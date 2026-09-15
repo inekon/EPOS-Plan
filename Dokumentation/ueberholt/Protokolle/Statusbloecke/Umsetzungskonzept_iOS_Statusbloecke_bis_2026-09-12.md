@@ -5373,3 +5373,491 @@ steht aus und ist die eigentliche Aufgabe von
 > Schlüsselfamilie weiter unter der Vorgängermaske `Views/Bericht/UcBericht.cs`, die es nicht mehr gibt — eigener Entscheid;
 > `BK_BTN_SIMULIEREN` ist ebenfalls eine Waise, gehört aber zu einer anderen Maske; Logbuch-Eintrag zum entfallenen Knopf
 > mit Versionsnummer beim Anwender zu erfragen.
+
+## #259 — Energieträger-Trägerkarte: Einheiten, Preishistorie, Katalogwerte (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderbefund 14.09.2026 (drei Bildschirmfotos, Energieträger-Dialog):** Heizwert und Brennwert tragen die Einheit
+> „kWh/kWh" („sind mit Einheit kWh/Nm³"); im Block „Preishistorie" „funktioniert Speichern nicht", „die Eingaben werden nicht
+> gespeichert"; dazu der Wunsch, die Stammdaten-Kosten aus der Administration in das Projekt übernehmen zu können.
+>
+> **Ursache (Orchestrierung, belegt; Agent bestätigt):** Die Hülle `WindowsFormsApplication1/Views/Kosten/EnergietraegerHuelle.cs`
+> (1 819 Zeilen, ohne Test, vom Linux-Gate nicht gebaut) bildete die Einheit von Heizwert und Brennwert aus der gewählten
+> Preisbasis („kWh/" + Basis), teilte beim Basiswechsel Heizwert, Brennwert und Leistungspreis durch den Faktor und bildete in
+> `Nachziehen()` die Basiswerte als Anzeige × Faktor; `TraegerWaehlen()` setzte die gespeicherte Preisbasis, rechnete die
+> Anzeige aber nicht um. Zusätzlich zeigte `["Nachrechnen"]` auf `Ansicht()`, das `Nachziehen()` nicht rief — Basiswerte,
+> Formel und Effektivzeile blieben auf dem Stand des Ladens, gespeichert wurde der alte Wert. `Stand.Historie` wurde nirgends
+> befüllt (der Kern-Leser hatte außer dem Speicheroptimierer keinen Aufrufer; der WinForms-Vorläufer rief `LoadHistory` beim
+> Trägerwechsel und nach dem Speichern). Im Projektkontext fehlte jeder Weg zu den Katalogwerten.
+>
+> **Anwenderentscheid 14.09.2026:** „Empfehlung: Katalogübernahme eine einmalige Kopie", „Empfehlung #259: umsetzen".
+>
+> **Umsetzung (Agent Opus, Worktree, sieben Commits `15259039` … `2f1256a4`; Merge `c0ae674d`, dessen Betreff die Nummer #258 aus der Zählung vor der
+> Windows-Synchronisation vom selben Tag trägt):** Heizwert und Brennwert sind
+> Stoffwerte je Abrechnungseinheit (`kWh/Nm³`, `kWh/L`, `kWh/kg`); nur der Arbeitspreis folgt der Preisbasis, der Leistungspreis
+> wird nicht mehr umgerechnet. Die Rechnung liegt als `EPOS.Kern/Controller/EnergietraegerPreiskarte.cs` ohne Datenbank im
+> Kern; Formelzeile und Effektivprüfung laufen über die Basiswerte und nennen die Einheiten; nach jeder Feldänderung wird
+> nachgezogen. Preishistorie: Laden beim Trägerwechsel und nach jedem erfolgreichen Speichern, Datum aus „Gültig ab", zweites
+> Speichern am selben Tag aktualisiert, Spaltenkopf mit `kWh/<Abrechnungseinheit>`; im Katalogkontext entsteht keine Zeile,
+> weil `energy_price.ID_Projekt` einen Fremdschlüssel auf `Tab_Projekt` trägt (Projekt 0 existiert nicht) — die Karte nennt den
+> Grund (`ETV_HISTORIE_NUR_PROJEKT`). Knopf „Katalogwerte übernehmen" im Fuß der Preisgruppe, nur im Projektkontext: holt
+> Arbeits-, Grund-, Leistungspreis, Heiz-, Brennwert und die drei Emissionswerte aus der Katalogzeile, setzt die Preisbasis auf
+> die Abrechnungseinheit, meldet „Katalogwerte übernommen — noch nicht gespeichert"; geschrieben wird erst mit Speichern/OK
+> (Historienzeile entsteht dabei). Bauweise: die Hülle liegt in `EPOS.UI.Daten/Kosten/` (Namensraum bleibt
+> `WindowsFormsApplication1` nach Hausregel des Projekts), Windows-Adapter `Views/Kosten/EnergietraegerFenster.cs` (58 Zeilen);
+> mitgezogen `EmissionskatalogHuelle`, `KostenprofilHuelle`, `SpotpreisImportHuelle`, `LeistungspreisReiheHuelle`,
+> `EnergietraegerKatalogCtrl` → `EPOS.Kern/Controller/`, `NamensabfrageGaben` als plattformfreier Parametersatz. Tests:
+> `EnergietraegerPreiskarteTests` (15), `EnergietraegerHuelleTests` (12, gegen die Arbeitskopie der Testdatenbank), sechs
+> bunit-Fälle; Kern 2 819 → 2 846, UI 4 015 → 4 021; Referenzlauf 5/5 PASS und byte-gleich; SQL-Dialektprüfer 0 von 1 363;
+> en-US-Lauf der betroffenen Klassen grün. Doku: Konzept Wirtschaftlichkeit konsolidiert, Wiki-Quelle Kosten (Upload
+> gebündelt), drei Logbuch-Einträge entworfen. Zwei einmalige Ausreißer in `EPOS.UI.Tests/Seiten/Strom`
+> (`VorpruefungEntprelltTests`, `SchrittfeldUndFortschrittTests`), einzeln und im Wiederholungslauf grün.
+> **Gates:** sept69 auf `c0ae674d` rot durch einen zeitabhängigen Ausreißer (`SchrittfeldUndFortschrittTests`), sept70 rot
+> durch den zweiten (`VorpruefungEntprelltTests`, en-US-Lauf) — beide Male alle übrigen Stufen grün, Referenzlauf 5/5
+> byte-gleich; nach #260 **Gate sept71 auf `ffc8be4f`:** GRÜN auf `ffc8be4f` — Kern 2 846, UI 4 022, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
+> **Offen:** Windows-Abnahme der Nähte und fachlich an Erdgas E im Projekt; Preishistorie im Katalogkontext braucht einen
+> Schemaentscheid (Fremdschlüssel lösen oder NULL zulassen, nummerierter Migrationsschritt); `KernwerteSpiegeln()` liest die
+> Emissionswerte vor `EmissionenSpeichern()` — für Handeingaben der drei Kernarten ein Folgeauftrag; Sammel-Upload frühestens
+> 20.09.2026.
+
+## #260 — Strom-Prüfstände warten auf den gezeichneten Zustand (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Die Gates sept69 und sept70 zum Merge `c0ae674d` (#259) waren rot durch je einen Fall in
+> `EPOS.UI.Tests/Seiten/Strom`: `SchrittfeldUndFortschrittTests.Die_Eingabefolge_im_Schrittfeld_kommt_vollstaendig_im_Modell_an`
+> (de-Lauf) und `VorpruefungEntprelltTests.Drei_schnelle_Tastendruecke_ergeben_genau_eine_volle_Pruefung` (en-US-Lauf) — je 1 von
+> 4 021, acht Einzelläufe der ersten Klasse einmal rot, Projektwiederholung 4 021/4 021; beide Gates liefen parallel zu einem
+> Agentenbuild. Alle übrigen Stufen beider Gates grün, Referenzlauf 5/5 byte-gleich.
+>
+> **Ursache (Agent, belegt):** bunits synchrones `Input()`/`Click()` gibt das Ereignis in den Zeichenverteiler und kehrt zurück,
+> ohne den Zeichenlauf abzuwarten. Die Seite legt je gemeldeter Änderung eine entprellte Vorprüfung auf; deren Fortsetzung
+> meldet sich nach 400 ms aus dem Fadenvorrat über `InvokeAsync(StateHasChanged)` zurück und belegt den Verteiler. Unter Last
+> rutscht der nächste Tastendruck dahinter, und der Sofort-Assert liest den Stand **vor** dem Zeichen (gemessen: Feldwert genau
+> eine Eingabe zurück). Der Verdacht „der Zeitgeber schreibt den Modellwert ins Feld zurück" ist widerlegt: ein Fall, der den
+> Zeitgeber bewusst zwischen zwei Eingaben feuern lässt, zeigt Feld, `Zahlenfeld._text` und Modell vor und nach dem Feuern
+> gleich (Sperren in `Zahlenfeld.OnParametersSet`). Unter künstlicher Rechenlast (12 Fäden): mit Zeitgeber 7 Ausreißer in
+> 6 Ansichten, ohne Zeitgeber 0 in 420 Eingaben. Kein Bedienfehler, die Komponente bleibt unverändert.
+>
+> **Umsetzung (Agent Opus, Worktree, Commit `134ae715`; Merge `ffc8be4f`, Betreff mit #259 aus derselben alten Zählung):** nur Prüfstände — `Auslegungshilfe.Schritt`
+> wartet auf das gezeichnete Blatt; beide Klassen tippen über eine `Tippen`-Hilfe, die auf `Fassung` und Feldtext wartet;
+> `SchrittfeldUndFortschrittTests` und `OptimierungStationTests` setzen `EntprellungMs = 0`; die überholten Entprellungen in
+> `Drei_schnelle_Tastendruecke…` tragen eine im Lauf nicht ablaufende Zeit, nur die dritte eine kurze; der `Dispose`-Fall
+> vergrößert Entprellzeit und Schranke im gleichen Verhältnis; neue Wache
+> `Der_Zeitgeber_zwischen_zwei_Eingaben_ueberschreibt_das_Feld_nicht`. Kein `Task.Delay`, kein übersprungener Fall, keine
+> geweitete Toleranz. Nachweis: 30/30 beide Klassen (de und `LANG=en_US.UTF-8`), 3 × 4 022/4 022 `EPOS.UI.Tests` (+1 unter
+> en-US), 12/12 unter Rechenlast; Kern-Filter grün (488 · 456 · 27+1 · 4 022 · 2 846); keine neue Warnung; kein Referenzlauf
+> nötig. Hausregel (Orchestrierung) in `EPOS.UI/CLAUDE.md`, Abschnitt Tests: nach `Input`/`Click` auf den gezeichneten Zustand
+> warten, wo ein Zeitgeber läuft.
+> **Gate sept71 auf `ffc8be4f`:** GRÜN auf `ffc8be4f` — Kern 2 846, UI 4 022, SpeicherEngine 456, KiKern 488, SpeicherPlanung 27 (+1 übersprungen), Formularkarte 122; 5 vorbestehende Warnungen (CS0108/CS0109/WFO0003); SQL-Dialekt 0 von 1 363; ChartProben 64 Bilder; Referenzlauf 5/5 byte-gleich gegen R7; en-US 0 FAIL.
+> **Offen:** keine.
+
+## #261 — Preishistorie: einzelne Preisstände löschen, Upsert je Kalendertag (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 14.09.2026 mit Bildschirmfoto der Trägerkarte: „historische Energieträger werte sollen
+> gelöscht werden können." Die Preishistorie zeigte zwei Zeilen mit demselben „Gültig ab 14.09.2026" (Basiseinheit m³ und
+> Nm³, Arbeitspreis 0,0000 und 0,0500).
+>
+> **Befund Doppelzeile (Agent, belegt):** `energy_price.valid_from` ist TEXT und trägt im Bestand zwei Schreibweisen:
+> Tagesstände (`2026-08-12 00:00:00`) aus der Trägerkarte und Zeitpunkte (`2026-08-09 20:33:16`) aus der Zuordnung —
+> `WizardCtrl` und `EnergietraegerVarianteCtrl` binden `DateTime.Now`. `SqliteDatenzugriff.NormalisiereWert` wertet
+> `DbParamTyp.Date` nicht aus; allein der CLR-Typ entscheidet (`DateTime` → `yyyy-MM-dd HH:mm:ss`). `HistorieSchreiben`
+> band `gueltigAb.Date`, verglich `valid_from = ?`, verfehlte den Zeitpunkt desselben Tages und fiel in den INSERT-Zweig; das
+> UNIQUE `unq_price_date` (Textgleichheit) ließ die zweite Zeile zu. In der Testdatenbank stehen beide Formen nebeneinander.
+>
+> **Umsetzung:** `Historienzeile.Id` aus `energy_price.id`; `EnergietraegerPreisCtrl.HistorieLoeschen(zeileId, traegerId,
+> projektId)` löscht genau eine Zeile (Träger und Projekt als Riegel, Rückgabe Zeilenzahl). Prüfung und UPDATE des Upserts
+> vergleichen den Kalendertag (`date(valid_from) = date(?)`); das Datum der getroffenen Zeile bleibt, neu angelegt wird zum
+> Tagesbeginn. Hülle `EnergietraegerHuelle.HistorieLoeschen(zeile)` mit `HistorieLoeschenGrund` als Gaben neben
+> `Speichern`/`SpeichernGrund`; Katalogkontext lehnt benannt ab (`ETV_HISTORIE_NUR_PROJEKT`), fehlende Zeile
+> `ETV_HISTORIE_LOESCH_FEHLT`; danach `HistorieLaden()`. Oberfläche: Aktionsspalte am Ende der Historientabelle mit
+> Löschknopf je Zeile, `Rueckfrage` mit Vorgabe Nein, Meldung wie beim Speichern. Windows-Schale unverändert (der volle
+> Gabensatz wird auf den Dialog gesplattet). Ressourcen `ETV_HISTORIE_LOESCHEN`, `ETV_HISTORIE_LOESCH_TITEL`,
+> `ETV_HISTORIE_LOESCHFRAGE`, `ETV_HISTORIE_LOESCH_FEHLT` de/en.
+>
+> **Abnahme:** Build 0 Fehler, keine neuen Warnungen; `EPOS.Kern.Tests ~Energietraeger` 52/52, `EPOS.UI.Tests ~Energietraeger`
+> 73/73 (je 6 neue Fälle), `EnergietraegerDialogTests` dreimal 52/52; Wachen 43/43; SqlDialektPruefer 1 363 Texte, 0 Fundstellen;
+> ResourceDesigner unverändert; Testdatenbank unberührt. `StromPreisCtrl.ArbeitspreisCtKwh` liest `energy_price` zum Stichtag —
+> unverändert, kein Referenzlauf. Merge `46282032`.
+>
+> **Offen:** Vereinheitlichung der Zuordnung auf den Tagesbeginn (Bestandsdaten) nur auf Zuruf; Logbuch-Eintrag entworfen
+> (Version 1.2.0.1), Upload gebündelt ab 20.09.
+
+## #262 — Wärmequelle Erdreich: Erdkollektor und Erdsonde als eigene Rubriken (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderrückmeldung 14.09.2026 mit Bildschirmfoto der Überlagerung „Wärmequelle Erdreich — <Wärmepumpe>" aus
+> der Simulationskonfiguration: „OK Button soll aus Dialog raus" und „Auswahl Erdkollektor und Erdsonde soll jeweils in einer
+> Rubrik sein mit den jeweils relevanten Parametern (nicht alle gemischt wie jetzt)". Die Gruppe „Quellsystem" trug die
+> `Optionsgruppe` und darunter Verlegetiefe, Fläche, Länge je Sonde und Anzahl Sonden in einem Formularraster; die Felder des
+> nicht gewählten Zweigs waren nur gesperrt (Abweichung A‑4: getrennte Felder je Zweig, Umschalten überschreibt nicht).
+>
+> **Umsetzung (Teil Rubriken):** `QuelleErdreichDialog.razor` zeichnet zwei Rubriken (`Gruppenkopf`) **Erdkollektor** und
+> **Erdsonde**, jede mit ihrem Optionsfeld als erster Zeile und nur ihren Feldern; die nicht gewählte Rubrik bleibt sichtbar,
+> gesperrt und behält ihre Werte, gedimmt über `epos-erdreich-zweig--ruht` (Farbe `--epos-text-sehr-leise`, keine neue Farbe).
+> Damit die Wahl EINE bleibt, bekam der Baustein `Optionsgruppe` die Gaben `NurEintrag` (zeichnet genau einen Eintrag,
+> `Eintraege` bleibt der Stand der Wahl) und `Gruppenname` (geteilter HTML-Name mehrerer Aufrufe); der Einzelaufruf meldet keine
+> eigene `radiogroup`, behält das `aria-label`. `SystemUmschalten`, `KOLLEKTOR`/`SONDE`, `Zweigfelder` und die Prüfmeldungen
+> unverändert; die übrigen 20 Wirte der `Optionsgruppe` ebenso. Ressourcen `SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL` und
+> `SIMQ_ERDREICH_RB_SONDE_WAHL` de/en über `QuelleErdreichHuelle`; `RB_KOLLEKTOR`/`RB_SONDE` sind Rubriktitel, `GB_QUELLSYSTEM`
+> bleibt Gruppenname der Wahl. Hausregel in `EPOS.UI/CLAUDE.md` („Eine Wahl darf über mehrere Rubriken laufen … nie ein nacktes
+> `<input type="radio">`"). Wiki-Quelle `EPOS.Kern/Allgemein/Hilfe/Berechnung/Wärmequelle Erdreich.wiki`: Herkunftsspalte nennt
+> die zwei Rubriken (kein Upload).
+>
+> **Abnahme:** Build 0 Fehler, keine neuen Warnungen; `QuelleErdreichDialogTests` 32 (3 neu), dreimal grün; `OptionsgruppeTests`
+> 16 (4 neu); `SimulationKonfig` 38; `EPOS.UI.Tests` 4 027 grün; Wachen Dokumentation-Link 7, Repository-Ordnung 10,
+> Wiki-Produktdaten 5 grün; ResourceDesigner unverändert. Kein Rechenweg, kein Referenzlauf. Merge `5b0df675`.
+>
+> **Offen:** Nachtrag OK-Knopf nach Anwenderentscheid (Lesart a/b, Reichweite auf die sieben Simulationsdialoge);
+> vorbestehende Tabuwörter der Wiki-Quelle („vorher", „Befund" als Prüfbefund) nur auf Zuruf; Logbuch-Eintrag entworfen
+> (Version 1.2.0.1), Upload gebündelt.
+
+## #263 — Kostenverwaltung: Zeilenaktionen behalten ungespeicherte Eingaben (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderbefund 14.09.2026 mit Bildschirmfoto der Kostenverwaltung (Administration): „Bei zufügen von Position
+> werden zuvor eingegebene Werte auf null gesetzt."
+>
+> **Ursache (belegt):** `PositionAnlegenMit` schreibt die neue Position sofort (`PositionNeu`, wie `btnPositionNeu_Click` im
+> Vorbild) und ruft danach `KontextLaden(_stand.VarianteId)`. Die Windows-Hülle `KostenKomponenteHuelle` baut in
+> `VorlagenRasterAufbauen`/`ProjektRasterAufbauen` bei jedem Laden `_bindungen` und `_zeilen` neu aus der Datenbank. Die Regel
+> Ä12/Ä19 („die Änderung lebt bis Speichern nur im Objekt") trug nur, solange niemand die Objekte austauschte — beim Auffrischen
+> war alles Ungespeicherte weg. Dieselben Zeilen stehen in `LoeschenFragen` und `UebernahmeFertigMachen`. Der Bestandsfake der
+> bunit-Tests gab stets dieselben Objekte zurück, deshalb blieb der Befund unsichtbar.
+>
+> **Beleg:** Fünf neue Fälle in `KostenKomponenteDialogTests` mit einem datenbankartigen Fake (Ablage, aus der jeder `Laden`-Aufruf
+> neue `KostenPositionZeile`-Objekte baut): vor dem Fix vier rot (Fußknopf „+ Position hinzufügen", Neuzeile, „Position löschen",
+> „In Projekt übernehmen" — Satz fällt von 1500 auf den Datenbankwert 1200, ebenso `Stand.Zeilen[0].Satz` und der Summenfuß);
+> der fünfte Fall (`Ein_Kontextwechsel_laedt_ohne_Uebertrag`) hält die gewollte Grenze fest.
+>
+> **Umsetzung:** Fix ausschließlich im plattformfreien `EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor`:
+> `KontextLaden(int? varianteId, bool eingabenUebernehmen = false)`; `EingabenUebertragen` überträgt nach dem Laden die
+> ungespeicherten Eingaben bisheriger Zeilen auf die neu gebauten Objekte gleicher `Id` — nur `Bezeichnung`, `BemessungId`, `Satz`,
+> `Nutzungsdauer`, nur wo sie vom geladenen Stand abweichen; je Zeile `Nachziehen` (Einheit, Betrag, Kette, Kurztexte), danach
+> `SummenNachziehen()`; `ReferenceEquals`-Wächter gegen identische Objekte. Gesetzt für Hinzufügen (beide Wege), Löschen,
+> Übernehmen; Kontextwechsel (Eintrag, Kategorie, Variante, Variante neu/gelöscht) laden ohne Übertrag; „Abbrechen" verwirft weiter
+> alles; nichts wird still gespeichert; die neue Position kommt weiter mit Einheit, Betragstext, Kette und Kurztexten aus der
+> Hülle. `Zahlenfeld`: `@key="zeile.Id"` bleibt, Instanz wird wiederverwendet, Sperren `Fehlerhaft`/`_geleert` wirksam.
+> Kopfkommentar und Hausregel in `EPOS.UI/CLAUDE.md` (Abschnitt Zustand, Meldung, Leerzustand). Windows-Schale unverändert.
+>
+> **Abnahme:** Build 0 Fehler, keine neuen Warnungen; gefilterter Lauf 76/76; `KostenKomponenteDialogTests` dreimal 46/46;
+> `EPOS.UI.Tests` 4 025/4 025; Wachen 17/17. Kein Rechenweg, keine Ressourcen, kein Referenzlauf. Merge `84ea142d`.
+>
+> **Offen:** Kontextwechsel verwirft still (Rückfrage nur auf Zuruf); Zeileneditor und Gesetzeskatalog ohne Übertrag
+> (`EditorFertig` der Windows-Hülle zieht `z.Bezeichnung` nicht nach); Nachweis am laufenden Windows-Build; Logbuch-Eintrag
+> entworfen (Version 1.2.0.1), Upload gebündelt.
+
+## #264 — Konzept Nutzungsdauer und AfA je Technik (14.09.2026, Nachtrag aus dem Konzeptcommit)
+
+> **Anlass:** Anwenderwunsch 14.09.2026: „in allen Kostendialogen soll die Nutzungsdauer nach Technik/Kategorie
+> standardmäßig vorbelegt werden können. Grundlage ist eine eigene AfA-Tabelle (Absetzung für Abnutzung / Nutzungsdauer,
+> editierbar) unter Administration an geeigneter Stelle."
+>
+> **Befund (Sonnet-Agent):** Nutzungsdauer liegt je Vorlagenposition (`Tab_KostenVorlagePosition.Nutzungsdauer`, Saat
+> NULL) und je Projektposition (`Tab_ProjektWerte.Nutzungsdauer` samt Worst/Best); `KapitalwertRechner` setzt n < 1 auf T;
+> zehn Komponenten in `Tab_KostenKomponente`, `Tab_Kostenfaktor` flach; Menü Administration → Kostenverwaltung
+> (Kostenvorlagen, Energieträger); keine Technik-Vorgabe im Bestand. Ein zweiter Befund derselben Runde (Energieträger je
+> Komponente, ein Preis je Trägertyp im Projekt) ging in #268 auf.
+>
+> **Ergebnis:** `Dokumentation/aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md` (Commits `9136b233`, `4453eaec`): Ist-Stand,
+> Zielbild 2.1–2.7 (Tabelle `Tab_Nutzungsdauer` STRICT je Komponente und Positionsart mit Nutzungsdauer, steuerlicher AfA,
+> Instandsetzungs- und Wartungssatz, Quelle, Standardkennung, Sortierung; `NutzungsdauerID` an Vorlagen- und Projektposition;
+> Vorbelegung mit Herkunftsanzeige in den Kostendialogen; Administrationsdialog unter Kostenverwaltung; Startwerte der Saat
+> nach VDI 2067 / AfA-Tabelle; Rechenwirkung und Referenzlauf), Stufenplan S1–S3, Fragen ND-Q1–Q8 mit Empfehlung — vom
+> Anwender angenommen —, Abschnitt 6 Umsetzung (S1 = #269, S2 = #270). Indexzeile in `Dokumentation/LIESMICH.md`;
+> Wachen `DokumentationLinkWache|RepositoryOrdnungWache` 17/17.
+>
+> **Offen:** S1 (#269), S2 (#270), S3 auf Zuruf; Konzept nach `ueberholt/` nach S3.
+
+## #266 — Aufschläge auf den Strombezugspreis: Vorgabe „kein Aufschlag" (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 14.09.2026 mit Bildschirmfoto der Gruppe „Aufschläge auf den Strombezugspreis" in der
+> Energieträger-Trägerkarte: Modus „Gesamtwert (Override)" mit Gesamtaufschlag 0, darunter die fünf Komponenten
+> (Netzentgelt 6,44 / Umlagen 2,946 / Stromsteuer 2,05 / Konzessionsabgabe 0,11 / Vertrieb 0,2) mit gesetzten, gesperrten
+> Haken und rot „Nicht aufgeschlüsselter Rest: −11,746 ct/kWh". „Der Aufschlag für den Strombezugspreis soll standard auf
+> null sein. Optional kann der Gesamtwert oder der aufgeschlüsselte Wert angegeben werden."
+>
+> **Befund:** `StromAufschlagModel` gab Modus aufgeschlüsselt mit fünf aktiven Vorschlagswerten vor; ein neues Projekt
+> trug damit von selbst 11,746 ct/kWh Aufschlag. Die Restzeile der Engine (`Override − Summe aktiv` im Modus Gesamtwert)
+> erklärte die rote −11,746. Bestandsprüfung an der Testdatenbank: die Stromträgerzeilen von 1017, 1019, 1023, 1024 tragen
+> einen ausdrücklichen Modus; 1030 ist die einzige Zeile mit NULL (dort folgenlos: `Aufschlaege_Anwenden = 0`, kein
+> Stromspeicher); 1007, 1045, 1046 haben keine Stromzeile — kein Referenzergebnis betroffen, kein Schema-Schritt.
+>
+> **Umsetzung:** dritter Modus „kein Aufschlag" (`DbWerte.SP_AUFSCHLAG_MODUS_KEINER`, `AufschlagsModus.Keiner = 2`:
+> wirksam 0, keine Abweichung) als Vorgabe des Modells; die fünf Vorschlagswerte und Haken bleiben als Vorschlag.
+> `StromAufschlagCtrl.Modus(text)`: nur die zwei ausdrücklichen Texte ergeben einen Rechenmodus, NULL/leer/unbekannt heißt
+> „kein Aufschlag"; gespeicherte Zeilen behalten ihren Modus. Baustein `StromAufschlaege`: Optionsgruppe mit „kein
+> Aufschlag" zuerst, Komponenten und Gesamtwert nur im zuständigen Modus bedienbar, Abweichungszeile nur im Modus
+> Gesamtwert und ohne Alarmfarbe („Gesamtwert liegt … über/unter der Summe der Komponenten"). Kohärenzprüfung und
+> `WirtschaftlichkeitCtrl.RechneAufschlaege` benennen den Modus (`KOH_GRUND_STROM_KEIN_AUFSCHLAG`). Brennstoffblock
+> geprüft, nicht geändert (Vorgabe Gesamtwert = erfasster Arbeitspreis, Bestandteile null; Kommentar abgegrenzt).
+> Wiki-Quellen: Bedienseite Kosten und Rechenwegseite Stromspeicher (drei Modi, Vorgabe).
+>
+> **Abnahme:** Build 0 Fehler, Warnungen Bestand; SpeicherEngine 29, Kern 64 (neu `StromAufschlagVorgabeTests` 11),
+> UI 97 grün; `EnergietraegerDialogTests` dreimal 52/52; Wachen und H13-Wächter 174 grün; volles Gate des Agenten 7 879
+> grün, 1 übersprungen (OR-Tools); SqlDialektPruefer 1 363 Texte, 0 Fundstellen; ResourceDesigner unverändert; Referenzlauf
+> 5/5 byte-gleich. Merge `9dc67660`.
+>
+> **Offen:** Bestandsprojekte des Anwenders ohne gespeicherten Modus rechnen jetzt mit 0 statt 11,746 ct/kWh — Schema-Schritt
+> zur Sicherung des alten Stands nur auf Zuruf (dann Referenzbasis neu); Logbuch-Eintrag entworfen, Upload gebündelt.
+
+## #267 — Wirtschaftlichkeit: Energiekosten und Rechenweg (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderbefund 14.09.2026 mit zwei Bildschirmfotos der Wirtschaftlichkeit (Kapitalwertmethode, Projekt
+> „Beispiel WP WG 1" mit den Varianten „Andere WP" und „Erdwärme", alle mit Simulation 09.09.26): „die Energiekosten sind 0
+> auch nach berechnung. Kosten sind angegeben." und „die gesamte Wirtschaftlichkeitsberechnung scheint nicht zu
+> funktionieren." Tabelle Stamm: Investition 88.767, Betriebskosten 0, Energiekosten „—", Ersatzbeschaffungen und Restwert 0,
+> Nettobarwert/Annuität/Amortisation/Wärmegestehungskosten „—"; Kacheln „nur Stammprojekt gerechnet"; Fußzeile „Parameter
+> gespeichert — bitte neu berechnen" ohne sichtbaren Knopf.
+>
+> **Befund (Agent, headless am Projekt 1026 der Testdatenbank — dasselbe Projekt):**
+> (a) Wärmepumpe, PV und Speicher tragen keinen `ID_Carrier`, dem Projekt ist nur „Erdgas E" zugeordnet;
+> `Emissionsquelle.StromTraeger(1026)` = 0, `ProjektEnergietraegerCtrl.StandardStromTraeger(1026)` = 60 — die Kostenrechnung
+> fragte enger als Anzeige und Assistent; Netzbezug 19,08 MWh/a unbepreist → Energiekosten null → Fehlgrund → kein Kapitalwert.
+> (b) Ein nur in `energy_price` (Trägerkarte, „Gültig ab") gepflegter Arbeitspreis mit `custom_price_work = 0` blieb ungelesen:
+> vorher NULL, nachher 6.678,00 €/a und Kapitalwert −106.127,28 €. (c/h) „nur Stammprojekt gerechnet" verlangt eine Variante mit
+> `KapitalwertDiff`; alle drei brachen an (a) ab. (d/g) Ersatz- und Restwert 0, weil `WirtschaftlichkeitCtrl.RechneProjekt` bei
+> fehlenden Energiekosten vor `RechneBild` umkehrt (Gegenprobe mit Preis: Ersatzbarwert 5.041,61 €); die Parameterzeile
+> „Ersatzbeschaffung im Jahr 10" entsteht unabhängig davon aus `NutzungsdauerAbgleich`. (e) Betriebskosten 0: 17 Vorlagenzeilen
+> mit leerem `EingegebenerWert`, kein Codefehler. (f) `Laden()` liest nur persistierte Ergebnisse; Rechnung nur auf Zuruf wie
+> beim Vorläufer `UcWirtschaftlichkeit`, der Knopf „Berechnen" lag in der Fußleiste unterhalb der Vergleichstabelle.
+>
+> **Umsetzung:** `KostenEmissionRechner` bepreist den Netzbezug mit Rückfall auf `StandardStromTraeger` (am Ergebnis vermerkt,
+> `VariantenDaten.StromTraegerRueckfall`); Preiskette Projektwert → `energy_price` zum Stichtag (`StromPreisCtrl.Stichtag`) →
+> Katalog; sechs benannte Gründe mit Ausweg (`VariantenDaten.EnergiekostenGrund`); `WirtschaftlichkeitCtrl.Fehlgrund` (Tabelle
+> und Verlauf) trägt den Grund des Rechners; der CO₂-Faktor bleibt am zugeordneten Träger (benannter Vorgabewert
+> `STROMMIX_CO2_G_JE_KWH`, Emissionszahlen des Bestands unverändert). Seite: `ErgebnisMatrix.Warnungen()` sammelt die
+> Warnzellen (`WARN_PRAEFIX`), Warnband über den Kennzahlkarten mit Grund und Knopf „Neu berechnen", auch nach dem Speichern
+> eines Unterdialogs und bei veralteter Statuszeile; Rechnung bewusst nicht automatisch beim Öffnen. Ressourcen de/en
+> nachgetragen. Wiki-Quelle Wirtschaftlichkeit (Hinweisband, „Neu berechnen").
+>
+> **Abnahme:** `EnergiekostenGrundTests` 5 von 7 rot vor dem Fix, bunit 5 von 33 rot ohne Warnband, danach grün; Kern gefiltert
+> 46 grün; Wachen 22 grün; Gate des Agenten Kern 2 859, UI 4 044, KiKern 488, Engine 456, SpeicherPlanung 27+1 grün, dreimal;
+> SqlDialektPruefer 1 365 Texte, 0 Fundstellen; Referenzlauf 5/5 byte-gleich (Wirtschaftlichkeit nicht im Referenzexport).
+> Merge `ebdbdde0`.
+>
+> **Offen:** CO₂-Rückfall auf denselben Stromträger (Anwenderentscheid); Kopplung der Parameterzeile an den Rechenlauf;
+> Windows-Hülle `WirtschaftlichkeitSeiteGaben.cs` mit Warnzeichen-Literal; Logbuch-Eintrag entworfen, Upload gebündelt.
+
+## #268 — Energieträgerverwaltung: nur zugelassene Träger je Komponente (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 14.09.2026 mit zwei Bildschirmfotos (Energieträgerverwaltung, Projekt 1027; Strom mit
+> „Elektrische Energie" und „Strom Variante"): „Die Energieträgerverwaltung (Dialog) sollte nur die zugelassenen
+> Energieträger für die ausgewählte Komponente zulassen (zum Beispiel: Wärmepumpe → Strom). Bei gleichem Energieträger-Typ
+> soll im Projekt der gleiche Energiepreis sein … Das Gleiche gilt für die Emissionswerte." Nachfrage des Anwenders: der
+> zweite Teil sei schon umgesetzt — prüfen.
+>
+> **Befund (Sonnet-Agent, am Bestand geprüft):** Preis und Emissionen hängen nur an (Projekt, Träger): `energy_price`
+> UNIQUE (carrier, valid_from, Projekt), `energy_project_settings` je (Projekt, Träger) (App-Logik, kein DB-Index),
+> Variante = eigener `energy_carrier`-Datensatz mit eigener Id, Emissionen je Träger global mit Projektspalten; die Rechnung
+> (`StromPreisCtrl.ArbeitspreisCtKwh`, `EnergietraegerPreisCtrl.ProjektpreisLesen`) liest (Projekt, Träger), die Komponente
+> wählt nur den Träger → Teil 2 erfüllt. Teil 1: die Verwaltung kannte keinen Komponentenkontext (`Gaben(traegerId)` nur
+> Vorwahl; Öffner `KostenKnoepfe.cs`, `EnergietraegerFenster.Oeffnen(besitzer, projektId, traegerId)`), die Trägerwahl je
+> Anlage (`EnergietraegerWahl.razor`/`ErzeugerTraegerHuelle`) zeigte alle Gruppen; Einengung nur im Varianten-Anlegedialog
+> (`EnergietraegerVarianteCtrl.KategorieZu`).
+>
+> **Umsetzung:** Kern `EPOS.Kern/Controller/EnergietraegerZulaessigkeit.cs` — `ZulaessigeGruppen(erzeugerart, geraeteId)`
+> (null = keine Einengung, leer = kein Träger), `Kategoriecodes`, `IstZulaessig`, `PasstGruppe`, `MitTraeger`,
+> `ZulaessigerKatalog`; entschieden wird am Kategoriecode (`Tab_BrennstoffKategorien.Code` = `energy_carrier.pricing_model`),
+> angezeigt über `group_code`: Wärmepumpe/PV/Stromspeicher/Heizstab ELECTRICITY → Strom; Heizkessel/BHKW mit Gerät nach
+> Gerätekategorie (GASEOUS → Gas, Wasserstoff; LIQUID → Öl; SOLID → Holz, Kohle, Koks; HEAT → Fernwärme; ELECTRICITY →
+> Strom), BHKW ohne Gerät GASEOUS+LIQUID (Biogas liegt in Gas); Solarthermie/Pufferspeicher leer; Sicherheitsnetz: bleibt
+> kein Katalogträger übrig, keine Einengung. Hülle `EnergietraegerHuelle.Gaben(traegerId, erzeugerart, geraeteId)`: gefilterte
+> Liste und Katalogübernahme, Kopfzeile mit Kontext, unpassender zugeordneter Träger bleibt markiert; Solarthermie/
+> Pufferspeicher nennen „kein eigener Energieträger" statt leerer Liste. `EnergietraegerListe.Passend`,
+> `ErzeugerTraegerHuelle.Katalog` aus `ZulaessigerKatalog`, drei Anlagenhüllen setzen ihre Erzeugerart; Kostenseite reicht die
+> gewählte Anlagenzeile an den Öffner (`KostenSeite.GewaehlteZeile()`, `AnlagenEintrag.GeraeteId`,
+> `KostenSeiteGaben.TraegerGaben(zeile)`); `KostenKnoepfe.cs` (WinForms-Leiste ohne Aufrufer) entfernt; Windows-Schale mit
+> `EnableWindowsTargeting` gebaut (0 Fehler, 5 Warnungen Bestand). Ressourcen
+> `KDLG_ET_KONTEXT_KOMPONENTE`, `_OHNE_TRAEGER`, `_ALLE`, `KDLG_ET_PASST_NICHT` de/en. Wiki-Quelle Kosten
+> (Energieträgerverwaltung, Träger je Anlage).
+>
+> **Abnahme:** Build 0 Fehler, Warnungen Bestand; Kern `Energietraeger|ProjektEnergietraeger` 72 grün (14 neue
+> `EnergietraegerZulaessigkeitTests`, 6 Hüllentests); UI 79 grün, `KostenSeiteTests` 45, `EnergietraegerDialogTests` dreimal 57; Wachen 22;
+> Gate des Agenten 7 906 grün; SqlDialektPruefer 1 366 Texte, 0 Fundstellen; ResourceDesigner unverändert; Referenzlauf 5/5.
+> Merge `4dba8d30`.
+>
+> **Offen:** Heizkessel-/BHKW-Dialog: `KostenOeffnen`/`EnergiekostenOeffnen` in `HeizkesselHuelle`/`BhkwHuelle` unbelegt
+> (eigener Auftrag); `ANIMAL_FAT` beim BHKW ohne Gerät; Wasserstoff in der Gasmenge (fachlich richtig); iOS-Variantendialog ohne
+> Kategorie; UNIQUE-Index `energy_project_settings` auf Zuruf; Logbuch-Eintrag entworfen, Upload gebündelt.
+
+## #269 — Nutzungsdauern (AfA) Stufe S1: Tabelle, Saat, Verwaltung, Vorbelegung (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Stufe S1 des Konzepts `Konzept_Nutzungsdauer_AfA_EPOS-Plan.md` (#264) nach den Entscheiden ND-Q1–Q8
+> (Empfehlung angenommen, 14.09.2026). Befund: im Bestand keine Technik-Vorgabe; Nutzungsdauer nur je Vorlagen- und
+> Projektposition, Saat NULL, `KapitalwertRechner` setzt n < 1 auf T.
+>
+> **Umsetzung:** `EPOS.Kern/Allgemein/Update/NutzungsdauerSchema.cs` als eine Quelle für DDL, Saat und Zuordnung
+> (Migration, Werkzeug Testdatenbankschema, Nachweis); Schema-Schritt 75, `SchemaStand.Zielversion` 74 → 75.
+> `Tab_Nutzungsdauer` STRICT mit KomponentenID, Positionsart, IstStandard, Nutzungsdauer_a, AfA_steuerlich_a,
+> Instandsetzung_Prozent, Wartung_Prozent, Quelle, ReadOnly, Sortierung; Boolean-Spalten mit `CHECK (… IN (0,1))`,
+> `UNIQUE (KomponentenID, Positionsart)` mit FK auf `Tab_KostenKomponente`, dazu ein eindeutiger Index über
+> `COALESCE(KomponentenID, 0)`, weil SQLite NULL nicht gegen NULL hält (zwei technikübergreifende Zeilen „Montage",
+> „Planung / Baunebenkosten"). `NutzungsdauerID` (INTEGER NULL, FK) an `Tab_KostenVorlagePosition` und `Tab_ProjektWerte`.
+> Saat 28 Zeilen, alle ReadOnly, genau zehn Standardzeilen (eine je Technik), Quellen „VDI 2067 Blatt 1, Tab. A2
+> (Richtwert)" und bei vier Zeilen „AfA-Tabelle AV (Richtwert)"; Zuordnung 31 von 53 Investitionspositionen der Vorlagen
+> (22 nicht zuordenbare Namen bleiben NULL), 0 von 67 Betriebspositionen; `Tab_ProjektWerte` bekommt die Spalte, aber
+> keinen Wert (175 Zeilen Feld für Feld unverändert). `NutzungsdauerCtrl`: `Alle`, `Zeile`, `Standard`, `Vorgabe(technik,
+> positionsart)` mit NULL-Auflösung und Herleitungstext, `Neu`, `Speichern`, `Loeschen` (ReadOnly → benannte Ablehnung),
+> `AuslieferungWiederherstellen`, tolerante Tabellen- und Spaltenprobe; Vorbelegung in `KostenVorlagenCtrl.PositionNeu`
+> (nur Investition), `KostenProjektPositionenCtrl.Neu`, `KostenVorlagenUebernahmeCtrl.AusVorlage` (kopiert `NutzungsdauerID`,
+> nimmt den Vorlagenwert, sonst `Vorgabe`); nichts Gespeichertes wird still verändert. Dialog
+> `EPOS.UI/Dialoge/Kosten/NutzungsdauerDialog.razor` mit `NutzungsdauerDaten.cs`, Hülle
+> `EPOS.UI.Daten/Kosten/NutzungsdauerHuelle.cs`, Menüpunkt „Nutzungsdauern (AfA)…" als dritter Eintrag unter Administration →
+> Kostenverwaltung, `Seitenschluessel.NutzungsdauerVerwaltung`, Menüwächter 60 Punkte / 8 Trenner / 13 klappend / 47 handelnd,
+> Zielmenge Administration 32; Windows-Öffner `WindowsFormsApplication1/Views/Kosten/NutzungsdauerFenster.cs` nach dem Muster
+> `EnergietraegerFenster`, Fall in `HauptfensterHuelle.Weg`, Zeile in `help_mapping.txt`; 31 Ressourcen `ND_*` de/en,
+> ResourceDesigner gezogen. Auslieferungsvorlage: Tabelle ohne Projektspalte und ohne `_STAMM` bleibt vollständig, Nachweis P6b,
+> P6 (STRICT) 118 → 119. Testdatenbank auf Schemastand 75 (120 Tabellen, 119 STRICT, 25 Projekte, `integrity_check` ok,
+> `foreign_key_check` 0), Zweitlauf des Werkzeugs 0/0. Wiki-Quelle Kosten: Absatz „Nutzungsdauern (AfA)"; Abschnitt
+> „Kosten in der Speicherauslegung" nennt nur den gültigen Stand. `BETRIEB_SQLITE.md` 6.5, `Referenzlaeufe/LIESMICH.md`.
+>
+> **Abnahme:** Build 0 Fehler, 4 Warnungen (Bestand); Gate des Agenten 7 906 grün, 1 übersprungen; `NutzungsdauerTests` 15
+> und `NutzungsdauerDialogTests` 12 je dreimal grün; Wachen 43, `MenuebandTests` 57, `ParametersatzTests` 17,
+> `StilblattTests` 23, `FormularrasterTests` 69, `KiDialogaufrufTests` 37; Auslieferungsvorlage 19, Formularkarte 122;
+> SqlDialektPruefer 1 383 Texte, 0 Fundstellen; Windows-Schale mit `EnableWindowsTargeting` 0 Fehler, 5 Warnungen (Bestand);
+> Referenzlauf 5/5 PASS und byte-gleich gegen `2026-09-11_R7_Speicherflotte`. Merge `de689bfe`.
+>
+> **Offen:** S2 (#270) und S3; `Instandsetzung_Prozent`/`Wartung_Prozent` angelegt, nicht gelesen; iOS ohne Rubrik
+> Kostenverwaltung; Logbuch-Eintrag entworfen, Upload gebündelt.
+
+## #271 — Kostenverwaltung: Bemessung „je kW Leistung" bei Solarthermie (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderbefund 14.09.2026 mit Bildschirmfoto der Kostenverwaltung Solarthermie (Projekt „Beispiel WP WG 1 -
+> Erdwärme", Investitionskosten nach VDI 2067): Zeile „Solarthermie", Bemessung „je kW Leistung", Satz 700 €/kW, Betrag netto 0,
+> Summe 0,00 €, kein Hinweis. „Bei Solarthermie und Auswahl ‚je kW Leistung' wird nicht die Leistung der Solarthermie-
+> Komponente genommen."
+>
+> **Befund:** `TechnikPlanwertCtrl.Geraetespalte` kannte für Komponente 4 nur „je m² Kollektorfläche" (`Aperturflaeche` ×
+> `Kollektormodulanzahl`); „je kW Leistung" traf keine Spalte, weil `Tab_Solarkollektoren` (Modulfläche, Aperturfläche, h0, k1,
+> k2, Kdir, Kdfu, Investitionskosten) keine Leistung führt und weder `SimulationSolarthermie` (spezifische Leistung je Stunde
+> in W/m²) noch Dialoge oder Hilfeseite eine Nenngröße kennen. Der H4c-Grund („Art passt nicht zum Gewerk") wurde gebaut
+> (`KostenKomponenteHuelle.BasisKurztext`), landete aber nur im Werkzeugtipp der Betragszelle.
+>
+> **Umsetzung:** Leistung des Kollektorfelds an EINER Stelle im Kern: `TechnikPlanwertCtrl.KOLLEKTOR_KW_JE_M2` = 0,7 kW/m²
+> (Konvention für die thermische Nennleistung von Solarkollektoren, Quellkommentar), `KollektorfeldKw` = 0,7 × Aperturfläche ×
+> Kollektormodulanzahl für „je kW Leistung" und „je kW Heizleistung" (`IstSolarLeistungsart`); Herleitungstext
+> `KollektorfeldHerleitung` („0,7 kW/m² × 2,50 m² × 10 Module = 17,50 kW") über `BaugroesseHerleitung`;
+> `KostenProjektPositionenCtrl.Zeile.BasisHerleitung` beim Laden, Nachziehen und Bemessungswechsel. Kein stilles 0:
+> `KostenPositionZeile.OhneBasis`/`BasisHerleitung`, `VorlagenZeile` setzt ⚠ in die Betragszelle (Grund als `aria-label`,
+> Kurztext und Herleitung im Werkzeugtipp), `KostenKomponenteDialog` sammelt betroffene Zeilen in einer leisen Zeile unter dem
+> Raster; zwei Stilregeln; Windows-Hülle `KopplungAnwenden` belegt die zwei Felder und reicht `VorlageOhneBasis`. Gewerk-Tabelle:
+> Wärmepumpe `Nennleistung`, Kessel `Ptherm`, PV `KwpSumme`, Speicher `Leistung`/`Energie`, BHKW `Ptherm`/`Pel`; bewusst „passt
+> nicht": WP elektrisch, PV thermisch, Pufferspeicher kWh, Komponenten 8–10 ohne Gerätetabelle. Wiki-Quelle Kosten: Abschnitt
+> „Bemessung der Positionen" mit Gewerk-Tabelle, Formel und Rechenbeispiel aus runden Zahlen, Punkt „Ohne Bezugsgröße".
+>
+> **Abnahme:** `SolarthermieLeistungTests` 18 (8 rot vor dem Fix), Kostenfilter 81/81, 7 bunit-Fälle (94/94), Wachen 22/22;
+> Gate des Agenten Kern 2 870, UI 4 045, KiKern 488, Engine 456, SpeicherPlanung 27+1 — 7 886 grün, 4 Warnungen Bestand;
+> SqlDialektPruefer 1 365 Texte, 0 Fundstellen; Referenzlauf 5/5 (Kosten nicht im Referenzexport, keine Solarthermie-Position
+> mit kW-Bemessung in der Testdatenbank). Merge `ddbed2b7`.
+>
+> **Offen:** BHKW und Pufferspeicher bei „je kW Leistung" mehrdeutig — eigener Grund nur nach Anwenderentscheid; Windows-
+> Abnahme der Hüllenzeilen; Logbuch-Eintrag entworfen, Upload gebündelt.
+
+## #273 — Stromspeicher-Auslegung: Ergebnisse in Station 5, Bedienblock unter der Suche, Größensuche ohne Gerät (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 14.09.2026 (drei Bildschirmfotos): Ergebnisse der Optimierung aus Station 4 in Station 5,
+> dort gegliedert in „Ergebnisse aus der Optimierung" und „Ergebnisse nach Simulation"; der rechte Bedienblock unter die
+> Suche. Nachtrag (zwei Bildschirmfotos): „Bei ‚Größe suchen' ist eine Speicherauswahl nicht sinnvoll — die
+> konfigurierten Speicher nicht in der Suche anzeigen, ‚variieren' entfällt."
+>
+> **Umsetzung:** `OptimierungBlock.razor` einspaltig: Suche (drei Sucharten mit Erklärzeile) → Bedienblock in voller
+> Breite (Ziel, Kandidatenzeile, Feinraster, Rechenknopf mit Fortschritt/Abbrechen) → „Suchraum je Einheit";
+> `.epos-flotte-optimierung-kopf` als einspaltiges Raster, feste Bedienblockbreite (26 rem) und `@media`-Umbruch entfallen.
+> Station 5 mit zwei `Gruppenkopf`-Rubriken: „Ergebnisse der Optimierung" im neuen Baustein
+> `EPOS.UI/Seiten/Strom/OptimierungsergebnisBlock.razor` (Kasten „Bestes Ergebnis" mit drei Karten, darunter
+> `SpeicherFlottenGroessenAnsicht`; nur nach einer Suche, sonst `FLOTTE_ERG_NUR_BEWERTET`), danach „Ergebnisse der
+> Simulation" (Diagnosebanner, Kandidatenhinweis, `SpeicherFlottenErgebnisAnsicht`, Fußleiste). Wechsel auf Station 5 nach
+> gelungenem Lauf (`FlotteStarten`), Abbruch und Vorprüfungssperre lassen Station 4 stehen; `_laufMethode` hält die Suchart
+> des Laufs, weil „Kandidat übernehmen" jetzt aus Station 5 kommt und der Anwender dazwischen umschalten kann. Größensuche:
+> keine Kopfzeile mit Hersteller/Typ/Kenndaten, kein Schalter „variieren"; eine Einheit → Block ohne Kopfzeile, mehrere →
+> „Einheit 1", „Einheit 2"; Erklärzeile `FLOTTE_OPT_GROESSE_UNABHAENGIG` de/en; `OnParametersSet` stellt unter „Größe
+> suchen" alle Achsen auf `Aktiv` (still), die Sperre gilt nur ohne Einheit; „Stückzahl suchen" bleibt an „variieren"
+> gebunden. Konzept Stromspeicher-Dialoge Abschnitt 7.10 (SD‑E‑11) mit Rechenwegbefund, 7.4/7.9/8.4 verweisen; Mockup;
+> Wiki-Quelle Stromspeicher (Schritt 4 als Eingabe, Suchraum je Suchart, Schritt 5 mit beiden Rubriken, Anker bleiben).
+>
+> **Rechenwegbefund (unverändert):** `FlottenOptimierer.BaueEinheiten` kopiert die Achsenvorlage vollständig und überschreibt
+> nur Kapazität, Lade- und Entladeleistung (gleicher Faktor aus max(Lade, Entlade)); vom Produkt fließen Wirkungsgrade,
+> SoC-Band, Peak-Reserve und Hilfsverbrauch (ungeskaliert), Grenzverschleiß, Rainflow-Kurve und `AnlageId` ein; Kosten aus
+> Station 2 überschreiben je Einheit und Achsenvorlage, außer bei `EigeneKosten` (dann Pauschalen ungeskaliert);
+> C-Rate-Kopplung aus dem Achsenmodus, Netzladung/Betriebsziel/Peak-Ziel flottenweit aus Station 3. Neutralisierung ist
+> eine offene Anwenderfrage.
+>
+> **Abnahme:** Build 0 Fehler, 4 Warnungen (Bestand); Filter `Strom|Flotte|Optimierung|Auslegung` 428 grün;
+> `OptimierungStationTests|StromspeicherAuslegungGroessenTests|StueckzahlsucheTests` dreimal 44 grün; Wachen 22,
+> `StilblattTests` 24 (neu: Kopf der Station einspaltig); Gate des Agenten 7 932 grün, 1 übersprungen; ResourceDesigner
+> wiederholbar; kein Rechenweg berührt. Merge `c98de53d` mit Auflösung der resx-Konflikte (beide Seiten, Designer neu);
+> Folgecommit: „zuvor" statt Tabuwort in der Wiki-Quelle.
+>
+> **Offen:** Anwenderfrage Produktparameter im Größenlauf; `FLOTTE_OPT_KEIN_ERGEBNIS` ohne Verwender; zwei
+> Logbuch-Einträge entworfen, Upload gebündelt.
+
+## #274 — Stromspeicher-Auslegung aus der Konfiguration ①, Ergebnisreiter nur Ergebnis (14.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 14.09.2026 mit zwei Bildschirmfotos: „Der Dialog Stromspeicher soll in den Dialog
+> Konfiguration verschoben werden. Ähnlich zu ‚Pufferspeicher anlegen/verwalten' einen Konfigurationsbutton
+> ‚Stromspeicher auslegen' (anstelle Aufruf aus ‚Speicherflotte und Auslegung')."
+>
+> **Umsetzung:** `SimulationKonfigSeite.razor`, Spalte „Speicher im Projekt": unter dem Pufferspeicher-Knopf der Knopf
+> „Stromspeicher auslegen…" (`SIM_BTN_SP_AUSLEGUNG`, de/en) mit Kurzzeile zum Stand (Mehrspeicherbetrieb aktiviert oder
+> deaktiviert, Betriebsziel, Einheitenzahl); ohne Stromspeicher und ohne Flottenstand eine Erklärzeile, ohne eingelegten
+> Weg kein Knopf. Neue Gabe `StromspeicherStand`, Delegat `SimulationKonfigDienste.AuslegungOeffnen`. Gegangen wird der
+> Weg von der **Ergebnishülle**, weil sie den gerechneten Lauf hält, aus dem die Auslegung ihre Zeitreihen zieht;
+> `SimulationAnsichtQuelle` verknüpft Konfigurations- und Ergebnishülle — dadurch gilt der Einstieg unter Windows **und**
+> auf iOS ohne eine Zeile in `EPOS.iOS`. Rückweg über den Rückwegstapel mit Marke in ① (`schritt=1`); die Konfiguration
+> wird beim Rückweg neu aufgebaut und liest ihre Speicherzeile frisch, der Kurzstand-Merker der Hülle fällt beim Öffnen.
+> `StromspeicherReiter.razor` verliert Kopfzeile, `SpeicherFlottenBetriebEditor`, Speichertabelle, Datenstand und
+> Öffnerknopf samt dem Schreibweg `FlottenbetriebGesetzt` — die Betriebsoptionen werden nur noch in der Auslegungsansicht
+> gepflegt (#213 gilt dort weiter); an ihrer Stelle eine Herkunftszeile aus `Daten.AktiveFlotte` (Betriebsziel,
+> Einheitenzahl, Peak-Ziel mit Modus nach #215) mit Verweis „Konfiguration ändern → ①". **Nebenbefund behoben:** Kacheln,
+> Betriebsbild und die 39 Kennzahlen des Reiters hingen an `!FlottenEinstiegMoeglich` und waren damit auf beiden
+> Plattformen unerreichbar; sie hängen jetzt am Ergebnis. Aus `SimulationErgebnisDienste` fallen `OptimierungVorgaben`,
+> `OptimierungFlottenRechnen`, `OptimierungEinstellungenSpeichern` und `AuslegungOeffnen` samt den zwei toten Hüllenwegen
+> und der Abbruchmarke; geblieben ist `OptimierungCsv`, neu `KonfigurationOeffnen`. `SpeicherParameterBlock` verliert
+> seinen zweiten, auf beiden Plattformen gesperrten Optimierungsknopf. Der Startseiten-Reiter (#220) bettet dieselbe
+> Ergebnisseite ein; sein Verweis geht über `KonfigurationOeffnen` auf die Einstiegsmarke `SIMULATION_KONFIGURATION`, die
+> die `AppWurzel` seit #207 in die Ansicht SIMULATION ① übersetzt — kein zweiter Datenweg. Konzept Simulationsablauf:
+> Zielbild und Ablaufregel auf ① umgestellt, Abschnitt 11 (Rückmeldung, Befund, Entscheid, Bauweise, Prüfmuster);
+> Wiki-Quellen Simulation, Stromspeicher (Abschnitt Erreichbarkeit) und Simulationsergebnisse.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 4 Warnungen (Bestand); Windows-Schale mit `EnableWindowsTargeting` 0 Fehler,
+> 5 Warnungen (Bestand); EPOS.UI.Tests 4 072, EPOS.Kern.Tests 2 933, SpeicherEngine 459, KiKern 488, SpeicherPlanung 27+1
+> grün; die sechs betroffenen Klassen dreimal grün; Wachen `DokumentationLinkWache`, `RepositoryOrdnungWache`,
+> `WikiProduktdatenWache`, `Ueberlagerungstitel`, `Stilblatt` grün; ResourceDesigner wiederholbar; kein Rechenweg berührt,
+> kein Referenzlauf nötig. Der Zweig zog `ios_migration_september` (Stand mit #273) selbst nach; einziger Konflikt waren
+> die angehängten Ressourcenblöcke beider Seiten, beide bleiben. Merge `6c811f56`; Folgecommit: „gerechneten Lauf" statt
+> Tabuwort in der Wiki-Quelle Stromspeicher.
+>
+> **Offen:** Logbuch-Eintrag entworfen, Upload gebündelt; `Proben/Rasterprobe` nicht gezogen (nicht berührt).
+
+## #275 — Wärmequelle Erdreich: der OK-Knopf fällt, das Schließen übernimmt (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 14.09.2026: „Dialog: Wärmequelle Erdreich / OK Button soll aus Dialog raus". Die zwei
+> übrigen Teile des Wunsches (Erdkollektor und Erdsonde als eigene Rubriken) waren mit #262 erledigt; der Knopf blieb
+> offen, weil zwei Lesarten möglich waren. Entscheid 15.09.2026 („umsetzen"): die Knopfleiste fällt ganz, das Schließen
+> übernimmt mit Prüfung. Reichweite nur dieser Dialog.
+>
+> **Umsetzung:** `EPOS.UI/Dialoge/Simulation/QuelleErdreichDialog.razor` trägt keine `SpeichernLeiste` mehr;
+> `BeiErgebnis(bool)` ist zu `public Task UebernehmenUndSchliessen()` geworden — dieselben acht Prüfregeln in derselben
+> Reihenfolge und mit demselben Wortlaut, dasselbe `Geschlossen.InvokeAsync(Daten with { … })`. Kreuz und Escape münden
+> beide dort hinein; es gibt keine zweite Kopie der Regeln und keinen Abbruchweg mehr (der Wirt behandelt eine leere
+> Rückgabe weiterhin). Eine verletzte Regel meldet im Warnband und hält den Dialog offen; `Meldet` zeichnet selbst nach,
+> weil der Ruf nun auch von außen kommt. Bei laufender Simulation (`_laeuft`) steigt der Weg sofort aus, der Dialog
+> schließt nicht. Die Parameter `OkText`/`AbbrechenText` hatten danach keinen Verwender mehr und fielen samt ihren zwei
+> Gaben in `EPOS.UI.Daten/Simulation/QuelleErdreichHuelle.cs` — ein unbekannter Schlüssel im `@attributes`-Splat würde
+> zur Laufzeit werfen.
+>
+> **Schließweg und Begründung:** Der Baustein `Ueberlagerung` bleibt unangetastet. Die Einbettung in
+> `SimulationKonfigSeite.razor` setzt `Offen="true"` ohne Zweiwegbindung; damit hat `OffenChanged` keinen Delegaten und
+> `BeiSchliessen` ruft allein `Geschlossen` — der Wirt entscheidet ohnehin, ob geschlossen wird. Die Seite ruft dort
+> `ErdreichSchliessen()` und darin über einen Verweis die eine öffentliche Methode des Dialogs; ist eine Regel verletzt,
+> tut sie nichts und die Überlagerung bleibt stehen. Ohne Verweis (Dialog noch nicht gezeichnet) schließt sie wie bisher,
+> damit niemand festsitzt; `Ebene2Schliessen` räumt den Verweis mit weg. Verworfen wurden ein neuer Prüf-Rückruf am
+> Baustein (unnötig) und `Schliessbar="false"` samt eigenem Kreuz im Dialogkopf (verdoppelt die Schließgeste). Escape
+> steigt vom Dialog bis zur Überlagerung auf und hätte den Weg zweimal angestoßen; die Dialogwurzel hält den Tastendruck
+> deshalb an und wertet ihn selbst aus. Liegt der Fokus noch auf der Überlagerungswurzel, greift deren Escape über den
+> Wirt auf dieselbe Methode.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 4 Warnungen (Bestand); Windows-Schale mit `EnableWindowsTargeting` 0 Fehler,
+> 5 Warnungen (Bestand); `~Erdreich` 37 und `~SimulationKonfig` 43 je dreimal grün (darunter zwei Ende-zu-Ende-Fälle, die
+> das echte Kreuz der Überlagerung klicken), `~SpeichernLeiste` 10, `~Ueberlagerung` 77, `~Stilblatt` 24,
+> `~KiDialogaufruf` 37, Kern-Wachen 43; voller `EPOS.UI.Tests`-Lauf 4 077 grün; ResourceDesigner unverändert und
+> wiederholbar; kein Rechenweg berührt. Merge `ede82c79`.
+>
+> **Offen:** kein Verwerfen mehr in diesem Dialog (Bedienänderung); die sechs übrigen Simulationsdialoge mit derselben
+> Leiste unverändert, Ausweitung auf Zuruf; Logbuch-Eintrag entworfen, Upload gebündelt.

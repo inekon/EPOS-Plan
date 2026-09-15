@@ -212,6 +212,38 @@
 
                     <button type="button" class="epos-knopf" disabled="@(IdProjekt <= 0)"
                             @onclick="() => PufferVerwaltungOeffnen(0)">@BtnPufferVerwalten</button>
+
+                    @* DER EINSTIEG IN DIE STROMSPEICHER-AUSLEGUNG (Auftrag #274,
+                       Anwenderwunsch 14.09.2026): „Der Dialog Stromspeicher soll in den
+                       Dialog Konfiguration verschoben werden. Aehnlich zu ‚Pufferspeicher
+                       anlegen/verwalten' einen Konfigurationsbutton ‚Stromspeicher
+                       auslegen'."
+
+                       Bis dahin fuehrte der Weg ueber den ERGEBNIS-Reiter „Stromspeicher":
+                       Wer die Betriebsfuehrung einstellen wollte, musste erst rechnen. Sie
+                       ist aber eine EINGABE - sie gehoert neben die Pufferverwaltung, in
+                       Schritt ①. Der Reiter zeigt seither nur noch, WOMIT gerechnet wurde.
+
+                       Der Knopf steht nur, wenn es etwas auszulegen gibt (Stromspeicher im
+                       Projekt oder ein Flottenstand); sonst steht dort dieselbe Art
+                       Erklaerzeile wie beim fehlenden Pufferspeicher. *@
+                    @if (_daten.Stromspeicherstand.Vorhanden && Dienste?.AuslegungOeffnen is not null)
+                    {
+                        <button type="button" class="epos-knopf epos-simkonfig-auslegung"
+                                disabled="@(IdProjekt <= 0)"
+                                @onclick="StromspeicherAuslegungOeffnen">@BtnStromspeicherAuslegen</button>
+
+                        @if (_daten.Stromspeicherstand.Standzeile.Length > 0)
+                        {
+                            <p class="epos-simkonfig-hinweis epos-simkonfig-flottenstand">
+                                @_daten.Stromspeicherstand.Standzeile
+                            </p>
+                        }
+                    }
+                    else if (_daten.Stromspeicherstand.LeerText.Length > 0)
+                    {
+                        <p class="epos-simkonfig-hinweis">@_daten.Stromspeicherstand.LeerText</p>
+                    }
                 </section>
             </div>
         }
@@ -342,9 +374,12 @@
 
     @if (_gaben2 is not null && _ebene2 == Editor.QuelleErdreich)
     {
-        <Ueberlagerung Offen="true" Titel="@ErdreichTitel" Geschlossen="Ebene2Schliessen">
+        @* Der Erdreich-Dialog hat KEINE Knopfleiste (#275): Sein Kreuz übernimmt,
+           deshalb geht das Schließen hier durch den Dialog statt geradewegs zu. *@
+        <Ueberlagerung Offen="true" Titel="@ErdreichTitel" Geschlossen="ErdreichSchliessen">
             <KindInhalt>
                 <EPOS.UI.Dialoge.Simulation.QuelleErdreichDialog @attributes="_gaben2"
+                                                                 @ref="_erdreich"
                                                                  Geschlossen="ErdreichFertig" />
             </KindInhalt>
         </Ueberlagerung>
@@ -480,6 +515,9 @@
     [Parameter] public string TipSpeicherBearbeiten { get; set; } = "Pufferspeicher bearbeiten";
     [Parameter] public string TipSpeicherAufklappen { get; set; } = "Einzelheiten anzeigen";
     [Parameter] public string BtnPufferVerwalten { get; set; } = "Pufferspeicher anlegen / verwalten…";
+
+    /// <summary>SIM_BTN_SP_AUSLEGUNG (#274) — der Knopf unter der Pufferverwaltung.</summary>
+    [Parameter] public string BtnStromspeicherAuslegen { get; set; } = "Stromspeicher auslegen…";
 
     [Parameter] public string LesepunktText { get; set; }
         = "Booster liest Speicherzustand vom Stundenanfang (konservativ)";
@@ -1044,6 +1082,22 @@
         AnsichtszustandAnwenden();
     }
 
+    /// <summary>
+    /// Wechselt auf die Ansicht „Stromspeicher-Auslegung" (Auftrag <b>#274</b>).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Editor, kein Zustand hier.</b> Die Seite ruft nur den Weg der Hülle; was
+    /// dort geschieht (Arbeitsgang anmelden, Ansicht wechseln), steht in
+    /// <c>SimulationKonfigHuelle</c>. Der Rückweg führt über den Rückwegstapel der
+    /// <c>AppWurzel</c> hierher zurück — die Ansicht wird dabei neu aufgebaut und
+    /// liest ihre Speicherspalte samt Flottenstand frisch.
+    /// </remarks>
+    private void StromspeicherAuslegungOeffnen()
+    {
+        if (IdProjekt <= 0) return;
+        Dienste?.AuslegungOeffnen?.Invoke();
+    }
+
     // =====================================================================
     // Fusszeile
     // =====================================================================
@@ -1193,6 +1247,12 @@
     private IReadOnlyDictionary<string, object>? _gaben1;
     private IReadOnlyDictionary<string, object>? _gaben2;
 
+    /// <summary>
+    /// Der Erdreich-Dialog, solange er steht (#275). Die Seite braucht ihn, weil sein
+    /// Schließen durch seine acht Prüfregeln läuft — siehe <see cref="ErdreichSchliessen"/>.
+    /// </summary>
+    private EPOS.UI.Dialoge.Simulation.QuelleErdreichDialog? _erdreich;
+
     /// <summary>Die Zeile, um deren Anlage es gerade geht; <c>null</c> = keine.</summary>
     private ErzeugerZeile? _zeile;
 
@@ -1222,6 +1282,7 @@
     {
         _ebene2 = Editor.Keine;
         _gaben2 = null;
+        _erdreich = null;                       // #275: der Verweis geht mit dem Dialog
     }
 
     /// <summary>
@@ -1459,6 +1520,28 @@
 
         Dienste?.QuellprofilSchreiben?.Invoke(zeile.IdAnlage, idProfil.Value);
         Neuladen();
+    }
+
+    /// <summary>
+    /// Das Kreuz der Überlagerung über dem Erdreich-Dialog (#275, Anwenderwunsch
+    /// 14.09.2026). Der Dialog hat seit #275 keine Knopfleiste mehr; sein EINZIGER
+    /// Ausgang übernimmt die Eingaben und läuft dabei durch die acht Prüfregeln.
+    /// Deshalb schließt die Seite hier NICHT selbst: Sie fragt den Dialog. Ist eine
+    /// Regel verletzt, meldet er und bleibt stehen; sind alle erfüllt, kommt er über
+    /// <see cref="ErdreichFertig"/> zurück, und DORT wird geschlossen.
+    ///
+    /// <para>Ohne Verweis (der Dialog ist noch nicht gezeichnet) schließt die Seite
+    /// wie bisher — niemand soll in einer Überlagerung festsitzen.</para>
+    /// </summary>
+    private Task ErdreichSchliessen()
+    {
+        if (_erdreich is null)
+        {
+            Ebene2Schliessen();
+            return Task.CompletedTask;
+        }
+
+        return _erdreich.UebernehmenUndSchliessen();
     }
 
     private void ErdreichFertig(EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten? ergebnis)

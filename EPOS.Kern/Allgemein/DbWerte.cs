@@ -1827,9 +1827,16 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Standard: Der wirksame Aufschlag ist die Summe der aktiven Komponenten.
-        /// NULL in der Datenbank wird von der Leseseite ebenso behandelt — der Modus
-        /// ist damit die sichere Vorbelegung fuer jede nicht gepflegte Zeile.
+        /// <b>Vorgabe: gar kein Aufschlag.</b> Der wirksame Aufschlag ist 0 ct/kWh;
+        /// die fuenf Komponenten bleiben als VORSCHLAG sichtbar und lesbar, wirken
+        /// aber nicht. Eine nicht gepflegte Zeile bekommt diesen Modus von der
+        /// Leseseite — ein Aufschlag entsteht erst, wenn ihn jemand ausdruecklich
+        /// waehlt (Anwenderentscheid 14.09.2026).
+        /// </summary>
+        public const string SP_AUFSCHLAG_MODUS_KEINER = "Keiner";
+
+        /// <summary>
+        /// Der wirksame Aufschlag ist die Summe der aktiven Komponenten.
         /// </summary>
         public const string SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT = "Aufgeschluesselt";
 

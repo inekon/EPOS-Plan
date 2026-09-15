@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Station 4 „Optimierung" — zwei Suchmethoden (Mockup v2)</title>
+<title>Optimierung: Eingabe in Station 4, Ergebnis in Station 5 (Mockup v2)</title>
 <!--
   MOCKUP zur Anwenderrueckmeldung SD-E-10 vom 12.09.2026, Auftrag #246.
   Gehoert zu Dokumentation/aktuell/Konzept_Stromspeicher_Dialoge_EPOS-Plan.md,
@@ -24,6 +24,14 @@
   sagt allein die gewaehlte Methode. Unter „Stueckzahl suchen" traegt jede
   eingeschaltete Karte ihre Stueckzahlzeile, unter „Groesse suchen" ihre
   Groessenzeilen.
+
+  NACHGEZOGEN AUF #273 (14.09.2026, Konzept 7.10): Station 4 ist reine EINGABE
+  — Suche, darunter der Bedienblock in VOLLER BREITE, darunter der Suchraum.
+  Der Kasten „Bestes Ergebnis" und die Groessenabhaengigkeit stehen in
+  STATION 5, gegliedert in „Ergebnisse der Optimierung" und „Ergebnisse der
+  Simulation". Unter „Groesse suchen" nennt die Karte kein Geraet mehr: keine
+  Produktzeile, keine festen Kenndaten, kein Schalter „variieren" — dort wird
+  jede Einheit variiert, und mehrere heissen neutral „Einheit 1", „Einheit 2".
 
   BEISPIELFLOTTE (aus dem Bildschirmfoto des Anwenders): eine Katalogeinheit
   „Shenzhen Growatt New Energy Co., Ltd.: WIT-M+APX ESS" mit 129 kWh / 100 kW
@@ -258,17 +266,14 @@ body {
 /*                                                                      */
 /* ZWEISPALTIG: links die Wahl der Methode, rechts der Bedienblock mit   */
 /* Ziel, Kandidatenzeile, Feinraster und Rechenknopf. Der Bedienblock    */
-/* hat eine FESTE Breite (Hausregel #233) — er soll nicht mitwachsen,    */
-/* wenn die Optionstexte links laenger werden.                          */
+/* steht in VOLLER BREITE UNTER der Suche (Konzept 7.10).               */
 /* ==================================================================== */
 .epos-flotte-optimierung-kopf {
-    display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 1.5rem; flex-wrap: wrap;
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.8rem;
 }
-.epos-flotte-suche { flex: 1 1 34rem; min-width: 0; margin: 0; padding: 0; border: 0; }
+.epos-flotte-suche { min-width: 0; margin: 0; padding: 0; border: 0; }
 .epos-flotte-suche > legend { padding: 0; font-weight: 700; color: var(--epos-karte-titel); }
 .epos-flotte-bedienblock {
-    flex: 0 0 26rem; max-width: 100%;
     display: grid; gap: 0.4rem;
     padding: 0.7rem 0.8rem;
     border: 1px solid var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
@@ -454,14 +459,13 @@ body {
     .epos-formularraster .epos-feld { grid-template-columns: minmax(0, 1fr); row-gap: 4px; min-height: 0; }
     .epos-formularraster .epos-feld-text,
     .epos-formularraster .epos-feld-zeile { grid-column: 1; }
-    .epos-flotte-bedienblock { flex: 1 1 100%; }
 }
 </style>
 </head>
 <body data-methode="stueckzahl">
 
 <div class="mockup-kopf">
-    <h1>Station 4 „Optimierung" — zwei Suchmethoden <span class="mockup-marke">Mockup v2</span></h1>
+    <h1>Optimierung: Eingabe in Station 4, Ergebnis in Station 5 <span class="mockup-marke">Mockup v2</span></h1>
     <p>Entwurf zur Anwenderrückmeldung <b>SD‑E‑10</b> vom 12.09.2026 (Auftrag #246), Kapitel 8 des
        Konzepts <code>Konzept_Stromspeicher_Dialoge_EPOS-Plan.md</code>. Beispielflotte aus dem
        Bildschirmfoto des Anwenders: eine Katalogeinheit <b>Growatt WIT‑M+APX ESS</b> (129 kWh,
@@ -509,8 +513,8 @@ body {
             </button>
         </li>
         <li class="epos-ablaufleiste-schritt">
-            <button type="button" class="epos-ablaufleiste-knopf" aria-disabled="true">
-                <span class="epos-ablaufleiste-stufe epos-ablaufleiste-stufe--gesperrt" aria-hidden="true">5</span>
+            <button type="button" class="epos-ablaufleiste-knopf">
+                <span class="epos-ablaufleiste-stufe" aria-hidden="true">5</span>
                 <span class="epos-ablaufleiste-titel">Ergebnis</span>
             </button>
         </li>
@@ -621,7 +625,9 @@ body {
 
                 <!-- (a) Eine Einheit aus dem Katalog — eingeschaltet, ihr Rumpf folgt der Methode -->
                 <article class="epos-flotte-einheitskarte">
-                    <div class="epos-flotte-einheitskarte__kopf">
+                    <!-- Unter „Groesse suchen" nennt die Karte kein Geraet (7.10): keine
+                         Produktzeile, keine festen Kenndaten, kein Schalter „variieren". -->
+                    <div class="epos-flotte-einheitskarte__kopf" data-nur="stueckzahl">
                         <span class="epos-flotte-einheitskarte__name">Shenzhen Growatt New Energy Co., Ltd.: WIT‑M+APX ESS</span>
                         <span class="epos-flotte-einheitskarte__kenndaten">129 kWh · 100 kW</span>
                         <span class="epos-flotte-einheitskarte__fueller"></span>
@@ -629,6 +635,9 @@ body {
                             <input class="epos-schalter-kasten" type="checkbox" checked disabled>
                             <span class="epos-feld-text">variieren</span>
                         </label>
+                    </div>
+                    <div class="epos-flotte-einheitskarte__kopf" data-nur="groesse">
+                        <span class="epos-flotte-einheitskarte__name">Einheit 1</span>
                     </div>
 
                     <div class="epos-flotte-einheitskarte__rumpf" data-nur="stueckzahl">
@@ -697,7 +706,7 @@ body {
 
                 <!-- (b) Eine von Hand angelegte Einheit — ebenso eingeschaltet -->
                 <article class="epos-flotte-einheitskarte">
-                    <div class="epos-flotte-einheitskarte__kopf">
+                    <div class="epos-flotte-einheitskarte__kopf" data-nur="stueckzahl">
                         <span class="epos-flotte-einheitskarte__name">Freie Auslegungseinheit</span>
                         <span class="epos-flotte-einheitskarte__kenndaten">ohne Gerät — die Größe wird gesucht</span>
                         <span class="epos-flotte-einheitskarte__fueller"></span>
@@ -705,6 +714,9 @@ body {
                             <input class="epos-schalter-kasten" type="checkbox" checked disabled>
                             <span class="epos-feld-text">variieren</span>
                         </label>
+                    </div>
+                    <div class="epos-flotte-einheitskarte__kopf" data-nur="groesse">
+                        <span class="epos-flotte-einheitskarte__name">Einheit 2</span>
                     </div>
 
                     <div class="epos-flotte-einheitskarte__rumpf" data-nur="groesse">
@@ -772,14 +784,42 @@ body {
                 </article>
             </div>
 
-            <p class="epos-herleitung">
-                <b>Der Schalter entscheidet, die Methode auch (8.3, SD‑Q15/SD‑Q16):</b> Variiert wird
-                JEDE Einheit mit „variieren" — und an ihr, was die Methode sagt: unter „Größe suchen"
-                zwei der drei Größen bei fester Stückzahl, unter „Stückzahl suchen" die Stückzahl bei
-                fester Größe. Eine Einheit ohne „variieren" steht gedimmt mit ihrem festen Wert da.
-                Beides im selben Lauf gibt es nicht; wer beides prüfen will, fährt zwei Läufe.
+            <p class="epos-herleitung" data-nur="groesse">
+                <b>Die Größensuche ist vom gewählten Speicher unabhängig (7.10):</b> Gesucht wird die
+                wirtschaftlich beste Größe; welches Gerät dahintersteht, beantwortet keine der
+                gestellten Fragen. Variiert wird deshalb JEDE Einheit, und die Karten heißen neutral
+                „Einheit 1", „Einheit 2".
+            </p>
+            <p class="epos-herleitung" data-nur="stueckzahl">
+                <b>Der Schalter entscheidet, die Methode auch (8.3, SD‑Q15/SD‑Q16):</b> Unter
+                „Stückzahl suchen" variiert der Lauf die Stückzahl JEDER Einheit mit „variieren", die
+                Größe bleibt die des Geräts. Eine Einheit ohne „variieren" steht gedimmt mit ihrem
+                festen Wert da. Größe und Stückzahl im selben Lauf gibt es nicht; wer beides prüfen
+                will, fährt zwei Läufe.
             </p>
         </section>
+
+    </div>
+    </div>
+</section>
+
+<!-- ================================================================== -->
+<!-- Station 5 „Ergebnis" — ZWEI Rubriken (Konzept 7.10)                 -->
+<!-- ================================================================== -->
+<section class="epos-gruppenkopf">
+    <div class="epos-gruppenkopf-balken">
+        <span class="epos-gruppenkopf-symbol" aria-hidden="true">⌁</span>
+        <h2 class="epos-gruppenkopf-titel">Ergebnisse der Optimierung</h2>
+        <span class="epos-gruppenkopf-summe">Station 5, Rubrik 1</span>
+    </div>
+
+    <div class="epos-gruppenkopf-koerper">
+    <div class="epos-flotte-optimierung">
+
+        <p class="epos-herleitung" data-nur="bewerten">
+            Dieser Lauf hat nur die eingestellte Flotte bewertet — gesucht wurde keine Größe.
+            Statt der Rubrik steht dann diese eine Zeile.
+        </p>
 
         <!-- ------------------------------------------- Bestes Ergebnis -->
         <section class="epos-flotte-abschnitt" aria-labelledby="bestes-titel">
@@ -971,6 +1011,27 @@ body {
             </p>
         </section>
 
+    </div>
+    </div>
+</section>
+
+<section class="epos-gruppenkopf">
+    <div class="epos-gruppenkopf-balken">
+        <span class="epos-gruppenkopf-symbol" aria-hidden="true">⌁</span>
+        <h2 class="epos-gruppenkopf-titel">Ergebnisse der Simulation</h2>
+        <span class="epos-gruppenkopf-summe">Station 5, Rubrik 2</span>
+    </div>
+
+    <div class="epos-gruppenkopf-koerper">
+    <div class="epos-flotte-optimierung">
+        <p class="epos-herleitung">
+            Hier steht unverändert, was Station 5 seit jeher zeigt — <b>Diagnosebanner</b>,
+            die Zeile „Gezeigt wird die Bewertung von: …", die <b>Ergebnisansicht</b> der einen
+            gewählten Flotte (Kennzahlkacheln, Vergleichstabelle, Jahresprojektion, Diagramme) und
+            die <b>Fußleiste</b> mit „Als Projektflotte übernehmen", „Beste Flotte übernehmen" und
+            „Größe in die Projektanlage übernehmen…". Dieses Mockup zeichnet sie nicht nach; es
+            zeigt nur, wo sie steht.
+        </p>
     </div>
     </div>
 </section>

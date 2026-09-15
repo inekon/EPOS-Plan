@@ -51,6 +51,13 @@ namespace WindowsFormsApplication1
             /// Oberfläche (Drei-Schichten-Regel).</summary>
             public string BasisGrund = "";
 
+            /// <summary>ANWENDERBEFUND 14.09.2026: WIE die <see cref="Basis"/>
+            /// entstanden ist, wenn sie GERECHNET und nicht am Gerät abgelesen wurde
+            /// — „0,7 kW/m² × 2,50 m² × 10 Module = 17,50 kW". Leer, wo die Größe
+            /// unmittelbar in einer Gerätemaske steht. Den Satz baut der Kern, weil
+            /// er die Formel kennt; die Oberfläche zeigt ihn nur.</summary>
+            public string BasisHerleitung = "";
+
             /// <summary>Projekt und Kategorie der Zeile — damit
             /// <see cref="Speichern"/> den wirksamen Betrag über denselben Rechenweg
             /// nachziehen kann wie <see cref="Lies(int,int,int,int)"/>.</summary>
@@ -181,16 +188,27 @@ namespace WindowsFormsApplication1
                 // der Bezugsgröße, mit der sie entstanden ist.
                 InvestKaskade.Zeile k;
                 KostenPositionNachweis n;
+                int anlageDerZeile = idAnlage > 0 ? idAnlage : 0;
                 if (kaskade != null && kaskade.TryGetValue(z.Raster.Id, out k))
                 {
                     z.Raster.BetragNetto = k.Betrag;
                     z.Basis = k.Basis;
+                    anlageDerZeile = k.Anlage;
                 }
                 else if (betrieb != null && betrieb.TryGetValue(z.Raster.Id, out n))
                 {
                     z.Raster.BetragNetto = n.BetragJahr;
                     z.Basis = n.Menge;
+                    anlageDerZeile = n.Anlage;
                 }
+
+                // ANWENDERBEFUND 14.09.2026: Eine GERECHNETE Bezugsgröße nennt ihre
+                // Formel — sonst stünden im Raster 17,50 kW, die in keiner
+                // Gerätemaske zu finden sind.
+                z.BasisHerleitung = z.Basis.HasValue
+                    ? TechnikPlanwertCtrl.BaugroesseHerleitung(
+                          projektId, komponentenId, z.Raster.Bemessung, anlageDerZeile)
+                    : "";
 
                 // ANWENDERBEFUND 10.09.2026 (H4c): Steht keine Bezugsgröße, wird der
                 // GRUND mitgegeben. Ohne ihn zeigt das Raster nur die 0 des
@@ -297,25 +315,44 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
+            int komponente, anlage;
+            Zeilenbezug(z, out komponente, out anlage);
+
             // H4c: derselbe Grundausweis wie beim Laden.
             z.BasisGrund = z.Basis.HasValue
-                ? "" : WirtschaftlichkeitCtrl.BasisGrund(z.Raster.Bemessung, KomponenteDerZeile(z));
+                ? "" : WirtschaftlichkeitCtrl.BasisGrund(z.Raster.Bemessung, komponente);
+
+            // 14.09.2026: und dieselbe Herleitung.
+            z.BasisHerleitung = z.Basis.HasValue
+                ? TechnikPlanwertCtrl.BaugroesseHerleitung(
+                      z.ProjektId, komponente, z.Raster.Bemessung, anlage)
+                : "";
         }
 
-        /// <summary>H4c: die Komponente der Zeile — <see cref="Speichern"/> kennt sie
-        /// nicht als Parameter, der Grundausweis braucht sie. 0 = unbekannt (dann nennt
-        /// der Grund die Art, nicht das Gewerk).</summary>
-        private static int KomponenteDerZeile(Zeile z)
+        /// <summary>H4c: Gewerk und Anlage der Zeile — <see cref="Speichern"/> kennt
+        /// beides nicht als Parameter, Grundausweis und Herleitung brauchen es.
+        /// 0 = unbekannt (dann nennt der Grund die Art, nicht das Gewerk, und die
+        /// Herleitung bemisst sich am ganzen Projekt).</summary>
+        private static void Zeilenbezug(Zeile z, out int komponente, out int anlage)
         {
-            if (z == null || z.Raster.Id <= 0) return 0;
+            komponente = 0; anlage = 0;
+            if (z == null || z.Raster.Id <= 0) return;
             try
             {
-                object o = DataRepository.ExecuteScalar(
-                    "SELECT KomponentenID FROM Tab_ProjektWerte WHERE ID = ?",
+                bool mitAnlage = WirtschaftlichkeitCtrl.AnlagenSpalteVorhanden();
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT KomponentenID" +
+                    (mitAnlage ? ", [" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "] " : " ") +
+                    "FROM Tab_ProjektWerte WHERE ID = ?",
                     new DbParam("@id", z.Raster.Id));
-                return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
+                if (dt == null || dt.Rows.Count == 0) return;
+                DataRow r = dt.Rows[0];
+                if (r["KomponentenID"] != DBNull.Value)
+                    komponente = Convert.ToInt32(r["KomponentenID"]);
+                if (mitAnlage && r[SchemaKatalog.SPALTE_PW_ID_ANLAGE] != DBNull.Value)
+                    anlage = Convert.ToInt32(r[SchemaKatalog.SPALTE_PW_ID_ANLAGE]);
             }
-            catch { return 0; }
+            catch { }
         }
 
         /// <summary>
@@ -330,6 +367,31 @@ namespace WindowsFormsApplication1
             string grund;
             z.Basis = WirtschaftlichkeitCtrl.FrischeBasis(z.Raster.Id, bemessung, out grund);
             z.BasisGrund = grund;
+
+            // 14.09.2026: Die Herleitung folgt der NEUEN Art — wer von „je m²" auf
+            // „je kW Leistung" wechselt, sieht sofort, woher die kW kommen.
+            int komponente, anlage;
+            Zeilenbezug(z, out komponente, out anlage);
+            z.BasisHerleitung = z.Basis.HasValue
+                ? TechnikPlanwertCtrl.BaugroesseHerleitung(
+                      z.ProjektId > 0 ? z.ProjektId : ProjektDerZeile(z), komponente,
+                      bemessung, anlage)
+                : "";
+        }
+
+        /// <summary>Das Projekt der Zeile, wenn der Aufrufer es nicht mitgeführt hat
+        /// (Bestandsweg über <c>Tab_ProjektWerte</c>). 0 = unauffindbar.</summary>
+        private static int ProjektDerZeile(Zeile z)
+        {
+            if (z == null || z.Raster.Id <= 0) return 0;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT ProjektID FROM Tab_ProjektWerte WHERE ID = ?",
+                    new DbParam("@id", z.Raster.Id));
+                return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
+            }
+            catch { return 0; }
         }
 
         /// <summary>Bestandssignatur — Position ohne Anlagenbezug.</summary>
@@ -600,7 +662,64 @@ namespace WindowsFormsApplication1
                 Einheitpreis = null
             });
             if (idAnlage > 0) AnlageZuordnen(id, idAnlage);
+
+            // STUFE S1 (Konzept Nutzungsdauer/AfA 2.4.1): Eine neue INVESTITIONSposition
+            // bekommt die Nutzungsdauer ihrer Technik - ohne Positionsart also die
+            // Standardzeile. Sie entstuende sonst mit 0, und 0 rechnet im
+            // KapitalwertRechner still "wie Betrachtungszeitraum". Vorbelegt wird nur
+            // eine NEUE Zeile; kein gespeicherter Wert wird angefasst.
+            if (kategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION)
+                NutzungsdauerVorbelegen(id, komponentenId, null);
+
             return id;
+        }
+
+        /// <summary>
+        /// Schreibt die Nutzungsdauer-Vorgabe in eine FRISCHE Projektzeile — den Wert
+        /// und beide Szenariospalten, wortgleich zur Vorlagenübernahme
+        /// (<c>KostenVorlagenUebernahmeCtrl.HerkunftUndNutzungsdauer</c>, FK4/FK10).
+        /// Gibt es keine Vorgabe, geschieht nichts: Es wird nichts erfunden.
+        /// </summary>
+        internal static void NutzungsdauerVorbelegen(int positionsId, int komponentenId,
+                                                     int? nutzungsdauerId)
+        {
+            if (positionsId <= 0) return;
+
+            NutzungsdauerVorgabe v = NutzungsdauerCtrl.Vorgabe(komponentenId, nutzungsdauerId);
+            if (!v.Wert.HasValue) return;
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_ProjektWerte SET Nutzungsdauer = ?, " +
+                "BestCase_Nutzungsdauer = ?, WorstCase_Nutzungsdauer = ? WHERE ID = ?",
+                new DbParam("@n1", v.Wert.Value),
+                new DbParam("@n2", v.Wert.Value),
+                new DbParam("@n3", v.Wert.Value),
+                new DbParam("@id", positionsId));
+        }
+
+        /// <summary>
+        /// Trägt die POSITIONSART einer Projektzeile nach (Stufe S1, Schritt 75) —
+        /// <c>null</c> löscht sie. Still, wo es die Spalte noch nicht gibt: Die Zeile
+        /// fällt dann auf den Technik-Standard zurück, und das ist derselbe Ausgang.
+        /// </summary>
+        internal static void NutzungsdauerArtZuordnen(int positionsId, int? nutzungsdauerId)
+        {
+            if (positionsId <= 0) return;
+            if (!NutzungsdauerCtrl.VerweisSpalteVorhanden(SchemaKatalog.TAB_PROJEKTWERTE)) return;
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_ProjektWerte SET [" + NutzungsdauerSchema.SPALTE_VERWEIS +
+                "] = ? WHERE ID = ?",
+                Ganzzahl("@art", nutzungsdauerId),
+                new DbParam("@id", positionsId));
+        }
+
+        /// <summary>Nullbarer LONG-Parameter (Muster <c>KostenVorlagenCtrl.Ganz</c>).</summary>
+        private static DbParam Ganzzahl(string name, int? wert)
+        {
+            var p = new DbParam(name, DbParamTyp.Integer);
+            p.Wert = wert.HasValue ? (object)wert.Value : DBNull.Value;
+            return p;
         }
 
         /// <summary>ETAPPE H3: Probe der Schritt-59-Spalte (Ergebnis je Prozess

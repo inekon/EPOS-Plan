@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
-                ["Traegerkatalog"] = ErzeugerTraegerHuelle.Katalog(),
+                ["Traegerkatalog"] = ErzeugerTraegerHuelle.Katalog(DbWerte.ERZEUGER_WAERMEPUMPE),
                 ["GruppeEnergietraeger"] = ErzeugerTraegerHuelle.GruppenTitel,
                 ["LabelTraegerGruppe"] = ErzeugerTraegerHuelle.LabelGruppe,
                 ["LabelTraegerArt"] = ErzeugerTraegerHuelle.LabelArt,

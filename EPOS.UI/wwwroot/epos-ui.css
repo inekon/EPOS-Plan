@@ -458,6 +458,24 @@ body {
     color: rgb(24, 98, 24);
 }
 
+/* ---------------------------------------------------------------------------
+   Das WARNBAND der Wirtschaftlichkeitsseite (Auftrag #267, Anwenderbefund
+   14.09.2026: "die Energiekosten sind 0 auch nach berechnung").
+
+   Es steht GANZ OBEN, vor den Kennzahlkarten, deren "—" es erklaert - der
+   Grund stand bis dahin als letzte Zeile "Hinweis" unter zwanzig
+   Kennzahlzeilen und wurde nicht gelesen. Der Rechenknopf gehoert in dieselbe
+   Gruppe: Die Aufforderung "bitte neu berechnen" hatte keinen sichtbaren Weg,
+   weil "Berechnen" erst unterhalb der Tabelle steht.
+
+   Eine eigene Klasse und nicht .epos-seite-zeile: Die Banner stapeln sich
+   UNTEREINANDER (eine Meldung je Zeile), die Seitenzeile ist eine Reihe. */
+.epos-wirt-warnband {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 /* ==========================================================================
    Baustein: Fehlerschranke (Befund W13-B-1, Windows-Abnahme 05.09.2026)
    ==========================================================================
@@ -1084,6 +1102,26 @@ body {
    [aria-disabled="true"] nicht in zwei Regeln mit denselben Werten stehen. */
 .epos-option-kasten:disabled + .epos-feld-text,
 .epos-option-kasten[aria-disabled="true"] + .epos-feld-text {
+    color: var(--epos-text-sehr-leise);
+}
+
+/* EIN Eintrag je Rubrik: Der Rahmen haelt nur eine Zeile, also braucht er
+   keinen Abstand zwischen Zeilen. Zusammengehalten wird die Wahl vom
+   gemeinsamen HTML-Namen der Eintraege, nicht vom Rahmen. */
+.epos-optionsgruppe--einzeln {
+    gap: 0;
+}
+
+/* Eine RUBRIK, die gerade nicht gewaehlt ist (Waermequelle Erdreich:
+   Erdkollektor gegen Erdsonde). Ihre Felder bleiben STEHEN - sie sagen, was der
+   andere Zweig braucht, und sie halten ihre Werte fuer den Fall, dass wieder
+   umgeschaltet wird. Leise wie eine gesperrte Option, in derselben Farbe: Ein
+   Anwender unterscheidet "gesperrt" nicht nach der Bauart.
+
+   NUR DIE FELDER: Das Optionsfeld der Rubrik bleibt in voller Farbe - es ist
+   das eine Bedienelement, das hier gerade offensteht. */
+.epos-erdreich-zweig--ruht .epos-feld .epos-feld-text,
+.epos-erdreich-zweig--ruht .epos-feld .epos-einheit {
     color: var(--epos-text-sehr-leise);
 }
 
@@ -1910,6 +1948,23 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 
 .epos-zr-betrag {
     font-variant-numeric: tabular-nums;
+}
+
+/* ANWENDERBEFUND 14.09.2026: Eine Zeile ohne Bezugsgroesse zeigt die 0 des
+   Anwenderentscheids I-2. Das Zeichen sagt, dass da etwas fehlt; den Grund
+   nennen Werkzeugtipp und der Hinweis unter dem Raster. Warnfarbe, kein Rot:
+   Es ist kein Fehler, sondern eine unvollstaendige Angabe. */
+.epos-zr-ohnebasis {
+    margin-right: 4px;
+    color: var(--epos-warn-text);
+}
+
+/* Die LEISE Zeile unter dem Raster (Hausregel: ein dauerhaftes Banner nur fuer
+   einen Zustand, den der Anwender sonst nicht sieht - das Zeichen in der Zeile
+   sieht er). Sie sammelt die Gruende der Zeilen ohne Bezugsgroesse. */
+.epos-zr-ohnebasis-zeile {
+    margin: 0 0 var(--epos-rand) 0;
+    color: var(--epos-text-leise);
 }
 
 .epos-ertragbonus {
@@ -3460,6 +3515,19 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-text-leise);
 }
 
+/* DER EINSTIEG IN DIE STROMSPEICHER-AUSLEGUNG (Auftrag #274). Er steht UNTER
+   „Pufferspeicher anlegen / verwalten…" und sieht aus wie dieser Knopf - zwei
+   Wege derselben Art, beide in die Tiefe der Speicherspalte. Die Standzeile
+   darunter ist eine leise Zeile, kein Banner (Regel W16b-E-6): Sie sagt, womit
+   der naechste Projektlauf rechnet, und verlangt nichts. */
+.epos-simkonfig-auslegung {
+    margin-top: 6px;
+}
+
+.epos-simkonfig-flottenstand {
+    margin-top: 4px;
+}
+
 /* DIE FUENF LAUFPARAMETER (Windows-Abnahme #216, Punkt 3). Der Abschnitt
    „Waermebedarf" steht ueber den zwei Spalten, die drei Erzeugerwerte in ihrer
    Karte. Beide nehmen denselben schmalen Feldblock wie der Reiter, aus dem sie
@@ -3735,6 +3803,36 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 .epos-simerg-status { margin: 4px 0; font-weight: 600; }
+
+/* DIE HERKUNFTSZEILE DES STROMSPEICHER-REITERS (Auftrag #274): Sie sagt, womit
+   der angezeigte Lauf gerechnet wurde, und traegt rechts daneben den Verweis
+   zurueck in Schritt (1). Der Verweis ist ein KNOPF (er wechselt die Ansicht),
+   sieht aber aus wie ein Verweis - dieselbe Bauart wie die Textknoepfe der
+   Hinweisleisten. Er behaelt sein Beruehrungsziel von 44 px ueber die Hoehe der
+   Zeile. */
+.epos-simerg-herkunft {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.epos-simerg-verweis {
+    border: 0;
+    background: none;
+    padding: 4px 0;
+    min-height: var(--epos-touchziel);
+    font: inherit;
+    font-weight: 400;
+    color: var(--epos-marke);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.epos-simerg-verweis:hover,
+.epos-simerg-verweis:focus-visible {
+    text-decoration-thickness: 2px;
+}
 .epos-simerg-warn { color: var(--epos-warn-text); }
 .epos-simerg-aequivalent { color: var(--epos-text-sehr-leise); }
 
@@ -8874,6 +8972,60 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     .epos-simerg-laufband {
         border: 1px solid ButtonBorder;
     }
+}
+
+/* ====================================================================== */
+/* NUTZUNGSDAUERN (AfA) - der Administrationsdialog der Nutzungsdauern.   */
+/*                                                                        */
+/* Vier Regeln, alle flach (kein Nesting - StilblattTests). Sie tragen    */
+/* das, was das Raster dieses Dialogs mehr braucht als ein gewoehnliches: */
+/* eine Gruppenzeile je Technik, ein Kennzeichen an der Positionsart und  */
+/* eine Aktionsspalte, deren Knopf IMMER sichtbar ist (Hausregel: nie     */
+/* erst bei :hover).                                                      */
+/* ====================================================================== */
+
+/* Die leise Zeile unter der Kopfleiste: ein Hinweis, den der Anwender    */
+/* liest, wo er ohnehin hinsieht - kein Banner (Hausregel "Zustand,       */
+/* Meldung, Leerzustand").                                                */
+.epos-leisezeile {
+    margin: 0 0 var(--epos-rand) 0;
+    color: var(--epos-text-leise);
+}
+
+/* Die Gruppenzeile im Raster. Sie spannt ueber alle Spalten und traegt   */
+/* dieselbe Flaeche wie der Spaltenkopf - so ist sie als Gliederung zu    */
+/* erkennen und nicht als Datenzeile.                                     */
+.epos-raster-gruppe th {
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+    font-weight: 600;
+    border-top: 2px solid var(--epos-rahmen-leise);
+}
+
+/* Das Kennzeichen an der Positionsart ("Standard", das Auslieferungs-    */
+/* zeichen). Es steht NEBEN dem Namen, nicht an seiner Stelle.            */
+.epos-kennzeichen {
+    margin-left: 6px;
+    padding: 0 6px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 999px;
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
+}
+
+/* Die Aktionsspalte: Der Flexkasten gehoert IN die Zelle, nicht auf das  */
+/* td - sonst verliert die Zelle ihre Rolle (Hausregel).                  */
+.epos-zeilenknoepfe {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+/* Der Leerzustand des Rasters: eine Zeile, die keine Datenzeile ist. Sie  */
+/* steht leise da und spannt ueber alle Spalten.                           */
+.epos-raster-leer td {
+    color: var(--epos-text-leise);
+    font-style: italic;
 }
 
 /* ==================================================================== */

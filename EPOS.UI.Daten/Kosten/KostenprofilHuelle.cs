@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
 using SpeicherEngine;
@@ -31,11 +29,6 @@ namespace WindowsFormsApplication1
         /// <summary>Vorbelegung eines Monatswerts [ct/kWh] — der Regelfall-Aufschlag
         /// plus 20 ct Energie (wortgleich aus <c>Form_Kostenprofil</c>).</summary>
         private const double VORGABE_MONATSWERT = 25.0;
-
-        /// <summary>Innenmaß des Fensters. Die WinForms-Fassung maß 700 × 580 mit
-        /// drei Reitern; die Blazor-Fassung stellt Monat, Woche und Grafik
-        /// untereinander (Bausteinlücke 10 — den Reiter gibt es erst in Welle 5).</summary>
-        private static readonly Size FENSTER = new Size(900, 860);
 
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs (iU9-W4.4). Bis Welle 3 zeigte diese
@@ -72,7 +65,7 @@ namespace WindowsFormsApplication1
 
                 // ChartAktualisieren: Engine rechnen lassen, Kern zeichnen lassen.
                 ["Vorschau"] = new Func<IReadOnlyList<double>, IReadOnlyList<double>, Task<byte[]>>(
-                    (m, w) => Task.Run(() =>
+                    (m, w) => Kulturweitergabe.Starten(() =>
                     {
                         double[] mm = Feld(m, 12);
                         double[] ww = Feld(w, 168);

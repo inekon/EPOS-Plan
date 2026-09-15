@@ -131,23 +131,27 @@ public sealed class OptimierungStationTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Ohne eine Einheit mit „variieren" ist keine Suchoption wählbar</b>
-    /// (Konzept 8.3): Beide stehen gedimmt da und die ABHILFE sagt, was zu tun ist.
+    /// <b>Ohne eine Einheit mit „variieren" ist die STÜCKZAHLSUCHE nicht wählbar</b>
+    /// (Konzept 8.3): Sie steht gedimmt da und die ABHILFE sagt, was zu tun ist.
     /// Gedimmt heißt WEICH gesperrt — ein <c>disabled</c>-Bedienelement könnte seinen
     /// Grund gar nicht zeigen (Hausregel W16b‑E‑6).
+    ///
+    /// <para><b>Die Größensuche bleibt wählbar</b> (Auftrag #273): Sie variiert seither
+    /// JEDE Einheit und braucht deshalb nur eine — den Schalter „variieren" gibt es
+    /// unter ihr gar nicht mehr.</para>
     /// </summary>
     [Fact]
-    public void Ohne_variierte_Einheit_stehen_die_Suchoptionen_gedimmt_mit_Abhilfe()
+    public void Ohne_variierte_Einheit_steht_die_Stueckzahlsuche_gedimmt_mit_Abhilfe()
     {
-        var cut = Station(FlottenSuchmethode.Groesse, variieren: false);
+        var cut = Station(FlottenSuchmethode.Stueckzahl, variieren: false);
 
         IElement groesse = Suchwahl(cut, Resource.FLOTTE_OPT_METHODE_GROESSE);
         IElement stueck = Suchwahl(cut, Resource.FLOTTE_OPT_METHODE_STUECKZAHL);
         IElement bewerten = Suchwahl(cut, Resource.FLOTTE_OPT_SUCHE_AUS);
 
-        Assert.Equal("true", groesse.GetAttribute("aria-disabled"));
         Assert.Equal("true", stueck.GetAttribute("aria-disabled"));
-        Assert.False(groesse.HasAttribute("disabled"));      // WEICH, damit der Grund ankommt
+        Assert.False(stueck.HasAttribute("disabled"));       // WEICH, damit der Grund ankommt
+        Assert.NotEqual("true", groesse.GetAttribute("aria-disabled"));
         Assert.NotEqual("true", bewerten.GetAttribute("aria-disabled"));
 
         Assert.Single(cut.FindAll("p.epos-flotte-abhilfe"));
@@ -157,19 +161,72 @@ public sealed class OptimierungStationTests : EposBunitContext
         Assert.True(cut.Find(".epos-flotte-optimierung-lauf button").HasAttribute("disabled"));
     }
 
+    /// <summary>
+    /// <b>Die Station ist seit Auftrag #273 einspaltig</b> (Anwenderentscheid vom
+    /// 14.09.2026): erst die Suche, darunter der Bedienblock in voller Breite, darunter
+    /// der Suchraum. Bis dahin saß der Bedienblock als Kasten fester Breite RECHTS
+    /// neben den Optionen.
+    /// </summary>
+    [Fact]
+    public void Der_Bedienblock_steht_unter_der_Suche_und_vor_dem_Suchraum()
+    {
+        var cut = Station();
+
+        IElement kopf = cut.Find(".epos-flotte-optimierung-kopf");
+        IElement[] kinder = kopf.Children.ToArray();
+
+        Assert.Equal(2, kinder.Length);
+        Assert.Contains("epos-flotte-suche", kinder[0].ClassName!, StringComparison.Ordinal);
+        Assert.Contains("epos-flotte-bedienblock", kinder[1].ClassName!, StringComparison.Ordinal);
+
+        // Und der Suchraum folgt DANACH, nicht daneben.
+        string[] klassen = cut.Find(".epos-flotte-optimierung").Children
+                              .Select(x => x.ClassName ?? "").ToArray();
+        int kopfstelle = Array.FindIndex(klassen,
+            x => x.Contains("epos-flotte-optimierung-kopf", StringComparison.Ordinal));
+        int raumstelle = Array.FindIndex(klassen,
+            x => x.Contains("epos-flotte-abschnitt", StringComparison.Ordinal));
+        Assert.True(kopfstelle >= 0 && raumstelle > kopfstelle,
+                    "Der Suchraum steht nicht hinter dem Kopfblock.");
+    }
+
+    /// <summary>
+    /// <b>Station 4 zeigt seit #273 KEIN Ergebnis mehr</b> (Konzept 7.10): weder den
+    /// Kasten „Bestes Ergebnis" noch die Größen-Sicht — beide stehen in Station 5 unter
+    /// der Rubrik „Ergebnisse der Optimierung".
+    /// </summary>
+    [Fact]
+    public void Station_vier_traegt_nach_dem_Lauf_kein_Ergebnis()
+    {
+        var cut = Gerechnet();
+
+        // Nach dem Lauf steht Station 5 vorn, und dort sind beide Rubriken.
+        Assert.Equal(AuslegungSchritt.Ergebnis, cut.Instance.Schritt);
+        Assert.Single(cut.FindAll(".epos-flotte-bestes"));
+        Assert.Contains(Resource.FLOTTE_ERG_OPTIMIERUNG, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_ERG_SIMULATION, cut.Markup, StringComparison.Ordinal);
+
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
+
+        Assert.Empty(cut.FindAll(".epos-flotte-bestes"));
+        Assert.Empty(cut.FindComponents<SpeicherFlottenGroessenAnsicht>());
+        Assert.Empty(cut.FindComponents<OptimierungsergebnisBlock>());
+    }
+
     // =====================================================================
     //  Der Suchraum als Tabelle
     // =====================================================================
 
     /// <summary>
-    /// EINE KARTE JE EINHEIT (Konzept 8.4, SD‑Q18) — Kopfzeile mit Namen, festen
-    /// Kenndaten und dem Schalter „variieren", Rumpf je Methode, Fußzeile mit den
-    /// Kandidaten DIESER Einheit. Die Neun-Spalten-Tabelle gibt es nicht mehr.
+    /// EINE KARTE JE EINHEIT (Konzept 8.4, SD‑Q18) — unter <b>„Stückzahl suchen"</b> mit
+    /// Kopfzeile aus Namen, festen Kenndaten und dem Schalter „variieren", Rumpf je
+    /// Methode, Fußzeile mit den Kandidaten DIESER Einheit. Die Neun-Spalten-Tabelle
+    /// gibt es nicht mehr.
     /// </summary>
     [Fact]
-    public void Der_Suchraum_traegt_eine_Karte_je_Einheit()
+    public void Der_Suchraum_traegt_unter_Stueckzahl_eine_Karte_je_Einheit()
     {
-        var cut = Station();
+        var cut = Station(FlottenSuchmethode.Stueckzahl);
 
         Assert.Empty(cut.FindAll("table.epos-flotte-suchraum"));
 
@@ -186,13 +243,71 @@ public sealed class OptimierungStationTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Unter „Größe suchen" nennt der Suchraum kein Gerät</b> (Auftrag #273,
+    /// Anwenderrückmeldung vom 14.09.2026): keine Kopfzeile mit Hersteller und Typ,
+    /// keine festen Kenndaten, kein Schalter „variieren" — die Suche variiert Kapazität,
+    /// Leistung und C-Rate, und welches Produkt dahintersteht, beantwortet keine der
+    /// gestellten Fragen. Der Suchraum selbst bleibt vollständig.
+    /// </summary>
+    [Fact]
+    public void Unter_Groesse_nennt_die_Karte_kein_Geraet()
+    {
+        var cut = Station(FlottenSuchmethode.Groesse);
+
+        IElement karte = Assert.Single(cut.FindAll("article.epos-flotte-einheitskarte"));
+
+        Assert.DoesNotContain("Hauptspeicher", karte.TextContent, StringComparison.Ordinal);
+        Assert.Empty(karte.QuerySelectorAll(".epos-flotte-einheitskarte__kopf"));
+        Assert.Empty(karte.QuerySelectorAll(".epos-flotte-einheitskarte__kenndaten"));
+        Assert.DoesNotContain(Resource.FLOTTE_OPT_SP_VARIIEREN, karte.TextContent,
+                              StringComparison.Ordinal);
+
+        // Der Suchraum steht vollstaendig — samt Kandidatenzahl dieser Einheit.
+        Assert.Contains(Resource.FLOTTE_ED_AUSLEGUNGSMODUS, karte.TextContent, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_ED_KAPAZITAET_VON, karte.TextContent, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_ED_LEISTUNG_SCHRITT, karte.TextContent, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_OPT_KARTE_KANDIDATEN,
+                        karte.QuerySelector(".epos-flotte-einheitskarte__fuss")!.TextContent,
+                        StringComparison.Ordinal);
+
+        // Und der Satz, der die fehlende Produktzeile erklaert.
+        Assert.Contains(Resource.FLOTTE_OPT_GROESSE_UNABHAENGIG, cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Mehrere Einheiten heißen unter „Größe suchen" neutral</b> (Auftrag #273):
+    /// „Einheit 1", „Einheit 2" — ohne Produktnamen, aber unterscheidbar. Und eine
+    /// abgeschaltete Achse gibt es dort nicht mehr: Die Station variiert jede Einheit
+    /// und stellt den Stand entsprechend.
+    /// </summary>
+    [Fact]
+    public void Unter_Groesse_heissen_zwei_Einheiten_neutral_und_werden_beide_variiert()
+    {
+        var cut = Station(FlottenSuchmethode.Groesse, zweiteEinheit: true, variieren: false);
+
+        IReadOnlyList<IElement> karten = cut.FindAll("article.epos-flotte-einheitskarte");
+        Assert.Equal(2, karten.Count);
+        Assert.Contains(string.Format(Kultur, Resource.FLOTTE_GROESSEN_EINHEIT, 1),
+                        karten[0].TextContent, StringComparison.Ordinal);
+        Assert.Contains(string.Format(Kultur, Resource.FLOTTE_GROESSEN_EINHEIT, 2),
+                        karten[1].TextContent, StringComparison.Ordinal);
+        Assert.DoesNotContain("Hauptspeicher", cut.Find("section.epos-flotte-abschnitt").TextContent,
+                              StringComparison.Ordinal);
+
+        Assert.All(cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Achsen,
+                   a => Assert.True(a.Aktiv));
+        Assert.Empty(cut.FindAll("article.epos-flotte-einheitskarte p.epos-flotte-fest"));
+    }
+
+    /// <summary>
     /// Eine Einheit OHNE „variieren" verschwindet nicht — ihre Karte steht GEDIMMT da
-    /// und sagt mit „fest: …", mit welchem Wert sie in jeden Kandidaten eingeht.
+    /// und sagt mit „fest: …", mit welchem Wert sie in jeden Kandidaten eingeht. Den
+    /// Schalter gibt es seit #273 nur noch unter „Stückzahl suchen".
     /// </summary>
     [Fact]
     public void Eine_Einheit_ohne_variieren_steht_gedimmt_mit_ihrem_festen_Wert()
     {
-        var cut = Station(FlottenSuchmethode.Groesse, variieren: false);
+        var cut = Station(FlottenSuchmethode.Stueckzahl, variieren: false);
 
         IElement karte = Assert.Single(cut.FindAll("article.epos-flotte-einheitskarte"));
         Assert.Contains("epos-flotte-einheitskarte--gedimmt", karte.ClassName!, StringComparison.Ordinal);
@@ -216,12 +331,13 @@ public sealed class OptimierungStationTests : EposBunitContext
 
     /// <summary>
     /// Der Schalter „variieren" auf der Karte SETZT <c>FlottenAuslegungsAchse.Aktiv</c> —
-    /// er entscheidet, WELCHE Einheiten die Methode variiert (Konzept 8.3, SD‑Q15).
+    /// er entscheidet unter „Stückzahl suchen", WELCHE Einheiten die Methode variiert
+    /// (Konzept 8.3, SD‑Q15). Unter „Größe suchen" gibt es ihn seit #273 nicht mehr.
     /// </summary>
     [Fact]
     public void Der_Schalter_variieren_setzt_die_Achse_der_Einheit()
     {
-        var cut = Station();
+        var cut = Station(FlottenSuchmethode.Stueckzahl);
 
         IElement schalter = cut.Find("article.epos-flotte-einheitskarte .epos-schalter input");
         schalter.Change(false);
@@ -403,33 +519,34 @@ public sealed class OptimierungStationTests : EposBunitContext
     }
 
     // =====================================================================
-    //  Der Kasten „Bestes Ergebnis"
+    //  Der Kasten „Bestes Ergebnis" — seit #273 in Station 5
     // =====================================================================
 
     /// <summary>
-    /// Ohne Suche steht hier der Satz „Noch keine Suche gerechnet." und kein leerer
-    /// Kasten.
+    /// Ohne Lauf gibt es in Station 4 keinen Kasten — und Station 5 ist noch gar nicht
+    /// betretbar.
     /// </summary>
     [Fact]
     public void Ohne_Suche_steht_kein_Kasten()
     {
         var cut = Station();
 
-        Assert.Contains(Resource.FLOTTE_OPT_KEIN_ERGEBNIS, cut.Markup, StringComparison.Ordinal);
         Assert.Empty(cut.FindAll(".epos-flotte-bestes"));
+        Assert.DoesNotContain(Resource.FLOTTE_ERG_OPTIMIERUNG, cut.Markup, StringComparison.Ordinal);
     }
 
     /// <summary>
     /// Nach einer Suche steht der Kasten mit Kapitalwert, jährlicher Ersparnis (SD‑Q11),
     /// Größe, Einheitenzahl, geprüften und zulässigen Kandidaten, Rechendauer — und der
-    /// MARKE, aus welcher Phase der Beste stammt.
+    /// MARKE, aus welcher Phase der Beste stammt. <b>Er steht seit #273 in Station 5</b>,
+    /// unter der Rubrik „Ergebnisse der Optimierung".
     /// </summary>
     [Fact]
     public void Nach_einer_Suche_steht_der_Kasten_mit_allen_sieben_Angaben()
     {
         var cut = Gerechnet();
-        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
 
+        Assert.Equal(AuslegungSchritt.Ergebnis, cut.Instance.Schritt);
         IElement kasten = cut.Find(".epos-flotte-bestes");
 
         Assert.Contains("1.500", kasten.TextContent, StringComparison.Ordinal);   // Kapitalwert
@@ -448,7 +565,6 @@ public sealed class OptimierungStationTests : EposBunitContext
     public void Ein_Bester_aus_dem_Grobraster_traegt_die_andere_Marke()
     {
         var cut = Gerechnet(phase: FlottenKandidatPhase.Grob);
-        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
 
         Assert.Contains(Resource.FLOTTE_OPT_MARKE_GROB,
                         cut.Find(".epos-flotte-phasenmarke").TextContent, StringComparison.Ordinal);
@@ -578,14 +694,37 @@ public sealed class OptimierungStationTests : EposBunitContext
     /// <param name="ausgleich">Der Energie-Ausgleichswert; <c>null</c> = 0,3.</param>
     /// <param name="hinweise">Die Hinweise der Vorprüfung.</param>
     /// <param name="variieren">Trägt die Einheit den Schalter „variieren"?</param>
+    /// <param name="zweiteEinheit">Eine zweite Einheit samt Achse (Auftrag #273).</param>
     private IRenderedComponent<StromspeicherAuslegungSeite> Station(
         FlottenSuchmethode methode = FlottenSuchmethode.Groesse,
         int maximaleKandidaten = 10000, double? ausgleich = null,
-        IReadOnlyList<FlottenHinweis>? hinweise = null, bool variieren = true)
+        IReadOnlyList<FlottenHinweis>? hinweise = null, bool variieren = true,
+        bool zweiteEinheit = false)
     {
         FlottenStudieKonfiguration flotte = Flotte(maximaleKandidaten, ausgleich);
         flotte.Auslegung.Suchmethode = methode;
         flotte.Auslegung.Achsen[0].Aktiv = variieren;
+
+        if (zweiteEinheit)
+        {
+            var zweite = new FlottenEinheit
+            {
+                Id = "s2", Name = "Nebenspeicher", KapazitaetKWh = 60,
+                LadeleistungKw = 30, EntladeleistungKw = 30,
+                Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95,
+                SocMin = 0.1, SocMax = 0.9, SocStart = 0.5
+            };
+            flotte.Einheiten.Add(zweite);
+            flotte.Auslegung.Achsen.Add(new FlottenAuslegungsAchse
+            {
+                Aktiv = variieren, Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
+                AnzahlVon = 1, AnzahlBis = 2,
+                KapazitaetVonKWh = 60, KapazitaetBisKWh = 120, KapazitaetSchrittKWh = 60,
+                LeistungVonKw = 30, LeistungBisKw = 60, LeistungSchrittKw = 30,
+                CRateVon = 0.5, CRateBis = 1.0, CRateSchritt = 0.5,
+                Vorlage = zweite
+            });
+        }
 
         var vorgaben = new SpeicherOptimierungVorgaben
         {
@@ -606,7 +745,12 @@ public sealed class OptimierungStationTests : EposBunitContext
                 FlotteRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis()),
                 Vorpruefen = _ => hinweise ?? Array.Empty<FlottenHinweis>()
             })
-            .Add(x => x.PlanerVerfuegbar, true));
+            .Add(x => x.PlanerVerfuegbar, true)
+            // OHNE ENTPRELLUNG: Die volle Vorpruefung laeuft im selben Zeichenlauf statt aus
+            // einem Zeitgeber. Sonst meldet sich ihre Fortsetzung aus dem Fadenvorrat
+            // zurueck, belegt den Zeichenverteiler und schiebt den naechsten Tastendruck
+            // hinter die Pruefung — ein lastabhaengiger Ausreisser.
+            .Add(x => x.EntprellungMs, 0));
 
         Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
         return cut;
@@ -655,6 +799,9 @@ public sealed class OptimierungStationTests : EposBunitContext
             .Add(x => x.PlanerVerfuegbar, true));
 
         Auslegungshilfe.Rechenknopf(cut).Click();
+        // Auf den gezeichneten Lauf warten, nicht sofort pruefen: bunit gibt den Klick in
+        // den Zeichenverteiler und kehrt zurueck, ohne den Zeichenlauf abzuwarten.
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Flottenergebnis));
         return cut;
     }
 

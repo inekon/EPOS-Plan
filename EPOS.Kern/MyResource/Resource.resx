@@ -3382,8 +3382,14 @@ Jahresvolllaststunden aus einem Simulationslauf.</value>
   <data name="SIMQ_ERDREICH_RB_KOLLEKTOR" xml:space="preserve">
     <value>Erdkollektor</value>
   </data>
+  <data name="SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL" xml:space="preserve">
+    <value>Erdkollektor als Quellsystem</value>
+  </data>
   <data name="SIMQ_ERDREICH_RB_SONDE" xml:space="preserve">
     <value>Erdsonde</value>
+  </data>
+  <data name="SIMQ_ERDREICH_RB_SONDE_WAHL" xml:space="preserve">
+    <value>Erdsonde als Quellsystem</value>
   </data>
   <data name="SIMQ_ERDREICH_SIM_NUR_GESPEICHERT" xml:space="preserve">
     <value>Der Lauf hat mit den GESPEICHERTEN Quelldaten gerechnet — die hier geänderten Eingaben wirken erst nach „OK" und einem neuen Lauf. Grenzwert und Sondenmeter sind bereits mit den geänderten Eingaben gerechnet.</value>
@@ -4533,11 +4539,14 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PREIS_GRUPPE_AUFSCHLAG" xml:space="preserve">
     <value>Aufschlaege auf den Strombezugspreis</value>
   </data>
+  <data name="PREIS_MODUS_KEINER" xml:space="preserve">
+    <value>kein Aufschlag</value>
+  </data>
   <data name="PREIS_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
     <value>aufgeschluesselt</value>
   </data>
   <data name="PREIS_MODUS_GESAMTWERT" xml:space="preserve">
-    <value>Gesamtwert (Override)</value>
+    <value>Gesamtwert</value>
   </data>
   <data name="PREIS_KOMP_NETZENTGELT" xml:space="preserve">
     <value>Netzentgelt Arbeit</value>
@@ -4575,11 +4584,14 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Summe der aktiven Komponenten: {0} ct/kWh   |   wirksamer Aufschlag: {1} ct/kWh</value>
   </data>
-  <data name="PREIS_REST_NICHT_AUFGESCHLUESSELT" xml:space="preserve">
-    <value>Nicht aufgeschluesselter Rest: {0} ct/kWh</value>
+  <data name="PREIS_GESAMTWERT_UEBER" xml:space="preserve">
+    <value>Gesamtwert liegt {0} ct/kWh ueber der Summe der Komponenten</value>
   </data>
-  <data name="PREIS_REST_HINWEIS_MODUS" xml:space="preserve">
-    <value>Im Modus "aufgeschluesselt" ist der wirksame Aufschlag die Summe der aktiven Komponenten.</value>
+  <data name="PREIS_GESAMTWERT_UNTER" xml:space="preserve">
+    <value>Gesamtwert liegt {0} ct/kWh unter der Summe der Komponenten</value>
+  </data>
+  <data name="PREIS_GESAMTWERT_GLEICH" xml:space="preserve">
+    <value>Gesamtwert entspricht der Summe der Komponenten</value>
   </data>
   <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
     <value>Spotmarktpreise importieren</value>
@@ -9032,6 +9044,15 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_ET_KONTEXT_PROJEKT" xml:space="preserve">
     <value>Kontext: Projekt {0}</value>
   </data>
+  <data name="KDLG_ET_KONTEXT_KOMPONENTE" xml:space="preserve">
+    <value>für {0}: nur Gruppe {1}</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_OHNE_TRAEGER" xml:space="preserve">
+    <value>für {0}: kein eigener Energieträger</value>
+  </data>
+  <data name="KDLG_ET_KONTEXT_ALLE" xml:space="preserve">
+    <value>für {0}: alle Energieträger</value>
+  </data>
   <data name="KDLG_ET_LISTE" xml:space="preserve">
     <value>Energieträger</value>
   </data>
@@ -9544,6 +9565,9 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   </data>
   <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
     <value>nicht zugeordnet</value>
+  </data>
+  <data name="KDLG_ET_PASST_NICHT" xml:space="preserve">
+    <value>passt nicht zur Komponente</value>
   </data>
   <data name="KDLG_ET_VERWENDET_VON" xml:space="preserve">
     <value>verwendet von: {0}</value>
@@ -10115,6 +10139,9 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>dem Projekt ist kein Strom-Energieträger zugeordnet</value>
   </data>
+  <data name="KOH_GRUND_STROM_KEIN_AUFSCHLAG" xml:space="preserve">
+    <value>fuer den Strombezugspreis ist "kein Aufschlag" gewaehlt</value>
+  </data>
   <data name="KOH_GRUND_STROM_GESAMTWERT" xml:space="preserve">
     <value>der Aufschlag ist als Gesamtwert erfasst und nicht aufgeschlüsselt</value>
   </data>
@@ -10159,6 +10186,33 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   </data>
   <data name="WIRT_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
     <value>CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit Strommix-Vorgabewert gerechnet.</value>
+  </data>
+  <data name="WIRT_STROMTRAEGER_RUECKFALL" xml:space="preserve">
+    <value>Netzbezug mit dem Energieträger „{0}“ bepreist — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen.</value>
+  </data>
+  <data name="WIRT_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen.</value>
+  </data>
+  <data name="WIRT_GRUND_STROMPREIS_FEHLT" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Für den Stromträger „{0}“ ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen.</value>
+  </data>
+  <data name="WIRT_GRUND_BRENNSTOFFPREIS_FEHLT" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen.</value>
+  </data>
+  <data name="WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs ({0} MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen Erzeugern unter „Anlagen“ einen Energieträger zuordnen.</value>
+  </data>
+  <data name="WIRT_GRUND_KEIN_VERBRAUCH" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Das Simulationsergebnis weist weder Brennstoffverbrauch noch Netzbezug aus. Ausweg: Simulation prüfen und erneut rechnen.</value>
+  </data>
+  <data name="WIRT_GRUND_RECHENFEHLER" xml:space="preserve">
+    <value>Energiekosten nicht bestimmbar: Die Kostenrechnung ist abgebrochen. Ausweg: Preise und Heizwerte der Energieträger prüfen.</value>
+  </data>
+  <data name="WIRT_BTN_NEU_BERECHNEN" xml:space="preserve">
+    <value>Neu berechnen</value>
+  </data>
+  <data name="WIRT_BAND_NACHRECHNEN" xml:space="preserve">
+    <value>Die angezeigten Werte stammen aus einem älteren Lauf — bitte neu berechnen.</value>
   </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung.</value>
@@ -10715,6 +10769,15 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="KDLG_BASIS_GRUND_KONSERVE" xml:space="preserve">
     <value>die Bezugsgröße dieser Art wird nicht ermittelt, sie ist zu pflegen</value>
+  </data>
+  <data name="KDLG_HERLEITUNG_SOLAR_KW" xml:space="preserve">
+    <value>{0} kW/m² × {1} m² × {2} Module = {3} kW</value>
+  </data>
+  <data name="KDLG_HERLEITUNG_SOLAR_KW_FLAECHE" xml:space="preserve">
+    <value>{0} kW/m² × {1} m² Aperturfläche = {2} kW</value>
+  </data>
+  <data name="KDLG_OHNE_BASIS_ZEILE" xml:space="preserve">
+    <value>„{0}“: {1}</value>
   </data>
   <data name="KFAK_TITEL" xml:space="preserve">
     <value>Administration Kostenfaktoren</value>
@@ -17704,7 +17767,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Rechnet die Flotte aus Schritt 1 genau einmal — nichts wird variiert.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_GROESSE_ERL" xml:space="preserve">
-    <value>Variiert an jeder eingeschalteten Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest.</value>
+    <value>Variiert an jeder Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest.</value>
   </data>
   <data name="FLOTTE_OPT_METHODE_STUECKZAHL_ERL" xml:space="preserve">
     <value>Lässt jede Einheit so groß, wie sie eingestellt ist, und variiert, wie viele davon stehen (0 = Einheit entfällt). Die Kosten sind die Kosten einer Einheit mal Stückzahl.</value>
@@ -19307,5 +19370,173 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_REG_SOC_BAND_VERDREHT" xml:space="preserve">
     <value>Der untere SoC-Wert ({0:N0} %) muss kleiner sein als der obere ({1:N0} %).</value>
+  </data>
+  <data name="ETV_FORMEL_JE_EINHEIT" xml:space="preserve">
+    <value>{0} €/{1} ÷ {2} kWh/{1} = {3} €/kWh</value>
+  </data>
+  <data name="ETV_FORMEL_DIREKT_KWH" xml:space="preserve">
+    <value>Direktabrechnung nach kWh</value>
+  </data>
+  <data name="ETV_FORMEL_DIREKT_BASIS" xml:space="preserve">
+    <value>Direktabrechnung: {0} €/kWh</value>
+  </data>
+  <data name="ETV_SP_HEIZWERT_EINHEIT" xml:space="preserve">
+    <value>Heizwert [{0}]</value>
+  </data>
+  <data name="ETV_BTN_KATALOGWERTE" xml:space="preserve">
+    <value>Katalogwerte übernehmen</value>
+  </data>
+  <data name="ETV_KATALOGWERTE_UEBERNOMMEN" xml:space="preserve">
+    <value>Katalogwerte übernommen — noch nicht gespeichert.</value>
+  </data>
+  <data name="ETV_HISTORIE_NUR_PROJEKT" xml:space="preserve">
+    <value>Die Preishistorie wird je Projekt geführt — im Katalog gilt die Katalogzeile selbst.</value>
+  </data>
+  <data name="ETV_HISTORIE_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="ETV_HISTORIE_LOESCHFRAGE" xml:space="preserve">
+    <value>Preisstand vom {0} löschen?</value>
+  </data>
+  <data name="ETV_HISTORIE_LOESCH_FEHLT" xml:space="preserve">
+    <value>Dieser Preisstand ist nicht mehr vorhanden.</value>
+  </data>
+  <data name="ETV_HISTORIE_LOESCH_TITEL" xml:space="preserve">
+    <value>Preisstand löschen</value>
+  </data>
+  <data name="SIM_BTN_SP_AUSLEGUNG" xml:space="preserve">
+    <value>Stromspeicher auslegen…</value>
+  </data>
+  <data name="SIM_SP_AUSLEGUNG_LEER" xml:space="preserve">
+    <value>Für dieses Projekt ist noch kein Stromspeicher angelegt.</value>
+  </data>
+  <data name="SIM_SP_STAND_AKTIV" xml:space="preserve">
+    <value>Mehrspeicherbetrieb aktiviert</value>
+  </data>
+  <data name="SIM_SP_STAND_AUS" xml:space="preserve">
+    <value>Mehrspeicherbetrieb deaktiviert — der Projektlauf fährt die Einzelanlage</value>
+  </data>
+  <data name="SIM_SP_STAND_OHNE" xml:space="preserve">
+    <value>Noch kein Mehrspeicherbetrieb eingerichtet — der Projektlauf fährt die Einzelanlage</value>
+  </data>
+  <data name="SIM_SP_STAND_FLOTTE" xml:space="preserve">
+    <value>{0} · {1} Einheiten</value>
+  </data>
+  <data name="SIM_SP_HERKUNFT" xml:space="preserve">
+    <value>Gerechnet mit Speicherflotte: {0} · {1} Einheiten</value>
+  </data>
+  <data name="SIM_SP_HERKUNFT_PEAK" xml:space="preserve">
+    <value>Peak-Ziel {0} kW ({1})</value>
+  </data>
+  <data name="SIM_SP_KONFIG_VERWEIS" xml:space="preserve">
+    <value>Konfiguration ändern → ①</value>
+  </data>
+  <data name="SIM_SP_KONFIG_VERWEIS_TIP" xml:space="preserve">
+    <value>Öffnet Schritt ① Konfiguration — dort steht „Stromspeicher auslegen…“.</value>
+  </data>
+  <data name="ND_TITEL" xml:space="preserve">
+    <value>Nutzungsdauern (AfA)</value>
+  </data>
+  <data name="ND_MENUE" xml:space="preserve">
+    <value>Nutzungsdauern (AfA)…</value>
+  </data>
+  <data name="ND_KONTEXT" xml:space="preserve">
+    <value>Rechnerische Nutzungsdauer je Technik und Positionsart — sie steuert Ersatzbeschaffung und Restwert im Kapitalwert.</value>
+  </data>
+  <data name="ND_SP_TECHNIK" xml:space="preserve">
+    <value>Technik</value>
+  </data>
+  <data name="ND_SP_POSITIONSART" xml:space="preserve">
+    <value>Positionsart</value>
+  </data>
+  <data name="ND_SP_NUTZUNGSDAUER" xml:space="preserve">
+    <value>Nutzungsdauer [a]</value>
+  </data>
+  <data name="ND_SP_AFA" xml:space="preserve">
+    <value>AfA steuerlich [a]</value>
+  </data>
+  <data name="ND_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="ND_SP_AKTIONEN" xml:space="preserve">
+    <value>Aktionen</value>
+  </data>
+  <data name="ND_SUCHE" xml:space="preserve">
+    <value>Suchen</value>
+  </data>
+  <data name="ND_SUCHE_PLATZHALTER" xml:space="preserve">
+    <value>Technik, Positionsart oder Quelle</value>
+  </data>
+  <data name="ND_NEU" xml:space="preserve">
+    <value>Neu</value>
+  </data>
+  <data name="ND_LOESCHEN" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="ND_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Auslieferungswerte wiederherstellen</value>
+  </data>
+  <data name="ND_FRAGE_WIEDERHERSTELLEN" xml:space="preserve">
+    <value>Die Werte aller Auslieferungszeilen auf die Auslieferung zurücksetzen? Eigene Zeilen bleiben unberührt.</value>
+  </data>
+  <data name="ND_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Zeile „{0}“ löschen?</value>
+  </data>
+  <data name="ND_TIP_AUSLIEFERUNG" xml:space="preserve">
+    <value>Auslieferungszeile: Der Wert ist änderbar, die Zeile wird nicht gelöscht.</value>
+  </data>
+  <data name="ND_TIP_STANDARD" xml:space="preserve">
+    <value>Standardzeile der Technik — sie gilt, wenn eine Position keine Positionsart trägt.</value>
+  </data>
+  <data name="ND_KENNZEICHEN_STANDARD" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="ND_TECHNIKUEBERGREIFEND" xml:space="preserve">
+    <value>technikübergreifend</value>
+  </data>
+  <data name="ND_LEER_HINWEIS" xml:space="preserve">
+    <value>Eine leere Nutzungsdauer heißt „wie die Standardzeile der Technik“.</value>
+  </data>
+  <data name="ND_MELD_READONLY" xml:space="preserve">
+    <value>Auslieferungszeilen werden nicht gelöscht. Ihr Wert lässt sich ändern; „Auslieferungswerte wiederherstellen“ setzt ihn zurück.</value>
+  </data>
+  <data name="ND_MELD_DOPPELT" xml:space="preserve">
+    <value>Für diese Technik gibt es die Positionsart „{0}“ bereits.</value>
+  </data>
+  <data name="ND_MELD_ART_LEER" xml:space="preserve">
+    <value>Die Positionsart darf nicht leer sein.</value>
+  </data>
+  <data name="ND_MELD_KEINE_TABELLE" xml:space="preserve">
+    <value>Die Nutzungsdauertabelle gibt es in dieser Datenbank noch nicht.</value>
+  </data>
+  <data name="ND_HERLEITUNG" xml:space="preserve">
+    <value>Nutzungsdauer aus Nutzungsdauern (AfA): {0} · {1} {2} a</value>
+  </data>
+  <data name="ND_HERLEITUNG_STANDARD" xml:space="preserve">
+    <value>Nutzungsdauer aus Nutzungsdauern (AfA): {0} → wie Standardzeile {1} · {2} {3} a</value>
+  </data>
+  <data name="ND_STATUS_WIEDERHERGESTELLT" xml:space="preserve">
+    <value>{0} Auslieferungszeile(n) zurückgesetzt.</value>
+  </data>
+  <data name="ND_LEER_LISTE" xml:space="preserve">
+    <value>Keine Zeile passt zur Suche.</value>
+  </data>
+  <data name="ND_QUELLE_EIGEN" xml:space="preserve">
+    <value>eigener Wert</value>
+  </data>
+  <data name="ND_MELD_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Zeile ließ sich nicht speichern.</value>
+  </data>
+  <data name="FLOTTE_ERG_OPTIMIERUNG" xml:space="preserve">
+    <value>Ergebnisse der Optimierung</value>
+  </data>
+  <data name="FLOTTE_ERG_SIMULATION" xml:space="preserve">
+    <value>Ergebnisse der Simulation</value>
+  </data>
+  <data name="FLOTTE_ERG_NUR_BEWERTET" xml:space="preserve">
+    <value>Dieser Lauf hat nur die eingestellte Flotte bewertet — gesucht wurde keine Größe. Eine Suche startet Schritt 4 „Optimierung“.</value>
+  </data>
+  <data name="FLOTTE_OPT_GROESSE_UNABHAENGIG" xml:space="preserve">
+    <value>Die Größensuche ist vom gewählten Speicher unabhängig; gesucht wird die wirtschaftlich beste Größe.</value>
   </data>
 </root>

@@ -47,7 +47,6 @@ public class SpeicherParameterBlockTests : EposBunitContext
 
     /// <summary>Jeder Schreibvorgang: Feldschlüssel und Wert, in der Reihenfolge des Anfalls.</summary>
     private readonly List<(string Feld, string Wert)> _geschrieben = new();
-    private int _optimierungen;
 
     /// <summary>
     /// Bewusst NICHT als Feldinitialisierer (siehe Doku an <see cref="_kultur"/>): Der
@@ -155,18 +154,12 @@ public class SpeicherParameterBlockTests : EposBunitContext
     private IRenderedComponent<SpeicherParameterBlock> Zeichnen(
         SpeicherParameterDaten? daten = null,
         SimulationErgebnisDienste? dienste = null,
-        bool gesperrt = false,
-        bool optimierung = false)
+        bool gesperrt = false)
         => Render<SpeicherParameterBlock>(p =>
         {
             p.Add(x => x.Daten, daten ?? Voll());
             p.Add(x => x.Dienste, dienste ?? Dienste());
             p.Add(x => x.Gesperrt, gesperrt);
-            if (optimierung)
-            {
-                p.Add(x => x.OptimierungMoeglich, true);
-                p.Add(x => x.Optimierung, EventCallback.Factory.Create(this, () => _optimierungen++));
-            }
         });
 
     /// <summary>Die Zahlenfelder in Markupreihenfolge: SoC min, SoC max, Leistung, Kapazität, Schwelle, …</summary>
@@ -363,42 +356,22 @@ public class SpeicherParameterBlockTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// <b>Der Optimierungsknopf steht OBEN</b> (W11b‑B‑29) — unter der Statuszeile und
-    /// VOR den Feldern. Am Blockende hat der Anwender ihn nicht gefunden.
+    /// <b>Der Block trägt überhaupt keinen Knopf</b> — weder Speichern noch Verwerfen
+    /// (W11b‑B‑29: jedes Feld schreibt sofort) noch den Sprung in die Auslegung
+    /// (Auftrag #274: Der Einstieg steht in Schritt ① neben der Pufferverwaltung,
+    /// und zwar genau einmal). Oben stehen die Statuszeile und dann die Felder.
     /// </summary>
     [Fact]
-    public void Der_Optimierungsknopf_steht_oben_unter_der_Statuszeile()
+    public void Der_Block_traegt_keinen_Knopf_und_beginnt_mit_der_Statuszeile()
     {
-        string markup = Zeichnen(optimierung: true).Markup;
+        var block = Zeichnen();
 
+        Assert.Empty(block.FindAll("button"));
+
+        string markup = block.Markup;
         int status = markup.IndexOf("epos-simerg-status", StringComparison.Ordinal);
-        int knopf = markup.IndexOf("epos-simerg-knopfzeile", StringComparison.Ordinal);
         int felder = markup.IndexOf("epos-simerg-felder", StringComparison.Ordinal);
-
-        Assert.True(status >= 0 && status < knopf, "Die Statuszeile steht über der Knopfzeile.");
-        Assert.True(knopf < felder, "Die Knopfzeile steht über den Feldern.");
-    }
-
-    /// <summary>Kein Sprungdelegat = kein Knopf (Regel seit W2.2).</summary>
-    [Fact]
-    public void Ohne_Delegat_bleibt_der_Optimierungsknopf_weg()
-    {
-        Assert.Empty(Zeichnen().FindAll("button"));
-
-        var mit = Zeichnen(optimierung: true);
-        mit.FindAll("button").First(b => b.TextContent.Contains("optimieren")).Click();
-
-        Assert.Equal(1, _optimierungen);
-    }
-
-    /// <summary>
-    /// <b>Es gibt keine Speichern- und keine Verwerfen-Knöpfe mehr</b> (W11b‑B‑29):
-    /// Der Optimierungsknopf ist der EINZIGE Knopf des Blocks.
-    /// </summary>
-    [Fact]
-    public void Der_Block_hat_ausser_der_Optimierung_keinen_Knopf()
-    {
-        Assert.Single(Zeichnen(optimierung: true).FindAll("button"));
+        Assert.True(status >= 0 && status < felder, "Die Statuszeile steht über den Feldern.");
     }
 
     // =====================================================================

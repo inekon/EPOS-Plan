@@ -29,7 +29,7 @@ Speicherwirkung weiter.
 |-
 | BHKW-Erzeugung || kW je Viertelstunde || BHKW-Zweig
 |-
-| Bezugspreis, Einspeisevergütung || ct/kWh || Energieträger- und Vergütungsdaten des Projekts
+| Bezugspreis, Einspeisevergütung || ct/kWh || Energieträger- und Vergütungsdaten des Projekts einschließlich des gewählten Aufschlags
 |-
 | Nennkapazität || kWh || Speicherkatalog, Feld „Energie (Kapazität)"
 |-
@@ -53,6 +53,8 @@ Speicherwirkung weiter.
 |-
 | Berechnungsart, Betriebsart, zulässige Ladequellen || — || Speichervariante
 |}
+
+'''Der Bezugspreis trägt den Aufschlag des Stromträgers.''' Er entsteht aus der Energiepreisreihe zuzüglich eines wirksamen Aufschlags in ct/kWh, der auf jedes Intervall gleich wirkt. Wie hoch er ist, bestimmt der am Stromträger gewählte Modus: Bei '''kein Aufschlag''' — der Vorbelegung — ist er 0&nbsp;ct/kWh, bei '''Gesamtwert''' der dort eingetragene Betrag, bei '''aufgeschlüsselt''' die Summe der eingeschalteten Komponenten Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe und Vertrieb. Ein Projekt, an dem niemand einen Aufschlag eingestellt hat, rechnet also mit dem reinen Arbeitspreis. Die Speichervariante kann den Aufschlag zusätzlich abschalten; eine importierte effektive Preisreihe bekommt ihn nie.
 
 === Datenimport ===
 

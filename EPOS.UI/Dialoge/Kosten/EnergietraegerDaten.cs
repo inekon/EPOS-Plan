@@ -29,9 +29,12 @@ public sealed class UmrechnungsregelZeile
 /// <param name="Arbeitspreis">Arbeitspreis je Abrechnungseinheit.</param>
 /// <param name="Grundpreis">Grundpreis [€/a].</param>
 /// <param name="Leistungspreis">Leistungspreis.</param>
+/// <param name="Id">Der Schlüssel der Zeile (<c>energy_price.id</c>); 0 = unbekannt.
+/// Er steht am Ende, damit er beim Bauen weggelassen werden darf — gebraucht wird
+/// er allein zum Löschen GENAU DIESER Zeile.</param>
 public sealed record PreishistorieZeile(string GueltigAb, string Heizwert, string Basiseinheit,
                                         string Arbeitspreis, string Grundpreis,
-                                        string Leistungspreis);
+                                        string Leistungspreis, int Id = 0);
 
 /// <summary>
 /// Eine Zeile des Emissions-Abschnitts (Etappe E3, Konzept
@@ -168,6 +171,27 @@ public sealed class EnergietraegerStand
     /// <summary>Die Preishistorie, jüngste zuerst.</summary>
     public IReadOnlyList<PreishistorieZeile> Historie { get; set; }
         = Array.Empty<PreishistorieZeile>();
+
+    /// <summary>
+    /// Leise Zeile unter der Tabelle — im Katalogkontext der Grund, warum dort
+    /// keine Zeile entsteht. Leer = kein Hinweis.
+    /// </summary>
+    public string HistorieHinweis { get; set; } = "";
+
+    // ---- Katalogübernahme ------------------------------------------------
+
+    /// <summary>
+    /// Zeigt den Knopf „Katalogwerte übernehmen"? Nur im Projektkontext — im
+    /// Katalog SIND die Felder die Katalogwerte.
+    /// </summary>
+    public bool MitKatalogUebernahme { get; set; }
+
+    /// <summary>
+    /// „Katalogwerte übernommen — noch nicht gespeichert."; leer = kein Hinweis.
+    /// Die Übernahme ist eine einmalige Kopie: Geschrieben wird erst mit
+    /// „Speichern" bzw. „OK".
+    /// </summary>
+    public string UebernahmeHinweis { get; set; } = "";
 
     // ---- Emissionen (Etappe E3) -----------------------------------------
 

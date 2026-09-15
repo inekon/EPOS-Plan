@@ -343,6 +343,20 @@ public static class Seitenschluessel
     /// <summary>Menue „Administration -> Kosten -> Energieträgerverwaltung…" (<c>EnergietraegerDialog</c>, W4.4).</summary>
     public const string EnergietraegerVerwaltung = "ENERGIETRAEGER_VERWALTUNG";
 
+    /// <summary>
+    /// Menue „Administration -> Kosten -> Nutzungsdauern (AfA)…"
+    /// (<c>NutzungsdauerDialog</c>, Konzept Nutzungsdauer/AfA Stufe S1, ND-Q3).
+    /// </summary>
+    /// <remarks>
+    /// Der dritte Eintrag der Rubrik „Kostenverwaltung", neben Kostenvorlagen und
+    /// Energietraegern. Er traegt — wie die beiden anderen — KEINEN
+    /// <c>Masken.*</c>-Zwilling: Der Weg fuehrt ueber die Windows-Huelle
+    /// (<c>HauptfensterHuelle.Weg</c>) in ein modales Fenster. Auf iOS faellt der
+    /// Schluessel wie die zwei Nachbarn durch und <see cref="AppWurzel"/> meldet
+    /// <c>false</c> — dort ist die Kostenverwaltung insgesamt noch nicht angebunden.
+    /// </remarks>
+    public const string NutzungsdauerVerwaltung = "NUTZUNGSDAUER_VERWALTUNG";
+
     /// <summary>Menue „Administration -> Einstellungen" (<c>EinstellungenDialog</c>, W14c.6).</summary>
     public const string Einstellungen = "EINSTELLUNGEN";
 
@@ -391,7 +405,7 @@ public static class Seitenschluessel
         ProjektAuswahl, ProjektDelete,
         ProjektNeu, ProjektOeffnen, ProjektBearbeiten, ProjektZuletzt,
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
-        Kostenverwaltung, EnergietraegerVerwaltung, Einstellungen,
+        Kostenverwaltung, EnergietraegerVerwaltung, NutzungsdauerVerwaltung, Einstellungen,
         Gesetzeskatalog, KatalogDubletten, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, SpracheDeutsch, SpracheEnglisch
     };

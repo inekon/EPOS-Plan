@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using EPOS.UI.Seiten.Simulation;
+using EPOS.UI.Seiten.Strom;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using Xunit;
@@ -129,16 +130,17 @@ namespace EPOS.Kern.Tests
             using var kopie = new TestDatenbank();
             if (!kopie.Vorhanden) return;
 
-            SimulationErgebnisDienste dienste = Ergebnisdienste(PROJEKT_GANGLINIE);
+            (SimulationKonfigDienste konfig, SimulationErgebnisDienste dienste) =
+                Simulationsdienste(PROJEKT_GANGLINIE);
 
             Rueckmeldung lauf = await dienste.Laufen((anteil, text) => { });
             Assert.True(lauf.Erfolg, lauf.Text);
             Assert.True(dienste.Laden(PROJEKT_GANGLINIE).ErgebnisGueltig);
 
-            // Derselbe Weg, den der Reiter „Stromspeicher" und die Ansicht
-            // STROMSPEICHER_AUSLEGUNG gehen — die Eingaben unverändert zurückgeschrieben.
-            SpeicherOptimierungEingaben eingaben = dienste.OptimierungVorgaben().Eingaben;
-            string fehler = await dienste.OptimierungEinstellungenSpeichern(eingaben);
+            // DER WEG DES ANWENDERS SEIT #274: „Stromspeicher auslegen…" in Schritt ①
+            // meldet den Arbeitsgang an; was in der Auslegung gespeichert wird, zieht
+            // die Ergebnishülle über ihren Nachzug nach.
+            string fehler = await InAuslegungSpeichern(konfig);
             Assert.True(string.IsNullOrEmpty(fehler), fehler);
 
             SimulationErgebnisDaten d = dienste.Laden(PROJEKT_GANGLINIE);
@@ -177,7 +179,8 @@ namespace EPOS.Kern.Tests
             const int projekt = 236001;
             SpeicherprojektAnlegen(projekt);
 
-            SimulationErgebnisDienste dienste = Ergebnisdienste(projekt);
+            (SimulationKonfigDienste konfig, SimulationErgebnisDienste dienste) =
+                Simulationsdienste(projekt);
 
             // Vor dem Lauf: der Bedarf steht, die Übersicht nicht.
             SimulationErgebnisDaten vorher = dienste.Laden(projekt);
@@ -187,7 +190,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, vorher.Bedarf.WaermebedarfGesamtMwh, 3);
             Assert.True(vorher.ReiterStromspeicher);
 
-            FlotteMitEinerEinheitSpeichern(dienste);
+            FlotteMitEinerEinheitSpeichern(konfig);
 
             Rueckmeldung lauf = await dienste.Laufen((anteil, text) => { });
             Assert.True(lauf.Erfolg, lauf.Text);
@@ -206,12 +209,23 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         private static SimulationErgebnisDienste Ergebnisdienste(int idProjekt)
+            => Simulationsdienste(idProjekt).Ergebnis;
+
+        /// <summary>
+        /// Die zwei Datenseiten der Ansicht SIMULATION aus EINER Quelle — sie gehören
+        /// zusammen: Seit Auftrag <b>#274</b> steht der Einstieg in die
+        /// Stromspeicher-Auslegung in Schritt ①, gegangen wird er von der Ergebnishülle,
+        /// und nur dieselbe Quelle verknüpft beide.
+        /// </summary>
+        private static (SimulationKonfigDienste Konfiguration, SimulationErgebnisDienste Ergebnis)
+            Simulationsdienste(int idProjekt)
         {
             SimulationAnsichtQuelle quelle = new SimulationAnsichtQuelle(new BedarfsZustand(), null);
             IReadOnlyDictionary<string, object> gaben = quelle.AnsichtGaben(idProjekt, "Prüfprojekt");
 
             SimulationAnsichtDienste dienste = (SimulationAnsichtDienste)gaben["Dienste"];
-            return (SimulationErgebnisDienste)dienste.Ergebnis["Dienste"];
+            return ((SimulationKonfigDienste)dienste.Konfiguration["Dienste"],
+                    (SimulationErgebnisDienste)dienste.Ergebnis["Dienste"]);
         }
 
         /// <summary>
@@ -258,22 +272,42 @@ namespace EPOS.Kern.Tests
         /// EINZIGE Einheit des neuen Projekts — derselbe Schreibweg wie die Ansicht
         /// „Stromspeicher-Auslegung".
         /// </summary>
-        private static void FlotteMitEinerEinheitSpeichern(SimulationErgebnisDienste dienste)
+        private static void FlotteMitEinerEinheitSpeichern(SimulationKonfigDienste konfig)
         {
             SpeicherOptimierungEingaben vorlage =
-                Ergebnisdienste(PROJEKT_FLOTTE).OptimierungVorgaben().Eingaben;
+                new StromspeicherAuslegungCtrl(PROJEKT_FLOTTE).Vorgaben().Eingaben;
             Assert.NotNull(vorlage.Auslegung.Flotte);
             Assert.NotEmpty(vorlage.Auslegung.Flotte.Einheiten);
 
-            SpeicherOptimierungEingaben eingaben = dienste.OptimierungVorgaben().Eingaben.Kopie();
-            eingaben.Auslegung.Flotte = vorlage.Auslegung.Flotte;
-            while (eingaben.Auslegung.Flotte.Einheiten.Count > 1)
-                eingaben.Auslegung.Flotte.Einheiten.RemoveAt(1);
-            eingaben.Auslegung.FlottenProjektbetriebDeaktiviert = false;
-            eingaben.Auslegung.FlottenGroessenOptimieren = false;
-
-            string fehler = dienste.OptimierungEinstellungenSpeichern(eingaben).GetAwaiter().GetResult();
+            string fehler = InAuslegungSpeichern(konfig, eingaben =>
+            {
+                eingaben.Auslegung.Flotte = vorlage.Auslegung.Flotte;
+                while (eingaben.Auslegung.Flotte.Einheiten.Count > 1)
+                    eingaben.Auslegung.Flotte.Einheiten.RemoveAt(1);
+                eingaben.Auslegung.FlottenProjektbetriebDeaktiviert = false;
+                eingaben.Auslegung.FlottenGroessenOptimieren = false;
+            }).GetAwaiter().GetResult();
             Assert.True(string.IsNullOrEmpty(fehler), fehler);
+        }
+
+        /// <summary>
+        /// Geht den Weg des Anwenders seit Auftrag <b>#274</b>: „Stromspeicher
+        /// auslegen…" in Schritt ① öffnen (das meldet den Arbeitsgang der Auslegung an)
+        /// und dort speichern. <paramref name="aendern"/> darf den Stand vorher anfassen;
+        /// ohne Eingriff wird er unverändert zurückgeschrieben.
+        /// </summary>
+        private static async Task<string> InAuslegungSpeichern(
+            SimulationKonfigDienste konfig, Action<SpeicherOptimierungEingaben> aendern = null)
+        {
+            Assert.NotNull(konfig.AuslegungOeffnen);
+            konfig.AuslegungOeffnen();
+
+            var auslegung = (StromspeicherAuslegungDienste)
+                StromspeicherAuslegungHuelle.AnsichtGaben()["Dienste"];
+
+            SpeicherOptimierungEingaben eingaben = auslegung.Vorgaben().Eingaben.Kopie();
+            if (aendern != null) aendern(eingaben);
+            return await auslegung.EinstellungenSpeichern(eingaben);
         }
 
         private static void Sql(string sql, params DbParam[] parameter)

@@ -49,9 +49,11 @@
     <ApplicationTitle>EPOS-Plan</ApplicationTitle>
     <ApplicationId>de.inekon.eposplan</ApplicationId>
     <!-- Gleiche Version wie Windows (WindowsFormsApplication1\Properties\AssemblyInfo.cs),
-         Update-Logbuch 1.2.0.0 (#191, 11.09.2026). -->
+         Update-Logbuch 1.2.0.1. CFBundleShortVersionString traegt nach Apples Vorgabe
+         drei Zahlen, deshalb bleibt die Anzeige 1.2.0 und die Revision zaehlt in
+         ApplicationVersion (CFBundleVersion) hoch. -->
     <ApplicationDisplayVersion>1.2.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationVersion>2</ApplicationVersion>
 
     <!-- 17.0: von SkiaSharp.NativeAssets.iOS 3.119 (net8.0-ios17.0) erzwungen;
          MAUI 10 selbst kaeme mit 15.0 aus (iF28 - iPads ab 2018). -->

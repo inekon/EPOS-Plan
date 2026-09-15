@@ -411,6 +411,208 @@ public class KostenKomponenteDialogTests : BunitContext
     }
 
     // =====================================================================
+    // Zeilenaktionen: das Neuladen behaelt die ungespeicherten Eingaben
+    // =====================================================================
+
+    /// <summary>
+    /// Eine „Datenbank", wie die Windows-Hülle sie führt: <c>Laden</c> baut bei
+    /// JEDEM Aufruf NEUE <see cref="KostenPositionZeile"/> aus den persistierten
+    /// Positionen (<c>VorlagenRasterAufbauen</c>: <c>_bindungen.Clear()</c>,
+    /// <c>_zeilen = new List&lt;…&gt;()</c>). Ein Fake, der immer dieselben Objekte
+    /// zurückgibt, kann den Anwenderbefund gar nicht zeigen — er verliert die
+    /// Eingabe nicht, weil sie im selben Objekt stehen bleibt.
+    /// </summary>
+    private sealed class Ablage
+    {
+        public readonly List<(int Id, string Name, double Satz)> Positionen
+            = new List<(int, string, double)> { (11, "Montage", 1200), (12, "Gerät", 8000) };
+
+        private int _naechste = 13;
+
+        /// <summary>Wie <c>PositionNeu</c> der Hülle: schreibt SOFORT (Ä12).</summary>
+        public int Anlegen(string name)
+        {
+            int id = _naechste++;
+            Positionen.Add((id, name, 0));
+            return id;
+        }
+
+        public bool Loeschen(int id) => Positionen.RemoveAll(p => p.Id == id) > 0;
+    }
+
+    /// <summary>Die Datenzeilen des Rasters ohne die Abschlusszeile.</summary>
+    private static IReadOnlyList<AngleSharp.Dom.IElement> Datenzeilen(
+        IRenderedComponent<KostenKomponenteDialog> cut)
+        => cut.FindAll(".epos-zeilenraster > .epos-zr-zeile");
+
+    /// <summary>Das Satzfeld der <paramref name="nr"/>-ten Datenzeile (vierte Spur).</summary>
+    private static AngleSharp.Dom.IElement Satzfeld(
+        IRenderedComponent<KostenKomponenteDialog> cut, int nr)
+        => Datenzeilen(cut)[nr].QuerySelectorAll("input[type=text]")[1];
+
+    private KostenKomponenteStand AusAblage(Ablage ablage)
+    {
+        KostenKomponenteStand s = Standard();
+        var zeilen = new List<KostenPositionZeile>();
+        foreach ((int id, string name, double satz) in ablage.Positionen)
+        {
+            zeilen.Add(Zeile(id, name, satz));
+        }
+
+        s.Zeilen = zeilen;
+        _stand = s;
+        s.Summen = Summenfuss();
+        return s;
+    }
+
+    /// <summary>Der Summenfuß fällt aus dem STAND, nicht aus der Ablage (Ä12/Ä19).</summary>
+    private IReadOnlyList<(string Text, bool Stark)> Summenfuss()
+    {
+        double summe = 0;
+        foreach (KostenPositionZeile z in _stand.Zeilen) summe += z.Satz ?? 0;
+        return new[] { ("Summe " + summe.ToString("0.##"), true) };
+    }
+
+    private IRenderedComponent<KostenKomponenteDialog> ZeigeMitAblage(
+        Ablage ablage,
+        Action<Bunit.ComponentParameterCollectionBuilder<KostenKomponenteDialog>>? mehr = null)
+    {
+        _geladen = 0;
+        _gefragt = null;
+
+        return Render<KostenKomponenteDialog>(p =>
+        {
+            p.Add(x => x.Eintraege, EINTRAEGE);
+            p.Add(x => x.Laden, k => { _geladen++; _gefragt = k; return AusAblage(ablage); });
+            p.Add(x => x.Summen, Summenfuss);
+            p.Add(x => x.Nachziehen, (KostenPositionZeile z) =>
+                z.BetragText = (z.Satz ?? 0).ToString("0.##"));
+            p.Add(x => x.PositionNeu, (string n) => ablage.Anlegen(n));
+            p.Add(x => x.PositionLoeschen, (KostenPositionZeile z) => ablage.Loeschen(z.Id));
+            p.Add(x => x.PositionNeuVorgabe, "Neue Position");
+            mehr?.Invoke(p);
+        });
+    }
+
+    /// <summary>
+    /// ANWENDERBEFUND 14.09.2026 (Kostenverwaltung, Reiter „Kosten Invest/Betrieb"):
+    /// „Bei zufügen von Position werden zuvor eingegebene Werte auf null gesetzt."
+    ///
+    /// <para>Ursache: „Position hinzufügen" schreibt die NEUE Position sofort und
+    /// lässt danach den ganzen Stand neu laden; die Hülle baut dabei jede Zeile neu
+    /// aus der Datenbank, in der die noch nicht gespeicherten Eingaben der übrigen
+    /// Zeilen nicht stehen. Die Regel Ä12/Ä19 („die Änderung lebt bis Speichern nur
+    /// im Objekt") trägt nur, solange niemand die Objekte austauscht — beim
+    /// Auffrischen werden die Eingaben deshalb übertragen.</para>
+    /// </summary>
+    [Fact]
+    public void Position_hinzufuegen_behaelt_die_ungespeicherten_Eingaben_der_Zeilen()
+    {
+        var ablage = new Ablage();
+        var cut = ZeigeMitAblage(ablage);
+
+        Satzfeld(cut, 0).Input("1500");
+        cut.WaitForAssertion(() => Assert.Equal("1500", Satzfeld(cut, 0).GetAttribute("value")));
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[0].Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(3, Datenzeilen(cut).Count));
+        Assert.Equal("1500", Satzfeld(cut, 0).GetAttribute("value"));
+        Assert.Equal(1500.0, cut.Instance.Stand.Zeilen[0].Satz);
+        Assert.Equal("8000", Satzfeld(cut, 1).GetAttribute("value"));
+        Assert.Equal("Neue Position", cut.Instance.Stand.Zeilen[2].Bezeichnung);
+        Assert.Equal("Summe 9500", cut.Find(".epos-zr-summenzelle").TextContent);
+    }
+
+    /// <summary>Derselbe Weg über die Abschlusszeile (Name eintippen, dann ＋).</summary>
+    [Fact]
+    public void Die_Abschlusszeile_behaelt_die_ungespeicherten_Eingaben_der_Zeilen()
+    {
+        var ablage = new Ablage();
+        var cut = ZeigeMitAblage(ablage);
+
+        Satzfeld(cut, 1).Input("9000");
+        cut.WaitForAssertion(() => Assert.Equal("9000", Satzfeld(cut, 1).GetAttribute("value")));
+
+        cut.Find(".epos-zr-neuzeile").QuerySelectorAll("input[type=text]")[0].Input("Wartung");
+        cut.Find(".epos-zr-neuzeile").QuerySelector("button")!.Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(3, Datenzeilen(cut).Count));
+        Assert.Equal("9000", Satzfeld(cut, 1).GetAttribute("value"));
+        Assert.Equal(9000.0, cut.Instance.Stand.Zeilen[1].Satz);
+        Assert.Equal("Wartung", cut.Instance.Stand.Zeilen[2].Bezeichnung);
+        Assert.Equal("Summe 10200", cut.Find(".epos-zr-summenzelle").TextContent);
+    }
+
+    /// <summary>„Position löschen" lädt denselben Stand neu — und behält ebenso.</summary>
+    [Fact]
+    public void Position_loeschen_behaelt_die_ungespeicherten_Eingaben_der_uebrigen()
+    {
+        var ablage = new Ablage();
+        var cut = ZeigeMitAblage(ablage, p => p
+            .Add(x => x.VorlagePositionLoeschen, "Position „{0}\" löschen?"));
+
+        Satzfeld(cut, 1).Input("9000");
+        cut.WaitForAssertion(() => Assert.Equal("9000", Satzfeld(cut, 1).GetAttribute("value")));
+
+        Datenzeilen(cut)[0].QuerySelectorAll("button")[1].Click();      // 🗑️ der ersten Zeile
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();         // Ja
+
+        cut.WaitForAssertion(() => Assert.Single(Datenzeilen(cut)));
+        Assert.Equal("9000", Satzfeld(cut, 0).GetAttribute("value"));
+        Assert.Equal(9000.0, cut.Instance.Stand.Zeilen[0].Satz);
+        Assert.Equal("Summe 9000", cut.Find(".epos-zr-summenzelle").TextContent);
+    }
+
+    /// <summary>
+    /// „In Projekt übernehmen" lädt nach dem Schließen ebenfalls neu
+    /// (<c>btnUebernahme_Click</c>: übernommene Positionen sofort zeigen).
+    /// </summary>
+    [Fact]
+    public void Die_Uebernahme_behaelt_die_ungespeicherten_Eingaben_der_Zeilen()
+    {
+        var ablage = new Ablage();
+        var cut = ZeigeMitAblage(ablage, p => p
+            .Add(x => x.UebernahmeGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zielprojekte"] = (IReadOnlyList<(int, string)>)new[] { (1, "Projekt") }
+                }));
+
+        Satzfeld(cut, 0).Input("1500");
+        cut.WaitForAssertion(() => Assert.Equal("1500", Satzfeld(cut, 0).GetAttribute("value")));
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[1].Click();   // Übernahme
+        cut.FindAll(".epos-ueberlagerung .epos-leiste")[^1]
+           .QuerySelectorAll("button")[1].Click();                              // Abbrechen
+
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.UeberlagerungOffen));
+        Assert.Equal("1500", Satzfeld(cut, 0).GetAttribute("value"));
+        Assert.Equal(1500.0, cut.Instance.Stand.Zeilen[0].Satz);
+        Assert.Equal("Summe 9500", cut.Find(".epos-zr-summenzelle").TextContent);
+    }
+
+    /// <summary>
+    /// Der GEGENFALL und damit die Grenze der Regel: Ein echter Kontextwechsel
+    /// (andere Komponente, andere Kategorie, andere Variante) lädt OHNE Übertrag —
+    /// dort ist das Verwerfen gewollt, die Zeilen des neuen Kontexts sind andere.
+    /// </summary>
+    [Fact]
+    public void Ein_Kontextwechsel_laedt_ohne_Uebertrag()
+    {
+        var ablage = new Ablage();
+        var cut = ZeigeMitAblage(ablage);
+
+        Satzfeld(cut, 0).Input("1500");
+        cut.WaitForAssertion(() => Assert.Equal("1500", Satzfeld(cut, 0).GetAttribute("value")));
+
+        cut.FindAll(".epos-kontextleiste select")[0].Change("1");
+
+        cut.WaitForAssertion(() => Assert.Equal(1200.0, cut.Instance.Stand.Zeilen[0].Satz));
+        Assert.Equal("1200", Satzfeld(cut, 0).GetAttribute("value"));
+    }
+
+    // =====================================================================
     // Die fünf Unterdialoge in der Überlagerung
     // =====================================================================
 
@@ -798,5 +1000,79 @@ public class KostenKomponenteDialogTests : BunitContext
         cut.Find(".epos-infoknopf").Click();
 
         Assert.Equal(new[] { "Form_KostenKomponente.btn_Help" }, hilfe.Geoeffnet);
+    }
+
+    // =====================================================================
+    // Kein stilles 0 (Anwenderbefund 14.09.2026)
+    // =====================================================================
+
+    private static KostenKomponenteStand StandOhneBasis()
+    {
+        var stand = new KostenKomponenteStand
+        {
+            Titel = "Kostenverwaltung Solarthermie — Musterprojekt",
+            Untertitel = "Investitionskosten nach VDI 2067",
+            Zeilen = new[]
+            {
+                Zeile(21, "Montage", 1200),
+                new KostenPositionZeile
+                {
+                    Id = 22,
+                    Bezeichnung = "Solarthermie",
+                    BemessungId = 2,
+                    Satz = 700,
+                    Einheit = "€/kW",
+                    BetragText = "0,00",
+                    OhneBasis = true,
+                    BetragKurztext = "Keine Bezugsgröße: kein Gerät mit dieser Baugröße "
+                                     + "im Projekt. Es gilt der erfasste Betrag.",
+                    Schreibbar = true
+                }
+            },
+            Bemessungen = BEMESSUNGEN,
+            SpalteBetrag = "Betrag netto [€]",
+            MitNutzungsdauer = true,
+            MitWorstBest = true,
+            PositionNeuMoeglich = true
+        };
+        return stand;
+    }
+
+    /// <summary>
+    /// DER BEFUND: Im Bildschirmfoto stand unter dem Raster nichts. Der Grund lag
+    /// allein im Werkzeugtipp des Betragsfeldes. Jetzt sammelt eine LEISE Zeile
+    /// unter dem Raster Bezeichnung und Grund jeder Zeile ohne Bezugsgröße.
+    /// </summary>
+    [Fact]
+    public void Zeilen_ohne_Bezugsgroesse_stehen_unter_dem_Raster()
+    {
+        var cut = Zeige(stand: StandOhneBasis());
+
+        string zeile = cut.Find(".epos-zr-ohnebasis-zeile").TextContent;
+
+        Assert.Contains("Solarthermie", zeile);
+        Assert.Contains("kein Gerät mit dieser Baugröße im Projekt", zeile);
+        Assert.DoesNotContain("Montage", zeile);
+    }
+
+    /// <summary>Hat jede Zeile ihre Bezugsgröße — der Regelfall —, bleibt die
+    /// Zeile weg; ein Dauerhinweis wäre Lärm.</summary>
+    [Fact]
+    public void Ohne_solche_Zeilen_bleibt_der_Hinweis_weg()
+    {
+        var cut = Zeige(stand: Standard(projekt: true));
+
+        Assert.Empty(cut.FindAll(".epos-zr-ohnebasis-zeile"));
+        Assert.Equal("", cut.Instance.OhneBasisText);
+    }
+
+    /// <summary>Und die Zeile selbst trägt das Zeichen — der Wirt reicht das
+    /// Kennzeichen durch.</summary>
+    [Fact]
+    public void Die_betroffene_Zeile_traegt_das_Zeichen_im_Raster()
+    {
+        var cut = Zeige(stand: StandOhneBasis());
+
+        Assert.Single(cut.FindAll(".epos-zr-zeile .epos-zr-ohnebasis"));
     }
 }

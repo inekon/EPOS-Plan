@@ -101,11 +101,15 @@ im Ergebnis, auf demselben Reiter.
 │ Simulation · Projekt „Stromspeicher mit Wärmepumpe"                [← zurück] │
 │  ① Konfiguration   ·   ② Simulation starten ▶   ·   ③ Ergebnis               │  ← Ablaufleiste
 ├──────────────────────────────────────────────────────────────────────────────┤
+│ ① Konfiguration                                                               │
+│  Komponenten der Simulation        │  Speicher im Projekt                     │
+│                                    │  [Pufferspeicher anlegen / verwalten…]   │
+│                                    │  [Stromspeicher auslegen…]               │  → Ansicht STROMSPEICHER_AUSLEGUNG
+│                                    │  Mehrspeicherbetrieb aktiviert · …       │     „← zurück" → hierher, Schritt ①
+├──────────────────────────────────────────────────────────────────────────────┤
 │ ③ Ergebnis                                                                    │
-│  Parameter | Übersicht | Bedarf | Wärmepumpe | … | Stromspeicher              │  ← die zehn Reiter, unverändert
-│  ┌ Speicherflotte und Auslegung ───────────────────────────────────────────┐  │
-│  │ Datenstand … [Speicherflotte & Auslegung öffnen]                        │  │  → Ansicht STROMSPEICHER_AUSLEGUNG
-│  └─────────────────────────────────────────────────────────────────────────┘  │     „← zurück" → hierher, Reiter Stromspeicher
+│  Übersicht | Bedarf | Wärmepumpe | … | Stromspeicher                          │  ← die neun Reiter
+│  Gerechnet mit Speicherflotte: Lastspitzenkappung · 2 Einheiten  [Konfiguration ändern → ①]
 │  Fußleiste: [Ergebnis speichern]                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -127,9 +131,11 @@ im Ergebnis, auf demselben Reiter.
   man kam. Eine ungespeicherte Konfiguration löst die Rückfrage nach 62b‑E‑1 aus
   (`DarfVerlassen`, dieselbe Überlagerung wie beim Assistenten).
 - **Die Auslegung bleibt eine eigene Ansicht** mit ihrer eigenen fünfschrittigen Ablaufleiste.
-  Verschachtelte Ablaufleisten wären eine zweite Sorte „Fenster im Fenster". Ihr Rückweg führt
-  in die Simulationsansicht, Schritt ③, Reiter „Stromspeicher"; der Nachzug markiert das Ergebnis
-  als veraltet, und der Reiter zeigt das Banner „Flotte geändert — Simulation neu starten".
+  Verschachtelte Ablaufleisten wären eine zweite Sorte „Fenster im Fenster". Der Weg hinein ist
+  der Knopf **„Stromspeicher auslegen…"** in Schritt ①, Spalte „Speicher im Projekt" (Abschnitt 11);
+  ihr Rückweg führt in die Simulationsansicht, Schritt ①. Der Nachzug markiert das Ergebnis als
+  veraltet, und der Reiter „Stromspeicher" zeigt das Banner „Flotte geändert — Simulation neu
+  starten".
 - **Kurze Unterdialoge bleiben Überlagerungen** (Regel SD‑Q1): Bedarfs-Detail, Wärmepumpen-Detail,
   Variantenvergleich, die sieben Quell-/Senken-/Pufferdialoge der Konfiguration. Sie haben eine
   eigene Rückkehr und keinen Zustand, den ein Ansichtswechsel verlieren könnte.
@@ -830,3 +836,81 @@ Auf der Oberflächenseite prüfen `EPOS.UI.Tests/Seiten/UebersichtReiterTests` d
 (darunter die Wache, die ein vorbelegtes `UebersichtDaten` durch die Komponente schickt und
 „0,00" an der Stelle des Strombedarfs nicht mehr findet) und
 `…/StartreiterSimulationTests` die drei Zustände der rechten Spalte.
+
+---
+
+## 11. #274 (14.09.2026) — der Einstieg in die Auslegung wandert nach ①
+
+### 11.1 Die Rückmeldung
+
+Der Anwender schickte zwei Bildschirmfotos und einen Satz: **„Der Dialog Stromspeicher soll in
+den Dialog Konfiguration verschoben werden. Ähnlich zu ‚Pufferspeicher anlegen/verwalten' einen
+Konfigurationsbutton ‚Stromspeicher auslegen' (anstelle Aufruf aus ‚Speicherflotte und
+Auslegung')."**
+
+Das erste Bild zeigte den Ergebnisreiter **Stromspeicher** mit dem Block *Speicherflotte und
+Auslegung*: Mehrspeicherbetrieb, der Editor „Betrieb und Leistungsverteilung" (Betriebsziel,
+Erzeuger-Reihenfolge, Peak-Ziel, Startwert, Netzladung, Export), die Speichertabelle und der
+Knopf *Speicherflotte & Auslegung öffnen*. Das zweite zeigte **① Konfiguration**, Spalte
+*Speicher im Projekt*, mit dem Knopf *Pufferspeicher anlegen / verwalten…*.
+
+### 11.2 Der Befund dahinter
+
+Der Block war eine **Eingabemaske mitten im Ergebnis**. Wer die Betriebsführung einstellen
+wollte, musste erst rechnen — und sah danach Zahlen, die noch zum vorigen Stand gehörten. Die
+Betriebsführung ist aber eine **Eingabe**: Sie entscheidet, WAS gerechnet wird, genau wie die
+Kaskade und die Pufferzuordnung daneben in ①. Dazu kam eine zweite Pflegestelle: Betriebsziel,
+Verteilung und Peak-Ziel standen im Reiter UND in Station 3 der Auslegungsansicht.
+
+### 11.3 Der Entscheid
+
+| | vorher | jetzt |
+|---|---|---|
+| Einstieg in die Auslegung | Knopf im Ergebnisreiter „Stromspeicher" | Knopf **„Stromspeicher auslegen…"** in ①, unter „Pufferspeicher anlegen / verwalten…" |
+| Betriebsführung pflegen | Editor im Reiter **und** Station 3 | allein Station 3 der Auslegungsansicht |
+| Reiter „Stromspeicher" | Eingabe und Ergebnis gemischt | reines Ergebnis plus **Herkunftszeile** |
+| Rückweg aus der Auslegung | ③, Blatt „Stromspeicher" | ①, Konfiguration |
+
+- **Der Knopf steht nur, wenn es etwas auszulegen gibt** — das Projekt führt einen Stromspeicher
+  oder einen Flottenstand. Sonst steht dort dieselbe Art Erklärzeile wie beim fehlenden
+  Pufferspeicher. Darunter eine **Kurzzeile zum Stand**: Mehrspeicherbetrieb aktiviert bzw.
+  deaktiviert, Betriebsziel, Einheitenzahl.
+- **Die Herkunftszeile** im Reiter sagt, WOMIT der angezeigte Lauf gerechnet wurde —
+  Betriebsziel, Einheitenzahl und, wo es eines gibt, das Peak-Ziel samt seinem Modus
+  („adaptiv (kausal)" bzw. „fest", Abschnitt 5.1.1 der Mehrspeicher-Spezifikation). Daneben der
+  Verweis **„Konfiguration ändern → ①"**. Anzeige, kein Editor.
+- **Zwei Wirte, ein Verweis:** In der Ansicht SIMULATION blättert er auf Schritt ①, aus dem
+  Startseiten-Reiter „Simulation" heraus öffnet er die Ansicht dort. Beides über denselben
+  Maskenschlüssel `SIMULATION_KONFIGURATION`, den die Wurzel seit #207 als Einstiegsmarke führt.
+
+### 11.4 Wie es gebaut ist
+
+- **Der Weg gehört der Ergebnishülle, der Knopf der Konfiguration.** Die Auslegung zieht ihre
+  EPOS-Zeitreihen aus einem abgeschlossenen Lauf, und den hält `SimulationErgebnisHuelle`;
+  `SimulationAnsichtQuelle` — die Stelle, die beide Hüllen kennt — legt deren `AuslegungOeffnen`
+  in `SimulationKonfigDienste` ein. Ohne eingelegten Weg gibt es den Knopf nicht (Hausregel
+  „kein Delegat, kein Knopf"); auf iOS ist er da, weil beide Plattformen dieselbe Quelle nehmen.
+- **Der Kurzstand wird einmal je Besuch gelesen.** `Laden` läuft nach jeder Bedienung der Seite,
+  der Flottenstand ändert sich dabei nicht — geschrieben wird er allein in der Auslegungsansicht.
+  Der Merker fällt genau dann, wenn der Einstieg benutzt wird, und beim Projektwechsel; der
+  Rückweg liest die Speicherspalte damit frisch.
+- **Keine toten Gaben.** Aus `SimulationErgebnisDienste` fallen `OptimierungVorgaben`,
+  `OptimierungFlottenRechnen`, `OptimierungEinstellungenSpeichern` und `AuslegungOeffnen`; neu
+  ist `KonfigurationOeffnen`. Geblieben ist `OptimierungCsv` — die Flottenansicht des Reiters
+  schreibt ihre CSV weiter.
+- **Nebenbefund:** Kacheln, Betriebsbild und die 39 Kennzahlen hingen zusätzlich an der Frage,
+  ob die Plattform eine Flotte rechnen KANN. Unter Windows und iOS ist das immer der Fall — der
+  Block war dort unerreichbar. Er hängt jetzt am Ergebnis: Gibt es ein Flottenergebnis, zeigt
+  die Flottenansicht die Zahlen je Speicher; gibt es keines, sind das die Zahlen des Laufs.
+
+### 11.5 Die Prüfmuster
+
+| Wo | Was |
+|---|---|
+| `EPOS.UI.Tests/Seiten/SimulationKonfigSeiteTests` | Knopf mit Standzeile unter der Pufferverwaltung, er ruft den Öffner; ohne Stromspeicher die Erklärzeile; ohne Weg kein Knopf |
+| `EPOS.UI.Tests/Seiten/StromspeicherReiterTests` | Herkunftszeile statt Editor, Peak-Modus in der Zeile, Verweis meldet seinen Klick, kein Einstieg mehr |
+| `EPOS.UI.Tests/Seiten/SimulationErgebnisSeiteTests` | der Reiter führt über den Verweis in die Konfiguration |
+| `EPOS.UI.Tests/Seiten/AppWurzelTests` | der Rückweg aus der Auslegung landet in ① (Marke `schritt=1`) |
+| `EPOS.Kern.Tests/SimulationUebersichtZustandTests` | der Zustand „veraltet" entsteht über den neuen Weg: aus ① öffnen, in der Auslegung speichern |
+
+**Am Rechenweg ändert sich nichts** — kein Referenzlauf nötig.

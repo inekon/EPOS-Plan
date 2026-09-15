@@ -171,6 +171,34 @@ namespace WindowsFormsApplication1
         /// nicht steht.</summary>
         public List<string> KesselOhneVerbrauch = new List<string>();
 
+        /// <summary>
+        /// <b>WARUM <see cref="Energiekosten"/> nicht bestimmbar ist</b> — im Klartext
+        /// und mit dem Ausweg; <c>null</c>, solange die Zahl steht. Gesetzt von
+        /// <see cref="KostenEmissionRechner"/> an genau der Stelle, an der er die
+        /// Auskunft verweigert.
+        ///
+        /// <para><b>Warum es das Feld gibt (Anwenderbefund 14.09.2026).</b> Bis hierher
+        /// wurde aus jedem Grund dasselbe: <c>Energiekosten = null</c>. Die Seite zeigte
+        /// „—", die Kennzahlkarten „nur Stammprojekt gerechnet", und der einzige
+        /// Hinweis nannte pauschal „Arbeitspreise/Träger prüfen" — auch dann, wenn die
+        /// Preise längst gepflegt waren und in Wahrheit der Wärmepumpe schlicht kein
+        /// Stromträger zugeordnet war. Der Grund entsteht dort, wo er bekannt ist, und
+        /// wird nur noch weitergereicht; die Oberfläche erfindet ihn nicht.</para>
+        /// </summary>
+        public string EnergiekostenGrund;
+
+        /// <summary>
+        /// <b>Der Stromträger kam aus dem RÜCKFALL</b>, nicht aus der Zuordnung des
+        /// Projekts: Name des Auslieferungsträgers, mit dem der Netzbezug bepreist
+        /// wurde (<c>ProjektEnergietraegerCtrl.StandardStromTraeger</c>); <c>null</c> =
+        /// der Träger stand zugeordnet, oder es gab keinen Netzbezug.
+        ///
+        /// <para>Dieselbe Regel, die die Kostenseite ANZEIGT und der Assistent
+        /// ZUORDNET — bis zum Anwenderbefund 14.09.2026 fragte allein die
+        /// Kostenrechnung enger und stand damit gegen beide.</para>
+        /// </summary>
+        public string StromTraegerRueckfall;
+
         // LEITENTSCHEIDUNG L13 — die beiden MENGEN, an denen die Bilanzierungskonvention
         // für Biomasse ansetzt. Bewusst Mengen und keine fertigen Emissionen: Der
         // Emissionsfaktor hängt an der gewählten Konvention und am Bilanzjahr, und beides

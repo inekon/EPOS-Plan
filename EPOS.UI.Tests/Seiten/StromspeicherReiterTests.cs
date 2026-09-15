@@ -91,24 +91,22 @@ public class StromspeicherReiterTests : EposBunitContext
                                                              Action? vergleich = null,
                                                              bool mitBild = true,
                                                              SpeicherParameterDaten? parameter = null,
-                                                             bool optimierung = false,
+                                                             bool konfigWeg = false,
                                                              SimulationErgebnisDienste? dienste = null)
         => Render<StromspeicherReiter>(p =>
         {
             p.Add(x => x.Daten, daten);
             p.Add(x => x.Parameter, parameter ?? new SpeicherParameterDaten());
             if (dienste is not null) p.Add(x => x.Dienste, dienste);
-            if (optimierung)
-            {
-                p.Add(x => x.OptimierungMoeglich, true);
-                p.Add(x => x.Optimierung, EventCallback.Factory.Create(this, () => _optimierungen++));
-            }
+            if (konfigWeg)
+                p.Add(x => x.KonfigurationOeffnen,
+                      EventCallback.Factory.Create(this, () => _konfigwechsel++));
             if (mitBild) p.Add(x => x.Bild, a => { _auftraege.Add(a); return new byte[] { 1 }; });
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
             if (vergleich is not null) p.Add(x => x.Vergleich, EventCallback.Factory.Create(this, vergleich));
         });
 
-    private int _optimierungen;
+    private int _konfigwechsel;
 
     /// <summary>Die Kontrollkästchen DES BILDES — nicht die des Parameterblocks.</summary>
     private static IReadOnlyList<AngleSharp.Dom.IElement> Bildschalter(
@@ -187,18 +185,21 @@ public class StromspeicherReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der alte Optimierungsknopf im Einzelparameterblock ist entfallen. Der gemeinsame
-    /// Einstieg für Einzel- und Mehrspeicherauslegung steht in einer eigenen Karte.
+    /// Der Reiter trägt KEINEN Einstieg in die Auslegung mehr (Auftrag #274,
+    /// Anwenderwunsch 14.09.2026) — weder den alten Optimierungsknopf im
+    /// Einzelparameterblock noch den Knopf „Speicherflotte &amp; Auslegung öffnen".
+    /// Ausgelegt wird in Schritt ①.
     /// </summary>
     [Fact]
-    public void Der_alte_Optimierungsknopf_bleibt_im_Parameterblock_ausgeblendet()
+    public void Der_Reiter_traegt_keinen_Einstieg_in_die_Auslegung_mehr()
     {
-        Assert.DoesNotContain(Zeichnen(Daten()).FindAll("button"),
-                              b => b.TextContent.Contains("optimieren"));
+        var seite = Zeichnen(Daten(), konfigWeg: true);
 
-        var mit = Zeichnen(Daten(), optimierung: true, dienste: Flottendienste());
+        Assert.DoesNotContain(seite.FindAll("button"),
+                              b => b.TextContent.Contains("optimieren"));
+        Assert.DoesNotContain("Speicherflotte", seite.Markup);
         Assert.DoesNotContain(
-            mit.FindComponent<SpeicherParameterBlock>().FindAll("button"),
+            seite.FindComponent<SpeicherParameterBlock>().FindAll("button"),
             b => b.TextContent.Contains("optimieren"));
     }
 
@@ -213,35 +214,25 @@ public class StromspeicherReiterTests : EposBunitContext
     [Fact]
     public void Ohne_aktivierte_Flotte_steht_der_Einzelanlagenblock_unter_seiner_Ueberschrift()
     {
-        var seite = Zeichnen(Daten(), optimierung: true, dienste: Flottendienste());
+        var seite = Zeichnen(Daten(), konfigWeg: true);
 
         Assert.Single(seite.FindComponents<SpeicherParameterBlock>());
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SP_GRP_EINZELANLAGE,
                         seite.Markup);
     }
 
+    /// <summary>
+    /// <b>AUFTRAG #274</b> (Anwenderwunsch 14.09.2026): An die Stelle des Blocks
+    /// „Speicherflotte und Auslegung" tritt EINE Herkunftszeile — Betriebsziel,
+    /// Einheitenzahl, Peak-Ziel — samt dem Verweis zurück in Schritt ①. Kein
+    /// Betriebseditor, keine Eingabetabelle, kein Knopf „öffnen".
+    /// </summary>
     [Fact]
-    public void Flottendienst_zeigt_den_gemeinsamen_Einstieg_auch_im_Einzelbetrieb()
-    {
-        var dienste = Flottendienste();
-        var seite = Zeichnen(Daten(), optimierung: true, dienste: dienste);
-
-        Assert.Contains("Speicherflotte und Auslegung", seite.Markup);
-        Assert.Contains("Eingabestand @Aktuell", seite.Markup);
-        Assert.Single(seite.FindComponents<SpeicherFlottenBetriebEditor>());
-        var knopf = seite.FindAll("button").Single(b => b.TextContent.Trim() == "Speicherflotte & Auslegung öffnen");
-        knopf.Click();
-        Assert.Equal(1, _optimierungen);
-        Assert.Contains("Last EPOS-Projektreihe", seite.Markup);
-        Assert.Contains("Kosten Investition direkte Eingabe", seite.Markup);
-    }
-
-    [Fact]
-    public void Aktivierte_Flotte_ersetzt_Altkopf_und_Einzelparameter()
+    public void Aktivierte_Flotte_ersetzt_den_Altkopf_durch_die_Herkunftszeile()
     {
         SpeicherErgebnisDaten daten = Daten();
         daten.FlotteImProjektAktiv = true;
-        daten.Kopf = "Growatt · Grünstrom · Dauernutzung";
+        daten.Kopf = "Speicher 1 · Grünstrom · Dauernutzung";
         daten.FlottenAenderungOhneNeuenLauf = true;
         daten.AktiveFlotte = new FlottenStudieKonfiguration
         {
@@ -258,36 +249,41 @@ public class StromspeicherReiterTests : EposBunitContext
             }
         };
 
-        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(daten.AktiveFlotte));
+        var seite = Zeichnen(daten, konfigWeg: true);
 
-        Assert.Contains("Mehrspeicherbetrieb aktiviert", seite.Markup);
-        Assert.DoesNotContain("Growatt · Grünstrom · Dauernutzung", seite.Markup);
+        // Die Herkunft steht da — und der Kopf der Einzelanlage nicht mehr.
+        Assert.Contains(string.Format(CultureInfo.CurrentCulture,
+            WindowsFormsApplication1.MyResource.Resource.SIM_SP_HERKUNFT,
+            WindowsFormsApplication1.MyResource.Resource.FLOTTE_ZIEL_MULTIUSE, 2),
+            seite.Find("p.epos-simerg-herkunft").TextContent);
+        Assert.Single(seite.FindAll("p.epos-simerg-status"));
+        Assert.DoesNotContain(daten.Kopf, seite.Find("p.epos-simerg-status").TextContent);
 
-        // #216: MIT aktivierter Flotte bleibt der Einzelanlagenblock weg - die
-        // Betriebsart folgt dann dem Haekchen „Netzladung" des Flotteneditors.
+        // Kein Editor, keine Eingabetabelle, kein zweiter Einstieg.
+        Assert.Empty(seite.FindComponents<SpeicherFlottenBetriebEditor>());
+        Assert.DoesNotContain("Speicherflotte und Auslegung", seite.Markup);
+        Assert.DoesNotContain(seite.FindAll("button"),
+            x => x.TextContent.Contains("Auslegung öffnen"));
+
+        // #216: MIT aktivierter Flotte bleibt der Einzelanlagenblock weg — die
+        // Betriebsart folgt dann dem Häkchen „Netzladung" der Auslegung.
         Assert.Empty(seite.FindComponents<SpeicherParameterBlock>());
         Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SP_GRP_EINZELANLAGE,
                               seite.Markup);
-        Assert.Single(seite.FindAll("button"), b => b.TextContent.Trim() == "Speicherflotte & Auslegung öffnen");
-        Assert.Contains("Multi Use", seite.Markup);
-        Assert.Contains("Grenzkosten", seite.Markup);
-        Assert.Equal(88, seite.FindComponent<SpeicherFlottenBetriebEditor>()
-            .Instance.Wert.WirtschaftlicherPeakZielwertKw);
-        Assert.Contains("Hauptspeicher", seite.Markup);
-        Assert.Contains("Schnellspeicher", seite.Markup);
-        Assert.Contains("120,00", seite.Markup);
+
+        // Das Veraltet-Banner bleibt — es gehört zum Ergebnis, nicht zum Editor.
         Assert.Contains("Flotte geändert: Projektsimulation neu berechnen. Angezeigte Ergebnisse gehören noch zum vorherigen Lauf.", seite.Markup);
     }
 
     /// <summary>
-    /// #215: Die BETRIEBSZEILE nennt den Modus der Entladeschwelle. Ein gespeicherter
-    /// Stand aus der Zeit vor der Ratsche trägt „fest" — und das steht da, statt stumm
-    /// zu bleiben (Spezifikation 5.1.1, Anwenderentscheid PS‑Q1).
+    /// #215 in der Herkunftszeile (#274): Sie nennt das Peak-Ziel samt seinem Modus.
+    /// Ein gespeicherter Stand aus der Zeit vor der Ratsche trägt „fest" — und das
+    /// steht da, statt stumm zu bleiben (Spezifikation 5.1.1, Anwenderentscheid PS‑Q1).
     /// </summary>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void Die_Betriebszeile_nennt_den_Modus_der_Entladeschwelle(bool adaptiv)
+    public void Die_Herkunftszeile_nennt_den_Modus_der_Entladeschwelle(bool adaptiv)
     {
         SpeicherErgebnisDaten daten = Daten();
         daten.FlotteImProjektAktiv = true;
@@ -305,26 +301,49 @@ public class StromspeicherReiterTests : EposBunitContext
             }
         };
 
-        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(daten.AktiveFlotte));
+        var seite = Zeichnen(daten);
 
         string erwartet = adaptiv
             ? WindowsFormsApplication1.MyResource.Resource.FLOTTE_PEAKMODUS_ADAPTIV
             : WindowsFormsApplication1.MyResource.Resource.FLOTTE_PEAKMODUS_FEST;
-        Assert.Contains(string.Format(System.Globalization.CultureInfo.CurrentCulture,
-            WindowsFormsApplication1.MyResource.Resource.FLOTTE_REITER_PEAKMODUS, erwartet), seite.Markup);
+        Assert.Contains(string.Format(CultureInfo.CurrentCulture,
+            WindowsFormsApplication1.MyResource.Resource.SIM_SP_HERKUNFT_PEAK,
+            200.0.ToString("N2", CultureInfo.CurrentCulture), erwartet),
+            seite.Find("p.epos-simerg-herkunft").TextContent);
     }
 
     /// <summary>
-    /// ANWENDERBEFUND #210 (11.09.2026): Der Eingabestand <c>@Aktuell</c> führte EINE
-    /// Einheit, obwohl das Projekt ZWEI Speicheranlagen hat — und der Abschnitt
-    /// „Kennzahlen je Speicher" zeigte dieselbe eine. Die Ursache lag in der Vorbelegung
-    /// des Kerns (<c>SpeicherFlottenStudieCtrl.Vorbelegung</c>, Wache in
-    /// <c>EPOS.Kern.Tests/SpeicherFlottenAnlagenEinheitenTests</c>); hier wird der
-    /// ANZEIGEteil festgehalten: Beide Einheiten stehen in der Eingabetabelle, beide mit
-    /// ihrer HERKUNFT, und das Ergebnis führt beide Kennzahlzeilen.
+    /// Der Verweis „Konfiguration ändern → ①" meldet seinen Klick — der Wirt
+    /// wechselt daraufhin in Schritt ① (in der Ansicht SIMULATION) bzw. öffnet sie
+    /// dort (Startseiten-Reiter). Ohne Delegat gibt es ihn nicht.
     /// </summary>
     [Fact]
-    public void Zwei_Speicheranlagen_stehen_mit_Herkunft_im_Eingabestand_und_im_Ergebnis()
+    public void Der_Verweis_in_die_Konfiguration_meldet_seinen_Klick()
+    {
+        SpeicherErgebnisDaten daten = Daten();
+        daten.FlotteImProjektAktiv = true;
+        daten.AktiveFlotte = new FlottenStudieKonfiguration
+        {
+            Einheiten = new() { new() { Id = "a", Name = "Speicher 1", KapazitaetKWh = 100 } }
+        };
+
+        Assert.Empty(Zeichnen(daten).FindAll("button.epos-simerg-verweis"));
+
+        var seite = Zeichnen(daten, konfigWeg: true);
+        seite.Find("button.epos-simerg-verweis").Click();
+        Assert.Equal(1, _konfigwechsel);
+    }
+
+    /// <summary>
+    /// ANWENDERBEFUND #210 (11.09.2026): Der Abschnitt „Kennzahlen je Speicher" zeigte
+    /// nur EINE Zeile, obwohl das Projekt ZWEI Speicheranlagen führt. Die Ursache lag
+    /// in der Vorbelegung des Kerns (<c>SpeicherFlottenStudieCtrl.Vorbelegung</c>, Wache
+    /// in <c>EPOS.Kern.Tests/SpeicherFlottenAnlagenEinheitenTests</c>); hier wird der
+    /// ANZEIGEteil festgehalten: Das Ergebnis führt beide Kennzahlzeilen, und die
+    /// Herkunftszeile nennt beide Einheiten.
+    /// </summary>
+    [Fact]
+    public void Zwei_Speicheranlagen_stehen_mit_ihren_Kennzahlen_im_Ergebnis()
     {
         var flotte = new FlottenStudieKonfiguration
         {
@@ -358,258 +377,24 @@ public class StromspeicherReiterTests : EposBunitContext
             }
         };
 
-        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(flotte));
+        var seite = Zeichnen(daten, konfigWeg: true);
 
-        // Der Eingabestand: zwei Zeilen, jede mit ihrer Projektanlage.
-        var eingabe = seite.FindAll("table.epos-tabelle").First();
-        Assert.Equal("Herkunft", eingabe.QuerySelectorAll("thead th")[1].TextContent.Trim());
-        var zeilen = eingabe.QuerySelectorAll("tbody tr");
-        Assert.Equal(2, zeilen.Length);
-        Assert.Equal(new[] { "Speicher Halle", "Speicher Verwaltung" },
-                     zeilen.Select(r => r.QuerySelectorAll("td")[0].TextContent.Trim()).ToArray());
-        Assert.Equal(new[] { "Projektanlage 14935", "Projektanlage 14936" },
-                     zeilen.Select(r => r.QuerySelectorAll("td")[1].TextContent.Trim()).ToArray());
+        // Die Herkunftszeile zählt beide Einheiten …
+        Assert.Contains(string.Format(CultureInfo.CurrentCulture,
+            WindowsFormsApplication1.MyResource.Resource.SIM_SP_HERKUNFT,
+            WindowsFormsApplication1.MyResource.Resource.FLOTTE_ZIEL_PVGREEDY, 2),
+            seite.Find("p.epos-simerg-herkunft").TextContent);
 
-        // Und das Ergebnis darunter führt beide Kennzahlzeilen.
+        // … und das Ergebnis darunter führt beide Kennzahlzeilen.
         var ansicht = seite.FindComponent<SpeicherFlottenErgebnisAnsicht>();
         var kennzahlen = ansicht.FindAll("table.epos-raster")
-            .Single(t => (t.QuerySelector("thead")?.TextContent ?? "").Contains(
+            .Single(x => (x.QuerySelector("thead")?.TextContent ?? "").Contains(
                 WindowsFormsApplication1.MyResource.Resource.FLOTTE_KENN_SP_VOLLZYKLEN,
                 StringComparison.Ordinal))
             .QuerySelectorAll("tbody tr");
         Assert.Equal(new[] { "Speicher Halle", "Speicher Verwaltung" },
                      kennzahlen.Select(r => r.QuerySelectorAll("td")[0].TextContent.Trim()).ToArray());
     }
-
-    /// <summary>Eine von Hand angelegte Einheit nennt sich als solche.</summary>
-    [Fact]
-    public void Eine_Einheit_ohne_Anlagenbezug_heisst_nur_im_Eingabestand()
-    {
-        var flotte = new FlottenStudieKonfiguration
-        {
-            Einheiten = new() { new() { Id = "x", Name = "Zusatzspeicher", KapazitaetKWh = 50 } }
-        };
-        SpeicherErgebnisDaten daten = Daten();
-        daten.FlotteImProjektAktiv = true;
-        daten.AktiveFlotte = flotte;
-
-        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(flotte));
-
-        Assert.Equal("nur im Eingabestand", seite.FindAll("table.epos-tabelle").First()
-            .QuerySelectorAll("tbody tr td")[1].TextContent.Trim());
-    }
-
-    /// <summary>
-    /// Anwenderentscheid 11.09.2026 („Empfehlung" angenommen, Auftrag #213, zweiter Wirt von
-    /// SD‑E‑8): Auch der Stromspeicher-Reiter zeigt die Klappliste „Leistungsverteilung" erst
-    /// ab zwei Einheiten — bei einer steht stattdessen dieselbe Erklärzeile wie im
-    /// Betriebseditor der Auslegungsansicht (<c>StromspeicherAuslegungEinModusTests
-    /// .Die_Verteilung_erscheint_erst_ab_zwei_Einheiten</c>). Bis #213 setzte der Reiter
-    /// <c>VerteilungZeigen</c> nicht und behielt damit die Vorgabe <c>true</c> des Editors.
-    /// </summary>
-    [Fact]
-    public void Bei_einer_Einheit_bleibt_die_Verteilung_im_Reiter_ausgeblendet()
-    {
-        var flotte = new FlottenStudieKonfiguration
-        {
-            Einheiten = new() { new() { Id = "a", Name = "Speicher 1", KapazitaetKWh = 100 } }
-        };
-        SpeicherErgebnisDaten daten = Daten();
-        daten.FlotteImProjektAktiv = true;
-        daten.AktiveFlotte = flotte;
-
-        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(flotte));
-
-        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.FLOTTE_BETRIEB_LBL_VERTEILUNG,
-            seite.Markup, StringComparison.Ordinal);
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.FLOTTE_BETRIEB_VERTEILUNG_EINE,
-            seite.Markup, StringComparison.Ordinal);
-    }
-
-    /// <summary>Zwei Einheiten: dieselbe Bedingung zeigt die Klappliste wie in der Auslegungsansicht.</summary>
-    [Fact]
-    public void Bei_zwei_Einheiten_zeigt_der_Reiter_die_Verteilung()
-    {
-        var flotte = new FlottenStudieKonfiguration
-        {
-            Einheiten = new()
-            {
-                new() { Id = "a", Name = "Hauptspeicher", KapazitaetKWh = 120 },
-                new() { Id = "b", Name = "Schnellspeicher", KapazitaetKWh = 36 }
-            }
-        };
-        SpeicherErgebnisDaten daten = Daten();
-        daten.FlotteImProjektAktiv = true;
-        daten.AktiveFlotte = flotte;
-
-        var seite = Zeichnen(daten, optimierung: true, dienste: Flottendienste(flotte));
-
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.FLOTTE_BETRIEB_LBL_VERTEILUNG,
-            seite.Markup, StringComparison.Ordinal);
-        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.FLOTTE_BETRIEB_VERTEILUNG_EINE,
-            seite.Markup, StringComparison.Ordinal);
-    }
-
-    /// <summary>
-    /// Auftrag #170c: Der Reiter zeigt DENSELBEN Baustein wie der Dialog — also gilt die
-    /// Planersperre auch hier. Ohne Fahrplan-Löser stehen die drei planenden Ziele gesperrt
-    /// in der Liste und nennen den Grund.
-    /// </summary>
-    [Fact]
-    public void Ohne_Planer_sind_die_planenden_Ziele_auch_im_Reiter_gesperrt()
-    {
-        var seite = Render<StromspeicherReiter>(p => p
-            .Add(x => x.Daten, Daten())
-            .Add(x => x.Parameter, new SpeicherParameterDaten())
-            .Add(x => x.Dienste, Flottendienste())
-            .Add(x => x.PlanerVerfuegbar, false));
-
-        var ziele = seite.FindAll("label").First(x => x.TextContent.Contains("Betriebsziel:"))
-                         .QuerySelector("select")!.QuerySelectorAll("option").ToArray();
-        Assert.Equal(new[] { "2", "3", "4" },
-            ziele.Where(x => x.HasAttribute("disabled")).Select(x => x.GetAttribute("value")).ToArray());
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.FLOTTE_PLANER_FEHLT, seite.Markup);
-    }
-
-    /// <summary>
-    /// Ein GESPEICHERTES planendes Profil erklärt sich im Reiter mit einem Banner, statt den
-    /// Anwender erst im Projektlauf gegen die Ausnahme des Kerns laufen zu lassen.
-    /// </summary>
-    [Fact]
-    public void Gespeichertes_planendes_Profil_erklaert_sich_im_Reiter()
-    {
-        var flotte = new FlottenStudieKonfiguration
-        {
-            Einheiten = new() { new() { Id = "s1", Name = "Speicher 1", KapazitaetKWh = 100 } },
-            Optionen = new FlottenSimulationOptionen { Betriebsziel = FlottenBetriebsziel.PvPlanung }
-        };
-
-        var seite = Render<StromspeicherReiter>(p => p
-            .Add(x => x.Daten, Daten())
-            .Add(x => x.Parameter, new SpeicherParameterDaten())
-            .Add(x => x.Dienste, Flottendienste(flotte))
-            .Add(x => x.PlanerVerfuegbar, false));
-
-        Assert.Contains(string.Format(WindowsFormsApplication1.MyResource.Resource.FLOTTE_PLANER_PROFIL,
-            "PV-Prognoseplanung"), seite.Markup);
-    }
-
-    [Fact]
-    public void Mit_Planer_bleibt_die_Zielliste_im_Reiter_vollstaendig_bedienbar()
-    {
-        var seite = Render<StromspeicherReiter>(p => p
-            .Add(x => x.Daten, Daten())
-            .Add(x => x.Parameter, new SpeicherParameterDaten())
-            .Add(x => x.Dienste, Flottendienste())
-            .Add(x => x.PlanerVerfuegbar, true));
-
-        var ziele = seite.FindAll("label").First(x => x.TextContent.Contains("Betriebsziel:"))
-                         .QuerySelector("select")!.QuerySelectorAll("option").ToArray();
-        Assert.DoesNotContain(ziele, x => x.HasAttribute("disabled"));
-        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.FLOTTE_PLANER_FEHLT, seite.Markup);
-    }
-
-    [Fact]
-    public void Ohne_vollstaendigen_Flottendienst_bleibt_der_Legacyblock_erhalten()
-    {
-        var unvollstaendig = new SimulationErgebnisDienste
-        {
-            OptimierungFlottenRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis())
-        };
-
-        Assert.Single(Zeichnen(Daten(), dienste: unvollstaendig)
-            .FindComponents<SpeicherParameterBlock>());
-    }
-
-    [Fact]
-    public void Ausdrueckliche_Deaktivierung_bleibt_im_erhaltenen_Aktuellstand_sichtbar()
-    {
-        SpeicherOptimierungEingaben eingaben = FlottenEingaben();
-        eingaben.Auslegung.FlottenProjektbetriebDeaktiviert = true;
-        var dienste = new SimulationErgebnisDienste
-        {
-            OptimierungFlottenRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis()),
-            OptimierungVorgaben = () => new SpeicherOptimierungVorgaben { Eingaben = eingaben.Kopie() },
-            OptimierungEinstellungenSpeichern = _ => Task.FromResult("")
-        };
-
-        Assert.Contains("Projektflottenbetrieb ausdrücklich deaktiviert",
-            Zeichnen(Daten(), dienste: dienste).Markup);
-    }
-
-    [Fact]
-    public async Task Betriebsoptionen_werden_im_Aktuellstand_gespeichert_und_frisch_gelesen()
-    {
-        SpeicherOptimierungEingaben stand = FlottenEingaben();
-        SpeicherOptimierungEingaben? gespeichert = null;
-        var dienste = new SimulationErgebnisDienste
-        {
-            OptimierungFlottenRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis()),
-            OptimierungVorgaben = () => new SpeicherOptimierungVorgaben { Eingaben = stand.Kopie() },
-            OptimierungEinstellungenSpeichern = e =>
-            {
-                gespeichert = e.Kopie();
-                stand = e.Kopie();
-                stand.Auslegung.Revision++;
-                return Task.FromResult("");
-            }
-        };
-        var seite = Zeichnen(Daten(), dienste: dienste);
-        var optionen = SpeicherAuslegungKopie.Von(
-            seite.FindComponent<SpeicherFlottenBetriebEditor>().Instance.Wert);
-        optionen.Betriebsziel = FlottenBetriebsziel.MultiUse;
-        optionen.Verteilung = FlottenVerteilung.Grenzkosten;
-        optionen.ErzeugerPrioritaet = FlottenErzeugerPrioritaet.BhkwVorPv;
-        optionen.WirtschaftlicherPeakZielwertKw = 73;
-        optionen.NetzladungErlaubt = true;
-        optionen.BatterieexportErlaubt = true;
-
-        await seite.InvokeAsync(() => seite.FindComponent<SpeicherFlottenBetriebEditor>()
-            .Instance.WertChanged.InvokeAsync(optionen));
-
-        Assert.NotNull(gespeichert);
-        Assert.Equal(FlottenBetriebsziel.MultiUse, gespeichert!.Auslegung.Flotte.Optionen.Betriebsziel);
-        Assert.Equal(FlottenVerteilung.Grenzkosten, gespeichert.Auslegung.Flotte.Optionen.Verteilung);
-        Assert.Equal(FlottenErzeugerPrioritaet.BhkwVorPv, gespeichert.Auslegung.Flotte.Optionen.ErzeugerPrioritaet);
-        Assert.Equal(73, gespeichert.Auslegung.Flotte.Optionen.WirtschaftlicherPeakZielwertKw);
-        Assert.True(gespeichert.Auslegung.Flotte.Optionen.NetzladungErlaubt);
-        Assert.True(gespeichert.Auslegung.Flotte.Optionen.BatterieexportErlaubt);
-        Assert.Contains("Revision 8", seite.Markup);
-        Assert.Contains("Flotte geändert", seite.Markup);
-    }
-
-    private static SimulationErgebnisDienste Flottendienste(FlottenStudieKonfiguration? flotte = null)
-    {
-        SpeicherOptimierungEingaben eingaben = FlottenEingaben(flotte);
-        return new SimulationErgebnisDienste
-        {
-            OptimierungFlottenRechnen = (_, _) => Task.FromResult(new SpeicherFlottenErgebnis()),
-            OptimierungVorgaben = () => new SpeicherOptimierungVorgaben { Eingaben = eingaben.Kopie() },
-            OptimierungEinstellungenSpeichern = _ => Task.FromResult("")
-        };
-    }
-
-    private static SpeicherOptimierungEingaben FlottenEingaben(FlottenStudieKonfiguration? flotte = null)
-        => new()
-        {
-            Auslegung = new SpeicherAuslegungKonfiguration
-            {
-                Flotte = SpeicherAuslegungKopie.Von(flotte) ?? new FlottenStudieKonfiguration
-                {
-                    Einheiten = new()
-                    {
-                        new() { Id = "s1", Name = "Speicher 1", KapazitaetKWh = 100,
-                                LadeleistungKw = 40, EntladeleistungKw = 50 }
-                    }
-                },
-                Lastquelle = SpeicherAuslegungQuelle.Epos,
-                PvQuelle = SpeicherAuslegungQuelle.Epos,
-                Preisquelle = SpeicherAuslegungQuelle.Epos,
-                Investitionsquelle = SpeicherKostenQuelle.Dialog,
-                Betriebsquelle = SpeicherKostenQuelle.Dialog,
-                Revision = 7
-            }
-        };
 
     [Fact]
     public void Zwoelf_Kacheln_stehen_im_Kachelraster()

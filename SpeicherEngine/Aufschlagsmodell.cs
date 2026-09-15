@@ -4,21 +4,35 @@ using System.Collections.Generic;
 namespace SpeicherEngine
 {
     /// <summary>
-    /// Die beiden Modi des Aufschlagsblocks (Fachkonzept 4.2).
+    /// Die drei Modi des Aufschlagsblocks (Fachkonzept 4.2).
     /// </summary>
+    /// <remarks>
+    /// Die Zahlenwerte von <see cref="Aufgeschluesselt"/> und <see cref="Gesamtwert"/>
+    /// bleiben, wie sie waren; <see cref="Keiner"/> haengt sich hinten an. Der dritte
+    /// Modus ist zwar der VORGABEFALL, aber die Reihenfolge einer Aufzaehlung ist
+    /// keine Rangfolge - eine Umnummerierung waere allein Unruhe.
+    /// </remarks>
     public enum AufschlagsModus
     {
         /// <summary>
-        /// Standard: Der wirksame Aufschlag ist die Summe der AKTIVEN Komponenten.
+        /// Der wirksame Aufschlag ist die Summe der AKTIVEN Komponenten.
         /// </summary>
         Aufgeschluesselt = 0,
 
         /// <summary>
         /// Der Anwender traegt einen Gesamtaufschlag ein. Die Komponentenliste bleibt
-        /// sichtbar und informativ; die Differenz zur Komponentensumme wird als
-        /// "nicht aufgeschluesselter Rest" ausgewiesen.
+        /// sichtbar und informativ; die Abweichung des Gesamtwerts von der
+        /// Komponentensumme wird ausgewiesen.
         /// </summary>
-        Gesamtwert = 1
+        Gesamtwert = 1,
+
+        /// <summary>
+        /// <b>Vorgabe: gar kein Aufschlag.</b> Der wirksame Aufschlag ist 0 ct/kWh,
+        /// unabhaengig von Komponenten und Gesamtwert. Die Komponentenliste bleibt
+        /// sichtbar und informativ - sie ist der Vorschlag fuer den Fall, dass jemand
+        /// auf "aufgeschluesselt" umschaltet.
+        /// </summary>
+        Keiner = 2
     }
 
     /// <summary>
@@ -75,7 +89,7 @@ namespace SpeicherEngine
     /// <remarks>
     /// <para>
     /// <b>Warum in der Engine und nicht im Controller.</b> Die Regel "wirksamer
-    /// Aufschlag = Summe der aktiven Komponenten ODER Override" entscheidet ueber
+    /// Aufschlag = 0 ODER Summe der aktiven Komponenten ODER Override" entscheidet ueber
     /// jeden Geldwert des Laufs. Sie steht deshalb dort, wo sie ohne Datenbank und
     /// ohne Oberflaeche geprueft werden kann - genau die Trennung, mit der AP2b die
     /// zwei Speichermodelle des Bestands beseitigt hat.
@@ -108,7 +122,7 @@ namespace SpeicherEngine
         /// Instanz ist danach unveraenderlich.
         /// </summary>
         /// <param name="komponenten">Komponentenliste, darf leer, aber nicht <c>null</c> sein.</param>
-        /// <param name="modus">Aufgeschluesselt oder Gesamtwert.</param>
+        /// <param name="modus">Keiner, Aufgeschluesselt oder Gesamtwert.</param>
         /// <param name="overrideCtKwh">Gesamtaufschlag; nur im Modus Gesamtwert wirksam.</param>
         /// <exception cref="ArgumentNullException">Wenn die Liste oder ein Eintrag <c>null</c> ist.</exception>
         public Aufschlagssatz(IEnumerable<Aufschlagskomponente> komponenten,
@@ -152,24 +166,30 @@ namespace SpeicherEngine
         /// Der Aufschlag, mit dem tatsaechlich gerechnet wird [ct/kWh]:
         /// im Modus <see cref="AufschlagsModus.Aufgeschluesselt"/> die
         /// <see cref="SummeAktivCtKwh"/>, im Modus
-        /// <see cref="AufschlagsModus.Gesamtwert"/> der <see cref="OverrideCtKwh"/>.
+        /// <see cref="AufschlagsModus.Gesamtwert"/> der <see cref="OverrideCtKwh"/>,
+        /// im Modus <see cref="AufschlagsModus.Keiner"/> exakt 0.
         /// </summary>
         public double WirksamCtKwh
         {
-            get { return Modus == AufschlagsModus.Gesamtwert ? OverrideCtKwh : SummeAktivCtKwh; }
+            get
+            {
+                if (Modus == AufschlagsModus.Keiner) return 0.0;
+                return Modus == AufschlagsModus.Gesamtwert ? OverrideCtKwh : SummeAktivCtKwh;
+            }
         }
 
         /// <summary>
-        /// Der "nicht aufgeschluesselte Rest" [ct/kWh] (Fachkonzept 4.2):
-        /// <c>Override - Summe der aktiven Komponenten</c>. Im Modus
-        /// <see cref="AufschlagsModus.Aufgeschluesselt"/> immer exakt 0.
+        /// Die Abweichung des Gesamtwerts von der Komponentensumme [ct/kWh]
+        /// (Fachkonzept 4.2): <c>Override - Summe der aktiven Komponenten</c>. In
+        /// jedem anderen Modus immer exakt 0.
         /// </summary>
         /// <remarks>
         /// Beispiel des Fachkonzepts: Bei 20 ct/kWh Gesamtaufschlag und 11,746 ct/kWh
-        /// aufgeschluesselt bleiben 8,254 ct/kWh Rest (Regelfall) bzw. 10,254 ct/kWh
-        /// im reduzierten Stromsteuerfall. Ein NEGATIVER Rest ist zulaessig und
-        /// bedeutet: Der eingetragene Gesamtwert liegt unter der Komponentensumme -
-        /// die Oberflaeche weist ihn aus, statt ihn zu verschweigen.
+        /// aufgeschluesselt liegt der Gesamtwert 8,254 ct/kWh darueber (Regelfall)
+        /// bzw. 10,254 ct/kWh im reduzierten Stromsteuerfall. Ein NEGATIVER Wert ist
+        /// zulaessig und bedeutet: Der eingetragene Gesamtwert liegt UNTER der
+        /// Komponentensumme - die Oberflaeche weist das aus, statt es zu
+        /// verschweigen, und macht daraus keinen Fehler.
         /// </remarks>
         public double NichtAufgeschluesselterRestCtKwh
         {

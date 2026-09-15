@@ -229,6 +229,21 @@ Basis im Arbeitsbaum.
 > Rechenwert ändert sich, die Basis wird nicht neu eingefroren, und **keine der drei
 > Einfrierregeln ist berührt** — der Schritt kopiert Zeilen, er schreibt keine.
 
+> **Nachtrag: Schemastand 75 (Auftrag #269), die Basis bleibt.** Migrationsschritt **75**
+> (`SCHRITT_75_NUTZUNGSDAUER`) legt die Nutzungsdauertabelle `Tab_Nutzungsdauer` an
+> (**STRICT** von der ersten Zeile an), sät ihre **28 Auslieferungszeilen** mit Richtwerten
+> und Quellenangabe, hängt die nullbare Verweisspalte `NutzungsdauerID` an
+> `Tab_KostenVorlagePosition` und `Tab_ProjektWerte` und ordnet **31 der 53
+> Investitionspositionen** über ihren Namen einer Positionsart zu
+> (`EPOS.Kern/Allgemein/Update/NutzungsdauerSchema.cs`). Stand der Datei: **Schemastand 75**,
+> **70 762 496 Byte**, **120 Tabellen, davon 119 STRICT**, **25 Projekte**.
+> **`Tab_ProjektWerte` bekommt die Spalte, aber keinen Wert** — alle 175 Projektzeilen sind
+> Feld für Feld unverändert, und die 120 Vorlagenpositionen behalten ihre Altspalten
+> wortgleich. **Der Referenzlauf ist 5/5 byte-gleich gegen diese Basis** (Toleranzvergleich
+> 5/5 PASS, 1 586 257 Werte): Kein Rechenwert ändert sich, die Basis wird nicht neu
+> eingefroren, und **keine der drei Einfrierregeln ist berührt** — der Schritt legt eine
+> Tabelle an und füllt sie, er rührt keine gerechnete Größe an.
+
 ## Was hier liegt
 
 | Pfad | Inhalt |

@@ -258,7 +258,14 @@ namespace WindowsFormsApplication1
                     return () => KostenKomponenteHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.EnergietraegerVerwaltung:
-                    return () => EnergietraegerHuelle.Oeffnen(_besitzer?.Invoke(), 0);
+                    return () => EnergietraegerFenster.Oeffnen(_besitzer?.Invoke(), 0);
+
+                // ANWENDERENTSCHEID ND-Q3 (14.09.2026): die Nutzungsdauern (AfA) als
+                // dritter Punkt der Rubrik Kostenverwaltung. Der Adapter ist duenn -
+                // Fenster und Parametersatz -, die Datenseite liegt plattformfrei in
+                // NutzungsdauerHuelle (EPOS.UI.Daten).
+                case Seitenschluessel.NutzungsdauerVerwaltung:
+                    return () => NutzungsdauerFenster.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.Einstellungen:
                     return () => EinstellungenHuelle.Oeffnen(_besitzer?.Invoke());

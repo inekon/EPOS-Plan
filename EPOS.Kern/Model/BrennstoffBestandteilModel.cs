@@ -72,15 +72,18 @@ namespace WindowsFormsApplication1
         // --- Modus ---
 
         /// <summary>
-        /// Werte aus <see cref="DbWerte"/>.SP_AUFSCHLAG_MODUS_* — dieselben zwei
+        /// Werte aus <see cref="DbWerte"/>.SP_AUFSCHLAG_MODUS_* — dieselben
         /// Persistenzwerte wie beim Strom, kein zweites Vokabular für dieselbe
-        /// Unterscheidung.
+        /// Unterscheidung. Den dritten Wert <c>KEINER</c> kennt der Strom-Block
+        /// allein: Hier wäre er wirkungsgleich mit <c>Gesamtwert</c>, weil die
+        /// vier Bestandteile keine Vorschlagswerte tragen.
         ///
         /// <para>Vorgabe ist <b>Gesamtwert</b>: „Der erfasste Preis ist der Preis, die
         /// Bestandteile sind Ausweis." Das ist der Wert, der nichts auslöst, und
-        /// zugleich der Regelfall einer Lieferantenrechnung. Beim Strom ist die Vorgabe
-        /// umgekehrt <c>Aufgeschluesselt</c> — dort sind die Komponenten ein Aufschlag
-        /// auf einen Nettopreis, hier eine Zerlegung eines Bruttopreises.</para>
+        /// zugleich der Regelfall einer Lieferantenrechnung. Beim Strom heißt derselbe
+        /// Gedanke <c>Keiner</c> — dort sind die Komponenten ein Aufschlag auf einen
+        /// Nettopreis und tragen Vorschlagswerte, hier die Zerlegung eines
+        /// Bruttopreises ohne jede Vorbelegung.</para>
         /// </summary>
         public string Modus = DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT;
 

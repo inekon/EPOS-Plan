@@ -81,11 +81,13 @@
                     {
                         int id = eintrag.Traeger.Value;
                         @* ET-3 (08.09.2026): ein VERWENDETER, nicht zugeordneter Traeger steht
-                           markiert in der Liste; der Kurztext nennt, wer ihn beitraegt. *@
+                           markiert in der Liste; der Kurztext nennt, wer ihn beitraegt.
+                           Auftrag 268: dieselbe Behandlung fuer einen zugeordneten Traeger,
+                           der nicht zur Komponente passt. *@
                         <Zeilenwahl Gewaehlt="@(_traegerId == id)"
-                                    Beschriftung="@(eintrag.Zugeordnet ? eintrag.Text : eintrag.Text + " ⚠ " + NichtZugeordnetText)"
+                                    Beschriftung="@Beschriftung(eintrag)"
                                     Kurztext="@(eintrag.Kurztext.Length > 0 ? eintrag.Kurztext : eintrag.Text)"
-                                    Zusatzklasse="@(eintrag.Zugeordnet ? "epos-traeger-eintrag" : "epos-traeger-eintrag epos-traeger-eintrag--offen")"
+                                    Zusatzklasse="@Zeilenklasse(eintrag)"
                                     Gewaehltwerden="() => BeiTraeger(id)" />
                     }
                 }
@@ -171,9 +173,12 @@
                                              RegelNeu="RegelAnlegen"
                                              RegelAbschalten="@RegelAbschalten"
                                              InArbeitspreis="ArbeitspreisUebernehmen"
+                                             KatalogUebernehmen="KatalogwerteHolen"
                                              AufschlagAnwenden="AufschlagAnwendenSetzen"
                                              KatalogFuerZeile="KatalogZeileOeffnen"
                                              KatalogVerwalten="KatalogVerwaltenOeffnen"
+                                             HistorieLoeschen="@HistorienzeileLoeschenWeg"
+                                             JaText="@JaText" NeinText="@NeinText"
                                              Speichern="BeiSpeichern" />
             }
         </div>
@@ -255,8 +260,13 @@
     /// Ein Listeneintrag: Gruppenkopf (<c>Traeger</c> = null) oder Träger. Seit ET‑3
     /// (08.09.2026) mit Kurztext („verwendet von: …") und der Aussage, ob der Träger dem
     /// Projekt zugeordnet ist — ein verwendeter, nicht zugeordneter steht markiert.
+    /// <c>Passend</c> ist die zweite Markierung (Auftrag 268): Wurde die Verwaltung aus
+    /// einer Komponente heraus geöffnet, bleibt der bereits zugeordnete Träger in der
+    /// Liste, auch wenn er nicht zu ihr passt — dann steht er mit Hinweis statt still zu
+    /// verschwinden.
     /// </summary>
-    public sealed record EnergietraegerListe(int? Traeger, string Text, string Kurztext = "", bool Zugeordnet = true);
+    public sealed record EnergietraegerListe(int? Traeger, string Text, string Kurztext = "",
+                                             bool Zugeordnet = true, bool Passend = true);
 
     // =====================================================================
     // Vorbelegung und Datenseite
@@ -300,6 +310,9 @@
     /// <summary>„In Arbeitspreis übernehmen" der Preiszerlegung.</summary>
     [Parameter] public EventCallback InArbeitspreis { get; set; }
 
+    /// <summary>B3: „Katalogwerte übernehmen" der Trägerkarte (nur im Projektkontext).</summary>
+    [Parameter] public EventCallback KatalogUebernehmen { get; set; }
+
     /// <summary>Ä16: der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen".</summary>
     [Parameter] public EventCallback<bool> AufschlagAnwenden { get; set; }
 
@@ -308,6 +321,15 @@
 
     /// <summary>Grund, wenn <see cref="Speichern"/> ablehnt.</summary>
     [Parameter] public Func<string>? SpeichernGrund { get; set; }
+
+    /// <summary>
+    /// Löscht EINE Zeile der Preishistorie (Anwenderwunsch 14.09.2026);
+    /// <c>true</c> = gelöscht. <c>null</c> = die Karte sperrt den Knopf.
+    /// </summary>
+    [Parameter] public Func<PreishistorieZeile, bool>? HistorieLoeschen { get; set; }
+
+    /// <summary>Grund, wenn <see cref="HistorieLoeschen"/> ablehnt.</summary>
+    [Parameter] public Func<string>? HistorieLoeschenGrund { get; set; }
 
     // ---- Katalogkontext ---------------------------------------------------
 
@@ -345,6 +367,12 @@
 
     /// <summary>Anhang am Namen eines verwendeten, nicht zugeordneten Trägers (ET‑3).</summary>
     [Parameter] public string NichtZugeordnetText { get; set; } = "nicht zugeordnet";
+
+    /// <summary>
+    /// Anhang am Namen eines Trägers, der nicht zur Komponente passt (Auftrag 268) —
+    /// er steht nur noch in der Liste, weil er der Komponente zugeordnet IST.
+    /// </summary>
+    [Parameter] public string PasstNichtText { get; set; } = "passt nicht zur Komponente";
 
     /// <summary>Übernimmt die gewählten Träger ins Projekt; Rückgabe = zuletzt übernommener.</summary>
     [Parameter] public Func<IReadOnlyList<int>, int>? InsProjekt { get; set; }
@@ -538,6 +566,27 @@
         }
     }
 
+    /// <summary>
+    /// Die Beschriftung einer Trägerzeile samt ihrer Warnzeichen: nicht zugeordnet
+    /// (ET‑3) und — seit Auftrag 268 — nicht passend zur Komponente. Beides kann
+    /// zugleich gelten.
+    /// </summary>
+    private string Beschriftung(EnergietraegerListe e)
+    {
+        string text = e.Text;
+        if (!e.Zugeordnet) text += " ⚠ " + NichtZugeordnetText;
+        if (!e.Passend) text += " ⚠ " + PasstNichtText;
+        return text;
+    }
+
+    /// <summary>Die Zusatzklasse einer Trägerzeile — beide Markierungen sehen gleich aus.</summary>
+    private string Zeilenklasse(EnergietraegerListe e)
+    {
+        return e.Zugeordnet && e.Passend
+            ? "epos-traeger-eintrag"
+            : "epos-traeger-eintrag epos-traeger-eintrag--offen";
+    }
+
     /// <summary>Die Träger der gefilterten Liste in Anzeigereihenfolge.</summary>
     private List<int> Treffer()
     {
@@ -611,6 +660,15 @@
     private async Task ArbeitspreisUebernehmen()
     {
         await InArbeitspreis.InvokeAsync();
+        Nachziehen();
+    }
+
+    /// <summary>B3: Die Hülle füllt die Felder aus der Katalogzeile; geschrieben
+    /// wird erst mit „Speichern" bzw. „OK".</summary>
+    private async Task KatalogwerteHolen()
+    {
+        Melden("");
+        await KatalogUebernehmen.InvokeAsync();
         Nachziehen();
     }
 
@@ -777,6 +835,9 @@
             return;
         }
         Melden("");
+        // Die Hülle hat die Preishistorie neu gelesen und den Übernahmehinweis
+        // gelöscht; die Ansicht folgt, damit beides sofort dasteht.
+        Nachziehen();
         _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
     }
 
@@ -788,6 +849,31 @@
             return Task.CompletedTask;
         }
         return Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>
+    /// Die Karte fragt, der Wirt schreibt und meldet — dieselbe Aufteilung wie
+    /// beim Speichern. Ohne Rückruf bleibt der Löschknopf der Karte gesperrt.
+    /// </summary>
+    private Func<PreishistorieZeile, bool>? HistorienzeileLoeschenWeg
+        => HistorieLoeschen is null ? null : HistorienzeileLoeschen;
+
+    private bool HistorienzeileLoeschen(PreishistorieZeile zeile)
+    {
+        if (HistorieLoeschen is null) return false;
+
+        if (!HistorieLoeschen(zeile))
+        {
+            Melden(HistorieLoeschenGrund is null ? "" : HistorieLoeschenGrund(),
+                   WarnStufe.Warnung);
+            return false;
+        }
+
+        // Die Hülle hat die Preishistorie neu gelesen; die Ansicht folgt, damit
+        // die Tabelle sofort ohne die Zeile dasteht.
+        Melden("");
+        Nachziehen();
+        return true;
     }
 
     private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);

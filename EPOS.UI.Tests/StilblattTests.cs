@@ -528,13 +528,37 @@ public sealed class StilblattTests
         Assert.Contains("overflow-wrap: anywhere", block, StringComparison.Ordinal);
     }
 
-    /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
-    private static string Regelblock(string selektor)
+    /// <summary>
+    /// <b>Auftrag #273:</b> Der Kopfblock der Station „Optimierung" steht EINSPALTIG —
+    /// erst die Suche, darunter der Bedienblock in voller Breite. Bis dahin war er eine
+    /// Flexzeile mit dem Bedienblock als zweiter Spalte fester Breite (26 rem); der
+    /// Anwender hat ihn am 14.09.2026 unter die Suche gestellt. Mit der zweiten Spalte
+    /// fällt auch die Umbruchregel — ohne sie gibt es nichts umzubrechen.
+    /// </summary>
+    [Fact]
+    public void W273_Der_Kopf_der_Station_Optimierung_ist_einspaltig()
     {
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        string kopf = Regelblock(".epos-flotte-optimierung-kopf", "epos-flotte.css");
+
+        Assert.Contains("display: grid", kopf, StringComparison.Ordinal);
+        Assert.Contains("grid-template-columns: minmax(0, 1fr)", kopf, StringComparison.Ordinal);
+        Assert.DoesNotContain("flex", kopf, StringComparison.Ordinal);
+
+        // Und der Bedienblock traegt keine feste Spaltenbreite mehr.
+        string block = Regelblock(".epos-flotte-bedienblock", "epos-flotte.css");
+        Assert.DoesNotContain("flex:", block, StringComparison.Ordinal);
+    }
+
+    /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> im Hausblatt.</summary>
+    private static string Regelblock(string selektor) => Regelblock(selektor, "epos-ui.css");
+
+    /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> in diesem Stilblatt.</summary>
+    private static string Regelblock(string selektor, string datei)
+    {
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), datei));
 
         int a = css.IndexOf("\n" + selektor, StringComparison.Ordinal);
-        Assert.True(a >= 0, "Die Regel \"" + selektor + "\" steht nicht in epos-ui.css");
+        Assert.True(a >= 0, "Die Regel \"" + selektor + "\" steht nicht in " + datei);
 
         int auf = css.IndexOf('{', a);
         int zu = css.IndexOf('}', auf);

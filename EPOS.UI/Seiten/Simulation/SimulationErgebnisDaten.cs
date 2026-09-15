@@ -798,38 +798,27 @@ public sealed class SimulationErgebnisDienste
     // ihre Delegaten stehen jetzt an der Ansicht STROMSPEICHER_AUSLEGUNG und
     // fuehren in EPOS.Kern/Controller/StromspeicherAuslegungCtrl.
     //
-    // Was HIER bleibt, braucht der Reiter „Stromspeicher" selbst: Er zeigt die
-    // Flotte samt Betriebseditor an, speichert deren Optionen und schreibt die CSV.
-
-    /// <summary>
-    /// Liest den Vorschlag fuer den Suchraum samt der aktuellen Auslegung
-    /// (Datenbankzugriff, Bedienfaden). Ohne Delegat steht der Vorschlag des
-    /// Fachkonzepts da.
-    /// </summary>
-    public Func<SpeicherOptimierungVorgaben>? OptimierungVorgaben;
-
-    /// <summary>
-    /// Ist der Flotteneinstieg ueberhaupt moeglich? Der Reiter fragt nur, OB es ihn
-    /// gibt; gerechnet wird in der Ansicht STROMSPEICHER_AUSLEGUNG.
-    /// </summary>
-    public Func<SpeicherOptimierungEingaben, Action<double?, string>,
-                Task<SpeicherFlottenErgebnis>>? OptimierungFlottenRechnen;
+    // SEIT AUFTRAG #274 sind es ZWEI, und der Grund dafuer ist der Anwenderwunsch
+    // vom 14.09.2026: Der Einstieg in die Auslegung steht in Schritt ① neben der
+    // Pufferverwaltung (SimulationKonfigDienste.AuslegungOeffnen), nicht mehr hier.
+    // Damit fallen Vorbelegung, Flottenprobe und der Schreibweg der Betriebsoptionen
+    // aus dieser Datenseite: Der Reiter „Stromspeicher" ist reines ERGEBNIS. Was er
+    // zeigt, steht fertig in SpeicherErgebnisDaten (AktiveFlotte, Flottenergebnis).
 
     /// <summary>Schreibt den uebergebenen CSV-Text in eine Datei; ohne Delegat kein Knopf.</summary>
     public Func<string, Task<Rueckmeldung>>? OptimierungCsv;
 
-    /// <summary>Speichert den aktuellen Auslegungsauftrag unter dem reservierten Standnamen.</summary>
-    public Func<SpeicherOptimierungEingaben, Task<string>>? OptimierungEinstellungenSpeichern;
-
     /// <summary>
-    /// Wechselt auf die Ansicht „Stromspeicher-Auslegung" (Paket P3, #192).
+    /// Wechselt auf Schritt ① der Ansicht „Simulation" (Auftrag <b>#274</b>) — der
+    /// Verweis „Konfiguration ändern → ①" der Herkunftszeile im Reiter „Stromspeicher".
     /// </summary>
     /// <remarks>
-    /// Die Huelle stellt dabei ihren gerechneten Simulationslauf bereit und meldet den
-    /// Seitenschluessel an die Wurzel. OHNE Delegat gibt es den Knopf nicht — auf iOS
-    /// ist das bis iU11 der Regelfall.
+    /// Er gilt fuer BEIDE Wirte der Ergebniskomponente: in der Ansicht SIMULATION
+    /// wechselt er den Schritt, im Startseiten-Reiter „Simulation" oeffnet er die
+    /// Ansicht in ①. Beides ueber denselben Maskenschluessel
+    /// <c>SIMULATION_KONFIGURATION</c>. OHNE Delegat gibt es den Verweis nicht.
     /// </remarks>
-    public Action? AuslegungOeffnen;
+    public Action? KonfigurationOeffnen;
 
     // ---- Die vier CSV-Exporte ----
 

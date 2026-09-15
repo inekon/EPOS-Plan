@@ -20,13 +20,13 @@ Der Entwurfsstand von Blatt 1 ist bewusst gewaehlt und wird hier ausdruecklich g
 {| class="wikitable"
 ! Groesse !! Einheit !! Herkunft im Programm
 |-
-| Quellsystem: Erdkollektor oder Erdsonde || — || Dialog „Wärmequelle Erdreich", Abschnitt „Quellsystem"
+| Quellsystem: Erdkollektor oder Erdsonde || — || Dialog „Wärmequelle Erdreich", Rubriken „Erdkollektor" und „Erdsonde"; jede Rubrik traegt ihr Optionsfeld, gewaehlt ist genau eine
 |-
-| Verlegetiefe (Kollektor) bzw. Laenge je Sonde || m || Dialog „Wärmequelle Erdreich", Feld „Verlegetiefe" bzw. „Länge je Sonde"
+| Verlegetiefe (Kollektor) bzw. Laenge je Sonde || m || Dialog „Wärmequelle Erdreich", Rubrik „Erdkollektor", Feld „Verlegetiefe" bzw. Rubrik „Erdsonde", Feld „Länge je Sonde"
 |-
-| Kollektorflaeche || m² || Dialog „Wärmequelle Erdreich", Feld „Fläche"
+| Kollektorflaeche || m² || Dialog „Wärmequelle Erdreich", Rubrik „Erdkollektor", Feld „Fläche"
 |-
-| Anzahl Sonden || — || Dialog „Wärmequelle Erdreich", Feld „Anzahl Sonden"
+| Anzahl Sonden || — || Dialog „Wärmequelle Erdreich", Rubrik „Erdsonde", Feld „Anzahl Sonden"
 |-
 | Bodentyp || — || Dialog „Wärmequelle Erdreich", Feld „Bodentyp" (13 Untergrundtypen)
 |-

@@ -14,7 +14,12 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>FELDBESTAND laut Feldkarte: 30 Steuerelemente plus das Diagramm - zwei
 /// Wahlknoepfe (Kollektor/Sonde), vier Zahlenfelder je Zweig, zwei Klapplisten
 /// (Bodentyp, Klimazone), das Spreizungsfeld, der Kartenknopf, drei
-/// Herleitungszeilen, die Kennwertzeile, der Simulationsknopf, OK und Abbrechen.</para>
+/// Herleitungszeilen, die Kennwertzeile und der Simulationsknopf.</para>
+///
+/// <para>OHNE KNOPFLEISTE (Auftrag #275, Anwenderwunsch 14.09.2026): OK und
+/// Abbrechen sind gefallen. Der EINE Ausgang ist das Schliessen der Ueberlagerung
+/// (Kreuz oder Esc), und es UEBERNIMMT - durch dieselben acht Pruefregeln, die
+/// vorher an OK hingen. Eine verletzte Regel meldet und haelt den Dialog offen.</para>
 ///
 /// <para>KEINE DATENBANK: Die Fachrechnung liegt in ErdreichTemperatur,
 /// VDI4640Pruefung und ErdreichAuswertung; alle drei rechnen aus dem uebergebenen
@@ -79,6 +84,14 @@ public class QuelleErdreichDialogTests : EposBunitContext
     private static ErdreichAuswertung.ErdreichLaufErgebnis MitLauf(double maxEntzug = 9000)
         => new(true, true, maxEntzug, 18000, 1800, "", "", "");
 
+    /// <summary>
+    /// Der EINE Ausgang (#275): das Schliessen der Ueberlagerung. Der Wirt ruft
+    /// genau diese Methode aus dem <c>Geschlossen</c>-Rueckruf seiner
+    /// <c>Ueberlagerung</c> (das Kreuz); Esc kommt im Dialog selbst hier an.
+    /// </summary>
+    private static async Task Schliessen(IRenderedComponent<QuelleErdreichDialog> cut)
+        => await cut.InvokeAsync(() => cut.Instance.UebernehmenUndSchliessen());
+
     // ================================================================== Feldbestand
 
     [Fact]
@@ -89,7 +102,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Equal("Wärmequelle Erdreich — WP Erdgeschoss",
                      cut.Find("h1.epos-dialog-titel").TextContent);
 
-        // Zwei Wahlknoepfe (Kollektor/Sonde).
+        // Zwei Wahlknoepfe (Kollektor/Sonde), je einer in seiner Rubrik.
         Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
 
         // Vier Zweigfelder + Spreizung = fuenf Zahlenfelder (davon eins ganzzahlig).
@@ -99,7 +112,10 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Equal(2, cut.FindAll("select").Count);
 
         Assert.NotNull(cut.Find("button.epos-infoknopf"));
-        Assert.Equal(2, cut.FindAll(".epos-leiste button").Count);
+
+        // #275: Die Knopfleiste ist gefallen - weder OK noch Abbrechen stehen noch da.
+        Assert.Empty(cut.FindAll(".epos-leiste"));
+        Assert.Empty(cut.FindAll("button.epos-knopf--primaer"));
     }
 
     /// <summary>
@@ -200,6 +216,104 @@ public class QuelleErdreichDialogTests : EposBunitContext
         felder = cut.FindAll("input.epos-eingabe");
         Assert.True(felder[0].HasAttribute("disabled"));
         Assert.False(felder[2].HasAttribute("disabled"));
+    }
+
+    // ===================================================================== Rubriken
+
+    /// <summary>
+    /// Anwenderwunsch 14.09.2026: Erdkollektor und Erdsonde sind ZWEI Rubriken mit je
+    /// ihren Parametern - nicht alle vier Felder gemischt unter einer Ueberschrift.
+    /// Jede Rubrik traegt als erste Zeile ihr Optionsfeld.
+    /// </summary>
+    [Fact]
+    public void Erdkollektor_und_Erdsonde_sind_zwei_Rubriken_mit_ihren_Feldern()
+    {
+        var cut = Zeige(Kollektor());
+        var rubriken = cut.FindAll("section.epos-gruppenkopf");
+
+        Assert.Equal("Erdkollektor", rubriken[0].QuerySelector(".epos-gruppenkopf-titel")!.TextContent);
+        Assert.Equal("Erdsonde", rubriken[1].QuerySelector(".epos-gruppenkopf-titel")!.TextContent);
+
+        // Rubrik 1: ein Optionsfeld, dann Verlegetiefe und Flaeche - sonst nichts.
+        Assert.Single(rubriken[0].QuerySelectorAll("input[type=radio]"));
+        string[] kollektor = Feldnamen(rubriken[0]);
+        Assert.Equal(new[] { "Verlegetiefe:", "Fläche:" }, kollektor);
+
+        // Rubrik 2: ein Optionsfeld, dann Laenge je Sonde und Anzahl Sonden.
+        Assert.Single(rubriken[1].QuerySelectorAll("input[type=radio]"));
+        string[] sonde = Feldnamen(rubriken[1]);
+        Assert.Equal(new[] { "Länge je Sonde:", "Anzahl Sonden:" }, sonde);
+    }
+
+    /// <summary>Die Beschriftungen der Felder einer Rubrik, in Anzeigereihenfolge.</summary>
+    private static string[] Feldnamen(AngleSharp.Dom.IElement rubrik)
+    {
+        var namen = new List<string>();
+        foreach (var feld in rubrik.QuerySelectorAll(".epos-feld"))
+        {
+            var text = feld.QuerySelector(".epos-feld-text");
+            if (text is not null) namen.Add(text.TextContent);
+        }
+        return namen.ToArray();
+    }
+
+    /// <summary>
+    /// Die zwei Optionsfelder sind EINE Wahl: gleicher HTML-Name (Browser, Tastatur und
+    /// Sprachausgabe lesen sie als Alternative) und immer GENAU EINES gewaehlt.
+    /// </summary>
+    [Fact]
+    public void Die_zwei_Optionsfelder_sind_eine_einzige_Wahl()
+    {
+        var cut = Zeige(Kollektor());
+        var wahl = cut.FindAll("input[type=radio]");
+
+        string name = wahl[0].GetAttribute("name")!;
+        Assert.False(string.IsNullOrEmpty(name));
+        Assert.Equal(name, wahl[1].GetAttribute("name"));
+
+        Assert.True(wahl[0].HasAttribute("checked"));
+        Assert.False(wahl[1].HasAttribute("checked"));
+
+        wahl[1].Change("1");
+        cut.WaitForAssertion(() =>
+        {
+            var neu = cut.FindAll("input[type=radio]");
+            Assert.False(neu[0].HasAttribute("checked"));
+            Assert.True(neu[1].HasAttribute("checked"));
+        });
+    }
+
+    /// <summary>
+    /// Die nicht gewaehlte Rubrik bleibt STEHEN: ihre Felder sind da, gesperrt und
+    /// leise gestellt (epos-erdreich-zweig--ruht). Umschalten wandert die Kennzeichnung
+    /// mit, die Werte bleiben (A-4).
+    /// </summary>
+    [Fact]
+    public void Die_ruhende_Rubrik_bleibt_stehen_und_wird_leise()
+    {
+        var cut = Zeige(Kollektor());
+        var zweige = cut.FindAll(".epos-erdreich-zweig");
+
+        Assert.Equal(2, zweige.Count);
+        Assert.False(zweige[0].ClassList.Contains("epos-erdreich-zweig--ruht"));
+        Assert.True(zweige[1].ClassList.Contains("epos-erdreich-zweig--ruht"));
+
+        // Die Felder der ruhenden Rubrik stehen weiter da - gesperrt, nicht verborgen.
+        Assert.Equal(2, zweige[1].QuerySelectorAll("input.epos-eingabe").Length);
+        foreach (var feld in zweige[1].QuerySelectorAll("input.epos-eingabe"))
+            Assert.True(feld.HasAttribute("disabled"));
+
+        cut.FindAll("input[type=radio]")[1].Change("1");
+        cut.WaitForAssertion(() =>
+        {
+            var neu = cut.FindAll(".epos-erdreich-zweig");
+            Assert.True(neu[0].ClassList.Contains("epos-erdreich-zweig--ruht"));
+            Assert.False(neu[1].ClassList.Contains("epos-erdreich-zweig--ruht"));
+        });
+
+        // Die Werte des ruhenden Zweigs bleiben unangetastet.
+        Assert.Equal(1.8, cut.Instance.Zweigfelder.Tiefe);
+        Assert.Equal(250.0, cut.Instance.Zweigfelder.Flaeche);
     }
 
     // ================================================================== Bodenkennwerte
@@ -461,58 +575,68 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.False(cut.Instance.KarteOffen);
     }
 
-    // ================================================================== OK-Regeln
+    // =========================================== Das Schliessen uebernimmt (#275)
 
+    /// <summary>
+    /// Die ACHT Pruefregeln (<c>btnOk_Click</c>:1194-1264) haengen seit #275 am
+    /// SCHLIESSEN statt am OK-Knopf - Wortlaut und Reihenfolge unveraendert. Jede
+    /// meldet, und der Dialog bleibt stehen.
+    /// </summary>
     [Fact]
-    public void Die_acht_Pruefregeln_melden_woertlich()
+    public async Task Die_acht_Pruefregeln_melden_woertlich()
     {
         // Kollektor: keine Zahl
         var cut = Zeige(Kollektor());
         cut.FindAll("input.epos-eingabe")[0].Input("");
-        cut.Find("button.epos-knopf--primaer").Click();
-        Assert.Contains("gültige Zahlenwerte für Verlegetiefe und Fläche", cut.Instance.Meldung);
+        await Schliessen(cut);
+        cut.WaitForAssertion(() => Assert.Contains(
+            "gültige Zahlenwerte für Verlegetiefe und Fläche", cut.Instance.Meldung));
 
         // Kollektor: Tiefe 0
         cut = Zeige(Kollektor());
         cut.FindAll("input.epos-eingabe")[0].Input("0");
-        cut.Find("button.epos-knopf--primaer").Click();
-        Assert.Contains("Verlegetiefe muss größer als 0 m sein", cut.Instance.Meldung);
+        await Schliessen(cut);
+        cut.WaitForAssertion(() => Assert.Contains(
+            "Verlegetiefe muss größer als 0 m sein", cut.Instance.Meldung));
 
         // Kollektor: Tiefe > 10
         cut = Zeige(Kollektor());
         cut.FindAll("input.epos-eingabe")[0].Input("12");
-        cut.Find("button.epos-knopf--primaer").Click();
-        Assert.Contains("nicht tiefer als 10 m", cut.Instance.Meldung);
+        await Schliessen(cut);
+        cut.WaitForAssertion(() => Assert.Contains("nicht tiefer als 10 m", cut.Instance.Meldung));
 
         // Kollektor: Flaeche 0
         cut = Zeige(Kollektor());
         cut.FindAll("input.epos-eingabe")[1].Input("0");
-        cut.Find("button.epos-knopf--primaer").Click();
-        Assert.Contains("Kollektorfläche eintragen", cut.Instance.Meldung);
+        await Schliessen(cut);
+        cut.WaitForAssertion(() => Assert.Contains("Kollektorfläche eintragen", cut.Instance.Meldung));
 
         // Sonde: keine Zahl
         cut = Zeige(Sonde());
         cut.FindAll("input.epos-eingabe")[2].Input("");
-        cut.Find("button.epos-knopf--primaer").Click();
-        Assert.Contains("gültige Zahlenwerte für Sondenlänge und Anzahl", cut.Instance.Meldung);
+        await Schliessen(cut);
+        cut.WaitForAssertion(() => Assert.Contains(
+            "gültige Zahlenwerte für Sondenlänge und Anzahl", cut.Instance.Meldung));
 
         // Sonde: Laenge 0
         cut = Zeige(Sonde());
         cut.FindAll("input.epos-eingabe")[2].Input("0");
-        cut.Find("button.epos-knopf--primaer").Click();
-        Assert.Contains("Sondenlänge muss größer als 0 m sein", cut.Instance.Meldung);
+        await Schliessen(cut);
+        cut.WaitForAssertion(() => Assert.Contains(
+            "Sondenlänge muss größer als 0 m sein", cut.Instance.Meldung));
 
         // Sonde: Anzahl 0
         cut = Zeige(Sonde());
         cut.FindAll("input.epos-eingabe")[3].Input("0");
-        cut.Find("button.epos-knopf--primaer").Click();
-        Assert.Contains("mindestens eine Sonde", cut.Instance.Meldung);
+        await Schliessen(cut);
+        cut.WaitForAssertion(() => Assert.Contains("mindestens eine Sonde", cut.Instance.Meldung));
 
         // Beide: Spreizung 0
         cut = Zeige(Kollektor());
         cut.FindAll("input.epos-eingabe")[4].Input("0");
-        cut.Find("button.epos-knopf--primaer").Click();
-        Assert.Contains("nutzbare Spreizung größer als 0 K", cut.Instance.Meldung);
+        await Schliessen(cut);
+        cut.WaitForAssertion(() => Assert.Contains(
+            "nutzbare Spreizung größer als 0 K", cut.Instance.Meldung));
     }
 
     /// <summary>
@@ -520,12 +644,12 @@ public class QuelleErdreichDialogTests : EposBunitContext
     /// ausdruecklich Anzahl = 0.
     /// </summary>
     [Fact]
-    public void OK_schreibt_den_Kollektorzweig_zurueck()
+    public async Task Das_Schliessen_schreibt_den_Kollektorzweig_zurueck()
     {
         QuelleErdreichDaten? ergebnis = null;
         var cut = Zeige(Kollektor(), d => ergebnis = d);
 
-        cut.Find("button.epos-knopf--primaer").Click();
+        await Schliessen(cut);
 
         Assert.NotNull(ergebnis);
         Assert.Equal(ErdreichTemperatur.QUELLSYSTEM_KOLLEKTOR, ergebnis!.Quellsystem);
@@ -541,12 +665,12 @@ public class QuelleErdreichDialogTests : EposBunitContext
     /// Anzahl gerundet.
     /// </summary>
     [Fact]
-    public void OK_schreibt_den_Sondenzweig_zurueck()
+    public async Task Das_Schliessen_schreibt_den_Sondenzweig_zurueck()
     {
         QuelleErdreichDaten? ergebnis = null;
         var cut = Zeige(Sonde(), d => ergebnis = d);
 
-        cut.Find("button.epos-knopf--primaer").Click();
+        await Schliessen(cut);
 
         Assert.NotNull(ergebnis);
         Assert.Equal(ErdreichTemperatur.QUELLSYSTEM_SONDE, ergebnis!.Quellsystem);
@@ -555,25 +679,82 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Equal(4, ergebnis.Anzahl);
     }
 
+    /// <summary>
+    /// #275, der Kern des Wunsches: Das Kreuz darf die Eingaben NICHT still
+    /// verwerfen. Ist eine Regel verletzt, meldet der Dialog sichtbar, gibt NICHTS
+    /// zurueck - auch kein <c>null</c> - und bleibt mit allen Eingaben stehen.
+    /// </summary>
     [Fact]
-    public void Abbrechen_und_Esc_liefern_null()
+    public async Task Eine_verletzte_Regel_haelt_den_Dialog_offen()
     {
-        QuelleErdreichDaten? ergebnis = Kollektor();
+        int gemeldet = 0;
+        QuelleErdreichDaten? ergebnis = null;
+        var cut = Zeige(Kollektor(), d => { gemeldet++; ergebnis = d; });
+
+        cut.FindAll("input.epos-eingabe")[0].Input("0");        // Verlegetiefe 0
+        await Schliessen(cut);
+
+        cut.WaitForAssertion(() => Assert.Contains(
+            "Verlegetiefe muss größer als 0 m sein",
+            cut.Find(".epos-warnbanner").TextContent));
+
+        Assert.Equal(0, gemeldet);
+        Assert.Null(ergebnis);
+
+        // Der Dialog steht noch, samt der eingetippten Flaeche.
+        Assert.NotNull(cut.Find("div.epos-dialog"));
+        Assert.Equal("250", cut.FindAll("input.epos-eingabe")[1].GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Ist die Regel erfuellt, meldet dasselbe Schliessen die Daten - ein zweiter
+    /// Anlauf nach der Berichtigung kommt also heraus.
+    /// </summary>
+    [Fact]
+    public async Task Nach_der_Berichtigung_kommt_der_Anwender_heraus()
+    {
+        QuelleErdreichDaten? ergebnis = null;
         var cut = Zeige(Kollektor(), d => ergebnis = d);
 
-        cut.FindAll(".epos-leiste button")[0].Click();
+        cut.FindAll("input.epos-eingabe")[0].Input("0");
+        await Schliessen(cut);
         Assert.Null(ergebnis);
 
-        ergebnis = Kollektor();
+        cut.FindAll("input.epos-eingabe")[0].Input("2,5");
+        await Schliessen(cut);
+
+        Assert.NotNull(ergebnis);
+        Assert.Equal(2.5, ergebnis!.Tiefe);
+        Assert.Equal("", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// ESC ist derselbe Weg, keine zweite Kopie der Regeln: Mit gueltigen Werten
+    /// uebernimmt er, mit einer verletzten Regel meldet er und der Dialog bleibt.
+    /// </summary>
+    [Fact]
+    public void Esc_uebernimmt_und_meldet_wie_das_Kreuz()
+    {
+        QuelleErdreichDaten? ergebnis = null;
+        var cut = Zeige(Kollektor(), d => ergebnis = d);
+
+        cut.FindAll("input.epos-eingabe")[0].Input("0");
         cut.Find("div.epos-dialog").KeyDown("Escape");
+        cut.WaitForAssertion(() => Assert.Contains(
+            "Verlegetiefe muss größer als 0 m sein", cut.Instance.Meldung));
         Assert.Null(ergebnis);
+
+        cut.FindAll("input.epos-eingabe")[0].Input("1,8");
+        cut.Find("div.epos-dialog").KeyDown("Escape");
+        cut.WaitForAssertion(() => Assert.NotNull(ergebnis));
+        Assert.Equal(1.8, ergebnis!.Tiefe);
     }
 
     /// <summary>Esc schliesst zuerst die KARTE, nicht den Dialog (Hausregel).</summary>
     [Fact]
     public void Esc_schliesst_zuerst_die_Karte()
     {
-        QuelleErdreichDaten? ergebnis = Kollektor();
+        QuelleErdreichDaten? ergebnis = null;
         var cut = Zeige(Kollektor(), d => ergebnis = d);
 
         cut.FindAll("button").First(b => b.TextContent.Contains("…")).Click();
@@ -581,7 +762,32 @@ public class QuelleErdreichDialogTests : EposBunitContext
 
         cut.Find("div.epos-dialog").KeyDown("Escape");
         Assert.False(cut.Instance.KarteOffen);
-        Assert.NotNull(ergebnis);          // der Dialog steht noch
+        Assert.Null(ergebnis);             // der Dialog steht noch, er hat nichts gemeldet
+    }
+
+    /// <summary>
+    /// Waehrend des Simulationslaufs schliesst der Dialog NICHT (Abweichung A-5):
+    /// Der Wartezustand haelt ihn, Kreuz und Esc uebernehmen nichts.
+    /// </summary>
+    [Fact]
+    public async Task Der_Wartezustand_verhindert_das_Uebernehmen()
+    {
+        var haenger = new TaskCompletionSource<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>();
+        QuelleErdreichDaten? ergebnis = null;
+
+        var cut = Zeige(Kollektor(), d => ergebnis = d, simulieren: _ => haenger.Task);
+
+        cut.FindAll("button").First(b => b.TextContent.Contains("Simulation")).Click();
+        cut.WaitForState(() => cut.Instance.Laeuft);
+
+        await Schliessen(cut);                              // das Kreuz
+        cut.Find("div.epos-dialog").KeyDown("Escape");      // und Esc
+
+        Assert.Null(ergebnis);
+        Assert.True(cut.Instance.Laeuft);
+
+        haenger.SetResult((MitLauf(), null));               // den Lauf sauber beenden
+        cut.WaitForState(() => !cut.Instance.Laeuft);
     }
 
     // =====================================================================
@@ -589,7 +795,8 @@ public class QuelleErdreichDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Quellsystem und Standort stehen im Formularraster - der Standort einspaltig, weil unter jedem Wert seine Herleitungszeile steht.
+    /// Die zwei Quellsystem-Rubriken und der Standort stehen im Formularraster - der
+    /// Standort einspaltig, weil unter jedem Wert seine Herleitungszeile steht.
     ///
     /// <para>Geprueft wird das MARKUP: Der Block traegt
     /// <c>epos-formularraster</c>, und darin stehen Felder. Was der Raster
@@ -602,7 +809,7 @@ public class QuelleErdreichDialogTests : EposBunitContext
     {
         var cut = Zeige(Kollektor());
 
-        Assert.Equal(2, cut.FindAll(".epos-formularraster").Count);
+        Assert.Equal(3, cut.FindAll(".epos-formularraster").Count);
         Assert.Single(cut.FindAll(".epos-formularraster--einspaltig"));
         Assert.NotEmpty(cut.FindAll(
             ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));

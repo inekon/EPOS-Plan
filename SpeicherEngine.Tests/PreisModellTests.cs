@@ -364,6 +364,44 @@ namespace SpeicherEngine.Tests
             Assert.Equal(5.0, satz.WirksamCtKwh, 9);
         }
 
+        // ---- Modus „kein Aufschlag" (Vorgabe, Anwenderentscheid 14.09.2026) ----
+
+        /// <summary>
+        /// Im Modus Keiner ist der wirksame Aufschlag exakt 0 - unabhaengig davon,
+        /// was in den Komponenten und im Gesamtwert steht. Die Summe bleibt
+        /// ablesbar: Sie ist die Auskunft, nicht der Rechenwert.
+        /// </summary>
+        [Fact]
+        public void Kein_Aufschlag_Wirkt_Nicht_Und_Weist_Keinen_Rest_Aus()
+        {
+            Aufschlagssatz satz = Regelfall(AufschlagsModus.Keiner, 20.0);
+
+            Assert.Equal(0.0, satz.WirksamCtKwh, 9);
+            Assert.Equal(0.0, satz.NichtAufgeschluesselterRestCtKwh, 9);
+            Assert.Equal(11.746, satz.SummeAktivCtKwh, 9);
+        }
+
+        [Fact]
+        public void Kein_Aufschlag_Laesst_Die_Preisreihe_Unveraendert()
+        {
+            double[] roh = { 0.0, 10.0, -3.5 };
+            double[] mit = Regelfall(AufschlagsModus.Keiner, 20.0).AufReihe(roh);
+
+            Assert.Equal(roh, mit);
+        }
+
+        /// <summary>
+        /// Die beiden Rechenmodi bleiben, wie sie waren - der dritte haengt sich
+        /// hinten an, er nummeriert nicht um.
+        /// </summary>
+        [Fact]
+        public void Die_Zahlenwerte_Der_Beiden_Rechenmodi_Bleiben_Stehen()
+        {
+            Assert.Equal(0, (int)AufschlagsModus.Aufgeschluesselt);
+            Assert.Equal(1, (int)AufschlagsModus.Gesamtwert);
+            Assert.Equal(2, (int)AufschlagsModus.Keiner);
+        }
+
         [Fact]
         public void Aufschlagssatz_Legt_Den_Wirksamen_Wert_Auf_Die_Reihe()
         {

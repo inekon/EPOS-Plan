@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
@@ -79,12 +80,13 @@ public class EnergietraegerDialogTests : EposBunitContext
             GueltigAb = new DateOnly(2026, 9, 3),
             Historie = new[]
             {
-                new PreishistorieZeile("01.01.2026", "10,10", "Nm³", "0,62", "120,00", "12,00")
+                new PreishistorieZeile("01.01.2026", "10,10", "Nm³", "0,62", "120,00", "12,00", 77)
             }
         };
         if (strom)
         {
-            s.Aufschlaege = new StromAufschlaegeStand { Aufgeschluesselt = true };
+            s.Aufschlaege = new StromAufschlaegeStand
+            { Wahl = StromAufschlagWahl.Aufgeschluesselt };
             s.MitAufschlagSchalter = true;
             s.EffektivpreisText = "Bezugspreis inkl. Aufschläge: 21,50 ct/kWh";
         }
@@ -762,5 +764,342 @@ public class EnergietraegerDialogTests : EposBunitContext
         // Auch der unzugeordnete Traeger laesst sich waehlen - Speichern ordnet ihn zu.
         eintraege[1].Click();
         Assert.Equal(60, _geladen);
+    }
+
+    // =====================================================================
+    // Preishistorie und Katalogübernahme (Anwenderbefund 14.09.2026, B2/B3)
+    // =====================================================================
+
+    /// <summary>Der Knopf der Gruppe „Preise" — er steht nur im Projektkontext.</summary>
+    private static IElement? Uebernahmeknopf(IRenderedComponent<EnergietraegerDialog> cut)
+    {
+        foreach (IElement k in cut.FindAll(".epos-traegerkarte button"))
+        {
+            if (k.TextContent.Trim() == "Katalogwerte übernehmen") return k;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// B3: „Eine Übernahme der Stammdaten-Kosten (aus der Administration) soll
+    /// möglich sein." Der Knopf steht in der Preisgruppe — aber nur, wo es einen
+    /// Katalog GEGENÜBER gibt, also im Projektkontext.
+    /// </summary>
+    [Fact]
+    public void Der_Uebernahmeknopf_steht_nur_im_Projektkontext()
+    {
+        EnergietraegerStand mit = Stand();
+        mit.MitKatalogUebernahme = true;
+        Assert.NotNull(Uebernahmeknopf(Zeige(katalog: false,
+            ansicht: new EnergietraegerAnsicht { Stand = mit })));
+
+        EnergietraegerStand ohne = Stand();
+        ohne.MitKatalogUebernahme = false;
+        Assert.Null(Uebernahmeknopf(Zeige(ansicht: new EnergietraegerAnsicht { Stand = ohne })));
+    }
+
+    /// <summary>Der Klick ruft den Rückruf der Hülle — geschrieben wird erst mit „Speichern".</summary>
+    [Fact]
+    public void Ein_Klick_auf_Katalogwerte_uebernehmen_ruft_den_Rueckruf()
+    {
+        int gerufen = 0;
+        EnergietraegerStand stand = Stand();
+        stand.MitKatalogUebernahme = true;
+
+        var cut = Zeige(katalog: false, ansicht: new EnergietraegerAnsicht { Stand = stand },
+                        mehr: p => p.Add(x => x.KatalogUebernehmen, () => gerufen++));
+
+        Uebernahmeknopf(cut)!.Click();
+
+        Assert.Equal(1, gerufen);
+    }
+
+    /// <summary>Die Hinweiszeile sagt, dass die Werte noch nicht geschrieben sind.</summary>
+    [Fact]
+    public void Nach_der_Uebernahme_steht_die_Hinweiszeile_da()
+    {
+        EnergietraegerStand stand = Stand();
+        stand.MitKatalogUebernahme = true;
+        stand.UebernahmeHinweis = "Katalogwerte übernommen — noch nicht gespeichert.";
+
+        var cut = Zeige(katalog: false, ansicht: new EnergietraegerAnsicht { Stand = stand });
+
+        Assert.Contains("noch nicht gespeichert", cut.Markup);
+    }
+
+    /// <summary>
+    /// B2: Der Spaltenkopf der Historie nennt die Einheit des Heizwerts —
+    /// kWh/&lt;Abrechnungseinheit&gt;, nicht „kWh/kWh".
+    /// </summary>
+    [Fact]
+    public void Der_Historien_Spaltenkopf_nennt_die_Einheit()
+    {
+        var cut = Zeige();
+
+        Assert.Contains("Heizwert [kWh/Nm³]", cut.Markup);
+    }
+
+    /// <summary>Ohne Heizwert bleibt es beim nackten Wort — der Träger führt keinen.</summary>
+    [Fact]
+    public void Ohne_Heizwert_bleibt_der_Spaltenkopf_ohne_Einheit()
+    {
+        EnergietraegerStand ohne = Stand();
+        ohne.MitHeizwert = false;
+        ohne.MitBrennwert = false;
+        ohne.MitFormel = false;
+
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = ohne });
+
+        Assert.DoesNotContain("kWh/Nm³", cut.Markup);
+        Assert.Contains("Heizwert", cut.Markup);
+    }
+
+    /// <summary>
+    /// Im Katalogkontext sagt die Karte, warum dort keine Historienzeile entsteht
+    /// — benannt abgelehnt statt still übergangen.
+    /// </summary>
+    [Fact]
+    public void Der_Katalogkontext_nennt_den_Grund_unter_der_Tabelle()
+    {
+        EnergietraegerStand stand = Stand();
+        stand.HistorieHinweis = "Die Preishistorie wird je Projekt geführt.";
+
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = stand });
+
+        Assert.Contains("je Projekt geführt", cut.Markup);
+    }
+
+    // =====================================================================
+    // Preisstände löschen (Anwenderwunsch 14.09.2026)
+    // =====================================================================
+
+    /// <summary>Die Löschknöpfe der Historientabelle — einer je Zeile.</summary>
+    private static IReadOnlyList<IElement> Loeschknoepfe(
+        IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.FindAll(".epos-traegerkarte > .epos-gruppenkopf button[title]");
+
+    /// <summary>Zwei Stände — der zweite trägt einen anderen Schlüssel.</summary>
+    private static EnergietraegerStand ZweiStaende()
+    {
+        EnergietraegerStand stand = Stand();
+        stand.Historie = new[]
+        {
+            new PreishistorieZeile("14.09.2026", "10,50", "Nm³", "0,9100", "0,00", "0,00", 12),
+            new PreishistorieZeile("01.01.2026", "10,10", "Nm³", "0,6200", "120,00", "12,00", 7)
+        };
+        return stand;
+    }
+
+    [Fact]
+    public void Die_Historientabelle_hat_eine_Aktionsspalte_mit_Loeschknopf()
+    {
+        var cut = Zeige(p => p.Add(x => x.HistorieLoeschen, _ => true),
+                        ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        // Die Spalte trägt einen Kopf mit Beschriftung (Hausregel), der Knopf
+        // steht je Zeile und ist immer sichtbar.
+        var koepfe = cut.FindAll(".epos-traegerkarte > .epos-gruppenkopf th");
+        Assert.Equal("Löschen", koepfe[^1].TextContent.Trim());
+        Assert.Equal(2, Loeschknoepfe(cut).Count);
+        Assert.Equal("Preisstand löschen", Loeschknoepfe(cut)[0].GetAttribute("title"));
+    }
+
+    /// <summary>Ohne Rückruf bleibt der Knopf gesperrt — kein Delegat, kein Knopf.</summary>
+    [Fact]
+    public void Ohne_Rueckruf_ist_der_Loeschknopf_gesperrt()
+    {
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        Assert.All(Loeschknoepfe(cut), k => Assert.True(k.HasAttribute("disabled")));
+    }
+
+    [Fact]
+    public void Der_Loeschknopf_fragt_erst_nach()
+    {
+        int geloescht = 0;
+        var cut = Zeige(p => p.Add(x => x.HistorieLoeschen, _ => { geloescht++; return true; }),
+                        ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        Loeschknoepfe(cut)[0].Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Contains("Preisstand vom 14.09.2026 löschen?", cut.Markup));
+        Assert.Equal(0, geloescht);
+    }
+
+    [Fact]
+    public void Ja_loescht_die_gewaehlte_Zeile()
+    {
+        PreishistorieZeile? gemeldet = null;
+        var cut = Zeige(p => p.Add(x => x.HistorieLoeschen, z => { gemeldet = z; return true; }),
+                        ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        // Die ZWEITE Zeile — gemeldet werden muss ihr Schlüssel, nicht der der ersten.
+        Loeschknoepfe(cut)[1].Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-rueckfrage")));
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        cut.WaitForAssertion(() => Assert.NotNull(gemeldet));
+        Assert.Equal(7, gemeldet!.Id);
+        Assert.Equal("01.01.2026", gemeldet.GueltigAb);
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-rueckfrage")));
+    }
+
+    [Fact]
+    public void Nein_laesst_den_Preisstand_stehen()
+    {
+        int geloescht = 0;
+        var cut = Zeige(p => p.Add(x => x.HistorieLoeschen, _ => { geloescht++; return true; }),
+                        ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        Loeschknoepfe(cut)[0].Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-rueckfrage")));
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[1].Click();
+
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-rueckfrage")));
+        Assert.Equal(0, geloescht);
+    }
+
+    /// <summary>Ein abgelehntes Löschen nennt den Grund — wie beim Speichern.</summary>
+    [Fact]
+    public void Ein_abgelehntes_Loeschen_nennt_den_Grund()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.HistorieLoeschen, _ => false)
+            .Add(x => x.HistorieLoeschenGrund, () => "Dieser Preisstand ist nicht mehr vorhanden."),
+            ansicht: new EnergietraegerAnsicht { Stand = ZweiStaende() });
+
+        Loeschknoepfe(cut)[0].Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-rueckfrage")));
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        cut.WaitForAssertion(() =>
+            Assert.Contains("nicht mehr vorhanden", cut.Instance.Meldung));
+    }
+
+    // =====================================================================
+    // Komponentenkontext (Anwenderwunsch 14.09.2026, Auftrag 268)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Kopfzeile nennt, wofür die Liste eingeengt ist — die Hülle baut den Text,
+    /// der Dialog zeigt ihn.
+    /// </summary>
+    [Fact]
+    public void Die_Kopfzeile_nennt_die_Komponente_und_ihre_Gruppe()
+    {
+        var cut = Zeige(katalog: false, mehr: p => p
+            .Add(x => x.KontextText, "Kontext: Projekt 1027 — für Wärmepumpe: nur Gruppe Strom"));
+
+        Assert.Contains("für Wärmepumpe: nur Gruppe Strom",
+                        cut.Find(".epos-kontextzeile").TextContent);
+    }
+
+    /// <summary>
+    /// Mit Komponentenkontext kommt die Liste bereits eingeengt herein — der Dialog
+    /// zeigt, was er bekommt, und die leere Gruppe fällt samt Kopf weg.
+    /// </summary>
+    [Fact]
+    public void Mit_Komponentenkontext_stehen_nur_die_zulaessigen_Traeger_in_der_Liste()
+    {
+        var liste = new EnergietraegerDialog.EnergietraegerListe[]
+        {
+            new(null, "Strom"),
+            new(60, "Elektrische Energie")
+        };
+        _ansicht = new EnergietraegerAnsicht { Stand = Stand() };
+        var cut = Render<EnergietraegerDialog>(p =>
+        {
+            p.Add(x => x.Liste, liste);
+            p.Add(x => x.Katalogkontext, false);
+            p.Add(x => x.TraegerLaden, id => { _geladen = id; return _ansicht; });
+            p.Add(x => x.Nachrechnen, () => _ansicht);
+        });
+
+        Assert.Equal(new[] { "Elektrische Energie" }, Eintraege(cut));
+        Assert.Equal(new[] { "Strom" }, Gruppenkoepfe(cut));
+    }
+
+    /// <summary>
+    /// Ein zugeordneter Träger, der nicht zur Komponente passt, VERSCHWINDET NICHT — er
+    /// steht markiert da, samt Hinweis. Wegfiltern hieße, eine falsche Zuordnung zu
+    /// verstecken.
+    /// </summary>
+    [Fact]
+    public void Ein_unzulaessiger_zugeordneter_Traeger_steht_markiert_in_der_Liste()
+    {
+        var liste = new EnergietraegerDialog.EnergietraegerListe[]
+        {
+            new(null, "Gas"),
+            new(63, "Erdgas E", "", true, false),
+            new(null, "Strom"),
+            new(60, "Elektrische Energie")
+        };
+        _ansicht = new EnergietraegerAnsicht { Stand = Stand() };
+        var cut = Render<EnergietraegerDialog>(p =>
+        {
+            p.Add(x => x.Liste, liste);
+            p.Add(x => x.Katalogkontext, false);
+            p.Add(x => x.PasstNichtText, "passt nicht zur Komponente");
+            p.Add(x => x.TraegerLaden, id => { _geladen = id; return _ansicht; });
+            p.Add(x => x.Nachrechnen, () => _ansicht);
+        });
+
+        var eintraege = cut.FindAll(".epos-traeger-eintrag");
+        Assert.Equal(2, eintraege.Count);
+        Assert.Contains("Erdgas E ⚠ passt nicht zur Komponente", eintraege[0].TextContent);
+        Assert.Contains("epos-traeger-eintrag--offen", eintraege[0].ClassName);
+        Assert.DoesNotContain("passt nicht", eintraege[1].TextContent);
+
+        // Wählbar bleibt er - sonst käme man an seine Preise nicht mehr heran.
+        eintraege[0].Click();
+        Assert.Equal(63, _geladen);
+    }
+
+    /// <summary>
+    /// Beide Markierungen zugleich: nicht zugeordnet UND nicht passend.
+    /// </summary>
+    [Fact]
+    public void Nicht_zugeordnet_und_nicht_passend_stehen_nebeneinander()
+    {
+        var liste = new EnergietraegerDialog.EnergietraegerListe[]
+        {
+            new(null, "Gas"),
+            new(63, "Erdgas E", "verwendet von: Heizkessel „Vitocrossal“", false, false)
+        };
+        _ansicht = new EnergietraegerAnsicht { Stand = Stand() };
+        var cut = Render<EnergietraegerDialog>(p =>
+        {
+            p.Add(x => x.Liste, liste);
+            p.Add(x => x.Katalogkontext, false);
+            p.Add(x => x.NichtZugeordnetText, "nicht zugeordnet");
+            p.Add(x => x.PasstNichtText, "passt nicht zur Komponente");
+            p.Add(x => x.TraegerLaden, id => { _geladen = id; return _ansicht; });
+            p.Add(x => x.Nachrechnen, () => _ansicht);
+        });
+
+        string text = cut.FindAll(".epos-traeger-eintrag")[0].TextContent;
+        Assert.Contains("nicht zugeordnet", text);
+        Assert.Contains("passt nicht zur Komponente", text);
+    }
+
+    /// <summary>
+    /// „Aus Katalog übernehmen…" bietet nur, was die Hülle hereingibt — mit
+    /// Komponentenkontext also nur die zulässigen Katalogträger.
+    /// </summary>
+    [Fact]
+    public void Die_Uebernahme_bietet_nur_die_hereingegebenen_Traeger()
+    {
+        var cut = Zeige(katalog: false, mehr: p => p
+            .Add(x => x.FreieLaden, () => new[] { (58, "Strom › Elektrische Energie 2") }));
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[0].Click();
+
+        Assert.Single(cut.FindAll(".epos-mehrfachauswahl-liste input[type=checkbox]"));
+        Assert.Contains("Strom › Elektrische Energie 2", cut.Markup);
+        Assert.DoesNotContain("Erdgas", cut.Find(".epos-mehrfachauswahl-liste").TextContent);
     }
 }

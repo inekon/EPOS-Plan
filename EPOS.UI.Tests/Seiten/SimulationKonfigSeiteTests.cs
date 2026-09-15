@@ -57,6 +57,15 @@ public class SimulationKonfigSeiteTests : BunitContext
     private readonly List<bool> _lesepunkt = new();
     private int _schemaGeholt;
 
+    /// <summary>#274: der Kurzstand der Stromspeicher-Auslegung; vorbelegt „nichts da".</summary>
+    private StromspeicherStand _spStand = new StromspeicherStand();
+
+    /// <summary>#274: Hat die Hülle einen Weg in die Auslegung eingelegt?</summary>
+    private bool _spWeg;
+
+    /// <summary>#274: Wie oft wurde die Auslegung geöffnet?</summary>
+    private int _spGeoeffnet;
+
     private static ErzeugerZeile Waerme(string dbWert, string rang, string titel,
                                         int idAnlage, bool erste, bool wp = false,
                                         params ChipDaten[] chips) => new ErzeugerZeile
@@ -183,6 +192,7 @@ public class SimulationKonfigSeiteTests : BunitContext
                 }
             },
             SpeicherLeerText = "Dieses Projekt führt keinen Pufferspeicher.",
+            Stromspeicherstand = _spStand,
             BoosterSichtbar = mitBooster,
             BoosterDavor = true,
             PvGewaehlt = true
@@ -193,6 +203,7 @@ public class SimulationKonfigSeiteTests : BunitContext
         => new SimulationKonfigDienste
         {
             Laden = _ => Daten(gesperrt, mitBooster),
+            AuslegungOeffnen = _spWeg ? () => _spGeoeffnet++ : null,
             SchemaLaden = _ => { _schemaGeholt++; return SchemaBild.Leer; },
             Verschieben = (w, r) => _verschoben.Add(w + ":" + r),
             Aufnehmen = w => _aufgenommen.Add(w),
@@ -999,5 +1010,182 @@ public class SimulationKonfigSeiteTests : BunitContext
         var ueberlagerungstitel = cut.FindAll("h2.epos-ueberlagerung-titel");
         Assert.Single(ueberlagerungstitel);
         Assert.Equal("Pufferspeicher im Projekt", ueberlagerungstitel[0].TextContent);
+    }
+
+    // ==================================================================
+    //  AUFTRAG #274 — „Stromspeicher auslegen…" in der Speicherspalte
+    // ==================================================================
+
+    /// <summary>
+    /// <b>Anwenderwunsch 14.09.2026:</b> „Der Dialog Stromspeicher soll in den Dialog
+    /// Konfiguration verschoben werden. Ähnlich zu ‚Pufferspeicher anlegen/verwalten'
+    /// einen Konfigurationsbutton ‚Stromspeicher auslegen'." Er steht UNTER dem
+    /// Pufferknopf, trägt darunter die Kurzzeile zum Stand und öffnet die Ansicht
+    /// „Stromspeicher-Auslegung" über den Weg der Hülle.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_Stromspeicher_auslegen_steht_mit_Standzeile_unter_der_Pufferverwaltung()
+    {
+        _spWeg = true;
+        _spStand = new StromspeicherStand
+        {
+            Vorhanden = true,
+            Standzeile = "Mehrspeicherbetrieb aktiviert · Lastspitzenkappung · 2 Einheiten"
+        };
+
+        var cut = Seite();
+
+        var knoepfe = cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf");
+        Assert.Equal(2, knoepfe.Count);
+        Assert.Contains("Pufferspeicher", knoepfe[0].TextContent);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIM_BTN_SP_AUSLEGUNG,
+                     knoepfe[1].TextContent.Trim());
+
+        Assert.Equal(_spStand.Standzeile,
+                     cut.Find("p.epos-simkonfig-flottenstand").TextContent.Trim());
+
+        cut.Find("section.epos-simkonfig-speicher button.epos-simkonfig-auslegung").Click();
+        Assert.Equal(1, _spGeoeffnet);
+    }
+
+    /// <summary>
+    /// Gibt es nichts auszulegen, steht statt des Knopfes eine Erklärzeile — dieselbe
+    /// Art Zeile wie „Für dieses Projekt ist noch kein Pufferspeicher angelegt".
+    /// </summary>
+    [Fact]
+    public void Ohne_Stromspeicher_steht_statt_des_Knopfes_die_Erklaerzeile()
+    {
+        _spWeg = true;
+        _spStand = new StromspeicherStand
+        {
+            Vorhanden = false,
+            LeerText = WindowsFormsApplication1.MyResource.Resource.SIM_SP_AUSLEGUNG_LEER
+        };
+
+        var cut = Seite();
+
+        Assert.Empty(cut.FindAll("button.epos-simkonfig-auslegung"));
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIM_SP_AUSLEGUNG_LEER,
+                        cut.Find("section.epos-simkonfig-speicher").TextContent);
+    }
+
+    /// <summary>
+    /// Kein Delegat, kein Knopf (Hausregel): Eine Schale ohne Weg in die Auslegung
+    /// zeichnet ihn gar nicht erst — die Seite bleibt vollständig bedienbar.
+    /// </summary>
+    [Fact]
+    public void Ohne_Weg_in_die_Auslegung_bleibt_der_Knopf_weg()
+    {
+        _spWeg = false;
+        _spStand = new StromspeicherStand { Vorhanden = true, Standzeile = "Eingabestand" };
+
+        var cut = Seite();
+
+        Assert.Empty(cut.FindAll("button.epos-simkonfig-auslegung"));
+        Assert.Empty(cut.FindAll("p.epos-simkonfig-flottenstand"));
+        Assert.Single(cut.FindAll("section.epos-simkonfig-speicher button.epos-knopf"));
+    }
+
+    // ==================================================================
+    //  AUFTRAG #275 — „Wärmequelle Erdreich": das Kreuz übernimmt
+    // ==================================================================
+
+    /// <summary>
+    /// Die Seite mit EINER Wärmepumpe, deren Quellenwahl in den Erdreich-Dialog
+    /// führt — geöffnet bis zur zweiten Ebene.
+    /// </summary>
+    private IRenderedComponent<SimulationKonfigSeite> ErdreichOffen(
+        List<EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten> geschrieben)
+    {
+        var cut = Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, new SimulationKonfigDienste
+            {
+                Laden = _ => new SimulationKonfigDaten
+                {
+                    IdProjekt = 1030,
+                    Gruppen = new List<KachelGruppe>
+                    {
+                        new KachelGruppe
+                        {
+                            Titel = "Wärmeerzeuger",
+                            Zeilen = new List<ErzeugerZeile>
+                            {
+                                Waerme("Wärmepumpe", "1", "WP 1", 10353, true, true,
+                                       new ChipDaten("Quelle: Außenluft", ChipStil.Quelle,
+                                                     "", ChipZiel.Quelle))
+                            }
+                        }
+                    }
+                },
+                Quellentypen = _ => new List<Quellentyp> { new Quellentyp("Erdreich", "Erdreich") },
+                QuelleTyp = _ => "Außenluft",
+                QuelleErdreichGaben = _ => new Dictionary<string, object>
+                {
+                    ["Daten"] = new EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten
+                    {
+                        WPName = "WP 1",
+                        IdProjekt = 1030,
+                        IdAnlage = 10353,
+                        Tiefe = 1.8,
+                        Flaeche = 250,
+                        Klimazone = 6,
+                        Spreizung = 4
+                    }
+                },
+                QuelleErdreichSchreiben = (_, d) => geschrieben.Add(d)
+            })
+            .Add(x => x.StartProjekt, 1030));
+
+        cut.FindAll("button.epos-chip--ziel")[0].DoubleClick();
+        cut.FindAll("div.epos-simkonfig-quellenwahl button")[0].Click();
+
+        Assert.Equal("QuelleErdreich", cut.Instance.OffenerUntereditor);
+        return cut;
+    }
+
+    /// <summary>
+    /// <b>Anwenderwunsch 14.09.2026:</b> „Dialog: Wärmequelle Erdreich / OK Button soll
+    /// aus Dialog raus." Der Dialog trägt keine Knopfleiste mehr — das KREUZ der
+    /// Überlagerung übernimmt: Es läuft durch die acht Prüfregeln des Dialogs, schreibt
+    /// und schließt.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_ueber_dem_Erdreich_Dialog_uebernimmt_die_Eingaben()
+    {
+        var geschrieben = new List<EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten>();
+        var cut = ErdreichOffen(geschrieben);
+
+        // Der Dialog selbst hat keine Knopfleiste mehr — die Leiste der SEITE bleibt.
+        Assert.Empty(cut.FindAll("div.epos-ueberlagerung .epos-leiste"));
+
+        cut.Find("button.epos-ueberlagerung-zu").Click();
+
+        cut.WaitForAssertion(() => Assert.Single(geschrieben));
+        Assert.Equal(1.8, geschrieben[0].Tiefe);
+        Assert.Equal(250.0, geschrieben[0].Flaeche);
+        Assert.Equal("Keine", cut.Instance.OffenerUntereditor);
+    }
+
+    /// <summary>
+    /// Ist eine Prüfregel verletzt, hält der Dialog das Kreuz AUF: Die Überlagerung
+    /// bleibt stehen, die Meldung steht darin, und geschrieben wird nichts. Das Kreuz
+    /// darf die Eingaben nicht still verwerfen.
+    /// </summary>
+    [Fact]
+    public void Eine_verletzte_Regel_haelt_die_Ueberlagerung_offen()
+    {
+        var geschrieben = new List<EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten>();
+        var cut = ErdreichOffen(geschrieben);
+
+        cut.FindAll("input.epos-eingabe")[0].Input("0");    // Verlegetiefe 0
+        cut.Find("button.epos-ueberlagerung-zu").Click();
+
+        cut.WaitForAssertion(() => Assert.Contains(
+            "Verlegetiefe muss größer als 0 m sein",
+            cut.Find(".epos-warnbanner").TextContent));
+
+        Assert.Empty(geschrieben);
+        Assert.Equal("QuelleErdreich", cut.Instance.OffenerUntereditor);
+        Assert.NotEmpty(cut.FindAll("div.epos-ueberlagerung"));
     }
 }

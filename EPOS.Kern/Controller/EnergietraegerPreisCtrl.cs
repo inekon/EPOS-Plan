@@ -275,6 +275,14 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Zeile der Preishistorie (<c>energy_price</c>).</summary>
         public sealed class Historienzeile
         {
+            /// <summary>
+            /// Der Schluessel der Zeile (<c>energy_price.id</c>) — mit ihm laesst
+            /// sich GENAU DIESE Zeile loeschen. Ohne ihn blieb nur der Weg ueber
+            /// (Traeger, Projekt, Datum), und der trifft zwei Staende desselben
+            /// Tages nicht auseinander.
+            /// </summary>
+            public int Id;
+
             public DateTime GueltigAb;
             public double? Heizwert;
             public string Basiseinheit;
@@ -292,7 +300,7 @@ namespace WindowsFormsApplication1
             var liste = new List<Historienzeile>();
             var parameter = new List<DbParam> { new DbParam("@cid", traegerId) };
 
-            string sql = "SELECT valid_from, heizwert, arbeitspreis, grundpreis, " +
+            string sql = "SELECT id, valid_from, heizwert, arbeitspreis, grundpreis, " +
                          "arbeitspreis_unit, leistungspreis FROM energy_price WHERE carrier_id = ?";
             if (projektId.HasValue)
             {
@@ -308,6 +316,7 @@ namespace WindowsFormsApplication1
             {
                 liste.Add(new Historienzeile
                 {
+                    Id = r["id"] != DBNull.Value ? Convert.ToInt32(r["id"]) : 0,
                     GueltigAb = r["valid_from"] != DBNull.Value
                         ? Convert.ToDateTime(r["valid_from"], CultureInfo.InvariantCulture)
                         : DateTime.MinValue,
@@ -495,9 +504,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Legt einen Historienstand zum gewählten Datum an bzw. aktualisiert
-        /// ihn — wortgleich aus <c>SpeichereWerte</c>, zweiter Zweig. Gerufen
-        /// wird die Methode nur, wenn sich etwas geändert hat (die Prüfung
-        /// bleibt beim Aufrufer, der die DB-Urwerte hält).
+        /// ihn — aus <c>SpeichereWerte</c>, zweiter Zweig. Gerufen wird die
+        /// Methode nur, wenn sich etwas geändert hat (die Prüfung bleibt beim
+        /// Aufrufer, der die DB-Urwerte hält).
+        ///
+        /// <para><b>Verglichen wird der KALENDERTAG, nicht der Zeitpunkt.</b>
+        /// <c>valid_from</c> ist TEXT und trägt im Bestand beides: Tagesstände
+        /// (<c>2026-08-12 00:00:00</c>) aus dieser Methode und Zeitpunkte
+        /// (<c>2026-08-09 20:33:16</c>) aus der Zuordnung — <c>WizardCtrl</c>
+        /// und <c>EnergietraegerVarianteCtrl</c> schreiben dort
+        /// <c>DateTime.Now</c>. Ein Vergleich auf Gleichheit verfehlte den
+        /// Zeitpunkt desselben Tages und legte eine ZWEITE Zeile an; die Karte
+        /// zeigte dann zweimal dasselbe „Gültig ab". Mit
+        /// <c>date(valid_from) = date(?)</c> trifft das zweite Speichern den
+        /// Stand des Tages und aktualisiert ihn. Das Datum der getroffenen
+        /// Zeile bleibt, wie es ist; neu angelegt wird weiter zum Tagesbeginn.</para>
         /// </summary>
         public static void HistorieSchreiben(int traegerId, int projektId, DateTime gueltigAb,
                                              Preisstand stand)
@@ -511,7 +532,7 @@ namespace WindowsFormsApplication1
 
             int vorhanden = Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM energy_price WHERE carrier_id = ? AND id_projekt = ? " +
-                "AND valid_from = ?", pruefen));
+                "AND date(valid_from) = date(?)", pruefen));
 
             if (vorhanden > 0)
             {
@@ -519,7 +540,7 @@ namespace WindowsFormsApplication1
                     @"UPDATE energy_price
                       SET arbeitspreis = ?, heizwert = ?, grundpreis = ?,
                           arbeitspreis_unit = ?, leistungspreis = ?
-                      WHERE carrier_id = ? AND id_projekt = ? AND valid_from = ?",
+                      WHERE carrier_id = ? AND id_projekt = ? AND date(valid_from) = date(?)",
                     new DbParam[]
                     {
                         new DbParam("@ap", Math.Round(stand.Arbeitspreis, 4)),
@@ -551,6 +572,30 @@ namespace WindowsFormsApplication1
                         new DbParam("@lp", Math.Round(stand.Leistungspreis, 4))
                     });
             }
+        }
+
+        /// <summary>
+        /// Löscht GENAU EINE Zeile der Preishistorie (Anwenderwunsch 14.09.2026,
+        /// „historische Energieträger werte sollen gelöscht werden können").
+        ///
+        /// <para>Der Schlüssel ist <c>energy_price.id</c>; Träger und Projekt
+        /// stehen als Riegel daneben, damit ein veralteter Stand der Karte
+        /// nicht die Zeile eines anderen Trägers oder Projekts trifft. Zwei
+        /// Stände desselben Tages lassen sich so einzeln entfernen.</para>
+        /// </summary>
+        /// <returns>Die Zahl der gelöschten Zeilen: 1 = getroffen, 0 = nichts.</returns>
+        public static int HistorieLoeschen(int zeileId, int traegerId, int projektId)
+        {
+            if (zeileId <= 0) return 0;
+
+            return (int)DataRepository.ExecuteNonQuery(
+                "DELETE FROM energy_price WHERE id = ? AND carrier_id = ? AND id_projekt = ?",
+                new DbParam[]
+                {
+                    new DbParam("@id", zeileId),
+                    new DbParam("@cid", traegerId),
+                    new DbParam("@prid", projektId)
+                });
         }
 
         /// <summary>

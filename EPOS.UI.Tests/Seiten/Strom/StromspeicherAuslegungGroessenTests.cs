@@ -15,10 +15,11 @@ using Xunit;
 namespace EPOS.UI.Tests.Seiten.Strom;
 
 /// <summary>
-/// DIE GRÖSSEN-SICHT IN STATION 4 (Auftrag #196 — die Einbindung von Paket P4 in die
-/// Ansicht aus Paket P3; Konzept „Stromspeicher-Dialoge" 2.5. <b>Seit Auftrag #224
-/// steht sie in Station 4 „Optimierung" statt in Schritt 5</b>, Zielbild 7.4: Sie
-/// gehört zur SUCHE — erst „welche Größe trägt sich?", dann die Auswertung der einen
+/// DIE GRÖSSEN-SICHT IN SCHRITT 5 (Auftrag #196 — die Einbindung von Paket P4 in die
+/// Ansicht aus Paket P3; Konzept „Stromspeicher-Dialoge" 2.5. <b>Seit Auftrag #273
+/// steht sie in Schritt 5 unter der Rubrik „Ergebnisse der Optimierung"</b>, Zielbild
+/// 7.10: Station 4 fragt, WAS gesucht werden soll, Schritt 5 zeigt beide Ergebnisarten
+/// gegliedert — erst „welche Größe trägt sich?", dann die Auswertung der einen
 /// gewählten Flotte).
 ///
 /// <para><b>Was hier geprüft wird.</b> Nicht der Baustein selbst — den prüft
@@ -43,45 +44,56 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Nach einem Suchlauf steht die Größen-Sicht in STATION 4 — und in Schritt 5 steht
-    /// sie NICHT (Auftrag #224): Zwei Orte für dieselbe Karte wären zwei Wahrheiten.
-    /// Schritt 5 sagt stattdessen in einer Zeile, WELCHER Kandidat dort bewertet ist.
+    /// Nach einem Suchlauf steht die Größen-Sicht in SCHRITT 5 — in der Rubrik
+    /// „Ergebnisse der Optimierung" vor der Rubrik „Ergebnisse der Simulation"
+    /// (Auftrag #273). In Station 4 steht sie NICHT: Zwei Orte für dieselbe Karte wären
+    /// zwei Wahrheiten.
     /// </summary>
     [Fact]
-    public void Mit_Rastersuchergebnis_steht_die_Groessensicht_in_Station_vier()
+    public void Mit_Rastersuchergebnis_steht_die_Groessensicht_in_Schritt_fuenf()
     {
         var cut = Gerechnet(MitAuslegung());
 
-        // Schritt 5 — die Bewertung der gewaehlten Flotte, ohne Karte.
         Assert.Equal(AuslegungSchritt.Ergebnis, cut.Instance.Schritt);
-        Assert.Single(cut.FindComponents<SpeicherFlottenErgebnisAnsicht>());
-        Assert.Empty(cut.FindComponents<SpeicherFlottenGroessenAnsicht>());
-        Assert.Contains("K-20", cut.Markup, StringComparison.Ordinal);   // die Hinweiszeile
 
-        // Station 4 — die Karte samt Kandidatentabelle, die Aussage des Laufs GENAU
-        // EINMAL, und die einfache Texttabelle der Ergebnisansicht gibt es nicht.
-        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
+        // BEIDE Rubriken, in dieser Reihenfolge.
+        int optimierung = cut.Markup.IndexOf(Resource.FLOTTE_ERG_OPTIMIERUNG, StringComparison.Ordinal);
+        int simulation = cut.Markup.IndexOf(Resource.FLOTTE_ERG_SIMULATION, StringComparison.Ordinal);
+        Assert.True(optimierung >= 0 && simulation > optimierung,
+                    "Die Optimierungsrubrik steht nicht vor der Simulationsrubrik.");
+
+        // Die Karte samt Kandidatentabelle, die Aussage des Laufs GENAU EINMAL, die
+        // Ergebnisansicht der gewaehlten Flotte und die Hinweiszeile mit dem Kandidaten.
         Assert.Single(cut.FindComponents<SpeicherFlottenGroessenAnsicht>());
+        Assert.Single(cut.FindComponents<SpeicherFlottenErgebnisAnsicht>());
         Assert.Equal(1, Vorkommen(cut.Markup, "Beste technisch zulässige Flotte"));
         Assert.DoesNotContain("Varianten geprüft", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("K-20", cut.Markup, StringComparison.Ordinal);
+
+        // Station 4 ist reine Eingabe.
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
+        Assert.Empty(cut.FindComponents<SpeicherFlottenGroessenAnsicht>());
+        Assert.DoesNotContain(Resource.FLOTTE_ERG_OPTIMIERUNG, cut.Markup, StringComparison.Ordinal);
     }
 
     /// <summary>
-    /// Ohne Rastersuche gibt es keine Kandidaten — dann steht auch in Station 4 keine
-    /// Karte, sondern der Satz „Noch keine Suche gerechnet.".
+    /// Hat der Lauf nur BEWERTET, gibt es kein Raster — dann steht in Schritt 5 statt
+    /// der Optimierungsrubrik eine Erklärzeile, und die Simulationsrubrik bleibt
+    /// (Auftrag #273).
     /// </summary>
     [Fact]
-    public void Ohne_Rastersuchergebnis_steht_keine_Groessensicht()
+    public void Ohne_Rastersuchergebnis_steht_eine_Erklaerzeile_statt_der_Rubrik()
     {
         var cut = Gerechnet(OhneAuslegung(), groessenOptimieren: false);
 
         Assert.Equal(AuslegungSchritt.Ergebnis, cut.Instance.Schritt);
         Assert.Single(cut.FindComponents<SpeicherFlottenErgebnisAnsicht>());
         Assert.Empty(cut.FindComponents<SpeicherFlottenGroessenAnsicht>());
+        Assert.Empty(cut.FindComponents<OptimierungsergebnisBlock>());
 
-        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
-        Assert.Empty(cut.FindComponents<SpeicherFlottenGroessenAnsicht>());
-        Assert.Contains(Resource.FLOTTE_OPT_KEIN_ERGEBNIS, cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(Resource.FLOTTE_ERG_OPTIMIERUNG, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_ERG_NUR_BEWERTET, cut.Markup, StringComparison.Ordinal);
+        Assert.Contains(Resource.FLOTTE_ERG_SIMULATION, cut.Markup, StringComparison.Ordinal);
     }
 
     // =====================================================================
@@ -177,7 +189,7 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
 
         Assert.DoesNotContain(Resource.FLOTTE_SEITE_KANDIDAT_FRAGE, cut.Markup, StringComparison.Ordinal);
         Assert.Equal(24.0, cut.Instance.Eingaben.Auslegung!.Flotte!.Einheiten[0].KapazitaetKWh, 9);
-        Assert.Equal(AuslegungSchritt.Optimierung, cut.Instance.Schritt);
+        Assert.Equal(AuslegungSchritt.Ergebnis, cut.Instance.Schritt);
     }
 
     /// <summary>„Verwerfen" übernimmt den Kandidaten, ohne vorher zu schreiben.</summary>
@@ -259,12 +271,12 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
 
     /// <summary>
     /// Klickt „übernehmen" in der Kandidatenzeile mit dieser Kennung. Die Tabelle steht
-    /// seit #224 in Station 4 — der Prüfstand wechselt vorher dorthin.
+    /// seit #273 in Schritt 5 — der Prüfstand wechselt vorher dorthin.
     /// </summary>
     private static void Uebernehmen(IRenderedComponent<StromspeicherAuslegungSeite> cut, string kandidat)
     {
-        if (cut.Instance.Schritt != AuslegungSchritt.Optimierung)
-            Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
+        if (cut.Instance.Schritt != AuslegungSchritt.Ergebnis)
+            Auslegungshilfe.Schritt(cut, AuslegungSchritt.Ergebnis);
 
         IElement zeile = cut.FindAll(".epos-flotte-groessen-tabelle tbody tr")
             .Single(x => x.TextContent.Contains(kandidat, StringComparison.Ordinal));
@@ -273,7 +285,7 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
 
     /// <summary>
     /// Ändert die Flotte in Schritt 1 (damit ist der Stand ungespeichert) und geht
-    /// zurück auf Station 4, wo die Kandidatentabelle steht.
+    /// zurück auf Schritt 5, wo die Kandidatentabelle steht.
     /// </summary>
     private static async Task AendernUndZurueckZumErgebnis(
         IRenderedComponent<StromspeicherAuslegungSeite> cut)
@@ -281,7 +293,7 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
         Auslegungshilfe.Schritt(cut, AuslegungSchritt.Speicher);
         await cut.InvokeAsync(() => cut.FindComponent<SpeicherFlottenEditor>()
             .Instance.WertChanged.InvokeAsync(Flotte()));
-        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Optimierung);
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Ergebnis);
         Assert.True(cut.Instance.Ungespeichert);
     }
 

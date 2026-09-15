@@ -8537,11 +8537,101 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogwerte übernehmen ähnelt.
+        /// </summary>
+        public static string ETV_BTN_KATALOGWERTE {
+            get {
+                return ResourceManager.GetString("ETV_BTN_KATALOGWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 💾 Speichern ähnelt.
         /// </summary>
         public static string ETV_BTN_SPEICHERN {
             get {
                 return ResourceManager.GetString("ETV_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktabrechnung: {0} €/kWh ähnelt.
+        /// </summary>
+        public static string ETV_FORMEL_DIREKT_BASIS {
+            get {
+                return ResourceManager.GetString("ETV_FORMEL_DIREKT_BASIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktabrechnung nach kWh ähnelt.
+        /// </summary>
+        public static string ETV_FORMEL_DIREKT_KWH {
+            get {
+                return ResourceManager.GetString("ETV_FORMEL_DIREKT_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/{1} ÷ {2} kWh/{1} = {3} €/kWh ähnelt.
+        /// </summary>
+        public static string ETV_FORMEL_JE_EINHEIT {
+            get {
+                return ResourceManager.GetString("ETV_FORMEL_JE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisstand vom {0} löschen? ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_LOESCHFRAGE {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_LOESCHFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Preisstand ist nicht mehr vorhanden. ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_LOESCH_FEHLT {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_LOESCH_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisstand löschen ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_LOESCH_TITEL {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_LOESCH_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Preishistorie wird je Projekt geführt — im Katalog gilt die Katalogzeile selbst. ähnelt.
+        /// </summary>
+        public static string ETV_HISTORIE_NUR_PROJEKT {
+            get {
+                return ResourceManager.GetString("ETV_HISTORIE_NUR_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogwerte übernommen — noch nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string ETV_KATALOGWERTE_UEBERNOMMEN {
+            get {
+                return ResourceManager.GetString("ETV_KATALOGWERTE_UEBERNOMMEN", resourceCulture);
             }
         }
         
@@ -8713,6 +8803,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_SP_HEIZWERT {
             get {
                 return ResourceManager.GetString("ETV_SP_HEIZWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwert [{0}] ähnelt.
+        /// </summary>
+        public static string ETV_SP_HEIZWERT_EINHEIT {
+            get {
+                return ResourceManager.GetString("ETV_SP_HEIZWERT_EINHEIT", resourceCulture);
             }
         }
         
@@ -11543,6 +11642,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Lauf hat nur die eingestellte Flotte bewertet — gesucht wurde keine Größe. Eine Suche startet Schritt 4 „Optimierung“. ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_NUR_BEWERTET {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_NUR_BEWERTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse der Optimierung ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_OPTIMIERUNG {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_OPTIMIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kausal erreicht: {0} kW — Schwelle in {1} von {2} Intervallen nachgezogen. ähnelt.
         /// </summary>
         public static string FLOTTE_ERG_PEAK_KAUSAL {
@@ -11566,6 +11683,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_ERG_REAKTIVE_REFERENZ {
             get {
                 return ResourceManager.GetString("FLOTTE_ERG_REAKTIVE_REFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse der Simulation ähnelt.
+        /// </summary>
+        public static string FLOTTE_ERG_SIMULATION {
+            get {
+                return ResourceManager.GetString("FLOTTE_ERG_SIMULATION", resourceCulture);
             }
         }
         
@@ -12749,6 +12875,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Größensuche ist vom gewählten Speicher unabhängig; gesucht wird die wirtschaftlich beste Größe. ähnelt.
+        /// </summary>
+        public static string FLOTTE_OPT_GROESSE_UNABHAENGIG {
+            get {
+                return ResourceManager.GetString("FLOTTE_OPT_GROESSE_UNABHAENGIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kandidaten im Grobraster, bis zu {1} im Feinraster — zusammen {2} von höchstens {3}. ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_KANDIDATEN {
@@ -12902,7 +13037,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Variiert an jeder eingeschalteten Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variiert an jeder Einheit zwei der drei Größen Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die Stückzahl steht dabei fest. ähnelt.
         /// </summary>
         public static string FLOTTE_OPT_METHODE_GROESSE_ERL {
             get {
@@ -20154,11 +20289,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für {0}: alle Energieträger ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KONTEXT_ALLE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KONTEXT_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kontext: Katalog (Stammdaten) ähnelt.
         /// </summary>
         public static string KDLG_ET_KONTEXT_KATALOG {
             get {
                 return ResourceManager.GetString("KDLG_ET_KONTEXT_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für {0}: nur Gruppe {1} ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KONTEXT_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KONTEXT_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für {0}: kein eigener Energieträger ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KONTEXT_OHNE_TRAEGER {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KONTEXT_OHNE_TRAEGER", resourceCulture);
             }
         }
         
@@ -20231,6 +20393,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_ET_NICHT_ZUGEORDNET {
             get {
                 return ResourceManager.GetString("KDLG_ET_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die passt nicht zur Komponente ähnelt.
+        /// </summary>
+        public static string KDLG_ET_PASST_NICHT {
+            get {
+                return ResourceManager.GetString("KDLG_ET_PASST_NICHT", resourceCulture);
             }
         }
         
@@ -20393,6 +20564,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_GESPEICHERT {
             get {
                 return ResourceManager.GetString("KDLG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW/m² × {1} m² × {2} Module = {3} kW ähnelt.
+        /// </summary>
+        public static string KDLG_HERLEITUNG_SOLAR_KW {
+            get {
+                return ResourceManager.GetString("KDLG_HERLEITUNG_SOLAR_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW/m² × {1} m² Aperturfläche = {2} kW ähnelt.
+        /// </summary>
+        public static string KDLG_HERLEITUNG_SOLAR_KW_FLAECHE {
+            get {
+                return ResourceManager.GetString("KDLG_HERLEITUNG_SOLAR_KW_FLAECHE", resourceCulture);
             }
         }
         
@@ -20709,6 +20898,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_MSG_STANDARD_LOESCHEN {
             get {
                 return ResourceManager.GetString("KDLG_MSG_STANDARD_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string KDLG_OHNE_BASIS_ZEILE {
+            get {
+                return ResourceManager.GetString("KDLG_OHNE_BASIS_ZEILE", resourceCulture);
             }
         }
         
@@ -28951,6 +29149,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fuer den Strombezugspreis ist &quot;kein Aufschlag&quot; gewaehlt ähnelt.
+        /// </summary>
+        public static string KOH_GRUND_STROM_KEIN_AUFSCHLAG {
+            get {
+                return ResourceManager.GetString("KOH_GRUND_STROM_KEIN_AUFSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die die Komponente Stromsteuer steht auf 0 ct/kWh ähnelt.
         /// </summary>
         public static string KOH_GRUND_STROM_NULL {
@@ -31823,6 +32030,285 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile „{0}“ löschen? ähnelt.
+        /// </summary>
+        public static string ND_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ND_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte aller Auslieferungszeilen auf die Auslieferung zurücksetzen? Eigene Zeilen bleiben unberührt. ähnelt.
+        /// </summary>
+        public static string ND_FRAGE_WIEDERHERSTELLEN {
+            get {
+                return ResourceManager.GetString("ND_FRAGE_WIEDERHERSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer aus Nutzungsdauern (AfA): {0} · {1} {2} a ähnelt.
+        /// </summary>
+        public static string ND_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("ND_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer aus Nutzungsdauern (AfA): {0} → wie Standardzeile {1} · {2} {3} a ähnelt.
+        /// </summary>
+        public static string ND_HERLEITUNG_STANDARD {
+            get {
+                return ResourceManager.GetString("ND_HERLEITUNG_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standard ähnelt.
+        /// </summary>
+        public static string ND_KENNZEICHEN_STANDARD {
+            get {
+                return ResourceManager.GetString("ND_KENNZEICHEN_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnerische Nutzungsdauer je Technik und Positionsart — sie steuert Ersatzbeschaffung und Restwert im Kapitalwert. ähnelt.
+        /// </summary>
+        public static string ND_KONTEXT {
+            get {
+                return ResourceManager.GetString("ND_KONTEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine leere Nutzungsdauer heißt „wie die Standardzeile der Technik“. ähnelt.
+        /// </summary>
+        public static string ND_LEER_HINWEIS {
+            get {
+                return ResourceManager.GetString("ND_LEER_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Zeile passt zur Suche. ähnelt.
+        /// </summary>
+        public static string ND_LEER_LISTE {
+            get {
+                return ResourceManager.GetString("ND_LEER_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
+        /// </summary>
+        public static string ND_LOESCHEN {
+            get {
+                return ResourceManager.GetString("ND_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Positionsart darf nicht leer sein. ähnelt.
+        /// </summary>
+        public static string ND_MELD_ART_LEER {
+            get {
+                return ResourceManager.GetString("ND_MELD_ART_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Technik gibt es die Positionsart „{0}“ bereits. ähnelt.
+        /// </summary>
+        public static string ND_MELD_DOPPELT {
+            get {
+                return ResourceManager.GetString("ND_MELD_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauertabelle gibt es in dieser Datenbank noch nicht. ähnelt.
+        /// </summary>
+        public static string ND_MELD_KEINE_TABELLE {
+            get {
+                return ResourceManager.GetString("ND_MELD_KEINE_TABELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeile ließ sich nicht speichern. ähnelt.
+        /// </summary>
+        public static string ND_MELD_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ND_MELD_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungszeilen werden nicht gelöscht. Ihr Wert lässt sich ändern; „Auslieferungswerte wiederherstellen“ setzt ihn zurück. ähnelt.
+        /// </summary>
+        public static string ND_MELD_READONLY {
+            get {
+                return ResourceManager.GetString("ND_MELD_READONLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauern (AfA)… ähnelt.
+        /// </summary>
+        public static string ND_MENUE {
+            get {
+                return ResourceManager.GetString("ND_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu ähnelt.
+        /// </summary>
+        public static string ND_NEU {
+            get {
+                return ResourceManager.GetString("ND_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Wert ähnelt.
+        /// </summary>
+        public static string ND_QUELLE_EIGEN {
+            get {
+                return ResourceManager.GetString("ND_QUELLE_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AfA steuerlich [a] ähnelt.
+        /// </summary>
+        public static string ND_SP_AFA {
+            get {
+                return ResourceManager.GetString("ND_SP_AFA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktionen ähnelt.
+        /// </summary>
+        public static string ND_SP_AKTIONEN {
+            get {
+                return ResourceManager.GetString("ND_SP_AKTIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer [a] ähnelt.
+        /// </summary>
+        public static string ND_SP_NUTZUNGSDAUER {
+            get {
+                return ResourceManager.GetString("ND_SP_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionsart ähnelt.
+        /// </summary>
+        public static string ND_SP_POSITIONSART {
+            get {
+                return ResourceManager.GetString("ND_SP_POSITIONSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string ND_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("ND_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technik ähnelt.
+        /// </summary>
+        public static string ND_SP_TECHNIK {
+            get {
+                return ResourceManager.GetString("ND_SP_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Auslieferungszeile(n) zurückgesetzt. ähnelt.
+        /// </summary>
+        public static string ND_STATUS_WIEDERHERGESTELLT {
+            get {
+                return ResourceManager.GetString("ND_STATUS_WIEDERHERGESTELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Suchen ähnelt.
+        /// </summary>
+        public static string ND_SUCHE {
+            get {
+                return ResourceManager.GetString("ND_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technik, Positionsart oder Quelle ähnelt.
+        /// </summary>
+        public static string ND_SUCHE_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("ND_SUCHE_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die technikübergreifend ähnelt.
+        /// </summary>
+        public static string ND_TECHNIKUEBERGREIFEND {
+            get {
+                return ResourceManager.GetString("ND_TECHNIKUEBERGREIFEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungszeile: Der Wert ist änderbar, die Zeile wird nicht gelöscht. ähnelt.
+        /// </summary>
+        public static string ND_TIP_AUSLIEFERUNG {
+            get {
+                return ResourceManager.GetString("ND_TIP_AUSLIEFERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standardzeile der Technik — sie gilt, wenn eine Position keine Positionsart trägt. ähnelt.
+        /// </summary>
+        public static string ND_TIP_STANDARD {
+            get {
+                return ResourceManager.GetString("ND_TIP_STANDARD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauern (AfA) ähnelt.
+        /// </summary>
+        public static string ND_TITEL {
+            get {
+                return ResourceManager.GetString("ND_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungswerte wiederherstellen ähnelt.
+        /// </summary>
+        public static string ND_WIEDERHERSTELLEN {
+            get {
+                return ResourceManager.GetString("ND_WIEDERHERSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die OND-Datei wurde nicht gefunden. ähnelt.
         /// </summary>
         public static string OND_MSG_DATEI_FEHLT {
@@ -33994,6 +34480,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert entspricht der Summe der Komponenten ähnelt.
+        /// </summary>
+        public static string PREIS_GESAMTWERT_GLEICH {
+            get {
+                return ResourceManager.GetString("PREIS_GESAMTWERT_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert liegt {0} ct/kWh ueber der Summe der Komponenten ähnelt.
+        /// </summary>
+        public static string PREIS_GESAMTWERT_UEBER {
+            get {
+                return ResourceManager.GetString("PREIS_GESAMTWERT_UEBER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert liegt {0} ct/kWh unter der Summe der Komponenten ähnelt.
+        /// </summary>
+        public static string PREIS_GESAMTWERT_UNTER {
+            get {
+                return ResourceManager.GetString("PREIS_GESAMTWERT_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlaege auf den Strombezugspreis ähnelt.
         /// </summary>
         public static string PREIS_GRUPPE_AUFSCHLAG {
@@ -34426,11 +34939,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert (Override) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert ähnelt.
         /// </summary>
         public static string PREIS_MODUS_GESAMTWERT {
             get {
                 return ResourceManager.GetString("PREIS_MODUS_GESAMTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Aufschlag ähnelt.
+        /// </summary>
+        public static string PREIS_MODUS_KEINER {
+            get {
+                return ResourceManager.GetString("PREIS_MODUS_KEINER", resourceCulture);
             }
         }
         
@@ -34728,24 +35250,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PREIS_QUELLE_ANZEIGE_SPOTMARKT {
             get {
                 return ResourceManager.GetString("PREIS_QUELLE_ANZEIGE_SPOTMARKT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Modus &quot;aufgeschluesselt&quot; ist der wirksame Aufschlag die Summe der aktiven Komponenten. ähnelt.
-        /// </summary>
-        public static string PREIS_REST_HINWEIS_MODUS {
-            get {
-                return ResourceManager.GetString("PREIS_REST_HINWEIS_MODUS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aufgeschluesselter Rest: {0} ct/kWh ähnelt.
-        /// </summary>
-        public static string PREIS_REST_NICHT_AUFGESCHLUESSELT {
-            get {
-                return ResourceManager.GetString("PREIS_REST_NICHT_AUFGESCHLUESSELT", resourceCulture);
             }
         }
         
@@ -42223,11 +42727,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdkollektor als Quellsystem ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_RB_KOLLEKTOR_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde ähnelt.
         /// </summary>
         public static string SIMQ_ERDREICH_RB_SONDE {
             get {
                 return ResourceManager.GetString("SIMQ_ERDREICH_RB_SONDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erdsonde als Quellsystem ähnelt.
+        /// </summary>
+        public static string SIMQ_ERDREICH_RB_SONDE_WAHL {
+            get {
+                return ResourceManager.GetString("SIMQ_ERDREICH_RB_SONDE_WAHL", resourceCulture);
             }
         }
         
@@ -44223,6 +44745,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_BTN_SENKE_RUNTER {
             get {
                 return ResourceManager.GetString("SIM_BTN_SENKE_RUNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher auslegen… ähnelt.
+        /// </summary>
+        public static string SIM_BTN_SP_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("SIM_BTN_SP_AUSLEGUNG", resourceCulture);
             }
         }
         
@@ -46388,6 +46919,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SPALTE_ZWEITSENKE {
             get {
                 return ResourceManager.GetString("SIM_SPALTE_ZWEITSENKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für dieses Projekt ist noch kein Stromspeicher angelegt. ähnelt.
+        /// </summary>
+        public static string SIM_SP_AUSLEGUNG_LEER {
+            get {
+                return ResourceManager.GetString("SIM_SP_AUSLEGUNG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet mit Speicherflotte: {0} · {1} Einheiten ähnelt.
+        /// </summary>
+        public static string SIM_SP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("SIM_SP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel {0} kW ({1}) ähnelt.
+        /// </summary>
+        public static string SIM_SP_HERKUNFT_PEAK {
+            get {
+                return ResourceManager.GetString("SIM_SP_HERKUNFT_PEAK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration ändern → ① ähnelt.
+        /// </summary>
+        public static string SIM_SP_KONFIG_VERWEIS {
+            get {
+                return ResourceManager.GetString("SIM_SP_KONFIG_VERWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Öffnet Schritt ① Konfiguration — dort steht „Stromspeicher auslegen…“. ähnelt.
+        /// </summary>
+        public static string SIM_SP_KONFIG_VERWEIS_TIP {
+            get {
+                return ResourceManager.GetString("SIM_SP_KONFIG_VERWEIS_TIP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrspeicherbetrieb aktiviert ähnelt.
+        /// </summary>
+        public static string SIM_SP_STAND_AKTIV {
+            get {
+                return ResourceManager.GetString("SIM_SP_STAND_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehrspeicherbetrieb deaktiviert — der Projektlauf fährt die Einzelanlage ähnelt.
+        /// </summary>
+        public static string SIM_SP_STAND_AUS {
+            get {
+                return ResourceManager.GetString("SIM_SP_STAND_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · {1} Einheiten ähnelt.
+        /// </summary>
+        public static string SIM_SP_STAND_FLOTTE {
+            get {
+                return ResourceManager.GetString("SIM_SP_STAND_FLOTTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Mehrspeicherbetrieb eingerichtet — der Projektlauf fährt die Einzelanlage ähnelt.
+        /// </summary>
+        public static string SIM_SP_STAND_OHNE {
+            get {
+                return ResourceManager.GetString("SIM_SP_STAND_OHNE", resourceCulture);
             }
         }
         
@@ -51801,6 +52413,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die angezeigten Werte stammen aus einem älteren Lauf — bitte neu berechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_BAND_NACHRECHNEN {
+            get {
+                return ResourceManager.GetString("WIRT_BAND_NACHRECHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig. ähnelt.
         /// </summary>
         public static string WIRT_BK_ABWEICHUNG {
@@ -51914,6 +52535,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_BTN_BHKW_TARIF {
             get {
                 return ResourceManager.GetString("WIRT_BTN_BHKW_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neu berechnen ähnelt.
+        /// </summary>
+        public static string WIRT_BTN_NEU_BERECHNEN {
+            get {
+                return ResourceManager.GetString("WIRT_BTN_NEU_BERECHNEN", resourceCulture);
             }
         }
         
@@ -52247,6 +52877,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERGEBNIS_VERALTET {
             get {
                 return ResourceManager.GetString("WIRT_ERGEBNIS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_BRENNSTOFFPREIS_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_BRENNSTOFFPREIS_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_KEIN_STROMTRAEGER {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_KEIN_STROMTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Das Simulationsergebnis weist weder Brennstoffverbrauch noch Netzbezug aus. Ausweg: Simulation prüfen und erneut rechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_KEIN_VERBRAUCH {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_KEIN_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Die Kostenrechnung ist abgebrochen. Ausweg: Preise und Heizwerte der Energieträger prüfen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_RECHENFEHLER {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_RECHENFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Für den Stromträger „{0}“ ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_STROMPREIS_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_STROMPREIS_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Ein Teil des Brennstoffverbrauchs ({0} MWh/a) gehört zu keinem Energieträger. Ausweg: den betroffenen Erzeugern unter „Anlagen“ einen Energieträger zuordnen. ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER", resourceCulture);
             }
         }
         
@@ -53174,6 +53858,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_STATUS_VERALTET {
             get {
                 return ResourceManager.GetString("WIRT_STATUS_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug mit dem Energieträger „{0}“ bepreist — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen. ähnelt.
+        /// </summary>
+        public static string WIRT_STROMTRAEGER_RUECKFALL {
+            get {
+                return ResourceManager.GetString("WIRT_STROMTRAEGER_RUECKFALL", resourceCulture);
             }
         }
         

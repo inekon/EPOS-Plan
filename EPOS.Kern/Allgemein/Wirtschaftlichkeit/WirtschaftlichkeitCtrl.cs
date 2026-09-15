@@ -1539,7 +1539,11 @@ namespace WindowsFormsApplication1
                 if (v.Fehler != null || v.Ergebnis == null)
                     serie.Fehlgrund = v.Fehler ?? "Kein Simulationsergebnis vorhanden.";
                 else if (!eingabe.Energie.HasValue)
-                    serie.Fehlgrund = "Energiekosten nicht bestimmbar.";
+                    // AUFTRAG #267: derselbe benannte Grund wie in RechneProjekt —
+                    // der Verlauf zeigte bisher „Energiekosten nicht bestimmbar." und
+                    // ließ den Anwender damit allein.
+                    serie.Fehlgrund = !string.IsNullOrEmpty(v.EnergiekostenGrund)
+                        ? v.EnergiekostenGrund : "Energiekosten nicht bestimmbar.";
                 else
                 {
                     KapitalwertRechner.Zahlungsbild bild =
@@ -2222,8 +2226,11 @@ namespace WindowsFormsApplication1
             catch { return; }
             if (ctKwh == 0)
             {
-                Melde(e, "Aufschläge sollen berücksichtigt werden, der wirksame Aufschlag ist " +
-                         "aber 0 ct/kWh (alle Komponenten inaktiv bzw. Gesamtwert 0).");
+                Melde(e, StromAufschlagCtrl.Modus(m.Modus) == SpeicherEngine.AufschlagsModus.Keiner
+                    ? "Aufschläge sollen berücksichtigt werden, für den Strombezugspreis ist " +
+                      "aber „kein Aufschlag\" gewählt — kein Aufschlagsbetrag."
+                    : "Aufschläge sollen berücksichtigt werden, der wirksame Aufschlag ist " +
+                      "aber 0 ct/kWh (alle Komponenten inaktiv bzw. Gesamtwert 0).");
                 return;
             }
 
@@ -2232,8 +2239,8 @@ namespace WindowsFormsApplication1
             if (e.Energie.HasValue) e.Energie = e.Energie.Value + betrag;
 
             System.Globalization.CultureInfo k = BerichtTexte.Kultur;
-            string zerlegung = string.Equals(m.Modus, DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT,
-                                             StringComparison.Ordinal)
+            string zerlegung =
+                StromAufschlagCtrl.Modus(m.Modus) == SpeicherEngine.AufschlagsModus.Gesamtwert
                 ? "Gesamtwert " + m.Override.ToString("N3", k) + " ct/kWh"
                 : "Netzentgelt " + Komponente(m.Netzentgelt, m.Netzentgelt_Aktiv, k) +
                   " + Umlagen " + Komponente(m.Umlagen, m.Umlagen_Aktiv, k) +
@@ -5113,6 +5120,16 @@ namespace WindowsFormsApplication1
                     "CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit " +
                     "Strommix-Vorgabewert gerechnet."));
 
+            // AUFTRAG #267: Dieselbe Lage auf der KOSTENseite — der Netzbezug wurde mit
+            // dem Auslieferungsträger des Katalogs bepreist, weil das Projekt keinen
+            // Stromträger führt. Gerechnet wird damit (sonst gäbe es gar keine Zahl),
+            // gesagt wird es hier.
+            if (!string.IsNullOrEmpty(v.StromTraegerRueckfall))
+                erg.Hinweis = Anhaengen(erg.Hinweis, string.Format(
+                    T("WIRT_STROMTRAEGER_RUECKFALL",
+                      KostenEmissionRechner.HINWEIS_STROMTRAEGER_RUECKFALL),
+                    v.StromTraegerRueckfall));
+
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
             // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein
             // Brennstoff still in Energiekosten, CO₂-Bilanz und BEHG-Menge (Fahne aus
@@ -5152,8 +5169,18 @@ namespace WindowsFormsApplication1
             if (!eingabe.Energie.HasValue)
             {
                 // Ohne Energiekosten fehlt der größte Posten — Kennzahlen bleiben „—".
-                erg.Fehlgrund = "Energiekosten nicht bestimmbar — Arbeitspreise/Träger in der " +
-                                "Kostenmaske (Energiekosten) prüfen.";
+                //
+                // AUFTRAG #267: Der GRUND kommt aus dem Rechner, der ihn kennt
+                // (KostenEmissionRechner setzt v.EnergiekostenGrund an genau der
+                // Stelle, an der er die Auskunft verweigert). Der pauschale Satz
+                // darunter bleibt nur als Rückfall für Stände ohne Grund — er hat den
+                // Anwenderbefund vom 14.09.2026 mit verursacht, weil er
+                // „Arbeitspreise prüfen" sagte, während in Wahrheit der Wärmepumpe
+                // kein Stromträger zugeordnet war.
+                erg.Fehlgrund = !string.IsNullOrEmpty(v.EnergiekostenGrund)
+                    ? v.EnergiekostenGrund
+                    : "Energiekosten nicht bestimmbar — Arbeitspreise/Träger in der " +
+                      "Kostenmaske (Energiekosten) prüfen.";
                 return erg;
             }
 

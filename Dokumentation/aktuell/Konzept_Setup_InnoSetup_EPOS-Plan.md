@@ -597,8 +597,8 @@ nicht nebenbei. Im Setup-Skript ist dafür nur `#define AppExeName` zu ändern.
 Setup-Skript sie aus der gebauten EXE. Das Build-Skript bricht ab, wenn dort
 `0.0.0.0` steht.
 
-Stand 11.09.2026: 1.2.0.0 (#191), gleich dem Update-Logbuch auf epos-plan.de; der nächste
-Setup-Lauf liefert `EPOS-Plan_Setup_1.2.0.0.exe`.
+Stand 15.09.2026: 1.2.0.1, gleich dem Update-Logbuch auf epos-plan.de; der nächste
+Setup-Lauf liefert `EPOS-Plan_Setup_1.2.0.1.exe`.
 
 **7.7 Einstellungen über Versionsgrenzen.** .NET legt `user.config` je
 Assemblyversion getrennt ab. Ohne einen `Settings.Default.Upgrade()`-Aufruf beim

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
 
@@ -28,11 +26,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class LeistungspreisReiheHuelle
     {
-        /// <summary>Innenmaß des Fensters. Die WinForms-Fassung maß 474 × 392 mit
-        /// zwei festen Spalten zu sechs Zeilen; die Blazor-Fassung stellt Feld und
-        /// Beschriftung übereinander und lässt das Gitter mitwachsen.</summary>
-        private static readonly Size FENSTER = new Size(680, 700);
-
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs (iU9-W4.4). Bis Welle 3 zeigte diese
         /// Hülle ein eigenes Fenster; seit die Trägerkarte selbst eine

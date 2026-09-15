@@ -45,6 +45,14 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Tastatur:** Esc schließt überall, wobei jeder Wirt erst seine Überlagerungsschalter prüft;
   **Enter** bestätigt nur in reinen OK-Dialogen — wo ein Knopf sofort schreibt, bleibt es
   unbelegt. **Kein Delegat, kein Knopf.**
+- **Ein Dialog ohne Knopfleiste schließt PRÜFEND** (einziger Fall: `QuelleErdreichDialog`): Er
+  hat kein OK, das Schließen der `Ueberlagerung` (✕ oder Esc) ÜBERNIMMT und läuft dabei durch
+  dieselben Prüfregeln; eine verletzte Regel meldet und hält den Dialog offen — Schließen darf
+  keine Eingabe still verwerfen. Der Wirt schließt dafür nicht selbst, sondern ruft aus dem
+  `Geschlossen`-Rückruf seiner `Ueberlagerung` über einen `@ref` die **eine** öffentliche
+  Methode des Dialogs; der Dialog hält Esc an seiner Wurzel an
+  (`@onkeydown:stopPropagation`), damit der Tastendruck nicht zusätzlich die Überlagerung
+  auslöst. Der Baustein `Ueberlagerung` bleibt dafür unverändert.
 
 ### Stilblatt
 
@@ -73,6 +81,9 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   zeichnen** — jeder Delegat `null`, jede Liste leer, jeder Text der Rückfall.
 - **Ein Parametersatz aus einer Hülle trifft nur `[Parameter]`** — ein unbekannter Schlüssel
   bricht beim ERSTEN Zeichnen im Blazor-Verteiler, ohne Namen.
+- **Ein Neuladen des Standes nach einer Zeilenaktion überträgt die ungespeicherten Eingaben der
+  bestehenden Zeilen** (gleiche Id, nur die eingebbaren Felder, danach Nachziehen und Summen);
+  ein echter Kontextwechsel lädt weiterhin ohne Übertrag.
 
 ### Anordnung: ein Dialog baut kein Hausmuster selbst nach, er nimmt den Baustein
 
@@ -89,6 +100,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Ein PARAMETERBLOCK steht im `Formularraster`:** Beschriftung neben dem Feld, und ein Feld
   sagt **selbst**, wie lang es ist (`epos-feld--kurz` an Zahlenfeldern, `epos-feld--breit` am
   mehrzeiligen Textfeld; ein `Datumsfeld` nie kurz).
+- **Eine Wahl darf über mehrere RUBRIKEN laufen:** `Optionsgruppe` zeichnet mit `NurEintrag`
+  einen Eintrag je Aufruf, und die Aufrufe teilen sich über `Gruppenname` den HTML-Namen — damit
+  bleiben sie für Browser, Tastatur und Sprachausgabe EINE Wahl. Nie ein nacktes
+  `<input type="radio">` im Dialog.
 - **Ein Kachelraster gehört in einen Reiter mit DREI Spalten; ein Zweispalten-Reiter bekommt
   einen BEDIENBLOCK:** feste Breite, **ein** Hauptknopf (`epos-knopf--primaer`) mit leiser
   Erklärzeile, darunter Zweitknöpfe und Sperrgründe. Die Kachel fällt nur als BAUFORM; Text und
@@ -215,6 +230,10 @@ AKTIONSNAMEN denselben Weg wie der Knopf.
   `CultureInfo.CurrentUICulture` auf: Jede Klasse mit deutschem Text-Assert nimmt die
   Hausvorrichtung (`EposBunitContext`); Sammlungen laufen nicht parallel.
 - `RenderCount` taugt **nicht** als Zähler für Zeichenläufe.
+- **bunits synchrones `Input()`/`Click()` wartet den Zeichenlauf nicht ab.** Läuft in der
+  Komponente ein Zeitgeber (Entprellung), belegt dessen Fortsetzung den Verteiler, und ein
+  Sofort-Assert liest den Stand vor dem Zeichen: nach jeder Eingabe auf den gezeichneten Zustand
+  warten (`WaitForAssertion`/`WaitForState`) und die Entprellung im Prüfstand ausdrücklich setzen.
 
 ## Fallstricke der Virtualisierung
 

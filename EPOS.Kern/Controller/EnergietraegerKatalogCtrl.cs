@@ -8,8 +8,8 @@ namespace WindowsFormsApplication1
     /// KATALOGPFLEGE der Energieträger (Nachtrag Ä9, Nutzerabnahme 26.08.2026 —
     /// der in KD4 offene Punkt „Trägervarianten + Katalog-Schreibweg"):
     /// Anlegen, Variante, Umbenennen/Gruppe, Löschen von
-    /// <c>energy_carrier</c>-Stammzeilen. UI-frei und testbar; der Dialog
-    /// (<see cref="Form_Energietraeger"/>) ruft ausschließlich hierher.
+    /// <c>energy_carrier</c>-Stammzeilen. UI-frei und testbar; die Hülle der
+    /// Energieträgerverwaltung ruft ausschließlich hierher.
     ///
     /// <para><b>Löschen ist geschützt:</b> Ein Träger, den Projekte
     /// (<c>energy_project_settings</c>), Anlagen (<c>Tab_Energieanlagen</c>)

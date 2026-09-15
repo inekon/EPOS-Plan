@@ -307,7 +307,7 @@ namespace WindowsFormsApplication1
                 // ET-5 (Anwenderentscheid 08.09.2026): Traegerwahl in der Katalog-Gliederung
                 // Gruppe > Art, gespeichert je Anlage; der gewaehlte Traeger wird dem Projekt
                 // zugeordnet (ausserhalb des Assistenten).
-                ["Traegerkatalog"] = ErzeugerTraegerHuelle.Katalog(),
+                ["Traegerkatalog"] = ErzeugerTraegerHuelle.Katalog(DbWerte.ERZEUGER_PHOTOVOLTAIK),
                 ["LabelTraegerGruppe"] = ErzeugerTraegerHuelle.LabelGruppe,
                 ["LabelTraegerArt"] = ErzeugerTraegerHuelle.LabelArt,
                 ["TraegerWechseln"] = new Action<ErzeugerZeile, int>(

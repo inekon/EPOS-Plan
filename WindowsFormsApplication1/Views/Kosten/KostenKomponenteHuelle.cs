@@ -253,6 +253,7 @@ namespace WindowsFormsApplication1
                 ["MeldungUebernommen"] = T("KUEB_MSG_UEBERNOMMEN",
                     "Die fehlenden Positionen der Quelle wurden angelegt."),
                 ["KatalogTitel"] = T("KFAK_TITEL", "Administration Kostenfaktoren"),
+                ["VorlageOhneBasis"] = T("KDLG_OHNE_BASIS_ZEILE", "„{0}\": {1}"),
                 ["VorlagePositionLoeschen"] = T("KDLG_MSG_POS_LOESCHEN", "Position „{0}\" löschen?"),
                 ["VorlagePflichtLoeschen"] = T("KDLG_MSG_PFLICHT_LOESCHEN",
                     "„{0}\" ist eine Pflichtposition dieser Komponente und kann nicht gelöscht werden.\r\n"
@@ -546,6 +547,21 @@ namespace WindowsFormsApplication1
                 z.BetragKurztext = T("KDLG_TT_BETRAG_ADMIN",
                     "Bezugsgröße erst im Projekt bekannt — der Betrag entsteht bei der Übernahme.");
             }
+
+            // ANWENDERBEFUND 14.09.2026: KEIN STILLES 0. Den Grund baut BasisKurztext
+            // seit H4c — aber nur als Werkzeugtipp des Betragsfeldes; im
+            // Raster stand die 0 des Anwenderentscheids I-2 ohne ein Wort dazu. Das
+            // Kennzeichen trägt die Zeile jetzt sichtbar, und der Dialog sammelt die
+            // Gründe unter dem Raster. GENAU DIESELBE Bedingung wie in BasisKurztext:
+            // keine Bezugsgröße UND ein nennbarer Grund — eine absolute Bemessung
+            // braucht keine und trägt deshalb auch kein Zeichen.
+            z.OhneBasis = pz != null && !pz.Basis.HasValue &&
+                          GrundText(pz.BasisGrund).Length > 0;
+
+            // Die Herleitung einer GERECHNETEN Bezugsgröße kommt fertig aus dem Kern
+            // (TechnikPlanwertCtrl.BaugroesseHerleitung); die Hülle reicht sie nur
+            // durch — die Formel steht an EINER Stelle.
+            z.BasisHerleitung = pz != null ? (pz.BasisHerleitung ?? "") : "";
         }
 
         /// <summary>
@@ -1006,7 +1022,7 @@ namespace WindowsFormsApplication1
                 ? _eintraege[_eintragIndex].Text : "";
             string vorschlag = basis + " — Variante " + _varianten.Count;
 
-            return NamensDialogHuelle.Gaben(
+            return NamensabfrageGaben.Gaben(
                 kopie ? T("KDLG_MSG_KOPIE_TITEL", "Speichern unter")
                       : T("KDLG_MSG_NEU_TITEL", "Neue Variante"),
                 T("KDLG_MSG_NEU_NAME", "Name der neuen Variante:"),

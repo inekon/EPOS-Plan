@@ -27,6 +27,14 @@
    W4-O1); seit Welle 5 gibt es ihn - und das Weglassen der zweiten Seite ist
    hier nur ein @if.
 
+   EINE AENDERUNG LEBT BIS „SPEICHERN" NUR IM OBJEKT (Ae12/Ae19) — und wird beim
+   AUFFRISCHEN mitgenommen. Eine Zeilenaktion (Position anlegen, Position
+   loeschen, Uebernahme) schreibt sofort und laesst den Stand danach neu laden;
+   die Huelle baut dabei jede Zeile neu aus der Datenbank. Damit die Regel
+   traegt, uebertraegt KontextLaden die ungespeicherten Eingaben der bestehenden
+   Zeilen auf die neu geladenen Objekte (EingabenUebertragen). Ein echter
+   Kontextwechsel laedt weiterhin ohne Uebertrag; „Abbrechen" verwirft alles.
+
    TASTATUR: Esc schliesst zuerst eine offene Ueberlagerung, dann den Dialog.
    Enter ist nicht belegt: „Speichern", „Uebernahme" und „Katalog" schreiben
    sofort (A-7 aus B5b). *@
@@ -111,6 +119,8 @@
                                BetragText="@zeile.BetragText"
                                Kette="@zeile.Kette"
                                BetragKurztext="@zeile.BetragKurztext"
+                               OhneBasis="@zeile.OhneBasis"
+                               BasisHerleitung="@zeile.BasisHerleitung"
                                EmpfehlungKurztext="@zeile.EmpfehlungKurztext"
                                Nutzungsdauer="@zeile.Nutzungsdauer"
                                NutzungsdauerChanged="@(w => Feld(zeile, () => zeile.Nutzungsdauer = w))"
@@ -143,6 +153,18 @@
             }
         </AbschlussZeile>
     </Zeilenraster>
+
+    @* ANWENDERBEFUND 14.09.2026: KEIN STILLES 0 - die Gruende der Zeilen ohne
+       Bezugsgroesse stehen UNTER dem Raster. Der Vorlaeufer trug sie nur im
+       Werkzeugtipp des Betragsfeldes; im Bildschirmfoto des Befundes war unter
+       dem Raster deshalb nichts zu sehen. *@
+    @if (OhneBasisText.Length > 0)
+    {
+        <p class="epos-zr-ohnebasis-zeile">
+            <span class="epos-zr-ohnebasis" role="img" aria-hidden="true">⚠</span>
+            @OhneBasisText
+        </p>
+    }
 
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" disabled="@(!_stand.PositionNeuMoeglich)"
@@ -400,6 +422,12 @@
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? GesetzeGaben { get; set; }
 
+    /// <summary>
+    /// 14.09.2026: Vorlage EINER Zeile des Hinweises unter dem Raster — Bezeichnung
+    /// der Position und ihr Grund. Mehrere Zeilen werden mit „ · " verbunden.
+    /// </summary>
+    [Parameter] public string VorlageOhneBasis { get; set; } = "„{0}\": {1}";
+
     /// <summary>Vorlage der Löschrückfrage einer Position.</summary>
     [Parameter] public string VorlagePositionLoeschen { get; set; } = "Position „{0}\" löschen?";
 
@@ -460,6 +488,27 @@
 
     private string _frage = "";
     private Func<Task>? _frageJa;
+
+    /// <summary>
+    /// 14.09.2026: Der Hinweis unter dem Raster — je Zeile ohne Bezugsgröße ihre
+    /// Bezeichnung und ihr Grund. Leer, solange jede Zeile ihre Bezugsgröße hat
+    /// (der Regelfall) und im Stammkontext, wo es noch kein Projekt gibt.
+    /// </summary>
+    public string OhneBasisText
+    {
+        get
+        {
+            var teile = new List<string>();
+            foreach (KostenPositionZeile z in _stand.Zeilen)
+            {
+                if (!z.OhneBasis) continue;
+                string grund = z.BetragKurztext ?? "";
+                if (grund.Length == 0) continue;
+                teile.Add(string.Format(VorlageOhneBasis, z.Bezeichnung, grund));
+            }
+            return string.Join(" · ", teile);
+        }
+    }
 
     /// <summary>Der gezeigte Stand (Prüfhilfe für Tests).</summary>
     public KostenKomponenteStand Stand => _stand;
@@ -554,12 +603,82 @@
         await _wurzel.FocusAsync();
     }
 
-    /// <summary>Wie <c>Kontext_Geaendert</c>: einmal fragen, alles neu zeigen.</summary>
-    private void KontextLaden(int? varianteId)
+    /// <summary>
+    /// Wie <c>Kontext_Geaendert</c>: einmal fragen, alles neu zeigen.
+    ///
+    /// <para><paramref name="eingabenUebernehmen"/> trennt die zwei Anlässe: Ein
+    /// echter KONTEXTWECHSEL (andere Komponente, andere Kategorie, andere
+    /// Variante) zeigt andere Zeilen — dort ist das Verwerfen gewollt. Eine
+    /// ZEILENAKTION im selben Kontext (Position anlegen, Position löschen,
+    /// Übernahme) lädt denselben Stand nur AUF; dann werden die ungespeicherten
+    /// Eingaben der bestehenden Zeilen mitgenommen (siehe
+    /// <see cref="EingabenUebertragen"/>).</para>
+    /// </summary>
+    private void KontextLaden(int? varianteId, bool eingabenUebernehmen = false)
     {
         if (Laden is null) return;
+
+        IReadOnlyList<KostenPositionZeile> vorher = eingabenUebernehmen
+            ? _stand.Zeilen
+            : Array.Empty<KostenPositionZeile>();
+
         _stand = Laden(new KostenKomponenteKontext(_eintragId, _invest, varianteId));
         _neuerName = "";
+
+        EingabenUebertragen(vorher);
+    }
+
+    /// <summary>
+    /// Trägt die ungespeicherten Eingaben der bisherigen Zeilen auf die neu
+    /// geladenen Objekte gleicher Id über (Ä12/Ä19).
+    ///
+    /// <para><b>Warum es das braucht.</b> Die Hülle baut bei JEDEM <c>Laden</c>
+    /// neue Zeilenobjekte aus der Datenbank (<c>RasterAufbauen</c>). Eine
+    /// Eingabe, die bis „Speichern" nur im Objekt lebt, stünde danach nicht mehr
+    /// da — eine Zeilenaktion würde die Arbeit an allen anderen Zeilen
+    /// vernichten. Übertragen werden ausschließlich die vier EINGEBBAREN Felder,
+    /// und nur, wo sie vom geladenen Stand abweichen; danach zieht
+    /// <see cref="Nachziehen"/> je Zeile Einheit, Betrag, Kette und Kurztexte
+    /// nach — genau wie nach einer Eingabe —, zuletzt der Summenfuß.</para>
+    ///
+    /// <para><b>Was NICHT übertragen wird.</b> Wo ein Unterdialog die Position
+    /// bereits GESCHRIEBEN hat (Zeileneditor, Worst/Best), ist der geladene
+    /// Stand der neuere: Dort lädt der Dialog ohne Übertrag, sonst überschriebe
+    /// der alte Anzeigewert das eben Gespeicherte.</para>
+    /// </summary>
+    private void EingabenUebertragen(IReadOnlyList<KostenPositionZeile> vorher)
+    {
+        if (vorher.Count == 0 || _stand.Zeilen.Count == 0) return;
+
+        Dictionary<int, KostenPositionZeile> alt = new Dictionary<int, KostenPositionZeile>();
+        foreach (KostenPositionZeile a in vorher) alt[a.Id] = a;
+
+        bool etwas = false;
+        foreach (KostenPositionZeile neu in _stand.Zeilen)
+        {
+            if (!alt.TryGetValue(neu.Id, out KostenPositionZeile? a)) continue;
+            if (ReferenceEquals(a, neu)) continue;
+
+            bool geaendert = false;
+            if (!string.Equals(a.Bezeichnung, neu.Bezeichnung, StringComparison.Ordinal))
+            {
+                neu.Bezeichnung = a.Bezeichnung;
+                geaendert = true;
+            }
+            if (a.BemessungId != neu.BemessungId) { neu.BemessungId = a.BemessungId; geaendert = true; }
+            if (a.Satz != neu.Satz) { neu.Satz = a.Satz; geaendert = true; }
+            if (a.Nutzungsdauer != neu.Nutzungsdauer)
+            {
+                neu.Nutzungsdauer = a.Nutzungsdauer;
+                geaendert = true;
+            }
+
+            if (!geaendert) continue;
+            Nachziehen?.Invoke(neu);
+            etwas = true;
+        }
+
+        if (etwas) SummenNachziehen();
     }
 
     private string[] Spaltenkopf() => new[]
@@ -630,7 +749,9 @@
         if (sauber.Length == 0) return;
         if (PositionNeu(sauber) == 0) return;
         Melden("");
-        KontextLaden(_stand.VarianteId);
+        // Die neue Position muss aus der Hülle kommen (Einheit, Betragstext, Kette,
+        // Kurztexte) — deshalb neu laden, aber MIT den Eingaben der übrigen Zeilen.
+        KontextLaden(_stand.VarianteId, eingabenUebernehmen: true);
     }
 
     /// <summary>
@@ -648,7 +769,8 @@
         _frage = string.Format(VorlagePositionLoeschen, zeile.Bezeichnung);
         _frageJa = () =>
         {
-            if (PositionLoeschen is not null && PositionLoeschen(zeile)) KontextLaden(_stand.VarianteId);
+            if (PositionLoeschen is not null && PositionLoeschen(zeile))
+                KontextLaden(_stand.VarianteId, eingabenUebernehmen: true);
             return Task.CompletedTask;
         };
     }
@@ -773,8 +895,9 @@
     {
         _uebernahmeGaben = null;
         if (geschrieben) Melden(MeldungUebernommen, WarnStufe.Hinweis);
-        // Wie btnUebernahme_Click: übernommene Positionen sofort zeigen.
-        KontextLaden(_stand.VarianteId);
+        // Wie btnUebernahme_Click: übernommene Positionen sofort zeigen — und die
+        // ungespeicherten Eingaben der bestehenden Zeilen behalten.
+        KontextLaden(_stand.VarianteId, eingabenUebernehmen: true);
     }
 
     private void KatalogOeffnen()
