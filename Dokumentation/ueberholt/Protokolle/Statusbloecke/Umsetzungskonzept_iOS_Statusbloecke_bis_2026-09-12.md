@@ -6240,3 +6240,66 @@ steht aus und ist die eigentliche Aufgabe von
 > `ad37b3d3`. Hausregel „Ein geliehener Wert wird nie still gesetzt" in `EPOS.Kern/CLAUDE.md`.
 >
 > **Offen:** Die Herkunft eines geliehenen Wertes wird nicht persistiert (siehe Statusdatei „Nach #280").
+
+## #281 — Größensuche wählt Geräte, sie erfindet keine (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026: „Größensuch Stromspeicher nur über Kapazität und Leistung im
+> Katalog des Projektes oder wahlweise aus Stammdaten. Bei Such aus Stammdaten mit Möglichkeit der
+> Übernahme aus Stammdaten in Projekt." Am selben Tag geschärft: „Sind ‚Projektkatalog oder Stammdaten'
+> → Kandidaten (Stromspeicher, die Bedingungen Größe (Leistung, Kapazität) erfüllen bzw. nahe kommen)."
+>
+> **Der Bruch liegt im Gegenstand der Suche, nicht in der Bedienung.** Bisher variierte die Suche eine
+> freie Größe und koppelte die zweite Achse über die C-Rate. Was dabei herauskam, war eine Zahl, kein
+> Speicher: Der Anwender bekam eine Auslegung vorgelegt, die er nicht kaufen kann, und musste danach
+> selbst ein Gerät suchen, das ungefähr passt. Jetzt gibt er je einen Bereich für Kapazität und Leistung
+> vor, wählt die Quelle, und die Suche rechnet die Geräte durch, die im Projektkatalog oder in den
+> Stammdaten stehen.
+>
+> **Die C-Rate fällt als Suchachse, nicht als Kennzahl.** `FlottenAuslegungsmodus.KapazitaetUndLeistung`
+> ist die einzige gültige Kopplung; die beiden C-Rate-Werte bleiben im Enum, damit gespeicherte Stände
+> lesbar bleiben (JSON führt dort 1 bzw. 2). Die C-Rate steht weiter an jedem Gerät als abgeleitetes
+> P/E, in keinem Eingabefeld. Ein Stand mit C-Rate-Kopplung wird beim Laden **benannt** umgerechnet
+> (`FlottenAltstand.Normalisiere`): Der Leistungsbereich entsteht aus den Ecken P = E · C, der
+> Kapazitätsbereich als E = P / C. Das ist der Unterschied zwischen „die Absicht übersetzen" und „den
+> Stand still verwerfen" — der Anwender findet seinen Suchraum wieder, nur anders beschriftet.
+>
+> **Die Auswahlregel steht an einer Stelle** (`FlottenGeraetewahl.Waehle`). Treffer sind die Geräte in
+> beiden Bereichen, Grenzen eingeschlossen; gibt es welche, sind nur sie die Kandidaten. Sonst kommen
+> höchstens fünf nächstliegende, damit die Suche nie leer ausgeht. Der Abstand je Größe ist der
+> Überstand über den Bereich, bezogen auf die **Bereichsmitte**, und beide Anteile werden addiert: So
+> wiegt ein Überstand von 10 kWh bei einem schmalen Bereich schwerer als bei einem weiten, und Kapazität
+> und Leistung sind trotz verschiedener Einheiten vergleichbar. Sortiert wird nach Abstand, Kapazität,
+> Leistung, Quellkennung — zwei Läufe auf derselben Datenbank liefern dieselbe Reihenfolge. Die
+> Abweichung in Prozent steht in der Kandidatentabelle und in der Geräteliste der Station „Optimierung".
+>
+> **Die Kandidatenzahl kann nicht mehr explodieren.** Sie ist die Zahl der gefundenen Geräte, nicht mehr
+> das Produkt zweier Rasterachsen; die Schranke „Maximale Auslegungskandidaten" bleibt als Fangnetz
+> stehen. Das **Feinraster entfällt ersatzlos**: Zwischen zwei Geräten liegt kein drittes, und eine
+> zwischengerechnete Größe wäre ein Speicher, den es nicht gibt. Der gespeicherte Schalter bleibt lesbar
+> und wirkungslos; die Zählregel nennt `FeinHoechstens` durchgehend 0.
+>
+> **Die Parameter kommen vom Gerät.** Fehlen sie, greifen die neutralen Vorgaben aus
+> `FlottenGeraetevorgaben` an **einer** Stelle (Lade- und Entladewirkungsgrad je 0,95, SoC-Fenster
+> 0,10…0,90, keine Alterung), und der Kandidat wird gekennzeichnet. Ein Katalogsatz führt keine
+> Betriebsführung und ist deshalb immer gekennzeichnet — der Anwender sieht, welche Zahl gemessen und
+> welche angenommen ist.
+>
+> **Ein Fehler, in dieser Welle gefunden und behoben** (`75a582c5`): Die Rückabbildung eines **nicht
+> besten** Kandidaten nahm ihre Vorlage aus der Suchachse. Unter „Größe suchen" bringt aber jeder
+> Kandidat sein eigenes Gerät mit — Wirkungsgrade, SoC-Band, Hilfsverbrauch, Kostensätze. Der Anwender
+> hätte ein Gerät mit den Kennwerten eines anderen übernommen: dieselben Zahlen im Bild, andere im
+> nächsten Lauf. Die Vorlage kommt jetzt in fester Reihenfolge — Einheit gleicher Kennung im
+> Arbeitsstand, Gerät des Kandidaten über seine Quellkennung, Achsenvorlage, erste Einheit. Der beste
+> Kandidat war nie betroffen: Für ihn legt der Optimierer seine eigene Konfiguration bei.
+>
+> **Nicht angefasst:** „Stückzahl suchen" bleibt unverändert; die Übernahme eines gefundenen
+> Stammdatengeräts nimmt den vorhandenen Weg (`EinheitenInProjektUebernehmen`), ein zweiter wird nicht
+> gebaut. Der Einzelspeicher-Optimierer je Anlage bleibt beim Rastern (siehe Statusdatei „Nach #281").
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 117 Tests grün;
+> `SqlDialektPruefer` 0 Fundstellen; ChartProben 47 von 49 Bildern byte-gleich —
+> `flottenraster_schraffur` zeigt jetzt die dünn besetzte Gerätekarte Kapazität × Entladeleistung,
+> `flottenschnitt_leistung` die Kurve über den Entladeleistungen der gefundenen Geräte; Referenzlauf
+> gegen `2026-09-11_R7_Speicherflotte` PASS und byte-gleich; Gate sept86 grün. Merge `cafa6313`.
+> Konzept „Stromspeicher-Dialoge" Abschnitt 8.9, Doku Mehrspeicher und die beiden Wiki-Quellen
+> (Bedienung, Rechenweg) nachgezogen — noch nicht hochgeladen.
