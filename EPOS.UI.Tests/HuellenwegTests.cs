@@ -41,6 +41,9 @@ namespace EPOS.UI.Tests;
 ///   synchroner Abschluss) und lässt sich nicht als ein Ausdrucksmuster stellen;
 ///   sie bringt deshalb ihren eigenen Leser mit
 ///   (<see cref="AnweisungsfundeIn"/>).</description></item>
+///   <item><description><b>Als Lambda:</b> dasselbe, nur ohne eigene Methode —
+///   gleich an Ort und Stelle in den Gabensatz geschrieben. Derselbe Leser misst
+///   auch diesen Rumpf.</description></item>
 /// </list>
 ///
 /// <para><b>Der Regelweg</b> ist der Baustein <c>Ueberlagerung</c>
@@ -115,6 +118,19 @@ public sealed class HuellenwegTests
         @"(?<![\w.])(?:private|internal|protected|public)[^;{}()=]*?\bTask\b" +
         @"(?:\s*<[^<>{}()]*>)?\s+(\w+)\s*\([^{};]*\)\s*\{",
         RegexOptions.Compiled | RegexOptions.Singleline);
+
+    /// <summary>
+    /// Derselbe Rumpf, nur ohne eigene Methode: das LAMBDA mit geschweiften
+    /// Klammern, wie es gleich an Ort und Stelle in den Gabensatz geschrieben wird
+    /// (<c>new Func&lt;Task&gt;(() =&gt; { … })</c>). Auch das ist eine Schreibweise,
+    /// die man beim Schreiben der ersten Regel nicht im Kopf hatte.
+    /// </summary>
+    /// <remarks>
+    /// Der Rumpf eines <c>Blazornachlauf.Nachgelagert(() =&gt; { … })</c> fällt von
+    /// selbst heraus: Er gibt keinen fertigen <c>Task</c> heraus — das tut die
+    /// Methode um ihn herum, und die führt den Nachlauf.
+    /// </remarks>
+    private static readonly Regex LambdaKopfRegex = new(@"=>\s*\{", RegexOptions.Compiled);
 
     // =====================================================================
     //  Der Fall
@@ -254,8 +270,17 @@ public sealed class HuellenwegTests
             "    return Task.FromResult(n);\n" +
             "}\n";
 
+        // Dieselbe Sache ohne eigene Methode — gleich im Gabensatz.
+        const string schlechtLambda =
+            "[\"KostenOeffnen\"] = new Func<Task>(() =>\n" +
+            "{\n" +
+            "    KostenKomponenteHuelle.OeffnenProjekt(besitzer, 7, \"P\", \"WP\", false, 3);\n" +
+            "    return Task.CompletedTask;\n" +
+            "}),\n";
+
         Assert.Single(AnweisungsfundeIn(schlecht));
         Assert.Contains("KostenOeffnen", AnweisungsfundeIn(schlecht)[0], StringComparison.Ordinal);
+        Assert.Single(AnweisungsfundeIn(schlechtLambda));
         Assert.Empty(AnweisungsfundeIn(gutNachlauf));
         Assert.Empty(AnweisungsfundeIn(gutAwait));
         Assert.Empty(AnweisungsfundeIn(gutOhneFenster));
@@ -280,36 +305,54 @@ public sealed class HuellenwegTests
     private static List<string> AnweisungsfundeIn(string quelltext)
     {
         var funde = new List<string>();
+        var gesehen = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (Match kopf in TaskKopfRegex.Matches(quelltext))
-        {
-            int klammer = kopf.Index + kopf.Length - 1;
-            string rumpf = Rumpf(quelltext, klammer);
-            if (rumpf is null) continue;
+            Sammle(quelltext, kopf.Index + kopf.Length - 1, kopf.Groups[1].Value, funde, gesehen);
 
-            if (rumpf.Contains("await", StringComparison.Ordinal)) continue;
-            if (rumpf.Contains("Blazornachlauf", StringComparison.Ordinal)) continue;
-            if (rumpf.Contains("Blazorsprung", StringComparison.Ordinal)) continue;
-
-            if (!rumpf.Contains("Task.CompletedTask", StringComparison.Ordinal) &&
-                !rumpf.Contains("Task.FromResult", StringComparison.Ordinal)) continue;
-
-            string ohneWorte = OhneKommentarzeilen(rumpf);
-            int kopfzeile = Zeile(quelltext, klammer);
-
-            foreach (Match treffer in ModalAufrufRegex.Matches(ohneWorte))
-                funde.Add((kopfzeile + Zeile(ohneWorte, treffer.Index) - 1) + "  " +
-                          kopf.Groups[1].Value + "  " + Einzeilig(treffer.Value));
-        }
+        foreach (Match kopf in LambdaKopfRegex.Matches(quelltext))
+            Sammle(quelltext, kopf.Index + kopf.Length - 1, "(Lambda)", funde, gesehen);
 
         return funde;
+    }
+
+    /// <summary>
+    /// Ein Rumpf, gemessen. <paramref name="gesehen"/> hält dieselbe Stelle davon
+    /// ab, zweimal zu erscheinen: Ein Lambda IN einer gemeldeten Methode trägt
+    /// denselben Aufruf in derselben Zeile.
+    /// </summary>
+    private static void Sammle(string quelltext, int klammer, string benennung,
+                               List<string> funde, HashSet<string> gesehen)
+    {
+        string? rumpf = Rumpf(quelltext, klammer);
+        if (rumpf is null) return;
+
+        if (rumpf.Contains("await", StringComparison.Ordinal)) return;
+        if (rumpf.Contains("Blazornachlauf", StringComparison.Ordinal)) return;
+        if (rumpf.Contains("Blazorsprung", StringComparison.Ordinal)) return;
+
+        if (!rumpf.Contains("Task.CompletedTask", StringComparison.Ordinal) &&
+            !rumpf.Contains("Task.FromResult", StringComparison.Ordinal)) return;
+
+        string ohneWorte = OhneKommentarzeilen(rumpf);
+        int kopfzeile = Zeile(quelltext, klammer);
+
+        foreach (Match treffer in ModalAufrufRegex.Matches(ohneWorte))
+        {
+            int zeile = kopfzeile + Zeile(ohneWorte, treffer.Index) - 1;
+            string aufruf = Einzeilig(treffer.Value);
+
+            if (!gesehen.Add(zeile + "|" + aufruf)) continue;
+
+            funde.Add(zeile + "  " + benennung + "  " + aufruf);
+        }
     }
 
     /// <summary>
     /// Der Methodenrumpf ab der öffnenden Klammer, über die Klammertiefe gezählt.
     /// <c>null</c>, wenn er nicht schließt.
     /// </summary>
-    private static string Rumpf(string quelltext, int klammer)
+    private static string? Rumpf(string quelltext, int klammer)
     {
         int tiefe = 0;
 
