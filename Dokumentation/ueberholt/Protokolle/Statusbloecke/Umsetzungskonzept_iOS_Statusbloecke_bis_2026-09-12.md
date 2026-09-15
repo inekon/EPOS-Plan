@@ -5824,3 +5824,40 @@ steht aus und ist die eigentliche Aufgabe von
 > Tabuwort in der Wiki-Quelle Stromspeicher.
 >
 > **Offen:** Logbuch-Eintrag entworfen, Upload gebündelt; `Proben/Rasterprobe` nicht gezogen (nicht berührt).
+
+## #275 — Wärmequelle Erdreich: der OK-Knopf fällt, das Schließen übernimmt (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 14.09.2026: „Dialog: Wärmequelle Erdreich / OK Button soll aus Dialog raus". Die zwei
+> übrigen Teile des Wunsches (Erdkollektor und Erdsonde als eigene Rubriken) waren mit #262 erledigt; der Knopf blieb
+> offen, weil zwei Lesarten möglich waren. Entscheid 15.09.2026 („umsetzen"): die Knopfleiste fällt ganz, das Schließen
+> übernimmt mit Prüfung. Reichweite nur dieser Dialog.
+>
+> **Umsetzung:** `EPOS.UI/Dialoge/Simulation/QuelleErdreichDialog.razor` trägt keine `SpeichernLeiste` mehr;
+> `BeiErgebnis(bool)` ist zu `public Task UebernehmenUndSchliessen()` geworden — dieselben acht Prüfregeln in derselben
+> Reihenfolge und mit demselben Wortlaut, dasselbe `Geschlossen.InvokeAsync(Daten with { … })`. Kreuz und Escape münden
+> beide dort hinein; es gibt keine zweite Kopie der Regeln und keinen Abbruchweg mehr (der Wirt behandelt eine leere
+> Rückgabe weiterhin). Eine verletzte Regel meldet im Warnband und hält den Dialog offen; `Meldet` zeichnet selbst nach,
+> weil der Ruf nun auch von außen kommt. Bei laufender Simulation (`_laeuft`) steigt der Weg sofort aus, der Dialog
+> schließt nicht. Die Parameter `OkText`/`AbbrechenText` hatten danach keinen Verwender mehr und fielen samt ihren zwei
+> Gaben in `EPOS.UI.Daten/Simulation/QuelleErdreichHuelle.cs` — ein unbekannter Schlüssel im `@attributes`-Splat würde
+> zur Laufzeit werfen.
+>
+> **Schließweg und Begründung:** Der Baustein `Ueberlagerung` bleibt unangetastet. Die Einbettung in
+> `SimulationKonfigSeite.razor` setzt `Offen="true"` ohne Zweiwegbindung; damit hat `OffenChanged` keinen Delegaten und
+> `BeiSchliessen` ruft allein `Geschlossen` — der Wirt entscheidet ohnehin, ob geschlossen wird. Die Seite ruft dort
+> `ErdreichSchliessen()` und darin über einen Verweis die eine öffentliche Methode des Dialogs; ist eine Regel verletzt,
+> tut sie nichts und die Überlagerung bleibt stehen. Ohne Verweis (Dialog noch nicht gezeichnet) schließt sie wie bisher,
+> damit niemand festsitzt; `Ebene2Schliessen` räumt den Verweis mit weg. Verworfen wurden ein neuer Prüf-Rückruf am
+> Baustein (unnötig) und `Schliessbar="false"` samt eigenem Kreuz im Dialogkopf (verdoppelt die Schließgeste). Escape
+> steigt vom Dialog bis zur Überlagerung auf und hätte den Weg zweimal angestoßen; die Dialogwurzel hält den Tastendruck
+> deshalb an und wertet ihn selbst aus. Liegt der Fokus noch auf der Überlagerungswurzel, greift deren Escape über den
+> Wirt auf dieselbe Methode.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 4 Warnungen (Bestand); Windows-Schale mit `EnableWindowsTargeting` 0 Fehler,
+> 5 Warnungen (Bestand); `~Erdreich` 37 und `~SimulationKonfig` 43 je dreimal grün (darunter zwei Ende-zu-Ende-Fälle, die
+> das echte Kreuz der Überlagerung klicken), `~SpeichernLeiste` 10, `~Ueberlagerung` 77, `~Stilblatt` 24,
+> `~KiDialogaufruf` 37, Kern-Wachen 43; voller `EPOS.UI.Tests`-Lauf 4 077 grün; ResourceDesigner unverändert und
+> wiederholbar; kein Rechenweg berührt. Merge `ede82c79`.
+>
+> **Offen:** kein Verwerfen mehr in diesem Dialog (Bedienänderung); die sechs übrigen Simulationsdialoge mit derselben
+> Leiste unverändert, Ausweitung auf Zuruf; Logbuch-Eintrag entworfen, Upload gebündelt.
