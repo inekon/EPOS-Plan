@@ -130,7 +130,6 @@ namespace WindowsFormsApplication1
                 ["Daten"] = daten,
                 ["Modus"] = neu ? KatalogModus.Neu : KatalogModus.Bearbeiten,
                 ["Brennstoffe"] = Brennstoffe(ctrl),
-                ["WartungEinheiten"] = WartungEinheiten(),
                 ["HinweisBeimOeffnen"] = hinweis,
 
                 ["Ueberschreiben"] = new Func<HeizkesselKatalogDaten, KatalogSpeicherErgebnis>(
@@ -138,8 +137,6 @@ namespace WindowsFormsApplication1
 
                 ["Anlegen"] = new Func<HeizkesselKatalogDaten, string, KatalogSpeicherErgebnis>(
                     (d, n) => Uebersetzen(HeizkesselStammCtrl.Anlegen(NachModell(d), n))),
-
-                ["Co2Vorgabe"] = new Func<string, double>(EmissionsVorgaben.HeizkesselCo2),
 
                 ["TitelText"] = Text_("HZKK_TITEL", "Administration Heizkessel"),
                 ["GruppeBezeichnung"] = Text_("HZKK_GRP_BEZEICHNUNG", "Kessel"),
@@ -164,29 +161,19 @@ namespace WindowsFormsApplication1
                 ["LabelVorlaufKurz"] = Text_("HZKK_FELD_VORLAUF", "Vorlauf"),
                 ["LabelRuecklauf"] = Text_("HZKK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["LabelRuecklaufKurz"] = Text_("HZKK_FELD_RUECKLAUF", "Rücklauf"),
-                ["GruppeKosten"] = Text_("HZKK_GRP_KOSTEN", "Eingabedaten zur Berechnung der Kosten"),
-                ["LabelInvest"] = Text_("HZKK_LBL_INVEST", "Investitionskosten:"),
-                ["LabelInvestKurz"] = Text_("HZKK_FELD_INVEST", "Investitionskosten"),
-                ["LabelWartung"] = MyResource.Resource.KESSEL_WARTUNG_LBL + ":",
-                ["LabelWartungKurz"] = MyResource.Resource.KESSEL_WARTUNG_LBL,
-                ["LabelWartungEinheit"] = MyResource.Resource.KESSEL_WARTUNG_EINHEIT_LBL + ":",
-                ["LabelRaumbedarf"] = Text_("HZKK_LBL_RAUMBEDARF", "Raumbedarf:"),
-                ["LabelRaumbedarfKurz"] = Text_("HZKK_FELD_RAUMBEDARF", "Raumbedarf"),
-                ["LabelNutzungsdauer"] = Text_("HZKK_LBL_NUTZUNGSDAUER", "Nutzungsdauer:"),
-                ["LabelNutzungsdauerKurz"] = Text_("HZKK_FELD_NUTZUNGSDAUER", "Nutzungsdauer"),
-                ["EinheitJahre"] = Text_("HZKK_EINHEIT_JAHRE", "Jahre"),
-                ["GruppeBehg"] = Text_("HZKK_GRP_BEHG", "Emissionen nach BEHG-V"),
-                ["BehgZeile"] = Text_("HZKK_BEHG_ZEILE", "für Heizzwecke in t CO2 / GJ"),
-                ["BehgOel"] = Text_("HZKK_BEHG_OEL", "Heizöl: 0,0808"),
-                ["BehgFluessiggas"] = Text_("HZKK_BEHG_FLUESSIGGAS", "Flüssiggas: 0,0663"),
-                ["BehgErdgas"] = Text_("HZKK_BEHG_ERDGAS", "Erdgas: 0,056"),
-                ["BtnCo2Text"] = Text_("HZKK_BTN_CO2", "CO2 BEHG"),
-                ["EmissionHinweis"] = Text_("HZKK_EMISSION_INFO",
-                    "Nur zur Information — die Emissionsrechnung nimmt den Faktor des Energieträgers aus dem Emissionskatalog."),
-                ["GruppeEmissionen"] = Text_("HZKK_GRP_EMISSIONEN",
-                    "Emissionsfaktoren bezogen auf den Brennstoffverbrauch"),
-                ["LabelStaub"] = Text_("HZKK_LBL_STAUB", "Staub:"),
-                ["LabelStaubKurz"] = Text_("HZKK_FELD_STAUB", "Staub"),
+
+                // HIER STANDEN DIE TEXTSCHLÜSSEL der Gruppen „Kosten",
+                // „Emissionen nach BEHG-V" und „Emissionsfaktoren" (GruppeKosten,
+                // LabelInvest…, LabelWartung…, LabelRaumbedarf…, LabelNutzungsdauer…,
+                // EinheitJahre, GruppeBehg, Behg*, BtnCo2Text, GruppeEmissionen,
+                // EmissionHinweis, LabelStaub…) samt Co2Vorgabe und WartungEinheiten.
+                // Der Dialog führt diese [Parameter] seit dem Anwenderentscheid vom
+                // 15.09.2026 nicht mehr, und ein Schlüssel ohne Parameter ist genau
+                // das, was ParametersatzTests findet. Die Ressourcen selbst bleiben:
+                // Der BHKW-Katalogeditor führt dieselben Gruppen weiter und liest
+                // HZKK_BEHG_*, HZKK_BTN_CO2, HZKK_EMISSION_INFO, HZKK_GRP_EMISSIONEN
+                // und HZKK_LBL_STAUB mit.
+
                 ["BtnUeberschreibenText"] = Text_("HZKK_BTN_UEBERSCHREIBEN", "Überschreiben"),
                 ["BtnSpeichernUnterText"] = Text_("HZKK_BTN_SPEICHERN_UNTER", "Speichern unter"),
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
@@ -288,20 +275,13 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>
-        /// Die drei Wartungseinheiten; die Id ist der Index in
-        /// <c>TechnikPlanwertCtrl.WARTUNG_SCHLUESSEL</c>. Der sprachneutrale Schlüssel
-        /// und der Persistenzwert bleiben hier — sie sind Datenbankinhalt
-        /// (Drei-Schichten-Regel).
-        /// </summary>
-        private static IReadOnlyList<(int Id, string Text)> WartungEinheiten()
-        {
-            var liste = new List<(int, string)>();
-            string[] schluessel = TechnikPlanwertCtrl.WARTUNG_SCHLUESSEL;
-            for (int i = 0; i < schluessel.Length; i++)
-                liste.Add((i, TechnikPlanwertCtrl.WartungName(schluessel[i])));
-            return liste;
-        }
+        // HIER STAND WartungEinheiten() — die drei Wartungseinheiten als Auswahlliste
+        // für die Maske. Mit der Gruppe „Kosten" ist die Auswahl gefallen
+        // (15.09.2026). Die BEIDEN Übersetzer darunter bleiben: Die Spalte
+        // Wartungskosten_Einheit steht weiter in der Datenbank, wird beim Laden nach
+        // HeizkesselKatalogDaten.WartungEinheit gelesen und beim Speichern
+        // unverändert zurückgeschrieben — gepflegt wird sie im Aufklapper
+        // „Alle Daten" des Projektdialogs.
 
         /// <summary>Persistenzwert → Listenindex (Vorbild <c>EinheitWaehlen</c>).</summary>
         private static int EinheitIndex(string dbWert)

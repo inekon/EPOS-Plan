@@ -177,10 +177,6 @@
     [Parameter] public IReadOnlyList<(int Id, string Text)> Brennstoffe { get; set; }
         = Array.Empty<(int, string)>();
 
-    /// <summary>Die Wartungseinheiten in Anzeigereihenfolge; die Id ist der Listenindex.</summary>
-    [Parameter] public IReadOnlyList<(int Id, string Text)> WartungEinheiten { get; set; }
-        = Array.Empty<(int, string)>();
-
     /// <summary>
     /// Hinweis beim Oeffnen - im Bestand die Mehrdeutigkeitsmeldung von
     /// <c>SetControls</c> („Der Katalog fuehrt den Namen … n-mal"). Leer = keiner.
@@ -193,8 +189,11 @@
     /// <summary>Legt einen neuen Satz an - zweiter Parameter ist der gewuenschte Name.</summary>
     [Parameter] public Func<HeizkesselKatalogDaten, string, KatalogSpeicherErgebnis>? Anlegen { get; set; }
 
-    /// <summary>Die CO2-Vorgabe zum gewaehlten Brennstoff (<c>EmissionsVorgaben.HeizkesselCo2</c>).</summary>
-    [Parameter] public Func<string, double>? Co2Vorgabe { get; set; }
+    // HIER STAND Co2Vorgabe, die CO2-Vorgabe zum gewaehlten Brennstoff
+    // (EmissionsVorgaben.HeizkesselCo2). Sie ist mit der Gruppe "Emissionen nach
+    // BEHG-V" entfallen (15.09.2026): Ohne das Feld CO2 gibt es nichts mehr
+    // vorzubelegen. Der Vorgabeknopf steht weiterhin im BhkwKatalogDialog, der seine
+    // Emissionsgruppe behaelt.
 
     /// <summary>
     /// Der Name, unter dem der Satz jetzt steht - <c>null</c> bei Abbruch. Der Aufrufer
@@ -237,33 +236,17 @@
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
     [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
 
-    [Parameter] public string GruppeKosten { get; set; } = "Eingabedaten zur Berechnung der Kosten";
-    [Parameter] public string LabelInvest { get; set; } = "Investitionskosten:";
-    [Parameter] public string LabelInvestKurz { get; set; } = "Investitionskosten";
-    [Parameter] public string LabelWartung { get; set; } = "Wartungskosten:";
-    [Parameter] public string LabelWartungKurz { get; set; } = "Wartungskosten";
-    [Parameter] public string LabelWartungEinheit { get; set; } = "Bezugsgröße:";
-    [Parameter] public string LabelRaumbedarf { get; set; } = "Raumbedarf:";
-    [Parameter] public string LabelRaumbedarfKurz { get; set; } = "Raumbedarf";
-    [Parameter] public string LabelNutzungsdauer { get; set; } = "Nutzungsdauer:";
-    [Parameter] public string LabelNutzungsdauerKurz { get; set; } = "Nutzungsdauer";
-    [Parameter] public string EinheitJahre { get; set; } = "Jahre";
-
-    [Parameter] public string GruppeBehg { get; set; } = "Emissionen nach BEHG-V";
-    [Parameter] public string BehgZeile { get; set; } = "für Heizzwecke in t CO2 / GJ";
-    [Parameter] public string BehgOel { get; set; } = "Heizöl: 0,0808";
-    [Parameter] public string BehgFluessiggas { get; set; } = "Flüssiggas: 0,0663";
-    [Parameter] public string BehgErdgas { get; set; } = "Erdgas: 0,056";
-    [Parameter] public string BtnCo2Text { get; set; } = "CO2 BEHG";
-
-    [Parameter] public string GruppeEmissionen { get; set; } = "Emissionsfaktoren bezogen auf den Brennstoffverbrauch";
-
-    /// <summary>Die Herleitungszeile ueber den fuenf Emissionsfeldern (W14a-E-8-B1):
-    /// Sie sind nur Anzeige, gerechnet wird mit dem Faktor des Energietraegers.</summary>
-    [Parameter] public string EmissionHinweis { get; set; } =
-        "Nur zur Information — die Emissionsrechnung nimmt den Faktor des Energieträgers aus dem Emissionskatalog.";
-    [Parameter] public string LabelStaub { get; set; } = "Staub:";
-    [Parameter] public string LabelStaubKurz { get; set; } = "Staub";
+    // HIER STANDEN DIE TEXTE der Gruppen "Kosten" (GruppeKosten, LabelInvest,
+    // LabelInvestKurz, LabelWartung, LabelWartungKurz, LabelWartungEinheit,
+    // LabelRaumbedarf, LabelRaumbedarfKurz, LabelNutzungsdauer,
+    // LabelNutzungsdauerKurz, EinheitJahre), "Emissionen nach BEHG-V" (GruppeBehg,
+    // BehgZeile, BehgOel, BehgFluessiggas, BehgErdgas, BtnCo2Text) und
+    // "Emissionsfaktoren" (GruppeEmissionen, EmissionHinweis, LabelStaub,
+    // LabelStaubKurz). Sie sind mit ihren Gruppen gefallen (15.09.2026); ein Parameter
+    // ohne Markup ist ein Schluessel, den die Huelle weiterhin fuellen darf, ohne dass
+    // ihn jemand liest - deshalb fallen sie in demselben Schritt. Die Ressourcen
+    // (HZKK_GRP_KOSTEN, HZKK_LBL_INVEST, HZKK_BEHG_*, HZKK_LBL_STAUB …) bleiben: Der
+    // BhkwKatalogDialog fuehrt dieselben Gruppen weiter und liest einen Teil davon.
 
     [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
     [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
@@ -414,20 +397,12 @@
         return false;
     }
 
-    private void BeiCo2Vorgabe()
-    {
-        // Der Vorlaeufer las den ANZEIGETEXT der Auswahlliste (comboBox_Brennstoff.Text)
-        // und entschied danach - deshalb geht der Name hinaus, nicht die Id.
-        if (Co2Vorgabe is null) return;
-        Daten.CO2 = Co2Vorgabe(GewaehlterBrennstoff());
-    }
-
-    private string GewaehlterBrennstoff()
-    {
-        foreach (var b in Brennstoffe)
-            if (Daten.Brennstoff.HasValue && b.Id == Daten.Brennstoff.Value) return b.Text;
-        return "";
-    }
+    // HIER STANDEN BeiCo2Vorgabe() und GewaehlterBrennstoff(). Der Knopf "CO2 BEHG"
+    // schrieb den Vorgabewert des gewaehlten Brennstoffs in die Spalte CO2; mit der
+    // Emissionsgruppe ist beides gegenstandslos (15.09.2026). Die Spalte selbst traegt
+    // der Feldsatz weiter - die Huelle liest sie und schreibt sie unveraendert zurueck
+    // (AusModell/NachModell in HeizkesselHuelle), gepflegt wird sie im Aufklapper
+    // "Alle Daten" des Projektdialogs.
 
     private async Task BeiUeberschreiben()
     {

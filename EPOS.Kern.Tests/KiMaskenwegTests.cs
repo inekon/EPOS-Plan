@@ -87,21 +87,29 @@ namespace EPOS.Kern.Tests
         // ===================================================== Die Grenzen
 
         /// <summary>
-        /// <b>Mehrdeutig heisst schweigen.</b> <c>nutzungsdauer</c> steht in mehr als
-        /// einer Katalogmaske; dann darf die Absage keine davon nennen, sondern faellt auf
-        /// die Liste zurueck.
+        /// <b>Mehrdeutig heisst schweigen.</b> <c>schritt</c> steht in mehr als einer
+        /// Katalogmaske (Stromspeicher-Auslegung und Simulation); dann darf die Absage
+        /// keine davon nennen, sondern faellt auf die Liste zurueck.
         /// </summary>
+        /// <remarks>
+        /// <b>Bis zum 15.09.2026 stand hier <c>nutzungsdauer</c></b> — das Feld gab es in
+        /// der Heizkesselmaske UND als Spalte der Kostenverwaltung. Mit dem
+        /// Anwenderentscheid „keine Kosten und Emissionen im Bearbeiten-Dialog" hat der
+        /// Heizkessel es verloren; es steht seither nur noch an einer Maske und taugt
+        /// nicht mehr als Beispiel. <c>schritt</c> ist an seine Stelle getreten, und die
+        /// Vorbedingung darunter prueft weiterhin, dass der Fall seinen Gegenstand hat.
+        /// </remarks>
         [Fact]
         public void Ein_mehrdeutiges_Feld_wird_nicht_geraten()
         {
             // Vorbedingung des Falles: Das Feld steht wirklich mehrfach im Katalog.
             int masken = 0;
             foreach (KiDialog d in KiDialoge.Katalog.Alle)
-                if (d.KenntFeld("nutzungsdauer")) masken++;
+                if (d.KenntFeld("schritt")) masken++;
             Assert.True(masken > 1, "Der Fall braucht ein Feld in mehreren Masken.");
 
             string text = Grund("feld_setzen",
-                new Dictionary<string, object> { ["feld"] = "nutzungsdauer", ["wert"] = "15" });
+                new Dictionary<string, object> { ["feld"] = "schritt", ["wert"] = "1" });
 
             Assert.NotNull(text);
             Assert.DoesNotContain("dialog_oeffnen", text, StringComparison.Ordinal);

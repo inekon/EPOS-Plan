@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Waermepumpe;
 using EPOS.UI.Dienste;
@@ -25,6 +27,15 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// (<c>HeizkesselKatalogDaten.Ptherm</c>), aufgelöst per Reflection. Ein Tippfehler
 /// darin bricht nichts — das Feld wird still nicht angemeldet und fehlt im Feldblock.
 /// Genau deshalb muss ihn ein Zeuge nennen.</para>
+///
+/// <para><b>ZWEI Wächter, zwei Fragen (15.09.2026).</b>
+/// <see cref="Jeder_Eigenschaftsname_des_Katalogs_gibt_es_am_Daten_Objekt"/> fragt, ob
+/// sich der Pfad AUFLÖSEN lässt;
+/// <see cref="Jeder_Feldpfad_steht_im_Markup_seiner_Maske"/> fragt, ob der Anwender das
+/// Feld auch SIEHT. Die zweite Frage kam dazu, weil der Heizkesseleditor seine Kosten-
+/// und Emissionsgruppen verlor und der Katalog die neun Felder trotzdem weiterführte:
+/// Die Eigenschaften gibt es am DTO noch — die Hülle liest und schreibt die Spalten —,
+/// nur zeigt die Maske sie nicht mehr. Der erste Wächter blieb dabei grün.</para>
 /// </summary>
 public class KiDialogkatalogTests
 {
@@ -73,7 +84,9 @@ public class KiDialogkatalogTests
         IReadOnlyList<string> fehlt =
             KiMaskenanmeldung.Pruefe(KiMaskennamen.HEIZKESSEL, typeof(PufferSpKatalogDaten));
 
-        Assert.Equal(15, fehlt.Count);
+        // SECHS seit dem 15.09.2026 — der Katalogeditor hat Kosten und Emissionen
+        // verloren (siehe Die_Heizkesselmaske_fuehrt_nur_noch_die_sechs_sichtbaren_Felder).
+        Assert.Equal(6, fehlt.Count);
         Assert.Contains("HeizkesselKatalogDaten.Ptherm", fehlt);
     }
 
@@ -134,15 +147,267 @@ public class KiDialogkatalogTests
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_unveraendert_15_3_1_und_1_Feld()
+    public void Die_vier_Startmasken_fuehren_6_3_1_und_1_Feld()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
         // Auflösungsweg (Fachkonzept 11.6).
-        Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
+        //
+        // GESCHRUMPFT ist er am 15.09.2026, und zwar allein beim Heizkessel: von 15 auf
+        // 6. Mit dem Anwenderentscheid „Der Dialog über Button Bearbeiten soll keine
+        // Kosten und Emissionen enthalten" hat die Maske neun Felder verloren; der
+        // Katalog führt sie deshalb auch nicht mehr (siehe
+        // Die_Heizkesselmaske_fuehrt_nur_noch_die_sechs_sichtbaren_Felder).
+        Assert.Equal(6, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
         Assert.Equal(3, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
         Assert.Single(KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder);
         Assert.Single(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder);
+    }
+
+    /// <summary>
+    /// <b>Was der Heizkesseleditor am 15.09.2026 verloren hat — namentlich.</b>
+    ///
+    /// <para>Neun Felder: <c>investitionskosten</c>, <c>wartungskosten</c>,
+    /// <c>raumbedarf</c>, <c>nutzungsdauer</c>, <c>co2</c>, <c>so2</c>, <c>nox</c>,
+    /// <c>co</c>, <c>staub</c>. Der Zählfall oben sagt nur, dass es sechs SIND; dieser
+    /// sagt, WELCHE — und dass keines der neun auf einem Umweg zurückkommt.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Heizkesselmaske_fuehrt_nur_noch_die_sechs_sichtbaren_Felder()
+    {
+        KiDialog hk = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!;
+
+        string[] erwartet =
+        {
+            "th_leistung", "wirkungsgrad_gas", "wirkungsgrad_oel",
+            "bereitschaftsverlust", "vorlauf", "ruecklauf"
+        };
+        Assert.Equal(erwartet.OrderBy(x => x, StringComparer.Ordinal),
+                     hk.Felder.Select(f => f.Name).OrderBy(x => x, StringComparer.Ordinal));
+
+        foreach (string weg in new[]
+                 {
+                     "investitionskosten", "wartungskosten", "raumbedarf", "nutzungsdauer",
+                     "co2", "so2", "nox", "co", "staub"
+                 })
+            Assert.False(hk.KenntFeld(weg), weg);
+    }
+
+    // =====================================================================
+    //  Der zweite Wächter: steht das Feld auch WIRKLICH auf der Maske?
+    // =====================================================================
+
+    /// <summary>
+    /// Maskenname → Razor-Datei, repo-relativ. Die EINE Zuordnungstabelle für die
+    /// Markup-Probe (Auftrag vom 15.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// Sie ist bewusst getrennt von <see cref="Masken"/>: Dort steht das
+    /// DATEN-OBJEKT (was der Dialog anmeldet), hier die DATEI (was der Anwender
+    /// sieht). Bei der Simulations- und der Stromspeicher-Ansicht fallen beide
+    /// auseinander — siehe <see cref="OhneMarkupprobe"/>.
+    /// </remarks>
+    public static TheoryData<string, string> Markupdateien() => new()
+    {
+        { KiMaskennamen.HEIZKESSEL,       "EPOS.UI/Dialoge/Erzeuger/HeizkesselKatalogDialog.razor" },
+        { KiMaskennamen.PHOTOVOLTAIK,     "EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor" },
+        { KiMaskennamen.PUFFERSPEICHER,   "EPOS.UI/Dialoge/Erzeuger/PufferSpKatalogDialog.razor" },
+        { KiMaskennamen.WAERMEPUMPE,      "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor" },
+        { KiMaskennamen.KOSTENVERWALTUNG, "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" }
+    };
+
+    /// <summary>
+    /// Die Masken OHNE Markup-Probe — mit Grund, je eine Zeile.
+    /// </summary>
+    /// <remarks>
+    /// <b>Beide binden über eine SICHTKLASSE.</b> <c>StromspeicherKiSicht</c> und
+    /// <c>SimulationKiSicht</c> sind flache Sichtmodelle, die die Kette zum lebenden
+    /// Stand EINMAL an einer benannten Stelle auflösen
+    /// (<c>KiEigenschaftspfad</c>-Kommentar: „Wo eine Maske echte Tiefe braucht,
+    /// bekommt sie ein flaches SICHTMODELL"). Ihre Eigenschaftsnamen
+    /// (<c>KapazitaetGesamtKWh</c>, <c>WaermedeckungProzent</c>) stehen deshalb NICHT
+    /// im Markup — die Ansicht zeigt dieselben Zahlen aus ihrem eigenen Stand. Für
+    /// beide hält die Sichtklasse selbst den Zeugen (<c>KiDialogkatalogTests</c>
+    /// weiter unten, <c>KiSimulationMaskeTests</c>): Dort wird gerechnet, ob die
+    /// Sicht die Werte der Ansicht trägt, und das ist die schärfere Probe.
+    /// </remarks>
+    private static readonly Dictionary<string, string> OhneMarkupprobe = new()
+    {
+        [KiMaskennamen.STROMSPEICHER_AUSLEGUNG] =
+            "bindet über die Sichtklasse StromspeicherKiSicht, nicht über das Markup",
+        [KiMaskennamen.SIMULATION] =
+            "bindet über die Sichtklasse SimulationKiSicht, nicht über das Markup"
+    };
+
+    /// <summary>
+    /// <b>Ein Katalogfeld, das auf der Maske nicht steht, ist eine stille Setzung.</b>
+    ///
+    /// <para><b>Der Befund (15.09.2026).</b> Der Heizkesseleditor verlor die Gruppen
+    /// „Kosten", „Emissionen nach BEHG-V" und „Emissionsfaktoren"; der Dialogkatalog
+    /// führte die neun Felder weiter. Der bisherige Wächter
+    /// (<see cref="Jeder_Eigenschaftsname_des_Katalogs_gibt_es_am_Daten_Objekt"/>) blieb
+    /// dabei GRÜN: Die Eigenschaften gibt es am DTO ja noch — die Hülle liest und
+    /// schreibt die Spalten weiterhin. Grün heißt hier also nur „auflösbar", nicht
+    /// „sichtbar". Der Assistent hätte angeboten, eine Zahl zu setzen, die der Anwender
+    /// in der offenen Maske nirgends nachlesen kann.</para>
+    ///
+    /// <para><b>Die Regel.</b> Der Eigenschaftsname — bei einer Spalte
+    /// (<c>Stand.Zeilen[].Nutzungsdauer</c>) der Teil NACH dem <c>[]</c> — muss im
+    /// Markup MIT FÜHRENDEM PUNKT vorkommen: <c>Daten.Ptherm</c>,
+    /// <c>_projektZeile.Neigung</c>, <c>zeile.Nutzungsdauer</c>. Der Punkt ist das
+    /// Entscheidende: Er trennt eine BINDUNG von einer gleichlautenden Zeichenkette —
+    /// <c>"Investitionskosten…"</c> als Knopftext oder <c>LabelInvestKurz</c> als
+    /// Parametername treffen die Regel nicht. Kommentarzeilen zählen nicht mit
+    /// (dieselbe Ausnahme wie bei den zwei <c>git grep</c>-Wächtern des Kerns);
+    /// sonst hielte ein „HIER STAND Daten.CO2" die entfernte Deklaration am Leben.</para>
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Markupdateien))]
+    public void Jeder_Feldpfad_steht_im_Markup_seiner_Maske(string maske, string datei)
+    {
+        string markup = MarkupOhneKommentare(datei);
+
+        KiDialog dialog = KiDialoge.Katalog.Finde(maske)!;
+        Assert.NotNull(dialog);
+        Assert.NotEmpty(dialog.Felder);
+
+        var fehlt = new List<string>();
+        foreach (KiDialogFeld f in dialog.Felder)
+        {
+            string eigenschaft = KiEigenschaftspfad.Eigenschaft(f.Eigenschaftspfad);
+            Assert.NotEqual("", eigenschaft);
+
+            if (!StehtImMarkup(markup, eigenschaft))
+                fehlt.Add(f.Name + " → " + f.Eigenschaftspfad);
+        }
+
+        Assert.True(fehlt.Count == 0,
+                    "Diese Felder der Maske '" + maske + "' stehen in " + datei +
+                    " an keiner Bindung — sie sind für den Anwender unsichtbar und " +
+                    "gehören damit nicht in den Dialogkatalog: " + string.Join(", ", fehlt));
+    }
+
+    /// <summary>
+    /// Jede Maske des Katalogs steht in GENAU EINER der beiden Listen — entweder mit
+    /// Razor-Datei oder mit begründeter Ausnahme. Ohne diesen Fall verschwände eine
+    /// neue Maske stillschweigend aus der Probe, indem niemand sie einträgt.
+    /// </summary>
+    [Fact]
+    public void Jede_Katalogmaske_hat_entweder_ein_Markup_oder_einen_Ausnahmegrund()
+    {
+        var mitDatei = new HashSet<string>();
+        foreach (object[] zeile in Markupdateien()) mitDatei.Add((string)zeile[0]);
+
+        foreach (KiDialog d in KiDialoge.Katalog.Alle)
+        {
+            bool markup = mitDatei.Contains(d.Maskenname);
+            bool ausnahme = OhneMarkupprobe.ContainsKey(d.Maskenname);
+
+            Assert.True(markup ^ ausnahme,
+                        "Die Maske '" + d.Maskenname + "' steht in keiner oder in beiden " +
+                        "Listen der Markup-Probe.");
+        }
+
+        // Und die Ausnahme bleibt an ihre Begründung gebunden: Eine Maske ohne
+        // Markup-Probe MUSS über eine Sichtklasse binden — daran hängt der Grund.
+        foreach (object[] zeile in Masken())
+        {
+            if (!OhneMarkupprobe.ContainsKey((string)zeile[0])) continue;
+
+            Type daten = (Type)zeile[1];
+            Assert.EndsWith("KiSicht", daten.Name, StringComparison.Ordinal);
+            Assert.NotEmpty(OhneMarkupprobe[(string)zeile[0]]);
+        }
+    }
+
+    /// <summary>
+    /// Die GEGENPROBE: Die Regel darf nicht alles durchlassen. Ein erfundener
+    /// Eigenschaftsname und eine Zeichenkette ohne führenden Punkt fallen durch.
+    /// </summary>
+    [Fact]
+    public void Die_Markupprobe_laesst_nicht_alles_durch()
+    {
+        string markup = MarkupOhneKommentare(
+            "EPOS.UI/Dialoge/Erzeuger/HeizkesselKatalogDialog.razor");
+
+        // Es gibt sie: die sechs Felder, die die Maske zeigt.
+        Assert.True(StehtImMarkup(markup, "Ptherm"));
+        Assert.True(StehtImMarkup(markup, "Ruecklauf"));
+
+        // Es gibt sie nicht: die neun, die am 15.09.2026 gefallen sind. Genau darauf
+        // hätte der bisherige Wächter nicht angeschlagen.
+        foreach (string weg in new[]
+                 {
+                     "Investitionskosten", "Wartungskosten", "Raumbedarf", "Nutzungsdauer",
+                     "CO2", "SO2", "NOx", "CO", "Staub"
+                 })
+            Assert.False(StehtImMarkup(markup, weg), weg);
+
+        // Und ein Name, den es nie gab.
+        Assert.False(StehtImMarkup(markup, "GibtEsNichtImMarkup"));
+    }
+
+    /// <summary>Die Wache darf nicht ins Leere greifen.</summary>
+    [Fact]
+    public void Die_Markupprobe_findet_ihre_Dateien_und_prueft_genug_Felder()
+    {
+        int felder = 0;
+
+        foreach (object[] zeile in Markupdateien())
+        {
+            string datei = (string)zeile[1];
+            Assert.True(File.Exists(Path.Combine(Wurzel(), datei.Replace('/', Path.DirectorySeparatorChar))),
+                        datei);
+            felder += KiDialoge.Katalog.Finde((string)zeile[0])!.Felder.Count;
+        }
+
+        // 6 (Heizkessel) + 3 (PV) + 1 (Puffer) + 1 (WP) + 7 (Kostenverwaltung) = 18.
+        Assert.True(felder >= 18, "Nur " + felder + " Feldpfade geprüft.");
+    }
+
+    // ---------------------------------------------------------------------
+    //  Hilfen der Markup-Probe
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// Kommt <paramref name="eigenschaft"/> im Markup als BINDUNG vor — also mit
+    /// führendem Punkt und an einer Wortgrenze endend?
+    /// </summary>
+    /// <remarks>
+    /// Die Wortgrenze am Ende ist nötig, damit <c>CO</c> nicht auf <c>Daten.CO2</c>
+    /// trifft; der führende Punkt trennt die Bindung vom gleichlautenden Literaltext.
+    /// </remarks>
+    private static bool StehtImMarkup(string markup, string eigenschaft)
+        => Regex.IsMatch(markup, @"\." + Regex.Escape(eigenschaft) + @"\b");
+
+    /// <summary>
+    /// Der Inhalt einer Razor-Datei OHNE Kommentare: <c>@* … *@</c> und jede Zeile,
+    /// die (nach Einrückung) mit <c>//</c> oder <c>///</c> beginnt.
+    /// </summary>
+    private static string MarkupOhneKommentare(string repopfad)
+    {
+        string voll = Path.Combine(Wurzel(), repopfad.Replace('/', Path.DirectorySeparatorChar));
+        Assert.True(File.Exists(voll), repopfad);
+
+        string text = Regex.Replace(File.ReadAllText(voll), @"@\*.*?\*@", " ",
+                                    RegexOptions.Singleline);
+
+        return string.Join("\n", text.Split('\n')
+                                     .Where(z => !z.TrimStart().StartsWith("//", StringComparison.Ordinal)));
+    }
+
+    /// <summary>
+    /// Der Weg zur Repowurzel — dasselbe Verfahren wie
+    /// <c>UeberlagerungstitelTests.Wurzel</c> und <c>StilblattTests.Wwwroot</c>.
+    /// </summary>
+    private static string Wurzel()
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        return d!.FullName;
     }
 
     // =====================================================================

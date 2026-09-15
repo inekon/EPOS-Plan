@@ -765,7 +765,7 @@ namespace WindowsFormsApplication1
         /// <remarks>
         /// <para>
         /// <b>Eindeutig heisst eindeutig.</b> Fuehren zwei Masken ein Feld desselben
-        /// Namens (etwa <c>nutzungsdauer</c>), liefert die Suche <c>null</c> - dann bleibt
+        /// Namens (etwa <c>schritt</c>), liefert die Suche <c>null</c> - dann bleibt
         /// es bei der Liste, statt eine der beiden zu raten. Genannt wird nur, was sicher
         /// ist.
         /// </para>

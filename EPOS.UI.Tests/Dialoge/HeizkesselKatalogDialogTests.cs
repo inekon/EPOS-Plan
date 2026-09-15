@@ -9,9 +9,17 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Katalogeditor Heizkessel (iU9-W6.1). Soll ist die Feldkarte von
-/// <c>Form_Heizkessel_Bearbeiten</c>: fuenf Gruppen, 17 Eingabefelder, drei
-/// Speicherwege und der Vorgabewertknopf „CO2 BEHG".
+/// Katalogeditor Heizkessel (iU9-W6.1). Soll waren fuenf Gruppen, 17 Eingabefelder,
+/// drei Speicherwege und der Vorgabewertknopf „CO2 BEHG" — die Feldkarte von
+/// <c>Form_Heizkessel_Bearbeiten</c>.
+///
+/// <para><b>Seit dem Anwenderentscheid vom 15.09.2026 sind es ZWEI Gruppen</b>
+/// („Der Dialog ueber Button Bearbeiten soll keine Kosten und Emissionen enthalten"):
+/// Bezeichnung und Technik. Mit „Kosten", „Emissionen nach BEHG-V" und
+/// „Emissionsfaktoren" sind neun Eingabefelder, die Wartungseinheiten-Auswahl und der
+/// Vorgabewertknopf gefallen. Die SPALTEN bleiben — der OK-Weg reicht sie unveraendert
+/// durch (<see cref="Der_OK_Weg_reicht_die_nicht_mehr_gezeigten_Spalten_unveraendert_durch"/>);
+/// gepflegt werden sie im Aufklapper „Alle Daten" des Projektdialogs.</para>
 ///
 /// <para>Die Kultur wird auf de-DE gepinnt: Die Zahlenfelder zeigen ihren Wert
 /// ueber <c>Zahlen.Anzeigetext</c>, und der Trennzeichenvergleich waere sonst
@@ -25,10 +33,9 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         (4, "Flüssiggas (Propan)"), (9, "Heizöl EL")
     };
 
-    private static readonly (int Id, string Text)[] Einheiten =
-    {
-        (0, "€ / a"), (1, "€ / kWh"), (2, "% der Investition / a")
-    };
+    // Die Liste der Wartungseinheiten ist mit der Gruppe „Kosten" gefallen
+    // (15.09.2026): Der Dialog fuehrt den Parameter WartungEinheiten nicht mehr, die
+    // Huelle gibt ihn nicht mehr mit.
 
     public HeizkesselKatalogDialogTests()
     {
@@ -66,7 +73,6 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         KatalogModus modus = KatalogModus.Bearbeiten,
         Func<HeizkesselKatalogDaten, KatalogSpeicherErgebnis>? ueberschreiben = null,
         Func<HeizkesselKatalogDaten, string, KatalogSpeicherErgebnis>? anlegen = null,
-        Func<string, double>? co2 = null,
         Action<string?>? geschlossen = null,
         string hinweis = "")
     {
@@ -74,11 +80,9 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
             .Add(x => x.Daten, daten ?? Bestand())
             .Add(x => x.Modus, modus)
             .Add(x => x.Brennstoffe, Brennstoffe)
-            .Add(x => x.WartungEinheiten, Einheiten)
             .Add(x => x.HinweisBeimOeffnen, hinweis)
             .Add(x => x.Ueberschreiben, ueberschreiben ?? (_ => new KatalogSpeicherErgebnis(true, "ok", "Musterkessel")))
             .Add(x => x.Anlegen, anlegen ?? ((_, n) => new KatalogSpeicherErgebnis(true, "ok", n)))
-            .Add(x => x.Co2Vorgabe, co2)
             .Add(x => x.Geschlossen, n => geschlossen?.Invoke(n)));
     }
 
@@ -152,7 +156,6 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         var cut = Render<HeizkesselKatalogDialog>(p => p
             .Add(x => x.Daten, Bestand())
             .Add(x => x.Brennstoffe, Brennstoffe)
-            .Add(x => x.WartungEinheiten, Einheiten)
             .Add(x => x.TitelText, "Boiler administration")
             .Add(x => x.LabelName, "Boiler name:")
             .Add(x => x.GruppeTechnik, "Technical data")
@@ -243,6 +246,45 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
 
         Assert.NotNull(uebergeben);
         Assert.Null(uebergeben!.Ptherm);
+    }
+
+    /// <summary>
+    /// <b>Der OK-Weg fasst die entfallenen Spalten nicht an</b> (Anwenderentscheid
+    /// 15.09.2026).
+    ///
+    /// <para>Der Dialog zeigt Investitionskosten, Wartungskosten, Wartungseinheit,
+    /// Raumbedarf, Nutzungsdauer und die fünf Emissionsfaktoren nicht mehr. Sie stehen
+    /// aber weiter in <c>HeizkesselKatalogDaten</c>, weil die Hülle sie beim Laden
+    /// füllt (<c>AusModell</c>) und beim Speichern zurückschreibt
+    /// (<c>NachModell</c>). Dieser Fall friert die eine Eigenschaft ein, auf der das
+    /// beruht: Der Dialog reicht den GELADENEN Satz unverändert an
+    /// <c>Ueberschreiben</c> weiter — er nullt nichts, nur weil er es nicht zeigt.
+    /// Sonst verlöre der Anwender beim ersten „Überschreiben" alles, was er im
+    /// Aufklapper „Alle Daten" gepflegt hat.</para>
+    /// </summary>
+    [Fact]
+    public void Der_OK_Weg_reicht_die_nicht_mehr_gezeigten_Spalten_unveraendert_durch()
+    {
+        HeizkesselKatalogDaten? uebergeben = null;
+        var cut = Aufbauen(ueberschreiben: d =>
+        {
+            uebergeben = d;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Name);
+        });
+
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.NotNull(uebergeben);
+        Assert.Equal(12000.0, uebergeben!.Investitionskosten);
+        Assert.Equal(300.0, uebergeben.Wartungskosten);
+        Assert.Equal(0, uebergeben.WartungEinheit);
+        Assert.Equal(2.5, uebergeben.Raumbedarf);
+        Assert.Equal(20.0, uebergeben.Nutzungsdauer);
+        Assert.Equal(201600.0, uebergeben.CO2);
+        Assert.Equal(0.0, uebergeben.SO2);
+        Assert.Equal(285.0, uebergeben.NOx);
+        Assert.Equal(370.0, uebergeben.CO);
+        Assert.Equal(0.0, uebergeben.Staub);
     }
 
     [Fact]
@@ -377,7 +419,6 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         var cut = Render<HeizkesselKatalogDialog>(p => p
             .Add(x => x.Daten, Bestand())
             .Add(x => x.Brennstoffe, Brennstoffe)
-            .Add(x => x.WartungEinheiten, Einheiten)
             .Add(x => x.TitelText, ""));
 
         Assert.Empty(cut.FindAll(".epos-dialog-titel"));

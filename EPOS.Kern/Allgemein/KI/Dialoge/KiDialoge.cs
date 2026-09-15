@@ -99,12 +99,16 @@ namespace WindowsFormsApplication1
     /// Fenster, die es nicht mehr gibt.
     /// </para>
     /// <para>
-    /// <b>Der Feldumfang der vier Masken ist UNVERAENDERT.</b> Er stammt aus Fachkonzept
-    /// 11.6 („Feldumfang v1 = die von der Knopfpruefung erfassten Eingabefelder") und ist
-    /// der Grund, warum drei der vier Masken so wenige Felder fuehren. Ihn zu erweitern
-    /// ist eine fachliche Entscheidung mit eigener Abnahme und gehoert nicht in einen
-    /// Schritt, der den Aufloesungsweg austauscht — sonst liesse sich hinterher nicht
-    /// sagen, was den Feldblock veraendert hat.
+    /// <b>Der Feldumfang folgt der SICHTBAREN Maske — nach oben wie nach unten.</b> Seine
+    /// Herkunft ist Fachkonzept 11.6 („Feldumfang v1 = die von der Knopfpruefung
+    /// erfassten Eingabefelder"); das ist der Grund, warum drei der Katalogmasken so
+    /// wenige Felder fuehren. Ihn zu ERWEITERN bleibt eine fachliche Entscheidung mit
+    /// eigener Abnahme. Verliert eine Maske dagegen ein Feld, verliert es der Katalog im
+    /// selben Schritt: Sonst boete der Assistent an, eine Zahl zu setzen, die in der
+    /// offenen Maske niemand nachlesen kann. Der Waechter
+    /// <c>EPOS.UI.Tests/Dialoge/Hilfe/KiDialogkatalogTests</c> haelt jeden Feldpfad gegen
+    /// das Markup seiner Maske; ohne diese Probe stehen nur die beiden Ansichten, die
+    /// ueber eine SICHTKLASSE binden (Stromspeicher, Simulation).
     /// </para>
     /// <para>
     /// <b>Kein Feld traegt einen Hilfe-Slug.</b> Die Zuordnung Feld → Slug las
@@ -245,15 +249,30 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Heizkessel bearbeiten — die 15 Felder der Knopfpruefung, seit Auftrag #200
-        /// als Eigenschaften von <c>EPOS.UI.Dialoge.Erzeuger.HeizkesselKatalogDaten</c>.
+        /// Heizkessel bearbeiten — die SECHS Felder, die <c>HeizkesselKatalogDialog</c>
+        /// sichtbar traegt, als Eigenschaften von
+        /// <c>EPOS.UI.Dialoge.Erzeuger.HeizkesselKatalogDaten</c>.
         /// </summary>
         /// <remarks>
-        /// Der Feldsatz ist derselbe wie zuvor; nur die Aufloesung hat gewechselt. Zwei
-        /// Namen fallen dabei auf, und beide sind Absicht: Die thermische Leistung heisst
+        /// <para>
+        /// <b>NEUN Felder sind mit dem Anwenderentscheid vom 15.09.2026 entfallen</b>
+        /// („Der Dialog ueber Button Bearbeiten soll keine Kosten und Emissionen
+        /// enthalten"): <c>investitionskosten</c>, <c>wartungskosten</c>,
+        /// <c>raumbedarf</c>, <c>nutzungsdauer</c>, <c>co2</c>, <c>so2</c>, <c>nox</c>,
+        /// <c>co</c> und <c>staub</c>. Die Maske zeigt sie nicht mehr; gepflegt werden
+        /// sie seit Phase 1 im AUFKLAPPER „Alle Daten" des Projektdialogs (Profil in
+        /// <c>EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs</c>). Dorthin fuehrt
+        /// KEIN Weg des Assistenten: Der Aufklapper ist keine angemeldete Katalogmaske,
+        /// und ein Katalogfeld, das in der offenen Maske niemand sieht, waere genau die
+        /// stille Setzung, die Fachkonzept 11.6 ausschliesst — der Anwender bestaetigte
+        /// eine Zahl, die er nirgends nachlesen kann.
+        /// </para>
+        /// <para>
+        /// Zwei Namen fallen auf, und beide sind Absicht: Die thermische Leistung heisst
         /// im Daten-Objekt <c>Ptherm</c> (nicht <c>ThLeistung</c>), und der
         /// Bereitschaftsverlust <c>Betriebsbereitschaftverlust</c> — so stehen sie in der
         /// Oberflaeche, und der Katalog schreibt keine zweite Schreibweise daneben.
+        /// </para>
         /// </remarks>
         private static KiDialog Heizkessel()
         {
@@ -279,42 +298,6 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.HkBbVerlustName, KiParameterTyp.Zahl,
                                      KiDialogTexte.HkBbVerlustErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
-                    new KiDialogFeld("investitionskosten", "HeizkesselKatalogDaten.Investitionskosten",
-                                     KiDialogTexte.HkInvestName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.HkInvestErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
-                    new KiDialogFeld("wartungskosten", "HeizkesselKatalogDaten.Wartungskosten",
-                                     KiDialogTexte.HkWartungName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.HkWartungErl,
-                                     leerErlaubt: true),
-                    new KiDialogFeld("raumbedarf", "HeizkesselKatalogDaten.Raumbedarf",
-                                     KiDialogTexte.HkRaumbedarfName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.HkRaumbedarfErl,
-                                     einheit: KiDialogTexte.EINHEIT_M3, leerErlaubt: true),
-                    new KiDialogFeld("nutzungsdauer", "HeizkesselKatalogDaten.Nutzungsdauer",
-                                     KiDialogTexte.HkNutzungsdauerName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.HkNutzungsdauerErl,
-                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
-                    new KiDialogFeld("co2", "HeizkesselKatalogDaten.CO2",
-                                     KiDialogTexte.HkCo2Name, KiParameterTyp.Zahl,
-                                     KiDialogTexte.HkCo2Erl,
-                                     einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
-                    new KiDialogFeld("so2", "HeizkesselKatalogDaten.SO2",
-                                     KiDialogTexte.HkSo2Name, KiParameterTyp.Zahl,
-                                     KiDialogTexte.HkSo2Erl,
-                                     einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
-                    new KiDialogFeld("nox", "HeizkesselKatalogDaten.NOx",
-                                     KiDialogTexte.HkNoxName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.HkNoxErl,
-                                     einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
-                    new KiDialogFeld("co", "HeizkesselKatalogDaten.CO",
-                                     KiDialogTexte.HkCoName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.HkCoErl,
-                                     einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
-                    new KiDialogFeld("staub", "HeizkesselKatalogDaten.Staub",
-                                     KiDialogTexte.HkStaubName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.HkStaubErl,
-                                     einheit: KiDialogTexte.EINHEIT_G_MWH, leerErlaubt: true),
                     new KiDialogFeld("vorlauf", "HeizkesselKatalogDaten.Vorlauf",
                                      KiDialogTexte.HkVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.HkVorlaufErl,
@@ -387,11 +370,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <b>Nur ein Feld — und das ist kein Versehen.</b> Die uebrigen Eingaben der
-        /// Maske (Hersteller, Speichertyp, Bereitschaftsverluste, Investitionskosten)
-        /// liefen im Vorlaeufer ueber stille Parser und gehoeren nach Fachkonzept 11.7
-        /// erst nach ihrer Umstellung in den Katalog. Ob die Razor-Fassung das anders
-        /// sieht, ist eine fachliche Frage mit eigener Abnahme — sie gehoert nicht in
-        /// den Schritt, der den Aufloesungsweg austauscht.
+        /// Maske (Hersteller, Speichertyp, Bereitschaftsverluste) liefen im Vorlaeufer
+        /// ueber stille Parser und gehoeren nach Fachkonzept 11.7 erst nach ihrer
+        /// Umstellung in den Katalog. Ob die Razor-Fassung das anders sieht, ist eine
+        /// fachliche Frage mit eigener Abnahme.
+        /// <para>
+        /// <b>Die INVESTITIONSKOSTEN kommen nicht mehr in Frage.</b> Sie verlassen die
+        /// Maske mit dem Anwenderentscheid vom 15.09.2026 (kein Kosteneintrag im
+        /// Bearbeiten-Dialog) und sind seither im Aufklapper „Alle Daten" des
+        /// Projektdialogs zu pflegen — ohne Weg des Assistenten, wie beim Heizkessel.
+        /// Der Katalog hat sie nie gefuehrt; hier steht nur, dass das so bleibt.
+        /// </para>
         /// </remarks>
         private static KiDialog Pufferspeicher()
         {
