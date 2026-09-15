@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Kosten;
@@ -529,6 +530,21 @@ namespace WindowsFormsApplication1
                 ["TitelLoeschen"] = Text_("HZK_TITEL_LOESCHEN", "Löschen"),
                 ["MeldungLoeschFehler"] = Text_("HZK_MSG_LOESCHFEHLER",
                     "Der Katalogeintrag konnte nicht gelöscht werden."),
+
+                // Die drei Knoepfe der Kostenleiste. Ohne Projekt gibt es keinen
+                // Kostenkontext - dann bleibt der Delegat weg und die Leiste zeichnet
+                // den Knopf gar nicht erst (ihre eigene Regel). Der Weg steht einmal
+                // in ErzeugerKostenwege, Heizkessel und BHKW teilen ihn sich.
+                ["KostenOeffnen"] = projektId > 0
+                    ? new Func<ErzeugerZeile, bool, Task>(
+                        (zeile, betrieb) => ErzeugerKostenwege.Kosten(
+                            besitzer, projektId, DbWerte.ERZEUGER_HEIZKESSEL, zeile, betrieb))
+                    : null,
+                ["EnergiekostenOeffnen"] = projektId > 0
+                    ? new Func<ErzeugerZeile, Task>(
+                        zeile => ErzeugerKostenwege.Energiekosten(
+                            besitzer, projektId, DbWerte.ERZEUGER_HEIZKESSEL, zeile))
+                    : null,
 
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),

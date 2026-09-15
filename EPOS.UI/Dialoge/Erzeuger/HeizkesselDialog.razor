@@ -161,7 +161,12 @@
 
     @if (!Wizard)
     {
-        <KostenKnoepfeLeiste KostenOeffnen="@KostenOeffnen" EnergiekostenOeffnen="@EnergiekostenOeffnen"
+        @* Die Leiste kennt nur "Schalter betrieb ja/nein" - WELCHE Zeile gemeint ist,
+           weiss allein dieser Dialog. Deshalb gehen die zwei Knopfwege als
+           geschlossene Rueckrufe hinein, die die gewaehlte Projektzeile mitnehmen
+           (dasselbe Muster wie auf der Kostenseite, wo VerwaltungGaben/TraegerGaben
+           die gewaehlte Zeile durchreichen). *@
+        <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
                              InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
                              EnergieText="@KostenEnergieText" />
 
@@ -310,8 +315,22 @@
 
     // --- Kostenleiste ----------------------------------------------------------
 
-    [Parameter] public Func<bool, Task>? KostenOeffnen { get; set; }
-    [Parameter] public Func<Task>? EnergiekostenOeffnen { get; set; }
+    /// <summary>
+    /// Öffnet die Kostenverwaltung zur GEWÄHLTEN Projektzeile; der zweite Parameter
+    /// ist der Schalter <c>betrieb</c> (<c>false</c> = Investitions-, <c>true</c> =
+    /// Betriebskosten). Die Zeile ist <c>null</c>, solange keine gewählt ist — dann
+    /// zeigt die Verwaltung die Komponente ohne Einengung auf eine Anlage.
+    /// Ohne Delegat fehlen beide Knöpfe.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile?, bool, Task>? KostenOeffnen { get; set; }
+
+    /// <summary>
+    /// Öffnet die Energieträgerverwaltung zur GEWÄHLTEN Projektzeile (Träger und
+    /// Gerät gehen mit, die Verwaltung zeigt dann nur die passenden Träger);
+    /// <c>null</c> = keine Wahl. Ohne Delegat fehlt der Knopf.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile?, Task>? EnergiekostenOeffnen { get; set; }
+
     [Parameter] public string KostenInvestText { get; set; } = "Investitionskosten…";
     [Parameter] public string KostenBetriebText { get; set; } = "Betriebskosten…";
     [Parameter] public string KostenEnergieText { get; set; } = "Energiekosten…";
@@ -405,6 +424,24 @@
 
     /// <summary>Die aktuelle Meldung (Pruefhilfe fuer Tests).</summary>
     public string Meldung => _meldung;
+
+    // --- Die Bruecke zur Kostenleiste ------------------------------------------
+    // Ohne Delegat KEIN Rueckruf - sonst zeichnete die Leiste einen Knopf, der
+    // nichts tut (ihre eigene Regel).
+
+    private Func<bool, Task>? KostenLeiste
+        => KostenOeffnen is null ? null : (Func<bool, Task>)BeiKosten;
+
+    private Func<Task>? EnergieLeiste
+        => EnergiekostenOeffnen is null ? null : (Func<Task>)BeiEnergiekosten;
+
+    /// <summary>Reicht die gewählte Projektzeile an die Kostenverwaltung durch.</summary>
+    private Task BeiKosten(bool betrieb)
+        => KostenOeffnen?.Invoke(_projektZeile, betrieb) ?? Task.CompletedTask;
+
+    /// <summary>Reicht die gewählte Projektzeile an die Energieträgerverwaltung durch.</summary>
+    private Task BeiEnergiekosten()
+        => EnergiekostenOeffnen?.Invoke(_projektZeile) ?? Task.CompletedTask;
 
     protected override void OnParametersSet()
     {

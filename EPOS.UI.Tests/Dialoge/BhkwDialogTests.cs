@@ -94,7 +94,9 @@ public class BhkwDialogTests : EposBunitContext
         Func<string, IReadOnlyDictionary<string, object>>? editorGabenNeu = null,
         bool wizard = false,
         Action<bool>? geschlossen = null,
-        int? projektvorgabe = null)
+        int? projektvorgabe = null,
+        Func<ErzeugerZeile?, bool, Task>? kostenOeffnen = null,
+        Func<ErzeugerZeile?, Task>? energiekosten = null)
     {
         return Render<BhkwDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) })
@@ -121,8 +123,13 @@ public class BhkwDialogTests : EposBunitContext
             })
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Projektvorgabe, projektvorgabe)
+            .Add(x => x.KostenOeffnen, kostenOeffnen)
+            .Add(x => x.EnergiekostenOeffnen, energiekosten)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
+
+    /// <summary>Der Auswahlpfad der Kostenknöpfe — drei Stück, in dieser Reihenfolge.</summary>
+    private const string KOSTENKNOEPFE = ".epos-kostenleiste button.epos-knopf";
 
     // =================================================================================
     // Feldbestand
@@ -194,6 +201,110 @@ public class BhkwDialogTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-status"));
         Assert.Empty(cut.FindAll(".epos-kostenleiste"));
+    }
+
+    // =================================================================================
+    // Die Kostenleiste
+    // =================================================================================
+
+    /// <summary>
+    /// Der Leerlauf, den es zu beheben galt: Ohne Wege der Hülle steht KEIN Knopf —
+    /// ein gezeichneter Knopf ohne Wirkung wäre eine Behauptung, die nicht stimmt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Wege_bleibt_die_Kostenleiste_leer()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+    }
+
+    [Fact]
+    public void Mit_den_Wegen_stehen_die_drei_Knoepfe()
+    {
+        var cut = Aufbauen(kostenOeffnen: (_, _) => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        var knoepfe = cut.FindAll(KOSTENKNOEPFE);
+        Assert.Equal(3, knoepfe.Count);
+        Assert.Equal("Investitionskosten…", knoepfe[0].TextContent);
+        Assert.Equal("Betriebskosten…", knoepfe[1].TextContent);
+        Assert.Equal("Energiekosten…", knoepfe[2].TextContent);
+    }
+
+    /// <summary>
+    /// Beide Kostenknöpfe führen in dieselbe Maske und unterscheiden sich nur im
+    /// Schalter <c>betrieb</c> — und beide nehmen die GEWÄHLTE Zeile mit.
+    /// </summary>
+    [Fact]
+    public void Invest_und_Betrieb_nehmen_die_gewaehlte_Zeile_mit()
+    {
+        var gerufen = new List<(ErzeugerZeile? Zeile, bool Betrieb)>();
+        var cut = Aufbauen(
+            kostenOeffnen: (z, b) => { gerufen.Add((z, b)); return Task.CompletedTask; },
+            energiekosten: _ => Task.CompletedTask);
+
+        cut.FindAll(KOSTENKNOEPFE)[0].Click();
+        cut.FindAll(KOSTENKNOEPFE)[1].Click();
+
+        Assert.Equal(2, gerufen.Count);
+        Assert.False(gerufen[0].Betrieb);
+        Assert.True(gerufen[1].Betrieb);
+        Assert.Equal(1, gerufen[0].Zeile!.Schluessel);
+        Assert.Equal(100, gerufen[0].Zeile!.GeraetId);
+    }
+
+    [Fact]
+    public void Energiekosten_nimmt_Traeger_und_Geraet_der_gewaehlten_Zeile_mit()
+    {
+        ErzeugerZeile? mitgegeben = null;
+        int gerufen = 0;
+        var cut = Aufbauen(
+            kostenOeffnen: (_, _) => Task.CompletedTask,
+            energiekosten: z => { gerufen++; mitgegeben = z; return Task.CompletedTask; });
+
+        cut.FindAll(KOSTENKNOEPFE)[2].Click();
+
+        Assert.Equal(1, gerufen);
+        Assert.Equal(5, mitgegeben!.CarrierId);
+        Assert.Equal(100, mitgegeben!.GeraetId);
+    }
+
+    /// <summary>
+    /// Ohne gewählte Projektzeile geht KEINE Zeile mit — die Verwaltung zeigt dann
+    /// die Komponente ohne Einengung (Muster der Kostenseite, Auftrag 268).
+    /// </summary>
+    [Fact]
+    public void Ohne_Projektwahl_geht_keine_Zeile_mit()
+    {
+        ErzeugerZeile? mitgegeben = Zeile(99, "Platzhalter", 999);
+        ErzeugerZeile? beiEnergie = Zeile(99, "Platzhalter", 999);
+        var cut = Aufbauen(
+            kostenOeffnen: (z, _) => { mitgegeben = z; return Task.CompletedTask; },
+            energiekosten: z => { beiEnergie = z; return Task.CompletedTask; });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        Assert.Null(cut.Instance.Projektzeile);
+
+        cut.FindAll(KOSTENKNOEPFE)[0].Click();
+        cut.FindAll(KOSTENKNOEPFE)[2].Click();
+
+        Assert.Null(mitgegeben);
+        Assert.Null(beiEnergie);
+    }
+
+    /// <summary>
+    /// Nur einer der beiden Wege belegt: Dann steht auch nur sein Knopf
+    /// (die Regel der <c>KostenKnoepfeLeiste</c>, hier über den Dialog geprüft).
+    /// </summary>
+    [Fact]
+    public void Ein_fehlender_Weg_nimmt_seine_Knoepfe_mit()
+    {
+        var cut = Aufbauen(energiekosten: _ => Task.CompletedTask);
+
+        var knoepfe = cut.FindAll(KOSTENKNOEPFE);
+        Assert.Single(knoepfe);
+        Assert.Equal("Energiekosten…", knoepfe[0].TextContent);
     }
 
     // =================================================================================
