@@ -6650,3 +6650,51 @@ steht aus und ist die eigentliche Aufgabe von
 >
 > **Offen:** der Windows-Lauf des Schema-Skripts, die Kommentardrift des Klimazonen-Erzeugers
 > und 19 weitere Dateien derselben Regel (siehe Statusdatei „Nach #290").
+
+## #291 — Der Strombezug-Einstieg bleibt: die Deckung fehlt (15.09.2026, Nachtrag aus dem Merge)
+
+Der Auftrag lautete, den Knopf „Strombezug…" von der Wirtschaftlichkeitsseite zu
+entfernen. Er hat nichts entfernt — die vorgeschaltete Anhalteregel hat gegriffen.
+
+> „Wirtschaftlichkeit - button Strombezug und damit im zusammenhang stehende was
+> nicht benötigt wird kann entfernt werden. Ist alles unter Verwaltung
+> Energiekosten und Energiepreisstruktur enthalten."
+
+Der letzte Satz war die Annahme, auf der alles ruhte, und er trifft nicht zu.
+
+**Sieben Werte ohne zweiten Pflegeweg.** Die vier Zonen-Bezugspreise (Winter und
+Sommer, je HT und NT) rechnen in `StromMatrix.Bezugskosten`; die drei Staffelgrößen
+des Leistungspreises (Grenze, Preis darunter, Preis darüber) in
+`StromMatrix.Leistungspreis` und in `SpeicherAuslegungVorgabenCtrl`. Beide Blöcke
+baut der Dialog nur in den Sichten `Komplett` und `Strombezug`
+(`MitZonenBezug => Sicht is TarifSicht.Komplett or TarifSicht.Strombezug`).
+
+**Und `Komplett` hat keinen Wirt.** Die zweistellige Überladung
+`TarifstrukturHuelle.Oeffnen(besitzer, idStamm)`, die diese Sicht öffnen würde, wird
+nirgends gerufen; es gibt keinen Menüpunkt dorthin. Die einzigen Aufrufer der Hülle
+sind die PV-Vergütung (Sicht `Photovoltaik`) und der BHKW-Dialog (Sichten `Bhkw` und
+`Strombezug`). Damit ist der Knopf auf der Wirtschaftlichkeitsseite der einzige
+Zugang zu diesen sieben Werten.
+
+**Die Kostenverwaltung deckt sie nicht ab.** `Tab_ProjektTarif` hat genau einen
+Schreibweg — `WirtschaftlichkeitCtrl.SpeichereTarif` mit einem einzigen Aufrufer.
+Trägerkarte, Aufschläge und Leistungspreisreihe pflegen andere Größen auf anderen
+Spalten. Der Kern benennt den Unterschied selbst: die Tarifstruktur trägt den Preis
+der Wirtschaftlichkeitsrechnung, der Energieträger den des Kostenmoduls. Der
+Tarifsatz **ersetzt** die Flat-Preise, er wiederholt sie nicht.
+
+**Eine zweite, breitere Lücke** aus derselben Messung: Der Knopf erscheint nicht nur
+bei aktivem Tarif, sondern auch, sobald die Gruppe eine Wärmepumpe führt. In einem
+Wärmepumpenprojekt ohne BHKW und ohne PV ist er der einzige Zugang zum Tarifsatz
+überhaupt — die Sichten `Bhkw` und `Photovoltaik` sind dort nicht erreichbar.
+
+Ergebnis im Repositorium ist allein die Messung: Sichtentabelle mit ihren Wirten,
+Feldkarte in vier Blöcken mit Datei und Zeilennummer je Zeile, die Begründung gegen
+die Kostenverwaltung und drei Wege zur Entscheidung. Kein Quelltext, kein
+Ressourcenschlüssel, keine Wiki-Quelle wurde angefasst; ein Referenzlauf war nicht
+nötig, weil kein Rechenweg berührt ist.
+
+Die Annahme der Orchestrierung, der gleichnamige Sprungknopf im BHKW-Dialog falle
+mit, ist bewusst **nicht** umgesetzt. Sie bleibt sachlich richtig — zwei Pflegewege
+auf dieselben Werte sind der Fehler, nicht die Bequemlichkeit —, setzt aber voraus,
+dass überhaupt ein Pflegeweg bleibt.
