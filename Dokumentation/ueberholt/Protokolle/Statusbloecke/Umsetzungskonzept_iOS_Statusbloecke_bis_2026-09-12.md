@@ -5861,3 +5861,95 @@ steht aus und ist die eigentliche Aufgabe von
 >
 > **Offen:** kein Verwerfen mehr in diesem Dialog (Bedienänderung); die sechs übrigen Simulationsdialoge mit derselben
 > Leiste unverändert, Ausweitung auf Zuruf; Logbuch-Eintrag entworfen, Upload gebündelt.
+
+## #276 — Wärmequelle Erdreich: OK und Abbrechen kehren zurück, #275 zurückgenommen (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Punkt 8 der Entscheide vom 15.09.2026 lautete „Ausweitung des Schließmusters: immer mit Abbrechen (neben
+> OK), der ohne Speichern den Dialog verlässt" — das ließ drei Lesarten zu und stand quer zu #275, das im Erdreich-Dialog
+> gerade den OK-Knopf hatte fallen lassen. Auf Rückfrage entschied der Anwender: „Der OK Button soll in jedem Dialog
+> vorhanden sein und diesen mit Speichern verlassen, Abbrechen Button ohne Speichern den Dialog verlassen." Damit ist
+> #275 zurückgenommen; die Rubriken Erdkollektor und Erdsonde aus #262 bleiben unangetastet.
+>
+> **Rückbau:** `QuelleErdreichDialog.razor`, `SimulationKonfigSeite.razor` und `QuelleErdreichHuelle.cs` stehen byte-genau
+> auf dem Stand vor #275. Der Dialog trägt wieder die `SpeichernLeiste`: OK prüft, speichert und schließt; Abbrechen, das
+> Kreuz und Escape verlassen ohne Speichern. `UebernehmenUndSchliessen()` ist wieder `BeiErgebnis(bool)` mit denselben
+> acht Prüfregeln in derselben Reihenfolge und demselben Wortlaut. Der `@ref`-Griff der Konfigurationsseite und
+> `ErdreichSchliessen()` entfallen, weil der Dialog sein Schließen wieder selbst verantwortet; `OkText` und
+> `AbbrechenText` samt ihren Gaben in der Hülle kehren zurück.
+>
+> **Was die Nachbardialoge betrifft:** nichts. Sie trugen das Hausmuster schon, es war nur nicht überall belegt. Belegt
+> ist jetzt ihr dritter Ausgang, und zwar am Wirt, wo das Kreuz wirklich hängt — je ein Fall an der Konfigurationsseite
+> für Betriebsmodus, Wärmesenke, Quelle Pufferspeicher, Quellprofil und Erdreich (Kreuz schließt, es wird nichts
+> geschrieben), dazu am Erdreich-Dialog OK (schreibt und schließt) und Abbrechen mit verletzter Regel (schließt ohne
+> Prüfung und ohne zu schreiben). Im Dialog selbst kommen zwei Fälle hinzu: Das Kreuz der Klimazonenkarte lässt die
+> markierte Zone fallen, und der Wartezustand des Simulationslaufs sperrt den OK-Knopf, während Escape ihn nicht
+> wegdrückt. Beim Quellprofil, das selbst speichert, prüft der Abbruchfall zusätzlich, dass der Speicherweg unberührt
+> bleibt.
+>
+> **Die eine Ausnahme:** `PufferSpProjektDialog` trägt „Übernehmen" und „Schließen", weil er beim Übernehmen sofort
+> schreibt; sein Kreuz wirkt wie dieses Schließen. `EPOS.UI/CLAUDE.md` hält das Muster jetzt als Regelzeile fest statt
+> eine Abweichung davon zu beschreiben, und benennt diese eine Ausnahme.
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale mit `EnableWindowsTargeting` 0 Fehler, 5 Warnungen (Bestand);
+> sechs neue Testfälle netto, betroffene Klassen mehrfach grün; ResourceDesigner unverändert und wiederholbar; kein
+> Rechenweg berührt. Merge `1c53c95c`.
+>
+> **Offen:** ob das Muster auch im `PufferSpProjektDialog` gelten soll — das hieße, das Schreiben bis zum OK
+> aufzuschieben — ist Anwenderentscheid. Der Logbuch-Eintrag zu #275 ist durch diese Rücknahme umgeschrieben worden,
+> Upload gebündelt.
+
+## #277 — Kostenknöpfe im Heizkessel- und BHKW-Dialog (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026 „Kostenknöpfe im Heizkessel- und BHKW-Dialog: Knöpfe belegen/ausführen."
+>
+> **Befund, der die Aufgabe verschob:** Es standen keine toten Knöpfe da — es standen keine. Die
+> `KostenKnoepfeLeiste` zeichnet ohne Delegat gar keinen Knopf, und alle vier Wirte reichten nur die Beschriftungen
+> durch. Vorbild für einen belegten Weg war allein `WaermepumpeAnlageHuelle`.
+>
+> **Weg:** Beide Projektdialoge führen ihre drei Wege jetzt mit der gewählten Projektzeile aus. Die Leiste selbst bleibt
+> unverändert, weil vier Wirte sie teilen. Die Windows-Seite steht einmal in
+> `WindowsFormsApplication1/Views/Kosten/ErzeugerKostenwege.cs`: Investitions- und Betriebskosten öffnen die
+> Kostenverwaltung im Projektmodus — die Anlagen-Id wird über `ProjektEnergietraegerCtrl.AnlagenMitTraeger`
+> nachgeschlagen, weil eine frisch aufgenommene Zeile ihre Datenbankzeile erst beim OK bekommt —, Energiekosten öffnen
+> die Energieträgerverwaltung mit Träger und Gerät. Beide Fenster gehen über `Blazornachlauf.Nachgelagert` auf (Regel b:
+> kein modales Systemfenster direkt aus einem Blazor-Ereignis). Ohne Projekt bleibt der Delegat weg, und damit der Knopf.
+>
+> **Was bewusst leer bleibt:** die Katalogeditoren. Ein Katalogsatz gehört keinem Projekt, also gibt es nichts zu
+> öffnen. Der neue Hüllen-Wächter `KostenknopfWegeTests` hält das ausdrücklich fest, statt es dem nächsten Leser zu
+> überlassen.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 0 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); Kern-Gate des Agenten
+> 8 001 grün; 12 neue bunit-Fälle und 5 Wächterfälle. Der Leerlauf ist belegt: mit den alten Hüllenständen fällt der
+> Wächter 2 von 5. Merge `42061e80`.
+>
+> **Offen:** `WaermepumpeAnlageHuelle.KostenOeffnen` öffnet `KostenKomponenteHuelle.OeffnenProjekt` synchron aus dem
+> Blazor-Rückruf und verstößt gegen Regel b; der Regex der `HuellenwegTests` greift dort nicht. Bestand, nicht neu —
+> eigener Auftrag.
+
+## #278 — Ein Satz je Energieträger und Projekt: Schemaschritt 76 (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026 „UNIQUE-Index auf die Projekteinstellungen je Energieträger: Umsetzen."
+>
+> **Bestand zuerst, dann der Schritt:** 28 Zeilen in `energy_project_settings` auf 18 Projekte, kein Paar zweimal — es
+> gab nichts zu entdoppeln, der Auftrag musste nirgends anhalten. Auch die Spaltenkombination ist gemessen, nicht
+> geraten: Jede Lesekette fragt `WHERE ID_Projekt = ? AND ID_Energieträger = ?` ohne `ORDER BY` und nimmt die erste
+> Zeile; der Index läuft deshalb plain über genau diese zwei Spalten und ist zugleich ihr Suchweg. `ID_Umrechnung`
+> gehört nicht zum Schlüssel.
+>
+> **Schritt 76** (`SCHRITT_76_TRAEGERSATZ_EINDEUTIG` in `EPOS.Kern/Allgemein/Update/ProjektEnergietraegerEindeutig.cs`)
+> entdoppelt erst und legt dann `idx_EnergyProjectSettings_Traeger` an. Das Entdoppeln behält je Paar `MIN(ID)` — also
+> die Zeile, die auch bisher galt, weil jede Lesekette die erste nimmt; der Schritt ist damit ergebnisneutral. Diese
+> Reihenfolge ist der Punkt: Ein unsauberer Altbestand auf einem fremden Rechner lässt den Schritt nicht scheitern und
+> sperrt den Simulationsbereich nicht (ADR-001). `SchemaStand.Zielversion` geht von 75 auf 76, die Testdatenbank ist
+> eingespielt (Schemastand 76, 120 Tabellen davon 119 STRICT, `integrity_check` ok, 70 766 592 Byte).
+>
+> **Die fünf Schreibwege bleiben, wie sie sind** — geprüft, nicht geändert: Katalogsatz und Assistent zählen vorher per
+> `COUNT`, die Preiszeile schreibt als Upsert, die Variantenanlage zählt in ihrer eigenen Transaktion, und die drei
+> kopierenden Wege schreiben immer in ein frisch angelegtes Projekt. Keiner kann den Index verletzen; eine
+> SQLite-Ausnahme erreicht den Anwender an keiner Stelle.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 0 Warnungen; Kern-Gate des Agenten 7 992 grün mit acht neuen Fällen;
+> SQL-Dialektprüfer 1 396 Texte, 0 Fundstellen; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); Referenzlauf 5 von 5
+> PASS und byte-gleich gegen R7. Merge `319c172b`.
+>
+> **Offen:** nichts. Kein Logbuch-Eintrag — die Änderung ist für den Anwender nicht sichtbar.
