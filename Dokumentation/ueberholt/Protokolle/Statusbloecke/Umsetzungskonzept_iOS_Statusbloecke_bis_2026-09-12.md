@@ -6172,3 +6172,71 @@ steht aus und ist die eigentliche Aufgabe von
 > CSV byte-gleich; Gate sept84 grün. Vier neue Prüfungen in `GangUndErgebnisReiterTests`. Merge `19b3ca8b`.
 >
 > **Offen:** `CHART_CSV_GESAMT` ohne Verwender (siehe Statusdatei „Nach #285").
+
+## #280 — Fehlende Werte benennen, aus der Kategorie nur mit Rückfrage leihen (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026, vier Punkte: CO₂-Rückfall aus der Kategorie **mit Rückfrage**
+> („Werte nicht ohne Wissen setzen!"), Warnung bei fehlenden Emissionswerten, dasselbe für die Kosten,
+> Kosten als Pflicht für die Wirtschaftlichkeitsrechnung — und gleiche Werte für alle Anlagen eines
+> Trägers.
+>
+> **Zwei der vier Punkte standen schon.** Das war das Ergebnis der Messung, bevor irgendetwas gebaut
+> wurde: Die Trägerregel (Punkt 4) ist seit #268 umgesetzt und seit #278 über den UNIQUE-Index
+> `idx_EnergyProjectSettings_Traeger` auch im Schema erzwungen — zwei Anlagen, die auf denselben Träger
+> zeigen, **können** gar nicht verschiedene Werte lesen. Der Anwender hat Punkt 4 am selben Tag
+> ausdrücklich auf den Träger eingegrenzt (nicht auf die Gruppe), damit Varianten ihren Zweck behalten.
+> Und Punkt 3 hält die Wirtschaftlichkeit seit #267 ein: „Arbeitspreis 0 zählt als NICHT gepflegt",
+> sechs benannte Gründe, Warnband mit „Neu berechnen", „—" statt eines erfundenen Betrags. Beides blieb
+> unangetastet.
+>
+> **Die wirkliche Lücke lag davor — an der Pflegestelle.** `EnergietraegerHuelle.Speichern()` prüfte
+> beim Schreiben nur, ob die Einheit auf kWh umrechenbar ist; ein Arbeitspreis 0, ein Leistungspreis 0
+> oder ein CO₂-Wert 0 ließen sich **ohne jede Meldung** speichern. Auffallen konnte es erst beim
+> Rechnen. Dazu ein zweiter Befund: `Emissionsquelle` setzt `Co2Gepflegt = false` mit der Herkunft
+> „kein Emissionsfaktor gepflegt" — aber **kein einziger Aufrufer las das Feld** außer der eigenen Datei
+> und ihren Tests. Die Kennzeichnung war da, nur zeigte sie niemand.
+>
+> **Die Karte sagt es jetzt, wo der Wert gepflegt wird:** die Preise im Reiter „Preise & Umrechnung",
+> der CO₂-Wert im Reiter „Emissionen". Die Lücke misst sich an **Karte und Lesekette zusammen** — die
+> Frage lautet „bliebe hier eine Lücke, wenn ich jetzt speicherte?", also das Feld, sonst die Kette.
+> Eine gepflegte Saisonreihe zählt beim Leistungspreis als gepflegt, und ein Träger ohne Leistungspreis
+> wird gar nicht erst danach gefragt. **Gesperrt wird nichts:** Ein halb gepflegter Träger muss sich
+> anlegen lassen, und derselbe Hinweis erscheint beim Speichern.
+>
+> **Der Übernahmeweg ist EIN Weg für drei Größen** (`Controller/EnergietraegerRueckfall.cs`): Kategorie,
+> `Wert()`, `Kandidaten()`, `Uebernehmen()`. `Wert()` baut keine eigene Lesekette nach, sondern fragt die
+> bestehenden — CO₂ über `Emissionsquelle.Fuer(…).Co2Gepflegt`, die Preise über eine neue, rein lesende
+> Auskunft, die dieselbe Vorrangkette Projekt → Preisstand → Katalog benutzt. Eine zweite Wahrheit
+> entsteht nicht.
+>
+> **Die Kategorie ist `energy_carrier.pricing_model`**, im Code KATEGORIECODE — die Spalte, auf der schon
+> die Zulässigkeitsprüfung aus #268 rechnet. Die angezeigte „Gruppe" wäre die falsche Klammer, und das
+> ist gemessen, nicht vermutet: Die acht GASEOUS_FUEL-Träger der Testdatenbank verteilen sich auf drei
+> Gruppen (Gas, Wasserstoff, Sonstige). Über die Gruppe zu suchen hielte Geber zurück, die fachlich zur
+> selben Familie gehören — und Zulässigkeit und Übernahme ruhten auf zwei verschiedenen Wahrheiten.
+>
+> **Nichts wird ohne Bestätigung gesetzt.** Auch der einzige Kandidat wird vorgelegt. Gibt es keinen,
+> sagt der Weg das und öffnet nichts. Die Reihenfolge ist fest und kulturunabhängig: erst die dem
+> Projekt zugeordneten Träger, dann die übrigen, je nach Namen und bei Gleichstand nach Id. Geschrieben
+> wird in die **Projektübersteuerung** — an der Lesekette nachgeprüft, sie ist dort die oberste Ebene,
+> der Wert gilt also sofort und ohne zweite Regel. Der Katalog gilt für alle Projekte und wird nie
+> angefasst; im Katalogkontext erscheint deshalb der Hinweis, aber kein Knopf.
+>
+> **Einheitentreue — vom Auftrag nicht verlangt, aber nötig.** Ein Preis ist eine Zahl je
+> Abrechnungseinheit. 0,95 €/L in einen Träger zu schreiben, der nach Nm³ abrechnet, wäre eine falsche
+> Zahl mit richtigem Anschein (GASEOUS_FUEL führt in der Testdatenbank Nm³ **und** kg). Als Geber eines
+> Preises kommt deshalb nur in Frage, wer dieselbe Abrechnungseinheit führt, beim Leistungspreis
+> zusätzlich denselben Modus. Der CO₂-Faktor steht überall in g/kWh und kennt die Einschränkung nicht.
+> Geprüft wird beim Übernehmen gegen die frisch gelesene Kandidatenliste, nicht gegen die angezeigte.
+>
+> **Kein Rückfall im Rechenweg.** `Emissionsquelle` und `KostenEmissionRechner` sind inhaltlich
+> unverändert; ein zugeordneter Träger ohne CO₂-Wert bleibt eine Datenlücke. Ein Wächter hält das fest,
+> und der Beleg ist der byte-gleiche Referenzlauf: Wäre ein Rückfall in den Rechenweg geraten, hätten
+> sich Zahlen bewegt.
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 113 Tests grün,
+> davon 12 neue in `EnergietraegerRueckfallTests`; `SqlDialektPruefer` 1 407 Texte, 0 Fundstellen;
+> Referenzlauf gegen `2026-09-11_R7_Speicherflotte` PASS und byte-gleich; Gate sept85 grün. Merge
+> `ad37b3d3`. Hausregel „Ein geliehener Wert wird nie still gesetzt" in `EPOS.Kern/CLAUDE.md`.
+>
+> **Offen:** Die Herkunft eines geliehenen Wertes wird nicht persistiert (siehe Statusdatei „Nach #280").
