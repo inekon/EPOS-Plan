@@ -6032,7 +6032,7 @@ steht aus und ist die eigentliche Aufgabe von
 >
 > **Abnahme:** Kern-Filter 0 Fehler, 0 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 341 Fälle der acht
 > betroffenen Klassen dreimal grün; voller Kern-Lauf des Agenten grün; Gate sept82 grün. Kein Rechenweg berührt.
-> Merge `a6c14be3`.
+> Merge `5e01bed7`.
 >
 > **Offen:** `BhkwWirtschaftlichkeitDialog` als letzte Abweichung (Anwenderentscheid).
 
@@ -6068,6 +6068,51 @@ steht aus und ist die eigentliche Aufgabe von
 > **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); `HuellenwegTests` 4 von 4 grün (je
 > ein Bestandsfall und eine Gegenprobe pro Regel, die Gegenprobe der zweiten trägt `KostenOeffnen` im Wortlaut vor der
 > Umstellung); Kern-Gate des Agenten 8 042 grün; Gate sept81 und sept82 grün. Kein Rechenweg berührt, kein Referenzlauf
-> nötig. Merge `fb680f24`.
+> nötig. Merge `0643cbbb`.
 >
 > **Offen:** Dateikreis des Wächters (Zuschnittsentscheid, siehe Statusdatei „Nach #283“).
+
+## #284 — Pufferspeicher bemisst sich nur am Volumen (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026 zur Vorlagenzeile, die #279 gefunden hatte: „Prüfe Pufferspeicher
+> Daten mit Volumen/Größe. EUR_PRO_KWH_KAPAZITAET spielt keine Rolle, nur das Volumen als Bezugsgröße."
+>
+> **Zwei Dinge, nicht eines.** Die eine Hälfte ist die Auswahl, die dem Anwender angeboten wird; die andere
+> ist die Zeile, die schon ausgeliefert wird. Nur beide zusammen lösen den Fall auf: Ohne die Auswahl könnte
+> er sich morgen wiederholen, ohne die Datenumstellung bliebe er im Bestand stehen.
+>
+> **Die Auswahl.** Der `BemessungKatalog` war eine flache Liste ohne Zuordnung je Gewerk — jede Art wurde
+> jedem Gewerk angeboten, auch eine, für die es dort keine Bezugsgröße gibt. Ein Satz an so einer Zeile fällt
+> über den Anwenderentscheid I‑2 auf den erfassten Betrag zurück; bei einer reinen Satzzeile ist das 0, und
+> zwar ohne Warnung. Das ist derselbe Mechanismus, den #271 an der Solarthermie gefunden hat.
+>
+> **Die Zuordnung steht an EINER Stelle.** `BemessungKatalog.PasstZuGewerk(art, gewerk)` und `Auswahl(…)`
+> fragen `WirtschaftlichkeitCtrl.BasisGrund` und lesen damit dieselbe Landkarte, aus der der Dialog schon
+> seinen Grundtext holt (`TechnikPlanwertCtrl`, `EndenergieAufloeser`). Eine zweite Zuordnung wäre eine
+> zweite Wahrheit — es gibt keine. Der GELTUNGSBEREICH ist benannt statt eingestreut
+> (`AUSWAHLFILTER_GEWERKE`) und umfasst heute allein den Pufferspeicher; die übrigen neun Gewerke behalten
+> ihre vollständige Auswahl, bis der Anwender über sie entschieden hat, und die Erweiterung ist dann eine
+> Zeile. **Eine Art, die eine vorhandene Zeile trägt, bleibt überall in der Liste** — sonst verschwände ein
+> gepflegter Wert aus der Auswahl, und der Anwender könnte ihn nicht mehr ändern.
+>
+> **Die Daten: Schemaschritt 77** (`SchemaStand.Zielversion` 76 → 77, `PufferspeicherBemessungVolumen`).
+> Die ausgelieferte Investitionsvorlage des Pufferspeichers trägt jetzt die Bemessung je Liter Gesamtvolumen.
+> Kern, Migration, das Werkzeug `Testdatenbankschema` und der Nachweis lesen dieselbe Quelle; die Saat der
+> zwanzig Auslieferungsvorlagen trägt dieselbe Art. **Umgestellt wird nur eine Zeile mit `Satz IS NULL`:**
+> Ein gepflegter Satz wäre eine Zahl je kWh und dürfte nicht stillschweigend zu einer Zahl je Liter werden —
+> das wäre eine Zahlenänderung ohne Anlass. Solche Zeilen zählt der Migrationsbericht (`ZaehlungGepflegt`),
+> statt sie anzufassen. Der Fall ist überhaupt möglich, weil der Schreibschutz der Auslieferungsvorlagen
+> seit Ä8 aufgehoben ist. `Tab_ProjektWerte` und die Vorlagen der übrigen neun Komponenten bleiben unberührt.
+>
+> **Die Testdatenbank nachgezogen:** genau eine Zeile umgestellt (Position 38, Vorlage 6, Satz NULL),
+> `integrity_check` ok, `foreign_key_check` leer, 119 STRICT-Tabellen, 70 766 592 Byte, Schemastand 77. Die
+> beiden Pufferspeicher der Referenzprojekte 1007 und 1046 sind nicht angefasst; `EUR_PRO_KWH_KAPAZITAET`
+> kommt in `Tab_ProjektWerte` überhaupt nicht vor (unabhängig nachgezählt: 0).
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 097 Tests grün;
+> `SqlDialektPruefer` 0 Fundstellen; Referenzlauf gegen `2026-09-11_R7_Speicherflotte` 5/5 PASS und 5/5
+> byte-gleich; Gate sept83 grün. Der Rechenweg ist nicht berührt — die Zeile rechnete vorher 0 und rechnet
+> jetzt mit dem Volumen, aber kein Referenzprojekt führt sie. Merge `bb550eeb`.
+>
+> **Offen:** Ausweitung der Filterung auf die übrigen neun Gewerke und die gleich gelagerte PV-Vorlagenzeile
+> „Batteriespeicher" (beides Anwenderentscheid, siehe Statusdatei „Nach #284").
