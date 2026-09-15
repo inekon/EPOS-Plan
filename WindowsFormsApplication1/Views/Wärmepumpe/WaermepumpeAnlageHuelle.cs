@@ -342,6 +342,13 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// „Kosten bearbeiten…" (<c>btnKosten_Click</c>:566) — ein ZWEITES Fenster
         /// (A-1 aus Welle 6, unverändert).
+        ///
+        /// <para><b>Über den Nachlauf</b>, wie der gleichlautende Weg der Brenner
+        /// (<c>ErzeugerKostenwege.Kosten</c>): Die Kostenverwaltung ist ein modales
+        /// Fenster, und ein modales Fenster darf nie SYNCHRON aus einem
+        /// Blazor-Ereignis aufgehen (Befunde W13‑B‑1 und W15b‑B‑1). Der Projektname
+        /// wird noch davor gelesen — er kostet nur eine Abfrage und gehört nicht in
+        /// die nachgelagerte Nachricht.</para>
         /// </summary>
         private static Task KostenOeffnen(IWin32Window besitzer, WErzeugerModel modell)
         {
@@ -356,9 +363,9 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
-            KostenKomponenteHuelle.OeffnenProjekt(besitzer, modell.ID_Projekt, projektname,
-                                                  DbWerte.ERZEUGER_WAERMEPUMPE, false, modell.ID);
-            return Task.CompletedTask;
+            return Blazornachlauf.Nachgelagert(() =>
+                KostenKomponenteHuelle.OeffnenProjekt(besitzer, modell.ID_Projekt, projektname,
+                                                      DbWerte.ERZEUGER_WAERMEPUMPE, false, modell.ID));
         }
 
         // =================================================================================

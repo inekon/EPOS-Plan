@@ -371,21 +371,27 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Schreibt das Sitzungsprotokoll. <b>CRLF je Zeile, UTF-8</b> — lesbar in
         /// Editor und Excel, wörtlich wie der Vorläufer.
+        ///
+        /// <para><b>Der Speichern-Wähler läuft HINTER dem Blazor-Ereignis</b>
+        /// (<c>DateiSpeichernAsync</c>, Befund W13‑B‑1, siehe <c>IDateiDienst</c>):
+        /// Ein modales Systemfenster aus dem WebView2-Rückruf heraus startet eine
+        /// verschachtelte Nachrichtenschleife, während Blazor zeichnet.</para>
         /// </summary>
-        private static Task<string> ProtokollSpeichern(IReadOnlyList<string> zeilen)
+        private static async Task<string> ProtokollSpeichern(IReadOnlyList<string> zeilen)
         {
             try
             {
-                string pfad = Dienste.Datei.DateiSpeichern(
-                    MyResource.Resource.ADM_DUBLETTEN_BTN_PROTOKOLL, "*.txt|*.txt", PROTOKOLLDATEI);
-                if (string.IsNullOrEmpty(pfad)) return Task.FromResult("");
+                string pfad = await Dienste.Datei.DateiSpeichernAsync(
+                    MyResource.Resource.ADM_DUBLETTEN_BTN_PROTOKOLL, "*.txt|*.txt", PROTOKOLLDATEI)
+                    .ConfigureAwait(true);
+                if (string.IsNullOrEmpty(pfad)) return "";
 
                 File.WriteAllText(pfad, string.Join("\r\n", zeilen.ToArray()) + "\r\n", Encoding.UTF8);
-                return Task.FromResult(MyResource.Resource.ADM_DUBLETTEN_MSG_PROTOKOLL_GESPEICHERT);
+                return MyResource.Resource.ADM_DUBLETTEN_MSG_PROTOKOLL_GESPEICHERT;
             }
             catch (Exception ex)
             {
-                return Task.FromResult(ex.Message);
+                return ex.Message;
             }
         }
     }
