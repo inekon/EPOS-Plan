@@ -294,6 +294,20 @@ namespace WindowsFormsApplication1
             return SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(_projektId, einheiten, stueckzahlen);
         }
 
+        /// <summary>
+        /// <b>Frischt den Gerätebestand des Suchraums auf</b> — der Schritt vor jeder
+        /// Kandidatenzeile und vor jedem Lauf der Größensuche. <b>Datenbankzugriff.</b>
+        /// </summary>
+        /// <remarks>
+        /// Durchreiche auf
+        /// <see cref="SpeicherFlottenStudieCtrl.GeraetebestandAuffrischen"/>: Die Ansicht
+        /// kennt ihre Projekt-Id nicht und soll sie nicht kennen müssen — dieselbe
+        /// Aufteilung wie bei <see cref="Projektanlagen"/>.
+        /// </remarks>
+        /// <param name="auslegung">Der Suchraum; er wird an Ort und Stelle beschrieben.</param>
+        public void GeraetebestandAuffrischen(FlottenAuslegungEingang auslegung)
+            => SpeicherFlottenStudieCtrl.GeraetebestandAuffrischen(_projektId, auslegung);
+
         /// <summary>Speichert den bearbeiteten Stand als projektgebundene Vorbelegung <c>@Aktuell</c>.</summary>
         /// <param name="eingaben">Der Arbeitsstand.</param>
         /// <returns>Leer bei Erfolg, sonst der Fehlertext.</returns>

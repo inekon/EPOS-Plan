@@ -144,6 +144,11 @@ namespace WindowsFormsApplication1
                 Katalogprofil = Katalogfilterprofil.MitVerwendung(Anlagenart.Stromspeicher, Text_),
                 EinheitAusKatalog = SpeicherFlottenStudieCtrl.EinheitAusKatalog,
 
+                // Der GERAETEBESTAND der Groessensuche: Projektkatalog oder Stammdaten.
+                // Auch das ist eine reine Durchreiche - welche Geraete gewaehlt werden,
+                // entscheidet die Engine (FlottenGeraetewahl), nicht die Huelle.
+                GeraetebestandAuffrischen = _ctrl.GeraetebestandAuffrischen,
+
                 // „Ausgewaehlte Einheiten in Projekt uebernehmen" (Auftrag #247, SD-Q15)
                 // — ebenfalls eine reine Durchreiche: Die Transaktion, die Namensvergabe
                 // und die Rueckabbildung der Werte stehen im Kern.

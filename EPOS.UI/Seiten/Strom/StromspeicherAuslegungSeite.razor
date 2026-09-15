@@ -266,7 +266,7 @@
             <OptimierungBlock Flotte="@Flotte" Methode="@Suchmethode"
                               MethodeChanged="SuchmethodeSetzen" Aktiv="@(!_laeuft)"
                               MethodeVerweigert="MethodeVerweigert"
-                              Geaendert="FlotteGeschrieben"
+                              Geaendert="FlotteGeschrieben" Geraetebestand="@Dienste?.GeraetebestandAuffrischen"
                               Rechnen="Starten" RechnenFrei="@RechnenFrei"
                               RechnenGrund="@Laufsperre" RechnenText="@RechnenText"
                               Laeuft="@_laeuft" Anteil="@_anteil" Fortschrittstext="@_fortschritt"
@@ -1419,6 +1419,8 @@
             FlottenKandidatenzahl zahl = FlottenOptimierer.Kandidatenzahl(Flotte);
             if (zahl.Befund == FlottenSuchbefund.KeineAktiveAchse)
                 fehler.Add(Resource.FLOTTE_OPT_ABHILFE);
+            if (zahl.Befund == FlottenSuchbefund.KeineGeraete)
+                fehler.Add(Resource.FLOTTE_OPT_KEINE_GERAETE);
             if (zahl.Gueltig && !zahl.Zulaessig) fehler.Add(Resource.FLOTTE_OPT_RASTER_ZUVIEL);
 
             foreach (FlottenAuslegungsAchse achse in Flotte.Auslegung.Achsen.Where(x => x.Aktiv))
@@ -1429,24 +1431,20 @@
 
                 if (methode != FlottenSuchmethode.Groesse) continue;
 
-                if (achse.Modus != FlottenAuslegungsmodus.LeistungUndCRate &&
-                    UngueltigerBereich(achse.KapazitaetVonKWh, achse.KapazitaetBisKWh, achse.KapazitaetSchrittKWh))
+                // DIE GROESSENSUCHE BRAUCHT ZWEI BEREICHE, keine Schrittweiten: Gesucht
+                // wird unter vorhandenen Geraeten, nicht auf einem Gitter.
+                if (UngueltigerBereich(achse.KapazitaetVonKWh, achse.KapazitaetBisKWh))
                     fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_KAPAZITAET, name));
-                if (achse.Modus != FlottenAuslegungsmodus.KapazitaetUndCRate &&
-                    UngueltigerBereich(achse.LeistungVonKw, achse.LeistungBisKw, achse.LeistungSchrittKw))
+                if (UngueltigerBereich(achse.LeistungVonKw, achse.LeistungBisKw))
                     fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_LEISTUNG, name));
-                if (achse.Modus != FlottenAuslegungsmodus.KapazitaetUndLeistung &&
-                    UngueltigerBereich(achse.CRateVon, achse.CRateBis, achse.CRateSchritt))
-                    fehler.Add(string.Format(Kultur, Resource.FLOTTE_DLG_PRUEF_CRATE, name));
             }
         }
 
         return string.Join(" ", fehler);
     }
 
-    private static bool UngueltigerBereich(double von, double bis, double schritt) =>
-        !double.IsFinite(von) || !double.IsFinite(bis) || von <= 0 || bis < von ||
-        (bis > von && (!double.IsFinite(schritt) || schritt <= 0));
+    private static bool UngueltigerBereich(double von, double bis) =>
+        !double.IsFinite(von) || !double.IsFinite(bis) || von <= 0 || bis < von;
 
     // =====================================================================
     //  Das Peak-Ziel (SD-Q3)

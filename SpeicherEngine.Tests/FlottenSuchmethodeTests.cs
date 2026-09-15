@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -61,20 +61,39 @@ public sealed class FlottenSuchmethodeTests : IDisposable
     // =====================================================================
 
     /// <summary>
-    /// Der Suchraum aus dem Bildschirmfoto des Anwenders (Kapazität 40–300 kWh in
-    /// Schritten von 20, Leistung 40–400 kW in Schritten von 20, Stückzahl 1–4) ergibt
-    /// unter „Größe suchen" <b>14 × 19 = 266</b> Kandidaten — die Stückzahl zählt als EIN
-    /// Stützpunkt.
+    /// <b>Unter „Größe suchen" ist die Kandidatenzahl die Zahl der GERAETE</b>, nicht das
+    /// Produkt zweier Rasterachsen: Von sechs Geräten des Bestands fallen vier in beide
+    /// Bereiche — also vier Kandidaten. Die Stückzahl zählt als EIN Stützpunkt.
     /// </summary>
     [Fact]
-    public void Unter_Groesse_zaehlt_die_Stueckzahl_als_ein_Stuetzpunkt()
+    public void Unter_Groesse_zaehlen_die_gefundenen_Geraete()
     {
         FlottenKandidatenzahl zahl = FlottenOptimierer.Kandidatenzahl(
             Beispielraum(FlottenSuchmethode.Groesse));
 
         Assert.True(zahl.Gueltig);
         Assert.Equal(FlottenSuchbefund.Inordnung, zahl.Befund);
-        Assert.Equal(266, zahl.Grob);
+        Assert.Equal(4, zahl.Grob);
+        Assert.Equal(0, zahl.FeinHoechstens);
+    }
+
+    /// <summary>
+    /// <b>Eine Quelle ohne Gerät ist eine BENANNTE Ablehnung</b>, keine Null: Ein Lauf
+    /// ohne Kandidaten rechnete nichts und meldete doch „in Ordnung".
+    /// </summary>
+    [Fact]
+    public void Eine_Quelle_ohne_Geraet_wird_benannt_abgelehnt()
+    {
+        FlottenStudieKonfiguration config = Beispielraum(FlottenSuchmethode.Groesse);
+        config.Auslegung.Achsen[0].Geraete.Clear();
+
+        FlottenKandidatenzahl zahl = FlottenOptimierer.Kandidatenzahl(config);
+        Assert.False(zahl.Gueltig);
+        Assert.False(zahl.Zulaessig);
+        Assert.Equal(FlottenSuchbefund.KeineGeraete, zahl.Befund);
+
+        var ex = Assert.Throws<ArgumentException>(() => FlottenOptimierer.Rechne(Eingang(), config));
+        Assert.Contains("Quelle", ex.Message);
     }
 
     /// <summary>
@@ -106,20 +125,24 @@ public sealed class FlottenSuchmethodeTests : IDisposable
     }
 
     /// <summary>
-    /// Das Feinraster gibt es NUR unter „Größe suchen" — unter S ist zwischen zwei ganzen
-    /// Stückzahlen nichts zu verfeinern, unter „Bewerten" wird gar nicht gerastert.
+    /// <b>Es gibt kein Feinraster mehr</b> — unter KEINER Methode. Zwischen zwei Geräten
+    /// liegt kein drittes; eine zwischengerechnete Größe wäre ein Speicher, den es nicht
+    /// gibt. Der gespeicherte Schalter bleibt lesbar und wirkungslos.
     /// </summary>
     [Fact]
-    public void Das_Feinraster_gehoert_allein_der_Groessensuche()
+    public void Es_gibt_kein_Feinraster_mehr()
     {
-        Assert.True(FlottenOptimierer.Kandidatenzahl(
-            Beispielraum(FlottenSuchmethode.Groesse, feinraster: true)).FeinHoechstens > 0);
+        Assert.Equal(0, FlottenOptimierer.Kandidatenzahl(
+            Beispielraum(FlottenSuchmethode.Groesse, feinraster: true)).FeinHoechstens);
         Assert.Equal(0, FlottenOptimierer.Kandidatenzahl(
             Beispielraum(FlottenSuchmethode.Stueckzahl, feinraster: true)).FeinHoechstens);
-        Assert.Empty(FlottenOptimierer.Feinrasterwerte(Beispielachse(), 200,
-                                                       FlottenSuchmethode.Stueckzahl));
-        Assert.NotEmpty(FlottenOptimierer.Feinrasterwerte(Beispielachse(), 200,
-                                                          FlottenSuchmethode.Groesse));
+
+        FlottenStudieKonfiguration raum = Laufraum(FlottenSuchmethode.Groesse, von: 1, bis: 1);
+        raum.Auslegung.Feinraster = true;
+        FlottenAuslegungErgebnis ergebnis = FlottenOptimierer.Rechne(Eingang(), raum);
+
+        Assert.False(ergebnis.FeinrasterGerechnet);
+        Assert.All(ergebnis.Kandidaten, k => Assert.Equal(FlottenKandidatPhase.Grob, k.Phase));
     }
 
     // =====================================================================
@@ -170,7 +193,7 @@ public sealed class FlottenSuchmethodeTests : IDisposable
     public void Ein_unbrauchbarer_Groessenbereich_meldet_sich_als_solcher()
     {
         FlottenStudieKonfiguration config = Beispielraum(FlottenSuchmethode.Groesse);
-        config.Auslegung.Achsen[0].KapazitaetBisKWh = 10;      // bis < von
+        config.Auslegung.Achsen[0].KapazitaetBisKWh = 10;      // bis < von (Kapazitaet von 40)
 
         FlottenKandidatenzahl zahl = FlottenOptimierer.Kandidatenzahl(config);
         Assert.False(zahl.Gueltig);
@@ -229,7 +252,7 @@ public sealed class FlottenSuchmethodeTests : IDisposable
         Assert.All(kandidaten, k => Assert.Equal(2, k.Einheiten.Count));
         Assert.All(kandidaten, k => Assert.Equal(new[] { 2 }, k.Stueckzahlen));
 
-        // Und die Größen laufen wirklich über das Raster: zwei Kapazitätsstufen.
+        // Und die Größen laufen wirklich über die zwei GERAETE des Bestands.
         Assert.Equal(2, kandidaten.Select(k => Math.Round(k.Einheiten[0].KapazitaetKWh, 6))
                                   .Distinct().Count());
     }
@@ -324,17 +347,42 @@ public sealed class FlottenSuchmethodeTests : IDisposable
     private static IEnumerable<FlottenKandidatZusammenfassung> Gerastert(FlottenAuslegungErgebnis e)
         => e.Kandidaten.Where(k => k.Einheiten.Count > 0);
 
-    /// <summary>Die Achse des Bildschirmfotos: 40–300 kWh / 20, 40–400 kW / 20, 1–4 Stück.</summary>
+    /// <summary>
+    /// Die Achse: Kapazität 40–300 kWh, Leistung 40–400 kW, 1–4 Stück — und ein Bestand
+    /// von SECHS Geräten, von denen VIER in beide Bereiche fallen.
+    /// </summary>
     private static FlottenAuslegungsAchse Beispielachse() => new()
     {
         Aktiv = true,
         Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
         AnzahlVon = 1,
         AnzahlBis = 4,
-        KapazitaetVonKWh = 40, KapazitaetBisKWh = 300, KapazitaetSchrittKWh = 20,
-        LeistungVonKw = 40, LeistungBisKw = 400, LeistungSchrittKw = 20,
-        CRateVon = 0.5, CRateBis = 2.0, CRateSchritt = 0.5,
+        KapazitaetVonKWh = 40, KapazitaetBisKWh = 300,
+        LeistungVonKw = 40, LeistungBisKw = 400,
+        Quelle = FlottenKandidatenquelle.Projektkatalog,
+        Geraete = Bestand(),
         Vorlage = Vorlage(129, 100)
+    };
+
+    /// <summary>
+    /// Der Prüfbestand: vier Treffer (innerhalb beider Bereiche) und zwei Geräte
+    /// daneben — eines zu klein, eines zu groß.
+    /// </summary>
+    private static List<FlottenGeraetekandidat> Bestand() => new()
+    {
+        Geraet("1", 50, 50), Geraet("2", 100, 100), Geraet("3", 200, 200),
+        Geraet("4", 300, 400), Geraet("5", 10, 10), Geraet("6", 1000, 1000)
+    };
+
+    private static FlottenGeraetekandidat Geraet(string id, double kWh, double kW) => new()
+    {
+        Quellkennung = id,
+        Geraet = new FlottenEinheit
+        {
+            Id = "G" + id, Name = "Speicher " + id,
+            KapazitaetKWh = kWh, LadeleistungKw = kW, EntladeleistungKw = kW,
+            EigeneKosten = true, InvestitionEuro = VORLAGE_INVESTITION
+        }
     };
 
     private static FlottenStudieKonfiguration Beispielraum(FlottenSuchmethode methode,
@@ -379,11 +427,16 @@ public sealed class FlottenSuchmethodeTests : IDisposable
                     new()
                     {
                         Aktiv = true,
-                        Modus = FlottenAuslegungsmodus.KapazitaetUndCRate,
+                        Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
                         AnzahlVon = von,
                         AnzahlBis = bis,
-                        KapazitaetVonKWh = 10, KapazitaetBisKWh = 20, KapazitaetSchrittKWh = 10,
-                        CRateVon = 1.0, CRateBis = 1.0, CRateSchritt = 0.5,
+                        KapazitaetVonKWh = 10, KapazitaetBisKWh = 20,
+                        LeistungVonKw = 10, LeistungBisKw = 20,
+                        // ZWEI Geraete im Bereich — der Lauf hat etwas zu waehlen.
+                        Geraete = new List<FlottenGeraetekandidat>
+                        {
+                            Geraet("L1", 10, 10), Geraet("L2", 20, 20)
+                        },
                         Vorlage = Vorlage(VORLAGE_KAPAZITAET, VORLAGE_LEISTUNG)
                     }
                 }

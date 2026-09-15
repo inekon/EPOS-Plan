@@ -17192,9 +17192,6 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="FLOTTE_DLG_PRUEF_LEISTUNG" xml:space="preserve">
     <value>Size range '{0}' – power [kW]: from must be positive, to at least from and the step positive for a range.</value>
   </data>
-  <data name="FLOTTE_DLG_PRUEF_CRATE" xml:space="preserve">
-    <value>Size range '{0}' – C rate [1/h]: from must be positive, to at least from and the step positive for a range.</value>
-  </data>
   <data name="FLOTTE_ED_TITEL" xml:space="preserve">
     <value>Storage fleet</value>
   </data>
@@ -17944,6 +17941,51 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   </data>
   <data name="FLOTTE_GROESSEN_SP_SPITZE" xml:space="preserve">
     <value>Peak demand</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_ABWEICHUNG" xml:space="preserve">
+    <value>Deviation</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_NEUTRAL" xml:space="preserve">
+    <value>Neutral values</value>
+  </data>
+  <data name="FLOTTE_OPT_QUELLE" xml:space="preserve">
+    <value>Devices from</value>
+  </data>
+  <data name="FLOTTE_OPT_QUELLE_PROJEKT" xml:space="preserve">
+    <value>Project catalogue</value>
+  </data>
+  <data name="FLOTTE_OPT_QUELLE_STAMM" xml:space="preserve">
+    <value>Master data</value>
+  </data>
+  <data name="FLOTTE_OPT_QUELLE_HINWEIS" xml:space="preserve">
+    <value>The search covers the storage devices of the selected source. A device found in the master data can be adopted into the project in step 1.</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_TITEL" xml:space="preserve">
+    <value>Devices found</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_LEER" xml:space="preserve">
+    <value>The selected source holds no device that could be computed.</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_TREFFER" xml:space="preserve">
+    <value>All listed devices lie within both ranges.</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_NAEHE" xml:space="preserve">
+    <value>No device lies within both ranges. The {0} closest ones are computed; their deviation is shown in the second-to-last column.</value>
+  </data>
+  <data name="FLOTTE_OPT_GERAETE_NEUTRAL" xml:space="preserve">
+    <value>Neutral values: charge and discharge efficiency 95 % each, SoC window 10 to 90 %, no ageing.</value>
+  </data>
+  <data name="FLOTTE_OPT_GER_SP_NAME" xml:space="preserve">
+    <value>Device</value>
+  </data>
+  <data name="FLOTTE_OPT_GER_SP_ABWEICHUNG" xml:space="preserve">
+    <value>Deviation</value>
+  </data>
+  <data name="FLOTTE_OPT_GER_SP_NEUTRAL" xml:space="preserve">
+    <value>Neutral values</value>
+  </data>
+  <data name="FLOTTE_OPT_KEINE_GERAETE" xml:space="preserve">
+    <value>No device found: select the other source or maintain the storage inventory.</value>
   </data>
   <data name="FLOTTE_GROESSEN_SP_ZULAESSIG" xml:space="preserve">
     <value>Feasible</value>
@@ -18956,9 +18998,6 @@ Do you want to allow this?</value>
   <data name="FLOTTE_OPT_FEINRASTER" xml:space="preserve">
     <value>Phase 2: fine grid around the coarse optimum</value>
   </data>
-  <data name="FLOTTE_OPT_FEINRASTER_HINWEIS" xml:space="preserve">
-    <value>After the coarse grid a second, narrower grid is computed around the best coarse point — on the size axis only, in steps of one ninth of the step width. The fine grid only wins on a strictly better net present value.</value>
-  </data>
   <data name="FLOTTE_OPT_SUCHRAUM" xml:space="preserve">
     <value>Search space per unit</value>
   </data>
@@ -18985,9 +19024,6 @@ Do you want to allow this?</value>
   </data>
   <data name="FLOTTE_OPT_KEINE_EINHEIT" xml:space="preserve">
     <value>Without a storage unit there is nothing to vary — step 1 creates one.</value>
-  </data>
-  <data name="FLOTTE_OPT_KANDIDATEN" xml:space="preserve">
-    <value>{0} candidates in the coarse grid, up to {1} in the fine grid — {2} in total out of at most {3}.</value>
   </data>
   <data name="FLOTTE_OPT_KANDIDATEN_OHNE" xml:space="preserve">
     <value>{0} candidates out of at most {1}.</value>
