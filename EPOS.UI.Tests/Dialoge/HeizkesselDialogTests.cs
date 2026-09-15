@@ -85,7 +85,6 @@ public class HeizkesselDialogTests : EposBunitContext
         Action<ErzeugerZeile, int>? traegerWechseln = null,
         Action<ErzeugerZeile>? uebernehmen = null,
         Func<int, bool>? katalogLoeschen = null,
-        Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
         Func<string, IReadOnlyDictionary<string, object>>? editorGaben = null,
         bool wizard = false,
         Action<bool>? geschlossen = null,
@@ -108,7 +107,6 @@ public class HeizkesselDialogTests : EposBunitContext
             .Add(x => x.TraegerWechseln, traegerWechseln)
             .Add(x => x.Uebernehmen, uebernehmen)
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
-            .Add(x => x.VerwaltungGaben, verwaltung)
             .Add(x => x.EditorGaben, editorGaben)
             .Add(x => x.TraegerGaben, _ => new Dictionary<string, object>
             {
@@ -177,40 +175,18 @@ public class HeizkesselDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Ohne Parametersatz der Katalogverwaltung kein Knopf — Hausregel. Seit
-    /// iU9-W14a.4 ist die Verwaltung eine ÜBERLAGERUNG im selben Fenster statt eines
-    /// zweiten Fensters über die Sprungbrücke (Risiko R2).
+    /// <b>Es gibt keinen Administrationsknopf mehr</b> (Anwenderentscheid 15.09.2026:
+    /// „nicht noetig, da schon unter Bearbeiten vorhanden"). Der Fall haelt die
+    /// Abwesenheit fest - sonst kaeme der Knopf bei der naechsten Huellenpflege
+    /// unbemerkt zurueck.
     /// </summary>
     [Fact]
-    public void Der_Admin_Knopf_erscheint_nur_mit_Verwaltungsgaben()
+    public void Es_gibt_keinen_Administrationsknopf_mehr()
     {
-        var ohne = Aufbauen();
-        Assert.DoesNotContain(ohne.FindAll("button").Select(b => b.TextContent), t => t == "Administration...");
+        var cut = Aufbauen();
 
-        var mit = Aufbauen(verwaltung: () => Verwaltungsgaben());
-        Assert.Contains(mit.FindAll("button").Select(b => b.TextContent), t => t == "Administration...");
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent == "Administration...");
     }
-
-    /// <summary>Der Knopf öffnet die Verwaltung als Überlagerung, nicht als Fenster.</summary>
-    [Fact]
-    public void Der_Admin_Knopf_oeffnet_die_Verwaltung_als_Ueberlagerung()
-    {
-        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
-
-        Assert.False(cut.Instance.VerwaltungOffen);
-        cut.FindAll("button").First(b => b.TextContent == "Administration...").Click();
-
-        Assert.True(cut.Instance.VerwaltungOffen);
-        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
-    }
-
-    /// <summary>Ein Mindestsatz für die Überlagerung — der Browser braucht sein Profil.</summary>
-    private static IReadOnlyDictionary<string, object> Verwaltungsgaben()
-        => new Dictionary<string, object>
-        {
-            ["Art"] = WindowsFormsApplication1.KatalogBrowserArt.Heizkessel,
-            ["Wege"] = new EPOS.UI.Dialoge.Erzeuger.KatalogBrowserWege()
-        };
 
     [Fact]
     public void Im_Assistenten_fehlen_OK_Abbrechen_und_die_Kostenleiste()
@@ -517,7 +493,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return true; });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[1].Click();
+        Knopf(cut, "Löschen").Click();
 
         Assert.Single(cut.FindAll(".epos-rueckfrage"));
         Assert.Empty(geloescht);
@@ -534,7 +510,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return true; });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[1].Click();
+        Knopf(cut, "Löschen").Click();
         cut.FindAll(".epos-rueckfrage button")[1].Click();
 
         Assert.Empty(geloescht);
@@ -551,7 +527,7 @@ public class HeizkesselDialogTests : EposBunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
+        Knopf(cut, "Bearbeiten...").Click();
 
         Assert.Equal("Kessel A", gefragt);
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
@@ -584,6 +560,96 @@ public class HeizkesselDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Equal(1, rufe);
         Assert.False(gemeldet);
+    }
+
+    /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile wirkt genau wie Esc — es schließt ohne zu speichern und meldet
+    /// <c>false</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_bricht_ab_wie_Esc()
+    {
+        int rufe = 0;
+        bool? gemeldet = null;
+        var cut = Aufbauen(geschlossen: ok => { gemeldet = ok; rufe++; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(1, rufe);
+        Assert.False(gemeldet);
+    }
+
+    /// <summary>Das ✕ der Trägerwahl wirkt wie deren Esc: nichts wird aufgenommen.</summary>
+    [Fact]
+    public void Das_Kreuz_der_Traegerwahl_bricht_sie_ab()
+    {
+        bool aufgenommen = false;
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100) };
+        var cut = Aufbauen(zeilen, aufnehmen: (_, _) =>
+        {
+            aufgenommen = true;
+            return new AufnahmeErgebnis(Zeile(9, "Kessel B", 200));
+        });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        Assert.True(cut.Instance.Traegerwahl);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.Traegerwahl);
+        Assert.False(aufgenommen);
+        Assert.Single(zeilen);
+    }
+
+    /// <summary>Das ✕ über dem Katalogeditor schließt ihn — derselbe Weg wie Esc.</summary>
+    [Fact]
+    public void Das_Kreuz_des_Katalogeditors_bricht_ihn_ab()
+    {
+        var cut = Aufbauen(editorGaben: _ =>
+            new Dictionary<string, object> { ["Daten"] = new HeizkesselKatalogDaten() });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        Knopf(cut, "Bearbeiten...").Click();
+        Assert.Single(cut.FindAll(".epos-ueberlagerung"));
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+    }
+
+    /// <summary>
+    /// Die Trägerwahl steht in einer BETITELTEN Überlagerung — die trägt Titel und ✕,
+    /// das eingebettete Blatt zeigt beides nicht mehr (<c>TitelText=""</c> hinter dem
+    /// Parametersatz). Befund des Anwenders: „Doppeltes Kreuz dürfen nicht sein!"
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Traegerwahl_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen();
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>Dasselbe über dem Katalogeditor.</summary>
+    [Fact]
+    public void Die_Ueberlagerung_Katalogeditor_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(editorGaben: _ =>
+            new Dictionary<string, object> { ["Daten"] = new HeizkesselKatalogDaten() });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        Knopf(cut, "Bearbeiten...").Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
 
     // =================================================================================
@@ -713,4 +779,18 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Equal("1 von 2 Sätzen", zweiterAufbau.Find(".epos-katalog-treffer").TextContent);
         Assert.Single(zweiterAufbau.FindAll(".epos-katalog-ruecksetzer"));
     }
+
+    /// <summary>
+    /// Der Knopf mit DIESER Beschriftung - gleich, in welcher Leiste er steht.
+    /// </summary>
+    /// <remarks>
+    /// <b>Ueber den TEXT und nicht ueber den Index</b> (15.09.2026). Die Faelle
+    /// griffen bis dahin mit <c>[0]</c> und <c>[1]</c> in die Knopfleiste der rechten
+    /// Spalte. Als "Bearbeiten..." in den Modulbereich wanderte und
+    /// "Administration..." entfiel, traf jeder dieser Indizes etwas anderes - oder
+    /// nichts. Der Text sagt, was gemeint ist, und haelt den naechsten Umbau aus.
+    /// </remarks>
+    private static AngleSharp.Dom.IElement Knopf(
+        Bunit.IRenderedComponent<HeizkesselDialog> cut, string beschriftung)
+        => cut.FindAll("button").First(b => b.TextContent.Trim() == beschriftung);
 }

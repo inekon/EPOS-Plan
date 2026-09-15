@@ -500,7 +500,7 @@ public class BhkwDialogTests : EposBunitContext
         var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return ""; });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[2].Click();
+        Knopf(cut, "Löschen").Click();
 
         Assert.Single(cut.FindAll(".epos-rueckfrage"));
         Assert.Empty(geloescht);
@@ -517,7 +517,7 @@ public class BhkwDialogTests : EposBunitContext
             "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.");
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[2].Click();
+        Knopf(cut, "Löschen").Click();
         cut.FindAll(".epos-rueckfrage button")[0].Click();
 
         Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
@@ -533,7 +533,7 @@ public class BhkwDialogTests : EposBunitContext
             return new Dictionary<string, object> { ["Daten"] = new BhkwKatalogDaten() };
         });
 
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[1].Click();
+        Knopf(cut, "Neu..").Click();
         cut.Find(".epos-ueberlagerung input[type=text]").Input("Neues Modul");
         cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
 
@@ -552,7 +552,7 @@ public class BhkwDialogTests : EposBunitContext
         });
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
+        Knopf(cut, "Bearbeiten...").Click();
 
         Assert.Equal("Modul A", gefragt);
         Assert.True(cut.Instance.Katalogeditor);
@@ -576,6 +576,119 @@ public class BhkwDialogTests : EposBunitContext
         Assert.Equal(1, rufe);
         Assert.False(gemeldet);
     }
+
+    /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile wirkt genau wie Esc — es schließt ohne zu speichern und meldet
+    /// <c>false</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_bricht_ab_wie_Esc()
+    {
+        int rufe = 0;
+        bool? gemeldet = null;
+        var cut = Aufbauen(geschlossen: ok => { gemeldet = ok; rufe++; });
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Equal(1, rufe);
+        Assert.False(gemeldet);
+    }
+
+    /// <summary>Das ✕ der Trägerwahl wirkt wie deren Esc: nichts wird aufgenommen.</summary>
+    [Fact]
+    public void Das_Kreuz_der_Traegerwahl_bricht_sie_ab()
+    {
+        bool aufgenommen = false;
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) };
+        var cut = Aufbauen(zeilen, aufnehmen: (_, _) =>
+        {
+            aufgenommen = true;
+            return new AufnahmeErgebnis(Zeile(9, "Modul B", 200), "angelegt");
+        });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        Assert.True(cut.Instance.Traegerwahl);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.Traegerwahl);
+        Assert.False(aufgenommen);
+        Assert.Single(zeilen);
+    }
+
+    /// <summary>Das ✕ über dem Katalogeditor schließt ihn — derselbe Weg wie Esc.</summary>
+    [Fact]
+    public void Das_Kreuz_des_Katalogeditors_bricht_ihn_ab()
+    {
+        var cut = Aufbauen(editorGaben: _ =>
+            new Dictionary<string, object> { ["Daten"] = new BhkwKatalogDaten() });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        Knopf(cut, "Bearbeiten...").Click();
+        Assert.True(cut.Instance.Katalogeditor);
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(cut.Instance.Katalogeditor);
+    }
+
+    /// <summary>
+    /// Das ✕ über der Namensfrage von „Neu…" bricht sie ab: Es entsteht kein Name,
+    /// und der Editor geht nicht auf.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_der_Namensfrage_oeffnet_keinen_Editor()
+    {
+        bool gefragt = false;
+        var cut = Aufbauen(editorGabenNeu: _ =>
+        {
+            gefragt = true;
+            return new Dictionary<string, object> { ["Daten"] = new BhkwKatalogDaten() };
+        });
+
+        Knopf(cut, "Neu..").Click();
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Assert.False(gefragt);
+        Assert.False(cut.Instance.Katalogeditor);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+    }
+
+    /// <summary>
+    /// Die Trägerwahl steht in einer BETITELTEN Überlagerung — die trägt Titel und ✕,
+    /// das eingebettete Blatt zeigt beides nicht mehr (<c>TitelText=""</c> hinter dem
+    /// Parametersatz). Befund des Anwenders: „Doppeltes Kreuz dürfen nicht sein!"
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_Traegerwahl_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen();
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    /// <summary>Dasselbe über dem Katalogeditor.</summary>
+    [Fact]
+    public void Die_Ueberlagerung_Katalogeditor_zeigt_nur_ein_Kreuz()
+    {
+        var cut = Aufbauen(editorGaben: _ =>
+            new Dictionary<string, object> { ["Daten"] = new BhkwKatalogDaten() });
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        Knopf(cut, "Bearbeiten...").Click();
+
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
     // =====================================================================
     //  Formularraster — Anwenderwunsch iU8‑E‑2, Paket P1 (05.09.2026)
     // =====================================================================
@@ -760,4 +873,14 @@ public class BhkwDialogTests : EposBunitContext
         Assert.Equal("1 von 2 Sätzen", zweiterAufbau.Find(".epos-katalog-treffer").TextContent);
         Assert.Single(zweiterAufbau.FindAll(".epos-katalog-ruecksetzer"));
     }
+
+    /// <summary>Der Knopf mit DIESER Beschriftung - gleich, in welcher Leiste er steht.</summary>
+    /// <remarks>
+    /// Über den TEXT und nicht über den Index (15.09.2026): "Bearbeiten..." ist in den
+    /// Modulbereich gewandert, die Indizes der Listenleiste haben sich dadurch
+    /// verschoben. Der Text sagt, was gemeint ist.
+    /// </remarks>
+    private static AngleSharp.Dom.IElement Knopf(
+        Bunit.IRenderedComponent<BhkwDialog> cut, string beschriftung)
+        => cut.FindAll("button").First(b => b.TextContent.Trim() == beschriftung);
 }

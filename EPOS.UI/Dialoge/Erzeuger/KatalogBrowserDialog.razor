@@ -44,6 +44,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Profil.Titel</h1>
         <InfoKnopf Schluessel="@Profil.HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="Abbrechen" />
     </div>
 
     @if (!string.IsNullOrEmpty(_meldung))
@@ -94,40 +95,12 @@
                 @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
                    Zahlenfelder kurz mit der Einheit dahinter, zwei Feldpaare je
                    Zeile, sobald die Spalte breit genug ist. *@
-                <Formularraster>
-                    <KindInhalt>
-                    @foreach (BrowserFeldwert feld in _felder)
-                    {
-                        @if (feld.Art == BrowserFeldArt.Schalter)
-                        {
-                            <Schalter Bezeichnung="@feld.Bezeichnung" Wert="@feld.Schalterwert"
-                                      WertChanged="@(w => SchalterSetzen(feld, w))"
-                                      Aktiv="@(feld.Editierbar && !NurLesen)" />
-                        }
-                        else if (feld.Art == BrowserFeldArt.Zahl && feld.Editierbar && !NurLesen)
-                        {
-                            <Zahlenfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
-                                        Feldname="@feld.Feldname" Wert="@Zahl(feld)"
-                                        WertChanged="@(w => ZahlSetzen(feld, w))"
-                                        FehlerZustand="BeiFehlerZustand" />
-                        }
-                        else if (feld.Art == BrowserFeldArt.Ganzzahl && feld.Editierbar && !NurLesen)
-                        {
-                            <Ganzzahlfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
-                                          Feldname="@feld.Feldname" Wert="@Ganzzahl(feld)"
-                                          WertChanged="@(w => GanzzahlSetzen(feld, w))"
-                                          FehlerZustand="BeiFehlerZustand" />
-                        }
-                        else
-                        {
-                            <Textfeld Bezeichnung="@feld.Bezeichnung" Wert="@feld.Wert"
-                                      WertChanged="@(w => TextSetzen(feld, w))"
-                                      NurLesen="@(!feld.Editierbar || NurLesen)"
-                                      Mehrzeilig="@(feld.Art == BrowserFeldArt.Mehrzeilig)" Zeilen="2" />
-                        }
-                    }
-                    </KindInhalt>
-                </Formularraster>
+                @* DAS RASTER STEHT SEIT DEM 15.09.2026 IM BAUSTEIN Katalogfelder -
+                   derselbe, den der Modulbereich der Erzeugerdialoge benutzt. Zwei
+                   Fassungen derselben Regel (welche Feldart wird wie gezeichnet, wann
+                   ist ein Feld setzbar) waeren zwei Fassungen, die auseinanderlaufen. *@
+                <Katalogfelder Felder="@_felder" NurLesen="@NurLesen"
+                               Geaendert="BeiFeldAenderung" FehlerZustand="BeiFehlerZustand" />
 
                 @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
                    (06.09.2026): "Erstelle einen Bearbeiten-Dialog zusaetzlich im
@@ -434,38 +407,17 @@
     // Die Felder des Speicherwegs
     // =====================================================================
 
-    private static double? Zahl(BrowserFeldwert feld) =>
-        Zahlen.ZahlParsen(feld.Wert, out double d) ? d : null;
-
-    private static int? Ganzzahl(BrowserFeldwert feld) =>
-        Zahlen.GanzzahlParsen(feld.Wert, out int i) ? i : null;
-
-    private void TextSetzen(BrowserFeldwert feld, string wert)
+    /// <summary>
+    /// Ein Feld im Baustein <c>Katalogfelder</c> hat sich geändert - der Browser führt
+    /// daraufhin seinen „geändert"-Zustand nach und nimmt eine stehende Meldung weg.
+    /// </summary>
+    /// <remarks>
+    /// <b>WAS sich geändert hat, interessiert hier nicht.</b> Der Baustein schreibt in
+    /// dieselben <see cref="BrowserFeldwert"/>-Objekte, die der Browser ohnehin hält;
+    /// gespeichert wird beim Knopfdruck aus genau dieser Liste.
+    /// </remarks>
+    private void BeiFeldAenderung()
     {
-        if (!feld.Editierbar || NurLesen) return;
-        feld.Wert = wert;
-        _geaendert = true;
-        _meldung = "";
-    }
-
-    private void ZahlSetzen(BrowserFeldwert feld, double? wert)
-    {
-        feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
-        _geaendert = true;
-        _meldung = "";
-    }
-
-    private void GanzzahlSetzen(BrowserFeldwert feld, int? wert)
-    {
-        feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
-        _geaendert = true;
-        _meldung = "";
-    }
-
-    private void SchalterSetzen(BrowserFeldwert feld, bool wert)
-    {
-        if (!feld.Editierbar || NurLesen) return;
-        feld.Schalterwert = wert;
         _geaendert = true;
         _meldung = "";
     }
@@ -681,6 +633,9 @@
         return false;
     }
 
+    /// <summary>Der Abbrechen-Weg: schließt ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(new BrowserErgebnis(false, _gewaehlt));
+
     /// <summary>
     /// Esc schließt die oberste Ebene. Enter bleibt unbelegt: „Löschen" und „Speichern"
     /// schreiben sofort.
@@ -690,6 +645,6 @@
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_editorOffen || _namensfrage || _loeschfrage || _schutzfrage) return Task.CompletedTask;
 
-        return Geschlossen.InvokeAsync(new BrowserErgebnis(false, _gewaehlt));
+        return Abbrechen();
     }
 }

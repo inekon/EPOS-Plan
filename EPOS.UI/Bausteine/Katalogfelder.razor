@@ -1,0 +1,135 @@
+﻿@* ALLE FELDER EINES KATALOGSATZES - als Raster, je Feld in seiner Art, und
+   bearbeitbar, wo der Katalog einen Speicherweg hat (Anwenderentscheid 15.09.2026).
+
+   WOZU ER DA IST. Der Anwender hat zwei Dinge in einem Satz verlangt: Der
+   Bearbeiten-Dialog soll keine Kosten und Emissionen mehr tragen, UND im
+   Modulbereich sollen "optional alle technischen Daten angezeigt und bearbeitet
+   werden koennen". Das Zweite ist der Ersatz fuer das Erste - ohne es entstuende
+   eine Pflegeluecke: Ein Katalogpreis, den weder der Bearbeiten-Dialog noch die
+   (ebenfalls entfallene) Administration mehr zeigt, liesse sich nirgends mehr
+   eintragen.
+
+   WARUM ER AUS DEM KATALOGBROWSER KOMMT. Genau dieses Raster stand schon einmal
+   im Haus: im KatalogBrowserDialog, der Maske hinter dem Knopf "Administration…".
+   Sie zeigt seit iU9-W14a ALLE Spalten eines Katalogsatzes, je Feld in seiner Art
+   (Text, Zahl, Ganzzahl, Schalter, mehrzeilig) und bearbeitbar, wo der Katalog
+   einen Speicherweg hat. Ein zweites Raster daneben zu bauen hiesse, dieselbe
+   Regel ein zweites Mal zu pflegen - und die zwei liefen auseinander. Der
+   Browser benutzt seit demselben Entscheid DIESEN Baustein.
+
+   WAS ER NICHT TUT. Er kennt weder Datenbank noch Controller: Die Felder kommen
+   fertig herein (BrowserFeldwert traegt Anzeigetext, Art und Editierbar), und
+   Aenderungen meldet er nach aussen. WANN gespeichert wird, entscheidet der Wirt -
+   der Browser mit seinem Speichern-Knopf, der Modulbereich mit seinem.
+
+   NUR LESEN IST DER REGELFALL. Einen Speicherweg haben heute nur Heizkessel und
+   BHKW (KatalogBrowserWege.Speichern); bei Photovoltaik, Pufferspeicher,
+   Stromspeicher und Solarkollektoren steht er auf null. Dort zeigt derselbe
+   Baustein dieselben Felder - unveraenderlich. Das ist keine Einschraenkung
+   dieses Bausteins, sondern die Lage der Kataloge. *@
+
+@namespace EPOS.UI.Bausteine
+@using EPOS.UI.Dialoge.Erzeuger
+@using WindowsFormsApplication1
+
+@* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld, Zahlenfelder
+   kurz mit der Einheit dahinter, zwei Feldpaare je Zeile, sobald es passt. *@
+<Formularraster>
+    <KindInhalt>
+    @foreach (BrowserFeldwert feld in Felder)
+    {
+        @if (feld.Art == BrowserFeldArt.Schalter)
+        {
+            <Schalter Bezeichnung="@feld.Bezeichnung" Wert="@feld.Schalterwert"
+                      WertChanged="@(w => SchalterSetzen(feld, w))"
+                      Aktiv="@Setzbar(feld)" />
+        }
+        else if (feld.Art == BrowserFeldArt.Zahl && Setzbar(feld))
+        {
+            <Zahlenfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
+                        Feldname="@feld.Feldname" Wert="@Zahl(feld)"
+                        WertChanged="@(w => ZahlSetzen(feld, w))"
+                        FehlerZustand="FehlerZustand" />
+        }
+        else if (feld.Art == BrowserFeldArt.Ganzzahl && Setzbar(feld))
+        {
+            <Ganzzahlfeld Bezeichnung="@feld.Bezeichnung" Einheit="@feld.Einheit"
+                          Feldname="@feld.Feldname" Wert="@Ganzzahl(feld)"
+                          WertChanged="@(w => GanzzahlSetzen(feld, w))"
+                          FehlerZustand="FehlerZustand" />
+        }
+        else
+        {
+            <Textfeld Bezeichnung="@feld.Bezeichnung" Wert="@feld.Wert"
+                      WertChanged="@(w => TextSetzen(feld, w))"
+                      NurLesen="@(!Setzbar(feld))"
+                      Mehrzeilig="@(feld.Art == BrowserFeldArt.Mehrzeilig)" Zeilen="2" />
+        }
+    }
+    </KindInhalt>
+</Formularraster>
+
+@code {
+    /// <summary>Die Felder des gewählten Katalogsatzes, in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<BrowserFeldwert> Felder { get; set; } = Array.Empty<BrowserFeldwert>();
+
+    /// <summary>
+    /// Alles nur anzeigen — unabhängig davon, was das einzelne Feld sagt.
+    /// </summary>
+    /// <remarks>
+    /// <b>Zwei Sperren, nicht eine.</b> <see cref="NurLesen"/> gilt für die ganze Maske
+    /// (ein schreibgeschützter Auslieferungssatz, ein Katalog ohne Speicherweg),
+    /// <c>BrowserFeldwert.Editierbar</c> für das einzelne Feld (eine abgeleitete Größe,
+    /// die niemand von Hand setzt). Gesetzt wird nur, wo BEIDE es zulassen.
+    /// </remarks>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>
+    /// Ein Feld hat sich geändert. Der Wirt führt daraufhin seinen „geändert"-Zustand
+    /// nach — er entscheidet, wann gespeichert wird, nicht dieser Baustein.
+    /// </summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Ein Zahlenfeld meldet einen ungültigen Eingabezustand. Der Wirt sperrt daraufhin
+    /// sein „Speichern" — dieselbe Naht, die der Katalogbrowser schon hatte.
+    /// </summary>
+    [Parameter] public EventCallback<(string Feldname, bool Fehler)> FehlerZustand { get; set; }
+
+    /// <summary>Darf dieses Feld gesetzt werden?</summary>
+    private bool Setzbar(BrowserFeldwert feld) => feld.Editierbar && !NurLesen;
+
+    private static double? Zahl(BrowserFeldwert feld)
+        => Zahlen.ZahlParsen(feld.Wert, out double d) ? d : null;
+
+    private static int? Ganzzahl(BrowserFeldwert feld)
+        => Zahlen.GanzzahlParsen(feld.Wert, out int i) ? i : null;
+
+    private Task TextSetzen(BrowserFeldwert feld, string wert)
+    {
+        if (!Setzbar(feld)) return Task.CompletedTask;
+        feld.Wert = wert;
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task ZahlSetzen(BrowserFeldwert feld, double? wert)
+    {
+        if (!Setzbar(feld)) return Task.CompletedTask;
+        feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task GanzzahlSetzen(BrowserFeldwert feld, int? wert)
+    {
+        if (!Setzbar(feld)) return Task.CompletedTask;
+        feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
+        return Geaendert.InvokeAsync();
+    }
+
+    private Task SchalterSetzen(BrowserFeldwert feld, bool wert)
+    {
+        if (!Setzbar(feld)) return Task.CompletedTask;
+        feld.Schalterwert = wert;
+        return Geaendert.InvokeAsync();
+    }
+}

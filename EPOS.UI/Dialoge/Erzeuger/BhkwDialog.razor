@@ -40,6 +40,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="Abbrechen" />
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -93,9 +94,10 @@
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
                           Vergleichsparameter="@Vergleichsparameter" />
 
+            @* "Bearbeiten…" ist in den Modulbereich gewandert (Anwenderentscheid
+               15.09.2026) - zu dem Satz, auf den es wirkt. "Neu.." und "Loeschen"
+               bleiben HIER: Sie wirken auf die LISTE, nicht auf den gewaehlten Satz. *@
             <div class="epos-leiste">
-                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
-                        @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
                 <button type="button" class="epos-knopf" @onclick="() => _namensfrage = true">@BtnNeuText</button>
                 <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
                         @onclick="BeiLoeschen">@BtnLoeschenText</button>
@@ -156,48 +158,88 @@
             }
                 </KindInhalt>
             </Formularraster>
+
+        @* ALLE UEBRIGEN KATALOGWERTE, aufklappbar (Anwenderentscheid 15.09.2026).
+           Bauart wortgleich zum Photovoltaik- und zum Heizkesseldialog. *@
+        @if (_detail.Parameterzeilen.Count > 0)
+        {
+            <div class="epos-modulparameter">
+                <button type="button" class="epos-modulparameter-knopf"
+                        aria-expanded="@(_parameterOffen ? "true" : "false")"
+                        @onclick="() => _parameterOffen = !_parameterOffen">
+                    <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_parameterOffen ? "▾" : "▸")</span>
+                    <span>@LabelAlleParameter</span>
+                </button>
+
+                @if (_parameterOffen)
+                {
+                    <Formularraster>
+                        <KindInhalt>
+                            @foreach (Modulparameter p in _detail.Parameterzeilen)
+                            {
+                                <Textfeld Bezeichnung="@p.Feld" Wert="@p.Wert" Einheit="@p.Einheit"
+                                          NurLesen="true" Kurz="@Kurzfeld(p)" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                }
+            </div>
+        }
+
+        @* DIE KNOEPFE ZUM GEWAEHLTEN SATZ - erst die Kosten- und Emissionswege,
+           darunter "Bearbeiten…". Die Kostenleiste stand bis zum 15.09.2026 UNTER
+           dem Modulblock; sie kennt nur "Schalter betrieb ja/nein", WELCHE Zeile
+           gemeint ist, weiss allein dieser Dialog. *@
+        @if (!Wizard)
+        {
+            <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
+                                 InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
+                                 EnergieText="@KostenEnergieText" />
+        }
+
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                    @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
+        </div>
         </KindInhalt>
     </Gruppenkopf>
 
     @if (!Wizard)
     {
-        @* Die Leiste kennt nur "Schalter betrieb ja/nein" - WELCHE Zeile gemeint ist,
-           weiss allein dieser Dialog. Deshalb gehen die zwei Knopfwege als
-           geschlossene Rueckrufe hinein, die die gewaehlte Projektzeile mitnehmen
-           (dasselbe Muster wie auf der Kostenseite, wo VerwaltungGaben/TraegerGaben
-           die gewaehlte Zeile durchreichen). *@
-        <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
-                             InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
-                             EnergieText="@KostenEnergieText" />
-
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
     }
 
     @* Traegerwahl vor dem Hinzufuegen. *@
-    <Ueberlagerung Offen="@(_traegerGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_traegerGaben is not null)"
                    Titel="@TraegerTitel" Geschlossen="() => TraegerFertig(null)">
         <KindInhalt>
             @if (_traegerGaben is not null)
             {
-                <EnergietraegerVarianteDialog @attributes="_traegerGaben" Geschlossen="TraegerFertig" />
+                @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt
+                   sie auch das ✕ - TitelText="" hinter dem Satz schaltet beides im Blatt ab. *@
+                <EnergietraegerVarianteDialog @attributes="_traegerGaben" TitelText=""
+                                              Geschlossen="TraegerFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* Katalogeditor - "Bearbeiten…" laedt den Satz, "Neu…" fragt zuerst den Namen. *@
-    <Ueberlagerung Offen="@(_editorGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_editorGaben is not null)"
                    Titel="@EditorTitel" Geschlossen="() => EditorFertig(null)">
         <KindInhalt>
             @if (_editorGaben is not null)
             {
-                <BhkwKatalogDialog @attributes="_editorGaben" Geschlossen="EditorFertig" />
+                @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt
+                   sie auch das ✕ - TitelText="" hinter dem Satz schaltet beides im Blatt ab. *@
+                <BhkwKatalogDialog @attributes="_editorGaben" TitelText=""
+                                   Geschlossen="EditorFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* "Neu…": erst der Name, dann der Editor - beides in derselben Ueberlagerung. *@
-    <Ueberlagerung Offen="@_namensfrage" Schliessbar="false" Titel="@BtnNeuText"
-                   Geschlossen="() => _namensfrage = false">
+    <Ueberlagerung Offen="@_namensfrage" Titel="@BtnNeuText"
+                   Geschlossen="() => BeiNeuemNamen(null)">
         <KindInhalt>
             <NamensDialog TitelText="" FrageText="@LabelName"
                           MeldungLeer="@MeldungNameFehlt" OkText="@OkText"
@@ -332,6 +374,8 @@
     [Parameter] public string BtnNeuText { get; set; } = "Neu..";
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
     [Parameter] public string GruppeModul { get; set; } = "Modul";
+    /// <summary>Beschriftung des Aufklappers ueber den uebrigen Katalogwerten (W6‑E‑1).</summary>
+    [Parameter] public string LabelAlleParameter { get; set; } = "Alle Daten anzeigen";
     [Parameter] public string LabelName { get; set; } = "Modul-Name:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
     [Parameter] public string LabelTraeger { get; set; } = "Brennstoff:";
@@ -392,6 +436,19 @@
     private Katalogfilterstand _filterstand = new();
     private IReadOnlyList<(int Id, string Text)> _varianten = Array.Empty<(int, string)>();
     private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
+
+    /// <summary>
+    /// Steht der Aufklapper „Alle Daten" offen? Der Zustand gehört der Dialogsitzung
+    /// und überlebt den Satzwechsel, wird aber nirgends abgelegt (W6‑E‑1).
+    /// </summary>
+    private bool _parameterOffen;
+
+    /// <summary>Steht der Parameterblock offen? (Prüfhilfe für Tests, W6‑E‑1.)</summary>
+    public bool ParameterOffen => _parameterOffen;
+
+    /// <summary>Kurze Feldbreite im Aufklapper - für Zahlen und für alles mit Einheit.</summary>
+    private static bool Kurzfeld(Modulparameter p)
+        => p.Einheit.Length > 0 || ErzeugerDetail.IstZahl(p.Wert);
 
     private string _summeText = "0";
 
@@ -710,11 +767,14 @@
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
+    /// <summary>Der Abbrechen-Weg: schliesst ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
+    private Task Abbrechen() => BeiErgebnis(false);
+
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_traegerGaben is not null || _editorGaben is not null ||
             _namensfrage || _loeschfrage) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }

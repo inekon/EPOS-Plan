@@ -87,17 +87,18 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
     // =================================================================================
 
     [Fact]
-    public void Die_fuenf_Gruppen_der_Karte_stehen()
+    public void Die_zwei_Gruppen_der_Karte_stehen()
     {
+        // Seit dem 15.09.2026 nur noch ZWEI: "Kosten", "Emissionen nach BEHG-V" und
+        // "Emissionsfaktoren…" sind entfallen (Anwenderentscheid: der Bearbeiten-Dialog
+        // traegt keine Kosten und keine Emissionen). Aufgerufen werden sie weiterhin
+        // ueber die Knopfleiste.
         var cut = Aufbauen();
 
         var titel = cut.FindAll(".epos-gruppenkopf-titel");
-        Assert.Equal(5, titel.Count);
+        Assert.Equal(2, titel.Count);
         Assert.Equal("Kessel", titel[0].TextContent);
         Assert.Equal("Technische Daten", titel[1].TextContent);
-        Assert.Equal("Eingabedaten zur Berechnung der Kosten", titel[2].TextContent);
-        Assert.Equal("Emissionen nach BEHG-V", titel[3].TextContent);
-        Assert.Equal("Emissionsfaktoren bezogen auf den Brennstoffverbrauch", titel[4].TextContent);
     }
 
     [Fact]
@@ -105,19 +106,22 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        // 18 Eingabefelder = die 17 TextBox der Karte plus das LAUFZEITFELD
-        // tb_Wartungskosten (WartungsfeldAufbauen, Z. 146): 13 Zahlen, 2 Ganzzahlen
-        // (Vorlauf/Rücklauf), 2 Texte, 1 mehrzeilige Beschreibung. Dazu 2 Auswahllisten
-        // (comboBox_Brennstoff + das Laufzeitfeld cb_WartungEinheit) und 1 Schalter.
-        Assert.Equal(13, cut.FindAll("input[inputmode=decimal]").Count);
+        // SEIT DEM 15.09.2026 ohne Kosten- und Emissionsfelder: Von den dreizehn
+        // Zahlenfeldern bleiben VIER (Leistung, zwei Wirkungsgrade,
+        // Betriebsbereitschaftsverluste); Investition, Wartung, Raumbedarf,
+        // Nutzungsdauer und die fuenf Emissionsfaktoren sind entfallen. Die zwei
+        // Ganzzahlen (Vorlauf/Ruecklauf) bleiben, ebenso die zwei Texte, die
+        // Beschreibung und der Schalter. Von den zwei Auswahllisten bleibt die eine
+        // (Brennstoff) - cb_WartungEinheit gehoerte zu den Kosten.
+        Assert.Equal(4, cut.FindAll("input[inputmode=decimal]").Count);
         Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);
         // Zahlen- und Ganzzahlfeld sind ebenfalls type="text" (type="number" wuerde je
         // nach Browsersprache eines der beiden Trennzeichen verweigern) - die reinen
         // Textfelder tragen als einzige KEIN inputmode.
         Assert.Equal(2, cut.FindAll("input[type=text]:not([inputmode])").Count);
-        Assert.Equal(17, cut.FindAll("input[type=text]").Count);
+        Assert.Equal(8, cut.FindAll("input[type=text]").Count);
         Assert.Single(cut.FindAll("textarea"));
-        Assert.Equal(2, cut.FindAll("select").Count);
+        Assert.Single(cut.FindAll("select"));
         Assert.Single(cut.FindAll("input[type=checkbox]"));
 
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
@@ -132,14 +136,12 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.Contains("Brennwertkessel", texte);
         Assert.Contains("Vorlauf:", texte);
         Assert.Contains("Rücklauf:", texte);
-        Assert.Contains("Investitionskosten:", texte);
-        Assert.Contains("Raumbedarf:", texte);
-        Assert.Contains("Nutzungsdauer:", texte);
-        Assert.Contains("CO2:", texte);
-        Assert.Contains("SO2:", texte);
-        Assert.Contains("NOx:", texte);
-        Assert.Contains("CO:", texte);
-        Assert.Contains("Staub:", texte);
+
+        // Und was NICHT mehr dasteht - der eigentliche Gegenstand der Aenderung.
+        Assert.DoesNotContain("Investitionskosten:", texte);
+        Assert.DoesNotContain("Nutzungsdauer:", texte);
+        Assert.DoesNotContain("CO2:", texte);
+        Assert.DoesNotContain("Staub:", texte);
     }
 
     [Fact]
@@ -154,14 +156,12 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
             .Add(x => x.TitelText, "Boiler administration")
             .Add(x => x.LabelName, "Boiler name:")
             .Add(x => x.GruppeTechnik, "Technical data")
-            .Add(x => x.LabelPtherm, "Thermal performance:")
-            .Add(x => x.LabelStaub, "Dust:"));
+            .Add(x => x.LabelPtherm, "Thermal performance:"));
 
         Assert.Equal("Boiler administration", cut.Find(".epos-dialog-titel").TextContent);
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
         Assert.Contains("Boiler name:", texte);
         Assert.Contains("Thermal performance:", texte);
-        Assert.Contains("Dust:", texte);
         Assert.Equal("Technical data", cut.FindAll(".epos-gruppenkopf-titel")[1].TextContent);
     }
 
@@ -335,31 +335,6 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Assert.Equal("Musterkessel", angelegtAls);
     }
 
-    [Fact]
-    public void Der_CO2_Knopf_setzt_den_Wert_nach_dem_Brennstofftext()
-    {
-        // btn_CO2_Click: die Entscheidung haengt am ANZEIGETEXT der Auswahlliste.
-        string? gefragt = null;
-        var cut = Aufbauen(co2: name => { gefragt = name; return 201600; });
-
-        var daten = Bestand();
-        cut.Find(".epos-gruppenkopf:nth-of-type(4) .epos-knopf").Click();
-
-        Assert.Equal("Erdgas E", gefragt);
-        Assert.Equal("201600", cut.FindAll("input[inputmode=decimal]")[8].GetAttribute("value"));
-    }
-
-    [Fact]
-    public void Ohne_Co2_Delegat_bleibt_der_Wert_stehen()
-    {
-        var daten = Bestand();
-        var cut = Aufbauen(daten, co2: null);
-
-        cut.Find(".epos-gruppenkopf:nth-of-type(4) .epos-knopf").Click();
-
-        Assert.Equal(201600, daten.CO2);
-    }
-
     // =================================================================================
     // Tastatur
     // =================================================================================
@@ -373,6 +348,42 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(gemeldet);
+    }
+
+    /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile wirkt genau wie Esc — es schließt ohne zu speichern und meldet
+    /// <c>null</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_bricht_ab_wie_Esc()
+    {
+        string? gemeldet = "noch nicht";
+        var cut = Aufbauen(geschlossen: n => gemeldet = n);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.Null(gemeldet);
+    }
+
+    /// <summary>
+    /// Die Kehrseite derselben Regel: Eingebettet trägt die <c>Ueberlagerung</c> den
+    /// Titel (<c>TitelText=""</c>, Hausregel „Ein Titel, eine Stelle") — dann steht
+    /// das Kreuz dort und NICHT ein zweites Mal im Dialogkopf.
+    /// </summary>
+    [Fact]
+    public void Ohne_Titel_traegt_der_Kopf_kein_Kreuz()
+    {
+        var cut = Render<HeizkesselKatalogDialog>(p => p
+            .Add(x => x.Daten, Bestand())
+            .Add(x => x.Brennstoffe, Brennstoffe)
+            .Add(x => x.WartungEinheiten, Einheiten)
+            .Add(x => x.TitelText, ""));
+
+        Assert.Empty(cut.FindAll(".epos-dialog-titel"));
+        Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        // Der Hilfeknopf bleibt - er haengt nicht am Titel.
+        Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
     [Fact]

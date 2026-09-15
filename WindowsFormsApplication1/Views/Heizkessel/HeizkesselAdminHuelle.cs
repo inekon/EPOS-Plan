@@ -42,6 +42,32 @@ namespace WindowsFormsApplication1
         /// Projektdialog <c>HeizkesselDialog</c> (W6.3). <c>Geschlossen</c> setzt dort
         /// der Wirt.
         /// </summary>
+        /// <summary>
+        /// Die zwei Wege, die der PROJEKTDIALOG fuer seinen Modulaufklapper braucht:
+        /// alle Felder eines Katalogsatzes lesen und sie zurueckschreiben
+        /// (Anwenderentscheid 15.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <b>Dieselben zwei Delegaten, die auch der Katalogbrowser bekam.</b> Sie stehen
+        /// hier und nicht ein zweites Mal im Projektdialog-Wirt: Welche Spalten ein
+        /// Heizkesselsatz fuehrt und wie sie zurueckgeschrieben werden, ist EINE Frage
+        /// mit EINER Antwort.
+        /// </remarks>
+        internal static KatalogBrowserWege Wege()
+        {
+            KatalogBrowserProfil profil = Profil();
+            var ctrl = new HeizkesselStammCtrl();
+
+            return new KatalogBrowserWege
+            {
+                Katalogzeilen = () => ctrl.Katalogfilterzeilen(),
+                Detail = name => KatalogBrowserHuelle.Felder(profil, ctrl.KatalogsatzAnzeige(name)),
+                Existiert = name => new HeizkesselStammCtrl().Exists(name),
+                Loeschen = Loeschen,
+                Speichern = (name, felder, _) => Schreiben(name, felder)
+            };
+        }
+
         internal static IReadOnlyDictionary<string, object> Gaben()
         {
             KatalogBrowserProfil profil = Profil();
@@ -49,16 +75,7 @@ namespace WindowsFormsApplication1
 
             var gaben = KatalogBrowserHuelle.GemeinsameGaben(profil);
 
-            gaben["Wege"] = new KatalogBrowserWege
-            {
-                // W14a-E-10: die VOLLSTAENDIGE Liste mit ihren sechs Spalten;
-                // gefiltert wird im Spaltenkopf, nicht mehr ueber zwei Klapplisten.
-                Katalogzeilen = () => ctrl.Katalogfilterzeilen(),
-                Detail = name => KatalogBrowserHuelle.Felder(profil, ctrl.KatalogsatzAnzeige(name)),
-                Existiert = name => new HeizkesselStammCtrl().Exists(name),
-                Loeschen = Loeschen,
-                Speichern = (name, felder, _) => Schreiben(name, felder)
-            };
+            gaben["Wege"] = Wege();
 
             gaben["EditorInhalt"] = KatalogBrowserHuelle.Editor<HeizkesselKatalogDialog>();
             gaben["EditorGaben"] = new Func<string, bool, Action<string>,

@@ -650,6 +650,22 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.False(ergebnis!.Bestaetigt);
     }
 
+    /// <summary>
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
+    /// Kopfzeile wirkt genau wie Esc — es schließt ohne Bestätigung.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_schliesst_wie_Esc_ohne_Bestaetigung()
+    {
+        BrowserErgebnis? ergebnis = null;
+        var cut = Aufbauen(geschlossen: e => ergebnis = e);
+
+        cut.Find(".epos-dialog-zu").Click();
+
+        Assert.NotNull(ergebnis);
+        Assert.False(ergebnis!.Bestaetigt);
+    }
+
     [Fact]
     public void Esc_bei_offener_Rueckfrage_schliesst_den_Dialog_nicht()
     {

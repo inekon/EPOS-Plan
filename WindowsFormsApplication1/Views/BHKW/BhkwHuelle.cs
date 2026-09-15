@@ -448,7 +448,7 @@ namespace WindowsFormsApplication1
                                                      zuModell, zaehler, stammId, ergebnis)),
 
                 ["Entfernen"] = new Action<ErzeugerZeile>(
-                    zeile => Entfernen(projektId, idType, modelle, zuModell, zeile)),
+                    zeile => Entfernen(projektId, idType, wizard, modelle, zuModell, zeile)),
 
                 ["TraegerWechseln"] = new Action<ErzeugerZeile, int>(
                     (zeile, neu) =>
@@ -606,7 +606,7 @@ namespace WindowsFormsApplication1
             // Anders als beim Heizkessel prueft der Vorlaeufer hier NUR m_ID_Projekt > 0
             // und nicht zusaetzlich den Assistentenbetrieb - im Assistenten ist die
             // Projekt-Id 0, das laeuft also auf dasselbe hinaus.
-            if (projektId > 0)
+            if (!wizard && projektId > 0)
             {
                 int projektKopie = new BHKWCtrl().CopyFromStamm(stammId, projektId);
                 if (projektKopie <= 0)
@@ -626,7 +626,7 @@ namespace WindowsFormsApplication1
             return new AufnahmeErgebnis(ZeileZu(model), traeger.Meldung, false);
         }
 
-        private static void Entfernen(int projektId, int idType,
+        private static void Entfernen(int projektId, int idType, bool wizard,
                                       List<WErzeugerModel> modelle,
                                       Dictionary<int, WErzeugerModel> zuModell,
                                       ErzeugerZeile zeile)
@@ -642,7 +642,7 @@ namespace WindowsFormsApplication1
             foreach (WErzeugerModel it in modelle)
                 if (it.ID_Type == idType && it.ID_BHKW == m.ID_BHKW) { nochReferenziert = true; break; }
 
-            if (projektId > 0 && !nochReferenziert)
+            if (!wizard && projektId > 0 && !nochReferenziert)
                 new BHKWCtrl().DeleteFromProjekt(m.Bezeichner, projektId);
         }
 

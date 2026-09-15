@@ -497,11 +497,9 @@ namespace WindowsFormsApplication1
 
                 ["KatalogLoeschen"] = new Func<int, bool>(id => stamm.Delete(id)),
 
-                // iU9-W14a.1: Die Katalogverwaltung ist die Razor-Komponente
-                // KatalogBrowserDialog und erscheint als UEBERLAGERUNG im selben
-                // Fenster - der Sprung ueber die Bruecke entfaellt (Risiko R2).
-                ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    HeizkesselAdminHuelle.Gaben),
+                // OHNE "VerwaltungGaben" seit dem 15.09.2026: Der Knopf
+                // "Administration..." und die Ueberlagerung dahinter sind entfallen -
+                // der KatalogBrowserDialog zeigte dasselbe wie "Bearbeiten...".
 
                 ["TitelText"] = Text_("HZK_TITEL", "Verwaltung Heizkessel"),
                 ["KopfbandText"] = Text_("HZK_KOPFBAND", "Geben Sie Daten des Spitzenlastkessels ein"),
@@ -512,8 +510,18 @@ namespace WindowsFormsApplication1
                 ["LabelEntfernen"] = Text_("HZK_TIP_ENTFERNEN", "Aus dem Projekt entfernen"),
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
-                ["BtnAdminText"] = Text_("HZK_BTN_ADMIN", "Administration..."),
                 ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
+                ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
+
+                // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
+                // Sie kommen aus derselben Quelle, aus der auch der - jetzt entfallene -
+                // Katalogbrowser sie bekam; der Aufklapper IST sein Raster.
+                ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
+                    name => HeizkesselAdminHuelle.Wege().Detail!(name)!),
+                ["KatalogfelderSpeichern"] =
+                    new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
+                        (name, felder) => HeizkesselAdminHuelle.Wege().Speichern!(name, felder, false)),
+                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
                 ["LabelTraeger"] = Text_("HZK_LBL_TRAEGER", "Brennstoff Variante:"),

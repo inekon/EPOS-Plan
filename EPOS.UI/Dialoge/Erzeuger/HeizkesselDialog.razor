@@ -54,6 +54,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="Abbrechen" />
     </div>
 
     <p class="epos-kontextzeile">@KopfbandText</p>
@@ -96,15 +97,14 @@
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
                           Vergleichsparameter="@Vergleichsparameter" />
 
+            @* NUR NOCH „Loeschen" (Anwenderentscheid 15.09.2026). „Bearbeiten…" ist in
+               den Modulbereich gewandert - dorthin, wo der gewaehlte Satz steht und wo
+               auch die Kostenknoepfe sitzen; „Administration…" ist ersatzlos entfallen,
+               weil der Katalogbrowser dasselbe zeigte wie „Bearbeiten". Loeschen bleibt
+               HIER: Es wirkt auf die Listenzeile, nicht auf den Modulblock. *@
             <div class="epos-leiste">
                 <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
-                        @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
-                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
                         @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
-                @if (VerwaltungGaben is not null)
-                {
-                    <button type="button" class="epos-knopf" @onclick="BeiAdmin">@BtnAdminText</button>
-                }
             </div>
         </Rechts>
 
@@ -156,56 +156,108 @@
             }
             </KindInhalt>
         </Formularraster>
+
+        @* ALLE DATEN DES GEWAEHLTEN KATALOGSATZES, aufklappbar und BEARBEITBAR
+           (Anwenderentscheid 15.09.2026: "Es soll in diesem Bereich optional alle
+           technischen Daten angezeigt und bearbeitet werden koennen").
+
+           ER IST DER ERSATZ FUER ZWEI ENTFALLENE WEGE. Aus dem Bearbeiten-Dialog sind
+           Kosten und Emissionen verschwunden, der Knopf "Administration…" ganz. Beide
+           waren Pflegestellen; ohne diesen Block liesse sich ein Katalogpreis nirgends
+           mehr eintragen. Das Raster ist deshalb DASSELBE, das die Administration
+           zeigte - der Baustein Katalogfelder, den seither auch der KatalogBrowser
+           benutzt.
+
+           ZUGEKLAPPT IST DIE VORGABE, und geladen wird erst beim Aufklappen: Der
+           Dialog sieht aus wie bisher, und wer nur einen Kessel auswaehlt, zahlt keine
+           Abfrage. Der Zustand gehoert der Dialogsitzung und wird nirgends abgelegt. *@
+        @if (Katalogfelder is not null && _katalogZeile is not null)
+        {
+            <div class="epos-modulparameter">
+                <button type="button" class="epos-modulparameter-knopf"
+                        aria-expanded="@(_parameterOffen ? "true" : "false")"
+                        @onclick="ParameterUmschalten">
+                    <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_parameterOffen ? "▾" : "▸")</span>
+                    <span>@LabelAlleParameter</span>
+                </button>
+
+                @if (_parameterOffen && _felder is not null)
+                {
+                    <Katalogfelder Felder="@_felder" NurLesen="@(KatalogfelderSpeichern is null)"
+                                   Geaendert="() => _felderGeaendert = true"
+                                   FehlerZustand="BeiFeldFehler" />
+
+                    @if (KatalogfelderSpeichern is not null)
+                    {
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf"
+                                    disabled="@(!_felderGeaendert || _feldFehler)"
+                                    @onclick="FelderSpeichern">@BtnFelderSpeichernText</button>
+                        </div>
+                    }
+                }
+            </div>
+        }
+
+        @* DIE KNOEPFE ZUM GEWAEHLTEN SATZ - hier und nicht mehr unter der Liste bzw.
+           unter dem Block (Anwenderentscheid 15.09.2026). Erst die Kosten- und
+           Emissionswege, darunter „Bearbeiten…": Der Modulbereich ist damit die EINE
+           Stelle, an der man mit dem gewaehlten Geraet arbeitet. *@
+        @if (!Wizard)
+        {
+            <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
+                                 InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
+                                 EnergieText="@KostenEnergieText" />
+        }
+
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                    @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
+        </div>
         </KindInhalt>
     </Gruppenkopf>
 
     @if (!Wizard)
     {
-        @* Die Leiste kennt nur "Schalter betrieb ja/nein" - WELCHE Zeile gemeint ist,
-           weiss allein dieser Dialog. Deshalb gehen die zwei Knopfwege als
-           geschlossene Rueckrufe hinein, die die gewaehlte Projektzeile mitnehmen
-           (dasselbe Muster wie auf der Kostenseite, wo VerwaltungGaben/TraegerGaben
-           die gewaehlte Zeile durchreichen). *@
-        <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
-                             InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
-                             EnergieText="@KostenEnergieText" />
-
+        @* Die Kostenleiste stand bis zum 15.09.2026 HIER, unter dem Modulblock. Sie
+           ist in den Modulbereich gewandert - zu dem Satz, auf den sie wirkt. Die
+           Leiste selbst ist unveraendert: Sie kennt nur "Schalter betrieb ja/nein",
+           WELCHE Zeile gemeint ist, weiss allein dieser Dialog. *@
         <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
     }
 
     @* --- Ueberlagerung 1: die Traegerwahl vor dem Hinzufuegen ---------------- *@
-    <Ueberlagerung Offen="@(_traegerGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_traegerGaben is not null)"
                    Titel="@TraegerTitel" Geschlossen="() => TraegerFertig(null)">
         <KindInhalt>
             @if (_traegerGaben is not null)
             {
-                <EnergietraegerVarianteDialog @attributes="_traegerGaben" Geschlossen="TraegerFertig" />
+                @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt
+                   sie auch das ✕ - TitelText="" hinter dem Satz schaltet beides im Blatt ab. *@
+                <EnergietraegerVarianteDialog @attributes="_traegerGaben" TitelText=""
+                                              Geschlossen="TraegerFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
     @* --- Ueberlagerung 2: der Katalogeditor ---------------------------------- *@
-    <Ueberlagerung Offen="@(_editorGaben is not null)" Schliessbar="false"
+    <Ueberlagerung Offen="@(_editorGaben is not null)"
                    Titel="@EditorTitel" Geschlossen="() => EditorFertig(null)">
         <KindInhalt>
             @if (_editorGaben is not null)
             {
-                <HeizkesselKatalogDialog @attributes="_editorGaben" Geschlossen="EditorFertig" />
+                @* Das Kreuz steht beim Titel: Die Ueberlagerung traegt ihn, also traegt
+                   sie auch das ✕ - TitelText="" hinter dem Satz schaltet beides im Blatt ab. *@
+                <HeizkesselKatalogDialog @attributes="_editorGaben" TitelText=""
+                                         Geschlossen="EditorFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung: die Katalogverwaltung (iU9-W14a.4) ------------------- *@
-    @* Der Knopf "Verwaltung" oeffnete bis hierher Form_Heizkessel_Admin ueber die Sprungbruecke; das Ziel ist jetzt selbst Blazor. *@
-    <Ueberlagerung Offen="@(_verwaltungGaben is not null)" Schliessbar="false"
-                   Titel="" Geschlossen="() => VerwaltungFertig(null)">
-        <KindInhalt>
-            @if (_verwaltungGaben is not null)
-            {
-                <KatalogBrowserDialog @attributes="_verwaltungGaben" Geschlossen="VerwaltungFertig" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
+    @* HIER STAND DIE UEBERLAGERUNG "Katalogverwaltung" (iU9-W14a.4). Sie zeigte den
+       KatalogBrowserDialog - dasselbe, was "Bearbeiten…" zeigt. Anwenderentscheid vom
+       15.09.2026: "Der Button Administration (und verbundener Dialog) ist nicht noetig,
+       da schon unter Bearbeiten vorhanden." *@
 
     @* --- Rueckfrage vor dem Loeschen aus dem KATALOG ------------------------- *@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
@@ -299,14 +351,6 @@
     /// <summary>Löscht einen KATALOGsatz; <c>true</c> = gelöscht.</summary>
     [Parameter] public Func<int, bool>? KatalogLoeschen { get; set; }
 
-    /// <summary>
-    /// Der Parametersatz der KATALOGVERWALTUNG. Sie erscheint seit iU9-W14a als
-    /// <c>Ueberlagerung</c> im selben Fenster statt als zweites Fenster über die
-    /// Sprungbrücke (Risiko R2) — ihr Ziel ist jetzt selbst Blazor. Ohne Delegat
-    /// kein Knopf.
-    /// </summary>
-    [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
-
     /// <summary>Assistentenbetrieb: keine OK/Abbrechen- und keine Kostenleiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
@@ -346,8 +390,31 @@
     [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
     [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
-    [Parameter] public string BtnAdminText { get; set; } = "Administration...";
     [Parameter] public string GruppeModul { get; set; } = "Modul";
+    /// <summary>Beschriftung des Aufklappers ueber den uebrigen Katalogwerten (W6‑E‑1).</summary>
+    [Parameter] public string LabelAlleParameter { get; set; } = "Alle Daten anzeigen";
+
+    /// <summary>
+    /// ALLE Felder eines Katalogsatzes - derselbe Weg, aus dem die entfallene
+    /// Administration ihr Raster speiste (<c>KatalogBrowserWege.Detail</c>). Ohne ihn
+    /// gibt es den Aufklapper nicht.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>?>? Katalogfelder { get; set; }
+
+    /// <summary>
+    /// Schreibt die geänderten Felder zurück; <c>null</c> = der Katalog hat keinen
+    /// Speicherweg, dann ist der Aufklapper reine Anzeige.
+    /// </summary>
+    /// <remarks>
+    /// <b>Heute haben ihn nur Heizkessel und BHKW</b> (<c>KatalogBrowserWege.Speichern</c>).
+    /// Das ist die Lage der Kataloge, keine Entscheidung dieses Dialogs - und der Grund,
+    /// warum der Aufklapper seine Bearbeitbarkeit am Delegaten abliest und nicht an einem
+    /// Schalter.
+    /// </remarks>
+    [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? KatalogfelderSpeichern { get; set; }
+
+    /// <summary>Beschriftung des Speicherknopfs im Aufklapper.</summary>
+    [Parameter] public string BtnFelderSpeichernText { get; set; } = "Speichern";
     [Parameter] public string LabelName { get; set; } = "Name:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
     [Parameter] public string LabelTraeger { get; set; } = "Brennstoff Variante:";
@@ -399,6 +466,76 @@
     private Katalogfilterstand _filterstand = new();
     private IReadOnlyList<(int Id, string Text)> _varianten = Array.Empty<(int, string)>();
     private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
+
+    /// <summary>
+    /// Steht der Aufklapper „Alle Daten" offen? Der Zustand gehört der Dialogsitzung
+    /// und überlebt den Satzwechsel, wird aber nirgends abgelegt (W6‑E‑1).
+    /// </summary>
+    private bool _parameterOffen;
+
+    /// <summary>Steht der Parameterblock offen? (Prüfhilfe für Tests, W6‑E‑1.)</summary>
+    public bool ParameterOffen => _parameterOffen;
+
+    /// <summary>Die Felder des gewählten Satzes; <c>null</c> = noch nicht geholt.</summary>
+    private IReadOnlyList<BrowserFeldwert>? _felder;
+
+    /// <summary>Hat der Anwender im Aufklapper etwas geändert?</summary>
+    private bool _felderGeaendert;
+
+    /// <summary>Steht in einem Zahlenfeld des Aufklappers etwas Ungültiges?</summary>
+    private bool _feldFehler;
+
+    /// <summary>
+    /// Auf- und zuklappen - und beim AUFklappen die Felder holen.
+    /// </summary>
+    /// <remarks>
+    /// <b>Erst beim Aufklappen.</b> Wer nur einen Kessel auswählt, zahlt keine Abfrage;
+    /// und wer aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
+    /// </remarks>
+    private void ParameterUmschalten()
+    {
+        _parameterOffen = !_parameterOffen;
+        if (_parameterOffen) FelderHolen();
+    }
+
+    /// <summary>Holt die Felder des gewählten Katalogsatzes neu.</summary>
+    private void FelderHolen()
+    {
+        _felder = Katalogfelder is null || _katalogZeile is null
+            ? null
+            : Katalogfelder(_katalogZeile.Bezeichner);
+        _felderGeaendert = false;
+        _feldFehler = false;
+    }
+
+    /// <summary>Ein Zahlenfeld des Aufklappers meldet einen ungültigen Zustand.</summary>
+    private void BeiFeldFehler((string Feldname, bool Fehler) meldung)
+        => _feldFehler = meldung.Fehler;
+
+    /// <summary>
+    /// Schreibt die geänderten Felder zurück und lädt Liste und Detailblock neu.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Befund des Katalogs zählt, nicht die Absicht.</b> Lehnt der Speicherweg ab
+    /// (Schreibschutz der Auslieferung, Prüfmeldung), bleibt der geänderte Stand im
+    /// Aufklapper stehen - der Anwender soll ihn verbessern können, statt ihn zu
+    /// verlieren.
+    /// </remarks>
+    private void FelderSpeichern()
+    {
+        if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
+
+        KatalogSpeicherErgebnis ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+        if (!ergebnis.Ok)
+        {
+            Melden(ergebnis.Meldung, true);
+            return;
+        }
+
+        _felderGeaendert = false;
+        Melden(ergebnis.Meldung, false);
+        KatalogNeuLaden();
+    }
 
     private IReadOnlyDictionary<string, object>? _traegerGaben;
     private IReadOnlyDictionary<string, object>? _editorGaben;
@@ -629,22 +766,6 @@
     // Katalogpflege
     // =================================================================================
 
-    /// <summary>Der Parametersatz der offenen Katalogverwaltung; <c>null</c> = zu.</summary>
-    private IReadOnlyDictionary<string, object>? _verwaltungGaben;
-
-    /// <summary>Steht die Katalogverwaltung? (Prüfhilfe für Tests.)</summary>
-    public bool VerwaltungOffen => _verwaltungGaben is not null;
-
-    /// <summary>
-    /// Nach der Verwaltung die Katalogliste neu ziehen — genau das tat der Vorläufer
-    /// nach der Rückkehr aus dem zweiten Fenster.
-    /// </summary>
-    private void VerwaltungFertig(BrowserErgebnis? ergebnis)
-    {
-        _verwaltungGaben = null;
-        KatalogNeuLaden();
-    }
-
     private void BeiKatalogBearbeiten()
     {
         if (_katalogZeile is null || EditorGaben is null) return;
@@ -679,13 +800,6 @@
         KatalogNeuLaden();
     }
 
-    private async Task BeiAdmin()
-    {
-        if (VerwaltungGaben is null) return;
-        _verwaltungGaben = VerwaltungGaben();
-        await Task.CompletedTask;
-    }
-
     // =================================================================================
     // Abschluss
     // =================================================================================
@@ -698,6 +812,9 @@
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
 
+    /// <summary>Der Abbrechen-Weg: schliesst ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
+    private Task Abbrechen() => BeiErgebnis(false);
+
     /// <summary>
     /// Esc schliesst; die Ueberlagerungen werten ihn zuerst fuer sich aus. Enter bleibt
     /// unbelegt (A-7 aus B5b).
@@ -706,6 +823,6 @@
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_traegerGaben is not null || _editorGaben is not null || _loeschfrage) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return Abbrechen();
     }
 }
