@@ -10854,7 +10854,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>, fuel from default</value>
   </data>
   <data name="WPAR_SPRUNG_HINWEIS" xml:space="preserve">
-    <value>The jump closes this dialog and reopens it afterwards — please save first.</value>
+    <value>The jump closes this dialogue without saving your entries — please save first.</value>
   </data>
   <data name="WPAR_TITEL" xml:space="preserve">
     <value>Economic parameters</value>

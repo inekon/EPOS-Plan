@@ -101,8 +101,17 @@ public sealed class WirtschaftlichkeitParameterTexte
         "dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau.");
     public string BhkwKnopf { get; } = T("BHW_PARAM_KNOPF",
         "⚙ BHKW-Wirtschaftlichkeit (KWKG, Steuern, Module)…");
+    /// <summary>
+    /// Der Hinweis unter dem Sprungknopf sagt, was DIESER Dialog tut. Er
+    /// unterscheidet sich bewusst vom Satz des BHKW-Dialogs
+    /// (<c>BHW_S_SPRUNG_HINWEIS</c>): Dort nimmt der Sprung den OK-Weg und
+    /// schreibt die Eingaben mit, hier meldet der Sprung nur
+    /// <c>WirtParameterSprung.BhkwWirtschaftlichkeit</c> und schließt —
+    /// <c>Speichern</c> läuft dabei nicht, und der Wirt lädt beim nächsten
+    /// Öffnen frisch. Was nicht gespeichert ist, ist danach fort.
+    /// </summary>
     public string SprungHinweis { get; } = T("WPAR_SPRUNG_HINWEIS",
-        "Der Sprung schließt diesen Dialog und öffnet ihn danach wieder — " +
+        "Der Sprung schließt diesen Dialog, ohne die Eingaben zu speichern — " +
         "bitte vorher speichern.");
 
     // -------------------------------------------------------- Brennstoff

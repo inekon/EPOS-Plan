@@ -55115,7 +55115,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung schließt diesen Dialog und öffnet ihn danach wieder — bitte vorher speichern. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung schließt diesen Dialog, ohne die Eingaben zu speichern — bitte vorher speichern. ähnelt.
         /// </summary>
         public static string WPAR_SPRUNG_HINWEIS {
             get {

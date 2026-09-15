@@ -239,7 +239,9 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <PhotovoltaikVerguetungDialog @attributes="_gaben"
+                @* Ein Titel, eine Stelle (W11b-B-9): Die Ueberlagerung traegt ihn
+                   schon, also zeigt der Dialog seinen eigenen Kopf hier nicht. *@
+                <PhotovoltaikVerguetungDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((PvVerguetungErgebnis e) => Fertig(e is not null))" />
             }
         </KindInhalt>
@@ -263,7 +265,9 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <TarifstrukturDialog @attributes="_gaben"
+                @* Ein Titel, eine Stelle (W11b-B-9): Die Ueberlagerung traegt ihn
+                   schon, also zeigt der Dialog seinen eigenen Kopf hier nicht. *@
+                <TarifstrukturDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((bool ok) => Fertig(ok))" />
             }
         </KindInhalt>
@@ -274,7 +278,9 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <WirtschaftlichkeitParameterDialog @attributes="_gaben"
+                @* Ein Titel, eine Stelle (W11b-B-9): Die Ueberlagerung traegt ihn
+                   schon, also zeigt der Dialog seinen eigenen Kopf hier nicht. *@
+                <WirtschaftlichkeitParameterDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((WirtParameterErgebnis e) => Fertig(e is not null))" />
             }
         </KindInhalt>
@@ -285,7 +291,9 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <KapitalwertVerlaufDialog @attributes="_gaben"
+                @* Ein Titel, eine Stelle (W11b-B-9): Die Ueberlagerung traegt ihn
+                   schon, also zeigt der Dialog seinen eigenen Kopf hier nicht. *@
+                <KapitalwertVerlaufDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@(() => Fertig(true))" />
             }
         </KindInhalt>
