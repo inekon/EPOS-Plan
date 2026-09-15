@@ -2761,6 +2761,60 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_75_NUTZUNGSDAUER = 75;
 
+        /// <summary>
+        /// Schritt 76 — der <b>eindeutige Index</b> über <c>energy_project_settings</c>
+        /// (Auftrag <b>#278</b>, Anwenderentscheid vom 15.09.2026; Ausgangslage aus
+        /// Auftrag #268). Anlass, die gemessene Spaltenkombination, die Entdoppelung und
+        /// die Ergebnisneutralität stehen vollständig bei
+        /// <see cref="ProjektEnergietraegerEindeutig"/>; hier nur, was die Migration
+        /// angeht.
+        ///
+        /// <para><b>Wozu.</b> „Ein Preis und ein Emissionssatz je Energieträger im
+        /// Projekt" hielt bis hierher allein die Anwendungslogik: Jeder der fünf
+        /// Schreibwege zählt vorher nach. Die Datenbank ließ die zweite Zeile zu, und
+        /// jede Lesekette des Hauses nimmt bei zwei Zeilen kommentarlos die erste — die
+        /// zweite wäre unsichtbar und dennoch da. Ab diesem Schritt hält die Regel der
+        /// Index.</para>
+        ///
+        /// <para><b>Zwei Anweisungen, beide aus dem KERN</b> und keine hier
+        /// abgeschriebene DDL: die Entdoppelung des Bestands und der Index selbst stehen
+        /// in <see cref="ProjektEnergietraegerEindeutig"/>. Aus derselben Quelle bedient
+        /// sich <c>Werkzeuge/Testdatenbankschema</c>, wenn die Messlatte
+        /// <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> nachgezogen wird.</para>
+        ///
+        /// <para><b>Reihenfolge: erst entdoppeln, dann den Index.</b> Sie ist NICHT
+        /// beliebig — <c>CREATE UNIQUE INDEX</c> scheitert, solange noch eine Dublette
+        /// steht, und ein gescheiterter Schemaschritt sperrt den Simulationsbereich
+        /// (ADR-001). Behalten wird je Paar die Zeile mit der kleinsten <c>ID</c>; genau
+        /// sie gilt schon heute in jeder Lesekette.</para>
+        ///
+        /// <para><b>Die Schreibwege bleiben, wie sie sind.</b> Alle fünf Wege, die in die
+        /// Tabelle schreiben, prüfen oder aktualisieren bereits vorher:
+        /// <c>EnergietraegerKatalogCtrl.InsProjekt</c> und
+        /// <c>WizardCtrl.TraegerSatzAnlegen</c> zählen, <c>EnergietraegerVarianteCtrl</c>
+        /// zählt innerhalb seiner Transaktion, <c>EnergietraegerPreisCtrl.Projektwerte</c>
+        /// schreibt als UPSERT (erst UPDATE, bei 0 Zeilen INSERT), und
+        /// <c>VariantenCtrl.KopiereEnergieEinstellungen</c> kopiert nur, solange das
+        /// ZIELprojekt noch keine Zeile führt. Die drei kopierenden Wege — Projektkopie,
+        /// Variantenanlage, Projekttransfer — schreiben immer in ein NEUES Projekt: Ist
+        /// die Quelle eindeutig, ist es die Kopie auch. Eine SQLite-Ausnahme erreicht den
+        /// Anwender damit an keiner Stelle; der Nachweis hält jeden dieser Wege offen
+        /// (<c>EPOS.Kern.Tests/ProjektEnergietraegerEindeutigTests</c>).</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Der Index ändert keinen Wert, und die
+        /// Entdoppelung entfernt nur Zeilen, die keine Lesekette erreicht. Auf der
+        /// Messlatte gibt es nichts zu entfernen. Der Referenzlauf bleibt byte-gleich —
+        /// das ist die Abnahme.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 76
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 75
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <c>IF NOT EXISTS</c> am Index, und die Entdoppelung
+        /// findet beim zweiten Lauf nichts mehr zu löschen.</para>
+        /// </summary>
+        public const int SCHRITT_76_TRAEGERSATZ_EINDEUTIG = 76;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3082,6 +3136,15 @@ namespace WindowsFormsApplication1
         /// höchstens eine (die des Strom-Carriers).
         /// </summary>
         public static int DatenAufschlagVorbelegt { get; private set; }
+
+        // --- Zaehlwerk der Entdoppelung aus Schritt 76 (Auftrag #278) -----------------
+
+        /// <summary>
+        /// Schritt 76: überzählige Zeilen in <c>energy_project_settings</c>, die die
+        /// Entdoppelung entfernt hat — Zeilen, die keine Lesekette erreichte. Auf einem
+        /// sauberen Bestand bleibt die Zahl 0.
+        /// </summary>
+        public static int DatenTraegersaetzeEntdoppelt { get; private set; }
 
         // --- Zählwerk der Einheiten-Konsistenz aus Schritt 25 (Etappe K2) --------------
 
@@ -3647,6 +3710,24 @@ namespace WindowsFormsApplication1
                         "editierbare Tabelle, aus der eine neue Position ihren Wert " +
                         "bekommt.",
                         Schritt_75_Nutzungsdauer),
+
+            // AUFTRAG #278 vom 15.09.2026 (Anwenderentscheid "Umsetzen", Ausgangslage
+            // aus Auftrag #268). Gemessene Spaltenkombination, Entdoppelungsregel und
+            // Idempotenzzusage stehen in ProjektEnergietraegerEindeutig - EINE Quelle
+            // fuer Migration, Testdatenbank und Nachweis. Ergebnisneutral: Der Index
+            // aendert keinen Wert, und die Entdoppelung entfernt nur Zeilen, die keine
+            // Lesekette erreicht.
+            new Schritt(SCHRITT_76_TRAEGERSATZ_EINDEUTIG,
+                        "Den eindeutigen Index ueber energy_project_settings anlegen - " +
+                        "ein Preis- und Emissionssatz je Energietraeger und Projekt " +
+                        "(Auftrag #278)",
+                        "Ueber Import, Projektkopie, Variantenanlage oder Projekttransfer " +
+                        "koennte weiterhin eine zweite Zeile je Energietraeger entstehen. " +
+                        "Jede Lesekette nimmt davon kommentarlos die erste - welcher Preis " +
+                        "und welcher Emissionsfaktor gilt, entschiede die " +
+                        "Speicherreihenfolge, und die gepflegte Zeile waere vielleicht die, " +
+                        "die niemand liest.",
+                        Schritt_76_TraegersatzEindeutig),
         };
 
         /// <summary>
@@ -4854,6 +4935,71 @@ namespace WindowsFormsApplication1
                     "Tab_ProjektWerte bekommt die Spalte, aber KEINEN Wert - kein " +
                     "gespeicherter Wert aendert sich, kein Rechenweg liest die neue " +
                     "Tabelle. KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 76 - ein Satz je Energietraeger und Projekt (Auftrag #278)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 76 — Anlass, gemessene Spaltenkombination, Entdoppelungsregel und
+        /// Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_76_TRAEGERSATZ_EINDEUTIG"/> und ausführlich bei
+        /// <see cref="ProjektEnergietraegerEindeutig"/>.
+        ///
+        /// <para><b>Zwei Handgriffe in fester Reihenfolge:</b> erst die Entdoppelung des
+        /// Bestands, dann der eindeutige Index. Umgekehrt scheiterte die Anlage an der
+        /// ersten Dublette — und ein gescheiterter Schemaschritt sperrt den
+        /// Simulationsbereich.</para>
+        ///
+        /// <para><b>Über <see cref="SqliteDml"/> und <see cref="SqliteDdl"/>.</b> Beide
+        /// Anweisungen stehen für sich: Die Entdoppelung ist wiederholbar, der Index
+        /// trägt <c>IF NOT EXISTS</c>. Eine gemeinsame Transaktion wie in Schritt 74
+        /// braucht es hier nicht — es gibt keinen Augenblick, in dem etwas fehlte.</para>
+        /// </summary>
+        private static bool Schritt_76_TraegersatzEindeutig(Lauf l)
+        {
+            long ueberzaehlig = SqliteZahl(ProjektEnergietraegerEindeutig.Zaehlung());
+            l.Notiz("76: ueberzaehlige Zeilen in " + ProjektEnergietraegerEindeutig.TABELLE +
+                    ": " + (ueberzaehlig < 0
+                        ? "unbekannt"
+                        : ueberzaehlig.ToString(CultureInfo.InvariantCulture)) + ".");
+
+            // Die Zahl ist Auskunft, keine Bedingung (dieselbe Regel wie bei SqliteZahl):
+            // Bei -1 laeuft die Entdoppelung trotzdem - sie ist wiederholbar und loescht
+            // bei sauberem Bestand nichts.
+            if (ueberzaehlig != 0)
+            {
+                if (!SqliteDml(l, ProjektEnergietraegerEindeutig.SQL_ENTDOPPELN,
+                               "Entdoppelung " + ProjektEnergietraegerEindeutig.TABELLE))
+                    return false;
+
+                long rest = SqliteZahl(ProjektEnergietraegerEindeutig.Zaehlung());
+                if (rest > 0)
+                {
+                    l.LetzterFehler = ProjektEnergietraegerEindeutig.TABELLE +
+                                      " fuehrt nach der Entdoppelung noch " + rest +
+                                      " ueberzaehlige Zeile(n).";
+                    l.Notiz("76: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+                if (ueberzaehlig > 0) DatenTraegersaetzeEntdoppelt = (int)ueberzaehlig;
+            }
+
+            if (!SqliteDdl(l, ProjektEnergietraegerEindeutig.SQL_INDEX,
+                           "Index " + ProjektEnergietraegerEindeutig.INDEX))
+                return false;
+
+            l.Notiz("76: " + ProjektEnergietraegerEindeutig.TABELLE + " fuehrt jetzt hoechstens " +
+                    "EINEN Satz je Projekt und Energietraeger; der eindeutige Index " +
+                    ProjektEnergietraegerEindeutig.INDEX + " steht" +
+                    (DatenTraegersaetzeEntdoppelt > 0
+                        ? " (" + DatenTraegersaetzeEntdoppelt + " ueberzaehlige Zeile(n) entfernt)"
+                        : "") +
+                    ". Behalten wurde je Paar die Zeile mit der kleinsten ID - genau die, " +
+                    "die jede Lesekette schon bisher genommen hat. KEIN Rechenergebnis " +
+                    "aendert sich.");
             return true;
         }
 
