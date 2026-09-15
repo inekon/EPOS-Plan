@@ -79,11 +79,18 @@ namespace WindowsFormsApplication1
         /// Verweisspalten <c>NutzungsdauerID</c> und die Saat-Zuordnung der
         /// Auslieferungspositionen; die Anweisungen stehen bei
         /// <see cref="NutzungsdauerSchema"/>, <c>Tab_ProjektWerte</c> bleibt
-        /// wertgleich. Der Freeze-Stand
+        /// wertgleich. Mit dem EINDEUTIGEN INDEX über
+        /// <c>energy_project_settings</c> (Schritt 76, Auftrag #278 vom 15.09.2026)
+        /// steht das Ziel auf <b>76</b>: Die Regel „ein Preis und ein Emissionssatz je
+        /// Energieträger im Projekt" hielt bis dahin allein die Anwendungslogik, ab hier
+        /// hält sie die Datenbank; die Anweisungen — die Entdoppelung des Bestands und
+        /// der Index — stehen bei
+        /// <see cref="ProjektEnergietraegerEindeutig"/>, und der Schritt ist
+        /// ergebnisneutral. Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 75;
+        public const int Zielversion = 76;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -74,6 +74,13 @@ namespace Testdatenbankschema
     /// Alles aus <c>NutzungsdauerSchema</c> - wieder DIESELBE Quelle, aus der sich
     /// <c>SchemaMigration.Schritt_75_Nutzungsdauer</c> bedient. Ergebnisneutral:
     /// <c>Tab_ProjektWerte</c> bekommt die SPALTE, aber keinen Wert.</para>
+    ///
+    /// <para><b>Schritt 76</b> (Auftrag #278) entdoppelt <c>energy_project_settings</c>
+    /// und legt darueber den eindeutigen Index ueber
+    /// <c>(ID_Projekt, ID_Energietraeger)</c> an - beides aus
+    /// <c>ProjektEnergietraegerEindeutig</c>, wieder DIESELBE Quelle, aus der sich
+    /// <c>SchemaMigration.Schritt_76_TraegersatzEindeutig</c> bedient. Ergebnisneutral:
+    /// Der Index aendert keinen Wert, und die Messlatte hat nichts zu entdoppeln.</para>
     /// </summary>
     internal static class Program
     {
@@ -84,7 +91,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 75) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 76) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -295,6 +302,29 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 75 - " + NutzungsdauerSchema.TABELLE +
                                   " ohne STRICT: " + Zahl(NutzungsdauerSchema.ZaehlungOhneStrict()) +
                                   " (erwartet 0).");
+            }
+            Console.WriteLine();
+
+            // ---- Schritt 76: ein Satz je Energietraeger und Projekt (Auftrag #278).
+            //      Zwei Anweisungen in FESTER Reihenfolge - erst die Entdoppelung des
+            //      Bestands, dann der eindeutige Index; umgekehrt scheiterte die Anlage
+            //      an der ersten Dublette. Beide kommen aus
+            //      ProjektEnergietraegerEindeutig - DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_76_TraegersatzEindeutig bedient.
+            //      Ergebnisneutral: Behalten wird je Paar die Zeile mit der kleinsten ID,
+            //      genau die, die jede Lesekette schon bisher genommen hat.
+            if (!trocken)
+            {
+                long ueberzaehlig = Zahl(ProjektEnergietraegerEindeutig.Zaehlung());
+                Console.WriteLine("Schritt 76 - " + ProjektEnergietraegerEindeutig.TABELLE +
+                                  ": ueberzaehlige Zeilen " + ueberzaehlig + ".");
+                if (ueberzaehlig > 0)
+                    DataRepository.ExecuteNonQuery(ProjektEnergietraegerEindeutig.SQL_ENTDOPPELN);
+                DataRepository.ExecuteNonQuery(ProjektEnergietraegerEindeutig.SQL_INDEX);
+                Console.WriteLine("Schritt 76 - Index " + ProjektEnergietraegerEindeutig.INDEX +
+                                  ": " + Zahl(ProjektEnergietraegerEindeutig.ZaehlungIndex()) +
+                                  " (erwartet 1), ueberzaehlig jetzt " +
+                                  Zahl(ProjektEnergietraegerEindeutig.Zaehlung()) + ".");
             }
             Console.WriteLine();
 
