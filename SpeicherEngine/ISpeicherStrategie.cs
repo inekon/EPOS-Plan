@@ -1,4 +1,4 @@
-namespace SpeicherEngine
+﻿namespace SpeicherEngine
 {
     /// <summary>
     /// Betriebsstrategie eines Speichers (Fachkonzept 6):

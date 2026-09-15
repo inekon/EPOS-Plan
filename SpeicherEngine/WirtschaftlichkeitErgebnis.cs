@@ -1,4 +1,4 @@
-namespace SpeicherEngine
+﻿namespace SpeicherEngine
 {
     /// <summary>
     /// Eingangsgroessen der Wirtschaftlichkeitsrechnung.

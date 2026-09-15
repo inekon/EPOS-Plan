@@ -1,4 +1,4 @@
-namespace SpeicherEngine
+﻿namespace SpeicherEngine
 {
     /// <summary>
     /// Energetische Kennzahlen eines Simulationslaufs (Fachkonzept 5.4 und 7.1).
