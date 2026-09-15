@@ -9973,6 +9973,9 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_STROMTRAEGER_RUECKFALL" xml:space="preserve">
     <value>Grid supply priced with energy carrier “{0}” — no electricity carrier is assigned to the project. Remedy: assign one under “Reports &amp; Costs › Energy carriers”.</value>
   </data>
+  <data name="WIRT_CO2_TRAEGER_RUECKFALL" xml:space="preserve">
+    <value>CO₂ balance: grid supply calculated with the emission factor of energy carrier “{0}” — no electricity carrier is assigned to the project. Remedy: assign one under “Reports &amp; Costs › Energy carriers”.</value>
+  </data>
   <data name="WIRT_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>Energy costs cannot be determined: no energy carrier is assigned to the electric generation (heat pump, photovoltaics, battery storage, heating element). Remedy: assign an electricity carrier under “Reports &amp; Costs › Energy carriers”.</value>
   </data>

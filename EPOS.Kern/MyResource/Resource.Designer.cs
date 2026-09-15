@@ -52872,6 +52872,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Bilanz: Netzbezug mit dem Emissionsfaktor des Energieträgers „{0}“ gerechnet — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen. ähnelt.
+        /// </summary>
+        public static string WIRT_CO2_TRAEGER_RUECKFALL {
+            get {
+                return ResourceManager.GetString("WIRT_CO2_TRAEGER_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis BEHG [€/t] (0 = Pfad): ähnelt.
         /// </summary>
         public static string WIRT_DLG_CO2 {

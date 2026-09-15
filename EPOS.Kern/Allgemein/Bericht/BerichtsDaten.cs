@@ -199,6 +199,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string StromTraegerRueckfall;
 
+        /// <summary>
+        /// <b>Der CO₂-Faktor des Netzbezugs ist GELIEHEN</b>: Name des
+        /// Auslieferungsträgers, mit dessen Emissionsfaktor der Netzstrom-Anteil von
+        /// <see cref="CO2Gesamt"/> gerechnet wurde, weil dem Projekt kein Stromträger
+        /// zugeordnet ist; <c>null</c> = der Faktor stammt vom zugeordneten Träger, vom
+        /// Vorgabewert (<see cref="CO2StrommixRueckfall"/>) oder es gab keinen Netzbezug.
+        ///
+        /// <para><b>Der Rückfall füllt nur Lücken</b> (Anwenderentscheid 15.09.2026:
+        /// „bereits zugewiesene CO₂-Zahlen nicht überschreiben"). Er greift allein dort,
+        /// wo gar kein Stromträger zugeordnet ist — wo also bis hierher der anonyme
+        /// Vorgabewert stand. Steht am zugeordneten Träger ein Faktor, bleibt er
+        /// unangetastet; trägt der zugeordnete Träger keinen, bleibt es beim
+        /// Vorgabewert wie bisher.</para>
+        ///
+        /// <para><b>Warum der Name mitgeführt wird.</b> Eine geliehene Zahl sieht aus
+        /// wie eine gepflegte. Die Hinweiszeile der Wirtschaftlichkeit nennt deshalb
+        /// den Geber — dasselbe Muster wie <see cref="StromTraegerRueckfall"/> auf der
+        /// Kostenseite.</para>
+        /// </summary>
+        public string CO2TraegerRueckfall;
+
         // LEITENTSCHEIDUNG L13 — die beiden MENGEN, an denen die Bilanzierungskonvention
         // für Biomasse ansetzt. Bewusst Mengen und keine fertigen Emissionen: Der
         // Emissionsfaktor hängt an der gewählten Konvention und am Bilanzjahr, und beides
