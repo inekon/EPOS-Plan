@@ -257,6 +257,30 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.Equal(3, Fussknoepfe(ohne).Count);   // Parameter, Verlauf, Berechnen
     }
 
+    /// <summary>
+    /// Der Einstieg „Strombezug…" hängt allein am TARIFSATZ des Projekts
+    /// (<c>MitStrombezug</c>), nicht an der Erzeugerlage der Gruppe: Er pflegt
+    /// die Sicht „Strombezug" des Tarifsatzes, und die wirkt nur, solange der
+    /// Satz aktiv ist. Ein Wärmepumpenprojekt ohne aktiven Tarif zeigt ihn
+    /// deshalb nicht — es gibt dort nichts zu pflegen, was rechnet.
+    /// </summary>
+    [Fact]
+    public void Der_Strombezug_Einstieg_haengt_allein_am_Tarifsatz()
+    {
+        // Aktiver Tarifsatz — der Knopf steht da, auch ohne PV und ohne BHKW.
+        var mitTarif = Zeige(
+            p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()),
+            stand: Standard(pv: false, bhkw: false, strom: true));
+        Assert.Contains(Fussknoepfe(mitTarif), k => k.TextContent.Trim() == "Strombezug…");
+
+        // Kein aktiver Tarifsatz — der Knopf fehlt, gleich welcher Erzeuger in
+        // der Vergleichsgruppe steht (die Wärmepumpe ankert ihn nicht mehr).
+        var ohneTarif = Zeige(
+            p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()),
+            stand: Standard(pv: false, bhkw: false, strom: false));
+        Assert.DoesNotContain(Fussknoepfe(ohneTarif), k => k.TextContent.Trim() == "Strombezug…");
+    }
+
     /// <summary>Ohne Delegat kein Knopf (A-18 aus Welle 2).</summary>
     [Fact]
     public void Ohne_Gaben_bleibt_nur_Berechnen()
@@ -669,7 +693,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Fussknoepfe(cut)[3].Click();                          // Parameter
         var dialog = cut.FindComponent<WirtschaftlichkeitParameterDialog>();
         await cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
-            new WirtParameterErgebnis(true, WirtParameterSprung.Keiner)));
+            new WirtParameterErgebnis(true)));
 
         Assert.Single(cut.FindAll(".epos-wirt-warnband .epos-leiste button"));
         Assert.Contains("bitte neu berechnen", cut.Find(".epos-wirt-warnband .epos-warnbanner").TextContent);

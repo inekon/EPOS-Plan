@@ -201,7 +201,12 @@ namespace WindowsFormsApplication1
 
             stand.MitPhotovoltaik = flags != null && flags.Photovoltaik;
             stand.MitBhkw = flags != null && flags.Bhkw;
-            stand.MitStrombezug = (flags != null && flags.Waermepumpe) || tarifAktiv;
+
+            // Der Einstieg "Strombezug..." haengt allein am TARIFSATZ des Projekts:
+            // Er pflegt die Sicht "Strombezug" von Tab_ProjektTarif, und die wirkt
+            // nur, solange der Satz aktiv ist (ohne ihn gelten die Flat-Preise der
+            // Kostenmaske). Die Erzeugerlage der Gruppe entscheidet nicht mit.
+            stand.MitStrombezug = tarifAktiv;
 
             // ETAPPE W5-B-11 (Anwenderentscheid 09.09.2026): die zwei VALERI-Ausweise
             // des Nachweisblocks. Sie haengen am Projekt, nicht an der Wahl - deshalb

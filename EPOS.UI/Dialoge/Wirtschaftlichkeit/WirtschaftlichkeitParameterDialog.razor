@@ -19,14 +19,15 @@
    Speicherweg dieselben Steuerelemente auslesen konnte (Bw9Ausblenden). Hier
    entfaellt dieser Umweg: Was nicht gebaut wird, wird auch nicht geschrieben,
    und der geladene Satz traegt die Werte unveraendert weiter. Uebrig bleibt der
-   Verweis mit dem Sprungknopf.
+   blosse Verweis auf den Dialog; er fuehrt selbst nicht dorthin, denn der
+   Einstieg in "BHKW-Wirtschaftlichkeit" steht in der Fussleiste der
+   Wirtschaftlichkeitsseite.
 
-   ZWEI WEGE, KEINER MEHR UEBER DIE BRUECKE (iU9-W14c.3). Der Gesetzeskatalog
-   ist seit W14c.2 selbst eine Razor-Komponente und erscheint als UEBERLAGERUNG
-   in diesem Dialog - mit der Vorwahl der Klasse CO2_PREIS, die bis dahin
-   Sprungziel.GesetzesparameterCo2 setzte. Der Dialog "BHKW-Wirtschaftlichkeit"
-   ist ebenfalls eine Blazor-Huelle; er bleibt NACHGELAGERT (Risiko R2) - die
-   Komponente meldet den Wunsch im Ergebnis.
+   EIN EINZIGER UNTERDIALOG (iU9-W14c.3). Der Gesetzeskatalog ist seit W14c.2
+   selbst eine Razor-Komponente und erscheint als UEBERLAGERUNG in diesem
+   Dialog - mit der Vorwahl der Klasse CO2_PREIS, die bis dahin
+   Sprungziel.GesetzesparameterCo2 setzte. Dieser Dialog verlaesst sich also
+   auf keinen Sprung mehr: Er schliesst oder er bleibt stehen.
 
    ER KENNT KEINE DATENBANK (Hausregel EPOS.UI). Parametersatz, Erzeugerflags,
    Kraftwerksparkliste, die Referenzkesselzeile und das Prognosejahr des
@@ -292,14 +293,15 @@
     </Gruppenkopf>
 
     @* ------------------------------------------------------------- BHKW *@
+    @* Die Gruppe ist reiner VERWEIS: Die KWKG- und Steuerangaben stehen im
+       Dialog "BHKW-Wirtschaftlichkeit", der ueber die Fussleiste der
+       Wirtschaftlichkeitsseite aufgeht. Dieser Dialog fuehrt keinen eigenen
+       Weg dorthin - ein Sprung von hier wuerde nur schliessen. *@
     @if (HatBhkw)
     {
         <Gruppenkopf Titel="@_t.GBhkw" Symbol="⚙">
             <KindInhalt>
                 <Herleitungszeile Text="@_t.BhkwVerweis" />
-                <button type="button" class="epos-knopf epos-sprung"
-                        @onclick="BhkwKlick">@_t.BhkwKnopf</button>
-                <Herleitungszeile Text="@_t.SprungHinweis" />
             </KindInhalt>
         </Gruppenkopf>
     }
@@ -578,7 +580,7 @@
     }
 
     // =====================================================================
-    // Sprünge
+    // Der Gesetzeskatalog
     // =====================================================================
 
     /// <summary>
@@ -601,16 +603,13 @@
         StateHasChanged();
     }
 
-    /// <summary>Der Sammeldialog — nachgelagert, siehe Kopf.</summary>
-    private Task BhkwKlick() => Schliessen(WirtParameterSprung.BhkwWirtschaftlichkeit);
-
     // =====================================================================
     // Speichern
     // =====================================================================
 
     private async Task BeiErgebnis(bool ok)
     {
-        if (!ok) { await Schliessen(WirtParameterSprung.Keiner); return; }
+        if (!ok) { await Schliessen(); return; }
 
         _fehler = "";
         if (Speichern is null || !Speichern())
@@ -620,16 +619,16 @@
         }
 
         _gespeichert = true;
-        await Schliessen(WirtParameterSprung.Keiner);
+        await Schliessen();
     }
 
-    private Task Schliessen(WirtParameterSprung sprung) =>
-        Geschlossen.InvokeAsync(new WirtParameterErgebnis(_gespeichert, sprung));
+    private Task Schliessen() =>
+        Geschlossen.InvokeAsync(new WirtParameterErgebnis(_gespeichert));
 
     /// <summary>Esc schließt die OBERSTE Ebene — erst den Katalog, dann den Dialog.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape" || _katalogOffen) return Task.CompletedTask;
-        return Schliessen(WirtParameterSprung.Keiner);
+        return Schliessen();
     }
 }

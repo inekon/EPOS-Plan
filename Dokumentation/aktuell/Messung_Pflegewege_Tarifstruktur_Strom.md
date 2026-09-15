@@ -6,8 +6,7 @@ Wirtschaftlichkeitsseite zu entfernen, weil dieselben Größen unter *Verwaltung
 Energiekosten* gepflegt würden.
 
 Dieses Papier misst, **welche Größe der Sicht „Strombezug" in den Rechenweg geht und wo
-sie sonst noch gepflegt werden kann.** Es trifft keine Entscheidung; es liefert die
-Grundlage für eine.
+sie sonst noch gepflegt werden kann.** Abschnitt 5 nennt, was daraus geworden ist.
 
 **Ergebnis in einem Satz:** Zwei Feldgruppen — die **Bezugspreise des Zonenmodells** und
 die **zweistufige Leistungspreis-Staffel** — gehen in den Rechenweg und sind ausschließlich
@@ -24,7 +23,7 @@ er beim Speichern überschreibt (`TarifstrukturDialog.razor:463-503`).
 | Sicht | Wirt | erreichbar |
 |---|---|---|
 | `Komplett` | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/TarifstrukturHuelle.cs:42` | **nein** — die zweistellige Überladung `Oeffnen(besitzer, idStamm)` hat keinen Aufrufer im Bestand; es gibt auch keinen Menüeintrag (`EPOS.UI/Bausteine/Menuetabelle.cs`) |
-| `Strombezug` | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/WirtschaftlichkeitSeiteGaben.cs:663` (Knopf „Strombezug…", `EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor:216-220`) **und** `WindowsFormsApplication1/Views/Wirtschaftlichkeit/BhkwWirtschaftlichkeitHuelle.cs:209-210` (Sprungknopf im BHKW-Dialog) | ja |
+| `Strombezug` | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/WirtschaftlichkeitSeiteGaben.cs` (Knopf „Strombezug…", `EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor:216-220`) **und** `WindowsFormsApplication1/Views/Wirtschaftlichkeit/BhkwWirtschaftlichkeitHuelle.cs:209-210` (Sprungknopf im BHKW-Dialog) | ja, solange der Tarifsatz des Projekts **aktiv** ist (`stand.MitStrombezug = tarifAktiv`) |
 | `Photovoltaik` | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/PhotovoltaikVerguetungHuelle.cs:59` | ja, nur mit Photovoltaik in der Vergleichsgruppe |
 | `Bhkw` | `WindowsFormsApplication1/Views/Wirtschaftlichkeit/BhkwWirtschaftlichkeitHuelle.cs:209-210` | ja, nur mit BHKW in der Vergleichsgruppe |
 
@@ -90,12 +89,13 @@ außerhalb der Sicht „Strombezug" keinen Pflegeweg. Das Zonenmodell ist dabei 
 **Vorbelegung** jedes Tarifsatzes (`TarifParameter.Modus = DbWerte.TARIF_MODUS_ZONEN`,
 `WirtschaftlichkeitDaten.cs:691`), nicht der Ausnahmefall.
 
-Hinzu kommt eine zweite, breitere Lücke: Der Knopf „Strombezug…" erscheint, sobald die
-Gruppe eine **Wärmepumpe** führt oder die Tarifstruktur aktiv ist
-(`WirtschaftlichkeitSeiteGaben.cs:204`). Genau in einer Gruppe ohne BHKW und ohne
-Photovoltaik — dem typischen Wärmepumpenprojekt — ist er der **einzige** Zugang zum
-Tarifsatz überhaupt; die Sichten `Bhkw` und `Photovoltaik` sind dort nicht erreichbar, und
-`Komplett` hat keinen Wirt.
+Der Knopf „Strombezug…" erscheint, **solange der Tarifsatz des Projekts aktiv ist**
+(`WirtschaftlichkeitSeiteGaben.cs`, `stand.MitStrombezug = tarifAktiv`). Damit bleibt der
+Pflegeweg genau dort offen, wo die sieben Werte rechnen — und er verschwindet, wo sie es
+nicht tun. Die Kehrseite: In einer Gruppe ohne BHKW und ohne Photovoltaik — dem typischen
+Wärmepumpenprojekt — gibt es bei **inaktivem** Tarifsatz keinen Zugang mehr zum Kopfblock
+und damit keinen Weg, ihn einzuschalten; die Sichten `Bhkw` und `Photovoltaik` sind dort
+nicht erreichbar, und `Komplett` hat keinen Wirt.
 
 ---
 
@@ -120,24 +120,32 @@ Größen auf anderen Spalten**:
 
 ---
 
-## 5. Was zu entscheiden ist
+## 5. Was daraus geworden ist
 
-Der Einstieg „Strombezug…" kann ohne Verlust nur fallen, wenn zuvor entschieden ist, was
-mit den sieben ungedeckten Werten geschieht. Drei gangbare Wege:
+Der Einstieg „Strombezug…" **bleibt** — Weg 1 der drei gemessenen Möglichkeiten, weil die
+sieben ungedeckten Werte sonst ohne Pflegeweg weiterrechneten. Er hängt allein am
+Tarifsatz: aktiv → Knopf, inaktiv → kein Knopf. Die Erzeugerlage der Gruppe ankert ihn
+nicht mehr.
 
-1. **Einstieg behalten**, gegebenenfalls umbenennen (die Sicht heißt im Dialog
-   „Tarifstruktur Strom — Strombezug", `TarifstrukturDaten.cs:148`).
-2. **Zonen-Bezugspreise und Staffel in die Kostenverwaltung verlegen** — neue Felder auf der
+Die beiden anderen Wege stehen weiterhin offen, falls die Lücke einmal geschlossen werden
+soll:
+
+1. **Zonen-Bezugspreise und Staffel in die Kostenverwaltung verlegen** — neue Felder auf der
    Trägerkarte des Stromträgers oder ein eigener Reiter, der denselben Tarifsatz schreibt.
-   Danach fällt der Einstieg ohne Lücke.
-3. **Zonenmodell abkündigen** und alle Projekte auf das Rollenmodell heben. Dann verlieren
+   Danach könnte der Einstieg ohne Lücke fallen.
+2. **Zonenmodell abkündigen** und alle Projekte auf das Rollenmodell heben. Dann verlieren
    die sieben Werte ihren Rechenweg, und der Rollenblock *Bezug* bleibt über die Sicht
    `Bhkw` erreichbar — allerdings nur mit BHKW in der Gruppe. Das ist ein Eingriff in den
    Rechenweg mit neuer Referenzbasis, kein Aufräumen einer Maske.
 
 Der zweite Knopf gleichen Namens im BHKW-Dialog (`BhkwWirtschaftlichkeitHuelle.cs:209-210`)
-ist davon unabhängig: Er öffnet dieselbe Sicht auf dieselben Werte und wäre, sobald Weg 1
-oder 2 steht, der überzählige von zweien.
+ist davon unabhängig: Er öffnet dieselbe Sicht auf dieselben Werte und ist damit der
+zweite von zweien.
+
+**Offen bleibt der Kopfblock.** Wer den Tarifsatz eines Wärmepumpenprojekts ohne BHKW und
+ohne Photovoltaik erst **einschalten** will, findet dafür keinen Weg mehr: Der Schalter
+`Aktiv` steht im Kopfblock, den jede Sicht baut — aber keine Sicht ist dort erreichbar,
+solange der Satz inaktiv ist.
 
 ---
 
@@ -148,9 +156,8 @@ oder 2 steht, der überzählige von zweien.
   der Rest des Sammel-Einstiegs „Tarifstruktur…", der mit Ä16 von der
   Wirtschaftlichkeitsseite genommen wurde (`WirtschaftlichkeitSeite.razor:26-29`), und
   zugleich die einzige Sicht, die alle Blöcke zeigt.
-- **Die Wiki-Quelle nennt einen Knopf, den es nicht gibt.**
-  `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki:21` führt
-  „'''Tarifstruktur…'''" in der Liste der Fußleiste. Die Seite trägt dort tatsächlich
-  „Photovoltaik…", „BHKW-Wirtschaftlichkeit…", „Strombezug…", „Parameter…", „Verlauf…" und
-  „Berechnen" (`WirtschaftlichkeitSeite.razor:205-232`). Die Zeile ist unabhängig von der
-  hier gemessenen Frage fortzuschreiben.
+- **Die Fußleiste der Seite** trägt „Photovoltaik…", „BHKW-Wirtschaftlichkeit…",
+  „Strombezug…", „Parameter…", „Verlauf…" und „Berechnen"
+  (`WirtschaftlichkeitSeite.razor:205-232`); die Wiki-Quelle
+  `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` nennt „Strombezug…"
+  samt seiner Bedingung.

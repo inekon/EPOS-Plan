@@ -10466,9 +10466,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BHW_PARAM_VERWEIS" xml:space="preserve">
     <value>As of stage B5 these settings are held in the separate dialogue "CHP economics" — there together with the values per CHP module, the derivations and the preview.</value>
   </data>
-  <data name="BHW_PARAM_KNOPF" xml:space="preserve">
-    <value>⚙ CHP economics (CHP Act, taxes, modules)…</value>
-  </data>
   <data name="VPOS_TITEL" xml:space="preserve">
     <value>Edit item</value>
   </data>
@@ -10852,9 +10849,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="WPAR_REFKESSEL_VORGABE" xml:space="preserve">
     <value>, fuel from default</value>
-  </data>
-  <data name="WPAR_SPRUNG_HINWEIS" xml:space="preserve">
-    <value>The jump closes this dialogue without saving your entries — please save first.</value>
   </data>
   <data name="WPAR_TITEL" xml:space="preserve">
     <value>Economic parameters</value>
