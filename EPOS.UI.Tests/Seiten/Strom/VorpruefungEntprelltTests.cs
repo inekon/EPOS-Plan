@@ -44,7 +44,7 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
 
     /// <summary>
     /// <b>Der Tastendruck meldet SOFORT und prüft NICHT voll.</b> Das geleerte
-    /// Schrittfeld macht das Raster ungültig, die Kandidatenzeile sagt es und der
+    /// Kapazitätsfeld macht den Bereich ungültig, die Kandidatenzeile sagt es und der
     /// Rechenknopf ist gesperrt — alles im selben Zeichenlauf; die teure Stufe wartet.
     /// </summary>
     [Fact]
@@ -102,7 +102,7 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
         // Die zwei ueberholten Entprellungen sind abgebrochen — kaemen sie noch, stuende
         // der Zaehler hier hoeher.
         Assert.Equal(vollVorher + 1, zaehler.Voll);
-        Assert.Equal(100.0, Achse(cut).KapazitaetSchrittKWh);
+        Assert.Equal(100.0, Achse(cut).KapazitaetBisKWh);
     }
 
     /// <summary>
@@ -259,23 +259,23 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
         var cut = Station(zaehler, entprellungMs: 1);
 
         TippenUndEntprellen(cut, zaehler, "100");
-        Assert.Equal("100", Schrittfeld(cut).GetAttribute("value"));
-        Assert.Equal(100.0, Achse(cut).KapazitaetSchrittKWh);
+        Assert.Equal("100", Kapazitaetsfeld(cut).GetAttribute("value"));
+        Assert.Equal(100.0, Achse(cut).KapazitaetBisKWh);
 
         // Das GELEERTE Feld: Das Modell nimmt die 0, die Anzeige bleibt leer.
         TippenUndEntprellen(cut, zaehler, "");
-        Assert.Equal("", Schrittfeld(cut).GetAttribute("value"));
-        Assert.Equal(0.0, Achse(cut).KapazitaetSchrittKWh);
+        Assert.Equal("", Kapazitaetsfeld(cut).GetAttribute("value"));
+        Assert.Equal(0.0, Achse(cut).KapazitaetBisKWh);
 
         // Und das naechste Zeichen landet vorn, nicht hinter einer zurueckgeschriebenen 0.
         Tippen(cut, "2");
-        Assert.Equal(2.0, Achse(cut).KapazitaetSchrittKWh);
+        Assert.Equal(2.0, Achse(cut).KapazitaetBisKWh);
     }
 
     // ================================================================= Prüfstand
 
     /// <summary>
-    /// Tippt in das Schrittfeld und <b>wartet auf den gezeichneten Zustand</b>: Die Fassung
+    /// Tippt in das Feld „Kapazität bis" und <b>wartet auf den gezeichneten Zustand</b>: Die Fassung
     /// des Arbeitsstandes ist weitergezählt UND das Feld zeigt das Getippte.
     /// </summary>
     /// <remarks>
@@ -289,11 +289,11 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
     private static void Tippen(IRenderedComponent<StromspeicherAuslegungSeite> cut, string text)
     {
         int fassung = cut.Instance.Fassung;
-        Schrittfeld(cut).Input(text);
+        Kapazitaetsfeld(cut).Input(text);
         cut.WaitForAssertion(() =>
         {
             Assert.True(cut.Instance.Fassung > fassung, "Der Tastendruck ist noch nicht angekommen.");
-            Assert.Equal(text, Schrittfeld(cut).GetAttribute("value"));
+            Assert.Equal(text, Kapazitaetsfeld(cut).GetAttribute("value"));
         });
     }
 
@@ -333,15 +333,31 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
     private static FlottenHinweis Hinweis(string text)
         => new() { Stufe = FlottenHinweisStufe.Hinweis, Text = text };
 
-    /// <summary>Das Schrittfeld der Kapazität — das Feld des Befunds #253.</summary>
-    private static IElement Schrittfeld(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+    /// <summary>Das Feld „Kapazität bis" — das Zahlenfeld des Befunds #253.</summary>
+    private static IElement Kapazitaetsfeld(IRenderedComponent<StromspeicherAuslegungSeite> cut)
         => cut.Find("article.epos-flotte-einheitskarte")
               .QuerySelectorAll("label.epos-feld")
-              .Single(x => x.TextContent.Contains(Resource.FLOTTE_ED_KAPAZITAET_SCHRITT, StringComparison.Ordinal))
+              .Single(x => x.TextContent.Contains(Resource.FLOTTE_ED_KAPAZITAET_BIS, StringComparison.Ordinal))
               .QuerySelector("input")!;
 
     private static FlottenAuslegungsAchse Achse(IRenderedComponent<StromspeicherAuslegungSeite> cut)
         => cut.Instance.Eingaben.Auslegung!.Flotte!.Auslegung.Achsen[0];
+
+    /// <summary>Vier Geraete von 100 bis 400 kWh, alle mit 50 kW.</summary>
+    private static List<FlottenGeraetekandidat> Bestand()
+        => new[] { 100.0, 200.0, 300.0, 400.0 }
+            .Select(kWh => new FlottenGeraetekandidat
+            {
+                Quellkennung = kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+                Geraet = new FlottenEinheit
+                {
+                    Id = "G" + kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+                    Name = "Speicher " + kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+                    KapazitaetKWh = kWh, LadeleistungKw = 50, EntladeleistungKw = 50,
+                    Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95,
+                    SocMin = 0.1, SocMax = 0.9, SocStart = 0.5
+                }
+            }).ToList();
 
     /// <summary>Die Ansicht auf Station 4, mit gezähltem Vorprüfungsweg.</summary>
     /// <param name="zaehler">Der Zähler beider Stufen.</param>
@@ -379,9 +395,9 @@ public sealed class VorpruefungEntprelltTests : EposBunitContext
                     {
                         Aktiv = true, Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
                         AnzahlVon = 1, AnzahlBis = 1,
-                        KapazitaetVonKWh = 100, KapazitaetBisKWh = 300, KapazitaetSchrittKWh = 10,
-                        LeistungVonKw = 40, LeistungBisKw = 80, LeistungSchrittKw = 20,
-                        CRateVon = 0.5, CRateBis = 2.0, CRateSchritt = 0.5,
+                        KapazitaetVonKWh = 1, KapazitaetBisKWh = 300,
+                        LeistungVonKw = 1, LeistungBisKw = 80,
+                        Geraete = Bestand(),
                         Vorlage = einheit
                     }
                 }

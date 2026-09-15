@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using WindowsFormsApplication1;
 
 namespace EPOS.UI.Tests;

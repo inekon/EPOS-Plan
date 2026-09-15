@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
@@ -116,7 +116,7 @@ namespace WindowsFormsApplication1
 
         public static SpeicherOptimierungVorgaben Vorbelegung(int projektId, double bezugsspitze)
         {
-            var v = SpeicherOptimierungCtrl.Vorbelegung(projektId, bezugsspitze);
+            var v = SpeicherAuslegungVorgabenCtrl.Vorbelegung(projektId, bezugsspitze);
             int anlage = Anlage(projektId);
             v.Modulkosten = Modulkosten(projektId, anlage);
             v.Strompreisprofile = new KostenprofilCtrl().ReadAllByProjekt(projektId);

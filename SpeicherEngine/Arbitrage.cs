@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace SpeicherEngine
 {
@@ -50,9 +50,8 @@ namespace SpeicherEngine
     /// <b>Kein Excel-Kompatibilitaetsmodus.</b> Die Arbitragelogik der V7-Mappe war
     /// nicht ausfuehrbar und ihre Ergebnisse mit keinem Datenstand reproduzierbar
     /// (Fachkonzept 6.5); es gibt also nichts, wogegen ein Kompatibilitaetsmodus
-    /// kompatibel waere. Dieselbe Lage wie bei der <see cref="Nachtnutzung"/> -
-    /// entsprechend dieselbe Behandlung ueber
-    /// <see cref="SchluesselOhneExcelReferenz"/>.
+    /// kompatibel waere; die Strategie lehnt den Modus ueber
+    /// <see cref="SchluesselOhneExcelReferenz"/> benannt ab.
     /// </para>
     /// <para>
     /// <b>Zur Verdopplung der Dispatch-Schleife.</b> Wiederverwendet wird alles, was
@@ -65,8 +64,8 @@ namespace SpeicherEngine
     /// nachgebildet - zeichengetreu, damit die Bitgleichheit ohne Netzpfade beweisbar
     /// bleibt. Fundstelle der Vorlage: <c>Dauernutzung.cs</c>, Methode
     /// <c>BerechneEnergetisch</c> (Begrenzungsreihenfolge, Merit-Order,
-    /// SoC-Fortschreibung, Bewertung, Kennzahlenaufbau); dieselbe Vorlage nutzt bereits
-    /// <c>Nachtnutzung.cs</c>. Wer eine der drei Schleifen aendert, muss die anderen
+    /// SoC-Fortschreibung, Bewertung, Kennzahlenaufbau). Wer eine der beiden Schleifen
+    /// aendert, muss die andere
     /// mitziehen - und dazu die Fenstersimulation in
     /// <c>ArbitragePlaner.Lauf.Simuliere</c>.
     /// </para>
@@ -80,7 +79,7 @@ namespace SpeicherEngine
         /// <summary>
         /// Sprachneutraler Schluessel der Ausnahme, die der Excel-Kompatibilitaetsmodus
         /// wirft; gleichlautend als Ressourcenschluessel <c>ARB_OHNE_EXCEL_REFERENZ</c>
-        /// im Hauptprojekt (Muster <see cref="Nachtnutzung.SchluesselOhneExcelReferenz"/>).
+        /// im Hauptprojekt.
         /// </summary>
         public const string SchluesselOhneExcelReferenz = "ARB_OHNE_EXCEL_REFERENZ";
 

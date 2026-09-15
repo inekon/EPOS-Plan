@@ -1,4 +1,4 @@
-// Der Weg vom Chatdienst zur Ausfuehrungsschicht (iU9-W15b.0a).
+﻿// Der Weg vom Chatdienst zur Ausfuehrungsschicht (iU9-W15b.0a).
 //
 // WARUM ES DIESE DATEI GIBT. Mit W15b.0a ist KiChatService in den Kern gezogen
 // (Befund W15b-B1: kein WinForms, kein Program., keine Registry, kein DPAPI).

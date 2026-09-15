@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Simulation;
+﻿namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// Ein gespeichertes Quellprofil, so weit die Auswahlliste es braucht.

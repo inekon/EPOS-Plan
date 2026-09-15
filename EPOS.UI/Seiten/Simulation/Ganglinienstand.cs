@@ -1,4 +1,4 @@
-namespace EPOS.UI.Seiten.Simulation;
+﻿namespace EPOS.UI.Seiten.Simulation;
 
 /// <summary>
 /// <b>Die Schalterstellung EINES Ganglinienreiters über die Sitzung</b>

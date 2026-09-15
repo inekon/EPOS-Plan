@@ -1,4 +1,4 @@
-namespace SpeicherEngine
+﻿namespace SpeicherEngine
 {
     /// <summary>
     /// Rechenmodus der Speicherstrategien (Fachkonzept 5.2).

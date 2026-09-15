@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using AngleSharp.Dom;
@@ -522,6 +522,11 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         var bester = Kandidat("K-20-1,0", 20, 20, 2000, true, 220);
         return new FlottenAuslegungErgebnis
         {
+            // DIE ALTE KOPPLUNGSMARKE, AUSGESCHRIEBEN: Ein Ergebnis, das sie noch traegt,
+            // soll sich weiterhin zeichnen lassen. Die Vorbelegung eines frischen
+            // Ergebnisses ist KapazitaetUndLeistung — die einzige Kopplung, die eine
+            // Suche erzeugt.
+            Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndCRate,
             Aussage = "Beste Variante im geprueften endlichen Raster",
             Kandidaten = new List<FlottenKandidatZusammenfassung>
             {

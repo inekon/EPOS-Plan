@@ -228,3 +228,245 @@ public enum BhkwSprung
 /// <param name="Sprung">Das gewuenschte Folgefenster; <see cref="BhkwSprung.Keiner"/>,
 /// wenn keines gewuenscht ist.</param>
 public sealed record BhkwWirtschaftlichkeitErgebnis(bool Gespeichert, BhkwSprung Sprung);
+
+/// <summary>
+/// Der ARBEITSSTAND einer Anlagenzeile — genau die elf Felder, die der Dialog
+/// pflegt (K7).
+///
+/// <para><b>Warum es ihn gibt.</b> Der Dialog traegt OK und Abbrechen; wer
+/// Abbrechen anbietet, darf vorher nichts geschrieben haben. Die Eingaben
+/// stehen deshalb bis zum OK hier und nicht in der geladenen Zeile. Erst
+/// <see cref="Anwenden"/> legt sie auf die Zeile, und erst danach schreibt der
+/// Wirt sie; Abbrechen laesst beides unberuehrt.</para>
+///
+/// <para><b>Warum elf Felder und keine Kopie der ganzen Zeile.</b> Eine Kopie
+/// muesste jedes Feld mitfuehren — auch die, die der Dialog nie anfasst
+/// (Bezeichner, Leistung, Brennstoff, Projektzuordnung); ein beim Kopieren
+/// vergessenes Feld ginge beim Schreiben verloren. Der Stand fuehrt deshalb
+/// ausschliesslich das, was der Dialog pflegt.</para>
+/// </summary>
+public sealed class BhkwAnlagenstand
+{
+    /// <summary>Bestell-/Genehmigungsdatum (Feldkarte 1.7).</summary>
+    public DateTime? Stichtag;
+
+    /// <summary>Inbetriebnahmedatum (1.8).</summary>
+    public DateTime? Inbetriebnahme;
+
+    /// <summary>Anlagenart, Steuerwert <c>DbWerte.KWKG_ANLAGENART_*</c> (1.9).</summary>
+    public string Anlagenart = "";
+
+    /// <summary>Tatbestand des § 6 Abs. 3, Steuerwert <c>DbWerte.KWKG_EIGENFALL_*</c> (1.10).</summary>
+    public string Eigenfall = "";
+
+    /// <summary>Ueberschreibwert des Einspeisesatzes [ct/kWh] (1.11); <c>null</c> = Projektsatz.</summary>
+    public double? SatzEinspCt;
+
+    /// <summary>Ueberschreibwert des Eigenstromsatzes [ct/kWh] (1.12); <c>null</c> = Projektsatz.</summary>
+    public double? SatzEigenCt;
+
+    /// <summary>Vbh-Kontingent [h] (1.13); <c>null</c> = Projektwert.</summary>
+    public double? VbhKontingent;
+
+    /// <summary>Jahresdeckel-Override [h/a] (1.14); <c>null</c> = Staffel.</summary>
+    public double? VbhDeckel;
+
+    /// <summary>Entlastungsnorm dieser Anlage (1.15); leer = Projektwert.</summary>
+    public string EnergiesteuerWahl = "";
+
+    /// <summary>Aufteilungsmethode dieser Anlage (1.16); leer = Projektwert.</summary>
+    public string AufteilungMethode = "";
+
+    /// <summary>Hilfsenergieanteil [%] (1.17); 0 = keine Hilfsenergie (BF4).</summary>
+    public double? HilfsenergieAnteil;
+
+    /// <summary>Der Stand, wie die Zeile geladen wurde.</summary>
+    public static BhkwAnlagenstand Aus(KwkgAnlagenAngabe a) => new BhkwAnlagenstand
+    {
+        Stichtag = a.Stichtag,
+        Inbetriebnahme = a.Inbetriebnahme,
+        Anlagenart = a.Anlagenart ?? "",
+        Eigenfall = a.Eigenfall ?? "",
+        SatzEinspCt = a.SatzEinspCt,
+        SatzEigenCt = a.SatzEigenCt,
+        VbhKontingent = a.VbhKontingent,
+        VbhDeckel = a.VbhDeckel,
+        EnergiesteuerWahl = a.EnergiesteuerWahl ?? "",
+        AufteilungMethode = a.AufteilungMethode ?? "",
+        HilfsenergieAnteil = a.HilfsenergieAnteil
+    };
+
+    /// <summary>
+    /// Trägt die geladene Zeile <paramref name="a"/> noch WERTGLEICH das, was
+    /// der Arbeitsstand führt? Dann hat der Anwender an dieser Zeile nichts
+    /// geändert, und ein Schreiben wäre folgenlos — schlimmer: In einer
+    /// Mehrbenutzerlage überschriebe es die Änderung eines anderen mit dem
+    /// eigenen geladenen Stand. Die Sprungknöpfe fragen deshalb hier, statt
+    /// sich auf ein Merkflag zu verlassen: Ein Flag kippt schon bei einem
+    /// Fokuswechsel oder einem Neuzeichnen, ein Wertvergleich nicht.
+    /// </summary>
+    public bool Gleicht(KwkgAnlagenAngabe a)
+        => Stichtag == a.Stichtag
+        && Inbetriebnahme == a.Inbetriebnahme
+        && Anlagenart == (a.Anlagenart ?? "")
+        && Eigenfall == (a.Eigenfall ?? "")
+        && SatzEinspCt == a.SatzEinspCt
+        && SatzEigenCt == a.SatzEigenCt
+        && VbhKontingent == a.VbhKontingent
+        && VbhDeckel == a.VbhDeckel
+        && EnergiesteuerWahl == (a.EnergiesteuerWahl ?? "")
+        && AufteilungMethode == (a.AufteilungMethode ?? "")
+        && HilfsenergieAnteil == a.HilfsenergieAnteil;
+
+    /// <summary>Den Stand auf die geladene Zeile legen — NUR im OK-Weg.</summary>
+    public void Anwenden(KwkgAnlagenAngabe a)
+    {
+        a.Stichtag = Stichtag;
+        a.Inbetriebnahme = Inbetriebnahme;
+        a.Anlagenart = Anlagenart;
+        a.Eigenfall = Eigenfall;
+        a.SatzEinspCt = SatzEinspCt;
+        a.SatzEigenCt = SatzEigenCt;
+        a.VbhKontingent = VbhKontingent;
+        a.VbhDeckel = VbhDeckel;
+        a.EnergiesteuerWahl = EnergiesteuerWahl;
+        a.AufteilungMethode = AufteilungMethode;
+        a.HilfsenergieAnteil = HilfsenergieAnteil;
+    }
+}
+
+/// <summary>
+/// Der ARBEITSSTAND der Projektvorgaben — genau die siebzehn Felder der Gruppen
+/// 2 bis 4, die der Dialog pflegt.
+///
+/// <para>Derselbe Grund und dieselbe Bauart wie bei
+/// <see cref="BhkwAnlagenstand"/>: Bis zum OK steht die Eingabe hier, danach
+/// legt <see cref="Anwenden"/> sie auf den geladenen Parametersatz. Alles
+/// Uebrige dieses Satzes — Zins, Betrachtungszeitraum, CO₂-Preis und was sonst
+/// andere Masken pflegen — bleibt unveraendert stehen und geht wertgleich in
+/// die Zeile zurueck.</para>
+/// </summary>
+public sealed class BhkwVorgabenstand
+{
+    /// <summary>Bonus Eigenstrom [ct/kWh] (2.1).</summary>
+    public double KwkgBonus;
+
+    /// <summary>Bonus Einspeisung [ct/kWh] (2.2).</summary>
+    public double KwkgBonusEinspeisung;
+
+    /// <summary>Vbh-Deckel-Override [h/a] (2.3).</summary>
+    public double KwkgVbhJahresdeckel;
+
+    /// <summary>Vbh-Kontingent gesamt [h] (2.4).</summary>
+    public double KwkgVbhKontingent;
+
+    /// <summary>Abschlag Negativstunden [%] (2.5).</summary>
+    public double KwkgAbschlagNegativ;
+
+    /// <summary>Eigenstrom-Tatbestand § 6 Abs. 3 (2.6); leer = nicht angegeben.</summary>
+    public string KwkgTatbestand = "";
+
+    /// <summary>Anlagenart § 8 (2.7); leer = nicht angegeben.</summary>
+    public string KwkgAnlagenart = "";
+
+    /// <summary>Anteil Neuherstellungskosten [%] (2.8).</summary>
+    public double KwkgKostenanteil;
+
+    /// <summary>Pauschale § 9 KWKG (2.9).</summary>
+    public bool KwkgPauschalmodus;
+
+    /// <summary>Stichtag, Vorgabe je Anlage (2.10).</summary>
+    public DateTime? KwkgStichtag;
+
+    /// <summary>Inbetriebnahme, Vorgabe je Anlage (2.11).</summary>
+    public DateTime? KwkgInbetriebnahme;
+
+    /// <summary>Energiesteuerentlastung (3.1).</summary>
+    public string EnergiesteuerWahl = "";
+
+    /// <summary>Brennstoff auf Strom/Waerme (3.2).</summary>
+    public string AufteilungMethode = "";
+
+    /// <summary>Jahresnutzungsgrad [%] (3.3); <c>null</c> = nicht erfasst.</summary>
+    public double? Jahresnutzungsgrad;
+
+    /// <summary>Unternehmensart (4.1).</summary>
+    public string Unternehmensart = "";
+
+    /// <summary>Raeumlicher Zusammenhang (4.2).</summary>
+    public bool RaeumlicherZusammenhang;
+
+    /// <summary>Hocheffizienz nachgewiesen (4.3).</summary>
+    public bool HocheffizienzNachweis;
+
+    /// <summary>Der Stand, wie der Parametersatz geladen wurde.</summary>
+    public static BhkwVorgabenstand Aus(WirtschaftlichkeitParameter p) => new BhkwVorgabenstand
+    {
+        KwkgBonus = p.KwkgBonus,
+        KwkgBonusEinspeisung = p.KwkgBonusEinspeisung,
+        KwkgVbhJahresdeckel = p.KwkgVbhJahresdeckel,
+        KwkgVbhKontingent = p.KwkgVbhKontingent,
+        KwkgAbschlagNegativ = p.KwkgAbschlagNegativ,
+        KwkgTatbestand = p.KwkgTatbestand ?? "",
+        KwkgAnlagenart = p.KwkgAnlagenart ?? "",
+        KwkgKostenanteil = p.KwkgKostenanteil,
+        KwkgPauschalmodus = p.KwkgPauschalmodus,
+        KwkgStichtag = p.KwkgStichtag,
+        KwkgInbetriebnahme = p.KwkgInbetriebnahme,
+        EnergiesteuerWahl = p.EnergiesteuerWahl ?? "",
+        AufteilungMethode = p.AufteilungMethode ?? "",
+        Jahresnutzungsgrad = p.Jahresnutzungsgrad,
+        Unternehmensart = p.Unternehmensart ?? "",
+        RaeumlicherZusammenhang = p.RaeumlicherZusammenhang,
+        HocheffizienzNachweis = p.HocheffizienzNachweis
+    };
+
+    /// <summary>
+    /// Trägt der geladene Parametersatz <paramref name="p"/> noch WERTGLEICH
+    /// das, was der Arbeitsstand führt? Dann hat der Anwender an den Vorgaben
+    /// nichts geändert — derselbe Grund wie bei
+    /// <see cref="BhkwAnlagenstand.Gleicht"/>: Wer nur nachschlägt, soll keinen
+    /// Schreibzugriff auslösen, und ein Schreiben ohne Änderung überschriebe in
+    /// einer Mehrbenutzerlage fremde Änderungen mit dem eigenen geladenen Stand.
+    /// </summary>
+    public bool Gleicht(WirtschaftlichkeitParameter p)
+        => KwkgBonus == p.KwkgBonus
+        && KwkgBonusEinspeisung == p.KwkgBonusEinspeisung
+        && KwkgVbhJahresdeckel == p.KwkgVbhJahresdeckel
+        && KwkgVbhKontingent == p.KwkgVbhKontingent
+        && KwkgAbschlagNegativ == p.KwkgAbschlagNegativ
+        && KwkgTatbestand == (p.KwkgTatbestand ?? "")
+        && KwkgAnlagenart == (p.KwkgAnlagenart ?? "")
+        && KwkgKostenanteil == p.KwkgKostenanteil
+        && KwkgPauschalmodus == p.KwkgPauschalmodus
+        && KwkgStichtag == p.KwkgStichtag
+        && KwkgInbetriebnahme == p.KwkgInbetriebnahme
+        && EnergiesteuerWahl == (p.EnergiesteuerWahl ?? "")
+        && AufteilungMethode == (p.AufteilungMethode ?? "")
+        && Jahresnutzungsgrad == p.Jahresnutzungsgrad
+        && Unternehmensart == (p.Unternehmensart ?? "")
+        && RaeumlicherZusammenhang == p.RaeumlicherZusammenhang
+        && HocheffizienzNachweis == p.HocheffizienzNachweis;
+
+    /// <summary>Den Stand auf den geladenen Parametersatz legen — NUR im OK-Weg.</summary>
+    public void Anwenden(WirtschaftlichkeitParameter p)
+    {
+        p.KwkgBonus = KwkgBonus;
+        p.KwkgBonusEinspeisung = KwkgBonusEinspeisung;
+        p.KwkgVbhJahresdeckel = KwkgVbhJahresdeckel;
+        p.KwkgVbhKontingent = KwkgVbhKontingent;
+        p.KwkgAbschlagNegativ = KwkgAbschlagNegativ;
+        p.KwkgTatbestand = KwkgTatbestand;
+        p.KwkgAnlagenart = KwkgAnlagenart;
+        p.KwkgKostenanteil = KwkgKostenanteil;
+        p.KwkgPauschalmodus = KwkgPauschalmodus;
+        p.KwkgStichtag = KwkgStichtag;
+        p.KwkgInbetriebnahme = KwkgInbetriebnahme;
+        p.EnergiesteuerWahl = EnergiesteuerWahl;
+        p.AufteilungMethode = AufteilungMethode;
+        p.Jahresnutzungsgrad = Jahresnutzungsgrad;
+        p.Unternehmensart = Unternehmensart;
+        p.RaeumlicherZusammenhang = RaeumlicherZusammenhang;
+        p.HocheffizienzNachweis = HocheffizienzNachweis;
+    }
+}

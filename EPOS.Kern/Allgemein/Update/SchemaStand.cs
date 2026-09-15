@@ -86,11 +86,24 @@ namespace WindowsFormsApplication1
         /// hält sie die Datenbank; die Anweisungen — die Entdoppelung des Bestands und
         /// der Index — stehen bei
         /// <see cref="ProjektEnergietraegerEindeutig"/>, und der Schritt ist
+        /// ergebnisneutral. Mit der VOLUMENBEMESSUNG DER PUFFERSPEICHER-VORLAGE
+        /// (Schritt 77, Auftrag #284 vom 15.09.2026) steht das Ziel auf <b>77</b>: Die
+        /// ausgelieferte Investitionsvorlage des Pufferspeichers trug die Bemessung „je
+        /// kWh Kapazität", für die dieses Gewerk keine Bezugsgröße führt; sie trägt ab
+        /// hier die Bemessung je Liter Gesamtvolumen. Die Anweisung steht bei
+        /// <see cref="PufferspeicherBemessungVolumen"/>; der Schritt fasst nur Zeilen ohne
+        /// gepflegten Satz an und ist damit ergebnisneutral. Mit dem FESTEN BETRAG DER
+        /// PV-POSITION „BATTERIESPEICHER" (Schritt 78, Auftrag #287 vom 15.09.2026) steht
+        /// das Ziel auf <b>78</b>: Die ausgelieferte Investitionsvorlage der Photovoltaik
+        /// trug für diese Position die Bemessung „je kWh Kapazität", für die das Gewerk
+        /// keine Bezugsgröße führt — seine einzige Baugröße ist die installierte Leistung
+        /// in kWp. Die Anweisung steht bei <see cref="PvVorlageBatteriespeicher"/>; wie
+        /// Schritt 77 fasst auch dieser nur Zeilen ohne gepflegten Satz an und ist damit
         /// ergebnisneutral. Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 76;
+        public const int Zielversion = 78;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

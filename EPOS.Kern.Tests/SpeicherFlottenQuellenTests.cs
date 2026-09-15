@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -304,9 +304,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, e.InvestitionEuroProKWh, 10);
             Assert.Equal(0.0, e.HilfsverbrauchKw, 10);
 
-            // Ein fehlender Wirkungsgrad faellt auf den Hausstandard 0,90 zurueck —
-            // dieselbe Regel, mit der LeseParameter eine Projektanlage liest.
-            Assert.Equal(Math.Sqrt(StromspeicherSimCtrl.ETA_RT_STANDARD), e.Ladewirkungsgrad, 10);
+            // EIN FEHLENDER WIRKUNGSGRAD BEKOMMT DIE NEUTRALE VORGABE (Anwenderentscheid
+            // vom 15.09.2026): 95 % je Richtung, hinterlegt an EINER Stelle. Ein zweiter
+            // Satz Vorgabewerte daneben waeren zwei Wahrheiten.
+            Assert.Equal(FlottenGeraetevorgaben.LADEWIRKUNGSGRAD, e.Ladewirkungsgrad, 10);
+            Assert.Equal(FlottenGeraetevorgaben.ENTLADEWIRKUNGSGRAD, e.Entladewirkungsgrad, 10);
 
             // Ladezustand 0 heisst „nicht gepflegt" und wird auf SoC_min geklemmt.
             Assert.Equal(0.10, e.SocStart, 10);
@@ -372,6 +374,154 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, SpeicherFlottenStudieCtrl.Projektanlagenkandidaten(PROJEKT).Count);
             Assert.NotNull(SpeicherFlottenStudieCtrl.EinheitAusProjektanlage(PROJEKT, A_SP2));
             Assert.Single(Vorbelegung());
+        }
+
+        // =====================================================================
+        // 5 — Die GERAETEKANDIDATEN der Größensuche (Anwenderentscheid 15.09.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die QUELLE entscheidet über die Kandidatenmenge.</b> Der Projektkatalog
+        /// führt die zwei Speicheranlagen dieses Projekts, die Stammdaten den ganzen
+        /// Katalog — zwei verschiedene Mengen aus demselben Aufruf, allein über die Quelle
+        /// unterschieden.
+        /// </summary>
+        [Fact]
+        public void Projektkatalog_und_Stammdaten_liefern_verschiedene_Kandidatenmengen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ZweiAnlagen();
+            Katalogsatz(K_VOLL, "Prüfhersteller: PS-50", 50.0, 25.0,
+                        wirkungsgradRt: 0.92, ladezustand: 40.0, modulkosten: 480.0,
+                        leistungskosten: 120.0, investitionFix: 2500.0, standbyW: 35.0);
+
+            var projekt = SpeicherFlottenStudieCtrl.Geraetekandidaten(
+                PROJEKT, FlottenKandidatenquelle.Projektkatalog);
+            var stamm = SpeicherFlottenStudieCtrl.Geraetekandidaten(
+                PROJEKT, FlottenKandidatenquelle.Stammdaten);
+
+            // Der Projektkatalog: genau die zwei Anlagen, mit ihren Anlagen-Kennungen.
+            Assert.Equal(2, projekt.Count);
+            Assert.Equal(new[] { A_SP1.ToString(CultureInfo.InvariantCulture),
+                                 A_SP2.ToString(CultureInfo.InvariantCulture) },
+                         projekt.Select(x => x.Quellkennung).OrderBy(x => x, StringComparer.Ordinal).ToArray());
+            Assert.Contains(projekt, x => Math.Abs(x.KapazitaetKWh - 129.0) < 1e-9);
+
+            // Die Stammdaten: der Katalog, darunter der eben angelegte Satz — und NICHT
+            // die Projektanlagen.
+            Assert.Contains(stamm, x => x.Quellkennung == K_VOLL.ToString(CultureInfo.InvariantCulture));
+            Assert.DoesNotContain(stamm, x => x.Quellkennung == A_SP1.ToString(CultureInfo.InvariantCulture));
+            Assert.NotEqual(projekt.Count, stamm.Count);
+        }
+
+        /// <summary>
+        /// <b>Ein Katalogsatz rechnet mit NEUTRALEN Vorgaben und ist gekennzeichnet.</b>
+        /// Der Katalog führt keine Betriebsführung — das SoC-Fenster kommt immer aus
+        /// <see cref="FlottenGeraetevorgaben"/>; fehlt zusätzlich der
+        /// Rundlaufwirkungsgrad, gelten auch die neutralen Wirkungsgrade.
+        /// </summary>
+        [Fact]
+        public void Ein_Katalogsatz_ohne_Wirkungsgrad_bekommt_die_neutralen_Vorgaben()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Katalogsatz(K_NACKT, "Prüfhersteller: PS-nackt", 20.0, 10.0,
+                        wirkungsgradRt: 0.0, ladezustand: 0.0, modulkosten: 0.0,
+                        leistungskosten: 0.0, investitionFix: 0.0, standbyW: 0.0);
+
+            FlottenGeraetekandidat kandidat = SpeicherFlottenStudieCtrl
+                .Geraetekandidaten(PROJEKT, FlottenKandidatenquelle.Stammdaten)
+                .Single(x => x.Quellkennung == K_NACKT.ToString(CultureInfo.InvariantCulture));
+
+            Assert.True(kandidat.NeutraleKennwerte);
+            Assert.Equal(FlottenGeraetevorgaben.LADEWIRKUNGSGRAD, kandidat.Geraet.Ladewirkungsgrad, 10);
+            Assert.Equal(FlottenGeraetevorgaben.ENTLADEWIRKUNGSGRAD, kandidat.Geraet.Entladewirkungsgrad, 10);
+            Assert.Equal(FlottenGeraetevorgaben.SOC_MIN, kandidat.Geraet.SocMin, 10);
+            Assert.Equal(FlottenGeraetevorgaben.SOC_MAX, kandidat.Geraet.SocMax, 10);
+            Assert.Empty(kandidat.Geraet.RainflowKurve);                     // keine Alterung
+            Assert.Equal(0.0, kandidat.Geraet.GrenzverschleissEuroProKWhEntladung, 10);
+        }
+
+        /// <summary>
+        /// <b>Der Gerätebestand landet in JEDER Suchachse</b> — dort liest ihn die
+        /// Zählregel der Engine, und dieselben Geräte rechnet der Lauf.
+        /// </summary>
+        [Fact]
+        public void Der_Bestand_wird_in_jede_Suchachse_geschrieben()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ZweiAnlagen();
+
+            var auslegung = new FlottenAuslegungEingang
+            {
+                Suchmethode = FlottenSuchmethode.Groesse,
+                Achsen = new List<FlottenAuslegungsAchse>
+                {
+                    // Eine ALTE Kopplung: Sie wird im selben Schritt benannt umgesetzt.
+                    new()
+                    {
+                        Aktiv = true, Modus = FlottenAuslegungsmodus.KapazitaetUndCRate,
+                        KapazitaetVonKWh = 10, KapazitaetBisKWh = 200,
+                        CRateVon = 0.5, CRateBis = 1.0,
+                        Quelle = FlottenKandidatenquelle.Projektkatalog
+                    }
+                }
+            };
+
+            SpeicherFlottenStudieCtrl.GeraetebestandAuffrischen(PROJEKT, auslegung);
+
+            Assert.Equal(FlottenAuslegungsmodus.KapazitaetUndLeistung, auslegung.Achsen[0].Modus);
+            Assert.Equal(2, auslegung.Achsen[0].Geraete.Count);
+            Assert.Equal(5.0, auslegung.Achsen[0].LeistungVonKw, 9);        // 10 kWh * 0,5 C
+            Assert.Equal(200.0, auslegung.Achsen[0].LeistungBisKw, 9);      // 200 kWh * 1,0 C
+        }
+
+        /// <summary>
+        /// <b>Die Übernahme eines Stammdatengeräts legt im PROJEKT an und lässt die
+        /// Stammdaten unberührt.</b> Sie nimmt den Weg, den
+        /// <see cref="SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen"/> für die
+        /// gewählten Einheiten schon baut — ein zweiter Weg daneben wäre eine zweite
+        /// Wahrheit darüber, was „in das Projekt übernehmen" heißt.
+        /// </summary>
+        [Fact]
+        public void Ein_Stammdatengeraet_laesst_sich_ins_Projekt_uebernehmen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ProjektAnlegen();
+            Katalogsatz(K_VOLL, "Prüfhersteller: PS-50", 50.0, 25.0,
+                        wirkungsgradRt: 0.92, ladezustand: 40.0, modulkosten: 480.0,
+                        leistungskosten: 120.0, investitionFix: 2500.0, standbyW: 35.0);
+
+            FlottenGeraetekandidat gefunden = SpeicherFlottenStudieCtrl
+                .Geraetekandidaten(PROJEKT, FlottenKandidatenquelle.Stammdaten)
+                .Single(x => x.Quellkennung == K_VOLL.ToString(CultureInfo.InvariantCulture));
+
+            int katalogVorher = StromspeicherStammCtrl.KatalogZeilen().Count;
+
+            FlottenUebernahmeErgebnis ergebnis = SpeicherFlottenStudieCtrl
+                .EinheitenInProjektUebernehmen(PROJEKT, new[] { gefunden.Geraet }, new[] { 1 });
+
+            Assert.True(ergebnis.Erfolg, ergebnis.Meldung);
+            Assert.Equal(1, ergebnis.Angelegt);
+            Assert.Equal(0, ergebnis.Geaendert);
+
+            // Im PROJEKT steht die neue Anlage — mit den Werten des Katalogsatzes.
+            var projekt = SpeicherFlottenStudieCtrl.Geraetekandidaten(
+                PROJEKT, FlottenKandidatenquelle.Projektkatalog);
+            Assert.Single(projekt);
+            Assert.Equal(50.0, projekt[0].KapazitaetKWh, 9);
+            Assert.Equal(25.0, projekt[0].LeistungKw, 9);
+
+            // Die STAMMDATEN sind unberührt: kein Satz dazu, keiner weg.
+            Assert.Equal(katalogVorher, StromspeicherStammCtrl.KatalogZeilen().Count);
+            Assert.NotNull(StromspeicherStammCtrl.Katalogsatz(K_VOLL));
         }
 
         // =====================================================================

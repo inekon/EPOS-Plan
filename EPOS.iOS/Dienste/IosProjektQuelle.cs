@@ -193,8 +193,10 @@ public sealed class IosProjektQuelle : IProjektQuelle
     /// <c>Views/Wirtschaftlichkeit/BhkwWirtschaftlichkeitHuelle.Oeffnen</c>:
     /// Parametersatz, Erzeugerkennzeichen, Stammname, Anlagen der
     /// Vergleichsgruppe, laufunabhaengige Doppelpflegepruefung. Der
-    /// Gesetzeskatalog und der Schreibweg gehen als Delegat hinein - genau die
-    /// Uebergabe, die der Dialog erwartet (Leitentscheidung L9).
+    /// Gesetzeskatalog und die beiden Schreibwege gehen als Delegat hinein - genau
+    /// die Uebergabe, die der Dialog erwartet (Leitentscheidung L9). Geschrieben
+    /// wird erst in seinem OK-Weg; Abbrechen laesst Anlagen und Parametersatz
+    /// unveraendert.
     /// </remarks>
     public BhkwDialogDaten? BhkwDaten(int idProjekt)
     {
@@ -229,7 +231,8 @@ public sealed class IosProjektQuelle : IProjektQuelle
                 Doppelpflege: doppelpflege,
                 Katalog: katalog.WertMitHerkunft,
                 ErgebnisseLaden: ids => wirt.LadeErgebnisse(new List<int>(ids)),
-                Speichern: () => Speichern(anlagenCtrl, wirt, anlagen, parameter));
+                SpeichereAnlage: a => SpeichereAnlage(anlagenCtrl, a),
+                SpeichereVorgaben: p => SpeichereVorgaben(wirt, p));
         }
         catch (Exception ex)
         {
@@ -239,25 +242,25 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     /// <summary>
-    /// Schreibt den Bildschirmzustand fort und liefert die Zahl der
-    /// GESCHEITERTEN Saetze - wortgleich zu
-    /// <c>BhkwWirtschaftlichkeitHuelle.Speichern</c>.
+    /// Schreibt EINE Anlagenzeile - wortgleich zu
+    /// <c>BhkwWirtschaftlichkeitHuelle.SpeichereAnlage</c>. Der Dialog ruft diesen
+    /// Weg NUR in seinem OK-Weg.
     /// </summary>
-    private static int Speichern(KwkgAnlagenCtrl anlagenCtrl, WirtschaftlichkeitCtrl wirt,
-                                 List<KwkgAnlagenAngabe> anlagen,
-                                 WirtschaftlichkeitParameter parameter)
+    private static bool SpeichereAnlage(KwkgAnlagenCtrl anlagenCtrl, KwkgAnlagenAngabe anlage)
     {
-        int fehler = 0;
+        try { return anlagenCtrl.Speichere(anlage, true); }
+        catch { return false; }
+    }
 
-        foreach (KwkgAnlagenAngabe a in anlagen)
-        {
-            if (!anlagenCtrl.Speichere(a, true)) fehler++;
-        }
-
-        try { if (!wirt.SpeichereParameter(parameter)) fehler++; }
-        catch { fehler++; }
-
-        return fehler;
+    /// <summary>
+    /// Schreibt die Projektvorgaben - wortgleich zu
+    /// <c>BhkwWirtschaftlichkeitHuelle.SpeichereVorgaben</c>.
+    /// </summary>
+    private static bool SpeichereVorgaben(WirtschaftlichkeitCtrl wirt,
+                                          WirtschaftlichkeitParameter parameter)
+    {
+        try { return wirt.SpeichereParameter(parameter); }
+        catch { return false; }
     }
 
     // =====================================================================

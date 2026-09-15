@@ -2,7 +2,8 @@
 
    VORBILD. NavigatorStrom (417 Z.): der Verbrauchsstapel (Lastgangprofil,
    Waermepumpe, Heizstab, Kessel), darueber die Erzeugungslinien (BHKW, PV) und
-   die Kontrolllinie „Gesamt" - im Viertelstundenraster.
+   die Kontrolllinie „Summe Stromverbrauch" - im Viertelstundenraster. Sie summiert
+   genau den STAPEL, also den Verbrauch; BHKW und Photovoltaik gehen nicht ein.
 
    BEFUND W11-B41 BEHOBEN (A-Zeile): Der Vorlaeufer hatte KEINEN
    Sortiert-Umschalter, anders als NavigatorWaerme und die drei Erzeugerseiten
@@ -29,8 +30,12 @@
                   WertChanged="@(w => { _sortiert = w; Merken(); })" />
     </div>
 
+    @* Die Kontrolllinie „Summe Stromverbrauch" steht als erster Eintrag ueber ihren
+       Summanden und ist durch eine Trennlinie abgesetzt - dieselbe Anordnung wie im
+       Waermegang. Sie bleibt Teil derselben Liste, also fassen „Alle" und „Keine" sie
+       mit. *@
     <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_SERIENAUSWAHL"
-                     Eintraege="@Eintraege" Gewaehlt="@_gewaehlt"
+                     Eintraege="@Eintraege" AbsatzNach="@AbsatzNach" Gewaehlt="@_gewaehlt"
                      GewaehltChanged="@(w => { _gewaehlt = w; Merken(); })" />
 
     @* DATENZOOM (Windows-Abnahme 05.09.2026, Befund A-1): Ein aufgezogenes Rechteck
@@ -94,6 +99,21 @@
             var liste = new List<Ganglinienreihe>();
             foreach (Ganglinienreihe r in Daten.Reihen) if (r.Vorhanden) liste.Add(r);
             return liste;
+        }
+    }
+
+    /// <summary>Der Schluessel der Summenlinie - dieselbe Schreibweise wie im Bild.</summary>
+    private const string SUMME = "GESAMT";
+
+    /// <summary>
+    /// Trennt die Summenlinie von ihren Summanden, wenn sie vorn steht; sonst 0.
+    /// </summary>
+    private int AbsatzNach
+    {
+        get
+        {
+            List<Ganglinienreihe> da = Vorhandene;
+            return da.Count > 0 && da[0].Schluessel == SUMME ? 1 : 0;
         }
     }
 

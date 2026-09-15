@@ -39,7 +39,7 @@
        (WirtschaftlichkeitSeite) traegt DIE den Titel; der Wirt setzt dort
        TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
        Ueberlagerung traegt beides. Der Titel kommt aus dem Textbuendel _t, nicht
-       aus einem leerbaren TitelText - Bauart b der Hausregel. *@
+       aus einem leerbaren TitelText. *@
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
         {
@@ -291,9 +291,12 @@
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_PhotovoltaikVerguetung.btn_Help";
 
     /// <summary>
-    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
-    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
-    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>.
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Vorgabe
+    /// <c>true</c> — im eigenen Fenster der Windows-Schale trägt ihn sonst
+    /// niemand. Steckt der Dialog dagegen in einer <c>Ueberlagerung</c>, die
+    /// denselben Titel schon führt, setzt die Einbettungsstelle <c>false</c>:
+    /// Ein Titel, eine Stelle. Und weil „das Kreuz beim Titel steht", trägt
+    /// dann auch die <c>Ueberlagerung</c> das Kreuz, nicht dieser Dialog.
     /// </summary>
     [Parameter] public bool TitelAnzeigen { get; set; } = true;
 

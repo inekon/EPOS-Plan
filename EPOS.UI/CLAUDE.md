@@ -50,14 +50,22 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   **Abbrechen** schließt ohne zu speichern und ohne Prüfung, und **✕ der `Ueberlagerung` sowie
   Esc** wirken wie Abbrechen — der Wirt schließt dafür selbst, er fragt den Dialog nicht.
   Die Prüfregeln stehen genau **einmal**, im Rückruf der Leiste, und gelten auf jedem Weg, der
-  speichert. **Geschrieben wird im OK-Weg, sonst ist Abbrechen eine Behauptung, die nicht
-  stimmt:** Ein Dialog, der eine Liste führt, sammelt sie als Arbeitsstand (`MitSpeichern="true"`
-  für den nicht schließenden „Anlegen"/„Übernehmen"-Knopf) und schreibt sie erst beim OK — dort
-  entsteht auch die Id einer neuen Zeile, die der Wirt danach liest.
-  **Jeder Dialogkopf trägt rechts außen das `Schliesskreuz`** (✕ = Esc = Abbrechen,
-  `Geschlossen` bekommt die Esc-Aktion des Dialogs); **das Kreuz steht beim Titel** — trägt die
-  `Ueberlagerung` den Titel, trägt sie auch das Kreuz (`Schliessbar`), die eingebettete
-  Komponente dann keins. Wache: `SchliesskreuzWacheTests`.
+  speichert. **Geschrieben wird im OK-Weg, ausnahmslos — sonst ist Abbrechen eine Behauptung, die
+  nicht stimmt:** Jeder Dialog führt bis dahin einen **Arbeitsstand** und lässt die Objekte, die
+  der Wirt hereingereicht hat, unangetastet; ein Dialog, der eine Liste führt, sammelt sie ebenso
+  (`MitSpeichern="true"` für den nicht schließenden „Anlegen"/„Übernehmen"-Knopf) und schreibt sie
+  erst beim OK — dort entsteht auch die Id einer neuen Zeile, die der Wirt danach liest.
+  **Der Schreibweg ist je Schritt benannt** (je Zeile, je Satz), nie ein einziger Rückruf mit
+  einer Fehlerzahl: Scheitert ein Schritt, bleibt der Dialog offen, und ein zweites OK darf das
+  bereits Geschriebene nicht wiederholen. Ein Knopf, der den Dialog auf einem **anderen Weg**
+  verlässt (ein Sprung in eine Nachbarmaske), nimmt entweder den OK-Weg — dann sagt es eine Zeile
+  unter dem Knopf — oder er verwirft wie Abbrechen; stillschweigend verlorene Eingaben gibt es
+  nicht.
+- **Jeder Dialogkopf trägt rechts außen das `Schliesskreuz`** (✕ = Esc = Abbrechen,
+  `Geschlossen` bekommt genau die Esc-Aktion des Dialogs); **das Kreuz steht beim Titel** — trägt
+  die `Ueberlagerung` den Titel, trägt sie auch das Kreuz (`Schliessbar`), die eingebettete
+  Komponente dann keins: Ihr Kreuz hängt an derselben Bedingung wie ihr `h1`
+  (`TitelAnzeigen`/`TitelText`). Wache: `SchliesskreuzWacheTests`.
 
 ### Stilblatt
 
@@ -121,6 +129,16 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   nie als zweite `BlazorWebView`; der Wirt splattet ihren Parametersatz aus `Gaben()`.
 - **Jedes Renderer-Bild steht im Baustein `Diagramm`**, einziger Weg dorthin ist `ChartBild` —
   sonst fehlt der Zoom; `Rund="true"` reicht `OhneZoom` durch.
+- **Eine Summenlinie heißt nach dem, was sie summiert, und ist abschaltbar wie ihre
+  Summanden.** Der Name folgt der Summenbildung im Code, nicht der Gewohnheit: Ein
+  Schlüssel „Gesamt" für drei verschiedene Summen benennt keine davon — je Diagramm ein
+  eigener Ressourcenschlüssel (`CHART_LEGENDE_SUMME_*`), und wo „Gesamt" eine AUSWAHL
+  benennt (Klapplisteneintrag), bleibt es stehen. Die Summe führt eine eigene Reihe in
+  derselben Wahl wie ihre Summanden, steht dort als ERSTER Eintrag, ist über `AbsatzNach`
+  der `Mehrfachauswahl` sichtbar abgesetzt, vorbelegt an, und „Alle"/„Keine" fassen sie mit;
+  die Schalterbeschriftung ist wörtlich der Legendentext. Wo eine Summenlinie das Diagramm
+  TRÄGT und nicht abschaltbar sein darf, wird das begründet, statt sie stillschweigend
+  festzunageln.
 
 ### Zeichenläufe, Fokus, JS-Interop
 

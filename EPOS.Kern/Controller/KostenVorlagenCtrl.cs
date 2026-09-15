@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 
@@ -620,6 +620,146 @@ namespace WindowsFormsApplication1
             foreach (Info i in Alle)
                 if (string.Equals(i.Persistenz, persistenz, StringComparison.Ordinal)) return i;
             return null;
+        }
+
+        // =====================================================================
+        // ANWENDERENTSCHEID 15.09.2026 — DIE AUSWAHL FOLGT DER BEZUGSGRÖSSE
+        //
+        //   „Prüfe Pufferspeicher Daten mit Volumen/Größe. EUR_PRO_KWH_KAPAZITAET
+        //   spielt keine Rolle, nur das Volumen als Bezugsgröße."
+        //
+        //   Der Katalog oben ist eine FLACHE Liste: Bis zu diesem Entscheid bot die
+        //   Auswahl jedem Gewerk jede Art an — auch eine, für die das Gewerk gar
+        //   keine Bezugsgröße führt. Ein Satz an so einer Zeile fiel über den
+        //   Anwenderentscheid I-2 auf den erfassten Betrag zurück, bei einer
+        //   Satzzeile also auf 0, und der Anwender sah nicht, warum.
+        //
+        //   EINE WAHRHEIT, KEINE ZWEITE LISTE. Welche Art zu welchem Gewerk eine
+        //   Größe führt, steht bereits in der Landkarte der Bezugsgrößen
+        //   (TechnikPlanwertCtrl.KenntBaugroesse für die Gerätewelt,
+        //   EndenergieAufloeser für die Arten aus dem Lauf). WirtschaftlichkeitCtrl
+        //   .BasisGrund liest genau sie und beantwortet für JEDE Art und JEDES
+        //   Gewerk die Frage, ob eine Bezugsgröße überhaupt möglich ist:
+        //   BASISGRUND_GEWERK heißt „die Art passt nicht zu diesem Gewerk", jede
+        //   andere Antwort heißt „die Art passt, die Größe fehlt (noch)". Die
+        //   Auswahl fragt dort nach, statt eine zweite Zuordnung zu führen.
+        //
+        //   DER GELTUNGSBEREICH IST BENANNT, NICHT STILL. Dasselbe Muster steht an
+        //   JEDEM Gewerk: Auch der Wärmepumpe wird „je kWp Leistung" angeboten und
+        //   der Photovoltaik „je m² Kollektorfläche". Der zweite Entscheid desselben
+        //   Tages weitet die Filterung deshalb auf ALLE ZEHN Gewerke aus; der
+        //   Geltungsbereich bleibt trotzdem benannt, damit sichtbar ist, WORAUF die
+        //   Regel wirkt, und nicht nur, DASS sie wirkt.
+        //
+        //   GEMESSEN, BEVOR SIE SCHARF GESCHALTET WURDE. Die Matrix Art↔Gewerk ist
+        //   je Gewerk und je Raster ausgezählt worden, dazu der Bestand der
+        //   Auslieferungsvorlagen und der Projektzeilen der Messlatte:
+        //
+        //     · Kein Gewerk verliert seine Auswahl. Am dünnsten bleibt das
+        //       BETRIEBSRASTER der vier Gewerke ohne Geräte- und Laufgrößen
+        //       (Pufferspeicher, Wärmezentrale, Bauliche Anlagen, Stromeinspeisung):
+        //       fester Jahresbetrag und „% der Investition" — beide tragen dort
+        //       wirklich, die zweite über die Investitionskaskade.
+        //     · Genau EINE Zeile des Bestands trug eine Art, die an ihrem Gewerk
+        //       keine Bezugsgröße führt: die Vorlagenposition „Batteriespeicher" der
+        //       Photovoltaik mit „je kWh Kapazität". Sie ist eigens umgestellt
+        //       worden (Schemaschritt 78, PvVorlageBatteriespeicher); die
+        //       Projektzeilen der Messlatte sind samt und sonders unauffällig.
+        //
+        //   Eine Art, die eine VORHANDENE Zeile trägt, bleibt davon unberührt in der
+        //   Liste (siehe Auswahl, Bedingung 1) — sonst verlöre ein gepflegter Wert
+        //   seine Auswahl und ließe sich nicht mehr ändern.
+        // =====================================================================
+
+        /// <summary>
+        /// Die Gewerke (<c>Tab_KostenKomponente.ID</c>), an denen die Auswahlliste nach
+        /// der Bezugsgröße gefiltert wird — <b>der Geltungsbereich des Entscheids</b>,
+        /// nicht die Regel selbst. Die Regel steht in <see cref="PasstZuGewerk"/>; seit
+        /// dem zweiten Entscheid vom 15.09.2026 deckt der Geltungsbereich alle zehn
+        /// Kostenkomponenten ab. Ein Gewerk, das hier fehlt, bekäme weiterhin die
+        /// vollständige Liste angeboten.
+        /// </summary>
+        private static readonly int[] AUSWAHLFILTER_GEWERKE =
+        {
+            1,   // Wärmepumpe
+            2,   // Heizkessel
+            3,   // Photovoltaik
+            4,   // Solarthermie
+            5,   // Stromspeicher
+            6,   // Pufferspeicher
+            7,   // BHKW
+            8,   // Wärmezentrale
+            9,   // Bauliche Anlagen
+            10,  // Stromeinspeisung
+        };
+
+        /// <summary>
+        /// Führt dieses Gewerk zu dieser Bemessungsart überhaupt eine Bezugsgröße?
+        /// <c>komponentenId</c> 0 = Gewerk unbekannt; dann wird nicht gefiltert.
+        ///
+        /// <para>Die Antwort kommt aus <see cref="WirtschaftlichkeitCtrl.BasisGrund"/> —
+        /// derselben Landkarte, aus der auch der Dialog seinen Grundtext holt, wenn eine
+        /// Zeile ohne Bezugsgröße bleibt. Eine eigene Zuordnung gibt es hier bewusst
+        /// nicht: Zwei Listen, die dasselbe behaupten, laufen auseinander.</para>
+        ///
+        /// <para>Absolute Arten (fester Betrag, fester Jahresbetrag) und die
+        /// Prozentarten der Investseite brauchen keine Baugröße und passen deshalb zu
+        /// jedem Gewerk.</para>
+        ///
+        /// <para><b>Die Frage gilt für JEDES Gewerk</b> — ob die AUSWAHL ihr folgt, sagt
+        /// <see cref="AUSWAHLFILTER_GEWERKE"/>. Wer die Zuordnung Art↔Gewerk wissen will
+        /// (Prüfungen, Grundtexte), fragt hier; wer die Liste baut, nimmt
+        /// <see cref="Auswahl"/>.</para>
+        /// </summary>
+        public static bool PasstZuGewerk(string persistenz, int komponentenId)
+        {
+            if (komponentenId <= 0 || string.IsNullOrEmpty(persistenz)) return true;
+            return !string.Equals(WirtschaftlichkeitCtrl.BasisGrund(persistenz, komponentenId),
+                                  WirtschaftlichkeitCtrl.BASISGRUND_GEWERK,
+                                  StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Wird die Auswahlliste dieses Gewerks nach der Bezugsgröße gefiltert?
+        /// Siehe <see cref="AUSWAHLFILTER_GEWERKE"/>.
+        /// </summary>
+        public static bool AuswahlWirdGefiltert(int komponentenId)
+        {
+            foreach (int k in AUSWAHLFILTER_GEWERKE)
+                if (k == komponentenId) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Die wählbaren Arten EINES Gewerks in Katalogreihenfolge — die EINE Stelle, an
+        /// der die Auswahlliste des Investitions- und des Betriebsrasters entsteht.
+        ///
+        /// <para>Drei Bedingungen, in dieser Reihenfolge: Eine Art, die eine vorhandene
+        /// Zeile bereits TRÄGT, steht immer in der Liste (<paramref name="benutzt"/>) —
+        /// sonst verlöre eine Bestandsposition beim Anzeigen ihren Wert, und genau dafür
+        /// stehen auch die beiden Altwerte des Katalogs. Sonst muss die Art zum Raster
+        /// gehören (<see cref="Info.FuerInvest"/>/<see cref="Info.FuerBetrieb"/>) und —
+        /// an den Gewerken des Geltungsbereichs (<see cref="AuswahlWirdGefiltert"/>) —
+        /// zum Gewerk passen (<see cref="PasstZuGewerk"/>).</para>
+        /// </summary>
+        /// <param name="komponentenId"><c>Tab_KostenKomponente.ID</c>; 0 = unbekannt,
+        /// dann wird nach dem Gewerk nicht gefiltert.</param>
+        /// <param name="invest">true = Investitionsraster, false = Betriebsraster.</param>
+        /// <param name="benutzt">Persistenzwerte, die vorhandene Zeilen schon tragen;
+        /// <c>null</c> erlaubt.</param>
+        public static List<Info> Auswahl(int komponentenId, bool invest,
+                                         ICollection<string> benutzt)
+        {
+            bool filtern = AuswahlWirdGefiltert(komponentenId);
+            var treffer = new List<Info>();
+            foreach (Info i in Alle)
+            {
+                if (benutzt != null && benutzt.Contains(i.Persistenz)) { treffer.Add(i); continue; }
+                if (!(invest ? i.FuerInvest : i.FuerBetrieb)) continue;
+                if (filtern && !PasstZuGewerk(i.Persistenz, komponentenId)) continue;
+                treffer.Add(i);
+            }
+            return treffer;
         }
 
         /// <summary>Anzeigetext (MyResource, deutscher Rückfall) — OHNE Gewerk, also

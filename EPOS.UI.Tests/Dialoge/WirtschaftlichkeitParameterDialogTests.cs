@@ -82,9 +82,11 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         bool bhkw = false, bool brennstoff = false,
         Func<bool>? speichern = null,
         Action<WirtParameterErgebnis>? geschlossen = null,
-        Func<IReadOnlyDictionary<string, object>>? gesetzeGaben = null)
+        Func<IReadOnlyDictionary<string, object>>? gesetzeGaben = null,
+        bool titelAnzeigen = true)
     {
         return Render<WirtschaftlichkeitParameterDialog>(p => p
+            .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.Parameter, satz)
             .Add(x => x.HatBhkw, bhkw)
             .Add(x => x.HatBrennstoff, brennstoff)
@@ -94,6 +96,30 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
             .Add(x => x.GesetzeGaben, gesetzeGaben)
             .Add(x => x.Speichern, speichern ?? (() => true))
             .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b‑B‑9): Zeigt der Wirt schon einen — die
+    /// Überlagerung der Wirtschaftlichkeitsseite tut es —, bleibt der eigene Kopf
+    /// weg; der Hilfeknopf bleibt.
+    /// </summary>
+    [Fact]
+    public void Ohne_TitelAnzeigen_bleibt_der_eigene_Kopf_weg_und_der_Hilfeknopf_steht()
+    {
+        var cut = Aufbauen(Satz(), titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll("h1.epos-dialog-titel"));
+        Assert.Contains("epos-dialog-kopf--ohnetitel", cut.Find("div.epos-dialog-kopf").ClassName);
+        Assert.NotNull(cut.Find(".epos-infoknopf"));
+    }
+
+    /// <summary>Im eigenen Fenster (Vorgabe) steht der Kopf wie bisher.</summary>
+    [Fact]
+    public void Mit_TitelAnzeigen_steht_der_eigene_Kopf()
+    {
+        var cut = Aufbauen(Satz());
+
+        Assert.Single(cut.FindAll("h1.epos-dialog-titel"));
     }
 
     // =====================================================================
@@ -135,7 +161,10 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         var titel = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
 
         Assert.Contains("BHKW — KWKG, Energie- und Stromsteuer", titel);
-        Assert.Single(cut.FindAll("button.epos-sprung"));
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent.Contains("BHKW-Wirtschaftlichkeit"));
+        // Die Gruppe ist reiner Verweis - sie fuehrt selbst nicht dorthin.
+        Assert.Empty(cut.FindAll("button.epos-sprung"));
         // Kein einziges Eingabefeld mehr aus den ausgezogenen Gruppen.
         Assert.Equal(FELDER_OHNE_ERZEUGER, cut.FindAll("input[inputmode=decimal]").Count);
     }
@@ -398,7 +427,7 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     }
 
     // =====================================================================
-    // Speichern und Sprünge
+    // Speichern und Schließen
     // =====================================================================
 
     [Fact]
@@ -416,7 +445,6 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
 
         Assert.Equal(1, gerufen);
         Assert.True(ergebnis!.Gespeichert);
-        Assert.Equal(WirtParameterSprung.Keiner, ergebnis.Sprung);
         Assert.Equal(4.25, satz.Zinssatz);
         Assert.Equal(25, satz.Betrachtungszeitraum);
     }
@@ -434,16 +462,21 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         Assert.Equal(30000, satz.KwkgVbhKontingent);
     }
 
+    /// <summary>
+    /// Die BHKW-Gruppe trägt keinen Weg aus dem Dialog heraus: Sie zeigt den
+    /// Verweis, und der Dialog bleibt stehen. Der Einstieg in den Sammeldialog
+    /// ist der eigene Knopf der Fußleiste der Wirtschaftlichkeitsseite.
+    /// </summary>
     [Fact]
-    public void Der_BHKW_Knopf_meldet_den_nachgelagerten_Sprung()
+    public void Die_BHKW_Gruppe_traegt_keinen_Weg_aus_dem_Dialog()
     {
         WirtParameterErgebnis? ergebnis = null;
         var cut = Aufbauen(Satz(), bhkw: true, geschlossen: e => ergebnis = e);
 
-        cut.Find("button.epos-sprung").Click();
-
-        Assert.Equal(WirtParameterSprung.BhkwWirtschaftlichkeit, ergebnis!.Sprung);
-        Assert.False(ergebnis.Gespeichert);
+        // Ohne Gesetzeskatalog ist kein einziger Sprungknopf gezeichnet - und
+        // der BHKW-Block trägt überhaupt keinen Knopf mehr.
+        Assert.Empty(cut.FindAll("button.epos-sprung"));
+        Assert.Null(ergebnis);
     }
 
     [Fact]

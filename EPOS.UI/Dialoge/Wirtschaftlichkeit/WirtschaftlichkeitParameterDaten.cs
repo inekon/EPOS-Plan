@@ -95,15 +95,16 @@ public sealed class WirtschaftlichkeitParameterTexte
         "berücksichtigen — Pflege im Energieträgerdialog (Strom)");
 
     // --------------------------------------------------------------- BHKW
+    /// <summary>
+    /// Die BHKW-Gruppe dieses Dialogs ist reiner VERWEIS: Sie sagt, wo die
+    /// Angaben stehen, und führt selbst nicht dorthin. Der Einstieg in den
+    /// Dialog „BHKW-Wirtschaftlichkeit" ist die Fußleiste der
+    /// Wirtschaftlichkeitsseite.
+    /// </summary>
     public string GBhkw { get; } = T("BHW_PARAM_GRUPPE", "BHKW — KWKG, Energie- und Stromsteuer");
     public string BhkwVerweis { get; } = T("BHW_PARAM_VERWEIS",
         "Diese Angaben stehen seit Etappe B5 im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — " +
         "dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau.");
-    public string BhkwKnopf { get; } = T("BHW_PARAM_KNOPF",
-        "⚙ BHKW-Wirtschaftlichkeit (KWKG, Steuern, Module)…");
-    public string SprungHinweis { get; } = T("WPAR_SPRUNG_HINWEIS",
-        "Der Sprung schließt diesen Dialog und öffnet ihn danach wieder — " +
-        "bitte vorher speichern.");
 
     // -------------------------------------------------------- Brennstoff
     public string GBrennstoff { get; } = T("WPAR_G_BRENNSTOFF",
@@ -184,26 +185,13 @@ public static class WirtParameterWahlen
 }
 
 /// <summary>
-/// Wohin der Anwender aus dem Parameterdialog springen wollte.
+/// Was der Parameterdialog beim Schließen meldet.
 ///
-/// <para>Zwei Ziele, zwei Wege: Der Gesetzeskatalog ist eine WinForms-Maske und
-/// wird über die <c>Sprungbruecke</c> (iU9-W2.2) MODAL über dem Dialog gezeigt —
-/// dieser Sprung erscheint deshalb nicht in dieser Aufzählung. Der Dialog
-/// „BHKW-Wirtschaftlichkeit" dagegen ist selbst eine Blazor-Hülle; er bleibt
-/// nachgelagert (Risiko R2), und dafür ist der Wunsch hier.</para>
+/// <para>Der Dialog führt genau EINEN Unterdialog, den Gesetzeskatalog, und der
+/// steht als <c>Ueberlagerung</c> in ihm. Ein Folgefenster meldet er nicht: Er
+/// schließt oder er bleibt stehen.</para>
 /// </summary>
-public enum WirtParameterSprung
-{
-    /// <summary>Kein Sprung — der Dialog wurde einfach geschlossen.</summary>
-    Keiner,
-
-    /// <summary>Der Sammeldialog „BHKW-Wirtschaftlichkeit" (Etappe B5).</summary>
-    BhkwWirtschaftlichkeit
-}
-
-/// <summary>Was der Parameterdialog beim Schließen meldet.</summary>
 /// <param name="Gespeichert">true, wenn geschrieben wurde — dann rechnet die
 /// Wirtschaftlichkeitsseite neu (Bestandsverhalten von
 /// <c>Form_WirtschaftlichkeitParameter.Gespeichert</c>).</param>
-/// <param name="Sprung">Das gewünschte Folgefenster.</param>
-public sealed record WirtParameterErgebnis(bool Gespeichert, WirtParameterSprung Sprung);
+public sealed record WirtParameterErgebnis(bool Gespeichert);

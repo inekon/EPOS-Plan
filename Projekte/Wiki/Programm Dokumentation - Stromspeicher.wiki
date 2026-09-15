@@ -96,7 +96,7 @@ Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeins
 {| class="wikitable"
 ! Was !! Wo !! Warum
 |-
-| Suchbereiche (Anzahl, Kapazität, Leistung, C-Rate) und der Schalter ''Größen optimieren'' || '''Schritt 4 — Optimierung''' || Der Suchraum beschreibt die SUCHE, nicht eine Einheit
+| Suchbereiche (Anzahl, Kapazität, Leistung) und der Schalter ''Größen optimieren'' || '''Schritt 4 — Optimierung''' || Der Suchraum beschreibt die SUCHE, nicht eine Einheit
 |-
 | ''Netz und Planung'' (Bezugs- und Einspeisegrenze, Prognoseplanung, Endenergieziele) || '''Schritt 3 — Betriebsführung''' || Anschlussgrenzen und Planungswissen beschreiben den BETRIEB der Flotte
 |-
@@ -175,7 +175,7 @@ Daneben steht '''„Prognosen und Projektjahre…"'''. Darüber werden ganze '''
 ==== Profile und Vorgaben ====
 {{Anker|auslegung-profile}}
 
-'''Einstellungen speichern''' hält den aktuellen Eingabestand fest. Ein '''benanntes Profil''' speichert Kostensätze, Suchbereiche, C-Raten, Strompreisprofil und sämtliche Quellenzuordnungen einschließlich eingelesener Zeitreihen. Sie können Profile laden, bearbeiten und unter einem weiteren Namen duplizieren. Die Ursprungsdateien müssen beim erneuten Öffnen nicht vorhanden sein.
+'''Einstellungen speichern''' hält den aktuellen Eingabestand fest. Ein '''benanntes Profil''' speichert Kostensätze, Suchbereiche, Gerätequelle, Strompreisprofil und sämtliche Quellenzuordnungen einschließlich eingelesener Zeitreihen. Sie können Profile laden, bearbeiten und unter einem weiteren Namen duplizieren. Die Ursprungsdateien müssen beim erneuten Öffnen nicht vorhanden sein.
 
 '''Namen mit einem führenden @ sind für das Programm reserviert.''' Der Arbeitsstand heißt ''@Aktuell'', die für den Projektlauf freigegebene Flotte ''@Projektflotte''. Ein eigenes Profil bekommt deshalb einen gewöhnlichen Namen.
 
@@ -242,7 +242,6 @@ Von oben nach unten, alles in '''einer Spalte''':
 # '''Der Bedienblock''' darunter, über die ganze Breite:
 ## '''Ziel''' – ''Kapitalwert gegenüber „ohne Speicher" [€]''. Das Ziel ist genannt und nicht wählbar: Eine Größe, die den Kapitalwert maximiert, ist die, die sich rechnet.
 ## '''Die Kandidatenzeile''' – sie zählt '''live''' mit (siehe unten).
-## '''Phase 2: Feinraster''' – ein Schalter mit Erklärzeile; er steht nur bei ''Größe suchen'' (siehe unten).
 ## '''Der Rechenknopf''' – ''Optimieren'' beziehungsweise ''Bewerten'', je nach Suchwahl, mit Fortschritt und ''Abbrechen'' darunter.
 # '''Suchraum je Einheit''' – eine '''Karte''' je Einheit (siehe unten).
 
@@ -256,12 +255,12 @@ Links im Kopf stehen '''drei Möglichkeiten''', jede mit einem Satz darunter:
 |-
 | '''Nur die eingestellte Flotte bewerten''' || Nichts. Es entsteht '''genau ein Kandidat''' – die Flotte, wie sie in Schritt 1 steht.
 |-
-| '''Größe suchen''' || An jeder eingeschalteten Einheit '''zwei der drei Größen''' Kapazität, Leistung und C-Rate; die dritte folgt aus der Kopplung. Die '''Stückzahl steht dabei fest'''.
+| '''Größe suchen''' || An jeder Einheit das '''Gerät''': Gesucht wird unter den Speichern einer Quelle nach '''Kapazität''' und '''Leistung'''. Die '''Stückzahl steht dabei fest'''.
 |-
 | '''Stückzahl suchen''' || An jeder eingeschalteten Einheit '''die Stückzahl''' von–bis (0 = die Einheit entfällt). Die '''Größe bleibt''', wie sie eingestellt ist; die Kosten sind die Kosten einer Einheit mal Stückzahl.
 |}
 
-'''Je Lauf wird genau eine Art variiert.''' Größe und Stückzahl zugleich gibt es nicht: Das hielte weder die Kandidatenzahl klein (266 Größen '''oder''' 4 Stückzahlen je Einheit statt 1 064) noch die Ergebnisbilder lesbar. Wer beides prüfen will, fährt zwei Läufe.
+'''Je Lauf wird genau eine Art variiert.''' Die zwei Suchmethoden ergeben ein Paar: ''Größe suchen'' beantwortet '''welches''' Gerät, ''Stückzahl suchen'' '''wie viele''' davon. Beides zugleich gibt es nicht — das hielte weder die Kandidatenzahl klein noch die Ergebnisbilder lesbar. Wer beides prüfen will, fährt zwei Läufe.
 
 '''Größe suchen''' ist wählbar, sobald es '''mindestens eine Einheit''' gibt – sie variiert ohnehin jede. '''Stückzahl suchen''' braucht mindestens eine Einheit mit dem Schalter ''variieren''; sonst steht die Option '''gedimmt''' da, und darunter steht, was zu tun ist: ''„Auf einer Einheitenkarte ‚variieren' einschalten — ohne sie gibt es nichts zu suchen."'' Gibt es gar keine Einheit, sind beide Suchoptionen gedimmt und die Abhilfe verweist auf Schritt 1. ''Nur bewerten'' bleibt immer wählbar.
 
@@ -270,13 +269,27 @@ Links im Kopf stehen '''drei Möglichkeiten''', jede mit einem Satz darunter:
 
 Jede Einheit hat eine '''eigene Karte'''. Wie sie aussieht, hängt an der Suchart.
 
-'''Bei „Größe suchen" nennt die Karte kein Gerät.''' Gesucht wird die wirtschaftlich beste Größe; welcher Speicher eingestellt ist, spielt dafür keine Rolle – es gibt deshalb weder Hersteller- und Typzeile noch feste Kenndaten noch den Schalter ''variieren''. Über den Karten steht der Satz ''„Die Größensuche ist vom gewählten Speicher unabhängig; gesucht wird die wirtschaftlich beste Größe."'' '''Variiert wird jede Einheit'''; bei mehreren heißen die Karten ''Einheit 1'', ''Einheit 2''. Die Karte trägt die '''Größenkopplung''' und dahinter ''Kapazität [kWh]'', ''Leistung [kW]'' beziehungsweise ''C-Rate [1/h]'', jeweils mit ''von'', ''bis'' und ''Schrittweite''. Die Größenkopplung sagt, welche '''zwei''' der drei Größen gerastert werden und welche '''dritte''' sich daraus ergibt – die abgeleitete Größe hat deshalb keine Felder.
+'''Bei „Größe suchen" sucht die Karte ein Gerät.''' Die eingestellte Einheit steht dabei nicht im Weg: Es gibt weder Hersteller- und Typzeile noch feste Kenndaten noch den Schalter ''variieren''. Über den Karten steht der Satz ''„Die Größensuche ist vom gewählten Speicher unabhängig; gesucht wird die wirtschaftlich beste Größe."'' '''Variiert wird jede Einheit'''; bei mehreren heißen die Karten ''Einheit 1'', ''Einheit 2''.
+
+Die Karte trägt:
+
+* '''Geräte aus''' – die '''Quelle''': ''Projektkatalog'' (die Speicher dieses Projekts) oder ''Stammdaten'' (der Speicherkatalog).
+* '''Kapazität von / bis''' [kWh] und '''Leistung von / bis''' [kW]. Gleiche Grenzen nageln eine Größe fest. Schrittweiten gibt es nicht – gesucht wird nicht auf einem Raster, sondern unter Geräten, die es wirklich gibt.
+* '''Gefundene Geräte''' – die Liste, die der Lauf rechnen wird: Name, Kapazität, Entladeleistung, '''C-Rate''', '''Abweichung''' und ob '''neutrale Kennwerte''' greifen.
+
+'''Es kommt heraus, was man kaufen kann.''' Liegt kein Gerät in beiden Bereichen, stehen die '''fünf nächstliegenden''' in der Liste, und darüber steht, dass es Ersatzvorschläge sind. Die Spalte ''Abweichung'' sagt, wie weit ein Gerät von Ihrer Vorgabe entfernt ist: 0 % heißt, es liegt in beiden Bereichen.
+
+'''Gerät oder eigene Parameter.''' Die Größe — Kapazität, Lade- und Entladeleistung — kommt immer vom Gerät; sie ist das, was gesucht wird. Alles Weitere kommt nur dann vom Gerät, wenn sein Satz es führt: Wirkungsgrade, SoC-Band, Hilfsverbrauch und Investitionssätze. Was Sie in Schritt 1 eingegeben haben, bleibt sonst stehen — und Betriebskosten, Durchsatzkosten, Grenzverschleiß, Reserve, Ersatz, Restwert und Alterungskurve bleiben immer Ihre Eingabe, denn ein Gerätesatz führt sie nicht. Die Spalte ''Herleitung'' der Kandidatentabelle sagt je Kandidat, was vom Gerät stammt und was von Ihnen.
+
+'''Neutrale Kennwerte''' heißt: Weder der Satz noch Ihre Eingabe führen Wirkungsgrade beziehungsweise ein SoC-Fenster; dann gelten 95 % je Richtung, 10 bis 90 % SoC und keine Alterung. Sätze aus den Stammdaten führen keine Betriebsführung und sind deshalb immer so gekennzeichnet.
+
+'''Ein Gerät aus den Stammdaten lässt sich übernehmen.''' Haben Sie über die Stammdaten gesucht und eine Bestückung gefunden, macht der Knopf ''Ausgewählte Einheiten in Projekt übernehmen'' in Schritt 1 daraus Speicheranlagen des Projekts – je Stück eine. Die Stammdaten bleiben dabei unberührt.
 
 '''Bei „Stückzahl suchen" zählt die konkrete Einheit.''' In der Kopfzeile stehen der Name, die festen Kenndaten (''100 kWh · 50 kW · 1 Stück'') und rechts der Schalter '''variieren'''. Er entscheidet, '''welche''' Einheiten der Lauf anfasst. Die Karte trägt '''Stückzahl von''' und '''Stückzahl bis''' und darunter eine Zeile, was daraus wird: ''= 100 – 400 kWh · 50 – 200 kW''. Eine Einheit '''ohne''' ''variieren'' verschwindet nicht: Ihre Karte steht gedimmt da und sagt mit ''„fest: …"'', mit welchem Wert sie in jeden Kandidaten eingeht.
 
 Unten steht in beiden Fällen, wie viele '''Kandidaten diese eine Einheit''' beisteuert.
 
-Die C-Rate beschreibt das Verhältnis von Leistung zu Kapazität: Bei 100 kWh und 0,5 1/h werden 50 kW angesetzt. Bei einer Leistungsvorgabe von 50 kW und derselben C-Rate ergeben sich 100 kWh.
+Die '''C-Rate''' beschreibt das Verhältnis von Leistung zu Kapazität und ergibt sich aus jedem Gerät: Ein Speicher mit 100 kWh und 50 kW hat 0,5 1/h. Sie steht in der Geräteliste und in der Kandidatentabelle; eingeben lässt sie sich nicht.
 
 Gibt es noch keine Einheit, steht statt der Karten die Zeile ''„Ohne Speichereinheit gibt es nichts zu variieren — Schritt 1 legt sie an."''
 
@@ -285,29 +298,24 @@ Gibt es noch keine Einheit, steht statt der Karten die Zeile ''„Ohne Speichere
 
 Im Bedienblock unter der Suche steht bei jeder Eingabe neu, '''wie groß das Raster wird''':
 
-  240 Kandidaten im Grobraster, bis zu 18 im Feinraster — zusammen 258 von höchstens 500.
+  6 Kandidaten von höchstens 500.
 
-'''Es ist dieselbe Zählregel, mit der der Lauf annimmt oder abweist''' – nicht eine zweite Rechnung, die auseinanderlaufen könnte. Reißt das Raster die Grenze aus Schritt 2, färbt sich die Zeile, nennt den Grund im Klartext und '''sperrt den Rechenknopf''': Bereich oder Schrittweite verkleinern, das Feinraster abschalten oder die Grenze erhöhen. Ist ein Bereich leer, negativ oder ohne Schrittweite, sagt sie auch das.
+'''Es ist dieselbe Zählregel, mit der der Lauf annimmt oder abweist''' – nicht eine zweite Rechnung, die auseinanderlaufen könnte. Bei ''Größe suchen'' ist es die Zahl der gefundenen Geräte; sie kann nicht anwachsen, indem ein Bereich feiner wird. Reißt sie die Grenze aus Schritt 2, färbt sich die Zeile, nennt den Grund im Klartext und '''sperrt den Rechenknopf''': Bereich enger setzen oder die Grenze erhöhen. Ist ein Bereich leer oder negativ, sagt sie auch das; führt die gewählte Quelle gar kein Gerät, steht das ebenfalls da.
 
 '''Ein geleertes Feld bleibt leer''' – die Zahl, die darin stand, wird nicht zurückgeschrieben, und Sie können ohne Umweg eine neue tippen. Solange es leer ist, gilt der Wert als '''fehlend''': Die Zeile meldet ''„Raster ungültig"'' und der Rechenknopf ist gesperrt, bis wieder eine Zahl darin steht. So rechnet kein Lauf mit einem Wert, der nicht mehr im Feld steht.
 
 Bei '''Stückzahl suchen''' ist die Zahl das Produkt der Stückzahlbereiche aller eingeschalteten Einheiten – bei ''Nur bewerten'' steht statt der Zeile der Satz ''„Ein Kandidat — die Flotte, wie sie in Schritt 1 eingestellt ist."''
 
-Für das '''Feinraster''' nennt sie eine '''Obergrenze''' („bis zu n") und keine feste Zahl: Wie breit sein Fenster wird, hängt an der Lage des Grob-Optimums, und die steht vor dem Lauf nicht fest. Geprüft wird gegen den größtmöglichen Fall – damit ein zu großes Raster nicht erst auffliegt, nachdem die erste Phase verrechnet ist.
-
-==== Phase 2: das Feinraster ====
+==== Was die Suche findet — und was nicht ====
 {{Anker|auslegung-feinraster}}
 
-Ein Raster findet nur, was auf seinen Stützstellen liegt. Deshalb rechnet die Suche danach eine '''zweite Phase''': ein engeres Raster '''um den besten Grobpunkt''' – und zwar '''nur auf der Größenachse'''. Die zweite Achse (etwa die C-Rate), die Stückzahl und das Betriebsziel bleiben beim Wert des Grob-Optimums.
+Die Suche rechnet '''die Geräte, die es gibt'''. Ein Speicher, der im Bestand fehlt, wird nicht gerechnet – Abhilfe ist die andere Quelle oder ein gepflegter Bestand.
 
-* Das Fenster reicht eine '''Grobschrittweite''' nach beiden Seiten, wird an den eingegebenen Grenzen '''gekappt''' (ein Optimum am Rand bekommt deshalb ein einseitiges Feinraster) und ist mindestens 1 kWh breit.
-* Gerechnet wird in Schritten von '''einem Neuntel''' der Grobschrittweite.
-* '''Das Feinraster gewinnt nur bei streng besserem Kapitalwert.''' Bei Gleichstand bleibt der Grobpunkt der Beste – der liegt auf einer Stützstelle, die Sie selbst gesetzt haben.
-* '''Zu sehen ist das Feinraster im Ausschnitt um das Optimum''' – der Kurve unter der Rasterkarte, siehe den Abschnitt ''Ergebnisse über der Speichergröße''.
+* '''Gibt es Treffer, werden nur Treffer gerechnet.''' Wer einen Bereich vorgibt und Geräte darin findet, will nicht daneben rechnen.
+* '''Trifft kein Gerät beide Bereiche''', kommen die fünf nächstliegenden. Gemessen wird, wie weit ein Gerät je Größe außerhalb seines Bereichs liegt, bezogen auf die Mitte des Bereichs; beide Anteile werden addiert. So sind Kilowattstunden und Kilowatt vergleichbar, und ein Gerät, das in beiden Größen danebenliegt, steht schlechter da als eines, das nur in einer danebenliegt.
+* '''Die Reihenfolge steht fest.''' Geordnet wird nach Abweichung, dann Kapazität, dann Leistung – zwei Läufe auf demselben Bestand liefern dieselbe Liste.
 
-'''Den Schalter gibt es nur bei „Größe suchen".''' Stückzahlen sind ganze Zahlen – zwischen zwei und drei Geräten liegt nichts, was sich verfeinern ließe.
-
-Der Schalter ist '''vorbelegt an''' und wird mit dem Profil gespeichert. Die Regel ist die der Tabellenkalkulation, aus der die Auslegung stammt; der Rechenweg steht auf ''[[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung/Stromspeicher]]'' im Abschnitt ''Rastersuche''.
+Der Rechenweg steht auf ''[[Programm Dokumentation/Berechnung/Stromspeicher|Berechnung/Stromspeicher]]'' im Abschnitt ''Rastersuche''.
 
 ==== Der Lauf ====
 {{Anker|auslegung-lauf}}
@@ -367,8 +375,6 @@ Nach dem Lauf steht der Kasten '''„Bestes Ergebnis"''' mit drei Karten:
 | '''Geprüft''' || wie viele Kandidaten gerechnet wurden, davon wie viele '''zulässig''' waren, und die '''gemessene''' Rechendauer
 |}
 
-Neben der Überschrift steht die '''Marke''', aus welcher Phase der beste Kandidat stammt: ''Grobraster'' oder ''Feinraster''.
-
 '''Der Kapitalwert ist das Ziel, die jährliche Ersparnis steht daneben.''' Wer aus einer Tabellenkalkulation kommt, sucht oft den Jahresüberschuss nach Kapitaldienst – der ist hier die zweite Zahl derselben Karte; optimiert wird gegen den Kapitalwert, weil er Laufzeit und Zins enthält.
 
 ===== Ergebnisse über der Speichergröße =====
@@ -378,16 +384,13 @@ Unter dem Kasten „Bestes Ergebnis" steht die Größen-Sicht:
 
 * die '''Rasterkarte''' – eine Zelle je Kandidat, die Farbe ist der Kapitalwert, unzulässige Zellen sind '''schraffiert''' (ein Muster, keine zweite Farbe), das Optimum ist markiert. Ab zwei Einheiten lässt sich wählen, ob die Karte die Summe der Flotte oder die Größen einer einzelnen Einheit zeigt;
 * die '''zwei Schnittkurven''' – der Kapitalwert über der Kapazität und derselbe über der Entladeleistung, je mit einem Schieber über die '''Stützstellen''' der anderen Achse; vorbelegt ist die Stelle des Optimums;
-* der '''Ausschnitt um das Optimum''' – die Kurve unter der Rasterkarte, sobald die Suche eine '''zweite Phase''' gerechnet hat: der Kapitalwert über der Größenachse, begrenzt auf das Fenster des Feinrasters. Die Werteachse stellt sich auf dieses Fenster ein und wirkt damit wie eine Lupe auf die Umgebung des Optimums. '''Punkte aus dem Feinraster''' zeichnet die Kurve kleiner und in einer eigenen Farbe; die Stützstellen des Grobrasters am Rand und in der Mitte des Fensters behalten ihre Darstellung. Unter dem Bild stehen Fenster, Schrittweite, Zahl der Stützstellen und das beste Ergebnis;
-* die '''Kandidatentabelle''' – Kapazität, Lade- und Entladeleistung, C-Rate, Kapitalwert, Ersparnis je Jahr, Vollzyklen je Jahr, Bezugsspitze und Zulässigkeit mit Grund. Sortierbar je Spalte, mit Spaltenfilter (Zahlenausdrücke wie ''>10'' oder ''10..60''), hervorgehobener Optimumzeile, dem Kennzeichen '''„arbeitslos"''' und '''„Übernehmen"''' je Zeile.
+* die '''Kandidatentabelle''' – Kapazität, Lade- und Entladeleistung, C-Rate, Kapitalwert, Ersparnis je Jahr, Vollzyklen je Jahr, Bezugsspitze, '''Abweichung''' [%], das Kennzeichen '''neutrale Kennwerte''', die '''Herleitung''' und die Zulässigkeit mit Grund. Sortierbar je Spalte, mit Spaltenfilter (Zahlenausdrücke wie ''>10'' oder ''10..60''), hervorgehobener Optimumzeile, dem Kennzeichen '''„arbeitslos"''' und '''„Übernehmen"''' je Zeile.
 
 '''„Kandidat übernehmen"''' setzt die Größen dieses Kandidaten als Speicher in Schritt 1 ein, leert die Suchachsen, schaltet die Rastersuche ab und markiert das Ergebnis als veraltet – bewerten Sie danach neu. Nach einer '''Stückzahlsuche''' setzt derselbe Knopf die '''Stückzahlen''' der Einheiten; welche der beiden Übernahmen es ist, entscheidet der Lauf, aus dem der Kandidat stammt. Ungespeicherte Eingaben werden zuvor abgefragt; die Ersetzung ist nicht rückgängig zu machen.
 
-'''Die Achsen folgen der Größenkopplung''' aus dem Suchraum: Bei „Kapazität und Leistung" stehen Kapazität und Entladeleistung an den Achsen (genau das eingegebene Raster, ohne Lücken), bei „Kapazität und C-Rate" Kapazität und C-Rate, bei „Leistung und C-Rate" Entladeleistung und C-Rate; Schieber, Achsentitel und Einheiten wechseln entsprechend mit. Eine Zelle, für die kein Kandidat gerechnet wurde, bleibt '''hellgrau''' – „nicht gerechnet" ist etwas anderes als „schlechtester Kandidat".
+'''Die Achsen sind Kapazität und Entladeleistung.''' Zeilen sind die Kapazitäten der gefundenen Geräte, Spalten ihre Entladeleistungen – beides aufsteigend. '''Die Karte ist dünn besetzt''': Geräte bilden kein lückenloses Gitter, und eine Zelle, für die kein Kandidat gerechnet wurde, bleibt '''hellgrau''' – „nicht gerechnet" ist etwas anderes als „schlechtester Kandidat". Jede besetzte Zelle ist ein Speicher, den es wirklich gibt.
 
-'''Rasterkarte und Schnittkurven zeigen die Stützstellen des Suchraums''' – genau die Werte, die beim Start des Laufs in Schritt 4 standen. Die Punkte der zweiten Phase liegen zwischen ihnen und stehen im Ausschnitt um das Optimum.
-
-'''Die Aussage gilt für das geprüfte endliche Raster''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird. Stammt das beste Ergebnis aus dem Feinraster, markiert die Rasterkarte den besten Punkt des '''Grobrasters''' – der Feinpunkt hat dort keine Zelle –, und derselbe Hinweis nennt sein Ergebnis und wo es zu sehen ist.
+'''Die Aussage gilt für die geprüften Geräte''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird. Ein Speicher, der im Bestand fehlt, wird nicht gerechnet.
 
 ==== Ergebnisse der Simulation ====
 {{Anker|auslegung-simulationsergebnis}}

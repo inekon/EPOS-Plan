@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Dienste;

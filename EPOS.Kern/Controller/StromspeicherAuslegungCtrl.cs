@@ -25,9 +25,10 @@ namespace WindowsFormsApplication1
     /// eine Flotte mit einer Einheit. Mit dem Modus fielen hier <c>EinzelVorbereiten</c>,
     /// <c>EinzelRechnen</c>, <c>Betriebsbild</c> und <c>RasterCsv</c> — und damit das
     /// gemerkte rohe Raster, an dem das Nachzeichnen des Betriebsbildes hing (W11b‑B‑25).
-    /// <b>Der Optimierer selbst bleibt</b> (<see cref="SpeicherOptimierungCtrl"/>,
-    /// <c>SpeicherOptimierer</c>): Er trägt das Betriebsbild des Berichts, die Vorbelegung
-    /// in <c>SpeicherAuslegungCtrl</c> und die KI-Aktion „speicher_optimieren".</para>
+    /// <b>Der Einzelspeicher-Optimierer ist inzwischen ganz gefallen</b>; vom alten
+    /// Umfeld stehen nur noch der gespeicherte Stand und die Leistungspreis-Quellen
+    /// (<see cref="SpeicherAuslegungVorgabenCtrl"/>), die
+    /// <c>SpeicherAuslegungCtrl.Vorbelegung</c> zieht.</para>
     ///
     /// <para><b>Er ist eine INSTANZ, kein statischer Satz.</b> Anders als
     /// <see cref="SpeicherFlottenStudieCtrl"/> hält er den ZUSTAND eines Arbeitsgangs:
@@ -293,6 +294,20 @@ namespace WindowsFormsApplication1
             ZwischenspeicherVerwerfen();
             return SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen(_projektId, einheiten, stueckzahlen);
         }
+
+        /// <summary>
+        /// <b>Frischt den Gerätebestand des Suchraums auf</b> — der Schritt vor jeder
+        /// Kandidatenzeile und vor jedem Lauf der Größensuche. <b>Datenbankzugriff.</b>
+        /// </summary>
+        /// <remarks>
+        /// Durchreiche auf
+        /// <see cref="SpeicherFlottenStudieCtrl.GeraetebestandAuffrischen"/>: Die Ansicht
+        /// kennt ihre Projekt-Id nicht und soll sie nicht kennen müssen — dieselbe
+        /// Aufteilung wie bei <see cref="Projektanlagen"/>.
+        /// </remarks>
+        /// <param name="auslegung">Der Suchraum; er wird an Ort und Stelle beschrieben.</param>
+        public void GeraetebestandAuffrischen(FlottenAuslegungEingang auslegung)
+            => SpeicherFlottenStudieCtrl.GeraetebestandAuffrischen(_projektId, auslegung);
 
         /// <summary>Speichert den bearbeiteten Stand als projektgebundene Vorbelegung <c>@Aktuell</c>.</summary>
         /// <param name="eingaben">Der Arbeitsstand.</param>

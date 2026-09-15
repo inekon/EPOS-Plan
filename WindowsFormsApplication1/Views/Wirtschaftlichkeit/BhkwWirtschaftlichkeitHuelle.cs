@@ -24,7 +24,10 @@ namespace WindowsFormsApplication1
     /// geladen — mit denselben Controllern und in derselben Reihenfolge wie zuvor
     /// im Konstruktor des Formulars — und alles, was sie schreibt, wird hier
     /// geschrieben: <c>KwkgAnlagenCtrl.Speichere(g, true)</c> (K7, elf Spalten) und
-    /// <c>WirtschaftlichkeitCtrl.SpeichereParameter</c>.</para>
+    /// <c>WirtschaftlichkeitCtrl.SpeichereParameter</c>. Beides sind ZWEI benannte
+    /// Wege, und der Dialog ruft sie ausschliesslich in seinem OK-Weg — er traegt
+    /// OK und Abbrechen, und bis zum OK steht seine Eingabe in seinem
+    /// Arbeitsstand.</para>
     ///
     /// <para><b>Der Sprung in die Tarifstruktur laeuft nachgelagert.</b> Die beiden
     /// Sprungknoepfe der Stromsteuergruppe fuehren in den Tarifdialog. Zu B5b war
@@ -162,34 +165,42 @@ namespace WindowsFormsApplication1
                     new Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>(
                         ids => ctrl.LadeErgebnisse(new List<int>(ids))),
 
-                // Der Schreibweg. Rueckgabe = Zahl der gescheiterten Saetze; die
-                // Komponente macht daraus ihre Statuszeile bzw. ihr Warnbanner.
-                ["Speichern"] = new Func<int>(() => Speichern(anlagenCtrl, ctrl, anlagen, parameter))
+                // DIE ZWEI SCHREIBWEGE, je einer fuer eine Zeile und fuer die
+                // Projektvorgaben. Der Dialog ruft sie NUR im OK-Weg und weiss
+                // dadurch, welcher Schritt durch ist: Scheitert einer, bleibt er
+                // offen, und ein zweites OK wiederholt das Geschriebene nicht.
+                ["SpeichereAnlage"] = new Func<KwkgAnlagenAngabe, bool>(
+                    a => SpeichereAnlage(anlagenCtrl, a)),
+                ["SpeichereVorgaben"] = new Func<WirtschaftlichkeitParameter, bool>(
+                    p => SpeichereVorgaben(ctrl, p))
             };
         }
 
         /// <summary>
-        /// Schreibt den Bildschirmzustand fort: die Anlagenzeilen mit ihren ELF Spalten
-        /// (K7) und die Projektvorgaben. Liefert die Zahl der gescheiterten Saetze.
+        /// Schreibt EINE Anlagenzeile mit ihren ELF Spalten (K7).
+        /// </summary>
+        private static bool SpeichereAnlage(KwkgAnlagenCtrl anlagenCtrl, KwkgAnlagenAngabe anlage)
+        {
+            try { return anlagenCtrl.Speichere(anlage, true); }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Schreibt die Projektvorgaben.
         ///
         /// <para><b>Nur die Felder dieses Dialogs.</b> Alles Uebrige steht unveraendert
         /// im geladenen Parametersatz und geht wertgleich in die Zeile zurueck; das ist
         /// dieselbe Eigenschaft, mit der der Parameterdialog seine ausgeblendeten
         /// Gruppen unveraendert laesst.</para>
+        ///
+        /// <para>K3 = a: Der Modus des § 9 Abs. 1 Nr. 3 wird NICHT gespeichert — es gibt
+        /// dafuer bis B6 (M-3) keine Spalte.</para>
         /// </summary>
-        private static int Speichern(KwkgAnlagenCtrl anlagenCtrl, WirtschaftlichkeitCtrl ctrl,
-                                     List<KwkgAnlagenAngabe> anlagen,
-                                     WirtschaftlichkeitParameter parameter)
+        private static bool SpeichereVorgaben(WirtschaftlichkeitCtrl ctrl,
+                                              WirtschaftlichkeitParameter parameter)
         {
-            int fehler = 0;
-            foreach (KwkgAnlagenAngabe a in anlagen)
-                if (!anlagenCtrl.Speichere(a, true)) fehler++;
-
-            // K3 = a: Der Modus des § 9 Abs. 1 Nr. 3 wird NICHT gespeichert — es gibt
-            // dafuer bis B6 (M-3) keine Spalte.
-            try { if (!ctrl.SpeichereParameter(parameter)) fehler++; }
-            catch { fehler++; }
-            return fehler;
+            try { return ctrl.SpeichereParameter(parameter); }
+            catch { return false; }
         }
 
         /// <summary>Der Sprung in die Tarifstruktur — nachgelagert, siehe Klassenkopf.</summary>

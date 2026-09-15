@@ -49,19 +49,316 @@ public enum FlottenVerteilung
 }
 
 /// <summary>
-/// Welche zwei Groessen eine Suchachse der Auslegung aufspannt; die dritte folgt aus
-/// <c>P = E * C</c> beziehungsweise <c>E = P / C</c>.
+/// Welche zwei Groessen eine Suchachse der Auslegung aufspannt.
 /// </summary>
+/// <remarks>
+/// <para><b>Es gibt genau EINE gueltige Kopplung:</b>
+/// <see cref="KapazitaetUndLeistung"/>. Der Anwender gibt einen Bereich fuer Kapazitaet
+/// und fuer Leistung vor; die C-Rate ist kein Eingabewert mehr, sondern die ABGELEITETE
+/// Kennzahl <c>C = P / E</c> jedes gefundenen Geraets.</para>
+/// <para><b>Die zwei C-Rate-Kopplungen sind NUR NOCH LESEWERTE.</b> Ein vor der
+/// Umstellung gespeicherter Stand traegt sie als Zahl 1 beziehungsweise 2; er soll sich
+/// oeffnen lassen und nicht abstuerzen. <see cref="FlottenAltstand.Normalisiere(FlottenAuslegungsAchse)"/>
+/// setzt sie BENANNT auf <see cref="KapazitaetUndLeistung"/> um und rechnet dabei die
+/// gespeicherten C-Raten-Grenzen in Leistungs- beziehungsweise Kapazitaetsgrenzen um —
+/// die Absicht des Anwenders bleibt erhalten, statt still verworfen zu werden. Eine
+/// Oberflaeche bietet sie nicht mehr an.</para>
+/// </remarks>
 public enum FlottenAuslegungsmodus
 {
-    /// <summary>Kapazitaet [kWh] und Leistung [kW] werden gerastert.</summary>
-    KapazitaetUndLeistung,
+    /// <summary>Kapazitaet [kWh] und Leistung [kW] spannen die Suche auf — die einzige gueltige Kopplung.</summary>
+    KapazitaetUndLeistung = 0,
 
-    /// <summary>Kapazitaet [kWh] und C-Rate [1/h] werden gerastert; die Leistung folgt als <c>P = E * C</c>.</summary>
-    KapazitaetUndCRate,
+    /// <summary>NUR ZUM LESEN aelterer Staende: Kapazitaet [kWh] und C-Rate [1/h]; wird auf <see cref="KapazitaetUndLeistung"/> umgesetzt.</summary>
+    KapazitaetUndCRate = 1,
 
-    /// <summary>Leistung [kW] und C-Rate [1/h] werden gerastert; die Kapazitaet folgt als <c>E = P / C</c>.</summary>
-    LeistungUndCRate
+    /// <summary>NUR ZUM LESEN aelterer Staende: Leistung [kW] und C-Rate [1/h]; wird auf <see cref="KapazitaetUndLeistung"/> umgesetzt.</summary>
+    LeistungUndCRate = 2
+}
+
+/// <summary>
+/// WOHER die Geraete kommen, unter denen die Groessensuche waehlt (Anwenderentscheid
+/// vom 15.09.2026).
+/// </summary>
+/// <remarks>
+/// Gesucht wird nicht mehr eine freie Groesse, sondern ein GERAET: Der Anwender gibt
+/// Bereiche fuer Kapazitaet und Leistung vor, und die Suche rechnet die Speicher durch,
+/// die es wirklich gibt. Welche Saetze das sind, sagt diese Quelle; die Aufloesung
+/// selbst gehoert in den Kern — die Engine kennt keine Datenbank.
+/// </remarks>
+public enum FlottenKandidatenquelle
+{
+    /// <summary>Die Speicher des offenen PROJEKTS (Projektkatalog).</summary>
+    Projektkatalog = 0,
+
+    /// <summary>Die Speicher der STAMMDATEN; ein gefundenes Geraet laesst sich danach ins Projekt uebernehmen.</summary>
+    Stammdaten = 1
+}
+
+/// <summary>
+/// Die NEUTRALEN VORGABEN eines Geraets, das seine Kennwerte nicht fuehrt
+/// (Anwenderentscheid vom 15.09.2026) — an EINER Stelle.
+/// </summary>
+/// <remarks>
+/// <para>Die Parameter der Suche kommen vom GERAET: Wirkungsgrade, SoC-Fenster und
+/// Alterung stehen am Kandidaten, dafuer sind es Geraete. Fehlt einem Satz etwas, wird
+/// nicht geraten und nicht aus einem fremden Geraet geliehen, sondern es gilt die hier
+/// hinterlegte neutrale Vorgabe — und der Kandidat wird in der Kandidatentabelle
+/// GEKENNZEICHNET (<see cref="FlottenGeraetekandidat.NeutraleKennwerte"/>).</para>
+/// <para>Es sind dieselben Werte, die <see cref="FlottenEinheit"/> seit jeher als
+/// Eigenschaftsinitialisierer traegt; die Initialisierer verweisen auf diese Konstanten,
+/// damit es keine zweite Wahrheit gibt. „Keine Alterung" heisst: leere
+/// <see cref="FlottenEinheit.RainflowKurve"/> und Grenzverschleiss 0 — ein Geraet ohne
+/// Lebensdauerkurve bekommt keine erfundene.</para>
+/// </remarks>
+public static class FlottenGeraetevorgaben
+{
+    /// <summary>Ladewirkungsgrad eta_c [-] eines Geraets ohne eigene Angabe: 0,95.</summary>
+    public const double LADEWIRKUNGSGRAD = 0.95;
+
+    /// <summary>Entladewirkungsgrad eta_d [-] eines Geraets ohne eigene Angabe: 0,95.</summary>
+    public const double ENTLADEWIRKUNGSGRAD = 0.95;
+
+    /// <summary>Untere SoC-Marke [-] eines Geraets ohne eigenes Band: 0,10.</summary>
+    public const double SOC_MIN = 0.10;
+
+    /// <summary>Obere SoC-Marke [-] eines Geraets ohne eigenes Band: 0,90.</summary>
+    public const double SOC_MAX = 0.90;
+
+    /// <summary>
+    /// Traegt das Geraet ein brauchbares Richtungswirkungsgradpaar? Sonst gelten
+    /// <see cref="LADEWIRKUNGSGRAD"/> und <see cref="ENTLADEWIRKUNGSGRAD"/>.
+    /// </summary>
+    public static bool WirkungsgradGefuehrt(double lade, double entlade)
+        => lade > 0.0 && lade <= 1.0 && entlade > 0.0 && entlade <= 1.0;
+
+    /// <summary>Traegt das Geraet ein brauchbares SoC-Band? Sonst gelten <see cref="SOC_MIN"/> und <see cref="SOC_MAX"/>.</summary>
+    public static bool SocBandGefuehrt(double min, double max)
+        => min >= 0.0 && max <= 1.0 && max > min;
+
+    /// <summary>
+    /// Fuellt die LUECKEN einer Geraeteeinheit mit den neutralen Vorgaben und sagt, ob
+    /// eine Luecke zu fuellen war.
+    /// </summary>
+    /// <param name="einheit">Die aus dem Katalog- oder Anlagensatz gebaute Einheit.</param>
+    /// <returns><c>true</c>, wenn wenigstens eine neutrale Vorgabe greifen musste.</returns>
+    public static bool LueckenFuellen(FlottenEinheit einheit)
+    {
+        if (einheit is null) return false;
+        bool gefuellt = false;
+
+        if (!WirkungsgradGefuehrt(einheit.Ladewirkungsgrad, einheit.Entladewirkungsgrad))
+        {
+            einheit.Ladewirkungsgrad = LADEWIRKUNGSGRAD;
+            einheit.Entladewirkungsgrad = ENTLADEWIRKUNGSGRAD;
+            gefuellt = true;
+        }
+        if (!SocBandGefuehrt(einheit.SocMin, einheit.SocMax))
+        {
+            einheit.SocMin = SOC_MIN;
+            einheit.SocMax = SOC_MAX;
+            gefuellt = true;
+        }
+        if (einheit.SocStart < einheit.SocMin) einheit.SocStart = einheit.SocMin;
+        if (einheit.SocStart > einheit.SocMax) einheit.SocStart = einheit.SocMax;
+        return gefuellt;
+    }
+}
+
+/// <summary>
+/// WELCHE KENNWERTE EINES KANDIDATEN VOM GERAET STAMMEN — und welche damit beim Anwender
+/// bleiben (Anwenderentscheid 15.09.2026).
+/// </summary>
+/// <remarks>
+/// Die Aufzaehlung ist die eine Herleitung: Was hier steht, hat der Geraetesatz wirklich
+/// gefuehrt; was fehlt, kommt aus der Vorlage des Anwenders (Schritt 1). Die
+/// Kandidatentabelle zeigt sie als Herleitungszeile.
+/// </remarks>
+[Flags]
+public enum FlottenKennwertherkunft
+{
+    /// <summary>Nichts vom Geraet — der Fall gibt es nur ohne Geraetewahl.</summary>
+    Keine = 0,
+
+    /// <summary>Kapazitaet, Lade- und Entladeleistung. Sie kommen IMMER vom Geraet: Sie sind der Gegenstand der Suche.</summary>
+    Groesse = 1,
+
+    /// <summary>Lade- und Entladewirkungsgrad.</summary>
+    Wirkungsgrade = 2,
+
+    /// <summary>Das SoC-Band samt Start-Ladezustand.</summary>
+    SocBand = 4,
+
+    /// <summary>Der Hilfsverbrauch.</summary>
+    Hilfsverbrauch = 8,
+
+    /// <summary>Die drei Investitionssaetze (fix, je kWh, je kW).</summary>
+    Kosten = 16
+}
+
+/// <summary>
+/// <b>GERAET ODER EIGENE PARAMETER — die EINE Regel</b> (Anwenderentscheid 15.09.2026).
+/// </summary>
+/// <remarks>
+/// <para><b>Die Entscheidung in einem Satz:</b> Was das Geraet mitbringt, kommt vom
+/// Geraet; was der Anwender in Schritt 1 gesetzt hat, bleibt seins. Es gibt keinen
+/// Vorrang je Feld auszuhandeln — ein Geraetesatz FUEHRT einen Kennwert oder er fuehrt
+/// ihn nicht, und nur im ersten Fall ueberschreibt er die Vorlage.</para>
+/// <para><b>Was das Geraet immer mitbringt</b>, ist seine GROESSE: Kapazitaet, Lade- und
+/// Entladeleistung. Sie ist der Gegenstand der Suche; eine Groesse aus der Vorlage waere
+/// keine Suche.</para>
+/// <para><b>Was ein Geraetesatz nie fuehrt</b> — Peak-Reserve, Grenzverschleiss,
+/// Betriebs- und Durchsatzkosten, Ersatz, Restwert und die Alterungskurve —, bleibt
+/// unangetastet in der Vorlage stehen. Ohne diese Regel fielen die Eingaben des
+/// Anwenders bei jeder Geraetewahl weg.</para>
+/// <para><b>Welche Kennwerte ein Satz fuehrt, sagt der Kern</b>
+/// (<see cref="FlottenGeraetekandidat.Gefuehrt"/>): Er liest die Quelle und weiss als
+/// Einziger, ob ein Wert aus dem Satz oder aus einer neutralen Vorgabe stammt. Die
+/// Engine raet es nicht aus dem Zahlenwert.</para>
+/// </remarks>
+public static class FlottenGeraeteuebernahme
+{
+    /// <summary>
+    /// WAS EIN GERAETESATZ FUEHRT — gelesen an der frisch gebauten Einheit, BEVOR
+    /// <see cref="FlottenGeraetevorgaben.LueckenFuellen"/> darueber gelaufen ist.
+    /// </summary>
+    /// <remarks>
+    /// <para>Ein Kennwert gilt als GEFUEHRT, wenn er brauchbar ist (derselbe Test, mit
+    /// dem die neutralen Vorgaben entscheiden, ob sie greifen muessen) UND nicht genau
+    /// auf der neutralen Vorgabe liegt. Der zweite Teil ist noetig, weil die Quellen die
+    /// Luecken eines Satzes bereits mit ebendieser Vorgabe schliessen — danach ist an der
+    /// Zahl allein nicht mehr zu sehen, woher sie kommt. Ein Satz, der zufaellig genau
+    /// die neutrale Vorgabe traegt, gilt damit als nicht gefuehrt; das aendert an seiner
+    /// Rechnung nichts, denn Geraetewert und Vorgabe sind dieselbe Zahl.</para>
+    /// <para>Die GROESSE steht immer darin: Ohne Kapazitaet und Leistung waere der Satz
+    /// kein Geraet, und die Quellen lassen einen solchen Satz gar nicht erst durch.</para>
+    /// </remarks>
+    /// <param name="roh">Die Einheit, wie die Quelle sie gebaut hat.</param>
+    public static FlottenKennwertherkunft Gefuehrt(FlottenEinheit roh)
+    {
+        if (roh is null) return FlottenKennwertherkunft.Keine;
+
+        var gefuehrt = FlottenKennwertherkunft.Groesse;
+        if (FlottenGeraetevorgaben.WirkungsgradGefuehrt(roh.Ladewirkungsgrad, roh.Entladewirkungsgrad)
+            && !(roh.Ladewirkungsgrad == FlottenGeraetevorgaben.LADEWIRKUNGSGRAD
+                 && roh.Entladewirkungsgrad == FlottenGeraetevorgaben.ENTLADEWIRKUNGSGRAD))
+            gefuehrt |= FlottenKennwertherkunft.Wirkungsgrade;
+        if (FlottenGeraetevorgaben.SocBandGefuehrt(roh.SocMin, roh.SocMax)
+            && !(roh.SocMin == FlottenGeraetevorgaben.SOC_MIN
+                 && roh.SocMax == FlottenGeraetevorgaben.SOC_MAX))
+            gefuehrt |= FlottenKennwertherkunft.SocBand;
+        if (roh.HilfsverbrauchKw > 0.0)
+            gefuehrt |= FlottenKennwertherkunft.Hilfsverbrauch;
+        if (roh.EigeneKosten)
+            gefuehrt |= FlottenKennwertherkunft.Kosten;
+        return gefuehrt;
+    }
+
+    /// <summary>
+    /// Traegt die Kennwerte des Geraets in eine aus der Vorlage gebaute Einheit ein.
+    /// </summary>
+    /// <param name="ziel">Die Einheit, die aus der Vorlage des Anwenders entstanden ist.</param>
+    /// <param name="kandidat">Das gewaehlte Geraet samt der Auskunft, was sein Satz fuehrt.</param>
+    /// <returns>Was wirklich vom Geraet kam — die Herleitung des Kandidaten.</returns>
+    public static FlottenKennwertherkunft Uebernehmen(FlottenEinheit ziel,
+                                                      FlottenGeraetekandidat kandidat)
+    {
+        if (ziel is null || kandidat?.Geraet is null) return FlottenKennwertherkunft.Keine;
+
+        FlottenEinheit g = kandidat.Geraet;
+        FlottenKennwertherkunft gefuehrt = kandidat.Gefuehrt;
+        var herkunft = FlottenKennwertherkunft.Groesse;
+
+        // DIE GROESSE KOMMT IMMER VOM GERAET.
+        ziel.KapazitaetKWh = g.KapazitaetKWh;
+        ziel.LadeleistungKw = g.LadeleistungKw;
+        ziel.EntladeleistungKw = g.EntladeleistungKw;
+        ziel.AnlageId = g.AnlageId;
+
+        if (gefuehrt.HasFlag(FlottenKennwertherkunft.Wirkungsgrade))
+        {
+            ziel.Ladewirkungsgrad = g.Ladewirkungsgrad;
+            ziel.Entladewirkungsgrad = g.Entladewirkungsgrad;
+            herkunft |= FlottenKennwertherkunft.Wirkungsgrade;
+        }
+
+        if (gefuehrt.HasFlag(FlottenKennwertherkunft.SocBand))
+        {
+            ziel.SocMin = g.SocMin;
+            ziel.SocMax = g.SocMax;
+            ziel.SocStart = g.SocStart;
+            herkunft |= FlottenKennwertherkunft.SocBand;
+        }
+
+        if (gefuehrt.HasFlag(FlottenKennwertherkunft.Hilfsverbrauch))
+        {
+            ziel.HilfsverbrauchKw = g.HilfsverbrauchKw;
+            herkunft |= FlottenKennwertherkunft.Hilfsverbrauch;
+        }
+
+        if (gefuehrt.HasFlag(FlottenKennwertherkunft.Kosten))
+        {
+            ziel.EigeneKosten = true;
+            ziel.InvestitionEuro = g.InvestitionEuro;
+            ziel.InvestitionEuroProKWh = g.InvestitionEuroProKWh;
+            ziel.InvestitionEuroProKw = g.InvestitionEuroProKw;
+            herkunft |= FlottenKennwertherkunft.Kosten;
+        }
+
+        // Der Start-Ladezustand muss im geltenden Band liegen — gleichgueltig, aus
+        // welcher der beiden Quellen Band und Start stammen.
+        if (ziel.SocStart < ziel.SocMin) ziel.SocStart = ziel.SocMin;
+        if (ziel.SocStart > ziel.SocMax) ziel.SocStart = ziel.SocMax;
+
+        return herkunft;
+    }
+}
+
+/// <summary>
+/// EIN Geraet, das als Kandidat der Groessensuche in Frage kommt (Anwenderentscheid vom
+/// 15.09.2026).
+/// </summary>
+/// <remarks>
+/// Die Liste fuellt der Kern aus der gewaehlten <see cref="FlottenKandidatenquelle"/>;
+/// WELCHE davon gerechnet werden, entscheidet allein
+/// <see cref="FlottenGeraetewahl.Waehle"/> — dieselbe Regel fuer die Kandidatenzahl der
+/// Seite, die Kandidatentabelle und den Lauf.
+/// </remarks>
+public sealed class FlottenGeraetekandidat
+{
+    /// <summary>Kennung des Satzes in seiner Quelle (Katalog-ID beziehungsweise Anlagen-ID als Text).</summary>
+    public string Quellkennung { get; set; } = string.Empty;
+
+    /// <summary>Das Geraet mit allen Kennwerten, die sein Satz fuehrt.</summary>
+    public FlottenEinheit Geraet { get; set; } = new();
+
+    /// <summary>
+    /// An diesem Geraet musste wenigstens eine neutrale Vorgabe greifen
+    /// (<see cref="FlottenGeraetevorgaben"/>); die Kandidatentabelle kennzeichnet es.
+    /// </summary>
+    public bool NeutraleKennwerte { get; set; }
+
+    /// <summary>
+    /// WAS DER SATZ WIRKLICH FUEHRT (<see cref="FlottenGeraeteuebernahme"/>). Gefuellt
+    /// vom Kern beim Lesen der Quelle; <see cref="FlottenKennwertherkunft.Groesse"/>
+    /// steht immer darin, denn ohne Kapazitaet und Leistung waere der Satz kein Geraet.
+    /// </summary>
+    public FlottenKennwertherkunft Gefuehrt { get; set; } = FlottenKennwertherkunft.Groesse;
+
+    /// <summary>
+    /// Der NORMIERTE ABSTAND zur Vorgabe des Anwenders; <c>0</c> = das Geraet liegt in
+    /// beiden Bereichen. Gefuellt von <see cref="FlottenGeraetewahl.Waehle"/>.
+    /// </summary>
+    public double Abweichung { get; set; }
+
+    /// <summary>Das Geraet liegt in BEIDEN vorgegebenen Bereichen.</summary>
+    public bool Treffer => Abweichung <= 0.0;
+
+    /// <summary>Kapazitaet [kWh] des Geraets.</summary>
+    public double KapazitaetKWh => Geraet?.KapazitaetKWh ?? 0.0;
+
+    /// <summary>Entladeleistung [kW] des Geraets — die Groesse der zweiten Achse.</summary>
+    public double LeistungKw => Geraet?.EntladeleistungKw ?? 0.0;
 }
 
 /// <summary>
@@ -186,17 +483,17 @@ public sealed class FlottenEinheit
     /// <summary>Hoechste Entladeleistung P_d [kW AC], nicht negativ. Lade- und Entladerichtung werden getrennt begrenzt.</summary>
     public double EntladeleistungKw { get; set; }
 
-    /// <summary>Ladewirkungsgrad eta_c [-], Standard 0,95. Aus einem reinen Rundlaufwert folgt <c>eta_c = eta_d = sqrt(eta_RT)</c>.</summary>
-    public double Ladewirkungsgrad { get; set; } = 0.95;
+    /// <summary>Ladewirkungsgrad eta_c [-], Standard <see cref="FlottenGeraetevorgaben.LADEWIRKUNGSGRAD"/>. Aus einem reinen Rundlaufwert folgt <c>eta_c = eta_d = sqrt(eta_RT)</c>.</summary>
+    public double Ladewirkungsgrad { get; set; } = FlottenGeraetevorgaben.LADEWIRKUNGSGRAD;
 
-    /// <summary>Entladewirkungsgrad eta_d [-], Standard 0,95. Gemeinsam mit <see cref="Ladewirkungsgrad"/> ergibt sich <c>eta_RT = eta_c * eta_d</c>.</summary>
-    public double Entladewirkungsgrad { get; set; } = 0.95;
+    /// <summary>Entladewirkungsgrad eta_d [-], Standard <see cref="FlottenGeraetevorgaben.ENTLADEWIRKUNGSGRAD"/>. Gemeinsam mit <see cref="Ladewirkungsgrad"/> ergibt sich <c>eta_RT = eta_c * eta_d</c>.</summary>
+    public double Entladewirkungsgrad { get; set; } = FlottenGeraetevorgaben.ENTLADEWIRKUNGSGRAD;
 
-    /// <summary>Untere SoC-Marke [-] des nutzbaren Bands, Standard 0,10; die technische Mindestenergie ist <c>SocMin * KapazitaetKWh</c>.</summary>
-    public double SocMin { get; set; } = 0.10;
+    /// <summary>Untere SoC-Marke [-] des nutzbaren Bands, Standard <see cref="FlottenGeraetevorgaben.SOC_MIN"/>; die technische Mindestenergie ist <c>SocMin * KapazitaetKWh</c>.</summary>
+    public double SocMin { get; set; } = FlottenGeraetevorgaben.SOC_MIN;
 
-    /// <summary>Obere SoC-Marke [-] des nutzbaren Bands, Standard 0,90; die hoechste Energie ist <c>SocMax * KapazitaetKWh</c>.</summary>
-    public double SocMax { get; set; } = 0.90;
+    /// <summary>Obere SoC-Marke [-] des nutzbaren Bands, Standard <see cref="FlottenGeraetevorgaben.SOC_MAX"/>; die hoechste Energie ist <c>SocMax * KapazitaetKWh</c>.</summary>
+    public double SocMax { get; set; } = FlottenGeraetevorgaben.SOC_MAX;
 
     /// <summary>SoC [-] zu Beginn des Rechenzeitraums, Standard 0,50. Bei mehreren Projektjahren wird der Endstand des Vorjahres hier eingesetzt.</summary>
     public double SocStart { get; set; } = 0.50;
@@ -1130,11 +1427,13 @@ public sealed class FlottenWirtschaftlichkeitErgebnis
 /// ihre Einheit, alle uebrigen Einheiten bleiben fest (Spezifikation 12.2).
 /// </summary>
 /// <remarks>
-/// Gerastert werden Anzahl und die zwei Groessen des <see cref="Modus"/>; die dritte
-/// folgt rechnerisch. Beim Skalieren bleibt das Verhaeltnis von Lade- zu
-/// Entladeleistung der <see cref="Vorlage"/> erhalten, eine Nullrichtung bleibt null.
-/// Das vollstaendige kartesische Raster wird nie gekuerzt: ueberschreitet es
-/// <see cref="FlottenAuslegungEingang.MaximaleKandidaten"/>, wird es abgewiesen.
+/// <para><b>Unter <see cref="FlottenSuchmethode.Groesse"/> sind die Kandidaten GERAETE</b>
+/// (Anwenderentscheid vom 15.09.2026): Der Bereich fuer Kapazitaet und Leistung waehlt
+/// unter den Saetzen der <see cref="Quelle"/>; gerechnet wird, was es wirklich gibt.
+/// Nichts wird mehr skaliert, und die Kandidatenzahl ist die Zahl der gefundenen Geraete
+/// — sie kann nicht mehr als Produkt zweier Achsen explodieren.</para>
+/// <para>Unter <see cref="FlottenSuchmethode.Stueckzahl"/> ist es unveraendert die
+/// <see cref="Vorlage"/>, nur in anderer Stueckzahl.</para>
 /// </remarks>
 public sealed class FlottenAuslegungsAchse
 {
@@ -1144,8 +1443,39 @@ public sealed class FlottenAuslegungsAchse
     /// <summary>Kennung der Einheit, die diese Achse ersetzt; <c>null</c> = die Achse fuegt eine neue Einheit hinzu.</summary>
     public string? ErsetztEinheitId { get; set; }
 
-    /// <summary>Welche zwei Groessen die Achse aufspannt.</summary>
+    /// <summary>
+    /// Welche zwei Groessen die Achse aufspannt. Gueltig ist allein
+    /// <see cref="FlottenAuslegungsmodus.KapazitaetUndLeistung"/>; ein aelterer Stand mit
+    /// einer C-Rate-Kopplung wird von <see cref="FlottenAltstand.Normalisiere(FlottenAuslegungsAchse)"/>
+    /// benannt umgesetzt.
+    /// </summary>
     public FlottenAuslegungsmodus Modus { get; set; }
+
+    /// <summary>
+    /// WOHER die Geraete kommen, unter denen die Groessensuche waehlt; Vorgabe
+    /// <see cref="FlottenKandidatenquelle.Projektkatalog"/>.
+    /// </summary>
+    /// <remarks>
+    /// Sie ist AUSGESCHRIEBEN und nicht bloss der Aufzaehlungsstandard: Ein Stand, der
+    /// das Feld nicht fuehrt, soll im eigenen Projekt suchen und nicht ungefragt den
+    /// ganzen Stammdatenbestand aufziehen.
+    /// </remarks>
+    public FlottenKandidatenquelle Quelle { get; set; } = FlottenKandidatenquelle.Projektkatalog;
+
+    /// <summary>
+    /// Die Geraete der <see cref="Quelle"/> — der VOLLE Bestand, aus dem
+    /// <see cref="FlottenGeraetewahl.Waehle"/> nach Kapazitaets- und Leistungsbereich
+    /// auswaehlt.
+    /// </summary>
+    /// <remarks>
+    /// <para>Gefuellt wird die Liste vom Kern (er kennt die Datenbank, die Engine nicht);
+    /// die AUSWAHL trifft allein die Engine. So zaehlen Kandidatenzeile,
+    /// Kandidatentabelle und Lauf dieselben Geraete, und zwei Laeufe auf derselben
+    /// Datenbank liefern dieselbe Reihenfolge.</para>
+    /// <para>Sie gehoert zum Suchraum und wird mitgespeichert; vor jedem Lauf und bei
+    /// jedem Quellenwechsel schreibt der Kern sie frisch.</para>
+    /// </remarks>
+    public List<FlottenGeraetekandidat> Geraete { get; set; } = new();
 
     /// <summary>Kleinste Stueckzahl der Achse, Standard 1; 0 ist zulaessig und bedeutet „diese Einheit entfaellt".</summary>
     public int AnzahlVon { get; set; } = 1;
@@ -1159,7 +1489,7 @@ public sealed class FlottenAuslegungsAchse
     /// <summary>Groesste Kapazitaet [kWh] der Achse.</summary>
     public double KapazitaetBisKWh { get; set; }
 
-    /// <summary>Schrittweite der Kapazitaet [kWh]; 0 bedeutet einen einzigen Stuetzwert.</summary>
+    /// <summary>NUR ZUM LESEN aelterer Staende: die Schrittweite der Kapazitaet [kWh] des frueheren Rasters. Die Geraetesuche rastert nicht.</summary>
     public double KapazitaetSchrittKWh { get; set; }
 
     /// <summary>Kleinste Leistung [kW] der Achse.</summary>
@@ -1168,19 +1498,24 @@ public sealed class FlottenAuslegungsAchse
     /// <summary>Groesste Leistung [kW] der Achse.</summary>
     public double LeistungBisKw { get; set; }
 
-    /// <summary>Schrittweite der Leistung [kW]; 0 bedeutet einen einzigen Stuetzwert.</summary>
+    /// <summary>NUR ZUM LESEN aelterer Staende: die Schrittweite der Leistung [kW] des frueheren Rasters. Die Geraetesuche rastert nicht.</summary>
     public double LeistungSchrittKw { get; set; }
 
-    /// <summary>Kleinste C-Rate [1/h] der Achse.</summary>
+    /// <summary>NUR ZUM LESEN aelterer Staende: kleinste C-Rate [1/h]; <see cref="FlottenAltstand"/> rechnet sie in eine Leistungs- oder Kapazitaetsgrenze um.</summary>
     public double CRateVon { get; set; }
 
-    /// <summary>Groesste C-Rate [1/h] der Achse.</summary>
+    /// <summary>NUR ZUM LESEN aelterer Staende: groesste C-Rate [1/h]; <see cref="FlottenAltstand"/> rechnet sie in eine Leistungs- oder Kapazitaetsgrenze um.</summary>
     public double CRateBis { get; set; }
 
-    /// <summary>Schrittweite der C-Rate [1/h]; 0 bedeutet einen einzigen Stuetzwert.</summary>
+    /// <summary>NUR ZUM LESEN aelterer Staende: die Schrittweite der C-Rate [1/h] des frueheren Rasters.</summary>
     public double CRateSchritt { get; set; }
 
-    /// <summary>Die Vorlage, aus der jede gerasterte Einheit entsteht: Wirkungsgrade, SoC-Band, Reserve, Hilfsverbrauch und Kostensaetze.</summary>
+    /// <summary>
+    /// Die Einheit, die unter <see cref="FlottenSuchmethode.Stueckzahl"/> vervielfacht
+    /// wird: Wirkungsgrade, SoC-Band, Reserve, Hilfsverbrauch und Kostensaetze. Unter
+    /// <see cref="FlottenSuchmethode.Groesse"/> bringt jeder Kandidat seine eigenen
+    /// Kennwerte mit — dort wird sie nicht gelesen.
+    /// </summary>
     public FlottenEinheit Vorlage { get; set; } = new();
 }
 
@@ -1206,8 +1541,10 @@ public enum FlottenSuchmethode
     Bewerten = 0,
 
     /// <summary>
-    /// Die GROESSE suchen: an jeder eingeschalteten Einheit zwei der drei Groessen nach
-    /// <see cref="FlottenAuslegungsmodus"/>; die Stueckzahl steht fest auf
+    /// Die GROESSE suchen: das GERAET finden, das in die vorgegebenen Bereiche fuer
+    /// Kapazitaet und Leistung passt. Kandidaten sind die Saetze der
+    /// <see cref="FlottenAuslegungsAchse.Quelle"/>, ausgewaehlt von
+    /// <see cref="FlottenGeraetewahl.Waehle"/>; die Stueckzahl steht fest auf
     /// <see cref="FlottenAuslegungsAchse.AnzahlVon"/> (0 gilt als 1).
     /// </summary>
     Groesse = 1,
@@ -1238,8 +1575,14 @@ public enum FlottenSuchbefund
     /// <summary>Ein Stueckzahlbereich ist leer oder negativ (Bis &lt; Von).</summary>
     StueckzahlbereichLeer = 2,
 
-    /// <summary>Ein Groessenbereich ist unbrauchbar (leer, negativ, Schritt 0 bei echter Spanne).</summary>
-    GroessenbereichUnbrauchbar = 3
+    /// <summary>Ein Groessenbereich ist unbrauchbar (leer, negativ, nicht positiv).</summary>
+    GroessenbereichUnbrauchbar = 3,
+
+    /// <summary>
+    /// Die gewaehlte Quelle fuehrt kein Geraet, das gerechnet werden koennte. Abhilfe:
+    /// die andere Quelle waehlen oder den Bestand pflegen.
+    /// </summary>
+    KeineGeraete = 4
 }
 
 /// <summary>Der Suchraum der Auslegungsoptimierung.</summary>
@@ -1256,19 +1599,20 @@ public sealed class FlottenAuslegungEingang
     public int MaximaleKandidaten { get; set; } = 10000;
 
     /// <summary>
-    /// PHASE 2 FEINRASTER: Nach dem Grobraster wird ein zweites, engeres Raster um das
-    /// Grob-Optimum gerechnet — nur auf der GROESSENACHSE (Auftrag #224, Anwenderentscheid
-    /// SD-Q10). Vorgabe <c>true</c>.
+    /// NUR ZUM LESEN aelterer Staende: der Schalter der frueheren zweiten Suchphase.
     /// </summary>
     /// <remarks>
-    /// <para><b>Warum die Vorgabe an ist und warum sie ein Eigenschaftsinitialisierer ist.</b>
-    /// Die Mappe V7 rechnet die zweite Phase immer; ein Stand, der das Feld nicht fuehrt —
-    /// jeder vor #224 gespeicherte —, wird beim Einlesen ueber den Initialisierer auf
-    /// <c>true</c> gesetzt und verhaelt sich damit wie die Mappe. Ein
-    /// <c>bool</c>-Standardwert <c>false</c> waere die stille Abschaltung gewesen.</para>
-    /// <para><b>Die zweite Achse bleibt beim Wert des Grob-Optimums</b> (SD-Q10): Die Mappe
-    /// zeigt, dass die C-Rate ab 1,0 C nichts mehr aendert; eine Verfeinerung dort kostet
-    /// Kandidaten ohne Erkenntnis.</para>
+    /// <para><b>Die Geraetesuche hat nichts zu verfeinern.</b> Die zweite Phase legte
+    /// Stuetzstellen ZWISCHEN die Rasterpunkte der Groessenachse und baute daraus eine
+    /// Einheit — das war moeglich, solange eine freie Groesse aus einer Vorlage skaliert
+    /// wurde. Kandidaten sind jetzt GERAETE; zwischen zwei Geraeten liegt kein drittes,
+    /// und eine zwischengerechnete Groesse waere ein Speicher, den es nicht gibt. Damit
+    /// gilt hier dieselbe Begruendung wie seit jeher fuer
+    /// <see cref="FlottenSuchmethode.Stueckzahl"/>: zwischen zwei ganzen Zahlen gibt es
+    /// nichts zu verfeinern.</para>
+    /// <para>Das Feld bleibt, damit ein aelterer Stand es weiterhin lesen kann; auf den
+    /// Lauf wirkt es nicht mehr, und <see cref="FlottenKandidatenzahl.FeinHoechstens"/>
+    /// ist immer 0.</para>
     /// </remarks>
     public bool Feinraster { get; set; } = true;
 
@@ -1492,6 +1836,41 @@ public sealed class FlottenKandidatZusammenfassung
     /// Kandidat kostet nur.
     /// </summary>
     public bool Arbeitslos { get; set; }
+
+    // =====================================================================
+    //  Die Herkunft des Geraets (Anwenderentscheid vom 15.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Kennung des Geraets in seiner Quelle (Katalog- beziehungsweise Anlagen-ID als
+    /// Text); leer, wo kein Geraet dahintersteht (Nullvariante, Stueckzahlsuche, reine
+    /// Bewertung).
+    /// </summary>
+    public string Quellkennung { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Der NORMIERTE ABSTAND des Geraets zur Vorgabe des Anwenders; <c>0</c> = es liegt
+    /// in beiden Bereichen.
+    /// </summary>
+    /// <remarks>
+    /// Sie steht in der Kandidatentabelle, damit ein naheliegendes Geraet nicht fuer
+    /// einen Treffer gehalten wird. Die Regel steht in
+    /// <see cref="FlottenGeraetewahl"/>.
+    /// </remarks>
+    public double Abweichung { get; set; }
+
+    /// <summary>
+    /// An diesem Geraet musste wenigstens eine neutrale Vorgabe greifen
+    /// (<see cref="FlottenGeraetevorgaben"/>); die Kandidatentabelle kennzeichnet es.
+    /// </summary>
+    public bool NeutraleKennwerte { get; set; }
+
+    /// <summary>
+    /// DIE HERLEITUNG DES KANDIDATEN: was vom GERAET stammt. Alles Uebrige kommt aus der
+    /// Vorlage des Anwenders (<see cref="FlottenGeraeteuebernahme"/>). Bei mehreren
+    /// Suchachsen bleibt sie leer — dort gibt es mehrere Geraete.
+    /// </summary>
+    public FlottenKennwertherkunft Kennwertherkunft { get; set; }
 }
 
 /// <summary>
@@ -1534,11 +1913,12 @@ public sealed class FlottenAuslegungErgebnis
     /// waehrend der Arbeitsstand daneben weiterbearbeitet wird — die Achsen der Karte
     /// gehoeren zum gerechneten Raster, nicht zum Stand von jetzt (Auftrag #226).</para>
     /// <para>Ohne aktive Suchachse gibt es kein Raster; dann bleibt die Vorbelegung
-    /// <see cref="FlottenAuslegungsmodus.KapazitaetUndCRate"/> stehen. Sie ist
-    /// AUSGESCHRIEBEN und nicht der Aufzaehlungsstandard 0: Ein Ergebnis aus fremder
-    /// Quelle, das den Modus nicht setzt, wird damit gelesen wie vor #226.</para>
+    /// <see cref="FlottenAuslegungsmodus.KapazitaetUndLeistung"/> stehen — die einzige
+    /// gueltige Kopplung. Ein Ergebnis aus fremder Quelle, das eine C-Rate-Kopplung
+    /// traegt, wird von <see cref="FlottenAltstand.Normalisiere(FlottenAuslegungErgebnis)"/>
+    /// benannt umgesetzt.</para>
     /// </remarks>
-    public FlottenAuslegungsmodus Achsenmodus { get; set; } = FlottenAuslegungsmodus.KapazitaetUndCRate;
+    public FlottenAuslegungsmodus Achsenmodus { get; set; } = FlottenAuslegungsmodus.KapazitaetUndLeistung;
 
     /// <summary>
     /// Die zweite Phase ist wirklich gelaufen (Auftrag #224) — <c>false</c>, wenn sie

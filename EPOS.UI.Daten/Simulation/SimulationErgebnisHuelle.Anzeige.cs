@@ -720,10 +720,21 @@ namespace WindowsFormsApplication1
 
         private WaermegangDaten WaermegangDaten(ErgebnisPraesenz p)
         {
+            // DIE SUMMENLINIE STEHT ÜBER IHREN SUMMANDEN und ist abschaltbar wie
+            // jeder einzelne Erzeuger (Anwenderwunsch 15.09.2026). Sie führt deshalb
+            // denselben Schlüssel „GESAMT" wie im Stromgang, steht als ERSTE Reihe
+            // der Erzeugerliste und ist VORBELEGT AN — wer nichts tut, sieht sie
+            // weiter. Ohne einen einzigen Erzeuger gibt es nichts zu summieren; dann
+            // ist sie nicht „vorhanden" und der Schalter bleibt weg.
+            bool erzeugerDa = p.Waermepumpe || p.Heizstab || p.Heizkessel
+                              || p.Solarthermie || p.BHKW;
+
             var d = new WaermegangDaten
             {
                 Erzeuger = new[]
                 {
+                    new Ganglinienreihe("GESAMT", MyResource.Resource.CHART_LEGENDE_SUMME_WAERMEERZEUGUNG,
+                                        erzeugerDa),
                     new Ganglinienreihe("WAERMEPUMPE", MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, p.Waermepumpe),
                     new Ganglinienreihe("HEIZSTAB", MyResource.Resource.CHART_SEGMENT_HEIZSTAB, p.Heizstab),
                     new Ganglinienreihe("HEIZKESSEL", MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL, p.Heizkessel),
@@ -754,6 +765,11 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// „Gesamt" immer, ein Kanal nur mit Jahressumme &gt; 0 — wörtlich
         /// <c>AktualisiereBedarfsartAuswahl</c> :460-491.
+        ///
+        /// <para><b>Hier ist „Gesamt" richtig und bleibt:</b> Der Eintrag benennt eine
+        /// AUSWAHL (alle Bedarfsarten zusammen), keine Summenlinie. Die Linien tragen
+        /// eigene Schlüssel, die sagen, was sie summieren
+        /// (<c>CHART_LEGENDE_SUMME_*</c>).</para>
         /// </summary>
         private List<(int, string)> Bedarfsarten()
         {
@@ -774,7 +790,7 @@ namespace WindowsFormsApplication1
             {
                 Reihen = new[]
                 {
-                    new Ganglinienreihe("GESAMT", MyResource.Resource.CHART_LEGENDE_GESAMT, true),
+                    new Ganglinienreihe("GESAMT", MyResource.Resource.CHART_LEGENDE_SUMME_STROMVERBRAUCH, true),
                     new Ganglinienreihe("PROFIL_LASTGANG", MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG, true),
                     new Ganglinienreihe("WAERMEPUMPE", MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE, p.Waermepumpe),
                     new Ganglinienreihe("HEIZSTAB", MyResource.Resource.CHART_SEGMENT_HEIZSTAB, p.Heizstab),

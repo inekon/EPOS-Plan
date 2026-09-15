@@ -186,6 +186,7 @@
                                              RegelAbschalten="@RegelAbschalten"
                                              InArbeitspreis="ArbeitspreisUebernehmen"
                                              KatalogUebernehmen="KatalogwerteHolen"
+                                             LueckeUebernehmen="LueckeOeffnen"
                                              AufschlagAnwenden="AufschlagAnwendenSetzen"
                                              KatalogFuerZeile="KatalogZeileOeffnen"
                                              KatalogVerwalten="KatalogVerwaltenOeffnen"
@@ -228,6 +229,28 @@
                         disabled="@(_uebernahmeWahl.Count == 0)"
                         @onclick="UebernahmeAusfuehren">@UebernehmenKurzText</button>
             </div>
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* Die Rueckfrage des Uebernahmewegs (Anwenderentscheid 15.09.2026: „nur mit
+       Rueckfrage, Werte nicht ohne Wissen setzen!"). Sie steht auch dann, wenn es
+       nur EINEN Kandidaten gibt - bestaetigt wird jeder geliehene Wert. *@
+    <Ueberlagerung Offen="@(_luecke is not null)" Titel="@(_luecke is null ? "" : _luecke.Titel)"
+                   Geschlossen="() => _luecke = null">
+        <KindInhalt>
+            @if (_luecke is not null)
+            {
+                <Auswahlfeld Bezeichnung="@_luecke.Frage" Eintraege="@_luecke.Kandidaten"
+                             Auswahl="@_lueckeWahl"
+                             AuswahlChanged="@(w => _lueckeWahl = w)" />
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf"
+                            @onclick="() => _luecke = null">@AbbrechenText</button>
+                    <button type="button" class="epos-knopf epos-knopf--primaer"
+                            disabled="@(_lueckeWahl is null)"
+                            @onclick="LueckeAusfuehren">@UebernehmenKurzText</button>
+                </div>
+            }
         </KindInhalt>
     </Ueberlagerung>
 
@@ -329,6 +352,25 @@
 
     /// <summary>B3: „Katalogwerte übernehmen" der Trägerkarte (nur im Projektkontext).</summary>
     [Parameter] public EventCallback KatalogUebernehmen { get; set; }
+
+    /// <summary>
+    /// Die Kandidaten des Übernahmewegs zu einer Größe — Träger derselben
+    /// Kategorie, die einen Wert tragen. Eine leere Liste ist eine gültige Antwort:
+    /// Dann sagt der Dialog es und bietet nichts an.
+    /// </summary>
+    [Parameter] public Func<string, Uebernahmewahl>? LueckenWahl { get; set; }
+
+    /// <summary>
+    /// Übernimmt den Wert des gewählten Trägers — NACH der Bestätigung. Der Wirt
+    /// schreibt ihn in die Projektübersteuerung; <c>false</c> = nichts geschrieben.
+    /// </summary>
+    [Parameter] public Func<string, int, bool>? LueckeUebernehmen { get; set; }
+
+    /// <summary>
+    /// Die offenen Lücken nach dem Speichern; leer = keine. Sie verhindern das
+    /// Speichern NICHT — ein halbgepflegter Träger muss sich anlegen lassen.
+    /// </summary>
+    [Parameter] public Func<string>? SpeichernHinweis { get; set; }
 
     /// <summary>Ä16: der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen".</summary>
     [Parameter] public EventCallback<bool> AufschlagAnwenden { get; set; }
@@ -511,6 +553,12 @@
 
     private string _frage = "";
     private Func<Task>? _frageJa;
+
+    /// <summary>Die offene Rückfrage des Übernahmewegs; <c>null</c> = keine.</summary>
+    private Uebernahmewahl? _luecke;
+
+    /// <summary>Der darin markierte Geber.</summary>
+    private int? _lueckeWahl;
 
     /// <summary>Der gewählte Träger (Prüfhilfe für Tests).</summary>
     public int? Traeger => _traegerId;
@@ -700,6 +748,48 @@
     private Task AufschlagAnwendenSetzen(bool an) => AufschlagAnwenden.InvokeAsync(an);
 
     // =====================================================================
+    // Übernahme aus der Kategorie — erst fragen, dann schreiben
+    // =====================================================================
+
+    /// <summary>
+    /// Öffnet die Rückfrage zu einer Größe. Gibt die Kategorie nichts her, sagt
+    /// der Weg das und bietet NICHTS an — dann bleibt es bei der Lücke.
+    /// </summary>
+    private void LueckeOeffnen(string groesse)
+    {
+        Melden("");
+        if (LueckenWahl is null) return;
+
+        Uebernahmewahl wahl = LueckenWahl(groesse);
+        if (wahl.Kandidaten.Count == 0)
+        {
+            Melden(wahl.LeerText, WarnStufe.Hinweis);
+            return;
+        }
+
+        // Auch der einzige Kandidat wird VORGELEGT, nicht gesetzt: geschrieben
+        // wird erst mit „Übernehmen".
+        _lueckeWahl = wahl.Kandidaten[0].Id;
+        _luecke = wahl;
+    }
+
+    private void LueckeAusfuehren()
+    {
+        Uebernahmewahl? wahl = _luecke;
+        int? geber = _lueckeWahl;
+        _luecke = null;
+        _lueckeWahl = null;
+
+        if (wahl is null || geber is null || LueckeUebernehmen is null) return;
+        if (!LueckeUebernehmen(wahl.Groesse, geber.Value)) return;
+
+        // Die Hülle hat geschrieben und die Karte nachgezogen; die Ansicht folgt,
+        // damit Wert und Herleitungszeile sofort dastehen.
+        Melden("");
+        Nachziehen();
+    }
+
+    // =====================================================================
     // Katalogkontext
     // =====================================================================
 
@@ -859,10 +949,12 @@
             Melden(SpeichernGrund is null ? "" : SpeichernGrund(), WarnStufe.Warnung);
             return;
         }
-        Melden("");
         // Die Hülle hat die Preishistorie neu gelesen und den Übernahmehinweis
         // gelöscht; die Ansicht folgt, damit beides sofort dasteht.
         Nachziehen();
+        // Ein Träger ohne Preis oder CO₂-Wert lässt sich speichern — er wird dabei
+        // aber benannt, nicht stillschweigend hingenommen.
+        Melden(SpeichernHinweis is null ? "" : SpeichernHinweis(), WarnStufe.Hinweis);
         _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
     }
 
@@ -910,7 +1002,7 @@
     }
 
     private bool UeberlagerungOffen => _namensGaben is not null || _uebernahmeOffen
-        || _unterGaben is not null || _frage.Length > 0;
+        || _unterGaben is not null || _frage.Length > 0 || _luecke is not null;
 
     private Task BeiTaste(KeyboardEventArgs e)
     {

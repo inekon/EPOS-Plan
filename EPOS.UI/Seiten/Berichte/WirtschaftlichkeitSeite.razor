@@ -239,10 +239,10 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
-                @* Ein Titel, eine Stelle: die Ueberlagerung traegt Titel UND Kreuz,
-                   also zeigt der Dialog keinen eigenen Kopf. TitelAnzeigen="false"
-                   steht RECHTS vom Satz und gilt deshalb auch dann, wenn er den
-                   Schluessel mitbraechte. *@
+                @* Ein Titel, eine Stelle: Die Ueberlagerung traegt Titel UND Kreuz,
+                   also zeigt der Dialog seinen eigenen Kopf hier nicht.
+                   TitelAnzeigen="false" steht RECHTS vom Satz und gilt deshalb auch
+                   dann, wenn er den Schluessel mitbraechte. *@
                 <PhotovoltaikVerguetungDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((PvVerguetungErgebnis e) => Fertig(e is not null))" />
             }
@@ -254,6 +254,9 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
+                @* Ein Titel, eine Stelle: Die Ueberlagerung traegt Titel UND Kreuz,
+                   also zeigt der Dialog seinen eigenen Kopf hier nicht.
+                   TitelAnzeigen="false" steht RECHTS vom Satz. *@
                 <BhkwWirtschaftlichkeitDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((BhkwWirtschaftlichkeitErgebnis e) => Fertig(e is { Gespeichert: true }))" />
             }
@@ -265,6 +268,9 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
+                @* Ein Titel, eine Stelle: Die Ueberlagerung traegt Titel UND Kreuz,
+                   also zeigt der Dialog seinen eigenen Kopf hier nicht.
+                   TitelAnzeigen="false" steht RECHTS vom Satz. *@
                 <TarifstrukturDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((bool ok) => Fertig(ok))" />
             }
@@ -276,6 +282,9 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
+                @* Ein Titel, eine Stelle: Die Ueberlagerung traegt Titel UND Kreuz,
+                   also zeigt der Dialog seinen eigenen Kopf hier nicht.
+                   TitelAnzeigen="false" steht RECHTS vom Satz. *@
                 <WirtschaftlichkeitParameterDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((WirtParameterErgebnis e) => Fertig(e is not null))" />
             }
@@ -287,9 +296,10 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
-                @* Bauart a: der Dialog haengt seinen Kopf an TitelText, also leert ihn
-                   der Wirt - RECHTS vom Satz, damit es auch bei gesetztem Titel gilt. *@
-                <KapitalwertVerlaufDialog @attributes="_gaben" TitelText=""
+                @* Ein Titel, eine Stelle: Die Ueberlagerung traegt Titel UND Kreuz,
+                   also zeigt der Dialog seinen eigenen Kopf hier nicht.
+                   TitelAnzeigen="false" steht RECHTS vom Satz. *@
+                <KapitalwertVerlaufDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@(() => Fertig(true))" />
             }
         </KindInhalt>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -172,8 +172,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { 10.0, 20.0 }, erste.Zeilenwerte);
             Assert.Equal(erste.Zeilenwerte, zweite.Zeilenwerte);
 
-            // Die C-Rate ist eine VERHAELTNISgröße und bleibt deshalb dieselbe.
-            Assert.Equal(summe.Spaltenwerte, erste.Spaltenwerte);
+            // Die Spalte traegt die ENTLADELEISTUNG und halbiert sich mit: Beide Achsen
+            // der Karte sind absolute Groessen, keine Verhaeltnisse.
+            Assert.Equal(new[] { 10.0, 20.0, 40.0 }, summe.Spaltenwerte);
+            Assert.Equal(new[] { 5.0, 10.0, 20.0 }, erste.Spaltenwerte);
+
+            // Dieselbe Zelle, derselbe Kandidat: unten links steht der kleinste Speicher.
             Assert.Equal(summe.Werte[0][0], erste.Werte[0][0], 9);
         }
 
@@ -706,16 +710,23 @@ namespace EPOS.Kern.Tests
         // =================================================================
 
         /// <summary>
-        /// Das Filterprofil trägt die zwölf Spalten der Kandidatentabelle; die
-        /// Zahlenspalten stehen rechtsbündig und tragen einen Trichter, das Kennzeichen
-        /// „zulässig" nur den Sortierpfeil (Konzept_Katalogfilter 5.6.2).
+        /// Das Filterprofil trägt die vierzehn Spalten der Kandidatentabelle; die
+        /// Zahlenspalten stehen rechtsbündig und tragen einen Trichter, die Kennzeichen
+        /// „zulässig" und „neutrale Kennwerte" nur den Sortierpfeil
+        /// (Konzept_Katalogfilter 5.6.2).
         /// </summary>
+        /// <remarks>
+        /// <b>Die ABWEICHUNG ist die dreizehnte, die NEUTRALEN KENNWERTE die vierzehnte
+        /// Spalte.</b> Die Größensuche rechnet Geräte; trifft keines den vorgegebenen
+        /// Bereich, kommen die nächstliegenden — der Anwender muss sehen, wie weit ein
+        /// Gerät von seiner Vorgabe entfernt ist, statt es für einen Treffer zu halten.
+        /// </remarks>
         [Fact]
-        public void Das_Filterprofil_nennt_zwoelf_Spalten()
+        public void Das_Filterprofil_nennt_fuenfzehn_Spalten()
         {
             Katalogfilterprofil profil = SpeicherFlottenAnzeigeCtrl.Kandidatenprofil();
 
-            Assert.Equal(12, profil.Spalten.Count);
+            Assert.Equal(15, profil.Spalten.Count);
             Assert.Equal("FLOTTE_KANDIDATEN", profil.Schluessel);
 
             Katalogspalte zulaessig = profil.Spalte(SpeicherFlottenAnzeigeCtrl.SP_ZULAESSIG);
@@ -727,6 +738,86 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Katalogspaltenart.Zahl, spitze.Art);
             Assert.True(spitze.Rechtsbuendig);
             Assert.True(spitze.Filterbar);
+
+            Katalogspalte abweichung = profil.Spalte(SpeicherFlottenAnzeigeCtrl.SP_ABWEICHUNG);
+            Assert.Equal(Katalogspaltenart.Zahl, abweichung.Art);
+            Assert.True(abweichung.Rechtsbuendig);
+
+            Katalogspalte neutral = profil.Spalte(SpeicherFlottenAnzeigeCtrl.SP_NEUTRAL);
+            Assert.Equal(Katalogspaltenart.JaNein, neutral.Art);
+            Assert.True(neutral.Sortierbar);
+            Assert.False(neutral.Filterbar);
+
+            // Die HERLEITUNG ist ein Text — sie nennt Gruppen, keine Zahl.
+            Katalogspalte herkunft = profil.Spalte(SpeicherFlottenAnzeigeCtrl.SP_HERKUNFT);
+            Assert.Equal(Katalogspaltenart.Text, herkunft.Art);
+        }
+
+        /// <summary>
+        /// <b>DIE HERLEITUNGSZEILE</b> (Anwenderentscheid 15.09.2026): Sie sagt je
+        /// Kandidat, welcher Wert vom GERÄT stammt und welcher vom ANWENDER. Die Größe
+        /// steht immer beim Gerät; was ein Gerätesatz nie führt — Betriebskosten und
+        /// Alterung —, steht immer beim Anwender.
+        /// </summary>
+        [Fact]
+        public void Die_Kandidatenzeile_traegt_die_Herleitung()
+        {
+            string nurGroesse = SpeicherFlottenAnzeigeCtrl.Herleitung(
+                FlottenKennwertherkunft.Groesse);
+
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_GROESSE, nurGroesse, StringComparison.Ordinal);
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_WIRKUNGSGRADE, nurGroesse, StringComparison.Ordinal);
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_BETRIEB, nurGroesse, StringComparison.Ordinal);
+
+            // Der Teil VOR dem Trenner gehört dem Gerät, der Teil danach dem Anwender.
+            string[] haelften = nurGroesse.Split(" · ");
+            Assert.Equal(2, haelften.Length);
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_GROESSE, haelften[0], StringComparison.Ordinal);
+            Assert.DoesNotContain(Resource.FLOTTE_HERKUNFT_WIRKUNGSGRADE, haelften[0], StringComparison.Ordinal);
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_WIRKUNGSGRADE, haelften[1], StringComparison.Ordinal);
+
+            // Führt der Satz die Wirkungsgrade, wechseln sie die Seite.
+            string mitWirkungsgraden = SpeicherFlottenAnzeigeCtrl.Herleitung(
+                FlottenKennwertherkunft.Groesse | FlottenKennwertherkunft.Wirkungsgrade);
+            string[] zwei = mitWirkungsgraden.Split(" · ");
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_WIRKUNGSGRADE, zwei[0], StringComparison.Ordinal);
+
+            // Ohne Gerätewahl gibt es nichts herzuleiten.
+            Assert.Equal("", SpeicherFlottenAnzeigeCtrl.Herleitung(FlottenKennwertherkunft.Keine));
+        }
+
+        /// <summary>
+        /// <b>Die Zeile nennt die Abweichung in PROZENT und die neutralen Kennwerte als
+        /// Kennzeichen.</b> Eine Zahl zwischen 0 und 1 läse sich als Anteil; der Anwender
+        /// vergleicht sie aber mit seiner eigenen Vorgabe.
+        /// </summary>
+        [Fact]
+        public void Die_Kandidatenzeile_nennt_Abweichung_und_neutrale_Kennwerte()
+        {
+            var ergebnis = new FlottenAuslegungErgebnis
+            {
+                Kandidaten = new List<FlottenKandidatZusammenfassung>
+                {
+                    new()
+                    {
+                        KandidatId = "K", Zulaessig = true, KapazitaetKWh = 100,
+                        EntladeleistungKw = 100, Abweichung = 0.125, NeutraleKennwerte = true,
+                        Einheiten = new List<FlottenKandidatEinheit>
+                        {
+                            new() { Id = "A", KapazitaetKWh = 100, EntladeleistungKw = 100 }
+                        }
+                    }
+                }
+            };
+
+            Katalogfilterzeile zeile =
+                Assert.Single(SpeicherFlottenAnzeigeCtrl.Kandidatenzeilen(ergebnis));
+
+            Assert.Equal(12.5, zeile.Zahl(SpeicherFlottenAnzeigeCtrl.SP_ABWEICHUNG).Value, 6);
+            Assert.Equal(1.0, zeile.Zahl(SpeicherFlottenAnzeigeCtrl.SP_NEUTRAL).Value, 6);
+            // Ohne Geraetewahl bleibt die Herleitung leer; die Zeile zeigt dafuer den
+            // Gedankenstrich des Katalogfilters.
+            Assert.Equal("–", zeile.Text(SpeicherFlottenAnzeigeCtrl.SP_HERKUNFT));
         }
 
         /// <summary>
@@ -936,6 +1027,54 @@ namespace EPOS.Kern.Tests
             Assert.Equal(20.0, einheit.KapazitaetKWh, 9);
         }
 
+        /// <summary>
+        /// <b>Ein übernommener Kandidat bringt die Kennwerte SEINES Geräts mit.</b> Unter
+        /// „Größe suchen" führt jeder Kandidat ein eigenes Gerät; käme die Vorlage aus der
+        /// Achse, übernähme der Anwender ein Gerät mit den Kennwerten eines anderen —
+        /// dieselben Zahlen im Bild, andere im nächsten Lauf.
+        /// </summary>
+        [Fact]
+        public void Ein_uebernommener_Kandidat_traegt_die_Kennwerte_seines_Geraets()
+        {
+            FlottenAuslegungErgebnis ergebnis = Ergebnis();
+            FlottenKandidatZusammenfassung kandidat =
+                ergebnis.Kandidaten.Single(x => x.KandidatId == "K-30-0,5");
+            kandidat.Quellkennung = "G30";
+            kandidat.Einheiten[0].Id = "A-A1-N1";
+
+            FlottenStudieKonfiguration stand = Arbeitsstand();
+            stand.Auslegung.Achsen.Add(new FlottenAuslegungsAchse
+            {
+                Aktiv = true,
+                Vorlage = new FlottenEinheit { Id = "A", Name = "Achsenvorlage",
+                                               Ladewirkungsgrad = 0.5, SocMin = 0.25 },
+                Geraete =
+                {
+                    new FlottenGeraetekandidat
+                    {
+                        Quellkennung = "G30",
+                        Geraet = new FlottenEinheit
+                        {
+                            Id = "G30", Name = "Speicher 30",
+                            KapazitaetKWh = 30, LadeleistungKw = 15, EntladeleistungKw = 15,
+                            Ladewirkungsgrad = 0.88, Entladewirkungsgrad = 0.87,
+                            SocMin = 0.05, SocMax = 0.95
+                        }
+                    }
+                }
+            });
+
+            FlottenStudieKonfiguration neu =
+                SpeicherFlottenAnzeigeCtrl.KandidatKonfiguration(ergebnis, stand, kandidat);
+
+            FlottenEinheit einheit = Assert.Single(neu.Einheiten);
+            Assert.Equal("Speicher 30", einheit.Name);
+            Assert.Equal(0.88, einheit.Ladewirkungsgrad, 9);      // vom GERAET
+            Assert.Equal(0.87, einheit.Entladewirkungsgrad, 9);
+            Assert.Equal(0.05, einheit.SocMin, 9);
+            Assert.Equal(30.0, einheit.KapazitaetKWh, 9);         // die Groesse des Kandidaten
+        }
+
         /// <summary>Ohne Kandidat gibt es nichts zu übernehmen.</summary>
         [Fact]
         public void Ohne_Kandidat_kommt_keine_Konfiguration()
@@ -1035,6 +1174,11 @@ namespace EPOS.Kern.Tests
             var bester = Kandidat("K-20-1,0", 20, 20, 2000, true, 220);
             var ergebnis = new FlottenAuslegungErgebnis
             {
+                // DIE ALTE KOPPLUNGSMARKE, AUSGESCHRIEBEN: Ein Ergebnis, das sie noch
+                // traegt, soll sich weiterhin zeichnen lassen - Zeilen Kapazitaet,
+                // Spalten C-Rate. Die Vorbelegung eines frischen Ergebnisses ist
+                // KapazitaetUndLeistung, die einzige Kopplung, die eine Suche erzeugt.
+                Achsenmodus = FlottenAuslegungsmodus.KapazitaetUndCRate,
                 Aussage = "Beste Variante im geprueften endlichen Raster",
                 Kandidaten = new List<FlottenKandidatZusammenfassung>
                 {

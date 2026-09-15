@@ -29,6 +29,13 @@
    CSV-Export eine unsichtbare Spalte mit (NavigatorStrom :266, dieselbe Regel
    hier). Die Auswahl haengt deshalb an den Schluesseln der VORHANDENEN Reihen.
 
+   DIE SUMMENLINIE IST EINE REIHE WIE JEDE ANDERE (Anwenderwunsch 15.09.2026):
+   „Summe Waermeerzeugung" (Schluessel GESAMT) steht als erster Eintrag der
+   Erzeugerliste, von ihren Summanden durch eine Trennlinie abgesetzt, ist
+   vorbelegt an und faellt in dasselbe Sitzungsgedaechtnis. In den CSV-Export
+   geht sie nicht: Die Huelle kennt zu GESAMT keinen Vektor, die Spalte entfaellt
+   still - genau wie im Stromgang.
+
    DER EXPORT IST IMMER CHRONOLOGISCH, auch im sortierten Modus - woertlich
    (Begruendung NavigatorWaerme :295-297): Eine Dauerlinie hat keine Zeitachse,
    und eine CSV ohne Zeitstempel ist keine.
@@ -55,8 +62,14 @@
     </div>
 
     <div class="epos-simerg-spalten">
+        @* DIE SUMMENLINIE STEHT UEBER IHREN SUMMANDEN (Anwenderwunsch 15.09.2026):
+           „Summe Waermeerzeugung" ist der erste Eintrag der Erzeugerliste, durch eine
+           Trennlinie abgesetzt (AbsatzNach) - und damit abschaltbar wie jeder einzelne
+           Erzeuger. Sie liegt in DERSELBEN Liste, also fassen „Alle" und „Keine" sie
+           mit, und das Sitzungsgedaechtnis merkt sie wie jede andere Reihe. *@
         <Mehrfachauswahl Bezeichnung="@Resource.SIMERG_LBL_ERZEUGERAUSWAHL"
                          Eintraege="@Eintraege(Vorhandene(Daten.Erzeuger))"
+                         AbsatzNach="@AbsatzNach"
                          Gewaehlt="@_erzeuger" GewaehltChanged="@(w => { _erzeuger = w; Merken(); })" />
 
         @if (Vorhandene(Daten.Speicher).Count > 0)
@@ -122,6 +135,23 @@
 
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;
+
+    /// <summary>Der Schluessel der Summenlinie - dieselbe Schreibweise wie im Bild.</summary>
+    private const string SUMME = "GESAMT";
+
+    /// <summary>
+    /// Trennt die Summenlinie von ihren Summanden, wenn sie vorn steht; sonst 0.
+    /// Fuehrt ein Lauf keine Summe (kein einziger Erzeuger), gibt es auch nichts
+    /// abzusetzen.
+    /// </summary>
+    private int AbsatzNach
+    {
+        get
+        {
+            List<Ganglinienreihe> erz = Vorhandene(Daten.Erzeuger);
+            return erz.Count > 0 && erz[0].Schluessel == SUMME ? 1 : 0;
+        }
+    }
 
     private int? _bedarfsart = -1;
     private bool _sortiert;

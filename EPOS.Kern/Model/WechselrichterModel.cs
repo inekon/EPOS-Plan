@@ -1,4 +1,4 @@
-namespace WindowsFormsApplication1
+﻿namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Ein Wechselrichter — Katalogsatz (<c>Tab_Wechselrichter_STAMM</c>) oder

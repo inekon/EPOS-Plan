@@ -1,4 +1,4 @@
-// DER HILFETEXT ZU EINEM KATALOGFELD (Auftrag #201).
+﻿// DER HILFETEXT ZU EINEM KATALOGFELD (Auftrag #201).
 //
 // dialog_parameter_erklaeren liefert zusaetzlich zur Katalog-Erlaeuterung den Hilfeartikel
 // zum Slug des Feldes. Der Hilfekatalog (WikiHelpCatalog) liegt in der Windows-Anwendung

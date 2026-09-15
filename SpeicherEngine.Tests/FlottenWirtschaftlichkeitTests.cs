@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using SpeicherEngine;
@@ -201,9 +201,26 @@ public sealed class FlottenWirtschaftlichkeitTests
         Assert.Contains("Rainflow-Kurve ist ungueltig.", doppelt.Message);
     }
 
+    /// <summary>
+    /// <b>Die Schranke bleibt stehen</b>, auch wenn die Kandidatenzahl nicht mehr
+    /// explodieren kann: Vier Geräte mal zwei Betriebsziele sind acht Kandidaten und
+    /// überschreiten eine Grenze von sieben — der Suchraum wird ABGEWIESEN und nicht
+    /// gekürzt.
+    /// </summary>
     [Fact]
-    public void ZuGrossesKartesischesRaster_WirdAbgelehntUndNichtAbgeschnitten()
+    public void ZuGrosserSuchraum_WirdAbgelehntUndNichtAbgeschnitten()
     {
+        FlottenGeraetekandidat Geraet(string id, double kWh, double kW) => new()
+        {
+            Quellkennung = id,
+            Geraet = new FlottenEinheit
+            {
+                Id = id, Name = id, KapazitaetKWh = kWh,
+                LadeleistungKw = kW, EntladeleistungKw = kW,
+                Ladewirkungsgrad = 1, Entladewirkungsgrad = 1
+            }
+        };
+
         var axis = new FlottenAuslegungsAchse
         {
             Aktiv = true,
@@ -211,10 +228,13 @@ public sealed class FlottenWirtschaftlichkeitTests
             AnzahlBis = 1,
             KapazitaetVonKWh = 10,
             KapazitaetBisKWh = 20,
-            KapazitaetSchrittKWh = 10,
             LeistungVonKw = 5,
             LeistungBisKw = 10,
-            LeistungSchrittKw = 5,
+            Geraete = new List<FlottenGeraetekandidat>
+            {
+                Geraet("a", 10, 5), Geraet("b", 10, 10),
+                Geraet("c", 20, 5), Geraet("d", 20, 10)
+            },
             Vorlage = new FlottenEinheit { Id = "A", Name = "A", LadeleistungKw = 5,
                 EntladeleistungKw = 5, Ladewirkungsgrad = 1, Entladewirkungsgrad = 1 }
         };

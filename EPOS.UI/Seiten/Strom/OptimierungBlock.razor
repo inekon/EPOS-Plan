@@ -48,11 +48,22 @@
         Feinraster und Rechenknopf samt Fortschritt;
      3. der Suchraum als EINE KARTE JE EINHEIT statt der Neun-Spalten-Tabelle.
 
+   DIE KANDIDATEN DER GROESSENSUCHE SIND GERAETE (Anwenderentscheid vom
+   15.09.2026): „Groessensuch Stromspeicher nur ueber Kapazitaet und Leistung im
+   Katalog des Projektes oder wahlweise aus Stammdaten." Der Anwender gibt je
+   einen Bereich fuer Kapazitaet und Leistung vor und waehlt die QUELLE;
+   gerechnet werden die Speicher, die es wirklich gibt. Die C-Rate ist keine
+   Suchachse mehr, sondern die abgeleitete Kennzahl P/E jedes Geraets — sie steht
+   in der Geraeteliste und in der Kandidatentabelle, aber in keinem Eingabefeld.
+
+   WELCHE Geraete gerechnet werden, sagt FlottenGeraetewahl.Waehle im Kern: die
+   Treffer, und wenn keines in beide Bereiche faellt, die naechstliegenden mit
+   ihrer Abweichung. Diese Seite zeigt dieselbe Liste, die der Lauf rechnet.
+
    DIE KANDIDATENZAHL KOMMT AUS DEM KERN. FlottenOptimierer.Kandidatenzahl ist
-   dieselbe Rechnung, mit der der Lauf sein Raster annimmt oder abweist — auch
-   die Fusszeile JEDER Karte fragt sie, mit einer Konfiguration aus genau dieser
-   einen Achse. Eine zweite Formel hier liefe beim ersten neuen Achsenmodus
-   auseinander. *@
+   dieselbe Rechnung, mit der der Lauf seinen Suchraum annimmt oder abweist —
+   auch die Fusszeile JEDER Karte fragt sie, mit einer Konfiguration aus genau
+   dieser einen Achse. Eine zweite Formel hier liefe auseinander. *@
 
 @namespace EPOS.UI.Seiten.Strom
 @using System.Globalization
@@ -108,15 +119,6 @@
                     <span>@Kandidatentext</span>
                     <strong>@Rasterurteil</strong>
                 </p>
-            }
-
-            @* PHASE 2 FEINRASTER — nur bei „Groesse suchen": Zwischen zwei ganzen
-               Stueckzahlen gibt es nichts zu verfeinern (Konzept 8.3). *@
-            @if (Methode == FlottenSuchmethode.Groesse)
-            {
-                <Schalter Bezeichnung="@Resource.FLOTTE_OPT_FEINRASTER" Wert="@Auslegung.Feinraster"
-                          Aktiv="@Aktiv" WertChanged="FeinrasterGesetzt" />
-                <Herleitungszeile Text="@Resource.FLOTTE_OPT_FEINRASTER_HINWEIS" />
             }
 
             <div class="epos-leiste epos-flotte-optimierung-lauf">
@@ -194,51 +196,71 @@
                                     {
                                         <Formularraster Einspaltig="false">
                                             <KindInhalt>
-                                                <Auswahlfeld Bezeichnung="@Resource.FLOTTE_ED_AUSLEGUNGSMODUS"
-                                                             Eintraege="@Kopplungen" Auswahl="@((int)a.Modus)"
-                                                             Aktiv="@frei" AuswahlChanged="@(v => KopplungGesetzt(a, v))" />
+                                                <Auswahlfeld Bezeichnung="@Resource.FLOTTE_OPT_QUELLE"
+                                                             Eintraege="@Quellen" Auswahl="@((int)a.Quelle)"
+                                                             Aktiv="@frei" AuswahlChanged="@(v => QuelleGesetzt(a, v))" />
 
-                                                @if (a.Modus != FlottenAuslegungsmodus.LeistungUndCRate)
-                                                {
-                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_KAPAZITAET_VON" Einheit="kWh"
-                                                                Wert="@a.KapazitaetVonKWh" Min="0" Aktiv="@frei"
-                                                                WertChanged="@(v => ZahlSetzen(x => a.KapazitaetVonKWh = x, v))" />
-                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_KAPAZITAET_BIS" Einheit="kWh"
-                                                                Wert="@a.KapazitaetBisKWh" Min="0" Aktiv="@frei"
-                                                                WertChanged="@(v => ZahlSetzen(x => a.KapazitaetBisKWh = x, v))" />
-                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_KAPAZITAET_SCHRITT" Einheit="kWh"
-                                                                Wert="@a.KapazitaetSchrittKWh" Min="0" Aktiv="@frei"
-                                                                WertChanged="@(v => ZahlSetzen(x => a.KapazitaetSchrittKWh = x, v))" />
-                                                }
-
-                                                @if (a.Modus != FlottenAuslegungsmodus.KapazitaetUndCRate)
-                                                {
-                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_LEISTUNG_VON" Einheit="kW"
-                                                                Wert="@a.LeistungVonKw" Min="0" Aktiv="@frei"
-                                                                WertChanged="@(v => ZahlSetzen(x => a.LeistungVonKw = x, v))" />
-                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_LEISTUNG_BIS" Einheit="kW"
-                                                                Wert="@a.LeistungBisKw" Min="0" Aktiv="@frei"
-                                                                WertChanged="@(v => ZahlSetzen(x => a.LeistungBisKw = x, v))" />
-                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_LEISTUNG_SCHRITT" Einheit="kW"
-                                                                Wert="@a.LeistungSchrittKw" Min="0" Aktiv="@frei"
-                                                                WertChanged="@(v => ZahlSetzen(x => a.LeistungSchrittKw = x, v))" />
-                                                }
-
-                                                @if (a.Modus != FlottenAuslegungsmodus.KapazitaetUndLeistung)
-                                                {
-                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_CRATE_VON" Einheit="1/h"
-                                                                Wert="@a.CRateVon" Min="0" Aktiv="@frei"
-                                                                WertChanged="@(v => ZahlSetzen(x => a.CRateVon = x, v))" />
-                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_CRATE_BIS" Einheit="1/h"
-                                                                Wert="@a.CRateBis" Min="0" Aktiv="@frei"
-                                                                WertChanged="@(v => ZahlSetzen(x => a.CRateBis = x, v))" />
-                                                    <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_CRATE_SCHRITT" Einheit="1/h"
-                                                                Wert="@a.CRateSchritt" Min="0" Aktiv="@frei"
-                                                                WertChanged="@(v => ZahlSetzen(x => a.CRateSchritt = x, v))" />
-                                                }
+                                                <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_KAPAZITAET_VON" Einheit="kWh"
+                                                            Wert="@a.KapazitaetVonKWh" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.KapazitaetVonKWh = x, v))" />
+                                                <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_KAPAZITAET_BIS" Einheit="kWh"
+                                                            Wert="@a.KapazitaetBisKWh" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.KapazitaetBisKWh = x, v))" />
+                                                <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_LEISTUNG_VON" Einheit="kW"
+                                                            Wert="@a.LeistungVonKw" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.LeistungVonKw = x, v))" />
+                                                <Zahlenfeld Bezeichnung="@Resource.FLOTTE_ED_LEISTUNG_BIS" Einheit="kW"
+                                                            Wert="@a.LeistungBisKw" Min="0" Aktiv="@frei"
+                                                            WertChanged="@(v => ZahlSetzen(x => a.LeistungBisKw = x, v))" />
                                             </KindInhalt>
                                         </Formularraster>
+                                        <Herleitungszeile Text="@Resource.FLOTTE_OPT_QUELLE_HINWEIS" />
                                         <Herleitungszeile Text="@Resource.FLOTTE_OPT_KARTE_FEST_STUECK" />
+
+                                        @* DIE GEFUNDENEN GERAETE — dieselbe Liste, die der
+                                           Lauf rechnet (FlottenGeraetewahl.Waehle im Kern).
+                                           Sie steht HIER und nicht erst im Ergebnis: Wer
+                                           einen Bereich eingibt, sieht sofort, WAS dabei
+                                           herauskommt. *@
+                                        <h4 class="epos-flotte-geraete__titel">@Resource.FLOTTE_OPT_GERAETE_TITEL</h4>
+                                        var gefunden = Geraete(a);
+                                        @if (gefunden.Count == 0)
+                                        {
+                                            <p class="epos-flotte-leer">@Resource.FLOTTE_OPT_GERAETE_LEER</p>
+                                        }
+                                        else
+                                        {
+                                            <Herleitungszeile Text="@Naehesatz(gefunden)" />
+                                            <table class="epos-tabelle epos-flotte-geraete">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">@Resource.FLOTTE_OPT_GER_SP_NAME</th>
+                                                        <th scope="col" class="epos-zahl">@Resource.FLOTTE_GROESSEN_SP_KAPAZITAET</th>
+                                                        <th scope="col" class="epos-zahl">@Resource.FLOTTE_GROESSEN_SP_ENTLADEN</th>
+                                                        <th scope="col" class="epos-zahl">@Resource.FLOTTE_GROESSEN_SP_CRATE</th>
+                                                        <th scope="col" class="epos-zahl">@Resource.FLOTTE_OPT_GER_SP_ABWEICHUNG</th>
+                                                        <th scope="col">@Resource.FLOTTE_OPT_GER_SP_NEUTRAL</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (FlottenGeraetekandidat g in gefunden)
+                                                    {
+                                                        <tr>
+                                                            <td>@g.Geraet.Name</td>
+                                                            <td class="epos-zahl">@Zahl(g.KapazitaetKWh, "0.#")</td>
+                                                            <td class="epos-zahl">@Zahl(g.LeistungKw, "0.#")</td>
+                                                            <td class="epos-zahl">@Zahl(CRate(g), "0.##")</td>
+                                                            <td class="epos-zahl">@FlottenGeraetewahl.Abweichungstext(g.Abweichung, Kultur) %</td>
+                                                            <td>@(g.NeutraleKennwerte ? Resource.PEAK_JA : Resource.PEAK_NEIN)</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                            @if (gefunden.Any(x => x.NeutraleKennwerte))
+                                            {
+                                                <Herleitungszeile Text="@Resource.FLOTTE_OPT_GERAETE_NEUTRAL" />
+                                            }
+                                        }
                                     }
                                     else
                                     {
@@ -339,6 +361,17 @@
     /// <summary>Beschriftung des Abbrechen-Knopfs; leer = die Vorgabe des Bausteins.</summary>
     [Parameter] public string AbbrechenText { get; set; } = "";
 
+    /// <summary>
+    /// <b>Frischt den Gerätebestand jeder Suchachse auf</b>
+    /// (<c>SpeicherFlottenStudieCtrl.GeraetebestandAuffrischen</c> über die Hülle).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Delegat ist keine Gerätesuche.</b> Ohne ihn bleibt der Bestand leer, die
+    /// Kandidatenzeile meldet „kein Gerät", und der Rechenknopf ist gesperrt — dieselbe
+    /// Regel wie bei den anderen Projektwegen dieses Blattes.
+    /// </remarks>
+    [Parameter] public Action<FlottenAuslegungEingang>? Geraetebestand { get; set; }
+
     private FlottenAuslegungEingang Auslegung => Flotte.Auslegung ??= new FlottenAuslegungEingang();
 
     private List<FlottenAuslegungsAchse> Achsen => Auslegung.Achsen ??= new List<FlottenAuslegungsAchse>();
@@ -361,6 +394,32 @@
     {
         if (!Groessensuche) return;
         foreach (FlottenAuslegungsAchse a in Achsen) a.Aktiv = true;
+        BestandNachziehen();
+    }
+
+    /// <summary>Die Quellenwahl, für die der Bestand zuletzt gelesen wurde.</summary>
+    private string _bestandStand = "";
+
+    /// <summary>
+    /// Liest den Gerätebestand neu, sobald sich die QUELLENWAHL geändert hat — und nur
+    /// dann.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum an der Quellenwahl und nicht an jedem Zeichenlauf.</b> Der Bestand
+    /// kostet einen Datenbankzugriff je Quelle; die Seite zeichnet bei JEDER
+    /// Tastatureingabe neu. Die Bereiche brauchen ihn nicht — sie wählen nur AUS dem
+    /// Bestand, und das rechnet der Kern ohne Datenbank.</para>
+    /// <para><b>Warum nicht „bis etwas gefunden ist".</b> Eine Quelle ohne Gerät ist ein
+    /// gültiges Ergebnis; wer darauf hin erneut läse, läse bei jedem Zeichenlauf.</para>
+    /// </remarks>
+    private void BestandNachziehen()
+    {
+        if (Geraetebestand is null) return;
+        string stand = string.Join("|", Achsen.Select(a => ((int)a.Quelle)
+            .ToString(CultureInfo.InvariantCulture)));
+        if (string.Equals(stand, _bestandStand, StringComparison.Ordinal)) return;
+        Geraetebestand(Auslegung);
+        _bestandStand = stand;
     }
 
     /// <summary>
@@ -396,10 +455,36 @@
     private static string Achsenkennung(FlottenAuslegungsAchse a)
         => (a.ErsetztEinheitId ?? a.Vorlage?.Id ?? "").Trim();
 
-    private static readonly IReadOnlyList<(int Id, string Text)> Kopplungen = new[]
+    /// <summary>
+    /// Die zwei QUELLEN der Gerätesuche. <b>Es gibt keine Kopplungswahl mehr</b>: Gesucht
+    /// wird ausschließlich über Kapazität und Leistung, die C-Rate ist die abgeleitete
+    /// Kennzahl jedes gefundenen Geräts.
+    /// </summary>
+    private static IReadOnlyList<(int Id, string Text)> Quellen => new[]
     {
-        (0, "Kapazität und Leistung"), (1, "Kapazität und C-Rate"), (2, "Leistung und C-Rate")
+        ((int)FlottenKandidatenquelle.Projektkatalog, Resource.FLOTTE_OPT_QUELLE_PROJEKT),
+        ((int)FlottenKandidatenquelle.Stammdaten, Resource.FLOTTE_OPT_QUELLE_STAMM)
     };
+
+    /// <summary>
+    /// Die Geräte, die DIESE Achse rechnen wird — dieselbe Auswahlregel wie im Lauf
+    /// (<c>FlottenGeraetewahl.Waehle</c>). Eine zweite Formel hier liefe auseinander.
+    /// </summary>
+    public IReadOnlyList<FlottenGeraetekandidat> Geraete(FlottenAuslegungsAchse achse)
+        => FlottenGeraetewahl.Waehle(achse);
+
+    /// <summary>Die abgeleitete C-Rate eines Geräts: Entladeleistung durch Kapazität.</summary>
+    private static double CRate(FlottenGeraetekandidat g)
+        => g.KapazitaetKWh > 0.0 ? g.LeistungKw / g.KapazitaetKWh : 0.0;
+
+    /// <summary>
+    /// Der Satz über der Geräteliste: Treffer oder Ersatzvorschläge — der Anwender muss
+    /// sehen, ob er bekommt, wonach er gefragt hat.
+    /// </summary>
+    public string Naehesatz(IReadOnlyList<FlottenGeraetekandidat> gefunden)
+        => gefunden.Count > 0 && gefunden[0].Treffer
+            ? Resource.FLOTTE_OPT_GERAETE_TREFFER
+            : string.Format(Kultur, Resource.FLOTTE_OPT_GERAETE_NAEHE, gefunden.Count);
 
     // =====================================================================
     //  Die drei Suchoptionen (Konzept 8.3, SD-Q13)
@@ -491,10 +576,8 @@
         {
             FlottenKandidatenzahl z = Kandidatenzahl;
             if (!z.Gueltig) return "";
-            return z.FeinHoechstens > 0
-                ? string.Format(Kultur, Resource.FLOTTE_OPT_KANDIDATEN,
-                                z.Grob, z.FeinHoechstens, z.Gesamt, z.Grenze)
-                : string.Format(Kultur, Resource.FLOTTE_OPT_KANDIDATEN_OHNE, z.Grob, z.Grenze);
+            // EINE PHASE, EINE ZAHL: Das Feinraster gibt es nicht mehr (siehe Kopf).
+            return string.Format(Kultur, Resource.FLOTTE_OPT_KANDIDATEN_OHNE, z.Grob, z.Grenze);
         }
     }
 
@@ -503,6 +586,7 @@
         get
         {
             FlottenKandidatenzahl z = Kandidatenzahl;
+            if (z.Befund == FlottenSuchbefund.KeineGeraete) return Resource.FLOTTE_OPT_KEINE_GERAETE;
             if (!z.Gueltig) return Resource.FLOTTE_OPT_RASTER_UNGUELTIG;
             if (z.Befund == FlottenSuchbefund.KeineAktiveAchse) return Abhilfetext;
             return z.Zulaessig ? Resource.FLOTTE_OPT_RASTER_OK : Resource.FLOTTE_OPT_RASTER_ZUVIEL;
@@ -571,8 +655,6 @@
             Gesperrte is { } sperren && sperren.TryGetValue(wert, out string? grund)
                 ? grund : Abhilfetext);
 
-    private Task FeinrasterGesetzt(bool wert) => Setzen(() => Auslegung.Feinraster = wert);
-
     private Task Setzen(Action setzen)
     {
         setzen();
@@ -602,7 +684,18 @@
     private Task GanzSetzen(Action<int> setzen, int? wert)
         => Setzen(() => setzen(wert ?? 0));
 
-    private Task KopplungGesetzt(FlottenAuslegungsAchse a, int? wert)
-        => wert.HasValue ? Setzen(() => a.Modus = (FlottenAuslegungsmodus)wert.Value)
-                         : Task.CompletedTask;
+    /// <summary>
+    /// Die QUELLE wurde umgestellt. Der Bestand wird sofort neu gelesen — sonst zeigte die
+    /// Geräteliste bis zum nächsten Zeichenlauf die Geräte der alten Quelle.
+    /// </summary>
+    private Task QuelleGesetzt(FlottenAuslegungsAchse a, int? wert)
+    {
+        if (!wert.HasValue) return Task.CompletedTask;
+        return Setzen(() =>
+        {
+            a.Quelle = (FlottenKandidatenquelle)wert.Value;
+            _bestandStand = "";
+            BestandNachziehen();
+        });
+    }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
@@ -19,9 +19,8 @@ namespace SpeicherEngine
     /// Konstruktor- und <c>Dispose</c>-Aufruf. Faellt eine solche Umschaltung mitten in
     /// eine laufende Rechnung, rechnet der eine Arbeitsfaden deutsch und der naechste
     /// englisch — und ein Etikett, das ueber seinen deutschen Text gesucht wird, ist
-    /// nicht mehr zu finden (Befund #231, Windows-Lauf 319:
-    /// <c>SpeicherOptimierungCtrlTests</c> mit „Sequence contains no matching
-    /// element").</para>
+    /// nicht mehr zu finden (Befund #231, Windows-Lauf 319: eine Testklasse mit
+    /// deutschen Etiketten mit „Sequence contains no matching element").</para>
     ///
     /// <para><b>Was hier gemessen wurde — und was daraus folgt.</b> Setzt der Aufrufer
     /// seine Kultur AUSDRUECKLICH (<c>Thread.CurrentThread.CurrentCulture = …</c> oder
@@ -55,10 +54,9 @@ namespace SpeicherEngine
     /// auf JEDEN Faden des Prozesses, auch auf unbeteiligte.</para>
     ///
     /// <para><b>Warum sie in <c>SpeicherEngine</c> steht und nicht im Kern.</b> Die
-    /// Abhaengigkeit laeuft <c>EPOS.Kern → SpeicherEngine</c>, nicht umgekehrt: Die
-    /// Rastersuche (<see cref="SpeicherOptimierer"/>) ist die einzige Stelle des
-    /// Bestands mit echter Rechenparallelitaet und liegt HIER, koennte eine Vorrichtung
-    /// im Kern also gar nicht rufen. Umgekehrt sehen <c>EPOS.Kern</c> und
+    /// Abhaengigkeit laeuft <c>EPOS.Kern → SpeicherEngine</c>, nicht umgekehrt: Eine
+    /// Rechnung dieses Projekts koennte eine Vorrichtung im Kern gar nicht rufen.
+    /// Umgekehrt sehen <c>EPOS.Kern</c>, <c>KiKern</c> und
     /// <c>EPOS.UI.Daten</c> dieses Projekt und benutzen dieselbe Klasse — eine
     /// Vorrichtung, nicht zwei baugleiche.</para>
     ///

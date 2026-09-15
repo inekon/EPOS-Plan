@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Simulation;
+﻿namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// EIN Projektpuffer, wie ihn die Auswahlliste des Quellendialogs zeigt.

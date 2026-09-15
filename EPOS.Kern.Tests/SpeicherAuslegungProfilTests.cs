@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using SpeicherEngine;
 using WindowsFormsApplication1;
@@ -28,8 +28,7 @@ public class SpeicherAuslegungProfilTests
 
     private static SpeicherOptimierungEingaben Eingaben() => new()
     {
-        Groessenachse = OptimiererGroessenachse.LeistungKw,
-        PMinKw = 50, PMaxKw = 125, PSchrittKw = 25,
+        LeistungspreisEurProKwA = 125,
         Auslegung = new()
         {
             Profilname = "Mein Profil", EposModelljahrZuordnen = true,
@@ -50,7 +49,7 @@ public class SpeicherAuslegungProfilTests
     {
         var original = Eingaben();
         var geladen = SpeicherAuslegungCtrl.Deserialisieren(SpeicherAuslegungCtrl.Serialisieren(original));
-        Assert.Equal(50, geladen.PMinKw);
+        Assert.Equal(125, geladen.LeistungspreisEurProKwA);
         Assert.Equal("20;21", geladen.Auslegung.Strompreisprofil.Monatswerte);
         Assert.Equal(3, geladen.Auslegung.LastDatei.Optionen.WertSpalte);
         Assert.Equal(original.Auslegung.LastDatei.ZeitstempelUtc, geladen.Auslegung.LastDatei.ZeitstempelUtc);
@@ -70,13 +69,13 @@ public class SpeicherAuslegungProfilTests
         Anlegen();
         var e = Eingaben();
         SpeicherAuslegungCtrl.Speichern(Projekt, Anlage, "Sommer", e);
-        e.PMaxKw = 200;
+        e.LeistungspreisEurProKwA = 200;
         SpeicherAuslegungCtrl.Speichern(Projekt, Anlage, "Sommer", e);
         SpeicherAuslegungCtrl.Speichern(Projekt, Anlage, "Winter", Eingaben());
         var profile = SpeicherAuslegungCtrl.Profile(Projekt, Anlage);
         Assert.Equal(2, profile.Count);
-        Assert.Equal(200, profile.Single(p => p.Name == "Sommer").Eingaben.PMaxKw);
-        Assert.Equal(125, profile.Single(p => p.Name == "Winter").Eingaben.PMaxKw);
+        Assert.Equal(200, profile.Single(p => p.Name == "Sommer").Eingaben.LeistungspreisEurProKwA);
+        Assert.Equal(125, profile.Single(p => p.Name == "Winter").Eingaben.LeistungspreisEurProKwA);
         Assert.Equal("Pruefwert", profile[0].Eingaben.Auslegung.LastDatei.SHA256);
         Sql("DELETE FROM Tab_Projekt WHERE ID=?", new DbParam("@p", Projekt));
         Assert.Empty(SpeicherAuslegungCtrl.Profile(Projekt, Anlage));
@@ -131,7 +130,7 @@ public class SpeicherAuslegungProfilTests
         var profile = SpeicherAuslegungCtrl.Profile(Projekt, nachher);
         Assert.Single(profile);
         Assert.Equal("Bleibt gespeichert", profile[0].Name);
-        Assert.Equal(125, profile[0].Eingaben.PMaxKw);
+        Assert.Equal(125, profile[0].Eingaben.LeistungspreisEurProKwA);
     }
 
     [Fact]
@@ -149,6 +148,6 @@ public class SpeicherAuslegungProfilTests
         Assert.NotEqual(Anlage, neueAnlage);
         var profile = SpeicherAuslegungCtrl.Profile(neu, neueAnlage);
         Assert.Single(profile);
-        Assert.Equal(50, profile[0].Eingaben.PMinKw);
+        Assert.Equal(125, profile[0].Eingaben.LeistungspreisEurProKwA);
     }
 }

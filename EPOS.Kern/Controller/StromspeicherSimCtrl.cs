@@ -308,26 +308,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Umgesetzt sind Dauernutzung (6.2, AP1), Nachtnutzung (6.1, AP6) und
-        /// Preissteuerung/Arbitrage (6.5, AP10).</b> Jeder andere — auch ein künftiger
+        /// <b>Umgesetzt sind Dauernutzung (6.2, AP1) und Preissteuerung/Arbitrage
+        /// (6.5, AP10).</b> Jeder andere — auch ein künftiger
         /// oder ein von Hand in die Datenbank geschriebener — Wert fällt protokolliert
         /// auf die Dauernutzung zurück; das war schon vor diesem Paket das Verhalten
         /// und bleibt es. Ein Lauf soll nie daran scheitern, dass eine Variante eine
         /// Ausbaustufe anfordert, die das Programm noch nicht kann.
         /// </para>
         /// <para>
+        /// <b>Der entfallene Wert bekommt seinen eigenen Satz.</b> Eine Variante, die
+        /// noch die entfallene Berechnungsart trägt (<see cref="SpeicherAltstand"/>),
+        /// ist kein unbekannter Wert und keine noch nicht umgesetzte Ausbaustufe: Sie
+        /// wird BENANNT auf die Dauernutzung umgesetzt, und das Protokoll sagt es.
+        /// </para>
+        /// <para>
         /// <b>Kompatibilitätsmodus.</b> Er ist eine Eigenschaft der VARIANTE, nicht des
         /// Aufrufers (Fachkonzept 5.2): Er gehört zu genau der Rechnung, mit der ein
         /// Anwender die Excel-Mappe nachstellt, und darf deshalb nicht an einer zweiten
-        /// Stelle noch einmal entschieden werden. Er greift allerdings <b>nur bei der
-        /// Dauernutzung</b> — nur sie hat eine Excel-Vorlage. Für die Nachtnutzung
-        /// hinterlegte die V7-Mappe lediglich eine als Dauernutzungssimulation
-        /// unbrauchbare Altversion, die bewusst nicht portiert wurde (Fachkonzept 6.1);
-        /// die Engine lehnt die Kombination mit einer
-        /// <see cref="NotSupportedException"/> ab. Statt den ganzen Simulationslauf
-        /// daran scheitern zu lassen, rechnet der Controller hier energetisch weiter
-        /// und schreibt einen Hinweis ins Protokoll. Die Parameterseite bietet die
-        /// Kombination gar nicht erst an — der Fall kann also nur aus Altdaten kommen.
+        /// Stelle noch einmal entschieden werden. Er greift <b>nur bei der
+        /// Dauernutzung</b> — nur sie hat eine Excel-Vorlage; die Parameterseite bietet
+        /// ihn deshalb auch nur dort an.
         /// </para>
         /// </remarks>
         /// <param name="kontext">Lauf-Kontext mit Variante, Preisreihen und Kompatibilitätsflag.</param>
@@ -342,11 +342,14 @@ namespace WindowsFormsApplication1
                 ? kontext.Variante.Berechnungsart
                 : DbWerte.SP_BERECHNUNG_DAUERNUTZUNG;
 
-            if (berechnungsart == DbWerte.SP_BERECHNUNG_NACHTNUTZUNG)
+            // BENANNTE UMSETZUNG eines gespeicherten Standes: Die entfallene
+            // Berechnungsart wird auf die Dauernutzung gezogen und das Protokoll sagt
+            // es. Sie fällt bewusst NICHT in den allgemeinen Rückfall weiter unten —
+            // der spricht von einer Ausbaustufe, die es noch nicht gibt.
+            if (SpeicherAltstand.IstEntfalleneBerechnungsart(berechnungsart))
             {
-                if (modus == SpeicherModus.ExcelKompatibilitaet)
-                    HinweisErgaenzen(MyResource.Resource.NACHT_HINWEIS_KOMPATIBILITAET);
-                return new Nachtnutzung();
+                HinweisErgaenzen(MyResource.Resource.SP_ALTSTAND_BERECHNUNGSART);
+                berechnungsart = SpeicherAltstand.Berechnungsart(berechnungsart);
             }
 
             if (berechnungsart == DbWerte.SP_BERECHNUNG_ARBITRAGE)
@@ -433,18 +436,17 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Wozu (Fachkonzept Etappe 6).</b> Eine abweichende Berechnungsart ist nur
         /// dann beurteilbar, wenn daneben steht, was der Standardfall geliefert hätte:
-        /// Die Nachtnutzung hält den Speicher tagsüber zurück und verschiebt die
-        /// Entladung in die Nacht — ob das im konkreten Projekt Ertrag kostet oder
-        /// bringt, zeigt erst der Vergleich. Ein Jahreslauf liegt im
-        /// Millisekundenbereich und verlängert die Kette nicht spürbar.
+        /// Die Preissteuerung verschiebt Ladung und Entladung nach dem Preis — ob das
+        /// im konkreten Projekt Ertrag kostet oder bringt, zeigt erst der Vergleich.
+        /// Ein Jahreslauf liegt im Millisekundenbereich und verlängert die Kette nicht
+        /// spürbar.
         /// </para>
         /// <para>
         /// <b>Immer energetisch.</b> Verglichen wird mit der Dauernutzung im
         /// Produktivmodus, unabhängig vom Kompatibilitätsflag der Variante: Der
         /// Excel-Kompatibilitätsmodus rechnet ohne Verlustmodell, mit Start-SoC 0 und
-        /// ohne Quellen-Matrix — seine Zahlen wären mit denen der Nachtnutzung nicht
-        /// vergleichbar. Der Fall kann ohnehin nur aus Altdaten kommen (siehe
-        /// <see cref="BaueStrategie"/>).
+        /// ohne Quellen-Matrix — seine Zahlen wären mit denen der abweichenden
+        /// Berechnungsart nicht vergleichbar.
         /// </para>
         /// <para>
         /// <b>Reine Anzeige.</b> Persistiert wird ausschließlich das Ergebnis der
@@ -474,78 +476,21 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // Auslegungsoptimierung (AP8, Fachkonzept 6.3)
+        // Vorbereitung des Auslegungslaufs (Fachkonzept 6.3)
         // =================================================================
 
         /// <summary>
-        /// Startet die Rastersuche über Kapazität und C-Rate für die aktive
-        /// Speichervariante des Projekts.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// <b>Die eine Regel dieser Methode: Datenbank vor Parallelität.</b>
-        /// Lastreihe, Erzeugungsreihen, Preisreihen und Parametersatz werden
-        /// <b>einmal</b> und <b>vollständig vor</b> dem Aufruf des Optimierers
-        /// beschafft — genau wie in <see cref="RechneKern"/>, nur eben nicht für einen,
-        /// sondern für alle Rasterpunkte. Danach passiert kein Datenbankzugriff mehr.
-        /// Das ist keine Optimierung, sondern Bedingung: Der dialogfreie
-        /// <see cref="DataRepository.EngineModus"/> ist <b>prozessweit und nicht
-        /// threadgebunden</b>; ein Zugriff aus dem <c>Parallel.For</c> der Rastersuche
-        /// heraus könnte deshalb in einem beliebigen anderen Thread einen Dialog
-        /// öffnen oder den Modus eines Nebenlaufs zurücksetzen. Die
-        /// <c>using</c>-Blöcke innerhalb von <see cref="LeseParameter(int,int)"/> und
-        /// <see cref="StromPreisCtrl"/> sind vor dem Optimiererlauf zu Ende.
-        /// </para>
-        /// <para>
-        /// <b>Synchron.</b> Die Methode rechnet im aufrufenden Thread. Der
-        /// Hintergrund-Task (<c>Task.Run</c>), die Fortschrittsanzeige und der
-        /// Abbruchknopf liegen in der Formularschicht
-        /// (<see cref="Form_SpeicherOptimierung"/>) — Fachkonzept 6.3.
-        /// </para>
-        /// <para>
-        /// <b>N_zyk.</b> Die zugesicherten Volladezyklen stehen am Gerät und nicht im
-        /// Engine-Parametersatz. Führt <paramref name="optionen"/> keinen eigenen Wert,
-        /// reicht diese Methode den aus <see cref="LetzterKontext"/> gelesenen weiter;
-        /// die Rastersuche kann dadurch je Punkt bewerten, ob das Zyklenbudget hält
-        /// (Fachkonzept 5.4).
-        /// </para>
-        /// </remarks>
-        /// <param name="sim">Bereits gelaufene Simulation (Quelle der Zeitreihen).</param>
-        /// <param name="idProjekt">Projekt-ID für Parameter- und Preisbeschaffung.</param>
-        /// <param name="optionen">Suchraum und Schalter; <c>null</c> = Vorbelegung des Fachkonzepts.</param>
-        /// <param name="fortschritt">Meldung je fertigem Rasterpunkt, oder <c>null</c>.</param>
-        /// <param name="abbruch">Abbruchmarke; ein Abbruch endet mit <see cref="OperationCanceledException"/>.</param>
-        /// <returns>
-        /// Das Ergebnis der Rastersuche, oder <c>null</c>, wenn das Projekt keinen
-        /// brauchbaren Speicher führt (Grund in <see cref="LetzterHinweis"/>).
-        /// </returns>
-        /// <exception cref="ArgumentNullException">Wenn <paramref name="sim"/> <c>null</c> ist.</exception>
-        /// <exception cref="OperationCanceledException">Bei Abbruch über <paramref name="abbruch"/>.</exception>
-        public OptimiererErgebnis StarteOptimierung(
-            SimulationControl sim,
-            int idProjekt,
-            OptimiererOptionen optionen,
-            IProgress<OptimiererFortschritt> fortschritt,
-            CancellationToken abbruch)
-        {
-            StromspeicherOptimierungVorbereitung vorbereitung = BereiteOptimierungVor(sim, idProjekt);
-            if (vorbereitung == null) return null;
-
-            return FuehreOptimierungAus(vorbereitung, optionen, fortschritt, abbruch);
-        }
-
-        /// <summary>
-        /// Erste Hälfte der Optimierung: <b>alles, was die Datenbank braucht</b> —
+        /// Erste Hälfte des Auslegungslaufs: <b>alles, was die Datenbank braucht</b> —
         /// Parametersatz, Zeitreihen, Preisreihen.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// Getrennt von <see cref="FuehreOptimierungAus"/>, damit der Aufrufer die
-        /// beiden Hälften auf <b>verschiedene Threads</b> legen kann: Der Dialog ruft
+        /// Getrennt von der Rechnung, damit der Aufrufer die
+        /// beiden Hälften auf <b>verschiedene Threads</b> legen kann: Die Ansicht ruft
         /// diese Methode auf dem UI-Thread und erst die zweite in <c>Task.Run</c>. Die
         /// Trennung ist damit nicht mehr nur dokumentiert, sondern durch die Signatur
-        /// erzwungen — es gibt schlicht keinen Datenbankcode mehr, der während des
-        /// <c>Parallel.For</c> laufen könnte. Zwei Gründe:
+        /// erzwungen — es gibt schlicht keinen Datenbankcode mehr, der während der
+        /// nebenläufigen Rechnung laufen könnte. Zwei Gründe:
         /// </para>
         /// <list type="number">
         ///   <item><description><see cref="DataRepository.EngineModus"/> ist prozessweit
@@ -653,40 +598,6 @@ namespace WindowsFormsApplication1
                 Eingang = sim == null ? null : BaueEingang(sim, idProjekt, variante),
                 Kontext = kontext
             };
-        }
-
-        /// <summary>
-        /// Zweite Hälfte der Optimierung: die reine Rechnung, <b>ohne jeden
-        /// Datenbankzugriff</b>. Darf in einem Hintergrund-Task laufen.
-        /// </summary>
-        /// <param name="vorbereitung">Ergebnis von <see cref="BereiteOptimierungVor"/>.</param>
-        /// <param name="optionen">Suchraum und Schalter; <c>null</c> = Vorbelegung des Fachkonzepts.</param>
-        /// <param name="fortschritt">Meldung je fertigem Rasterpunkt, oder <c>null</c>.</param>
-        /// <param name="abbruch">Abbruchmarke.</param>
-        /// <remarks>
-        /// Die zugesicherten Volladezyklen N_zyk stehen am Gerät und nicht im
-        /// Engine-Parametersatz. Führt <paramref name="optionen"/> keinen eigenen Wert,
-        /// reicht diese Methode den aus der Vorbereitung gelesenen weiter; die
-        /// Rastersuche kann dadurch je Punkt bewerten, ob das Zyklenbudget hält
-        /// (Fachkonzept 5.4).
-        /// </remarks>
-        /// <exception cref="OperationCanceledException">Bei Abbruch über <paramref name="abbruch"/>.</exception>
-        public static OptimiererErgebnis FuehreOptimierungAus(
-            StromspeicherOptimierungVorbereitung vorbereitung,
-            OptimiererOptionen optionen,
-            IProgress<OptimiererFortschritt> fortschritt,
-            CancellationToken abbruch)
-        {
-            if (vorbereitung == null) throw new ArgumentNullException(nameof(vorbereitung));
-
-            OptimiererOptionen opt = optionen ?? new OptimiererOptionen();
-
-            double zyklen = vorbereitung.Kontext != null ? vorbereitung.Kontext.ZyklenZugesichert : 0.0;
-            if (opt.ZyklenZugesichert <= 0.0 && zyklen > 0.0)
-                opt = opt with { ZyklenZugesichert = zyklen };
-
-            return new SpeicherOptimierer().Optimiere(
-                vorbereitung.Eingang, vorbereitung.Basis, opt, fortschritt, abbruch);
         }
 
         /// <summary>
@@ -1322,9 +1233,8 @@ namespace WindowsFormsApplication1
                 HinweisErgaenzen(MyResource.Resource.SIMENG_SPEICHER_OHNE_VARIANTE);
             }
 
-            // Der Hinweis auf eine nicht umgesetzte Berechnungsart steht seit AP6 dort,
-            // wo die Strategie wirklich gewählt wird (BaueStrategie) - hier wäre er
-            // inzwischen falsch: Die Nachtnutzung IST umgesetzt.
+            // Der Hinweis auf eine nicht umgesetzte Berechnungsart steht dort, wo die
+            // Strategie wirklich gewählt wird (BaueStrategie) - hier wäre er zu früh.
 
             double ladezustandProzent = gewichtetLadezustand / summeEnergie;
             double degradationProzent = gewichtetDegradation / summeEnergie;
@@ -1906,16 +1816,17 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Alles, was die Auslegungsoptimierung aus der Datenbank braucht — fertig
-    /// beschafft und ab hier unveränderlich (AP8).
+    /// Alles, was der Auslegungslauf aus der Datenbank braucht — fertig
+    /// beschafft und ab hier unveränderlich.
     /// </summary>
     /// <remarks>
     /// Der Typ ist die Nahtstelle zwischen dem Datenbankteil
-    /// (<see cref="StromspeicherSimCtrl.BereiteOptimierungVor"/>, UI-Thread) und dem
-    /// Rechenteil (<see cref="StromspeicherSimCtrl.FuehreOptimierungAus"/>,
+    /// (<see cref="StromspeicherSimCtrl.BereiteOptimierungVor"/> bzw.
+    /// <see cref="StromspeicherSimCtrl.BereiteProjektflotteVor"/>, UI-Thread) und dem
+    /// Rechenteil der Flotte (<c>SpeicherFlottenStudieCtrl.Rechnen</c>,
     /// Hintergrund-Task). <see cref="SpeicherEingang"/> und
     /// <see cref="SpeicherParameter"/> sind ihrerseits unveränderlich und dürfen
-    /// deshalb von allen Rasterpunkten gleichzeitig gelesen werden.
+    /// deshalb von allen Kandidaten gleichzeitig gelesen werden.
     /// </remarks>
     public class StromspeicherOptimierungVorbereitung
     {

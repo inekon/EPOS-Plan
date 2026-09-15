@@ -6032,7 +6032,7 @@ steht aus und ist die eigentliche Aufgabe von
 >
 > **Abnahme:** Kern-Filter 0 Fehler, 0 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 341 Fälle der acht
 > betroffenen Klassen dreimal grün; voller Kern-Lauf des Agenten grün; Gate sept82 grün. Kein Rechenweg berührt.
-> Merge `a6c14be3`.
+> Merge `5e01bed7`.
 >
 > **Offen:** `BhkwWirtschaftlichkeitDialog` als letzte Abweichung (Anwenderentscheid).
 
@@ -6068,6 +6068,727 @@ steht aus und ist die eigentliche Aufgabe von
 > **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); `HuellenwegTests` 4 von 4 grün (je
 > ein Bestandsfall und eine Gegenprobe pro Regel, die Gegenprobe der zweiten trägt `KostenOeffnen` im Wortlaut vor der
 > Umstellung); Kern-Gate des Agenten 8 042 grün; Gate sept81 und sept82 grün. Kein Rechenweg berührt, kein Referenzlauf
-> nötig. Merge `fb680f24`.
+> nötig. Merge `0643cbbb`.
 >
 > **Offen:** Dateikreis des Wächters (Zuschnittsentscheid, siehe Statusdatei „Nach #283“).
+
+## #284 — Pufferspeicher bemisst sich nur am Volumen (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026 zur Vorlagenzeile, die #279 gefunden hatte: „Prüfe Pufferspeicher
+> Daten mit Volumen/Größe. EUR_PRO_KWH_KAPAZITAET spielt keine Rolle, nur das Volumen als Bezugsgröße."
+>
+> **Zwei Dinge, nicht eines.** Die eine Hälfte ist die Auswahl, die dem Anwender angeboten wird; die andere
+> ist die Zeile, die schon ausgeliefert wird. Nur beide zusammen lösen den Fall auf: Ohne die Auswahl könnte
+> er sich morgen wiederholen, ohne die Datenumstellung bliebe er im Bestand stehen.
+>
+> **Die Auswahl.** Der `BemessungKatalog` war eine flache Liste ohne Zuordnung je Gewerk — jede Art wurde
+> jedem Gewerk angeboten, auch eine, für die es dort keine Bezugsgröße gibt. Ein Satz an so einer Zeile fällt
+> über den Anwenderentscheid I‑2 auf den erfassten Betrag zurück; bei einer reinen Satzzeile ist das 0, und
+> zwar ohne Warnung. Das ist derselbe Mechanismus, den #271 an der Solarthermie gefunden hat.
+>
+> **Die Zuordnung steht an EINER Stelle.** `BemessungKatalog.PasstZuGewerk(art, gewerk)` und `Auswahl(…)`
+> fragen `WirtschaftlichkeitCtrl.BasisGrund` und lesen damit dieselbe Landkarte, aus der der Dialog schon
+> seinen Grundtext holt (`TechnikPlanwertCtrl`, `EndenergieAufloeser`). Eine zweite Zuordnung wäre eine
+> zweite Wahrheit — es gibt keine. Der GELTUNGSBEREICH ist benannt statt eingestreut
+> (`AUSWAHLFILTER_GEWERKE`) und umfasst heute allein den Pufferspeicher; die übrigen neun Gewerke behalten
+> ihre vollständige Auswahl, bis der Anwender über sie entschieden hat, und die Erweiterung ist dann eine
+> Zeile. **Eine Art, die eine vorhandene Zeile trägt, bleibt überall in der Liste** — sonst verschwände ein
+> gepflegter Wert aus der Auswahl, und der Anwender könnte ihn nicht mehr ändern.
+>
+> **Die Daten: Schemaschritt 77** (`SchemaStand.Zielversion` 76 → 77, `PufferspeicherBemessungVolumen`).
+> Die ausgelieferte Investitionsvorlage des Pufferspeichers trägt jetzt die Bemessung je Liter Gesamtvolumen.
+> Kern, Migration, das Werkzeug `Testdatenbankschema` und der Nachweis lesen dieselbe Quelle; die Saat der
+> zwanzig Auslieferungsvorlagen trägt dieselbe Art. **Umgestellt wird nur eine Zeile mit `Satz IS NULL`:**
+> Ein gepflegter Satz wäre eine Zahl je kWh und dürfte nicht stillschweigend zu einer Zahl je Liter werden —
+> das wäre eine Zahlenänderung ohne Anlass. Solche Zeilen zählt der Migrationsbericht (`ZaehlungGepflegt`),
+> statt sie anzufassen. Der Fall ist überhaupt möglich, weil der Schreibschutz der Auslieferungsvorlagen
+> seit Ä8 aufgehoben ist. `Tab_ProjektWerte` und die Vorlagen der übrigen neun Komponenten bleiben unberührt.
+>
+> **Die Testdatenbank nachgezogen:** genau eine Zeile umgestellt (Position 38, Vorlage 6, Satz NULL),
+> `integrity_check` ok, `foreign_key_check` leer, 119 STRICT-Tabellen, 70 766 592 Byte, Schemastand 77. Die
+> beiden Pufferspeicher der Referenzprojekte 1007 und 1046 sind nicht angefasst; `EUR_PRO_KWH_KAPAZITAET`
+> kommt in `Tab_ProjektWerte` überhaupt nicht vor (unabhängig nachgezählt: 0).
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 097 Tests grün;
+> `SqlDialektPruefer` 0 Fundstellen; Referenzlauf gegen `2026-09-11_R7_Speicherflotte` 5/5 PASS und 5/5
+> byte-gleich; Gate sept83 grün. Der Rechenweg ist nicht berührt — die Zeile rechnete vorher 0 und rechnet
+> jetzt mit dem Volumen, aber kein Referenzprojekt führt sie. Merge `bb550eeb`.
+>
+> **Offen:** Ausweitung der Filterung auf die übrigen neun Gewerke und die gleich gelagerte PV-Vorlagenzeile
+> „Batteriespeicher" (beides Anwenderentscheid, siehe Statusdatei „Nach #284").
+
+## #285 — Summenlinien heißen nach ihrer Summe und sind abschaltbar (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderwunsch 15.09.2026 mit Bildschirmfoto des Blatts „Wärme Produktion Chart": Die grüne
+> Linie „Gesamt" soll „Summe Wärmeerzeugung" heißen und ein Kästchen bekommen wie die Wärmepumpe daneben;
+> gleichartige Darstellungen sollen mitgeändert werden.
+>
+> **Der Name war nur die Oberfläche.** Darunter lag ein Schlüssel für drei Dinge: `CHART_LEGENDE_GESAMT`
+> beschriftete die Summenlinie des Wärmegangs, die des Stromgangs, die des Bedarfsreiters **und** den ersten
+> Eintrag der Klappliste „Bedarfsart". Eine globale Umbenennung hätte aus einer Verbrauchssumme eine
+> Erzeugung gemacht und den Auswahleintrag gleich mit umbenannt.
+>
+> **Deshalb zuerst gemessen, was jede Linie addiert** — nicht, wie sie heißt:
+>
+> | Diagramm | Summanden im Code | Name |
+> |---|---|---|
+> | Wärmegang | die gestapelten Erzeugerreihen | Summe Wärmeerzeugung |
+> | Stromgang | Lastgang + Wärmepumpe + Heizstab + Heizkessel | Summe Stromverbrauch |
+> | Bedarfsreiter | der gesamte Wärmebedarf über alle Bedarfsarten | Summe Wärmebedarf |
+>
+> Dass der Stromgang eine **Verbrauchs**summe führt, ist zweifach belegt: Der Bildtitel heißt „Strombedarf,
+> Stromverbrauch Jahresganglinie", und BHKW wie Photovoltaik stehen als Erzeugungslinien NEBEN dem Stapel
+> und gehen in die Kontur ausdrücklich nicht ein. „Summe Stromerzeugung" wäre dort schlicht falsch gewesen.
+>
+> **`CHART_LEGENDE_GESAMT` bleibt** — an der einen Stelle, an der „Gesamt" zutrifft: der Klappliste
+> „Bedarfsart". Dort benennt es eine Auswahl, keine Linie; die Trennung der Schlüssel verhindert, dass die
+> Umbenennung dorthin durchschlägt.
+>
+> **Warum der Schalter fehlte.** Die Kontur des Wärmegangs hing nicht an der Reihenwahl: Sie entstand,
+> sobald `stapel.Count > 0`. Es gab also nichts zu schalten, und `WaermegangDaten` führte die Reihe gar
+> nicht erst. Jetzt ist sie eine Reihe wie die anderen — als erster Eintrag der Erzeugerliste, vorbelegt an,
+> und `Vorhanden` hängt daran, dass es überhaupt einen Erzeuger gibt, damit kein Schalter ohne Wirkung
+> erscheint. Die Kontur entsteht nur noch bei gewählter Reihe; sonst ist am Zeichenweg nichts geändert —
+> gleiche Reihenfolge, gleiche Farbe, gleiche Strichstärke.
+>
+> **Die Summe steht über ihren Summanden, nicht neben ihnen.** Dafür bekam der Baustein `Mehrfachauswahl`
+> den Parameter `AbsatzNach`: eine Trennlinie nach n Einträgen. Die Summe bleibt damit IN der Liste —
+> „Alle" und „Keine" fassen sie mit, und sie fällt in dasselbe Sitzungsgedächtnis wie die Erzeuger — ist aber
+> sichtbar abgesetzt. Der Stromgang bekam dieselbe Anordnung.
+>
+> **Was bewusst nicht angefasst wurde, je mit Grund:** die CSV-Schlüssel der Referenzbasis (sonst kein
+> Vergleich gegen die eingefrorene Basis mehr möglich); die Speicherreihe „Speicher gesamt" im Netzbild (der
+> Name sagt schon, was sie summiert, und sie ist längst abschaltbar — dazu eine Linie unter Linien, keine
+> Kontur über einem Stapel); die kumulierte Linie der Jahresprojektion (eine Zeitkumulierte, keine
+> Spaltensumme); Peak-Shaving- und Speicherbetriebsbild (übergeben ausdrücklich keine Kontur); die
+> Fachreiter der Erzeuger (keine Kontur, ihre Linien sind Bezugsgrößen und einzeln abwählbar); der Bericht
+> (benutzt keinen der drei Schlüssel). Eine Summenlinie, die das Diagramm trägt und deshalb nicht
+> abschaltbar sein dürfte, gibt es nirgends.
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 101 Tests grün;
+> ChartProben 64 Bilder, 0 Verstöße, und im Vergleich zweier Läufe vor und nach der Änderung **alle 49 PNG
+> byte-gleich** — der Renderer zeichnet die Kontur mit eigenem Text, nicht über die Ressource, also ist der
+> Zeichenweg nachweislich unberührt; Referenzlauf gegen `2026-09-11_R7_Speicherflotte` 5/5 PASS und alle 135
+> CSV byte-gleich; Gate sept84 grün. Vier neue Prüfungen in `GangUndErgebnisReiterTests`. Merge `19b3ca8b`.
+>
+> **Offen:** `CHART_CSV_GESAMT` ohne Verwender (siehe Statusdatei „Nach #285").
+
+## #280 — Fehlende Werte benennen, aus der Kategorie nur mit Rückfrage leihen (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026, vier Punkte: CO₂-Rückfall aus der Kategorie **mit Rückfrage**
+> („Werte nicht ohne Wissen setzen!"), Warnung bei fehlenden Emissionswerten, dasselbe für die Kosten,
+> Kosten als Pflicht für die Wirtschaftlichkeitsrechnung — und gleiche Werte für alle Anlagen eines
+> Trägers.
+>
+> **Zwei der vier Punkte standen schon.** Das war das Ergebnis der Messung, bevor irgendetwas gebaut
+> wurde: Die Trägerregel (Punkt 4) ist seit #268 umgesetzt und seit #278 über den UNIQUE-Index
+> `idx_EnergyProjectSettings_Traeger` auch im Schema erzwungen — zwei Anlagen, die auf denselben Träger
+> zeigen, **können** gar nicht verschiedene Werte lesen. Der Anwender hat Punkt 4 am selben Tag
+> ausdrücklich auf den Träger eingegrenzt (nicht auf die Gruppe), damit Varianten ihren Zweck behalten.
+> Und Punkt 3 hält die Wirtschaftlichkeit seit #267 ein: „Arbeitspreis 0 zählt als NICHT gepflegt",
+> sechs benannte Gründe, Warnband mit „Neu berechnen", „—" statt eines erfundenen Betrags. Beides blieb
+> unangetastet.
+>
+> **Die wirkliche Lücke lag davor — an der Pflegestelle.** `EnergietraegerHuelle.Speichern()` prüfte
+> beim Schreiben nur, ob die Einheit auf kWh umrechenbar ist; ein Arbeitspreis 0, ein Leistungspreis 0
+> oder ein CO₂-Wert 0 ließen sich **ohne jede Meldung** speichern. Auffallen konnte es erst beim
+> Rechnen. Dazu ein zweiter Befund: `Emissionsquelle` setzt `Co2Gepflegt = false` mit der Herkunft
+> „kein Emissionsfaktor gepflegt" — aber **kein einziger Aufrufer las das Feld** außer der eigenen Datei
+> und ihren Tests. Die Kennzeichnung war da, nur zeigte sie niemand.
+>
+> **Die Karte sagt es jetzt, wo der Wert gepflegt wird:** die Preise im Reiter „Preise & Umrechnung",
+> der CO₂-Wert im Reiter „Emissionen". Die Lücke misst sich an **Karte und Lesekette zusammen** — die
+> Frage lautet „bliebe hier eine Lücke, wenn ich jetzt speicherte?", also das Feld, sonst die Kette.
+> Eine gepflegte Saisonreihe zählt beim Leistungspreis als gepflegt, und ein Träger ohne Leistungspreis
+> wird gar nicht erst danach gefragt. **Gesperrt wird nichts:** Ein halb gepflegter Träger muss sich
+> anlegen lassen, und derselbe Hinweis erscheint beim Speichern.
+>
+> **Der Übernahmeweg ist EIN Weg für drei Größen** (`Controller/EnergietraegerRueckfall.cs`): Kategorie,
+> `Wert()`, `Kandidaten()`, `Uebernehmen()`. `Wert()` baut keine eigene Lesekette nach, sondern fragt die
+> bestehenden — CO₂ über `Emissionsquelle.Fuer(…).Co2Gepflegt`, die Preise über eine neue, rein lesende
+> Auskunft, die dieselbe Vorrangkette Projekt → Preisstand → Katalog benutzt. Eine zweite Wahrheit
+> entsteht nicht.
+>
+> **Die Kategorie ist `energy_carrier.pricing_model`**, im Code KATEGORIECODE — die Spalte, auf der schon
+> die Zulässigkeitsprüfung aus #268 rechnet. Die angezeigte „Gruppe" wäre die falsche Klammer, und das
+> ist gemessen, nicht vermutet: Die acht GASEOUS_FUEL-Träger der Testdatenbank verteilen sich auf drei
+> Gruppen (Gas, Wasserstoff, Sonstige). Über die Gruppe zu suchen hielte Geber zurück, die fachlich zur
+> selben Familie gehören — und Zulässigkeit und Übernahme ruhten auf zwei verschiedenen Wahrheiten.
+>
+> **Nichts wird ohne Bestätigung gesetzt.** Auch der einzige Kandidat wird vorgelegt. Gibt es keinen,
+> sagt der Weg das und öffnet nichts. Die Reihenfolge ist fest und kulturunabhängig: erst die dem
+> Projekt zugeordneten Träger, dann die übrigen, je nach Namen und bei Gleichstand nach Id. Geschrieben
+> wird in die **Projektübersteuerung** — an der Lesekette nachgeprüft, sie ist dort die oberste Ebene,
+> der Wert gilt also sofort und ohne zweite Regel. Der Katalog gilt für alle Projekte und wird nie
+> angefasst; im Katalogkontext erscheint deshalb der Hinweis, aber kein Knopf.
+>
+> **Einheitentreue — vom Auftrag nicht verlangt, aber nötig.** Ein Preis ist eine Zahl je
+> Abrechnungseinheit. 0,95 €/L in einen Träger zu schreiben, der nach Nm³ abrechnet, wäre eine falsche
+> Zahl mit richtigem Anschein (GASEOUS_FUEL führt in der Testdatenbank Nm³ **und** kg). Als Geber eines
+> Preises kommt deshalb nur in Frage, wer dieselbe Abrechnungseinheit führt, beim Leistungspreis
+> zusätzlich denselben Modus. Der CO₂-Faktor steht überall in g/kWh und kennt die Einschränkung nicht.
+> Geprüft wird beim Übernehmen gegen die frisch gelesene Kandidatenliste, nicht gegen die angezeigte.
+>
+> **Kein Rückfall im Rechenweg.** `Emissionsquelle` und `KostenEmissionRechner` sind inhaltlich
+> unverändert; ein zugeordneter Träger ohne CO₂-Wert bleibt eine Datenlücke. Ein Wächter hält das fest,
+> und der Beleg ist der byte-gleiche Referenzlauf: Wäre ein Rückfall in den Rechenweg geraten, hätten
+> sich Zahlen bewegt.
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 113 Tests grün,
+> davon 12 neue in `EnergietraegerRueckfallTests`; `SqlDialektPruefer` 1 407 Texte, 0 Fundstellen;
+> Referenzlauf gegen `2026-09-11_R7_Speicherflotte` PASS und byte-gleich; Gate sept85 grün. Merge
+> `ad37b3d3`. Hausregel „Ein geliehener Wert wird nie still gesetzt" in `EPOS.Kern/CLAUDE.md`.
+>
+> **Offen:** Die Herkunft eines geliehenen Wertes wird nicht persistiert (siehe Statusdatei „Nach #280").
+
+## #281 — Größensuche wählt Geräte, sie erfindet keine (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026: „Größensuch Stromspeicher nur über Kapazität und Leistung im
+> Katalog des Projektes oder wahlweise aus Stammdaten. Bei Such aus Stammdaten mit Möglichkeit der
+> Übernahme aus Stammdaten in Projekt." Am selben Tag geschärft: „Sind ‚Projektkatalog oder Stammdaten'
+> → Kandidaten (Stromspeicher, die Bedingungen Größe (Leistung, Kapazität) erfüllen bzw. nahe kommen)."
+>
+> **Der Bruch liegt im Gegenstand der Suche, nicht in der Bedienung.** Bisher variierte die Suche eine
+> freie Größe und koppelte die zweite Achse über die C-Rate. Was dabei herauskam, war eine Zahl, kein
+> Speicher: Der Anwender bekam eine Auslegung vorgelegt, die er nicht kaufen kann, und musste danach
+> selbst ein Gerät suchen, das ungefähr passt. Jetzt gibt er je einen Bereich für Kapazität und Leistung
+> vor, wählt die Quelle, und die Suche rechnet die Geräte durch, die im Projektkatalog oder in den
+> Stammdaten stehen.
+>
+> **Die C-Rate fällt als Suchachse, nicht als Kennzahl.** `FlottenAuslegungsmodus.KapazitaetUndLeistung`
+> ist die einzige gültige Kopplung; die beiden C-Rate-Werte bleiben im Enum, damit gespeicherte Stände
+> lesbar bleiben (JSON führt dort 1 bzw. 2). Die C-Rate steht weiter an jedem Gerät als abgeleitetes
+> P/E, in keinem Eingabefeld. Ein Stand mit C-Rate-Kopplung wird beim Laden **benannt** umgerechnet
+> (`FlottenAltstand.Normalisiere`): Der Leistungsbereich entsteht aus den Ecken P = E · C, der
+> Kapazitätsbereich als E = P / C. Das ist der Unterschied zwischen „die Absicht übersetzen" und „den
+> Stand still verwerfen" — der Anwender findet seinen Suchraum wieder, nur anders beschriftet.
+>
+> **Die Auswahlregel steht an einer Stelle** (`FlottenGeraetewahl.Waehle`). Treffer sind die Geräte in
+> beiden Bereichen, Grenzen eingeschlossen; gibt es welche, sind nur sie die Kandidaten. Sonst kommen
+> höchstens fünf nächstliegende, damit die Suche nie leer ausgeht. Der Abstand je Größe ist der
+> Überstand über den Bereich, bezogen auf die **Bereichsmitte**, und beide Anteile werden addiert: So
+> wiegt ein Überstand von 10 kWh bei einem schmalen Bereich schwerer als bei einem weiten, und Kapazität
+> und Leistung sind trotz verschiedener Einheiten vergleichbar. Sortiert wird nach Abstand, Kapazität,
+> Leistung, Quellkennung — zwei Läufe auf derselben Datenbank liefern dieselbe Reihenfolge. Die
+> Abweichung in Prozent steht in der Kandidatentabelle und in der Geräteliste der Station „Optimierung".
+>
+> **Die Kandidatenzahl kann nicht mehr explodieren.** Sie ist die Zahl der gefundenen Geräte, nicht mehr
+> das Produkt zweier Rasterachsen; die Schranke „Maximale Auslegungskandidaten" bleibt als Fangnetz
+> stehen. Das **Feinraster entfällt ersatzlos**: Zwischen zwei Geräten liegt kein drittes, und eine
+> zwischengerechnete Größe wäre ein Speicher, den es nicht gibt. Der gespeicherte Schalter bleibt lesbar
+> und wirkungslos; die Zählregel nennt `FeinHoechstens` durchgehend 0.
+>
+> **Die Parameter kommen vom Gerät.** Fehlen sie, greifen die neutralen Vorgaben aus
+> `FlottenGeraetevorgaben` an **einer** Stelle (Lade- und Entladewirkungsgrad je 0,95, SoC-Fenster
+> 0,10…0,90, keine Alterung), und der Kandidat wird gekennzeichnet. Ein Katalogsatz führt keine
+> Betriebsführung und ist deshalb immer gekennzeichnet — der Anwender sieht, welche Zahl gemessen und
+> welche angenommen ist.
+>
+> **Ein Fehler, in dieser Welle gefunden und behoben** (`75a582c5`): Die Rückabbildung eines **nicht
+> besten** Kandidaten nahm ihre Vorlage aus der Suchachse. Unter „Größe suchen" bringt aber jeder
+> Kandidat sein eigenes Gerät mit — Wirkungsgrade, SoC-Band, Hilfsverbrauch, Kostensätze. Der Anwender
+> hätte ein Gerät mit den Kennwerten eines anderen übernommen: dieselben Zahlen im Bild, andere im
+> nächsten Lauf. Die Vorlage kommt jetzt in fester Reihenfolge — Einheit gleicher Kennung im
+> Arbeitsstand, Gerät des Kandidaten über seine Quellkennung, Achsenvorlage, erste Einheit. Der beste
+> Kandidat war nie betroffen: Für ihn legt der Optimierer seine eigene Konfiguration bei.
+>
+> **Nicht angefasst:** „Stückzahl suchen" bleibt unverändert; die Übernahme eines gefundenen
+> Stammdatengeräts nimmt den vorhandenen Weg (`EinheitenInProjektUebernehmen`), ein zweiter wird nicht
+> gebaut. Der Einzelspeicher-Optimierer je Anlage bleibt beim Rastern (siehe Statusdatei „Nach #281").
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 117 Tests grün;
+> `SqlDialektPruefer` 0 Fundstellen; ChartProben 47 von 49 Bildern byte-gleich —
+> `flottenraster_schraffur` zeigt jetzt die dünn besetzte Gerätekarte Kapazität × Entladeleistung,
+> `flottenschnitt_leistung` die Kurve über den Entladeleistungen der gefundenen Geräte; Referenzlauf
+> gegen `2026-09-11_R7_Speicherflotte` PASS und byte-gleich; Gate sept86 grün. Merge `cafa6313`.
+> Konzept „Stromspeicher-Dialoge" Abschnitt 8.9, Doku Mehrspeicher und die beiden Wiki-Quellen
+> (Bedienung, Rechenweg) nachgezogen — noch nicht hochgeladen.
+
+## #286 — Die letzte Maske ohne Abbrechen (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026 auf den offenen Punkt aus #282: Der
+> `BhkwWirtschaftlichkeitDialog` war die letzte Maske ohne Abbrechen und bekommt denselben
+> Umbau wie die Pufferverwaltung. Wieder gilt: Das ist keine Frage der Beschriftung, sondern
+> des Schreibzeitpunkts. Wer Abbrechen anbietet, darf vorher nichts geschrieben haben.
+>
+> **Die Messung fiel anders aus als bei #282.** Geschrieben wurde **nicht** beim Tippen und
+> nicht beim Verlassen eines Feldes, sondern erst beim Klick auf den nicht schließenden
+> „Speichern"-Knopf: Dialog → Rückruf `Speichern` → `BhkwWirtschaftlichkeitHuelle.Speichern`
+> bzw. `IosProjektQuelle.Speichern` → `KwkgAnlagenCtrl.Speichere` je Anlagenzeile und
+> `WirtschaftlichkeitCtrl.SpeichereParameter`. Kein zweiter Weg, kein Inline-SQL. Der Dialog
+> schrieb aber **jede Eingabe sofort in die vom Wirt hereingereichten Objekte**, und genau
+> die gingen in den Schreibweg. Nach einem Klick auf Speichern gab es kein Zurück — deshalb
+> trug die Leiste „Speichern"/„Schließen" statt OK/Abbrechen, und `SpeichernLeiste.MitAbbrechen`
+> nannte diesen Dialog namentlich als die eine Ausnahme des Hauses.
+>
+> **Am frühen Schreiben hing niemand.** Beide Wirte werfen ihren Gabensatz nach dem
+> Schließen weg und laden neu (`WirtschaftlichkeitSeite.Fertig`, `AppWurzel.ZurueckZurListe`);
+> gebraucht wird allein die Kennzeichnung, ob gespeichert wurde, für die Aufforderung zum
+> Nachrechnen. Anders als bei #282, wo die neue Id aufzulösen war, gab es hier **keine**
+> Abhängigkeit zu behandeln. Einbettungsstellen: zwei, dazu das eigenständige Fenster.
+>
+> **Der Arbeitsstand ist bewusst kein Vollabbild.** `BhkwAnlagenstand` führt je Zeile die elf
+> gepflegten Felder, `BhkwVorgabenstand` die 17 Projektfelder — nicht die Kern-Objekte im
+> Ganzen. Der Grund ist die Fehlerquelle, die ein Vollabbild mitbringt: Ein beim Kopieren
+> vergessenes Feld ginge beim Schreiben verloren. Was der Dialog nicht pflegt, bleibt in der
+> geladenen Zeile stehen. Anlagentabelle, Warn- und Herleitungszeilen und der Knopf
+> „Vorschlag übernehmen" lesen und schreiben denselben Stand, damit Tabelle und Felder nicht
+> auseinanderlaufen.
+>
+> **OK schreibt**, in der Reihenfolge Anlagenzeilen (Listenreihenfolge) vor Projektvorgaben —
+> so steht der Projektwert nie vor den Zeilen, die ihn überschreiben. Scheitert ein Schritt,
+> bleibt der Dialog offen und nennt die Zahl der gescheiterten Sätze im bisherigen Wortlaut;
+> Geschriebenes wird bei einem zweiten OK nicht wiederholt.
+>
+> **Dafür musste die Schreibnaht aufgetrennt werden.** `Speichern` als `Func<int>` sagte
+> nicht, welcher Schritt durch war; an seine Stelle treten `SpeichereAnlage` und
+> `SpeichereVorgaben`, beide mit Rückgabe. `BhkwDialogDaten` und beide Hüllen sind
+> nachgezogen, die Fehlerklammer liegt jetzt in den Hüllen. Ohne diesen Schnitt wäre „nicht
+> zweimal schreiben" nicht einlösbar gewesen.
+>
+> **Abbrechen, ✕ und Esc** verlassen ohne einen Schreibzugriff — und ohne dass sich ein
+> hereingereichtes Objekt geändert hätte. Der OK-Knopf heißt „Speichern": Hier stimmt es, er
+> schreibt und schließt. In #282 blieb der mittlere Knopf bei „Anlegen"/„Übernehmen", weil
+> „Speichern" dort eine Behauptung gewesen wäre, die nicht zutrifft.
+>
+> **Der Sprung nimmt jetzt den OK-Weg.** Die zwei Sprungknöpfe schreiben und schließen. Ohne
+> das wären Eingaben mit dem Sprung verloren: Die Hülle lädt beim Zurückbringen neu, und
+> einen nicht schließenden Speichern-Knopf gibt es nicht mehr. Ein Hinweis sagt es in beiden
+> Sprachen (siehe Statusdatei „Nach #286").
+>
+> **Eine Wache gegen den Rückfall.** `FussleisteAusgaengeTests` lässt keine `SpeichernLeiste`
+> im Haus mit „Speichern", aber ohne „Abbrechen" zu — genau die Paarung, bei der ein nicht
+> schließender Knopf ohne Verwerfen dasteht. Sie prüft jede Razor-Datei, nicht diesen Dialog,
+> und ist am eingefrorenen Bestand von vorher rot (Gegenprobe nach Lehre W6-B-1). Ein reiner
+> Ansichtsdialog mit nur „Schließen" bleibt erlaubt: Dort gibt es nichts zu verwerfen.
+> `EPOS.UI/CLAUDE.md` hält die Regel jetzt ohne Ausnahme.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 0 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen
+> (Bestand); 136 Fälle der betroffenen Klassen dreimal grün ohne Flattern; voller Kern-Lauf
+> 8 129 grün; Referenzlauf gegen `2026-09-11_R7_Speicherflotte` PASS und byte-gleich; Gate
+> sept87 grün. Kein Rechenweg berührt, kein SQL angefasst. Merge `3f2c70b9`.
+>
+> **Offen:** der Sprung-Entscheid und drei Befunde aus derselben Messung (siehe Statusdatei
+> „Nach #286").
+
+## #287 — Die Auswahl folgt der Bezugsgröße, auch bei der PV-Zeile (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Zwei Anwenderentscheide vom 15.09.2026 auf die offenen Punkte aus #284 — die
+> Filterung der Bemessungsarten auf die übrigen neun Gewerke ausweiten, und die
+> PV-Vorlagenzeile „Batteriespeicher" (Vorlage 5, Komponente 3) mit `EUR_PRO_KWH_KAPAZITAET`
+> auflösen. Wieder dieselben zwei Hälften: die Auswahl, die dem Anwender angeboten wird, und
+> die Zeile, die schon ausgeliefert wird.
+>
+> **Die Matrix wurde neu ausgezählt, bevor sie scharf geschaltet wurde** — je Gewerk **und je
+> Raster**, aus `WirtschaftlichkeitCtrl.BasisGrund`, also derselben Landkarte, dazu der
+> Bestand. Der Grund: Eine Filterung, die nur ein Gewerk traf, war billig zu belegen; jetzt
+> trifft sie alle zehn, und ein Fehler wäre nicht mehr auf eine Maske begrenzt.
+>
+> **Kein Gewerk wird leergeräumt, keines behält nur die Pauschale.** Die dünnsten Listen sind
+> die Betriebsraster der vier Gewerke ohne Geräte- und Laufgrößen (Pufferspeicher,
+> Wärmezentrale, Bauliche Anlagen, Stromeinspeisung): fester Jahresbetrag **und** „% der
+> Investition". Die zweite trägt dort wirklich — ihre Basis ist die Investitionskaskade, nicht
+> ein Gerät. Für den Pufferspeicher ist genau das seit #284 ausgeliefert; die drei übrigen
+> landen auf demselben Bild. Die dünnste Investitionsliste hat drei Arten.
+>
+> **Genau eine Bestandszeile fiel heraus** — und zwar dieselbe, um die es in der zweiten
+> Hälfte geht: `Tab_KostenVorlagePosition` 33, Satz `NULL`. Sonst nichts: weder in den zwanzig
+> Auslieferungsvorlagen noch irgendwo in `Tab_ProjektWerte` (175 Zeilen, alle zehn Gewerke),
+> und in **keinem** Referenzprojekt. Der Bestandsschutz aus #284 greift unverändert und ist je
+> Gewerk × gewerksfremder Art einzeln geprüft.
+>
+> **Die PV-Zeile wird ein fester Betrag, nicht „je kWp".** Die Begründung ist gemessen, nicht
+> geraten, und sie ist der Kern dieser Hälfte:
+>
+> - Die Photovoltaik führt im Investitionsraster genau **zwei** Arten mit echter Baugröße —
+>   `EUR_PRO_KWP` und `EUR_PRO_KW_ELEKTRISCH` —, und **beide liefern dieselbe Zahl**
+>   (`PhotovoltaikCtrl.KwpSumme`, Modulanzahl × Modulleistung). Ein Batteriespeicher-Satz je
+>   kWp bemäße den **Preis eines Geräts an der Größe eines anderen**: eine erfundene
+>   Bezugsgröße anstelle der alten, nicht die richtige.
+> - Die Vorlage sagt selbst, wie sie Gerätepositionen ohne eigene Baugröße bemisst:
+>   „Wechselrichter", „Montagesystem / Unterkonstruktion" und „Bauliche Anlagen" stehen **alle**
+>   auf festem Betrag; nur die Modulzeile trägt den kWp-Satz. Der Batteriespeicher reiht sich
+>   ein.
+> - Ein fester Betrag ist absolut — der erfasste Wert **ist** der Betrag. Es gibt keine Menge,
+>   die fehlen könnte, also auch keinen stillen Betrag 0. Genau das war der Mechanismus, den
+>   #271 an der Solarthermie und #284 am Pufferspeicher gefunden hat.
+> - Die kapazitätsbemessene Zeile geht nicht verloren: Sie steht am Gewerk **Stromspeicher**
+>   („Speicher", Bezugsgröße `Tab_Stromspeicher.Energie`) — unverändert.
+>
+> **Schemaschritt 78** nach dem Muster 77: eine Quelle (`PvVorlageBatteriespeicher`), aus der
+> Kern, Migration, das Werkzeug `Testdatenbankschema`, der Nachweis und die Saat der zwanzig
+> Auslieferungsvorlagen lesen. Die Anweisung filtert am **Gewerk**, nicht am Positionsnamen —
+> ein Name ist keine Zusicherung —, und fasst nur eine Zeile mit `Satz IS NULL` an. Eine Zeile
+> mit gepflegtem Satz wird gezählt (`ZaehlungGepflegt`), nicht geändert: Ein Satz je kWh darf
+> nicht stillschweigend zu einem festen Betrag werden.
+>
+> **Testdatenbank nachgezogen:** Schemastand 78, 70 766 592 Byte (unverändert), 119
+> STRICT-Tabellen, `integrity_check` ok, `foreign_key_check` leer. Tabellenweiser
+> Fingerabdruck gegen den Git-Stand: **genau zwei** Tabellen ändern sich — `Tab_Applikation`
+> (77 → 78) und `Tab_KostenVorlagePosition` (Zeile 33; die übrigen 120 Zeilen unverändert).
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 8 144
+> Tests grün, davon 27 neue in `BemessungsauswahlJeGewerkTests` (je Gewerk ein Fall mit
+> vollständiger Invest- und Betriebsliste, „kein Gewerk ohne Auswahl", Bestandsschutz je
+> Gewerk) und `PvBatteriespeicherBemessungTests` (Landkarte, Saat = Nachzug, gepflegte vs.
+> ungepflegte Zeile, Wiederholbarkeit); `SqlDialektPruefer` 1 409 Texte, 0 Fundstellen;
+> Referenzlauf gegen `2026-09-11_R7_Speicherflotte` 5/5 PASS und **135 von 135 Dateien
+> byte-gleich** (sha256-weise nachgezählt); Gate sept88 grün. Keine Einfrierregel berührt, die
+> Basis bleibt. Merge `4cf8efe1`.
+>
+> **Offen:** ein flatterhafter Fremdtest und eine Datei ohne BOM (siehe Statusdatei „Nach #287").
+
+## #288 — Zwei Wege werden einer, eine Betriebsart fällt (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anwenderwunsch und Entscheid.** „‚Nachtnutzung' herausnehmen und nicht mehr verwenden."
+> Die Messung ergab, dass der Name zwei verschiedene Dinge trägt: eine **tote**
+> Auslegungsstrategie des Einzelspeicher-Optimierers und eine **lebende** Berechnungsart des
+> Simulationslaufs (`StromspeicherSimCtrl.BaueStrategie`, Klappliste im Ergebnis, gespeichert
+> in `Tab_StromspeicherVariante.Berechnungsart`). Auf die Rückfrage, ob beides oder nur das
+> tote Stück fallen soll: „(a) Beides raus". Dazu der offene Punkt aus #281 — die Gegenprobe
+> bestätigte, dass `SpeicherOptimierungCtrl.Rechnen` außerhalb der Tests **keinen Aufrufer**
+> hat: Die einzige Produktionsreferenz auf die Klasse war `Vorbelegung`, gezogen aus
+> `SpeicherAuslegungCtrl.cs:119`; alle übrigen Treffer waren Kommentare. Ebenso ohne
+> Produktionsaufrufer: `StromspeicherSimCtrl.StarteOptimierung` und `.FuehreOptimierungAus`.
+>
+> **Teil 1 — Nachtnutzung.** Entfernt: `SpeicherEngine/Nachtnutzung.cs` (350 Zeilen),
+> `NachtnutzungTests.cs` (757 Zeilen, 17 Methoden), `OptimiererStrategie.Nachtnutzung`, der
+> Zweig in `BaueStrategie`, der Klapplisteneintrag des Simulationsergebnisses und drei
+> Ressourcenschlüssel in beiden Sprachen. Die drei Vergleichslauf-Texte bleiben — sie tragen
+> die Vergleichsspalte der Preissteuerung.
+>
+> Ein gespeicherter Stand wird **benannt** umgesetzt statt still: `SpeicherAltstand` trägt den
+> entfallenen Persistenzwert und die Regel an einer Stelle (Muster
+> `FlottenAltstand.Normalisiere`). Gesagt wird es zweimal — im Protokoll des Laufs
+> (`SP_ALTSTAND_BERECHNUNGSART`) und in jedem Anzeigetext
+> (`SP_BERECHNUNG_ANZEIGE_ALTSTAND`, `SpeicherAnzeigeCtrl.BerechnungsartText`). **Kein
+> Schemaschritt, Testdatenbank nicht angefasst**; der gespeicherte Text wird auch nicht
+> überschrieben. Alle 13 Zeilen der Testdatenbank stehen ohnehin auf Dauernutzung — kein
+> Einfluss auf den Referenzlauf, keine neue Basis.
+>
+> **Eine Berichtigung, die im Auftrag nicht stand:** Der Excel-Kompatibilitätsmodus hing an
+> der Nachtnutzung (`SimulationErgebnisHuelle.cs:721`, `SpeicherParameterBlock.razor:279`),
+> obwohl er nach Fachkonzept 5.2 allein zur Dauernutzung gehört — nur sie hat eine
+> Excel-Vorlage. Ohne diese Berichtigung wäre der Schalter dauerhaft gesperrt gewesen. Er
+> hängt jetzt an der Dauernutzung.
+>
+> **Teil 2 — der tote Weg.** Entfernter Produktionscode: `SpeicherOptimierer.cs` (555),
+> `OptimiererOptionen.cs` (419), `OptimiererErgebnis.cs` (444), `SpeicherOptimierungCtrl.cs`
+> (1 619) = **3 037 Zeilen**, dazu `StarteOptimierung` und `FuehreOptimierungAus`; acht
+> Testdateien mit **3 095 Zeilen**.
+>
+> Nach dem Löschen bestand die Klasse nur noch aus dem gespeicherten Stand und den
+> Leistungspreis-Quellen — der Name stimmte nicht mehr. Sie heißt jetzt
+> **`SpeicherAuslegungVorgabenCtrl`** (drei Methoden: `Vorbelegung`, `Leistungspreisquellen`,
+> `TarifQuelle`). Die drei DTO-Typen behalten ihre Namen: Sie sind der **serialisierte** Stand
+> von `Tab_SpeicherAuslegung` und stehen an über achtzig Stellen; ihr Umbenennen ist ein
+> eigener Schritt. `SpeicherOptimierungEingaben` verliert die zwölf Felder des
+> Einzelspeicher-Suchraums samt zwei Aufzählungen, die sonst als Zombies weitergelebt hätten;
+> ein älterer JSON-Stand trägt sie noch, der Leser überliest sie
+> (`UnmappedMemberHandling.Skip`) — **kein Schemaschritt**.
+>
+> Nachgezogen: `ParallelitaetWacheTests` (Belegdatei), `KulturweitergabeTests` (der Beleg am
+> echten Rechenweg fällt — die `SpeicherEngine` führt jetzt überhaupt keine
+> Rechenparallelität mehr; die synthetischen Belege bleiben), **73 verwaiste `OPT_*`-Ressourcen**
+> in beiden Sprachen, der KI-Aktionskatalog, vier Konzeptpapiere, die Hilfeseite
+> `Berechnung/Stromspeicher.wiki` und die offene Statuszeile „Nach #281". Berichtigt: Der
+> Kopfkommentar von `SpeicherBetriebsbild` stellte die Abhängigkeit umgekehrt dar.
+>
+> **Die Bilderzahl sinkt nicht — sie bleibt 64.** `ChartRenderer.Optimierungsraster` und
+> `.Schnittkurve` haben weiterhin Aufrufer: die Größen- und Stückzahlsicht der Flotte. Nur
+> `RasterCsvText` ist mit dem Controller gefallen, und die ChartProben kennen es nicht.
+>
+> **Teil 3 — die Flottenlücke.** `FlottenOptimierer.BaueGeraeteeinheiten` ersetzte die Vorlage
+> bisher vollständig durch das Gerät. Die eine Entscheidung (`FlottenGeraeteuebernahme` in
+> `SpeicherEngine/FlottenModel.cs`): Was der Gerätesatz **führt**, kommt vom Gerät; was der
+> Anwender in Schritt 1 gesetzt hat, bleibt seins. Kapazität und Lade-/Entladeleistung immer
+> vom Gerät (Gegenstand der Suche); Wirkungsgrade, SoC-Band, Hilfsverbrauch und
+> Investitionssätze vom Gerät, **wenn sein Satz sie führt**; Peak-Reserve, Grenzverschleiß,
+> Betriebs- und Durchsatzkosten, Ersatz, Restwert und Alterungskurve **immer vom Anwender** —
+> ein Gerätesatz führt sie nie.
+>
+> Was „geführt" heißt, entscheidet der **Kern** (`FlottenGeraeteuebernahme.Gefuehrt`, gesetzt
+> in `SpeicherFlottenStudieCtrl.Geraetekandidaten`): brauchbar **und** nicht genau auf der
+> neutralen Vorgabe — nach `LueckenFuellen` ist an der Zahl allein nicht mehr zu sehen, woher
+> sie kommt. Die Engine rät nichts. Sichtbar an einer Stelle: neue Spalte „Herleitung" der
+> Kandidatentabelle, eine Zeile je Kandidat („Gerät: … · eigene Eingabe: …"), leer, wo kein
+> Gerät dahintersteht oder mehrere Achsen mehrere Geräte liefern. Nebenbefund erledigt:
+> `SpeicherFlottenEditor.razor` zieht die vier neutralen Vorgaben jetzt aus
+> `FlottenGeraetevorgaben`.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 0 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen
+> (Bestand); Tests grün in beiden Kulturen — die Laufzahlen sinken um **125 Fälle** mit dem
+> entfernten Weg, davon 6 gerettet; ChartProben 64 Bilder, 0 Verstöße; SqlDialektPrüfer 0
+> Fundstellen von 1 407; Referenzlauf 1030/1007/1017/1045/1046 gegen
+> `2026-09-11_R7_Speicherflotte` **byte-gleich**; Gate a288 grün. Entfernt: rund 3 390 Zeilen
+> Produktionscode und 3 852 Zeilen Testcode. Keine Einfrierregel berührt, die Basis bleibt.
+> Merge `4372f51a`.
+>
+> **Offen:** die Umbenennung der drei DTO-Typen als eigener Schritt (siehe Statusdatei
+> „Nach #288").
+
+## #289 — Die Wache lernt sehen, der Sprung lernt schweigen (15.09.2026, Nachtrag aus dem Merge)
+
+> **Fünf Kleinpunkte** aus den Messungen zu #286 und #287, vom Anwender freigegeben.
+>
+> **K1 — vier doppelte Titel, und die Lücke dahinter.** `TarifstrukturDialog`,
+> `PhotovoltaikVerguetungDialog`, `WirtschaftlichkeitParameterDialog` und
+> `KapitalwertVerlaufDialog` zeichneten ihren `epos-dialog-titel` unbedingt, obwohl die
+> Überlagerung denselben Titel schon trägt. Sie führen jetzt `TitelAnzeigen` (Vorgabe `true`,
+> Bestand unverändert); die vier Einbettungsstellen in `WirtschaftlichkeitSeite.razor` setzen
+> `false`. Alle Einbettungsstellen geprüft: je Dialog genau zwei Wirte — die Überlagerung und
+> die Windows-Hülle (eigenes Fenster, behält ihren Kopf).
+>
+> Der eigentliche Punkt ist die **Lücke**: Die Wache `UeberlagerungstitelTests` verglich
+> Titel**ausdrücke** und griff deshalb nicht, weil die vier ihren Text aus `@_t.Titel`,
+> `@_t.Titel(Sicht)` und `@TitelText` beziehen. Die neue Prüfung `StrukturFunde` kommt **ohne
+> jeden Textvergleich** aus: Wer in einer betitelten `Ueberlagerung` steckt, darf keinen
+> unbedingten Dialogtitel zeichnen — gleich, woher sein Text kommt. Belegt an einem
+> nachgebauten Vorstand: Die geschärfte Wache meldet dort alle vier, nach der Behebung
+> nichts; die alten Bauarten melden in beiden Fassungen nichts. Dazu acht bunit-Fälle je
+> Dialog und eine Theory über alle fünf Bereiche.
+>
+> **K2 — der Befund traf nur halb zu.** Der Auftrag ging davon aus, `WPAR_SPRUNG_HINWEIS`
+> („bitte vorher speichern") sei seit #282/#286 überholt. Die Nachprüfung, wie der
+> Parameterdialog seine Sprünge **wirklich** abwickelt, ergab das Gegenteil: `BhkwKlick()`
+> meldet den Sprungwunsch und schließt — `Speichern` läuft **nicht**. Anders als der
+> BHKW-Dialog nimmt dieser Sprung nicht den OK-Weg; nicht gespeicherte Eingaben sind fort,
+> weil die Hülle beim nächsten Öffnen frisch lädt. Deshalb **nicht** der Wortlaut des
+> BHKW-Dialogs übernommen, sondern der Text sagt, was **dieser** Dialog tut: „Der Sprung
+> schließt diesen Dialog, ohne die Eingaben zu speichern — bitte vorher speichern." Beide
+> Sprachen, Designer wiederholbar gezogen.
+>
+> **K3 — Sprung schreibt nur bei Änderung** (Anwenderentscheid 15.09.2026, Empfehlung
+> angenommen). Die zwei Sprungknöpfe des BHKW-Dialogs bleiben beim OK-Weg — ein Sprung ist
+> kein Abbruch, und ohne Schreiben wären die Eingaben verloren. Aber sie schreiben nur bei
+> Unterschied: `BhkwAnlagenstand.Gleicht` (elf Felder) und `BhkwVorgabenstand.Gleicht`
+> (siebzehn Felder) vergleichen **Werte** gegen das hereingereichte Objekt — **kein
+> Merkflag**, denn ein Flag kippt schon bei einer Bedienung ohne Wertänderung. Ohne
+> Unterschied: Sprung ohne einen einzigen Schreibaufruf, `Gespeichert` bleibt `false`, der
+> Wirt hat keinen Grund neu zu rechnen; der Hinweissatz steht nur, wenn wirklich geschrieben
+> würde. Begründung im Kommentar: Wer nur nachschlägt, soll keinen Schreibzugriff auslösen —
+> ein Schreiben ohne Änderung überschriebe in einer Mehrbenutzerlage fremde Änderungen mit
+> dem eigenen geladenen Stand. Dass ein Fehlschlag den Sprung verhindert und die Maske offen
+> hält (Muster Ae25), hielt der Bestand schon; jetzt mit Testfall belegt. Fünf bunit-Fälle.
+>
+> **K4 — der sechste Flatterer.** Ursache: Der Messpunkt wurde **sofort** nach dem Klick auf
+> den Spaltenkopf genommen, das virtualisierte QuickGrid holt seine Zeilen aber über einen
+> `ItemsProvider` nach — der Messpunkt lag in der Einschwingphase. Neuer Helfer `ZurRuhe`:
+> zeichnet, bis zwei Läufe in Folge dieselbe Rechnung, Datenquelle **und** Menge zeigen; kommt
+> die Liste nach zwanzig Läufen nicht zur Ruhe, fällt der Fall mit klarem Grund — die Prüfung
+> bleibt scharf. Drei weitere Zeilenklicks derselben Klasse ohne Wartepunkt bekamen den
+> vorhandenen Helfer. **Nachweis: 30 Klassenläufe, je 59 von 59 grün.**
+>
+> **K5 — BOM.** `EPOS.Kern/Controller/KostenVorlagenCtrl.cs`: vorher `75 73 69`, 44 530 Byte,
+> 0 CR, 875 LF — nachher `ef bb bf`, 44 533 Byte, 0 CR, 875 LF, Rest byte-identisch. Genau das
+> BOM, keine Zeile sonst.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 4 Warnungen (Bestand); Windows-Schale 0 Fehler, 5
+> Warnungen (Bestand); **8 023 Tests grün**, 1 übersprungen, 0 rot (EPOS.UI 4 136 → 4 151);
+> Referenzlauf 1030/1007/1017/1045/1046 byte-gleich; Gate a289 grün. Kein Rechenweg berührt.
+> Merge `6245e330`.
+>
+> **Offen:** vier Entscheide — der Sprungknopf, den niemand auswertet; 37 weitere doppelte
+> Titel; 332 Dateien ohne BOM; die Schreibbedingung des OK-Wegs (siehe Statusdatei
+> „Nach #289").
+
+## #290 — Erst die Erzeuger, dann die Dateien (15.09.2026, Nachtrag aus dem Merge)
+
+> **Befund.** `.editorconfig` verlangt für `.cs` UTF-8 mit BOM. Von 1 311 versionierten
+> `.cs` lagen 332 ohne — quer durch `EPOS.Kern` (125), `EPOS.Kern.Tests` (60),
+> `EPOS.UI.Tests` (34), `EPOS.UI` (32), `SpeicherEngine` (32) und neun weitere Orte.
+>
+> **Warum die Reihenfolge der Punkt war.** Zwei dieser Dateien werden von Werkzeugen
+> geschrieben, und beide Werkzeuge schrieben ohne BOM: `sql/tools/Erzeuge-Schema.ps1`
+> (`UTF8Encoding($false)` für **alle** Ausgaben) und `Werkzeuge/KlimazonenPfade/erzeugen.py`
+> (`encoding="utf-8"`). Hätte man nur die Dateien angefasst, wäre das BOM beim nächsten
+> Werkzeuglauf wieder verschwunden und der Befund zurückgekommen. Die Erzeuger wurden
+> gesucht, nicht nach Dateinamen geraten, und zuerst umgestellt: Das PowerShell-Skript
+> bekommt einen Schalter, den **nur** der C#-Aufruf setzt — die drei `.sql` und zwei `.json`
+> bleiben bewusst BOM-frei —, `erzeugen.py` schreibt `utf-8-sig`, und ein zweiter Lauf auf
+> dasselbe Ziel liefert byte-gleiche 407 739 Byte (Muster #152). Ein dritter Kandidat wurde
+> geprüft und **nicht** geändert: `designer_neu.py` schreibt `Resource.Designer.cs` schon mit
+> BOM.
+>
+> **Gemessen statt angenommen.** Die Wurzel-`CLAUDE.md` warnt, dass ältere Dateien
+> Windows-1252 ohne BOM sein können — ein BOM davor gesetzt ergäbe Byte-Salat. Alle 332
+> wurden streng dekodiert: **keine einzige** ist 1252, alle sind gültiges UTF-8. Die
+> Ausnahmeliste der Wache ist deshalb leer, und das ist ein Messergebnis, keine Auslassung.
+>
+> **Die Gegenprobe.** Sie trägt den ganzen Auftrag und wurde von der Orchestrierung
+> unabhängig nachgerechnet: Zieht man aus jeder geänderten Datei die drei BOM-Bytes wieder
+> ab, ist sie byte-identisch zu ihrem Stand in `be2eb4c7` — **332 von 332, 0 abweichend**,
+> verglichen gegen die Git-Blobs. Der zeilenbasierte Diff zeigt für alle 332 genau `1 1`;
+> das ist das Minimum, das eine reine BOM-Änderung zeigen kann, und mehr kommt nicht vor.
+>
+> **Die Wache.** Eine solche gab es nicht. Neu: `EPOS.Kern.Tests/QuelltextKodierungWacheTests`
+> (Zuschnitt und Ton nach `RepositoryOrdnungWacheTests`, sechs Fälle, im Kern-Filter). Sie
+> prüft zweierlei: BOM-Pflicht je versionierter `.cs` **und** UTF-8-Gültigkeit — die zweite
+> Regel fängt den Rückweg ab, bei dem jemand eine Signatur vor einen 1252-Rumpf setzt; ihre
+> Meldung sagt ausdrücklich, dass ein BOM die Sache in diesem Fall schlimmer macht. Die Liste
+> stammt aus `git ls-files -z` (Dateisystem nur als Rückfall, damit sie nie still grün wird),
+> dazu vier Gegenproben — ganzer Bestand, synthetischer Baum mit allen drei Fällen,
+> Ausnahmeliste, Pfade mit Umlaut. Im Lauf live belegt: BOM entfernt → rot **mit Dateinamen**,
+> wiederhergestellt → grün. Zeilenenden prüft sie bewusst nicht: `* text=auto` legt LF ab und
+> checkt auf Windows CRLF aus — eine Prüfung darauf wäre auf einer der beiden Plattformen
+> immer rot.
+>
+> **Ein Punkt, an dem der Agent angehalten hat.** `KlimazonenPfade.cs` wurde nicht neu
+> erzeugt: Die eingecheckte Datei weicht vom `KOPF`-Muster des Erzeugers in genau einer
+> Kommentarzeile ab (der double-Durchgang `b76c53d7` hat sie dort geändert, im Erzeuger
+> nicht). Neuerzeugen hätte diese Zeile zurückgedreht — mehr als das BOM, was der Auftrag
+> verbietet. Das BOM wurde von Hand gesetzt, byte-identisch zu dem, was der geänderte
+> Erzeuger für diesen Inhalt schreiben würde, und die Drift im Commit festgehalten.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 4 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen
+> (Bestand); 8 029 Tests grün, 1 übersprungen; Formularkarte 122 grün (die Prüfmuster tragen
+> jetzt BOM — `File.ReadAllText` verwirft es), Auslieferungsvorlage 19 grün; SqlDialektPrüfer
+> 0 Fundstellen von 1 409; ResourceDesigner-Trockenlauf +0; Referenzlauf
+> 1030/1007/1017/1045/1046 byte-gleich; Gate a290 grün. Kein Rechenweg berührt — geändert
+> sind drei Bytes je Datei, zwei Erzeuger-Schreibpfade und eine neue Testklasse.
+> Merge `5be42948`.
+>
+> **Offen:** der Windows-Lauf des Schema-Skripts, die Kommentardrift des Klimazonen-Erzeugers
+> und 19 weitere Dateien derselben Regel (siehe Statusdatei „Nach #290").
+
+## #291 — Der Strombezug-Einstieg bleibt: die Deckung fehlt (15.09.2026, Nachtrag aus dem Merge)
+
+Der Auftrag lautete, den Knopf „Strombezug…" von der Wirtschaftlichkeitsseite zu
+entfernen. Er hat nichts entfernt — die vorgeschaltete Anhalteregel hat gegriffen.
+
+> „Wirtschaftlichkeit - button Strombezug und damit im zusammenhang stehende was
+> nicht benötigt wird kann entfernt werden. Ist alles unter Verwaltung
+> Energiekosten und Energiepreisstruktur enthalten."
+
+Der letzte Satz war die Annahme, auf der alles ruhte, und er trifft nicht zu.
+
+**Sieben Werte ohne zweiten Pflegeweg.** Die vier Zonen-Bezugspreise (Winter und
+Sommer, je HT und NT) rechnen in `StromMatrix.Bezugskosten`; die drei Staffelgrößen
+des Leistungspreises (Grenze, Preis darunter, Preis darüber) in
+`StromMatrix.Leistungspreis` und in `SpeicherAuslegungVorgabenCtrl`. Beide Blöcke
+baut der Dialog nur in den Sichten `Komplett` und `Strombezug`
+(`MitZonenBezug => Sicht is TarifSicht.Komplett or TarifSicht.Strombezug`).
+
+**Und `Komplett` hat keinen Wirt.** Die zweistellige Überladung
+`TarifstrukturHuelle.Oeffnen(besitzer, idStamm)`, die diese Sicht öffnen würde, wird
+nirgends gerufen; es gibt keinen Menüpunkt dorthin. Die einzigen Aufrufer der Hülle
+sind die PV-Vergütung (Sicht `Photovoltaik`) und der BHKW-Dialog (Sichten `Bhkw` und
+`Strombezug`). Damit ist der Knopf auf der Wirtschaftlichkeitsseite der einzige
+Zugang zu diesen sieben Werten.
+
+**Die Kostenverwaltung deckt sie nicht ab.** `Tab_ProjektTarif` hat genau einen
+Schreibweg — `WirtschaftlichkeitCtrl.SpeichereTarif` mit einem einzigen Aufrufer.
+Trägerkarte, Aufschläge und Leistungspreisreihe pflegen andere Größen auf anderen
+Spalten. Der Kern benennt den Unterschied selbst: die Tarifstruktur trägt den Preis
+der Wirtschaftlichkeitsrechnung, der Energieträger den des Kostenmoduls. Der
+Tarifsatz **ersetzt** die Flat-Preise, er wiederholt sie nicht.
+
+**Eine zweite, breitere Lücke** aus derselben Messung: Der Knopf erscheint nicht nur
+bei aktivem Tarif, sondern auch, sobald die Gruppe eine Wärmepumpe führt. In einem
+Wärmepumpenprojekt ohne BHKW und ohne PV ist er der einzige Zugang zum Tarifsatz
+überhaupt — die Sichten `Bhkw` und `Photovoltaik` sind dort nicht erreichbar.
+
+Ergebnis im Repositorium ist allein die Messung: Sichtentabelle mit ihren Wirten,
+Feldkarte in vier Blöcken mit Datei und Zeilennummer je Zeile, die Begründung gegen
+die Kostenverwaltung und drei Wege zur Entscheidung. Kein Quelltext, kein
+Ressourcenschlüssel, keine Wiki-Quelle wurde angefasst; ein Referenzlauf war nicht
+nötig, weil kein Rechenweg berührt ist.
+
+Die Annahme der Orchestrierung, der gleichnamige Sprungknopf im BHKW-Dialog falle
+mit, ist bewusst **nicht** umgesetzt. Sie bleibt sachlich richtig — zwei Pflegewege
+auf dieselben Werte sind der Fehler, nicht die Bequemlichkeit —, setzt aber voraus,
+dass überhaupt ein Pflegeweg bleibt.
+
+## #292 — Zwei Einstiege fallen, einer davon war nie einer (15.09.2026, Nachtrag aus dem Merge)
+
+Zwei Anwenderentscheide an derselben Seite, beide ohne Rechenwirkung.
+
+**Teil A — „Tarifstruktur für Wärmepumpe entfällt."** Der Knopf „Strombezug…" erschien
+bisher unter zwei Bedingungen: aktiver Tarifsatz **oder** eine Wärmepumpe in der Gruppe
+(`WirtschaftlichkeitSeiteGaben.cs`, `stand.MitStrombezug = (flags != null &&
+flags.Waermepumpe) || tarifAktiv`). Der zweite Zweig fällt. Damit hängt der Einstieg
+allein an der Frage, ob das Projekt überhaupt mit einer Tarifstruktur rechnet.
+
+Nicht gefallen ist der Knopf selbst, und das hat einen belegten Grund: Die Sicht
+`Strombezug` ist der einzige Pflegeweg für vier Zonen-Bezugspreise und drei Staffelgrößen
+des Leistungspreises, die alle in den Rechenweg gehen. Die Messung dazu steht unter
+`Dokumentation/aktuell/`.
+
+Mitgefallen ist `ErzeugerFlags.Waermepumpe` samt seiner Abfrage: Nach der Änderung hatte
+das Feld genau null Leser.
+
+**Teil B — der Knopf, der nichts tat.** Der Sprungknopf „BHKW-Wirtschaftlichkeit…" im
+Wirtschaftlichkeitsparameter-Dialog meldete einen Sprungwunsch, den niemand auswertete.
+Der einzige lebende Wirt ist die Überlagerung der Wirtschaftlichkeitsseite, und die
+schreibt `Geschlossen="@((WirtParameterErgebnis e) => Fertig(e is not null))"` — der
+Sprungwert fällt auf den Boden. Die Schleife, die früher wieder öffnete, hatte keinen
+Aufrufer mehr.
+
+Gefallen sind deshalb nicht nur der Knopf, sondern die ganze Kette dahinter: `BhkwKlick`,
+die Beschriftung, der Hinweistext, der Aufzählungstyp `WirtParameterSprung` (nach dem
+Wegfall des einen Wertes blieb nur `Keiner`), der Parameter `Sprung` des Ergebnisses —
+`Schliessen()` ist jetzt parameterlos — und in der Hülle `Oeffnen` samt `EinmalZeigen`,
+beide ohne Aufrufer, mitsamt vier Usings. Die BHKW-Gruppe im Dialog bleibt stehen, als
+reiner Verweis darauf, wo die Angaben gepflegt werden.
+
+**Eine Folge, die benannt gehört.** Nach Teil A gilt: In einer Gruppe ohne BHKW und ohne
+Photovoltaik ist bei inaktivem Tarifsatz keine Sicht des Tarifdialogs mehr erreichbar.
+Der Schalter „Aktiv" sitzt im Kopfblock, den jede Sicht baut — aber wer keine Sicht
+öffnen kann, kommt an den Schalter nicht heran. Das ist die konsequente Folge des
+Entscheids und bewusst so umgesetzt; ein Rückweg wäre ein Wirt für die Sicht `Komplett`,
+die als Überladung existiert und seit jeher keinen Aufrufer hat.
+
+Zur Wiki-Quelle: Die Fußleiste der Seite „Wirtschaftlichkeit" nannte einen Knopf
+„Tarifstruktur…", den es seit Ä16 nicht mehr gibt. Er heißt dort jetzt „Strombezug…",
+mit seiner Bedingung, und daneben steht „BHKW-Wirtschaftlichkeit…" als das, was es nach
+dieser Welle ist: der einzige Weg in jenen Dialog.
+
+## #293 — Der Rückfall setzt an der Zuordnung an, nicht am Wert (15.09.2026, Nachtrag aus dem Merge)
+
+Der Anwenderentscheid lautete:
+
+> „bereits zugewiesen CO-Zahlen nicht überschreiben"
+
+Das verlangt, eine Lücke von einem Wert zu unterscheiden. Die Messung zeigt zuerst,
+dass der heutige Datenstand genau das **nicht kann**.
+
+**Eine gepflegte 0 ist heute nicht von „nie ausgefüllt" zu unterscheiden.** Im Code
+zählt jede der vier Ebenen der Lesekette einen Wert erst ab *größer als 0* als gepflegt;
+eine 0 fällt durch auf die nächste Ebene. Im Schema stehen `energy_project_settings.co2`,
+`energy_carrier.co2` und `Tab_Brennstoff_Stamm.CO2` auf `DEFAULT 0` statt `NULL` — in der
+Testdatenbank finden sich dort 2 / 3 / 2 Zeilen mit exakt 0 und **keine einzige** `NULL`,
+dazu 41 Nullen in `emissionswert.wert`. Projekt 1017 ist das lebende Beispiel: zwei
+Stromträger zugeordnet, beide mit Projektwert 0. Ob das „Ökostrom, bewusst 0" heißen soll
+oder „nie gepflegt", steht nirgends.
+
+**Die Folgerung war, nicht zu raten.** Der Rückfall setzt an der **Trägerzuordnung** an:
+Er greift nur, wenn dem Projekt gar kein Stromträger zugeordnet ist — das ist eine
+Tatsache der Struktur und braucht keine Deutung. Ist ein Träger zugeordnet, gilt sein
+Faktor, auch wenn er 0 ist. Damit stellt sich die 0-Frage im umgesetzten Weg nicht.
+
+`Emissionsquelle.Netzstrom` ist nun die eine Stelle für den Netzstromfaktor: zugeordneter
+Träger über die Lesekette, sonst der Auslieferungsträger des Katalogs, sonst der
+Vorgabewert. `KostenEmissionRechner` liest von dort statt aus einer eigenen Kette — die
+zweite Wahrheit aus #267 ist weg, wo Kosten- und Emissionsseite dieselbe Lage
+verschieden beantwortet haben. Wo der Rückfall greift, nennt eine Herleitungszeile den
+geliehenen Träger.
+
+**Kein einziger Emissionsskalar ändert sich** — gemessen je Projekt, nicht geschätzt:
+1030 (10 Skalare, 0 Abweichungen), 1017 (10, 0), 1045 (5, 0); 1007 und 1046 führen keine.
+1030 und 1017 haben einen Träger zugeordnet, der Rückfall greift dort nicht. Bei 1007,
+1045 und 1046 greift er und trifft auf Träger 60 „Elektrische Energie" mit 435 g/kWh —
+genau die Zahl, mit der diese Projekte vorher als anonymer Vorgabewert gerechnet haben.
+Die Lücke wird gefüllt, die ausgewiesene Zahl bleibt gleich. Das Gate bestätigt es
+unabhängig: Referenzlauf 5/5 byte-gleich.
+
+Zwei Stellen blieben bewusst unberührt. Eine BHKW- oder Kesselzeile ohne Trägerbezug
+lässt `CO2Gesamt` weiterhin auf `null` laufen („—"); ihr den **Strom**träger zu leihen
+wäre fachlich falsch, dafür gibt es den Brennstoff-Rückfall. Und `Emissionsquelle.Fuer`
+samt `StromTraeger` bleibt, wie sie war, damit Simulation, Strompreis und Aufschläge
+unverändert rechnen und der Wächter aus #280 weiter gilt.
+
+Eine Nebenwirkung gehört genannt: Dieselbe Stelle speist die Autarkie-Kachel. In einem
+Projekt ohne zugeordneten Stromträger bekommt sie künftig den Katalogfaktor statt des
+Vorgabewerts. In der Testdatenbank sind beide 435, deshalb kein Unterschied; in einer
+Datenbank mit abweichend gepflegtem Auslieferungsträger verschiebt sie sich um dessen
+Differenz. Das war der Preis dafür, aus zwei Fassungen derselben Frage eine zu machen.

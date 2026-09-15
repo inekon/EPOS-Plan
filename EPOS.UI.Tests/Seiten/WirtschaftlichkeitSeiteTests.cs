@@ -4,6 +4,7 @@ using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -256,6 +257,30 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.Equal(3, Fussknoepfe(ohne).Count);   // Parameter, Verlauf, Berechnen
     }
 
+    /// <summary>
+    /// Der Einstieg „Strombezug…" hängt allein am TARIFSATZ des Projekts
+    /// (<c>MitStrombezug</c>), nicht an der Erzeugerlage der Gruppe: Er pflegt
+    /// die Sicht „Strombezug" des Tarifsatzes, und die wirkt nur, solange der
+    /// Satz aktiv ist. Ein Wärmepumpenprojekt ohne aktiven Tarif zeigt ihn
+    /// deshalb nicht — es gibt dort nichts zu pflegen, was rechnet.
+    /// </summary>
+    [Fact]
+    public void Der_Strombezug_Einstieg_haengt_allein_am_Tarifsatz()
+    {
+        // Aktiver Tarifsatz — der Knopf steht da, auch ohne PV und ohne BHKW.
+        var mitTarif = Zeige(
+            p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()),
+            stand: Standard(pv: false, bhkw: false, strom: true));
+        Assert.Contains(Fussknoepfe(mitTarif), k => k.TextContent.Trim() == "Strombezug…");
+
+        // Kein aktiver Tarifsatz — der Knopf fehlt, gleich welcher Erzeuger in
+        // der Vergleichsgruppe steht (die Wärmepumpe ankert ihn nicht mehr).
+        var ohneTarif = Zeige(
+            p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()),
+            stand: Standard(pv: false, bhkw: false, strom: false));
+        Assert.DoesNotContain(Fussknoepfe(ohneTarif), k => k.TextContent.Trim() == "Strombezug…");
+    }
+
     /// <summary>Ohne Delegat kein Knopf (A-18 aus Welle 2).</summary>
     [Fact]
     public void Ohne_Gaben_bleibt_nur_Berechnen()
@@ -398,6 +423,85 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
         Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.Keins, cut.Instance.OffenerUnterdialog);
         Assert.Equal(2, _geladen);                            // Aufbau + Nachlauf
+    }
+
+    /// <summary>
+    /// Auftrag #286, Einbettungsstelle 2: Der BHKW-Dialog schreibt auch hier nur im
+    /// OK-Weg. Nach OK bekommt der Wirt seine Speichermeldung und rechnet neu, nach
+    /// Abbrechen bekommt er nichts — und die Datenbank sieht keinen Zugriff.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Der_BHKW_Dialog_schreibt_in_der_Ueberlagerung_nur_im_OK_Weg(bool ok)
+    {
+        var anlage = new KwkgAnlagenAngabe
+        { IdAnlage = 14920, IdProjekt = 1030, Bezeichner = "BHKW 50", PelKW = 50 };
+        var parameter = new WirtschaftlichkeitParameter();
+        int zugriffe = 0;
+        bool? gemeldet = null;
+
+        var gaben = new Dictionary<string, object>
+        {
+            ["IdStamm"] = 1030,
+            ["Anlagen"] = (IList<KwkgAnlagenAngabe>)new List<KwkgAnlagenAngabe> { anlage },
+            ["Parameter"] = parameter,
+            ["SpeichereAnlage"] = new Func<KwkgAnlagenAngabe, bool>(_ => { zugriffe++; return true; }),
+            ["SpeichereVorgaben"] = new Func<WirtschaftlichkeitParameter, bool>(
+                _ => { zugriffe++; return true; })
+        };
+
+        var cut = Zeige(p => p
+            .Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _)
+                => (IReadOnlyDictionary<string, object>)gaben)
+            .Add(x => x.Nachlauf, (WirtschaftlichkeitSeite.Unterdialog _, bool g)
+                => { gemeldet = g; return g ? "BHKW-Wirtschaftlichkeit gespeichert." : ""; }));
+
+        Fussknoepfe(cut)[1].Click();                  // BHKW
+        cut.FindAll("input[inputmode=decimal]")[0].Input("5,57");
+        Assert.Equal(0, zugriffe);
+
+        // Die Leiste des Dialogs traegt Abbrechen (0) und Speichern (1).
+        IReadOnlyList<IElement> knoepfe = cut.FindAll(".epos-ueberlagerung .epos-leiste button");
+        knoepfe[ok ? 1 : 0].Click();
+
+        Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.Keins, cut.Instance.OffenerUnterdialog);
+        Assert.Equal(ok ? 2 : 0, zugriffe);
+        Assert.Equal(ok ? 5.57 : (double?)null, anlage.SatzEinspCt);
+        Assert.Equal(ok, gemeldet);
+
+        // Nach OK setzt der Nachlauf die Meldung; nach Abbrechen sagt er nichts, und
+        // die Seite behaelt ihre eigene Statuszeile.
+        if (ok) Assert.Equal("BHKW-Wirtschaftlichkeit gespeichert.", cut.Instance.Status);
+        else Assert.DoesNotContain("BHKW-Wirtschaftlichkeit gespeichert.", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b‑B‑9): Die Überlagerung trägt ihn, der Dialog
+    /// darin zeigt keinen eigenen Kopf — und zwar JEDER der fünf. Die vier
+    /// Geschwister des BHKW-Dialogs beziehen ihren Titel aus einem eigenen
+    /// Ausdruck; deshalb sah die Markup-Wache sie bis #289 nicht, und deshalb
+    /// steht hier der GEZEICHNETE Nachweis: genau ein Titel je Bereich, der der
+    /// Überlagerung.
+    /// </summary>
+    [Theory]
+    [InlineData(0)]   // Photovoltaik
+    [InlineData(1)]   // BHKW
+    [InlineData(2)]   // Strombezug
+    [InlineData(3)]   // Parameter
+    [InlineData(4)]   // Verlauf
+    public void Kein_Unterdialog_zeigt_in_der_Ueberlagerung_einen_eigenen_Titel(int knopf)
+    {
+        var cut = Zeige(p => p.Add(x => x.Gaben,
+            (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
+
+        Fussknoepfe(cut)[knopf].Click();
+
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung h1.epos-dialog-titel"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-ueberlagerung-titel"));
+
+        // Der Hilfeknopf des Dialogs bleibt — nur der Kopf faellt weg.
+        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung .epos-dialog-kopf--ohnetitel"));
     }
 
     // =====================================================================
@@ -615,7 +719,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Fussknoepfe(cut)[3].Click();                          // Parameter
         var dialog = cut.FindComponent<WirtschaftlichkeitParameterDialog>();
         await cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
-            new WirtParameterErgebnis(true, WirtParameterSprung.Keiner)));
+            new WirtParameterErgebnis(true)));
 
         Assert.Single(cut.FindAll(".epos-wirt-warnband .epos-leiste button"));
         Assert.Contains("bitte neu berechnen", cut.Find(".epos-wirt-warnband .epos-warnbanner").TextContent);

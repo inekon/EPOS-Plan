@@ -2815,6 +2815,92 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_76_TRAEGERSATZ_EINDEUTIG = 76;
 
+        /// <summary>
+        /// Schritt 77 — die <b>Volumenbemessung der ausgelieferten
+        /// Pufferspeicher-Vorlage</b> (Auftrag <b>#284</b>, Anwenderentscheid vom
+        /// 15.09.2026: „Prüfe Pufferspeicher Daten mit Volumen/Größe.
+        /// EUR_PRO_KWH_KAPAZITAET spielt keine Rolle, nur das Volumen als Bezugsgröße").
+        /// Anlass, Anweisung und Ergebnisneutralität stehen vollständig bei
+        /// <see cref="PufferspeicherBemessungVolumen"/>; hier nur, was die Migration
+        /// angeht.
+        ///
+        /// <para><b>Wozu.</b> Der Pufferspeicher führt keine kWh-Kapazität — ohne
+        /// Temperaturpaar gibt es keine belastbare Umrechnung seines Volumens. Die
+        /// Landkarte der Bezugsgrößen liefert für „je kWh Kapazität" an diesem Gewerk
+        /// deshalb nichts, und ein Satz an so einer Zeile liefe über den
+        /// Anwenderentscheid I-2 auf den erfassten Betrag hinaus. Die ausgelieferte
+        /// Investitionsvorlage trug die Art dennoch und ist die Quelle jedes neuen
+        /// Projekts.</para>
+        ///
+        /// <para><b>Eine Anweisung, aus dem KERN</b> und keine hier abgeschriebene DML:
+        /// <c>PufferspeicherBemessungVolumen.SQL_UMSTELLEN</c>. Aus derselben Quelle
+        /// bedienen sich <c>Werkzeuge/Testdatenbankschema</c> und der Nachweis in
+        /// <c>EPOS.Kern.Tests</c>; die Saat der zwanzig Auslieferungsvorlagen
+        /// (<c>SchemaKatalog.Schritt39_Vorlagen</c>) trägt dieselbe Art.</para>
+        ///
+        /// <para><b>Ergebnisneutral, und zwar mit Bedingung.</b> Umgestellt wird nur eine
+        /// Zeile mit <c>Satz IS NULL</c> — eine Vorlagenzeile ohne Satz gibt allein die
+        /// ART vor, keine Zahl. Eine Zeile mit gepflegtem Satz trüge eine Zahl je kWh und
+        /// wäre nach einer Umstellung eine Zahl je Liter; das wäre eine stille Umdeutung
+        /// und bleibt deshalb aus. Solche Zeilen zählt der Bericht mit, statt sie
+        /// anzufassen. <c>Tab_ProjektWerte</c> und die Vorlagen der übrigen neun
+        /// Komponenten bleiben unberührt; der Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 77
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 76
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Ein zweiter Lauf findet keine Zeile mehr mit der alten
+        /// Art.</para>
+        /// </summary>
+        public const int SCHRITT_77_PUFFER_VOLUMENBEMESSUNG = 77;
+
+        /// <summary>
+        /// Schritt 78 — der <b>feste Betrag für die ausgelieferte PV-Position
+        /// „Batteriespeicher"</b> (Auftrag <b>#287</b>, Anwenderentscheid vom 15.09.2026).
+        /// Anlass, Anweisung und Ergebnisneutralität stehen vollständig bei
+        /// <see cref="PvVorlageBatteriespeicher"/>; hier nur, was die Migration angeht.
+        ///
+        /// <para><b>Wozu.</b> Die Photovoltaik führt keine kWh-Kapazität — ihre einzige
+        /// Baugröße ist die installierte Leistung in kWp (Modulanzahl × Modulleistung).
+        /// Die Landkarte der Bezugsgrößen liefert für „je kWh Kapazität" an diesem Gewerk
+        /// deshalb nichts, und ein Satz an so einer Zeile liefe über den Anwenderentscheid
+        /// I-2 auf den erfassten Betrag hinaus — bei einer reinen Satzzeile also auf 0.
+        /// Die ausgelieferte Investitionsvorlage trug die Art dennoch und ist die Quelle
+        /// jedes neuen Projekts. Dieselbe Lage wie in
+        /// <see cref="SCHRITT_77_PUFFER_VOLUMENBEMESSUNG"/>, nur am anderen Gewerk.</para>
+        ///
+        /// <para><b>Warum der feste Betrag.</b> Die beiden Arten mit echter Baugröße
+        /// meinen an der Photovoltaik dieselbe Zahl, die Modulleistung; ein
+        /// Batteriespeicher-Satz je kWp bemäße den Preis eines Geräts an der Größe eines
+        /// anderen. Die übrigen Gerätepositionen derselben Vorlage (Wechselrichter,
+        /// Montagesystem, Bauliche Anlagen) stehen bereits auf dem festen Betrag. Wer nach
+        /// der Kapazität bemessen will, nimmt das Gewerk Stromspeicher — dort ist sie die
+        /// Baugröße.</para>
+        ///
+        /// <para><b>Eine Anweisung, aus dem KERN</b> und keine hier abgeschriebene DML:
+        /// <c>PvVorlageBatteriespeicher.SQL_UMSTELLEN</c>. Aus derselben Quelle bedienen
+        /// sich <c>Werkzeuge/Testdatenbankschema</c> und der Nachweis in
+        /// <c>EPOS.Kern.Tests</c>; die Saat der zwanzig Auslieferungsvorlagen
+        /// (<c>SchemaKatalog.Schritt39_Vorlagen</c>) trägt dieselbe Art.</para>
+        ///
+        /// <para><b>Ergebnisneutral, und zwar mit Bedingung.</b> Umgestellt wird nur eine
+        /// Zeile mit <c>Satz IS NULL</c> — eine Vorlagenzeile ohne Satz gibt allein die
+        /// ART vor, keine Zahl. Eine Zeile mit gepflegtem Satz trüge eine Zahl je kWh und
+        /// wäre nach einer Umstellung ein Gesamtbetrag; das wäre eine stille Umdeutung und
+        /// bleibt deshalb aus. Solche Zeilen zählt der Bericht mit, statt sie anzufassen.
+        /// <c>Tab_ProjektWerte</c> und die Vorlagen der übrigen neun Komponenten bleiben
+        /// unberührt; der Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Nebenwirkung, systemimmanent:</b> Mit dem Sprung auf Zielstand 78
+        /// weist <c>ProjektExportImportCtrl</c> <c>.wpx</c>-Pakete ab, die auf Stand 77
+        /// geschnürt wurden — die eingebaute Zusage des Formats.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Ein zweiter Lauf findet keine Zeile mehr mit der alten
+        /// Art.</para>
+        /// </summary>
+        public const int SCHRITT_78_PV_BATTERIESPEICHER = 78;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3728,6 +3814,38 @@ namespace WindowsFormsApplication1
                         "Speicherreihenfolge, und die gepflegte Zeile waere vielleicht die, " +
                         "die niemand liest.",
                         Schritt_76_TraegersatzEindeutig),
+
+            // AUFTRAG #284 vom 15.09.2026 (Anwenderentscheid "Pruefe Pufferspeicher Daten
+            // mit Volumen/Groesse. EUR_PRO_KWH_KAPAZITAET spielt keine Rolle, nur das
+            // Volumen als Bezugsgroesse"). Anweisung, Bedingung und Idempotenzzusage
+            // stehen in PufferspeicherBemessungVolumen - EINE Quelle fuer Migration,
+            // Testdatenbank und Nachweis. Ergebnisneutral: Umgestellt wird nur eine Zeile
+            // OHNE gepflegten Satz; sie gibt allein die Art vor, keine Zahl.
+            new Schritt(SCHRITT_77_PUFFER_VOLUMENBEMESSUNG,
+                        "Die ausgelieferte Pufferspeicher-Vorlage auf die Bemessung je " +
+                        "Liter Gesamtvolumen umstellen (Auftrag #284)",
+                        "Die Auslieferungsvorlage des Pufferspeichers bliebe auf \"je kWh " +
+                        "Kapazitaet\" stehen - einer Bemessung, fuer die dieses Gewerk " +
+                        "keine Bezugsgroesse fuehrt. Jedes neue Projekt uebernaehme sie, " +
+                        "und ein dort gepflegter Satz ergaebe keinen Betrag.",
+                        Schritt_77_PufferVolumenbemessung),
+
+            // AUFTRAG #287 vom 15.09.2026 (Anwenderentscheid "PV-Vorlagenzeile
+            // 'Batteriespeicher' mit EUR_PRO_KWH_KAPAZITAET (Vorlage 5, KomponentenID 3):
+            // ok"). Anweisung, Bedingung und Idempotenzzusage stehen in
+            // PvVorlageBatteriespeicher - EINE Quelle fuer Migration, Testdatenbank und
+            // Nachweis. Ergebnisneutral: Umgestellt wird nur eine Zeile OHNE gepflegten
+            // Satz; sie gibt allein die Art vor, keine Zahl.
+            new Schritt(SCHRITT_78_PV_BATTERIESPEICHER,
+                        "Die ausgelieferte PV-Position \"" +
+                        PvVorlageBatteriespeicher.POSITION +
+                        "\" auf den festen Betrag umstellen (Auftrag #287)",
+                        "Die Auslieferungsvorlage der Photovoltaik bliebe fuer diese " +
+                        "Position auf \"je kWh Kapazitaet\" stehen - einer Bemessung, " +
+                        "fuer die dieses Gewerk keine Bezugsgroesse fuehrt. Jedes neue " +
+                        "Projekt uebernaehme sie, und ein dort gepflegter Satz ergaebe " +
+                        "keinen Betrag.",
+                        Schritt_78_PvBatteriespeicher),
         };
 
         /// <summary>
@@ -5000,6 +5118,97 @@ namespace WindowsFormsApplication1
                     ". Behalten wurde je Paar die Zeile mit der kleinsten ID - genau die, " +
                     "die jede Lesekette schon bisher genommen hat. KEIN Rechenergebnis " +
                     "aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 77 - das Volumen ist die einzige Bezugsgroesse des Pufferspeichers
+        //              (Auftrag #284)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 77 — Anlass, Anweisung und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_77_PUFFER_VOLUMENBEMESSUNG"/> und ausführlich bei
+        /// <see cref="PufferspeicherBemessungVolumen"/>.
+        ///
+        /// <para><b>Ein Handgriff über <see cref="SqliteDml"/>.</b> Die Anweisung trägt
+        /// ihre Bedingung selbst (<c>Satz IS NULL</c>) und ist wiederholbar; eine
+        /// Transaktion braucht es nicht — es gibt keinen Augenblick, in dem etwas
+        /// fehlte.</para>
+        ///
+        /// <para><b>Die gepflegten Zeilen kommen in den Bericht, nicht unter den
+        /// Pflug.</b> Der Schreibschutz der Auslieferungsvorlagen ist aufgehoben (Ä8),
+        /// eine Vorlagenzeile kann also einen Satz tragen. Ein €/kWh-Satz als €/Ltr.-Satz
+        /// weitergeführt wäre eine stille Umdeutung; deshalb bleibt so eine Zeile stehen,
+        /// und ihre Zahl steht in der Notiz.</para>
+        /// </summary>
+        private static bool Schritt_77_PufferVolumenbemessung(Lauf l)
+        {
+            long offen = SqliteZahl(PufferspeicherBemessungVolumen.Zaehlung());
+            long gepflegt = SqliteZahl(PufferspeicherBemessungVolumen.ZaehlungGepflegt());
+
+            // Die Zahl ist Auskunft, keine Bedingung (dieselbe Regel wie in Schritt 76):
+            // Bei -1 laeuft die Umstellung trotzdem - sie ist wiederholbar und stellt bei
+            // sauberem Bestand nichts um.
+            if (offen != 0 &&
+                !SqliteDml(l, PufferspeicherBemessungVolumen.SQL_UMSTELLEN,
+                           "Volumenbemessung der Pufferspeicher-Vorlage"))
+                return false;
+
+            l.Notiz("77: Vorlagenposition(en) des Pufferspeichers auf " +
+                    PufferspeicherBemessungVolumen.BEMESSUNG_NEU + " umgestellt: " +
+                    (offen < 0 ? "unbekannt" : offen.ToString(CultureInfo.InvariantCulture)) +
+                    "; mit gepflegtem Satz unangetastet geblieben: " +
+                    (gepflegt < 0 ? "unbekannt" : gepflegt.ToString(CultureInfo.InvariantCulture)) +
+                    ". Umgestellt wird nur eine Zeile OHNE Satz - sie gibt allein die Art " +
+                    "vor, keine Zahl. Tab_ProjektWerte bleibt unberuehrt. KEIN " +
+                    "Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 78 - der feste Betrag fuer die PV-Position "Batteriespeicher"
+        //              (Auftrag #287)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 78 — Anlass, Anweisung und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_78_PV_BATTERIESPEICHER"/> und ausführlich bei
+        /// <see cref="PvVorlageBatteriespeicher"/>.
+        ///
+        /// <para><b>Ein Handgriff über <see cref="SqliteDml"/>.</b> Die Anweisung trägt
+        /// ihre Bedingung selbst (<c>Satz IS NULL</c>) und ist wiederholbar; eine
+        /// Transaktion braucht es nicht — es gibt keinen Augenblick, in dem etwas
+        /// fehlte.</para>
+        ///
+        /// <para><b>Die gepflegten Zeilen kommen in den Bericht, nicht unter den
+        /// Pflug.</b> Der Schreibschutz der Auslieferungsvorlagen ist aufgehoben (Ä8),
+        /// eine Vorlagenzeile kann also einen Satz tragen. Ein €/kWh-Satz als fester
+        /// Betrag weitergeführt wäre eine stille Umdeutung; deshalb bleibt so eine Zeile
+        /// stehen, und ihre Zahl steht in der Notiz.</para>
+        /// </summary>
+        private static bool Schritt_78_PvBatteriespeicher(Lauf l)
+        {
+            long offen = SqliteZahl(PvVorlageBatteriespeicher.Zaehlung());
+            long gepflegt = SqliteZahl(PvVorlageBatteriespeicher.ZaehlungGepflegt());
+
+            // Die Zahl ist Auskunft, keine Bedingung (dieselbe Regel wie in Schritt 77):
+            // Bei -1 laeuft die Umstellung trotzdem - sie ist wiederholbar und stellt bei
+            // sauberem Bestand nichts um.
+            if (offen != 0 &&
+                !SqliteDml(l, PvVorlageBatteriespeicher.SQL_UMSTELLEN,
+                           "Fester Betrag fuer die PV-Position " +
+                           PvVorlageBatteriespeicher.POSITION))
+                return false;
+
+            l.Notiz("78: Vorlagenposition(en) der Photovoltaik auf " +
+                    PvVorlageBatteriespeicher.BEMESSUNG_NEU + " umgestellt: " +
+                    (offen < 0 ? "unbekannt" : offen.ToString(CultureInfo.InvariantCulture)) +
+                    "; mit gepflegtem Satz unangetastet geblieben: " +
+                    (gepflegt < 0 ? "unbekannt" : gepflegt.ToString(CultureInfo.InvariantCulture)) +
+                    ". Umgestellt wird nur eine Zeile OHNE Satz - sie gibt allein die Art " +
+                    "vor, keine Zahl. Tab_ProjektWerte bleibt unberuehrt. KEIN " +
+                    "Rechenergebnis aendert sich.");
             return true;
         }
 

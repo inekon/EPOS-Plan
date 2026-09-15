@@ -702,6 +702,7 @@ public class KatalogImportDialogTests : EposBunitContext
 
         Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Markiert(cut, 0);
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
 
         Gemeldet(cut, "Bereits eingelesen (übersprungen): 1");
@@ -1200,6 +1201,7 @@ public class KatalogImportDialogTests : EposBunitContext
 
         Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Markiert(cut, 0);
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
         cut.WaitForAssertion(() => Assert.True(cut.Instance.Geschrieben));
         Assert.Null(ergebnis);
@@ -1239,6 +1241,7 @@ public class KatalogImportDialogTests : EposBunitContext
 
         Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
+        Markiert(cut, 0);
         cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
         cut.WaitForAssertion(() => Assert.True(cut.Instance.Geschrieben));
 
@@ -1271,6 +1274,50 @@ public class KatalogImportDialogTests : EposBunitContext
     /// 105 ms mit Sortierung nach kWh und 445 ms mit „alle gewählt", danach 4 ms und
     /// 15 ms.</para>
     /// </summary>
+    /// <summary>
+    /// <b>Wartet auf den RUHEZUSTAND der Liste</b> und liefert den Messpunkt
+    /// (Zahl der Neurechnungen, Datenquelle des QuickGrid, angezeigte Menge).
+    ///
+    /// <para>Dieselbe Regel wie bei <see cref="Gezeichnet"/>, nur eine Ebene
+    /// tiefer: Hinter einem Klick auf einen Spaltenkopf und hinter dem Einlesen
+    /// stehen Ereignisse, die noch laufen, wenn <c>Click()</c> zurückkehrt --
+    /// das virtualisierte QuickGrid holt seine Zeilen über einen
+    /// <c>ItemsProvider</c> nach. Wer den Messpunkt SOFORT nimmt, misst mitten
+    /// in der Einschwingphase und vergleicht ihn danach mit einem Wert von
+    /// hinterher; genau das liess diese Fälle vereinzelt flattern. Deshalb wird
+    /// gezeichnet, bis zwei Läufe in Folge dasselbe zeigen -- erst dann steht
+    /// der Messpunkt. Kommt die Liste gar nicht zur Ruhe, ist das der Befund,
+    /// den diese Prüfungen suchen, und der Fall fällt mit klarem Grund.</para>
+    /// </summary>
+    private static (int Rechnungen, object? Quelle, object Menge) ZurRuhe(
+        IRenderedComponent<KatalogImportDialog> cut)
+    {
+        int rechnungen = -1;
+        object? quelle = null;
+        object? menge = null;
+
+        for (int lauf = 0; lauf < 20; lauf++)
+        {
+            Katalogliste liste = cut.FindComponent<Katalogliste>().Instance;
+            int jetzt = liste.Neurechnungen;
+            object? q = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+            object m = liste.Angezeigt;
+
+            if (jetzt == rechnungen && ReferenceEquals(q, quelle) && ReferenceEquals(m, menge))
+                return (rechnungen, quelle, menge!);
+
+            rechnungen = jetzt;
+            quelle = q;
+            menge = m;
+            cut.Render();
+        }
+
+        Assert.Fail(
+            "Die Katalogliste kommt nach zwanzig Zeichenlaeufen nicht zur Ruhe - "
+            + "sie rechnet die gefilterte Sicht bei jedem Lauf neu (Befund #212).");
+        return (0, null, new object());
+    }
+
     [Theory]
     [InlineData(KatalogImportArt.Heizkessel)]
     [InlineData(KatalogImportArt.Pufferspeicher)]
@@ -1281,12 +1328,9 @@ public class KatalogImportDialogTests : EposBunitContext
     {
         var cut = ImportMitVielenZeilen(art, 6654);
 
-        var liste = cut.FindComponent<Katalogliste>();
-        Assert.True(liste.Instance.Virtualisiert);
+        Assert.True(cut.FindComponent<Katalogliste>().Instance.Virtualisiert);
 
-        object? quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
-        object menge = liste.Instance.Angezeigt;
-        int rechnungen = liste.Instance.Neurechnungen;
+        (int rechnungen, object? quelle, object menge) = ZurRuhe(cut);
 
         for (int i = 0; i < 10; i++)
         {
@@ -1317,13 +1361,15 @@ public class KatalogImportDialogTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.NotEqual(
             erste, cut.FindComponent<Katalogliste>().Instance.Angezeigt[0].Bezeichner));
 
-        int rechnungen = cut.FindComponent<Katalogliste>().Instance.Neurechnungen;
-        object? quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+        // Erst wenn die Sortierung GEZEICHNET zur Ruhe gekommen ist, steht der
+        // Messpunkt - sonst wird die Einschwingphase mitgemessen.
+        (int rechnungen, object? quelle, object menge) = ZurRuhe(cut);
 
         for (int i = 0; i < 10; i++) cut.Render();
 
         Assert.Equal(rechnungen, cut.FindComponent<Katalogliste>().Instance.Neurechnungen);
         Assert.Same(quelle, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+        Assert.Same(menge, cut.FindComponent<Katalogliste>().Instance.Angezeigt);
     }
 
     /// <summary>
@@ -1341,13 +1387,14 @@ public class KatalogImportDialogTests : EposBunitContext
         cut.Find(".epos-wahl-alle input").Change(true);
         cut.WaitForAssertion(() => Assert.Equal(6654, cut.Instance.Markiert.Count));
 
-        int rechnungen = cut.FindComponent<Katalogliste>().Instance.Neurechnungen;
-        object? quelle = cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items;
+        // Wie oben: erst der gezeichnete Ruhezustand, dann der Messpunkt.
+        (int rechnungen, object? quelle, object menge) = ZurRuhe(cut);
 
         for (int i = 0; i < 10; i++) cut.Render();
 
         Assert.Equal(rechnungen, cut.FindComponent<Katalogliste>().Instance.Neurechnungen);
         Assert.Same(quelle, cut.FindComponent<QuickGrid<Katalogfilterzeile>>().Instance.Items);
+        Assert.Same(menge, cut.FindComponent<Katalogliste>().Instance.Angezeigt);
         Assert.Equal(6654, cut.Instance.Markiert.Count);
     }
 

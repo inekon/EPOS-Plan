@@ -65,6 +65,58 @@ public sealed class EmissionsFeldZeile
 }
 
 /// <summary>
+/// Was die Trägerkarte zu EINER Größe (CO₂-Wert, Arbeits-, Leistungspreis) zu sagen
+/// hat: entweder sie fehlt — dann steht hier der Hinweis und die Beschriftung des
+/// Übernahmewegs —, oder sie ist aus der Kategorie GELIEHEN — dann steht hier die
+/// Herleitungszeile.
+///
+/// <para><b>Warum eine Zeile für beides.</b> Ein Wert ist entweder eine Lücke oder
+/// ein geliehener Wert; nie beides und nie gleichzeitig eine dritte Sache. Zwei
+/// Listen nebeneinander wären zwei Wahrheiten über dieselbe Größe.</para>
+///
+/// <para><b>Der Knopf verspricht nichts.</b> Er öffnet die Auswahl; geschrieben wird
+/// erst, was der Anwender darin bestätigt.</para>
+/// </summary>
+public sealed class Wertluecke
+{
+    /// <summary>Schlüssel der Größe (<c>CO2</c>, <c>ARBEITSPREIS</c>, <c>LEISTUNGSPREIS</c>).</summary>
+    public string Groesse { get; set; } = "";
+
+    /// <summary>„Für diesen Energieträger ist kein … gepflegt."; leer = keine Lücke.</summary>
+    public string Hinweis { get; set; } = "";
+
+    /// <summary>Beschriftung des Übernahmewegs; leer = kein Weg (Katalogkontext).</summary>
+    public string KnopfText { get; set; } = "";
+
+    /// <summary>Die Herleitung eines geliehenen Wertes; leer = nichts geliehen.</summary>
+    public string Leihzeile { get; set; } = "";
+}
+
+/// <summary>
+/// Die Rückfrage des Übernahmewegs: welcher Träger derselben Kategorie soll den Wert
+/// stellen? Auch bei GENAU EINEM Kandidaten wird gefragt — der Anwenderentscheid
+/// verlangt ausdrücklich die Bestätigung, nicht die Bequemlichkeit.
+/// </summary>
+public sealed class Uebernahmewahl
+{
+    /// <summary>Schlüssel der Größe, um die es geht.</summary>
+    public string Groesse { get; set; } = "";
+
+    /// <summary>Titel der Überlagerung.</summary>
+    public string Titel { get; set; } = "";
+
+    /// <summary>Die Frage über der Auswahl.</summary>
+    public string Frage { get; set; } = "";
+
+    /// <summary>Was der Weg sagt, wenn die Kategorie nichts hergibt.</summary>
+    public string LeerText { get; set; } = "";
+
+    /// <summary>Die Kandidaten mit Name, Wert und Einheit — Id = <c>energy_carrier.id</c>.</summary>
+    public IReadOnlyList<(int Id, string Text)> Kandidaten { get; set; }
+        = Array.Empty<(int, string)>();
+}
+
+/// <summary>
 /// Der Bearbeitungsstand einer Trägerkarte (iU9-W4.4) — was
 /// <c>EnergietraegerEinstellungen</c> zeigt und ändert.
 ///
@@ -192,6 +244,19 @@ public sealed class EnergietraegerStand
     /// „Speichern" bzw. „OK".
     /// </summary>
     public string UebernahmeHinweis { get; set; } = "";
+
+    // ---- Fehlende und geliehene Werte -----------------------------------
+
+    /// <summary>
+    /// Was zu CO₂-Wert, Arbeits- und Leistungspreis zu sagen ist: fehlende Werte mit
+    /// ihrem Übernahmeweg, geliehene mit ihrer Herleitung. Leere Liste = alles
+    /// gepflegt und nichts geliehen.
+    ///
+    /// <para>Die Karte zeigt die Preiszeilen im Preisteil, die CO₂-Zeile im
+    /// Emissionsteil — jede Aussage steht dort, wo der Wert gepflegt wird.</para>
+    /// </summary>
+    public IReadOnlyList<Wertluecke> Wertluecken { get; set; }
+        = Array.Empty<Wertluecke>();
 
     // ---- Emissionen (Etappe E3) -----------------------------------------
 

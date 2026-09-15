@@ -1,4 +1,4 @@
-// Ist der Hilfe-Assistent auf DIESER Installation grundsaetzlich moeglich?
+﻿// Ist der Hilfe-Assistent auf DIESER Installation grundsaetzlich moeglich?
 // (Auftrag #199, Stufe S1 des Konzepts "Der Hilfe-Assistent im Dialog", 3.1)
 //
 // WARUM ES DIESE AUSKUNFT GIBT. Der KI-Knopf steht seit S1 nicht mehr in 88 Dialogen

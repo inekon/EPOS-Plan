@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Waermepumpe;
+﻿namespace EPOS.UI.Dialoge.Waermepumpe;
 
 /// <summary>
 /// Eine Zeile der Wärmepumpen-Liste im Stammdialog (iU9-W7.3).

@@ -125,7 +125,8 @@ public class AppWurzelTests : EposBunitContext
             Doppelpflege: Array.Empty<KohaerenzHinweis>(),
             Katalog: null,
             ErgebnisseLaden: null,
-            Speichern: null);
+            SpeichereAnlage: null,
+            SpeichereVorgaben: null);
 
         var cut = Aufbauen(new TestProjektquelle(ZweiProjekte, bhkw: daten));
 
@@ -133,6 +134,49 @@ public class AppWurzelTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-seite"));
         Assert.Contains("B3-Kaskade", cut.Find(".epos-dialog-titel").TextContent);
+    }
+
+    /// <summary>
+    /// Auftrag #286, Einbettungsstelle 1: Der Wirt bekommt nach OK, was er braucht
+    /// (die Speichermeldung — der Dialog hat geschrieben), und nach Abbrechen nichts.
+    /// Gemessen werden die Schreibzugriffe, nicht die Anzeige.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Der_BHKW_Dialog_schreibt_in_der_Wurzel_nur_im_OK_Weg(bool ok)
+    {
+        var anlage = new KwkgAnlagenAngabe
+        { IdAnlage = 14920, IdProjekt = 1030, Bezeichner = "BHKW 50", PelKW = 50 };
+        var parameter = new WirtschaftlichkeitParameter();
+        int zugriffe = 0;
+
+        var daten = new BhkwDialogDaten(
+            IdStamm: 1030,
+            StammName: "B3-Kaskade",
+            Anlagen: new List<KwkgAnlagenAngabe> { anlage },
+            Parameter: parameter,
+            HatHeizkessel: false,
+            Doppelpflege: Array.Empty<KohaerenzHinweis>(),
+            Katalog: null,
+            ErgebnisseLaden: null,
+            SpeichereAnlage: _ => { zugriffe++; return true; },
+            SpeichereVorgaben: _ => { zugriffe++; return true; });
+
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte, bhkw: daten));
+        cut.FindAll(".epos-projekt-bhkw")[0].Click();
+
+        // Eine aendernde Bedienung: der erste Satz der gewaehlten Anlage.
+        cut.FindAll("input[inputmode=decimal]")[0].Input("5,57");
+        Assert.Equal(0, zugriffe);
+
+        // Die Leiste traegt Abbrechen (0) und Speichern (1).
+        var knoepfe = cut.FindAll(".epos-leiste button");
+        knoepfe[ok ? 1 : 0].Click();
+
+        Assert.Equal(ok ? 2 : 0, zugriffe);
+        Assert.Equal(ok ? 5.57 : (double?)null, anlage.SatzEinspCt);
+        Assert.Single(cut.FindAll(".epos-seite"));   // zurueck in der Liste
     }
 
     [Fact]

@@ -19,14 +19,15 @@
    Speicherweg dieselben Steuerelemente auslesen konnte (Bw9Ausblenden). Hier
    entfaellt dieser Umweg: Was nicht gebaut wird, wird auch nicht geschrieben,
    und der geladene Satz traegt die Werte unveraendert weiter. Uebrig bleibt der
-   Verweis mit dem Sprungknopf.
+   blosse Verweis auf den Dialog; er fuehrt selbst nicht dorthin, denn der
+   Einstieg in "BHKW-Wirtschaftlichkeit" steht in der Fussleiste der
+   Wirtschaftlichkeitsseite.
 
-   ZWEI WEGE, KEINER MEHR UEBER DIE BRUECKE (iU9-W14c.3). Der Gesetzeskatalog
-   ist seit W14c.2 selbst eine Razor-Komponente und erscheint als UEBERLAGERUNG
-   in diesem Dialog - mit der Vorwahl der Klasse CO2_PREIS, die bis dahin
-   Sprungziel.GesetzesparameterCo2 setzte. Der Dialog "BHKW-Wirtschaftlichkeit"
-   ist ebenfalls eine Blazor-Huelle; er bleibt NACHGELAGERT (Risiko R2) - die
-   Komponente meldet den Wunsch im Ergebnis.
+   EIN EINZIGER UNTERDIALOG (iU9-W14c.3). Der Gesetzeskatalog ist seit W14c.2
+   selbst eine Razor-Komponente und erscheint als UEBERLAGERUNG in diesem
+   Dialog - mit der Vorwahl der Klasse CO2_PREIS, die bis dahin
+   Sprungziel.GesetzesparameterCo2 setzte. Dieser Dialog verlaesst sich also
+   auf keinen Sprung mehr: Er schliesst oder er bleibt stehen.
 
    ER KENNT KEINE DATENBANK (Hausregel EPOS.UI). Parametersatz, Erzeugerflags,
    Kraftwerksparkliste, die Referenzkesselzeile und das Prognosejahr des
@@ -46,7 +47,7 @@
        (WirtschaftlichkeitSeite) traegt DIE den Titel; der Wirt setzt dort
        TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
        Ueberlagerung traegt beides. Der Titel kommt aus dem Textbuendel _t, nicht
-       aus einem leerbaren TitelText - Bauart b der Hausregel. *@
+       aus einem leerbaren TitelText. *@
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
         {
@@ -55,7 +56,7 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         @if (TitelAnzeigen)
         {
-            <Schliesskreuz Geschlossen="@(() => Schliessen(WirtParameterSprung.Keiner))" />
+            <Schliesskreuz Geschlossen="Abbrechen" />
         }
     </div>
 
@@ -301,14 +302,15 @@
     </Gruppenkopf>
 
     @* ------------------------------------------------------------- BHKW *@
+    @* Die Gruppe ist reiner VERWEIS: Die KWKG- und Steuerangaben stehen im
+       Dialog "BHKW-Wirtschaftlichkeit", der ueber die Fussleiste der
+       Wirtschaftlichkeitsseite aufgeht. Dieser Dialog fuehrt keinen eigenen
+       Weg dorthin - ein Sprung von hier wuerde nur schliessen. *@
     @if (HatBhkw)
     {
         <Gruppenkopf Titel="@_t.GBhkw" Symbol="⚙">
             <KindInhalt>
                 <Herleitungszeile Text="@_t.BhkwVerweis" />
-                <button type="button" class="epos-knopf epos-sprung"
-                        @onclick="BhkwKlick">@_t.BhkwKnopf</button>
-                <Herleitungszeile Text="@_t.SprungHinweis" />
             </KindInhalt>
         </Gruppenkopf>
     }
@@ -458,9 +460,12 @@
         = "Form_WirtschaftlichkeitParameter.btn_Help";
 
     /// <summary>
-    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
-    /// „Das Kreuz steht beim Titel": Trägt die umschließende <c>Ueberlagerung</c> den
-    /// Titel, trägt sie auch das Kreuz; dann steht hier <c>false</c>.
+    /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Vorgabe
+    /// <c>true</c> — im eigenen Fenster der Windows-Schale trägt ihn sonst
+    /// niemand. Steckt der Dialog dagegen in einer <c>Ueberlagerung</c>, die
+    /// denselben Titel schon führt, setzt die Einbettungsstelle <c>false</c>:
+    /// Ein Titel, eine Stelle. Und weil „das Kreuz beim Titel steht", trägt
+    /// dann auch die <c>Ueberlagerung</c> das Kreuz, nicht dieser Dialog.
     /// </summary>
     [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
@@ -589,7 +594,7 @@
     }
 
     // =====================================================================
-    // Sprünge
+    // Der Gesetzeskatalog
     // =====================================================================
 
     /// <summary>
@@ -612,16 +617,13 @@
         StateHasChanged();
     }
 
-    /// <summary>Der Sammeldialog — nachgelagert, siehe Kopf.</summary>
-    private Task BhkwKlick() => Schliessen(WirtParameterSprung.BhkwWirtschaftlichkeit);
-
     // =====================================================================
     // Speichern
     // =====================================================================
 
     private async Task BeiErgebnis(bool ok)
     {
-        if (!ok) { await Schliessen(WirtParameterSprung.Keiner); return; }
+        if (!ok) { await Schliessen(); return; }
 
         _fehler = "";
         if (Speichern is null || !Speichern())
@@ -631,16 +633,20 @@
         }
 
         _gespeichert = true;
-        await Schliessen(WirtParameterSprung.Keiner);
+        await Schliessen();
     }
 
-    private Task Schliessen(WirtParameterSprung sprung) =>
-        Geschlossen.InvokeAsync(new WirtParameterErgebnis(_gespeichert, sprung));
+    private Task Schliessen() =>
+        Geschlossen.InvokeAsync(new WirtParameterErgebnis(_gespeichert));
+
+    /// <summary>
+    /// Abbrechen: schließt ohne zu speichern. Das ist der Weg von Esc UND vom
+    /// Schließkreuz im Kopf — das Kreuz tut genau, was Esc tut. Solange der
+    /// Katalog obenauf liegt, gehört die Geste ihm.
+    /// </summary>
+    private Task Abbrechen() => _katalogOffen ? Task.CompletedTask : Schliessen();
 
     /// <summary>Esc schließt die OBERSTE Ebene — erst den Katalog, dann den Dialog.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
-    {
-        if (e.Key != "Escape" || _katalogOffen) return Task.CompletedTask;
-        return Schliessen(WirtParameterSprung.Keiner);
-    }
+        => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
 }

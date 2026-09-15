@@ -652,10 +652,17 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die wählbaren Bemessungen dieses Kontexts — wortgleich aus
-        /// <c>BemessungenFuellen</c>: gefiltert nach Invest/Betrieb, dazu jede
-        /// Bemessung, die eine vorhandene Zeile bereits trägt (sonst verlöre eine
-        /// Bestandsposition beim Anzeigen ihren Wert).
+        /// Die wählbaren Bemessungen dieses Kontexts: gefiltert nach Invest/Betrieb
+        /// UND nach dem Gewerk, dazu jede Bemessung, die eine vorhandene Zeile bereits
+        /// trägt (sonst verlöre eine Bestandsposition beim Anzeigen ihren Wert).
+        ///
+        /// <para><b>ANWENDERENTSCHEID 15.09.2026:</b> Eine Art, für die das Gewerk gar
+        /// keine Bezugsgröße führt, steht nicht mehr in der Auswahl — an ALLEN ZEHN
+        /// Gewerken: am Pufferspeicher also nicht mehr „je kWh Kapazität", an der
+        /// Wärmepumpe nicht mehr „je kWp Leistung", an der Photovoltaik nicht mehr „je m²
+        /// Kollektorfläche". Die Zuordnung Art↔Gewerk steht an EINER
+        /// Stelle im Kern (<see cref="BemessungKatalog.Auswahl"/>), die ihrerseits die
+        /// Landkarte der Bezugsgrößen liest; die Hülle führt keine zweite Liste.</para>
         /// </summary>
         private IReadOnlyList<ValueTuple<int, string>> BemessungenBauen()
         {
@@ -668,9 +675,7 @@ namespace WindowsFormsApplication1
                     benutzt.Add(b.Position.Bemessung);
             }
 
-            foreach (BemessungKatalog.Info i in BemessungKatalog.Alle)
-                if ((_invest && i.FuerInvest) || (!_invest && i.FuerBetrieb) || benutzt.Contains(i.Persistenz))
-                    _bemessungen.Add(i);
+            _bemessungen.AddRange(BemessungKatalog.Auswahl(KomponentenId, _invest, benutzt));
 
             // ANWENDERENTSCHEID 15.09.2026: Der Name der Art folgt der Bezugsgröße des
             // GEWERKS — „je kW Leistung" heißt am BHKW „je kW elektr. Leistung" und am

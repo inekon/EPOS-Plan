@@ -308,6 +308,21 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
         return zahl;
     }
 
+
+    /// <summary>EIN Gerät des Prüfbestands der Größensuche.</summary>
+    private static FlottenGeraetekandidat Geraet(double kWh, double kW) => new()
+    {
+        Quellkennung = kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+        Geraet = new FlottenEinheit
+        {
+            Id = "G" + kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+            Name = "Speicher " + kWh.ToString("0", System.Globalization.CultureInfo.InvariantCulture),
+            KapazitaetKWh = kWh, LadeleistungKw = kW, EntladeleistungKw = kW,
+            Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95,
+            SocMin = 0.1, SocMax = 0.9, SocStart = 0.5
+        }
+    };
+
     private static FlottenStudieKonfiguration Flotte() => new()
     {
         Einheiten =
@@ -343,8 +358,9 @@ public sealed class StromspeicherAuslegungGroessenTests : EposBunitContext
                     Aktiv = true, Modus = FlottenAuslegungsmodus.KapazitaetUndLeistung,
                     AnzahlVon = 1, AnzahlBis = 1,
                     KapazitaetVonKWh = 20, KapazitaetBisKWh = 30, KapazitaetSchrittKWh = 10,
-                    LeistungVonKw = 10, LeistungBisKw = 12, LeistungSchrittKw = 2,
-                    CRateVon = 0.5, CRateBis = 1.0, CRateSchritt = 0.5,
+                    LeistungVonKw = 10, LeistungBisKw = 12,
+                    // ZWEI Geraete im Bereich — der kleinstmoegliche Suchraum.
+                    Geraete = { Geraet(20, 10), Geraet(30, 12) },
                     Vorlage = new FlottenEinheit
                     {
                         Id = "a", Name = "A", KapazitaetKWh = 24,

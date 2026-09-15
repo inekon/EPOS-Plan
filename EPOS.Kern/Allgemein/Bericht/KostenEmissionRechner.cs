@@ -176,6 +176,22 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Der Netzbezug wurde mit dem CO₂-Faktor des AUSLIEFERUNGSträgers
+        /// gerechnet, weil das Projekt keinen zugeordnet hat — die Herleitungszeile zum
+        /// GELIEHENEN Emissionsfaktor (Anwenderentscheid 15.09.2026). Sie steht neben,
+        /// nicht anstelle der Kostenzeile: Beide Seiten können denselben Träger geliehen
+        /// haben, und der Anwender behebt beides mit demselben Griff.</summary>
+        internal static string HINWEIS_CO2_TRAEGER_RUECKFALL
+        {
+            get
+            {
+                return T("WIRT_CO2_TRAEGER_RUECKFALL",
+                    "CO₂-Bilanz: Netzbezug mit dem Emissionsfaktor des Energieträgers „{0}“ " +
+                    "gerechnet — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter " +
+                    "„Berichte & Kosten › Energieträger“ zuordnen.");
+            }
+        }
+
         /// <summary>
         /// MyResource mit deutschem Rückfall (Drei-Schichten-Regel) — dasselbe Muster
         /// wie <c>WirtschaftlichkeitCtrl.T</c> und <c>KohaerenzPruefung.T</c>. Der
@@ -206,6 +222,7 @@ namespace WindowsFormsApplication1
                 v.KesselVerbrauchFehlt = false;                  // B-1/N1
                 v.KesselOhneVerbrauch = new List<string>();
                 v.StromTraegerRueckfall = null;
+                v.CO2TraegerRueckfall = null;
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
         }
@@ -215,6 +232,7 @@ namespace WindowsFormsApplication1
             ErgebnisModel m = v.Ergebnis;
             v.EnergiekostenGrund = null;         // Auftrag #267 — frischer Lauf
             v.StromTraegerRueckfall = null;
+            v.CO2TraegerRueckfall = null;        // Auftrag #293
 
             // BERECHNUNGSMODUS (F7) - EINMAL je Lauf gelesen und am Ergebnis vermerkt.
             // Der Vermerk ist der Grund, weshalb ein Bericht die Zahl richtig
@@ -432,19 +450,31 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            if (stromCarrier > 0)
+            // AUFTRAG #293 (Anwenderentscheid 15.09.2026: „bereits zugewiesene
+            // CO₂-Zahlen nicht überschreiben").
+            //
+            // Der Emissionsfaktor des Netzbezugs kommt aus EINER Stelle —
+            // Emissionsquelle.Netzstrom —, derselben, aus der auch die Autarkie-Kachel
+            // liest: zugeordneter Stromträger über die Lesekette (EmissionsFaktorLader,
+            // im MODUS des Laufs, F7) → nur wenn KEINER zugeordnet ist der
+            // Auslieferungsträger des Katalogs → sonst der Vorgabewert.
+            //
+            // DIE ZWEITE STUFE FÜLLT AUSSCHLIESSLICH LÜCKEN: Wo ein Träger zugeordnet
+            // ist, bleibt sein Faktor unangetastet — auch ein Träger, dessen Kette
+            // nichts hergibt, rechnet weiter mit dem Vorgabewert und meldet das über
+            // CO2StrommixRueckfall. Verändert wird nur die Lage, in der bis hierher
+            // gar keine Projektzahl stand: kein Stromträger, anonymer Vorgabewert.
+            Emissionsfaktoren netz = Emissionsquelle.Netzstrom(v.IdProjekt, stromCarrier, modus);
+            if (netz.Co2Gepflegt && netz.Co2GKwh > 0)
             {
-                TraegerInfo strom = LadeTraeger(v.IdProjekt, stromCarrier);
-                // Emissionsfaktor des Strom-Trägers über dieselbe Kette wie die
-                // Brennstoffe (EmissionsFaktorLader) und im selben MODUS (F7) — der
-                // Netzstrom-Anteil gehört zu CO2Gesamt und darf keine andere Methode
-                // führen als der Rest der Kennzahl.
-                double? stromWirksam = strom.Faktoren.Wirksam(modus);
-                if (stromWirksam.HasValue && stromWirksam.Value > 0)
-                {
-                    stromCO2 = stromWirksam.Value;
-                    strommixRueckfall = false;
-                }
+                stromCO2 = netz.Co2GKwh;
+                strommixRueckfall = false;
+
+                // DIE HERLEITUNG. Sie steht nur, wenn der geliehene Faktor auch wirklich
+                // eine Menge getragen hat — sonst behauptete die Zeile eine Rechnung,
+                // die gar nicht stattgefunden hat (dieselbe Klemme wie beim Preisträger).
+                if (netz.RueckfallTraegerId > 0 && netzbezugMWh > 0)
+                    v.CO2TraegerRueckfall = TraegerName(netz.RueckfallTraegerId);
             }
             // Ohne Netzbezug ändert der Vorgabewert nichts - dann ist er kein Rückfall,
             // sondern eine Zahl, die mit 0 MWh multipliziert wird.
@@ -679,15 +709,14 @@ namespace WindowsFormsApplication1
         /// ohne Wärmepumpe, PV, Stromspeicher oder Heizstab bekommt keinen Rückfall:
         /// Sein Netzbezug ist Haushaltsstrom der Bedarfsseite und keine Anlagengröße,
         /// und ein Träger, den niemand zugeordnet hat, wäre dort eine Erfindung.</para>
+        ///
+        /// <para>Der Rumpf steht seit dem Anwenderentscheid vom 15.09.2026 in
+        /// <see cref="Emissionsquelle.KatalogStromTraeger"/> — die CO₂-Seite braucht
+        /// dieselbe Wahl, und zwei Fassungen wären zwei Antworten.</para>
         /// </summary>
         private static int StandardStromTraeger(int idProjekt)
         {
-            try
-            {
-                if (!ProjektEnergietraegerCtrl.BrauchtStromTraeger(idProjekt)) return 0;
-                return ProjektEnergietraegerCtrl.StandardStromTraeger(idProjekt);
-            }
-            catch { return 0; }
+            return Emissionsquelle.KatalogStromTraeger(idProjekt);
         }
 
         private static TraegerInfo LadeTraeger(int idProjekt, int carrierId)
@@ -877,6 +906,32 @@ namespace WindowsFormsApplication1
             return (info.EffHi.HasValue && info.EffHi.Value > 0)
                 ? info.PreisArbeit.Value / info.EffHi.Value
                 : info.PreisArbeit.Value;
+        }
+
+        /// <summary>
+        /// Arbeits- und Leistungspreis EINES Trägers, wie dieser Rechner sie sieht:
+        /// je ABRECHNUNGSEINHEIT (der Arbeitspreis also NICHT auf kWh umgerechnet),
+        /// <c>null</c> = nicht gepflegt.
+        ///
+        /// <para><b>Nur ein zweiter Leser, kein zweiter Rechenweg.</b> Die
+        /// Vorrangkette — Projektwert → Preisstand → Katalogwert, jeweils „0 zählt als
+        /// nicht gepflegt" — steht genau einmal, in <see cref="LadeTraeger"/>. Der
+        /// Übernahmeweg der Trägerkarte
+        /// (<see cref="EnergietraegerRueckfall"/>) fragt hier, statt sich dieselbe
+        /// Kette ein zweites Mal zu schreiben: Was die Karte als Lücke zeigt, muss
+        /// dasselbe sein, was die Wirtschaftlichkeit als Lücke meldet.</para>
+        /// </summary>
+        internal static void PreiseDesTraegers(int idProjekt, int carrierId,
+                                               out double? arbeitspreis,
+                                               out double? leistungspreis)
+        {
+            arbeitspreis = null;
+            leistungspreis = null;
+            if (carrierId <= 0) return;
+
+            TraegerInfo info = LadeTraeger(idProjekt, carrierId);
+            arbeitspreis = info.PreisArbeit;
+            leistungspreis = info.PreisLeistung;
         }
 
         /// <summary><c>energy_carrier.id</c> des Stromträgers des Projekts

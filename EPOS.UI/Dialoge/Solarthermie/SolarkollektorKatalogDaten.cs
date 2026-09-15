@@ -1,4 +1,4 @@
-namespace EPOS.UI.Dialoge.Solarthermie;
+﻿namespace EPOS.UI.Dialoge.Solarthermie;
 
 /// <summary>
 /// Der Feldsatz des Solarkollektor-Katalogeditors — das plattformfreie Abbild von

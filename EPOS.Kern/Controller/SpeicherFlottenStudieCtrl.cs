@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -250,8 +250,8 @@ public static partial class SpeicherFlottenStudieCtrl
     ///   <item><term><c>Bezeichner</c></term><description>→ <see cref="FlottenEinheit.Name"/></description></item>
     ///   <item><term><c>Energie</c> [kWh]</term><description>→ <see cref="FlottenEinheit.KapazitaetKWh"/></description></item>
     ///   <item><term><c>Leistung</c> [kW]</term><description>→ Lade- UND Entladeleistung; fehlt sie, gilt wie im Lauf <b>1 C</b> (Leistung = Kapazität)</description></item>
-    ///   <item><term><c>Wirkungsgrad_RT</c></term><description>→ beide Richtungen als <c>sqrt(eta_RT)</c> (<c>SpeicherParameter.EtaCh</c>/<c>EtaDis</c>); außerhalb (0…1] gilt <c>ETA_RT_STANDARD</c> = 0,90</description></item>
-    ///   <item><term>SoC-Band</term><description>10 / 90 % — die Vorgaben einer LEEREN Variantenzeile (<c>StromspeicherVarianteModel</c>); ein Katalogsatz hat keine Betriebsführung</description></item>
+    ///   <item><term><c>Wirkungsgrad_RT</c></term><description>→ beide Richtungen als <c>sqrt(eta_RT)</c> (<c>SpeicherParameter.EtaCh</c>/<c>EtaDis</c>); außerhalb (0…1] gelten die neutralen Vorgaben <c>FlottenGeraetevorgaben.LADEWIRKUNGSGRAD</c>/<c>ENTLADEWIRKUNGSGRAD</c></description></item>
+    ///   <item><term>SoC-Band</term><description><c>FlottenGeraetevorgaben.SOC_MIN</c>/<c>SOC_MAX</c> — ein Katalogsatz hat keine Betriebsführung</description></item>
     ///   <item><term><c>Ladezustand</c> [%]</term><description>→ Start-SoC, in das Band geklemmt (im Bestand fast überall 0 und damit SoC_min — Entscheid AP0, Frage 8)</description></item>
     ///   <item><term><c>Modulkosten</c> [€/kWh]</term><description>→ <see cref="FlottenEinheit.InvestitionEuroProKWh"/></description></item>
     ///   <item><term><c>Leistungskosten</c> [€/kW]</term><description>→ <see cref="FlottenEinheit.InvestitionEuroProKw"/></description></item>
@@ -276,27 +276,51 @@ public static partial class SpeicherFlottenStudieCtrl
     /// <returns>Die Einheit ohne Anlagenbezug; <c>null</c>, wenn es den Satz nicht gibt
     /// oder er keine Kapazität führt.</returns>
     public static FlottenEinheit EinheitAusKatalog(int katalogId)
+        => EinheitAusKatalogsatz(StromspeicherStammCtrl.Katalogsatz(katalogId), out _);
+
+    /// <summary>
+    /// Dieselbe Abbildung aus einem bereits gelesenen Katalogsatz — und die Auskunft, ob
+    /// dabei eine NEUTRALE VORGABE greifen musste (Anwenderentscheid vom 15.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Ein Katalogsatz führt keine Betriebsführung.</b> Das SoC-Fenster steht
+    /// nirgends in <c>Tab_Stromspeicher_STAMM</c>; es kommt deshalb IMMER aus
+    /// <c>FlottenGeraetevorgaben</c>, und damit ist <paramref name="neutraleKennwerte"/>
+    /// für jeden Katalogsatz gesetzt. Das ist die Aussage, die der Anwender braucht:
+    /// „dieses Gerät rechnet mit neutralen Betriebsvorgaben". Führt der Satz zusätzlich
+    /// keinen Rundlaufwirkungsgrad, gelten auch die neutralen Wirkungsgrade.</para>
+    /// <para><b>Eine ALTERUNG bekommt ein Katalogsatz nicht.</b> Die Rainflow-Kurve
+    /// bleibt leer und der Grenzverschleiß 0 — eine Zyklenzahl ohne Entladetiefe ist
+    /// keine Stützstelle, und eine erfundene Kurve wäre teurer als keine.</para>
+    /// </remarks>
+    /// <param name="m">Der Katalogsatz; <c>null</c> liefert <c>null</c>.</param>
+    /// <param name="neutraleKennwerte">Es musste wenigstens eine neutrale Vorgabe greifen.</param>
+    internal static FlottenEinheit EinheitAusKatalogsatz(StromspeicherModel m,
+                                                         out bool neutraleKennwerte)
     {
-        StromspeicherModel m = StromspeicherStammCtrl.Katalogsatz(katalogId);
+        neutraleKennwerte = false;
         if (m == null || !(m.m_Energie > 0)) return null;
 
         double kapazitaet = m.m_Energie;
         double leistung = m.m_Leistung > 0.0 ? m.m_Leistung : kapazitaet;
 
         double etaRt = m.m_WirkungsgradRT;
-        if (!(etaRt > 0.0) || etaRt > 1.0) etaRt = StromspeicherSimCtrl.ETA_RT_STANDARD;
-        double etaRichtung = Math.Sqrt(etaRt);
-
-        // Das SoC-Band einer LEEREN Variantenzeile — ein Katalogsatz trägt keine
-        // Betriebsführung, und zwei Sätze Vorgabewerte wären zwei Wahrheiten.
-        var variante = new StromspeicherVarianteModel();
-        double socMin = variante.SoC_Min_Prozent / 100.0;
-        double socMax = variante.SoC_Max_Prozent / 100.0;
-        if (!(socMax > socMin))
+        double etaLaden, etaEntladen;
+        if (etaRt > 0.0 && etaRt <= 1.0)
         {
-            socMin = StromspeicherSimCtrl.SOC_MIN_ANTEIL;
-            socMax = StromspeicherSimCtrl.SOC_MAX_ANTEIL;
+            etaLaden = etaEntladen = Math.Sqrt(etaRt);
         }
+        else
+        {
+            etaLaden = FlottenGeraetevorgaben.LADEWIRKUNGSGRAD;
+            etaEntladen = FlottenGeraetevorgaben.ENTLADEWIRKUNGSGRAD;
+            neutraleKennwerte = true;
+        }
+
+        // DAS SoC-BAND KOMMT IMMER AUS DEN NEUTRALEN VORGABEN: Der Katalog führt keins.
+        double socMin = FlottenGeraetevorgaben.SOC_MIN;
+        double socMax = FlottenGeraetevorgaben.SOC_MAX;
+        neutraleKennwerte = true;
 
         double socStart = m.m_Ladezustand / 100.0;
         if (socStart < socMin) socStart = socMin;
@@ -312,8 +336,8 @@ public static partial class SpeicherFlottenStudieCtrl
             KapazitaetKWh = kapazitaet,
             LadeleistungKw = leistung,
             EntladeleistungKw = leistung,
-            Ladewirkungsgrad = etaRichtung,
-            Entladewirkungsgrad = etaRichtung,
+            Ladewirkungsgrad = etaLaden,
+            Entladewirkungsgrad = etaEntladen,
             SocMin = socMin, SocMax = socMax, SocStart = socStart,
             HilfsverbrauchKw = m.m_StandbyVerbrauch / 1000.0,
             EigeneKosten = kosten,

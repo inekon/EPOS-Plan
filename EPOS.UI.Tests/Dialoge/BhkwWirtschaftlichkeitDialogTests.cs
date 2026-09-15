@@ -80,11 +80,13 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         IList<KwkgAnlagenAngabe>? anlagen = null,
         WirtschaftlichkeitParameter? parameter = null,
         Action<BhkwWirtschaftlichkeitErgebnis>? beimSchliessen = null,
-        Func<int>? speichern = null,
+        Func<KwkgAnlagenAngabe, bool>? speichereAnlage = null,
+        Func<WirtschaftlichkeitParameter, bool>? speichereVorgaben = null,
         bool hatHeizkessel = false,
         IReadOnlyList<KohaerenzHinweis>? doppelpflege = null,
         IReadOnlyList<WirtschaftlichkeitErgebnis>? ausLauf = null,
-        Func<string, int, GesetzParameter>? katalog = null)
+        Func<string, int, GesetzParameter>? katalog = null,
+        bool titelAnzeigen = true)
     {
         return Render<BhkwWirtschaftlichkeitDialog>(p => p
             .Add(x => x.IdStamm, STAMM)
@@ -95,9 +97,51 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
             .Add(x => x.Doppelpflege, doppelpflege ?? Array.Empty<KohaerenzHinweis>())
             .Add(x => x.ErgebnisseAusLauf, ausLauf ?? Array.Empty<WirtschaftlichkeitErgebnis>())
             .Add(x => x.Katalog, katalog)
-            .Add(x => x.Speichern, speichern)
+            .Add(x => x.SpeichereAnlage, speichereAnlage)
+            .Add(x => x.SpeichereVorgaben, speichereVorgaben)
+            .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.Geschlossen, beimSchliessen ?? (_ => { })));
     }
+
+    /// <summary>
+    /// Ein SCHREIBZAEHLER: Er merkt sich jeden Aufruf der beiden Schreibwege in der
+    /// Reihenfolge, in der er kam. Die Abnahme dieses Dialogs misst den
+    /// DATENBANKSTAND, nicht die Anzeige — also wird gezaehlt, was geschrieben wurde.
+    /// </summary>
+    private sealed class Schreibzaehler
+    {
+        private readonly List<string> _wege = new List<string>();
+
+        /// <summary>Was die Anlagenzeile antworten soll; <c>null</c> = immer gelungen.</summary>
+        internal Func<KwkgAnlagenAngabe, bool>? AnlageAntwort { get; set; }
+
+        /// <summary>Was die Projektvorgaben antworten sollen; <c>null</c> = gelungen.</summary>
+        internal Func<WirtschaftlichkeitParameter, bool>? VorgabenAntwort { get; set; }
+
+        /// <summary>Die Schreibzugriffe in ihrer Reihenfolge („Anlage:BHKW 50", „Vorgaben").</summary>
+        internal IReadOnlyList<string> Wege => _wege;
+
+        /// <summary>Die Zahl der Schreibzugriffe.</summary>
+        internal int Zugriffe => _wege.Count;
+
+        internal bool Anlage(KwkgAnlagenAngabe a)
+        {
+            _wege.Add("Anlage:" + a.Bezeichner);
+            return AnlageAntwort is null || AnlageAntwort(a);
+        }
+
+        internal bool Vorgaben(WirtschaftlichkeitParameter p)
+        {
+            _wege.Add("Vorgaben");
+            return VorgabenAntwort is null || VorgabenAntwort(p);
+        }
+    }
+
+    private static IElement OkKnopf(IRenderedComponent<BhkwWirtschaftlichkeitDialog> cut)
+        => cut.FindAll(".epos-leiste button")[1];
+
+    private static IElement AbbrechenKnopf(IRenderedComponent<BhkwWirtschaftlichkeitDialog> cut)
+        => cut.FindAll(".epos-leiste button")[0];
 
     private static IElement Gruppe(IRenderedComponent<BhkwWirtschaftlichkeitDialog> cut, int nr)
         => cut.FindAll("section.epos-gruppenkopf")[nr];
@@ -134,6 +178,21 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
 
         Assert.Equal("BHKW-Wirtschaftlichkeit — Musterprojekt",
                      cut.Find(".epos-dialog-titel").TextContent);
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b‑B‑9): Zeigt der Wirt schon einen — die
+    /// Überlagerung der Wirtschaftlichkeitsseite tut es —, bleibt der eigene Kopf
+    /// weg; der Hilfeknopf bleibt.
+    /// </summary>
+    [Fact]
+    public void Ohne_TitelAnzeigen_bleibt_der_eigene_Kopf_weg_und_der_Hilfeknopf_steht()
+    {
+        var cut = Aufbauen(titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll("h1.epos-dialog-titel"));
+        Assert.Contains("epos-dialog-kopf--ohnetitel", cut.Find("div.epos-dialog-kopf").ClassName);
+        Assert.NotNull(cut.Find(".epos-infoknopf"));
     }
 
     [Fact]
@@ -316,23 +375,27 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Eine_Eingabe_landet_in_der_Anlagenzeile_und_0_heisst_Projektwert()
+    public void Eine_Eingabe_landet_im_Arbeitsstand_und_0_heisst_Projektwert()
     {
         var anlagen = ZweiAnlagen();
         var cut = Aufbauen(anlagen);
         var zahlen = Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]");
 
         zahlen[0].Input("5,57");                       // Satz Einspeisung
-        Assert.Equal(5.57, anlagen[0].SatzEinspCt);
+        Assert.Equal(5.57, cut.Instance.AktuellerStand!.SatzEinspCt);
 
         zahlen[0].Input("0");                          // 0 = kein eigener Wert
-        Assert.Null(anlagen[0].SatzEinspCt);
+        Assert.Null(cut.Instance.AktuellerStand!.SatzEinspCt);
 
         // Beim Hilfsenergieanteil ist 0 ein GUELTIGER Wert (BF4).
         zahlen[4].Input("3,5");
-        Assert.Equal(3.5, anlagen[0].HilfsenergieAnteil);
+        Assert.Equal(3.5, cut.Instance.AktuellerStand!.HilfsenergieAnteil);
         zahlen[4].Input("0");
-        Assert.Equal(0.0, anlagen[0].HilfsenergieAnteil);
+        Assert.Equal(0.0, cut.Instance.AktuellerStand!.HilfsenergieAnteil);
+
+        // Die geladene Zeile bleibt dabei unberuehrt — geschrieben wird im OK-Weg.
+        Assert.Null(anlagen[0].SatzEinspCt);
+        Assert.Null(anlagen[0].HilfsenergieAnteil);
     }
 
     [Fact]
@@ -343,16 +406,21 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         IElement g = Koerper(cut, 1);
 
         g.QuerySelectorAll("input[type=date]")[0].Change("2026-03-17");
-        Assert.Equal(new DateTime(2026, 3, 17), anlagen[0].Stichtag);
+        Assert.Equal(new DateTime(2026, 3, 17), cut.Instance.AktuellerStand!.Stichtag);
 
         g.QuerySelectorAll("input[type=date]")[0].Change("");
-        Assert.Null(anlagen[0].Stichtag);
+        Assert.Null(cut.Instance.AktuellerStand!.Stichtag);
 
         Koerper(cut, 1).QuerySelectorAll("select")[0].Change("2");
-        Assert.Equal(DbWerte.KWKG_ANLAGENART_MODERNISIERT, anlagen[0].Anlagenart);
+        Assert.Equal(DbWerte.KWKG_ANLAGENART_MODERNISIERT, cut.Instance.AktuellerStand!.Anlagenart);
 
         Koerper(cut, 1).QuerySelectorAll("select")[2].Change("3");
-        Assert.Equal(DbWerte.ENERGIESTEUER_WAHL_53A, anlagen[0].EnergiesteuerWahl);
+        Assert.Equal(DbWerte.ENERGIESTEUER_WAHL_53A, cut.Instance.AktuellerStand!.EnergiesteuerWahl);
+
+        // Und die geladene Zeile steht unveraendert da.
+        Assert.Null(anlagen[0].Stichtag);
+        Assert.Equal("", anlagen[0].Anlagenart);
+        Assert.Equal("", anlagen[0].EnergiesteuerWahl);
     }
 
     // =====================================================================
@@ -414,7 +482,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Contains("Einspeisung", text);
         Assert.Contains("Eigenstrom", text);
 
-        Assert.Null(anlagen[0].SatzEinspCt);
+        Assert.Null(cut.Instance.AktuellerStand!.SatzEinspCt);
         cut.Find("button.epos-vorschlag").Click();
 
         // Die Zahl gehoert dem Bestandsrechner, nicht dem Dialog: Erwartet wird genau
@@ -422,12 +490,15 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         KwkgSatzVorschlag soll = KwkgSatzRechner.Vorschlag(
             50, 2027, DbWerte.KWKG_ANLAGENART_NEU, "", katalog,
             CultureInfo.GetCultureInfo("de-DE"));
-        Assert.Equal(soll.SatzEinspeisungCt, anlagen[0].SatzEinspCt);
+        Assert.Equal(soll.SatzEinspeisungCt, cut.Instance.AktuellerStand!.SatzEinspCt);
         // Ohne Tatbestand nach § 6 Abs. 3 ist der Eigenstromsatz 0 - und 0 heisst
         // an der Anlage "kein eigener Wert".
         Assert.Equal(0.0, soll.SatzEigenCt);
-        Assert.Null(anlagen[0].SatzEigenCt);
+        Assert.Null(cut.Instance.AktuellerStand!.SatzEigenCt);
         Assert.True(cut.Instance.Geaendert);
+
+        // Der Knopf uebernimmt in den Arbeitsstand, er schreibt nicht.
+        Assert.Null(anlagen[0].SatzEinspCt);
     }
 
     [Fact]
@@ -534,20 +605,25 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Stromsteuerfelder_schreiben_in_den_Parametersatz()
+    public void Die_Stromsteuerfelder_schreiben_in_den_Arbeitsstand_der_Vorgaben()
     {
         var p = new WirtschaftlichkeitParameter();
         var cut = Aufbauen(parameter: p);
         IElement g = Koerper(cut, 4);
 
         g.QuerySelectorAll("select")[0].Change("1");
-        Assert.Equal(DbWerte.UNTERNEHMENSART_PROD_GEWERBE, p.Unternehmensart);
+        Assert.Equal(DbWerte.UNTERNEHMENSART_PROD_GEWERBE, cut.Instance.Vorgabenstand.Unternehmensart);
 
         g.QuerySelectorAll("input[type=checkbox]")[0].Change(true);
-        Assert.True(p.RaeumlicherZusammenhang);
+        Assert.True(cut.Instance.Vorgabenstand.RaeumlicherZusammenhang);
 
         g.QuerySelectorAll("input[type=checkbox]")[1].Change(true);
-        Assert.True(p.HocheffizienzNachweis);
+        Assert.True(cut.Instance.Vorgabenstand.HocheffizienzNachweis);
+
+        // Der hereingereichte Parametersatz bleibt bis zum OK unveraendert.
+        Assert.Equal(DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE, p.Unternehmensart);
+        Assert.False(p.RaeumlicherZusammenhang);
+        Assert.False(p.HocheffizienzNachweis);
     }
 
     // =====================================================================
@@ -720,127 +796,171 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     }
 
     // =====================================================================
-    // Speichernleiste
+    //  Die Fussleiste — OK und Abbrechen, geschrieben wird im OK-Weg
+    //  (Auftrag #286; die Abnahme misst den Datenbankstand, nicht die Anzeige)
     // =====================================================================
 
     [Fact]
-    public void Die_Leiste_zeigt_Speichern_und_Schliessen_aber_kein_Abbrechen()
+    public void Die_Leiste_traegt_Abbrechen_und_Speichern_und_keinen_dritten_Knopf()
     {
         var cut = Aufbauen();
         var knoepfe = cut.FindAll(".epos-leiste button");
 
         Assert.Equal(2, knoepfe.Count);
-        Assert.Equal("Speichern", knoepfe[0].TextContent);
-        Assert.Equal("Schließen", knoepfe[1].TextContent);
+        Assert.Equal("Abbrechen", knoepfe[0].TextContent);
+        Assert.Equal("Speichern", knoepfe[1].TextContent);
         Assert.Contains("epos-knopf--primaer", knoepfe[1].ClassName);
     }
 
     [Fact]
-    public void Speichern_ist_erst_nach_einer_Aenderung_moeglich()
+    public void OK_ist_von_Anfang_an_anklickbar()
     {
         var cut = Aufbauen();
 
-        Assert.True(cut.FindAll(".epos-leiste button")[0].HasAttribute("disabled"));
-
-        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
-
-        Assert.False(cut.FindAll(".epos-leiste button")[0].HasAttribute("disabled"));
+        // Es gibt keinen nicht schliessenden Speichern-Knopf mehr, den eine
+        // fehlende Aenderung sperren muesste — OK verlaesst den Dialog immer.
+        Assert.False(OkKnopf(cut).HasAttribute("disabled"));
     }
 
     [Fact]
-    public void Ein_gelungenes_Speichern_meldet_sich_in_der_Statuszeile_und_schliesst_nicht()
+    public void OK_schreibt_erst_die_Anlagenzeilen_dann_die_Projektvorgaben()
     {
-        int aufrufe = 0;
-        bool geschlossen = false;
-        var cut = Aufbauen(speichern: () => { aufrufe++; return 0; },
-                           beimSchliessen: _ => geschlossen = true);
-
-        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
-        cut.FindAll(".epos-leiste button")[0].Click();
-
-        Assert.Equal(1, aufrufe);
-        Assert.False(geschlossen);
-        Assert.True(cut.Instance.Gespeichert);
-        Assert.False(cut.Instance.Geaendert);
-        Assert.Contains("gespeichert", cut.Find(".epos-status").TextContent,
-                        StringComparison.OrdinalIgnoreCase);
-        // Nach dem Speichern gibt es nichts mehr zu speichern.
-        Assert.True(cut.FindAll(".epos-leiste button")[0].HasAttribute("disabled"));
-    }
-
-    [Fact]
-    public void Ein_gescheitertes_Speichern_zeigt_das_Warnbanner_statt_einer_MessageBox()
-    {
-        var cut = Aufbauen(speichern: () => 2);
-
-        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
-        cut.FindAll(".epos-leiste button")[0].Click();
-
-        Assert.False(cut.Instance.Gespeichert);
-        Assert.Equal("2 Angabe(n) konnten nicht gespeichert werden.",
-                     cut.FindAll(".epos-warnbanner-text")[^1].TextContent);
-        Assert.Contains("epos-warnbanner--fehler", cut.FindAll(".epos-warnbanner")[^1].ClassName);
-        Assert.True(cut.Find(".epos-status--fehler") is not null);
-    }
-
-    // =====================================================================
-    // Schliessen und Sprung
-    // =====================================================================
-
-    [Fact]
-    public void Schliessen_meldet_das_Ergebnis_ohne_Sprung()
-    {
+        var anlagen = ZweiAnlagen();
+        var p = new WirtschaftlichkeitParameter();
+        var z = new Schreibzaehler();
         BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
-        var cut = Aufbauen(beimSchliessen: e => ergebnis = e);
 
-        cut.FindAll(".epos-leiste button")[1].Click();
+        var cut = Aufbauen(anlagen, p, e => ergebnis = e, z.Anlage, z.Vorgaben);
 
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
+
+        Assert.Equal(0, z.Zugriffe);          // bis hierher ist nichts geschrieben
+        OkKnopf(cut).Click();
+
+        Assert.Equal(new[] { "Anlage:BHKW EW M 50 S [K] Erdgas", "Anlage:EC-POWER XRGI 9", "Vorgaben" },
+                     z.Wege);
+        Assert.Equal(5.57, anlagen[0].SatzEinspCt);
+        Assert.True(p.RaeumlicherZusammenhang);
         Assert.NotNull(ergebnis);
-        Assert.False(ergebnis!.Gespeichert);
+        Assert.True(ergebnis!.Gespeichert);
         Assert.Equal(BhkwSprung.Keiner, ergebnis.Sprung);
     }
 
+    /// <summary>
+    /// Der Kern der Abnahme: Nach JEDER aendernden Bedienung im selben Durchgang
+    /// ergibt Abbrechen null Schreibzugriffe — und die hereingereichten Objekte
+    /// stehen unveraendert da.
+    /// </summary>
     [Fact]
-    public void Esc_schliesst_ebenfalls()
+    public void Abbrechen_nach_jeder_aendernden_Bedienung_schreibt_nichts()
     {
+        var anlagen = ZweiAnlagen();
+        var p = new WirtschaftlichkeitParameter();
+        var z = new Schreibzaehler();
         BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
-        var cut = Aufbauen(beimSchliessen: e => ergebnis = e);
 
+        var cut = Aufbauen(anlagen, p, e => ergebnis = e, z.Anlage, z.Vorgaben,
+                           katalog: Katalog(500, 2000));
+
+        // Zeilenwahl, Zahlenfeld, Datumsfeld, Auswahlfeld, Schalter, Vorschlagsknopf.
+        Koerper(cut, 0).QuerySelectorAll("button.epos-anlagenwahl")[1].Click();
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("7,25");
+        Koerper(cut, 1).QuerySelectorAll("input[type=date]")[0].Change("2026-03-17");
+        Koerper(cut, 1).QuerySelectorAll("select")[0].Change("2");
+        Koerper(cut, 2).QuerySelectorAll("input[inputmode=decimal]")[0].Input("4,5");
+        Koerper(cut, 2).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
+        Koerper(cut, 3).QuerySelectorAll("select")[0].Change("1");
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[1].Change(true);
+        cut.Find("button.epos-vorschlag").Click();
+
+        AbbrechenKnopf(cut).Click();
+
+        Assert.Equal(0, z.Zugriffe);
+        Assert.NotNull(ergebnis);
+        Assert.False(ergebnis!.Gespeichert);
+        Assert.Equal(BhkwSprung.Keiner, ergebnis.Sprung);
+
+        // Nichts ist an den hereingereichten Objekten haengen geblieben.
+        Assert.Null(anlagen[0].SatzEinspCt);
+        Assert.Null(anlagen[1].SatzEinspCt);
+        Assert.Null(anlagen[1].Stichtag);
+        Assert.Equal("", anlagen[1].Anlagenart);
+        Assert.Equal(0.0, p.KwkgBonus);
+        Assert.False(p.KwkgPauschalmodus);
+        Assert.False(p.HocheffizienzNachweis);
+        Assert.Equal(DbWerte.ENERGIESTEUER_WAHL_KEINE, p.EnergiesteuerWahl);
+    }
+
+    [Fact]
+    public void Esc_verwirft_wie_Abbrechen()
+    {
+        var anlagen = ZweiAnlagen();
+        var z = new Schreibzaehler();
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(anlagen, beimSchliessen: e => ergebnis = e,
+                           speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
+
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
         cut.Find("div.epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
+        Assert.Equal(0, z.Zugriffe);
         Assert.NotNull(ergebnis);
-        Assert.Equal(BhkwSprung.Keiner, ergebnis!.Sprung);
+        Assert.False(ergebnis!.Gespeichert);
+        Assert.Equal(BhkwSprung.Keiner, ergebnis.Sprung);
+        Assert.Null(anlagen[0].SatzEinspCt);
     }
 
     /// <summary>
-    /// Anwenderentscheid 15.09.2026: das Kreuz wirkt wie Esc — hier also wie "Schließen"
-    /// (der Dialog hat kein Abbrechen, MitAbbrechen="false").
+    /// Das ✕ der Überlagerung schließt den Dialog von außen — der Wirt ruft dabei
+    /// keinen Rückruf der Komponente. Geprüft wird deshalb, was zählt: dass bis zu
+    /// diesem Augenblick kein Schreibzugriff stattgefunden hat.
     /// </summary>
     [Fact]
-    public void Kreuz_schliesst_ebenfalls()
+    public void Das_Kreuz_des_Wirts_findet_einen_ungeschriebenen_Stand_vor()
     {
-        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
-        var cut = Aufbauen(beimSchliessen: e => ergebnis = e);
+        var anlagen = ZweiAnlagen();
+        var p = new WirtschaftlichkeitParameter();
+        var z = new Schreibzaehler();
+        var cut = Aufbauen(anlagen, p, speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
 
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
+        Koerper(cut, 2).QuerySelectorAll("input[inputmode=decimal]")[0].Input("4,5");
+
+        Assert.Equal(0, z.Zugriffe);
+        Assert.Null(anlagen[0].SatzEinspCt);
+        Assert.Equal(0.0, p.KwkgBonus);
+    }
+
+    /// <summary>
+    /// Das eigene ✕ im Dialogkopf — es steht nur dort, wo der Dialog seinen Titel
+    /// selbst trägt — geht GENAU den Weg von Esc: verwerfen, ohne einen einzigen
+    /// Schreibzugriff. Das Kreuz ist Abbrechen, nicht OK.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_im_Kopf_verwirft_wie_Abbrechen()
+    {
+        var anlagen = ZweiAnlagen();
+        var z = new Schreibzaehler();
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(anlagen, beimSchliessen: e => ergebnis = e,
+                           speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
+
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
         cut.Find(".epos-dialog-zu").Click();
 
+        Assert.Equal(0, z.Zugriffe);
         Assert.NotNull(ergebnis);
-        Assert.Equal(BhkwSprung.Keiner, ergebnis!.Sprung);
+        Assert.False(ergebnis!.Gespeichert);
+        Assert.Equal(BhkwSprung.Keiner, ergebnis.Sprung);
+        Assert.Null(anlagen[0].SatzEinspCt);
     }
 
     /// <summary>Titel-bedingter Kopf: ohne Titel zeigt der Kopf weder Titel noch Kreuz.</summary>
     [Fact]
     public void Ohne_Titel_zeigt_der_Kopf_weder_Titel_noch_Kreuz()
     {
-        var cut = Render<BhkwWirtschaftlichkeitDialog>(p => p
-            .Add(x => x.IdStamm, STAMM)
-            .Add(x => x.StammName, "Musterprojekt")
-            .Add(x => x.Anlagen, ZweiAnlagen())
-            .Add(x => x.Parameter, new WirtschaftlichkeitParameter())
-            .Add(x => x.Doppelpflege, Array.Empty<KohaerenzHinweis>())
-            .Add(x => x.ErgebnisseAusLauf, Array.Empty<WirtschaftlichkeitErgebnis>())
-            .Add(x => x.Geschlossen, (BhkwWirtschaftlichkeitErgebnis _) => { })
-            .Add(x => x.TitelAnzeigen, false));
+        var cut = Aufbauen(titelAnzeigen: false);
 
         Assert.Empty(cut.FindAll(".epos-dialog-titel"));
         Assert.Empty(cut.FindAll(".epos-dialog-zu"));
@@ -849,30 +969,174 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_beiden_Sprungknoepfe_melden_ihr_Ziel_an_die_Huelle()
+    public void Ein_gescheiterter_Schritt_haelt_den_Dialog_offen_und_nennt_die_Zahl()
     {
-        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
-        var cut = Aufbauen(beimSchliessen: e => ergebnis = e);
+        var z = new Schreibzaehler { VorgabenAntwort = _ => false };
+        bool geschlossen = false;
+        var cut = Aufbauen(beimSchliessen: _ => geschlossen = true,
+                           speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
 
-        cut.FindAll("button.epos-sprung")[0].Click();
-        Assert.Equal(BhkwSprung.Strombezug, ergebnis!.Sprung);
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
+        OkKnopf(cut).Click();
 
-        var cut2 = Aufbauen(beimSchliessen: e => ergebnis = e);
-        cut2.FindAll("button.epos-sprung")[1].Click();
-        Assert.Equal(BhkwSprung.BhkwTarif, ergebnis!.Sprung);
+        Assert.False(geschlossen);
+        Assert.False(cut.Instance.Gespeichert);
+        Assert.Equal("1 Angabe(n) konnten nicht gespeichert werden.",
+                     cut.FindAll(".epos-warnbanner-text")[^1].TextContent);
+        Assert.Contains("epos-warnbanner--fehler", cut.FindAll(".epos-warnbanner")[^1].ClassName);
+        Assert.NotNull(cut.Find(".epos-status--fehler"));
     }
 
     [Fact]
-    public void Nach_dem_Speichern_traegt_das_Ergebnis_die_Speichermeldung()
+    public void Ein_zweites_OK_wiederholt_das_bereits_Geschriebene_nicht()
     {
+        var z = new Schreibzaehler { VorgabenAntwort = _ => false };
         BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
-        var cut = Aufbauen(speichern: () => 0, beimSchliessen: e => ergebnis = e);
+        var cut = Aufbauen(beimSchliessen: e => ergebnis = e,
+                           speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
 
         Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
-        cut.FindAll(".epos-leiste button")[0].Click();
-        cut.FindAll(".epos-leiste button")[1].Click();
+        OkKnopf(cut).Click();
 
+        Assert.Equal(new[] { "Anlage:BHKW EW M 50 S [K] Erdgas", "Anlage:EC-POWER XRGI 9", "Vorgaben" },
+                     z.Wege);
+        Assert.Null(ergebnis);
+
+        // Der zweite Anlauf gelingt — und ruehrt die zwei geschriebenen Zeilen nicht
+        // noch einmal an.
+        z.VorgabenAntwort = null;
+        OkKnopf(cut).Click();
+
+        Assert.Equal(new[] { "Anlage:BHKW EW M 50 S [K] Erdgas", "Anlage:EC-POWER XRGI 9",
+                             "Vorgaben", "Vorgaben" }, z.Wege);
+        Assert.NotNull(ergebnis);
         Assert.True(ergebnis!.Gespeichert);
+    }
+
+    [Fact]
+    public void Ohne_Schreibwege_schliesst_OK_und_meldet_gespeichert()
+    {
+        // Jede Seite muss AUCH OHNE GABEN zeichnen und bedienbar sein.
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(beimSchliessen: e => ergebnis = e);
+
+        OkKnopf(cut).Click();
+
+        Assert.NotNull(ergebnis);
+        Assert.True(ergebnis!.Gespeichert);
+    }
+
+    // =====================================================================
+    // Schliessen und Sprung
+    // =====================================================================
+
+    /// <summary>
+    /// ANWENDERENTSCHEID 15.09.2026, Fall (a): Wer nur nachschlaegt und nichts
+    /// aendert, loest mit dem Sprung KEINEN Schreibzugriff aus. Gesprungen wird
+    /// trotzdem — ein Sprung ist kein Abbruch.
+    /// </summary>
+    [Fact]
+    public void Ohne_Aenderung_springt_der_Knopf_ohne_einen_Schreibzugriff()
+    {
+        var z = new Schreibzaehler();
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(beimSchliessen: e => ergebnis = e,
+                           speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
+
+        cut.FindAll("button.epos-sprung")[0].Click();
+
+        Assert.Equal(BhkwSprung.Strombezug, ergebnis!.Sprung);
+        Assert.Equal(0, z.Zugriffe);
+        Assert.False(ergebnis.Gespeichert);   // nichts geschrieben, nichts neu zu rechnen
+
+        var z2 = new Schreibzaehler();
+        var cut2 = Aufbauen(beimSchliessen: e => ergebnis = e,
+                            speichereAnlage: z2.Anlage, speichereVorgaben: z2.Vorgaben);
+        cut2.FindAll("button.epos-sprung")[1].Click();
+
+        Assert.Equal(BhkwSprung.BhkwTarif, ergebnis!.Sprung);
+        Assert.Equal(0, z2.Zugriffe);
+    }
+
+    /// <summary>
+    /// Fall (b): Geaendert — dann schreibt der Sprung, aber GENAU das betroffene
+    /// Ziel. Eine geaenderte Anlagenzeile zieht weder die zweite Zeile noch die
+    /// Projektvorgaben mit.
+    /// </summary>
+    [Fact]
+    public void Eine_geaenderte_Anlagenzeile_schreibt_nur_diese_Zeile_und_springt()
+    {
+        var anlagen = ZweiAnlagen();
+        var p = new WirtschaftlichkeitParameter();
+        var z = new Schreibzaehler();
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(anlagen, p, e => ergebnis = e, z.Anlage, z.Vorgaben);
+
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
+        cut.FindAll("button.epos-sprung")[0].Click();
+
+        Assert.Equal(new[] { "Anlage:BHKW EW M 50 S [K] Erdgas" }, z.Wege);
+        Assert.Equal(5.57, anlagen[0].SatzEinspCt);
+        Assert.Null(anlagen[1].SatzEinspCt);
+        Assert.Equal(BhkwSprung.Strombezug, ergebnis!.Sprung);
+        Assert.True(ergebnis.Gespeichert);
+    }
+
+    /// <summary>Fall (b), die andere Seite: nur die Projektvorgaben geaendert.</summary>
+    [Fact]
+    public void Geaenderte_Projektvorgaben_schreiben_nur_die_Vorgaben_und_springen()
+    {
+        var anlagen = ZweiAnlagen();
+        var p = new WirtschaftlichkeitParameter();
+        var z = new Schreibzaehler();
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(anlagen, p, e => ergebnis = e, z.Anlage, z.Vorgaben);
+
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
+        cut.FindAll("button.epos-sprung")[1].Click();
+
+        Assert.Equal(new[] { "Vorgaben" }, z.Wege);
+        Assert.True(p.RaeumlicherZusammenhang);
+        Assert.Equal(BhkwSprung.BhkwTarif, ergebnis!.Sprung);
+        Assert.True(ergebnis.Gespeichert);
+    }
+
+    /// <summary>
+    /// Fall (c), Muster Ae25: Schlaegt das Schreiben fehl, findet der Sprung
+    /// NICHT statt und die Maske bleibt offen — mit demselben Fehlerband wie im
+    /// OK-Weg.
+    /// </summary>
+    [Fact]
+    public void Scheitert_das_Schreiben_findet_der_Sprung_nicht_statt()
+    {
+        var z = new Schreibzaehler { VorgabenAntwort = _ => false };
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(beimSchliessen: e => ergebnis = e,
+                           speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
+
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
+        cut.FindAll("button.epos-sprung")[0].Click();
+
+        Assert.Null(ergebnis);                 // kein Sprung, die Maske bleibt offen
+        Assert.False(cut.Instance.Gespeichert);
+        Assert.Equal("1 Angabe(n) konnten nicht gespeichert werden.",
+                     cut.FindAll(".epos-warnbanner-text")[^1].TextContent);
+    }
+
+    /// <summary>
+    /// Der Satz unter den Knoepfen kuendigt das Schreiben an — er steht deshalb
+    /// nur, wenn ein Sprung jetzt wirklich schreiben wuerde.
+    /// </summary>
+    [Fact]
+    public void Die_Zeile_unter_den_Sprungknoepfen_steht_nur_bei_geaendertem_Stand()
+    {
+        var cut = Aufbauen();
+
+        Assert.DoesNotContain("Der Sprung speichert die Eingaben", Koerper(cut, 4).TextContent);
+
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
+
+        Assert.Contains("Der Sprung speichert die Eingaben", Koerper(cut, 4).TextContent);
     }
 
     [Fact]

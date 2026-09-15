@@ -682,37 +682,49 @@ namespace ChartProben
             // SP-O-4-Hinweis. Beides sind optionale Parameter; die Probe 37 darueber
             // ruft die Funktion weiterhin ohne sie und muss byte-gleich bleiben.
             //
-            // Unzulaessig ist hier der ganze obere Rand (die zwei groessten
-            // Kapazitaeten) und die schnellste C-Rate - so liegt Schraffur sowohl an
-            // einer Kante als auch quer durch die Flaeche, und das Optimum bleibt frei.
-            bool[][] rasterSperre = Rastersperre(rasterKapazitaeten.Length, rasterCRaten.Length);
+            // DIE KARTE IST DUENN BESETZT. Die Groessensuche waehlt unter GERAETEN, und
+            // Geraete bilden kein Gitter: Zeilen sind die verschiedenen Kapazitaeten der
+            // gefundenen Geraete, Spalten ihre verschiedenen Entladeleistungen, und nur
+            // die Zellen, hinter denen wirklich ein Geraet steht, tragen einen Wert. Die
+            // C-RATE IST KEINE ACHSE MEHR - sie ist die abgeleitete Kennzahl P/E jedes
+            // Geraets. Genau das muss der Renderer koennen: Die uebrigen Zellen sind NaN
+            // und duerfen nicht in der Minimumfarbe erscheinen.
+            //
+            // Unzulaessig ist hier der ganze obere Rand (die zwei groessten Kapazitaeten)
+            // und die hoechste Leistung - so liegt Schraffur sowohl an einer Kante als
+            // auch quer durch die Flaeche, und das Optimum bleibt frei.
+            (double E, double P)[] geraete = Geraeteliste();
+            double[] geraeteLeistungen = Geraeteleistungen(geraete);
+            double[][] geraeteWerte = Geraetefeld(rasterKapazitaeten, geraeteLeistungen, geraete);
+            bool[][] rasterSperre = Rastersperre(rasterKapazitaeten.Length, geraeteLeistungen.Length);
 
             Pruefe(ziel, "flottenraster_schraffur", 860, 560,
                    new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
                            ChartRenderer.C_RASTER_GUT, SKColors.Black },
-                   () => ChartRenderer.Optimierungsraster("Kapitalwert über Kapazität und C-Rate",
-                            "C-Rate [1/h] (Leistung = Kapazität × C-Rate)", "Kapazität [kWh]",
-                            "Kapitalwert [€]",
-                            rasterCRaten, rasterKapazitaeten, rasterWerte,
-                            RASTER_BESTE_ZEILE, RASTER_BESTE_SPALTE,
+                   () => ChartRenderer.Optimierungsraster(
+                            "Kapitalwert über Kapazität und Entladeleistung",
+                            "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                            geraeteLeistungen, rasterKapazitaeten, geraeteWerte,
+                            RASTER_BESTE_ZEILE, GERAETE_BESTE_SPALTE,
                             rasterSperre,
-                            "SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. "
-                            + "Zwischen zwei Stützstellen ist nichts gerechnet."));
+                            "SP-O-4: Die Aussage gilt nur für die geprüften Geräte. "
+                            + "Zwischen zwei Geräten ist nichts gerechnet."));
 
-            // Der SCHNITT UEBER DER LEISTUNG ist dieselbe Funktion mit einer anderen
-            // Achse: P = E * C, die Kapazitaetszeile also ueber der Leistung gelesen.
-            // Geprueft wird, dass sie das auch mit einer Achse kann, die nicht bei
-            // 500 anfaengt - die Leistungen liegen hier zwischen 1 250 und 7 500 kW.
-            double[] leistungsachse = Leistungsachse(rasterCRaten,
-                                                     rasterKapazitaeten[RASTER_BESTE_ZEILE]);
+            // Der SCHNITT UEBER DER LEISTUNG laeuft ueber die gefundenen GERAETE, nach
+            // ihrer Entladeleistung geordnet - jeder Punkt ist ein Speicher, den es
+            // wirklich gibt. Geprueft wird, dass die Kurve das auch mit einer Achse kann,
+            // die nicht bei 500 anfaengt und ungleichmaessig geteilt ist.
+            double[] geraeteAchse = geraete.OrderBy(g => g.P).Select(g => g.P).ToArray();
+            double[] geraeteKurve = geraete.OrderBy(g => g.P).Select(g => Flaeche(g.E, g.P / g.E)).ToArray();
+            int besterPunkt = Array.IndexOf(geraeteAchse, 1250.0);
 
             Pruefe(ziel, "flottenschnitt_leistung", 720, 460,
                    new[] { ChartRenderer.C_STAMM, ChartRenderer.C_RASTER_SCHLECHT },
-                   () => ChartRenderer.Schnittkurve("Schnitt bei 2 500 kWh — Kapitalwert über der Entladeleistung",
+                   () => ChartRenderer.Schnittkurve(
+                            "Kapitalwert über der Entladeleistung der gefundenen Geräte",
                             "Entladeleistung [kW]", "Kapitalwert [€]",
-                            leistungsachse, rasterWerte[RASTER_BESTE_ZEILE],
-                            leistungsachse[RASTER_BESTE_SPALTE],
-                            rasterWerte[RASTER_BESTE_ZEILE][RASTER_BESTE_SPALTE]));
+                            geraeteAchse, geraeteKurve,
+                            geraeteAchse[besterPunkt], geraeteKurve[besterPunkt]));
 
             // =========================================================================
             // 41 - die SCHNITTKURVE mit FEINRASTERPUNKTEN (#224)
@@ -1171,14 +1183,20 @@ namespace ChartProben
                 feld[i] = new double[cRaten.Length];
                 for (int s = 0; s < cRaten.Length; s++)
                 {
-                    double c = kapazitaeten[i], r = cRaten[s];
-                    feld[i][s] = 4000.0
-                               - 0.0009 * (c - 2500.0) * (c - 2500.0)
-                               - 900.0 * (r - 1.5) * (r - 1.5);
+                    feld[i][s] = Flaeche(kapazitaeten[i], cRaten[s]);
                 }
             }
             return feld;
         }
+
+        /// <summary>
+        /// Die synthetische Flaeche, aus der beide Karten ihre Werte nehmen: ein Scheitel
+        /// bei 2 500 kWh und 1,5 C, nach beiden Seiten abfallend und ins Negative laufend.
+        /// </summary>
+        private static double Flaeche(double kapazitaetKwh, double cRate)
+            => 4000.0
+             - 0.0009 * (kapazitaetKwh - 2500.0) * (kapazitaetKwh - 2500.0)
+             - 900.0 * (cRate - 1.5) * (cRate - 1.5);
 
         /// <summary>Eine Spalte des Rasters - die Schnittkurve bei fester C-Rate.</summary>
         private static double[] Rasterspalte(double[][] feld, int spalte)
@@ -1250,6 +1268,46 @@ namespace ChartProben
             var w = new double[cRaten.Length];
             for (int s = 0; s < cRaten.Length; s++) w[s] = cRaten[s] * kapazitaetKwh;
             return w;
+        }
+
+        /// <summary>Die Spalte des Optimums in der GERAETEkarte: 1 250 kW.</summary>
+        private const int GERAETE_BESTE_SPALTE = 4;
+
+        /// <summary>
+        /// ZEHN Geraete, wie sie ein Katalog fuehrt: krumme Paare aus Kapazitaet und
+        /// Entladeleistung, kein Gitter. Das Optimum liegt auf (2 500 kWh, 1 250 kW).
+        /// </summary>
+        private static (double E, double P)[] Geraeteliste() => new[]
+        {
+            (500.0, 250.0), (1000.0, 500.0), (1000.0, 1000.0), (1500.0, 750.0),
+            (2000.0, 1000.0), (2500.0, 1250.0), (2500.0, 2500.0), (3000.0, 1500.0),
+            (4000.0, 2000.0), (5000.0, 2500.0)
+        };
+
+        /// <summary>Die verschiedenen Entladeleistungen der Geraete, aufsteigend — die Spaltenachse.</summary>
+        private static double[] Geraeteleistungen((double E, double P)[] geraete)
+            => geraete.Select(g => g.P).Distinct().OrderBy(x => x).ToArray();
+
+        /// <summary>
+        /// Die DUENN besetzte Matrix: Nur eine Zelle, hinter der ein Geraet steht, traegt
+        /// einen Wert; jede andere bleibt <c>NaN</c> und damit leer.
+        /// </summary>
+        private static double[][] Geraetefeld(double[] kapazitaeten, double[] leistungen,
+                                              (double E, double P)[] geraete)
+        {
+            var feld = new double[kapazitaeten.Length][];
+            for (int z = 0; z < kapazitaeten.Length; z++)
+            {
+                feld[z] = new double[leistungen.Length];
+                for (int s = 0; s < leistungen.Length; s++) feld[z][s] = double.NaN;
+            }
+            foreach ((double E, double P) g in geraete)
+            {
+                int z = Array.IndexOf(kapazitaeten, g.E);
+                int s = Array.IndexOf(leistungen, g.P);
+                if (z >= 0 && s >= 0) feld[z][s] = Flaeche(g.E, g.P / g.E);
+            }
+            return feld;
         }
 
         /// <summary>Das Optimum des Kapazitaet-x-Leistung-Feldes: 220 kWh (Zeile 5).</summary>

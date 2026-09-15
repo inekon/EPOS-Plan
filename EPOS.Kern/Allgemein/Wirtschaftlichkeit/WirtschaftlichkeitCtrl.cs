@@ -1165,9 +1165,6 @@ namespace WindowsFormsApplication1
             public bool Bhkw;
             public bool Photovoltaik;
             public bool Heizkessel;
-            /// <summary>Ä18: Wärmepumpe in der Gruppe — Anker des
-            /// Strombezug-Tarifeinstiegs auf der Wirtschaftlichkeitsseite.</summary>
-            public bool Waermepumpe;
             /// <summary>Brennstoff-Erzeuger vorhanden (BHKW oder Kessel) — Emissionsbilanz sinnvoll.</summary>
             public bool Brennstoff { get { return Bhkw || Heizkessel; } }
         }
@@ -1194,7 +1191,6 @@ namespace WindowsFormsApplication1
             f.Bhkw = ErzeugerVorhanden("Tab_BHKW", ids);
             f.Photovoltaik = ErzeugerVorhanden("Tab_PV", ids);
             f.Heizkessel = ErzeugerVorhanden("Tab_Heizkessel", ids);
-            f.Waermepumpe = ErzeugerVorhanden("Tab_WP", ids);
             return f;
         }
 
@@ -5129,6 +5125,19 @@ namespace WindowsFormsApplication1
                     T("WIRT_STROMTRAEGER_RUECKFALL",
                       KostenEmissionRechner.HINWEIS_STROMTRAEGER_RUECKFALL),
                     v.StromTraegerRueckfall));
+
+            // ANWENDERENTSCHEID 15.09.2026 — dieselbe Lage auf der CO₂-Seite, und
+            // anders als oben MIT Zahl: Der Netzbezug wurde mit dem Emissionsfaktor
+            // des Auslieferungsträgers gerechnet, weil das Projekt keinen Stromträger
+            // führt. Eine geliehene Zahl sieht aus wie eine gepflegte — diese Zeile
+            // macht den Unterschied sichtbar. Sie steht NEBEN der Strommix-Zeile
+            // darüber, nie zugleich mit ihr: Entweder trug der Rückfall den Faktor,
+            // oder es blieb beim Vorgabewert.
+            if (!string.IsNullOrEmpty(v.CO2TraegerRueckfall))
+                erg.Hinweis = Anhaengen(erg.Hinweis, string.Format(
+                    T("WIRT_CO2_TRAEGER_RUECKFALL",
+                      KostenEmissionRechner.HINWEIS_CO2_TRAEGER_RUECKFALL),
+                    v.CO2TraegerRueckfall));
 
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
             // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein

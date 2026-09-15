@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 
 namespace WindowsFormsApplication1
@@ -53,6 +53,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Herkunft in Worten — für Laufprotokoll und Bericht.</summary>
         public string Herkunft = "";
+
+        /// <summary>
+        /// <b>Der Faktor ist GELIEHEN</b>: <c>energy_carrier.id</c> des Trägers, der
+        /// eingesprungen ist, weil dem Projekt keiner zugeordnet war; <c>0</c> = kein
+        /// Rückfall, die Zahl steht auf eigenen Füßen.
+        ///
+        /// <para>Gesetzt wird das Feld allein von <see cref="Emissionsquelle.Netzstrom(int,int,string)"/>
+        /// (Anwenderentscheid 15.09.2026). Es trägt die HERLEITUNG: Der Anwender soll
+        /// einen geliehenen Wert von einem gepflegten unterscheiden können, und
+        /// <see cref="Herkunft"/> sagt es in Worten.</para>
+        /// </summary>
+        public int RueckfallTraegerId;
     }
 
     /// <summary>
@@ -195,15 +207,64 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der CO₂-Faktor des NETZSTROMS eines Projekts [g/kWh]: der Faktor des
-        /// zugeordneten Stromträgers (<c>pricing_model = 'ELECTRICITY'</c>), sonst
-        /// <see cref="NETZSTROM_RUECKFALL_G_JE_KWH"/>.
+        /// Der CO₂-Faktor des NETZSTROMS eines Projekts [g/kWh] — siehe die
+        /// Stufenfolge in <see cref="Netzstrom(int,int,string)"/>.
         /// </summary>
         public static Emissionsfaktoren Netzstrom(int idProjekt, string modus)
         {
-            int carrier = StromTraeger(idProjekt);
-            Emissionsfaktoren f = Fuer(idProjekt, carrier, 0, modus);
+            return Netzstrom(idProjekt, StromTraeger(idProjekt), modus);
+        }
+
+        /// <summary>
+        /// Der CO₂-Faktor des NETZSTROMS [g/kWh] mit bereits bestimmtem Stromträger —
+        /// für Aufrufer, die ihn ohnehin schon gelesen haben (spart die zweite
+        /// Abfrage).
+        ///
+        /// <para><b>Die Stufen, in dieser Reihenfolge:</b></para>
+        /// <list type="number">
+        ///   <item><description>der Faktor des ZUGEORDNETEN Stromträgers
+        ///     (<c>pricing_model = 'ELECTRICITY'</c>) über die Lesekette;</description></item>
+        ///   <item><description>sonst — und nur, wenn gar keiner zugeordnet ist — der
+        ///     des Auslieferungsträgers des Katalogs
+        ///     (<see cref="KatalogStromTraeger"/>);</description></item>
+        ///   <item><description>sonst <see cref="NETZSTROM_RUECKFALL_G_JE_KWH"/>.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Stufe 2 FÜLLT NUR LÜCKEN</b> (Anwenderentscheid 15.09.2026:
+        /// „bereits zugewiesene CO₂-Zahlen nicht überschreiben"). Sie greift allein
+        /// dort, wo <b>kein</b> Stromträger zugeordnet ist — wo also gar keine Zahl aus
+        /// den Projektdaten steht, sondern der anonyme Vorgabewert. Ein ZUGEORDNETER
+        /// Träger behält seinen Faktor, auch wenn er keinen trägt: Dann bleibt es beim
+        /// Vorgabewert wie bisher, denn seine Lesekette hat vier Ebenen durchsucht, und
+        /// ein zweiter Anlauf über einen fremden Träger verdeckte die Lücke, statt sie
+        /// zu füllen — dieselbe Regel, die <see cref="Fuer"/> für den
+        /// Brennstoff-Rückfall trägt.</para>
+        ///
+        /// <para><b>Derselbe Träger wie auf der KOSTENseite:</b>
+        /// <see cref="KostenEmissionRechner"/> bepreist den Netzbezug seit Auftrag #267
+        /// mit genau dieser Wahl. Bis hierher fragten Kosten und Emissionen
+        /// verschieden — dieselbe Lage, zwei Antworten.</para>
+        /// </summary>
+        public static Emissionsfaktoren Netzstrom(int idProjekt, int stromTraeger, string modus)
+        {
+            Emissionsfaktoren f = Fuer(idProjekt, stromTraeger, 0, modus);
             if (f.Co2GKwh > 0) return f;
+
+            if (stromTraeger <= 0)
+            {
+                int rueckfall = KatalogStromTraeger(idProjekt);
+                if (rueckfall > 0)
+                {
+                    Emissionsfaktoren r = Fuer(idProjekt, rueckfall, 0, modus);
+                    if (r.Co2GKwh > 0)
+                    {
+                        r.RueckfallTraegerId = rueckfall;
+                        r.Herkunft = HerkunftstextTraeger(rueckfall, r.Ebene) +
+                                     " — dem Projekt ist kein Stromträger zugeordnet";
+                        return r;
+                    }
+                }
+            }
 
             f.Co2GKwh = NETZSTROM_RUECKFALL_G_JE_KWH;
             f.Co2Gepflegt = false;
@@ -266,6 +327,37 @@ namespace WindowsFormsApplication1
             }
             catch { }
             return 0;
+        }
+
+        /// <summary>
+        /// <b>Der Stromträger, der einspringt, wenn dem Projekt keiner zugeordnet
+        /// ist</b> — der Auslieferungsträger des Katalogs
+        /// (<see cref="ProjektEnergietraegerCtrl.StandardStromTraeger"/>), also genau
+        /// die Fassung, die die Kostenseite ANZEIGT und der Assistent ZUORDNET.
+        /// <c>0</c> = das Projekt führt keine elektrische Erzeugung, oder der Katalog
+        /// führt keinen Stromträger.
+        ///
+        /// <para><b>Nur für Projekte mit elektrischer Welt.</b> Ein reines
+        /// Kesselprojekt ohne Wärmepumpe, PV, Stromspeicher oder Heizstab bekommt
+        /// keinen Rückfall: Sein Netzbezug ist Haushaltsstrom der Bedarfsseite und
+        /// keine Anlagengröße, und ein Träger, den niemand zugeordnet hat, wäre dort
+        /// eine Erfindung.</para>
+        ///
+        /// <para><b>EINE Fassung für Kosten und Emissionen.</b>
+        /// <see cref="KostenEmissionRechner"/> bepreist den Netzbezug seit Auftrag #267
+        /// mit demselben Träger und liest ihn hier; <see cref="Netzstrom(int,int,string)"/>
+        /// holt sich von hier den Faktor. Zwei Fassungen wären zwei Antworten auf
+        /// dieselbe Frage.</para>
+        /// </summary>
+        internal static int KatalogStromTraeger(int idProjekt)
+        {
+            if (idProjekt <= 0) return 0;
+            try
+            {
+                if (!ProjektEnergietraegerCtrl.BrauchtStromTraeger(idProjekt)) return 0;
+                return ProjektEnergietraegerCtrl.StandardStromTraeger(idProjekt);
+            }
+            catch { return 0; }
         }
 
         /// <summary>

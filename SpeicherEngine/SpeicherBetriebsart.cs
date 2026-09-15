@@ -1,4 +1,4 @@
-namespace SpeicherEngine
+﻿namespace SpeicherEngine
 {
     /// <summary>
     /// Betriebsart des Speichers nach der Quellen-Matrix (Fachkonzept 2.1).

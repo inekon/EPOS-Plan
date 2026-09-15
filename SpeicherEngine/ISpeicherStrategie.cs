@@ -1,8 +1,9 @@
-namespace SpeicherEngine
+﻿namespace SpeicherEngine
 {
     /// <summary>
-    /// Betriebsstrategie eines Speichers (Fachkonzept 6). Stufe 1 kennt nur
-    /// <see cref="Dauernutzung"/>; Nachtnutzung, Peak-Shaving und Arbitrage folgen.
+    /// Betriebsstrategie eines Speichers (Fachkonzept 6):
+    /// <see cref="Dauernutzung"/>, <see cref="PeakShaving"/> und
+    /// <see cref="Arbitrage"/>.
     /// </summary>
     /// <remarks>
     /// Implementierungen muessen zustandslos oder unveraenderlich sein und duerfen

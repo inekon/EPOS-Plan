@@ -1,4 +1,4 @@
-// WAS VON DER AUSFUEHRUNGSSCHICHT IN DER WINDOWS-HUELLE BLEIBT (Auftrag #201).
+﻿// WAS VON DER AUSFUEHRUNGSSCHICHT IN DER WINDOWS-HUELLE BLEIBT (Auftrag #201).
 //
 // Bis #201 lag die ganze Schicht hier: KiAusfuehrer (995 Zeilen, statisch) samt Register,
 // Einlaeufigkeit, Bestaetigungsriegel, Protokoll und Sitzungsgedaechtnis. Sie liegt jetzt

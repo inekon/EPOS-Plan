@@ -1,4 +1,4 @@
-using WindowsFormsApplication1;
+﻿using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.Kern.Tests
