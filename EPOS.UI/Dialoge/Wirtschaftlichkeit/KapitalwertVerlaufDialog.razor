@@ -23,8 +23,11 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@TitelText</h1>
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
@@ -94,6 +97,16 @@
     /// <summary>Fenstertitel (der Aufrufer haengt den Stammnamen an).</summary>
     [Parameter] public string TitelText { get; set; }
         = "Kapitalwert-Verlauf über den Nutzungszeitraum";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf (<c>epos-dialog-titel</c>)? Vorgabe
+    /// <c>true</c> — im eigenen Fenster der Windows-Schale trägt ihn sonst
+    /// niemand. Steckt der Dialog dagegen in einer <c>Ueberlagerung</c>, die
+    /// denselben Titel schon führt, setzt die Einbettungsstelle <c>false</c>:
+    /// Ein Titel, eine Stelle (Hausregel W11b-B-9). <c>TitelText</c> bleibt
+    /// dabei unverändert — die Windows-Hülle hängt den Stammnamen an.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
     /// <summary>Beschriftung des Zeitraumfeldes (Designer: lblZeitraum).</summary>
     [Parameter] public string LabelJahre { get; set; } = "Zeitraum [Jahre]:";

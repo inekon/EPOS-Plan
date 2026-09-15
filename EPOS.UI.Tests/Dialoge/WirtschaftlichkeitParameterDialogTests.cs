@@ -82,9 +82,11 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         bool bhkw = false, bool brennstoff = false,
         Func<bool>? speichern = null,
         Action<WirtParameterErgebnis>? geschlossen = null,
-        Func<IReadOnlyDictionary<string, object>>? gesetzeGaben = null)
+        Func<IReadOnlyDictionary<string, object>>? gesetzeGaben = null,
+        bool titelAnzeigen = true)
     {
         return Render<WirtschaftlichkeitParameterDialog>(p => p
+            .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.Parameter, satz)
             .Add(x => x.HatBhkw, bhkw)
             .Add(x => x.HatBrennstoff, brennstoff)
@@ -94,6 +96,30 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
             .Add(x => x.GesetzeGaben, gesetzeGaben)
             .Add(x => x.Speichern, speichern ?? (() => true))
             .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b‑B‑9): Zeigt der Wirt schon einen — die
+    /// Überlagerung der Wirtschaftlichkeitsseite tut es —, bleibt der eigene Kopf
+    /// weg; der Hilfeknopf bleibt.
+    /// </summary>
+    [Fact]
+    public void Ohne_TitelAnzeigen_bleibt_der_eigene_Kopf_weg_und_der_Hilfeknopf_steht()
+    {
+        var cut = Aufbauen(Satz(), titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll("h1.epos-dialog-titel"));
+        Assert.Contains("epos-dialog-kopf--ohnetitel", cut.Find("div.epos-dialog-kopf").ClassName);
+        Assert.NotNull(cut.Find(".epos-infoknopf"));
+    }
+
+    /// <summary>Im eigenen Fenster (Vorgabe) steht der Kopf wie bisher.</summary>
+    [Fact]
+    public void Mit_TitelAnzeigen_steht_der_eigene_Kopf()
+    {
+        var cut = Aufbauen(Satz());
+
+        Assert.Single(cut.FindAll("h1.epos-dialog-titel"));
     }
 
     // =====================================================================

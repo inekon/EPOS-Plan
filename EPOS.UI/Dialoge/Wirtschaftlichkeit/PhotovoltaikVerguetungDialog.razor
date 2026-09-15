@@ -35,8 +35,11 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@_t.Titel</h1>
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@_t.Titel</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
@@ -277,6 +280,15 @@
 
     /// <summary>Schlüssel des Hilfeknopfes — dieselbe Wikiseite wie bisher.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_PhotovoltaikVerguetung.btn_Help";
+
+    /// <summary>
+    /// Zeigt der Dialog seinen eigenen Kopf (<c>epos-dialog-titel</c>)? Vorgabe
+    /// <c>true</c> — im eigenen Fenster der Windows-Schale trägt ihn sonst
+    /// niemand. Steckt der Dialog dagegen in einer <c>Ueberlagerung</c>, die
+    /// denselben Titel schon führt, setzt die Einbettungsstelle <c>false</c>:
+    /// Ein Titel, eine Stelle (Hausregel W11b-B-9).
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
     // =====================================================================
     // Zustand

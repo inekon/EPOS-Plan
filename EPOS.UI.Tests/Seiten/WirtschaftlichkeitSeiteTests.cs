@@ -428,17 +428,30 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
     /// <summary>
     /// Ein Titel, eine Stelle (W11b‑B‑9): Die Überlagerung trägt ihn, der Dialog
-    /// darin zeigt keinen eigenen Kopf.
+    /// darin zeigt keinen eigenen Kopf — und zwar JEDER der fünf. Die vier
+    /// Geschwister des BHKW-Dialogs beziehen ihren Titel aus einem eigenen
+    /// Ausdruck; deshalb sah die Markup-Wache sie bis #289 nicht, und deshalb
+    /// steht hier der GEZEICHNETE Nachweis: genau ein Titel je Bereich, der der
+    /// Überlagerung.
     /// </summary>
-    [Fact]
-    public void Der_BHKW_Dialog_zeigt_in_der_Ueberlagerung_keinen_eigenen_Titel()
+    [Theory]
+    [InlineData(0)]   // Photovoltaik
+    [InlineData(1)]   // BHKW
+    [InlineData(2)]   // Strombezug
+    [InlineData(3)]   // Parameter
+    [InlineData(4)]   // Verlauf
+    public void Kein_Unterdialog_zeigt_in_der_Ueberlagerung_einen_eigenen_Titel(int knopf)
     {
         var cut = Zeige(p => p.Add(x => x.Gaben,
             (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
 
-        Fussknoepfe(cut)[1].Click();   // BHKW
+        Fussknoepfe(cut)[knopf].Click();
 
         Assert.Empty(cut.FindAll(".epos-ueberlagerung h1.epos-dialog-titel"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-ueberlagerung-titel"));
+
+        // Der Hilfeknopf des Dialogs bleibt — nur der Kopf faellt weg.
+        Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung .epos-dialog-kopf--ohnetitel"));
     }
 
     // =====================================================================

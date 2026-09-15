@@ -35,14 +35,40 @@ public class KapitalwertVerlaufDialogTests : BunitContext
     private IRenderedComponent<KapitalwertVerlaufDialog> Aufbauen(
         Func<int, int, CancellationToken, Task<KapitalwertVerlaufBilder>>? berechnen = null,
         Action? beimSchliessen = null,
-        int jahreVorgabe = 20)
+        int jahreVorgabe = 20,
+        bool titelAnzeigen = true)
     {
         return Render<KapitalwertVerlaufDialog>(p => p
             .Add(x => x.Szenarien, Szenarien)
             .Add(x => x.JahreVorgabe, jahreVorgabe)
+            .Add(x => x.TitelAnzeigen, titelAnzeigen)
             .Add(x => x.Berechnen, berechnen ??
                 ((jahre, szenario, _) => Task.FromResult(Ergebnis(jahre, Szenarien[szenario].Text))))
             .Add(x => x.Geschlossen, () => beimSchliessen?.Invoke()));
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b‑B‑9): Zeigt der Wirt schon einen — die
+    /// Überlagerung der Wirtschaftlichkeitsseite tut es —, bleibt der eigene Kopf
+    /// weg; der Hilfeknopf bleibt.
+    /// </summary>
+    [Fact]
+    public void Ohne_TitelAnzeigen_bleibt_der_eigene_Kopf_weg_und_der_Hilfeknopf_steht()
+    {
+        var cut = Aufbauen(titelAnzeigen: false);
+
+        Assert.Empty(cut.FindAll("h1.epos-dialog-titel"));
+        Assert.Contains("epos-dialog-kopf--ohnetitel", cut.Find("div.epos-dialog-kopf").ClassName);
+        Assert.NotNull(cut.Find(".epos-infoknopf"));
+    }
+
+    /// <summary>Im eigenen Fenster (Vorgabe) steht der Kopf wie bisher.</summary>
+    [Fact]
+    public void Mit_TitelAnzeigen_steht_der_eigene_Kopf()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindAll("h1.epos-dialog-titel"));
     }
 
     [Fact]

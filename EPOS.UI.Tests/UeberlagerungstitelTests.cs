@@ -69,7 +69,27 @@ namespace EPOS.UI.Tests;
 /// Parameter <c>[Parameter] public bool TitelAnzeigen { get; set; } = true;</c>
 /// steuert stattdessen NUR den eigenen Kopf.</para>
 ///
-/// <para><b>Ausnahmeliste: leer.</b> Alle Fälle unten müssen ohne
+/// <para><b>Nachtrag Auftrag #289 — Bauart C, strukturell:</b> Die Bauarten A
+/// und b vergleichen AUSDRÜCKE. Bezieht die eingebettete Komponente ihren Titel
+/// aus einem EIGENEN Ausdruck (<c>@_t.Titel</c>, <c>@_t.Titel(Sicht)</c>, eine
+/// berechnete Eigenschaft), griff keiner der beiden — vier Dialoge der
+/// Wirtschaftlichkeitsseite standen deshalb doppelt. Seither prüft
+/// <see cref="MarkupFunde"/> zusätzlich OHNE jeden Textvergleich: Wer in einer
+/// <c>&lt;Ueberlagerung&gt;</c> MIT Titel eingebettet wird, darf keinen
+/// unbedingten <c>epos-dialog-titel</c> zeichnen — gleich, woher sein Text
+/// kommt und ob die Überlagerung ihren Titel aus einem Bezeichner oder als
+/// Literal führt. Das prüft
+/// <see cref="Die_Markup_Wache_findet_die_vier_Geschwisterdialoge_vor_289"/>
+/// am nachgebauten Markup und
+/// <see cref="Keine_neue_Komponente_zeichnet_ihren_Kopf_in_einer_betitelten_Ueberlagerung"/>
+/// am ganzen Baum. Diese Bauart trifft im Bestand weitere Einbettungen, die
+/// #289 nicht mehr behoben hat (jede ist Handarbeit an einem fremden Dialog);
+/// sie stehen namentlich in der schrumpfenden Restliste
+/// <see cref="RestbefundC"/> — ein offener Befund, keine Erlaubnis. Jeder NEUE
+/// Fall macht die Wache rot, und eine Zeile der Restliste, die die Wache nicht
+/// mehr findet, ebenso.</para>
+///
+/// <para><b>Ausnahmeliste der Bauarten A und b: leer.</b> Alle Fälle unten müssen ohne
 /// Einschränkung grün bleiben — jeder neue Doppel-Titel, gleich welcher
 /// Bauart, ist ein Fehler, keine Ausnahme.</para>
 /// </summary>
@@ -233,6 +253,127 @@ public sealed class UeberlagerungstitelTests
         Assert.Empty(MarkupFunde(dateienLeererTitelText));
     }
 
+    /// <summary>
+    /// Die Luecke, die Auftrag <b>#289</b> geschlossen hat: Die vier
+    /// Geschwisterdialoge der Wirtschaftlichkeitsseite
+    /// (<c>TarifstrukturDialog</c>, <c>PhotovoltaikVerguetungDialog</c>,
+    /// <c>WirtschaftlichkeitParameterDialog</c>, <c>KapitalwertVerlaufDialog</c>)
+    /// zeichneten ihren Kopf unbedingt, obwohl die Überlagerung denselben Titel
+    /// schon trug — und KEINE der beiden älteren Bauarten sah es: Der Text kam
+    /// aus einem EIGENEN Ausdruck der Komponente (<c>@_t.Titel</c>,
+    /// <c>@_t.Titel(Sicht)</c>, <c>@TitelText</c>), also gab es weder ein
+    /// <c>TitelText="@X"</c> an der Einbettungsstelle (Bauart A) noch einen
+    /// Parameter <c>TitelAnzeigen</c> (Bauart b).
+    ///
+    /// <para>Der eingefrorene Bestand von <c>WirtschaftlichkeitSeite.razor</c>
+    /// VOR #289 muss alle vier als Fund liefern; die HEUTIGE Fassung (bedingter
+    /// Kopf plus <c>TitelAnzeigen="false"</c> an der Einbettungsstelle) keinen
+    /// einzigen mehr.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Markup_Wache_findet_die_vier_Geschwisterdialoge_vor_289()
+    {
+        // Die Ueberlagerungen der Seite - unveraendert vor wie nach #289.
+        static string Seite(string tarif, string pv, string parameter, string verlauf) =>
+            "<Ueberlagerung Offen=\"@(_offen == Unterdialog.Photovoltaik)\" Titel=\"@PhotovoltaikText\">\n" +
+            "    <KindInhalt>\n" +
+            "        <PhotovoltaikVerguetungDialog @attributes=\"_gaben\"" + pv + "\n" +
+            "            Geschlossen=\"@((PvVerguetungErgebnis e) => Fertig(e is not null))\" />\n" +
+            "    </KindInhalt>\n" +
+            "</Ueberlagerung>\n" +
+            "<Ueberlagerung Offen=\"@(_offen == Unterdialog.Strombezug)\" Titel=\"@StrombezugText\">\n" +
+            "    <KindInhalt>\n" +
+            "        <TarifstrukturDialog @attributes=\"_gaben\"" + tarif + "\n" +
+            "            Geschlossen=\"@((bool ok) => Fertig(ok))\" />\n" +
+            "    </KindInhalt>\n" +
+            "</Ueberlagerung>\n" +
+            "<Ueberlagerung Offen=\"@(_offen == Unterdialog.Parameter)\" Titel=\"@ParameterText\">\n" +
+            "    <KindInhalt>\n" +
+            "        <WirtschaftlichkeitParameterDialog @attributes=\"_gaben\"" + parameter + "\n" +
+            "            Geschlossen=\"@((WirtParameterErgebnis e) => Fertig(e is not null))\" />\n" +
+            "    </KindInhalt>\n" +
+            "</Ueberlagerung>\n" +
+            "<Ueberlagerung Offen=\"@(_offen == Unterdialog.Verlauf)\" Titel=\"@VerlaufText\">\n" +
+            "    <KindInhalt>\n" +
+            "        <KapitalwertVerlaufDialog @attributes=\"_gaben\"" + verlauf + "\n" +
+            "            Geschlossen=\"@(() => Fertig(true))\" />\n" +
+            "    </KindInhalt>\n" +
+            "</Ueberlagerung>\n";
+
+        // Der Kopf der Komponente VOR #289: unbedingt, Text aus EIGENEM Ausdruck.
+        static string KopfVorher(string ausdruck) =>
+            "<div class=\"epos-dialog-kopf\">\n" +
+            "    <h1 class=\"epos-dialog-titel\">" + ausdruck + "</h1>\n" +
+            "    <InfoKnopf Schluessel=\"@HilfeSchluessel\" />\n" +
+            "</div>\n";
+
+        // Der Kopf HEUTE: bedingt, plus der Parameter TitelAnzeigen.
+        static string KopfHeute(string ausdruck) =>
+            "<div class=\"epos-dialog-kopf @(TitelAnzeigen ? \"\" : \"epos-dialog-kopf--ohnetitel\")\">\n" +
+            "    @if (TitelAnzeigen)\n" +
+            "    {\n" +
+            "        <h1 class=\"epos-dialog-titel\">" + ausdruck + "</h1>\n" +
+            "    }\n" +
+            "    <InfoKnopf Schluessel=\"@HilfeSchluessel\" />\n" +
+            "</div>\n" +
+            "@code {\n" +
+            "    [Parameter] public bool TitelAnzeigen { get; set; } = true;\n" +
+            "}\n";
+
+        var vorher = new Dictionary<string, string>
+        {
+            ["WirtschaftlichkeitSeite.razor"] = Seite("", "", "", ""),
+            ["TarifstrukturDialog.razor"] = KopfVorher("@_t.Titel(Sicht)"),
+            ["PhotovoltaikVerguetungDialog.razor"] = KopfVorher("@_t.Titel"),
+            ["WirtschaftlichkeitParameterDialog.razor"] = KopfVorher("@_t.Titel"),
+            ["KapitalwertVerlaufDialog.razor"] = KopfVorher("@TitelText")
+        };
+
+        Assert.Equal(
+            new[]
+            {
+                "KapitalwertVerlaufDialog",
+                "PhotovoltaikVerguetungDialog",
+                "TarifstrukturDialog",
+                "WirtschaftlichkeitParameterDialog"
+            },
+            StrukturFunde(vorher).Select(f => f.Kind)
+                .OrderBy(k => k, StringComparer.Ordinal).ToArray());
+
+        // Gegenprobe: Die ALTEN Bauarten A und b sahen KEINEN dieser vier Faelle -
+        // weder ein TitelText="@X" an der Einbettungsstelle noch ein Parameter
+        // TitelAnzeigen kam darin vor.
+        Assert.Empty(MarkupFunde(vorher));
+        Assert.DoesNotContain("TitelText=\"@", Seite("", "", "", ""), StringComparison.Ordinal);
+        Assert.All(vorher.Where(d => d.Key != "WirtschaftlichkeitSeite.razor"),
+            d => Assert.False(FuehrtTitelAnzeigenParameter(d.Value)));
+
+        var heute = new Dictionary<string, string>
+        {
+            ["WirtschaftlichkeitSeite.razor"] = Seite(
+                " TitelAnzeigen=\"false\"", " TitelAnzeigen=\"false\"",
+                " TitelAnzeigen=\"false\"", " TitelAnzeigen=\"false\""),
+            ["TarifstrukturDialog.razor"] = KopfHeute("@_t.Titel(Sicht)"),
+            ["PhotovoltaikVerguetungDialog.razor"] = KopfHeute("@_t.Titel"),
+            ["WirtschaftlichkeitParameterDialog.razor"] = KopfHeute("@_t.Titel"),
+            ["KapitalwertVerlaufDialog.razor"] = KopfHeute("@TitelText")
+        };
+        Assert.Empty(StrukturFunde(heute));
+        Assert.Empty(MarkupFunde(heute));
+
+        // Und die halbe Behebung faellt weiter durch: bedingter Kopf (Bauart C
+        // schweigt), aber die Einbettungsstelle vergisst das
+        // TitelAnzeigen="false" - dafuer greift jetzt Bauart b.
+        var halb = new Dictionary<string, string>(heute)
+        {
+            ["WirtschaftlichkeitSeite.razor"] = Seite("", " TitelAnzeigen=\"false\"",
+                " TitelAnzeigen=\"false\"", " TitelAnzeigen=\"false\"")
+        };
+        Assert.Empty(StrukturFunde(halb));
+        MarkupFund rest = Assert.Single(MarkupFunde(halb));
+        Assert.Equal("TarifstrukturDialog", rest.Kind);
+    }
+
     private static List<MarkupFund> MarkupFunde(IReadOnlyDictionary<string, string> dateien)
     {
         var funde = new List<MarkupFund>();
@@ -270,7 +411,7 @@ public sealed class UeberlagerungstitelTests
                     if (!dateien.TryGetValue(kind + ".razor", out string? kindDatei))
                         continue;                       // Kind nicht Teil dieses Laufs/Baums
 
-                    if (ZeigtKopfUnbedingt(kindDatei))
+                    if (ZeigtTitelTextKopfUnbedingt(kindDatei))
                     {
                         int zeile = 1 + CountNewlines(s, m.Index);
                         funde.Add(new MarkupFund(datei.Key, zeile, bezeichner, kind));
@@ -313,6 +454,137 @@ public sealed class UeberlagerungstitelTests
         return funde;
     }
 
+    // ---------------------------------------------------------------------
+    //  Bauart C — strukturell, ohne jeden Textvergleich (#289)
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// <b>Offener Befund aus #289, keine Ausnahmeliste.</b> Die Strukturwache
+    /// (Bauart C) findet im Bestand weitere Einbettungen, an denen die
+    /// Komponente ihren eigenen Kopf in einer betitelten Überlagerung zeichnet.
+    /// Jede einzelne davon ist Handarbeit an einem fremden Dialog (bedingter
+    /// Kopf, neuer Parameter, Einbettungsstelle) und gehört damit in einen
+    /// eigenen Auftrag — #289 hat nur die vier Geschwisterdialoge der
+    /// Wirtschaftlichkeitsseite behoben.
+    ///
+    /// <para>Die Liste ist eine <b>Restliste, die schrumpft</b>: Wer einen
+    /// dieser Fälle behebt, streicht seine Zeile hier. Eine Zeile, die die
+    /// Wache nicht mehr findet, ist ein Fehler (unten geprüft) — so kann die
+    /// Liste nicht heimlich veralten. Jeder NEUE Fall, der nicht hier steht,
+    /// macht die Wache rot.</para>
+    /// </summary>
+    private static readonly string[] RestbefundC =
+    {
+        "BedarfAdminDialog.razor -> BedarfErgebnisDialog",
+        "BedarfAdminDialog.razor -> TypProfilDialog",
+        "BedarfAdminDialog.razor -> TypStammDialog",
+        "BedarfsProfileDialog.razor -> BedarfErgebnisDialog",
+        "BedarfsProfileDialog.razor -> TypProfilDialog",
+        "BedarfsProfileDialog.razor -> TypStammDialog",
+        "BhkwDialog.razor -> BhkwKatalogDialog",
+        "BhkwDialog.razor -> EnergietraegerVarianteDialog",
+        "EnergietraegerDialog.razor -> EmissionskatalogDialog",
+        "EnergietraegerDialog.razor -> KostenprofilDialog",
+        "EnergietraegerDialog.razor -> LeistungspreisReiheDialog",
+        "EnergietraegerDialog.razor -> SpotpreisImportDialog",
+        "GebaeudeDialog.razor -> GebaeudeBedarfDialog",
+        "GebaeudeDialog.razor -> GebaeudeKatalogDialog",
+        "GebaeudeDialog.razor -> GebaeudeWohnflaecheDialog",
+        "GebaeudeDialog.razor -> GebaeudetypDialog",
+        "GebaeudeKatalogDialog.razor -> BedarfsProfileDialog",
+        "GesetzeskatalogDialog.razor -> GesetzeskatalogZeileDialog",
+        "HeizkesselDialog.razor -> EnergietraegerVarianteDialog",
+        "HeizkesselDialog.razor -> HeizkesselKatalogDialog",
+        "KostenSeite.razor -> EnergietraegerDialog",
+        "KostenSeite.razor -> KostenKomponenteDialog",
+        "SimulationErgebnisSeite.razor -> BedarfErgebnisDialog",
+        "SimulationErgebnisSeite.razor -> WaermepumpenDialog",
+        "SimulationKonfigSeite.razor -> BetriebsmodusDialog",
+        "SimulationKonfigSeite.razor -> QuelleErdreichDialog",
+        "SimulationKonfigSeite.razor -> QuellePufferspeicherDialog",
+        "SimulationKonfigSeite.razor -> QuellprofilDialog",
+        "SimulationKonfigSeite.razor -> WaermesenkeDialog",
+        "SolarkollektorenDialog.razor -> SolarkollektorKatalogDialog",
+        "SpeicherAuslegungEditor.razor -> KostenprofilDialog",
+        "SpeicherAuslegungEditor.razor -> SpeicherZeitreihenDialog",
+        "StromspeicherAuslegungSeite.razor -> SpeicherFlottenCsvDialog",
+        "UebersichtSeite.razor -> BkUebernahmeDialog",
+        "WaermepumpeAnlageDialog.razor -> WaermepumpeStammDialog",
+        "WaermepumpeAnlageDialog.razor -> WaermepumpenKatalogDialog",
+        "WaermepumpeStammDialog.razor -> KennlinienEditorDialog"
+    };
+
+    [Fact]
+    public void Keine_neue_Komponente_zeichnet_ihren_Kopf_in_einer_betitelten_Ueberlagerung()
+    {
+        string[] gefunden = StrukturFunde(RazorDateien())
+            .Select(f => f.Datei + " -> " + f.Kind)
+            .Distinct()
+            .OrderBy(z => z, StringComparer.Ordinal)
+            .ToArray();
+
+        string[] neu = gefunden.Except(RestbefundC, StringComparer.Ordinal).ToArray();
+        Assert.True(neu.Length == 0,
+            "Doppelter Ueberlagerungstitel (Bauart C, W11b-B-9) - die Komponente "
+            + "zeichnet ihren eigenen epos-dialog-titel in einer Ueberlagerung, die "
+            + "schon einen Titel traegt:\n  " + string.Join("\n  ", neu));
+
+        string[] behoben = RestbefundC.Except(gefunden, StringComparer.Ordinal).ToArray();
+        Assert.True(behoben.Length == 0,
+            "Diese Zeilen der Restliste RestbefundC findet die Wache nicht mehr - "
+            + "bitte streichen:\n  " + string.Join("\n  ", behoben));
+    }
+
+    /// <summary>
+    /// Alle Stellen, an denen eine Komponente INNERHALB einer
+    /// <c>&lt;Ueberlagerung&gt;</c> mit Titel steckt und ihren eigenen
+    /// <c>epos-dialog-titel</c> UNBEDINGT zeichnet — gleich, woher ihr Text
+    /// kommt und ob die Überlagerung ihren Titel aus einem Bezeichner oder als
+    /// Literal führt. Das ist die Lücke, die Bauart A und b offen ließen.
+    /// </summary>
+    private static List<MarkupFund> StrukturFunde(IReadOnlyDictionary<string, string> dateien)
+    {
+        var funde = new List<MarkupFund>();
+
+        foreach (KeyValuePair<string, string> datei in dateien)
+        {
+            string s = datei.Value;
+
+            foreach (Match m in Regex.Matches(s, @"<Ueberlagerung\b"))
+            {
+                int tagEnde = FindeTagEnde(s, m.Index);
+                if (tagEnde < 0) continue;
+                string offnungstag = s.Substring(m.Index, tagEnde - m.Index + 1);
+
+                // Traegt die Ueberlagerung ueberhaupt einen Titel? Ein Bezeichner
+                // ("Titel=\"@X\"") zaehlt so gut wie ein Literal ("Titel=\"Text\"").
+                Match titelM = Regex.Match(offnungstag, "\\sTitel=\"([^\"]*)\"");
+                if (!titelM.Success || titelM.Groups[1].Value.Length == 0) continue;
+                string bezeichner = titelM.Groups[1].Value;
+
+                int blockEnde = s.IndexOf("</Ueberlagerung>", tagEnde, StringComparison.Ordinal);
+                if (blockEnde < 0) blockEnde = s.Length;
+                string block = s.Substring(tagEnde + 1, blockEnde - tagEnde - 1);
+
+                foreach (Match kindM in Regex.Matches(block,
+                             @"<(?:[A-Za-z0-9_.]*\.)?([A-Z][A-Za-z0-9]*)\b"))
+                {
+                    string kind = kindM.Groups[1].Value;
+
+                    if (!dateien.TryGetValue(kind + ".razor", out string? kindDatei))
+                        continue;                       // Kind nicht Teil dieses Laufs/Baums
+                    if (!ZeigtKopfUnbedingt(kindDatei))
+                        continue;                       // Kopf haengt an einer Bedingung
+
+                    int zeile = 1 + CountNewlines(s, m.Index);
+                    funde.Add(new MarkupFund(datei.Key, zeile, bezeichner, kind));
+                }
+            }
+        }
+
+        return funde.Distinct().ToList();
+    }
+
     /// <summary>
     /// Fuehrt die Komponente einen eigenen <c>[Parameter] public bool TitelAnzeigen</c>
     /// (Bauart b der Hausregel, statt eines leerbaren <c>TitelText</c>)?
@@ -322,30 +594,57 @@ public sealed class UeberlagerungstitelTests
 
     /// <summary>
     /// Zeichnet <paramref name="kindText"/> seinen eigenen
+    /// <c>epos-dialog-titel</c> AUS <c>@TitelText</c> UNBEDINGT — ohne ein
+    /// unmittelbar vorausgehendes <c>@if (...) {</c>? Das ist die enge Form
+    /// für die Bauarten A und b, die ohnehin über <c>TitelText</c> laufen.
+    /// </summary>
+    private static bool ZeigtTitelTextKopfUnbedingt(string kindText)
+    {
+        Match h1 = Regex.Match(kindText, "<h1 class=\"epos-dialog-titel\">@TitelText</h1>");
+        return h1.Success && IstUnbedingt(kindText, h1.Index);
+    }
+
+    /// <summary>
+    /// Zeichnet <paramref name="kindText"/> IRGENDEINEN eigenen
     /// <c>epos-dialog-titel</c> UNBEDINGT — ohne ein unmittelbar
     /// vorausgehendes <c>@if (...) {</c>?
+    ///
+    /// <para>Der Inhalt des <c>&lt;h1&gt;</c> ist dabei gleichgueltig (#289):
+    /// Ob der Titel aus <c>@TitelText</c>, aus <c>@_t.Titel</c>, aus
+    /// <c>@_t.Titel(Sicht)</c> oder aus einer berechneten Eigenschaft kommt,
+    /// aendert nichts daran, dass er am Bildschirm ein zweites Mal steht.</para>
     /// </summary>
     private static bool ZeigtKopfUnbedingt(string kindText)
     {
-        Match h1 = Regex.Match(kindText, "<h1 class=\"epos-dialog-titel\">@TitelText</h1>");
-        if (!h1.Success) return false;
+        foreach (Match h1 in Regex.Matches(kindText, "<h1 class=\"epos-dialog-titel\""))
+            if (IstUnbedingt(kindText, h1.Index))
+                return true;
 
+        return false;
+    }
+
+    /// <summary>
+    /// Steht die Stelle <paramref name="stelle"/> AUSSERHALB eines
+    /// <c>@if (...) { … }</c>, das unmittelbar davor aufgeht?
+    /// </summary>
+    private static bool IstUnbedingt(string kindText, int stelle)
+    {
         // Das naechste "@if" davor - seine Bedingung darf selbst Klammern
         // enthalten (z. B. "IsNullOrEmpty(TitelText)"), deshalb Klammerbilanz
         // statt "[^)]*" (das brach an der ERSTEN inneren Klammer ab).
-        int ifIdx = kindText.LastIndexOf("@if", h1.Index, StringComparison.Ordinal);
+        int ifIdx = kindText.LastIndexOf("@if", stelle, StringComparison.Ordinal);
         if (ifIdx < 0) return true;
 
         int offen = kindText.IndexOf('(', ifIdx);
-        if (offen < 0 || offen > h1.Index) return true;
+        if (offen < 0 || offen > stelle) return true;
 
         int zu = FindeSchliessendeKlammer(kindText, offen);
-        if (zu < 0 || zu > h1.Index) return true;
+        if (zu < 0 || zu > stelle) return true;
 
         // Zwischen der Bedingung und dem <h1> darf nur Leerraum und GENAU
         // EINE oeffnende geschweifte Klammer stehen - sonst ist das "@if"
         // ein fremder Block, der den Kopf nicht wirklich umschliesst.
-        string dazwischen = kindText.Substring(zu + 1, h1.Index - zu - 1);
+        string dazwischen = kindText.Substring(zu + 1, stelle - zu - 1);
         return !Regex.IsMatch(dazwischen, @"^\s*\{\s*$");
     }
 
