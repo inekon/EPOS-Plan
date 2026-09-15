@@ -6792,3 +6792,197 @@ Projekt ohne zugeordneten Stromträger bekommt sie künftig den Katalogfaktor st
 Vorgabewerts. In der Testdatenbank sind beide 435, deshalb kein Unterschied; in einer
 Datenbank mit abweichend gepflegtem Auslieferungsträger verschiebt sie sich um dessen
 Differenz. Das war der Preis dafür, aus zwei Fassungen derselben Frage eine zu machen.
+
+## #294 — Die Absage nennt die Maske, nicht ihre Typnamen (15./16.09.2026, Nachtrag aus dem Merge)
+
+Der Anwenderbefund vom 15.09.2026 galt einer Antwort, die formal richtig und praktisch
+unbrauchbar war: Wer den Assistenten bat, Felder zu setzen, während die zugehörige Maske
+nicht offen stand, bekam eine Liste von **Typnamen** zurück. Sie sagte weder, welche Maske
+gemeint war, noch was man tun soll.
+
+**Die Absage entsteht in der Vorbedingung**, nicht im Ausführer — und dort liegt auch die
+Lösung. `KiAktionenDialog` leitet die gemeinte Maske jetzt aus den **Feldnamen** der Aktion
+ab (`BrueckenGrund`, `GemeinteMaske`, `Anzeigenamen`) und nennt zwei Dinge: den
+Anzeigenamen der Maske und `dialog_oeffnen` als den Weg dorthin
+(`KI_DLG_MASKE_NICHT_OFFEN`, de/en). Das gilt für beide Formularaktionen,
+`formular_ausfuellen` und `feld_setzen`.
+
+**Bei Mehrdeutigkeit schweigt sie.** Passt ein Feldname auf mehr als eine Maske, wird nicht
+geraten: Die Absage fällt auf die bisherige Liste zurück, jetzt aber mit Anzeigenamen statt
+Typnamen. Eine falsch benannte Maske wäre schlechter als gar keine — sie schickte den
+Anwender in die falsche Richtung und der Assistent bekäme sie obendrein als Tatsache
+zurückgespielt.
+
+**Der zweite Weg führt am Anwender vorbei.** Der Systemprompt weist das Modell an, nach
+einer gescheiterten Formularaktion selbst `dialog_oeffnen` zu rufen (`KiChatService`); im
+Regelfall sieht der Anwender die Absage dann gar nicht, sondern die geöffnete Maske mit den
+gesetzten Werten. Dazu eine Kleinigkeit aus derselben Stelle: `dialog_lesen` zählt jetzt,
+was **wirklich** gelesen wurde, nicht, was angefordert war.
+
+**Geprüft wird an der Vorbedingung** (`EPOS.Kern.Tests/KiMaskenwegTests`, fünf Fälle: die
+Maske zu den Feldern, dasselbe für `feld_setzen`, das mehrdeutige Feld ohne Rateversuch,
+das unbekannte Feld auf der Liste mit Anzeigenamen, die Heizkesselmaske mit Vor- und
+Rücklauf). Am Ausführer wäre der Weg gar nicht messbar: Er weist eine Stufe-2-Aktion ohne
+Freigabe schon vorher ab.
+
+Die Ressourcen stehen in beiden Sprachen. Die erzeugte `Resource.Designer.cs` trägt dadurch
+bereits `SCHLIESSKREUZ_TOOLTIP` aus der folgenden Welle — sie entsteht als Ganzes aus der
+neutralen `.resx` und lässt sich nicht nach Commits schneiden.
+
+**Logbuch-Vorschlag** (Version vom Anwender zu nennen):
+
+> Seit 16.09.2026 nennt der Hilfe-Assistent die gemeinte Maske, wenn er Felder nicht füllen
+> kann: Ist die Maske nicht geöffnet, sagt die Antwort ihren Namen und mit welcher Aktion
+> sie sich öffnen lässt, statt eine Liste technischer Bezeichnungen auszugeben. Passen die
+> genannten Felder auf mehrere Masken, erscheint weiterhin eine Auswahl — jetzt mit den
+> Namen, unter denen die Masken im Programm stehen.
+
+## #295 — Das Kreuz steht beim Titel (15./16.09.2026, Nachtrag aus dem Merge)
+
+Der Anwenderentscheid vom 15.09.2026 lautete:
+
+> „alle Dialoge sollten mit einem Kreuz zu schließen sein … nicht erst ganz unten mit den
+> Buttons … einheitlich"
+
+und, auf den ersten Stand hin nachgesetzt:
+
+> „Doppeltes Kreuz dürfen nicht sein!"
+
+Beides zusammen ist eine Regel, nicht zwei: Genau **ein** Kreuz je geschlossenem Bereich,
+und zwar oben rechts.
+
+**Der Baustein.** `Schliesskreuz` (`button.epos-dialog-zu`) steht als letztes Kind jedes
+`epos-dialog-kopf`. Es wirkt wie Esc und wie „Abbrechen" — `Geschlossen` bekommt die
+Esc-Aktion des Dialogs, es entsteht kein zweiter Verwerfen-Weg, der eigene Regeln bekommen
+könnte. Enter auf dem fokussierten Kreuz erreicht die Dialogwurzel nicht
+(`stopPropagation`), sonst löste die Taste zugleich den OK-Weg aus. Die Stilregel teilt es
+sich mit dem Kreuz der Überlagerung, der Tooltip ist `SCHLIESSKREUZ_TOOLTIP` (de/en).
+
+**Das Kreuz hängt an derselben Bedingung wie der Titel.** Wo ein Kopf nur unter Bedingung
+gezeichnet wird, wird auch das Kreuz nur unter dieser Bedingung gezeichnet — daher die
+Kurzform „das Kreuz steht beim Titel". Sie ist der Grund, warum die Doppelkreuz-Frage
+überhaupt beantwortbar ist: Betitelte Überlagerungen verlieren `Schliessbar="false"` und
+tragen ihr Kreuz selbst (es ruft dasselbe `Geschlossen`, das Esc dort schon rief); die
+darin eingebetteten Dialoge verbergen dafür Titel **und** Kreuz — `TitelText=""` bzw.
+`TitelAnzeigen`, gesetzt am **Einbettungs**-Starttag und hinter einem etwaigen
+`@attributes`, damit die Regel nicht daran hängt, was eine Hülle in ihren Parametersatz
+legt.
+
+**Wo bewusst kein Kreuz steht**, hat es jedes Mal denselben Grund: Zugehen würde schaden.
+Das sind die Rückfragen, die laufenden Vorgänge (Import, Klimadaten, Projektkopie und
+-transfer), die Schritte des Assistenten sowie `KiEinstellungen` und `KiHinweisDialog`,
+deren Wirte eins tragen. Die Lizenzverwaltung schließt über das Fensterkreuz bzw. über ihre
+Überlagerung.
+
+**Eine Strukturwache statt einer Zählung.** `EPOS.UI.Tests/SchliesskreuzWacheTests` hält
+drei Regeln: (1) Jede Dialogdatei, die einen Kopf zeichnet, enthält ein `<Schliesskreuz`.
+(2) Kein `<Ueberlagerung>`-Starttag trägt zugleich einen nicht-leeren Titel und
+`Schliessbar="false"` — dann hätte der Bereich gar kein Kreuz. (3) Die Gegenrichtung: keine
+betitelte, schließbare Überlagerung mit **zwei** Kreuzen. Neun Fälle, jede Regel mit ihrer
+Gegenprobe; die Ausnahmeliste der ersten beiden Regeln nennt zwei begründete Stellen (die
+Warte-Überlagerung des Erdreich-Laufs, die selbst zugeht, und `WertAbfrage`, die eine
+Antwort braucht), die zum Doppelkreuz ist **leer** — der Anwender hat es ausdrücklich
+zurückgegeben. Die Wache wird erst mit dem Kreuz-Anteil des Erzeuger-Commits überall grün;
+solange die vier Erzeuger-Dialoge noch fehlten, war sie rot, und das ist die Gegenprobe im
+Lauf.
+
+**Aus dem Merge.** Drei Stellen trafen auf die Wellen von `origin`, alle inhaltlich
+zusammengeführt: Der einmalige Titel der vier Wirtschaftlichkeitsdialoge (#289) nutzt
+denselben Parameter `TitelAnzeigen` wie diese Welle — die Seite setzt ihn an allen fünf
+Einbettungen auf `false`. Im `BhkwWirtschaftlichkeitDialog` (#286, OK und Abbrechen) ruft
+das Kreuz `Verwerfen`, genau die Methode hinter Esc, ohne Schreibzugriff. Und im
+Parameterdialog, dessen Sprungwert mit #292 gefallen ist, geht das Kreuz über eine
+herausgelöste `Abbrechen()`, die auch Esc ruft. Die Bauart-C-Restliste der
+`UeberlagerungstitelTests` ist danach leer: kein doppelter Überlagerungstitel mehr im Baum.
+
+**Logbuch-Vorschlag** (Version vom Anwender zu nennen):
+
+> Seit 16.09.2026 lässt sich jeder Dialog über ein Schließkreuz rechts oben in der Kopfzeile
+> schließen. Das Kreuz wirkt wie die Esc-Taste und wie „Abbrechen": Eingaben werden
+> verworfen, es wird nichts gespeichert. Kein Kreuz tragen Rückfragen, laufende Vorgänge und
+> die Schritte des Assistenten — dort würde ein Schließen den Ablauf unterbrechen.
+
+## #296 — Alle sechs Erzeuger im Schema des Heizkessels (15./16.09.2026, Nachtrag aus dem Merge)
+
+Der Anwenderentscheid vom 15.09.2026 fiel an der Verwaltung Heizkessel und galt
+ausdrücklich für **alle sechs** Erzeuger: Der Bearbeiten-Dialog trägt keine Kosten und
+Emissionen mehr; im Modulbereich steht ein Aufklapper „Alle Daten anzeigen" mit
+bearbeitbaren Feldern, darüber die Kostenknöpfe, darunter „Bearbeiten…"; Neu und Löschen
+bleiben bei der Liste; die Administration entfällt.
+
+**Ein Baustein statt sechs Feldraster.** Das Feldraster des Katalogbrowsers wird zum
+Baustein `Katalogfelder` — je Feld in seiner Art, bearbeitbar dort, wo der Katalog einen
+Speicherweg hat. Der Browser benutzt ihn selbst; damit gibt es die Darstellung einmal, nicht
+siebenmal.
+
+**Die Profile führen jetzt jede fachliche Spalte.** `KatalogBrowserProfil`: Heizkessel 21
+Felder (20 editierbar), BHKW 25 (23), Solarkollektoren 14 (13), Pufferspeicher 6 (5); der
+Bezeichner bleibt Schlüssel. Geschrieben wird read-modify-write und **nur** auf den
+editierbaren Spalten: `AnzeigefelderHeizkessel` und `AnzeigefelderBhkw` sind erweitert (neue
+Felder optional, `null` = unverändert), `AnzeigefelderPufferspeicher` und
+`AnzeigefelderSolarkollektor` mit `AnzeigefelderSchreiben` neu; `HatSpeicherweg` gilt jetzt
+für alle vier. Fehleingaben werden benannt abgelehnt, nicht still verschluckt
+(`KatalogFeldPruefung`: negativer Wert, Wert außerhalb des Bereichs, unbekannter
+Listenwert).
+
+**Vier Entscheide, die später sonst als Versehen gelesen würden.**
+
+*Emissionen bleiben editierbar*, obwohl sie aus dem Bearbeiten-Dialog gefallen sind. Sie
+sind gespeicherte **Herstellerangaben** des Katalogsatzes; der Rechenweg liest den
+Emissionskatalog, nicht diese Spalten. Wer sie schreibgeschützt hätte, hätte ein Datenblatt
+unpflegbar gemacht, ohne eine Zahl zu schützen.
+
+*Energieträger und Wartungseinheit* stehen als Textfelder mit Nachschlag gegen die
+erlaubten Werte da, leer heißt unverändert. Das Feldraster kennt keine Klappliste, und eine
+eigene Feldart wäre mehr gewesen, als der Entscheid verlangt.
+
+*Die BHKW-Investitionsrechnung* (fünf Posten ↔ € je kW elektrisch) ist aus dem Katalogeditor
+gefallen. `BHKWKosten` bleibt im Kern: `Investition_kwel` wird beim Speichern aus den
+Posten gerechnet und im Aufklapper nur **angezeigt** — das ist die zweite der beiden nicht
+editierbaren BHKW-Spalten. Zugleich ist das BHKW die **einzige** Familie mit einer
+Schreibschutz-Rückfrage; genau dafür trägt der Speichern-Delegat ein drittes Argument.
+
+*Der Entscheid E-11 („leere Kollektorfläche") ist abgelöst.* Der Vorläufer ließ das Feld
+leer, und das war richtig, **solange der Block nur anzeigte** (die Modulfläche wurde gelesen
+und sofort von der Aperturfläche überschrieben). Mit einem Speicherweg kehrt sich das um:
+Ein leeres Feld hätte die gespeicherte Modulfläche beim ersten Speichern auf 0 gesetzt.
+Deshalb zeigt der Block sie jetzt und schreibt sie zurück.
+
+**Die sechs im Einzelnen.** Heizkessel und BHKW bekamen den Umbau zuerst (Aufklapper im
+Modulbereich, Katalogeditor ohne Kosten/BEHG/Emissionen). Photovoltaik und Stromspeicher
+gehen über die `ModulFeldwertBruecke`, die `ModulFeldwert` auf `BrowserFeldwert` abbildet
+und den Satz als Ganzes über `ModulKatalogWege` speichert; die PV-Koeffizienten `alpha_SC`
+und `beta_OC` bleiben dabei Lesewerte. Beim Stromspeicher wandert die Überlagerung aus der
+Kopfzeile ans Dialogende. Pufferspeicher und Solarkollektoren speichern über die
+Admin-Hüllen; ihre Katalogeditoren tragen keine Investitionskosten mehr (der OK-Weg reicht
+die Spalte unverändert durch), und „Kollektor in DB ändern…" heißt jetzt „Bearbeiten…" und
+steht im Modulbereich. Die Kostenknöpfe aller sechs Wirte stehen unter Aufsicht
+(`KostenknopfWegeTests`); **Puffer und Solar haben keinen Energiekosten-Knopf** — dort gibt
+es keinen Energieträger, an dem er hinge.
+
+**Zwei Nachzüge zum Schluss.** `ParameterVerwendung` nennt die im Aufklapper gepflegten
+Spalten mit ihrer neuen Fundstelle statt mit entfallenen Dialogzeilen. Und
+`KiDialoge.Heizkessel` führt nur noch die **sechs** sichtbaren Felder des Katalogeditors
+statt fünfzehn: Die neun entfallenen Kosten- und Emissionsfelder sind im Aufklapper des
+Projektdialogs pflegbar, dort ohne KI-Weg. Damit das nicht wieder auseinanderläuft, prüft
+eine neue Wache in `KiDialogkatalogTests`, dass jeder Feldpfad einer Katalogmaske im Markup
+der zugeordneten Razor-Datei steht. Aus dem `HeizkesselKatalogDialog` sind zugleich 23 nicht
+mehr gezeichnete Parameter samt `BeiCo2Vorgabe` und `GewaehlterBrennstoff` gefallen; ein
+Fact hält fest, dass der OK-Weg die nicht mehr gezeigten Spalten unverändert durchreicht.
+
+**Verwaist, aber nicht entfernt:** `PVD_AUFKLAPP_PARAMETER`, `PSPK_GRP_KOSTEN`,
+`PSPK_FELD_INVEST`, die 18 `Hk*`-Texte in `KiDialogTexte` samt ihren `KI_DLG_HK_*`-Schlüsseln
+und `ErzeugerDetail.Parameterzeilen`/`Modulparameter`. Das Aufräumen zieht an Ressourcen,
+erzeugtem Designer und Katalogtests zugleich und ist deshalb ein eigener Schritt; in dieser
+Welle wäre es ein Merge-Risiko gewesen.
+
+**Logbuch-Vorschlag** (Version vom Anwender zu nennen):
+
+> Seit 16.09.2026 stehen in den Dialogen für Heizkessel, BHKW, Photovoltaik, Stromspeicher,
+> Pufferspeicher und Solarkollektoren alle Daten des gewählten Katalogsatzes im
+> Modulbereich: Der Abschnitt „Alle Daten anzeigen" klappt sie auf, die Felder lassen sich
+> dort ändern und mit einem eigenen Knopf speichern. Der Bearbeiten-Dialog zeigt nur noch
+> die Stammdaten; Kosten, BEHG-Angaben und Emissionen sind dort nicht mehr vorhanden und
+> werden im aufgeklappten Bereich gepflegt. Der Knopf „Bearbeiten…" steht im Modulbereich
+> unter den Kostenknöpfen, „Neu" und „Löschen" bei der Liste. Die getrennte Administration
+> der Erzeuger ist nicht mehr vorhanden.
