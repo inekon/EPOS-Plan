@@ -51,12 +51,13 @@
     /// <summary>
     /// Zeigt den Abbrechen-Knopf.
     ///
-    /// <para>Nicht jede Maske hat zwei Ausgaenge. Eine Maske, die schon beim
-    /// Speichern schreibt - der Dialog "BHKW-Wirtschaftlichkeit" ist der einzige -,
-    /// kennt kein Verwerfen mehr: Sie hat nur "Speichern" und "Schliessen". Ein
-    /// zweiter Knopf, der nichts anderes tut als der erste, waere dort eine
-    /// Behauptung, die nicht stimmt. Das Hausmuster ist das andere: sammeln und
-    /// erst im OK-Weg schreiben, dann traegt die Leiste alle drei Knoepfe.</para>
+    /// <para><b>Jede Maske des Hauses traegt ihn.</b> Das Muster ist ueberall
+    /// dasselbe: sammeln und erst im OK-Weg schreiben. Wer vorher schreibt, darf
+    /// kein Abbrechen anbieten - es naehme nichts zurueck -, und deshalb schreibt
+    /// keine Maske mehr vorher. Ein Dialog, der eine LISTE fuehrt, zeigt zusaetzlich
+    /// den nicht schliessenden Knopf (<see cref="MitSpeichern"/>); der uebernimmt
+    /// in den Arbeitsstand und heisst deshalb "Anlegen"/"Uebernehmen", nicht
+    /// "Speichern".</para>
     /// </summary>
     [Parameter] public bool MitAbbrechen { get; set; } = true;
 

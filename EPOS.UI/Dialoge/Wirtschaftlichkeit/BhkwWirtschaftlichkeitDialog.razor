@@ -17,9 +17,22 @@
    ER KENNT KEINE DATENBANK (Hausregel EPOS.UI). Alles kommt als [Parameter]
    herein: die Anlagenzeilen, der Parametersatz, die Ergebnisse des Laufs und
    - als Delegat, wie es KwkgSatzRechner selbst haelt (Leitentscheidung L9) -
-   der Zugang zum Gesetzeskatalog. Geschrieben wird ueber den Rueckruf
-   Speichern; die Huelle ruft damit KwkgAnlagenCtrl.Speichere(g, true) (K7,
-   elf Spalten) und WirtschaftlichkeitCtrl.SpeichereParameter.
+   der Zugang zum Gesetzeskatalog. Geschrieben wird ueber die beiden Rueckrufe
+   SpeichereAnlage und SpeichereVorgaben; die Huelle ruft damit
+   KwkgAnlagenCtrl.Speichere(g, true) (K7, elf Spalten) bzw.
+   WirtschaftlichkeitCtrl.SpeichereParameter.
+
+   ER FUEHRT EINEN ARBEITSSTAND, UND GESCHRIEBEN WIRD IM OK-WEG. Jede Eingabe
+   landet in BhkwAnlagenstand bzw. BhkwVorgabenstand - nicht in den Objekten,
+   die der Wirt hereingereicht hat. Erst OK legt den Stand auf diese Objekte
+   und schreibt sie, in der Reihenfolge Anlagenzeilen (Listenreihenfolge) und
+   danach Projektvorgaben. Scheitert ein Schritt, bleibt der Dialog offen und
+   nennt die Zahl der gescheiterten Saetze; was geschrieben ist, gilt und wird
+   bei einem zweiten OK nicht wiederholt. Abbrechen, das Kreuz der
+   Ueberlagerung und Esc verlassen den Dialog OHNE einen einzigen
+   Schreibzugriff - und ohne dass ein hereingereichtes Objekt sich veraendert
+   haette. Die beiden Sprungknoepfe nehmen denselben Weg wie OK: Sie schreiben
+   und schliessen, sonst waeren die Eingaben mit dem Sprung verloren.
 
    NULLSEMANTIK durchgehend: An der Anlage heisst leer bzw. 0 "kein eigener
    Wert - es gilt die Projektvorgabe" (E6-/B3a-Muster); nur beim
@@ -37,8 +50,14 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@Kopftitel</h1>
+    @* Ein Titel, eine Stelle (W11b-B-9): Zeigt der Wirt schon einen Titel -
+       die Ueberlagerung der Wirtschaftlichkeitsseite tut es -, bleibt der
+       eigene Kopf weg; der Hilfeknopf bleibt immer. *@
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Kopftitel</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
     </div>
 
@@ -65,14 +84,16 @@
                     <TemplateColumn TGridItem="KwkgAnlagenAngabe" Title="@_t.SpBrennstoff">
                         @context.Brennstoffname
                     </TemplateColumn>
+                    @* Die drei Spalten zeigen den ARBEITSSTAND, nicht die geladene
+                       Zeile - sonst widerspraeche die Tabelle den Feldern darunter. *@
                     <TemplateColumn TGridItem="KwkgAnlagenAngabe" Title="@_t.SpStichtag">
-                        @BhwTexte.Kurzdatum(Tag(context.Stichtag))
+                        @BhwTexte.Kurzdatum(Tag(Stand(context).Stichtag))
                     </TemplateColumn>
                     <TemplateColumn TGridItem="KwkgAnlagenAngabe" Title="@_t.SpIbn">
-                        @BhwTexte.Kurzdatum(Tag(context.Inbetriebnahme))
+                        @BhwTexte.Kurzdatum(Tag(Stand(context).Inbetriebnahme))
                     </TemplateColumn>
                     <TemplateColumn TGridItem="KwkgAnlagenAngabe" Title="@_t.SpAnlagenart">
-                        @BhkwWahlen.TextZu(_artA, context.Anlagenart)
+                        @BhkwWahlen.TextZu(_artA, Stand(context).Anlagenart)
                     </TemplateColumn>
                 </KindInhalt>
             </Raster>
@@ -87,7 +108,7 @@
     @* ------------------------- Gruppe 1b: Angaben der gewaehlten Anlage *@
     <Gruppenkopf Titel="@_t.G1b">
         <KindInhalt>
-            @if (Aktuelle is null)
+            @if (AktuellerStand is null)
             {
                 <Herleitungszeile Text="@_t.AOhneWahl" />
             }
@@ -99,45 +120,45 @@
                 <Formularraster>
                     <KindInhalt>
                     <Datumsfeld Bezeichnung="@_t.AStichtag"
-                                Wert="@Tag(Aktuelle.Stichtag)" WertChanged="StichtagA" />
+                                Wert="@Tag(AktuellerStand.Stichtag)" WertChanged="StichtagA" />
 
                     <Datumsfeld Bezeichnung="@_t.AIbn"
-                                Wert="@Tag(Aktuelle.Inbetriebnahme)" WertChanged="IbnA" />
+                                Wert="@Tag(AktuellerStand.Inbetriebnahme)" WertChanged="IbnA" />
 
                     <Auswahlfeld Bezeichnung="@_t.AAnlagenart"
                                  Eintraege="@BhkwWahlen.Eintraege(_artA)"
-                                 Auswahl="@BhkwWahlen.NummerZu(_artA, Aktuelle.Anlagenart)"
+                                 Auswahl="@BhkwWahlen.NummerZu(_artA, AktuellerStand.Anlagenart)"
                                  AuswahlChanged="ArtA" />
 
                     <Auswahlfeld Bezeichnung="@_t.AEigenfall"
                                  Eintraege="@BhkwWahlen.Eintraege(_fallA)"
-                                 Auswahl="@BhkwWahlen.NummerZu(_fallA, Aktuelle.Eigenfall)"
+                                 Auswahl="@BhkwWahlen.NummerZu(_fallA, AktuellerStand.Eigenfall)"
                                  AuswahlChanged="FallA" />
 
                     <Zahlenfeld Bezeichnung="@_t.ASatzEinsp" Einheit="ct/kWh"
                                 Min="0" Max="30" Nachkommastellen="2"
-                                Wert="@Aktuelle.SatzEinspCt" WertChanged="SatzEinspA" />
+                                Wert="@AktuellerStand.SatzEinspCt" WertChanged="SatzEinspA" />
 
                     <Zahlenfeld Bezeichnung="@_t.ASatzEigen" Einheit="ct/kWh"
                                 Min="0" Max="30" Nachkommastellen="2"
-                                Wert="@Aktuelle.SatzEigenCt" WertChanged="SatzEigenA" />
+                                Wert="@AktuellerStand.SatzEigenCt" WertChanged="SatzEigenA" />
 
                     <Zahlenfeld Bezeichnung="@_t.AKontingent" Einheit="h"
                                 Min="0" Max="200000" Nachkommastellen="0"
-                                Wert="@Aktuelle.VbhKontingent" WertChanged="KontingentA" />
+                                Wert="@AktuellerStand.VbhKontingent" WertChanged="KontingentA" />
 
                     <Zahlenfeld Bezeichnung="@_t.ADeckel" Einheit="h/a"
                                 Min="0" Max="8760" Nachkommastellen="0"
-                                Wert="@Aktuelle.VbhDeckel" WertChanged="DeckelA" />
+                                Wert="@AktuellerStand.VbhDeckel" WertChanged="DeckelA" />
 
                     <Auswahlfeld Bezeichnung="@_t.AEnergiesteuer"
                                  Eintraege="@BhkwWahlen.Eintraege(_esA)"
-                                 Auswahl="@BhkwWahlen.NummerZu(_esA, Aktuelle.EnergiesteuerWahl)"
+                                 Auswahl="@BhkwWahlen.NummerZu(_esA, AktuellerStand.EnergiesteuerWahl)"
                                  AuswahlChanged="EnergiesteuerA" />
 
                     <Auswahlfeld Bezeichnung="@_t.AAufteilung"
                                  Eintraege="@BhkwWahlen.Eintraege(_aufA)"
-                                 Auswahl="@BhkwWahlen.NummerZu(_aufA, Aktuelle.AufteilungMethode)"
+                                 Auswahl="@BhkwWahlen.NummerZu(_aufA, AktuellerStand.AufteilungMethode)"
                                  AuswahlChanged="AufteilungA" />
 
                     @* K2/K6: Die Bemessungsbasis steht ausdruecklich in der Beschriftung -
@@ -149,7 +170,7 @@
                     {
                         <Zahlenfeld Bezeichnung="@_t.AHilfsanteil" Einheit="%"
                                     Min="0" Max="100" Nachkommastellen="1"
-                                    Wert="@Aktuelle.HilfsenergieAnteil" WertChanged="HilfsAnteilA" />
+                                    Wert="@AktuellerStand.HilfsenergieAnteil" WertChanged="HilfsAnteilA" />
                     }
                     </KindInhalt>
                 </Formularraster>
@@ -169,46 +190,46 @@
                 <KindInhalt>
                 <Zahlenfeld Bezeichnung="@_t.PBonusEigen" Einheit="ct/kWh"
                             Min="0" Max="30" Nachkommastellen="2"
-                            Wert="@Parameter.KwkgBonus" WertChanged="BonusEigenP" />
+                            Wert="@_vorgaben.KwkgBonus" WertChanged="BonusEigenP" />
 
                 <Zahlenfeld Bezeichnung="@_t.PBonusEinsp" Einheit="ct/kWh"
                             Min="0" Max="30" Nachkommastellen="2"
-                            Wert="@Parameter.KwkgBonusEinspeisung" WertChanged="BonusEinspP" />
+                            Wert="@_vorgaben.KwkgBonusEinspeisung" WertChanged="BonusEinspP" />
 
                 <Zahlenfeld Bezeichnung="@_t.PDeckel" Einheit="h/a"
                             Min="0" Max="8760" Nachkommastellen="0"
-                            Wert="@Parameter.KwkgVbhJahresdeckel" WertChanged="DeckelP" />
+                            Wert="@_vorgaben.KwkgVbhJahresdeckel" WertChanged="DeckelP" />
 
                 <Zahlenfeld Bezeichnung="@_t.PKontingent" Einheit="h"
                             Min="0" Max="200000" Nachkommastellen="0"
-                            Wert="@Parameter.KwkgVbhKontingent" WertChanged="KontingentP" />
+                            Wert="@_vorgaben.KwkgVbhKontingent" WertChanged="KontingentP" />
 
                 <Zahlenfeld Bezeichnung="@_t.PAbschlag" Einheit="%"
                             Min="0" Max="50" Nachkommastellen="1"
-                            Wert="@Parameter.KwkgAbschlagNegativ" WertChanged="AbschlagP" />
+                            Wert="@_vorgaben.KwkgAbschlagNegativ" WertChanged="AbschlagP" />
 
                 <Auswahlfeld Bezeichnung="@_t.PTatbestand"
                              Eintraege="@BhkwWahlen.Eintraege(_fallP)"
-                             Auswahl="@BhkwWahlen.NummerZu(_fallP, Parameter.KwkgTatbestand)"
+                             Auswahl="@BhkwWahlen.NummerZu(_fallP, _vorgaben.KwkgTatbestand)"
                              AuswahlChanged="TatbestandP" />
 
                 <Auswahlfeld Bezeichnung="@_t.PAnlagenart"
                              Eintraege="@BhkwWahlen.Eintraege(_artP)"
-                             Auswahl="@BhkwWahlen.NummerZu(_artP, Parameter.KwkgAnlagenart)"
+                             Auswahl="@BhkwWahlen.NummerZu(_artP, _vorgaben.KwkgAnlagenart)"
                              AuswahlChanged="AnlagenartP" />
 
                 <Zahlenfeld Bezeichnung="@_t.PKostenanteil" Einheit="%"
                             Min="0" Max="100" Nachkommastellen="1"
-                            Wert="@Parameter.KwkgKostenanteil" WertChanged="KostenanteilP" />
+                            Wert="@_vorgaben.KwkgKostenanteil" WertChanged="KostenanteilP" />
 
                 <Schalter Bezeichnung="@_t.PPauschal"
-                          Wert="@Parameter.KwkgPauschalmodus" WertChanged="PauschalP" />
+                          Wert="@_vorgaben.KwkgPauschalmodus" WertChanged="PauschalP" />
 
                 <Datumsfeld Bezeichnung="@_t.PStichtag"
-                            Wert="@Tag(Parameter.KwkgStichtag)" WertChanged="StichtagP" />
+                            Wert="@Tag(_vorgaben.KwkgStichtag)" WertChanged="StichtagP" />
 
                 <Datumsfeld Bezeichnung="@_t.PIbn"
-                            Wert="@Tag(Parameter.KwkgInbetriebnahme)" WertChanged="IbnP" />
+                            Wert="@Tag(_vorgaben.KwkgInbetriebnahme)" WertChanged="IbnP" />
                 </KindInhalt>
             </Formularraster>
 
@@ -230,19 +251,19 @@
                 <KindInhalt>
                 <Auswahlfeld Bezeichnung="@_t.EWahl"
                              Eintraege="@BhkwWahlen.Eintraege(_esP)"
-                             Auswahl="@BhkwWahlen.NummerZu(_esP, Parameter.EnergiesteuerWahl)"
+                             Auswahl="@BhkwWahlen.NummerZu(_esP, _vorgaben.EnergiesteuerWahl)"
                              AuswahlChanged="EnergiesteuerP" />
 
                 <Auswahlfeld Bezeichnung="@_t.EAufteilung"
                              Eintraege="@BhkwWahlen.Eintraege(_aufP)"
-                             Auswahl="@BhkwWahlen.NummerZu(_aufP, Parameter.AufteilungMethode)"
+                             Auswahl="@BhkwWahlen.NummerZu(_aufP, _vorgaben.AufteilungMethode)"
                              AuswahlChanged="AufteilungP" />
 
                 @* K5: Der Jahresnutzungsgrad bleibt eine PROJEKTgroesse (B3a-Stand) - ein
                    anlagenscharfer Wert waere eine eigene Datenfrage. *@
                 <Zahlenfeld Bezeichnung="@_t.ENutzungsgrad" Einheit="%"
                             Min="0" Max="100" Nachkommastellen="1"
-                            Wert="@Parameter.Jahresnutzungsgrad" WertChanged="NutzungsgradP" />
+                            Wert="@_vorgaben.Jahresnutzungsgrad" WertChanged="NutzungsgradP" />
                 </KindInhalt>
             </Formularraster>
 
@@ -258,14 +279,14 @@
                 @* BW4: Die Unternehmensart ist das fuehrende Feld der Stromsteuerseite. *@
                 <Auswahlfeld Bezeichnung="@_t.SUnternehmensart"
                              Eintraege="@BhkwWahlen.Eintraege(_uaP)"
-                             Auswahl="@BhkwWahlen.NummerZu(_uaP, Parameter.Unternehmensart)"
+                             Auswahl="@BhkwWahlen.NummerZu(_uaP, _vorgaben.Unternehmensart)"
                              AuswahlChanged="UnternehmensartP" />
 
                 <Schalter Bezeichnung="@_t.SRaeumlich"
-                          Wert="@Parameter.RaeumlicherZusammenhang" WertChanged="RaeumlichP" />
+                          Wert="@_vorgaben.RaeumlicherZusammenhang" WertChanged="RaeumlichP" />
 
                 <Schalter Bezeichnung="@_t.SHocheffizienz"
-                          Wert="@Parameter.HocheffizienzNachweis" WertChanged="HocheffizienzP" />
+                          Wert="@_vorgaben.HocheffizienzNachweis" WertChanged="HocheffizienzP" />
 
                 @* K3 = a (Anwenderentscheid 03.09.2026): Das Modusfeld des § 9 Abs. 1 Nr. 3
                    (BW3) wird GEZEIGT, aber deaktiviert - die Persistenzspalte
@@ -351,9 +372,13 @@
         <Warnbanner Stufe="WarnStufe.Fehler" Text="@_meldung" />
     }
 
-    <SpeichernLeiste @ref="_leiste" MitSpeichern="true" MitAbbrechen="false"
-                     SatzMarkiert="true" Geaendert="_geaendert" OkText="@_t.Schliessen"
-                     Gespeichertwerden="Speichern_Klick" Ergebnis="BeiErgebnis" />
+    @* Zwei Ausgaenge, wie in jeder Maske des Hauses: OK schreibt den ganzen
+       Arbeitsstand und schliesst, Abbrechen verlaesst ihn ohne einen einzigen
+       Schreibzugriff. Einen nicht schliessenden Speichern-Knopf gibt es nicht
+       mehr - er war der Grund, warum diese Maske kein Abbrechen tragen konnte. *@
+    <SpeichernLeiste @ref="_leiste" MitSpeichern="false" MitAbbrechen="true"
+                     OkText="@_t.Speichern" AbbrechenText="@_t.Abbrechen"
+                     Ergebnis="BeiErgebnis" />
 </div>
 
 @code {
@@ -366,14 +391,17 @@
 
     /// <summary>
     /// Die BHKW-Anlagen der Vergleichsgruppe (<c>KwkgAnlagenCtrl.LadeGruppe</c>),
-    /// fertig geladen. Der Dialog schreibt seine Eingaben in DIESE Objekte zurueck -
-    /// genau wie die WinForms-Fassung; die Huelle speichert danach dieselben Zeilen.
+    /// fertig geladen.
+    ///
+    /// <para><b>Der Dialog laesst sie bis zum OK in Ruhe.</b> Jede Eingabe steht im
+    /// Arbeitsstand (<see cref="BhkwAnlagenstand"/>); erst der OK-Weg legt ihn auf
+    /// diese Zeilen und schreibt sie. Nach Abbrechen sind sie unveraendert.</para>
     /// </summary>
     [Parameter] public IList<KwkgAnlagenAngabe> Anlagen { get; set; } = new List<KwkgAnlagenAngabe>();
 
     /// <summary>Der Parametersatz des Stammprojekts
-    /// (<c>WirtschaftlichkeitCtrl.LadeParameter</c>). Auch er wird an Ort und Stelle
-    /// fortgeschrieben.</summary>
+    /// (<c>WirtschaftlichkeitCtrl.LadeParameter</c>). Auch er bleibt bis zum OK
+    /// unangetastet — der Arbeitsstand dazu ist <see cref="BhkwVorgabenstand"/>.</summary>
     [Parameter] public WirtschaftlichkeitParameter Parameter { get; set; } = new WirtschaftlichkeitParameter();
 
     /// <summary>Id des Stammprojekts - Bezugspunkt von Vorschau und Steuerherkunft.</summary>
@@ -417,16 +445,25 @@
     public Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>? ErgebnisseLaden { get; set; }
 
     /// <summary>
-    /// Schreibt den Bildschirmzustand fort und liefert die Zahl der GESCHEITERTEN
-    /// Saetze (0 = alles gespeichert).
+    /// Schreibt EINE Anlagenzeile (<c>KwkgAnlagenCtrl.Speichere(a, true)</c>, K7,
+    /// elf Spalten); <c>false</c> = fehlgeschlagen. <b>Nur im OK-Weg.</b>
     ///
-    /// <para><b>Warum kein <c>EventCallback</c>.</b> Die Speichernleiste braucht eine
-    /// Antwort - „gespeichert um 12:03" oder „nicht gespeichert". Ein
-    /// <c>EventCallback</c> liefert keine; der Rueckruf zum Schliessen
-    /// (<see cref="Geschlossen"/>) bleibt deshalb einer, dieser hier ist ein
-    /// <see cref="Func{TResult}"/>.</para>
+    /// <para><b>Warum je Zeile und nicht ein Rueckruf fuer alles.</b> Scheitert ein
+    /// Schritt, bleibt der Dialog offen — und ein zweites OK darf das bereits
+    /// Geschriebene nicht wiederholen. Dafuer muss der Dialog wissen, welche Zeile
+    /// durch ist; ein Rueckruf, der nur eine Fehlerzahl liefert, sagt es nicht.</para>
+    ///
+    /// <para><b>Warum kein <c>EventCallback</c>.</b> Der Dialog braucht eine Antwort —
+    /// gelungen oder nicht. Ein <c>EventCallback</c> liefert keine; der Rueckruf zum
+    /// Schliessen (<see cref="Geschlossen"/>) bleibt deshalb einer, diese hier sind
+    /// <see cref="Func{T, TResult}"/>.</para>
     /// </summary>
-    [Parameter] public Func<int>? Speichern { get; set; }
+    [Parameter] public Func<KwkgAnlagenAngabe, bool>? SpeichereAnlage { get; set; }
+
+    /// <summary>Schreibt die Projektvorgaben
+    /// (<c>WirtschaftlichkeitCtrl.SpeichereParameter</c>); <c>false</c> =
+    /// fehlgeschlagen. <b>Nur im OK-Weg</b>, und erst nach den Anlagenzeilen.</summary>
+    [Parameter] public Func<WirtschaftlichkeitParameter, bool>? SpeichereVorgaben { get; set; }
 
     /// <summary>Der Dialog ist zu Ende. Geschlossen wird das Fenster von der Huelle,
     /// nicht von der Komponente.</summary>
@@ -434,6 +471,11 @@
 
     /// <summary>Schluessel des Hilfeknopfes - die Zeile in <c>help_mapping.txt</c>.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_BhkwWirtschaftlichkeit.btn_Help";
+
+    /// <summary>Zeigt den eigenen Kopf. <c>false</c>, wo der Wirt schon einen Titel
+    /// traegt (Hausregel „Ein Titel, eine Stelle", W11b-B-9) — die Ueberlagerung der
+    /// Wirtschaftlichkeitsseite tut es, die Ansicht der Wurzel nicht.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
     /// <summary>Rueckfallgrenze der Ausschreibungswarnung [kW], wenn der Katalog
     /// schweigt (<c>WirtschaftlichkeitCtrl.KWKG_MAX_LEISTUNG_KW</c> = 500).</summary>
@@ -458,6 +500,19 @@
     private bool _gespeichert;
     private string _meldung = "";
 
+    /// <summary>Der Arbeitsstand je Anlagenzeile, in Listenreihenfolge.</summary>
+    private readonly List<BhkwAnlagenstand> _staende = new List<BhkwAnlagenstand>();
+
+    /// <summary>Welche Anlagenzeile im OK-Weg schon geschrieben wurde. Ein zweites OK
+    /// nach einem gescheiterten Schritt wiederholt sie nicht.</summary>
+    private readonly List<bool> _anlageGeschrieben = new List<bool>();
+
+    /// <summary>Der Arbeitsstand der Projektvorgaben.</summary>
+    private BhkwVorgabenstand _vorgaben = new BhkwVorgabenstand();
+
+    /// <summary>Sind die Projektvorgaben im OK-Weg schon geschrieben?</summary>
+    private bool _vorgabenGeschrieben;
+
     private IReadOnlyList<Steuerwahl> _artA = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _fallA = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _esA = Array.Empty<Steuerwahl>();
@@ -480,9 +535,25 @@
     /// <summary>true, wenn seit dem letzten Speichern etwas geaendert wurde.</summary>
     public bool Geaendert => _geaendert;
 
-    /// <summary>Die gewaehlte Anlagenzeile; <c>null</c> = keine.</summary>
+    /// <summary>Die gewaehlte Anlagenzeile; <c>null</c> = keine. Sie traegt, was der
+    /// Dialog NICHT pflegt (Bezeichner, Leistung, Brennstoff, Projekt); die Eingaben
+    /// stehen in <see cref="AktuellerStand"/>.</summary>
     public KwkgAnlagenAngabe? Aktuelle =>
         _aktuell >= 0 && _aktuell < Anlagen.Count ? Anlagen[_aktuell] : null;
+
+    /// <summary>Der Arbeitsstand der gewaehlten Zeile; <c>null</c> = keine gewaehlt.</summary>
+    public BhkwAnlagenstand? AktuellerStand =>
+        _aktuell >= 0 && _aktuell < _staende.Count ? _staende[_aktuell] : null;
+
+    /// <summary>Der Arbeitsstand der Projektvorgaben (Pruefhilfe fuer Tests).</summary>
+    public BhkwVorgabenstand Vorgabenstand => _vorgaben;
+
+    /// <summary>Der Arbeitsstand einer Zeile der Anlagentabelle.</summary>
+    private BhkwAnlagenstand Stand(KwkgAnlagenAngabe a)
+    {
+        int i = Anlagen.IndexOf(a);
+        return i >= 0 && i < _staende.Count ? _staende[i] : new BhkwAnlagenstand();
+    }
 
     /// <summary>
     /// K6 - der Hilfsenergieanteil ist nur bei BHKW-Anlagen pflegbar.
@@ -527,6 +598,16 @@
         _uaP = BhkwWahlen.Unternehmensart();
         _modus = BhkwWahlen.Befreiungsmodus();
 
+        // Der Arbeitsstand entsteht EINMAL aus dem geladenen Stand. Ab hier
+        // arbeitet der Dialog nur noch auf ihm; die hereingereichten Objekte
+        // ruehrt er erst im OK-Weg an.
+        foreach (KwkgAnlagenAngabe a in Anlagen)
+        {
+            _staende.Add(BhkwAnlagenstand.Aus(a));
+            _anlageGeschrieben.Add(false);
+        }
+        _vorgaben = BhkwVorgabenstand.Aus(Parameter);
+
         // Erstauswahl wie ErsteZeileWaehlen der WinForms-Fassung.
         _aktuell = Anlagen.Count > 0 ? 0 : -1;
     }
@@ -554,8 +635,9 @@
         _meldung = "";
     }
 
-    /// <summary>Ein Feld hat sich geaendert: fortschreiben und merken. Geschrieben
-    /// wird erst beim Speichern (Bestandsverhalten <c>Feld_Wechsel</c>).</summary>
+    /// <summary>Ein Feld hat sich geaendert: den ARBEITSSTAND fortschreiben und
+    /// merken. In die Datenbank geht davon nichts - das tut allein
+    /// <see cref="Schreiben"/> im OK-Weg.</summary>
     private void Setze(Action aenderung)
     {
         aenderung();
@@ -564,54 +646,54 @@
         _leiste?.Leeren();
     }
 
-    private void StichtagA(DateOnly? d) => Setze(() => Aktuelle!.Stichtag = Zeit(d));
-    private void IbnA(DateOnly? d) => Setze(() => Aktuelle!.Inbetriebnahme = Zeit(d));
-    private void ArtA(int? n) => Setze(() => Aktuelle!.Anlagenart = BhkwWahlen.WertZu(_artA, n));
-    private void FallA(int? n) => Setze(() => Aktuelle!.Eigenfall = BhkwWahlen.WertZu(_fallA, n));
+    private void StichtagA(DateOnly? d) => Setze(() => AktuellerStand!.Stichtag = Zeit(d));
+    private void IbnA(DateOnly? d) => Setze(() => AktuellerStand!.Inbetriebnahme = Zeit(d));
+    private void ArtA(int? n) => Setze(() => AktuellerStand!.Anlagenart = BhkwWahlen.WertZu(_artA, n));
+    private void FallA(int? n) => Setze(() => AktuellerStand!.Eigenfall = BhkwWahlen.WertZu(_fallA, n));
 
     // 0 heisst "kein eigener Wert": Ein Zuschlagssatz von null waere fachlich kein
     // Satz und ein Kontingent von null keine Laufzeit - sonst kaeme niemand mehr zum
     // Projektwert zurueck (E6-Muster).
-    private void SatzEinspA(double? w) => Setze(() => Aktuelle!.SatzEinspCt = Positiv(w));
-    private void SatzEigenA(double? w) => Setze(() => Aktuelle!.SatzEigenCt = Positiv(w));
-    private void KontingentA(double? w) => Setze(() => Aktuelle!.VbhKontingent = Positiv(w));
-    private void DeckelA(double? w) => Setze(() => Aktuelle!.VbhDeckel = Positiv(w));
-    private void EnergiesteuerA(int? n) => Setze(() => Aktuelle!.EnergiesteuerWahl = BhkwWahlen.WertZu(_esA, n));
-    private void AufteilungA(int? n) => Setze(() => Aktuelle!.AufteilungMethode = BhkwWahlen.WertZu(_aufA, n));
+    private void SatzEinspA(double? w) => Setze(() => AktuellerStand!.SatzEinspCt = Positiv(w));
+    private void SatzEigenA(double? w) => Setze(() => AktuellerStand!.SatzEigenCt = Positiv(w));
+    private void KontingentA(double? w) => Setze(() => AktuellerStand!.VbhKontingent = Positiv(w));
+    private void DeckelA(double? w) => Setze(() => AktuellerStand!.VbhDeckel = Positiv(w));
+    private void EnergiesteuerA(int? n) => Setze(() => AktuellerStand!.EnergiesteuerWahl = BhkwWahlen.WertZu(_esA, n));
+    private void AufteilungA(int? n) => Setze(() => AktuellerStand!.AufteilungMethode = BhkwWahlen.WertZu(_aufA, n));
 
     // Beim Anteil ist 0 ein GUELTIGER Wert ("keine Hilfsenergie", BF4) - er wird
     // deshalb als 0 geschrieben und nicht auf null abgebildet.
-    private void HilfsAnteilA(double? w) => Setze(() => Aktuelle!.HilfsenergieAnteil = w ?? 0);
+    private void HilfsAnteilA(double? w) => Setze(() => AktuellerStand!.HilfsenergieAnteil = w ?? 0);
 
-    private void BonusEigenP(double? w) => Setze(() => Parameter.KwkgBonus = w ?? 0);
-    private void BonusEinspP(double? w) => Setze(() => Parameter.KwkgBonusEinspeisung = w ?? 0);
-    private void DeckelP(double? w) => Setze(() => Parameter.KwkgVbhJahresdeckel = w ?? 0);
-    private void KontingentP(double? w) => Setze(() => Parameter.KwkgVbhKontingent = w ?? 0);
-    private void AbschlagP(double? w) => Setze(() => Parameter.KwkgAbschlagNegativ = w ?? 0);
-    private void KostenanteilP(double? w) => Setze(() => Parameter.KwkgKostenanteil = w ?? 0);
-    private void PauschalP(bool b) => Setze(() => Parameter.KwkgPauschalmodus = b);
-    private void StichtagP(DateOnly? d) => Setze(() => Parameter.KwkgStichtag = Zeit(d));
-    private void IbnP(DateOnly? d) => Setze(() => Parameter.KwkgInbetriebnahme = Zeit(d));
+    private void BonusEigenP(double? w) => Setze(() => _vorgaben.KwkgBonus = w ?? 0);
+    private void BonusEinspP(double? w) => Setze(() => _vorgaben.KwkgBonusEinspeisung = w ?? 0);
+    private void DeckelP(double? w) => Setze(() => _vorgaben.KwkgVbhJahresdeckel = w ?? 0);
+    private void KontingentP(double? w) => Setze(() => _vorgaben.KwkgVbhKontingent = w ?? 0);
+    private void AbschlagP(double? w) => Setze(() => _vorgaben.KwkgAbschlagNegativ = w ?? 0);
+    private void KostenanteilP(double? w) => Setze(() => _vorgaben.KwkgKostenanteil = w ?? 0);
+    private void PauschalP(bool b) => Setze(() => _vorgaben.KwkgPauschalmodus = b);
+    private void StichtagP(DateOnly? d) => Setze(() => _vorgaben.KwkgStichtag = Zeit(d));
+    private void IbnP(DateOnly? d) => Setze(() => _vorgaben.KwkgInbetriebnahme = Zeit(d));
 
     // Leer ist hier eine gueltige Aussage ("nicht angegeben") und darf nicht durch
     // einen Ersatzwert ueberschrieben werden (K6-Muster des Bestands).
-    private void TatbestandP(int? n) => Setze(() => Parameter.KwkgTatbestand = BhkwWahlen.WertZu(_fallP, n));
-    private void AnlagenartP(int? n) => Setze(() => Parameter.KwkgAnlagenart = BhkwWahlen.WertZu(_artP, n));
+    private void TatbestandP(int? n) => Setze(() => _vorgaben.KwkgTatbestand = BhkwWahlen.WertZu(_fallP, n));
+    private void AnlagenartP(int? n) => Setze(() => _vorgaben.KwkgAnlagenart = BhkwWahlen.WertZu(_artP, n));
 
-    private void EnergiesteuerP(int? n) => Setze(() => Parameter.EnergiesteuerWahl =
+    private void EnergiesteuerP(int? n) => Setze(() => _vorgaben.EnergiesteuerWahl =
         WertMitVorgabe(_esP, n, DbWerte.ENERGIESTEUER_WAHL_KEINE));
-    private void AufteilungP(int? n) => Setze(() => Parameter.AufteilungMethode =
+    private void AufteilungP(int? n) => Setze(() => _vorgaben.AufteilungMethode =
         WertMitVorgabe(_aufP, n, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF));
-    private void UnternehmensartP(int? n) => Setze(() => Parameter.Unternehmensart =
+    private void UnternehmensartP(int? n) => Setze(() => _vorgaben.Unternehmensart =
         WertMitVorgabe(_uaP, n, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE));
 
-    private void RaeumlichP(bool b) => Setze(() => Parameter.RaeumlicherZusammenhang = b);
-    private void HocheffizienzP(bool b) => Setze(() => Parameter.HocheffizienzNachweis = b);
+    private void RaeumlichP(bool b) => Setze(() => _vorgaben.RaeumlicherZusammenhang = b);
+    private void HocheffizienzP(bool b) => Setze(() => _vorgaben.HocheffizienzNachweis = b);
 
     // 0 % Jahresnutzungsgrad heisst "nicht erfasst": Ein Nutzungsgrad von null ist
     // fachlich kein Wert, und die Begruendung soll "nicht erfasst" von "erfasst und
     // zu niedrig" unterscheiden koennen (E4-Muster).
-    private void NutzungsgradP(double? w) => Setze(() => Parameter.Jahresnutzungsgrad = Positiv(w));
+    private void NutzungsgradP(double? w) => Setze(() => _vorgaben.Jahresnutzungsgrad = Positiv(w));
 
     /// <summary>Wie <c>GewaehltMitVorgabe</c> der WinForms-Fassung: Diese drei Listen
     /// haben keinen Leereintrag, ein unbekannter Index faellt auf die Vorgabe.</summary>
@@ -652,24 +734,28 @@
     /// Modulmaske aus E6).</summary>
     private KwkgSatzVorschlag Vorschlag(KwkgAnlagenAngabe a)
     {
-        int jahr = a.Inbetriebnahme.HasValue
-            ? a.Inbetriebnahme.Value.Year
-            : (Parameter.KwkgInbetriebnahme.HasValue
-               ? Parameter.KwkgInbetriebnahme.Value.Year
+        BhkwAnlagenstand s = Stand(a);
+        int jahr = s.Inbetriebnahme.HasValue
+            ? s.Inbetriebnahme.Value.Year
+            : (_vorgaben.KwkgInbetriebnahme.HasValue
+               ? _vorgaben.KwkgInbetriebnahme.Value.Year
                : DateTime.Now.Year + 1);
-        return KwkgSatzRechner.Vorschlag(a.PelKW, jahr, a.Anlagenart, a.Eigenfall,
+        return KwkgSatzRechner.Vorschlag(a.PelKW, jahr, s.Anlagenart, s.Eigenfall,
                                          Katalog, BhwTexte.Kultur);
     }
 
+    /// <summary>Der Knopf der Gruppe 2. Er legt den Vorschlag in den ARBEITSSTAND -
+    /// geschrieben wird er wie jede andere Eingabe erst beim OK.</summary>
     private void VorschlagUebernehmen()
     {
         KwkgAnlagenAngabe? a = Aktuelle;
-        if (a is null) return;
+        BhkwAnlagenstand? s = AktuellerStand;
+        if (a is null || s is null) return;
         KwkgSatzVorschlag v = Vorschlag(a);
         Setze(() =>
         {
-            a.SatzEinspCt = Positiv(v.SatzEinspeisungCt);
-            a.SatzEigenCt = Positiv(v.SatzEigenCt);
+            s.SatzEinspCt = Positiv(v.SatzEinspeisungCt);
+            s.SatzEigenCt = Positiv(v.SatzEigenCt);
         });
     }
 
@@ -682,8 +768,8 @@
     /// </summary>
     private IReadOnlyList<string> Anlagenwarnungen()
     {
-        int jahr = Parameter.KwkgInbetriebnahme.HasValue
-                 ? Parameter.KwkgInbetriebnahme.Value.Year : DateTime.Now.Year;
+        int jahr = _vorgaben.KwkgInbetriebnahme.HasValue
+                 ? _vorgaben.KwkgInbetriebnahme.Value.Year : DateTime.Now.Year;
         double grenzeAusschreibung = Katalogwert(DbWerte.GESETZ_KWKG_AUSSCHREIBUNG_GRENZE, jahr,
                                                  GrenzeAusschreibungRueckfall);
         double grenzeStromsteuer = Katalogwert(DbWerte.GESETZ_STROMST_GRENZE_BEFREIUNG, jahr,
@@ -696,7 +782,8 @@
         {
             if (a.PelKW > grenzeAusschreibung) ausschreibung.Add(a.Bezeichner);
             if (a.PelKW > grenzeStromsteuer) ueberStromsteuer.Add(a.Bezeichner);
-            int ibn = a.Inbetriebnahme.HasValue ? a.Inbetriebnahme.Value.Year : jahr;
+            DateTime? ibnStand = Stand(a).Inbetriebnahme;
+            int ibn = ibnStand.HasValue ? ibnStand.Value.Year : jahr;
             if (a.Heizoel && ibn >= 2025) heizoel.Add(a.Bezeichner);
         }
 
@@ -908,12 +995,40 @@
     // =====================================================================
 
     /// <summary>
-    /// Speichert die Anlagenzeilen (elf Spalten, K7) und die Projektvorgaben ueber die
-    /// Huelle. <b>Schliesst nicht</b> - SpeichernLeiste-Muster aus B2.
+    /// Der EINZIGE Schreibweg des Dialogs. Die Reihenfolge ist Absicht: erst die
+    /// Anlagenzeilen in Listenreihenfolge (elf Spalten, K7), dann die
+    /// Projektvorgaben — so steht der Projektwert nie vor den Zeilen, die ihn
+    /// ueberschreiben. Der Arbeitsstand wird dabei Zeile fuer Zeile auf das
+    /// hereingereichte Objekt gelegt und dieses geschrieben.
+    ///
+    /// <para>Scheitert ein Schritt, bleibt der Dialog OFFEN und nennt die Zahl der
+    /// gescheiterten Saetze — derselbe Wortlaut wie zuvor (<c>BHW_MSG_FEHLER</c>).
+    /// Was geschrieben ist, gilt und wird bei einem zweiten OK nicht wiederholt;
+    /// die uebrigen Schritte laufen trotz eines Fehlschlags weiter, damit die Zahl
+    /// stimmt.</para>
     /// </summary>
-    private void Speichern_Klick()
+    private async Task Schreiben(BhkwSprung sprung)
     {
-        int fehler = Speichern is null ? 0 : Speichern();
+        int fehler = 0;
+
+        for (int i = 0; i < Anlagen.Count && i < _staende.Count; i++)
+        {
+            if (_anlageGeschrieben[i]) continue;
+
+            _staende[i].Anwenden(Anlagen[i]);
+            if (SpeichereAnlage is not null && !SpeichereAnlage(Anlagen[i])) { fehler++; continue; }
+            _anlageGeschrieben[i] = true;
+        }
+
+        if (!_vorgabenGeschrieben)
+        {
+            // K3 = a: Der Modus des § 9 Abs. 1 Nr. 3 wird NICHT geschrieben - es gibt
+            // dafuer bis B6 (M-3) keine Spalte; er steht auch nicht im Arbeitsstand.
+            _vorgaben.Anwenden(Parameter);
+            if (SpeichereVorgaben is not null && !SpeichereVorgaben(Parameter)) fehler++;
+            else _vorgabenGeschrieben = true;
+        }
+
         if (fehler > 0)
         {
             _meldung = string.Format(_t.MsgFehler, fehler);
@@ -925,18 +1040,32 @@
         _geaendert = false;
         _meldung = "";
         _ergebnisCache = null;   // der gebuchte Lauf ist ueberholt - neu einlesen
-        _leiste?.Gespeichert();
+        await Schliessen(sprung);
     }
 
-    private Task BeiErgebnis(bool ok) => Schliessen(BhkwSprung.Keiner);
+    /// <summary>
+    /// Der Rueckruf der Leiste. <b>OK</b> schreibt den ganzen Arbeitsstand und
+    /// schliesst; scheitert ein Schritt, bleibt der Dialog offen und nennt den Grund.
+    /// <b>Abbrechen</b> verlaesst ihn ohne einen einzigen Schreibzugriff.
+    /// </summary>
+    private Task BeiErgebnis(bool ok) => ok ? Schreiben(BhkwSprung.Keiner) : Verwerfen();
 
-    private Task SprungBhkwTarif() => Schliessen(BhkwSprung.BhkwTarif);
+    // Die zwei Sprungknoepfe nehmen den OK-Weg: Sie schreiben und schliessen. Der
+    // Wirt oeffnet danach das Ziel und bringt den Dialog zurueck - ohne das
+    // Schreiben waeren die Eingaben mit dem Sprung verloren, und der Satz unter den
+    // Knoepfen (BHW_S_SPRUNG_HINWEIS) sagt es.
+    private Task SprungBhkwTarif() => Schreiben(BhkwSprung.BhkwTarif);
 
-    private Task SprungStrombezug() => Schliessen(BhkwSprung.Strombezug);
+    private Task SprungStrombezug() => Schreiben(BhkwSprung.Strombezug);
+
+    /// <summary>Ohne zu schreiben hinaus. Der Arbeitsstand faellt; die
+    /// hereingereichten Objekte sind unveraendert.</summary>
+    private Task Verwerfen() => Schliessen(BhkwSprung.Keiner);
 
     private Task Schliessen(BhkwSprung sprung) =>
         Geschlossen.InvokeAsync(new BhkwWirtschaftlichkeitErgebnis(_gespeichert, sprung));
 
+    /// <summary>Esc wirkt wie Abbrechen — geschrieben wird nichts.</summary>
     private Task BeiTaste(KeyboardEventArgs e) =>
-        e.Key == "Escape" ? Schliessen(BhkwSprung.Keiner) : Task.CompletedTask;
+        e.Key == "Escape" ? Verwerfen() : Task.CompletedTask;
 }

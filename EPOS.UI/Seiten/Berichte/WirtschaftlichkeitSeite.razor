@@ -250,7 +250,9 @@
         <KindInhalt>
             @if (_gaben is not null)
             {
-                <BhkwWirtschaftlichkeitDialog @attributes="_gaben"
+                @* Ein Titel, eine Stelle (W11b-B-9): Die Ueberlagerung traegt ihn
+                   schon, also zeigt der Dialog seinen eigenen Kopf hier nicht. *@
+                <BhkwWirtschaftlichkeitDialog @attributes="_gaben" TitelAnzeigen="false"
                     Geschlossen="@((BhkwWirtschaftlichkeitErgebnis e) => Fertig(e is { Gespeichert: true }))" />
             }
         </KindInhalt>

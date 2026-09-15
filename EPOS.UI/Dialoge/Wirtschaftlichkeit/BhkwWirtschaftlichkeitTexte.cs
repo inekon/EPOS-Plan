@@ -22,7 +22,14 @@ public sealed class BhkwWirtschaftlichkeitTexte
 
     // ------------------------------------------------------------ Rahmen
     public string Titel { get; } = T("BHW_TITEL", "BHKW-Wirtschaftlichkeit");
-    public string Schliessen { get; } = T("BHW_BTN_SCHLIESSEN", "Schließen");
+
+    /// <summary>Der OK-Knopf der Fußleiste. Er schreibt und schließt — „Speichern"
+    /// ist hier also keine Behauptung, sondern das, was der Knopf tut.</summary>
+    public string Speichern { get; } = T("BHW_BTN_SPEICHERN", "Speichern");
+
+    /// <summary>Der Abbrechen-Knopf — derselbe Hausschlüssel wie in den
+    /// Nachbardialogen der Wirtschaftlichkeit.</summary>
+    public string Abbrechen { get; } = T("ALLG_BTN_ABBRECHEN", "Abbrechen");
 
     // ------------------------------------------------------- Gruppentitel
     public string G1 { get; } = T("BHW_G1", "Anlagen");
@@ -98,11 +105,12 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string BtnStrombezug { get; } = T("BHW_BTN_STROMBEZUG", "Strombezug…");
     public string BtnBhkwTarif { get; } = T("BHW_BTN_BHKW_TARIF", "BHKW-Tarif…");
 
-    /// <summary>NEU in B5b: Der Sprung in einen WinForms-Dialog laeuft ueber die
-    /// Huelle und schliesst diesen Dialog vorher (siehe <see cref="BhkwSprung"/>).
-    /// Der Satz sagt es, bevor es geschieht.</summary>
+    /// <summary>Der Sprung laeuft ueber die Huelle und schliesst diesen Dialog
+    /// vorher (siehe <see cref="BhkwSprung"/>). Er nimmt denselben Weg wie OK —
+    /// erst schreiben, dann hinaus —, sonst waeren die Eingaben des Anwenders mit
+    /// dem Sprung verloren. Der Satz sagt es, bevor es geschieht.</summary>
     public string SSprungHinweis { get; } = T("BHW_S_SPRUNG_HINWEIS",
-        "Der Sprung schließt diesen Dialog und öffnet ihn danach wieder — bitte vorher speichern.");
+        "Der Sprung speichert die Eingaben, schließt diesen Dialog und öffnet ihn danach wieder.");
 
     // ------------------------------------------------- Kohaerenz und Hilfsstrom
     public string KLeer { get; } = T("BHW_K_LEER", "Keine Auffälligkeit im zuletzt gebuchten Lauf.");

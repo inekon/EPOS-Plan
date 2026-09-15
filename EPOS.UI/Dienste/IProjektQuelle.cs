@@ -26,9 +26,11 @@ public sealed record ProjektZeile(int Id, string Name, string Klimazone, string 
 /// herein; die Reihenfolge der Ladeschritte bleibt damit an EINER Stelle und
 /// nicht in der Oberflaeche.</para>
 ///
-/// <para><see cref="Anlagen"/> und <see cref="Parameter"/> werden vom Dialog
-/// AN ORT UND STELLE fortgeschrieben - genau wie unter Windows; deshalb sind es
-/// veraenderliche Objekte und keine Kopien.</para>
+/// <para><see cref="Anlagen"/> und <see cref="Parameter"/> ruehrt der Dialog erst
+/// im OK-WEG an: Bis dahin stehen die Eingaben in seinem Arbeitsstand, und
+/// Abbrechen laesst beide Objekte unveraendert. Im OK-Weg legt er den Stand darauf
+/// und reicht sie den zwei Schreibwegen; deshalb sind es veraenderliche Objekte
+/// und keine Kopien.</para>
 /// </summary>
 /// <param name="IdStamm">Id des Stammprojekts der Vergleichsgruppe.</param>
 /// <param name="StammName">Anzeigename des Stammprojekts.</param>
@@ -38,7 +40,8 @@ public sealed record ProjektZeile(int Id, string Name, string Klimazone, string 
 /// <param name="Doppelpflege">Die laufunabhaengige Kohaerenzpruefung.</param>
 /// <param name="Katalog">Lesefassade auf <c>Tab_Gesetzesparameter</c>; <c>null</c> = Rueckfallwerte.</param>
 /// <param name="ErgebnisseLaden">Der gebuchte Ergebnisstand aus der Datenbank.</param>
-/// <param name="Speichern">Schreibt den Bildschirmzustand fort; Rueckgabe = Zahl der gescheiterten Saetze.</param>
+/// <param name="SpeichereAnlage">Schreibt EINE Anlagenzeile; <c>false</c> = fehlgeschlagen. NUR im OK-Weg.</param>
+/// <param name="SpeichereVorgaben">Schreibt die Projektvorgaben; <c>false</c> = fehlgeschlagen. NUR im OK-Weg.</param>
 public sealed record BhkwDialogDaten(
     int IdStamm,
     string StammName,
@@ -48,7 +51,8 @@ public sealed record BhkwDialogDaten(
     IReadOnlyList<KohaerenzHinweis> Doppelpflege,
     Func<string, int, GesetzParameter>? Katalog,
     Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>? ErgebnisseLaden,
-    Func<int>? Speichern);
+    Func<KwkgAnlagenAngabe, bool>? SpeichereAnlage,
+    Func<WirtschaftlichkeitParameter, bool>? SpeichereVorgaben);
 
 /// <summary>
 /// Die zweite Aussenschnittstelle von EPOS.UI neben <see cref="IHilfeDienst"/>:

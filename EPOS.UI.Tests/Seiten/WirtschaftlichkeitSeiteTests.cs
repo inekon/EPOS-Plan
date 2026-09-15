@@ -4,6 +4,7 @@ using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -372,6 +373,72 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
         Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.Keins, cut.Instance.OffenerUnterdialog);
         Assert.Equal(2, _geladen);                            // Aufbau + Nachlauf
+    }
+
+    /// <summary>
+    /// Auftrag #286, Einbettungsstelle 2: Der BHKW-Dialog schreibt auch hier nur im
+    /// OK-Weg. Nach OK bekommt der Wirt seine Speichermeldung und rechnet neu, nach
+    /// Abbrechen bekommt er nichts — und die Datenbank sieht keinen Zugriff.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Der_BHKW_Dialog_schreibt_in_der_Ueberlagerung_nur_im_OK_Weg(bool ok)
+    {
+        var anlage = new KwkgAnlagenAngabe
+        { IdAnlage = 14920, IdProjekt = 1030, Bezeichner = "BHKW 50", PelKW = 50 };
+        var parameter = new WirtschaftlichkeitParameter();
+        int zugriffe = 0;
+        bool? gemeldet = null;
+
+        var gaben = new Dictionary<string, object>
+        {
+            ["IdStamm"] = 1030,
+            ["Anlagen"] = (IList<KwkgAnlagenAngabe>)new List<KwkgAnlagenAngabe> { anlage },
+            ["Parameter"] = parameter,
+            ["SpeichereAnlage"] = new Func<KwkgAnlagenAngabe, bool>(_ => { zugriffe++; return true; }),
+            ["SpeichereVorgaben"] = new Func<WirtschaftlichkeitParameter, bool>(
+                _ => { zugriffe++; return true; })
+        };
+
+        var cut = Zeige(p => p
+            .Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _)
+                => (IReadOnlyDictionary<string, object>)gaben)
+            .Add(x => x.Nachlauf, (WirtschaftlichkeitSeite.Unterdialog _, bool g)
+                => { gemeldet = g; return g ? "BHKW-Wirtschaftlichkeit gespeichert." : ""; }));
+
+        Fussknoepfe(cut)[1].Click();                  // BHKW
+        cut.FindAll("input[inputmode=decimal]")[0].Input("5,57");
+        Assert.Equal(0, zugriffe);
+
+        // Die Leiste des Dialogs traegt Abbrechen (0) und Speichern (1).
+        IReadOnlyList<IElement> knoepfe = cut.FindAll(".epos-ueberlagerung .epos-leiste button");
+        knoepfe[ok ? 1 : 0].Click();
+
+        Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.Keins, cut.Instance.OffenerUnterdialog);
+        Assert.Equal(ok ? 2 : 0, zugriffe);
+        Assert.Equal(ok ? 5.57 : (double?)null, anlage.SatzEinspCt);
+        Assert.Equal(ok, gemeldet);
+
+        // Nach OK setzt der Nachlauf die Meldung; nach Abbrechen sagt er nichts, und
+        // die Seite behaelt ihre eigene Statuszeile.
+        if (ok) Assert.Equal("BHKW-Wirtschaftlichkeit gespeichert.", cut.Instance.Status);
+        else Assert.DoesNotContain("BHKW-Wirtschaftlichkeit gespeichert.", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// Ein Titel, eine Stelle (W11b‑B‑9): Die Überlagerung trägt ihn, der Dialog
+    /// darin zeigt keinen eigenen Kopf.
+    /// </summary>
+    [Fact]
+    public void Der_BHKW_Dialog_zeigt_in_der_Ueberlagerung_keinen_eigenen_Titel()
+    {
+        var cut = Zeige(p => p.Add(x => x.Gaben,
+            (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
+
+        Fussknoepfe(cut)[1].Click();   // BHKW
+
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung h1.epos-dialog-titel"));
     }
 
     // =====================================================================

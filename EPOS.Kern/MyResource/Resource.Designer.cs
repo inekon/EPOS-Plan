@@ -3295,11 +3295,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
-        public static string BHW_BTN_SCHLIESSEN {
+        public static string BHW_BTN_SPEICHERN {
             get {
-                return ResourceManager.GetString("BHW_BTN_SCHLIESSEN", resourceCulture);
+                return ResourceManager.GetString("BHW_BTN_SPEICHERN", resourceCulture);
             }
         }
         
@@ -3772,7 +3772,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung schließt diesen Dialog und öffnet ihn danach wieder — bitte vorher speichern. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung speichert die Eingaben, schließt diesen Dialog und öffnet ihn danach wieder. ähnelt.
         /// </summary>
         public static string BHW_S_SPRUNG_HINWEIS {
             get {
