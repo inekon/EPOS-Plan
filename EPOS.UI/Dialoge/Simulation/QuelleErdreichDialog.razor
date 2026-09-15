@@ -54,30 +54,14 @@
    das benennt der Aenderungshinweis SIMQ_ERDREICH_SIM_NUR_GESPEICHERT; die
    Halbheit bleibt, sie wird nicht stillschweigend repariert.
 
-   ABWEICHUNG A-6 (Anwenderwunsch 14.09.2026, Entscheid 15.09.2026): KEINE
-   KNOPFLEISTE. Der Dialog trug bis hierher OK und Abbrechen. Jetzt gibt es nur
-   noch EINEN Ausgang - das Schliessen der Ueberlagerung (Kreuz oder Esc) - und
-   der UEBERNIMMT: Er laeuft durch dieselben acht Pruefregeln, die vorher an OK
-   hingen (UebernehmenUndSchliessen). Ist eine verletzt, MELDET der Dialog und
-   bleibt stehen; das Schliessen darf die Eingaben nicht still verwerfen. Einen
-   Weg, der die Eingaben verwirft, gibt es damit nicht mehr.
-
-   Der Wirt kommt auf zwei Wegen hierher: ueber das Kreuz der Ueberlagerung
-   (deren Geschlossen-Rueckruf ruft UebernehmenUndSchliessen) und ueber Esc.
-   Damit Esc nicht BEIDE Wege zugleich anstoesst - der Tastendruck steigt sonst
-   von hier bis zur Ueberlagerung auf -, haelt die Wurzel ihn an
-   (onkeydown:stopPropagation). So bleibt es EIN Weg, und die Pruefregeln
-   stehen an EINER Stelle.
-
-   TASTATUR: Esc uebernimmt - erst die Karte, dann der Dialog. Enter ist NICHT
-   belegt: Acht Pruefregeln haengen am Schliessen, und ein versehentliches Enter
-   waere dort kein Bestaetigen. *@
+   TASTATUR: Esc bricht ab - erst die Karte, dann der Dialog. Enter ist NICHT
+   belegt: Acht Pruefregeln haengen an OK, und ein versehentliches Enter waere
+   dort kein Bestaetigen. *@
 
 @namespace EPOS.UI.Dialoge.Simulation
 @using WindowsFormsApplication1
 
-<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste"
-     @onkeydown:stopPropagation="true">
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Titel</h1>
@@ -216,8 +200,8 @@
         </KindInhalt>
     </Gruppenkopf>
 
-    @* Keine Knopfleiste (Abweichung A-6): Das Schließen der Überlagerung
-       übernimmt — siehe UebernehmenUndSchliessen. *@
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     OkErlaubt="@(!_laeuft)" Ergebnis="BeiErgebnis" />
 
     @* --- Die Klimazonenkarte als ÜBERLAGERUNG, nicht als zweites Fenster ---- *@
     <Ueberlagerung Offen="@_karteOffen" Titel="@KarteTitel"
@@ -275,12 +259,7 @@
     /// </summary>
     [Parameter] public Func<double[], double[]?, Task<byte[]?>>? Jahresgangbild { get; set; }
 
-    /// <summary>
-    /// Das Ergebnis: der geänderte Satz. Seit dem Entfall der Knopfleiste
-    /// (Abweichung A-6) meldet der Dialog <c>null</c> NICHT mehr — es gibt keinen
-    /// Weg heraus, der die Eingaben verwirft. Der Rückweg bleibt trotzdem
-    /// <c>null</c>-fähig: Der Wirt behandelt beide Fälle wie bisher.
-    /// </summary>
+    /// <summary>Das Ergebnis: der geänderte Satz, <c>null</c> bei Abbruch oder Esc.</summary>
     [Parameter] public EventCallback<QuelleErdreichDaten?> Geschlossen { get; set; }
 
     // --- Texte ------------------------------------------------------------------
@@ -325,6 +304,8 @@
         = "Klimazonenkarte anzeigen und Zone auf der Karte wählen";
     [Parameter] public string KarteTitel { get; set; } = "Klimazonen nach DIN 4710";
     [Parameter] public string BtnSimulation { get; set; } = "Simulation starten";
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string BildAlt { get; set; }
         = "Jahresgang der Quelltemperatur über 8760 Stunden";
     [Parameter] public string PlatzhalterText { get; set; } = "Noch kein Diagramm";
@@ -833,24 +814,12 @@
     // --- Ergebnis ---------------------------------------------------------------
 
     /// <summary>
-    /// DER EINE AUSGANG (Abweichung A-6): Das Schließen der Überlagerung übernimmt.
-    ///
-    /// <para>Es läuft durch die ACHT Prüfregeln aus <c>btnOk_Click</c>:1194-1264, in
-    /// derselben Reihenfolge und mit demselben Wortlaut, die vorher am OK-Knopf
-    /// hingen. Jede verletzte Regel MELDET und lässt den Dialog offen — wer schließt,
-    /// verliert seine Eingaben nicht still. Sind alle erfüllt, meldet der Dialog den
-    /// Satz über <see cref="Geschlossen"/>, und der Wirt schließt die Überlagerung.</para>
-    ///
-    /// <para>Öffentlich, weil der Wirt sie aus dem <c>Geschlossen</c>-Rückruf der
-    /// Überlagerung ruft (Kreuz). Esc kommt über <see cref="BeiTaste"/> hier an. Eine
-    /// ZWEITE Kopie der Regeln gibt es nicht.</para>
-    ///
-    /// <para>Während eines Simulationslaufs schließt nichts: Der Wartezustand hält
-    /// den Dialog, bis der Lauf zurück ist (Abweichung A-5).</para>
+    /// Die ACHT Prüfregeln aus <c>btnOk_Click</c>:1194-1264, in derselben Reihenfolge
+    /// und mit demselben Wortlaut. Jede meldet und lässt den Dialog offen.
     /// </summary>
-    public Task UebernehmenUndSchliessen()
+    private Task BeiErgebnis(bool ok)
     {
-        if (_laeuft) return Task.CompletedTask;
+        if (!ok) return Geschlossen.InvokeAsync(null);
 
         double tiefe = 0, flaeche = 0, laenge = 0;
         int anzahl = 0;
@@ -894,29 +863,18 @@
         });
     }
 
-    /// <summary>
-    /// Die verletzte Regel MELDET, der Dialog bleibt stehen. <c>StateHasChanged</c>
-    /// steht hier, weil der Ruf auch VON AUSSEN kommt (Kreuz der Überlagerung): Dann
-    /// zeichnet kein Rückruf dieser Komponente nach.
-    /// </summary>
     private Task Meldet(string text)
     {
         Melden(text, WarnStufe.Warnung);
-        StateHasChanged();
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    /// Esc: erst die Karte, dann der Dialog (Hausregel der Überlagerungen) — und der
-    /// Dialog ÜBERNIMMT dabei (Abweichung A-6), er bricht nicht mehr ab. Die Wurzel
-    /// hält den Tastendruck an, damit die Überlagerung ihn nicht ein zweites Mal
-    /// auswertet.
-    /// </summary>
+    /// <summary>Esc: erst die Karte, dann der Dialog (Hausregel der Überlagerungen).</summary>
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_laeuft) return Task.CompletedTask;      // ein Lauf laesst sich nicht wegdruecken
         if (_karteOffen) { _karteOffen = false; return Task.CompletedTask; }
-        return UebernehmenUndSchliessen();
+        return Geschlossen.InvokeAsync(null);
     }
 }

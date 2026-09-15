@@ -374,12 +374,9 @@
 
     @if (_gaben2 is not null && _ebene2 == Editor.QuelleErdreich)
     {
-        @* Der Erdreich-Dialog hat KEINE Knopfleiste (#275): Sein Kreuz übernimmt,
-           deshalb geht das Schließen hier durch den Dialog statt geradewegs zu. *@
-        <Ueberlagerung Offen="true" Titel="@ErdreichTitel" Geschlossen="ErdreichSchliessen">
+        <Ueberlagerung Offen="true" Titel="@ErdreichTitel" Geschlossen="Ebene2Schliessen">
             <KindInhalt>
                 <EPOS.UI.Dialoge.Simulation.QuelleErdreichDialog @attributes="_gaben2"
-                                                                 @ref="_erdreich"
                                                                  Geschlossen="ErdreichFertig" />
             </KindInhalt>
         </Ueberlagerung>
@@ -1247,12 +1244,6 @@
     private IReadOnlyDictionary<string, object>? _gaben1;
     private IReadOnlyDictionary<string, object>? _gaben2;
 
-    /// <summary>
-    /// Der Erdreich-Dialog, solange er steht (#275). Die Seite braucht ihn, weil sein
-    /// Schließen durch seine acht Prüfregeln läuft — siehe <see cref="ErdreichSchliessen"/>.
-    /// </summary>
-    private EPOS.UI.Dialoge.Simulation.QuelleErdreichDialog? _erdreich;
-
     /// <summary>Die Zeile, um deren Anlage es gerade geht; <c>null</c> = keine.</summary>
     private ErzeugerZeile? _zeile;
 
@@ -1282,7 +1273,6 @@
     {
         _ebene2 = Editor.Keine;
         _gaben2 = null;
-        _erdreich = null;                       // #275: der Verweis geht mit dem Dialog
     }
 
     /// <summary>
@@ -1520,28 +1510,6 @@
 
         Dienste?.QuellprofilSchreiben?.Invoke(zeile.IdAnlage, idProfil.Value);
         Neuladen();
-    }
-
-    /// <summary>
-    /// Das Kreuz der Überlagerung über dem Erdreich-Dialog (#275, Anwenderwunsch
-    /// 14.09.2026). Der Dialog hat seit #275 keine Knopfleiste mehr; sein EINZIGER
-    /// Ausgang übernimmt die Eingaben und läuft dabei durch die acht Prüfregeln.
-    /// Deshalb schließt die Seite hier NICHT selbst: Sie fragt den Dialog. Ist eine
-    /// Regel verletzt, meldet er und bleibt stehen; sind alle erfüllt, kommt er über
-    /// <see cref="ErdreichFertig"/> zurück, und DORT wird geschlossen.
-    ///
-    /// <para>Ohne Verweis (der Dialog ist noch nicht gezeichnet) schließt die Seite
-    /// wie bisher — niemand soll in einer Überlagerung festsitzen.</para>
-    /// </summary>
-    private Task ErdreichSchliessen()
-    {
-        if (_erdreich is null)
-        {
-            Ebene2Schliessen();
-            return Task.CompletedTask;
-        }
-
-        return _erdreich.UebernehmenUndSchliessen();
     }
 
     private void ErdreichFertig(EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten? ergebnis)
