@@ -96,7 +96,10 @@ public class BhkwDialogTests : EposBunitContext
         Action<bool>? geschlossen = null,
         int? projektvorgabe = null,
         Func<ErzeugerZeile?, bool, Task>? kostenOeffnen = null,
-        Func<ErzeugerZeile?, Task>? energiekosten = null)
+        Func<ErzeugerZeile?, Task>? energiekosten = null,
+        Func<string, IReadOnlyList<BrowserFeldwert>?>? katalogfelder = null,
+        Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>? katalogfelderSpeichern = null,
+        Func<string, bool>? katalogfelderGeschuetzt = null)
     {
         return Render<BhkwDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) })
@@ -125,8 +128,49 @@ public class BhkwDialogTests : EposBunitContext
             .Add(x => x.Projektvorgabe, projektvorgabe)
             .Add(x => x.KostenOeffnen, kostenOeffnen)
             .Add(x => x.EnergiekostenOeffnen, energiekosten)
+            .Add(x => x.Katalogfelder, katalogfelder)
+            .Add(x => x.KatalogfelderSpeichern, katalogfelderSpeichern)
+            .Add(x => x.KatalogfelderGeschuetzt, katalogfelderGeschuetzt)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
+
+    /// <summary>
+    /// Die Felder des Aufklappers — ein Ausschnitt des BHKW-Profils: ein Text, eine
+    /// Zahl und die ABGELEITETE Investition je kWel, die niemand von Hand setzt.
+    /// </summary>
+    private static List<BrowserFeldwert> Felder() => new()
+    {
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldFirma,
+            Bezeichnung = "Hersteller:",
+            Art = BrowserFeldArt.Text,
+            Editierbar = true,
+            Wert = "Musterwerk"
+        },
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldKostenModul,
+            Bezeichnung = "Modul:",
+            Einheit = "€",
+            Art = BrowserFeldArt.Zahl,
+            Editierbar = true,
+            Wert = "40000"
+        },
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldInvestitionJeKwel,
+            Bezeichnung = "Investition je kW elektrisch:",
+            Einheit = "€ / kWel",
+            Art = BrowserFeldArt.Zahl,
+            Editierbar = false,
+            Wert = "1250"
+        }
+    };
+
+    /// <summary>Wählt die erste Katalogzeile — erst dann gibt es einen Aufklapper.</summary>
+    private static void KatalogsatzWaehlen(IRenderedComponent<BhkwDialog> cut)
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
 
     /// <summary>Der Auswahlpfad der Kostenknöpfe — drei Stück, in dieser Reihenfolge.</summary>
     private const string KOSTENKNOEPFE = ".epos-kostenleiste button.epos-knopf";
@@ -687,6 +731,235 @@ public class BhkwDialogTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+
+    // =================================================================================
+    //  Der Aufklapper „Alle Daten anzeigen" — Anwenderentscheid 15.09.2026
+    // =================================================================================
+    //
+    // „Es soll in diesem Bereich optional alle technischen Daten angezeigt und
+    // bearbeitet werden koennen." Er ist der Ersatz fuer die Kosten-, BEHG- und
+    // Emissionsgruppen, die aus dem Katalogeditor verschwunden sind; das Raster ist
+    // der Baustein Katalogfelder, den auch der Katalogbrowser benutzt.
+
+    /// <summary>Ohne den Weg zu den Feldern gibt es den Aufklapper gar nicht.</summary>
+    [Fact]
+    public void Ohne_Katalogfelder_gibt_es_keinen_Aufklapper()
+    {
+        var cut = Aufbauen();
+
+        KatalogsatzWaehlen(cut);
+
+        Assert.Empty(cut.FindAll(".epos-modulparameter"));
+    }
+
+    /// <summary>
+    /// <b>Geholt wird erst beim Aufklappen.</b> Wer nur ein Modul auswählt, zahlt keine
+    /// Abfrage — und wer aufklappt, sieht den Stand von JETZT.
+    /// </summary>
+    [Fact]
+    public void Der_Aufklapper_holt_die_Felder_erst_beim_Aufklappen()
+    {
+        int rufe = 0;
+        var cut = Aufbauen(katalogfelder: _ => { rufe++; return Felder(); });
+
+        KatalogsatzWaehlen(cut);
+
+        Assert.Equal(0, rufe);
+        Assert.False(cut.Instance.ParameterOffen);
+        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.Equal(1, rufe);
+        Assert.True(cut.Instance.ParameterOffen);
+        Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.NotEmpty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+    }
+
+    /// <summary>
+    /// <b>Ein Satzwechsel bei offenem Aufklapper holt die Felder NEU.</b> Sonst stünde
+    /// der Feldsatz des vorigen Moduls da, und „Speichern" schriebe ihn unter dem Namen
+    /// des jetzt gewählten zurück.
+    /// </summary>
+    [Fact]
+    public void Ein_Satzwechsel_zieht_die_Felder_des_neuen_Satzes_nach()
+    {
+        var gefragt = new List<string>();
+        var cut = Aufbauen(katalogfelder: n => { gefragt.Add(n); return Felder(); });
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        Assert.Equal(new[] { "Modul A" }, gefragt);
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
+
+        Assert.Equal(new[] { "Modul A", "Modul B" }, gefragt);
+        Assert.True(cut.Instance.ParameterOffen);
+    }
+
+    /// <summary>
+    /// <b>Ohne Speicherweg ist der Aufklapper reine Anzeige</b> — kein Knopf, jedes Feld
+    /// nur lesbar. Das ist die Lage der meisten Kataloge, nicht eine Entscheidung dieses
+    /// Dialogs.
+    /// </summary>
+    [Fact]
+    public void Ohne_Speicherweg_ist_der_Aufklapper_nur_Anzeige()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder());
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Speichern");
+        Assert.All(cut.Find(".epos-modulparameter").QuerySelectorAll("input"),
+                   e => Assert.True(e.HasAttribute("readonly")));
+    }
+
+    /// <summary>
+    /// <b>„Speichern" reicht die GEÄNDERTEN Felder durch</b> — und bleibt gesperrt,
+    /// solange nichts geändert wurde.
+    /// </summary>
+    [Fact]
+    public void Speichern_im_Aufklapper_reicht_die_geaenderten_Felder_durch()
+    {
+        string? name = null;
+        IReadOnlyList<BrowserFeldwert>? geschrieben = null;
+        bool? schutz = null;
+
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (n, f, s) =>
+            {
+                name = n; geschrieben = f; schutz = s;
+                return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+            });
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.True(Knopf(cut, "Speichern").HasAttribute("disabled"));
+
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
+        Assert.False(Knopf(cut, "Speichern").HasAttribute("disabled"));
+
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Equal("Modul A", name);
+        Assert.NotNull(geschrieben);
+        Assert.Equal("60000",
+            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldKostenModul).Wert);
+
+        // Ohne Schreibschutzweg wird ohne Rueckfrage und ohne Uebergehen geschrieben.
+        Assert.False(schutz);
+        Assert.False(cut.Instance.Schutzfrage);
+        Assert.Equal("Datensatz gespeichert", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// <b>Ein abgelehnter Schreibvorgang lässt den Stand stehen</b> und meldet den
+    /// Grund des Katalogs — der Anwender soll ihn verbessern können.
+    /// </summary>
+    [Fact]
+    public void Ein_abgelehntes_Speichern_meldet_den_Grund_und_haelt_die_Eingabe()
+    {
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (_, _, _) =>
+                new KatalogSpeicherErgebnis(false, "„Modul“ darf nicht negativ sein.", ""));
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Contains("darf nicht negativ sein", cut.Instance.Meldung);
+        Assert.Equal("60000", cut.Find(".epos-modulparameter input[inputmode=decimal]")
+                                 .GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// <b>Das BHKW ist die einzige Familie mit Schreibschutz:</b> Ein Auslieferungssatz
+    /// wird vor dem Überschreiben erfragt, und erst „Ja" hebt den Schutz für GENAU
+    /// diesen Vorgang auf.
+    /// </summary>
+    [Fact]
+    public void Ein_geschuetzter_Satz_fragt_nach_und_Ja_hebt_den_Schutz_auf()
+    {
+        bool? schutz = null;
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (n, _, s) =>
+            {
+                schutz = s;
+                return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+            },
+            katalogfelderGeschuetzt: _ => true);
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
+        Knopf(cut, "Speichern").Click();
+
+        // Erst die Rueckfrage - geschrieben ist noch nichts.
+        Assert.True(cut.Instance.Schutzfrage);
+        Assert.Null(schutz);
+        Assert.Contains("Modul A", cut.Find(".epos-rueckfrage-text").TextContent);
+
+        cut.FindAll(".epos-rueckfrage button")[0].Click();
+
+        Assert.False(cut.Instance.Schutzfrage);
+        Assert.True(schutz);
+    }
+
+    /// <summary>„Nein" schreibt nichts.</summary>
+    [Fact]
+    public void Nein_auf_die_Schreibschutzfrage_schreibt_nichts()
+    {
+        bool geschrieben = false;
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (n, _, _) =>
+            {
+                geschrieben = true;
+                return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+            },
+            katalogfelderGeschuetzt: _ => true);
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
+        Knopf(cut, "Speichern").Click();
+        cut.FindAll(".epos-rueckfrage button")[1].Click();
+
+        Assert.False(cut.Instance.Schutzfrage);
+        Assert.False(geschrieben);
+    }
+
+    /// <summary>
+    /// <b>Ein eigener Satz wird ohne Rückfrage geschrieben</b> — der Schreibschutzweg
+    /// meldet <c>false</c>, und der Dialog fragt dann nicht.
+    /// </summary>
+    [Fact]
+    public void Ein_eigener_Satz_wird_ohne_Rueckfrage_geschrieben()
+    {
+        bool? schutz = null;
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (n, _, s) =>
+            {
+                schutz = s;
+                return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+            },
+            katalogfelderGeschuetzt: _ => false);
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("60000");
+        Knopf(cut, "Speichern").Click();
+
+        Assert.False(cut.Instance.Schutzfrage);
+        Assert.False(schutz);
     }
 
     // =====================================================================

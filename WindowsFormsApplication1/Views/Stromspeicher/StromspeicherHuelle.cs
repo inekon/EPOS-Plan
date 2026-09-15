@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
 using Microsoft.AspNetCore.Components;
@@ -123,6 +124,41 @@ namespace WindowsFormsApplication1
                 // Fenster - der Sprung ueber die Bruecke entfaellt (Risiko R2).
                 ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
                     StromspeicherAdminHuelle.Gaben),
+
+                // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
+                // Sie kommen aus derselben Quelle, aus der auch der Modulkatalog hinter
+                // "Bearbeiten..." seine Felder bekommt; der Aufklapper IST sein Raster.
+                // Uebersetzt wird zwischen den zwei Feldtypen in der
+                // ModulFeldwertBruecke. Erst damit sind die sechs AP3-Geraetewerte
+                // (Wirkungsgrad, Zyklen, Verschleiss- und Leistungskosten, Investition
+                // fix, Standby) aus dem Projektdialog heraus ueberhaupt zu sehen.
+                ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
+                    name => ModulFeldwertBruecke.Felder(StromspeicherAdminHuelle.Wege(), name)),
+                ["KatalogfelderSpeichern"] =
+                    new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
+                        (name, felder) => ModulFeldwertBruecke.Speichern(
+                            StromspeicherAdminHuelle.Wege(), name, felder)),
+                ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
+                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
+
+                // Die drei Knoepfe der Kostenleiste. Ohne Projekt gibt es keinen
+                // Kostenkontext - dann bleibt der Delegat weg und die Leiste zeichnet
+                // den Knopf gar nicht erst (ihre eigene Regel). Der Weg steht einmal
+                // in ErzeugerKostenwege; alle Erzeugerdialoge teilen ihn sich.
+                ["KostenOeffnen"] = projektId > 0
+                    ? new Func<ErzeugerZeile, bool, Task>(
+                        (zeile, betrieb) => ErzeugerKostenwege.Kosten(
+                            besitzer, projektId, DbWerte.ERZEUGER_STROMSPEICHER, zeile, betrieb))
+                    : null,
+                ["EnergiekostenOeffnen"] = projektId > 0
+                    ? new Func<ErzeugerZeile, Task>(
+                        zeile => ErzeugerKostenwege.Energiekosten(
+                            besitzer, projektId, DbWerte.ERZEUGER_STROMSPEICHER, zeile))
+                    : null,
+
+                ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
+                ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
+                ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…"),
 
                 ["TitelText"] = Text_("SPD_TITEL", "Verwaltung Stromspeicher"),
                 ["KopfbandText"] = Text_("SPD_KOPFBAND", "Geben Sie Daten der Stromspeicher ein"),

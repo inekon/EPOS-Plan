@@ -34,6 +34,7 @@
 @namespace EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Kosten
 @using WindowsFormsApplication1
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -94,9 +95,12 @@
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
                           Vergleichsparameter="@Vergleichsparameter" />
 
+            @* NUR NOCH „neu…" und „löschen" (Anwenderentscheid 15.09.2026). Der dritte
+               Knopf, „Kollektor in DB ändern…", ist als „Bearbeiten…" in den
+               Modulbereich gewandert - dorthin, wo der gewaehlte Satz steht und wo auch
+               die Kostenknoepfe sitzen. Diese beiden bleiben HIER: Sie wirken auf die
+               LISTE (einen Satz anlegen, einen entfernen), nicht auf den Modulblock. *@
             <div class="epos-leiste">
-                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
-                        @onclick="() => KatalogEditor(false)">@BtnKatalogAendernText</button>
                 <button type="button" class="epos-knopf"
                         @onclick="() => _namensfrage = true">@BtnKatalogNeuText</button>
                 <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
@@ -121,6 +125,58 @@
             }
                 </KindInhalt>
             </Formularraster>
+
+            @* ALLE DATEN DES GEWAEHLTEN KATALOGSATZES, aufklappbar und BEARBEITBAR
+               (Anwenderentscheid 15.09.2026, Muster HeizkesselDialog): Der
+               Bearbeiten-Dialog traegt keine Kosten mehr, gepflegt wird der Preis hier.
+               Das Raster ist DASSELBE, das der Katalogbrowser zeigt - der Baustein
+               Katalogfelder; er fuehrt die vierzehn Spalten des Kollektorsatzes.
+
+               ZUGEKLAPPT IST DIE VORGABE, und geladen wird erst beim Aufklappen: Der
+               Dialog sieht aus wie bisher, und wer nur einen Kollektor auswaehlt, zahlt
+               keine Abfrage. Der Zustand gehoert der Dialogsitzung. *@
+            @if (Katalogfelder is not null && _katalogZeile is not null)
+            {
+                <div class="epos-modulparameter">
+                    <button type="button" class="epos-modulparameter-knopf"
+                            aria-expanded="@(_parameterOffen ? "true" : "false")"
+                            @onclick="ParameterUmschalten">
+                        <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_parameterOffen ? "▾" : "▸")</span>
+                        <span>@LabelAlleParameter</span>
+                    </button>
+
+                    @if (_parameterOffen && _felder is not null)
+                    {
+                        <Katalogfelder Felder="@_felder" NurLesen="@(KatalogfelderSpeichern is null)"
+                                       Geaendert="() => _felderGeaendert = true"
+                                       FehlerZustand="BeiFeldFehler" />
+
+                        @if (KatalogfelderSpeichern is not null)
+                        {
+                            <div class="epos-leiste">
+                                <button type="button" class="epos-knopf"
+                                        disabled="@(!_felderGeaendert || _feldFehler)"
+                                        @onclick="FelderSpeichern">@BtnFelderSpeichernText</button>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+
+            @* DIE KNOEPFE ZUM GEWAEHLTEN SATZ - hier und nicht mehr unter der Liste
+               (Anwenderentscheid 15.09.2026). Erst die Kostenwege, darunter
+               „Bearbeiten…": Der Modulbereich ist die EINE Stelle, an der man mit dem
+               gewaehlten Geraet arbeitet. *@
+            @if (!Wizard && KostenOeffnen is not null)
+            {
+                <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste"
+                                     InvestText="@KostenInvestText" BetriebText="@KostenBetriebText" />
+            }
+
+            <div class="epos-leiste">
+                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                        @onclick="() => KatalogEditor(false)">@BtnBearbeitenText</button>
+            </div>
         </KindInhalt>
     </Gruppenkopf>
 
@@ -263,7 +319,32 @@
     /// <summary>Löscht einen Katalogsatz.</summary>
     [Parameter] public Func<string, bool>? KatalogLoeschen { get; set; }
 
-    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    /// <summary>
+    /// ALLE Felder eines Katalogsatzes — derselbe Weg, aus dem der Katalogbrowser sein
+    /// Raster speist (<c>KatalogBrowserWege.Detail</c>). Ohne ihn gibt es den Aufklapper
+    /// „Alle Daten anzeigen" nicht.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>?>? Katalogfelder { get; set; }
+
+    /// <summary>
+    /// Schreibt die geänderten Felder zurück; <c>null</c> = der Katalog hat keinen
+    /// Speicherweg, dann ist der Aufklapper reine Anzeige.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? KatalogfelderSpeichern { get; set; }
+
+    /// <summary>
+    /// Öffnet die Kostenverwaltung zur GEWÄHLTEN Projektzeile; der zweite Parameter ist
+    /// der Schalter <c>betrieb</c> (<c>false</c> = Investitions-, <c>true</c> =
+    /// Betriebskosten). Ohne Delegat fehlt die Leiste.
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein dritter Knopf.</b> „Energiekosten…" führt in die
+    /// Energieträgerverwaltung — die Sonne ist kein gekaufter Träger, also gibt es den
+    /// Weg hier nicht (die Leiste zeichnet ohne Delegat nichts).
+    /// </remarks>
+    [Parameter] public Func<ErzeugerZeile?, bool, Task>? KostenOeffnen { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste und keine Kostenleiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
@@ -295,9 +376,28 @@
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
     [Parameter] public string EinheitGrad { get; set; } = "°C";
     [Parameter] public string BtnUebernehmenText { get; set; } = "Übernehmen";
+
+    /// <summary>
+    /// Der Knopf im MODULBEREICH (15.09.2026) — er trägt seit dem Entscheid dieselbe
+    /// Beschriftung wie in den fünf Schwesterdialogen (<c>HZK_BTN_BEARBEITEN</c>).
+    /// </summary>
+    [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
+
+    /// <summary>
+    /// Der TITEL der Überlagerung über dem Katalogeditor — der alte Knopftext, der als
+    /// Überschrift weiter sagt, worum es geht.
+    /// </summary>
     [Parameter] public string BtnKatalogAendernText { get; set; } = "Kollektor in DB ändern...";
     [Parameter] public string BtnKatalogNeuText { get; set; } = "Kollektor in DB neu...";
     [Parameter] public string BtnKatalogLoeschenText { get; set; } = "Kollektor in DB löschen";
+
+    /// <summary>Beschriftung des Aufklappers über den übrigen Katalogwerten.</summary>
+    [Parameter] public string LabelAlleParameter { get; set; } = "Alle Daten anzeigen";
+
+    /// <summary>Beschriftung des Speicherknopfs im Aufklapper.</summary>
+    [Parameter] public string BtnFelderSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string KostenInvestText { get; set; } = "Investitionskosten…";
+    [Parameter] public string KostenBetriebText { get; set; } = "Betriebskosten…";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
@@ -345,6 +445,24 @@
 
     /// <summary>Steht der Katalogeditor? Prüfhilfe für die Tests.</summary>
     public bool EditorOffen => _editorGaben is not null;
+
+    /// <summary>
+    /// Steht der Aufklapper „Alle Daten" offen? Der Zustand gehört der Dialogsitzung
+    /// und wird nirgends abgelegt.
+    /// </summary>
+    private bool _parameterOffen;
+
+    /// <summary>Steht der Parameterblock offen? (Prüfhilfe für Tests.)</summary>
+    public bool ParameterOffen => _parameterOffen;
+
+    /// <summary>Die Felder des gewählten Satzes; <c>null</c> = noch nicht geholt.</summary>
+    private IReadOnlyList<BrowserFeldwert>? _felder;
+
+    /// <summary>Hat der Anwender im Aufklapper etwas geändert?</summary>
+    private bool _felderGeaendert;
+
+    /// <summary>Steht in einem Zahlenfeld des Aufklappers etwas Ungültiges?</summary>
+    private bool _feldFehler;
 
     /// <summary>Die Gesamtfläche — Modulfläche mal Anzahl, live (<c>textBox_Anzahl_TextChanged</c>:367).</summary>
     private string Gesamtflaeche => (_modulflaeche * (_anzahl ?? 0)).ToString();
@@ -408,6 +526,7 @@
         _katalogZeile = null;
         _katalogGewaehlt = "";
         _meldung = "";
+        _felder = null;                       // der Aufklapper gehoert dem KATALOGsatz
         DetailSetzen(zeile.Bezeichner);
 
         _anzahl = (int?)(zeile.AnzahlModule ?? 0);
@@ -425,7 +544,82 @@
         _projektZeile = null;
         _meldung = "";
         DetailSetzen(_katalogGewaehlt);
+
+        // Der offene Aufklapper zeigt den NEUEN Satz, der geschlossene holt nichts.
+        if (_parameterOffen) FelderHolen(); else _felder = null;
     }
+
+    // =================================================================================
+    // Der Aufklapper „Alle Daten anzeigen" (Anwenderentscheid 15.09.2026)
+    // =================================================================================
+
+    /// <summary>Auf- und zuklappen - und beim AUFklappen die Felder holen.</summary>
+    /// <remarks>
+    /// <b>Erst beim Aufklappen.</b> Wer nur einen Kollektor auswählt, zahlt keine
+    /// Abfrage; und wer aufklappt, sieht den Stand von JETZT und nicht den von der
+    /// Auswahl.
+    /// </remarks>
+    private void ParameterUmschalten()
+    {
+        _parameterOffen = !_parameterOffen;
+        if (_parameterOffen) FelderHolen();
+    }
+
+    /// <summary>Holt die Felder des gewählten Katalogsatzes neu.</summary>
+    private void FelderHolen()
+    {
+        _felder = Katalogfelder is null || _katalogZeile is null
+            ? null
+            : Katalogfelder(_katalogZeile.Bezeichner);
+        _felderGeaendert = false;
+        _feldFehler = false;
+    }
+
+    /// <summary>Ein Zahlenfeld des Aufklappers meldet einen ungültigen Zustand.</summary>
+    private void BeiFeldFehler((string Feldname, bool Fehler) meldung)
+        => _feldFehler = meldung.Fehler;
+
+    /// <summary>
+    /// Schreibt die geänderten Felder zurück und lädt die Katalogliste neu.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Befund des Katalogs zählt, nicht die Absicht.</b> Lehnt der Speicherweg ab
+    /// (Schreibschutz der Auslieferung, Prüfmeldung), bleibt der geänderte Stand im
+    /// Aufklapper stehen - der Anwender soll ihn verbessern können, statt ihn zu
+    /// verlieren.
+    /// </remarks>
+    private void FelderSpeichern()
+    {
+        if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
+
+        KatalogSpeicherErgebnis ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        _felderGeaendert = false;
+        _meldung = ergebnis.Meldung;
+        _meldungStufe = WarnStufe.Hinweis;
+
+        // Die Liste zeigt Kollektortyp und Aperturflaeche - beide koennen sich gerade
+        // geaendert haben; das Detail des gewaehlten Satzes ebenso.
+        KatalogNeuLaden();
+        DetailSetzen(_katalogGewaehlt);
+    }
+
+    // --- Die Bruecke zur Kostenleiste ------------------------------------------
+    // Ohne Delegat KEIN Rueckruf - sonst zeichnete die Leiste einen Knopf, der
+    // nichts tut (ihre eigene Regel).
+
+    private Func<bool, Task>? KostenLeiste
+        => KostenOeffnen is null ? null : (Func<bool, Task>)BeiKosten;
+
+    /// <summary>Reicht die gewählte Projektzeile an die Kostenverwaltung durch.</summary>
+    private Task BeiKosten(bool betrieb)
+        => KostenOeffnen?.Invoke(_projektZeile, betrieb) ?? Task.CompletedTask;
 
     // =================================================================================
     // Aufnehmen und Entfernen
@@ -519,6 +713,10 @@
     {
         _editorGaben = null;
         KatalogNeuLaden();
+
+        // Der Editor schreibt einen Teil der Felder, die der Aufklapper zeigt - steht er
+        // offen, bekommt er den NEUEN Stand.
+        if (_parameterOffen) FelderHolen();
     }
 
     private void LoeschfrageBeantwortet(bool? antwort)

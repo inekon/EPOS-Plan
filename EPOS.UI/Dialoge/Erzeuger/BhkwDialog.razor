@@ -18,7 +18,11 @@
    DER KATALOG LAESST SICH HIER PFLEGEN: "Bearbeiten…" und "Neu…" oeffnen den
    Katalogeditor aus W6.2 in einer Ueberlagerung, "Loeschen" fragt nach - und
    lehnt einen Auslieferungssatz (ReadOnly) mit Begruendung ab, statt ihn
-   anzubieten.
+   anzubieten. Seit dem Anwenderentscheid vom 15.09.2026 traegt der Modulbereich
+   ausserdem den Aufklapper "Alle Daten anzeigen": ALLE Spalten des gewaehlten
+   Katalogsatzes, bearbeitbar, mit eigenem Speichern-Knopf. Er ist der Ersatz
+   fuer die Kosten-, BEHG- und Emissionsgruppen, die aus dem Katalogeditor
+   verschwunden sind.
 
    Alles Uebrige - geteilte Liste, Traegerwahl vor dem Hinzufuegen,
    Assistentenbetrieb, Tastatur - ist wie in HeizkesselDialog; dort steht die
@@ -159,29 +163,48 @@
                 </KindInhalt>
             </Formularraster>
 
-        @* ALLE UEBRIGEN KATALOGWERTE, aufklappbar (Anwenderentscheid 15.09.2026).
-           Bauart wortgleich zum Photovoltaik- und zum Heizkesseldialog. *@
-        @if (_detail.Parameterzeilen.Count > 0)
+        @* ALLE DATEN DES GEWAEHLTEN KATALOGSATZES, aufklappbar und BEARBEITBAR
+           (Anwenderentscheid 15.09.2026: "Es soll in diesem Bereich optional alle
+           technischen Daten angezeigt und bearbeitet werden koennen") - wortgleich
+           zum Heizkessel.
+
+           ER IST DER ERSATZ FUER DIE ENTFALLENEN GRUPPEN. Aus dem Bearbeiten-Dialog
+           sind Kosten, BEHG und Emissionen verschwunden; ohne diesen Block liesse sich
+           ein Katalogpreis nirgends mehr eintragen. Das Raster ist deshalb DASSELBE,
+           das der Katalogbrowser zeigt - der Baustein Katalogfelder.
+
+           ZUGEKLAPPT IST DIE VORGABE, und geladen wird erst beim Aufklappen: Der
+           Dialog sieht aus wie bisher, und wer nur ein Modul auswaehlt, zahlt keine
+           Abfrage. Der Zustand gehoert der Dialogsitzung und wird nirgends abgelegt.
+
+           DAS BHKW IST DIE EINZIGE FAMILIE MIT SCHREIBSCHUTZ. In der
+           Auslieferungsdatenbank ist JEDER Satz von Tab_BHKW_STAMM geschuetzt;
+           deshalb fragt der Speichern-Knopf hier vorher nach - dieselbe Reihenfolge
+           wie im Katalogbrowser und im Katalogeditor. *@
+        @if (Katalogfelder is not null && _katalogZeile is not null)
         {
             <div class="epos-modulparameter">
                 <button type="button" class="epos-modulparameter-knopf"
                         aria-expanded="@(_parameterOffen ? "true" : "false")"
-                        @onclick="() => _parameterOffen = !_parameterOffen">
+                        @onclick="ParameterUmschalten">
                     <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_parameterOffen ? "▾" : "▸")</span>
                     <span>@LabelAlleParameter</span>
                 </button>
 
-                @if (_parameterOffen)
+                @if (_parameterOffen && _felder is not null)
                 {
-                    <Formularraster>
-                        <KindInhalt>
-                            @foreach (Modulparameter p in _detail.Parameterzeilen)
-                            {
-                                <Textfeld Bezeichnung="@p.Feld" Wert="@p.Wert" Einheit="@p.Einheit"
-                                          NurLesen="true" Kurz="@Kurzfeld(p)" />
-                            }
-                        </KindInhalt>
-                    </Formularraster>
+                    <Katalogfelder Felder="@_felder" NurLesen="@(KatalogfelderSpeichern is null)"
+                                   Geaendert="() => _felderGeaendert = true"
+                                   FehlerZustand="BeiFeldFehler" />
+
+                    @if (KatalogfelderSpeichern is not null)
+                    {
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf"
+                                    disabled="@(!_felderGeaendert || _feldFehler)"
+                                    @onclick="FelderSpeichern">@BtnFelderSpeichernText</button>
+                        </div>
+                    }
                 }
             </div>
         }
@@ -250,6 +273,13 @@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" JaText="@JaText" NeinText="@NeinText"
                 Frage="@(string.Format(FrageLoeschen, _katalogZeile?.Bezeichner ?? ""))"
                 Beantwortet="BeiLoeschfrage" />
+
+    @* Rueckfrage vor dem Ueberschreiben eines AUSLIEFERUNGSsatzes aus dem Aufklapper -
+       derselbe Weg, den der Katalogbrowser geht (KatalogBrowserDialog.BeiSpeichern).
+       Ohne den Delegaten KatalogfelderGeschuetzt gibt es sie nicht: Ein Katalog ohne
+       Schreibschutz soll nicht nach einem Schutz fragen, den es nicht gibt. *@
+    <Rueckfrage Offen="@_schutzfrage" TitelText="@TitelSchutz" JaText="@JaText" NeinText="@NeinText"
+                Frage="@_schutztext" Beantwortet="BeiSchutzAntwort" />
 </div>
 
 @code {
@@ -376,6 +406,40 @@
     [Parameter] public string GruppeModul { get; set; } = "Modul";
     /// <summary>Beschriftung des Aufklappers ueber den uebrigen Katalogwerten (W6‑E‑1).</summary>
     [Parameter] public string LabelAlleParameter { get; set; } = "Alle Daten anzeigen";
+
+    /// <summary>
+    /// ALLE Felder eines Katalogsatzes — derselbe Weg, aus dem der Katalogbrowser sein
+    /// Raster speist (<c>KatalogBrowserWege.Detail</c>). Ohne ihn gibt es den
+    /// Aufklapper nicht.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>?>? Katalogfelder { get; set; }
+
+    /// <summary>
+    /// Schreibt die geänderten Felder zurück; der dritte Parameter hebt den
+    /// Schreibschutz für GENAU diesen Vorgang auf. <c>null</c> = der Katalog hat keinen
+    /// Speicherweg, dann ist der Aufklapper reine Anzeige.
+    /// </summary>
+    /// <remarks>
+    /// <b>Drei Parameter und nicht zwei — anders als beim Heizkessel.</b> Der
+    /// BHKW-Katalog ist der einzige mit Schreibschutz: In der Auslieferungsdatenbank ist
+    /// JEDER Satz von <c>Tab_BHKW_STAMM</c> geschützt, und <c>AnzeigefelderSchreiben</c>
+    /// verlangt die Antwort auf die Rückfrage als eigenes Argument. Die Signatur ist
+    /// damit dieselbe wie <c>KatalogBrowserWege.Speichern</c> — die Hülle reicht ihn
+    /// unverändert durch.
+    /// </remarks>
+    [Parameter]
+    public Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>?
+        KatalogfelderSpeichern { get; set; }
+
+    /// <summary>
+    /// Ist dieser Katalogsatz ein Auslieferungssatz (<c>ReadOnly</c>)? Dann fragt der
+    /// Aufklapper vor dem Speichern nach (<c>KatalogBrowserWege.IstGeschuetzt</c>).
+    /// <c>null</c> = kein Schreibschutz, keine Rückfrage.
+    /// </summary>
+    [Parameter] public Func<string, bool>? KatalogfelderGeschuetzt { get; set; }
+
+    /// <summary>Beschriftung des Speicherknopfs im Aufklapper.</summary>
+    [Parameter] public string BtnFelderSpeichernText { get; set; } = "Speichern";
     [Parameter] public string LabelName { get; set; } = "Modul-Name:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
     [Parameter] public string LabelTraeger { get; set; } = "Brennstoff:";
@@ -415,6 +479,16 @@
     [Parameter] public string TitelLoeschen { get; set; } = "Löschen";
     [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Namen eingeben!";
 
+    /// <summary>
+    /// Rückfrage vor dem Überschreiben eines Auslieferungssatzes aus dem Aufklapper;
+    /// <c>{0}</c> nimmt den Bezeichner auf (<c>ADM_SCHUTZ_FRAGE</c>, derselbe Text wie
+    /// im Katalogbrowser).
+    /// </summary>
+    [Parameter] public string FrageSchutz { get; set; } =
+        "Der Datensatz \"{0}\" gehört zum Auslieferungskatalog. Trotzdem überschreiben?";
+
+    [Parameter] public string TitelSchutz { get; set; } = "Schreibgeschützter Datensatz";
+
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_BHKWEing.btn_Help";
 
@@ -446,9 +520,14 @@
     /// <summary>Steht der Parameterblock offen? (Prüfhilfe für Tests, W6‑E‑1.)</summary>
     public bool ParameterOffen => _parameterOffen;
 
-    /// <summary>Kurze Feldbreite im Aufklapper - für Zahlen und für alles mit Einheit.</summary>
-    private static bool Kurzfeld(Modulparameter p)
-        => p.Einheit.Length > 0 || ErzeugerDetail.IstZahl(p.Wert);
+    /// <summary>Die Felder des gewählten Satzes; <c>null</c> = noch nicht geholt.</summary>
+    private IReadOnlyList<BrowserFeldwert>? _felder;
+
+    /// <summary>Hat der Anwender im Aufklapper etwas geändert?</summary>
+    private bool _felderGeaendert;
+
+    /// <summary>Steht in einem Zahlenfeld des Aufklappers etwas Ungültiges?</summary>
+    private bool _feldFehler;
 
     private string _summeText = "0";
 
@@ -456,6 +535,8 @@
     private IReadOnlyDictionary<string, object>? _editorGaben;
     private bool _namensfrage;
     private bool _loeschfrage;
+    private bool _schutzfrage;
+    private string _schutztext = "";
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
@@ -478,6 +559,9 @@
 
     /// <summary>Steht der Katalogeditor? (Pruefhilfe fuer Tests.)</summary>
     public bool Katalogeditor => _editorGaben is not null;
+
+    /// <summary>Steht die Schreibschutzrueckfrage des Aufklappers? (Pruefhilfe fuer Tests.)</summary>
+    public bool Schutzfrage => _schutzfrage;
 
     /// <summary>Die angezeigte Leistungssumme (Pruefhilfe fuer Tests).</summary>
     public string Summe => _summeText;
@@ -571,6 +655,7 @@
         _katalogGewaehlt = "";
         _varianten = Varianten is not null ? Varianten(zeile.CarrierId) : Array.Empty<(int, string)>();
         _detail = (ProjektDetail is not null ? ProjektDetail(zeile.Bezeichner) : null) ?? Leer(zeile.Bezeichner);
+        FelderNachziehen();
     }
 
     private void KatalogZeileWaehlen(string bezeichner)
@@ -581,6 +666,7 @@
         _varianten = Array.Empty<(int, string)>();
         _detail = (KatalogDetail is not null ? KatalogDetail(_katalogGewaehlt) : null)
                   ?? Leer(_katalogGewaehlt);
+        FelderNachziehen();
     }
 
     private static ErzeugerDetail Leer(string name)
@@ -704,6 +790,107 @@
     }
 
     // =================================================================================
+    // Der Aufklapper "Alle Daten" (Anwenderentscheid 15.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Auf- und zuklappen - und beim AUFklappen die Felder holen.
+    /// </summary>
+    /// <remarks>
+    /// <b>Erst beim Aufklappen.</b> Wer nur ein Modul auswählt, zahlt keine Abfrage; und
+    /// wer aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
+    /// </remarks>
+    private void ParameterUmschalten()
+    {
+        _parameterOffen = !_parameterOffen;
+        if (_parameterOffen) FelderHolen();
+    }
+
+    /// <summary>Holt die Felder des gewählten Katalogsatzes neu.</summary>
+    private void FelderHolen()
+    {
+        _felder = Katalogfelder is null || _katalogZeile is null
+            ? null
+            : Katalogfelder(_katalogZeile.Bezeichner);
+        _felderGeaendert = false;
+        _feldFehler = false;
+    }
+
+    /// <summary>
+    /// Nach einem SATZWECHSEL: Der offene Aufklapper zeigt die Felder des JETZT
+    /// gewählten Satzes, der geschlossene gar keine.
+    /// </summary>
+    /// <remarks>
+    /// <b>Sonst speicherte der Knopf fremde Werte.</b> <see cref="FelderSpeichern"/>
+    /// schreibt <c>_felder</c> unter dem Bezeichner der GEWÄHLTEN Zeile zurück — bliebe
+    /// der alte Feldsatz stehen, landeten die Werte des vorigen Moduls im neuen.
+    /// </remarks>
+    private void FelderNachziehen()
+    {
+        if (_parameterOffen && _katalogZeile is not null) { FelderHolen(); return; }
+
+        _felder = null;
+        _felderGeaendert = false;
+        _feldFehler = false;
+    }
+
+    /// <summary>Ein Zahlenfeld des Aufklappers meldet einen ungültigen Zustand.</summary>
+    private void BeiFeldFehler((string Feldname, bool Fehler) meldung)
+        => _feldFehler = meldung.Fehler;
+
+    /// <summary>
+    /// „Speichern" im Aufklapper. Ein AUSLIEFERUNGSSATZ wird vorher erfragt — genau die
+    /// Reihenfolge des Katalogbrowsers (erst die Rückfrage, dann der Schreibvorgang).
+    /// </summary>
+    private void FelderSpeichern()
+    {
+        if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
+
+        if (KatalogfelderGeschuetzt?.Invoke(_katalogZeile.Bezeichner) == true)
+        {
+            _schutztext = string.Format(FrageSchutz, _katalogZeile.Bezeichner);
+            _schutzfrage = true;
+            return;
+        }
+
+        FelderSchreiben(false);
+    }
+
+    /// <summary>„Nein" schreibt nichts, „Ja" hebt den Schutz für DIESEN Vorgang auf.</summary>
+    private void BeiSchutzAntwort(bool? antwort)
+    {
+        _schutzfrage = false;
+        if (antwort != true) return;
+        FelderSchreiben(true);
+    }
+
+    /// <summary>
+    /// Schreibt die geänderten Felder zurück und lädt die Katalogliste neu.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Befund des Katalogs zählt, nicht die Absicht.</b> Lehnt der Speicherweg ab
+    /// (Prüfmeldung, Schreibschutz), bleibt der geänderte Stand im Aufklapper stehen -
+    /// der Anwender soll ihn verbessern können, statt ihn zu verlieren.
+    /// </remarks>
+    private void FelderSchreiben(bool schutzUebergehen)
+    {
+        if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
+
+        KatalogSpeicherErgebnis ergebnis =
+            KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder, schutzUebergehen);
+
+        if (!ergebnis.Ok)
+        {
+            Melden(ergebnis.Meldung, true);
+            return;
+        }
+
+        _felderGeaendert = false;
+        Melden(ergebnis.Meldung, false);
+        KatalogNeuLaden();
+    }
+
+    // =================================================================================
     // Katalogpflege
     // =================================================================================
 
@@ -774,7 +961,7 @@
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_traegerGaben is not null || _editorGaben is not null ||
-            _namensfrage || _loeschfrage) return Task.CompletedTask;
+            _namensfrage || _loeschfrage || _schutzfrage) return Task.CompletedTask;
         return Abbrechen();
     }
 }

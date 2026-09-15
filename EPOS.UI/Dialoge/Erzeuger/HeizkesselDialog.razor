@@ -406,10 +406,13 @@
     /// Speicherweg, dann ist der Aufklapper reine Anzeige.
     /// </summary>
     /// <remarks>
-    /// <b>Heute haben ihn nur Heizkessel und BHKW</b> (<c>KatalogBrowserWege.Speichern</c>).
-    /// Das ist die Lage der Kataloge, keine Entscheidung dieses Dialogs - und der Grund,
-    /// warum der Aufklapper seine Bearbeitbarkeit am Delegaten abliest und nicht an einem
-    /// Schalter.
+    /// <b>Alle sechs Erzeugerfamilien haben ihn</b> (Anwenderentscheid 15.09.2026):
+    /// Heizkessel, BHKW, Pufferspeicher und Solarkollektoren über
+    /// <c>KatalogBrowserWege.Speichern</c>, Photovoltaik und Stromspeicher über die
+    /// <c>ModulFeldwertBruecke</c> ihrer Hülle. Dass der Aufklapper seine
+    /// Bearbeitbarkeit trotzdem am DELEGATEN abliest und nicht an einem Schalter, bleibt
+    /// richtig: Ein Wirt ohne Speicherweg — der Assistent, ein Prüfstand — bekommt so
+    /// eine reine Anzeige, ohne dass der Dialog davon wissen müsste.
     /// </remarks>
     [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? KatalogfelderSpeichern { get; set; }
 
@@ -504,6 +507,24 @@
         _felder = Katalogfelder is null || _katalogZeile is null
             ? null
             : Katalogfelder(_katalogZeile.Bezeichner);
+        _felderGeaendert = false;
+        _feldFehler = false;
+    }
+
+    /// <summary>
+    /// Nach einem SATZWECHSEL: Der offene Aufklapper zeigt die Felder des JETZT
+    /// gewählten Satzes, der geschlossene gar keine.
+    /// </summary>
+    /// <remarks>
+    /// <b>Sonst speicherte der Knopf fremde Werte.</b> <see cref="FelderSpeichern"/>
+    /// schreibt <c>_felder</c> unter dem Bezeichner der GEWÄHLTEN Zeile zurück — bliebe
+    /// der alte Feldsatz stehen, landeten die Werte des vorigen Kessels im neuen.
+    /// </remarks>
+    private void FelderNachziehen()
+    {
+        if (_parameterOffen && _katalogZeile is not null) { FelderHolen(); return; }
+
+        _felder = null;
         _felderGeaendert = false;
         _feldFehler = false;
     }
@@ -654,6 +675,7 @@
         _katalogGewaehlt = "";
         _varianten = Varianten is not null ? Varianten(zeile.CarrierId) : Array.Empty<(int, string)>();
         _detail = (ProjektDetail is not null ? ProjektDetail(zeile.GeraetId) : null) ?? Leer(zeile.Bezeichner);
+        FelderNachziehen();
     }
 
     /// <summary>
@@ -668,6 +690,7 @@
         _varianten = Array.Empty<(int, string)>();
         _detail = (KatalogDetail is not null ? KatalogDetail(_katalogGewaehlt) : null)
                   ?? Leer(_katalogGewaehlt);
+        FelderNachziehen();
     }
 
     private static ErzeugerDetail Leer(string name)

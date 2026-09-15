@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Solarthermie;
@@ -111,7 +112,13 @@ namespace WindowsFormsApplication1
                 ["LabelKollektortyp"] = Text_("SKK_LBL_TYP", "Kollektortype :"),
                 ["LabelModulflaeche"] = Text_("SKK_LBL_MODULFLAECHE", "Modulfläche :"),
                 ["LabelAperturflaeche"] = Text_("SKK_LBL_APERTURFLAECHE", "Aperturfläche :"),
-                ["LabelKosten"] = Text_("SKK_LBL_KOSTEN", "Investitionskosten :"),
+
+                // OHNE "LabelKosten" (Anwenderentscheid 15.09.2026: "Der Dialog ueber
+                // Button Bearbeiten soll keine Kosten und Emissionen enthalten"). Das
+                // Feld "Investitionskosten" ist aus der Technikgruppe gefallen; gepflegt
+                // wird der Preis im Aufklapper "Alle Daten anzeigen". Der WERT bleibt im
+                // Feldsatz: AusModell liest ihn, NachModell schreibt ihn unveraendert
+                // zurueck - sonst nullte jedes "Ueberschreiben" die Spalte.
                 ["LabelVorlauf"] = Text_("SKK_LBL_VORLAUF", "Vorlauf:"),
                 ["LabelRuecklauf"] = Text_("SKK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["BtnUeberschreibenText"] = Text_("SKK_BTN_UEBERSCHREIBEN", "Überschreiben"),
@@ -144,7 +151,7 @@ namespace WindowsFormsApplication1
             BlazorDialogForm<SolarkollektorenDialog> dlg = null;
 
             var werte = new Dictionary<string, object>(
-                ProjektGaben(projektId, modelle, wizard: false))
+                ProjektGaben(projektId, modelle, wizard: false, besitzer: besitzer))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -169,8 +176,13 @@ namespace WindowsFormsApplication1
         // WinForms-Formular mehr. AssistentHuelle ruft direkt Gaben(...).
 
         /// <summary>Der PARAMETERSATZ des Projektdialogs.</summary>
+        /// <param name="besitzer">
+        /// Fenster, ueber dem die Kostenverwaltung erscheint; <c>null</c> im Assistenten
+        /// — dort gibt es die Kostenleiste ohnehin nicht (<c>Wizard</c>).
+        /// </param>
         internal static IReadOnlyDictionary<string, object> ProjektGaben(
-            int projektId, List<WErzeugerModel> modelle, bool wizard)
+            int projektId, List<WErzeugerModel> modelle, bool wizard,
+            IWin32Window besitzer = null)
         {
             var zeilen = new List<ErzeugerZeile>();
             var zuModell = new Dictionary<int, WErzeugerModel>();
@@ -245,9 +257,41 @@ namespace WindowsFormsApplication1
                 ["LabelVorlauf"] = Text_("SKK_LBL_VORLAUF", "Vorlauf:"),
                 ["LabelRuecklauf"] = Text_("SKK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["BtnUebernehmenText"] = Text_("SKV_BTN_UEBERNEHMEN", "Übernehmen"),
+
+                // „Bearbeiten…" STATT „Kollektor in DB ändern…" (Anwenderentscheid
+                // 15.09.2026, „alle sechs Erzeuger im gleichen Schema"): Der Knopf steht
+                // jetzt im Modulbereich und heisst dort, wie er in den fuenf
+                // Schwesterdialogen heisst - derselbe Ressourcenschluessel, kein neuer.
+                // BtnKatalogAendernText bleibt der TITEL der Ueberlagerung darueber.
+                ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["BtnKatalogAendernText"] = Text_("SKV_BTN_DB_AENDERN", "Kollektor in DB ändern..."),
                 ["BtnKatalogNeuText"] = Text_("SKV_BTN_DB_NEU", "Kollektor in DB neu..."),
                 ["BtnKatalogLoeschenText"] = Text_("SKV_BTN_DB_LOESCHEN", "Kollektor in DB löschen"),
+                ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
+
+                // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
+                // Sie kommen aus derselben Quelle wie die des Katalogbrowsers - der
+                // Aufklapper IST sein Raster; der Speicherweg steht seit demselben Tag
+                // im Kern (SolarkollektorenStammCtrl.AnzeigefelderSchreiben).
+                ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
+                    name => SolarkollektorAdminHuelle.Wege().Detail!(name)!),
+                ["KatalogfelderSpeichern"] =
+                    new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
+                        (name, felder) => SolarkollektorAdminHuelle.Wege().Speichern!(name, felder, false)),
+                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
+
+                // DIE KOSTENKNOEPFE IM MODULBEREICH - derselbe Weg, den Heizkessel und
+                // BHKW gehen (ErzeugerKostenwege nimmt die Kostenkomponente als
+                // Zeichenkette). NUR ZWEI KNOEPFE: „Energiekosten…" fuehrt in die
+                // Energietraegerverwaltung, und die Sonne ist kein gekaufter Traeger -
+                // ohne Delegat zeichnet die Leiste den Knopf gar nicht erst.
+                ["KostenOeffnen"] = projektId > 0
+                    ? new Func<ErzeugerZeile, bool, Task>(
+                        (zeile, betrieb) => ErzeugerKostenwege.Kosten(
+                            besitzer, projektId, DbWerte.ERZEUGER_SOLARTHERMIE, zeile, betrieb))
+                    : null,
+                ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
+                ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
                 ["FrageLoeschen"] = Text_("SKV_FRAGE_LOESCHEN",
                     "Wollen Sie wirklich den Solarkollektor löschen?"),
                 ["MeldungUebernommen"] = Text_("SKV_MSG_UEBERNOMMEN", "Die Angaben sind übernommen."),

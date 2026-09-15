@@ -22,11 +22,13 @@
    Aenderungen meldet er nach aussen. WANN gespeichert wird, entscheidet der Wirt -
    der Browser mit seinem Speichern-Knopf, der Modulbereich mit seinem.
 
-   NUR LESEN IST DER REGELFALL. Einen Speicherweg haben heute nur Heizkessel und
-   BHKW (KatalogBrowserWege.Speichern); bei Photovoltaik, Pufferspeicher,
-   Stromspeicher und Solarkollektoren steht er auf null. Dort zeigt derselbe
-   Baustein dieselben Felder - unveraenderlich. Das ist keine Einschraenkung
-   dieses Bausteins, sondern die Lage der Kataloge. *@
+   OB GESCHRIEBEN WERDEN DARF, ENTSCHEIDET DER WIRT, NICHT DIESER BAUSTEIN.
+   Seit dem Anwenderentscheid vom 15.09.2026 haben ALLE SECHS Erzeugerfamilien
+   einen Speicherweg: Heizkessel, BHKW, Pufferspeicher und Solarkollektoren ueber
+   KatalogBrowserWege.Speichern, Photovoltaik und Stromspeicher ueber die
+   ModulFeldwertBruecke ihrer Windows-Huelle. NurLesen bleibt trotzdem: Ein Wirt
+   ohne Speicherweg - ein Pruefstand, eine Vorschau - zeigt mit demselben Baustein
+   dieselben Felder unveraenderlich. *@
 
 @namespace EPOS.UI.Bausteine
 @using EPOS.UI.Dialoge.Erzeuger

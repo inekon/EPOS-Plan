@@ -69,6 +69,31 @@ public class PufferspeicherDialogTests : EposBunitContext
                 ("Bereitschaftsverluste:", "1,5"), ("Gesamtvolumen [l]:", "600,0"),
                 ("Investitionskosten [€]:", "2500,0") });
 
+    /// <summary>
+    /// Die Felder des Aufklappers „Alle Daten anzeigen" — der Feldsatz des
+    /// Pufferspeicherprofils in Kurzform: der Bezeichner nur lesbar, die übrigen
+    /// editierbar.
+    /// </summary>
+    private static List<BrowserFeldwert> Katalogfelder(string name) => new()
+    {
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldBezeichner, Bezeichnung = "Name:",
+            Art = BrowserFeldArt.Text, Editierbar = false, Wert = name
+        },
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldFirma, Bezeichnung = "Hersteller:",
+            Art = BrowserFeldArt.Text, Editierbar = true, Wert = "Musterwerk"
+        },
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldInvestitionskosten,
+            Bezeichnung = "Investitionskosten:", Einheit = "€",
+            Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "2500"
+        }
+    };
+
     private IRenderedComponent<PufferspeicherDialog> Aufbauen(
         List<ErzeugerZeile>? zeilen = null,
         Func<int, string>? dublettenfrage = null,
@@ -77,6 +102,9 @@ public class PufferspeicherDialogTests : EposBunitContext
         Func<int, ErzeugerDetail?>? projektDetail = null,
         Func<int, bool>? katalogLoeschen = null,
         Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
+        Func<string, IReadOnlyList<BrowserFeldwert>?>? katalogfelder = null,
+        Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? felderSpeichern = null,
+        Func<ErzeugerZeile?, bool, Task>? kostenOeffnen = null,
         Action<bool>? geschlossen = null)
     {
         return Render<PufferspeicherDialog>(p => p
@@ -92,8 +120,20 @@ public class PufferspeicherDialogTests : EposBunitContext
             .Add(x => x.Entfernen, entfernen)
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
             .Add(x => x.VerwaltungGaben, verwaltung)
+            .Add(x => x.Katalogfelder, katalogfelder)
+            .Add(x => x.KatalogfelderSpeichern, felderSpeichern)
+            .Add(x => x.KostenOeffnen, kostenOeffnen)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
+
+    /// <summary>
+    /// Der Knopf mit DIESER Beschriftung — gleich, in welcher Leiste er steht. Über den
+    /// TEXT und nicht über den Index: Seit „Bearbeiten…" in den Modulbereich gewandert
+    /// ist, träfe jeder Index in der Listenleiste etwas anderes.
+    /// </summary>
+    private static AngleSharp.Dom.IElement Knopf(
+        IRenderedComponent<PufferspeicherDialog> cut, string beschriftung)
+        => cut.FindAll("button").First(b => b.TextContent.Trim() == beschriftung);
 
     // =================================================================================
     // Feldbestand
@@ -311,11 +351,232 @@ public class PufferspeicherDialogTests : EposBunitContext
         var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
 
         Assert.False(cut.Instance.VerwaltungOffen);
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
+        Knopf(cut, "Bearbeiten...").Click();
 
         Assert.True(cut.Instance.VerwaltungOffen);
         Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
     }
+
+    /// <summary>
+    /// <b>„Bearbeiten…" steht im MODULBEREICH, „Löschen" bei der Liste</b>
+    /// (Anwenderentscheid 15.09.2026, „alle sechs Erzeuger im gleichen Schema"): Der
+    /// eine Knopf wirkt auf den gewählten SATZ und gehört deshalb dorthin, wo dieser
+    /// Satz steht; der andere wirkt auf die Listenzeile und bleibt bei der Liste.
+    /// </summary>
+    [Fact]
+    public void Bearbeiten_steht_im_Modulbereich_und_Loeschen_bei_der_Liste()
+    {
+        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
+
+        var listenknoepfe = cut.FindAll(".epos-zweispalten-spalte")[1]
+                               .QuerySelectorAll(".epos-leiste button")
+                               .Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Löschen" }, listenknoepfe);
+
+        var modulknoepfe = cut.FindAll(".epos-gruppenkopf-koerper")[0]
+                              .QuerySelectorAll(".epos-leiste button")
+                              .Select(b => b.TextContent.Trim()).ToList();
+        Assert.Contains("Bearbeiten...", modulknoepfe);
+    }
+
+    // =================================================================================
+    // Der Aufklapper „Alle Daten anzeigen" (Anwenderentscheid 15.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Ohne Weg zu den Katalogfeldern kein Aufklapper — Hausregel „kein Delegat, kein
+    /// Knopf". Und er gehört dem KATALOGsatz: Steht eine Projektzeile, ist er weg.
+    /// </summary>
+    [Fact]
+    public void Der_Aufklapper_steht_nur_mit_Weg_und_nur_am_Katalogsatz()
+    {
+        var ohne = Aufbauen();
+        KatalogZeileWaehlen(ohne, 0);
+        Assert.Empty(ohne.FindAll(".epos-modulparameter-knopf"));
+
+        var mit = Aufbauen(katalogfelder: Katalogfelder);
+        Assert.Empty(mit.FindAll(".epos-modulparameter-knopf"));   // erste Projektzeile
+
+        KatalogZeileWaehlen(mit, 0);
+        Assert.Single(mit.FindAll(".epos-modulparameter-knopf"));
+    }
+
+    /// <summary>
+    /// <b>Geholt wird erst beim Aufklappen.</b> Wer nur einen Speicher auswählt, zahlt
+    /// keine Abfrage; und wer aufklappt, sieht den Stand von JETZT.
+    /// </summary>
+    [Fact]
+    public void Die_Felder_kommen_erst_beim_Aufklappen()
+    {
+        int rufe = 0;
+        var cut = Aufbauen(katalogfelder: n => { rufe++; return Katalogfelder(n); });
+
+        KatalogZeileWaehlen(cut, 0);
+        Assert.Equal(0, rufe);
+        Assert.False(cut.Instance.ParameterOffen);
+        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.Equal(1, rufe);
+        Assert.True(cut.Instance.ParameterOffen);
+        Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Equal(3, cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld").Length);
+    }
+
+    /// <summary>
+    /// „Speichern" reicht die GEÄNDERTEN Felder an den Schreibweg — und ist vorher
+    /// gesperrt: Ohne Änderung gibt es nichts zu schreiben.
+    /// </summary>
+    [Fact]
+    public void Speichern_reicht_die_geaenderten_Felder_an_den_Schreibweg()
+    {
+        IReadOnlyList<BrowserFeldwert>? gesehen = null;
+        string? name = null;
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, f) =>
+                           {
+                               name = n; gesehen = f;
+                               return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+                           });
+
+        KatalogZeileWaehlen(cut, 0);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        var speichern = Knopf(cut, "Speichern");
+        Assert.True(speichern.HasAttribute("disabled"));
+
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("3000");
+        speichern = Knopf(cut, "Speichern");
+        Assert.False(speichern.HasAttribute("disabled"));
+        speichern.Click();
+
+        Assert.Equal("Speicher 600 Ltr", name);
+        Assert.NotNull(gesehen);
+        Assert.Equal("3000",
+            gesehen!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
+        Assert.Equal("Datensatz gespeichert", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Ohne Schreibweg ist der Aufklapper reine ANZEIGE: kein Speichern-Knopf, kein
+    /// beschreibbares Feld. Das ist die Lage des Katalogs, keine Entscheidung des
+    /// Dialogs — er liest sie am Delegaten ab.
+    /// </summary>
+    [Fact]
+    public void Ohne_Schreibweg_zeigt_der_Aufklapper_nur_an()
+    {
+        var cut = Aufbauen(katalogfelder: Katalogfelder);
+
+        KatalogZeileWaehlen(cut, 0);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        var block = cut.Find(".epos-modulparameter");
+        Assert.DoesNotContain(block.QuerySelectorAll("button").Select(b => b.TextContent.Trim()),
+                              t => t == "Speichern");
+        Assert.Empty(block.QuerySelectorAll("input:not([readonly])"));
+    }
+
+    /// <summary>
+    /// Eine Fehleingabe in einem Zahlenfeld sperrt „Speichern" — der Dialog schriebe
+    /// sonst den Stand VOR der angefangenen Zahl zurück.
+    /// </summary>
+    [Fact]
+    public void Eine_Fehleingabe_sperrt_den_Speichern_Knopf()
+    {
+        bool geschrieben = false;
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, _) =>
+                           {
+                               geschrieben = true;
+                               return new KatalogSpeicherErgebnis(true, "ok", n);
+                           });
+
+        KatalogZeileWaehlen(cut, 0);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        // Erst eine gueltige Aenderung - sie gibt den Knopf frei.
+        var zahl = cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0];
+        zahl.Input("3000");
+        Assert.False(Knopf(cut, "Speichern").HasAttribute("disabled"));
+
+        // Dann die Fehleingabe: der Knopf geht wieder zu.
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("dreitausend");
+
+        Assert.True(Knopf(cut, "Speichern").HasAttribute("disabled"));
+        Assert.False(geschrieben);
+    }
+
+    /// <summary>
+    /// Ein abgelehnter Schreibweg (Schreibschutz der Auslieferung) meldet den Grund und
+    /// lässt den geänderten Stand stehen — der Anwender soll ihn verbessern können.
+    /// </summary>
+    [Fact]
+    public void Eine_Ablehnung_meldet_den_Grund()
+    {
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (_, __) =>
+                               new KatalogSpeicherErgebnis(false, "Schreibgeschützt.", ""));
+
+        KatalogZeileWaehlen(cut, 0);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("3000");
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Equal("Schreibgeschützt.", cut.Instance.Meldung);
+        Assert.True(cut.Instance.ParameterOffen);
+    }
+
+    // =================================================================================
+    // Die Kostenknöpfe im Modulbereich
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Zwei Knöpfe, kein dritter</b> (Anwenderentscheid 15.09.2026): Investitions-
+    /// und Betriebskosten führen in DIESELBE Maske und unterscheiden sich nur im
+    /// Schalter; „Energiekosten…" gibt es nicht — ein Speicher verbraucht keinen Träger.
+    /// Ohne Delegat fehlt die Leiste ganz.
+    /// </summary>
+    [Fact]
+    public void Die_Kostenleiste_steht_nur_mit_Weg_und_traegt_zwei_Knoepfe()
+    {
+        Assert.Empty(Aufbauen().FindAll(".epos-kostenleiste button"));
+
+        var gerufen = new List<bool>();
+        var cut = Aufbauen(kostenOeffnen: (_, betrieb) =>
+        {
+            gerufen.Add(betrieb);
+            return Task.CompletedTask;
+        });
+
+        var knoepfe = cut.FindAll(".epos-kostenleiste button");
+        Assert.Equal(2, knoepfe.Count);
+
+        knoepfe[0].Click();
+        cut.FindAll(".epos-kostenleiste button")[1].Click();
+        Assert.Equal(new[] { false, true }, gerufen);
+    }
+
+    /// <summary>Die Kostenleiste bekommt die GEWÄHLTE Projektzeile mit.</summary>
+    [Fact]
+    public void Die_Kostenleiste_reicht_die_gewaehlte_Projektzeile_durch()
+    {
+        ErzeugerZeile? gesehen = null;
+        var cut = Aufbauen(kostenOeffnen: (zeile, _) =>
+        {
+            gesehen = zeile;
+            return Task.CompletedTask;
+        });
+
+        cut.FindAll(".epos-kostenleiste button")[0].Click();
+
+        Assert.NotNull(gesehen);
+        Assert.Equal(1, gesehen!.Schluessel);
+    }
+
+    /// <summary>Wählt die Katalogzeile mit dieser Nummer in der rechten Liste.</summary>
+    private static void KatalogZeileWaehlen(IRenderedComponent<PufferspeicherDialog> cut, int nr)
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[nr].Click();
 
     [Fact]
     public void Esc_bricht_ab_und_Enter_ist_nicht_belegt()

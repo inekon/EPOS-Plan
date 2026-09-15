@@ -38,15 +38,25 @@ namespace WindowsFormsApplication1
             return KatalogBrowserProfil.Finde(KatalogBrowserArt.Bhkw, Text);
         }
 
-        /// <summary>Der PARAMETERSATZ — auch für eine Überlagerung in einem Blazor-Wirt.</summary>
-        internal static IReadOnlyDictionary<string, object> Gaben()
+        /// <summary>
+        /// Die Wege, die der PROJEKTDIALOG für seinen Modulaufklapper braucht: alle
+        /// Felder eines Katalogsatzes lesen, sie zurückschreiben und wissen, ob der
+        /// Satz aus der Auslieferung stammt (Anwenderentscheid 15.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <b>Dieselben Delegaten, die auch der Katalogbrowser bekommt.</b> Sie stehen
+        /// hier und nicht ein zweites Mal im Projektdialog-Wirt: Welche Spalten ein
+        /// BHKW-Satz führt und wie sie zurückgeschrieben werden, ist EINE Frage mit
+        /// EINER Antwort. <see cref="KatalogBrowserWege.IstGeschuetzt"/> trägt nur
+        /// dieser Katalog — in der Auslieferungsdatenbank ist jeder Satz von
+        /// <c>Tab_BHKW_STAMM</c> schreibgeschützt.
+        /// </remarks>
+        internal static KatalogBrowserWege Wege()
         {
             KatalogBrowserProfil profil = Profil();
             var ctrl = new BHKWStammCtrl();
 
-            var gaben = KatalogBrowserHuelle.GemeinsameGaben(profil);
-
-            gaben["Wege"] = new KatalogBrowserWege
+            return new KatalogBrowserWege
             {
                 // W14a-E-10: acht Spalten statt der vierzeiligen Eigenschaftenzelle;
                 // die Stromkennzahl sigma rechnet der Controller mit.
@@ -58,6 +68,14 @@ namespace WindowsFormsApplication1
                 Speichern = Schreiben,
                 IstGeschuetzt = BHKWStammCtrl.IstSchreibgeschuetzt
             };
+        }
+
+        /// <summary>Der PARAMETERSATZ — auch für eine Überlagerung in einem Blazor-Wirt.</summary>
+        internal static IReadOnlyDictionary<string, object> Gaben()
+        {
+            var gaben = KatalogBrowserHuelle.GemeinsameGaben(Profil());
+
+            gaben["Wege"] = Wege();
 
             gaben["EditorInhalt"] = KatalogBrowserHuelle.Editor<BhkwKatalogDialog>();
             gaben["EditorGaben"] = new Func<string, bool, Action<string>,
@@ -85,6 +103,23 @@ namespace WindowsFormsApplication1
                 ok ? "" : MyResource.Resource.KBROW_MSG_LOESCHEN_FEHLER, name);
         }
 
+        /// <summary>
+        /// Schreibt die Felder des Aufklappers zurück — ALLE editierbaren Spalten des
+        /// Profils, nicht nur die sechs des Vorläufers.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Gelesen wird genau, was das Profil als <c>Editierbar</c> führt</b>
+        /// (Anwenderentscheid 15.09.2026): Firma, Beschreibung, Brennstoff, Motortyp,
+        /// die vier Leistungs- und Temperaturwerte, Wirkungsgrad, Raumbedarf, die fünf
+        /// Kostenposten, Wartung, Nutzungsdauer und die fünf Emissionsfaktoren. Die
+        /// Investition je kWel bleibt draußen: Sie ist die ABLEITUNG der fünf Posten
+        /// (W14a-E-8-B3) und wird im Kern nachgerechnet.</para>
+        /// <para><b>Ein leeres Textfeld heißt „unverändert lassen".</b> Der Brennstoff
+        /// ist ein Nachschlagewert; kommt er leer herein, rührt
+        /// <c>KatalogFeldPruefung.AusListe</c> die Spalte nicht an — so bleibt ein
+        /// Altbestandssatz mit einem Wert außerhalb der Liste in seinen übrigen Feldern
+        /// pflegbar.</para>
+        /// </remarks>
         private static KatalogSpeicherErgebnis Schreiben(string name,
                                                          IReadOnlyList<BrowserFeldwert> felder,
                                                          bool schutzUebergehen)
@@ -95,7 +130,27 @@ namespace WindowsFormsApplication1
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPel),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldGrenzleistung),
                 KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldVorlauf),
-                KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldRuecklauf));
+                KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldRuecklauf),
+                Beschreibung: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBeschreibung),
+                Brennstoff: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBrennstoff),
+                Wirkungsgrad: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgrad),
+                Motortyp: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMotortyp),
+                Raumbedarf: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldRaumbedarf),
+                KostenModul: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenModul),
+                KostenMontage: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenMontage),
+                KostenLieferung: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenLieferung),
+                KostenSchallschutzhaube:
+                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenSchallschutz),
+                KostenAbgasreinigung:
+                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenAbgasreinigung),
+                WartungskostenJeKWhel:
+                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWartungJeKwhel),
+                Nutzungsdauer: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldNutzungsdauer),
+                NOx: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldNox),
+                SO2: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldSo2),
+                CO: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldCo),
+                CO2: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldCo2),
+                Staub: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldStaub));
 
             BHKWStammCtrl.SpeicherErgebnis e =
                 BHKWStammCtrl.AnzeigefelderSchreiben(name, werte, schutzUebergehen);

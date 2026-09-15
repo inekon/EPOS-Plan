@@ -89,7 +89,10 @@ public class HeizkesselDialogTests : EposBunitContext
         bool wizard = false,
         Action<bool>? geschlossen = null,
         Func<ErzeugerZeile?, bool, Task>? kostenOeffnen = null,
-        Func<ErzeugerZeile?, Task>? energiekosten = null)
+        Func<ErzeugerZeile?, Task>? energiekosten = null,
+        Func<string, IReadOnlyList<BrowserFeldwert>?>? katalogfelder = null,
+        Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>?
+            katalogfelderSpeichern = null)
     {
         return Render<HeizkesselDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100) })
@@ -115,11 +118,50 @@ public class HeizkesselDialogTests : EposBunitContext
             .Add(x => x.Wizard, wizard)
             .Add(x => x.KostenOeffnen, kostenOeffnen)
             .Add(x => x.EnergiekostenOeffnen, energiekosten)
+            .Add(x => x.Katalogfelder, katalogfelder)
+            .Add(x => x.KatalogfelderSpeichern, katalogfelderSpeichern)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
 
     /// <summary>Der Auswahlpfad der Kostenknöpfe — drei Stück, in dieser Reihenfolge.</summary>
     private const string KOSTENKNOEPFE = ".epos-kostenleiste button.epos-knopf";
+
+    /// <summary>
+    /// Die Felder des Aufklappers — ein Ausschnitt des Heizkesselprofils: ein Text,
+    /// eine Zahl und der Schalter „Brennwertkessel".
+    /// </summary>
+    private static List<BrowserFeldwert> Felder() => new()
+    {
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldFirma,
+            Bezeichnung = "Hersteller:",
+            Art = BrowserFeldArt.Text,
+            Editierbar = true,
+            Wert = "Musterwerk"
+        },
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldInvestitionskosten,
+            Bezeichnung = "Investitionskosten:",
+            Einheit = "€",
+            Art = BrowserFeldArt.Zahl,
+            Editierbar = true,
+            Wert = "12000"
+        },
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldBrennwert,
+            Bezeichnung = "Brennwertkessel:",
+            Art = BrowserFeldArt.Schalter,
+            Editierbar = true,
+            Wert = "1"
+        }
+    };
+
+    /// <summary>Wählt die erste Katalogzeile — erst dann gibt es einen Aufklapper.</summary>
+    private static void KatalogsatzWaehlen(IRenderedComponent<HeizkesselDialog> cut)
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
 
     // =================================================================================
     // Feldbestand
@@ -778,6 +820,208 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Single(Katalogzeilen(zweiterAufbau));
         Assert.Equal("1 von 2 Sätzen", zweiterAufbau.Find(".epos-katalog-treffer").TextContent);
         Assert.Single(zweiterAufbau.FindAll(".epos-katalog-ruecksetzer"));
+    }
+
+    // =================================================================================
+    //  Der Aufklapper „Alle Daten anzeigen" — Anwenderentscheid 15.09.2026
+    // =================================================================================
+    //
+    // „Es soll in diesem Bereich optional alle technischen Daten angezeigt und
+    // bearbeitet werden koennen." Er ist der Ersatz fuer die Kosten- und
+    // Emissionsgruppen, die aus dem Katalogeditor verschwunden sind, und fuer den
+    // entfallenen Knopf "Administration..."; das Raster ist der Baustein
+    // Katalogfelder, den auch der Katalogbrowser benutzt. Der Heizkesselkatalog
+    // kennt KEINEN Schreibschutz - deshalb fehlen hier die zwei Schutzfragefaelle
+    // des BHKW.
+
+    /// <summary>Ohne den Weg zu den Feldern gibt es den Aufklapper gar nicht.</summary>
+    [Fact]
+    public void Ohne_Katalogfelder_gibt_es_keinen_Aufklapper()
+    {
+        var cut = Aufbauen();
+
+        KatalogsatzWaehlen(cut);
+
+        Assert.Empty(cut.FindAll(".epos-modulparameter"));
+    }
+
+    /// <summary>
+    /// <b>Geholt wird erst beim Aufklappen.</b> Wer nur einen Kessel auswählt, zahlt
+    /// keine Abfrage — und wer aufklappt, sieht den Stand von JETZT.
+    /// </summary>
+    [Fact]
+    public void Der_Aufklapper_holt_die_Felder_erst_beim_Aufklappen()
+    {
+        int rufe = 0;
+        var cut = Aufbauen(katalogfelder: _ => { rufe++; return Felder(); });
+
+        KatalogsatzWaehlen(cut);
+
+        Assert.Equal(0, rufe);
+        Assert.False(cut.Instance.ParameterOffen);
+        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.Equal(1, rufe);
+        Assert.True(cut.Instance.ParameterOffen);
+        Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.NotEmpty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+    }
+
+    /// <summary>
+    /// <b>Ein Satzwechsel bei offenem Aufklapper holt die Felder NEU.</b> Sonst stünde
+    /// der Feldsatz des vorigen Kessels da, und „Speichern" schriebe ihn unter dem
+    /// Namen des jetzt gewählten zurück.
+    /// </summary>
+    [Fact]
+    public void Ein_Satzwechsel_zieht_die_Felder_des_neuen_Satzes_nach()
+    {
+        var gefragt = new List<string>();
+        var cut = Aufbauen(katalogfelder: n => { gefragt.Add(n); return Felder(); });
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        Assert.Equal(new[] { "Kessel A" }, gefragt);
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
+
+        Assert.Equal(new[] { "Kessel A", "Kessel B" }, gefragt);
+        Assert.True(cut.Instance.ParameterOffen);
+    }
+
+    /// <summary>
+    /// <b>Ein Wechsel auf eine PROJEKTzeile räumt den Aufklapper leer.</b> Der
+    /// Aufklapper gehört dem Katalogsatz; bliebe sein Feldsatz stehen, zeigte er Werte,
+    /// zu denen es keine gewählte Katalogzeile mehr gibt.
+    /// </summary>
+    [Fact]
+    public void Ein_Wechsel_auf_die_Projektzeile_raeumt_den_Aufklapper()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder());
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        Assert.NotEmpty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+
+        // Ohne Katalogzeile zeichnet der Block gar nicht mehr - der Zustand "offen"
+        // gehoert der Dialogsitzung und ueberlebt den Wechsel trotzdem.
+        Assert.Empty(cut.FindAll(".epos-modulparameter"));
+        Assert.True(cut.Instance.ParameterOffen);
+    }
+
+    /// <summary>
+    /// <b>Ohne Speicherweg ist der Aufklapper reine Anzeige</b> — kein Knopf, jedes Feld
+    /// nur lesbar. Das entscheidet der WIRT über den Delegaten, nicht der Dialog.
+    /// </summary>
+    [Fact]
+    public void Ohne_Speicherweg_ist_der_Aufklapper_nur_Anzeige()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder());
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Speichern");
+        Assert.All(cut.Find(".epos-modulparameter").QuerySelectorAll("input[type=text]"),
+                   e => Assert.True(e.HasAttribute("readonly")));
+    }
+
+    /// <summary>
+    /// <b>„Speichern" reicht die GEÄNDERTEN Felder durch</b> — und bleibt gesperrt,
+    /// solange nichts geändert wurde.
+    /// </summary>
+    [Fact]
+    public void Speichern_im_Aufklapper_reicht_die_geaenderten_Felder_durch()
+    {
+        string? name = null;
+        IReadOnlyList<BrowserFeldwert>? geschrieben = null;
+
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (n, f) =>
+            {
+                name = n; geschrieben = f;
+                return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+            });
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.True(Knopf(cut, "Speichern").HasAttribute("disabled"));
+
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("15000");
+        Assert.False(Knopf(cut, "Speichern").HasAttribute("disabled"));
+
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Equal("Kessel A", name);
+        Assert.NotNull(geschrieben);
+        Assert.Equal("15000",
+            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
+        Assert.Equal("Datensatz gespeichert", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// <b>Ein abgelehnter Schreibvorgang lässt den Stand stehen</b> und meldet den
+    /// Grund des Katalogs — der Anwender soll ihn verbessern können.
+    /// </summary>
+    [Fact]
+    public void Ein_abgelehntes_Speichern_meldet_den_Grund_und_haelt_die_Eingabe()
+    {
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (_, _) =>
+                new KatalogSpeicherErgebnis(false, "„Investitionskosten“ darf nicht negativ sein.", ""));
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("15000");
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Contains("darf nicht negativ sein", cut.Instance.Meldung);
+        Assert.Equal("15000", cut.Find(".epos-modulparameter input[inputmode=decimal]")
+                                 .GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// <b>Der Aufklapper trägt den vollen Feldbestand des Profils</b>, Schalter
+    /// eingeschlossen — er ist die einzige Pflegestelle der Spalten, die aus dem
+    /// Katalogeditor gefallen sind.
+    /// </summary>
+    [Fact]
+    public void Der_Aufklapper_zeichnet_jede_Feldart_des_Profils()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder(),
+                           katalogfelderSpeichern: (n, _) =>
+                               new KatalogSpeicherErgebnis(true, "ok", n));
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        var block = cut.Find(".epos-modulparameter");
+        Assert.Equal(3, block.QuerySelectorAll(".epos-feld, .epos-schalter").Length);
+        Assert.NotEmpty(block.QuerySelectorAll("input[type=text]"));
+        Assert.NotEmpty(block.QuerySelectorAll("input[inputmode=decimal]"));
+        Assert.NotEmpty(block.QuerySelectorAll("input[type=checkbox]"));
+    }
+
+    /// <summary>
+    /// <b>Zugeklappt ist die Vorgabe</b>, und zugeklappt steht kein Feld da — der
+    /// Dialog sieht aus wie vorher, wer nur auswählt, zahlt keine Abfrage.
+    /// </summary>
+    [Fact]
+    public void Zugeklappt_ist_die_Vorgabe_und_zeigt_kein_Feld()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder());
+
+        KatalogsatzWaehlen(cut);
+
+        Assert.False(cut.Instance.ParameterOffen);
+        Assert.Equal("false", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
     }
 
     /// <summary>

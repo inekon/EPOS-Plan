@@ -12,8 +12,8 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// Solarkollektor-Katalogeditor (iU9-W7.6). Soll ist die Feldkarte von
-/// <c>Form_SolarDB</c>: 27 Zeilen — vier Textfelder, acht Pflichtzahlen, zwei
-/// Ganzzahlen mit erlaubter Leere und vier Knöpfe.
+/// <c>Form_SolarDB</c> ohne die am 15.09.2026 entfallene Kostenzeile: vier Textfelder,
+/// sieben Pflichtzahlen, zwei Ganzzahlen mit erlaubter Leere und vier Knöpfe.
 /// </summary>
 public class SolarkollektorKatalogDialogTests : EposBunitContext
 {
@@ -72,8 +72,9 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         Assert.Equal(3, bezeichnung.QuerySelectorAll("input").Length);
         Assert.Single(bezeichnung.QuerySelectorAll("textarea"));
 
-        // Zehn Zahlen: acht Pflicht plus Vorlauf und Ruecklauf.
-        Assert.Equal(10, cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelectorAll("input").Length);
+        // Neun Zahlen: sieben Pflicht plus Vorlauf und Ruecklauf. Die zehnte,
+        // "Investitionskosten", ist am 15.09.2026 mit der Kostenzeile entfallen.
+        Assert.Equal(9, cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelectorAll("input").Length);
 
         var knopftexte = cut.FindAll(".epos-leiste button").Select(b => b.TextContent.Trim()).ToList();
         Assert.Equal(new[] { "Überschreiben", "Speichern unter", "Abbrechen", "Speichern" }, knopftexte);
@@ -84,14 +85,50 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
     {
         // R-W6-7 / A-12: Die Karte ordnet "k2 :" dem Feld textBox_Kosten zu und laesst
         // textBox_k2 ohne Beschriftung. Die Designer-Koordinaten sagen: Label15 "k2:"
-        // (80,327) steht LINKS von textBox_k2 (111,327), Label25
-        // "Investitionskosten:" (356,297) UEBER textBox_Kosten (359,319).
+        // (80,327) steht LINKS von textBox_k2 (111,327). Das Kostenfeld selbst gibt es
+        // hier seit dem 15.09.2026 nicht mehr - "k2 :" bleibt trotzdem genau EINMAL da.
         var cut = Aufbauen();
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
 
         Assert.Contains("k2 :", texte);
-        Assert.Contains("Investitionskosten :", texte);
         Assert.Equal(1, texte.Count(t => t == "k2 :"));
+    }
+
+    /// <summary>
+    /// <b>Keine Kostenzeile mehr</b> (Anwenderentscheid 15.09.2026: „Der Dialog über
+    /// Button Bearbeiten soll keine Kosten und Emissionen enthalten"). Gepflegt wird der
+    /// Preis im Aufklapper „Alle Daten anzeigen" des Projektdialogs.
+    /// </summary>
+    [Fact]
+    public void Die_Kostenzeile_steht_nicht_mehr_auf_der_Karte()
+    {
+        var cut = Aufbauen();
+        var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
+
+        Assert.DoesNotContain("Investitionskosten :", texte);
+        Assert.DoesNotContain("€", cut.FindAll(".epos-einheit").Select(e => e.TextContent));
+    }
+
+    /// <summary>
+    /// <b>Der Preis überlebt das „Überschreiben".</b> Der Dialog zeigt ihn nicht mehr —
+    /// geschrieben wird der GELADENE Wert, nicht eine Null. Ohne diesen Durchgriff
+    /// nullte jedes Speichern in dieser Maske die Katalogspalte, die nur noch der
+    /// Aufklapper führt.
+    /// </summary>
+    [Fact]
+    public void Der_ungezeigte_Preis_geht_unveraendert_in_den_Speicherweg()
+    {
+        SolarkollektorKatalogDaten? gesehen = null;
+        var cut = Aufbauen(ueberschreiben: d =>
+        {
+            gesehen = d;
+            return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", d.Name);
+        });
+
+        Knopf(cut, "Überschreiben").Click();
+
+        Assert.NotNull(gesehen);
+        Assert.Equal(850.0, gesehen!.Kosten);
     }
 
     [Fact]
@@ -104,7 +141,7 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
                  {
                      "Kollektorname :", "Hersteller :", "Beschreibung :", "Kollektortype :",
                      "Modulfläche :", "Aperturfläche :", "h0 :", "k1 :", "k2 :", "Kdir :",
-                     "Kdiff :", "Investitionskosten :", "Vorlauf:", "Rücklauf:"
+                     "Kdiff :", "Vorlauf:", "Rücklauf:"
                  })
             Assert.Contains(soll, texte);
     }
@@ -165,8 +202,13 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
     // Pruefungen
     // =================================================================================
 
+    /// <summary>
+    /// <b>Sieben statt acht</b> (15.09.2026): „Investitionskosten" ist mit seinem Feld
+    /// gefallen und darf deshalb nicht mehr Pflicht sein — eine Pflicht ohne Feld wäre
+    /// eine Sperre ohne Ausweg (der Modus „Neu" trägt alle Zahlen leer).
+    /// </summary>
     [Fact]
-    public void Jede_der_acht_Pflichtzahlen_wird_beim_Namen_genannt()
+    public void Jede_der_sieben_Pflichtzahlen_wird_beim_Namen_genannt()
     {
         (string Feld, Action<SolarkollektorKatalogDaten> Leeren)[] faelle =
         {
@@ -176,8 +218,7 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
             ("k1",                 d => d.K1 = null),
             ("k2",                 d => d.K2 = null),
             ("Kdir",               d => d.Kdir = null),
-            ("Kdiff",              d => d.Kdiff = null),
-            ("Investitionskosten", d => d.Kosten = null)
+            ("Kdiff",              d => d.Kdiff = null)
         };
 
         foreach (var fall in faelle)
@@ -203,9 +244,12 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
     public void Vorlauf_und_Ruecklauf_duerfen_leer_bleiben()
     {
         // Program.GanzzahlPruefen(..., leerErlaubt: true) - dort galt "" schon als 0.
+        // Die Investitionskosten duerfen es seit dem 15.09.2026 ebenfalls: Sie stehen
+        // nicht mehr auf der Karte, also kann niemand sie hier nachtragen.
         var daten = Voll();
         daten.Vorlauf = null;
         daten.Ruecklauf = null;
+        daten.Kosten = null;
 
         bool geschrieben = false;
         var cut = Aufbauen(daten, ueberschreiben: _ =>

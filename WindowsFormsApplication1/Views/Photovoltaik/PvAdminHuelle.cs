@@ -35,13 +35,22 @@ namespace WindowsFormsApplication1
             return ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik, Text);
         }
 
-        /// <summary>Der PARAMETERSATZ — auch für eine Überlagerung in einem Blazor-Wirt.</summary>
-        internal static IReadOnlyDictionary<string, object> Gaben()
+        /// <summary>
+        /// Der Satz Datenwege des Modulkatalogs — Muster
+        /// <c>HeizkesselAdminHuelle.Wege()</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Er steht getrennt vom Parametersatz</b>, seit der Aufklapper „Alle Daten
+        /// anzeigen" im Projektdialog dieselben Felder zeigt wie der Katalogeditor
+        /// (Anwenderentscheid 15.09.2026). <c>PhotovoltaikHuelle</c> holt sich von hier
+        /// <c>Detail</c> und <c>Speichern</c> über die <see cref="ModulFeldwertBruecke"/>;
+        /// eine zweite Feldliste daneben liefe beim ersten Fachwechsel auseinander.
+        /// </remarks>
+        internal static ModulKatalogWege Wege()
         {
             ModulKatalogProfil profil = Profil();
-            var gaben = ModulKatalogHuelle.GemeinsameGaben(profil);
 
-            gaben["Wege"] = new ModulKatalogWege
+            return new ModulKatalogWege
             {
                 // W14a-E-10: sieben Spalten statt der einen Namensspalte - und der
                 // ERSTE Filter dieses Katalogs, der nach dem CEC-Import 20 749 Zeilen
@@ -51,6 +60,15 @@ namespace WindowsFormsApplication1
                 Speichern = Schreiben,
                 Loeschen = Loeschen
             };
+        }
+
+        /// <summary>Der PARAMETERSATZ — auch für eine Überlagerung in einem Blazor-Wirt.</summary>
+        internal static IReadOnlyDictionary<string, object> Gaben()
+        {
+            ModulKatalogProfil profil = Profil();
+            var gaben = ModulKatalogHuelle.GemeinsameGaben(profil);
+
+            gaben["Wege"] = Wege();
             return gaben;
         }
 

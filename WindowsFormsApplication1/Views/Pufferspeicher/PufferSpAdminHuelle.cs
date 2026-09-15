@@ -45,14 +45,22 @@ namespace WindowsFormsApplication1
             return KatalogBrowserProfil.Finde(KatalogBrowserArt.Pufferspeicher, Text);
         }
 
-        /// <summary>Der PARAMETERSATZ — auch für eine Überlagerung in einem Blazor-Wirt.</summary>
-        internal static IReadOnlyDictionary<string, object> Gaben(bool nurLesen = false)
+        /// <summary>
+        /// Die Wege des Katalogs — Liste, Detail, Existiert, Loeschen und seit dem
+        /// 15.09.2026 der SPEICHERWEG.
+        /// </summary>
+        /// <remarks>
+        /// <b>Dieselben zwei Delegaten, die auch der Projektdialog braucht.</b> Sein
+        /// Aufklapper „Alle Daten anzeigen" liest ueber <c>Detail</c> und schreibt ueber
+        /// <c>Speichern</c>; beides steht hier und nicht ein zweites Mal im Wirt: Welche
+        /// Spalten ein Pufferspeichersatz fuehrt und wie sie zurueckgeschrieben werden,
+        /// ist EINE Frage mit EINER Antwort (Muster <see cref="HeizkesselAdminHuelle"/>).
+        /// </remarks>
+        internal static KatalogBrowserWege Wege()
         {
             KatalogBrowserProfil profil = Profil();
 
-            var gaben = KatalogBrowserHuelle.GemeinsameGaben(profil, nurLesen);
-
-            gaben["Wege"] = new KatalogBrowserWege
+            return new KatalogBrowserWege
             {
                 // W14a-E-10: fuenf Spalten statt der einen Namensspalte; die sechs
                 // festen Volumenstufen entfallen zugunsten des Ausdrucks "200..500"
@@ -64,8 +72,19 @@ namespace WindowsFormsApplication1
                 // Befund W14-B27: Der Vorlaeufer prueft mit inline-SQL, obwohl
                 // PufferSpStammCtrl.Exists im Kern liegt und die Schwestermaske sie nutzt.
                 Existiert = name => new PufferSpStammCtrl().Exists(name),
-                Loeschen = Loeschen
+                Loeschen = Loeschen,
+                Speichern = (name, felder, _) => Schreiben(name, felder)
             };
+        }
+
+        /// <summary>Der PARAMETERSATZ — auch für eine Überlagerung in einem Blazor-Wirt.</summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(bool nurLesen = false)
+        {
+            KatalogBrowserProfil profil = Profil();
+
+            var gaben = KatalogBrowserHuelle.GemeinsameGaben(profil, nurLesen);
+
+            gaben["Wege"] = Wege();
 
             gaben["EditorInhalt"] = KatalogBrowserHuelle.Editor<PufferSpKatalogDialog>();
             gaben["EditorGaben"] = new Func<string, bool, Action<string>,
@@ -80,6 +99,30 @@ namespace WindowsFormsApplication1
         private static KatalogSpeicherErgebnis Loeschen(string name)
         {
             PufferSpStammCtrl.SpeicherErgebnis e = PufferSpStammCtrl.Loeschen(name);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>
+        /// Die fuenf editierbaren Anzeigefelder zurueck in den Katalogsatz — der Weg des
+        /// Knopfes „Speichern" im Aufklapper und in der Speicherleiste des Browsers.
+        /// </summary>
+        /// <remarks>
+        /// <b>Die Zahlregel des Hauses liest die Felder</b> (<c>KatalogBrowserHuelle.Zahl</c>
+        /// und <c>…Ganzzahl</c>, komma- wie punkttolerant); der Bezeichner steht nicht in
+        /// der Liste, er ist der SCHLUESSEL und im Profil nicht editierbar.
+        /// </remarks>
+        private static KatalogSpeicherErgebnis Schreiben(string name,
+                                                         IReadOnlyList<BrowserFeldwert> felder)
+        {
+            var werte = new PufferSpStammCtrl.AnzeigefelderPufferspeicher(
+                KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldFirma),
+                KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldSpeichertyp),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldVerluste),
+                KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldVolumen),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten));
+
+            PufferSpStammCtrl.SpeicherErgebnis e =
+                PufferSpStammCtrl.AnzeigefelderSchreiben(name, werte);
             return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
         }
 
@@ -139,9 +182,14 @@ namespace WindowsFormsApplication1
                 ["FeldVerluste"] = MyResource.Resource.PSPK_FELD_VERLUSTE,
                 ["LabelVolumen"] = MyResource.Resource.PSPK_LBL_VOLUMEN,
                 ["FeldVolumen"] = MyResource.Resource.PSPK_FELD_VOLUMEN,
-                ["GruppeKosten"] = MyResource.Resource.PSPK_GRP_KOSTEN,
-                ["LabelInvest"] = MyResource.Resource.PSPK_LBL_INVEST,
-                ["FeldInvest"] = MyResource.Resource.PSPK_FELD_INVEST,
+
+                // OHNE DIE GRUPPE "Kosten" (Anwenderentscheid 15.09.2026: "Der Dialog
+                // ueber Button Bearbeiten soll keine Kosten und Emissionen enthalten").
+                // Die drei Schluessel GruppeKosten, LabelInvest und FeldInvest sind mit
+                // ihren Feldern gefallen; GEPFLEGT wird der Preis im Aufklapper "Alle
+                // Daten anzeigen" des Projektdialogs. Der Wert selbst bleibt im
+                // Feldsatz (AusKatalog liest ihn, NachModell schreibt ihn unveraendert
+                // zurueck) - sonst nullte jedes "Ueberschreiben" die Spalte.
                 ["BtnUeberschreibenText"] = MyResource.Resource.HZKK_BTN_UEBERSCHREIBEN,
                 ["BtnSpeichernUnterText"] = MyResource.Resource.HZKK_BTN_SPEICHERN_UNTER,
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,

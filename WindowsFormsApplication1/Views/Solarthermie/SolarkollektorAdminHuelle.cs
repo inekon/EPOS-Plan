@@ -33,13 +33,22 @@ namespace WindowsFormsApplication1
             return KatalogBrowserProfil.Finde(KatalogBrowserArt.Solarkollektoren, Text);
         }
 
-        /// <summary>Der PARAMETERSATZ — auch für eine Überlagerung in einem Blazor-Wirt.</summary>
-        internal static IReadOnlyDictionary<string, object> Gaben()
+        /// <summary>
+        /// Die Wege des Katalogs — Liste, Detail, Existiert, Loeschen und seit dem
+        /// 15.09.2026 der SPEICHERWEG.
+        /// </summary>
+        /// <remarks>
+        /// <b>Dieselben zwei Delegaten, die auch der Projektdialog braucht.</b> Sein
+        /// Aufklapper „Alle Daten anzeigen" liest ueber <c>Detail</c> und schreibt ueber
+        /// <c>Speichern</c>; beides steht hier und nicht ein zweites Mal im Wirt: Welche
+        /// Spalten ein Kollektorsatz fuehrt und wie sie zurueckgeschrieben werden, ist
+        /// EINE Frage mit EINER Antwort (Muster <see cref="HeizkesselAdminHuelle"/>).
+        /// </remarks>
+        internal static KatalogBrowserWege Wege()
         {
             KatalogBrowserProfil profil = Profil();
-            var gaben = KatalogBrowserHuelle.GemeinsameGaben(profil);
 
-            gaben["Wege"] = new KatalogBrowserWege
+            return new KatalogBrowserWege
             {
                 // W14a-E-10: sechs Spalten statt der dreizeiligen Eigenschaftenzelle -
                 // und der ERSTE Filter dieses Katalogs ueberhaupt (bis hierher
@@ -48,8 +57,18 @@ namespace WindowsFormsApplication1
                 Detail = name => KatalogBrowserHuelle.Felder(
                     profil, SolarkollektorenStammCtrl.KatalogsatzAnzeige(name)),
                 Existiert = name => new SolarkollektorenStammCtrl().Exists(name),
-                Loeschen = Loeschen
+                Loeschen = Loeschen,
+                Speichern = (name, felder, _) => Schreiben(name, felder)
             };
+        }
+
+        /// <summary>Der PARAMETERSATZ — auch für eine Überlagerung in einem Blazor-Wirt.</summary>
+        internal static IReadOnlyDictionary<string, object> Gaben()
+        {
+            KatalogBrowserProfil profil = Profil();
+            var gaben = KatalogBrowserHuelle.GemeinsameGaben(profil);
+
+            gaben["Wege"] = Wege();
 
             gaben["EditorInhalt"] = KatalogBrowserHuelle.Editor<SolarkollektorKatalogDialog>();
             gaben["EditorGaben"] = new Func<string, bool, Action<string>,
@@ -67,6 +86,38 @@ namespace WindowsFormsApplication1
             bool ok = ctrl.Delete(name);
             return new KatalogSpeicherErgebnis(ok,
                 ok ? "" : MyResource.Resource.KBROW_MSG_LOESCHEN_FEHLER, name);
+        }
+
+        /// <summary>
+        /// Die dreizehn editierbaren Anzeigefelder zurueck in den Katalogsatz — der Weg
+        /// des Knopfes „Speichern" im Aufklapper und in der Speicherleiste des Browsers.
+        /// </summary>
+        /// <remarks>
+        /// <b>Die Zahlregel des Hauses liest die Felder</b> (<c>KatalogBrowserHuelle.Zahl</c>
+        /// und <c>…Ganzzahl</c>, komma- wie punkttolerant); der Bezeichner steht nicht in
+        /// der Liste, er ist der SCHLUESSEL und im Profil nicht editierbar.
+        /// </remarks>
+        private static KatalogSpeicherErgebnis Schreiben(string name,
+                                                         IReadOnlyList<BrowserFeldwert> felder)
+        {
+            var werte = new SolarkollektorenStammCtrl.AnzeigefelderSolarkollektor(
+                KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldKollektortyp),
+                KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldFirma),
+                KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBeschreibung),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldModulflaeche),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldAperturflaeche),
+                KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldVorlauf),
+                KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldRuecklauf),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldH0),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldK1),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldK2),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKdir),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKdiff),
+                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten));
+
+            SolarkollektorenStammCtrl.SpeicherErgebnis e =
+                SolarkollektorenStammCtrl.AnzeigefelderSchreiben(name, werte);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
         }
 
         private static IReadOnlyDictionary<string, object> EditorGaben(string name, bool neu,

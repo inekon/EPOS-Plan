@@ -1,7 +1,8 @@
 ﻿@* Solarkollektor im Katalog bearbeiten (iU9-W7.6).
 
    VORBILD. Views/Solarthermie/Form_SolarDB (286 Z., lokalisiert de/en, 27
-   Kartenzeilen, 12 MessageBox). Vier Textfelder, acht Pflichtzahlen, zwei
+   Kartenzeilen, 12 MessageBox). Vier Textfelder, sieben Pflichtzahlen (die achte,
+   "Investitionskosten", ist am 15.09.2026 mit der Kostenzeile entfallen), zwei
    Ganzzahlen mit erlaubter Leere und die drei Speicherwege des
    Katalogeditors - dieselbe Bauart wie HeizkesselKatalogDialog (W6.1) und
    BhkwKatalogDialog (W6.2), deshalb auch derselbe KatalogModus und dasselbe
@@ -23,7 +24,8 @@
    Karte ordnet "k2 :" dem Feld textBox_Kosten zu und laesst textBox_k2 ohne
    Beschriftung. Die Koordinaten sagen etwas anderes - Label15 "k2:" (80,327)
    steht LINKS von textBox_k2 (111,327), Label25 "Investitionskosten:"
-   (356,297) UEBER textBox_Kosten (359,319). Ein Test haelt beides fest.
+   (356,297) UEBER textBox_Kosten (359,319). Ein Test haelt "k2 :" fest; das
+   Kostenfeld selbst gibt es hier seit dem 15.09.2026 nicht mehr.
 
    ZWEI VERWAISTE HANDLER ENTFALLEN: textBox_C_TextChanged:90 und
    textBox_Ertrag_TextChanged:105 faerben Felder, die es im Designer nicht
@@ -98,9 +100,18 @@
             <Zahlenfeld Bezeichnung="@LabelKdiff" Einheit="@EinheitWinkel"
                         Feldname="@LabelKdiffKurz" Wert="@Daten.Kdiff"
                         WertChanged="w => Daten.Kdiff = w" />
-            <Zahlenfeld Bezeichnung="@LabelKosten" Einheit="@EinheitEuro"
-                        Feldname="@LabelKostenKurz" Wert="@Daten.Kosten"
-                        WertChanged="w => Daten.Kosten = w" />
+            @* HIER STAND DAS FELD "Investitionskosten" (Anwenderentscheid 15.09.2026:
+               "Der Dialog ueber Button Bearbeiten soll keine Kosten und Emissionen
+               enthalten"). Gepflegt wird der Preis seither im Aufklapper "Alle Daten
+               anzeigen" des Projektdialogs - und dort auch im Katalogbrowser, der
+               dasselbe Raster zeigt.
+
+               DER WERT BLEIBT IM FELDSATZ. SolarkollektorKatalogDaten.Kosten fuehrt ihn
+               weiter, die Huelle liest ihn beim Oeffnen aus dem Katalogsatz (AusModell)
+               und schreibt ihn beim Speichern unveraendert zurueck (NachModell); ohne
+               das nullte jedes "Ueberschreiben" die Spalte, die dieser Dialog nicht
+               mehr zeigt. Aus den ACHT Pflichtzahlen sind damit SIEBEN geworden - eine
+               Pflicht ohne Feld waere eine Sperre ohne Ausweg. *@
             <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad"
                           Feldname="@LabelVorlaufKurz" Wert="@Daten.Vorlauf"
                           WertChanged="w => Daten.Vorlauf = w" />
@@ -173,7 +184,6 @@
     [Parameter] public string LabelK2 { get; set; } = "k2 :";
     [Parameter] public string LabelKdir { get; set; } = "Kdir :";
     [Parameter] public string LabelKdiff { get; set; } = "Kdiff :";
-    [Parameter] public string LabelKosten { get; set; } = "Investitionskosten :";
     [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf:";
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf:";
 
@@ -186,7 +196,6 @@
     [Parameter] public string LabelK2Kurz { get; set; } = "k2";
     [Parameter] public string LabelKdirKurz { get; set; } = "Kdir";
     [Parameter] public string LabelKdiffKurz { get; set; } = "Kdiff";
-    [Parameter] public string LabelKostenKurz { get; set; } = "Investitionskosten";
     [Parameter] public string LabelVorlaufKurz { get; set; } = "Vorlauf";
     [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
 
@@ -194,7 +203,6 @@
     [Parameter] public string EinheitK1 { get; set; } = "W/(m²*K)";
     [Parameter] public string EinheitK2 { get; set; } = "W/(m²*K²)";
     [Parameter] public string EinheitWinkel { get; set; } = "50°";
-    [Parameter] public string EinheitEuro { get; set; } = "€";
     [Parameter] public string EinheitGrad { get; set; } = "°C";
 
     [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
@@ -229,10 +237,16 @@
     }
 
     /// <summary>
-    /// Die acht Pflichtzahlen — wortgleich zur Reihenfolge in
+    /// Die sieben Pflichtzahlen — wortgleich zur Reihenfolge in
     /// <c>InitDatensatzUpdate</c>. Vorlauf und Rücklauf fehlen hier mit Absicht: Dort
     /// steht <c>leerErlaubt: true</c>, leer gilt als 0.
     /// </summary>
+    /// <remarks>
+    /// <b>Die achte war „Investitionskosten"</b> — sie ist am 15.09.2026 mit ihrem Feld
+    /// aus dieser Maske gefallen. Eine Pflicht ohne Feld wäre eine Sperre ohne Ausweg:
+    /// Der Modus „Neu" trägt alle Zahlen leer, und niemand könnte den Preis hier noch
+    /// eintragen.
+    /// </remarks>
     private string? FehlendePflichtzahl()
     {
         if (Daten.Modulflaeche is null) return LabelModulflaecheKurz;
@@ -242,7 +256,6 @@
         if (Daten.K2 is null) return LabelK2Kurz;
         if (Daten.Kdir is null) return LabelKdirKurz;
         if (Daten.Kdiff is null) return LabelKdiffKurz;
-        if (Daten.Kosten is null) return LabelKostenKurz;
         return null;
     }
 

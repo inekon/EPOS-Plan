@@ -11,8 +11,9 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// Katalogeditor Pufferspeicher (iU9-W14a.2) — der FEHLENDE VIERTE der Editorfamilie
-/// aus W6/W7. Soll ist die Feldkarte von <c>Form_PufferSp_Bearbeiten</c>: drei Gruppen,
-/// fünf Eingabefelder plus Auswahlliste, drei Speicherwege.
+/// aus W6/W7. Soll ist die Feldkarte von <c>Form_PufferSp_Bearbeiten</c> ohne die am
+/// 15.09.2026 entfallene Kostengruppe: zwei Gruppen, vier Eingabefelder plus
+/// Auswahlliste, drei Speicherwege.
 ///
 /// <para>Die Sprache wird im Konstruktor gepinnt (Regel seit iU9-W8, verschärft nach
 /// dem Windows-Lauf 33839255709): Die Erwartungswerte sind deutsche Beschriftungen und
@@ -68,30 +69,36 @@ public class PufferSpKatalogDialogTests : EposBunitContext
     // Feldbestand gegen die Karte
     // =================================================================================
 
+    /// <summary>
+    /// <b>Zwei Gruppen statt dreier</b> (Anwenderentscheid 15.09.2026): „Eingabedaten
+    /// zur Berechnung der Kosten" mit ihrem einen Feld „Investitionskosten" ist
+    /// ersatzlos gefallen — der Preis wird im Aufklapper „Alle Daten anzeigen" des
+    /// Projektdialogs gepflegt.
+    /// </summary>
     [Fact]
-    public void Die_drei_Gruppen_der_Karte_stehen()
+    public void Die_zwei_Gruppen_der_Karte_stehen_ohne_die_Kostengruppe()
     {
         var cut = Aufbauen();
 
         var titel = cut.FindAll(".epos-gruppenkopf-titel");
-        Assert.Equal(3, titel.Count);
+        Assert.Equal(2, titel.Count);
         Assert.Equal("Bezeichnung", titel[0].TextContent);
         Assert.Equal("Technische Daten", titel[1].TextContent);
-        Assert.Equal("Eingabedaten zur Berechnung der Kosten", titel[2].TextContent);
+        Assert.DoesNotContain(titel, t => t.TextContent.Contains("Kosten"));
     }
 
     /// <summary>
-    /// Fünf Eingabefelder und eine Auswahlliste — genau die dreizehn Kartenzeilen ohne
-    /// die vier Knöpfe, die drei Gruppenrahmen und die reinen Einheitenlabels.
+    /// Vier Eingabefelder und eine Auswahlliste — die Kartenzeilen ohne die vier Knöpfe,
+    /// die Gruppenrahmen, die reinen Einheitenlabels und ohne die entfallene Kostenzeile.
     /// </summary>
     [Fact]
     public void Der_Feldbestand_stimmt_nach_Zahl_und_Beschriftung()
     {
         var cut = Aufbauen();
 
-        // Zwei Zahlenfelder (Verluste, Investitionskosten), ein Ganzzahlfeld (Volumen),
-        // zwei reine Textfelder (Name, Hersteller), eine Auswahlliste.
-        Assert.Equal(2, cut.FindAll("input[inputmode=decimal]").Count);
+        // EIN Zahlenfeld (Verluste), ein Ganzzahlfeld (Volumen), zwei reine Textfelder
+        // (Name, Hersteller), eine Auswahlliste.
+        Assert.Single(cut.FindAll("input[inputmode=decimal]"));
         Assert.Single(cut.FindAll("input[inputmode=numeric]"));
         Assert.Equal(2, cut.FindAll("input[type=text]:not([inputmode])").Count);
         Assert.Single(cut.FindAll("select"));
@@ -103,7 +110,7 @@ public class PufferSpKatalogDialogTests : EposBunitContext
         Assert.Contains("Speichertyp:", texte);
         Assert.Contains("Betriebsbereitschaftsverluste:", texte);
         Assert.Contains("Gesamtvolumen:", texte);
-        Assert.Contains("Investitionskosten:", texte);
+        Assert.DoesNotContain("Investitionskosten:", texte);
     }
 
     [Fact]
@@ -114,7 +121,9 @@ public class PufferSpKatalogDialogTests : EposBunitContext
         var einheiten = cut.FindAll(".epos-einheit").Select(e => e.TextContent).ToList();
         Assert.Contains("kWh/d", einheiten);
         Assert.Contains("l", einheiten);
-        Assert.Contains("€", einheiten);
+
+        // Das „€" ging mit der Kostenzeile (15.09.2026).
+        Assert.DoesNotContain("€", einheiten);
     }
 
     [Fact]
@@ -399,10 +408,38 @@ public class PufferSpKatalogDialogTests : EposBunitContext
     /// Befund W14-B21: Verluste und Investitionskosten liefen im Vorläufer über
     /// <c>double.TryParse</c> OHNE Kultur, während das Volumen über
     /// <c>Program.GanzzahlPruefen</c> ging — dieselbe Maske, zwei Zahlregeln. Jetzt
-    /// gilt für alle drei dieselbe: Komma und Punkt.
+    /// gilt für beide verbliebenen Felder dieselbe: Komma und Punkt.
     /// </summary>
     [Fact]
-    public void Komma_und_Punkt_gelten_in_allen_drei_Zahlenfeldern()
+    public void Komma_und_Punkt_gelten_in_beiden_Zahlenfeldern()
+    {
+        foreach (string eingabe in new[] { "4.5", "4,5" })
+        {
+            PufferSpKatalogDaten? gesehen = null;
+            var cut = Aufbauen(ueberschreiben: d =>
+            {
+                gesehen = d;
+                return new KatalogSpeicherErgebnis(true, "ok", d.Name);
+            });
+
+            cut.FindAll("input[inputmode=decimal]")[0].Input(eingabe);
+            cut.FindAll("input[inputmode=numeric]")[0].Input("2500");
+            cut.FindAll(".epos-leiste .epos-knopf")[0].Click();
+
+            Assert.NotNull(gesehen);
+            Assert.Equal(4.5, gesehen!.Bereitschaftsverluste);
+            Assert.Equal(2500, gesehen.Gesamtvolumen);
+        }
+    }
+
+    /// <summary>
+    /// <b>Der Preis überlebt das „Überschreiben"</b> (Anwenderentscheid 15.09.2026): Der
+    /// Dialog zeigt die Investitionskosten nicht mehr — geschrieben wird der GELADENE
+    /// Wert, nicht eine Null. Ohne diesen Durchgriff nullte jedes Speichern in dieser
+    /// Maske die Katalogspalte, die nur noch der Aufklapper führt.
+    /// </summary>
+    [Fact]
+    public void Der_ungezeigte_Preis_geht_unveraendert_in_den_Speicherweg()
     {
         PufferSpKatalogDaten? gesehen = null;
         var cut = Aufbauen(ueberschreiben: d =>
@@ -411,13 +448,11 @@ public class PufferSpKatalogDialogTests : EposBunitContext
             return new KatalogSpeicherErgebnis(true, "ok", d.Name);
         });
 
-        cut.FindAll("input[inputmode=decimal]")[0].Input("4.5");
-        cut.FindAll("input[inputmode=decimal]")[1].Input("1234,75");
+        cut.FindAll("input[inputmode=decimal]")[0].Input("4,5");
         cut.FindAll(".epos-leiste .epos-knopf")[0].Click();
 
         Assert.NotNull(gesehen);
-        Assert.Equal(4.5, gesehen!.Bereitschaftsverluste);
-        Assert.Equal(1234.75, gesehen.Investitionskosten);
+        Assert.Equal(1250.5, gesehen!.Investitionskosten);
     }
 
     // =================================================================================

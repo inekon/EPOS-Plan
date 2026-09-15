@@ -8,15 +8,21 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Die WACHE über die KOSTENKNÖPFE der Brenner-Projektdialoge — Auftrag 277.
+/// Die WACHE über die KOSTENKNÖPFE der Erzeuger-Projektdialoge — Auftrag 277.
 ///
-/// <para><b>Worum es geht.</b> <c>HeizkesselDialog</c> und <c>BhkwDialog</c> zeichnen
-/// die <c>KostenKnoepfeLeiste</c>. Ob ihre drei Knöpfe erscheinen und wohin sie führen,
+/// <para><b>Worum es geht.</b> Alle sechs Erzeugerdialoge zeichnen die
+/// <c>KostenKnoepfeLeiste</c>. Ob ihre Knöpfe erscheinen und wohin sie führen,
 /// entscheidet allein der WIRT: Er legt <c>KostenOeffnen</c> und
 /// <c>EnergiekostenOeffnen</c> in seinen Parametersatz. Bleiben die Schlüssel weg,
 /// zeichnet die Leiste gar nichts — und genau das war der Zustand, den dieser Fall
 /// festhält: Die beiden Windows-Hüllen reichten nur die BESCHRIFTUNGEN herein
 /// (<c>KostenInvestText</c> und die zwei anderen), die Wege nicht.</para>
+///
+/// <para><b>Zwei Hüllen tragen nur ZWEI Knöpfe</b> (Anwenderentscheid 15.09.2026):
+/// „Energiekosten…" führt in die Energieträgerverwaltung, und weder ein Pufferspeicher
+/// noch ein Sonnenkollektor verbraucht einen gekauften Träger. Ohne Delegat zeichnet die
+/// Leiste den Knopf gar nicht erst — deshalb steht der dritte Knopf hier als
+/// EIGENSCHAFT der Familie in der Tabelle und nicht als Ausnahme im Fall.</para>
 ///
 /// <para><b>Warum der Fall HIER steht und nicht in einem Windows-Test.</b> Die Hüllen
 /// liegen in einem <c>net10.0-windows</c>-Projekt; ein Test, der es referenziert, liefe
@@ -35,13 +41,26 @@ namespace EPOS.UI.Tests.Dialoge;
 public sealed class KostenknopfWegeTests
 {
     /// <summary>
-    /// Die Wirte der Kostenleiste mit Projektbezug: Hüllendatei und die
-    /// Kostenkomponente, mit der sie die Verwaltungen aufschlägt.
+    /// Die Wirte der Kostenleiste mit Projektbezug: Hüllendatei, die Kostenkomponente,
+    /// mit der sie die Verwaltungen aufschlägt, und ob die Familie den dritten Knopf
+    /// „Energiekosten…" trägt.
     /// </summary>
-    private static readonly (string Datei, string Komponente)[] Wirte =
+    private static readonly (string Datei, string Komponente, bool Energiekosten)[] Wirte =
     {
-        ("WindowsFormsApplication1/Views/Heizkessel/HeizkesselHuelle.cs", "ERZEUGER_HEIZKESSEL"),
-        ("WindowsFormsApplication1/Views/BHKW/BhkwHuelle.cs",             "ERZEUGER_BHKW"),
+        ("WindowsFormsApplication1/Views/Heizkessel/HeizkesselHuelle.cs",
+         "ERZEUGER_HEIZKESSEL", true),
+        ("WindowsFormsApplication1/Views/BHKW/BhkwHuelle.cs",
+         "ERZEUGER_BHKW", true),
+        ("WindowsFormsApplication1/Views/Photovoltaik/PhotovoltaikHuelle.cs",
+         "ERZEUGER_PHOTOVOLTAIK", true),
+        ("WindowsFormsApplication1/Views/Stromspeicher/StromspeicherHuelle.cs",
+         "ERZEUGER_STROMSPEICHER", true),
+
+        // Ohne Energieträger und damit ohne dritten Knopf.
+        ("WindowsFormsApplication1/Views/Pufferspeicher/PufferspeicherHuelle.cs",
+         "KOSTEN_KOMPONENTE_PUFFERSPEICHER", false),
+        ("WindowsFormsApplication1/Views/Solarthermie/SolarkollektorHuelle.cs",
+         "ERZEUGER_SOLARTHERMIE", false),
     };
 
     /// <summary>Der gemeinsame Weg hinter den drei Knöpfen.</summary>
@@ -52,21 +71,33 @@ public sealed class KostenknopfWegeTests
     // =====================================================================
 
     /// <summary>
-    /// Beide Brennerhüllen belegen BEIDE Wege. Vor Auftrag 277 stand hier nur die
-    /// Beschriftung — die Knöpfe wurden gezeichnet und taten nichts.
+    /// Jede Erzeugerhülle belegt die Wege ihrer Knöpfe. Vor Auftrag 277 stand hier nur
+    /// die Beschriftung — die Knöpfe wurden gezeichnet und taten nichts.
     /// </summary>
     [Fact]
-    public void Jede_Brennerhuelle_belegt_die_beiden_Knopfwege()
+    public void Jede_Erzeugerhuelle_belegt_die_Wege_ihrer_Knoepfe()
     {
         var funde = new List<string>();
 
-        foreach ((string datei, _) in Wirte)
+        foreach ((string datei, _, bool energiekosten) in Wirte)
         {
             string quelltext = Lesen(datei);
 
-            foreach (string schluessel in new[] { "KostenOeffnen", "EnergiekostenOeffnen" })
-                if (!Belegt(quelltext, schluessel))
-                    funde.Add(Path.GetFileName(datei) + ": [\"" + schluessel + "\"] fehlt.");
+            if (!Belegt(quelltext, "KostenOeffnen"))
+                funde.Add(Path.GetFileName(datei) + ": [\"KostenOeffnen\"] fehlt.");
+
+            // Der dritte Knopf ist eine Eigenschaft der Familie - und wo er fehlt, darf
+            // auch seine BESCHRIFTUNG nicht dastehen: Sie waere der Hinweis auf einen
+            // Knopf, den die Leiste nie zeichnet.
+            if (energiekosten && !Belegt(quelltext, "EnergiekostenOeffnen"))
+                funde.Add(Path.GetFileName(datei) + ": [\"EnergiekostenOeffnen\"] fehlt.");
+            if (!energiekosten && Belegt(quelltext, "EnergiekostenOeffnen"))
+                funde.Add(Path.GetFileName(datei) +
+                          ": [\"EnergiekostenOeffnen\"] steht da, obwohl die Familie keinen " +
+                          "Energieträger kauft.");
+            if (!energiekosten && Belegt(quelltext, "KostenEnergieText"))
+                funde.Add(Path.GetFileName(datei) +
+                          ": [\"KostenEnergieText\"] beschriftet einen Knopf, den es nicht gibt.");
 
             // Gegenprobe im selben Atemzug: Die Beschriftungen allein genuegen nicht -
             // genau diese Lage (Text ja, Weg nein) war der Leerlauf.
@@ -82,22 +113,23 @@ public sealed class KostenknopfWegeTests
     }
 
     /// <summary>
-    /// Beide Hüllen gehen denselben Weg — <c>ErzeugerKostenwege</c> — und je mit
+    /// Alle Hüllen gehen denselben Weg — <c>ErzeugerKostenwege</c> — und je mit
     /// IHRER Kostenkomponente. Zwei Abschriften desselben Ablaufs liefen auseinander.
     /// </summary>
     [Fact]
-    public void Beide_Huellen_gehen_denselben_Weg_mit_eigener_Komponente()
+    public void Jede_Huelle_geht_denselben_Weg_mit_eigener_Komponente()
     {
         var funde = new List<string>();
 
-        foreach ((string datei, string komponente) in Wirte)
+        foreach ((string datei, string komponente, bool energiekosten) in Wirte)
         {
             string quelltext = Lesen(datei);
             string name = Path.GetFileName(datei);
 
             if (!quelltext.Contains("ErzeugerKostenwege.Kosten", StringComparison.Ordinal))
                 funde.Add(name + ": ruft ErzeugerKostenwege.Kosten nicht.");
-            if (!quelltext.Contains("ErzeugerKostenwege.Energiekosten", StringComparison.Ordinal))
+            if (energiekosten
+                && !quelltext.Contains("ErzeugerKostenwege.Energiekosten", StringComparison.Ordinal))
                 funde.Add(name + ": ruft ErzeugerKostenwege.Energiekosten nicht.");
             if (!quelltext.Contains("DbWerte." + komponente, StringComparison.Ordinal))
                 funde.Add(name + ": nennt DbWerte." + komponente + " nicht.");

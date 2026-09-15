@@ -96,18 +96,16 @@
         </KindInhalt>
     </Gruppenkopf>
 
-    <Gruppenkopf Titel="@GruppeKosten">
-        <KindInhalt>
-            <Formularraster>
-                <KindInhalt>
-                <Zahlenfeld Bezeichnung="@LabelInvest" Einheit="€" Feldname="@FeldInvest"
-                            Wert="@Daten.Investitionskosten"
-                            WertChanged="w => Daten.Investitionskosten = w"
-                            FehlerZustand="BeiFehlerZustand" />
-                </KindInhalt>
-            </Formularraster>
-        </KindInhalt>
-    </Gruppenkopf>
+    @* HIER STAND DIE GRUPPE "Eingabedaten zur Berechnung der Kosten" mit dem einen Feld
+       "Investitionskosten" (Anwenderentscheid 15.09.2026: "Der Dialog ueber Button
+       Bearbeiten soll keine Kosten und Emissionen enthalten"). Gepflegt wird der Preis
+       seither im Aufklapper "Alle Daten anzeigen" des Projektdialogs - und dort auch im
+       Katalogbrowser, der dasselbe Raster zeigt.
+
+       DER WERT BLEIBT IM FELDSATZ. PufferSpKatalogDaten.Investitionskosten fuehrt ihn
+       weiter, die Huelle liest ihn beim Oeffnen aus dem Katalogsatz und schreibt ihn
+       beim OK unveraendert zurueck; ohne das nullte jedes "Ueberschreiben" die Spalte,
+       die dieser Dialog nicht mehr zeigt. *@
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
@@ -179,9 +177,9 @@
     [Parameter] public string LabelVolumen { get; set; } = "Gesamtvolumen:";
     [Parameter] public string FeldVolumen { get; set; } = "Gesamtvolumen";
 
-    [Parameter] public string GruppeKosten { get; set; } = "Eingabedaten zur Berechnung der Kosten";
-    [Parameter] public string LabelInvest { get; set; } = "Investitionskosten:";
-    [Parameter] public string FeldInvest { get; set; } = "Investitionskosten";
+    // OHNE GruppeKosten, LabelInvest und FeldInvest (15.09.2026): Sie gehoerten zur
+    // entfallenen Kostengruppe. Ihre Ressourcenschluessel bleiben bestehen - der
+    // Katalogbrowser beschriftet dasselbe Feld weiter (KBROW_LBL_INVEST).
 
     [Parameter] public string BtnUeberschreibenText { get; set; } = "Überschreiben";
     [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
@@ -305,8 +303,10 @@
     /// <summary>
     /// Die Zahlenpruefung der Speicherknoepfe. Der Vorlaeufer prueft nur das VOLUMEN
     /// (<c>VolumenPruefen</c>, Z. 259-262) und liest Verluste und Kosten mit einem
-    /// stillen <c>double.TryParse</c> OHNE Kultur (Befund W14-B21). Hier gilt fuer alle
-    /// drei dieselbe Zahlregel; ein leeres Feld bleibt gueltig und zaehlt als 0.
+    /// stillen <c>double.TryParse</c> OHNE Kultur (Befund W14-B21). Hier gilt fuer beide
+    /// verbliebenen Zahlenfelder dieselbe Zahlregel; ein leeres Feld bleibt gueltig und
+    /// zaehlt als 0. (Das dritte, die Investitionskosten, ist am 15.09.2026 mit der
+    /// Kostengruppe entfallen.)
     /// </summary>
     private bool EingabenPruefen()
     {

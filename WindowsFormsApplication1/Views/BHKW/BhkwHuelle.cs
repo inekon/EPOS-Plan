@@ -96,21 +96,15 @@ namespace WindowsFormsApplication1
                 ["Anlegen"] = new Func<BhkwKatalogDaten, string, KatalogSpeicherErgebnis>(
                     (d, n) => Uebersetzen(BHKWStammCtrl.Anlegen(NachModell(d), n))),
 
-                ["Co2Vorgabe"] = new Func<string, double?>(EmissionsVorgaben.BhkwCo2),
-
-                ["EmissionsVorgabe"] = new Func<string, bool, double,
-                        (double? SO2, double? CO2, double? NOx, double? CO, double? Staub)>(
-                    (brennstoff, scr, ptherm) =>
-                    {
-                        EmissionsVorgaben.BhkwSatz s = EmissionsVorgaben.Bhkw(brennstoff, scr, ptherm);
-                        return (s.SO2, s.CO2, s.NOx, s.CO, s.Staub);
-                    }),
-
-                // Die Umrechnung zwischen Gesamtsumme, Wert je kWel und den fuenf Posten
-                // reicht die Hülle NICHT mehr herein: Seit W14a-E-8-B3 ruft der Dialog
-                // BHKWKosten unmittelbar (EPOS.UI verweist auf EPOS.Kern). Die drei
-                // Funktionsparameter hätten sonst je eine Ersatzrechnung im Dialog
-                // gebraucht — eine zweite Fassung derselben Regel.
+                // OHNE "Co2Vorgabe" und "EmissionsVorgabe" seit dem 15.09.2026: Die zwei
+                // Vorgabeknoepfe gehörten zu den Gruppen BEHG und Emissionen, und die
+                // sind aus dem Katalogeditor ersatzlos entfallen (Anwenderentscheid
+                // „keine Kosten und Emissionen"). Die Emissionsspalten werden jetzt im
+                // Aufklapper "Alle Daten anzeigen" gepflegt; gerechnet wird ohnehin mit
+                // dem Faktor des Energieträgers aus dem Emissionskatalog (W14a-E-8-B1).
+                //
+                // Ebenso ohne die Umrechnung der Investition: Sie stand schon bisher im
+                // Kern (BHKWKosten) und wird auf dem Schreibweg dort gezogen.
 
                 ["TitelText"] = Text_("BHKWK_TITEL", "BHKW Eigenschaften"),
                 ["GruppeBezeichnung"] = Text_("BHKWK_GRP_BEZEICHNUNG", "Modul"),
@@ -133,46 +127,14 @@ namespace WindowsFormsApplication1
                 ["FeldVorlauf"] = Text_("BHKWK_FELD_VORLAUF", "Vorlauftemperatur"),
                 ["LabelRuecklauf"] = Text_("BHKWK_LBL_RUECKLAUF", "Rücklauf:"),
                 ["FeldRuecklauf"] = Text_("BHKWK_FELD_RUECKLAUF", "Rücklauftemperatur"),
-                ["GruppeKosten"] = Text_("BHKWK_GRP_KOSTEN", "Eingabedaten zur Berechnung der Kosten"),
-                ["LabelModul"] = Text_("BHKWK_LBL_MODUL", "Modul:"),
-                ["FeldModul"] = Text_("BHKWK_FELD_MODUL", "Kosten Modul"),
-                ["LabelMontage"] = Text_("BHKWK_LBL_MONTAGE", "Montage und Inbetriebnahme:"),
-                ["FeldMontage"] = Text_("BHKWK_FELD_MONTAGE", "Kosten Montage und Inbetriebnahme"),
-                ["LabelLieferung"] = Text_("BHKWK_LBL_LIEFERUNG", "Lieferung (50 km Umkreis):"),
-                ["FeldLieferung"] = Text_("BHKWK_FELD_LIEFERUNG", "Kosten Lieferung"),
-                ["LabelSchallschutz"] = Text_("BHKWK_LBL_SCHALLSCHUTZ", "Schallschutzhaube:"),
-                ["FeldSchallschutz"] = Text_("BHKWK_FELD_SCHALLSCHUTZ", "Kosten Schallschutzhaube"),
-                ["LabelAbgasreinigung"] = Text_("BHKWK_LBL_ABGASREINIGUNG", "Abgasreinigung, z. B. Kat:"),
-                ["FeldAbgasreinigung"] = Text_("BHKWK_FELD_ABGASREINIGUNG", "Kosten Abgasreinigung"),
-                ["LabelGesamt"] = MyResource.Resource.BHKW_SUMME_LBL,
-                ["FeldGesamt"] = Text_("BHKW_INVEST_GESAMT_FELD", "Investition gesamt"),
-                ["LabelInvest"] = Text_("BHKWK_LBL_INVEST", "Investition je kW elektrisch:"),
-                ["FeldInvest"] = Text_("BHKW_INVEST_JEKW_FELD", "Investition je kW elektrisch"),
-                ["LabelRaumbedarf"] = Text_("BHKWK_LBL_RAUMBEDARF", "Raumbedarf:"),
-                ["FeldRaumbedarf"] = Text_("BHKWK_FELD_RAUMBEDARF", "Raumbedarf"),
-                ["LabelWartung"] = Text_("BHKWK_LBL_WARTUNG", "Wartungskosten:"),
-                ["FeldWartung"] = Text_("BHKWK_FELD_WARTUNG", "Wartungskosten"),
-                ["LabelNutzungsdauer"] = Text_("BHKWK_LBL_NUTZUNGSDAUER", "Nutzungsdauer:"),
-                ["FeldNutzungsdauer"] = Text_("BHKWK_FELD_NUTZUNGSDAUER", "Nutzungsdauer"),
-                ["EinheitJahre"] = Text_("BHKWK_EINHEIT_JAHRE", "Jahre"),
-                ["HinweisFuehrend"] = MyResource.Resource.BHKW_INVEST_HINWEIS_FUEHREND,
-                ["HinweisUnbestimmt"] = MyResource.Resource.BHKW_INVEST_HINWEIS_UNBESTIMMT,
-                ["HinweisAbweichung"] = MyResource.Resource.BHKW_INVEST_HINWEIS_ABWEICHUNG,
-                ["HinweisGedeckelt"] = MyResource.Resource.BHKW_INVEST_HINWEIS_GEDECKELT,
-                ["GruppeBehg"] = Text_("BHKWK_GRP_BEHG", "Emissionen nach BEHG-V"),
-                ["BehgZeile"] = Text_("HZKK_BEHG_ZEILE", "für Heizzwecke in t CO2 / GJ"),
-                ["BehgOel"] = Text_("HZKK_BEHG_OEL", "Heizöl: 0,0808"),
-                ["BehgFluessiggas"] = Text_("HZKK_BEHG_FLUESSIGGAS", "Flüssiggas: 0,0663"),
-                ["BehgErdgas"] = Text_("HZKK_BEHG_ERDGAS", "Erdgas: 0,056"),
-                ["BtnCo2Text"] = Text_("HZKK_BTN_CO2", "CO2 BEHG"),
-                ["EmissionHinweis"] = Text_("HZKK_EMISSION_INFO",
-                    "Nur zur Information — die Emissionsrechnung nimmt den Faktor des Energieträgers aus dem Emissionskatalog."),
-                ["GruppeEmissionen"] = Text_("HZKK_GRP_EMISSIONEN",
-                    "Emissionsfaktoren bezogen auf den Brennstoffverbrauch"),
-                ["LabelStaub"] = Text_("HZKK_LBL_STAUB", "Staub:"),
-                ["FeldStaub"] = Text_("BHKWK_FELD_STAUB", "Staub-Emission"),
-                ["LabelScr"] = Text_("BHKWK_LBL_SCR", "mit SCR"),
-                ["BtnEintragenText"] = Text_("BHKWK_BTN_EINTRAGEN", "Eintragen"),
+
+                // HIER STANDEN DIE TEXTE DER GRUPPEN "Kosten", "BEHG" und "Emissionen"
+                // (Anwenderentscheid 15.09.2026). Die Gruppen sind aus dem Katalogeditor
+                // ersatzlos entfallen, also fallen auch ihre Schlüssel — ein Schlüssel
+                // ohne [Parameter] bricht sonst beim ersten Zeichnen (ParametersatzTests).
+                // Die Ressourcenschlüssel selbst bleiben in der .resx: Dieselben Texte
+                // beschriften die Felder des Aufklappers über das Katalogbrowser-Profil.
+
                 ["BtnUeberschreibenText"] = Text_("HZKK_BTN_UEBERSCHREIBEN", "Überschreiben"),
                 ["BtnSpeichernUnterText"] = Text_("HZKK_BTN_SPEICHERN_UNTER", "Speichern unter"),
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
@@ -496,6 +458,30 @@ namespace WindowsFormsApplication1
                 ["BtnNeuText"] = Text_("BHKWV_BTN_NEU", "Neu.."),
                 ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
                 ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
+                ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
+
+                // DIE WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026). Sie
+                // kommen aus derselben Quelle, aus der sie auch der Katalogbrowser
+                // bekommt; der Aufklapper IST sein Raster. Dieselben Schluessel und
+                // dieselben Texte wie beim Heizkessel - die sechs Erzeugerfamilien
+                // sollen im gleichen Schema stehen.
+                ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
+                    name => BhkwAdminHuelle.Wege().Detail!(name)!),
+
+                // DREI Argumente, anders als beim Heizkessel: Der BHKW-Katalog ist der
+                // einzige mit Schreibschutz, und der Kern verlangt die Antwort auf die
+                // Rueckfrage als eigenes Argument (AnzeigefelderSchreiben).
+                ["KatalogfelderSpeichern"] =
+                    new Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>(
+                        (name, felder, schutz) => BhkwAdminHuelle.Wege().Speichern!(name, felder, schutz)),
+
+                ["KatalogfelderGeschuetzt"] = new Func<string, bool>(
+                    name => BhkwAdminHuelle.Wege().IstGeschuetzt!(name)),
+
+                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
+                ["FrageSchutz"] = MyResource.Resource.ADM_SCHUTZ_FRAGE,
+                ["TitelSchutz"] = MyResource.Resource.ADM_SCHUTZ_TITEL,
+
                 ["LabelName"] = Text_("BHKWV_LBL_NAME", "Modul-Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
                 ["LabelTraeger"] = Text_("BHKWV_LBL_TRAEGER", "Brennstoff:"),

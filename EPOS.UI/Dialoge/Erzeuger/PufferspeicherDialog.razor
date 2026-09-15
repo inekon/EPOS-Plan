@@ -33,6 +33,7 @@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Kosten
 @using WindowsFormsApplication1
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -80,11 +81,11 @@
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
                           Vergleichsparameter="@Vergleichsparameter" />
 
+            @* NUR NOCH „Loeschen" (Anwenderentscheid 15.09.2026). „Bearbeiten…" ist in
+               den Modulbereich gewandert - dorthin, wo der gewaehlte Satz steht und wo
+               auch die Kostenknoepfe sitzen. Loeschen bleibt HIER: Es wirkt auf die
+               Listenzeile, nicht auf den Modulblock. *@
             <div class="epos-leiste">
-                @if (VerwaltungGaben is not null)
-                {
-                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
-                }
                 <button type="button" class="epos-knopf" @onclick="BeiLoeschen">@BtnLoeschenText</button>
             </div>
         </Rechts>
@@ -114,6 +115,60 @@
             }
                 </KindInhalt>
             </Formularraster>
+
+            @* ALLE DATEN DES GEWAEHLTEN KATALOGSATZES, aufklappbar und BEARBEITBAR
+               (Anwenderentscheid 15.09.2026, Muster HeizkesselDialog): Der
+               Bearbeiten-Dialog traegt keine Kosten mehr, gepflegt wird der Preis hier.
+               Das Raster ist DASSELBE, das die Speicherverwaltung zeigt - der Baustein
+               Katalogfelder.
+
+               ZUGEKLAPPT IST DIE VORGABE, und geladen wird erst beim Aufklappen: Der
+               Dialog sieht aus wie bisher, und wer nur einen Speicher auswaehlt, zahlt
+               keine Abfrage. Der Zustand gehoert der Dialogsitzung. *@
+            @if (Katalogfelder is not null && _katalogZeile is not null)
+            {
+                <div class="epos-modulparameter">
+                    <button type="button" class="epos-modulparameter-knopf"
+                            aria-expanded="@(_parameterOffen ? "true" : "false")"
+                            @onclick="ParameterUmschalten">
+                        <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_parameterOffen ? "▾" : "▸")</span>
+                        <span>@LabelAlleParameter</span>
+                    </button>
+
+                    @if (_parameterOffen && _felder is not null)
+                    {
+                        <Katalogfelder Felder="@_felder" NurLesen="@(KatalogfelderSpeichern is null)"
+                                       Geaendert="() => _felderGeaendert = true"
+                                       FehlerZustand="BeiFeldFehler" />
+
+                        @if (KatalogfelderSpeichern is not null)
+                        {
+                            <div class="epos-leiste">
+                                <button type="button" class="epos-knopf"
+                                        disabled="@(!_felderGeaendert || _feldFehler)"
+                                        @onclick="FelderSpeichern">@BtnFelderSpeichernText</button>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+
+            @* DIE KNOEPFE ZUM GEWAEHLTEN SATZ - hier und nicht mehr unter der Liste
+               (Anwenderentscheid 15.09.2026). Erst die Kostenwege, darunter
+               „Bearbeiten…": Der Modulbereich ist die EINE Stelle, an der man mit dem
+               gewaehlten Geraet arbeitet. *@
+            @if (!Wizard && KostenOeffnen is not null)
+            {
+                <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste"
+                                     InvestText="@KostenInvestText" BetriebText="@KostenBetriebText" />
+            }
+
+            @if (VerwaltungGaben is not null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                </div>
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -217,7 +272,32 @@
     /// </summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
 
-    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste.</summary>
+    /// <summary>
+    /// ALLE Felder eines Katalogsatzes — derselbe Weg, aus dem die Speicherverwaltung
+    /// ihr Raster speist (<c>KatalogBrowserWege.Detail</c>). Ohne ihn gibt es den
+    /// Aufklapper „Alle Daten anzeigen" nicht.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>?>? Katalogfelder { get; set; }
+
+    /// <summary>
+    /// Schreibt die geänderten Felder zurück; <c>null</c> = der Katalog hat keinen
+    /// Speicherweg, dann ist der Aufklapper reine Anzeige.
+    /// </summary>
+    [Parameter] public Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? KatalogfelderSpeichern { get; set; }
+
+    /// <summary>
+    /// Öffnet die Kostenverwaltung zur GEWÄHLTEN Projektzeile; der zweite Parameter ist
+    /// der Schalter <c>betrieb</c> (<c>false</c> = Investitions-, <c>true</c> =
+    /// Betriebskosten). Ohne Delegat fehlt die Leiste.
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein dritter Knopf.</b> „Energiekosten…" führt in die
+    /// Energieträgerverwaltung — ein Speicher verbraucht keinen Träger, also gibt es
+    /// den Weg hier nicht (die Leiste zeichnet ohne Delegat nichts).
+    /// </remarks>
+    [Parameter] public Func<ErzeugerZeile?, bool, Task>? KostenOeffnen { get; set; }
+
+    /// <summary>Assistentenbetrieb: keine OK/Abbrechen-Leiste und keine Kostenleiste.</summary>
     [Parameter] public bool Wizard { get; set; }
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
@@ -235,6 +315,14 @@
     [Parameter] public string BtnBearbeitenText { get; set; } = "Bearbeiten...";
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
     [Parameter] public string GruppeModul { get; set; } = "Modul";
+
+    /// <summary>Beschriftung des Aufklappers über den übrigen Katalogwerten.</summary>
+    [Parameter] public string LabelAlleParameter { get; set; } = "Alle Daten anzeigen";
+
+    /// <summary>Beschriftung des Speicherknopfs im Aufklapper.</summary>
+    [Parameter] public string BtnFelderSpeichernText { get; set; } = "Speichern";
+    [Parameter] public string KostenInvestText { get; set; } = "Investitionskosten…";
+    [Parameter] public string KostenBetriebText { get; set; } = "Betriebskosten…";
     [Parameter] public string LabelName { get; set; } = "Name:";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
@@ -270,6 +358,24 @@
     /// <summary>Der Filterstand je Katalog über die Sitzung (S2.5, Frage Q2).</summary>
     private Katalogfilterstand _filterstand = new();
     private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
+
+    /// <summary>
+    /// Steht der Aufklapper „Alle Daten" offen? Der Zustand gehört der Dialogsitzung
+    /// und wird nirgends abgelegt.
+    /// </summary>
+    private bool _parameterOffen;
+
+    /// <summary>Steht der Parameterblock offen? (Prüfhilfe für Tests.)</summary>
+    public bool ParameterOffen => _parameterOffen;
+
+    /// <summary>Die Felder des gewählten Satzes; <c>null</c> = noch nicht geholt.</summary>
+    private IReadOnlyList<BrowserFeldwert>? _felder;
+
+    /// <summary>Hat der Anwender im Aufklapper etwas geändert?</summary>
+    private bool _felderGeaendert;
+
+    /// <summary>Steht in einem Zahlenfeld des Aufklappers etwas Ungültiges?</summary>
+    private bool _feldFehler;
 
     private string? _dublettenfrage;
     private bool _loeschfrage;
@@ -350,6 +456,7 @@
         _projektZeile = zeile;
         _katalogZeile = null;
         _katalogGewaehlt = "";
+        _felder = null;                       // der Aufklapper gehoert dem KATALOGsatz
         _detail = (ProjektDetail is not null ? ProjektDetail(zeile.GeraetId) : null) ?? Leer(zeile.Bezeichner);
     }
 
@@ -361,7 +468,76 @@
         _detail = (_katalogZeile is not null && KatalogDetail is not null
                       ? KatalogDetail(_katalogZeile.Id) : null)
                   ?? Leer(_katalogGewaehlt);
+
+        // Der offene Aufklapper zeigt den NEUEN Satz, der geschlossene holt nichts.
+        if (_parameterOffen) FelderHolen(); else _felder = null;
     }
+
+    // =================================================================================
+    // Der Aufklapper „Alle Daten anzeigen" (Anwenderentscheid 15.09.2026)
+    // =================================================================================
+
+    /// <summary>Auf- und zuklappen - und beim AUFklappen die Felder holen.</summary>
+    /// <remarks>
+    /// <b>Erst beim Aufklappen.</b> Wer nur einen Speicher auswählt, zahlt keine
+    /// Abfrage; und wer aufklappt, sieht den Stand von JETZT und nicht den von der
+    /// Auswahl.
+    /// </remarks>
+    private void ParameterUmschalten()
+    {
+        _parameterOffen = !_parameterOffen;
+        if (_parameterOffen) FelderHolen();
+    }
+
+    /// <summary>Holt die Felder des gewählten Katalogsatzes neu.</summary>
+    private void FelderHolen()
+    {
+        _felder = Katalogfelder is null || _katalogZeile is null
+            ? null
+            : Katalogfelder(_katalogZeile.Bezeichner);
+        _felderGeaendert = false;
+        _feldFehler = false;
+    }
+
+    /// <summary>Ein Zahlenfeld des Aufklappers meldet einen ungültigen Zustand.</summary>
+    private void BeiFeldFehler((string Feldname, bool Fehler) meldung)
+        => _feldFehler = meldung.Fehler;
+
+    /// <summary>
+    /// Schreibt die geänderten Felder zurück und lädt die Katalogliste neu.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Befund des Katalogs zählt, nicht die Absicht.</b> Lehnt der Speicherweg ab
+    /// (Schreibschutz der Auslieferung, Prüfmeldung), bleibt der geänderte Stand im
+    /// Aufklapper stehen - der Anwender soll ihn verbessern können, statt ihn zu
+    /// verlieren.
+    /// </remarks>
+    private void FelderSpeichern()
+    {
+        if (KatalogfelderSpeichern is null || _felder is null || _katalogZeile is null) return;
+
+        KatalogSpeicherErgebnis ergebnis = KatalogfelderSpeichern(_katalogZeile.Bezeichner, _felder);
+        if (!ergebnis.Ok)
+        {
+            Melden(ergebnis.Meldung, true);
+            return;
+        }
+
+        _felderGeaendert = false;
+        Melden(ergebnis.Meldung, false);
+        KatalogNeuLaden();
+    }
+
+    // --- Die Bruecke zur Kostenleiste ------------------------------------------
+    // Ohne Delegat KEIN Rueckruf - sonst zeichnete die Leiste einen Knopf, der
+    // nichts tut (ihre eigene Regel).
+
+    private Func<bool, Task>? KostenLeiste
+        => KostenOeffnen is null ? null : (Func<bool, Task>)BeiKosten;
+
+    /// <summary>Reicht die gewählte Projektzeile an die Kostenverwaltung durch.</summary>
+    private Task BeiKosten(bool betrieb)
+        => KostenOeffnen?.Invoke(_projektZeile, betrieb) ?? Task.CompletedTask;
 
     private static ErzeugerDetail Leer(string name)
         => new(name, "", Array.Empty<(string, string)>());
@@ -443,6 +619,10 @@
     {
         _verwaltungGaben = null;
         KatalogNeuLaden();
+
+        // Die Verwaltung schreibt genau die Felder, die der Aufklapper zeigt - steht er
+        // offen, bekommt er den NEUEN Stand.
+        if (_parameterOffen) FelderHolen();
     }
 
     private async Task BeiBearbeiten()

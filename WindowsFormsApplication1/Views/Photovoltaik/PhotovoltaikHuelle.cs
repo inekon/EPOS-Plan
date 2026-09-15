@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
 using Microsoft.AspNetCore.Components;
@@ -291,6 +292,37 @@ namespace WindowsFormsApplication1
                 ["VerwaltungGaben"] = new Func<IReadOnlyDictionary<string, object>>(
                     PvAdminHuelle.Gaben),
 
+                // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
+                // Sie kommen aus derselben Quelle, aus der auch der Modulkatalog hinter
+                // "Modul Bearbeiten..." seine Felder bekommt; der Aufklapper IST sein
+                // Raster. Uebersetzt wird zwischen den zwei Feldtypen in der
+                // ModulFeldwertBruecke.
+                ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(Katalogfelder),
+                ["KatalogfelderSpeichern"] =
+                    new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
+                        (name, felder) => ModulFeldwertBruecke.Speichern(
+                            PvAdminHuelle.Wege(), name, felder)),
+                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
+
+                // Die drei Knoepfe der Kostenleiste. Ohne Projekt gibt es keinen
+                // Kostenkontext - dann bleibt der Delegat weg und die Leiste zeichnet
+                // den Knopf gar nicht erst (ihre eigene Regel). Der Weg steht einmal
+                // in ErzeugerKostenwege; alle Erzeugerdialoge teilen ihn sich.
+                ["KostenOeffnen"] = projektId > 0
+                    ? new Func<ErzeugerZeile, bool, Task>(
+                        (zeile, betrieb) => ErzeugerKostenwege.Kosten(
+                            besitzer, projektId, DbWerte.ERZEUGER_PHOTOVOLTAIK, zeile, betrieb))
+                    : null,
+                ["EnergiekostenOeffnen"] = projektId > 0
+                    ? new Func<ErzeugerZeile, Task>(
+                        zeile => ErzeugerKostenwege.Energiekosten(
+                            besitzer, projektId, DbWerte.ERZEUGER_PHOTOVOLTAIK, zeile))
+                    : null,
+
+                ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
+                ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
+                ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…"),
+
                 ["TitelText"] = Text_("PVD_TITEL", "Verwaltung Photovoltaik Module"),
                 ["KopfbandText"] = Text_("PVD_KOPFBAND", "Eingabe der Photovoltaik Anlagendaten"),
                 ["LabelProjektliste"] = Text_("PVD_LBL_PROJEKTLISTE", "ausgewählte Module"),
@@ -320,9 +352,10 @@ namespace WindowsFormsApplication1
                 ["LabelAnzahl"] = Text_("PVD_LBL_ANZAHL", "Anzahl Module:"),
                 ["GruppeModul"] = Text_("PVD_GRP_MODUL", "Modul Eigenschaften:"),
                 // W6-E-1 (Windows-Abnahme 05.09.2026): der Aufklapper ueber allen
-                // Modulparametern.
-                ["LabelAlleParameter"] = Text_("PVD_AUFKLAPP_PARAMETER",
-                                               "Alle Modulparameter anzeigen"),
+                // Modulparametern. Seit dem 15.09.2026 traegt er denselben Text wie bei
+                // Heizkessel und BHKW - er zeigt jetzt dasselbe: ALLE Daten des
+                // Katalogsatzes, bearbeitbar.
+                ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
                 // Q9: Sobald ein Strang besteht, ist "Anzahl Module" abgeleitet - und
                 // sagt es.
                 ["LabelAnzahlAbgeleitet"] = Text_("PVS_ANZAHL_ABGELEITET",
@@ -913,11 +946,12 @@ namespace WindowsFormsApplication1
         /// nur das Anlagen-Panel unterschied sie.
         /// </summary>
         /// <remarks>
-        /// <b>W6‑E‑1</b> (Windows-Abnahme 05.09.2026): Dazu kommen ALLE übrigen
-        /// Katalogparameter für den Aufklapper. Sie stehen im SELBEN Lesevorgang —
-        /// <c>PhotovoltaikStammCtrl.Detail</c> liest sie seither mit —, und weil der
-        /// Dialog diesen Weg bei jedem Wechsel der Modulwahl ruft, aktualisiert sich
-        /// der Block von selbst.
+        /// <b>Die Parameterzeilen des Aufklappers kommen seit dem 15.09.2026 NICHT mehr
+        /// von hier.</b> Der Aufklapper „Alle Daten anzeigen" zeigt den Katalogsatz in
+        /// der Bauart aller sechs Erzeuger — bearbeitbar und aus derselben Feldliste,
+        /// die auch der Modulkatalog hinter „Modul Bearbeiten…" führt
+        /// (<see cref="Katalogfelder"/>). Dieser Weg liefert wieder nur den festen
+        /// Detailblock.
         /// </remarks>
         private static ErzeugerDetail DetailZu(string name)
         {
@@ -930,26 +964,68 @@ namespace WindowsFormsApplication1
                 (Text_("PVD_LBL_LEISTUNG", "Modul Leistung [W]:"), d.Leistung.ToString("F2"))
             };
 
-            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,
-                                      null, Parameterzeilen(d));
+            return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
         }
 
+        // =================================================================================
+        // Der Aufklapper „Alle Daten anzeigen" (Anwenderentscheid 15.09.2026)
+        // =================================================================================
+
         /// <summary>
-        /// Die dreizehn übrigen Katalogfelder als Anzeigezeilen (W6‑E‑1). Beschriftung,
-        /// Einheit, Zahlenform und das „–" für einen nicht gepflegten Wert entscheidet
-        /// der Kern — die Hülle bildet nur ab.
+        /// ALLE Felder des gewählten Katalogsatzes: die fünfzehn des Modulkatalogs, dazu
+        /// die zwei Temperaturkoeffizienten als Lesewerte.
         /// </summary>
-        private static IReadOnlyList<Modulparameter> Parameterzeilen(
-            PhotovoltaikStammCtrl.ModulDetail d)
+        /// <returns><c>null</c>, wenn es das Modul nicht gibt.</returns>
+        private static IReadOnlyList<BrowserFeldwert> Katalogfelder(string name)
         {
-            var liste = new List<Modulparameter>();
-            foreach (PhotovoltaikStammCtrl.ModulParameter p in
-                     PhotovoltaikStammCtrl.Parameterzeilen(d))
-                liste.Add(new Modulparameter(p.Bezeichnung, p.Wert, p.Einheit));
+            IReadOnlyList<BrowserFeldwert> felder =
+                ModulFeldwertBruecke.Felder(PvAdminHuelle.Wege(), name);
+            if (felder == null) return null;
+
+            var liste = new List<BrowserFeldwert>(felder);
+            liste.AddRange(Koeffizienten(name));
             return liste;
         }
 
+        /// <summary>
+        /// <b><c>alpha_SC</c> und <c>beta_OC</c> — die zwei Spalten, die der Modulkatalog
+        /// nicht führt</b> (er kann sie nicht pflegen, siehe
+        /// <c>PhotovoltaikStammCtrl.SpeichernAus</c>); sie kommen aus dem Import (CEC/PAN)
+        /// und stehen im Aufklapper deshalb als LESEWERTE.
+        /// </summary>
+        /// <remarks>
+        /// <b>Sonst verlöre der Block Auskunft.</b> Der Vorläufer dieses Aufklappers
+        /// (W6‑E‑1) zeigte dreizehn Zeilen, darunter diese zwei. Beschriftung, Zahlenform
+        /// und das „–" für einen nicht gepflegten Wert entscheidet weiter der Kern
+        /// (<c>PhotovoltaikStammCtrl.Parameterzeilen</c>) — die Hülle greift nur die zwei
+        /// Zeilen heraus. Der Speicherweg lässt sie liegen: Was die Feldliste des
+        /// Modulkatalogs nicht kennt, geht nicht in den Stammsatz.
+        /// </remarks>
+        private static IReadOnlyList<BrowserFeldwert> Koeffizienten(string name)
+        {
+            var liste = new List<BrowserFeldwert>();
 
+            PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.Detail(name);
+            if (d == null) return liste;
+
+            foreach (PhotovoltaikStammCtrl.ModulParameter p in
+                     PhotovoltaikStammCtrl.Parameterzeilen(d))
+            {
+                if (p.Schluessel != "ALPHA_SC" && p.Schluessel != "BETA_OC") continue;
+
+                liste.Add(new BrowserFeldwert
+                {
+                    Schluessel = p.Schluessel,
+                    Bezeichnung = p.Bezeichnung,
+                    Einheit = p.Einheit ?? "",
+                    Art = BrowserFeldArt.Text,
+                    Editierbar = false,
+                    Wert = p.Wert ?? ""
+                });
+            }
+
+            return liste;
+        }
 
 
         /// <summary>

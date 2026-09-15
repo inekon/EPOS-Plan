@@ -122,8 +122,9 @@ public sealed class BhkwKatalogDaten
     /// <summary>Staub [g/MWh].</summary>
     public int? Staub { get; set; }
 
-    /// <summary>Schalter „mit SCR" — er steuert nur die Vorgabewerte, er wird nicht gespeichert.</summary>
-    public bool ScrVorhanden { get; set; }
+    // OHNE den Schalter „mit SCR" seit dem 15.09.2026: Er steuerte ausschliesslich den
+    // Knopf „Eintragen" der Emissionsgruppe, und die ist mit den Emissionsfeldern
+    // ersatzlos entfallen (Anwenderentscheid). Gespeichert wurde er nie.
 
     // --- Herkunft --------------------------------------------------------------
 

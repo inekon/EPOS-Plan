@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
 using Microsoft.AspNetCore.Components;
@@ -143,6 +144,18 @@ namespace WindowsFormsApplication1
                 ["BtnBearbeitenText"] = Text_("HZK_BTN_BEARBEITEN", "Bearbeiten..."),
                 ["BtnLoeschenText"] = Text_("HZK_BTN_LOESCHEN", "Löschen"),
                 ["GruppeModul"] = Text_("HZK_GRP_MODUL", "Modul"),
+                ["LabelAlleParameter"] = Text_("HZK_LBL_ALLE_DATEN", "Alle Daten anzeigen"),
+
+                // DIE ZWEI WEGE DES MODULAUFKLAPPERS (Anwenderentscheid 15.09.2026).
+                // Sie kommen aus derselben Quelle wie die der Speicherverwaltung - der
+                // Aufklapper IST deren Raster; der Speicherweg steht seit demselben Tag
+                // im Kern (PufferSpStammCtrl.AnzeigefelderSchreiben).
+                ["Katalogfelder"] = new Func<string, IReadOnlyList<BrowserFeldwert>>(
+                    name => PufferSpAdminHuelle.Wege().Detail!(name)!),
+                ["KatalogfelderSpeichern"] =
+                    new Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>(
+                        (name, felder) => PufferSpAdminHuelle.Wege().Speichern!(name, felder, false)),
+                ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
@@ -153,7 +166,27 @@ namespace WindowsFormsApplication1
                 ["FrageLoeschen"] = MyResource.Resource.PSP_MELDUNG_KATALOG_LOESCHEN,
                 ["MeldungModulWaehlen"] = MyResource.Resource.PSP_MELDUNG_MODUL_WAEHLEN,
                 ["MeldungLoeschFehler"] = Text_("HZK_MSG_LOESCHFEHLER",
-                    "Der Katalogeintrag konnte nicht gelöscht werden.")
+                    "Der Katalogeintrag konnte nicht gelöscht werden."),
+
+                // DIE KOSTENKNOEPFE IM MODULBEREICH (Anwenderentscheid 15.09.2026:
+                // "alle sechs Erzeuger im gleichen Schema"). Der Weg ist derselbe, den
+                // Heizkessel und BHKW gehen - ErzeugerKostenwege nimmt die
+                // Kostenkomponente als Zeichenkette entgegen; der Pufferspeicher ist
+                // kein Erzeuger und traegt deshalb seinen eigenen Wert
+                // (DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER).
+                //
+                // NUR ZWEI KNOEPFE: "Energiekosten…" fuehrt in die
+                // Energietraegerverwaltung, und ein Speicher verbraucht keinen Traeger -
+                // ohne Delegat zeichnet die Leiste den Knopf gar nicht erst (ihre
+                // eigene Regel). Ohne Projekt gibt es ueberhaupt keinen Kostenkontext.
+                ["KostenOeffnen"] = projektId > 0
+                    ? new Func<ErzeugerZeile, bool, Task>(
+                        (zeile, betrieb) => ErzeugerKostenwege.Kosten(
+                            besitzer, projektId, DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER,
+                            zeile, betrieb))
+                    : null,
+                ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
+                ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…")
             };
         }
 

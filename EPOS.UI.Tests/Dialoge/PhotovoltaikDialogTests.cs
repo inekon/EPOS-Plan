@@ -72,33 +72,44 @@ public class PhotovoltaikDialogTests : EposBunitContext
 
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung",
-        new[] { ("Hersteller:", "Musterwerk"), ("Modul Leistung [W]:", "275,19") },
-        null, Parameter(name));
+        new[] { ("Hersteller:", "Musterwerk"), ("Modul Leistung [W]:", "275,19") });
 
     /// <summary>
-    /// Die dreizehn Parameterzeilen des Aufklappers (W6‑E‑1). Sie kommen FERTIG
-    /// FORMATIERT aus der Hülle — die Komponente rechnet und übersetzt nichts; der
-    /// Wert hängt am Modulnamen, damit ein Wechsel sichtbar wird.
+    /// Das PROFIL des Modulkatalogs — aus ihm baut die Hülle über die
+    /// <c>ModulFeldwertBruecke</c> die Felder des Aufklappers. Der Prüfstand nimmt
+    /// DASSELBE Profil, damit die Feldarten hier nicht erfunden werden.
     /// </summary>
-    private static IReadOnlyList<Modulparameter> Parameter(string name)
+    private static readonly ModulKatalogProfil Modulprofil =
+        ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik,
+            s => Resource.ResourceManager.GetString(s) ?? s);
+
+    /// <summary>
+    /// Die Felder des Aufklappers „Alle Daten anzeigen" (Anwenderentscheid 15.09.2026)
+    /// — abgebildet wie in der Hülle: Der Bezeichner ist gesperrt, ein Auswahlfeld
+    /// bleibt Lesewert (es führt seine Optionen im Modulkatalog, nicht hier), alles
+    /// Übrige ist editierbar.
+    /// </summary>
+    private static List<BrowserFeldwert> Katalogfelder(string name)
     {
-        string kennung = name.EndsWith("500", StringComparison.Ordinal) ? "500" : "400";
-        return new[]
+        var liste = new List<BrowserFeldwert>();
+        foreach (ModulKatalogFeld f in Modulprofil.Felder)
         {
-            new Modulparameter("Wirkungsgrad:", "16," + kennung, "%"),
-            new Modulparameter("Spannung im MPP (Umpp):", "30,99", "V"),
-            new Modulparameter("Leerlaufspannung (Uoc):", "38,97", "V"),
-            new Modulparameter("Strom im MPP (Impp):", "8,88", "A"),
-            new Modulparameter("Kurzschlussstrom (Isc):", "9,42", "A"),
-            new Modulparameter("α_Isc / aIsc [A/°C]:", "–"),
-            new Modulparameter("β_Voc / BVoco [V/°C]:", "–"),
-            new Modulparameter("Temp.-Koeffizient Pmax:", "-0,4509", "%/K"),
-            new Modulparameter("Zelltemperatur NOCT:", "–", "°C"),
-            new Modulparameter("Länge:", "1,64", "m"),
-            new Modulparameter("Breite:", "0,992", "m"),
-            new Modulparameter("Modulkosten:", "–", "€"),
-            new Modulparameter("Zelltechnologie:", "Kristallines Silizium (mono/poly)")
-        };
+            string wert = f.Schluessel == ModulKatalogProfil.FeldBezeichner ? name
+                        : f.Art == BrowserFeldArt.Zahl ? "12,5"
+                        : f.Art == BrowserFeldArt.Ganzzahl ? "70"
+                        : "Wert " + f.Schluessel;
+
+            liste.Add(new BrowserFeldwert
+            {
+                Schluessel = f.Schluessel,
+                Bezeichnung = f.Bezeichnung,
+                Einheit = f.Einheit,
+                Art = f.Art,
+                Editierbar = !f.Gesperrt && f.Art != BrowserFeldArt.Auswahl,
+                Wert = wert
+            });
+        }
+        return liste;
     }
 
     private IRenderedComponent<PhotovoltaikDialog> Aufbauen(
@@ -111,6 +122,8 @@ public class PhotovoltaikDialogTests : EposBunitContext
         Func<IReadOnlyDictionary<string, object>>? verwaltung = null,
         bool wizard = false,
         Func<string, ErzeugerDetail>? detail = null,
+        Func<string, IReadOnlyList<BrowserFeldwert>?>? katalogfelder = null,
+        Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>? felderSpeichern = null,
         Action<bool>? geschlossen = null)
     {
         return Render<PhotovoltaikDialog>(p => p
@@ -124,10 +137,21 @@ public class PhotovoltaikDialogTests : EposBunitContext
             .Add(x => x.Uebernehmen, uebernehmen)
             .Add(x => x.Gesamtleistung, gesamt ?? (() => "8"))
             .Add(x => x.KatalogLoeschen, katalogLoeschen ?? (_ => true))
+            .Add(x => x.Katalogfelder, katalogfelder)
+            .Add(x => x.KatalogfelderSpeichern, felderSpeichern)
             .Add(x => x.VerwaltungGaben, verwaltung)
             .Add(x => x.Wizard, wizard)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
+
+    /// <summary>Die zweite Liste ist die KATALOGliste; ihre erste Zeile ist „Modul 400".</summary>
+    private static void KatalogzeileWaehlen(IRenderedComponent<PhotovoltaikDialog> cut, int nummer = 0)
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[nummer].Click();
+
+    /// <summary>Der Modulbereich — der Gruppenkopf „Modul Eigenschaften:".</summary>
+    private static AngleSharp.Dom.IElement Modulbereich(IRenderedComponent<PhotovoltaikDialog> cut)
+        => cut.FindAll(".epos-gruppenkopf")
+              .First(e => e.TextContent.Contains("Modul Eigenschaften:"));
 
     // =================================================================================
     // Feldbestand
@@ -402,7 +426,11 @@ public class PhotovoltaikDialogTests : EposBunitContext
         var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
 
         Assert.False(cut.Instance.VerwaltungOffen);
-        cut.FindAll(".epos-zweispalten-spalte")[1].QuerySelectorAll(".epos-leiste button")[0].Click();
+
+        // Der Knopf steht seit dem 15.09.2026 im MODULBEREICH, nicht mehr unter der
+        // Katalogliste.
+        Modulbereich(cut).QuerySelectorAll(".epos-leiste button")
+                         .First(b => b.TextContent == "Modul Bearbeiten...").Click();
 
         Assert.True(cut.Instance.VerwaltungOffen);
         Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
@@ -468,66 +496,83 @@ public class PhotovoltaikDialogTests : EposBunitContext
     }
 
     // =====================================================================
-    //  Alle Modulparameter — Anwenderwunsch W6‑E‑1 (05.09.2026)
+    //  Der Aufklapper „Alle Daten anzeigen" — Anwenderentscheid 15.09.2026
     // =====================================================================
+    //  Er löst den Parameterblock aus W6‑E‑1 (05.09.2026) ab: Damals dreizehn
+    //  NUR LESBARE Zeilen aus einer eigenen Liste, jetzt ALLE Felder des
+    //  Katalogsatzes in der Bauart aller sechs Erzeuger — derselbe Baustein
+    //  Katalogfelder, gespeist aus derselben Feldliste wie der Modulkatalog,
+    //  und bearbeitbar, wo der Katalog einen Speicherweg hat.
 
     /// <summary>
-    /// <b>W6‑E‑1:</b> „optional sollten beim ausgewählten PV-Modul alle
-    /// Eigenschaften/Parameter angezeigt werden."
-    ///
-    /// <para>OPTIONAL heißt: zugeklappt als Vorgabe. Der Dialog sieht beim Öffnen
-    /// aus wie bisher — der Aufklapper steht darunter, und der Knopf sagt seinen
-    /// Zustand über <c>aria-expanded</c> an.</para>
+    /// <b>Der Aufklapper gehört zum KATALOGSATZ.</b> Beim Öffnen ist die Projektzeile
+    /// markiert — dann gibt es ihn nicht; er erscheint mit der Wahl in der
+    /// Katalogliste.
+    /// </summary>
+    [Fact]
+    public void Ohne_gewaehlten_Katalogsatz_gibt_es_keinen_Aufklapper()
+    {
+        var cut = Aufbauen(katalogfelder: Katalogfelder);
+
+        Assert.Empty(cut.FindAll(".epos-modulparameter-knopf"));
+
+        KatalogzeileWaehlen(cut);
+        Assert.Single(cut.FindAll(".epos-modulparameter-knopf"));
+    }
+
+    /// <summary>
+    /// Ohne Weg zu den Feldern kein Aufklapper — Hausregel „kein Delegat, kein
+    /// Knopf". Ein leerer Aufklapper wäre ein Versprechen ohne Inhalt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Katalogfelder_gibt_es_keinen_Aufklapper()
+    {
+        var cut = Aufbauen();
+        KatalogzeileWaehlen(cut);
+
+        Assert.Empty(cut.FindAll(".epos-modulparameter-knopf"));
+    }
+
+    /// <summary>
+    /// ZUGEKLAPPT IST DIE VORGABE, und der Weg zu den Feldern wird dabei NICHT
+    /// gegangen: Wer nur ein Modul auswählt, zahlt keine Abfrage.
     /// </summary>
     [Fact]
     public void Der_Parameterblock_ist_zugeklappt_die_Vorgabe()
     {
-        var cut = Aufbauen();
+        int rufe = 0;
+        var cut = Aufbauen(katalogfelder: n => { rufe++; return Katalogfelder(n); });
+        KatalogzeileWaehlen(cut);
 
         var knopf = cut.Find(".epos-modulparameter-knopf");
         Assert.Equal("false", knopf.GetAttribute("aria-expanded"));
-        Assert.Contains("Alle Modulparameter anzeigen", knopf.TextContent);
+        Assert.Contains("Alle Daten anzeigen", knopf.TextContent);
 
         Assert.False(cut.Instance.ParameterOffen);
         Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+        Assert.Equal(0, rufe);
     }
 
     /// <summary>
-    /// Aufgeklappt stehen alle dreizehn Katalogfelder da — Beschriftung, Wert und
-    /// die Einheit unmittelbar hinter dem kurzen Feld (iU8‑E‑2). Und sie sind
-    /// NUR LESEND: Der Katalog wird hier angesehen, nicht gepflegt.
+    /// <b>Die Felder kommen erst beim Aufklappen</b> — und dann ALLE, die der
+    /// Modulkatalog führt. Wer aufklappt, sieht den Stand von JETZT.
     /// </summary>
     [Fact]
-    public void Aufgeklappt_stehen_alle_dreizehn_Parameter_da()
+    public void Erst_das_Aufklappen_holt_die_Felder()
     {
-        var cut = Aufbauen();
+        int rufe = 0;
+        var cut = Aufbauen(katalogfelder: n => { rufe++; return Katalogfelder(n); });
+        KatalogzeileWaehlen(cut);
+        Assert.Equal(0, rufe);
+
         cut.Find(".epos-modulparameter-knopf").Click();
 
+        Assert.Equal(1, rufe);
         Assert.True(cut.Instance.ParameterOffen);
         Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
 
         var block = cut.Find(".epos-modulparameter");
-        Assert.Single(block.QuerySelectorAll(".epos-formularraster"));
-
-        var texte = block.QuerySelectorAll(".epos-feld-text").Select(e => e.TextContent).ToList();
-        Assert.Equal(13, texte.Count);
-        Assert.Equal(new[]
-        {
-            "Wirkungsgrad:", "Spannung im MPP (Umpp):", "Leerlaufspannung (Uoc):",
-            "Strom im MPP (Impp):", "Kurzschlussstrom (Isc):",
-            "α_Isc / aIsc [A/°C]:", "β_Voc / BVoco [V/°C]:",
-            "Temp.-Koeffizient Pmax:", "Zelltemperatur NOCT:",
-            "Länge:", "Breite:", "Modulkosten:", "Zelltechnologie:"
-        }, texte);
-
-        // Jedes Feld ist nur lesbar.
-        var eingaben = block.QuerySelectorAll("input");
-        Assert.Equal(13, eingaben.Length);
-        Assert.All(eingaben, e => Assert.True(e.HasAttribute("readonly")));
-
-        // Die Einheit steht hinter dem Feld - dieselbe Klasse wie beim Zahlenfeld.
-        var einheiten = block.QuerySelectorAll(".epos-einheit").Select(e => e.TextContent).ToList();
-        Assert.Equal(new[] { "%", "V", "V", "A", "A", "%/K", "°C", "m", "m", "€" }, einheiten);
+        Assert.Equal(Modulprofil.Felder.Count, block.QuerySelectorAll(".epos-feld").Length);
     }
 
     /// <summary>
@@ -537,7 +582,8 @@ public class PhotovoltaikDialogTests : EposBunitContext
     [Fact]
     public void Ein_zweiter_Druck_klappt_wieder_zu()
     {
-        var cut = Aufbauen();
+        var cut = Aufbauen(katalogfelder: Katalogfelder);
+        KatalogzeileWaehlen(cut);
 
         cut.Find(".epos-modulparameter-knopf").Click();
         Assert.True(cut.Instance.ParameterOffen);
@@ -548,65 +594,236 @@ public class PhotovoltaikDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Der Block gehört zum GEWÄHLTEN Modul.</b> Wer in der Katalogliste ein
-    /// anderes Modul wählt, sieht dessen Werte — und der Aufklappzustand bleibt
-    /// stehen, sonst müsste man ihn beim Vergleichen zweier Module jedes Mal neu
-    /// aufziehen.
+    /// <b>Der Block gehört zum GEWÄHLTEN Modul.</b> Wer in der Katalogliste ein anderes
+    /// Modul wählt, sieht dessen Werte — und der Aufklappzustand bleibt stehen, sonst
+    /// müsste man ihn beim Vergleichen zweier Module jedes Mal neu aufziehen.
     /// </summary>
     [Fact]
     public void Ein_Modulwechsel_zieht_den_Block_nach()
     {
-        var cut = Aufbauen();
+        int rufe = 0;
+        var cut = Aufbauen(katalogfelder: n => { rufe++; return Katalogfelder(n); });
+        KatalogzeileWaehlen(cut);
         cut.Find(".epos-modulparameter-knopf").Click();
 
-        string vorher = cut.Find(".epos-modulparameter").QuerySelectorAll("input")[0]
-                           .GetAttribute("value")!;
-        Assert.Equal("16,400", vorher);
+        Assert.Equal(1, rufe);
+        Assert.Equal("Modul 400", cut.Find(".epos-modulparameter")
+                                     .QuerySelectorAll("input")[0].GetAttribute("value"));
 
         // Zweite Zeile der KATALOGliste: "Modul 500".
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
+        KatalogzeileWaehlen(cut, 1);
 
         Assert.True(cut.Instance.ParameterOffen);
-        Assert.Equal("16,500", cut.Find(".epos-modulparameter").QuerySelectorAll("input")[0]
-                                  .GetAttribute("value"));
+        Assert.Equal(2, rufe);
+        Assert.Equal("Modul 500", cut.Find(".epos-modulparameter")
+                                     .QuerySelectorAll("input")[0].GetAttribute("value"));
     }
 
     /// <summary>
-    /// <b>Ein nicht gepflegter Wert steht als „–" da, nicht als 0.</b> Die
-    /// Entscheidung fällt im Kern (<c>PhotovoltaikStammCtrl.Parameterzeilen</c>);
-    /// hier ist nachgewiesen, dass die Komponente den Strich unverändert zeigt und
-    /// nicht etwa ein leeres Feld daraus macht.
+    /// <b>Zwei Felder bleiben Lesewerte:</b> der Bezeichner — er ist der Schlüssel des
+    /// <c>UPDATE</c> — und die Zelltechnologie, ein Auswahlfeld, dessen Optionen der
+    /// Aufklapper nicht führt. Die Zahl der gesperrten Felder liest der Prüfstand aus
+    /// DEMSELBEN Profil, aus dem die Hülle sie ableitet.
     /// </summary>
     [Fact]
-    public void Ein_nicht_gepflegter_Wert_steht_als_Strich_da()
+    public void Der_Bezeichner_und_das_Auswahlfeld_bleiben_Lesewerte()
     {
-        var cut = Aufbauen();
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n));
+        KatalogzeileWaehlen(cut);
         cut.Find(".epos-modulparameter-knopf").Click();
 
-        var werte = cut.Find(".epos-modulparameter").QuerySelectorAll("input")
-                       .Select(e => e.GetAttribute("value")).ToList();
+        int erwartet = Modulprofil.Felder
+            .Count(f => f.Gesperrt || f.Art == BrowserFeldArt.Auswahl);
 
-        // alpha_SC, beta_OC, T_NOCT und die Modulkosten sind im Katalog leer -
-        // und stehen als Strich da, nicht als "0" und nicht als leeres Feld.
-        foreach (int i in new[] { 5, 6, 8, 11 })
-        {
-            Assert.Equal("–", werte[i]);
-            Assert.NotEqual("0", werte[i]);
-        }
+        Assert.True(erwartet > 0, "Das Profil führt weder ein gesperrtes noch ein Auswahlfeld.");
+        Assert.Equal(erwartet,
+            cut.Find(".epos-modulparameter").QuerySelectorAll("input[readonly]").Length);
     }
 
     /// <summary>
-    /// Ohne Parameterzeilen gibt es keinen Aufklapper — so ist es heute bei den
-    /// vier übrigen Erzeugerdialogen, die denselben Detailblock zeichnen. Ein
-    /// leerer Knopf wäre ein Versprechen ohne Inhalt.
+    /// <b>Ohne Speicherweg ist der Aufklapper reine Anzeige</b> — kein Knopf, jedes
+    /// Feld nur lesbar. Das ist die Lage eines Katalogs ohne Schreibweg, keine
+    /// Entscheidung dieses Dialogs.
     /// </summary>
     [Fact]
-    public void Ohne_Parameterzeilen_gibt_es_keinen_Aufklapper()
+    public void Ohne_Speicherweg_ist_der_Aufklapper_nur_Anzeige()
     {
-        var cut = Aufbauen(detail: n => new ErzeugerDetail(
-            n, "Beschreibung", new[] { ("Hersteller:", "Musterwerk") }));
+        var cut = Aufbauen(katalogfelder: Katalogfelder);
+        KatalogzeileWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
 
-        Assert.Empty(cut.FindAll(".epos-modulparameter-knopf"));
+        Assert.Empty(cut.FindAll(".epos-modulparameter .epos-leiste"));
+
+        var eingaben = cut.FindAll(".epos-modulparameter input");
+        Assert.NotEmpty(eingaben);
+        Assert.All(eingaben, e => Assert.True(e.HasAttribute("readonly")));
+    }
+
+    /// <summary>
+    /// <b>Speichern reicht die GEÄNDERTEN Felder hinaus</b> — und ist ohne Änderung
+    /// gesperrt. Was daraus wird, entscheidet die Hülle; die Komponente kennt weder
+    /// Tabelle noch Spalte.
+    /// </summary>
+    [Fact]
+    public void Speichern_reicht_die_geaenderten_Felder_hinaus()
+    {
+        string? name = null;
+        IReadOnlyList<BrowserFeldwert>? gesehen = null;
+        var cut = Aufbauen(
+            katalogfelder: Katalogfelder,
+            felderSpeichern: (n, f) =>
+            {
+                name = n;
+                gesehen = f;
+                return new KatalogSpeicherErgebnis(true, "", n);
+            });
+
+        KatalogzeileWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.True(cut.Find(".epos-modulparameter .epos-leiste .epos-knopf")
+                       .HasAttribute("disabled"));
+
+        cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
+
+        var speichern = cut.Find(".epos-modulparameter .epos-leiste .epos-knopf");
+        Assert.False(speichern.HasAttribute("disabled"));
+        speichern.Click();
+
+        Assert.Equal("Modul 400", name);
+        Assert.NotNull(gesehen);
+        Assert.Contains(gesehen!, f => f.Wert == "42");
+    }
+
+    /// <summary>
+    /// <b>Eine ungültige Zahl sperrt das Speichern.</b> Das Zahlenfeld färbt sich und
+    /// meldet seinen Zustand nach oben — dieselbe Naht, die der Katalogbrowser schon
+    /// hatte.
+    /// </summary>
+    [Fact]
+    public void Ein_Fehlerzustand_sperrt_das_Speichern()
+    {
+        var cut = Aufbauen(katalogfelder: Katalogfelder,
+                           felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n));
+        KatalogzeileWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
+        Assert.False(cut.Find(".epos-modulparameter .epos-leiste .epos-knopf")
+                        .HasAttribute("disabled"));
+
+        cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("keine Zahl");
+        Assert.True(cut.Find(".epos-modulparameter .epos-leiste .epos-knopf")
+                       .HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Der Befund des Katalogs zählt.</b> Lehnt der Speicherweg ab, meldet der
+    /// Dialog — und der geänderte Stand bleibt stehen, damit der Anwender ihn
+    /// verbessern kann, statt ihn zu verlieren.
+    /// </summary>
+    [Fact]
+    public void Eine_abgelehnte_Speicherung_meldet_und_haelt_den_Stand()
+    {
+        var cut = Aufbauen(
+            katalogfelder: Katalogfelder,
+            felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(
+                false, "Der Datensatz ist schreibgeschützt.", n));
+
+        KatalogzeileWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+        cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
+        cut.Find(".epos-modulparameter .epos-leiste .epos-knopf").Click();
+
+        Assert.Equal("Der Datensatz ist schreibgeschützt.", cut.Instance.Meldung);
+
+        // Der Knopf bleibt frei: Die Aenderung steht noch im Aufklapper.
+        Assert.False(cut.Find(".epos-modulparameter .epos-leiste .epos-knopf")
+                        .HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Die Knöpfe zum gewählten Satz stehen im MODULBEREICH</b> (Anwenderentscheid
+    /// 15.09.2026): „Modul Bearbeiten…" ist dorthin gewandert, wo der Satz steht;
+    /// „Modul Löschen" bleibt bei der LISTE, denn es wirkt auf die Listenzeile.
+    /// </summary>
+    [Fact]
+    public void Bearbeiten_steht_im_Modulbereich_Loeschen_bei_der_Liste()
+    {
+        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben());
+        KatalogzeileWaehlen(cut);
+
+        var unterDerListe = cut.FindAll(".epos-zweispalten-spalte")[1]
+                               .QuerySelectorAll(".epos-leiste button")
+                               .Select(b => b.TextContent).ToList();
+        Assert.Equal(new[] { "Modul Löschen" }, unterDerListe);
+
+        var imModulbereich = Modulbereich(cut)
+                             .QuerySelectorAll(".epos-leiste button")
+                             .Select(b => b.TextContent).ToList();
+        Assert.Contains("Modul Bearbeiten...", imModulbereich);
+    }
+
+    /// <summary>
+    /// <b>Die Kostenleiste steht ÜBER „Modul Bearbeiten…"</b> und im Assistenten gar
+    /// nicht — dieselbe Anordnung wie beim Heizkessel. Ohne Delegat zeichnet die
+    /// Leiste keinen Knopf (ihre eigene Regel).
+    /// </summary>
+    [Fact]
+    public void Die_Kostenleiste_steht_im_Modulbereich_und_fehlt_im_Assistenten()
+    {
+        var cut = Aufbauen();
+        Assert.Single(Modulbereich(cut).QuerySelectorAll(".epos-kostenleiste"));
+        Assert.Empty(cut.FindAll(".epos-kostenleiste button"));
+
+        var wizard = Aufbauen(wizard: true);
+        Assert.Empty(wizard.FindAll(".epos-kostenleiste"));
+    }
+
+    /// <summary>
+    /// Mit Delegaten stehen die drei Knöpfe da und reichen die GEWÄHLTE Zeile durch —
+    /// beim Katalogsatz ist das <c>null</c>, dann zeigt die Verwaltung die Komponente
+    /// ohne Einengung auf eine Anlage.
+    /// </summary>
+    [Fact]
+    public void Die_Kostenknoepfe_reichen_die_gewaehlte_Zeile_durch()
+    {
+        var kosten = new List<bool>();
+        int energie = 0;
+        ErzeugerZeile? gesehen = null;
+
+        var cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Modul 400", 31) })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.Detail, n => Detail(n))
+            .Add(x => x.Gesamtleistung, () => "8")
+            .Add(x => x.KostenOeffnen, (Func<ErzeugerZeile?, bool, Task>)((zeile, betrieb) =>
+            {
+                gesehen = zeile;
+                kosten.Add(betrieb);
+                return Task.CompletedTask;
+            }))
+            .Add(x => x.EnergiekostenOeffnen, (Func<ErzeugerZeile?, Task>)(_ =>
+            {
+                energie++;
+                return Task.CompletedTask;
+            })));
+
+        var knoepfe = cut.FindAll(".epos-kostenleiste button");
+        Assert.Equal(3, knoepfe.Count);
+
+        knoepfe[0].Click();
+        Assert.Equal(new[] { false }, kosten);
+        Assert.NotNull(gesehen);                       // beim Oeffnen ist die Projektzeile gewaehlt
+
+        cut.FindAll(".epos-kostenleiste button")[1].Click();
+        Assert.Equal(new[] { false, true }, kosten);
+
+        cut.FindAll(".epos-kostenleiste button")[2].Click();
+        Assert.Equal(1, energie);
     }
 
     /// <summary>
@@ -624,18 +841,22 @@ public class PhotovoltaikDialogTests : EposBunitContext
             .Add(x => x.Katalogprofil, Profil)
             .Add(x => x.Katalogzeilen, Katalogzeilen)
             .Add(x => x.Filterstandvorgabe, _filterstand)
-            .Add(x => x.Detail, n => new ErzeugerDetail(
-                n, "", Array.Empty<(string, string)>(), null,
-                new[]
+            .Add(x => x.Detail, n => new ErzeugerDetail(n, "", Array.Empty<(string, string)>()))
+            .Add(x => x.Katalogfelder, (Func<string, IReadOnlyList<BrowserFeldwert>?>)(_ =>
+                new List<BrowserFeldwert>
                 {
-                    new Modulparameter("Efficiency:", "16.91", "%"),
-                    new Modulparameter("Cell technology:", "–")
+                    new() { Schluessel = "ETA", Bezeichnung = "Efficiency:", Einheit = "%",
+                            Art = BrowserFeldArt.Zahl, Editierbar = false, Wert = "16.91" },
+                    new() { Schluessel = "TECH", Bezeichnung = "Cell technology:",
+                            Art = BrowserFeldArt.Text, Editierbar = false, Wert = "–" }
                 }))
-            .Add(x => x.LabelAlleParameter, "Show all module parameters")
+            .Add(x => x.LabelAlleParameter, "Show all data")
             .Add(x => x.Gesamtleistung, () => "8"));
 
+        KatalogzeileWaehlen(cut);
+
         var knopf = cut.Find(".epos-modulparameter-knopf");
-        Assert.Contains("Show all module parameters", knopf.TextContent);
+        Assert.Contains("Show all data", knopf.TextContent);
         knopf.Click();
 
         var block = cut.Find(".epos-modulparameter");
