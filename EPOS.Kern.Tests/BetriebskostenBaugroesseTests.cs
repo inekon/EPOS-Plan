@@ -363,12 +363,14 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// H4c-Regel: Eine Kombination rechnet, wenn das Gewerk GENAU EINE Größe führt,
-        /// die die Art meint. Das BHKW führt <c>Pel</c> UND <c>Ptherm</c> — „je kW
-        /// Leistung" bleibt dort deshalb ohne Bezugsgröße, und der Pufferspeicher trägt
-        /// überhaupt keine (ohne Temperaturpaar keine kWh, Speicher-Registry).
+        /// die die Art meint. Der Pufferspeicher trägt keine kWh-Kapazität (ohne
+        /// Temperaturpaar keine Umrechnung, Speicher-Registry); die Wärmepumpe keine
+        /// elektrische Nennleistung, die Solarthermie keine kWp.
+        /// <para>„je kW Leistung" am BHKW und am Pufferspeicher stand bis zum
+        /// ANWENDERENTSCHEID 15.09.2026 ebenfalls hier — dort gilt jetzt <c>Pel</c>
+        /// bzw. das Volumen (<see cref="BemessungBhkwPufferspeicherTests"/>).</para>
         /// </summary>
         [Theory]
-        [InlineData(7, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG)]     // BHKW: zwei Leistungen
         [InlineData(6, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET)]  // Pufferspeicher
         [InlineData(1, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH)]   // Wärmepumpe
         [InlineData(4, DbWerte.BEMESSUNG_EUR_PRO_KWP)]             // Solarthermie

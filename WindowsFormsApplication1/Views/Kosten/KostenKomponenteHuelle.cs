@@ -510,7 +510,7 @@ namespace WindowsFormsApplication1
 
             BemessungKatalog.Info info = BemessungInfo(p.Bemessung);
             z.BemessungId = info != null ? (int?)BemessungIndex(info) : null;
-            z.Einheit = info != null ? info.Einheit : "";
+            z.Einheit = EinheitVon(info);
             KopplungAnwenden(z, p, info, pz);
             z.EmpfehlungKurztext = EmpfehlungText(p, z.Einheit);
             return z;
@@ -593,12 +593,13 @@ namespace WindowsFormsApplication1
             if (pz == null || !pz.Basis.HasValue || p == null || !p.Satz.HasValue || info == null)
                 return bestand;
 
-            string satz = ZahlText(p.Satz) + " " + info.Einheit;
-            bool prozent = string.Equals(info.Einheit, "%", StringComparison.Ordinal);
+            string einheit = EinheitVon(info);
+            string satz = ZahlText(p.Satz) + " " + einheit;
+            bool prozent = string.Equals(einheit, "%", StringComparison.Ordinal);
             string basisEinheit = prozent
                 ? DbWerte.KOSTEN_EINHEIT_EURO
-                : (info.Einheit != null && info.Einheit.StartsWith("€/", StringComparison.Ordinal)
-                    ? info.Einheit.Substring(2) : "");
+                : (einheit.StartsWith("€/", StringComparison.Ordinal)
+                    ? einheit.Substring(2) : "");
             string basis = (pz.Basis.Value.ToString("#,##0.00", CultureInfo.CurrentCulture) +
                             " " + basisEinheit).Trim();
 
@@ -671,9 +672,14 @@ namespace WindowsFormsApplication1
                 if ((_invest && i.FuerInvest) || (!_invest && i.FuerBetrieb) || benutzt.Contains(i.Persistenz))
                     _bemessungen.Add(i);
 
+            // ANWENDERENTSCHEID 15.09.2026: Der Name der Art folgt der Bezugsgröße des
+            // GEWERKS — „je kW Leistung" heißt am BHKW „je kW elektr. Leistung" und am
+            // Pufferspeicher „je Liter". Ein Persistenzwert, zwei Beschriftungen; welche
+            // gilt, weiß der Katalog (BemessungKatalog.Anzeige mit der Komponente).
             var liste = new List<ValueTuple<int, string>>();
             for (int n = 0; n < _bemessungen.Count; n++)
-                liste.Add(new ValueTuple<int, string>(n, BemessungKatalog.Anzeige(_bemessungen[n].Persistenz)));
+                liste.Add(new ValueTuple<int, string>(
+                    n, BemessungKatalog.Anzeige(_bemessungen[n].Persistenz, KomponentenId)));
 
             // Die Ids der Zeilen zeigen auf diese Liste — sie werden erst hier gültig.
             foreach (KostenPositionZeile z in _zeilen)
@@ -684,6 +690,15 @@ namespace WindowsFormsApplication1
                 z.BemessungId = info != null ? (int?)BemessungIndex(info) : null;
             }
             return liste;
+        }
+
+        /// <summary>ANWENDERENTSCHEID 15.09.2026: Das Einheitenzeichen hinter dem
+        /// Satzfeld gehört zur Bezugsgröße, und die hängt am Gewerk — am
+        /// Pufferspeicher „€/Ltr." statt „€/kW". Der Katalogeintrag selbst bleibt
+        /// unangetastet; er ist für alle Komponenten derselbe.</summary>
+        private string EinheitVon(BemessungKatalog.Info info)
+        {
+            return info == null ? "" : BemessungKatalog.Einheit(info.Persistenz, KomponentenId);
         }
 
         private static BemessungKatalog.Info BemessungInfo(string persistenz)
@@ -740,7 +755,7 @@ namespace WindowsFormsApplication1
                     KostenProjektPositionenCtrl.BasisNachziehen(b.Projektzeile, info.Persistenz);
 
                 p.Bemessung = info.Persistenz;
-                z.Einheit = info.Einheit;
+                z.Einheit = EinheitVon(info);
             }
 
             p.Satz = z.Satz;

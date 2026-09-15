@@ -6215,6 +6215,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je kW elektr. Leistung ähnelt.
+        /// </summary>
+        public static string BM_KW_LEISTUNG_BHKW {
+            get {
+                return ResourceManager.GetString("BM_KW_LEISTUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die je Liter ähnelt.
+        /// </summary>
+        public static string BM_LITER {
+            get {
+                return ResourceManager.GetString("BM_LITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die je m² Kollektorfläche ähnelt.
         /// </summary>
         public static string BM_M2_KOLLEKTOR {

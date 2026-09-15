@@ -365,10 +365,12 @@ namespace WindowsFormsApplication1
                 string.Equals(n.Bemessung, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
                 return "";
             if (!n.Menge.HasValue || !n.Einheitpreis.HasValue) return "";
+            // ANWENDERENTSCHEID 15.09.2026: Die Satzeinheit folgt der Bezugsgröße des
+            // GEWERKS — am Pufferspeicher ist sie „€/Ltr.", nicht „€/kW".
             return n.Menge.Value.ToString("N2", kultur) + " " +
                    BetriebskostenCtrl.MengenEinheit(n.Bemessung) + " × " +
                    n.Einheitpreis.Value.ToString("N3", kultur) + " " +
-                   BetriebskostenCtrl.SatzEinheit(n.Bemessung);
+                   BetriebskostenCtrl.SatzEinheit(n.Bemessung, n.Komponente);
         }
     }
 
