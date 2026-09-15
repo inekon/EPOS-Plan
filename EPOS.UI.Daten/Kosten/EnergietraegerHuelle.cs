@@ -123,6 +123,22 @@ namespace WindowsFormsApplication1
         /// <summary>Der vorgewählte Träger der Komponente — er bleibt in der Liste, auch wenn er nicht passt.</summary>
         private int _vorwahl;
 
+        // ---- Fehlende und geliehene Werte ------------------------------------
+        //
+        // Was die LESEKETTE zu den drei Größen sagt, gelesen beim Trägerwechsel.
+        // Was seither im FELD steht, ist die zweite Hälfte der Aussage; zusammen
+        // beantworten beide die Frage, die die Karte stellt: „Bliebe hier eine
+        // Lücke, wenn ich jetzt speicherte?" Die Kette selbst wird NICHT
+        // nachgebaut — sie steht in Emissionsquelle bzw. KostenEmissionRechner und
+        // wird über EnergietraegerRueckfall befragt.
+        private bool _co2AusKette;
+        private bool _arbeitspreisAusKette;
+        private bool _leistungspreisAusKette;
+
+        /// <summary>Je Größe die Herleitung eines in dieser Sitzung geliehenen Wertes.</summary>
+        private readonly Dictionary<string, string> _leihzeilen =
+            new Dictionary<string, string>(StringComparer.Ordinal);
+
         /// <param name="projektId">0 = Katalogkontext (Stammdaten).</param>
         public EnergietraegerHuelle(int projektId)
         {
@@ -191,6 +207,13 @@ namespace WindowsFormsApplication1
                 ["AufschlagAnwenden"] = EventCallback.Factory.Create<bool>(new object(), AufschlagAnwenden),
                 ["Speichern"] = new Func<bool>(Speichern),
                 ["SpeichernGrund"] = new Func<string>(SpeichernGrund),
+                ["SpeichernHinweis"] = new Func<string>(SpeichernHinweis),
+                // Der Übernahmeweg aus der Kategorie: erst fragen, dann schreiben.
+                // Die Wahl liefert die Kandidaten samt Wert und Einheit, die
+                // Übernahme schreibt GENAU den bestätigten Wert in die
+                // Projektübersteuerung (EnergietraegerRueckfall).
+                ["LueckenWahl"] = new Func<string, Uebernahmewahl>(Kandidatenwahl),
+                ["LueckeUebernehmen"] = new Func<string, int, bool>(LueckeUebernehmen),
                 ["HistorieLoeschen"] = new Func<PreishistorieZeile, bool>(HistorieLoeschen),
                 ["HistorieLoeschenGrund"] = new Func<string>(HistorieLoeschenGrund),
                 ["UnterdialogGeschlossen"] = EventCallback.Factory.Create(new object(),
@@ -695,6 +718,11 @@ namespace WindowsFormsApplication1
             _regeln = EnergieEinheitenPruefung.RegelnDesBrennstoffs(_gewaehlt.ID_Brennstoff);
             stand.ReihenStatus = ReihenStatus();
 
+            // Ein Trägerwechsel verwirft jede geliehene Zeile: Sie gehört dem
+            // Träger, nicht der Karte.
+            _leihzeilen.Clear();
+            KetteLesen();
+
             BloeckeAufbauen();
             EmissionenAufbauen();
             HistorieLaden();
@@ -1054,6 +1082,7 @@ namespace WindowsFormsApplication1
             EffektivSetzen();
             RegelnSetzen();
             EmissionsSummeSetzen();
+            LueckenSetzen();
         }
 
         /// <summary>
@@ -1298,6 +1327,13 @@ namespace WindowsFormsApplication1
             // Vorlaeufer las die Historie ebenfalls nach jedem Schreiben neu.
             _stand.UebernahmeHinweis = "";
             HistorieLaden();
+
+            // Was jetzt in der Datenbank steht, ist die neue Wahrheit: Die
+            // Lückenzeilen werden daran neu gemessen, damit der Hinweis nach dem
+            // Speichern stimmt - und nach dem Speichern DERSELBE ist wie davor,
+            // wenn nichts eingetragen wurde (das Speichern sperrt er nicht).
+            KetteLesen();
+            Nachziehen();
             return true;
         }
 
@@ -1590,6 +1626,267 @@ namespace WindowsFormsApplication1
             foreach (EmissionsZeile z in _emissionen.Zeilen)
                 if (string.Equals(z.Kuerzel, kuerzel, StringComparison.OrdinalIgnoreCase)) return z;
             return null;
+        }
+
+        // =====================================================================
+        // Fehlende Werte und die Übernahme aus der Kategorie
+        //
+        // DIE LÜCKE WIRD SICHTBAR, WO SIE ENTSTEHT. Ein Arbeitspreis 0, ein
+        // Leistungspreis 0 oder ein fehlender CO₂-Wert ließen sich bis hierher
+        // ohne jede Meldung speichern; auffallen tat es erst beim Rechnen — beim
+        // CO₂ als stille 0 in der Emissionsbilanz, beim Preis als
+        // „Energiekosten nicht bestimmbar". Die Karte sagt es jetzt am Ort der
+        // Pflege.
+        //
+        // DER HINWEIS SPERRT NICHTS. Ein halbgepflegter Träger muss sich anlegen
+        // lassen; Speichern bleibt möglich und meldet denselben Hinweis.
+        //
+        // KEIN AUTOMATISCHER RÜCKFALL. Der Übernahmeweg ist ein Bedienweg: Er
+        // legt Kandidaten vor, und erst die Bestätigung des Anwenders schreibt.
+        // Im Rechenweg bleibt ein Träger ohne Wert eine Datenlücke.
+        // =====================================================================
+
+        /// <summary>
+        /// Was die Lesekette zu den drei Größen sagt — EINMAL je Trägerwechsel.
+        /// Befragt wird <see cref="EnergietraegerRueckfall"/>, damit es bei der
+        /// einen Kette bleibt (CO₂ über <c>Emissionsquelle.Co2Gepflegt</c>, die
+        /// Preise über die Vorrangkette der Wirtschaftlichkeit).
+        /// </summary>
+        private void KetteLesen()
+        {
+            _co2AusKette = false;
+            _arbeitspreisAusKette = false;
+            _leistungspreisAusKette = false;
+            if (_gewaehlt == null) return;
+
+            try
+            {
+                _co2AusKette = EnergietraegerRueckfall
+                    .Wert(_projektId, _gewaehlt.ID, Rueckfallgroesse.Co2).HasValue;
+                _arbeitspreisAusKette = EnergietraegerRueckfall
+                    .Wert(_projektId, _gewaehlt.ID, Rueckfallgroesse.Arbeitspreis).HasValue;
+                _leistungspreisAusKette = EnergietraegerRueckfall
+                    .Wert(_projektId, _gewaehlt.ID, Rueckfallgroesse.Leistungspreis).HasValue;
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Die Zeilen der Karte zu den drei Größen: fehlende Werte mit ihrem
+        /// Übernahmeweg, geliehene mit ihrer Herleitung.
+        /// </summary>
+        private void LueckenSetzen()
+        {
+            if (_stand == null || _gewaehlt == null) return;
+
+            var liste = new List<Wertluecke>();
+
+            Wertzeile(liste, EnergietraegerRueckfall.GROESSE_ARBEITSPREIS,
+                _baseWork > 0.0 || _arbeitspreisAusKette,
+                T("ETV_LUECKE_ARBEITSPREIS",
+                  "Für diesen Energieträger ist kein Arbeitspreis gepflegt. Ohne ihn lässt "
+                  + "sich die Wirtschaftlichkeit nicht rechnen."));
+
+            // Nur Träger, die überhaupt einen Leistungspreis führen. Eine
+            // gepflegte Saisonreihe (FK6a) gilt vor dem konstanten Satz - dann
+            // ist der Leistungspreis gepflegt, auch wenn das Feld 0 zeigt.
+            if (_gewaehlt.HasPowerPrice)
+            {
+                Wertzeile(liste, EnergietraegerRueckfall.GROESSE_LEISTUNGSPREIS,
+                    _basePower > 0.0 || _leistungspreisAusKette
+                        || (_stand.ReihenStatus ?? "").Length > 0,
+                    T("ETV_LUECKE_LEISTUNGSPREIS",
+                      "Für diesen Energieträger ist kein Leistungspreis gepflegt."));
+            }
+
+            double? co2 = KartenCo2();
+            Wertzeile(liste, EnergietraegerRueckfall.GROESSE_CO2,
+                (co2.HasValue && co2.Value > 0.0) || _co2AusKette,
+                T("ETV_LUECKE_CO2",
+                  "Für diesen Energieträger ist kein CO₂-Wert gepflegt. Die Emissionsbilanz "
+                  + "rechnet ihn mit 0."));
+
+            _stand.Wertluecken = liste;
+        }
+
+        /// <summary>
+        /// Eine Zeile entsteht nur, wenn es etwas zu sagen gibt: eine offene Lücke
+        /// oder ein geliehener Wert. Der Übernahmeweg steht allein im
+        /// PROJEKTkontext — geschrieben wird in die Projektübersteuerung, und die
+        /// gibt es im Katalog nicht.
+        /// </summary>
+        private void Wertzeile(List<Wertluecke> liste, string groesse, bool gepflegt,
+                               string hinweis)
+        {
+            string leih;
+            _leihzeilen.TryGetValue(groesse, out leih);
+            bool geliehen = !string.IsNullOrEmpty(leih);
+            if (gepflegt && !geliehen) return;
+
+            liste.Add(new Wertluecke
+            {
+                Groesse = groesse,
+                Hinweis = gepflegt ? "" : hinweis,
+                KnopfText = gepflegt || _projektId <= 0
+                    ? ""
+                    : T("ETV_LUECKE_BTN", "Wert aus der Kategorie übernehmen…"),
+                Leihzeile = leih ?? ""
+            });
+        }
+
+        /// <summary>
+        /// Der CO₂-Wert, wie er JETZT IN DER KARTE steht: die Zeile des
+        /// Artenkatalogs, sonst das Bestandsfeld. <c>null</c> = keine Zeile.
+        /// </summary>
+        private double? KartenCo2()
+        {
+            if (_stand == null) return null;
+            if (_stand.EmissionenVerfuegbar && _stand.Emissionszeilen != null)
+            {
+                foreach (EmissionsFeldZeile z in _stand.Emissionszeilen)
+                {
+                    if (string.Equals(z.Kuerzel, DbWerte.EMISSIONSART_CO2,
+                                      StringComparison.OrdinalIgnoreCase))
+                        return z.Wert;
+                }
+            }
+            return _stand.AltCO2;
+        }
+
+        /// <summary>Die offenen Lücken in einem Satz; leer = keine.</summary>
+        private string SpeichernHinweis()
+        {
+            if (_stand == null) return "";
+            var teile = new List<string>();
+            foreach (Wertluecke l in _stand.Wertluecken)
+                if (!string.IsNullOrEmpty(l.Hinweis)) teile.Add(l.Hinweis);
+            return teile.Count == 0 ? "" : string.Join(" ", teile);
+        }
+
+        /// <summary>
+        /// Die RÜCKFRAGE des Übernahmewegs: die Träger derselben Kategorie, die
+        /// den gesuchten Wert tragen, jeder mit seinem Wert und dessen Einheit.
+        /// Eine leere Kandidatenliste ist eine gültige Antwort — dann sagt der Weg
+        /// das und bietet nichts an.
+        /// </summary>
+        private Uebernahmewahl Kandidatenwahl(string schluessel)
+        {
+            var wahl = new Uebernahmewahl { Groesse = schluessel ?? "" };
+
+            Rueckfallgroesse groesse;
+            if (_gewaehlt == null || _projektId <= 0
+                || !EnergietraegerRueckfall.Groesse(schluessel, out groesse)) return wahl;
+
+            string kategorie = EnergietraegerRueckfall.KategorieName(
+                EnergietraegerRueckfall.Kategorie(_gewaehlt.ID));
+            string name = Groessenname(groesse);
+
+            wahl.Titel = string.Format(CultureInfo.CurrentCulture,
+                T("ETV_LUECKE_TITEL", "{0} aus der Kategorie übernehmen"), name);
+            wahl.Frage = string.Format(CultureInfo.CurrentCulture,
+                T("ETV_LUECKE_FRAGE",
+                  "Welcher Energieträger der Kategorie „{0}“ soll den Wert stellen? Der "
+                  + "gewählte Wert wird in dieses Projekt übernommen; der Katalog bleibt "
+                  + "unverändert."),
+                kategorie);
+            wahl.LeerText = string.Format(CultureInfo.CurrentCulture,
+                T("ETV_LUECKE_LEER",
+                  "Kein Energieträger der Kategorie „{0}“ trägt einen {1} — es gibt nichts "
+                  + "zu übernehmen."),
+                kategorie, name);
+
+            var eintraege = new List<ValueTuple<int, string>>();
+            foreach (Rueckfallkandidat k in
+                     EnergietraegerRueckfall.Kandidaten(_projektId, _gewaehlt.ID, groesse))
+            {
+                eintraege.Add(new ValueTuple<int, string>(k.TraegerId,
+                    string.Format(CultureInfo.CurrentCulture,
+                        T("ETV_LUECKE_KANDIDAT", "{0} — {1} {2}"),
+                        k.Name, Wertzahl(k.Wert), k.Einheit)));
+            }
+            wahl.Kandidaten = eintraege;
+            return wahl;
+        }
+
+        /// <summary>
+        /// Die BESTÄTIGTE Übernahme: Der Wert des gewählten Trägers geht in die
+        /// Projektübersteuerung dieses Trägers und in die Felder der Karte.
+        /// <c>false</c> = nichts geschrieben (der gewählte Träger ist kein
+        /// Kandidat mehr, oder das Schreiben ist gescheitert).
+        ///
+        /// <para>Der gewählte Träger wird gegen die FRISCH gelesene Kandidatenliste
+        /// gehalten — was nicht angeboten wurde, wird auch nicht übernommen. Damit
+        /// gilt die Einheitenprüfung des Kerns auch für diesen Weg.</para>
+        /// </summary>
+        private bool LueckeUebernehmen(string schluessel, int geberId)
+        {
+            Rueckfallgroesse groesse;
+            if (_stand == null || _gewaehlt == null || _projektId <= 0 || geberId <= 0
+                || !EnergietraegerRueckfall.Groesse(schluessel, out groesse)) return false;
+
+            Rueckfallkandidat geber = null;
+            foreach (Rueckfallkandidat k in
+                     EnergietraegerRueckfall.Kandidaten(_projektId, _gewaehlt.ID, groesse))
+            {
+                if (k.TraegerId == geberId) { geber = k; break; }
+            }
+            if (geber == null) return false;
+
+            if (!EnergietraegerRueckfall.Uebernehmen(_projektId, _gewaehlt.ID,
+                                                     groesse, geber.Wert)) return false;
+
+            switch (groesse)
+            {
+                case Rueckfallgroesse.Arbeitspreis:
+                    _baseWork = geber.Wert;
+                    AnzeigeAusBasis();
+                    break;
+                case Rueckfallgroesse.Leistungspreis:
+                    _basePower = geber.Wert;
+                    AnzeigeAusBasis();
+                    break;
+                default:
+                    _stand.AltCO2 = geber.Wert;
+                    Uebernehmen(DbWerte.EMISSIONSART_CO2, geber.Wert);
+                    EmissionszeilenSetzen();
+                    break;
+            }
+
+            // Ein übernommener Wert ist ab jetzt ein gepflegter Wert — aber man
+            // muss sehen können, wie er dorthin kam.
+            _leihzeilen[EnergietraegerRueckfall.Schluessel(groesse)] =
+                string.Format(CultureInfo.CurrentCulture,
+                    T("ETV_LUECKE_LEIHZEILE",
+                      "{0} {1} {2} aus der Kategorie „{3}“ übernommen — Energieträger „{4}“."),
+                    Groessenname(groesse), Wertzahl(geber.Wert), geber.Einheit,
+                    EnergietraegerRueckfall.KategorieName(
+                        EnergietraegerRueckfall.Kategorie(_gewaehlt.ID)),
+                    geber.Name);
+
+            KetteLesen();
+            Nachziehen();
+            return true;
+        }
+
+        /// <summary>Der Name einer Größe in Worten.</summary>
+        private static string Groessenname(Rueckfallgroesse groesse)
+        {
+            switch (groesse)
+            {
+                case Rueckfallgroesse.Arbeitspreis:
+                    return T("ETV_GROESSE_ARBEITSPREIS", "Arbeitspreis");
+                case Rueckfallgroesse.Leistungspreis:
+                    return T("ETV_GROESSE_LEISTUNGSPREIS", "Leistungspreis");
+                default:
+                    return T("ETV_GROESSE_CO2", "CO₂-Wert");
+            }
+        }
+
+        /// <summary>Ein Preis oder Faktor, wie er in der Rückfrage steht — vier
+        /// Nachkommastellen, damit ein ct-Betrag nicht gerundet daherkommt.</summary>
+        private static string Wertzahl(double wert)
+        {
+            return wert.ToString("0.####", CultureInfo.CurrentCulture);
         }
 
         // =====================================================================

@@ -879,6 +879,32 @@ namespace WindowsFormsApplication1
                 : info.PreisArbeit.Value;
         }
 
+        /// <summary>
+        /// Arbeits- und Leistungspreis EINES Trägers, wie dieser Rechner sie sieht:
+        /// je ABRECHNUNGSEINHEIT (der Arbeitspreis also NICHT auf kWh umgerechnet),
+        /// <c>null</c> = nicht gepflegt.
+        ///
+        /// <para><b>Nur ein zweiter Leser, kein zweiter Rechenweg.</b> Die
+        /// Vorrangkette — Projektwert → Preisstand → Katalogwert, jeweils „0 zählt als
+        /// nicht gepflegt" — steht genau einmal, in <see cref="LadeTraeger"/>. Der
+        /// Übernahmeweg der Trägerkarte
+        /// (<see cref="EnergietraegerRueckfall"/>) fragt hier, statt sich dieselbe
+        /// Kette ein zweites Mal zu schreiben: Was die Karte als Lücke zeigt, muss
+        /// dasselbe sein, was die Wirtschaftlichkeit als Lücke meldet.</para>
+        /// </summary>
+        internal static void PreiseDesTraegers(int idProjekt, int carrierId,
+                                               out double? arbeitspreis,
+                                               out double? leistungspreis)
+        {
+            arbeitspreis = null;
+            leistungspreis = null;
+            if (carrierId <= 0) return;
+
+            TraegerInfo info = LadeTraeger(idProjekt, carrierId);
+            arbeitspreis = info.PreisArbeit;
+            leistungspreis = info.PreisLeistung;
+        }
+
         /// <summary><c>energy_carrier.id</c> des Stromträgers des Projekts
         /// (<c>pricing_model = 'ELECTRICITY'</c>); 0 = keiner gepflegt.</summary>
         internal static int StromTraegerId(int idProjekt)
