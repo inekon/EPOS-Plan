@@ -79,7 +79,7 @@ Der Ergebnisreiter ''Stromspeicher'' zeigt selbst nur '''Ergebnisse'''. Über se
 * '''Standort und Boden''' – Bodentyp, Klimazone und die nutzbare Spreizung. Die Klimazone lässt sich mit dem Knopf daneben auch auf der Karte wählen; unter den Feldern stehen die Kennwerte des gewählten Bodens.
 * '''Jahresgang der Quelltemperatur''' – die Vorschau zeichnet die Quelltemperatur über das Jahr, beim Erdkollektor gedämpft und zeitlich verschoben gegenüber der Außentemperatur.
 * '''Auslegungsprüfung nach VDI 4640 Blatt 2''' – sie braucht die Ergebnisse eines Simulationslaufs: Jahresentzugsarbeit, maximale Entzugsleistung und Jahresvolllaststunden. Mit ''Simulation starten'' rechnen Sie den Lauf aus dem Dialog heraus; solange er läuft, bleibt der Dialog stehen und nimmt keine Eingabe an.
-* '''Der Dialog hat keinen Knopf OK – das Schließen übernimmt''' – mit ✕ oder ''Esc'' werden die Eingaben geprüft und übernommen. Ist eine Eingabe unzulässig – eine Verlegetiefe von 0 m oder über 10 m, eine fehlende Kollektorfläche, eine Sondenlänge von 0 m, weniger als eine Sonde oder eine Spreizung von 0 K –, bleibt der Dialog offen und nennt den Grund als Hinweis über den Feldern. Verloren geht dabei nichts: Die eingetippten Werte stehen weiter da.
+* '''Übernehmen oder verwerfen''' – ''OK'' prüft die Eingaben und übernimmt sie. Ist eine Eingabe unzulässig – eine Verlegetiefe von 0 m oder über 10 m, eine fehlende Kollektorfläche, eine Sondenlänge von 0 m, weniger als eine Sonde oder eine Spreizung von 0 K –, bleibt der Dialog offen und nennt den Grund als Hinweis über den Feldern; die eingetippten Werte stehen weiter da. ''Abbrechen'' schließt den Dialog, ohne zu speichern; ✕ und ''Esc'' wirken ebenso.
 
 === Wärmesenken einer Anlage ===
 

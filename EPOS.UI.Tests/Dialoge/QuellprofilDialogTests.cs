@@ -433,18 +433,26 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.Equal(55, ergebnis);
     }
 
+    /// <summary>
+    /// Abbrechen und Esc verlassen den Dialog OHNE zu speichern: Der Dialog schreibt
+    /// selbst, und der Pruefstand bleibt leer.
+    /// </summary>
     [Fact]
     public void Abbrechen_und_Esc_liefern_null()
     {
         int? ergebnis = 7;
-        var cut = Zeige(Neu(), new Pruefstand(), id => ergebnis = id);
+        var stand = new Pruefstand();
+        var cut = Zeige(Neu(), stand, id => ergebnis = id);
 
+        Bezeichner(cut, "Profil A");
         cut.FindAll(".epos-leiste button").First(b => b.TextContent == "Abbrechen").Click();
         Assert.Null(ergebnis);
+        Assert.Null(stand.Gespeichert);
 
         ergebnis = 7;
         cut.Find("div.epos-dialog").KeyDown("Escape");
         Assert.Null(ergebnis);
+        Assert.Null(stand.Gespeichert);
     }
 
     // ================================================================== Hilfsgriffe

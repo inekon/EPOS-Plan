@@ -81,8 +81,8 @@ namespace WindowsFormsApplication1
                 ["KarteKnopfTip"] = MyResource.Resource.SIMQ_KARTE_KNOPF_TIP,
                 ["KarteTitel"] = MyResource.Resource.SIMQ_KARTE_TITEL,
                 ["BtnSimulation"] = MyResource.Resource.SIMQ_ERDREICH_BTN_SIMULATION,
-                // Keine OkText/AbbrechenText mehr (#275): Der Dialog hat keine
-                // Knopfleiste; sein Schließen übernimmt.
+                ["OkText"] = MyResource.Resource.SIM_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.SIM_BTN_ABBRECHEN,
                 ["BildAlt"] = MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU,
                 ["PlatzhalterText"] = MyResource.Resource.SIMQ_ERDREICH_BILD_PLATZHALTER,
 
