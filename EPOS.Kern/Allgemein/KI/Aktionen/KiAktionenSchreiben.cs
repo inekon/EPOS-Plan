@@ -780,15 +780,15 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT s.C_Nom, s.P_Lade FROM Tab_Energieanlagen AS a " +
+                    "SELECT s.Energie, s.Leistung FROM Tab_Energieanlagen AS a " +
                     "INNER JOIN Tab_Stromspeicher AS s ON a.ID_SP = s.ID " +
                     "WHERE a.ID_Projekt = ? AND a.ID_SP IS NOT NULL",
                     new DbParam("@p", idProjekt));
 
                 if (dt != null && dt.Rows.Count > 0)
                 {
-                    stand.KapazitaetKwh = Gleit(dt.Rows[0], "C_Nom");
-                    stand.LeistungKw = Gleit(dt.Rows[0], "P_Lade");
+                    stand.KapazitaetKwh = Gleit(dt.Rows[0], "Energie");
+                    stand.LeistungKw = Gleit(dt.Rows[0], "Leistung");
                 }
             }
             catch { }

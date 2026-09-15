@@ -29,7 +29,7 @@ namespace KiKern
     /// Befehlszeilenschalter (<c>/ki-feldsicherung-aus</c>) die Feldbestaetigung der
     /// Formularaktionen aufheben - vorgesehen als Entwicklerkanal (Fachkonzept 11.5).
     /// Der Auftraggeber hat ihn abbestellt: „eine Bestaetigung was gesetzt wird sollte
-    /// immer erscheinen". <see cref="KiFeldsicherung"/> ist damit ersatzlos entfallen,
+    /// immer erscheinen". Die Klasse <c>KiFeldsicherung</c> ist damit ersatzlos entfallen,
     /// und diese Klasse antwortet genau das, was der Riegel sagt.
     /// </para>
     /// <para>
