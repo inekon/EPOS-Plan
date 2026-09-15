@@ -39,5 +39,8 @@ using System.Runtime.InteropServices;
 // 1.2.0.0 (September 2026, #191): Datenhaltung SQLite (Kenndaten.sqlite statt
 // Access), Laufzeit .NET 10 und WebView2, Setup ohne Access-Engine; Nummer wie
 // im Update-Logbuch auf epos-plan.de.
-[assembly: AssemblyVersion("1.2.0.0")]
-[assembly: AssemblyFileVersion("1.2.0.0")]
+// 1.2.0.1 (September 2026): Nutzungsdauern (AfA) je Technik und Positionsart,
+// Energietraeger je Komponente, Stromspeicher-Auslegung mit zwei Suchmethoden;
+// Nummer wie im Update-Logbuch auf epos-plan.de.
+[assembly: AssemblyVersion("1.2.0.1")]
+[assembly: AssemblyFileVersion("1.2.0.1")]
