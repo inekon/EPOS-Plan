@@ -19544,4 +19544,58 @@ Do you want to allow this?</value>
   <data name="FLOTTE_OPT_GROESSE_UNABHAENGIG" xml:space="preserve">
     <value>The size search does not depend on the selected storage unit; it looks for the most economical size.</value>
   </data>
+  <data name="ETV_LUECKE_ARBEITSPREIS" xml:space="preserve">
+    <value>No unit price is maintained for this energy carrier. Without it the economic calculation cannot be performed.</value>
+  </data>
+  <data name="ETV_LUECKE_LEISTUNGSPREIS" xml:space="preserve">
+    <value>No demand charge is maintained for this energy carrier.</value>
+  </data>
+  <data name="ETV_LUECKE_CO2" xml:space="preserve">
+    <value>No CO₂ value is maintained for this energy carrier. The emission balance counts it as 0.</value>
+  </data>
+  <data name="ETV_LUECKE_BTN" xml:space="preserve">
+    <value>Take value from the category…</value>
+  </data>
+  <data name="ETV_LUECKE_TITEL" xml:space="preserve">
+    <value>Take {0} from the category</value>
+  </data>
+  <data name="ETV_LUECKE_FRAGE" xml:space="preserve">
+    <value>Which energy carrier of the category “{0}” should provide the value? The chosen value is taken into this project; the catalogue stays unchanged.</value>
+  </data>
+  <data name="ETV_LUECKE_LEER" xml:space="preserve">
+    <value>No energy carrier of the category “{0}” carries a {1} — there is nothing to take.</value>
+  </data>
+  <data name="ETV_LUECKE_KANDIDAT" xml:space="preserve">
+    <value>{0} — {1} {2}</value>
+  </data>
+  <data name="ETV_LUECKE_LEIHZEILE" xml:space="preserve">
+    <value>{0} {1} {2} taken from the category “{3}” — energy carrier “{4}”.</value>
+  </data>
+  <data name="ETV_GROESSE_CO2" xml:space="preserve">
+    <value>CO₂ value</value>
+  </data>
+  <data name="ETV_GROESSE_ARBEITSPREIS" xml:space="preserve">
+    <value>unit price</value>
+  </data>
+  <data name="ETV_GROESSE_LEISTUNGSPREIS" xml:space="preserve">
+    <value>demand charge</value>
+  </data>
+  <data name="ETV_KAT_ELECTRICITY" xml:space="preserve">
+    <value>Electricity</value>
+  </data>
+  <data name="ETV_KAT_GASEOUS_FUEL" xml:space="preserve">
+    <value>Gaseous fuels</value>
+  </data>
+  <data name="ETV_KAT_LIQUID_FUEL" xml:space="preserve">
+    <value>Liquid fuels</value>
+  </data>
+  <data name="ETV_KAT_SOLID_FUEL" xml:space="preserve">
+    <value>Solid fuels</value>
+  </data>
+  <data name="ETV_KAT_HEAT" xml:space="preserve">
+    <value>Heat</value>
+  </data>
+  <data name="ETV_KAT_ANIMAL_FAT" xml:space="preserve">
+    <value>Animal fats</value>
+  </data>
 </root>

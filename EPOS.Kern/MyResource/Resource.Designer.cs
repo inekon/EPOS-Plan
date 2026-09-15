@@ -8627,6 +8627,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis ähnelt.
+        /// </summary>
+        public static string ETV_GROESSE_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("ETV_GROESSE_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Wert ähnelt.
+        /// </summary>
+        public static string ETV_GROESSE_CO2 {
+            get {
+                return ResourceManager.GetString("ETV_GROESSE_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis ähnelt.
+        /// </summary>
+        public static string ETV_GROESSE_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("ETV_GROESSE_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string ETV_HISTORIE_LOESCHEN {
@@ -8677,6 +8704,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_KATALOGWERTE_UEBERNOMMEN {
             get {
                 return ResourceManager.GetString("ETV_KATALOGWERTE_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tierische Fette ähnelt.
+        /// </summary>
+        public static string ETV_KAT_ANIMAL_FAT {
+            get {
+                return ResourceManager.GetString("ETV_KAT_ANIMAL_FAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
+        /// </summary>
+        public static string ETV_KAT_ELECTRICITY {
+            get {
+                return ResourceManager.GetString("ETV_KAT_ELECTRICITY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gasförmige Brennstoffe ähnelt.
+        /// </summary>
+        public static string ETV_KAT_GASEOUS_FUEL {
+            get {
+                return ResourceManager.GetString("ETV_KAT_GASEOUS_FUEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme ähnelt.
+        /// </summary>
+        public static string ETV_KAT_HEAT {
+            get {
+                return ResourceManager.GetString("ETV_KAT_HEAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Flüssige Brennstoffe ähnelt.
+        /// </summary>
+        public static string ETV_KAT_LIQUID_FUEL {
+            get {
+                return ResourceManager.GetString("ETV_KAT_LIQUID_FUEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feste Brennstoffe ähnelt.
+        /// </summary>
+        public static string ETV_KAT_SOLID_FUEL {
+            get {
+                return ResourceManager.GetString("ETV_KAT_SOLID_FUEL", resourceCulture);
             }
         }
         
@@ -8803,6 +8884,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_LEER {
             get {
                 return ResourceManager.GetString("ETV_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Energieträger ist kein Arbeitspreis gepflegt. Ohne ihn lässt sich die Wirtschaftlichkeit nicht rechnen. ähnelt.
+        /// </summary>
+        public static string ETV_LUECKE_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("ETV_LUECKE_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert aus der Kategorie übernehmen… ähnelt.
+        /// </summary>
+        public static string ETV_LUECKE_BTN {
+            get {
+                return ResourceManager.GetString("ETV_LUECKE_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Energieträger ist kein CO₂-Wert gepflegt. Die Emissionsbilanz rechnet ihn mit 0. ähnelt.
+        /// </summary>
+        public static string ETV_LUECKE_CO2 {
+            get {
+                return ResourceManager.GetString("ETV_LUECKE_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welcher Energieträger der Kategorie „{0}“ soll den Wert stellen? Der gewählte Wert wird in dieses Projekt übernommen; der Katalog bleibt unverändert. ähnelt.
+        /// </summary>
+        public static string ETV_LUECKE_FRAGE {
+            get {
+                return ResourceManager.GetString("ETV_LUECKE_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1} {2} ähnelt.
+        /// </summary>
+        public static string ETV_LUECKE_KANDIDAT {
+            get {
+                return ResourceManager.GetString("ETV_LUECKE_KANDIDAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Energieträger der Kategorie „{0}“ trägt einen {1} — es gibt nichts zu übernehmen. ähnelt.
+        /// </summary>
+        public static string ETV_LUECKE_LEER {
+            get {
+                return ResourceManager.GetString("ETV_LUECKE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} {2} aus der Kategorie „{3}“ übernommen — Energieträger „{4}“. ähnelt.
+        /// </summary>
+        public static string ETV_LUECKE_LEIHZEILE {
+            get {
+                return ResourceManager.GetString("ETV_LUECKE_LEIHZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Energieträger ist kein Leistungspreis gepflegt. ähnelt.
+        /// </summary>
+        public static string ETV_LUECKE_LEISTUNGSPREIS {
+            get {
+                return ResourceManager.GetString("ETV_LUECKE_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} aus der Kategorie übernehmen ähnelt.
+        /// </summary>
+        public static string ETV_LUECKE_TITEL {
+            get {
+                return ResourceManager.GetString("ETV_LUECKE_TITEL", resourceCulture);
             }
         }
         

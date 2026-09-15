@@ -29,6 +29,7 @@
    schlechter als die alte. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
 
 <div class="epos-traegerkarte">
 
@@ -119,6 +120,29 @@
                     <Herleitungszeile Text="@Stand.UebernahmeHinweis" />
                 }
             }
+
+            @* Fehlende Preise: Hinweis am Ort der Pflege, daneben der Weg. Der
+               Hinweis sperrt nichts - ein halbgepflegter Traeger muss sich
+               anlegen lassen. Geschrieben wird erst, was der Anwender in der
+               Rueckfrage bestaetigt. *@
+            @foreach (Wertluecke luecke in Preisluecken)
+            {
+                @if (!string.IsNullOrEmpty(luecke.Hinweis))
+                {
+                    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@luecke.Hinweis" />
+                }
+                @if (!string.IsNullOrEmpty(luecke.KnopfText))
+                {
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf"
+                                @onclick="() => LueckeUebernehmen.InvokeAsync(luecke.Groesse)">@luecke.KnopfText</button>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(luecke.Leihzeile))
+                {
+                    <Herleitungszeile Text="@luecke.Leihzeile" />
+                }
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -196,6 +220,27 @@
     @* ====================================================== Emissionen *@
     <Reiterblatt Schluessel="EMISSIONEN" Titel="@TitelEmissionen">
         <KindInhalt>
+            @* Derselbe Weg wie bei den Preisen, nur fuer den CO2-Wert - er wird
+               hier gepflegt, also steht der Hinweis hier. *@
+            @foreach (Wertluecke luecke in Co2luecken)
+            {
+                @if (!string.IsNullOrEmpty(luecke.Hinweis))
+                {
+                    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@luecke.Hinweis" />
+                }
+                @if (!string.IsNullOrEmpty(luecke.KnopfText))
+                {
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf"
+                                @onclick="() => LueckeUebernehmen.InvokeAsync(luecke.Groesse)">@luecke.KnopfText</button>
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(luecke.Leihzeile))
+                {
+                    <Herleitungszeile Text="@luecke.Leihzeile" />
+                }
+            }
+
             @if (!Stand.EmissionenVerfuegbar)
             {
                 <Warnbanner Stufe="WarnStufe.Warnung" Text="@KeinKatalogText" />
@@ -379,6 +424,28 @@
     /// Felder. Eine einmalige Kopie; geschrieben wird erst mit „Speichern".
     /// </summary>
     [Parameter] public EventCallback KatalogUebernehmen { get; set; }
+
+    /// <summary>
+    /// „Wert aus der Kategorie übernehmen…" — mit dem Schlüssel der Größe. Der
+    /// Wirt legt die Kandidaten zur Bestätigung vor; diese Karte schreibt nichts.
+    /// </summary>
+    [Parameter] public EventCallback<string> LueckeUebernehmen { get; set; }
+
+    /// <summary>Die Lückenzeilen der beiden Preise (Arbeits- und Leistungspreis).</summary>
+    private IEnumerable<Wertluecke> Preisluecken => Luecken(false);
+
+    /// <summary>Die Lückenzeile des CO₂-Wertes.</summary>
+    private IEnumerable<Wertluecke> Co2luecken => Luecken(true);
+
+    private IEnumerable<Wertluecke> Luecken(bool co2)
+    {
+        foreach (Wertluecke l in Stand.Wertluecken)
+        {
+            bool istCo2 = string.Equals(l.Groesse, EnergietraegerRueckfall.GROESSE_CO2,
+                                        StringComparison.Ordinal);
+            if (istCo2 == co2) yield return l;
+        }
+    }
 
     /// <summary>
     /// Löscht EINE Zeile der Preishistorie (Anwenderwunsch 14.09.2026). Der Wirt

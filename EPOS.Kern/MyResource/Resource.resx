@@ -19551,4 +19551,58 @@ Möchten Sie das zulassen?</value>
   <data name="FLOTTE_OPT_GROESSE_UNABHAENGIG" xml:space="preserve">
     <value>Die Größensuche ist vom gewählten Speicher unabhängig; gesucht wird die wirtschaftlich beste Größe.</value>
   </data>
+  <data name="ETV_LUECKE_ARBEITSPREIS" xml:space="preserve">
+    <value>Für diesen Energieträger ist kein Arbeitspreis gepflegt. Ohne ihn lässt sich die Wirtschaftlichkeit nicht rechnen.</value>
+  </data>
+  <data name="ETV_LUECKE_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Für diesen Energieträger ist kein Leistungspreis gepflegt.</value>
+  </data>
+  <data name="ETV_LUECKE_CO2" xml:space="preserve">
+    <value>Für diesen Energieträger ist kein CO₂-Wert gepflegt. Die Emissionsbilanz rechnet ihn mit 0.</value>
+  </data>
+  <data name="ETV_LUECKE_BTN" xml:space="preserve">
+    <value>Wert aus der Kategorie übernehmen…</value>
+  </data>
+  <data name="ETV_LUECKE_TITEL" xml:space="preserve">
+    <value>{0} aus der Kategorie übernehmen</value>
+  </data>
+  <data name="ETV_LUECKE_FRAGE" xml:space="preserve">
+    <value>Welcher Energieträger der Kategorie „{0}“ soll den Wert stellen? Der gewählte Wert wird in dieses Projekt übernommen; der Katalog bleibt unverändert.</value>
+  </data>
+  <data name="ETV_LUECKE_LEER" xml:space="preserve">
+    <value>Kein Energieträger der Kategorie „{0}“ trägt einen {1} — es gibt nichts zu übernehmen.</value>
+  </data>
+  <data name="ETV_LUECKE_KANDIDAT" xml:space="preserve">
+    <value>{0} — {1} {2}</value>
+  </data>
+  <data name="ETV_LUECKE_LEIHZEILE" xml:space="preserve">
+    <value>{0} {1} {2} aus der Kategorie „{3}“ übernommen — Energieträger „{4}“.</value>
+  </data>
+  <data name="ETV_GROESSE_CO2" xml:space="preserve">
+    <value>CO₂-Wert</value>
+  </data>
+  <data name="ETV_GROESSE_ARBEITSPREIS" xml:space="preserve">
+    <value>Arbeitspreis</value>
+  </data>
+  <data name="ETV_GROESSE_LEISTUNGSPREIS" xml:space="preserve">
+    <value>Leistungspreis</value>
+  </data>
+  <data name="ETV_KAT_ELECTRICITY" xml:space="preserve">
+    <value>Strom</value>
+  </data>
+  <data name="ETV_KAT_GASEOUS_FUEL" xml:space="preserve">
+    <value>Gasförmige Brennstoffe</value>
+  </data>
+  <data name="ETV_KAT_LIQUID_FUEL" xml:space="preserve">
+    <value>Flüssige Brennstoffe</value>
+  </data>
+  <data name="ETV_KAT_SOLID_FUEL" xml:space="preserve">
+    <value>Feste Brennstoffe</value>
+  </data>
+  <data name="ETV_KAT_HEAT" xml:space="preserve">
+    <value>Wärme</value>
+  </data>
+  <data name="ETV_KAT_ANIMAL_FAT" xml:space="preserve">
+    <value>Tierische Fette</value>
+  </data>
 </root>
