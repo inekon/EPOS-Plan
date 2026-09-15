@@ -16851,6 +16851,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string HZK_BTN_FELDER_SPEICHERN {
+            get {
+                return ResourceManager.GetString("HZK_BTN_FELDER_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string HZK_BTN_LOESCHEN {
@@ -16883,6 +16892,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HZK_KOPFBAND {
             get {
                 return ResourceManager.GetString("HZK_KOPFBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Daten anzeigen ähnelt.
+        /// </summary>
+        public static string HZK_LBL_ALLE_DATEN {
+            get {
+                return ResourceManager.GetString("HZK_LBL_ALLE_DATEN", resourceCulture);
             }
         }
         
@@ -19502,6 +19520,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBROW_MSG_SCHUTZ_LOESCHEN {
             get {
                 return ResourceManager.GetString("KBROW_MSG_SCHUTZ_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ muss zwischen {1} und {2} liegen. ähnelt.
+        /// </summary>
+        public static string KBROW_MSG_WERT_BEREICH {
+            get {
+                return ResourceManager.GetString("KBROW_MSG_WERT_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ darf nicht negativ sein. ähnelt.
+        /// </summary>
+        public static string KBROW_MSG_WERT_NEGATIV {
+            get {
+                return ResourceManager.GetString("KBROW_MSG_WERT_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: „{1}“ ist kein zulässiger Wert. Zulässig sind: {2} ähnelt.
+        /// </summary>
+        public static string KBROW_MSG_WERT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KBROW_MSG_WERT_UNBEKANNT", resourceCulture);
             }
         }
         
@@ -48213,6 +48258,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SKK_MSG_NAME_FEHLT {
             get {
                 return ResourceManager.GetString("SKK_MSG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string SKK_MSG_SCHUTZ {
+            get {
+                return ResourceManager.GetString("SKK_MSG_SCHUTZ", resourceCulture);
             }
         }
         

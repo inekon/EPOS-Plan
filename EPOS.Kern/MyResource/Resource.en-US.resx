@@ -693,6 +693,15 @@
   <data name="KBROW_MSG_SCHUTZ_LOESCHEN" xml:space="preserve">
     <value>This master record is write-protected (read-only) and cannot be deleted.</value>
   </data>
+  <data name="KBROW_MSG_WERT_BEREICH" xml:space="preserve">
+    <value>"{0}" must be between {1} and {2}.</value>
+  </data>
+  <data name="KBROW_MSG_WERT_NEGATIV" xml:space="preserve">
+    <value>"{0}" must not be negative.</value>
+  </data>
+  <data name="KBROW_MSG_WERT_UNBEKANNT" xml:space="preserve">
+    <value>"{0}": "{1}" is not a permitted value. Permitted values: {2}</value>
+  </data>
   <data name="KBROW_SPALTE_EIGENSCHAFTEN" xml:space="preserve">
     <value>Properties</value>
   </data>
@@ -11716,6 +11725,12 @@ Overwrite it anyway?</value>
   <data name="HZK_BTN_ADMIN" xml:space="preserve">
     <value>Administration...</value>
   </data>
+  <data name="HZK_LBL_ALLE_DATEN" xml:space="preserve">
+    <value>Show all data</value>
+  </data>
+  <data name="HZK_BTN_FELDER_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
   <data name="HZK_GRP_MODUL" xml:space="preserve">
     <value>Module</value>
   </data>
@@ -12503,6 +12518,9 @@ Overwrite it anyway?</value>
   </data>
   <data name="SKK_MSG_FEHLER" xml:space="preserve">
     <value>Error saving the record!</value>
+  </data>
+  <data name="SKK_MSG_SCHUTZ" xml:space="preserve">
+    <value>This master record is write-protected (read-only) and cannot be saved.</value>
   </data>
   <data name="SKV_TITEL" xml:space="preserve">
     <value>Entering the solar panels</value>

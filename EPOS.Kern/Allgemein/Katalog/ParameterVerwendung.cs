@@ -261,8 +261,16 @@ namespace WindowsFormsApplication1
         /// (<c>Emissionsquelle</c> ueber <c>EmissionsFaktorLader</c>) —, und die fuenf
         /// Katalogspalten sind ausdruecklich <b>nur Anzeige</b>: Sie stehen in g/MWh,
         /// haben kein CO2-Aequivalent und keine Herkunft. Sie bleiben als
-        /// Herstellerangabe erhalten; der Katalogeditor sagt es mit einer
-        /// Herleitungszeile an.
+        /// Herstellerangabe erhalten.
+        ///
+        /// <para><b>Die Pflegestelle ist seit dem 15.09.2026 der AUFKLAPPER</b> „Alle
+        /// Daten" im Modulbereich des <c>HeizkesselDialog</c>, nicht mehr der
+        /// Katalogeditor: Kosten, Wartung, Raumbedarf, Nutzungsdauer und die fuenf
+        /// Emissionsspalten sind aus dem Bearbeiten-Dialog gefallen, und der Aufklapper
+        /// zeigt statt ihrer ALLE editierbaren Spalten des
+        /// <see cref="KatalogBrowserProfil"/>. Die Fundstellen unten nennen deshalb das
+        /// PROFIL — es ist die eine Stelle, die entscheidet, was der Aufklapper
+        /// zeigt.</para>
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Heizkessel(Func<string, string> t)
         {
@@ -275,7 +283,7 @@ namespace WindowsFormsApplication1
                 E("Firma", t("HZKK_LBL_HERSTELLER"), "", BER,
                   "AbweichungsErmittler.cs:96"),
                 E("Beschreibung", t("HZKK_LBL_BESCHREIBUNG"), "", DLG,
-                  "HeizkesselKatalogDialog.razor:69"),
+                  "HeizkesselKatalogDialog.razor (Feld Beschreibung)"),
                 E("Ptherm", t("HZKK_LBL_PTHERM"), "kW", SIM_WIRT_BER,
                   "SimulationSPK.cs:148; WirtschaftlichkeitCtrl.cs:723; AbweichungsErmittler.cs:97"),
                 E("Brennstoff", t("HZKK_LBL_ENERGIETRAEGER"), "", SIM_WIRT,
@@ -287,21 +295,21 @@ namespace WindowsFormsApplication1
                 E("Investitionskosten", t("HZKK_LBL_INVEST"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:357 (BasenFuellen, ERZEUGER_HEIZKESSEL)"),
                 E("Raumbedarf", t("HZKK_LBL_RAUMBEDARF"), "m³", DLG,
-                  "HeizkesselKatalogDialog.razor:134"),
+                  "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ des HeizkesselDialog"),
                 E("Wartungskosten", t("KESSEL_WARTUNG_LBL"), "", WIRT,
                   "TechnikPlanwertCtrl.cs:823 (Betriebskosten-Planwert)"),
                 E("Nutzungsdauer", t("HZKK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
-                  "HeizkesselKatalogDialog.razor:137"),
+                  "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ des HeizkesselDialog"),
                 E("CO2", "CO2:", "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:164 — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                  "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("SO2", "SO2:", "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:167 — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                  "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("NOx", "NOx:", "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:170 — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                  "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("CO", "CO:", "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:173 — nur Anzeige (W14a-E-8-B1); der Artenkatalog fuehrt kein CO"),
+                  "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Artenkatalog fuehrt kein CO"),
                 E("Staub", t("HZKK_LBL_STAUB"), "g / MWh", DLG,
-                  "HeizkesselKatalogDialog.razor:176 — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                  "KatalogBrowserProfil (Heizkessel) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("Betriebsbereitschaftverlust", t("HZKK_LBL_BBVERLUST"), "%", SIM,
                   "SimulationSPK.cs:178"),
                 E("Brennwert", t("HZKK_LBL_BRENNWERT"), "", BER,
@@ -328,11 +336,18 @@ namespace WindowsFormsApplication1
         /// rechnet mit <c>Kosten_Modul</c> und den vier Nebenposten
         /// (<c>TechnikPlanwertCtrl.cs:317-325</c>). Seit dem Anwenderentscheid
         /// <b>W14a-E-8-B3</b> vom 07.09.2026 ist er aber keine Dublette mehr, sondern
-        /// die ANZEIGE EINES EINGABEWEGS: Der Katalogeditor nimmt die Investition
-        /// wahlweise als Gesamtsumme, als Wert je kWel oder als die fuenf Posten
-        /// entgegen und rechnet um (<c>BHKWKosten.GesamtAusJeKWel</c>,
-        /// <c>BHKWKosten.ModulAusGesamt</c>); gespeichert wird immer nur, was in den
-        /// Posten steht. Er bleibt <c>Dialog</c>.
+        /// die AUSGERECHNETE ANZEIGE der fuenf Posten; gespeichert wird immer nur, was
+        /// in den Posten steht. Seit dem Anwenderentscheid vom 15.09.2026 steht er im
+        /// AUFKLAPPER „Alle Daten" und ist dort ausdruecklich NICHT editierbar — zwei
+        /// Eingabewege fuer dasselbe Geld liessen sich widersprechen. Er bleibt
+        /// <c>Dialog</c>.
+        ///
+        /// <para><b>Die Pflegestelle ist seit dem 15.09.2026 der AUFKLAPPER</b> „Alle
+        /// Daten" im Modulbereich des <c>BhkwDialog</c>: Aus dem Katalogeditor sind die
+        /// Gruppen Kosten, BEHG und Emissionsfaktoren ersatzlos gefallen; der
+        /// Aufklapper zeigt dafuer ALLE editierbaren Spalten des
+        /// <see cref="KatalogBrowserProfil"/>. Die Fundstellen unten nennen deshalb das
+        /// PROFIL.</para>
         ///
         /// <para><b>Der zweite Befund, seit W14a-E-8-B1 (07.09.2026):</b> Die fuenf
         /// Emissionsspalten (<c>CO2</c>, <c>SO2</c>, <c>NOX</c>, <c>CO</c>,
@@ -355,7 +370,7 @@ namespace WindowsFormsApplication1
                 E("Firma", t("BHKWK_LBL_HERSTELLER"), "", BER,
                   "AbweichungsErmittler.cs:86"),
                 E("Beschreibung", t("BHKWK_LBL_BESCHREIBUNG"), "", DLG,
-                  "BhkwKatalogDialog.razor:64"),
+                  "BhkwKatalogDialog.razor (Feld Beschreibung)"),
                 E("Ptherm", t("BHKWK_LBL_PTHERM"), "kW", SIM_WIRT_BER,
                   "SimulationBHKW.cs:282; KostenEmissionRechner.cs:352; AbweichungsErmittler.cs:88"),
                 E("Pel", t("BHKWK_LBL_PEL"), "kW", SIM_WIRT_BER,
@@ -365,25 +380,25 @@ namespace WindowsFormsApplication1
                 E("Wirkungsgrad", t("BHKWK_LBL_WIRKUNGSGRAD"), "", SIM_WIRT_BER,
                   "SimulationBHKW.cs:287; KostenEmissionRechner.cs:352; AbweichungsErmittler.cs:90"),
                 E("Investition_kwel", t("BHKWK_LBL_INVEST"), "€ / kWel", DLG,
-                  "BhkwKatalogDialog.razor — Eingabeweg und Anzeige (W14a-E-8-B3): abgeleitet " +
-                  "aus den Posten (BHKWKosten.JeKWel), als Eingabe umgerechnet " +
-                  "(BHKWKosten.GesamtAusJeKWel); kein Leser im Rechenweg"),
+                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige " +
+                  "(W14a-E-8-B3): abgeleitet aus den fuenf Posten (BHKWKosten.JeKWel) und " +
+                  "beim Schreiben nachgerechnet; kein Leser im Rechenweg"),
                 E("Raumbedarf", t("BHKWK_LBL_RAUMBEDARF"), "m³", DLG,
-                  "BhkwKatalogDialog.razor:130"),
+                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ des BhkwDialog"),
                 E("Wartungskosten_kwhel", t("BHKWK_LBL_WARTUNG"), "€ / kWhel", WIRT,
                   "TechnikPlanwertCtrl.cs:706 (Betriebskosten-Planwert)"),
                 E("Nutzungsdauer", t("BHKWK_LBL_NUTZUNGSDAUER"), t("HZKK_EINHEIT_JAHRE"), DLG,
-                  "BhkwKatalogDialog.razor:137"),
+                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ des BhkwDialog"),
                 E("NOX", "NOx:", "g / MWh", DLG,
-                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("SO2", "SO2:", "g / MWh", DLG,
-                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("CO", "CO:", "g / MWh", DLG,
-                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Artenkatalog fuehrt kein CO"),
+                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Artenkatalog fuehrt kein CO"),
                 E("CO2", "CO2:", "g / MWh", DLG,
-                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("Staub", t("HZKK_LBL_STAUB"), "g / MWh", DLG,
-                  "BhkwKatalogDialog.razor — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
+                  "KatalogBrowserProfil (BHKW) - Aufklapper „Alle Daten“ — nur Anzeige (W14a-E-8-B1); der Lauf nimmt den Emissionskatalog des Energietraegers"),
                 E("Motortyp", t("BHKWK_LBL_MOTORTYP"), "", BER,
                   "AbweichungsErmittler.cs:87"),
                 E("Grenzleistung", t("BHKWK_LBL_GRENZLEISTUNG"), "%", SIM,
@@ -490,6 +505,13 @@ namespace WindowsFormsApplication1
         /// (<c>SimulationSolarthermie.cs:242-245</c>). Und <c>Modulflaeche</c> ist die
         /// Flaeche EINES Moduls, gerechnet wird mit <c>Aperturflaeche</c> mal
         /// <c>Tab_Energieanlagen.Kollektormodulanzahl</c>.
+        ///
+        /// <para><b>Die Investitionskosten pflegt seit dem 15.09.2026 der AUFKLAPPER</b>
+        /// „Alle Daten" im Modulbereich des <c>SolarkollektorenDialog</c>: Aus dem
+        /// Katalogeditor ist das Feld gefallen (Pflichtfelder 8 → 7), der Aufklapper
+        /// zeigt dafuer ALLE editierbaren Spalten des
+        /// <see cref="KatalogBrowserProfil"/>. Die Fundstelle bleibt die des RECHNERS —
+        /// sie belegt die Einstufung, nicht die Eingabe.</para>
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Solarkollektoren(Func<string, string> t)
         {
@@ -500,13 +522,13 @@ namespace WindowsFormsApplication1
                 E("Bezeichner", t("SKK_LBL_NAME"), "", SIM_BER,
                   "SimulationSolarthermie.cs:251; AbweichungsErmittler.cs:103"),
                 E("Firma", t("SKK_LBL_HERSTELLER"), "", DLG,
-                  "SolarkollektorKatalogDialog.razor:53"),
+                  "SolarkollektorKatalogDialog.razor (Feld Hersteller)"),
                 E("Beschreibung", t("SKK_LBL_BESCHREIBUNG"), "", DLG,
-                  "SolarkollektorKatalogDialog.razor:55"),
+                  "SolarkollektorKatalogDialog.razor (Feld Beschreibung)"),
                 E("Kollektortyp", t("SKK_LBL_TYP"), "", BER,
                   "AbweichungsErmittler.cs:104"),
                 E("Modulflaeche", t("SKK_LBL_MODULFLAECHE"), "m²", DLG,
-                  "SolarkollektorKatalogDialog.razor:71 — gerechnet wird mit Aperturflaeche"),
+                  "SolarkollektorKatalogDialog.razor (Feld Kollektorflaeche) — gerechnet wird mit Aperturflaeche"),
                 E("Aperturflaeche", t("SKK_LBL_APERTURFLAECHE"), "m²", SIM_BER,
                   "SimulationSolarthermie.cs:232; AbweichungsErmittler.cs:105"),
                 E("h0", "h0:", "", SIM, "SimulationSolarthermie.cs:242 (Konversionsfaktor)"),
@@ -514,13 +536,13 @@ namespace WindowsFormsApplication1
                 E("k2", "k2:", "W/(m²*K²)", SIM, "SimulationSolarthermie.cs:244"),
                 E("Kdir", "Kdir:", "", SIM, "SimulationSolarthermie.cs:245 (IAM, direkt)"),
                 E("Kdfu", "Kdiff:", "50°", DLG,
-                  "SolarkollektorKatalogDialog.razor:87 — kein Leser im Rechenweg"),
+                  "SolarkollektorKatalogDialog.razor (Feld Kdiff) — kein Leser im Rechenweg"),
                 E("Investitionskosten", t("SKK_LBL_KOSTEN"), "€", WIRT,
                   "TechnikPlanwertCtrl.cs:341 (Stueckpreis, ERZEUGER_SOLARTHERMIE)"),
                 E("Vorlauf", t("SKK_LBL_VORLAUF"), "°C", DLG,
-                  "SolarkollektorKatalogDialog.razor:93 — der Lauf nimmt Tab_Energieanlagen.Vorlauf"),
+                  "SolarkollektorKatalogDialog.razor (Feld Vorlauf) — der Lauf nimmt Tab_Energieanlagen.Vorlauf"),
                 E("Ruecklauf", t("SKK_LBL_RUECKLAUF"), "°C", DLG,
-                  "SolarkollektorKatalogDialog.razor:96 — der Lauf nimmt Tab_Energieanlagen.[Rücklauf]"),
+                  "SolarkollektorKatalogDialog.razor (Feld Rücklauf) — der Lauf nimmt Tab_Energieanlagen.[Rücklauf]"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "SolarkollektorenStammCtrl (Auslieferungssatz)")
             };
@@ -653,6 +675,12 @@ namespace WindowsFormsApplication1
         /// gepflegt werden sie im <c>PufferSpProjektDialog</c> (W10a.4). Der KATALOG
         /// traegt nur die sechs Geraetewerte — deshalb ist dies die kuerzeste der
         /// sieben Tabellen.
+        ///
+        /// <para><b>Die Investitionskosten pflegt seit dem 15.09.2026 der AUFKLAPPER</b>
+        /// „Alle Daten" im Modulbereich des <c>PufferspeicherDialog</c>: Aus dem
+        /// Katalogeditor ist die Kostengruppe gefallen, der Aufklapper zeigt dafuer ALLE
+        /// editierbaren Spalten des <see cref="KatalogBrowserProfil"/>. Die Fundstelle
+        /// bleibt die des RECHNERS — sie belegt die Einstufung, nicht die Eingabe.</para>
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Pufferspeicher(Func<string, string> t)
         {
@@ -663,7 +691,7 @@ namespace WindowsFormsApplication1
                 E("Bezeichner", t("PSPK_LBL_NAME"), "", SIM_BER,
                   "WaermesenkeClass.cs:1284/1561; AbweichungsErmittler.cs:115"),
                 E("Hersteller", t("PSPK_LBL_HERSTELLER"), "", DLG,
-                  "PufferSpKatalogDialog.razor:61; Herstellerfilter des Browsers"),
+                  "PufferSpKatalogDialog.razor (Feld Hersteller); Herstellerfilter des Browsers"),
                 E("Speichertyp", t("PSPK_LBL_SPEICHERTYP"), "", SIM_BER,
                   "Warnkriterien.cs:1307/984 (Kriterium W4, Kombi- und Solarspeicher); AbweichungsErmittler.cs:116"),
                 E("Bereitschaftsverluste", t("PSPK_LBL_VERLUSTE"), "kWh/d", SIM,

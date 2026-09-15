@@ -870,6 +870,102 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =================================================================================
+        // Der Speicherweg des Katalog-Aufklappers (Anwenderentscheid 15.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Die fuenf editierbaren Felder eines Katalogsatzes — jede fachliche Spalte
+        /// ausser dem Bezeichner, der der Schluessel des <c>UPDATE</c> ist.
+        /// </summary>
+        /// <remarks>
+        /// Der Pufferspeicher ist die kuerzeste der vier Auspraegungen: Der KATALOG
+        /// fuehrt nur diese Geraetewerte, alles Weitere (Schichten, Schwellen,
+        /// Entnahmehoehen) steht erst in der Projektkopie und wird im Projektdialog
+        /// gepflegt. Alle Felder sind Pflicht — der Datensatz ist neu, es gibt keinen
+        /// Aufrufer aus der Zeit davor, der eine Leerstelle brauchte.
+        /// </remarks>
+        public sealed record AnzeigefelderPufferspeicher(string Firma, string Speichertyp,
+                                                         double Bereitschaftsverluste,
+                                                         int Gesamtvolumen,
+                                                         double Investitionskosten);
+
+        /// <summary>
+        /// Schreibt die Anzeigefelder in den Katalogsatz zurueck — der Weg des Knopfes
+        /// „Speichern" im Aufklapper „Alle Daten anzeigen".
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Muster <c>HeizkesselStammCtrl.AnzeigefelderSchreiben</c></b>:
+        /// Dublettenklammer, Schreibschutz, schreiben, Grund als Text zurueck. Ein
+        /// vorheriges Lesen braucht es hier NICHT — der Datensatz fuehrt jede
+        /// beschreibbare Spalte des Katalogsatzes, es bleibt keine uebrig, die ein
+        /// halb gefuelltes Modell nullen koennte.</para>
+        /// <para><b>Der Speichertyp geht durch die Bestandsabbildung</b>
+        /// (<see cref="SpeichertypIndex(string)"/> / <see cref="SpeichertypDbWert"/>):
+        /// Der deutsche Persistenzwert wird erkannt, der englische Altwert umgesetzt,
+        /// und ein unbekannter Freitext bleibt stehen, statt still umgeschrieben zu
+        /// werden (Befund L0-1).</para>
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreiben(string bezeichner,
+                                                              AnzeigefelderPufferspeicher felder)
+        {
+            if (string.IsNullOrWhiteSpace(bezeichner) || felder == null)
+                return new SpeicherErgebnis(false,
+                    MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, "");
+
+            try
+            {
+                object anz = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                    new DbParam("@bez", bezeichner));
+                int anzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
+                if (anzahl == 0)
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+                if (anzahl > 1)
+                    return new SpeicherErgebnis(false,
+                        string.Format(MyResource.Resource.ADM_MEHRDEUTIG_TEXT, bezeichner, anzahl), "");
+
+                if (IsReadOnlyStatic(bezeichner))
+                    return new SpeicherErgebnis(false, Text("PSPK_MSG_SCHUTZ",
+                        "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
+
+                const KatalogBrowserArt art = KatalogBrowserArt.Pufferspeicher;
+                string grund = KatalogFeldPruefung.ErsterGrund(
+                    KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldVerluste,
+                                                     felder.Bereitschaftsverluste),
+                    KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldVolumen,
+                                                     felder.Gesamtvolumen),
+                    KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldInvestitionskosten,
+                                                     felder.Investitionskosten));
+                if (!string.IsNullOrEmpty(grund))
+                    return new SpeicherErgebnis(false, grund, "");
+
+                var daten = new PufferSpModel
+                {
+                    Name = bezeichner,
+                    Firma = felder.Firma ?? "",
+                    Speichertyp = SpeichertypDbWert(SpeichertypIndex(felder.Speichertyp),
+                                                    felder.Speichertyp),
+                    Betriebsbereitschaftverlust = felder.Bereitschaftsverluste,
+                    Gesamtvolumen = felder.Gesamtvolumen,
+                    Investitionskosten = felder.Investitionskosten
+                };
+
+                if (!new PufferSpStammCtrl().UpdateFrom(daten))
+                    return new SpeicherErgebnis(false,
+                        MyResource.Resource.PSP_MELDUNG_SPEICHERN_FEHLER, "");
+
+                return new SpeicherErgebnis(true,
+                    MyResource.Resource.PSP_MELDUNG_DATENSATZ_GESPEICHERT, bezeichner);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherErgebnis(false,
+                    string.Format(MyResource.Resource.PSP_MELDUNG_FEHLER_AUFGETRETEN, ex.Message), "");
+            }
+        }
+
         private static string Text(string schluessel, string rueckfall)
         {
             string t = null;

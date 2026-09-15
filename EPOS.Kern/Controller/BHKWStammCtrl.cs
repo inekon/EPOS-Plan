@@ -708,7 +708,68 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldVorlauf] = Feld(r, "Vorlauf");
             werte[KatalogBrowserProfil.FeldRuecklauf] = Feld(r, "Ruecklauf");
 
+            // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
+            //
+            // Roh wie die acht oben; dieser Katalog kannte noch nie ein Anzeigeformat.
+
+            // Nachschlage-Anzeige: die Spalte fuehrt eine 1-basierte Nummer, gezeigt
+            // wird der Name. Liegt sie ausserhalb der Liste, bleibt das Feld leer -
+            // Bestandsverhalten, dasselbe wie in KatalogZeile.
+            var ctrl = new BHKWStammCtrl();
+            int brenn = r["Brennstoff"] == DBNull.Value ? 0 : Convert.ToInt32(r["Brennstoff"]);
+            werte[KatalogBrowserProfil.FeldBrennstoff] =
+                (brenn >= 1 && brenn <= ctrl.Brennstoffart.Count) ? ctrl.Brennstoffart[brenn - 1] : "";
+
+            werte[KatalogBrowserProfil.FeldWirkungsgrad] = Feld(r, "Wirkungsgrad");
+            werte[KatalogBrowserProfil.FeldMotortyp] = Feld(r, "Motortyp");
+            werte[KatalogBrowserProfil.FeldRaumbedarf] = Feld(r, "Raumbedarf");
+            werte[KatalogBrowserProfil.FeldKostenModul] = Feld(r, "Kosten_Modul");
+            werte[KatalogBrowserProfil.FeldKostenMontage] = Feld(r, "Kosten_Montage");
+            werte[KatalogBrowserProfil.FeldKostenLieferung] = Feld(r, "Kosten_Lieferung");
+            werte[KatalogBrowserProfil.FeldKostenSchallschutz] = Feld(r, "Kosten_Schallschutzhaube");
+            werte[KatalogBrowserProfil.FeldKostenAbgasreinigung] = Feld(r, "Kosten_Abgasreinigung");
+
+            // ABGELEITET (W14a-E-8-B3): nicht die gespeicherte Spalte, sondern die
+            // Umrechnung der fuenf Posten. Wer die Posten aendert, sieht hier sofort,
+            // was daraus folgt - und die Spalte selbst zieht der Schreibweg nach.
+            werte[KatalogBrowserProfil.FeldInvestitionJeKwel] =
+                JeKWelText(Zahl(r, "Kosten_Modul"), Zahl(r, "Kosten_Montage"),
+                           Zahl(r, "Kosten_Lieferung"), Zahl(r, "Kosten_Schallschutzhaube"),
+                           Zahl(r, "Kosten_Abgasreinigung"), Zahl(r, "Pel"));
+
+            werte[KatalogBrowserProfil.FeldWartungJeKwhel] = Feld(r, "Wartungskosten_kwhel");
+            werte[KatalogBrowserProfil.FeldNutzungsdauer] = Feld(r, "Nutzungsdauer");
+            werte[KatalogBrowserProfil.FeldNox] = Feld(r, "NOX");
+            werte[KatalogBrowserProfil.FeldSo2] = Feld(r, "SO2");
+            werte[KatalogBrowserProfil.FeldCo] = Feld(r, "CO");
+            werte[KatalogBrowserProfil.FeldCo2] = Feld(r, "CO2");
+            werte[KatalogBrowserProfil.FeldStaub] = Feld(r, "Staub");
+
             return werte;
+        }
+
+        /// <summary>Spaltenwert als Zahl; fehlende Spalte und <c>NULL</c> ergeben 0.</summary>
+        private static double Zahl(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return 0;
+            object v = row[spalte];
+            return (v == null || v == DBNull.Value) ? 0 : Convert.ToDouble(v);
+        }
+
+        /// <summary>
+        /// Die Investition je kWel als Anzeigetext — leer, solange sich keine bilden
+        /// laesst (<c>Pel</c> = 0). Eine 0 stuende dort sonst fuer „umsonst" und
+        /// verschwiege die erfasste Summe (<see cref="BHKWKosten.JeKWelBestimmbar"/>).
+        /// </summary>
+        private static string JeKWelText(double modul, double montage, double lieferung,
+                                         double schallschutz, double abgas, double pel)
+        {
+            if (!BHKWKosten.JeKWelBestimmbar(pel)) return "";
+
+            // UNGERUNDET, also genau der Wert, den der Schreibweg in die Spalte
+            // zurueckrechnet - Anzeige und Speicher fallen damit nie auseinander.
+            double summe = BHKWKosten.Summe(modul, montage, lieferung, schallschutz, abgas);
+            return BHKWKosten.JeKWel(summe, pel).ToString();
         }
 
         /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
@@ -738,11 +799,37 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Die SECHS Felder, die der Katalogbrowser zurueckschreibt
-        /// (<c>Form_BHKWAdmin.Speicherfelder</c> Z. 338-345).
+        /// Die editierbaren Felder eines Katalogsatzes — seit dem Anwenderentscheid vom
+        /// 15.09.2026 ALLE dreiundzwanzig: jede fachliche Spalte ausser dem Bezeichner
+        /// (Schluessel) und der abgeleiteten Investition je kWel.
         /// </summary>
+        /// <remarks>
+        /// <para><b>Die ersten sechs stehen unveraendert vorn</b>
+        /// (<c>Form_BHKWAdmin.Speicherfelder</c> Z. 338-345); die siebzehn neuen haengen
+        /// hinten an und sind Leerstellen: <c>null</c> heisst „unveraendert lassen"
+        /// (Begruendung bei <c>HeizkesselStammCtrl.AnzeigefelderHeizkessel</c>).</para>
+        /// <para><b>Die Investition je kWel fehlt mit Absicht.</b> Sie ist seit
+        /// W14a-E-8-B3 abgeleitet (<see cref="BHKWKosten.JeKWel"/> aus den fuenf Posten);
+        /// gespeichert wird, was in den Posten steht, und der Schreibweg rechnet die
+        /// Spalte daraus nach.</para>
+        /// </remarks>
         public sealed record AnzeigefelderBhkw(string Firma, double Ptherm, double Pel,
-                                               double Grenzleistung, int Vorlauf, int Ruecklauf);
+                                               double Grenzleistung, int Vorlauf, int Ruecklauf,
+                                               string Beschreibung = null,
+                                               string Brennstoff = null,
+                                               double? Wirkungsgrad = null,
+                                               string Motortyp = null,
+                                               double? Raumbedarf = null,
+                                               double? KostenModul = null,
+                                               double? KostenMontage = null,
+                                               double? KostenLieferung = null,
+                                               double? KostenSchallschutzhaube = null,
+                                               double? KostenAbgasreinigung = null,
+                                               double? WartungskostenJeKWhel = null,
+                                               int? Nutzungsdauer = null,
+                                               int? NOx = null, int? SO2 = null,
+                                               int? CO = null, int? CO2 = null,
+                                               int? Staub = null);
 
         /// <summary>
         /// Schreibt die sechs Anzeigefelder in den Katalogsatz zurueck — der Weg des
@@ -782,6 +869,11 @@ namespace WindowsFormsApplication1
                 m.m_Vorlauf = felder.Vorlauf;
                 m.m_Ruecklauf = felder.Ruecklauf;
 
+                // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
+                string verstoss = FelderUebernehmen(m, felder);
+                if (!string.IsNullOrEmpty(verstoss))
+                    return new SpeicherErgebnis(false, verstoss, "");
+
                 var schreiber = new BHKWStammCtrl { model = m };
                 if (m.m_bReadOnly)
                 {
@@ -803,6 +895,90 @@ namespace WindowsFormsApplication1
                 return new SpeicherErgebnis(false, Text("BHKWK_MSG_FEHLER",
                     "Fehler beim Überschreiben des Datensatzes!"), "");
             }
+        }
+
+        /// <summary>
+        /// Prueft die Werte und traegt sie in den GELESENEN Satz ein; der Rueckgabewert
+        /// ist der Ablehnungsgrund im Klartext oder <c>null</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Erst pruefen, dann setzen</b> — kein Feld wird uebernommen, solange
+        /// eines noch strittig ist. Was nicht mitkommt, bleibt stehen.</para>
+        /// <para><b>Die Investition je kWel wird NACHGERECHNET</b>, nicht entgegen-
+        /// genommen: Sie ist die Umrechnung der fuenf Posten (W14a-E-8-B3), und wer die
+        /// Posten aendert, ohne die abgeleitete Spalte nachzuziehen, liesse zwei Zahlen
+        /// stehen, die einander widersprechen. Leser im Rechenweg hat sie keinen.</para>
+        /// </remarks>
+        private static string FelderUebernehmen(BHKWStammModel satz, AnzeigefelderBhkw f)
+        {
+            const KatalogBrowserArt art = KatalogBrowserArt.Bhkw;
+
+            // 1. Die Zahlenbereiche.
+            string grund = KatalogFeldPruefung.ErsterGrund(
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldPtherm, f.Ptherm),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldPel, f.Pel),
+                KatalogFeldPruefung.ImBereich(art, KatalogBrowserProfil.FeldGrenzleistung,
+                                              f.Grenzleistung, 0, 100),
+                Nichtnegativ(KatalogBrowserProfil.FeldWirkungsgrad, f.Wirkungsgrad),
+                Nichtnegativ(KatalogBrowserProfil.FeldRaumbedarf, f.Raumbedarf),
+                Nichtnegativ(KatalogBrowserProfil.FeldKostenModul, f.KostenModul),
+                Nichtnegativ(KatalogBrowserProfil.FeldKostenMontage, f.KostenMontage),
+                Nichtnegativ(KatalogBrowserProfil.FeldKostenLieferung, f.KostenLieferung),
+                Nichtnegativ(KatalogBrowserProfil.FeldKostenSchallschutz, f.KostenSchallschutzhaube),
+                Nichtnegativ(KatalogBrowserProfil.FeldKostenAbgasreinigung, f.KostenAbgasreinigung),
+                Nichtnegativ(KatalogBrowserProfil.FeldWartungJeKwhel, f.WartungskostenJeKWhel),
+                Nichtnegativ(KatalogBrowserProfil.FeldNutzungsdauer, f.Nutzungsdauer),
+                Nichtnegativ(KatalogBrowserProfil.FeldNox, f.NOx),
+                Nichtnegativ(KatalogBrowserProfil.FeldSo2, f.SO2),
+                Nichtnegativ(KatalogBrowserProfil.FeldCo, f.CO),
+                Nichtnegativ(KatalogBrowserProfil.FeldCo2, f.CO2),
+                Nichtnegativ(KatalogBrowserProfil.FeldStaub, f.Staub));
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
+            // 2. Der Nachschlagewert.
+            string brennstoff;
+            grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldBrennstoff,
+                                                 f.Brennstoff, new BHKWStammCtrl().Brennstoffart,
+                                                 out brennstoff);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
+            // 3. Uebernehmen.
+            if (brennstoff != null)
+                satz.m_Brennstoff = new BHKWStammCtrl().Brennstoffart.IndexOf(brennstoff) + 1;
+            if (f.Beschreibung != null) satz.m_szBeschreibung = f.Beschreibung;
+            if (f.Wirkungsgrad.HasValue) satz.m_Wirkungsgrad = f.Wirkungsgrad.Value;
+            if (f.Motortyp != null) satz.m_szMotortyp = f.Motortyp;
+            if (f.Raumbedarf.HasValue) satz.m_Raumbedarf = f.Raumbedarf.Value;
+            if (f.KostenModul.HasValue) satz.m_Kosten_Modul = f.KostenModul.Value;
+            if (f.KostenMontage.HasValue) satz.m_Kosten_Montage = f.KostenMontage.Value;
+            if (f.KostenLieferung.HasValue) satz.m_Kosten_Lieferung = f.KostenLieferung.Value;
+            if (f.KostenSchallschutzhaube.HasValue)
+                satz.m_Kosten_Schallschutzhaube = f.KostenSchallschutzhaube.Value;
+            if (f.KostenAbgasreinigung.HasValue)
+                satz.m_Kosten_Abgasreinigung = f.KostenAbgasreinigung.Value;
+            if (f.WartungskostenJeKWhel.HasValue)
+                satz.m_Wartungskosten_kWhel = f.WartungskostenJeKWhel.Value;
+            if (f.Nutzungsdauer.HasValue) satz.m_Nutzungsdauer = f.Nutzungsdauer.Value;
+            if (f.NOx.HasValue) satz.m_NOx = f.NOx.Value;
+            if (f.SO2.HasValue) satz.m_SO2 = f.SO2.Value;
+            if (f.CO.HasValue) satz.m_CO = f.CO.Value;
+            if (f.CO2.HasValue) satz.m_CO2 = f.CO2.Value;
+            if (f.Staub.HasValue) satz.m_Staub = f.Staub.Value;
+
+            // 4. Die abgeleitete Spalte nachziehen.
+            satz.m_Investition_KWel = BHKWKosten.JeKWel(
+                BHKWKosten.Summe(satz.m_Kosten_Modul, satz.m_Kosten_Montage,
+                                 satz.m_Kosten_Lieferung, satz.m_Kosten_Schallschutzhaube,
+                                 satz.m_Kosten_Abgasreinigung),
+                satz.m_Pel);
+
+            return null;
+
+            static string Nichtnegativ(string schluessel, double? wert)
+                => wert.HasValue
+                    ? KatalogFeldPruefung.NichtNegativ(KatalogBrowserArt.Bhkw,
+                                                       schluessel, wert.Value)
+                    : null;
         }
     }
 }

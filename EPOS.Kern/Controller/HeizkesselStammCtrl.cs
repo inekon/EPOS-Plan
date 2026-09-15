@@ -1142,6 +1142,28 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldRuecklauf] =
                 r["Ruecklauf"] == DBNull.Value ? "" : Convert.ToInt32(r["Ruecklauf"]).ToString();
 
+            // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
+            //
+            // ROH, nicht mit F2. Die acht Felder oben tragen ihr Bestandsformat, weil
+            // der Vorlaeufer es so zeigte; ein NEUES Feld bekommt keines, denn diese
+            // Felder werden auch GESCHRIEBEN: Wer 0,925 auf „0,93" rundet anzeigt und
+            // die Anzeige zurueckschreibt, verliert die dritte Stelle beim ersten
+            // Speichern.
+            werte[KatalogBrowserProfil.FeldFirma] = Feld(r, "Firma");
+            werte[KatalogBrowserProfil.FeldWirkungsgradGas] = Feld(r, "Wirkungsgrad_Gas");
+            werte[KatalogBrowserProfil.FeldWirkungsgradOel] = Feld(r, "Wirkungsgrad_Öl");
+            werte[KatalogBrowserProfil.FeldBBVerlust] = Feld(r, "Betriebsbereitschaftverlust");
+            werte[KatalogBrowserProfil.FeldRaumbedarf] = Feld(r, "Raumbedarf");
+            werte[KatalogBrowserProfil.FeldWartungskosten] = Feld(r, "Wartungskosten");
+            werte[KatalogBrowserProfil.FeldWartungEinheit] =
+                WartungseinheitGepflegt(Feld(r, SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT));
+            werte[KatalogBrowserProfil.FeldNutzungsdauer] = Feld(r, "Nutzungsdauer");
+            werte[KatalogBrowserProfil.FeldCo2] = Feld(r, "CO2");
+            werte[KatalogBrowserProfil.FeldSo2] = Feld(r, "SO2");
+            werte[KatalogBrowserProfil.FeldNox] = Feld(r, "NOx");
+            werte[KatalogBrowserProfil.FeldCo] = Feld(r, "CO");
+            werte[KatalogBrowserProfil.FeldStaub] = Feld(r, "Staub");
+
             return werte;
         }
 
@@ -1158,13 +1180,57 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Die SECHS Felder, die der Katalogbrowser zurueckschreibt (Speicherpaket vom
-        /// 18.08.2026, <c>Form_Heizkessel_Admin.Speicherfelder</c> Z. 277-284 plus der
-        /// Schalter „Brennwertkessel").
+        /// Die editierbaren Felder eines Katalogsatzes — seit dem Anwenderentscheid vom
+        /// 15.09.2026 ALLE zwanzig, also jede fachliche Spalte ausser dem Bezeichner.
         /// </summary>
+        /// <remarks>
+        /// <para><b>Die ersten sechs stehen unveraendert vorn</b> (das Speicherpaket vom
+        /// 18.08.2026, <c>Form_Heizkessel_Admin.Speicherfelder</c> Z. 277-284 plus der
+        /// Schalter „Brennwertkessel"). Die vierzehn neuen haengen hinten an.</para>
+        /// <para><b><c>null</c> heisst „unveraendert lassen".</b> Jedes neue Feld ist
+        /// eine Leerstelle — wer es nicht mitgibt, aendert die Spalte nicht. Das ist
+        /// nicht Bequemlichkeit, sondern Datenschutz im Wortsinn: Der Schreibweg liest
+        /// den Satz, aendert die mitgegebenen Felder und schreibt ihn ganz zurueck; ein
+        /// vergessenes Feld wuerde sonst als 0 ueber einen gepflegten Wert laufen.</para>
+        /// </remarks>
         public sealed record AnzeigefelderHeizkessel(string Beschreibung, double Ptherm,
                                                      double Investitionskosten, bool Brennwert,
-                                                     int Vorlauf, int Ruecklauf);
+                                                     int Vorlauf, int Ruecklauf,
+                                                     string Brennstoff = null,
+                                                     string Firma = null,
+                                                     double? WirkungsgradGas = null,
+                                                     double? WirkungsgradOel = null,
+                                                     double? Betriebsbereitschaftverlust = null,
+                                                     double? Raumbedarf = null,
+                                                     double? Wartungskosten = null,
+                                                     string WartungskostenEinheit = null,
+                                                     double? Nutzungsdauer = null,
+                                                     double? CO2 = null, double? SO2 = null,
+                                                     double? NOx = null, double? CO = null,
+                                                     double? Staub = null);
+
+        /// <summary>
+        /// Die drei zulaessigen Bezugsgroessen der Wartungskosten, in Anzeigereihenfolge
+        /// (<see cref="DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR"/> und die zwei anderen).
+        /// </summary>
+        /// <remarks>
+        /// Sie sind sprachneutral („€/a", „€/kWh", „%/a") und deshalb im Aufklapper als
+        /// TEXTFELD zu bedienen: Der Baustein kennt dort nur Text, Zahl und Schalter,
+        /// keine Klappliste. Was nicht in dieser Liste steht, wird benannt abgelehnt.
+        /// </remarks>
+        public static readonly string[] WARTUNGSEINHEITEN =
+        {
+            DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR,
+            DbWerte.KESSEL_WARTUNG_EINHEIT_ARBEIT,
+            DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT
+        };
+
+        /// <summary>
+        /// Die gepflegte Bezugsgroesse: der gespeicherte Text, bei leerem Feld der
+        /// Jahresbetrag — dieselbe Regel wie <c>HeizkesselCtrl.Einheit</c>.
+        /// </summary>
+        private static string WartungseinheitGepflegt(string wert)
+            => string.IsNullOrWhiteSpace(wert) ? DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR : wert.Trim();
 
         /// <summary>
         /// Schreibt die sechs Anzeigefelder in den Katalogsatz zurueck — der Weg des
@@ -1215,6 +1281,11 @@ namespace WindowsFormsApplication1
                 schreiber.Vorlauf = felder.Vorlauf;
                 schreiber.Ruecklauf = felder.Ruecklauf;
 
+                // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
+                string verstoss = FelderUebernehmen(schreiber, felder);
+                if (!string.IsNullOrEmpty(verstoss))
+                    return new SpeicherErgebnis(false, verstoss, "");
+
                 (bool ok, string grund) = schreiber.UpdateMitGrund();
                 if (!ok) return new SpeicherErgebnis(false, grund, "");
 
@@ -1226,6 +1297,84 @@ namespace WindowsFormsApplication1
                 return new SpeicherErgebnis(false, Text("HZKK_MSG_FEHLER",
                     "Fehler beim Überschreiben des Datensatzes!"), "");
             }
+        }
+
+        /// <summary>
+        /// Prueft die Werte und traegt sie in den GELESENEN Satz ein; der Rueckgabewert
+        /// ist der Ablehnungsgrund im Klartext oder <c>null</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Erst pruefen, dann setzen.</b> Kein Feld wird uebernommen, solange
+        /// eines noch strittig ist — sonst stuende nach einer Ablehnung ein halb
+        /// geaenderter Satz im Speicher, den der naechste Aufruf mitschriebe.</para>
+        /// <para><b>Was nicht mitkommt, bleibt stehen</b> (<c>null</c>-Regel des
+        /// Datensatzes). Der Energietraeger und die Bezugsgroesse der Wartungskosten
+        /// sind Nachschlagewerte: Sie kommen als TEXT herein und werden gegen ihre
+        /// Liste gehalten; ein leeres Feld laesst den gespeicherten Wert stehen, ein
+        /// unbekannter Text wird benannt abgelehnt.</para>
+        /// </remarks>
+        private static string FelderUebernehmen(HeizkesselStammCtrl satz,
+                                                AnzeigefelderHeizkessel f)
+        {
+            const KatalogBrowserArt art = KatalogBrowserArt.Heizkessel;
+
+            // 1. Die Zahlenbereiche.
+            string grund = KatalogFeldPruefung.ErsterGrund(
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldPtherm, f.Ptherm),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldInvestitionskosten,
+                                                 f.Investitionskosten),
+                Nichtnegativ(KatalogBrowserProfil.FeldWirkungsgradGas, f.WirkungsgradGas),
+                Nichtnegativ(KatalogBrowserProfil.FeldWirkungsgradOel, f.WirkungsgradOel),
+                Nichtnegativ(KatalogBrowserProfil.FeldRaumbedarf, f.Raumbedarf),
+                Nichtnegativ(KatalogBrowserProfil.FeldWartungskosten, f.Wartungskosten),
+                Nichtnegativ(KatalogBrowserProfil.FeldNutzungsdauer, f.Nutzungsdauer),
+                Nichtnegativ(KatalogBrowserProfil.FeldCo2, f.CO2),
+                Nichtnegativ(KatalogBrowserProfil.FeldSo2, f.SO2),
+                Nichtnegativ(KatalogBrowserProfil.FeldNox, f.NOx),
+                Nichtnegativ(KatalogBrowserProfil.FeldCo, f.CO),
+                Nichtnegativ(KatalogBrowserProfil.FeldStaub, f.Staub),
+                f.Betriebsbereitschaftverlust.HasValue
+                    ? KatalogFeldPruefung.ImBereich(art, KatalogBrowserProfil.FeldBBVerlust,
+                                                    f.Betriebsbereitschaftverlust.Value, 0, 100)
+                    : null);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
+            // 2. Die zwei Nachschlagewerte.
+            string einheit;
+            grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldWartungEinheit,
+                                                 f.WartungskostenEinheit, WARTUNGSEINHEITEN,
+                                                 out einheit);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
+            string brennstoff;
+            grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldBrennstoff,
+                                                 f.Brennstoff, satz.Brennstoffart, out brennstoff);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
+            // 3. Uebernehmen.
+            if (brennstoff != null) satz.Brennstoff = satz.Brennstoffart.IndexOf(brennstoff) + 1;
+            if (f.Firma != null) satz.Firma = f.Firma;
+            if (f.WirkungsgradGas.HasValue) satz.Wirkungsgrad_Gas = f.WirkungsgradGas.Value;
+            if (f.WirkungsgradOel.HasValue) satz.Wirkungsgrad_Oel = f.WirkungsgradOel.Value;
+            if (f.Betriebsbereitschaftverlust.HasValue)
+                satz.Betriebsbereitschaftverlust = f.Betriebsbereitschaftverlust.Value;
+            if (f.Raumbedarf.HasValue) satz.Raumbedarf = f.Raumbedarf.Value;
+            if (f.Wartungskosten.HasValue) satz.Wartungskosten = f.Wartungskosten.Value;
+            if (einheit != null) satz.Wartungskosten_Einheit = einheit;
+            if (f.Nutzungsdauer.HasValue) satz.Nutzungsdauer = f.Nutzungsdauer.Value;
+            if (f.CO2.HasValue) satz.CO2 = f.CO2.Value;
+            if (f.SO2.HasValue) satz.SO2 = f.SO2.Value;
+            if (f.NOx.HasValue) satz.NOx = f.NOx.Value;
+            if (f.CO.HasValue) satz.CO = f.CO.Value;
+            if (f.Staub.HasValue) satz.Staub = f.Staub.Value;
+
+            return null;
+
+            static string Nichtnegativ(string schluessel, double? wert)
+                => wert.HasValue
+                    ? KatalogFeldPruefung.NichtNegativ(KatalogBrowserArt.Heizkessel,
+                                                       schluessel, wert.Value)
+                    : null;
         }
     }
 }

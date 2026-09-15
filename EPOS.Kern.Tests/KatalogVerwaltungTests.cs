@@ -321,17 +321,25 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>
-        /// Die vier Auspraegungen sind vollstaendig und tragen die gemessene Feldzahl
-        /// (8 / 8 / 8 / 6 aus der Vermessung § 1-3 und § 5).
+        /// Die vier Auspraegungen sind vollstaendig und tragen die Feldzahl des VOLLEN
+        /// Katalogsatzes (Anwenderentscheid 15.09.2026): jede fachliche Spalte der
+        /// Stammtabelle ausser <c>ID</c> und <c>ReadOnly</c>.
         /// </summary>
+        /// <remarks>
+        /// Die Zahlen sind die Spaltenzahlen der vier Tabellen minus zwei:
+        /// <c>Tab_Heizkessel_STAMM</c> 23, <c>Tab_BHKW_STAMM</c> 27,
+        /// <c>Tab_Solarkollektoren_STAMM</c> 16, <c>Tab_Pufferspeicher_STAMM</c> 8.
+        /// Bis zum Entscheid waren es 8 / 8 / 8 / 6 — der Detailblock der vier
+        /// Vorlaeufer-Masken; diese Felder stehen unveraendert vorn.
+        /// </remarks>
         [Fact]
         public void Browserprofil_kennt_die_vier_Auspraegungen_mit_ihrer_Feldzahl()
         {
             var erwartet = new Dictionary<KatalogBrowserArt, int>
             {
-                [KatalogBrowserArt.Heizkessel] = 8,
-                [KatalogBrowserArt.Bhkw] = 8,
-                [KatalogBrowserArt.Solarkollektoren] = 8,
+                [KatalogBrowserArt.Heizkessel] = 21,
+                [KatalogBrowserArt.Bhkw] = 25,
+                [KatalogBrowserArt.Solarkollektoren] = 14,
                 [KatalogBrowserArt.Pufferspeicher] = 6
             };
 
@@ -351,9 +359,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Speicherweg gibt es nur bei Heizkessel und BHKW, dort mit je SECHS
-        /// editierbaren Feldern (Vermessung § 1 b und § 2 b).
+        /// Die Speicherleiste des BROWSERS steht seit dem Anwenderentscheid vom
+        /// 15.09.2026 in allen vier Auspraegungen — ebenso wie EDITIERBAR dort jedes
+        /// Feld ausser dem Bezeichner ist.
         /// </summary>
+        /// <remarks>
+        /// <b>Zwei verschiedene Dinge.</b> <c>HatSpeicherweg</c> sagt, ob die Maske des
+        /// Browsers ihren Knopf „Speichern" zeigt (sie folgt der Belegung von
+        /// <c>KatalogBrowserWege.Speichern</c> in der Huelle); <c>Editierbar</c> sagt,
+        /// welche Felder <c>…StammCtrl.AnzeigefelderSchreiben</c> zurueckschreibt — den
+        /// Weg benutzt der Aufklapper „Alle Daten anzeigen" des Projektdialogs, und den
+        /// gibt es seit dem Entscheid in allen vier Kernen.
+        /// </remarks>
         [Fact]
         public void Browserprofil_traegt_den_Speicherweg_nur_wo_es_ihn_gibt()
         {
@@ -362,15 +379,33 @@ namespace EPOS.Kern.Tests
             var solar = KatalogBrowserProfil.Finde(KatalogBrowserArt.Solarkollektoren);
             var puffer = KatalogBrowserProfil.Finde(KatalogBrowserArt.Pufferspeicher);
 
+            // Alle vier: Solarkollektoren und Pufferspeicher kamen dazu, sobald ihre
+            // Huellen KatalogBrowserWege.Speichern belegten (fuer den Aufklapper
+            // "Alle Daten anzeigen" der Projektdialoge).
             Assert.True(heiz.HatSpeicherweg);
             Assert.True(bhkw.HatSpeicherweg);
-            Assert.False(solar.HatSpeicherweg);
-            Assert.False(puffer.HatSpeicherweg);
+            Assert.True(solar.HatSpeicherweg);
+            Assert.True(puffer.HatSpeicherweg);
 
-            Assert.Equal(6, heiz.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(6, bhkw.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(0, solar.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(0, puffer.Detailfelder.Count(f => f.Editierbar));
+            // Alles ausser dem Bezeichner — beim BHKW zusaetzlich ohne die ABGELEITETE
+            // Investition je kWel (W14a-E-8-B3): 20 / 23 / 13 / 5.
+            Assert.Equal(20, heiz.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(23, bhkw.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(13, solar.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
+
+            foreach (var art in KatalogBrowserProfil.AlleArten)
+            {
+                var profil = KatalogBrowserProfil.Finde(art);
+                foreach (var feld in profil.Detailfelder)
+                {
+                    bool schluesselOderAbgeleitet =
+                        feld.Schluessel == KatalogBrowserProfil.FeldBezeichner
+                        || feld.Schluessel == KatalogBrowserProfil.FeldInvestitionJeKwel;
+
+                    Assert.Equal(!schluesselOderAbgeleitet, feld.Editierbar);
+                }
+            }
         }
 
         /// <summary>
@@ -480,8 +515,9 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>
-        /// Der Detailblock des Heizkesselbrowsers: acht Schluessel, die Zahlen mit
-        /// <c>F2</c>, der Brennstoff als Nachschlag, <c>NULL</c> als leerer Text.
+        /// Der Detailblock des Heizkesselbrowsers: die acht Bestandsfelder unveraendert
+        /// — die Zahlen mit <c>F2</c>, der Brennstoff als Nachschlag, <c>NULL</c> als
+        /// leerer Text — innerhalb des vollen Satzes von einundzwanzig.
         /// </summary>
         [Fact]
         public void Heizkessel_Katalogsatz_zeigt_die_acht_Felder_wie_der_Bestand()
@@ -493,7 +529,7 @@ namespace EPOS.Kern.Tests
             var satz = ctrl.KatalogsatzAnzeige("GC7000F 22 23 - MX25");
 
             Assert.NotNull(satz);
-            Assert.Equal(8, satz.Count);
+            Assert.Equal(21, satz.Count);
             Assert.Equal("GC7000F 22 23 - MX25", satz[KatalogBrowserProfil.FeldBezeichner]);
             Assert.Equal("Brennwert-Kessel", satz[KatalogBrowserProfil.FeldBeschreibung]);
             Assert.Equal(ctrl.Brennstoffart[2], satz[KatalogBrowserProfil.FeldBrennstoff]);
@@ -593,19 +629,32 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Befund W14a-B78 / W14-B15: „Kollektorfläche" bleibt LEER, „Aperturfläche"
-        /// traegt die Aperturflaeche. Woertlich wie der Bestand — Entscheide E-2 und E-11.
+        /// Befund W14a-B78 / W14-B15 ABGELOEST am 15.09.2026: „Kollektorfläche" zeigt
+        /// jetzt die gespeicherte Modulflaeche statt eines leeren Textes.
         /// </summary>
+        /// <remarks>
+        /// <b>Warum der Entscheid E-11 faellt.</b> Der Vorlaeufer liess das Feld leer
+        /// (die Modulflaeche wurde gelesen und sofort von der Aperturflaeche
+        /// ueberschrieben), und das war woertlich richtig, solange der Block NUR ANZEIGTE.
+        /// Seit dem Aufklapper hat das Feld einen Speicherweg: Eine leere Anzeige, die
+        /// zurueckgeschrieben wird, setzte die gespeicherte Modulflaeche beim ersten
+        /// Speichern auf 0. Ein Anzeigefeld mit Speicherweg muss zeigen, was dasteht.
+        /// </remarks>
         [Fact]
-        public void Solarkollektoren_Kollektorflaeche_bleibt_leer()
+        public void Solarkollektoren_Kollektorflaeche_zeigt_die_Modulflaeche()
         {
             if (!_db.Vorhanden) return;
             using var _ = new DeutscheOberflaeche();
 
             var satz = SolarkollektorenStammCtrl.KatalogsatzAnzeige("SO4000TFV-FCC220-2V");
             Assert.NotNull(satz);
-            Assert.Equal("", satz[KatalogBrowserProfil.FeldModulflaeche]);
+            Assert.Equal("0", satz[KatalogBrowserProfil.FeldModulflaeche]);
             Assert.Equal("1,94", satz[KatalogBrowserProfil.FeldAperturflaeche]);
+
+            // Und wo eine Modulflaeche gepflegt ist, steht sie auch da.
+            var mitFlaeche = SolarkollektorenStammCtrl.KatalogsatzAnzeige("test");
+            Assert.NotNull(mitFlaeche);
+            Assert.Equal("1", mitFlaeche[KatalogBrowserProfil.FeldModulflaeche]);
         }
 
         /// <summary>

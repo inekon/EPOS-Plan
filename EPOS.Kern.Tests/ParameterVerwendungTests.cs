@@ -380,24 +380,38 @@ namespace EPOS.Kern.Tests
         // =================================================================================
 
         /// <summary>
-        /// Was der Anwender in der Verwaltung EINGEBEN kann, je Anlagenart — die
-        /// Spaltennamen, die der Speicherweg der jeweiligen Maske zurueckschreibt.
+        /// Was der Anwender von Hand EINGEBEN kann, je Anlagenart — die Spaltennamen,
+        /// die ein Speicherweg der Oberflaeche zurueckschreibt.
         /// </summary>
         /// <remarks>
-        /// <para><b>Woher die Listen stammen</b> (Stand 06.09.2026, gelesen, nicht
-        /// geraten): Heizkessel aus <c>HeizkesselKatalogDaten</c> und
-        /// <c>HeizkesselHuelle.Speichern</c>; BHKW aus <c>BhkwKatalogDaten</c>;
-        /// Waermepumpe aus <c>WaermepumpeStammDaten</c> und
-        /// <c>WaermepumpeStammHuelle.Speichern</c>; Solarkollektoren aus
-        /// <c>SolarkollektorKatalogDaten</c>; Photovoltaik und Stromspeicher aus
-        /// <c>ModulKatalogProfil.Felder</c> mit der Zuordnung in
-        /// <c>PvAdminHuelle</c>/<c>StromspeicherAdminHuelle</c>; Pufferspeicher aus
-        /// <c>PufferSpKatalogDaten</c>.</para>
-        /// <para><b>Warum sie hier stehen und nicht gelesen werden.</b> Vier der sieben
-        /// Feldsaetze sind Razor-Komponenten in <c>EPOS.UI</c> — von hier unerreichbar,
-        /// und ein Textscanner ueber <c>.razor</c> waere eine Wache, die auf jede
-        /// Umformatierung anspricht. Die Liste ist deshalb der EINGEFRORENE Befund;
-        /// aendert sich ein Formular, aendert sich hier eine Zeile, und der Fall
+        /// <para><b>Seit dem Anwenderentscheid vom 15.09.2026 hat jede der vier
+        /// Erzeugerfamilien mit Katalogeditor ZWEI Pflegestellen</b>, und diese Liste
+        /// ist ihre VEREINIGUNG: den schlanken Katalogeditor (Bezeichnung und Technik)
+        /// und den Aufklapper „Alle Daten" im Modulbereich des Projektdialogs, der ALLE
+        /// editierbaren Spalten des <c>KatalogBrowserProfil</c> zeigt. Kosten, Wartung,
+        /// Raumbedarf, Nutzungsdauer und die Emissionsfaktoren sind aus den Editoren
+        /// gefallen und stehen seither dort — pflegbar sind sie deshalb unveraendert,
+        /// und genau das misst dieser Fall.</para>
+        /// <para><b>Woher die Listen stammen</b> (gelesen, nicht geraten): Heizkessel,
+        /// BHKW, Solarkollektoren und Pufferspeicher aus
+        /// <c>KatalogBrowserProfil.Finde(...).Detailfelder</c> (die Felder mit
+        /// <c>Editierbar</c>) samt dem Speicherweg der zugehoerigen
+        /// <c>*AdminHuelle.Schreiben</c>; Waermepumpe aus <c>WaermepumpeStammDaten</c>
+        /// und <c>WaermepumpeStammHuelle.Speichern</c>; Photovoltaik, Stromspeicher und
+        /// Wechselrichter aus <c>ModulKatalogProfil.Felder</c> mit der Zuordnung in
+        /// <c>PvAdminHuelle</c>/<c>StromspeicherAdminHuelle</c>/<c>WechselrichterAdminHuelle</c>.
+        /// <b>Abgeleitete Werte gehoeren nicht hinein:</b> <c>Investition_kwel</c> steht
+        /// im BHKW-Aufklapper ausdruecklich NICHT editierbar (der Kern rechnet ihn aus
+        /// den fuenf Posten nach) und fehlt deshalb in der BHKW-Liste.</para>
+        /// <para><b>Warum sie hier stehen und nicht aus dem Profil gelesen werden.</b>
+        /// Ein Profilfeld mit <c>Editierbar</c> ist ein ANGEBOT; ob der Wert ankommt,
+        /// entscheidet der Speicherweg der Huelle — und der liegt in einem
+        /// <c>net10.0-windows</c>-Projekt, von hier unerreichbar. Genau diese Luecke gab
+        /// es: <c>HeizkesselAdminHuelle.Schreiben</c> las sechs von zwanzig angebotenen
+        /// Feldern, die uebrigen vierzehn verfielen still. Ein aus dem Profil
+        /// abgeleiteter Vergleich haette das nie gesehen, weil er das Angebot mit sich
+        /// selbst verglichen haette. Die Liste ist deshalb der EINGEFRORENE Befund;
+        /// aendert sich eine Pflegestelle, aendert sich hier eine Zeile, und der Fall
         /// darunter sagt, was das fuer die Rechnung bedeutet.</para>
         /// </remarks>
         private static IReadOnlyList<string> ImFormular(Anlagenart art)
@@ -477,8 +491,9 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Pruefung aus Teil 3 des Anwenderwunsches W14a-E-8</b>: Steht jeder
-        /// GERECHNETE Parameter im Bearbeiten-Formular seiner Verwaltung?
+        /// <b>Die Pruefung aus Teil 3 des Anwenderwunsches W14a-E-8</b>: Kann der
+        /// Anwender jeden GERECHNETEN Parameter irgendwo eingeben — im Katalogeditor
+        /// oder, seit dem 15.09.2026, im Aufklapper „Alle Daten" des Projektdialogs?
         ///
         /// <para><b>Der Befund vom 06.09.2026: genau EINE Luecke</b> —
         /// <c>Tab_WP_STAMM.Modulkosten</c>. Der Wert geht in die Kostenplanung

@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Linq;
 using System.Threading;
 using Bunit;
 using EPOS.UI.Dialoge.Erzeuger;
@@ -154,10 +155,14 @@ public class KatalogBrowserDialogTests : EposBunitContext
     // Feldbestand je Ausprägung (R-W14-4)
     // =================================================================================
 
+    // Die Feldzahlen sind seit dem Anwenderentscheid vom 15.09.2026 die des VOLLEN
+    // Katalogsatzes — jede fachliche Spalte der Stammtabelle ausser ID und ReadOnly
+    // (21 / 25 / 14 / 6). Bis dahin waren es 8 / 8 / 8 / 6: der Detailblock der vier
+    // Vorlaeufer-Masken. Die Quelle ist KatalogBrowserProfil; hier steht nur die Zahl.
     [Theory]
-    [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 8)]
-    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 8)]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 8)]
+    [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 21)]
+    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 25)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 14)]
     [InlineData(KatalogBrowserArt.Pufferspeicher, "Administration Pufferspeicher", 6)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Detailfelder(
         KatalogBrowserArt art, string titel, int felder)
@@ -225,14 +230,18 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der Speichern-Knopf steht nur bei Heizkessel und BHKW — die beiden Browser mit
-    /// dem Speicherweg vom 18.08.2026.
+    /// Der Speichern-Knopf steht, wo das Profil einen Speicherweg ausweist
+    /// (<c>HatSpeicherweg</c>) — seit dem 15.09.2026 bei ALLEN VIER Ausprägungen:
+    /// Solarkollektoren und Pufferspeicher haben ihren Schreibweg im Kern
+    /// (<c>…StammCtrl.AnzeigefelderSchreiben</c>) und ihre Hüllen belegen
+    /// <c>KatalogBrowserWege.Speichern</c> damit, seit der Aufklapper „Alle Daten
+    /// anzeigen" der Projektdialoge ihn braucht.
     /// </summary>
     [Theory]
     [InlineData(KatalogBrowserArt.Heizkessel, 5)]
     [InlineData(KatalogBrowserArt.Bhkw, 5)]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, 4)]
-    [InlineData(KatalogBrowserArt.Pufferspeicher, 4)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren, 5)]
+    [InlineData(KatalogBrowserArt.Pufferspeicher, 5)]
     public void Der_Speichern_Knopf_steht_nur_wo_es_einen_Speicherweg_gibt(
         KatalogBrowserArt art, int knoepfe)
     {
@@ -305,18 +314,27 @@ public class KatalogBrowserDialogTests : EposBunitContext
     /// <c>NurLesen</c>: „Neu…", „Bearbeiten…" und „Löschen" sind gesperrt, Liste und
     /// Detailblock bleiben sichtbar — wortgleich
     /// <c>Form_PufferSp_Admin.Form_PufferSp_Admin_Load</c> (Z. 39-44).
+    ///
+    /// <para><b>Und „Speichern" ebenfalls.</b> Der Pufferspeicherkatalog hat seit dem
+    /// 15.09.2026 einen Speicherweg, die Leiste trägt also fünf Knöpfe. Ein
+    /// schreibgesperrter Browser, dessen Speicherknopf frei stünde, wäre die
+    /// gefährlichste Lücke von allen — <c>SpeichernErlaubt</c> nimmt <c>NurLesen</c>
+    /// deshalb als ERSTE Bedingung.</para>
     /// </summary>
     [Fact]
     public void NurLesen_sperrt_drei_Knoepfe_und_laesst_Liste_und_Detail_stehen()
     {
-        var cut = Aufbauen(KatalogBrowserArt.Pufferspeicher, nurLesen: true);
+        const KatalogBrowserArt art = KatalogBrowserArt.Pufferspeicher;
+        var cut = Aufbauen(art, nurLesen: true);
 
+        int v = Versatz(art);
         var knoepfe = cut.FindAll(".epos-leiste .epos-knopf");
-        Assert.Equal(4, knoepfe.Count);
-        Assert.True(knoepfe[0].HasAttribute("disabled"));    // Neu...
-        Assert.True(knoepfe[1].HasAttribute("disabled"));    // Bearbeiten...
-        Assert.True(knoepfe[2].HasAttribute("disabled"));    // Löschen
-        Assert.False(knoepfe[3].HasAttribute("disabled"));   // OK
+        Assert.Equal(4 + v, knoepfe.Count);
+        if (v == 1) Assert.True(knoepfe[0].HasAttribute("disabled"));   // Speichern
+        Assert.True(knoepfe[v].HasAttribute("disabled"));               // Neu...
+        Assert.True(knoepfe[v + 1].HasAttribute("disabled"));           // Bearbeiten...
+        Assert.True(knoepfe[v + 2].HasAttribute("disabled"));           // Löschen
+        Assert.False(knoepfe[v + 3].HasAttribute("disabled"));          // OK
 
         // Liste und Detailblock stehen unveraendert.
         Assert.Equal(2, cut.Instance.Zeilen.Count);
@@ -325,13 +343,21 @@ public class KatalogBrowserDialogTests : EposBunitContext
                       + cut.FindAll(".epos-schalter input").Count);
     }
 
+    /// <summary>
+    /// Ohne <c>NurLesen</c> stehen die drei Knöpfe und OK frei. „Speichern" bleibt
+    /// gesperrt, solange nichts geändert ist — das ist seine EIGENE Regel
+    /// (<c>Der_Speichern_Knopf_ist_ohne_Aenderung_gesperrt</c>) und kein Schreibschutz.
+    /// </summary>
     [Fact]
     public void Ohne_NurLesen_sind_die_drei_Knoepfe_frei()
     {
-        var cut = Aufbauen(KatalogBrowserArt.Pufferspeicher);
+        const KatalogBrowserArt art = KatalogBrowserArt.Pufferspeicher;
+        var cut = Aufbauen(art);
 
+        int v = Versatz(art);
         var knoepfe = cut.FindAll(".epos-leiste .epos-knopf");
-        Assert.All(knoepfe, k => Assert.False(k.HasAttribute("disabled")));
+        Assert.All(knoepfe.Skip(v), k => Assert.False(k.HasAttribute("disabled")));
+        if (v == 1) Assert.True(knoepfe[0].HasAttribute("disabled"));   // Speichern, noch ohne Änderung
     }
 
     // =================================================================================

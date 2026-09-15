@@ -66,11 +66,12 @@ namespace WindowsFormsApplication1
     /// dem <c>…StammCtrl.KatalogsatzAnzeige</c> den Wert liefert. So bleibt die
     /// Zuordnung zwischen Datenbankspalte, Anzeigefeld und Speicherweg an EINEM Ort.</para>
     /// <para><b><see cref="Editierbar"/> ist der Speicherweg</b>: Genau die Felder mit
-    /// <c>true</c> schreibt der Browser zurueck — beim Heizkessel sechs (Beschreibung,
-    /// Leistung, Investitionskosten, Brennwert, Vorlauf, Ruecklauf), beim BHKW sechs
-    /// (Hersteller, thermische und elektrische Leistung, untere Grenzleistung, Vorlauf,
-    /// Ruecklauf). Solarkollektoren und Pufferspeicher haben keinen Speicherweg; dort
-    /// ist jedes Feld <c>false</c>.</para>
+    /// <c>true</c> schreibt <c>…StammCtrl.AnzeigefelderSchreiben</c> zurueck. Seit dem
+    /// Anwenderentscheid vom 15.09.2026 ist das JEDE fachliche Spalte ausser dem
+    /// Bezeichner — er ist der Schluessel des <c>UPDATE</c> und wird im Aufklapper nicht
+    /// umbenannt. Eine begruendete Ausnahme: Die Investition je kWel des BHKW ist
+    /// abgeleitet (<c>BHKWKosten.JeKWel</c> aus den fuenf Posten, W14a-E-8-B3) und
+    /// bleibt Lesewert.</para>
     /// </remarks>
     public sealed class BrowserDetailfeld
     {
@@ -161,14 +162,32 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public Katalogfilterprofil Filterprofil { get; private set; }
 
-        /// <summary>Die Detailfelder in der Reihenfolge der Maske (8 / 8 / 8 / 6).</summary>
+        /// <summary>
+        /// Die Detailfelder in Anzeigereihenfolge — seit dem Anwenderentscheid vom
+        /// 15.09.2026 der VOLLE Feldbestand des Katalogsatzes (21 / 25 / 14 / 6):
+        /// jede fachliche Spalte, ohne <c>ID</c> und <c>ReadOnly</c>.
+        /// </summary>
+        /// <remarks>
+        /// Die Felder der ersten Fassung (8 / 8 / 8 / 6, der Detailblock der vier
+        /// Vorlaeufer-Masken) stehen unveraendert an ihrem Platz; der volle Satz
+        /// haengt hinten an, gruppiert Technik → Kosten → Emissionen.
+        /// </remarks>
         public IReadOnlyList<BrowserDetailfeld> Detailfelder { get; private set; }
 
         /// <summary>
-        /// Schreibt der Browser selbst zurueck? Heizkessel und BHKW ja (der Speicherweg
-        /// vom 18.08.2026, im Vorlaeufer die <c>SpeichernLeiste</c>), die beiden anderen
-        /// nein.
+        /// Traegt der KATALOGBROWSER seine eigene Speicherleiste? Seit dem 15.09.2026 alle
+        /// vier Auspraegungen (der Speicherweg vom 18.08.2026, im Vorlaeufer die
+        /// <c>SpeichernLeiste</c>) — Solarkollektoren und Pufferspeicher kamen zuletzt dazu.
         /// </summary>
+        /// <remarks>
+        /// <b>Nicht zu verwechseln mit <see cref="BrowserDetailfeld.Editierbar"/>.</b>
+        /// Seit dem 15.09.2026 hat JEDER der vier Kataloge im Kern einen Schreibweg
+        /// (<c>…StammCtrl.AnzeigefelderSchreiben</c>) — den benutzt der Aufklapper „Alle
+        /// Daten anzeigen" des Projektdialogs. Diese Kennzeichnung sagt nur, ob die
+        /// Maske des Browsers ihren Knopf „Speichern" zeigt; sie folgt der Belegung von
+        /// <c>KatalogBrowserWege.Speichern</c> in der jeweiligen Huelle und wird mit ihr
+        /// zusammen umgestellt.
+        /// </remarks>
         public bool HatSpeicherweg { get; private set; }
 
         /// <summary>
@@ -273,6 +292,48 @@ namespace WindowsFormsApplication1
         public const string FeldVerluste = "VERLUSTE";
         public const string FeldVolumen = "VOLUMEN";
 
+        // -----------------------------------------------------------------
+        // Der VOLLE Feldbestand (Anwenderentscheid 15.09.2026)
+        //
+        // Bis hierher fuehrte das Profil je Katalog nur die Felder, die der
+        // Vorlaeufer-Detailblock zeigte (8 / 8 / 8 / 6). Seit dem Entscheid
+        // zeigt und BEARBEITET der Aufklapper „Alle Daten anzeigen" JEDE
+        // fachliche Spalte des Katalogsatzes - sonst entstuende genau die
+        // Pflegeluecke, die der Wegfall der Kosten- und Emissionsgruppen im
+        // Bearbeiten-Dialog hinterlaesst. Nicht fachlich und deshalb nicht
+        // hier: ID (Schluessel der Tabelle) und ReadOnly (Kennzeichen der
+        // Auslieferung, kein Geraetewert).
+        // -----------------------------------------------------------------
+
+        public const string FeldWirkungsgradGas = "WIRKUNGSGRAD_GAS";
+        public const string FeldWirkungsgradOel = "WIRKUNGSGRAD_OEL";
+        public const string FeldBBVerlust = "BBVERLUST";
+        public const string FeldRaumbedarf = "RAUMBEDARF";
+        public const string FeldWartungskosten = "WARTUNGSKOSTEN";
+        public const string FeldWartungEinheit = "WARTUNG_EINHEIT";
+        public const string FeldNutzungsdauer = "NUTZUNGSDAUER";
+        public const string FeldCo2 = "CO2";
+        public const string FeldSo2 = "SO2";
+        public const string FeldNox = "NOX";
+        public const string FeldCo = "CO";
+        public const string FeldStaub = "STAUB";
+
+        public const string FeldWirkungsgrad = "WIRKUNGSGRAD";
+        public const string FeldMotortyp = "MOTORTYP";
+        public const string FeldInvestitionJeKwel = "INVESTITION_KWEL";
+        public const string FeldKostenModul = "KOSTEN_MODUL";
+        public const string FeldKostenMontage = "KOSTEN_MONTAGE";
+        public const string FeldKostenLieferung = "KOSTEN_LIEFERUNG";
+        public const string FeldKostenSchallschutz = "KOSTEN_SCHALLSCHUTZ";
+        public const string FeldKostenAbgasreinigung = "KOSTEN_ABGASREINIGUNG";
+        public const string FeldWartungJeKwhel = "WARTUNG_KWHEL";
+
+        public const string FeldH0 = "H0";
+        public const string FeldK1 = "K1";
+        public const string FeldK2 = "K2";
+        public const string FeldKdir = "KDIR";
+        public const string FeldKdiff = "KDIFF";
+
         // ==================================================================
         // Die vier Auspraegungen
         // ==================================================================
@@ -312,7 +373,8 @@ namespace WindowsFormsApplication1
                             new BrowserDetailfeld(FeldBezeichner,   t("KBROW_LBL_NAME")),
                             new BrowserDetailfeld(FeldBeschreibung, t("KBROW_LBL_BESCHREIBUNG"), "",
                                                   BrowserFeldArt.Mehrzeilig, editierbar: true),
-                            new BrowserDetailfeld(FeldBrennstoff,   t("KBROW_LBL_BRENNSTOFF")),
+                            new BrowserDetailfeld(FeldBrennstoff,   t("KBROW_LBL_BRENNSTOFF"), "",
+                                                  BrowserFeldArt.Text, editierbar: true),
                             new BrowserDetailfeld(FeldPtherm,       t("KBROW_LBL_LEISTUNG"), "kW",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€",
@@ -322,7 +384,41 @@ namespace WindowsFormsApplication1
                             new BrowserDetailfeld(FeldVorlauf,      t("KBROW_LBL_VORLAUF"), "°C",
                                                   BrowserFeldArt.Ganzzahl, editierbar: true),
                             new BrowserDetailfeld(FeldRuecklauf,    t("KBROW_LBL_RUECKLAUF"), "°C",
-                                                  BrowserFeldArt.Ganzzahl, editierbar: true)
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+
+                            // Der volle Satz (15.09.2026): Technik, Kosten, Emissionen.
+                            new BrowserDetailfeld(FeldFirma,        t("HZKK_LBL_HERSTELLER"), "",
+                                                  BrowserFeldArt.Text, editierbar: true),
+                            new BrowserDetailfeld(FeldWirkungsgradGas, t("HZKK_LBL_WG_GAS"), "",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldWirkungsgradOel, t("HZKK_LBL_WG_OEL"), "",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldBBVerlust,    t("HZKK_LBL_BBVERLUST"), "%",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldRaumbedarf,   t("HZKK_LBL_RAUMBEDARF"), "m³",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldWartungskosten, t("KESSEL_WARTUNG_LBL") + ":", "",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldWartungEinheit, t("KESSEL_WARTUNG_EINHEIT_LBL") + ":", "",
+                                                  BrowserFeldArt.Text, editierbar: true),
+                            new BrowserDetailfeld(FeldNutzungsdauer, t("HZKK_LBL_NUTZUNGSDAUER"),
+                                                  t("HZKK_EINHEIT_JAHRE"),
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+
+                            // Emissionen: Herstellerangabe des Katalogsatzes. Der Lauf
+                            // rechnet sie NICHT (W14a-E-8-B1) - er nimmt den
+                            // Emissionskatalog des Energietraegers -, gepflegt werden
+                            // sie trotzdem hier, denn sonst nirgends mehr.
+                            new BrowserDetailfeld(FeldCo2,   "CO2:",  "g / MWh",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldSo2,   "SO2:",  "g / MWh",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldNox,   "NOx:",  "g / MWh",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldCo,    "CO:",   "g / MWh",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldStaub, t("HZKK_LBL_STAUB"), "g / MWh",
+                                                  BrowserFeldArt.Zahl, editierbar: true)
                         }
                     };
 
@@ -354,7 +450,7 @@ namespace WindowsFormsApplication1
                             new BrowserDetailfeld(FeldFirma,        t("KBROW_LBL_HERSTELLER"), "",
                                                   BrowserFeldArt.Text, editierbar: true),
                             new BrowserDetailfeld(FeldBeschreibung, t("KBROW_LBL_BESCHREIBUNG"), "",
-                                                  BrowserFeldArt.Mehrzeilig),
+                                                  BrowserFeldArt.Mehrzeilig, editierbar: true),
                             new BrowserDetailfeld(FeldPtherm,       t("KBROW_LBL_PTHERM"), "kWth",
                                                   BrowserFeldArt.Zahl, editierbar: true),
                             new BrowserDetailfeld(FeldPel,          t("KBROW_LBL_PEL"), "kWel",
@@ -364,6 +460,55 @@ namespace WindowsFormsApplication1
                             new BrowserDetailfeld(FeldVorlauf,      t("KBROW_LBL_VORLAUF"), "°C",
                                                   BrowserFeldArt.Ganzzahl, editierbar: true),
                             new BrowserDetailfeld(FeldRuecklauf,    t("KBROW_LBL_RUECKLAUF"), "°C",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+
+                            // Der volle Satz (15.09.2026): Technik, Kosten, Emissionen.
+                            new BrowserDetailfeld(FeldBrennstoff,   t("BHKWK_LBL_ENERGIETRAEGER"), "",
+                                                  BrowserFeldArt.Text, editierbar: true),
+                            new BrowserDetailfeld(FeldWirkungsgrad, t("BHKWK_LBL_WIRKUNGSGRAD"), "",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldMotortyp,     t("BHKWK_LBL_MOTORTYP"), "",
+                                                  BrowserFeldArt.Text, editierbar: true),
+                            new BrowserDetailfeld(FeldRaumbedarf,   t("BHKWK_LBL_RAUMBEDARF"), "m³",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+
+                            // Die fuenf Kostenposten sind das, was gespeichert wird und
+                            // was die Kostenplanung liest (TechnikPlanwertCtrl:317-325).
+                            new BrowserDetailfeld(FeldKostenModul,  t("BHKWK_LBL_MODUL"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldKostenMontage, t("BHKWK_LBL_MONTAGE"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldKostenLieferung, t("BHKWK_LBL_LIEFERUNG"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldKostenSchallschutz, t("BHKWK_LBL_SCHALLSCHUTZ"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldKostenAbgasreinigung, t("BHKWK_LBL_ABGASREINIGUNG"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+
+                            // ABGELEITET und deshalb nicht editierbar (W14a-E-8-B3):
+                            // BHKWKosten.JeKWel aus den fuenf Posten. Zwei Eingabewege
+                            // fuer dasselbe Geld liessen sich widersprechen; die Posten
+                            // sind die Wahrheit, diese Zeile rechnet sie nur um.
+                            new BrowserDetailfeld(FeldInvestitionJeKwel, t("BHKWK_LBL_INVEST"), "€ / kWel",
+                                                  BrowserFeldArt.Zahl),
+                            new BrowserDetailfeld(FeldWartungJeKwhel, t("BHKWK_LBL_WARTUNG"), "€ / kWhel",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldNutzungsdauer, t("BHKWK_LBL_NUTZUNGSDAUER"),
+                                                  t("HZKK_EINHEIT_JAHRE"),
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+
+                            // Emissionen: Herstellerangabe, seit W14a-E-8-B1 „nur
+                            // Anzeige" im Rechenweg - gepflegt werden sie hier. Die
+                            // fuenf Spalten sind INTEGER, deshalb Ganzzahlfelder.
+                            new BrowserDetailfeld(FeldNox,   "NOx:",  "g / MWh",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+                            new BrowserDetailfeld(FeldSo2,   "SO2:",  "g / MWh",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+                            new BrowserDetailfeld(FeldCo,    "CO:",   "g / MWh",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+                            new BrowserDetailfeld(FeldCo2,   "CO2:",  "g / MWh",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+                            new BrowserDetailfeld(FeldStaub, t("HZKK_LBL_STAUB"), "g / MWh",
                                                   BrowserFeldArt.Ganzzahl, editierbar: true)
                         }
                     };
@@ -375,7 +520,7 @@ namespace WindowsFormsApplication1
                         Stammtabelle = SolarkollektorenStammCtrl.TABLE,
                         Zweispaltig = true,
                         Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Solarkollektoren, t),
-                        HatSpeicherweg = false,
+                        HatSpeicherweg = true,
                         ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_SolarKollektorenAdmin.btn_Help",
                         BerechnungsSchluessel = "Form_SolarKollektorenAdmin.Berechnung",
@@ -393,19 +538,44 @@ namespace WindowsFormsApplication1
                         Detailfelder = new[]
                         {
                             new BrowserDetailfeld(FeldBezeichner,    t("KBROW_LBL_NAME")),
-                            new BrowserDetailfeld(FeldKollektortyp,  t("KBROW_LBL_KOLLEKTOR")),
-                            new BrowserDetailfeld(FeldFirma,         t("KBROW_LBL_HERSTELLER")),
+                            new BrowserDetailfeld(FeldKollektortyp,  t("KBROW_LBL_KOLLEKTOR"), "",
+                                                  BrowserFeldArt.Text, editierbar: true),
+                            new BrowserDetailfeld(FeldFirma,         t("KBROW_LBL_HERSTELLER"), "",
+                                                  BrowserFeldArt.Text, editierbar: true),
                             new BrowserDetailfeld(FeldBeschreibung,  t("KBROW_LBL_BESCHREIBUNG"), "",
-                                                  BrowserFeldArt.Mehrzeilig),
+                                                  BrowserFeldArt.Mehrzeilig, editierbar: true),
 
-                            // Befund W14a-B78: textBox_Kollektor_A („Kollektorfläche") wird im
-                            // Bestand NIE gefuellt - die Modulflaeche wird gelesen und sofort
-                            // von der Aperturflaeche ueberschrieben (W14-B15). Das Feld bleibt
-                            // deshalb woertlich leer; Entscheid E-11.
-                            new BrowserDetailfeld(FeldModulflaeche,   t("KBROW_LBL_KOLLEKTORFLAECHE"), "m²"),
-                            new BrowserDetailfeld(FeldAperturflaeche, t("KBROW_LBL_APERTURFLAECHE"), "m²"),
-                            new BrowserDetailfeld(FeldVorlauf,        t("KBROW_LBL_VORLAUF"), "°C"),
-                            new BrowserDetailfeld(FeldRuecklauf,      t("KBROW_LBL_RUECKLAUF"), "°C")
+                            // Befund W14a-B78 / Entscheid E-11 ABGELOEST am 15.09.2026:
+                            // Der Vorlaeufer liess „Kollektorfläche" leer (die Modulflaeche
+                            // wurde gelesen und sofort von der Aperturflaeche ueberschrieben,
+                            // W14-B15), und das war richtig, solange der Block NUR ANZEIGTE.
+                            // Ein leeres Feld mit Speicherweg wuerde die gespeicherte
+                            // Modulflaeche beim ersten Speichern auf 0 setzen - deshalb
+                            // zeigt der Block sie jetzt und schreibt sie zurueck.
+                            new BrowserDetailfeld(FeldModulflaeche,   t("KBROW_LBL_KOLLEKTORFLAECHE"), "m²",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldAperturflaeche, t("KBROW_LBL_APERTURFLAECHE"), "m²",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldVorlauf,        t("KBROW_LBL_VORLAUF"), "°C",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+                            new BrowserDetailfeld(FeldRuecklauf,      t("KBROW_LBL_RUECKLAUF"), "°C",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+
+                            // Der volle Satz (15.09.2026): die Kennlinie und der Preis.
+                            // Kdfu heisst im Editor „Kdiff" und hat im Rechenweg keinen
+                            // Leser (ParameterVerwendung); gepflegt wird er trotzdem.
+                            new BrowserDetailfeld(FeldH0,   "h0:",   "",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldK1,   "k1:",   "W/(m²*K)",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldK2,   "k2:",   "W/(m²*K²)",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldKdir, "Kdir:", "",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldKdiff, "Kdiff:", "50°",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: true)
                         }
                     };
 
@@ -416,7 +586,7 @@ namespace WindowsFormsApplication1
                         Stammtabelle = PufferSpStammCtrl.TABLE,
                         Zweispaltig = false,
                         Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Pufferspeicher, t),
-                        HatSpeicherweg = false,
+                        HatSpeicherweg = true,
                         ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_PufferSp_Admin.btn_Help",
                         BerechnungsSchluessel = "Form_PufferSp_Admin.Berechnung",
@@ -430,12 +600,21 @@ namespace WindowsFormsApplication1
                         SpalteEigenschaften = "",
                         Detailfelder = new[]
                         {
+                            // Der Katalog fuehrt nur diese sechs Geraetewerte - alles
+                            // Weitere (Schichten, Schwellen, Entnahmehoehen) steht erst
+                            // in der Projektkopie. Der Feldbestand bleibt deshalb am
+                            // 15.09.2026 unveraendert; hinzu kommt der Speicherweg.
                             new BrowserDetailfeld(FeldBezeichner, t("KBROW_LBL_NAME")),
-                            new BrowserDetailfeld(FeldFirma,      t("KBROW_LBL_HERSTELLER")),
-                            new BrowserDetailfeld(FeldSpeichertyp, t("KBROW_LBL_SPEICHERTYP")),
-                            new BrowserDetailfeld(FeldVerluste,   t("KBROW_LBL_VERLUSTE"), "kWh/d"),
-                            new BrowserDetailfeld(FeldVolumen,    t("KBROW_LBL_VOLUMEN"), "l"),
-                            new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€")
+                            new BrowserDetailfeld(FeldFirma,      t("KBROW_LBL_HERSTELLER"), "",
+                                                  BrowserFeldArt.Text, editierbar: true),
+                            new BrowserDetailfeld(FeldSpeichertyp, t("KBROW_LBL_SPEICHERTYP"), "",
+                                                  BrowserFeldArt.Text, editierbar: true),
+                            new BrowserDetailfeld(FeldVerluste,   t("KBROW_LBL_VERLUSTE"), "kWh/d",
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldVolumen,    t("KBROW_LBL_VOLUMEN"), "l",
+                                                  BrowserFeldArt.Ganzzahl, editierbar: true),
+                            new BrowserDetailfeld(FeldInvestitionskosten, t("KBROW_LBL_INVEST"), "€",
+                                                  BrowserFeldArt.Zahl, editierbar: true)
                         }
                     };
             }

@@ -693,6 +693,15 @@
   <data name="KBROW_MSG_SCHUTZ_LOESCHEN" xml:space="preserve">
     <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gelöscht werden.</value>
   </data>
+  <data name="KBROW_MSG_WERT_BEREICH" xml:space="preserve">
+    <value>„{0}“ muss zwischen {1} und {2} liegen.</value>
+  </data>
+  <data name="KBROW_MSG_WERT_NEGATIV" xml:space="preserve">
+    <value>„{0}“ darf nicht negativ sein.</value>
+  </data>
+  <data name="KBROW_MSG_WERT_UNBEKANNT" xml:space="preserve">
+    <value>„{0}“: „{1}“ ist kein zulässiger Wert. Zulässig sind: {2}</value>
+  </data>
   <data name="KBROW_SPALTE_EIGENSCHAFTEN" xml:space="preserve">
     <value>Eigenschaften</value>
   </data>
@@ -11723,6 +11732,12 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="HZK_BTN_ADMIN" xml:space="preserve">
     <value>Administration...</value>
   </data>
+  <data name="HZK_LBL_ALLE_DATEN" xml:space="preserve">
+    <value>Alle Daten anzeigen</value>
+  </data>
+  <data name="HZK_BTN_FELDER_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
   <data name="HZK_GRP_MODUL" xml:space="preserve">
     <value>Modul</value>
   </data>
@@ -12510,6 +12525,9 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="SKK_MSG_FEHLER" xml:space="preserve">
     <value>Fehler beim Speichern des Datensatzes!</value>
+  </data>
+  <data name="SKK_MSG_SCHUTZ" xml:space="preserve">
+    <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.</value>
   </data>
   <data name="SKV_TITEL" xml:space="preserve">
     <value>Eingabe der Solarkollektoren</value>

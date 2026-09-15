@@ -499,11 +499,22 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldFirma] = Feld(r, "Firma");
             werte[KatalogBrowserProfil.FeldBeschreibung] = Feld(r, "Beschreibung");
 
-            // W14a-B78: bleibt leer, genau wie im Bestand.
-            werte[KatalogBrowserProfil.FeldModulflaeche] = "";
+            // W14a-B78 ABGELOEST am 15.09.2026: Hier stand "" - die leere
+            // „Kollektorfläche" des Vorlaeufers. Das war richtig, solange der Block nur
+            // ANZEIGTE; mit dem Speicherweg wuerde die Leere beim ersten Speichern die
+            // gespeicherte Modulflaeche auf 0 setzen. Gezeigt wird deshalb der Wert.
+            werte[KatalogBrowserProfil.FeldModulflaeche] = Feld(r, "Modulflaeche");
             werte[KatalogBrowserProfil.FeldAperturflaeche] = Feld(r, "Aperturflaeche");
             werte[KatalogBrowserProfil.FeldVorlauf] = Feld(r, "Vorlauf");
             werte[KatalogBrowserProfil.FeldRuecklauf] = Feld(r, "Ruecklauf");
+
+            // --- Der volle Feldbestand (Anwenderentscheid 15.09.2026) ---
+            werte[KatalogBrowserProfil.FeldH0] = Feld(r, "h0");
+            werte[KatalogBrowserProfil.FeldK1] = Feld(r, "k1");
+            werte[KatalogBrowserProfil.FeldK2] = Feld(r, "k2");
+            werte[KatalogBrowserProfil.FeldKdir] = Feld(r, "Kdir");
+            werte[KatalogBrowserProfil.FeldKdiff] = Feld(r, "Kdfu");
+            werte[KatalogBrowserProfil.FeldInvestitionskosten] = Feld(r, "Investitionskosten");
 
             return werte;
         }
@@ -514,6 +525,155 @@ namespace WindowsFormsApplication1
             if (!row.Table.Columns.Contains(spalte)) return "";
             object v = row[spalte];
             return (v == null || v == DBNull.Value) ? "" : v.ToString();
+        }
+
+        // =================================================================================
+        // Der Speicherweg des Katalog-Aufklappers (Anwenderentscheid 15.09.2026)
+        // =================================================================================
+
+        /// <summary>Das Ergebnis eines Schreibversuchs — wie in den sechs Nachbarn.</summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">Der Grund im Klartext, bereits lokalisiert.</param>
+        /// <param name="Name">Der Bezeichner, unter dem der Satz jetzt steht.</param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Die dreizehn editierbaren Felder eines Katalogsatzes — jede fachliche Spalte
+        /// ausser dem Bezeichner, der der Schluessel des <c>UPDATE</c> ist.
+        /// </summary>
+        /// <remarks>
+        /// Anders als bei Heizkessel und BHKW sind hier ALLE Felder Pflicht: Der
+        /// Datensatz ist neu, es gibt keinen Aufrufer aus der Zeit davor, der eine
+        /// Leerstelle brauchte.
+        /// </remarks>
+        public sealed record AnzeigefelderSolarkollektor(string Kollektortyp, string Firma,
+                                                         string Beschreibung,
+                                                         double Modulflaeche,
+                                                         double Aperturflaeche,
+                                                         int Vorlauf, int Ruecklauf,
+                                                         double H0, double K1, double K2,
+                                                         double Kdir, double Kdiff,
+                                                         double Investitionskosten);
+
+        /// <summary>
+        /// Schreibt die Anzeigefelder in den Katalogsatz zurueck — der Weg des Knopfes
+        /// „Speichern" im Aufklapper „Alle Daten anzeigen".
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Muster <c>HeizkesselStammCtrl.AnzeigefelderSchreiben</c></b>, in
+        /// derselben Reihenfolge: Dublettenklammer, Satz VOLLSTAENDIG lesen, nur die
+        /// angezeigten Felder aendern, schreiben. Der Grund einer Ablehnung kommt als
+        /// Text zurueck statt als Meldungsfenster — eine Razor-Komponente hat keines.</para>
+        /// <para><b>Der Schreibschutz wird VOR dem Schreiben gefragt</b>, nicht in
+        /// <see cref="UpdateFrom"/> abgewartet: Jene Methode zeigt ihn ueber
+        /// <c>Meldung.Hinweis</c>, und ein Fenster ist hier keine Antwort. Dieselbe
+        /// Reihenfolge wie in <c>PufferSpStammCtrl.Ueberschreiben</c>.</para>
+        /// </remarks>
+        public static SpeicherErgebnis AnzeigefelderSchreiben(string bezeichner,
+                                                              AnzeigefelderSolarkollektor felder)
+        {
+            if (string.IsNullOrWhiteSpace(bezeichner) || felder == null)
+                return new SpeicherErgebnis(false, Text("SKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+
+            try
+            {
+                // Dublettenklammer: UpdateFrom filtert auf den Bezeichner, und der
+                // Katalog fuehrt darauf keinen eindeutigen Schluessel. Bei einer
+                // Dublette wuerden beide Saetze zugleich ueberschrieben.
+                object anz = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                    new DbParam("@bez", bezeichner));
+                int anzahl = (anz == null || anz == DBNull.Value) ? 0 : Convert.ToInt32(anz);
+                if (anzahl > 1)
+                    return new SpeicherErgebnis(false,
+                        string.Format(MyResource.Resource.ADM_MEHRDEUTIG_TEXT, bezeichner, anzahl), "");
+
+                if (IsReadOnlyStatic(bezeichner))
+                    return new SpeicherErgebnis(false, Text("SKK_MSG_SCHUTZ",
+                        "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."), "");
+
+                var schreiber = new SolarkollektorenStammCtrl();
+                schreiber.ReadSingle(bezeichner);
+                if (schreiber.rows == 0)
+                    return new SpeicherErgebnis(false, Text("SKK_MSG_FEHLER",
+                        "Fehler beim Überschreiben des Datensatzes!"), "");
+
+                string verstoss = FelderUebernehmen(schreiber, felder);
+                if (!string.IsNullOrEmpty(verstoss))
+                    return new SpeicherErgebnis(false, verstoss, "");
+
+                if (!schreiber.UpdateFrom(null))
+                    return new SpeicherErgebnis(false, Text("SKK_MSG_FEHLER",
+                        "Fehler beim Überschreiben des Datensatzes!"), "");
+
+                return new SpeicherErgebnis(true,
+                    Text("SKK_MSG_GESPEICHERT", "Datensatz gespeichert"),
+                    schreiber.m_szKollektorname);
+            }
+            catch
+            {
+                return new SpeicherErgebnis(false, Text("SKK_MSG_FEHLER",
+                    "Fehler beim Überschreiben des Datensatzes!"), "");
+            }
+        }
+
+        /// <summary>
+        /// Prueft die Werte und traegt sie in den GELESENEN Satz ein; der Rueckgabewert
+        /// ist der Ablehnungsgrund im Klartext oder <c>null</c>. Erst pruefen, dann
+        /// setzen — nach einer Ablehnung steht kein halb geaenderter Satz im Speicher.
+        /// </summary>
+        private static string FelderUebernehmen(SolarkollektorenStammCtrl satz,
+                                                AnzeigefelderSolarkollektor f)
+        {
+            const KatalogBrowserArt art = KatalogBrowserArt.Solarkollektoren;
+
+            string grund = KatalogFeldPruefung.ErsterGrund(
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldModulflaeche,
+                                                 f.Modulflaeche),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldAperturflaeche,
+                                                 f.Aperturflaeche),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldInvestitionskosten,
+                                                 f.Investitionskosten),
+
+                // h0 ist der KONVERSIONSFAKTOR und liegt zwischen 0 und 1 - wer dort
+                // 76,1 eintraegt, meint Prozent und soll es hoeren
+                // (SimulationSolarthermie.cs:242).
+                KatalogFeldPruefung.ImBereich(art, KatalogBrowserProfil.FeldH0, f.H0, 0, 1),
+
+                // Kdir und Kdiff sind EINFALLSWINKELKORREKTUREN und duerfen ueber 1
+                // liegen: Ein Vakuumroehrenkollektor sammelt schraeg mehr als senkrecht
+                // (der Auslieferungskatalog fuehrt 1,27). Nur negativ geht nicht.
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldKdir, f.Kdir),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldKdiff, f.Kdiff),
+
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldK1, f.K1),
+                KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldK2, f.K2));
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
+            satz.m_szKollektortyp = f.Kollektortyp ?? "";
+            satz.m_szFirma = f.Firma ?? "";
+            satz.m_szBeschreibung = f.Beschreibung ?? "";
+            satz.m_Modulfläche = f.Modulflaeche;
+            satz.m_Aperturfläche = f.Aperturflaeche;
+            satz.m_Vorlauf = f.Vorlauf;
+            satz.m_Ruecklauf = f.Ruecklauf;
+            satz.m_h0 = f.H0;
+            satz.m_k1 = f.K1;
+            satz.m_k2 = f.K2;
+            satz.m_Kdir = f.Kdir;
+            satz.m_Kdfu = f.Kdiff;
+            satz.m_Kosten = f.Investitionskosten;
+
+            return null;
+        }
+
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
     }
 }
