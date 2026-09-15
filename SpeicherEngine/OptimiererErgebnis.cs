@@ -133,8 +133,8 @@ namespace SpeicherEngine
         // ------------------------------------------------------ Lastspitzenkappung
 
         // Die vier Groessen fuellt AUSSCHLIESSLICH die Berechnungsart
-        // Lastspitzenkappung (Anwenderentscheid W11b-E-3, 10.09.2026); bei
-        // Dauer- und Nachtnutzung bleiben sie 0 beziehungsweise false. Sie stehen
+        // Lastspitzenkappung (Anwenderentscheid W11b-E-3, 10.09.2026); bei der
+        // Dauernutzung bleiben sie 0 beziehungsweise false. Sie stehen
         // hier und nicht in einem eigenen Typ, weil der Rasterpunkt EINE Zeile der
         // Kennzahlentabelle und der CSV-Ausgabe ist - ein zweiter Typ zwaenge Anzeige
         // und Export zu einer Fallunterscheidung, die nichts erklaert.

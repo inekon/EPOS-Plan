@@ -32,7 +32,7 @@ namespace SpeicherEngine.Tests
     ///     synthetischer Graustrom-Jahreslauf im AP4-Spotreihenformat.</description></item>
     /// </list>
     /// <para>
-    /// Mini-Parametersatz wie in <c>NachtnutzungTests</c>: dt = 0,25 h,
+    /// Mini-Parametersatz der Strategietests: dt = 0,25 h,
     /// P*dt = 2,5 kWh, Band 0 .. 10 kWh. Wo es auf exakte Zahlen ankommt, steht
     /// eta_RT = 1 (dann sind eta_ch = eta_dis = 1 und alle Zwischenwerte exakt);
     /// sonst eta_RT = 0,81, weil eta_ch = eta_dis = 0,9 als Double exakt ist.

@@ -308,26 +308,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Umgesetzt sind Dauernutzung (6.2, AP1), Nachtnutzung (6.1, AP6) und
-        /// Preissteuerung/Arbitrage (6.5, AP10).</b> Jeder andere — auch ein künftiger
+        /// <b>Umgesetzt sind Dauernutzung (6.2, AP1) und Preissteuerung/Arbitrage
+        /// (6.5, AP10).</b> Jeder andere — auch ein künftiger
         /// oder ein von Hand in die Datenbank geschriebener — Wert fällt protokolliert
         /// auf die Dauernutzung zurück; das war schon vor diesem Paket das Verhalten
         /// und bleibt es. Ein Lauf soll nie daran scheitern, dass eine Variante eine
         /// Ausbaustufe anfordert, die das Programm noch nicht kann.
         /// </para>
         /// <para>
+        /// <b>Der entfallene Wert bekommt seinen eigenen Satz.</b> Eine Variante, die
+        /// noch die entfallene Berechnungsart trägt (<see cref="SpeicherAltstand"/>),
+        /// ist kein unbekannter Wert und keine noch nicht umgesetzte Ausbaustufe: Sie
+        /// wird BENANNT auf die Dauernutzung umgesetzt, und das Protokoll sagt es.
+        /// </para>
+        /// <para>
         /// <b>Kompatibilitätsmodus.</b> Er ist eine Eigenschaft der VARIANTE, nicht des
         /// Aufrufers (Fachkonzept 5.2): Er gehört zu genau der Rechnung, mit der ein
         /// Anwender die Excel-Mappe nachstellt, und darf deshalb nicht an einer zweiten
-        /// Stelle noch einmal entschieden werden. Er greift allerdings <b>nur bei der
-        /// Dauernutzung</b> — nur sie hat eine Excel-Vorlage. Für die Nachtnutzung
-        /// hinterlegte die V7-Mappe lediglich eine als Dauernutzungssimulation
-        /// unbrauchbare Altversion, die bewusst nicht portiert wurde (Fachkonzept 6.1);
-        /// die Engine lehnt die Kombination mit einer
-        /// <see cref="NotSupportedException"/> ab. Statt den ganzen Simulationslauf
-        /// daran scheitern zu lassen, rechnet der Controller hier energetisch weiter
-        /// und schreibt einen Hinweis ins Protokoll. Die Parameterseite bietet die
-        /// Kombination gar nicht erst an — der Fall kann also nur aus Altdaten kommen.
+        /// Stelle noch einmal entschieden werden. Er greift <b>nur bei der
+        /// Dauernutzung</b> — nur sie hat eine Excel-Vorlage; die Parameterseite bietet
+        /// ihn deshalb auch nur dort an.
         /// </para>
         /// </remarks>
         /// <param name="kontext">Lauf-Kontext mit Variante, Preisreihen und Kompatibilitätsflag.</param>
@@ -342,11 +342,14 @@ namespace WindowsFormsApplication1
                 ? kontext.Variante.Berechnungsart
                 : DbWerte.SP_BERECHNUNG_DAUERNUTZUNG;
 
-            if (berechnungsart == DbWerte.SP_BERECHNUNG_NACHTNUTZUNG)
+            // BENANNTE UMSETZUNG eines gespeicherten Standes: Die entfallene
+            // Berechnungsart wird auf die Dauernutzung gezogen und das Protokoll sagt
+            // es. Sie fällt bewusst NICHT in den allgemeinen Rückfall weiter unten —
+            // der spricht von einer Ausbaustufe, die es noch nicht gibt.
+            if (SpeicherAltstand.IstEntfalleneBerechnungsart(berechnungsart))
             {
-                if (modus == SpeicherModus.ExcelKompatibilitaet)
-                    HinweisErgaenzen(MyResource.Resource.NACHT_HINWEIS_KOMPATIBILITAET);
-                return new Nachtnutzung();
+                HinweisErgaenzen(MyResource.Resource.SP_ALTSTAND_BERECHNUNGSART);
+                berechnungsart = SpeicherAltstand.Berechnungsart(berechnungsart);
             }
 
             if (berechnungsart == DbWerte.SP_BERECHNUNG_ARBITRAGE)
@@ -433,18 +436,17 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Wozu (Fachkonzept Etappe 6).</b> Eine abweichende Berechnungsart ist nur
         /// dann beurteilbar, wenn daneben steht, was der Standardfall geliefert hätte:
-        /// Die Nachtnutzung hält den Speicher tagsüber zurück und verschiebt die
-        /// Entladung in die Nacht — ob das im konkreten Projekt Ertrag kostet oder
-        /// bringt, zeigt erst der Vergleich. Ein Jahreslauf liegt im
-        /// Millisekundenbereich und verlängert die Kette nicht spürbar.
+        /// Die Preissteuerung verschiebt Ladung und Entladung nach dem Preis — ob das
+        /// im konkreten Projekt Ertrag kostet oder bringt, zeigt erst der Vergleich.
+        /// Ein Jahreslauf liegt im Millisekundenbereich und verlängert die Kette nicht
+        /// spürbar.
         /// </para>
         /// <para>
         /// <b>Immer energetisch.</b> Verglichen wird mit der Dauernutzung im
         /// Produktivmodus, unabhängig vom Kompatibilitätsflag der Variante: Der
         /// Excel-Kompatibilitätsmodus rechnet ohne Verlustmodell, mit Start-SoC 0 und
-        /// ohne Quellen-Matrix — seine Zahlen wären mit denen der Nachtnutzung nicht
-        /// vergleichbar. Der Fall kann ohnehin nur aus Altdaten kommen (siehe
-        /// <see cref="BaueStrategie"/>).
+        /// ohne Quellen-Matrix — seine Zahlen wären mit denen der abweichenden
+        /// Berechnungsart nicht vergleichbar.
         /// </para>
         /// <para>
         /// <b>Reine Anzeige.</b> Persistiert wird ausschließlich das Ergebnis der
@@ -1322,9 +1324,8 @@ namespace WindowsFormsApplication1
                 HinweisErgaenzen(MyResource.Resource.SIMENG_SPEICHER_OHNE_VARIANTE);
             }
 
-            // Der Hinweis auf eine nicht umgesetzte Berechnungsart steht seit AP6 dort,
-            // wo die Strategie wirklich gewählt wird (BaueStrategie) - hier wäre er
-            // inzwischen falsch: Die Nachtnutzung IST umgesetzt.
+            // Der Hinweis auf eine nicht umgesetzte Berechnungsart steht dort, wo die
+            // Strategie wirklich gewählt wird (BaueStrategie) - hier wäre er zu früh.
 
             double ladezustandProzent = gewichtetLadezustand / summeEnergie;
             double degradationProzent = gewichtetDegradation / summeEnergie;

@@ -145,7 +145,7 @@ namespace EPOS.Kern.Tests
                 RSchritt = 0.5,
                 Feinraster = true,
                 KVerInZielfunktion = true,
-                Strategie = OptimiererStrategie.Nachtnutzung
+                Strategie = OptimiererStrategie.Lastspitzenkappung
             });
 
             Assert.Equal(500.0, o.CMinKwh);
@@ -154,7 +154,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(6, o.CRatenAnzahl);
             Assert.True(o.Feinraster);
             Assert.True(o.KVerInZielfunktion);
-            Assert.Equal(OptimiererStrategie.Nachtnutzung, o.Strategie);
+            Assert.Equal(OptimiererStrategie.Lastspitzenkappung, o.Strategie);
         }
 
         [Fact]
@@ -634,16 +634,15 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_drei_Strategien_stehen_in_der_Reihenfolge_der_Klappliste()
+        public void Die_Strategien_stehen_in_der_Reihenfolge_der_Klappliste()
         {
             var namen = SpeicherOptimierungCtrl.Strategien();
 
-            // Der dritte Eintrag kam mit dem Anwenderentscheid W11b‑E‑3 (10.09.2026)
+            // Der zweite Eintrag kam mit dem Anwenderentscheid W11b‑E‑3 (10.09.2026)
             // dazu; die Reihenfolge ist der Zahlenwert von OptimiererStrategie.
-            Assert.Equal(3, namen.Count);
+            Assert.Equal(2, namen.Count);
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG, namen[0]);
-            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG, namen[1]);
-            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG, namen[2]);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG, namen[1]);
         }
 
         // =================================================================

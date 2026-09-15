@@ -347,7 +347,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Gruppenschlüssel: die Größen der Lastspitzenkappung (W11b‑E‑3). Die Gruppe
-        /// erscheint NUR bei dieser Berechnungsart — bei Dauer- und Nachtnutzung stünden
+        /// erscheint NUR bei dieser Berechnungsart — bei der Dauernutzung stünden
         /// dort fünf Nullen ohne Aussage.
         /// </summary>
         public const string GRUPPE_KAPPUNG = "KAPPUNG";
@@ -622,17 +622,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Anzeigetexte der Betriebsstrategien, in der Reihenfolge der Klappliste.</summary>
         /// <remarks>
-        /// Der DRITTE Eintrag kommt aus dem Anwenderentscheid W11b‑E‑3 (10.09.2026): Ein
-        /// Projekt ohne PV und ohne BHKW bekommt mit Dauer- und Nachtnutzung eine
-        /// einfarbige Rasterkarte, weil beide den genutzten Erzeugungsüberschuss
-        /// bewerten und der ohne Erzeugung 0 ist (Befund W11b‑B‑25, Projekt 1050).
+        /// Der ZWEITE Eintrag kommt aus dem Anwenderentscheid W11b‑E‑3 (10.09.2026): Ein
+        /// Projekt ohne PV und ohne BHKW bekommt mit der Dauernutzung eine
+        /// einfarbige Rasterkarte, weil sie den genutzten Erzeugungsüberschuss
+        /// bewertet und der ohne Erzeugung 0 ist (Befund W11b‑B‑25, Projekt 1050).
         /// </remarks>
         public static IReadOnlyList<string> Strategien()
         {
             return new List<string>
             {
                 MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG,
-                MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG,
                 MyResource.Resource.SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG
             };
         }

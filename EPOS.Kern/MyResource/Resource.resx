@@ -4746,8 +4746,11 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PREIS_PARAM_INFO" xml:space="preserve">
     <value>Energiepreis im Mittel {0} ct/kWh + Aufschlag {1} ct/kWh = Bezugspreis {2} ct/kWh   |   Preisversion: {3}</value>
   </data>
-  <data name="SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG" xml:space="preserve">
-    <value>Nachtnutzung</value>
+  <data name="SP_BERECHNUNG_ANZEIGE_ALTSTAND" xml:space="preserve">
+    <value>Dauernutzung (aus entfallener Berechnungsart übernommen)</value>
+  </data>
+  <data name="SP_ALTSTAND_BERECHNUNGSART" xml:space="preserve">
+    <value>Die gespeicherte Berechnungsart dieser Variante gibt es nicht mehr; gerechnet wird die Dauernutzung.</value>
   </data>
   <data name="SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG" xml:space="preserve">
     <value>Lastspitzenkappung</value>
@@ -4758,14 +4761,8 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="NACHT_ERG_VERGLEICH_HINWEIS" xml:space="preserve">
     <value>Die Vergleichsspalte zeigt, was die Dauernutzung mit denselben Daten geliefert hätte. Gespeichert wird nur das Ergebnis der gewählten Berechnungsart.</value>
   </data>
-  <data name="NACHT_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
-    <value>Der Excel-Kompatibilitätsmodus gilt nur für die Dauernutzung – für die Nachtnutzung gibt es keine Excel-Referenz. Gerechnet wird energetisch.</value>
-  </data>
   <data name="NACHT_HINWEIS_VERGLEICH_FEHLER" xml:space="preserve">
     <value>Der Vergleichslauf mit der Dauernutzung ist fehlgeschlagen: {0}</value>
-  </data>
-  <data name="NACHT_OHNE_EXCEL_REFERENZ" xml:space="preserve">
-    <value>Für die Nachtnutzung gibt es keine Excel-Referenz; der Kompatibilitätsmodus ist dort nicht vorgesehen.</value>
   </data>
   <data name="PEAK_MENUE" xml:space="preserve">
     <value>Lastspitzenkappung (Peak-Shaving)</value>
@@ -5188,7 +5185,7 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
     <value>Die leistungsbezogene Investition c_pow ist 0 — die C-Raten-Achse ist kostenneutral. Welche C-Rate gewinnt, entscheidet dann allein der Nutzen; bringt mehr Leistung keinen, gewinnt bei Gleichstand die KLEINSTE C-Rate, weil der Bestpunkt in fester Reihenfolge gesucht wird.</value>
   </data>
   <data name="OPT_WARN_KEINE_ERZEUGUNG" xml:space="preserve">
-    <value>Das Projekt führt weder PV- noch BHKW-Erzeugung. Dauernutzung und Nachtnutzung bewerten den genutzten Erzeugungsüberschuss — ohne Erzeugung ist er 0, und jeder Rasterpunkt liefert denselben Ertrag. Für dieses Projekt ist die Berechnungsart „Lastspitzenkappung“ die passende.</value>
+    <value>Das Projekt führt weder PV- noch BHKW-Erzeugung. Die Dauernutzung bewertet den genutzten Erzeugungsüberschuss — ohne Erzeugung ist er 0, und jeder Rasterpunkt liefert denselben Ertrag. Für dieses Projekt ist die Berechnungsart „Lastspitzenkappung“ die passende.</value>
   </data>
   <data name="OPT_WARN_CCAP_NULL" xml:space="preserve">
     <value>Die kapazitätsbezogene Investition c_cap ist 0 — größere Speicher kosten dann nichts, und die Kapazitätsachse trägt keine Entscheidung. Modulkosten am Speichergerät pflegen (Dialog Stromspeicher, Feld „Modulkosten [€/kWh]“).</value>

@@ -32804,29 +32804,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Excel-Kompatibilitätsmodus gilt nur für die Dauernutzung – für die Nachtnutzung gibt es keine Excel-Referenz. Gerechnet wird energetisch. ähnelt.
-        /// </summary>
-        public static string NACHT_HINWEIS_KOMPATIBILITAET {
-            get {
-                return ResourceManager.GetString("NACHT_HINWEIS_KOMPATIBILITAET", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Vergleichslauf mit der Dauernutzung ist fehlgeschlagen: {0} ähnelt.
         /// </summary>
         public static string NACHT_HINWEIS_VERGLEICH_FEHLER {
             get {
                 return ResourceManager.GetString("NACHT_HINWEIS_VERGLEICH_FEHLER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nachtnutzung gibt es keine Excel-Referenz; der Kompatibilitätsmodus ist dort nicht vorgesehen. ähnelt.
-        /// </summary>
-        public static string NACHT_OHNE_EXCEL_REFERENZ {
-            get {
-                return ResourceManager.GetString("NACHT_OHNE_EXCEL_REFERENZ", resourceCulture);
             }
         }
         
@@ -34023,7 +34005,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt weder PV- noch BHKW-Erzeugung. Dauernutzung und Nachtnutzung bewerten den genutzten Erzeugungsüberschuss — ohne Erzeugung ist er 0, und jeder Rasterpunkt liefert denselben Ertrag. Für dieses Projekt ist die Berechnungsart „Lastspitzenkappung“ die passende. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt weder PV- noch BHKW-Erzeugung. Die Dauernutzung bewertet den genutzten Erzeugungsüberschuss — ohne Erzeugung ist er 0, und jeder Rasterpunkt liefert denselben Ertrag. Für dieses Projekt ist die Berechnungsart „Lastspitzenkappung“ die passende. ähnelt.
         /// </summary>
         public static string OPT_WARN_KEINE_ERZEUGUNG {
             get {
@@ -48937,6 +48919,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gespeicherte Berechnungsart dieser Variante gibt es nicht mehr; gerechnet wird die Dauernutzung. ähnelt.
+        /// </summary>
+        public static string SP_ALTSTAND_BERECHNUNGSART {
+            get {
+                return ResourceManager.GetString("SP_ALTSTAND_BERECHNUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauernutzung (aus entfallener Berechnungsart übernommen) ähnelt.
+        /// </summary>
+        public static string SP_BERECHNUNG_ANZEIGE_ALTSTAND {
+            get {
+                return ResourceManager.GetString("SP_BERECHNUNG_ANZEIGE_ALTSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preissteuerung / Arbitrage ähnelt.
         /// </summary>
         public static string SP_BERECHNUNG_ANZEIGE_ARBITRAGE {
@@ -48960,15 +48960,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG {
             get {
                 return ResourceManager.GetString("SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nachtnutzung ähnelt.
-        /// </summary>
-        public static string SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG {
-            get {
-                return ResourceManager.GetString("SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG", resourceCulture);
             }
         }
         

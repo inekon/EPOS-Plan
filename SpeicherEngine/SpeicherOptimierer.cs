@@ -478,8 +478,6 @@ namespace SpeicherEngine
         {
             switch (opt.Strategie)
             {
-                case OptimiererStrategie.Nachtnutzung:
-                    return new Nachtnutzung(SpeicherModus.Energetisch);
                 case OptimiererStrategie.Dauernutzung:
                     return new Dauernutzung(SpeicherModus.Energetisch);
                 case OptimiererStrategie.Lastspitzenkappung:

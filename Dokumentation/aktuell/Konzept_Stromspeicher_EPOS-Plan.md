@@ -28,7 +28,7 @@ Exporthinweise aktualisiert (7.2). Die SpeicherEngine samt bitgenauem Referenzte
 Auslegungsoptimierung** (6.3, 6.4) — Anwenderentscheid vom 10.09.2026: *„Nehme auf: Lastspitzenkappung —
 Leistungspreis in Maske und alternativ aus Leistungspreis Tarifstruktur/Energieträger Strom (Übernahme in die
 Maske als Auswahl)."* Anlass war der Befund W11b‑B‑25 der Windows-Abnahme vom 09.09.2026: Projekt 1050 führt
-genau einen Stromspeicher, keine PV und kein BHKW; Dauer- und Nachtnutzung bewerten den genutzten
+genau einen Stromspeicher, keine PV und kein BHKW; die Dauernutzung bewertet den genutzten
 Erzeugungsüberschuss, der ohne Erzeugung 0 ist, und die Rasterkarte war einfarbig (alle 120 Punkte ΔJ = 0).
 Die separate Peak-Shaving-Maske bleibt bestehen (6.4); geteilt wird der Parametersatz. Ergänzt sind außerdem
 die **Quellen des Leistungspreises L_P** (4.4, 5.1) und das Ergebnisbild **„Lastgang und Speicherbetrieb"**
@@ -599,32 +599,13 @@ E_quelle   = (PV zulässig ? E_pv_frei : 0) + (BHKW zulässig ? E_bhkw_frei : 0)
 Überschuss und Defizit schließen sich konstruktionsbedingt aus; Laden und Entladen im selben Intervall ist damit
 ausgeschlossen (bei Round-Trip-Verlusten ohnehin nie vorteilhaft).
 
-### 6.1 (a) Start Nachtnutzung
+### 6.1 (a) Entfallen
 
-**Zweck:** Der Speicher soll für die Nutzung nach Sonnenuntergang nicht geleert sein.
-**Regel (gesetzte Entscheidung):** Entladen ausschließlich, wenn die PV-Erzeugung null ist; solange PV erzeugt,
-wird nur geladen. Kein Klimadaten- oder Sonnenstandsbezug nötig.
-
-```
-für jedes Intervall i:
-    E_ac_ch = 0 ; E_ac_dis = 0
-    if P_pv[i] > eps:                                   # Tag: nur laden
-        E_ac_ch = min( E_quelle, P·dt, (SoC_max − SoC)/η_ch )
-    else:                                               # PV = 0: entladen erlaubt
-        E_ac_dis = min( E_defizit, P·dt, (SoC − SoC_min)·η_dis )
-        if E_quelle > 0:                                # BHKW-Überschuss nachts
-            E_ac_ch = min( E_quelle, P·dt, (SoC_max − SoC)/η_ch )
-    SoC += E_ac_ch·η_ch − E_ac_dis/η_dis
-    bewerte(i, E_ac_ch, E_ac_dis)
-```
-
-**Einordnung:** Die V7-Mappe hinterlegte für den Button „Start Nachtnutzung" nur eine Altversion, deren
-Entladezweig bei PV = 0 die volle Last statt der Residuallast ansetzte — bei PV = 0 rechnerisch dasselbe, weshalb
-sich ihre Trigger-Bedingung zufällig mit der hier gesetzten Regel deckt. Als Dauernutzungssimulation war sie
-gleichwohl unbrauchbar, Laden aus BHKW oder Netz fehlte vollständig. Die hier beschriebene Fassung ist eine
-**Neudefinition, kein Port**; sie ist nicht gegen Excel-Werte verifizierbar und braucht eigene Tests. Optionale
-Erweiterung (nicht Stufe 1): ein Ziel-Ladezustand bis Sonnenuntergang, den der Speicher bei unzureichendem
-PV-Überschuss aus BHKW (Grün) oder Netz (Grau) auffüllt.
+Die Berechnungsart „Nachtnutzung" ist mit dem Anwenderentscheid vom 15.09.2026 entfallen — die
+Ziffer bleibt stehen, damit die Nummern 6.2 bis 6.5 ihre Bedeutung behalten. Ein gespeicherter
+Stand mit `Tab_StromspeicherVariante.Berechnungsart = "Nachtnutzung"` wird beim Lesen **benannt**
+auf die Dauernutzung umgesetzt (`SpeicherAltstand`); die Spalte selbst bleibt unverändert, es gibt
+keinen Schemaschritt.
 
 ### 6.2 (b) Dauernutzung
 
@@ -716,8 +697,8 @@ verwendet, weil sie die Nutzungsdauer ignoriert und systematisch zu kleine Speic
 Sekundärkennzahl.
 
 **Betriebsstrategie je Rasterpunkt — drei zur Wahl (Rev. 5).** Gerechnet wird jeder Rasterpunkt mit
-(a) Dauernutzung, (b) Nachtnutzung oder (c) **Lastspitzenkappung** (Anwenderentscheid W11b‑E‑3 vom 10.09.2026).
-Die dritte Wahl ist keine Bequemlichkeit, sondern die Antwort auf Befund W11b‑B‑25: Dauer- und Nachtnutzung
+(a) Dauernutzung oder (b) **Lastspitzenkappung** (Anwenderentscheid W11b‑E‑3 vom 10.09.2026).
+Die zweite Wahl ist keine Bequemlichkeit, sondern die Antwort auf Befund W11b‑B‑25: Die Dauernutzung
 bewerten den genutzten **Erzeugungsüberschuss**; führt ein Projekt weder PV noch BHKW, ist der 0, jeder
 Rasterpunkt trägt denselben Ertrag, und die Karte ist einfarbig. Die Lastspitzenkappung bewertet stattdessen
 den gesparten **Leistungspreis** und braucht dafür keine Erzeugung.
@@ -979,7 +960,7 @@ Leistung. Jeder Speicher führt eigenen Ladezustand, eigene Zyklenzählung und e
 ### 8.1 SpeicherEngine — UI-freie Klassenbibliothek
 
 Struktur: `SpeicherParameter`, `PreisZeitreihe`, `SpeicherEingang`, `SpeicherErgebnis`, `ISpeicherStrategie` mit
-den Implementierungen `Dauernutzung`, `Nachtnutzung`, `PeakShaving`, `Arbitrage`, dazu `SpeicherOptimierer` und
+den Implementierungen `Dauernutzung`, `PeakShaving`, `Arbitrage`, dazu `SpeicherOptimierer` und
 `Wirtschaftlichkeit`.
 
 **Harte Randbedingungen (aus der Code-Prüfung):**
@@ -1123,7 +1104,9 @@ Jede Stufe endet mit einem lauffähigen, vorführbaren Zwischenstand.
    Override, Vergütungsregime, Netzladepreis, Preisversionierung. *Anforderungen 4 und 5 vollständig.*
 5. **Lastgangimport erweitern** (CSV/Excel, Dezimalkomma, Zeitstempel, Einheiten, Schaltjahr, Validierungs-
    protokoll) auf Basis des vorhandenen Imports. *Anforderung 3 vollständig.*
-6. **Nachtnutzung** als zweite Berechnungsart, mit Vergleichsdarstellung gegen die Dauernutzung.
+6. *(entfallen — die Stufe hat eine zweite Berechnungsart gebracht, die mit dem Anwenderentscheid vom
+   15.09.2026 wieder gefallen ist; die Vergleichsdarstellung gegen die Dauernutzung bleibt und dient
+   jetzt der Preissteuerung.)*
 7. **Peak-Shaving als separate Funktionalität**: eigener Einstieg mit eigener Maske (direkt auf dem
    importierten Lastgang, ohne PV/BHKW-Kette nutzbar), `PeakShaving`-Strategie der gemeinsamen Engine samt
    Leistungspreis-Monetarisierung; Regressionstest gegen die verifizierte Python-Referenz. Setzt Stufe 5 voraus.

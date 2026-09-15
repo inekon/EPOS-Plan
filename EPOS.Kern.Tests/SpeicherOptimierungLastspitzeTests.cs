@@ -13,7 +13,7 @@ namespace EPOS.Kern.Tests
     /// Berechnungsart der Auslegungsoptimierung — Controller-Seite.
     ///
     /// <para><b>Warum es sie gibt.</b> Projekt 1050 führt genau einen Stromspeicher,
-    /// keine PV und kein BHKW. Dauer- und Nachtnutzung bewerten den genutzten
+    /// keine PV und kein BHKW. Die Dauernutzung bewertet den genutzten
     /// Erzeugungsüberschuss; ohne Erzeugung ist er 0, und mit Modulkosten 0 war auch
     /// der Kapitaldienst 0 — die Rasterkarte war einfarbig und trug an allen 120
     /// Punkten ΔJ = 0 (Befund W11b‑B‑25, Windows-Abnahme 09.09.2026).</para>

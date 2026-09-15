@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Der Ergebnisreiter kennt keine Schwelle.</b> Die Reihe
     /// <see cref="REIHE_SCHWELLE"/> gehört zur Lastspitzenkappung, und die ist eine
     /// Berechnungsart der AUSLEGUNGSOPTIMIERUNG (W11b‑E‑3) bzw. die eigene Maske
-    /// <c>PeakShaving</c> — der Simulationslauf fährt Dauernutzung, Nachtnutzung oder
+    /// <c>PeakShaving</c> — der Simulationslauf fährt Dauernutzung oder
     /// Preissteuerung (<c>StromspeicherSimCtrl.BaueStrategie</c>). <see cref="Zeichnen"/>
     /// nimmt die Schwelle trotzdem entgegen: Eine Berechnungsart mit Kappung hätte sonst
     /// im Reiter kein Bild, sondern eine Ausnahme von der Regel.</para>

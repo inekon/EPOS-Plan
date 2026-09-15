@@ -4730,8 +4730,11 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PREIS_PARAM_INFO" xml:space="preserve">
     <value>Mean energy price {0} ct/kWh + surcharge {1} ct/kWh = purchase price {2} ct/kWh   |   price version: {3}</value>
   </data>
-  <data name="SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG" xml:space="preserve">
-    <value>Night use</value>
+  <data name="SP_BERECHNUNG_ANZEIGE_ALTSTAND" xml:space="preserve">
+    <value>Continuous use (carried over from a discontinued calculation type)</value>
+  </data>
+  <data name="SP_ALTSTAND_BERECHNUNGSART" xml:space="preserve">
+    <value>The calculation type stored for this variant no longer exists; continuous use is calculated instead.</value>
   </data>
   <data name="SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG" xml:space="preserve">
     <value>Peak shaving</value>
@@ -4742,14 +4745,8 @@ Please run the simulation with photovoltaics first.</value>
   <data name="NACHT_ERG_VERGLEICH_HINWEIS" xml:space="preserve">
     <value>The comparison column shows what continuous use would have delivered from the same data. Only the result of the selected calculation type is saved.</value>
   </data>
-  <data name="NACHT_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
-    <value>The Excel compatibility mode applies to continuous use only - there is no Excel reference for night use. The calculation runs with the energy model.</value>
-  </data>
   <data name="NACHT_HINWEIS_VERGLEICH_FEHLER" xml:space="preserve">
     <value>The comparison run with continuous use failed: {0}</value>
-  </data>
-  <data name="NACHT_OHNE_EXCEL_REFERENZ" xml:space="preserve">
-    <value>There is no Excel reference for night use; the compatibility mode is not available there.</value>
   </data>
   <data name="PEAK_MENUE" xml:space="preserve">
     <value>Peak shaving</value>
@@ -5172,7 +5169,7 @@ Please run the simulation with photovoltaics first.</value>
     <value>The power related investment c_pow is 0 — the C rate axis is cost neutral. Which C rate wins is then decided by the benefit alone; if more power brings none, a tie goes to the SMALLEST C rate, because the best point is searched in a fixed order.</value>
   </data>
   <data name="OPT_WARN_KEINE_ERZEUGUNG" xml:space="preserve">
-    <value>The project has neither PV nor CHP generation. Continuous use and night use value the generation surplus actually used — without generation it is 0, and every grid point yields the same return. For this project the calculation mode „peak shaving“ is the fitting one.</value>
+    <value>The project has neither PV nor CHP generation. Continuous use values the generation surplus actually used — without generation it is 0, and every grid point yields the same return. For this project the calculation mode „peak shaving“ is the fitting one.</value>
   </data>
   <data name="OPT_WARN_CCAP_NULL" xml:space="preserve">
     <value>The capacity related investment c_cap is 0 — larger storages then cost nothing and the capacity axis carries no decision. Maintain the module cost at the storage device (storage dialog, field „module cost [€/kWh]“).</value>

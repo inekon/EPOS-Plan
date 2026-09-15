@@ -487,36 +487,6 @@ namespace SpeicherEngine.Tests
             ErgebnisseSindBitgleich(parallel, seriell);
         }
 
-        [Fact]
-        public void Parallel_Und_Seriell_Sind_Auch_Bei_Nachtnutzung_Gleich()
-        {
-            SpeicherEingang eingang = JahresEingang();
-            SpeicherParameter basis = JahresBasis();
-
-            OptimiererErgebnis parallel = new SpeicherOptimierer().Optimiere(
-                eingang, basis, new OptimiererOptionen { Strategie = OptimiererStrategie.Nachtnutzung });
-            OptimiererErgebnis seriell = new SpeicherOptimierer().Optimiere(
-                eingang, basis, new OptimiererOptionen { Strategie = OptimiererStrategie.Nachtnutzung, MaxParallel = 1 });
-
-            ErgebnisseSindBitgleich(parallel, seriell);
-        }
-
-        [Fact]
-        public void Nachtnutzung_Und_Dauernutzung_Liefern_Verschiedene_Raster()
-        {
-            SpeicherEingang eingang = JahresEingang();
-            SpeicherParameter basis = JahresBasis();
-            OptimiererOptionen klein = new OptimiererOptionen { Stuetzstellen = 3, Feinraster = false };
-
-            OptimiererErgebnis tag = new SpeicherOptimierer().Optimiere(eingang, basis, klein);
-            OptimiererErgebnis nacht = new SpeicherOptimierer().Optimiere(
-                eingang, basis, klein with { Strategie = OptimiererStrategie.Nachtnutzung });
-
-            // Die Nachtnutzung haelt den Speicher tagsueber zurueck - auf einer Reihe
-            // mit PV muss sich das im Ertrag niederschlagen.
-            Assert.NotEqual(tag.BestPunkt.ErtragReferenzjahrEur, nacht.BestPunkt.ErtragReferenzjahrEur, 6);
-        }
-
         /// <summary>Vergleicht zwei Laeufe Bit fuer Bit ueber alle Rasterpunkte.</summary>
         private static void ErgebnisseSindBitgleich(OptimiererErgebnis a, OptimiererErgebnis b)
         {

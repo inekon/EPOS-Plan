@@ -26,7 +26,7 @@ namespace SpeicherEngine
     /// einer anderen Zielgroesse (Lastspitze statt Residuallast) und hat eine eigene
     /// Maske (AP7). Der Anwenderentscheid W11b-E-3 (10.09.2026) nimmt sie auf, weil
     /// ein Projekt OHNE Erzeugung sonst gar keine auswertbare Optimierung hat - ohne
-    /// PV und BHKW bewerten Dauer- und Nachtnutzung nichts, und alle Rasterpunkte
+    /// PV und BHKW bewertet die Dauernutzung nichts, und alle Rasterpunkte
     /// liefern denselben Wert (Befund W11b-B-25, Projekt 1050). Die eigene Maske
     /// bleibt daneben bestehen (Fachkonzept 6.4); geteilt wird der Parametersatz
     /// (<see cref="PeakShavingParameter.Nachziehend"/>).
@@ -35,9 +35,6 @@ namespace SpeicherEngine
     {
         /// <summary>Dauernutzung im energetischen Produktivmodus (Fachkonzept 6.2).</summary>
         Dauernutzung = 0,
-
-        /// <summary>Nachtnutzung im energetischen Produktivmodus (Fachkonzept 6.1).</summary>
-        Nachtnutzung = 1,
 
         /// <summary>
         /// Lastspitzenkappung mit nachziehender Schwelle (Fachkonzept 6.4,

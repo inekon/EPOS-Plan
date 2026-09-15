@@ -115,7 +115,7 @@ namespace EPOS.Kern.Tests
             };
 
         // =================================================================
-        // (a) Ohne Erzeugung bewerten Dauer- und Nachtnutzung nichts
+        // (a) Ohne Erzeugung bewertet die Dauernutzung nichts
         // =================================================================
 
         [Fact]

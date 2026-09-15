@@ -10,8 +10,8 @@ namespace SpeicherEngine.Tests
     /// <remarks>
     /// <para>
     /// <b>Woher der Auftrag kommt.</b> Projekt 1050 ("Stromspeicher Optimierung")
-    /// fuehrt genau einen Speicher, keine PV und kein BHKW. Dauer- und Nachtnutzung
-    /// bewerten den genutzten Erzeugungsueberschuss; ohne Erzeugung ist der 0, und mit
+    /// fuehrt genau einen Speicher, keine PV und kein BHKW. Die Dauernutzung
+    /// bewertet den genutzten Erzeugungsueberschuss; ohne Erzeugung ist der 0, und mit
     /// Modulkosten 0 war auch der Kapitaldienst 0 - die Rasterkarte war einfarbig, alle
     /// 120 Punkte trugen dJ = 0 (Befund W11b-B-25, Windows-Abnahme 09.09.2026). Der
     /// Test <see cref="Dauernutzung_Ohne_Erzeugung_Liefert_Ueberall_Null"/> haelt genau
