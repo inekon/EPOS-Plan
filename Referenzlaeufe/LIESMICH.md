@@ -145,7 +145,7 @@ Protokoll unter
 **`2026-09-11_R7_Speicherflotte/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **345 CSV**, **1 937 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (**Schemastand 73**;
-die Datei selbst steht auf **Schemastand 77** — der Lauf gegen diese Basis bleibt davon
+die Datei selbst steht auf **Schemastand 78** — der Lauf gegen diese Basis bleibt davon
 byte-gleich, siehe die Nachträge am Ende des Abschnitts). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, **1046**) jeden Push, `ios.yml` den
 iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach. Sie ist die **einzige**
@@ -277,6 +277,26 @@ Basis im Arbeitsbaum.
 > Schritt ändert eine Bemessungsart ohne Satz, er schreibt keinen Wert. Die beiden
 > Pufferspeicher der Referenzprojekte 1007 und 1046 (Anlagenzeilen 11238 und 14941) sind
 > nicht angefasst.
+
+> **Nachtrag: Schemastand 78 (Auftrag #287), die Basis bleibt.** Migrationsschritt **78**
+> (`SCHRITT_78_PV_BATTERIESPEICHER`) stellt die ausgelieferte Investitionsposition
+> „Batteriespeicher" der **Photovoltaik** von „je kWh Kapazität" auf den **festen Betrag**
+> um — die Photovoltaik führt keine kWh-Kapazität, ihre einzige Baugröße ist die
+> installierte Leistung in kWp, und die Art blieb dort ohne Bezugsgröße
+> (`EPOS.Kern/Allgemein/Update/PvVorlageBatteriespeicher.cs`). **Genau eine Zeile war
+> betroffen:** `Tab_KostenVorlagePosition` 33 („Batteriespeicher", Vorlage 5), **Satz
+> `NULL`** — die Vorlage gibt die Art vor, keine Zahl. Der Schritt fasst ausschließlich
+> Zeilen **ohne** gepflegten Satz an; auf der Messlatte gab es keine mit Satz.
+> `Tab_ProjektWerte` führt die Art an der Photovoltaik überhaupt nicht und bleibt unberührt,
+> die Vorlagen der übrigen neun Komponenten ebenso — die Stromspeicher-Position „Speicher"
+> trägt die Kapazitätsbemessung weiter, dort ist sie die Baugröße. Stand der Datei:
+> **Schemastand 78**, **70 766 592 Byte**, **120 Tabellen, davon 119 STRICT**, **25
+> Projekte**; `PRAGMA integrity_check` = `ok`, `PRAGMA foreign_key_check` bleibt leer. **Der
+> Referenzlauf ist 5/5 byte-gleich gegen diese Basis** (135 von 135 Dateien, Toleranzvergleich
+> 5/5 PASS, 1 586 257 Werte): Kein Rechenwert ändert sich, die Basis wird nicht neu
+> eingefroren, und **keine der drei Einfrierregeln ist berührt** — der Schritt ändert eine
+> Bemessungsart ohne Satz, er schreibt keinen Wert. Die Photovoltaik-Anlagen der
+> Referenzprojekte sind nicht angefasst.
 
 ## Was hier liegt
 
