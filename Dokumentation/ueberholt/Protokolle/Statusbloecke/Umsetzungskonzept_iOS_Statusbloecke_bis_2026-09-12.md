@@ -5953,3 +5953,121 @@ steht aus und ist die eigentliche Aufgabe von
 > PASS und byte-gleich gegen R7. Merge `319c172b`.
 >
 > **Offen:** nichts. Kein Logbuch-Eintrag — die Änderung ist für den Anwender nicht sichtbar.
+
+## #279 — Bemessung: BHKW je kW elektrisch, Pufferspeicher je Liter (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026, wortgleich: „‚je kW Leistung‘ beim BHKW ist ‚je kW elektr. Leistung‘, beim
+> Pufferspeicher soll das Volumen die Bezugsgröße sein (€/Ltr.)“.
+>
+> **Befund:** Es ist EINE Stelle — `TechnikPlanwertCtrl.Geraetespalte` ist die Landkarte Art↔Gewerk, daneben stehen nur
+> die zwei benannten Sonderwege für PV und Solarthermie (aus #271/H4c, jeweils begründet, weil die Größe gerechnet statt
+> gelesen wird). Kein zusammenzuführender Zweitort. Was die beiden Komponenten bekamen: BHKW bei „je kW Leistung“ `null`
+> mit dem Kommentar „Pel ODER Ptherm — offen“; Pufferspeicher `null` bei **jeder** Bemessungsart, also gar keine Baugröße.
+> In beiden Fällen galt über Anwenderentscheid I‑2 der erfasste Betrag, bei satzbasierten Zeilen also 0.
+>
+> **BHKW:** `Tab_BHKW.Pel` [kW el] — belegt über `BHKWStammCtrl` („Elektrische Leistung [kW]“), `AbweichungsErmittler`
+> („el. Leistung“, „kW“), `ParameterVerwendung` und `SimulationBHKW`, das `bhkwStromLeistung` aus `m_Pel` speist. Nicht
+> Ptherm, nicht die Summe. „je kW Heizleistung“ bleibt unverändert auf Ptherm.
+>
+> **Pufferspeicher:** `Tab_Pufferspeicher.Gesamtvolumen` in Litern (belegt über `PufferSpStammCtrl` „Gesamtvolumen: Liter“
+> und `AbweichungsErmittler` Einheit „l“). Die vorhandene Art wird **umgedeutet, nicht verdoppelt** — am Bestand
+> entschieden: `Tab_ProjektWerte` führt `EUR_PRO_KW_LEISTUNG` genau einmal, an Komponente 2 (Heizkessel), und die
+> Auslieferungsvorlage ebenfalls nur dort; an Komponente 6 oder 7 keine einzige Zeile. Umgekehrt wäre die Umdeutung von
+> `EUR_PRO_KWH_KAPAZITAET` genau der Fall, vor dem zu warnen war: dort steht eine ausgelieferte Vorlagenzeile, deren Zahl
+> still von €/kWh auf €/Ltr. umgedeutet würde — deshalb blieb sie hier unberührt und wird mit #284 aufgelöst.
+>
+> **Beschriftung:** ein Persistenzwert, gewerkabhängige Anzeige. `BemessungKatalog.Anzeige(persistenz, komponentenId)` und
+> `.Einheit(...)` liefern am BHKW „je kW elektr. Leistung“/„€/kW“, am Pufferspeicher „je Liter“/„€/Ltr.“, sonst
+> unverändert; `BetriebskostenCtrl.SatzEinheit` bekam eine Überladung mit Komponente, damit auch die Herleitungszeile des
+> Berichts „€/Ltr.“ schreibt. Zwei neue Ressourcenschlüssel in beiden Sprachen.
+>
+> **Tests:** neue Klasse `BemessungBhkwPufferspeicherTests` (29 Fälle, synthetisches Projekt BHKW 50 kW el / 100 kW th,
+> Puffer 1 000 l): je Komponente ein nachgerechneter Betrag, je Komponente ein Fall mit Größe 0, der `BASISGRUND_GERAET`
+> statt eines stillen 0 verlangt, dazu die unveränderten Gewerke und beide Beschriftungen in beiden Sprachen. Gegenprobe:
+> mit den zwei zurückgenommenen Zeilen sind 9 der 29 rot. Zwei Bestandsklassen zogen nach.
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); Gate des Agenten 8 068 grün;
+> SQL-Dialektprüfer 1 398 Texte, 0 Fundstellen; Gate sept81 und sept82 grün; Referenzlauf 5 von 5 PASS und byte-gleich
+> gegen R7. Der Entscheid wirkt erst an einem gepflegten Satz beim Anwender — dort wird aus einem stillen 0 der Betrag
+> Satz × P_el bzw. Satz × Volumen. Merge `72d57143`.
+>
+> **Offen:** die Vorlagenzeile der Komponente 6 (siehe oben, #284); Windows-Abnahme der Hüllenzeilen in `KopplungAnwenden`.
+
+## #282 — Pufferverwaltung mit OK und Abbrechen, geschrieben wird im OK-Weg (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Anwenderentscheid 15.09.2026 auf die offene Frage aus #276: „1. PufferSpProjektDialog: Auch OK/Abbrechen“.
+> Das ist nicht die Beschriftung, sondern der Schreibzeitpunkt — wer Abbrechen anbietet, darf vorher nichts geschrieben
+> haben.
+>
+> **Messung zuerst:** Dialog → `PufferSpProjektDienste.Anlegen/Aendern/Entfernen` → `PufferSpProjektHuelle` →
+> `PufferSpCtrl` → `StilleDb`. Anlegen: INSERT in `Tab_Pufferspeicher`, danach zwei zielgenaue UPDATE (Klassen-Set,
+> Schichtdaten), dazu eine Anlagenzeile in `Tab_Energieanlagen` (`ID_Type = 12`). Ändern: UPDATE auf denselben drei Wegen,
+> bei Namenswechsel zusätzlich der Bezeichner der Anlagenzeile. Entfernen: DELETE in `Z_ProjektPufferSp`, in
+> `Tab_Energieanlagen`, `ReferenzenLoesen`, DELETE in `Tab_Pufferspeicher`, dann `ProjektWaisenEntfernen`.
+>
+> **Abhängig vom frühen Schreiben war genau eine Stelle: die neue Id.** Alle drei Wirte lesen erst NACH dem Rückruf
+> `Geschlossen` — `SimulationKonfigSeite.VerwaltungFertig` lädt neu, `QuellePufferspeicherDialog` und `WaermesenkeDialog`
+> nehmen die gelieferte Id in ihre Auswahl bzw. in die markierte Senkenzeile. Damit war die Abhängigkeit **auflösbar statt
+> umbaubar**. Sonst hängt nichts daran: `IstLeitspeicher` und `Referenzen` fragen Beziehungen ab, die anderswo entstehen;
+> der Klemmhinweis hängt allein an den Eingaben.
+>
+> **Umbau:** Der Dialog führt einen Arbeitsstand. „Anlegen“/„Übernehmen“ prüft die Felder (dieselbe Prüfkette, Reihenfolge
+> und derselbe Wortlaut) und legt sie als Zeile in die Liste; „Entfernen“ nimmt eine Zeile heraus. Eine vorläufige Zeile
+> trägt eine **negative** Nummer, nur eine positive Id hat eine Datenbankentsprechung. Erst OK schreibt — in der
+> Reihenfolge Entfernen → Ändern → Anlegen, so ist ein Bezeichner wieder frei, den eine neue Zeile tragen soll; dort
+> entsteht die neue Id, die an den Wirt geht. Scheitert ein Schritt, bleibt der Dialog offen und nennt den Grund;
+> Geschriebenes wird bei einem zweiten OK nicht wiederholt. Abbrechen, ✕ und Esc verlassen ohne Schreibzugriff.
+>
+> OK prüft die offene Zeile **nur, wenn an ihr etwas geändert wurde** — sonst verriegelte ein Altbestand, der die heutigen
+> Regeln verletzt (etwa ein leeres Klassen-Set), den Dialog. Die Nutzungsrückfrage führt den OK-Weg zu Ende.
+>
+> **Belegt am Datenbankstand, nicht am Dialogzustand:** Abbrechen nach Anlegen UND Ändern UND Entfernen im selben
+> Durchgang ergibt `Schreibzugriffe == 0`; OK schreibt den ganzen Arbeitsstand in der genannten Reihenfolge; Esc verwirft
+> wie Abbrechen; eine vorläufige Zeile bekommt ihre Id erst beim OK; dazu je zwei Fälle an allen drei Einbettungsstellen.
+>
+> **Bewusst in Kauf genommen:** Die drei Kontrollanzeigen (Ladereihenfolge, Automatiktext, Entladeposition) lesen weiter
+> die Datenbank und zeigen bis zum OK den gespeicherten Stand; ein doppelter Bezeichner bekommt sein Unterscheidungssuffix
+> erst beim Schreiben; der mittlere Knopf behält „Anlegen“/„Übernehmen“, weil „Speichern“ dort eine Behauptung wäre, die
+> nicht stimmt; der Klemmhinweis erscheint beim Übernehmen, wer direkt OK drückt, sieht ihn nicht.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 0 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); 341 Fälle der acht
+> betroffenen Klassen dreimal grün; voller Kern-Lauf des Agenten grün; Gate sept82 grün. Kein Rechenweg berührt.
+> Merge `a6c14be3`.
+>
+> **Offen:** `BhkwWirtschaftlichkeitDialog` als letzte Abweichung (Anwenderentscheid).
+
+## #283 — Regel b im Wärmepumpenweg, und der Wächter, der ihn übersah (15.09.2026, Nachtrag aus dem Merge)
+
+> **Anlass:** Nebenbefund aus #277, Anwenderentscheid 15.09.2026 „Empfehlung“ — die Stelle umstellen **und** den Wächter
+> schärfen. `WaermepumpeAnlageHuelle.KostenOeffnen` rief das Kostenfenster als gewöhnliche Anweisung auf und schloss mit
+> `Task.CompletedTask`: ein modales Systemfenster direkt aus einem Blazor-Ereignis.
+>
+> **Warum der Wächter sie nicht fand:** Der `ModalRegex` der `HuellenwegTests` sucht `Task.FromResult(… Huelle.Oeffnen …)`.
+> Er kennt nur die eine Schreibweise; „Aufruf als Anweisung, danach `return Task.CompletedTask;`“ fällt durch.
+>
+> **Zweite Regel statt erweitertem Regex:** Die neue Frage gilt dem ganzen Methodenrumpf — Rückgabetyp `Task`, kein
+> `await`, kein `Blazornachlauf`/`Blazorsprung`, Abschluss mit `Task.CompletedTask`/`Task.FromResult` — und ein Regex kann
+> einen Rumpf nicht begrenzen (Klammertiefe). Die zweite Regel bringt deshalb einen eigenen Leser mit, der den Rumpf über
+> die Klammertiefe herausschneidet. Die Aufrufliste steht nun einmal und wird von beiden Regeln benutzt. Eine dritte
+> Schreibweise (derselbe Rumpf als Lambda im Gabensatz) kommt im Bestand nicht vor, ist aber mitgeprüft.
+>
+> **Der Beleg:** Der Wächter in seinem Endstand, gelaufen gegen den Bestand VOR der Korrektur, meldet genau zwei Stellen
+> und keine weitere — `KatalogDublettenHuelle.ProtokollSpeichern` und `WaermepumpeAnlageHuelle.KostenOeffnen`.
+>
+> **Beide umgestellt.** Die Wärmepumpe über `return Blazornachlauf.Nachgelagert(() => …)` wie der gleichlautende
+> Brennerweg aus #277; der Projektname wird weiterhin davor gelesen, er gehört nicht in die nachgelagerte Nachricht. Die
+> zweite Stelle ist **kein Falsch-Positiv**, sondern derselbe Befund am Dateiwähler (W13‑B‑1): Die Methode fuhr
+> `Dienste.Datei.DateiSpeichern` synchron hoch und gab das Ergebnis als `Task.FromResult` heraus; jetzt
+> `await Dienste.Datei.DateiSpeichernAsync(…)`, der seinerseits über `Blazornachlauf` läuft. Keine Ausnahmeliste angelegt —
+> es war keine nötig.
+>
+> **Zwei Nebenfunde:** `Datei.DateienOeffnen` fehlte in der alten Aufrufliste (`Datei.DateiOeffnen` deckt es nicht ab),
+> ergänzt für beide Regeln. Und beide Regeln zusätzlich über `EPOS.UI.Daten` und `EPOS.UI` laufen lassen: null
+> Fundstellen.
+>
+> **Abnahme:** Kern-Filter 0 Fehler; Windows-Schale 0 Fehler, 5 Warnungen (Bestand); `HuellenwegTests` 4 von 4 grün (je
+> ein Bestandsfall und eine Gegenprobe pro Regel, die Gegenprobe der zweiten trägt `KostenOeffnen` im Wortlaut vor der
+> Umstellung); Kern-Gate des Agenten 8 042 grün; Gate sept81 und sept82 grün. Kein Rechenweg berührt, kein Referenzlauf
+> nötig. Merge `fb680f24`.
+>
+> **Offen:** Dateikreis des Wächters (Zuschnittsentscheid, siehe Statusdatei „Nach #283“).
