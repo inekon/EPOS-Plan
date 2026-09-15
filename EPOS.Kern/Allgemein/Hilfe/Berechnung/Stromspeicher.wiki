@@ -2,7 +2,7 @@
      EPOS.Kern/Allgemein/Simulation/SimulationControl.Stromspeicher.cs, Controller/StromspeicherSimCtrl.cs,
      Controller/SpeicherFlottenStudieCtrl.cs, Controller/SpeicherFlottenProjektCtrl.cs, Controller/FlottenPeakZiel.cs,
      Controller/FlottenPlausibilitaet.cs, Controller/StromspeicherAuslegungCtrl.cs, SpeicherPlanung/OrToolsFlottenPlaner.cs,
-     SpeicherEngine/ (Vorverarbeitung, Dauernutzung, Arbitrage, Wirtschaftlichkeit, SpeicherOptimierer, Flotten*.cs) -->
+     SpeicherEngine/ (Vorverarbeitung, Dauernutzung, Arbitrage, Wirtschaftlichkeit, Flotten*.cs) -->
 
 == Was berechnet wird ==
 {{Anker|was}}
@@ -406,11 +406,6 @@ Intervall ist damit unmöglich. Welche Quellen zulässig sind (<math>\chi = 1</m
 :: <math>\mathrm{SOC}_{\mathrm{min}}</math> – untere Grenze des Ladezustands [kWh]
 :: <math>\eta_{\mathrm{dis}}</math> – Entladewirkungsgrad aus (4) [–]
 
-'''Nachtnutzung''': Solange die PV erzeugt, wird '''nur geladen'''; entladen wird erst, wenn
-<math>P_{\mathrm{pv}}(k) = 0</math> ist. Ein BHKW-Überschuss darf auch nachts laden. Zweck ist ein
-Speicher, der nach Sonnenuntergang nicht schon leer ist. Das Kriterium ist die PV-Reihe selbst — es
-braucht weder Klimadaten noch Sonnenstand.
-
 '''Preissteuerung / Arbitrage''': Zuerst plant ein Vorlauf die Netzpfade des ganzen Jahres
 (rollierend über 24-Stunden-Fenster mit vollständiger Pfadprüfung), dann fährt der Dispatch diesen
 Plan ab. Der '''Eigenverbrauchsfluss hat Vorrang''' und läuft unverändert nach (12) und (13); die
@@ -521,11 +516,7 @@ Rasterpunkt. Das Ergebnis ist unabhängig davon, auf wie vielen Fäden gerechnet
 === Erweiterte Auslegung mit Kosten und Zeitreihen ===
 {{Anker|auslegung-kosten-zeitreihen}}
 
-Dieser Abschnitt beschreibt den '''Rechenweg des Einzelspeicher-Optimierers'''. Er erweitert die Auslegung um spezifische Kosten, gespeicherte Profile und getrennte Datenquellen.
-
-'''In der Ansicht ''Stromspeicher-Auslegung'' steht er nicht.''' Sie kennt EINEN Weg: die Flottenrechnung, und ein Einzelspeicher ist dort eine Flotte mit einer Einheit (siehe [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Auslegung optimieren]]). An die Stelle der drei Berechnungsarten ''Dauernutzung'', ''Nachtnutzung'' und ''Lastspitzenkappung'' treten dort die fünf Betriebsziele der Flotte.
-
-Der hier beschriebene Rechenweg ist '''in Betrieb''': Er trägt das Betriebsbild des Berichts und die Aktion ''speicher_optimieren'' des Hilfe-Assistenten. Die Formeln (24) bis (26) gelten deshalb; eingegeben werden ihre Größen aber nicht in dieser Ansicht.
+Dieser Abschnitt beschreibt die '''Kosten- und Datenseite der Auslegung''': spezifische Kosten, gespeicherte Profile und getrennte Datenquellen. Sie gelten für die Größensuche der Ansicht ''Stromspeicher-Auslegung'' (siehe [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Auslegung optimieren]]); dort rechnet ein Einzelspeicher als Flotte mit einer Einheit.
 
 Als Größenachse wird entweder die Kapazität <math>E</math> in kWh oder die AC-Nennleistung <math>P</math> in kW vorgegeben. Die C-Rate <math>r</math> hat die Einheit 1/h. Es gilt <math>P = E \cdot r</math> beziehungsweise <math>E = P/r</math>. Unter- und Obergrenze sind einschließlich; gleiche Grenzen prüfen einen festen Wert. Die Feinphase bleibt innerhalb des vorgegebenen Bereichs.
 
@@ -557,7 +548,7 @@ Die Zielfunktion aus (23) wird um <math>O</math> vermindert. Der Kapitalwert wir
 
 Vollständige Dateijahre behalten ihre UTC-Zeitachse und alle Werte, auch im Schaltjahr. Bei ausdrücklich eingeschalteter Kombination mit EPOS-Modellreihen werden die EPOS-Werte auf die Datei-Zeitachse zugeordnet: Monat, Tag und Uhrzeit bestimmen den Modellwert; der 29. Februar verwendet den EPOS-28. Februar, eine doppelte Ortsstunde denselben EPOS-Wert erneut. Ein Strompreisprofil wird auf echten Dateiachsen nach tatsächlichem Monat, Wochentag und Stunde ausgewertet. Fehlende Intervalle, doppelte UTC-Zeitstempel und nicht übereinstimmende Dateiachsen führen zum Abbruch mit Hinweis.
 
-Gespeicherte Auslegungsprofile enthalten Eingabebereiche, Quellen, Kostensätze, Importoptionen und die eingelesenen Zeitreihen. Ein Rechenlauf verwendet einen unabhängigen Eingabestand; die Kandidaten lesen keine Projektkosten während des Laufs nach. Eine gemeinsame Auslegung einer parallel betriebenen Speicherflotte und nichtlineare Kostenkurven sind weiterführende Erweiterungen.
+Gespeicherte Auslegungsprofile enthalten Eingabebereiche, Quellen, Kostensätze, Importoptionen und die eingelesenen Zeitreihen. Ein Rechenlauf verwendet einen unabhängigen Eingabestand; die Kandidaten lesen keine Projektkosten während des Laufs nach. Nichtlineare Kostenkurven sind eine weiterführende Erweiterung.
 
 
 == Mehrere Speicher (Speicherflotte) ==

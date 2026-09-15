@@ -722,11 +722,11 @@ namespace EPOS.Kern.Tests
         /// Gerät von seiner Vorgabe entfernt ist, statt es für einen Treffer zu halten.
         /// </remarks>
         [Fact]
-        public void Das_Filterprofil_nennt_vierzehn_Spalten()
+        public void Das_Filterprofil_nennt_fuenfzehn_Spalten()
         {
             Katalogfilterprofil profil = SpeicherFlottenAnzeigeCtrl.Kandidatenprofil();
 
-            Assert.Equal(14, profil.Spalten.Count);
+            Assert.Equal(15, profil.Spalten.Count);
             Assert.Equal("FLOTTE_KANDIDATEN", profil.Schluessel);
 
             Katalogspalte zulaessig = profil.Spalte(SpeicherFlottenAnzeigeCtrl.SP_ZULAESSIG);
@@ -747,6 +747,43 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Katalogspaltenart.JaNein, neutral.Art);
             Assert.True(neutral.Sortierbar);
             Assert.False(neutral.Filterbar);
+
+            // Die HERLEITUNG ist ein Text — sie nennt Gruppen, keine Zahl.
+            Katalogspalte herkunft = profil.Spalte(SpeicherFlottenAnzeigeCtrl.SP_HERKUNFT);
+            Assert.Equal(Katalogspaltenart.Text, herkunft.Art);
+        }
+
+        /// <summary>
+        /// <b>DIE HERLEITUNGSZEILE</b> (Anwenderentscheid 15.09.2026): Sie sagt je
+        /// Kandidat, welcher Wert vom GERÄT stammt und welcher vom ANWENDER. Die Größe
+        /// steht immer beim Gerät; was ein Gerätesatz nie führt — Betriebskosten und
+        /// Alterung —, steht immer beim Anwender.
+        /// </summary>
+        [Fact]
+        public void Die_Kandidatenzeile_traegt_die_Herleitung()
+        {
+            string nurGroesse = SpeicherFlottenAnzeigeCtrl.Herleitung(
+                FlottenKennwertherkunft.Groesse);
+
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_GROESSE, nurGroesse, StringComparison.Ordinal);
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_WIRKUNGSGRADE, nurGroesse, StringComparison.Ordinal);
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_BETRIEB, nurGroesse, StringComparison.Ordinal);
+
+            // Der Teil VOR dem Trenner gehört dem Gerät, der Teil danach dem Anwender.
+            string[] haelften = nurGroesse.Split(" · ");
+            Assert.Equal(2, haelften.Length);
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_GROESSE, haelften[0], StringComparison.Ordinal);
+            Assert.DoesNotContain(Resource.FLOTTE_HERKUNFT_WIRKUNGSGRADE, haelften[0], StringComparison.Ordinal);
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_WIRKUNGSGRADE, haelften[1], StringComparison.Ordinal);
+
+            // Führt der Satz die Wirkungsgrade, wechseln sie die Seite.
+            string mitWirkungsgraden = SpeicherFlottenAnzeigeCtrl.Herleitung(
+                FlottenKennwertherkunft.Groesse | FlottenKennwertherkunft.Wirkungsgrade);
+            string[] zwei = mitWirkungsgraden.Split(" · ");
+            Assert.Contains(Resource.FLOTTE_HERKUNFT_WIRKUNGSGRADE, zwei[0], StringComparison.Ordinal);
+
+            // Ohne Gerätewahl gibt es nichts herzuleiten.
+            Assert.Equal("", SpeicherFlottenAnzeigeCtrl.Herleitung(FlottenKennwertherkunft.Keine));
         }
 
         /// <summary>
@@ -778,6 +815,9 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(12.5, zeile.Zahl(SpeicherFlottenAnzeigeCtrl.SP_ABWEICHUNG).Value, 6);
             Assert.Equal(1.0, zeile.Zahl(SpeicherFlottenAnzeigeCtrl.SP_NEUTRAL).Value, 6);
+            // Ohne Geraetewahl bleibt die Herleitung leer; die Zeile zeigt dafuer den
+            // Gedankenstrich des Katalogfilters.
+            Assert.Equal("–", zeile.Text(SpeicherFlottenAnzeigeCtrl.SP_HERKUNFT));
         }
 
         /// <summary>

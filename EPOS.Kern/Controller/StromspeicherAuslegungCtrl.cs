@@ -25,9 +25,10 @@ namespace WindowsFormsApplication1
     /// eine Flotte mit einer Einheit. Mit dem Modus fielen hier <c>EinzelVorbereiten</c>,
     /// <c>EinzelRechnen</c>, <c>Betriebsbild</c> und <c>RasterCsv</c> — und damit das
     /// gemerkte rohe Raster, an dem das Nachzeichnen des Betriebsbildes hing (W11b‑B‑25).
-    /// <b>Der Optimierer selbst bleibt</b> (<see cref="SpeicherOptimierungCtrl"/>,
-    /// <c>SpeicherOptimierer</c>): Er trägt das Betriebsbild des Berichts, die Vorbelegung
-    /// in <c>SpeicherAuslegungCtrl</c> und die KI-Aktion „speicher_optimieren".</para>
+    /// <b>Der Einzelspeicher-Optimierer ist inzwischen ganz gefallen</b>; vom alten
+    /// Umfeld stehen nur noch der gespeicherte Stand und die Leistungspreis-Quellen
+    /// (<see cref="SpeicherAuslegungVorgabenCtrl"/>), die
+    /// <c>SpeicherAuslegungCtrl.Vorbelegung</c> zieht.</para>
     ///
     /// <para><b>Er ist eine INSTANZ, kein statischer Satz.</b> Anders als
     /// <see cref="SpeicherFlottenStudieCtrl"/> hält er den ZUSTAND eines Arbeitsgangs:

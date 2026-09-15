@@ -103,6 +103,7 @@ public static class FlottenGeraetewahl
                 Quellkennung = g.Quellkennung ?? "",
                 Geraet = g.Geraet,
                 NeutraleKennwerte = g.NeutraleKennwerte,
+                Gefuehrt = g.Gefuehrt,
                 Abweichung = d <= SCHRANKE ? 0.0 : d
             });
         }

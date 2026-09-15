@@ -279,7 +279,9 @@ Die Karte trägt:
 
 '''Es kommt heraus, was man kaufen kann.''' Liegt kein Gerät in beiden Bereichen, stehen die '''fünf nächstliegenden''' in der Liste, und darüber steht, dass es Ersatzvorschläge sind. Die Spalte ''Abweichung'' sagt, wie weit ein Gerät von Ihrer Vorgabe entfernt ist: 0 % heißt, es liegt in beiden Bereichen.
 
-'''Neutrale Kennwerte''' heißt: Der Satz führt Wirkungsgrade beziehungsweise ein SoC-Fenster nicht selbst; dann gelten 95 % je Richtung, 10 bis 90 % SoC und keine Alterung. Sätze aus den Stammdaten führen keine Betriebsführung und sind deshalb immer so gekennzeichnet.
+'''Gerät oder eigene Parameter.''' Die Größe — Kapazität, Lade- und Entladeleistung — kommt immer vom Gerät; sie ist das, was gesucht wird. Alles Weitere kommt nur dann vom Gerät, wenn sein Satz es führt: Wirkungsgrade, SoC-Band, Hilfsverbrauch und Investitionssätze. Was Sie in Schritt 1 eingegeben haben, bleibt sonst stehen — und Betriebskosten, Durchsatzkosten, Grenzverschleiß, Reserve, Ersatz, Restwert und Alterungskurve bleiben immer Ihre Eingabe, denn ein Gerätesatz führt sie nicht. Die Spalte ''Herleitung'' der Kandidatentabelle sagt je Kandidat, was vom Gerät stammt und was von Ihnen.
+
+'''Neutrale Kennwerte''' heißt: Weder der Satz noch Ihre Eingabe führen Wirkungsgrade beziehungsweise ein SoC-Fenster; dann gelten 95 % je Richtung, 10 bis 90 % SoC und keine Alterung. Sätze aus den Stammdaten führen keine Betriebsführung und sind deshalb immer so gekennzeichnet.
 
 '''Ein Gerät aus den Stammdaten lässt sich übernehmen.''' Haben Sie über die Stammdaten gesucht und eine Bestückung gefunden, macht der Knopf ''Ausgewählte Einheiten in Projekt übernehmen'' in Schritt 1 daraus Speicheranlagen des Projekts – je Stück eine. Die Stammdaten bleiben dabei unberührt.
 
@@ -382,7 +384,7 @@ Unter dem Kasten „Bestes Ergebnis" steht die Größen-Sicht:
 
 * die '''Rasterkarte''' – eine Zelle je Kandidat, die Farbe ist der Kapitalwert, unzulässige Zellen sind '''schraffiert''' (ein Muster, keine zweite Farbe), das Optimum ist markiert. Ab zwei Einheiten lässt sich wählen, ob die Karte die Summe der Flotte oder die Größen einer einzelnen Einheit zeigt;
 * die '''zwei Schnittkurven''' – der Kapitalwert über der Kapazität und derselbe über der Entladeleistung, je mit einem Schieber über die '''Stützstellen''' der anderen Achse; vorbelegt ist die Stelle des Optimums;
-* die '''Kandidatentabelle''' – Kapazität, Lade- und Entladeleistung, C-Rate, Kapitalwert, Ersparnis je Jahr, Vollzyklen je Jahr, Bezugsspitze, '''Abweichung''' [%], das Kennzeichen '''neutrale Kennwerte''' und die Zulässigkeit mit Grund. Sortierbar je Spalte, mit Spaltenfilter (Zahlenausdrücke wie ''>10'' oder ''10..60''), hervorgehobener Optimumzeile, dem Kennzeichen '''„arbeitslos"''' und '''„Übernehmen"''' je Zeile.
+* die '''Kandidatentabelle''' – Kapazität, Lade- und Entladeleistung, C-Rate, Kapitalwert, Ersparnis je Jahr, Vollzyklen je Jahr, Bezugsspitze, '''Abweichung''' [%], das Kennzeichen '''neutrale Kennwerte''', die '''Herleitung''' und die Zulässigkeit mit Grund. Sortierbar je Spalte, mit Spaltenfilter (Zahlenausdrücke wie ''>10'' oder ''10..60''), hervorgehobener Optimumzeile, dem Kennzeichen '''„arbeitslos"''' und '''„Übernehmen"''' je Zeile.
 
 '''„Kandidat übernehmen"''' setzt die Größen dieses Kandidaten als Speicher in Schritt 1 ein, leert die Suchachsen, schaltet die Rastersuche ab und markiert das Ergebnis als veraltet – bewerten Sie danach neu. Nach einer '''Stückzahlsuche''' setzt derselbe Knopf die '''Stückzahlen''' der Einheiten; welche der beiden Übernahmen es ist, entscheidet der Lauf, aus dem der Kandidat stammt. Ungespeicherte Eingaben werden zuvor abgefragt; die Ersetzung ist nicht rückgängig zu machen.
 

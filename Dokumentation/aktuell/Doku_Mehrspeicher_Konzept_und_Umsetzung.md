@@ -111,19 +111,18 @@ Eine Suchachse ersetzt über `ErsetztEinheitId` genau ihre Einheit; andere bleib
 
 **Welche Geräte gerechnet werden, sagt `FlottenGeraetewahl.Waehle`** — dieselbe Regel für die Kandidatenzeile der Station „Optimierung", für die Geräteliste, für die Kandidatentabelle und für den Lauf. Ein Gerät ist ein TREFFER, wenn Kapazität und Entladeleistung in ihren Bereichen liegen (Grenzen eingeschlossen); gibt es Treffer, sind nur sie die Kandidaten. Sonst kommen höchstens `NAECHSTLIEGENDE_HOECHSTENS` = 5 Geräte nach steigendem Abstand. Der Abstand je Größe ist der Überstand über den Bereich, bezogen auf die **Bereichsmitte** (sie ist auch bei `von == bis` definiert und macht kW und kWh vergleichbar); beide Anteile werden ADDIERT, damit ein Gerät, das in beiden Größen danebenliegt, schlechter dasteht als eines, das nur in einer danebenliegt. Sortiert wird nach Abstand, Kapazität, Leistung und zuletzt der je Quelle eindeutigen Quellkennung — zwei Läufe auf derselben Datenbank liefern dieselbe Reihenfolge. Die Abweichung steht in der Kandidatentabelle, damit ein naheliegendes Gerät nicht für einen Treffer gehalten wird.
 
-**Die Parameter kommen vom Gerät** — Wirkungsgrade, SoC-Fenster und Alterung. Fehlen sie, greifen die neutralen Vorgaben aus `FlottenGeraetevorgaben` an EINER Stelle: Lade- und Entladewirkungsgrad je 0,95, SoC-Fenster 0,10 bis 0,90, keine Alterung (leere Rainflow-Kurve, Grenzverschleiß 0). Der Kandidat wird dabei gekennzeichnet. Ein Katalogsatz führt keine Betriebsführung und trägt die Kennzeichnung deshalb immer.
+**Gerät oder eigene Parameter** (`FlottenGeraeteuebernahme`): Was der Gerätesatz FÜHRT, kommt vom Gerät; was der Anwender in Schritt 1 gesetzt hat, bleibt seins. Die Größe — Kapazität, Lade- und Entladeleistung — kommt immer vom Gerät, sie ist der Gegenstand der Suche; Wirkungsgrade, SoC-Band, Hilfsverbrauch und Investitionssätze nur, wenn der Satz sie führt; Peak-Reserve, Grenzverschleiß, Betriebs- und Durchsatzkosten, Ersatz, Restwert und Alterungskurve führt ein Gerätesatz nie und sie bleiben deshalb ausnahmslos beim Anwender. Welche Kennwerte ein Satz führt, sagt der Kern beim Lesen der Quelle (`FlottenGeraeteuebernahme.Gefuehrt`) — danach ist an der Zahl allein nicht mehr zu sehen, woher sie kommt. Fehlt am Ende noch etwas, greifen die neutralen Vorgaben aus `FlottenGeraetevorgaben` an EINER Stelle: Lade- und Entladewirkungsgrad je 0,95, SoC-Fenster 0,10 bis 0,90, keine Alterung (leere Rainflow-Kurve, Grenzverschleiß 0). Der Kandidat wird dabei gekennzeichnet. Ein Katalogsatz führt keine Betriebsführung und trägt die Kennzeichnung deshalb immer. **Die Herleitung je Kandidat** steht als eigene Spalte in der Kandidatentabelle (`SpeicherFlottenAnzeigeCtrl.Herleitung`).
 
 Die Kandidatenzahl ist die Zahl der gefundenen Geräte mal der Zahl der Betriebsziele — nicht mehr das Produkt zweier Rasterachsen; sie kann nicht mehr explodieren. Übersteigt sie `MaximaleKandidaten`, wird der Suchraum abgewiesen und nicht gekürzt; die Schranke bleibt als Fangnetz für einen sehr großen Bestand. Rangfolge: technisch zulässige Varianten nach höchstem NPV, daneben die technisch zulässige Nullvariante mit NPV 0. Ist die Referenz wegen einer harten Netzgrenze unzulässig, kann eine technisch nötige Variante trotz negativem NPV gewinnen. Sind alle Rechnungen fachlich ungültig, entsteht ein Konfigurationsfehler statt einer falschen Null-Empfehlung.
 
 `CancellationToken` wirkt in Kandidaten-, Jahres-, Intervall- und Solverlauf; Fortschritt meldet Anzahl und Kandidaten-ID. Alle Kandidaten halten nur Zusammenfassungen, die vollständige Reihe nur der beste Kandidat beziehungsweise die Nullvariante.
 
 **Nebenläufigkeit und Sprache (Auftrag #232, 12.09.2026).** Die Flotten-Rastersuche
-(`FlottenOptimierer`) rechnet **sequenziell**; parallel läuft allein die Rastersuche der
-Einzelspeicher-Auslegung (`SpeicherOptimierer.RechnePhase`), und die tut es seit #232 über
-`SpeicherEngine/Kulturweitergabe.For` statt über ein nacktes `Parallel.For` — jedes
+(`FlottenOptimierer`) rechnet **sequenziell**; mit dem Wegfall des Einzelspeicher-Optimierers
+führt die `SpeicherEngine` überhaupt keine Rechenparallelität mehr. Wird die Flottensuche eines
+Tages parallelisiert, gilt die Hausregel: nur über `SpeicherEngine/Kulturweitergabe` — jedes
 Arbeitspaket trägt damit die Kultur des Aufrufers, statt den veränderlichen prozessweiten
-Vorgabewert bei jedem Zugriff neu zu lesen. Wird die Flottensuche eines Tages ebenfalls
-parallelisiert, gilt dieselbe Hausregel: nur über die Vorrichtung — der Wächter
+Vorgabewert bei jedem Zugriff neu zu lesen; der Wächter
 `EPOS.Kern.Tests/ParallelitaetWacheTests` lässt in `SpeicherEngine` kein nacktes
 `Parallel.For`, `Task.Run` oder `new Thread` mehr zu.
 
@@ -480,9 +479,9 @@ zwei Pfade führt (SD‑Q2): das **Rückschreiben in die Projektanlage** in Schr
 mit Rückfrage für die eine Einheit mit Anlagenbezug, ohne den die ausgelegte Größe beim
 klassischen Projektlauf nie ankäme — und der **Leistungspreis** als EINE Eingabe in Schritt 2
 (`LeistungspreisBlock`; derselbe Wert für `FlottenTarif.LeistungspreisEuroProKw`, den Suchraum
-und die Projektvariante). Der Einzelspeicher-**Optimierer** selbst ist nicht gelöscht: Er
-trägt das Betriebsbild des Berichts (`SpeicherBetriebsbild`), die Vorbelegung in
-`SpeicherAuslegungCtrl` und die KI-Aktion `speicher_optimieren`.
+und die Projektvariante). Der Einzelspeicher-**Optimierer** ist gefallen; das Betriebsbild des
+Berichts (`SpeicherBetriebsbild`) steht eigenständig, und die Vorbelegung in
+`SpeicherAuslegungCtrl` zieht `SpeicherAuslegungVorgabenCtrl`.
 
 **Der Weg dorthin und zurück.** Der Reiter „Stromspeicher" der Ergebnisseite **wechselt die
 Ansicht**, statt eine Überlagerung aufzuziehen (Muster W16c‑E‑3). Die Ergebnisseite selbst

@@ -58,12 +58,18 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Die Lücke ist beim Zusammenführen mit W10b geschlossen worden.</b>
         /// Drei der vier Fassungen des Bestands (Variantenvergleich,
-        /// Auslegungsoptimierung, Ergebnisseite) kannten nur Nachtnutzung und
-        /// Dauernutzung; die Preissteuerung erschien dort mit ihrem Persistenzwert
+        /// Auslegungsoptimierung, Ergebnisseite) kannten nur zwei Berechnungsarten; die
+        /// Preissteuerung erschien dort mit ihrem Persistenzwert
         /// „Arbitrage". Die VIERTE — <c>Form_Simulation_Config.BerechnungsartAnzeige</c>,
         /// mit iU9‑W10b nach <c>SimulationKonfigHuelle</c> gewandert — kannte sie. Diese
         /// Fassung ist die vollständigere und steht jetzt hier; alle vier Aufrufer
         /// bekommen damit denselben Text (W11a‑O‑4).</para>
+        ///
+        /// <para><b>Der entfallene Wert wird BENANNT umgesetzt</b>, nicht verschwiegen:
+        /// Eine Variante mit der entfallenen Berechnungsart
+        /// (<see cref="SpeicherAltstand"/>) zeigt den Text, der beides sagt — dass die
+        /// Dauernutzung gilt und woher der Stand kommt. So steht an jeder Anzeigestelle
+        /// dasselbe, ohne dass jede von ihnen die Regel kennen müßte.</para>
         ///
         /// <para>Ein unbekannter Wert kommt weiterhin unverändert zurück. Die vierte
         /// Fassung fiel dort auf „Dauernutzung" zurück — das ist eine Behauptung über
@@ -72,8 +78,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static string BerechnungsartText(string wert)
         {
-            if (wert == DbWerte.SP_BERECHNUNG_NACHTNUTZUNG)
-                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG;
+            if (SpeicherAltstand.IstEntfalleneBerechnungsart(wert))
+                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ALTSTAND;
             if (wert == DbWerte.SP_BERECHNUNG_DAUERNUTZUNG)
                 return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG;
             if (wert == DbWerte.SP_BERECHNUNG_ARBITRAGE)

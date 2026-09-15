@@ -33,7 +33,7 @@ namespace EPOS.Kern.Tests
     /// Der naheliegende Versuchsaufbau — den prozessweiten Vorgabewert mitten im Lauf
     /// umschalten — wurde gebaut, gemessen und VERWORFEN: Er reißt genau die Testklassen
     /// mit, die er beschreibt (zwei von drei Läufen unter <c>LANG=en_US.UTF-8</c> ließen
-    /// <c>SpeicherOptimierungCtrlTests</c> fallen, ohne ihn vier von vier grün). Hier
+    /// eine Testklasse mit deutschen Etiketten fallen, ohne ihn vier von vier grün). Hier
     /// wird deshalb NICHTS Prozessweites angefasst. Stattdessen:</para>
     /// <list type="number">
     ///   <item>Der Aufruferfaden (der Testfaden) steht auf <c>de-AT</c> — nur er, über
@@ -313,101 +313,6 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(KapazitaetDe, m.Text);
             });
         }
-
-        // =====================================================================
-        //  Der Beleg — die echte Rastersuche
-        // =====================================================================
-
-        /// <summary>
-        /// Dieselbe Aussage am echten Rechenweg: Die Rastersuche
-        /// (<see cref="SpeicherOptimierer"/>, 72 Punkte auf den Fäden des Pools) meldet
-        /// ihren Fortschritt aus den RECHNENDEN Fäden. Der Fluss ist unterdrückt — die
-        /// Fäden erben also nichts und stünden auf der Umgebung des Prozesses (invariant
-        /// oder <c>en-US</c>). Sie melden trotzdem <c>de-AT</c>, und ein <c>de-AT</c> auf
-        /// einem Arbeitsfaden kann NUR aus der Vorrichtung stammen — seit #232 parallelt
-        /// <c>SpeicherOptimierer</c> über sie.
-        /// </summary>
-        [Fact]
-        public void Die_Rastersuche_meldet_in_der_Sprache_des_Aufrufers()
-        {
-            var gesammelt = new ConcurrentBag<Marke>();
-            int angekommen = 0;
-            var zweiterDa = new ManualResetEventSlim(false);
-
-            IProgress<OptimiererFortschritt> melder = new Melder(_ =>
-            {
-                int n = Interlocked.Increment(ref angekommen);
-                if (n >= 2) zweiterDa.Set();
-                if (n <= 2) zweiterDa.Wait(TimeSpan.FromSeconds(30));
-                gesammelt.Add(Aufzeichnen());
-            });
-
-            using (ExecutionContext.SuppressFlow())
-            {
-                new SpeicherOptimierer().Optimiere(Eingang(), Basis(), Suchraum(), melder,
-                                                   CancellationToken.None);
-            }
-
-            List<Marke> marken = gesammelt.ToList();
-            Assert.Equal(72, marken.Count);
-            Assert.True(marken.Select(m => m.Faden).Distinct().Count() >= 2,
-                        "Die Rastersuche lief auf einem einzigen Faden.");
-
-            Assert.All(marken, m =>
-            {
-                Assert.Equal("de-AT", m.Oberflaeche);
-                Assert.Equal("1234,5", m.Zahl);
-                Assert.Equal(KapazitaetDe, m.Text);
-            });
-        }
-
-        /// <summary>Ein <see cref="IProgress{T}"/>, der SYNCHRON im rechnenden Faden läuft
-        /// — anders als <see cref="Progress{T}"/>, der in den Aufruferkontext zurückspringt.</summary>
-        private sealed class Melder : IProgress<OptimiererFortschritt>
-        {
-            private readonly Action<OptimiererFortschritt> _tun;
-            public Melder(Action<OptimiererFortschritt> tun) { _tun = tun; }
-            public void Report(OptimiererFortschritt wert) { _tun(wert); }
-        }
-
-        private static SpeicherEingang Eingang()
-        {
-            double[] last = { 0.0, 0.0, 40.0, 40.0 };
-            double[] pv = { 40.0, 40.0, 0.0, 0.0 };
-            double[] preis = { 20.0, 20.0, 20.0, 20.0 };
-            return new SpeicherEingang(last, pv, preis);
-        }
-
-        private static SpeicherParameter Basis() => new SpeicherParameter
-        {
-            CNomKwh = 10.0,
-            PKw = 10.0,
-            SoCMinKwh = 0.0,
-            SoCMaxKwh = 10.0,
-            RoundTripWirkungsgrad = 1.0,
-            DtH = 0.25,
-            VerguetungCtKwh = 5.0,
-            CCapEurProKwh = 100.0,
-            CPowEurProKw = 50.0,
-            IFixEur = 1000.0,
-            Kapitalzins = 0.0,
-            NutzungsdauerA = 10.0,
-            DegradationProA = 0.0,
-            CVerEurProKwhZyklus = 0.025
-        };
-
-        /// <summary>Zwölf Kapazitäten mal sechs C-Raten, kein Feinraster: 72 Rasterpunkte.</summary>
-        private static OptimiererOptionen Suchraum() => new OptimiererOptionen
-        {
-            CMinKwh = 10.0,
-            CMaxKwh = 120.0,
-            Stuetzstellen = 12,
-            RMin = 0.5,
-            RMax = 3.0,
-            RSchritt = 0.5,
-            Feinraster = false,
-            MaxParallel = 4
-        };
 
         // =====================================================================
         //  Der Beleg — Task.Run

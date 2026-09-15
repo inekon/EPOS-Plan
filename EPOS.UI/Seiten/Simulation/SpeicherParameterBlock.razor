@@ -45,7 +45,7 @@
 
 @namespace EPOS.UI.Seiten.Simulation
 @using System.Globalization
-@using WindowsFormsApplication1   @* DbWerte.SP_BERECHNUNG_NACHTNUTZUNG *@
+@using WindowsFormsApplication1   @* DbWerte.SP_BERECHNUNG_DAUERNUTZUNG *@
 
 <div class="epos-simerg-speicherparameter">
 
@@ -270,14 +270,15 @@
 
     /// <summary>
     /// Der Kompatibilitätsmodus hängt an der Berechnungsart — dieselbe Regel, die die
-    /// Hülle beim LESEN anwendet (nur bei Nachtnutzung). Sie muss hier mitlaufen, sonst
-    /// bliebe der Schalter bis zum nächsten Lesen falsch gesperrt bzw. offen.
+    /// Hülle beim LESEN anwendet (nur bei Dauernutzung, nur sie hat eine Excel-Vorlage).
+    /// Sie muss hier mitlaufen, sonst bliebe der Schalter bis zum nächsten Lesen falsch
+    /// gesperrt bzw. offen.
     /// </summary>
     private void BerechnungsartGesetzt(string wert)
     {
         Daten.Berechnungsart = wert;
         Daten.KompatibilitaetMoeglich =
-            string.Equals(wert, DbWerte.SP_BERECHNUNG_NACHTNUTZUNG, StringComparison.Ordinal);
+            string.Equals(wert, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG, StringComparison.Ordinal);
     }
 
     /// <summary>

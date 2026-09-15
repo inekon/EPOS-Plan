@@ -447,6 +447,11 @@ public static class FlottenOptimierer
         Quellkennung = variante.Wahlen.Count == 1 ? variante.Wahlen[0].Quellkennung : "",
         Abweichung = variante.Wahlen.Count == 1 ? variante.Wahlen[0].Abweichung : 0.0,
         NeutraleKennwerte = variante.Wahlen.Any(w => w.NeutraleKennwerte),
+        // DIE HERLEITUNG steht wie die Herkunft bei genau EINER Suchachse: Bei mehreren
+        // Geraeten waere eine gemeinsame Zeile eine Behauptung ueber zwei Saetze.
+        Kennwertherkunft = variante.Wahlen.Count == 1
+            ? variante.Wahlen[0].Herkunft
+            : FlottenKennwertherkunft.Keine,
         Einheiten = units.Select(x => new FlottenKandidatEinheit
         {
             Id = x.Id,
@@ -540,6 +545,9 @@ public static class FlottenOptimierer
 
         /// <summary>Am Geraet musste wenigstens eine neutrale Vorgabe greifen.</summary>
         public bool NeutraleKennwerte { get; init; }
+
+        /// <summary>Was vom GERAET kam; alles Uebrige stammt aus der Vorlage des Anwenders.</summary>
+        public FlottenKennwertherkunft Herkunft { get; init; } = FlottenKennwertherkunft.Keine;
 
         public List<FlottenEinheit> Einheiten { get; init; } = new();
 
@@ -675,8 +683,9 @@ public static class FlottenOptimierer
         var result = new List<Achsenwahl>(geraete.Count);
         foreach (FlottenGeraetekandidat g in geraete)
         {
-            List<FlottenEinheit> einheiten = BaueGeraeteeinheiten(g, axisIndex, count,
-                                                                  out bool neutral);
+            List<FlottenEinheit> einheiten = BaueGeraeteeinheiten(axis, g, axisIndex, count,
+                                                                  out bool neutral,
+                                                                  out FlottenKennwertherkunft herkunft);
             result.Add(new Achsenwahl
             {
                 Einheiten = einheiten,
@@ -687,33 +696,56 @@ public static class FlottenOptimierer
                 ZweiterWert = g.LeistungKw,
                 Quellkennung = g.Quellkennung ?? "",
                 Abweichung = g.Abweichung,
-                NeutraleKennwerte = g.NeutraleKennwerte || neutral
+                NeutraleKennwerte = g.NeutraleKennwerte || neutral,
+                Herkunft = herkunft
             });
         }
         return result;
     }
 
     /// <summary>
-    /// Die Einheiten EINER Geraetewahl: <paramref name="count"/> Stueck DESSELBEN Geraets,
-    /// unveraendert in Kapazitaet, Leistung, Wirkungsgraden und SoC-Band.
+    /// Die Einheiten EINER Geraetewahl: <paramref name="count"/> Stueck DESSELBEN Geraets
+    /// auf der VORLAGE des Anwenders.
     /// </summary>
     /// <remarks>
-    /// <b>Hier wird nichts skaliert.</b> Die Parameter kommen vom Geraet — dafuer sind es
-    /// Geraete. Fehlt einem Satz etwas, greifen die neutralen Vorgaben aus
-    /// <see cref="FlottenGeraetevorgaben"/> an EINER Stelle, und
-    /// <paramref name="neutral"/> sagt es der Kandidatentabelle.
+    /// <para><b>Geraet ODER eigene Parameter — die eine Regel steht in
+    /// <see cref="FlottenGeraeteuebernahme"/>:</b> Die Einheit entsteht aus der Vorlage
+    /// der Achse (Schritt 1 des Anwenders), und das Geraet ueberschreibt daraus genau
+    /// das, was sein Satz wirklich fuehrt — immer die Groesse, darueber hinaus nur
+    /// gefuehrte Kennwerte. Ohne diese Regel fielen Wirkungsgrade, SoC-Band,
+    /// Hilfsverbrauch und Kostensaetze des Anwenders bei jeder Geraetewahl weg; unter
+    /// „Stueckzahl suchen" bleiben sie seit jeher stehen, und beide Suchmethoden duerfen
+    /// nicht verschieden rechnen.</para>
+    /// <para><b>Ohne Vorlage bleibt es beim Geraet allein</b> — dann gibt es nichts zu
+    /// erhalten. <b>Hier wird nichts skaliert:</b> Fehlt am Ende noch etwas, greifen die
+    /// neutralen Vorgaben aus <see cref="FlottenGeraetevorgaben"/> an EINER Stelle, und
+    /// <paramref name="neutral"/> sagt es der Kandidatentabelle.</para>
     /// </remarks>
-    private static List<FlottenEinheit> BaueGeraeteeinheiten(FlottenGeraetekandidat kandidat,
+    /// <param name="axis">Die Suchachse; ihre Vorlage traegt die Eingaben des Anwenders.</param>
+    /// <param name="kandidat">Das gewaehlte Geraet.</param>
+    /// <param name="axisIndex">Nummer der Achse — sie geht in Kennung und Name.</param>
+    /// <param name="count">Stueckzahl dieser Wahl.</param>
+    /// <param name="neutral">Es musste wenigstens eine neutrale Vorgabe greifen.</param>
+    /// <param name="herkunft">Was vom Geraet kam — die Herleitung des Kandidaten.</param>
+    private static List<FlottenEinheit> BaueGeraeteeinheiten(FlottenAuslegungsAchse axis,
+                                                             FlottenGeraetekandidat kandidat,
                                                              int axisIndex, int count,
-                                                             out bool neutral)
+                                                             out bool neutral,
+                                                             out FlottenKennwertherkunft herkunft)
     {
         neutral = false;
+        herkunft = FlottenKennwertherkunft.Groesse;
         var einheiten = new List<FlottenEinheit>(count);
         for (var n = 0; n < count; n++)
         {
-            var b = FlottenKopie.Einheit(kandidat.Geraet);
+            var b = axis?.Vorlage is null
+                ? FlottenKopie.Einheit(kandidat.Geraet)
+                : FlottenKopie.Einheit(axis.Vorlage);
+            herkunft = axis?.Vorlage is null
+                ? FlottenKennwertherkunft.Groesse | kandidat.Gefuehrt
+                : FlottenGeraeteuebernahme.Uebernehmen(b, kandidat);
             b.Id = $"{(string.IsNullOrWhiteSpace(b.Id) ? "Speicher" : b.Id)}-A{axisIndex + 1}-N{n + 1}";
-            b.Name = $"{(string.IsNullOrWhiteSpace(b.Name) ? "Speicher" : b.Name)} {n + 1}";
+            b.Name = $"{(string.IsNullOrWhiteSpace(kandidat.Geraet.Name) ? "Speicher" : kandidat.Geraet.Name)} {n + 1}";
             neutral |= FlottenGeraetevorgaben.LueckenFuellen(b);
             einheiten.Add(b);
         }
@@ -791,6 +823,7 @@ public static class FlottenOptimierer
                 {
                     Quellkennung = g.Quellkennung,
                     NeutraleKennwerte = g.NeutraleKennwerte,
+                    Gefuehrt = g.Gefuehrt,
                     Abweichung = g.Abweichung,
                     Geraet = FlottenKopie.Einheit(g.Geraet)
                 }).ToList(),

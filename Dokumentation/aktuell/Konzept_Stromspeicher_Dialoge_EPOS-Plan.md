@@ -297,8 +297,9 @@ Bleiben" beim Verlassen mit ungespeicherten Eingaben (wie 62b‑E‑1) und die P
 > **Modus-Umschalter Flotte / Einzelspeicher ist gefallen** — die Ansicht rechnet immer die
 > Flotte, und ein Einzelspeicher ist eine Flotte mit genau einer Einheit. Die Absätze unten,
 > die einen Modus nennen, sind in diesem Sinn zu lesen; was sie dem Modus „Flotte" zuschreiben,
-> gilt seither für jede Einheitenzahl. Der Einzelspeicher-**Optimierer** bleibt: Er trägt weiter
-> das Betriebsbild des Berichts und die KI-Aktion `speicher_optimieren`. Einzelheiten in 4.1.
+> gilt seither für jede Einheitenzahl. Der Einzelspeicher-**Optimierer** ist inzwischen ganz
+> gefallen; das Betriebsbild des Berichts (`SpeicherBetriebsbild`) steht eigenständig und wird
+> vom Stromspeicher-Reiter der Ergebnisseite gezeichnet. Einzelheiten in 4.1.
 
 Dasselbe Muster bekam bis #206 die **Einzelspeicher-Optimierung** (`SpeicherOptimierungDialog`,
 2 Bilder mit Reihenwahl schon vorhanden): Sie wurde Modus „Einzelspeicher" derselben Ansicht. Ob
@@ -520,10 +521,11 @@ Projektflotte aktiviert, geht den Flottenpfad (SP‑O‑12 offen). Umsetzung als
 - **Gelöscht** sind `EinzelspeicherSuchraum/-Betrieb/-Ergebnis.razor`, der Suchraum-Teil des
   `SpeicherAuslegungEditor` samt `NurQuellenKostenProfile`, der `Modusknopf` der `Ablaufleiste`,
   `AuslegungModus` und im Kern der Einzelweg des `StromspeicherAuslegungCtrl`
-  (`EinzelVorbereiten`, `EinzelRechnen`, `Betriebsbild`, `RasterCsv`). **Nicht gelöscht** sind
-  `SpeicherOptimierungCtrl` und `SpeicherOptimierer`: Sie haben weitere Aufrufer (Bericht
-  `SpeicherBetriebsbild`, `SpeicherAuslegungCtrl.Vorbelegung`, KI-Aktion `speicher_optimieren`
-  über `StromspeicherSimCtrl`).
+  (`EinzelVorbereiten`, `EinzelRechnen`, `Betriebsbild`, `RasterCsv`). `SpeicherOptimierungCtrl`
+  und `SpeicherOptimierer` blieben damals stehen; sie sind inzwischen ebenfalls gefallen. Vom
+  alten Umfeld bleiben der gespeicherte Stand und die Leistungspreis-Quellen
+  (`SpeicherAuslegungVorgabenCtrl`) sowie das eigenständige Betriebsbild des Berichts
+  (`SpeicherBetriebsbild`).
 
 ### 4.2 Anwenderbefund 11.09.2026: Lastspitzenkappung entlädt zu früh (Ratsche)
 
@@ -1311,11 +1313,33 @@ drittes; eine zwischengerechnete Größe wäre ein Speicher, den es nicht gibt �
 wie bei „Stückzahl suchen" (SD‑Q16). `FlottenAuslegungEingang.Feinraster` bleibt als Lesefeld
 älterer Stände erhalten und wirkt nicht mehr.
 
-**Die Parameter kommen vom Gerät** — Wirkungsgrade, SoC-Fenster und Alterung; dafür sind es Geräte.
-Fehlen sie, greifen die neutralen Vorgaben aus `FlottenGeraetevorgaben` an EINER Stelle: Lade- und
-Entladewirkungsgrad je 95 %, SoC-Fenster 10 bis 90 %, keine Alterung. Der Kandidat wird dabei
-gekennzeichnet. Ein Katalogsatz führt keine Betriebsführung (das SoC-Fenster steht nirgends in
-`Tab_Stromspeicher_STAMM`) und trägt die Kennzeichnung deshalb immer.
+**Gerät ODER eigene Parameter — die EINE Regel** (Anwenderentscheid 15.09.2026,
+`FlottenGeraeteuebernahme`): **Was der Gerätesatz führt, kommt vom Gerät; was der Anwender in
+Schritt 1 gesetzt hat, bleibt seins.** Ein Kandidat entsteht deshalb aus der **Vorlage der
+Suchachse**, und das Gerät überschreibt daraus genau das, was sein Satz wirklich trägt:
+
+| Größe | Herkunft |
+|---|---|
+| Kapazität, Lade- und Entladeleistung | **immer vom Gerät** — sie sind der Gegenstand der Suche |
+| Wirkungsgrade, SoC-Band, Hilfsverbrauch, Investitionssätze | vom Gerät, **wenn sein Satz sie führt**; sonst vom Anwender |
+| Peak-Reserve, Grenzverschleiß, Betriebs- und Durchsatzkosten, Ersatz, Restwert, Alterungskurve | **immer vom Anwender** — ein Gerätesatz führt sie nie |
+
+Bis dahin ersetzte `FlottenOptimierer.BaueGeraeteeinheiten` die Vorlage **vollständig** durch das
+Gerät; die Eingaben aus Schritt 1 fielen bei jeder Gerätewahl weg, während sie unter „Stückzahl
+suchen" stehen blieben — zwei Suchmethoden, die verschieden rechnen.
+
+**Was „geführt" heißt, entscheidet der Kern**, nicht die Engine: Nur beim Lesen der Quelle ist zu
+sehen, ob ein Wert aus dem Satz oder aus einer neutralen Vorgabe stammt
+(`FlottenGeraeteuebernahme.Gefuehrt`, gesetzt in `SpeicherFlottenStudieCtrl.Geraetekandidaten`).
+Fehlt danach noch etwas, greifen die neutralen Vorgaben aus `FlottenGeraetevorgaben` an EINER
+Stelle: Lade- und Entladewirkungsgrad je 95 %, SoC-Fenster 10 bis 90 %, keine Alterung. Der
+Kandidat wird dabei gekennzeichnet. Ein Katalogsatz führt keine Betriebsführung (das SoC-Fenster
+steht nirgends in `Tab_Stromspeicher_STAMM`) und trägt die Kennzeichnung deshalb immer.
+
+**Die Herleitung steht an EINER Stelle sichtbar**: Die Kandidatentabelle trägt die Spalte
+„Herleitung" (`SpeicherFlottenAnzeigeCtrl.Herleitung`), eine Zeile je Kandidat — „Gerät: … ·
+eigene Eingabe: …". Sie bleibt leer, wo es kein Gerät gibt („Stückzahl suchen") oder wo mehrere
+Suchachsen mehrere Geräte liefern; eine gemeinsame Zeile wäre dort eine Behauptung über zwei Sätze.
 
 **Die Übernahme ins Projekt** nimmt den Weg aus #247
 (`SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen`, SD‑Q15): Aus den gewählten Einheiten

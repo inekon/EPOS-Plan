@@ -331,6 +331,7 @@ public sealed class FlottenGeraetesucheTests
         FlottenGeraetekandidat schlecht = Geraet("schlecht", 20, 20);
         schlecht.Geraet.Ladewirkungsgrad = 0.5;
         schlecht.Geraet.Entladewirkungsgrad = 0.5;
+        schlecht.Gefuehrt = FlottenGeraeteuebernahme.Gefuehrt(schlecht.Geraet);
         config.Auslegung.Achsen[0].Geraete = new List<FlottenGeraetekandidat> { gut, schlecht };
 
         FlottenAuslegungErgebnis ergebnis = FlottenOptimierer.Rechne(Eingang(), config);
@@ -391,18 +392,28 @@ public sealed class FlottenGeraetesucheTests
         Geraet("M300", 300, 300), Geraet("M050", 50, 50)
     };
 
-    private static FlottenGeraetekandidat Geraet(string id, double kWh, double kW) => new()
+    /// <summary>
+    /// Ein Geraet, dessen Satz Wirkungsgrade, SoC-Band und Kosten FUEHRT — was es fuehrt,
+    /// sagt <see cref="FlottenGeraeteuebernahme.Gefuehrt"/> nach derselben Regel, die der
+    /// Kern beim Lesen der Quelle anwendet.
+    /// </summary>
+    private static FlottenGeraetekandidat Geraet(string id, double kWh, double kW)
     {
-        Quellkennung = id,
-        Geraet = new FlottenEinheit
+        var e = new FlottenEinheit
         {
             Id = "G" + id, Name = "Speicher " + id,
             KapazitaetKWh = kWh, LadeleistungKw = kW, EntladeleistungKw = kW,
             Ladewirkungsgrad = 1, Entladewirkungsgrad = 1,
             SocMin = 0.2, SocMax = 1.0, SocStart = 0.2,
             EigeneKosten = true, InvestitionEuro = 1000
-        }
-    };
+        };
+        return new FlottenGeraetekandidat
+        {
+            Quellkennung = id,
+            Geraet = e,
+            Gefuehrt = FlottenGeraeteuebernahme.Gefuehrt(e)
+        };
+    }
 
     private static FlottenAuslegungsAchse Achse(double kapVon, double kapBis,
                                                 double leiVon, double leiBis,

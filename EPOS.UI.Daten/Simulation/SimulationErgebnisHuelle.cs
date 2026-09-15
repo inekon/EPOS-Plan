@@ -699,7 +699,13 @@ namespace WindowsFormsApplication1
                 KapazitaetKwh = kapazitaetKwh,
 
                 Betriebsart = v.Betriebsart,
-                Berechnungsart = v.Berechnungsart,
+
+                // BENANNTE UMSETZUNG eines gespeicherten Standes: Trägt die Variante
+                // die entfallene Berechnungsart, steht die Klappliste auf der
+                // Dauernutzung statt auf nichts — und der Chip bzw. die Kopfzeile sagt
+                // über SpeicherAnzeigeCtrl.BerechnungsartText, woher der Wert kommt.
+                // Geschrieben wird erst, wenn der Anwender die Wahl selbst bestätigt.
+                Berechnungsart = SpeicherAltstand.Berechnungsart(v.Berechnungsart),
                 Betriebsarten = new[]
                 {
                     new Steuerwahl(DbWerte.SP_BETRIEBSART_GRUENSTROM,
@@ -711,14 +717,18 @@ namespace WindowsFormsApplication1
                 {
                     new Steuerwahl(DbWerte.SP_BERECHNUNG_DAUERNUTZUNG,
                                    MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG),
-                    new Steuerwahl(DbWerte.SP_BERECHNUNG_NACHTNUTZUNG,
-                                   MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG),
                     new Steuerwahl(DbWerte.SP_BERECHNUNG_ARBITRAGE,
                                    MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ARBITRAGE)
                 },
 
                 Kompatibilitaet = v.Kompatibilitaetsmodus,
-                KompatibilitaetMoeglich = v.Berechnungsart == DbWerte.SP_BERECHNUNG_NACHTNUTZUNG,
+
+                // Der Excel-Kompatibilitätsmodus gehört zur DAUERNUTZUNG — nur sie hat
+                // eine Excel-Vorlage (Fachkonzept 5.2, dieselbe Regel, die
+                // StromspeicherSimCtrl.BaueStrategie im Lauf anwendet). Die
+                // Preissteuerung hat keine; dort bleibt der Schalter gesperrt.
+                KompatibilitaetMoeglich =
+                    SpeicherAltstand.Berechnungsart(v.Berechnungsart) == DbWerte.SP_BERECHNUNG_DAUERNUTZUNG,
 
                 LadenAusPv = v.PV_Zulaessig,
                 LadenAusBhkw = v.BHKW_Ueberschuss_Zulaessig,

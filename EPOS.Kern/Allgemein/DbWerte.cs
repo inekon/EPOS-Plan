@@ -1771,15 +1771,17 @@ namespace WindowsFormsApplication1
         // =====================================================================
         // Stromspeicher — Berechnungsart
         //   Tab_StromspeicherVariante.Berechnungsart
-        //   (Fachkonzept Stromspeicher 6.1-6.5)
+        //   (Fachkonzept Stromspeicher 6.2-6.5)
         //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        //   Ein Persistenzwert steht hier NICHT mehr: „Nachtnutzung". Er kann in
+        //   Anwenderprojekten in der Spalte stehen und wird beim Lesen BENANNT
+        //   umgesetzt — die Regel und der Wert stehen an genau einer Stelle,
+        //   SpeicherAltstand. Die Spalte selbst bleibt unverändert.
         // =====================================================================
 
         /// <summary>Dauernutzung (6.2) — der referenzverifizierte Standardfall.</summary>
         public const string SP_BERECHNUNG_DAUERNUTZUNG = "Dauernutzung";
-
-        /// <summary>Start Nachtnutzung (6.1), Ausbaustufe AP6.</summary>
-        public const string SP_BERECHNUNG_NACHTNUTZUNG = "Nachtnutzung";
 
         /// <summary>Optimierter Speicher (6.3), Ausbaustufe AP8.</summary>
         public const string SP_BERECHNUNG_OPTIMIERT = "Optimiert";

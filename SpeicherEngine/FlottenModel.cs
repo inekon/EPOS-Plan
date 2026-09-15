@@ -166,6 +166,155 @@ public static class FlottenGeraetevorgaben
 }
 
 /// <summary>
+/// WELCHE KENNWERTE EINES KANDIDATEN VOM GERAET STAMMEN — und welche damit beim Anwender
+/// bleiben (Anwenderentscheid 15.09.2026).
+/// </summary>
+/// <remarks>
+/// Die Aufzaehlung ist die eine Herleitung: Was hier steht, hat der Geraetesatz wirklich
+/// gefuehrt; was fehlt, kommt aus der Vorlage des Anwenders (Schritt 1). Die
+/// Kandidatentabelle zeigt sie als Herleitungszeile.
+/// </remarks>
+[Flags]
+public enum FlottenKennwertherkunft
+{
+    /// <summary>Nichts vom Geraet — der Fall gibt es nur ohne Geraetewahl.</summary>
+    Keine = 0,
+
+    /// <summary>Kapazitaet, Lade- und Entladeleistung. Sie kommen IMMER vom Geraet: Sie sind der Gegenstand der Suche.</summary>
+    Groesse = 1,
+
+    /// <summary>Lade- und Entladewirkungsgrad.</summary>
+    Wirkungsgrade = 2,
+
+    /// <summary>Das SoC-Band samt Start-Ladezustand.</summary>
+    SocBand = 4,
+
+    /// <summary>Der Hilfsverbrauch.</summary>
+    Hilfsverbrauch = 8,
+
+    /// <summary>Die drei Investitionssaetze (fix, je kWh, je kW).</summary>
+    Kosten = 16
+}
+
+/// <summary>
+/// <b>GERAET ODER EIGENE PARAMETER — die EINE Regel</b> (Anwenderentscheid 15.09.2026).
+/// </summary>
+/// <remarks>
+/// <para><b>Die Entscheidung in einem Satz:</b> Was das Geraet mitbringt, kommt vom
+/// Geraet; was der Anwender in Schritt 1 gesetzt hat, bleibt seins. Es gibt keinen
+/// Vorrang je Feld auszuhandeln — ein Geraetesatz FUEHRT einen Kennwert oder er fuehrt
+/// ihn nicht, und nur im ersten Fall ueberschreibt er die Vorlage.</para>
+/// <para><b>Was das Geraet immer mitbringt</b>, ist seine GROESSE: Kapazitaet, Lade- und
+/// Entladeleistung. Sie ist der Gegenstand der Suche; eine Groesse aus der Vorlage waere
+/// keine Suche.</para>
+/// <para><b>Was ein Geraetesatz nie fuehrt</b> — Peak-Reserve, Grenzverschleiss,
+/// Betriebs- und Durchsatzkosten, Ersatz, Restwert und die Alterungskurve —, bleibt
+/// unangetastet in der Vorlage stehen. Ohne diese Regel fielen die Eingaben des
+/// Anwenders bei jeder Geraetewahl weg.</para>
+/// <para><b>Welche Kennwerte ein Satz fuehrt, sagt der Kern</b>
+/// (<see cref="FlottenGeraetekandidat.Gefuehrt"/>): Er liest die Quelle und weiss als
+/// Einziger, ob ein Wert aus dem Satz oder aus einer neutralen Vorgabe stammt. Die
+/// Engine raet es nicht aus dem Zahlenwert.</para>
+/// </remarks>
+public static class FlottenGeraeteuebernahme
+{
+    /// <summary>
+    /// WAS EIN GERAETESATZ FUEHRT — gelesen an der frisch gebauten Einheit, BEVOR
+    /// <see cref="FlottenGeraetevorgaben.LueckenFuellen"/> darueber gelaufen ist.
+    /// </summary>
+    /// <remarks>
+    /// <para>Ein Kennwert gilt als GEFUEHRT, wenn er brauchbar ist (derselbe Test, mit
+    /// dem die neutralen Vorgaben entscheiden, ob sie greifen muessen) UND nicht genau
+    /// auf der neutralen Vorgabe liegt. Der zweite Teil ist noetig, weil die Quellen die
+    /// Luecken eines Satzes bereits mit ebendieser Vorgabe schliessen — danach ist an der
+    /// Zahl allein nicht mehr zu sehen, woher sie kommt. Ein Satz, der zufaellig genau
+    /// die neutrale Vorgabe traegt, gilt damit als nicht gefuehrt; das aendert an seiner
+    /// Rechnung nichts, denn Geraetewert und Vorgabe sind dieselbe Zahl.</para>
+    /// <para>Die GROESSE steht immer darin: Ohne Kapazitaet und Leistung waere der Satz
+    /// kein Geraet, und die Quellen lassen einen solchen Satz gar nicht erst durch.</para>
+    /// </remarks>
+    /// <param name="roh">Die Einheit, wie die Quelle sie gebaut hat.</param>
+    public static FlottenKennwertherkunft Gefuehrt(FlottenEinheit roh)
+    {
+        if (roh is null) return FlottenKennwertherkunft.Keine;
+
+        var gefuehrt = FlottenKennwertherkunft.Groesse;
+        if (FlottenGeraetevorgaben.WirkungsgradGefuehrt(roh.Ladewirkungsgrad, roh.Entladewirkungsgrad)
+            && !(roh.Ladewirkungsgrad == FlottenGeraetevorgaben.LADEWIRKUNGSGRAD
+                 && roh.Entladewirkungsgrad == FlottenGeraetevorgaben.ENTLADEWIRKUNGSGRAD))
+            gefuehrt |= FlottenKennwertherkunft.Wirkungsgrade;
+        if (FlottenGeraetevorgaben.SocBandGefuehrt(roh.SocMin, roh.SocMax)
+            && !(roh.SocMin == FlottenGeraetevorgaben.SOC_MIN
+                 && roh.SocMax == FlottenGeraetevorgaben.SOC_MAX))
+            gefuehrt |= FlottenKennwertherkunft.SocBand;
+        if (roh.HilfsverbrauchKw > 0.0)
+            gefuehrt |= FlottenKennwertherkunft.Hilfsverbrauch;
+        if (roh.EigeneKosten)
+            gefuehrt |= FlottenKennwertherkunft.Kosten;
+        return gefuehrt;
+    }
+
+    /// <summary>
+    /// Traegt die Kennwerte des Geraets in eine aus der Vorlage gebaute Einheit ein.
+    /// </summary>
+    /// <param name="ziel">Die Einheit, die aus der Vorlage des Anwenders entstanden ist.</param>
+    /// <param name="kandidat">Das gewaehlte Geraet samt der Auskunft, was sein Satz fuehrt.</param>
+    /// <returns>Was wirklich vom Geraet kam — die Herleitung des Kandidaten.</returns>
+    public static FlottenKennwertherkunft Uebernehmen(FlottenEinheit ziel,
+                                                      FlottenGeraetekandidat kandidat)
+    {
+        if (ziel is null || kandidat?.Geraet is null) return FlottenKennwertherkunft.Keine;
+
+        FlottenEinheit g = kandidat.Geraet;
+        FlottenKennwertherkunft gefuehrt = kandidat.Gefuehrt;
+        var herkunft = FlottenKennwertherkunft.Groesse;
+
+        // DIE GROESSE KOMMT IMMER VOM GERAET.
+        ziel.KapazitaetKWh = g.KapazitaetKWh;
+        ziel.LadeleistungKw = g.LadeleistungKw;
+        ziel.EntladeleistungKw = g.EntladeleistungKw;
+        ziel.AnlageId = g.AnlageId;
+
+        if (gefuehrt.HasFlag(FlottenKennwertherkunft.Wirkungsgrade))
+        {
+            ziel.Ladewirkungsgrad = g.Ladewirkungsgrad;
+            ziel.Entladewirkungsgrad = g.Entladewirkungsgrad;
+            herkunft |= FlottenKennwertherkunft.Wirkungsgrade;
+        }
+
+        if (gefuehrt.HasFlag(FlottenKennwertherkunft.SocBand))
+        {
+            ziel.SocMin = g.SocMin;
+            ziel.SocMax = g.SocMax;
+            ziel.SocStart = g.SocStart;
+            herkunft |= FlottenKennwertherkunft.SocBand;
+        }
+
+        if (gefuehrt.HasFlag(FlottenKennwertherkunft.Hilfsverbrauch))
+        {
+            ziel.HilfsverbrauchKw = g.HilfsverbrauchKw;
+            herkunft |= FlottenKennwertherkunft.Hilfsverbrauch;
+        }
+
+        if (gefuehrt.HasFlag(FlottenKennwertherkunft.Kosten))
+        {
+            ziel.EigeneKosten = true;
+            ziel.InvestitionEuro = g.InvestitionEuro;
+            ziel.InvestitionEuroProKWh = g.InvestitionEuroProKWh;
+            ziel.InvestitionEuroProKw = g.InvestitionEuroProKw;
+            herkunft |= FlottenKennwertherkunft.Kosten;
+        }
+
+        // Der Start-Ladezustand muss im geltenden Band liegen — gleichgueltig, aus
+        // welcher der beiden Quellen Band und Start stammen.
+        if (ziel.SocStart < ziel.SocMin) ziel.SocStart = ziel.SocMin;
+        if (ziel.SocStart > ziel.SocMax) ziel.SocStart = ziel.SocMax;
+
+        return herkunft;
+    }
+}
+
+/// <summary>
 /// EIN Geraet, das als Kandidat der Groessensuche in Frage kommt (Anwenderentscheid vom
 /// 15.09.2026).
 /// </summary>
@@ -188,6 +337,13 @@ public sealed class FlottenGeraetekandidat
     /// (<see cref="FlottenGeraetevorgaben"/>); die Kandidatentabelle kennzeichnet es.
     /// </summary>
     public bool NeutraleKennwerte { get; set; }
+
+    /// <summary>
+    /// WAS DER SATZ WIRKLICH FUEHRT (<see cref="FlottenGeraeteuebernahme"/>). Gefuellt
+    /// vom Kern beim Lesen der Quelle; <see cref="FlottenKennwertherkunft.Groesse"/>
+    /// steht immer darin, denn ohne Kapazitaet und Leistung waere der Satz kein Geraet.
+    /// </summary>
+    public FlottenKennwertherkunft Gefuehrt { get; set; } = FlottenKennwertherkunft.Groesse;
 
     /// <summary>
     /// Der NORMIERTE ABSTAND zur Vorgabe des Anwenders; <c>0</c> = das Geraet liegt in
@@ -1708,6 +1864,13 @@ public sealed class FlottenKandidatZusammenfassung
     /// (<see cref="FlottenGeraetevorgaben"/>); die Kandidatentabelle kennzeichnet es.
     /// </summary>
     public bool NeutraleKennwerte { get; set; }
+
+    /// <summary>
+    /// DIE HERLEITUNG DES KANDIDATEN: was vom GERAET stammt. Alles Uebrige kommt aus der
+    /// Vorlage des Anwenders (<see cref="FlottenGeraeteuebernahme"/>). Bei mehreren
+    /// Suchachsen bleibt sie leer — dort gibt es mehrere Geraete.
+    /// </summary>
+    public FlottenKennwertherkunft Kennwertherkunft { get; set; }
 }
 
 /// <summary>

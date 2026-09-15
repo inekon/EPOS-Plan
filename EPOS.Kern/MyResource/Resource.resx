@@ -4746,8 +4746,11 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PREIS_PARAM_INFO" xml:space="preserve">
     <value>Energiepreis im Mittel {0} ct/kWh + Aufschlag {1} ct/kWh = Bezugspreis {2} ct/kWh   |   Preisversion: {3}</value>
   </data>
-  <data name="SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG" xml:space="preserve">
-    <value>Nachtnutzung</value>
+  <data name="SP_BERECHNUNG_ANZEIGE_ALTSTAND" xml:space="preserve">
+    <value>Dauernutzung (aus entfallener Berechnungsart übernommen)</value>
+  </data>
+  <data name="SP_ALTSTAND_BERECHNUNGSART" xml:space="preserve">
+    <value>Die gespeicherte Berechnungsart dieser Variante gibt es nicht mehr; gerechnet wird die Dauernutzung.</value>
   </data>
   <data name="SP_BERECHNUNG_ANZEIGE_LASTSPITZENKAPPUNG" xml:space="preserve">
     <value>Lastspitzenkappung</value>
@@ -4758,14 +4761,8 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="NACHT_ERG_VERGLEICH_HINWEIS" xml:space="preserve">
     <value>Die Vergleichsspalte zeigt, was die Dauernutzung mit denselben Daten geliefert hätte. Gespeichert wird nur das Ergebnis der gewählten Berechnungsart.</value>
   </data>
-  <data name="NACHT_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
-    <value>Der Excel-Kompatibilitätsmodus gilt nur für die Dauernutzung – für die Nachtnutzung gibt es keine Excel-Referenz. Gerechnet wird energetisch.</value>
-  </data>
   <data name="NACHT_HINWEIS_VERGLEICH_FEHLER" xml:space="preserve">
     <value>Der Vergleichslauf mit der Dauernutzung ist fehlgeschlagen: {0}</value>
-  </data>
-  <data name="NACHT_OHNE_EXCEL_REFERENZ" xml:space="preserve">
-    <value>Für die Nachtnutzung gibt es keine Excel-Referenz; der Kompatibilitätsmodus ist dort nicht vorgesehen.</value>
   </data>
   <data name="PEAK_MENUE" xml:space="preserve">
     <value>Lastspitzenkappung (Peak-Shaving)</value>
@@ -5037,23 +5034,14 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PEAK_MSG_GERISSEN" xml:space="preserve">
     <value>Der Speicher hält die Zielschwelle nicht: die neue Spitze liegt bei {0} kW. Kapazität oder Leistung erhöhen oder die Schwelle anheben.</value>
   </data>
-  <data name="OPT_GRP_ERGEBNIS" xml:space="preserve">
-    <value>Ergebnis</value>
-  </data>
   <data name="OPT_LBL_AKTUELL" xml:space="preserve">
     <value>Aktuelle Auslegung: {0} kWh / {1} kW ({2} C)</value>
-  </data>
-  <data name="OPT_HINWEIS_ZIELFUNKTION" xml:space="preserve">
-    <value>Maximiert wird der Jahresüberschuss nach Kapitaldienst ΔJ = E_a,äq − (c_cap·C + c_pow·P + I_fix) · a(i_z, N). Die Amortisationszeit ist bewusst keine Zielgröße, sondern Sekundärkennzahl.</value>
   </data>
   <data name="OPT_LBL_LEISTUNGSPREIS" xml:space="preserve">
     <value>Leistungspreis L_P</value>
   </data>
   <data name="OPT_LBL_LP_QUELLE" xml:space="preserve">
     <value>Übernehmen aus</value>
-  </data>
-  <data name="OPT_MSG_LP_FEHLT" xml:space="preserve">
-    <value>Leistungspreis fehlt — eingeben oder aus einer Quelle übernehmen.</value>
   </data>
   <data name="OPT_QUELLE_TARIF" xml:space="preserve">
     <value>Tarifstruktur (Wirtschaftlichkeit): {0} €/(kW·a) — {1}</value>
@@ -5070,35 +5058,8 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="OPT_QUELLE_ENERGIETRAEGER" xml:space="preserve">
     <value>Energieträger Strom: {0} €/(kW·a)</value>
   </data>
-  <data name="OPT_KZ_GRUPPE_KAPPUNG" xml:space="preserve">
-    <value>Lastspitzenkappung</value>
-  </data>
-  <data name="OPT_KZ_SPITZE_OHNE" xml:space="preserve">
-    <value>Lastspitze ohne Speicher</value>
-  </data>
-  <data name="OPT_KZ_SPITZE_MIT" xml:space="preserve">
-    <value>Lastspitze mit Speicher</value>
-  </data>
-  <data name="OPT_KZ_KAPPUNG" xml:space="preserve">
-    <value>Kappung ΔP_max</value>
-  </data>
-  <data name="OPT_KZ_LP_ERSPARNIS" xml:space="preserve">
-    <value>Leistungspreisersparnis</value>
-  </data>
-  <data name="OPT_KZ_SCHWELLE" xml:space="preserve">
-    <value>Erreichte Schwelle</value>
-  </data>
-  <data name="OPT_WARN_SCHWELLE" xml:space="preserve">
-    <value>Die Zielschwelle wurde gerissen — der Speicher hält sie nicht.</value>
-  </data>
-  <data name="OPT_HINWEIS_SUCHRAUM" xml:space="preserve">
-    <value>Vorbelegung: 500 … 5.000 kWh mit 10 Stützstellen; liegt die aktuelle Kapazität außerhalb, statt dessen 0,25 … 2,5 × aktuelle Kapazität. C-Rate 0,5 … 3,0 in 0,5er-Schritten.</value>
-  </data>
   <data name="OPT_BTN_OEFFNEN" xml:space="preserve">
     <value>Auslegung optimieren …</value>
-  </data>
-  <data name="OPT_BTN_START" xml:space="preserve">
-    <value>Optimierung starten</value>
   </data>
   <data name="OPT_BTN_ABBRUCH" xml:space="preserve">
     <value>Abbrechen</value>
@@ -5108,45 +5069,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   </data>
   <data name="OPT_BTN_SCHLIESSEN" xml:space="preserve">
     <value>Schließen</value>
-  </data>
-  <data name="OPT_STATUS_BEREIT" xml:space="preserve">
-    <value>Bereit.</value>
-  </data>
-  <data name="OPT_STATUS_PUNKT" xml:space="preserve">
-    <value>Rasterpunkt {0} von {1}</value>
-  </data>
-  <data name="OPT_STATUS_PUNKT_FEIN" xml:space="preserve">
-    <value>Rasterpunkt {0} von {1} (Feinraster)</value>
-  </data>
-  <data name="OPT_STATUS_FERTIG" xml:space="preserve">
-    <value>{0} Rasterpunkte in {1} s — Optimum {2} kWh / {3} C</value>
-  </data>
-  <data name="OPT_STATUS_ABGEBROCHEN" xml:space="preserve">
-    <value>Abgebrochen — es liegt kein vollständiges Raster vor.</value>
-  </data>
-  <data name="OPT_CHART_HEATMAP_TITEL" xml:space="preserve">
-    <value>Jahresüberschuss ΔJ [€/a]</value>
-  </data>
-  <data name="OPT_CHART_X_CRATE" xml:space="preserve">
-    <value>C-Rate [1/h]</value>
-  </data>
-  <data name="OPT_CHART_Y_KAPAZITAET" xml:space="preserve">
-    <value>Kapazität [kWh]</value>
-  </data>
-  <data name="OPT_CHART_SCHNITT_TITEL" xml:space="preserve">
-    <value>Schnittkurve bei {0} C</value>
-  </data>
-  <data name="OPT_CHART_SCHNITT_Y" xml:space="preserve">
-    <value>ΔJ [€/a]</value>
-  </data>
-  <data name="OPT_CHART_BETRIEB_TITEL" xml:space="preserve">
-    <value>Lastgang und Speicherbetrieb [kW] — {0}</value>
-  </data>
-  <data name="OPT_BETRIEB_WOCHE" xml:space="preserve">
-    <value>Woche der Jahresspitze</value>
-  </data>
-  <data name="OPT_BETRIEB_JAHR" xml:space="preserve">
-    <value>ganzes Jahr</value>
   </data>
   <data name="OPT_BETRIEB_R_OHNE" xml:space="preserve">
     <value>Netzbezug ohne Speicher</value>
@@ -5160,116 +5082,8 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="OPT_BETRIEB_R_LEISTUNG" xml:space="preserve">
     <value>Speicherleistung (Entladen +, Laden −)</value>
   </data>
-  <data name="OPT_CHART_FARBSKALA" xml:space="preserve">
-    <value>ΔJ [€/a]</value>
-  </data>
-  <data name="OPT_ZELLE_LEER" xml:space="preserve">
-    <value>Zelle mit der Maus überfahren, um ihre Werte zu sehen.</value>
-  </data>
-  <data name="OPT_ZELLE" xml:space="preserve">
-    <value>{0} kWh · {1} C · P = {2} kW · ΔJ = {3} €/a · T_stat = {4}</value>
-  </data>
-  <data name="OPT_WARN_RAND" xml:space="preserve">
-    <value>Optimum am Rand — Suchbereich erweitern ({0}).</value>
-  </data>
-  <data name="OPT_WARN_RAND_C_UNTEN" xml:space="preserve">
-    <value>Kapazität an der Untergrenze</value>
-  </data>
-  <data name="OPT_WARN_RAND_C_OBEN" xml:space="preserve">
-    <value>Kapazität an der Obergrenze</value>
-  </data>
-  <data name="OPT_WARN_RAND_R_UNTEN" xml:space="preserve">
-    <value>C-Rate an der Untergrenze</value>
-  </data>
-  <data name="OPT_WARN_RAND_R_OBEN" xml:space="preserve">
-    <value>C-Rate an der Obergrenze</value>
-  </data>
-  <data name="OPT_WARN_CPOW" xml:space="preserve">
-    <value>Die leistungsbezogene Investition c_pow ist 0 — die C-Raten-Achse ist kostenneutral. Welche C-Rate gewinnt, entscheidet dann allein der Nutzen; bringt mehr Leistung keinen, gewinnt bei Gleichstand die KLEINSTE C-Rate, weil der Bestpunkt in fester Reihenfolge gesucht wird.</value>
-  </data>
-  <data name="OPT_WARN_KEINE_ERZEUGUNG" xml:space="preserve">
-    <value>Das Projekt führt weder PV- noch BHKW-Erzeugung. Dauernutzung und Nachtnutzung bewerten den genutzten Erzeugungsüberschuss — ohne Erzeugung ist er 0, und jeder Rasterpunkt liefert denselben Ertrag. Für dieses Projekt ist die Berechnungsart „Lastspitzenkappung“ die passende.</value>
-  </data>
-  <data name="OPT_WARN_CCAP_NULL" xml:space="preserve">
-    <value>Die kapazitätsbezogene Investition c_cap ist 0 — größere Speicher kosten dann nichts, und die Kapazitätsachse trägt keine Entscheidung. Modulkosten am Speichergerät pflegen (Dialog Stromspeicher, Feld „Modulkosten [€/kWh]“).</value>
-  </data>
-  <data name="OPT_WARN_ALLE_GLEICH" xml:space="preserve">
-    <value>Alle Rasterpunkte liefern denselben Wert, es gibt kein Optimum — die angezeigte Auslegung ist nur der erste Punkt des Rasters.</value>
-  </data>
-  <data name="OPT_WARN_KVER_AKTIV" xml:space="preserve">
-    <value>K_ver ist in ΔJ eingerechnet (Fachkonzept 5.4).</value>
-  </data>
-  <data name="OPT_WARN_ZYKLEN" xml:space="preserve">
-    <value>Der Bestpunkt rechnet {0} Vollzyklen über die Nutzungsdauer gegen {1} zugesicherte.</value>
-  </data>
-  <data name="OPT_SP_GROESSE" xml:space="preserve">
-    <value>Größe</value>
-  </data>
-  <data name="OPT_SP_WERT" xml:space="preserve">
-    <value>Wert</value>
-  </data>
-  <data name="OPT_SP_EINHEIT" xml:space="preserve">
-    <value>Einheit</value>
-  </data>
   <data name="OPT_KZ_KAPAZITAET" xml:space="preserve">
     <value>Nennkapazität C_nom</value>
-  </data>
-  <data name="OPT_KZ_CRATE" xml:space="preserve">
-    <value>C-Rate</value>
-  </data>
-  <data name="OPT_KZ_LEISTUNG" xml:space="preserve">
-    <value>Lade-/Entladeleistung P</value>
-  </data>
-  <data name="OPT_KZ_ZIELFUNKTION" xml:space="preserve">
-    <value>Zielfunktion ΔJ</value>
-  </data>
-  <data name="OPT_KZ_UEBERSCHUSS" xml:space="preserve">
-    <value>Jahresüberschuss ohne K_ver</value>
-  </data>
-  <data name="OPT_KZ_ERTRAG1" xml:space="preserve">
-    <value>Ertrag Referenzjahr E_a,1</value>
-  </data>
-  <data name="OPT_KZ_ERTRAGAEQ" xml:space="preserve">
-    <value>Ertrag äquivalent E_a,äq</value>
-  </data>
-  <data name="OPT_KZ_INVEST" xml:space="preserve">
-    <value>Investition I</value>
-  </data>
-  <data name="OPT_KZ_ANNUITAET" xml:space="preserve">
-    <value>Annuität A</value>
-  </data>
-  <data name="OPT_KZ_NPV" xml:space="preserve">
-    <value>Kapitalwert NPV</value>
-  </data>
-  <data name="OPT_KZ_AMORT_STAT" xml:space="preserve">
-    <value>Amortisation statisch</value>
-  </data>
-  <data name="OPT_KZ_AMORT_DYN" xml:space="preserve">
-    <value>Amortisation dynamisch</value>
-  </data>
-  <data name="OPT_KZ_ZYKLEN" xml:space="preserve">
-    <value>Äquivalente Vollzyklen</value>
-  </data>
-  <data name="OPT_KZ_ZYKLEN_N" xml:space="preserve">
-    <value>Zyklen über die Nutzungsdauer</value>
-  </data>
-  <data name="OPT_KZ_KVER" xml:space="preserve">
-    <value>Verschleißkosten K_ver</value>
-  </data>
-  <data name="OPT_KZ_EIGENVERBRAUCH" xml:space="preserve">
-    <value>Eigenverbrauchsquote</value>
-  </data>
-  <data name="OPT_KZ_AUTARKIE" xml:space="preserve">
-    <value>Autarkiegrad</value>
-  </data>
-  <data name="OPT_KZ_LADEENERGIE" xml:space="preserve">
-    <value>Ladeenergie</value>
-  </data>
-  <data name="OPT_KZ_ENTLADEENERGIE" xml:space="preserve">
-    <value>Entladeenergie</value>
-  </data>
-  <data name="OPT_KZ_VERLUSTE" xml:space="preserve">
-    <value>Speicherverluste</value>
   </data>
   <data name="OPT_AMORT_UEBER" xml:space="preserve">
     <value>&gt; Nutzungsdauer</value>
@@ -5277,38 +5091,11 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="OPT_AMORT_NIE" xml:space="preserve">
     <value>nicht amortisierbar</value>
   </data>
-  <data name="OPT_MSG_KEIN_LAUF" xml:space="preserve">
-    <value>Die Simulation ist noch nicht gerechnet. Die Auslegungsoptimierung braucht den Lastgang und die Erzeugungsreihen eines vollständigen Laufs.</value>
-  </data>
   <data name="OPT_MSG_KEIN_ERGEBNIS" xml:space="preserve">
     <value>Es liegt noch kein Optimierungsergebnis vor.</value>
   </data>
   <data name="OPT_MSG_FEHLER" xml:space="preserve">
     <value>Die Optimierung ist fehlgeschlagen: {0}</value>
-  </data>
-  <data name="OPT_MSG_CMIN" xml:space="preserve">
-    <value>Die untere Kapazitätsgrenze muss größer als 0 sein.</value>
-  </data>
-  <data name="OPT_MSG_CMAX" xml:space="preserve">
-    <value>Die obere Kapazitätsgrenze muss über der unteren liegen.</value>
-  </data>
-  <data name="OPT_MSG_STUETZSTELLEN" xml:space="preserve">
-    <value>Die Kapazitätsachse braucht mindestens 2 Stützstellen.</value>
-  </data>
-  <data name="OPT_MSG_STUETZSTELLEN_MAX" xml:space="preserve">
-    <value>Die Kapazitätsachse verträgt höchstens {0} Stützstellen — jede ist ein vollständiger Jahreslauf.</value>
-  </data>
-  <data name="OPT_MSG_PUNKTE_MAX" xml:space="preserve">
-    <value>Der Suchraum ergibt {0} Rasterpunkte; zulässig sind höchstens {1}. Bitte die Stützstellen verringern oder die Schrittweite der C-Rate vergrößern.</value>
-  </data>
-  <data name="OPT_MSG_RMIN" xml:space="preserve">
-    <value>Die untere C-Rate muss größer als 0 sein.</value>
-  </data>
-  <data name="OPT_MSG_RMAX" xml:space="preserve">
-    <value>Die obere C-Rate darf nicht unter der unteren liegen.</value>
-  </data>
-  <data name="OPT_MSG_RSCHRITT" xml:space="preserve">
-    <value>Die Schrittweite der C-Rate muss größer als 0 sein.</value>
   </data>
   <data name="OPT_MSG_MEHRERE_ANLAGEN" xml:space="preserve">
     <value>Das Projekt führt mehrere Speicheranlagen. Die Optimierung rechnet mit ihrer Summe; die Aufteilung eines Optimums auf mehrere Geräte ist nicht eindeutig. Bitte die Werte von Hand eintragen.</value>
@@ -5329,15 +5116,6 @@ Die Simulation wird dabei nicht neu gerechnet.</value>
   </data>
   <data name="OPT_CSV_TITEL" xml:space="preserve">
     <value>CSV-Export</value>
-  </data>
-  <data name="OPT_CSV_PHASE" xml:space="preserve">
-    <value>Phase</value>
-  </data>
-  <data name="OPT_CSV_PHASE_GROB" xml:space="preserve">
-    <value>Grobraster</value>
-  </data>
-  <data name="OPT_CSV_PHASE_FEIN" xml:space="preserve">
-    <value>Feinraster</value>
   </data>
   <data name="OPT_CSV_GESCHRIEBEN" xml:space="preserve">
     <value>Die Datei wurde erstellt:
@@ -17936,6 +17714,33 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="FLOTTE_GROESSEN_SP_NEUTRAL" xml:space="preserve">
     <value>Neutrale Kennwerte</value>
+  </data>
+  <data name="FLOTTE_GROESSEN_SP_HERKUNFT" xml:space="preserve">
+    <value>Herleitung</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_GERAET" xml:space="preserve">
+    <value>Gerät: {0}</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_ANWENDER" xml:space="preserve">
+    <value>eigene Eingabe: {0}</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_WIRKUNGSGRADE" xml:space="preserve">
+    <value>Wirkungsgrade</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_SOCBAND" xml:space="preserve">
+    <value>SoC-Band</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_HILFSVERBRAUCH" xml:space="preserve">
+    <value>Hilfsverbrauch</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_KOSTEN" xml:space="preserve">
+    <value>Investitionssätze</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten und Alterung</value>
   </data>
   <data name="FLOTTE_OPT_QUELLE" xml:space="preserve">
     <value>Geräte aus</value>

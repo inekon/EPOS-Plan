@@ -96,7 +96,6 @@ public class SpeicherParameterBlockTests : EposBunitContext
         Berechnungsarten = new[]
         {
             new Steuerwahl(DbWerte.SP_BERECHNUNG_DAUERNUTZUNG, "Dauernutzung"),
-            new Steuerwahl(DbWerte.SP_BERECHNUNG_NACHTNUTZUNG, "Nachtnutzung"),
             new Steuerwahl(DbWerte.SP_BERECHNUNG_ARBITRAGE, "Preissteuerung / Arbitrage")
         },
         KompatibilitaetMoeglich = false,
@@ -213,7 +212,7 @@ public class SpeicherParameterBlockTests : EposBunitContext
         Zahlen(block)[8].Input("3");                             // Netzladeaufschlag
 
         block.FindAll("select")[0].Change("1");                  // Betriebsart -> Graustrom
-        block.FindAll("select")[1].Change("1");                  // Berechnungsart -> Nachtnutzung
+        block.FindAll("select")[1].Change("0");                  // Berechnungsart -> Dauernutzung
         block.FindAll("input[type='checkbox']")[0].Change(true); // Kompatibilitaet
         block.FindAll("input[type='checkbox']")[1].Change(false);// Laden aus PV
         block.FindAll("input[type='checkbox']")[2].Change(true); // Laden aus BHKW
@@ -234,7 +233,7 @@ public class SpeicherParameterBlockTests : EposBunitContext
             (SpeicherFeld.Leistungspreis, "130"),
             (SpeicherFeld.Netzladeaufschlag, "3"),
             (SpeicherFeld.Betriebsart, DbWerte.SP_BETRIEBSART_GRAUSTROM),
-            (SpeicherFeld.Berechnungsart, DbWerte.SP_BERECHNUNG_NACHTNUTZUNG),
+            (SpeicherFeld.Berechnungsart, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG),
             (SpeicherFeld.Kompatibilitaet, "1"),
             (SpeicherFeld.LadenPv, "0"),
             (SpeicherFeld.LadenBhkw, "1"),
@@ -516,7 +515,8 @@ public class SpeicherParameterBlockTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der Kompatibilitätsmodus ist nur bei NACHTNUTZUNG wählbar — dieselbe Regel, die
+    /// Der Kompatibilitätsmodus ist nur bei der DAUERNUTZUNG wählbar — nur sie hat eine
+    /// Excel-Vorlage. Dieselbe Regel, die
     /// die Hülle beim Lesen anwendet. Sie muß hier mitlaufen, sonst bliebe der
     /// Schalter bis zum nächsten Lesen falsch gesperrt.
     /// </summary>
@@ -529,12 +529,12 @@ public class SpeicherParameterBlockTests : EposBunitContext
         // [0] Kompatibilitaet, [1..3] Quellen, [4] Ausbaustufe, [5] Aufschlag
         Assert.True(block.FindAll("input[type='checkbox']")[0].HasAttribute("disabled"));
 
-        block.FindAll("select")[1].Change("1");     // Berechnungsart -> Nachtnutzung
+        block.FindAll("select")[1].Change("0");     // Berechnungsart -> Dauernutzung
 
         Assert.True(d.KompatibilitaetMoeglich);
         Assert.False(block.FindAll("input[type='checkbox']")[0].HasAttribute("disabled"));
 
-        block.FindAll("select")[1].Change("2");     // -> Arbitrage
+        block.FindAll("select")[1].Change("1");     // -> Arbitrage
         Assert.False(d.KompatibilitaetMoeglich);
         Assert.True(block.FindAll("input[type='checkbox']")[0].HasAttribute("disabled"));
     }

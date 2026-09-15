@@ -686,7 +686,7 @@ Für den Umsetzungsvorschlag wurden am 10. September 2026 ausgewählte Dateien i
 | SpeicherParameter | Ein PKw für beide Richtungen; eta aus sqrt(eta_RT) | Eigene Lade- und Entladegrenzen sowie Richtungswirkungsgrade je Einheit |
 | SpeicherEingang | Last, PV, Preise in ct/kWh; optionale BHKW- und Vergütungsreihen | Zeitachsenkennung, Prognoseversion und getrennte Preispfade ergänzen |
 | ArbitragePlaner | Greedy-Planung mit 24-Stunden-Fenstern und SoC-Pfadprüfung | Als Vergleich behalten; zusätzlichen Optimierer hinter einer Schnittstelle anbinden |
-| SpeicherOptimierer | Grob- und Feinraster nach äquivalentem Jahresüberschuss | Explizite Kapitalwertbewertung mehrjähriger Cashflows ergänzen |
+| FlottenOptimierer | Grob- und Feinraster über die Suchachsen der Flotte, Bewertung nach Kapitalwert | — |
 | EPOS.Kern | Controller beschaffen Projekt-, Varianten- und Preisdaten | Flottenaufbau, Daten-Snapshots und Simulationsaufträge koordinieren |
 | EPOS.UI | Plattformfreie Razor-Komponenten für Speicher und Vergleich | Bestehende Seiten um Flotte, Strategieparameter und Quellenstatus erweitern |
 
@@ -788,7 +788,7 @@ Die folgenden Dateien bilden die überprüfbare Grundlage des Umsetzungsvorschla
 | Kernarchitektur | SpeicherEngine/SpeicherEngine.csproj; EPOS.Kern/EPOS.Kern.csproj; EPOS.UI/EPOS.UI.csproj |
 | Daten und Einheiten | SpeicherEngine/SpeicherEingang.cs; SpeicherEngine/SpeicherParameter.cs; SpeicherEngine/SpotreihenAufbereitung.cs |
 | Strategien | SpeicherEngine/ISpeicherStrategie.cs; SpeicherEngine/PeakShaving.cs; SpeicherEngine/ArbitragePlaner.cs |
-| Optimierung und NPV | SpeicherEngine/SpeicherOptimierer.cs; SpeicherEngine/Wirtschaftlichkeit.cs |
+| Optimierung und NPV | SpeicherEngine/FlottenOptimierer.cs; SpeicherEngine/FlottenWirtschaftlichkeit.cs; SpeicherEngine/Wirtschaftlichkeit.cs |
 | Einbindung | EPOS.Kern/Controller/StromspeicherSimCtrl.cs; EPOS.Kern/Allgemein/Simulation/SimulationControl.Stromspeicher.cs; SimulationControl.cs im selben Ordner |
 | EPOS-Konzept | Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md |
 
@@ -863,17 +863,17 @@ Die Daten bleiben beim Kopieren des Projekts und beim erneuten Speichern derselb
 
 | Schicht | Anschlussstelle | Aufgabe |
 |---|---|---|
-| Rechenkern | `SpeicherEngine/OptimiererOptionen.cs`, `SpeicherOptimierer.cs`, `PeakShaving.cs` | Größenraster, Betriebskosten, Netzanschlussbewertung |
+| Rechenkern | `SpeicherEngine/FlottenOptimierer.cs`, `FlottenWirtschaftlichkeit.cs`, `PeakShaving.cs` | Größenraster, Betriebskosten, Netzanschlussbewertung |
 | EPOS-Kern | `Controller/SpeicherAuslegungCtrl.cs` | Speicherung und spezifische Kosten aus Projektpositionen |
 | EPOS-Kern | `Controller/SpeicherAuslegungCtrl.Rechnung.cs` | Eingabestand einfrieren, Quellen und Zeitachsen zusammenführen |
 | EPOS-Kern | `Controller/SpeicherZeitreihenImport.cs` | Vorschau, Spaltenwahl, Prüfung und Normierung |
-| EPOS-Kern | `Controller/SpeicherOptimierungCtrl.cs` | Kennzahlen, Diagramme und Exporte |
+| EPOS-Kern | `Controller/SpeicherFlottenAnzeigeCtrl.cs` | Kennzahlen, Diagramme und Exporte |
 | Oberfläche | `Dialoge/Strom/SpeicherAuslegungEditor.razor`, `SpeicherZeitreihenDialog.razor` | Bedienung und Rückmeldungen |
 | Windows | `SimulationErgebnisHuelle.Optimierung.cs` | Dateiauswahl, Speicherung und Hintergrundlauf |
 
 Die Kandidatenrechnung greift nicht auf die Datenbank zu. Sie erhält einen unabhängigen Eingabestand mit bereits aufgelösten Kostensätzen und ausgerichteten Zeitreihen. Änderungen am Dialog verändern einen laufenden Kandidaten nicht.
 
-Die Umsetzung optimiert die **aktive einzelne Speichervariante**. Eine gemeinsame Größenoptimierung mehrerer physisch parallel betriebener Speicher und nichtlineare Investitionskurven mit Stützstellen gehören weiterhin zum weiterführenden Konzept. Benannte Profile speichern in dieser Umsetzung die spezifischen Kostensätze samt vollständiger Auslegungskonfiguration.
+Die Umsetzung optimiert die **Flotte der aktiven Speichervariante**; ein Einzelspeicher ist dort eine Flotte mit einer Einheit. Nichtlineare Investitionskurven mit Stützstellen gehören weiterhin zum weiterführenden Konzept. Benannte Profile speichern in dieser Umsetzung die spezifischen Kostensätze samt vollständiger Auslegungskonfiguration.
 
 ### 14.5 Prüfung
 
@@ -887,12 +887,12 @@ Vor dem Hintergrundlauf werden Quellen, Kostensätze und technische Parameter ei
 eingaben = Dialogeingaben.Kopie()
 vorbereitet = SpeicherAuslegungCtrl.Vorbereiten(simulation, projektId, eingaben)
 Speichern(projektId, anlageId, "@Aktuell", vorbereitet.Eingaben)
-ergebnis = SpeicherOptimierungCtrl.Rechnen(vorbereitet, vorbereitet.Eingaben, ...)
+ergebnis = SpeicherFlottenStudieCtrl.Rechnen(vorbereitet, konfiguration, ...)
 ```
 
-Das Grobraster kombiniert Größenachse und C-Raten. Jeder Kandidat erhält eigene Leistung, Kapazität und skalierte SoC-Grenzen. Nach dem Viertelstundenlauf werden Investition, Betriebskosten und Erträge bewertet. Die optionale Feinphase bleibt innerhalb der eingegebenen Grenzen.
+Das Grobraster kombiniert die aktiven Suchachsen der Einheiten. Jeder Kandidat erhält eigene Leistung, Kapazität und skalierte SoC-Grenzen. Nach dem Viertelstundenlauf werden Investition, Betriebskosten und Erträge bewertet. Die optionale Feinphase bleibt innerhalb der eingegebenen Grenzen.
 
-In der erweiterten Lastspitzenkappung steuert die Residuallast am Netzanschluss: Bruttolast abzüglich PV und gegebenenfalls BHKW. Die wirtschaftliche Bewertung verwendet die tatsächliche Änderung des Netzbezugs je Intervall und dessen Preis. Das bisherige Verhalten des Rechenkerns ohne neue Auslegungskonfiguration bleibt für vorhandene Aufrufer erhalten. Dies ist eine Rastersuche mit der gewählten Betriebsstrategie, kein Nachweis eines global optimalen Fahrplans für sämtliche Marktoptionen.
+In der erweiterten Lastspitzenkappung steuert die Residuallast am Netzanschluss: Bruttolast abzüglich PV und gegebenenfalls BHKW. Die wirtschaftliche Bewertung verwendet die tatsächliche Änderung des Netzbezugs je Intervall und dessen Preis. Dies ist eine Rastersuche mit der gewählten Betriebsstrategie, kein Nachweis eines global optimalen Fahrplans für sämtliche Marktoptionen.
 
 ### 14.7 Nachrechenbare Abnahmebeispiele
 

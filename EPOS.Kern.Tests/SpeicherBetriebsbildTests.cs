@@ -307,7 +307,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die SCHWELLE der Lastspitzenkappung gibt es im Ergebnisreiter nicht (der Lauf
-        /// fährt Dauernutzung, Nachtnutzung oder Preissteuerung) — aber das Bild kann
+        /// fährt Dauernutzung oder Preissteuerung) — aber das Bild kann
         /// sie, damit eine Berechnungsart mit Kappung keine Ausnahme von der Regel
         /// bräuchte.
         /// </summary>

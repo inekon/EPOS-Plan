@@ -38,14 +38,35 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void BerechnungsartText_uebersetzt_Nacht_und_Dauernutzung()
+        public void BerechnungsartText_uebersetzt_die_Dauernutzung()
         {
             using var _ = new DeutscheOberflaeche();
 
-            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_NACHTNUTZUNG,
-                         SpeicherAnzeigeCtrl.BerechnungsartText(DbWerte.SP_BERECHNUNG_NACHTNUTZUNG));
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG,
                          SpeicherAnzeigeCtrl.BerechnungsartText(DbWerte.SP_BERECHNUNG_DAUERNUTZUNG));
+        }
+
+        /// <summary>
+        /// DIE BENANNTE UMSETZUNG EINES GESPEICHERTEN STANDES (Anwenderentscheid
+        /// 15.09.2026): Eine Variante kann die entfallene Berechnungsart „Nachtnutzung"
+        /// tragen. Sie wird nicht verschwiegen und nicht als unbekannter Wert
+        /// durchgereicht, sondern bekommt den Text, der beides sagt — dass die
+        /// Dauernutzung gilt und dass der Wert aus einem aelteren Stand stammt.
+        /// </summary>
+        [Fact]
+        public void BerechnungsartText_setzt_den_entfallenen_Stand_benannt_um()
+        {
+            using var _ = new DeutscheOberflaeche();
+
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ALTSTAND,
+                         SpeicherAnzeigeCtrl.BerechnungsartText(SpeicherAltstand.BERECHNUNG_NACHTNUTZUNG));
+
+            // Und die Umsetzung selbst: Der gespeicherte Wert wird zur Dauernutzung,
+            // ein unbekannter Wert bleibt unbekannt.
+            Assert.Equal(DbWerte.SP_BERECHNUNG_DAUERNUTZUNG,
+                         SpeicherAltstand.Berechnungsart(SpeicherAltstand.BERECHNUNG_NACHTNUTZUNG));
+            Assert.Equal("Irgendwas", SpeicherAltstand.Berechnungsart("Irgendwas"));
+            Assert.False(SpeicherAltstand.IstEntfalleneBerechnungsart(DbWerte.SP_BERECHNUNG_DAUERNUTZUNG));
         }
 
         /// <summary>
