@@ -67,6 +67,7 @@ und `README.md`.
 | [`aktuell/Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md`](aktuell/Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) | Szenarioparameter und VALERI-Abgleich nach DIN EN 17463 | 2026-09-09 |
 | [`aktuell/Lokalisierung_Katalog.md`](aktuell/Lokalisierung_Katalog.md) | Ressourcenkatalog des Simulationsbereichs — Schlüssel, Texte, Fundstellen | 2026-08-29 |
 | [`aktuell/Lokalisierung_Pruefung.md`](aktuell/Lokalisierung_Pruefung.md) | Prüfrezeptur Lokalisierung — angewandt, von `WindowsFormsApplication1/CLAUDE.md` genannt | 2026-08-29 |
+| [`aktuell/Messung_Pflegewege_Tarifstruktur_Strom.md`](aktuell/Messung_Pflegewege_Tarifstruktur_Strom.md) | Tarifstruktur Strom: welches Feld geht in den Rechenweg und wo ist es sonst pflegbar — Deckungsmessung der Sicht „Strombezug“ | 2026-09-15 |
 | [`aktuell/Spezifikation_Stromspeicher_Optimierung.md`](aktuell/Spezifikation_Stromspeicher_Optimierung.md) | Simulation mehrerer Stromspeicher — die fachliche Spezifikation (14 Kapitel) | 2026-09-11 |
 | [`aktuell/Status_iOS_Migration.md`](aktuell/Status_iOS_Migration.md) | Stand der iOS-Migration: Pakete iU0–iU13, Wellen W0–W16c, Aufträge #nnn und was offen ist — je Schritt eine Zeile, das Konzept bleibt im Umsetzungskonzept | 2026-09-12 |
 | [`aktuell/Umsetzung_iU10_Nachweise.md`](aktuell/Umsetzung_iU10_Nachweise.md) | Nachweisliste iU10 (iOS-Hülle): was ohne Mac nachweisbar ist und was nicht — wird fortgeschrieben | 2026-09-11 |
