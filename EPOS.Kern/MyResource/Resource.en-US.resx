@@ -7112,6 +7112,45 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="KI_REG_ZWECK_KOSTENLAGE_PRUEFEN" xml:space="preserve">
     <value>Compares the recorded investment item of a component with the engineering planning values.</value>
   </data>
+  <data name="KI_REG_ZWECK_ANLAGEN_AUFLISTEN" xml:space="preserve">
+    <value>Lists the plants installed in the project — per device the component, device name and engineering planning value. Without a component across all trades.</value>
+  </data>
+  <data name="KI_REG_TITEL_ANLAGEN_AUFLISTEN" xml:space="preserve">
+    <value>List plants</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_ANLAGEN_AUFLISTEN" xml:space="preserve">
+    <value>List all boilers in the project. / Which plants are installed?</value>
+  </data>
+  <data name="KI_REG_ANLAGEN_GEFUNDEN" xml:space="preserve">
+    <value>{0} installed plant(s) found.</value>
+  </data>
+  <data name="KI_REG_ZWECK_KOSTENPOS_AUFLISTEN" xml:space="preserve">
+    <value>Lists the recorded cost items of the project — per item its id_position, name, basis, amount and service life. The id_position is the value kostenposition_setzen works with.</value>
+  </data>
+  <data name="KI_REG_TITEL_KOSTENPOS_AUFLISTEN" xml:space="preserve">
+    <value>List cost items</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_KOSTENPOS_AUFLISTEN" xml:space="preserve">
+    <value>List all cost items. / What does the battery storage cost?</value>
+  </data>
+  <data name="KI_REG_KOSTENPOS_GEFUNDEN" xml:space="preserve">
+    <value>{0} cost item(s), total {1:N2} €.</value>
+  </data>
+  <data name="KI_REG_ERL_KOMPONENTE_OPTIONAL" xml:space="preserve">
+    <value>Trade to restrict to. Without a value all trades apply.</value>
+  </data>
+  <data name="KI_REG_ERL_KOSTENKATEGORIE" xml:space="preserve">
+    <value>Investment or operation. Without a value investment applies.</value>
+  </data>
+  <data name="KI_REG_ERL_MIT_VARIANTEN" xml:space="preserve">
+    <value>Include the project's variants as well (or, for a variant, the whole group including its base project). Without a value only the named project.</value>
+  </data>
+  <data name="KI_REG_MIT_VARIANTEN_NAME" xml:space="preserve">
+    <value>Include variants</value>
+  </data>
+  <data name="KI_REG_KOSTENKATEGORIE_NAME" xml:space="preserve">
+    <value>Cost type</value>
+  </data>
   <data name="KI_REG_ZWECK_UEBERNAHME_VORSCHAU" xml:space="preserve">
     <value>Shows what transferring a trade from one project into another would change. Writes nothing.</value>
   </data>
@@ -7390,6 +7429,15 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   </data>
   <data name="KI_AKT_ERGEBNISZEILEN" xml:space="preserve">
     <value>Result rows: {0}</value>
+  </data>
+  <data name="KI_AKT_WEITERE_ZEILEN" xml:space="preserve">
+    <value>… and {0} more rows</value>
+  </data>
+  <data name="KI_AKT_WERT_JA" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="KI_AKT_WERT_NEIN" xml:space="preserve">
+    <value>no</value>
   </data>
   <data name="KI_AKT_AKTION_WAEHLEN" xml:space="preserve">
     <value>Please select an action first.</value>
@@ -8702,12 +8750,6 @@ The seat becomes available for another device; a new activation is required to c
   </data>
   <data name="KI_REG_WIRKUNG_DIALOG_AKTION" xml:space="preserve">
     <value>The form runs its own check and processes the entries - just as with a click by hand.</value>
-  </data>
-  <data name="KI_KERN_FELDSICHERUNG_AUS" xml:space="preserve">
-    <value>Field guard OFF — fields are filled in without a separate confirmation. The confirmation of data-changing actions remains in place.</value>
-  </data>
-  <data name="KI_KERN_FELDSICHERUNG_VERMERK" xml:space="preserve">
-    <value>field guard off</value>
   </data>
   <data name="MENU_VARIANTE_SPEICHERN" xml:space="preserve">
     <value>Save as variant&#8230;</value>
@@ -18182,6 +18224,51 @@ Do you want to allow this?</value>
   <data name="KI_DLG_MASKE_SPA" xml:space="preserve">
     <value>Battery storage sizing</value>
   </data>
+  <data name="KI_DLG_MASKE_KV" xml:space="preserve">
+    <value>Cost management</value>
+  </data>
+  <data name="KI_DLG_KV_TITEL_NAME" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="KI_DLG_KV_TITEL_ERL" xml:space="preserve">
+    <value>The component whose costs are being edited — heading of the screen.</value>
+  </data>
+  <data name="KI_DLG_KV_UNTERTITEL_NAME" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="KI_DLG_KV_UNTERTITEL_ERL" xml:space="preserve">
+    <value>Device and project the cost items refer to.</value>
+  </data>
+  <data name="KI_DLG_KV_NURLESEN_NAME" xml:space="preserve">
+    <value>Shipped template</value>
+  </data>
+  <data name="KI_DLG_KV_NURLESEN_ERL" xml:space="preserve">
+    <value>True if the selected template is part of the shipped catalogue; its rows cannot be changed then.</value>
+  </data>
+  <data name="KI_DLG_KV_POSITION_NAME" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="KI_DLG_KV_POSITION_ERL" xml:space="preserve">
+    <value>Name of the cost item, e.g. "Heat generator (boiler)" or "Planning / ancillary building costs".</value>
+  </data>
+  <data name="KI_DLG_KV_SATZ_NAME" xml:space="preserve">
+    <value>Rate</value>
+  </data>
+  <data name="KI_DLG_KV_SATZ_ERL" xml:space="preserve">
+    <value>The value for the selected basis — per kW, per unit, fixed amount or percentage.</value>
+  </data>
+  <data name="KI_DLG_KV_NUTZUNGSDAUER_NAME" xml:space="preserve">
+    <value>Service life</value>
+  </data>
+  <data name="KI_DLG_KV_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Calculatory service life of the item in years (VDI 2067); it drives depreciation and replacement.</value>
+  </data>
+  <data name="KI_DLG_KV_BETRAG_NAME" xml:space="preserve">
+    <value>Net amount</value>
+  </data>
+  <data name="KI_DLG_KV_BETRAG_ERL" xml:space="preserve">
+    <value>The calculated net amount of the item — derived from rate and basis, not editable.</value>
+  </data>
   <data name="KI_DLG_SPA_EINHEITEN_NAME" xml:space="preserve">
     <value>Units in the fleet</value>
   </data>
@@ -19033,5 +19120,185 @@ Do you want to allow this?</value>
   </data>
   <data name="FLOTTE_ED_NACHZUG_AUFNEHMEN_TITEL" xml:space="preserve">
     <value>Add every missing battery system as a unit</value>
+  </data>
+  <data name="KI_REG_ZWECK_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Transfers an entire trade from one project to another — creates, aligns and removes what is missing in the source project.</value>
+  </data>
+  <data name="KI_REG_TITEL_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Transfer component</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Transfer the heat pump from project A into project B.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Afterwards the trade in the target project matches the source project. Not reversible.</value>
+  </data>
+  <data name="KI_REG_VORSCHAU_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Trade "{0}" from "{1}" to "{2}": create {3}, replace {4}, remove {5}.</value>
+  </data>
+  <data name="KI_REG_UEBERNAHME_AUSGEFUEHRT" xml:space="preserve">
+    <value>Trade "{0}" transferred to "{1}".</value>
+  </data>
+  <data name="KI_REG_UEBERNAHME_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Trade "{0}" could not be transferred: {1}</value>
+  </data>
+  <data name="KI_REG_UEBERNAHME_NICHTS_ZU_TUN" xml:space="preserve">
+    <value>There is nothing to transfer — both projects already hold the same trade.</value>
+  </data>
+  <data name="KI_REG_ZWECK_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>Writes ONE characteristic from one project into another. The previous value is shown in the confirmation.</value>
+  </data>
+  <data name="KI_REG_TITEL_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>Transfer characteristic</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>Transfer the flow temperature from project A into project B.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>Afterwards the characteristic in the target project carries the source value. Reversible with the same call in the opposite direction.</value>
+  </data>
+  <data name="KI_REG_VORSCHAU_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>{0} in "{1}" · {2} → {3} {4}</value>
+  </data>
+  <data name="KI_REG_MERKMAL_GESCHRIEBEN" xml:space="preserve">
+    <value>{0} changed: {1} → {2}</value>
+  </data>
+  <data name="KI_REG_MERKMAL_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Characteristic "{0}" could not be written: {1}</value>
+  </data>
+  <data name="KI_REG_MERKMAL_GESPERRT" xml:space="preserve">
+    <value>Characteristic "{0}" is a key column and is not transferred.</value>
+  </data>
+  <data name="KI_REG_MERKMAL_OHNE_VORSCHAU" xml:space="preserve">
+    <value>No preview can be built for this characteristic.</value>
+  </data>
+  <data name="KI_REG_ZWECK_PARAMETER_SETZEN" xml:space="preserve">
+    <value>Changes individual parameters of the economic calculation. Only the named fields are written, all others stay unchanged.</value>
+  </data>
+  <data name="KI_REG_TITEL_PARAMETER_SETZEN" xml:space="preserve">
+    <value>Set economic parameters</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PARAMETER_SETZEN" xml:space="preserve">
+    <value>Set the interest rate to 4 % and the period under review to 20 years.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_PARAMETER_SETZEN" xml:space="preserve">
+    <value>The named parameters apply to every economic calculation of this group from now on. Existing results are not recalculated.</value>
+  </data>
+  <data name="KI_REG_PARAMETER_GESETZT" xml:space="preserve">
+    <value>{0} parameter(s) changed in "{1}".</value>
+  </data>
+  <data name="KI_REG_PARAMETER_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The parameters of project {0} could not be saved.</value>
+  </data>
+  <data name="KI_REG_PARAMETER_NUR_AM_STAMM" xml:space="preserve">
+    <value>Project {0} is a variant of {1}. The economic parameters belong to the base project and are set there.</value>
+  </data>
+  <data name="KI_REG_PARAMETER_OHNE_ANGABE" xml:space="preserve">
+    <value>No parameter to change was named.</value>
+  </data>
+  <data name="KI_REG_FELD_ZINSSATZ" xml:space="preserve">
+    <value>Discount rate</value>
+  </data>
+  <data name="KI_REG_ERL_ZINSSATZ" xml:space="preserve">
+    <value>Discount rate of the net present value calculation in percent.</value>
+  </data>
+  <data name="KI_REG_FELD_ZEITRAUM" xml:space="preserve">
+    <value>Period under review</value>
+  </data>
+  <data name="KI_REG_ERL_ZEITRAUM" xml:space="preserve">
+    <value>Period under review of the economic calculation in years.</value>
+  </data>
+  <data name="KI_REG_FELD_PREIS_ENERGIE" xml:space="preserve">
+    <value>Energy price increase</value>
+  </data>
+  <data name="KI_REG_ERL_PREIS_ENERGIE" xml:space="preserve">
+    <value>Annual price increase of energy costs in percent.</value>
+  </data>
+  <data name="KI_REG_FELD_PREIS_BETRIEB" xml:space="preserve">
+    <value>Operating price increase</value>
+  </data>
+  <data name="KI_REG_ERL_PREIS_BETRIEB" xml:space="preserve">
+    <value>Annual price increase of operating costs in percent.</value>
+  </data>
+  <data name="KI_REG_FELD_PREIS_INVEST" xml:space="preserve">
+    <value>Investment price increase</value>
+  </data>
+  <data name="KI_REG_ERL_PREIS_INVEST" xml:space="preserve">
+    <value>Annual price increase of replacements in percent. If unset the operating price increase applies.</value>
+  </data>
+  <data name="KI_REG_FELD_EINSPEISUNG" xml:space="preserve">
+    <value>Feed-in tariff</value>
+  </data>
+  <data name="KI_REG_ERL_EINSPEISUNG" xml:space="preserve">
+    <value>Feed-in tariff in euro per kilowatt hour.</value>
+  </data>
+  <data name="KI_REG_FELD_CO2_PREIS" xml:space="preserve">
+    <value>CO2 price</value>
+  </data>
+  <data name="KI_REG_ERL_CO2_PREIS" xml:space="preserve">
+    <value>CO2 price in euro per tonne.</value>
+  </data>
+  <data name="KI_REG_ZWECK_SPEICHERAUSLEGUNG" xml:space="preserve">
+    <value>Writes capacity and charge/discharge power into the project's battery storage.</value>
+  </data>
+  <data name="KI_REG_TITEL_SPEICHERAUSLEGUNG" xml:space="preserve">
+    <value>Apply storage sizing</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_SPEICHERAUSLEGUNG" xml:space="preserve">
+    <value>Apply 12 kWh and 5 kW as the storage sizing.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_SPEICHERAUSLEGUNG" xml:space="preserve">
+    <value>Afterwards the project's battery storage carries the named values. Nothing is recalculated — the user starts the simulation.</value>
+  </data>
+  <data name="KI_REG_SPEICHERAUSLEGUNG_GESETZT" xml:space="preserve">
+    <value>Storage sizing set: {0:N1} kWh, {1:N1} kW in "{2}".</value>
+  </data>
+  <data name="KI_REG_SPEICHERAUSLEGUNG_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>The storage sizing could not be written. {0}</value>
+  </data>
+  <data name="KI_REG_SPEICHER_KEINE_ANLAGE" xml:space="preserve">
+    <value>Project "{0}" holds no battery storage.</value>
+  </data>
+  <data name="KI_REG_SPEICHER_MEHRERE_ANLAGEN" xml:space="preserve">
+    <value>The project holds {0} storage plants. Variants of the same storage share one device record; the user decides in the screen which one is meant.</value>
+  </data>
+  <data name="KI_REG_ZWECK_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Creates the operating variant of a storage plant — operating mode and SoC band.</value>
+  </data>
+  <data name="KI_REG_TITEL_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Create storage variant</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Create a storage variant with green power and SoC 10 to 90 %.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Afterwards the storage plant holds an operating variant. Not reversible — deleting is not part of the assistant.</value>
+  </data>
+  <data name="KI_REG_VORSCHAU_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Storage variant for "{0}" (plant {1}) in "{2}": operating mode {3}, SoC {4:N0} to {5:N0} %.</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_ANGELEGT" xml:space="preserve">
+    <value>Storage variant {0} created for "{1}".</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_ANLEGEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>No storage variant could be created for "{0}".</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_SCHON_DA" xml:space="preserve">
+    <value>Plant "{0}" already holds a storage variant.</value>
+  </data>
+  <data name="KI_REG_SPEICHERANLAGE_NAME" xml:space="preserve">
+    <value>Storage plant</value>
+  </data>
+  <data name="KI_REG_ERL_SPEICHERANLAGE" xml:space="preserve">
+    <value>Name of the storage plant. If the project holds exactly one, the value may be omitted.</value>
+  </data>
+  <data name="KI_REG_BETRIEBSART_NAME" xml:space="preserve">
+    <value>Operating mode</value>
+  </data>
+  <data name="KI_REG_ERL_BETRIEBSART" xml:space="preserve">
+    <value>Operating mode of the storage variant. Without a value green power applies.</value>
+  </data>
+  <data name="KI_REG_SOC_BAND_VERDREHT" xml:space="preserve">
+    <value>The lower SoC value ({0:N0} %) must be smaller than the upper one ({1:N0} %).</value>
   </data>
 </root>

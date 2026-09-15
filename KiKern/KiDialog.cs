@@ -47,6 +47,21 @@ namespace KiKern
         /// <param name="einheit">Einheit fuer die Anzeige, z. B. „kWh"; leer, wenn keine.</param>
         /// <param name="leerErlaubt">Darf das Feld leer bleiben?</param>
         /// <param name="hilfeSlug">Slug des Hilfeartikels (<c>WordPressHelpCatalog.Get</c>); <c>null</c> = keiner.</param>
+        /// <param name="zeilenkennzeichen">
+        /// NUR fuer eine Spalte (Pfad mit <see cref="KiEigenschaftspfad.Sammlungszeichen"/>):
+        /// die Eigenschaft der ZEILE, aus der die Bestaetigung ihre Zeilenbenennung
+        /// nimmt (z. B. <c>Bezeichnung</c>). Ohne sie heisst eine Zeile nach ihrer
+        /// Nummer - das ist richtig, aber deutlich weniger sagend: „Nutzungsdauer
+        /// (Zubehoer) · 15 → 20" gegen „Nutzungsdauer 2 · 15 → 20".
+        /// </param>
+        /// <param name="nurLesen">
+        /// Ist das Feld eine ANZEIGE und kein Eingabefeld? Dann wird es gelesen und
+        /// erklaert, aber nie gesetzt - auch dann nicht, wenn die Eigenschaft dahinter
+        /// technisch schreibbar ist. Das ist der Regelfall fuer abgeleitete Groessen
+        /// (eine Summe, ein fertig formatierter Betrag) und fuer Ueberschriften: Sie
+        /// tragen einen Setzer, weil die Huelle sie fuellt - nicht, weil der Anwender
+        /// sie aendern koennte.
+        /// </param>
         public KiDialogFeld(string name,
                             string eigenschaftspfad,
                             string anzeigename,
@@ -54,7 +69,9 @@ namespace KiKern
                             string erlaeuterung,
                             string? einheit = null,
                             bool leerErlaubt = false,
-                            string? hilfeSlug = null)
+                            string? hilfeSlug = null,
+                            string? zeilenkennzeichen = null,
+                            bool nurLesen = false)
         {
             if (!KiName.IstGueltig(name))
                 throw new ArgumentException(
@@ -83,6 +100,15 @@ namespace KiKern
                     "Das Feld '" + name + "' kann keine Zahlenliste sein; ein Maskenfeld traegt genau einen Wert.",
                     nameof(typ));
 
+            // Ein Zeilenkennzeichen ohne Sammlung waere eine Angabe ohne Gegenstand -
+            // und sie faellt sonst nie auf, weil sie schlicht nie gelesen wuerde.
+            if (!string.IsNullOrWhiteSpace(zeilenkennzeichen) &&
+                !KiEigenschaftspfad.IstSammlung(eigenschaftspfad))
+                throw new ArgumentException(
+                    "Das Feld '" + name + "' fuehrt ein Zeilenkennzeichen, ist aber keine Spalte " +
+                    "(der Pfad braucht dafuer eine Sammlung '" +
+                    KiEigenschaftspfad.Sammlungszeichen + "').", nameof(zeilenkennzeichen));
+
             Name = name;
             Eigenschaftspfad = eigenschaftspfad.Trim();
             Anzeigename = anzeigename;
@@ -91,6 +117,8 @@ namespace KiKern
             Einheit = einheit ?? "";
             LeerErlaubt = leerErlaubt;
             HilfeSlug = string.IsNullOrWhiteSpace(hilfeSlug) ? "" : hilfeSlug!.Trim();
+            Zeilenkennzeichen = string.IsNullOrWhiteSpace(zeilenkennzeichen) ? "" : zeilenkennzeichen!.Trim();
+            NurLesen = nurLesen;
         }
 
         /// <summary>Logischer, sprachneutraler Schluessel des Feldes.</summary>
@@ -128,6 +156,67 @@ namespace KiKern
 
         /// <summary>Ist ein Hilfeartikel deklariert?</summary>
         public bool HatHilfe => HilfeSlug.Length > 0;
+
+        /// <summary>
+        /// Die Eigenschaft der Zeile, die eine Spaltenzeile benennt; leer, wenn keine
+        /// deklariert ist oder das Feld keine Spalte ist.
+        /// </summary>
+        public string Zeilenkennzeichen { get; }
+
+        /// <summary>
+        /// Ist das Feld eine Anzeige und kein Eingabefeld? Dann wird es nie gesetzt.
+        /// </summary>
+        public bool NurLesen { get; }
+
+        /// <summary>Fuehrt dieses Feld ueber eine Sammlung - ist es also eine SPALTE?</summary>
+        public bool IstSpalte => KiEigenschaftspfad.IstSammlung(Eigenschaftspfad);
+
+        /// <summary>Der Name der Sammlung; leer, wenn das Feld keine Spalte ist.</summary>
+        public string Sammlung => KiEigenschaftspfad.Sammlung(Eigenschaftspfad);
+
+        /// <summary>
+        /// Dasselbe Feld fuer EINE Zeile einer Spalte: eigener Schluessel, eigener
+        /// Anzeigename, sonst unveraendert.
+        /// </summary>
+        /// <param name="nummer">Zeilennummer, bei 1 beginnend - sie geht in den Schluessel.</param>
+        /// <param name="beschriftung">
+        /// Klartext aus dem <see cref="Zeilenkennzeichen"/> der Zeile; leer = die Zeile
+        /// wird nach ihrer Nummer benannt.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// <b>Aus einer Spalte werden gewoehnliche Felder</b>, und darauf beruht der
+        /// ganze Rest: Pruefung, Bestaetigungsblock, Protokollzeile und Rueckmeldung
+        /// bekommen nichts Neues zu sehen - sie arbeiten weiter mit flachen Feldnamen.
+        /// Die einzige Stelle, die von Zeilen weiss, ist die Anmeldung der Maske.
+        /// </para>
+        /// <para>
+        /// <b>Der Schluessel bleibt maschinenlesbar</b> (<c>nutzungsdauer_3</c>): Er geht
+        /// als Parameterwert an das Modell und zurueck und muss deshalb der Namensregel
+        /// <see cref="KiName"/> genuegen - der Anzeigename darf alles tragen, der
+        /// Schluessel nicht.
+        /// </para>
+        /// </remarks>
+        public KiDialogFeld FuerZeile(int nummer, string? beschriftung = null)
+        {
+            if (nummer < 1) throw new ArgumentOutOfRangeException(nameof(nummer), "Zeilen zaehlen ab 1.");
+
+            string zusatz = string.IsNullOrWhiteSpace(beschriftung)
+                ? nummer.ToString(CultureInfo.InvariantCulture)
+                : "(" + beschriftung!.Trim() + ")";
+
+            return new KiDialogFeld(
+                Name + "_" + nummer.ToString(CultureInfo.InvariantCulture),
+                Eigenschaftspfad,
+                Anzeigename + " " + zusatz,
+                Typ,
+                Erlaeuterung,
+                Einheit,
+                LeerErlaubt,
+                HilfeSlug.Length == 0 ? null : HilfeSlug,
+                Zeilenkennzeichen.Length == 0 ? null : Zeilenkennzeichen,
+                NurLesen);
+        }
 
         /// <inheritdoc/>
         public override string ToString() => Name + " (" + Eigenschaftspfad + ")";
@@ -483,18 +572,32 @@ namespace KiKern
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Ein Eigenschaftspfad hat GENAU ZWEI Stufen: den Typnamen des Daten-Objekts und
-    /// den Namen der Eigenschaft darin (<c>HeizkesselKatalogDaten.Ptherm</c>). Beide
-    /// sind C#-Bezeichner - Buchstabe oder Unterstrich am Anfang, danach Buchstaben,
+    /// Ein Eigenschaftspfad hat ZWEI oder DREI Stufen. Die einfache Form nennt den
+    /// Typnamen des Daten-Objekts und die Eigenschaft darin
+    /// (<c>HeizkesselKatalogDaten.Ptherm</c>). Die SPALTENFORM schiebt eine Sammlung
+    /// dazwischen und kennzeichnet sie mit <see cref="Sammlungszeichen"/>:
+    /// <c>KostenKomponenteStand.Zeilen[].Nutzungsdauer</c> meint „die Eigenschaft
+    /// <c>Nutzungsdauer</c> in JEDER Zeile von <c>Zeilen</c>". Alle Stufen sind
+    /// C#-Bezeichner - Buchstabe oder Unterstrich am Anfang, danach Buchstaben,
     /// Ziffern und Unterstriche.
     /// </para>
     /// <para>
-    /// <b>Warum genau zwei und nicht beliebig viele.</b> Der Getter der Maskenbruecke
-    /// liest die Eigenschaft per Reflection an EINEM Objekt; ein tieferer Pfad
+    /// <b>Warum es die dritte Stufe gibt</b> (Anwenderbefund vom 14.09.2026: „Setze
+    /// die Nutzungsdauer ueberall auf 15 Jahre"). Eine Maske mit Raster fuehrt ihre
+    /// Werte nicht als Einzelfelder, sondern als LISTE von Zeilen; mit zwei Stufen
+    /// liess sich davon kein einziger Wert benennen - weder lesend noch setzend. Die
+    /// Sammlung ist deshalb die eine zugelassene Tiefe. Sie kostet nichts an
+    /// Sicherheit: Was eine Spalte ist, steht weiterhin im KATALOG, und aus einer
+    /// Spaltendeklaration wird je vorhandener Zeile ein gewoehnliches Feld
+    /// (<see cref="KiDialogFeld.FuerZeile"/>) - mit eigener Bestaetigungszeile.
+    /// </para>
+    /// <para>
+    /// <b>Warum nicht beliebig tief.</b> Ein freier Pfad
     /// (<c>Daten.Flotte.Optionen.Betriebsziel</c>) haette ueber eine Kette von
     /// <c>null</c>-Stellen zu laufen, und jede davon waere eine stille Fehlerquelle.
-    /// Wo eine Maske eine Tiefe braucht, bekommt sie ein flaches SICHTMODELL, das die
-    /// Kette EINMAL an einer benannten Stelle aufloest (so die Stromspeicher-Ansicht).
+    /// Wo eine Maske echte Tiefe braucht, bekommt sie weiterhin ein flaches
+    /// SICHTMODELL, das die Kette EINMAL an einer benannten Stelle aufloest (so die
+    /// Stromspeicher-Ansicht).
     /// </para>
     /// <para>
     /// <b>Der Typname steht mit im Pfad</b>, obwohl er zum Aufloesen nicht noetig waere:
@@ -505,33 +608,78 @@ namespace KiKern
     /// </remarks>
     public static class KiEigenschaftspfad
     {
-        /// <summary>Trennzeichen zwischen Typname und Eigenschaft.</summary>
+        /// <summary>Trennzeichen zwischen den Stufen.</summary>
         public const char Trenner = '.';
 
-        /// <summary>Ist das ein brauchbarer Eigenschaftspfad <c>Typ.Eigenschaft</c>?</summary>
+        /// <summary>Kennzeichnet die mittlere Stufe als Sammlung: <c>Zeilen[]</c>.</summary>
+        public const string Sammlungszeichen = "[]";
+
+        /// <summary>
+        /// Ist das ein brauchbarer Eigenschaftspfad - <c>Typ.Eigenschaft</c> oder
+        /// <c>Typ.Sammlung[].Eigenschaft</c>?
+        /// </summary>
         public static bool IstGueltig(string? pfad)
         {
             if (string.IsNullOrWhiteSpace(pfad)) return false;
 
             string[] stufen = pfad!.Trim().Split(Trenner);
-            if (stufen.Length != 2) return false;
 
-            foreach (string stufe in stufen)
-                if (!IstBezeichner(stufe)) return false;
+            if (stufen.Length == 2)
+                return IstBezeichner(stufen[0]) && IstBezeichner(stufen[1]);
 
-            return true;
+            if (stufen.Length == 3)
+                return IstBezeichner(stufen[0])
+                    && IstSammlungsstufe(stufen[1])
+                    && IstBezeichner(stufen[2]);
+
+            return false;
         }
 
-        /// <summary>Der Typname vor dem Punkt; leer, wenn der Pfad nicht gueltig ist.</summary>
+        /// <summary>Der Typname vor dem ersten Punkt; leer, wenn der Pfad nicht gueltig ist.</summary>
         public static string Datentyp(string? pfad) => Stufe(pfad, 0);
 
-        /// <summary>Der Eigenschaftsname hinter dem Punkt; leer, wenn der Pfad nicht gueltig ist.</summary>
-        public static string Eigenschaft(string? pfad) => Stufe(pfad, 1);
+        /// <summary>
+        /// Der Name der EIGENSCHAFT - immer die letzte Stufe, gleich ob der Pfad zwei
+        /// oder drei hat.
+        /// </summary>
+        public static string Eigenschaft(string? pfad)
+        {
+            if (!IstGueltig(pfad)) return "";
+            string[] stufen = pfad!.Trim().Split(Trenner);
+            return stufen[stufen.Length - 1];
+        }
+
+        /// <summary>Fuehrt der Pfad ueber eine Sammlung - ist er also eine SPALTE?</summary>
+        public static bool IstSammlung(string? pfad)
+        {
+            if (!IstGueltig(pfad)) return false;
+            return pfad!.Trim().Split(Trenner).Length == 3;
+        }
+
+        /// <summary>
+        /// Der Name der Sammlung OHNE <see cref="Sammlungszeichen"/>; leer bei einem
+        /// Pfad ohne Sammlung.
+        /// </summary>
+        public static string Sammlung(string? pfad)
+        {
+            if (!IstSammlung(pfad)) return "";
+            string stufe = pfad!.Trim().Split(Trenner)[1];
+            return stufe.Substring(0, stufe.Length - Sammlungszeichen.Length);
+        }
 
         private static string Stufe(string? pfad, int nummer)
         {
             if (!IstGueltig(pfad)) return "";
             return pfad!.Trim().Split(Trenner)[nummer];
+        }
+
+        /// <summary>Ist das eine Sammlungsstufe <c>Bezeichner[]</c>?</summary>
+        private static bool IstSammlungsstufe(string? stufe)
+        {
+            if (string.IsNullOrEmpty(stufe)) return false;
+            if (!stufe!.EndsWith(Sammlungszeichen, StringComparison.Ordinal)) return false;
+
+            return IstBezeichner(stufe.Substring(0, stufe.Length - Sammlungszeichen.Length));
         }
 
         /// <summary>Ist das ein C#-Bezeichner?</summary>

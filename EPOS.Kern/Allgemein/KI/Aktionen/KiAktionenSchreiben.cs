@@ -12,13 +12,16 @@ namespace WindowsFormsApplication1
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Drei Aktionen, nicht acht.</b> Aus dem Katalog 5.2 sind die drei uebernommen,
-    /// die sich vollstaendig absichern lassen: Sie schreiben in EINE Tabelle, ihr
-    /// Vorzustand ist lesbar, und ihr Andockpunkt bringt seine Regeln selbst mit. Die
-    /// uebrigen (Komponenten- und Merkmaluebernahme, Wirtschaftlichkeitsparameter,
-    /// Speicherauslegung) haengen an mehrstufigen Trockenlaeufen oder an einer
-    /// Mehrdeutigkeit, die eine Rueckfrage braucht - beides gehoert in eine eigene Runde
-    /// mit eigener Abnahme.
+    /// <b>Fuenf hier, drei anderswo - der Katalog 5.2 ist seit dem 15.09.2026
+    /// vollstaendig.</b> Bis dahin standen hier nur die drei, die sich sofort
+    /// vollstaendig absichern liessen; die uebrigen haengen an mehrstufigen
+    /// Trockenlaeufen oder an einer Mehrdeutigkeit und brauchten die eigene Runde, die
+    /// sie jetzt bekommen haben. Zwei davon liegen NICHT hier, sondern bei ihren
+    /// Verwandten: <c>komponente_uebernehmen</c> und <c>merkmal_uebernehmen</c> in
+    /// <see cref="KiAktionenUebernahme"/> (dort IST der Trockenlauf ihre Vorschau) und
+    /// <c>wirtschaftlichkeit_parameter_setzen</c> in <see cref="KiAktionenWirtschaft"/>
+    /// (dort steht der Leseweg, aus dem seine Vorschau den Vorzustand nimmt). Eine
+    /// Aktion gehoert zu ihrer Fachlichkeit, nicht zu ihrer Schutzstufe.
     /// </para>
     /// <para>
     /// <b>Keine eigene Fachlogik.</b> Jede Aktion ruft genau die Bestandsmethode, die es
@@ -569,7 +572,13 @@ namespace WindowsFormsApplication1
         /// Abbruch: die eigentliche Aenderung ist zu diesem Zeitpunkt schon geschrieben,
         /// und ein fehlendes Datum darf sie nicht in Zweifel ziehen.
         /// </remarks>
-        private static string AenderungsdatumSetzen(int idProjekt)
+        /// <remarks>
+        /// <b>Seit dem 15.09.2026 <c>internal</c>:</b> Die fuenf nachgezogenen
+        /// Schreibaktionen stehen bei ihren Verwandten (Uebernahme, Wirtschaftlichkeit)
+        /// und brauchen denselben Vermerk. Eine zweite Fassung dort waere genau die
+        /// Stelle, an der die Erkennbarkeit halb verlorenginge.
+        /// </remarks>
+        internal static string AenderungsdatumSetzen(int idProjekt)
         {
             if (idProjekt <= 0) return null;
             try
@@ -622,6 +631,341 @@ namespace WindowsFormsApplication1
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return 0.0;
             try { return Convert.ToDouble(r[spalte], CultureInfo.InvariantCulture); }
             catch { return 0.0; }
+        }
+
+        // =====================================================================
+        // speicherauslegung_uebernehmen  (Fachkonzept 5.2, 15.09.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// Traegt Kapazitaet und Leistung in den Projektdatensatz des Stromspeichers ein.
+        /// Andockpunkt <c>StromspeicherSimCtrl.UebernehmeAuslegung(int, double, double)</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Vorbedingung des Bestands ist scharf, und das mit Grund:</b> Geschrieben
+        /// wird nur, wenn das Projekt GENAU EINE <c>SP_TYP</c>-Anlage fuehrt. Varianten
+        /// desselben Speichers teilen sich eine Geraetekopie in <c>Tab_Stromspeicher</c> -
+        /// ein Schreibzugriff aendert sonst stillschweigend auch die Geschwistervarianten.
+        /// Der Bestand bricht in diesem Fall ab und legt den Grund in
+        /// <c>LetzterHinweis</c>; diese Aktion reicht ihn woertlich weiter, statt ihn zu
+        /// verschlucken.
+        /// </para>
+        /// <para>
+        /// <b>UMKEHRBAR:</b> Vorher- und Nachher-Wert stehen in der Vorschau und im
+        /// Ergebnis; zurueckgeschrieben wird mit demselben Aufruf und den alten Zahlen.
+        /// </para>
+        /// <para>
+        /// <b>Nachgerechnet wird NICHTS.</b> Der Bestand tut es nicht, und diese Aktion
+        /// stoesst es auch nicht an: Wann eine Simulation laeuft, entscheidet der Anwender
+        /// (<c>simulation_rechnen</c>, Stufe 3, eigene Bestaetigung).
+        /// </para>
+        /// </remarks>
+        internal static KiAktion SpeicherauslegungUebernehmen()
+        {
+            return new KiAktion(
+                name: "speicherauslegung_uebernehmen",
+                zweck: KiAktionsTexte.ZweckSpeicherauslegung,
+                titel: KiAktionsTexte.TitelSpeicherauslegung,
+                beispiel: KiAktionsTexte.BeispielSpeicherauslegung,
+                stufe: Schutzstufe.Schreiben,
+                andockpunkt: "StromspeicherSimCtrl.UebernehmeAuslegung",
+                wirkung: KiAktionsTexte.WirkungSpeicherauslegung,
+                umkehrbar: true,
+                parameter: new[]
+                {
+                    KiHilfe.ProjektParameter(pflicht: false),
+                    new KiParameter("kapazitaet_kwh", KiParameterTyp.Zahl,
+                                    KiAktionsTexte.ErlKapazitaet,
+                                    anzeigename: KiAktionsTexte.KapazitaetName,
+                                    min: 0, max: 1000000, einheit: "kWh"),
+                    new KiParameter("leistung_kw", KiParameterTyp.Zahl,
+                                    KiAktionsTexte.ErlLeistung,
+                                    anzeigename: KiAktionsTexte.LeistungName,
+                                    min: 0, max: 1000000, einheit: "kW")
+                },
+                vorbedingung: a =>
+                {
+                    string grund = KiHilfe.ProjektMussAufloesbarSein(a);
+                    if (grund != null) return grund;
+
+                    int id = KiHilfe.ProjektId(a);
+
+                    // GENAU EINE Speicheranlage - dieselbe Bedingung, an der der Bestand
+                    // sonst erst beim Schreiben abbraeche. Hier faellt sie VOR der
+                    // Bestaetigung auf, und der Anwender klickt nichts weg, was ohnehin
+                    // nicht laufen kann.
+                    int anzahl = WErzeugerCtrl.AnlagenJeTyp(id, WizardItemClass.SP_TYP).Count;
+                    if (anzahl == 0)
+                        return string.Format(CultureInfo.CurrentCulture,
+                                             KiAktionsTexte.SpeicherKeineAnlage, KiHilfe.ProjektName(id));
+                    if (anzahl > 1)
+                        return string.Format(CultureInfo.CurrentCulture,
+                                             KiAktionsTexte.SpeicherMehrereAnlagen, anzahl);
+
+                    return KiSchreibschutz.Gesperrt("Tab_Projekt", "ID", id);
+                },
+                vorschau: a =>
+                {
+                    int id = KiHilfe.ProjektId(a);
+                    Auslegung alt = AuslegungLesen(id);
+
+                    var aenderungen = new List<KiFeldAenderung>
+                    {
+                        new KiFeldAenderung(KiAktionsTexte.KapazitaetName,
+                                            Menge(alt.KapazitaetKwh, "kWh"),
+                                            Menge(a.Zahl("kapazitaet_kwh"), "kWh")),
+                        new KiFeldAenderung(KiAktionsTexte.LeistungName,
+                                            Menge(alt.LeistungKw, "kW"),
+                                            Menge(a.Zahl("leistung_kw"), "kW"))
+                    };
+
+                    return KiFeldBlock.Felder(KiHilfe.ProjektName(id), aenderungen);
+                },
+                ausfuehren: a =>
+                {
+                    int id = KiHilfe.ProjektId(a);
+                    double kapazitaet = a.Zahl("kapazitaet_kwh");
+                    double leistung = a.Zahl("leistung_kw");
+
+                    Auslegung alt = AuslegungLesen(id);
+
+                    var ctrl = new StromspeicherSimCtrl();
+                    if (!ctrl.UebernehmeAuslegung(id, kapazitaet, leistung))
+                        return KiErgebnis.Fehlgeschlagen(
+                            string.Format(CultureInfo.CurrentCulture,
+                                          KiAktionsTexte.SpeicherauslegungFehlgeschlagen,
+                                          KiHilfe.Text(ctrl.LetzterHinweis)));
+
+                    string datumsmeldung = AenderungsdatumSetzen(id);
+
+                    var zeilen = KiHilfe.Liste();
+                    zeilen.Add(KiHilfe.Zeile(
+                        "id_projekt", id,
+                        "kapazitaet_vorher_kwh", KiHilfe.Wert(alt.KapazitaetKwh),
+                        "kapazitaet_nachher_kwh", KiHilfe.Wert(kapazitaet),
+                        "leistung_vorher_kw", KiHilfe.Wert(alt.LeistungKw),
+                        "leistung_nachher_kw", KiHilfe.Wert(leistung)));
+
+                    KiErgebnis e = KiErgebnis.Ok(
+                        string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.SpeicherauslegungGesetzt,
+                                      kapazitaet, leistung, KiHilfe.ProjektName(id)),
+                        zeilen, anzahl: 1);
+
+                    var meldungen = new List<string>();
+                    if (!string.IsNullOrWhiteSpace(ctrl.LetzterHinweis)) meldungen.Add(ctrl.LetzterHinweis.Trim());
+                    if (datumsmeldung != null) meldungen.Add(datumsmeldung);
+                    return e.MitMeldungen(meldungen);
+                });
+        }
+
+        /// <summary>Der Auslegungsstand einer Speicheranlage - fuer Vorschau und Rueckweg.</summary>
+        private struct Auslegung
+        {
+            internal double KapazitaetKwh;
+            internal double LeistungKw;
+        }
+
+        /// <summary>
+        /// Kapazitaet und Leistung des Projektspeichers; 0/0, wenn keiner lesbar ist.
+        /// </summary>
+        /// <remarks>
+        /// Gelesen wird ueber <c>Tab_Energieanlagen.ID_SP</c> - genau der Verweis, ueber
+        /// den auch <c>UebernehmeAuslegung</c> schreibt. Ein zweiter Leseweg koennte einen
+        /// anderen Satz treffen als der Schreibweg.
+        /// </remarks>
+        private static Auslegung AuslegungLesen(int idProjekt)
+        {
+            var stand = new Auslegung();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT s.C_Nom, s.P_Lade FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_Stromspeicher AS s ON a.ID_SP = s.ID " +
+                    "WHERE a.ID_Projekt = ? AND a.ID_SP IS NOT NULL",
+                    new DbParam("@p", idProjekt));
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+                    stand.KapazitaetKwh = Gleit(dt.Rows[0], "C_Nom");
+                    stand.LeistungKw = Gleit(dt.Rows[0], "P_Lade");
+                }
+            }
+            catch { }
+            return stand;
+        }
+
+        /// <summary>Ein Zahlwert mit Einheit fuer den Bestaetigungsblock.</summary>
+        private static string Menge(double wert, string einheit)
+        {
+            return wert.ToString("0.###", CultureInfo.CurrentCulture) + " " + einheit;
+        }
+
+        // =====================================================================
+        // speichervariante_anlegen  (Fachkonzept 5.2, 15.09.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// Legt die Betriebsvariante einer Speicheranlage an. Andockpunkt
+        /// <c>StromspeicherVarianteCtrl.Insert(StromspeicherVarianteModel)</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>IDEMPOTENT - und die Bestaetigung sagt das.</b> Fuehrt die Anlage bereits
+        /// eine Variante, liefert <c>Insert</c> deren Id zurueck und schreibt NICHTS. Das
+        /// ist keine Fehlerbehandlung, sondern die Zusage des Bestands; die Vorbedingung
+        /// faengt den Fall trotzdem vorher ab, damit niemand eine Bestaetigung fuer eine
+        /// Aenderung wegklickt, die gar nicht stattfindet.
+        /// </para>
+        /// <para>
+        /// <b>Vier Werte, sonst Vorgaben.</b> Das Modell setzt Betriebsart und SoC-Band;
+        /// alles Weitere kommt aus den Vorgaben des Modells
+        /// (<c>StromspeicherVarianteModel</c>). Die Betriebsart ist eine AUFZAEHLUNG aus
+        /// <see cref="DbWerte"/> - ein freier Text landete sonst als Persistenzwert in
+        /// der Tabelle.
+        /// </para>
+        /// <para>
+        /// NICHT umkehrbar: <c>StromspeicherVarianteCtrl.Delete</c> steht ausdruecklich
+        /// nicht im Register (Fachkonzept 5.4).
+        /// </para>
+        /// </remarks>
+        internal static KiAktion SpeichervarianteAnlegen()
+        {
+            return new KiAktion(
+                name: "speichervariante_anlegen",
+                zweck: KiAktionsTexte.ZweckSpeichervarianteAnlegen,
+                titel: KiAktionsTexte.TitelSpeichervarianteAnlegen,
+                beispiel: KiAktionsTexte.BeispielSpeichervarianteAnlegen,
+                stufe: Schutzstufe.Schreiben,
+                andockpunkt: "StromspeicherVarianteCtrl.Insert",
+                wirkung: KiAktionsTexte.WirkungSpeichervarianteAnlegen,
+                umkehrbar: false,
+                parameter: new[]
+                {
+                    KiHilfe.ProjektParameter(pflicht: false),
+                    new KiParameter("speicheranlage", KiParameterTyp.Text,
+                                    KiAktionsTexte.ErlSpeicheranlage, pflicht: false,
+                                    anzeigename: KiAktionsTexte.SpeicheranlageName, maxLaenge: 120),
+                    new KiParameter("betriebsart", KiParameterTyp.Aufzaehlung,
+                                    KiAktionsTexte.ErlBetriebsart, pflicht: false,
+                                    anzeigename: KiAktionsTexte.BetriebsartName,
+                                    werte: new[] { DbWerte.SP_BETRIEBSART_GRUENSTROM,
+                                                   DbWerte.SP_BETRIEBSART_GRAUSTROM }),
+                    new KiParameter("soc_min_prozent", KiParameterTyp.Zahl,
+                                    KiAktionsTexte.ErlSocMin, pflicht: false,
+                                    anzeigename: KiAktionsTexte.SocMinName, min: 0, max: 100, einheit: "%"),
+                    new KiParameter("soc_max_prozent", KiParameterTyp.Zahl,
+                                    KiAktionsTexte.ErlSocMax, pflicht: false,
+                                    anzeigename: KiAktionsTexte.SocMaxName, min: 0, max: 100, einheit: "%")
+                },
+                vorbedingung: a =>
+                {
+                    string grund = KiHilfe.ProjektMussAufloesbarSein(a);
+                    if (grund != null) return grund;
+
+                    KiHilfe.Auswahl w = SpeicheranlageWaehlen(a);
+                    if (w.Fehler != null) return w.Fehler;
+
+                    if (new StromspeicherVarianteCtrl().ReadByEnergieanlage(w.Id) != null)
+                        return string.Format(CultureInfo.CurrentCulture,
+                                             KiAktionsTexte.SpeichervarianteSchonDa, w.Name);
+
+                    double min = a.Zahl("soc_min_prozent", StromspeicherVarianteModel.SOC_MIN_VORGABE);
+                    double max = a.Zahl("soc_max_prozent", StromspeicherVarianteModel.SOC_MAX_VORGABE);
+                    if (min >= max)
+                        return string.Format(CultureInfo.CurrentCulture,
+                                             KiAktionsTexte.SocBandVerdreht, min, max);
+
+                    return KiSchreibschutz.Gesperrt("Tab_Projekt", "ID", KiHilfe.ProjektId(a));
+                },
+                vorschau: a =>
+                {
+                    KiHilfe.Auswahl w = SpeicheranlageWaehlen(a);
+
+                    return string.Format(CultureInfo.CurrentCulture,
+                        KiAktionsTexte.VorschauSpeichervarianteAnlegen,
+                        w.Name, w.Id,
+                        KiHilfe.ProjektName(KiHilfe.ProjektId(a)),
+                        Betriebsart(a),
+                        a.Zahl("soc_min_prozent", StromspeicherVarianteModel.SOC_MIN_VORGABE),
+                        a.Zahl("soc_max_prozent", StromspeicherVarianteModel.SOC_MAX_VORGABE));
+                },
+                ausfuehren: a =>
+                {
+                    int idProjekt = KiHilfe.ProjektId(a);
+                    KiHilfe.Auswahl w = SpeicheranlageWaehlen(a);
+                    if (w.Fehler != null) return KiErgebnis.Abgelehnt(w.Fehler);
+
+                    var m = new StromspeicherVarianteModel
+                    {
+                        ID_Energieanlage = w.Id,
+                        Betriebsart = Betriebsart(a),
+                        SoC_Min_Prozent = a.Zahl("soc_min_prozent",
+                                                 StromspeicherVarianteModel.SOC_MIN_VORGABE),
+                        SoC_Max_Prozent = a.Zahl("soc_max_prozent",
+                                                 StromspeicherVarianteModel.SOC_MAX_VORGABE)
+                    };
+
+                    int neueId = new StromspeicherVarianteCtrl().Insert(m);
+                    if (neueId <= 0)
+                        return KiErgebnis.Fehlgeschlagen(
+                            string.Format(CultureInfo.CurrentCulture,
+                                          KiAktionsTexte.SpeichervarianteAnlegenFehlgeschlagen, w.Name));
+
+                    string datumsmeldung = AenderungsdatumSetzen(idProjekt);
+
+                    var zeilen = KiHilfe.Liste();
+                    zeilen.Add(KiHilfe.Zeile(
+                        "id_projekt", idProjekt,
+                        "id_variante", neueId,
+                        "id_energieanlage", w.Id,
+                        "anlage", KiHilfe.Text(w.Name),
+                        "betriebsart", m.Betriebsart,
+                        "soc_min_prozent", KiHilfe.Wert(m.SoC_Min_Prozent),
+                        "soc_max_prozent", KiHilfe.Wert(m.SoC_Max_Prozent)));
+
+                    KiErgebnis e = KiErgebnis.Ok(
+                        string.Format(CultureInfo.CurrentCulture,
+                                      KiAktionsTexte.SpeichervarianteAngelegt, neueId, w.Name),
+                        zeilen, anzahl: 1);
+
+                    if (datumsmeldung != null) e.MitMeldungen(new[] { datumsmeldung });
+                    return e;
+                });
+        }
+
+        /// <summary>Die Betriebsart des Aufrufs oder die Vorgabe des Modells.</summary>
+        private static string Betriebsart(KiAufruf a)
+        {
+            string genannt = (a.Text("betriebsart") ?? "").Trim();
+            return genannt.Length > 0 ? genannt : DbWerte.SP_BETRIEBSART_GRUENSTROM;
+        }
+
+        /// <summary>
+        /// Die gemeinte SPEICHERANLAGE des Projekts - genannt oder, bei genau einer, die
+        /// eine.
+        /// </summary>
+        /// <remarks>
+        /// <b>Gewaehlt wird ueber den Bezeichner</b>, wie ueberall im Register: Der
+        /// Anwender kennt den Namen seiner Anlage, die Datensatznummer sieht er nirgends.
+        /// Fuehrt das Projekt genau eine Speicheranlage, darf der Name ganz entfallen -
+        /// dann gibt es nichts auszuwaehlen.
+        /// </remarks>
+        private static KiHilfe.Auswahl SpeicheranlageWaehlen(KiAufruf a)
+        {
+            int idProjekt = KiHilfe.ProjektId(a);
+            List<WErzeugerCtrl.AnlagenZeile> anlagen =
+                WErzeugerCtrl.AnlagenJeTyp(idProjekt, WizardItemClass.SP_TYP);
+
+            var kandidaten = new List<KiHilfe.Kandidat>();
+            foreach (WErzeugerCtrl.AnlagenZeile z in anlagen)
+                kandidaten.Add(new KiHilfe.Kandidat(z.Id, z.Bezeichner, ""));
+
+            string genannt = (a.Text("speicheranlage") ?? "").Trim();
+            if (genannt.Length == 0 && kandidaten.Count == 1)
+                return new KiHilfe.Auswahl { Id = kandidaten[0].Id, Name = kandidaten[0].Name };
+
+            return KiHilfe.Waehle(genannt, kandidaten, KiAktionsTexte.SpeicheranlageName);
         }
     }
 }

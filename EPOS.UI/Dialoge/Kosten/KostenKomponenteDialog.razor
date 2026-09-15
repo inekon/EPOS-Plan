@@ -34,6 +34,8 @@
 @namespace EPOS.UI.Dialoge.Kosten
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Wirtschaftlichkeit
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -473,12 +475,77 @@
         || _variantenGaben is not null || _uebernahmeGaben is not null
         || _katalogGaben is not null || _gesetzeGaben is not null || _frage.Length > 0;
 
+    // =====================================================================
+    // Der Hilfe-Assistent (Anwenderbefund vom 14.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Anmeldung beim Hilfe-Assistenten — sie macht die Maske lesbar UND setzbar.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Die erste Maske des Katalogs mit einem RASTER.</b> Ihre Werte stehen
+    /// nicht in Einzelfeldern, sondern in <c>_stand.Zeilen</c>; der Katalog beschreibt
+    /// sie deshalb als SPALTEN (<c>KostenKomponenteStand.Zeilen[].Nutzungsdauer</c>),
+    /// und die Anmeldung löst daraus je vorhandener Zeile ein Feld auf. Die Zeilen
+    /// werden bei jedem Zugriff frisch geholt — der Anwender legt Positionen an und
+    /// löscht sie, während der Dialog steht.</para>
+    /// <para><b>Ohne diese drei Zeilen antwortete der Assistent daneben.</b> Gefragt
+    /// war „wie ist die Nutzungsdauer in diesem Projekt?", in der Maske stand überall
+    /// 15 — geantwortet wurde „standardmäßig 20 Jahre" aus einem Hilfeabschnitt, weil
+    /// es keinen Weg an die tatsächlichen Werte gab.</para>
+    /// <para><b>Angemeldet heißt nicht übertragen.</b> Die Brücke hält nur den Zugang;
+    /// ob ein Feldwert hinausgeht, entscheiden der Schalter „Feldwerte mitsenden" im
+    /// Chat und die Einwilligungsstufe „Dialogdaten" (Anwenderentscheid KI‑D‑Q2).</para>
+    /// </remarks>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: zeichnen nach dem Setzen, der
+    /// Schreibschutz der Auslieferungsvorlage und der Speicherweg der Maske.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Speicherweg ist DERSELBE, den „Speichern" ruft</b> — samt der Prüfung,
+    /// die darin steckt. Der Assistent ersetzt sie nicht, er löst sie aus; sein
+    /// <c>dialog_speichern</c> trägt dafür Bestätigung UND Sicherungspunkt
+    /// (Anwenderentscheid KI‑D‑Q4).
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _stand.NurLesen,
+        Speichern = KiSpeichern
+    };
+
+    /// <summary>Der Speicherweg für <c>dialog_speichern</c> — derselbe wie „Speichern".</summary>
+    private Task<KiKern.KiErgebnis> KiSpeichern()
+    {
+        if (Speichern is null)
+            return Task.FromResult(KiKern.KiErgebnis.Abgelehnt(
+                Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", _stand.Titel)));
+
+        if (_stand.NurLesen)
+            return Task.FromResult(KiKern.KiErgebnis.Abgelehnt(Resource.KI_DLG_KV_NURLESEN_ERL));
+
+        if (!Speichern())
+            return Task.FromResult(KiKern.KiErgebnis.Fehlgeschlagen(_status));
+
+        // Nach dem Schreiben denselben Weg wie der Knopf: neu laden, Statuszeile setzen.
+        KontextLaden(_stand.VarianteId);
+        _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
+
+        return Task.FromResult(KiKern.KiErgebnis.Ok(_status, anzahl: 1));
+    }
+
     protected override void OnInitialized()
     {
         _eintragId = EintragVorwahl ?? (Eintraege.Count > 0 ? Eintraege[0].Id : null);
         _invest = InvestVorwahl;
         KontextLaden(null);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KOSTENVERWALTUNG, () => _stand, KiHaken());
     }
+
+    /// <summary>Meldet die Maske beim Assistenten wieder ab.</summary>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

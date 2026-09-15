@@ -259,5 +259,220 @@ namespace WindowsFormsApplication1
             }
             catch { return 0; }
         }
+
+        // =====================================================================
+        // wirtschaftlichkeit_parameter_setzen  (Fachkonzept 5.2, 15.09.2026)
+        // =====================================================================
+
+        /// <summary>
+        /// Aendert einzelne Parameter der Wirtschaftlichkeitsrechnung. Andockpunkt
+        /// <c>WirtschaftlichkeitCtrl.LadeParameter</c> + <c>SpeichereParameter</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>TEILAENDERUNG, kein Parametersatz.</b> Der Bestand speichert immer den
+        /// GANZEN Satz; diese Aktion laedt ihn deshalb, ueberschreibt nur die genannten
+        /// Felder und speichert ihn zurueck. Ein Aufruf mit drei Werten laesst die uebrigen
+        /// acht nachweislich unberuehrt - haette die Aktion dagegen einen vollstaendigen
+        /// Satz verlangt, muesste das Modell die anderen acht MITLIEFERN, und jeder
+        /// vergessene Wert waere eine stille Nullsetzung.
+        /// </para>
+        /// <para>
+        /// <b>Sieben Felder, nicht elf.</b> Aufgenommen ist, wonach im Gespraech gefragt
+        /// wird. <c>id_kraftwerkspark</c> und <c>nicht_monetaere_wirkungen</c> bleiben
+        /// aussen vor (ein Verweis in eine Katalogliste bzw. ein Freitext), ebenso der
+        /// Tarifsatz - der haengt an <c>SpeichereTarif</c> und damit an einer zweiten
+        /// Schreibmethode; er bekaeme eine eigene Aktion mit eigener Vorschau.
+        /// </para>
+        /// <para>
+        /// <b>UMKEHRBAR:</b> Der Vorzustand jedes geaenderten Feldes steht in der
+        /// Vorschau und im Ergebnis - Zurueckschreiben ist derselbe Aufruf mit den alten
+        /// Zahlen, mit eigener Bestaetigung.
+        /// </para>
+        /// <para>
+        /// <b>Nur am STAMMPROJEKT.</b> Der Parametersatz haengt an <c>IdStamm</c>; an
+        /// einer Variante gaebe es ihn gar nicht, und <c>SpeichereParameter</c> legte
+        /// stillschweigend einen zweiten an.
+        /// </para>
+        /// </remarks>
+        internal static KiAktion ParameterSetzen()
+        {
+            return new KiAktion(
+                name: "wirtschaftlichkeit_parameter_setzen",
+                zweck: KiAktionsTexte.ZweckParameterSetzen,
+                titel: KiAktionsTexte.TitelParameterSetzen,
+                beispiel: KiAktionsTexte.BeispielParameterSetzen,
+                stufe: Schutzstufe.Schreiben,
+                andockpunkt: "WirtschaftlichkeitCtrl.SpeichereParameter",
+                wirkung: KiAktionsTexte.WirkungParameterSetzen,
+                umkehrbar: true,
+                parameter: Parameterfelder(),
+                vorbedingung: a =>
+                {
+                    string grund = KiHilfe.ProjektMussAufloesbarSein(a);
+                    if (grund != null) return grund;
+
+                    int id = KiHilfe.ProjektId(a);
+
+                    int stammRef = new VariantenCtrl().StammRefDerVariante(id);
+                    if (stammRef > 0)
+                        return string.Format(CultureInfo.CurrentCulture,
+                                             KiAktionsTexte.ParameterNurAmStamm, id, stammRef);
+
+                    if (Genannte(a).Count == 0) return KiAktionsTexte.ParameterOhneAngabe;
+
+                    return KiSchreibschutz.Gesperrt("Tab_Projekt", "ID", id);
+                },
+                vorschau: a =>
+                {
+                    int id = KiHilfe.ProjektId(a);
+                    WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(id);
+
+                    var aenderungen = new List<KiFeldAenderung>();
+                    foreach (Feld f in Genannte(a))
+                        aenderungen.Add(new KiFeldAenderung(
+                            f.Anzeigename,
+                            Zahltext(f.Lesen(p), f.Einheit),
+                            Zahltext(a.Zahl(f.Name), f.Einheit)));
+
+                    return KiFeldBlock.Felder(KiHilfe.ProjektName(id), aenderungen);
+                },
+                ausfuehren: a =>
+                {
+                    int id = KiHilfe.ProjektId(a);
+                    var ctrl = new WirtschaftlichkeitCtrl();
+
+                    // ERST laden, DANN ueberschreiben: Alles, was der Aufruf nicht nennt,
+                    // geht unveraendert wieder hinaus.
+                    WirtschaftlichkeitParameter p = ctrl.LadeParameter(id);
+
+                    var zeilen = KiHilfe.Liste();
+                    foreach (Feld f in Genannte(a))
+                    {
+                        double vorher = f.Lesen(p);
+                        double neu = a.Zahl(f.Name);
+                        f.Setzen(p, neu);
+
+                        zeilen.Add(KiHilfe.Zeile(
+                            "id_projekt", id,
+                            "feld", f.Name,
+                            "anzeigename", KiHilfe.Text(f.Anzeigename),
+                            "einheit", KiHilfe.Text(f.Einheit),
+                            "wert_vorher", KiHilfe.Wert(vorher),
+                            "wert_nachher", KiHilfe.Wert(neu)));
+                    }
+
+                    if (!ctrl.SpeichereParameter(p))
+                        return KiErgebnis.Fehlgeschlagen(
+                            string.Format(CultureInfo.CurrentCulture,
+                                          KiAktionsTexte.ParameterFehlgeschlagen, id));
+
+                    string datumsmeldung = KiAktionenSchreiben.AenderungsdatumSetzen(id);
+
+                    KiErgebnis e = KiErgebnis.Ok(
+                        string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.ParameterGesetzt,
+                                      zeilen.Count, KiHilfe.ProjektName(id)),
+                        zeilen, anzahl: zeilen.Count);
+
+                    if (datumsmeldung != null) e.MitMeldungen(new[] { datumsmeldung });
+                    return e;
+                });
+        }
+
+        /// <summary>
+        /// EIN aenderbares Parameterfeld: Name fuer das Modell, Klartext fuer die
+        /// Bestaetigung und die zwei Zugriffe auf den Parametersatz.
+        /// </summary>
+        /// <remarks>
+        /// Eine Deklaration, vier Verwendungen - Werkzeugkatalog, Vorbedingung, Vorschau
+        /// und Lauf lesen alle aus dieser Tabelle. Eine zweite Liste („welche Felder gibt
+        /// es") waere genau die, die man beim Nachtragen vergisst.
+        /// </remarks>
+        private sealed class Feld
+        {
+            internal string Name;
+            internal string Anzeigename;
+            internal string Erlaeuterung;
+            internal string Einheit;
+            internal double Min;
+            internal double Max;
+            internal Func<WirtschaftlichkeitParameter, double> Lesen;
+            internal Action<WirtschaftlichkeitParameter, double> Setzen;
+        }
+
+        /// <summary>Die sieben aenderbaren Felder - die EINE Tabelle.</summary>
+        private static readonly Feld[] FELDER =
+        {
+            new Feld { Name = "zinssatz_prozent", Anzeigename = KiAktionsTexte.FeldZinssatz,
+                       Erlaeuterung = KiAktionsTexte.ErlZinssatz,
+                       Einheit = "%", Min = 0, Max = 100,
+                       Lesen = p => p.Zinssatz, Setzen = (p, w) => p.Zinssatz = w },
+
+            new Feld { Name = "betrachtungszeitraum_a", Anzeigename = KiAktionsTexte.FeldZeitraum,
+                       Erlaeuterung = KiAktionsTexte.ErlZeitraum,
+                       Einheit = "a", Min = 1, Max = 100,
+                       Lesen = p => p.Betrachtungszeitraum,
+                       Setzen = (p, w) => p.Betrachtungszeitraum = (int)Math.Round(w) },
+
+            new Feld { Name = "preissteigerung_energie_prozent", Anzeigename = KiAktionsTexte.FeldPreisEnergie,
+                       Erlaeuterung = KiAktionsTexte.ErlPreisEnergie,
+                       Einheit = "%/a", Min = -50, Max = 100,
+                       Lesen = p => p.PreissteigerungEnergie,
+                       Setzen = (p, w) => p.PreissteigerungEnergie = w },
+
+            new Feld { Name = "preissteigerung_betrieb_prozent", Anzeigename = KiAktionsTexte.FeldPreisBetrieb,
+                       Erlaeuterung = KiAktionsTexte.ErlPreisBetrieb,
+                       Einheit = "%/a", Min = -50, Max = 100,
+                       Lesen = p => p.PreissteigerungBetrieb,
+                       Setzen = (p, w) => p.PreissteigerungBetrieb = w },
+
+            // p_I: gemeldet wird der WIRKSAME Wert (leer heisst „wie p_B", nicht 0 %/a) -
+            // dieselbe Regel wie im Leseweg. Gesetzt wird er danach ausdruecklich.
+            new Feld { Name = "preissteigerung_investition_prozent", Anzeigename = KiAktionsTexte.FeldPreisInvest,
+                       Erlaeuterung = KiAktionsTexte.ErlPreisInvest,
+                       Einheit = "%/a", Min = -50, Max = 100,
+                       Lesen = p => p.PreisInvestWirksam,
+                       Setzen = (p, w) => p.PreissteigerungInvestition = w },
+
+            new Feld { Name = "einspeiseverguetung_eur_kwh", Anzeigename = KiAktionsTexte.FeldEinspeisung,
+                       Erlaeuterung = KiAktionsTexte.ErlEinspeisung,
+                       Einheit = "€/kWh", Min = 0, Max = 10,
+                       Lesen = p => p.Einspeiseverguetung,
+                       Setzen = (p, w) => p.Einspeiseverguetung = w },
+
+            new Feld { Name = "co2_preis_eur_t", Anzeigename = KiAktionsTexte.FeldCo2Preis,
+                       Erlaeuterung = KiAktionsTexte.ErlCo2Preis,
+                       Einheit = "€/t", Min = 0, Max = 10000,
+                       Lesen = p => p.CO2Preis, Setzen = (p, w) => p.CO2Preis = w }
+        };
+
+        /// <summary>Projektparameter plus die sieben Felder - alle Felder FREIWILLIG.</summary>
+        private static KiParameter[] Parameterfelder()
+        {
+            var liste = new List<KiParameter> { KiHilfe.ProjektParameter(pflicht: false) };
+
+            foreach (Feld f in FELDER)
+                liste.Add(new KiParameter(f.Name, KiParameterTyp.Zahl, f.Erlaeuterung,
+                                          pflicht: false, anzeigename: f.Anzeigename,
+                                          min: f.Min, max: f.Max, einheit: f.Einheit));
+
+            return liste.ToArray();
+        }
+
+        /// <summary>Die Felder, die dieser Aufruf tatsaechlich nennt.</summary>
+        private static List<Feld> Genannte(KiAufruf a)
+        {
+            var liste = new List<Feld>();
+            foreach (Feld f in FELDER)
+                if (a.Hat(f.Name)) liste.Add(f);
+            return liste;
+        }
+
+        /// <summary>Ein Zahlwert mit Einheit fuer den Bestaetigungsblock.</summary>
+        private static string Zahltext(double wert, string einheit)
+        {
+            string zahl = wert.ToString("0.####", CultureInfo.CurrentCulture);
+            return string.IsNullOrEmpty(einheit) ? zahl : zahl + " " + einheit;
+        }
     }
 }

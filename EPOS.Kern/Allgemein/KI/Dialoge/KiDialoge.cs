@@ -47,6 +47,21 @@ namespace WindowsFormsApplication1
         /// Maske und die zweite ohne <c>Form_</c>-Vorsilbe.
         /// </summary>
         public const string SIMULATION = "Simulation";
+
+        /// <summary>
+        /// Die Kostenverwaltung einer Komponente (<c>KostenKomponenteDialog</c>) — die
+        /// SIEBTE Maske und die erste mit einem RASTER (Anwenderbefund vom 14.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// Sie ist der Anlass fuer die Spaltenform des Eigenschaftspfades
+        /// (<see cref="KiEigenschaftspfad.Sammlungszeichen"/>): Ihre Werte stehen nicht
+        /// in Einzelfeldern, sondern in einer Liste von Positionen. Mit den bisherigen
+        /// zwei Pfadstufen liess sich davon kein Wert benennen - der Assistent
+        /// antwortete deshalb auf „wie ist die Nutzungsdauer in diesem Projekt?" mit
+        /// einem VORGABEWERT aus der Dokumentation, waehrend in der offenen Maske
+        /// etwas anderes stand.
+        /// </remarks>
+        public const string KOSTENVERWALTUNG = "Kostenverwaltung";
     }
 
     /// <summary>
@@ -135,8 +150,95 @@ namespace WindowsFormsApplication1
                 Pufferspeicher(),
                 Waermepumpe(),
                 Stromspeicherauslegung(),
-                Simulation());
+                Simulation(),
+                Kostenverwaltung());
         }
+
+        // =====================================================================
+        // Kostenverwaltung  ->  KostenKomponenteDialog
+        // =====================================================================
+
+        /// <summary>
+        /// Kostenverwaltung einer Komponente — die erste Maske des Katalogs, die mit
+        /// SPALTEN arbeitet (Anwenderbefund vom 14.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Drei Kopffelder und vier Spalten.</b> Die Kopffelder sagen, WORAN der
+        /// Anwender gerade arbeitet (Komponente, Projekt, Art der Vorlage); sie sind
+        /// samt und sonders <c>nurLesen</c> - die Huelle fuellt sie, der Anwender
+        /// aendert sie nicht. Die Spalten sind das Raster: je Position eine Zeile, und
+        /// aus jeder Spaltendeklaration wird je vorhandener Zeile ein gewoehnliches
+        /// Feld (<c>nutzungsdauer_1</c>, <c>nutzungsdauer_2</c>, …).
+        /// </para>
+        /// <para>
+        /// <b>Der Betrag ist Anzeige, kein Eingabefeld.</b> Er faellt aus Satz und
+        /// Bemessung und traegt im Daten-Objekt nur deshalb einen Setzer, weil die
+        /// Huelle ihn fuellt. Ohne <c>nurLesen</c> boete der Assistent an, ihn zu
+        /// setzen - und die naechste Neuberechnung ueberschriebe es wortlos.
+        /// </para>
+        /// <para>
+        /// <b>Die Bemessung fehlt mit Absicht.</b> Sie ist ein Verweis in eine
+        /// kontextabhaengige Liste (<c>KostenKomponenteStand.Bemessungen</c>); sie ueber
+        /// ihre rohe Id setzen zu lassen hiesse, das Modell eine Zahl raten zu lassen,
+        /// deren Bedeutung nur die Maske kennt. Sie kommt in den Katalog, sobald es
+        /// dafuer eine benannte Auswahl gibt - dieselbe Regel wie ueberall:
+        /// Aufzaehlungswerte stammen aus dem Bestand, nie aus Modelltext.
+        /// </para>
+        /// <para>
+        /// <b>Keine Knoepfe.</b> „Speichern" und „OK" sind datenbankwirksam und laufen
+        /// deshalb ueber <c>dialog_speichern</c> mit Bestaetigung UND Sicherungspunkt
+        /// (Anwenderentscheid KI-D-Q4) - nicht als Formularaktion.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Kostenverwaltung()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KOSTENVERWALTUNG,
+                anzeigename: KiDialogTexte.MaskeKostenverwaltung,
+                felder: new[]
+                {
+                    // ---- Woran der Anwender gerade arbeitet -------------------------
+                    new KiDialogFeld("komponente", "KostenKomponenteStand.Titel",
+                                     KiDialogTexte.KvTitelName, KiParameterTyp.Text,
+                                     KiDialogTexte.KvTitelErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("bezug", "KostenKomponenteStand.Untertitel",
+                                     KiDialogTexte.KvUntertitelName, KiParameterTyp.Text,
+                                     KiDialogTexte.KvUntertitelErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("auslieferungsvorlage", "KostenKomponenteStand.NurLesen",
+                                     KiDialogTexte.KvNurLesenName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.KvNurLesenErl,
+                                     nurLesen: true),
+
+                    // ---- Das Raster: je Position eine Zeile --------------------------
+                    new KiDialogFeld("position", "KostenKomponenteStand.Zeilen[].Bezeichnung",
+                                     KiDialogTexte.KvPositionName, KiParameterTyp.Text,
+                                     KiDialogTexte.KvPositionErl,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN),
+                    new KiDialogFeld("satz", "KostenKomponenteStand.Zeilen[].Satz",
+                                     KiDialogTexte.KvSatzName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KvSatzErl,
+                                     leerErlaubt: true, zeilenkennzeichen: ZEILENKENNZEICHEN),
+                    new KiDialogFeld("nutzungsdauer", "KostenKomponenteStand.Zeilen[].Nutzungsdauer",
+                                     KiDialogTexte.KvNutzungsdauerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KvNutzungsdauerErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN),
+                    new KiDialogFeld("betrag", "KostenKomponenteStand.Zeilen[].BetragText",
+                                     KiDialogTexte.KvBetragName, KiParameterTyp.Text,
+                                     KiDialogTexte.KvBetragErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN, nurLesen: true)
+                });
+        }
+
+        /// <summary>
+        /// Die Eigenschaft, aus der eine Rasterzeile ihren Klartextnamen bekommt -
+        /// „Nutzungsdauer (Zubehoer)" statt „Nutzungsdauer 2".
+        /// </summary>
+        private const string ZEILENKENNZEICHEN = "Bezeichnung";
 
         // =====================================================================
         // Form_Heizkessel_Bearbeiten  ->  HeizkesselKatalogDialog

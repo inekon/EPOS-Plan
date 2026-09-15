@@ -28,7 +28,7 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// </summary>
 public class KiDialogkatalogTests
 {
-    /// <summary>Die sechs Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
+    /// <summary>Die sieben Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
     public static TheoryData<string, Type> Masken() => new()
     {
         { KiMaskennamen.HEIZKESSEL,              typeof(HeizkesselKatalogDaten) },
@@ -41,7 +41,13 @@ public class KiDialogkatalogTests
         // Voll ausgeschrieben: EPOS.UI.Seiten.Simulation fuehrt eine ZWEITE
         // ErzeugerZeile, und ein using darauf machte die Zeile darueber mehrdeutig.
         { KiMaskennamen.SIMULATION,
-          typeof(EPOS.UI.Seiten.Simulation.SimulationKiSicht) }
+          typeof(EPOS.UI.Seiten.Simulation.SimulationKiSicht) },
+
+        // 14.09.2026: die siebte Maske — und die erste mit einem RASTER. Ihre Felder
+        // sind zum Teil SPALTEN (KostenKomponenteStand.Zeilen[].Nutzungsdauer); der
+        // Waechter unten loest sie ueber KiMaskenanmeldung.Pruefe mit auf.
+        { KiMaskennamen.KOSTENVERWALTUNG,
+          typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteStand) }
     };
 
     // =====================================================================
@@ -86,11 +92,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_sechs_Masken()
+    public void Der_Katalog_fuehrt_sieben_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(6, katalog.Anzahl);
+        Assert.Equal(7, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }

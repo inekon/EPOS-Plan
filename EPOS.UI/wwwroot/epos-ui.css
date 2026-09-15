@@ -4460,6 +4460,21 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 .epos-verlauf-zeile--fehler        { color: var(--epos-verlauf-fehler); }
 .epos-verlauf-zeile--bestaetigung  { color: var(--epos-verlauf-bestaetigung); font-weight: 600; }
 
+/* Die Ergebnistabelle einer Aktion. Der Kern richtet die Spalten mit
+   Leerzeichen aus; das traegt nur mit fester Zeichenbreite UND mit
+   `white-space: pre` - das sonst geltende `pre-line` zoege jede Spaltenluecke
+   auf ein Leerzeichen zusammen. Eine zu breite Tabelle bekommt ihren eigenen
+   Schieber, damit sie den Verlauf nicht auseinanderzieht. */
+.epos-verlauf-zeile--datenzeile {
+    color: var(--epos-verlauf-leise);
+    font-family: var(--epos-schrift-fest, ui-monospace, "Cascadia Mono", Consolas, monospace);
+    font-size: 0.92em;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+    margin: 0;
+}
+
 /* Der Absatztrenner traegt keinen Text und braucht trotzdem Hoehe. */
 .epos-verlauf-zeile--leerzeile {
     min-height: 0.6em;

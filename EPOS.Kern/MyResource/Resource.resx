@@ -7128,6 +7128,45 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="KI_REG_ZWECK_KOSTENLAGE_PRUEFEN" xml:space="preserve">
     <value>Vergleicht die erfasste Investitionsposition einer Komponente mit den Technik-Planwerten.</value>
   </data>
+  <data name="KI_REG_ZWECK_ANLAGEN_AUFLISTEN" xml:space="preserve">
+    <value>Listet die im Projekt verbauten Anlagen auf — je Gerät Komponente, Gerätebezeichnung und Technik-Planwert. Ohne Komponente über alle Gewerke.</value>
+  </data>
+  <data name="KI_REG_TITEL_ANLAGEN_AUFLISTEN" xml:space="preserve">
+    <value>Anlagen auflisten</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_ANLAGEN_AUFLISTEN" xml:space="preserve">
+    <value>Liste alle Heizkessel im Projekt auf. / Welche Anlagen sind verbaut?</value>
+  </data>
+  <data name="KI_REG_ANLAGEN_GEFUNDEN" xml:space="preserve">
+    <value>{0} verbaute Anlage(n) gefunden.</value>
+  </data>
+  <data name="KI_REG_ZWECK_KOSTENPOS_AUFLISTEN" xml:space="preserve">
+    <value>Listet die erfassten Kostenpositionen des Projekts auf — je Position ihre id_position, Bezeichnung, Bemessung, Betrag und Nutzungsdauer. Die id_position ist der Wert, mit dem kostenposition_setzen arbeitet.</value>
+  </data>
+  <data name="KI_REG_TITEL_KOSTENPOS_AUFLISTEN" xml:space="preserve">
+    <value>Kostenpositionen auflisten</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_KOSTENPOS_AUFLISTEN" xml:space="preserve">
+    <value>Liste alle Kostenpositionen auf. / Was kostet der Stromspeicher?</value>
+  </data>
+  <data name="KI_REG_KOSTENPOS_GEFUNDEN" xml:space="preserve">
+    <value>{0} Kostenposition(en), Summe {1:N2} €.</value>
+  </data>
+  <data name="KI_REG_ERL_KOMPONENTE_OPTIONAL" xml:space="preserve">
+    <value>Gewerk, auf das eingeschränkt werden soll. Ohne Angabe gelten alle Gewerke.</value>
+  </data>
+  <data name="KI_REG_ERL_KOSTENKATEGORIE" xml:space="preserve">
+    <value>Investition oder Betrieb. Ohne Angabe gilt die Investition.</value>
+  </data>
+  <data name="KI_REG_ERL_MIT_VARIANTEN" xml:space="preserve">
+    <value>Auch die Varianten des Projekts einbeziehen (bzw. bei einer Variante die ganze Gruppe samt Stammprojekt). Ohne Angabe nur das genannte Projekt.</value>
+  </data>
+  <data name="KI_REG_MIT_VARIANTEN_NAME" xml:space="preserve">
+    <value>Mit Varianten</value>
+  </data>
+  <data name="KI_REG_KOSTENKATEGORIE_NAME" xml:space="preserve">
+    <value>Kostenart</value>
+  </data>
   <data name="KI_REG_ZWECK_UEBERNAHME_VORSCHAU" xml:space="preserve">
     <value>Zeigt, was die Übernahme eines Gewerks von einem Projekt in ein anderes ändern würde. Schreibt nichts.</value>
   </data>
@@ -7406,6 +7445,15 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   </data>
   <data name="KI_AKT_ERGEBNISZEILEN" xml:space="preserve">
     <value>Ergebniszeilen: {0}</value>
+  </data>
+  <data name="KI_AKT_WEITERE_ZEILEN" xml:space="preserve">
+    <value>… und {0} weitere Zeilen</value>
+  </data>
+  <data name="KI_AKT_WERT_JA" xml:space="preserve">
+    <value>ja</value>
+  </data>
+  <data name="KI_AKT_WERT_NEIN" xml:space="preserve">
+    <value>nein</value>
   </data>
   <data name="KI_AKT_AKTION_WAEHLEN" xml:space="preserve">
     <value>Bitte zuerst eine Aktion wählen.</value>
@@ -8709,12 +8757,6 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
   </data>
   <data name="KI_REG_WIRKUNG_DIALOG_AKTION" xml:space="preserve">
     <value>Die Maske führt ihre eigene Prüfung aus und verarbeitet die Eingaben - wie bei einem Klick von Hand.</value>
-  </data>
-  <data name="KI_KERN_FELDSICHERUNG_AUS" xml:space="preserve">
-    <value>Feldsicherung AUS — Felder werden ohne gesonderte Bestätigung gesetzt. Die Bestätigung datenverändernder Aktionen bleibt bestehen.</value>
-  </data>
-  <data name="KI_KERN_FELDSICHERUNG_VERMERK" xml:space="preserve">
-    <value>Feldsicherung aus</value>
   </data>
   <data name="MENU_VARIANTE_SPEICHERN" xml:space="preserve">
     <value>Als Variante speichern&#8230;</value>
@@ -18189,6 +18231,51 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_MASKE_SPA" xml:space="preserve">
     <value>Stromspeicher-Auslegung</value>
   </data>
+  <data name="KI_DLG_MASKE_KV" xml:space="preserve">
+    <value>Kostenverwaltung</value>
+  </data>
+  <data name="KI_DLG_KV_TITEL_NAME" xml:space="preserve">
+    <value>Komponente</value>
+  </data>
+  <data name="KI_DLG_KV_TITEL_ERL" xml:space="preserve">
+    <value>Die Komponente, deren Kosten gerade gepflegt werden — Überschrift der Maske.</value>
+  </data>
+  <data name="KI_DLG_KV_UNTERTITEL_NAME" xml:space="preserve">
+    <value>Bezug</value>
+  </data>
+  <data name="KI_DLG_KV_UNTERTITEL_ERL" xml:space="preserve">
+    <value>Gerät und Projekt, auf die sich die Kostenpositionen beziehen.</value>
+  </data>
+  <data name="KI_DLG_KV_NURLESEN_NAME" xml:space="preserve">
+    <value>Auslieferungsvorlage</value>
+  </data>
+  <data name="KI_DLG_KV_NURLESEN_ERL" xml:space="preserve">
+    <value>Wahr, wenn die gewählte Vorlage zur Auslieferung gehört; ihre Zeilen lassen sich dann nicht ändern.</value>
+  </data>
+  <data name="KI_DLG_KV_POSITION_NAME" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="KI_DLG_KV_POSITION_ERL" xml:space="preserve">
+    <value>Bezeichnung der Kostenposition, z. B. „Wärmeerzeuger (Kessel)" oder „Planung / Baunebenkosten".</value>
+  </data>
+  <data name="KI_DLG_KV_SATZ_NAME" xml:space="preserve">
+    <value>Satz</value>
+  </data>
+  <data name="KI_DLG_KV_SATZ_ERL" xml:space="preserve">
+    <value>Der Wert zur gewählten Bemessung — je kW, je Stück, fester Betrag oder Prozentsatz.</value>
+  </data>
+  <data name="KI_DLG_KV_NUTZUNGSDAUER_NAME" xml:space="preserve">
+    <value>Nutzungsdauer</value>
+  </data>
+  <data name="KI_DLG_KV_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Kalkulatorische Nutzungsdauer der Position in Jahren (VDI 2067); sie steuert Abschreibung und Ersatzbedarf.</value>
+  </data>
+  <data name="KI_DLG_KV_BETRAG_NAME" xml:space="preserve">
+    <value>Betrag netto</value>
+  </data>
+  <data name="KI_DLG_KV_BETRAG_ERL" xml:space="preserve">
+    <value>Der errechnete Nettobetrag der Position — Anzeige aus Satz und Bemessung, nicht eingebbar.</value>
+  </data>
   <data name="KI_DLG_SPA_EINHEITEN_NAME" xml:space="preserve">
     <value>Einheiten der Flotte</value>
   </data>
@@ -19040,5 +19127,185 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="FLOTTE_ED_NACHZUG_AUFNEHMEN_TITEL" xml:space="preserve">
     <value>Alle fehlenden Speicheranlagen als Einheiten aufnehmen</value>
+  </data>
+  <data name="KI_REG_ZWECK_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Überträgt ein ganzes Gewerk von einem Projekt in ein anderes — legt an, zieht gleich und entfernt, was im Quellprojekt fehlt.</value>
+  </data>
+  <data name="KI_REG_TITEL_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Komponente übernehmen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernimm die Wärmepumpe aus Projekt A in Projekt B.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Das Gewerk im Zielprojekt entspricht danach dem des Quellprojekts. Nicht umkehrbar.</value>
+  </data>
+  <data name="KI_REG_VORSCHAU_KOMPONENTE_UEBERNEHMEN" xml:space="preserve">
+    <value>Gewerk „{0}" von „{1}" nach „{2}": {3} anlegen, {4} ersetzen, {5} entfernen.</value>
+  </data>
+  <data name="KI_REG_UEBERNAHME_AUSGEFUEHRT" xml:space="preserve">
+    <value>Gewerk „{0}" nach „{1}" übernommen.</value>
+  </data>
+  <data name="KI_REG_UEBERNAHME_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Das Gewerk „{0}" konnte nicht übernommen werden: {1}</value>
+  </data>
+  <data name="KI_REG_UEBERNAHME_NICHTS_ZU_TUN" xml:space="preserve">
+    <value>Es gibt nichts zu übernehmen — beide Projekte führen dasselbe Gewerk bereits gleich.</value>
+  </data>
+  <data name="KI_REG_ZWECK_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>Schreibt EIN Merkmal aus einem Projekt in ein anderes. Der Vorzustand steht in der Bestätigung.</value>
+  </data>
+  <data name="KI_REG_TITEL_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>Merkmal übernehmen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernimm die Vorlauftemperatur aus Projekt A in Projekt B.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>Das Merkmal im Zielprojekt trägt danach den Wert des Quellprojekts. Umkehrbar über denselben Aufruf in der Gegenrichtung.</value>
+  </data>
+  <data name="KI_REG_VORSCHAU_MERKMAL_UEBERNEHMEN" xml:space="preserve">
+    <value>{0} in „{1}" · {2} → {3} {4}</value>
+  </data>
+  <data name="KI_REG_MERKMAL_GESCHRIEBEN" xml:space="preserve">
+    <value>{0} geändert: {1} → {2}</value>
+  </data>
+  <data name="KI_REG_MERKMAL_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Das Merkmal „{0}" konnte nicht geschrieben werden: {1}</value>
+  </data>
+  <data name="KI_REG_MERKMAL_GESPERRT" xml:space="preserve">
+    <value>Das Merkmal „{0}" ist eine Schlüsselspalte und wird nicht übernommen.</value>
+  </data>
+  <data name="KI_REG_MERKMAL_OHNE_VORSCHAU" xml:space="preserve">
+    <value>Zu diesem Merkmal lässt sich keine Vorschau bilden.</value>
+  </data>
+  <data name="KI_REG_ZWECK_PARAMETER_SETZEN" xml:space="preserve">
+    <value>Ändert einzelne Parameter der Wirtschaftlichkeitsrechnung. Nur die genannten Felder werden geschrieben, alle übrigen bleiben unverändert.</value>
+  </data>
+  <data name="KI_REG_TITEL_PARAMETER_SETZEN" xml:space="preserve">
+    <value>Wirtschaftlichkeitsparameter setzen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_PARAMETER_SETZEN" xml:space="preserve">
+    <value>Setze den Zinssatz auf 4 % und den Betrachtungszeitraum auf 20 Jahre.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_PARAMETER_SETZEN" xml:space="preserve">
+    <value>Die genannten Parameter gelten ab sofort für jede Wirtschaftlichkeitsrechnung dieser Gruppe. Vorhandene Ergebnisse werden dadurch nicht neu gerechnet.</value>
+  </data>
+  <data name="KI_REG_PARAMETER_GESETZT" xml:space="preserve">
+    <value>{0} Parameter in „{1}" geändert.</value>
+  </data>
+  <data name="KI_REG_PARAMETER_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Die Parameter des Projekts {0} konnten nicht gespeichert werden.</value>
+  </data>
+  <data name="KI_REG_PARAMETER_NUR_AM_STAMM" xml:space="preserve">
+    <value>Projekt {0} ist eine Variante von {1}. Die Wirtschaftlichkeitsparameter hängen am Stammprojekt und werden dort gesetzt.</value>
+  </data>
+  <data name="KI_REG_PARAMETER_OHNE_ANGABE" xml:space="preserve">
+    <value>Es wurde kein Parameter genannt, der geändert werden soll.</value>
+  </data>
+  <data name="KI_REG_FELD_ZINSSATZ" xml:space="preserve">
+    <value>Kalkulationszins</value>
+  </data>
+  <data name="KI_REG_ERL_ZINSSATZ" xml:space="preserve">
+    <value>Kalkulationszins der Kapitalwertrechnung in Prozent.</value>
+  </data>
+  <data name="KI_REG_FELD_ZEITRAUM" xml:space="preserve">
+    <value>Betrachtungszeitraum</value>
+  </data>
+  <data name="KI_REG_ERL_ZEITRAUM" xml:space="preserve">
+    <value>Betrachtungszeitraum der Wirtschaftlichkeitsrechnung in Jahren.</value>
+  </data>
+  <data name="KI_REG_FELD_PREIS_ENERGIE" xml:space="preserve">
+    <value>Preissteigerung Energie</value>
+  </data>
+  <data name="KI_REG_ERL_PREIS_ENERGIE" xml:space="preserve">
+    <value>Jährliche Preissteigerung der Energiekosten in Prozent.</value>
+  </data>
+  <data name="KI_REG_FELD_PREIS_BETRIEB" xml:space="preserve">
+    <value>Preissteigerung Betrieb</value>
+  </data>
+  <data name="KI_REG_ERL_PREIS_BETRIEB" xml:space="preserve">
+    <value>Jährliche Preissteigerung der Betriebskosten in Prozent.</value>
+  </data>
+  <data name="KI_REG_FELD_PREIS_INVEST" xml:space="preserve">
+    <value>Preissteigerung Investition</value>
+  </data>
+  <data name="KI_REG_ERL_PREIS_INVEST" xml:space="preserve">
+    <value>Jährliche Preissteigerung der Ersatzbeschaffungen in Prozent. Ohne Pflege gilt die Preissteigerung Betrieb.</value>
+  </data>
+  <data name="KI_REG_FELD_EINSPEISUNG" xml:space="preserve">
+    <value>Einspeisevergütung</value>
+  </data>
+  <data name="KI_REG_ERL_EINSPEISUNG" xml:space="preserve">
+    <value>Einspeisevergütung in Euro je Kilowattstunde.</value>
+  </data>
+  <data name="KI_REG_FELD_CO2_PREIS" xml:space="preserve">
+    <value>CO2-Preis</value>
+  </data>
+  <data name="KI_REG_ERL_CO2_PREIS" xml:space="preserve">
+    <value>CO2-Preis in Euro je Tonne.</value>
+  </data>
+  <data name="KI_REG_ZWECK_SPEICHERAUSLEGUNG" xml:space="preserve">
+    <value>Trägt Kapazität und Lade-/Entladeleistung in den Stromspeicher des Projekts ein.</value>
+  </data>
+  <data name="KI_REG_TITEL_SPEICHERAUSLEGUNG" xml:space="preserve">
+    <value>Speicherauslegung übernehmen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_SPEICHERAUSLEGUNG" xml:space="preserve">
+    <value>Übernimm 12 kWh und 5 kW als Speicherauslegung.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_SPEICHERAUSLEGUNG" xml:space="preserve">
+    <value>Der Stromspeicher des Projekts trägt danach die genannten Werte. Nachgerechnet wird nichts — die Simulation startet der Anwender selbst.</value>
+  </data>
+  <data name="KI_REG_SPEICHERAUSLEGUNG_GESETZT" xml:space="preserve">
+    <value>Speicherauslegung gesetzt: {0:N1} kWh, {1:N1} kW in „{2}".</value>
+  </data>
+  <data name="KI_REG_SPEICHERAUSLEGUNG_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Die Speicherauslegung konnte nicht geschrieben werden. {0}</value>
+  </data>
+  <data name="KI_REG_SPEICHER_KEINE_ANLAGE" xml:space="preserve">
+    <value>Das Projekt „{0}" führt keinen Stromspeicher.</value>
+  </data>
+  <data name="KI_REG_SPEICHER_MEHRERE_ANLAGEN" xml:space="preserve">
+    <value>Das Projekt führt {0} Speicheranlagen. Varianten desselben Speichers teilen sich einen Gerätesatz; welche gemeint ist, entscheidet der Anwender in der Maske.</value>
+  </data>
+  <data name="KI_REG_ZWECK_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Legt die Betriebsvariante einer Speicheranlage an — Betriebsart und SoC-Band.</value>
+  </data>
+  <data name="KI_REG_TITEL_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Speichervariante anlegen</value>
+  </data>
+  <data name="KI_REG_BEISPIEL_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Lege eine Speichervariante mit Grünstrom und SoC 10 bis 90 % an.</value>
+  </data>
+  <data name="KI_REG_WIRKUNG_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Die Speicheranlage führt danach eine Betriebsvariante. Nicht umkehrbar — Löschen gehört nicht zum Assistenten.</value>
+  </data>
+  <data name="KI_REG_VORSCHAU_SPEICHERVARIANTE_ANLEGEN" xml:space="preserve">
+    <value>Speichervariante für „{0}" (Anlage {1}) in „{2}": Betriebsart {3}, SoC {4:N0} bis {5:N0} %.</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_ANGELEGT" xml:space="preserve">
+    <value>Speichervariante {0} für „{1}" angelegt.</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_ANLEGEN_FEHLGESCHLAGEN" xml:space="preserve">
+    <value>Für „{0}" konnte keine Speichervariante angelegt werden.</value>
+  </data>
+  <data name="KI_REG_SPEICHERVARIANTE_SCHON_DA" xml:space="preserve">
+    <value>Die Anlage „{0}" führt bereits eine Speichervariante.</value>
+  </data>
+  <data name="KI_REG_SPEICHERANLAGE_NAME" xml:space="preserve">
+    <value>Speicheranlage</value>
+  </data>
+  <data name="KI_REG_ERL_SPEICHERANLAGE" xml:space="preserve">
+    <value>Bezeichner der Speicheranlage. Führt das Projekt genau eine, darf die Angabe entfallen.</value>
+  </data>
+  <data name="KI_REG_BETRIEBSART_NAME" xml:space="preserve">
+    <value>Betriebsart</value>
+  </data>
+  <data name="KI_REG_ERL_BETRIEBSART" xml:space="preserve">
+    <value>Betriebsart der Speichervariante. Ohne Angabe gilt Grünstrom.</value>
+  </data>
+  <data name="KI_REG_SOC_BAND_VERDREHT" xml:space="preserve">
+    <value>Der untere SoC-Wert ({0:N0} %) muss kleiner sein als der obere ({1:N0} %).</value>
   </data>
 </root>

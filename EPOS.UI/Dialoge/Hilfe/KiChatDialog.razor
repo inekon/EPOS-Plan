@@ -94,10 +94,10 @@
             </details>
         }
 
-        @if (!string.IsNullOrEmpty(FeldsicherungHinweis))
-        {
-            <Warnbanner Stufe="WarnStufe.Warnung" Text="@FeldsicherungHinweis" />
-        }
+        @* HIER STAND DAS BANNER „Feldsicherung AUS" (Paket F4). Es meldete den
+           abgeschalteten Entwicklerschalter — den es seit dem 14.09.2026 nicht mehr
+           gibt: Jede Feldsetzung wird bestätigt, ausnahmslos. Ein Warnbanner, das nie
+           erscheinen kann, ist keine Warnung. *@
     </header>
 
     @* --- Der Gespraechsverlauf fuellt die Hoehe -------------------------- *@
@@ -344,12 +344,6 @@
 
     /// <summary>Das feste Tageslimit.</summary>
     [Parameter] public int Tageslimit { get; set; }
-
-    /// <summary>
-    /// Dauerhafter Hinweis, solange die Feldsicherung abgeschaltet ist (Paket F4);
-    /// leer = alles in Ordnung.
-    /// </summary>
-    [Parameter] public string FeldsicherungHinweis { get; set; } = "";
 
     /// <summary>Vorbelegung des Aktionsschalters (gemerkt UND Einwilligung erteilt).</summary>
     [Parameter] public bool AktionenVorbelegt { get; set; }

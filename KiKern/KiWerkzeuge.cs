@@ -40,10 +40,28 @@ namespace KiKern
     public static class KiWerkzeuge
     {
         /// <summary>
-        /// Hoechstzahl der Modellrunden je Anwenderaeusserung (Fachkonzept 3.3, Festlegung 5):
-        /// Aufruf, Ergebnis, Antwort - plus nichts. Schuetzt vor Schleifen und Tageslimit.
+        /// Hoechstzahl der Modellrunden je Anwenderaeusserung (Fachkonzept 3.3,
+        /// Festlegung 5). Schuetzt vor Schleifen und Tageslimit.
         /// </summary>
-        public const int Rundendeckel = 3;
+        /// <remarks>
+        /// <para>
+        /// <b>Seit dem Anwenderbefund vom 14.09.2026 sechs statt drei.</b> Drei reichten
+        /// fuer genau einen Zug: Aufruf, Ergebnis, Antwort. Jede Frage, die zwei Aktionen
+        /// braucht - und das ist der Regelfall, sobald eine davon das Projekt oder die
+        /// Maske erst bestimmen muss ("welches Projekt ist offen?", dann "was steht
+        /// darin?") - endete deshalb mit dem Abbruchtext STATT mit einer Antwort. Genau
+        /// so geschehen: <c>projekt_aktiv</c>, <c>projekt_lesen</c>, ein abgelehntes
+        /// <c>dialog_oeffnen</c> - Deckel erreicht, keine Antwort.
+        /// </para>
+        /// <para>
+        /// <b>Warum sechs und nicht mehr.</b> Der Deckel schuetzt zwei Dinge: das
+        /// Tageslimit (jede Runde ist eine Anfrage) und den Anwender vor einer Schleife,
+        /// in der ein Modell dieselbe Aktion immer wieder ruft. Sechs laesst zwei bis
+        /// drei Aktionen samt Korrekturrunde zu und haelt beide Schutzzwecke: Ein Zwoelftel
+        /// des Tageslimits je Frage bleibt die Ausnahme, nicht die Regel.
+        /// </para>
+        /// </remarks>
+        public const int Rundendeckel = 6;
 
         /// <summary>Schluessel des Antwortfeldes „Aktion" im Weg B.</summary>
         public const string FeldAktion = "aktion";

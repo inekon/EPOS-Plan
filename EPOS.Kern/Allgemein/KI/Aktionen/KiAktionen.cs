@@ -90,6 +90,14 @@ namespace WindowsFormsApplication1
             register.Aufnehmen(KiAktionenProjekt.VariantenAuflisten());
             register.Aufnehmen(KiAktionenProjekt.SpeichervariantenAuflisten());
 
+            // ---- Was im Projekt verbaut ist und was es kostet (15.09.2026).
+            //      anlagen_auflisten beantwortet „liste alle Heizkessel auf" und nennt
+            //      die GERAETENAMEN - ohne sie hielt das Modell einen Geraetenamen aus
+            //      der Frage fuer einen Projektnamen. kostenpositionen_auflisten fuehrt
+            //      je Zeile die id_position und ist damit der Einstieg zum Setzen.
+            register.Aufnehmen(KiAktionenKosten.AnlagenAuflisten());
+            register.Aufnehmen(KiAktionenKosten.KostenpositionenAuflisten());
+
             // ---- Wirtschaftlichkeit und Kosten
             register.Aufnehmen(KiAktionenWirtschaft.ErgebnisseLesen());
             register.Aufnehmen(KiAktionenWirtschaft.ParameterLesen());
@@ -116,6 +124,17 @@ namespace WindowsFormsApplication1
             register.Aufnehmen(KiAktionenSchreiben.VarianteAnlegen());
             register.Aufnehmen(KiAktionenSchreiben.SpeichervarianteAktivSetzen());
             register.Aufnehmen(KiAktionenSchreiben.KostenpositionSetzen());
+
+            // ---- Die fuenf nachgezogenen Schreibaktionen (15.09.2026). Damit ist der
+            //      Katalog 5.2 vollstaendig. Sie stehen bei ihren Verwandten und nicht
+            //      alle in KiAktionenSchreiben: Bei den beiden Uebernahmen IST der
+            //      Trockenlauf die Vorschau, und der Parametersetzer nimmt seinen
+            //      Vorzustand aus dem Leseweg daneben.
+            register.Aufnehmen(KiAktionenSchreiben.SpeicherauslegungUebernehmen());
+            register.Aufnehmen(KiAktionenSchreiben.SpeichervarianteAnlegen());
+            register.Aufnehmen(KiAktionenUebernahme.KomponenteUebernehmen());
+            register.Aufnehmen(KiAktionenUebernahme.MerkmalUebernehmen());
+            register.Aufnehmen(KiAktionenWirtschaft.ParameterSetzen());
 
             // ---- Formularsteuerung (Etappe 3b, Fachkonzept 11.4). Die beiden lesenden
             //      Aktionen gehoeren zu Stufe 1; die drei uebrigen sind Schreibaktionen
@@ -301,10 +320,63 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Projekt aus dem genannten Parameter aufloesen.</summary>
+        /// <summary>
+        /// Projekt aus dem genannten Parameter aufloesen - und wo keines genannt ist,
+        /// das GERADE GEOEFFNETE nehmen.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der Rueckfall ist die haeufigste Lesart</b> (Anwenderbefund vom 15.09.2026).
+        /// Wer im Programm steht und „wieviel kostet der Stromspeicher?" fragt, meint das
+        /// Projekt, das vor ihm liegt - er nennt es nicht, weil er es sieht. Bis hierher
+        /// war der Projektname PFLICHT: Das Modell musste ihn entweder erfragen (eine
+        /// Runde mehr) oder raten - und es riet, indem es den Geraetenamen aus der Frage
+        /// als Projektnamen uebergab.
+        /// </para>
+        /// <para>
+        /// <b>Er greift nur bei LEERER Angabe.</b> Ein genannter Name wird unveraendert
+        /// aufgeloest, auch ein falscher - dessen Meldung nennt weiterhin die Kandidaten.
+        /// Und wo kein Projekt offen ist, bleibt es bei der bisherigen Rueckfrage: Der
+        /// Rueckfall erfindet nichts, er nutzt nur, was ohnehin feststeht.
+        /// </para>
+        /// <para>
+        /// <b>Eine Stelle, alle Aktionen.</b> Jede projektgebundene Aktion fragt ueber
+        /// diese Methode (<see cref="ProjektId"/>, <see cref="ProjektMussAufloesbarSein"/>);
+        /// der Rueckfall gilt damit ueberall gleich. <see cref="ProjektIdOptional"/> ist
+        /// ausgenommen und bleibt es: Dort heisst „nichts angegeben" ausdruecklich
+        /// „ohne Projekt" (Ganglinien: dann gilt der Stammkatalog), und das ist eine
+        /// andere Aussage als „das offene".
+        /// </para>
+        /// </remarks>
         internal static Auswahl ProjektWaehlen(KiAufruf a, string parameter = "projekt")
         {
-            return Waehle(a.Text(parameter), ProjektKandidaten(), KiAktionsTexte.ProjektIdName);
+            string genannt = (a.Text(parameter) ?? "").Trim();
+            if (genannt.Length > 0)
+                return Waehle(genannt, ProjektKandidaten(), KiAktionsTexte.ProjektIdName);
+
+            return AktivesProjektAlsAuswahl();
+        }
+
+        /// <summary>
+        /// Das gerade geoeffnete Projekt als <see cref="Auswahl"/>; ist keines offen,
+        /// traegt sie den bisherigen Klartextgrund „Name fehlt".
+        /// </summary>
+        internal static Auswahl AktivesProjektAlsAuswahl()
+        {
+            var ergebnis = new Auswahl();
+
+            int id;
+            string name;
+            if (KiAktionenProjekt.AktivesProjektErmitteln(out id, out name) && id > 0)
+            {
+                ergebnis.Id = id;
+                ergebnis.Name = name ?? "";
+                return ergebnis;
+            }
+
+            ergebnis.Fehler = string.Format(CultureInfo.CurrentCulture,
+                                            KiAktionsTexte.NameFehlt, KiAktionsTexte.ProjektIdName);
+            return ergebnis;
         }
 
         /// <summary>Projekt-ID zum Namen; 0, wenn er sich nicht aufloesen laesst.</summary>

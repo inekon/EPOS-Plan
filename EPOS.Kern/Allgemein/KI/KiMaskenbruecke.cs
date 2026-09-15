@@ -104,6 +104,150 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Eine SPALTE einer offenen Maske: dieselbe Deklaration, angewandt auf jede Zeile
+    /// einer Liste (Anwenderbefund vom 14.09.2026, „Setze die Nutzungsdauer ueberall
+    /// auf 15 Jahre").
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Sie haelt keine Zugaenge, sie erzeugt sie.</b> Und das bei JEDEM Zugriff, nicht
+    /// einmal beim Anmelden: Ein Dialog meldet sich beim Aufbau an, seine Zeilen kommen
+    /// und gehen aber waehrend er offen steht (Position hinzufuegen, Position loeschen).
+    /// Eine beim Anmelden eingefrorene Zeilenliste zeigte dem Assistenten den Stand von
+    /// vorhin - und der Setzweg schriebe in eine Zeile, die es nicht mehr gibt.
+    /// </para>
+    /// <para>
+    /// <b>Jede Zeile wird ein gewoehnliches Feld</b> (<see cref="KiDialogFeld.FuerZeile"/>).
+    /// Damit sehen Pruefung, Bestaetigungsblock, Protokoll und Rueckmeldung nichts Neues:
+    /// Fuer sie ist <c>nutzungsdauer_3</c> ein Feld wie jedes andere, mit eigener Zeile
+    /// „alt → neu" in der Bestaetigung. Die Sammlung ist die EINZIGE Stelle, die von
+    /// Zeilen weiss.
+    /// </para>
+    /// <para>
+    /// <b>Der Schreibschutz gilt je ZEILE.</b> Eine Auslieferungsvorlage laesst sich
+    /// nicht bearbeiten, eine eigene Position schon - und beide stehen in derselben
+    /// Liste. <see cref="Schreibbar"/> entscheidet das je Zeile; wo es <c>false</c>
+    /// sagt, entsteht ein Feld OHNE Setzer, und der Assistent meldet es als nicht
+    /// bedienbar, statt still danebenzugreifen.
+    /// </para>
+    /// </remarks>
+    public sealed class KiFeldsammlung
+    {
+        /// <summary>Legt eine Spalte an.</summary>
+        /// <param name="feld">Die Spaltendeklaration aus dem Dialogkatalog.</param>
+        /// <param name="zeilen">Liefert die aktuellen Zeilen; darf <c>null</c> liefern.</param>
+        /// <param name="lesen">Liest den Spaltenwert AUS einer Zeile.</param>
+        /// <param name="setzen">Schreibt den Spaltenwert IN eine Zeile; <c>null</c> = nur lesbar.</param>
+        /// <param name="beschriftung">Benennt eine Zeile im Klartext; <c>null</c> = Nummer.</param>
+        /// <param name="schreibbar">Darf DIESE Zeile geaendert werden? <c>null</c> = ja.</param>
+        /// <param name="werttyp">Der CLR-Typ, den <paramref name="setzen"/> entgegennimmt.</param>
+        public KiFeldsammlung(KiDialogFeld feld,
+                              Func<IReadOnlyList<object>> zeilen,
+                              Func<object, object> lesen,
+                              Action<object, object> setzen = null,
+                              Func<object, string> beschriftung = null,
+                              Func<object, bool> schreibbar = null,
+                              Type werttyp = null)
+        {
+            if (feld == null) throw new ArgumentNullException(nameof(feld));
+            if (zeilen == null) throw new ArgumentNullException(nameof(zeilen));
+            if (lesen == null) throw new ArgumentNullException(nameof(lesen));
+
+            Feld = feld;
+            Zeilen = zeilen;
+            Lesen = lesen;
+            Setzen = setzen;
+            Beschriftung = beschriftung;
+            Schreibbar = schreibbar;
+            Werttyp = werttyp;
+        }
+
+        /// <summary>Die Spaltendeklaration aus dem Dialogkatalog.</summary>
+        public KiDialogFeld Feld { get; }
+
+        /// <summary>Liefert die aktuellen Zeilen.</summary>
+        public Func<IReadOnlyList<object>> Zeilen { get; }
+
+        /// <summary>Liest den Spaltenwert aus einer Zeile.</summary>
+        public Func<object, object> Lesen { get; }
+
+        /// <summary>Schreibt den Spaltenwert in eine Zeile; <c>null</c> = nur lesbar.</summary>
+        public Action<object, object> Setzen { get; }
+
+        /// <summary>Benennt eine Zeile im Klartext; <c>null</c> = Nummer.</summary>
+        public Func<object, string> Beschriftung { get; }
+
+        /// <summary>Darf diese Zeile geaendert werden? <c>null</c> = ja.</summary>
+        public Func<object, bool> Schreibbar { get; }
+
+        /// <summary>Der CLR-Typ des Spaltenwertes.</summary>
+        public Type Werttyp { get; }
+
+        /// <summary>
+        /// Je vorhandener Zeile ein Feldzugang - FRISCH ermittelt.
+        /// </summary>
+        /// <remarks>
+        /// Wirft nie: Ein Dialog kann waehrend des Lesens abgeraeumt werden, und dann
+        /// hat diese Spalte eben keine Zeilen. Dieselbe Regel wie im uebrigen Weg der
+        /// Bruecke - eine Assistentenauskunft darf unvollstaendig sein, aber nie
+        /// sprengen.
+        /// </remarks>
+        public IReadOnlyList<KiFeldzugang> Zugaenge()
+        {
+            IReadOnlyList<object> zeilen;
+            try { zeilen = Zeilen() ?? Array.Empty<object>(); }
+            catch (Exception) { return Array.Empty<KiFeldzugang>(); }
+
+            var liste = new List<KiFeldzugang>(zeilen.Count);
+
+            for (int i = 0; i < zeilen.Count; i++)
+            {
+                object zeile = zeilen[i];
+                if (zeile == null) continue;
+
+                int stelle = i;                       // fuer den Abschluss festhalten
+                bool darfSchreiben = Setzen != null && (Schreibbar == null || Sicher(zeile));
+
+                KiDialogFeld feld = Feld.FuerZeile(i + 1, Kennzeichen(zeile));
+
+                liste.Add(new KiFeldzugang(
+                    feld,
+                    () => { object z = Zeile(stelle); return z == null ? null : Lesen(z); },
+                    darfSchreiben
+                        ? wert => { object z = Zeile(stelle); if (z != null) Setzen(z, wert); }
+                        : (Action<object>)null,
+                    Werttyp));
+            }
+
+            return liste;
+        }
+
+        /// <summary>Die Zeile an dieser Stelle - oder <c>null</c>, wenn es sie nicht mehr gibt.</summary>
+        private object Zeile(int stelle)
+        {
+            try
+            {
+                IReadOnlyList<object> zeilen = Zeilen();
+                return zeilen != null && stelle >= 0 && stelle < zeilen.Count ? zeilen[stelle] : null;
+            }
+            catch (Exception) { return null; }
+        }
+
+        private string Kennzeichen(object zeile)
+        {
+            if (Beschriftung == null) return "";
+            try { return Beschriftung(zeile) ?? ""; }
+            catch (Exception) { return ""; }
+        }
+
+        private bool Sicher(object zeile)
+        {
+            try { return Schreibbar(zeile); }
+            catch (Exception) { return false; }   // im Zweifel nicht schreiben
+        }
+    }
+
+    /// <summary>
     /// EIN gelesenes Feld: Deklaration, Rohwert und der Wert als Text.
     /// </summary>
     /// <remarks>
@@ -233,7 +377,23 @@ namespace WindowsFormsApplication1
             internal object Marke;
             internal KiDialog Dialog;
             internal List<KiFeldzugang> Felder;
+            internal List<KiFeldsammlung> Spalten;
             internal KiMaskenhaken Haken;
+
+            /// <summary>
+            /// Alle Zugaenge dieser Maske: die festen Felder, danach je Spalte ein
+            /// Zugang je Zeile — JETZT ermittelt, nicht beim Anmelden.
+            /// </summary>
+            internal List<KiFeldzugang> AlleZugaenge()
+            {
+                var alle = new List<KiFeldzugang>(Felder);
+
+                if (Spalten != null)
+                    foreach (KiFeldsammlung spalte in Spalten)
+                        alle.AddRange(spalte.Zugaenge());
+
+                return alle;
+            }
         }
 
         private static readonly object _sperre = new object();
@@ -273,26 +433,42 @@ namespace WindowsFormsApplication1
         /// Was der Dialog ausser seinen Feldern beisteuert (Auftrag #201): Auffrischen,
         /// Plausibilitaetspruefung, Speicherweg, Rechenwege. <c>null</c> = nichts davon.
         /// </param>
+        /// <param name="spalten">
+        /// Die SPALTEN der Maske (Raster): je Deklaration eine Sammlung, die bei jedem
+        /// Zugriff ihre Zeilen frisch aufloest. <c>null</c> = die Maske hat keine.
+        /// </param>
         /// <returns>Die Marke dieser Anmeldung; <c>null</c>, wenn nichts angemeldet wurde.</returns>
         public static object Anmelden(string maskenname, KiDialog dialog,
                                       IReadOnlyList<KiFeldzugang> felder,
-                                      KiMaskenhaken haken = null)
+                                      KiMaskenhaken haken = null,
+                                      IReadOnlyList<KiFeldsammlung> spalten = null)
         {
             if (string.IsNullOrWhiteSpace(maskenname)) return null;
-            if (felder == null || felder.Count == 0) return null;
+
+            bool hatFelder = felder != null && felder.Count > 0;
+            bool hatSpalten = spalten != null && spalten.Count > 0;
+            if (!hatFelder && !hatSpalten) return null;
 
             var eintrag = new Eintrag
             {
                 Marke = new object(),
                 Dialog = dialog,
-                Felder = new List<KiFeldzugang>(felder.Count),
+                Felder = new List<KiFeldzugang>(hatFelder ? felder.Count : 0),
+                Spalten = new List<KiFeldsammlung>(hatSpalten ? spalten.Count : 0),
                 Haken = haken ?? new KiMaskenhaken()
             };
 
-            foreach (KiFeldzugang z in felder)
-                if (z != null) eintrag.Felder.Add(z);
+            if (hatFelder)
+                foreach (KiFeldzugang z in felder)
+                    if (z != null) eintrag.Felder.Add(z);
 
-            if (eintrag.Felder.Count == 0) return null;
+            if (hatSpalten)
+                foreach (KiFeldsammlung s in spalten)
+                    if (s != null) eintrag.Spalten.Add(s);
+
+            // EINE Maske ohne jeden Zugang ist keine Anmeldung. Eine Maske mit NUR
+            // Spalten sehr wohl - ein Raster ohne Kopffelder ist ein gewoehnlicher Fall.
+            if (eintrag.Felder.Count == 0 && eintrag.Spalten.Count == 0) return null;
 
             string schluessel = maskenname.Trim();
 
@@ -395,9 +571,10 @@ namespace WindowsFormsApplication1
             Eintrag eintrag = Finde(maskenname);
             if (eintrag == null) return Array.Empty<KiFeldwert>();
 
-            var werte = new List<KiFeldwert>(eintrag.Felder.Count);
+            List<KiFeldzugang> zugaenge = eintrag.AlleZugaenge();
+            var werte = new List<KiFeldwert>(zugaenge.Count);
 
-            foreach (KiFeldzugang zugang in eintrag.Felder)
+            foreach (KiFeldzugang zugang in zugaenge)
             {
                 object roh;
 
@@ -423,7 +600,7 @@ namespace WindowsFormsApplication1
             Eintrag eintrag = Finde(maskenname);
             if (eintrag == null) return null;
 
-            foreach (KiFeldzugang z in eintrag.Felder)
+            foreach (KiFeldzugang z in eintrag.AlleZugaenge())
                 if (string.Equals(z.Name, feldname, StringComparison.Ordinal)) return z;
 
             return null;

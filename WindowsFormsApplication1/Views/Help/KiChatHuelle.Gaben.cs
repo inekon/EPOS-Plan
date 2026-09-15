@@ -51,7 +51,6 @@ namespace WindowsFormsApplication1
                 ["Eingerichtet"] = KiChatService.IstEingerichtet,
                 ["AnfragenHeute"] = KiChatService.AnfragenHeute,
                 ["Tageslimit"] = KiChatService.Tageslimit,
-                ["FeldsicherungHinweis"] = KiFeldsicherung.Chathinweis() ?? "",
                 ["AktionenVorbelegt"] = KiChatService.AktionenZulassen && KiEinwilligung.Erteilt,
                 // OHNE Zaehler (Befund W15b-E-3): "Heute genutzt: n von 50" stand
                 // zweimal auf demselben Bild - hier und in der Fussleiste. Die
@@ -563,6 +562,7 @@ namespace WindowsFormsApplication1
                 case KiVerlaufsrolle.AssistentKopf: return Gespraechsrolle.AssistentKopf;
                 case KiVerlaufsrolle.Ueberschrift: return Gespraechsrolle.Ueberschrift;
                 case KiVerlaufsrolle.Leise: return Gespraechsrolle.Leise;
+                case KiVerlaufsrolle.Datenzeile: return Gespraechsrolle.Datenzeile;
                 case KiVerlaufsrolle.Erfolg: return Gespraechsrolle.Erfolg;
                 case KiVerlaufsrolle.Warnung: return Gespraechsrolle.Warnung;
                 case KiVerlaufsrolle.Fehler: return Gespraechsrolle.Fehler;

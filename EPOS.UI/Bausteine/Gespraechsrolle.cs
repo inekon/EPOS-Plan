@@ -32,8 +32,22 @@ public enum Gespraechsrolle
     /// <summary>Eine Zwischenueberschrift („Gefundene Hilfeabschnitte:") — blau, fett.</summary>
     Ueberschrift,
 
-    /// <summary>Quellen, Tageszaehler, Cache-Vermerk, Ergebniszeilen, Protokollzeile — grau.</summary>
+    /// <summary>Quellen, Tageszaehler, Cache-Vermerk, Zeilenzahl, Protokollzeile — grau.</summary>
     Leise,
+
+    /// <summary>
+    /// Eine Zeile der Ergebnistabelle einer Aktion — grau und mit FESTER
+    /// Zeichenbreite.
+    ///
+    /// <para><b>Die elfte Rolle, und die einzige mit einem Schriftschnitt als
+    /// Zweck.</b> Die zehn anderen unterscheiden sich in der Farbe; diese in der
+    /// Laufweite. Der Kern richtet die Spalten mit Leerzeichen aus
+    /// (<c>KiVerlaufstexte.Datentabelle</c>) — das trägt nur, wenn die Anzeige
+    /// weder die Zeichen unterschiedlich breit setzt noch die Leerzeichen
+    /// zusammenzieht. Deshalb steht sie hier und nicht unter
+    /// <see cref="Leise"/>.</para>
+    /// </summary>
+    Datenzeile,
 
     /// <summary>Ausgefuehrt, Bestaetigung erteilt, „gespeichert" — gruen.</summary>
     Erfolg,

@@ -11,13 +11,12 @@ namespace KiKern.Tests
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Warum hier NICHT abgeschaltet wird.</b> <see cref="KiFeldsicherung"/> ist
-    /// prozessweit und laesst sich nicht zuruecksetzen; welchen Zustand diese Klasse
-    /// antrifft, haengt davon ab, ob <c>KiFeldsicherungTests</c> vorher gelaufen ist. Die
-    /// Faelle hier pruefen deshalb ausschliesslich Zusagen, die in BEIDEN Zustaenden
-    /// gelten muessen - dann ist der Befund von der Reihenfolge unabhaengig. Der eine
-    /// Fall, der den Uebergang selbst braucht, steht dort, wo der Uebergang stattfindet:
-    /// in <c>KiFeldsicherungTests.DerLebenslauf_...</c>.
+    /// <b>Seit dem 14.09.2026 gibt es hier nichts mehr abzuschalten.</b> Bis dahin trug
+    /// die Feldsicherung einen prozessweiten, nicht zuruecksetzbaren Zustand
+    /// (Befehlszeilenschalter <c>/ki-feldsicherung-aus</c>), und diese Faelle mussten
+    /// darauf Ruecksicht nehmen: Sie durften nur Zusagen pruefen, die in BEIDEN
+    /// Zustaenden gelten. Der Schalter ist entfallen - die Antwort dieser Klasse ist
+    /// seither in jedem Lauf dieselbe.
     /// </para>
     /// </remarks>
     public class KiBestaetigungspflichtTests
@@ -67,17 +66,27 @@ namespace KiKern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Auch eine Formularaktion wird IMMER bestaetigt</b> (Auftraggeber,
+        /// 14.09.2026: „eine Bestaetigung was gesetzt wird sollte immer erscheinen").
+        /// Bis dahin hing genau dieser Fall am Befehlszeilenschalter
+        /// <c>/ki-feldsicherung-aus</c>; den gibt es nicht mehr.
+        /// </summary>
         [Fact]
-        public void EineFormularaktionHaengtGenauAnDerFeldsicherung()
+        public void EineFormularaktionWirdIMMERBestaetigt()
         {
-            Assert.Equal(KiFeldsicherung.Aktiv, KiBestaetigungspflicht.Gilt(Formularaktion()));
+            KiAktion a = Formularaktion();
+
+            Assert.True(KiBestaetigungspflicht.Gilt(a));
+            Assert.Equal(KiRiegel.BrauchtBestaetigung(a), KiBestaetigungspflicht.Gilt(a));
         }
 
         [Fact]
-        public void DerSchalterKannNurEINSCHRAENKEN_NieErweitern()
+        public void DieAntwortIstGENAUDieDesRiegels()
         {
-            // Was der Riegel durchlaesst, darf die Feldsicherung nicht nachtraeglich
-            // bestaetigungspflichtig machen; was er sperrt, darf sie nicht freistellen.
+            // Diese Klasse darf nichts hinzufuegen und nichts wegnehmen - sie ist seit
+            // dem Wegfall der Feldsicherung eine reine Weiterleitung, und genau das
+            // haelt dieser Fall fest.
             var alle = new List<KiAktion>
             {
                 Leseaktion(), Schreibaktion(), Formularaktion(),
@@ -85,9 +94,7 @@ namespace KiKern.Tests
             };
 
             foreach (KiAktion a in alle)
-                if (KiBestaetigungspflicht.Gilt(a))
-                    Assert.True(KiRiegel.BrauchtBestaetigung(a),
-                                a.Name + ": die Feldsicherung hat die Pflicht ERWEITERT.");
+                Assert.Equal(KiRiegel.BrauchtBestaetigung(a), KiBestaetigungspflicht.Gilt(a));
         }
 
         [Fact]

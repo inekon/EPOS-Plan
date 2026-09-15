@@ -49,6 +49,11 @@ namespace EPOS.Kern.Tests
             "varianten_auflisten", "speichervarianten_auflisten",
             "ergebnisse_lesen", "wirtschaftlichkeit_parameter_lesen", "kostenlage_pruefen",
             "energietraeger_pruefen",
+            // Stufe 1, NEU am 15.09.2026: was verbaut ist und was es kostet. Ohne sie
+            // hatte das Modell fuer „liste alle Heizkessel auf" und „liste alle
+            // Kostenpositionen auf" kein Werkzeug - und hielt einen Geraetenamen aus
+            // der Frage fuer einen Projektnamen.
+            "anlagen_auflisten", "kostenpositionen_auflisten",
             "uebernahme_vorschau", "merkmal_vorschau",
             "lastgang_pruefen", "ganglinien_auflisten", "minimale_spitze_ermitteln",
             "letzte_aktionen",
@@ -57,6 +62,10 @@ namespace EPOS.Kern.Tests
             "dialog_oeffnen",
             // Stufe 2 — schreibend
             "variante_anlegen", "speichervariante_aktiv_setzen", "kostenposition_setzen",
+            // Stufe 2, NEU am 15.09.2026: damit ist der Katalog 5.2 vollstaendig.
+            "speicherauslegung_uebernehmen", "speichervariante_anlegen",
+            "komponente_uebernehmen", "merkmal_uebernehmen",
+            "wirtschaftlichkeit_parameter_setzen",
             "feld_setzen", "formular_ausfuellen", "dialog_aktion_ausfuehren",
             // Stufe 2, NEU mit S3
             "dialog_speichern",

@@ -28,10 +28,9 @@
     /// nichts, Einstellungen leben nur im Speicher, Navigation läuft leer. Ein
     /// vergessener Adapter fällt damit als fehlende Wirkung auf, nicht als Absturz.</para>
     ///
-    /// <para><b>Wer belegt.</b> Genau eine Stelle: <c>Program.Main</c>, unmittelbar nach
-    /// der Auswertung des Feldsicherungsschalters und <b>vor</b>
-    /// <c>DataRepository.DatenbankVorhanden()</c> — sonst käme die erste Startmeldung auf
-    /// die Konsole statt in einen Dialog.</para>
+    /// <para><b>Wer belegt.</b> Genau eine Stelle: <c>Program.Main</c>, vor allem anderen
+    /// und insbesondere <b>vor</b> <c>DataRepository.DatenbankVorhanden()</c> — sonst käme
+    /// die erste Startmeldung auf die Konsole statt in einen Dialog.</para>
     ///
     /// <para><b>Prüfstände tauschen ein Feld und setzen es zurück</b> — genau wie bei
     /// <c>AnlagenEindeutigkeit.Frage</c>. Ein <c>null</c> ist dabei nicht vorgesehen; wer

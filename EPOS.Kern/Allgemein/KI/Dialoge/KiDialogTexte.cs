@@ -74,6 +74,26 @@
         /// <summary>Die fuenfte Maske (Auftrag #200): die Stromspeicher-Ansicht.</summary>
         internal static string MaskeSpeicherauslegung => MyResource.Resource.KI_DLG_MASKE_SPA;
 
+        /// <summary>Die siebte Maske (14.09.2026): die Kostenverwaltung mit ihrem Raster.</summary>
+        internal static string MaskeKostenverwaltung => MyResource.Resource.KI_DLG_MASKE_KV;
+
+        // ============================================================= Kostenverwaltung
+
+        internal static string KvTitelName => MyResource.Resource.KI_DLG_KV_TITEL_NAME;
+        internal static string KvTitelErl => MyResource.Resource.KI_DLG_KV_TITEL_ERL;
+        internal static string KvUntertitelName => MyResource.Resource.KI_DLG_KV_UNTERTITEL_NAME;
+        internal static string KvUntertitelErl => MyResource.Resource.KI_DLG_KV_UNTERTITEL_ERL;
+        internal static string KvNurLesenName => MyResource.Resource.KI_DLG_KV_NURLESEN_NAME;
+        internal static string KvNurLesenErl => MyResource.Resource.KI_DLG_KV_NURLESEN_ERL;
+        internal static string KvPositionName => MyResource.Resource.KI_DLG_KV_POSITION_NAME;
+        internal static string KvPositionErl => MyResource.Resource.KI_DLG_KV_POSITION_ERL;
+        internal static string KvSatzName => MyResource.Resource.KI_DLG_KV_SATZ_NAME;
+        internal static string KvSatzErl => MyResource.Resource.KI_DLG_KV_SATZ_ERL;
+        internal static string KvNutzungsdauerName => MyResource.Resource.KI_DLG_KV_NUTZUNGSDAUER_NAME;
+        internal static string KvNutzungsdauerErl => MyResource.Resource.KI_DLG_KV_NUTZUNGSDAUER_ERL;
+        internal static string KvBetragName => MyResource.Resource.KI_DLG_KV_BETRAG_NAME;
+        internal static string KvBetragErl => MyResource.Resource.KI_DLG_KV_BETRAG_ERL;
+
         /// <summary>Die sechste Maske (Auftrag #221): die Ansicht „Simulation".</summary>
         internal static string MaskeSimulation => MyResource.Resource.KI_DLG_MASKE_SIM;
 
