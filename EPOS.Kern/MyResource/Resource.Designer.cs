@@ -12299,6 +12299,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herleitung ähnelt.
+        /// </summary>
+        public static string FLOTTE_GROESSEN_SP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("FLOTTE_GROESSEN_SP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kandidat ähnelt.
         /// </summary>
         public static string FLOTTE_GROESSEN_SP_KANDIDAT {
@@ -12457,6 +12466,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_GROESSEN_WERT_LEISTUNG {
             get {
                 return ResourceManager.GetString("FLOTTE_GROESSEN_WERT_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigene Eingabe: {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_HERKUNFT_ANWENDER {
+            get {
+                return ResourceManager.GetString("FLOTTE_HERKUNFT_ANWENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten und Alterung ähnelt.
+        /// </summary>
+        public static string FLOTTE_HERKUNFT_BETRIEB {
+            get {
+                return ResourceManager.GetString("FLOTTE_HERKUNFT_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät: {0} ähnelt.
+        /// </summary>
+        public static string FLOTTE_HERKUNFT_GERAET {
+            get {
+                return ResourceManager.GetString("FLOTTE_HERKUNFT_GERAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string FLOTTE_HERKUNFT_GROESSE {
+            get {
+                return ResourceManager.GetString("FLOTTE_HERKUNFT_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsverbrauch ähnelt.
+        /// </summary>
+        public static string FLOTTE_HERKUNFT_HILFSVERBRAUCH {
+            get {
+                return ResourceManager.GetString("FLOTTE_HERKUNFT_HILFSVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionssätze ähnelt.
+        /// </summary>
+        public static string FLOTTE_HERKUNFT_KOSTEN {
+            get {
+                return ResourceManager.GetString("FLOTTE_HERKUNFT_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die SoC-Band ähnelt.
+        /// </summary>
+        public static string FLOTTE_HERKUNFT_SOCBAND {
+            get {
+                return ResourceManager.GetString("FLOTTE_HERKUNFT_SOCBAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrade ähnelt.
+        /// </summary>
+        public static string FLOTTE_HERKUNFT_WIRKUNGSGRADE {
+            get {
+                return ResourceManager.GetString("FLOTTE_HERKUNFT_WIRKUNGSGRADE", resourceCulture);
             }
         }
         

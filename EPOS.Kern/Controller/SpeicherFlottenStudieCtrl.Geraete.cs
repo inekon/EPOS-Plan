@@ -62,6 +62,10 @@ public static partial class SpeicherFlottenStudieCtrl
             {
                 Quellkennung = z.Id.ToString(CultureInfo.InvariantCulture),
                 Geraet = e,
+                // WAS DER SATZ FUEHRT, entscheidet die Uebernahme auf die Vorlage des
+                // Anwenders (FlottenGeraeteuebernahme) — gelesen an der frisch gebauten
+                // Einheit, denn nur hier ist noch zu sehen, was aus dem Satz stammt.
+                Gefuehrt = FlottenGeraeteuebernahme.Gefuehrt(e),
                 NeutraleKennwerte = neutral
             });
         }
@@ -85,11 +89,15 @@ public static partial class SpeicherFlottenStudieCtrl
         {
             FlottenEinheit e = EinheitAusProjektanlage(projektId, anlageId, liste.Count + 1);
             if (e == null || !(e.KapazitaetKWh > 0.0) || !(e.EntladeleistungKw > 0.0)) continue;
+            // ERST LESEN, DANN FUELLEN: Nach LueckenFuellen ist nicht mehr zu sehen, ob
+            // ein Wert aus der Anlagenzeile oder aus der neutralen Vorgabe stammt.
+            FlottenKennwertherkunft gefuehrt = FlottenGeraeteuebernahme.Gefuehrt(e);
             bool neutral = FlottenGeraetevorgaben.LueckenFuellen(e);
             liste.Add(new FlottenGeraetekandidat
             {
                 Quellkennung = anlageId.ToString(CultureInfo.InvariantCulture),
                 Geraet = e,
+                Gefuehrt = gefuehrt,
                 NeutraleKennwerte = neutral
             });
         }

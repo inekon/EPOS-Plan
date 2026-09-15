@@ -716,6 +716,9 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// <summary>Spaltenschlüssel: das Gerät rechnet mit neutralen Vorgaben (Kennzeichen).</summary>
     public const string SP_NEUTRAL = "NEUTRAL";
 
+    /// <summary>Spaltenschlüssel: die HERLEITUNG — was vom Gerät stammt und was vom Anwender.</summary>
+    public const string SP_HERKUNFT = "HERKUNFT";
+
     /// <summary>
     /// Das Filterprofil der Kandidatentabelle (Konzept 2.5: „sortierbar, mit
     /// Spaltenfilter (Katalogfilter-Muster)").
@@ -756,6 +759,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
                               "%", Katalogspaltenart.Zahl),
             new Katalogspalte(SP_NEUTRAL, MyResource.Resource.FLOTTE_GROESSEN_SP_NEUTRAL,
                               "", Katalogspaltenart.JaNein),
+            new Katalogspalte(SP_HERKUNFT, MyResource.Resource.FLOTTE_GROESSEN_SP_HERKUNFT),
             new Katalogspalte(SP_ZULAESSIG, MyResource.Resource.FLOTTE_GROESSEN_SP_ZULAESSIG,
                               "", Katalogspaltenart.JaNein),
             new Katalogspalte(SP_GRUND, MyResource.Resource.FLOTTE_GROESSEN_SP_GRUND)
@@ -794,11 +798,65 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             // Anteil, und der Anwender vergleicht sie mit seiner eigenen Vorgabe.
             zeile.MitZahl(SP_ABWEICHUNG, k.Einheiten.Count > 0 ? k.Abweichung * 100.0 : (double?)null, 1);
             zeile.MitKennzeichen(SP_NEUTRAL, k.NeutraleKennwerte);
+            zeile.MitText(SP_HERKUNFT, Herleitung(k.Kennwertherkunft));
             zeile.MitKennzeichen(SP_ZULAESSIG, k.Zulaessig);
             zeile.MitText(SP_GRUND, k.Grund);
             zeilen.Add(zeile);
         }
         return zeilen;
+    }
+
+    /// <summary>
+    /// <b>DIE HERLEITUNG EINES KANDIDATEN</b> — die EINE Stelle, an der sichtbar wird,
+    /// welcher Wert vom GERÄT stammt und welcher vom ANWENDER (Anwenderentscheid
+    /// 15.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// <para>Die Regel selbst steht in <c>FlottenGeraeteuebernahme</c>: Was der
+    /// Gerätesatz führt, kommt vom Gerät; alles Übrige bleibt, wie der Anwender es in
+    /// Schritt 1 gesetzt hat. Diese Methode übersetzt das Ergebnis in EINE Zeile —
+    /// nicht in eine Spalte je Feld, denn zu lesen ist die Regel und nicht ihre
+    /// Buchführung.</para>
+    /// <para>Ohne Gerätewahl (Methode „Stückzahl suchen", oder mehrere Suchachsen mit
+    /// mehreren Geräten) bleibt die Zeile LEER: Dort gibt es nichts herzuleiten
+    /// beziehungsweise mehrere Geräte, und eine gemeinsame Zeile wäre eine Behauptung
+    /// über zwei Sätze.</para>
+    /// </remarks>
+    /// <param name="herkunft">Was vom Gerät kam.</param>
+    /// <returns>„Gerät: … · Anwender: …"; leer, wenn kein Gerät dahintersteht.</returns>
+    public static string Herleitung(FlottenKennwertherkunft herkunft)
+    {
+        if (herkunft == FlottenKennwertherkunft.Keine) return "";
+
+        var vomGeraet = new List<string> { MyResource.Resource.FLOTTE_HERKUNFT_GROESSE };
+        var vomAnwender = new List<string>();
+
+        Teile(herkunft, FlottenKennwertherkunft.Wirkungsgrade,
+              MyResource.Resource.FLOTTE_HERKUNFT_WIRKUNGSGRADE, vomGeraet, vomAnwender);
+        Teile(herkunft, FlottenKennwertherkunft.SocBand,
+              MyResource.Resource.FLOTTE_HERKUNFT_SOCBAND, vomGeraet, vomAnwender);
+        Teile(herkunft, FlottenKennwertherkunft.Hilfsverbrauch,
+              MyResource.Resource.FLOTTE_HERKUNFT_HILFSVERBRAUCH, vomGeraet, vomAnwender);
+        Teile(herkunft, FlottenKennwertherkunft.Kosten,
+              MyResource.Resource.FLOTTE_HERKUNFT_KOSTEN, vomGeraet, vomAnwender);
+
+        // Was ein Gerätesatz NIE führt, steht immer beim Anwender — es steht deshalb
+        // fest am Ende seiner Aufzählung und nicht in der Fallunterscheidung darüber.
+        vomAnwender.Add(MyResource.Resource.FLOTTE_HERKUNFT_BETRIEB);
+
+        string text = string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.FLOTTE_HERKUNFT_GERAET,
+                                    string.Join(", ", vomGeraet));
+        return text + " · " + string.Format(CultureInfo.CurrentCulture,
+                                            MyResource.Resource.FLOTTE_HERKUNFT_ANWENDER,
+                                            string.Join(", ", vomAnwender));
+    }
+
+    private static void Teile(FlottenKennwertherkunft herkunft, FlottenKennwertherkunft marke,
+                              string name, List<string> vomGeraet, List<string> vomAnwender)
+    {
+        if (herkunft.HasFlag(marke)) vomGeraet.Add(name);
+        else vomAnwender.Add(name);
     }
 
     /// <summary>Der Name eines Betriebsziels — DIESELBE Ressource wie im Betriebseditor.</summary>

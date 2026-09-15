@@ -17726,6 +17726,33 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="FLOTTE_GROESSEN_SP_NEUTRAL" xml:space="preserve">
     <value>Neutral values</value>
   </data>
+  <data name="FLOTTE_GROESSEN_SP_HERKUNFT" xml:space="preserve">
+    <value>Derivation</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_GERAET" xml:space="preserve">
+    <value>device: {0}</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_ANWENDER" xml:space="preserve">
+    <value>own input: {0}</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_GROESSE" xml:space="preserve">
+    <value>size</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_WIRKUNGSGRADE" xml:space="preserve">
+    <value>efficiencies</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_SOCBAND" xml:space="preserve">
+    <value>SoC band</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_HILFSVERBRAUCH" xml:space="preserve">
+    <value>auxiliary consumption</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_KOSTEN" xml:space="preserve">
+    <value>investment rates</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_BETRIEB" xml:space="preserve">
+    <value>operating costs and ageing</value>
+  </data>
   <data name="FLOTTE_OPT_QUELLE" xml:space="preserve">
     <value>Devices from</value>
   </data>

@@ -17715,6 +17715,33 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="FLOTTE_GROESSEN_SP_NEUTRAL" xml:space="preserve">
     <value>Neutrale Kennwerte</value>
   </data>
+  <data name="FLOTTE_GROESSEN_SP_HERKUNFT" xml:space="preserve">
+    <value>Herleitung</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_GERAET" xml:space="preserve">
+    <value>Gerät: {0}</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_ANWENDER" xml:space="preserve">
+    <value>eigene Eingabe: {0}</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_WIRKUNGSGRADE" xml:space="preserve">
+    <value>Wirkungsgrade</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_SOCBAND" xml:space="preserve">
+    <value>SoC-Band</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_HILFSVERBRAUCH" xml:space="preserve">
+    <value>Hilfsverbrauch</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_KOSTEN" xml:space="preserve">
+    <value>Investitionssätze</value>
+  </data>
+  <data name="FLOTTE_HERKUNFT_BETRIEB" xml:space="preserve">
+    <value>Betriebskosten und Alterung</value>
+  </data>
   <data name="FLOTTE_OPT_QUELLE" xml:space="preserve">
     <value>Geräte aus</value>
   </data>

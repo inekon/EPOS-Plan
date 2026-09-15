@@ -903,8 +903,12 @@
     {
         Id = NeueId(), Name = string.Format(CultureInfo.CurrentCulture, Texte.StandardEinheit, nummer),
         KapazitaetKWh = 100, LadeleistungKw = 50, EntladeleistungKw = 50,
-        Ladewirkungsgrad = 0.95, Entladewirkungsgrad = 0.95,
-        SocMin = 0.10, SocMax = 0.90, SocStart = 0.50
+        // Die vier neutralen Vorgaben stehen an EINER Stelle (FlottenGeraetevorgaben);
+        // hier ausgeschrieben waeren sie eine zweite Wahrheit.
+        Ladewirkungsgrad = FlottenGeraetevorgaben.LADEWIRKUNGSGRAD,
+        Entladewirkungsgrad = FlottenGeraetevorgaben.ENTLADEWIRKUNGSGRAD,
+        SocMin = FlottenGeraetevorgaben.SOC_MIN, SocMax = FlottenGeraetevorgaben.SOC_MAX,
+        SocStart = 0.50
     };
 
     private static FlottenAuslegungsAchse NeueAchse(FlottenEinheit e) => new()
