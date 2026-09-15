@@ -35,7 +35,8 @@ namespace WindowsFormsApplication1
     // gepflegtem Wert, und eine Projektzeile ist kein Auslieferungsdatum. Ebenso bleiben
     // die Vorlagen der uebrigen neun Komponenten stehen, auch die PV-Position
     // "Batteriespeicher": Sie bemisst den Batteriespeicher einer PV-Anlage, nicht einen
-    // Pufferspeicher, und der Entscheid gilt dem Pufferspeicher.
+    // Pufferspeicher, und dieser Entscheid gilt dem Pufferspeicher. Ihr eigener Fall ist
+    // ein eigener Schritt (PvVorlageBatteriespeicher, Schemaschritt 78).
     //
     // WARUM HIER UND NICHT IN DER MIGRATION. Dieselbe Begruendung wie bei
     // WechselrichterSchema (65), AnlageStrangSchema (66), SpeicherAuslegungStrict (74),

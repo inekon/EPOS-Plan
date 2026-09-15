@@ -88,6 +88,13 @@ namespace Testdatenbankschema
     /// Quelle, aus der sich <c>SchemaMigration.Schritt_77_PufferVolumenbemessung</c>
     /// bedient. Ergebnisneutral: Umgestellt wird nur eine Zeile OHNE gepflegten Satz;
     /// sie gibt allein die Art vor, keine Zahl.</para>
+    ///
+    /// <para><b>Schritt 78</b> (Auftrag #287) stellt die ausgelieferte
+    /// Investitionsposition "Batteriespeicher" der Photovoltaik auf den FESTEN BETRAG um -
+    /// aus <c>PvVorlageBatteriespeicher</c>, wieder DIESELBE Quelle, aus der sich
+    /// <c>SchemaMigration.Schritt_78_PvBatteriespeicher</c> bedient. Ergebnisneutral:
+    /// Umgestellt wird nur eine Zeile OHNE gepflegten Satz; sie gibt allein die Art vor,
+    /// keine Zahl.</para>
     /// </summary>
     internal static class Program
     {
@@ -353,6 +360,29 @@ namespace Testdatenbankschema
                     DataRepository.ExecuteNonQuery(PufferspeicherBemessungVolumen.SQL_UMSTELLEN);
                 Console.WriteLine("Schritt 77 - offen jetzt " +
                                   Zahl(PufferspeicherBemessungVolumen.Zaehlung()) +
+                                  " (erwartet 0).");
+            }
+            Console.WriteLine();
+
+            // ---- Schritt 78: der feste Betrag fuer die PV-Position "Batteriespeicher"
+            //      (Auftrag #287). Die eine Anweisung kommt aus PvVorlageBatteriespeicher
+            //      - DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_78_PvBatteriespeicher bedient.
+            //      Ergebnisneutral: Umgestellt wird nur eine Vorlagenzeile OHNE
+            //      gepflegten Satz - sie gibt allein die Art vor, keine Zahl. Eine Zeile
+            //      MIT Satz bliebe eine Zahl je kWh und wuerde durch die Umstellung zu
+            //      einem Gesamtbetrag; genau das ist ausgeschlossen.
+            if (!trocken)
+            {
+                long offen = Zahl(PvVorlageBatteriespeicher.Zaehlung());
+                long gepflegt = Zahl(PvVorlageBatteriespeicher.ZaehlungGepflegt());
+                Console.WriteLine("Schritt 78 - PV-Vorlage \"" +
+                                  PvVorlageBatteriespeicher.POSITION + "\": umzustellen " +
+                                  offen + ", mit gepflegtem Satz (bleibt) " + gepflegt + ".");
+                if (offen > 0)
+                    DataRepository.ExecuteNonQuery(PvVorlageBatteriespeicher.SQL_UMSTELLEN);
+                Console.WriteLine("Schritt 78 - offen jetzt " +
+                                  Zahl(PvVorlageBatteriespeicher.Zaehlung()) +
                                   " (erwartet 0).");
             }
             Console.WriteLine();

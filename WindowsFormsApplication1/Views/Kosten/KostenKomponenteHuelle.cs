@@ -656,9 +656,11 @@ namespace WindowsFormsApplication1
         /// UND nach dem Gewerk, dazu jede Bemessung, die eine vorhandene Zeile bereits
         /// trägt (sonst verlöre eine Bestandsposition beim Anzeigen ihren Wert).
         ///
-        /// <para><b>ANWENDERENTSCHEID 15.09.2026:</b> Eine Art, für die dieses Gewerk gar
-        /// keine Bezugsgröße führt, steht nicht mehr in der Auswahl — am Pufferspeicher
-        /// also nicht mehr „je kWh Kapazität". Die Zuordnung Art↔Gewerk steht an EINER
+        /// <para><b>ANWENDERENTSCHEID 15.09.2026:</b> Eine Art, für die das Gewerk gar
+        /// keine Bezugsgröße führt, steht nicht mehr in der Auswahl — an ALLEN ZEHN
+        /// Gewerken: am Pufferspeicher also nicht mehr „je kWh Kapazität", an der
+        /// Wärmepumpe nicht mehr „je kWp Leistung", an der Photovoltaik nicht mehr „je m²
+        /// Kollektorfläche". Die Zuordnung Art↔Gewerk steht an EINER
         /// Stelle im Kern (<see cref="BemessungKatalog.Auswahl"/>), die ihrerseits die
         /// Landkarte der Bezugsgrößen liest; die Hülle führt keine zweite Liste.</para>
         /// </summary>

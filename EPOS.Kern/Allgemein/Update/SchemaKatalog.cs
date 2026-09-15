@@ -2790,12 +2790,23 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Bauliche Anlagen (Gerüst etc.)", ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
             }),
+            // ANWENDERENTSCHEID 15.09.2026: Die Photovoltaik führt keine kWh-Kapazität —
+            // ihre einzige Baugröße ist die installierte Leistung in kWp (Modulanzahl ×
+            // Modulleistung). Die Position „Batteriespeicher" trägt deshalb den FESTEN
+            // BETRAG wie die übrigen Gerätepositionen dieser Vorlage (Wechselrichter,
+            // Montagesystem, Bauliche Anlagen); ein Satz je kWp bemäße den Preis eines
+            // Geräts an der Größe eines anderen. Wer nach der Kapazität bemessen will,
+            // nimmt das Gewerk Stromspeicher — dort ist sie die Baugröße. Dieselbe Art
+            // zieht Migrationsschritt 78 an einer bestehenden Datenbank nach
+            // (PvVorlageBatteriespeicher) — Saat und Nachzug dürfen nicht
+            // auseinanderlaufen.
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
                 new VorlagenPositionSeed("PV-Module", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWP),
                 new VorlagenPositionSeed("Wechselrichter", ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed("Montagesystem / Unterkonstruktion", ART_KAP, BM_BETRAG),
-                new VorlagenPositionSeed("Batteriespeicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
+                new VorlagenPositionSeed(PvVorlageBatteriespeicher.POSITION, ART_KAP,
+                                         PvVorlageBatteriespeicher.BEMESSUNG_NEU),
                 new VorlagenPositionSeed("Elektrotechnik / Netzanschluss", ART_KAP, BM_PERZ),
                 new VorlagenPositionSeed("Montage und Installation", ART_KAP, BM_PINV),
                 new VorlagenPositionSeed("Bauliche Anlagen (Gerüst etc.)", ART_KAP, BM_BETRAG),

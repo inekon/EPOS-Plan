@@ -82,22 +82,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die übrigen Gewerke bleiben UNVERÄNDERT: Ihre Auswahl ist Wort für Wort die
-        /// Katalogliste nach Invest/Betrieb, wie vor dem Entscheid. Die Regel
-        /// <see cref="BemessungKatalog.PasstZuGewerk"/> ist vollständig und für alle
-        /// Gewerke geprüft, greift aber nur im benannten Geltungsbereich.
+        /// Der Geltungsbereich umfasst alle zehn Gewerke (zweiter Entscheid vom
+        /// 15.09.2026, Auftrag #287): Der Pufferspeicher ist darin kein Sonderfall mehr,
+        /// sondern das Gewerk, an dem die Regel zuerst scharf geschaltet wurde. Was JEDES
+        /// Gewerk anbietet und was nicht, steht Wort für Wort in
+        /// <c>BemessungsauswahlJeGewerkTests</c>.
         /// </summary>
         [Fact]
-        public void Die_uebrigen_Gewerke_behalten_ihre_vollstaendige_Auswahl()
+        public void Auch_die_uebrigen_Gewerke_stehen_im_Geltungsbereich()
         {
             foreach (int k in ALLE_GEWERKE)
-            {
-                if (k == K_PUFFER) continue;
-                Assert.False(BemessungKatalog.AuswahlWirdGefiltert(k),
-                             "Gewerk " + k + " steht unerwartet im Geltungsbereich.");
-                Assert.Equal(Rasterliste(true), Persistenzwerte(k, true));
-                Assert.Equal(Rasterliste(false), Persistenzwerte(k, false));
-            }
+                Assert.True(BemessungKatalog.AuswahlWirdGefiltert(k),
+                            "Gewerk " + k + " fehlt im Geltungsbereich.");
         }
 
         /// <summary>Ohne bekanntes Gewerk (0) wird nicht gefiltert — sonst verschwänden
@@ -317,7 +313,8 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.Equal(77, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= 77,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 77.");
             Assert.True(Zahl("SELECT SchemaVersion FROM Tab_Applikation") >= SchemaStand.Zielversion);
         }
 
