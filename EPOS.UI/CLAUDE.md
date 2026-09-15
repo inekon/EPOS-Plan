@@ -45,14 +45,13 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
 - **Tastatur:** Esc schließt überall, wobei jeder Wirt erst seine Überlagerungsschalter prüft;
   **Enter** bestätigt nur in reinen OK-Dialogen — wo ein Knopf sofort schreibt, bleibt es
   unbelegt. **Kein Delegat, kein Knopf.**
-- **Ein Dialog ohne Knopfleiste schließt PRÜFEND** (einziger Fall: `QuelleErdreichDialog`): Er
-  hat kein OK, das Schließen der `Ueberlagerung` (✕ oder Esc) ÜBERNIMMT und läuft dabei durch
-  dieselben Prüfregeln; eine verletzte Regel meldet und hält den Dialog offen — Schließen darf
-  keine Eingabe still verwerfen. Der Wirt schließt dafür nicht selbst, sondern ruft aus dem
-  `Geschlossen`-Rückruf seiner `Ueberlagerung` über einen `@ref` die **eine** öffentliche
-  Methode des Dialogs; der Dialog hält Esc an seiner Wurzel an
-  (`@onkeydown:stopPropagation`), damit der Tastendruck nicht zusätzlich die Überlagerung
-  auslöst. Der Baustein `Ueberlagerung` bleibt dafür unverändert.
+- **Jeder Dialog trägt OK und Abbrechen** — als `SpeichernLeiste`, nie als eigene Knopfzeile:
+  **OK** prüft, speichert und schließt; eine verletzte Regel meldet und hält den Dialog offen.
+  **Abbrechen** schließt ohne zu speichern und ohne Prüfung, und **✕ der `Ueberlagerung` sowie
+  Esc** wirken wie Abbrechen — der Wirt schließt dafür selbst, er fragt den Dialog nicht.
+  Die Prüfregeln stehen genau **einmal**, im Rückruf der Leiste, und gelten auf jedem Weg, der
+  speichert. Die eine Ausnahme ist der Dialog, der schon beim Speichern schreibt: Er trägt
+  „Speichern" und „Schließen" (`MitAbbrechen="false"`), weil es dort nichts zu verwerfen gibt.
 
 ### Stilblatt
 
