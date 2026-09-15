@@ -980,78 +980,6 @@ Anlage** (die Projekttabelle kennt keine Stückzahl; eine n-fach große Anlage w
 **Rückschreiben statt Dublette**, wenn die Einheit schon eine Projektanlage vertritt. Beides steht in 8.3 und lässt sich in der
 Abnahme umkehren.
 
-### 8.9 Die Größensuche wählt GERÄTE — Anwenderentscheid vom 15.09.2026
-
-> „Größensuch Stromspeicher nur über Kapazität und Leistung im Katalog des Projektes oder
-> wahlweise aus Stammdaten. Bei Such aus Stammdaten mit Möglichkeit der Übernahme aus Stammdaten
-> in Projekt."
-
-**Dieser Abschnitt gilt vor 8.2 und 8.3, wo diese vom Rastern einer freien Größe sprechen.**
-
-**Was gesucht wird.** Der Anwender gibt je einen Bereich für Kapazität [kWh] und Leistung [kW] vor
-und wählt die Quelle — **Projektkatalog** (`Tab_Stromspeicher` des offenen Projekts) oder
-**Stammdaten** (`Tab_Stromspeicher_STAMM`). Gerechnet werden die Speicher, die es wirklich gibt;
-es wird nichts skaliert und nichts gerastert. Es kommt heraus, was man kaufen kann.
-
-**Die C-Rate ist keine Achse mehr.** Sie ist die abgeleitete Kennzahl `C = P / E` jedes Geräts und
-steht in der Geräteliste und in der Kandidatentabelle, aber in keinem Eingabefeld.
-`FlottenAuslegungsmodus.KapazitaetUndLeistung` ist die einzige gültige Kopplung; die zwei
-C-Rate-Kopplungen sind Lesewerte älterer Stände. `FlottenAltstand.Normalisiere` setzt sie benannt
-um: Der Leistungsbereich entsteht aus den Ecken `P = E · C`, der Kapazitätsbereich als `E = P / C`
-(die schnellste C-Rate ergibt die kleinste Kapazität). Die Absicht des Anwenders bleibt damit
-erhalten, statt still verworfen zu werden; ohne brauchbare C-Raten bleibt der gespeicherte Bereich
-stehen, und die Vorprüfung sagt, was fehlt.
-
-**Die Auswahlregel** (`FlottenGeraetewahl.Waehle`, eine Stelle für Kandidatenzeile, Geräteliste,
-Kandidatentabelle und Lauf):
-
-1. Ein Gerät ist ein **Treffer**, wenn seine Kapazität im Kapazitätsbereich **und** seine
-   Entladeleistung im Leistungsbereich liegt (Grenzen eingeschlossen). Sein Abstand ist 0.
-2. **Gibt es Treffer, gibt es nur Treffer** — wer einen Bereich vorgibt und Geräte darin findet,
-   will nicht daneben rechnen.
-3. Sonst kommen die **nächstliegenden**, höchstens fünf (`NAECHSTLIEGENDE_HOECHSTENS`).
-
-Der Abstand je Größe ist der Überstand über den Bereich, bezogen auf die **Bereichsmitte**; beide
-Anteile werden addiert:
-
-```text
-ueberstand(x) = x < von ? von − x : x > bis ? x − bis : 0
-bezug         = (von + bis) / 2
-Abstand       = ueberstand(E)/bezug_E + ueberstand(P)/bezug_P
-```
-
-Normiert wird, weil kWh und kW sonst nicht vergleichbar wären; die **Mitte** statt der Breite, weil
-ein Bereich zu einem Punkt zusammenfallen darf (`von == bis`) und die Breite dort 0 wäre; die
-**Summe** statt des Euklid, weil ein Gerät, das in beiden Größen danebenliegt, schlechter passt als
-eines, das nur in einer danebenliegt — und weil sie ohne Wurzel auskommt. Sortiert wird nach
-Abstand, Kapazität, Leistung und zuletzt der je Quelle eindeutigen Quellkennung; zwei Läufe auf
-derselben Datenbank liefern dieselbe Reihenfolge. **Die Abweichung steht in der Kandidatentabelle**
-(Spalte in Prozent), damit ein naheliegendes Gerät nicht für einen Treffer gehalten wird.
-
-**Kandidatenzahl, Schranke, Feinraster.** Die Kandidatenzahl ist die Zahl der gefundenen Geräte mal
-der Zahl der Betriebsziele — nicht mehr das Produkt zweier Rasterachsen. Sie kann nicht mehr
-explodieren; die Schranke „Maximale Auslegungskandidaten" bleibt als Fangnetz für einen sehr großen
-Bestand stehen. **Die zweite Suchphase entfällt**: Sie verfeinerte die Größenachse zwischen ihren
-Stützstellen, was eine frei skalierbare Größe voraussetzt. Zwischen zwei Geräten liegt kein
-drittes; eine zwischengerechnete Größe wäre ein Speicher, den es nicht gibt — dieselbe Begründung
-wie bei „Stückzahl suchen" (SD‑Q16). `FlottenAuslegungEingang.Feinraster` bleibt als Lesefeld
-älterer Stände erhalten und wirkt nicht mehr.
-
-**Die Parameter kommen vom Gerät** — Wirkungsgrade, SoC-Fenster und Alterung; dafür sind es Geräte.
-Fehlen sie, greifen die neutralen Vorgaben aus `FlottenGeraetevorgaben` an EINER Stelle: Lade- und
-Entladewirkungsgrad je 95 %, SoC-Fenster 10 bis 90 %, keine Alterung. Der Kandidat wird dabei
-gekennzeichnet. Ein Katalogsatz führt keine Betriebsführung (das SoC-Fenster steht nirgends in
-`Tab_Stromspeicher_STAMM`) und trägt die Kennzeichnung deshalb immer.
-
-**Die Übernahme ins Projekt** nimmt den Weg aus #247
-(`SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen`, SD‑Q15): Aus den gewählten Einheiten
-werden Speicheranlagen des Projekts, je Stück eine, alles in einer Transaktion. Ein zweiter Weg
-wird nicht gebaut — er wäre eine zweite Wahrheit darüber, was „in das Projekt übernehmen" heißt.
-Die Stammdaten bleiben dabei unberührt.
-
-**„Stückzahl suchen" bleibt unverändert** (#246/#247): Dort ist das Gerät fest und die Stückzahl die
-Variable. Die beiden Methoden ergeben das Paar **welches** Gerät und **wie viele** davon.
-
 ### 8.6 Stufenplan
 
 - **#247 (Umsetzung, nach Entscheid):** Engine — `Suchmethode` mit Kandidatenzahl, Feinraster, `BildeAchse` und Vorprüfung je
@@ -1325,3 +1253,75 @@ und neuen Vorgaben, schnelle Stufe ohne Datenbankvorgang), zwei in `FlottenPlaus
 (ohne Reihe fehlen genau die Peak-Ziel-Hinweise; Eingang und Istreihe liefern dasselbe) und acht
 in `EPOS.UI.Tests/Seiten/Strom/VorpruefungEntprelltTests`. **Referenzlauf Projekt 1046 gegen
 `2026-09-11_R7_Speicherflotte`: PASS und byte-gleich** — der Rechenweg ist unverändert.
+
+### 8.9 Die Größensuche wählt GERÄTE — Anwenderentscheid vom 15.09.2026
+
+> „Größensuch Stromspeicher nur über Kapazität und Leistung im Katalog des Projektes oder
+> wahlweise aus Stammdaten. Bei Such aus Stammdaten mit Möglichkeit der Übernahme aus Stammdaten
+> in Projekt."
+
+**Dieser Abschnitt gilt vor 8.2 und 8.3, wo diese vom Rastern einer freien Größe sprechen.**
+
+**Was gesucht wird.** Der Anwender gibt je einen Bereich für Kapazität [kWh] und Leistung [kW] vor
+und wählt die Quelle — **Projektkatalog** (`Tab_Stromspeicher` des offenen Projekts) oder
+**Stammdaten** (`Tab_Stromspeicher_STAMM`). Gerechnet werden die Speicher, die es wirklich gibt;
+es wird nichts skaliert und nichts gerastert. Es kommt heraus, was man kaufen kann.
+
+**Die C-Rate ist keine Achse mehr.** Sie ist die abgeleitete Kennzahl `C = P / E` jedes Geräts und
+steht in der Geräteliste und in der Kandidatentabelle, aber in keinem Eingabefeld.
+`FlottenAuslegungsmodus.KapazitaetUndLeistung` ist die einzige gültige Kopplung; die zwei
+C-Rate-Kopplungen sind Lesewerte älterer Stände. `FlottenAltstand.Normalisiere` setzt sie benannt
+um: Der Leistungsbereich entsteht aus den Ecken `P = E · C`, der Kapazitätsbereich als `E = P / C`
+(die schnellste C-Rate ergibt die kleinste Kapazität). Die Absicht des Anwenders bleibt damit
+erhalten, statt still verworfen zu werden; ohne brauchbare C-Raten bleibt der gespeicherte Bereich
+stehen, und die Vorprüfung sagt, was fehlt.
+
+**Die Auswahlregel** (`FlottenGeraetewahl.Waehle`, eine Stelle für Kandidatenzeile, Geräteliste,
+Kandidatentabelle und Lauf):
+
+1. Ein Gerät ist ein **Treffer**, wenn seine Kapazität im Kapazitätsbereich **und** seine
+   Entladeleistung im Leistungsbereich liegt (Grenzen eingeschlossen). Sein Abstand ist 0.
+2. **Gibt es Treffer, gibt es nur Treffer** — wer einen Bereich vorgibt und Geräte darin findet,
+   will nicht daneben rechnen.
+3. Sonst kommen die **nächstliegenden**, höchstens fünf (`NAECHSTLIEGENDE_HOECHSTENS`).
+
+Der Abstand je Größe ist der Überstand über den Bereich, bezogen auf die **Bereichsmitte**; beide
+Anteile werden addiert:
+
+```text
+ueberstand(x) = x < von ? von − x : x > bis ? x − bis : 0
+bezug         = (von + bis) / 2
+Abstand       = ueberstand(E)/bezug_E + ueberstand(P)/bezug_P
+```
+
+Normiert wird, weil kWh und kW sonst nicht vergleichbar wären; die **Mitte** statt der Breite, weil
+ein Bereich zu einem Punkt zusammenfallen darf (`von == bis`) und die Breite dort 0 wäre; die
+**Summe** statt des Euklid, weil ein Gerät, das in beiden Größen danebenliegt, schlechter passt als
+eines, das nur in einer danebenliegt — und weil sie ohne Wurzel auskommt. Sortiert wird nach
+Abstand, Kapazität, Leistung und zuletzt der je Quelle eindeutigen Quellkennung; zwei Läufe auf
+derselben Datenbank liefern dieselbe Reihenfolge. **Die Abweichung steht in der Kandidatentabelle**
+(Spalte in Prozent), damit ein naheliegendes Gerät nicht für einen Treffer gehalten wird.
+
+**Kandidatenzahl, Schranke, Feinraster.** Die Kandidatenzahl ist die Zahl der gefundenen Geräte mal
+der Zahl der Betriebsziele — nicht mehr das Produkt zweier Rasterachsen. Sie kann nicht mehr
+explodieren; die Schranke „Maximale Auslegungskandidaten" bleibt als Fangnetz für einen sehr großen
+Bestand stehen. **Die zweite Suchphase entfällt**: Sie verfeinerte die Größenachse zwischen ihren
+Stützstellen, was eine frei skalierbare Größe voraussetzt. Zwischen zwei Geräten liegt kein
+drittes; eine zwischengerechnete Größe wäre ein Speicher, den es nicht gibt — dieselbe Begründung
+wie bei „Stückzahl suchen" (SD‑Q16). `FlottenAuslegungEingang.Feinraster` bleibt als Lesefeld
+älterer Stände erhalten und wirkt nicht mehr.
+
+**Die Parameter kommen vom Gerät** — Wirkungsgrade, SoC-Fenster und Alterung; dafür sind es Geräte.
+Fehlen sie, greifen die neutralen Vorgaben aus `FlottenGeraetevorgaben` an EINER Stelle: Lade- und
+Entladewirkungsgrad je 95 %, SoC-Fenster 10 bis 90 %, keine Alterung. Der Kandidat wird dabei
+gekennzeichnet. Ein Katalogsatz führt keine Betriebsführung (das SoC-Fenster steht nirgends in
+`Tab_Stromspeicher_STAMM`) und trägt die Kennzeichnung deshalb immer.
+
+**Die Übernahme ins Projekt** nimmt den Weg aus #247
+(`SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen`, SD‑Q15): Aus den gewählten Einheiten
+werden Speicheranlagen des Projekts, je Stück eine, alles in einer Transaktion. Ein zweiter Weg
+wird nicht gebaut — er wäre eine zweite Wahrheit darüber, was „in das Projekt übernehmen" heißt.
+Die Stammdaten bleiben dabei unberührt.
+
+**„Stückzahl suchen" bleibt unverändert** (#246/#247): Dort ist das Gerät fest und die Stückzahl die
+Variable. Die beiden Methoden ergeben das Paar **welches** Gerät und **wie viele** davon.
