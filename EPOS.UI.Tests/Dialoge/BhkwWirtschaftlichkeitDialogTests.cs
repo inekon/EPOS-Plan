@@ -994,8 +994,13 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     // Schliessen und Sprung
     // =====================================================================
 
+    /// <summary>
+    /// ANWENDERENTSCHEID 15.09.2026, Fall (a): Wer nur nachschlaegt und nichts
+    /// aendert, loest mit dem Sprung KEINEN Schreibzugriff aus. Gesprungen wird
+    /// trotzdem — ein Sprung ist kein Abbruch.
+    /// </summary>
     [Fact]
-    public void Die_beiden_Sprungknoepfe_melden_ihr_Ziel_und_nehmen_den_OK_Weg()
+    public void Ohne_Aenderung_springt_der_Knopf_ohne_einen_Schreibzugriff()
     {
         var z = new Schreibzaehler();
         BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
@@ -1003,22 +1008,97 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
                            speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
 
         cut.FindAll("button.epos-sprung")[0].Click();
+
         Assert.Equal(BhkwSprung.Strombezug, ergebnis!.Sprung);
-        Assert.True(ergebnis.Gespeichert);
-        Assert.Equal(3, z.Zugriffe);
+        Assert.Equal(0, z.Zugriffe);
+        Assert.False(ergebnis.Gespeichert);   // nichts geschrieben, nichts neu zu rechnen
 
         var z2 = new Schreibzaehler();
         var cut2 = Aufbauen(beimSchliessen: e => ergebnis = e,
                             speichereAnlage: z2.Anlage, speichereVorgaben: z2.Vorgaben);
         cut2.FindAll("button.epos-sprung")[1].Click();
+
         Assert.Equal(BhkwSprung.BhkwTarif, ergebnis!.Sprung);
-        Assert.Equal(3, z2.Zugriffe);
+        Assert.Equal(0, z2.Zugriffe);
     }
 
+    /// <summary>
+    /// Fall (b): Geaendert — dann schreibt der Sprung, aber GENAU das betroffene
+    /// Ziel. Eine geaenderte Anlagenzeile zieht weder die zweite Zeile noch die
+    /// Projektvorgaben mit.
+    /// </summary>
     [Fact]
-    public void Die_Zeile_unter_den_Sprungknoepfen_sagt_dass_der_Sprung_speichert()
+    public void Eine_geaenderte_Anlagenzeile_schreibt_nur_diese_Zeile_und_springt()
+    {
+        var anlagen = ZweiAnlagen();
+        var p = new WirtschaftlichkeitParameter();
+        var z = new Schreibzaehler();
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(anlagen, p, e => ergebnis = e, z.Anlage, z.Vorgaben);
+
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
+        cut.FindAll("button.epos-sprung")[0].Click();
+
+        Assert.Equal(new[] { "Anlage:BHKW EW M 50 S [K] Erdgas" }, z.Wege);
+        Assert.Equal(5.57, anlagen[0].SatzEinspCt);
+        Assert.Null(anlagen[1].SatzEinspCt);
+        Assert.Equal(BhkwSprung.Strombezug, ergebnis!.Sprung);
+        Assert.True(ergebnis.Gespeichert);
+    }
+
+    /// <summary>Fall (b), die andere Seite: nur die Projektvorgaben geaendert.</summary>
+    [Fact]
+    public void Geaenderte_Projektvorgaben_schreiben_nur_die_Vorgaben_und_springen()
+    {
+        var anlagen = ZweiAnlagen();
+        var p = new WirtschaftlichkeitParameter();
+        var z = new Schreibzaehler();
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(anlagen, p, e => ergebnis = e, z.Anlage, z.Vorgaben);
+
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
+        cut.FindAll("button.epos-sprung")[1].Click();
+
+        Assert.Equal(new[] { "Vorgaben" }, z.Wege);
+        Assert.True(p.RaeumlicherZusammenhang);
+        Assert.Equal(BhkwSprung.BhkwTarif, ergebnis!.Sprung);
+        Assert.True(ergebnis.Gespeichert);
+    }
+
+    /// <summary>
+    /// Fall (c), Muster Ae25: Schlaegt das Schreiben fehl, findet der Sprung
+    /// NICHT statt und die Maske bleibt offen — mit demselben Fehlerband wie im
+    /// OK-Weg.
+    /// </summary>
+    [Fact]
+    public void Scheitert_das_Schreiben_findet_der_Sprung_nicht_statt()
+    {
+        var z = new Schreibzaehler { VorgabenAntwort = _ => false };
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(beimSchliessen: e => ergebnis = e,
+                           speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
+
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
+        cut.FindAll("button.epos-sprung")[0].Click();
+
+        Assert.Null(ergebnis);                 // kein Sprung, die Maske bleibt offen
+        Assert.False(cut.Instance.Gespeichert);
+        Assert.Equal("1 Angabe(n) konnten nicht gespeichert werden.",
+                     cut.FindAll(".epos-warnbanner-text")[^1].TextContent);
+    }
+
+    /// <summary>
+    /// Der Satz unter den Knoepfen kuendigt das Schreiben an — er steht deshalb
+    /// nur, wenn ein Sprung jetzt wirklich schreiben wuerde.
+    /// </summary>
+    [Fact]
+    public void Die_Zeile_unter_den_Sprungknoepfen_steht_nur_bei_geaendertem_Stand()
     {
         var cut = Aufbauen();
+
+        Assert.DoesNotContain("Der Sprung speichert die Eingaben", Koerper(cut, 4).TextContent);
+
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
 
         Assert.Contains("Der Sprung speichert die Eingaben", Koerper(cut, 4).TextContent);
     }

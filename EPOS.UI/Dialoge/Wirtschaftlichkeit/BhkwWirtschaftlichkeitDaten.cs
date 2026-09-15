@@ -296,6 +296,28 @@ public sealed class BhkwAnlagenstand
         HilfsenergieAnteil = a.HilfsenergieAnteil
     };
 
+    /// <summary>
+    /// Trägt die geladene Zeile <paramref name="a"/> noch WERTGLEICH das, was
+    /// der Arbeitsstand führt? Dann hat der Anwender an dieser Zeile nichts
+    /// geändert, und ein Schreiben wäre folgenlos — schlimmer: In einer
+    /// Mehrbenutzerlage überschriebe es die Änderung eines anderen mit dem
+    /// eigenen geladenen Stand. Die Sprungknöpfe fragen deshalb hier, statt
+    /// sich auf ein Merkflag zu verlassen: Ein Flag kippt schon bei einem
+    /// Fokuswechsel oder einem Neuzeichnen, ein Wertvergleich nicht.
+    /// </summary>
+    public bool Gleicht(KwkgAnlagenAngabe a)
+        => Stichtag == a.Stichtag
+        && Inbetriebnahme == a.Inbetriebnahme
+        && Anlagenart == (a.Anlagenart ?? "")
+        && Eigenfall == (a.Eigenfall ?? "")
+        && SatzEinspCt == a.SatzEinspCt
+        && SatzEigenCt == a.SatzEigenCt
+        && VbhKontingent == a.VbhKontingent
+        && VbhDeckel == a.VbhDeckel
+        && EnergiesteuerWahl == (a.EnergiesteuerWahl ?? "")
+        && AufteilungMethode == (a.AufteilungMethode ?? "")
+        && HilfsenergieAnteil == a.HilfsenergieAnteil;
+
     /// <summary>Den Stand auf die geladene Zeile legen — NUR im OK-Weg.</summary>
     public void Anwenden(KwkgAnlagenAngabe a)
     {
@@ -398,6 +420,33 @@ public sealed class BhkwVorgabenstand
         RaeumlicherZusammenhang = p.RaeumlicherZusammenhang,
         HocheffizienzNachweis = p.HocheffizienzNachweis
     };
+
+    /// <summary>
+    /// Trägt der geladene Parametersatz <paramref name="p"/> noch WERTGLEICH
+    /// das, was der Arbeitsstand führt? Dann hat der Anwender an den Vorgaben
+    /// nichts geändert — derselbe Grund wie bei
+    /// <see cref="BhkwAnlagenstand.Gleicht"/>: Wer nur nachschlägt, soll keinen
+    /// Schreibzugriff auslösen, und ein Schreiben ohne Änderung überschriebe in
+    /// einer Mehrbenutzerlage fremde Änderungen mit dem eigenen geladenen Stand.
+    /// </summary>
+    public bool Gleicht(WirtschaftlichkeitParameter p)
+        => KwkgBonus == p.KwkgBonus
+        && KwkgBonusEinspeisung == p.KwkgBonusEinspeisung
+        && KwkgVbhJahresdeckel == p.KwkgVbhJahresdeckel
+        && KwkgVbhKontingent == p.KwkgVbhKontingent
+        && KwkgAbschlagNegativ == p.KwkgAbschlagNegativ
+        && KwkgTatbestand == (p.KwkgTatbestand ?? "")
+        && KwkgAnlagenart == (p.KwkgAnlagenart ?? "")
+        && KwkgKostenanteil == p.KwkgKostenanteil
+        && KwkgPauschalmodus == p.KwkgPauschalmodus
+        && KwkgStichtag == p.KwkgStichtag
+        && KwkgInbetriebnahme == p.KwkgInbetriebnahme
+        && EnergiesteuerWahl == (p.EnergiesteuerWahl ?? "")
+        && AufteilungMethode == (p.AufteilungMethode ?? "")
+        && Jahresnutzungsgrad == p.Jahresnutzungsgrad
+        && Unternehmensart == (p.Unternehmensart ?? "")
+        && RaeumlicherZusammenhang == p.RaeumlicherZusammenhang
+        && HocheffizienzNachweis == p.HocheffizienzNachweis;
 
     /// <summary>Den Stand auf den geladenen Parametersatz legen — NUR im OK-Weg.</summary>
     public void Anwenden(WirtschaftlichkeitParameter p)

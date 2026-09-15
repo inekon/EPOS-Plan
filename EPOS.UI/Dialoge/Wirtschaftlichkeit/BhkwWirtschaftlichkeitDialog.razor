@@ -32,7 +32,12 @@
    Ueberlagerung und Esc verlassen den Dialog OHNE einen einzigen
    Schreibzugriff - und ohne dass ein hereingereichtes Objekt sich veraendert
    haette. Die beiden Sprungknoepfe nehmen denselben Weg wie OK: Sie schreiben
-   und schliessen, sonst waeren die Eingaben mit dem Sprung verloren.
+   und schliessen, sonst waeren die Eingaben mit dem Sprung verloren - aber sie
+   schreiben NUR, wenn sich der Arbeitsstand seit dem Laden wertlich geaendert
+   hat. Wer nur nachschlagen will, soll keinen Schreibzugriff ausloesen; ein
+   Schreiben ohne Aenderung ueberschriebe in einer Mehrbenutzerlage fremde
+   Aenderungen mit dem eigenen geladenen Stand. Scheitert das Schreiben, findet
+   der Sprung nicht statt und die Maske bleibt offen.
 
    NULLSEMANTIK durchgehend: An der Anlage heisst leer bzw. 0 "kein eigener
    Wert - es gilt die Projektvorgabe" (E6-/B3a-Muster); nur beim
@@ -309,7 +314,12 @@
             <button type="button" class="epos-knopf epos-sprung"
                     @onclick="SprungBhkwTarif">@_t.BtnBhkwTarif</button>
 
-            <Herleitungszeile Text="@_t.SSprungHinweis" />
+            @* Der Satz kuendigt das Schreiben an - er steht deshalb nur, wenn ein
+               Sprung jetzt wirklich schreiben wuerde (Anwenderentscheid 15.09.2026). *@
+            @if (SprungSchreibtMit)
+            {
+                <Herleitungszeile Text="@_t.SSprungHinweis" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -1006,29 +1016,44 @@
     /// Was geschrieben ist, gilt und wird bei einem zweiten OK nicht wiederholt;
     /// die uebrigen Schritte laufen trotz eines Fehlschlags weiter, damit die Zahl
     /// stimmt.</para>
+    ///
+    /// <para><b><paramref name="nurBeiAenderung"/> — der Sprungweg (#289).</b> Die
+    /// zwei Sprungknoepfe schreiben nur, was sich seit dem Laden WERTLICH
+    /// geaendert hat: Wer nur nachschlagen will, soll keinen Schreibzugriff
+    /// ausloesen, und ein Schreiben ohne Aenderung ueberschriebe in einer
+    /// Mehrbenutzerlage fremde Aenderungen mit dem eigenen geladenen Stand.
+    /// Gemessen wird am Wert (<c>BhkwAnlagenstand.Gleicht</c>,
+    /// <c>BhkwVorgabenstand.Gleicht</c>), nicht an einem Merkflag - ein Flag
+    /// kippt schon bei einem Fokuswechsel. Der OK-Weg bleibt unberuehrt: Er
+    /// schreibt wie bisher jede noch nicht geschriebene Zeile.</para>
     /// </summary>
-    private async Task Schreiben(BhkwSprung sprung)
+    private async Task Schreiben(BhkwSprung sprung, bool nurBeiAenderung = false)
     {
         int fehler = 0;
+        bool geschrieben = false;
 
         for (int i = 0; i < Anlagen.Count && i < _staende.Count; i++)
         {
             if (_anlageGeschrieben[i]) continue;
+            if (nurBeiAenderung && _staende[i].Gleicht(Anlagen[i])) continue;
 
             _staende[i].Anwenden(Anlagen[i]);
             if (SpeichereAnlage is not null && !SpeichereAnlage(Anlagen[i])) { fehler++; continue; }
             _anlageGeschrieben[i] = true;
+            geschrieben = true;
         }
 
-        if (!_vorgabenGeschrieben)
+        if (!_vorgabenGeschrieben && !(nurBeiAenderung && _vorgaben.Gleicht(Parameter)))
         {
             // K3 = a: Der Modus des § 9 Abs. 1 Nr. 3 wird NICHT geschrieben - es gibt
             // dafuer bis B6 (M-3) keine Spalte; er steht auch nicht im Arbeitsstand.
             _vorgaben.Anwenden(Parameter);
             if (SpeichereVorgaben is not null && !SpeichereVorgaben(Parameter)) fehler++;
-            else _vorgabenGeschrieben = true;
+            else { _vorgabenGeschrieben = true; geschrieben = true; }
         }
 
+        // Scheitert ein Schritt, findet der Sprung NICHT statt und die Maske bleibt
+        // offen (Muster Ae25) - derselbe Ausgang wie beim OK-Weg.
         if (fehler > 0)
         {
             _meldung = string.Format(_t.MsgFehler, fehler);
@@ -1036,10 +1061,16 @@
             return;
         }
 
-        _gespeichert = true;
+        // Der OK-Weg meldet "gespeichert" wie bisher unbedingt; der Sprungweg nur,
+        // wenn wirklich etwas geschrieben wurde - sonst haette der Wirt keinen
+        // Grund, neu zu rechnen.
+        if (geschrieben || !nurBeiAenderung)
+        {
+            _gespeichert = true;
+            _ergebnisCache = null;   // der gebuchte Lauf ist ueberholt - neu einlesen
+        }
         _geaendert = false;
         _meldung = "";
-        _ergebnisCache = null;   // der gebuchte Lauf ist ueberholt - neu einlesen
         await Schliessen(sprung);
     }
 
@@ -1054,9 +1085,34 @@
     // Wirt oeffnet danach das Ziel und bringt den Dialog zurueck - ohne das
     // Schreiben waeren die Eingaben mit dem Sprung verloren, und der Satz unter den
     // Knoepfen (BHW_S_SPRUNG_HINWEIS) sagt es.
-    private Task SprungBhkwTarif() => Schreiben(BhkwSprung.BhkwTarif);
+    //
+    // ANWENDERENTSCHEID 15.09.2026: Sie schreiben aber NUR, wenn sich der
+    // Arbeitsstand seit dem Laden wirklich geaendert hat. Wer nur nachschlagen
+    // will und nichts geaendert hat, soll keinen Schreibzugriff ausloesen; ein
+    // Schreiben ohne Aenderung ueberschriebe in einer Mehrbenutzerlage fremde
+    // Aenderungen mit dem eigenen geladenen Stand. Ohne Unterschied springt der
+    // Knopf also ohne einen einzigen Schreibaufruf.
+    private Task SprungBhkwTarif() => Schreiben(BhkwSprung.BhkwTarif, nurBeiAenderung: true);
 
-    private Task SprungStrombezug() => Schreiben(BhkwSprung.Strombezug);
+    private Task SprungStrombezug() => Schreiben(BhkwSprung.Strombezug, nurBeiAenderung: true);
+
+    /// <summary>
+    /// Wuerde ein Sprung jetzt etwas schreiben? Das ist der Fall, sobald eine
+    /// Anlagenzeile oder die Projektvorgaben vom geladenen Stand abweichen. Nur
+    /// dann steht der Satz unter den Knoepfen — er kuendigt das Schreiben an, und
+    /// eine Ankuendigung ohne Schreiben waere falsch.
+    /// </summary>
+    private bool SprungSchreibtMit
+    {
+        get
+        {
+            for (int i = 0; i < Anlagen.Count && i < _staende.Count; i++)
+                if (!_anlageGeschrieben[i] && !_staende[i].Gleicht(Anlagen[i]))
+                    return true;
+
+            return !_vorgabenGeschrieben && !_vorgaben.Gleicht(Parameter);
+        }
+    }
 
     /// <summary>Ohne zu schreiben hinaus. Der Arbeitsstand faellt; die
     /// hereingereichten Objekte sind unveraendert.</summary>
