@@ -22529,7 +22529,34 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("KI_AKT_ERGEBNISZEILEN", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die … und {0} weitere Zeilen ähnelt.
+        /// </summary>
+        public static string KI_AKT_WEITERE_ZEILEN {
+            get {
+                return ResourceManager.GetString("KI_AKT_WEITERE_ZEILEN", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ja ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERT_JA {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERT_JA", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nein ähnelt.
+        /// </summary>
+        public static string KI_AKT_WERT_NEIN {
+            get {
+                return ResourceManager.GetString("KI_AKT_WERT_NEIN", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anfrage konnte nicht beantwortet werden: {0} ähnelt.
         /// </summary>
@@ -23955,7 +23982,142 @@ namespace WindowsFormsApplication1.MyResource {
                 return ResourceManager.GetString("KI_DLG_MASKE_SPA", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KV {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KV", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_TITEL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_TITEL_NAME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Komponente, deren Kosten gerade gepflegt werden ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_TITEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_TITEL_ERL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezug ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_UNTERTITEL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_UNTERTITEL_NAME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerät und Projekt, auf die sich die Kostenpositionen beziehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_UNTERTITEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_UNTERTITEL_ERL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungsvorlage ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_NURLESEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_NURLESEN_NAME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wahr, wenn die gewählte Vorlage zur Auslieferung gehört ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_NURLESEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_NURLESEN_ERL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_POSITION_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_POSITION_NAME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung der Kostenposition ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_POSITION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_POSITION_ERL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_SATZ_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_SATZ_NAME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert zur gewählten Bemessung ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_SATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_SATZ_ERL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_NUTZUNGSDAUER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_NUTZUNGSDAUER_NAME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulatorische Nutzungsdauer der Position in Jahren (VDI 2067) ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_NUTZUNGSDAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_NUTZUNGSDAUER_ERL", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag netto ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_BETRAG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_BETRAG_NAME", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der errechnete Nettobetrag der Position ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_BETRAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_BETRAG_ERL", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ist für den Assistenten nicht freigegeben. Freigegeben sind: {1}. ähnelt.
         /// </summary>
@@ -25756,24 +25918,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_KERN_DIENST_UNBEKANNT {
             get {
                 return ResourceManager.GetString("KI_KERN_DIENST_UNBEKANNT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Feldsicherung AUS — Felder werden ohne gesonderte Bestätigung gesetzt. Die Bestätigung datenverändernder Aktionen bleibt bestehen. ähnelt.
-        /// </summary>
-        public static string KI_KERN_FELDSICHERUNG_AUS {
-            get {
-                return ResourceManager.GetString("KI_KERN_FELDSICHERUNG_AUS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Feldsicherung aus ähnelt.
-        /// </summary>
-        public static string KI_KERN_FELDSICHERUNG_VERMERK {
-            get {
-                return ResourceManager.GetString("KI_KERN_FELDSICHERUNG_VERMERK", resourceCulture);
             }
         }
         
@@ -28000,6 +28144,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_REG_ZWECK_KOSTENLAGE_PRUEFEN {
             get {
                 return ResourceManager.GetString("KI_REG_ZWECK_KOSTENLAGE_PRUEFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Listet die im Projekt verbauten Anlagen auf ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_ANLAGEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_ANLAGEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagen auflisten ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_ANLAGEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_ANLAGEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liste alle Heizkessel im Projekt auf. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_ANLAGEN_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_ANLAGEN_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} verbaute Anlage(n) gefunden. ähnelt.
+        /// </summary>
+        public static string KI_REG_ANLAGEN_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ANLAGEN_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Listet die erfassten Kostenpositionen des Projekts auf ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_KOSTENPOS_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_KOSTENPOS_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenpositionen auflisten ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_KOSTENPOS_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_KOSTENPOS_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liste alle Kostenpositionen auf. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_KOSTENPOS_AUFLISTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_KOSTENPOS_AUFLISTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Kostenposition(en), Summe {1:N2} €. ähnelt.
+        /// </summary>
+        public static string KI_REG_KOSTENPOS_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("KI_REG_KOSTENPOS_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerk, auf das eingeschränkt werden soll. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_KOMPONENTE_OPTIONAL {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_KOMPONENTE_OPTIONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition oder Betrieb. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_KOSTENKATEGORIE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_KOSTENKATEGORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auch die Varianten des Projekts einbeziehen ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_MIT_VARIANTEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_MIT_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit Varianten ähnelt.
+        /// </summary>
+        public static string KI_REG_MIT_VARIANTEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_MIT_VARIANTEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenart ähnelt.
+        /// </summary>
+        public static string KI_REG_KOSTENKATEGORIE_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_KOSTENKATEGORIE_NAME", resourceCulture);
             }
         }
         
@@ -56911,6 +57172,546 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WZP_PFLICHT {
             get {
                 return ResourceManager.GetString("WZP_PFLICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überträgt ein ganzes Gewerk von einem Projekt in ein ander ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_KOMPONENTE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_KOMPONENTE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente übernehmen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_KOMPONENTE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_KOMPONENTE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernimm die Wärmepumpe aus Projekt A in Projekt B. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_KOMPONENTE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_KOMPONENTE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gewerk im Zielprojekt entspricht danach dem des Quellpro ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_KOMPONENTE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_KOMPONENTE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerk „{0}" von „{1}" nach „{2}": {3} anlegen, {4} er ähnelt.
+        /// </summary>
+        public static string KI_REG_VORSCHAU_KOMPONENTE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_VORSCHAU_KOMPONENTE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewerk „{0}" nach „{1}" übernommen. ähnelt.
+        /// </summary>
+        public static string KI_REG_UEBERNAHME_AUSGEFUEHRT {
+            get {
+                return ResourceManager.GetString("KI_REG_UEBERNAHME_AUSGEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gewerk „{0}" konnte nicht übernommen werden: {1} ähnelt.
+        /// </summary>
+        public static string KI_REG_UEBERNAHME_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_UEBERNAHME_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt nichts zu übernehmen — beide Projekte führen das ähnelt.
+        /// </summary>
+        public static string KI_REG_UEBERNAHME_NICHTS_ZU_TUN {
+            get {
+                return ResourceManager.GetString("KI_REG_UEBERNAHME_NICHTS_ZU_TUN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt EIN Merkmal aus einem Projekt in ein anderes. Der V ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_MERKMAL_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_MERKMAL_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Merkmal übernehmen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_MERKMAL_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_MERKMAL_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernimm die Vorlauftemperatur aus Projekt A in Projekt B. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_MERKMAL_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_MERKMAL_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Merkmal im Zielprojekt trägt danach den Wert des Quellp ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_MERKMAL_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_MERKMAL_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} in „{1}" · {2} → {3} {4} ähnelt.
+        /// </summary>
+        public static string KI_REG_VORSCHAU_MERKMAL_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KI_REG_VORSCHAU_MERKMAL_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} geändert: {1} → {2} ähnelt.
+        /// </summary>
+        public static string KI_REG_MERKMAL_GESCHRIEBEN {
+            get {
+                return ResourceManager.GetString("KI_REG_MERKMAL_GESCHRIEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Merkmal „{0}" konnte nicht geschrieben werden: {1} ähnelt.
+        /// </summary>
+        public static string KI_REG_MERKMAL_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_MERKMAL_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Merkmal „{0}" ist eine Schlüsselspalte und wird nicht ähnelt.
+        /// </summary>
+        public static string KI_REG_MERKMAL_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_REG_MERKMAL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesem Merkmal lässt sich keine Vorschau bilden. ähnelt.
+        /// </summary>
+        public static string KI_REG_MERKMAL_OHNE_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KI_REG_MERKMAL_OHNE_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ändert einzelne Parameter der Wirtschaftlichkeitsrechnung.  ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_PARAMETER_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_PARAMETER_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeitsparameter setzen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_PARAMETER_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_PARAMETER_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Setze den Zinssatz auf 4 % und den Betrachtungszeitraum auf  ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_PARAMETER_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_PARAMETER_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die genannten Parameter gelten ab sofort für jede Wirtschaf ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_PARAMETER_SETZEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_PARAMETER_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Parameter in „{1}" geändert. ähnelt.
+        /// </summary>
+        public static string KI_REG_PARAMETER_GESETZT {
+            get {
+                return ResourceManager.GetString("KI_REG_PARAMETER_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Parameter des Projekts {0} konnten nicht gespeichert wer ähnelt.
+        /// </summary>
+        public static string KI_REG_PARAMETER_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_PARAMETER_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt {0} ist eine Variante von {1}. Die Wirtschaftlichkei ähnelt.
+        /// </summary>
+        public static string KI_REG_PARAMETER_NUR_AM_STAMM {
+            get {
+                return ResourceManager.GetString("KI_REG_PARAMETER_NUR_AM_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es wurde kein Parameter genannt, der geändert werden soll. ähnelt.
+        /// </summary>
+        public static string KI_REG_PARAMETER_OHNE_ANGABE {
+            get {
+                return ResourceManager.GetString("KI_REG_PARAMETER_OHNE_ANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszins ähnelt.
+        /// </summary>
+        public static string KI_REG_FELD_ZINSSATZ {
+            get {
+                return ResourceManager.GetString("KI_REG_FELD_ZINSSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszins der Kapitalwertrechnung in Prozent. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_ZINSSATZ {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_ZINSSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum ähnelt.
+        /// </summary>
+        public static string KI_REG_FELD_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("KI_REG_FELD_ZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum der Wirtschaftlichkeitsrechnung in Jahr ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_ZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Energie ähnelt.
+        /// </summary>
+        public static string KI_REG_FELD_PREIS_ENERGIE {
+            get {
+                return ResourceManager.GetString("KI_REG_FELD_PREIS_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jährliche Preissteigerung der Energiekosten in Prozent. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_PREIS_ENERGIE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_PREIS_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Betrieb ähnelt.
+        /// </summary>
+        public static string KI_REG_FELD_PREIS_BETRIEB {
+            get {
+                return ResourceManager.GetString("KI_REG_FELD_PREIS_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jährliche Preissteigerung der Betriebskosten in Prozent. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_PREIS_BETRIEB {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_PREIS_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Investition ähnelt.
+        /// </summary>
+        public static string KI_REG_FELD_PREIS_INVEST {
+            get {
+                return ResourceManager.GetString("KI_REG_FELD_PREIS_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jährliche Preissteigerung der Ersatzbeschaffungen in Prozen ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_PREIS_INVEST {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_PREIS_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisevergütung ähnelt.
+        /// </summary>
+        public static string KI_REG_FELD_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("KI_REG_FELD_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisevergütung in Euro je Kilowattstunde. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO2-Preis ähnelt.
+        /// </summary>
+        public static string KI_REG_FELD_CO2_PREIS {
+            get {
+                return ResourceManager.GetString("KI_REG_FELD_CO2_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO2-Preis in Euro je Tonne. ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_CO2_PREIS {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_CO2_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trägt Kapazität und Lade-/Entladeleistung in den Stromspei ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_SPEICHERAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_SPEICHERAUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung übernehmen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_SPEICHERAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_SPEICHERAUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernimm 12 kWh und 5 kW als Speicherauslegung. ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_SPEICHERAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_SPEICHERAUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Stromspeicher des Projekts trägt danach die genannten W ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_SPEICHERAUSLEGUNG {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_SPEICHERAUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung gesetzt: {0:N1} kWh, {1:N1} kW in „{2}". ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERAUSLEGUNG_GESETZT {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERAUSLEGUNG_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherauslegung konnte nicht geschrieben werden. {0} ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERAUSLEGUNG_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERAUSLEGUNG_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}" führt keinen Stromspeicher. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHER_KEINE_ANLAGE {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHER_KEINE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt {0} Speicheranlagen. Varianten desselben  ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHER_MEHRERE_ANLAGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHER_MEHRERE_ANLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legt die Betriebsvariante einer Speicheranlage an — Betrie ähnelt.
+        /// </summary>
+        public static string KI_REG_ZWECK_SPEICHERVARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_ZWECK_SPEICHERVARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervariante anlegen ähnelt.
+        /// </summary>
+        public static string KI_REG_TITEL_SPEICHERVARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_TITEL_SPEICHERVARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lege eine Speichervariante mit Grünstrom und SoC 10 bis 90  ähnelt.
+        /// </summary>
+        public static string KI_REG_BEISPIEL_SPEICHERVARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_BEISPIEL_SPEICHERVARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicheranlage führt danach eine Betriebsvariante. Nich ähnelt.
+        /// </summary>
+        public static string KI_REG_WIRKUNG_SPEICHERVARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_WIRKUNG_SPEICHERVARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervariante für „{0}" (Anlage {1}) in „{2}": Betri ähnelt.
+        /// </summary>
+        public static string KI_REG_VORSCHAU_SPEICHERVARIANTE_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_VORSCHAU_SPEICHERVARIANTE_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichervariante {0} für „{1}" angelegt. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTE_ANGELEGT {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTE_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für „{0}" konnte keine Speichervariante angelegt werden. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTE_ANLEGEN_FEHLGESCHLAGEN {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTE_ANLEGEN_FEHLGESCHLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage „{0}" führt bereits eine Speichervariante. ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERVARIANTE_SCHON_DA {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERVARIANTE_SCHON_DA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicheranlage ähnelt.
+        /// </summary>
+        public static string KI_REG_SPEICHERANLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_SPEICHERANLAGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner der Speicheranlage. Führt das Projekt genau eine ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_SPEICHERANLAGE {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_SPEICHERANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart ähnelt.
+        /// </summary>
+        public static string KI_REG_BETRIEBSART_NAME {
+            get {
+                return ResourceManager.GetString("KI_REG_BETRIEBSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart der Speichervariante. Ohne Angabe gilt Grünstro ähnelt.
+        /// </summary>
+        public static string KI_REG_ERL_BETRIEBSART {
+            get {
+                return ResourceManager.GetString("KI_REG_ERL_BETRIEBSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der untere SoC-Wert ({0:N0} %) muss kleiner sein als der obe ähnelt.
+        /// </summary>
+        public static string KI_REG_SOC_BAND_VERDREHT {
+            get {
+                return ResourceManager.GetString("KI_REG_SOC_BAND_VERDREHT", resourceCulture);
             }
         }
     }

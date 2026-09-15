@@ -244,12 +244,15 @@ namespace KiKern
         /// nicht geben.
         /// </para>
         /// <para>
-        /// <b>Wofuer es dann da ist.</b> Zwei Dinge im Anwendungsprojekt haengen daran:
-        /// die Modalitaetsweiche (eine Formularaktion VERLANGT die offene Zielmaske, waehrend
-        /// alle uebrigen Aktionen bei offenem modalem Dialog abgewiesen werden) und die
-        /// Feldsicherung (<see cref="KiFeldsicherung"/>), die nur fuer diese Aktionen
-        /// abschaltbar ist. Beides braucht ein Merkmal an der DEKLARATION - abgeleitet aus
-        /// dem Aktionsnamen waere es wieder eine Liste, die altert.
+        /// <b>Wofuer es dann da ist.</b> Daran haengt die Modalitaetsweiche des
+        /// Anwendungsprojekts: Eine Formularaktion VERLANGT die offene Zielmaske, waehrend
+        /// alle uebrigen Aktionen bei offenem modalem Dialog abgewiesen werden. Das
+        /// braucht ein Merkmal an der DEKLARATION - abgeleitet aus dem Aktionsnamen waere
+        /// es wieder eine Liste, die altert.
+        ///
+        /// <br/>Bis zum 14.09.2026 hing hier ein zweites: die abschaltbare Feldsicherung.
+        /// Sie ist entfallen - eine Formularaktion wird seither bestaetigt wie jede
+        /// andere Schreibaktion (<see cref="KiBestaetigungspflicht"/>).
         /// </para>
         /// </remarks>
         public bool Formularaktion { get; }

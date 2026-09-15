@@ -100,23 +100,23 @@ namespace KiKern.Tests
         // ============================================================ Rundendeckel
 
         [Fact]
-        public void DerRegeldeckelIstDrei()
+        public void DerRegeldeckelIstSechs()
         {
-            Assert.Equal(3, KiWerkzeuge.Rundendeckel);
-            Assert.Equal(3, new KiRunden().Deckel);
+            Assert.Equal(6, KiWerkzeuge.Rundendeckel);
+            Assert.Equal(6, new KiRunden().Deckel);
         }
 
         [Fact]
-        public void DreiRundenGehenDannIstSchluss()
+        public void SechsRundenGehenDannIstSchluss()
         {
             var runden = new KiRunden();
 
-            Assert.True(runden.Beginne());
-            Assert.True(runden.Beginne());
-            Assert.True(runden.Beginne());
+            for (int i = 0; i < KiWerkzeuge.Rundendeckel; i++)
+                Assert.True(runden.Beginne());
+
             Assert.False(runden.Beginne());
 
-            Assert.Equal(3, runden.Verbraucht);
+            Assert.Equal(KiWerkzeuge.Rundendeckel, runden.Verbraucht);
             Assert.False(runden.DarfWeiter);
         }
 
@@ -158,7 +158,7 @@ namespace KiKern.Tests
             var runden = new KiRunden();
             runden.Beginne();
 
-            Assert.Equal("1/3", runden.ToString());
+            Assert.Equal("1/" + KiWerkzeuge.Rundendeckel, runden.ToString());
         }
     }
 }

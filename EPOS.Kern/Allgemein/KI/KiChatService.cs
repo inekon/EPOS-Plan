@@ -654,14 +654,24 @@ namespace WindowsFormsApplication1
             // bewusst nicht gepflegt (Entscheid 7.1a). Übersetzt wird deshalb beim
             // ANTWORTEN. Der deutsche Zweig ist unverändert; im englischen entfällt
             // das "auf Deutsch", sonst stünden zwei sich widersprechende Regeln da.
+            // DER SATZDECKEL GILT NUR FUER DIE AUSKUNFT (Anwenderbefund 14.09.2026).
+            // "Hoechstens 6 Saetze" war die Regel fuer eine Bedienauskunft und stand
+            // bis dahin auch ueber jeder Datenfrage - eine Liste von zwoelf Kesseln
+            // samt Werten passt da nicht hinein, und das Modell kuerzte genau das weg,
+            // wonach gefragt war. Im Aktionsbetrieb zaehlt deshalb die Vollstaendigkeit
+            // des Ergebnisses; knapp bleibt die ERLAEUTERUNG darum herum.
             if (Dienste.Sprache.IstEnglisch)
             {
-                sb.AppendLine("Beantworte die Frage kurz und sachlich - höchstens 6 Sätze.");
+                sb.AppendLine(mitAktionen
+                    ? "Answer factually. Keep explanations short; list results completely."
+                    : "Beantworte die Frage kurz und sachlich - höchstens 6 Sätze.");
                 sb.AppendLine("Answer in English.");
             }
             else
             {
-                sb.AppendLine("Beantworte die Frage kurz, sachlich und auf Deutsch - höchstens 6 Sätze.");
+                sb.AppendLine(mitAktionen
+                    ? "Antworte sachlich und auf Deutsch. Halte Erläuterungen kurz, gib Ergebnisse aber VOLLSTÄNDIG wieder."
+                    : "Beantworte die Frage kurz, sachlich und auf Deutsch - höchstens 6 Sätze.");
             }
 
             if (mitAktionen)
@@ -674,6 +684,18 @@ namespace WindowsFormsApplication1
                               "höchstens EINE Aktion je Antwort und nur, wenn die Frage sie verlangt.");
                 sb.AppendLine("Jede Zahl, die du nennst, stammt aus einem Aktionsergebnis oder aus einem " +
                               "Hilfeabschnitt. Erfinde weder Zahlen noch Bezeichner.");
+                // Der Fehlerfall vom 14.09.2026: Gefragt war "wie ist die Nutzungsdauer
+                // in diesem Projekt?", in der offenen Maske stand ueberall 15 - geantwortet
+                // wurde "standardmaessig 20 Jahre" aus einem Hilfeabschnitt. Ein
+                // Vorgabewert der Dokumentation ist KEINE Auskunft ueber den Datenbestand;
+                // der Unterschied muss dastehen, sonst ist er fuer das Modell keiner.
+                sb.AppendLine("Ein Wert DIESES Projekts oder DIESER Maske stammt ausschliesslich aus einem " +
+                              "Aktionsergebnis. Hilfeabschnitte nennen Vorgabe- und Erfahrungswerte - gib sie " +
+                              "nie als den Stand des Projekts aus, sondern lies ihn (z. B. dialog_lesen).");
+                sb.AppendLine("Kannst du einen gefragten Wert mit keiner Aktion lesen, sage das - statt einen " +
+                              "allgemeinen Wert an seine Stelle zu setzen.");
+                sb.AppendLine("Mehrere Ergebniszeilen gibst du als Aufzaehlung wieder, eine Zeile je Datensatz, " +
+                              "mit den gefragten Werten.");
                 sb.AppendLine("Bezeichner erscheinen als Platzhalter („Name 1“); übernimm sie unverändert.");
                 // H8: Ohne diesen Satz weicht das Modell dem Platzhalter aus („das
                 // geöffnete Projekt") - der Anwender bekäme dann auch keinen Klarnamen
@@ -688,6 +710,18 @@ namespace WindowsFormsApplication1
                 sb.AppendLine("Projekt- und Variantennamen aus der Frage übergibst du unverändert als Parameter, auch Teilnamen; "
                               + "aufgelöst werden sie lokal im Programm.");
                 sb.AppendLine("Willst du wissen, ob es ein Projekt gibt, nimm projekt_suchen - es vergleicht die Klarnamen.");
+                // Der Fehlgriff vom 15.09.2026: Gefragt war „wieviel kostet der
+                // Stromspeicher — Shenzhen Growatt", gesucht wurde ein PROJEKT dieses
+                // Namens. Ein Geraetename sieht wie ein Eigenname aus, und die Regeln
+                // darueber sagten nur, was ein Projektname IST - nicht, was keiner ist.
+                sb.AppendLine("Geraete-, Typen- und Herstellerbezeichnungen (z. B. „Vitocrossal 200\", " +
+                              "„Shenzhen Growatt\") sind KEINE Projektnamen. Uebergib sie nie als " +
+                              "Projekt oder Suchtext.");
+                sb.AppendLine("Fragen nach verbauten Geraeten beantwortet anlagen_auflisten, Fragen nach " +
+                              "Kosten einzelner Positionen kostenpositionen_auflisten - beide ohne " +
+                              "Projektangabe fuer das gerade geoeffnete Projekt.");
+                sb.AppendLine("Fehlt eine Projektangabe in der Frage, lass den Parameter WEG - das " +
+                              "Programm nimmt dann das geoeffnete Projekt. Rate keinen Namen.");
                 sb.AppendLine("Behaupte NIE, ein Projekt gebe es nicht, nur weil sein Name in Platzhalterzeilen nicht auftaucht.");
             }
             else
@@ -1363,11 +1397,10 @@ namespace WindowsFormsApplication1
                         schritt.Kurzfassung = KiBestaetigung.Kurzfassung(aufruf);
 
                         // Gefragt wird ueber KiBestaetigungspflicht und nicht direkt am
-                        // Riegel: Bei abgeschalteter Feldsicherung laeuft eine
-                        // Formularaktion ohne Feldbestaetigung durch (Fachkonzept 11.5).
-                        // Fuer jede gewoehnliche Schreibaktion aendert sich nichts - der
-                        // Schalter erreicht sie gar nicht. Der KiAusfuehrer fragt dieselbe
-                        // Stelle, damit Chat und Ausfuehrer nicht auseinanderlaufen koennen.
+                        // Riegel - dieselbe Stelle, die auch der KiAusfuehrer fragt, damit
+                        // Chat und Ausfuehrer nicht auseinanderlaufen koennen. Seit dem
+                        // Wegfall der Feldsicherung (14.09.2026) antwortet sie genau wie
+                        // der Riegel: Auch eine Formularaktion braucht den Klick.
                         schritt.Bestaetigungspflichtig = KiBestaetigungspflicht.Gilt(aufruf);
 
                         string riegel = KiRiegel.PruefeStufe(aufruf);

@@ -44,6 +44,21 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string STROMSPEICHER_AUSLEGUNG = "STROMSPEICHER_AUSLEGUNG";
 
+        /// <summary>
+        /// Der Seitenschluessel der Kostenverwaltung.
+        /// </summary>
+        /// <remarks>
+        /// <b>Ein Ziel, das heute nirgends aufgeht — und das ist die richtige Angabe.</b>
+        /// Die Kostenverwaltung haengt an einer gewaehlten KOMPONENTE eines Projekts;
+        /// einen kontextfreien Weg dorthin gibt es nicht, und einen zu erfinden hiesse,
+        /// die Maske ohne Bezug zu oeffnen. <c>OeffneMaske</c> liefert deshalb
+        /// <c>false</c>, und <c>dialog_oeffnen</c> lehnt benannt ab, statt still nichts
+        /// zu tun — genau wie bei der Stromspeicher-Ansicht unter Windows. LESEN und
+        /// SETZEN erreichen die Maske trotzdem, sobald der Anwender sie offen hat: Dafuer
+        /// zaehlt die Anmeldung an der Maskenbruecke, nicht dieses Ziel.
+        /// </remarks>
+        public const string KOSTENVERWALTUNG = "KOSTENVERWALTUNG";
+
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -72,7 +87,11 @@ namespace WindowsFormsApplication1
                 // zugleich ein Maskenschluessel der Windows-Navigationstabelle (SIM-Q3,
                 // #207) - beide Wege fuehren ueber denselben Schluessel, und deshalb
                 // steht hier Masken.Simulation und keine zweite Zeichenkette.
-                { KiMaskennamen.SIMULATION,       Masken.Simulation }
+                { KiMaskennamen.SIMULATION,       Masken.Simulation },
+
+                // Die Kostenverwaltung geht nur AUS einer gewaehlten Komponente auf;
+                // siehe KOSTENVERWALTUNG.
+                { KiMaskennamen.KOSTENVERWALTUNG, KOSTENVERWALTUNG }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

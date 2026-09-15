@@ -318,10 +318,15 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Der Rundendeckel greift</b> (Fachkonzept 3.3, Festlegung 5). Antwortet das
-        /// Modell endlos mit Werkzeugaufrufen, endet der Lauf nach drei Runden — sonst
-        /// könnte eine Schleife beliebig viele Anfragen und beliebig viele Aktionen
-        /// auslösen.
+        /// Modell endlos mit Werkzeugaufrufen, endet der Lauf nach
+        /// <see cref="KiWerkzeuge.Rundendeckel"/> Runden — sonst könnte eine Schleife
+        /// beliebig viele Anfragen und beliebig viele Aktionen auslösen.
         /// </summary>
+        /// <remarks>
+        /// Geprüft wird gegen die KONSTANTE und nicht gegen eine hier zweitgeschriebene
+        /// Zahl: Der Deckel ist seit dem Befund vom 14.09.2026 von drei auf sechs
+        /// gewachsen, und dieser Test soll den Schutzzweck halten, nicht den Stand.
+        /// </remarks>
         [Fact]
         public async Task Rundendeckel_beendet_eine_Schleife()
         {
@@ -330,8 +335,8 @@ namespace EPOS.Kern.Tests
                 KiEntscheidung.Erteilt);
 
             Assert.True(antwort.Deckel);
-            Assert.Equal(3, runden);
-            Assert.Equal(3, schicht.Ausgefuehrt.Count);
+            Assert.Equal(KiWerkzeuge.Rundendeckel, runden);
+            Assert.Equal(KiWerkzeuge.Rundendeckel, schicht.Ausgefuehrt.Count);
         }
 
         // ==================================================================

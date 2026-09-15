@@ -44,7 +44,7 @@ public class GespraechsverlaufTests : EposBunitContext
         => new(rolle, text, adresse, kennung);
 
     // ==================================================================
-    //  G-1  Zehn Rollen, zehn Klassen
+    //  G-1  Elf Rollen, elf Klassen
     // ==================================================================
 
     [Theory]
@@ -53,6 +53,7 @@ public class GespraechsverlaufTests : EposBunitContext
     [InlineData(Gespraechsrolle.AssistentKopf, "epos-verlauf-zeile--assistentkopf")]
     [InlineData(Gespraechsrolle.Ueberschrift, "epos-verlauf-zeile--ueberschrift")]
     [InlineData(Gespraechsrolle.Leise, "epos-verlauf-zeile--leise")]
+    [InlineData(Gespraechsrolle.Datenzeile, "epos-verlauf-zeile--datenzeile")]
     [InlineData(Gespraechsrolle.Erfolg, "epos-verlauf-zeile--erfolg")]
     [InlineData(Gespraechsrolle.Warnung, "epos-verlauf-zeile--warnung")]
     [InlineData(Gespraechsrolle.Fehler, "epos-verlauf-zeile--fehler")]
@@ -70,11 +71,11 @@ public class GespraechsverlaufTests : EposBunitContext
         Assert.Single(zeile.ClassName!.Split(' '), k => k.StartsWith("epos-verlauf-zeile--"));
     }
 
-    /// <summary>Die zehn Rollen des Aufzählungstyps sind vollständig belegt.</summary>
+    /// <summary>Die elf Rollen des Aufzählungstyps sind vollständig belegt.</summary>
     [Fact]
-    public void G1_Es_sind_genau_zehn_Rollen()
+    public void G1_Es_sind_genau_elf_Rollen()
     {
-        Assert.Equal(10, Enum.GetValues<Gespraechsrolle>().Length);
+        Assert.Equal(11, Enum.GetValues<Gespraechsrolle>().Length);
     }
 
     // ==================================================================

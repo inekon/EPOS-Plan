@@ -289,21 +289,10 @@ namespace KiKern
         public static string KnopfWirdAusgeloest => Hole(Vorsatz + "KNOPF_WIRD_AUSGELOEST",
             "Knopf ‚{0}' wird ausgelöst");
 
-        /// <summary>
-        /// Der dauerhafte Hinweis im Chatfenster, wenn die Feldsicherung abgeschaltet ist
-        /// (Fachkonzept 11.5). Der Satz nennt ausdruecklich auch, was WEITER gilt - sonst
-        /// liesse sich „Feldsicherung AUS" als „gar keine Bestaetigung mehr" lesen.
-        /// </summary>
-        public static string FeldsicherungAus => Hole(Vorsatz + "FELDSICHERUNG_AUS",
-            "Feldsicherung AUS — Felder werden ohne gesonderte Bestätigung gesetzt. " +
-            "Die Bestätigung datenverändernder Aktionen bleibt bestehen.");
-
-        /// <summary>
-        /// Vermerk in jeder Protokollzeile, solange die Feldsicherung abgeschaltet ist -
-        /// kurz gehalten, weil er in das Ergebnisfeld der Zeile passen muss.
-        /// </summary>
-        public static string FeldsicherungVermerk => Hole(Vorsatz + "FELDSICHERUNG_VERMERK",
-            "Feldsicherung aus");
+        // HIER STANDEN „FeldsicherungAus" und „FeldsicherungVermerk" (Fachkonzept 11.5).
+        // Beide beschrieben einen Zustand, den es seit dem 14.09.2026 nicht mehr gibt:
+        // Der Abschalter der Feldsicherung ist entfallen, jede Formularaktion wird
+        // bestaetigt. Ein Text, der nie erscheinen kann, ist keiner.
 
         // -------------------------------------------------- Stoerungen des Modelldienstes
 

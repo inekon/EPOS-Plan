@@ -70,6 +70,23 @@
         internal static string ZweckErgebnisseLesen => MyResource.Resource.KI_REG_ZWECK_ERGEBNISSE_LESEN;
         internal static string ZweckParameterLesen => MyResource.Resource.KI_REG_ZWECK_PARAMETER_LESEN;
         internal static string ZweckKostenlagePruefen => MyResource.Resource.KI_REG_ZWECK_KOSTENLAGE_PRUEFEN;
+
+        // ---- Anlagen und Kostenpositionen (15.09.2026) ------------------------
+        internal static string ZweckAnlagenAuflisten => MyResource.Resource.KI_REG_ZWECK_ANLAGEN_AUFLISTEN;
+        internal static string TitelAnlagenAuflisten => MyResource.Resource.KI_REG_TITEL_ANLAGEN_AUFLISTEN;
+        internal static string BeispielAnlagenAuflisten => MyResource.Resource.KI_REG_BEISPIEL_ANLAGEN_AUFLISTEN;
+        internal static string AnlagenGefunden => MyResource.Resource.KI_REG_ANLAGEN_GEFUNDEN;
+
+        internal static string ZweckKostenpositionenAuflisten => MyResource.Resource.KI_REG_ZWECK_KOSTENPOS_AUFLISTEN;
+        internal static string TitelKostenpositionenAuflisten => MyResource.Resource.KI_REG_TITEL_KOSTENPOS_AUFLISTEN;
+        internal static string BeispielKostenpositionenAuflisten => MyResource.Resource.KI_REG_BEISPIEL_KOSTENPOS_AUFLISTEN;
+        internal static string KostenpositionenGefunden => MyResource.Resource.KI_REG_KOSTENPOS_GEFUNDEN;
+
+        internal static string ErlKomponenteOptional => MyResource.Resource.KI_REG_ERL_KOMPONENTE_OPTIONAL;
+        internal static string ErlKostenkategorie => MyResource.Resource.KI_REG_ERL_KOSTENKATEGORIE;
+        internal static string ErlMitVarianten => MyResource.Resource.KI_REG_ERL_MIT_VARIANTEN;
+        internal static string MitVariantenName => MyResource.Resource.KI_REG_MIT_VARIANTEN_NAME;
+        internal static string KostenkategorieName => MyResource.Resource.KI_REG_KOSTENKATEGORIE_NAME;
         internal static string ZweckUebernahmeVorschau => MyResource.Resource.KI_REG_ZWECK_UEBERNAHME_VORSCHAU;
         internal static string ZweckMerkmalVorschau => MyResource.Resource.KI_REG_ZWECK_MERKMAL_VORSCHAU;
         internal static string ZweckLastgangPruefen => MyResource.Resource.KI_REG_ZWECK_LASTGANG_PRUEFEN;
@@ -330,5 +347,67 @@
         internal static string SchutzSatz => MyResource.Resource.KI_SCHUTZ_SATZ;
         internal static string SchutzKatalog => MyResource.Resource.KI_SCHUTZ_KATALOG;
         internal static string SchutzUnpruefbar => MyResource.Resource.KI_SCHUTZ_UNPRUEFBAR;
+
+        // ---- Die fuenf nachgezogenen Schreibaktionen (15.09.2026) -------------
+        internal static string ZweckKomponenteUebernehmen => MyResource.Resource.KI_REG_ZWECK_KOMPONENTE_UEBERNEHMEN;
+        internal static string TitelKomponenteUebernehmen => MyResource.Resource.KI_REG_TITEL_KOMPONENTE_UEBERNEHMEN;
+        internal static string BeispielKomponenteUebernehmen => MyResource.Resource.KI_REG_BEISPIEL_KOMPONENTE_UEBERNEHMEN;
+        internal static string WirkungKomponenteUebernehmen => MyResource.Resource.KI_REG_WIRKUNG_KOMPONENTE_UEBERNEHMEN;
+        internal static string VorschauKomponenteUebernehmen => MyResource.Resource.KI_REG_VORSCHAU_KOMPONENTE_UEBERNEHMEN;
+        internal static string UebernahmeAusgefuehrt => MyResource.Resource.KI_REG_UEBERNAHME_AUSGEFUEHRT;
+        internal static string UebernahmeFehlgeschlagen => MyResource.Resource.KI_REG_UEBERNAHME_FEHLGESCHLAGEN;
+        internal static string UebernahmeNichtsZuTun => MyResource.Resource.KI_REG_UEBERNAHME_NICHTS_ZU_TUN;
+        internal static string ZweckMerkmalUebernehmen => MyResource.Resource.KI_REG_ZWECK_MERKMAL_UEBERNEHMEN;
+        internal static string TitelMerkmalUebernehmen => MyResource.Resource.KI_REG_TITEL_MERKMAL_UEBERNEHMEN;
+        internal static string BeispielMerkmalUebernehmen => MyResource.Resource.KI_REG_BEISPIEL_MERKMAL_UEBERNEHMEN;
+        internal static string WirkungMerkmalUebernehmen => MyResource.Resource.KI_REG_WIRKUNG_MERKMAL_UEBERNEHMEN;
+        internal static string VorschauMerkmalUebernehmen => MyResource.Resource.KI_REG_VORSCHAU_MERKMAL_UEBERNEHMEN;
+        internal static string MerkmalGeschrieben => MyResource.Resource.KI_REG_MERKMAL_GESCHRIEBEN;
+        internal static string MerkmalFehlgeschlagen => MyResource.Resource.KI_REG_MERKMAL_FEHLGESCHLAGEN;
+        internal static string MerkmalGesperrt => MyResource.Resource.KI_REG_MERKMAL_GESPERRT;
+        internal static string MerkmalOhneVorschau => MyResource.Resource.KI_REG_MERKMAL_OHNE_VORSCHAU;
+        internal static string ZweckParameterSetzen => MyResource.Resource.KI_REG_ZWECK_PARAMETER_SETZEN;
+        internal static string TitelParameterSetzen => MyResource.Resource.KI_REG_TITEL_PARAMETER_SETZEN;
+        internal static string BeispielParameterSetzen => MyResource.Resource.KI_REG_BEISPIEL_PARAMETER_SETZEN;
+        internal static string WirkungParameterSetzen => MyResource.Resource.KI_REG_WIRKUNG_PARAMETER_SETZEN;
+        internal static string ParameterGesetzt => MyResource.Resource.KI_REG_PARAMETER_GESETZT;
+        internal static string ParameterFehlgeschlagen => MyResource.Resource.KI_REG_PARAMETER_FEHLGESCHLAGEN;
+        internal static string ParameterNurAmStamm => MyResource.Resource.KI_REG_PARAMETER_NUR_AM_STAMM;
+        internal static string ParameterOhneAngabe => MyResource.Resource.KI_REG_PARAMETER_OHNE_ANGABE;
+        internal static string FeldZinssatz => MyResource.Resource.KI_REG_FELD_ZINSSATZ;
+        internal static string ErlZinssatz => MyResource.Resource.KI_REG_ERL_ZINSSATZ;
+        internal static string FeldZeitraum => MyResource.Resource.KI_REG_FELD_ZEITRAUM;
+        internal static string ErlZeitraum => MyResource.Resource.KI_REG_ERL_ZEITRAUM;
+        internal static string FeldPreisEnergie => MyResource.Resource.KI_REG_FELD_PREIS_ENERGIE;
+        internal static string ErlPreisEnergie => MyResource.Resource.KI_REG_ERL_PREIS_ENERGIE;
+        internal static string FeldPreisBetrieb => MyResource.Resource.KI_REG_FELD_PREIS_BETRIEB;
+        internal static string ErlPreisBetrieb => MyResource.Resource.KI_REG_ERL_PREIS_BETRIEB;
+        internal static string FeldPreisInvest => MyResource.Resource.KI_REG_FELD_PREIS_INVEST;
+        internal static string ErlPreisInvest => MyResource.Resource.KI_REG_ERL_PREIS_INVEST;
+        internal static string FeldEinspeisung => MyResource.Resource.KI_REG_FELD_EINSPEISUNG;
+        internal static string ErlEinspeisung => MyResource.Resource.KI_REG_ERL_EINSPEISUNG;
+        internal static string FeldCo2Preis => MyResource.Resource.KI_REG_FELD_CO2_PREIS;
+        internal static string ErlCo2Preis => MyResource.Resource.KI_REG_ERL_CO2_PREIS;
+        internal static string ZweckSpeicherauslegung => MyResource.Resource.KI_REG_ZWECK_SPEICHERAUSLEGUNG;
+        internal static string TitelSpeicherauslegung => MyResource.Resource.KI_REG_TITEL_SPEICHERAUSLEGUNG;
+        internal static string BeispielSpeicherauslegung => MyResource.Resource.KI_REG_BEISPIEL_SPEICHERAUSLEGUNG;
+        internal static string WirkungSpeicherauslegung => MyResource.Resource.KI_REG_WIRKUNG_SPEICHERAUSLEGUNG;
+        internal static string SpeicherauslegungGesetzt => MyResource.Resource.KI_REG_SPEICHERAUSLEGUNG_GESETZT;
+        internal static string SpeicherauslegungFehlgeschlagen => MyResource.Resource.KI_REG_SPEICHERAUSLEGUNG_FEHLGESCHLAGEN;
+        internal static string SpeicherKeineAnlage => MyResource.Resource.KI_REG_SPEICHER_KEINE_ANLAGE;
+        internal static string SpeicherMehrereAnlagen => MyResource.Resource.KI_REG_SPEICHER_MEHRERE_ANLAGEN;
+        internal static string ZweckSpeichervarianteAnlegen => MyResource.Resource.KI_REG_ZWECK_SPEICHERVARIANTE_ANLEGEN;
+        internal static string TitelSpeichervarianteAnlegen => MyResource.Resource.KI_REG_TITEL_SPEICHERVARIANTE_ANLEGEN;
+        internal static string BeispielSpeichervarianteAnlegen => MyResource.Resource.KI_REG_BEISPIEL_SPEICHERVARIANTE_ANLEGEN;
+        internal static string WirkungSpeichervarianteAnlegen => MyResource.Resource.KI_REG_WIRKUNG_SPEICHERVARIANTE_ANLEGEN;
+        internal static string VorschauSpeichervarianteAnlegen => MyResource.Resource.KI_REG_VORSCHAU_SPEICHERVARIANTE_ANLEGEN;
+        internal static string SpeichervarianteAngelegt => MyResource.Resource.KI_REG_SPEICHERVARIANTE_ANGELEGT;
+        internal static string SpeichervarianteAnlegenFehlgeschlagen => MyResource.Resource.KI_REG_SPEICHERVARIANTE_ANLEGEN_FEHLGESCHLAGEN;
+        internal static string SpeichervarianteSchonDa => MyResource.Resource.KI_REG_SPEICHERVARIANTE_SCHON_DA;
+        internal static string SpeicheranlageName => MyResource.Resource.KI_REG_SPEICHERANLAGE_NAME;
+        internal static string ErlSpeicheranlage => MyResource.Resource.KI_REG_ERL_SPEICHERANLAGE;
+        internal static string BetriebsartName => MyResource.Resource.KI_REG_BETRIEBSART_NAME;
+        internal static string ErlBetriebsart => MyResource.Resource.KI_REG_ERL_BETRIEBSART;
+        internal static string SocBandVerdreht => MyResource.Resource.KI_REG_SOC_BAND_VERDREHT;
     }
 }

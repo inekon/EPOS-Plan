@@ -25,34 +25,29 @@ namespace KiKern
     /// Freigabe - oder umgekehrt. Sie rufen deshalb alle diese Methode.
     /// </para>
     /// <para>
-    /// <b>Die Reichweite des Schalters, in einer Zeile.</b> Er wirkt AUSSCHLIESSLICH auf
-    /// Aktionen mit <see cref="KiAktion.Formularaktion"/>. Fuer jede gewoehnliche
-    /// Schreibaktion (<c>kostenposition_setzen</c> und alles andere der Stufe 2) bleibt die
-    /// Antwort unveraendert die des Riegels - unabhaengig davon, ob die Feldsicherung an
-    /// oder aus ist. Das ist keine Absichtserklaerung, sondern am Ausdruck unten ablesbar:
-    /// Ist <c>Formularaktion</c> falsch, kommt <see cref="KiFeldsicherung"/> gar nicht zum
-    /// Tragen.
+    /// <b>Seit dem 14.09.2026 gibt es keinen Schalter mehr.</b> Bis dahin konnte ein
+    /// Befehlszeilenschalter (<c>/ki-feldsicherung-aus</c>) die Feldbestaetigung der
+    /// Formularaktionen aufheben - vorgesehen als Entwicklerkanal (Fachkonzept 11.5).
+    /// Der Auftraggeber hat ihn abbestellt: „eine Bestaetigung was gesetzt wird sollte
+    /// immer erscheinen". <see cref="KiFeldsicherung"/> ist damit ersatzlos entfallen,
+    /// und diese Klasse antwortet genau das, was der Riegel sagt.
+    /// </para>
+    /// <para>
+    /// <b>Warum die Klasse trotzdem bleibt.</b> Sie ist die EINE Stelle, die drei
+    /// Aufrufer gemeinsam fragen; die Begruendung dafuer steht oben und haengt nicht am
+    /// Schalter. Kaeme je wieder eine zweite Bedingung hinzu, stuende sie hier - und
+    /// nicht dreimal verteilt.
     /// </para>
     /// </remarks>
     public static class KiBestaetigungspflicht
     {
         /// <summary>
-        /// Braucht diese Aktion die ausdrueckliche Bestaetigung des Anwenders - unter
-        /// Beruecksichtigung der Feldsicherung?
+        /// Braucht diese Aktion die ausdrueckliche Bestaetigung des Anwenders?
         /// </summary>
         /// <remarks>
-        /// Die Reihenfolge der beiden Fragen ist Absicht: Erst der Riegel, dann - und nur
-        /// dann - die Feldsicherung. So kann der Schalter niemals etwas
-        /// bestaetigungspflichtig machen, was der Riegel durchlaesst, und niemals etwas
-        /// oberhalb der Formularaktionen freistellen.
+        /// Deckt auch <c>null</c> ab: Der Riegel antwortet dort mit <c>false</c>.
         /// </remarks>
-        public static bool Gilt(KiAktion? aktion)
-        {
-            // Deckt auch den Fall aktion == null ab: der Riegel antwortet dort mit false.
-            if (!KiRiegel.BrauchtBestaetigung(aktion)) return false;
-
-            return KiFeldsicherung.Aktiv || !aktion!.Formularaktion;
-        }
+        public static bool Gilt(KiAktion? aktion) => KiRiegel.BrauchtBestaetigung(aktion);
 
         /// <summary>Dieselbe Frage fuer einen gepruefen Aufruf.</summary>
         public static bool Gilt(KiAufruf? aufruf) => Gilt(aufruf?.Aktion);

@@ -50,8 +50,19 @@ namespace WindowsFormsApplication1
         AssistentKopf,
         /// <summary>Eine Zwischenueberschrift.</summary>
         Ueberschrift,
-        /// <summary>Quellen, Zaehler, Cache-Vermerk, Ergebniszeilen, Protokollzeile.</summary>
+        /// <summary>Quellen, Zaehler, Cache-Vermerk, Zeilenzahl, Protokollzeile.</summary>
         Leise,
+        /// <summary>
+        /// Eine Zeile der ERGEBNISTABELLE einer Aktion - Kopfzeile oder Datensatz.
+        /// </summary>
+        /// <remarks>
+        /// Eigene Rolle, weil sie als EINZIGE mit fester Zeichenbreite gesetzt wird:
+        /// Die Spalten stehen nur dann untereinander, wenn die Anzeige weder Schrift
+        /// noch Leerzeichen zusammenzieht. Farblich bleibt sie zurueckhaltend wie
+        /// <see cref="Leise"/> - der Blick soll auf die WERTE fallen, nicht auf das
+        /// Raster.
+        /// </remarks>
+        Datenzeile,
         /// <summary>Ausgefuehrt, Bestaetigung erteilt, gespeichert.</summary>
         Erfolg,
         /// <summary>Hinweise, Verfall, „kein Schluessel hinterlegt".</summary>
@@ -274,12 +285,22 @@ namespace WindowsFormsApplication1
                         string.Format(CultureInfo.CurrentCulture,
                                       MyResource.Resource.KI_AKT_AUSGEFUEHRT, bezeichnung)));
 
+                    // DIE WERTE SELBST, nicht nur ihre Anzahl (Anwenderbefund vom
+                    // 14.09.2026: „KI-Assistent zeigt keine Datenwerte"). Bis dahin
+                    // endete jede Leseaktion mit der Zeile „Ergebniszeilen: 12" - der
+                    // Inhalt stand allein im Antworttext des MODELLS und damit nur so
+                    // weit, wie dieses ihn nacherzaehlte. Gezeigt wird hier der
+                    // ungekuerzte Bestand mit Klarnamen; was an das Modell ging, ist
+                    // eine andere, platzgehaltene Fassung (KiRueckmeldung, H8).
                     if (schritt.Ergebnis != null && schritt.Ergebnis.Zeilen.Count > 0)
+                    {
                         zeilen.Add(new KiVerlaufszeile(
                             KiVerlaufsrolle.Leise,
                             string.Format(CultureInfo.CurrentCulture,
                                           MyResource.Resource.KI_AKT_ERGEBNISZEILEN,
                                           schritt.Ergebnis.Zeilen.Count)));
+                        zeilen.AddRange(Datentabelle(schritt.Ergebnis.Zeilen));
+                    }
                 }
                 else
                 {
@@ -420,6 +441,171 @@ namespace WindowsFormsApplication1
             zeilen.Add(LEER);
             return zeilen;
         }
+
+        // ==================================================================
+        //  Die Ergebnistabelle einer Aktion
+        // ==================================================================
+
+        /// <summary>Hoechstzahl der Datensaetze, die der Verlauf ausschreibt.</summary>
+        /// <remarks>
+        /// Deutlich groesser als <see cref="KiRueckmeldung.MaxZeilen"/> (20), und das
+        /// mit Absicht: Jene Grenze schuetzt die UEBERTRAGUNG an den Modellanbieter,
+        /// diese hier nur die Lesbarkeit des Fensters. Der Anwender darf sehen, was
+        /// sein eigenes Programm gelesen hat - auch das, was nie hinausgegangen ist.
+        /// </remarks>
+        public const int MaxDatenzeilen = 200;
+
+        /// <summary>Hoechstzahl der Spalten je Datensatz.</summary>
+        public const int MaxDatenspalten = 10;
+
+        /// <summary>Hoechstbreite einer Spalte in Zeichen.</summary>
+        private const int SPALTENBREITE = 30;
+
+        /// <summary>Trennt zwei Spalten der Ergebnistabelle.</summary>
+        private const string SPALTENTRENNER = "  ";
+
+        /// <summary>
+        /// Die Nutzdaten eines Aktionsergebnisses als ausgerichtete Tabelle: eine
+        /// Kopfzeile mit den Feldnamen, darunter je Datensatz eine Zeile.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der Kern setzt hier ausnahmsweise Zeichen und nicht nur Bedeutung.</b>
+        /// Eine Tabelle ist ohne feste Spaltenbreiten keine Tabelle, und die Breite
+        /// haengt an den Werten - die kennt nur diese Schicht. Die Anzeige steuert
+        /// weiterhin Farbe und Schrift bei (<see cref="KiVerlaufsrolle.Datenzeile"/>
+        /// wird mit fester Zeichenbreite gesetzt); ohne sie stuenden die Spalten
+        /// nicht untereinander, aber jeder Wert stuende trotzdem da.
+        /// </para>
+        /// <para>
+        /// <b>Zahlen in der Kultur des Anwenders</b> (<see cref="CultureInfo.CurrentCulture"/>),
+        /// wie ueberall in der Anzeige - invariant geschrieben wird nur, was an das
+        /// Modell geht (<see cref="KiRueckmeldung"/>).
+        /// </para>
+        /// </remarks>
+        public static IReadOnlyList<KiVerlaufszeile> Datentabelle(
+            IReadOnlyList<IReadOnlyDictionary<string, object>> zeilen)
+        {
+            var ausgabe = new List<KiVerlaufszeile>();
+            if (zeilen == null || zeilen.Count == 0) return ausgabe;
+
+            List<string> spalten = Spalten(zeilen);
+            if (spalten.Count == 0) return ausgabe;
+
+            int gezeigt = Math.Min(zeilen.Count, MaxDatenzeilen);
+
+            // ERST alle Zellen, DANN die Breiten, DANN die Zeilen. Wer die Breite je
+            // Zeile nachfuehrte, bekaeme eine Treppe statt einer Tabelle.
+            var kopf = new List<string>(spalten.Count);
+            foreach (string s in spalten) kopf.Add(Zelle(s));
+
+            var breite = new int[spalten.Count];
+            for (int s = 0; s < spalten.Count; s++) breite[s] = kopf[s].Length;
+
+            var werte = new List<List<string>>(gezeigt);
+            for (int z = 0; z < gezeigt; z++)
+            {
+                var reihe = new List<string>(spalten.Count);
+                for (int s = 0; s < spalten.Count; s++)
+                {
+                    string text = Zelle(Zellentext(zeilen[z], spalten[s]));
+                    if (text.Length > breite[s]) breite[s] = text.Length;
+                    reihe.Add(text);
+                }
+                werte.Add(reihe);
+            }
+
+            ausgabe.Add(new KiVerlaufszeile(KiVerlaufsrolle.Datenzeile, Reihe(kopf, breite)));
+            foreach (List<string> reihe in werte)
+                ausgabe.Add(new KiVerlaufszeile(KiVerlaufsrolle.Datenzeile, Reihe(reihe, breite)));
+
+            if (zeilen.Count > gezeigt)
+                ausgabe.Add(new KiVerlaufszeile(
+                    KiVerlaufsrolle.Leise,
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KI_AKT_WEITERE_ZEILEN,
+                                  zeilen.Count - gezeigt)));
+
+            return ausgabe;
+        }
+
+        /// <summary>
+        /// Die Spaltennamen in der Reihenfolge ihres ersten Auftretens - ueber ALLE
+        /// Zeilen, nicht nur ueber die erste.
+        /// </summary>
+        /// <remarks>
+        /// Die Aktionen bauen ihre Zeilen zwar durchweg gleichfoermig
+        /// (<c>KiHilfe.Zeile</c>), aber eine Aktion, die ein Feld nur manchmal
+        /// mitgibt, soll es nicht verlieren. Der Deckel
+        /// <see cref="MaxDatenspalten"/> greift danach.
+        /// </remarks>
+        private static List<string> Spalten(IReadOnlyList<IReadOnlyDictionary<string, object>> zeilen)
+        {
+            var spalten = new List<string>();
+            var gesehen = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (IReadOnlyDictionary<string, object> zeile in zeilen)
+            {
+                if (zeile == null) continue;
+                foreach (KeyValuePair<string, object> feld in zeile)
+                {
+                    if (spalten.Count >= MaxDatenspalten) return spalten;
+                    if (gesehen.Add(feld.Key)) spalten.Add(feld.Key);
+                }
+            }
+
+            return spalten;
+        }
+
+        /// <summary>Der Anzeigetext EINER Zelle; ein fehlendes Feld bleibt leer.</summary>
+        private static string Zellentext(IReadOnlyDictionary<string, object> zeile, string schluessel)
+        {
+            object wert;
+            if (zeile == null || !zeile.TryGetValue(schluessel, out wert) || wert == null) return "";
+
+            if (wert is bool ja)
+                return ja ? MyResource.Resource.KI_AKT_WERT_JA : MyResource.Resource.KI_AKT_WERT_NEIN;
+            if (wert is DateTime tag)
+                return tag.ToString("d", CultureInfo.CurrentCulture);
+
+            return Convert.ToString(wert, CultureInfo.CurrentCulture) ?? "";
+        }
+
+        /// <summary>
+        /// Eine Zelle auf eine Zeile und auf <see cref="SPALTENBREITE"/> gebracht.
+        /// </summary>
+        /// <remarks>
+        /// Ein Zeilenumbruch IN einem Wert zerrisse die Tabelle - er wird zum
+        /// Leerzeichen. Das ist keine Schoenheitsfrage: Der Verlauf setzt eine
+        /// Datenzeile als EINEN Absatz, und ein Umbruch darin verschoebe alle
+        /// folgenden Spalten dieser Zeile.
+        /// </remarks>
+        private static string Zelle(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return "";
+
+            string eine = MEHRFACHRAUM.Replace(text, " ").Trim();
+            return eine.Length <= SPALTENBREITE
+                ? eine
+                : eine.Substring(0, SPALTENBREITE - 1) + "…";
+        }
+
+        /// <summary>Setzt eine Reihe aus ihren Zellen; die letzte Spalte wird nicht gefuellt.</summary>
+        private static string Reihe(List<string> zellen, int[] breite)
+        {
+            var sb = new System.Text.StringBuilder();
+
+            for (int s = 0; s < zellen.Count; s++)
+            {
+                if (s > 0) sb.Append(SPALTENTRENNER);
+                sb.Append(s == zellen.Count - 1 ? zellen[s] : zellen[s].PadRight(breite[s]));
+            }
+
+            return sb.ToString().TrimEnd();
+        }
+
+        /// <summary>Jede Folge von Leerraum - auch Umbrueche und Tabulatoren.</summary>
+        private static readonly Regex MEHRFACHRAUM = new Regex(@"\s+", RegexOptions.Compiled);
 
         // ==================================================================
         //  Helfer

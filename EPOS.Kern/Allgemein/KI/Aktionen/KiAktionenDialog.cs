@@ -97,7 +97,15 @@ namespace WindowsFormsApplication1
                     KiMaskenhaken haken = KiMaskenbruecke.Haken(maske);
                     var zeilen = KiHilfe.Liste();
 
+                    // GEZAEHLT wird, was tatsaechlich gelesen wurde - nicht, was der
+                    // Katalog deklariert. Seit es Spalten gibt, sind das zwei Zahlen:
+                    // Eine Spaltendeklaration steht einmal im Katalog und liefert so
+                    // viele Felder, wie die Maske gerade Zeilen hat.
+                    int gelesen = 0;
+
                     foreach (KiFeldwert w in KiMaskenbruecke.Lesen(maske))
+                    {
+                        gelesen++;
                         zeilen.Add(KiHilfe.Zeile(
                             "art", "feld",
                             "name", w.Name,
@@ -108,6 +116,7 @@ namespace WindowsFormsApplication1
                             "wert", KiHilfe.Text(w.Text),
                             "bedienbar", w.Setzbar,
                             "hinweis", KiHilfe.Text(w.Setzbar ? null : KiDialogTexte.NichtSetzbar)));
+                    }
 
                     foreach (KiDialogKnopf k in eintrag.Knoepfe)
                         zeilen.Add(KiHilfe.Zeile(
@@ -126,7 +135,7 @@ namespace WindowsFormsApplication1
                     return KiErgebnis.Ok(
                         string.Format(CultureInfo.CurrentCulture, KiDialogTexte.Gelesen,
                                       eintrag.Anzeigename,
-                                      eintrag.Felder.Count, eintrag.Knoepfe.Count),
+                                      gelesen, eintrag.Knoepfe.Count),
                         zeilen);
                 });
         }

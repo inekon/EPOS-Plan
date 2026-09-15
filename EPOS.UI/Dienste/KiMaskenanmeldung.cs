@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Reflection;
 using KiKern;
 using WindowsFormsApplication1;
@@ -81,9 +82,20 @@ public sealed class KiMaskenanmeldung : IDisposable
         if (eintrag is null) return new KiMaskenanmeldung(maskenname ?? "", null);
 
         var zugaenge = new List<KiFeldzugang>(eintrag.Felder.Count);
+        var spalten = new List<KiFeldsammlung>();
 
         foreach (KiDialogFeld feld in eintrag.Felder)
         {
+            // EINE SPALTE geht einen anderen Weg: Sie loest nicht EINE Eigenschaft an
+            // EINEM Objekt auf, sondern je Zeile eine - und das bei jedem Zugriff neu,
+            // weil Zeilen entstehen und vergehen, solange der Dialog offen steht.
+            if (feld.IstSpalte)
+            {
+                KiFeldsammlung? spalte = Spalte(feld, quelle);
+                if (spalte is not null) spalten.Add(spalte);
+                continue;
+            }
+
             PropertyInfo? eigenschaft = Eigenschaft(typeof(T), feld);
             if (eigenschaft is null) continue;
 
@@ -98,7 +110,11 @@ public sealed class KiMaskenanmeldung : IDisposable
             // hier, damit die Setzbarkeit eines Feldes AN DER EIGENSCHAFT haengt und nicht
             // an einer zweiten Liste: Eine abgeleitete Groesse (die Diagnose der Flotte)
             // hat keinen Setzer, und genau das soll der Assistent sehen.
-            Action<object?>? setzen = eigenschaft.CanWrite
+            // `NurLesen` schlägt `CanWrite`: Eine Überschrift und ein fertig
+            // formatierter Betrag tragen einen Setzer, weil die Hülle sie füllt — nicht,
+            // weil der Anwender sie ändern könnte. Ohne diese Zeile böte der Assistent
+            // genau solche Felder zum Setzen an (Auftrag vom 14.09.2026).
+            Action<object?>? setzen = eigenschaft.CanWrite && !feld.NurLesen
                 ? wert =>
                   {
                       T? stand = quelle();
@@ -113,8 +129,103 @@ public sealed class KiMaskenanmeldung : IDisposable
             zugaenge.Add(new KiFeldzugang(feld, lesen, setzen, eigenschaft.PropertyType));
         }
 
-        object? marke = KiMaskenbruecke.Anmelden(eintrag.Maskenname, eintrag, zugaenge, haken);
+        object? marke = KiMaskenbruecke.Anmelden(eintrag.Maskenname, eintrag, zugaenge, haken, spalten);
         return new KiMaskenanmeldung(eintrag.Maskenname, marke);
+    }
+
+    /// <summary>
+    /// Die Sammlung hinter einer Spaltendeklaration
+    /// (<c>KostenKomponenteStand.Zeilen[].Nutzungsdauer</c>); <c>null</c>, wenn der Pfad
+    /// am Daten-Objekt nicht aufloest.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Zweimal Reflection, beide Male EINMAL.</b> Die Liste (<c>Zeilen</c>) haengt am
+    /// Daten-Objekt, die Spalte (<c>Nutzungsdauer</c>) am ZEILENtyp. Beide
+    /// <see cref="PropertyInfo"/> werden hier aufgeloest und in den Abschluessen
+    /// festgehalten; zur Laufzeit bleibt je Zugriff ein <c>GetValue</c> ohne Suche -
+    /// dieselbe Regel wie beim flachen Feld.
+    /// </para>
+    /// <para>
+    /// <b>Der ZEILENTYP kommt aus <c>IEnumerable&lt;X&gt;</c></b> und nicht aus dem ersten
+    /// Element: Eine Maske, deren Raster gerade leer ist, soll ihre Spalten trotzdem
+    /// anmelden koennen - sonst haette der Assistent sie erst, nachdem der Anwender von
+    /// Hand eine Zeile angelegt hat.
+    /// </para>
+    /// <para>
+    /// <b><c>Schreibbar</c> ist Bestandsregel, keine Erfindung.</b> Fuehrt der Zeilentyp
+    /// eine Eigenschaft dieses Namens, entscheidet SIE, ob der Assistent in die Zeile
+    /// schreiben darf - genau wie sie im Dialog die Eingabefelder sperrt. Fuehrt er
+    /// keine, sind alle Zeilen aenderbar.
+    /// </para>
+    /// </remarks>
+    private static KiFeldsammlung? Spalte<T>(KiDialogFeld feld, Func<T?> quelle) where T : class
+    {
+        if (!string.Equals(feld.Datentyp, typeof(T).Name, StringComparison.Ordinal)) return null;
+
+        PropertyInfo? liste = typeof(T).GetProperty(feld.Sammlung,
+                                                    BindingFlags.Public | BindingFlags.Instance);
+        if (liste is null) return null;
+
+        Type? zeilentyp = Zeilentyp(liste.PropertyType);
+        if (zeilentyp is null) return null;
+
+        PropertyInfo? spalte = zeilentyp.GetProperty(feld.Eigenschaft,
+                                                     BindingFlags.Public | BindingFlags.Instance);
+        if (spalte is null) return null;
+
+        PropertyInfo? kennzeichen = feld.Zeilenkennzeichen.Length == 0
+            ? null
+            : zeilentyp.GetProperty(feld.Zeilenkennzeichen, BindingFlags.Public | BindingFlags.Instance);
+
+        PropertyInfo? schreibbar = zeilentyp.GetProperty(SCHREIBBAR,
+                                                         BindingFlags.Public | BindingFlags.Instance);
+        if (schreibbar is not null && schreibbar.PropertyType != typeof(bool)) schreibbar = null;
+
+        return new KiFeldsammlung(
+            feld,
+            () =>
+            {
+                T? stand = quelle();
+                return stand is null ? null : Zeilen(liste.GetValue(stand));
+            },
+            zeile => spalte.GetValue(zeile),
+            spalte.CanWrite && !feld.NurLesen
+                ? (zeile, wert) => spalte.SetValue(zeile, wert)
+                : null,
+            kennzeichen is null
+                ? null
+                : zeile => Convert.ToString(kennzeichen.GetValue(zeile), CultureInfo.CurrentCulture) ?? "",
+            schreibbar is null ? null : zeile => (bool)(schreibbar.GetValue(zeile) ?? true),
+            spalte.PropertyType);
+    }
+
+    /// <summary>Name der Zeileneigenschaft, die den Schreibschutz einer Zeile traegt.</summary>
+    private const string SCHREIBBAR = "Schreibbar";
+
+    /// <summary>Der Elementtyp einer <c>IEnumerable&lt;X&gt;</c>; <c>null</c>, wenn es keine ist.</summary>
+    private static Type? Zeilentyp(Type listentyp)
+    {
+        if (listentyp == typeof(string)) return null;
+
+        foreach (Type schnittstelle in listentyp.GetInterfaces())
+            if (schnittstelle.IsGenericType &&
+                schnittstelle.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                return schnittstelle.GetGenericArguments()[0];
+
+        return null;
+    }
+
+    /// <summary>Die Zeilen als Liste; nie <c>null</c>.</summary>
+    private static IReadOnlyList<object> Zeilen(object? wert)
+    {
+        if (wert is not System.Collections.IEnumerable folge) return Array.Empty<object>();
+
+        var zeilen = new List<object>();
+        foreach (object? glied in folge)
+            if (glied is not null) zeilen.Add(glied);
+
+        return zeilen;
     }
 
     /// <summary>
@@ -137,10 +248,39 @@ public sealed class KiMaskenanmeldung : IDisposable
         var fehlt = new List<string>();
 
         foreach (KiDialogFeld feld in eintrag.Felder)
-            if (Eigenschaft(datentyp, feld) is null)
+            if (feld.IstSpalte ? !SpalteLoest(datentyp, feld) : Eigenschaft(datentyp, feld) is null)
                 fehlt.Add(feld.Eigenschaftspfad);
 
         return fehlt;
+    }
+
+    /// <summary>
+    /// Löst eine SPALTE am Daten-Objekt auf — Typname, Sammlung, Zeilentyp und die
+    /// Eigenschaft darin?
+    /// </summary>
+    /// <remarks>
+    /// Das Zeilenkennzeichen wird MITGEPRÜFT: Ein Tippfehler darin fiele sonst nirgends
+    /// auf — die Anmeldung fällt still auf die Zeilennummer zurück, und in der
+    /// Bestätigung stünde „Nutzungsdauer 3" statt „Nutzungsdauer (Zubehör)". Richtig,
+    /// aber nicht das, was der Katalog sagt.
+    /// </remarks>
+    private static bool SpalteLoest(Type datentyp, KiDialogFeld feld)
+    {
+        if (!string.Equals(feld.Datentyp, datentyp.Name, StringComparison.Ordinal)) return false;
+
+        PropertyInfo? liste = datentyp.GetProperty(feld.Sammlung,
+                                                   BindingFlags.Public | BindingFlags.Instance);
+        if (liste is null) return false;
+
+        Type? zeilentyp = Zeilentyp(liste.PropertyType);
+        if (zeilentyp is null) return false;
+
+        if (zeilentyp.GetProperty(feld.Eigenschaft, BindingFlags.Public | BindingFlags.Instance) is null)
+            return false;
+
+        return feld.Zeilenkennzeichen.Length == 0
+            || zeilentyp.GetProperty(feld.Zeilenkennzeichen,
+                                     BindingFlags.Public | BindingFlags.Instance) is not null;
     }
 
     /// <summary>Meldet die Maske ab. Mehrfaches Abmelden ist ausdrücklich erlaubt.</summary>
