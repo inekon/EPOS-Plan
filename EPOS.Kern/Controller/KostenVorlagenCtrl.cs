@@ -646,24 +646,51 @@ namespace WindowsFormsApplication1
         //
         //   DER GELTUNGSBEREICH IST BENANNT, NICHT STILL. Dasselbe Muster steht an
         //   JEDEM Gewerk: Auch der Wärmepumpe wird „je kWp Leistung" angeboten und
-        //   der Photovoltaik „je m² Kollektorfläche". Der Entscheid, den diese
-        //   Stelle umsetzt, gilt dem PUFFERSPEICHER; die übrigen Gewerke bleiben
-        //   deshalb, wie sie sind, bis der Anwender über sie entschieden hat. Die
-        //   Regel selbst ist vollständig und für alle Gewerke geprüft — sie greift
-        //   nur dort, wo AUSWAHLFILTER_GEWERKE es sagt. Dieser Geltungsbereich ist
-        //   das EINZIGE, was hier zu ändern ist, wenn der Entscheid sich weitet.
+        //   der Photovoltaik „je m² Kollektorfläche". Der zweite Entscheid desselben
+        //   Tages weitet die Filterung deshalb auf ALLE ZEHN Gewerke aus; der
+        //   Geltungsbereich bleibt trotzdem benannt, damit sichtbar ist, WORAUF die
+        //   Regel wirkt, und nicht nur, DASS sie wirkt.
+        //
+        //   GEMESSEN, BEVOR SIE SCHARF GESCHALTET WURDE. Die Matrix Art↔Gewerk ist
+        //   je Gewerk und je Raster ausgezählt worden, dazu der Bestand der
+        //   Auslieferungsvorlagen und der Projektzeilen der Messlatte:
+        //
+        //     · Kein Gewerk verliert seine Auswahl. Am dünnsten bleibt das
+        //       BETRIEBSRASTER der vier Gewerke ohne Geräte- und Laufgrößen
+        //       (Pufferspeicher, Wärmezentrale, Bauliche Anlagen, Stromeinspeisung):
+        //       fester Jahresbetrag und „% der Investition" — beide tragen dort
+        //       wirklich, die zweite über die Investitionskaskade.
+        //     · Genau EINE Zeile des Bestands trug eine Art, die an ihrem Gewerk
+        //       keine Bezugsgröße führt: die Vorlagenposition „Batteriespeicher" der
+        //       Photovoltaik mit „je kWh Kapazität". Sie ist eigens umgestellt
+        //       worden (Schemaschritt 78, PvVorlageBatteriespeicher); die
+        //       Projektzeilen der Messlatte sind samt und sonders unauffällig.
+        //
+        //   Eine Art, die eine VORHANDENE Zeile trägt, bleibt davon unberührt in der
+        //   Liste (siehe Auswahl, Bedingung 1) — sonst verlöre ein gepflegter Wert
+        //   seine Auswahl und ließe sich nicht mehr ändern.
         // =====================================================================
 
         /// <summary>
         /// Die Gewerke (<c>Tab_KostenKomponente.ID</c>), an denen die Auswahlliste nach
         /// der Bezugsgröße gefiltert wird — <b>der Geltungsbereich des Entscheids</b>,
-        /// nicht die Regel selbst. Die Regel steht in <see cref="PasstZuGewerk"/> und
-        /// gilt für alle Gewerke; ein Gewerk, das hier fehlt, bekommt weiterhin die
+        /// nicht die Regel selbst. Die Regel steht in <see cref="PasstZuGewerk"/>; seit
+        /// dem zweiten Entscheid vom 15.09.2026 deckt der Geltungsbereich alle zehn
+        /// Kostenkomponenten ab. Ein Gewerk, das hier fehlt, bekäme weiterhin die
         /// vollständige Liste angeboten.
         /// </summary>
         private static readonly int[] AUSWAHLFILTER_GEWERKE =
         {
-            6,   // Pufferspeicher — Anwenderentscheid 15.09.2026
+            1,   // Wärmepumpe
+            2,   // Heizkessel
+            3,   // Photovoltaik
+            4,   // Solarthermie
+            5,   // Stromspeicher
+            6,   // Pufferspeicher
+            7,   // BHKW
+            8,   // Wärmezentrale
+            9,   // Bauliche Anlagen
+            10,  // Stromeinspeisung
         };
 
         /// <summary>
