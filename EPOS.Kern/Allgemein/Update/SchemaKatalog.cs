@@ -2801,9 +2801,16 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Bauliche Anlagen (Gerüst etc.)", ART_KAP, BM_BETRAG),
                 new VorlagenPositionSeed("Planung / Baunebenkosten", ART_KAP, BM_PINV),
             }),
+            // ANWENDERENTSCHEID 15.09.2026: Am Pufferspeicher ist das VOLUMEN die einzige
+            // Bezugsgröße. BEMESSUNG_EUR_PRO_KW_LEISTUNG meint an diesem Gewerk
+            // Tab_Pufferspeicher.Gesamtvolumen in Litern (Anzeige „je Liter", €/Ltr. —
+            // BemessungKatalog); eine kWh-Kapazität führt der Pufferspeicher nicht.
+            // Dieselbe Art zieht Migrationsschritt 77 an einer bestehenden Datenbank nach
+            // (PufferspeicherBemessungVolumen) — Saat und Nachzug dürfen nicht
+            // auseinanderlaufen.
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]
             {
-                new VorlagenPositionSeed("Speicher", ART_KAP, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET),
+                new VorlagenPositionSeed("Speicher", ART_KAP, PufferspeicherBemessungVolumen.BEMESSUNG_NEU),
                 new VorlagenPositionSeed(DbWerte.KOSTENPOSTEN_SONSTIGES, ART_KAP, BM_BETRAG),
             }),
             new KostenVorlagenSeed(DbWerte.KOSTEN_KOMPONENTE_STROMSPEICHER, DbWerte.KOSTEN_KATEGORIE_INVESTITION, new[]

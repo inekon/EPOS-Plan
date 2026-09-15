@@ -817,9 +817,11 @@ Lesepunkt: `Tab_ProjektWerte` mit `KategorieID = 1`, **ohne ORDER BY** (Befund I
 | `EUR_PRO_KWP` | Σ PV_Leistung × Satz | `Tab_Energieanlagen.PV_Leistung` ⚠ **I-1** |
 | `EUR_PRO_KWH_KAPAZITAET` | Σ Energie × Satz | `Tab_Stromspeicher.Energie` |
 | `EUR_PRO_M2_KOLLEKTOR` | Σ (Aperturfläche × Modulanzahl) × Satz | Solarthermie |
+| `EUR_PRO_KW_LEISTUNG` am Pufferspeicher | Σ Gesamtvolumen × Satz [€/Ltr.] | `Tab_Pufferspeicher.Gesamtvolumen` |
 
-Art ↔ Gewerk wird gekreuzt geprüft: falsches Paar ⇒ **null, keine Fantasiezahl**. Pufferspeicher
-liefert immer null (ohne Temperaturpaar keine belastbare kWh).
+Art ↔ Gewerk wird gekreuzt geprüft: falsches Paar ⇒ **null, keine Fantasiezahl**. Der
+Pufferspeicher bemisst sich allein an seinem **Volumen**; eine kWh-Kapazität führt er nicht
+(ohne Temperaturpaar keine belastbare kWh), und `EUR_PRO_KWH_KAPAZITAET` liefert dort null.
 
 **Runde 2 — `PROZENT_ERZEUGERKOSTEN`:**
 
