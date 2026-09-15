@@ -6698,3 +6698,47 @@ Die Annahme der Orchestrierung, der gleichnamige Sprungknopf im BHKW-Dialog fall
 mit, ist bewusst **nicht** umgesetzt. Sie bleibt sachlich richtig — zwei Pflegewege
 auf dieselben Werte sind der Fehler, nicht die Bequemlichkeit —, setzt aber voraus,
 dass überhaupt ein Pflegeweg bleibt.
+
+## #292 — Zwei Einstiege fallen, einer davon war nie einer (15.09.2026, Nachtrag aus dem Merge)
+
+Zwei Anwenderentscheide an derselben Seite, beide ohne Rechenwirkung.
+
+**Teil A — „Tarifstruktur für Wärmepumpe entfällt."** Der Knopf „Strombezug…" erschien
+bisher unter zwei Bedingungen: aktiver Tarifsatz **oder** eine Wärmepumpe in der Gruppe
+(`WirtschaftlichkeitSeiteGaben.cs`, `stand.MitStrombezug = (flags != null &&
+flags.Waermepumpe) || tarifAktiv`). Der zweite Zweig fällt. Damit hängt der Einstieg
+allein an der Frage, ob das Projekt überhaupt mit einer Tarifstruktur rechnet.
+
+Nicht gefallen ist der Knopf selbst, und das hat einen belegten Grund: Die Sicht
+`Strombezug` ist der einzige Pflegeweg für vier Zonen-Bezugspreise und drei Staffelgrößen
+des Leistungspreises, die alle in den Rechenweg gehen. Die Messung dazu steht unter
+`Dokumentation/aktuell/`.
+
+Mitgefallen ist `ErzeugerFlags.Waermepumpe` samt seiner Abfrage: Nach der Änderung hatte
+das Feld genau null Leser.
+
+**Teil B — der Knopf, der nichts tat.** Der Sprungknopf „BHKW-Wirtschaftlichkeit…" im
+Wirtschaftlichkeitsparameter-Dialog meldete einen Sprungwunsch, den niemand auswertete.
+Der einzige lebende Wirt ist die Überlagerung der Wirtschaftlichkeitsseite, und die
+schreibt `Geschlossen="@((WirtParameterErgebnis e) => Fertig(e is not null))"` — der
+Sprungwert fällt auf den Boden. Die Schleife, die früher wieder öffnete, hatte keinen
+Aufrufer mehr.
+
+Gefallen sind deshalb nicht nur der Knopf, sondern die ganze Kette dahinter: `BhkwKlick`,
+die Beschriftung, der Hinweistext, der Aufzählungstyp `WirtParameterSprung` (nach dem
+Wegfall des einen Wertes blieb nur `Keiner`), der Parameter `Sprung` des Ergebnisses —
+`Schliessen()` ist jetzt parameterlos — und in der Hülle `Oeffnen` samt `EinmalZeigen`,
+beide ohne Aufrufer, mitsamt vier Usings. Die BHKW-Gruppe im Dialog bleibt stehen, als
+reiner Verweis darauf, wo die Angaben gepflegt werden.
+
+**Eine Folge, die benannt gehört.** Nach Teil A gilt: In einer Gruppe ohne BHKW und ohne
+Photovoltaik ist bei inaktivem Tarifsatz keine Sicht des Tarifdialogs mehr erreichbar.
+Der Schalter „Aktiv" sitzt im Kopfblock, den jede Sicht baut — aber wer keine Sicht
+öffnen kann, kommt an den Schalter nicht heran. Das ist die konsequente Folge des
+Entscheids und bewusst so umgesetzt; ein Rückweg wäre ein Wirt für die Sicht `Komplett`,
+die als Überladung existiert und seit jeher keinen Aufrufer hat.
+
+Zur Wiki-Quelle: Die Fußleiste der Seite „Wirtschaftlichkeit" nannte einen Knopf
+„Tarifstruktur…", den es seit Ä16 nicht mehr gibt. Er heißt dort jetzt „Strombezug…",
+mit seiner Bedingung, und daneben steht „BHKW-Wirtschaftlichkeit…" als das, was es nach
+dieser Welle ist: der einzige Weg in jenen Dialog.
