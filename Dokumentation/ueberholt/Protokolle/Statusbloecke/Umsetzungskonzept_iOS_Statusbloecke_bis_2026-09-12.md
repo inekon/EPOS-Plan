@@ -6591,3 +6591,62 @@ steht aus und ist die eigentliche Aufgabe von
 > **Offen:** vier Entscheide — der Sprungknopf, den niemand auswertet; 37 weitere doppelte
 > Titel; 332 Dateien ohne BOM; die Schreibbedingung des OK-Wegs (siehe Statusdatei
 > „Nach #289").
+
+## #290 — Erst die Erzeuger, dann die Dateien (15.09.2026, Nachtrag aus dem Merge)
+
+> **Befund.** `.editorconfig` verlangt für `.cs` UTF-8 mit BOM. Von 1 311 versionierten
+> `.cs` lagen 332 ohne — quer durch `EPOS.Kern` (125), `EPOS.Kern.Tests` (60),
+> `EPOS.UI.Tests` (34), `EPOS.UI` (32), `SpeicherEngine` (32) und neun weitere Orte.
+>
+> **Warum die Reihenfolge der Punkt war.** Zwei dieser Dateien werden von Werkzeugen
+> geschrieben, und beide Werkzeuge schrieben ohne BOM: `sql/tools/Erzeuge-Schema.ps1`
+> (`UTF8Encoding($false)` für **alle** Ausgaben) und `Werkzeuge/KlimazonenPfade/erzeugen.py`
+> (`encoding="utf-8"`). Hätte man nur die Dateien angefasst, wäre das BOM beim nächsten
+> Werkzeuglauf wieder verschwunden und der Befund zurückgekommen. Die Erzeuger wurden
+> gesucht, nicht nach Dateinamen geraten, und zuerst umgestellt: Das PowerShell-Skript
+> bekommt einen Schalter, den **nur** der C#-Aufruf setzt — die drei `.sql` und zwei `.json`
+> bleiben bewusst BOM-frei —, `erzeugen.py` schreibt `utf-8-sig`, und ein zweiter Lauf auf
+> dasselbe Ziel liefert byte-gleiche 407 739 Byte (Muster #152). Ein dritter Kandidat wurde
+> geprüft und **nicht** geändert: `designer_neu.py` schreibt `Resource.Designer.cs` schon mit
+> BOM.
+>
+> **Gemessen statt angenommen.** Die Wurzel-`CLAUDE.md` warnt, dass ältere Dateien
+> Windows-1252 ohne BOM sein können — ein BOM davor gesetzt ergäbe Byte-Salat. Alle 332
+> wurden streng dekodiert: **keine einzige** ist 1252, alle sind gültiges UTF-8. Die
+> Ausnahmeliste der Wache ist deshalb leer, und das ist ein Messergebnis, keine Auslassung.
+>
+> **Die Gegenprobe.** Sie trägt den ganzen Auftrag und wurde von der Orchestrierung
+> unabhängig nachgerechnet: Zieht man aus jeder geänderten Datei die drei BOM-Bytes wieder
+> ab, ist sie byte-identisch zu ihrem Stand in `be2eb4c7` — **332 von 332, 0 abweichend**,
+> verglichen gegen die Git-Blobs. Der zeilenbasierte Diff zeigt für alle 332 genau `1 1`;
+> das ist das Minimum, das eine reine BOM-Änderung zeigen kann, und mehr kommt nicht vor.
+>
+> **Die Wache.** Eine solche gab es nicht. Neu: `EPOS.Kern.Tests/QuelltextKodierungWacheTests`
+> (Zuschnitt und Ton nach `RepositoryOrdnungWacheTests`, sechs Fälle, im Kern-Filter). Sie
+> prüft zweierlei: BOM-Pflicht je versionierter `.cs` **und** UTF-8-Gültigkeit — die zweite
+> Regel fängt den Rückweg ab, bei dem jemand eine Signatur vor einen 1252-Rumpf setzt; ihre
+> Meldung sagt ausdrücklich, dass ein BOM die Sache in diesem Fall schlimmer macht. Die Liste
+> stammt aus `git ls-files -z` (Dateisystem nur als Rückfall, damit sie nie still grün wird),
+> dazu vier Gegenproben — ganzer Bestand, synthetischer Baum mit allen drei Fällen,
+> Ausnahmeliste, Pfade mit Umlaut. Im Lauf live belegt: BOM entfernt → rot **mit Dateinamen**,
+> wiederhergestellt → grün. Zeilenenden prüft sie bewusst nicht: `* text=auto` legt LF ab und
+> checkt auf Windows CRLF aus — eine Prüfung darauf wäre auf einer der beiden Plattformen
+> immer rot.
+>
+> **Ein Punkt, an dem der Agent angehalten hat.** `KlimazonenPfade.cs` wurde nicht neu
+> erzeugt: Die eingecheckte Datei weicht vom `KOPF`-Muster des Erzeugers in genau einer
+> Kommentarzeile ab (der double-Durchgang `b76c53d7` hat sie dort geändert, im Erzeuger
+> nicht). Neuerzeugen hätte diese Zeile zurückgedreht — mehr als das BOM, was der Auftrag
+> verbietet. Das BOM wurde von Hand gesetzt, byte-identisch zu dem, was der geänderte
+> Erzeuger für diesen Inhalt schreiben würde, und die Drift im Commit festgehalten.
+>
+> **Abnahme:** Kern-Filter 0 Fehler, 4 Warnungen; Windows-Schale 0 Fehler, 5 Warnungen
+> (Bestand); 8 029 Tests grün, 1 übersprungen; Formularkarte 122 grün (die Prüfmuster tragen
+> jetzt BOM — `File.ReadAllText` verwirft es), Auslieferungsvorlage 19 grün; SqlDialektPrüfer
+> 0 Fundstellen von 1 409; ResourceDesigner-Trockenlauf +0; Referenzlauf
+> 1030/1007/1017/1045/1046 byte-gleich; Gate a290 grün. Kein Rechenweg berührt — geändert
+> sind drei Bytes je Datei, zwei Erzeuger-Schreibpfade und eine neue Testklasse.
+> Merge `5be42948`.
+>
+> **Offen:** der Windows-Lauf des Schema-Skripts, die Kommentardrift des Klimazonen-Erzeugers
+> und 19 weitere Dateien derselben Regel (siehe Statusdatei „Nach #290").
