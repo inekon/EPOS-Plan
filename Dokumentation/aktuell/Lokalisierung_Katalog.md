@@ -1405,42 +1405,43 @@ Umsetzung der Etappe **E3** aus `Konzept_BHKW_Kosten_Erloese.md`; Begründung, W
 Verifikation im
 [`../Reporting/W4_E3_Kostenarten_Betriebskosten_Protokoll.md`](../ueberholt/Protokolle/Reporting/W4_E3_Kostenarten_Betriebskosten_Protokoll.md).
 
-**43 neue Schlüssel** in `MyResource/Resource.resx` (+ `.en-US.resx` + `Resource.Designer.cs`).
-Zwei Präfixe: `KOSTEN_*` für die beiden Ergänzungen in der Kostenverwaltung, `VDI_*` für die
-neue Maske `Form_Betriebskosten`.
+**Zwei Schlüssel** in `MyResource/Resource.resx` (+ `.en-US.resx` + `Resource.Designer.cs`),
+Präfix `KOSTEN_*` für die beiden Ergänzungen in der Kostenverwaltung. Die 41 Schlüssel des
+Präfixes `VDI_*` sind entfallen (unten).
 
 | Schlüssel | DE | EN | Fundstellen |
 |---|---|---|---|
 | `KOSTEN_BTN_VDI2067` | ⚙ Betriebskosten VDI 2067… | ⚙ Operating costs VDI 2067… | `Form_Kosten.UpdateDetailPanel` — Knopf in der Hauptgruppe des BHKW auf dem Reiter „Betriebskosten" |
 | `KOSTEN_BEMESSUNG_HERLEITUNG` | Abgeleitet: {0} {1} × {2} {3} | Derived: {0} {1} × {2} {3} | `Form_Kosten.LoadKostenFaktoren` — Hinweis am gesperrten Betragsfeld einer abgeleiteten Position |
-| `VDI_TITEL` | Betriebskosten nach VDI 2067 | Operating costs to VDI 2067 | `Form_Betriebskosten.Aufbauen` |
-| `VDI_HINWEIS` | Kopfzeile: netto verbindlich, Brutto abgeleitet, Satz hat Vorrang | dito englisch | dieselbe |
-| `VDI_SP_POSITION` · `VDI_SP_BEMESSUNG` · `VDI_SP_SATZ` · `VDI_SP_NETTO` · `VDI_SP_BRUTTO` · `VDI_SP_BEZUG` | die sechs Spaltenköpfe | dito | dieselbe |
-| `VDI_POS_ANZ_*` (11 Schlüssel) | Anzeigenamen der elf Positionen | dito | `Form_Betriebskosten.PositionName` |
-| `VDI_BEM_ANZ_*` (5 Schlüssel) | Anzeigenamen der fünf Bemessungsarten | dito | `Form_Betriebskosten.BemessungName` |
-| `VDI_EMPFEHLUNG` | VDI 2067: {0}–{1} % | dito | dieselbe |
-| `VDI_ERSETZT` | Durch die Satzangabe ersetzt — der Betrag wird berechnet … | Replaced by the rate … | `Form_Betriebskosten.ZeileNachziehen` (Hinweis am gesperrten Feld) |
-| `VDI_VBH_NAEHERUNG` | Näherung: „Vollbenutzungsstunden" sind Wärme geteilt durch Leistung … | Approximation: … | `Form_Betriebskosten.Aufbauen`, Fußhinweis |
-| `VDI_HINWEIS_INSTANDHALTUNG` | Wartung und Instandhaltung BHKW sind zwei EIGENE Positionen … | Maintenance and repairs … | dieselbe |
-| `VDI_SUMME_NETTO` · `VDI_SUMME_BRUTTO` | Summenzeilen | dito | `Form_Betriebskosten.SummenNachziehen` |
-| `VDI_UST_FEHLT` | Umsatzsteuersatz nicht im Katalog gepflegt — kein Bruttobetrag | VAT rate not maintained … | dieselbe |
-| `VDI_BTN_OK` · `VDI_BTN_ABBRUCH` | Übernehmen · Abbrechen | Apply · Cancel | `Form_Betriebskosten.Aufbauen` |
-| `VDI_GESPEICHERT` | {0} Betriebskostenpositionen nach VDI 2067 gespeichert. | {0} operating cost items to VDI 2067 saved. | `Form_Kosten.btnBetriebskostenVdi_Click` |
 
-**Entfallen (7)**
+**Entfallen (41)**
+
+Die Maske `Form_Betriebskosten` gibt es nicht mehr: Das Betriebskostenraster steht im
+Komponenten-Kostendialog (`EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor` mit der Hülle
+`WindowsFormsApplication1/Views/Kosten/KostenKomponenteHuelle.cs`), dessen Texte unter dem
+Präfix `KDLG_*` laufen. Alle Schlüssel des Präfixes `VDI_*` sind damit repo-weit ohne
+Fundstelle und aus `Resource.resx`, `Resource.en-US.resx` und `Resource.Designer.cs` entfernt.
 
 | Schlüssel | Grund |
 |---|---|
-| `VDI_BEZUG_INVEST_BHKW` · `VDI_BEZUG_INVEST_KESSEL` · `VDI_BEZUG_INVEST_GESAMT` · `VDI_BEZUG_STROM` · `VDI_BEZUG_VBH` · `VDI_BEZUG_BRENNSTOFF` | Anzeigenamen der sechs Bezugsgrößen. Der Bezugsgrößenkatalog ist entfallen; die Empfehlungsbereiche nach VDI 2067 stehen an der Position einer Kostenvorlage (`Tab_KostenVorlagePosition`, Spalten `Empfehlung_von`/`Empfehlung_bis`) und erscheinen am Satzfeld des Komponenten-Kostendialogs. Repo-weit ohne Fundstelle, aus `Resource.resx`, `Resource.en-US.resx` und `Resource.Designer.cs` entfernt. |
-| `VDI_BEZUG_FEHLT` | „nicht ermittelbar (Simulationslauf oder Investitionsposition fehlt)" — die Meldung hing an derselben Rechnung und fällt mit ihr. Ebenso ohne Fundstelle und aus allen drei Dateien entfernt. |
+| `VDI_TITEL` · `VDI_HINWEIS` · `VDI_HINWEIS_INSTANDHALTUNG` · `VDI_VBH_NAEHERUNG` (4) | Titel, Kopfzeile und die beiden Fußhinweise der Maske. Im Komponenten-Kostendialog nennt `KDLG_UNTERTITEL_BETRIEB` die Sicht und `KDLG_BANNER` die Nettoregel. |
+| `VDI_SP_POSITION` · `VDI_SP_BEMESSUNG` · `VDI_SP_SATZ` · `VDI_SP_NETTO` · `VDI_SP_BRUTTO` · `VDI_SP_BEZUG` (6) | die sechs Spaltenköpfe. Das Raster des Komponenten-Kostendialogs trägt seine Spalten unter `KDLG_SP_*`; eine Spalte „Bezug" führt es nicht mehr. |
+| `VDI_POS_ANZ_*` (11) | Anzeigenamen der elf Positionen. Angezeigt wird die Bezeichnung der Position selbst (`Tab_KostenVorlagePosition.Bezeichnung`) — ein getrennter Anzeigetext besteht nicht mehr. |
+| `VDI_BEM_ANZ_*` (5) | Anzeigenamen der fünf Bemessungsarten. Die Anzeigenamen führt `KostenVorlagenCtrl.BemessungKatalog` unter dem Präfix `BM_*`, je Eintrag mit Persistenzwert, Schlüssel und Einheit. |
+| `VDI_SUMME_NETTO` · `VDI_SUMME_BRUTTO` · `VDI_UST_FEHLT` (3) | Summenzeilen und der Hinweis am fehlenden Umsatzsteuersatz; im Komponenten-Kostendialog `KDLG_SUMME_NETTO_BETRIEB` und `KDLG_SUMME_BRUTTO`, das den Satz aus dem Katalog mitführt. |
+| `VDI_EMPFEHLUNG` · `VDI_ERSETZT` (2) | Empfehlungsbereich und Hinweis am gesperrten Betragsfeld. Die Empfehlung steht an der Position der Kostenvorlage (`Empfehlung_von`/`Empfehlung_bis`) und erscheint am Satzfeld; der Werkzeugtipp am gekoppelten Betragsfeld steht als `KDLG_TT_KETTE` bzw. `KDLG_TT_BETRAG_BASIS_*`. |
+| `VDI_BTN_OK` · `VDI_BTN_ABBRUCH` (2) | die beiden Knöpfe der Maske; der Komponenten-Kostendialog trägt `KDLG_BTN_SPEICHERN` und `KDLG_BTN_ABBRECHEN`. |
+| `VDI_GESPEICHERT` (1) | Rückmeldung des Knopfes, der die Maske öffnete. |
+| `VDI_BEZUG_INVEST_BHKW` · `VDI_BEZUG_INVEST_KESSEL` · `VDI_BEZUG_INVEST_GESAMT` · `VDI_BEZUG_STROM` · `VDI_BEZUG_VBH` · `VDI_BEZUG_BRENNSTOFF` (6) | Anzeigenamen der sechs Bezugsgrößen. Der Bezugsgrößenkatalog ist entfallen; die Empfehlungsbereiche nach VDI 2067 stehen an der Position einer Kostenvorlage (`Tab_KostenVorlagePosition`, Spalten `Empfehlung_von`/`Empfehlung_bis`) und erscheinen am Satzfeld des Komponenten-Kostendialogs. Repo-weit ohne Fundstelle, aus `Resource.resx`, `Resource.en-US.resx` und `Resource.Designer.cs` entfernt. |
+| `VDI_BEZUG_FEHLT` (1) | „nicht ermittelbar (Simulationslauf oder Investitionsposition fehlt)" — die Meldung hing an derselben Rechnung und fällt mit ihr. Ebenso ohne Fundstelle und aus allen drei Dateien entfernt. |
 
 **Nicht lokalisiert — und warum**
 
 | Wert | Grund |
 |---|---|
 | `"KAPITALGEBUNDEN"`, `"BEDARFSGEBUNDEN"`, `"BETRIEBSGEBUNDEN"`, `"SONSTIGE"` (`DbWerte.KOSTENART_*`) | **Persistenzwerte** — Inhalt von `Tab_ProjektWerte.Kostenart`, in SQL verglichen und nach der Auslieferung eingefroren. ASCII und Großbuchstaben wie die 135 Katalogschlüssel aus E1. Die Anzeige läuft nicht über diese Werte: Die Kostenart hat in E3 keine sichtbare Oberfläche, sie gliedert erst den Bericht der Etappe E7. |
-| `"BETRAG"`, `"PROZENT_INVESTITION"`, `"EUR_PRO_H"`, `"EUR_PRO_KWH"`, `"PROZENT_BRENNSTOFFKOSTEN"` (`DbWerte.BEMESSUNG_*`) | dito — Inhalt von `Tab_ProjektWerte.Bemessung`. Der Anzeigename steht getrennt als `VDI_BEM_ANZ_*`; die ComboBox trägt `Form_Betriebskosten.BemessungItem`, das den **Wert** hält und den **Namen** anzeigt (Muster `Form_Gesetzesparameter.KlasseItem`). Kein Anzeigetext ist je Steuerwert. |
-| Die elf Positionsbezeichnungen (`DbWerte.VDI_POS_*`, z. B. `"Wartung BHKW"`) | **Persistenzwerte** — sie stehen als `Tab_Kostenfaktor.Bezeichnung` in der Datenbank, werden in SQL damit verglichen und ordnen der Position im Code ihre Bezugsgröße zu. Deutsch und eingefroren wie die vier Nebenkostenposten aus der Kostenübernahme (`KOSTENPOSTEN_MONTAGE` & Co.). Der Anzeigetext kommt getrennt aus `VDI_POS_ANZ_*`. |
+| `"BETRAG"`, `"PROZENT_INVESTITION"`, `"EUR_PRO_H"`, `"EUR_PRO_KWH"`, `"PROZENT_BRENNSTOFFKOSTEN"` (`DbWerte.BEMESSUNG_*`) | dito — Inhalt von `Tab_ProjektWerte.Bemessung`. Der Anzeigename steht getrennt im `BemessungKatalog` (`KostenVorlagenCtrl`, Schlüssel `BM_*`); die Auswahlliste des Komponenten-Kostendialogs hält den **Wert** und zeigt den **Namen**. Kein Anzeigetext ist je Steuerwert. |
+| Die elf Positionsbezeichnungen (`DbWerte.VDI_POS_*`, z. B. `"Wartung BHKW"`) | **Persistenzwerte** — sie stehen als `Tab_Kostenfaktor.Bezeichnung` in der Datenbank, werden in SQL damit verglichen und benennen die gesäten Positionen der Kostenvorlagen (`SchemaKatalog.VorlagenPositionSeed`). Deutsch und eingefroren wie die vier Nebenkostenposten aus der Kostenübernahme (`KOSTENPOSTEN_MONTAGE` & Co.). Im Komponenten-Kostendialog ist die Bezeichnung zugleich der Anzeigetext der Zeile. |
 | `"Betriebskosten VDI 2067"` (`DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI`) | dito — Wert in `Tab_ProjektWerte.Gruppe` und `Tab_KostenGruppenKatalog.GruppenName`, wie `KOSTEN_GRUPPE_ALLGEMEIN`. |
 | `"%"`, `"€/h"`, `"€/kWh"`, `"€"`, `"h/a"`, `"kWh/a"` (`BetriebskostenCtrl.SatzEinheit` / `MengenEinheit`) | reine **Einheitenzeichen ohne Wortbestand**, in beiden Sprachen gleich — dieselbe Ausnahme wie bei den typografischen Marken. |
 
@@ -1497,7 +1498,7 @@ Erlösreihen.
 
 | Wert | Grund |
 |---|---|
-| `"KEIN_PROD_GEWERBE"`, `"PROD_GEWERBE"`, `"LAND_FORSTWIRTSCHAFT"` (`DbWerte.UNTERNEHMENSART_*`) | **Persistenzwerte** — Inhalt von `Tab_ProjektWirtschaftlichkeit.Unternehmensart`, in SQL verglichen, nach der Auslieferung eingefroren. Die ComboBox trägt `Form_WirtschaftlichkeitParameter.Steuerwahl`, das den **Wert** hält und den **Namen** anzeigt (Muster `Form_Betriebskosten.BemessungItem`). |
+| `"KEIN_PROD_GEWERBE"`, `"PROD_GEWERBE"`, `"LAND_FORSTWIRTSCHAFT"` (`DbWerte.UNTERNEHMENSART_*`) | **Persistenzwerte** — Inhalt von `Tab_ProjektWirtschaftlichkeit.Unternehmensart`, in SQL verglichen, nach der Auslieferung eingefroren. Die ComboBox trägt `Form_WirtschaftlichkeitParameter.Steuerwahl`, das den **Wert** hält und den **Namen** anzeigt. |
 | `"KEINE"`, `"PARAGRAF_53"`, `"PARAGRAF_53A"` (`DbWerte.ENERGIESTEUER_WAHL_*`) | dito — Inhalt von `…Energiesteuer_Wahl`, Vorbelegung durch Migrationsschritt 20b. |
 | `"VOLLER_BRENNSTOFF"`, `"ENERGETISCH"` (`DbWerte.AUFTEILUNG_*`) | dito — Inhalt von `…Aufteilung_Methode`. |
 | `"KWKG_ZUSCHLAG"`, `"ENERGIESTEUER_GUTSCHRIFT"`, `"STROMSTEUER_BEFREIUNG"`, `"STROMSTEUER_ENTLASTUNG"` (`KapitalwertRechner.ErloesReihe.*`) | **Schlüssel**, nicht Anzeige: sprachneutral und ASCII, stehen nirgends in der Datenbank und nirgends auf dem Bildschirm. Der Anzeigename ist `WIRT_REIHE_*`. |
