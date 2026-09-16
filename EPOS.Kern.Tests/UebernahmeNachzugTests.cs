@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.Kern.Tests
@@ -162,8 +163,111 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // 3 — Der Fehlschlag des Nachzugs (NL-Q2)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Scheitert Schritt 8, meldet sich der Fehlschlag im HINWEISKANAL</b> —
+        /// so, wie es Schritt 9 für die Speichervarianten schon tut
+        /// (<c>BK_KOMP_HINW_VARIANTE</c>). Anwenderentscheid NL-Q2.
+        ///
+        /// <para><b>Was der Fall belegt.</b> Drei Dinge. Erstens: <c>Uebernehmen</c>
+        /// meldet weiterhin, was es heute meldet — <c>true</c> und kein
+        /// <c>fehler</c>; die Übernahme wird NICHT zurückgenommen, die
+        /// Transaktionsgrenze bleibt, wo sie ist. Zweitens: Für JEDE Anlage, deren
+        /// Senkenkette nicht angelegt werden konnte, steht eine Zeile in
+        /// <c>hinweise</c> — dieselbe Form wie beim Nachbarschritt 9, benannt über den
+        /// Bezeichner der Anlage. Drittens: Der Hinweis beschreibt die WAHRHEIT — das
+        /// Ziel führt hinterher tatsächlich keine Senkenzeile und rechnet mit der
+        /// Vorbelegung.</para>
+        ///
+        /// <para><b>Wie der Fehlschlag erzwungen wird.</b> Ein <c>BEFORE INSERT</c>-
+        /// Wächter auf <c>Z_AnlageSenke</c> lässt jede NEUE Senkenzeile des Zielprojekts
+        /// scheitern. Das trifft ausschließlich Schritt 8: Innerhalb des Hauptvorgangs
+        /// wird <c>Z_AnlageSenke</c> nur per <c>UPDATE</c>
+        /// (<c>SenkenverweiseWiederherstellen</c>, <c>PufferverweiseUmschreiben</c>) und
+        /// über die Löschweitergabe der Anlagenzeile angefasst — die EINZIGE
+        /// <c>INSERT</c>-Stelle des ganzen Ablaufs ist der Nachzug. Ein echter
+        /// Datenbankfehler auf dem echten Schreibweg, kein Haken im Quelltext.</para>
+        ///
+        /// <para>Eigene Arbeitskopie, weil die Probe schreibt.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_gescheiterter_Senkennachzug_meldet_sich_im_Hinweiskanal()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                List<string> mitSenken = AnlagenMitSenken(QUELLE);
+                Assert.NotEmpty(mitSenken);          // sonst bewiese der Fall nichts
+
+                string fehler, hinweise;
+                bool ok;
+
+                Assert.True(DataRepository.ExecuteSQL(WAECHTER_AN));
+                try
+                {
+                    ok = new KomponentenUebernahmeCtrl()
+                        .Uebernehmen(QUELLE, ZIEL, GEWERK, out fehler, out hinweise);
+                }
+                finally { DataRepository.ExecuteSQL(WAECHTER_AUS); }
+
+                // 1) Die Uebernahme bleibt stehen - sie wird NICHT zurueckgenommen.
+                Assert.True(ok, fehler);
+                Assert.Null(fehler);
+
+                // 2) Jede betroffene Anlage steht mit ihrem Bezeichner im Hinweiskanal -
+                //    dieselbe Form wie BK_KOMP_HINW_VARIANTE bei Schritt 9. Verglichen
+                //    wird gegen die RESSOURCE, damit der Fall in beiden Sprachen gilt.
+                foreach (string bezeichner in mitSenken)
+                    Assert.Contains(
+                        string.Format(Resource.BK_KOMP_HINW_SENKEN, bezeichner),
+                        hinweise);
+
+                // 3) Und der Hinweis sagt die Wahrheit: Das Ziel fuehrt keine
+                //    Senkenzeile mehr und rechnet mit der Vorbelegung.
+                Assert.Empty(Senkenketten(ZIEL));
+            }
+        }
+
+        // =================================================================================
         // Helfer
         // =================================================================================
+
+        /// <summary>
+        /// Der Wächter der Probe: Jede NEUE Senkenzeile einer Anlage des ZIELS scheitert.
+        /// </summary>
+        private const string WAECHTER_AN =
+            "CREATE TRIGGER NLQ2_Senkennachzug_scheitert " +
+            "BEFORE INSERT ON Z_AnlageSenke " +
+            "WHEN NEW.ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = 1019) " +
+            "BEGIN SELECT RAISE(ABORT, 'NL-Q2 Probe'); END";
+
+        private const string WAECHTER_AUS =
+            "DROP TRIGGER IF EXISTS NLQ2_Senkennachzug_scheitert";
+
+        /// <summary>
+        /// Die Bezeichner der Wärmepumpen-Anlagenzeilen eines Projekts, die eine
+        /// Senkenkette führen — in Anlagenreihenfolge. Genau diese Anlagen muss der
+        /// Nachzug bedienen, und genau sie meldet er bei einem Fehlschlag.
+        /// </summary>
+        private static List<string> AnlagenMitSenken(int idProjekt)
+        {
+            var liste = new List<string>();
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT a.Bezeichner FROM Tab_Energieanlagen a " +
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = " +
+                WizardItemClass.WP_TYP.ToString(System.Globalization.CultureInfo.InvariantCulture) +
+                " AND EXISTS (SELECT 1 FROM Z_AnlageSenke s WHERE s.ID_Anlage = a.ID) " +
+                "ORDER BY a.ID",
+                new DbParam("@p", idProjekt));
+
+            if (dt == null) return liste;
+            foreach (DataRow r in dt.Rows) liste.Add(Convert.ToString(r["Bezeichner"]));
+            return liste;
+        }
 
         /// <summary>
         /// Eine Wegwerf-Anlagenzeile. Die Geräte-Fremdschlüssel gehen ausdrücklich als

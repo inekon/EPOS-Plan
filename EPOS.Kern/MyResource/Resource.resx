@@ -5975,6 +5975,9 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie.</value>
   </data>
+  <data name="BK_KOMP_HINW_SENKEN" xml:space="preserve">
+    <value>Die Wärmesenken der Anlage „{0}" konnten nicht angelegt werden — die Anlage rechnet mit der Vorbelegung Heizkreis (beides).</value>
+  </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden.</value>
   </data>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
@@ -407,22 +408,24 @@ namespace EPOS.Kern.Tests
 
 
         /// <summary>
-        /// <b>Das HEUTIGE Verhalten, wenn die Strangliste des Dialogs nicht geschrieben
-        /// werden kann</b> (Block ST1 in <c>WizardCtrl.Add_WP_Waermeerzeuger</c>,
-        /// „BEST EFFORT wie die Nachbarn").
+        /// <b>Kann die Strangliste des Dialogs nicht geschrieben werden, wird der Lauf
+        /// ZURÜCKGENOMMEN</b> (Block ST1 in <c>WizardCtrl.Add_WP_Waermeerzeuger</c>,
+        /// Anwenderentscheid NL-Q1).
         ///
-        /// <para><b>Der Fall hält fest, was ist — er fordert nichts.</b>
-        /// <c>AnlageStrangCtrl.SchreibenJeAnlage</c> fängt jeden Datenbankfehler selbst
-        /// ab und meldet ihn über den RÜCKGABEWERT; der Speicherlauf wertet ihn nicht
-        /// aus. Folge: Der Lauf meldet Erfolg, und weil die Anlage danach KEINE
-        /// Strangzeile führt, trägt <c>StraengeWiederherstellen</c> die Liste des
-        /// VORZUSTANDS wieder ein. Der Anwender bekommt also seine alten Stränge zurück,
-        /// ohne dass ihm jemand sagt, dass die neuen nicht angekommen sind.</para>
+        /// <para><b>Was der Fall belegt.</b> <c>AnlageStrangCtrl.SchreibenJeAnlage</c>
+        /// fängt jeden Datenbankfehler selbst ab und meldet ihn über den RÜCKGABEWERT;
+        /// der Speicherlauf wertet ihn jetzt aus und steigt mit <c>false</c> aus. Der
+        /// hereingereichte <c>DbVorgang</c> — derselbe Weg, den
+        /// <c>AssistentCtrl.Speichern</c> geht — wird deshalb NICHT festgeschrieben:
+        /// Von diesem Speichern bleibt nichts, die Anlagenzeile trägt hinterher noch
+        /// ihre alte Id.</para>
         ///
-        /// <para><b>Der Lauf ist geklammert</b> — der hereingereichte <c>DbVorgang</c>
-        /// ist derselbe Weg, den <c>AssistentCtrl.Speichern</c> geht. Er wird
-        /// festgeschrieben, obwohl der Strangschritt gescheitert ist: Das gefangene
-        /// Scheitern verhindert den Rückzug.</para>
+        /// <para><b>Und die Eingabe kehrt sich nicht mehr um.</b>
+        /// <c>StraengeWiederherstellen</c> steht HINTER dem Block ST1 und bediente jede
+        /// Anlage ohne Strangzeile — es trug damit die Liste des VORZUSTANDS wieder ein,
+        /// während der Anwender Erfolg gemeldet bekam. Das <c>return false</c> endet den
+        /// Lauf davor; die Konsolenmitschrift zeigt die Rücknahme und KEINE
+        /// „Strang-Rettung".</para>
         ///
         /// <para><b>Wie der Fehlschlag erzwungen wird:</b> über die ERZWUNGENE Beziehung
         /// <c>Z_AnlageStrang.ID_Wechselrichter</c> → <c>Tab_Wechselrichter</c> — ein
@@ -430,7 +433,7 @@ namespace EPOS.Kern.Tests
         /// echten Schreibweg.</para>
         /// </summary>
         [Fact]
-        public void Ein_gescheitertes_Schreiben_der_Dialog_Straenge_bleibt_unbemerkt()
+        public void Ein_gescheitertes_Schreiben_der_Dialog_Straenge_nimmt_den_Lauf_zurueck()
         {
             if (!_db.Vorhanden) return;
 
@@ -468,26 +471,124 @@ namespace EPOS.Kern.Tests
             };
 
             var wizard = new WizardCtrl();
+            TextWriter vorher = Console.Out;
+            var mitschrift = new StringWriter();
+
+            try
+            {
+                Console.SetOut(mitschrift);
+
+                using (DbVorgang vorgang = DataRepository.Vorgang())
+                {
+                    Assert.True(wizard.Del_Projekt_Waermeerzeuger(
+                        TESTPROJEKT, WizardItemClass.PV_TYP, vorgang));
+
+                    // DER RUECKZUG: Der gescheiterte Strangschritt meldet sich.
+                    Assert.False(wizard.Add_WP_Waermeerzeuger(
+                        TESTPROJEKT, new List<WErzeugerModel> { anlage }, vorgang));
+
+                    // KEIN Commit - der Vorgang tritt beim Dispose zurueck, genau wie es
+                    // AssistentCtrl.Speichern nach einem false tut.
+                }
+            }
+            finally { Console.SetOut(vorher); }
+
+            string spur = mitschrift.ToString();
+
+            // Die Ruecknahme ist gemeldet ...
+            Assert.Contains("das Speichern wird zurueckgenommen", spur);
+
+            // ... und die RETTUNG ist gar nicht mehr gelaufen: Die Eingabe des Dialogs
+            // kehrt sich nicht mehr still in den Vorzustand um.
+            Assert.DoesNotContain("Strang-Rettung", spur);
+
+            // Nichts von dem Lauf steht in der Datenbank: Die Anlagenzeile traegt noch
+            // ihre ALTE Id (Del+Add sind zurueckgerollt), samt ihren alten Straengen.
+            Assert.Equal(alteId, AnlagenId(bezeichner));
+            Assert.Equal(new[] { "Alt Ost", "Alt West" },
+                         ctrl.LesenJeAnlage(alteId).Select(z => z.Bezeichner).ToArray());
+
+            AnlageLoeschen(alteId);
+            WechselrichterLoeschen(geraet);
+        }
+
+        /// <summary>
+        /// <b>BEFUND, nicht Forderung: Eine GELEERTE Dialogliste hebt sich im
+        /// Del+Add-Speicherweg auf.</b> Der Fall hält das HEUTIGE Verhalten fest; ob es
+        /// so bleibt, ist eine offene Fachfrage.
+        ///
+        /// <para><b>Die Kette.</b> Der PV-Dialog reicht die Stränge unbedingt
+        /// heraus — <c>PhotovoltaikHuelle.StraengeZuModell</c> liefert bei leerer
+        /// Maskenliste eine LEERE Liste, nie <c>null</c>. Der Block ST1 in
+        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c> schreibt sie, denn <c>null</c> hieße
+        /// „nicht angefasst", eine leere Liste dagegen „alle entfernt":
+        /// <c>SchreibenJeAnlage</c> löscht die Zeilen und meldet
+        /// <b><c>true</c></b> — ein GELUNGENES Schreiben. Danach führt die Anlage keine
+        /// Strangzeile, und genau solche Anlagen bedient
+        /// <c>StraengeWiederherstellen</c>: Es trägt die Liste des Vorzustands wieder
+        /// ein.</para>
+        ///
+        /// <para><b>Warum NL-Q1 das nicht erledigt.</b> Der Rückzug aus NL-Q1 greift bei
+        /// einem FEHLSCHLAG. Hier gelingt das Schreiben — es gibt nichts
+        /// zurückzunehmen, der Lauf endet nicht, und die Rettung kommt sehr wohl zum
+        /// Zuge. Der Befund ist damit BESTÄTIGT und nicht erledigt; er sitzt an einer
+        /// anderen Stelle als NL-Q1, nämlich in der Frage, woran
+        /// <c>StraengeWiederherstellen</c> eine „vom Dialog geleerte" Anlage von einer
+        /// „vom Dialog nicht angefassten" unterscheidet.</para>
+        /// </summary>
+        [Fact]
+        public void Eine_geleerte_Dialogliste_traegt_die_Strang_Rettung_heute_wieder_ein()
+        {
+            if (!_db.Vorhanden) return;
+
+            string bezeichner = "ST1 Leerprobe";
+
+            var anlage = new WErzeugerCtrl
+            {
+                ID_Projekt = TESTPROJEKT,
+                Bezeichner = bezeichner,
+                ID_Type = WizardItemClass.PV_TYP,
+                ID_PV = ModulAnlegen(),
+                PV_Leistung = 21
+            };
+            Assert.True(anlage.Insert());
+
+            int alteId = AnlagenId(bezeichner);
+            int geraet = WechselrichterAnlegen("ST1 Leerprobe 5000TL");
+
+            // Der VORZUSTAND: zwei gespeicherte Straenge.
+            var ctrl = new AnlageStrangCtrl();
+            Assert.True(ctrl.SchreibenJeAnlage(alteId, new List<AnlageStrangModel>
+            {
+                new AnlageStrangModel { Bezeichner = "Alt Ost", ID_Wechselrichter = geraet,
+                                        Mppt = 1, Module_Reihe = 11 },
+                new AnlageStrangModel { Bezeichner = "Alt West", ID_Wechselrichter = geraet,
+                                        Mppt = 2, Module_Reihe = 10 }
+            }));
+
+            // Der Anwender hat im Dialog die LETZTE Strangzeile entfernt.
+            anlage.PV_Straenge = new List<AnlageStrangModel>();
+
+            var wizard = new WizardCtrl();
             using (DbVorgang vorgang = DataRepository.Vorgang())
             {
                 Assert.True(wizard.Del_Projekt_Waermeerzeuger(
                     TESTPROJEKT, WizardItemClass.PV_TYP, vorgang));
 
-                // HEUTE: Der Lauf meldet Erfolg, obwohl der Strangschritt gescheitert ist.
+                // Das Schreiben GELINGT (eine leere Liste ist ein gueltiger
+                // Loeschauftrag) - der Rueckzug aus NL-Q1 greift hier also nicht.
                 Assert.True(wizard.Add_WP_Waermeerzeuger(
                     TESTPROJEKT, new List<WErzeugerModel> { anlage }, vorgang));
 
-                // ... und er wird festgeschrieben. Der Rueckzug findet nicht statt.
                 vorgang.Commit();
             }
 
             int neueId = AnlagenId(bezeichner);
             Assert.True(neueId > 0);
 
-            // Was jetzt da steht, ist der VORZUSTAND - nicht die Liste des Dialogs.
-            List<AnlageStrangModel> jetzt = ctrl.LesenJeAnlage(neueId);
+            // HEUTE: Die geleerte Liste ist wieder gefuellt - mit dem Vorzustand.
             Assert.Equal(new[] { "Alt Ost", "Alt West" },
-                         jetzt.Select(z => z.Bezeichner).ToArray());
+                         ctrl.LesenJeAnlage(neueId).Select(z => z.Bezeichner).ToArray());
 
             AnlageLoeschen(neueId);
             WechselrichterLoeschen(geraet);

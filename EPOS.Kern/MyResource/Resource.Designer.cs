@@ -4764,6 +4764,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmesenken der Anlage „{0}&quot; konnten nicht angelegt werden — die Anlage rechnet mit der Vorbelegung Heizkreis (beides). ähnelt.
+        /// </summary>
+        public static string BK_KOMP_HINW_SENKEN {
+            get {
+                return ResourceManager.GetString("BK_KOMP_HINW_SENKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Betriebsführung der Speichervariante „{0}&quot; konnte nicht angelegt werden. ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_VARIANTE {
