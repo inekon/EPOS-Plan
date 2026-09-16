@@ -207,7 +207,7 @@ Querverweise der Protokolle untereinander kurz bleiben.
 | [`ueberholt/Protokolle/Views/`](ueberholt/Protokolle/Views/) | 4 | Projektdialoge P1–P6 und das Redesign „Berichte & Kosten" |
 | [`ueberholt/Protokolle/Update/`](ueberholt/Protokolle/Update/) | 2 | Anlagenzeilen-Eindeutigkeit (Schritt 17) und die E6-Quellensaat |
 | [`ueberholt/Protokolle/CLAUDE-Historie/`](ueberholt/Protokolle/CLAUDE-Historie/) | 4 | Die ausführlichen Fassungen der vier `CLAUDE.md` (Wurzel, `EPOS.Kern`, `EPOS.UI`, `WindowsFormsApplication1`) vor der Kürzung auf den gültigen Stand; die relativen Verweise sind auf den Ablageort umgeschrieben |
-| [`ueberholt/Protokolle/Statusbloecke/`](ueberholt/Protokolle/Statusbloecke/) | 1 | Die Statusblöcke, die bis zum 12.09.2026 im Umsetzungskonzept iOS standen: die Paketblöcke iU1–iU10, die 25 Wellenblöcke iU9‑W0…W16c und die Gesamtübersicht § 4.0 — wortgetreu, mit alten Commit-Kennungen; fortgeschrieben wird `aktuell/Status_iOS_Migration.md` |
+| [`ueberholt/Protokolle/Statusbloecke/`](ueberholt/Protokolle/Statusbloecke/) | 2 | Der ausführliche Block zur Statuszeile #307 (Kaskade sichtbar und umkehrbar, Pufferdubletten) und die Statusblöcke, die bis zum 12.09.2026 im Umsetzungskonzept iOS standen: die Paketblöcke iU1–iU10, die 25 Wellenblöcke iU9‑W0…W16c und die Gesamtübersicht § 4.0 — wortgetreu, mit alten Commit-Kennungen; fortgeschrieben wird `aktuell/Status_iOS_Migration.md` |
 | [`ueberholt/Protokolle/Bericht/`](ueberholt/Protokolle/Bericht/) | 1 | `LIESMICH_Phase1.md` — Phasen-Historie des Berichtsmoduls |
 | [`ueberholt/Protokolle/EPOS.Kern_Import/`](ueberholt/Protokolle/EPOS.Kern_Import/) | 1 | `PvKatalog_Koeffizienten_Protokoll.md` — Befund und Reparatur der PV-Modulkoeffizienten (Schemaschritt 69) |
 
