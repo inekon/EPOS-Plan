@@ -130,5 +130,17 @@ namespace WindowsFormsApplication1.Properties {
                 this["WordPressUrl"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EinstellungenUebernommen {
+            get {
+                return ((bool)(this["EinstellungenUebernommen"]));
+            }
+            set {
+                this["EinstellungenUebernommen"] = value;
+            }
+        }
     }
 }

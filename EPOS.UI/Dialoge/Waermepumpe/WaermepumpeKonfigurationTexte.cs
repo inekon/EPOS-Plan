@@ -33,15 +33,34 @@ public sealed class WaermepumpeKonfigurationTexte
         return string.IsNullOrEmpty(t) ? rueckfall : t;
     }
 
-    // --- Heizstab und Überschrift ----------------------------------------------
+    // --- Heizstab ---------------------------------------------------------------
+    //
+    // DER SCHALTER HEISST SEIT DEM 16.09.2026 "Heizstab mitrechnen" (Schemaschritt 79).
+    // Vorher stand da "Elektrische Nachheizung aktivieren (falls vorhanden)" - ein Text
+    // aus der Zeit, als dieser Schalter gar nicht rechnete: Er entschied allein ueber die
+    // Energietraegerwahl, gerechnet wurde der projektweite Tab_Einstellungen.WP_Heizstab.
+    // Seit Schritt 79 gibt es nur noch DIESEN, und der Lauf liest ihn je Waermepumpe
+    // (SimulationWaermepumpe.ModuleAufbauen). "Mitrechnen" sagt genau das; das
+    // "(falls vorhanden)" ist entfallen, weil die Herleitungszeile darunter den Fall
+    // ohne hinterlegte Heizstableistung ausdruecklich benennt.
 
     /// <summary>WPA_CHK_HEIZSTAB — der Text des Heizstab-Häkchens.</summary>
-    public string LabelHeizstab { get; set; } = T("WPA_CHK_HEIZSTAB",
-        "Elektrische Nachheizung aktivieren (falls vorhanden)");
+    public string LabelHeizstab { get; set; } = T("WPA_CHK_HEIZSTAB", "Heizstab mitrechnen");
 
-    /// <summary>WPA_HINWEIS_SPITZENLAST — die Herleitungszeile unter dem Häkchen.</summary>
-    public string HinweisSpitzenlast { get; set; } = T("WPA_HINWEIS_SPITZENLAST",
-        "Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:");
+    /// <summary>WPA_HRL_HEIZSTAB — die Herleitungszeile unter dem Häkchen.</summary>
+    public string HinweisHeizstab { get; set; } = T("WPA_HRL_HEIZSTAB",
+        "Der Heizstab dieser Wärmepumpe wird bei Unterdeckung zugeschaltet.");
+
+    /// <summary>
+    /// WPA_HINWEIS_HEIZSTAB_LEER — die zweite, leise Zeile, wenn die Projektkopie
+    /// keine Heizstableistung führt (<c>Tab_WP.Heizung</c> = 0 oder leer).
+    ///
+    /// <para>Der Schalter bleibt dabei BEDIENBAR: Ob ein Heizstab mitgerechnet werden
+    /// soll, ist eine Entscheidung; ob eine Leistung dafür hinterlegt ist, eine
+    /// Tatsache. Ein gesperrter Schalter verschwiege, welche der beiden fehlt.</para>
+    /// </summary>
+    public string HinweisOhneHeizstableistung { get; set; } = T("WPA_HINWEIS_HEIZSTAB_LEER",
+        "Für diese Wärmepumpe ist keine Heizstableistung hinterlegt (Feld „Heizstab kW“ im Block Stammdaten).");
 
     // --- Sperrzeit --------------------------------------------------------------
 

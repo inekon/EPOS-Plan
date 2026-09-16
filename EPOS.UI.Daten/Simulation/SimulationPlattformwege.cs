@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Waermepumpe;
+using EPOS.UI.Seiten.Simulation;
 
 namespace WindowsFormsApplication1
 {
@@ -62,10 +63,13 @@ namespace WindowsFormsApplication1
         // Abbildungen der Wärmepumpen-Hülle (AusModell/NachModell) und ihren
         // Speicherweg; beides steht in der Schale, nicht hier.
         //
-        // OHNE DIESE WEGE bleibt der Knopf stehen, der Dialog zeigt aber nur die
-        // PROJEKTEINSTELLUNG "mit Heizstab (falls vorhanden)". Das ist keine stille
-        // Auslassung: Sie ist der einzige Heizstab-Wert, den der Rechenweg überhaupt
-        // liest, und der Dialog sagt an seiner Herleitungszeile, was er zeigt.
+        // OHNE DIESE WEGE bleibt der Knopf stehen, und der Dialog sagt BENANNT, dass
+        // die Anlagenkonfiguration auf dieser Plattform nicht verfügbar ist
+        // (SIMKONF_MSG_WP_OHNE_ANLAGE). Bis zum 16.09.2026 zeigte er an dieser Stelle
+        // die PROJEKTEINSTELLUNG Tab_Einstellungen.WP_Heizstab; die ist mit
+        // Schemaschritt 79 entfallen — der Heizstab gehört seither der Anlage. Ein
+        // leerer Dialog ohne ein Wort wäre genau die stille Auslassung, die die
+        // Hausregel verbietet.
 
         /// <summary>
         /// Die Anlagendaten EINER Wärmepumpe als frische Kopie (<c>idProjekt</c>,
@@ -74,10 +78,12 @@ namespace WindowsFormsApplication1
         internal Func<int, int, WaermepumpeAnlageDaten> WaermepumpeKonfigLesen;
 
         /// <summary>
-        /// Schreibt die Anlagendaten zurück (<c>idProjekt</c>,
-        /// <c>Tab_Energieanlagen.ID</c>, Feldsatz); <c>true</c> = geschrieben.
+        /// Schreibt die KONFIGURATIONSFELDER der Anlage zurück (<c>idProjekt</c>,
+        /// <c>Tab_Energieanlagen.ID</c>, Feldsatz) und meldet das Ergebnis mit seinem
+        /// Grund — seit dem 16.09.2026 kein blosses <c>bool</c> mehr.
         /// </summary>
-        internal Func<int, int, WaermepumpeAnlageDaten, bool> WaermepumpeKonfigSchreiben;
+        internal Func<int, int, WaermepumpeAnlageDaten, AnlagenkonfigErgebnis>
+            WaermepumpeKonfigSchreiben;
 
         /// <summary>Der Trägerkatalog der Energieträgerwahl; <c>null</c> = keine Wahl.</summary>
         internal Func<IReadOnlyList<EnergietraegerWahl.Eintrag>> WaermepumpeTraegerkatalog;

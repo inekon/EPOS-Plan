@@ -337,7 +337,28 @@ namespace WindowsFormsApplication1
         public const string SpVlMin = "VLMIN";
         public const string SpVlMax = "VLMAX";
         public const string SpZuheizung = "ZUHEIZUNG";
-        public const string SpKuehlen = "KUEHLEN";
+
+        /// <summary>
+        /// <b>Kuehlleistung [kW]</b> (<c>Tab_WP_STAMM.Kuehlleistung</c>) — die ZAHL, nicht
+        /// mehr das Kennzeichen „Kuehlen" (Anwenderentscheid 16.09.2026).
+        ///
+        /// <para>Bis dahin stand hier <c>SpKuehlen</c>, ein Ja/Nein aus
+        /// <c>Kuehlleistung &gt; 0</c>. Die Zahl sagt dasselbe und mehr: Wer kuehlen will,
+        /// will wissen, WIE VIEL. „Zwei Spalten fuer eine Aussage waeren eine zu viel"
+        /// (Konzept_Katalogfilter 4.3) — deshalb ERSETZT die Zahlenspalte das Kennzeichen,
+        /// statt neben es zu treten; die Waermepumpe behaelt ihre neun Spalten. Das
+        /// schnelle „nur mit Kuehlfunktion" traegt der Schalter des
+        /// <c>WaermepumpenKatalogDialog</c>, der genau diese Spalte auf <c>&gt;0</c> setzt.</para>
+        /// </summary>
+        public const string SpKuehlleistung = "KUEHLLEISTUNG";
+
+        /// <summary>
+        /// Der Ausdruck, den der Schalter „nur mit Kuehlfunktion" in
+        /// <see cref="SpKuehlleistung"/> legt — dieselbe Zeichenkette, die ein Anwender
+        /// von Hand in den Trichter schriebe (<see cref="Zahlenausdruck"/>).
+        /// </summary>
+        public const string AUSDRUCK_MIT_KUEHLUNG = ">0";
+
         public const string SpCop = "COP";
 
         /// <summary>
@@ -518,7 +539,11 @@ namespace WindowsFormsApplication1
                             new Katalogspalte(SpVlMin,        t("KFLT_SP_VLMIN"), "°C", Katalogspaltenart.Zahl),
                             new Katalogspalte(SpVlMax,        t("KFLT_SP_VLMAX"), "°C", Katalogspaltenart.Zahl),
                             new Katalogspalte(SpZuheizung,    t("KFLT_SP_ZUHEIZUNG"), "kW", Katalogspaltenart.Zahl),
-                            new Katalogspalte(SpKuehlen,      t("KFLT_SP_KUEHLEN"), "", Katalogspaltenart.JaNein),
+                            // 16.09.2026: die ZAHL statt des Kennzeichens „Kuehlen" - sie
+                            // sagt dasselbe und nennt die Leistung; das schnelle Ja/Nein
+                            // traegt der Schalter „nur mit Kuehlfunktion", der genau
+                            // diese Spalte auf ">0" setzt.
+                            new Katalogspalte(SpKuehlleistung, t("KFLT_SP_KUEHLLEISTUNG"), "kW", Katalogspaltenart.Zahl),
                             new Katalogspalte(SpCop,          t("KFLT_SP_COP"), "", Katalogspaltenart.Zahl)
                         }
                     };

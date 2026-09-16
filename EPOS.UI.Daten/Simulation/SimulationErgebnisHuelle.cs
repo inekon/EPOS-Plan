@@ -620,7 +620,7 @@ namespace WindowsFormsApplication1
                     : idAnlage => _wege.WaermepumpeKonfigLesen(m_ID_Projekt, idAnlage),
 
                 WaermepumpeKonfigurationSpeichern = _wege.WaermepumpeKonfigSchreiben == null
-                    ? (Func<int, WaermepumpeAnlageDaten, bool>)null
+                    ? (Func<int, WaermepumpeAnlageDaten, AnlagenkonfigErgebnis>)null
                     : (idAnlage, daten) =>
                         _wege.WaermepumpeKonfigSchreiben(m_ID_Projekt, idAnlage, daten),
 

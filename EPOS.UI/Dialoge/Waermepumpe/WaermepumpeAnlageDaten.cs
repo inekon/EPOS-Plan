@@ -115,6 +115,17 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Nennleistung [kW] der gewählten Wärmepumpe.</summary>
     public int Nennleistung { get; set; }
 
+    /// <summary>
+    /// Kühlleistung [kW] der PROJEKTKOPIE (<c>Tab_WP.Kuehlleistung</c>) — seit dem
+    /// Anwenderentscheid vom 16.09.2026 im Feldsatz und im Stammfeldblock BEARBEITBAR,
+    /// wie die Nennleistung daneben.
+    ///
+    /// <para><b>Eine Kommazahl, keine ganze:</b> Die Spalte ist <c>REAL</c>; 5,5 kW sind
+    /// ein gültiger Wert. <c>null</c> = die Hülle führt sie nicht (Prüfstand, ältere
+    /// Aufrufer) und der Schreibweg lässt die Spalte dann stehen.</para>
+    /// </summary>
+    public double? Kuehlleistung { get; set; }
+
     // --- Verborgen mitlaufend --------------------------------------------------
 
     /// <summary>Modulkosten [€] — Ä19, nicht gezeichnet.</summary>
@@ -153,6 +164,7 @@ public sealed class WaermepumpeAnlageDaten
         Aufstellung = Aufstellung,
         Firma = Firma,
         Nennleistung = Nennleistung,
+        Kuehlleistung = Kuehlleistung,
         Modulkosten = Modulkosten,
         Volumen = Volumen,
         Solaranteil = Solaranteil,

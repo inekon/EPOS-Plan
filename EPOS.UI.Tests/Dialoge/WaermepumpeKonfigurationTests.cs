@@ -63,7 +63,7 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
         var cut = Aufbauen();
 
         var schalter = cut.FindAll(".epos-schalter").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Contains("Elektrische Nachheizung aktivieren (falls vorhanden)", schalter);
+        Assert.Contains("Heizstab mitrechnen", schalter);
         Assert.Contains("Sperrzeit durch Energieversorger", schalter);
         Assert.Contains("Bivalenter Betrieb", schalter);
 
@@ -79,8 +79,86 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
 
         // Der Gruppenkopf gehoert dem WIRT (Ueberlagerungstitel bzw. Abschnitt).
         Assert.Empty(cut.FindAll(".epos-gruppenkopf-titel"));
-        Assert.Contains("Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:",
+        Assert.Contains("Der Heizstab dieser Wärmepumpe wird bei Unterdeckung zugeschaltet.",
                         cut.FindAll(".epos-herleitung").Select(e => e.TextContent));
+    }
+
+    // =================================================================================
+    // Der Heizstab je Anlage (Schemaschritt 79, 16.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Der Schalter heißt „Heizstab mitrechnen"</b> und sagt darunter, was das
+    /// bedeutet. Bis zum 16.09.2026 stand da „Elektrische Nachheizung aktivieren (falls
+    /// vorhanden)" — ein Text aus der Zeit, als dieser Schalter gar nicht rechnete: Er
+    /// entschied allein über die Energieträgerwahl, gerechnet wurde der projektweite
+    /// <c>Tab_Einstellungen.WP_Heizstab</c>. Den gibt es seit Schemaschritt 79 nicht
+    /// mehr; der Lauf liest DIESEN, je Wärmepumpe.
+    /// </summary>
+    [Fact]
+    public void Der_Heizstabschalter_heisst_mitrechnen_und_erklaert_sich()
+    {
+        var daten = Voll();
+        daten.HeizstabLeistung = 9;
+        var cut = Aufbauen(daten);
+
+        Assert.Contains("Heizstab mitrechnen",
+                        cut.FindAll(".epos-schalter").Select(e => e.TextContent.Trim()));
+        Assert.DoesNotContain("Elektrische Nachheizung", cut.Markup);
+
+        var herleitungen = cut.FindAll(".epos-herleitung").Select(e => e.TextContent).ToList();
+        Assert.Contains("Der Heizstab dieser Wärmepumpe wird bei Unterdeckung zugeschaltet.",
+                        herleitungen);
+
+        // Mit hinterlegter Leistung KEIN zweiter Hinweis.
+        Assert.DoesNotContain(herleitungen, h => h.Contains("keine Heizstableistung hinterlegt"));
+    }
+
+    /// <summary>
+    /// <b>Ohne hinterlegte Heizstableistung sagt der Block es — und sperrt nicht.</b>
+    /// Ob ein Heizstab mitgerechnet werden soll, ist eine Entscheidung; ob eine
+    /// Leistung dafür gepflegt ist, eine Tatsache. Ein gesperrter Schalter verschwiege,
+    /// welche der beiden fehlt.
+    /// </summary>
+    /// <remarks>
+    /// <b>0 und leer sind dasselbe</b> — <c>Tab_WP.Heizung</c> ist eine INTEGER-Spalte,
+    /// und ein Heizstab mit 0 kW ist keiner.
+    /// </remarks>
+    [Theory]
+    [InlineData(null)]
+    [InlineData(0)]
+    public void Ohne_Heizstableistung_steht_der_Hinweis_und_der_Schalter_bleibt_bedienbar(int? kw)
+    {
+        var daten = Voll();
+        daten.HeizstabLeistung = kw;
+        var cut = Aufbauen(daten);
+
+        Assert.Contains(cut.FindAll(".epos-herleitung").Select(e => e.TextContent),
+                        h => h.Contains("keine Heizstableistung hinterlegt"));
+
+        var haken = cut.FindAll(".epos-schalter input[type=checkbox]")[0];
+        Assert.False(haken.HasAttribute("disabled"));
+
+        haken.Change(false);
+        Assert.False(daten.Heizstab);
+    }
+
+    /// <summary>
+    /// Der Hinweis ist KEIN eigener Zustand: Er hängt am Feldsatz, den der Wirt hält —
+    /// im Anlagendialog zieht die Eingabe im Stammfeld „Heizstab" ihn unmittelbar nach.
+    /// </summary>
+    [Fact]
+    public void Der_Hinweis_verschwindet_mit_einer_hinterlegten_Leistung()
+    {
+        var daten = Voll();
+        daten.HeizstabLeistung = 0;
+        var cut = Aufbauen(daten);
+        Assert.Contains("keine Heizstableistung hinterlegt", cut.Markup);
+
+        daten.HeizstabLeistung = 6;
+        cut.Render();
+
+        Assert.DoesNotContain("keine Heizstableistung hinterlegt", cut.Markup);
     }
 
     /// <summary>
@@ -94,9 +172,13 @@ public class WaermepumpeKonfigurationTests : EposBunitContext
 
         Assert.NotEmpty(cut.FindAll(".epos-wp-konfiguration"));
         Assert.Equal(3, cut.FindAll(".epos-wp-erklaerung").Count);
-        Assert.Contains("Elektrische Nachheizung aktivieren (falls vorhanden)",
+        Assert.Contains("Heizstab mitrechnen",
                         cut.FindAll(".epos-schalter").Select(e => e.TextContent.Trim()));
         Assert.Empty(cut.FindAll(".epos-traegerwahl"));
+
+        // Ohne Gaben traegt der leere Feldsatz auch keine Heizstableistung - der
+        // Hinweis steht also, und zwar in der Sprache des Buendels.
+        Assert.Contains("keine Heizstableistung hinterlegt", cut.Markup);
     }
 
     // =================================================================================

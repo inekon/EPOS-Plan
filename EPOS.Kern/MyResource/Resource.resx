@@ -858,8 +858,8 @@
   <data name="KFLT_SP_KOLLEKTORTYP" xml:space="preserve">
     <value>Kollektortyp</value>
   </data>
-  <data name="KFLT_SP_KUEHLEN" xml:space="preserve">
-    <value>Kühlen</value>
+  <data name="KFLT_SP_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Kühlleistung</value>
   </data>
   <data name="KFLT_SP_LEISTUNG" xml:space="preserve">
     <value>P</value>
@@ -11806,6 +11806,9 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="WPK_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>✔ Auswahl übernehmen</value>
   </data>
+  <data name="WPK_CHK_NUR_KUEHLUNG" xml:space="preserve">
+    <value>nur mit Kühlfunktion</value>
+  </data>
   <data name="WPK_BTN_KATALOG" xml:space="preserve">
     <value>📋  Modul-Katalog...</value>
   </data>
@@ -12025,8 +12028,11 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="WPA_LBL_ABSCHALTTEMP" xml:space="preserve">
     <value>Bivalenztemperatur</value>
   </data>
-  <data name="WPA_HINWEIS_SPITZENLAST" xml:space="preserve">
-    <value>Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:</value>
+  <data name="WPA_HRL_HEIZSTAB" xml:space="preserve">
+    <value>Der Heizstab dieser Wärmepumpe wird bei Unterdeckung zugeschaltet.</value>
+  </data>
+  <data name="WPA_HINWEIS_HEIZSTAB_LEER" xml:space="preserve">
+    <value>Für diese Wärmepumpe ist keine Heizstableistung hinterlegt (Feld „Heizstab kW“ im Block Stammdaten).</value>
   </data>
   <data name="WPA_HINWEIS_BETRIEB" xml:space="preserve">
     <value>Außentemperaturgesteuerter Betrieb:</value>
@@ -15982,7 +15988,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Typ</value>
   </data>
   <data name="WPA_CHK_HEIZSTAB" xml:space="preserve">
-    <value>Elektrische Nachheizung aktivieren (falls vorhanden)</value>
+    <value>Heizstab mitrechnen</value>
   </data>
   <data name="WPA_CHK_SPERRZEIT" xml:space="preserve">
     <value>Sperrzeit durch Energieversorger</value>
@@ -19326,11 +19332,11 @@ Möchten Sie das zulassen?</value>
   <data name="SIMKONF_HRL_PROJEKTWEIT" xml:space="preserve">
     <value>Projekteinstellung — sie gilt für alle Anlagen dieser Art im Projekt.</value>
   </data>
-  <data name="SIMKONF_HRL_HEIZSTAB" xml:space="preserve">
-    <value>Projekteinstellung — sie gilt für alle Wärmepumpen des Projekts; nur wenn sie gesetzt ist, rechnet die Simulation eine Heizstabphase.</value>
+  <data name="SIMKONF_MSG_WP_OHNE_ANLAGE" xml:space="preserve">
+    <value>Die Konfiguration der Wärmepumpen-Anlage ist auf dieser Plattform nicht verfügbar.</value>
   </data>
-  <data name="SIMKONF_HRL_HEIZSTAB_ANLAGE" xml:space="preserve">
-    <value>„Elektrische Nachheizung aktivieren (falls vorhanden)“ oben gehört dagegen zu dieser Anlage: Sie hebt die Anlage in die elektrische Welt und entscheidet über ihren Energieträger, nicht über den Rechenweg.</value>
+  <data name="ABW_MERKMAL_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab mitrechnen</value>
   </data>
   <data name="WP_PROJ_MSG_GESPEICHERT" xml:space="preserve">
     <value>Projektgerät gespeichert</value>
@@ -19367,6 +19373,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WPA_UEB_TEXT_NEU" xml:space="preserve">
     <value>Es gibt keinen Katalogsatz „{0}“. Er wird neu angelegt.</value>
+  </data>
+  <data name="WPA_UEB_TEXT_UMBENANNT" xml:space="preserve">
+    <value>Der Katalogsatz „{0}“ (jetzt „{1}“) wird mit den Werten dieser Anlage überschrieben. {2} weitere Projekte führen bereits eine Kopie — sie ändern sich nicht.</value>
   </data>
   <data name="WPA_UEB_CHK_KENNLINIEN" xml:space="preserve">
     <value>Kennlinien mitübernehmen (ersetzt Wärme- und Kühlkennlinien des Katalogsatzes)</value>

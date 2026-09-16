@@ -458,7 +458,11 @@ public class SimulationKonfigSeiteTests : BunitContext
 
         SimulationParameterDienste dienste = Parameterdienste();
         dienste.WaermepumpeKonfigurationLaden = id => { geladen.Add(id); return anlage; };
-        dienste.WaermepumpeKonfigurationSpeichern = (id, d) => { gespeichert.Add(id); return true; };
+        dienste.WaermepumpeKonfigurationSpeichern = (id, d) =>
+        {
+            gespeichert.Add(id);
+            return new AnlagenkonfigErgebnis(true, "");
+        };
 
         var seite = Render<SimulationKonfigSeite>(p => p
             .Add(x => x.Dienste, DiensteMitWpAnlage())
@@ -471,6 +475,64 @@ public class SimulationKonfigSeiteTests : BunitContext
 
         Leiste(seite, 1).Click();
         Assert.Equal(new[] { 14930 }, gespeichert);
+    }
+
+    /// <summary>
+    /// <b>Der Grund des Kerns steht in der Meldung</b> (16.09.2026). Bis dahin meldete
+    /// die Naht nur <c>true</c>/<c>false</c>, und die Seite setzte ihren eigenen
+    /// Allgemeinplatz daneben — der Satz, WARUM nicht geschrieben wurde („Die Anlage 42
+    /// wurde nicht gefunden"), ging dabei verloren.
+    /// </summary>
+    [Fact]
+    public void Ein_Fehlschlag_der_Anlagenkonfiguration_meldet_den_Grund_des_Kerns()
+    {
+        var anlage = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten
+        {
+            Bezeichner = "WP 1"
+        };
+
+        SimulationParameterDienste dienste = Parameterdienste();
+        dienste.WaermepumpeKonfigurationLaden = _ => anlage;
+        dienste.WaermepumpeKonfigurationSpeichern = (_, _) =>
+            new AnlagenkonfigErgebnis(false, "Die Anlage 14930 wurde nicht gefunden.");
+
+        var seite = Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, DiensteMitWpAnlage())
+            .Add(x => x.Parameter, dienste)
+            .Add(x => x.StartProjekt, 1030));
+
+        Knopf(seite, "Wärmepumpe · WP 1").Click();
+        Leiste(seite, 1).Click();
+
+        Assert.Contains("Die Anlage 14930 wurde nicht gefunden.", seite.Markup);
+    }
+
+    /// <summary>
+    /// Ohne Wortlaut bleibt der Rückfall der Seite stehen — eine leere Meldung wäre
+    /// ein Band ohne Aussage.
+    /// </summary>
+    [Fact]
+    public void Ohne_Wortlaut_meldet_die_Seite_ihren_Rueckfall()
+    {
+        var anlage = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten
+        {
+            Bezeichner = "WP 1"
+        };
+
+        SimulationParameterDienste dienste = Parameterdienste();
+        dienste.WaermepumpeKonfigurationLaden = _ => anlage;
+        dienste.WaermepumpeKonfigurationSpeichern = (_, _) => new AnlagenkonfigErgebnis(false, "");
+
+        var seite = Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, DiensteMitWpAnlage())
+            .Add(x => x.Parameter, dienste)
+            .Add(x => x.StartProjekt, 1030)
+            .Add(x => x.StatusKonfigFehler, "Rückfalltext der Seite"));
+
+        Knopf(seite, "Wärmepumpe · WP 1").Click();
+        Leiste(seite, 1).Click();
+
+        Assert.Contains("Rückfalltext der Seite", seite.Markup);
     }
 
     /// <summary>

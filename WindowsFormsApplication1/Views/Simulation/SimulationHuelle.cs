@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Waermepumpe;
+using EPOS.UI.Seiten.Simulation;
 
 namespace WindowsFormsApplication1
 {
@@ -55,10 +56,11 @@ namespace WindowsFormsApplication1
                     WaermepumpenHuelle.Gaben(besitzer(), idProjekt, modelle, wizard: false),
 
                 // ANWENDERWUNSCH 16.09.2026: die Konfiguration EINER Waermepumpe hinter
-                // dem Knopf ihrer Karte. Windows ist hier nicht die Ursache - die zwei
-                // ABBILDUNGEN liegen in der Waermepumpen-Huelle dieser Schale
-                // (AusModell/NachModell), und eine zweite Wahrheit ueber dieselben
-                // vierzehn Felder gibt es nicht.
+                // dem Knopf ihrer Karte. Windows ist hier nicht die Ursache - die
+                // ABBILDUNG liegt in der Waermepumpen-Huelle dieser Schale (AusModell),
+                // und eine zweite Wahrheit ueber dieselben vierzehn Felder gibt es
+                // nicht. GESCHRIEBEN wird seither ueber den schmalen Weg des Kerns
+                // (WErzeugerCtrl.KonfigurationSchreiben) - die Anlagen-Ids bleiben.
                 WaermepumpeKonfigLesen = KonfigurationLesen,
                 WaermepumpeKonfigSchreiben = KonfigurationSchreiben,
                 WaermepumpeTraegerkatalog =
@@ -94,54 +96,66 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schreibt den Feldsatz zurück — <b>derselbe</b> Weg, den der Reiter
-        /// „Wärmepumpe" nach seinem Übernehmen geht
-        /// (<c>SimulationErgebnisHuelle.WaermepumpenFertig</c>, wörtlich
-        /// <c>listView_SimWP_MouseDown</c> :5145-5150): <c>NachModell</c> in die
-        /// Zeile, Träger dem Projekt zuordnen, dann die Wärmepumpen-Anlagen des
-        /// Projekts als Ganzes neu schreiben.
+        /// Schreibt die KONFIGURATIONSFELDER der Anlage zurück — ein schmales UPDATE
+        /// auf <c>Tab_Energieanlagen</c> über <c>WErzeugerCtrl.KonfigurationSchreiben</c>.
         /// </summary>
         /// <remarks>
-        /// <b>Warum die ganze Liste und nicht <c>WErzeugerCtrl.Update</c>.</b> Dessen
-        /// UPDATE führt genau sechzehn Spalten und darunter WEDER <c>Heizstab</c> NOCH
-        /// <c>ID_Carrier</c> — beide stehen in diesem Feldsatz. Ein Schreibweg, der
-        /// zwei der bearbeiteten Felder still fallen ließe, wäre schlimmer als der
-        /// teure: Löschen und Neuanlegen sichert Senken, Stränge, Varianten und
-        /// Fachspalten (<c>Del_Projekt_Waermeerzeuger</c>) und ist der EINE
-        /// Schreibweg aller Erzeuger.
+        /// <para><b>Was hier bis zum 16.09.2026 stand</b>, war der Bestandsweg der
+        /// Erzeuger: <c>NachModell</c> in die Zeile, dann
+        /// <c>WizardCtrl.Del_Projekt_Waermeerzeuger</c> + <c>Add_WP_Waermeerzeuger</c>
+        /// für die ganze Anlagenliste des Projekts. Er war nicht falsch, aber zu teuer
+        /// und hatte eine sichtbare Folge: <b>Löschen und Neuanlegen vergibt neue
+        /// Anlagen-Ids.</b> Die Karte, die man gerade bearbeitet hatte, war danach nicht
+        /// mehr markiert, und jede Zuordnung, die an der alten Id hängt, muss beim
+        /// Neuanlegen gerettet werden. Für acht Felder ist das der falsche Preis.</para>
+        ///
+        /// <para><b>Warum es jetzt geht.</b> Der Grund für den Umweg war
+        /// <c>WErzeugerCtrl.Update</c>: Dessen UPDATE führt sechzehn Spalten und darunter
+        /// weder <c>Heizstab</c> noch <c>ID_Carrier</c> — die zwei Felder, um die es hier
+        /// vor allem geht. <c>WErzeugerCtrl.KonfigurationSchreiben</c> ist genau für
+        /// diesen Satz gebaut: acht Felder, read-modify-write (<c>null</c> = unverändert),
+        /// adressiert über <c>ID</c> UND <c>ID_Projekt</c>, die Ids bleiben stehen.</para>
+        ///
+        /// <para><b>Nur die KONFIGURATION, nicht der ganze Feldsatz.</b> Der Dialog an
+        /// der Karte zeigt den Baustein <c>WaermepumpeKonfiguration</c> und nichts sonst;
+        /// Vorlauf, Rücklauf, Nutzungsdauer und die Stammfelder bearbeitet allein der
+        /// Anlagendialog, und der geht weiter seinen eigenen Speicherweg. Ein Schreibweg,
+        /// der hier mehr anfasste, als der Dialog zeigt, schriebe Werte zurück, die
+        /// niemand angesehen hat.</para>
         /// </remarks>
-        private static bool KonfigurationSchreiben(int idProjekt, int idAnlage,
-                                                   WaermepumpeAnlageDaten daten)
+        private static AnlagenkonfigErgebnis KonfigurationSchreiben(
+            int idProjekt, int idAnlage, WaermepumpeAnlageDaten daten)
         {
-            if (daten == null) return false;
+            if (daten == null)
+                return new AnlagenkonfigErgebnis(false, Text_("ANL_KONFIG_MSG_FEHLER",
+                    "Die Konfiguration der Anlage konnte nicht gespeichert werden."));
 
-            WErzeugerModel m = Anlage(idProjekt, idAnlage, out List<WErzeugerModel> modelle);
-            if (m == null) return false;
+            WErzeugerCtrl.SpeicherErgebnis e = WErzeugerCtrl.KonfigurationSchreiben(
+                idAnlage, idProjekt,
+                new WErzeugerCtrl.KonfigurationFelder(
+                    Heizstab: daten.Heizstab,
+                    Sperrung: daten.Sperrung,
+                    SperrzeitVon: daten.SperrzeitVon ?? 0,
+                    SperrzeitBis: daten.SperrzeitBis ?? 0,
+                    BivalenterBetrieb: daten.BivalenterBetrieb,
+                    Betriebsart: daten.Betriebsart ?? "",
+                    Abschaltpunkt: daten.Abschaltpunkt,
+                    // 0 heisst hier "nicht anfassen", nicht "kein Traeger": Der Dialog
+                    // bietet keine Moeglichkeit, die Wahl ZURUECKZUNEHMEN - er laesst
+                    // sie nur unberuehrt, solange die Anlage noch keine fuehrt.
+                    IdCarrier: daten.CarrierId > 0 ? daten.CarrierId : (int?)null));
 
-            WaermepumpeAnlageHuelle.NachModell(daten, m);
+            // ET-5: der gewaehlte Traeger gehoert dem Projekt zugeordnet. Idempotent;
+            // er steht auch dann an, wenn der Satz sonst unveraendert blieb.
+            if (e.Ok) ErzeugerTraegerHuelle.Zuordnen(idProjekt, false, daten.CarrierId);
 
-            // ET-5: der gewaehlte Traeger gehoert dem Projekt zugeordnet.
-            ErzeugerTraegerHuelle.Zuordnen(idProjekt, false, m.ID_Carrier);
-
-            WizardCtrl wizctrl = new WizardCtrl();
-            wizctrl.Del_Projekt_Waermeerzeuger(idProjekt, WizardItemClass.WP_TYP);
-            if (!wizctrl.Add_WP_Waermeerzeuger(idProjekt, modelle)) return false;
-
-            // Anwenderentscheid 16.09.2026: Die STAMMFELDER des Anlagendialogs gehoeren
-            // der Projektkopie (Tab_WP) - der Del+Add-Weg schreibt nur
-            // Tab_Energieanlagen. NACH dem Add zeigt m.ID_WP auf die Kopie.
-            string grund = WaermepumpeAnlageHuelle.ProjektgeraetNachziehen(m, daten, idProjekt);
-            if (string.IsNullOrEmpty(grund)) return true;
-
-            // Benannt abgelehnt statt still uebergangen: Der Wirt dieses Weges wertet
-            // nur true/false aus, also steht die Meldung hier.
-            Dienste.Dialog.Meldung(grund, MyResource.Resource.WPV_TITEL);
-            return false;
+            return new AnlagenkonfigErgebnis(e.Ok, e.Meldung ?? "");
         }
 
         /// <summary>
-        /// Die Anlagenzeile zu einer Id samt der Liste, in der sie steht — die Liste
-        /// ist es, die der Schreibweg braucht.
+        /// Die Anlagenzeile zu einer Id — der LESEWEG braucht sie samt der Liste, in
+        /// der sie steht; der Schreibweg adressiert seit dem 16.09.2026 unmittelbar
+        /// über (<c>ID</c>, <c>ID_Projekt</c>).
         /// </summary>
         private static WErzeugerModel Anlage(int idProjekt, int idAnlage,
                                              out List<WErzeugerModel> modelle)
@@ -152,6 +166,15 @@ namespace WindowsFormsApplication1
                 if (m.ID == idAnlage) return m;
 
             return null;
+        }
+
+        /// <summary>Ressourcentext mit deutschem Rueckfall (Drei-Schichten-Regel).</summary>
+        private static string Text_(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
         }
     }
 }

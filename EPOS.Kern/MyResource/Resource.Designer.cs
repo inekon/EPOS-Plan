@@ -61,6 +61,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitrechnen ähnelt.
+        /// </summary>
+        public static string ABW_MERKMAL_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("ABW_MERKMAL_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
         public static string ADM_BTN_SPEICHERN {
@@ -21775,11 +21784,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
         /// </summary>
-        public static string KFLT_SP_KUEHLEN {
+        public static string KFLT_SP_KUEHLLEISTUNG {
             get {
-                return ResourceManager.GetString("KFLT_SP_KUEHLEN", resourceCulture);
+                return ResourceManager.GetString("KFLT_SP_KUEHLLEISTUNG", resourceCulture);
             }
         }
         
@@ -42071,24 +42080,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung — sie gilt für alle Wärmepumpen des Projekts; nur wenn sie gesetzt ist, rechnet die Simulation eine Heizstabphase. ähnelt.
-        /// </summary>
-        public static string SIMKONF_HRL_HEIZSTAB {
-            get {
-                return ResourceManager.GetString("SIMKONF_HRL_HEIZSTAB", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Elektrische Nachheizung aktivieren (falls vorhanden)“ oben gehört dagegen zu dieser Anlage: Sie hebt die Anlage in die elektrische Welt und entscheidet über ihren Energieträger, nicht über den Rechenweg. ähnelt.
-        /// </summary>
-        public static string SIMKONF_HRL_HEIZSTAB_ANLAGE {
-            get {
-                return ResourceManager.GetString("SIMKONF_HRL_HEIZSTAB_ANLAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wirkt nur, wenn das Projekt einen Wärmebedarf führt: Die Verluste werden stündlich umgelegt und anteilig auf die Bedarfskanäle verteilt. Vorgabe 0 %. ähnelt.
         /// </summary>
         public static string SIMKONF_HRL_NETZVERLUSTE {
@@ -42112,6 +42103,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMKONF_MSG_WP_KONFIG_FEHLER {
             get {
                 return ResourceManager.GetString("SIMKONF_MSG_WP_KONFIG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konfiguration der Wärmepumpen-Anlage ist auf dieser Plattform nicht verfügbar. ähnelt.
+        /// </summary>
+        public static string SIMKONF_MSG_WP_OHNE_ANLAGE {
+            get {
+                return ResourceManager.GetString("SIMKONF_MSG_WP_OHNE_ANLAGE", resourceCulture);
             }
         }
         
@@ -55007,7 +55007,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrische Nachheizung aktivieren (falls vorhanden) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab mitrechnen ähnelt.
         /// </summary>
         public static string WPA_CHK_HEIZSTAB {
             get {
@@ -55106,11 +55106,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Wärmepumpe ist keine Heizstableistung hinterlegt (Feld „Heizstab kW“ im Block Stammdaten). ähnelt.
         /// </summary>
-        public static string WPA_HINWEIS_SPITZENLAST {
+        public static string WPA_HINWEIS_HEIZSTAB_LEER {
             get {
-                return ResourceManager.GetString("WPA_HINWEIS_SPITZENLAST", resourceCulture);
+                return ResourceManager.GetString("WPA_HINWEIS_HEIZSTAB_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Heizstab dieser Wärmepumpe wird bei Unterdeckung zugeschaltet. ähnelt.
+        /// </summary>
+        public static string WPA_HRL_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("WPA_HRL_HEIZSTAB", resourceCulture);
             }
         }
         
@@ -55318,6 +55327,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_UEB_TEXT_UEBERSCHREIBEN {
             get {
                 return ResourceManager.GetString("WPA_UEB_TEXT_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz „{0}“ (jetzt „{1}“) wird mit den Werten dieser Anlage überschrieben. {2} weitere Projekte führen bereits eine Kopie — sie ändern sich nicht. ähnelt.
+        /// </summary>
+        public static string WPA_UEB_TEXT_UMBENANNT {
+            get {
+                return ResourceManager.GetString("WPA_UEB_TEXT_UMBENANNT", resourceCulture);
             }
         }
         
@@ -55561,6 +55579,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPK_BTN_UEBERNEHMEN {
             get {
                 return ResourceManager.GetString("WPK_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur mit Kühlfunktion ähnelt.
+        /// </summary>
+        public static string WPK_CHK_NUR_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("WPK_CHK_NUR_KUEHLUNG", resourceCulture);
             }
         }
         

@@ -1664,19 +1664,28 @@
         // Laden waere nur die Gelegenheit, ihn wieder zu verlieren.
         _parameter = werte;
 
-        Func<int, EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten, bool>? speichern
+        Func<int, EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten, AnlagenkonfigErgebnis>? speichern
             = Parameter?.WaermepumpeKonfigurationSpeichern;
 
         if (art != Komponentenart.Waermepumpe || anlage is null || zeile is null ||
             speichern is null)
             return;
 
-        if (!speichern(zeile.IdAnlage, anlage))
-            Melden(StatusKonfigFehler, WarnStufe.Fehler);
+        // DER GRUND KOMMT AUS DEM KERN (16.09.2026). Bis dahin meldete der Weg nur
+        // true/false, und die Seite setzte ihren eigenen Allgemeinplatz daneben - der
+        // Satz, warum nicht geschrieben wurde, ging verloren. Ohne Wortlaut bleibt er
+        // als Rueckfall stehen.
+        AnlagenkonfigErgebnis ergebnis = speichern(zeile.IdAnlage, anlage);
 
-        // DANACH IMMER: Die Anlagenzeilen sind neu geschrieben - Betriebsart und
-        // Sperrzeit stehen als Chip auf der Karte, und die Anlagen-Ids koennen
-        // dabei gewechselt haben (der Speicherweg loescht und legt neu an).
+        if (!ergebnis.Ok)
+            Melden(string.IsNullOrEmpty(ergebnis.Meldung) ? StatusKonfigFehler : ergebnis.Meldung,
+                   WarnStufe.Fehler);
+
+        // DANACH IMMER: Die Konfigurationsfelder stehen neu in der Anlagenzeile -
+        // Betriebsart und Sperrzeit stehen als Chip auf der Karte. Die Anlagen-Ids
+        // BLEIBEN dabei seit dem 16.09.2026 stehen (der Schreibweg ist ein schmales
+        // UPDATE statt Loeschen+Neuanlegen), die Hervorhebung der bearbeiteten Karte
+        // ueberlebt das Speichern damit.
         KachelnNeuladen();
     }
 

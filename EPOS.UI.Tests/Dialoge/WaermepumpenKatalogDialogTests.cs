@@ -61,16 +61,16 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
     /// </summary>
     private static IReadOnlyList<Katalogfilterzeile> Katalogzeilen() => new[]
     {
-        Zeile(1, "Alpha", "CS-070", "Luft-Wasser",  7.0, 35, 55,  3, false, 3.4),
-        Zeile(2, "Alpha", "CS-127", "Luft-Wasser", 12.7, 35, 60,  6, true,  3.2),
-        Zeile(3, "Beta",  "BX-200", "Sole-Wasser", 20.0, 30, 45,  9, false, 4.1),
-        Zeile(4, "Gamma", "cs-990", "Sole-Wasser", 99.0, 25, 35,  0, false, 4.4),
+        Zeile(1, "Alpha", "CS-070", "Luft-Wasser",  7.0, 35, 55,  3, 0.0, 3.4),
+        Zeile(2, "Alpha", "CS-127", "Luft-Wasser", 12.7, 35, 60,  6, 5.5, 3.2),
+        Zeile(3, "Beta",  "BX-200", "Sole-Wasser", 20.0, 30, 45,  9, 0.0, 4.1),
+        Zeile(4, "Gamma", "cs-990", "Sole-Wasser", 99.0, 25, 35,  0, 0.0, 4.4),
     };
 
     private static Katalogfilterzeile Zeile(int id, string hersteller, string modell,
                                             string quelle, double pN, double vlMin,
-                                            double vlMax, double zuheizung, bool kuehlen,
-                                            double cop)
+                                            double vlMax, double zuheizung,
+                                            double kuehlleistung, double cop)
         => new Katalogfilterzeile(id, modell)
             .MitText(Katalogfilterprofil.SpHersteller, hersteller)
             .MitText(Katalogfilterprofil.SpBezeichner, modell)
@@ -79,7 +79,7 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
             .MitZahl(Katalogfilterprofil.SpVlMin, vlMin, 0)
             .MitZahl(Katalogfilterprofil.SpVlMax, vlMax, 0)
             .MitZahl(Katalogfilterprofil.SpZuheizung, zuheizung, 1)
-            .MitKennzeichen(Katalogfilterprofil.SpKuehlen, kuehlen)
+            .MitZahl(Katalogfilterprofil.SpKuehlleistung, kuehlleistung, 1)
             .MitZahl(Katalogfilterprofil.SpCop, cop, 2);
 
     public WaermepumpenKatalogDialogTests()
@@ -134,8 +134,9 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>An ihrer Stelle stehen die NEUN Spalten</b> (Konzept 5.6.5, Reiter M2) —
-    /// plus die Wahlspalte. Acht davon tragen einen Trichter; „Kühlen" ist ein
-    /// Kennzeichen und trägt nur den Sortierpfeil (5.6.2).
+    /// plus die Wahlspalte. Seit dem 16.09.2026 tragen ALLE NEUN einen Trichter: Aus
+    /// dem Kennzeichen „Kühlen" (Ja/Nein, nur Sortierpfeil) ist die Zahlenspalte
+    /// „Kühlleistung [kW]" geworden.
     /// </summary>
     [Fact]
     public void An_ihrer_Stelle_stehen_neun_Spalten_mit_Trichter_und_Sortierpfeil()
@@ -153,22 +154,55 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
         Assert.Contains(kopf, k => k.Contains("VL min"));
         Assert.Contains(kopf, k => k.Contains("VL max"));
         Assert.Contains(kopf, k => k.Contains("Zuheizung"));
-        Assert.Contains(kopf, k => k.StartsWith("Kühlen"));
+        Assert.Contains(kopf, k => k.StartsWith("Kühlleistung"));
         Assert.Contains(kopf, k => k.StartsWith("COP"));
 
-        // Acht Trichter: alle ausser dem Kennzeichen „Kuehlen".
-        Assert.Equal(8, cut.FindAll(".epos-trichter").Count);
-        Assert.Equal(8, Profil.Spalten.Count(x => x.Filterbar));
-        Assert.False(Profil.Spalte(Katalogfilterprofil.SpKuehlen)!.Filterbar);
+        // Die Kuehlleistung ist eine ZAHLENSPALTE - mit Trichter, mit Einheit.
+        Assert.Contains(kopf, k => k.Contains("Kühlleistung [kW]"));
+        Assert.Equal(9, cut.FindAll(".epos-trichter").Count);
+        Assert.Equal(9, Profil.Spalten.Count(x => x.Filterbar));
+        Assert.True(Profil.Spalte(Katalogfilterprofil.SpKuehlleistung)!.Filterbar);
 
         // Neun Sortierpfeile - jede Parameterspalte laesst sich sortieren.
         Assert.Equal(9, cut.FindAll(".epos-sortierpfeil").Count);
     }
 
     /// <summary>
+    /// <b>Der Schalter „nur mit Kühlfunktion"</b> (Anwenderentscheid 16.09.2026) ist
+    /// eine ABKÜRZUNG in den vorhandenen Filter und kein zweiter Mechanismus: Er legt
+    /// den Ausdruck <c>&gt;0</c> auf die Spalte Kühlleistung. Genau deshalb stimmen
+    /// Trefferzahl und Trichter, und „Filter zurücksetzen" nimmt ihn mit zurück.
+    /// </summary>
+    [Fact]
+    public void Nur_mit_Kuehlfunktion_setzt_den_Spaltenfilter_und_zaehlt_richtig()
+    {
+        var cut = Aufbauen();
+        Assert.Equal(4, Trefferzahl(cut));
+
+        var schalter = cut.Find(".epos-leiste .epos-schalter input[type=checkbox]");
+        Assert.Contains("nur mit Kühlfunktion", cut.Markup);
+        Assert.False(schalter.HasAttribute("checked"));
+
+        schalter.Change(true);
+
+        // EINE Wahrheit: der Filterstand. Genau ein Satz der Probe fuehrt 5,5 kW.
+        Assert.Equal(Katalogfilterprofil.AUSDRUCK_MIT_KUEHLUNG,
+                     cut.Instance.Filterstand.Ausdruck(Katalogfilterprofil.SpKuehlleistung));
+        Assert.True(cut.Instance.NurMitKuehlung);
+        Assert.Equal(1, Trefferzahl(cut));
+        Assert.Contains("CS-127", cut.Find(".epos-raster tbody").TextContent);
+
+        // Zurueckgenommen heisst: kein Ausdruck mehr, alle vier Saetze wieder da.
+        cut.Find(".epos-leiste .epos-schalter input[type=checkbox]").Change(false);
+        Assert.Equal("", cut.Instance.Filterstand.Ausdruck(Katalogfilterprofil.SpKuehlleistung));
+        Assert.False(cut.Instance.NurMitKuehlung);
+        Assert.Equal(4, Trefferzahl(cut));
+    }
+
+    /// <summary>
     /// <b>Drei der elf werden KEINE Spalte</b> — und das ist gemessen, nicht
     /// vergessen: Die Bauart ist in 45 von 51 Sätzen leer, „Auslegung" ist
-    /// dieselbe Aussage wie das Kennzeichen „Kühlen" (beides
+    /// dieselbe Aussage wie die Kühlleistung (beides
     /// <c>Kuehlleistung &gt; 0</c>), und Regelung wie Aufstellung stehen im
     /// Kenndatenblock. Die Suche über alle Spalten findet sie weiterhin, sobald
     /// sie als Wert dastehen.

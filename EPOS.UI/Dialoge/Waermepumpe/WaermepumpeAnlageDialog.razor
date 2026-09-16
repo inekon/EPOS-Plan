@@ -313,6 +313,7 @@
                     <span class="@Huelle(MANGEL_HEIZSTAB)">
                         <WaermepumpeStammFelder Daten="@_stamm" Texte="@StammfelderTexte"
                                                 Aktiv="@(!NurLesen)" BezeichnerAenderbar="false"
+                                                KuehlleistungAenderbar="true"
                                                 Geaendert="StammfeldGeaendert" />
                     </span>
 
@@ -764,6 +765,22 @@
     [Parameter] public string UebernahmeTextNeu { get; set; } =
         "Es gibt keinen Katalogsatz „{0}“. Er wird neu angelegt.";
 
+    /// <summary>
+    /// Die Warnung, wenn der verknüpfte Katalogsatz UMBENANNT wurde
+    /// (<c>WPA_UEB_TEXT_UMBENANNT</c>); <c>{0}</c> ist der Name der Projektkopie, <c>{1}</c>
+    /// der heutige Name des Katalogsatzes, <c>{2}</c> die Zahl der ANDEREN Projekte mit
+    /// eigener Kopie.
+    /// </summary>
+    /// <remarks>
+    /// Seit Schemaschritt 80 findet die Projektkopie ihren Katalogsatz über
+    /// <c>Tab_WP.ID_Stamm</c> und nicht mehr über den Namen — eine Umbenennung im Katalog
+    /// zerreißt die Klammer also nicht mehr. Überschrieben wird dann aber ein Satz, der
+    /// ANDERS heißt als die Anlage; das muss die Rückfrage sagen, sonst suchte der Anwender
+    /// im Katalog nach einem Namen, der dort nicht mehr steht.
+    /// </remarks>
+    [Parameter] public string UebernahmeTextUmbenannt { get; set; } =
+        "Der Katalogsatz „{0}“ (jetzt „{1}“) wird mit den Werten dieser Anlage überschrieben. {2} weitere Projekte führen bereits eine Kopie — sie ändern sich nicht.";
+
     /// <summary>Der Schalter über die Kennlinien (<c>WPA_UEB_CHK_KENNLINIEN</c>).</summary>
     [Parameter] public string UebernahmeSchalterKennlinien { get; set; } =
         "Kennlinien mitübernehmen (ersetzt Wärme- und Kühlkennlinien des Katalogsatzes)";
@@ -995,9 +1012,11 @@
     /// (<c>WaermepumpeGeraeteCtrl.GeraetedatenFuellen</c> füllt sie Projektkopie vor
     /// Katalog).</para>
     ///
-    /// <para><see cref="WaermepumpeStammDaten.Kuehlleistung"/> und
-    /// <see cref="WaermepumpeStammDaten.Modulkosten"/> stehen im Baustein nur lesend;
-    /// die Kühlleistung führt der Feldsatz der Anlage gar nicht und bleibt deshalb 0.</para>
+    /// <para><see cref="WaermepumpeStammDaten.Modulkosten"/> steht im Baustein nur lesend
+    /// und läuft unverändert mit. Die <see cref="WaermepumpeStammDaten.Kuehlleistung"/>
+    /// dagegen ist seit dem 16.09.2026 eine Spalte der PROJEKTKOPIE wie die Nennleistung
+    /// — sie kommt aus <see cref="Daten"/> und geht dorthin zurück
+    /// (<c>KuehlleistungAenderbar="true"</c>).</para>
     /// </summary>
     private void StammabbildNachziehen()
     {
@@ -1013,6 +1032,7 @@
             Baujahr = Daten.Baujahr,
             Nennleistung = Daten.Nennleistung,
             Heizstab = Daten.HeizstabLeistung,
+            Kuehlleistung = Daten.Kuehlleistung ?? 0,
             Modulkosten = Daten.Modulkosten
         };
         _stammMeldung = "";
@@ -1073,6 +1093,7 @@
             Daten.Typ = stamm.Typ;
             Daten.Aufstellung = stamm.Aufstellung;
             Daten.HeizstabLeistung = stamm.Heizstab;
+            Daten.Kuehlleistung = stamm.Kuehlleistung;
         }
         Auffrischen();
     }
@@ -1206,7 +1227,9 @@
     ///
     /// <para>Der BEZEICHNER wird NICHT zurückgeschrieben: Er steht im Baustein nur lesend
     /// (<c>BezeichnerAenderbar="false"</c>), und die Kopplung Projektkopie ↔ Katalogsatz
-    /// hängt an ihm. Kühlleistung und Modulkosten sind ebenfalls nur lesend.</para>
+    /// hängt an ihm. Die Modulkosten sind ebenfalls nur lesend; die KÜHLLEISTUNG ist es
+    /// seit dem 16.09.2026 nicht mehr — sie ist eine Spalte der Projektkopie und geht
+    /// denselben Weg wie die Nennleistung.</para>
     /// </summary>
     private void StammfeldGeaendert()
     {
@@ -1220,6 +1243,7 @@
         Daten.Baujahr = _stamm.Baujahr ?? 0;
         Daten.Nennleistung = _stamm.Nennleistung ?? 0;
         Daten.HeizstabLeistung = _stamm.Heizstab;
+        Daten.Kuehlleistung = _stamm.Kuehlleistung;
     }
 
     // ---------------------------------------------------------------------------------
@@ -1247,14 +1271,35 @@
         _vorschau = v;
     }
 
-    /// <summary>Der Warntext zum Fall — je Fall EIN Satz, und er nennt den Namen.</summary>
+    /// <summary>
+    /// Der Warntext zum Fall — je Fall EIN Satz, und er nennt den Namen.
+    ///
+    /// <para><b>Drei Fälle, nicht zwei</b> (16.09.2026): Seit Schemaschritt 80 hängt die
+    /// Projektkopie über <c>ID_Stamm</c> an ihrem Katalogsatz, und der kann inzwischen
+    /// ANDERS heißen. Dann steht beides da — der Name der Anlage und der heutige Name im
+    /// Katalog —, denn sonst suchte der Anwender nach einem Satz, den es unter diesem
+    /// Namen nicht mehr gibt.</para>
+    /// </summary>
     private string UebernahmeWarntext(WaermepumpeUebernahmeVorschau v)
     {
         if (v.ReadOnly) return MeldungUebernahmeReadOnly;
-        return v.KatalogsatzVorhanden
-            ? string.Format(UebernahmeTextUeberschreiben, v.Bezeichner, v.AnzahlProjekteMitKopie)
-            : string.Format(UebernahmeTextNeu, v.Bezeichner);
+        if (!v.KatalogsatzVorhanden) return string.Format(UebernahmeTextNeu, v.Bezeichner);
+
+        return Umbenannt(v)
+            ? string.Format(UebernahmeTextUmbenannt, v.Bezeichner, v.KatalogBezeichner,
+                            v.AnzahlProjekteMitKopie)
+            : string.Format(UebernahmeTextUeberschreiben, v.Bezeichner,
+                            v.AnzahlProjekteMitKopie);
     }
+
+    /// <summary>
+    /// Heißt der verknüpfte Katalogsatz anders als die Anlage? Ein leerer
+    /// <c>KatalogBezeichner</c> ist KEINE Umbenennung, sondern eine Vorschau ohne die
+    /// Angabe — die Aufrufer, die sie nicht führen, bleiben beim bisherigen Wortlaut.
+    /// </summary>
+    private static bool Umbenannt(WaermepumpeUebernahmeVorschau v)
+        => !string.IsNullOrEmpty(v.KatalogBezeichner) &&
+           !string.Equals(v.KatalogBezeichner, v.Bezeichner, StringComparison.Ordinal);
 
     /// <summary>✕, Esc und „Schließen" des ReadOnly-Falls: nichts geschieht.</summary>
     private void UebernahmeSchliessen()

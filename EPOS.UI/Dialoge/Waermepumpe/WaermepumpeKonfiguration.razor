@@ -45,10 +45,26 @@
        "Sperrzeit" neben den Schalter "Heizstab". *@
     <Formularraster Einspaltig="true">
         <KindInhalt>
+            @* DER HEIZSTAB DIESER WAERMEPUMPE (Schemaschritt 79, 16.09.2026). Bis dahin
+               hiess der Schalter "Elektrische Nachheizung aktivieren (falls vorhanden)"
+               und rechnete NICHT - gerechnet wurde der projektweite
+               Tab_Einstellungen.WP_Heizstab. Den gibt es nicht mehr; der Lauf liest
+               diesen hier je Modul. Darum "mitrechnen".
+
+               OHNE HINTERLEGTE LEISTUNG BLEIBT ER BEDIENBAR und sagt es nur: Ob ein
+               Heizstab mitgerechnet werden soll, ist eine Entscheidung; ob eine Leistung
+               dafuer gepflegt ist, eine Tatsache. Ein gesperrter Schalter verschwiege,
+               welche der beiden fehlt - und die Leistung steht im selben Dialog
+               (Stammfelder, Feld "Heizstab"), also einen Handgriff entfernt. *@
             <Schalter Bezeichnung="@Texte.LabelHeizstab" Wert="@Daten.Heizstab"
                       WertChanged="BeiHeizstab" Aktiv="@Aktiv" />
 
-            <Herleitungszeile Text="@Texte.HinweisSpitzenlast" />
+            <Herleitungszeile Text="@Texte.HinweisHeizstab" />
+
+            @if (!HeizstableistungHinterlegt)
+            {
+                <Herleitungszeile Text="@Texte.HinweisOhneHeizstableistung" />
+            }
 
             <Formulargruppe Titel="@Texte.GruppeSperrzeit">
                 <KindInhalt>
@@ -193,6 +209,21 @@
         => Daten.BivalenterBetrieb &&
            (Daten.Betriebsart == DbWerte.WP_BETRIEBSART_TEILPARALLEL ||
             Daten.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV);
+
+    /// <summary>
+    /// Führt die PROJEKTKOPIE dieser Wärmepumpe eine Heizstableistung?
+    /// (<c>Tab_WP.Heizung</c>, im Feldsatz <see cref="WaermepumpeAnlageDaten.HeizstabLeistung"/>.)
+    ///
+    /// <para><b>0 und leer sind dasselbe</b> — <c>Tab_WP.Heizung</c> ist eine
+    /// INTEGER-Spalte, und ein Heizstab mit 0 kW ist keiner. Der Wert steht im
+    /// hereingereichten Feldsatz und braucht deshalb KEINE eigene Gabe: Beide Wirte —
+    /// Anlagendialog und Simulation › Konfiguration — füllen ihn aus derselben Quelle
+    /// (<c>WaermepumpeAnlageHuelle.AusModell</c> nach
+    /// <c>WaermepumpeGeraeteCtrl.GeraetedatenFuellen</c>), und im Anlagendialog zieht die
+    /// Eingabe im Stammfeld „Heizstab" ihn unmittelbar nach. Eine zweite Gabe wäre eine
+    /// zweite Wahrheit über denselben Wert.</para>
+    /// </summary>
+    public bool HeizstableistungHinterlegt => Daten.HeizstabLeistung is int kw && kw > 0;
 
     /// <summary>Zusatzklasse des Erklärkastens, dessen Betriebsart gewählt ist.</summary>
     private string Kastenstand(string betriebsart)

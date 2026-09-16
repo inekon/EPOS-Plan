@@ -858,8 +858,8 @@
   <data name="KFLT_SP_KOLLEKTORTYP" xml:space="preserve">
     <value>Collector type</value>
   </data>
-  <data name="KFLT_SP_KUEHLEN" xml:space="preserve">
-    <value>Cooling</value>
+  <data name="KFLT_SP_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Cooling capacity</value>
   </data>
   <data name="KFLT_SP_LEISTUNG" xml:space="preserve">
     <value>P</value>
@@ -11799,6 +11799,9 @@ Overwrite it anyway?</value>
   <data name="WPK_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>✔ Accept selection</value>
   </data>
+  <data name="WPK_CHK_NUR_KUEHLUNG" xml:space="preserve">
+    <value>cooling function only</value>
+  </data>
   <data name="WPK_BTN_KATALOG" xml:space="preserve">
     <value>📋  Module catalogue...</value>
   </data>
@@ -12018,8 +12021,11 @@ Overwrite it anyway?</value>
   <data name="WPA_LBL_ABSCHALTTEMP" xml:space="preserve">
     <value>Bivalent temperature</value>
   </data>
-  <data name="WPA_HINWEIS_SPITZENLAST" xml:space="preserve">
-    <value>A peak load heat generator may be necessary due to:</value>
+  <data name="WPA_HRL_HEIZSTAB" xml:space="preserve">
+    <value>The electric heating rod of this heat pump is switched on when the heat pump cannot cover the demand.</value>
+  </data>
+  <data name="WPA_HINWEIS_HEIZSTAB_LEER" xml:space="preserve">
+    <value>No heating rod capacity is stored for this heat pump (field “Heating rod kW” in the master data block).</value>
   </data>
   <data name="WPA_HINWEIS_BETRIEB" xml:space="preserve">
     <value>Outside temperature controlled operation:</value>
@@ -15993,7 +15999,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>Type</value>
   </data>
   <data name="WPA_CHK_HEIZSTAB" xml:space="preserve">
-    <value>Activate electric afterheating (if available)</value>
+    <value>Include electric heating rod</value>
   </data>
   <data name="WPA_CHK_SPERRZEIT" xml:space="preserve">
     <value>Blackout period by energy supplier</value>
@@ -19319,11 +19325,11 @@ Do you want to allow this?</value>
   <data name="SIMKONF_HRL_PROJEKTWEIT" xml:space="preserve">
     <value>Project setting — applies to all units of this type in the project.</value>
   </data>
-  <data name="SIMKONF_HRL_HEIZSTAB" xml:space="preserve">
-    <value>Project setting — applies to all heat pumps in the project; only when it is set does the simulation calculate an electric heater phase.</value>
+  <data name="SIMKONF_MSG_WP_OHNE_ANLAGE" xml:space="preserve">
+    <value>Configuring the heat pump unit is not available on this platform.</value>
   </data>
-  <data name="SIMKONF_HRL_HEIZSTAB_ANLAGE" xml:space="preserve">
-    <value>“Activate electric afterheating (if available)” above belongs to this unit instead: it moves the unit into the electric world and decides its energy carrier, not the calculation path.</value>
+  <data name="ABW_MERKMAL_HEIZSTAB" xml:space="preserve">
+    <value>Include electric heating rod</value>
   </data>
   <data name="WP_PROJ_MSG_GESPEICHERT" xml:space="preserve">
     <value>Project unit saved</value>
@@ -19360,6 +19366,9 @@ Do you want to allow this?</value>
   </data>
   <data name="WPA_UEB_TEXT_NEU" xml:space="preserve">
     <value>There is no catalogue record “{0}”. It will be created.</value>
+  </data>
+  <data name="WPA_UEB_TEXT_UMBENANNT" xml:space="preserve">
+    <value>The catalogue record “{0}” (now “{1}”) will be overwritten with the values of this unit. {2} further projects already keep a copy — they do not change.</value>
   </data>
   <data name="WPA_UEB_CHK_KENNLINIEN" xml:space="preserve">
     <value>Transfer characteristic curves as well (replaces heating and cooling curves of the catalogue record)</value>

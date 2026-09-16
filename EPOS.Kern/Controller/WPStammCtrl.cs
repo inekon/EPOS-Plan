@@ -148,7 +148,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Zeilen der Stammverwaltung</b> (Anwenderentscheid W14a-E-10,
         /// Konzept_Katalogfilter 4.3 und S1.5) — NEUN Spalten: Hersteller, Modell,
-        /// Quelle, Nennleistung, VL min, VL max, Zuheizung, Kuehlen und COP bei A2/W35.
+        /// Quelle, Nennleistung, VL min, VL max, Zuheizung, Kuehlleistung und COP bei A2/W35.
         ///
         /// <para><b>Der Kern des Entscheids.</b> „Das Schema des Dialogs sollte immer
         /// gleich aussehen (Waermepumpe aehnlich wie PV-Module und Heizkessel)" — bis
@@ -168,8 +168,10 @@ namespace WindowsFormsApplication1
         ///   <item><b>COP A2/W35</b> = <c>COP</c> bei <c>Vorlauf = 35</c> und
         ///     <c>Temperatur = 2</c> — die Guetezahl, nach der ein Planer waehlt. Sie
         ///     steht als Kennlinienpunkt da und nirgends als Spalte.</item>
-        ///   <item><b>Kuehlen</b> = <c>Kuehlleistung &gt; 0</c> („Ja"/„Nein", leer zaehlt
-        ///     als Nein) — das Kennzeichen traegt nur den Sortierpfeil (5.6.2).</item>
+        ///   <item><b>Kuehlleistung</b> = <c>Tab_WP_STAMM.Kuehlleistung</c> [kW]. Bis zum
+        ///     16.09.2026 stand hier das Kennzeichen „Kuehlen" (<c>Kuehlleistung &gt; 0</c>,
+        ///     „Ja"/„Nein"); die Zahl sagt dasselbe und nennt die Leistung, und der
+        ///     Schalter „nur mit Kuehlfunktion" setzt sie auf <c>&gt;0</c>.</item>
         /// </list>
         ///
         /// <para><b>Die Bauart fehlt bewusst</b>: 45 von 51 Saetzen fuehren sie leer
@@ -236,7 +238,11 @@ namespace WindowsFormsApplication1
                     .MitZahl(Katalogfilterprofil.SpVlMax,
                              groesster.ContainsKey(id) ? groesster[id] : null, 0)
                     .MitZahl(Katalogfilterprofil.SpZuheizung, Katalogfeld.Zahl(r, "Heizung"), 1)
-                    .MitKennzeichen(Katalogfilterprofil.SpKuehlen, kuehl != null && kuehl.Value > 0)
+                    // 16.09.2026: die KUEHLLEISTUNG als Zahl. Das Kennzeichen „Kuehlen"
+                    // (Kuehlleistung > 0) sagte dasselbe mit weniger Auskunft; ein NICHT
+                    // gepflegter Wert bleibt der Halbgeviertstrich und faellt damit aus
+                    // jedem Bereichsfilter - genau wie bei VL min/max.
+                    .MitZahl(Katalogfilterprofil.SpKuehlleistung, kuehl, 1)
                     .MitZahl(Katalogfilterprofil.SpCop, cop.ContainsKey(id) ? cop[id] : null, 2));
             }
             return liste;

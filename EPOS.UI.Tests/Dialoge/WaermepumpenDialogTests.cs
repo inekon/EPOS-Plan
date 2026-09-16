@@ -47,7 +47,7 @@ public class WaermepumpenDialogTests : EposBunitContext
             .MitZahl(Katalogfilterprofil.SpVlMin, 35, 0)
             .MitZahl(Katalogfilterprofil.SpVlMax, 60, 0)
             .MitZahl(Katalogfilterprofil.SpZuheizung, 9, 1)
-            .MitKennzeichen(Katalogfilterprofil.SpKuehlen, false)
+            .MitZahl(Katalogfilterprofil.SpKuehlleistung, 0.0, 1)
             .MitZahl(Katalogfilterprofil.SpCop, 4.1, 2)
     };
 

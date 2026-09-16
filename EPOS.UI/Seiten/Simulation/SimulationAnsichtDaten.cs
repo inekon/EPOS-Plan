@@ -342,10 +342,18 @@ public sealed class SimulationParameterDienste
     public Func<int, WaermepumpeAnlageDaten?>? WaermepumpeKonfigurationLaden;
 
     /// <summary>
-    /// Schreibt die Anlagendaten zurück (<c>Tab_Energieanlagen.ID</c>, Feldsatz);
-    /// <c>true</c> = geschrieben. Der Aufrufer meldet den Fehlschlag.
+    /// Schreibt die Konfigurationsfelder der Anlage zurück
+    /// (<c>Tab_Energieanlagen.ID</c>, Feldsatz) und meldet das Ergebnis BENANNT.
     /// </summary>
-    public Func<int, WaermepumpeAnlageDaten, bool>? WaermepumpeKonfigurationSpeichern;
+    /// <remarks>
+    /// <para><b>Warum nicht <c>bool</c></b> (bis 16.09.2026): Der Kern lehnt einen
+    /// Schreibversuch mit einem SATZ ab — „Die Anlage 42 wurde nicht gefunden",
+    /// „Die Konfiguration der Anlage konnte nicht gespeichert werden" —, und ein
+    /// <c>false</c> warf ihn weg. Die Seite zeigte dafür ihren eigenen Allgemeinplatz,
+    /// und der Grund stand nirgends. Jetzt reicht die Naht den Wortlaut des Kerns
+    /// durch, und die Seite meldet ihn.</para>
+    /// </remarks>
+    public Func<int, WaermepumpeAnlageDaten, AnlagenkonfigErgebnis>? WaermepumpeKonfigurationSpeichern;
 
     /// <summary>
     /// Der Trägerkatalog der Energieträgerwahl; <c>null</c> = keine Wahl. Er wird
@@ -357,3 +365,17 @@ public sealed class SimulationParameterDienste
     // selbst aus MyResource in der Oberflaechensprache - die Huelle muss nichts
     // beisteuern, und ein Delegat dafuer waere eine Naht ohne Gegenueber.
 }
+
+/// <summary>
+/// Was ein Schreibversuch an der Anlagenkonfiguration ergeben hat — das
+/// plattformfreie Abbild von <c>WErzeugerCtrl.SpeicherErgebnis</c> (16.09.2026).
+/// </summary>
+/// <remarks>
+/// Eine Razor-Seite kennt die Fachklassen des Kerns nicht; der Record trägt deshalb
+/// genau die zwei Angaben, die sie braucht. Den <c>Name</c> des Kern-Ergebnisses führt
+/// er nicht: Der Bezeichner ändert sich auf diesem Weg nie, und die Karte, an der die
+/// Meldung erscheint, trägt ihn ohnehin.
+/// </remarks>
+/// <param name="Ok">Wurde geschrieben?</param>
+/// <param name="Meldung">Der Grund im Klartext, bereits lokalisiert.</param>
+public sealed record AnlagenkonfigErgebnis(bool Ok, string Meldung);

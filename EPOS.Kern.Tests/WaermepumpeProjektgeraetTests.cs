@@ -166,6 +166,51 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die KÜHLLEISTUNG geht denselben Weg</b> (Anwenderentscheid 16.09.2026) —
+        /// sie steht seither im Stammfeldblock des Anlagendialogs und ist dort
+        /// bearbeitbar wie die Nennleistung daneben.
+        /// </summary>
+        /// <remarks>
+        /// <b>Und sie wird UNVERKÜRZT geschrieben.</b> <c>Tab_WP.Kuehlleistung</c> ist
+        /// eine <c>REAL</c>-Spalte; ein <c>int?</c> im Feldsatz hätte 5,5 kW still auf
+        /// 5 kW abgeschnitten. Der Fall prüft genau diese Nachkommastelle.
+        /// </remarks>
+        [Fact]
+        public void ProjektgeraetSchreiben_schreibt_die_Kuehlleistung_als_Kommazahl()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            var e = WPCtrl.ProjektgeraetSchreiben(WP_1006, PROJEKT_1006,
+                new WPCtrl.ProjektgeraetFelder(Kuehlleistung: 5.5));
+            Assert.True(e.Ok, e.Meldung);
+            Assert.Equal(5.5, Kommazahl(Projektsatz(WP_1006), "Kuehlleistung"), 3);
+
+            // Ausgelassen heisst unveraendert - nicht 0.
+            var zweite = WPCtrl.ProjektgeraetSchreiben(WP_1006, PROJEKT_1006,
+                new WPCtrl.ProjektgeraetFelder(Firma: "Ohne Kuehlangabe"));
+            Assert.True(zweite.Ok, zweite.Meldung);
+            Assert.Equal(5.5, Kommazahl(Projektsatz(WP_1006), "Kuehlleistung"), 3);
+        }
+
+        /// <summary>Eine negative Kühlleistung wird benannt abgelehnt, wie jede andere.</summary>
+        [Fact]
+        public void ProjektgeraetSchreiben_lehnt_eine_negative_Kuehlleistung_ab()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            double vorher = Kommazahl(Projektsatz(WP_1009), "Kuehlleistung");
+
+            var e = WPCtrl.ProjektgeraetSchreiben(WP_1009, PROJEKT_1009,
+                new WPCtrl.ProjektgeraetFelder(Kuehlleistung: -1.0));
+
+            Assert.False(e.Ok);
+            Assert.NotEqual("", e.Meldung);
+            Assert.Equal(vorher, Kommazahl(Projektsatz(WP_1009), "Kuehlleistung"), 3);
+        }
+
+        /// <summary>
         /// Eine KATALOG-Id wird benannt abgelehnt: Die Anlagenzeile trägt sie, solange
         /// die Anlage noch nicht gespeichert ist (zweistufige Suche in
         /// <c>WaermepumpeGeraeteCtrl</c>).
@@ -625,5 +670,11 @@ namespace EPOS.Kern.Tests
 
         private static int Zahl(DataRow r, string spalte)
             => r[spalte] == DBNull.Value ? 0 : Convert.ToInt32(r[spalte]);
+
+        /// <summary>Eine REAL-Spalte, invariant gelesen (die Fälle pinnen die Kultur).</summary>
+        private static double Kommazahl(DataRow r, string spalte)
+            => r[spalte] == DBNull.Value
+                ? 0.0
+                : Convert.ToDouble(r[spalte], System.Globalization.CultureInfo.InvariantCulture);
     }
 }

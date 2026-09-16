@@ -130,7 +130,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
                     .MitZahl(Katalogfilterprofil.SpVlMin, 35, 0)
                     .MitZahl(Katalogfilterprofil.SpVlMax, 60, 0)
                     .MitZahl(Katalogfilterprofil.SpZuheizung, 9, 1)
-                    .MitKennzeichen(Katalogfilterprofil.SpKuehlen, false)
+                    .MitZahl(Katalogfilterprofil.SpKuehlleistung, 0.0, 1)
                     .MitZahl(Katalogfilterprofil.SpCop, 4.1, 2)
             })
             .Add(x => x.Katalogprofil, Katalogfilterprofil.Finde(Anlagenart.Waermepumpe))
@@ -229,6 +229,33 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
         Assert.True(ergebnis);
         Assert.Equal(18, daten.Nennleistung);
+    }
+
+    /// <summary>
+    /// <b>Die KÜHLLEISTUNG ist im Anlagendialog bedienbar</b> (Anwenderentscheid
+    /// 16.09.2026) — sie ist eine Spalte der Projektkopie (<c>Tab_WP.Kuehlleistung</c>)
+    /// wie die Nennleistung daneben und geht denselben Weg: in den Feldsatz, mit dem OK
+    /// hinaus, von dort über <c>WPCtrl.ProjektgeraetSchreiben</c> in die Zeile.
+    ///
+    /// <para>In der KATALOGPFLEGE bleibt das Feld ein Lesewert; das prüft
+    /// <c>WaermepumpeStammFelderTests</c>.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Kuehlleistung_ist_bedienbar_und_geht_in_die_Anlagendaten()
+    {
+        var daten = Voll();
+        daten.Kuehlleistung = 4.0;
+        var cut = Aufbauen(daten);
+
+        var felder = cut.FindComponent<WaermepumpeStammFelder>();
+        Assert.True(felder.Instance.KuehlleistungAenderbar);
+        Assert.Equal(4.0, felder.Instance.Daten.Kuehlleistung);
+
+        IElement feld = Feld(cut, "Kühlleistung");
+        Assert.False(feld.HasAttribute("disabled"));
+
+        feld.Input("5,5");
+        Assert.Equal(5.5, daten.Kuehlleistung);
     }
 
     /// <summary>
@@ -351,6 +378,53 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
         // Der Schalter steht da und ist AUS.
         Assert.False(cut.Find(".epos-ueberlagerung input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    /// <summary>
+    /// <b>Der UMBENANNTE Katalogsatz wird beim Namen genannt</b> (Anwenderentscheid
+    /// 16.09.2026, Schemaschritt 80).
+    ///
+    /// <para>Seit die Projektkopie über <c>Tab_WP.ID_Stamm</c> an ihrem Katalogsatz
+    /// hängt, überlebt die Klammer eine Umbenennung im Katalog — überschrieben wird dann
+    /// aber ein Satz, der ANDERS heißt als die Anlage. Stünde dort weiter nur der Name
+    /// der Anlage, suchte der Anwender im Katalog nach einem Satz, den es unter diesem
+    /// Namen nicht mehr gibt.</para>
+    /// </summary>
+    [Fact]
+    public void In_Stamm_uebernehmen_nennt_den_umbenannten_Katalogsatz()
+    {
+        var cut = MitUebernahme(
+            new WaermepumpeUebernahmeVorschau("WP Alpha", true, false, 2, "WP Alpha II"));
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        string text = cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent;
+        Assert.Contains("WP Alpha", text);
+        Assert.Contains("jetzt", text);
+        Assert.Contains("WP Alpha II", text);
+        Assert.Contains("überschrieben", text);
+        Assert.Contains("2 weitere Projekte", text);
+    }
+
+    /// <summary>
+    /// GLEICHER Name heißt: der bisherige Wortlaut. Und ein LEERER
+    /// <c>KatalogBezeichner</c> ist keine Umbenennung, sondern eine Vorschau, die die
+    /// Angabe nicht führt — auch dann bleibt es beim bisherigen Satz.
+    /// </summary>
+    [Theory]
+    [InlineData("WP Alpha")]
+    [InlineData("")]
+    public void Ohne_Umbenennung_bleibt_der_bisherige_Warntext(string katalogname)
+    {
+        var cut = MitUebernahme(
+            new WaermepumpeUebernahmeVorschau("WP Alpha", true, false, 3, katalogname));
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        string text = cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent;
+        Assert.Contains("WP Alpha", text);
+        Assert.Contains("überschrieben", text);
+        Assert.DoesNotContain("jetzt", text);
     }
 
     /// <summary>Ohne Katalogsatz gleichen Namens wird ein neuer angelegt — und das steht da.</summary>
@@ -904,7 +978,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
 
         var block = Konfiguration(cut);
-        Assert.Contains("Elektrische Nachheizung aktivieren (falls vorhanden)", block.TextContent);
+        Assert.Contains("Heizstab mitrechnen", block.TextContent);
         Assert.Contains("Sperrzeit durch Energieversorger", block.TextContent);
         Assert.Contains("Bivalenter Betrieb", block.TextContent);
         Assert.Equal(3, block.QuerySelectorAll(".epos-wp-erklaerung").Length);
@@ -1319,7 +1393,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         var schalter = Konfiguration(cut).QuerySelectorAll(".epos-schalter")
                                          .Select(e => e.TextContent.Trim()).ToList();
 
-        Assert.Contains("Elektrische Nachheizung aktivieren (falls vorhanden)", schalter);
+        Assert.Contains("Heizstab mitrechnen", schalter);
         Assert.Contains("Sperrzeit durch Energieversorger", schalter);
         Assert.Contains("Bivalenter Betrieb", schalter);
     }

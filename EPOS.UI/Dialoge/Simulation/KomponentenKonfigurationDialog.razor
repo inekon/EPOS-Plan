@@ -71,6 +71,16 @@
                                           Texte="@Texte" Aktiv="@(!NurLesen)"
                                           Geaendert="Neugezeichnet" />
             }
+            else
+            {
+                @* BENANNT ABGELEHNT STATT STILL LEER (Hausregel EPOS.UI, „Dienste").
+                   Seit Schemaschritt 79 gibt es bei der Wärmepumpe keinen projektweiten
+                   Wert mehr — ohne die Anlagen-Naht (iOS, Proben, oder eine Kartenzeile
+                   ohne Anlage) bliebe dieser Zweig sonst VOLLSTÄNDIG leer, und der
+                   Anwender stünde vor einem Dialog, der nichts zeigt und nichts sagt.
+                   Das Band IST hier der Inhalt, nicht eine Meldung daneben. *@
+                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@MeldungOhneAnlage" />
+            }
 
             @* 16.09.2026 (Auftrag #299): Hier stand der PROJEKTweite Heizstabschalter
                samt seinen zwei Herleitungszeilen. Der Heizstab gehört seither der
@@ -207,6 +217,15 @@
     // HinweisHeizstabAnlage — die zwei Herleitungszeilen, die den projektweiten vom
     // anlagenbezogenen Heizstabschalter trennten. Es gibt nur noch EINEN, und er steht
     // in der Anlagenkonfiguration; zu trennen ist damit nichts mehr.
+
+    /// <summary>
+    /// SIMKONF_MSG_WP_OHNE_ANLAGE — was der Wärmepumpen-Zweig sagt, wenn er nichts
+    /// zeigen kann: die Plattform stellt die Anlagen-Naht nicht
+    /// (<c>SimulationParameterDienste.WaermepumpeKonfigurationLaden</c> fehlt) oder die
+    /// Kartenzeile führt keine Anlage.
+    /// </summary>
+    [Parameter] public string MeldungOhneAnlage { get; set; }
+        = Resource.SIMKONF_MSG_WP_OHNE_ANLAGE;
 
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;

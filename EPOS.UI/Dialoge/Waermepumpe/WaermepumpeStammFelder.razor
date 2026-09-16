@@ -16,8 +16,13 @@
    MODULKOSTEN STEHEN NUR LESEND DA (Anwenderentscheid W14a-O-1 vom 06.09.2026):
    kein Eingabefeld, sondern ein <span> in der Rasterzelle mit Herleitungszeile
    darunter. Gepflegt werden Geraetekosten in der Kostenverwaltung (Ä19); der Wert
-   im Datensatz wird nur durchgereicht. Dasselbe gilt fuer die Kuehlleistung: Sie
-   kommt aus den Kuehl-Kenndaten und wird hier nur angezeigt.
+   im Datensatz wird nur durchgereicht.
+
+   DIE KUEHLLEISTUNG HAENGT AM WIRT (KuehlleistungAenderbar, 16.09.2026): Im
+   ANLAGENDIALOG bearbeitet der Baustein die Projektkopie, und Tab_WP.Kuehlleistung
+   gehoert der Anlage wie ihre Nennleistung - dort ist das Feld bedienbar. In der
+   KATALOGPFLEGE bleibt es ein Lesewert: Dort kommt die Zahl aus den Kuehl-Kenndaten
+   der Auslieferung, und der Vorlaeufer schrieb sie nie zurueck.
 
    DIE KLAPPLISTEN TRAGEN EINEN BESTANDSWERT MIT (Abweichung A-16): Der Vorlaeufer
    hatte frei beschreibbare ComboBoxen; ein <select> wuerde einen Wert, den die
@@ -59,8 +64,16 @@
         <Ganzzahlfeld Bezeichnung="@Texte.LabelHeizstab" Einheit="@Texte.EinheitKw"
                       Feldname="@Texte.LabelHeizstab" Wert="@Daten.Heizstab"
                       WertChanged="BeiHeizstab" Aktiv="@Aktiv" />
+        @* DIE KUEHLLEISTUNG - nur im ANLAGENDIALOG bearbeitbar (Anwenderentscheid
+           16.09.2026). Dort bearbeitet der Baustein die PROJEKTKOPIE (Tab_WP), und
+           deren Kuehlleistung gehoert der Anlage wie ihre Nennleistung: Ein Geraet,
+           das kuehlen soll, braucht die Zahl im Projekt. In der KATALOGPFLEGE bleibt
+           sie ein Lesewert - dort kommt sie aus den Kuehl-Kenndaten der Auslieferung,
+           und der Vorlaeufer schrieb sie nie zurueck. *@
         <Zahlenfeld Bezeichnung="@Texte.LabelKuehlleistung" Einheit="@Texte.EinheitKw"
-                    Wert="@Daten.Kuehlleistung" Aktiv="false" />
+                    Feldname="@Texte.LabelKuehlleistung" Wert="@Daten.Kuehlleistung"
+                    WertChanged="BeiKuehlleistung"
+                    Aktiv="@(Aktiv && KuehlleistungAenderbar)" />
 
         @* --- Modulkosten, nur lesend (W14a-O-1) --------------------------------
            KEIN EINGABEFELD, sondern ein <span> in der Rasterzelle. Ein gesperrtes
@@ -106,6 +119,17 @@
     /// werden darf.</para>
     /// </summary>
     [Parameter] public bool BezeichnerAenderbar { get; set; } = true;
+
+    /// <summary>
+    /// Darf die KÜHLLEISTUNG geändert werden? (Anwenderentscheid 16.09.2026)
+    ///
+    /// <para><c>true</c> ist der Weg des <c>WaermepumpeAnlageDialog</c>: Dort bearbeitet
+    /// der Baustein die PROJEKTKOPIE, und <c>Tab_WP.Kuehlleistung</c> ist eine ihrer
+    /// Spalten — sie gehört der Anlage wie ihre Nennleistung. <c>false</c> (Vorgabe) ist
+    /// der Weg der Katalogverwaltung: Dort kommt der Wert aus den Kühl-Kenndaten der
+    /// Auslieferung, und der Vorläufer schrieb ihn nie zurück.</para>
+    /// </summary>
+    [Parameter] public bool KuehlleistungAenderbar { get; set; }
 
     /// <summary>Jede Eingabe meldet sich — der Wirt zieht daraufhin Sperren und Knöpfe nach.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
@@ -155,6 +179,13 @@
     private Task BeiBeschreibung(string wert) { Daten.Beschreibung = wert; return Melden(); }
     private Task BeiNennleistung(int? wert)   { Daten.Nennleistung = wert; return Melden(); }
     private Task BeiHeizstab(int? wert)       { Daten.Heizstab = wert;     return Melden(); }
+
+    /// <summary>
+    /// Die Kühlleistung. <c>WaermepumpeStammDaten.Kuehlleistung</c> ist nicht nullbar —
+    /// ein geleertes Feld ist deshalb 0, und 0 heißt hier wie im Katalogfilter „kühlt
+    /// nicht".
+    /// </summary>
+    private Task BeiKuehlleistung(double? wert) { Daten.Kuehlleistung = wert ?? 0; return Melden(); }
 
     private Task BeiTyp(int? index)
     {

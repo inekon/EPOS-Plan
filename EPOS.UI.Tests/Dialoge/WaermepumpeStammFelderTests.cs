@@ -38,11 +38,12 @@ public class WaermepumpeStammFelderTests : EposBunitContext
 
     private IRenderedComponent<WaermepumpeStammFelder> Aufbauen(
         WaermepumpeStammDaten? daten = null, Action? geaendert = null, bool aktiv = true,
-        bool bezeichnerAenderbar = true)
+        bool bezeichnerAenderbar = true, bool kuehlleistungAenderbar = false)
         => Render<WaermepumpeStammFelder>(p => p
             .Add(x => x.Daten, daten ?? Satz())
             .Add(x => x.Aktiv, aktiv)
             .Add(x => x.BezeichnerAenderbar, bezeichnerAenderbar)
+            .Add(x => x.KuehlleistungAenderbar, kuehlleistungAenderbar)
             .Add(x => x.Geaendert, () => geaendert?.Invoke()));
 
     /// <summary>
@@ -71,14 +72,21 @@ public class WaermepumpeStammFelderTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Zwei Werte stehen NUR LESEND da.</b> Die Kühlleistung kommt aus den
-    /// Kühl-Kenndaten; die Modulkosten sind seit W14a‑O‑1 ein Lesewert mit
-    /// Herleitungszeile — gepflegt werden Gerätekosten in der Kostenverwaltung (Ä19).
+    /// <b>Zwei Werte stehen in der KATALOGPFLEGE nur lesend da.</b> Die Kühlleistung
+    /// kommt dort aus den Kühl-Kenndaten der Auslieferung; die Modulkosten sind seit
+    /// W14a‑O‑1 ein Lesewert mit Herleitungszeile — gepflegt werden Gerätekosten in der
+    /// Kostenverwaltung (Ä19).
+    ///
+    /// <para>Der ANLAGENDIALOG setzt seit dem 16.09.2026
+    /// <c>KuehlleistungAenderbar="true"</c>: Dort bearbeitet der Baustein die
+    /// Projektkopie, und <c>Tab_WP.Kuehlleistung</c> gehört der Anlage. Die Vorgabe
+    /// bleibt <c>false</c> — der Katalogweg ändert sich nicht.</para>
     /// </summary>
     [Fact]
     public void Kuehlleistung_und_Modulkosten_sind_nur_lesend()
     {
         var cut = Aufbauen();
+        Assert.False(cut.Instance.KuehlleistungAenderbar);
 
         // Die Kuehlleistung ist das EINZIGE gesperrte Eingabefeld.
         Assert.Single(cut.FindAll("input[disabled]"));
@@ -91,6 +99,35 @@ public class WaermepumpeStammFelderTests : EposBunitContext
         Assert.Contains("€", lesewert.ParentElement!.QuerySelector(".epos-einheit")!.TextContent);
         Assert.Contains(cut.FindAll(".epos-herleitung").Select(e => e.TextContent),
                         t => t.Contains("Kostenverwaltung"));
+    }
+
+    /// <summary>
+    /// <b>Mit <c>KuehlleistungAenderbar</c> ist das Feld bedienbar und schreibt</b> — der
+    /// Weg des Anlagendialogs (Anwenderentscheid 16.09.2026). Es ist dann KEIN gesperrtes
+    /// Feld mehr; die Modulkosten bleiben ein Lesewert.
+    /// </summary>
+    [Fact]
+    public void Mit_KuehlleistungAenderbar_schreibt_das_Feld_in_den_Satz()
+    {
+        int gemeldet = 0;
+        var daten = Satz();
+        var cut = Aufbauen(daten, geaendert: () => gemeldet++, kuehlleistungAenderbar: true);
+
+        Assert.Empty(cut.FindAll("input[disabled]"));
+
+        IElement feld = cut.FindAll("label.epos-feld")
+                           .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim()
+                                       == "Kühlleistung")
+                           .QuerySelector("input")!;
+
+        feld.Input("5,5");
+        Assert.Equal(5.5, daten.Kuehlleistung);
+        Assert.Equal(1, gemeldet);
+
+        // Ein geleertes Feld ist 0 - und 0 heisst „kuehlt nicht" (WaermepumpeStammDaten
+        // fuehrt die Kuehlleistung nicht nullbar).
+        feld.Input("");
+        Assert.Equal(0.0, daten.Kuehlleistung);
     }
 
     /// <summary>Ohne Planwert: der Halbgeviertstrich und die zweite, leise Zeile.</summary>

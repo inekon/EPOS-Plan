@@ -61,6 +61,12 @@ namespace WindowsFormsApplication1
             // - NachModell schriebe sie so zurueck, genau die Falle aus Ä22/Ä23.
             ziel.Aufstellung = quelle.Aufstellung;
             ziel.Heizung = quelle.Heizung;
+
+            // 16.09.2026: Die Kuehlleistung ebenso - sie steht seit dem
+            // Anwenderentscheid im Feldsatz des Anlagendialogs und ist dort
+            // bearbeitbar. Ohne diese Zeile stuende sie leer da, und NachModell
+            // schriebe sie so zurueck (dieselbe Falle wie bei Ä22/Ä23).
+            ziel.Kuehlleistung = quelle.Kuehlleistung;
             return true;
         }
 
@@ -74,7 +80,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <para><b>Warum es diesen Schritt gibt.</b> Die Felder Hersteller, Beschreibung,
-        /// Typ, Regelung, Aufstellung, Baujahr, Nennleistung und Heizstableistung standen
+        /// Typ, Regelung, Aufstellung, Baujahr, Nennleistung, Heizstableistung und
+        /// Kuehlleistung standen
         /// im Waermepumpen-Anlagendialog bis zum 16.09.2026 fuer den KATALOGSATZ. Sie
         /// gehoeren der Anlage dieses Projekts — und der Rechenweg liest genau die Zeile
         /// in <c>Tab_WP</c> (<c>SimulationWaermepumpe.ModuleAufbauen</c>). Der
@@ -115,7 +122,10 @@ namespace WindowsFormsApplication1
                     Aufstellung: quelle.Aufstellung ?? "",
                     Baujahr: quelle.Baujahr,
                     Nennleistung: quelle.Nennleistung,
-                    Heizung: (int)Math.Round(quelle.Heizung)));
+                    Heizung: (int)Math.Round(quelle.Heizung),
+                    // 16.09.2026: unverkuerzt - Tab_WP.Kuehlleistung ist REAL, und
+                    // der Anlagendialog laesst sie als Kommazahl eingeben.
+                    Kuehlleistung: quelle.Kuehlleistung));
 
             return ergebnis.Ok ? null : ergebnis.Meldung;
         }

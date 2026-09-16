@@ -343,11 +343,17 @@ namespace EPOS.Kern.Tests
             Assert.True(brennwert.Sortierbar);
             Assert.False(brennwert.Filterbar);
 
-            Katalogspalte kuehlen =
+            // DIE WAERMEPUMPE FUEHRT SEIT DEM 16.09.2026 KEINE KENNZEICHENSPALTE MEHR:
+            // Aus dem Ja/Nein „Kuehlen" ist die Zahlenspalte „Kuehlleistung [kW]"
+            // geworden - sie sagt dasselbe und nennt die Leistung, und sie traegt
+            // deshalb einen Trichter. Das schnelle Ja/Nein steht als Schalter
+            // „nur mit Kuehlfunktion" ueber der Liste.
+            Katalogspalte kuehlleistung =
                 Katalogfilterprofil.Finde(Anlagenart.Waermepumpe)
-                                   .Spalte(Katalogfilterprofil.SpKuehlen);
-            Assert.Equal(Katalogspaltenart.JaNein, kuehlen.Art);
-            Assert.False(kuehlen.Filterbar);
+                                   .Spalte(Katalogfilterprofil.SpKuehlleistung);
+            Assert.Equal(Katalogspaltenart.Zahl, kuehlleistung.Art);
+            Assert.True(kuehlleistung.Filterbar);
+            Assert.Equal("kW", kuehlleistung.Einheit);
         }
 
         /// <summary>Zahlenspalten stehen rechtsbuendig und tragen ihre Einheit im Kopf.</summary>
@@ -483,9 +489,11 @@ namespace EPOS.Kern.Tests
                 (Katalogfilterprofil.SpNennleistung, "5..12"),
                 (Katalogfilterprofil.SpVlMax, ">=60")));
 
-            // 15 von 51 Saetzen tragen eine Kuehlleistung > 0 (Anhang A).
-            Assert.Equal(15, zeilen.Count(z => z.Text(Katalogfilterprofil.SpKuehlen) ==
-                                               WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_JA));
+            // 15 von 51 Saetzen tragen eine Kuehlleistung > 0 (Anhang A) - und genau die
+            // trifft der Schalter „nur mit Kuehlfunktion", weil er nichts anderes tut,
+            // als den Ausdruck ">0" in diese Spalte zu legen.
+            Assert.Equal(15, Treffer(profil, zeilen,
+                (Katalogfilterprofil.SpKuehlleistung, Katalogfilterprofil.AUSDRUCK_MIT_KUEHLUNG)));
         }
 
         /// <summary>
@@ -553,7 +561,9 @@ namespace EPOS.Kern.Tests
             // Bauart: 45 von 51 leer.
             Assert.Equal(45, alt.Count(z => string.IsNullOrWhiteSpace(z.Bauart)));
 
-            // Auslegung == Spalte "Kuehlen": dieselbe Menge, Satz fuer Satz.
+            // Auslegung == Spalte "Kuehlleistung > 0": dieselbe Menge, Satz fuer Satz.
+            // Seit dem 16.09.2026 steht dort die ZAHL statt des Kennzeichens „Kuehlen";
+            // die Aussage ist unveraendert dieselbe (Kuehlleistung > 0).
             var mitKuehlung = alt
                 .Where(z => z.Auslegung == WaermepumpenKatalogZeile.AUSLEGUNG_HEIZEN_KUEHLEN)
                 .Select(z => z.Bezeichnung)
@@ -561,8 +571,7 @@ namespace EPOS.Kern.Tests
                 .ToList();
 
             var spalteJa = new WPStammCtrl().Katalogfilterzeilen()
-                .Where(z => z.Text(Katalogfilterprofil.SpKuehlen) ==
-                            WindowsFormsApplication1.MyResource.Resource.ALLG_BTN_JA)
+                .Where(z => z.Zahl(Katalogfilterprofil.SpKuehlleistung) > 0)
                 .Select(z => z.Bezeichner)
                 .OrderBy(x => x, StringComparer.Ordinal)
                 .ToList();

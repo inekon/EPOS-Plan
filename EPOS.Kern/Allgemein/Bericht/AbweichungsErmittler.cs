@@ -20,11 +20,43 @@ namespace WindowsFormsApplication1
             public string Gewerk;      // Anzeigegruppe ("Anlage", "Wärmepumpe", …)
             public string Tabelle;     // Quelltabelle (projektbezogen, siehe ProjektDetails)
             public string Spalte;      // Spaltenname (tolerant — fehlt sie, wird übersprungen)
-            public string Label;       // Anzeigename
             public string Einheit;     // "" wenn keine
             public int Dez;            // Nachkommastellen (-1 = Text, -2 = Ja/Nein)
-            public Merkmal(string gewerk, string tabelle, string spalte, string label, string einheit, int dez)
-            { Gewerk = gewerk; Tabelle = tabelle; Spalte = spalte; Label = label; Einheit = einheit; Dez = dez; }
+
+            private readonly string _labelSchluessel;   // "" = fester deutscher Text
+            private readonly string _labelRueckfall;
+
+            /// <summary>
+            /// Der Anzeigename.
+            ///
+            /// <para><b>Warum eine Eigenschaft und kein Feld.</b> <see cref="Felder"/> ist
+            /// eine <c>static readonly</c>-Liste: Ein Ressourcentext, den der Feldinitialisierer
+            /// läse, wäre in der Sprache eingefroren, die beim ERSTEN Zugriff auf die Klasse
+            /// galt — ein Sprachwechsel zur Laufzeit ginge an ihm vorbei (Kulturpinnung). Die
+            /// Eigenschaft liest ihn bei jedem Zugriff, mit dem deutschen Wortlaut als
+            /// Rückfall. Wer keinen Schlüssel angibt, bekommt den Text, den er hineingegeben
+            /// hat — so stehen die übrigen 50 Merkmale unverändert da.</para>
+            /// </summary>
+            public string Label
+            {
+                get
+                {
+                    if (string.IsNullOrEmpty(_labelSchluessel)) return _labelRueckfall;
+                    string t = null;
+                    try { t = MyResource.Resource.ResourceManager.GetString(_labelSchluessel); }
+                    catch { }
+                    return string.IsNullOrEmpty(t) ? _labelRueckfall : t;
+                }
+            }
+
+            public Merkmal(string gewerk, string tabelle, string spalte, string label,
+                           string einheit, int dez, string labelSchluessel = "")
+            {
+                Gewerk = gewerk; Tabelle = tabelle; Spalte = spalte;
+                Einheit = einheit; Dez = dez;
+                _labelRueckfall = label ?? "";
+                _labelSchluessel = labelSchluessel ?? "";
+            }
         }
 
         public const int TEXT = -1;
@@ -52,7 +84,14 @@ namespace WindowsFormsApplication1
             new Merkmal("Anlage", "Tab_Energieanlagen", "Rücklauf",           "Rücklauftemperatur", "°C", 0),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Bivalenter_Betrieb", "Bivalenter Betrieb", "", JN),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Abschaltpunkt",      "Abschaltpunkt", "°C", 1),
-            new Merkmal("Anlage", "Tab_Energieanlagen", "Heizstab",           "Heizstab", "", JN),
+            // 16.09.2026: Der Schalter heisst „Heizstab mitrechnen" und gehoert seit
+            // Schemaschritt 79 der ANLAGE - der Lauf liest ihn je Waermepumpe
+            // (SimulationWaermepumpe.ModuleAufbauen), die projektweite Einstellung
+            // Tab_Einstellungen.WP_Heizstab ist entfallen. Das blosse „Heizstab" las
+            // sich wie die LEISTUNG des Heizstabs (Tab_WP.Heizung, weiter unten);
+            // die Spalte und damit der Rechenweg bleiben unberuehrt.
+            new Merkmal("Anlage", "Tab_Energieanlagen", "Heizstab",           "Heizstab mitrechnen", "", JN,
+                        "ABW_MERKMAL_HEIZSTAB"),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Grenzleistung",      "Grenzleistung", "kW", 1),
             new Merkmal("Anlage", "Tab_Energieanlagen", "PV_Leistung",        "PV-Leistung", "kWp", 1),
             new Merkmal("Anlage", "Tab_Energieanlagen", "Neigung",            "Neigung", "°", 0),

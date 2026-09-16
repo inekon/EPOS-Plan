@@ -41,14 +41,14 @@ public class WaermepumpeStammDialogTests : EposBunitContext
             .MitText(Katalogfilterprofil.SpQuelle, "Luft-Wasser")
             .MitZahl(Katalogfilterprofil.SpNennleistung, 12.0)
             .MitZahl(Katalogfilterprofil.SpVlMax, 55.0, 0)
-            .MitKennzeichen(Katalogfilterprofil.SpKuehlen, true),
+            .MitZahl(Katalogfilterprofil.SpKuehlleistung, 6.5, 1),
         new Katalogfilterzeile(2, "WP Ausliefer") { Geschuetzt = true }
             .MitText(Katalogfilterprofil.SpHersteller, "Beta")
             .MitText(Katalogfilterprofil.SpBezeichner, "WP Ausliefer")
             .MitText(Katalogfilterprofil.SpQuelle, "Sole-Wasser")
             .MitZahl(Katalogfilterprofil.SpNennleistung, 20.0)
             .MitZahl(Katalogfilterprofil.SpVlMax, 65.0, 0)
-            .MitKennzeichen(Katalogfilterprofil.SpKuehlen, false)
+            .MitZahl(Katalogfilterprofil.SpKuehlleistung, 0.0, 1)
     };
 
     public WaermepumpeStammDialogTests()
@@ -223,15 +223,17 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     /// <b>Die Stammliste trägt seit W14a‑E‑10 die NEUN Spalten des Profils</b>
     /// (Konzept 4.3) — bis dahin eine Namensspalte, während der einzige
     /// vollständige Filter des Hauses in einer Überlagerung saß (Befund 1.2/4).
-    /// „Kühlen" ist ein Kennzeichen und trägt deshalb nur den Sortierpfeil.
+    /// Seit dem 16.09.2026 tragen ALLE NEUN einen Trichter: Aus dem Kennzeichen
+    /// „Kühlen" (Ja/Nein, nur Sortierpfeil) ist die Zahlenspalte „Kühlleistung [kW]"
+    /// geworden.
     /// </summary>
     [Fact]
-    public void Die_Stammliste_zeigt_die_neun_Spalten_und_acht_Trichter()
+    public void Die_Stammliste_zeigt_die_neun_Spalten_und_neun_Trichter()
     {
         var cut = Aufbauen();
 
         Assert.Equal(9, cut.FindAll(".epos-spaltenkopf").Count);
-        Assert.Equal(8, cut.FindAll(".epos-trichter").Count);
+        Assert.Equal(9, cut.FindAll(".epos-trichter").Count);
         Assert.Single(cut.FindAll(".epos-katalog-suchzeile"));
     }
 

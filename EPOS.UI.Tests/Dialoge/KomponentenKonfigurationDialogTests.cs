@@ -33,10 +33,21 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
         Bereitschaft = 8000
     };
 
+    /// <summary>
+    /// Der Hilfedienst wird EINMAL je Prüfstand eingelegt — bunit lässt keine
+    /// Dienstregistrierung mehr zu, sobald die erste Komponente gezeichnet ist, und
+    /// ein Fall, der zwei Arten nacheinander zeigt, bräuchte sie sonst zweimal.
+    /// </summary>
+    private bool _hilfeEingelegt;
+
     private IRenderedComponent<KomponentenKonfigurationDialog> Zeige(
         Komponentenart art, WaermepumpeAnlageDaten? anlage = null, bool titel = false)
     {
-        Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+        if (!_hilfeEingelegt)
+        {
+            Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
+            _hilfeEingelegt = true;
+        }
 
         return Render<KomponentenKonfigurationDialog>(p =>
         {
@@ -110,21 +121,43 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
     /// <c>SimulationWaermepumpe.ModuleAufbauen</c>); es gibt keinen projektweiten Wert
     /// mehr, den dieser Dialog ohne Anlagendaten zeigen könnte.</para>
     ///
-    /// <para><b>Der leere Zweig ist Absicht und kein Versehen</b>: Wo die Plattform
-    /// die Naht zur Anlage nicht stellt (iOS, Proben) oder die Kartenzeile keine
-    /// Anlage führt, gibt es nichts zu konfigurieren. Wie die Ansicht das sagt,
-    /// entscheidet der Umbau der Oberfläche.</para>
+    /// <para><b>Und er bleibt nicht stumm</b> (16.09.2026): Wo die Plattform die Naht
+    /// zur Anlage nicht stellt (iOS, Proben) oder die Kartenzeile keine Anlage führt,
+    /// steht eine BENANNTE Meldung statt eines leeren Dialogkörpers — „was eine
+    /// Plattform nicht kann, wird benannt abgelehnt, nie still übergangen".</para>
     /// </summary>
     [Fact]
-    public void Die_Waermepumpe_zeigt_ohne_Anlage_keinen_Schalter()
+    public void Die_Waermepumpe_meldet_ohne_Anlage_die_fehlende_Naht()
     {
         var cut = Zeige(Komponentenart.Waermepumpe);
 
         Assert.Empty(cut.FindComponents<WaermepumpeKonfiguration>());
         Assert.Empty(cut.FindAll("input[type=checkbox]"));
 
-        // Die Schlussleiste steht trotzdem - der Dialog ist offen, nur leer.
+        // Kein leerer Koerper: die Meldung IST hier der Inhalt.
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_WP_OHNE_ANLAGE,
+                     cut.Find(".epos-warnbanner-text").TextContent.Trim());
+        Assert.Contains("nicht verfügbar", cut.Markup);
+
+        // Die Schlussleiste steht trotzdem - der Dialog ist offen.
         Assert.Equal(2, cut.FindAll("div.epos-leiste button").Count);
+    }
+
+    /// <summary>
+    /// Die Meldung steht NUR bei der Wärmepumpe ohne Anlage — Heizkessel und BHKW
+    /// führen projektweite Werte und brauchen keine Naht.
+    /// </summary>
+    [Fact]
+    public void Die_Meldung_steht_nur_im_Waermepumpenzweig()
+    {
+        string meldung = WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_WP_OHNE_ANLAGE;
+
+        Assert.DoesNotContain(meldung, Zeige(Komponentenart.Heizkessel).Markup);
+        Assert.DoesNotContain(meldung, Zeige(Komponentenart.Bhkw).Markup);
+
+        var mitAnlage = Zeige(Komponentenart.Waermepumpe,
+                              new WaermepumpeAnlageDaten { Bezeichner = "WP 1" });
+        Assert.DoesNotContain(meldung, mitAnlage.Markup);
     }
 
     /// <summary>
@@ -141,8 +174,9 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
         Assert.NotNull(cut.FindComponent<WaermepumpeKonfiguration>());
 
         // GENAU EIN Heizstabschalter - der der Anlage (Auftrag #299). Der zweite,
-        // projektweite ist mit dem Entscheid entfallen.
-        Assert.Contains("Elektrische Nachheizung", cut.Markup);
+        // projektweite ist mit dem Entscheid entfallen, und der verbliebene heisst
+        // seither "Heizstab mitrechnen", weil er der ist, den der Lauf liest.
+        Assert.Contains("Heizstab mitrechnen", cut.Markup);
     }
 
     /// <summary>

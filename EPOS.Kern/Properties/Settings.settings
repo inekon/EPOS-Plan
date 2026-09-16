@@ -29,5 +29,8 @@
     <Setting Name="WordPressUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">https://wiki.epos-plan.de</Value>
     </Setting>
+    <Setting Name="EinstellungenUebernommen" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

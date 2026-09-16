@@ -106,6 +106,8 @@ namespace WindowsFormsApplication1
         [STAThread]
         static void Main()
         {
+            EinstellungenUebernehmen();
+
             SpeicherFlottenProjektCtrl.PlanerFactory = () => new SpeicherPlanung.OrToolsFlottenPlaner();
 
             // DIE DIENSTE VOR ALLEM ANDEREN (Umsetzungskonzept iU5).
@@ -329,6 +331,51 @@ namespace WindowsFormsApplication1
             Application.Run(rahmen);
 
             Application.Exit();
+        }
+
+        /// <summary>
+        /// DIE BENUTZEREINSTELLUNGEN DER VORHERIGEN PROGRAMMVERSION UEBERNEHMEN —
+        /// genau EINMAL je Fassung, beim ersten Start (16.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum es diesen Aufruf braucht.</b> Die neun Einstellungen in
+        /// <c>Properties.Settings</c> (Datenbankpfad und -name, Import-/Exportpfade,
+        /// VDI-3805-Pfad, PVGIS- und Geokodierungs-URL, Wiki-Adresse) haben alle den
+        /// Gueltigkeitsbereich <b>User</b>. .NET legt sie in einer
+        /// <c>user.config</c> ab, deren Pfad die ASSEMBLYVERSION enthaelt — bei
+        /// 1.2.0.1 ein anderer Ordner als bei 1.2.0.2. Ohne diesen Aufruf faende
+        /// das Programm nach jedem Update eine leere Ablage vor und fiele auf die
+        /// Vorgaben zurueck: Der Anwender haette seinen eingestellten
+        /// Datenbankpfad verloren, und das ist kein kosmetischer Verlust.</para>
+        ///
+        /// <para><b>Warum ein eigener Schalter und keine Abfrage auf „leer".</b>
+        /// <c>Upgrade()</c> ist nicht kostenlos (es sucht die Ablagen aelterer
+        /// Fassungen ab) und darf eine SPAETERE Aenderung des Anwenders nicht wieder
+        /// ueberschreiben. Der Schalter <c>EinstellungenUebernommen</c> steht selbst
+        /// in derselben user.config: In einer frischen Ablage ist er
+        /// <c>false</c> — also genau dann, wenn die Uebernahme ansteht —, und nach
+        /// dem <c>Save()</c> ist er es nie wieder. Ein leerer Pfad taugte nicht als
+        /// Kennzeichen: Er kann auch die bewusste Wahl des Anwenders sein.</para>
+        ///
+        /// <para><b>Vor allem anderen</b>, denn <c>DataRepository</c> liest
+        /// <c>DBPath</c> und <c>DBName</c> beim ersten Datenbankzugriff. Ein
+        /// Fehlschlag wird geschluckt: Der Verlust der Einstellungen ist aergerlich,
+        /// ein Programm, das deshalb gar nicht startet, waere schlimmer.</para>
+        /// </remarks>
+        private static void EinstellungenUebernehmen()
+        {
+            try
+            {
+                if (Properties.Settings.Default.EinstellungenUebernommen) return;
+
+                Properties.Settings.Default.Upgrade();
+                Properties.Settings.Default.EinstellungenUebernommen = true;
+                Properties.Settings.Default.Save();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Einstellungen konnten nicht uebernommen werden: " + ex.Message);
+            }
         }
 
         /// <summary>

@@ -77,10 +77,22 @@ public sealed record KennlinienBilder(byte[]? Cop, byte[]? Leistung,
 /// <param name="KatalogsatzVorhanden">Steht im Katalog bereits ein Satz gleichen Namens?</param>
 /// <param name="ReadOnly">Ist dieser Katalogsatz ein Auslieferungssatz? Dann kein Übernehmen.</param>
 /// <param name="AnzahlProjekteMitKopie">Wie viele ANDERE Projekte führen eine eigene Kopie?</param>
+/// <param name="KatalogBezeichner">
+/// Der Name des VERKNÜPFTEN Katalogsatzes (<c>Tab_WP.ID_Stamm</c>, Schemaschritt 80);
+/// leer, wenn es keinen gibt.
+///
+/// <para>Er ist normalerweise gleich <paramref name="Bezeichner"/> — aber eben nur
+/// normalerweise: Wer den Katalogsatz umbenannt hat, bekommt hier den NEUEN Namen und im
+/// Bezeichner den der Projektkopie. Der Dialog sagt dann „Katalogsatz ‚Alt' (jetzt
+/// ‚Neu')", statt eine Überschreibung anzukündigen, deren Ziel der Anwender im Katalog
+/// nicht wiederfände. Die Vorbelegung lässt die Aufrufer unverändert, die die Frage
+/// nicht stellen.</para>
+/// </param>
 public sealed record WaermepumpeUebernahmeVorschau(string Bezeichner,
                                                    bool KatalogsatzVorhanden,
                                                    bool ReadOnly,
-                                                   int AnzahlProjekteMitKopie);
+                                                   int AnzahlProjekteMitKopie,
+                                                   string KatalogBezeichner = "");
 
 /// <summary>
 /// Der Feldsatz des Wärmepumpen-Stammdialogs — das plattformfreie Abbild von

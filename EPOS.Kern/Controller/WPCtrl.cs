@@ -189,6 +189,15 @@ namespace WindowsFormsApplication1
         /// <param name="Baujahr">Baujahr.</param>
         /// <param name="Nennleistung">Nennleistung [kW].</param>
         /// <param name="Heizung">Leistung des Heizstabs [kW] (Spalte <c>Tab_WP.Heizung</c>).</param>
+        /// <param name="Kuehlleistung">
+        /// Kuehlleistung [kW] (Spalte <c>Tab_WP.Kuehlleistung</c>, <c>REAL</c>).
+        ///
+        /// <para><b>Sie ist eine KOMMAZAHL und keine ganze</b> — anders als Nennleistung
+        /// und Heizstableistung, die als <c>INTEGER</c> stehen. Ein <c>int?</c> an dieser
+        /// Stelle schnitte 5,5 kW auf 5 kW ab, und zwar still; die Uebernahme in den
+        /// Katalog (<see cref="WPStammCtrl.UebernehmenAusProjekt"/>) traegt die Spalte
+        /// unveraendert mit.</para>
+        /// </param>
         public sealed record ProjektgeraetFelder(string Firma = null,
                                                  string Beschreibung = null,
                                                  string Typ = null,
@@ -196,7 +205,8 @@ namespace WindowsFormsApplication1
                                                  string Aufstellung = null,
                                                  int? Baujahr = null,
                                                  int? Nennleistung = null,
-                                                 int? Heizung = null);
+                                                 int? Heizung = null,
+                                                 double? Kuehlleistung = null);
 
         /// <summary>Das kleinste zulaessige Baujahr.</summary>
         public const int BAUJAHR_KLEINSTES = 1900;
@@ -220,7 +230,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <para><b>Warum nicht in den Katalog.</b> Die Felder Hersteller, Beschreibung,
-        /// Typ, Regelung, Aufstellung, Baujahr, Nennleistung und Heizstableistung standen
+        /// Typ, Regelung, Aufstellung, Baujahr, Nennleistung, Heizstableistung und
+        /// Kuehlleistung standen
         /// im Anlagendialog bisher fuer den KATALOGSATZ. Wer sie dort aenderte, aenderte
         /// sie fuer jedes andere Projekt mit. Sie gehoeren zur Anlage dieses Projekts —
         /// also in <c>Tab_WP</c>, und der Rechenweg liest genau diese Zeile
@@ -255,7 +266,8 @@ namespace WindowsFormsApplication1
             {
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT ID, Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, " +
-                    "Nennleistung, Heizung, Regelung FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
+                    "Nennleistung, Heizung, Regelung, Kuehlleistung " +
+                    "FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
                     new DbParam("@id", idWp), new DbParam("@proj", idProjekt));
 
                 if (dt == null || dt.Rows.Count == 0)
@@ -270,8 +282,8 @@ namespace WindowsFormsApplication1
 
                 bool ok = DataRepository.ExecuteSQL(
                     "UPDATE Tab_WP SET Firma = ?, Beschreibung = ?, Typ = ?, Regelung = ?, " +
-                    "Aufstellung = ?, Baujahr = ?, Nennleistung = ?, Heizung = ? " +
-                    "WHERE ID = ? AND ID_Projekt = ?",
+                    "Aufstellung = ?, Baujahr = ?, Nennleistung = ?, Heizung = ?, " +
+                    "Kuehlleistung = ? WHERE ID = ? AND ID_Projekt = ?",
                     new DbParam("@fir", Uebernommen(felder.Firma, satz, "Firma")),
                     new DbParam("@bes", Uebernommen(felder.Beschreibung, satz, "Beschreibung")),
                     new DbParam("@typ", Uebernommen(felder.Typ, satz, "Typ")),
@@ -280,6 +292,7 @@ namespace WindowsFormsApplication1
                     new DbParam("@bau", Uebernommen(felder.Baujahr, satz, "Baujahr")),
                     new DbParam("@nen", Uebernommen(felder.Nennleistung, satz, "Nennleistung")),
                     new DbParam("@hei", Uebernommen(felder.Heizung, satz, "Heizung")),
+                    new DbParam("@kue", Uebernommen(felder.Kuehlleistung, satz, "Kuehlleistung")),
                     new DbParam("@id", idWp),
                     new DbParam("@proj", idProjekt));
 
@@ -365,6 +378,9 @@ namespace WindowsFormsApplication1
             if (f.Heizung.HasValue && f.Heizung.Value < 0)
                 return Negativ(Text("WPS_LBL_HEIZSTAB", "Heizstab"));
 
+            if (f.Kuehlleistung.HasValue && f.Kuehlleistung.Value < 0)
+                return Negativ(Text("WPS_LBL_KUEHLLEISTUNG", "Kühlleistung"));
+
             if (f.Baujahr.HasValue &&
                 (f.Baujahr.Value < BAUJAHR_KLEINSTES || f.Baujahr.Value > BaujahrGroesstes))
                 return string.Format(
@@ -387,6 +403,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die neue Zahl, sonst der gelesene Wert (<c>NULL</c> bleibt <c>NULL</c>).</summary>
         private static object Uebernommen(int? neu, DataRow satz, string spalte)
+            => neu.HasValue ? (object)neu.Value : Spaltenwert(satz, spalte);
+
+        /// <summary>Die neue Kommazahl, sonst der gelesene Wert (<c>NULL</c> bleibt <c>NULL</c>).</summary>
+        private static object Uebernommen(double? neu, DataRow satz, string spalte)
             => neu.HasValue ? (object)neu.Value : Spaltenwert(satz, spalte);
 
         /// <summary>Der rohe Spaltenwert; fehlende Spalte und <c>null</c> ergeben <c>DBNull</c>.</summary>

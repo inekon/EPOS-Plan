@@ -75,6 +75,27 @@
         }
     </div>
 
+    @* "NUR MIT KUEHLFUNKTION" (Anwenderentscheid 16.09.2026). Der Schalter ist kein
+       zweiter Filtermechanismus, sondern eine ABKUERZUNG in den vorhandenen: Er legt
+       in den Katalogfilterstand denselben Ausdruck ">0" auf die Spalte Kuehlleistung,
+       den ein Anwender von Hand in ihren Trichter schriebe. Folgen, die genau deshalb
+       stimmen: Der Trichter im Spaltenkopf steht gefuellt da, die Trefferzahl zaehlt
+       richtig, "Filter zuruecksetzen" nimmt ihn mit zurueck, und der Stand ueberlebt
+       die Sitzung wie jeder andere (Katalogfilterregister).
+
+       WARUM UEBERHAUPT EIN SCHALTER, wo es den Trichter gibt: "Kuehlen ja/nein" ist
+       die eine Frage, die ein Planer bei der Waermepumpe IMMER zuerst stellt - dafuer
+       einen Zahlenausdruck zu tippen, waere ein Umweg. Umgekehrt trug die abgeloeste
+       Kennzeichenspalte "Kuehlen" gar keinen Trichter (5.6.2) und war deshalb
+       ueberhaupt nicht filterbar. *@
+    @* KEINE EIGENE STILREGEL: Die Zeile ist eine „epos-leiste" wie jede andere
+       waagerechte Reihe des Hauses - ein eigener Klassenname waere eine Regel mehr im
+       Stilblatt fuer dieselbe Anordnung. *@
+    <div class="epos-leiste">
+        <Schalter Bezeichnung="@SchalterNurKuehlung" Wert="@NurMitKuehlung"
+                  WertChanged="NurMitKuehlungGesetzt" />
+    </div>
+
     @* DIE EINE KATALOGLISTE - Suchzeile, Trefferzahl, Spaltenkoepfe mit
        Sortierpfeil und Trichter. Dasselbe Bild wie im Heizkessel- und im
        PV-Katalog; das ist der Entscheid. *@
@@ -156,6 +177,11 @@
     /// <summary>Kopf der Wahlspalte — dasselbe Wort in allen Katalogdialogen.</summary>
     [Parameter] public string SpalteWahl { get; set; } = Resource.KFAK_SP_WAHL;
 
+    /// <summary>
+    /// WPK_CHK_NUR_KUEHLUNG — der Schnellfilter über der Liste (16.09.2026).
+    /// </summary>
+    [Parameter] public string SchalterNurKuehlung { get; set; } = Resource.WPK_CHK_NUR_KUEHLUNG;
+
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_WPFilterAuswahl.btn_Help";
 
@@ -181,6 +207,27 @@
 
     /// <summary>Der Filterzustand der Liste — Prüfhilfe für die Tests.</summary>
     public Katalogfilterstand Filterstand => _filterstand;
+
+    /// <summary>
+    /// Steht „nur mit Kühlfunktion"? <b>Der Schalter führt keinen eigenen Zustand</b> —
+    /// er LIEST den Filterstand. Sonst gäbe es zwei Wahrheiten darüber, ob gefiltert
+    /// wird: „Filter zurücksetzen" und der Trichter der Spalte ändern denselben Stand,
+    /// und ein zweites <c>bool</c> daneben stünde danach falsch.
+    /// </summary>
+    public bool NurMitKuehlung
+        => _filterstand.Ausdruck(Katalogfilterprofil.SpKuehlleistung) ==
+           Katalogfilterprofil.AUSDRUCK_MIT_KUEHLUNG;
+
+    /// <summary>
+    /// Der Schalter setzt bzw. nimmt den Ausdruck <c>&gt;0</c> auf der Spalte
+    /// Kühlleistung — leerer Text heißt im <see cref="Katalogfilterstand"/> „kein
+    /// Filter". Ein von Hand getippter ANDERER Ausdruck derselben Spalte (etwa
+    /// <c>&gt;=5</c>) wird dabei überschrieben; das ist gewollt, denn der Schalter sagt,
+    /// was danach gilt.
+    /// </summary>
+    private void NurMitKuehlungGesetzt(bool wert)
+        => _filterstand.Setzen(Katalogfilterprofil.SpKuehlleistung,
+                               wert ? Katalogfilterprofil.AUSDRUCK_MIT_KUEHLUNG : "");
 
     protected override void OnInitialized()
     {

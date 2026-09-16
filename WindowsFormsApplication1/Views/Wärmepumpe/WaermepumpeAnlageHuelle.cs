@@ -176,6 +176,8 @@ namespace WindowsFormsApplication1
                     "Der Katalogsatz „{0}“ wird mit den Werten dieser Anlage überschrieben. {1} weitere Projekte führen bereits eine Kopie — sie ändern sich nicht."),
                 ["UebernahmeTextNeu"] = Text_("WPA_UEB_TEXT_NEU",
                     "Es gibt keinen Katalogsatz „{0}“. Er wird neu angelegt."),
+                ["UebernahmeTextUmbenannt"] = Text_("WPA_UEB_TEXT_UMBENANNT",
+                    "Der Katalogsatz „{0}“ (jetzt „{1}“) wird mit den Werten dieser Anlage überschrieben. {2} weitere Projekte führen bereits eine Kopie — sie ändern sich nicht."),
                 ["UebernahmeSchalterKennlinien"] = Text_("WPA_UEB_CHK_KENNLINIEN",
                     "Kennlinien mitübernehmen (ersetzt Wärme- und Kühlkennlinien des Katalogsatzes)"),
                 ["UebernahmeOkText"] = Text_("WPA_UEB_BTN_OK", "Übernehmen"),
@@ -325,7 +327,10 @@ namespace WindowsFormsApplication1
                 WPStammCtrl.UebernahmeVorschau(idWp, projektId);
 
             return new WaermepumpeUebernahmeVorschau(
-                s.Bezeichner, s.KatalogsatzVorhanden, s.ReadOnly, s.AnzahlProjekteMitKopie);
+                s.Bezeichner, s.KatalogsatzVorhanden, s.ReadOnly, s.AnzahlProjekteMitKopie,
+                // Schemaschritt 80: der HEUTIGE Name des verknuepften Katalogsatzes. Er
+                // weicht ab, wenn der Satz umbenannt wurde - dann sagt der Dialog beides.
+                s.KatalogBezeichner ?? "");
         }
 
         /// <summary>
@@ -500,6 +505,12 @@ namespace WindowsFormsApplication1
                 Aufstellung = m.Aufstellung ?? "",
                 Firma = m.Firma ?? "",
                 Nennleistung = m.Nennleistung,
+
+                // 16.09.2026: Die Kuehlleistung der PROJEKTKOPIE steht seither im
+                // Feldsatz und ist im Stammfeldblock bearbeitbar - wie die
+                // Nennleistung daneben. Sie ist eine Kommazahl (Tab_WP.Kuehlleistung
+                // ist REAL); ein int schnitte 5,5 kW still auf 5 kW.
+                Kuehlleistung = m.Kuehlleistung,
                 Modulkosten = m.Modulkosten,
                 Volumen = m.Volumen,
                 Solaranteil = m.Solaranteil,
@@ -556,6 +567,10 @@ namespace WindowsFormsApplication1
             m.Firma = d.Firma;
             m.Typ = d.Typ;
             m.Aufstellung = d.Aufstellung;
+
+            // Leer laesst den bisherigen Wert stehen - ein Aufrufer, der die
+            // Kuehlleistung gar nicht fuehrt (Pruefstand), soll sie nicht nullen.
+            if (d.Kuehlleistung.HasValue) m.Kuehlleistung = d.Kuehlleistung.Value;
         }
 
         private static string Text_(string schluessel, string rueckfall)
