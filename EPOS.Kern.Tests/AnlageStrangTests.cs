@@ -405,6 +405,94 @@ namespace EPOS.Kern.Tests
             WechselrichterLoeschen(geraet);
         }
 
+
+        /// <summary>
+        /// <b>Das HEUTIGE Verhalten, wenn die Strangliste des Dialogs nicht geschrieben
+        /// werden kann</b> (Block ST1 in <c>WizardCtrl.Add_WP_Waermeerzeuger</c>,
+        /// „BEST EFFORT wie die Nachbarn").
+        ///
+        /// <para><b>Der Fall hält fest, was ist — er fordert nichts.</b>
+        /// <c>AnlageStrangCtrl.SchreibenJeAnlage</c> fängt jeden Datenbankfehler selbst
+        /// ab und meldet ihn über den RÜCKGABEWERT; der Speicherlauf wertet ihn nicht
+        /// aus. Folge: Der Lauf meldet Erfolg, und weil die Anlage danach KEINE
+        /// Strangzeile führt, trägt <c>StraengeWiederherstellen</c> die Liste des
+        /// VORZUSTANDS wieder ein. Der Anwender bekommt also seine alten Stränge zurück,
+        /// ohne dass ihm jemand sagt, dass die neuen nicht angekommen sind.</para>
+        ///
+        /// <para><b>Der Lauf ist geklammert</b> — der hereingereichte <c>DbVorgang</c>
+        /// ist derselbe Weg, den <c>AssistentCtrl.Speichern</c> geht. Er wird
+        /// festgeschrieben, obwohl der Strangschritt gescheitert ist: Das gefangene
+        /// Scheitern verhindert den Rückzug.</para>
+        ///
+        /// <para><b>Wie der Fehlschlag erzwungen wird:</b> über die ERZWUNGENE Beziehung
+        /// <c>Z_AnlageStrang.ID_Wechselrichter</c> → <c>Tab_Wechselrichter</c> — ein
+        /// Wechselrichter, den es nicht gibt. Das ist ein echter Datenbankfehler auf dem
+        /// echten Schreibweg.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_gescheitertes_Schreiben_der_Dialog_Straenge_bleibt_unbemerkt()
+        {
+            if (!_db.Vorhanden) return;
+
+            string bezeichner = "ST1 Fehlschlagprobe";
+
+            var anlage = new WErzeugerCtrl
+            {
+                ID_Projekt = TESTPROJEKT,
+                Bezeichner = bezeichner,
+                ID_Type = WizardItemClass.PV_TYP,
+                ID_PV = ModulAnlegen(),
+                PV_Leistung = 21
+            };
+            Assert.True(anlage.Insert());
+
+            int alteId = AnlagenId(bezeichner);
+            int geraet = WechselrichterAnlegen("ST1 Fehlschlag 5000TL");
+
+            // Der VORZUSTAND: zwei gespeicherte Straenge.
+            var ctrl = new AnlageStrangCtrl();
+            Assert.True(ctrl.SchreibenJeAnlage(alteId, new List<AnlageStrangModel>
+            {
+                new AnlageStrangModel { Bezeichner = "Alt Ost", ID_Wechselrichter = geraet,
+                                        Mppt = 1, Module_Reihe = 11 },
+                new AnlageStrangModel { Bezeichner = "Alt West", ID_Wechselrichter = geraet,
+                                        Mppt = 2, Module_Reihe = 10 }
+            }));
+
+            // Der DIALOG gibt eine neue, aber unschreibbare Liste mit.
+            anlage.PV_Straenge = new List<AnlageStrangModel>
+            {
+                new AnlageStrangModel { Bezeichner = "Neu Sued",
+                                        ID_Wechselrichter = WECHSELRICHTER_GIBT_ES_NICHT,
+                                        Mppt = 1, Module_Reihe = 12 }
+            };
+
+            var wizard = new WizardCtrl();
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            {
+                Assert.True(wizard.Del_Projekt_Waermeerzeuger(
+                    TESTPROJEKT, WizardItemClass.PV_TYP, vorgang));
+
+                // HEUTE: Der Lauf meldet Erfolg, obwohl der Strangschritt gescheitert ist.
+                Assert.True(wizard.Add_WP_Waermeerzeuger(
+                    TESTPROJEKT, new List<WErzeugerModel> { anlage }, vorgang));
+
+                // ... und er wird festgeschrieben. Der Rueckzug findet nicht statt.
+                vorgang.Commit();
+            }
+
+            int neueId = AnlagenId(bezeichner);
+            Assert.True(neueId > 0);
+
+            // Was jetzt da steht, ist der VORZUSTAND - nicht die Liste des Dialogs.
+            List<AnlageStrangModel> jetzt = ctrl.LesenJeAnlage(neueId);
+            Assert.Equal(new[] { "Alt Ost", "Alt West" },
+                         jetzt.Select(z => z.Bezeichner).ToArray());
+
+            AnlageLoeschen(neueId);
+            WechselrichterLoeschen(geraet);
+        }
+
         // =================================================================================
         // 3 — Der Schalter aus W6-E-3 an der Anlagenzeile
         // =================================================================================
@@ -479,6 +567,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Das Projekt der Testdatenbank, in dem die Wegwerf-Anlagen entstehen.</summary>
         private const int TESTPROJEKT = 1030;
+
+        /// <summary>Eine Wechselrichter-Id, die es in der Testdatenbank NICHT gibt — der
+        /// Weg, auf dem ein Schreibfehler erzwungen wird (erzwungene Beziehung).</summary>
+        private const int WECHSELRICHTER_GIBT_ES_NICHT = 999999999;
 
         private static readonly StringComparer Vergleich = StringComparer.OrdinalIgnoreCase;
 

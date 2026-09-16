@@ -1819,7 +1819,35 @@ namespace WindowsFormsApplication1
                     // koennten. NULL heisst "nicht angefasst" und ueberlaesst die Zeile
                     // der Rettung weiter unten; eine gesetzte Liste ist die neue Wahrheit
                     // und hat Vorrang, weil StraengeWiederherstellen nur Anlagen OHNE
-                    // Straenge bedient. BEST EFFORT wie die Nachbarn.
+                    // Straenge bedient.
+                    //
+                    // BEST EFFORT - und was das HEUTE bedeutet, nachgemessen in der
+                    // Nachlese zur Senkenklammer (Prueffall
+                    // AnlageStrangTests.Ein_gescheitertes_Schreiben_der_Dialog_Straenge_bleibt_unbemerkt):
+                    //
+                    // 1. DER catch IST NICHT DIE STELLE, DIE SCHLUCKT.
+                    //    AnlageStrangCtrl.SchreibenJeAnlage faengt jeden Datenbankfehler
+                    //    selbst ab, rollt zurueck und meldet ihn ueber den RUECKGABEWERT;
+                    //    hierher kommt praktisch nichts mehr durch. Verschluckt wird der
+                    //    Fehlschlag dadurch, dass dieser Rueckgabewert nicht ausgewertet
+                    //    wird.
+                    // 2. DER LAUF IST GEKLAMMERT. Kommt der Vorgang von
+                    //    AssistentCtrl.Speichern herein (iU9-W16a-O-1), wird der eigene
+                    //    Vorgang von SchreibenJeAnlage zum Sicherungspunkt: Sein
+                    //    Ruecktritt nimmt NUR die Strangzeilen zurueck, der uebrige Lauf
+                    //    wird festgeschrieben.
+                    // 3. FOLGE FUER DEN ANWENDER: Die Anlage fuehrt danach keine
+                    //    Strangzeile, und StraengeWiederherstellen weiter unten traegt
+                    //    deshalb die Liste des VORZUSTANDS wieder ein. Die Eingabe des
+                    //    Dialogs ist fort, gemeldet wird nichts - Console.WriteLine
+                    //    erreicht den Anwender nicht.
+                    // 4. DIE NACHBARN, auf die sich das "wie die Nachbarn" beruft, gibt
+                    //    es noch (ZuordnungReparieren/AnkerNachziehen,
+                    //    PflichtpositionenSicherstellen, GeraeteWaisen.Aufraeumen). Sie
+                    //    verhalten sich gleich - aber sie sind NACHSORGE, die der Lauf
+                    //    selbst anstoesst; diese Zeile schreibt, was der Anwender
+                    //    eingegeben hat. Ob das denselben Umgang verdient, ist eine
+                    //    offene Fachfrage (NL-Q1) und wird hier nicht entschieden.
                     if (item.PV_Straenge != null && item.ID > 0)
                     {
                         try { new AnlageStrangCtrl().SchreibenJeAnlage(item.ID, item.PV_Straenge); }
