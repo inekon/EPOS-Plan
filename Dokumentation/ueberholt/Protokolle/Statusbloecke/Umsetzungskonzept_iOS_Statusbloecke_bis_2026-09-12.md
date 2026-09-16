@@ -6986,3 +6986,138 @@ Welle wäre es ein Merge-Risiko gewesen.
 > werden im aufgeklappten Bereich gepflegt. Der Knopf „Bearbeiten…" steht im Modulbereich
 > unter den Kostenknöpfen, „Neu" und „Löschen" bei der Liste. Die getrennte Administration
 > der Erzeuger ist nicht mehr vorhanden.
+
+## #297 — Bearbeiten nach oben, alle Daten offen, die Konfiguration als eigener Dialog (16.09.2026)
+
+Der Anwenderentscheid vom 16.09.2026 kam in drei Sätzen. Keiner davon galt einer Maske;
+jeder galt allen.
+
+> „Der Bearbeiten-Button soll weiter oben (unter der blauen Zeile Modul) stehen, so dass er
+> besser sichtbar ist. Unter Bearbeiten sollen alle Parameter angezeigt werden und
+> bearbeitbar sein. Das gleiche Schema für alle Komponenten."
+
+> „Brennstoff Typ und Brennstoff Variante sollen untereinander stehen — bei allen
+> brennstoffgekoppelten Komponenten."
+
+Und zum Wärmepumpendialog: Die Bezeichnung „Wärmeerzeuger Spitzenlast" bezieht sich nur auf
+die elektrische Nachheizung; der Titel soll „Konfiguration" heißen, der Bereich aus dem
+Dialog herausgelöst und separat aufrufbar sein — erstens aus diesem Dialog über einen Knopf
+„Konfiguration", zweitens aus Simulation > Konfiguration, dort anstelle des Balkens
+„Parameter für die Simulation" und für alle Komponenten, mit den bestehenden Parametern
+(Heizstab, Betriebsbereitschaft) darin. Dazu: „Der Dialog ‚Parameter Bearbeiten' ist nicht
+mehr nötig, alle Parameter samt Kennlinie direkt im Dialog."
+
+**Eine Knopfzeile, nicht zwei.** Der Entscheid sagt, wo „Bearbeiten…" stehen soll, aber
+nicht, was aus den Kostenknöpfen wird, die seit #296 darüber standen. Zwei gestapelte Zeilen
+hätten den Knopf wieder nach unten geschoben — genau das, was abgestellt werden sollte.
+Deshalb ist es **eine** Zeile: Kostenknöpfe links, Füller, „Bearbeiten…" rechts, als erstes
+Kind des Modulkörpers in allen sechs Erzeuger-Dialogen. Die Wahl ist die des Orchestrators,
+nicht die des Anwenders — die Rückfrage dazu hat er abgebrochen, und sie bleibt damit
+widerrufbar. Dass die Kostenleiste in einer Knopfzeile ihren Trennstrich verliert, ist die
+Stilfolge davon.
+
+**„Alle Daten" startet offen und bleibt zuklappbar.** „Unter Bearbeiten sollen alle Parameter
+angezeigt werden" heißt: sichtbar ohne einen zweiten Klick. Der Aufklapper ist deshalb nicht
+gefallen, sondern umgestellt — er geht offen auf und holt seine Felder mit der Satzwahl. Wer
+den Dialog schmal haben will, klappt weiterhin zu; wer ihn zum Arbeiten öffnet, sieht alles.
+Ein entfernter Aufklapper hätte die Wahl genommen, ohne etwas zu gewinnen.
+
+**Das Brennstoffpaar ohne neues CSS.** „Untereinander" ist im Feldraster eine Frage der
+Spaltenbreite, nicht der Reihenfolge: Ein Paarblock über die volle Breite setzt seine zwei
+Felder untereinander. Dafür steht `epos-feld--breit` schon da — eine eigene Regel für diesen
+einen Fall wäre eine zweite Antwort auf eine beantwortete Frage gewesen. Beim Heizkessel
+standen beide Felder bereits im Raster. **Das BHKW nicht:** Ihm fehlte das Katalogfeld
+„Brennstoff Typ" ganz, es zeigte nur die Projektwahl. Die Hülle liefert den
+Katalog-Brennstoff jetzt über `BHKWStammCtrl.KatalogsatzAnzeige` nach, und die Beschriftung
+folgt dem Heizkessel (`HZK_LBL_BRENNSTOFFTYP`, `HZK_LBL_TRAEGER`) statt dem eigenen
+`BHKWV_LBL_TRAEGER` — zwei Namen für dasselbe Feld wären dem Entscheid „bei allen
+brennstoffgekoppelten Komponenten" zuwidergelaufen.
+
+**Die Wärmepumpe: die Konfiguration wird ein Bereich mit eigenem Leben.**
+`WaermepumpeKonfiguration` trägt Nachheizung, Sperrzeit, bivalenten Betrieb, Betriebsart,
+Bivalenztemperatur, Energieträger und die Erklärkästen — ein Baustein mit eigenem Textbündel,
+damit ihn beide Wirte gleich beschriften. Der Anlagendialog zeigt ihn in einer Überlagerung
+mit OK/Abbrechen auf einer **Arbeitskopie**: Abbrechen lässt den Stand, wie er war. Fehlt
+beim OK des Anlagendialogs ein Feld der Konfiguration, geht die Überlagerung auf, statt die
+Eingabe wortlos zu verweigern.
+
+**Die Stammfelder bearbeiten den KATALOGSATZ.** `WaermepumpeStammFelder` ist dasselbe
+Feldraster im Stammdialog und im Anlagendialog; im Anlagendialog ist es bearbeitbar und hat
+seinen eigenen Speichern-Knopf. Geschrieben wird damit `Tab_WP_STAMM`, zugeordnet über den
+**Bezeichner**: Ohne Katalogsatz sind die Felder gesperrt, ein Auslieferungssatz (`ReadOnly`)
+lehnt das Speichern benannt ab. Das ist genau die Reichweite, die das entfallene „Parameter
+Bearbeiten…" hatte — es führte über denselben Weg in denselben Satz, nur über einen zweiten
+Dialog. Neu ist nicht, **was** geschrieben wird, sondern dass es ohne Umweg geschieht. **Der
+Anwender muss das bestätigen:** Eine Kennzahl, die im Projektdialog geändert wird, gilt
+danach für jedes Projekt, das denselben Katalogsatz benutzt.
+
+**Der Heizstab steht doppelt — und nur einer der beiden rechnet.** Der Befund fiel beim
+Zusammenlegen auf und gehört festgehalten, weil die Maske ihn sonst verdeckt. Der
+Simulationslauf liest den Heizstab **projektweit** aus `Tab_Einstellungen.WP_Heizstab`
+(`SimulationControl` → `SimulationWaermepumpe.Mit_Heizstab`) — nur wenn dieser Schalter
+steht, rechnet der Lauf überhaupt eine Heizstabphase. Der Anlagenschalter
+`Tab_Energieanlagen.Heizstab`, in der Maske „Elektrische Nachheizung aktivieren (falls
+vorhanden)", entscheidet dagegen allein über die **Energieträgerwahl**
+(`EnergietraegerZulaessigkeit`, `WizardCtrl.BrauchtStromTraeger`): Er hebt die Anlage in die
+elektrische Welt. Beides steht jetzt im selben Dialog, und beides ist dort benannt
+(`SIMKONF_HRL_HEIZSTAB`, `SIMKONF_HRL_HEIZSTAB_ANLAGE`), damit niemand am falschen Schalter
+dreht. **Empfehlung für einen eigenen Kern-Schritt:** den Anlagenschalter im Rechenweg
+auswerten und den Projektschalter abschaffen. Das greift in den Rechenweg ein, verlangt eine
+Migration der bestehenden Projekte und eine Referenzprüfung — es in diese Welle zu ziehen
+hätte aus einer Maskenänderung einen Eingriff in die Physik gemacht. Anwenderentscheid offen.
+
+**Warum der teure Schreibweg.** Speichert man die Wärmepumpen-Konfiguration von der
+Simulationsseite, geht der Weg über `Del_Projekt_Waermeerzeuger` + `Add_WP_Waermeerzeuger`,
+also über Löschen und Neuschreiben aller Wärmepumpen-Anlagen des Projekts — derselbe Weg, den
+der Reiter „Wärmepumpe" nach seinem Übernehmen schon immer ging. Der kürzere
+`WErzeugerCtrl.Update` führt in seinen sechzehn Spalten **weder `Heizstab` noch
+`ID_Carrier`**; beide stehen in diesem Feldsatz. Ein Schreibweg, der zwei gerade bearbeitete
+Felder still fallen ließe, wäre schlimmer als der teure. Senken, Stränge und Varianten
+überleben, weil sie über das Paar (`ID_Type`, Bezeichner) zugeordnet werden — **die Ids der
+Anlagen wechseln dabei jedoch**, und die Hervorhebung der gerade bearbeiteten Karte geht
+danach verloren. Kosmetisch, sichtbar, offen.
+
+**Nur drei Karten tragen den Knopf.** Auf Simulation > Konfiguration steht er an
+Wärmepumpen-, Heizkessel- und BHKW-Karten, weil nur diese drei Laufparameter haben: Heizstab,
+Betriebsbereitschaft, BHKW-Betriebsart samt unterer Leistungsgrenze. Solarthermie,
+Photovoltaik, Strom- und Pufferspeicher haben keine — ein Knopf, der einen leeren Dialog
+öffnet, wäre schlechter als kein Knopf. Die Zuordnung liegt an **einer** Stelle
+(`Komponentenart`), damit eine vierte Art sie nicht an drei Orten suchen muss. Dahinter steht
+der `KomponentenKonfigurationDialog`: OK schreibt, Abbrechen nicht. Die Naht dorthin ist
+`SimulationParameterDienste` (Laden und Speichern der Anlagenkonfiguration, Trägerkatalog);
+die Windows-Schale belegt sie mit dem Bestandsweg der Wärmepumpenhülle.
+
+**Die Wache zieht mit.** `KiDialogkatalogTests` prüft seit #296, dass jeder Feldpfad einer
+Katalogmaske im Markup der zugeordneten Razor-Datei steht. `Form_WP` bindet jetzt über zwei
+Dateien — `WaermepumpeStammDialog` und `WaermepumpeStammFelder` —, weil das Feldraster ein
+eigener Baustein geworden ist; die Wache nimmt beide. Gefallen sind `WPA_LBL_SPITZENLAST`,
+`WPA_GRP_SPITZENLAST`, `WPA_BTN_PARAMETER`, `WPA_LBL_BESCHREIBUNG`, `BHKWV_LBL_TRAEGER` und
+`SIMKONF_GRP_LAUFPARAMETER`.
+
+**Prüfung.** Kern-Filter 0 Fehler, Windows-Schale 0 Fehler, `EPOS.UI.Tests` 4 478/4 478; das
+Gate grün bis auf die zwei fremden Fälle (Bildvergleich, nicht committete Papiere). Je
+Erzeuger-Dialog gemessen: Reihenfolge in der Knopfzeile, offener Startzustand, Zuklappen; bei
+Heizkessel und BHKW die Nachbarschaft des Brennstoffpaars. Neu sind
+`WaermepumpeKonfigurationTests`, `WaermepumpeStammFelderTests` und
+`KomponentenKonfigurationDialogTests`; nachgezogen `WaermepumpeAnlageDialogTests`,
+`WaermepumpenDialogTests`, `SimulationKonfigSeiteTests` und `KiDialogkatalogTests`.
+
+**Logbuch-Vorschlag Erzeuger** (Version vom Anwender zu nennen):
+
+> Seit 16.09.2026 steht der Knopf „Bearbeiten…" in den Dialogen der Erzeuger gleich unter der
+> Modulzeile, in einer Zeile mit den Kostenknöpfen. Der Bereich „Alle Daten" darunter ist beim
+> Öffnen des Dialogs bereits aufgeklappt: Alle Daten des gewählten Katalogsatzes stehen sofort
+> sichtbar und bearbeitbar da, zuklappen lässt sich der Bereich weiterhin. In den Dialogen für
+> Heizkessel und BHKW stehen „Brennstoff Typ" und „Brennstoff Variante" untereinander.
+
+**Logbuch-Vorschlag Wärmepumpe und Simulation** (Version vom Anwender zu nennen):
+
+> Seit 16.09.2026 heißt der Bereich „Wärmeerzeuger Spitzenlast" des Wärmepumpendialogs
+> „Konfiguration" und ist ein eigener Dialog. Er lässt sich an zwei Stellen öffnen: im
+> Wärmepumpendialog über den Knopf „Konfiguration" und unter Simulation > Konfiguration über
+> den Knopf „Konfiguration" an der Karte der Anlage, an der Stelle des Balkens „Parameter für
+> die Simulation". Dieser Knopf steht an den Karten von Wärmepumpe, Heizkessel und BHKW und
+> führt zu den Parametern, mit denen die Anlage in die Simulation geht — Heizstab und
+> Betriebsbereitschaft stehen dort. Der Dialog „Parameter Bearbeiten…" ist nicht mehr
+> vorhanden; die Daten der Wärmepumpe stehen samt Kennliniendaten direkt im
+> Wärmepumpendialog.
