@@ -92,8 +92,8 @@ markierte Wellen siehe § 4.
 
 Nummerierte Aufträge, soweit sie in den Statusblöcken benannt sind. Alle Daten 2026.
 
-| Nr. | Datum | Gegenstand | Ergebnis |
-|---|---|---|---|
+| Nr. | Datum | Gegenstand | Ergebnis | Sichtbar |
+|---|---|---|---|---|
 | **#76** | 05.09. | Katalogdialoge: altes Schema nebeneinander, Umbruch auf schmalem Schirm | Empfehlung umgesetzt — Baustein `Zweispaltenauswahl` in allen betroffenen Dialogen |
 | **#91** | 05./06.09. | Restumstellung auf die hausweite Formularregel (iU8‑E‑2) | in drei Paketen abgeschlossen: 41 weitere Dateien, alle `epos-feldpaar` gefallen |
 | **#155** | 09.09. | Befund des Wiki-Agenten (Erststart, Sicherungspunkt) | Auslöser für #157 und #158 |
