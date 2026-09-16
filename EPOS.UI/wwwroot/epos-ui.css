@@ -1634,6 +1634,14 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-karte-titel);
 }
 
+/* DAS KREUZ STEHT BEIM TITEL - auch im Kopf einer freien ANSICHT. Im
+   Dialogkopf schiebt es der Titel mit seinem flex: 1 1 auto nach rechts; ein
+   Seitenkopf haelt Ueberschrift, Zahl und Knoepfe dagegen links beieinander
+   (.epos-projekt-neu), das Kreuz rueckt deshalb selbst an den rechten Rand. */
+.epos-seite-kopf .epos-dialog-zu {
+    margin-left: auto;
+}
+
 /* Die Zahl neben der Ueberschrift - dieselbe Rolle wie die Summe im
    Gruppenkopf: leise, rechts, ohne eigene Beschriftung. */
 .epos-seite-anzahl {

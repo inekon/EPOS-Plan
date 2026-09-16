@@ -412,7 +412,7 @@ Skalierung bleiben unverändert, und **kein Aufrufer außerhalb von `HeizwaermeE
 dass es Zonen gibt.** `SimulationWaermebedarf.Waermebedarf_Max` bleibt das Maximum des
 Kanalsummenvektors (`:401`); die Ergebnisgröße `Waermelast_Max` wird davon unverändert abgeleitet
 (`SimulationRunner.cs:358`, Konzept 4.5). **Die Skalierung** `Z_AuswahlWohnflaeche / Wohnflaeche`
-(Konzept 4.7, Entscheid E8) steht im Bestandsweg in der Physikfunktion selbst
+(Konzept 4.7, Entscheid E8) steht im Altweg — dem Übergangsweg nach E20 — in der Physikfunktion selbst
 (`EPOS.Kern/Allgemein/BhkwPlan.cs:435`, Argumente `:392`) — die in Entscheid E8 genannte Fundstelle
 in `SimulationWaermebedarf.cs` trifft den Kopfkommentar von `SummenvektorAusKanaelen` und ist dort
 zu berichtigen. Im Stundenmodell wird die Skalierung zur Nachmultiplikation und wird auf der

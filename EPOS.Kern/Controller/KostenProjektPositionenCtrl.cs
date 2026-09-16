@@ -447,6 +447,12 @@ namespace WindowsFormsApplication1
         /// Kopien ankerten an den Geräten des QUELLprojekts und verloren die
         /// Zuordnung beim ersten Anlagen-Wizard-Lauf der Variante.
         /// Migrationsschritt 47 macht dasselbe einmalig für den Bestand.
+        ///
+        /// <para>Je Komponente laufen ZWEI Anweisungen: Die erste leitet den Anker der
+        /// gültig zugeordneten Zeilen aus ihrer Anlagenzeile ab, die zweite setzt ihn bei
+        /// den Zeilen OHNE gültige Anlage auf <c>NULL</c>. Ohne die zweite überlebte der
+        /// Anker des Quellprojekts jede Kopie — ein toter Verweis auf ein Gerät, das es im
+        /// Zielprojekt nicht gibt.</para>
         /// </summary>
         internal static void AnkerNachziehen(int projektId)
         {
@@ -497,6 +503,23 @@ namespace WindowsFormsApplication1
                         "WHERE ProjektID = " + projektId +
                         " AND KomponentenID = " + komponentenId +
                         " AND EXISTS (SELECT 1 " + anlageDesProjekts + ")");
+
+                    // Die GEGENPROBE zum Satz darüber (Auftrag Kostenbereich,
+                    // Nebenbefund 2): Die EXISTS-Klausel zieht den Anker nur für
+                    // Zeilen mit gültiger Anlage nach — eine Position, die schon in
+                    // der QUELLE lose war (ID_Anlage NULL oder verwaister Verweis),
+                    // behielt den Geräteanker des Quellprojekts für immer. In der
+                    // Kopie zeigt er auf ein Gerät, das es dort nicht gibt: ein
+                    // toter Verweis, den kein Leseweg mehr auflösen kann. Eine
+                    // Position ohne gültige Anlage hat keinen Anker — sie bekommt
+                    // NULL, wie sie ihn auch in ZuordnungReparieren bekäme, wenn ihr
+                    // Gerät verschwindet ("Zuordnung EHRLICH lösen").
+                    DataRepository.ExecuteSQL(
+                        "UPDATE Tab_ProjektWerte SET ID_AnlageGeraet = NULL " +
+                        "WHERE ProjektID = " + projektId +
+                        " AND KomponentenID = " + komponentenId +
+                        " AND ID_AnlageGeraet IS NOT NULL" +
+                        " AND NOT EXISTS (SELECT 1 " + anlageDesProjekts + ")");
                 }
             }
             catch { }
@@ -596,6 +619,77 @@ namespace WindowsFormsApplication1
                         new DbParam("@a", Convert.ToInt32(ziel)),
                         new DbParam("@id", Convert.ToInt32(r["ID"])));
             }
+        }
+
+        /// <summary>
+        /// Was der Papierkorb der gelben Zeile wegnehmen WÜRDE: Anzahl und Summe der
+        /// Positionen ohne (gültige) Anlagenzuordnung.
+        /// </summary>
+        internal struct LoseBefund
+        {
+            /// <summary>Zahl der Positionen, die <see cref="LoseLoeschen"/> träfe.</summary>
+            public int Anzahl;
+
+            /// <summary>Ihre Summe [€] — der BERECHNETE Betrag, nicht der eingegebene.</summary>
+            public double Summe;
+        }
+
+        /// <summary>
+        /// Zählt VOR dem Löschen, was der Papierkorb der gelben Zeile träfe (Anzahl und
+        /// Summe), damit die Rückfrage beides nennen kann.
+        ///
+        /// <para><b>Dieselbe Menge wie <see cref="LoseLoeschen"/>:</b> gezählt wird über
+        /// <see cref="Lies(int,int,int,int)"/> mit <c>idAnlage = 0</c> — der einen Stelle,
+        /// die „ohne Anlagenzuordnung" definiert (<c>ID_Anlage IS NULL</c> oder Verweis auf
+        /// eine Anlage, die es im Projekt nicht mehr gibt). Eine zweite Abfrage mit
+        /// eigenem Filter ginge irgendwann auseinander.</para>
+        ///
+        /// <para><b>Die Summe ist der ANGEZEIGTE Betrag</b> (<c>Raster.BetragNetto</c>) —
+        /// derselbe, der in der gelben Zeile steht und den die Wirtschaftlichkeit rechnet,
+        /// nicht der rohe <c>EingegebenerWert</c>. Für eine satzbasierte Position sind das
+        /// zwei verschiedene Zahlen.</para>
+        /// </summary>
+        /// <param name="kategorieId">
+        /// <c>DbWerte.KOSTEN_KATEGORIE_INVESTITION</c> oder <c>…_BETRIEB</c>; ein Wert
+        /// ≤ 0 zählt BEIDE Kategorien — also genau das, was <see cref="LoseLoeschen"/>
+        /// löscht.
+        /// </param>
+        internal static LoseBefund LoseZaehlen(int projektId, int komponentenId, int kategorieId)
+        {
+            var befund = new LoseBefund();
+            if (projektId <= 0 || komponentenId <= 0) return befund;
+
+            int[] kategorien = kategorieId > 0
+                ? new[] { kategorieId }
+                : new[] { DbWerte.KOSTEN_KATEGORIE_INVESTITION, DbWerte.KOSTEN_KATEGORIE_BETRIEB };
+
+            foreach (int kategorie in kategorien)
+                foreach (Zeile z in Lies(projektId, komponentenId, kategorie, 0))
+                {
+                    befund.Anzahl++;
+                    // BetragNetto ist nullbar: eine Position ohne gepflegten Wert zählt
+                    // mit, trägt aber 0 zur Summe bei — gezählt wird, was gelöscht wird.
+                    befund.Summe += z.Raster.BetragNetto ?? 0.0;
+                }
+            return befund;
+        }
+
+        /// <summary>
+        /// <c>Tab_KostenKomponente.ID</c> zum sprachneutralen Gewerkenamen; 0, wenn es ihn
+        /// nicht gibt. Die Oberfläche kennt die Komponente als NAMEN — die Id dazu holt der
+        /// Kern, nicht die Hülle.
+        /// </summary>
+        internal static int KomponentenId(string komponente)
+        {
+            if (string.IsNullOrEmpty(komponente)) return 0;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT ID FROM Tab_KostenKomponente WHERE Komponente = ?",
+                    new DbParam("@k", komponente));
+                return (o == null || o == DBNull.Value) ? 0 : Convert.ToInt32(o);
+            }
+            catch { return 0; }
         }
 
         /// <summary>Ä21: alle Positionen einer Komponente OHNE (gültige)

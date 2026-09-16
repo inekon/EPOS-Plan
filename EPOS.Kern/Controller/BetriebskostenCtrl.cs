@@ -786,8 +786,32 @@ namespace WindowsFormsApplication1
         /// Liest die zwölf Positionen eines Projekts. Nicht erfasste Positionen kommen mit
         /// <c>Id = 0</c> und der Vorgabebemessung zurück — der Dialog zeigt also immer
         /// alle zwölf Zeilen, unabhängig davon, was schon gepflegt ist.
+        ///
+        /// <para>Bestandssignatur OHNE Anlagenbezug — sie findet die Zeile der ERSTEN
+        /// Anlage des Gewerks. Wer eine bestimmte Anlage meint, nimmt
+        /// <see cref="Lies(int,Bezugsgroessen,int)"/>.</para>
         /// </summary>
         internal static List<Zeile> Lies(int projektID, Bezugsgroessen bezug)
+        {
+            return Lies(projektID, bezug, 0);
+        }
+
+        /// <summary>
+        /// Dieselben zwölf Positionen MIT ANLAGENBEZUG (<c>Tab_ProjektWerte.ID_Anlage</c>,
+        /// Migrationsschritt 45).
+        ///
+        /// <para><b>Warum der Bezug hierher gehört.</b> Seit Ä20 hängen die Positionen an
+        /// der ANLAGE, und ein Projekt führt regelmäßig MEHRERE Anlagen desselben Gewerks.
+        /// Ohne den Bezug fand die Suche stets <c>MIN(ID)</c> — also die Zeile der ERSTEN
+        /// Anlage; der Dialog zeigte deren Zahlen für jede weitere Anlage an, und
+        /// <see cref="Speichere(int,List{Zeile},int)"/> schrieb sie dorthin zurück. Es ist
+        /// derselbe Befund, den <c>KostenPositionCtrl.SetzeBetrag</c> (Ä25) für die
+        /// INVESTITION behoben hat.</para>
+        ///
+        /// <para><paramref name="idAnlage"/> ≤ 0 oder eine Datenbank ohne die Spalte:
+        /// Bestandsverhalten (ohne Anlagenfilter).</para>
+        /// </summary>
+        internal static List<Zeile> Lies(int projektID, Bezugsgroessen bezug, int idAnlage)
         {
             var liste = new List<Zeile>();
             Dictionary<int, KostenPositionCtrl.Zusatz> zusatz =
@@ -800,7 +824,7 @@ namespace WindowsFormsApplication1
                 int stammID = KostenPositionCtrl.StammIdNeben(p.Bezeichnung);
                 if (stammID > 0)
                     z.Id = KostenPositionCtrl.FindePosition(projektID, DbWerte.KOSTEN_KATEGORIE_BETRIEB,
-                                                            KOMPONENTE_BHKW, stammID);
+                                                            KOMPONENTE_BHKW, stammID, idAnlage);
 
                 if (z.Id > 0)
                 {
@@ -836,6 +860,29 @@ namespace WindowsFormsApplication1
         /// <returns>Zahl der geschriebenen Zeilen.</returns>
         internal static int Speichere(int projektID, List<Zeile> zeilen)
         {
+            return Speichere(projektID, zeilen, 0);
+        }
+
+        /// <summary>
+        /// Dasselbe MIT ANLAGENBEZUG — die Gegenstelle zu
+        /// <see cref="Lies(int,Bezugsgroessen,int)"/>.
+        ///
+        /// <para><b>Der Befund (Auftrag Kostenbereich, Nebenbefund 3).</b> Hier stand die
+        /// anlagenBLINDE Überladung von <c>KostenPositionCtrl.SetzeBetrag</c>. Führt ein
+        /// Projekt mehrere Anlagen desselben Gewerks, fand sie über
+        /// (Projekt, Kategorie, Komponente, StammID) die Zeile der ERSTEN Anlage und
+        /// überschrieb deren Betrag — die Betriebskosten der zweiten Anlage landeten bei
+        /// der ersten. Für die INVESTITION ist derselbe Fehler seit Ä25 behoben; die
+        /// anlagenbewusste Überladung legt <c>ID_Anlage</c> mit an, damit die frische
+        /// Zeile über dieselbe Suche wiederfindbar ist.</para>
+        ///
+        /// <para>Die anlagenblinde Überladung von <c>KostenPositionCtrl.SetzeBetrag</c>
+        /// bleibt bestehen: Sie ist der Rückfallweg der anlagenbewussten (Datenbank ohne
+        /// die Spalte, <paramref name="idAnlage"/> ≤ 0) und trägt weiterhin
+        /// <c>SchreibeNebenkosten</c>.</para>
+        /// </summary>
+        internal static int Speichere(int projektID, List<Zeile> zeilen, int idAnlage)
+        {
             if (zeilen == null) return 0;
             KostenPositionCtrl.StelleSpaltenSicher();
 
@@ -854,7 +901,8 @@ namespace WindowsFormsApplication1
                 if (id <= 0)
                     id = KostenPositionCtrl.SetzeBetrag(projektID, DbWerte.KOSTEN_KATEGORIE_BETRIEB,
                                                         KOMPONENTE_BHKW, stammID, 0.0,
-                                                        DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI, true);
+                                                        DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI, true,
+                                                        idAnlage);
                 if (id <= 0) continue;
 
                 var zu = new KostenPositionCtrl.Zusatz

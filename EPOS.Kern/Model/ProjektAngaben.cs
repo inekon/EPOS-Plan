@@ -226,15 +226,19 @@ namespace WindowsFormsApplication1
         ApplikationsdatenFehler,
 
         /// <summary>
-        /// Der Name trifft MEHRERE Projekte, und der Aufrufer hat das Loeschen aller
-        /// nicht ausdruecklich verlangt (Entscheid W15a-O-3 vom 04.09.2026). Es wurde
-        /// NICHTS angefasst; <c>Anzahl</c> sagt, wie viele Projekte den Namen tragen.
+        /// Der Name trifft MEHRERE Projekte, und der Aufrufer hat die Rueckfrage dazu
+        /// nicht bejaht (Entscheid W15a-O-3 vom 04.09.2026). Es wurde NICHTS angefasst;
+        /// <c>Anzahl</c> sagt, wie viele Projekte den Namen tragen.
         ///
         /// <para>Regulaer kann das nicht vorkommen: <c>Tab_Projekt</c> traegt seit der
         /// SQLite-Migration den eindeutigen Index <c>Projektname</c>, und „Speichern
         /// unter" prueft ueber <c>PruefeNamen</c>. Ein Altbestand OHNE diesen Index kann
-        /// den Fall aber fuehren — und dann darf der Loeschweg, der ueber den NAMEN
-        /// laeuft, nicht still zwei Projekte mitnehmen.</para>
+        /// den Fall aber fuehren — ein Befund, den der Anwender sehen soll.</para>
+        ///
+        /// <para><b>Es ist eine ANZEIGE, keine Schutzmassnahme mehr.</b> Der Loeschweg
+        /// laeuft seit dem Nebenbefund 4 des Auftrags Kostenbereich durchgaengig ueber
+        /// <c>Tab_Projekt.ID</c>; bejaht der Anwender die Rueckfrage, faellt NUR das
+        /// gewaehlte Projekt, nicht mehr jedes gleichnamige.</para>
         /// </summary>
         Mehrdeutig,
 

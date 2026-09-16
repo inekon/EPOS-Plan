@@ -86,6 +86,7 @@ namespace WindowsFormsApplication1
                 ["TraegerGaben"] = new Func<KostenZeile, IReadOnlyDictionary<string, object>>(
                     TraegerGaben),
                 ["LoeschFrage"] = new Func<KostenZeile, string>(LoeschFrage),
+                ["LoeschNichts"] = new Func<KostenZeile, string>(LoeschNichts),
                 ["Loeschen"] = new Func<KostenZeile, string>(Loeschen),
                 ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
                 ["LabelVergleich"] = MyResource.Resource.BK_LBL_VERGLEICHSWAHL,
@@ -895,17 +896,54 @@ namespace WindowsFormsApplication1
                 a != null ? a.GeraeteId : 0);
         }
 
-        /// <summary>Ä21: die Frage vor dem Löschen der losen Positionen.</summary>
+        /// <summary>
+        /// Ä21: die Frage vor dem Löschen der losen Positionen — mit ANZAHL und SUMME.
+        ///
+        /// <para>Beides zählt der Kern (<c>KostenProjektPositionenCtrl.LoseZaehlen</c>) über
+        /// genau die Menge, die <c>LoseLoeschen</c> anschließend wegnimmt; die Hülle setzt
+        /// nur den Text zusammen. Der Betrag trägt das Zahlenformat dieser Seite — dieselbe
+        /// Kultur und dieselbe Schreibweise wie die Spalten der Tabelle darüber.</para>
+        ///
+        /// <para>Gibt es NICHTS zu löschen (die gelbe Zeile stammt aus einem älteren
+        /// Aufbau), bleibt die Rückfrage aus. Leer heißt für die Seite „geht nicht" — sie
+        /// sagt es dann in der Fußzeile, statt den Papierkorb still verpuffen zu
+        /// lassen.</para>
+        /// </summary>
         private string LoeschFrage(KostenZeile zeile)
         {
             string komponente;
             if (zeile == null || !_loseKomponenten.TryGetValue(zeile.Schluessel, out komponente))
                 return "";
 
-            return string.Format(T("BK_KOSTEN_LOSE_LOESCHEN",
-                "Alle Kostenpositionen ohne Anlagenzuordnung der Komponente „{0}“ " +
-                "löschen?\n\nSie stammen z. B. aus einer Variantenkopie ohne dieses " +
-                "Gewerk und rechnen bis dahin in der Wirtschaftlichkeit mit."), komponente);
+            int kid = KostenProjektPositionenCtrl.KomponentenId(komponente);
+            if (kid <= 0) return "";
+
+            KostenProjektPositionenCtrl.LoseBefund befund =
+                KostenProjektPositionenCtrl.LoseZaehlen(_idProjekt, kid, 0);
+            if (befund.Anzahl <= 0) return "";
+
+            CultureInfo kultur = CultureInfo.CurrentCulture;
+            return string.Format(kultur,
+                T("BK_KOSTEN_LOSE_LOESCHEN_SUMME",
+                  "{0} Position(en) ohne Anlagenzuordnung der Komponente „{2}“ mit zusammen " +
+                  "{1} € löschen?\n\nSie stammen z. B. aus einer Variantenkopie ohne dieses " +
+                  "Gewerk und rechnen bis dahin in der Wirtschaftlichkeit mit."),
+                befund.Anzahl, befund.Summe.ToString("N2", kultur), komponente);
+        }
+
+        /// <summary>
+        /// Die benannte Absage, wenn es nichts zu löschen gibt — die Seite zeigt sie
+        /// anstelle der Rückfrage.
+        /// </summary>
+        private string LoeschNichts(KostenZeile zeile)
+        {
+            string komponente;
+            if (zeile == null || !_loseKomponenten.TryGetValue(zeile.Schluessel, out komponente))
+                komponente = "";
+
+            return string.Format(T("BK_KOSTEN_LOSE_KEINE",
+                "Die Komponente „{0}“ führt keine Position ohne Anlagenzuordnung — " +
+                "es gibt nichts zu löschen."), komponente);
         }
 
         private string Loeschen(KostenZeile zeile)
@@ -914,17 +952,10 @@ namespace WindowsFormsApplication1
             if (zeile == null || !_loseKomponenten.TryGetValue(zeile.Schluessel, out komponente))
                 return "";
 
-            object kid = null;
-            try
-            {
-                kid = DataRepository.ExecuteScalar(
-                    "SELECT ID FROM Tab_KostenKomponente WHERE Komponente = ?",
-                    new DbParam("@k", komponente));
-            }
-            catch { }
-            if (kid == null || kid == DBNull.Value) return "";
+            int kid = KostenProjektPositionenCtrl.KomponentenId(komponente);
+            if (kid <= 0) return "";
 
-            int n = KostenProjektPositionenCtrl.LoseLoeschen(_idProjekt, Convert.ToInt32(kid));
+            int n = KostenProjektPositionenCtrl.LoseLoeschen(_idProjekt, kid);
             return string.Format(T("BK_KOSTEN_LOSE_GELOESCHT",
                 "{0} Position(en) der Komponente „{1}“ gelöscht."), n, komponente);
         }

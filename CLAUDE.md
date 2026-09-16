@@ -254,8 +254,10 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
   vorhanden“), geordnet nach Version (neueste oben). Tabu auf Fachseiten: „seit …“,
   „bisher/früher/vorher“, „Anwenderentscheid“, „Befund“, Auftrags-, Wellen- und
   Commit-Kürzel, „in Umsetzung, Stand …“ — auch nicht in HTML-Kommentaren. Zu jeder
-  veröffentlichten Funktionsänderung einen Logbuch-Eintrag vorschlagen und die
-  Versionsnummer beim Anwender erfragen. Wiki-Entwürfe vor dem Veröffentlichen mit
+  veröffentlichten Funktionsänderung einen Logbuch-Eintrag vorschlagen und die Versionsnummer
+  beim Anwender erfragen; **Einträge knapp: ein Satz je wesentlicher, sichtbarer Änderung,
+  ohne Einzelheiten und Begründung; Kleinigkeiten bekommen keinen Eintrag (Regel: Konzept
+  Hilfesystem 13.4)**. Wiki-Entwürfe vor dem Veröffentlichen mit
   `seit (dem|der|W)|geändert|Entscheid|Befund|W\d+[a-z]?[‑-][A-Z][‑-]\d+|Stand:? *\d|bisher|früher|vorher|Bis dahin|Migrationsschritt`
   gegenlesen.
   **Keine Hersteller- und Produktdaten im Wiki:** kein Herstellername, keine Typbezeichnung,

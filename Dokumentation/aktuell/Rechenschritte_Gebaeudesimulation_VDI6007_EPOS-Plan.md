@@ -1,6 +1,6 @@
 # Rechenschritte der Gebäudesimulation nach VDI 6007 Blatt 1 in EPOS-Plan
 
-**Stand:** 15.09.2026
+**Stand:** 16.09.2026
 **Zweck:** Das Rechenbuch des Stundenmodells. Es führt die Rechnung in Schritten vor — je
 Schritt die Formeln, die Eingaben mit Einheit und Datenquelle, die Ausgaben und die Stelle in
 der Reihenfolge. Damit kann ein Fachplaner ein Ergebnis nachvollziehen und ein Entwickler den
@@ -10,11 +10,14 @@ Prüfer (Abnahme gegen das Normband).
 **Was hier nicht steht:** die Begründung der Modellwahl, die Messungen am Bestand, die
 Entscheide. Sie stehen im Konzept
 [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
-(Kapitel 4 Rechenweg, Kapitel 5 Prototyp und Klimaweg, Nachtrag 1 Entscheide E1–E10), die
+(Kapitel 4 Rechenweg, Kapitel 5 Prototyp und Klimaweg, Nachtrag 1 Entscheide E1 ff.), die
 Einbindung in den Kern im
 [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
-(Kapitel 1), der Entscheid dazu in
-[`ADR-002_Stundenmodell_VDI6007_Einbindung.md`](ADR-002_Stundenmodell_VDI6007_Einbindung.md).
+(Kapitel 1), die Entscheide dazu in
+[`ADR-002_Stundenmodell_VDI6007_Einbindung.md`](ADR-002_Stundenmodell_VDI6007_Einbindung.md) und
+[`ADR-006_Trennung_Altweg_VDI6007.md`](ADR-006_Trennung_Altweg_VDI6007.md) (Trennung der
+Rechenwege), die Kälteseite im
+[`Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md`](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md).
 Der Stand der Umsetzung steht in
 [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md).
 **Kapitel 13** führt die Befunde des Gegenlesens vom 15.09.2026 und deren Erledigung; was dort
@@ -32,6 +35,15 @@ in K/W, Leitwerte G in W/K, Kapazitäten C in J/K.
 ---
 
 ## 0. Überblick
+
+**Wo diese Rechnung steht.** Die Fassade `SimulationWaermebedarf` ruft je Gebäude erst einen
+**modellfreien Vorbereitungsschritt** (Bewohnerzahl aus der Nutzfläche, Skalierungsfaktor nach E8,
+Klimareihen) und danach über **eine einzige Weiche** genau ein Rechenmodul (E20). **Dieses Papier
+beschreibt das Modul `Gebaeude/`** — den VDI-Weg. Der Tagesbilanz-Weg wird Zeichen für Zeichen in
+das Modul `Altweg/` verschoben, bekommt keine neue Funktion und endet mit Stufe GA; er wird hier nur
+dort genannt, wo eine Zahl gegen ihn gehalten wird. **Keines der beiden Module ruft das andere.**
+Die Kälteseite verlässt denselben Lauf über die zweite Fassade `SimulationKaeltebedarf` (E21) — es
+gibt keine zweite Gebäuderechnung für sie.
 
 Die Rechnung in zwölf Sätzen:
 
@@ -63,9 +75,11 @@ Die Rechnung in zwölf Sätzen:
     und sieben Kennzahlen (Schritt G).
 11. Die Heizlastreihe geht in Watt in den vorhandenen Gebäudepuffer und von dort unverändert in
     den Kanal `HEIZUNG`; alles danach — Summen, Dauerlinie, Energieprobe, `Waermelast_Max` —
-    bleibt Zeichen für Zeichen der Bestandsweg.
+    bleibt Zeichen für Zeichen der Bestandsweg. Die Kühlbedarfsreihe desselben Laufs geht über die
+    Kältefassade in den Kanal `KUEHLUNG` und **in keine dieser Rechnungen der Wärmeseite** (E21).
 12. Die Skalierung vom Katalogbau auf die Projektfläche und die Verbrauchs-Rückrechnung sind
-    eine Verhältnisrechnung **nach** der Simulation und ändern die Physik nicht.
+    eine Verhältnisrechnung **nach** der Simulation und ändern die Physik nicht. Sie sind ein
+    **Schritt dieses Moduls** — nachgebaut, nicht aus dem Altweg gerufen (8.3).
 
 ```mermaid
 flowchart TD
@@ -77,10 +91,21 @@ flowchart TD
     C --> D["Schritt D<br/>exakte Diskretisierung<br/>Phi, Gamma, Psi fuer h = 3600 s"]
     D --> F["Schritt F<br/>Vorlauf 30 Tage<br/>+ 8760 Blockstunden<br/>Regelung, Bisektion"]
     E --> F
+    V["Vorbereitungsschritt — modellfrei, VOR der Weiche<br/>Bewohner aus der Nutzflaeche, Skalierungsfaktor E8,<br/>Klimareihen — kennt kein Rechenmodell"] --> E
+    V --> S
     F --> G["Schritt G<br/>Reihen und Kennzahlen<br/>Heizlast W, Temperaturen, Kuehlbedarf"]
-    G --> S["Skalierung E8<br/>Z_AuswahlWohnflaeche / Wohnflaeche<br/>Verbrauchs-Rueckrechnung"]
+    G --> S["Skalierung E8 — Schritt des VDI-Moduls<br/>Z_AuswahlWohnflaeche / Nutzflaeche<br/>Verbrauchs-Rueckrechnung, nachgebaut"]
     S --> K["Kanal HEIZUNG (kW)<br/>Summen, Dauerlinie, Energieprobe"]
+    G --> KK["Fassade Kaeltebedarf<br/>Kanal KUEHLUNG (kWh)<br/>eigene Summe, Dauerlinie, Deckung"]
 ```
+
+**Zum Bild.** Der **Vorbereitungsschritt** steht links vor der Weiche: Er liefert Bewohnerzahl,
+Skalierungsfaktor und Klimareihen und kennt kein Rechenmodell (E20) — beide Rechenwege lesen sein
+Ergebnis, keiner ruft den anderen. Die **Skalierung nach E8 bleibt**, aber sie ist ein **Schritt des
+VDI-Moduls**: Es baut die Verhältnisrechnung nach (8.3), statt sie aus dem Altweg zu rufen. Die
+Spalte heißt nach dem Umbenennungsschritt `Nutzflaeche` (E19); `Z_AuswahlWohnflaeche` behält seinen
+Namen. Der **Kühlbedarf** verlässt Schritt G auf einem eigenen Weg in den vierten Kanal (E12, E21) —
+aus **demselben** Lauf, nicht aus einer zweiten Rechnung.
 
 ---
 
@@ -143,12 +168,21 @@ Umsetzungskonzept 1.6 und 1.7). Entschieden ist die Verschmelzung noch nicht;
 | Randbedingung Grundfläche | — | — | `Tab_Gebaeude.Grundflaeche_Randbedingung` **77** | `ERDREICH` | `ERDREICH` / `KELLER` / `AUSSENLUFT` |
 | Kellertemperatur | θ_NR | °C | `Tab_Gebaeude.Kellertemperatur` **77** | 10 | nur bei `KELLER` |
 | Strahlung auf Außenbauteile | — | 0/1 | `Tab_Gebaeude.Aussenbauteile_Strahlung` **77** | 0 (Schalter, `NOT NULL DEFAULT 0`) | — |
-| Projektfläche (Skalierung) | A_proj | m² | `Z_ProjektGebaeude.Wohnflaeche_Waermebedarf` über `Z_AuswahlWohnflaeche` | — | > 0 |
-| Katalogfläche (Basis der Rückrechnung) | A_alt | m² | `Tab_Gebaeude.Wohnflaeche_gesamt` | — (Pflicht) | > 0; `FlaecheAlt` in 8.3, Basis von `Bewohner` |
-| Einheit der Verbrauchseingabe | — | — | `Z_ProjektGebaeude.Einheit_Waermebedarf_Wohnflaeche` | `Wohnfläche [m²]` | Wertliste, siehe 8.3 |
-| Jahresnutzungsgrad der Altanlage | η | — | `Z_ProjektGebaeude.Jahresnutzungsgrad` | — | > 0, geht in `VerbrauchNeu` ein |
+| Projektfläche (Skalierung) | A_proj | m² | **Vorbereitungsschritt**, aus `Z_ProjektGebaeude.Wohnflaeche_Waermebedarf` über `Z_AuswahlWohnflaeche` | — | > 0 |
+| Katalogfläche (Basis der Rückrechnung) | A_alt | m² | **Vorbereitungsschritt**, aus `Tab_Gebaeude.Wohnflaeche_gesamt` | — (Pflicht) | > 0; `FlaecheAlt` in 8.3, Basis von `Bewohner` |
+| Einheit der Verbrauchseingabe | — | — | **Vorbereitungsschritt**, aus `Z_ProjektGebaeude.Einheit_Waermebedarf_Wohnflaeche` | `Wohnfläche [m²]` | Wertliste, siehe 8.3 |
+| Jahresnutzungsgrad der Altanlage | η | — | **Vorbereitungsschritt**, aus `Z_ProjektGebaeude.Jahresnutzungsgrad` | — | > 0, geht in `VerbrauchNeu` ein |
+| Bewohnerzahl | — | Personen | **Vorbereitungsschritt** (modellfrei, vor der Weiche) — nicht aus einem Aufruf des Altwegs | — | Fläche / `Flaeche_Nutzer`, siehe 8.3 |
+| Skalierungsfaktor (E8) | — | — | **Vorbereitungsschritt**; angewandt wird er als Schritt dieses Moduls (8.3) | 1 | > 0 |
 | Fläche je Person | — | m²/Person | `Tab_Gebaeude.Flaeche_Nutzer` | — | > 0 |
 | spezifischer Verbrauch | — | kWh/(m²a) | `Tab_Gebaeude.spez_Waermeverbrauch` | — | **reine Katalogkennzahl, kein Rechnungseingang** — sie geht allein in das Abnahmekriterium (Konzept 10.4 (4)) |
+
+**Zur Herkunft „Vorbereitungsschritt".** Die sechs so gekennzeichneten Größen liest das Modul
+`Gebaeude/` **nicht selbst aus der Datenbank** und ruft sie auch nicht aus dem Altweg ab: Sie
+stehen fertig bereit, wenn die Weiche das Modul ruft (E20). Der Vorbereitungsschritt kennt kein
+Rechenmodell — er fragt nicht, auf welchem Weg dieses Gebäude rechnet —, und beide Rechenwege lesen
+dasselbe Ergebnis. Die Spalten dahinter sind die des Bestands; sie sind hier genannt, damit jede
+Zahl ihre Quelle behält.
 
 ### 1.2 Klimadaten
 
@@ -163,11 +197,11 @@ Umsetzungskonzept 1.6 und 1.7). Entschieden ist die Verschmelzung noch nicht;
 | Ausstrahlung der Erdoberfläche | E_E | W/m² | aus θ_out abgeleitet, Blatt 3 Gl. (89) (Blatt 1 nennt sie E_E) | NULL bzw. E_A fehlt: Δθ_lw = 0, siehe E5 |
 | Windgeschwindigkeit | v_W | m/s | `Tab_Solar.Windgeschwindigkeit` (eigener Schemaschritt) | NULL: α_A bleibt 25 W/(m²K) |
 | Luftfeuchte | φ_L | % | `Tab_Solar.Luftfeuchte` (eigener Schemaschritt) | nicht rechenwirksam in G1/G2 |
-| Wochenendmaske | — | 0/1, 365 Tage | `Tab_Klimadaten.WE` über `KlimakalenderLesen` | dieselbe Quelle wie der Tagesbilanz-Weg; **UTC-Tage**, siehe E1 |
+| Wochenendmaske | — | 0/1, 365 Tage | `Tab_Klimadaten.WE` über `KlimakalenderLesen` | dieselbe Quelle wie der Altweg; **UTC-Tage**, siehe E1 |
 | Klimaregion | — | — | `Tab_Projekt.ID_Klimaregion` | Längen- und Breitengrad für den Sonnenstand |
 
 Die isotropen **Tagesmittel** `Tab_Klimadaten.Sol_Nord/Ost/Sued/West` gehören dem
-Tagesbilanz-Weg (`KlimakalenderLesen`); die gleichnamigen **Stundenspalten** in `Tab_Solar`
+Altweg (`KlimakalenderLesen`); die gleichnamigen **Stundenspalten** in `Tab_Solar`
 werden beim Import geschrieben und von `SolardatenCtrl` gemappt, aber von keinem Rechenweg des
 Kerns gelesen. Das Stundenmodell rechnet die Fassadenstrahlung selbst (Schritt E).
 
@@ -231,8 +265,8 @@ A_rad     = min(A_AW,opak, A_IW)      [m²]      Bezugsfläche des inneren Strah
 Σψ·L      = ψ_1·L_1 + ψ_2·L_2 + ψ_3·L_3                      [W/K]
 ```
 
-Die Gewichte 0,83 / 0,95 / 0,45 / 0,83 des Tagesbilanz-Wegs gehen hier **nicht** ein; sie
-bleiben dem ausdrücklich gewählten Tagesbilanz-Weg (Entscheid E2).
+Die Gewichte 0,83 / 0,95 / 0,45 / 0,83 gehen hier **nicht** ein; sie bleiben dem Altweg und
+entfallen mit ihm (Entscheid E2).
 
 **A4 — Widerstände des Außenwandpfads** (EPOS-Klassenweg, Konzept 4.3; normkonformes
 Gegenstück: (25)–(28))
@@ -512,7 +546,7 @@ Alles in diesem Schritt geschieht im Eingangsbauer `GebaeudeModellEingang` und e
 Reihen zu 8 760 Werten. Das Modell hat **einen** Lesepfad: Ortszeit über `ReadOrtszeit` (wie PV
 und Solarthermie); `Tab_Klimadaten` wird allein für die Wochenendmaske gebraucht. Zwei
 Zeitbezüge bleiben darin stehen und sind beide gewollt: der **Sonnenstand rechnet auf UTC**
-(E1), und die Wochenendmaske `WE[365]` trägt **UTC-Tage** (E8) — genau wie im Bestandsweg.
+(E1), und die Wochenendmaske `WE[365]` trägt **UTC-Tage** (E8) — genau wie im Altweg.
 
 **E1 — Sonnenstand** (Blatt 3, Abschnitt 5)
 
@@ -528,7 +562,7 @@ anderen Sonnenstand als PV und Solarthermie. Zwei weitere Festlegungen:
   übergibt dagegen den Stundenanfang aus der TMY-Zeitmarke. Der Unterschied ist eine halbe
   Stunde Stundenwinkel = 7,5° und verschiebt gerade die Ost- und Westflächen. Entschieden wird
   an **einer** Stelle, im Eingangsbauer (Frage U6, Konzept N1.10); `Tab_Solar.Sol_*` bleibt
-  unberührt, damit die Referenzbasis des Tagesbilanz-Wegs gültig bleibt.
+  unberührt, damit die Referenzbasis des Altwegs gültig bleibt.
 - **Azimutkonvention** des Eingangsbauers: Grad gegen Süd, Ost −90°, Nord 180°, West +90°,
   Fassadenneigung 90°, Dach nach Projektangabe. (Blatt 3 zählt Nord = 0°, Süd = 180° — die
   Umrechnung steht im Eingangsbauer, nicht verstreut.)
@@ -619,7 +653,7 @@ Erdoberfläche (Blatt 3 Gl. (89), aus θ_out abgeleitet, 1.2). **Fehlt E_A oder 
 α_A = 25 W/(m²K) bleibt — das ist der Fall der Stufe G1.
 
 In Stufe G1 steht der Schalter `Aussenbauteile_Strahlung` auf aus, also θ_A,eq,k = θ_out für
-Wand, Dach und Sonstiges — Parität mit dem Tagesbilanz-Weg. Mit G2 wird der Schalter mit der
+Wand, Dach und Sonstiges — Parität mit dem Altweg. Mit G2 wird der Schalter mit der
 obigen Normformel gefüllt.
 
 **E6 — Grundfläche: Erdreich, Keller oder Außenluft**
@@ -674,8 +708,9 @@ der ganze Fahrplan um eine Stunde.
 **Wochenende:** die Absenkung hängt allein an θ_soll,WE > 5 und `WE[Tag]`. Die Spalte
 `Tab_Gebaeude.Wochenende` wird im Kern nur gelesen und zurückgeschrieben; sie geht in **keine**
 Rechnung ein und ist deshalb auch hier keine Bedingung. Die Maske ist `WE[365]` aus
-`KlimakalenderLesen` — dieselbe Quelle wie der Tagesbilanz-Weg (und derselbe UTC-Tageskalender),
-damit beide Wege denselben Kalender rechnen und der Vergleich im Bedarfsdialog gültig bleibt.
+`KlimakalenderLesen` — dieselbe Quelle wie der Altweg (und derselbe UTC-Tageskalender),
+damit beide Wege denselben Kalender rechnen und der Vergleich alt/neu im Bedarfsdialog gültig
+bleibt, solange es ihn gibt (bis Stufe GA).
 Ferien haben Vorrang vor dem Wochenende.
 
 **Ferien:** Zeiträume laufen nach Tagesindex 1…365. Geprüft wird nur ein **aktiver** Fahrplan
@@ -825,10 +860,19 @@ flowchart TD
 | operative Temperatur | θ_op | °C | °C | neue Datei `operative_temperatur_<n>.csv` |
 | Kühlbedarf | Φ_c | **kWh** (`KuehlbedarfKwh`) | kWh | neue Datei `kuehlbedarf_<n>.csv` |
 
-Die drei neuen Dateien entstehen **nur** für Gebäude mit dem Stundenmodell. Für
-Tagesbilanz-Gebäude dürfen sie gar nicht erst angelegt werden — nicht „mit Nullen gefüllt" —,
+Die drei neuen Dateien entstehen **nur** für Gebäude, die das Modul `Gebaeude/` rechnet. Für
+Gebäude auf dem Altweg dürfen sie gar nicht erst angelegt werden — nicht „mit Nullen gefüllt" —,
 sonst schlägt der Vergleich des Referenzlaufs fehl (eine Datei, die nur im neuen Lauf liegt,
 bekommt die Schwere `double.MaxValue`).
+
+**Die Kühlbedarfsreihe hat zwei Abnehmer (E21).** Sie geht als Datei in den Referenzlauf-Export
+**und** über die Fassade `SimulationKaeltebedarf` in den vierten Kanal `KUEHLUNG` — aus demselben
+Lauf, ohne zweite Gebäuderechnung. Die Vorzeichenregel dafür ist **„die Norm innen, der Betrag
+außen"**: Der Löser führt Φ_h > 0 = Heizen und Φ_h < 0 = Kühlen (4.3), an der Grenze des
+Gebäudemodells werden daraus zwei nie negative Reihen. Hergeleitet ist sie im
+[Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.3; hier wird sie nur benannt.
+Ein Gebäude auf dem Altweg liefert in diesem Kanal **0 mit benanntem Hinweis** — der Altweg
+rechnet keine Kühllast.
 
 **Einheiten.** Der Löser bildet Leistungen in Watt; der Kern rechnet sie vor dem Ablegen in kWh
 um — Zeitreihen führen kWh und tragen die Einheit im Namen (Einheitenregeln 1 und 3 des Kerns).
@@ -858,6 +902,17 @@ Die Kennzahlen gehen **nicht** in die Datenbank: `Tab_ErgebnisEnergiebedarf` ist
 Lauf, die Kennzahlen sind je Gebäude. Sie reisen als Skalare in `aggregate.csv` des
 Referenzlaufs, mit dem Präfix `Geb[i].`.
 
+**Die Kennzahlen der Kälteseite spiegeln die der Wärmeseite (E21).** Zu `JahresheizwaermeMwh` und
+`SpitzeKw` je Gebäude tritt auf Kanalebene das Gegenstück: die **Jahreskälte** in MWh, die
+**Kältespitze** `Kaeltelast_Max` in kW als Maximum des Kühlkanals — sie geht **nicht** in
+`Waermelast_Max` ein — und die **Kühlstunden** in h. Die beiden Größen dieser Tabelle,
+`KuehlenergieMwh` und `StundenMitKuehlbedarf`, sind ihre Entsprechung **je Gebäude**; auf
+Kanalebene entstehen sie aus der Summe über die Gebäude, mit eigener Dauerlinie und eigenem
+Deckungszweig. Die Symmetrie ist **Bauvorschrift**, kein Stilwunsch: Was auf der Wärmeseite eine
+Kennzahl, ein Bild oder einen Deckungsweg hat, hat ihn auf der Kälteseite auch. Bildung, Bezug und
+Schemaschritte je Kennzahl stehen im
+[Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md).
+
 ### 8.3 Skalierung und Verbrauchs-Rückrechnung (Entscheid E8, letzter Schritt)
 
 Die Simulation läuft mit den **Katalogdaten** des Gebäudes. Erst danach wird skaliert:
@@ -866,12 +921,18 @@ Die Simulation läuft mit den **Katalogdaten** des Gebäudes. Erst danach wird s
 Φ_h,Projekt(h) = Φ_h,Katalog(h) · Z_AuswahlWohnflaeche / Wohnflaeche
 ```
 
-Im Tagesbilanz-Weg steckt dieser Faktor im Rückgabewert der Tagesrechnung; **das Stundenmodell
-muss die Verhältnisrechnung selbst führen** — sie fällt ihm nicht zu.
+Im Altweg steckt dieser Faktor im Rückgabewert der Tagesrechnung. **Dieses Modul baut die
+Verhältnisrechnung nach — es ruft sie nicht aus dem Altweg** (E20): Die beiden Module kennen
+einander nicht, also fällt dem VDI-Weg nichts zu, was im Altweg steht. Was **vor** der Weiche
+liegt und deshalb modellfrei ist — Bewohnerzahl aus der Nutzfläche, der Skalierungsfaktor selbst,
+die Klimareihen —, liefert der Vorbereitungsschritt; **angewandt** wird der Faktor hier, als
+Schritt dieses Moduls.
 
 Die Verbrauchs-Rückrechnung ist eine reine Verhältnisrechnung mit **einem** Kataloglauf. Die
-Reihenfolge ist die des Bestands und **nicht vertauschbar**: `Z_AuswahlWohnflaeche` trägt bis
-Schritt 2 den **eingegebenen Verbrauch**, danach die Fläche.
+Reihenfolge ist die des Bestands und **nicht vertauschbar** — sie gilt als Vorschrift für den
+Nachbau weiter (Befund 22/23 des Gegenlese-Protokolls, Kapitel 13): `Z_AuswahlWohnflaeche` trägt
+bis Schritt 2 den **eingegebenen Verbrauch**, danach die Fläche. Wer beim Nachbau zuerst setzt und
+dann ausliest, bekommt die Fläche statt des Verbrauchs und rechnet still falsch.
 
 ```
 1.  VerbrauchNeu aus Z_AuswahlWohnflaeche je Einheit_Waermebedarf_Wohnflaeche bilden [kWh]:
@@ -901,9 +962,13 @@ Zwei harte Bedingungen bleiben, jede aus eigenem Grund:
 - Der Löser muss **zustandsfrei zweimal hintereinander** laufen dürfen — nicht wegen der
   Rückrechnung, sondern weil derselbe Löser mehrere Gebäude und der Referenzlauf dieselbe
   Instanz mehrfach bedient. `Zuruecksetzen` ist Pflicht, Gegenprobe „zwei Läufe byte-gleich".
-- **Beide** Aufrufstellen verzweigen gemeinsam — sonst käme `VerbrauchAlt` aus dem Tagesmodell
-  und der Bedarf aus VDI 6007. `VerbrauchAlt = 0` wird im Stundenzweig benannt abgelehnt
-  (im Bestand läuft es ungeschützt in eine Division durch null).
+- **Die Rückrechnung kann keine zwei Rechenwege mehr mischen.** Im Bestand mussten beide
+  Aufrufstellen gemeinsam verzweigen, sonst käme `VerbrauchAlt` aus dem Tagesmodell und der Bedarf
+  aus VDI 6007. Nach E20 ist das keine einzuhaltende Bedingung mehr, sondern eine Folge des
+  Zuschnitts: Der Vorbereitungsschritt liegt **vor** der Weiche und kennt kein Modell, und
+  `VerbrauchAlt` entsteht in **Lauf 1 dieses Moduls** — aus derselben Rechnung wie der Bedarf.
+  `VerbrauchAlt = 0` wird hier benannt abgelehnt (im Bestand läuft es ungeschützt in eine Division
+  durch null).
 
 ### 8.4 Was unverändert bleibt
 
@@ -911,9 +976,14 @@ Zwei harte Bedingungen bleiben, jede aus eigenem Grund:
   Deckung und Anzeige eine Basis behalten. Die drei Spitzenkennzahlen aus 8.2 treten
   **zusätzlich je Gebäude** daneben; sie ersetzen `Waermelast_Max` nicht.
 - Addition in den Kanal, Energieprobe, Monatssummen, Dauerlinie, Mischfälle mit Ganglinien:
-  Zeichen für Zeichen der Bestandsweg.
+  Zeichen für Zeichen der Bestandsweg — **auf der Wärmeseite**. Die Kälteseite bekommt dieselben
+  Wege ein zweites Mal, für sich (E21): eigene Summe, eigene Dauerlinie, eigene Spitze, eigener
+  Deckungszweig. Der Kühlkanal läuft in **keinen** dieser Wärmewege ein.
 - Der Tagesbilanz-Weg selbst ändert sich nicht — weder seine Gewichte noch sein Vorlauf von
-  15 Tagen.
+  15 Tagen. Er wird **Zeichen für Zeichen nach `Altweg/` verschoben** und bekommt danach keine
+  Funktion mehr, nur noch Fehlerbehebung; die Verschiebung ist mit einem **byte-gleichen**
+  Referenzlauf abzunehmen, bevor dieses Modul angebunden wird (E20). Mit Stufe GA entfällt er
+  ganz — Zeitpunkt offen (Q24).
 
 ---
 
@@ -1254,9 +1324,17 @@ ausgelieferte Test führt nur die berechneten Abweichungen und das Bestanden-Kri
 
 Jede Zeile ist eine bewusste Festlegung, keine Lücke. Die Begründung steht jeweils im Konzept.
 
+**Was hier nicht steht: der Unterschied zum bisherigen Rechenweg.** Diese Tabelle führt
+Abweichungen von der **Richtlinie**. Der Tagesbilanz-Weg ist nach E20 kein zweiter, gleichrangiger
+Weg, gegen den hier abgegrenzt würde, sondern der **Übergangsweg (Altweg)**, den dieses Modul
+ablöst: eigenes Modul, keine neue Funktion, Ende mit Stufe GA. Wo eine Zeile ihn unten nennt, geht
+es um eine Zahl, die bei ihm bleibt. Wer beide Wege an einem Gebäude nebeneinander sehen will,
+findet sie im **Vergleich alt/neu im Bedarfsdialog**; er entsteht mit G2 und **entfällt mit GA**,
+weil es danach nur noch einen Rechenweg gibt, mit dem sich vergleichen ließe.
+
 | # | Abweichung | Was die Richtlinie sagt | Warum in EPOS-Plan | Verweis |
 |---|---|---|---|---|
-| 1 | **Hay-Davies** als Transpositionsmodell | Blatt 3 schreibt Aydinli/Krochmann vor: bedeckter Himmel rotationssymmetrisch, klarer Himmel anisotrop, Mischung über die Sonnenwahrscheinlichkeit aus dem Bedeckungsgrad | Der Bedeckungsgrad fehlt in `Tab_Solar` (PVGIS liefert ihn nicht); Blatt 3 verlangt zudem die Koordinaten des TRY-Referenzorts, nicht des Projektorts. Hay-Davies ist gegenüber dem isotropen Bestandsweg eine erhebliche Verbesserung. In G1 wird Blatt 3 **neben** Hay-Davies gerechnet und je Klimaregion, Orientierung und Neigung gegengehalten | Konzept N1.3, N1.10 (E5); Q20 |
+| 1 | **Hay-Davies** als Transpositionsmodell | Blatt 3 schreibt Aydinli/Krochmann vor: bedeckter Himmel rotationssymmetrisch, klarer Himmel anisotrop, Mischung über die Sonnenwahrscheinlichkeit aus dem Bedeckungsgrad | Der Bedeckungsgrad fehlt in `Tab_Solar` (PVGIS liefert ihn nicht); Blatt 3 verlangt zudem die Koordinaten des TRY-Referenzorts, nicht des Projektorts. Hay-Davies ist gegenüber dem isotropen Weg des Altwegs eine erhebliche Verbesserung. In G1 wird Blatt 3 **neben** Hay-Davies gerechnet und je Klimaregion, Orientierung und Neigung gegengehalten | Konzept N1.3, N1.10 (E5); Q20 |
 | 2 | **Kusuda-Erdreich** | VDI 6007-1 hat kein Erdreichmodell; erdberührte Bauteile laufen über θ_NR,eq (40) mit vorzugebender Nachbarraumtemperatur | Ein Anwender soll für die Bodenplatte keine Temperatur erfinden müssen. Kusuda ergänzt die Norm, ohne sie zu verletzen: er liefert genau das θ_NR, das (40) verlangt. `KELLER` ist der Normweg mit vorgegebener Temperatur | Konzept N1.3, 4.4 |
 | 3 | **Klassenweg-Parameter** h_ms = 9,1 W/(m²K), a_AW = 0,3, f_IW = 2,5 | Die Richtlinie leitet R_1, R_Rest und C_1 aus dem Schichtaufbau ab (1)–(17) | `Tab_Gebaeude` führt keine Schichtaufbauten. Der Klassenweg ist die Brücke, bis der Bauteilkatalog (G3) und der IFC-Import (G4) sie liefern. h_ms stammt aus DIN EN ISO 13790 und wird — bewusst abweichend von dort — auf **beide** Massepfade angewandt | Konzept 4.3 |
 | 4 | **Fenster im Lüftungszweig** statt im Außenwandzweig | (25)–(28): Fenster mit R_1,AF = R_AF/6 **nach** den Wänden parallel, und in θ_A,eq,gew (41) | Im Klassenweg eine bewusste **Vereinfachung**, nicht eine gleichwertige Umformung: der Fensterpfad umgeht den AW-Massenknoten und das innere Oberflächennetz und läuft über R_ext direkt zwischen Außenluft und Luftknoten. Stationär unterscheiden sich die Wege um den inneren Übergang, transient um die Pufferung durch C_AW; zudem fällt die Fensterfläche aus der Flächenwichtung von θ_op und aus der Strahlungsverteilung heraus (E3). Die Wirkung ist in G1 auszuweisen; mit G3 wird auf (25)–(28) umgestellt. **Entfallen mit E14 (16.09.2026):** der Normweg (25)–(28) gilt bereits in G1 (A7a); die Zeile bleibt als Beschreibung des Prototypwegs stehen, der nur noch Prüfwerkzeug ist | Konzept N1.3, N1.19 (E14), Frage Q6 |
@@ -1267,7 +1345,7 @@ Jede Zeile ist eine bewusste Festlegung, keine Lücke. Die Begründung steht jew
 | 9 | **a_kon = 0,09** als Vorgabe | Blatt 2, Tabelle A5: je Verglasung 0,02 bis 0,09, mit innen liegendem Sonnenschutz bis 0,52 | 0,09 gilt für 3-fach-Wärmeschutz. Die Tabellenwerte aus Blatt 2 sind je Verglasungsart zu übernehmen | Konzept N1.3 |
 | 10 | **α_kon,i = 2,7** global, **α_A = 25** als Festwert | Blatt 1, Seite 10: die konvektiven Werte sind je Bauteil vorzugeben (Testräume 1,7 Boden/Decke, 2,7 Wände/Fenster, 5,0 Kühldecke, außen 20,0); Gl. (38) legt nur die Summenbildung α_A = α_kon,A + α_str,A fest | Im Klassenweg gibt es keine Bauteile, nur zwei Gruppen; α_A = 25 ist die Summe der Testraumwerte 20,0 + 5,0, **kein gesetzter Normwert** (1.3). Die Normtestfälle laufen mit den Bauteilwerten; für Testbeispiel 11 ist der eigene Kühldeckenknoten die **vermutete** Ursache und die offene Aufgabe (10.3) | Konzept N1.3 |
 | 11 | **c·ρ = 0,34 Wh/(m³K)** | Testbeispiel 12 schreibt 1,1953 kJ/(m³K) = 0,332 vor | 0,34 stammt aus DIN EN 12831 und gilt für Projektrechnungen; die Normfälle rechnen mit 1,1953 | Konzept N1.3 |
-| 12 | **Bestandsgewichte gestrichen** (0,83 / 0,95 / 0,45 / 0,83) | — (die Gewichte sind eine Kalibrierung, keine Norm) | Im Stundenmodell gehen die Transmissionsverluste ungewichtet mit U·A ein; jede Fläche bekommt statt dessen ihre eigene Randbedingung. Faktor **und** Randbedingung wären eine doppelte Minderung. Der Tagesbilanz-Weg behält seine Gewichte | Entscheid E2, Konzept N1.6 |
+| 12 | **Bestandsgewichte gestrichen** (0,83 / 0,95 / 0,45 / 0,83) | — (die Gewichte sind eine Kalibrierung, keine Norm) | Im Stundenmodell gehen die Transmissionsverluste ungewichtet mit U·A ein; jede Fläche bekommt statt dessen ihre eigene Randbedingung. Faktor **und** Randbedingung wären eine doppelte Minderung. Der Altweg behält seine Gewichte, solange es ihn gibt; mit Stufe GA verschwinden sie mit ihm | Entscheid E2, E20, Konzept N1.6 |
 | 13 | **Validierung nur gegen Blatt 1** | Blatt 3 verweist zur Validierung auf Testbeispiele der VDI 2078 bzw. VDI 6020 | Deren Referenzergebnisse liegen nur auf den Datenträgern und setzen TRY05 Würzburg voraus; beides wird nach Entscheid E5 nicht beschafft. Ausgewiesen wird deshalb „validiert an den zwölf Testbeispielen der VDI 6007 Blatt 1" — nicht „validiert nach VDI 6020/2078" | Konzept N1.10 (E5), N1.11 (E6) |
 | 14 | **Der Klassenweg gibt die Katalog-U-Werte nicht wieder** | Der U-Wert enthält R_si; das Netz führt den inneren Übergang über (25)–(28) und die Dreieckschaltung — beide sind im Bauteilweg widerspruchsfrei, weil R_1 und R_Rest aus den Schichten folgen | Im Klassenweg wird R_si/A vom U-Wert abgezogen, im Netz liegt an seiner Stelle R_conv,AW parallel (R_conv,IW + R_rad) = R_innen,eff. Der wirksame Leitwert ist deshalb kleiner als Σ(U·A)_opak — für das Gebäude aus Kapitel 9 607,48 statt 686,95 W/K (−11,6 %). Der Abzug bleibt, weil der innere Übergang sonst zweimal zählt; die Minderung ist je Referenzgebäude auszuweisen, bevor die Basis neu eingefroren wird. Mit G3 entfällt die Frage | A4, 9.6, 10.4 |
 | 15 | **Verteilung der Strahlungslasten flächenproportional** | (45)/(46): die bestrahlte Fläche und die zu ihr parallelen Bauteile werden nicht beaufschlagt, Gewichte mit A_v je Orientierung | `Tab_Gebaeude` führt keine opaken Flächen je Orientierung, also ist A_v nicht rechenbar; in G1 gilt A_v = 0. Mit dem Bauteilkatalog (G3) oder neuen Spalten in 1.1 wird auf (45)/(46) umgestellt | E3, E4 |
@@ -1281,12 +1359,18 @@ Jede Zeile ist eine bewusste Festlegung, keine Lücke. Die Begründung steht jew
 - [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
   — Kapitel 4 (Rechenweg, Randbedingungen, Regelung, Vorlauf, Skalierung, Determinismus),
   Kapitel 5 (Prototyp, Klimaweg, Messungen), Kapitel 6 (Datenmodell), Kapitel 10 (Tests und
-  Abnahme), Nachtrag 1 (Entscheide E1–E10, Korrekturen aus der Richtlinie).
+  Abnahme), Nachtrag 1 (Entscheide E1 ff., Korrekturen aus der Richtlinie).
 - [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
-  — Kapitel 1 (Verzweigung, Datenfluss, Kernklassen, Schemaschritt 77, Ergebnisreihen, Tests),
+  — Kapitel 1 (Weiche und Datenfluss, Kernklassen, Schemaschritt 77, Ergebnisreihen, Tests),
   Kapitel 2 (Gebäudedialog mit der U·A-Tabelle), Kapitel 4 (Reihenfolge und Abnahme je Stufe).
 - [`ADR-002_Stundenmodell_VDI6007_Einbindung.md`](ADR-002_Stundenmodell_VDI6007_Einbindung.md)
   — der Entscheid: Stundenmodell als Vorgabemodell, eine Naht, Neu-Einfrieren der Basis.
+- [`ADR-006_Trennung_Altweg_VDI6007.md`](ADR-006_Trennung_Altweg_VDI6007.md)
+  — die Trennung der Rechenwege: Weiche am Eingang, modellfreier Vorbereitungsschritt, Modul
+  `Altweg/` als befristeter Übergang, Stufe GA.
+- [`Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md`](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md)
+  — die Kälteseite: Vorzeichenregel (3.3), vierter Kanal `KUEHLUNG`, Kälteerzeuger und Deckung,
+  Kennzahlen, Stufen KU0–KU3.
 - [`ADR-001_Schema-Ausrollung.md`](ADR-001_Schema-Ausrollung.md) — Regeln für den Schemaschritt.
 - [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md) — Stand je
   Entscheid und je Stufe.
@@ -1311,7 +1395,7 @@ Jede Zeile ist eine bewusste Festlegung, keine Lücke. Die Begründung steht jew
 - [`Gebaeudesimulation/2026-09-15_Befund_J_Normband_Validierung.md`](Gebaeudesimulation/2026-09-15_Befund_J_Normband_Validierung.md)
   — die Prüfung gegen das Normband aller zwölf Fälle.
 - [`Gebaeudesimulation/2026-09-15_Befund_L_Einbindung_Kern.md`](Gebaeudesimulation/2026-09-15_Befund_L_Einbindung_Kern.md)
-  — die eine Verzweigung, der Puffer in Watt, der Weg vom Klima bis zum Kanal.
+  — die eine Naht, der Puffer in Watt, der Weg vom Klima bis zum Kanal.
 
 **Hausregeln**
 

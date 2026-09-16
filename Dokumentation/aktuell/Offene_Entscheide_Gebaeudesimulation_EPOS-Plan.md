@@ -1,6 +1,6 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
-**Stand 16.09.2026, nach den Entscheiden E16–E19.**
+**Stand 16.09.2026, nach den Entscheiden E16–E21.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -19,8 +19,8 @@ Entscheid um den betroffenen Punkt gekürzt.
 - **Kapitel 0** nennt die Punkte, die **vor dem Start von G0/G1 oder vor der Beauftragung einer
   Stufe** fällig sind — alles, was Schema, Referenzbasis, Datenmodell oder eine Fremdbibliothek
   unwiderruflich festlegt. Wer wenig Zeit hat, liest nur dieses Kapitel.
-- **Kapitel 2 bis 6** führen je Papier alle offenen Punkte einzeln aus (Kapitel 1 ist entfallen —
-  alle Konzeptfragen sind entschieden), immer im selben Aufbau:
+- **Kapitel 1 bis 6** führen je Papier alle offenen Punkte einzeln aus (Kapitel 1 trägt seit E20 allein
+  die neue Frage Q24), immer im selben Aufbau:
   Frage, Hintergrund, Optionen, Empfehlung des Papiers, Folge bei Nichtentscheid, Fällig vor.
 - **Kapitel 7** ist entfallen (ADR-004 und ADR-005 sind angenommen), **Kapitel 8** nennt die technischen Festlegungen,
   denen nur zu widersprechen ist, **Kapitel 9** den Weg, auf dem ein Entscheid festgehalten wird.
@@ -30,11 +30,12 @@ Entscheid um den betroffenen Punkt gekürzt.
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur,
   **K** Kühlung.
 
-**Umfang in Zahlen.** 65 offene Punkte (nach den Entscheiden E16–E19 vom 16.09.2026, die Q10, Q11a,
-U11, U16, M1, M4, A7 und A8 aus diesem Register genommen haben): keiner mehr im Konzept, 14 im
-Umsetzungskonzept (U1–U10, U12–U15), 12 im Mehrzonenkonzept (M2, M3, M5–M14), 7 im
-Datenaustauschkonzept (D1, D2, D4, D5, D6, D11, D16), 17 in der Softwarearchitektur (A1–A6, A9–A19,
-davon vier reine Verweise auf U-Nummern) und 15 im Kühlkonzept (K1, K4–K12, K19 sowie K20–K23).
+**Umfang in Zahlen.** 63 offene Punkte (nach den Entscheiden E16–E21 vom 16.09.2026, die Q10, Q11a,
+U2, U11, U16, M1, M4, A7, A8, A16, A19 und K1 aus diesem Register genommen und Q24 sowie Q25 hinzugefügt haben): 2 im
+Konzept (Q24, Q25), 13 im Umsetzungskonzept (U1, U3–U10, U12–U15), 12 im Mehrzonenkonzept (M2, M3,
+M5–M14), 7 im Datenaustauschkonzept (D1, D2, D4, D5, D6, D11, D16), 15 in der Softwarearchitektur
+(A1–A6, A9–A15, A17, A18, davon drei reine Verweise auf U-Nummern) und 14 im Kühlkonzept (K4–K12,
+K19 sowie K20–K23).
 ADR-004 und ADR-005 sind angenommen; dazu drei Listen zur Kenntnis.
 
 ---
@@ -43,7 +44,7 @@ ADR-004 und ADR-005 sind angenommen; dazu drei Listen zur Kenntnis.
 
 Kriterium dieser Liste: Der Punkt legt **Schema, Referenzbasis, Datenmodell oder eine
 Fremdbibliothek unwiderruflich** fest, oder er ist für den Anwender in der Oberfläche sichtbar und
-lässt sich nachträglich nicht stillschweigend ändern. Alles Übrige steht in den Kapiteln 2 bis 6
+lässt sich nachträglich nicht stillschweigend ändern. Alles Übrige steht in den Kapiteln 1 bis 6
 und darf mit der Stufe entschieden werden, zu der es gehört.
 
 | Nr. | Frage in einem Satz | Empfehlung in einem Satz | Spätestens vor |
@@ -51,14 +52,11 @@ und darf mit der Stufe entschieden werden, zu der es gehört.
 | **U8** | Werden die Normzahlen als gitignorierte, lokal beizustellende Datei geführt — mit der Folge, dass der Normfallnachweis lokal und nicht in der CI läuft? | Ja; das Ausliefern wäre eine Vervielfältigung, und die Lücke im Gate gehört ins Protokoll. | **G0** |
 | **U5** | Werden die zwei Gebäudespalten-Schemaschritte zu **einem** verschmolzen (ein Sichtneubau statt zwei)? | Ja — G1 und G2 werden gemeinsam ausgeliefert; der Klimaschritt bleibt getrennt. | **G1** |
 | **U1** | Bekommt der Katalogeditor **einen** Schreibweg statt der heutigen mehreren — eine für den Anwender sichtbare Änderung? | Ja, mit G1; „Speichern unter…" bleibt als nicht schließender Zweitknopf. | **G1** |
-| **U2** | Werden die sieben Modellparameterfelder im Tagesbilanz-Weg **versteckt** oder **gesperrt gezeigt**? | Verstecken; die Herleitungszeile sagt in beiden Stellungen, was gilt. | **G1** |
 | **U3** | Bekommt das `Zahlenfeld` einen `Platzhalter` — ein Eingriff in einen Standardbaustein, den jeder Dialog benutzt? | Ja, rein additiv; zieht die Stilblatt-Tests nach sich. | **G1** |
-| **A15** | Was geschieht mit der letzten reinen Bestandsbasis, gegen die der Rückweg-Nachweis läuft? | Keine zweite Basis, sondern ein Referenzprojekt, das dauerhaft auf Tagesbilanz steht und in der neuen Basis mit eingefroren wird. | **G1 + G2** |
-| **A16** | Welchen Zuschnitt bekommt der zweite Verzweigungspunkt, und wie gelangt die Modellwahl dorthin? | Derselbe Zuschnitt, die Modellwahl als Parameter durchgereicht; der Tagesbilanz-Weg bleibt Zeichen für Zeichen, wie er ist. | **G1** |
+| **A15** | Was geschieht mit der letzten reinen Bestandsbasis, gegen die der Rückweg-Nachweis läuft? | Keine zweite Basis, sondern ein Referenzprojekt, das für die Dauer des Übergangs auf dem Altweg (Tagesbilanz) steht und in der neuen Basis mit eingefroren wird; mit Stufe GA wird es umgestellt (E20). | **G1 + G2** |
 | **A18** | Bleibt der Klimaweg des Gebäudemodells eine **eigene Klasse** oder fällt er in den Eingangsbauer zurück? | Eigene Klasse behalten, aber ausschließlich vom Eingangsbauer gerufen. | **G1** |
 | **A10** | Zieht der Gebäudedialog schon mit G1 nach `EPOS.UI.Daten` oder erst mit G6? | Mit G1 — die Hülle wird ohnehin neu geschnitten, und der Importweg setzt einen plattformfreien Schreibweg voraus. | **G1** |
 | **A12** | Wo erscheint der Produktausweis — Wiki-Seite **und** Berichtskopf? | Beides, im Wortlaut von E10, unverändert und ohne Umschreibung. | **G1** (Berichtskopf), G2 (Wiki) |
-| **K1** | Vierter Kanal in der bestehenden Kanalstruktur — oder eine eigene Struktur für Kälte? | Vierter Kanal, mit getrennter Deckungsseite und zwei Kanallisten. | **KU1** (mit G1 + G2) |
 | **K2** | Vorzeichen: Norm innen, Betrag außen — führt der Kanal positive Kältemengen? | Ja; ein Kanal mit negativen Werten bräche jede Summen- und Deckungsrechnung, und zwar still. | **KU1** |
 | **K10** | Bleibt der Kühlbetrieb bis zu einer ausdrücklichen Projekteinstellung aus? | Ja, Vorgabe 0 — nicht um das Einfrieren zu vermeiden, sondern um die zwölf übrigen Referenzprojekte zu schützen. | **KU1** |
 | **K11** | Eigener Kühlsollwert und eigene Kühlleistungsgrenze — oder bleibt die vorhandene Maximaltemperatur die einzige Kühleingabe? | Eigener Sollwert und eigene Grenze in KU1, Zeitprofil erst in KU3. | **KU1** |
@@ -93,20 +91,64 @@ Kapiteln.
 
 ---
 
-## 1. Konzept Gebäudesimulation VDI 6007 — entfallen
+## 1. Konzept Gebäudesimulation VDI 6007 — Q24 und Q25
 
-Alle 23 Fragen des Konzepts sind entschieden (E1 bis E19; zuletzt **Q10** mit E18 und **Q11a** mit
-E19 am 16.09.2026 — Konzept Kapitel 13 und Nachtrag N1.17 bis N1.24, Statusdatei Abschnitt 1). Die
-Fragen, die aus E15 entstanden sind, führt das Kühlkonzept als K20 bis K23 (Kapitel 6). Die Nummer
-dieses Kapitels bleibt stehen, damit die Verweise auf Kapitel 2 bis 9 gelten.
+Quelle: [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
+Kapitel 13 und Nachtrag N1.25. Alle 23 ursprünglichen Fragen des Konzepts sind entschieden (E1 bis E19;
+zuletzt **Q10** mit E18 und **Q11a** mit E19 am 16.09.2026). Mit **E20** — Trennung der Rechenwege,
+der Altweg nur als Übergang — sind zwei neue Fragen entstanden (Q25 aus Befund X). Die Fragen, die aus E15 entstanden
+sind, führt das Kühlkonzept als K20 bis K23 (Kapitel 6).
+
+### Q24 — wann endet der Übergang?
+
+- **Frage:** Wann wird der Altweg (Tagesbilanz) entfernt — Stufe **GA** mit Modul, Weiche, Schalter
+  „Rechenweg", Altweg-Spalten, Umstellung des Übergangs-Referenzprojekts und Neu-Einfrieren?
+- **Hintergrund:** E20 löst den Tagesbilanz-Weg ab und behält ihn nur als Übergang. Ein Übergang
+  braucht ein Ende, sonst bleiben zwei Rechenwege, ein Schalter, ein Rückweg-Test und ein
+  Referenzprojekt auf dem Altweg dauerhaft im Produkt. Bis zum Ende bekommt der Altweg keine
+  Änderung außer Fehlerbehebung; die Bestandsbefunde GB werden vor der Verschiebung behoben.
+- **Optionen:**
+  - **(a) Frühestens nach G3**, wenn alle Referenzprojekte und die Bestandsprojekte des Anwenders
+    einmal auf VDI 6007 gerechnet und geprüft sind — den Zeitpunkt setzt dann der Anwender.
+  - **(b) Sofort mit G1 + G2** — kein Übergang; Bestandsprojekte können nicht mehr mit dem alten Weg
+    verglichen werden, der Rückweg-Test entfällt sofort.
+  - **(c) Unbefristet** — widerspricht E20 („nur als Übergang").
+- **Empfehlung des Papiers:** **(a)**; Aufwand der Stufe GA rund 5–8 PT.
+- **Folge bei Nichtentscheid:** Der Altweg bleibt im Produkt, und jede Änderung an gemeinsam
+  genutzten Stellen (Vorbereitungsschritt, Dialog) ist doppelt zu prüfen.
+- **Fällig vor:** **GA** — frühestens nach G3; kein Sperrpunkt für G0 bis G3.
+- **Quelle:** [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.25 und Kapitel 13 (Q24);
+  [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md).
+
+### Q25 — Umfang der Stufe GA
+
+- **Frage:** Bleibt `Typ` (Gebäudetyp mit Tagesverteilung) als Katalogmerkmal in der Hauptstruktur, und
+  was wird aus `Tab_DBTagV` und dem `GebaeudetypDialog`, wenn der Altweg als einziger Rechenleser
+  entfällt? Fallen die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` mit dem GA-Schemaschritt?
+- **Hintergrund:** Befund X zählt in den Gebäudetabellen vier Spalten, die nur der Altweg liest (`Typ`,
+  `Fensterflaeche_Ost_West`, `Wochenende`, `Ferien`), und acht ohne jeden Rechenleser. `Typ` ist
+  zugleich ein Katalogmerkmal, das der Anwender wählt und im Gebäudetypen-Dialog pflegt.
+- **Optionen:**
+  - **(a) `Typ` bleibt als Stammdatum in der Hauptstruktur**, die Tagesverteilungstabellen verlieren
+    ihren Rechenleser und bleiben bis zu einem eigenen Aufräumentscheid; die toten Spalten fallen mit GA.
+  - **(b) `Typ`, Tagesverteilung und Gebäudetypen-Dialog fallen mit GA** — kleineres Schema, aber ein
+    Katalogmerkmal weniger.
+  - **(c) Tote Spalten in einem eigenen Aufräumschritt** — ein Schemaschritt mehr.
+- **Empfehlung des Befunds:** **(a)**.
+- **Folge bei Nichtentscheid:** Der GA-Schemaschritt ist im Umfang unbestimmt; die Tagesverteilung
+  bliebe ohne Leser im Produkt.
+- **Fällig vor:** **GA** (mit Q24).
+- **Quelle:** [Befund X](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md) 5
+  (X2, X3); [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 13 (Q25).
 
 ---
 
 ## 2. Umsetzungskonzept — U1 bis U16
 
 Quelle: [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
-Kapitel 5 („Fragen mit Empfehlung"; das Papier steht in Rev. 2). Vierzehn der sechzehn Fragen sind
-offen; **U11** und **U16** sind mit E18 (16.09.2026) beantwortet und hier gekürzt.
+Kapitel 5 („Fragen mit Empfehlung"; das Papier steht in Rev. 2). Dreizehn der sechzehn Fragen sind
+offen; **U2** ist durch E20 überholt, **U11** und **U16** sind mit E18 (16.09.2026) beantwortet — alle
+drei hier gekürzt.
 Vier von ihnen führt die Softwarearchitektur unter eigener Nummer als Sperrpunkt: **U1 = A4**,
 **U2 = A19**, **U3 = A5**, **U5 = A9** — entschieden werden sie unter der U-Nummer, damit nicht
 zwei Register zwei Antworten bekommen.
@@ -136,26 +178,10 @@ zwei Register zwei Antworten bekommen.
 
 ### U2 — sieben Modellparameterfelder verstecken oder gesperrt zeigen
 
-- **Frage:** Werden die sieben Modellparameterfelder des dritten Reiters im Tagesbilanz-Weg
-  **versteckt** oder **gesperrt gezeigt**?
-- **Hintergrund:** Eine Hausregel für diesen Fall gibt es nicht, nur die Nachbarregel, dass ein
-  gesperrtes Bedienelement seinen Grund nennen muss. Sieben gesperrte, aber sichtbare Felder
-  wären demnach sieben Begründungen auf einmal. Der Dialog trägt in beiden Stellungen eine
-  Herleitungszeile unter der Modell-Klappliste, die sagt, welches Modell gilt.
-- **Optionen:**
-  - **(a) Verstecken** — die Maske bleibt ruhig; der Anwender sieht im Tagesbilanz-Weg nur, was
-    dort wirkt, und erfährt aus der Herleitungszeile, warum.
-  - **(b) Gesperrt zeigen** — der Anwender sieht, was das andere Modell könnte; nach der Hausregel
-    braucht jedes gesperrte Feld dann einen genannten Grund.
-- **Empfehlung des Papiers:** **Verstecken.** Sieben graue Felder auf einmal verwirren mehr, als
-  sie erklären; die Herleitungszeile sagt in beiden Stellungen, was gilt.
-- **Folge bei Nichtentscheid:** Der Maskenzustand und sein Feldbestandstest lassen sich nicht
-  festschreiben; die Softwarearchitektur führt den Punkt als A19 und **sperrt damit den dritten
-  Reiter samt seinem bunit-Test**.
-- **Fällig vor:** **G1**.
-- **Quelle:** [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 5
-  (U2) und 2.3; [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 6 (A19)
-  und 3.2.
+**Durch E20 überholt (16.09.2026).** Der Gebäudedialog ist in VDI-6007-Struktur aufgebaut, die
+Modellparameter sind immer sichtbar und bearbeitbar; Felder, die nur der Altweg liest, stehen in einem
+eingeklappten Abschnitt „Übergang: Tagesbilanz", der nur bei einem Gebäude auf dem Altweg erscheint
+und mit ihm entfällt. Festlegung in Kapitel 8; Konzept N1.25, ADR-006.
 
 ### U3 — `Platzhalter` am Standardbaustein `Zahlenfeld`
 
@@ -838,8 +864,8 @@ Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026
 
 Quelle: [`Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md`](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md),
 Kapitel 6 („Offene Architekturentscheide"; das Papier steht in Rev. 2). **Neunzehn Fragen, davon
-A7 und A8 am 16.09.2026 entschieden (E16, E17) und hier gekürzt.** Vier
-davon — **A4 = U1**, **A5 = U3**, **A9 = U5**, **A19 = U2** — liegen bereits unter einer Nummer des
+A7 und A8 (E16, E17) sowie A16 und A19 (E20) am 16.09.2026 entschieden und hier gekürzt.** Drei
+davon — **A4 = U1**, **A5 = U3**, **A9 = U5** — liegen bereits unter einer Nummer des
 Umsetzungskonzepts beim Anwender und stehen dort **nur als Sperrpunkt dieses Papiers**; sie sind
 hier als Verweis geführt und werden unter ihrer U-Nummer entschieden (Kapitel 2). Ebenso stellt
 das Papier **D1** und **D2** ausdrücklich nicht neu — sie stehen im Datenaustauschkonzept
@@ -1085,7 +1111,7 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
   nicht mehr im Repositorium, gerechnet wird ausschließlich gegen die aktuelle Basis". Der
   Systementwurf empfiehlt denselben Ausweg wie die Softwarearchitektur.
 - **Optionen:**
-  - **(a) Ein Referenzprojekt, das dauerhaft auf Tagesbilanz steht** und in der **neuen** Basis
+  - **(a) Ein Referenzprojekt, das für die Dauer des Übergangs auf dem Altweg steht** und in der **neuen** Basis
     mitgefroren wird — dann prüft jeder Lauf **beide** Wege gegen dieselbe, aktuelle Basis, und die
     neuen Reihen entstehen für dieses Projekt gar nicht erst. Die alte Basis bleibt nur bis zum
     Merge von G1 und G2 und wandert dann mit ihrem Protokoll in die Geschichte.
@@ -1093,7 +1119,9 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
     misst.
   - **(c) Ein Dateiausschluss im Vergleich** — löste es technisch, kostet aber einen neuen Schalter
     an einem Werkzeug, an dem die ganze Nachweiskette hängt.
-- **Empfehlung des Papiers:** **(a)** — so auch der Systementwurf.
+- **Empfehlung des Papiers:** **(a)** — so auch der Systementwurf. **E20 (16.09.2026) befristet:** das
+  Projekt wird mit Stufe GA auf VDI 6007 umgestellt, der Rückweg-Test eingestellt, die Basis neu
+  eingefroren (Konzept N1.25).
 - **Folge bei Nichtentscheid:** **G1 + G2 blockiert**: Der Einfrierschritt kann nicht abgenommen
   werden, weil unklar ist, wogegen der Rückweg künftig gemessen wird.
 - **Fällig vor:** **G1 + G2** (der gemeinsame Einfrierschritt).
@@ -1103,26 +1131,11 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
 
 ### A16 — Zuschnitt des zweiten Verzweigungspunkts
 
-- **Frage:** Bekommt der zweite Verzweigungspunkt (in der Methode, die Bewohnerzahl und Fläche
-  rechnet) denselben Zuschnitt wie der erste — und wie gelangt die Modellwahl dorthin? Die Methode
-  kennt sie heute nicht.
-- **Hintergrund:** Für den ersten Punkt ist es entschieden: Im Stundenzweig entfällt der ganze
-  Tagesverteilungsblock samt dem Abbruch bei fehlender Verteilung, den das Stundenmodell nicht
-  erbt. Bliebe die Rückrechnung beim Tagesmodell, mischte die Verhältnisrechnung zwei Modelle — was
-  [ADR-002](ADR-002_Stundenmodell_VDI6007_Einbindung.md) ausschließt.
-- **Optionen:**
-  - **(a) Derselbe Zuschnitt, die Modellwahl als Parameter durchgereicht** — der Tagesbilanz-Weg
-    bleibt an **beiden** Stellen Zeichen für Zeichen, wie er ist.
-  - **(b) Die Rückrechnung beim Tagesmodell lassen** — dann mischt die Verhältnisrechnung zwei
-    Modelle.
-  - **(c) Die Modellwahl über ein Feld der Instanz reichen** — spart die Signatur, stellt aber
-    einen Zustand her, der zwischen Gebäuden reisen kann.
-- **Empfehlung des Papiers:** **(a).**
-- **Folge bei Nichtentscheid:** **G1 blockiert** — die Verzweigung selbst ist der Kern der Stufe.
-- **Fällig vor:** **G1**.
-- **Quelle:** [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 6 (A16),
-  1.6 und 4.1; [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 1.5;
-  [ADR-002](ADR-002_Stundenmodell_VDI6007_Einbindung.md).
+**Durch E20 entschieden (16.09.2026): Es gibt keinen zweiten Verzweigungspunkt mehr.** Der
+Tagesbilanz-Weg wird Zeichen für Zeichen in ein eigenes Modul `Altweg/` verschoben, der VDI-Weg ruft
+nichts daraus; eine Weiche am Eingang der Gebäudebedarfsrechnung wählt das Modul, und was beide
+brauchen (Bewohner, Skalierungsfaktor, Klimareihen), liefert ein modellfreier Vorbereitungsschritt.
+Konzept N1.25, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md).
 
 ### A17 — Maskenschlüssel und Menüzeile für Import und Export?
 
@@ -1166,21 +1179,9 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
 
 ### A19 — sieben Modellparameterfelder verstecken oder sperren (= U2)
 
-- **Frage und Erläuterung:** siehe **U2** in Kapitel 2.
-- **Empfehlung des Papiers:** „**= U2, Empfehlung dort: verstecken** — die `Herleitungszeile` sagt
-  in beiden Stellungen, was gilt; sieben gesperrte, aber sichtbare Felder wären nach der Hausregel
-  sieben Begründungen auf einmal."
-- **Folge bei Nichtentscheid:** **G1 blockiert** — der dritte Reiter und sein Feldbestandstest.
-- **Fällig vor:** **G1**.
-- **Quelle:** [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 6 (A19) und
-  3.2; entschieden wird unter U2.
-
-### Wiedervorlage des Systementwurfs
-
-Der [Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) stellt in **Kapitel 11** elf
-Gegenstände zur Wiedervorlage — sie sind **keine offenen Entscheide**, sondern benannte Punkte, die
-später zu überdenken sind, jeder mit der Bedingung, an der er hängt. Sie stehen als Liste in
-Kapitel 8 dieses Registers.
+**Durch E20 überholt (16.09.2026), mit U2.** Der Dialog ist in VDI-6007-Struktur aufgebaut, die
+Modellparameter sind immer sichtbar; Altweg-Felder stehen im eingeklappten Übergangsabschnitt eines
+Altweg-Gebäudes. Festlegung in Kapitel 8; Konzept N1.25, ADR-006.
 
 ---
 
@@ -1194,27 +1195,14 @@ G1 + G2), **KU2** (der Erzeuger) und **KU3** (das Umfeld).
 
 Der zweite Block (12.2) sind technische Festlegungen, denen nur zu widersprechen ist; sie stehen in
 Kapitel 8. **K20 bis K23** sind die vier Fragen, die mit **E15** und dem Gegenlesen vom
-16.09.2026 hinzugekommen sind; das Papier führt sie in Kapitel 12.1 neben K1–K19.
+16.09.2026 hinzugekommen sind; das Papier führt sie in Kapitel 12.1 neben K1–K19. **K1** ist mit **E21** (Simulation Kältebedarf analog zur Wärmeseite, 16.09.2026) entschieden und hier gekürzt.
 
 ### K1 — vierter Kanal oder eigene Kältestruktur
 
-- **Frage:** Wird die Kälte als **vierter Kanal** in der bestehenden Kanalstruktur geführt — oder
-  bekommt sie eine **eigene Struktur**?
-- **Hintergrund:** Der Kanal ist die Einheit, an der Persistenz, Kennzahlen, Export, Bericht und
-  Wächter hängen. Eine parallele Struktur verdoppelt jede dieser Stellen. Zugleich darf der
-  Kühlkanal **nicht** in die Wärmesumme laufen — dafür braucht es zwei Kanallisten und zwei
-  ausdrücklich benannte Ausnahmen.
-- **Optionen:**
-  - **(a) Vierter Kanal mit getrennter Deckungsseite** — eine Struktur, zwei Kanallisten; die
-    Trennung der Deckungswelten wird erzwungen und geprüft.
-  - **(b) Eigene Kältestruktur** — die Wärmeseite bleibt unberührt; Persistenz, Kennzahlen, Export
-    und Wächter entstehen ein zweites Mal.
-- **Empfehlung des Papiers:** **Vierter Kanal**, mit getrennter Deckungsseite und zwei
-  Kanallisten.
-- **Folge bei Nichtentscheid:** „Der gesamte Zuschnitt" hängt daran — KU1 ist nicht beauftragbar.
-- **Fällig vor:** **KU1** (und damit vor dem gemeinsamen Merge mit G1 + G2).
-- **Quelle:** [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 4.1 und 12.1 (K1);
-  [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.18 (E12).
+**Durch E21 entschieden (16.09.2026): vierter Kanal in der bestehenden Kanalstruktur mit getrennter
+Deckungsseite** — die Simulation des Kältebedarfs wird analog zur Simulation des Wärmebedarfs
+gebaut (Fassade `SimulationKaeltebedarf`, Kanal `KUEHLUNG`, Kennzahlen, Bedarfsdialog, Deckung,
+Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei Abschnitt 1; hier gekürzt.
 
 ### K4 — Stellung der Kühlung in der Knappheitsreihenfolge
 
@@ -1523,7 +1511,17 @@ dieses Kapitels bleibt stehen, damit die Verweise auf Kapitel 8 und 9 gelten.
 
 Die folgenden Punkte **verlangen keinen Entscheid**. Die Papiere beantworten sie selbst; sie stehen
 hier, damit der Anwender **widersprechen** kann, nicht damit er entscheiden muss. Nur die Nummer,
-der Gegenstand und die Fundstelle — die Begründungen stehen in den Papieren.
+die Festlegung in einem Satz und die Stufe, bis zu der ein Widerspruch noch billig ist — die
+Begründung steht im jeweiligen Papier (Datenaustauschkonzept 11.2, Kühlkonzept 12.2, Wiedervorlage
+des Systementwurfs).
+
+**Festlegung aus E20 (16.09.2026), zu widersprechen bis zur Beauftragung von G1:** Der Gebäudedialog und
+seine Nachbarn (Katalog-, Skalierungs- und Bedarfsdialog) sind in **VDI-6007-Struktur** aufgebaut, die
+Modellparameter immer sichtbar und bearbeitbar; Felder, die nur der Altweg liest, stehen in einem
+eingeklappten Abschnitt „Übergang: Tagesbilanz", der nur bei einem Gebäude auf dem Altweg erscheint;
+der Schalter heißt „Rechenweg" mit Vorgabe „VDI 6007" und Wert „Tagesbilanz (Übergang)"; ein
+Gebäude auf dem Altweg trägt im Bericht „Tagesbilanz (Übergangsweg)" statt des Produktausweises
+(Konzept N1.25, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)).
 
 ### 8.1 Datenaustausch, technische Festlegungen (11.2)
 
