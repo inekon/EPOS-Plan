@@ -836,6 +836,13 @@ nicht sinnvoll."*
    Rolle spielt. Die Größensuche ist damit nur noch gesperrt, wenn es gar keine Einheit gibt.
    **„Stückzahl suchen" und „Nur bewerten" bleiben unverändert** — dort zählt die konkrete Einheit.
 
+> **Dieser Befund beschreibt einen Rechenweg, den es nicht mehr gibt — die Frage am Ende ist
+> mit 8.9 beantwortet.** Der Größenlauf rastert seit dem Anwenderentscheid vom 15.09.2026
+> keine freie Größe mehr, sondern wählt **Geräte**; welcher Kennwert vom Gerät kommt und
+> welcher Eingabe des Anwenders bleibt, legt `FlottenGeraeteuebernahme` je Kennwert fest
+> (Tabelle in 8.9). Das Verhältnis von Lade- zu Entladeleistung wirkt gar nicht mehr, weil
+> beide Leistungen vom Gerät kommen. Der Absatz bleibt als Befundlage stehen.
+
 **Was vom Gerät trotzdem in den Größenlauf eingeht** (Befund am Rechenweg, `FlottenOptimierer`
 und `SpeicherFlottenStudieCtrl.Konfiguration`): Der Kandidat entsteht als **Kopie der
 Achsenvorlage**; überschrieben werden nur Kapazität und die beiden Leistungen. Es bleiben

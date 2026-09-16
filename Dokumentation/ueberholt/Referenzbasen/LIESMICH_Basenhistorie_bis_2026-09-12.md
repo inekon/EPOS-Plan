@@ -4,8 +4,8 @@
 [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) — wortgetreu und in der
 Reihenfolge des Originals hierher ausgelagert. Dort stehen seither nur noch die Regeln, die
 Bedienung und die **aktuelle** Basis
-[`2026-09-11_R7_Speicherflotte`](../../../Referenzlaeufe/2026-09-11_R7_Speicherflotte/); hier
-steht, **welche Basis wann von welcher abgelöst wurde und warum**.
+[`2026-09-16_R8_Heizkessel_Kaskade`](../../../Referenzlaeufe/2026-09-16_R8_Heizkessel_Kaskade/);
+hier steht, **welche Basis wann von welcher abgelöst wurde und warum**.
 
 **Was hier beschrieben wird, liegt nicht mehr im Arbeitsbaum.** Die Ordner der Basen sind am
 11.09.2026 aus `Referenzlaeufe/` gefallen (Anwenderentscheid **SYNC‑Q1**) und seit dem

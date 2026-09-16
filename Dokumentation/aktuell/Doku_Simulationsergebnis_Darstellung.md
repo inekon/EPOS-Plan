@@ -257,11 +257,19 @@ bzw. `Tool_6`); einen Erzeuger im Assistenten oder im Erzeugerdialog ANZULEGEN l
 keinen Platz an — das tut allein „+ aufnehmen" auf der verfügbaren Karte der
 Simulationskonfiguration. Referenzprojekt 1007 ist genau dieser Fall.
 
-**Anwenderentscheid HK‑E‑1a (11.09.2026): Erzeuger ohne Kaskadenplatz werden gemeldet,
-nicht automatisch aufgenommen; die Referenzbasis R7 bleibt.** Ein automatisches
-Aufnehmen änderte die Ergebnisse jedes Bestandsprojekts mit einer solchen Lücke und
-verlangte eine neue Basis. Gemeldet wird an **drei** Stellen, und alle drei lesen
-DIESELBE Vorprüfung `SimulationLaufCtrl.ErzeugerOhneKaskadenplatz`:
+**Anwenderentscheid HK‑E‑1 (15.09.2026): Der HEIZKESSEL wird automatisch aufgenommen —
+nachrangig, am hinteren Ende der Kaskade.** Ein Heizkessel, den das Projekt führt und der
+auf keinem Platz steht, bekommt ihn beim Lesen der Konfiguration
+(`KonfigurationCtrl.HeizkesselNachziehen`), und der Platz wird in `Tab_Einstellungen`
+geschrieben. Die **Position bleibt wählbar**: Weil die Automatik nur ohne Kesselplatz
+greift, überschreiben die Pfeile der Erzeugerkachel (`Kaskade.Verschieben`) sie dauerhaft;
+ein zweites Bedienelement gibt es dafür nicht. Diese Wirkung ist der Grund für die
+Referenzbasis **R8** — drei Prüfprojekte rechnen ihren Kessel seither mit.
+
+**Die übrigen fünf Erzeugerarten werden weiterhin nur gemeldet** — Wärmepumpe,
+Solarthermie, BHKW, Photovoltaik und Stromspeicher; der Entscheid nennt allein den
+Heizkessel. Gemeldet wird an **drei** Stellen, und alle drei lesen DIESELBE Vorprüfung
+`SimulationLaufCtrl.ErzeugerOhneKaskadenplatz`:
 
 1. **Die Vorprüfung** liefert je nicht platzierter Anlage einen `Warnbefund` mit
    sprachneutraler Kennung — `LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ` für die vier
@@ -273,8 +281,7 @@ DIESELBE Vorprüfung `SimulationLaufCtrl.ErzeugerOhneKaskadenplatz`:
 2. **Das Laufprotokoll** wiederholt sie als `Protokoll.WarnungEinmal`, geprüft gegen
    `tool[]` — also gegen die Belegung, die DIESER Lauf wirklich gerechnet hat. Ohne sie
    bliebe der unbeaufsichtigte Referenz- und CI-Lauf stumm. Das Protokoll gehört **nicht**
-   zum Referenzexport: `aggregate.csv` und die Ganglinien sind unverändert
-   (13/13 byte-gleich gegen R7).
+   zum Referenzexport: `aggregate.csv` und die Ganglinien sind von der Meldung unberührt.
 3. **Die Übersichtszeile** trägt den Zusatz „(nicht in der Kaskade)"
    (`SIMERG_ZUSATZ_NICHT_IN_KASKADE`) — die kürzeste Antwort auf die 0,00 daneben. Die
    Zeile selbst bleibt stehen: Die Präsenzregel (Punkt 4, „eine vorhandene Anlage mit
@@ -288,8 +295,9 @@ für eine LÜCKE („der angelegte Kessel steht auf keinem Platz"). `ErzeugerZei
 trennt beides: Gibt es mindestens eine Lücke, steht über der Erzeugerspalte eine
 Hinweisleiste („n Erzeuger sind im Projekt angelegt, aber nicht in der Simulation"), und
 die Spalte klappt beim ersten Blick auf das Projekt von selbst auf. Danach gehört der
-Schalter dem Anwender — ein „+ aufnehmen" setzt ihn nicht zurück. **Aufgenommen wird
-weiterhin von Hand**; die Seite nimmt nichts selbst auf.
+Schalter dem Anwender — ein „+ aufnehmen" setzt ihn nicht zurück. Die **fünf übrigen**
+Erzeugerarten nimmt der Anwender von Hand auf; der Heizkessel steht dort bereits
+aufgenommen, weil er seinen Platz beim Lesen der Konfiguration bekommt.
 
 ## 7. Was ausdrücklich NICHT vereinheitlicht ist
 
