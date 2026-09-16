@@ -218,12 +218,12 @@ namespace EPOS.Kern.Tests
         // =============================================================================
 
         /// <summary>
-        /// Der Loeschweg laeuft ueber den NAMEN. Regulaer trifft der genau ein Projekt:
-        /// <c>Tab_Projekt</c> traegt den eindeutigen Index <c>Projektname</c>. Ein
-        /// ALTBESTAND ohne diesen Index kann zwei gleichnamige Projekte fuehren — dann
-        /// darf der Weg nicht still beide mitnehmen (Anwenderentscheid vom 04.09.2026:
-        /// „Projektname darf nicht gleich sein, daher löschen. Rückfragen in diesem
-        /// Fall.").
+        /// Ein doppelt vergebener Projektname ist ein BEFUND, den der Anwender sehen soll:
+        /// Regulaer kann er nicht vorkommen, <c>Tab_Projekt</c> traegt den eindeutigen
+        /// Index <c>Projektname</c>. Ein ALTBESTAND ohne diesen Index kann zwei
+        /// gleichnamige Projekte fuehren — dann wird gefragt, statt still weiterzulaufen
+        /// (Anwenderentscheid vom 04.09.2026: „Projektname darf nicht gleich sein, daher
+        /// löschen. Rückfragen in diesem Fall.").
         ///
         /// <para>Die Probe stellt genau diesen Altbestand auf der ARBEITSKOPIE her: Index
         /// weg, eine zweite Zeile desselben Namens dazu.</para>
@@ -263,11 +263,17 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Mit der ausdruecklichen Freigabe laeuft derselbe Weg wie eh und je — ueber den
-        /// NAMEN, also fuer ALLE Projekte dieses Namens, mit allen Vorarbeiten.
+        /// Mit der ausdruecklichen Freigabe laeuft der Weg durch — und nimmt GENAU EIN
+        /// Projekt mit, naemlich das mit der hereingereichten Id.
+        ///
+        /// <para><b>Auftrag Kostenbereich, Nebenbefund 4.</b> Bis dahin lief der letzte
+        /// Schritt (<c>ProjektCtrl.Delete</c>) samt seinen drei Vorarbeiten ueber den
+        /// NAMEN: Der Namensvetter fiel mit, samt seinen Kostenpositionen in
+        /// <c>Tab_ProjektWerte</c> (Loeschweitergabe an <c>Tab_Projekt.ID</c>). Seit der
+        /// Umstellung auf die Id bleibt er stehen — die Zaehlung ist nur noch Anzeige.</para>
         /// </summary>
         [Fact]
-        public void P9d_Mit_ausdruecklicher_Freigabe_fallen_alle_Projekte_des_Namens()
+        public void P9d_Mit_ausdruecklicher_Freigabe_faellt_NUR_das_gewaehlte_Projekt()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -278,22 +284,30 @@ namespace EPOS.Kern.Tests
             int zwilling = ZwillingAnlegen(id);
             Assert.True(zwilling > 0);
 
+            // Der Zwilling fuehrt eigene Kostenpositionen - sie haengen an SEINER Id.
+            int positionen = KostenpositionenUebernehmen(id, zwilling);
+            Assert.True(positionen > 0);
+
             LoeschBefund befund = ProjektCtrl.LoeschenMitVorarbeiten(
                 id, MIT_ANHANG, mehrdeutigZugelassen: true);
 
             Assert.Equal(LoeschStand.Geloescht, befund.Stand);
             Assert.Equal(2, befund.Anzahl);
 
-            Assert.Equal(0, ProjektCtrl.AnzahlGleicherNamen(MIT_ANHANG));
+            // Das gewaehlte Projekt ist weg, der Namensvetter steht - samt Positionen.
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + id));
-            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + zwilling));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + zwilling));
+            Assert.Equal(positionen,
+                         Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = " + zwilling));
+            Assert.Equal(1, ProjektCtrl.AnzahlGleicherNamen(MIT_ANHANG));
 
-            // Die drei Vorarbeiten sind gelaufen.
+            // Die drei Vorarbeiten sind gelaufen - fuer DIESES Projekt.
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Berichtskonfiguration WHERE ProjektID = " + id));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Variante WHERE ID_Projekt = " + id +
                                  " OR ID_ProjektRef = " + id));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + id));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Pufferspeicher WHERE ID_Projekt = " + id));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = " + id));
         }
 
         [Fact]
@@ -332,6 +346,25 @@ namespace EPOS.Kern.Tests
             return Zahl("SELECT MAX(ID) FROM Tab_Projekt");
         }
 
+        /// <summary>
+        /// Gibt dem Zwilling EIGENE Kostenpositionen: dieselben Zeilen wie
+        /// <paramref name="quelle"/>, aber an SEINER <c>ProjektID</c>. Sie haengen ueber
+        /// die Loeschweitergabe an <c>Tab_Projekt.ID</c> — genau das, was ein Loeschweg
+        /// ueber den NAMEN mitgerissen haette. Gibt ihre Anzahl zurueck.
+        /// </summary>
+        private static int KostenpositionenUebernehmen(int quelle, int ziel)
+        {
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, " +
+                "EingegebenerWert, Nutzungsdauer, Einheit, Gruppe) " +
+                "SELECT ?, StammID, KomponentenID, KategorieID, EingegebenerWert, " +
+                "Nutzungsdauer, Einheit, Gruppe FROM Tab_ProjektWerte WHERE ProjektID = ?",
+                new DbParam("@ziel", ziel),
+                new DbParam("@quelle", quelle));
+
+            return Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = " + ziel);
+        }
+
         // =============================================================================
         //  P9e/P9f/P9g — die VARIANTENloeschung (Entscheid W15a-O-4)
         // =============================================================================
@@ -340,12 +373,11 @@ namespace EPOS.Kern.Tests
         /// Der Anwenderentscheid O-4 vom 04.09.2026 (Empfehlung angenommen): Die
         /// Variantenloeschung geht ueber DIESELBE Vorpruefung wie das Projektloeschen.
         ///
-        /// <para><b>Warum sie eine braucht.</b> Der letzte der drei Schritte ist
-        /// <c>ProjektCtrl.Delete(projektname)</c> und laeuft damit ueber den NAMEN — die
-        /// beiden davor arbeiten ueber die Id. Traegt eine Datenbank zwei Projekte
-        /// desselben Namens, naehme dieser Schritt beide mit. Regulaer geht das nicht
-        /// (eindeutiger Index <c>Projektname</c> auf <c>Tab_Projekt</c>); die Probe
-        /// stellt den ALTBESTAND ohne ihn auf der Arbeitskopie her.</para>
+        /// <para>Alle drei Schritte laufen ueber die Id (Auftrag Kostenbereich,
+        /// Nebenbefund 4) — der doppelt vergebene Name reisst also nichts mehr mit. Er
+        /// bleibt trotzdem ein Befund, den der Anwender sehen soll: Regulaer geht er nicht
+        /// (eindeutiger Index <c>Projektname</c> auf <c>Tab_Projekt</c>); die Probe stellt
+        /// den ALTBESTAND ohne ihn auf der Arbeitskopie her.</para>
         /// </summary>
         [Fact]
         public void P9e_Eine_Variante_mit_mehrdeutigem_Namen_meldet_die_Anzahl_und_loescht_nichts()
@@ -376,12 +408,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Mit der ausdruecklichen Freigabe laeuft derselbe Weg wie eh und je — die drei
-        /// Schritte in ihrer Reihenfolge, der letzte ueber den NAMEN, also fuer ALLE
-        /// Projekte dieses Namens.
+        /// Mit der ausdruecklichen Freigabe laufen die drei Schritte in ihrer Reihenfolge —
+        /// und ALLE DREI ueber die Id. Der Namensvetter bleibt stehen, samt seinen
+        /// Kostenpositionen (Auftrag Kostenbereich, Nebenbefund 4).
         /// </summary>
         [Fact]
-        public void P9f_Mit_ausdruecklicher_Freigabe_faellt_die_Variante_samt_Gleichnamigen()
+        public void P9f_Mit_ausdruecklicher_Freigabe_faellt_NUR_die_gewaehlte_Variante()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -393,19 +425,25 @@ namespace EPOS.Kern.Tests
             int zwilling = ZwillingAnlegen(variante);
             Assert.True(zwilling > 0);
 
+            int positionen = KostenpositionenUebernehmen(variante, zwilling);
+            Assert.True(positionen > 0);
+
             LoeschBefund befund = new VariantenCtrl().LoescheVariante(
                 variante, name, mehrdeutigZugelassen: true);
 
             Assert.Equal(LoeschStand.Geloescht, befund.Stand);
             Assert.Equal(2, befund.Anzahl);
 
-            Assert.Equal(0, ProjektCtrl.AnzahlGleicherNamen(name));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + variante));
-            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + zwilling));
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM Tab_Projekt WHERE ID = " + zwilling));
+            Assert.Equal(positionen,
+                         Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = " + zwilling));
+            Assert.Equal(1, ProjektCtrl.AnzahlGleicherNamen(name));
 
             // Die beiden Schritte ueber die Id sind ebenfalls gelaufen.
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Variante WHERE ID_Projekt = " + variante));
             Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = " + variante));
+            Assert.Equal(0, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ProjektID = " + variante));
         }
 
         /// <summary>

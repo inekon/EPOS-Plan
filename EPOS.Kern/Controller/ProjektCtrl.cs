@@ -291,15 +291,28 @@ namespace WindowsFormsApplication1
         /// die Energieanlagen zwar vorher - aber die B0-6b-Kaskade soll nicht von der
         /// Aufrufreihenfolge abhängen. Deshalb steht das Lösen hier, an der einen
         /// zentralen Stelle, durch die beide Wege laufen.
+        ///
+        /// <para><b>Der Schlüssel ist die ID, nicht der NAME</b> (Auftrag Kostenbereich,
+        /// Nebenbefund 4). Bis dahin liefen dieses DELETE und seine drei Vorarbeiten über
+        /// <c>WHERE Projektname=?</c>; zwei Projekte desselben Namens fielen also
+        /// gemeinsam, samt ihrer <c>Tab_ProjektWerte</c>-Kosten. Geschützt war das allein
+        /// durch eine Zählung beim AUFRUFER — eine Prüfung, die den Löschweg selbst nicht
+        /// erreicht. Der eindeutige Index <c>Projektname</c> macht den Fall im gesunden
+        /// Bestand unmöglich, ein Altbestand ohne ihn kann ihn führen, und ein Schlüssel,
+        /// der eine Prüfung braucht, ist der falsche Schlüssel. Die Kaskade
+        /// <c>Tab_Projekt → Tab_ProjektWerte</c> und alle anderen Löschweitergaben bleiben
+        /// unberührt: Sie hängen ohnehin an <c>Tab_Projekt.ID</c>.</para>
         /// </summary>
-        public bool Delete(string szProjekt)
+        public bool Delete(int idProjekt)
         {
-            PufferReferenzenLoesen(szProjekt);
-            BerichtsKonfigurationEntfernen(szProjekt);
-            VariantenVerknuepfungenEntfernen(szProjekt);
+            if (idProjekt <= 0) return false;
 
-            string sql = "DELETE FROM Tab_Projekt WHERE Projektname=?";
-            DbParam[] ps = { new DbParam("@pname", szProjekt) };
+            PufferReferenzenLoesen(idProjekt);
+            BerichtsKonfigurationEntfernen(idProjekt);
+            VariantenVerknuepfungenEntfernen(idProjekt);
+
+            string sql = "DELETE FROM Tab_Projekt WHERE ID=?";
+            DbParam[] ps = { new DbParam("@id", idProjekt) };
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
@@ -327,22 +340,27 @@ namespace WindowsFormsApplication1
         /// die eine Spalte im SELECT; die Zuweisung <c>ID_Projekt = 0</c> ist wie zuvor
         /// eine Konstante.</para>
         ///
-        /// <para><b>Ein Name, der MEHRERE Projekte trifft, wird nicht still mitgeloescht</b>
-        /// (Befund W15a-B49, Entscheid O-3 vom 04.09.2026 — woertlich: „Projektname darf
-        /// nicht gleich sein, daher löschen. Rückfragen in diesem Fall."). Alle sechs
-        /// Schritte laufen ueber den NAMEN; das bleibt bitgleich, denn der Name IST
-        /// eindeutig (eindeutiger Index <c>Projektname</c> auf <c>Tab_Projekt</c> seit der
-        /// SQLite-Migration, dazu <c>PruefeNamen</c> in „Speichern unter"). Fuehrt ein
-        /// Altbestand OHNE diesen Index den Fall dennoch, meldet der Weg
-        /// <see cref="LoeschStand.Mehrdeutig"/> mit der Anzahl und fasst NICHTS an. Erst
-        /// wenn der Aufrufer nachgefragt hat und mit <paramref name="mehrdeutigZugelassen"/>
-        /// ausdruecklich „alle loeschen" verlangt, laeuft er wie zuvor.</para>
+        /// <para><b>JEDER Schritt laeuft ueber die ID</b> (Auftrag Kostenbereich,
+        /// Nebenbefund 4). Bis dahin nahm der letzte Schritt — <see cref="Delete"/> samt
+        /// seinen drei Vorarbeiten — den NAMEN, und zwei Projekte desselben Namens fielen
+        /// gemeinsam; die Zaehlung hier war der einzige Schutz davor. Geloescht wird jetzt
+        /// genau das eine Projekt, dessen Id hereinkommt.</para>
+        ///
+        /// <para><b>Die Zaehlung bleibt als ANZEIGE</b> (Entscheid O-3 vom 04.09.2026 —
+        /// woertlich: „Projektname darf nicht gleich sein, daher löschen. Rückfragen in
+        /// diesem Fall."). Ein doppelt vergebener Name ist im gesunden Bestand unmoeglich
+        /// (eindeutiger Index <c>Projektname</c> auf <c>Tab_Projekt</c> seit der
+        /// SQLite-Migration, dazu <c>PruefeNamen</c> in „Speichern unter") und in einem
+        /// Altbestand ohne diesen Index ein Befund, den der Anwender sehen soll: Der Weg
+        /// meldet <see cref="LoeschStand.Mehrdeutig"/> mit der Anzahl und fasst NICHTS an.
+        /// Mit <paramref name="mehrdeutigZugelassen"/> laeuft er weiter — und nimmt dann
+        /// NUR das gewaehlte Projekt, nicht mehr seine Namensvettern.</para>
         /// </summary>
-        /// <param name="idProjekt">Id des zu loeschenden Projekts (fuer den Vergleich mit <c>Tab_Applikation</c>).</param>
-        /// <param name="projektname">Name des zu loeschenden Projekts — der fuehrende Schluessel.</param>
+        /// <param name="idProjekt">Id des zu loeschenden Projekts — der Schluessel jedes Schritts.</param>
+        /// <param name="projektname">Name des Projekts; Anzeige und Zaehlung, nicht mehr Schluessel.</param>
         /// <param name="mehrdeutigZugelassen">
-        /// <c>true</c> = der Anwender hat der Loeschung ALLER Projekte dieses Namens
-        /// ausdruecklich zugestimmt. Vorgabe <c>false</c>: mehrdeutig heisst abbrechen.
+        /// <c>true</c> = der Anwender hat die Rueckfrage zum doppelt vergebenen Namen
+        /// bejaht. Vorgabe <c>false</c>: mehrdeutig heisst abbrechen.
         /// </param>
         public static LoeschBefund LoeschenMitVorarbeiten(int idProjekt, string projektname,
                                                           bool mehrdeutigZugelassen = false)
@@ -384,14 +402,14 @@ namespace WindowsFormsApplication1
             new ErgebnisCtrl().Delete(idProjekt);
 
             var projekt = new ProjektCtrl { m_szProjektname = projektname };
-            projekt.Delete(projektname);
+            projekt.Delete(idProjekt);
 
             return new LoeschBefund(LoeschStand.Geloescht, projektname, "", gleichnamige);
         }
 
         /// <summary>
-        /// Entfernt die Berichtskonfigurationen aller Projekte dieses Namens VOR dem
-        /// Projekt-DELETE. Die Tabelle Berichtskonfiguration hängt an keiner
+        /// Entfernt die Berichtskonfiguration DIESES Projekts VOR dem Projekt-DELETE. Die
+        /// Tabelle Berichtskonfiguration hängt an keiner
         /// Löschweitergabe (Ad-hoc-DDL ohne Beziehung, BerichtCtrl) — verbliebe die
         /// Zeile, kollidierte eine spätere Projektkopie am eindeutigen Index
         /// UQ_BerichtKonfigProj, sobald die neue Projekt-ID (MAX+1) auf die verwaiste
@@ -399,21 +417,13 @@ namespace WindowsFormsApplication1
         /// Fehlt die Tabelle (Datenbank ohne Berichtsmodul), läuft das Löschen ohne
         /// Dialog weiter.
         /// </summary>
-        private static void BerichtsKonfigurationEntfernen(string szProjekt)
+        private static void BerichtsKonfigurationEntfernen(int idProjekt)
         {
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT ID FROM Tab_Projekt WHERE Projektname=?",
-                    new DbParam("@pname", szProjekt ?? ""));
-
-                if (dt == null) return;
-
-                foreach (DataRow r in dt.Rows)
-                    if (r[0] != DBNull.Value)
-                        StilleDb.NonQuery(
-                            "DELETE FROM " + SchemaKatalog.TAB_BERICHTSKONFIGURATION + " WHERE ProjektID = ?",
-                            StilleDb.Par("@proj", DbParamTyp.Integer, Convert.ToInt32(r[0])));
+                StilleDb.NonQuery(
+                    "DELETE FROM " + SchemaKatalog.TAB_BERICHTSKONFIGURATION + " WHERE ProjektID = ?",
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
             }
             catch (Exception ex)
             {
@@ -422,7 +432,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Entfernt die Tab_Variante-Verknüpfungen aller Projekte dieses Namens VOR dem
+        /// Entfernt die Tab_Variante-Verknüpfungen DIESES Projekts VOR dem
         /// Projekt-DELETE (Befund B5: Tab_Variante hängt an keiner Löschweitergabe).
         /// Beide Richtungen: die Verknüpfungszeile des Projekts selbst (ID_Projekt) und
         /// die seiner Varianten (ID_ProjektRef) — deren Projekte bleiben bestehen und
@@ -432,22 +442,14 @@ namespace WindowsFormsApplication1
         /// (gleiche Falle wie UQ_BerichtKonfigProj). Still über StilleDb: Fehlt die
         /// Tabelle (Datenbank ohne Variantenmodul), läuft das Löschen ohne Dialog weiter.
         /// </summary>
-        private static void VariantenVerknuepfungenEntfernen(string szProjekt)
+        private static void VariantenVerknuepfungenEntfernen(int idProjekt)
         {
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT ID FROM Tab_Projekt WHERE Projektname=?",
-                    new DbParam("@pname", szProjekt ?? ""));
-
-                if (dt == null) return;
-
-                foreach (DataRow r in dt.Rows)
-                    if (r[0] != DBNull.Value)
-                        StilleDb.NonQuery(
-                            "DELETE FROM " + SchemaKatalog.TAB_VARIANTE + " WHERE ID_Projekt = ? OR ID_ProjektRef = ?",
-                            StilleDb.Par("@proj", DbParamTyp.Integer, Convert.ToInt32(r[0])),
-                            StilleDb.Par("@ref", DbParamTyp.Integer, Convert.ToInt32(r[0])));
+                StilleDb.NonQuery(
+                    "DELETE FROM " + SchemaKatalog.TAB_VARIANTE + " WHERE ID_Projekt = ? OR ID_ProjektRef = ?",
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                    StilleDb.Par("@ref", DbParamTyp.Integer, idProjekt));
             }
             catch (Exception ex)
             {
@@ -456,23 +458,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Löst die Anlagen-Verweise auf die Pufferspeicher aller Projekte dieses Namens.
+        /// Löst die Anlagen-Verweise auf die Pufferspeicher DIESES Projekts.
         /// Still: schlägt es fehl, soll das Löschen trotzdem versucht werden - die
         /// Beziehung meldet sich dann von selbst.
         /// </summary>
-        private static void PufferReferenzenLoesen(string szProjekt)
+        private static void PufferReferenzenLoesen(int idProjekt)
         {
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT ID FROM Tab_Projekt WHERE Projektname=?",
-                    new DbParam("@pname", szProjekt ?? ""));
-
-                if (dt == null) return;
-
-                foreach (DataRow r in dt.Rows)
-                    if (r[0] != DBNull.Value)
-                        PufferSpCtrl.ReferenzenLoesenFuerProjekt(Convert.ToInt32(r[0]));
+                PufferSpCtrl.ReferenzenLoesenFuerProjekt(idProjekt);
             }
             catch (Exception ex)
             {

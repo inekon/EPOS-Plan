@@ -5034,13 +5034,22 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Kostenpositionen ohne Anlagenzuordnung der Komponente „{0}“ löschen?
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Komponente „{0}“ führt keine Position ohne Anlagenzuordnung — es gibt nichts zu löschen. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_LOSE_KEINE {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_LOSE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Position(en) ohne Anlagenzuordnung der Komponente „{2}“ mit zusammen {1} € löschen?
         ///
         ///Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis dahin in der Wirtschaftlichkeit mit. ähnelt.
         /// </summary>
-        public static string BK_KOSTEN_LOSE_LOESCHEN {
+        public static string BK_KOSTEN_LOSE_LOESCHEN_SUMME {
             get {
-                return ResourceManager.GetString("BK_KOSTEN_LOSE_LOESCHEN", resourceCulture);
+                return ResourceManager.GetString("BK_KOSTEN_LOSE_LOESCHEN_SUMME", resourceCulture);
             }
         }
         
@@ -35669,7 +35678,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden gelöscht. Fortfahren? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Projektname „{0}“ ist {1}-mal vergeben. Gelöscht wird nur das gewählte Projekt. Fortfahren? ähnelt.
         /// </summary>
         public static string PROJ_MSG_NAME_MEHRDEUTIG {
             get {

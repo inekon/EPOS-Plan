@@ -297,6 +297,14 @@
     /// </summary>
     [Parameter] public Func<KostenZeile, string>? LoeschFrage { get; set; }
 
+    /// <summary>
+    /// Die BENANNTE Absage, wenn <see cref="LoeschFrage"/> leer bleibt — es gibt
+    /// nichts zu löschen. Sie erscheint in der Fußzeile; ohne sie verpuffte der
+    /// Papierkorb still, und der Anwender sah keinen Unterschied zu einem
+    /// klemmenden Knopf.
+    /// </summary>
+    [Parameter] public Func<KostenZeile, string>? LoeschNichts { get; set; }
+
     /// <summary>Löscht die losen Positionen und liefert die Meldung.</summary>
     [Parameter] public Func<KostenZeile, string>? Loeschen { get; set; }
 
@@ -489,7 +497,14 @@
         // Zeile und endet hier.
         if (!z.Loeschbar || LoeschFrage is null) return;
         string frage = LoeschFrage(z);
-        if (string.IsNullOrEmpty(frage)) return;
+        if (string.IsNullOrEmpty(frage))
+        {
+            // Nichts zu löschen: die Rückfrage entfällt BENANNT. Wer keine Absage
+            // mitgibt, bekommt das alte stille Verhalten.
+            string absage = LoeschNichts?.Invoke(z) ?? "";
+            if (!string.IsNullOrEmpty(absage)) _status = absage;
+            return;
+        }
         _loeschzeile = z;
         _loeschfrage = frage;
     }

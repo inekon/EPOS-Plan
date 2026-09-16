@@ -343,6 +343,58 @@ public class KostenSeiteTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-rueckfrage"));
     }
 
+    /// <summary>
+    /// Auftrag Kostenbereich, Punkt 1: Die Rückfrage nennt ANZAHL und SUMME dessen, was
+    /// der Papierkorb wegnähme — die Hülle setzt den Text aus der Zählung des Kerns
+    /// zusammen, die Seite zeigt ihn unverändert.
+    /// </summary>
+    [Fact]
+    public void Die_Rueckfrage_nennt_Anzahl_und_Summe()
+    {
+        var cut = Zeige(p => p.Add(x => x.LoeschFrage, (KostenZeile z) =>
+            "3 Position(en) ohne Anlagenzuordnung der Komponente „Pufferspeicher\" " +
+            "mit zusammen 3.000,50 € löschen?"));
+
+        Anlagenzeilen(cut)[2].QuerySelector(".epos-zr-knopf")!.Click();
+
+        string text = cut.Find(".epos-rueckfrage-text").TextContent;
+        Assert.Contains("3 Position(en)", text);
+        Assert.Contains("3.000,50 €", text);
+    }
+
+    /// <summary>
+    /// Gibt es nichts zu löschen, entfällt die Rückfrage BENANNT: Die Fußzeile sagt es,
+    /// statt dass der Papierkorb still verpufft.
+    /// </summary>
+    [Fact]
+    public void Ohne_lose_Positionen_entfaellt_die_Rueckfrage_benannt()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.LoeschFrage, (KostenZeile z) => "")
+            .Add(x => x.LoeschNichts, (KostenZeile z) => "Nichts zu löschen."));
+
+        Anlagenzeilen(cut)[2].QuerySelector(".epos-zr-knopf")!.Click();
+
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.Equal("Nichts zu löschen.", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// Ohne Absage bleibt es beim alten stillen Verhalten — eine Hülle, die
+    /// <c>LoeschNichts</c> nicht mitgibt, bricht nicht.
+    /// </summary>
+    [Fact]
+    public void Ohne_Absage_bleibt_der_Papierkorb_still()
+    {
+        var cut = Zeige(p => p.Add(x => x.LoeschFrage, (KostenZeile z) => ""));
+
+        string vorher = cut.Instance.Status;
+        Anlagenzeilen(cut)[2].QuerySelector(".epos-zr-knopf")!.Click();
+
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.Equal(vorher, cut.Instance.Status);
+    }
+
     [Fact]
     public void Der_Hilfeknopf_traegt_den_Schluessel_der_alten_Maske()
     {

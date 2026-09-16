@@ -9376,10 +9376,13 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_UEB_QUELLE_LOSE" xml:space="preserve">
     <value>(no plant assignment)</value>
   </data>
-  <data name="BK_KOSTEN_LOSE_LOESCHEN" xml:space="preserve">
-    <value>Delete all cost items of component “{0}” without a plant assignment?
+  <data name="BK_KOSTEN_LOSE_LOESCHEN_SUMME" xml:space="preserve">
+    <value>Delete {0} item(s) without a plant assignment of component “{2}”, totalling {1} €?
 
 They typically stem from a variant copy without this trade and keep entering the profitability figures until removed.</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_KEINE" xml:space="preserve">
+    <value>Component “{0}” has no item without a plant assignment — there is nothing to delete.</value>
   </data>
   <data name="BK_KOSTEN_LOSE_TITEL" xml:space="preserve">
     <value>Items without plant assignment</value>
@@ -14237,7 +14240,7 @@ Import anyway?</value>
     <value>Project name used more than once</value>
   </data>
   <data name="PROJ_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
-    <value>The project name "{0}" is used {1} times. All {1} projects will be deleted. Continue?</value>
+    <value>The project name "{0}" is used {1} times. Only the selected project will be deleted. Continue?</value>
   </data>
   <data name="LIZ_ST_GUELTIG" xml:space="preserve">
     <value>{0} · valid until {1}</value>

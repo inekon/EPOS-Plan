@@ -9383,10 +9383,13 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_UEB_QUELLE_LOSE" xml:space="preserve">
     <value>(ohne Anlagenzuordnung)</value>
   </data>
-  <data name="BK_KOSTEN_LOSE_LOESCHEN" xml:space="preserve">
-    <value>Alle Kostenpositionen ohne Anlagenzuordnung der Komponente „{0}“ löschen?
+  <data name="BK_KOSTEN_LOSE_LOESCHEN_SUMME" xml:space="preserve">
+    <value>{0} Position(en) ohne Anlagenzuordnung der Komponente „{2}“ mit zusammen {1} € löschen?
 
 Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis dahin in der Wirtschaftlichkeit mit.</value>
+  </data>
+  <data name="BK_KOSTEN_LOSE_KEINE" xml:space="preserve">
+    <value>Die Komponente „{0}“ führt keine Position ohne Anlagenzuordnung — es gibt nichts zu löschen.</value>
   </data>
   <data name="BK_KOSTEN_LOSE_TITEL" xml:space="preserve">
     <value>Positionen ohne Anlagenzuordnung</value>
@@ -14226,7 +14229,7 @@ Trotzdem importieren?</value>
     <value>Projektname mehrfach vergeben</value>
   </data>
   <data name="PROJ_MSG_NAME_MEHRDEUTIG" xml:space="preserve">
-    <value>Der Projektname „{0}“ ist {1}-mal vergeben. Alle {1} Projekte werden gelöscht. Fortfahren?</value>
+    <value>Der Projektname „{0}“ ist {1}-mal vergeben. Gelöscht wird nur das gewählte Projekt. Fortfahren?</value>
   </data>
   <data name="LIZ_ST_GUELTIG" xml:space="preserve">
     <value>{0} · gültig bis {1}</value>
