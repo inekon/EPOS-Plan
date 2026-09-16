@@ -35,16 +35,18 @@
    ANWENDERWUNSCH W6-E-1 (Windows-Abnahme 05.09.2026): "optional sollten beim
    ausgewaehlten PV-Modul alle Eigenschaften/Parameter angezeigt werden." Der
    Block "Modul Eigenschaften" zeigt vier der neunzehn Katalogspalten; die
-   uebrigen stehen darunter hinter einem AUFKLAPPER - zugeklappt als Vorgabe,
-   geladen erst beim Aufklappen und, seit dem Anwenderentscheid vom 15.09.2026,
-   BEARBEITBAR: Er zeigt den Baustein Katalogfelder mit derselben Feldliste, die
-   auch der Modulkatalog hinter "Modul Bearbeiten..." fuehrt. Dazu kommen als
-   Lesewerte die zwei Temperaturkoeffizienten, die der Katalog nicht pflegt.
+   uebrigen stehen darunter hinter einem AUFKLAPPER - seit dem Anwenderentscheid
+   vom 16.09.2026 AUFGEKLAPPT als Vorgabe (geholt wird mit der Wahl des Satzes)
+   und, seit dem Anwenderentscheid vom 15.09.2026, BEARBEITBAR: Er zeigt den
+   Baustein Katalogfelder mit derselben Feldliste, die auch der Modulkatalog
+   hinter "Modul Bearbeiten..." fuehrt. Dazu kommen als Lesewerte die zwei
+   Temperaturkoeffizienten, die der Katalog nicht pflegt.
 
    DIE KNOEPFE ZUM GEWAEHLTEN SATZ STEHEN IM MODULBEREICH (15.09.2026, "alle
-   sechs Erzeuger im gleichen Schema"): erst der Aufklapper, dann die
-   Kostenleiste, dann "Modul Bearbeiten...". Bei der Katalogliste bleibt allein
-   "Modul Loeschen" - es wirkt auf die Listenzeile, nicht auf den Modulblock.
+   sechs Erzeuger im gleichen Schema"), seit dem 16.09.2026 in EINER Zeile ganz
+   OBEN: links die Kostenleiste, rechts "Modul Bearbeiten...", darunter erst die
+   Felder und der Aufklapper. Bei der Katalogliste bleibt allein "Modul
+   Loeschen" - es wirkt auf die Listenzeile, nicht auf den Modulblock.
 
    ENTSCHEID #76 (05.09.2026). Die zwei Listen und die Pfeilspalte stehen im
    Baustein Zweispaltenauswahl - EIN Aufbau fuer alle Projekt/Datenbank-Dialoge
@@ -210,6 +212,32 @@
     @* Eigenschaften des MODULS - immer sichtbar (panel2). *@
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
+            @* DIE KNOPFZEILE STEHT OBEN (Anwenderentscheid 16.09.2026: "Der
+               Bearbeiten-Button soll weiter oben, z. B. unter der blauen Zeile Modul
+               stehen, so dass er besser sichtbar ist"). EINE Zeile unmittelbar unter
+               dem Gruppenkopf: links die Kostenknoepfe, rechts "Modul Bearbeiten…",
+               dazwischen der Fueller. Dieselbe Bauart in allen sechs
+               Erzeugerdialogen; die Knoepfe selbst sind unveraendert - im Assistenten
+               gibt es keinen Kostenkontext, dort bleibt die Leiste weg, und ohne
+               Parametersatz der Modulverwaltung gibt es den Knopf nicht. *@
+            <div class="epos-leiste">
+                @if (!Wizard)
+                {
+                    <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
+                                         InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
+                                         EnergieText="@KostenEnergieText" />
+                }
+                <span class="epos-leiste-fueller"></span>
+                @* „Modul Bearbeiten…" oeffnet WEITERHIN den ganzen Modulkatalog als
+                   Ueberlagerung: Er ist die Katalogverwaltung mit „Neu…" und „Loeschen"
+                   und damit mehr als der Aufklapper, der nur den gewaehlten Satz
+                   pflegt. *@
+                @if (VerwaltungGaben is not null)
+                {
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                }
+            </div>
+
             @* Formularraster (iU8-E-2, Paket P1): Der Detailblock stand zuvor als
                eine Spalte voller Felder ueber die ganze Breite. *@
             <Formularraster>
@@ -242,9 +270,12 @@
                dieses Blocks hatte seine eigene Zeilenliste; zwei Listen liefen beim
                ersten Fachwechsel auseinander.
 
-               ZUGEKLAPPT IST DIE VORGABE, und geladen wird erst beim Aufklappen: Der
-               Dialog sieht aus wie bisher, und wer nur ein Modul auswaehlt, zahlt keine
-               Abfrage. Der Zustand gehoert der Dialogsitzung und wird nirgends abgelegt. *@
+               AUFGEKLAPPT IST DIE VORGABE (Anwenderentscheid 16.09.2026: "Unter
+               Bearbeiten sollen alle Parameter angezeigt werden und bearbeitbar sein").
+               Wer ein Modul waehlt, sieht seine Daten sofort; zuklappen kann er sie
+               weiterhin mit demselben Knopf. Ohne gewaehlten Katalogsatz gibt es den
+               Block gar nicht, und dann wird auch nichts abgefragt. Der Zustand gehoert
+               der Dialogsitzung und wird nirgends abgelegt. *@
             @if (Katalogfelder is not null && _katalogZeile is not null)
             {
                 <div class="epos-modulparameter">
@@ -273,27 +304,10 @@
                 </div>
             }
 
-            @* DIE KNOEPFE ZUM GEWAEHLTEN SATZ - hier und nicht mehr unter der Liste
-               (Anwenderentscheid 15.09.2026). Erst die Kosten- und Emissionswege,
-               darunter „Modul Bearbeiten…": Der Modulbereich ist damit die EINE Stelle,
-               an der man mit dem gewaehlten Geraet arbeitet. Im Assistenten gibt es
-               keinen Kostenkontext - dort bleibt die Leiste weg. *@
-            @if (!Wizard)
-            {
-                <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
-                                     InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
-                                     EnergieText="@KostenEnergieText" />
-            }
-
-            @* „Modul Bearbeiten…" oeffnet WEITERHIN den ganzen Modulkatalog als
-               Ueberlagerung: Er ist die Katalogverwaltung mit „Neu…" und „Loeschen"
-               und damit mehr als der Aufklapper, der nur den gewaehlten Satz pflegt. *@
-            @if (VerwaltungGaben is not null)
-            {
-                <div class="epos-leiste">
-                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
-                </div>
-            }
+            @* HIER STANDEN DIE KOSTENKNOEPFE UND „Modul Bearbeiten…" (15.09.2026). Sie
+               sind am 16.09.2026 an den KOPF des Modulbereichs gewandert - unter die
+               blaue Zeile "Modul", wo der Anwender sie sieht, ohne an den Parametern
+               vorbeizurollen. *@
         </KindInhalt>
     </Gruppenkopf>
 
@@ -647,10 +661,16 @@
     private bool _loeschfrage;
 
     /// <summary>
-    /// Steht der Parameterblock offen? (W6‑E‑1.) Vorgabe zu; der Zustand gehört der
-    /// Dialogsitzung und überlebt den Modulwechsel, wird aber nirgends abgelegt.
+    /// Steht der Parameterblock offen? (W6‑E‑1.) <b>Vorgabe OFFEN</b> seit dem
+    /// Anwenderentscheid vom 16.09.2026; der Zustand gehört der Dialogsitzung und
+    /// überlebt den Modulwechsel, wird aber nirgends abgelegt.
     /// </summary>
-    private bool _parameterOffen;
+    /// <remarks>
+    /// Weil er offen beginnt, holt schon die ERSTE Wahl eines Katalogsatzes die Felder:
+    /// <c>KatalogZeileWaehlen</c> ruft <c>FelderHolen</c>, sobald er offen steht. Ohne
+    /// gewählten Satz gibt es den Block nicht — dann wird auch nichts abgefragt.
+    /// </remarks>
+    private bool _parameterOffen = true;
 
     /// <summary>Die Felder des gewählten Satzes; <c>null</c> = noch nicht geholt.</summary>
     private IReadOnlyList<BrowserFeldwert>? _felder;
@@ -693,8 +713,8 @@
     /// Auf- und zuklappen - und beim AUFklappen die Felder holen.
     /// </summary>
     /// <remarks>
-    /// <b>Erst beim Aufklappen.</b> Wer nur ein Modul auswählt, zahlt keine Abfrage; und
-    /// wer aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
+    /// <b>Der Knopf bleibt, die Vorgabe ist offen.</b> Wer zuklappt und wieder
+    /// aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
     /// </remarks>
     private void ParameterUmschalten()
     {

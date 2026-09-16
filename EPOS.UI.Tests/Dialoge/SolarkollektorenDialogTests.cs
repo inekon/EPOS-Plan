@@ -720,26 +720,75 @@ public class SolarkollektorenDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Geholt wird erst beim Aufklappen.</b> Wer nur einen Kollektor auswählt, zahlt
-    /// keine Abfrage; und wer aufklappt, sieht den Stand von JETZT.
+    /// <b>Geholt wird mit der WAHL des Satzes</b> (Anwenderentscheid 16.09.2026: „Unter
+    /// Bearbeiten sollen alle Parameter angezeigt werden und bearbeitbar sein"). Der
+    /// Aufklapper steht offen, sobald ein Katalogsatz gewählt ist — genau EINE Abfrage
+    /// je Satz; ohne gewählten Satz gibt es den Block nicht.
     /// </summary>
     [Fact]
-    public void Die_Felder_kommen_erst_beim_Aufklappen()
+    public void Die_Felder_kommen_mit_der_Wahl_des_Satzes()
     {
         int rufe = 0;
         var cut = Aufbauen(katalogfelder: n => { rufe++; return Katalogfelder(n); });
 
-        KatalogZeileWaehlen(cut, 0);
         Assert.Equal(0, rufe);
-        Assert.False(cut.Instance.ParameterOffen);
-        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+        Assert.Empty(cut.FindAll(".epos-modulparameter"));
 
-        cut.Find(".epos-modulparameter-knopf").Click();
+        KatalogZeileWaehlen(cut, 0);
 
         Assert.Equal(1, rufe);
         Assert.True(cut.Instance.ParameterOffen);
         Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
         Assert.Equal(3, cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld").Length);
+    }
+
+    /// <summary>
+    /// <b>Zuklappen geht weiterhin</b> — der Knopf bleibt, was er war, nur seine Vorgabe
+    /// hat sich gedreht.
+    /// </summary>
+    [Fact]
+    public void Der_Aufklapper_laesst_sich_weiterhin_zuklappen()
+    {
+        var cut = Aufbauen(katalogfelder: Katalogfelder);
+
+        KatalogZeileWaehlen(cut, 0);
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.False(cut.Instance.ParameterOffen);
+        Assert.Equal("false", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.True(cut.Instance.ParameterOffen);
+        Assert.NotEmpty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+    }
+
+    /// <summary>
+    /// <b>Die Knopfzeile steht als ERSTES unter dem Modulkopf</b> (Anwenderentscheid
+    /// 16.09.2026: „Der Bearbeiten-Button soll weiter oben … stehen, so dass er besser
+    /// sichtbar ist"): links die Kostenknöpfe, rechts „Bearbeiten…", dazwischen der
+    /// Füller. Danach erst die Felder, danach der Aufklapper.
+    /// </summary>
+    [Fact]
+    public void Die_Knopfzeile_steht_unmittelbar_unter_dem_Modulkopf()
+    {
+        var cut = Aufbauen(kostenOeffnen: (_, _) => Task.CompletedTask,
+                           katalogfelder: Katalogfelder);
+        KatalogZeileWaehlen(cut, 0);
+
+        var kinder = cut.FindAll(".epos-gruppenkopf-koerper")[0].Children.ToList();
+
+        Assert.Contains("epos-leiste", kinder[0].ClassList);
+        int raster = kinder.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
+        int parameter = kinder.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
+        Assert.True(0 < raster && raster < parameter);
+
+        var teile = kinder[0].Children.ToList();
+        Assert.Contains("epos-kostenleiste", teile[0].ClassList);
+        Assert.Contains("epos-leiste-fueller", teile[1].ClassList);
+        Assert.Equal("Bearbeiten...", teile[2].TextContent.Trim());
     }
 
     /// <summary>
@@ -759,7 +808,6 @@ public class SolarkollektorenDialogTests : EposBunitContext
                            });
 
         KatalogZeileWaehlen(cut, 0);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         var speichern = Knopf(cut, "Speichern");
         Assert.True(speichern.HasAttribute("disabled"));
@@ -787,7 +835,6 @@ public class SolarkollektorenDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: Katalogfelder);
 
         KatalogZeileWaehlen(cut, 0);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         var block = cut.Find(".epos-modulparameter");
         Assert.DoesNotContain(block.QuerySelectorAll("button").Select(b => b.TextContent.Trim()),
@@ -811,7 +858,6 @@ public class SolarkollektorenDialogTests : EposBunitContext
                            });
 
         KatalogZeileWaehlen(cut, 0);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         // Erst eine gueltige Aenderung - sie gibt den Knopf frei.
         cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("900");
@@ -836,7 +882,6 @@ public class SolarkollektorenDialogTests : EposBunitContext
                                new KatalogSpeicherErgebnis(false, "Schreibgeschützt.", ""));
 
         KatalogZeileWaehlen(cut, 0);
-        cut.Find(".epos-modulparameter-knopf").Click();
         cut.Find(".epos-modulparameter").QuerySelectorAll("input[inputmode=decimal]")[0].Input("900");
         Knopf(cut, "Speichern").Click();
 

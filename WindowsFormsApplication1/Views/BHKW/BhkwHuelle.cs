@@ -390,13 +390,14 @@ namespace WindowsFormsApplication1
                     stamm.Katalogfilterzeilen),
 
                 ["KatalogDetail"] = new Func<string, ErzeugerDetail>(
-                    name => DetailZu(BHKWCtrl.StammDetail(name))),
+                    name => DetailZu(BHKWCtrl.StammDetail(name), BrennstoffZu(name))),
 
                 // FillDetailsFromProjekt: Im Assistenten (kein persistiertes Projekt)
                 // stammen die Werte aus den Stammdaten - dieselbe Weiche wie im Bestand.
                 ["ProjektDetail"] = new Func<string, ErzeugerDetail>(
                     name => DetailZu(projektId > 0 ? BHKWCtrl.ProjektDetail(name, projektId)
-                                                   : BHKWCtrl.StammDetail(name))),
+                                                   : BHKWCtrl.StammDetail(name),
+                                     BrennstoffZu(name))),
 
                 ["Varianten"] = new Func<int, IReadOnlyList<(int Id, string Text)>>(
                     carrierId =>
@@ -489,7 +490,15 @@ namespace WindowsFormsApplication1
 
                 ["LabelName"] = Text_("BHKWV_LBL_NAME", "Modul-Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
-                ["LabelTraeger"] = Text_("BHKWV_LBL_TRAEGER", "Brennstoff:"),
+
+                // DAS BRENNSTOFFPAAR (Anwenderentscheid 16.09.2026). Die Beschriftung des
+                // Typfeldes ist der SCHLUESSEL, an dem der Dialog es in ErzeugerDetail.Felder
+                // wiederfindet - wortgleich die, unter der DetailZu es legt. Die Variante
+                // heisst nicht mehr "Brennstoff:" (BHKWV_LBL_TRAEGER), sondern wie beim
+                // Heizkessel "Brennstoff Variante:" (HZK_LBL_TRAEGER): Unter dem Typ
+                // stehend sagt erst das Paar, was es ist.
+                ["LabelBrennstofftyp"] = Text_("HZK_LBL_BRENNSTOFFTYP", "Brennstoff Typ:"),
+                ["LabelTraeger"] = Text_("HZK_LBL_TRAEGER", "Brennstoff Variante:"),
                 ["LabelGrenzleistung"] = Text_("BHKWV_LBL_GRENZLEISTUNG",
                     "Untere Grenzleistung des ausgewählten Moduls:"),
 
@@ -695,18 +704,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der Detailblock (<c>FillDetailControls</c>, Z. 350).</summary>
-        private static ErzeugerDetail DetailZu(BHKWCtrl.BhkwDetail d)
+        /// <param name="d">Die Anzeigewerte des Kerns; <c>null</c> = leerer Block.</param>
+        /// <param name="brennstoff">
+        /// Der Anzeigename des Brennstoffs — <b>das erste Feld seit dem 16.09.2026</b>
+        /// (Anwenderentscheid: „Brennstoff Typ und Brennstoff Variante sollen
+        /// untereinander stehen"). Der Dialog findet es an der Beschriftung wieder
+        /// (<c>LabelBrennstofftyp</c>) und stellt die Variante unmittelbar darunter.
+        /// Leer heißt: kein Feld — dann bleibt die Variante an ihrer alten Stelle.
+        /// </param>
+        private static ErzeugerDetail DetailZu(BHKWCtrl.BhkwDetail d, string brennstoff)
         {
             if (d == null) return new ErzeugerDetail("", "", new List<(string, string)>());
 
-            var felder = new List<(string, string)>
-            {
-                (Text_("BHKWV_LBL_HERSTELLER", "Hersteller:"), d.Firma),
-                (Text_("BHKWV_LBL_PTHERM", "thermische Leistung [kWth]:"), d.Ptherm.ToString()),
-                (Text_("BHKWV_LBL_PEL", "elektrische Leistung [kWel]:"), d.Pel.ToString())
-            };
+            var felder = new List<(string, string)>();
+
+            // DIESELBE BESCHRIFTUNG WIE BEIM HEIZKESSEL (HZK_LBL_BRENNSTOFFTYP,
+            // "Brennstoff Typ:"). BHKWK_LBL_ENERGIETRAEGER hiesse "Energieträger:" und
+            // wuerde das Paar auseinanderbenennen; die sechs Erzeugerfamilien sollen im
+            // gleichen Schema stehen.
+            if (!string.IsNullOrEmpty(brennstoff))
+                felder.Add((Text_("HZK_LBL_BRENNSTOFFTYP", "Brennstoff Typ:"), brennstoff));
+
+            felder.Add((Text_("BHKWV_LBL_HERSTELLER", "Hersteller:"), d.Firma));
+            felder.Add((Text_("BHKWV_LBL_PTHERM", "thermische Leistung [kWth]:"), d.Ptherm.ToString()));
+            felder.Add((Text_("BHKWV_LBL_PEL", "elektrische Leistung [kWel]:"), d.Pel.ToString()));
 
             return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder);
+        }
+
+        /// <summary>
+        /// Der Anzeigename des Brennstoffs eines Katalogsatzes; leer, wenn es ihn nicht
+        /// gibt. <c>BhkwDetail</c> des Kerns führt ihn nicht — der Katalogsatz des
+        /// Browsers schon, und er ist EIN Lesevorgang über den Bezeichner.
+        /// </summary>
+        /// <remarks>
+        /// Auch für eine PROJEKTzeile: Der Brennstofftyp ist die Eigenschaft des Moduls
+        /// und wird mit der Projektkopie übernommen; verändert wird im Projekt nur die
+        /// VARIANTE. Fehlt der Katalogsatz (gelöscht), bleibt das Feld weg.
+        /// </remarks>
+        private static string BrennstoffZu(string name)
+        {
+            IReadOnlyDictionary<string, string> satz = BHKWStammCtrl.KatalogsatzAnzeige(name);
+            return satz != null && satz.TryGetValue(KatalogBrowserProfil.FeldBrennstoff, out string brenn)
+                 ? brenn ?? "" : "";
         }
 
 

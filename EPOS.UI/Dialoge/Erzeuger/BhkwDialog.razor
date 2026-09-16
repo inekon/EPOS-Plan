@@ -112,6 +112,24 @@
 
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
+            @* DIE KNOPFZEILE STEHT OBEN (Anwenderentscheid 16.09.2026: "Der
+               Bearbeiten-Button soll weiter oben, z. B. unter der blauen Zeile Modul
+               stehen, so dass er besser sichtbar ist"). EINE Zeile unmittelbar unter
+               dem Gruppenkopf: links die Kostenknoepfe, rechts "Bearbeiten…",
+               dazwischen der Fueller. Dieselbe Bauart in allen sechs
+               Erzeugerdialogen; die Knoepfe selbst sind unveraendert. *@
+            <div class="epos-leiste">
+                @if (!Wizard)
+                {
+                    <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
+                                         InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
+                                         EnergieText="@KostenEnergieText" />
+                }
+                <span class="epos-leiste-fueller"></span>
+                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                        @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
+            </div>
+
             @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
                weil dieser Abschnitt den Rechenweg parametriert - Brennstoffvariante,
                Grenzleistung, Vorlauf und Ruecklauf. Der Fensterknopf oben rechts
@@ -128,18 +146,41 @@
             <Textfeld Bezeichnung="@LabelName" Wert="@_detail.Bezeichner" NurLesen="true" />
             @foreach (var feld in _detail.Felder)
             {
-                @* Eine Zahl bekommt die kurze Feldbreite (iU8-E-2, Paket P1). *@
-                <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
-                          Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
+                @* BRENNSTOFF TYP UND BRENNSTOFF VARIANTE STEHEN UNTEREINANDER
+                   (Anwenderentscheid 16.09.2026, fuer alle brennstoffgekoppelten
+                   Komponenten). Das Formularraster fliesst ZEILENWEISE: zwei
+                   aufeinanderfolgende Felder stuenden NEBENeinander, nicht
+                   untereinander. Beide zusammen in EINEN Block, der ueber die volle
+                   Rasterbreite geht (.epos-feld--breit), stapelt sie in derselben
+                   Spalte - ohne neues CSS und ohne Sonderregel je Dialog. Den Typ
+                   liefert die Huelle als erstes Feld des Detailblocks. *@
+                @if (_projektZeile is not null && feld.Feld == LabelBrennstofftyp)
+                {
+                    <div class="epos-feld--breit">
+                        <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true" />
+                        @TraegerwahlFeld
+                    </div>
+                }
+                else
+                {
+                    @* Eine Zahl bekommt die kurze Feldbreite (iU8-E-2, Paket P1). *@
+                    <Textfeld Bezeichnung="@feld.Feld" Wert="@feld.Wert" NurLesen="true"
+                              Kurz="@ErzeugerDetail.IstZahl(feld.Wert)" />
+                }
             }
             <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_detail.Beschreibung"
                       NurLesen="true" Mehrzeilig="true" Zeilen="2" />
 
             @if (_projektZeile is not null)
             {
-                <Auswahlfeld Bezeichnung="@LabelTraeger" Eintraege="@_varianten"
-                             Auswahl="@(_projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
-                             AuswahlChanged="BeiTraegerwechsel" />
+                @* Die Traegerwahl steht oben, im Paarblock unter "Brennstoff Typ".
+                   Fuehrt der Detailblock kein solches Feld - ein Wirt ohne Detailweg,
+                   ein Pruefstand -, bleibt sie HIER stehen, statt still zu
+                   verschwinden. *@
+                @if (!BrennstofftypImDetail)
+                {
+                    @TraegerwahlFeld
+                }
                 <Zahlenfeld Bezeichnung="@LabelGrenzleistung" Einheit="%"
                             Wert="@_projektZeile.Grenzleistung" WertChanged="BeiGrenzleistung" />
                 @* W6-E-7 (07.09.2026): WOMIT GERECHNET WIRD, wenn hier 0 steht.
@@ -173,9 +214,12 @@
            ein Katalogpreis nirgends mehr eintragen. Das Raster ist deshalb DASSELBE,
            das der Katalogbrowser zeigt - der Baustein Katalogfelder.
 
-           ZUGEKLAPPT IST DIE VORGABE, und geladen wird erst beim Aufklappen: Der
-           Dialog sieht aus wie bisher, und wer nur ein Modul auswaehlt, zahlt keine
-           Abfrage. Der Zustand gehoert der Dialogsitzung und wird nirgends abgelegt.
+           AUFGEKLAPPT IST DIE VORGABE (Anwenderentscheid 16.09.2026: "Unter Bearbeiten
+           sollen alle Parameter angezeigt werden und bearbeitbar sein"). Wer einen
+           Katalogsatz waehlt, sieht seine Daten sofort; zuklappen kann er sie weiterhin
+           mit demselben Knopf. Ohne gewaehlten Katalogsatz gibt es den Block gar nicht,
+           und dann wird auch nichts abgefragt. Der Zustand gehoert der Dialogsitzung
+           und wird nirgends abgelegt.
 
            DAS BHKW IST DIE EINZIGE FAMILIE MIT SCHREIBSCHUTZ. In der
            Auslieferungsdatenbank ist JEDER Satz von Tab_BHKW_STAMM geschuetzt;
@@ -209,21 +253,11 @@
             </div>
         }
 
-        @* DIE KNOEPFE ZUM GEWAEHLTEN SATZ - erst die Kosten- und Emissionswege,
-           darunter "Bearbeiten…". Die Kostenleiste stand bis zum 15.09.2026 UNTER
-           dem Modulblock; sie kennt nur "Schalter betrieb ja/nein", WELCHE Zeile
-           gemeint ist, weiss allein dieser Dialog. *@
-        @if (!Wizard)
-        {
-            <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
-                                 InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
-                                 EnergieText="@KostenEnergieText" />
-        }
-
-        <div class="epos-leiste">
-            <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
-                    @onclick="BeiKatalogBearbeiten">@BtnBearbeitenText</button>
-        </div>
+        @* HIER STANDEN DIE KOSTENKNOEPFE UND "Bearbeiten…" (15.09.2026). Sie sind am
+           16.09.2026 an den KOPF des Modulbereichs gewandert - unter die blaue Zeile
+           "Modul", wo der Anwender sie sieht, ohne an den Parametern vorbeizurollen.
+           Die Kostenleiste selbst ist unveraendert: Sie kennt nur "Schalter betrieb
+           ja/nein", WELCHE Zeile gemeint ist, weiss allein dieser Dialog. *@
         </KindInhalt>
     </Gruppenkopf>
 
@@ -442,7 +476,27 @@
     [Parameter] public string BtnFelderSpeichernText { get; set; } = "Speichern";
     [Parameter] public string LabelName { get; set; } = "Modul-Name:";
     [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
-    [Parameter] public string LabelTraeger { get; set; } = "Brennstoff:";
+
+    /// <summary>
+    /// <b>Die Beschriftung des Brennstoff-Typ-Feldes</b> — WORTGLEICH die, unter der die
+    /// Hülle es in <c>ErzeugerDetail.Felder</c> legt (<c>HZK_LBL_BRENNSTOFFTYP</c>,
+    /// derselbe Schlüssel wie beim Heizkessel).
+    /// </summary>
+    /// <remarks>
+    /// Sie ist der SCHLÜSSEL, an dem der Dialog das Feld in der Feldschleife wiederfindet:
+    /// <c>ErzeugerDetail.Felder</c> trägt Paare aus Beschriftung und Wert und sonst nichts,
+    /// und die Trägerwahl soll unmittelbar darunter stehen (Anwenderentscheid 16.09.2026).
+    /// Passt keine Beschriftung, bleibt die Trägerwahl an ihrer alten Stelle.
+    /// </remarks>
+    [Parameter] public string LabelBrennstofftyp { get; set; } = "Brennstoff Typ:";
+
+    /// <summary>
+    /// Die Trägervariante der Projektzeile. <b>Sie heißt seit dem 16.09.2026 „Brennstoff
+    /// Variante:"</b> (<c>HZK_LBL_TRAEGER</c>) statt „Brennstoff:" — unter „Brennstoff
+    /// Typ" stehend sagt erst das Paar, was es ist, und alle brennstoffgekoppelten
+    /// Komponenten benennen es gleich.
+    /// </summary>
+    [Parameter] public string LabelTraeger { get; set; } = "Brennstoff Variante:";
     [Parameter] public string LabelGrenzleistung { get; set; } = "Untere Grenzleistung des ausgewählten Moduls:";
 
     /// <summary>
@@ -515,7 +569,12 @@
     /// Steht der Aufklapper „Alle Daten" offen? Der Zustand gehört der Dialogsitzung
     /// und überlebt den Satzwechsel, wird aber nirgends abgelegt (W6‑E‑1).
     /// </summary>
-    private bool _parameterOffen;
+    /// <remarks>
+    /// <b>Vorgabe OFFEN</b> (Anwenderentscheid 16.09.2026). Deshalb holt schon die
+    /// ERSTE Wahl eines Katalogsatzes die Felder — <see cref="FelderNachziehen"/> tut
+    /// das für jeden Satzwechsel, und ohne gewählten Satz gibt es den Block nicht.
+    /// </remarks>
+    private bool _parameterOffen = true;
 
     /// <summary>Steht der Parameterblock offen? (Prüfhilfe für Tests, W6‑E‑1.)</summary>
     public bool ParameterOffen => _parameterOffen;
@@ -541,6 +600,21 @@
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
 
+    /// <summary>
+    /// Führt der Detailblock ein Feld mit der Beschriftung <see cref="LabelBrennstofftyp"/>?
+    /// Nur dann steht die Trägerwahl oben unter ihm statt an ihrer alten Stelle.
+    /// </summary>
+    private bool BrennstofftypImDetail
+        => _detail.Felder.Any(f => f.Feld == LabelBrennstofftyp);
+
+    /// <summary>
+    /// <b>Die Trägerwahl der Projektzeile</b> — ihr Bauplan steht EINMAL hier, weil sie an
+    /// zwei Stellen erscheinen kann: im Paarblock unter „Brennstoff Typ" (der Regelfall)
+    /// und ersatzweise dort, wo sie bis zum 16.09.2026 stand.
+    /// </summary>
+    private RenderFragment TraegerwahlFeld => @<Auswahlfeld Bezeichnung="@LabelTraeger" Eintraege="@_varianten"
+                                                            Auswahl="@(_projektZeile is not null && _projektZeile.CarrierId > 0 ? _projektZeile.CarrierId : null)"
+                                                            AuswahlChanged="BeiTraegerwechsel" />;
 
     /// <summary>Die gewaehlte Projektzeile (Pruefhilfe fuer Tests).</summary>
     public ErzeugerZeile? Projektzeile => _projektZeile;
@@ -797,8 +871,8 @@
     /// Auf- und zuklappen - und beim AUFklappen die Felder holen.
     /// </summary>
     /// <remarks>
-    /// <b>Erst beim Aufklappen.</b> Wer nur ein Modul auswählt, zahlt keine Abfrage; und
-    /// wer aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
+    /// <b>Der Knopf bleibt, die Vorgabe ist offen.</b> Wer zuklappt und wieder
+    /// aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
     /// </remarks>
     private void ParameterUmschalten()
     {

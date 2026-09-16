@@ -11,8 +11,9 @@
    heraus ueberhaupt zu sehen.
 
    DIE KNOEPFE ZUM GEWAEHLTEN SATZ STEHEN IM MODULBEREICH ("alle sechs Erzeuger
-   im gleichen Schema"): erst der Aufklapper, dann die Kostenleiste, dann
-   "Bearbeiten...". Unter der Katalogliste steht kein Knopf mehr.
+   im gleichen Schema"), seit dem 16.09.2026 in EINER Zeile ganz OBEN: links die
+   Kostenleiste, rechts "Bearbeiten...", darunter erst die Felder und der
+   Aufklapper. Unter der Katalogliste steht kein Knopf mehr.
 
    JE KLICK EINE EIGENE ZEILE. btn_Hinzu_Click legt seit AP2b bewusst eine
    NEUE Modellinstanz an: Bis dahin landete immer dasselbe Feldobjekt in der
@@ -106,6 +107,31 @@
 
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
+            @* DIE KNOPFZEILE STEHT OBEN (Anwenderentscheid 16.09.2026: "Der
+               Bearbeiten-Button soll weiter oben, z. B. unter der blauen Zeile Modul
+               stehen, so dass er besser sichtbar ist"). EINE Zeile unmittelbar unter
+               dem Gruppenkopf: links die Kostenknoepfe, rechts "Bearbeiten…",
+               dazwischen der Fueller. Dieselbe Bauart in allen sechs
+               Erzeugerdialogen; die Knoepfe selbst sind unveraendert - im Assistenten
+               gibt es keinen Kostenkontext, dort bleibt die Leiste weg. *@
+            <div class="epos-leiste">
+                @if (!Wizard)
+                {
+                    <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
+                                         InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
+                                         EnergieText="@KostenEnergieText" />
+                }
+                <span class="epos-leiste-fueller"></span>
+                @* „Bearbeiten…" oeffnet WEITERHIN den ganzen Modulkatalog als
+                   Ueberlagerung: Er ist die Katalogverwaltung mit „Neu…" und „Loeschen"
+                   und damit mehr als der Aufklapper, der nur den gewaehlten Satz
+                   pflegt. *@
+                @if (VerwaltungGaben is not null)
+                {
+                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
+                }
+            </div>
+
             @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
                weil dieser Abschnitt die Geraetewerte zeigt, die die Speicherengine als
                Parametersatz liest - Kapazitaet, Leistung, Ladezustand, Wirkungsgrad,
@@ -149,9 +175,12 @@
                sie hier, in derselben Bauart wie bei Heizkessel und BHKW und aus
                derselben Quelle wie der Katalogeditor hinter "Bearbeiten…".
 
-               ZUGEKLAPPT IST DIE VORGABE, und geladen wird erst beim Aufklappen: Der
-               Dialog sieht aus wie bisher, und wer nur einen Speicher auswaehlt, zahlt
-               keine Abfrage. Der Zustand gehoert der Dialogsitzung. *@
+               AUFGEKLAPPT IST DIE VORGABE (Anwenderentscheid 16.09.2026: "Unter
+               Bearbeiten sollen alle Parameter angezeigt werden und bearbeitbar sein").
+               Wer einen Speicher waehlt, sieht seine Daten sofort; zuklappen kann er sie
+               weiterhin mit demselben Knopf. Ohne gewaehlten Katalogsatz gibt es den
+               Block gar nicht, und dann wird auch nichts abgefragt. Der Zustand gehoert
+               der Dialogsitzung. *@
             @if (Katalogfelder is not null && _katalogZeile is not null)
             {
                 <div class="epos-modulparameter">
@@ -180,27 +209,10 @@
                 </div>
             }
 
-            @* DIE KNOEPFE ZUM GEWAEHLTEN SATZ - hier und nicht mehr unter der Liste
-               (Anwenderentscheid 15.09.2026). Erst die Kosten- und Emissionswege,
-               darunter „Bearbeiten…": Der Modulbereich ist damit die EINE Stelle, an
-               der man mit dem gewaehlten Geraet arbeitet. Im Assistenten gibt es keinen
-               Kostenkontext - dort bleibt die Leiste weg. *@
-            @if (!Wizard)
-            {
-                <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste" EnergiekostenOeffnen="@EnergieLeiste"
-                                     InvestText="@KostenInvestText" BetriebText="@KostenBetriebText"
-                                     EnergieText="@KostenEnergieText" />
-            }
-
-            @* „Bearbeiten…" oeffnet WEITERHIN den ganzen Modulkatalog als Ueberlagerung:
-               Er ist die Katalogverwaltung mit „Neu…" und „Loeschen" und damit mehr als
-               der Aufklapper, der nur den gewaehlten Satz pflegt. *@
-            @if (VerwaltungGaben is not null)
-            {
-                <div class="epos-leiste">
-                    <button type="button" class="epos-knopf" @onclick="BeiBearbeiten">@BtnBearbeitenText</button>
-                </div>
-            }
+            @* HIER STANDEN DIE KOSTENKNOEPFE UND „Bearbeiten…" (15.09.2026). Sie sind am
+               16.09.2026 an den KOPF des Modulbereichs gewandert - unter die blaue Zeile
+               "Modul", wo der Anwender sie sieht, ohne an den Parametern
+               vorbeizurollen. *@
         </KindInhalt>
     </Gruppenkopf>
 
@@ -393,9 +405,15 @@
 
     /// <summary>
     /// Steht der Aufklapper „Alle Daten" offen? Der Zustand gehört der Dialogsitzung und
-    /// überlebt den Satzwechsel, wird aber nirgends abgelegt.
+    /// überlebt den Satzwechsel, wird aber nirgends abgelegt. <b>Vorgabe OFFEN</b>
+    /// (Anwenderentscheid 16.09.2026).
     /// </summary>
-    private bool _parameterOffen;
+    /// <remarks>
+    /// Weil er offen beginnt, holt schon die ERSTE Wahl eines Katalogsatzes die Felder:
+    /// <c>KatalogZeileWaehlen</c> ruft <c>FelderHolen</c>, sobald er offen steht. Ohne
+    /// gewählten Satz gibt es den Block nicht — dann wird auch nichts abgefragt.
+    /// </remarks>
+    private bool _parameterOffen = true;
 
     /// <summary>Die Felder des gewählten Satzes; <c>null</c> = noch nicht geholt.</summary>
     private IReadOnlyList<BrowserFeldwert>? _felder;
@@ -557,8 +575,8 @@
     /// Auf- und zuklappen - und beim AUFklappen die Felder holen.
     /// </summary>
     /// <remarks>
-    /// <b>Erst beim Aufklappen.</b> Wer nur einen Speicher auswählt, zahlt keine Abfrage;
-    /// und wer aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
+    /// <b>Der Knopf bleibt, die Vorgabe ist offen.</b> Wer zuklappt und wieder
+    /// aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
     /// </remarks>
     private void ParameterUmschalten()
     {

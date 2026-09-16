@@ -534,63 +534,51 @@ public class PhotovoltaikDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// ZUGEKLAPPT IST DIE VORGABE, und der Weg zu den Feldern wird dabei NICHT
-    /// gegangen: Wer nur ein Modul auswählt, zahlt keine Abfrage.
+    /// AUFGEKLAPPT IST DIE VORGABE (Anwenderentscheid 16.09.2026: „Unter Bearbeiten
+    /// sollen alle Parameter angezeigt werden und bearbeitbar sein"), und der Weg zu
+    /// den Feldern wird mit der WAHL gegangen — einmal je Satz, nicht je Klick. Ohne
+    /// gewählten Satz gibt es den Block nicht, und dann wird auch nichts abgefragt.
     /// </summary>
     [Fact]
-    public void Der_Parameterblock_ist_zugeklappt_die_Vorgabe()
+    public void Der_Parameterblock_ist_aufgeklappt_die_Vorgabe()
     {
         int rufe = 0;
         var cut = Aufbauen(katalogfelder: n => { rufe++; return Katalogfelder(n); });
+
+        Assert.Equal(0, rufe);
+        Assert.Empty(cut.FindAll(".epos-modulparameter"));
+
         KatalogzeileWaehlen(cut);
 
         var knopf = cut.Find(".epos-modulparameter-knopf");
-        Assert.Equal("false", knopf.GetAttribute("aria-expanded"));
+        Assert.Equal("true", knopf.GetAttribute("aria-expanded"));
         Assert.Contains("Alle Daten anzeigen", knopf.TextContent);
 
-        Assert.False(cut.Instance.ParameterOffen);
-        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
-        Assert.Equal(0, rufe);
-    }
-
-    /// <summary>
-    /// <b>Die Felder kommen erst beim Aufklappen</b> — und dann ALLE, die der
-    /// Modulkatalog führt. Wer aufklappt, sieht den Stand von JETZT.
-    /// </summary>
-    [Fact]
-    public void Erst_das_Aufklappen_holt_die_Felder()
-    {
-        int rufe = 0;
-        var cut = Aufbauen(katalogfelder: n => { rufe++; return Katalogfelder(n); });
-        KatalogzeileWaehlen(cut);
-        Assert.Equal(0, rufe);
-
-        cut.Find(".epos-modulparameter-knopf").Click();
-
-        Assert.Equal(1, rufe);
         Assert.True(cut.Instance.ParameterOffen);
-        Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Equal(1, rufe);
 
         var block = cut.Find(".epos-modulparameter");
         Assert.Equal(Modulprofil.Felder.Count, block.QuerySelectorAll(".epos-feld").Length);
     }
 
     /// <summary>
-    /// Ein zweiter Druck klappt wieder zu — der Zustand gehört dem Dialog, nicht
+    /// Der Knopf klappt zu und wieder auf — der Zustand gehört dem Dialog, nicht
     /// dem Browser.
     /// </summary>
     [Fact]
-    public void Ein_zweiter_Druck_klappt_wieder_zu()
+    public void Der_Knopf_klappt_zu_und_wieder_auf()
     {
         var cut = Aufbauen(katalogfelder: Katalogfelder);
         KatalogzeileWaehlen(cut);
 
         cut.Find(".epos-modulparameter-knopf").Click();
-        Assert.True(cut.Instance.ParameterOffen);
+        Assert.False(cut.Instance.ParameterOffen);
+        Assert.Equal("false", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
 
         cut.Find(".epos-modulparameter-knopf").Click();
-        Assert.False(cut.Instance.ParameterOffen);
-        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+        Assert.True(cut.Instance.ParameterOffen);
+        Assert.NotEmpty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
     }
 
     /// <summary>
@@ -604,7 +592,6 @@ public class PhotovoltaikDialogTests : EposBunitContext
         int rufe = 0;
         var cut = Aufbauen(katalogfelder: n => { rufe++; return Katalogfelder(n); });
         KatalogzeileWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         Assert.Equal(1, rufe);
         Assert.Equal("Modul 400", cut.Find(".epos-modulparameter")
@@ -631,7 +618,6 @@ public class PhotovoltaikDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: Katalogfelder,
                            felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n));
         KatalogzeileWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         int erwartet = Modulprofil.Felder
             .Count(f => f.Gesperrt || f.Art == BrowserFeldArt.Auswahl);
@@ -651,7 +637,6 @@ public class PhotovoltaikDialogTests : EposBunitContext
     {
         var cut = Aufbauen(katalogfelder: Katalogfelder);
         KatalogzeileWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         Assert.Empty(cut.FindAll(".epos-modulparameter .epos-leiste"));
 
@@ -680,7 +665,6 @@ public class PhotovoltaikDialogTests : EposBunitContext
             });
 
         KatalogzeileWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         Assert.True(cut.Find(".epos-modulparameter .epos-leiste .epos-knopf")
                        .HasAttribute("disabled"));
@@ -707,7 +691,6 @@ public class PhotovoltaikDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: Katalogfelder,
                            felderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n));
         KatalogzeileWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
         Assert.False(cut.Find(".epos-modulparameter .epos-leiste .epos-knopf")
@@ -732,7 +715,6 @@ public class PhotovoltaikDialogTests : EposBunitContext
                 false, "Der Datensatz ist schreibgeschützt.", n));
 
         KatalogzeileWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
         cut.FindAll(".epos-modulparameter input[inputmode=decimal]")[0].Input("42");
         cut.Find(".epos-modulparameter .epos-leiste .epos-knopf").Click();
 
@@ -766,7 +748,34 @@ public class PhotovoltaikDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Kostenleiste steht ÜBER „Modul Bearbeiten…"</b> und im Assistenten gar
+    /// <b>Die Knopfzeile steht als ERSTES unter dem Modulkopf</b> (Anwenderentscheid
+    /// 16.09.2026: „Der Bearbeiten-Button soll weiter oben … stehen, so dass er besser
+    /// sichtbar ist"): links die Kostenknöpfe, rechts „Modul Bearbeiten…", dazwischen
+    /// der Füller. Danach erst die Felder, danach der Aufklapper.
+    /// </summary>
+    [Fact]
+    public void Die_Knopfzeile_steht_unmittelbar_unter_dem_Modulkopf()
+    {
+        var cut = Aufbauen(verwaltung: () => Verwaltungsgaben(),
+                           katalogfelder: Katalogfelder);
+        KatalogzeileWaehlen(cut);
+
+        var kinder = Modulbereich(cut).QuerySelector(".epos-gruppenkopf-koerper")!
+                                      .Children.ToList();
+
+        Assert.Contains("epos-leiste", kinder[0].ClassList);
+        int raster = kinder.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
+        int parameter = kinder.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
+        Assert.True(0 < raster && raster < parameter);
+
+        var teile = kinder[0].Children.ToList();
+        Assert.Contains("epos-kostenleiste", teile[0].ClassList);
+        Assert.Contains("epos-leiste-fueller", teile[1].ClassList);
+        Assert.Equal("Modul Bearbeiten...", teile[2].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>Die Kostenleiste steht LINKS in der Knopfzeile</b> und im Assistenten gar
     /// nicht — dieselbe Anordnung wie beim Heizkessel. Ohne Delegat zeichnet die
     /// Leiste keinen Knopf (ihre eigene Regel).
     /// </summary>
@@ -855,9 +864,12 @@ public class PhotovoltaikDialogTests : EposBunitContext
 
         KatalogzeileWaehlen(cut);
 
+        // Aufgeklappt ist die Vorgabe (Anwenderentscheid 16.09.2026) - der Knopf
+        // traegt seine englische Beschriftung, geklickt wird nicht: Ein Klick
+        // klappte den Block ZU.
         var knopf = cut.Find(".epos-modulparameter-knopf");
         Assert.Contains("Show all data", knopf.TextContent);
-        knopf.Click();
+        Assert.Equal("true", knopf.GetAttribute("aria-expanded"));
 
         var block = cut.Find(".epos-modulparameter");
         Assert.Equal(new[] { "Efficiency:", "Cell technology:" },

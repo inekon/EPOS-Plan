@@ -2223,6 +2223,19 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-top: 1px solid var(--epos-rahmen);
 }
 
+/* IN DER KNOPFZEILE OBEN traegt die Kostenleiste keinen Trenner (#297,
+   Anwenderwunsch 16.09.2026 "Bearbeiten nach oben"): Dort stehen die drei
+   Kostenknoepfe als erstes Kind der .epos-leiste am KOPF des Modulkoerpers,
+   und der Strich lag nicht mehr UNTER den Feldern, sondern mitten in der
+   Knopfzeile - nur ueber den Kostenknoepfen, nicht ueber "Bearbeiten...".
+   Aufgehoben wird genau das, was den Trenner macht (Strich samt seinen
+   beiden Abstaenden); Ausrichtung und Abstand der Knoepfe bleiben. */
+.epos-leiste > .epos-kostenleiste {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
 .epos-kostenleiste-hinweis {
     color: var(--epos-senke-text);          /* Color.Firebrick des Vorlaeufers */
     font-size: var(--epos-schriftgroesse);

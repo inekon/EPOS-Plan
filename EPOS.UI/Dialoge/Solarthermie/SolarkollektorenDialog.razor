@@ -112,6 +112,24 @@
 
     <Gruppenkopf Titel="@GruppeModul">
         <KindInhalt>
+            @* DIE KNOPFZEILE STEHT OBEN (Anwenderentscheid 16.09.2026: "Der
+               Bearbeiten-Button soll weiter oben, z. B. unter der blauen Zeile Modul
+               stehen, so dass er besser sichtbar ist"). EINE Zeile unmittelbar unter
+               dem Gruppenkopf: links die Kostenknoepfe, rechts "Bearbeiten…",
+               dazwischen der Fueller. Dieselbe Bauart in allen sechs
+               Erzeugerdialogen; die Knoepfe selbst sind unveraendert - ohne gewaehlten
+               Katalogsatz bleibt "Bearbeiten…" tot. *@
+            <div class="epos-leiste">
+                @if (!Wizard && KostenOeffnen is not null)
+                {
+                    <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste"
+                                         InvestText="@KostenInvestText" BetriebText="@KostenBetriebText" />
+                }
+                <span class="epos-leiste-fueller"></span>
+                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
+                        @onclick="() => KatalogEditor(false)">@BtnBearbeitenText</button>
+            </div>
+
             @* Formularraster (iU8-E-2, Paket P1): Der Detailblock stand zuvor als
                eine Spalte voller Felder ueber die ganze Breite. *@
             <Formularraster>
@@ -132,9 +150,12 @@
                Das Raster ist DASSELBE, das der Katalogbrowser zeigt - der Baustein
                Katalogfelder; er fuehrt die vierzehn Spalten des Kollektorsatzes.
 
-               ZUGEKLAPPT IST DIE VORGABE, und geladen wird erst beim Aufklappen: Der
-               Dialog sieht aus wie bisher, und wer nur einen Kollektor auswaehlt, zahlt
-               keine Abfrage. Der Zustand gehoert der Dialogsitzung. *@
+               AUFGEKLAPPT IST DIE VORGABE (Anwenderentscheid 16.09.2026: "Unter
+               Bearbeiten sollen alle Parameter angezeigt werden und bearbeitbar sein").
+               Wer einen Kollektor waehlt, sieht seine Daten sofort; zuklappen kann er
+               sie weiterhin mit demselben Knopf. Ohne gewaehlten Katalogsatz gibt es den
+               Block gar nicht, und dann wird auch nichts abgefragt. Der Zustand gehoert
+               der Dialogsitzung. *@
             @if (Katalogfelder is not null && _katalogZeile is not null)
             {
                 <div class="epos-modulparameter">
@@ -163,20 +184,10 @@
                 </div>
             }
 
-            @* DIE KNOEPFE ZUM GEWAEHLTEN SATZ - hier und nicht mehr unter der Liste
-               (Anwenderentscheid 15.09.2026). Erst die Kostenwege, darunter
-               „Bearbeiten…": Der Modulbereich ist die EINE Stelle, an der man mit dem
-               gewaehlten Geraet arbeitet. *@
-            @if (!Wizard && KostenOeffnen is not null)
-            {
-                <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste"
-                                     InvestText="@KostenInvestText" BetriebText="@KostenBetriebText" />
-            }
-
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf" disabled="@(_katalogZeile is null)"
-                        @onclick="() => KatalogEditor(false)">@BtnBearbeitenText</button>
-            </div>
+            @* HIER STANDEN DIE KOSTENKNOEPFE UND „Bearbeiten…" (15.09.2026). Sie sind am
+               16.09.2026 an den KOPF des Modulbereichs gewandert - unter die blaue Zeile
+               "Modul", wo der Anwender sie sieht, ohne an den Parametern
+               vorbeizurollen. *@
         </KindInhalt>
     </Gruppenkopf>
 
@@ -448,9 +459,14 @@
 
     /// <summary>
     /// Steht der Aufklapper „Alle Daten" offen? Der Zustand gehört der Dialogsitzung
-    /// und wird nirgends abgelegt.
+    /// und wird nirgends abgelegt. <b>Vorgabe OFFEN</b> (Anwenderentscheid 16.09.2026).
     /// </summary>
-    private bool _parameterOffen;
+    /// <remarks>
+    /// Weil er offen beginnt, holt schon die ERSTE Wahl eines Katalogsatzes die Felder:
+    /// <c>KatalogZeileWaehlen</c> ruft <c>FelderHolen</c>, sobald er offen steht. Ohne
+    /// gewählten Satz gibt es den Block nicht — dann wird auch nichts abgefragt.
+    /// </remarks>
+    private bool _parameterOffen = true;
 
     /// <summary>Steht der Parameterblock offen? (Prüfhilfe für Tests.)</summary>
     public bool ParameterOffen => _parameterOffen;
@@ -555,9 +571,8 @@
 
     /// <summary>Auf- und zuklappen - und beim AUFklappen die Felder holen.</summary>
     /// <remarks>
-    /// <b>Erst beim Aufklappen.</b> Wer nur einen Kollektor auswählt, zahlt keine
-    /// Abfrage; und wer aufklappt, sieht den Stand von JETZT und nicht den von der
-    /// Auswahl.
+    /// <b>Der Knopf bleibt, die Vorgabe ist offen.</b> Wer zuklappt und wieder
+    /// aufklappt, sieht den Stand von JETZT und nicht den von der Auswahl.
     /// </remarks>
     private void ParameterUmschalten()
     {

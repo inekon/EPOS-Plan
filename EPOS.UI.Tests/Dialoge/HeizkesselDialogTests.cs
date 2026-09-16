@@ -846,26 +846,50 @@ public class HeizkesselDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Geholt wird erst beim Aufklappen.</b> Wer nur einen Kessel auswählt, zahlt
-    /// keine Abfrage — und wer aufklappt, sieht den Stand von JETZT.
+    /// <b>Geholt wird mit der WAHL des Satzes</b> (Anwenderentscheid 16.09.2026: „Unter
+    /// Bearbeiten sollen alle Parameter angezeigt werden und bearbeitbar sein"). Der
+    /// Aufklapper steht offen, sobald ein Katalogsatz gewählt ist — genau EINE Abfrage
+    /// je Satz, nicht eine je Klick.
     /// </summary>
     [Fact]
-    public void Der_Aufklapper_holt_die_Felder_erst_beim_Aufklappen()
+    public void Der_Aufklapper_holt_die_Felder_mit_der_Wahl_des_Satzes()
     {
         int rufe = 0;
         var cut = Aufbauen(katalogfelder: _ => { rufe++; return Felder(); });
 
-        KatalogsatzWaehlen(cut);
-
+        // Ohne gewaehlten Katalogsatz (die erste PROJEKTzeile steht vorgewaehlt) gibt es
+        // den Block gar nicht - und keine Abfrage.
         Assert.Equal(0, rufe);
-        Assert.False(cut.Instance.ParameterOffen);
-        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+        Assert.Empty(cut.FindAll(".epos-modulparameter"));
 
-        cut.Find(".epos-modulparameter-knopf").Click();
+        KatalogsatzWaehlen(cut);
 
         Assert.Equal(1, rufe);
         Assert.True(cut.Instance.ParameterOffen);
         Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.NotEmpty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+    }
+
+    /// <summary>
+    /// <b>Zuklappen geht weiterhin</b> — der Knopf bleibt, was er war, nur seine Vorgabe
+    /// hat sich gedreht.
+    /// </summary>
+    [Fact]
+    public void Der_Aufklapper_laesst_sich_weiterhin_zuklappen()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder());
+
+        KatalogsatzWaehlen(cut);
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.False(cut.Instance.ParameterOffen);
+        Assert.Equal("false", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        Assert.True(cut.Instance.ParameterOffen);
         Assert.NotEmpty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
     }
 
@@ -881,7 +905,6 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: n => { gefragt.Add(n); return Felder(); });
 
         KatalogsatzWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
         Assert.Equal(new[] { "Kessel A" }, gefragt);
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
@@ -901,7 +924,6 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: _ => Felder());
 
         KatalogsatzWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
         Assert.NotEmpty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
 
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
@@ -922,7 +944,6 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: _ => Felder());
 
         KatalogsatzWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Speichern");
         Assert.All(cut.Find(".epos-modulparameter").QuerySelectorAll("input[type=text]"),
@@ -948,7 +969,6 @@ public class HeizkesselDialogTests : EposBunitContext
             });
 
         KatalogsatzWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         Assert.True(Knopf(cut, "Speichern").HasAttribute("disabled"));
 
@@ -977,7 +997,6 @@ public class HeizkesselDialogTests : EposBunitContext
                 new KatalogSpeicherErgebnis(false, "„Investitionskosten“ darf nicht negativ sein.", ""));
 
         KatalogsatzWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("15000");
         Knopf(cut, "Speichern").Click();
 
@@ -999,7 +1018,6 @@ public class HeizkesselDialogTests : EposBunitContext
                                new KatalogSpeicherErgebnis(true, "ok", n));
 
         KatalogsatzWaehlen(cut);
-        cut.Find(".epos-modulparameter-knopf").Click();
 
         var block = cut.Find(".epos-modulparameter");
         Assert.Equal(3, block.QuerySelectorAll(".epos-feld, .epos-schalter").Length);
@@ -1009,19 +1027,120 @@ public class HeizkesselDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Zugeklappt ist die Vorgabe</b>, und zugeklappt steht kein Feld da — der
-    /// Dialog sieht aus wie vorher, wer nur auswählt, zahlt keine Abfrage.
+    /// <b>Aufgeklappt ist die Vorgabe</b> (Anwenderentscheid 16.09.2026) — mit gewähltem
+    /// Satz stehen die Felder da, ohne gewählten Satz gibt es den Block gar nicht.
     /// </summary>
     [Fact]
-    public void Zugeklappt_ist_die_Vorgabe_und_zeigt_kein_Feld()
+    public void Aufgeklappt_ist_die_Vorgabe_und_zeigt_die_Felder()
     {
         var cut = Aufbauen(katalogfelder: _ => Felder());
 
+        Assert.Empty(cut.FindAll(".epos-modulparameter"));
+
         KatalogsatzWaehlen(cut);
 
-        Assert.False(cut.Instance.ParameterOffen);
-        Assert.Equal("false", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
-        Assert.Empty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
+        Assert.True(cut.Instance.ParameterOffen);
+        Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Equal("Alle Daten anzeigen",
+                     cut.Find(".epos-modulparameter-knopf").QuerySelectorAll("span")[1].TextContent);
+        Assert.Equal(3, cut.Find(".epos-modulparameter")
+                           .QuerySelectorAll(".epos-feld, .epos-schalter").Length);
+    }
+
+    // =================================================================================
+    //  Die Knopfzeile im Modulbereich — Anwenderentscheid 16.09.2026
+    // =================================================================================
+    //
+    // „Der Bearbeiten-Button soll weiter oben (z. B. unter der blauen Zeile Modul)
+    // stehen, so dass er besser sichtbar ist."
+
+    /// <summary>
+    /// <b>Die Knopfzeile steht als ERSTES unter dem Modulkopf</b>: links die
+    /// Kostenknöpfe, rechts „Bearbeiten…", dazwischen der Füller. Danach erst die
+    /// Felder, danach der Aufklapper.
+    /// </summary>
+    [Fact]
+    public void Die_Knopfzeile_steht_unmittelbar_unter_dem_Modulkopf()
+    {
+        var cut = Aufbauen(kostenOeffnen: (_, _) => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask,
+                           katalogfelder: _ => Felder(),
+                           editorGaben: _ => new Dictionary<string, object>());
+
+        KatalogsatzWaehlen(cut);
+
+        var kinder = cut.Find(".epos-gruppenkopf-koerper").Children.ToList();
+
+        // Die Knopfzeile ist das erste Kind - vor Hilfeknopf, Feldern und Aufklapper.
+        Assert.Contains("epos-leiste", kinder[0].ClassList);
+        int raster = kinder.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
+        int parameter = kinder.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
+        Assert.True(0 < raster && raster < parameter);
+
+        // Links die Kostenknoepfe, dann der Fueller, rechts "Bearbeiten...".
+        var teile = kinder[0].Children.ToList();
+        Assert.Contains("epos-kostenleiste", teile[0].ClassList);
+        Assert.Contains("epos-leiste-fueller", teile[1].ClassList);
+        Assert.Equal("Bearbeiten...", teile[2].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>„Bearbeiten…" bleibt gesperrt, solange kein Katalogsatz gewählt ist</b> — die
+    /// Sperre ist mit dem Knopf nach oben gewandert, nicht verschwunden.
+    /// </summary>
+    [Fact]
+    public void Bearbeiten_bleibt_in_der_Knopfzeile_ohne_Katalogsatz_gesperrt()
+    {
+        var cut = Aufbauen(editorGaben: _ => new Dictionary<string, object>());
+
+        Assert.True(Knopf(cut, "Bearbeiten...").HasAttribute("disabled"));
+
+        KatalogsatzWaehlen(cut);
+
+        Assert.False(Knopf(cut, "Bearbeiten...").HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>„Brennstoff Variante" steht unmittelbar unter „Brennstoff Typ"</b>
+    /// (Anwenderentscheid 16.09.2026) — beide in EINEM Block über die volle
+    /// Rasterbreite, sonst stellte das zweispaltige Raster sie nebeneinander.
+    /// </summary>
+    [Fact]
+    public void Brennstoff_Variante_steht_unmittelbar_unter_Brennstoff_Typ()
+    {
+        var cut = Aufbauen();
+
+        var paar = cut.Find(".epos-formularraster > div.epos-feld--breit");
+        var felder = paar.QuerySelectorAll(".epos-feld");
+
+        Assert.Equal(2, felder.Length);
+        Assert.Equal("Brennstoff Typ:", felder[0].QuerySelector(".epos-feld-text")!.TextContent);
+        Assert.Equal("Brennstoff Variante:", felder[1].QuerySelector(".epos-feld-text")!.TextContent);
+        Assert.NotNull(felder[1].QuerySelector("select"));
+
+        // Und sie steht NICHT mehr ein zweites Mal weiter unten.
+        Assert.Single(cut.FindAll(".epos-formularraster select"));
+    }
+
+    /// <summary>
+    /// <b>Ohne Brennstoff-Typ-Feld bleibt die Trägerwahl stehen</b>, wo sie war — ein
+    /// Wirt ohne Detailweg verliert sein Bedienelement nicht still.
+    /// </summary>
+    [Fact]
+    public void Ohne_Brennstofftyp_im_Detail_bleibt_die_Traegerwahl_an_ihrer_Stelle()
+    {
+        var cut = Render<HeizkesselDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100) })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.Varianten, _ => new[] { (5, "Erdgas E Variante") }));
+
+        // Kein ProjektDetail: Der Detailblock ist leer, ein Paarblock entsteht nicht.
+        Assert.Empty(cut.FindAll(".epos-formularraster > div.epos-feld--breit"));
+        Assert.Single(cut.FindAll(".epos-formularraster select"));
+        Assert.Contains("Brennstoff Variante:",
+                        cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
     }
 
     /// <summary>

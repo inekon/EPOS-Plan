@@ -508,6 +508,13 @@ namespace WindowsFormsApplication1
                 ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
                 ["LabelName"] = Text_("HZK_LBL_NAME", "Name:"),
                 ["LabelBeschreibung"] = Text_("HZKK_LBL_BESCHREIBUNG", "Beschreibung:"),
+
+                // DER SCHLUESSEL ZUM PAARBLOCK (Anwenderentscheid 16.09.2026):
+                // WORTGLEICH die Beschriftung, unter der DetailZu den Brennstofftyp in
+                // ErzeugerDetail.Felder legt. Der Dialog findet das Feld daran wieder und
+                // stellt die Variante unmittelbar darunter - die Feldpaare tragen sonst
+                // keinen Schluessel.
+                ["LabelBrennstofftyp"] = Text_("HZK_LBL_BRENNSTOFFTYP", "Brennstoff Typ:"),
                 ["LabelTraeger"] = Text_("HZK_LBL_TRAEGER", "Brennstoff Variante:"),
                 ["LabelVorlauf"] = Text_("HZKK_LBL_VORLAUF", "Vorlauf:"),
                 ["LabelRuecklauf"] = Text_("HZKK_LBL_RUECKLAUF", "Rücklauf:"),
