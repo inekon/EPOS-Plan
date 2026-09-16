@@ -1,6 +1,6 @@
 # ADR-005: Zonenkopplung im Mehrzonenmodell — Gauß-Seidel je Stunde über die Nachbarraum-Randbedingung
 
-**Status:** Vorgeschlagen (15.09.2026, Empfehlung M1 des Mehrzonenkonzepts; Gegenlesen des Papiers läuft, Entscheid des Anwenders steht aus)
+**Status:** Angenommen (16.09.2026, Entscheid E17 des Anwenders — Konzept-Nachtrag N1.22; damit sind M1 (Weg B) und M4 (Zonen-Luftaustausch in G6b) entschieden; vorgeschlagen am 15.09.2026 als Empfehlung M1 des Mehrzonenkonzepts)
 **Datum:** 15.09.2026
 **Entscheider:** Anwender (Projektverantwortung EPOS-Plan)
 **Betrifft:** [`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md)
@@ -43,7 +43,7 @@ Luftaustausch zwischen Zonenpaaren.
    muss aus Grenzfällen kommen (eine Zone = Einzonenmodell; zwei identische Zonen ohne
    Austausch = zwei Einzonenmodelle; exaktes Gesamtsystem für N = 2 als Orakel).
 
-## Entscheidung (vorgeschlagen)
+## Entscheidung
 
 1. **Kopplung über die Nachbarraum-Randbedingung:** Trennbauteile zur Nachbarzone gehören
    in die AW-Gruppe der Zone; die Nachbartemperatur geht als θ_NR,eq nach Gl. (40) ein und
@@ -76,7 +76,7 @@ Jede Zone rechnet mit den Nachbartemperaturen der vergangenen Stunde.
 **Dafür:** einfach, deterministisch. **Dagegen:** Treppenhaus und offene Küche (großer
 Luftaustausch) rechnen falsch; nur haltbar, wenn der Luftaustausch gestrichen wird (Frage M4).
 
-### Option B: Gauß-Seidel innerhalb der Stunde *(vorgeschlagen)*
+### Option B: Gauß-Seidel innerhalb der Stunde *(angenommen)*
 
 | Dimension | Bewertung |
 |---|---|
@@ -127,8 +127,9 @@ sichtbar ist.
 
 ## Aufgaben
 
-1. [ ] Entscheid des Anwenders zu M1 (Kopplungsweg) und M4 (Zonen-Luftaustausch) nach
-       Abschluss des Gegenlesens des Mehrzonenkonzepts; dann Status dieses ADR auf
-       „Angenommen" setzen oder Option ändern.
+1. [x] Entscheid des Anwenders zu M1 (Kopplungsweg B) und M4 (Zonen-Luftaustausch als Paare in
+       G6b): angenommen am 16.09.2026, Entscheid **E17** (Konzept-Nachtrag N1.22); Status auf
+       „Angenommen" gesetzt, Architekturfrage **A8** damit beantwortet, Sperrpunkt vor G6b
+       aufgehoben. Die Messpflicht (Aufgabe 2 und die Probe „eine Zone bitgleich") gehört zum Entscheid.
 2. [ ] Prüforakel: 4×4-Gesamtsystem für zwei Zonen im Testprojekt.
 3. [ ] G6b: Zonenschleife, Gruppenbildung, θ_NR,eq, Gauß-Seidel, Proben 1–12.

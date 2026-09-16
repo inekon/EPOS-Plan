@@ -1,6 +1,6 @@
 # ADR-004: gbXML-Leseweg — LINQ to XML mit handgeschriebenem Modell statt `XmlSerializer`
 
-**Status:** Vorgeschlagen (15.09.2026, Empfehlung aus Befund R; Entscheid des Anwenders steht aus)
+**Status:** Angenommen (16.09.2026, Entscheid E16 des Anwenders — Konzept-Nachtrag N1.21; vorgeschlagen am 15.09.2026 aus Befund R)
 **Datum:** 15.09.2026
 **Entscheider:** Anwender (Projektverantwortung EPOS-Plan)
 **Betrifft:** [`Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
@@ -38,7 +38,7 @@ und den .NET-Weg selbst nachgemessen:
 3. **Umfang:** EPOS braucht rund 25 der 518 Elemente des Schemas.
 4. **Wartung:** ein Fremdpaket ohne Pflege ist teurer als eigener Code.
 
-## Entscheidung (vorgeschlagen)
+## Entscheidung
 
 1. **Lesen und Schreiben mit LINQ to XML** (`System.Xml.Linq`) gegen ein
    **handgeschriebenes Modell** der benötigten Elemente (`Campus`, `Building`, `Space`,
@@ -69,7 +69,7 @@ und den .NET-Weg selbst nachgemessen:
 
 **Dagegen:** gemessen nicht lauffähig, auch nicht auf Windows.
 
-### Option B: LINQ to XML mit handgeschriebenem Modell *(vorgeschlagen)*
+### Option B: LINQ to XML mit handgeschriebenem Modell *(angenommen)*
 
 | Dimension | Bewertung |
 |---|---|
@@ -117,11 +117,14 @@ ist er ein Datenblatt in XML, das bilanzierende Werkzeuge lesen, Simulationswerk
 
 ## Aufgaben
 
-1. [ ] Entscheid des Anwenders zu **D1** (Reihenfolge), **D2** (Export nur mit Stufe 2) und
+1. [x] Annahme des ADR durch den Anwender — 16.09.2026, Entscheid **E16** (Konzept-Nachtrag
+       N1.21); Architekturfrage **A7** der Softwarearchitektur ist damit beantwortet, der
+       Sperrpunkt vor G4c aufgehoben.
+2. [ ] Entscheid des Anwenders zu **D1** (Reihenfolge), **D2** (Export nur mit Stufe 2) und
        **D16** (Zonenbildung X1…X3 mit G6c) — Kapitel 11.1 des Datenaustauschkonzepts. **D3**
        (Schema und Testdateien ohne Lizenz) steht in 11.2 zur Kenntnis; zu klären bleibt dort
        allein die Ablage der XSD-Kopie im Repositorium.
-2. [ ] `GbxmlImportAblauf`/`-Profil`/`-Satz` nach dem Hausmuster; Lesemodell; Einheiten.
-3. [ ] Rundlauf-Testdateien selbst erzeugen; XSD in den Testordner, gitignoriert oder mit
+3. [ ] `GbxmlImportAblauf`/`-Profil`/`-Satz` nach dem Hausmuster; Lesemodell; Einheiten.
+4. [ ] Rundlauf-Testdateien selbst erzeugen; XSD in den Testordner, gitignoriert oder mit
        geklärter Lizenz.
-4. [ ] Export Stufe 1, dann Stufe 2 nach Freigabe.
+5. [ ] Export Stufe 1, dann Stufe 2 nach Freigabe.

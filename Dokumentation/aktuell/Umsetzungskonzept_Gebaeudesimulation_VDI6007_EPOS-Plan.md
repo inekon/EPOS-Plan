@@ -199,11 +199,16 @@ Ort: `EPOS.Kern/Allgemein/Simulation/Gebaeude/`. Alle Dateien ohne `DataReposito
 
 **`ErsatzparameterRC.cs`** — ein `record` mit den reduzierten RC-Größen eines Gebäudes: die beiden
 Kapazitäten `C_AW_Jk`/`C_IW_Jk` [J/K], die Widerstände `R_Rest_AW_KW`, `R_1_AW_KW`, `R_1_IW_KW`,
-`R_conv_AW_KW`, `R_conv_IW_KW`, `R_rad_KW` und `R_ext_KW` (= H_ve + U_w·A_w + Σψ·L) [K/W], die
+`R_conv_AW_KW`, `R_conv_IW_KW`, `R_rad_KW` und `R_ext_KW` (= H_ve + Σψ·L) [K/W], die
 Bezugsflächen `A_AW_opak_M2`/`A_IW_M2` und `SummeUA_opak_WK` für θ_eq; dazu
 `static ErsatzparameterRC AusKlassenweg(GebaeudeModellEingang e)`. Der Erbauer trägt die harten
 Prüfungen aus Konzept 4.8 — `R_Rest_AW > 0` mit benanntem Fehler (kein stiller Rückfall),
 `5 ≤ Bauweise/Wohnflaeche ≤ 200 Wh/(m²K)`, U-Werte 0,1…6 W/(m²K), `0 < g ≤ 1`.
+
+**E14 (16.09.2026): die Fenster liegen im AW-Zweig, nicht im Lüftungszweig.** Der Satz führt
+dafür `R_1_AF_KW` (= R_AF/6, nach den Wänden parallel geschaltet, Gl. (25)–(28)) und
+`R_Rest_AF_KW`; `R_ext_KW` trägt allein Lüftung und Wärmebrücken. Der Fensterpfad des Prototyps
+entfällt damit für das Produkt (Konzept N1.19, Rechenschritte A7a).
 
 **`Zonenmodell2K.cs`** — der Löser. **Der Name folgt der Norm:** die Richtlinie sagt „2-K-Modell",
 „7R2C" ist nur Kurzform (Konzept N1.3); Konzept 4.1 und 11 nennen noch `Zonenmodell7R2C` und sind
@@ -347,6 +352,8 @@ Daraus zwei harte Folgen für das Stundenmodell:
    Tagesmodell bleibt es bei einer Warnung, damit die Basis unberührt bleibt — Q18).
 
 ### 1.6 Stufe G1 — Schemaschritt 77, vollständig
+
+> **Hinweis zu den Schrittnummern (16.09.2026):** „77" und „78" sind in diesem Papier Arbeitsnummern aus der Entwurfszeit. Der Bestand steht inzwischen auf `SchemaStand.Zielversion = 78` (`EPOS.Kern/Allgemein/Update/SchemaStand.cs:106`), beide Nummern sind vergeben; die tatsächliche Nummer vergibt der Schritt bei seiner Beauftragung; die Nummern 79 und 80 belegt der laufende Auftrag #299 (Heizstab je Wärmepumpe, Katalogverweis der Projektkopie), die nächste freie ist danach 81 — beim Beauftragen am `SchemaStand` nachprüfen. **E19 (16.09.2026):** derselbe Schritt benennt `Wohnflaeche` in beiden Gebäudetabellen in `Nutzflaeche` um, und der Sichtneubau liefert die Spalte unter dem neuen Namen (Konzept N1.24). Die Softwarearchitektur führt denselben Schritt unter dem Papiernamen M3.
 
 `SchemaMigration` liegt in der **Schale**
 (`WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`); der Kern kennt nur die Zielzahl
@@ -774,7 +781,7 @@ Summenzeile derselben Ansicht steht.
 | Name | — | `Daten.Name` (Admin: Klappliste) | — | beim Anlegen | nicht leer |
 | Gebäudetyp / Gebäudeart / Baujahr / Verwendung | — | `Typ`, `Gebaeudeart`, `Baualtersklasse`, `Verwendung` (**Steuerwert**, `GebaeudeKatalogDaten.cs:45-49`) | — | nein | — |
 | Bauart | — | `Bauart` → `Bauweise` (`:713-715`) | schwer | **ja** (Fußnote) | 5 ≤ Bauweise/Wohnfläche ≤ 200 Wh/(m²K) |
-| Wohn-/Nutzfläche | m² | `WohnflaecheGesamt` | — | **ja** | > 0 |
+| Nutzfläche (E13) | m² | `WohnflaecheGesamt` (Editorfeld des Bestands; Spalte `Nutzflaeche` ab M3, E19) | — | **ja** | > 0 |
 | Fläche / Nutzer | m² | `FlaecheNutzer` | 35 (Hülle, `GebaeudeKatalogHuelle.cs:429-431`) | **ja** | > 0 |
 | Interne Wärmegewinne | W | `Waermegewinne` | — | **ja** | ≥ 0 |
 | Fensterdurchlaßgrad | — | `Fensterdurchlassgrad` | — | **ja** | 0 < g ≤ 1 |
@@ -881,6 +888,14 @@ Bezugsfläche ist im Lauf `Tab_Gebaeude.Wohnflaeche` (`SimulationWaermebedarf.cs
 `Wohnflaeche_gesamt`; beim Schreiben werden sie gleichgesetzt (`GebaeudeKatalogHuelle.cs:427`,
 `:458`), bei Altzeilen nicht — der Dialog nennt das in der Herleitungszeile. Die Kennzahl **H_T
 wandert zusätzlich in `KennzahlenKatalog.cs` und den Bericht** (Konzept N1.6).
+
+**E13 (16.09.2026): die Bezugsfläche heißt Nutzfläche.** Feldbeschriftung, Herleitungszeile,
+Prüfregeln und Meldungstexte nennen sie **Nutzfläche** (beheizte Netto-Grundfläche), nicht mehr
+Wohnfläche; Pflichtfelder des Imports sind Nutzfläche und Raumhöhe (Konzept N1.17). **E19 (16.09.2026,
+Q11a):** die Spalte heißt künftig auch im Schema so — `Wohnflaeche` wird in `Tab_Gebaeude` und
+`Tab_Gebaeude_STAMM` im Gebäudespalten-Schritt (1.6, mit dem Sichtneubau) zu **`Nutzflaeche`**
+umbenannt, Werte 1:1, alle Leser und Schreiber auf den neuen Namen; `Wohnflaeche_gesamt` und die
+Skalierungsspalten der Projektzuordnung (E8) bleiben; der Referenzlauf bleibt byte-gleich (Konzept N1.24).
 
 **Zwei Prüfregeln hängen an der Tabelle** (Konzept 4.8): U-Werte zwischen 0,1 und 6 W/(m²K) — als
 `Min`/`Max` am Feld **und** als Meldung beim OK — und `R_Rest,AW > 0`, also mittleres U der opaken
@@ -1500,12 +1515,12 @@ Nur **neue** Fragen; Q1–Q23 des Konzepts sind dort beantwortet oder durch **E1
 | **U8** | Normzahlen als **gitignorierte, lokal beizustellende** Datei (`Referenzlaeufe/Normzahlen/`) mit schweigenden Testfällen — Folge: der Normfallnachweis ist **lokal**, nicht CI | **Ja** — das Ausliefern der Normzahlen wäre eine Vervielfältigung (Konzept N1.2), und LFS ist keine Zugriffsbeschränkung. Die Lücke im Gate gehört ins Protokoll, der Laufauszug (Abweichung je Fall, ohne Absolutwerte) in die Dokumentation |
 | **U9** | Die Grenze von 100 Gebäuden beheben (`HeizwaermebedarfGeb[100]`, `:31`; `MaxP[100]`, `:56`; `IndexOutOfRangeException` an `:816`)? | **Ja, in GB**, wo die Schleife ohnehin angefasst wird: `MaxP` **löschen** (wird nirgends gelesen), `HeizwaermebedarfGeb` auf `ctrl.rows` dimensionieren. Ergebnisneutral |
 | **U10** | Eine Lizenzhinweisseite im Installationspaket — und dann gleich für **alle** ausgelieferten Fremdanteile, nicht nur xBIM? | **Ja, mit G4-1 und für alle.** CDDL § 3.1 verlangt den Quellenverweis an den Empfänger; ohne die Seite ist der IFC-Import nicht auslieferbar. Die übrigen Fremdanteile sind ohnehin fällig — darunter **three.js (MIT)** des Gebäudebetrachters (E11, Konzept N1.16) |
-| **U11** | Größenlimit für IFC-Dateien: 50 MB Windows / 20 MB iOS — oder es versuchen und bei Speichermangel abbrechen? | **Benannt ablehnen**, nicht versuchen: `MemoryModel` hält das Modell im Arbeitsspeicher (10–20 MB je MB STEP-Text), ein Speicherabbruch auf dem iPad ist kein Fehlerbild, das man erklären kann. **Die iOS-Zahl ist in G4-8 zu messen**, nicht zu schätzen |
+| **U11** | Größenlimit für IFC-Dateien: 50 MB Windows / 20 MB iOS — oder es versuchen und bei Speichermangel abbrechen? | **Benannt ablehnen**, nicht versuchen: `MemoryModel` hält das Modell im Arbeitsspeicher (10–20 MB je MB STEP-Text), ein Speicherabbruch auf dem iPad ist kein Fehlerbild, das man erklären kann. **Die iOS-Zahl ist in G4-8 zu messen**, nicht zu schätzen — **mit E18 (16.09.2026) nach Empfehlung entschieden** |
 | **U12** | Woher die Vorgaben je Baualtersklasse? TABULA/IWU hat weder DOI noch Datensatzlizenz | **Eigene Werte aus dem EPOS-Gebäudekatalog ableiten** — die Testdatenbank führt Gebäude je Klasse. Lizenzfrei, hausgemacht, passt zu den übrigen EPOS-Vorgaben. Sonst nur A–H vorbelegen und den Rest leer lassen |
 | **U13** | Mehrere `IfcBuilding` in einer Datei: Klappliste und **ein** Gebäude je Lauf — oder alle auf einmal anlegen? | **Eines je Lauf.** „Alle auf einmal" erzeugt Katalognamen automatisch und zöge die Dublettenlogik des Katalogimports nach; das ist ein eigener Schritt, nicht G4a |
 | **U14** | Fensterabzug: Wandfläche = `GrossSideArea` **minus** Fenster und Außentüren — oder die Öffnungen in der Wandfläche belassen, wie `GrossSideArea` sie liefert? | **Abziehen.** Das Modell führt Wand und Fenster getrennt mit je eigenem U-Wert; ohne Abzug zählt die Öffnung zweimal. Wird die Differenz negativ: `NetSideArea`, sonst Warnung und 0 |
 | **U15** | Die drei ψ-Werte und die drei Anschlusslängen beim IFC-Import als **Vorgabe je Baualtersklasse** setzen oder **leer** lassen? | **ψ als Vorgabe, Längen leer.** IFC liefert weder das eine noch das andere; eine geratene Anschlusslänge sähe aus wie eine gemessene, ein ψ-Vorgabewert ist als Klassenwert erkennbar. Beide tragen Herkunft `Vorgabe` bzw. `Leer` |
-| **U16** | Soll `ios.yml` um einen **Gerätebau** ergänzt werden (heute baut der Lauf für den Simulator, `:123-127`, und dort wird nie getrimmt) — oder genügt ein einmaliger Nachweis von Hand? | **Einmaliger Nachweis in G4-8**, nach Rückfrage. Ein dauerhafter Release-Zweig verdoppelt die Laufzeit eines Workflows, der zehnfach zählt; erst wenn xBIM im Feld ist, lohnt die Dauerprüfung |
+| **U16** | Soll `ios.yml` um einen **Gerätebau** ergänzt werden (heute baut der Lauf für den Simulator, `:123-127`, und dort wird nie getrimmt) — oder genügt ein einmaliger Nachweis von Hand? | **Einmaliger Nachweis in G4-8**, nach Rückfrage. Ein dauerhafter Release-Zweig verdoppelt die Laufzeit eines Workflows, der zehnfach zählt; erst wenn xBIM im Feld ist, lohnt die Dauerprüfung — **mit E18 (16.09.2026) nach Empfehlung entschieden** |
 
 ---
 
@@ -1525,7 +1540,8 @@ Nur **neue** Fragen; Q1–Q23 des Konzepts sind dort beantwortet oder durch **E1
   die Wiki-Seite „Gebäudemodell VDI 6007" kommt, steht in Konzept 9; der Logbuch-Eintrag entsteht
   mit dem Upload und trägt die Version, die der Anwender nennt
   ([`Konzept_Hilfesystem_Wikidokumentation.md`](Konzept_Hilfesystem_Wikidokumentation.md), 13.3).
-- **Alles, was Konzept 15 ausschließt:** Feuchtebilanz, Kühlung als vierter Kanal,
+- **Alles, was Konzept 15 ausschließt:** Feuchtebilanz, Kühlung als vierter Kanal (**E12 vom
+  16.09.2026 nimmt ihn auf** — die Folgen regelt das Kühlkonzept, Konzept N1.18),
   Bauteilaktivierung, Kopplung von Vorlauftemperatur und Wärmepumpen-Fahrplan an die
   Raumtemperatur, sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG/DIN V 18599,
   Verschattung durch Nachbarbebauung, Wärmerückgewinnung, Nutzungsprofile für Nichtwohngebäude,

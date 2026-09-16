@@ -59,13 +59,14 @@ Dieses Papier entscheidet nichts; es legt vor.
    Hay-Davies; die Produktaussage bleibt „Rechenkern nach VDI 6007 Blatt 1" **je Zone**
    (Wortlaut nach Entscheid E10, Kapitel 7).
 3. **Der Rechenweg ist keine zweite Physik, sondern eine zusätzliche Randbedingung.** Je Zone läuft
-   das validierte 7R2C-Netz aus Konzept 4.2 in der G3-Fassung weiter; die Kopplung sitzt
+   das validierte 7R2C-Netz aus Konzept 4.2 in der G3-Fassung weiter — ihr Fensterpfad gilt nach
+   **E14** schon ab G1 (Konzept N1.19); die Kopplung sitzt
    ausschließlich in θ_A,eq,gew. Vorgeschlagen wird **Gauß-Seidel innerhalb der Stunde**
    (Vorschlag B, Befund O, 3.2) mit fester Reihenfolge, den Schwellen 0,01 K **und 0,1 W**,
    höchstens 50 Durchläufen und benanntem Fehler; das Regelungsmuster des ersten Durchlaufs einer
    Stunde wird festgehalten und jeder Wechsel gezählt. Vorschlag A ist die Vergleichsrechnung, das
    4×4-Gesamtsystem für N = 2 das exakte Prüforakel; die Entscheidung ist als
-   [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) festgehalten, Status „vorgeschlagen".
+   [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) festgehalten und am 16.09.2026 angenommen (E17).
 4. **Die Zonentopologie steht nicht in der IFC-Datei.** In keiner der vier gemessenen Dateien steht
    eine einzige `IfcZone` (Befund P, § 1.5) — für die zweite Entität der thermischen Zone,
    `IfcSpatialZone` mit `PredefinedType = THERMAL`, steht die Messung aus und ist vor G6c
@@ -147,8 +148,9 @@ die Präzisierung.
 
 Die Kopplungsentscheidung selbst — Nachbarraum-Randbedingung statt zweiter Physik, Gauß-Seidel je
 Stunde (Empfehlung M1) — ist als
-[`ADR-005_Zonenkopplung_Mehrzonenmodell.md`](ADR-005_Zonenkopplung_Mehrzonenmodell.md) mit Status
-„vorgeschlagen" festgehalten; dieses Papier trägt die Begründung, der ADR den Entscheid.
+[`ADR-005_Zonenkopplung_Mehrzonenmodell.md`](ADR-005_Zonenkopplung_Mehrzonenmodell.md) festgehalten
+und am 16.09.2026 angenommen (E17, damit auch M4); dieses Papier trägt die Begründung, der ADR den
+Entscheid.
 
 ---
 
@@ -157,7 +159,8 @@ Stunde (Empfehlung M1) — ist als
 ### 2.1 Der Grundsatz
 
 Je Zone z ∈ 1…N das Netz aus Konzept 4.2 **in der G3-Fassung** (Fenster im AW-Zweig nach
-Gl. (25)–(28), R_rad nach Gl. (29)/(31)); nur die Bauteile dieses Zweigs stehen im Nenner von B_zj.
+Gl. (25)–(28) — nach **E14** schon der Stand von G1 —, R_rad nach Gl. (29)/(31), die mit G3 kommt);
+nur die Bauteile dieses Zweigs stehen im Nenner von B_zj.
 Sonst unverändert: zwei Zustände θ_m,AW,z und θ_m,IW,z,
 drei algebraische Knoten θ_s,AW,z, θ_s,IW,z, θ_air,z, exakte Diskretisierung über Φ, Γ, Ψ aus den
 beiden Eigenwerten. Geändert wird allein die **Bauteilzuordnung** und eine Randbedingung — **keine
@@ -537,7 +540,10 @@ adiabaten Innenbauteile**. Gl. (28) mit (28a)–(28c): R_Rest,AW als Differenz, 
 Die Kapazität des Außenfensters ist „praktisch null" (S. 14); VDI 2078, 6.1, S. 18 erlaubt
 ausdrücklich, transparente Bauteile allein mit dem U-Wert zu veranschlagen. Der Fensterpfad des
 Einzonen-Klassenwegs (Konzept 4.2) ist nach N1.5 eine **bewusste Abweichung**; G3 stellt auf den
-Normweg um, und das Mehrzonenmodell erbt ihn.
+Normweg um, und das Mehrzonenmodell erbt ihn. **Mit E14 (16.09.2026) ist das erledigt:** der
+Einzonen-Klassenweg führt die Fenster schon in G1 nach Gl. (25)–(28); die hier für G3 vorgesehene
+Umstellung des Fensterpfads samt ihrer Einfrierfolge **entfällt**, G3 ändert an den Fenstern
+nichts mehr — dort wechselt allein R_rad auf Gl. (29)/(31) (Probe 12a, Konzept N1.19).
 
 ### 3.4 U-Wert aus Schichten
 
@@ -670,7 +676,7 @@ Projektware; wiederverwendbar ist der Bauteilaufbau, nicht die Zone).
 | `ID_Gebaeude` | INTEGER NOT NULL | — | FK → `Tab_Gebaeude.ID`, `ON DELETE CASCADE` |
 | `Rang` | INTEGER NOT NULL | — | Reihenfolge, lückenlos ab 1; zugleich die Iterationsreihenfolge (2.4) |
 | `Bezeichner` | TEXT NOT NULL CHECK (length ≤ 80) | — | Zonenname |
-| `Nutzflaeche`, `Raumhoehe`, `Volumen` | REAL | ja | m², m, m³; NULL = aus den Bauteilen bzw. `Tab_Gebaeude.Raumhoehe` bzw. Fläche × Höhe |
+| `Nutzflaeche`, `Raumhoehe`, `Volumen` | REAL | ja | m², m, m³; NULL = aus den Bauteilen bzw. `Tab_Gebaeude.Raumhoehe` bzw. Fläche × Höhe. **E13 (16.09.2026):** die Zonenfläche ist die **Nutzfläche der Zone** (beheizte Netto-Grundfläche) — dieselbe Größe, die das Gebäude nach Konzept N1.17 als Nutzfläche führt |
 | `IstBeheizt` | INTEGER NOT NULL DEFAULT 1 CHECK (IN (0,1)) | — | Schalter, kein Fachwert (Boolean-Regel `BETRIEB_SQLITE.md`) |
 | `Raumsolltemperatur_Tag`, `_Nachtabsenkung`, `_Wochenende`, `_Ferien`, `Maximaleraumtemperatur`, `Heizung_Strahlungsanteil`, `Heizleistung_Max`, `Luftwechsel_Infiltration`, `Luftwechsel_Nutzer` | REAL | ja | NULL = Wert des Gebäudes |
 | `Interne_Waermegewinne`, `Bewohner` | REAL | ja | NULL = anteilig aus dem Gebäude (Flächenschlüssel) |
@@ -884,7 +890,7 @@ Zone desselben Gebäudes; **geschlossene Hülle je Zone** — Σ A_v·n_v betrag
 die Verankerung von „oben" und „unten" an einer Bodenplatte bzw. einer Erdreichgrenze (6.2), weil
 Σ oben ≈ Σ unten gegen eine globale Spiegelung blind ist (Abweichung > 10 % → Warnung; eine Zone
 ohne Außenfläche ist zulässig, aber benannt);
-**Flächensumme** Σ `Tab_Zone.Nutzflaeche` gegen `Tab_Gebaeude.Wohnflaeche` (> 5 % → Warnung, Hinweis
+**Flächensumme** Σ `Tab_Zone.Nutzflaeche` gegen `Tab_Gebaeude.Nutzflaeche` (E19; > 5 % → Warnung, Hinweis
 auf doppelt gezählte Räume); **4-K-Zuordnung** — Anzeige, ob eine Trennfläche als IW oder AW zählt,
 mit dem im adiabaten Vorlauf **gerechneten** Δϑ als Beleg (2.2); **Wärmebrücke auf der Zonengrenze** — ψ·L gehört **der Zone,
 in der die wärmere Seite liegt**, sonst zählt sie doppelt (Befund O, 5); **Luftstrombilanz** — nur
@@ -1374,10 +1380,10 @@ behoben sein.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
-| **M1** | Kopplungsweg: A (Vorstunde), B (Gauß-Seidel) oder C (Gesamtsystem)? | **B bleibt es auch nach dem Gegenlesen**, mit A als Vergleichsrechnung und C für N = 2 als Prüforakel (2.4): Die berichtigte Gewichtung (Σ B_v = 1, 2.3) dämpft den Kopplungspfad eher, das zusätzliche Abbruchmaß 0,1 W verschärft nur die Schwelle, und das Festhalten des Regelungsmusters je Stunde ist gerade der Punkt, an dem C teuer würde. Die Wahl wird durch Probe 6 **gemessen** bestätigt, nicht vorausgesetzt; festgehalten in [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md), Status „vorgeschlagen" |
+| **M1** | Kopplungsweg: A (Vorstunde), B (Gauß-Seidel) oder C (Gesamtsystem)? | **B bleibt es auch nach dem Gegenlesen**, mit A als Vergleichsrechnung und C für N = 2 als Prüforakel (2.4): Die berichtigte Gewichtung (Σ B_v = 1, 2.3) dämpft den Kopplungspfad eher, das zusätzliche Abbruchmaß 0,1 W verschärft nur die Schwelle, und das Festhalten des Regelungsmusters je Stunde ist gerade der Punkt, an dem C teuer würde. Die Wahl wird durch Probe 6 **gemessen** bestätigt, nicht vorausgesetzt; festgehalten in [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) — **angenommen 16.09.2026 (E17)** |
 | **M2** | Raumseitenmaß oder Bruttomaß beim Import? | **Raumseitenmaß durchhalten und im Dialog benennen** (6.2). Das weicht von der Bemaßungsregel des Einzonenmodells ab (VDI 2078, 6.1, S. 18) und ist ein Entscheid; Probe 17 beziffert den Abstand vorher |
 | **M3** | Gilt die 4-K-Regel als feste Vorgabe oder je Trennfläche übersteuerbar? | **Vorgabe mit Übersteuerung je Trennfläche**, Anzeige des Δϑ als Beleg; gemessen wird es an den **gerechneten Raumkonditionen** eines adiabaten Vorlaufs, nicht an den Sollwerten (VDI 2078, 7.2, S. 46), und die Zuordnung fällt einmal vor dem Lauf, nie während (2.2). Nach dem Lauf wird eine Überschreitung von 4 K benannt |
-| **M4** | Kommt der Zonen-Luftaustausch in G6 oder später? | **In G6b**, als Paare mit `CHECK (ID_ZoneA < ID_ZoneB)`. Ohne ihn ist Treppenhaus und offene Küche nicht darstellbar — und er ist der Grund gegen Vorschlag A. Wer ihn streicht, kann A nehmen und spart 2–3 PT |
+| **M4** | Kommt der Zonen-Luftaustausch in G6 oder später? | **In G6b**, als Paare mit `CHECK (ID_ZoneA < ID_ZoneB)`. Ohne ihn ist Treppenhaus und offene Küche nicht darstellbar — und er ist der Grund gegen Vorschlag A. Wer ihn streicht, kann A nehmen und spart 2–3 PT — **entschieden 16.09.2026 mit ADR-005 (E17): in G6b** |
 | **M5** | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **Ja** — sie tragen keine Heizlast, aber Temperatur und Überhitzungsstunden; ohne Zeile ist die Kellertemperatur unsichtbar, und sie ist der fachliche Gewinn (2.5) |
 | **M6** | Vorlauf: 30 Tage mit Konvergenzprobe oder fest 90 Tage? | **30 Tage mit Probe** (2.9); feste 90 Tage kosten Rechenzeit ohne Aussage bei leichten Gebäuden |
 | **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen zwingend Z5 (6.5) |
@@ -1427,7 +1433,9 @@ behoben sein.
 - **Feuchte** — die latente Wärmelast ist nach Blatt 1, 6.2, S. 10 nicht Gegenstand der Richtlinie;
   kein Feuchtetransport zwischen Zonen, keine Kondensat- oder Schimmelaussage. **Luftströmung als
   Physik** — Auftrieb, Wind, Druckbilanz, Kamineffekt; alle Ströme sind Eingaben (2.7).
-- **Kühlung als vierter Kanal**, Kältemaschinen, Bauteilaktivierung, Nachweise nach GEG/DIN V 18599,
+- **Kühlung als vierter Kanal** (**E12 vom 16.09.2026 nimmt ihn auf** — die Kühllast je Zone und ihre
+  Deckung regelt das Kühlkonzept, Konzept N1.18), Kältemaschinen, Bauteilaktivierung, Nachweise nach
+  GEG/DIN V 18599,
   sommerlicher Wärmeschutz nach DIN 4108-2, Nutzungsprofile für Nichtwohngebäude, Validierung an
   gemessenen Verbräuchen — wie in Konzept 15 abgegrenzt.
 - **Die Entscheidung, ob und wann G6 beauftragt wird.** Dieses Papier legt vor.

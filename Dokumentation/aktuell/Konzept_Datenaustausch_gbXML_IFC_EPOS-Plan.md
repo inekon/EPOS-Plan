@@ -32,7 +32,7 @@ Die beiden Bauweisen, die dieses Papier voraussetzt, sind als Entscheidungsverme
 [`ADR-003_IFC_xBIM_ohne_Geometriekernel.md`](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) (xBIM als
 unverändertes NuGet-Paket, `MemoryModel` ohne Esent) und
 [`ADR-004_gbXML_LINQ_to_XML.md`](ADR-004_gbXML_LINQ_to_XML.md) (LINQ to XML mit handgeschriebenem
-Modell). Der Stand der Entscheide steht in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md).
+Modell; angenommen 16.09.2026, E16). Der Stand der Entscheide steht in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md).
 Normzahlen der VDI 6007 stehen hier nicht; aus VDI 6020:2022 ist nach **E6** nichts herangezogen.
 Jede Aussage über den Quelltext trägt Datei und Zeile. **Dieses Papier entscheidet nichts; es legt vor.**
 
@@ -60,7 +60,7 @@ Jede Aussage über den Quelltext trägt Datei und Zeile. **Dieses Papier entsche
    gibt kein `space.Area`. Der Standardserialisierer scheidet schon auf Windows aus. Der Weg ist
    **LINQ to XML mit handgeschriebenem Lesemodell**: reine BCL, kein Paket, keine
    Laufzeitcodeerzeugung, iOS-fest — statt 518 Schemaelementen braucht EPOS rund 25
-   (Befund R, 4.1/4.2; [`ADR-004`](ADR-004_gbXML_LINQ_to_XML.md)).
+   (Befund R, 4.1/4.2; [`ADR-004`](ADR-004_gbXML_LINQ_to_XML.md), angenommen 16.09.2026, E16).
 
 3. **Beide Importe tragen EIN Zuordnungsgerüst.** Muster Ablauf/Profil/Satz (Befund N, 1.1),
    Herkunft je Feld, **ein** Zuordnungsdialog, **eine** Persistenz. Die **Anforderung** steht im
@@ -412,7 +412,7 @@ Grundlage ist die Tabelle aus Befund R, 5.1; hier steht sie auf die Tabellen des
 | `Campus/Building` | `Tab_Gebaeude` | ein EPOS-Gebäude je `Building`; mehrere → Klappliste, **eines je Lauf** (Umsetzungskonzept 3.5, Nr. 1) |
 | `Building/@buildingType` | — | nur Anzeige; `SingleFamily`/`MultiFamily` bestätigen die Wohnnutzung |
 | `Space` (+ `Zone` über `@zoneIdRef`) | `Tab_Zone` (`Bezeichner`, `Rang`) | Aggregation nach 3.3; `Bezeichner` aus `Space/Name`, sonst `@id` |
-| `Space/Area`, `/Volume` | `Tab_Zone.Nutzflaeche`, `.Volumen` | `Raumhoehe` = Volumen ÷ Fläche, wenn beides vorliegt; sonst NULL = Wert des Gebäudes |
+| `Space/Area`, `/Volume` | `Tab_Zone.Nutzflaeche`, `.Volumen` | `Raumhoehe` = Volumen ÷ Fläche, wenn beides vorliegt; sonst NULL = Wert des Gebäudes. **E13 (16.09.2026):** die Zielgröße heißt durchgängig **Nutzfläche** (beheizte Netto-Grundfläche) — auf Gebäudeebene trägt sie weiter die Spalte `Tab_Gebaeude.Wohnflaeche` (Annahme, Frage Q11a; Konzept N1.17) |
 | `Space/@conditionType` | `Tab_Zone.IstBeheizt` | 3.3 |
 | `Zone/DesignHeatT`, `/DesignCoolT` | `Tab_Zone.Raumsolltemperatur_Tag`, `.Maximaleraumtemperatur` | fehlt oft; NULL = Wert des Gebäudes, **keine** Zahlenvorgabe im Import |
 | `Space/AirChangesPerHour` | `Tab_Zone.Luftwechsel_Infiltration` | **eine** Zahl gegen zwei Spalten — `Luftwechsel_Nutzer` bleibt NULL (Frage **D12**). `InfiltrationFlow` (`Loose`/`Average`/`Tight`) ist für 1/h unbrauchbar |
@@ -1225,8 +1225,8 @@ handgeschrieben und führt die Aufzählungswerte als C#-Konstanten. **Vorschlag 
 | Die vier gbxml.org-Beispieldateien | **keine** | **nicht** ins Repositorium (Befund R, 1.10) |
 | ASHRAE-RP-1810-Testfälle (gbxml.org) | keine ausgewiesenen Bedingungen | nicht aufnehmen |
 | Ladybug/Honeybee | AGPL-3.0 | scheidet als Testdatenquelle aus |
-| `AC20-FZK-Haus.ifc` (KIT/IAI) | uneingeschränkt, Namensnennung | bleibt die IFC-Importprobe (Umsetzungskonzept 3.7) |
-| `FM_ARC_DigitalHub_with_SB_v1.ifc` | **MIT** | die Mehrzonen-Importprobe (Mehrzonenkonzept 8.2) |
+| `AC20-FZK-Haus.ifc` (KIT/IAI) | uneingeschränkt, Namensnennung | bleibt die IFC-Importprobe (Umsetzungskonzept 3.7); mit **Q12** entschieden: kommt mit Quellenvermerk ins Repositorium |
+| `FM_ARC_DigitalHub_with_SB_v1.ifc` | **MIT** | die Mehrzonen-Importprobe (Mehrzonenkonzept 8.2); als RWTH-/bim2sim-Datei nach **Q12** erst **nach der Lizenzklärung** aufzunehmen — die Lizenzangabe ist vor der Aufnahme zu belegen |
 
 **Die gbXML-Prüfdateien erzeugt EPOS selbst** — das ist der eigentliche Gewinn des Rundlaufs: Der
 Exporteur schreibt aus einem gesäten Testgebäude eine Stufe-1- und eine Stufe-2-Datei, und der
@@ -1239,6 +1239,13 @@ tragende Zusage steht auch schon: **`.gitattributes` nimmt `Referenzlaeufe/Impor
 `-text` von der Zeilenenden-Normierung aus** (`.gitattributes:87`). Genau das ist die Bedingung
 dafür, dass die UTF-16LE-Probe (Probe 5) byteweise überlebt — `* text=auto` schriebe sie beim
 nächsten Auschecken um. **An `.gitattributes` ist nichts zu tun.**
+
+**Q12 ist entschieden (16.09.2026): Importproben für alle Importwege.** Nicht nur der
+IFC-Weg bekommt seine Probe, sondern **jeder** Leser: die KIT-Datei mit Quellenvermerk für IFC,
+die selbst erzeugten Rundlaufdateien (Stufe 1 und Stufe 2) und die Kleinstdateien je Fehlerbild
+für gbXML — alle unter `Referenzlaeufe/Importproben/` mit ihrer LIESMICH-Zeile (Herkunft,
+Abrufdatum bzw. „selbst erzeugt", Lizenzstand). RWTH- und bim2sim-Dateien bleiben bis zur
+Lizenzklärung draußen (Konzept N1.17).
 
 ### 8.4 Kennzeichnung schematischer Geometrie
 
@@ -1286,6 +1293,11 @@ Geschmacksfrage, und sie steht an drei Stellen:
 **Die Proben 25 bis 27** — Determinismus der Geometrie, Komponentenprobe des
 Gebäudebetrachters, „Ansicht und Datei zeigen dasselbe" — gehören zu dieser Liste und stehen
 in **14.5**; sie werden mit G6c bzw. G7b abgenommen.
+
+**Je Importweg eine Probe im Repositorium** (Entscheid zu **Q12**, 16.09.2026): die Proben 1, 2
+und 5 bis 9 laufen gegen Dateien, die nach 8.3 im Repositorium liegen — für gbXML die selbst
+erzeugten, für IFC die KIT-Datei mit Quellenvermerk. Ein Importweg ohne eigene Probendatei gilt
+als nicht abgenommen; RWTH- und bim2sim-Dateien kommen erst nach der Lizenzklärung hinzu.
 
 **Abnahme je Teilstufe:** Kern-Filter grün, die zugehörigen Proben bestanden, Referenzlauf
 unverändert, Windows-Sichtabnahme (Datei wählen bzw. schreiben, Zuordnung prüfen, OK), iOS-Lauf nach

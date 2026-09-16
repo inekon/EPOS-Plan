@@ -103,7 +103,7 @@ Umsetzungskonzept 1.6 und 1.7). Entschieden ist die Verschmelzung noch nicht;
 | Größe | Zeichen | Einheit | Quelle (Tabelle.Spalte) | Vorgabe bei NULL | Plausibilitätsgrenze (Konzept 4.8) |
 |---|---|---|---|---|---|
 | Rechenmodell | — | — | `Tab_Gebaeude.Gebaeude_Modell` **77** | `VDI6007` (E1) | Wert aus `DbWerte.GEBAEUDE_MODELL_*` |
-| Wohnfläche des Katalogbaus | A_f | m² | `Tab_Gebaeude.Wohnflaeche` | — (Pflicht) | > 0 |
+| Nutzfläche des Katalogbaus (E13) | A_f | m² | `Tab_Gebaeude.Nutzflaeche` (bis zum Schemaschritt M3 noch `Wohnflaeche`, E19) | — (Pflicht) | > 0; beheizte Netto-Grundfläche (E13) |
 | Raumhöhe | H | m | `Tab_Gebaeude.Raumhoehe` | — (Pflicht) | > 0 |
 | Speichermasse | C_ges | Wh/K | `Tab_Gebaeude.Bauweise` | — (Pflicht) | 5 ≤ Bauweise/A_f ≤ 200 Wh/(m²K) |
 | U-Wert Außenwand | U_AW | W/(m²K) | `Tab_Gebaeude.k_Wert_Außenwand` | — | 0,1 … 6 |
@@ -208,8 +208,10 @@ C_AW   = a_AW · C_ges                [J/K]
 C_IW   = (1 − a_AW) · C_ges          [J/K]
 ```
 
-Die drei EPOS-Bauarten entsprechen 20 / 50 / 100 Wh/(m²K) je m² Wohnfläche, also 72 / 180 /
-360 kJ/(m²K). Prüfung: 5 ≤ Bauweise/A_f ≤ 200 Wh/(m²K), sonst benannter Abbruch.
+Die drei EPOS-Bauarten entsprechen 20 / 50 / 100 Wh/(m²K) je m² Nutzfläche (E13), also 72 / 180 /
+360 kJ/(m²K). Prüfung: 5 ≤ Bauweise/A_f ≤ 200 Wh/(m²K), sonst benannter Abbruch. **A_f ist die
+Nutzfläche** (beheizte Netto-Grundfläche, E13); sie trägt ab dem Schemaschritt M3
+die Spalte `Tab_Gebaeude.Nutzflaeche` (E19; bis dahin `Wohnflaeche`).
 
 **A2 — Bezugsflächen** (EPOS-Klassenweg, Konzept 4.3)
 
@@ -279,20 +281,37 @@ R_conv,IW = 1 / (α_kon,i · A_IW)                             [K/W]
 R_rad     = 1 / (α_str,i · A_rad)                            [K/W]
 ```
 
-**A7 — masseloser Zweig: Lüftung, Fenster, Wärmebrücken** (Lüftung: (75); Fenster im
-Klassenweg als bewusste Abweichung, siehe Kapitel 11)
+**A7 — masseloser Zweig: Lüftung und Wärmebrücken** (Lüftung: (75); die Fenster liegen nach **E14** im
+Außenwandzweig, A7a — nicht mehr hier; Kapitel 11, Zeile 4)
 
 ```
 H_ve  = n · V · c·ρ           mit V = A_f · H                [W/K]
-H_ext = H_ve + (U·A)_w + Σψ·L                                [W/K]
+H_ext = H_ve + Σψ·L                                          [W/K]
 R_ext = 1 / H_ext                                            [K/W]
 ```
 
 In Stufe G2 tritt an die Stelle von n die Summe n_inf + n_nutz, in der Sommerlüftungsregel
 n = 2,0 1/h, solange θ_air > 23 °C **und** θ_out < θ_air − 2 K.
 
+**A7a — Fensterpfad im Außenwandzweig** (Entscheid **E14**, Normweg (25)–(28), Muster B6)
+
+```
+R_AF      = 1 / (U·A)_w                                      [K/W]
+R_1,AF    = R_AF / 6                                         [K/W]
+R_Rest,AF = 5/6 · R_AF                                       [K/W]
+```
+
+Die Fensterzweige werden **nach** den Wänden parallel an den gemeinsamen Oberflächenknoten
+θ_s,AW geschaltet (Klemmfälle (28a)–(28c) wie in B6); die Kapazität der Wände bleibt
+unverändert. Die Fensterfläche A_w zählt damit in der Flächenwichtung der Oberflächen, in der
+Strahlungsverteilung (Schritt E) und in der Gewichtung der äquivalenten Außentemperatur nach
+(41). Der Weg des Prototyps — Fenster als masseloser Widerstand am Luftknoten in R_ext —
+**entfällt für das Produkt**; er bleibt die Konvention, in der die Zahlen in Kapitel 9 entstanden
+sind (Konzept N1.19, Kapitel 11, Zeile 4).
+
 **Ausgabe von Schritt A** ist der Datensatz `ErsatzparameterRC`: C_AW, C_IW [J/K]; R_Rest,AW,
-R_1,AW, R_1,IW, R_conv,AW, R_conv,IW, R_rad, R_ext [K/W]; dazu A_AW,opak, A_IW [m²] und
+R_1,AW, R_1,IW, R_conv,AW, R_conv,IW, R_rad, R_ext und — nach E14 — R_1,AF, R_Rest,AF [K/W];
+dazu A_AW,opak, A_IW, A_w [m²] und
 Σ(U·A)_opak [W/K] für Schritt E. Für die Knotenrechnung werden daraus die Leitwerte
 G_1 = 1/R_1,AW, G_2 = 1/R_1,IW, G_Rest = 1/R_Rest,AW, G_cAW = 1/R_conv,AW,
 G_cIW = 1/R_conv,IW, G_rad = 1/R_rad und G_ext = 1/R_ext gebildet [W/K].
@@ -922,6 +941,7 @@ Prototyp gehalten werden kann, erweitert um zwei Konventionen des Prototyp-Adapt
 | **UTC-Reihenfolge** der Stundenreihe | Ortszeit über `ReadOrtszeit` (E1/6) |
 | **a_kon = 0** (kein konvektiver Anteil des Fenstersolars) | a_kon = 0,09 (E3) |
 | Regelung **ohne** Kühlung und ohne Φ_h,max (Q ≥ 0, Q_max = ∞) | Kappung an θ_max, Grenze nach 1.1 (7.1) |
+| **Fenster am Luftknoten** in R_ext (Weg A des Prototyps) | Normweg (25)–(28) im Außenwandzweig, R_1,AF = R_AF/6 (**E14**, A7a). Die Zwischenwerte in 9.1 bis 9.6 sind in der Prototypkonvention gerechnet und werden hier **nicht** neu gerechnet |
 
 Folgen für den Leser: die Tages- und Stundenangaben in 9.4 und 9.5 stehen in der
 UTC-Reihenfolge, nicht in Ortszeit — in Ortszeit trifft der Sollwertfahrplan aus E8 andere
@@ -1239,7 +1259,7 @@ Jede Zeile ist eine bewusste Festlegung, keine Lücke. Die Begründung steht jew
 | 1 | **Hay-Davies** als Transpositionsmodell | Blatt 3 schreibt Aydinli/Krochmann vor: bedeckter Himmel rotationssymmetrisch, klarer Himmel anisotrop, Mischung über die Sonnenwahrscheinlichkeit aus dem Bedeckungsgrad | Der Bedeckungsgrad fehlt in `Tab_Solar` (PVGIS liefert ihn nicht); Blatt 3 verlangt zudem die Koordinaten des TRY-Referenzorts, nicht des Projektorts. Hay-Davies ist gegenüber dem isotropen Bestandsweg eine erhebliche Verbesserung. In G1 wird Blatt 3 **neben** Hay-Davies gerechnet und je Klimaregion, Orientierung und Neigung gegengehalten | Konzept N1.3, N1.10 (E5); Q20 |
 | 2 | **Kusuda-Erdreich** | VDI 6007-1 hat kein Erdreichmodell; erdberührte Bauteile laufen über θ_NR,eq (40) mit vorzugebender Nachbarraumtemperatur | Ein Anwender soll für die Bodenplatte keine Temperatur erfinden müssen. Kusuda ergänzt die Norm, ohne sie zu verletzen: er liefert genau das θ_NR, das (40) verlangt. `KELLER` ist der Normweg mit vorgegebener Temperatur | Konzept N1.3, 4.4 |
 | 3 | **Klassenweg-Parameter** h_ms = 9,1 W/(m²K), a_AW = 0,3, f_IW = 2,5 | Die Richtlinie leitet R_1, R_Rest und C_1 aus dem Schichtaufbau ab (1)–(17) | `Tab_Gebaeude` führt keine Schichtaufbauten. Der Klassenweg ist die Brücke, bis der Bauteilkatalog (G3) und der IFC-Import (G4) sie liefern. h_ms stammt aus DIN EN ISO 13790 und wird — bewusst abweichend von dort — auf **beide** Massepfade angewandt | Konzept 4.3 |
-| 4 | **Fenster im Lüftungszweig** statt im Außenwandzweig | (25)–(28): Fenster mit R_1,AF = R_AF/6 **nach** den Wänden parallel, und in θ_A,eq,gew (41) | Im Klassenweg eine bewusste **Vereinfachung**, nicht eine gleichwertige Umformung: der Fensterpfad umgeht den AW-Massenknoten und das innere Oberflächennetz und läuft über R_ext direkt zwischen Außenluft und Luftknoten. Stationär unterscheiden sich die Wege um den inneren Übergang, transient um die Pufferung durch C_AW; zudem fällt die Fensterfläche aus der Flächenwichtung von θ_op und aus der Strahlungsverteilung heraus (E3). Die Wirkung ist in G1 auszuweisen; mit G3 wird auf (25)–(28) umgestellt | Konzept N1.3, Frage Q6 |
+| 4 | **Fenster im Lüftungszweig** statt im Außenwandzweig | (25)–(28): Fenster mit R_1,AF = R_AF/6 **nach** den Wänden parallel, und in θ_A,eq,gew (41) | Im Klassenweg eine bewusste **Vereinfachung**, nicht eine gleichwertige Umformung: der Fensterpfad umgeht den AW-Massenknoten und das innere Oberflächennetz und läuft über R_ext direkt zwischen Außenluft und Luftknoten. Stationär unterscheiden sich die Wege um den inneren Übergang, transient um die Pufferung durch C_AW; zudem fällt die Fensterfläche aus der Flächenwichtung von θ_op und aus der Strahlungsverteilung heraus (E3). Die Wirkung ist in G1 auszuweisen; mit G3 wird auf (25)–(28) umgestellt. **Entfallen mit E14 (16.09.2026):** der Normweg (25)–(28) gilt bereits in G1 (A7a); die Zeile bleibt als Beschreibung des Prototypwegs stehen, der nur noch Prüfwerkzeug ist | Konzept N1.3, N1.19 (E14), Frage Q6 |
 | 5 | **Zeitbezug Stundenanfang statt Stundenmitte** | Blatt 3, Seite 11: Sonnenstand zur Stundenmitte | Der Klimaimport des Bestands übergibt den Stundenanfang. Der Unterschied sind 7,5° Stundenwinkel und trifft Ost und West. Entschieden wird an einer Stelle, im Eingangsbauer; `Tab_Solar.Sol_*` bleibt unberührt | Umsetzungskonzept 1.2, Frage U6 |
 | 6 | **F_F (Rahmenanteil) und F_W = 0,9** | Blatt 2 schließt Rahmen ausdrücklich aus; Blatt 3 kennt die winkelabhängige Korrektur korg (59)–(61) | F_F stammt aus DIN V 18599 und bildet ab, dass die Katalogfläche die Rohbaufläche ist. F_W = 0,9 ist die Näherung für korg; korg kommt mit G3 | Konzept N1.3 |
 | 7 | **F_S als Pauschalfaktor** (0,9 / 0,8 / 0,7) | Blatt 3, Abschnitt 12: Verschattung geometrisch | Die Datenbank führt keine Verbauungsgeometrie. Mit dem IFC-Import wird sie verfügbar | Konzept N1.3 |

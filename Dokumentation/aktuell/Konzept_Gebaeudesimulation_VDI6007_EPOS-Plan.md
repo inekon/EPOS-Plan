@@ -503,7 +503,7 @@ und θ_air (Raumluft, Luftkapazität null wie in den Normtestfällen). Widerstä
 | R_conv,AW | θ_s,AW ↔ θ_air | 1 / (h_conv · A_AW), h_conv = 2,7 W/(m²K) |
 | R_conv,IW | θ_s,IW ↔ θ_air | 1 / (h_conv · A_IW) |
 | R_rad | θ_s,AW ↔ θ_s,IW | 1 / (h_rad,i · A_rad), h_rad,i = 5 W/(m²K) (**innerer** Strahlungsaustausch), Bezugsfläche wie in den Testfällen |
-| R_ext | θ_out ↔ θ_air | 1 / H_ext, **H_ext = H_ve + U_w·A_w + Σψ·L**, H_ve = n · V · 0,34 Wh/(m³K) — Fenster und Wärmebrücken laufen masselos im selben Zweig wie die Lüftung |
+| R_ext | θ_out ↔ θ_air | 1 / H_ext, **H_ext = H_ve + U_w·A_w + Σψ·L**, H_ve = n · V · 0,34 Wh/(m³K) — Fenster und Wärmebrücken laufen masselos im selben Zweig wie die Lüftung. **E14 (16.09.2026): die Fenster liegen nicht mehr hier, sondern im AW-Zweig** (R_1,AF = R_AF/6, Gl. (25)–(28), parallel nach den Wänden); R_ext trägt dann allein Lüftung und Wärmebrücken, H_ext = H_ve + Σψ·L (N1.19) |
 
 Knotenbilanzen (Φ in W, Widerstände in K/W):
 
@@ -1422,25 +1422,25 @@ Kalenderzeit, nicht die Prüfzeit. **Summen:** G0+G1 8–14 PT; G0–GB 9–16 P
 |---|---|---|
 | **Q1** | Modellwahl je Gebäude mit Vorgabe Tagesbilanz — oder VDI 6007 als Vorgabe für neue Gebäude? | **Je Gebäude, Vorgabe Tagesbilanz**; Vorgabe erst umstellen, wenn G2 abgenommen und die Wiki-Seite steht — **siehe Nachtrag 1 (entschieden: Stundenwerte)** |
 | **Q2** | Quelle der Normreferenzwerte: die Richtlinie (liegt VDI 6007-1 bei INEKON vor?) oder die AixLib-Validierungsmodelle (überarbeitete BSD-Lizenz, 5.1)? Dürfen die Normzahlen in ausgelieferten Tests stehen? | **AixLib mit Quellenvermerk und Lizenzwortlaut** für die Tests (so lief der Prototyp); **die Richtlinie beziehen** — für die Zitierfähigkeit der Zahlen und den Nachweis der Bauteilreduktion (G3); bis dahin bleiben die Referenzreihen interne Prüfdaten — **siehe Nachtrag 1 (Richtlinie liegt vor)** |
-| **Q3** | Thermische Masse in G1 aus der Bauweise-Klasse mit Aufteilung 0,3 / 0,7 — oder gleich Schichtaufbau? | **Klassenweg in G1** (gemessen unkritisch, ≤ 0,1 %); Schichtaufbau in G3 |
-| **Q4** | Erdreich: Kusuda (harmonische Amplitude) als Vorgabe, Keller und Außenluft als Feldwerte? | **Ja**; der Bestandsfaktor 0,45 wird nicht nachgebaut |
-| **Q5** | Opake Außenbauteile mit Absorption und Abstrahlung in G1? | **Aus (Parität), Schalter vorhanden**; die Pauschale −3 K ist verboten; Normformel in G2 nachrüsten |
-| **Q6** | Fensterpfad im Netz (Teil des Lüftungszweigs, wie im Prototyp, oder eigener Oberflächenknoten)? | **Wie im Prototyp** (validiert über Testfälle 5, 8, 9); ein Fensterknoten erst mit G3 — **siehe Nachtrag 1** |
-| **Q7** | `Heizleistung_Max` als Option; wie werden die drei Spitzenwerte je Gebäude neben `Waermelast_Max` geführt? | **Option ja, NULL = unbegrenzt. `Waermelast_Max` bleibt unverändert das Maximum des Kanalsummenvektors** (`SimulationWaermebedarf.cs:401`), damit Dauerlinie, Deckung und Anzeige eine Basis behalten; Stundenspitze, gleitendes Tagesmittel und 95-%-Quantil werden **zusätzlich je Gebäude** ausgewiesen und im Bericht daneben gestellt. Wer die Aufheizspitze nicht auslegen will, setzt `Heizleistung_Max`; Rückrechnung ohne Grenze |
-| **Q8** | Kühlung als vierter Kanal? | **Nein — informativ** (Kühlenergie, Stunden); ein Kanal ist ein eigenes Konzept |
+| **Q3** | Thermische Masse in G1 aus der Bauweise-Klasse mit Aufteilung 0,3 / 0,7 — oder gleich Schichtaufbau? | **Klassenweg in G1** (gemessen unkritisch, ≤ 0,1 %); Schichtaufbau in G3 — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
+| **Q4** | Erdreich: Kusuda (harmonische Amplitude) als Vorgabe, Keller und Außenluft als Feldwerte? | **Ja**; der Bestandsfaktor 0,45 wird nicht nachgebaut — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
+| **Q5** | Opake Außenbauteile mit Absorption und Abstrahlung in G1? | **Aus (Parität), Schalter vorhanden**; die Pauschale −3 K ist verboten; Normformel in G2 nachrüsten — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
+| **Q6** | Fensterpfad im Netz (Teil des Lüftungszweigs, wie im Prototyp, oder eigener Oberflächenknoten)? | **Wie im Prototyp** (validiert über Testfälle 5, 8, 9); ein Fensterknoten erst mit G3 — **siehe Nachtrag 1 und N1.19 (entschieden 16.09.2026, E14: Normweg in G1, eigener Fensterknoten frühestens G3)** |
+| **Q7** | `Heizleistung_Max` als Option; wie werden die drei Spitzenwerte je Gebäude neben `Waermelast_Max` geführt? | **Option ja, NULL = unbegrenzt. `Waermelast_Max` bleibt unverändert das Maximum des Kanalsummenvektors** (`SimulationWaermebedarf.cs:401`), damit Dauerlinie, Deckung und Anzeige eine Basis behalten; Stundenspitze, gleitendes Tagesmittel und 95-%-Quantil werden **zusätzlich je Gebäude** ausgewiesen und im Bericht daneben gestellt. Wer die Aufheizspitze nicht auslegen will, setzt `Heizleistung_Max`; Rückrechnung ohne Grenze — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
+| **Q8** | Kühlung als vierter Kanal? | **Nein — informativ** (Kühlenergie, Stunden); ein Kanal ist ein eigenes Konzept — **siehe Nachtrag 1 (entschieden 16.09.2026, E12: Kühlung wird aufgenommen)** |
 | **Q9** | IFC-Bibliothek: xBIM (CDDL-1.0 mit Quelltextpflicht für die ausgelieferten CDDL-Dateien, 7.4) oder GeometryGymIFC (MIT)? | **xBIM als NuGet-Paket, nie geforkt**; Lizenzentscheid dokumentieren, Lizenztext und Quellenverweis ins Installationspaket |
-| **Q10** | IFC-Import auch auf iOS? | **Ja, Kern-Weg ist plattformfrei**; Trimming-Nachweis im iOS-Lauf nach Rückfrage; Größenlimit 50 MB |
-| **Q11** | Pflichtfelder des Imports und Vorgaben je Baualtersklasse (TABULA/IWU)? | **Nur Wohnfläche und Raumhöhe Pflicht**, Rest Vorgabe mit Herkunftsmarke |
-| **Q12** | KIT-Datei `AC20-FZK-Haus.ifc` (2,5 MB) als Importprobe ins Repositorium (`Referenzlaeufe/Importproben/`)? RWTH- und bim2sim-Dateien nur nach Lizenzklärung? | **KIT ja** (Quellenvermerk), **RWTH/bim2sim nein**, bis die Nutzung geklärt ist |
-| **Q13** | gbXML? | **G5, erst bei Bedarf aus der Praxis** |
+| **Q10** | IFC-Import auch auf iOS? | **Ja, Kern-Weg ist plattformfrei**; Trimming-Nachweis im iOS-Lauf nach Rückfrage; Größenlimit 50 MB — **siehe Nachtrag 1 und N1.23 (entschieden 16.09.2026, E18: ja, wie empfohlen; die iOS-Zahl wird in G4 gemessen)** |
+| **Q11** | Pflichtfelder des Imports und Vorgaben je Baualtersklasse (TABULA/IWU)? | **Nur Wohnfläche und Raumhöhe Pflicht**, Rest Vorgabe mit Herkunftsmarke — **siehe Nachtrag 1 (entschieden 16.09.2026, E13: Nutzfläche statt Wohnfläche; Q11a mit E19, N1.24: die Spalte heißt künftig `Nutzflaeche`)** |
+| **Q12** | KIT-Datei `AC20-FZK-Haus.ifc` (2,5 MB) als Importprobe ins Repositorium (`Referenzlaeufe/Importproben/`)? RWTH- und bim2sim-Dateien nur nach Lizenzklärung? | **KIT ja** (Quellenvermerk), **RWTH/bim2sim nein**, bis die Nutzung geklärt ist — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
+| **Q13** | gbXML? | **G5, erst bei Bedarf aus der Praxis** — **siehe Nachtrag 1 (entschieden 16.09.2026; durch E9 überholt)** |
 | **Q14** | Neues Referenzprojekt mit VDI 6007 in der Testdatenbank und Neu-Einfrieren der Basis mit G1? | **Ja** — sonst ist das Modell im Regressionsnetz unsichtbar |
-| **Q15** | Reihenfolge G0 → G1 → G2 → G3 → G4 → G5; G0 und G1 als erste Beauftragung? | **Ja**, G0 zuerst — ohne bestandene Normtests keine Anbindung |
+| **Q15** | Reihenfolge G0 → G1 → G2 → G3 → G4 → G5; G0 und G1 als erste Beauftragung? | **Ja**, G0 zuerst — ohne bestandene Normtests keine Anbindung — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
 | **Q16** | Die Bestandsgewichte 0,83 / 0,95 / 0,45 / 0,83 im VDI-6007-Weg streichen? | **Ja** — sie sind Kalibrierung, keine Physik; der ungewichtete Weg trifft die Katalogkennzahl zu 86–100 % |
-| **Q17** | Verschattungsfaktor und Rahmenanteil als Felder mit Vorgabe je Lage (0,9 / 0,8 / 0,7) bzw. 0,3? | **Ja** — der größte geratene Hebel (6,4 %); eine Vorgabe je Baualter erst, wenn `Baujahr` vorliegt (G4) |
-| **Q18** | Harte Plausibilitätsprüfungen (4.8) im VDI-6007-Weg; im Tagesmodell nur Warnung, um die Basis nicht zu berühren? | **Ja, so** |
-| **Q19** | Sommerlüftungsregel und Trennung Infiltration/Nutzerlüftung in G2? | **Ja, G2** — für die Jahresheizwärme unerheblich, für die Überhitzungskennzahl entscheidend |
-| **Q20** | Fassadenstrahlung im Gebäudemodell mit Hay-Davies aus GHI/DNI/DHI statt der isotropen `Sol_*`-Spalten? | **Ja** — Nord ist isotrop rund 25 % zu hoch; die Spalten bleiben dem Bestandsweg — **siehe Nachtrag 1** |
-| **Q21** | Eine Zeitbasis (Ortszeit) für das Gebäudemodell, wie PV und Solarthermie? | **Ja** — das Modell braucht `Tab_Klimadaten` nicht |
+| **Q17** | Verschattungsfaktor und Rahmenanteil als Felder mit Vorgabe je Lage (0,9 / 0,8 / 0,7) bzw. 0,3? | **Ja** — der größte geratene Hebel (6,4 %); eine Vorgabe je Baualter erst, wenn `Baujahr` vorliegt (G4) — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
+| **Q18** | Harte Plausibilitätsprüfungen (4.8) im VDI-6007-Weg; im Tagesmodell nur Warnung, um die Basis nicht zu berühren? | **Ja, so** — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
+| **Q19** | Sommerlüftungsregel und Trennung Infiltration/Nutzerlüftung in G2? | **Ja, G2** — für die Jahresheizwärme unerheblich, für die Überhitzungskennzahl entscheidend — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
+| **Q20** | Fassadenstrahlung im Gebäudemodell mit Hay-Davies aus GHI/DNI/DHI statt der isotropen `Sol_*`-Spalten? | **Ja** — Nord ist isotrop rund 25 % zu hoch; die Spalten bleiben dem Bestandsweg — **siehe Nachtrag 1 (entschieden 16.09.2026, N1.17)** |
+| **Q21** | Eine Zeitbasis (Ortszeit) für das Gebäudemodell, wie PV und Solarthermie? | **Ja** — das Modell braucht `Tab_Klimadaten` nicht — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
 | **Q22** | `Bauweise` von Gebäude 10576 in der Testdatenbank auf 15 200 Wh/K korrigieren (Projekt 1008 ändert sich, Basis neu einfrieren) und dafür eine vierte Einfrierregel „gesäte Gebäudedaten" anlegen? | **Ja, im Einfrierschritt GB** (Kapitel 11) |
 | **Q23** | Statischen Zustand `_prevRoomTemp` im Bestand beheben (Instanzzustand, `ResetState` je Gebäude)? Das ändert Projekte mit mehreren Gebäuden (1008, 1039) und damit die Basis | **Ja, aber als eigener, begründeter Einfrierschritt** — nicht still mit G1 |
 
@@ -1464,7 +1464,8 @@ Kalenderzeit, nicht die Prüfzeit. **Summen:** G0+G1 8–14 PT; G0–GB 9–16 P
 ## 15. Abgrenzung — was dieses Papier nicht behandelt
 
 Mehrzonenmodelle und Nachbarräume (Testfall 10 wird als Test gebaut, nicht als Funktion),
-Feuchtebilanz, Kühlung als Kanal und Kältemaschinen, Flächenheizsysteme als
+Feuchtebilanz, Kühlung als Kanal und Kältemaschinen (**aufgehoben durch E12, N1.18** — Regelung im
+Kühlkonzept), Flächenheizsysteme als
 Bauteilaktivierung (Testfall 11 nur als Test), die Kopplung von Vorlauftemperatur und
 Wärmepumpen-Fahrplan an die Raumtemperatur, sommerlicher Wärmeschutz als Nachweis nach
 DIN 4108-2, Nachweise nach GEG/DIN V 18599, Verschattung durch Nachbarbebauung (nur als
@@ -1582,7 +1583,7 @@ Folgen:
 |---|---|---|
 | 4.2, Bezeichnungen | „7R2C" steht nicht in der Richtlinie; sie sagt **2-K-Modell** und benennt R_1,IW, R_1,AW, R_Rest,AW, R_α;kon;IW, R_α;kon;AW, R_α;str;AW/IW (Dreieck, per Stern-Dreieck-Transformation Gl. (55)–(57)) und R_Lue | Normbezeichnungen in Code und Doku; „7R2C" nur als Kurzform |
 | 4.2, h_conv | α_kon ist **je Bauteil** vorzugeben (Seite 10): Testräume 1,7 Boden/Decke, 2,7 Wände/Fenster, 5,0 Kühldecke; ein globales 2,7 trifft Testfall 11 nicht | R_conv,AW und R_conv,IW als Parallelschaltung über die Bauteile; 2,7 nur Vorgabe für Wände im Klassenweg; G0 |
-| 4.2, Fensterpfad (Q6) | die Norm führt Fenster **im AW-Zweig** (R_1,AF = R_AF/6, Gl. (25)–(28), parallel nach den Wänden) und in θ_A,eq,gew (Gl. (41)); der Prototyp koppelt Fenster direkt an die Luft | Q6 ist durch die Testfälle **nicht** belegt (sie liefen nach 5.3 über den Normweg); der Klassenweg von G1 bleibt als bewusste Abweichung erlaubt, G3 stellt auf Gl. (25)–(28) um |
+| 4.2, Fensterpfad (Q6) | die Norm führt Fenster **im AW-Zweig** (R_1,AF = R_AF/6, Gl. (25)–(28), parallel nach den Wänden) und in θ_A,eq,gew (Gl. (41)); der Prototyp koppelt Fenster direkt an die Luft | Q6 ist durch die Testfälle **nicht** belegt (sie liefen nach 5.3 über den Normweg); der Klassenweg von G1 bleibt als bewusste Abweichung erlaubt, G3 stellt auf Gl. (25)–(28) um — **mit E14 gilt der Normweg schon in G1**, der Klassenweg von G1 führt die Fenster nach Gl. (25)–(28) (N1.19) |
 | 4.2, „gleitende Stundenmittel" | Norm: **Blockmittel** je Stunde („n-te Stunde") | Wort „gleitend" streichen (gilt auch für die Spitzenlast-Kennzahl in 4.5: „Tagesmittel" = Mittel über 24 Blockstunden) |
 | 4.3, Innenbauteile | „symmetrisch bis zur Mittelebene" droht doppelt zu halbieren: die Norm baut die Kettenmatrix über den **vollständigen** Aufbau (Gl. (11)) und reduziert erst danach (Seite 14) | Formulierung ersetzen; G3 |
 | 4.3, Nachweis der Reduktion | die Richtlinie nennt **keine** Soll-RC-Werte (die Zahlen aus 1.1 stammen aus AixLib); sie gibt Schichtaufbau (Tabellen A.1.1 Typraum S, A.3.1 Typraum L) **und** Ergebnisreihen | Nachweis in G3: Reduktion nach Gl. (11)–(17) aus A.1.1/A.3.1, Simulation, Treffen von A1.3/A3.3 im Band; Bezugsperioden 7 Tage je Bauteil (2 Tage bei raumseitig abgedeckter Speichermasse), 5 Tage für den Raum |
@@ -1668,7 +1669,7 @@ Vergleich, Begründung in `Referenzlaeufe/LIESMICH.md` und einen grünen CI-Lauf
 |---|---|
 | Q1 | **endgültig entschieden (E1): Stundenmodell für alle Gebäude, auch bestehende**; Tagesbilanz nur als ausdrücklich wählbare Ausnahme; Basis wird mit G1 vollständig neu eingefroren, Bestandsweg über ausdrückliche Wahl weiter regressionsgeprüft |
 | Q2 | Referenzwerte aus der Richtlinie, Band ± 0,1 K / ± 1 W, Normzahlen nicht ausliefern, Datenträger prüfen, VDI 6020 oder 2078 beschaffen |
-| Q6 | Fensterpfad des Klassenwegs ist eine bewusste Abweichung, nicht durch Testfälle belegt; G3 stellt auf den Normweg um |
+| Q6 | Fensterpfad des Klassenwegs ist eine bewusste Abweichung, nicht durch Testfälle belegt; G3 stellt auf den Normweg um — **mit E14 gilt der Normweg schon in G1** (N1.19) |
 | Q20 | Hay-Davies bleibt Empfehlung für G1, aber als Abweichung von Blatt 3 (Aydinli/Krochmann braucht den Bedeckungsgrad) gekennzeichnet |
 | Q16 | **entschieden (E2): Gewichte im Stundenmodell gestrichen; der Gebäudedialog zeigt je Bauteil U, A und U·A ohne verdeckte Faktoren** (N1.6) |
 | Q9 | **entschieden (E3, nach Empfehlung): xBIM Essentials als unverändertes NuGet-Paket unter CDDL-1.0**, Lizenztext und Quellenverweis im Installationspaket, nie geforkt; `Xbim.Geometry` nicht; Ausweg GeometryGymIFC (MIT), falls die CDDL-Auflagen später nicht tragbar sind (N1.7) |
@@ -2045,3 +2046,304 @@ Die Einzelheiten stehen als **Nachtrag 1** im
 Modell, beide Exporte, Proben, Aufwand) und als Abschnitt 6.7 im
 [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (Grundrissansicht im
 Zuordnungsdialog).
+
+### N1.17 Entscheide vom 16.09.2026 zu den Fragen Q3–Q5, Q7, Q11–Q13, Q15, Q17–Q21
+
+Anwender, 16.09.2026: „Q3-W5: Empfehlung / Q6: was spricht gegen ‚eigener Oberflächenknoten?' ?
+-> diese auswahl scheint mir vernünftiger. erläutere / Q7: Empfehlung / Q8: Kühlung aufnehmen,
+konzept dazu erweitern / Q11: Wohnfläche ändern in Nutzfläche, sonst empfehlung / Q12: betrachte
+als geklärt, importdatei für alle umsetzen / Q13 - Q21: Empfehlung." — „Q3-W5" ist als **Q3–Q5**
+zu lesen.
+
+Damit gelten die Empfehlungen aus Kapitel 13 als Entscheide. Die Tabelle nennt je Frage den
+Entscheid im Wortlaut der Empfehlung und die Stelle, die ihn trägt. Q8 bekommt einen eigenen
+Abschnitt (N1.18, Entscheid E12); Q6 bekommt die erbetene Erläuterung (N1.19) und bleibt offen.
+
+| Nr. | Entscheid (16.09.2026) | Folge / Stelle |
+|---|---|---|
+| **Q3** | Thermische Masse in G1 aus der Bauweise-Klasse mit der Aufteilung 0,3 / 0,7 — **Klassenweg in G1** (gemessen unkritisch, ≤ 0,1 %), Schichtaufbau in G3 | Kapitel 4.3; Schritt A der [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md); der Bauteilweg bleibt Stufe G3 (6.3) |
+| **Q4** | Erdreich nach Kusuda (harmonische Amplitude) als Vorgabe, Keller und Außenluft als Feldwerte; **der Bestandsfaktor 0,45 wird nicht nachgebaut** | Kapitel 4.4; Schritt E der Rechenschritte; benannte Erweiterung gegenüber der Richtlinie |
+| **Q5** | Opake Außenbauteile mit Absorption und Abstrahlung in G1 **aus (Parität), Schalter vorhanden**; die Pauschale −3 K bleibt verboten; die Normformel wird in G2 nachgerüstet | Kapitel 4.4; Schalter `Aussenbauteile_Strahlung` aus Schemaschritt 77 (6.1) |
+| **Q7** | `Heizleistung_Max` als Option, NULL = unbegrenzt; **`Waermelast_Max` bleibt unverändert das Maximum des Kanalsummenvektors**; Stundenspitze, gleitendes Tagesmittel und 95-%-Quantil stehen zusätzlich je Gebäude | Kapitel 4.5 und 8.2; Kennzahlen und Bericht in der [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) |
+| **Q11** | **Entscheid E13 — Nutzfläche statt Wohnfläche.** Pflichtfelder des Imports sind die **Nutzfläche** (beheizte Netto-Grundfläche) und die **Raumhöhe**, alle übrigen Felder Vorgabe mit Herkunftsmarke. Bezugsfläche des Stundenmodells ist die Nutzfläche: A_IW = 2,5 · Nutzfläche, und die Skalierung nach E8 rechnet auf die Nutzfläche hoch | Absatz unter dieser Tabelle; Kapitel 4.3 und 4.7; Rechenschritte 1.1 und Schritt A; Umsetzungskonzept 2; Datenaustauschkonzept 3.4; Mehrzonenkonzept 4.2 |
+| **Q12** | **Als geklärt zu betrachten.** Die KIT-Datei `AC20-FZK-Haus.ifc` kommt mit Quellenvermerk als Importprobe ins Repositorium; **Importproben werden für alle Importwege umgesetzt** — IFC und gbXML, dazu die selbst erzeugten Rundlaufdateien; RWTH- und bim2sim-Dateien erst nach Lizenzklärung | Kapitel 7.8; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 8.3 und 9; Ablage `Referenzlaeufe/Importproben/` |
+| **Q13** | **Durch E9 überholt:** der gbXML-Import ist nicht Kür in G5, sondern **Pflicht in G4c**, dazu kommen beide Exporte als Stufe G7 | N1.13; Datenaustauschkonzept 3 und 10 |
+| **Q15** | Reihenfolge G0 → G1 → G2 → G3 → G4 → G5; **G0 und G1 als erste Beauftragung**, G0 zuerst — ohne bestandene Normtests keine Anbindung | Kapitel 11 und 16 |
+| **Q17** | Verschattungsfaktor und Rahmenanteil als Felder mit Vorgabe je Lage (0,9 / 0,8 / 0,7) bzw. 0,3 — der größte geratene Hebel; eine Vorgabe je Baualter erst, wenn `Baujahr` vorliegt (G4) | Kapitel 4.4; Schemaschritt 77 (6.1); Dialoggruppe im Umsetzungskonzept 2 |
+| **Q18** | Harte Plausibilitätsprüfungen im VDI-6007-Weg, im Tagesmodell nur Warnung — damit die Basis unberührt bleibt | Kapitel 4.8; die Warnungen gehören in den Einfrierschritt GB (Kapitel 16) |
+| **Q19** | Sommerlüftungsregel und die Trennung von Infiltration und Nutzerlüftung in **G2** — für die Jahresheizwärme unerheblich, für die Überhitzungskennzahl entscheidend | Kapitel 4.4 und 11; die Kennzahl bleibt bis dahin vorläufig (Kapitel 14) |
+| **Q20** | Fassadenstrahlung im Gebäudemodell mit Hay-Davies aus GHI/DNI/DHI; die isotropen `Sol_*`-Spalten bleiben dem Bestandsweg | N1.4; Schritt E der Rechenschritte |
+| **Q21** | Eine Zeitbasis (Ortszeit) für das Gebäudemodell wie bei PV und Solarthermie; `Tab_Klimadaten` braucht das Modell nicht | Kapitel 4.4; Schritt E der Rechenschritte |
+
+**Zu E13 (Q11): eine Annahme und eine Rückfrage — durch E19 (N1.24) erledigt.** Entschieden war am Vormittag die **Bezeichnung**, nicht die
+Spalte. Der Orchestrator nimmt an — **Annahme, keine Festlegung** —, dass die Bestandsspalte
+`Tab_Gebaeude.Wohnflaeche` technisch bestehen bleibt, weil der Tagesbilanz-Weg und die
+Referenzbasis sie lesen, und dass sie im Stundenmodell, in den Dialogen und in den Importen nur
+als **„Nutzfläche"** beschriftet und gelesen wird: **keine neue Spalte, kein Schemaschritt dafür.**
+Daraus folgt die **Frage Q11a** an den Anwender: Bleibt es bei der einen Spalte unter neuem Namen
+in der Oberfläche — oder soll das Schema eine eigene Spalte `Nutzflaeche` bekommen, mit Migration
+der Bestandszeilen und einem eigenen Einfrierschritt? Die Antwort kam am selben Tag: **E19** (N1.24)
+wählt die eigene Spalte; die Annahme ist aufgehoben, die gekennzeichneten Stellen sind nachgezogen.
+
+**Was danach offen ist.** **Q10** (IFC-Import auch auf iOS) wurde am 16.09.2026 zunächst nicht genannt
+und ist am selben Tag nachentschieden (**E18**, N1.23), **Q11a** ebenso (**E19**, N1.24) — keine Konzeptfrage ist mehr offen. Alles Übrige war schon entschieden: **Q8** mit **E12**
+(N1.18), **Q6** mit **E14** — der Anwender hat die Erläuterung erbeten und am selben Tag
+entschieden (N1.19) —, davor **Q1** (E1), **Q2** samt Klimabasis (E5), **Q9** (E3), **Q14, Q22,
+Q23** (E4) und **Q16** (E2).
+
+### N1.18 Entscheid E12 — Q8: Kühlung wird aufgenommen
+
+Anwender, 16.09.2026: „Q8: Kühlung aufnehmen, konzept dazu erweitern."
+
+**Entscheid E12: Kühlung wird als vierter Kanal aufgenommen.** Neben `HEIZUNG`, `BRAUCHWASSER`
+und `PROZESS` tritt der Kanal **`KUEHLUNG`**, und sein Bedarf wird **durch Kälteerzeuger gedeckt**
+— er bleibt nicht länger eine bloß informative Reihe je Gebäude. Die Antwort aus Rev. 1 („Nein —
+informativ", Kapitel 13, Q8) ist damit aufgehoben.
+
+**Das Konzept dazu ist ein eigenes Papier.** Es entsteht als
+[`Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md`](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) (in Arbeit; der Bestandsbefund W über Kanäle,
+Erzeuger, Speicher, Wirtschaftlichkeit und Bericht läuft) — solange die Datei fehlt, steht ihr
+Name hier als Text ohne Verweis. Es setzt seine **eigenen Fragen K1 …** und regelt, was der vierte
+Kanal in Rechenkern, Datenmodell, Oberfläche, Bericht, Wirtschaftlichkeit und Regressionsnetz
+auslöst. **Dieses Papier entscheidet davon nichts vor**; es vermerkt nur, wo E12 den bisherigen
+Stand aufhebt.
+
+| Stelle | Bisheriger Stand | Folge aus E12 |
+|---|---|---|
+| Kapitel 8.2 (Bedarfsdialog und Ergebnis) | Kühlenergie und Stunden mit Kühlbedarf als informative Kennzahlen | ein Kanal mit Deckung: Erzeugerwahl, Deckungsanteile, Kennzahlen — die Aufteilung setzt das Kühlkonzept |
+| Kapitel 9 (Bericht, Diagramme, Wiki) | Kühlkennzahlen neben den Heizkennzahlen | eigene Kanalzeile, Deckungsbild, Wiki-Abschnitt samt Logbuch-Eintrag |
+| Kapitel 15 (Abgrenzung) | „Kühlung als Kanal und Kältemaschinen" ausgeschlossen | **aufgehoben** — der Ausschluss trägt jetzt den Vermerk auf diesen Abschnitt |
+| [Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) B9, Abwägung 10, Wiedervorlage | „Drei Kanäle, und Kühlung ist keiner" | Nachtragssatz an den Kanalaussagen gesetzt; die Kanalzahl selbst ändert das Kühlkonzept |
+| [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) (Ergebnisdarstellung, Abgrenzung) | „Informative Reihe, kein vierter Kanal" | Nachtragssatz gesetzt; Kennzahlen, Export und Bericht zieht das Kühlkonzept nach |
+| [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 6 (Abgrenzung) | mit Kapitel 15 ausgeschlossen | Verweis auf E12 gesetzt |
+| [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 12 (Abgrenzung) | Kühlung je Zone ausgeschlossen | Verweis auf E12 gesetzt; die Kühllast je Zone gehört ins Kühlkonzept |
+| Referenzbasis | dreizehn Projekte, Kanalsummen ohne Kühlung | ein vierter Kanal bewegt Kanalsummen, Deckung und Wirtschaftlichkeit: das verlangt einen eigenen, begründeten Einfrierschritt — das Kühlkonzept benennt ihn und seinen Platz in der Reihenfolge (Kapitel 16) |
+
+**Was E12 nicht ist.** Kein Auftrag, den Kanal vor G1 zu bauen, und keine Änderung an den Stufen
+G0 bis G2: das Stundenmodell rechnet die Kühlleistung schon als Reihe (4.5), erst die Deckung
+macht daraus einen Kanal. Welche Stufe ihn bringt, setzt das Kühlkonzept.
+
+### N1.19 Erläuterung zu Q6 — Fensterpfad: drei Wege
+
+Anwender, 16.09.2026: „Q6: was spricht gegen ‚eigener Oberflächenknoten?' ? -> diese auswahl
+scheint mir vernünftiger. erläutere". Die Erläuterung ist am selben Tag beantwortet worden; der
+Entscheid **E14** steht am Ende dieses Abschnitts. Die Erläuterung im Wortlaut:
+
+Drei Wege stehen zur Wahl. **(A) Klassenweg des Prototyps:** das Fenster hängt als masseloser
+Widerstand am Luftknoten, zusammen mit Lüftung und Wärmebrücken in R_ext; die Fensterfläche nimmt
+nicht am Strahlungsaustausch der Oberflächen teil. **(B) Normweg nach VDI 6007 Blatt 1,
+Gl. (25)–(28):** das Fenster gehört zum AW-Zweig; R_AF wird in R_1,AF = R_AF/6 und
+R_Rest,AF = 5/6 · R_AF geteilt und parallel zu den Außenwänden am gemeinsamen Oberflächenknoten
+θ_s,AW angeschlossen; die Fensterfläche zählt in der Strahlungsverteilung und in der Gewichtung
+der äquivalenten Außentemperatur nach Gl. (41). **(C) Eigener Oberflächenknoten θ_s,AF:** ein
+dritter Oberflächenknoten ohne Kapazität, mit eigenem konvektiven Übergang zur Luft, eigenem
+Strahlungswiderstand zu den anderen Oberflächen und R_AF nach außen.
+
+Was gegen (C) spricht: Erstens verlässt (C) das Netz der Richtlinie, das genau zwei
+Oberflächenknoten kennt; die zwölf Testbeispiele und die Prüfregel 6.6 prüfen das Normnetz, und
+der Ausweis „Rechenkern nach VDI 6007 Blatt 1" gilt für den Kopplungsweg dann nur mit einer
+benannten Erweiterung — wie bei Kusuda und Hay-Davies. Zweitens legt die Richtlinie die Parameter
+eines dritten Knotens nicht fest (Strahlungswiderstand Fenster–Innenwand, Fenster–Außenwand,
+konvektiver Übergang am Glas); EPOS müsste sie selbst setzen. Drittens ist ein Knoten ohne
+Kapazität algebraisch eliminierbar: mit denselben Übergangskoeffizienten wie an der Außenwand
+fällt (C) rechnerisch auf (B) zurück — die Teilung R_AF/6 der Richtlinie ist genau diese
+Elimination in vereinfachter Form. (C) liefert also nur dann etwas Neues, wenn seine Parameter von
+denen der Wand abweichen, und dann liefert es vor allem eine eigene Glasoberflächentemperatur.
+
+Was für (C) spricht: eine eigene Glasoberflächentemperatur verbessert die operative Temperatur und
+Behaglichkeitskennzahlen (kalte Scheibe im Winter, warme im Sommer), erlaubt Tauwasser- und
+Sommerbewertungen je Fensterlage und trägt die Kühllast mit Solargewinnen genauer — Punkte, die
+mit E12 (Kühlung) an Gewicht gewinnen. Auf die Jahresheizwärme wirkt der Unterschied zwischen (B)
+und (C) klein; auf Spitzen und Überhitzungsstunden kann er sichtbar werden.
+
+Empfehlung: **(B) schon in G1**, nicht erst in G3 — der Löser entsteht in G0 neu, der Normweg
+kostet dort nichts zusätzlich, und die Basis wird mit G1 ohnehin neu eingefroren; die in G3
+geplante Umstellung des Fensterpfads (Mehrzonenkonzept 3.3) und der damit verbundene zweite
+Einfrierschritt entfallen. **(C) als benannte EPOS-Erweiterung mit G3** (Bauteilkatalog, Fenster je
+Lage mit eigenem U und g), wenn die Behaglichkeits- und Kühlkennzahlen sie brauchen; bis dahin
+bleibt sie Option. Wer (C) sofort will, trägt die Zusatzannahmen und den Nachweis, dass die
+Testbeispiele 5, 8 und 9 im Normband bleiben.
+
+**Entscheid E14 (16.09.2026).** Anwender: „Q6: wie empfohlen, erst mit G3." Damit gilt:
+
+- **Weg B ist der Produktweg und gilt schon im Klassenweg der Stufe G1**, nicht erst mit G3: das
+  Fenster liegt im AW-Zweig, R_AF geteilt in R_1,AF = R_AF/6 und R_Rest,AF = 5/6 · R_AF, parallel
+  nach den Wänden am gemeinsamen Oberflächenknoten θ_s,AW; die Fensterfläche zählt in der
+  Strahlungsverteilung und in der Gewichtung der äquivalenten Außentemperatur nach Gl. (41).
+- **Weg C** (eigener Oberflächenknoten θ_s,AF) ist eine **benannte EPOS-Erweiterung frühestens mit
+  G3** — nur, wenn die Behaglichkeits- oder Kühlkennzahlen sie brauchen, und nur mit den
+  Zusatzannahmen und dem Nachweis, dass die Testbeispiele 5, 8 und 9 im Normband bleiben.
+- **Weg A** (Prototyp: Fenster als Widerstand am Luftknoten in R_ext) **entfällt für das Produkt**;
+  der Prototyp bleibt Prüfwerkzeug, und die mit ihm gemessenen Zwischenwerte in Kapitel 5 und im
+  Zahlenweg der Rechenschritte sind nach dieser Konvention entstanden.
+- **Die Abnahme von G0 und G1 ändert sich nicht:** alle zwölf Testbeispiele im Normband nach E10.
+  Die im [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) für G3 vorgesehene Umstellung
+  des Fensterpfads samt ihrer Einfrierfolge **entfällt**; die Umstellung von R_rad auf Gl. (29)/(31)
+  in G3 bleibt davon unberührt.
+
+### N1.20 Entscheid E15 — Wärmepumpen mit Kühlfunktion: Auswahl und Konfiguration
+
+**Entscheid E15 (Anwender, 16.09.2026), im Wortlaut:**
+
+> „Konzept: es gibt Wärmepumpen mit Kühlfunktion. Diese sind auch im Katalog. Es sollte eine
+> Auswahl mit Wärmepumpen mit Kühlfunktion geben und entsprechender Konfiguration, so dass die
+> Anforderungen an einen Erzeuger erfüllt sind und insbes. die Gebäudesimulation nach VDI 6007
+> dann möglich wird."
+
+**Die Festlegung in fünf Sätzen.** Erstens: „Kühlfähig" heißt zweierlei — **kühlfähig im
+Katalog** (`Tab_WP_STAMM.Kuehlleistung > 0`, die Angabe, die ein Datenblatt führt) und
+**rechenbar kühlfähig** (es liegt eine Kühlkennlinie vor); gerechnet wird mit der Kennlinie, und
+der Katalog wird nach der Nennleistung durchsucht. Zweitens: Die Katalogliste der Wärmepumpe
+bekommt die Auswahl **„nur mit Kühlfunktion"** auf der vorhandenen Spalte „Kühlen", die heute
+angezeigt, aber nicht gefiltert werden kann. Drittens: Die Übernahme eines Katalogsatzes in ein
+Projekt bringt die Kühlkennlinie **bereits heute** vollständig mit — auf allen drei Wegen
+(Katalogsatz, Gewerkübernahme, Projektduplikat); daran ist nichts zu bauen, wohl aber ein
+Datenbankfall, der es festhält. Viertens: Die Projektanlage bekommt vier Einstellungen —
+Kühlbetrieb, Kühl-Vorlauf (er wählt die Kennlinie, wie der Heizvorlauf es auf der Wärmeseite
+tut), Umschaltregel und Hilfsstromanteil —, und der Kühlbetrieb ist **nur** einschaltbar, wenn
+eine Kühlkennlinie vorliegt; fehlt sie bei vorhandener Nennkühlleistung, erscheint eine benannte
+Warnung statt einer stillen Ablehnung. Fünftens: Eine so konfigurierte Anlage rechnet die
+Simulation mit Kühlung vollständig — Bedarf, Deckung, Kältestrom, Kosten, Emissionen, Kennzahlen
+und Bericht —, und zwar **frühestens nach G1 + G2 + KU1 + KU2**, weil das Stundenmodell die
+Kühllast liefert, die Sommerlüftung sie auf das richtige Maß bringt, KU1 den Kanal öffnet und
+KU2 den Erzeuger bringt.
+
+**Wo das ausgeführt ist.** Abschnitt **5.0** des
+[Kühlkonzepts](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) — mit der Messung, wie viele
+Katalogsätze es betrifft, mit der Stelle, die das Filtern heute verhindert, mit den
+Übernahmewegen und mit den Konfigurationsfeldern. Die Schemaspalten stehen dort in 7.3
+(`KU-S3`), die Dialogführung in 8.2 und 8.6, die Proben in 10.2 und 10.3, der Aufwand in 11.1.
+
+**Vier Fragen bleiben offen und gehören zu diesem Entscheid** (Kühlkonzept 12.1): **K20** — der
+Weg zum Filter: benannte Ausnahme von der Regel „Kennzeichenspalten sind nicht filterbar" oder
+eine eigene Filterart (Empfehlung: eigene Filterart). **K21** — Kühl-Vorlauf als Auswahl aus den
+Stützstellen oder als freie Eingabe mit Interpolation (Empfehlung: Auswahl). **K22** — führt die
+Spalte `COP` der Kühlkennlinie wirklich den EER, oder in manchen Herstellersätzen etwas anderes
+(vor KU2 zu prüfen). **K23** — Hilfsstrom je Anlage oder pauschal je Projekt (Empfehlung: je
+Anlage).
+
+**E12 bleibt unberührt.** E15 entscheidet nichts über den Kanal, den Rechenweg oder die
+Abgrenzung; er betrifft allein den Weg des Anwenders zum Kälteerzeuger. Die Ausschlüsse aus
+Kapitel 15 — Feuchte und Entfeuchtung, Bauteilaktivierung als Funktion, Kältemittelemissionen —
+gelten unverändert weiter.
+
+### N1.21 Entscheid E16 — ADR-004 angenommen: gbXML-Leseweg
+
+**Entscheid E16 (Anwender, 16.09.2026), im Wortlaut:** „ADR-004: Annehmen".
+
+**Was damit gilt.** [`ADR-004_gbXML_LINQ_to_XML.md`](ADR-004_gbXML_LINQ_to_XML.md) steht auf
+„Angenommen": gbXML wird mit LINQ to XML (`System.Xml.Linq`) gegen ein handgeschriebenes Modell
+der rund 25 benötigten Elemente gelesen und geschrieben — reine BCL, keine Code-Erzeugung, keine
+Reflexion, kein Paket. Der Import ist tolerant (Datei als Strom, Kodierung aus der XML-Deklaration,
+Einheiten global und lokal aufgelöst, `RectangularGeometry` als Flächenquelle, unvollständige
+Aufbauten als masselos mit Warnung, fehlende Konstruktionen als Herkunft „Vorgabe"); der Export ist
+zweistufig (Stufe 1 schemagültig mit `version="6.01"`, Stufe 2 synthetische Quadergeometrie mit
+Kennzeichnung „schematisch"); die Schemaprüfung läuft nur im Test gegen eine nicht ausgelieferte
+XSD-Kopie. Damit ist Architekturfrage **A7** der Softwarearchitektur beantwortet und der Sperrpunkt
+vor G4c aufgehoben.
+
+**Was offen bleibt.** Der ADR entscheidet den Leseweg, nicht die Beauftragung: **D1** (gbXML-Import
+vor IFC-Import), **D2** (gbXML-Export nur mit Stufe 2) und **D16** (Zonenbildung X1…X3 mit G6c)
+bleiben Fragen des [Datenaustauschkonzepts](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) (11.1);
+die Ablage der XSD-Kopie im Repositorium (D3, 11.2) ist mit G4c zu klären.
+
+**Nachgezogen:** Statusdatei Abschnitte 1 und 3, Indexzeile, Fragentabellen der
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) (A7, Stufentabelle) und
+des [Systementwurfs](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) (B4), Datenaustauschkonzept
+Kapitel 1, [Register der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md).
+
+### N1.22 Entscheid E17 — ADR-005 angenommen: Zonenkopplung im Mehrzonenmodell
+
+**Entscheid E17 (Anwender, 16.09.2026), im Wortlaut:** „ADR-005: annehmen".
+
+**Was damit gilt.** [`ADR-005_Zonenkopplung_Mehrzonenmodell.md`](ADR-005_Zonenkopplung_Mehrzonenmodell.md)
+steht auf „Angenommen", und mit ihm sind zwei Fragen des
+[Mehrzonenkonzepts](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) entschieden. **M1** — Kopplungsweg
+**B**: Die Trennbauteile zur Nachbarzone gehören in die AW-Gruppe der Zone, die Nachbartemperatur
+geht als θ_NR,eq nach Gl. (40) ein und wird nach Gl. (41)/(42) gewichtet, der Strahlungsaustausch
+endet an der Zonengrenze; je Stunde läuft ein Gauß-Seidel-Durchlauf über die Zonen in fester
+Reihenfolge, Abbruch bei 0,01 K **und** 0,1 W, höchstens 50 Durchläufe mit benanntem Fehler
+(beteiligte Zonen und Volumenstrom), das Regelungsmuster des ersten Durchlaufs einer Stunde wird
+festgehalten und jeder Wechsel gezählt. **M4** — der Zonen-Luftaustausch kommt in **G6b**, als
+Paare mit `CHECK (ID_ZoneA < ID_ZoneB)` (Schemaschritt S-G), im selben Durchlauf berücksichtigt.
+Das validierte 7R2C-Netz je Zone bleibt unverändert; ein Gebäude ohne Zonendaten rechnet bitgleich
+wie das Einzonenmodell desselben Programmstands. Damit ist **A8** der Softwarearchitektur
+beantwortet und der Sperrpunkt vor G6b aufgehoben.
+
+**Messpflicht, die zum Entscheid gehört.** Die Wahl wird gemessen bestätigt, nicht vorausgesetzt:
+Vorschlag A (Vorstunde) bleibt als Vergleichsrechnung stehen, das 4×4-Gesamtsystem für zwei Zonen
+ist das exakte Prüforakel (Mehrzonenkonzept, Probe 6), und die Probe „eine Zone bitgleich zum
+Einzonenmodell" ist das Gate von G6b.
+
+**Normstatus.** Der Produktausweis lautet weiterhin „Rechenkern nach VDI 6007 Blatt 1" **je Zone**;
+die Kopplung ist eine benannte EPOS-Erweiterung wie Kusuda und Hay-Davies. „Mehrzonensimulation
+nach VDI 6007" wird nirgends behauptet.
+
+**Nachgezogen:** Statusdatei Abschnitte 1 und 3, Indexzeile, Mehrzonenkonzept (Kapitel 1 und 2,
+Fragentabelle 10: M1, M4), [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
+(A8, Stufentabelle), [Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) (B5),
+[Register der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md).
+
+### N1.23 Entscheid E18 — Q10: IFC-Import auch auf iOS
+
+**Entscheid E18 (Anwender, 16.09.2026), im Wortlaut:** „Q10: Umsetzen/Empfehlung".
+
+**Was damit gilt.** Der IFC-Import steht auf **beiden Schalen** zur Verfügung; der Leser wird auch
+in der iOS-Hülle registriert, nicht benannt abgelehnt. Der Rechenweg ist plattformfrei (7.4: die
+Entity-Factory von xBIM ist erzeugter Code, kein `Reflection.Emit`); das iOS-Risiko ist das
+Trimming der Metadatenklasse, Abhilfe ist ein `TrimmerRootDescriptor`. Mit der Empfehlung
+angenommen sind die beiden Schärfungen des
+[Umsetzungskonzepts](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md): Das Größenlimit
+wird **benannt abgelehnt**, nicht versucht, und die iOS-Zahl wird in G4 **gemessen**, nicht
+geschätzt — die 50 MB aus 7.9 sind der Windows-Richtwert bis zur Messung (**U11**); der Gerätebau
+wird **einmalig von Hand** nachgewiesen, nicht dauerhaft im iOS-Workflow (**U16**). Der
+Trimming-Nachweis ist Teil von G4 und läuft in einem iOS-Lauf **nach Rückfrage** — jeder
+macOS-Läufer braucht das Wort des Anwenders, ohne Ausnahme.
+
+**Was das für die Architektur heißt.** Die Naht `IGebaeudeLeser` (Softwarearchitektur A2) wird
+trotzdem von Anfang an gezogen — nicht, um iOS abzulehnen, sondern damit ein späterer Umzug des
+Lesers in ein eigenes Projekt eine Fabrikzeile statt eines Umbaus kostet, falls der Gerätebau
+Typen vermisst. A2 selbst bleibt eine Frage des Architekturpapiers.
+
+**Nachgezogen:** Statusdatei Abschnitte 1 und 2 (G4), Kapitel 13 (Q10), Umsetzungskonzept Kapitel 5
+(U11, U16), [Register der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md).
+
+### N1.24 Entscheid E19 — Q11a: eigene Spalte `Nutzflaeche`
+
+**Entscheid E19 (Anwender, 16.09.2026), im Wortlaut:** „Q11a: Option (b) — Wohnflaeche sollte
+zukünftig Nutzflaeche sein".
+
+**Was damit gilt.** Die Bezugsfläche des Gebäudes heißt im Schema, was sie ist: Die Spalte
+`Wohnflaeche` in `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` wird zu **`Nutzflaeche`** — eine
+**Umbenennung mit Wertübernahme**, keine zweite Spalte. Die Bestandswerte gehen 1:1 über; ein
+Umrechnungsfaktor von Wohn- auf Nutzfläche wird nicht angewandt, weil der Bestand die Fläche schon
+heute als Bezugsfläche der Rechnung führt. Die Annahme aus N1.17 („eine Spalte, neue Beschriftung")
+ist aufgehoben; die Regel für den Fall „beide Spalten gefüllt" aus dem Register entfällt, weil es
+keine zwei Spalten gibt.
+
+**Wo die Umbenennung geschieht.** Im Gebäudespalten-Schemaschritt (Papiername **M3**) zusammen mit
+dem Sichtneubau: `ALTER TABLE … RENAME COLUMN` in beiden Tabellen, danach die Sicht
+`Abfrage_Projektgebaeude` aus `GebaeudeSchema.SQL_VIEW_NEU` mit der Spalte `Nutzflaeche`. Alle
+Leser und Schreiber ziehen im selben Schritt auf den neuen Namen: der Rechenweg
+(`SimulationWaermebedarf.cs`), `GebaeudeStammCtrl`, die Modelle, `GebaeudeDialog` und
+`GebaeudeKatalogDialog`, die Gebäudehüllen und der Bericht — rund 200 Fundstellen des Namens im
+Quelltext, von denen etwa die Hälfte die Skalierungsspalten meint und bleibt.
+`sql/schema/001_grundschema.sql` ist der eingefrorene Grundstand und wird nicht nachgezogen (wie es
+W17 der Softwarearchitektur für die Sicht regelt). Aufwand rund 2–3 PT innerhalb von M3.
+
+**Was unverändert bleibt.** `Wohnflaeche_gesamt` (Basis des Bewohner- und Verbrauchswegs) und die
+Skalierungsspalten der Projektzuordnung (`Z_ProjektGebaeude.Wohnflaeche_Waermebedarf`,
+`Einheit_Waermebedarf_Wohnflaeche`, `Z_AuswahlWohnflaeche`) bezeichnen die **Projektfläche des
+Anwenders** im Skalierungsweg nach E8, nicht die Bezugsfläche des Modells; sie behalten Namen und
+Bedeutung. Das ist eine Folge von E8, keine neue Frage.
+
+**Referenzbasis.** Die Umbenennung ist ergebnisneutral: Der Referenzlauf muss **byte-gleich**
+bleiben; eine Abweichung wäre ein Fehler der Migration, kein Einfrieranlass. Der Schemastand der
+Testdatenbank wandert mit dem Schritt (Migrationstest, Auslieferungsvorlage, Schemawerkzeug).
+
+**Nachgezogen:** Statusdatei Abschnitte 1 bis 3, Kapitel 13 (Q11), N1.17 (Annahme aufgehoben),
+[Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (Eingabetabelle, Schritt A),
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (1.6, 2),
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (Flächenprobe der Zonen),
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) (W13, Schrittfolge M3),
+[Register der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Kapitel 1 entfällt).
