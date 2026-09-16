@@ -1091,8 +1091,7 @@ namespace WindowsFormsApplication1
         //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
         //
         //   Die Bezeichnung ist zugleich der SCHLUESSEL der Position: Sie steht in
-        //   Tab_Kostenfaktor, wird in SQL damit verglichen und ordnet der Position im
-        //   Code ihre Bezugsgroesse zu (BetriebskostenCtrl.Katalog). Deshalb deutsch,
+        //   Tab_Kostenfaktor und wird in SQL damit verglichen. Deshalb deutsch,
         //   deshalb eingefroren; der Anzeigetext kommt getrennt aus
         //   MyResource.Resource.VDI_POS_*.
         // =====================================================================

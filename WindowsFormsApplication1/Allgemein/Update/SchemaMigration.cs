@@ -821,16 +821,16 @@ namespace WindowsFormsApplication1
         /// E1 vom 19.08.2026, Begründung an
         /// <see cref="DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE"/>.
         ///
-        /// <b>Warum die Empfehlungsbereiche NICHT hier stehen.</b> Das Konzept § 7.6 sah
-        /// zwei Spalten <c>Empfehlung_von</c>/<c>Empfehlung_bis</c> an
-        /// <c>Tab_Kostenfaktor</c> vor. Der Befund vom 20.08.2026: Sie existieren bereits —
-        /// als Felder <c>EmpfehlungVon</c>/<c>EmpfehlungBis</c> des VDI-Katalogs in
-        /// <c>BetriebskostenCtrl.Katalog</c>, mit exakt den sieben Wertepaaren aus § 7.6,
-        /// und der Bezugstext der Betriebskostenpflege zeigt sie seit Etappe E3 am
-        /// Satzfeld an. Zwei Datenbankspalten daneben wären eine zweite Wahrheit über dieselbe
-        /// Zahl — und zwar die schlechtere, weil die VDI-Positionen ihren
-        /// Empfehlungsbereich aus der Norm beziehen und nicht je Datenbank abweichen
-        /// dürfen. Der Schritt legt sie deshalb bewusst nicht an.
+        /// <b>Warum die Empfehlungsbereiche NICHT an <c>Tab_Kostenfaktor</c> hängen.</b>
+        /// Das Konzept § 7.6 sah dort zwei Spalten
+        /// <c>Empfehlung_von</c>/<c>Empfehlung_bis</c> vor. Geführt werden die Bereiche
+        /// an der POSITION einer Kostenvorlage (<c>Tab_KostenVorlagePosition</c>, Spalten
+        /// <c>Empfehlung_von</c>/<c>Empfehlung_bis</c>, gesät aus
+        /// <see cref="SchemaKatalog.Schritt39_Vorlagen"/>); von dort zeigt der
+        /// Komponenten-Kostendialog sie am Satzfeld an. Zwei Spalten am Kostenfaktor
+        /// daneben wären eine zweite Wahrheit über dieselbe Zahl — und zwar die
+        /// schlechtere, weil die Bereiche aus der Norm stammen und nicht je Datenbank
+        /// abweichen dürfen. Der Schritt legt sie deshalb bewusst nicht an.
         ///
         /// <b>Idempotent</b> (unabhängig vom Marker): Jeder Einfügung geht ein
         /// <c>COUNT(*)</c> auf den Namen voraus — <c>Komponente</c> bzw.

@@ -5,18 +5,19 @@ using System.Data;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die zwölf Betriebskostenpositionen nach VDI 2067 (Etappe E3, Konzept
-    /// <c>Konzept_BHKW_Kosten_Erloese.md</c> Abschnitt 4.1) — Positionskatalog,
-    /// Bezugsgrößen und der EINE Rechenweg je Bemessungsart.
+    /// Der EINE Rechenweg der Betriebskostenpositionen nach VDI 2067 (Konzept
+    /// <c>Konzept_BHKW_Kosten_Erloese.md</c> Abschnitt 4.1): der Betrag aus Menge und
+    /// Satz (<see cref="Betrag"/>), die Einheitenzeichen von Satz und Bezugsmenge
+    /// (<c>SatzEinheit</c>, <c>MengenEinheit</c>) und die Investitionssumme, an der sich
+    /// eine Prozentposition bemisst (<c>Kaskadensummen</c>,
+    /// <see cref="InvestSummeFuer"/>).
     ///
     /// <para>
-    /// <b>Warum ein eigener Controller.</b> Drei Aufrufer brauchen dieselben Regeln: die
-    /// Kostenseite (<see cref="UcBkKosten"/>), der Kostendialog
-    /// <c>Form_KostenKomponente</c> (Sperren der abgeleiteten Beträge) und die
-    /// Wirtschaftlichkeit
-    /// (<c>WirtschaftlichkeitCtrl.LiesBetriebskosten</c>). Eine zweite Kopie der Formel
-    /// wäre genau die Sorte Doppelpflege, an der die Kostenseite schon einmal
-    /// auseinandergelaufen ist (Befund D1).
+    /// <b>Warum ein eigener Controller.</b> Zwei Aufrufer brauchen dieselben Regeln: der
+    /// Komponenten-Kostendialog (<c>KostenKomponenteHuelle</c>, Sperren der abgeleiteten
+    /// Beträge) und die Wirtschaftlichkeit (<c>WirtschaftlichkeitCtrl</c>). Eine zweite
+    /// Kopie der Formel wäre genau die Sorte Doppelpflege, an der die Kostenseite schon
+    /// einmal auseinandergelaufen ist (Befund D1).
     /// </para>
     ///
     /// <para>
@@ -30,223 +31,15 @@ namespace WindowsFormsApplication1
     /// </para>
     ///
     /// <para>
-    /// <b>Zugehörigkeit und Bemessungsgrundlage sind zwei verschiedene Dinge.</b> Alle
-    /// zwölf Positionen gehören zur Betriebskostenrechnung der KWK-Anlage und werden
-    /// deshalb unter der Komponente „BHKW" geführt — auch „Instandhaltung Heizkessel",
-    /// die sich an der KESSELinvestition bemisst. So bleibt jeder Betrag in der
-    /// Kostenverwaltung und in den Komponentensummen sichtbar; welche Größe ihn trägt,
-    /// steht in <c>Menge</c> und im Dialog.
-    /// </para>
-    ///
-    /// <para>
     /// <b>ANWENDERENTSCHEID W5‑B‑8 (09.09.2026): „x % der Investitionssumme" rechnet auf
-    /// die KASKADE.</b> Die Bezugsgröße <c>INVEST_*</c> kommt seither aus
-    /// <see cref="InvestKaskade"/> statt aus <c>SUM(EingegebenerWert)</c> — siehe
-    /// <see cref="InvestSummeFuer"/>. Damit ist der VIERTE Leseweg der Kategorie-1-Zeilen
-    /// geschlossen, den W5‑B‑7 auf der Investseite bereits abgeschafft hatte.
+    /// die KASKADE.</b> Die Investitionssumme kommt aus <see cref="InvestKaskade"/> statt
+    /// aus <c>SUM(EingegebenerWert)</c> — siehe <see cref="InvestSummeFuer"/>. Damit ist
+    /// der VIERTE Leseweg der Kategorie-1-Zeilen geschlossen, den W5‑B‑7 auf der
+    /// Investseite bereits abgeschafft hatte.
     /// </para>
     /// </summary>
     internal static class BetriebskostenCtrl
     {
-        // ------------------------------------------------------------- Bezugsgrößen
-
-        /// <summary>Keine Bezugsgröße — die Position ist ein fester Jahresbetrag.</summary>
-        internal const string BEZUG_KEINE = "KEINE";
-
-        /// <summary>Investitionssumme der Komponente BHKW (Kategorie 1).</summary>
-        internal const string BEZUG_INVEST_BHKW = "INVEST_BHKW";
-
-        /// <summary>Investitionssumme der Komponente Heizkessel (Kategorie 1).</summary>
-        internal const string BEZUG_INVEST_KESSEL = "INVEST_KESSEL";
-
-        /// <summary>Investitionssumme des GESAMTEN Projekts (Kategorie 1).</summary>
-        internal const string BEZUG_INVEST_GESAMT = "INVEST_GESAMT";
-
-        /// <summary>Elektrische Jahreserzeugung aller BHKW-Module [kWh/a].</summary>
-        internal const string BEZUG_STROM_BHKW = "STROM_BHKW";
-
-        /// <summary>
-        /// Summe der thermischen Vollbenutzungsstunden über alle BHKW-Module [h/a].
-        /// <b>Näherung</b> — siehe <see cref="DbWerte.BEMESSUNG_EUR_PRO_H"/>.
-        /// </summary>
-        internal const string BEZUG_VBH_BHKW = "VBH_BHKW";
-
-        /// <summary>Summe der Brennstoffkosten des Projekts [€/a].</summary>
-        internal const string BEZUG_BRENNSTOFFKOSTEN = "BRENNSTOFFKOSTEN";
-
-        // ------------------------------------------------------------- Positionskatalog
-
-        /// <summary>Eine der zwölf Positionen: was sie heißt, wie sie bemessen wird, woran.</summary>
-        internal sealed class Position
-        {
-            /// <summary>Persistenzwert aus <see cref="DbWerte"/> — zugleich der Schlüssel.</summary>
-            public string Bezeichnung;
-
-            /// <summary>Kostenart nach VDI 2067 (<c>DbWerte.KOSTENART_*</c>).</summary>
-            public string Kostenart;
-
-            /// <summary>
-            /// Die zulässigen Bemessungsarten. Genau EINE gilt (L7); hat die Position
-            /// mehr als eine zur Wahl, ist die Auswahl im Dialog sichtbar und die übrigen
-            /// Felder sind gesperrt.
-            /// </summary>
-            public string[] Bemessungen;
-
-            /// <summary>Bezugsgrößen-Schlüssel je Bemessungsart, gleiche Reihenfolge wie <see cref="Bemessungen"/>.</summary>
-            public string[] Bezuege;
-
-            /// <summary>Empfehlungsbereich der VDI 2067 in Prozent (0/0 = keiner).</summary>
-            public double EmpfehlungVon;
-            public double EmpfehlungBis;
-
-            /// <summary>true = der Anwender vergibt einen eigenen Text („Sonstige Kosten").</summary>
-            public bool FreieBezeichnung;
-
-            /// <summary>Bezugsgröße zur gewählten Bemessung, <see cref="BEZUG_KEINE"/> wenn unbekannt.</summary>
-            public string BezugZu(string bemessung)
-            {
-                if (Bemessungen == null) return BEZUG_KEINE;
-                for (int i = 0; i < Bemessungen.Length; i++)
-                    if (string.Equals(Bemessungen[i], bemessung, StringComparison.Ordinal))
-                        return (Bezuege != null && i < Bezuege.Length) ? Bezuege[i] : BEZUG_KEINE;
-                return BEZUG_KEINE;
-            }
-
-            /// <summary>Vorgewählte Bemessung — die erste der Liste.</summary>
-            public string Vorgabe
-            {
-                get
-                {
-                    return (Bemessungen != null && Bemessungen.Length > 0)
-                        ? Bemessungen[0] : DbWerte.BEMESSUNG_BETRAG;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Die zwölf Positionen in der Reihenfolge des Dialogs. Empfehlungsbereiche aus
-        /// den Beschriftungen der Altmaske <c>Dial_BetriebKost</c>
-        /// (<c>Analyse_Altanwendung_BHKW-Plan.md</c>, Abschnitt 2.6).
-        ///
-        /// <para>
-        /// <b>„Instandhaltung BHKW" steht NEBEN der Wartung, nicht statt ihrer.</b> Die
-        /// Altanwendung beschriftete das Feld mit „oder", addierte den Betrag aber
-        /// (Befund 7). Hier sind es zwei Zeilen mit zwei eigenen Beträgen, und der Dialog
-        /// sagt das in seinem Hinweistext ausdrücklich.
-        /// </para>
-        ///
-        /// <para>
-        /// <b>Wärmezentrale, bauliche Anlagen und Stromeinspeisung bemessen sich an der
-        /// GESAMTinvestition.</b> Die Altanwendung kannte dafür eigene Investitionsgruppen
-        /// (Heizraum, Schornstein, Abgasanlage, Öllagerung, Gasanschluss). EPOS-Plan führt
-        /// keine solchen Gruppen: Es kennt sieben Komponenten und den FREITEXT
-        /// <c>Tab_ProjektWerte.Gruppe</c>, dessen Bestand („test", „Arbeitspreis",
-        /// „Infrastruktur", „Allgemein" …) je Projekt anders aussieht und deshalb keine
-        /// verlässliche Bezugsgröße hergibt. Neue Investitionsgruppen zu erfinden wäre ein
-        /// Datenmodelleingriff ohne Auftrag. Die drei Positionen bemessen sich deshalb an
-        /// der Investitionssumme des Projekts — sichtbar benannt, damit niemand eine
-        /// engere Bezugsgröße unterstellt.
-        /// </para>
-        /// </summary>
-        internal static readonly Position[] Katalog =
-        {
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_WARTUNG_BHKW,
-                Kostenart = DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
-                // L7: genau EINE Bemessung gilt, sichtbar ausgewählt.
-                Bemessungen = new[] { DbWerte.BEMESSUNG_EUR_PRO_KWH,
-                                      DbWerte.BEMESSUNG_EUR_PRO_H,
-                                      DbWerte.BEMESSUNG_PROZENT_INVESTITION },
-                Bezuege     = new[] { BEZUG_STROM_BHKW, BEZUG_VBH_BHKW, BEZUG_INVEST_BHKW }
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_INSTANDHALTUNG_BHKW,
-                Kostenart = DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_PROZENT_INVESTITION },
-                Bezuege     = new[] { BEZUG_INVEST_BHKW },
-                EmpfehlungVon = 3.0, EmpfehlungBis = 9.0
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_INSTANDHALTUNG_KESSEL,
-                Kostenart = DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_PROZENT_INVESTITION },
-                Bezuege     = new[] { BEZUG_INVEST_KESSEL },
-                EmpfehlungVon = 1.5, EmpfehlungBis = 2.5
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_INSTANDHALTUNG_WAERMEZENTRALE,
-                Kostenart = DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_PROZENT_INVESTITION },
-                Bezuege     = new[] { BEZUG_INVEST_GESAMT },
-                EmpfehlungVon = 1.8, EmpfehlungBis = 2.2
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_INSTANDHALTUNG_BAULICH,
-                Kostenart = DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_PROZENT_INVESTITION },
-                Bezuege     = new[] { BEZUG_INVEST_GESAMT },
-                EmpfehlungVon = 1.0, EmpfehlungBis = 1.5
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_INSTANDHALTUNG_STROMEINSPEISUNG,
-                Kostenart = DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_PROZENT_INVESTITION },
-                Bezuege     = new[] { BEZUG_INVEST_GESAMT },
-                EmpfehlungVon = 1.8, EmpfehlungBis = 2.2
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_PERSONAL,
-                Kostenart = DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_PROZENT_INVESTITION },
-                Bezuege     = new[] { BEZUG_INVEST_GESAMT },
-                EmpfehlungVon = 1.0, EmpfehlungBis = 4.0
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_VERWALTUNG,
-                Kostenart = DbWerte.KOSTENART_SONSTIGE,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_PROZENT_INVESTITION },
-                Bezuege     = new[] { BEZUG_INVEST_GESAMT },
-                EmpfehlungVon = 0.8, EmpfehlungBis = 2.0
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_HILFSENERGIE,
-                Kostenart = DbWerte.KOSTENART_BEDARFSGEBUNDEN,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN },
-                Bezuege     = new[] { BEZUG_BRENNSTOFFKOSTEN }
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_RESERVELEISTUNG,
-                Kostenart = DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_BETRAG },
-                Bezuege     = new[] { BEZUG_KEINE }
-            },
-            new Position
-            {
-                Bezeichnung = DbWerte.VDI_POS_SONSTIGE,
-                Kostenart = DbWerte.KOSTENART_SONSTIGE,
-                Bemessungen = new[] { DbWerte.BEMESSUNG_BETRAG },
-                Bezuege     = new[] { BEZUG_KEINE },
-                FreieBezeichnung = true
-            }
-        };
-
-        /// <summary>Position mit dieser Bezeichnung, oder null.</summary>
-        internal static Position Finde(string bezeichnung)
-        {
-            foreach (Position p in Katalog)
-                if (string.Equals(p.Bezeichnung, bezeichnung, StringComparison.Ordinal)) return p;
-            return null;
-        }
 
         // ------------------------------------------------------------- Der Rechenweg
 

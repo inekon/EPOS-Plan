@@ -443,8 +443,8 @@ namespace WindowsFormsApplication1
         /// VOLLBENUTZUNGSstunden. Taktung und Teillast bildet der Rechenkern nicht ab;
         /// ein Modul, das ein Jahr lang halb moduliert läuft, hat 8.760 Betriebsstunden
         /// und 4.380 thermische Vbh. Genommen wird <c>VbhThermisch</c> — dieselbe
-        /// Größe, die der Betriebskosten-Dialog seit E3 als Bezug „je Stunde" anbietet
-        /// (<see cref="BetriebskostenCtrl.BEZUG_VBH_BHKW"/>) und die
+        /// Größe, die eine Position mit der Bemessung „je Stunde" am BHKW als
+        /// Bezugsgröße trägt — die Vollbenutzungsstunden des BHKW, die
         /// <see cref="DbWerte.BEMESSUNG_EUR_PRO_H"/> als Näherung ausweist. Eine zweite
         /// Wahrheit wäre schlimmer als die benannte Näherung.</description></item>
         /// <item><description><b>Heizkessel (2) und alle übrigen: null.</b> Die
