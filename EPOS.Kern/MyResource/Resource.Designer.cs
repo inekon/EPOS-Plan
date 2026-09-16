@@ -42125,6 +42125,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Automatik wieder übernehmen ähnelt.
+        /// </summary>
+        public static string SIMKONF_KASKADE_AUTOMATIK {
+            get {
+                return ResourceManager.GetString("SIMKONF_KASKADE_AUTOMATIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Reihenfolge dieses Projekts ist von Hand gepflegt; neue Erzeuger kommen nicht mehr von selbst hinein. ähnelt.
+        /// </summary>
+        public static string SIMKONF_KASKADE_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("SIMKONF_KASKADE_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Konfiguration der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
         /// </summary>
         public static string SIMKONF_MSG_WP_KONFIG_FEHLER {

@@ -19224,6 +19224,12 @@ Möchten Sie das zulassen?</value>
   <data name="SIMKONF_TITEL_KONFIGURATION" xml:space="preserve">
     <value>Konfiguration · {0}</value>
   </data>
+  <data name="SIMKONF_KASKADE_GEPFLEGT" xml:space="preserve">
+    <value>Die Reihenfolge dieses Projekts ist von Hand gepflegt; neue Erzeuger kommen nicht mehr von selbst hinein.</value>
+  </data>
+  <data name="SIMKONF_KASKADE_AUTOMATIK" xml:space="preserve">
+    <value>Automatik wieder übernehmen</value>
+  </data>
   <data name="SIMKONF_MSG_WP_KONFIG_FEHLER" xml:space="preserve">
     <value>Die Konfiguration der Wärmepumpe konnte nicht gespeichert werden.</value>
   </data>

@@ -138,6 +138,25 @@
                         </div>
                     }
 
+                    @* #307 - DIE GEPFLEGTE KASKADE WIRD SICHTBAR UND UMKEHRBAR
+                       (Anwenderentscheid 16.09.2026). Wer die Kaskade anfasst, dem
+                       gehoert sie: Nachziehen und Vorwahl greifen dann nicht mehr.
+                       Das ist ein ZUSTAND, kein Fehler - eine ruhige Zeile, kein
+                       Warnbanner, kein rotes Band. Der Handgriff gibt sie der
+                       Automatik zurueck; die Kaskade selbst laesst er unberuehrt.
+                       Ohne Delegat kein Knopf (Hausregel "kein Delegat, kein Knopf"). *@
+                    @if (_daten.KaskadeGepflegt)
+                    {
+                        <p class="epos-simkonfig-gepflegt">
+                            <span class="epos-simkonfig-gepflegt-text">@GepflegtText</span>
+                            @if (Dienste?.AutomatikUebernehmen != null)
+                            {
+                                <button type="button" class="epos-simkonfig-gepflegt-knopf"
+                                        @onclick="AutomatikUebernehmen">@GepflegtKnopf</button>
+                            }
+                        </p>
+                    }
+
                     @foreach (KachelGruppe gruppe in _daten.Gruppen)
                     {
                         <h3 class="epos-simkonfig-gruppe">@gruppe.Titel</h3>
@@ -531,6 +550,13 @@
 
     /// <summary>SIM_KARTE_NICHT_AUFGENOMMEN_KNOPF (#190).</summary>
     [Parameter] public string NichtAufgenommenKnopf { get; set; } = "einblenden";
+
+    /// <summary>SIMKONF_KASKADE_GEPFLEGT (#307) — die ruhige Zeile an der Kaskade.</summary>
+    [Parameter] public string GepflegtText { get; set; }
+        = "Die Reihenfolge dieses Projekts ist von Hand gepflegt; neue Erzeuger kommen nicht mehr von selbst hinein.";
+
+    /// <summary>SIMKONF_KASKADE_AUTOMATIK (#307) — der Handgriff in derselben Zeile.</summary>
+    [Parameter] public string GepflegtKnopf { get; set; } = "Automatik wieder übernehmen";
 
     [Parameter] public string AufnehmenText { get; set; } = "+ aufnehmen";
     [Parameter] public string TipHoch { get; set; } = "In der Kaskade nach vorn";
@@ -1015,6 +1041,21 @@
             int n = LueckeAnzahl;
             return n == 1 ? NichtAufgenommenEiner : string.Format(NichtAufgenommenMehrere, n);
         }
+    }
+
+    /// <summary>
+    /// <b>Die Kaskade der Automatik zurueckgeben</b> (#307). Er setzt die Merkspalte
+    /// auf 0 — im Modell UND in der Datenbank, an derselben EINEN Stelle, die sie
+    /// setzt (<c>SimulationKonfigHuelle</c>), damit es bei EINER Wahrheit bleibt.
+    /// <para><b>Die Kaskade selbst bleibt unberuehrt</b>, und deshalb ist hier auch
+    /// nichts "geaendert": Es entsteht kein ungespeicherter Kaskadenstand. Beim
+    /// naechsten Lesen der Konfiguration greifen Nachziehen und Vorwahl wieder, und
+    /// was dann hineinkommt, sieht der Anwender an Ort und Stelle.</para>
+    /// </summary>
+    private void AutomatikUebernehmen()
+    {
+        Dienste?.AutomatikUebernehmen?.Invoke();
+        KachelnNeuladen();
     }
 
     private void Verschieben(ErzeugerZeile z, int richtung)

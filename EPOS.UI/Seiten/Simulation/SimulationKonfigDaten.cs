@@ -124,6 +124,15 @@ public sealed class SimulationKonfigDaten
 
     /// <summary>true = im Projekt ist eine Photovoltaik aufgenommen (PV-Hinweis des Modus).</summary>
     public bool PvGewaehlt;
+
+    /// <summary>
+    /// <b>Die Kaskade dieses Projekts ist von Hand gepflegt</b>
+    /// (<c>Tab_Einstellungen.Kaskade_Gepflegt</c>). Dann steht an der Kaskade eine
+    /// ruhige Zeile mit dem Handgriff „Automatik wieder uebernehmen" — es ist ein
+    /// ZUSTAND, kein Fehler: kein Warnbanner, kein rotes Band. Steht die Spalte auf
+    /// 0, steht dort nichts.
+    /// </summary>
+    public bool KaskadeGepflegt;
 }
 
 /// <summary>
@@ -190,6 +199,14 @@ public sealed class SimulationKonfigDienste
 
     /// <summary>Setzt den Stromplatz (5 oder 6); leerer Wert = nicht aufnehmen.</summary>
     public Action<int, string>? StromAuswahl;
+
+    /// <summary>
+    /// Gibt die Kaskade dieses Projekts der Automatik zurueck: Die Merkspalte faellt
+    /// auf 0. <b>Die Kaskade selbst bleibt, wie sie ist</b> — beim naechsten Lesen der
+    /// Konfiguration greifen Nachziehen und Vorwahl wieder, und was dann hineinkommt,
+    /// sieht der Anwender an Ort und Stelle. Ohne Delegat gibt es den Handgriff nicht.
+    /// </summary>
+    public Action? AutomatikUebernehmen;
 
     /// <summary>Schreibt <c>Tool_1..6</c> weg; <c>false</c> = fehlgeschlagen.</summary>
     public Func<bool>? Speichern;

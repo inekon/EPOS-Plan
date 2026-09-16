@@ -3631,6 +3631,29 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     text-decoration: underline;
 }
 
+/* #307 - die gepflegte Kaskade. Ein ZUSTAND, kein Fehler: leiser Text ohne
+   Rahmen und ohne Warnflaeche, der Handgriff als Textschalter daneben - bewusst
+   NICHT der Warnklang der Hinweisleiste darueber. */
+.epos-simkonfig-gepflegt {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
+    margin: 0 0 8px 0;
+    color: var(--epos-text-leise);
+    max-width: 640px;
+}
+
+.epos-simkonfig-gepflegt-knopf {
+    border: 0;
+    background: transparent;
+    color: var(--epos-quelle-text);
+    cursor: pointer;
+    padding: 0;
+    font-size: var(--epos-schriftgroesse);
+    text-decoration: underline;
+}
+
 .epos-simkonfig-fuss {
     display: flex;
     flex-direction: column;
