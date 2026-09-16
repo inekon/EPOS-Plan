@@ -1,12 +1,16 @@
 # Systementwurf Gebäudesimulation und ihre Einbindung in EPOS-Plan
 
-**Stand:** 15.09.2026
+**Stand:** 16.09.2026
 **Zweck:** Der Systementwurf der Gebäudesimulation nach VDI 6007 Blatt 1 und ihrer Einbindung in
 EPOS-Plan: Anforderungen, Bausteine und ihre Verantwortlichkeiten, Datenflüsse, Verträge,
 Speicherung, Fehlerbehandlung, Leistung, Nachweis, Abwägungen und Grenzen. Er sagt, **in welchem
 Gerüst** gerechnet, gespeichert, gemeldet und nachgewiesen wird — nicht, **wie** gerechnet wird.
 **Leserkreis:** Projektverantwortung, Entwickler, Agenten.
 
+> **Rev. 3 — Trennung der Rechenwege eingearbeitet (E20):** eine Weiche am Eingang statt zweier
+> Verzweigungspunkte, ein modellfreier Vorbereitungsschritt davor, der Tagesbilanz-Weg als
+> befristetes Modul `Altweg/` mit Ende in Stufe GA, die Oberfläche allein in VDI-6007-Struktur —
+> [`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md).
 > **Rev. 2 — Korrekturen des Gegenlesens vom 15.09.2026 eingearbeitet, Protokoll:**
 > [Gegenlesen](Gebaeudesimulation/2026-09-15_Gegenlesen_Systementwurf.md)
 
@@ -17,7 +21,8 @@ Gerüst** gerechnet, gespeichert, gemeldet und nachgewiesen wird — nicht, **wi
 | Kern-Einbindung, Gebäudedialog, IFC-Import, Stufenfolge | [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) |
 | Zonen, Kopplung, Zonenimport, Stufen G6a–G6d | [`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) |
 | Zuordnungsgerüst, gbXML, Exporte, Importherkunft | [`Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) |
-| Architekturentscheide | [`ADR-001`](ADR-001_Schema-Ausrollung.md) · [`ADR-002`](ADR-002_Stundenmodell_VDI6007_Einbindung.md) · [`ADR-003`](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) · [`ADR-004`](ADR-004_gbXML_LINQ_to_XML.md) · [`ADR-005`](ADR-005_Zonenkopplung_Mehrzonenmodell.md) |
+| Kältebedarf, vierter Kanal, Kälteerzeuger und Deckung, Stufen KU0–KU3 | [`Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md`](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) |
+| Architekturentscheide | [`ADR-001`](ADR-001_Schema-Ausrollung.md) · [`ADR-002`](ADR-002_Stundenmodell_VDI6007_Einbindung.md) · [`ADR-003`](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) · [`ADR-004`](ADR-004_gbXML_LINQ_to_XML.md) · [`ADR-005`](ADR-005_Zonenkopplung_Mehrzonenmodell.md) · [`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md) |
 | Bestandsbefunde, auf denen dieser Entwurf steht | [Befund T — Softwarearchitektur](Gebaeudesimulation/2026-09-15_Befund_T_Softwarearchitektur_Bestand.md) · [Befund U — Dialogführung](Gebaeudesimulation/2026-09-15_Befund_U_Dialogfuehrung_Bestand.md) · [Befund V — Datenmodell](Gebaeudesimulation/2026-09-15_Befund_V_Datenmodell_Architektur.md) |
 | Weitere Befunde | [L — Einbindung Kern](Gebaeudesimulation/2026-09-15_Befund_L_Einbindung_Kern.md) · [M — Gebäudedialog](Gebaeudesimulation/2026-09-15_Befund_M_Gebaeudedialog.md) · [N — IFC-Import](Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md) · [Q — Muster](Gebaeudesimulation/2026-09-15_Befund_Q_Muster_Datenmodell_Dialoge.md) · [R — gbXML](Gebaeudesimulation/2026-09-15_Befund_R_gbXML_Schema_Werkzeuge.md) · [S — IFC-Export](Gebaeudesimulation/2026-09-15_Befund_S_IFC-Export_ohne_Geometriekernel.md) · [H — Rechenzeit](Gebaeudesimulation/2026-09-15_Befund_H_OstWest_Rechenzeit.md) |
 | Hausregeln | Wurzel-[`CLAUDE.md`](../../CLAUDE.md) · [`EPOS.Kern/CLAUDE.md`](../../EPOS.Kern/CLAUDE.md) · [`EPOS.UI/CLAUDE.md`](../../EPOS.UI/CLAUDE.md) · [`EPOS.iOS/CLAUDE.md`](../../EPOS.iOS/CLAUDE.md) |
@@ -40,12 +45,16 @@ welches Papier zuerst hineingeht.
 
 ## 0. Das Ergebnis in sieben Punkten
 
-1. **Die Gebäudesimulation dockt an genau einer Naht an.** Die Wärme eines Gebäudes entsteht in
-   derjenigen Methode, die sie heute erzeugt; sie hat **zwei Aufrufer** — den Lauf und die
-   Auskunft — und **zwei Stellen, an denen die Modellwahl fällt**: die Bedarfsrechnung im Rumpf
-   der Methode und die Flächen- und Bewohnerrechnung, die **vor** ihr läuft und derselben Wahl
-   folgen muss. Eine Naht, zwei Aufrufer, zwei Stellen: Puffer, Kanal, Dauerlinie und Energieprobe
-   bleiben unberührt. Die Fundstellen stehen in 3.1.
+1. **Die Gebäudesimulation dockt an genau einer Naht an — einer Weiche am Eingang (E20).** Die
+   Methode, die heute die Wärme eines Gebäudes erzeugt, wird zur **Fassade**: Sie hat **zwei
+   Aufrufer** — den Lauf und die Auskunft —, sie ruft **einen modellfreien Vorbereitungsschritt**
+   (Bewohner aus der Nutzfläche, Skalierungsfaktor nach E8, Klimareihen) und danach über **eine
+   einzige Weiche** genau ein Rechenmodul: `Gebaeude/` für VDI 6007 oder `Altweg/` für die
+   Tagesbilanz. **Die Module kennen einander nicht.** Neben der Wärmefassade steht die
+   **Kältefassade `SimulationKaeltebedarf` (E21)**: Sie liest denselben Vorbereitungsschritt und
+   wird aus **demselben einen Lauf** des Moduls `Gebaeude/` bedient — die Fassaden verteilen, sie
+   rechnen das Gebäude nicht zweimal. Puffer, Kanal, Dauerlinie und Energieprobe der Wärmeseite
+   bleiben unberührt; die Kälteseite bekommt ihre eigenen. Die Fundstellen stehen in 3.1.
 2. **Das Gerüst ist unverändert Kern → Hülle → Razor-Komponente mit neun Umgebungsdiensten.** Die
    Physik liegt einmal im Kern, die Oberfläche kennt keine Datenbank und keine Fachklasse, die
    Umgebung erreicht der Kern nur über `Dienste.*` (Befund T 1.2, 1.3). Neue Bausteine ordnen sich
@@ -66,10 +75,13 @@ welches Papier zuerst hineingeht.
    Referenzbasis.** Kein statisches Feld schreibt über Gebäude hinweg fort, der Vorlauf gehört in
    den Löser, der Lauf bleibt einfädig, und dasselbe Gebäude zweimal zu rechnen muss byte-gleich
    bleiben — die Verbrauchs-Rückrechnung tut genau das.
-6. **Drei Schritte frieren die Basis neu ein: GB, G1 + G2 und G6d.** GB, weil der Instanzzustand
+6. **Vier Schritte frieren die Basis neu ein: GB, G1 + G2, G6d und GA.** GB, weil der Instanzzustand
    zwei Referenzprojekte ändert; G1 + G2, weil dreizehn Projekte stündlich rechnen; G6d, weil ein
-   Referenzprojekt auf Zonen umgestellt wird. Alle Tabellen-, Saat- und Sichtschritte dazwischen sind
-   ergebnisneutral — **und das ist je Schritt zu belegen, nicht zu behaupten**.
+   Referenzprojekt auf Zonen umgestellt wird; **GA, weil mit dem Altweg das Referenzprojekt des
+   Übergangs auf VDI 6007 umgestellt und der Rückweg-Test eingestellt wird** (E20, Zeitpunkt Q24).
+   Alle Tabellen-, Saat- und Sichtschritte dazwischen sind ergebnisneutral — ebenso die
+   **Verschiebung des Altwegs in sein Modul, die byte-gleich nachzuweisen ist** —, **und das ist je
+   Schritt zu belegen, nicht zu behaupten**.
 7. **Import, Export und Ansicht laufen über ein Gerüst und eine Geometriequelle.** Ein
    Zuordnungsgerüst mit zwei Formatprofilen trägt IFC und gbXML; bis zur ausdrücklichen Übernahme
    wird nichts geschrieben. Die Geometrie, die die Exporte schreiben und die der Gebäudebetrachter
@@ -86,10 +98,10 @@ welches Papier zuerst hineingeht.
 | # | Anforderung | Quelle | Nachweis |
 |---|---|---|---|
 | **F1** | Das 2-K-Modell nach VDI 6007 Blatt 1 rechnet **stündlich** und ist das Vorgabemodell **jedes** Gebäudes, auch eines bestehenden | E1, ADR-002 | Normtestfälle lokal (G0); Referenzlauf G1 + G2 |
-| **F2** | Die Tagesbilanz bleibt als **ausdrücklich wählbare** Ausnahme je Gebäude erhalten und bleibt regressionsgeprüft | E1, ADR-002 | Rückweg-Nachweis: ein Tagesbilanz-Gebäude rechnet gegen die Basis unverändert |
+| **F2** | Die Tagesbilanz bleibt je Gebäude wählbar — als **befristeter Übergangsweg** im eigenen Modul `Altweg/`, nicht als dauerhafte Ausnahme; sie bleibt regressionsgeprüft, solange sie besteht (F18) | E1, **E20**, ADR-002, ADR-006 | Rückweg-Nachweis: ein Altweg-Gebäude rechnet gegen die Basis unverändert; die Verschiebung in das Modul selbst **byte-gleich** |
 | **F3** | Der Gebäudedialog zeigt je Bauteilgruppe bzw. je Bauteil **U, A und U·A** ohne verdeckte Gewichte, darunter H_T, H_ve, H_ges | E2, Konzept N1.6 | bunit-Fall über die U·A-Tabelle; Summenprobe gegen den Löser |
 | **F4** | Eine **Vorschau je Gebäude** rechnet auf demselben Rechenweg wie der Lauf — nie eine zweite Rechnung | Hausregel `EPOS.Kern/CLAUDE.md`; Befund T 7.1 (2) | Datenbankfall: Auskunft und Lauf liefern denselben Vektor |
-| **F5** | Die **Skalierung** (Hochrechnung auf Fläche/Volumen) und die **Verbrauchs-Rückrechnung** bleiben erhalten. Die Skalierung ist **Teil der Modellrechnung**, keine Nachmultiplikation des Ergebnisvektors: Sie steckt heute im Rückgabewert der Tagesrechnung, das Stundenmodell **führt die Verhältnisrechnung Gesamtfläche/Wohnfläche selbst** — sie fällt ihm nicht zu | E8; Umsetzungskonzept 1.5 | Zwei Läufe desselben Gebäudes byte-gleich; Datenbankfall über beide Einheiten |
+| **F5** | Die **Skalierung** (Hochrechnung auf Fläche/Volumen) und die **Verbrauchs-Rückrechnung** bleiben erhalten. Die Skalierung ist **Teil der Modellrechnung**, keine Nachmultiplikation des Ergebnisvektors: Im Altweg steckt sie im Rückgabewert der Tagesrechnung, das Modul `Gebaeude/` **führt die Verhältnisrechnung Projektfläche/Katalogfläche selbst** — es ruft sie nicht aus dem Altweg. Bewohnerzahl aus der Nutzfläche und Skalierungsfaktor liefert der **modellfreie Vorbereitungsschritt** vor der Weiche | E8, E13/E19, **E20**; Umsetzungskonzept 1.5 | Zwei Läufe desselben Gebäudes byte-gleich; Datenbankfall über beide Einheiten |
 | **F6** | Je Gebäude entstehen die Reihen **Raumtemperatur**, **operative Temperatur** und **Kühlbedarf** über 8 760 Stunden | Konzept 4, Umsetzungskonzept 1.4 | drei neue Vektordateien im Referenzlauf-Export |
 | **F7** | Je Gebäude entstehen **acht Kennzahlen**: Jahresheizwärme, Spitze, Tagesmittel der Spitze, 95-%-Wert, Kühlenergie, Stunden mit Kühlbedarf, mittlere Raumtemperatur der Heizzeit und Übertemperaturstunden (im Mehrzonenkonzept M5 „Überhitzungsstunden" — **dieselbe Größe**). **Im Bericht** stehen die fünf des Kennzahlenkatalogs (Schwesterpapier 4.3), **im Referenzlauf-Export** zusätzlich Stunden mit Kühlbedarf und die Gebäudespitze; wer eine der beiden später in den Bericht hebt, gibt ihr dabei eine Aggregationsregel über Gebäude — bei Stunden mit Kühlbedarf wäre eine Summe sinnlos | Umsetzungskonzept 1.4 (sieben Kennzahlen) **und** Befund U 5.2 (Übertemperaturstunden) | Skalare mit Gebäudepräfix in `aggregate.csv`; die fünf Kennzahlen im Bericht |
 | **F8** | Ein **Bauteilkatalog** trägt Baustoffe, Aufbauten und Schichten — als Auslieferungskatalog und als Projektkopie | Konzept 6.3, Mehrzonenkonzept 3 | Katalogeditor-Fälle; Auslieferungsvorlage meldet keinen leeren Katalog |
@@ -102,6 +114,9 @@ welches Papier zuerst hineingeht.
 | **F15** | **Bericht und Kennzahlen** führen die neuen Größen je Gebäude, im Mehrzonenfall zusätzlich je Zone | Konzept 9, Mehrzonenkonzept 7 | Berichtsprobe; `Proben/ChartProben` für jedes neue Bild |
 | **F16** | Der **Referenzlauf-Export** trägt die neuen Reihen und Skalare — **nur** für Gebäude im neuen Modell | Umsetzungskonzept 1.8; Befund L 4.3 | Vergleich gegen die Basis: `GESAMT: PASS`, keine unbedingte neue Datei |
 | **F17** | Ein **Gebäudebetrachter** zeigt Grundriss je Geschoss und schematische Körper aus **einem** Zonengeometrie-Modell des Kerns — eine Komponente, ein Umschalter; die Kennzeichnung **„schematisch" steht sichtbar am Bild**, nicht nur in der Datei, und jede Zone weist aus, ob ihr Polygon aus Raumgrenzen oder aus der Rechteckherleitung stammt | **E11**, Datenaustausch Kapitel 14 | bunit-Fall über die Ansicht; Probe „Determinismus der Geometrie" (gleiche Eingabe, gleiche Polygone, byteweise gleicher Export) |
+| **F18** | Der **Altweg ist ein Übergang mit Ende**: Er liegt in einem eigenen, abgeschlossenen Modul, bekommt **keine neue Funktion** (nur Fehlerbehebung), ruft nichts aus dem VDI-Weg und wird von ihm nicht gerufen. **Stufe GA** entfernt Modul, Weiche, Rechenweg-Schalter und die Altweg-Spalten und weist ein Gebäude auf dem Altweg bis dahin als **„Tagesbilanz (Übergangsweg)"** aus | **E20**, ADR-006 | byte-gleicher Referenzlauf über die Verschiebung; GA ist Einfrierschritt (8.3), Zeitpunkt **Q24** |
+| **F19** | Die **Oberfläche folgt allein der VDI-6007-Struktur**: Gebäude-, Katalog-, Skalierungs- und Bedarfsdialog nach den Eingaben des VDI-Wegs, die Modellparameter **immer sichtbar und bearbeitbar**. Felder, die nur der Altweg liest, erscheinen ausschließlich bei einem Altweg-Gebäude im **eingeklappten Abschnitt „Übergang: Tagesbilanz"** und entfallen mit ihm; der Schalter heißt **„Rechenweg"** (Vorgabe „VDI 6007", Wert „Tagesbilanz (Übergang)") | **E20**, E2, E13/E19, ADR-006 | bunit-Fälle über Dialogstruktur und Übergangsabschnitt; kein Dialogfall kennt einen Modellzustand mehr |
+| **F20** | Der **Kältebedarf wird analog zum Wärmebedarf simuliert, dargestellt und gedeckt**: eigene Fassade `SimulationKaeltebedarf` neben `SimulationWaermebedarf`, beide aus **demselben** Vorbereitungsschritt und **einem** Lauf des Moduls `Gebaeude/` (Heiz- und Kühllast je Stunde, **keine zweite Gebäuderechnung**); Ergebnis ist der vierte Kanal `KUEHLUNG` mit eigener Summe, eigener Spitze, eigener Dauerlinie, eigenem Deckungszweig, eigenen Kennzahlen, Berichts-, Wirtschaftlichkeits- und Emissionszeilen. **Auf der Kälteseite gibt es keinen Altweg:** ein Altweg-Gebäude liefert Kältebedarf **0 mit benanntem Hinweis**, nie stillschweigend | **E21**, E12, E20 | Symmetrieprobe: zu jeder Kennzahl, jedem Bild und jedem Deckungsweg der Wärmeseite steht das Gegenstück der Kälteseite; Probe „Altweg-Gebäude liefert Kältebedarf 0 **mit Hinweis**"; Probe „ein Lauf, zwei Reihen" |
 
 ### 1.2 Nichtfunktionale Anforderungen
 
@@ -122,27 +137,28 @@ welches Papier zuerst hineingeht.
 
 | # | Randbedingung | Wirkung auf den Entwurf |
 |---|---|---|
-| **B1** | **Die Entscheide E1–E11 sind verbindlich** (Tabelle unten) | sie sind nicht Gegenstand einer Abwägung, sondern deren Ausgangspunkt |
-| **B2** | [`ADR-002`](ADR-002_Stundenmodell_VDI6007_Einbindung.md) **angenommen** — Stundenmodell als Vorgabe, eine Naht, Basis neu einfrieren | kein zweiter Rechenweg, keine zweite Kennzahlenmenge |
+| **B1** | **Die Entscheide E1–E21 sind verbindlich** — E1–E11 im Wortlaut ihrer Wirkung in der Tabelle unten, die späteren dort, wo sie wirken: E12 in B9 und Abwägung 10, E16/E17 in B4/B5, E13/E19 in F5 und F19, **E20 in F18, F19, B15, Kapitel 2, 3.1 und Abwägung 11**, **E21 in F20, B9, Kapitel 2, 3.1, V15 und 8.2** | sie sind nicht Gegenstand einer Abwägung, sondern deren Ausgangspunkt |
+| **B2** | [`ADR-002`](ADR-002_Stundenmodell_VDI6007_Einbindung.md) **angenommen** — Stundenmodell als Vorgabe, eine Naht, Basis neu einfrieren; sein **Ergänzungsvermerk** führt die eine Naht in der Form aus, die E20 verlangt: als **Weiche am Eingang** | kein zweiter Rechenweg im Rumpf, keine zweite Kennzahlenmenge; die Modellwahl fällt an genau **einer** Stelle |
 | **B3** | [`ADR-003`](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) **angenommen** — xBIM unverändert, allein `Xbim.IO.MemoryModel` | kein `IfcStore`, kein Esent, kein `Xbim.Geometry`; CDDL-Auflage ist eine Auslieferungsauflage |
 | **B4** | [`ADR-004`](ADR-004_gbXML_LINQ_to_XML.md) **angenommen** (E16) — gbXML über LINQ to XML | F12 hat seinen Leseweg: kein Paket, keine Code-Erzeugung, Import tolerant |
 | **B5** | [`ADR-005`](ADR-005_Zonenkopplung_Mehrzonenmodell.md) **angenommen** (E17) — Nachbarraum-Randbedingung, Gauß-Seidel je Stunde, Zonen-Luftaustausch als Paare | F10 hat sein Lösungsschema; das Zonennetz bleibt unverändert, Messpflicht mit Prüforakel für zwei Zonen |
 | **B6** | [`ADR-001`](ADR-001_Schema-Ausrollung.md) — jede Schemaänderung ist ein nummerierter Schritt über `SchemaMigration` | drei Eintragungen je neuer Tabelle: Migrationsschritt, Auslieferungsvorlage, Schemapflege der Testdatenbank (Befund T 1.2) |
 | **B7** | **Die Hausregeln der vier `CLAUDE.md`** | Fachänderung einmal im Kern; keine Datenbank in der Oberfläche; Umgebung nur über `Dienste.*`; in `EPOS.iOS` nichts Fachliches |
 | **B8** | **Feste Raster** 8 760 Stunden, 168 Wochenstunden, 365 Tage, 12 Monate, kein Schaltjahr | der Löser rechnet Blockstunden auf diesem Raster; Vorlauf zählt nicht zum Jahr |
-| **B9** | **Drei Kanäle** — `HEIZUNG`, `BRAUCHWASSER`, `PROZESS` (`Kanal.ANZAHL = 3`, `EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs:429-438`) —, **und Kühlung ist keiner** | der Kühlbedarf ist eine informative Reihe je Gebäude, er geht in keinen Kanal und in keine Erzeugerrechnung; ein Kühlkanal wäre der **vierte** (Abwägung 10). **Nachtrag E12 (16.09.2026): Kühlung wird als vierter Kanal aufgenommen; die Folgen regelt das Kühlkonzept** (Konzept N1.18) |
+| **B9** | **Vier Kanäle** — `HEIZUNG`, `BRAUCHWASSER`, `PROZESS` und **`KUEHLUNG`** (E12); der Bestand führt drei (`Kanal.ANZAHL = 3`, `EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs:429-438`) | Der Kühlbedarf ist keine bloß informative Reihe mehr, sondern ein **gedeckter Bedarf**. **Die Kälteseite bleibt dabei von der Wärmeseite getrennt (E21):** eigene Summe, eigene Spitze, eigene Dauerlinie, eigene Erzeugerkaskade, eigener Deckungszweig — der Kühlkanal geht in **keine** Summen-, Dauerlinien-, Maximum- und Netzverlustrechnung der Wärmeseite ein. Die Folgen im Einzelnen regelt das [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) |
 | **B10** | **SQLite, `STRICT`, Beziehungen über IDs**, Boolean als 0/1 mit `CHECK`, Zugriff nur über `DataRepository` mit `?`-Parametern | keine neuen Textverweise; kein zusammengesetzter SQL-Text; nach jeder Anweisung der `SqlDialektPruefer` |
 | **B11** | **Kein Fremdpaket an iOS ohne Messung** | ein Paket, das der Gerätebau nicht trägt, gehört hinter eine Schnittstelle mit Fabrik in der Schale (Muster `IFlottenPlaner`) |
 | **B12** | **CI-Kontingent und Rückfragepflicht** — vor jedem macOS-, iOS- und Setup-Lauf beim Anwender nachfragen, jedes Mal | der Nachweis der Stufen liegt auf `kern.yml` (ubuntu); ein iOS-Lauf ist nur begründet, wenn die iOS-Hülle selbst betroffen ist |
 | **B13** | **Normzahlen liegen nicht im Repositorium** | der Normfallnachweis ist ein lokaler Nachweis; die Lücke im Gate gehört ins Protokoll, nicht in eine Datei |
 | **B14** | **Referenzbasis und Toleranz** — aktuell `2026-09-11_R7_Speicherflotte`, Toleranz Betrag ≥ 1 relativ 1e-4, sonst absolut 0,01; der Byte-Vergleich ist Information | jede Stufe rechnet gegen die **aktuelle** Basis; eine Datei, die nur im neuen Lauf liegt, ist ohne Schalter FAIL |
+| **B15** | [`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md) **angenommen** (E20) — zwei getrennte Module, **eine** Weiche am Eingang, ein modellfreier Vorbereitungsschritt davor, der Altweg befristet bis Stufe GA, die Oberfläche in **einer** Struktur | der VDI-Weg ruft nichts aus dem Altweg und der Altweg nichts aus dem VDI-Weg; kein zweites Datenmodell; **A16 gegenstandslos**, **U2 überholt**, **A15 auf die Dauer des Übergangs befristet** |
 
 **Die elf Entscheide im Wortlaut ihrer Wirkung** (Quelle: Konzept-Nachtrag 1 und
 [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md)):
 
 | # | Entscheid |
 |---|---|
-| **E1** | Stundenmodell für **alle** Gebäude, auch bestehende; Tagesbilanz nur als ausdrücklich wählbare Ausnahme; `Gebaeude_Modell = NULL` bedeutet **VDI 6007** |
+| **E1** | Stundenmodell für **alle** Gebäude, auch bestehende; `Gebaeude_Modell = NULL` bedeutet **VDI 6007**. Die Tagesbilanz bleibt je Gebäude wählbar — nach E20 als **befristeter Übergangsweg** im eigenen Modul `Altweg/`, nicht als dauerhafte Ausnahme |
 | **E2** | Bestandsgewichte gestrichen; **U·A je Bauteil** im Dialog, ohne verdeckte Faktoren |
 | **E3** | **xBIM unverändert** als NuGet-Paket unter CDDL-1.0, allein `Xbim.IO.MemoryModel`; kein `IfcStore`, kein Esent, kein `Xbim.Geometry`; Lizenztext und Quellenverweis im Installationspaket |
 | **E4** | **Einfrierschritt GB vor G1** (Instanzzustand, Ferienwarnungen, Korrektur der Bauweise eines Gebäudes), dazu die vierte Einfrierregel |
@@ -174,9 +190,11 @@ flowchart TB
     HUE["Huellen Gebaeudebereich<br/>DTO bauen, Bilder vorab, Fadenwechsel"]
     KOMP["Razor-Komponenten<br/>Gebaeude, Katalog, Zonen, Zuordnung, Ansicht"]
     CTRL["Kern-Controller<br/>lesen und schreiben"]
-    LAUF["Lauf und Kernnaht<br/>SimulationWaermebedarf"]
+    LAUF["Fassaden und Weiche<br/>SimulationWaermebedarf, SimulationKaeltebedarf"]
+    VOR["Vorbereitungsschritt — modellfrei<br/>Bewohner aus der Nutzflaeche, Skalierung E8, Klimareihen"]
+    ALT["Modul Altweg — befristeter Uebergang<br/>Tagesbilanz, ohne neue Funktion, ohne Kaelteseite"]
     EING["Eingangsbau und Pruefung<br/>Randbedingungen, Geschwisterpruefung"]
-    PHY["Gebaeudephysik im Kern<br/>Loeser, Ersatzparameter, Kopplung"]
+    PHY["Modul Gebaeude — VDI 6007<br/>Loeser, Ersatzparameter, Kopplung<br/>EIN Lauf: Heiz- und Kuehllast"]
     GEOM["Zonengeometrie-Modell<br/>Polygon, Hoehe, Geschoss, Kantenzuordnung"]
     ABL["Importablauf im Kern<br/>Abbild, Satz, Zuordnung, Uebernahme"]
     LES["Leser und Schreiber<br/>IFC, gbXML"]
@@ -197,6 +215,8 @@ flowchart TB
   HUE --> GEOM
   CTRL --> DB
   CTRL --> LAUF
+  LAUF --> VOR
+  LAUF --> ALT
   LAUF --> EING
   EING --> PHY
   LAUF --> PHY
@@ -214,18 +234,25 @@ flowchart TB
   ABL -. "IGebaeudeLeser / IGebaeudeSchreiber" .-> LES
 ```
 
-**Drei Kanten, die es ausdrücklich nicht gibt.** Die Razor-Komponente kennt die Hülle **nicht** —
+**Vier Kanten, die es ausdrücklich nicht gibt.** Die Razor-Komponente kennt die Hülle **nicht** —
 `EPOS.UI.Daten` verweist auf `EPOS.UI`, nie umgekehrt (`EPOS.UI.Daten/EPOS.UI.Daten.csproj:52`;
 `EPOS.UI/EPOS.UI.csproj:44` verweist allein auf `EPOS.Kern`); der Rückweg im Bild ist der
 Ergebnis-Record, also Datenfluss. Der **Leser** kennt den Controller nicht: Er füllt ein
-formatfreies Abbild, das Schreiben macht der Ablauf über den Controller. Und **Bericht und Export
-lesen die Physik**, nicht umgekehrt — die Physik kennt keinen ihrer Abnehmer.
+formatfreies Abbild, das Schreiben macht der Ablauf über den Controller. **Bericht und Export
+lesen die Physik**, nicht umgekehrt — die Physik kennt keinen ihrer Abnehmer. Und der **Altweg
+kennt das Modul `Gebaeude/` nicht, das Modul `Gebaeude/` den Altweg nicht** (E20): Was beide
+brauchen, reicht die Fassade aus dem Vorbereitungsschritt herein — er steht im Bild an der
+Fassade, weil **sie** ihn ruft und sein Ergebnis in genau ein Modul gibt. Das ist der Grund, aus
+dem es zwischen den beiden Modulen keine Kante gibt und auch keine geben darf.
 
 ### 2.2 Wer welche Frage beantwortet — und welchen Typ er nicht kennen darf
 
 | Baustein | Beantwortet die Frage | Kennt **nicht** |
 |---|---|---|
-| **Gebäudephysik im Kern** (Löser, Ersatzparameter, Bauteilreduktion, Zonenkopplung) | „Welche Heizlast, welche Temperatur, welcher Kühlbedarf entsteht in dieser Stunde?" | Datenbank, `Dienste.*`, Protokollkanal, Ressourcen, Oberfläche. Reine Rechnung auf `double`, Zustand an der Instanz |
+| **Fassaden und Weiche** (`SimulationWaermebedarf`, `SimulationKaeltebedarf`) | „Auf welchem Rechenweg steht dieses Gebäude, und wohin gehen seine beiden Reihen?" | die Physik beider Module von innen. Sie **verteilen**, sie rechnen nicht: die Weiche ruft **genau ein** Modul, und die Kältefassade rechnet das Gebäude **nicht ein zweites Mal** (E21) |
+| **Vorbereitungsschritt** (modellfrei) | „Wie viele Bewohner, welcher Skalierungsfaktor, welche Klimareihen gehören zu diesem Gebäude?" | **jedes Rechenmodell** — er fragt nie, auf welchem Weg gerechnet wird, und er ruft weder den Altweg noch das Modul `Gebaeude/` |
+| **Modul `Gebaeude/`** — VDI 6007 (Löser, Ersatzparameter, Bauteilreduktion, Zonenkopplung) | „Welche Heizlast, welche Temperatur, welcher Kühlbedarf entsteht in dieser Stunde?" | Datenbank, `Dienste.*`, Protokollkanal, Ressourcen, Oberfläche **und den Altweg**. Reine Rechnung auf `double`, Zustand an der Instanz; **ein** Lauf liefert Heiz- **und** Kühllast |
+| **Modul `Altweg/`** — Tagesbilanz, befristet (E20) | „Welchen Wattvektor liefert der Übergangsweg für dieses Gebäude?" | das Modul `Gebaeude/`, den Vorbereitungsschritt als Aufrufziel **und die Kälteseite** — er liefert keinen Kältebedarf. Er bekommt **keine neue Funktion** und endet mit Stufe GA |
 | **Eingangsbau** | „Wie sehen die 8 760 Randbedingungen dieses Gebäudes aus?" | die Oberfläche; er liest **fertige** Modelle und Klimareihen, nie die Datenbank selbst |
 | **Geschwisterprüfung** | „Passen Flächen, Hülle, Trennflächen und Luftströme dieses Gebäudes zueinander?" | Anzeigetexte — sie liefert Meldungsschlüssel und invariante Werte, nie Sätze |
 | **Kern-Controller** | „Welche Zeilen stehen in der Datenbank, und wie kommen meine hinein?" | WinForms, Razor, `MessageBox`, Dateipfade außerhalb von `Dienste.*` |
@@ -251,55 +278,82 @@ Vier Flüsse, getrennt zu betrachten: der **Lauf**, die **Auskunft**, der **Impo
 
 ### 3.1 Der Lauf — von den Klimareihen bis zum Bericht
 
-**Bild 2 — der Lauf mit der Modellwahl an beiden Stellen.** Die Flächen- und Bewohnerrechnung läuft
-**vor** der Verzweigung des Bedarfs und folgt derselben Modellwahl.
+**Bild 2 — der Lauf mit einer Weiche am Eingang.** Ein modellfreier Vorbereitungsschritt läuft
+**vor** der Weiche; die Weiche ruft **genau ein** Modul. Die Kältefassade nimmt ihre Reihe aus
+**demselben** Lauf des Moduls `Gebaeude/` (E21).
 
 ```mermaid
 sequenceDiagram
   autonumber
   participant R as SimulationRunner
-  participant W as SimulationWaermebedarf
-  participant G as Gebaeudezeile
+  participant W as Fassade Waermebedarf
+  participant V as Vorbereitungsschritt
+  participant A as Modul Altweg
   participant E as Eingangsbau
-  participant L as Loeser 2-K
+  participant L as Modul Gebaeude — Loeser 2-K
   participant P as Protokollkanal
-  participant K as Kanal HEIZUNG
+  participant KW as Kanal HEIZUNG
+  participant KK as Fassade Kaeltebedarf und Kanal KUEHLUNG
   participant B as Bericht und Export
 
   R->>W: Waermebedarf rechnen
   loop je Gebaeudezeile
-    W->>G: Einheit lesen
+    W->>V: Vorbereitung — modellfrei, kennt kein Rechenmodell
     alt Verbrauchseinheit
-      W->>W: Bewohner_und_Flaeche_berechnen :613, Aufruf :575<br/>ERSTER Verzweigungspunkt :647 — laeuft VOR dem zweiten,<br/>folgt derselben Modellwahl
-    else Wohnflaeche
-      W->>W: Bewohner aus Wohnflaeche :569
+      V->>V: Rueckrechnung auf die Flaeche,<br/>Bewohner aus der Nutzflaeche
+    else Nutzflaeche
+      V->>V: Bewohner aus der Nutzflaeche
     end
-    alt Gebaeude_Modell = TAGESBILANZ
-      W->>W: Tagesmodell wie bisher, ZWEITER Verzweigungspunkt :581
-    else NULL oder VDI6007
+    V-->>W: Bewohner, Skalierungsfaktor E8, Klimareihen
+    alt Rechenweg = Tagesbilanz — Uebergang
+      W->>A: Tagesbilanz rechnen
+      A-->>W: HeizlastW 8760 in WATT
+      A-->>P: Hinweis — Altweg liefert keinen Kaeltebedarf
+    else Rechenweg = VDI 6007 — Vorgabe, NULL
       W->>E: Randbedingungen 8760 h bauen
       E->>L: Ersatzparameter und acht Reihen
       L-->>W: HeizlastW 8760 in WATT, Reihen, Kennzahlen
+      L-->>KK: KuehlbedarfKwh 8760 — derselbe Lauf
       L-->>P: Warnung bei Grenzwert oder Nichtkonvergenz
     end
-    W->>K: Wattpuffer in den Heizkanal addieren
+    W->>KW: Wattpuffer in den Heizkanal addieren
   end
   W->>W: Kanal EINMAL nach kW
   R->>B: Kennzahlen, Reihen, Gebaeudeergebnisse
 ```
 
-**Die Naht im Wortlaut ihrer Fundstellen.** Die Wärme eines Gebäudes entsteht in
+**Die Naht im Wortlaut ihrer Fundstellen.** Die Wärme eines Gebäudes entsteht heute in
 `SimulationWaermebedarf.HeizwaermeEinesGebaeudes`
 (`EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs:566`, Rumpf bis `:611`). Sie hat **zwei
 Aufrufer** — den Lauf (`…/SimulationWaermebedarf.cs:197`) und die Auskunft
-(`EPOS.Kern/Controller/GebaeudeBedarfCtrl.cs:117`) — und **zwei Verzweigungspunkte**, die nicht
-beide in ihrem Rumpf liegen. Der **erste** steht in der Flächen- und Bewohnerrechnung
-`Bewohner_und_Flaeche_berechnen` (`:613-656`, gerufen bei `:575`, Tagesmodellruf `:647`), der
-**zweite** im Rumpf selbst (`:581`). Die Rückrechnung läuft also **vor** der Modellwahl des Bedarfs
-und nicht hinter ihr, und sie **muss derselben Modellwahl folgen** — die Zählung ist die des
-Schwesterpapiers 4.1. ADR-002, Entscheidung 3, sagt genau das: „Die
-Flächen- und Bewohnerrechnung, die vor der Verzweigung läuft und selbst das Tagesmodell ruft, folgt
-derselben Modellwahl."
+(`EPOS.Kern/Controller/GebaeudeBedarfCtrl.cs:117`) — und im Bestand **zwei Stellen, an denen das
+Tagesmodell hängt**: die Flächen- und Bewohnerrechnung `Bewohner_und_Flaeche_berechnen`
+(`:613-656`, gerufen bei `:575`, Tagesmodellruf `:647`) und den Rumpf selbst (`:581`). **Beide
+Stellen werden aufgelöst, nicht verzweigt** (E20):
+
+1. Was an `:613-656` **modellfrei** ist — Bewohnerzahl aus der Nutzfläche, Skalierungsfaktor nach
+   E8, Klimareihen —, wird zum **Vorbereitungsschritt** vor der Weiche. Er kennt kein Rechenmodell
+   und ruft keines.
+2. Was an `:581` und `:647` **Tagesbilanz** ist, wandert **Zeichen für Zeichen** in das Modul
+   `Altweg/` — ohne neue Funktion, mit einem **byte-gleichen** Referenzlauf als Abnahme.
+3. `SimulationWaermebedarf` bleibt als **Fassade** stehen und trägt die **eine Weiche**: Sie liest
+   den Rechenweg des Gebäudes und ruft genau ein Modul. **Einen zweiten Verzweigungspunkt gibt es
+   nicht** — die frühere Architekturfrage nach seinem Zuschnitt ist damit gegenstandslos.
+
+ADR-002, Entscheidung 3, verlangte, dass die Flächen- und Bewohnerrechnung „derselben Modellwahl
+folgt". Der Ergänzungsvermerk zieht daraus die schärfere Folge: Sie folgt keiner Modellwahl mehr,
+weil sie keine mehr kennt — sie läuft davor. Damit kann die Skalierung zwei Modelle nicht mehr
+mischen; die Bedingung ist nicht mehr einzuhalten, sondern strukturell erfüllt.
+
+**Die zweite Fassade (E21).** Neben `SimulationWaermebedarf` steht `SimulationKaeltebedarf` mit
+demselben Aufbau: dieselben zwei Aufrufer, derselbe Vorbereitungsschritt, dieselbe
+Gebäudeschleife — und **kein eigener Rechengang**. Das Modul `Gebaeude/` liefert Heiz- und
+Kühllast je Stunde aus **einem** Lauf (Vorzeichenregel „Norm innen, Betrag außen"); die Fassaden
+**verteilen** diese beiden Reihen auf die Kanäle `HEIZUNG` und `KUEHLUNG`. Eine zweite
+Gebäuderechnung für die Kälteseite gäbe es nicht nur doppelte Rechenzeit, sie könnte auch
+auseinanderlaufen. **Der Altweg hat keine Kälteseite:** Ein Gebäude auf dem Übergangsweg liefert
+Kältebedarf **0 mit benanntem Hinweis** im Protokollkanal — nicht stillschweigend, damit eine 0 im
+Kühlkanal nie als Rechenergebnis missverstanden wird.
 
 **Was dabei gilt.**
 
@@ -313,9 +367,9 @@ derselben Modellwahl."
   `EPOS.Kern.Tests/EinheitenWacheTests.cs:10-24`). Der Bestand hat eine **dritte**:
   `GebaeudeBedarfCtrl.Rechnen` bildet die Jahressumme selbst —
   `ergebnis.HeizwaermeMwh = werte.Sum() / 1000` (`EPOS.Kern/Controller/GebaeudeBedarfCtrl.cs:130`),
-  zeichengleich zum Lauf und deshalb dort bewusst so geschrieben. Sie bleibt: Der Tagesbilanz-Weg
-  liefert nur einen Wattvektor, und eine Auskunft, die eine zweite Rechnung führte, wäre der
-  schwerere Fehler. Festlegung dieses Entwurfs, gleichlautend mit dem Schwesterpapier 1.7: Die
+  zeichengleich zum Lauf und deshalb dort bewusst so geschrieben. Sie bleibt, solange der Altweg
+  besteht: Er liefert nur einen Wattvektor, und eine Auskunft, die eine zweite Rechnung führte,
+  wäre der schwerere Fehler. Festlegung dieses Entwurfs, gleichlautend mit dem Schwesterpapier 1.7: Die
   dritte Naht wird **benannt und in die Regel aufgenommen** — drei Nähte, alle drei im Kern —, und
   für Gebäude im Stundenmodell bildet die Ergebnisklasse die Jahressumme, die der Controller dann
   durchreicht. Damit stimmt der Satz des Umsetzungskonzepts 1.4 („umgerechnet wird im Kern,
@@ -323,28 +377,37 @@ derselben Modellwahl."
   **Eine vierte Naht entsteht nicht.**
 - Die **Liste der Gebäudeergebnisse** hängt an der Simulationsinstanz, an der Stelle des toten
   `MaxP`; sie verlässt den Lauf über Bericht und Export, nicht über die Datenbank.
-- **Der Tagesmodellruf `:647` verzweigt mit.** Käme der Vergleichswert der Rückrechnung aus dem
-  Tagesmodell und der Bedarf aus VDI 6007, mischte die Skalierung zwei Modelle — genau das
-  verbietet ADR-002, Entscheidung 3, für die Flächen- und Bewohnerrechnung ausdrücklich.
-- **Eine Vorbedingung des Bestandswegs darf das Stundenmodell nicht erben.** Der Abbruch bei
-  fehlender Tagesverteilung steht heute **hinter** dem zweiten Verzweigungspunkt
+- **Der Vorbereitungsschritt ist modellfrei — das ist seine ganze Aufgabe.** Käme der
+  Vergleichswert der Rückrechnung aus dem einen und der Bedarf aus dem anderen Modul, mischte die
+  Skalierung zwei Rechenwege. Der Bestand verhindert das durch eine Bedingung („beide Stellen
+  verzweigen gemeinsam"), der Entwurf durch den Zuschnitt: Was vor der Weiche liegt, kann keinem
+  Modul folgen. Die Verhältnisrechnung selbst führt jedes Modul für sich — das Modul `Gebaeude/`
+  **baut sie nach**, es ruft sie nicht aus dem Altweg (F5).
+- **Eine Vorbedingung des Altwegs kann das Modul `Gebaeude/` nicht erben.** Der Abbruch bei
+  fehlender Tagesverteilung steht heute im Rumpf
   (`…/SimulationWaermebedarf.cs:590-595`, Warnung `SIMENG_TAGESVERTEILUNG_FEHLT`, `return false`).
-  Das Stundenmodell braucht keine Tagesverteilung. **Für den Punkt im Rumpf (`:581`) ist der
-  Zuschnitt entschieden:** Das Umsetzungskonzept 1.5 legt fest, dass im Stundenzweig der ganze
-  Tagesverteilungsblock entfällt — samt diesem Abbruch, den das Stundenmodell deshalb nicht erbt.
-  Offen ist allein, ob der Tagesmodellruf `:647` denselben Zuschnitt bekommt und wie die Modellwahl
-  dorthin gelangt (Schwesterpapier Kapitel 6, **A16**); der Entwurf verlangt nur, dass ein
-  Stundenmodell-Gebäude **nicht** am fehlenden Tagesprofil scheitert.
+  Er **wandert mit dem Tagesbilanz-Weg in das Modul `Altweg/`** und bleibt dort, was er ist. Das
+  Modul `Gebaeude/` braucht keine Tagesverteilung, es liest sie nicht und ruft den Altweg nicht —
+  ein VDI-Gebäude kann an einem fehlenden Tagesprofil also gar nicht mehr scheitern. Das ist die
+  Wirkung der Trennung: Was früher als Zuschnitt einer Verzweigung zu entscheiden war, entscheidet
+  jetzt die Modulgrenze.
+- **Die Kälteseite hängt an derselben Grenze (E21).** Der Kühlbedarf entsteht im Modul `Gebaeude/`
+  und nirgends sonst; er geht über die Kältefassade in den Kanal `KUEHLUNG` und **nicht** in
+  Summe, Dauerlinie, Maximum oder Netzverlustverteilung der Wärmeseite (B9). Ein Altweg-Gebäude
+  trägt in diesem Kanal eine **0 mit Hinweis**, kein Rechenergebnis.
 
 ### 3.2 Die Auskunft — eine Rechnung, kein zweiter Rechenweg
 
 Der Bedarfsdialog ruft denselben Weg wie der Lauf: `HeizwaermeEinesGebaeudes` über
-`GebaeudeBedarfCtrl` (`EPOS.Kern/Controller/GebaeudeBedarfCtrl.cs:117`), mit denselben Tabellen und
-derselben Verzweigung. Neu ist allein ein **vierter Parameter für das erzwungene Modell**
-(`null` = der Spaltenwert). Er wirkt ausschließlich auf der **gelesenen** Instanz, schreibt nichts
-und dient dem Vergleich beider Wege im Dialog. *Eine Auskunft ruft den Rechenweg des Laufs, sie
-schreibt ihn nicht ab* — das ist keine Stilfrage, sondern die Bedingung dafür, dass Vorschau und
-Bericht nie auseinanderlaufen.
+`GebaeudeBedarfCtrl` (`EPOS.Kern/Controller/GebaeudeBedarfCtrl.cs:117`), mit denselben Tabellen,
+demselben Vorbereitungsschritt und **derselben Weiche**. Neu ist allein ein **vierter Parameter für
+den erzwungenen Rechenweg** (`null` = der Spaltenwert). Er wirkt ausschließlich auf der
+**gelesenen** Instanz, schreibt nichts und trägt den **Vergleich alt/neu im Bedarfsdialog**. Dieser
+Vergleich ist eine **Übergangshilfe: Er entsteht mit G2 und entfällt mit Stufe GA**, weil es
+danach nur noch einen Rechenweg gibt, mit dem sich vergleichen ließe. Der Abschnitt „Kältebedarf"
+desselben Dialogs zeigt die Kälteseite **nach demselben Muster** (E21) — aus derselben Rechnung,
+nicht aus einer zweiten. *Eine Auskunft ruft den Rechenweg des Laufs, sie schreibt ihn nicht ab* —
+das ist keine Stilfrage, sondern die Bedingung dafür, dass Vorschau und Bericht nie auseinanderlaufen.
 
 ### 3.3 Der Import — von der Datei bis ins Projekt
 
@@ -439,7 +502,7 @@ Dateiwahl aus der Hülle, Ablauf im Kern, Schreiben nur über den Controller.
 
 ## 4. Schnittstellen und Verträge
 
-Vierzehn Verträge tragen die Gebäudesimulation. Je Vertrag stehen Zweck, Eingaben, Ausgaben mit
+Fünfzehn Verträge tragen die Gebäudesimulation. Je Vertrag stehen Zweck, Eingaben, Ausgaben mit
 Einheit, Fehlerfall und derjenige, der ihn belegt. **Die Signaturen, Klassennamen und Ablageorte
 stehen im Schwesterpapier, Kapitel 1.3 bis 1.5** — dieses Kapitel nennt, *was* über die Naht geht,
 nicht *wie* sie heißt.
@@ -450,6 +513,22 @@ nicht *wie* sie heißt.
 classDiagram
   class SimulationWaermebedarf {
     +bool HeizwaermeEinesGebaeudes(gebaeude, index, zielWatt)
+    +Weiche: liest den Rechenweg, ruft EIN Modul
+  }
+  class SimulationKaeltebedarf {
+    +bool KaeltebedarfEinesGebaeudes(gebaeude, index, zielKwh)
+    +kein eigener Rechengang
+  }
+  class Vorbereitungsschritt {
+    +Bewohner aus der Nutzflaeche
+    +Skalierungsfaktor E8
+    +Klimareihen
+    +modellfrei
+  }
+  class Altweg {
+    +Tagesbilanz, unveraendert
+    +keine neue Funktion
+    +kein Kaeltebedarf
   }
   class GebaeudeModellEingang {
     +Bauen(gebaeude, solarOrtszeit, wochenende, laengengrad, breitengrad)
@@ -504,9 +583,13 @@ classDiagram
     +ImportBilanz
   }
 
+  SimulationWaermebedarf --> Vorbereitungsschritt
+  SimulationKaeltebedarf --> Vorbereitungsschritt
+  SimulationWaermebedarf --> Altweg
   SimulationWaermebedarf --> GebaeudeModellEingang
   GebaeudeModellEingang --> ErsatzparameterRC
   SimulationWaermebedarf --> GebaeudeModellErgebnis
+  SimulationKaeltebedarf --> GebaeudeModellErgebnis
   Gebaeudepruefung ..> GebaeudeModellEingang
   IGebaeudeLeser <|.. IfcLeser
   IGebaeudeLeser <|.. GbxmlLeser
@@ -538,10 +621,10 @@ zurückfallen. Für den Gebäudeimport ist die asynchrone Form Pflicht — dass 
 
 | # | Vertrag | Eingaben | Ausgaben und Einheiten | Fehlerfall | Belegt von |
 |---|---|---|---|---|---|
-| **V1** | **Kernnaht** — die Wärme eines Gebäudes | Gebäudezeile, Merkplatz, Zielpuffer | Zielpuffer gefüllt in **Watt**; `bool` für „gerechnet" | fehlende Vorbedingung des **gewählten** Modells: Warnung im Protokollkanal, `false`; keine Ausnahme | Kern; zwei Aufrufer (Lauf, Auskunft) |
+| **V1** | **Kernnaht** — die Wärme eines Gebäudes, als **Weiche am Eingang** (E20): erst der modellfreie Vorbereitungsschritt (Bewohner aus der Nutzfläche, Skalierungsfaktor nach E8, Klimareihen), dann **genau ein** Modul — `Gebaeude/` oder `Altweg/` | Gebäudezeile, Merkplatz, Zielpuffer | Zielpuffer gefüllt in **Watt**; `bool` für „gerechnet" | fehlende Vorbedingung des **gerufenen Moduls**: Warnung im Protokollkanal, `false`; keine Ausnahme. Die Vorbedingungen des Altwegs liegen **im Altweg** und gelten nur dort | Kern; zwei Aufrufer (Lauf, Auskunft). **Über diese Naht bekommt der Altweg keine neue Funktion** — sie ruft ihn nur |
 | **V2** | **Eingangsbau** — Randbedingungen eines Gebäudejahres | Gebäudemodell, 8 760 Klimazeilen in Ortszeit, Wochenendmaske, Ort | acht Reihen zu 8 760 Werten (Temperaturen °C, Strahlungs- und Gewinnleistungen W), Ersatzparameter, Prüfmodus-Schalter | fehlende Klimaspalte: Schätzweg bzw. fester Rückfall, je mit Meldung (Klasse K6a/K6b); unplausible Kennwerte: benannter Fehler statt stillem Rückfall | Kern |
 | **V3** | **Ergebnis** — Reihen und Kennzahlen eines Gebäudes | — | `HeizlastW` 8 760 in **Watt** und **bereits skaliert** — die Hochrechnung ist Teil der Modellrechnung, nicht eine Nachmultiplikation des Vektors (F5); Zeitreihen in **kWh** bzw. **°C**; Jahressummen in **MWh**; Leistungen in **kW** — die Einheit steht im Namen | — | Kern; **Eintrag in der Namensliste des Einheitenwächters ist Pflicht**, sonst sieht der Wächter die Datei nicht |
-| **V4** | **Auskunft je Gebäude** | Projekt, Gebäude, Klimaregion, **erzwungenes Modell** (`null` = Spaltenwert) | dasselbe Ergebnis wie im Lauf, Leistung in kW, Jahressumme in MWh | wie V1; der erzwungene Wert schreibt **nie** | Kern-Controller |
+| **V4** | **Auskunft je Gebäude** | Projekt, Gebäude, Klimaregion, **erzwungener Rechenweg** (`null` = Spaltenwert) | dasselbe Ergebnis wie im Lauf, Leistung in kW, Jahressumme in MWh, Kälteseite nach V15 | wie V1; der erzwungene Wert schreibt **nie**. Der Parameter trägt den Vergleich alt/neu und **entfällt mit Stufe GA** | Kern-Controller |
 | **V5** | **Geschwisterprüfung** eines Gebäudes | Gebäude mit Zonen, Bauteilen, Luftströmen | Liste von Prüfmeldungen: Schlüssel, Stufe, invariante Werte — **nie Text** | keine Ausnahme; eine leere Liste heißt „in Ordnung" | Kern; Anzeige gestaffelt (Kapitel 6) |
 | **V6** | **Formatnaht Lesen** (Signatur siehe Schwesterpapier 1.5 und die Anmerkung über dieser Tabelle) | Datenstrom, Format-Profil, Fortschrittsmelder, Abbruchzeichen | formatfreies Abbild; Bilanz (gelesen, übersprungen, fehlend) | ein fehlerhafter Eintrag erzeugt eine Meldung und wird übersprungen; die Datei wird nie validiert, nie aus dem Netz geladen | Kern; Fabrik in der Schale, falls das Paket eine Plattform nicht trägt |
 | **V7** | **Formatnaht Schreiben** | Satz, Datenstrom, Format-Profil | Datei im Zielformat samt Produktausweis und Kennzeichnung | fehlende Pflichtangabe: benannte Ablehnung **vor** dem Schreiben, keine halbe Datei | Kern; Dateiwahl bleibt außerhalb (V9) |
@@ -551,7 +634,8 @@ zurückfallen. Für den Gebäudeimport ist die asynchrone Form Pflicht — dass 
 | **V11** | **Controller-Verträge der vier neuen Aggregate** (Baustoffe, Aufbauten, Zonen samt Bauteilen und Luftströmen, Importherkunft) | je zwei Lesewege — einer für den Dialog, einer je Projekt für den Rechenkern — und **ein** Schreibweg je Aggregat | geschriebene Zeilen samt neuer Ids | der Schreibweg läuft in **einer** Transaktion; ein Fehler schreibt nichts | Kern-Controller; die Oberfläche schreibt nie selbst |
 | **V12** | **Gaben-Vertrag der Oberfläche** | Wörterbuch aus der Hülle | Parameter der Komponente | **jeder Schlüssel trifft ein `[Parameter]`** — sonst übersetzt es sauber und fällt beim ersten Zeichnen beim Anwender aus | Strukturwache über Hüllen und Komponenten |
 | **V13** | **Zonengeometrie — eine Quelle, drei Abnehmer** (E11) | Zonen, Bauteile und Flächen eines Gebäudes; bei IFC die Raumgrenzen, sonst die Rechteckherleitung aus Fläche und Bauteilgruppen | je Zone Grundrisspolygon, Höhe, Geschoss und die Zuordnung der Bauteile zu Kanten, Boden und Decke, **je Zone mit ihrer Geometrieherkunft** (Raumgrenze oder Herleitung) | widersprüchliche Anordnung: **benannte Ablehnung** statt erfundener Lage; keine Geometrie ohne Herkunft | Kern; **drei Abnehmer**: Gebäudebetrachter (über die Hülle), gbXML-Export, IFC-Export. Nachweis: Probe „Determinismus der Geometrie" — gleiche Eingabe, gleiche Polygone, byteweise gleicher Export |
-| **V14** | **Berichtskante** | Gebäudeergebnisse der Simulationsinstanz, im Mehrzonenfall die Zonenreihen | Kennzahlblock je Gebäude bzw. je Zone (Einheit im Namen, `null` als Gedankenstrich, nie als 0); Diagrammbilder über den **plattformfreien** Renderer | fehlende Reihe: **Merkmal am Gebäude** statt leerem Bild | Bericht; `Proben/ChartProben` ist rot, sobald sich ein Bild ändert oder der Renderer eine Windows-API braucht |
+| **V14** | **Berichtskante** | Gebäudeergebnisse der Simulationsinstanz, im Mehrzonenfall die Zonenreihen | Kennzahlblock je Gebäude bzw. je Zone (Einheit im Namen, `null` als Gedankenstrich, nie als 0); Diagrammbilder über den **plattformfreien** Renderer. **Zu jeder Zeile und jedem Bild der Wärmeseite steht das Gegenstück der Kälteseite** (E21) | fehlende Reihe: **Merkmal am Gebäude** statt leerem Bild | Bericht; `Proben/ChartProben` ist rot, sobald sich ein Bild ändert oder der Renderer eine Windows-API braucht |
+| **V15** | **Kältekante** (E21) — die Kälteseite trägt dieselbe Bauform wie die Wärmeseite | dieselbe Gebäudezeile, derselbe Vorbereitungsschritt, **die Kühlreihe aus demselben Lauf** des Moduls `Gebaeude/` (keine zweite Gebäuderechnung) | Kanal **`KUEHLUNG`** mit eigener Summe, eigener Spitze (`Kaeltelast_Max`, Kühlkonzept K16), eigener Dauerlinie und eigenem Deckungszweig (`DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` als Bezug); Kennzahlen Jahreskälte in **MWh**, Kältespitze in **kW**, Kühlstunden in **h** | **Altweg-Gebäude: Kältebedarf 0 mit benanntem Hinweis** im Protokollkanal, nie stillschweigend; Unterdeckung ist eine benannte Meldung, kein stiller Rest | Kern; die Trennung der Deckungswelten ist **erzwungen**, nicht verabredet: Der Kühlkanal geht in keine Summen-, Dauerlinien-, Maximum- und Netzverlustrechnung der Wärmeseite ein (B9). Einzelheiten: [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) |
 
 ### 4.2 Die Ergebniskante
 
@@ -661,12 +745,13 @@ des Controller-Vertrags V11.
 
 ### 5.5 Der Stand der Tagesmodell-Eingaben
 
-Die Tagesverteilungen des Bestands bleiben der **Eingang des ausdrücklich wählbaren** Tagesmodells
-(F2): nicht abgelöst, nicht erweitert, nicht eingefroren gelöscht — und der Stundenzweig liest sie
-nicht. Daraus folgt für dieses Papier nur eine Systemeigenschaft: **Solange F2 gilt, ist eine
-Bestandsdatenquelle im Spiel, die niemand pflegt.** Wer den Tagesweg ablösen will, löst zuerst F2
-ab, und das ist ein eigener Entscheid. Tabellen, Stand je Testgebäude und die Belege stehen im
-Schwesterpapier 2.9.
+Die Tagesverteilungen des Bestands bleiben der **Eingang des Übergangswegs** (F2): nicht erweitert,
+nicht gepflegt, nicht gelöscht — das Modul `Gebaeude/` liest sie nicht. Daraus folgt für dieses
+Papier eine Systemeigenschaft mit **Ablaufdatum**: Solange der Altweg besteht, ist eine
+Bestandsdatenquelle im Spiel, die niemand pflegt; sie endet **mit ihm** in Stufe GA. Der Entscheid
+darüber ist gefallen (E20) — offen ist allein der Zeitpunkt (**Q24**, Empfehlung frühestens nach
+G3). Bis dahin gilt für diese Tabellen dieselbe Regel wie für das Modul: **keine Änderung außer
+Fehlerbehebung.** Tabellen, Stand je Testgebäude und die Belege stehen im Schwesterpapier 2.9.
 
 ### 5.6 Zonen im Katalog — es gibt keine
 
@@ -702,7 +787,7 @@ also bleibt es eine Klasse.
 | **K1** | **Eingabefehler** | Zahl außerhalb des Bereichs, Pflichtfeld leer | das Feld färbt und trägt seinen Fehlerzustand | **kein** Meldungstext; leise, am Ort des Fehlers |
 | **K2** | **Fachprüfung** | Flächensumme, geschlossene Hülle, Trennflächen- und Luftstrombilanz je Gebäude | Prüfmeldung mit Schlüssel, Stufe und invarianten Werten aus dem Kern | Kohärenzzeile je Zeile (leise); **Sammelbanner erst beim Übernahme-Versuch**; zusätzlich unverzüglich vor dem Lauf |
 | **K3** | **Benannte Ablehnung** | die Plattform kann den Weg nicht, die Datei ist zu groß, die Quelle taugt nicht für den Round-Trip | Sperrgrund am Bedienelement (sichtbar, nicht ausgeblendet) | Grund am Element, Banner nach dem Versuch — **nie** ein Knopf, der nichts tut |
-| **K4** | **Laufwarnung** | fehlende Vorbedingung, unplausible Bauweise, nicht konvergierter Vorlauf | Protokollkanal des Laufs | im Protokoll des Laufs; **keine Ausnahme, keine gewachsene Signatur** |
+| **K4** | **Laufwarnung** | fehlende Vorbedingung, unplausible Bauweise, nicht konvergierter Vorlauf; **ein Gebäude auf dem Übergangsweg, das deshalb keinen Kältebedarf liefert** (E21) | Protokollkanal des Laufs | im Protokoll des Laufs; **keine Ausnahme, keine gewachsene Signatur**. Die 0 im Kühlkanal ist damit **benannt**, nicht stillschweigend |
 | **K5** | **Rechenfehler und Grenzwert** | Gauß-Seidel erreicht die Höchstzahl der Durchläufe ohne Konvergenz; die Heizleistungsgrenze wird erreicht; ein Zwischenwert wird `NaN` oder unendlich; der Vergleichswert der Rückrechnung ist null | Warnung im Protokollkanal **mit Stunde und Gebäude**; die Rechnung liefert den letzten gültigen Stand, **niemals stillschweigend 0** | im Protokoll; im Bericht als Merkmal am betroffenen Gebäude |
 | **K6a** | **Fehlende Eingangsgröße mit Schätzweg** | `Gegenstrahlung` ist `NULL`, weil die Region vor dem Klimaschritt importiert wurde | benannter **Schätzweg** nach Blatt 3 mit **einer** Meldung je Region und Lauf | im Protokoll: „geschätzt, weil nicht importiert" — nie stillschweigend |
 | **K6b** | **Fehlende Eingangsgröße mit festem Rückfall** | `Windgeschwindigkeit` oder `Luftfeuchte` ist `NULL` | benannter **Rückfall auf den festen Kennwert** — beim Wärmeübergang bleibt es beim Festwert; **kein** Schätzweg, weil es für diese beiden keinen gibt | dieselbe Form: eine Meldung je Region und Lauf, die den Rückfall **nennt** |
@@ -805,7 +890,7 @@ Der Nachweis läuft in **vier Stufen**, und keine ersetzt eine andere:
 |---|---|---|---|
 | **1 — Normband** | die zwölf Testbeispiele der Richtlinie mit Druckrundung (E10) | **lokal**, Prüfdatei nicht im Repositorium | läuft nicht in der CI; die Lücke im Gate gehört ins Protokoll, nicht in eine Datei |
 | **2 — unabhängige Zweitimplementierung** | der Prototyp außerhalb des Repositoriums als Prüforakel | lokal | dient der Entwicklung; maßgeblich ist Stufe 1 |
-| **3 — Proben im Repositorium** | Rechenproben, Dialogfälle, Strukturwachen, Rundläufe der Formate | `kern.yml` bei jedem Push | prüft Verhalten, nicht Normtreue |
+| **3 — Proben im Repositorium** | Rechenproben, Dialogfälle, Strukturwachen, Rundläufe der Formate; dazu die drei Proben der Trennung: **Aufrufprobe** (das Modul `Gebaeude/` ruft nichts aus dem Altweg und umgekehrt), **Symmetrieprobe der Kennzahlen** (zu jeder Kennzahl, jedem Bild und jedem Deckungsweg der Wärmeseite steht das Gegenstück der Kälteseite, E21) und **Probe „Altweg-Gebäude liefert Kältebedarf 0 mit Hinweis"** | `kern.yml` bei jedem Push | prüft Verhalten, nicht Normtreue |
 | **4 — Referenzlauf** | fünf Projekte in der CI, dreizehn in der Basis, Toleranz nach B14 | `kern.yml`; Basis unter `Referenzlaeufe/` | prüft Gleichheit gegen den eingefrorenen Stand, nicht Richtigkeit |
 
 **Der Prüfmodus ist ein Vertrag, kein Schalter im Dialog.** Der Eingangsbau trägt einen
@@ -826,15 +911,29 @@ liest.
 stateDiagram-v2
   [*] --> Basis_R7 : aktuelle Basis
   Basis_R7 --> Basis_GB : GB — Instanzzustand,<br/>Warnungen, Saatkorrektur
-  Basis_GB --> Basis_GB : Umbenennung im Bestand · Gebaeudespalten und Sichtneubau ·<br/>Klimaspalten — byte-gleich gegen die GB-Basis
+  Basis_GB --> Basis_GB : Umbenennung im Bestand · Gebaeudespalten und Sichtneubau ·<br/>Klimaspalten · Altweg in sein Modul verschieben —<br/>byte-gleich gegen die GB-Basis
   Basis_GB --> Basis_G1G2 : G1 und G2 —<br/>stuendliche Rechnung
   Basis_G1G2 --> Basis_G1G2 : Bauteil-, Zonen- und Importtabellen —<br/>byte-gleich, kein Leser
   Basis_G1G2 --> Basis_G6 : G6d — Zonenprojekt<br/>in der Testdatenbank
-  Basis_G6 --> [*]
+  Basis_G6 --> Basis_GA : GA — Altweg entfernen,<br/>DROP COLUMN und Sichtneubau,<br/>Referenzprojekt auf VDI 6007<br/>Zeitpunkt offen, Q24
+  Basis_GA --> [*]
 ```
 
-**Drei Anlässe, und nur drei** — GB, G1 + G2, G6d. Was dazwischen liegt, ist ergebnisneutral, und
-**das ist je Schritt zu belegen, nicht zu behaupten**. Als Systemeigenschaften gilt dazu:
+**Vier Anlässe, und nur vier** — GB, G1 + G2, G6d und **GA**. Was dazwischen liegt, ist
+ergebnisneutral, und **das ist je Schritt zu belegen, nicht zu behaupten**. Als Systemeigenschaften
+gilt dazu:
+
+- **Die Verschiebung des Altwegs ist ergebnisneutral und byte-gleich nachzuweisen** (E20). Sie ist
+  ein **eigener Schritt innerhalb von G1**, und sie läuft **vor** der Anbindung des Moduls
+  `Gebaeude/`: Wer beides in einem Zug macht, kann eine Abweichung nicht mehr zuordnen. Die
+  Bestandsbefunde **GB werden vor der Verschiebung behoben**, damit das verschobene Modul der
+  geprüfte Stand ist und danach nur noch Fehlerbehebung erfährt.
+- **GA ist ein Einfrierschritt**, weil dort das Referenzprojekt des Übergangs auf VDI 6007
+  umgestellt und der Rückweg-Test eingestellt wird — beides bewegt die Basis. GA entfernt im selben
+  Zug Modul, Weiche, Rechenweg-Schalter und die Altweg-Spalten (`DROP COLUMN` mit Sichtneubau, B6).
+  Der **Zeitpunkt ist offen (Q24)**; die Empfehlung lautet frühestens nach G3, wenn alle
+  Referenzprojekte und die Bestandsprojekte des Anwenders einmal auf VDI 6007 gerechnet und geprüft
+  sind.
 
 - **Der Klimaschritt liegt vor G1.** Rechnete G1 vor ihm, fehlten dem Eingangsbau die Spalten, die er
   liest; käme er nach G1, verschöbe ein späterer Neuimport einer Referenzregion die Basis **still**.
@@ -868,27 +967,31 @@ Schwesterpapier 2.8. Dieses Papier hält nur fest, **dass** es zu führen ist.
   und 3.2). Offen bleibt allein, **was den Umschalter Klassenweg → Bauteilweg trägt** — die Datenlage
   oder ein eigener Persistenzwert (Schwesterpapier Kapitel 6, **A14**).
 
-### 8.4 Die Frage der Basis vor dem Modellwechsel
+### 8.4 Die Basis für den Rückweg-Test
 
-Der Rückweg-Nachweis für die ausdrücklich gewählte Tagesbilanz (F2) verlangt eine Basis, die den
-reinen Bestandsweg trägt. Zugleich gilt die Hausregel, dass frühere Basen **nicht** im Repositorium
-liegen und ausschließlich gegen die aktuelle Basis gerechnet wird. Beides zusammen geht nicht;
-entschieden ist es nicht (Schwesterpapier Kapitel 6, **A15**).
+Der Rückweg-Nachweis für den Übergangsweg (F2) verlangt eine Basis, die ihn trägt. Zugleich gilt die
+Hausregel, dass frühere Basen **nicht** im Repositorium liegen und ausschließlich gegen die aktuelle
+Basis gerechnet wird. Beides zusammen geht nur auf einem Weg — und der ist entschieden.
 
-**Zwei Quellen sehen die GB-Basis als dauerhaften Prüfstand.** Befund V 5.2 verlangt ausdrücklich:
-„Die GB-Basis ist aufzuheben." Und der Wortlaut des verbindlichen Entscheids **E4** nennt sie „die
-letzte reine Bestandsbasis, **gegen die** der ausdrücklich gewählte Tagesbilanz-Weg später
-regressionsgeprüft wird".
+**Zwei Quellen sahen die GB-Basis als dauerhaften Prüfstand.** Befund V 5.2 verlangt: „Die GB-Basis
+ist aufzuheben." Und der Wortlaut des Entscheids **E4** nennt sie „die letzte reine Bestandsbasis,
+**gegen die** der ausdrücklich gewählte Tagesbilanz-Weg später regressionsgeprüft wird".
 
-**Empfehlung dieses Entwurfs — und sie weicht von beiden ab:** keine zweite Basis im Repositorium,
-sondern **ein Referenzprojekt, das dauerhaft auf Tagesbilanz steht und in der neuen Basis mit
+**Festlegung (E20, Punkt 6):** keine zweite Basis im Repositorium, sondern **ein Referenzprojekt,
+das für die Dauer des Übergangs auf dem Altweg steht und in der jeweils aktuellen Basis mit
 eingefroren wird**. Dann prüft jeder Lauf beide Wege gegen dieselbe, aktuelle Basis, und die drei
 neuen Reihen entstehen für dieses Projekt gar nicht erst — genau die Bedingung, die der Vergleich
 ohnehin stellt. Bis zum Merge G1 + G2 ist die GB-Basis dabei ohnehin die **aktuelle** Basis; danach
 wandert sie mit ihrem Protokoll nach
 [`Dokumentation/ueberholt/Referenzbasen/`](../ueberholt/Referenzbasen/LIESMICH.md), wie jede Basis
-vor ihr. Solange A15 offen ist, ist der Rückweg-Test auf einer **gitignorierten Arbeitskopie** gegen
-die GB-Basis der Übergangsweg (Schwesterpapier 2.8, Zeile G1 + G2).
+vor ihr.
+
+**Das Wort „dauerhaft" ist damit gestrichen: Der Rückweg-Test ist befristet.** Er läuft, solange der
+Altweg besteht, und wird **mit Stufe GA eingestellt** — im selben Schritt, der das Referenzprojekt
+auf VDI 6007 umstellt und die Basis neu einfriert. Die Architekturfrage **A15** ist damit in der
+Sache beantwortet; offen ist allein ihr Ende, und das hängt an **Q24**. Bis zur Verschiebung des
+Altwegs in sein Modul ist der Rückweg-Test auf einer **gitignorierten Arbeitskopie** gegen die
+GB-Basis der Zwischenweg (Schwesterpapier 2.8, Zeile G1 + G2).
 
 ---
 
@@ -911,7 +1014,7 @@ die GB-Basis der Übergangsweg (Schwesterpapier 2.8, Zeile G1 + G2).
 | # | Entscheidung | Alternativen | Grund für den gewählten Weg | Entscheid |
 |---|---|---|---|---|
 | **1** | **Stundenmodell als Vorgabemodell für alle Gebäude** | (b) Tagesmodell bleibt Vorgabe, Stundenmodell wählbar; (c) Material übernehmen und anpassen; (d) externe Simulationsmaschine anbinden | (b) hielte zwei Rechenwege, zwei Kennzahlensätze und zwei Wiki-Seiten dauerhaft; (c) baut auf einem belegten Strukturfehler und ungeklärter Lizenz auf; (d) bricht Plattformfreiheit und Laufzeitgrößenordnung | **E1**, [ADR-002](ADR-002_Stundenmodell_VDI6007_Einbindung.md) |
-| **2** | **Eine Naht statt zweier Rechenwege** — die Verzweigung sitzt in der einen Methode, die die Wärme eines Gebäudes erzeugt | (b) ein zweiter Bedarfsweg neben dem bestehenden; (c) Verzweigung beim Aufrufer | (b) verdoppelt Puffer, Kanal, Dauerlinie und Energieprobe; (c) verdoppelt sie an jedem Aufrufer — und es gibt zwei | [ADR-002](ADR-002_Stundenmodell_VDI6007_Einbindung.md) |
+| **2** | **Eine Naht statt zweier Rechenwege** — die Wahl fällt in derjenigen Methode, die die Wärme eines Gebäudes erzeugt, und zwar **an ihrem Eingang** (Abwägung 11) | (b) ein zweiter Bedarfsweg neben dem bestehenden; (c) Verzweigung beim Aufrufer | (b) verdoppelt Puffer, Kanal, Dauerlinie und Energieprobe; (c) verdoppelt sie an jedem Aufrufer — und es gibt zwei | [ADR-002](ADR-002_Stundenmodell_VDI6007_Einbindung.md) samt Ergänzungsvermerk (E20) |
 | **3** | **xBIM im Speichermodell, am Kern gebunden, aber hinter einer Naht** | (b) sofort ein eigenes Projekt mit Fabrik in der Schale; (c) ohne Naht direkt binden | (b) nähme iOS den IFC-Import von vornherein, obwohl das Paket ihn tragen könnte; (c) macht jeden späteren Umzug zu einem Umbau | **E3**, [ADR-003](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) |
 | **4** | **gbXML über einen handgeschriebenen Leseweg** | (b) aus dem Schema erzeugtes Modell mit Serialisierer; (c) Fremdbibliothek | (b) liefert Kindinhalte als typlose Felder und erzeugt Laufzeitcode, den iOS nicht trägt; (c) gibt es für .NET nicht | [ADR-004](ADR-004_gbXML_LINQ_to_XML.md), **angenommen** (E16) |
 | **5** | **Zonenkopplung über die Nachbarraum-Randbedingung, iterativ je Stunde** | (b) Kopplung über die Vorstunde; (c) Gesamtsystem über alle Zonen | (b) ist einfacher und schneller, trägt aber den Luftaustausch zwischen Zonen nicht; (c) ist exakt, aber teuer genau dort, wo je Stunde das Regelungsmuster festgehalten wird | [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md), **angenommen** (E17) |
@@ -919,7 +1022,9 @@ die GB-Basis der Übergangsweg (Schwesterpapier 2.8, Zeile G1 + G2).
 | **7** | **Ergebnisreihen als CSV des Laufs, nicht als Tabelle** | (b) Stundenreihen je Zone persistieren; (c) Reihen verdichtet ablegen | (b) kostet bei 150 Zonen rund 5,3 Mio. Zeilen und 150 MB je Lauf und macht die Sicherung im laufenden Betrieb unbrauchbar; (c) verliert genau das, was der Vergleich braucht | Befund V 6.3 — **ohne eigenen ADR, Festlegung dieses Papiers** |
 | **8** | **Ein Zuordnungsgerüst für beide Formate** — ein Ablauf, zwei Profile, zwei Leser | (b) zwei getrennte Importprogramme | (b) macht jede Änderung an Zuordnung, Fortschritt, Größenablehnung und Sammelmeldung zweimal nötig | Datenaustausch 2.1, 2.4 — **ohne eigenen ADR, Festlegung dieses Papiers** |
 | **9** | **Zonen entstehen erst nach ausdrücklicher Übernahme, nie implizit** | (b) je Gebäude beim Anlegen der Tabellen eine Zone erzeugen | (b) kehrte die Verzweigung des Mehrzonenmodells um und schaltete **jedes** Bestandsgebäude ungefragt auf den Bauteilweg; der Nachweis „eine Zone bitgleich" bleibt als Probe, nicht als Auslieferungsweg | Mehrzonenkonzept 1.2, 4.3 — **ohne eigenen ADR, Festlegung dieses Papiers** |
-| **10** | **Der Kühlbedarf ist eine Reihe, kein Kanal** | (b) vierter Kanal neben Heizung, Brauchwasser und Prozess | (b) zöge Erzeuger, Speicher, Wirtschaftlichkeit und Bericht mit — ein eigenes Vorhaben, nicht ein Nebenprodukt. **Nachtrag E12 (16.09.2026): Kühlung wird als vierter Kanal aufgenommen; die Folgen regelt das Kühlkonzept** (Konzept N1.18) | Konzept 15, B9 — **ohne eigenen ADR, Festlegung dieses Papiers** |
+| **10** | **Der Kühlbedarf ist ein eigener, vierter Kanal `KUEHLUNG` — mit getrennter Deckungsseite** | (b) Kühlbedarf bleibt eine bloß informative Reihe je Gebäude (der frühere Weg); (c) eine eigene, parallele Kanalstruktur neben dem Bedarfsfeld | (b) hätte Erzeuger, Speicher, Wirtschaftlichkeit und Bericht außen vor gelassen — der Kühlbedarf wäre ausgewiesen, aber nie gedeckt worden; (c) verdoppelte Persistenz, Knappheit, Kennzahlrechnung, Export und Wächtersatz für dieselbe Aussage. Der vierte Kanal entsteht **einmal**; getrennt wird die **Deckungsseite**, nicht das Bedarfsfeld — und die Kälteseite wird **symmetrisch zur Wärmeseite** gebaut (Abwägung 12) | **E12**, **E21**; [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) K1 — **ohne eigenen ADR** |
+| **11** | **Trennung der Rechenwege mit Weiche und befristetem Altweg** statt einer Verzweigung im Bestandsrumpf | (b) Verzweigung im Rumpf — zwei `if`, der Tagesbilanz-Zweig bleibt im selben Code (der Weg, den ADR-002 beschrieben hatte); (c) sofortige Entfernung des Tagesbilanz-Wegs mit G1 + G2 | (b) ist nur am ersten Tag billig: Jede Zeile des VDI-Wegs müsste beweisen, dass sie den anderen Zweig nicht berührt, der Dialog trüge zwei Zustände (U2), der Rückweg-Test bliebe ohne Ende. (c) wäre sauber im Kern, nähme dem Anwender aber die Brücke, die er verlangt hat — Bestandsprojekte sprängen ohne Vergleich. Die Trennung kostet **einen** zusätzlichen Nachweisschritt (byte-gleiche Verschiebung) und liefert dafür klare Grenzen, eine Dialogstruktur und ein Ende | [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md), **angenommen** (E20) |
+| **12** | **Die Kälteseite wird symmetrisch zur Wärmeseite gebaut** — zweite Fassade, ein Lauf des Gebäudemoduls | (b) der Kühlbedarf reist als Anhang der Wärmerechnung mit; (c) eine zweite Gebäuderechnung eigens für die Kälte | (b) ließe Kennzahlen, Dauerlinie, Deckung und Bericht der Kälteseite je Stelle einzeln erfinden — die Symmetrie ist gerade das, was sie entbehrlich macht; (c) kostete die doppelte Rechenzeit und könnte auseinanderlaufen. Deshalb: **zwei Fassaden, ein Rechengang** — und die Symmetrie ist **Bauvorschrift für KU1–KU3**, nicht ein Stilwunsch | **E21**; [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) — **ohne eigenen ADR** |
 
 ---
 
@@ -928,13 +1033,13 @@ die GB-Basis der Übergangsweg (Schwesterpapier 2.8, Zeile G1 + G2).
 | Gegenstand | Warum er heute offenbleibt | Woran er hängt |
 |---|---|---|
 | **Auslegungsheizlast im Stundenmodell** | Die maximale Wärmelast bleibt das Maximum des Kanalsummenvektors; die drei Spitzenkennzahlen stehen zusätzlich je Gebäude. Eine Norm-Auslegungsheizlast ist eine andere Rechnung mit anderen Randbedingungen | eigenes Papier |
-| **Kühlung als eigener Kanal** | heute eine informative Reihe je Gebäude (B9). **Nachtrag E12 (16.09.2026): Kühlung wird als vierter Kanal aufgenommen; die Folgen regelt das Kühlkonzept** (Konzept N1.18) | Erzeuger-, Speicher- und Wirtschaftlichkeitsrechnung |
+| **Der Zeitpunkt der Stufe GA** (**Q24**) | Dass der Altweg endet, ist entschieden (E20); **wann**, ist es nicht. Die Empfehlung lautet frühestens nach G3 — wenn alle Referenzprojekte und die Bestandsprojekte des Anwenders einmal auf VDI 6007 gerechnet und geprüft sind. Zu früh genommen, nimmt GA dem Anwender die Brücke; zu spät genommen, pflegt das Vorhaben zwei Rechenwege länger als nötig | Anwenderentscheid; GA ist ein **Einfrierschritt** (8.3) und trägt einen Schemaschritt mit `DROP COLUMN` und Sichtneubau |
 | **Die geerbten Textvergleiche im Umfeld des Gebäudemodells** | Das Umfeld trägt **mehrere**: die Kanalzuordnung der externen Ganglinien (`Kanal.AusText`, `SimulationKanaele.cs:454-463`) sowie `item.Einheit` und `item.Typ` in der Gebäudeschleife selbst (`SimulationWaermebedarf.cs:569`, `:601`, `:617-638`), dazu die Einheit der Netzverluste (`:353`). **Kein Umbauauftrag**, aber ein benannter Bestand: neue Beziehungen laufen über IDs, die alten Vergleiche bleiben | eine Altlastbehebung gehört nicht in einen Einfrierschritt, der dreizehn Projekte bewegt |
 | **Die zwei Projektbindungen des Gebäudes** | Das Gebäude hängt über eine Zuordnungstabelle (`ID_ProjektGebaeude`, mit Fremdschlüssel und Kaskade) **und** über ein Projektfeld **ohne** Fremdschlüssel am Projekt. Ein nachgerüsteter Fremdschlüssel änderte den Löschweg eines Projekts und wäre eine Verhaltensänderung | wird benannt und dokumentiert. Die Regel dazu lautet: **kein Kind des Gebäudes bekommt ein eigenes Projektfeld**; es hängt über seinen unmittelbaren Elternteil — Gebäude, Zone, Aufbau, Importquelle — am Projekt. Die **Projektkataloge** (Baustoffe, Bauteilaufbauten) tragen ihr Projektfeld wie ihre Vorbilder im Bestand; das ist zugleich die Bedingung, unter der der Projekttransfer sie erfasst |
 | **Parallelität bei sehr großen Zonenprojekten** | technisch über die Kulturweitergabe erlaubt, heute ohne Anlass (Kapitel 7) und im Widerspruch zum Determinismusversprechen | erst, wenn ein gemessener Fall es verlangt |
 | **Ein eigenes Projekt für die Formatleser** | falls der iOS-Gerätebau Typen des Pakets trimmt | die Naht steht von Anfang an; der Umzug kostet dann eine Fabrikzeile |
 | **Ob der Bauteilweg den Klassenweg vollständig ablöst** | Der Klassenweg ist heute zugleich die Vorgabe, aus der eine erste Zone entsteht; solange Bestandsgebäude ohne Schichtdaten bestehen, bleiben beide | Datenlage im Feld |
-| **Die dritte Umrechnungsnaht** | Sie ist im Bestand vorhanden (`GebaeudeBedarfCtrl.cs:130`) und wird mit diesem Vorhaben **benannt und in die Regel aufgenommen**, statt sie zu verschweigen (3.1). Offen bleibt, ob sie später entfällt — sie entfällt genau dann, wenn F2 entfällt und jede Jahressumme aus der Ergebnisklasse kommt | Einheitenregel des Kerns; `EPOS.Kern/CLAUDE.md` Punkt 4 ist im selben Merge fortzuschreiben |
+| **Die dritte Umrechnungsnaht** | Sie ist im Bestand vorhanden (`GebaeudeBedarfCtrl.cs:130`) und wird mit diesem Vorhaben **benannt und in die Regel aufgenommen**, statt sie zu verschweigen (3.1). Sie entfällt **mit Stufe GA**: Dann gibt es keinen Weg mehr, der nur einen Wattvektor liefert, und jede Jahressumme kommt aus der Ergebnisklasse. Bis dahin bleibt sie — eine Auskunft, die eine zweite Rechnung führte, wäre der schwerere Fehler | Einheitenregel des Kerns; `EPOS.Kern/CLAUDE.md` Punkt 4 ist im selben Merge fortzuschreiben, und mit GA noch einmal |
 | **Zwei Festlegungen von ADR-Gewicht ohne ADR** | „Ergebnisreihen als CSV, nicht als Tabelle" und „ein Zuordnungsgerüst für beide Formate" (Abwägungen 7 und 8) tragen keinen Architekturentscheid. Sie sind als Festlegungen dieses Papiers gekennzeichnet; ob sie eigene ADR bekommen, ist zur Wiedervorlage gestellt | Beauftragung von G4c bzw. des Ergebnisexports |
 | **Die Obergrenze von 50 Zonen** | eine Setzung aus der Rechenzeit, kein Messergebnis | Laufzeitmessung an einem echten Mehrzonengebäude |
 
@@ -950,12 +1055,13 @@ die GB-Basis der Übergangsweg (Schwesterpapier 2.8, Zeile G1 + G2).
 | **Klassennamen, Ordner, Signaturen, Spaltennamen, Maskenschlüssel, Ressourcenpräfixe, Wächterliste** | [Schwesterpapier](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) Kapitel 1 bis 4 |
 | **Die Auflösung der Widersprüche W1–W21 und der Lücken L1/L2** — W1–W18 stammen aus Befund V, W19–W21 sind eigene Berichtigungen des Schwesterpapiers | [Schwesterpapier](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) Kapitel 2.3; Fundstelle von W1–W18: [Befund V](Gebaeudesimulation/2026-09-15_Befund_V_Datenmodell_Architektur.md) Kapitel 4 |
 | **Aufwände, Stufeninhalte und Umfang je Merge** | [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kapitel 4, [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kapitel 9, [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kapitel 10 |
+| **Die Kälteseite im Einzelnen** — Kühlsollwert und Kühlleistungsgrenze, Kälteerzeuger und Deckungsreihenfolge, Kältestrom, Kältespeicher, Wirtschaftlichkeit und Emissionen der Kälte, Kennzahlen- und Schemaschritte KU0–KU3. Dieses Papier führt davon nur F20, B9, V15 und die Symmetrie als Bauvorschrift | [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) |
 | **Feldlisten und Wortlaut der Masken** | [Befund M](Gebaeudesimulation/2026-09-15_Befund_M_Gebaeudedialog.md) Kapitel 5 |
 | **Die Geometrieherleitung des Betrachters** — woher ein Polygon kommt, wenn keine Raumgrenzen vorliegen, wie die Zonen zueinander angeordnet werden, wie die Ansicht gebaut ist | [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kapitel 14 (Nachtrag 1) und 5.5; Klassenname, Ordner und Naht im [Schwesterpapier](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) Kapitel 1 und 3. Dieses Papier führt nur den Vertrag V13 und die Auflagen aus F17 und Kapitel 9 |
 | **Abbildungsregeln je Format** — welche Entität auf welches Feld führt | [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 3.4, [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kapitel 6, [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) Kapitel 3, 5 und 6 |
 | **Verbindliche Schemaschrittnummern** | festgelegt sind Inhalt, Reihenfolge, Ergebnisneutralität und Nachweis je Schritt; die Nummer vergibt der Schritt bei seiner Beauftragung |
 | **Wiki- und Berichtstexte im Wortlaut, Logbuch-Einträge, Versionsnummern** | entstehen mit dem jeweiligen Auftrag; die Versionsnummer erfragt der Auftrag beim Anwender |
 | **Normzahlen und ihre Ablage** | die Testbeispiele werden nicht ausgeliefert; der Nachweis ist lokal, die Lücke im Gate gehört ins Protokoll. Dieses Papier führt keine Normwerte |
-| **Alles, was das Konzept ausschließt** | Feuchtebilanz, Kühlung als vierter Kanal (**E12 vom 16.09.2026 nimmt ihn auf** — die Folgen regelt das Kühlkonzept, Konzept N1.18), Bauteilaktivierung, Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur, sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG oder DIN V 18599, Verschattung durch Nachbarbebauung, Wärmerückgewinnung, Nutzungsprofile für Nichtwohngebäude, Scan-to-BIM, Validierung an gemessenen Verbräuchen ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kapitel 15) |
-| **Entscheide** | A1 ff. sind Fragen mit Empfehlung im [Schwesterpapier](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) Kapitel 6; ADR-004 und ADR-005 sind angenommen (E16, E17); die Fragen der Konzeptpapiere bleiben dort offen, wo sie geführt werden |
+| **Alles, was das Konzept ausschließt** | Feuchtebilanz, Bauteilaktivierung, Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur, sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG oder DIN V 18599, Verschattung durch Nachbarbebauung, Wärmerückgewinnung, Nutzungsprofile für Nichtwohngebäude, Scan-to-BIM, Validierung an gemessenen Verbräuchen ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kapitel 15) |
+| **Entscheide** | A1 ff. sind Fragen mit Empfehlung im [Schwesterpapier](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) Kapitel 6; ADR-004 und ADR-005 sind angenommen (E16, E17), **[ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) ist angenommen (E20)** und ADR-002 trägt dessen Ergänzungsvermerk. **E20** macht A16 gegenstandslos, überholt U2 und befristet A15; **E21** entscheidet K1 des Kühlkonzepts (vierter Kanal mit getrennter Deckungsseite, Kälteseite symmetrisch zur Wärmeseite). Offen bleibt aus beiden allein **Q24** (Zeitpunkt der Stufe GA). Die übrigen Fragen der Konzeptpapiere bleiben dort offen, wo sie geführt werden |
 | **Geschichte** | Dieses Papier führt keine Datums-, Auftrags-, Wellen- oder Commit-Kennungen. Was war und warum es geändert wurde, steht in den Protokollen unter [`Dokumentation/ueberholt/`](../ueberholt/) und in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md) |
