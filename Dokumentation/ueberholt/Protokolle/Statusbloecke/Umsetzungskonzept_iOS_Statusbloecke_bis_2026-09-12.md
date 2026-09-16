@@ -6829,7 +6829,7 @@ Die Ressourcen stehen in beiden Sprachen. Die erzeugte `Resource.Designer.cs` tr
 bereits `SCHLIESSKREUZ_TOOLTIP` aus der folgenden Welle — sie entsteht als Ganzes aus der
 neutralen `.resx` und lässt sich nicht nach Commits schneiden.
 
-**Logbuch-Vorschlag** (Version vom Anwender zu nennen):
+**Logbuch-Vorschlag** (Version 1.2.0.2):
 
 > Seit 16.09.2026 nennt der Hilfe-Assistent die gemeinte Maske, wenn er Felder nicht füllen
 > kann: Ist die Maske nicht geöffnet, sagt die Antwort ihren Namen und mit welcher Aktion
@@ -6895,7 +6895,7 @@ Parameterdialog, dessen Sprungwert mit #292 gefallen ist, geht das Kreuz über e
 herausgelöste `Abbrechen()`, die auch Esc ruft. Die Bauart-C-Restliste der
 `UeberlagerungstitelTests` ist danach leer: kein doppelter Überlagerungstitel mehr im Baum.
 
-**Logbuch-Vorschlag** (Version vom Anwender zu nennen):
+**Logbuch-Vorschlag** (Version 1.2.0.2):
 
 > Seit 16.09.2026 lässt sich jeder Dialog über ein Schließkreuz rechts oben in der Kopfzeile
 > schließen. Das Kreuz wirkt wie die Esc-Taste und wie „Abbrechen": Eingaben werden
@@ -6976,7 +6976,7 @@ und `ErzeugerDetail.Parameterzeilen`/`Modulparameter`. Das Aufräumen zieht an R
 erzeugtem Designer und Katalogtests zugleich und ist deshalb ein eigener Schritt; in dieser
 Welle wäre es ein Merge-Risiko gewesen.
 
-**Logbuch-Vorschlag** (Version vom Anwender zu nennen):
+**Logbuch-Vorschlag** (Version 1.2.0.2):
 
 > Seit 16.09.2026 stehen in den Dialogen für Heizkessel, BHKW, Photovoltaik, Stromspeicher,
 > Pufferspeicher und Solarkollektoren alle Daten des gewählten Katalogsatzes im
@@ -7102,7 +7102,7 @@ Heizkessel und BHKW die Nachbarschaft des Brennstoffpaars. Neu sind
 `KomponentenKonfigurationDialogTests`; nachgezogen `WaermepumpeAnlageDialogTests`,
 `WaermepumpenDialogTests`, `SimulationKonfigSeiteTests` und `KiDialogkatalogTests`.
 
-**Logbuch-Vorschlag Erzeuger** (Version vom Anwender zu nennen):
+**Logbuch-Vorschlag Erzeuger** (Version 1.2.0.2):
 
 > Seit 16.09.2026 steht der Knopf „Bearbeiten…" in den Dialogen der Erzeuger gleich unter der
 > Modulzeile, in einer Zeile mit den Kostenknöpfen. Der Bereich „Alle Daten" darunter ist beim
@@ -7110,7 +7110,7 @@ Heizkessel und BHKW die Nachbarschaft des Brennstoffpaars. Neu sind
 > sichtbar und bearbeitbar da, zuklappen lässt sich der Bereich weiterhin. In den Dialogen für
 > Heizkessel und BHKW stehen „Brennstoff Typ" und „Brennstoff Variante" untereinander.
 
-**Logbuch-Vorschlag Wärmepumpe und Simulation** (Version vom Anwender zu nennen):
+**Logbuch-Vorschlag Wärmepumpe und Simulation** (Version 1.2.0.2):
 
 > Seit 16.09.2026 heißt der Bereich „Wärmeerzeuger Spitzenlast" des Wärmepumpendialogs
 > „Konfiguration" und ist ein eigener Dialog. Er lässt sich an zwei Stellen öffnen: im
@@ -7223,7 +7223,7 @@ ein gleichnamiges Gerät im zweiten Projekt bleibt unverändert. Nachgezogen sin
 weiche Sperren, Vorschautexte, Übernahme mit und ohne Kennlinienschalter, Abbrechen) und
 `WaermepumpeStammFelderTests` (`BezeichnerAenderbar`).
 
-**Logbuch-Vorschlag** (Version vom Anwender zu nennen):
+**Logbuch-Vorschlag** (Version 1.2.0.2):
 
 > Seit 16.09.2026 gelten die Stammdaten im Wärmepumpendialog einer Anlage nur für diese
 > Anlage in diesem Projekt: Firma, Beschreibung, Typ, Regelung, Aufstellung, Baujahr,
@@ -7237,3 +7237,181 @@ weiche Sperren, Vorschautexte, Übernahme mit und ohne Kennlinienschalter, Abbre
 > Kennlinien mit. Ist kein Katalogsatz dieses Namens vorhanden, wird einer angelegt;
 > ausgelieferte Katalogsätze werden nicht überschrieben. Der Name der Anlage ist im
 > Anlagendialog nur lesbar — über ihn ist die Anlage dem Katalogsatz zugeordnet.
+
+## #299 — Wärmepumpe: Heizstab je Anlage, Katalogkopplung über ID, Kühlleistung wählbar (16.09.2026)
+
+Der Anwenderentscheid vom 16.09.2026 traf drei Punkte der Wärmepumpe zugleich: Der Heizstab
+soll keine projektweite Einstellung mehr sein, sondern eine Eigenschaft je
+Wärmepumpen-Anlage — Wärmepumpenbetrieb mit und ohne Heizstab soll im selben Projekt
+vorkommen dürfen. Die Kopplung zwischen Projektkopie und Katalog soll über einen
+Schemaschritt auf eine ID statt auf den Namen gestellt werden. Und Wärmepumpen mit
+Kühlfunktion sollen wählbar sein. Dazu die letzte Stelle der Versionsnummer erhöhen.
+
+**Schema 78 → 80, zwei Schritte nach ADR-001.** Schritt 79 übernimmt
+`Tab_Einstellungen.WP_Heizstab` in `Tab_Energieanlagen.Heizstab` aller Wärmepumpen-Anlagen
+und entfernt danach die Spalte — der erste Schritt des SQLite-Zweigs, der eine Spalte
+entfernt, statt nur anzulegen; der Rechenweg liest den Heizstab seither je Modul. Schritt 80
+legt `Tab_WP.ID_Stamm` an, einen Verweis auf `Tab_WP_STAMM`, und trägt ihn bei eindeutigem
+Bezeichner nach; Katalogkopie, Übernahme in den Stamm und das Lesen der Kennlinien aus dem
+Katalog laufen seither über die ID. Die Übernahme-Vorschau nennt dabei einen inzwischen
+umbenannten Katalogsatz beim richtigen Namen.
+
+**`WErzeugerCtrl.KonfigurationSchreiben` schreibt, ohne zu löschen.** Die acht
+Konfigurationsfelder einer Anlage gehen jetzt über ein read-modify-write; Ids und die
+Hervorhebung der bearbeiteten Karte auf der Simulationsseite bleiben dabei erhalten — der
+teure Weg über `Del_Projekt_Waermeerzeuger` + `Add_WP_Waermeerzeuger` aus #297/#298 ist an
+dieser Stelle nicht mehr nötig, die Simulationshülle nutzt den neuen Weg. Entfallen sind
+`KonfigurationModel.m_WP_Heizstab`, `ParameterDaten.Heizstab`, das KI-Feld `wp_heizstab` und
+der projektweite Heizstab-Schalter im Konfigurationsdialog der Simulation; fehlt dort die
+Anlagen-Naht, meldet der Dialog das jetzt benannt statt leer zu bleiben.
+
+**Oberfläche.** Der Anlagendialog trägt den Schalter „Heizstab mitrechnen" je Anlage, mit
+Hinweis, wenn die Projektkopie keine Heizstableistung führt. Die Kühlleistung der
+Projektkopie ist im Stammfelderblock als Kommazahl bearbeitbar; die Katalogauswahl führt
+dafür die Zahlenspalte „Kühlleistung [kW]" statt der bisherigen Ja/Nein-Spalte, dazu den
+Schalter „nur mit Kühlfunktion". Das Variantenmerkmal „Heizstab mitrechnen" ist als Ressource
+angelegt.
+
+**Ein Nebenbefund, der für sich stand: Anwendereinstellungen gingen bei einem Versionssprung
+verloren.** `Settings.Default.Upgrade()` fehlte im Programmstart; ohne ihn wären bei jedem
+Versionswechsel neun Anwenderwerte zurückgesetzt worden, darunter der Datenbankpfad. Der
+Programmstart ruft ihn jetzt auf.
+
+**Was offen bleibt.** Zwei Punkte aus „Nach #298" sind mit dieser Welle erledigt — die
+Katalogkopplung über `ID_Stamm` und die sichtbare, bearbeitbare Kühlleistung. Drei bleiben
+unverändert offen: das Baujahr 0 einer nie gepflegten Anlage, der Mangelrahmen, der den
+ganzen Stammfeldblock statt des einzelnen Feldes markiert, und `WPCtrl.Delete` mit
+`WHERE Bezeichner` ohne Projektfilter. Dazu drei neue Punkte dieser Welle: Die Einstellungen
+zum Kühlbetrieb — welche Parameter, wie sie in die Simulation gehen — warten auf das
+Gebäudesimulationskonzept. Altzeilen in `Tab_Energieanlagen` mit `Heizstab = 1` ohne
+Wärmepumpe stehen in der Testdatenbank nicht; in Kundendatenbanken würden sie weiter einen
+Stromträger ziehen, was nur dort auffällt, wo eine Kessel- oder BHKW-Zeile das Kennzeichen
+trägt. Und `Tab_WP.Kuehlleistung` NULL wird beim Speichern im Anlagendialog zu 0,0 — fachlich
+gleichbedeutend, Nullbarkeit bis ins Modell wäre die Alternative.
+
+**Prüfung.** Kern-Filter 0 Fehler; `EPOS.UI.Tests` 4 516/4 516; `EPOS.Kern.Tests`
+3 055/3 056 (einzig rot: der bekannte fremde Fall
+`SpeicherFlottenGroessenCtrlTests.Die_Fusszeile_der_Karte_nennt_den_Feinpunkt`);
+Windows-Schale 0 Fehler; SqlDialektPruefer 1 438 Texte, 0 Fundstellen; Referenzlauf 5/5 PASS,
+byte-gleich; Testdatenbank auf Schemastand 80, `integrity_check` ok, `foreign_key_check`
+leer. 23 neue Testmethoden (Kern 10, Oberfläche 13).
+
+**Logbuch-Vorschlag** (Version 1.2.0.2):
+
+> Seit 16.09.2026 wird der Heizstab je Wärmepumpe eingestellt (Konfiguration der Anlage,
+> Schalter „Heizstab mitrechnen"); die projektweite Einstellung ist entfallen und wurde auf
+> alle Wärmepumpen des Projekts übertragen. Die Kühlleistung einer Wärmepumpe ist in der
+> Katalogauswahl als Spalte und Filter „nur mit Kühlfunktion" wählbar und im Anlagendialog
+> bearbeitbar. Anwendereinstellungen bleiben beim Versionswechsel erhalten.
+
+## #300 — Neues Projekt: der Assistent startet in der Projektkonfiguration (16.09.2026)
+
+Der Anwenderentscheid vom 16.09.2026 galt der Kachel „Neues Projekt": Sie soll nicht mehr die
+Komponentenauswahl zeigen — bei einer Neuanlage ist sie ohne Bedeutung —, sondern den
+Assistenten unmittelbar in der Projektkonfiguration beginnen; „Weiter" soll auf die Kachel
+Wärmebedarf springen.
+
+**Die Kachel meldet den Einstieg.** Sie trägt der `AppWurzel` jetzt mit, dass es sich um eine
+Neuanlage handelt (`AssistentEinstieg`); der Assistent beginnt daraufhin auf der
+Projektkonfiguration, ohne den Komponentenschritt, mit der Knopfleiste Abbrechen / ◀ Zurück /
+Weiter ▶. „Weiter" prüft und speichert wie bisher und meldet sein Ziel; die `AppWurzel`
+wechselt zur Startseite und holt dort den Reiter „Wärmebedarf" nach vorn. „Zurück" führt ohne
+Rückfrage zur Startseite, „Abbrechen" fragt weiterhin nach. Das Menü „Projekt → Neu…" und die
+iOS-Projektliste behalten den vollständigen Assistenten mit Komponentenauswahl — nur die
+Kachel ändert ihr Verhalten. Es kommen keine neuen Ressourcen und keine Hüllenänderung hinzu.
+
+**Was offen bleibt.** Zwei Fragen, beide Anwenderentscheid. Soll „bei Neuanlage" auch für das
+Menü „Projekt → Neu…" und den iOS-Knopf gelten, sodass allein die Betriebsart entscheidet?
+Und: „Zurück" auf der Projektkonfiguration verwirft einen eingegebenen Projektnamen ohne
+Rückfrage — die Alternative wäre dieselbe Rückfrage wie bei „Abbrechen".
+
+**Prüfung.** 13 neue Facts (`EPOS.UI.Tests/Seiten/AssistentNeuanlageTests.cs`); das Gate lief
+gemeinsam mit #299 (Zahlen dort).
+
+**Logbuch-Vorschlag** (Version 1.2.0.2):
+
+> Seit 16.09.2026 startet die Kachel „Neues Projekt" den Assistenten direkt in der
+> Projektkonfiguration; mit „Weiter" gelangt man zur Kachel Wärmebedarf. Über das Menü
+> „Projekt → Neu…" bleibt der vollständige Assistent mit Komponentenauswahl erreichbar.
+
+## #301 — Berichte & Kosten: Kosten nach Rückwechsel auf Stamm, Kostenfaktor-Löschen ohne Kaskade (16.09.2026)
+
+Zwei Anwendermeldungen vom 16.09.2026 zu „Berichte & Kosten", unabhängig voneinander und im
+selben Schritt behoben. Commits: `b5ab356c` (Rückwechsel), `4eafaed0` (Kostenfaktor löschen),
+`6d29183e` (Testdatenbank auf Schemastand 81 nachgezogen).
+
+**Fehler 1 — Kosten nach Rückwechsel auf das Stammprojekt.** Am Projekt „Booster-Kette mit
+Kombi-Speicher" zeigte die Seite „Kosten" nach dem Wechsel Stamm → Variante → Stamm „Kein
+Projekt gewählt." mit leeren Kacheln und Tabellen; erst nach Verlassen und Neubetreten des
+Bereichs waren die Stammkosten wieder sichtbar. Ursache waren zwei nicht zusammenpassende
+Regeln in der Windows-Hülle des Bereichs (`WindowsFormsApplication1/Views/BerichteKosten/
+UebersichtSeiteGaben.cs`, `BerichteKostenHuelle.cs`): Die Markierung wurde beim Wechsel des
+aktiven Projekts geräumt und nur im Varianten-Zweig neu gesetzt; die Kostenseite erhielt
+danach die leere Markierung (−1), obwohl eine Rettung eine Zeile zuvor das Stammprojekt
+gesetzt hatte. Behoben mit der neuen plattformfreien Klasse
+`EPOS.Kern/Allgemein/Bericht/Berichtsgruppe.cs` (Nachbarin von `Vergleichsauswahl`): Sie hält
+Stammprojekt und markierte Version und hütet beide Regeln an einer Stelle — der Kontext
+markiert sich selbst, Variante wie Stamm; die Kostenseite zeigt die markierte Version, ohne
+Markierung das Stammprojekt. Beide Hüllen teilen sich eine Instanz. Mitbehoben:
+Wirtschaftlichkeit und Bericht hängen ihre Vergleichsgruppe jetzt am Stand statt am
+Meldungsargument — der Rückfall des Listenladens hatte die Gruppe sonst ohne Meldung
+gewechselt; der Name der Markierung folgt der Id. Übersicht, Wirtschaftlichkeit und Bericht
+haben auf demselben Wechselweg keinen weiteren Fehler. 7 neue Fälle in
+`EPOS.Kern.Tests/BerichtsgruppeTests.cs`, 1 bUnit-Fall in
+`EPOS.UI.Tests/Seiten/BerichteKostenSeiteTests.cs` (Stamm → Variante → Stamm auf derselben
+Seiteninstanz); mit der alten Regel sind 4 Kern-Fälle und der bUnit-Fall rot.
+
+**Fehler 2 — Kostenfaktor löschen riss Projektpositionen mit.** Die Anwendermeldung lautete:
+„Beim Löschen einer nicht zugeordneten Komponente werden die Kosten anderer, nicht aller
+Komponenten einschließlich der kompletten Kostenpositionen gelöscht." Ursache war nicht der
+Papierkorb an der Zeile „ohne Anlagenzuordnung" (der löscht nachweislich genau eine
+Position), sondern „Kostenverwaltung öffnen… → Administration Kostenfaktoren → Löschen":
+`KostenfaktorCtrl.Loeschen` löschte den Katalogeintrag in `Tab_Kostenfaktor`, und der
+Fremdschlüssel `Tab_ProjektWerte.StammID → Tab_Kostenfaktor` trug `ON DELETE CASCADE` — damit
+verschwand jede Projektposition mit dieser Kostenfaktor-ID in allen Projekten und Gewerken;
+die Rückfrage nannte nur den Katalognamen. „Nicht alle", weil die zehn Hauptpositionen der
+Gewerke vom Löschen ausgenommen sind. Nachgerechnet auf einer Kopie der Testdatenbank:
+„Planung / Baunebenkosten" löschen → 175 → 169 Positionen in 5 Projekten und 3 Gewerken;
+„Wärmepumpe (Aggregat)" löschen → 175 → 171, Wärmepumpen-Investition in den Projekten
+1042/1043/1044 von je 13 000 € auf 0 €. Behoben in zwei Schichten: (1)
+`KostenfaktorCtrl.Loeschen(int, out string)` zählt vor dem Löschen Projekt- und
+Vorlagenpositionen und verweigert mit benanntem Grund (Ressource `KFAK_MSG_IN_BENUTZUNG`:
+„{0} Projektposition(en) in {1} Projekt(en) und {2} Vorlagenposition(en) verweisen auf diesen
+Kostenfaktor."); Hülle und Dialog zeigen den Grund als Warnbanner, der Eintrag bleibt stehen;
+mitbehoben ein am Filter leer gelaufener DELETE, der bisher Erfolg meldete. (2) Schemaschritt
+81 nach ADR-001 (`EPOS.Kern/Allgemein/Update/ProjektWerteLoeschschutz.cs`): `Tab_ProjektWerte`
+wird neu gebaut mit `ON DELETE RESTRICT` (STRICT, fünf Fremdschlüssel, AUTOINCREMENT-Stand,
+fünf Indizes und die Sicht `Abfrage_Kostenfaktoren` bleiben erhalten; die Umbenennung läuft
+unter `PRAGMA legacy_alter_table`); ein zweiter Lauf ist No-op. Testdatenbank auf Stand 81
+(175 Zeilen unverändert, `integrity_check` ok, `foreign_key_check` leer), Nachtrag in
+`Referenzlaeufe/LIESMICH.md`; die Referenzbasis wird dafür nicht neu eingefroren. 4 Fälle in
+`EPOS.Kern.Tests/KostenfaktorCtrlTests.cs` (3 davon vorher rot), 8 Fälle in
+`ProjektWerteSchemaWacheTests.cs` (mit Gegenbeweis auf dem alten Stand und
+Umbau-Wiederholbarkeit), 2 weitere in `KostenfaktorKatalogDialogTests`.
+
+**Prüfung.** Beide Fixe liefen im eigenen Worktree-Gate, zusammengeführt per Cherry-Pick ohne
+Konflikt; das Gesamtgate folgt auf dem zusammengeführten Stand. Fix 1: Kern-Filter 0 Fehler,
+`EPOS.UI.Tests` 4 504/4 504, `EPOS.Kern.Tests` 3 060/3 061, Windows-Schale 0 Fehler. Fix 2:
+Kern-Filter 0 Fehler, `EPOS.UI.Tests` 4 505/4 505, `EPOS.Kern.Tests` 3 065/3 066,
+Windows-Schale 0 Fehler, SqlDialektPruefer 1 460 Texte, 0 Fundstellen, Referenzlauf 5/5 PASS
+byte-gleich. Einzig rot jeweils der bekannt fremde Fall
+`SpeicherFlottenGroessenCtrlTests.Die_Fusszeile_der_Karte_nennt_den_Feinpunkt`.
+
+**Was offen bleibt.** Vier Punkte, alle eigener Auftrag, weil sie
+`KostenProjektPositionenCtrl` und `KostenSeiteGaben` berühren: Der Papierkorb an der Zeile
+„ohne Anlagenzuordnung" fragt ohne Anzahl und Summe nach. Beim Anlegen einer Variante
+behalten bereits lose Positionen den Geräteanker des Quellprojekts (`AnkerNachziehen` zieht
+nur Zeilen mit gültiger Anlage nach) und können nie wieder zugeordnet werden.
+`BetriebskostenCtrl` schreibt Betriebskosten anlagenblind — bei mehreren Anlagen desselben
+Gewerks wird die erste überschrieben; für die Investition ist das bereits behoben.
+Variante/Projekt löschen läuft über den Projektnamen statt über die Id. Dazu ein
+Bestandsbefund ohne Wächter: Es gibt keine Prüfung, die die Repo-Testdatenbank selbst auf
+ihren Schemastand hält — jede Arbeitskopie wird im Test selbst nachgezogen.
+
+**Logbuch-Vorschlag** (Version 1.2.0.2):
+
+> Seit 16.09.2026 zeigt die Seite „Kosten" nach dem Wechsel von einer Variante zurück auf das
+> Stammprojekt wieder dessen Kosten. Ein Kostenfaktor, der in Projekt- oder
+> Vorlagenpositionen verwendet wird, lässt sich in der Administration Kostenfaktoren nicht
+> mehr löschen; die Meldung nennt die Anzahl der Positionen und Projekte. Bisher gingen dabei
+> Kostenpositionen in allen Projekten verloren, die diesen Kostenfaktor nutzten.
