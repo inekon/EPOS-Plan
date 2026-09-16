@@ -180,7 +180,7 @@ public class AssistentNeuanlageTests : EposBunitContext
 
         Assert.DoesNotContain("◀ Zurück", cut.Find(".epos-assistent-fuss").TextContent,
                               StringComparison.Ordinal);
-        Assert.Empty(Fussknoepfe(cut).Where(k => k.HasAttribute("disabled")));
+        Assert.DoesNotContain(Fussknoepfe(cut), k => k.HasAttribute("disabled"));
     }
 
     // =====================================================================
