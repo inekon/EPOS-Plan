@@ -10550,6 +10550,9 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="KFAK_MSG_LOESCHEN_FEHLER" xml:space="preserve">
     <value>The cost factor could not be deleted.</value>
   </data>
+  <data name="KFAK_MSG_IN_BENUTZUNG" xml:space="preserve">
+    <value>{0} project item(s) in {1} project(s) and {2} template item(s) refer to this cost factor.</value>
+  </data>
   <data name="WVERL_TITEL" xml:space="preserve">
     <value>Net present value over the service life</value>
   </data>

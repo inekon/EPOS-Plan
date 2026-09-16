@@ -104,7 +104,11 @@ namespace Testdatenbankschema
     /// gerechnet hat. <b>Schritt 80</b> (derselbe Auftrag) gibt <c>Tab_WP</c> den
     /// Katalogverweis <c>ID_Stamm</c> samt Index und traegt ihn bei EINDEUTIGEM
     /// Bezeichner nach - aus <c>WaermepumpeKatalogverweis</c>. Ergebnisneutral: Kein
-    /// Rechenweg liest die Spalte.</para>
+    /// Rechenweg liest die Spalte. <b>Schritt 81</b> (Auftrag #302) baut
+    /// <c>Tab_ProjektWerte</c> neu auf, damit der Fremdschluessel auf
+    /// <c>Tab_Kostenfaktor</c> <c>ON DELETE RESTRICT</c> statt <c>CASCADE</c> traegt -
+    /// aus <c>ProjektWerteLoeschschutz</c>. Ergebnisneutral: Zeilen, IDs und
+    /// AUTOINCREMENT-Stand bleiben, nur die Loeschregel wechselt.</para>
     /// </summary>
     internal static class Program
     {
@@ -115,7 +119,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 80) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 81) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -494,6 +498,38 @@ namespace Testdatenbankschema
             //      Quelle, aus der sich SchemaMigration.Schritt_69_PvKoeffizienten
             //      bedient. Reihenfolge und Idempotenz sind dort begruendet.
             SchrittPvKoeffizienten(trocken);
+            Console.WriteLine();
+
+            // ---- Schritt 81: der Loeschschutz der Projektkosten (Auftrag #302).
+            //      DER ZWEITE TABELLENNEUBAU DIESES WERKZEUGS. Er steht ZULETZT, weil er
+            //      Tab_ProjektWerte vollstaendig kopiert - jede Spalte, die ein
+            //      frueherer Schritt anlegt, muss vorher dastehen (Schritt 75 haengt die
+            //      Verweisspalte NutzungsdauerID an). Die Anweisungen kommen aus
+            //      ProjektWerteLoeschschutz - DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_81_ProjektWerteLoeschschutz bedient; der Umbau
+            //      laeuft dort in EINER Transaktion, hier wie dort ueber Umbauen().
+            //      Ergebnisneutral: Zeilen, IDs und AUTOINCREMENT-Stand bleiben, nur die
+            //      Loeschregel des Fremdschluessels auf Tab_Kostenfaktor wechselt von
+            //      CASCADE auf RESTRICT.
+            long mitKaskade = Zahl(ProjektWerteLoeschschutz.Zaehlung());
+            long zeilenVorher81 = Zahl(ProjektWerteLoeschschutz.ZaehlungZeilen());
+            Console.WriteLine("Schritt 81 - " + ProjektWerteLoeschschutz.TABELLE +
+                              " mit ON DELETE CASCADE auf " + ProjektWerteLoeschschutz.KATALOG +
+                              ": " + mitKaskade + "   (Zeilen " + zeilenVorher81 + ").");
+            if (!trocken)
+            {
+                if (ProjektWerteLoeschschutz.Umbauen())
+                    Console.WriteLine("Schritt 81 - neu aufgebaut; Loeschregel jetzt ON DELETE " +
+                                      ProjektWerteLoeschschutz.LOESCHREGEL + " (" +
+                                      Zahl(ProjektWerteLoeschschutz.ZaehlungNeueRegel()) +
+                                      ", erwartet 1), CASCADE noch " +
+                                      Zahl(ProjektWerteLoeschschutz.Zaehlung()) +
+                                      " (erwartet 0), Zeilen " +
+                                      Zahl(ProjektWerteLoeschschutz.ZaehlungZeilen()) +
+                                      " (erwartet " + zeilenVorher81 + ").");
+                else
+                    Console.WriteLine("Schritt 81: nichts zu tun - die Loeschregel steht bereits.");
+            }
             Console.WriteLine();
 
             Console.WriteLine();

@@ -110,11 +110,21 @@ namespace WindowsFormsApplication1
         /// <b>80</b>: <c>Tab_WP</c> bekommt die nullbare Spalte <c>ID_Stamm</c> samt
         /// Index, nachgetragen wird sie nur bei EINDEUTIGEM Bezeichner; die Anweisungen
         /// stehen bei <see cref="WaermepumpeKatalogverweis"/>, kein Rechenweg liest sie.
+        /// Mit dem LÖSCHSCHUTZ DER PROJEKTKOSTEN (Schritt 81, Auftrag #302 vom
+        /// 16.09.2026) steht das Ziel auf <b>81</b>: Der Fremdschlüssel
+        /// <c>Tab_ProjektWerte.StammID → Tab_Kostenfaktor</c> trug
+        /// <c>ON DELETE CASCADE</c> — EINEN Katalogeintrag zu löschen riss jede
+        /// Projektposition derselben <c>StammID</c> in allen Projekten und Gewerken mit.
+        /// Ab hier trägt er <c>ON DELETE RESTRICT</c>; <c>ON UPDATE CASCADE</c> bleibt.
+        /// Der Schritt ist der ZWEITE Tabellenneubau des SQLite-Zweigs (SQLite kann eine
+        /// Fremdschlüsselregel nicht per <c>ALTER TABLE</c> ändern); die Anweisungen
+        /// stehen bei <see cref="ProjektWerteLoeschschutz"/>. Er kopiert Zeilen, IDs und
+        /// den AUTOINCREMENT-Stand unverändert und ist damit ergebnisneutral.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 80;
+        public const int Zielversion = 81;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -21496,6 +21496,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Projektposition(en) in {1} Projekt(en) und {2} Vorlagenposition(en) verweisen auf diesen Kostenfaktor. ähnelt.
+        /// </summary>
+        public static string KFAK_MSG_IN_BENUTZUNG {
+            get {
+                return ResourceManager.GetString("KFAK_MSG_IN_BENUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kostenfaktor '{0}' wirklich löschen? ähnelt.
         /// </summary>
         public static string KFAK_MSG_LOESCHEN {

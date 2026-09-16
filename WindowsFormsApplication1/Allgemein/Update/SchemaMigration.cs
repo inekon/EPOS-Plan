@@ -2962,6 +2962,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_80_WP_KATALOGVERWEIS = 80;
 
+        /// <summary>
+        /// Schritt 81 — der <b>Löschschutz der Projektkosten</b> (Auftrag <b>#302</b>,
+        /// Befund des Anwenders vom 16.09.2026). Anlass, Anweisungen und
+        /// Ergebnisneutralität stehen vollständig bei
+        /// <see cref="ProjektWerteLoeschschutz"/>.
+        ///
+        /// <para><b>Wozu.</b> Der Fremdschlüssel
+        /// <c>Tab_ProjektWerte.StammID → Tab_Kostenfaktor(StammID)</c> trug
+        /// <c>ON DELETE CASCADE</c>, und <c>PRAGMA foreign_keys = ON</c> steht je
+        /// Verbindung. EINEN Katalogeintrag im Dialog „Administration Kostenfaktoren" zu
+        /// löschen riss damit JEDE Projektposition derselben <c>StammID</c> mit — quer
+        /// durch alle Projekte und alle Gewerke, ohne dass die Rückfrage davon etwas
+        /// nannte. Die Kaskade war nie gewollt: Dieselbe Beziehung an
+        /// <c>Tab_KostenVorlagePosition.StammID</c> trägt überhaupt keinen
+        /// Fremdschlüssel.</para>
+        ///
+        /// <para><b>Zweite Schicht.</b> Die erste ist
+        /// <c>KostenfaktorCtrl.Loeschen</c> — es zählt vor dem <c>DELETE</c> und lehnt
+        /// benannt ab. Dieser Schritt gilt auch für jeden Weg, der an diesem Controller
+        /// vorbeigeht.</para>
+        ///
+        /// <para><b>Tabellenneubau.</b> SQLite ändert keine Fremdschlüsselregel per
+        /// <c>ALTER TABLE</c>; die Tabelle wird nach dem Rezept des Handbuchs neu
+        /// aufgebaut — wie <see cref="SCHRITT_74_SPEICHERAUSLEGUNG_STRICT"/>, nur mit
+        /// zwei Zugaben: Der AUTOINCREMENT-Stand reist mit, und die Umbenennung läuft
+        /// unter <c>PRAGMA legacy_alter_table</c>, weil die Sicht
+        /// <c>Abfrage_Kostenfaktoren</c> die Tabelle liest.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Der Schritt kopiert Zeilen und IDs, er rechnet
+        /// nicht. Der Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <c>ProjektWerteLoeschschutz.UmbauNoetig</c> fragt
+        /// <c>pragma_foreign_key_list</c> nach der REGEL; steht sie schon auf
+        /// <c>RESTRICT</c>, tut der Schritt nichts.</para>
+        /// </summary>
+        public const int SCHRITT_81_PROJEKTWERTE_LOESCHSCHUTZ = 81;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3936,6 +3973,21 @@ namespace WindowsFormsApplication1
                         "Klammer, und \"In Stamm uebernehmen\" legte einen zweiten " +
                         "Katalogsatz an, statt den vorhandenen zu pflegen.",
                         Schritt_80_WpKatalogverweis),
+
+            // AUFTRAG #302 vom 16.09.2026 (Befund des Anwenders: "Ein Kostenfaktor
+            // loeschen leert Positionen in fremden Projekten"). Der Tabellenneubau, die
+            // Zaehlungen und die Idempotenzzusage stehen in ProjektWerteLoeschschutz -
+            // EINE Quelle fuer Migration, Testdatenbank und Nachweis. Ergebnisneutral:
+            // Der Schritt kopiert Zeilen und IDs, er rechnet nicht.
+            new Schritt(SCHRITT_81_PROJEKTWERTE_LOESCHSCHUTZ,
+                        "Tab_ProjektWerte neu aufbauen: der Fremdschluessel auf " +
+                        "Tab_Kostenfaktor traegt ON DELETE RESTRICT statt CASCADE " +
+                        "(Auftrag #302)",
+                        "Ein geloeschter Katalogeintrag risse weiterhin JEDE " +
+                        "Projektposition derselben StammID mit - in allen Projekten " +
+                        "und allen Gewerken, ohne Rueckfrage und ohne Spur. Nur der " +
+                        "Controller haelte dagegen; jeder Weg an ihm vorbei nicht.",
+                        Schritt_81_ProjektWerteLoeschschutz),
         };
 
         /// <summary>
@@ -5419,6 +5471,100 @@ namespace WindowsFormsApplication1
                     " (kein Katalogsatz oder ein mehrdeutiger Bezeichner - dort gilt " +
                     "weiter der Name). KEIN Rechenweg liest die Spalte, KEIN " +
                     "Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 81 - der Loeschschutz der Projektkosten (Auftrag #302)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 81 — Anlass, Anweisungen und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_81_PROJEKTWERTE_LOESCHSCHUTZ"/> und ausführlich bei
+        /// <see cref="ProjektWerteLoeschschutz"/>.
+        ///
+        /// <para><b>Wortgleich zu <see cref="Schritt_74_SpeicherauslegungStrict"/></b>:
+        /// Zählung, Umbau in EINER Transaktion über den Kern, Nachprobe. Der Umbau selbst
+        /// steht nicht hier — er braucht die Transaktionsklammer, die nur
+        /// <c>DataRepository.Vorgang</c> spannt.</para>
+        ///
+        /// <para><b>Die Nachprobe fragt ZWEIMAL:</b> Ist das <c>CASCADE</c> weg UND steht
+        /// das <c>RESTRICT</c> da? Die erste Frage allein bestünde auch ein
+        /// Fremdschlüssel, den es gar nicht mehr gibt.</para>
+        /// </summary>
+        private static bool Schritt_81_ProjektWerteLoeschschutz(Lauf l)
+        {
+            long umzubauen = SqliteZahl(ProjektWerteLoeschschutz.Zaehlung());
+            l.Notiz("81: " + ProjektWerteLoeschschutz.TABELLE + " mit ON DELETE CASCADE auf " +
+                    ProjektWerteLoeschschutz.KATALOG + ": " +
+                    (umzubauen < 0 ? "unbekannt" : umzubauen.ToString(CultureInfo.InvariantCulture)) + ".");
+
+            if (umzubauen == 0)
+            {
+                l.Notiz("81: nichts zu tun - die Loeschregel steht bereits, oder die " +
+                        "Tabelle gibt es auf dieser Datei nicht.");
+                return true;
+            }
+
+            long zeilenVorher = SqliteZahl(ProjektWerteLoeschschutz.ZaehlungZeilen());
+
+            bool umgebaut;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    umgebaut = ProjektWerteLoeschschutz.Umbauen();
+                }
+                catch (Exception ex)
+                {
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz("81: FEHLER - " + text);
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            // Die Nachprobe. Eine -1 heisst "nicht lesbar" und ist Auskunft, keine
+            // Bedingung (dieselbe Regel wie bei SqliteZahl).
+            long rest = SqliteZahl(ProjektWerteLoeschschutz.Zaehlung());
+            long neueRegel = SqliteZahl(ProjektWerteLoeschschutz.ZaehlungNeueRegel());
+            long zeilenNachher = SqliteZahl(ProjektWerteLoeschschutz.ZaehlungZeilen());
+
+            if (rest > 0 || neueRegel == 0)
+            {
+                l.LetzterFehler = "Der Fremdschluessel von " + ProjektWerteLoeschschutz.TABELLE +
+                                  " auf " + ProjektWerteLoeschschutz.KATALOG +
+                                  " traegt nach dem Umbau nicht ON DELETE " +
+                                  ProjektWerteLoeschschutz.LOESCHREGEL + ".";
+                l.Notiz("81: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            if (zeilenVorher >= 0 && zeilenNachher >= 0 && zeilenVorher != zeilenNachher)
+            {
+                l.LetzterFehler = ProjektWerteLoeschschutz.TABELLE + " fuehrte vor dem Umbau " +
+                                  zeilenVorher.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) und danach " +
+                                  zeilenNachher.ToString(CultureInfo.InvariantCulture) + ".";
+                l.Notiz("81: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("81: " + ProjektWerteLoeschschutz.TABELLE + " ist neu aufgebaut" +
+                    (umgebaut ? " (Zeilen, IDs und AUTOINCREMENT-Stand uebernommen)" : "") +
+                    "; der Fremdschluessel auf " + ProjektWerteLoeschschutz.KATALOG +
+                    " traegt jetzt ON DELETE " + ProjektWerteLoeschschutz.LOESCHREGEL +
+                    ", ON UPDATE CASCADE bleibt. Zeilen " +
+                    (zeilenNachher < 0 ? "unbekannt" : zeilenNachher.ToString(CultureInfo.InvariantCulture)) +
+                    ", die fuenf Indizes stehen wieder. Ein geloeschter Kostenfaktor " +
+                    "reisst ab hier keine Projektposition mehr mit; es aendert sich kein " +
+                    "Wert und keine Id - der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

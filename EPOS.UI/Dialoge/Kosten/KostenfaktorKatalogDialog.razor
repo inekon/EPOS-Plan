@@ -84,8 +84,17 @@
     /// <summary>Legt einen Kostenfaktor an. Rueckgabe = neue Id, 0 = nichts geschrieben.</summary>
     [Parameter] public Func<string, int>? Neu { get; set; }
 
-    /// <summary>Loescht einen Kostenfaktor. Rueckgabe <c>false</c> = nichts geloescht.</summary>
-    [Parameter] public Func<int, bool>? Loeschen { get; set; }
+    /// <summary>
+    /// Loescht einen Kostenfaktor. <c>Erfolg = false</c> = nichts geloescht;
+    /// <c>Grund</c> nennt dann, WAS den Eintrag haelt (leer, wenn es nichts zu
+    /// benennen gibt — dann erscheint <see cref="MeldungLoeschenFehler"/>).
+    ///
+    /// <para>Bis Auftrag #302 war das ein <c>Func&lt;int, bool&gt;</c>: Die Kaskade des
+    /// Fremdschluessels riss jede Projektposition desselben Kostenfaktors mit, und der
+    /// Dialog hatte nichts zu sagen als „konnte nicht geloescht werden". Derselbe Aufbau
+    /// wie bei <c>EnergietraegerDialog.TraegerLoeschen</c>.</para>
+    /// </summary>
+    [Parameter] public Func<int, (bool Erfolg, string Grund)>? Loeschen { get; set; }
 
     /// <summary>
     /// Rueckfrage vor dem Loeschen (Huelle: <c>Dienste.Dialog.Frage</c>).
@@ -203,9 +212,13 @@
         if (Rueckfrage is not null &&
             !Rueckfrage(string.Format(VorlageRueckfrage, zeile.Bezeichnung))) return;
 
-        if (!Loeschen(zeile.StammId))
+        (bool erfolg, string grund) = Loeschen(zeile.StammId);
+        if (!erfolg)
         {
-            _meldung = MeldungLoeschenFehler;
+            // Der BENANNTE Grund geht vor: "6 Projektposition(en) in 5 Projekt(en) ..."
+            // sagt dem Anwender, warum der Eintrag bleibt. Nur wenn nichts zu benennen
+            // ist, steht die allgemeine Meldung da (Auftrag #302).
+            _meldung = string.IsNullOrEmpty(grund) ? MeldungLoeschenFehler : grund;
             return;
         }
 

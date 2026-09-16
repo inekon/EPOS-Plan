@@ -31,7 +31,7 @@ namespace WindowsFormsApplication1
                 ["Zeilen"] = Zeilen(),
                 ["NeuLaden"] = new Func<IReadOnlyList<KostenfaktorKatalogDialog.KostenfaktorZeile>>(Zeilen),
                 ["Neu"] = new Func<string, int>(KostenfaktorCtrl.Neu),
-                ["Loeschen"] = new Func<int, bool>(KostenfaktorCtrl.Loeschen),
+                ["Loeschen"] = new Func<int, ValueTuple<bool, string>>(Loeschen),
 
                 // Die Rückfrage von btnDeleteKostenfaktor_Click — derselbe Text,
                 // dieselbe Vorgabe (Ja/Nein mit Fragezeichen).
@@ -57,6 +57,23 @@ namespace WindowsFormsApplication1
                 ["MeldungLoeschenFehler"] = Text_("KFAK_MSG_LOESCHEN_FEHLER",
                     "Der Kostenfaktor konnte nicht gelöscht werden.")
             };
+        }
+
+        /// <summary>
+        /// Löschen MIT dem benannten Grund (Auftrag #302). Der Kern zählt vorher, wer
+        /// den Kostenfaktor benutzt; bleibt er stehen, reicht die Hülle den Grund als
+        /// zweiten Rückgabewert durch, und der Dialog zeigt ihn statt der allgemeinen
+        /// Meldung <c>KFAK_MSG_LOESCHEN_FEHLER</c>.
+        ///
+        /// <para>Derselbe Aufbau wie <c>EnergietraegerHuelle.TraegerLoeschen</c>: Die
+        /// Hülle kennt kein SQL, sie übersetzt nur <c>out string</c> in das Wertepaar,
+        /// das eine Razor-Komponente als Parameter nehmen kann.</para>
+        /// </summary>
+        private static ValueTuple<bool, string> Loeschen(int stammId)
+        {
+            string grund;
+            bool ok = KostenfaktorCtrl.Loeschen(stammId, out grund);
+            return new ValueTuple<bool, string>(ok, grund ?? "");
         }
 
         /// <summary>Die Katalogzeilen aus dem Kern, in die Zeilenform der Komponente.</summary>

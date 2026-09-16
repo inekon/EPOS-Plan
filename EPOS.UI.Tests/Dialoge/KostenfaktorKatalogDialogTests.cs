@@ -33,14 +33,14 @@ public class KostenfaktorKatalogDialogTests : BunitContext
     private IRenderedComponent<KostenfaktorKatalogDialog> Aufbauen(
         Action? beimSchliessen = null,
         Func<string, int>? neu = null,
-        Func<int, bool>? loeschen = null,
+        Func<int, (bool Erfolg, string Grund)>? loeschen = null,
         Func<string, bool>? rueckfrage = null,
         Func<IReadOnlyList<KostenfaktorKatalogDialog.KostenfaktorZeile>>? neuLaden = null)
     {
         return Render<KostenfaktorKatalogDialog>(p => p
             .Add(x => x.Zeilen, Bestand)
             .Add(x => x.Neu, neu ?? (_ => 11))
-            .Add(x => x.Loeschen, loeschen ?? (_ => true))
+            .Add(x => x.Loeschen, loeschen ?? (_ => (true, "")))
             .Add(x => x.Rueckfrage, rueckfrage)
             .Add(x => x.NeuLaden, neuLaden ?? (() => Bestand))
             .Add(x => x.Geschlossen, () => beimSchliessen?.Invoke()));
@@ -142,7 +142,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         bool geloescht = false;
         var cut = Aufbauen(
             rueckfrage: text => { frage = text; return true; },
-            loeschen: _ => { geloescht = true; return true; });
+            loeschen: _ => { geloescht = true; return (true, ""); });
 
         cut.FindAll(".epos-anlagenwahl")[0].Click();
         cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
@@ -157,7 +157,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         bool geloescht = false;
         var cut = Aufbauen(
             rueckfrage: _ => false,
-            loeschen: _ => { geloescht = true; return true; });
+            loeschen: _ => { geloescht = true; return (true, ""); });
 
         cut.FindAll(".epos-anlagenwahl")[0].Click();
         cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
@@ -174,7 +174,7 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         var bestand = new List<KostenfaktorKatalogDialog.KostenfaktorZeile>(Bestand);
         var cut = Aufbauen(
             rueckfrage: _ => true,
-            loeschen: id => { erhalten = id; bestand.RemoveAll(z => z.StammId == id); return true; },
+            loeschen: id => { erhalten = id; bestand.RemoveAll(z => z.StammId == id); return (true, ""); },
             neuLaden: () => bestand);
 
         cut.FindAll(".epos-anlagenwahl")[1].Click();
@@ -189,12 +189,53 @@ public class KostenfaktorKatalogDialogTests : BunitContext
     public void Ohne_Rueckfragedelegat_wird_sofort_geloescht()
     {
         bool geloescht = false;
-        var cut = Aufbauen(loeschen: _ => { geloescht = true; return true; });
+        var cut = Aufbauen(loeschen: _ => { geloescht = true; return (true, ""); });
 
         cut.FindAll(".epos-anlagenwahl")[0].Click();
         cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
 
         Assert.True(geloescht);
+    }
+
+    /// <summary>
+    /// AUFTRAG #302: Ein benutzter Kostenfaktor bleibt stehen, und der BENANNTE Grund
+    /// des Kerns erscheint als Warnbanner — nicht die allgemeine Meldung. Die Zeile
+    /// bleibt in der Liste und bleibt markiert, damit der Anwender sieht, worum es geht.
+    /// </summary>
+    [Fact]
+    public void Ein_benutzter_Kostenfaktor_meldet_den_Grund_und_bleibt_in_der_Liste()
+    {
+        const string Grund = "6 Projektposition(en) in 5 Projekt(en) und 0 " +
+                             "Vorlagenposition(en) verweisen auf diesen Kostenfaktor.";
+        var cut = Aufbauen(
+            rueckfrage: _ => true,
+            loeschen: _ => (false, Grund));
+
+        cut.FindAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
+
+        Assert.Equal(Grund, cut.Find(".epos-warnbanner-text").TextContent);
+        Assert.Equal(2, cut.Instance.Angezeigt.Count);
+        Assert.Equal(3, cut.Instance.Gewaehlt);
+    }
+
+    /// <summary>
+    /// Bleibt der Grund leer, steht die allgemeine Meldung da — der Rueckfall, den es
+    /// vor Auftrag #302 als einzige Antwort gab.
+    /// </summary>
+    [Fact]
+    public void Ohne_benannten_Grund_steht_die_allgemeine_Meldung()
+    {
+        var cut = Aufbauen(
+            rueckfrage: _ => true,
+            loeschen: _ => (false, ""));
+
+        cut.FindAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
+
+        Assert.Equal("Der Kostenfaktor konnte nicht gelöscht werden.",
+                     cut.Find(".epos-warnbanner-text").TextContent);
+        Assert.Equal(2, cut.Instance.Angezeigt.Count);
     }
 
     [Fact]

@@ -260,6 +260,15 @@ namespace EPOS.Kern.Tests
                 DataRepository.ExecuteNonQuery(WaermepumpeKatalogverweis.SQL_INDEX);
                 DataRepository.ExecuteNonQuery(WaermepumpeKatalogverweis.SqlNachtrag());
 
+                // Schritt 81 (Auftrag #302, 16.09.2026): der Loeschschutz der
+                // Projektkosten - Tab_ProjektWerte neu aufgebaut, damit der
+                // Fremdschluessel auf Tab_Kostenfaktor ON DELETE RESTRICT statt CASCADE
+                // traegt. DIESELBE Quelle wie in der Migration und im Werkzeug, und er
+                // steht ZULETZT: Er kopiert die Tabelle vollstaendig, also muss jede
+                // Spalte eines frueheren Schritts (Schritt 75: NutzungsdauerID) vorher
+                // dastehen. Steht die Regel schon, tut der Aufruf nichts.
+                ProjektWerteLoeschschutz.Umbauen();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
