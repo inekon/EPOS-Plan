@@ -207,10 +207,102 @@ namespace WindowsFormsApplication1
                         ? row[SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE]
                         : null);
 
+                HeizkesselNachziehen(model);
+
                 return true;
             }
 
             return false;
+        }
+
+        // =====================================================================
+        // HK-E-1 — DER HEIZKESSEL KOMMT IN DIE KASKADE
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Ein Heizkessel, den das Projekt fuehrt, bekommt automatisch einen
+        /// Kaskadenplatz, wenn er keinen hat</b> (Anwenderentscheid HK-E-1 vom
+        /// 15.09.2026: „Umsetzen", Vorgabe NACHRANGIG, Position waehlbar).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Der Befund, den er schliesst</b> (#190): Die Simulation rechnet
+        /// einen Waermeerzeuger ausschliesslich dann, wenn seine Technologie in einem
+        /// der vier Plaetze <c>Tab_Einstellungen.Tool_1..4</c> steht. Einen Kessel
+        /// anzulegen legte aber keinen Platz an — <see cref="Kaskade.Aufnehmen"/> hatte
+        /// als einzigen Aufrufer das „+ aufnehmen" der verfuegbaren Karte. Die Anlage
+        /// stand im Projekt und rechnete still nicht mit. Stufe 1 (#190) hat das
+        /// sichtbar gemacht und bewusst nichts geaendert; hier kommt die Wirkung.</para>
+        ///
+        /// <para><b>NACHRANGIG ist die Vorgabe</b>, und sie ist bereits die Semantik von
+        /// <see cref="Kaskade.Aufnehmen"/>: erster freier Platz HINTER dem letzten
+        /// belegten, die Karte erscheint also am Ende der Kaskade. Ein eigenes Verfahren
+        /// waere eine zweite Wahrheit ueber „hinten".</para>
+        ///
+        /// <para><b>Die Position bleibt WAEHLBAR, und dafuer wird nichts Neues gebaut:</b>
+        /// Die Simulationskonfiguration ordnet die Kaskade seit jeher mit den Pfeilen der
+        /// Erzeugerkachel um (<c>Kaskade.Verschieben</c>). Weil diese Automatik nur
+        /// greift, solange KEIN Platz den Heizkessel traegt, ueberschreibt jede
+        /// Umordnung sie dauerhaft — der Anwender waehlt, die Vorgabe greift nur einmal.</para>
+        ///
+        /// <para><b>Warum hier und warum GESCHRIEBEN wird.</b> Diese Stelle ist der eine
+        /// Trichter, durch den jede Lesung der Konfiguration laeuft — Simulationslauf,
+        /// Referenz- und CI-Lauf, Speicherauslegung und die Konfigurationsseite. Ein
+        /// bloss im Arbeitsspeicher gesetzter Platz waere trotzdem falsch:
+        /// <c>Ladeordnung.Kaskadenpositionen</c> liest <c>Tool_1..4</c> waehrend des
+        /// Laufs unmittelbar aus der Datenbank. Steht der Platz nur im Modell, rechnete
+        /// derselbe Lauf mit zwei verschiedenen Kaskaden. Geschrieben wird deshalb
+        /// sofort — und nur EINMAL je Projekt, denn danach traegt ein Platz den
+        /// Heizkessel und die Bedingung trifft nie wieder.</para>
+        ///
+        /// <para><b>Schlaegt das Schreiben fehl</b> (schreibgeschuetzte Datenbank), bleibt
+        /// auch das Modell unveraendert. Lieber der alte Zustand samt seiner Warnung als
+        /// zwei Wahrheiten ueber die Kaskade in einem Lauf.</para>
+        ///
+        /// <para><b>Nur der Heizkessel.</b> Der Entscheid nennt ihn allein. Waermepumpe,
+        /// Solarthermie, BHKW, Photovoltaik und Stromspeicher ohne Platz bleiben
+        /// unberuehrt und werden weiterhin nur gemeldet
+        /// (<c>SimulationLaufCtrl.ErzeugerOhneKaskadenplatz</c>).</para>
+        /// </remarks>
+        /// <param name="model">Das eben gefuellte Konfigurationsmodell.</param>
+        /// <returns><c>true</c>, wenn ein Platz belegt und geschrieben wurde.</returns>
+        private static bool HeizkesselNachziehen(KonfigurationModel model)
+        {
+            if (model == null || model.m_ID_Projekt <= 0) return false;
+            if (Kaskade.Lesen(model).Contains(DbWerte.ERZEUGER_HEIZKESSEL)) return false;
+            if (!HeizkesselImProjekt(model.m_ID_Projekt)) return false;
+
+            // Auf einer KOPIE probieren: Erst wenn das Schreiben durchgeht, gilt der
+            // neue Platz auch im Modell.
+            KonfigurationModel probe = new KonfigurationModel();
+            Kaskade.Schreiben(probe, Kaskade.Lesen(model));
+            if (!Kaskade.Aufnehmen(probe, DbWerte.ERZEUGER_HEIZKESSEL)) return false;
+
+            if (StilleDb.NonQuery(
+                    "UPDATE Tab_Einstellungen SET Tool_1 = ?, Tool_2 = ?, Tool_3 = ?, Tool_4 = ? " +
+                    "WHERE ID_Projekt = ?",
+                    StilleDb.Par("@t1", DbParamTyp.VarWChar, probe.m_Tool_1 ?? ""),
+                    StilleDb.Par("@t2", DbParamTyp.VarWChar, probe.m_Tool_2 ?? ""),
+                    StilleDb.Par("@t3", DbParamTyp.VarWChar, probe.m_Tool_3 ?? ""),
+                    StilleDb.Par("@t4", DbParamTyp.VarWChar, probe.m_Tool_4 ?? ""),
+                    StilleDb.Par("@proj", DbParamTyp.Integer, model.m_ID_Projekt)) <= 0)
+                return false;
+
+            Kaskade.Schreiben(model, Kaskade.Lesen(probe));
+            return true;
+        }
+
+        /// <summary>
+        /// Fuehrt das Projekt wenigstens eine Heizkesselanlage
+        /// (<c>Tab_Energieanlagen.ID_Type</c> = <see cref="WizardItemClass.KESSEL_TYP"/>)?
+        /// Dialogfrei gelesen, weil derselbe Weg im unbeaufsichtigten Referenz- und
+        /// CI-Lauf benutzt wird.
+        /// </summary>
+        private static bool HeizkesselImProjekt(int idProjekt)
+        {
+            return StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.KESSEL_TYP)), 0) > 0;
         }
 
         // =====================================================================

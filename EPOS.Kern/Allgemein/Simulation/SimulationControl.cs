@@ -3619,10 +3619,13 @@ namespace WindowsFormsApplication1
         /// Plaetze anders gesetzt haben als die gespeicherte Zeile; gemeldet wird, was
         /// DIESER Lauf wirklich rechnet.</para>
         ///
-        /// <para><b>Ergebnisneutral.</b> Es wird kein Platz belegt (Anwenderentscheid
-        /// HK-E-1a vom 11.09.2026: melden, nicht automatisch aufnehmen), und das
-        /// Protokoll gehoert nicht zum Referenzexport — <c>Ergebnisexport</c> schreibt
-        /// ausschliesslich <c>Tab_Ergebnis*</c> und die Ganglinien.</para>
+        /// <para><b>Ergebnisneutral.</b> Es wird kein Platz belegt — hier wird nur
+        /// gemeldet —, und das Protokoll gehoert nicht zum Referenzexport;
+        /// <c>Ergebnisexport</c> schreibt ausschliesslich <c>Tab_Ergebnis*</c> und die
+        /// Ganglinien. <b>Der Heizkessel kommt hier nicht mehr vor</b>
+        /// (Anwenderentscheid HK-E-1 vom 15.09.2026): Seinen Platz zieht
+        /// <c>KonfigurationCtrl.HeizkesselNachziehen</c> beim Lesen der Konfiguration
+        /// nach, lange bevor <c>tool</c> hier ausgewertet wird.</para>
         /// </summary>
         private void ErzeugerOhneKaskadenplatzMelden()
         {
