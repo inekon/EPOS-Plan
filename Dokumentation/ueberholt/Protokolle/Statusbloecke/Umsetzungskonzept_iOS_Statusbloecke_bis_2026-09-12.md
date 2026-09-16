@@ -7565,7 +7565,7 @@ auf — der letzte Griff bleibt beim Anwender. Ob er statt dessen unmittelbar au
 Anwenderentscheid vom 16.09.2026 auf den offenen Punkt „Nach #302 (Kaskade)": „Was fehlt, ist
 die Zuordnung je Anlage zum Energieträger: Brennstoff, Kosten und Emissionen dieser Anlagen
 lassen sich im Bericht keinem Träger zuordnen: Korrigiere & setze um." Dazu der Entscheid
-**„240 gilt"** vom selben Tag. Commit: `%%HALT%%`.
+**„240 gilt"** vom selben Tag. Commit: `d353369e`.
 
 **Der Auftrag ist an seiner eigenen Abbruchbedingung angehalten worden.** Die Zuordnung ist
 **nicht** emissionsneutral: Sie verschiebt den wirksamen CO₂-Faktor der betroffenen Anlagen
@@ -7667,6 +7667,21 @@ die Emissionswerte festgenagelt**; die Emissionstests arbeiten mit ausdrücklich
 Träger-IDs und sind von der Zuordnung an der Anlage unberührt. **Keine neue Basis, kein Push,
 kein CI-Lauf, kein iOS-Lauf, kein Wiki-Upload, keine Zahl in `emissionswert`,
 `energy_carrier` oder `Tab_Brennstoff_Stamm` geändert, `GEG_NACHWEIS` nicht aktiv gesetzt.**
+
+### Was ein Weg zurück zur 240 kosten würde — gemessen
+
+Für den Fall, dass der Anwender beides will (Zuordnung UND die Zahlen des Entscheids):
+
+| Träger | aktiv heute | Zeile mit der Zahl des Entscheids |
+|---|---|---|
+| 63, 64 (Gas) | `BAFA_EEW` 201 | `GEG_NACHWEIS` **240**, vorhanden, nicht aktiv |
+| 54, 58, 60 (Strom) | `BAFA_EEW` 435 | **keine** — `GEG_NACHWEIS` steht auf 100, `UBA_STROMMIX` auf 379/387/442 |
+
+Beim **Gas** genügte es also, die vorhandene `GEG_NACHWEIS`-Zeile aktiv zu setzen. Beim
+**Strom gibt es diesen Weg nicht**: Die 560 steht ausschließlich in `Tab_Brennstoff_Stamm`
+und in den Projektübersteuerungen. Wer beide Zahlen halten will, braucht deshalb je Projekt
+eine Übersteuerung in `energy_project_settings` — genau die Bauart, die 1018, 1024, 1030 und
+1039–1045 bereits führen und die sie in dieser Messung unbewegt gelassen hat.
 
 ### Bestandsbefund ohne Auftrag
 
