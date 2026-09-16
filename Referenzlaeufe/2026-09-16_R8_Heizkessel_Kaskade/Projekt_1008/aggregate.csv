@@ -17,7 +17,7 @@ Puffer.SOC_Mittel;5.79364889
 Puffer.SOC_Max;6.528875
 Puffer.Vollzyklen;4134.18454
 Sim.Speicher_Anzahl;1
-Em.Kessel.Co2T;2.41627632
+Em.Kessel.Co2T;2.88510606
 Em.Kessel.So2Kg;0.00360638257
 Em.Kessel.NoxKg;1.32234028
 Em.Kessel.CoKg;0
@@ -94,7 +94,7 @@ HeizkesselModul[0].Waerme_Oel;0
 HeizkesselModul[0].Brennstoff;
 HeizkesselModul[0].Verbrauch;0
 HeizkesselModul[0].Jahresnutzungsgrad;23.11
-HeizkesselModul[0].carrier_id;64
+HeizkesselModul[0].carrier_id;
 HeizkesselModul[0].Waermeproduktion;0
 HeizkesselModul[0].Hilfsenergie;0
 Pufferspeicher[0].ID_Pufferspeicher;1008007

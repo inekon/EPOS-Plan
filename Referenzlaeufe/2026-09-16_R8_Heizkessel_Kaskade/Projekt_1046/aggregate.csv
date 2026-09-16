@@ -10,7 +10,7 @@ Sim.bSimulationPV;True
 Sim.bSimulationSSP;True
 Sim.PufferWP_vorhanden;False
 Sim.Speicher_Anzahl;0
-Em.Kessel.Co2T;3.11016591
+Em.Kessel.Co2T;3.71363094
 Em.Kessel.So2Kg;0.00464203868
 Em.Kessel.NoxKg;1.70208085
 Em.Kessel.CoKg;0
@@ -123,7 +123,7 @@ HeizkesselModul[0].Waerme_Oel;0
 HeizkesselModul[0].Brennstoff;
 HeizkesselModul[0].Verbrauch;0
 HeizkesselModul[0].Jahresnutzungsgrad;39.62
-HeizkesselModul[0].carrier_id;64
+HeizkesselModul[0].carrier_id;
 HeizkesselModul[0].Waermeproduktion;0
 HeizkesselModul[0].Hilfsenergie;0
 Solarthermie.Waermebedarf;57.13

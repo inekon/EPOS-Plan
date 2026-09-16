@@ -70,13 +70,6 @@ Damit ist `Kenndaten_Test.sqlite` an den **Emissionsfaktoren** regressionsreleva
 >
 > **Nicht** betroffen ist die Pflege von **Vorlagen** (`ist_aktiv = falsch`, 224 Zeilen) —
 > sie erreichen die Lesekette gar nicht.
->
-> **Ebenso betroffen: der Energieträger einer Brenner-Anlage** — `Tab_Energieanlagen.ID_Carrier`
-> an einer Anlage mit `ID_Type` 10 (Heizkessel) oder 11 (BHKW). Er ist kein Faktor, aber er
-> wählt, welcher Faktorsatz für die Anlage gilt: mit Träger die Kette Projektwert → aktive
-> `emissionswert`-Zeile → `Tab_Brennstoff_Stamm` → `energy_carrier`, ohne Träger unmittelbar
-> `Tab_Brennstoff_Stamm` über den Brennstoff des Geräts. Beide Wege enden auf verschiedenen
-> Zahlen, solange der Katalogwiderspruch unten offen ist.
 
 Ohne diese Regel fiele die CI beim nächsten Katalogschritt rot aus, ohne dass jemand mit dem
 Zusammenhang rechnete. Herleitung und Messung stehen in
@@ -134,17 +127,17 @@ Herleitung der Größen, der drei Gegenproben und der Wahl des Peak-Ziels stehen
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-16_R9_Energietraeger_Brenner`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-16_R8_Heizkessel_Kaskade`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Skripte` und `LIESMICH.md` stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
 Dateien, 1 016,7 MB) sind am 11.09.2026 aus dem Arbeitsbaum gefallen (**SYNC‑Q1**: „entfernt
 lassen") und seit dem Umschreiben der Git-Geschichte (**AUF‑Q1**, 12.09.2026) auch dort nicht
-mehr enthalten; **`2026-09-11_R7_Speicherflotte` und `2026-09-16_R8_Heizkessel_Kaskade` sind am
-16.09.2026 nach demselben Muster gefallen** (26 Basen, ihre Protokolle gesichert). Kein Test,
-kein Gate, keine CI liest eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund
-8 000 CSV-Dateien) — eine alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 26 Basen samt der Tabelle Basis → Datum → Zweck →
+mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselben Muster
+gefallen** (25 Basen, ihr Protokoll gesichert). Kein Test, kein Gate, keine CI liest eine
+entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine alte
+Zahl steht nur noch im Protokoll.
+Erhalten sind die **Protokolle** aller 25 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort in der ausgelagerten
@@ -152,103 +145,51 @@ Protokoll unter
 
 ## Aktuelle Basis
 
-**`2026-09-16_R9_Energietraeger_Brenner/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
+**`2026-09-16_R8_Heizkessel_Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 82**, unverändert gegenüber R8). Gegen diese Basis hält
-`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, **1046**) jeden Push, `ios.yml` den
-iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach. Sie ist die
-**einzige** Basis im Arbeitsbaum.
+(**Schemastand 82**). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
+1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung
+zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: der Anwenderentscheid vom 16.09.2026.** „Was fehlt, ist die Zuordnung je Anlage
-> zum Energieträger: Brennstoff, Kosten und Emissionen dieser Anlagen lassen sich im Bericht
-> keinem Träger zuordnen." Die Simulation kennt genau eine Quelle für die Emissionsfaktoren
-> eines Brenners: den zugeordneten Träger (`Tab_Energieanlagen.ID_Carrier`, gelesen von
-> `SimulationControl.EnergietraegerZuordnungLesen`). War die Spalte leer, warnte der Lauf, das
-> Ergebnismodul bekam keine `carrier_id`, und `KostenEmissionRechner` zählte die Anlage als
-> Verbrauch ohne Träger mit `kostenVollstaendig = false`. **Der Rechenweg ist nicht angefasst**
-> — nur Daten der Testdatenbank.
+> **Anlass: der Anwenderentscheid HK‑E‑1 vom 15.09.2026, „Umsetzen".** Ein Wärmeerzeuger
+> rechnet nur, wenn seine Technologie in einem der vier Plätze `Tab_Einstellungen.Tool_1..4`
+> steht. Einen Heizkessel anzulegen legte aber keinen Platz an — die Anlage stand im Projekt
+> und wurde still übergangen. Seit diesem Entscheid zieht das Lesen der Konfiguration den
+> Platz nach (`KonfigurationCtrl.HeizkesselNachziehen`), **nachrangig** am hinteren Ende der
+> Kaskade und in die Projektdaten geschrieben; die vorhandene Umordnung der
+> Simulationskonfiguration überschreibt diese Vorgabe dauerhaft. **Nur der Heizkessel** —
+> Wärmepumpe, Solarthermie, BHKW, Photovoltaik und Stromspeicher ohne Platz werden weiterhin
+> nur gemeldet.
 >
-> **Elf Brenner-Anlagen des ganzen Bestands haben ihren Träger bekommen**, davon acht in
-> Referenzprojekten; die drei übrigen (1009 zweimal, 1031 einmal) rechnen in keiner Basis mit.
-> Nachgetragen hat das wiederholbare Werkzeug `sql/tools/Setze-Energietraeger-Brenner.sql`
-> samt Läufer: Probe auf einer Kopie, Zählungen vorher/nachher, Sollzuordnung je Anlage,
-> `foreign_key_check`, `integrity_check`, Wiederholungslauf, erst dann Schreiben.
+> **Drei Projekte verschieben sich, zehn sind byte-gleich zur Vorgängerbasis.** Betroffen
+> ist genau, wer eine Heizkesselanlage führt und keinen Kesselplatz hatte: **1007**, **1008**
+> und **1046**. Die übrigen zehn Projekte sind `diff -rq` ohne einen einzigen Unterschied.
 >
-> | Projekt | Anlage | Art | Brennstoff | Träger |
-> |---|---|---|---|---|
-> | 1007 | 10358 | Heizkessel | 1 Stadtgas | **64** „Stadtgas" |
-> | 1008 | 10134 | Heizkessel | 1 Stadtgas | **64** |
-> | 1017 | 10260 | BHKW | 1 Stadtgas | **64** |
-> | 1046 | 14939 | Heizkessel | 1 Stadtgas | **64** |
-> | 1018 | 10369 | Heizkessel | 3 Erdgas E | **63** „Erdgas E" |
-> | 1023 | 11205 | Heizkessel | 3 Erdgas E | **63** |
-> | 1017 | 10259 | Heizkessel | 13 Elektrische Energie | **60** — Annahme, siehe unten |
-> | 1024 | 11255 | Heizkessel | 13 Elektrische Energie | **60** — Annahme, siehe unten |
->
-> **Unberührt bleiben Wärmepumpe, Solarthermie, Photovoltaik, Stromspeicher und
-> Pufferspeicher**: Sie führen im ganzen Bestand keinen `ID_Carrier`, und das ist so
-> vorgesehen (`ProjektEnergietraegerCtrl`, `WErzeugerCtrl`), keine Lücke. Ebenso unberührt
-> bleibt jede Anlage, die bereits einen Träger trägt.
->
-> **Sieben Projekte verschieben sich, sechs sind byte-gleich zur Vorgängerbasis** — und es
-> bewegen sich **ausschließlich CO₂-Größen** und die neu belegte `carrier_id`:
->
-> | Projekt | Skalar | R8 | R9 |
-> |---|---|---:|---:|
-> | 1007 | `Em.Kessel.Co2T` [t/a] | 3,71363094 | **3,11016591** (−16,25 %) |
-> | 1008 | `Em.Kessel.Co2T` [t/a] | 2,88510606 | **2,41627632** (−16,25 %) |
-> | 1017 | `Em.Kessel.Co2T` [t/a] | 10,4728765 | **8,13518083** (−22,32 %) |
-> | 1017 | `Em.Bhkw.Co2T` [t/a] | 21,6405316 | **18,1239452** (−16,25 %) |
-> | 1023 | `Em.Kessel.Co2T` [t/a] | 18,872987 | **15,8061266** (−16,25 %) |
-> | 1046 | `Em.Kessel.Co2T` [t/a] | 3,71363094 | **3,11016591** (−16,25 %) |
-> | 1007, 1008, 1046 | `HeizkesselModul[0].carrier_id` | leer | **64** |
-> | 1017 | `HeizkesselModul[0].carrier_id` / `BHKWModul[0].carrier_id` | leer | **60** / **64** |
-> | 1018, 1023 | `HeizkesselModul[0].carrier_id` | leer | **63** / **63** |
-> | 1024 | `HeizkesselModul[0].carrier_id` | leer | **60** |
->
-> **Wärme, Strom und Brennstoffmengen bleiben Wert für Wert stehen**, ebenso SO₂, NOₓ, CO und
-> Staub: Der Träger bestimmt den Emissionsfaktor, nicht den Rechenweg. Vierzehn Abweichungen
-> in 3 882 737 Werten, alle in `aggregate.csv`; kein Vektor einer Ganglinie hat sich bewegt.
->
-> **1018 und 1024 verschieben sich NICHT, obwohl sie einen Träger bekommen haben.** Beide
-> führen für genau diesen Träger eine Projektübersteuerung in `energy_project_settings`
-> (1018/63: 240 g/kWh; 1024/60: 560 g/kWh) — und die steht in der Lesekette ganz oben. Sie
-> treffen damit dieselbe Zahl wie zuvor der Brennstoffstamm. 1030 und 1039–1045 waren schon
-> vorher zugeordnet.
->
-> **Die Annahme, die der Anwender umstoßen kann: Brennstoff 13 → Träger 60.** Zu
-> „Elektrische Energie" führt der Katalog **drei** Träger — 54 „Strom Variante",
-> 58 „Elektrische Energie 2", 60 „Elektrische Energie". Gewählt ist der **namensgleiche 60**;
-> das ist eine Annahme, keine Ableitung, und sie steht an einer Stelle im Skript. Für die
-> **Emissionen** sind die drei gleichwertig (alle enden auf CO₂ 435, SO₂ 200, NOₓ 280,
-> Staub 12 g bzw. mg/kWh). Für **Preis und Heizwert nicht**:
->
-> | | 54 | 58 | 60 |
+> | Größe | 1007 | 1008 | 1046 |
 > |---|---:|---:|---:|
-> | `hs_kwh_per_unit` | 0,0 | 1,0 | 1,0 |
-> | Preis in **1017** | 0,38 €/kWh + 50 € Grundpreis | 0,32 €/kWh | **keine Preiszeile** |
-> | Preis in **1024** | keine Preiszeile | keine Preiszeile | 0,35 €/kWh + 50 € Grundpreis |
+> | `Sim.Restwaerme` [MWh] | 6,1313 → **0** | 2,7781 → **0** | 6,1313 → **0** |
+> | `Heizkessel.Waermeproduktion` [MWh] | — → **6,13** | — → **2,78** | — → **6,13** |
+> | `Heizkessel.Gasverbrauch` [MWh] | — → **15,47** | — → **12,02** | — → **15,47** |
+> | `Heizkessel.Waermebedarfsdeckung` [%] | — → **10,73** | — → **5,07** | — → **10,73** |
+> | `Em.Kessel.Co2T` [t/a] | — → **3,7136** | — → **2,8851** | — → **3,7136** |
+> | `Sim.bSimulationKessel` | False → **True** | False → **True** | False → **True** |
+> | CSV / Skalare | 29/99 → **33/139** | 21/101 → **25/141** | 33/145 → **37/185** |
 >
-> In **1024** ist 60 damit der gepflegte Träger — er hält Preis und Emissionswert. In **1017**
-> ist er der einzige der drei **ohne** Preiszeile: Der Strom des Elektrokessels kostet dort in
-> der Wirtschaftlichkeit 0 €/kWh, während 54 und 58 einen Preis führen. Die Referenzbasis
-> misst keine Kostengrößen und bleibt davon unberührt; die **Wirtschaftlichkeit des Projekts
-> 1017 hängt an dieser Wahl**. Wer 54 oder 58 für richtig hält, ändert die Zahl im Kopf von
-> `Setze-Energietraeger-Brenner.sql` und friert neu ein.
+> **Die Richtung stimmt fachlich:** Der Kessel steht am hinteren Ende der Kaskade und nimmt
+> nur, was die vorderen Stufen übrig lassen. Deshalb sinkt die ungedeckte Restwärme auf null,
+> und Kesselwärme, Brennstoff und Emissionen kommen hinzu — **kein anderer Erzeuger verliert
+> Deckung**: Wärmepumpe, Solarthermie und Photovoltaik rechnen in allen drei Projekten Wert
+> für Wert wie zuvor. Der niedrige Jahresnutzungsgrad (39,6 % bzw. 23,1 %) ist die Rechnung
+> eines Kessels, der nur wenige Spitzenstunden fährt und den Rest des Jahres
+> Betriebsbereitschaft vorhält.
 >
-> **Offen und bewusst nicht aufgelöst: der Katalogwiderspruch.** Derselbe Brennstoff trägt in
-> `Tab_Brennstoff_Stamm` und im Trägerkatalog verschiedene CO₂-Faktoren:
->
-> | Brennstoff | `Tab_Brennstoff_Stamm.CO2` | aktive `emissionswert`-Zeile des Trägers |
-> |---|---:|---:|
-> | 1 Stadtgas / 3 Erdgas E | 240 g/kWh | **201 g/kWh** (Träger 64 bzw. 63, Quelle BAFA_EEW) |
-> | 13 Elektrische Energie | 560 g/kWh | **435 g/kWh** (Träger 54/58/60, Quelle BAFA_EEW) |
->
-> Seit dieser Basis rechnen die zugeordneten Brenner mit dem Trägerwert — daher die −16,25 %
-> bzw. −22,32 %. **Welcher der beiden Werte der fachlich richtige ist, ist eine Frage an den
-> Anwender und hier nicht entschieden.** Wird sie beantwortet, verschiebt sich die Basis
-> erneut.
+> **Zwei weitere Änderungen dieser Welle verschieben die Basis NICHT** und sind deshalb
+> getrennt gemessen: Die Bereinigung der zwei Probierpuffer „test" (2 Ltr, 4 000 €) in 1007
+> und 1046 ist **13/13 byte-gleich** — sie hängen an keiner Zeile von `Z_ProjektPufferSp` und
+> rechnen im hydraulischen Weg nicht mit. Und im Größenlauf der Speicherflotte wurde **nichts
+> geändert**; die dort offene Frage nach den Produktparametern ist durch den Entscheid vom
+> 15.09.2026 zur Gerätesuche bereits beantwortet.
 >
 > **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich**,
 > Toleranzvergleich **13/13 PASS** (3 882 737 Werte), Laufzeit 00:00:06.
@@ -257,13 +198,14 @@ iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach. Sie is
 > dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
->   --ziel Referenzlaeufe/2026-09-16_R9_Energietraeger_Brenner
+>   --ziel Referenzlaeufe/2026-09-16_R8_Heizkessel_Kaskade
 > ```
 >
 > Ablauf, Warnungen und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
-> **Die Vorgängerbasis `2026-09-16_R8_Heizkessel_Kaskade`** ist mit dieser Einfrierung aus dem
-> Arbeitsbaum gefallen; ihr Protokoll und die Herleitung ihres Wechsels stehen in
+> **Die Vorgängerbasis `2026-09-11_R7_Speicherflotte`** ist mit dieser Einfrierung aus dem
+> Arbeitsbaum gefallen; ihr Protokoll samt Herleitung des Prüfprojekts 1046 und den sechs
+> Nachträgen zu den Schemaständen 74 bis 81 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
@@ -434,7 +376,7 @@ wird oder die Kopie außerhalb des Repos liegen soll.
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen.** Die einzige Basis im Arbeitsbaum,
-   `2026-09-16_R9_Energietraeger_Brenner`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
+   `2026-09-16_R8_Heizkessel_Kaskade`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
    Wer auf Windows gegen die produktive Datenbank misst, friert **vor** der Änderung selbst
    einen Stand ein und vergleicht gegen diesen. **`--projekte` ist Pflicht**:
    ```powershell

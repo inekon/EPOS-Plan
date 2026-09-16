@@ -10,12 +10,12 @@ Sim.bSimulationPV;False
 Sim.bSimulationSSP;True
 Sim.PufferWP_vorhanden;False
 Sim.Speicher_Anzahl;0
-Em.Kessel.Co2T;8.13518083
+Em.Kessel.Co2T;10.4728765
 Em.Kessel.So2Kg;3.74031302
 Em.Kessel.NoxKg;5.23643823
 Em.Kessel.CoKg;0
 Em.Kessel.StaubKg;0.224418781
-Em.Bhkw.Co2T;18.1239452
+Em.Bhkw.Co2T;21.6405316
 Em.Bhkw.So2Kg;0.0270506645
 Em.Bhkw.NoxKg;9.918577
 Em.Bhkw.CoKg;0
@@ -68,7 +68,7 @@ BHKWModul[0].Waermeproduktion;54.05
 BHKWModul[0].Stromproduktion;28.45
 BHKWModul[0].Brennstoff;Gas
 BHKWModul[0].Verbrauch;90.17
-BHKWModul[0].carrier_id;64
+BHKWModul[0].carrier_id;
 BHKWModul[0].VbhThermisch;2844.98
 BHKWModul[0].VbhElektrisch;2844.98
 BHKWModul[0].Hilfsenergie;0
@@ -100,7 +100,7 @@ HeizkesselModul[0].Waerme_Oel;0
 HeizkesselModul[0].Brennstoff;
 HeizkesselModul[0].Verbrauch;0
 HeizkesselModul[0].Jahresnutzungsgrad;47.64
-HeizkesselModul[0].carrier_id;60
+HeizkesselModul[0].carrier_id;
 HeizkesselModul[0].Waermeproduktion;0
 HeizkesselModul[0].Hilfsenergie;0
 Vektor.waermebedarf.Summe;62964.7091

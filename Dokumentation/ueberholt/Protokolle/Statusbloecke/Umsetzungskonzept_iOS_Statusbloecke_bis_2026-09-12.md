@@ -7560,128 +7560,125 @@ auf — der letzte Griff bleibt beim Anwender. Ob er statt dessen unmittelbar au
 
 ---
 
-## #304 — Jede Brenner-Anlage bekommt ihren Energieträger (16.09.2026)
+## #304 — Energieträger je Brenner-Anlage: gemessen und angehalten (16.09.2026)
 
 Anwenderentscheid vom 16.09.2026 auf den offenen Punkt „Nach #302 (Kaskade)": „Was fehlt, ist
 die Zuordnung je Anlage zum Energieträger: Brennstoff, Kosten und Emissionen dieser Anlagen
-lassen sich im Bericht keinem Träger zuordnen: Korrigiere & setze um." Der Auftrag verschiebt
-die eingefrorene Basis ausdrücklich; am Ende steht **R9**. Commits: `a945c88f` (Werkzeug und
-Daten der Testdatenbank), dazu der Commit der Basis R9 und der Papiere. **Kein Rechenweg, kein
-Controller, keine Oberfläche angefasst.**
+lassen sich im Bericht keinem Träger zuordnen: Korrigiere & setze um." Dazu der Entscheid
+**„240 gilt"** vom selben Tag. Commit: `%%HALT%%`.
 
-**Der Befund.** `SimulationControl.EnergietraegerZuordnungLesen` liest ausschließlich
-`Tab_Energieanlagen.ID_Carrier`. War die Spalte leer, schrieb der Lauf eine Protokollwarnung,
-das Ergebnismodul bekam keine `carrier_id`, und `KostenEmissionRechner` zählte die Anlage als
-`verbrauchOhneTraeger` mit `kostenVollstaendig = false`. Einen Rückfall auf den
-Gerätebrennstoff gibt es in der Simulation bewusst nicht (`ErgebnisCtrl`, entfernt am
-22.08.2026): `Tab_Heizkessel`/`Tab_BHKW` führen EINE ZEILE JE GERÄT, und zu einem Brennstoff
-gibt es mehrere `energy_carrier`-Sätze mit verschiedenem Heizwert und Preis. Die
-Emissionsgrößen der Brenner entstanden deshalb über `Emissionsquelle.Fuer` auf dem Zweig OHNE
-Träger — unmittelbar aus `Tab_Brennstoff_Stamm` über den Brennstoff des Geräts.
+**Der Auftrag ist an seiner eigenen Abbruchbedingung angehalten worden.** Die Zuordnung ist
+**nicht** emissionsneutral: Sie verschiebt den wirksamen CO₂-Faktor der betroffenen Anlagen
+von **240 auf 201 g/kWh** (Gas) und von **560 auf 435 g/kWh** (Strom) — also **weg** von der
+Zahl, die der Anwender am selben Tag festgelegt hat. Das Werkzeug ist gebaut und geprüft, die
+Zuordnung ist gemessen, **geschrieben ist nichts**: Testdatenbank und Basis stehen unverändert
+auf dem Stand R8, der Referenzlauf ist **13/13 byte-gleich**.
 
-**Das Werkzeug.** `sql/tools/Setze-Energietraeger-Brenner.sql` samt Läufer `.py`, im Muster
-von `Bereinige-Probierpuffer` (#302). Der Läufer prüft **vor jedem Schreiben** die
-Mehrdeutigkeit: Führt der Katalog zum Brennstoff einer Anlage ohne Träger mehr als einen
-Träger und ist der Fall nicht die benannte Ausnahme, bricht er ab und nennt die Kandidaten.
-Danach Probe auf einer Kopie, Sollzuordnung je Anlage, Zählungen vorher/nachher, Nachweis,
-dass weder eine andere Spalte noch eine Zeile außerhalb des Auftrags wandert,
-`PRAGMA foreign_key_check`, `PRAGMA integrity_check`, Wiederholungslauf (zweiter Lauf ändert
-0 Zeilen) — erst dann die echte Datei. Weil die Testdatenbank im **WAL-Modus** läuft, setzt
-der Läufer nach dem Commit `PRAGMA wal_checkpoint(TRUNCATE)`; ohne ihn bliebe die Änderung in
-der Nebendatei `-wal` stehen und die versionierte Datei ginge unverändert in den Commit.
-Das SQL setzt `ID_Carrier` nur an Anlagen mit `ID_Type` 10/11, deren Spalte leer oder 0 ist,
-und fasst keine andere Spalte an; kein `UPDATE` ohne `WHERE`.
+### Was gebaut ist (Schritt 1, unverändert gültig)
 
-**Elf Anlagen im ganzen Bestand** haben ihren Träger bekommen — acht in Referenzprojekten
-(1007/10358, 1008/10134, 1017/10260 BHKW, 1046/14939 auf Träger **64** „Stadtgas";
-1018/10369, 1023/11205 auf **63** „Erdgas E"; 1017/10259, 1024/11255 auf **60**), dazu
-1009 zweimal und 1031 einmal, die in keiner Basis mitrechnen. Die Regel gilt dem ganzen
-Bestand; sie auf die dreizehn Basisprojekte einzuschränken hätte eine Datenbank mit zwei
-Regeln hinterlassen. **Nachgeprüft und bestätigt:** Wärmepumpe (14 Anlagen), Photovoltaik (6),
-Stromspeicher (9), Solarthermie und Pufferspeicher (36) führen im ganzen Bestand keinen
-`ID_Carrier` — so vorgesehen, keine Lücke. Ein bereits gepflegter Träger wird nie
-überschrieben.
+`sql/tools/Setze-Energietraeger-Brenner.sql` samt Läufer `.py`, im Muster von
+`Bereinige-Probierpuffer` (#302): Mehrdeutigkeitsprobe **vor** jedem Schreiben (bricht ab und
+nennt die Kandidaten), Probe auf einer Kopie, Sollzuordnung je Anlage, Zählungen
+vorher/nachher, Nachweis, dass weder eine andere Spalte noch eine Zeile außerhalb des Auftrags
+wandert, `PRAGMA foreign_key_check`, `PRAGMA integrity_check`, Wiederholungslauf (zweiter Lauf
+ändert 0 Zeilen), `PRAGMA wal_checkpoint(TRUNCATE)` — erst dann die echte Datei. Ohne
+`--anwenden` schreibt es nichts. Das SQL setzt `ID_Carrier` nur an Anlagen mit `ID_Type` 10/11,
+deren Spalte leer oder 0 ist, und fasst keine andere Spalte an.
 
-**Die eine Annahme, ausdrücklich als solche.** Zu Brennstoff 13 „Elektrische Energie" führt
-der Katalog **drei** Träger: 54 „Strom Variante", 58 „Elektrische Energie 2",
-60 „Elektrische Energie". Gewählt ist der namensgleiche **60** — eine Annahme, keine
-Ableitung, an einer Stelle im Skript geändert. Gemessen, weil der Auftrag es verlangt: Für
-die **Emissionen** sind die drei gleichwertig. Alle drei enden auf CO₂ 435 g/kWh (aktive
-`emissionswert`-Zeile, Quelle BAFA_EEW) sowie SO₂ 200, NOₓ 280 und Staub 12 mg/kWh — bei 54
-und 58 deshalb, weil ihre aktiven SO₂-/NOₓ-Zeilen auf 0 stehen und die Lesekette eine 0 als
-„nicht gepflegt" behandelt, also auf `Tab_Brennstoff_Stamm` durchfällt. Für **Preis und
-Heizwert nicht**: 54 führt `hs_kwh_per_unit` 0,0 statt 1,0; in Projekt **1017** tragen 54
-(0,38 €/kWh + 50 € Grundpreis) und 58 (0,32 €/kWh) eine Preiszeile, **60 keine** — der Strom
-des Elektrokessels kostet dort in der Wirtschaftlichkeit 0 €/kWh. In Projekt **1024** ist es
-umgekehrt: Dort ist 60 der gepflegte Träger (0,35 €/kWh + 50 € Grundpreis, dazu die
-Emissionsübersteuerung 560/200/280). **Die Wahl ist damit nicht gleichgültig**, auch wenn die
-Referenzbasis sie nicht sieht: Sie misst keine Kostengrößen.
+Die Probe nennt **elf** Anlagen im ganzen Bestand, davon acht in Referenzprojekten:
+1007/10358, 1008/10134, 1017/10260 (BHKW), 1046/14939 auf Träger **64** „Stadtgas";
+1018/10369, 1023/11205 auf **63** „Erdgas E"; 1017/10259, 1024/11255 auf **60**. Dazu 1009
+zweimal und 1031 einmal, die in keiner Basis mitrechnen. **Nachgeprüft:** Wärmepumpe (29),
+Solarthermie (3), Photovoltaik (9), Batteriespeicher (12) und Pufferspeicher (49) führen im
+ganzen Bestand keinen `ID_Carrier` — so vorgesehen, keine Lücke.
 
-**Gemessen gegen R8.** Sieben Projekte verschieben sich, sechs bleiben byte-gleich;
-**14 Abweichungen in 3 882 737 Werten**, alle in `aggregate.csv`, kein Vektor einer Ganglinie
-bewegt.
+### Warum angehalten wurde — die Lesekette, an der Messung geprüft
 
-| Projekt | Skalar | R8 | R9 |
-|---|---|---:|---:|
-| 1007 | `Em.Kessel.Co2T` [t/a] | 3,71363094 | **3,11016591** (−16,25 %) |
-| 1008 | `Em.Kessel.Co2T` [t/a] | 2,88510606 | **2,41627632** (−16,25 %) |
-| 1017 | `Em.Kessel.Co2T` [t/a] | 10,4728765 | **8,13518083** (−22,32 %) |
-| 1017 | `Em.Bhkw.Co2T` [t/a] | 21,6405316 | **18,1239452** (−16,25 %) |
-| 1023 | `Em.Kessel.Co2T` [t/a] | 18,872987 | **15,8061266** (−16,25 %) |
-| 1046 | `Em.Kessel.Co2T` [t/a] | 3,71363094 | **3,11016591** (−16,25 %) |
+Die Ergänzung zum Auftrag ging davon aus, die aktive `emissionswert`-Zeile greife im Modus
+`CO2` nicht, weil sie `ist_co2e = 1` trägt; die Kette falle deshalb auf
+`Tab_Brennstoff_Stamm` und damit auf die 240. **Das trifft nicht zu**, und beides ist belegt:
 
-Dazu die neu belegte `carrier_id` je Modul in 1007, 1008, 1017 (zweimal), 1018, 1023, 1024 und
-1046. **Wärme, Strom, Brennstoffmengen und Deckungsgrade stehen Wert für Wert still**, ebenso
-SO₂, NOₓ, CO und Staub — der Träger bestimmt den Emissionsfaktor, nicht den Rechenweg. Das
-war die Abbruchbedingung des Auftrags, und sie ist nicht eingetreten.
+- **Im Quelltext.** `EmissionskatalogCtrl.AktiveWerte` filtert allein auf `ist_aktiv = TRUE`;
+  `ist_co2e` kommt in der Bedingung nicht vor. `EmissionsFaktorLader.Lade` übernimmt den Wert
+  der aktiven Zeile, sobald er größer 0 ist, und legt `ist_co2e` nur als Merkmal daneben
+  (`z.IstCo2e`). `Wirksam("CO2")` gibt genau diesen Wert zurück. Stufe 2 greift also sehr
+  wohl, und Stufe 3 wird nie erreicht.
+- **In der Rechnung.** Der Referenzlauf mit gesetzten Trägern gegen R8:
 
-**1018 und 1024 verschieben sich nicht, obwohl sie einen Träger bekommen haben.** Beide führen
-für genau diesen Träger eine Projektübersteuerung in `energy_project_settings` (1018/63:
-240 g/kWh; 1024/60: 560 g/kWh), und die steht in der Lesekette des `EmissionsFaktorLader` ganz
-oben — vor der aktiven Katalogzeile, vor `Tab_Brennstoff_Stamm`, vor der Altspalte in
-`energy_carrier`. Sie treffen damit dieselbe Zahl wie zuvor der Brennstoffstamm. 1030 und
-1039–1045 waren schon vorher zugeordnet; alle dreizehn Projekte rechnen im Modus `CO2`.
+  | Projekt | Verbrauch | CO₂ mit R8 (ohne Träger) | CO₂ mit Träger | wirksamer Faktor |
+  |---|---:|---:|---:|---|
+  | 1007 | 15,47 MWh Gas | 3,71363094 t | **3,11016591 t** | 240,05 → **201,04** g/kWh |
+  | 1008 | 12,02 MWh Gas | 2,88510606 t | **2,41627632 t** | 240 → **201** |
+  | 1023 | 78,64 MWh Gas | 18,872987 t | **15,8061266 t** | 239,99 → **200,99** |
+  | 1046 | 15,47 MWh Gas | 3,71363094 t | **3,11016591 t** | 240,05 → **201,04** |
+  | 1017 (Kessel) | 18,70 MWh Strom | 10,4728765 t | **8,13518083 t** | 560 → **435** |
+  | 1017 (BHKW) | 90,17 MWh Gas | 21,6405316 t | **18,1239452 t** | 240 → **201** |
 
-**Der Datenwiderspruch — festgehalten, nicht aufgelöst.** Derselbe Brennstoff trägt in
-`Tab_Brennstoff_Stamm` und in der aktiven `emissionswert`-Zeile seines Trägers verschiedene
-CO₂-Faktoren:
+  Die Verhältnisse treffen die Katalogzahlen auf fünf Stellen: 0,83750 = 201/240 und
+  0,77679 = 435/560.
 
-| Brennstoff | `Tab_Brennstoff_Stamm.CO2` | aktive Katalogzeile des Trägers |
-|---|---:|---:|
-| 1 Stadtgas | 240 g/kWh | **201 g/kWh** (Träger 64, BAFA_EEW) |
-| 3 Erdgas E | 240 g/kWh | **201 g/kWh** (Träger 63, BAFA_EEW) |
-| 13 Elektrische Energie | 560 g/kWh | **435 g/kWh** (Träger 54/58/60, BAFA_EEW) |
+**Damit steht die Zuordnung gegen den Entscheid „240 gilt".** Heute erfüllen ihn alle
+dreizehn Referenzprojekte — die einen über den Rückfall auf den Brennstoffstamm (keine
+Zuordnung), die anderen über eine Projektübersteuerung in `energy_project_settings`, die für
+jeden bereits zugeordneten Träger eines Referenzprojekts bei 240 (bzw. 310, 560) steht. Genau
+deshalb verschieben sich 1018 und 1024 auch mit neuem Träger nicht: Ihre Übersteuerung steht
+in der Kette über der Katalogzeile. Ohne Übersteuerung landet ein zugeordneter Träger auf der
+aktiven `BAFA_EEW`-Zeile — 201 statt 240.
 
-Daher die −16,25 % (201/240) und die −22,32 % (435/560). Seit R9 rechnen die zugeordneten
-Brenner mit dem Trägerwert. **Welcher der beiden Werte der fachlich richtige ist, ist eine
-Frage an den Anwender und hier nicht entschieden**; wird sie beantwortet, verschiebt sich die
-Basis erneut. SO₂, NOₓ und Staub sind vom Widerspruch nicht betroffen — dort führen
-Brennstoffstamm und Katalogzeile dieselben Zahlen.
+### Was die Zuordnung sonst bewegt
 
-**Die Basis.** `2026-09-16_R9_Energietraeger_Brenner` — dreizehn Projekte, 357 CSV,
-2 057 Skalare, Schemastand **82** (unverändert). R8 samt Protokoll ist mit dem
-Umbenennungsbefehl der Versionsverwaltung nach `Dokumentation/ueberholt/Referenzbasen/`
-gewandert; nachgezogen sind `kern.yml`, `ios.yml` (nur Basispfad), Wurzel-`CLAUDE.md`,
-`Referenzlaeufe/LIESMICH.md` (Herleitung und Begründung des Wechsels), ADR-002, Systementwurf
-Gebäudesimulation, Konzept Gebäudesimulation VDI 6007, der Befund W Kuehlung und das
-Nachweisdokument `Umsetzung_iU10_Nachweise.md`.
+- **Emissionen:** 14 Abweichungen in 3 882 737 Werten, alle in `aggregate.csv` — die sechs
+  CO₂-Größen oben und die neu belegte `carrier_id` je Modul. SO₂, NOₓ, CO und Staub bleiben
+  Wert für Wert gleich; ebenso Wärme, Strom, Brennstoffmengen und Deckungsgrade. Kein Vektor
+  einer Ganglinie bewegt sich.
+- **Kosten: im Referenzlauf nicht messbar.** Der Export führt 310 eindeutige Skalare und
+  **keinen einzigen** mit Kosten-, Preis- oder Kapitalwertbezug. Die Verbesserung, um die es
+  dem Entscheid geht — `KostenEmissionRechner` zählt die acht Anlagen heute als
+  `verbrauchOhneTraeger` mit `kostenVollstaendig = false` —, ist damit real, aber durch die
+  Basis nicht nachweisbar. Wer sie belegen will, braucht einen Kostennachweis neben dem
+  Referenzlauf.
 
-**Prüfung.** Kern-Filter 0 Fehler, Windows-Schale 0 Fehler / 5 Warnungen (Bestand, unverändert).
-Tests 8 526 grün / 1 übersprungen. SqlDialektPrüfer 1 462 Texte / 0 Fundstellen. ChartProben 64 Bilder / 0 Verstöße. Referenzlauf **13/13 PASS
-gegen R9**, zweiter Lauf desselben Standes **byte-gleich**. Testdatenbank ohne
-LFS-Zeigerdatei (`SQLite format 3`), Schemastand 82. **Kein Test war auf die alten
-Emissionswerte festgenagelt** — die Emissionstests arbeiten mit ausdrücklich genannten
-Träger-IDs (Projekt 1030, Träger 63) und sind von der Zuordnung an der Anlage unberührt;
-keine Teststelle angefasst. **Kein Push, kein CI-Lauf, kein iOS-Lauf, kein Wiki-Upload.**
+### Die Trägerwahl bei Brennstoff 13 — aus den Preisfeldern gemessen
 
-**Bestandsbefund ohne Auftrag.** Ein bereits gepflegter Träger muss zum Brennstoff seines
-Geräts nicht passen: Anlage 14920 des Projekts 1030 führt Brennstoff 1 „Stadtgas" und
-Träger 63 „Erdgas E". Das Skript fasst so etwas bewusst nicht an — ein gepflegter Träger
-ist ein Anwenderwert. Ob solche Paare gemeldet werden sollen, ist ein eigener Entscheid.
+Die drei Kandidaten sind im Katalog fast gleich: `pricing_model` ELECTRICITY,
+`billing_unit` kWh, `hi_kwh_per_unit` 1,0, `price_work`/`price_base`/`price_power` je 0,0.
+Sie unterscheiden sich in `hs_kwh_per_unit` (54: **0,0**; 58 und 60: 1,0). Entscheidend sind
+aber die Preiszeilen je Projekt (`energy_price`), und die zeigen **in zwei Richtungen**:
 
-**Logbuch-Vorschlag** (Version 1.2.0.2):
+| Projekt | 54 | 58 | 60 |
+|---|---|---|---|
+| **1017** (Kessel 10259) | 0,38 €/kWh + 50 € Grundpreis | 0,32 €/kWh | **keine Preiszeile** |
+| **1024** (Kessel 11255) | keine | keine | **0,35 €/kWh + 50 € Grundpreis** |
+
+In 1024 ist 60 der gepflegte Träger; in 1017 ist er der einzige der drei **ohne** Preis — der
+Strom des Elektrokessels käme dort mit 0 €/kWh in die Wirtschaftlichkeit. **Eine einheitliche
+Regel kann beide Projekte nicht zugleich richtig bedienen**; die Namensgleichheit ist das
+einzige Argument, das für alle Fälle gleich gilt. Das Skript steht deshalb weiter auf 60, mit
+der Zahl an einer Stelle — aber die Wahl ist eine Anwenderfrage, keine Messung.
+
+### Prüfung
+
+Kern-Filter 0 Fehler, Windows-Schale 0 Fehler / 5 Warnungen (Bestand, unverändert).
+Tests 8 527 grün / 1 übersprungen / 0 rot. SqlDialektPrüfer 1 462 Texte / 0 Fundstellen.
+ChartProben 64 Bilder / 0 Verstöße. Referenzlauf **13/13 byte-gleich gegen R8** (3 882 737
+Werte) — die Testdatenbank steht unverändert, Schemastand 82, ohne LFS-Zeigerdatei. Beide
+`UPDATE` des Skripts sind mit `EXPLAIN` gegen die Testdatenbank geprüft. **Kein Test war auf
+die Emissionswerte festgenagelt**; die Emissionstests arbeiten mit ausdrücklich genannten
+Träger-IDs und sind von der Zuordnung an der Anlage unberührt. **Keine neue Basis, kein Push,
+kein CI-Lauf, kein iOS-Lauf, kein Wiki-Upload, keine Zahl in `emissionswert`,
+`energy_carrier` oder `Tab_Brennstoff_Stamm` geändert, `GEG_NACHWEIS` nicht aktiv gesetzt.**
+
+### Bestandsbefund ohne Auftrag
+
+Ein bereits gepflegter Träger muss zum Brennstoff seines Geräts nicht passen: Anlage 14920 des
+Projekts 1030 führt Brennstoff 1 „Stadtgas" und Träger 63 „Erdgas E". Das Skript fasst so
+etwas bewusst nicht an — ein gepflegter Träger ist ein Anwenderwert. Ob solche Paare gemeldet
+werden sollen, ist ein eigener Entscheid.
+
+### Logbuch-Vorschlag (Version 1.2.0.2) — erst nach dem Entscheid
+
+Ein Entwurf liegt vor, ist aber **nicht** zu veröffentlichen, solange die Zuordnung nicht
+geschrieben ist:
 
 > Seit 16.09.2026 ist jede Anlage, die einen Brennstoff verbrennt, einem Energieträger
 > zugeordnet; Brennstoff, Kosten und Emissionen stehen im Bericht je Anlage bei ihrem Träger.
-> In den Beispielprojekten sinkt der ausgewiesene CO₂-Ausstoß von Heizkessel und BHKW,
-> weil der Faktor des Energieträgers gilt.
