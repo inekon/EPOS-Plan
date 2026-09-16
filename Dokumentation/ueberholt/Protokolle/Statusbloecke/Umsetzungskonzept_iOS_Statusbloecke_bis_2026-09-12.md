@@ -7617,6 +7617,11 @@ Die Ergänzung zum Auftrag ging davon aus, die aktive `emissionswert`-Zeile grei
   Die Verhältnisse treffen die Katalogzahlen auf fünf Stellen: 0,83750 = 201/240 und
   0,77679 = 435/560.
 
+- **Der Modus ändert daran nichts.** Ausgewählt sind allein die drei Kernarten CO₂, SO₂ und
+  NOₓ; SO₂ und NOₓ tragen den Äquivalenzfaktor 0, die CO₂e-Summe ist deshalb gleich dem
+  CO₂-Wert. `CO2` und `CO2E` enden auf derselben aktiven Zeile. Alle dreizehn Referenzprojekte
+  stehen auf `CO2`.
+
 **Damit steht die Zuordnung gegen den Entscheid „240 gilt".** Heute erfüllen ihn alle
 dreizehn Referenzprojekte — die einen über den Rückfall auf den Brennstoffstamm (keine
 Zuordnung), die anderen über eine Projektübersteuerung in `energy_project_settings`, die für
@@ -7676,8 +7681,10 @@ Für den Fall, dass der Anwender beides will (Zuordnung UND die Zahlen des Entsc
 |---|---|---|
 | 63, 64 (Gas) | `BAFA_EEW` 201 | `GEG_NACHWEIS` **240**, vorhanden, nicht aktiv |
 | 54, 58, 60 (Strom) | `BAFA_EEW` 435 | **keine** — `GEG_NACHWEIS` steht auf 100, `UBA_STROMMIX` auf 379/387/442 |
+| 71 (Heizöl L) | `BAFA_EEW` 266 | `GEG_NACHWEIS` **310**, vorhanden, nicht aktiv |
 
-Beim **Gas** genügte es also, die vorhandene `GEG_NACHWEIS`-Zeile aktiv zu setzen. Beim
+Beim **Gas** und beim **Heizöl** genügte es also, die vorhandene `GEG_NACHWEIS`-Zeile aktiv zu
+setzen. Beim
 **Strom gibt es diesen Weg nicht**: Die 560 steht ausschließlich in `Tab_Brennstoff_Stamm`
 und in den Projektübersteuerungen. Wer beide Zahlen halten will, braucht deshalb je Projekt
 eine Übersteuerung in `energy_project_settings` — genau die Bauart, die 1018, 1024, 1030 und
