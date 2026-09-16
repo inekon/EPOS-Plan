@@ -5959,6 +5959,9 @@ Depending on the project size this takes several minutes. Continue?</value>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Table {0} could not be read — its data is missing from the copy.</value>
   </data>
+  <data name="BK_KOMP_HINW_SENKEN" xml:space="preserve">
+    <value>The heat sinks of unit "{0}" could not be created — the unit uses the default heating circuit (both).</value>
+  </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>The operating parameters of storage variant "{0}" could not be created.</value>
   </data>

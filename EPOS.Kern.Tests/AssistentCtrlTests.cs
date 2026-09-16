@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Threading;
 using WindowsFormsApplication1;
@@ -659,6 +660,105 @@ namespace EPOS.Kern.Tests
                     Assert.Equal(kopfVorher.Kunde, kopfNachher.Kunde);
                     Assert.Equal(kopfVorher.Bearbeiter, kopfNachher.Bearbeiter);
                     Assert.Equal(kopfVorher.Klimaname, kopfNachher.Klimaname);
+                }
+                finally { WizardCtrl.Aktueller = vorherCtrl; }
+            }
+        }
+
+        /// <summary>
+        /// NACHWEIS zu NL-Q1: Scheitert das Schreiben der im PV-Dialog bearbeiteten
+        /// STRÄNGE, nimmt der Lauf sich zurück — und die Meldung NENNT den Schritt.
+        ///
+        /// <para><b>Wie der Fehlschlag erzwungen wird.</b> Der Block ST1 in
+        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c> schreibt <c>PV_Straenge</c> einer
+        /// Anlagenzeile über <c>AnlageStrangCtrl.SchreibenJeAnlage</c>. Die Strangzeile
+        /// zeigt hier auf einen Wechselrichter, den es nicht gibt — die ERZWUNGENE
+        /// Beziehung <c>Z_AnlageStrang.ID_Wechselrichter</c> →
+        /// <c>Tab_Wechselrichter</c> lässt das Insert scheitern. Ein echter
+        /// Datenbankfehler auf dem echten Schreibweg, kein Haken.</para>
+        ///
+        /// <para><b>Was der Fall belegt.</b> Drei Dinge, die vor NL-Q1 alle drei
+        /// anders waren. Erstens meldet <c>Speichern</c> jetzt
+        /// <c>Fehlgeschlagen</c> statt Erfolg. Zweitens NENNT
+        /// <c>AssistentErgebnis.Schritt</c> den Schritt
+        /// (<c>Add_WP_Waermeerzeuger</c>, Entscheid E-4) — der Aufrufer zeigt EINE
+        /// Meldung, und <see cref="AssistentCtrl.Meldungstext"/> trägt den Namen
+        /// hinein. Drittens steht danach NICHTS von dem Lauf in der Datenbank:
+        /// Zählstand, Anlagenbezeichner und der vollständige Zeileninhalt der
+        /// einundzwanzig projektgebundenen Tabellen sind Zeichen für Zeichen die von
+        /// vorher.</para>
+        ///
+        /// <para><b>Die Eingabe kehrt sich nicht mehr um.</b>
+        /// <c>StraengeWiederherstellen</c> steht hinter dem Block ST1 und trug bis
+        /// NL-Q1 die Liste des VORZUSTANDS wieder ein, während der Anwender Erfolg
+        /// gemeldet bekam. Die Konsolenmitschrift zeigt, dass die Rettung nicht mehr
+        /// zum Zuge kommt: Der Lauf endet vorher.</para>
+        ///
+        /// <para>Eigene Arbeitskopie, weil die Probe schreibt.</para>
+        /// </summary>
+        [Fact]
+        public void Ein_gescheiterter_Strangschritt_nimmt_den_Lauf_zurueck_und_nennt_ihn()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                WizardCtrl vorherCtrl = WizardCtrl.Aktueller;
+                TextWriter vorherAus = Console.Out;
+                var mitschrift = new StringWriter();
+
+                try
+                {
+                    WizardCtrl.Aktueller = new WizardCtrl();
+
+                    const string NAME = "Laurentiuskirche";
+                    const int ID = 1007;
+                    const int WECHSELRICHTER_GIBT_ES_NICHT = 999999999;
+
+                    AssistentCtrl a = Bearbeitenlauf(NAME, ID);
+                    Assert.NotEmpty(a.Erzeuger);
+
+                    Dictionary<string, int> zaehlVorher = Zaehlstand(ID);
+                    string[] anlagenVorher = Anlagenbezeichner(ID);
+                    string abbildVorher = Projektabbild(ID);
+
+                    // DER FEHLSCHLAG: eine Strangliste, die sich nicht schreiben laesst.
+                    a.Erzeuger[0].PV_Straenge = new List<AnlageStrangModel>
+                    {
+                        new AnlageStrangModel
+                        {
+                            Bezeichner = "NL-Q1 Fehlschlag",
+                            ID_Wechselrichter = WECHSELRICHTER_GIBT_ES_NICHT,
+                            Mppt = 1, Module_Reihe = 12
+                        }
+                    };
+
+                    AssistentErgebnis e;
+                    try
+                    {
+                        Console.SetOut(mitschrift);
+                        e = a.Speichern();
+                    }
+                    finally { Console.SetOut(vorherAus); }
+
+                    // 1) Der Lauf ist FEHLGESCHLAGEN ...
+                    Assert.Equal(AssistentAusgang.Fehlgeschlagen, e.Ausgang);
+                    Assert.False(a.Gespeichert);
+
+                    // 2) ... der Schritt ist BENANNT, und die EINE Meldung traegt ihn.
+                    Assert.Equal("Add_WP_Waermeerzeuger", e.Schritt);
+                    Assert.Contains("Add_WP_Waermeerzeuger", AssistentCtrl.Meldungstext(e));
+
+                    // 3) ... und nichts von dem Lauf steht in der Datenbank.
+                    Assert.Equal(zaehlVorher, Zaehlstand(ID));
+                    Assert.Equal(anlagenVorher, Anlagenbezeichner(ID));
+                    Assert.Equal(abbildVorher, Projektabbild(ID));
+
+                    // Die Ruecknahme ist gemeldet - und die Strang-Rettung, die die
+                    // Eingabe still in den Vorzustand zurueckdrehte, laeuft nicht mehr.
+                    string spur = mitschrift.ToString();
+                    Assert.Contains("das Speichern wird zurueckgenommen", spur);
+                    Assert.DoesNotContain("Strang-Rettung", spur);
                 }
                 finally { WizardCtrl.Aktueller = vorherCtrl; }
             }

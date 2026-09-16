@@ -456,10 +456,12 @@ namespace WindowsFormsApplication1
             // aber eine Fachentscheidung und keine Aufräumarbeit: Ein Fehlschlag hier
             // nähme dann die ganze Übernahme mit zurück, statt sie stehen zu lassen.
             //
-            // WAS HEUTE GILT: Der Rückgabewert von SchreibenJeAnlage wird nicht
-            // ausgewertet (siehe SenkenNachziehen). Scheitert der Schritt, steht die
-            // übernommene Komponente ohne ihre Senkenkette da, und "warnungen" bleibt
-            // stumm - anders als bei Schritt 9, der seine Fehlschläge meldet.
+            // WAS GILT (NL-Q2): Die Übernahme bleibt stehen, der Fehlschlag wird
+            // GEMELDET. Der Rückgabewert von SchreibenJeAnlage geht als
+            // BK_KOMP_HINW_SENKEN in "warnungen" - derselbe Kanal und dieselbe Form wie
+            // bei Schritt 9 (BK_KOMP_HINW_VARIANTE). Die beiden Nachbarschritte
+            // behandeln denselben Fall damit gleich, und die Transaktionsgrenze bleibt,
+            // wo sie ist.
             SenkenNachziehen(idZiel, plan, quellAnlagen, quellAnlagenIds, quellSenken,
                              pufferAbbildungNachher, warnungen);
 
@@ -1115,13 +1117,21 @@ namespace WindowsFormsApplication1
                     });
                 }
 
-                // HEUTE OHNE AUSWERTUNG: SchreibenJeAnlage meldet ein Scheitern über den
-                // Rückgabewert (und auf der Konsole), nicht über eine Ausnahme. Was hier
-                // scheitert, fehlt der übernommenen Komponente stillschweigend - der
-                // Hauptvorgang ist zu diesem Zeitpunkt festgeschrieben. Ob das eine
-                // Meldung in "warnungen" bekommt (wie bei den Speichervarianten) oder die
-                // Übernahme zurücknehmen soll, ist eine offene Fachfrage (NL-Q2).
-                ctrl.SchreibenJeAnlage(neueAnlage, zeilen);
+                // MELDEN, NICHT ZURÜCKNEHMEN (NL-Q2). SchreibenJeAnlage meldet ein
+                // Scheitern über den Rückgabewert (und auf der Konsole), nicht über eine
+                // Ausnahme; fängt es ab und rollt seine eigenen Zeilen zurück. Der
+                // Hauptvorgang ist zu diesem Zeitpunkt festgeschrieben und die Übernahme
+                // ausdrücklich nicht umkehrbar — deshalb geht der Fehlschlag in denselben
+                // Hinweiskanal und in dieselbe Form wie beim Nachbarschritt 9
+                // (VariantenNachziehen, BK_KOMP_HINW_VARIANTE): eine Zeile je Anlage,
+                // benannt über ihren Bezeichner. Der Lauf macht mit der nächsten Anlage
+                // weiter, "Uebernehmen" meldet wie bisher true.
+                //
+                // Ein "continue" wie bei Schritt 9 steht hier nicht: Der Aufruf IST die
+                // letzte Anweisung des Schleifenrumpfes.
+                if (!ctrl.SchreibenJeAnlage(neueAnlage, zeilen))
+                    warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_SENKEN,
+                                                quellAnlagen[i].Bezeichner));
             }
 
             if (verloren > 0)

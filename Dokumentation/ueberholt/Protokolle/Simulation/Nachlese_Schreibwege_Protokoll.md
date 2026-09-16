@@ -5,10 +5,12 @@ Untersuchungsauftrag aus Abschnitt 8 des
 Stellen derselben Machart"). Arbeitszweig `ios_migration_september`, Arbeitsstand auf
 `w-nachlese-schreibwege`.
 
-**Das Ergebnis vorweg: An beiden Stellen bleibt das Verhalten unverändert.** Was sich
-geändert hat, sind die Begründungen im Quelltext — eine war überholt, eine war falsch
-formuliert — und drei Prüffälle, die den heutigen Stand festhalten. Zwei Fachfragen gehen
-an den Anwender.
+**Der Untersuchungsauftrag hat das Verhalten an beiden Stellen unverändert gelassen** und
+nur die Begründungen im Quelltext berichtigt — eine war überholt, eine war falsch
+formuliert — sowie vier Prüffälle angelegt, die den damaligen Stand festhalten. Die zwei
+Fachfragen, die er an den Anwender gestellt hat, sind **am 16.09.2026 beide nach Empfehlung
+entschieden und im selben Zug umgesetzt** worden: `NL-Q1` = (a), `NL-Q2` = (a). Was daraus
+geworden ist, steht in den Abschnitten 4 und 5; die Abnahme der Umsetzung in Abschnitt 7.
 
 ## 1. Stelle (1): `KomponentenUebernahmeCtrl`, Schritte 8 und 9
 
@@ -57,7 +59,7 @@ Belegt, und er liegt **nicht** an der fehlenden Klammer:
   Transaktionsklammer des Bestands schließe „einen Teilzustand aus halb übernommenen
   Komponenten" aus. Für die Schritte 8 und 9 stimmt das nicht.
 
-### 1.4 Warum trotzdem nichts umgebaut wird
+### 1.4 Warum der Untersuchungsauftrag nichts umgebaut hat
 
 1. **Die Klammer allein behebt den Schaden nicht.** Zöge man die beiden Aufrufe unter die
    Klammer, bliebe der Rückgabewert weiterhin unausgewertet: Der Sicherungspunkt nähme nur
@@ -71,15 +73,20 @@ Belegt, und er liegt **nicht** an der fehlenden Klammer:
    damit, was `PufferAbbildung`, `PufferCache` und `Geraete` SEHEN. Das ist der
    Abbruchgrund des Auftrags.
 3. **Die Behebung des belegten Schadens ist eine Fachentscheidung** — melden oder
-   zurücknehmen —, und sie wird nicht nebenbei getroffen. Sie geht als `NL-Q2` an den
-   Anwender.
+   zurücknehmen —, und sie wird nicht nebenbei getroffen. Sie ging als `NL-Q2` an den
+   Anwender und ist **entschieden: melden** (Abschnitt 4).
 
 ### 1.5 Was stattdessen geschehen ist
 
 - **Vier Kommentarstellen berichtigt** (Klassenkopf, Lesekommentar Schritt 1, Schritt 8,
   `VariantenNachziehen`): der überholte Grund ist fort, der wahre Grund steht präzise da,
-  und die offene Fachfrage ist an der Aufrufstelle benannt. **Keine Codezeile geändert.**
+  und die offene Fachfrage war an der Aufrufstelle benannt. **Keine Codezeile geändert.**
 - **Drei Prüffälle** in `EPOS.Kern.Tests/UebernahmeNachzugTests.cs` (siehe Abschnitt 3).
+
+> **Stand heute:** Mit dem Entscheid `NL-Q2` = (a) wertet Schritt 8 den Rückgabewert aus
+> und meldet. Die zwei Kommentarstellen zu Schritt 8 (Aufrufstelle und Schreibstelle) sagen
+> das jetzt; der wahre Grund für die Reihenfolge — die zweite Verbindung — steht
+> unverändert daneben. Siehe Abschnitt 4.
 
 ## 2. Stelle (2): `WizardCtrl`, die Stränge des PV-Dialogs
 
@@ -119,9 +126,13 @@ Nachsorge und ein „best effort" auf einer Anwendereingabe sind nicht dasselbe 
 
 ### 2.3 Was geschehen ist
 
-- **Der Kommentar** nennt die vier Punkte oben jetzt ausdrücklich. **Keine Codezeile
-  geändert** — das Verhalten wartet auf `NL-Q1`.
-- **Ein Prüffall** hält den heutigen Stand fest (Abschnitt 3).
+- **Der Kommentar** nannte die vier Punkte oben ausdrücklich. **Keine Codezeile
+  geändert** — das Verhalten wartete auf `NL-Q1`.
+- **Ein Prüffall** hielt den damaligen Stand fest (Abschnitt 3).
+
+> **Stand heute:** Mit dem Entscheid `NL-Q1` = (a) wird der Rückgabewert ausgewertet und
+> der Lauf zurückgenommen. Der Kommentar trägt kein „BEST EFFORT" mehr, und der Prüffall
+> ist umgedreht. Siehe Abschnitt 4.
 
 ## 3. Nachweis
 
@@ -144,6 +155,8 @@ Senkenklammer.
    `AssistentCtrl.Speichern`), die Dialogliste zeigt auf einen Wechselrichter, den es nicht
    gibt. `Add_WP_Waermeerzeuger` meldet **`true`**, der Vorgang wird festgeschrieben, und
    gelesen werden hinterher die ALTEN Stränge.
+   **Mit `NL-Q1` ist dieser Fall umgedreht** und heißt seither
+   `Ein_gescheitertes_Schreiben_der_Dialog_Straenge_nimmt_den_Lauf_zurueck` (Abschnitt 7.2).
 
 **Gegenproben.** Jeder der drei belastbaren Fälle wurde versuchsweise entwertet und danach
 zurückgebaut:
@@ -158,69 +171,119 @@ zurückgebaut:
   konnte nicht gespeichert werden: FOREIGN KEY constraint failed" → „Strang-Rettung: 2
   Strangzeile(n) … wiederhergestellt" → „Daten erfolgreich aktualisiert."
 
-## 4. Die zwei Fachfragen an den Anwender
+## 4. Die zwei Fachfragen — entschieden und umgesetzt
 
-### `NL-Q1` — Die Stränge des PV-Dialogs im Speicherlauf des Assistenten
+Beide Fragen sind am **16.09.2026 nach Empfehlung** entschieden worden. Der Wortlaut der
+Fragen, die drei Wahlmöglichkeiten je Frage und die Begründung der Empfehlung stehen in
+der Fassung dieses Protokolls, die den Untersuchungsauftrag abschloss; hier steht,
+**was gilt**.
 
-**Frage.** Der Speicherlauf schreibt die im PV-Dialog bearbeiteten Stränge. Scheitert das,
-wird der Fehlschlag heute verschluckt: Der Lauf meldet Erfolg, wird festgeschrieben, und
-die alten Stränge kehren still zurück. Soll das so bleiben, oder soll der Fehlschlag
+### `NL-Q1` = (a) — Der Fehlschlag nimmt den Lauf zurück
 
-- **(a) den Lauf zurücknehmen** — durchreichen, der Vorgang rollt zurück, nichts von diesem
-  Speichern steht (der Weg der Senkenklammer und von `AssistentCtrl`), oder
-- **(b) als benannter Schritt gemeldet werden** — der Lauf wird festgeschrieben, aber
-  `AssistentErgebnis` nennt den Schritt und der Aufrufer zeigt EINE Meldung (der Weg von
-  Entscheid `E-4`), oder
-- **(c) bleiben wie es ist** — „best effort wie die Nachbarn"?
+**Entschieden.** Scheitert im Speicherlauf des Assistenten das Schreiben der im PV-Dialog
+bearbeiteten Stränge, wird der Lauf **zurückgenommen**. Nicht melden-und-weiterlaufen,
+nicht lassen.
 
-**Empfehlung: (a).** Drei Gründe. Erstens ist es die Eingabe des Anwenders und keine
-Nachsorge — die Nachbarn im selben Rumpf sind Kostenanker, Pflichtpositionen und
-Aufräumlauf, und deren Ausfall holt der nächste Lauf nach; eine verlorene Strangliste holt
-niemand nach. Zweitens ist (c) heute nicht einmal ehrlich „best effort": Der Lauf
-**kehrt die Eingabe um** und stellt den Vorzustand wieder her, was schlimmer ist als sie
-liegen zu lassen. Drittens hat der Speicherlauf seit `iU9-W16a-O-1` genau dafür eine
-Klammer, und `E-4` verlangt für denselben Lauf, dass ein Fehlschlag gemeldet statt
-verschluckt wird — (b) wäre die halbe Antwort: Der Anwender erführe davon, stünde aber vor
-einem Projekt, dessen PV-Stränge nicht zu seiner Eingabe passen.
+**Umgesetzt** in `WizardCtrl.Add_WP_Waermeerzeuger`, Block `ST1`:
 
-**Umfang bei (a):** eine Zeile in `WizardCtrl` (Rückgabewert auswerten, `false` zurück wie
-bei den Nachbarzeilen darüber — `SpVariantenVerwerfen`/`FachspaltenVerwerfen`), dazu der
-Prüffall aus Abschnitt 3 umgedreht und eine Gegenprobe.
+- Der Rückgabewert von `AnlageStrangCtrl.SchreibenJeAnlage` wird **ausgewertet**. Ein
+  `false` verwirft die zwei Sicherungen und steigt mit `return false` aus — Zeichen für
+  Zeichen der Weg der Nachbarzeilen darüber (`SpVariantenVerwerfen`,
+  `FachspaltenVerwerfen`, `return false`).
+- **Der Rückzug kommt an, und der Schritt wird benannt.** `AssistentCtrl.Anlegen` und
+  `.Fortschreiben` melden diesen Schritt als `Add_WP_Waermeerzeuger` im
+  `AssistentErgebnis`; `AssistentCtrl.Speichern` lässt den Vorgang der Klammer aus
+  `iU9-W16a-O-1` zurücktreten, und `Meldungstext` trägt den Namen in die EINE Meldung
+  (Entscheid `E-4`). Der Schrittname ist sprechend und bleibt, wie er ist.
+- **Die Eingabe kehrt sich nicht mehr um.** `StraengeWiederherstellen` steht HINTER dem
+  Block `ST1`. Weil der Lauf vorher endet, kommt der Rettungsweg gar nicht mehr zum Zuge —
+  gemessen an der Konsolenmitschrift, in der „Strang-Rettung" nicht mehr vorkommt.
+- **Das `catch` bleibt.** Es ist nach wie vor praktisch unerreichbar, weil der Controller
+  selbst abfängt; entfernt zu werden verdient es deshalb nicht: Ein entferntes `catch`
+  änderte das Verhalten für den Tag, an dem der Controller doch einmal wirft. Statt zu
+  schlucken führt es diesen Wurf jetzt auf denselben Weg wie ein `false` — Konsolenzeile,
+  dann Rückzug.
+- **Der Kommentar** trägt nicht mehr „BEST EFFORT wie die Nachbarn", sondern nennt den
+  Unterschied, um den es geht: Die drei Nachbarn im selben Rumpf sind **Nachsorge**, die
+  der Lauf selbst anstößt und die der nächste Lauf nachholt; diese Zeile schreibt, **was
+  der Anwender gerade eingegeben hat**.
 
-### `NL-Q2` — Der Nachzug der Senkenlisten in der Komponenten-Übernahme
+### `NL-Q2` = (a) — Der Senkennachzug meldet sich
 
-**Frage.** Die Übernahme zieht die Senkenlisten nach dem Commit nach und wertet den
-Rückgabewert nicht aus. Scheitert der Schritt, steht die übernommene Komponente ohne ihre
-Senkenkette da, und die Übernahme meldet Erfolg. Soll der Fehlschlag
+**Entschieden.** Scheitert der Nachzug der Senkenliste bei der Komponentenübernahme, wird
+das **im Hinweiskanal gemeldet**. Die Übernahme wird **nicht** zurückgenommen; die
+Transaktionsgrenze bleibt, wo sie ist.
 
-- **(a) in `hinweise` gemeldet werden** — wie es Schritt 9 für die Speichervarianten schon
-  tut (`BK_KOMP_HINW_VARIANTE`); die Übernahme bleibt stehen, der Anwender erfährt, welche
-  Komponente ihre Senkenkette nicht bekommen hat, oder
-- **(b) die ganze Übernahme zurücknehmen** — dann müssen die Schritte 8 und 9 unter die
-  Klammer und vor den Commit, oder
-- **(c) bleiben wie es ist**?
+**Umgesetzt** in `KomponentenUebernahmeCtrl.SenkenNachziehen` (Schritt 8): Der Rückgabewert
+von `Z_AnlageSenkeCtrl.SchreibenJeAnlage` wird ausgewertet, ein Fehlschlag geht als neuer
+Schlüssel `BK_KOMP_HINW_SENKEN` in `warnungen` — und damit über `hinweise` an denselben
+Kanal, den der Anwender nach dem Lauf sieht.
 
-**Empfehlung: (a).** Die Übernahme ist ausdrücklich nicht umkehrbar, und ihre Oberfläche
-führt bereits einen Hinweiskanal, den der Anwender nach dem Lauf sieht; ein ungleiches
-Verhalten der Nachbarschritte 8 und 9 ist ohnehin schwer zu rechtfertigen. (b) verschöbe
-eine Transaktionsgrenze in einem Ablauf, der sich an anderer Stelle ausdrücklich darauf
-verlässt, außerhalb der Transaktion zu lesen (`PufferCache`) — das wäre eine eigene Welle
-mit eigenem Nachweis, nicht die Antwort auf einen Nebenbefund.
+**Die Ungleichheit der zwei Nachbarschritte war der eigentliche Mangel.** Danach verhalten
+sie sich gleich:
 
-**Umfang bei (a):** ein neuer Ressourcenschlüssel in beiden Sprachen, `ResourceDesigner`
-ziehen, `SenkenNachziehen` wertet den Rückgabewert aus, ein Prüffall.
+| | Schritt 8 `SenkenNachziehen` | Schritt 9 `VariantenNachziehen` |
+|---|---|---|
+| Fehlschlag erkannt an | Rückgabewert `false` | `AnlageFinden <= 0` bzw. `Insert <= 0` |
+| Kanal | `warnungen` → `hinweise` | `warnungen` → `hinweise` |
+| Form | `string.Format(BK_KOMP_HINW_SENKEN, Bezeichner)` | `string.Format(BK_KOMP_HINW_VARIANTE, Bezeichner)` |
+| Benannt über | Bezeichner der Anlage | Bezeichner der Anlage |
+| Menge | eine Zeile je betroffener Anlage | eine Zeile je betroffener Anlage |
+| Danach | Lauf geht weiter, `Uebernehmen` meldet `true` | Lauf geht weiter, `Uebernehmen` meldet `true` |
 
-## 5. Ein Nebenbefund, nicht mitumgebaut
+Einziger Unterschied in der Schreibweise: Schritt 9 schließt seine Meldung mit `continue`
+ab, weil danach noch Anweisungen folgen; in Schritt 8 IST der Aufruf die letzte Anweisung
+des Schleifenrumpfes, ein `continue` wäre dort ohne Wirkung.
 
-`StraengeWiederherstellen` bedient jede Anlage, die JETZT keine Strangzeile führt. Eine vom
-Dialog übergebene **leere** Liste (`StraengeZuModell` liefert eine leere Liste, nie `null`)
-ist ein gültiger Auftrag — sie löscht die Stränge. Danach führt die Anlage keine Strangzeile
-mehr, und die Rettung trägt die alten wieder ein. Das Entfernen der letzten Strangzeile
-bzw. das Umschalten auf „vereinfacht" könnte sich damit im Del+Add-Speicherweg aufheben.
-**Nicht gemessen** — dieser Auftrag hat es beim Lesen gefunden, und es ist eine eigene
-Frage.
+**Der neue Text nennt die Folge, nicht die Technik** — was jetzt gilt, nicht welche Methode
+`false` geliefert hat. Im Zuschnitt des Nachbarn: gleiches Satzgerüst („Die … der …
+„{0}" konnte(n) nicht angelegt werden"), dann die Folge hinter dem Gedankenstrich wie bei
+`BK_KOMP_HINW_KINDTABELLE` und `BK_KOMP_HINW_PUFFERVERWEIS`:
 
-## 6. Abnahme
+- **de:** Die Wärmesenken der Anlage „{0}" konnten nicht angelegt werden — die Anlage
+  rechnet mit der Vorbelegung Heizkreis (beides).
+- **en:** The heat sinks of unit "{0}" could not be created — the unit uses the default
+  heating circuit (both).
+
+Der Kommentar an der Aufrufstelle (Schritt 8 im Ablauf von `Uebernehmen`) sagt das jetzt
+ebenfalls: Die Übernahme bleibt stehen, der Fehlschlag wird gemeldet, die
+Transaktionsgrenze bleibt. Der Satz über die zweite Verbindung — der wahre Kern der alten
+Begründung — steht unverändert daneben, denn er gilt weiter.
+
+## 5. Der Nebenbefund — gemessen, BESTÄTIGT, nicht geändert
+
+Der Untersuchungsauftrag hatte ihn beim Lesen gefunden: `StraengeZuModell` liefert bei
+leerer Maskenliste eine **leere Liste**, nie `null`; eine leere Liste ist ein gültiger
+Löschauftrag; `StraengeWiederherstellen` bedient genau Anlagen ohne Strangzeile. Verdacht:
+Das Entfernen der letzten Strangzeile hebt sich im Del+Add-Speicherweg auf.
+
+**Gemessen, nicht mehr vermutet** — Prüffall
+`AnlageStrangTests.Eine_geleerte_Dialogliste_traegt_die_Strang_Rettung_heute_wieder_ein`.
+Er hält das heutige Verhalten fest und fordert nichts:
+
+1. Die Anlage führt zwei gespeicherte Stränge.
+2. Der Dialog gibt eine **leere** Liste mit — der Anwender hat die letzte Zeile entfernt.
+3. `SchreibenJeAnlage` löscht die Zeilen und meldet **`true`**: ein GELUNGENES Schreiben.
+4. Danach führt die Anlage keine Strangzeile — und `StraengeWiederherstellen` trägt die
+   Liste des Vorzustands wieder ein.
+5. Gelesen werden hinterher wieder „Alt Ost" und „Alt West".
+
+**`NL-Q1` erledigt den Befund NICHT und verschiebt ihn auch nicht — es bestätigt ihn.**
+Der Rückzug aus `NL-Q1` greift bei einem FEHLSCHLAG; hier gelingt das Schreiben. Es gibt
+nichts zurückzunehmen, der Lauf endet nicht, und der Rettungsweg kommt sehr wohl zum Zuge.
+Der Befund sitzt an einer anderen Stelle als `NL-Q1`, nämlich in der Frage, **woran
+`StraengeWiederherstellen` eine „vom Dialog geleerte" Anlage von einer „vom Dialog nicht
+angefassten" unterscheiden soll** — heute kann es das nicht, weil beide Fälle dasselbe
+Bild ergeben: keine Strangzeile.
+
+**Gegenprobe gefahren:** `StraengeWiederherstellen` versuchsweise ausgehängt → der Fall
+wird **rot** („Collections differ"). Er misst also die Rettung und nicht eine Konstante;
+danach wieder eingebaut.
+
+**Geändert wurde nichts** — das war der Auftrag. Ob und wie der Befund behoben wird,
+entscheidet der Anwender.
+
+## 6. Abnahme des Untersuchungsauftrags
 
 | | vorher (`763f7713`) | nachher |
 |---|---|---|
@@ -240,7 +303,91 @@ Schemaschritt, keine neue Referenzbasis. **Kein iOS-Lauf** (die Änderung trifft
 iOS-Hülle nicht); am Rechenweg ist nichts angefasst, die vier neuen Fälle sind der ganze
 Zuwachs.
 
-## 7. Abnahmepunkte auf Windows
+## 7. Abnahme der Umsetzung (`NL-Q1` und `NL-Q2`)
 
-Keine — es ist keine Codezeile geändert worden. Nach einer Antwort auf `NL-Q1` bzw. `NL-Q2`
-kommen die Abnahmepunkte mit der Umsetzung.
+### 7.1 Was geändert wurde
+
+| Datei | Änderung |
+|---|---|
+| `EPOS.Kern/Controller/WizardCtrl.cs` | Block `ST1`: Rückgabewert ausgewertet, `false` verwirft die zwei Sicherungen und steigt aus; `catch` bleibt und führt auf denselben Weg; Kommentar neu. Dazu im Kopf von `StraengeWiederherstellen` der Satz, dass ein gescheitertes Schreiben der Dialogliste diese Methode nicht mehr erreicht |
+| `EPOS.Kern/Controller/KomponentenUebernahmeCtrl.cs` | Schritt 8: Rückgabewert ausgewertet, Fehlschlag als `BK_KOMP_HINW_SENKEN` in `warnungen`; zwei Kommentarstellen nachgezogen |
+| `EPOS.Kern/MyResource/Resource.resx`, `Resource.en-US.resx` | neuer Schlüssel `BK_KOMP_HINW_SENKEN` in beiden Sprachen |
+| `EPOS.Kern/MyResource/Resource.Designer.cs` | neu erzeugt (`designer_neu.py schreiben`): 6 331 → 6 332 Einträge, +430 Zeichen, zweiter Lauf **+0 / wiederholbar** |
+
+**Nicht angefasst:** `Vorgangsklammer`, `AssistentCtrl.Speichern`, `WaermesenkeClass`, der
+Senkenweg der Senkenklammer, die Transaktionsgrenze von `KomponentenUebernahmeCtrl`. Kein
+Schemaschritt, keine neue Referenzbasis.
+
+### 7.2 Die Prüffälle und ihre Gegenproben
+
+| Fall | Was er misst | Gegenprobe |
+|---|---|---|
+| `AnlageStrangTests.Ein_gescheitertes_Schreiben_der_Dialog_Straenge_nimmt_den_Lauf_zurueck` (umgedreht) | `Add_WP_Waermeerzeuger` meldet `false`, der Vorgang wird NICHT festgeschrieben, die Anlagenzeile trägt hinterher noch ihre ALTE Id samt alten Strängen; die Mitschrift zeigt die Rücknahme und **keine** „Strang-Rettung" | Auswertung ausgehängt → **rot** (`Assert.False() Failure`), danach wieder eingebaut |
+| `AssistentCtrlTests.Ein_gescheiterter_Strangschritt_nimmt_den_Lauf_zurueck_und_nennt_ihn` (neu) | Über `AssistentCtrl.Speichern`: Ausgang `Fehlgeschlagen`, `Schritt` = `Add_WP_Waermeerzeuger`, der Name steht in `Meldungstext`; Zählstand, Anlagenbezeichner und der vollständige Zeileninhalt der einundzwanzig projektgebundenen Tabellen sind die von vorher | Auswertung ausgehängt → **rot** (`Assert.Equal() Failure: Values differ`), danach wieder eingebaut |
+| `UebernahmeNachzugTests.Ein_gescheiterter_Senkennachzug_meldet_sich_im_Hinweiskanal` (neu) | `Uebernehmen` meldet weiterhin `true` und keinen `fehler`; für jede betroffene Anlage steht `BK_KOMP_HINW_SENKEN` in `hinweise`; das Ziel führt hinterher wirklich keine Senkenzeile | Auswertung ausgehängt → **rot** (`Assert.Contains() Failure`), die zwei `NL-Q1`-Fälle blieben dabei **grün**; danach wieder eingebaut |
+| `AnlageStrangTests.Eine_geleerte_Dialogliste_traegt_die_Strang_Rettung_heute_wieder_ein` (neu, BEFUND) | Abschnitt 5 | `StraengeWiederherstellen` ausgehängt → **rot** (`Assert.Equal() Failure: Collections differ`), danach wieder eingebaut |
+
+**Wie die Fehlschläge erzwungen werden — in beiden Fällen an der Wurzel, nie über einen
+Haken im Quelltext.** Für `NL-Q1` die ERZWUNGENE Beziehung
+`Z_AnlageStrang.ID_Wechselrichter` → `Tab_Wechselrichter` (ein Wechselrichter, den es nicht
+gibt). Für `NL-Q2` ein `BEFORE INSERT`-Wächter auf `Z_AnlageSenke`, der jede neue
+Senkenzeile des Zielprojekts abweist: Das trifft ausschließlich Schritt 8, denn innerhalb
+des Hauptvorgangs wird `Z_AnlageSenke` nur per `UPDATE` und über die Löschweitergabe der
+Anlagenzeile angefasst — die EINZIGE `INSERT`-Stelle des ganzen Ablaufs ist der Nachzug.
+Der Wächter wird im `finally` wieder entfernt, die Arbeitskopie ist ohnehin eine eigene.
+
+### 7.3 Zahlen
+
+| | vorher (`8831b83c`) | nachher |
+|---|---|---|
+| Kern-Filter Release | 0 Fehler, 5 Warnungen | 0 Fehler, 5 Warnungen |
+| `EPOS.Kern.Tests` | 3 108 / 3 108 | 3 111 / 3 111 |
+| `EPOS.UI.Tests` | 4 530 / 4 530 | 4 530 / 4 530 |
+| `SpeicherEngine.Tests` | 370 / 370 | 370 / 370 |
+| `KiKern.Tests` | 499 / 499 | 499 / 499 |
+| `SpeicherPlanung.Tests` | 27 / 28 (1 übersprungen) | 27 / 28 (1 übersprungen) |
+| `SqlDialektPruefer` | 1 462 Texte, 0 Fundstellen | 1 462 Texte, 0 Fundstellen |
+| `ChartProben` | 64 Bilder, 0 Verstöße | 64 Bilder, 0 Verstöße |
+| Referenzlauf gegen `2026-09-16_R8_Heizkessel_Kaskade` (5 Projekte) | 5/5 PASS, byte-gleich | 5/5 PASS, byte-gleich |
+
+Beide Testläufe zweimal gefahren: einmal in der Standardkultur, einmal unter
+`LC_ALL=en_US.UTF-8` — beide Male dieselben Zahlen. Bei einem neuen Text in zwei Sprachen
+ist das der eigentliche Nachweis. **Keine neue Warnung** (Schranke 7), kein Schemaschritt,
+keine neue Referenzbasis, **kein iOS-Lauf** — die Änderung trifft die iOS-Hülle nicht.
+
+## 8. Abnahmepunkte auf Windows
+
+Beide Sprachen prüfen (Menü „Extras → Sprache"), beide Fälle sind Fehlschlagfälle und
+brauchen eine Datenbank, in der sich der Fehlschlag erzeugen lässt — am einfachsten auf
+einer Arbeitskopie.
+
+**`A-NLQ1-1`** — Der Assistent nimmt einen gescheiterten Strangschritt zurück.
+Projekt mit PV-Anlage öffnen, im PV-Dialog Stränge bearbeiten, den benutzten
+Wechselrichter zwischendurch aus dem Projekt entfernen (oder die Zeile auf ein Gerät
+zeigen lassen, das es nicht mehr gibt), dann speichern. **Erwartet:** EINE Meldung, die
+den Schritt `Add_WP_Waermeerzeuger` nennt; das Projekt ist danach **unverändert** — nicht
+teils gespeichert, und die Stränge sind nicht stillschweigend auf den alten Stand
+zurückgesprungen, während „gespeichert" gemeldet wird.
+
+**`A-NLQ1-2`** — Der Normalfall bleibt, wie er war. Dieselbe Anlage, Stränge bearbeiten,
+alles gültig, speichern. **Erwartet:** Speichern gelingt, die bearbeiteten Stränge stehen
+nach dem erneuten Öffnen so da, wie sie eingegeben wurden.
+
+**`A-NLQ2-1`** — Die Komponentenübernahme meldet einen gescheiterten Senkennachzug.
+Gewerk mit Senkenketten von einem Projekt in ein anderes übernehmen und den Nachzug
+scheitern lassen. **Erwartet:** Die Übernahme läuft durch (sie wird **nicht**
+zurückgenommen) und der Hinweisbereich nennt **je betroffener Anlage** den Text: „Die
+Wärmesenken der Anlage „…" konnten nicht angelegt werden — die Anlage rechnet mit der
+Vorbelegung Heizkreis (beides)." Auf Englisch: „The heat sinks of unit … could not be
+created — the unit uses the default heating circuit (both)."
+
+**`A-NLQ2-2`** — Die zwei Hinweise klingen nach einem Verfasser. Eine Übernahme, bei der
+sowohl der Senkennachzug als auch die Betriebsführung einer Speichervariante scheitert.
+**Erwartet:** Beide Zeilen stehen im selben Hinweisbereich, im selben Satzbau und je einmal
+pro Anlage — kein Stilbruch zwischen ihnen.
+
+**`A-NLQ2-3`** — Der Normalfall bleibt, wie er war. Eine gelingende Übernahme mit
+Senkenketten. **Erwartet:** Der Hinweisbereich zeigt zu den Senken **nichts**, und die
+Senkenketten des Ziels sind die der Quelle.
+
+
