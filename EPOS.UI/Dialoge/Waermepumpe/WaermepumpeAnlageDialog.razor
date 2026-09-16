@@ -90,11 +90,28 @@
    zusaetzlich als Herleitungszeile, weil ein Tooltip auf einem
    Beruehrungsgeraet nicht erreichbar ist.
 
-   DIE STAMMFELDER GEHOEREN DEM KATALOG (Tab_WP_STAMM), nicht der Projektkopie.
-   Das war schon so, als der Knopf "Parameter Bearbeiten…" die Stammdatenpflege
-   oeffnete; nur steht das Raster jetzt unmittelbar im Dialog. Zugeordnet wird
-   ueber den BEZEICHNER, denn Daten.IdWp ist bei einer gespeicherten Anlage die
-   Id der Projektkopie (StammfelderNachziehen).
+   DIE STAMMFELDER GEHOEREN DER PROJEKTKOPIE (Anwenderentscheid 16.09.2026, und
+   das BERICHTIGT die Bauart des Vormittags). Sie schrieben bis dahin in den
+   KATALOG (Tab_WP_STAMM) - wer Hersteller, Typ, Regelung, Aufstellung, Baujahr,
+   Nennleistung oder Heizstab aenderte, aenderte sie fuer JEDES andere Projekt
+   mit. Sie sind aber Daten DIESER Anlage: Der Rechenweg liest Tab_WP
+   (SimulationWaermepumpe.ModuleAufbauen), und dorthin gehoeren sie.
+
+   FOLGEN, jede fuer sich pruefbar:
+
+     * Die Felder binden an Daten (den Feldsatz der Anlage) und gehen mit dem OK
+       des Dialogs hinaus - KEIN eigener Speichern-Knopf mehr. Den Schreibweg in
+       Tab_WP zieht die Huelle nach dem Anlegen der Projektkopie nach
+       (WPCtrl.ProjektgeraetSchreiben).
+     * Der BEZEICHNER ist hier nicht editierbar (BezeichnerAenderbar="false"):
+       Projektkopie und Katalogsatz kennen einander allein ueber den Namen, und
+       die Waermesenken haengen an (Typ, Bezeichner). Umbenannt wird in der
+       Katalogverwaltung.
+     * Das eigene Heizstab-Feld der Anlage ist mit dem des Bausteins VERSCHMOLZEN
+       - ein Feld, eine Spalte (Tab_WP.Heizung); zwei gleich beschriftete Felder
+       in einem Block waren nicht auseinanderzuhalten.
+     * In den Katalog kommt der Stand nur auf ausdruecklichen Zuruf: der Knopf
+       "In Stamm uebernehmen…" mit Vorschau und Rueckfrage.
 
    TASTATUR: Esc bricht ab - aber erst, wenn keine Ueberlagerung offen ist.
    Enter ist nicht belegt. *@
@@ -236,10 +253,25 @@
                         <button type="button" class="epos-knopf" disabled="@NurLesen"
                                 @onclick="KonfigurationOeffnen">@BtnKonfigurationText</button>
                         <span class="epos-leiste-fueller"></span>
+
+                        @* WEICHE SPERRE, kein disabled (Hausregel „Bedienung"): Beide
+                           Knöpfe brauchen die PROJEKTKOPIE — der Editor bearbeitet seit
+                           dem 16.09.2026 die Projektkennlinien (Tab_Kenndaten), die
+                           Übernahme liest die Projektzeile. Vor dem ersten Speichern gibt
+                           es beides nicht; ein gesperrter Knopf, der seinen Grund erklären
+                           soll, darf nicht disabled sein — sein Tooltip erschiene nie. Der
+                           Klick MELDET stattdessen. *@
                         @if (Kennlinien is not null)
                         {
-                            <button type="button" class="epos-knopf" disabled="@(_stammId <= 0)"
+                            <button type="button" class="epos-knopf" title="@Sperrgrund"
+                                    aria-disabled="@((!Projektkopie).ToString().ToLowerInvariant())"
                                     @onclick="BeiKenndaten">@BtnKenndatenText</button>
+                        }
+                        @if (InStammUebernehmen is not null && !NurLesen)
+                        {
+                            <button type="button" class="epos-knopf" title="@Sperrgrund"
+                                    aria-disabled="@((!Projektkopie).ToString().ToLowerInvariant())"
+                                    @onclick="BeiInStamm">@BtnInStammText</button>
                         }
                     </div>
 
@@ -263,48 +295,31 @@
                         <Herleitungszeile Text="@TipKostenNeu" />
                     }
 
-                    @* ALLE PARAMETER DES STAMMGERAETS - unmittelbar und BEARBEITBAR
+                    @* ALLE PARAMETER DER ANLAGE - unmittelbar und BEARBEITBAR
                        (Anwenderentscheid 16.09.2026: "alle Parameter direkt im Dialog
                        zugaenglich"). Dasselbe Feldraster, das die Stammdatenpflege zeigt;
                        die sechs nur lesenden Kenndatenfelder sind damit entfallen - kein
                        Feld steht zweimal da.
 
-                       GEMEINT IST DER KATALOGSATZ (Tab_WP_STAMM), nicht die Projektkopie:
-                       Der Knopf "Parameter Bearbeiten…" oeffnete bis hierher genau diese
-                       Maske, und der Speicherweg ist derselbe geblieben. Die Zuordnung
-                       laeuft ueber den BEZEICHNER (StammfelderNachziehen) - bei einer
-                       gespeicherten Anlage ist Daten.IdWp die Id der PROJEKTKOPIE. *@
-                    <WaermepumpeStammFelder Daten="@_stamm" Texte="@StammfelderTexte"
-                                            Aktiv="@(!NurLesen)" Geaendert="StammfeldGeaendert" />
+                       GEMEINT IST DIE PROJEKTKOPIE (Tab_WP), nicht der Katalogsatz. _stamm
+                       ist nur das ABBILD, das der Baustein braucht; gefuellt wird es aus
+                       Daten (StammabbildNachziehen), und jede Eingabe schreibt die
+                       editierbaren Werte dorthin zurueck (StammfeldGeaendert). Hinaus gehen
+                       sie mit dem OK des Dialogs - darum steht hier kein Speichern-Knopf.
+
+                       Das Heizstabfeld des Bausteins IST das Feld der Anlage: Es traegt die
+                       Mangelklasse des Pflichtfelds, damit das Warnband weiter auf dasselbe
+                       Feld zeigt. *@
+                    <span class="@Huelle(MANGEL_HEIZSTAB)">
+                        <WaermepumpeStammFelder Daten="@_stamm" Texte="@StammfelderTexte"
+                                                Aktiv="@(!NurLesen)" BezeichnerAenderbar="false"
+                                                Geaendert="StammfeldGeaendert" />
+                    </span>
 
                     @if (_stammMeldung.Length > 0)
                     {
                         <Warnbanner Stufe="@_stammStufe" Text="@_stammMeldung" />
                     }
-
-                    @if (StammSpeichern is not null)
-                    {
-                        <div class="epos-leiste">
-                            <button type="button" class="epos-knopf" disabled="@(NurLesen || _stammId <= 0)"
-                                    @onclick="StammfelderSpeichern">@BtnStammSpeichernText</button>
-                        </div>
-                    }
-
-                    @* Die Heizstableistung gehoert der ANLAGE (Tab_Energieanlagen.Heizung)
-                       und nicht dem Katalogsatz - sie bleibt deshalb hier stehen, unter den
-                       Stammfeldern, und traegt den Namen, mit dem die Pflichtmeldung sie
-                       nennt ("Leistung Heizstab"): Der Katalogsatz fuehrt daneben seinen
-                       eigenen "Heizstab", und zwei gleich beschriftete Felder in einem Block
-                       waeren nicht auseinanderzuhalten. *@
-                    <Formularraster>
-                        <KindInhalt>
-                            <span class="@Huelle(MANGEL_HEIZSTAB)">
-                                <Ganzzahlfeld Bezeichnung="@LabelPHeizstabKurz" Einheit="@EinheitKw"
-                                              Feldname="@LabelPHeizstabKurz" Wert="@Daten.HeizstabLeistung"
-                                              WertChanged="w => Daten.HeizstabLeistung = w" Aktiv="@(!NurLesen)" />
-                            </span>
-                        </KindInhalt>
-                    </Formularraster>
                 </KindInhalt>
             </Gruppenkopf>
 
@@ -432,19 +447,58 @@
     </Ueberlagerung>
 
     @* --- Ueberlagerung 2: der Kennlinieneditor (16.09.2026) -----------------
-       Derselbe Weg, den bis hierher die Stammdatenpflege hinter "Parameter
-       Bearbeiten…" fuehrte: Der Editor bearbeitet die Kennlinien des KATALOGSATZES
-       (Tab_Kenndaten_STAMM). Die Bilder unten zeigen dagegen die des Projekts - so
-       war es auch vorher, nur eine Ueberlagerung tiefer. *@
+       Er bearbeitet die PROJEKTKENNLINIEN (Tab_Kenndaten), nicht die des Katalogs:
+       Gerechnet wird ausschliesslich mit ihnen, und die Bilder darunter zeigen
+       dieselben. Vor dem ersten Speichern gibt es sie nicht - dann ist der Knopf
+       weich gesperrt und meldet den Grund. *@
     <Ueberlagerung Offen="@(_kennlinienZeilen is not null)"
                    Titel="@BtnKenndatenText" Geschlossen="() => KenndatenFertig(null)">
         <KindInhalt>
             @if (_kennlinienZeilen is not null)
             {
                 @* Ein Titel, eine Stelle: die Ueberlagerung traegt den Titel. *@
-                <KennlinienEditorDialog Zeilen="_kennlinienZeilen" IdWp="@_stammId"
-                                        NurLesen="@(NurLesen || _stamm.NurLesen)" TitelText=""
+                <KennlinienEditorDialog Zeilen="_kennlinienZeilen" IdWp="@Daten.IdWp"
+                                        NurLesen="@NurLesen" TitelText=""
                                         Geschlossen="KenndatenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 4: "In Stamm uebernehmen" (16.09.2026) ---------------
+       Der EINE Weg, auf dem der Stand dieser Anlage in den KATALOG kommt. Er fragt
+       vorher - und zwar KONKRET: Die Vorschau nennt den Namen des Katalogsatzes,
+       sagt, ob er ueberschrieben oder neu angelegt wird, und wie viele ANDERE
+       Projekte bereits eine eigene Kopie fuehren (die sich nicht aendern). Ein
+       Auslieferungssatz bekommt gar keinen Uebernehmen-Knopf, nur den Grund. *@
+    <Ueberlagerung Offen="@(_vorschau is not null)" Titel="@UebernahmeTitel"
+                   Geschlossen="UebernahmeSchliessen">
+        <KindInhalt>
+            @if (_vorschau is WaermepumpeUebernahmeVorschau v)
+            {
+                <div class="epos-wp-uebernahme">
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@UebernahmeWarntext(v)" />
+
+                    @if (!v.ReadOnly)
+                    {
+                        <Schalter Bezeichnung="@UebernahmeSchalterKennlinien"
+                                  Wert="@_mitKennlinien" WertChanged="w => _mitKennlinien = w" />
+                    }
+                </div>
+
+                @if (v.ReadOnly)
+                {
+                    @* Kein Uebernehmen-Knopf: Ein Knopf, der nur ablehnen kann, ist ein
+                       Versprechen, das der Weg nicht halten darf. *@
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf epos-knopf--primaer"
+                                @onclick="UebernahmeSchliessen">@SchliessenText</button>
+                    </div>
+                }
+                else
+                {
+                    <SpeichernLeiste OkText="@UebernahmeOkText" AbbrechenText="@AbbrechenText"
+                                     Ergebnis="UebernahmeErgebnis" />
+                }
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -525,26 +579,38 @@
 
 
     /// <summary>
-    /// <b>Der KATALOGSATZ zu einer Stammkatalog-Id</b> (<c>WaermepumpeStammHuelle.SatzZu</c>,
-    /// also <c>Tab_WP_STAMM</c>) — seit dem 16.09.2026 stehen dessen Felder unmittelbar im
-    /// Kenndatenblock, statt hinter „Parameter Bearbeiten…" in einer Überlagerung.
+    /// <b>Führt das Projekt für <c>Daten.IdWp</c> eine eigene Gerätekopie?</b>
+    /// (<c>Tab_WP.ID = ? AND ID_Projekt = ?</c>) — die Frage entscheidet über die WEICHE
+    /// SPERRE von „Kennliniendaten…" und „In Stamm übernehmen…".
     ///
-    /// <para><b>Nicht zu verwechseln mit <see cref="Stammdaten"/>:</b> Jener Weg liest
-    /// Projektkopie VOR Stammkatalog und füllt damit die Anzeigefelder der Anlage; dieser
-    /// liest ausschließlich den Katalog, weil nur dorthin auch zurückgeschrieben wird.</para>
+    /// <para>Vor dem ersten Speichern trägt <c>Daten.IdWp</c> die KATALOG-Id
+    /// (<c>Tab_WP_STAMM</c>): Es gibt weder Projektkennlinien zu bearbeiten noch eine
+    /// Projektzeile zu übernehmen. Ohne Delegat gilt die Anlage als gespeichert — die
+    /// Komponente zeichnet auch ohne Gaben.</para>
     /// </summary>
-    [Parameter] public Func<int, WaermepumpeStammDaten?>? StammSatz { get; set; }
+    [Parameter] public Func<int, bool>? ProjektkopieVorhanden { get; set; }
 
     /// <summary>
-    /// Schreibt den Katalogsatz (<c>WaermepumpeStammHuelle.Speichern</c>, zweiter Parameter
-    /// <c>true</c> = anlegen — hier immer <c>false</c>). OHNE Delegat kein Speichernknopf.
+    /// Was die Übernahme in den Katalog vorfinden wird
+    /// (<c>WPStammCtrl.UebernahmeVorschau</c>) — die Grundlage der Rückfrage.
     /// </summary>
-    [Parameter] public Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>? StammSpeichern { get; set; }
+    [Parameter] public Func<int, WaermepumpeUebernahmeVorschau?>? UebernahmeVorschau { get; set; }
 
-    /// <summary>Die Kennlinien eines KATALOGSATZES für den Editor (<c>KenndatenCtrl.LiesStamm</c>).</summary>
+    /// <summary>
+    /// Trägt den Stand der PROJEKTKOPIE in den Katalog
+    /// (<c>WPStammCtrl.UebernehmenAusProjekt</c>); zweiter Parameter = Kennlinien
+    /// mitnehmen. <b>Ohne Delegat kein Knopf</b> (Hausregel seit W2).
+    /// </summary>
+    [Parameter] public Func<int, bool, KatalogSpeicherErgebnis>? InStammUebernehmen { get; set; }
+
+    /// <summary>
+    /// Die PROJEKTKENNLINIEN eines Geräts für den Editor (<c>KenndatenCtrl.LiesProjekt</c>).
+    /// Seit dem 16.09.2026 nicht mehr die des Katalogs: Gerechnet wird ausschließlich mit
+    /// den Projektkennlinien, und genau die zeigen auch die Bilder darunter.
+    /// </summary>
     [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>>? Kennlinien { get; set; }
 
-    /// <summary>Schreibt den Editorstand zurück (<c>KenndatenCtrl.Abgleichen</c>).</summary>
+    /// <summary>Schreibt den Editorstand zurück (<c>KenndatenCtrl.AbgleichenProjekt</c>).</summary>
     [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>, bool>? KennlinienAbgleichen { get; set; }
 
     /// <summary>ET‑5 (08.09.2026): der Trägerkatalog in der Gliederung Gruppe › Art; leer = kein Feld.</summary>
@@ -679,21 +745,54 @@
     /// <summary>Der Knopf in den Kennlinieneditor (<c>WPS_BTN_KENNDATEN</c>).</summary>
     [Parameter] public string BtnKenndatenText { get; set; } = "Kennliniendaten Ansicht/Bearbeiten...";
 
-    /// <summary>Der Speichernknopf der Stammfelder (<c>ADM_BTN_SPEICHERN</c>).</summary>
-    [Parameter] public string BtnStammSpeichernText { get; set; } = "Speichern";
+    // --- „In Stamm übernehmen…" (Anwenderentscheid 16.09.2026) -----------------
+
+    /// <summary>Der Knopf in die Übernahme (<c>WPA_BTN_IN_STAMM</c>).</summary>
+    [Parameter] public string BtnInStammText { get; set; } = "In Stamm übernehmen…";
+
+    /// <summary>Titel der Überlagerung (<c>WPA_UEB_TITEL</c>).</summary>
+    [Parameter] public string UebernahmeTitel { get; set; } = "In Stamm übernehmen";
+
+    /// <summary>
+    /// Die Warnung, wenn es den Katalogsatz schon gibt (<c>WPA_UEB_TEXT_UEBERSCHREIBEN</c>);
+    /// <c>{0}</c> ist sein Name, <c>{1}</c> die Zahl der ANDEREN Projekte mit eigener Kopie.
+    /// </summary>
+    [Parameter] public string UebernahmeTextUeberschreiben { get; set; } =
+        "Der Katalogsatz „{0}“ wird mit den Werten dieser Anlage überschrieben. {1} weitere Projekte führen bereits eine Kopie — sie ändern sich nicht.";
+
+    /// <summary>Die Ansage, wenn der Satz neu entsteht (<c>WPA_UEB_TEXT_NEU</c>); <c>{0}</c> = Name.</summary>
+    [Parameter] public string UebernahmeTextNeu { get; set; } =
+        "Es gibt keinen Katalogsatz „{0}“. Er wird neu angelegt.";
+
+    /// <summary>Der Schalter über die Kennlinien (<c>WPA_UEB_CHK_KENNLINIEN</c>).</summary>
+    [Parameter] public string UebernahmeSchalterKennlinien { get; set; } =
+        "Kennlinien mitübernehmen (ersetzt Wärme- und Kühlkennlinien des Katalogsatzes)";
+
+    /// <summary>Der OK-Knopf der Überlagerung (<c>WPA_UEB_BTN_OK</c>).</summary>
+    [Parameter] public string UebernahmeOkText { get; set; } = "Übernehmen";
+
+    /// <summary>
+    /// Der Grund der weichen Sperre und die Meldung beim Klick darauf
+    /// (<c>WP_PROJ_MSG_NICHT_GESPEICHERT</c>) — derselbe Wortlaut, mit dem der Kern einen
+    /// Schreibversuch ohne Projektkopie ablehnt.
+    /// </summary>
+    [Parameter] public string MeldungNichtGespeichert { get; set; } =
+        "Die Anlage ist noch nicht gespeichert; die Projektdaten entstehen mit dem ersten Speichern.";
+
+    /// <summary>Der Grund bei einem Auslieferungssatz (<c>WP_STAMM_UEBERNAHME_MSG_READONLY</c>).</summary>
+    [Parameter] public string MeldungUebernahmeReadOnly { get; set; } =
+        "Auslieferungssätze werden nicht überschrieben.";
 
     [Parameter] public string BtnKostenText { get; set; } = "Kosten bearbeiten…";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string SchliessenText { get; set; } = "Schließen";
 
-    /// <summary>Meldung beim Speichern eines Auslieferungssatzes (<c>WPS_MSG_READONLY_SPEICHERN</c>).</summary>
-    [Parameter] public string MeldungReadOnlySpeichern { get; set; } =
-        "Diese Wärmepumpe ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.";
-
-    /// <summary>Hinweis vor dem Kennlinieneditor eines Auslieferungssatzes (<c>WPS_MSG_READONLY_KENNDATEN</c>).</summary>
-    [Parameter] public string MeldungReadOnlyKenndaten { get; set; } =
-        "Diese Wärmepumpe ist schreibgeschützt (ReadOnly). Die Kennliniendaten können nur angesehen, nicht geändert werden.";
+    // Die beiden ReadOnly-Meldungen (MeldungReadOnlySpeichern, MeldungReadOnlyKenndaten)
+    // sind mit dem Anwenderentscheid vom 16.09.2026 ENTFALLEN: Bearbeitet und geschrieben
+    // wird die PROJEKTKOPIE, und die kennt kein ReadOnly - das ist ein Merkmal des
+    // Auslieferungskatalogs. Wo es weiterhin gilt, bei der Uebernahme IN den Katalog,
+    // steht es als MeldungUebernahmeReadOnly.
 
     /// <summary>Vorschlagszeile unter dem Rücklauffeld; <c>{0}</c> ist die Werteliste.</summary>
     [Parameter] public string RuecklaufFormat { get; set; } = "Übliche Werte: {0} °C";
@@ -752,14 +851,27 @@
 
     // --- Die STAMMFELDER im Kenndatenblock (16.09.2026) ------------------------
 
-    /// <summary>Der bearbeitete KATALOGSATZ; nie <c>null</c>, damit der Block ohne Gaben zeichnet.</summary>
+    /// <summary>
+    /// Das ABBILD der Anlagenfelder für den Baustein; nie <c>null</c>, damit der Block
+    /// ohne Gaben zeichnet.
+    ///
+    /// <para><b>Es ist kein Katalogsatz.</b> Gefüllt wird es aus <see cref="Daten"/>
+    /// (<see cref="StammabbildNachziehen"/>), und jede Eingabe schreibt die editierbaren
+    /// Werte dorthin zurück (<see cref="StammfeldGeaendert"/>). Der Baustein braucht nur
+    /// den Typ; die Wahrheit steht in <see cref="Daten"/> und geht mit dem OK hinaus.</para>
+    /// </summary>
     private WaermepumpeStammDaten _stamm = new();
-
-    /// <summary>Seine Id im STAMMKATALOG (<c>Tab_WP_STAMM</c>); 0 = kein Katalogsatz dieses Namens.</summary>
-    private int _stammId;
 
     private string _stammMeldung = "";
     private WarnStufe _stammStufe = WarnStufe.Hinweis;
+
+    // --- „In Stamm übernehmen…" (16.09.2026) -----------------------------------
+
+    /// <summary>Die Vorschau; <c>null</c> = die Überlagerung steht nicht.</summary>
+    private WaermepumpeUebernahmeVorschau? _vorschau;
+
+    /// <summary>Der Schalter „Kennlinien mitübernehmen" — Vorgabe AUS.</summary>
+    private bool _mitKennlinien;
 
     /// <summary>Die Zeilen des Kennlinieneditors; <c>null</c> = er steht nicht.</summary>
     private List<KennlinienZeile>? _kennlinienZeilen;
@@ -795,6 +907,19 @@
 
     /// <summary>Steht der Kennlinieneditor? Prüfhilfe für die Tests.</summary>
     public bool KennlinieneditorOffen => _kennlinienZeilen is not null;
+
+    /// <summary>Steht die Übernahme in den Katalog? Prüfhilfe für die Tests.</summary>
+    public bool UebernahmeOffen => _vorschau is not null;
+
+    /// <summary>
+    /// Führt das Projekt eine eigene Gerätekopie? Ohne Delegat <c>true</c> — eine Seite
+    /// ohne Gaben soll zeichnen und bedienbar sein, nicht gesperrt dastehen.
+    /// </summary>
+    private bool Projektkopie
+        => ProjektkopieVorhanden is null || (Daten.IdWp > 0 && ProjektkopieVorhanden(Daten.IdWp));
+
+    /// <summary>Der Grund der weichen Sperre — <c>null</c>, solange nichts gesperrt ist.</summary>
+    private string? Sperrgrund => Projektkopie ? null : MeldungNichtGespeichert;
 
     private string RuecklaufVorschlagszeile
         => string.Format(RuecklaufFormat, string.Join(", ", RuecklaufVorschlaege));
@@ -856,38 +981,35 @@
         _bilder = (Bilder is not null && Daten.IdWp > 0)
             ? Bilder(Daten.IdWp) : KennlinienBilder.Leer;
         _kostenBereit = KostenBereit?.Invoke() ?? false;
-        StammfelderNachziehen();
+        StammabbildNachziehen();
     }
 
     /// <summary>
-    /// Den KATALOGSATZ zur gewählten Wärmepumpe holen (16.09.2026).
+    /// Das Abbild der ANLAGENFELDER für den Baustein aufbauen (Anwenderentscheid
+    /// 16.09.2026).
     ///
-    /// <para><b>Über den BEZEICHNER, nicht über <c>Daten.IdWp</c>:</b> Bei einer
-    /// gespeicherten Anlage ist <c>IdWp</c> die Id der PROJEKTKOPIE (<c>Tab_WP</c>) —
-    /// mit ihr in <c>Tab_WP_STAMM</c> zu schreiben träfe einen fremden Katalogsatz oder
-    /// gar keinen. Die Stammliste führt beides nebeneinander, Id und Bezeichner; sie ist
-    /// deshalb der Weg.</para>
+    /// <para><b>Quelle ist <see cref="Daten"/>, nicht der Katalog.</b> Bis zum Vormittag
+    /// holte diese Stelle den Katalogsatz gleichen Namens und schrieb auch dorthin zurück —
+    /// wer hier Nennleistung oder Baujahr änderte, änderte sie für jedes andere Projekt
+    /// mit. Die Felder gehören der Anlage; <c>Daten</c> trägt sie seit Ä23 alle
+    /// (<c>WaermepumpeGeraeteCtrl.GeraetedatenFuellen</c> füllt sie Projektkopie vor
+    /// Katalog).</para>
     ///
-    /// <para>Ohne Delegat (oder ohne Katalogsatz dieses Namens) steht ein Satz aus den
-    /// Anlagenfeldern da — die Anlagenzeile trägt die Stammfelder seit Ä23 mit. Gespeichert
-    /// wird dann nichts: Der Knopf erscheint nur mit <see cref="StammSpeichern"/> und
-    /// bleibt ohne Katalog-Id gesperrt.</para>
+    /// <para><see cref="WaermepumpeStammDaten.Kuehlleistung"/> und
+    /// <see cref="WaermepumpeStammDaten.Modulkosten"/> stehen im Baustein nur lesend;
+    /// die Kühlleistung führt der Feldsatz der Anlage gar nicht und bleibt deshalb 0.</para>
     /// </summary>
-    private void StammfelderNachziehen()
+    private void StammabbildNachziehen()
     {
-        _stammId = _stammliste.FirstOrDefault(z => z.Bezeichner == Daten.Bezeichner)?.Id ?? 0;
-
-        WaermepumpeStammDaten? satz = (StammSatz is not null && _stammId > 0)
-            ? StammSatz(_stammId) : null;
-
-        _stamm = satz ?? new WaermepumpeStammDaten
+        _stamm = new WaermepumpeStammDaten
         {
-            Id = _stammId,
+            Id = Daten.IdWp,
             Name = Daten.Bezeichner,
             Firma = Daten.Firma,
             Beschreibung = Daten.Beschreibung,
             Typ = Daten.Typ,
             Regelung = Daten.Regelung,
+            Aufstellung = Daten.Aufstellung,
             Baujahr = Daten.Baujahr,
             Nennleistung = Daten.Nennleistung,
             Heizstab = Daten.HeizstabLeistung,
@@ -949,6 +1071,7 @@
             Daten.Beschreibung = stamm.Beschreibung;
             Daten.Firma = stamm.Firma;
             Daten.Typ = stamm.Typ;
+            Daten.Aufstellung = stamm.Aufstellung;
             Daten.HeizstabLeistung = stamm.Heizstab;
         }
         Auffrischen();
@@ -1072,74 +1195,133 @@
     // Die Stammfelder im Kenndatenblock (16.09.2026)
     // ---------------------------------------------------------------------------------
 
-    /// <summary>Eine Eingabe im Feldraster — die alte Meldung gilt nicht mehr.</summary>
-    private void StammfeldGeaendert() => _stammMeldung = "";
+    /// <summary>
+    /// Eine Eingabe im Feldraster — sie geht SOFORT in <see cref="Daten"/> zurück
+    /// (Anwenderentscheid 16.09.2026).
+    ///
+    /// <para><b>Und damit erst mit dem OK des Dialogs hinaus:</b> <c>Daten</c> ist die
+    /// Kopie, die der Dialog bearbeitet; die Hülle überträgt sie beim OK in die
+    /// Anlagenzeile und zieht danach die Projektkopie nach. „Abbrechen" verwirft sie —
+    /// die Hausregel „Geschrieben wird im OK-Weg" bleibt gewahrt.</para>
+    ///
+    /// <para>Der BEZEICHNER wird NICHT zurückgeschrieben: Er steht im Baustein nur lesend
+    /// (<c>BezeichnerAenderbar="false"</c>), und die Kopplung Projektkopie ↔ Katalogsatz
+    /// hängt an ihm. Kühlleistung und Modulkosten sind ebenfalls nur lesend.</para>
+    /// </summary>
+    private void StammfeldGeaendert()
+    {
+        _stammMeldung = "";
+
+        Daten.Firma = _stamm.Firma ?? "";
+        Daten.Beschreibung = _stamm.Beschreibung ?? "";
+        Daten.Typ = _stamm.Typ ?? "";
+        Daten.Regelung = _stamm.Regelung ?? "";
+        Daten.Aufstellung = _stamm.Aufstellung ?? "";
+        Daten.Baujahr = _stamm.Baujahr ?? 0;
+        Daten.Nennleistung = _stamm.Nennleistung ?? 0;
+        Daten.HeizstabLeistung = _stamm.Heizstab;
+    }
+
+    // ---------------------------------------------------------------------------------
+    // „In Stamm übernehmen…" (Anwenderentscheid 16.09.2026)
+    // ---------------------------------------------------------------------------------
 
     /// <summary>
-    /// „Speichern" der Stammfelder — <b>derselbe Weg, den der Stammdialog geht</b>
-    /// (<c>WaermepumpeStammHuelle.Speichern</c>, Änderung: <c>neu = false</c>). Danach
-    /// werden die Stammliste und die Anzeigefelder der Anlage nachgezogen, genau wie es
-    /// bis zum 16.09.2026 <c>StammdialogFertig</c> tat.
+    /// Der Klick auf den Knopf. Ist er weich gesperrt, MELDET er den Grund, statt still
+    /// nichts zu tun (Hausregel „Bedienung"); sonst holt er die Vorschau und öffnet die
+    /// Überlagerung.
     /// </summary>
-    private void StammfelderSpeichern()
+    private void BeiInStamm()
     {
-        if (StammSpeichern is null || _stammId <= 0) return;
+        if (!Projektkopie) { NichtGespeichertMelden(); return; }
+        if (InStammUebernehmen is null || UebernahmeVorschau is null || NurLesen) return;
 
-        // ReadOnly-Sperre wie in der Stammdatenpflege: Ein Auslieferungssatz wird nicht
-        // geschrieben, und der Dialog sagt warum, statt still nichts zu tun.
-        if (_stamm.NurLesen)
+        WaermepumpeUebernahmeVorschau? v = UebernahmeVorschau(Daten.IdWp);
+        if (v is null || string.IsNullOrEmpty(v.Bezeichner))
         {
-            _stammMeldung = MeldungReadOnlySpeichern;
-            _stammStufe = WarnStufe.Hinweis;
+            NichtGespeichertMelden();
             return;
         }
 
-        KatalogSpeicherErgebnis ergebnis = StammSpeichern(_stamm, false);
+        _mitKennlinien = false;
+        _vorschau = v;
+    }
+
+    /// <summary>Der Warntext zum Fall — je Fall EIN Satz, und er nennt den Namen.</summary>
+    private string UebernahmeWarntext(WaermepumpeUebernahmeVorschau v)
+    {
+        if (v.ReadOnly) return MeldungUebernahmeReadOnly;
+        return v.KatalogsatzVorhanden
+            ? string.Format(UebernahmeTextUeberschreiben, v.Bezeichner, v.AnzahlProjekteMitKopie)
+            : string.Format(UebernahmeTextNeu, v.Bezeichner);
+    }
+
+    /// <summary>✕, Esc und „Schließen" des ReadOnly-Falls: nichts geschieht.</summary>
+    private void UebernahmeSchliessen()
+    {
+        _vorschau = null;
+        _mitKennlinien = false;
+    }
+
+    /// <summary>
+    /// OK der Überlagerung: <b>hier</b> wird in den Katalog geschrieben — der einzige
+    /// Weg, auf dem dieser Dialog den Katalog anfasst. Danach wird die Stammliste neu
+    /// geladen: Ein neu angelegter Satz steht jetzt darin.
+    /// </summary>
+    private void UebernahmeErgebnis(bool ok)
+    {
+        if (!ok) { UebernahmeSchliessen(); return; }
+
+        if (InStammUebernehmen is null) { UebernahmeSchliessen(); return; }
+
+        KatalogSpeicherErgebnis ergebnis = InStammUebernehmen(Daten.IdWp, _mitKennlinien);
+
         _stammStufe = ergebnis.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung;
-        if (!ergebnis.Ok) { _stammMeldung = ergebnis.Meldung; return; }
+        _stammMeldung = ergebnis.Meldung ?? "";
 
-        // Die Stammliste kann sich geaendert haben (ein umbenannter Satz).
+        // Der Katalog hat sich geaendert - die Auswahlliste links liest ihn.
         _stammliste = Stammliste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
-        if (!string.IsNullOrEmpty(ergebnis.Name)) Daten.Bezeichner = ergebnis.Name;
 
-        WaermepumpeStammDaten? stamm = Stammdaten?.Invoke(Daten.IdWp);
-        if (stamm is not null)
-        {
-            Daten.Beschreibung = stamm.Beschreibung;
-            Daten.Baujahr = stamm.Baujahr ?? 0;
-            Daten.Regelung = stamm.Regelung;
-            Daten.Typ = stamm.Typ;
-            Daten.Firma = stamm.Firma;
-            Daten.Modulkosten = stamm.Modulkosten;
-            Daten.Nennleistung = stamm.Nennleistung ?? 0;
-        }
-        Auffrischen();
-        _stammMeldung = ergebnis.Meldung;
+        UebernahmeSchliessen();
+    }
+
+    /// <summary>
+    /// Die Meldung der weichen Sperre — sie steht bei den Kenndaten, also dort, wo auch
+    /// die beiden gesperrten Knöpfe stehen.
+    /// </summary>
+    private void NichtGespeichertMelden()
+    {
+        _stammMeldung = MeldungNichtGespeichert;
+        _stammStufe = WarnStufe.Hinweis;
     }
 
     // ---------------------------------------------------------------------------------
     // Der Kennlinieneditor (16.09.2026 aus der Stammdatenpflege uebernommen)
     // ---------------------------------------------------------------------------------
 
+    /// <summary>
+    /// „Kennliniendaten Ansicht/Bearbeiten…" — der Editor bearbeitet seit dem 16.09.2026
+    /// die PROJEKTKENNLINIEN (<c>Tab_Kenndaten</c>) zu <c>Daten.IdWp</c>.
+    ///
+    /// <para>Vor dem ersten Speichern gibt es keine: Der Knopf ist dann WEICH gesperrt und
+    /// meldet den Grund, statt still nichts zu tun.</para>
+    /// </summary>
     private void BeiKenndaten()
     {
-        if (Kennlinien is null || _stammId <= 0) return;
+        if (!Projektkopie) { NichtGespeichertMelden(); return; }
+        if (Kennlinien is null || Daten.IdWp <= 0) return;
 
-        // Der Hinweis kommt wie in der Stammdatenpflege VOR dem Oeffnen.
-        if (_stamm.NurLesen)
-        {
-            _stammMeldung = MeldungReadOnlyKenndaten;
-            _stammStufe = WarnStufe.Hinweis;
-        }
-        _kennlinienZeilen = Kennlinien(_stammId).Select(z => z.Kopie()).ToList();
+        _kennlinienZeilen = Kennlinien(Daten.IdWp).Select(z => z.Kopie()).ToList();
     }
 
     private void KenndatenFertig(IReadOnlyList<KennlinienZeile>? stand)
     {
         _kennlinienZeilen = null;
-        if (stand is null || NurLesen || _stamm.NurLesen) return;   // Abbruch oder ReadOnly
+        if (stand is null || NurLesen) return;   // Abbruch
 
-        KennlinienAbgleichen?.Invoke(_stammId, stand);
+        KennlinienAbgleichen?.Invoke(Daten.IdWp, stand);
+
+        // Die Bilder lesen Tab_Kenndaten - nach dem Editor stehen sie neu da.
         Auffrischen();
     }
 
@@ -1243,7 +1425,8 @@
     {
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
         if (e.Key != "Escape" || Eingebettet || _konfigOffen ||
-            _kennlinienZeilen is not null || _katalogOffen) return Task.CompletedTask;
+            _kennlinienZeilen is not null || _katalogOffen ||
+            _vorschau is not null) return Task.CompletedTask;
         return Abbrechen();
     }
 }

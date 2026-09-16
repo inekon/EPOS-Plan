@@ -64,6 +64,25 @@ public sealed record KennlinienBilder(byte[]? Cop, byte[]? Leistung,
 }
 
 /// <summary>
+/// Was die Übernahme einer PROJEKTKOPIE in den Katalog vorfinden wird — das
+/// plattformfreie Abbild von <c>WPStammCtrl.UebernahmeVorschauSatz</c>
+/// (Anwenderentscheid 16.09.2026).
+///
+/// <para><b>Wozu.</b> Der Anlagendialog warnt vor der Übernahme KONKRET, statt
+/// allgemein: Er nennt den Namen des Katalogsatzes, sagt, ob er überschrieben oder neu
+/// angelegt wird, und wie viele ANDERE Projekte bereits eine eigene Kopie führen — die
+/// sich nicht ändern. Ein Auslieferungssatz wird gar nicht erst angeboten.</para>
+/// </summary>
+/// <param name="Bezeichner">Der Name des Projektgeräts; „" = es gibt den Satz nicht.</param>
+/// <param name="KatalogsatzVorhanden">Steht im Katalog bereits ein Satz gleichen Namens?</param>
+/// <param name="ReadOnly">Ist dieser Katalogsatz ein Auslieferungssatz? Dann kein Übernehmen.</param>
+/// <param name="AnzahlProjekteMitKopie">Wie viele ANDERE Projekte führen eine eigene Kopie?</param>
+public sealed record WaermepumpeUebernahmeVorschau(string Bezeichner,
+                                                   bool KatalogsatzVorhanden,
+                                                   bool ReadOnly,
+                                                   int AnzahlProjekteMitKopie);
+
+/// <summary>
 /// Der Feldsatz des Wärmepumpen-Stammdialogs — das plattformfreie Abbild von
 /// <c>WPModel</c>, soweit die Maske es zeigt (iU9-W7.3).
 ///

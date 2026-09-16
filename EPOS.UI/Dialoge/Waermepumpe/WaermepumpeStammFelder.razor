@@ -28,8 +28,14 @@
 
 <Formularraster>
     <KindInhalt>
+        @* DER BEZEICHNER IST NICHT UEBERALL AENDERBAR (Anwenderentscheid 16.09.2026).
+           Im ANLAGENDIALOG steht er nur lesend: Projektkopie (Tab_WP) und Katalogsatz
+           (Tab_WP_STAMM) kennen einander allein ueber den Namen - Tab_WP fuehrt kein
+           ID_Stamm -, und die Waermesenken haengen an (Typ, Bezeichner). Wer ihn dort
+           aendern koennte, zerrisse beide Klammern. Umbenannt wird in der
+           Katalogverwaltung (WaermepumpeStammDialog), und dort bleibt er aenderbar. *@
         <Textfeld Bezeichnung="@Texte.LabelName" Wert="@Daten.Name"
-                  WertChanged="BeiName" NurLesen="@(!Aktiv)" />
+                  WertChanged="BeiName" NurLesen="@(!Aktiv || !BezeichnerAenderbar)" />
         <Textfeld Bezeichnung="@Texte.LabelHersteller" Wert="@Daten.Firma"
                   WertChanged="BeiFirma" NurLesen="@(!Aktiv)" />
         <Textfeld Bezeichnung="@Texte.LabelBeschreibung" Wert="@Daten.Beschreibung"
@@ -89,6 +95,17 @@
 
     /// <summary>Bedienbar? <c>false</c> sperrt jedes Feld (Weg „Ansicht" eines Wirts).</summary>
     [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Darf der BEZEICHNER geändert werden? (Anwenderentscheid 16.09.2026)
+    ///
+    /// <para><c>false</c> stellt das Namensfeld nur lesend — der Weg des
+    /// <c>WaermepumpeAnlageDialog</c>: Dort bearbeitet der Baustein die PROJEKTKOPIE
+    /// eines Geräts, und deren einzige Klammer zum Katalogsatz ist der Name.
+    /// <c>true</c> (Vorgabe) ist der Weg der Katalogverwaltung, in der umbenannt
+    /// werden darf.</para>
+    /// </summary>
+    [Parameter] public bool BezeichnerAenderbar { get; set; } = true;
 
     /// <summary>Jede Eingabe meldet sich — der Wirt zieht daraufhin Sperren und Knöpfe nach.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }

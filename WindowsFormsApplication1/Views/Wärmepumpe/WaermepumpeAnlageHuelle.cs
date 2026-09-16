@@ -141,23 +141,48 @@ namespace WindowsFormsApplication1
 
                 // --- Die STAMMFELDER im Kenndatenblock (Anwenderentscheid 16.09.2026) ---
                 //
-                // "Parameter Bearbeiten..." ist entfallen; damit auch die Gabe StammGaben,
-                // die den ganzen Stammdialog in eine Ueberlagerung stellte. An ihrer Stelle
-                // stehen DREI Wege DESSELBEN Dialogs: der Katalogsatz, sein Speicherweg und
-                // der Kennlinieneditor. Sie kommen aus WaermepumpeStammHuelle - es ist
-                // derselbe Weg, den die Stammdatenpflege geht, nur ohne ihre Liste.
+                // SIE GEHOEREN DER PROJEKTKOPIE, NICHT DEM KATALOG. Bis zum Vormittag
+                // standen hier StammSatz (Tab_WP_STAMM lesen) und StammSpeichern (dorthin
+                // schreiben); wer im Anlagendialog Nennleistung oder Baujahr aenderte,
+                // aenderte sie fuer JEDES andere Projekt mit. Beide Gaben sind entfallen:
+                // Die Felder binden an den Feldsatz der Anlage und gehen mit dem OK hinaus,
+                // den Schreibweg in Tab_WP zieht ProjektgeraetNachziehen nach.
                 //
-                // SatzZu liest Tab_WP_STAMM, NICHT die Projektkopie: Geschrieben wird in den
-                // Katalog, und dorthin gehoert auch die Id. Der Anlagendialog sucht sie ueber
-                // den Bezeichner, weil Daten.IdWp bei einer gespeicherten Anlage die Id der
-                // Projektkopie traegt.
-                ["StammSatz"] = new Func<int, WaermepumpeStammDaten>(WaermepumpeStammHuelle.SatzZu),
-                ["StammSpeichern"] = new Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>(
-                    WaermepumpeStammHuelle.Speichern),
+                // Geblieben ist die Frage, ob es die Projektkopie ueberhaupt schon gibt -
+                // sie entscheidet ueber die WEICHE SPERRE von "Kennliniendaten..." und
+                // "In Stamm uebernehmen...".
+                ["ProjektkopieVorhanden"] = new Func<int, bool>(
+                    idWp => WPCtrl.ProjektgeraetVorhanden(idWp, projektId)),
+
+                // Der Kennlinieneditor bearbeitet die PROJEKTKENNLINIEN (Tab_Kenndaten),
+                // nicht die des Katalogs: Gerechnet wird ausschliesslich mit ihnen, und
+                // genau die zeigen auch die Bilder darunter (BilderZuAnlage).
                 ["Kennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(
-                    WaermepumpeStammHuelle.KennlinienZu),
+                    WaermepumpeStammHuelle.KennlinienProjektZu),
                 ["KennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
-                    WaermepumpeStammHuelle.KennlinienAbgleichen),
+                    WaermepumpeStammHuelle.KennlinienProjektAbgleichen),
+
+                // --- "In Stamm uebernehmen..." (Anwenderentscheid 16.09.2026) ----------
+                // Der EINE Weg, auf dem dieser Dialog den Katalog anfasst - und er fragt
+                // vorher. Die Projekt-Id kennt nur die Huelle; der Dialog reicht die
+                // Geraete-Id herein.
+                ["UebernahmeVorschau"] = new Func<int, WaermepumpeUebernahmeVorschau>(
+                    idWp => Uebernahmevorschau(idWp, projektId)),
+                ["InStammUebernehmen"] = new Func<int, bool, KatalogSpeicherErgebnis>(
+                    (idWp, mitKennlinien) => InStammUebernehmen(idWp, projektId, mitKennlinien)),
+                ["BtnInStammText"] = Text_("WPA_BTN_IN_STAMM", "In Stamm übernehmen…"),
+                ["UebernahmeTitel"] = Text_("WPA_UEB_TITEL", "In Stamm übernehmen"),
+                ["UebernahmeTextUeberschreiben"] = Text_("WPA_UEB_TEXT_UEBERSCHREIBEN",
+                    "Der Katalogsatz „{0}“ wird mit den Werten dieser Anlage überschrieben. {1} weitere Projekte führen bereits eine Kopie — sie ändern sich nicht."),
+                ["UebernahmeTextNeu"] = Text_("WPA_UEB_TEXT_NEU",
+                    "Es gibt keinen Katalogsatz „{0}“. Er wird neu angelegt."),
+                ["UebernahmeSchalterKennlinien"] = Text_("WPA_UEB_CHK_KENNLINIEN",
+                    "Kennlinien mitübernehmen (ersetzt Wärme- und Kühlkennlinien des Katalogsatzes)"),
+                ["UebernahmeOkText"] = Text_("WPA_UEB_BTN_OK", "Übernehmen"),
+                ["MeldungNichtGespeichert"] = Text_("WP_PROJ_MSG_NICHT_GESPEICHERT",
+                    "Die Anlage ist noch nicht gespeichert; die Projektdaten entstehen mit dem ersten Speichern."),
+                ["MeldungUebernahmeReadOnly"] = Text_("WP_STAMM_UEBERNAHME_MSG_READONLY",
+                    "Auslieferungssätze werden nicht überschrieben."),
 
                 ["TitelText"] = Text_("WPA_TITEL", "Detailansicht"),
                 ["LabelWpAuswahl"] = Text_("WPA_LBL_WP", "Wärmepumpen Auswahl:"),
@@ -199,11 +224,6 @@ namespace WindowsFormsApplication1
                 ["SchliessenText"] = Text_("WPV_BTN_SCHLIESSEN", "Schließen"),
                 ["BtnKatalogText"] = Text_("WPK_BTN_KATALOG", "📋  Modul-Katalog..."),
                 ["BtnKenndatenText"] = Text_("WPS_BTN_KENNDATEN", "Kennliniendaten Ansicht/Bearbeiten..."),
-                ["BtnStammSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
-                ["MeldungReadOnlySpeichern"] = Text_("WPS_MSG_READONLY_SPEICHERN",
-                    "Diese Wärmepumpe ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."),
-                ["MeldungReadOnlyKenndaten"] = Text_("WPS_MSG_READONLY_KENNDATEN",
-                    "Diese Wärmepumpe ist schreibgeschützt (ReadOnly). Die Kennliniendaten können nur angesehen, nicht geändert werden."),
                 ["BtnKostenText"] = Text_("WPI_BTN_KOSTEN", "Kosten bearbeiten…"),
                 ["TipKosten"] = Text_("WPI_TIP_KOSTEN",
                     "Kostenverwaltung dieser Anlage öffnen (Projektmodus)."),
@@ -294,6 +314,70 @@ namespace WindowsFormsApplication1
         {
             return new WPCtrl().KennlinienAusKatalog(idWp);
         }
+
+        /// <summary>
+        /// Die Vorschau der Übernahme — <c>WPStammCtrl.UebernahmeVorschau</c>, übersetzt
+        /// in den plattformfreien Record der Oberfläche.
+        /// </summary>
+        private static WaermepumpeUebernahmeVorschau Uebernahmevorschau(int idWp, int projektId)
+        {
+            WPStammCtrl.UebernahmeVorschauSatz s =
+                WPStammCtrl.UebernahmeVorschau(idWp, projektId);
+
+            return new WaermepumpeUebernahmeVorschau(
+                s.Bezeichner, s.KatalogsatzVorhanden, s.ReadOnly, s.AnzahlProjekteMitKopie);
+        }
+
+        /// <summary>
+        /// „In Stamm übernehmen" — <c>WPStammCtrl.UebernehmenAusProjekt</c>, das Ergebnis
+        /// im Ergebnis-Record der Oberfläche (dieselben drei Felder).
+        /// </summary>
+        private static KatalogSpeicherErgebnis InStammUebernehmen(int idWp, int projektId,
+                                                                  bool mitKennlinien)
+        {
+            WPStammCtrl.SpeicherErgebnis e =
+                WPStammCtrl.UebernehmenAusProjekt(idWp, projektId, mitKennlinien);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        // =================================================================================
+        // Der Schreibweg der STAMMFELDER in die Projektkopie (Anwenderentscheid 16.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Trägt die Stammfelder einer Anlagenzeile in ihre PROJEKTKOPIE nach
+        /// (<c>WPCtrl.ProjektgeraetSchreiben</c>) — <b>der Schritt NACH dem
+        /// WizardCtrl-Weg</b>.
+        ///
+        /// <para><b>Warum danach und nicht davor.</b> <c>Add_WP_Waermeerzeuger</c> legt die
+        /// Projektkopie über <c>WPCtrl.CopyFromStamm</c> an und setzt <c>item.ID_WP</c> auf
+        /// deren Id; bis dahin trägt eine frische Zeile die KATALOG-Id, und ein Schreiben
+        /// träfe den falschen Satz (der Kern lehnte es benannt ab). <c>Del_Projekt_…</c>
+        /// löscht nur <c>Tab_Energieanlagen</c> — die Gerätekopie und ihre Kennlinien
+        /// bleiben stehen, und <c>CopyFromStamm</c> gibt bei vorhandener Kopie deren Id
+        /// zurück, ohne sie anzurühren.</para>
+        ///
+        /// <para><b>Die Felder kommen aus dem MODELL</b>, in das <see cref="NachModell"/>
+        /// den Feldsatz des Dialogs bereits übertragen hat — so gilt derselbe Weg für die
+        /// Einzelzeile wie für die Liste, die die Erzeugerwege schreiben.</para>
+        /// </summary>
+        /// <returns><c>null</c> = geschrieben; sonst der Ablehnungsgrund im Klartext.</returns>
+        internal static string ProjektgeraetNachziehen(WErzeugerModel modell,
+                                                       WaermepumpeAnlageDaten daten,
+                                                       int projektId)
+        {
+            if (modell != null && daten != null) NachModell(daten, modell);
+            return WaermepumpeGeraeteCtrl.ProjektgeraetNachziehen(modell, projektId);
+        }
+
+        /// <summary>
+        /// Dieselbe Nachführung für die LISTE, die die Erzeugerwege am Stück schreiben
+        /// (Startseite, Simulationsreiter). Nicht-Wärmepumpen werden übergangen.
+        /// </summary>
+        /// <returns><c>null</c> = alles geschrieben; sonst der ERSTE Ablehnungsgrund.</returns>
+        internal static string ProjektgeraeteNachziehen(IEnumerable<WErzeugerModel> modelle,
+                                                        int projektId)
+            => WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(modelle, projektId);
 
         private static WaermepumpeStammDaten StammdatenZu(int idWp)
         {
@@ -409,6 +493,11 @@ namespace WindowsFormsApplication1
                 Baujahr = m.Baujahr,
                 Regelung = m.Regelung ?? "",
                 Typ = m.Typ ?? "",
+
+                // 16.09.2026: Die Aufstellungsart gehoert seit dem Anwenderentscheid zum
+                // Feldsatz - die Stammfelder des Dialogs bearbeiten die Projektkopie, und
+                // Tab_WP.Aufstellung ist eine ihrer Spalten.
+                Aufstellung = m.Aufstellung ?? "",
                 Firma = m.Firma ?? "",
                 Nennleistung = m.Nennleistung,
                 Modulkosten = m.Modulkosten,
@@ -456,7 +545,9 @@ namespace WindowsFormsApplication1
             m.Nutzungszeit = d.Nutzungszeit ?? 0;
 
             // Ä23: Die Stammfelder der gewaehlten Waermepumpe gehoeren zur Zeile -
-            // sonst zeigte die Verwaltungsliste nach einem Wechsel 0 kW.
+            // sonst zeigte die Verwaltungsliste nach einem Wechsel 0 kW. Seit dem
+            // Anwenderentscheid vom 16.09.2026 sind sie ausserdem BEARBEITBAR und
+            // gehen von hier aus weiter in die Projektkopie (ProjektgeraetNachziehen).
             m.Regelung = d.Regelung;
             m.Nennleistung = d.Nennleistung;
             m.Modulkosten = d.Modulkosten;
@@ -464,6 +555,7 @@ namespace WindowsFormsApplication1
             m.Beschreibung = d.Beschreibung;
             m.Firma = d.Firma;
             m.Typ = d.Typ;
+            m.Aufstellung = d.Aufstellung;
         }
 
         private static string Text_(string schluessel, string rueckfall)

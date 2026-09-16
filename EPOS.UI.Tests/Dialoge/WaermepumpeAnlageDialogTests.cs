@@ -93,14 +93,16 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Func<bool>? kostenBereit = null,
         Func<(double, double)>? kostensumme = null,
         Func<Task>? kostenOeffnen = null,
-        Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>? stammSpeichern = null,
         Func<int, IReadOnlyList<KennlinienZeile>>? kennlinien = null,
         Func<int, IReadOnlyList<KennlinienZeile>, bool>? kennlinienAbgleichen = null,
         Action<bool>? geschlossen = null,
         IReadOnlyList<EnergietraegerWahl.Eintrag>? traegerkatalog = null,
         bool eingebettet = false,
         Func<bool, bool>? extrapolationSchreiben = null,
-        bool extrapolationErlaubt = true)
+        bool extrapolationErlaubt = true,
+        Func<int, bool>? projektkopieVorhanden = null,
+        Func<int, WaermepumpeUebernahmeVorschau?>? uebernahmeVorschau = null,
+        Func<int, bool, KatalogSpeicherErgebnis>? inStammUebernehmen = null)
         => Render<WaermepumpeAnlageDialog>(p => p
             .Add(x => x.Daten, daten ?? Voll())
             .Add(x => x.Traegerkatalog, traegerkatalog ?? Array.Empty<EnergietraegerWahl.Eintrag>())
@@ -132,10 +134,12 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
                     .MitZahl(Katalogfilterprofil.SpCop, 4.1, 2)
             })
             .Add(x => x.Katalogprofil, Katalogfilterprofil.Finde(Anlagenart.Waermepumpe))
-            // 16.09.2026: der KATALOGSATZ und sein Speicherweg stehen unmittelbar im
-            // Kenndatenblock; „Parameter Bearbeiten…" und die Gabe StammGaben sind entfallen.
-            .Add(x => x.StammSatz, Stamm)
-            .Add(x => x.StammSpeichern, stammSpeichern)
+            // 16.09.2026: Die Stammfelder binden an die ANLAGENDATEN und gehen mit dem OK
+            // hinaus; StammSatz und StammSpeichern (der Katalogweg) sind entfallen. Neu ist
+            // die Frage nach der Projektkopie — sie entscheidet über die weiche Sperre.
+            .Add(x => x.ProjektkopieVorhanden, projektkopieVorhanden)
+            .Add(x => x.UebernahmeVorschau, uebernahmeVorschau)
+            .Add(x => x.InStammUebernehmen, inStammUebernehmen)
             .Add(x => x.Kennlinien, kennlinien)
             .Add(x => x.KennlinienAbgleichen, kennlinienAbgleichen)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
@@ -155,6 +159,15 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     private static IElement Ueberlagerungsknopf(IRenderedComponent<WaermepumpeAnlageDialog> cut, string text)
         => cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
               .First(b => b.TextContent.Trim() == text);
+
+    /// <summary>
+    /// Das Eingabefeld zu einer Beschriftung — die Felder des Bausteins tragen keinen
+    /// eigenen Haken, wohl aber ihr <c>label</c> mit der Beschriftung darin.
+    /// </summary>
+    private static IElement Feld(IRenderedComponent<WaermepumpeAnlageDialog> cut, string bezeichnung)
+        => cut.FindAll("label.epos-feld")
+              .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == bezeichnung)
+              .QuerySelector("input")!;
 
     // =================================================================================
     // Feldbestand
@@ -193,42 +206,230 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Stammfelder sind seit dem 16.09.2026 BEARBEITBAR</b> (Anwenderentscheid:
-    /// „alle Parameter direkt im Dialog zugänglich"), und „Speichern" geht denselben Weg,
-    /// den bis dahin die Stammdatenpflege hinter „Parameter Bearbeiten…" ging.
+    /// <b>Die Stammfelder binden an die ANLAGENDATEN</b> (Anwenderentscheid 16.09.2026):
+    /// Sie schreiben nicht mehr in den Katalog, sondern in den Feldsatz dieser Anlage —
+    /// und gehen damit mit dem OK des Dialogs hinaus, wie jedes andere Feld auch.
     /// </summary>
     [Fact]
-    public void Die_Stammfelder_sind_bearbeitbar_und_Speichern_ruft_den_Stammweg()
+    public void Die_Stammfelder_binden_an_die_Anlagendaten_und_gehen_mit_OK_hinaus()
     {
-        var gespeichert = new List<(WaermepumpeStammDaten Satz, bool Neu)>();
-        var cut = Aufbauen(stammSpeichern: (d, neu) =>
-        {
-            gespeichert.Add((d, neu));
-            return new KatalogSpeicherErgebnis(true, "Gespeichert", d.Name);
-        });
+        bool? ergebnis = null;
+        var daten = Voll();
+        var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
 
-        var gruppe = cut.FindAll(".epos-gruppenkopf-koerper")[1];   // rechts: Kenndaten
-        Assert.Empty(gruppe.QuerySelectorAll("input[readonly]"));
-
-        // Der Katalogsatz steht da, wie ihn StammSatz geliefert hat.
+        // Der Baustein zeigt die Werte der ANLAGE, nicht die eines Katalogsatzes.
         var felder = cut.FindComponent<WaermepumpeStammFelder>();
         Assert.Equal("WP Alpha", felder.Instance.Daten.Name);
+        Assert.Equal(12, felder.Instance.Daten.Nennleistung);
 
-        gruppe.QuerySelectorAll("input[type=text]")[0].Input("WP Alpha neu");
-        Knopf(cut, "Speichern").Click();
+        Feld(cut, "Nennleistung").Input("18");
+        Assert.Equal(18, daten.Nennleistung);
 
-        Assert.Single(gespeichert);
-        Assert.Equal("WP Alpha neu", gespeichert[0].Satz.Name);
-        Assert.False(gespeichert[0].Neu);           // geaendert, nicht angelegt
-        Assert.Contains("Gespeichert", cut.Markup);
+        Knopf(cut, "OK").Click();
+
+        Assert.True(ergebnis);
+        Assert.Equal(18, daten.Nennleistung);
     }
 
-    /// <summary>Ohne Speicherweg kein Knopf (Hausregel seit W2).</summary>
+    /// <summary>
+    /// <b>Der Bezeichner ist im Anlagendialog nur lesend.</b> Projektkopie und
+    /// Katalogsatz kennen einander allein über den Namen, und die Wärmesenken hängen an
+    /// (Typ, Bezeichner) — umbenannt wird in der Katalogverwaltung.
+    /// </summary>
     [Fact]
-    public void Ohne_Stamm_Speicherweg_gibt_es_keinen_Speichernknopf()
+    public void Der_Bezeichner_ist_im_Anlagendialog_nur_lesend()
     {
         var cut = Aufbauen();
-        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()), t => t == "Speichern");
+
+        var felder = cut.FindComponent<WaermepumpeStammFelder>();
+        Assert.False(felder.Instance.BezeichnerAenderbar);
+
+        IElement name = felder.FindAll("input[type=text]")[0];
+        Assert.True(name.HasAttribute("readonly"));
+
+        // Die übrigen Textfelder bleiben bedienbar — gesperrt ist NUR der Name.
+        Assert.False(felder.FindAll("input[type=text]")[1].HasAttribute("readonly"));
+    }
+
+    /// <summary>
+    /// <b>Kein eigener Speichern-Knopf mehr.</b> Die Stammfelder sind Teil der
+    /// Anlagendaten; ein zweiter Schreibweg neben dem OK wäre ein zweiter Zeitpunkt, zu
+    /// dem etwas in der Datenbank steht.
+    /// </summary>
+    [Fact]
+    public void Es_gibt_keinen_eigenen_Speichern_Knopf_fuer_die_Stammfelder()
+    {
+        var cut = Aufbauen();
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
+                              t => t == "Speichern");
+    }
+
+    // =================================================================================
+    // Kennlinieneditor und „In Stamm übernehmen…" (Anwenderentscheid 16.09.2026)
+    // =================================================================================
+
+    private static WaermepumpeAnlageDaten Ungespeichert()
+    {
+        var d = Voll();
+        d.IdWp = 1;                     // die KATALOG-Id, wie bei „Neu.."
+        return d;
+    }
+
+    /// <summary>
+    /// <b>Weiche Sperre, kein <c>disabled</c></b> (Hausregel „Bedienung"): Vor dem ersten
+    /// Speichern gibt es keine Projektkennlinien — der Knopf MELDET den Grund, statt still
+    /// nichts zu tun.
+    /// </summary>
+    [Fact]
+    public void Kennliniendaten_ist_vor_dem_ersten_Speichern_weich_gesperrt_und_meldet()
+    {
+        bool gerufen = false;
+        var cut = Aufbauen(Ungespeichert(),
+                           projektkopieVorhanden: _ => false,
+                           kennlinien: _ => { gerufen = true; return Array.Empty<KennlinienZeile>(); });
+
+        IElement knopf = Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...");
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.Contains("noch nicht gespeichert", knopf.GetAttribute("title"));
+
+        knopf.Click();
+
+        Assert.False(gerufen);
+        Assert.False(cut.Instance.KennlinieneditorOffen);
+        Assert.Contains("noch nicht gespeichert", cut.Markup);
+    }
+
+    /// <summary>
+    /// Mit Projektkopie öffnet der Knopf den Editor — <b>mit der PROJEKT-Id</b>
+    /// (<c>Daten.IdWp</c>), nicht mit einer Katalog-Id: Gerechnet wird ausschließlich mit
+    /// den Projektkennlinien.
+    /// </summary>
+    [Fact]
+    public void Kennliniendaten_oeffnet_den_Editor_mit_der_Projekt_Id()
+    {
+        var gefragt = new List<int>();
+        var cut = Aufbauen(projektkopieVorhanden: _ => true,
+                           kennlinien: id => { gefragt.Add(id); return Array.Empty<KennlinienZeile>(); });
+
+        IElement knopf = Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...");
+        Assert.Equal("false", knopf.GetAttribute("aria-disabled"));
+
+        knopf.Click();
+
+        Assert.Equal(new[] { 77 }, gefragt);        // Voll().IdWp = die Projektkopie
+        Assert.True(cut.Instance.KennlinieneditorOffen);
+    }
+
+    private static WaermepumpeUebernahmeVorschau Vorhanden(int andere = 3)
+        => new("WP Alpha", true, false, andere);
+
+    private IRenderedComponent<WaermepumpeAnlageDialog> MitUebernahme(
+        WaermepumpeUebernahmeVorschau vorschau,
+        Action<(int IdWp, bool MitKennlinien)>? uebernommen = null)
+        => Aufbauen(projektkopieVorhanden: _ => true,
+                    uebernahmeVorschau: _ => vorschau,
+                    inStammUebernehmen: (id, mit) =>
+                    {
+                        uebernommen?.Invoke((id, mit));
+                        return new KatalogSpeicherErgebnis(true, "Katalogsatz „WP Alpha“ überschrieben.", "WP Alpha");
+                    });
+
+    /// <summary>Die Warnung nennt den Namen UND die Zahl der anderen Projekte.</summary>
+    [Fact]
+    public void In_Stamm_uebernehmen_zeigt_die_Vorschau_mit_Anzahl()
+    {
+        var cut = MitUebernahme(Vorhanden(3));
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        Assert.True(cut.Instance.UebernahmeOffen);
+        string text = cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent;
+        Assert.Contains("WP Alpha", text);
+        Assert.Contains("überschrieben", text);
+        Assert.Contains("3 weitere Projekte", text);
+
+        // Der Schalter steht da und ist AUS.
+        Assert.False(cut.Find(".epos-ueberlagerung input[type=checkbox]").HasAttribute("checked"));
+    }
+
+    /// <summary>Ohne Katalogsatz gleichen Namens wird ein neuer angelegt — und das steht da.</summary>
+    [Fact]
+    public void In_Stamm_uebernehmen_zeigt_den_Neu_Anlegen_Text_ohne_Katalogsatz()
+    {
+        var cut = MitUebernahme(new WaermepumpeUebernahmeVorschau("WP Alpha", false, false, 0));
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        string text = cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent;
+        Assert.Contains("keinen Katalogsatz", text);
+        Assert.Contains("neu angelegt", text);
+    }
+
+    /// <summary>
+    /// Ein Auslieferungssatz wird nicht überschrieben: der Grund steht da, und es gibt
+    /// KEINEN Übernehmen-Knopf — ein Knopf, der nur ablehnen kann, ist ein Versprechen,
+    /// das der Weg nicht halten darf.
+    /// </summary>
+    [Fact]
+    public void In_Stamm_uebernehmen_bietet_bei_ReadOnly_kein_Uebernehmen()
+    {
+        bool gerufen = false;
+        var cut = Aufbauen(projektkopieVorhanden: _ => true,
+                           uebernahmeVorschau: _ => new WaermepumpeUebernahmeVorschau("WP Alpha", true, true, 0),
+                           inStammUebernehmen: (_, _) =>
+                           {
+                               gerufen = true;
+                               return new KatalogSpeicherErgebnis(true, "", "");
+                           });
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Contains("Auslieferungssätze", ueberlagerung.QuerySelector(".epos-warnbanner")!.TextContent);
+        Assert.DoesNotContain(ueberlagerung.QuerySelectorAll("button").Select(b => b.TextContent.Trim()),
+                              t => t == "Übernehmen");
+        Assert.Null(ueberlagerung.QuerySelector("input[type=checkbox]"));
+        Assert.False(gerufen);
+    }
+
+    /// <summary>„Übernehmen" ruft die Gabe — mit der Geräte-Id und dem Stand des Schalters.</summary>
+    [Fact]
+    public void Uebernehmen_ruft_die_Gabe_mit_dem_Kennlinien_Schalter()
+    {
+        var gerufen = new List<(int IdWp, bool MitKennlinien)>();
+        var cut = MitUebernahme(Vorhanden(), gerufen.Add);
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+        cut.Find(".epos-ueberlagerung input[type=checkbox]").Change(true);
+        Ueberlagerungsknopf(cut, "Übernehmen").Click();
+
+        Assert.Equal(new[] { (77, true) }, gerufen);
+        Assert.False(cut.Instance.UebernahmeOffen);
+        Assert.Contains("überschrieben", cut.Markup);
+    }
+
+    /// <summary>„Abbrechen" ruft nichts — die Überlagerung schließt, der Katalog bleibt.</summary>
+    [Fact]
+    public void Abbrechen_der_Uebernahme_ruft_nichts()
+    {
+        var gerufen = new List<(int, bool)>();
+        var cut = MitUebernahme(Vorhanden(), gerufen.Add);
+
+        Knopf(cut, "In Stamm übernehmen…").Click();
+        Ueberlagerungsknopf(cut, "Abbrechen").Click();
+
+        Assert.Empty(gerufen);
+        Assert.False(cut.Instance.UebernahmeOffen);
+    }
+
+    /// <summary>Ohne Delegat kein Knopf (Hausregel seit W2).</summary>
+    [Fact]
+    public void Ohne_Uebernahmeweg_gibt_es_den_Knopf_In_Stamm_nicht()
+    {
+        var cut = Aufbauen();
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
+                              t => t == "In Stamm übernehmen…");
     }
 
     /// <summary>
@@ -272,14 +473,21 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         var cut = Aufbauen();
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
 
-        // Die Stammfelder des Katalogsatzes und die Felder der Anlage.
+        // Die Stammfelder der Anlage und ihre Auslegungsfelder.
         foreach (string soll in new[]
                  {
                      "Name", "Hersteller", "Beschreibung", "Wärmepumpentyp", "Leistungsstufen",
                      "Aufstellung", "Baujahr", "Nennleistung", "Heizstab", "Kühlleistung",
-                     "Leistung Heizstab", "Vorlauf", "Rücklauf", "Nutzungsdauer"
+                     "Vorlauf", "Rücklauf", "Nutzungsdauer"
                  })
             Assert.Contains(soll, texte);
+
+        // EIN Heizstabfeld, nicht zwei (16.09.2026): Das eigene Feld der Anlage
+        // („Leistung Heizstab") ist mit dem des Bausteins VERSCHMOLZEN — beide schreiben
+        // dieselbe Spalte Tab_WP.Heizung, und zwei gleich beschriftete Felder in einem
+        // Block waren nicht auseinanderzuhalten.
+        Assert.DoesNotContain("Leistung Heizstab", texte);
+        Assert.Single(texte, t => t == "Heizstab");
 
         // Die Konfigurationsfelder stehen NICHT mehr im Dialogkoerper.
         Assert.DoesNotContain("Sperrzeit von", texte);

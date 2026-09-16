@@ -37,10 +37,12 @@ public class WaermepumpeStammFelderTests : EposBunitContext
     };
 
     private IRenderedComponent<WaermepumpeStammFelder> Aufbauen(
-        WaermepumpeStammDaten? daten = null, Action? geaendert = null, bool aktiv = true)
+        WaermepumpeStammDaten? daten = null, Action? geaendert = null, bool aktiv = true,
+        bool bezeichnerAenderbar = true)
         => Render<WaermepumpeStammFelder>(p => p
             .Add(x => x.Daten, daten ?? Satz())
             .Add(x => x.Aktiv, aktiv)
+            .Add(x => x.BezeichnerAenderbar, bezeichnerAenderbar)
             .Add(x => x.Geaendert, () => geaendert?.Invoke()));
 
     /// <summary>
@@ -148,6 +150,39 @@ public class WaermepumpeStammFelderTests : EposBunitContext
         Assert.NotEmpty(cut.FindAll(".epos-formularraster"));
         Assert.Contains("Name", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
         Assert.Equal("–", cut.Find(".epos-lesewert").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b><c>BezeichnerAenderbar="false"</c> stellt NUR das Namensfeld nur lesend</b>
+    /// (Anwenderentscheid 16.09.2026) — der Weg des Anlagendialogs: Dort bearbeitet der
+    /// Baustein die Projektkopie, und deren einzige Klammer zum Katalogsatz ist der Name.
+    /// Alle übrigen Felder bleiben bedienbar.
+    /// </summary>
+    [Fact]
+    public void Ohne_BezeichnerAenderbar_ist_nur_das_Namensfeld_nur_lesend()
+    {
+        var daten = Satz();
+        var cut = Aufbauen(daten, bezeichnerAenderbar: false);
+
+        IElement name = cut.FindAll("input[type=text]")[0];
+        Assert.True(name.HasAttribute("readonly"));
+
+        // Hersteller, die vier Klapplisten und die beiden Ganzzahlfelder bleiben offen.
+        Assert.False(cut.FindAll("input[type=text]")[1].HasAttribute("readonly"));
+        Assert.False(cut.Find("textarea").HasAttribute("readonly"));
+        Assert.All(cut.FindAll("select"), s => Assert.False(s.HasAttribute("disabled")));
+
+        // Und der Baustein nimmt die Eingabe im Namensfeld nicht entgegen — er zeichnet
+        // ihn nur lesend; der Satz bleibt, wie er war.
+        Assert.Equal("WP Alpha", daten.Name);
+    }
+
+    /// <summary>Vorgabe ist AENDERBAR — der Weg der Katalogverwaltung.</summary>
+    [Fact]
+    public void Der_Bezeichner_ist_vorgabegemaess_aenderbar()
+    {
+        var cut = Aufbauen();
+        Assert.False(cut.FindAll("input[type=text]")[0].HasAttribute("readonly"));
     }
 
     /// <summary>Nur ansehen: Jedes Feld ist gesperrt bzw. schreibgeschützt.</summary>

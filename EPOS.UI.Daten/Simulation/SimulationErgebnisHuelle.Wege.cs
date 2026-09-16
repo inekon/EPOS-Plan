@@ -356,6 +356,15 @@ namespace WindowsFormsApplication1
             WizardCtrl wizctrl = new WizardCtrl();
             wizctrl.Del_Projekt_Waermeerzeuger(m_ID_Projekt, WizardItemClass.WP_TYP);
             wizctrl.Add_WP_Waermeerzeuger(m_ID_Projekt, _wpModelle);
+
+            // Anwenderentscheid 16.09.2026: Die STAMMFELDER des Anlagendialogs gehoeren
+            // der PROJEKTKOPIE (Tab_WP), und der Del+Add-Weg schreibt nur
+            // Tab_Energieanlagen. Erst NACH dem Add zeigt ID_WP auf die Kopie - deshalb
+            // steht der Nachzug hier und nicht im Uebernehmen des Dialogs. Die Ablehnung
+            // wird GEMELDET, auf demselben Weg, den diese Huelle schon fuehrt.
+            string grund = WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(_wpModelle, m_ID_Projekt);
+            if (!string.IsNullOrEmpty(grund))
+                Dienste.Dialog.Meldung(grund, MyResource.Resource.WPV_TITEL);
         }
 
         // =================================================================

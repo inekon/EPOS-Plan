@@ -102,6 +102,13 @@ public sealed class WaermepumpeAnlageDaten
     /// <summary>Typ der gewählten Wärmepumpe.</summary>
     public string Typ { get; set; } = "";
 
+    /// <summary>
+    /// Aufstellungsart (<c>Tab_WP.Aufstellung</c>) — seit dem Anwenderentscheid vom
+    /// 16.09.2026 im Feldsatz: Die Stammfelder des Anlagendialogs schreiben in die
+    /// PROJEKTKOPIE, und Aufstellung gehört dazu. Vorher lief sie am Dialog vorbei.
+    /// </summary>
+    public string Aufstellung { get; set; } = "";
+
     /// <summary>Hersteller der gewählten Wärmepumpe.</summary>
     public string Firma { get; set; } = "";
 
@@ -143,6 +150,7 @@ public sealed class WaermepumpeAnlageDaten
         Baujahr = Baujahr,
         Regelung = Regelung,
         Typ = Typ,
+        Aufstellung = Aufstellung,
         Firma = Firma,
         Nennleistung = Nennleistung,
         Modulkosten = Modulkosten,

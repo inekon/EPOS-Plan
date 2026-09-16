@@ -869,8 +869,17 @@ namespace WindowsFormsApplication1
         {
             // Woertlich pBox_WP_Click (:479-505).
             List<WErzeugerModel> liste = Anlagen(WizardItemClass.WP_TYP);
-            if (WaermepumpenHuelle.Oeffnen(wirt, _kontext.Id, liste))
-                Schreiben(WizardItemClass.WP_TYP, liste);
+            if (!WaermepumpenHuelle.Oeffnen(wirt, _kontext.Id, liste)) return;
+
+            Schreiben(WizardItemClass.WP_TYP, liste);
+
+            // Anwenderentscheid 16.09.2026: Die STAMMFELDER des Anlagendialogs gehoeren
+            // der Projektkopie (Tab_WP). Sie werden NACH dem Del+Add nachgezogen - erst
+            // dann zeigt ID_WP auf die Kopie. Eine Ablehnung wird GEMELDET, nicht still
+            // uebergangen; der Weg dafuer ist der, den diese Huelle ohnehin hat.
+            string grund = WaermepumpeAnlageHuelle.ProjektgeraeteNachziehen(liste, _kontext.Id);
+            if (!string.IsNullOrEmpty(grund))
+                Dienste.Dialog.Meldung(grund, MyResource.Resource.WPV_TITEL);
         }
 
         private void Heizkessel(IWin32Window wirt)

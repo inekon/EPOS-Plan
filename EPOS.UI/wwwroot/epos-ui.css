@@ -8129,6 +8129,16 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     gap: 4px;
 }
 
+/* "In Stamm uebernehmen..." (16.09.2026): Warnung und Schalter stehen      */
+/* UNTEREINANDER, mit Luft zur Speichernleiste darunter - der Schalter ist  */
+/* eine Entscheidung zur Warnung, keine Zeile daneben.                      */
+.epos-wp-uebernahme {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    margin-bottom: var(--epos-rand);
+}
+
 /* Ueberschrift und "Modul-Katalog..." stehen in EINER Zeile - im        */
 /* Vorbild label_WP bei 16/13 und btn_Katalog bei 286/10.                */
 .epos-wp-auswahl-kopf {

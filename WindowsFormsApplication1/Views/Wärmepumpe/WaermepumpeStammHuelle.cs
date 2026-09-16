@@ -273,13 +273,46 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// Die Kennlinien eines KATALOGSATZES für den Editor — seit dem 16.09.2026 auch
-        /// der Weg des Anlagendialogs (Gabe <c>Kennlinien</c>).
+        /// Die Kennlinien eines KATALOGSATZES für den Editor — der Weg der
+        /// Katalogverwaltung (<c>Tab_Kenndaten_STAMM</c>).
         /// </summary>
         internal static IReadOnlyList<KennlinienZeile> KennlinienZu(int idWp)
+            => AusModell(KenndatenCtrl.LiesStamm(idWp));
+
+        /// <summary>
+        /// Der Rückschreibweg des Kennlinieneditors in den KATALOG
+        /// (<c>Tab_Kenndaten_STAMM</c>).
+        /// </summary>
+        internal static bool KennlinienAbgleichen(int idWp, IReadOnlyList<KennlinienZeile> zeilen)
+        {
+            return KenndatenCtrl.Abgleichen(idWp, NachModell(zeilen));
+        }
+
+        /// <summary>
+        /// Die PROJEKTKENNLINIEN eines Geräts für den Editor (<c>Tab_Kenndaten</c>) — der
+        /// Weg des ANLAGENDIALOGS seit dem Anwenderentscheid vom 16.09.2026.
+        ///
+        /// <para><b>Der Unterschied zu <see cref="KennlinienZu"/> ist die TABELLE</b>, wie
+        /// schon bei den Bildern (Befund W7‑B‑3): Gerechnet wird ausschließlich mit den
+        /// Projektkennlinien; ein Editor auf dem Katalogsatz änderte einen Stand, den die
+        /// Simulation gar nicht liest — und für jedes andere Projekt mit.</para>
+        /// </summary>
+        internal static IReadOnlyList<KennlinienZeile> KennlinienProjektZu(int idWp)
+            => AusModell(KenndatenCtrl.LiesProjekt(idWp));
+
+        /// <summary>Der Rückschreibweg in die PROJEKTKENNLINIEN (<c>Tab_Kenndaten</c>).</summary>
+        internal static bool KennlinienProjektAbgleichen(int idWp, IReadOnlyList<KennlinienZeile> zeilen)
+        {
+            return KenndatenCtrl.AbgleichenProjekt(idWp, NachModell(zeilen));
+        }
+
+        /// <summary>Aus den Kernzeilen in die Editorzeilen — für beide Tabellen dieselbe Abbildung.</summary>
+        private static IReadOnlyList<KennlinienZeile> AusModell(IReadOnlyList<KenndatenModel> quelle)
         {
             var liste = new List<KennlinienZeile>();
-            foreach (KenndatenModel m in KenndatenCtrl.LiesStamm(idWp))
+            if (quelle == null) return liste;
+
+            foreach (KenndatenModel m in quelle)
                 liste.Add(new KennlinienZeile
                 {
                     Id = m.m_ID,
@@ -289,15 +322,6 @@ namespace WindowsFormsApplication1
                     Ptherm = m.m_nPTherm
                 });
             return liste;
-        }
-
-        /// <summary>
-        /// Der Rückschreibweg des Kennlinieneditors — seit dem 16.09.2026 auch der Weg des
-        /// Anlagendialogs (Gabe <c>KennlinienAbgleichen</c>).
-        /// </summary>
-        internal static bool KennlinienAbgleichen(int idWp, IReadOnlyList<KennlinienZeile> zeilen)
-        {
-            return KenndatenCtrl.Abgleichen(idWp, NachModell(zeilen));
         }
 
         private static IReadOnlyList<KenndatenModel> NachModell(IReadOnlyList<KennlinienZeile> zeilen)

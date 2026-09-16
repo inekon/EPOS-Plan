@@ -804,6 +804,14 @@ namespace WindowsFormsApplication1
             if (!ctrl.Add_WP_Waermeerzeuger(ProjektId, Erzeuger, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WP_Waermeerzeuger");
 
+            // Anwenderentscheid 16.09.2026: Die Stammfelder des Waermepumpen-Anlagendialogs
+            // gehoeren der PROJEKTKOPIE (Tab_WP); Add_WP_Waermeerzeuger schreibt nur
+            // Tab_Energieanlagen und hat die Kopie soeben angelegt. Eine Ablehnung bricht
+            // den Assistenten NICHT ab - sie betrifft ein Anzeigefeld, nicht den
+            // Rechenweg -, sie wird protokolliert (WaermepumpeGeraeteCtrl meldet den Grund).
+            using (Vorgangsklammer.Halter wpKlammer = Vorgangsklammer.Setzen(vorgang))
+                WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(Erzeuger, ProjektId);
+
             // Erst hier steht die ECHTE Projekt-ID (Add_Projekt/@@IDENTITY). Die Seiten
             // haben in ihrem CreateNewEnergyCarrier nur den Katalogtraeger angelegt;
             // energy_price und energy_Project_settings haengen an Tab_Projekt.ID und
@@ -844,6 +852,11 @@ namespace WindowsFormsApplication1
 
             if (!ctrl.Add_WP_Waermeerzeuger(ProjektId, Erzeuger, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_WP_Waermeerzeuger");
+
+            // Wortgleich zum NEU-Zweig: die Stammfelder in die Projektkopie nachziehen
+            // (Anwenderentscheid 16.09.2026).
+            using (Vorgangsklammer.Halter wpKlammer = Vorgangsklammer.Setzen(vorgang))
+                WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(Erzeuger, ProjektId);
 
             // Auch hier: neu hinzugekommene Traeger bekommen ihre projektgebundenen
             // Saetze, bereits zugeordnete faengt der COUNT-Test ab.
