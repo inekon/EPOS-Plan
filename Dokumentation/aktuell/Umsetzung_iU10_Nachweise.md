@@ -662,6 +662,44 @@ ist damit um EINE verfehlt** (6 statt der 5, die Kern und SDK beisteuern); der N
 freigegebenen Lauf nach #223. Was der Lauf NICHT zeigt: ob die Simulationsansicht auf dem Gerät bedienbar aussieht
 und ob `autofocus`/`FocusAsync` aus #219 in der WKWebView die Tastatur holen — beides Sichtprüfung auf dem iPad (iU13-Liste).
 
+**Vierundvierzigster Lauf 35131123243 (`ios.yml`, `macos-26`, 16.09.2026, 17:55–18:03 UTC, 8 min 43 s)** auf
+`32300bc1` — ausgelöst per `workflow_dispatch` nach ausdrücklicher Anwenderfreigabe (16.09.2026). **Anlass ist
+W16a‑O‑4:** `IosProjektQuelle.AssistentGaben` ist umgesetzt, und dies ist der erste Lauf, der den neuen iOS-Weg des
+Projektassistenten überhaupt übersetzt. Er deckt zugleich alles ab, was die iOS-Hülle seit Lauf 43 bekommen hat —
+`ios.yml` selbst, `EPOS.iOS.csproj`, `IosProjektQuelle`, `Dienste.cs` und `IProjektQuelle`; keine dieser Änderungen
+war vorher auf einem Mac.
+
+Schrittzeiten: Workload `maui-ios` (Set 10.0.400.1) 15 s, **Bau 2 min 00 s**, Simulator wählen und starten 1 min 58 s,
+Installieren und Prüfmodus 2 min 30 s, Startmarken 2 s, iZ6-Vergleich 18 s. Erststart mit **Seed-Kopie aus dem
+Anwendungspaket** (`Kenndaten.sqlite`, 67 MB). Startmarken `SQLite 3.53.3` · **`STRICT=119`** (Erwartung aus der
+Seed-Datenbank 119 — Stand seit Schemaschritt 74; Lauf 43 stand noch bei 118) · `Projekte=25`, Oberflächensprache `en`,
+Rechen- und Anzeigekultur `de-DE`. Prüfmodus Projekt 1030: Ergebnis-Kopf-ID 212, **22 CSV-Dateien, 160 Skalare**,
+22 s.
+
+**Die Zeile, für die dieser Lauf gefahren wurde**, aus dem Prüfmodus:
+
+```
+Assistent: Schluessel=25 Komponenten=ja Projektkopf=ja Gebaeude=abgelehnt Sperrgrund=ja HatAenderungen=nein
+```
+
+Damit ist auf dem Simulator belegt, was W16a‑O‑4 zugesagt hat: Der Parametersatz entsteht (25 Schlüssel), die zwei
+heute bedienbaren Schritte tragen (**Komponenten** und **Projektkopf**), einer der elf noch nicht umgezogenen Schritte
+wird **benannt abgelehnt** statt still leer zu bleiben (`Gebaeude=abgelehnt` mit `Sperrgrund=ja`), und der Delegat
+`HatAenderungen` antwortet — die Grundlage der Rückfrage aus Anwenderentscheid 62b‑E‑1, die damit auch auf dem iPad
+greift. **iZ6-Vergleich gegen `2026-09-16_R8_Heizkessel_Kaskade` PASS** (22 Dateien, 236 680 Werte) und
+**BYTE-GLEICH** (`diff -rq` leer, iOS-Simulator arm64). Artefakte `ios-simulator` (874 KB) und `ios-app` (84,2 MB).
+
+Der Bau des `EPOS.Referenzlauf` im Vergleichsschritt meldete **0 Fehler und 4 Warnungen** — genau die vier
+Bestandswarnungen des Kerns (CS0108 ×2, CS0109 ×2); die mit Lauf 43 aufgefallene `CS8600` in `Referenzlauf/Protokoll.cs`
+steht dort nicht mehr. **Nicht ausgelesen ist in diesem Durchgang die Warnungsbilanz des iOS-BAUSCHRITTS selbst** (der
+Simulatorstart füllt das Protokoll, der Bauschritt liegt außerhalb des gelesenen Ausschnitts) — die mit Lauf 43
+formulierte Schranke „iOS-Warnungen = 0" ist für Lauf 44 damit **weder belegt noch widerlegt**; sie ist beim nächsten
+Lauf gezielt am Bauschritt abzulesen.
+
+Was der Lauf NICHT zeigt: ob der Assistent auf dem Gerät bedienbar **aussieht** — die zwei Einstiege in der
+Projektliste, die Rückfrage beim Verlassen, der Hinweistext der abgelehnten Schritte. Das sind die Abnahmepunkte
+`A‑W16a‑O4‑1` bis `‑6` und bleiben Sichtprüfung auf dem iPad (iU13-Liste).
+
 ## Nachweise, die nur ein Gerät führen kann — offen (iU13)
 
 Sie brauchen ein Apple-Developer-Konto (iF24), ein Signaturzertifikat und ein iPad.
