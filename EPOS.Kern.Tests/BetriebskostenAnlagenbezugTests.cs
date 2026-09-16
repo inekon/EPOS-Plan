@@ -10,17 +10,25 @@ namespace EPOS.Kern.Tests
     /// Auftrag Kostenbereich, Punkt 3: Die Betriebskosten gehoeren der ANLAGE, nicht dem
     /// Gewerk.
     ///
-    /// <para><b>Der Befund.</b> <c>BetriebskostenCtrl.Lies</c> und
-    /// <c>…Speichere</c> arbeiteten ueber (Projekt, Kategorie, Komponente, StammID) —
-    /// OHNE <c>Tab_ProjektWerte.ID_Anlage</c>. Fuehrt ein Projekt mehrere Anlagen
-    /// desselben Gewerks, fand diese Suche stets <c>MIN(ID)</c>, also die Zeile der
-    /// ERSTEN Anlage: Der Dialog zeigte deren Zahlen fuer jede weitere Anlage, und das
-    /// Speichern schrieb sie dorthin zurueck. Fuer die INVESTITION ist derselbe Fehler
-    /// seit Ä25 behoben (<c>KostenPositionCtrl.SetzeBetrag</c> mit Anlagenbezug).</para>
+    /// <para><b>Der Befund.</b> Wer eine Betriebsposition ueber (Projekt, Kategorie,
+    /// Komponente, StammID) sucht — OHNE <c>Tab_ProjektWerte.ID_Anlage</c> —, findet bei
+    /// mehreren Anlagen desselben Gewerks stets die Zeile der ERSTEN Anlage: Die Maske
+    /// zeigte deren Zahlen fuer jede weitere Anlage, und das Speichern schrieb sie
+    /// dorthin zurueck. Fuer die INVESTITION ist derselbe Fehler seit Ä25 behoben
+    /// (<c>KostenPositionCtrl.SetzeBetrag</c> mit Anlagenbezug).</para>
+    ///
+    /// <para><b>Geprueft wird der LEBENDE Weg.</b> Betriebspositionen liest und legt
+    /// heute die Kostenseite an: <c>KostenProjektPositionenCtrl.Lies(…, idAnlage)</c> und
+    /// <c>KostenProjektPositionenCtrl.Neu(…, idAnlage)</c>, darunter
+    /// <c>KostenPositionCtrl.FindePosition</c> bzw. <c>SetzeBetrag</c> — beide mit
+    /// Anlagenbezug. Die gleichnamigen Glieder des alten WinForms-Betriebskostendialogs
+    /// (<c>BetriebskostenCtrl.Lies</c>/<c>…Speichere</c> samt ihren Zeilen- und
+    /// Bezugsgroessentypen) sind mit dem Dialog gefallen; ein Test auf sie haette nur
+    /// noch sich selbst geprueft.</para>
     ///
     /// <para><b>Die Messlatte.</b> Projekt 1030 „Referenz BHKW-Kaskade" fuehrt ZWEI
-    /// BHKW-Anlagen (14920, 14921) und zu beiden je drei Betriebspositionen der
-    /// Komponente BHKW — der Regelfall, an dem der Fehler sichtbar wird.</para>
+    /// BHKW-Anlagen (14920, 14921) und zu beiden Betriebspositionen der Komponente BHKW —
+    /// der Regelfall, an dem der Fehler sichtbar wird.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class BetriebskostenAnlagenbezugTests
@@ -28,6 +36,9 @@ namespace EPOS.Kern.Tests
         private const int PROJEKT = 1030;
         private const int ERSTE = 14920;
         private const int ZWEITE = 14921;
+
+        private const int KATEGORIE = DbWerte.KOSTEN_KATEGORIE_BETRIEB;
+        private const int KOMPONENTE = BetriebskostenCtrl.KOMPONENTE_BHKW;
 
         /// <summary>Die Anlage, an der eine Projektposition haengt; 0 = keine.</summary>
         private static int AnlageDer(int positionsId)
@@ -46,8 +57,8 @@ namespace EPOS.Kern.Tests
                 "SELECT ID, EingegebenerWert FROM Tab_ProjektWerte " +
                 "WHERE ProjektID = ? AND KomponentenID = ? AND KategorieID = ? AND ID_Anlage = ?",
                 new DbParam("@p", PROJEKT),
-                new DbParam("@k", BetriebskostenCtrl.KOMPONENTE_BHKW),
-                new DbParam("@g", DbWerte.KOSTEN_KATEGORIE_BETRIEB),
+                new DbParam("@k", KOMPONENTE),
+                new DbParam("@g", KATEGORIE),
                 new DbParam("@a", idAnlage));
             if (dt == null) return werte;
             foreach (System.Data.DataRow r in dt.Rows)
@@ -56,15 +67,21 @@ namespace EPOS.Kern.Tests
             return werte;
         }
 
-        private static List<int> ErfassteIds(List<BetriebskostenCtrl.Zeile> zeilen)
+        /// <summary>Die Zeilen, die die Kostenseite fuer EINE Anlage liest.</summary>
+        private static List<KostenProjektPositionenCtrl.Zeile> ZeilenDer(int idAnlage)
         {
-            return zeilen.Where(z => z.Id > 0).Select(z => z.Id).OrderBy(i => i).ToList();
+            return KostenProjektPositionenCtrl.Lies(PROJEKT, KOMPONENTE, KATEGORIE, idAnlage);
+        }
+
+        private static List<int> IdsDer(int idAnlage)
+        {
+            return ZeilenDer(idAnlage).Select(z => z.Raster.Id).OrderBy(i => i).ToList();
         }
 
         /// <summary>
-        /// Die LESESEITE trennt die beiden Anlagen — jede bekommt ihre eigenen Zeilen.
-        /// Die anlagenblinde Bestandssignatur liefert dagegen fuer beide dieselbe Menge:
-        /// die der ERSTEN Anlage. Genau das ist der Befund.
+        /// Die LESESEITE trennt die beiden Anlagen — jede bekommt ihre eigenen Zeilen,
+        /// und keine Zeile taucht bei beiden auf. Genau das ist der Befund: Ohne
+        /// Anlagenbezug gaebe es nur EINE Menge fuer beide.
         /// </summary>
         [Fact]
         public void Die_Leseseite_findet_die_Positionen_der_gemeinten_Anlage()
@@ -72,8 +89,8 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            List<int> erste = ErfassteIds(BetriebskostenCtrl.Lies(PROJEKT, null, ERSTE));
-            List<int> zweite = ErfassteIds(BetriebskostenCtrl.Lies(PROJEKT, null, ZWEITE));
+            List<int> erste = IdsDer(ERSTE);
+            List<int> zweite = IdsDer(ZWEITE);
 
             Assert.NotEmpty(erste);
             Assert.NotEmpty(zweite);
@@ -82,8 +99,13 @@ namespace EPOS.Kern.Tests
             foreach (int id in erste) Assert.Equal(ERSTE, AnlageDer(id));
             foreach (int id in zweite) Assert.Equal(ZWEITE, AnlageDer(id));
 
-            // Die Gegenprobe: ohne Anlagenbezug kommt die Menge der ERSTEN Anlage.
-            Assert.Equal(erste, ErfassteIds(BetriebskostenCtrl.Lies(PROJEKT, null)));
+            // Die Gegenprobe: OHNE Anlagenfilter (Bestandssignatur, -1) steht die Menge
+            // BEIDER Anlagen da - der Rechen- und Smokeweg sieht unveraendert alles.
+            List<int> alle = KostenProjektPositionenCtrl
+                .Lies(PROJEKT, KOMPONENTE, KATEGORIE)
+                .Select(z => z.Raster.Id).ToList();
+            foreach (int id in erste) Assert.Contains(id, alle);
+            foreach (int id in zweite) Assert.Contains(id, alle);
         }
 
         /// <summary>
@@ -107,31 +129,34 @@ namespace EPOS.Kern.Tests
                 "DELETE FROM Tab_ProjektWerte WHERE ProjektID = ? AND KomponentenID = ? " +
                 "AND KategorieID = ? AND ID_Anlage = ?",
                 new DbParam("@p", PROJEKT),
-                new DbParam("@k", BetriebskostenCtrl.KOMPONENTE_BHKW),
-                new DbParam("@g", DbWerte.KOSTEN_KATEGORIE_BETRIEB),
+                new DbParam("@k", KOMPONENTE),
+                new DbParam("@g", KATEGORIE),
                 new DbParam("@a", ZWEITE));
 
             Dictionary<int, double> vorher = BetraegeDer(ERSTE);
             Assert.NotEmpty(vorher);
             Assert.Empty(BetraegeDer(ZWEITE));
+            Assert.Empty(IdsDer(ZWEITE));
 
-            List<BetriebskostenCtrl.Zeile> zeilen = BetriebskostenCtrl.Lies(PROJEKT, null, ZWEITE);
-            Assert.All(zeilen, z => Assert.Equal(0, z.Id));      // nichts erfasst
+            // Anlegen auf dem Weg der Kostenseite - MIT Anlagenbezug.
+            int id = KostenProjektPositionenCtrl.Neu(
+                PROJEKT, KOMPONENTE, KATEGORIE,
+                DbWerte.VDI_POS_WARTUNG_BHKW, DbWerte.KOSTENART_BETRIEBSGEBUNDEN,
+                DbWerte.BEMESSUNG_BETRAG, ZWEITE);
 
+            Assert.True(id > 0, "Die Position der zweiten Anlage wurde nicht angelegt.");
+            Assert.Equal(ZWEITE, AnlageDer(id));
+            Assert.Equal(new[] { id }, IdsDer(ZWEITE));
+
+            // Und sie nimmt ihren eigenen Betrag an - ueber denselben Speicherweg.
             const double BETRAG = 1234.50;
-            foreach (BetriebskostenCtrl.Zeile z in zeilen)
-            {
-                z.Bemessung = DbWerte.BEMESSUNG_BETRAG;
-                z.Fest = BETRAG;
-                z.Satz = null;
-                z.Menge = null;
-            }
-            Assert.True(BetriebskostenCtrl.Speichere(PROJEKT, zeilen, ZWEITE) > 0);
+            KostenProjektPositionenCtrl.Zeile neu = ZeilenDer(ZWEITE).Single();
+            neu.Raster.Bemessung = DbWerte.BEMESSUNG_BETRAG;
+            neu.Raster.Satz = BETRAG;
+            Assert.True(KostenProjektPositionenCtrl.Speichern(neu));
 
-            // Die zweite Anlage hat jetzt eigene Zeilen - mit dem erfassten Betrag.
             Dictionary<int, double> nachher = BetraegeDer(ZWEITE);
-            Assert.NotEmpty(nachher);
-            foreach (double w in nachher.Values) Assert.Equal(BETRAG, w, 6);
+            Assert.Equal(BETRAG, Assert.Single(nachher).Value, 6);
 
             // Und die erste Anlage steht unveraendert da: dieselben Zeilen, dieselben Werte.
             Dictionary<int, double> ersteNachher = BetraegeDer(ERSTE);
