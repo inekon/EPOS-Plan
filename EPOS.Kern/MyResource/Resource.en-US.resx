@@ -2905,7 +2905,7 @@ Please select a different buffer storage or change the heat sink of one of the u
     <value>✔ Configuration saved successfully</value>
   </data>
   <data name="SIM_STATUS_SENKE_FEHLER" xml:space="preserve">
-    <value>⚠ The heat sink could not be saved completely</value>
+    <value>⚠ The heat sink was not saved — the system is unchanged</value>
   </data>
   <data name="SIM_STATUS_SENKE_GESPEICHERT" xml:space="preserve">
     <value>✔ Heat sink saved ({0})</value>

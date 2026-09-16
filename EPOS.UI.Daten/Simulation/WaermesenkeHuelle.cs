@@ -258,15 +258,22 @@ namespace WindowsFormsApplication1
         /// Schreibt die Senkenliste UND die Verbundmitglieder
         /// (<c>ListeSpeichern</c>:2018-2034). Die Mitgliederliste geht IMMER heraus,
         /// auch leer — das ist der Weg, auf dem ein Verbund wieder aufgelöst wird.
+        ///
+        /// <para><b>Die Hülle übersetzt nur.</b> Sie baut aus den Dialogzeilen die
+        /// Modelle und ruft den EINEN Kern-Weg
+        /// <c>WaermesenkeClass.SenkenlisteUndVerbundSchreiben</c>. Dort — und nicht
+        /// hier — liegt die Klammer um beide Schreibvorgänge: Gelingt einer nicht, ist
+        /// nichts geschrieben. Eine Transaktion über zwei Controller-Schreibwege ist
+        /// eine Zusage des Kerns, keine der Hülle.</para>
         /// </summary>
         private static bool Schreiben(int idAnlage, IReadOnlyList<SenkenzeileDaten> zeilen,
                                       IReadOnlyList<int> verbund)
         {
             if (idAnlage <= 0) return false;
 
-            bool ok = new Z_AnlageSenkeCtrl().SchreibenJeAnlage(idAnlage, Modelle(idAnlage, zeilen));
-            if (!AnlagePufferVerbundCtrl.Schreiben(idAnlage, new List<int>(verbund))) ok = false;
-            return ok;
+            return WaermesenkeClass.SenkenlisteUndVerbundSchreiben(
+                idAnlage, Modelle(idAnlage, zeilen),
+                verbund == null ? new List<int>() : new List<int>(verbund));
         }
 
         /// <summary>
