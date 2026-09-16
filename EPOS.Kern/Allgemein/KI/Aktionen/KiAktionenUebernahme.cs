@@ -258,9 +258,14 @@ namespace WindowsFormsApplication1
         /// so - und davor steht der Sicherungspunkt (Fachkonzept 4.4, Punkt 1).
         /// </para>
         /// <para>
-        /// <b>Die Transaktionsklammer bringt der Bestand mit</b>
-        /// (<c>KomponentenUebernahmeCtrl:283</c>): Ein Teilzustand aus halb uebernommenen
-        /// Komponenten ist damit ausgeschlossen, ohne dass diese Aktion etwas dazutut.
+        /// <b>Die Transaktionsklammer deckt NICHT den ganzen Ablauf</b>
+        /// (<c>KomponentenUebernahmeCtrl.Uebernehmen</c>): Sie fasst Loeschen und Anlegen.
+        /// Die Schritte 8 (<c>SenkenNachziehen</c>) und 9 (<c>VariantenNachziehen</c>)
+        /// laufen ABSICHTLICH danach - sie lesen ihre neuen Anlagen-IDs ueber eine zweite
+        /// Verbindung, auf der eine noch nicht festgeschriebene Zeile unsichtbar waere.
+        /// Ein Teilzustand aus halb uebernommenen Komponenten ist damit MOEGLICH und wird
+        /// seit NL-Q2 gemeldet (<c>BK_KOMP_HINW_SENKEN</c>, <c>BK_KOMP_HINW_VARIANTE</c>) -
+        /// nicht mehr verschluckt, aber auch nicht ausgeschlossen.
         /// </para>
         /// </remarks>
         internal static KiAktion KomponenteUebernehmen()
