@@ -32,8 +32,11 @@ Neues und kostet Minutenkontingent).
 python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite
 ```
 
-Die Datenbank wird **nur lesend** geöffnet (`file:…?mode=ro`) und nicht verändert; geprüft
-wird ausschließlich mit `EXPLAIN`, das eine Anweisung vorbereitet, aber nicht ausführt.
+Die Datenbank wird **nur lesend** geöffnet (`file:…?mode=ro&immutable=1`) und nicht
+verändert; geprüft wird ausschließlich mit `EXPLAIN`, das eine Anweisung vorbereitet,
+aber nicht ausführt. `immutable=1` gehört dazu: Ohne es legt schon eine lesende
+Verbindung die Begleitdateien `-wal` und `-shm` neben der Testdatenbank an und lässt sie
+liegen — der Prüfer hinterlässt so nichts im Arbeitsbaum.
 
 | Schalter | Wirkung |
 |---|---|

@@ -64,6 +64,7 @@ import sqlite3
 import sys
 import tempfile
 import types
+import urllib.parse
 
 LOCH = "\x01"          # Interpolationsloch  $"...{x}..."
 UNBEK = "\x02"         # nicht aufloesbarer Verkettungsteil
@@ -1230,6 +1231,28 @@ def selbsttest(conn, namen, klein, bool_ausnahmen):
 
 
 
+def db_uri(pfad):
+    """Der Datenbankpfad als ``file:``-URI - NUR LESEND und OHNE Begleitdateien.
+
+    ``mode=ro`` allein reicht nicht: Steht die Datenbank im WAL-Modus, legt schon
+    eine LESENDE Verbindung die Begleitdateien ``-wal`` und ``-shm`` neben der Datei
+    an - und laesst sie liegen. Neben ``Referenzlaeufe/Kenndaten_Test.sqlite`` sind
+    das zwei Dateien, die dort nichts zu suchen haben. ``immutable=1`` sagt SQLite
+    zu, dass sich die Datei waehrend des Laufs nicht aendert; dann verzichtet es auf
+    Sperren und auf die Begleitdateien. Der Pruefer aendert ohnehin nichts - er
+    faehrt ausschliesslich ``EXPLAIN``.
+
+    Der Pfad wird als URI geschrieben: Vorwaertsschraegstriche (auch unter Windows),
+    ein fuehrender Schraegstrich vor dem Laufwerksbuchstaben und prozentkodiert -
+    sonst zerfiele ein Pfad mit Leerzeichen, Raute oder Fragezeichen in Pfad und
+    Abfragezeichenkette.
+    """
+    voll = os.path.abspath(pfad).replace("\\", "/")
+    if not voll.startswith("/"):
+        voll = "/" + voll                       # C:/... -> /C:/...
+    return "file://" + urllib.parse.quote(voll, safe="/:") + "?mode=ro&immutable=1"
+
+
 def main():
     ap = argparse.ArgumentParser(
         description="Haelt alle SQL-Texte des Quellbestands gegen SQLite.")
@@ -1245,7 +1268,7 @@ def main():
     args = ap.parse_args()
 
     basis = os.path.abspath(args.basis)
-    conn = sqlite3.connect("file:%s?mode=ro" % os.path.abspath(args.db), uri=True)
+    conn = sqlite3.connect(db_uri(args.db), uri=True)
     namen, klein = schema_namen(conn)
     bool_ausnahmen = nicht_01_spalten(conn)
 
