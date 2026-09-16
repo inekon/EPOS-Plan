@@ -255,6 +255,17 @@ public sealed class UebersichtDaten
     /// </summary>
     public IReadOnlyCollection<string> OhneKaskadenplatz = Array.Empty<string>();
 
+    /// <summary>
+    /// Dieselben Erzeuger als HANDLUNGSFÄHIGE Meldung (Anwenderentscheid vom
+    /// 16.09.2026, Punkt c) — je Anlage ein Satz und, wenn ein Platz frei ist, der Weg
+    /// in die Simulationskonfiguration. Leer = alles Angelegte rechnet auch.
+    ///
+    /// <para><b>Sie stammt aus DERSELBEN Vorprüfung</b> wie
+    /// <see cref="OhneKaskadenplatz"/> (<c>SimulationLaufCtrl</c>) — der Zusatz an der
+    /// Tabellenzeile und die Meldung darüber sagen also dasselbe, nicht zweierlei.</para>
+    /// </summary>
+    public IReadOnlyList<Platzangebot> OhnePlatzAngebote = Array.Empty<Platzangebot>();
+
     /// <summary>Der Mittelwert der beiden Ringe in Prozent.</summary>
     public double WaermedeckungProzent;
     public double StromdeckungProzent;
@@ -350,6 +361,29 @@ public sealed record Tabellenkopf(string Text, string Einheit = "");
 /// <param name="Zusatz">Klammerzusatz am Namen, z. B. „(nicht in der Kaskade)".</param>
 public sealed record Erzeugerzeile(string Name, IReadOnlyList<string> Zahlen,
                                    bool OhneBeitrag = false, string Zusatz = "");
+
+/// <summary>
+/// Ein angelegter Erzeuger OHNE Platz in der Simulation, samt dem Weg dorthin
+/// (Anwenderentscheid vom 16.09.2026, Punkt c).
+/// </summary>
+/// <param name="IdAnlage">
+/// <c>Tab_Energieanlagen.ID</c> — die Karte, die die Simulationskonfiguration
+/// hervorhebt, wenn der Anwender dem Angebot folgt.
+/// </param>
+/// <param name="Kennung">
+/// Die sprachneutrale Meldungskennung (<c>KiMeldungskennung</c>) für den Link
+/// „erklären lassen" am Banner.
+/// </param>
+/// <param name="Text">Die Meldung — derselbe Satz, den auch das Laufprotokoll führt.</param>
+/// <param name="AufnahmeMoeglich">
+/// Ist überhaupt ein Platz frei? Nur dann steht der Knopf da; sonst sagt
+/// <paramref name="Sperrgrund"/>, warum nicht.
+/// </param>
+/// <param name="Sperrgrund">
+/// Der Satz statt des Knopfes, wenn kein Platz frei ist; leer, solange einer frei ist.
+/// </param>
+public sealed record Platzangebot(int IdAnlage, string Kennung, string Text,
+                                  bool AufnahmeMoeglich, string Sperrgrund = "");
 
 /// <summary>
 /// Die Erzeugertabelle EINER Spalte des Dashboards (#222) — Köpfe, Zeilen, die
