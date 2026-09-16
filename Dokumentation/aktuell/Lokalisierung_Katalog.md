@@ -602,7 +602,7 @@ Festtext im Code (wie die Quellspeicher-Hinweise in `WaermequelleClass.PufferZei
 | `SIM_STATUS_KASKADE_AUS` | Zweikanalige Kaskade abgewählt - es rechnet wieder die einkanalige Kaskade. | Two-channel cascade deselected - the single-channel cascade calculates again. | Form_Simulation_Config.Uebersicht.cs:415 |
 | `SIM_STATUS_KASKADE_EIN` | Zweikanalige Kaskade eingeschaltet - der nächste Lauf rechnet damit und liefert andere Ergebnisse. | Two-channel cascade switched on - the next run calculates with it and delivers different results. | Form_Simulation_Config.Uebersicht.cs:413 |
 | `SIM_STATUS_KONFIG_GESPEICHERT` | ✔ Konfiguration erfolgreich gespeichert | ✔ Configuration saved successfully | Form_Simulation_Config.cs:982 |
-| `SIM_STATUS_SENKE_FEHLER` | ⚠ Die Wärmesenke konnte nicht vollständig gespeichert werden | ⚠ The heat sink could not be saved completely | Form_Simulation_Config.Uebersicht.cs:1237 |
+| `SIM_STATUS_SENKE_FEHLER` | ⚠ Die Wärmesenke wurde nicht gespeichert — die Anlage ist unverändert | ⚠ The heat sink was not saved — the system is unchanged | Form_Simulation_Config.Uebersicht.cs:1237 |
 | `SIM_STATUS_SENKE_GESPEICHERT` | ✔ Wärmesenke gespeichert ({0}) | ✔ Heat sink saved ({0}) | Form_Simulation_Config.Uebersicht.cs:1240 |
 | `SIM_STROMSPEICHER` | Stromspeicher | Electricity storage | Form_Simulation_Detail.cs:667 |
 | `SIM_TABELLE_HEIZKESSEL` | HeizKessel | Boiler | NavigatorUebersicht.cs:69 |

@@ -47022,7 +47022,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Wärmesenke konnte nicht vollständig gespeichert werden ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Wärmesenke wurde nicht gespeichert — die Anlage ist unverändert ähnelt.
         /// </summary>
         public static string SIM_STATUS_SENKE_FEHLER {
             get {

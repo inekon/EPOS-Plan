@@ -453,6 +453,87 @@ namespace WindowsFormsApplication1
         // steht an der Mitlesestelle SimulationControl.SenkenPufferDerAnlagen (A1-O4).
 
         /// <summary>
+        /// DER SPEICHERWEG DER WÄRMESENKE — Senkenliste UND Verbundmitglieder in EINER
+        /// Transaktion.
+        ///
+        /// <para><b>Warum das hier steht und nicht in der Hülle.</b> Es sind zwei
+        /// Schreibwege über zwei Controller: <c>Z_AnlageSenkeCtrl.SchreibenJeAnlage</c>
+        /// (<c>Z_AnlageSenke</c>) und <c>AnlagePufferVerbundCtrl.Schreiben</c>
+        /// (<c>Z_AnlagePufferVerbund</c>). Jeder ist für sich transaktional, aber die
+        /// Zusage „entweder beides oder nichts" ist eine Zusage des KERNS — sie gehört
+        /// dorthin, wo die Fachregel steht, nicht in eine Oberflächenhülle, die man
+        /// umgehen kann. <see cref="VerbundLesen"/> ist die Gegenrichtung dazu.</para>
+        ///
+        /// <para><b>Die Klammer.</b> EIN <see cref="DbVorgang"/> über beide Schritte, für
+        /// dessen Dauer über <c>Vorgangsklammer</c> am Faden angemeldet — damit auch die
+        /// beiden Controller darunter auf DIESER Verbindung und in DIESER Transaktion
+        /// arbeiten (dasselbe Muster wie <c>AssistentCtrl.Speichern</c>). Der eigene
+        /// Vorgang von <c>SchreibenJeAnlage</c> wird dadurch zum Sicherungspunkt; über
+        /// die Dauerhaftigkeit entscheidet allein der Vorgang hier.</para>
+        ///
+        /// <para><b>Fachlich ändert sich nichts.</b> Erst die Senkenliste, dann der
+        /// Verbund; die Mitgliederliste geht IMMER heraus, auch leer — das ist der Weg,
+        /// auf dem ein Verbund wieder aufgelöst wird. Anders ist allein der FEHLSCHLAG:
+        /// Scheitert der erste Schritt, wird der zweite gar nicht mehr versucht;
+        /// scheitert einer von beiden, steht hinterher NICHTS von diesem Lauf in der
+        /// Datenbank, und der Aufrufer bekommt wie bisher <c>false</c>.</para>
+        ///
+        /// <para>Dialogfrei wie der übrige Senkenkern (Konzept 13.4): Eine Ausnahme wird
+        /// zurückgerollt und auf die Konsole gemeldet, nicht geworfen — der Aufrufer
+        /// erfährt das Scheitern am Rückgabewert.</para>
+        /// </summary>
+        /// <param name="idAnlage">Die Wärmeerzeuger-Anlage; <c>&lt;= 0</c> schreibt nichts.</param>
+        /// <param name="zeilen">Die Senkenliste in Rangfolge; <c>null</c> gilt als leer.</param>
+        /// <param name="verbundMitglieder">
+        /// Die zusätzlichen Verbundmitglieder am Rang-1-Speicher; <c>null</c> und die leere
+        /// Liste lösen den Verbund auf.
+        /// </param>
+        /// <returns><c>true</c>, wenn BEIDES geschrieben ist.</returns>
+        public static bool SenkenlisteUndVerbundSchreiben(
+            int idAnlage, List<Z_AnlageSenkeModel> zeilen, IList<int> verbundMitglieder)
+        {
+            if (idAnlage <= 0) return false;
+
+            List<int> mitglieder = verbundMitglieder == null
+                ? new List<int>()
+                : new List<int>(verbundMitglieder);
+
+            try
+            {
+                using (DbVorgang vorgang = DataRepository.Vorgang())
+                using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang))
+                {
+                    // 1. Die Senkenliste. Scheitert sie, wird der Verbund NICHT mehr
+                    //    versucht - sonst bekäme eine Anlage einen Verbund, deren
+                    //    Senkenliste gar nicht in der Datenbank steht.
+                    if (!new Z_AnlageSenkeCtrl().SchreibenJeAnlage(idAnlage, zeilen))
+                    {
+                        vorgang.Rollback();
+                        return false;
+                    }
+
+                    // 2. Die Mitgliederliste - IMMER, auch leer (Verbund auflösen).
+                    if (!AnlagePufferVerbundCtrl.Schreiben(idAnlage, mitglieder))
+                    {
+                        vorgang.Rollback();
+                        return false;
+                    }
+
+                    vorgang.Commit();
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Der Vorgang ist beim Verlassen des using ohne Commit bereits
+                // zurückgerollt; hier bleibt die Meldung.
+                Console.WriteLine("Die Wärmesenke der Anlage " + idAnlage +
+                                  " konnte nicht gespeichert werden: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Zieht die Vorbelegung der Ladeprioritäten für ein Projekt nach: <c>NULL</c> wird
         /// zu <c>0</c> („nach Vorgabe" bzw. „nicht gesetzt", Konzept 3.4).
         ///

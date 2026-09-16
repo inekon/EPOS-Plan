@@ -2921,7 +2921,7 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
     <value>✔ Konfiguration erfolgreich gespeichert</value>
   </data>
   <data name="SIM_STATUS_SENKE_FEHLER" xml:space="preserve">
-    <value>⚠ Die Wärmesenke konnte nicht vollständig gespeichert werden</value>
+    <value>⚠ Die Wärmesenke wurde nicht gespeichert — die Anlage ist unverändert</value>
   </data>
   <data name="SIM_STATUS_SENKE_GESPEICHERT" xml:space="preserve">
     <value>✔ Wärmesenke gespeichert ({0})</value>
