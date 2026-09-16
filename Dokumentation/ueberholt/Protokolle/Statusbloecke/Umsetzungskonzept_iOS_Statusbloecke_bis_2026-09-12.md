@@ -7121,3 +7121,119 @@ Heizkessel und BHKW die Nachbarschaft des Brennstoffpaars. Neu sind
 > Betriebsbereitschaft stehen dort. Der Dialog „Parameter Bearbeiten…" ist nicht mehr
 > vorhanden; die Daten der Wärmepumpe stehen samt Kennliniendaten direkt im
 > Wärmepumpendialog.
+
+## #298 — Die Stammfelder ändern die Anlage, die Übernahme den Katalog (16.09.2026)
+
+Der offene Punkt „Nach #297" hatte genau diese Entscheidung verlangt: Die Stammfelder im
+Anlagendialog schrieben den Katalogsatz, und wer dort eine Kennzahl änderte, änderte sie für
+jedes Projekt, das denselben Satz benutzt. Die Antwort kam am 16.09.2026.
+
+> „Stammfelder im Wärmepumpendialog ändern den Katalogsatz: speichern nicht in Stamm sondern
+> nur in Projektdaten. Es soll die Option zur Übernahme in Stamm gegeben sein (überschreiben
+> — mit Warnung!)"
+
+Der Satz enthält beides: das Verbot und den Ersatz. Beides musste gebaut werden — der Ersatz
+mehr als das Verbot, denn den Weg, den der Entscheid verlangt, gab es nicht.
+
+**Es gab keinen Schreibweg in die Projektkopie.** `Tab_WP` trägt je Projekt eine Kopie des
+Katalogsatzes. Angelegt wird sie einmal, beim Zuweisen der Wärmepumpe (`CopyFromStamm`);
+danach schrieb sie **niemand** mehr. Der Entscheid „speichern nur in Projektdaten" ließ sich
+also nicht dadurch erfüllen, dass man einen Aufruf umhängt — die Zieltür fehlte. Was der
+Controller an Schreibweg führte, war ein `Update` **ohne Aufrufer**, und es war gefährlich:
+`WHERE Bezeichner`, **ohne Projektfilter**. Hätte es jemand in Betrieb genommen, hätte das
+Speichern einer Anlage die gleichnamigen Geräte **aller** Projekte mitgeschrieben — genau der
+Fehler, den der Entscheid abschafft, nur eine Ebene tiefer. Es ist entfallen statt repariert:
+Ein Weg, der Geräte über ihren Namen sucht, ist nicht der Weg, der hier gebraucht wird.
+
+**Der neue Weg geht über die Ids.** `WPCtrl.ProjektgeraetSchreiben(idWp, idProjekt, …)` ist
+read-modify-write über **ID und ID_Projekt**, nie über den Bezeichner: acht Felder (Firma,
+Beschreibung, Typ, Regelung, Aufstellung, Baujahr, Nennleistung, Heizstableistung), `null` =
+unverändert, damit ein Aufrufer schreiben kann, was er kennt, ohne den Rest zu berühren.
+Abgelehnt wird benannt: kein Projektsatz, negative Werte, Baujahr außerhalb 1900 … Jahr+1.
+`WPCtrl.ProjektgeraetVorhanden` sagt vorab, ob es die Kopie überhaupt gibt — davon hängen die
+weichen Sperren im Dialog ab.
+
+**Die Leistung des Heizstabs hatte nirgends eine Heimat.** Sie stand in der Maske und wurde
+in **keine** Tabelle geschrieben: `Tab_Energieanlagen` hat keine Spalte dafür, und die
+Projektkopie wurde nicht beschrieben. Der Wert ging beim Schließen verloren. Er gehört in
+`Tab_WP.Heizung` und geht seither dorthin. Das ist kein Nebenbefund der Welle, sondern der
+Grund, warum sie an dieser Stelle etwas **gewinnt** und nicht nur verschiebt.
+
+**Gespeichert wird mit OK, nicht mit einem eigenen Knopf.** Der Speichern-Knopf, den die
+Stammfelder in #297 bekommen hatten, entfällt: Er gehörte zum Katalogweg. Jetzt binden die
+Felder an die Anlagendaten und gehen mit dem OK des Dialogs hinaus — die Hausregel für jeden
+Dialog dieses Hauses. Der **Bezeichner** ist im Anlagendialog nur lesend
+(`BezeichnerAenderbar` am Baustein, im Stammdialog weiterhin änderbar). Das ist keine
+Bequemlichkeit: Die Kopplung an den Katalogsatz läuft allein über den Namen, und die Senken
+werden über das Paar (Typ, Bezeichner) zugeordnet. Ein im Anlagendialog geänderter Name hätte
+beide Zuordnungen zugleich gelöst, ohne dass es jemand sieht.
+
+**Der Kennlinieneditor bearbeitet seither die Projektkennlinien.** `KenndatenCtrl.LiesProjekt`
+und `AbgleichenProjekt` liefern sie in derselben Form wie der Katalogweg seine — gemeinsamer
+Rumpf, verhaltensgleiches Abgleichen —, damit der Editor nicht zwei Welten kennen muss. Vor
+dem ersten Speichern der Anlage gibt es die Kopie noch nicht; dann ist der Editor **weich
+gesperrt mit Grund**, ebenso die Übernahme in den Stamm. Weich heißt: Die Reiter stehen da,
+sie sagen, warum sie noch nicht können, und sie können, sobald die Anlage einmal gespeichert
+ist. Eine ausgeblendete Schaltfläche hätte dieselbe Wirkung und keine Erklärung.
+
+**Die Übernahme in den Stamm ist die gewarnte Gegenrichtung.** „In Stamm übernehmen…" öffnet
+eine Überlagerung, die zuerst sagt, was geschehen wird (`WPStammCtrl.UebernahmeVorschau`),
+und drei Fälle unterscheidet: Steht ein freier Katalogsatz dieses Namens da, wird er
+**überschrieben** — genannt mit der Zahl der anderen Projekte, die eine eigene Kopie besitzen
+und sich dabei **nicht** ändern, denn deren Kopien sind ja gerade der Sinn der ganzen Welle.
+Steht keiner da, wird ein Satz **neu angelegt**. Ist der Satz ein Auslieferungssatz
+(`ReadOnly`), wird nichts übernommen und die Absage benannt. Dazu der Schalter „Kennlinien
+mitübernehmen": Er ersetzt Wärme- **und** Kühlkennlinien des Katalogsatzes, beide oder keine
+— eine halb ersetzte Kennlinienmenge wäre schlimmer als eine unveränderte.
+`WPStammCtrl.UebernehmenAusProjekt` schreibt in **einer** Transaktion; danach wird die
+Stammliste neu geholt, damit der Dialog nicht auf einem Stand von vorhin weiterarbeitet.
+
+**Vier Speicherwege, ein Nachzug.** Die Anlage wird an vier Stellen gespeichert: in der
+Wärmepumpen-Verwaltung, auf dem Simulationsreiter Wärmepumpe, in Simulation > Konfiguration
+und im Assistenten (neu wie bearbeiten). Alle vier ziehen die Projektkopie über
+`WaermepumpeGeraeteCtrl.ProjektgeraetNachziehen` nach — die Stammfelder dürfen nicht davon
+abhängen, über welchen Weg jemand auf OK geklickt hat. Der teure Schreibweg aus #297
+(`Del_Projekt_Waermeerzeuger` + `Add_WP_Waermeerzeuger`) schadet dabei **nicht**: Gelöscht
+wird nur `Tab_Energieanlagen`; Projektkopie und Projektkennlinien bleiben stehen, und
+`CopyFromStamm` gibt beim Neuanlegen die vorhandene Kopie zurück, statt sie aus dem Katalog zu
+überschreiben. Der Nachzug schreibt anschließend die Gerätezeile nicht, sondern nur die Kopie.
+
+**Was offen bleibt, hat eine gemeinsame Wurzel.** Projektkopie und Katalogsatz hängen allein
+am **Bezeichner**. Wird der Katalogsatz umbenannt, findet die Übernahme keinen Satz dieses
+Namens und legt einen neuen an, statt den gemeinten zu überschreiben; die Vorschau sagt das
+ehrlich, aber sie kann den Zusammenhang nicht kennen. Sauber wird das erst mit einer Spalte
+`ID_Stamm` in `Tab_WP` — ein nummerierter Schritt über `SchemaMigration` samt Nachziehen der
+bestehenden Kopien über den Namen. Das ist ein eigener Auftrag im Kern und keine Nacharbeit an
+der Maske, deshalb steht es nicht in dieser Welle. Drei kleinere Punkte sind Folgen davon,
+dass der Dialog jetzt die **Anlage** zeigt: Die Kühlleistung kommt nicht mehr aus dem
+Katalogsatz und steht ohne gepflegten Projektwert auf 0; ein Baujahr 0 einer nie gepflegten
+Anlage erscheint als Bestandswert des Projekts; und der Mangelrahmen einer fehlenden
+Pflichtangabe markiert den ganzen Stammfeldblock statt des einzelnen Feldes. Zuletzt:
+`WPCtrl.Delete` ist derselbe Fall wie das entfernte `Update` — `WHERE Bezeichner` ohne
+Projektfilter, ohne Aufrufer. Entfernt wurde hier nur, was der neue Schreibweg ersetzt; der
+Löschweg gehört in denselben Aufräumschritt.
+
+**Prüfung.** Kern-Filter 0 Fehler, Windows-Schale 0 Fehler, `EPOS.UI.Tests` 4 489/4 489;
+SQL-Dialekt-Prüfer 0 Fundstellen; das Gate grün bis auf den bekannten Bildvergleich. Der
+**Rechenweg ist unverändert** — geschrieben wird in Felder, die der Lauf schon vorher las,
+und der Referenzlauf ist nicht betroffen. Neu sind `WaermepumpeProjektgeraetTests` mit 18
+Fällen gegen eine **Kopie der Testdatenbank**, darunter der Fall, um den es dem Anwender geht:
+ein gleichnamiges Gerät im zweiten Projekt bleibt unverändert. Nachgezogen sind
+`WaermepumpeAnlageDialogTests` (Bindung und OK, Bezeichner nur lesend, kein Speichern-Knopf,
+weiche Sperren, Vorschautexte, Übernahme mit und ohne Kennlinienschalter, Abbrechen) und
+`WaermepumpeStammFelderTests` (`BezeichnerAenderbar`).
+
+**Logbuch-Vorschlag** (Version vom Anwender zu nennen):
+
+> Seit 16.09.2026 gelten die Stammdaten im Wärmepumpendialog einer Anlage nur für diese
+> Anlage in diesem Projekt: Firma, Beschreibung, Typ, Regelung, Aufstellung, Baujahr,
+> Nennleistung und die Leistung des Heizstabs gehen mit „OK" in die Projektdaten; der Katalog
+> bleibt unberührt, und andere Projekte mit derselben Wärmepumpe behalten ihre Werte. Einen
+> eigenen Speichern-Knopf für diese Felder gibt es nicht. Auch die Kennliniendaten im selben
+> Dialog gehören zur Anlage und lassen sich dort bearbeiten. Der Knopf „In Stamm
+> übernehmen…" schreibt die Daten der Anlage auf Wunsch in den Katalog zurück. Vor dem
+> Übernehmen nennt er den Katalogsatz, der überschrieben wird, und die Zahl der anderen
+> Projekte, die eine eigene Kopie besitzen und unverändert bleiben; ein Schalter nimmt die
+> Kennlinien mit. Ist kein Katalogsatz dieses Namens vorhanden, wird einer angelegt;
+> ausgelieferte Katalogsätze werden nicht überschrieben. Der Name der Anlage ist im
+> Anlagendialog nur lesbar — über ihn ist die Anlage dem Katalogsatz zugeordnet.
