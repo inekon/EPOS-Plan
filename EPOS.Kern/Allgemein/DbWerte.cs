@@ -454,7 +454,8 @@ namespace WindowsFormsApplication1
         //   damit die Herleitung persistent ist und nicht nur als Anzeigetext existiert
         //   (Leitentscheidung L5).
         //
-        //   ASCII, eingefroren; Anzeigetexte in MyResource.Resource.VDI_BEM_ANZ_*.
+        //   ASCII, eingefroren; die Anzeigetexte fuehrt der BemessungKatalog in
+        //   KostenVorlagenCtrl (MyResource-Schluessel BM_*).
         //
         //   LAENGE BEACHTEN: Der laengste Wert ist PROZENT_BRENNSTOFFKOSTEN mit 24
         //   Zeichen. Die Spalte Tab_ProjektWerte.Bemessung ist deshalb TEXT(30) und
@@ -1092,8 +1093,8 @@ namespace WindowsFormsApplication1
         //
         //   Die Bezeichnung ist zugleich der SCHLUESSEL der Position: Sie steht in
         //   Tab_Kostenfaktor und wird in SQL damit verglichen. Deshalb deutsch,
-        //   deshalb eingefroren; der Anzeigetext kommt getrennt aus
-        //   MyResource.Resource.VDI_POS_*.
+        //   deshalb eingefroren; im Komponenten-Kostendialog ist sie zugleich der
+        //   Anzeigetext der Zeile (Tab_KostenVorlagePosition.Bezeichnung).
         // =====================================================================
 
         /// <summary>
