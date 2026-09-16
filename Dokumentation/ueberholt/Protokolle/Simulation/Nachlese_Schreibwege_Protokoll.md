@@ -258,8 +258,9 @@ Löschauftrag; `StraengeWiederherstellen` bedient genau Anlagen ohne Strangzeile
 Das Entfernen der letzten Strangzeile hebt sich im Del+Add-Speicherweg auf.
 
 **Gemessen, nicht mehr vermutet** — Prüffall
-`AnlageStrangTests.Eine_geleerte_Dialogliste_traegt_die_Strang_Rettung_heute_wieder_ein`.
-Er hält das heutige Verhalten fest und fordert nichts:
+`AnlageStrangTests.Eine_geleerte_Dialogliste_traegt_die_Strang_Rettung_heute_wieder_ein`
+(heißt seit `#308` `…_wirkt_und_die_Rettung_traegt_nichts_nach` und misst das Gegenteil,
+Abschnitt 10). Er hielt das damalige Verhalten fest und forderte nichts:
 
 1. Die Anlage führt zwei gespeicherte Stränge.
 2. Der Dialog gibt eine **leere** Liste mit — der Anwender hat die letzte Zeile entfernt.
@@ -325,7 +326,7 @@ Schemaschritt, keine neue Referenzbasis.
 | `AnlageStrangTests.Ein_gescheitertes_Schreiben_der_Dialog_Straenge_nimmt_den_Lauf_zurueck` (umgedreht) | `Add_WP_Waermeerzeuger` meldet `false`, der Vorgang wird NICHT festgeschrieben, die Anlagenzeile trägt hinterher noch ihre ALTE Id samt alten Strängen; die Mitschrift zeigt die Rücknahme und **keine** „Strang-Rettung" | Auswertung ausgehängt → **rot** (`Assert.False() Failure`), danach wieder eingebaut |
 | `AssistentCtrlTests.Ein_gescheiterter_Strangschritt_nimmt_den_Lauf_zurueck_und_nennt_ihn` (neu) | Über `AssistentCtrl.Speichern`: Ausgang `Fehlgeschlagen`, `Schritt` = `Add_WP_Waermeerzeuger`, der Name steht in `Meldungstext`; Zählstand, Anlagenbezeichner und der vollständige Zeileninhalt der einundzwanzig projektgebundenen Tabellen sind die von vorher | Auswertung ausgehängt → **rot** (`Assert.Equal() Failure: Values differ`), danach wieder eingebaut |
 | `UebernahmeNachzugTests.Ein_gescheiterter_Senkennachzug_meldet_sich_im_Hinweiskanal` (neu) | `Uebernehmen` meldet weiterhin `true` und keinen `fehler`; für jede betroffene Anlage steht `BK_KOMP_HINW_SENKEN` in `hinweise`; das Ziel führt hinterher wirklich keine Senkenzeile | Auswertung ausgehängt → **rot** (`Assert.Contains() Failure`), die zwei `NL-Q1`-Fälle blieben dabei **grün**; danach wieder eingebaut |
-| `AnlageStrangTests.Eine_geleerte_Dialogliste_traegt_die_Strang_Rettung_heute_wieder_ein` (neu, BEFUND) | Abschnitt 5 | `StraengeWiederherstellen` ausgehängt → **rot** (`Assert.Equal() Failure: Collections differ`), danach wieder eingebaut |
+| `AnlageStrangTests.Eine_geleerte_Dialogliste_traegt_die_Strang_Rettung_heute_wieder_ein` (neu, BEFUND; seit `#308` umgedreht) | Abschnitt 5 | `StraengeWiederherstellen` ausgehängt → **rot** (`Assert.Equal() Failure: Collections differ`), danach wieder eingebaut |
 
 **Wie die Fehlschläge erzwungen werden — in beiden Fällen an der Wurzel, nie über einen
 Haken im Quelltext.** Für `NL-Q1` die ERZWUNGENE Beziehung
@@ -429,3 +430,90 @@ Schranke 7), `EPOS.Kern.Tests` 3 111/3 111, `EPOS.UI.Tests` 4 530/4 530, Speiche
 kein iOS-Lauf.
 
 
+
+## 10. Die geleerte Strangliste wirkt (`#308`, Anwenderentscheid 16.09.2026)
+
+Der Nebenbefund aus Abschnitt 5 ist behoben. **Anwenderentscheid 16.09.2026, Weg (b):**
+
+| Wert von `PV_Straenge` | Bedeutung | Wirkung |
+|---|---|---|
+| `null` | der Dialog hat die Stränge **nicht angefasst** | die Rettung bedient die Zeile |
+| leere Liste | der Dialog hat sie angefasst und **alle entfernt** | gelöscht wird, die Rettung lässt die Anlage in Ruhe |
+| gefüllte Liste | die neue Wahrheit | wird geschrieben, die Rettung lässt in Ruhe |
+
+### 10.1 Wo die Verwechslung saß — gemessen
+
+Zwei Stellen kamen in Frage: **die Hülle** (sie könnte „nie angefasst" und „geleert"
+ununterscheidbar machen) oder **die Rettung** (ihr Kriterium könnte zu grob sein).
+Gemessen wurde am Quelltext der einen Erzeugerstelle:
+
+* `PhotovoltaikHuelle.StraengeZuZeile` füllt die Maskenzeilen aus `m.PV_Straenge`
+  **oder, wenn das `null` ist, aus dem BESTAND** (`AnlageStrangCtrl.LesenJeAnlage`).
+  Eine unverändert geöffnete Maske reicht also die vorhandenen Zeilen zurück, keine leere
+  Liste.
+* `m.PV_Straenge` wird im ganzen Bestand an **genau einer** Stelle gesetzt:
+  `PhotovoltaikHuelle` Zeile 184, aus `zeile.Straenge` — also aus dem eben genannten
+  Bestand. Kein zweiter Schreiber.
+
+**Ergebnis: die Hülle ist in Ordnung.** `PV_Straenge != null` ist bereits das saubere
+Kennzeichen „vom Dialog angefasst"; eine leere Liste bedeutet dort verlässlich „alle
+entfernt". Zu grob war die **Rettung**: `StraengeWiederherstellen` hing sein Kriterium an
+„die Anlage führt keine Strangzeile" statt an „`ST1` hat für diese Anlage nichts
+geschrieben". Die Änderung liegt deshalb in `WizardCtrl`, nicht in der Hülle — die vom
+Anwender entschiedene Semantik bleibt dieselbe.
+
+### 10.2 Was geändert wurde
+
+`WizardCtrl.Add_WP_Waermeerzeuger` führt eine **örtliche** Menge der Anlagen-Ids, für die
+der Block `ST1` die Dialogliste geschrieben hat; sie entsteht mit dem Lauf und endet mit
+ihm. `StraengeWiederherstellen` bekommt sie als Argument und übergeht diese Anlagen —
+gleich ob die Liste gefüllt oder leer war. **Kein neues Feld, kein statischer Merker.**
+
+**Was ausdrücklich NICHT geändert wurde:** die Hülle (`StraengeZuModell` liefert
+weiterhin eine leere Liste, nie `null` — die naive Lesart hätte das Entfernen der letzten
+Zeile unspeicherbar gemacht), die Rettung als solche, der Rückzug aus `NL-Q1`,
+`Vorgangsklammer`, `AssistentCtrl.Speichern`, `WaermesenkeClass`. Kein Schemaschritt,
+keine neue Referenzbasis, kein SQL.
+
+### 10.3 Die Prüffälle und die Gegenprobe
+
+| Fall | was er misst | Gegenprobe (Kriterium ausgehängt) |
+|---|---|---|
+| `AnlageStrangTests.Eine_geleerte_Dialogliste_wirkt_und_die_Rettung_traegt_nichts_nach` (umgedreht) | geleerte Liste → Anlage führt danach **keine** Strangzeile | **rot** (`Assert.Empty() Failure: Collection was not empty`, „Alt Ost"/„Alt West") |
+| `AnlageStrangTests.Die_Strang_Rettung_bedient_weiter_die_vom_Dialog_nicht_angefasste_Anlage` (neu) | zwei Anlagen in EINEM Speicherlauf — eine geleert, eine mit `PV_Straenge == null`; die unangetastete bekommt ihre zwei Stränge zurück | **grün** — die Rettung ist nicht stillgelegt |
+| `AnlageStrangTests.Ein_gescheitertes_Schreiben_der_Dialog_Straenge_nimmt_den_Lauf_zurueck` (`NL-Q1`) | der Fehlschlagfall | **grün** |
+| `AnlageStrangTests.Der_Speicherweg_rettet_die_Straenge_ueber_Loeschen_und_Neuanlegen` | die Rettung im Normalfall | **grün** |
+
+Die Gegenprobe wurde im Muster der Senkenklammer gefahren: Kriterium versuchsweise
+ausgehängt, beide Fälle gemessen, wieder eingebaut.
+
+### 10.4 Zahlen
+
+| | vorher (`a24aaf81`) | nachher |
+|---|---|---|
+| Kern-Filter Release | 0 Fehler, 5 Warnungen | 0 Fehler, 5 Warnungen (keine neue, Schranke 7) |
+| Windows-Schale (Linux, `EnableWindowsTargeting`) | 0 Fehler, 5 Warnungen | 0 Fehler, 5 Warnungen |
+| `EPOS.Kern.Tests` | 3 111/3 111 | 3 112/3 112 (der neue Gegenfall) |
+| `EPOS.UI.Tests` | 4 532/4 532 | 4 532/4 532 |
+| SpeicherEngine / KiKern / SpeicherPlanung | 370/370, 499/499, 27/28 (1 übersprungen) | unverändert |
+| zweite Kultur (`LC_ALL=en_US.UTF-8`) | grün | grün |
+| Referenzlauf 1030/1007/1017/1045/1046 | Basis `2026-09-16_R8_Heizkessel_Kaskade` | `GESAMT: PASS`, alle fünf **byte-gleich** |
+
+### 10.5 Abnahmepunkte auf Windows
+
+**`A-STRANG-1`** — Die letzte Strangzeile entfernen und speichern. Projekt mit PV-Anlage
+öffnen, im PV-Dialog alle Strangzeilen entfernen, speichern, Dialog schließen und erneut
+öffnen. **Erwartet:** Die Strangliste ist **leer** — die alten Zeilen sind nicht zurück.
+
+**`A-STRANG-2`** — Den Dialog öffnen und ohne Änderung schließen. Projekt mit PV-Anlage
+und gepflegten Strängen öffnen, PV-Dialog öffnen, nichts ändern, übernehmen, speichern.
+**Erwartet:** Die Stränge stehen unverändert da.
+
+**`A-STRANG-3`** — Eine Anlage, die der Dialog gar nicht gesehen hat. Projekt mit
+gepflegten Strängen öffnen und über einen anderen Weg speichern, der `Del+Add` fährt (etwa
+die Wärmepumpen-Konfiguration der Simulationsseite), ohne den PV-Dialog zu öffnen.
+**Erwartet:** Die Stränge der PV-Anlage sind nach dem Speichern noch da — die Rettung hat
+sie getragen.
+
+**`A-STRANG-4`** — Der Normalfall. Stränge bearbeiten (eine Zeile ändern, eine
+hinzufügen), speichern, erneut öffnen. **Erwartet:** Genau der eingegebene Stand.
