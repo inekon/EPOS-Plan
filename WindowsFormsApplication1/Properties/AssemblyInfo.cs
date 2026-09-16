@@ -42,5 +42,5 @@ using System.Runtime.InteropServices;
 // 1.2.0.1 (September 2026): Nutzungsdauern (AfA) je Technik und Positionsart,
 // Energietraeger je Komponente, Stromspeicher-Auslegung mit zwei Suchmethoden;
 // Nummer wie im Update-Logbuch auf epos-plan.de.
-[assembly: AssemblyVersion("1.2.0.1")]
-[assembly: AssemblyFileVersion("1.2.0.1")]
+[assembly: AssemblyVersion("1.2.0.2")]
+[assembly: AssemblyFileVersion("1.2.0.2")]
