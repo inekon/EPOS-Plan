@@ -3,6 +3,7 @@ using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -298,5 +299,71 @@ public class BerichteKostenSeiteTests : BunitContext
         knopf.Click();
 
         Assert.Equal(1, gemeldet);
+    }
+
+    // =====================================================================
+    //  Stamm → Variante → Stamm auf DERSELBEN Seiteninstanz
+    //  (Anwenderbefund 16.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Weg des Anwenders, gefahren über die echte
+    /// <see cref="Berichtsgruppe"/> — so, wie die Hülle der Schale ihn fährt:
+    /// Projektkontext setzen, danach die Gaben der Kostenseite aus dem Stand
+    /// bauen. Vorher stand nach dem Rückwechsel auf das Stammprojekt
+    /// „Kein Projekt gewählt." da.
+    /// </summary>
+    private sealed class Kostenweg
+    {
+        internal readonly Berichtsgruppe Stand = new();
+
+        internal Kostenweg(int idStamm, string stammName)
+            => Stand.StammSetzen(idStamm, stammName);
+
+        /// <summary>Der Projektkontext hat gewechselt (Kopfzeile bzw. Variantenwahl).</summary>
+        internal void Kontext(int idProjekt, string name, int idStammRef)
+            => Stand.KontextGewechselt(idProjekt, name, idStammRef);
+
+        /// <summary>Der Parametersatz der Kostenseite — die eine Entscheidung der Hülle.</summary>
+        internal IReadOnlyDictionary<string, object> Gaben() => new Dictionary<string, object>
+        {
+            ["Laden"] = new Func<KostenStand>(() => Stand.KostenId <= 0
+                ? new KostenStand { Projektzeile = "Kein Projekt gewählt.", Bedienbar = false }
+                : new KostenStand { Projektzeile = "Projekt: " + Stand.KostenName, Bedienbar = true })
+        };
+    }
+
+    [Fact]
+    public void Der_Rueckwechsel_auf_das_Stammprojekt_zeigt_wieder_dessen_Kosten()
+    {
+        const int stamm = 1030, variante = 1047;
+        const string stammName = "Booster-Kette mit Kombi-Speicher";
+        const string variantenName = "Booster-Kette mit Kombi-Speicher - Schichtspeicher";
+
+        var weg = new Kostenweg(stamm, stammName);
+        var zustand = new SeitenZustand();
+
+        weg.Kontext(stamm, stammName, 0);
+
+        var cut = Render<BerichteKostenSeite>(p => p
+            .Add(x => x.Zustand, zustand)
+            .Add(x => x.Startseite, BerichteKostenSeite.SEITE_KOSTEN)
+            .Add(x => x.SeitenGaben, (string s) => weg.Gaben()));
+
+        Assert.Equal("Projekt: " + stammName, cut.Find(".epos-seite-titel").TextContent.Trim());
+
+        // Die Variante wird zum aktiven Projekt.
+        weg.Kontext(variante, variantenName, stamm);
+        zustand.ProjektSetzen(variante, variantenName);
+
+        Assert.Equal("Projekt: " + variantenName, cut.Find(".epos-seite-titel").TextContent.Trim());
+
+        // Und zurueck auf das Stammprojekt - OHNE den Bereich zu verlassen.
+        weg.Kontext(stamm, stammName, 0);
+        zustand.ProjektSetzen(stamm, stammName);
+
+        Assert.Equal("Projekt: " + stammName, cut.Find(".epos-seite-titel").TextContent.Trim());
+        Assert.DoesNotContain("Kein Projekt", cut.Markup);
+        Assert.Empty(cut.FindAll(".epos-knopf[disabled]"));
     }
 }

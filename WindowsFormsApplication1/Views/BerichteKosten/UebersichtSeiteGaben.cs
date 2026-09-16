@@ -54,9 +54,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private readonly Func<Form> _besitzer;
 
-        internal UebersichtSeiteGaben(Func<Form> besitzer = null)
+        internal UebersichtSeiteGaben(Func<Form> besitzer = null, Berichtsgruppe stand = null)
         {
             _besitzer = besitzer;
+            _stand = stand ?? new Berichtsgruppe();
         }
 
         /// <summary>
@@ -69,11 +70,16 @@ namespace WindowsFormsApplication1
         private readonly List<int> _gruppe = new List<int>();
 
         private int _aktuellesProjekt = -1;
-        private int _stammId = -1;
-        private string _stammName = "";
+        private string _aktuellerName = "";
         private bool _nurStaemme;
-        private int _markiert = -1;
-        private string _markiertName = "";
+
+        /// <summary>
+        /// DER GETEILTE GRUPPENSTAND: Stammprojekt und markierte Version. Die
+        /// Rahmenhülle reicht EINE Instanz herein und liest daraus, welches Projekt
+        /// die Kostenseite zeigt — zwei Sätze wären zwei Wahrheiten über dieselbe
+        /// Gruppe, und genau daran lag der Anwenderbefund vom 16.09.2026.
+        /// </summary>
+        private readonly Berichtsgruppe _stand;
 
         private readonly Dictionary<int, ProjektDetails> _details = new Dictionary<int, ProjektDetails>();
         private int _detailsGruppe = -1;
@@ -103,27 +109,28 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Setzt den Projektkontext des Reiters. Ist das Projekt eine Variante,
-        /// wird deren Stammprojekt gewählt und die Variante markiert.
+        /// wird deren Stammprojekt gewählt; markiert wird in JEDEM Fall das Projekt
+        /// selbst — die Variante ebenso wie das Stammprojekt.
         /// </summary>
-        internal void SetzeAktuellesProjekt(int idProjekt)
+        internal void SetzeAktuellesProjekt(int idProjekt, string projektname = null)
         {
             _aktuellesProjekt = idProjekt;
-            _markiert = -1;
+            _aktuellerName = projektname ?? "";
             VorauswahlBestimmen();
             VerwirfDetails();
         }
 
         /// <summary>Das gewählte Stammprojekt (0 = keins).</summary>
-        internal int IdStamm { get { return _stammId > 0 ? _stammId : 0; } }
+        internal int IdStamm { get { return _stand.IdStamm > 0 ? _stand.IdStamm : 0; } }
 
         /// <summary>Name des gewählten Stammprojekts.</summary>
-        internal string StammName { get { return _stammName; } }
+        internal string StammName { get { return _stand.StammName; } }
 
         /// <summary>Die markierte Version (Stamm oder Variante).</summary>
-        internal int IdMarkiert { get { return _markiert; } }
+        internal int IdMarkiert { get { return _stand.IdMarkiert; } }
 
         /// <summary>Name der markierten Version.</summary>
-        internal string NameMarkiert { get { return _markiertName; } }
+        internal string NameMarkiert { get { return _stand.NameMarkiert; } }
 
         /// <summary>Der Parametersatz der Seite.</summary>
         internal IReadOnlyDictionary<string, object> Gaben()
@@ -208,19 +215,16 @@ namespace WindowsFormsApplication1
                 return stand;
             }
 
-            if (_stammId <= 0 || !staemme.Any(x => x.Item1 == _stammId))
-            {
-                _stammId = staemme[0].Item1;
-                _stammName = staemme[0].Item2;
-            }
-            stand.StammId = _stammId;
+            if (_stand.IdStamm <= 0 || !staemme.Any(x => x.Item1 == _stand.IdStamm))
+                _stand.StammSetzen(staemme[0].Item1, staemme[0].Item2);
+            stand.StammId = _stand.IdStamm;
 
             // --- die Liste --------------------------------------------------
             var stand2 = new Dictionary<int, BerichtsDatenSammler.VariantenStatus>();
             try
             {
                 foreach (BerichtsDatenSammler.VariantenStatus st in
-                         BerichtsDatenSammler.ErmittleStatus(_stammId, _stammName))
+                         BerichtsDatenSammler.ErmittleStatus(_stand.IdStamm, _stand.StammName))
                     stand2[st.IdProjekt] = st;
             }
             catch { }
@@ -228,7 +232,7 @@ namespace WindowsFormsApplication1
             var zeilen = new List<VarianteZeile>();
             try
             {
-                foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(_stammId, _stammName))
+                foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(_stand.IdStamm, _stand.StammName))
                 {
                     BerichtsDatenSammler.VariantenStatus st;
                     stand2.TryGetValue(vi.IdProjekt, out st);
@@ -266,23 +270,24 @@ namespace WindowsFormsApplication1
             // Vorgabe alle Versionen, der Stamm immer.
             _gruppe.Clear();
             foreach (VarianteZeile z in zeilen) _gruppe.Add(z.IdProjekt);
-            stand.GewaehlteVarianten = Vergleich.Gewaehlte(_gruppe, _stammId);
+            stand.GewaehlteVarianten = Vergleich.Gewaehlte(_gruppe, _stand.IdStamm);
 
             // Markierung: die vorgemerkte Zeile, sonst das GEOEFFNETE Projekt,
             // sonst der Stamm (Vorbild WaehleZeile).
             if (zeilen.Count > 0)
             {
-                if (!zeilen.Any(z => z.IdProjekt == _markiert))
-                    _markiert = zeilen.Any(z => z.IdProjekt == _aktuellesProjekt)
+                int markiert = _stand.IdMarkiert;
+                if (!zeilen.Any(z => z.IdProjekt == markiert))
+                    markiert = zeilen.Any(z => z.IdProjekt == _aktuellesProjekt)
                         ? _aktuellesProjekt : zeilen[0].IdProjekt;
 
-                VarianteZeile m = zeilen.First(z => z.IdProjekt == _markiert);
-                _markiertName = m.Projektname;
-                stand.MarkierteId = _markiert;
+                VarianteZeile m = zeilen.First(z => z.IdProjekt == markiert);
+                _stand.Markieren(markiert, m.Projektname);
+                stand.MarkierteId = markiert;
                 stand.Loeschbar = !m.IstStamm;
                 stand.SimulierenMoeglich = true;
             }
-            stand.AnlegenMoeglich = _stammId > 0;
+            stand.AnlegenMoeglich = _stand.IdStamm > 0;
 
             // --- der Komponentenbereich -------------------------------------
             Komponentenbereich(stand);
@@ -325,7 +330,7 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            ProjektDetails ds = Details(_stammId, _stammId);
+            ProjektDetails ds = Details(_stand.IdStamm, _stand.IdStamm);
             if (markiert.IstStamm) Gegenueberstellung(stand, ds);
             else Unterschiede(stand, markiert, ds);
         }
@@ -381,7 +386,7 @@ namespace WindowsFormsApplication1
             stand.Spalten = spalten;
 
             var versionen = new List<ProjektDetails> { ds };
-            foreach (VarianteZeile v in varianten) versionen.Add(Details(_stammId, v.IdProjekt));
+            foreach (VarianteZeile v in varianten) versionen.Add(Details(_stand.IdStamm, v.IdProjekt));
 
             var zeilen = new List<VergleichZeile>();
             FuelleVergleich(versionen, zeilen);
@@ -439,7 +444,7 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.BK_SP_WERT_VARIANTE
             };
 
-            ProjektDetails dv = Details(_stammId, z.IdProjekt);
+            ProjektDetails dv = Details(_stand.IdStamm, z.IdProjekt);
             List<Abweichung> liste = AbweichungsErmittler.Vergleiche(ds, dv);
 
             if (liste.Count == 0)
@@ -454,7 +459,7 @@ namespace WindowsFormsApplication1
             {
                 var satz = new UebernahmeSatz
                 {
-                    IdStamm = _stammId,
+                    IdStamm = _stand.IdStamm,
                     IdVariante = z.IdProjekt,
                     Gewerk = a.Gewerk,
                     Merkmal = a.Merkmal
@@ -506,10 +511,9 @@ namespace WindowsFormsApplication1
 
         private void StammSetzen(int id)
         {
-            if (id == _stammId) return;
-            _stammId = id;
-            _stammName = Staemme().Where(x => x.Item1 == id).Select(x => x.Item2).FirstOrDefault() ?? "";
-            _markiert = -1;
+            if (id == _stand.IdStamm) return;
+            _stand.StammGewaehlt(
+                id, Staemme().Where(x => x.Item1 == id).Select(x => x.Item2).FirstOrDefault() ?? "");
             SpeichereLetztenStamm(id);
             VerwirfDetails();
             Melde();
@@ -523,39 +527,46 @@ namespace WindowsFormsApplication1
 
         private void ZeileSetzen(int idProjekt)
         {
-            _markiert = idProjekt;
+            // Nur die Id - der Name der Zeile steht dem Aufrufer hier nicht zur
+            // Verfuegung und zieht beim naechsten Laden der Liste nach.
+            _stand.MarkierungSetzen(idProjekt);
             Action<int, string> h = ProjektMarkiert;
-            if (h != null) h(idProjekt, _markiertName);
+            if (h != null) h(idProjekt, _stand.NameMarkiert);
         }
 
         /// <summary>Die Vergleichswahl der Seite (W5‑B‑5) in die geteilte Auswahl.</summary>
         private void VergleichSetzen(IReadOnlyList<int> gewaehlt)
         {
-            Vergleich.Setzen(gewaehlt, _gruppe, _stammId);
+            Vergleich.Setzen(gewaehlt, _gruppe, _stand.IdStamm);
         }
 
         private void Melde()
         {
             Action<int, string> h = StammGewechselt;
-            if (h != null) h(_stammId, _stammName);
+            if (h != null) h(_stand.IdStamm, _stand.StammName);
         }
 
         /// <summary>
         /// Bestimmt das vorzuwählende Stammprojekt: das geöffnete Projekt (ist
         /// es eine Variante, deren Stamm), sonst die zuletzt gewählte Auswahl
         /// (Registry), sonst der erste Eintrag.
+        ///
+        /// <para>MARKIERT WIRD DAS GEÖFFNETE PROJEKT SELBST — die Variante ebenso
+        /// wie das Stammprojekt. Die Regel steht in
+        /// <see cref="Berichtsgruppe.KontextGewechselt"/>; bis zum Anwenderbefund
+        /// vom 16.09.2026 markierte nur die Variante, und der Rückwechsel auf das
+        /// Stammprojekt ließ die Markierung leer.</para>
         /// </summary>
         private void VorauswahlBestimmen()
         {
-            int gewuenscht = -1;
+            int refId = 0;
             if (_aktuellesProjekt > 0)
             {
-                int refId = 0;
                 try { refId = _ctrl.StammRefDerVariante(_aktuellesProjekt); }
                 catch { }
-                if (refId > 0) { _markiert = _aktuellesProjekt; gewuenscht = refId; }
-                else gewuenscht = _aktuellesProjekt;
             }
+
+            int gewuenscht = _stand.KontextGewechselt(_aktuellesProjekt, _aktuellerName, refId);
             if (gewuenscht <= 0) gewuenscht = LiesLetztenStamm();
 
             List<ValueTuple<int, string>> staemme = Staemme();
@@ -564,9 +575,8 @@ namespace WindowsFormsApplication1
             ValueTuple<int, string> treffer = staemme.FirstOrDefault(x => x.Item1 == gewuenscht);
             if (treffer.Item1 <= 0) treffer = staemme[0];
 
-            _stammId = treffer.Item1;
-            _stammName = treffer.Item2;
-            SpeichereLetztenStamm(_stammId);
+            _stand.StammSetzen(treffer.Item1, treffer.Item2);
+            SpeichereLetztenStamm(_stand.IdStamm);
             Melde();
         }
 
@@ -627,10 +637,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         private Task<bool> VarianteAnlegenOeffnen()
         {
-            if (_stammId <= 0) return Task.FromResult(false);
+            if (_stand.IdStamm <= 0) return Task.FromResult(false);
 
-            int idStamm = _stammId;
-            string stammName = _stammName;
+            int idStamm = _stand.IdStamm;
+            string stammName = _stand.StammName;
             var zusage = new TaskCompletionSource<bool>();
             int gestartet = 0;
 
@@ -661,16 +671,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         private string VarianteUmbenennen(string bezeichner)
         {
-            if (_markiert <= 0) return MyResource.Resource.BK_MSG_KEIN_STAMM;
+            if (_stand.IdMarkiert <= 0) return MyResource.Resource.BK_MSG_KEIN_STAMM;
             bezeichner = (bezeichner ?? "").Trim();
             if (bezeichner.Length == 0) return MyResource.Resource.VAR_MSG_BEZEICHNER_LEER;
             string bisher = "";
-            foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(_stammId, _stammName))
-                if (vi.IdProjekt == _markiert) { bisher = vi.Variantenname ?? ""; break; }
+            foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(_stand.IdStamm, _stand.StammName))
+                if (vi.IdProjekt == _stand.IdMarkiert) { bisher = vi.Variantenname ?? ""; break; }
             try
             {
                 string meldung = StartseiteHuelle.Aktuelle != null
-                    ? StartseiteHuelle.Aktuelle.ProjektUmbenennen(_markiert, bezeichner, bisher)
+                    ? StartseiteHuelle.Aktuelle.ProjektUmbenennen(_stand.IdMarkiert, bezeichner, bisher)
                     : UmbenennenOhneStartseite(bezeichner, bisher);
                 VerwirfDetails();
                 return meldung;
@@ -684,7 +694,7 @@ namespace WindowsFormsApplication1
         private string UmbenennenOhneStartseite(string bezeichner, string bisher)
         {
             string fehler, neuerName;
-            if (!_ctrl.Umbenennen(_markiert, bezeichner, out fehler, out neuerName)) return fehler ?? "";
+            if (!_ctrl.Umbenennen(_stand.IdMarkiert, bezeichner, out fehler, out neuerName)) return fehler ?? "";
             return string.Format(MyResource.Resource.VAR_MSG_UMBENANNT, bisher, bezeichner);
         }
 
@@ -728,7 +738,7 @@ namespace WindowsFormsApplication1
                         : befund.Fehlertext;
 
                 VerwirfDetails();          // die Gruppe hat eine Spalte weniger
-                _markiert = -1;
+                _stand.MarkierungVerwerfen();
                 return string.Format(MyResource.Resource.BK_MSG_VARIANTE_GELOESCHT, z.Bezeichner);
             }
             catch (Exception ex)
@@ -739,7 +749,7 @@ namespace WindowsFormsApplication1
 
         private VarianteZeile MarkierteZeile()
         {
-            try { return Laden().Zeilen.FirstOrDefault(z => z.IdProjekt == _markiert); }
+            try { return Laden().Zeilen.FirstOrDefault(z => z.IdProjekt == _stand.IdMarkiert); }
             catch { return null; }
         }
 
@@ -750,14 +760,14 @@ namespace WindowsFormsApplication1
         private async Task<LaufErgebnis> Simulieren(Action<Laufschritt> melder)
         {
             VarianteZeile z = MarkierteZeile();
-            if (z == null || _stammId <= 0)
+            if (z == null || _stand.IdStamm <= 0)
                 return new LaufErgebnis { Statuszeile = MyResource.Resource.BK_MSG_BITTE_WAEHLEN };
 
             // Zu simulierende Projekte: der Stamm immer, plus die gewaehlte
             // Variante — so werden die Ergebnisse BEIDER frisch geschrieben.
             var laeufe = new List<Tuple<int, string>>();
-            laeufe.Add(Tuple.Create(_stammId,
-                string.Format(MyResource.Resource.BK_PRAEFIX_STAMM, _stammName)));
+            laeufe.Add(Tuple.Create(_stand.IdStamm,
+                string.Format(MyResource.Resource.BK_PRAEFIX_STAMM, _stand.StammName)));
             if (!z.IstStamm)
                 laeufe.Add(Tuple.Create(z.IdProjekt,
                     string.Format(MyResource.Resource.BK_PRAEFIX_VARIANTE, z.Bezeichner)));
@@ -854,7 +864,7 @@ namespace WindowsFormsApplication1
             var liste = new List<UebernahmeQuelle>();
             try
             {
-                foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(_stammId, _stammName))
+                foreach (VariantenCtrl.VarianteInfo vi in _ctrl.LadeGruppe(_stand.IdStamm, _stand.StammName))
                 {
                     if (vi.IdProjekt == idZiel) continue;
                     liste.Add(new UebernahmeQuelle
@@ -954,7 +964,7 @@ namespace WindowsFormsApplication1
                 // Nach jedem Schreibvorgang: Puffer verwerfen, Zeile markiert
                 // lassen, auf veraltete Ergebnisse hinweisen.
                 VerwirfDetails();
-                _markiert = s.IdVariante;
+                _stand.MarkierungSetzen(s.IdVariante);
                 if (MerkmalUebernahmeCtrl.HatErgebnisse(s.IdVariante))
                     meldung += "  " + MyResource.Resource.BK_MSG_UEB_ERGEBNIS_VERALTET;
                 return meldung;

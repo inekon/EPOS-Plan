@@ -15,13 +15,13 @@ namespace WindowsFormsApplication1
     /// <c>Form_Start.tabPage6</c>. Eine WebView trägt alle vier Seiten
     /// (Risiko R5); umgeschaltet wird in der Komponente.</para>
     ///
-    /// <para><b>Der geteilte Zustand.</b> Was der Vorläufer über vier Felder
-    /// (<c>_idStamm</c>, <c>_stammName</c>, <c>_idMarkiert</c>,
-    /// <c>_nameMarkiert</c>) und zwei Ereignisse der Übersichtsseite hielt,
-    /// hält diese Hülle: Die Übersicht meldet Stammwechsel und Markierung, die
-    /// Kostenseite folgt der Markierung, Wirtschaftlichkeit und Bericht hängen
-    /// an der Vergleichsgruppe und werden bei einem Stammwechsel VERWORFEN —
-    /// sie entstehen beim nächsten Aufruf neu.</para>
+    /// <para><b>Der geteilte Zustand.</b> Was der Vorläufer über vier Felder und
+    /// zwei Ereignisse der Übersichtsseite hielt, hält die plattformfreie
+    /// <see cref="Berichtsgruppe"/>: Stammprojekt und markierte Version stehen
+    /// EINMAL da, und die Hülle reicht dieselbe Instanz an die Übersicht weiter.
+    /// Die Kostenseite folgt der Markierung; Wirtschaftlichkeit und Bericht hängen
+    /// an der Vergleichsgruppe und werden bei einem Stammwechsel VERWORFEN — sie
+    /// entstehen beim nächsten Aufruf neu.</para>
     ///
     /// <para><b>Der Projektwechsel</b> läuft über
     /// <see cref="SeitenZustand"/>: <c>Form_Start</c> ruft
@@ -38,8 +38,21 @@ namespace WindowsFormsApplication1
         private WirtschaftlichkeitSeiteGaben _wirtschaft;
         private BerichtSeiteGaben _bericht;
 
-        private int _idStamm = -1;
-        private string _stammName = "";
+        /// <summary>
+        /// DER EINE Gruppenstand der vier Seiten: das Stammprojekt und die markierte
+        /// Version. Er gehört dieser Hülle und wird der Übersicht hineingereicht —
+        /// bis zum Anwenderbefund vom 16.09.2026 führten beide ihre eigenen Felder,
+        /// und die Kostenseite las am Ende eine andere Antwort, als die Zeile davor
+        /// gesetzt hatte.
+        /// </summary>
+        private readonly Berichtsgruppe _stand = new Berichtsgruppe();
+
+        /// <summary>
+        /// Das Stammprojekt, für das <see cref="_wirtschaft"/> und
+        /// <see cref="_bericht"/> gebaut sind — die beiden hängen fest an ihrer
+        /// Vergleichsgruppe und entstehen beim Wechsel neu.
+        /// </summary>
+        private int _seitenStamm = Berichtsgruppe.KEINS;
 
         /// <summary>
         /// DIE EINE Vergleichswahl der Seiten Übersicht, Kosten und Wirtschaftlichkeit
@@ -89,7 +102,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal void SetzeProjekt(int idProjekt, string projektname)
         {
-            Uebersicht.SetzeAktuellesProjekt(idProjekt);
+            Uebersicht.SetzeAktuellesProjekt(idProjekt, projektname);
             _zustand.ProjektSetzen(idProjekt, projektname ?? "");
 
             // Ein Projektwechsel ohne Wechsel der Id (Auffrischen nach dem
@@ -107,7 +120,7 @@ namespace WindowsFormsApplication1
             {
                 if (_uebersicht == null)
                 {
-                    _uebersicht = new UebersichtSeiteGaben(_besitzer) { Vergleich = _vergleich };
+                    _uebersicht = new UebersichtSeiteGaben(_besitzer, _stand) { Vergleich = _vergleich };
                     _uebersicht.StammGewechselt += StammWechsel;
                     _uebersicht.ProjektMarkiert += Markierung;
                 }
@@ -132,40 +145,36 @@ namespace WindowsFormsApplication1
                     return Uebersicht.Gaben();
 
                 case BerichteKostenSeite.SEITE_KOSTEN:
-                    // Der Vorlaeufer sicherte hier die Markierung ab: Wer den
-                    // Reiter betritt und ohne Umweg ueber die Uebersicht auf
-                    // "Kosten" geht, bekaeme sonst -1 (SichereMarkierung).
-                    SichereMarkierung();
-                    Kosten.SetzeGruppe(_idStamm, _stammName);
-                    Kosten.SetzeProjekt(Uebersicht.IdMarkiert, Uebersicht.NameMarkiert);
+                    // EINE Entscheidung, nicht zwei (Anwenderbefund 16.09.2026):
+                    // Die Kostenseite folgt der markierten Version, und ohne
+                    // Markierung steht das Stammprojekt der Gruppe. Bis dahin setzte
+                    // ein SichereMarkierung() zuerst das Stammprojekt, und die
+                    // naechste Zeile ueberschrieb es unbesehen mit der leeren
+                    // Markierung - nach dem Rueckwechsel von einer Variante auf ihr
+                    // Stammprojekt stand die Seite mit "Kein Projekt gewaehlt." da.
+                    Kosten.SetzeGruppe(_stand.IdStamm, _stand.StammName);
+                    Kosten.SetzeProjekt(_stand.KostenId, _stand.KostenName);
                     return Kosten.Gaben();
 
                 case BerichteKostenSeite.SEITE_WIRTSCHAFT:
-                    if (_idStamm <= 0) return null;
+                    if (_stand.IdStamm <= 0) return null;
+                    GruppenseitenPruefen();
                     if (_wirtschaft == null)
-                        _wirtschaft = new WirtschaftlichkeitSeiteGaben(_idStamm, _stammName, _besitzer)
+                        _wirtschaft = new WirtschaftlichkeitSeiteGaben(
+                            _stand.IdStamm, _stand.StammName, _besitzer)
                         {
                             Vergleich = _vergleich
                         };
                     return _wirtschaft.Gaben();
 
                 case BerichteKostenSeite.SEITE_BERICHT:
-                    if (_idStamm <= 0) return null;
+                    if (_stand.IdStamm <= 0) return null;
+                    GruppenseitenPruefen();
                     if (_bericht == null)
-                        _bericht = new BerichtSeiteGaben(_idStamm, _stammName);
+                        _bericht = new BerichtSeiteGaben(_stand.IdStamm, _stand.StammName);
                     return _bericht.Gaben();
             }
             return null;
-        }
-
-        /// <summary>
-        /// Fängt den Fall ab, dass die Kostenseite ohne Projekt dastünde:
-        /// die markierte Zeile, sonst das Stammprojekt der Gruppe.
-        /// </summary>
-        private void SichereMarkierung()
-        {
-            if (Uebersicht.IdMarkiert > 0) return;
-            if (_idStamm > 0) Kosten.SetzeProjekt(_idStamm, _stammName);
         }
 
         // =====================================================================
@@ -174,14 +183,25 @@ namespace WindowsFormsApplication1
 
         private void StammWechsel(int idStamm, string name)
         {
-            if (idStamm == _idStamm) { _stammName = name ?? ""; return; }
+            // Die Meldung der Uebersicht ist der ANLASS; die Antwort steht im Stand.
+            GruppenseitenPruefen();
+        }
 
-            _idStamm = idStamm;
-            _stammName = name ?? "";
+        /// <summary>
+        /// Wirtschaftlichkeit und Bericht hängen FEST an ihrer Vergleichsgruppe:
+        /// Steht ein anderes Stammprojekt, werden sie verworfen und entstehen beim
+        /// nächsten Aufruf frisch.
+        ///
+        /// <para>Entschieden wird am <see cref="_stand"/>, nicht am Argument der
+        /// Meldung — das Laden der Liste darf das Stammprojekt auch OHNE Meldung
+        /// wechseln (der Rückfall auf den ersten Eintrag), und dann trügen die
+        /// beiden Seiten weiter die alte Gruppe.</para>
+        /// </summary>
+        private void GruppenseitenPruefen()
+        {
+            if (_seitenStamm == _stand.IdStamm) return;
 
-            // Wirtschaftlichkeit und Bericht haengen fest an ihrer
-            // Vergleichsgruppe: beim Stammwechsel verwerfen, damit sie beim
-            // naechsten Aufruf frisch mit dem neuen Stamm entstehen.
+            _seitenStamm = _stand.IdStamm;
             _wirtschaft = null;
             _bericht = null;
         }
@@ -216,8 +236,8 @@ namespace WindowsFormsApplication1
         private string Kopf(string seite)
         {
             string kopf = KopfText(seite);
-            return _idStamm > 0 && !string.IsNullOrEmpty(kopf)
-                ? kopf + "  ·  " + _stammName
+            return _stand.IdStamm > 0 && !string.IsNullOrEmpty(kopf)
+                ? kopf + "  ·  " + _stand.StammName
                 : kopf;
         }
 
