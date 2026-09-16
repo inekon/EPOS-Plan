@@ -1230,4 +1230,279 @@ public class EnergietraegerDialogTests : EposBunitContext
 
         NurEinKreuz(cut);
     }
+
+    // =====================================================================
+    // ET-5 / ET-6 (Anwenderbefund 16.09.2026): Die Liste folgt jedem
+    // Schreibweg — und der stille Wiederzuordner wird benannt
+    // =====================================================================
+
+    /// <summary>Der veränderliche Listenstand, den <c>ListeNeuLaden</c> zurückgibt.</summary>
+    private List<EnergietraegerDialog.EnergietraegerListe> _stand = new();
+
+    /// <summary>
+    /// Wie <see cref="Zeige"/>, nur mit angeschlossenem Nachlade-Weg: Die Hülle würde
+    /// hier ihre Trägerliste frisch aus der Datenbank bauen; der Prüfstand nimmt eine
+    /// Liste, die der Schreibweg des Falls verändert.
+    /// </summary>
+    private IRenderedComponent<EnergietraegerDialog> ZeigeMitNachladen(
+        Action<Bunit.ComponentParameterCollectionBuilder<EnergietraegerDialog>> mehr,
+        bool katalog = true)
+    {
+        _stand = new List<EnergietraegerDialog.EnergietraegerListe>(LISTE);
+        return Zeige(p =>
+        {
+            p.Add(x => x.ListeNeuLaden,
+                  () => (IReadOnlyList<EnergietraegerDialog.EnergietraegerListe>)_stand);
+            mehr(p);
+        }, katalog: katalog);
+    }
+
+    /// <summary>Das Markup der Trägerliste — ohne die Karte rechts.</summary>
+    private static string Listenmarkup(IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.Find(".epos-traeger-eintraege").OuterHtml;
+
+    [Fact]
+    public void Nach_dem_Entfernen_verschwindet_der_Traeger_aus_der_Liste()
+    {
+        var cut = ZeigeMitNachladen(p => p
+            .Add(x => x.AusProjekt, () =>
+            {
+                _stand.RemoveAll(e => e.Traeger == 11);
+                return (true, "");
+            })
+            .Add(x => x.VorlageEntfernen, "Träger „{0}\" aus dem Projekt entfernen?"),
+            katalog: false);
+
+        Assert.Contains("Erdgas H", Listenmarkup(cut));
+        Assert.Equal(11, cut.Instance.Traeger);
+
+        // „Entfernen" ist der zweite Knopf der Listenleiste im Projektkontext.
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[1].Click();
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        Assert.DoesNotContain("Erdgas H", Listenmarkup(cut));
+        Assert.DoesNotContain(cut.Instance.Angezeigt, e => e.Traeger == 11);
+        Assert.Null(cut.Instance.Traeger);
+    }
+
+    [Fact]
+    public void Nach_dem_Loeschen_verschwindet_der_Traeger_aus_der_Liste()
+    {
+        var cut = ZeigeMitNachladen(p => p
+            .Add(x => x.TraegerLoeschen, () =>
+            {
+                _stand.RemoveAll(e => e.Traeger == 11);
+                return (true, "");
+            })
+            .Add(x => x.VorlageLoeschen, "Energieträger „{0}\" löschen?"));
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[2].Click();
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        Assert.DoesNotContain("Erdgas H", Listenmarkup(cut));
+        Assert.Null(cut.Instance.Traeger);
+    }
+
+    [Fact]
+    public void Nach_Neu_steht_der_neue_Traeger_in_der_Liste_und_ist_markiert()
+    {
+        var cut = ZeigeMitNachladen(p => p
+            .Add(x => x.NamensGaben, () => (IReadOnlyDictionary<string, object>)
+                new Dictionary<string, object>())
+            .Add(x => x.TraegerNeu, (string name) =>
+            {
+                _stand.Add(new EnergietraegerDialog.EnergietraegerListe(41, name));
+                return 41;
+            }));
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[0].Click();
+        cut.Find(".epos-ueberlagerung .epos-eingabe").Input("Klärgas");
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();
+
+        Assert.Contains("Klärgas", Listenmarkup(cut));
+        Assert.Equal(41, cut.Instance.Traeger);
+        Assert.Equal(41, _geladen);
+    }
+
+    [Fact]
+    public void Nach_Variante_steht_die_Variante_in_der_Liste_und_ist_markiert()
+    {
+        var cut = ZeigeMitNachladen(p => p
+            .Add(x => x.TraegerVariante, () =>
+            {
+                _stand.Add(new EnergietraegerDialog.EnergietraegerListe(42, "Erdgas H Variante"));
+                return 42;
+            }));
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[1].Click();
+
+        Assert.Contains("Erdgas H Variante", Listenmarkup(cut));
+        Assert.Equal(42, cut.Instance.Traeger);
+    }
+
+    /// <summary>
+    /// Der Weg des Anwenderbefunds: Bis ET-5 setzte die Übernahme <c>_traegerId</c> auf
+    /// einen Träger, den die Liste GAR NICHT führte — Liste ohne Markierung, Karte mit
+    /// neuem Träger.
+    /// </summary>
+    [Fact]
+    public void Nach_der_Kataloguebernahme_steht_der_Traeger_in_der_Liste_und_ist_markiert()
+    {
+        var cut = ZeigeMitNachladen(p => p
+            .Add(x => x.Freie, new[] { (31, "Fernwärme"), (32, "Pellets") })
+            .Add(x => x.InsProjekt, (IReadOnlyList<int> ids) =>
+            {
+                _stand.Add(new EnergietraegerDialog.EnergietraegerListe(32, "Pellets"));
+                return 32;
+            }),
+            katalog: false);
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[0].Click();
+        cut.FindAll(".epos-mehrfachauswahl-liste input[type=checkbox]")[1].Change(true);
+        var leisten = cut.FindAll(".epos-ueberlagerung .epos-leiste");
+        leisten[^1].QuerySelectorAll("button")[1].Click();
+
+        Assert.Contains("Pellets", Listenmarkup(cut));
+        Assert.Equal(32, cut.Instance.Traeger);
+    }
+
+    [Fact]
+    public void Nach_dem_Stamm_Speichern_traegt_die_Liste_den_neuen_Namen()
+    {
+        var cut = ZeigeMitNachladen(p => p
+            .Add(x => x.StammSchreiben, (string n, int? g) =>
+            {
+                int i = _stand.FindIndex(e => e.Traeger == 11);
+                _stand[i] = _stand[i] with { Text = "Erdgas H neu" };
+                return true;
+            }));
+
+        cut.Find(".epos-traeger-inhalt .epos-leiste button").Click();
+
+        Assert.Contains("Erdgas H neu", Listenmarkup(cut));
+        // Die Markierung bleibt beim Träger — umbenannt ist nicht entfernt.
+        Assert.Equal(11, cut.Instance.Traeger);
+    }
+
+    /// <summary>
+    /// ET-3: Ein verwendeter, noch nicht zugeordneter Träger steht markiert in der
+    /// Liste; das Speichern ordnet ihn zu — die Marke muss danach weg sein.
+    /// </summary>
+    [Fact]
+    public void Nach_dem_Speichern_folgt_die_Liste_der_Zuordnung()
+    {
+        // Beim Öffnen trägt der Eintrag die Marke „nicht zugeordnet" ...
+        var mitMarke = new List<EnergietraegerDialog.EnergietraegerListe>
+        {
+            new(null, "Gas"),
+            new(11, "Erdgas H", "verwendet von: Heizkessel", false),
+            new(12, "Flüssiggas"),
+            new(null, "Strom"),
+            new(21, "Elektrische Energie")
+        };
+        // ... nach dem Speichern nicht mehr, denn es hat ihn zugeordnet.
+        _stand = new List<EnergietraegerDialog.EnergietraegerListe>(LISTE);
+
+        _ansicht = new EnergietraegerAnsicht { Stand = Stand() };
+        var cut = Render<EnergietraegerDialog>(p => p
+            .Add(x => x.Liste, mitMarke)
+            .Add(x => x.Katalogkontext, false)
+            .Add(x => x.TraegerLaden, id => { _geladen = id; return _ansicht; })
+            .Add(x => x.Nachrechnen, () => _ansicht)
+            .Add(x => x.ListeNeuLaden,
+                 () => (IReadOnlyList<EnergietraegerDialog.EnergietraegerListe>)_stand)
+            .Add(x => x.Speichern, () => true));
+
+        Assert.Contains("epos-traeger-eintrag--offen", Listenmarkup(cut));
+
+        cut.FindAll("button").Single(b => b.TextContent.Trim() == "Speichern").Click();
+
+        Assert.DoesNotContain("epos-traeger-eintrag--offen", Listenmarkup(cut));
+        Assert.Equal(11, cut.Instance.Traeger);
+    }
+
+    /// <summary>
+    /// ET-6: Nach dem Entfernen steht ein Hinweis, WENN das Projekt seinen Stromträger
+    /// im selben Atemzug wieder bekommen hat. Sonst sagt der Dialog nichts.
+    /// </summary>
+    [Fact]
+    public void Das_Entfernen_nennt_den_wieder_zugeordneten_Stromtraeger()
+    {
+        var cut = ZeigeMitNachladen(p => p
+            .Add(x => x.AusProjekt, () =>
+            {
+                _stand.RemoveAll(e => e.Traeger == 11);
+                return (true, "");
+            })
+            .Add(x => x.StromZugeordnet, () => "Elektrische Energie")
+            .Add(x => x.VorlageStromZugeordnet,
+                 "Das Projekt führt elektrische Anlagen; der Stromträger „{0}\" wurde zugeordnet.")
+            .Add(x => x.VorlageEntfernen, "Träger „{0}\" entfernen?"),
+            katalog: false);
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[1].Click();
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        Assert.Contains("elektrische Anlagen", cut.Instance.Meldung);
+        Assert.Contains("Elektrische Energie", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void Der_Hinweis_zum_Stromtraeger_erscheint_auch_auf_Englisch()
+    {
+        var cut = ZeigeMitNachladen(p => p
+            .Add(x => x.AusProjekt, () =>
+            {
+                _stand.RemoveAll(e => e.Traeger == 11);
+                return (true, "");
+            })
+            .Add(x => x.StromZugeordnet, () => "Electrical energy")
+            .Add(x => x.VorlageStromZugeordnet,
+                 "The project has electrical equipment; the electricity carrier „{0}\" has been assigned.")
+            .Add(x => x.VorlageEntfernen, "Remove carrier „{0}\"?"),
+            katalog: false);
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[1].Click();
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        Assert.Contains("electrical equipment", cut.Instance.Meldung);
+        Assert.Contains("Electrical energy", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void Ohne_Wiederzuordnung_bleibt_der_Hinweis_aus()
+    {
+        var cut = ZeigeMitNachladen(p => p
+            .Add(x => x.AusProjekt, () =>
+            {
+                _stand.RemoveAll(e => e.Traeger == 11);
+                return (true, "");
+            })
+            .Add(x => x.StromZugeordnet, () => "")
+            .Add(x => x.VorlageEntfernen, "Träger „{0}\" entfernen?"),
+            katalog: false);
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[1].Click();
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        Assert.Equal("", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Ohne Nachlade-Weg ändert sich nichts: Ein Prüfstand ohne Hülle zeichnet weiter
+    /// die Liste, die er bekommen hat — der Delegat ist eine Zugabe, keine Pflicht.
+    /// </summary>
+    [Fact]
+    public void Ohne_Nachlade_Weg_bleibt_die_Liste_stehen()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.TraegerLoeschen, () => (true, ""))
+            .Add(x => x.VorlageLoeschen, "Energieträger „{0}\" löschen?"));
+
+        cut.Find(".epos-traeger-liste .epos-leiste").QuerySelectorAll("button")[2].Click();
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();
+
+        Assert.Contains("Erdgas H", Listenmarkup(cut));
+        Assert.Null(cut.Instance.Traeger);
+    }
 }

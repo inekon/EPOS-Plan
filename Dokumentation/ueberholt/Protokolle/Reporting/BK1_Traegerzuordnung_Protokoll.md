@@ -228,3 +228,124 @@ OK speichert, die Energieträgerverwaltung führt den Träger als „verwendet v
 „Elektrische Energie 2" → in Kosten und Wirtschaftlichkeit rechnet der Strombezug mit dessen
 Preis und Emissionsfaktor. (3) Stromspeicher: Detailblock der markierten Projektzeile zeigt die
 Wahl; beim Katalogsatz nicht. (4) Neue Anlage aus dem Katalog: Vorgabe Strom.
+
+## 8. Windows-Abnahme 16.09.2026 — die Trägerliste frischt sich auf (ET‑5 bis ET‑7)
+
+**Wortlaut des Anwenders (Projektkontext, Bericht & Kosten → Kosten → Energieträgerverwaltung):**
+„Ein entfernter Energieträger verschwindet nicht aus der Liste."
+
+**Zur Kennung:** ET‑5 ist am 08.09.2026 schon einmal vergeben worden — für die Frage nach der
+Zweistufigkeit (Abschnitt 7.5/7.6, umgesetzt und geschlossen). Die drei Befunde dieses
+Abschnitts stammen aus dem Anwenderbefund vom 16.09.2026 und heißen zur Unterscheidung
+**ET‑5/S2a**, **ET‑6/S2a** und **ET‑7/S2a**.
+
+### 8.1 Befund
+
+| Nr. | Befund | Ursache |
+|---|---|---|
+| **ET‑5/S2a** | Ein entfernter Träger blieb in der linken Liste stehen, solange der Dialog offen war — und mit ihm sieben weitere Wege: „Löschen", „Neu…", „Variante", das Stamm-„Übernehmen" (der neue Name stand weiter alt in der Liste), „Aus Katalog übernehmen…" (Liste ohne Markierung, Karte mit dem neuen Träger) und „Speichern" (die Marke „⚠ nicht zugeordnet" blieb nach der Zuordnung stehen) | **Die Liste war ein eingefrorener WERT.** `EnergietraegerHuelle.Gaben` setzte `["Liste"] = Listeneintraege()` einmal beim Bau; die Wirte halten den Gabensatz über die ganze Dialoglaufzeit, und die Komponente las den Parameter nur in `OnInitialized`. Kern und Hülle arbeiteten richtig — sie riefen nach jedem Schreiben `ListeLaden()` —, aber **es fehlte der Rückweg** in die Komponente |
+| **ET‑6/S2a** | Nach dem Entfernen eines Stromträgers stand plötzlich wieder einer da; der Anwender hielt das für den Fehler, der gerade behoben wird | `ListeLaden()` ruft vor jedem Lesen `ProjektEnergietraegerCtrl.StromTraegerSicherstellen`. Führt das Projekt eine elektrische Anlage und verliert es dabei seinen letzten zugeordneten Stromträger, ordnet dieser Aufruf den Auslieferungsträger wieder zu — **still**. Die Wiederzuordnung selbst ist Anwenderentscheid ET‑2 vom 08.09.2026 und bleibt |
+| **ET‑7/S2a** | Drei Knöpfe desselben Dialogs trugen „übernehmen": der Bestätigungsknopf der Kataloguebernahme, „Katalogwerte übernehmen" und der Knopf am Stammkopf | `KDLG_ET_STAMM_SPEICHERN` trug den Wert „Übernehmen" / „Apply" |
+| **Testloch** | Kein einziger Prüffall rührte „Entfernen" an; im Kern hatten `AusProjektEntfernen`, `Umbenennen`, `Neu`, `Variante` und `Loeschen` **keine** Probe | Der Referenzlauf rechnet einen bestehenden Projektstand nach — er legt keinen Träger an und entfernt keinen; die bunit-Fälle reichten Attrappen herein |
+
+### 8.2 Umsetzung
+
+- **ET‑5/S2a — ein Nachlade-Weg, im Muster von `FreieLaden` (ET‑1) und
+  `KostenfaktorKatalogHuelle.NeuLaden`.** Der Gabensatz führt neben `["Liste"]` den Delegaten
+  `["ListeNeuLaden"] = new Func<…>(Listeneintraege)`; **kein zweites `ListeLaden()` darin** — die
+  Schreibwege der Hülle (`AusProjekt`, `InsProjekt`, `TraegerNeu`, `TraegerVariante`,
+  `TraegerLoeschen`, `StammSchreiben`) rufen es selbst, und ein weiterer Aufruf zöge
+  `StromTraegerSicherstellen` ein zweites Mal.
+  Die Komponente hält eine eigene `_liste`, füllt sie in `OnInitialized` aus dem Parameter und
+  liest ausschließlich daraus (`GefilterteListe`, `ErsterTraeger`, `TraegerName`; `Treffer` und
+  `BeiListenTaste` hängen an `GefilterteListe`). `ListeNachziehen()` zieht sie an **sieben**
+  Stellen nach: Ja‑Zweig von `EntfernenFragen` und `LoeschenFragen`, `UebernahmeAusfuehren`,
+  `NeuFertig`, `VarianteAnlegen`, `StammUebernehmen` und `BeiSpeichern`. Steht der gewählte
+  Träger danach nicht mehr in der Liste, fällt die Markierung weg und die Karte wird leer.
+  **Reihenfolge:** Erst nachziehen, dann markieren — sonst nähme das Nachziehen die eben
+  gesetzte Markierung gleich wieder weg. Nach Entfernen und Löschen bleibt es bei „nichts
+  markiert, Karte leer", auch wenn der Träger wieder auftaucht (ET‑6).
+  Die Unterdialoge (Kostenprofil, Spotpreis, saisonale Sätze, Emissionskatalog) ziehen **nicht**
+  nach: Keiner von ihnen ändert Bestand, Name oder Zuordnung eines Trägers, und die Hülle liest
+  ihre Trägerliste dort auch nicht neu.
+- **ET‑6/S2a — der stille Wiederzuordner wird benannt; der Kern bleibt unberührt.**
+  `AusProjekt` merkt sich vor dem Entfernen die ZUGEORDNETEN Träger (ohne den zu entfernenden)
+  und sucht nach dem `ListeLaden()` den ersten zugeordneten, der vorher nicht dabei war; sein
+  Name steht in der Gabe `["StromZugeordnet"]`. **Nicht** über die Rückgabe von
+  `StromTraegerSicherstellen`: Sie nennt auch dann eine Id, wenn der Träger längst zugeordnet
+  war (idempotenter Fall), und taugt deshalb nicht als Ereignismelder.
+  Der Dialog zeigt daraufhin ein Hinweisbanner (`WarnStufe.Hinweis`, kein Fehler) mit dem neuen
+  Schlüssel `KDLG_ET_STROM_ZUGEORDNET` in beiden Sprachen: „Das Projekt führt elektrische
+  Anlagen; der Stromträger „{0}" wurde zugeordnet." / „The project has electrical equipment; the
+  electricity carrier „{0}" has been assigned."
+- **ET‑7/S2a — der Stammkopf-Knopf heißt „Bezeichnung speichern" / „Save name"** (Wert von
+  `KDLG_ET_STAMM_SPEICHERN` geändert, kein neuer Schlüssel; der Rückfalltext der Komponente und
+  der der Hülle mitgezogen). Kein Prüffall hielt den alten Text fest.
+
+**Unverändert:** `Katalogkontext` (Anwenderentscheid Ä9/Ä10), der projektlose
+Administrationsweg, die Einengung (`EnergietraegerZulaessigkeit`, `Freie()`, `Eingeengt`), die
+Wiederzuordnung selbst und jeder Rechenweg. Kein Schemaschritt, keine neue Referenzbasis.
+
+### 8.3 Nachweise
+
+| Was | Wo | Ergebnis |
+|---|---|---|
+| Je Schreibweg ein Fall: Entfernen, Löschen, Neu, Variante, Kataloguebernahme, Stamm-Speichern, Speichern — Liste, Markierung und Karte danach; dazu der Hinweis zum Stromträger in beiden Sprachen, sein Ausbleiben ohne Wiederzuordnung und der Fall ohne Delegat | `EPOS.UI.Tests/Dialoge/EnergietraegerDialogTests.cs` | **11** neue Fälle (65 → 76) |
+| `Umbenennen`, `Neu`, `Variante`, `Loeschen`, `AusProjektEntfernen` gegen die Testdatenbank, einschließlich beider Verweigerungen (Anlage hält den Träger; die elektrische Welt hält ihn) | `EPOS.Kern.Tests/EnergietraegerKatalogCtrlTests.cs` (neu) | **11** Fälle |
+| Der Delegat liefert den frischen Stand, der eingefrorene Wert nicht; ohne Wiederzuordnung bleibt der Hinweis leer; mit Wiederzuordnung nennt die Hülle den Träger; Hinweistext in beiden Sprachen; Knopftext de/en | `EPOS.Kern.Tests/EnergietraegerHuelleTests.cs` | **5** neue Fälle (24 → 29) |
+| **Gegenprobe 1:** `ListeNachziehen` ausgehängt | `EnergietraegerDialogTests` | **7** Fälle rot — genau die sieben Schreibwege; wieder eingehängt, 76/76 grün |
+| **Gegenprobe 2:** die Erkennung in `AusProjekt` ausgehängt | `EnergietraegerHuelleTests` | **1** Fall rot (`Das_Entfernen_nennt_den_wieder_zugeordneten_Stromtraeger`); wieder eingehängt, 29/29 grün |
+| `Resource.Designer.cs` neu erzeugt | `Werkzeuge/ResourceDesigner` | 6 293 → 6 294 Einträge, +401 Zeichen, zweiter Lauf +0 (wiederholbar) |
+| Referenzlauf | fünf Projekte gegen `2026-09-16_R8_Heizkessel_Kaskade` | byte-gleich — kein Rechenweg berührt |
+
+### 8.4 Abnahmepunkte — A‑ET‑S2a (Windows, beide Kontexte)
+
+1. **Projektkontext**, Projekt mit mehreren Trägern öffnen: „Entfernen" auf einem Träger, den
+   keine Anlage hält → der Träger ist sofort aus der Liste, nichts ist markiert, die Karte
+   rechts ist leer.
+2. **Projektkontext**, Projekt mit Wärmepumpe/PV/Stromspeicher: Wird beim Entfernen ein
+   Stromträger nachgezogen, steht über der Liste der ruhige Hinweis mit seinem Namen — und er
+   steht in der Liste.
+3. **Projektkontext:** „Aus Katalog übernehmen…", einen Träger wählen und bestätigen → er steht
+   in der Liste UND ist markiert, die Karte gehört ihm.
+4. **Katalogkontext** (Administration → Kosten → Energieträgerverwaltung…): „Neu…" und
+   „Variante" → der neue Eintrag steht in der Liste und ist markiert; „Löschen" → er ist weg,
+   nichts markiert, Karte leer.
+5. **Katalogkontext:** Bezeichnung ändern, „Bezeichnung speichern" → der neue Name steht in der
+   Liste und im Kartenkopf, die Markierung bleibt beim Träger.
+6. **Beide Sprachen:** Der Knopf heißt „Bezeichnung speichern" bzw. „Save name" und damit
+   anders als die beiden Übernahmeknöpfe.
+
+### 8.5 Logbuch-Entwurf (Version beim Anwender offen) und Wiki
+
+Zwei Sätze, je einer für eine sichtbare Änderung — mehr trägt der Eintrag nicht (Regel: Konzept
+Hilfesystem 13.4):
+
+> - In der Energieträgerverwaltung zeigt die Trägerliste nach jedem Schritt sofort den neuen
+>   Stand: Ein angelegter oder übernommener Träger steht darin und ist ausgewählt, ein
+>   umbenannter trägt seinen neuen Namen, ein entfernter oder gelöschter ist verschwunden.
+> - Trägt das Programm beim Entfernen eines Trägers den Stromträger eines Projekts mit
+>   elektrischen Anlagen wieder nach, sagt das jetzt ein Hinweis mit dessen Namen.
+
+Der neue Knopftext „Bezeichnung speichern" bekommt **keinen** eigenen Satz — eine Beschriftung
+ist eine Kleinigkeit im Sinne derselben Regel.
+
+**Wiki-Quelle** `Projekte/Wiki/Programm Dokumentation - Kosten.wiki`, Abschnitt
+„Energieträgerverwaltung": drei Stellen fortgeschrieben — der Hinweis zum nachgezogenen
+Stromträger am Punkt ''Strom für elektrische Anlagen'', die Folge des Entfernens am Punkt
+''Entfernen'', dazu zwei neue Punkte ''Katalogkontext'' (mit dem Knopf ''Bezeichnung
+speichern'') und ''Die Liste folgt jedem Schritt''. Upload gebündelt und ausstehend.
+
+### 8.6 Ohne Auftrag beim Lesen gefunden
+
+- **Die Kennung ET‑5 ist doppelt vergeben.** Sie steht seit dem 08.09.2026 für die Frage nach der
+  Zweistufigkeit (Abschnitt 7.5/7.6, erledigt); der Auftrag vom 16.09.2026 vergibt sie ein
+  zweites Mal. Beide Reihen sind hier als `/S2a` unterschieden — für künftige Befunde dieses
+  Dialogs ist **ET‑8** die nächste freie Nummer.
+- **Der Wiederzuordner greift durch ein enges Tor.** `AusProjektEntfernen` lehnt einen Träger ab,
+  den die elektrische Welt hält (ET‑4) — der Stromträger eines Wärmepumpenprojekts lässt sich
+  also gar nicht entfernen, solange die Anlagen ihn beitragen. ET‑6 tritt deshalb nur ein, wenn
+  die Anlagen ihren Träger SELBST wählen (ET‑5 vom 08.09.2026) und dieser Träger dem Projekt
+  nicht zugeordnet ist: Dann hält niemand den zugeordneten Stromträger fest, sein Entfernen ist
+  erlaubt, und `StromTraegerSicherstellen` legt ihn sofort wieder an. Genau dieser Stand ist im
+  Prüffall hergestellt; ohne ihn bleibt das Banner aus — was der Gegenfall belegt.
