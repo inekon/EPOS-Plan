@@ -44668,6 +44668,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in der Konfiguration aufnehmen ähnelt.
+        /// </summary>
+        public static string SIM_BTN_IN_KONFIGURATION_AUFNEHMEN {
+            get {
+                return ResourceManager.GetString("SIM_BTN_IN_KONFIGURATION_AUFNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die OK ähnelt.
         /// </summary>
         public static string SIM_BTN_OK {
@@ -47100,6 +47109,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Springt in Schritt 1 und hebt die Karte dieser Anlage hervor; aufgenommen wird sie dort mit „+ aufnehmen“. ähnelt.
+        /// </summary>
+        public static string SIM_TIP_IN_KONFIGURATION_AUFNEHMEN {
+            get {
+                return ResourceManager.GetString("SIM_TIP_IN_KONFIGURATION_AUFNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenke (Doppelklick zum Ändern)
         ///Wohin gibt dieser Erzeuger seine Wärme ab?
         ///• Heizkreis - deckt den Bedarf der Stunde unmittelbar
@@ -47411,6 +47429,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_W_ERZEUGER_OHNE_STROMPLATZ {
             get {
                 return ResourceManager.GetString("SIM_W_ERZEUGER_OHNE_STROMPLATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die vier Plätze der Kaskade sind belegt — nehmen Sie erst einen Wärmeerzeuger heraus. ähnelt.
+        /// </summary>
+        public static string SIM_W_KASKADE_VOLL {
+            get {
+                return ResourceManager.GetString("SIM_W_KASKADE_VOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Platz dieser Erzeugerart ist bereits belegt — nehmen Sie erst den vorhandenen heraus. ähnelt.
+        /// </summary>
+        public static string SIM_W_STROMPLATZ_BELEGT {
+            get {
+                return ResourceManager.GetString("SIM_W_STROMPLATZ_BELEGT", resourceCulture);
             }
         }
         

@@ -7458,3 +7458,102 @@ mit #302 erledigt ist.
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
 > kein eigener Eintrag — zu klein für das Logbuch (Regel 13.4).
+
+## #303 — Die gepflegte Kaskade und der Weg zurück in sie (16.09.2026)
+
+Drei Anwenderentscheide vom 16.09.2026 auf den offenen Punkt „Nach #302". Sie hängen
+inhaltlich zusammen, aber nicht technisch, und sind einzeln gemessen. Commits: `2145dcc7`
+(Merkspalte, Schemaschritt 82), `7e179ab5` (die Meldung wird handlungsfähig), dazu die
+Papieränderung zum Größenlauf. **Keine neue Referenzbasis** — die Abnahme war der Nachweis,
+dass sich nichts verschiebt.
+
+**Entscheid 1 — die Merkspalte (Wahl (b)).** Der Befund aus „Nach #302": Wer den Heizkessel
+in der Simulationskonfiguration mit „×" aus der Kaskade nahm, fand ihn beim nächsten Lesen
+der Konfiguration wieder darin. `Kaskade.Entfernen` setzt den Platz leer, und ein leerer Platz
+ist genau die Bedingung, unter der `KonfigurationCtrl.HeizkesselNachziehen` ihn erneut
+aufnimmt — `Tab_Einstellungen.Tool_1..4` trägt die BELEGUNG, nicht die ABSICHT. Gebaut ist
+**Schemaschritt 82** nach ADR-001: `Tab_Einstellungen.Kaskade_Gepflegt`, 0/1, `NOT NULL
+DEFAULT 0` mit `CHECK`, angelegt per `ALTER TABLE … ADD COLUMN` (die Tabelle ist STRICT, ein
+INTEGER mit Vorgabe ist dort zulässig — kein Tabellenneubau). Name und Spaltenliste stehen im
+Kern (`SchemaKatalog.SPALTE_KASKADE_GEPFLEGT`, `Schritt82_KaskadeGepflegt`); Migration und
+`Werkzeuge/Testdatenbankschema` bedienen sich derselben Quelle, `SchemaStand.Zielversion`
+steht auf 82. Gelesen wird die Spalte namensbasiert (die Ordinalkette von `ZeileUebernehmen`
+bleibt unberührt), geschrieben über ein eigenes, zielgenaues UPDATE
+(`KonfigurationCtrl.KaskadeGepflegtSchreiben`). `HeizkesselNachziehen` steigt bei 1 aus,
+bevor es irgendetwas schreibt; der Doc-Satz „nur EINMAL je Projekt" war falsch, sobald jemand
+entfernt, und ist berichtigt. Gesetzt wird die Marke an EINER Stelle — in
+`SimulationKonfigHuelle` bei allen drei Handgriffen (aufnehmen, entfernen, verschieben) und
+nur, wenn der Handgriff wirklich etwas geändert hat —, und zwar ins Modell UND in die
+Datenbank, weil `Ladeordnung.Kaskadenpositionen` `Tool_1..4` während des Laufs ein zweites Mal
+von dort liest. `Speichern` (Delete + Insert) reicht sie nach, sonst verlöre gerade das
+Speichern die Aussage. **Zweite Fundstelle, im Auftrag nicht genannt:** Die Vorwahl Ä15
+(`VerbauteAnlagenVorwaehlen`) füllt beim Öffnen der Konfigurationsseite jeden leeren Platz mit
+dem, was das Projekt führt — sie hätte den eben entfernten Erzeuger im Arbeitsstand
+zurückgeholt und den Entscheid an der Oberfläche wirkungslos gemacht. Sie trägt deshalb
+dieselbe Sperre. **Bewusste Folge:** Wer die Kaskade einmal von Hand angefasst hat, bekommt
+die Automatik auch dann nicht mehr, wenn er später eine neue Kesselanlage anlegt.
+
+**Entscheid 2 — die Meldung wird handlungsfähig (Wahl (c)).** Für Wärmepumpe, Solarthermie,
+BHKW, Photovoltaik und Stromspeicher wird **ausdrücklich nichts nachgezogen**: Wer einen
+Erzeuger weglässt, meint das oft so. Statt dessen bekommt die Meldung einen Griff.
+`SimulationLaufCtrl.AufnahmeMoeglich` beantwortet, ob überhaupt ein Platz frei wäre (einer der
+vier Wärmeplätze bzw. der eigene Stromplatz `Tool_5`/`Tool_6`); die Ergebnishülle baut daraus
+je Anlage ein `Platzangebot` — aus DERSELBEN Vorprüfung, die schon den Zusatz „(nicht in der
+Kaskade)" an der Tabellenzeile speist. Der Übersichtsreiter zeigt sie als `Warnbanner` über
+dem Dashboard; das Banner trägt dafür einen optionalen Handgriff (`AktionText`/`Aktion`) neben
+„erklären lassen". **Gewählt ist die Ausprägung „springen und hervorheben", nicht das
+unmittelbare Aufnehmen**, und der Grund ist die Datenhaltung: Die Kaskade gehört Schritt ①,
+ihr Arbeitsstand liegt in `SimulationKonfigHuelle`, die zwischen zwei Besuchen lebt und erst
+mit „Speichern" schreibt. Aus Schritt ③ heraus aufzunehmen schriebe an diesem Arbeitsstand
+vorbei — zwei Wahrheiten über dieselbe Kaskade und ein angezeigtes Ergebnis, das still nicht
+mehr zu seinen Eingaben passt. Der Sprung führt statt dessen an die Stelle, die die
+vorhandene Bedienung ohnehin kennt (Hinweisleiste „N Erzeuger nicht aufgenommen", verfügbare
+Karten, „+ aufnehmen"): Die Ansicht SIMULATION wechselt nach ① und ruft dort
+`SimulationKonfigSeite.KarteHervorheben` — Auswahl auf die Anlage, verfügbare Karten
+eingeblendet. Damit bleibt es bei EINEM Aufnahmeweg, und das ist derselbe, der die Kaskade als
+gepflegte merkt. Ist kein Platz frei, steht kein Knopf da, sondern der Grund. Vier neue
+Ressourcenschlüssel in beiden Sprachen, Designer neu erzeugt. Projekt 1017 rechnet
+unverändert: Seine Wärmepumpe bekäme Platz 3, also hinter BHKW und Kessel, die die Wärme
+bereits vollständig decken — genau deshalb entscheidet hier der Anwender.
+
+**Entscheid 3 — die Produktparameter im Größenlauf bleiben (nur Papier).** Keine Zeile am
+Rechenweg, `FlottenGeraeteuebernahme` unverändert. Im Konzept Stromspeicher-Dialoge 7.10
+ersetzt die Entscheidung die offene Frage: Peak-Reserve, Grenzverschleiß, Betriebs- und
+Durchsatzkosten, Ersatz, Restwert und Alterungskurve bleiben aus der Achsenvorlage stehen,
+auch wenn diese aus einer Projektanlage oder einem Katalogsatz entstanden ist. Was das heißt,
+steht dabei: Es sind die Werte dieser einen Anlage, und sie gelten an jedem Rasterpunkt; wer
+andere will, ändert sie in Schritt 1 oder 2. Die Herleitungszeile
+(`SpeicherFlottenAnzeigeCtrl.Herleitung`, Abschnitt 8.9) sagt je Kandidat, welcher Kennwert
+vom Gerät kommt — darauf verweist der Absatz, statt eine zweite Auskunft daneben zu stellen.
+
+**Prüfung.** Kern-Filter 0 Fehler / 5 Warnungen (Bestand, darunter der fremde `xUnit2000` in
+`HeizstabJeWaermepumpeTests`), Windows-Schale 0 Fehler / 5 Warnungen. Tests 8 512 grün, 1
+bewusst übersprungen (`EPOS.Kern.Tests` 3 093, `EPOS.UI.Tests` 4 523, `SpeicherEngine.Tests`
+370, `KiKern.Tests` 499, `SpeicherPlanung.Tests` 27/28). SqlDialektPrüfer 1 464 Texte / 0
+Fundstellen, ChartProben 64 Bilder / 0 Verstöße. Referenzlauf über alle dreizehn Projekte
+gegen `2026-09-16_R8_Heizkessel_Kaskade`: **13/13 PASS, 3 882 737 Werte, `diff -rq` ohne einen
+einzigen Unterschied** außer `protokoll.txt` (Zeitstempel). Testdatenbank auf Schemastand 82,
+eine Spalte angelegt, kein DML; alle 22 Zeilen von `Tab_Einstellungen` stehen auf
+`Kaskade_Gepflegt = 0`, die Datei bleibt echte SQLite-Datei in Git LFS. **Kein iOS-Lauf, kein
+Push, keine neue Referenzbasis.**
+
+**Was offen bleibt.** Drei Punkte. (1) Die Marke wirkt auch auf die Vorwahl Ä15 und damit auf
+ALLE Erzeugerarten, nicht nur auf den Heizkessel: Wer in einem Projekt einmal umgeordnet hat
+und danach eine Wärmepumpe anlegt, findet sie nicht mehr von selbst in der Kaskade, sondern
+als verfügbare Karte samt Hinweisleiste. Das ist die konsequente Lesart des Entscheids („die
+Pflege gehört dann ihm"), aber sie ändert das Verhalten über den Heizkessel hinaus — der
+Anwender sollte sie bestätigen. (2) Es gibt keinen Weg, eine gepflegte Kaskade wieder der
+Automatik zu überlassen; ein Rücksetzen wäre ein eigener Handgriff in der
+Simulationskonfiguration. (3) Der Knopf an der Meldung führt in Schritt ①, nimmt aber nicht
+auf — der letzte Griff bleibt beim Anwender. Ob er statt dessen unmittelbar aufnehmen soll
+(mit dem Preis, den der Entscheid-2-Absatz nennt), ist eine Anwenderfrage.
+
+**Logbuch-Vorschlag** (Version 1.2.0.2):
+
+> Seit 16.09.2026 gehört die Kaskade der Simulationskonfiguration dem Anwender, sobald er sie
+> selbst angefasst hat: Ein Heizkessel, den Sie mit „×" herausnehmen, bleibt draußen und wird
+> nicht mehr von selbst aufgenommen — auch dann nicht, wenn Sie später eine weitere
+> Kesselanlage anlegen. Meldet ein Lauf einen Erzeuger, der im Projekt angelegt ist, aber auf
+> keinem Platz der Simulation steht, trägt die Meldung über der Ergebnisübersicht jetzt den
+> Knopf „in der Konfiguration aufnehmen": Er führt in Schritt 1 und hebt die Karte dieser
+> Anlage hervor. Ist kein Platz frei, nennt die Meldung den Grund.

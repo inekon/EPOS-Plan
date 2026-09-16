@@ -133,6 +133,28 @@
         /// </summary>
         public string Kanal_Knappheitsreihenfolge = DbWerte.KNAPPHEIT_DEFAULT;
 
+        /// <summary>
+        /// <b>Die Kaskade dieses Projekts hat der Anwender gepflegt</b> — Spalte
+        /// <c>Tab_Einstellungen.Kaskade_Gepflegt</c> (Schemaschritt 82,
+        /// Anwenderentscheid vom 16.09.2026). <b>Vorbelegung <c>false</c></b>.
+        ///
+        /// <para>Sie trägt die ABSICHT, die <c>Tool_1..4</c> nicht tragen kann: Ein
+        /// leerer Platz sieht gleich aus, ob ihn nie jemand belegt oder ob der Anwender
+        /// den Erzeuger eben herausgenommen hat. Sobald einer der drei Handgriffe der
+        /// Simulationskonfiguration geschehen ist — aufnehmen, entfernen, verschieben —,
+        /// steht sie auf <c>true</c>, und
+        /// <see cref="KonfigurationCtrl.HeizkesselNachziehen"/> greift nicht mehr ein.
+        /// Die Folge ist gewollt: Wer die Kaskade einmal selbst angefasst hat, bekommt
+        /// die Automatik auch dann nicht mehr, wenn er später eine neue Kesselanlage
+        /// anlegt — die Pflege gehört dann ihm.</para>
+        ///
+        /// <para>Gelesen wird NAMENSBASIERT (<c>KonfigurationCtrl.ZeileUebernehmen</c>),
+        /// nicht über die Ordinalkette; geschrieben ausschließlich über
+        /// <see cref="KonfigurationCtrl.KaskadeGepflegtSchreiben"/> — dieselbe
+        /// Begründung wie bei <see cref="Extrapolation_erlaubt"/>.</para>
+        /// </summary>
+        public bool Kaskade_Gepflegt;
+
         public KonfigurationModel()
         {
             m_ID = 0;

@@ -207,6 +207,24 @@ namespace WindowsFormsApplication1
                         ? row[SchemaKatalog.SPALTE_KANAL_KNAPPHEITSREIHENFOLGE]
                         : null);
 
+                // --- Merkspalte „Kaskade vom Anwender gepflegt" (Schemaschritt 82) -----
+                //
+                // Drittes Feld nach demselben namensbasierten Muster, und wieder in
+                // BEIDEN Zweigen gesetzt: Ein wiederverwendetes Model duerfte die Marke
+                // des zuvor gelesenen Projekts nicht behalten - sonst bliebe die
+                // Automatik am naechsten Projekt aus, das sie braucht.
+                //
+                // Fehlende Spalte (Datenbank noch nicht auf Schemastand 82), NULL und
+                // ein unlesbarer Wert heissen gleichermassen FALSCH, also „nicht
+                // gepflegt". Das ist genau das bisherige Verhalten: Die Automatik greift
+                // wie zuvor. Anders als bei Extrapolation_erlaubt braucht es hier keine
+                // Markerpruefung (Befund N8) - die Vorbelegung der Spalte IST der
+                // bisherige Zustand, eine 0 aus einer Datenluecke sagt dasselbe wie eine
+                // 0 aus dem Bestand.
+                model.Kaskade_Gepflegt =
+                    dt.Columns.Contains(SchemaKatalog.SPALTE_KASKADE_GEPFLEGT) &&
+                    WahrOderFalsch(row[SchemaKatalog.SPALTE_KASKADE_GEPFLEGT]);
+
                 HeizkesselNachziehen(model);
 
                 return true;
@@ -240,9 +258,16 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Die Position bleibt WAEHLBAR, und dafuer wird nichts Neues gebaut:</b>
         /// Die Simulationskonfiguration ordnet die Kaskade seit jeher mit den Pfeilen der
-        /// Erzeugerkachel um (<c>Kaskade.Verschieben</c>). Weil diese Automatik nur
-        /// greift, solange KEIN Platz den Heizkessel traegt, ueberschreibt jede
-        /// Umordnung sie dauerhaft — der Anwender waehlt, die Vorgabe greift nur einmal.</para>
+        /// Erzeugerkachel um (<c>Kaskade.Verschieben</c>). Beim Verschieben bleibt der
+        /// Platz belegt, nur an anderer Stelle — die Bedingung dieser Methode trifft
+        /// danach nicht mehr zu, und der Anwender behaelt seine Reihenfolge.</para>
+        ///
+        /// <para><b>DIE MERKSPALTE HAT VORRANG</b> (Anwenderentscheid vom 16.09.2026):
+        /// Steht <c>Tab_Einstellungen.Kaskade_Gepflegt</c> auf 1, steigt diese Methode
+        /// aus, BEVOR sie irgendetwas schreibt. Eine vom Anwender gepflegte Kaskade wird
+        /// nicht nachgezogen. Die Marke setzt die Simulationskonfiguration bei jedem der
+        /// drei Handgriffe — aufnehmen, entfernen, verschieben
+        /// (<c>SimulationKonfigHuelle</c>).</para>
         ///
         /// <para><b>Warum hier und warum GESCHRIEBEN wird.</b> Diese Stelle ist der eine
         /// Trichter, durch den jede Lesung der Konfiguration laeuft — Simulationslauf,
@@ -251,8 +276,15 @@ namespace WindowsFormsApplication1
         /// <c>Ladeordnung.Kaskadenpositionen</c> liest <c>Tool_1..4</c> waehrend des
         /// Laufs unmittelbar aus der Datenbank. Steht der Platz nur im Modell, rechnete
         /// derselbe Lauf mit zwei verschiedenen Kaskaden. Geschrieben wird deshalb
-        /// sofort — und nur EINMAL je Projekt, denn danach traegt ein Platz den
-        /// Heizkessel und die Bedingung trifft nie wieder.</para>
+        /// sofort.</para>
+        ///
+        /// <para><b>Wie oft sie greift.</b> Solange niemand die Kaskade anfasst, genau
+        /// EINMAL je Projekt: Danach traegt ein Platz den Heizkessel, und die erste
+        /// Bedingung trifft nicht mehr. Wer ihn aber wieder ENTFERNT, hinterlaesst einen
+        /// leeren Platz — und der sieht fuer diese Pruefung aus wie der Zustand vor dem
+        /// ersten Lauf. Genau dafuer gibt es die Merkspalte
+        /// <c>Kaskade_Gepflegt</c>: Sie unterscheidet „noch nie belegt" von „vom Anwender
+        /// herausgenommen". Mit ihr bleibt ein entfernter Kessel draussen.</para>
         ///
         /// <para><b>Schlaegt das Schreiben fehl</b> (schreibgeschuetzte Datenbank), bleibt
         /// auch das Modell unveraendert. Lieber der alte Zustand samt seiner Warnung als
@@ -268,6 +300,12 @@ namespace WindowsFormsApplication1
         private static bool HeizkesselNachziehen(KonfigurationModel model)
         {
             if (model == null || model.m_ID_Projekt <= 0) return false;
+
+            // DER VORRANG IST EINDEUTIG: eine gepflegte Kaskade wird nicht nachgezogen.
+            // Die Pruefung steht VOR jeder anderen - sie soll auch kein COUNT(*) auf
+            // Tab_Energieanlagen mehr kosten.
+            if (model.Kaskade_Gepflegt) return false;
+
             if (Kaskade.Lesen(model).Contains(DbWerte.ERZEUGER_HEIZKESSEL)) return false;
             if (!HeizkesselImProjekt(model.m_ID_Projekt)) return false;
 
@@ -614,6 +652,77 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_BOOSTER_LESEPUNKT + "] = ? " +
                 "WHERE ID_Projekt = ?",
                 StilleDb.Par("@wert", DbParamTyp.VarWChar, wert),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        // --- Merkspalte „Kaskade vom Anwender gepflegt" (Schemaschritt 82) ------------
+
+        /// <summary>
+        /// Ein Datenbankwert als Wahrheitswert; NULL, DBNull und alles Unlesbare heissen
+        /// FALSCH. Der Weg fuer die 0/1-Spalten, deren Datenluecke dasselbe bedeutet wie
+        /// ihre Vorbelegung.
+        /// </summary>
+        private static bool WahrOderFalsch(object wert)
+        {
+            if (wert == null || wert == DBNull.Value) return false;
+            try { return Convert.ToBoolean(wert); }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Hat der Anwender die Kaskade dieses Projekts selbst in die Hand genommen?
+        /// DIALOGFREI gelesen, weil derselbe Weg im unbeaufsichtigten Referenz- und
+        /// CI-Lauf benutzt wird.
+        ///
+        /// <para>Fehlende Spalte (Datenbank noch nicht auf Schemastand 82), fehlende
+        /// Zeile und NULL liefern gleichermassen <c>false</c> — „nicht gepflegt", also
+        /// genau das bisherige Verhalten.</para>
+        /// </summary>
+        public static bool KaskadeGepflegtLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return false;
+
+            return WahrOderFalsch(StilleDb.Scalar(
+                "SELECT [" + SchemaKatalog.SPALTE_KASKADE_GEPFLEGT + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)));
+        }
+
+        /// <summary>
+        /// Schreibt die Merkspalte eines Projekts.
+        ///
+        /// Bewusst ein EIGENES, zielgenaues UPDATE statt einer Erweiterung von
+        /// <see cref="Update"/> — dieselbe Begruendung wie bei
+        /// <see cref="KnappheitsreihenfolgeSchreiben"/>: Die Spaltenlisten von
+        /// <see cref="Insert"/>/<see cref="Update"/> haengen an der Ordinalkette in
+        /// <see cref="ReadSingle"/>, und auf einer Datenbank ohne die Spalte wuerde ein
+        /// erweitertes UPDATE das Speichern der GESAMTEN Konfiguration scheitern lassen.
+        ///
+        /// <para><b>Warum das in die DATENBANK muss und nicht ins Modell reicht:</b>
+        /// dieselbe Begruendung, aus der <see cref="HeizkesselNachziehen"/> den Platz
+        /// schreibt — <c>Ladeordnung.Kaskadenpositionen</c> liest <c>Tool_1..4</c>
+        /// waehrend des Laufs ein zweites Mal unmittelbar aus der Datenbank. Eine Marke,
+        /// die nur im Arbeitsspeicher stuende, waere beim naechsten Lesen der
+        /// Konfiguration wieder fort, und die Automatik naehme den eben entfernten
+        /// Heizkessel erneut auf.</para>
+        ///
+        /// <para>Geschrieben wird 0/1 (Hausregel BETRIEB_SQLITE.md Abschnitt 6), nicht
+        /// <c>true</c>/<c>false</c>: Die Spalte traegt ein <c>CHECK (… IN (0,1))</c>.</para>
+        ///
+        /// Dialogfrei (Konzept 13.4). Rueckgabe <c>false</c>, wenn keine Zeile getroffen
+        /// wurde oder die Spalte fehlt.
+        /// </summary>
+        public static bool KaskadeGepflegtSchreiben(int idProjekt, bool gepflegt)
+        {
+            if (idProjekt <= 0) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" +
+                SchemaKatalog.SPALTE_KASKADE_GEPFLEGT + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", DbParamTyp.Integer, gepflegt ? 1 : 0),
                 StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             return betroffen > 0;

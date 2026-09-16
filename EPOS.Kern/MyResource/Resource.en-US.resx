@@ -16340,6 +16340,18 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="SIM_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
     <value>{0} “{1}” exists in the project but has not been added to the simulation — it is not calculated. Remedy: simulation configuration → show available cards → “+ add”.</value>
   </data>
+  <data name="SIM_BTN_IN_KONFIGURATION_AUFNEHMEN" xml:space="preserve">
+    <value>add in the configuration</value>
+  </data>
+  <data name="SIM_TIP_IN_KONFIGURATION_AUFNEHMEN" xml:space="preserve">
+    <value>Jumps to step 1 and highlights this unit’s card; you add it there with “+ add”.</value>
+  </data>
+  <data name="SIM_W_KASKADE_VOLL" xml:space="preserve">
+    <value>All four cascade slots are occupied — remove a heat generator first.</value>
+  </data>
+  <data name="SIM_W_STROMPLATZ_BELEGT" xml:space="preserve">
+    <value>The slot for this kind of generator is already occupied — remove the existing one first.</value>
+  </data>
   <data name="SIM_KARTE_NICHT_AUFGENOMMEN_EINER" xml:space="preserve">
     <value>One generator exists in the project but is not part of the simulation — it is not calculated.</value>
   </data>

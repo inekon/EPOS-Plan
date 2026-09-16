@@ -113,7 +113,8 @@
                                           RingWaerme="@(ErgebnisSteht ? Bild(Bilder.RingWaerme) : null)"
                                           RingStrom="@(ErgebnisSteht ? Bild(Bilder.RingStrom) : null)"
                                           BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)"
-                                          StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)" />
+                                          StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)"
+                                          Aufnehmen="@ErzeugerAufnehmen" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -370,6 +371,22 @@
 
     // Der Parameter HilfeSchluessel ist mit #216 entfallen: Die Seite traegt
     // keinen Infoknopf mehr, und den der Ansicht setzt SimulationSeite.
+
+    /// <summary>
+    /// „Nimm diesen Erzeuger in die Simulation auf" — gemeldet wird die
+    /// <c>Tab_Energieanlagen.ID</c> der Anlage, die ohne Kaskadenplatz steht
+    /// (Anwenderentscheid vom 16.09.2026). Ohne Rueckruf steht an der Meldung kein
+    /// Knopf, und sie bleibt, was sie war.
+    /// </summary>
+    /// <remarks>
+    /// <b>Diese Seite nimmt nichts auf.</b> Sie zeigt das ERGEBNIS eines Laufs; die
+    /// Kaskade gehoert Schritt ①, und deren Arbeitsstand liegt in der
+    /// Konfigurationshuelle. Hier an ihm vorbei zu schreiben, ergaebe zwei Wahrheiten
+    /// ueber dieselbe Kaskade — und ein Ergebnis, das still nicht mehr zu seinen
+    /// Eingaben passt. Der Wirt (die Ansicht SIMULATION) wechselt deshalb nach ① und
+    /// hebt dort die Karte hervor.
+    /// </remarks>
+    [Parameter] public EventCallback<int> ErzeugerAufnehmen { get; set; }
 
     // =====================================================================
     // Zustand

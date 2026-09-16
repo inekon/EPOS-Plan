@@ -78,6 +78,30 @@
 <div class="epos-simueb">
     @if (Ergebnisstand)
     {
+        @* DIE MELDUNG „ERZEUGER OHNE PLATZ" WIRD HANDLUNGSFAEHIG (Anwenderentscheid
+           vom 16.09.2026, Punkt c). Bis dahin stand sie nur im Laufprotokoll und als
+           gedimmter Zusatz „(nicht in der Kaskade)" an der Tabellenzeile - beides
+           Auskunft ohne Griff. Der Knopf fuehrt in Schritt (1) und hebt die Karte
+           dieser Anlage hervor; AUFGENOMMEN wird sie dort mit „+ aufnehmen", dem
+           einen Weg, der die Kaskade auch als GEPFLEGTE merkt.
+
+           KEINE AUTOMATIK: Waermepumpe, Solarthermie, BHKW, Photovoltaik und
+           Stromspeicher bekommen ihren Platz nur, wenn ein Mensch ihn ihnen gibt.
+           Wer einen Erzeuger weglaesst, meint das oft so.
+
+           IST KEIN PLATZ FREI, steht kein Knopf da, sondern der Grund - ein Knopf,
+           der nichts tut, waere schlimmer als keiner. *@
+        @foreach (Platzangebot angebot in D.OhnePlatzAngebote)
+        {
+            Platzangebot a = angebot;
+            <Warnbanner Stufe="WarnStufe.Warnung"
+                        Text="@(a.AufnahmeMoeglich ? a.Text : a.Text + " " + a.Sperrgrund)"
+                        Kennung="@a.Kennung"
+                        AktionText="@(a.AufnahmeMoeglich && Aufnahmeweg ? AufnehmenText : "")"
+                        AktionKurztext="@AufnehmenKurztext"
+                        Aktion="@(Aufnahmeweg ? EventCallback.Factory.Create(this, () => Aufnehmen.InvokeAsync(a.IdAnlage)) : default)" />
+        }
+
         <div class="epos-simueb-spalten">
             @Spalte(true)
             @Spalte(false)
@@ -152,6 +176,35 @@
     /// ohnehin schon.
     /// </summary>
     [Parameter] public EventCallback StromDetails { get; set; }
+
+    // =====================================================================
+    //  Der Weg von der Meldung zur Handlung (Anwenderentscheid vom 16.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// „Nimm diesen Erzeuger auf" — gemeldet wird die <c>Tab_Energieanlagen.ID</c> der
+    /// Anlage. Ohne Rückruf kein Knopf; die Meldung bleibt dann, was sie war.
+    /// </summary>
+    /// <remarks>
+    /// <b>Dieser Reiter nimmt nichts auf.</b> Er meldet den Wunsch nach oben; der Wirt
+    /// (die Ansicht SIMULATION) wechselt nach Schritt ① und hebt dort die Karte hervor.
+    /// Aufgenommen wird mit „+ aufnehmen" der Karte — dem EINEN Weg, mit dem die Kaskade
+    /// auch als GEPFLEGTE gemerkt wird. Ein zweiter Aufnahmeweg von hier aus schriebe
+    /// an dem Arbeitsstand vorbei, den Schritt ① hält, und der Anwender hätte zwei
+    /// Wahrheiten über seine Kaskade.
+    /// </remarks>
+    [Parameter] public EventCallback<int> Aufnehmen { get; set; }
+
+    /// <summary>Beschriftung des Knopfes an der Meldung.</summary>
+    [Parameter] public string AufnehmenText { get; set; }
+        = Resource.SIM_BTN_IN_KONFIGURATION_AUFNEHMEN;
+
+    /// <summary>Kurztext des Knopfes an der Meldung.</summary>
+    [Parameter] public string AufnehmenKurztext { get; set; }
+        = Resource.SIM_TIP_IN_KONFIGURATION_AUFNEHMEN;
+
+    /// <summary>Gibt es überhaupt einen Weg zum Aufnehmen? (Prüfhilfe)</summary>
+    public bool Aufnahmeweg => Aufnehmen.HasDelegate;
 
     /// <summary>
     /// Stehen die Zeilen ohne Beitrag? Je Spalte ein Stand, Vorgabe EINBLENDEN —

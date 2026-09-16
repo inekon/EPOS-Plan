@@ -399,6 +399,98 @@ namespace EPOS.Kern.Tests
             Assert.Contains(WErzeugerCtrl.AnlagenBezeichner(b.ID_Anlage), b.Text);
         }
 
+        // =================================================================
+        // DIE MELDUNG WIRD HANDLUNGSFAEHIG (Anwenderentscheid vom 16.09.2026,
+        // Punkt c): Die Vorpruefung sagt jetzt auch, OB ein Platz frei waere.
+        // =================================================================
+
+        /// <summary>
+        /// Ein freier Waermeplatz reicht — gleich welcher. Die Kaskade verdichtet nicht,
+        /// eine Luecke vorn ist so gut wie ein freier Platz hinten.
+        /// </summary>
+        [Fact]
+        public void Ein_freier_Waermeplatz_macht_das_Aufnehmen_moeglich()
+        {
+            string[] mitLuecke = { "", DbWerte.ERZEUGER_SOLARTHERMIE,
+                                   DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_BHKW,
+                                   DbWerte.ERZEUGER_PHOTOVOLTAIK, DbWerte.ERZEUGER_STROMSPEICHER };
+
+            Assert.True(SimulationLaufCtrl.AufnahmeMoeglich(mitLuecke, DbWerte.ERZEUGER_HEIZKESSEL));
+        }
+
+        /// <summary>
+        /// Sind alle vier Waermeplaetze belegt, ist das Aufnehmen NICHT moeglich — die
+        /// Meldung sagt das dann, statt einen Knopf zu zeigen, der nichts tut.
+        /// </summary>
+        [Fact]
+        public void Eine_volle_Kaskade_laesst_keinen_Waermeerzeuger_mehr_zu()
+        {
+            string[] voll = { DbWerte.ERZEUGER_HEIZKESSEL, DbWerte.ERZEUGER_SOLARTHERMIE,
+                              DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_BHKW, "", "" };
+
+            Assert.False(SimulationLaufCtrl.AufnahmeMoeglich(voll, DbWerte.ERZEUGER_HEIZKESSEL));
+        }
+
+        /// <summary>
+        /// Photovoltaik und Stromspeicher haengen an IHREM Platz (<c>Tool_5</c> bzw.
+        /// <c>Tool_6</c>) — ein freier Waermeplatz hilft ihnen nicht, und ein belegter
+        /// Stromplatz sperrt nur die eigene Erzeugerart.
+        /// </summary>
+        [Fact]
+        public void Die_Stromseite_fragt_ihren_eigenen_Platz()
+        {
+            string[] pvBelegt = { "", "", "", "", DbWerte.ERZEUGER_PHOTOVOLTAIK, "" };
+
+            Assert.False(SimulationLaufCtrl.AufnahmeMoeglich(pvBelegt, DbWerte.ERZEUGER_PHOTOVOLTAIK));
+            Assert.True(SimulationLaufCtrl.AufnahmeMoeglich(pvBelegt, DbWerte.ERZEUGER_STROMSPEICHER));
+            Assert.True(SimulationLaufCtrl.AufnahmeMoeglich(pvBelegt, DbWerte.ERZEUGER_WAERMEPUMPE));
+        }
+
+        /// <summary>
+        /// Eine kuerzere Liste laesst die fehlenden Plaetze als FREI gelten, und ein
+        /// leerer Steuerwert ist nie aufnehmbar.
+        /// </summary>
+        [Fact]
+        public void Fehlende_Plaetze_gelten_als_frei_und_ein_leerer_Steuerwert_nie()
+        {
+            string[] nurWaerme = { DbWerte.ERZEUGER_HEIZKESSEL, DbWerte.ERZEUGER_SOLARTHERMIE,
+                                   DbWerte.ERZEUGER_WAERMEPUMPE, DbWerte.ERZEUGER_BHKW };
+
+            Assert.True(SimulationLaufCtrl.AufnahmeMoeglich(nurWaerme, DbWerte.ERZEUGER_PHOTOVOLTAIK));
+            Assert.False(SimulationLaufCtrl.AufnahmeMoeglich(nurWaerme, ""));
+            Assert.False(SimulationLaufCtrl.AufnahmeMoeglich(null, null));
+        }
+
+        /// <summary>
+        /// <b>Das gemessene Beispiel: Projekt 1017.</b> Die Waermepumpe steht ohne Platz,
+        /// <c>Tool_3/4</c> sind frei — das Aufnehmen waere also moeglich, und die Meldung
+        /// traegt den Knopf. Sie geschieht aber NICHT von selbst: Keine Automatik fuer
+        /// andere Erzeugerarten als den Heizkessel.
+        /// </summary>
+        [Fact]
+        public void Projekt_1017_meldet_die_Waermepumpe_und_haette_einen_freien_Platz()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(1017);
+            Assert.NotNull(konfig);
+
+            var gemeldet = new List<string>();
+            foreach (Warnbefund b in SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(1017, konfig))
+                gemeldet.Add(b.Steuerwert);
+
+            Assert.Contains(DbWerte.ERZEUGER_WAERMEPUMPE, gemeldet);
+
+            // Der Platz waere da - genommen wird er nur von einem Menschen.
+            List<string> plaetze = Kaskade.Lesen(konfig);
+            plaetze.Add(Kaskade.StromWert(konfig, Kaskade.PLATZ_STROMERZEUGER));
+            plaetze.Add(Kaskade.StromWert(konfig, Kaskade.PLATZ_ENERGIESPEICHER));
+
+            Assert.True(SimulationLaufCtrl.AufnahmeMoeglich(plaetze, DbWerte.ERZEUGER_WAERMEPUMPE));
+            Assert.DoesNotContain(DbWerte.ERZEUGER_WAERMEPUMPE, Kaskade.Lesen(konfig));
+        }
+
         /// <summary>Ein <c>IProgress&lt;T&gt;</c> ohne Marshalling — fuer den Prueffall.</summary>
         private sealed class SofortMelder : IProgress<LaufFortschritt>
         {

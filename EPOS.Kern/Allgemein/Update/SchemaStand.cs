@@ -120,11 +120,21 @@ namespace WindowsFormsApplication1
         /// Fremdschlüsselregel nicht per <c>ALTER TABLE</c> ändern); die Anweisungen
         /// stehen bei <see cref="ProjektWerteLoeschschutz"/>. Er kopiert Zeilen, IDs und
         /// den AUTOINCREMENT-Stand unverändert und ist damit ergebnisneutral.
+        /// Mit der MERKSPALTE DER GEPFLEGTEN KASKADE (Schritt 82, Anwenderentscheid vom
+        /// 16.09.2026) steht das Ziel auf <b>82</b>: <c>Tab_Einstellungen</c> bekommt die
+        /// Ja/Nein-Spalte <c>Kaskade_Gepflegt</c> (0/1, <c>NOT NULL DEFAULT 0</c>). Sie
+        /// hält fest, dass der Anwender die Kaskade selbst in die Hand genommen hat —
+        /// dann zieht <c>KonfigurationCtrl.HeizkesselNachziehen</c> keinen Heizkessel
+        /// mehr nach, und ein entfernter Kessel bleibt draussen. Der Name steht bei
+        /// <see cref="SchemaKatalog.SPALTE_KASKADE_GEPFLEGT"/>, die Spaltenliste bei
+        /// <see cref="SchemaKatalog.Schritt82_KaskadeGepflegt"/>. Der Schritt ist
+        /// ergebnisneutral: Er legt eine Spalte an und schreibt keinen Wert; im ganzen
+        /// Bestand steht dort 0, und 0 heisst „wie bisher".
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 81;
+        public const int Zielversion = 82;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

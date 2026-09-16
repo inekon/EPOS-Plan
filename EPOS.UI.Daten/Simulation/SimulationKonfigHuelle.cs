@@ -142,11 +142,23 @@ namespace WindowsFormsApplication1
         /// <c>Kaskade.Aufnehmen</c> (dort der erste freie Platz HINTER dem letzten
         /// belegten, weil das die Bedienhandlung „+ aufnehmen" ist).</para>
         ///
+        /// <para><b>EINE GEPFLEGTE KASKADE WIRD NICHT VORGEWÄHLT</b> (Anwenderentscheid
+        /// vom 16.09.2026, Merkspalte <c>Tab_Einstellungen.Kaskade_Gepflegt</c>). Die
+        /// Vorwahl ist eine VORBELEGUNG für ein Projekt, dessen Kaskade niemand
+        /// eingerichtet hat — sie füllt leere Plätze mit dem, was das Projekt führt.
+        /// Sobald der Anwender aufgenommen, entfernt oder umgeordnet hat, ist ein leerer
+        /// Platz seine Aussage und keine Lücke: Sie hier zu füllen, holte den eben
+        /// entfernten Erzeuger zurück und machte den Entscheid wirkungslos. Das ist
+        /// dieselbe Sperre, die <c>KonfigurationCtrl.HeizkesselNachziehen</c> hat — nur
+        /// an der zweiten Stelle, die von selbst Plätze belegt.</para>
+        ///
         /// <para><c>catch { }</c> wie im Vorläufer: Die Vorwahl ist Komfort — sie darf das
         /// Öffnen nie verhindern.</para>
         /// </summary>
         private void VerbauteAnlagenVorwaehlen()
         {
+            if (_konfiguration != null && _konfiguration.Kaskade_Gepflegt) return;
+
             try
             {
                 List<string> plaetze = Kaskade.Lesen(_konfiguration);
@@ -327,10 +339,16 @@ namespace WindowsFormsApplication1
                 Laden = Laden,
                 SchemaLaden = SchemaLaden,
 
+                // DIE DREI HANDGRIFFE AN DER KASKADE - und nur sie - machen die Kaskade
+                // zu einer GEPFLEGTEN (Anwenderentscheid 16.09.2026, Schemaschritt 82).
+                // Der Merkweg liegt an EINER Stelle (KaskadeGepflegtMerken); die
+                // Razor-Seite bekommt keinen Datenbankzugriff.
                 Verschieben = (dbWert, richtung) =>
-                    Kaskade.Verschieben(_konfiguration, dbWert, richtung),
-                Aufnehmen = dbWert => Kaskade.Aufnehmen(_konfiguration, dbWert),
-                Entfernen = dbWert => Kaskade.Entfernen(_konfiguration, dbWert),
+                    KaskadeGepflegtMerken(Kaskade.Verschieben(_konfiguration, dbWert, richtung)),
+                Aufnehmen = dbWert =>
+                    KaskadeGepflegtMerken(Kaskade.Aufnehmen(_konfiguration, dbWert)),
+                Entfernen = dbWert =>
+                    KaskadeGepflegtMerken(Kaskade.Entfernen(_konfiguration, dbWert)),
                 StromAuswahl = (platz, dbWert) =>
                     Kaskade.StromAuswahl(_konfiguration, platz, dbWert),
 
@@ -398,6 +416,39 @@ namespace WindowsFormsApplication1
         {
             AnlagenInfo a;
             return _anlagen.TryGetValue(idAnlage, out a) ? a : null;
+        }
+
+        /// <summary>
+        /// Merkt sich, dass der Anwender die Kaskade selbst in die Hand genommen hat —
+        /// der EINE Weg fuer alle drei Handgriffe (Anwenderentscheid vom 16.09.2026).
+        /// Gibt <paramref name="getroffen"/> unveraendert zurueck, damit er sich um den
+        /// Aufruf des Handgriffs legen laesst.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Nur bei WIRKUNG.</b> Ein Pfeil am Anfang der Kaskade, ein „aufnehmen"
+        /// eines schon aufgenommenen Erzeugers, ein „×" an einem leeren Platz — die drei
+        /// <c>Kaskade</c>-Methoden melden dann <c>false</c> und haben nichts geaendert.
+        /// Eine Marke ohne Aenderung waere eine Aussage ueber eine Absicht, die sich im
+        /// Stand nicht zeigt.</para>
+        /// <para><b>Und in die DATENBANK, nicht nur ins Modell.</b> Dieselbe Begruendung,
+        /// aus der <c>KonfigurationCtrl.HeizkesselNachziehen</c> den Platz schreibt:
+        /// <c>Ladeordnung.Kaskadenpositionen</c> liest <c>Tool_1..4</c> waehrend des
+        /// Laufs ein zweites Mal unmittelbar aus der Datenbank, und die naechste Lesung
+        /// der Konfiguration holt die Marke von dort. Stuende sie nur im Modell, naehme
+        /// die Automatik den eben entfernten Heizkessel beim naechsten Lesen wieder
+        /// auf.</para>
+        /// <para><b>Beides oder keines?</b> Nein: Das Modell traegt die Marke in jedem
+        /// Fall. Schlaegt das Schreiben fehl (schreibgeschuetzte Datenbank), bleibt
+        /// wenigstens der laufende Besuch bei dem, was der Anwender wollte — und
+        /// <see cref="Speichern"/> reicht sie mit der ganzen Zeile nach.</para>
+        /// </remarks>
+        private bool KaskadeGepflegtMerken(bool getroffen)
+        {
+            if (!getroffen) return false;
+
+            _konfiguration.Kaskade_Gepflegt = true;
+            KonfigurationCtrl.KaskadeGepflegtSchreiben(m_ID_Projekt, true);
+            return true;
         }
 
         // =================================================================
@@ -1768,6 +1819,16 @@ namespace WindowsFormsApplication1
 
             if (!extrapolationErlaubt)
                 KonfigurationCtrl.ExtrapolationErlaubtSchreiben(m_ID_Projekt, false);
+
+            // DIE MERKSPALTE REIST MIT (Schemaschritt 82). Delete + Insert legt eine
+            // NEUE Zeile an, und eine neue Zeile traegt die Vorbelegung 0 - ohne diese
+            // Nachreichung verloere genau das Speichern die Aussage "der Anwender hat
+            // die Kaskade gepflegt", und die Automatik naehme den eben entfernten
+            // Heizkessel beim naechsten Lesen wieder auf. Dieselbe Bauart wie die
+            // Vorbelegung von Extrapolation_erlaubt darueber; die Wahrheit steht im
+            // Arbeitsstand, den die drei Handgriffe gesetzt haben.
+            if (_konfiguration.Kaskade_Gepflegt)
+                KonfigurationCtrl.KaskadeGepflegtSchreiben(m_ID_Projekt, true);
 
             return true;
         }

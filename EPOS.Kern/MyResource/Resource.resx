@@ -16329,6 +16329,18 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="SIM_W_ERZEUGER_OHNE_STROMPLATZ" xml:space="preserve">
     <value>{0} „{1}“ ist im Projekt angelegt, aber nicht in die Simulation aufgenommen — die Anlage rechnet nicht. Abhilfe: Simulationskonfiguration → verfügbare Karten einblenden → „+ aufnehmen“.</value>
   </data>
+  <data name="SIM_BTN_IN_KONFIGURATION_AUFNEHMEN" xml:space="preserve">
+    <value>in der Konfiguration aufnehmen</value>
+  </data>
+  <data name="SIM_TIP_IN_KONFIGURATION_AUFNEHMEN" xml:space="preserve">
+    <value>Springt in Schritt 1 und hebt die Karte dieser Anlage hervor; aufgenommen wird sie dort mit „+ aufnehmen“.</value>
+  </data>
+  <data name="SIM_W_KASKADE_VOLL" xml:space="preserve">
+    <value>Die vier Plätze der Kaskade sind belegt — nehmen Sie erst einen Wärmeerzeuger heraus.</value>
+  </data>
+  <data name="SIM_W_STROMPLATZ_BELEGT" xml:space="preserve">
+    <value>Der Platz dieser Erzeugerart ist bereits belegt — nehmen Sie erst den vorhandenen heraus.</value>
+  </data>
   <data name="SIM_KARTE_NICHT_AUFGENOMMEN_EINER" xml:space="preserve">
     <value>Ein Erzeuger ist im Projekt angelegt, aber nicht in der Simulation — er rechnet nicht.</value>
   </data>

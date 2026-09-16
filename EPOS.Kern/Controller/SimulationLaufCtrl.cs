@@ -338,6 +338,50 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Waere fuer diesen Erzeuger ueberhaupt ein Platz frei?</b> Die Frage, die
+        /// vor jedem Angebot zum Aufnehmen steht (Anwenderentscheid vom 16.09.2026,
+        /// Punkt c: die Meldung wird handlungsfaehig). <c>false</c> heisst: Die Meldung
+        /// sagt, dass kein Platz frei ist, statt einen Knopf zu zeigen, der nichts tut.
+        ///
+        /// <para><b>Sie AENDERT nichts</b> — wie die Meldung selbst. Aufgenommen wird
+        /// ausschliesslich in der Simulationskonfiguration, mit dem „+ aufnehmen" der
+        /// verfuegbaren Karte; das ist der eine Weg, und mit ihm wird die Kaskade zu
+        /// einer GEPFLEGTEN (<c>Tab_Einstellungen.Kaskade_Gepflegt</c>).</para>
+        /// </summary>
+        /// <param name="plaetze">
+        /// Die Platzbelegung POSITIONSTREU: 0…3 sind <c>Tool_1..4</c>, 4 ist
+        /// <c>Tool_5</c> (Stromerzeuger), 5 ist <c>Tool_6</c> (Energiespeicher) — genau
+        /// die Ordnung von <c>SimulationControl.tool</c> und der Liste, die die
+        /// Ueberladung <see cref="ErzeugerOhneKaskadenplatz(int, KonfigurationModel)"/>
+        /// baut. Eine kuerzere Liste laesst die fehlenden Plaetze als FREI gelten.
+        /// </param>
+        /// <param name="dbWert">Der Steuerwert des Erzeugers (<c>DbWerte.ERZEUGER_*</c>).</param>
+        public static bool AufnahmeMoeglich(IList<string> plaetze, string dbWert)
+        {
+            if (string.IsNullOrEmpty(dbWert)) return false;
+
+            // Die beiden Stromplaetze tragen je genau EINE Erzeugerart; frei ist der
+            // Platz, wenn dort nichts steht.
+            if (dbWert == DbWerte.ERZEUGER_PHOTOVOLTAIK)
+                return PlatzFrei(plaetze, Kaskade.PLATZ_STROMERZEUGER - 1);
+            if (dbWert == DbWerte.ERZEUGER_STROMSPEICHER)
+                return PlatzFrei(plaetze, Kaskade.PLATZ_ENERGIESPEICHER - 1);
+
+            // Die Waermeseite: einer der vier Kaskadenplaetze muss frei sein.
+            for (int i = 0; i < Kaskade.PLAETZE; i++)
+                if (PlatzFrei(plaetze, i)) return true;
+
+            return false;
+        }
+
+        /// <summary>Ist der Platz mit diesem Listenindex frei? Fehlt er, gilt er als frei.</summary>
+        private static bool PlatzFrei(IList<string> plaetze, int index)
+        {
+            if (plaetze == null || index >= plaetze.Count) return true;
+            return string.IsNullOrEmpty(plaetze[index]);
+        }
+
+        /// <summary>
         /// Der Steuerwert (<c>DbWerte.ERZEUGER_*</c>) zu einem
         /// <c>Tab_Energieanlagen.ID_Type</c>; <c>null</c> = kein Erzeuger mit eigenem
         /// Platz (Pufferspeicher, Referenzanlagen des Vergleichsfalls).

@@ -747,6 +747,30 @@
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Hebt die Karte EINER Anlage hervor und blendet dafür die verfügbaren Karten ein
+    /// — der Landeplatz für den Knopf an der Meldung „Erzeuger ohne Kaskadenplatz"
+    /// (Anwenderentscheid vom 16.09.2026).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Sie nimmt nichts auf.</b> Aufgenommen wird mit „+ aufnehmen" an der
+    /// Karte; dieser Weg führt nur hin. So bleibt es bei EINEM Aufnahmeweg — und damit
+    /// bei EINER Stelle, die die Kaskade als GEPFLEGTE merkt.</para>
+    /// <para><b>Die verfügbaren Karten müssen dabei offen sein</b>: Eine Anlage ohne
+    /// Platz steht genau dort, und der Schalter am Spaltenende kann sie eben
+    /// zugeklappt haben. Ohne diese Zeile zeigte der Knopf auf eine Karte, die der
+    /// Anwender nicht sieht.</para>
+    /// </remarks>
+    public void KarteHervorheben(int idAnlage)
+    {
+        if (idAnlage <= 0) return;
+
+        _auswahl = PRAEFIX_ERZEUGER + idAnlage;
+        _verfuegbareZeigen = true;
+        AnsichtszustandAnwenden();
+        StateHasChanged();
+    }
+
     // =====================================================================
     // Laden
     // =====================================================================
