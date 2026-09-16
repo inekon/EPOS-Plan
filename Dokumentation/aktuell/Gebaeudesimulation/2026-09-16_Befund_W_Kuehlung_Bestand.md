@@ -251,7 +251,7 @@ Für die Kühlung heißt das dreierlei:
    die Befund T 2.3 für die Gebäudereihen der Tagesbilanz-Gebäude formuliert. Ein leerer
    Nullvektor wäre die schlechtere Wahl: Er kostet 8 760 Zeilen je Projekt und sagt nichts.
 
-Die aktuelle Basis ist `2026-09-16_R8_Heizkessel_Kaskade` (zum Zeitpunkt der Zählung noch `2026-09-11_R7_Speicherflotte`), dreizehn Projekte; die CI rechnet 1030,
+Die aktuelle Basis ist `2026-09-16_R9_Energietraeger_Brenner` (zum Zeitpunkt der Zählung noch `2026-09-11_R7_Speicherflotte`), dreizehn Projekte; die CI rechnet 1030,
 1007, 1017, 1045, 1046.
 
 ---

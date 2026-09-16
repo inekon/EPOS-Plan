@@ -1,9 +1,9 @@
-# Die Protokolle der 25 entfernten Referenzbasen
+# Die Protokolle der 26 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **25 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **26 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
-aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu. **26 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; die Protokolle von R7 und
+R8 kamen am 16.09.2026 dazu. **27 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -13,10 +13,10 @@ Auftrag #244) ist die Geschichte umgeschrieben worden — **die Basen sind seith
 nicht mehr enthalten.** Damit wäre die Begründung jeder einzelnen Basiswahl verloren gegangen.
 Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 
-> **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
+> **Die Messdaten selbst sind endgültig weg.** Die rund **8 400 CSV-Dateien** der 26 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-16_R8_Heizkessel_Kaskade`](../../../Referenzlaeufe/2026-09-16_R8_Heizkessel_Kaskade/);
+> [`Referenzlaeufe/2026-09-16_R9_Energietraeger_Brenner`](../../../Referenzlaeufe/2026-09-16_R9_Energietraeger_Brenner/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -53,6 +53,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-07_R5_Zahlenrand` | 07.09.2026 | CI-Basis nach den Entscheiden W8‑O‑5d‑Q1 (Zahlenrand), W8‑O‑5d‑Q2 (keine `int`-Abschneidung im BHKW-Plan-Port) und Em‑9.8 (zehn Emissionsskalare); zwölf Projekte, 312 CSV, 1 792 Skalare | [`2026-09-07_R5_Zahlenrand/protokoll.txt`](2026-09-07_R5_Zahlenrand/protokoll.txt) |
 | `2026-09-07_R6_PvKoeffizienten` | 07.09.2026 | CI-Basis nach Befund W6‑B‑5 (Reparatur der PV-Modulkoeffizienten aus der CEC-Liste, Schemaschritt 69); zwölf Projekte, 312 CSV, 1 792 Skalare — abgelöst durch R7 am 11.09.2026 | [`2026-09-07_R6_PvKoeffizienten/protokoll.txt`](2026-09-07_R6_PvKoeffizienten/protokoll.txt) |
 | `2026-09-11_R7_Speicherflotte` | 11.09.2026 | CI-Basis nach Anwenderentscheid SP‑O‑8 mit dem Prüfprojekt 1046 „Prüfprojekt Speicherflotte" (Mehrspeicherpfad im gewöhnlichen Projektlauf); dreizehn Projekte, 345 CSV, 1 937 Skalare — abgelöst durch R8 am 16.09.2026 | [`2026-09-11_R7_Speicherflotte/protokoll.txt`](2026-09-11_R7_Speicherflotte/protokoll.txt) |
+| `2026-09-16_R8_Heizkessel_Kaskade` | 16.09.2026 | CI-Basis nach Anwenderentscheid HK‑E‑1 (ein Heizkessel, den das Projekt führt, bekommt seinen Kaskadenplatz automatisch und nachrangig); dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R9 am 16.09.2026 | [`2026-09-16_R8_Heizkessel_Kaskade/protokoll.txt`](2026-09-16_R8_Heizkessel_Kaskade/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -280,6 +281,68 @@ Basis im Arbeitsbaum.
 > Einfrierregeln ist berührt**.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R8 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis" hat am 16.09.2026 für wenige Stunden die Basis R8 beschrieben.
+Er steht hier im Wortlaut, weil die Messung des Kaskadennachzugs weiterhin gebraucht wird: Sie
+ist der Nachweis dafür, dass ein Heizkessel ohne eigenen Platz seither mitrechnet.
+
+**Abgelöst wurde R8 durch `2026-09-16_R9_Energietraeger_Brenner`** (Anwenderentscheid vom
+16.09.2026: jede Brenner-Anlage bekommt ihren Energieträger). Sieben der dreizehn Projekte
+verschieben sich dadurch (1007, 1008, 1017, 1018, 1023, 1024, 1046 — 1018 und 1024 nur in der
+`carrier_id`), sechs bleiben byte-gleich; die Tabelle der Abweichungen steht in
+[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT R8, BEGINN -->
+
+**`2026-09-16_R8_Heizkessel_Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
+1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
+dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
+(**Schemastand 82**).
+
+> **Anlass: der Anwenderentscheid HK‑E‑1 vom 15.09.2026, „Umsetzen".** Ein Wärmeerzeuger
+> rechnet nur, wenn seine Technologie in einem der vier Plätze `Tab_Einstellungen.Tool_1..4`
+> steht. Einen Heizkessel anzulegen legte aber keinen Platz an — die Anlage stand im Projekt
+> und wurde still übergangen. Seit diesem Entscheid zieht das Lesen der Konfiguration den
+> Platz nach (`KonfigurationCtrl.HeizkesselNachziehen`), **nachrangig** am hinteren Ende der
+> Kaskade und in die Projektdaten geschrieben; die vorhandene Umordnung der
+> Simulationskonfiguration überschreibt diese Vorgabe dauerhaft. **Nur der Heizkessel** —
+> Wärmepumpe, Solarthermie, BHKW, Photovoltaik und Stromspeicher ohne Platz werden weiterhin
+> nur gemeldet.
+>
+> **Drei Projekte verschieben sich, zehn sind byte-gleich zur Vorgängerbasis.** Betroffen
+> ist genau, wer eine Heizkesselanlage führt und keinen Kesselplatz hatte: **1007**, **1008**
+> und **1046**. Die übrigen zehn Projekte sind `diff -rq` ohne einen einzigen Unterschied.
+>
+> | Größe | 1007 | 1008 | 1046 |
+> |---|---:|---:|---:|
+> | `Sim.Restwaerme` [MWh] | 6,1313 → **0** | 2,7781 → **0** | 6,1313 → **0** |
+> | `Heizkessel.Waermeproduktion` [MWh] | — → **6,13** | — → **2,78** | — → **6,13** |
+> | `Heizkessel.Gasverbrauch` [MWh] | — → **15,47** | — → **12,02** | — → **15,47** |
+> | `Heizkessel.Waermebedarfsdeckung` [%] | — → **10,73** | — → **5,07** | — → **10,73** |
+> | `Em.Kessel.Co2T` [t/a] | — → **3,7136** | — → **2,8851** | — → **3,7136** |
+> | `Sim.bSimulationKessel` | False → **True** | False → **True** | False → **True** |
+> | CSV / Skalare | 29/99 → **33/139** | 21/101 → **25/141** | 33/145 → **37/185** |
+>
+> **Die Richtung stimmt fachlich:** Der Kessel steht am hinteren Ende der Kaskade und nimmt
+> nur, was die vorderen Stufen übrig lassen. Deshalb sinkt die ungedeckte Restwärme auf null,
+> und Kesselwärme, Brennstoff und Emissionen kommen hinzu — **kein anderer Erzeuger verliert
+> Deckung**: Wärmepumpe, Solarthermie und Photovoltaik rechnen in allen drei Projekten Wert
+> für Wert wie zuvor. Der niedrige Jahresnutzungsgrad (39,6 % bzw. 23,1 %) ist die Rechnung
+> eines Kessels, der nur wenige Spitzenstunden fährt und den Rest des Jahres
+> Betriebsbereitschaft vorhält.
+>
+> **Zwei weitere Änderungen jener Welle verschieben die Basis NICHT** und sind deshalb
+> getrennt gemessen: Die Bereinigung der zwei Probierpuffer „test" (2 Ltr, 4 000 €) in 1007
+> und 1046 ist **13/13 byte-gleich** — sie hängen an keiner Zeile von `Z_ProjektPufferSp` und
+> rechnen im hydraulischen Weg nicht mit. Und im Größenlauf der Speicherflotte wurde **nichts
+> geändert**.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich**,
+> Toleranzvergleich **13/13 PASS** (3 882 737 Werte), Laufzeit 00:00:06.
+
+<!-- ÜBERNOMMENER ABSCHNITT R8, ENDE -->
 
 ## Was in diesen Protokollen steht — und was nicht
 

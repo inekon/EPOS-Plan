@@ -137,7 +137,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-16_R8_Heizkessel_Kaskade`, dreizehn Projekte; Aufbau, Herleitung und Schemastand in
+`2026-09-16_R9_Energietraeger_Brenner`, dreizehn Projekte; Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
 1030, 1007, 1017, 1045 und 1046; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
@@ -147,7 +147,9 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 
 - gesäte Emissionsfaktoren der Testdatenbank (`emissionsart`, aktive `emissionswert`,
   `Tab_Brennstoff_Stamm.CO2/SO2/NOx/Staub`, `energy_project_settings.co2/so2/nox`,
-  Berechnungsmodus eines Referenzprojekts);
+  Berechnungsmodus eines Referenzprojekts) — dazu gehört der Energieträger
+  `Tab_Energieanlagen.ID_Carrier` einer Brenner-Anlage (`ID_Type` 10, 11): Er wählt, welcher
+  Faktorsatz für sie gilt;
 - gesäte PV-Modulkoeffizienten (`alpha_SC`, `beta_OC`, `gamma_PMP`, `T_NOCT`) oder ein neues
   Modul, das ein Referenzprojekt benutzt;
 - der Flottenstand `@Projektflotte` des Projekts 1046 in `Tab_SpeicherAuslegung` und dessen

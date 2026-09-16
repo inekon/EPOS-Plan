@@ -822,6 +822,18 @@ Projekt `SpeicherPlanung`**, das **Google OR-Tools 9.15.6755 (SCIP)** hinter der
 > Testdatenbank hat nur zwei Probierreste („test", 2 Ltr) weniger und bleibt auf
 > Schemastand 81.
 
+> **Und `#304` ebenfalls nicht** (16.09.2026, Anwenderentscheid zur Trägerzuordnung): Jede
+> Brenner-Anlage (`ID_Type` 10, 11) trägt seither ihren Energieträger in
+> `Tab_Energieanlagen.ID_Carrier`, und die Referenzbasis ist deshalb neu eingefroren —
+> **`2026-09-16_R9_Energietraeger_Brenner`** (13 Projekte, 357 CSV, 2 057 Skalare).
+> `ios.yml` ist dabei **nur** im Basis-Pfad nachgezogen; der iZ6-Vergleich für Projekt 1030
+> zeigt jetzt auf R9 statt R8 — **`Projekt_1030` ist in beiden Basen byte-gleich** (seine
+> drei Brenner trugen ihren Träger 63 bereits), der Nachweis des letzten iOS-Laufs bleibt
+> damit gültig. Weder `EPOS.iOS/`, noch ein Adapter, noch der Prüfmodus, noch die Seed-Kopie
+> sind berührt — der Nachweis ist der grüne Kern-Lauf auf ubuntu. Die Seed-Datenbank ist
+> unverändert; die Testdatenbank hat elf nachgetragene Trägerzuordnungen und bleibt auf
+> Schemastand 82.
+
 ---
 
 ## Was iU10 bewusst **nicht** tut
