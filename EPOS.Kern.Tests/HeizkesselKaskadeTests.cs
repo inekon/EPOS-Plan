@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using EPOS.UI.Seiten.Simulation;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -411,6 +413,70 @@ namespace EPOS.Kern.Tests
                                  DbWerte.ERZEUGER_WAERMEPUMPE, "");
             }
         }
+
+        /// <summary>
+        /// <b>#307 — die gepflegte Kaskade ist umkehrbar.</b> Der Handgriff
+        /// „Automatik wieder uebernehmen" der Simulationskonfiguration setzt die
+        /// Merkspalte auf 0 — in Modell UND Datenbank —, laesst die Kaskade selbst
+        /// aber unberuehrt. Beim naechsten Lesen der Konfiguration greifen
+        /// Nachziehen (Heizkessel) und Vorwahl Ae15 (alle uebrigen Erzeugerarten)
+        /// wieder, und was dann hineinkommt, sieht der Anwender an Ort und Stelle.
+        /// </summary>
+        [Fact]
+        public void Der_Rueckweg_gibt_Nachziehen_und_Vorwahl_wieder_frei()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new DeutscheOberflaeche();
+
+            bool vorher = GepflegtSetzen(PROJEKT_LUECKE, true);
+            PlaetzeSchreiben(PROJEKT_LUECKE, "", "", "", "");
+
+            try
+            {
+                // 1) Gepflegt: weder Nachziehen noch Vorwahl fassen etwas an.
+                SimulationKonfigDienste dienste = DiensteDerHuelle(PROJEKT_LUECKE);
+                SimulationKonfigDaten daten = dienste.Laden(PROJEKT_LUECKE);
+                Assert.True(daten.KaskadeGepflegt);
+                Assert.Empty(Aufgenommen(daten));
+
+                // 2) Der Handgriff: die Marke faellt, die Kaskade bleibt leer.
+                Assert.NotNull(dienste.AutomatikUebernehmen);
+                dienste.AutomatikUebernehmen();
+
+                Assert.False(KonfigurationCtrl.KaskadeGepflegtLesen(PROJEKT_LUECKE));
+                Assert.False(dienste.Laden(PROJEKT_LUECKE).KaskadeGepflegt);
+                Assert.Equal(new List<string> { "", "", "", "" },
+                             PlaetzeAusDerDatenbank(PROJEKT_LUECKE));
+
+                // 3) Das naechste Lesen: beide Automatiken greifen wieder.
+                SimulationKonfigDaten danach = DiensteDerHuelle(PROJEKT_LUECKE)
+                                                   .Laden(PROJEKT_LUECKE);
+                Assert.False(danach.KaskadeGepflegt);
+
+                List<string> drin = Aufgenommen(danach);
+                Assert.Contains(DbWerte.ERZEUGER_HEIZKESSEL, drin);   // Nachziehen
+                Assert.Contains(DbWerte.ERZEUGER_WAERMEPUMPE, drin);  // Vorwahl Ae15
+            }
+            finally
+            {
+                GepflegtSetzen(PROJEKT_LUECKE, vorher);
+                PlaetzeSchreiben(PROJEKT_LUECKE, "", DbWerte.ERZEUGER_SOLARTHERMIE,
+                                 DbWerte.ERZEUGER_WAERMEPUMPE, "");
+            }
+        }
+
+        /// <summary>Die Datenseite der Simulationskonfiguration zu einem Projekt.</summary>
+        private static SimulationKonfigDienste DiensteDerHuelle(int idProjekt)
+            => (SimulationKonfigDienste)SimulationKonfigHuelle.Erzeugen(idProjekt)
+                                                              .Gaben()["Dienste"];
+
+        /// <summary>
+        /// Die Waermeerzeuger, die die Seite als AUFGENOMMEN zeigt — also die Belegung
+        /// der Kaskade, wie sie der Anwender sieht.
+        /// </summary>
+        private static List<string> Aufgenommen(SimulationKonfigDaten daten)
+            => daten.Gruppen[0].Zeilen.Where(z => !z.Verfuegbar)
+                                      .Select(z => z.DbWert).Distinct().ToList();
 
         /// <summary>
         /// <b>Die Wirkung.</b> Der Lauf des Projekts 1007 rechnet den Kessel jetzt: Er

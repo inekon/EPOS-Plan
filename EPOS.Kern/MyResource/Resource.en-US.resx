@@ -19217,6 +19217,12 @@ Do you want to allow this?</value>
   <data name="SIMKONF_TITEL_KONFIGURATION" xml:space="preserve">
     <value>Configuration · {0}</value>
   </data>
+  <data name="SIMKONF_KASKADE_GEPFLEGT" xml:space="preserve">
+    <value>The order of this project is maintained by hand; new generators are no longer added automatically.</value>
+  </data>
+  <data name="SIMKONF_KASKADE_AUTOMATIK" xml:space="preserve">
+    <value>Hand back to the automatic order</value>
+  </data>
   <data name="SIMKONF_MSG_WP_KONFIG_FEHLER" xml:space="preserve">
     <value>The heat pump configuration could not be saved.</value>
   </data>

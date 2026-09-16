@@ -67,6 +67,15 @@ public class SimulationKonfigSeiteTests : BunitContext
     /// <summary>#274: Wie oft wurde die Auslegung geöffnet?</summary>
     private int _spGeoeffnet;
 
+    /// <summary>#307: Steht die Merkspalte „Kaskade vom Anwender gepflegt" auf 1?</summary>
+    private bool _gepflegt;
+
+    /// <summary>
+    /// #307: Was der Handgriff „Automatik wieder übernehmen" durchgeschrieben hat —
+    /// die Hülle setzt Modell UND Datenbank, hier steht die Spur davon.
+    /// </summary>
+    private readonly List<bool> _gepflegtGeschrieben = new();
+
     private static ErzeugerZeile Waerme(string dbWert, string rang, string titel,
                                         int idAnlage, bool erste, bool wp = false,
                                         params ChipDaten[] chips) => new ErzeugerZeile
@@ -196,7 +205,8 @@ public class SimulationKonfigSeiteTests : BunitContext
             Stromspeicherstand = _spStand,
             BoosterSichtbar = mitBooster,
             BoosterDavor = true,
-            PvGewaehlt = true
+            PvGewaehlt = true,
+            KaskadeGepflegt = _gepflegt
         };
     }
 
@@ -210,6 +220,7 @@ public class SimulationKonfigSeiteTests : BunitContext
             Aufnehmen = w => _aufgenommen.Add(w),
             Entfernen = w => _entfernt.Add(w),
             StromAuswahl = (p, w) => _strom.Add((p, w)),
+            AutomatikUebernehmen = () => { _gepflegt = false; _gepflegtGeschrieben.Add(false); },
             Speichern = () => { _gespeichert++; return true; },
             LesepunktSchreiben = w => { _lesepunkt.Add(w); return true; },
             BetriebsmodusGaben = _ => new Dictionary<string, object>
@@ -1689,5 +1700,71 @@ public class SimulationKonfigSeiteTests : BunitContext
         cut.FindAll(".epos-ueberlagerung input.epos-eingabe")[1].Input("900");
         cut.FindAll(".epos-ueberlagerung button")
            .First(b => b.TextContent.Contains("Anlegen")).Click();
+    }
+
+    // =====================================================================
+    //  #307 - die gepflegte Kaskade wird sichtbar und umkehrbar
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Steht die Merkspalte auf 0, steht dort nichts.</b> Der Regelfall aller
+    /// dreizehn Referenzprojekte — die Seite sagt nichts über einen Zustand, der
+    /// keiner ist.
+    /// </summary>
+    [Fact]
+    public void Ohne_Marke_steht_keine_Zeile_an_der_Kaskade()
+    {
+        _gepflegt = false;
+
+        var cut = Seite();
+
+        Assert.Empty(cut.FindAll("p.epos-simkonfig-gepflegt"));
+        Assert.Empty(cut.FindAll("button.epos-simkonfig-gepflegt-knopf"));
+    }
+
+    /// <summary>
+    /// <b>Steht sie auf 1, sagt die Seite es — ruhig.</b> Eine Zeile mit dem Text der
+    /// Ressource, KEIN Warnbanner: Sie trägt weder die Warnklasse der Hinweisleiste
+    /// noch <c>role="alert"</c>. Es ist ein Zustand, kein Fehler.
+    /// </summary>
+    [Fact]
+    public void Mit_Marke_steht_die_ruhige_Zeile_an_der_Kaskade()
+    {
+        _gepflegt = true;
+
+        var cut = Seite();
+
+        IElement zeile = cut.Find("p.epos-simkonfig-gepflegt");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMKONF_KASKADE_GEPFLEGT,
+                        zeile.TextContent);
+        Assert.Null(zeile.GetAttribute("role"));
+        Assert.DoesNotContain("luecke", zeile.ClassName ?? "");
+
+        // Sie steht in der Erzeugerspalte, vor den Gruppen.
+        Assert.Single(cut.Find("section.epos-simkonfig-erzeuger")
+                         .QuerySelectorAll("p.epos-simkonfig-gepflegt"));
+    }
+
+    /// <summary>
+    /// <b>Der Handgriff setzt auf 0 und schreibt durch.</b> Er ruft GENAU EINMAL den
+    /// Weg der Hülle (dort fällt die Marke in Modell und Datenbank), danach ist die
+    /// Zeile fort — und die Kaskade selbst hat er nicht angefasst: kein Verschieben,
+    /// kein Aufnehmen, kein Entfernen, und nichts ist ungespeichert.
+    /// </summary>
+    [Fact]
+    public void Der_Handgriff_gibt_die_Kaskade_der_Automatik_zurueck()
+    {
+        _gepflegt = true;
+
+        var cut = Seite();
+        cut.Find("button.epos-simkonfig-gepflegt-knopf").Click();
+
+        Assert.Equal(new[] { false }, _gepflegtGeschrieben);
+        Assert.Empty(cut.FindAll("p.epos-simkonfig-gepflegt"));
+
+        Assert.Empty(_verschoben);
+        Assert.Empty(_aufgenommen);
+        Assert.Empty(_entfernt);
+        Assert.False(cut.Instance.Ungespeichert);
     }
 }

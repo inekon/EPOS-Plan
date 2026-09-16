@@ -244,6 +244,11 @@ namespace WindowsFormsApplication1
                 ["NichtAufgenommenMehrere"] = MyResource.Resource.SIM_KARTE_NICHT_AUFGENOMMEN_MEHRERE,
                 ["NichtAufgenommenKnopf"] = MyResource.Resource.SIM_KARTE_NICHT_AUFGENOMMEN_KNOPF,
 
+                // #307 - die ruhige Zeile an einer von Hand gepflegten Kaskade und
+                // der Handgriff, der sie der Automatik zurueckgibt.
+                ["GepflegtText"] = MyResource.Resource.SIMKONF_KASKADE_GEPFLEGT,
+                ["GepflegtKnopf"] = MyResource.Resource.SIMKONF_KASKADE_AUTOMATIK,
+
                 ["AufnehmenText"] = MyResource.Resource.SIM_KARTE_AUFNEHMEN,
                 ["TipHoch"] = MyResource.Resource.SIM_KARTE_TIP_HOCH,
                 ["TipRunter"] = MyResource.Resource.SIM_KARTE_TIP_RUNTER,
@@ -352,6 +357,10 @@ namespace WindowsFormsApplication1
                 StromAuswahl = (platz, dbWert) =>
                     Kaskade.StromAuswahl(_konfiguration, platz, dbWert),
 
+                // #307: der Rueckweg zur Automatik - dieselbe EINE Stelle
+                // (KaskadeGepflegtSetzen), nur mit false.
+                AutomatikUebernehmen = AutomatikUebernehmen,
+
                 Speichern = Speichern,
                 LesepunktSchreiben = LesepunktSchreiben,
 
@@ -446,9 +455,41 @@ namespace WindowsFormsApplication1
         {
             if (!getroffen) return false;
 
-            _konfiguration.Kaskade_Gepflegt = true;
-            KonfigurationCtrl.KaskadeGepflegtSchreiben(m_ID_Projekt, true);
+            KaskadeGepflegtSetzen(true);
             return true;
+        }
+
+        /// <summary>
+        /// <b>Die Kaskade wieder der Automatik uebergeben</b> (Auftrag #307,
+        /// Anwenderentscheid vom 16.09.2026): Die Merkspalte faellt auf 0, und beim
+        /// naechsten Lesen der Konfiguration greifen <c>HeizkesselNachziehen</c> und
+        /// die Vorwahl Ae15 wieder.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Die Kaskade selbst bleibt unberuehrt.</b> Sie hier zu leeren oder
+        /// neu zu fuellen hiesse, im Namen des Anwenders zu ordnen; was die Automatik
+        /// beisteuert, sieht er beim naechsten Oeffnen an Ort und Stelle und kann es
+        /// dort umordnen.</para>
+        /// <para><b>Und sofort in die Datenbank</b>, aus demselben Grund, aus dem das
+        /// Merken hineingeht: <c>Ladeordnung.Kaskadenpositionen</c> und das naechste
+        /// Lesen der Konfiguration holen die Marke von dort. Stuende die Ruecknahme
+        /// nur im Modell, bliebe die Automatik bis zum naechsten Speichern aus.</para>
+        /// </remarks>
+        private void AutomatikUebernehmen()
+        {
+            KaskadeGepflegtSetzen(false);
+        }
+
+        /// <summary>
+        /// Die EINE Stelle, die die Merkspalte setzt — im Modell UND in der Datenbank.
+        /// Beide Richtungen laufen hier zusammen, damit es bei einer Wahrheit bleibt.
+        /// </summary>
+        private void KaskadeGepflegtSetzen(bool gepflegt)
+        {
+            if (_konfiguration == null) return;
+
+            _konfiguration.Kaskade_Gepflegt = gepflegt;
+            KonfigurationCtrl.KaskadeGepflegtSchreiben(m_ID_Projekt, gepflegt);
         }
 
         // =================================================================
@@ -508,6 +549,12 @@ namespace WindowsFormsApplication1
                                DbWerte.BOOSTER_LESEPUNKT_DANACH, StringComparison.Ordinal);
 
             d.PvGewaehlt = Kaskade.StromWert(_konfiguration, Kaskade.PLATZ_STROMERZEUGER).Length > 0;
+
+            // #307: Steht die Merkspalte auf 1, sagt die Seite das in einer ruhigen
+            // Zeile an der Kaskade und bietet den Rueckweg an. Gelesen wird der
+            // ARBEITSSTAND, nicht die Datenbank - ein Handgriff an der Kaskade setzt
+            // die Marke, und die Zeile steht schon bei der naechsten Auffrischung da.
+            d.KaskadeGepflegt = _konfiguration != null && _konfiguration.Kaskade_Gepflegt;
 
             return d;
         }
