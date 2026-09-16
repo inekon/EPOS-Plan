@@ -1649,10 +1649,10 @@
                     Parameter?.LeistungsgrenzeSchreiben?.Invoke(werte.UntersteLeistungsgrenze);
                 break;
 
-            case Komponentenart.Waermepumpe:
-                if (werte.Heizstab != _parameter.Heizstab)
-                    Parameter?.HeizstabSchreiben?.Invoke(werte.Heizstab);
-                break;
+            // 16.09.2026 (Auftrag #299): Hier stand der projektweite Heizstab. Er
+            // gehoert seither der WAERMEPUMPE und geht mit den uebrigen Anlagenfeldern
+            // ueber WaermepumpeKonfigurationSpeichern weiter unten - die Waermepumpe
+            // hat damit keinen projektweiten Wert mehr.
 
             case Komponentenart.Heizkessel:
                 if (werte.Bereitschaft != _parameter.Bereitschaft)

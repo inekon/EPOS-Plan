@@ -805,9 +805,12 @@ namespace WindowsFormsApplication1
                     // Kanäle unverändert - die Stufe hat dann nichts gedeckt.
                     Kanalsatz vorher = kanaele.Clone();
 
+                    // 16.09.2026 (Schemaschritt 79): Der Heizstab steht nicht mehr in der
+                    // Projekteinstellung, sondern an der Anlagenzeile jeder Wärmepumpe.
+                    // Das Modul liest ihn selbst (SimulationWaermepumpe.ModuleAufbauen);
+                    // hier stand bis dahin ein dritter Parameter ctrl_konfig.model.m_WP_Heizstab.
                     Speicherstufe_Rechnen(kanaele,
                         Viertelstunden_zu_Stundenwerte_Mittelwert(Rest_Strombedarf_viertelstuendlich),
-                        ctrl_konfig.model.m_WP_Heizstab,
                         ctrl_konfig.model.m_Kessel_Betriebsbereitschaft);
 
                     if (m_bError)
@@ -1181,7 +1184,7 @@ namespace WindowsFormsApplication1
         /// Die Kanäle werden dabei in place fortgeschrieben.
         /// </summary>
         private void Speicherstufe_Rechnen(Kanalsatz kanaele, double[] Strombedarf,
-                                           bool bHeizstab, int nBereitschaft)
+                                           int nBereitschaft)
         {
             WaermequelleClass.SchemaSicherstellen();
 
@@ -1203,7 +1206,9 @@ namespace WindowsFormsApplication1
                 simulation_wp.Temperatur = Stundentemperatur;
                 simulation_wp.PV_Ueberschuss_stuendlich = PV_Ueberschuss_Vorabberechnen();
                 simulation_wp.WP_Strombedarf_stuendlich = Strombedarf;
-                simulation_wp.Mit_Heizstab = bHeizstab;
+                // Den Heizstab holt sich das Modul seit dem 16.09.2026 je Anlage selbst
+                // (Tab_Energieanlagen.Heizstab, Schemaschritt 79) - hier stand bis dahin
+                // "simulation_wp.Mit_Heizstab = bHeizstab".
                 // Waermebedarf_stuendlich und Warmwasserbedarf_stuendlich setzt das Modul
                 // selbst aus den Kanälen - im zweikanaligen Weg ist der Kanal die Wahrheit,
                 // nicht ein vorab zugewiesener Summenvektor.

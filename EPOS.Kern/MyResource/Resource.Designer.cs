@@ -1205,6 +1205,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konfiguration der Anlage konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string ANL_KONFIG_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("ANL_KONFIG_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration gespeichert ähnelt.
+        /// </summary>
+        public static string ANL_KONFIG_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ANL_KONFIG_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage {0} wurde nicht gefunden. ähnelt.
+        /// </summary>
+        public static string ANL_KONFIG_MSG_NICHT_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("ANL_KONFIG_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}&quot; ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}&quot; umbenannt. ähnelt.
         /// </summary>
         public static string ANL_SP_NAME_ANGEPASST {

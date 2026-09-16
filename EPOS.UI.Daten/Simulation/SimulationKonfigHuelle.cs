@@ -1794,7 +1794,6 @@ namespace WindowsFormsApplication1
                 _konfiguration.m_szNetzverlusteEinheit = frisch.m_szNetzverlusteEinheit;
                 _konfiguration.Betriebsart = frisch.Betriebsart;
                 _konfiguration.Leistungsgrenze = frisch.Leistungsgrenze;
-                _konfiguration.m_WP_Heizstab = frisch.m_WP_Heizstab;
                 _konfiguration.m_Kessel_Betriebsbereitschaft = frisch.m_Kessel_Betriebsbereitschaft;
             }
             catch { /* Nachlesen ist Vorsorge - es darf das Speichern nie verhindern */ }

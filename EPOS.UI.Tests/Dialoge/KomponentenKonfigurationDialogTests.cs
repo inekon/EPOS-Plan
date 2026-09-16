@@ -30,7 +30,6 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
     {
         Betriebsart = 1,
         UntersteLeistungsgrenze = 30,
-        Heizstab = true,
         Bereitschaft = 8000
     };
 
@@ -102,32 +101,30 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Die Wärmepumpe OHNE Anlagendaten: allein die PROJEKTEINSTELLUNG „mit Heizstab
-    /// (falls vorhanden)" — und ihre Herleitungszeile sagt, dass sie projektweit
-    /// gilt.
+    /// Die Wärmepumpe OHNE Anlagendaten zeigt KEINEN Schalter mehr.
     ///
-    /// <para><b>Befund 16.09.2026:</b> Der Rechenweg liest ausschließlich
-    /// <c>Tab_Einstellungen.WP_Heizstab</c> (<c>SimulationControl</c> →
-    /// <c>SimulationWaermepumpe.Mit_Heizstab</c> → <c>Heizstabphase</c>). Deshalb
-    /// steht dieser Schalter in JEDEM Wärmepumpendialog, auch ohne Naht zur
-    /// Anlage.</para>
+    /// <para><b>Anwenderentscheid 16.09.2026 (Auftrag #299).</b> Bis dahin stand hier
+    /// die PROJEKTEINSTELLUNG <c>Tab_Einstellungen.WP_Heizstab</c> — der einzige
+    /// Schalter, den der Lauf las. Der Heizstab gehört seither der WÄRMEPUMPE
+    /// (<c>Tab_Energieanlagen.Heizstab</c>, gelesen je Modul in
+    /// <c>SimulationWaermepumpe.ModuleAufbauen</c>); es gibt keinen projektweiten Wert
+    /// mehr, den dieser Dialog ohne Anlagendaten zeigen könnte.</para>
+    ///
+    /// <para><b>Der leere Zweig ist Absicht und kein Versehen</b>: Wo die Plattform
+    /// die Naht zur Anlage nicht stellt (iOS, Proben) oder die Kartenzeile keine
+    /// Anlage führt, gibt es nichts zu konfigurieren. Wie die Ansicht das sagt,
+    /// entscheidet der Umbau der Oberfläche.</para>
     /// </summary>
     [Fact]
-    public void Die_Waermepumpe_zeigt_ohne_Anlage_nur_die_Projekteinstellung()
+    public void Die_Waermepumpe_zeigt_ohne_Anlage_keinen_Schalter()
     {
         var cut = Zeige(Komponentenart.Waermepumpe);
 
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_CHK_HEIZSTAB,
-                        cut.Markup);
-        Assert.Contains("Projekteinstellung", cut.Markup);
         Assert.Empty(cut.FindComponents<WaermepumpeKonfiguration>());
+        Assert.Empty(cut.FindAll("input[type=checkbox]"));
 
-        // Die zweite Herleitungszeile trennt die zwei gleichnamigen Schalter - ohne
-        // Anlagenkonfiguration gibt es nichts zu trennen.
-        Assert.DoesNotContain("Elektrische Nachheizung aktivieren", cut.Markup);
-
-        cut.Find("input[type=checkbox]").Change(false);
-        Assert.False(_werte.Heizstab);
+        // Die Schlussleiste steht trotzdem - der Dialog ist offen, nur leer.
+        Assert.Equal(2, cut.FindAll("div.epos-leiste button").Count);
     }
 
     /// <summary>
@@ -143,9 +140,8 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
 
         Assert.NotNull(cut.FindComponent<WaermepumpeKonfiguration>());
 
-        // Beide Schalter stehen da - und die Herleitung sagt, welcher was tut.
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_CHK_HEIZSTAB,
-                        cut.Markup);
+        // GENAU EIN Heizstabschalter - der der Anlage (Auftrag #299). Der zweite,
+        // projektweite ist mit dem Entscheid entfallen.
         Assert.Contains("Elektrische Nachheizung", cut.Markup);
     }
 

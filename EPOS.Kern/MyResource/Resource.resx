@@ -19374,4 +19374,13 @@ Möchten Sie das zulassen?</value>
   <data name="WPA_UEB_BTN_OK" xml:space="preserve">
     <value>Übernehmen</value>
   </data>
+  <data name="ANL_KONFIG_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Konfiguration gespeichert</value>
+  </data>
+  <data name="ANL_KONFIG_MSG_FEHLER" xml:space="preserve">
+    <value>Die Konfiguration der Anlage konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="ANL_KONFIG_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Die Anlage {0} wurde nicht gefunden.</value>
+  </data>
 </root>

@@ -312,8 +312,9 @@ public sealed class SimulationParameterDienste
     /// <summary>Die projektweite untere Modulationsgrenze der BHKW-Module [%].</summary>
     public Action<int>? LeistungsgrenzeSchreiben;
 
-    /// <summary>Rechnet die Wärmepumpe mit Heizstab?</summary>
-    public Action<bool>? HeizstabSchreiben;
+    // 16.09.2026 (Auftrag #299): Hier stand "HeizstabSchreiben" - der Schreibweg des
+    // PROJEKTweiten Heizstabschalters. Der Heizstab gehört seither der WÄRMEPUMPE; er
+    // geht über WaermepumpeKonfigurationSpeichern mit den übrigen Anlagenfeldern.
 
     /// <summary>Die Betriebsbereitschaft des Heizkessels [h/a].</summary>
     public Action<double>? BereitschaftSchreiben;

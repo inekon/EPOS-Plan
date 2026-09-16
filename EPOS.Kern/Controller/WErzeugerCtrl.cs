@@ -85,6 +85,221 @@ namespace WindowsFormsApplication1
         /// Fremdschlüsselspalten (<c>WS_ID_Puffer</c> &amp; Co.) bleiben dort NULL.
         /// </para>
         /// </summary>
+        #region --- SCHMALES UPDATE DER ANLAGENKONFIGURATION ---
+
+        /// <summary>
+        /// Was ein Schreibversuch an der Anlagenkonfiguration ergeben hat — derselbe
+        /// Zuschnitt wie <see cref="WPCtrl.SpeicherErgebnis"/>.
+        /// </summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">Der Grund im Klartext, bereits lokalisiert.</param>
+        /// <param name="Name">Der Bezeichner der Anlage — er aendert sich hier nie.</param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Die Felder der WAERMEPUMPEN-KONFIGURATION an der Anlagenzeile
+        /// (Anwenderentscheid 16.09.2026) — genau die, die der Konfigurationsknopf der
+        /// Karte zeigt.
+        /// </summary>
+        /// <remarks>
+        /// <para><b><c>null</c> heisst „unveraendert lassen"</b>, wie bei
+        /// <see cref="WPCtrl.ProjektgeraetFelder"/>: Der Schreibweg liest den Satz, legt
+        /// die mitgegebenen Felder darueber und schreibt zurueck. Ein ausgelassenes Feld
+        /// wuerde sonst als 0 oder leer ueber einen gepflegten Wert laufen.</para>
+        ///
+        /// <para><b>Der Bezeichner steht nicht darin</b> und die Geraeteverweise
+        /// (<c>ID_WP</c> &amp; Co.) auch nicht — das ist keine Konfiguration, sondern die
+        /// Identitaet der Zeile. Wer sie aendert, geht weiter ueber den Speicherweg des
+        /// Assistenten.</para>
+        /// </remarks>
+        /// <param name="Heizstab">
+        /// „Mit Heizstab" — seit dem Entscheid der EINE Schalter, den der Lauf je
+        /// Waermepumpe liest (<c>SimulationWaermepumpe.ModuleAufbauen</c>).
+        /// </param>
+        /// <param name="Sperrung">Sperrzeit beachten?</param>
+        /// <param name="SperrzeitVon">Beginn der Sperrzeit [h].</param>
+        /// <param name="SperrzeitBis">Ende der Sperrzeit [h].</param>
+        /// <param name="BivalenterBetrieb">Bivalenter Betrieb?</param>
+        /// <param name="Betriebsart">
+        /// <c>Tab_Energieanlagen.Betriebsart</c> (monovalent / bivalent-parallel /
+        /// bivalent-alternativ); die Engine vergleicht sie ZEICHENGLEICH.
+        /// </param>
+        /// <param name="Abschaltpunkt">Abschaltpunkt bzw. Bivalenztemperatur [Grad C].</param>
+        /// <param name="IdCarrier">
+        /// Der Energietraeger der Anlage (<c>Tab_Energieanlagen.ID_Carrier</c>).
+        /// <c>null</c> heisst wie ueberall „nicht anfassen"; <b>0 heisst ausdruecklich
+        /// „kein Energietraeger"</b> und wird als 0 geschrieben. Die Spalte fuehrt im
+        /// Bestand beide Schreibweisen fuer „keiner" (NULL und 0), und der lesende Code
+        /// behandelt sie gleich (SchemaKatalog, Schritt 8).
+        /// </param>
+        public sealed record KonfigurationFelder(bool? Heizstab = null,
+                                                 bool? Sperrung = null,
+                                                 int? SperrzeitVon = null,
+                                                 int? SperrzeitBis = null,
+                                                 bool? BivalenterBetrieb = null,
+                                                 string Betriebsart = null,
+                                                 double? Abschaltpunkt = null,
+                                                 int? IdCarrier = null);
+
+        /// <summary>
+        /// Schreibt die Konfigurationsfelder EINER Anlagenzeile — der Speicherweg des
+        /// Konfigurationsknopfs (Anwenderentscheid 16.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum es diesen Weg neben <see cref="Update"/> gibt.</b>
+        /// <see cref="Update"/> fuehrt weder <c>Heizstab</c> noch <c>ID_Carrier</c> — die
+        /// zwei Felder, um die es hier vor allem geht. Und der uebliche Speicherweg der
+        /// Oberflaeche ist LOESCHEN + NEUANLEGEN
+        /// (<c>WizardCtrl.Del_Projekt_Waermeerzeuger</c> + <c>Add_WP_Waermeerzeuger</c>):
+        /// Er vergibt neue Anlagen-Ids, und jede Zuordnung, die an der alten Id haengt —
+        /// Kostenzeilen, Straenge, Senken —, muss gerettet werden. Fuer die Aenderung von
+        /// acht Feldern ist das der falsche Preis.</para>
+        ///
+        /// <para><b>Adressiert wird ueber <c>ID</c> UND <c>ID_Projekt</c></b>, nie ueber
+        /// den Bezeichner — dieselbe Lehre wie bei
+        /// <see cref="WPCtrl.ProjektgeraetSchreiben"/>: Anlagenbezeichner sind nicht
+        /// eindeutig.</para>
+        ///
+        /// <para><b>Read-modify-write.</b> Was der Aufrufer nicht mitgibt (<c>null</c>),
+        /// wird aus dem gelesenen Satz zurueckgeschrieben — auch <c>NULL</c> bleibt
+        /// <c>NULL</c>. Die Ids der Zeile bleiben, wie sie sind.</para>
+        ///
+        /// <para><b>Der Stromtraeger wird nachgezogen</b> wie in <see cref="Update"/>:
+        /// Wer den Heizstab einschaltet, hebt die Anlage in die elektrische Welt, und das
+        /// Projekt braucht dann seinen Stromtraeger (ET-2). Ein Fehlschlag dabei bricht
+        /// das Speichern nicht ab.</para>
+        /// </remarks>
+        /// <param name="idAnlage">Die Anlagenzeile (<c>Tab_Energieanlagen.ID</c>).</param>
+        /// <param name="idProjekt">Das Projekt (<c>Tab_Energieanlagen.ID_Projekt</c>).</param>
+        /// <param name="felder">Die zu schreibenden Felder; <c>null</c> = unveraendert.</param>
+        public static SpeicherErgebnis KonfigurationSchreiben(int idAnlage, int idProjekt,
+                                                              KonfigurationFelder felder)
+        {
+            if (felder == null || idAnlage <= 0 || idProjekt <= 0)
+                return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
+                    "Die Konfiguration der Anlage konnte nicht gespeichert werden."), "");
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, Bezeichner, Heizstab, Sperrung, Sperrzeit_von, Sperrzeit_bis, " +
+                    "Bivalenter_Betrieb, Betriebsart, Abschaltpunkt, [" +
+                    SchemaKatalog.SPALTE_ID_CARRIER + "] " +
+                    "FROM Tab_Energieanlagen WHERE ID = ? AND ID_Projekt = ?",
+                    new DbParam("@id", idAnlage), new DbParam("@proj", idProjekt));
+
+                if (dt == null || dt.Rows.Count == 0)
+                    return new SpeicherErgebnis(false,
+                        string.Format(Text("ANL_KONFIG_MSG_NICHT_GEFUNDEN",
+                            "Die Anlage {0} wurde nicht gefunden."), idAnlage), "");
+
+                DataRow satz = dt.Rows[0];
+                string bezeichner = Feldtext(satz, "Bezeichner");
+
+                // Die Ja/Nein-Spalten sind NOT NULL mit CHECK (spalte IN (0,1)) - sie
+                // bekommen deshalb IMMER einen Wert, nie DBNull. Die uebrigen sind
+                // NULL-treu: Was nicht mitkommt, wird zurueckgeschrieben, wie es stand.
+                bool ok = DataRepository.ExecuteSQL(
+                    "UPDATE Tab_Energieanlagen SET Heizstab = ?, Sperrung = ?, " +
+                    "Sperrzeit_von = ?, Sperrzeit_bis = ?, Bivalenter_Betrieb = ?, " +
+                    "Betriebsart = ?, Abschaltpunkt = ?, [" +
+                    SchemaKatalog.SPALTE_ID_CARRIER + "] = ? " +
+                    "WHERE ID = ? AND ID_Projekt = ?",
+                    new DbParam("@stab", Uebernommen(felder.Heizstab, satz, "Heizstab")),
+                    new DbParam("@sperr", Uebernommen(felder.Sperrung, satz, "Sperrung")),
+                    ProjektPuffer.Par("@svon", DbParamTyp.Integer,
+                        Uebernommen(felder.SperrzeitVon, satz, "Sperrzeit_von")),
+                    ProjektPuffer.Par("@sbis", DbParamTyp.Integer,
+                        Uebernommen(felder.SperrzeitBis, satz, "Sperrzeit_bis")),
+                    new DbParam("@biv", Uebernommen(felder.BivalenterBetrieb, satz,
+                                                    "Bivalenter_Betrieb")),
+                    ProjektPuffer.Par("@art", DbParamTyp.VarWChar,
+                        Uebernommen(felder.Betriebsart, satz, "Betriebsart")),
+                    ProjektPuffer.Par("@ab", DbParamTyp.Double,
+                        Uebernommen(felder.Abschaltpunkt, satz, "Abschaltpunkt")),
+                    ProjektPuffer.Par("@carrier", DbParamTyp.Integer,
+                        Uebernommen(felder.IdCarrier, satz, SchemaKatalog.SPALTE_ID_CARRIER)),
+                    new DbParam("@id", idAnlage),
+                    new DbParam("@proj", idProjekt));
+
+                if (!ok)
+                    return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
+                        "Die Konfiguration der Anlage konnte nicht gespeichert werden."),
+                        bezeichner);
+
+                // ET-2 wie in Update(): Wer den Heizstab einschaltet, hebt die Anlage in
+                // die elektrische Welt. Idempotent, und ein Fehlschlag bricht nichts ab.
+                try
+                {
+                    bool elektrisch = Ja(Uebernommen(felder.Heizstab, satz, "Heizstab"));
+                    if (elektrisch) ProjektEnergietraegerCtrl.StromTraegerSicherstellen(idProjekt);
+                }
+                catch { }
+
+                return new SpeicherErgebnis(true, Text("ANL_KONFIG_MSG_GESPEICHERT",
+                    "Konfiguration gespeichert"), bezeichner);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Schreiben der Anlagenkonfiguration: " + ex.Message);
+                return new SpeicherErgebnis(false, Text("ANL_KONFIG_MSG_FEHLER",
+                    "Die Konfiguration der Anlage konnte nicht gespeichert werden."), "");
+            }
+        }
+
+        /// <summary>Der neue Wahrheitswert, sonst der gelesene (0/1, nie <c>NULL</c>).</summary>
+        private static object Uebernommen(bool? neu, DataRow satz, string spalte)
+            => neu.HasValue ? (object)neu.Value : (object)Ja(Feldwert(satz, spalte));
+
+        /// <summary>Die neue Zahl, sonst der gelesene Wert (<c>NULL</c> bleibt <c>NULL</c>).</summary>
+        private static object Uebernommen(int? neu, DataRow satz, string spalte)
+            => neu.HasValue ? (object)neu.Value : Wertoderleer(Feldwert(satz, spalte));
+
+        /// <summary>Die neue Kommazahl, sonst der gelesene Wert (<c>NULL</c> bleibt <c>NULL</c>).</summary>
+        private static object Uebernommen(double? neu, DataRow satz, string spalte)
+            => neu.HasValue ? (object)neu.Value : Wertoderleer(Feldwert(satz, spalte));
+
+        /// <summary>Der neue Text, sonst der gelesene Wert (<c>NULL</c> bleibt <c>NULL</c>).</summary>
+        private static object Uebernommen(string neu, DataRow satz, string spalte)
+            => neu ?? Wertoderleer(Feldwert(satz, spalte));
+
+        /// <summary><c>DBNull</c> wird zu <c>null</c> — so, wie <c>ProjektPuffer.Par</c> es erwartet.</summary>
+        private static object Wertoderleer(object v)
+            => (v == null || v == DBNull.Value) ? null : v;
+
+        /// <summary>Der rohe Spaltenwert; fehlende Spalte und <c>null</c> ergeben <c>DBNull</c>.</summary>
+        private static object Feldwert(DataRow satz, string spalte)
+        {
+            object v = satz.Table.Columns.Contains(spalte) ? satz[spalte] : DBNull.Value;
+            return v ?? DBNull.Value;
+        }
+
+        /// <summary>Der Spaltenwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
+        private static string Feldtext(DataRow satz, string spalte)
+        {
+            object v = Feldwert(satz, spalte);
+            return v == DBNull.Value ? "" : v.ToString();
+        }
+
+        /// <summary>Der Spaltenwert als Wahrheitswert; <c>NULL</c> und Unlesbares ergeben <c>false</c>.</summary>
+        private static bool Ja(object v)
+        {
+            if (v == null || v == DBNull.Value) return false;
+            try { return Convert.ToBoolean(v); }
+            catch { return false; }
+        }
+
+        /// <summary>Ressourcentext mit deutschem Rueckfall (Drei-Schichten-Regel).</summary>
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        #endregion
+
         public bool Insert()
         {
             try

@@ -99,11 +99,22 @@ namespace WindowsFormsApplication1
         /// keine Bezugsgröße führt — seine einzige Baugröße ist die installierte Leistung
         /// in kWp. Die Anweisung steht bei <see cref="PvVorlageBatteriespeicher"/>; wie
         /// Schritt 77 fasst auch dieser nur Zeilen ohne gepflegten Satz an und ist damit
-        /// ergebnisneutral. Der Freeze-Stand
+        /// ergebnisneutral. Mit dem HEIZSTAB JE WÄRMEPUMPE (Schritt 79, Auftrag #299 vom
+        /// 16.09.2026) steht das Ziel auf <b>79</b>: Der projektweite Schalter
+        /// <c>Tab_Einstellungen.WP_Heizstab</c> — der einzige, den der Lauf las — geht an
+        /// die Anlagenzeile über (<c>Tab_Energieanlagen.Heizstab</c>) und wird danach
+        /// entfernt; die Anweisungen stehen bei <see cref="HeizstabJeWaermepumpe"/>. Der
+        /// Schritt ist ergebnisneutral, weil die Übernahme jeder Wärmepumpen-Anlage genau
+        /// den Wert gibt, mit dem ihr Projekt gerechnet hat. Und mit dem KATALOGVERWEIS
+        /// DER WÄRMEPUMPEN-PROJEKTKOPIE (Schritt 80, derselbe Auftrag) steht es auf
+        /// <b>80</b>: <c>Tab_WP</c> bekommt die nullbare Spalte <c>ID_Stamm</c> samt
+        /// Index, nachgetragen wird sie nur bei EINDEUTIGEM Bezeichner; die Anweisungen
+        /// stehen bei <see cref="WaermepumpeKatalogverweis"/>, kein Rechenweg liest sie.
+        /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 78;
+        public const int Zielversion = 80;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

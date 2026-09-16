@@ -205,17 +205,23 @@ namespace WindowsFormsApplication1.Referenzlauf
         };
 
         /// <summary>
-        /// Die 23 Spalten, die <c>KonfigurationCtrl.ReadSingle</c> POSITIONSBASIERT ueber
-        /// row[0]…row[22] liest - in genau dieser Reihenfolge.
+        /// Die 22 Spalten, die <c>KonfigurationCtrl.ReadSingle</c> POSITIONSBASIERT ueber
+        /// row[0]…row[21] liest - in genau dieser Reihenfolge.
         ///
         /// Jede angehaengte Spalte (Extrapolation_erlaubt aus Schritt 2,
         /// Kaskade_Zweikanalig aus Schritt 6) muss dahinter liegen; verschoebe sich
-        /// eine dieser 23, laese die Anwendung stillschweigend falsche Werte.
+        /// eine dieser 22, laese die Anwendung stillschweigend falsche Werte.
+        ///
+        /// <para><b>Seit Schemaschritt 79</b> (Auftrag #299, 16.09.2026) ist es EINE
+        /// Spalte weniger: Der projektweite Heizstabschalter <c>WP_Heizstab</c> stand an
+        /// row[5] und ist entfernt - der Heizstab gehoert der WAERMEPUMPE
+        /// (<c>Tab_Energieanlagen.Heizstab</c>). Alles dahinter ist um eins nach vorn
+        /// gerueckt, in KonfigurationCtrl ebenso wie hier.</para>
         /// </summary>
         private static readonly string[] EINSTELLUNGEN_ORDINALKETTE =
         {
             "ID", "ID_Projekt", "BHKW_Grenzleistung", "Netzverluste", "NetzverlusteEinheit",
-            "WP_Heizstab", "Kessel_Betriebsbereitschaft",
+            "Kessel_Betriebsbereitschaft",
             "Tool_1", "Tool_2", "Tool_3", "Tool_4", "Tool_5", "Tool_6",
             "Ladefuellstand_Min", "Ladefuellstand_Max", "Ladeleistung_Max",
             "Ladefuellstand_Min_Auswahl", "Ladefuellstand_Max_Auswahl",
@@ -230,7 +236,7 @@ namespace WindowsFormsApplication1.Referenzlauf
         };
 
         /// <summary>
-        /// Nachweis fuer Tab_Einstellungen: Die Ordinalkette row[0..22] ist unveraendert,
+        /// Nachweis fuer Tab_Einstellungen: Die Ordinalkette row[0..21] ist unveraendert,
         /// und die angehaengten Spalten liegen dahinter. Rueckgabe: Zahl der Abweichungen.
         /// </summary>
         private static int EinstellungenNachweis(List<string> spalten, Protokoll log)
@@ -239,7 +245,7 @@ namespace WindowsFormsApplication1.Referenzlauf
 
             log.Roh("  Tab_Einstellungen: " + spalten.Count + " Spalten");
 
-            // 1. Ordinalkette row[0..22] Position fuer Position
+            // 1. Ordinalkette row[0..21] Position fuer Position
             for (int i = 0; i < EINSTELLUNGEN_ORDINALKETTE.Length; i++)
             {
                 string ist = i < spalten.Count ? spalten[i] : "(fehlt)";
@@ -251,7 +257,7 @@ namespace WindowsFormsApplication1.Referenzlauf
                 }
             }
             if (fehler == 0)
-                log.Roh("    row[0..22] unveraendert (KonfigurationCtrl.ReadSingle liest positionsbasiert)");
+                log.Roh("    row[0..21] unveraendert (KonfigurationCtrl.ReadSingle liest positionsbasiert)");
 
             // 2. Angehaengte Spalten
             foreach (string name in EINSTELLUNGEN_ANGEHAENGT)
@@ -297,7 +303,7 @@ namespace WindowsFormsApplication1.Referenzlauf
                     fehlend += fehlt.Count;
                 }
 
-                // --- Position von Extrapolation_erlaubt (row[0..22] darf unberuehrt bleiben)
+                // --- Position von Extrapolation_erlaubt (row[0..21] darf unberuehrt bleiben)
                 List<string> einstellungen = SpaltenInReihenfolge(conn, "Tab_Einstellungen");
                 fehlend += EinstellungenNachweis(einstellungen, log);
 

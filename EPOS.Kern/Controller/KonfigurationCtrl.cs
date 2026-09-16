@@ -126,24 +126,27 @@ namespace WindowsFormsApplication1
                 if (row[2] != DBNull.Value) model.m_BHKW_Grenzleistung = Convert.ToDouble(row[2]);
                 if (row[3] != DBNull.Value) model.m_Netzverluste = Convert.ToDouble(row[3]);
                 if (row[4] != DBNull.Value) model.m_szNetzverlusteEinheit = row[4].ToString();
-                if (row[5] != DBNull.Value) model.m_WP_Heizstab = Convert.ToBoolean(row[5]);
-                if (row[6] != DBNull.Value) model.m_Kessel_Betriebsbereitschaft = Convert.ToInt32(row[6]);
-                if (row[7] != DBNull.Value) model.m_Tool_1 = row[7].ToString();
-                if (row[8] != DBNull.Value) model.m_Tool_2 = row[8].ToString();
-                if (row[9] != DBNull.Value) model.m_Tool_3 = row[9].ToString();
-                if (row[10] != DBNull.Value) model.m_Tool_4 = row[10].ToString();
-                if (row[11] != DBNull.Value) model.m_Tool_5 = row[11].ToString();
-                if (row[12] != DBNull.Value) model.m_Tool_6 = row[12].ToString();
-                if (row[13] != DBNull.Value) model.m_Ladefuellstand_Min = Convert.ToInt32(row[13]);
-                if (row[14] != DBNull.Value) model.m_Ladefuellstand_Max = Convert.ToInt32(row[14]);
-                if (row[15] != DBNull.Value) model.m_Ladeleistung_Max = Convert.ToInt32(row[15]);
-                if (row[16] != DBNull.Value) model.m_Ladefuellstand_Min_Auswahl = row[16].ToString();
-                if (row[17] != DBNull.Value) model.m_Ladefuellstand_Max_Auswahl = row[17].ToString();
-                if (row[18] != DBNull.Value) model.m_Ladeleistung_Max_Auswahl = row[18].ToString();
-                if (row[19] != DBNull.Value) model.m_Ladeschwellwert = Convert.ToDouble(row[19]);
-                if (row[20] != DBNull.Value) model.Betriebsart = Convert.ToInt32(row[20]);
-                if (row[21] != DBNull.Value) model.Leistungsgrenze = Convert.ToInt32(row[21]);
-                if (row[22] != DBNull.Value) model.Pendelspeicher = Convert.ToDouble(row[22]);
+                // 16.09.2026 (Schemaschritt 79): Hier stand row[5] = WP_Heizstab, der
+                // PROJEKTweite Heizstabschalter. Er ist an die Anlagenzeile gewandert
+                // (Tab_Energieanlagen.Heizstab), und die Spalte ist entfernt - die
+                // Ordinalkette ist damit um EINE Position nach vorn gerueckt.
+                if (row[5] != DBNull.Value) model.m_Kessel_Betriebsbereitschaft = Convert.ToInt32(row[5]);
+                if (row[6] != DBNull.Value) model.m_Tool_1 = row[6].ToString();
+                if (row[7] != DBNull.Value) model.m_Tool_2 = row[7].ToString();
+                if (row[8] != DBNull.Value) model.m_Tool_3 = row[8].ToString();
+                if (row[9] != DBNull.Value) model.m_Tool_4 = row[9].ToString();
+                if (row[10] != DBNull.Value) model.m_Tool_5 = row[10].ToString();
+                if (row[11] != DBNull.Value) model.m_Tool_6 = row[11].ToString();
+                if (row[12] != DBNull.Value) model.m_Ladefuellstand_Min = Convert.ToInt32(row[12]);
+                if (row[13] != DBNull.Value) model.m_Ladefuellstand_Max = Convert.ToInt32(row[13]);
+                if (row[14] != DBNull.Value) model.m_Ladeleistung_Max = Convert.ToInt32(row[14]);
+                if (row[15] != DBNull.Value) model.m_Ladefuellstand_Min_Auswahl = row[15].ToString();
+                if (row[16] != DBNull.Value) model.m_Ladefuellstand_Max_Auswahl = row[16].ToString();
+                if (row[17] != DBNull.Value) model.m_Ladeleistung_Max_Auswahl = row[17].ToString();
+                if (row[18] != DBNull.Value) model.m_Ladeschwellwert = Convert.ToDouble(row[18]);
+                if (row[19] != DBNull.Value) model.Betriebsart = Convert.ToInt32(row[19]);
+                if (row[20] != DBNull.Value) model.Leistungsgrenze = Convert.ToInt32(row[20]);
+                if (row[21] != DBNull.Value) model.Pendelspeicher = Convert.ToDouble(row[21]);
 
                 // PAKET L (Aufräumen): Hier stand die namensbasierte Lesung des
                 // Feature-Flags Kaskade_Zweikanalig. Sie ist mit dem Feld
@@ -533,13 +536,13 @@ namespace WindowsFormsApplication1
                     INSERT INTO TAB_Einstellungen 
                     (
                         ID_Projekt, BHKW_Grenzleistung, Netzverluste, NetzverlusteEinheit, 
-                        WP_Heizstab, Kessel_Betriebsbereitschaft, 
+                        Kessel_Betriebsbereitschaft, 
                         Tool_1, Tool_2, Tool_3, Tool_4, Tool_5, Tool_6,
                         Ladefuellstand_Min, Ladefuellstand_Max, Ladeleistung_Max,
                         Ladefuellstand_Min_Auswahl, Ladefuellstand_Max_Auswahl, 
                         Ladeleistung_Max_Auswahl, Ladeschwellwert, Betriebsart, Leistungsgrenze, Pendelspeicher
                     ) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 // Die Parameter werden als OLEDB-Objekte an dein DataRepository gereicht
                 DbParam[] parameters = new DbParam[]
@@ -548,7 +551,6 @@ namespace WindowsFormsApplication1
                     new DbParam("?", model.m_BHKW_Grenzleistung),
                     new DbParam("?", model.m_Netzverluste),
                     new DbParam("?", model.m_szNetzverlusteEinheit ?? (object)DBNull.Value),
-                    new DbParam("?", model.m_WP_Heizstab),
                     new DbParam("?", model.m_Kessel_Betriebsbereitschaft),
                     new DbParam("?", model.m_Tool_1 ?? (object)DBNull.Value),
                     new DbParam("?", model.m_Tool_2 ?? (object)DBNull.Value),
@@ -614,7 +616,6 @@ namespace WindowsFormsApplication1
                 BHKW_Grenzleistung = ?, 
                 Netzverluste = ?, 
                 NetzverlusteEinheit = ?, 
-                WP_Heizstab = ?, 
                 Kessel_Betriebsbereitschaft = ?, 
                 Tool_1 = ?, 
                 Tool_2 = ?, 
@@ -640,7 +641,6 @@ namespace WindowsFormsApplication1
             new DbParam("?", model.m_BHKW_Grenzleistung),
             new DbParam("?", model.m_Netzverluste),
             new DbParam("?", model.m_szNetzverlusteEinheit ?? (object)DBNull.Value),
-            new DbParam("?", model.m_WP_Heizstab),
             new DbParam("?", model.m_Kessel_Betriebsbereitschaft),
             new DbParam("?", model.m_Tool_1 ?? (object)DBNull.Value),
             new DbParam("?", model.m_Tool_2 ?? (object)DBNull.Value),

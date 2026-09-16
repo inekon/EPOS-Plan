@@ -368,7 +368,22 @@ namespace WindowsFormsApplication1
         // Hysterese-Zustand der einkanaligen Stundenschleife. Er ist mit ihr entfallen;
         // die Hysterese führt seit Etappe 4b jeder SimulationPufferspeicher selbst.
 
-        public bool Mit_Heizstab = false;
+        /// <summary>
+        /// Rechnet das Modul MIT seinem Heizstab? Je Modul, aus
+        /// <c>Tab_Energieanlagen.Heizstab</c> der zugehoerigen Anlagenzeile
+        /// (Anwenderentscheid 16.09.2026, Schemaschritt 79).
+        ///
+        /// <para><b>Hier stand bis dahin ein einzelnes <c>Mit_Heizstab</c></b>, das
+        /// <c>SimulationControl</c> aus der PROJEKTeinstellung
+        /// <c>Tab_Einstellungen.WP_Heizstab</c> setzte — ein Projekt mit zwei
+        /// Waermepumpen konnte den Heizstab deshalb nur gemeinsam ein- oder ausschalten,
+        /// obwohl seine Leistung je Geraet in <c>Tab_WP.Heizung</c> steht. Der Schalter
+        /// gehoert jetzt der Anlage; <see cref="ModuleAufbauen"/> fuellt das Feld, und
+        /// die Migration hat jeder Waermepumpe den Wert gegeben, mit dem ihr Projekt
+        /// gerechnet hat.</para>
+        /// </summary>
+        private bool[] WP_MitHeizstab = new bool[MAX_WP];
+
         public double Volumen_Pufferspeicher = 0;
 
         // Senkenspeicher der Wärmepumpe (Alias puffer_wp), von SimulationControl aus der
@@ -530,7 +545,12 @@ namespace WindowsFormsApplication1
                 WErzeugerModel model = wp.items[0];
          
                 WP_Betriebsart[i] = model.Betriebsart != null ? model.Betriebsart : "";
-                WP_Modul[i] = model.Bezeichner; 
+                WP_Modul[i] = model.Bezeichner;
+
+                // 16.09.2026 (Schemaschritt 79): Der Heizstab ist ein Merkmal DIESER
+                // Anlage. Bis dahin reichte SimulationControl die Projekteinstellung
+                // Tab_Einstellungen.WP_Heizstab an das ganze Modul durch.
+                WP_MitHeizstab[i] = model.Heizstab;
 
                 if (model.Volumen > 0) Volumen_Pufferspeicher = model.Volumen; 
 
@@ -1564,15 +1584,22 @@ namespace WindowsFormsApplication1
         /// und deshalb aus derselben Quelle (<see cref="Kanalabzug.Offen"/>) statt aus
         /// einer zweiten Summenbildung. <see cref="Heizstab_Kanal"/> nimmt die
         /// Aufschlüsselung des Abzugs auf.</para>
+        ///
+        /// <para><b>Der Schalter steht seit dem 16.09.2026 JE MODUL</b>
+        /// (<see cref="WP_MitHeizstab"/>, Schemaschritt 79). Hier stand bis dahin ein
+        /// <c>if (!Mit_Heizstab) return;</c> am Anfang — ein Projekt schaltete damit alle
+        /// seine Wärmepumpen gemeinsam. Ein Modul ohne Heizstab wird jetzt übergangen,
+        /// die übrigen rechnen weiter: Die Prüfung steht deshalb IN der Schleife und
+        /// hinter dem Abbruch auf einen gedeckten Rest — an der Reihenfolge der
+        /// Modulbeiträge ändert das nichts.</para>
         /// </summary>
         public void Heizstabphase(int stunde, double[] rest)
         {
-            if (!Mit_Heizstab) return;
-
             for (int index = 0; index < wp_model.Count; index++)
             {
                 double offen = Kanalabzug.Offen(WaermequelleClass.SENKE_BEIDES, rest);
                 if (offen <= 0) break;
+                if (!WP_MitHeizstab[index]) continue;
                 if (WP_Heizung[index] <= 0) continue;
 
                 double menge = Math.Min(offen, WP_Heizung[index]);
@@ -1600,6 +1627,11 @@ namespace WindowsFormsApplication1
                 Modul_Heizstab[i] = 0;
                 Modul_WP_Laufzeit[i] = 0;
                 WP_Modul[i] = "";
+
+                // Schemaschritt 79: der Heizstabschalter je Modul gehört zum Laufzustand.
+                // ModuleAufbauen füllt ihn gleich danach aus der Anlagenzeile; ein Lauf mit
+                // kürzerer Modulliste dürfte keinen Schalter des Vorlaufs erben.
+                WP_MitHeizstab[i] = false;
             }
             WpWaermeproduktionGesamtKwh = 0;
             WpStrombedarfGesamtKwh = 0;
@@ -1957,6 +1989,11 @@ namespace WindowsFormsApplication1
                 Modul_Heizstab[i] = 0;
                 Modul_WP_Laufzeit[i] = 0;
                 WP_Modul[i] = "";
+
+                // Schemaschritt 79: der Heizstabschalter je Modul gehört zum Laufzustand.
+                // ModuleAufbauen füllt ihn gleich danach aus der Anlagenzeile; ein Lauf mit
+                // kürzerer Modulliste dürfte keinen Schalter des Vorlaufs erben.
+                WP_MitHeizstab[i] = false;
             }
 
             for (int i = 0; i < 8760; i++)

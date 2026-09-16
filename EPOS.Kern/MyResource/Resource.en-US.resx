@@ -19367,4 +19367,13 @@ Do you want to allow this?</value>
   <data name="WPA_UEB_BTN_OK" xml:space="preserve">
     <value>Transfer</value>
   </data>
+  <data name="ANL_KONFIG_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Configuration saved</value>
+  </data>
+  <data name="ANL_KONFIG_MSG_FEHLER" xml:space="preserve">
+    <value>The unit configuration could not be saved.</value>
+  </data>
+  <data name="ANL_KONFIG_MSG_NICHT_GEFUNDEN" xml:space="preserve">
+    <value>Unit {0} was not found.</value>
+  </data>
 </root>

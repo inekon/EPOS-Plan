@@ -777,10 +777,52 @@ namespace WindowsFormsApplication1
         /// Wie viele ANDERE Projekte fuehren eine eigene Kopie desselben Geraets? Sie
         /// aendern sich durch die Uebernahme NICHT — der Satz, den sie tragen, ist ihrer.
         /// </param>
+        /// <param name="KatalogBezeichner">
+        /// Der Name des VERKNUEPFTEN Katalogsatzes (Schemaschritt 80); leer, wenn es
+        /// keinen gibt.
+        ///
+        /// <para>Er ist normalerweise gleich <paramref name="Bezeichner"/> — aber eben
+        /// nur normalerweise: Wer den Katalogsatz umbenannt hat, bekommt hier den NEUEN
+        /// Namen und im Bezeichner den der Projektkopie. Die Oberflaeche sagt dann
+        /// „Katalogsatz ‚Alt' (jetzt ‚Neu')" statt stillschweigend einen zweiten Satz
+        /// anzulegen.</para>
+        /// </param>
         public sealed record UebernahmeVorschauSatz(string Bezeichner,
                                                     bool KatalogsatzVorhanden,
                                                     bool ReadOnly,
-                                                    int AnzahlProjekteMitKopie);
+                                                    int AnzahlProjekteMitKopie,
+                                                    string KatalogBezeichner = "");
+
+        /// <summary>
+        /// Der Katalogsatz einer Projektkopie: ueber den VERWEIS
+        /// (<c>Tab_WP.ID_Stamm</c>, Schemaschritt 80), sonst ueber den Bezeichner.
+        ///
+        /// <para><b>Der Rueckfall ist kein Notnagel, sondern der Altbestand.</b>
+        /// <c>ID_Stamm</c> ist nullbar: von Hand angelegte Geraete, ein geloeschter
+        /// Katalogsatz und jede Kopie, deren Name beim Nachtrag mehrdeutig war, tragen
+        /// keinen Verweis. Erst wenn auch der Verweis ins Leere zeigt, gilt wieder der
+        /// Name.</para>
+        ///
+        /// <para>Die Zeilen tragen <c>ID</c>, <c>ReadOnly</c> und <c>Bezeichner</c> —
+        /// den Namen braucht die Vorschau, um eine Umbenennung benennen zu koennen.
+        /// Ueber den Namen koennen es MEHRERE Zeilen sein (der Katalog fuehrt keinen
+        /// eindeutigen Schluessel darauf); ueber den Verweis ist es immer genau eine.</para>
+        /// </summary>
+        private static DataTable KatalogsatzZu(int stammId, string bezeichner)
+        {
+            if (stammId > 0)
+            {
+                DataTable ueberVerweis = DataRepository.GetDataTable(
+                    "SELECT ID, ReadOnly, Bezeichner FROM " + TABLE + " WHERE ID = ?",
+                    new DbParam("@id", stammId));
+                if (ueberVerweis != null && ueberVerweis.Rows.Count > 0) return ueberVerweis;
+            }
+
+            return DataRepository.GetDataTable(
+                "SELECT ID, ReadOnly, Bezeichner FROM " + TABLE +
+                " WHERE Bezeichner = ? ORDER BY ID",
+                new DbParam("@bez", bezeichner ?? ""));
+        }
 
         /// <summary>
         /// Was die Uebernahme eines Projektgeraets in den Katalog antreffen wird
@@ -801,19 +843,27 @@ namespace WindowsFormsApplication1
 
             try
             {
-                object b = DataRepository.ExecuteScalar(
-                    "SELECT Bezeichner FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
+                DataTable kopf = DataRepository.GetDataTable(
+                    "SELECT Bezeichner, " + WaermepumpeKatalogverweis.SPALTE +
+                    " FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
                     new DbParam("@id", idWp), new DbParam("@proj", idProjekt));
-                if (b == null || b == DBNull.Value) return leer;
+                if (kopf == null || kopf.Rows.Count == 0) return leer;
 
-                string bezeichner = b.ToString();
+                DataRow kopie = kopf.Rows[0];
+                if (kopie["Bezeichner"] == DBNull.Value) return leer;
 
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT ID, ReadOnly FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
-                    new DbParam("@bez", bezeichner));
+                string bezeichner = kopie["Bezeichner"].ToString();
+
+                // DER KATALOGSATZ: erst über den Verweis (Schemaschritt 80), dann über
+                // den Namen. Der Verweis überlebt eine Umbenennung des Katalogsatzes -
+                // der Name nicht, und genau darin lag der Fehler, den der Entscheid
+                // abstellt.
+                DataTable dt = KatalogsatzZu(WPCtrl.Verweis(kopie), bezeichner);
                 bool vorhanden = dt != null && dt.Rows.Count > 0;
                 bool geschuetzt = vorhanden && dt.Rows[0]["ReadOnly"] != DBNull.Value &&
                                   Convert.ToBoolean(dt.Rows[0]["ReadOnly"]);
+                string katalogname = vorhanden && dt.Rows[0]["Bezeichner"] != DBNull.Value
+                    ? dt.Rows[0]["Bezeichner"].ToString() : "";
 
                 object n = DataRepository.ExecuteScalar(
                     "SELECT COUNT(DISTINCT ID_Projekt) FROM Tab_WP " +
@@ -821,7 +871,8 @@ namespace WindowsFormsApplication1
                     new DbParam("@bez", bezeichner), new DbParam("@proj", idProjekt));
                 int andere = (n == null || n == DBNull.Value) ? 0 : Convert.ToInt32(n);
 
-                return new UebernahmeVorschauSatz(bezeichner, vorhanden, geschuetzt, andere);
+                return new UebernahmeVorschauSatz(bezeichner, vorhanden, geschuetzt, andere,
+                                                  katalogname);
             }
             catch (Exception ex)
             {
@@ -873,7 +924,8 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable quelle = DataRepository.GetDataTable(
-                    "SELECT Bezeichner, " + UEBERNAHME_SPALTEN +
+                    "SELECT Bezeichner, " + WaermepumpeKatalogverweis.SPALTE + ", " +
+                    UEBERNAHME_SPALTEN +
                     " FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
                     new DbParam("@id", idWp), new DbParam("@proj", idProjekt));
                 if (quelle == null || quelle.Rows.Count == 0)
@@ -883,13 +935,14 @@ namespace WindowsFormsApplication1
                 string bezeichner = satz["Bezeichner"] == DBNull.Value
                     ? "" : satz["Bezeichner"].ToString();
 
-                // (1) Der Katalogsatz gleichen Bezeichners. Tab_WP_STAMM fuehrt auf
-                //     Bezeichner keinen eindeutigen Schluessel - bei einer Dublette
-                //     wuerde ein Update BEIDE Saetze treffen (Klammer wie
+                // (1) Der Katalogsatz: ueber den VERWEIS (Schemaschritt 80), sonst ueber
+                //     den Bezeichner. Ueber den Verweis ist es immer genau EINER - eine
+                //     Umbenennung des Katalogsatzes legt damit keinen zweiten mehr an.
+                //     Ueber den Namen koennen es mehrere sein: Tab_WP_STAMM fuehrt auf
+                //     Bezeichner keinen eindeutigen Schluessel, und ein Update traefe
+                //     dann BEIDE Saetze (Klammer wie
                 //     HeizkesselStammCtrl.AnzeigefelderSchreiben).
-                DataTable katalog = DataRepository.GetDataTable(
-                    "SELECT ID, ReadOnly FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
-                    new DbParam("@bez", bezeichner));
+                DataTable katalog = KatalogsatzZu(WPCtrl.Verweis(satz), bezeichner);
                 int anzahl = katalog == null ? 0 : katalog.Rows.Count;
 
                 if (anzahl > 1)
@@ -960,6 +1013,20 @@ namespace WindowsFormsApplication1
                                 "WHERE ID = ?",
                                 p.ToArray());
                         }
+
+                        // DIE KLAMMER FESTZIEHEN (Schemaschritt 80). Nach einem INSERT
+                        // gibt es den Katalogsatz erst seit dieser Zeile - ohne den
+                        // Verweis faende die Projektkopie ihn beim naechsten Mal wieder
+                        // nur ueber den Namen. Und wo der Satz ueber den NAMEN gefunden
+                        // wurde (Kopie ohne Verweis, Altbestand), entsteht die Klammer
+                        // hier: Danach traegt die Umbenennung des Katalogsatzes nichts
+                        // mehr aus.
+                        v.Ausfuehren(
+                            "UPDATE Tab_WP SET " + WaermepumpeKatalogverweis.SPALTE + " = ? " +
+                            "WHERE ID = ? AND ID_Projekt = ?",
+                            new DbParam("@stamm", DbParamTyp.Integer) { Wert = katalogId },
+                            new DbParam("@id", DbParamTyp.Integer) { Wert = idWp },
+                            new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt });
 
                         if (mitKennlinien)
                         {

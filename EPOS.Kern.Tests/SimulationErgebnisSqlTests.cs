@@ -51,7 +51,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(alt.model.m_Netzverluste, neu.m_Netzverluste);
             Assert.Equal(alt.model.m_szNetzverlusteEinheit, neu.m_szNetzverlusteEinheit);
             Assert.Equal(alt.model.m_BHKW_Grenzleistung, neu.m_BHKW_Grenzleistung);
-            Assert.Equal(alt.model.m_WP_Heizstab, neu.m_WP_Heizstab);
+            // 16.09.2026 (Auftrag #299): Hier stand m_WP_Heizstab. Der Heizstab
+            // gehoert der WAERMEPUMPE; Tab_Einstellungen fuehrt die Spalte nicht mehr.
             Assert.Equal(alt.model.m_Kessel_Betriebsbereitschaft, neu.m_Kessel_Betriebsbereitschaft);
             Assert.Equal(alt.model.m_Tool_1, neu.m_Tool_1);
             Assert.Equal(alt.model.m_Tool_2, neu.m_Tool_2);

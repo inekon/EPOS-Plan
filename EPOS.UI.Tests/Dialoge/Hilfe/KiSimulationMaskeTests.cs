@@ -115,7 +115,7 @@ public class KiSimulationMaskeTests : IDisposable
         Laufmeldungen = "LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ: Kollektorfeld"
     };
 
-    /// <summary>Die fünf Laufparameter samt Schreibweg — und was der Weg mitbekommt.</summary>
+    /// <summary>Die vier Laufparameter samt Schreibweg — und was der Weg mitbekommt.</summary>
     private sealed class Schreibprobe
     {
         internal ParameterDaten Stand = new ParameterDaten
@@ -123,7 +123,6 @@ public class KiSimulationMaskeTests : IDisposable
             Netzverluste = 3.0,
             Betriebsart = 0,
             UntersteLeistungsgrenze = 50,
-            Heizstab = false,
             Bereitschaft = 4000.0
         };
 
@@ -137,7 +136,9 @@ public class KiSimulationMaskeTests : IDisposable
                     System.Globalization.CultureInfo.InvariantCulture) + einheit),
             BetriebsartSchreiben = wert => Geschrieben.Add("betriebsart=" + wert),
             LeistungsgrenzeSchreiben = wert => Geschrieben.Add("grenze=" + wert),
-            HeizstabSchreiben = wert => Geschrieben.Add("heizstab=" + wert),
+            // 16.09.2026 (Auftrag #299): HeizstabSchreiben ist entfallen - der Heizstab
+            // gehoert der WAERMEPUMPE (Tab_Energieanlagen.Heizstab je Anlage) und ist
+            // kein Laufparameter des Projekts mehr.
             BereitschaftSchreiben = wert => Geschrieben.Add("bereitschaft=" +
                 wert.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))
         };
@@ -158,8 +159,13 @@ public class KiSimulationMaskeTests : IDisposable
     //  1 — Was die Ansicht anmeldet
     // =====================================================================
 
+    /// <summary>
+    /// Siebzehn seit Auftrag #299: Das Feld <c>wp_heizstab</c> ist entfallen — der
+    /// Heizstab gehört der WÄRMEPUMPE (<c>Tab_Energieanlagen.Heizstab</c> je Anlage)
+    /// und ist kein Laufparameter des Projekts mehr.
+    /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_achtzehn_Felder_an()
+    public void Die_Ansicht_meldet_siebzehn_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -168,11 +174,11 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(18, felder.Count);
+        Assert.Equal(17, felder.Count);
     }
 
     [Fact]
-    public void Schritt_1_liefert_Kaskade_Reihenfolge_und_die_fuenf_Laufparameter()
+    public void Schritt_1_liefert_Kaskade_Reihenfolge_und_die_vier_Laufparameter()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -190,11 +196,11 @@ public class KiSimulationMaskeTests : IDisposable
         // der Grund fuer eine 0,00 in der Uebersicht (#190).
         Assert.Equal("Kollektorfeld", werte["nicht_aufgenommen"]);
 
-        // Die fuenf Laufparameter.
+        // Die vier Laufparameter (seit Auftrag #299 ohne wp_heizstab).
         Assert.Equal("3", werte["netzverluste"]);
         Assert.Equal("0", werte["bhkw_betriebsart"]);
         Assert.Equal("50", werte["bhkw_leistungsgrenze"]);
-        Assert.Equal("Nein", werte["wp_heizstab"]);
+        Assert.False(werte.ContainsKey("wp_heizstab"));
         Assert.Equal("4000", werte["kessel_bereitschaft"]);
 
         Assert.Equal("1 Konfiguration", werte["schritt"]);
@@ -249,7 +255,6 @@ public class KiSimulationMaskeTests : IDisposable
     [InlineData("netzverluste", "7,5", "netzverluste=7.5%")]
     [InlineData("bhkw_betriebsart", "1", "betriebsart=1")]
     [InlineData("bhkw_leistungsgrenze", "30", "grenze=30")]
-    [InlineData("wp_heizstab", "Ja", "heizstab=True")]
     [InlineData("kessel_bereitschaft", "6000", "bereitschaft=6000")]
     public async Task Ein_Laufparameter_wird_ueber_den_Delegaten_geschrieben(
         string feld, string wert, string erwartet)
@@ -323,7 +328,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.Equal(new[]
         {
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
-            "wp_heizstab", "kessel_bereitschaft"
+            "kessel_bereitschaft"
         }, setzbar);
     }
 

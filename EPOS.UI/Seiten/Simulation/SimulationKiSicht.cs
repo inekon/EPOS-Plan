@@ -205,18 +205,10 @@ public sealed class SimulationKiSicht
         }
     }
 
-    /// <summary>Rechnet die Wärmepumpe mit Heizstab?</summary>
-    public bool WpHeizstab
-    {
-        get => Parameter?.Heizstab ?? false;
-        set
-        {
-            ParameterDaten? p = Parameter;
-            if (p is null) return;
-            p.Heizstab = value;
-            Wege?.HeizstabSchreiben?.Invoke(value);
-        }
-    }
+    // 16.09.2026 (Auftrag #299): Hier stand "WpHeizstab" - das KI-Feld wp_heizstab der
+    // Simulationsmaske. Der Heizstab ist kein Laufparameter des Projekts mehr, sondern
+    // ein Feld JE WÄRMEPUMPE (Tab_Energieanlagen.Heizstab); die Maske führt ihn deshalb
+    // nicht mehr, und KiDialoge.Katalog nennt ihn nicht mehr.
 
     /// <summary>Die Betriebsbereitschaft des Heizkessels [h/a].</summary>
     public double KesselBereitschaft

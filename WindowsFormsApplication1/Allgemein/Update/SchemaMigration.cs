@@ -2901,6 +2901,67 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_78_PV_BATTERIESPEICHER = 78;
 
+        /// <summary>
+        /// Schritt 79 — der <b>Heizstab je Wärmepumpe</b> (Auftrag <b>#299</b>,
+        /// Anwenderentscheid vom 16.09.2026). Anlass, Anweisungen und
+        /// Ergebnisneutralität stehen vollständig bei
+        /// <see cref="HeizstabJeWaermepumpe"/>; hier nur, was die Migration angeht.
+        ///
+        /// <para><b>Wozu.</b> Es gab zwei Schalter mit demselben Wort: den projektweiten
+        /// <c>Tab_Einstellungen.WP_Heizstab</c>, der als EINZIGER rechnete, und
+        /// <c>Tab_Energieanlagen.Heizstab</c> je Anlage, den der Lauf nicht las. Ein
+        /// Projekt mit zwei Wärmepumpen konnte den Heizstab deshalb nur gemeinsam ein-
+        /// oder ausschalten, obwohl seine Leistung je Gerät in <c>Tab_WP.Heizung</c>
+        /// steht. Ab hier gilt EIN Schalter je Wärmepumpe, gespeichert an der Anlage.</para>
+        ///
+        /// <para><b>Zwei Anweisungen in FESTER Reihenfolge</b>, beide aus dem KERN:
+        /// erst die Übernahme des Projektschalters an jede Wärmepumpen-Anlage, dann das
+        /// Entfernen der Projektspalte. Umgekehrt wäre der Wert weg, bevor er an die
+        /// Anlagen gekommen ist.</para>
+        ///
+        /// <para><b>Ergebnisneutral durch die Übernahme.</b> Jede Wärmepumpen-Anlage
+        /// bekommt genau den Wert, mit dem ihr Projekt gerechnet hat — auch die 0. Der
+        /// Referenzlauf bleibt byte-gleich; erst der Anwender kann zwei Module eines
+        /// Projekts künftig auseinanderziehen.</para>
+        ///
+        /// <para><b>Achtung, ORDINALKETTE.</b> <c>KonfigurationCtrl.ZeileUebernehmen</c>
+        /// liest <c>SELECT * FROM Tab_Einstellungen</c> über Positionen; mit der
+        /// entfernten Spalte ist die Kette um eins nach vorn gerückt. Beides steht im
+        /// selben Commit.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Die Übernahme schreibt beim zweiten Lauf denselben
+        /// Wert; das <c>DROP COLUMN</c> läuft nur, solange die Spalte steht.</para>
+        /// </summary>
+        public const int SCHRITT_79_HEIZSTAB_JE_WP = 79;
+
+        /// <summary>
+        /// Schritt 80 — der <b>Katalogverweis der Wärmepumpen-Projektkopie</b> (Auftrag
+        /// <b>#299</b>, derselbe Anwenderentscheid). Anlass, Anweisungen und
+        /// Ergebnisneutralität stehen vollständig bei
+        /// <see cref="WaermepumpeKatalogverweis"/>.
+        ///
+        /// <para><b>Wozu.</b> <c>Tab_WP</c> hing am Katalogsatz allein über den
+        /// BEZEICHNER — ein Textfeld, das in keiner der beiden Tabellen eindeutig ist.
+        /// Wer einen Katalogsatz umbenannte, zerriss damit die Klammer zu jeder
+        /// Projektkopie; „In Stamm übernehmen" legte danach einen zweiten Satz an. Die
+        /// Hausregel verlangt für neue Beziehungen IDs, keine Textfelder.</para>
+        ///
+        /// <para><b>Drei Handgriffe in fester Reihenfolge:</b> Spalte
+        /// (<c>ADD COLUMN</c> mit <c>REFERENCES</c>, ohne <c>DEFAULT</c>), Index, dann
+        /// der Nachtrag. Alle drei aus dem Kern.</para>
+        ///
+        /// <para><b>Der Nachtrag rät nicht.</b> Gefüllt wird nur, wo der Bezeichner
+        /// GENAU EINEN Katalogsatz trifft; Dublette und Fehlanzeige ergeben NULL. NULL
+        /// bleibt ein gültiger Zustand, und jeder Leser hat seinen Rückfall auf den
+        /// Namen behalten.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest <c>Tab_WP.ID_Stamm</c>.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Spaltenprobe, <c>IF NOT EXISTS</c> am Index, und der
+        /// Nachtrag fasst nur Zeilen ohne Verweis an.</para>
+        /// </summary>
+        public const int SCHRITT_80_WP_KATALOGVERWEIS = 80;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3846,6 +3907,35 @@ namespace WindowsFormsApplication1
                         "Projekt uebernaehme sie, und ein dort gepflegter Satz ergaebe " +
                         "keinen Betrag.",
                         Schritt_78_PvBatteriespeicher),
+
+            // AUFTRAG #299 vom 16.09.2026 (Anwenderentscheid "EIN Schalter 'mit
+            // Heizstab' je Waermepumpe; der Projektschalter entfaellt"). Uebernahme,
+            // Drop und Idempotenzzusage stehen in HeizstabJeWaermepumpe - EINE Quelle
+            // fuer Migration, Testdatenbank und Nachweis. Ergebnisneutral: Jede
+            // Waermepumpen-Anlage bekommt genau den Wert, mit dem ihr Projekt gerechnet
+            // hat.
+            new Schritt(SCHRITT_79_HEIZSTAB_JE_WP,
+                        "Den Heizstab an die Waermepumpen-Anlagen uebergeben und den " +
+                        "Projektschalter Tab_Einstellungen.WP_Heizstab entfernen " +
+                        "(Auftrag #299)",
+                        "Der Lauf laese den Heizstab weiter je Anlage aus " +
+                        "Tab_Energieanlagen.Heizstab - und dort steht im Bestand " +
+                        "ueberall 0. Jedes Projekt, das bisher MIT Heizstab rechnete, " +
+                        "rechnete ab dem naechsten Lauf ohne ihn.",
+                        Schritt_79_HeizstabJeWp),
+
+            // AUFTRAG #299 vom 16.09.2026 (derselbe Anwenderentscheid, zweiter Teil:
+            // "Tab_WP bekommt ID_Stamm"). Spalte, Index, Nachtrag und Idempotenzzusage
+            // stehen in WaermepumpeKatalogverweis. Ergebnisneutral: Kein Rechenweg liest
+            // die Spalte.
+            new Schritt(SCHRITT_80_WP_KATALOGVERWEIS,
+                        "Tab_WP bekommt den Katalogverweis ID_Stamm samt Index; " +
+                        "nachgetragen wird er bei EINDEUTIGEM Bezeichner (Auftrag #299)",
+                        "Projektkopie und Katalogsatz haengen weiter allein am " +
+                        "Bezeichner. Eine Umbenennung des Katalogsatzes zerrisse die " +
+                        "Klammer, und \"In Stamm uebernehmen\" legte einen zweiten " +
+                        "Katalogsatz an, statt den vorhandenen zu pflegen.",
+                        Schritt_80_WpKatalogverweis),
         };
 
         /// <summary>
@@ -5208,6 +5298,126 @@ namespace WindowsFormsApplication1
                     (gepflegt < 0 ? "unbekannt" : gepflegt.ToString(CultureInfo.InvariantCulture)) +
                     ". Umgestellt wird nur eine Zeile OHNE Satz - sie gibt allein die Art " +
                     "vor, keine Zahl. Tab_ProjektWerte bleibt unberuehrt. KEIN " +
+                    "Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 79 - der Heizstab gehoert der Waermepumpe (Auftrag #299)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 79 — Anlass, Anweisungen und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_79_HEIZSTAB_JE_WP"/> und ausführlich bei
+        /// <see cref="HeizstabJeWaermepumpe"/>.
+        ///
+        /// <para><b>Zwei Handgriffe in FESTER Reihenfolge:</b> erst die Übernahme des
+        /// Projektschalters an jede Wärmepumpen-Anlage (<see cref="SqliteDml"/>), dann
+        /// das Entfernen der Projektspalte (<see cref="SqliteDdl"/>). Umgekehrt wäre der
+        /// Wert weg, bevor er an den Anlagen steht — und der Schritt hätte jedes Projekt
+        /// still auf „ohne Heizstab" gestellt.</para>
+        ///
+        /// <para><b>Die Spalte ist die Bedingung.</b> Steht sie nicht mehr, ist der
+        /// Schritt bereits gelaufen; dann gibt es nichts zu übernehmen und nichts zu
+        /// entfernen. Genau so wird er wiederholbar.</para>
+        /// </summary>
+        private static bool Schritt_79_HeizstabJeWp(Lauf l)
+        {
+            bool spalte;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                spalte = HeizstabJeWaermepumpe.ProjektschalterVorhanden();
+                DataRepository.StilleFehlerAbholen();
+            }
+
+            if (!spalte)
+            {
+                l.Notiz("79: nichts zu tun - " + HeizstabJeWaermepumpe.TABELLE_EINSTELLUNGEN +
+                        "." + HeizstabJeWaermepumpe.SPALTE_PROJEKT + " gibt es nicht mehr.");
+                return true;
+            }
+
+            long offen = SqliteZahl(HeizstabJeWaermepumpe.Zaehlung());
+            long ein = SqliteZahl(HeizstabJeWaermepumpe.ZaehlungEinschalten());
+
+            if (!SqliteDml(l, HeizstabJeWaermepumpe.SqlUebernahme(),
+                           "Heizstab je Waermepumpe uebernehmen"))
+                return false;
+
+            // Die Probe VOR dem Entfernen: Danach laesst sich nicht mehr vergleichen.
+            long rest = SqliteZahl(HeizstabJeWaermepumpe.Zaehlung());
+            if (rest > 0)
+            {
+                l.LetzterFehler = rest + " Waermepumpen-Anlage(n) tragen nach der " +
+                                  "Uebernahme weiterhin einen anderen Wert als ihr Projekt.";
+                l.Notiz("79: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            if (!SqliteDdl(l, HeizstabJeWaermepumpe.SqlSpalteEntfernen(),
+                           HeizstabJeWaermepumpe.TABELLE_EINSTELLUNGEN + "." +
+                           HeizstabJeWaermepumpe.SPALTE_PROJEKT + " (entfernt)"))
+                return false;
+
+            l.Notiz("79: Heizstab an die Anlagenzeilen uebergeben - umgestellt " +
+                    (offen < 0 ? "unbekannt" : offen.ToString(CultureInfo.InvariantCulture)) +
+                    ", danach MIT Heizstab " +
+                    (ein < 0 ? "unbekannt" : ein.ToString(CultureInfo.InvariantCulture)) +
+                    " Waermepumpen-Anlage(n). Der Projektschalter " +
+                    HeizstabJeWaermepumpe.SPALTE_PROJEKT + " ist entfernt; die " +
+                    "Ordinalkette von KonfigurationCtrl ist um eins nach vorn gerueckt. " +
+                    "Jede Waermepumpe rechnet mit dem Wert, mit dem ihr Projekt " +
+                    "gerechnet hat - KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 80 - der Katalogverweis der WP-Projektkopie (Auftrag #299)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 80 — Anlass, Anweisungen und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_80_WP_KATALOGVERWEIS"/> und ausführlich bei
+        /// <see cref="WaermepumpeKatalogverweis"/>.
+        ///
+        /// <para><b>Drei Handgriffe in fester Reihenfolge:</b> Spalte (über
+        /// <see cref="SqliteSpalteAnlegen"/>, das die Spaltenprobe mitbringt), Index
+        /// (<c>IF NOT EXISTS</c>), Nachtrag (<c>ID_Stamm IS NULL</c>). Jeder für sich
+        /// wiederholbar.</para>
+        ///
+        /// <para><b>NICHT über <c>SchemaKatalog</c>.</b> Dessen Typübersetzung kennt nur
+        /// Access-Typnamen und schnitte das <c>REFERENCES</c> weg — dieselbe Lage wie bei
+        /// den Verweisspalten in Schritt 75. Die Typdefinition kommt deshalb wörtlich aus
+        /// dem Kern.</para>
+        /// </summary>
+        private static bool Schritt_80_WpKatalogverweis(Lauf l)
+        {
+            if (!SqliteSpalteAnlegen(l, WaermepumpeKatalogverweis.TABELLE,
+                                     WaermepumpeKatalogverweis.SPALTE,
+                                     WaermepumpeKatalogverweis.TYP_SPALTE))
+                return false;
+
+            if (!SqliteDdl(l, WaermepumpeKatalogverweis.SQL_INDEX,
+                           "Index " + WaermepumpeKatalogverweis.INDEX))
+                return false;
+
+            long offen = SqliteZahl(WaermepumpeKatalogverweis.Zaehlung());
+
+            if (offen != 0 &&
+                !SqliteDml(l, WaermepumpeKatalogverweis.SqlNachtrag(),
+                           "Katalogverweis nachtragen"))
+                return false;
+
+            long ohne = SqliteZahl(WaermepumpeKatalogverweis.ZaehlungOhneVerweis());
+
+            l.Notiz("80: " + WaermepumpeKatalogverweis.TABELLE + "." +
+                    WaermepumpeKatalogverweis.SPALTE + " steht; nachgetragen " +
+                    (offen < 0 ? "unbekannt" : offen.ToString(CultureInfo.InvariantCulture)) +
+                    " Projektkopie(n), ohne Verweis geblieben " +
+                    (ohne < 0 ? "unbekannt" : ohne.ToString(CultureInfo.InvariantCulture)) +
+                    " (kein Katalogsatz oder ein mehrdeutiger Bezeichner - dort gilt " +
+                    "weiter der Name). KEIN Rechenweg liest die Spalte, KEIN " +
                     "Rechenergebnis aendert sich.");
             return true;
         }

@@ -238,6 +238,28 @@ namespace EPOS.Kern.Tests
                 NutzungsdauerSchema.SaatSchreiben();
                 NutzungsdauerSchema.ZuordnungSchreiben();
 
+                // Schritt 79 (Auftrag #299, 16.09.2026): der Heizstab je Waermepumpe.
+                // Zwei Anweisungen in FESTER Reihenfolge aus DERSELBEN Quelle wie in der
+                // Migration und im Werkzeug - erst die Uebernahme des Projektschalters an
+                // die Anlagenzeilen, dann das Entfernen der Projektspalte. Die
+                // Quelldatei fuehrt beides seit dem Nachziehen; hier steht es fuer den
+                // Fall, dass jemand eine aeltere Kopie einlegt. Ohne den Schritt
+                // rechneten die Referenzprojekte 1007 und 1046 still ohne Heizstab.
+                if (HeizstabJeWaermepumpe.ProjektschalterVorhanden())
+                {
+                    DataRepository.ExecuteNonQuery(HeizstabJeWaermepumpe.SqlUebernahme());
+                    DataRepository.ExecuteNonQuery(HeizstabJeWaermepumpe.SqlSpalteEntfernen());
+                }
+
+                // Schritt 80 (derselbe Auftrag): der Katalogverweis Tab_WP.ID_Stamm samt
+                // Index und Nachtrag. NICHT ueber SpalteSicherstellen - dessen
+                // Typuebersetzung kennt nur Access-Typnamen und schnitte das REFERENCES
+                // weg (dieselbe Regel wie bei den Verweisspalten aus Schritt 75).
+                if (!WaermepumpeKatalogverweis.SpalteVorhanden())
+                    DataRepository.ExecuteNonQuery(WaermepumpeKatalogverweis.SQL_SPALTE);
+                DataRepository.ExecuteNonQuery(WaermepumpeKatalogverweis.SQL_INDEX);
+                DataRepository.ExecuteNonQuery(WaermepumpeKatalogverweis.SqlNachtrag());
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

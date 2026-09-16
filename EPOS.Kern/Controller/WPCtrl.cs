@@ -416,6 +416,34 @@ namespace WindowsFormsApplication1
 
         #region --- STAMM -> PROJEKT KOPIE ---
 
+        /// <summary>
+        /// Projekt-WP-ID (<c>Tab_WP.ID</c>) zu einem KATALOGSATZ im Projekt, oder 0 —
+        /// der Weg über die Id statt über den Namen (Anwenderentscheid 16.09.2026,
+        /// Schemaschritt 80).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum es diesen Weg neben <see cref="GetProjektId"/> gibt.</b>
+        /// <c>Tab_WP.Bezeichner</c> ist nicht eindeutig, und ein umbenannter Katalogsatz
+        /// findet seine eigene Projektkopie über den Namen gar nicht mehr. Die Spalte
+        /// <c>ID_Stamm</c> ist die Klammer, die eine Umbenennung überlebt.</para>
+        ///
+        /// <para><b><c>ID_Stamm</c> darf NULL sein</b> — von Hand angelegte Geräte, ein
+        /// gelöschter Katalogsatz, ein beim Nachtrag mehrdeutiger Name. Wer hier 0
+        /// bekommt, fragt deshalb weiter über den Namen; das ist keine Ausnahme, sondern
+        /// der Regelfall des Altbestands.</para>
+        /// </remarks>
+        public int GetProjektIdZuStamm(int stammId, int idProjekt)
+        {
+            if (stammId <= 0 || idProjekt <= 0) return 0;
+
+            object v = DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_WP WHERE " + WaermepumpeKatalogverweis.SPALTE +
+                " = ? AND ID_Projekt = ? ORDER BY ID",
+                new DbParam("@stamm", stammId),
+                new DbParam("@proj", idProjekt));
+            return (v != null && v != DBNull.Value) ? Convert.ToInt32(v) : 0;
+        }
+
         // Projekt-WP-ID (Tab_WP.ID) zu einem Bezeichner im Projekt, oder 0.
         public int GetProjektId(string szBezeichner, int idProjekt)
         {
@@ -461,7 +489,12 @@ namespace WindowsFormsApplication1
                 DataRow sHead = head.Rows[0];
                 string bez = sHead["Bezeichner"].ToString();
 
-                int vorhanden = GetProjektId(bez, idProjekt);
+                // Die vorhandene Kopie: ZUERST über den Katalogverweis (Schemaschritt
+                // 80), erst danach über den Namen. Umgekehrt fände ein umbenannter
+                // Katalogsatz seine eigene Kopie nicht und legte eine zweite an; der
+                // Namensweg bleibt für jede Kopie ohne Verweis (ID_Stamm NULL).
+                int vorhanden = GetProjektIdZuStamm(stammId, idProjekt);
+                if (vorhanden <= 0) vorhanden = GetProjektId(bez, idProjekt);
                 if (vorhanden > 0) return vorhanden;
 
                 DataTable cw = DataRepository.GetDataTable(
@@ -479,15 +512,19 @@ namespace WindowsFormsApplication1
                             neueId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                         }
 
+                        // ID_Stamm seit Schemaschritt 80: Die Kopie merkt sich, aus
+                        // welchem Katalogsatz sie stammt - eine Umbenennung des Satzes
+                        // zerreisst die Klammer dann nicht mehr.
                         string hsql = @"INSERT INTO Tab_WP
-                        (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung,
+                        (ID, ID_Projekt, ID_Stamm, Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung,
                          Nennleistung, maxPtherm, Heizung, Regelung, Modulkosten, Laenge, Breite, Hoehe,
                          Gewicht, Raum, Kuehlleistung, Bauart)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", neueId));
                             p.Add(new DbParam("@proj", idProjekt));
+                            p.Add(new DbParam("@stamm", stammId));
                             p.Add(P(sHead, "Bezeichner"));
                             p.Add(P(sHead, "Firma"));
                             p.Add(P(sHead, "Beschreibung"));
@@ -601,13 +638,19 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable kopf = DataRepository.GetDataTable(
-                    "SELECT Bezeichner FROM Tab_WP WHERE ID = ?", new DbParam("@id", projektWpId));
+                    "SELECT Bezeichner, " + WaermepumpeKatalogverweis.SPALTE +
+                    " FROM Tab_WP WHERE ID = ?", new DbParam("@id", projektWpId));
                 if (kopf == null || kopf.Rows.Count == 0) return -1;
 
                 string bez = kopf.Rows[0]["Bezeichner"] == DBNull.Value
                     ? "" : kopf.Rows[0]["Bezeichner"].ToString();
 
-                int stammId = DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", bez);
+                // Der KATALOGVERWEIS zuerst (Schemaschritt 80), der Name als Rückfall.
+                // Sonst holte der Knopf die Stützstellen eines gleichnamigen Fremdsatzes,
+                // sobald jemand den eigenen Katalogsatz umbenannt hat.
+                int stammId = Verweis(kopf.Rows[0]);
+                if (stammId <= 0)
+                    stammId = DataRepository.GetIdByName(WPStammCtrl.TABLE, "Bezeichner", bez);
                 if (stammId <= 0) return 0;
 
                 bool waermeFehlt = Zeilenzahl("SELECT COUNT(*) FROM Tab_Kenndaten WHERE ID_WP = ?", projektWpId) == 0;
@@ -690,6 +733,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Zeilenzahl einer Zaehlabfrage mit einer Geraete-Id.</summary>
+        /// <summary>
+        /// Der Katalogverweis einer Projektzeile (<c>Tab_WP.ID_Stamm</c>) als Zahl;
+        /// fehlende Spalte, NULL und 0 ergeben gleichermaßen 0 — „an keinem
+        /// Katalogsatz". Die Fallunterscheidung steht hier und nicht bei jedem
+        /// Aufrufer.
+        /// </summary>
+        internal static int Verweis(DataRow satz)
+        {
+            if (satz == null) return 0;
+            if (!satz.Table.Columns.Contains(WaermepumpeKatalogverweis.SPALTE)) return 0;
+
+            object v = satz[WaermepumpeKatalogverweis.SPALTE];
+            if (v == null || v == DBNull.Value) return 0;
+
+            try { return Convert.ToInt32(v); }
+            catch { return 0; }
+        }
+
         private static int Zeilenzahl(string sql, int id)
         {
             object v = DataRepository.ExecuteScalar(sql, new DbParam("@id", id));

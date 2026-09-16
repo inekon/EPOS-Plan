@@ -255,13 +255,12 @@ public class SimulationKonfigSeiteTests : BunitContext
             NetzverlusteEinheit = "%",
             Betriebsart = 1,
             UntersteLeistungsgrenze = 30,
-            Heizstab = true,
             Bereitschaft = 8000
         },
         NetzverlusteSchreiben = (w, e) => _geschrieben.Add("netz:" + w + e),
         BetriebsartSchreiben = w => _geschrieben.Add("betriebsart:" + w),
         LeistungsgrenzeSchreiben = w => _geschrieben.Add("grenze:" + w),
-        HeizstabSchreiben = w => _geschrieben.Add("heizstab:" + w),
+        // 16.09.2026 (Auftrag #299): HeizstabSchreiben ist entfallen.
         BereitschaftSchreiben = w => _geschrieben.Add("bereitschaft:" + w)
     };
 
@@ -426,7 +425,7 @@ public class SimulationKonfigSeiteTests : BunitContext
     /// der bis zum 16.09.2026 am Feld der Karte hing.
     /// </summary>
     [Fact]
-    public void Heizkessel_und_Waermepumpe_schreiben_ihre_Werte_im_OK_Weg()
+    public void Der_Heizkessel_schreibt_seinen_Wert_im_OK_Weg()
     {
         var seite = SeiteMitParametern();
         seite.Find("button.epos-simkonfig-verfuegbar").Click();
@@ -435,12 +434,10 @@ public class SimulationKonfigSeiteTests : BunitContext
         seite.Find("div.epos-ueberlagerung").QuerySelectorAll("input")[0].Input("7500");
         Leiste(seite, 1).Click();
 
-        Knopf(seite, "Wärmepumpe").Click();
-        seite.Find("div.epos-ueberlagerung")
-             .QuerySelector("input[type='checkbox']")!.Change(false);
-        Leiste(seite, 1).Click();
-
-        Assert.Equal(new[] { "bereitschaft:7500", "heizstab:False" }, _geschrieben);
+        // Die Wärmepumpe steht NICHT mehr daneben: Ihr projektweiter Heizstabschalter
+        // ist mit Auftrag #299 entfallen - der Heizstab gehört der Anlage und geht über
+        // WaermepumpeKonfigurationSpeichern (siehe den Fall darunter).
+        Assert.Equal(new[] { "bereitschaft:7500" }, _geschrieben);
     }
 
     /// <summary>
@@ -476,9 +473,18 @@ public class SimulationKonfigSeiteTests : BunitContext
         Assert.Equal(new[] { 14930 }, gespeichert);
     }
 
-    /// <summary>Ohne die Naht bleibt der Knopf — der Dialog zeigt die Projekteinstellung.</summary>
+    /// <summary>
+    /// Ohne die Naht bleibt der Knopf — der Dialog geht auf, zeigt aber NICHTS zu
+    /// konfigurieren.
+    ///
+    /// <para><b>Auftrag #299 (16.09.2026):</b> Bis dahin stand hier die
+    /// PROJEKTEINSTELLUNG „mit Heizstab". Der Heizstab gehört seither der Wärmepumpe
+    /// (<c>Tab_Energieanlagen.Heizstab</c>); einen projektweiten Wert gibt es nicht
+    /// mehr, und wo die Plattform die Naht zur Anlage nicht stellt, bleibt der Bereich
+    /// leer.</para>
+    /// </summary>
     [Fact]
-    public void Ohne_Naht_zeigt_die_Waermepumpe_nur_die_Projekteinstellung()
+    public void Ohne_Naht_zeigt_die_Waermepumpe_keine_Konfiguration()
     {
         var seite = Render<SimulationKonfigSeite>(p => p
             .Add(x => x.Dienste, DiensteMitWpAnlage())
@@ -488,9 +494,13 @@ public class SimulationKonfigSeiteTests : BunitContext
         Knopf(seite, "Wärmepumpe · WP 1").Click();
 
         IElement bereich = seite.Find("div.epos-ueberlagerung");
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_CHK_HEIZSTAB,
-                        bereich.TextContent);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMERG_CHK_HEIZSTAB,
+                              bereich.TextContent);
         Assert.Empty(seite.FindComponents<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKonfiguration>());
+
+        // Die Schlussleiste steht trotzdem - der Dialog ist offen, nur leer.
+        Assert.Equal(2, seite.Find("div.epos-ueberlagerung")
+                             .QuerySelectorAll("div.epos-leiste button").Length);
     }
 
     /// <summary>Der Konfigurationsknopf EINER Karte über ihren Titel.</summary>

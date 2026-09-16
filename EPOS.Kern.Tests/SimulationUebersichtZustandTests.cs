@@ -242,12 +242,14 @@ namespace EPOS.Kern.Tests
                 new("@quelle", PROJEKT_GANGLINIE));
 
             // Einstellungen mit LEEREN Kaskadenplätzen; einzige Technologie ist der Speicher.
+            // Ohne WP_Heizstab: Die Spalte ist mit Schemaschritt 79 entfallen (Auftrag
+            // #299) - der Heizstab gehoert der Waermepumpe, nicht dem Projekt.
             Sql("INSERT INTO Tab_Einstellungen (ID,ID_Projekt,BHKW_Grenzleistung,Netzverluste," +
-                "NetzverlusteEinheit,WP_Heizstab,Kessel_Betriebsbereitschaft," +
+                "NetzverlusteEinheit,Kessel_Betriebsbereitschaft," +
                 "Tool_1,Tool_2,Tool_3,Tool_4,Tool_5,Tool_6," +
                 "Ladefuellstand_Min,Ladefuellstand_Max,Ladeleistung_Max,Ladeschwellwert," +
                 "Betriebsart,Leistungsgrenze) " +
-                "SELECT ?,?,0,0,NetzverlusteEinheit,0,0,'','','','','',?,0,100,0,0,0,30 " +
+                "SELECT ?,?,0,0,NetzverlusteEinheit,0,'','','','','',?,0,100,0,0,0,30 " +
                 "FROM Tab_Einstellungen WHERE ID_Projekt=?",
                 new("@id", projekt + 100), new("@neu", projekt),
                 new("@sp", DbWerte.ERZEUGER_STROMSPEICHER), new("@quelle", PROJEKT_GANGLINIE));

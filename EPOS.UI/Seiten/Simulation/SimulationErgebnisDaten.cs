@@ -174,7 +174,11 @@ public sealed class ParameterDaten
     public SpeicherParameterDaten Speicher = new SpeicherParameterDaten();
 
     // ---- P4: Wärmepumpe ----
-    public bool Heizstab;
+    //
+    // 16.09.2026 (Auftrag #299): Hier stand "public bool Heizstab" - der PROJEKTweite
+    // Heizstabschalter aus Tab_Einstellungen.WP_Heizstab. Er gehört seither der
+    // WÄRMEPUMPE (Tab_Energieanlagen.Heizstab je Anlage) und reist deshalb mit den
+    // Anlagendaten, nicht mit den Laufparametern des Projekts.
 
     // ---- P5: Heizkessel ----
     public double Bereitschaft;
@@ -195,7 +199,6 @@ public sealed class ParameterDaten
         Betriebsart = Betriebsart,
         UntersteLeistungsgrenze = UntersteLeistungsgrenze,
         Speicher = Speicher,
-        Heizstab = Heizstab,
         Bereitschaft = Bereitschaft
     };
 }

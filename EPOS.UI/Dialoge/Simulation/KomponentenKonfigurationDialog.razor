@@ -72,17 +72,10 @@
                                           Geaendert="Neugezeichnet" />
             }
 
-            <Formularraster Einspaltig="true">
-                <KindInhalt>
-                    <Schalter Bezeichnung="@Resource.SIMERG_CHK_HEIZSTAB" Wert="@Werte.Heizstab"
-                              Aktiv="@(!NurLesen)" WertChanged="w => Werte.Heizstab = w" />
-                    <Herleitungszeile Text="@HinweisHeizstab" />
-                    @if (Anlage is not null)
-                    {
-                        <Herleitungszeile Text="@HinweisHeizstabAnlage" />
-                    }
-                </KindInhalt>
-            </Formularraster>
+            @* 16.09.2026 (Auftrag #299): Hier stand der PROJEKTweite Heizstabschalter
+               samt seinen zwei Herleitungszeilen. Der Heizstab gehört seither der
+               Wärmepumpe und steht in der Anlagenkonfiguration darüber; ein zweiter,
+               gleichnamiger Schalter gibt es nicht mehr. *@
         }
 
         @* ---------------------------------------------------------- Heizkessel *@
@@ -210,25 +203,10 @@
     [Parameter] public string HinweisProjektweit { get; set; }
         = Resource.SIMKONF_HRL_PROJEKTWEIT;
 
-    /// <summary>
-    /// SIMKONF_HRL_HEIZSTAB — die Herleitungszeile unter dem projektweiten Heizstab.
-    /// Sie sagt ausdrücklich, dass DIESER Schalter den Rechenweg entscheidet.
-    /// </summary>
-    /// <remarks>
-    /// <b>Befund 16.09.2026.</b> Der Lauf liest ausschließlich
-    /// <c>Tab_Einstellungen.WP_Heizstab</c>: <c>SimulationControl</c> reicht ihn an
-    /// <c>SimulationWaermepumpe.Mit_Heizstab</c>, und <c>Heizstabphase</c> steigt ohne
-    /// ihn sofort wieder aus. Die Zuheizleistung je Modul begrenzt danach
-    /// <c>Tab_WP.Heizung</c>.
-    /// </remarks>
-    [Parameter] public string HinweisHeizstab { get; set; } = Resource.SIMKONF_HRL_HEIZSTAB;
-
-    /// <summary>
-    /// SIMKONF_HRL_HEIZSTAB_ANLAGE — die zweite Herleitungszeile; nur, wenn die
-    /// Anlagenkonfiguration darüber steht: Sie trennt die beiden gleichnamigen Schalter.
-    /// </summary>
-    [Parameter] public string HinweisHeizstabAnlage { get; set; }
-        = Resource.SIMKONF_HRL_HEIZSTAB_ANLAGE;
+    // 16.09.2026 (Auftrag #299): Hier standen HinweisHeizstab und
+    // HinweisHeizstabAnlage — die zwei Herleitungszeilen, die den projektweiten vom
+    // anlagenbezogenen Heizstabschalter trennten. Es gibt nur noch EINEN, und er steht
+    // in der Anlagenkonfiguration; zu trennen ist damit nichts mehr.
 
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;

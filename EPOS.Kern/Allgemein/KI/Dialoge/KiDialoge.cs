@@ -667,7 +667,7 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimOhnePlatzName, KiParameterTyp.Text,
                                      KiDialogTexte.SimOhnePlatzErl, leerErlaubt: true),
 
-                    // ---- Die fuenf Laufparameter (lesbar und setzbar) ----------------
+                    // ---- Die vier Laufparameter (lesbar und setzbar) -----------------
                     new KiDialogFeld("netzverluste", "SimulationKiSicht.Netzverluste",
                                      KiDialogTexte.SimNetzverlusteName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SimNetzverlusteErl,
@@ -679,9 +679,11 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimLeistungsgrenzeName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SimLeistungsgrenzeErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT),
-                    new KiDialogFeld("wp_heizstab", "SimulationKiSicht.WpHeizstab",
-                                     KiDialogTexte.SimHeizstabName, KiParameterTyp.Wahrheitswert,
-                                     KiDialogTexte.SimHeizstabErl),
+                    // 16.09.2026 (Auftrag #299): Hier stand das Feld "wp_heizstab" -
+                    // der PROJEKTweite Heizstabschalter. Er gehoert seither der
+                    // WAERMEPUMPE (Tab_Energieanlagen.Heizstab je Anlage), und die
+                    // Simulationsmaske fuehrt keinen projektweiten Wert mehr, den die KI
+                    // setzen koennte. Aus fuenf Laufparametern sind damit VIER geworden.
                     new KiDialogFeld("kessel_bereitschaft", "SimulationKiSicht.KesselBereitschaft",
                                      KiDialogTexte.SimBereitschaftName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SimBereitschaftErl,

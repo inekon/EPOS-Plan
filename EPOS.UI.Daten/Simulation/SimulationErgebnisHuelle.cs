@@ -550,7 +550,6 @@ namespace WindowsFormsApplication1
                     ? "%" : m.m_szNetzverlusteEinheit,
                 Betriebsart = _bhkwBetriebsart,
                 UntersteLeistungsgrenze = _grenzleistungBhkw,
-                Heizstab = m.m_WP_Heizstab,
                 Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
                 Speicher = SpeicherParameter()
             };
@@ -586,7 +585,6 @@ namespace WindowsFormsApplication1
                             ? "%" : m.m_szNetzverlusteEinheit,
                         Betriebsart = _bhkwBetriebsart,
                         UntersteLeistungsgrenze = _grenzleistungBhkw,
-                        Heizstab = m.m_WP_Heizstab,
                         Bereitschaft = m.m_Kessel_Betriebsbereitschaft
                     };
                 },
@@ -606,7 +604,9 @@ namespace WindowsFormsApplication1
                     _grenzleistungBhkw = wert;
                     KonfigSchreiben(m => m.Leistungsgrenze = wert);
                 },
-                HeizstabSchreiben = wert => KonfigSchreiben(m => m.m_WP_Heizstab = wert),
+                // 16.09.2026 (Auftrag #299): Hier stand HeizstabSchreiben - der
+                // Schreibweg des PROJEKTweiten Heizstabs. Er geht seither mit den
+                // uebrigen Anlagenfeldern ueber WaermepumpeKonfigurationSpeichern.
                 BereitschaftSchreiben = wert =>
                     KonfigSchreiben(m => m.m_Kessel_Betriebsbereitschaft = (int)wert),
 

@@ -95,6 +95,16 @@ namespace Testdatenbankschema
     /// <c>SchemaMigration.Schritt_78_PvBatteriespeicher</c> bedient. Ergebnisneutral:
     /// Umgestellt wird nur eine Zeile OHNE gepflegten Satz; sie gibt allein die Art vor,
     /// keine Zahl.</para>
+    ///
+    /// <para><b>Schritt 79</b> (Auftrag #299) uebergibt den Heizstab an die
+    /// WAERMEPUMPEN-ANLAGEN und entfernt danach den Projektschalter
+    /// <c>Tab_Einstellungen.WP_Heizstab</c> - aus <c>HeizstabJeWaermepumpe</c>, DERSELBEN
+    /// Quelle, aus der sich <c>SchemaMigration.Schritt_79_HeizstabJeWp</c> bedient.
+    /// Ergebnisneutral: Jede Waermepumpe bekommt genau den Wert, mit dem ihr Projekt
+    /// gerechnet hat. <b>Schritt 80</b> (derselbe Auftrag) gibt <c>Tab_WP</c> den
+    /// Katalogverweis <c>ID_Stamm</c> samt Index und traegt ihn bei EINDEUTIGEM
+    /// Bezeichner nach - aus <c>WaermepumpeKatalogverweis</c>. Ergebnisneutral: Kein
+    /// Rechenweg liest die Spalte.</para>
     /// </summary>
     internal static class Program
     {
@@ -105,7 +115,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 76) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 80) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -384,6 +394,76 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 78 - offen jetzt " +
                                   Zahl(PvVorlageBatteriespeicher.Zaehlung()) +
                                   " (erwartet 0).");
+            }
+            Console.WriteLine();
+
+            // ---- Schritt 79: der Heizstab gehoert der Waermepumpe (Auftrag #299).
+            //      Zwei Anweisungen in FESTER Reihenfolge - erst die Uebernahme des
+            //      Projektschalters an jede Waermepumpen-Anlage, dann das Entfernen der
+            //      Projektspalte; umgekehrt waere der Wert weg, bevor er an den Anlagen
+            //      steht. Beide kommen aus HeizstabJeWaermepumpe - DIESELBE Quelle, aus
+            //      der sich SchemaMigration.Schritt_79_HeizstabJeWp bedient.
+            //      Ergebnisneutral: Jede Waermepumpe bekommt genau den Wert, mit dem ihr
+            //      Projekt gerechnet hat.
+            if (!HeizstabJeWaermepumpe.ProjektschalterVorhanden())
+            {
+                Console.WriteLine("Schritt 79 - nichts zu tun: " +
+                                  HeizstabJeWaermepumpe.TABELLE_EINSTELLUNGEN + "." +
+                                  HeizstabJeWaermepumpe.SPALTE_PROJEKT +
+                                  " gibt es nicht mehr.");
+            }
+            else
+            {
+                long umzustellen = Zahl(HeizstabJeWaermepumpe.Zaehlung());
+                long mitStab = Zahl(HeizstabJeWaermepumpe.ZaehlungEinschalten());
+                Console.WriteLine("Schritt 79 - Waermepumpen-Anlagen: umzustellen " +
+                                  umzustellen + ", danach MIT Heizstab " + mitStab + ".");
+                if (!trocken)
+                {
+                    DataRepository.ExecuteNonQuery(HeizstabJeWaermepumpe.SqlUebernahme());
+                    Console.WriteLine("Schritt 79 - offen jetzt " +
+                                      Zahl(HeizstabJeWaermepumpe.Zaehlung()) + " (erwartet 0).");
+                    DataRepository.ExecuteNonQuery(HeizstabJeWaermepumpe.SqlSpalteEntfernen());
+                    Console.WriteLine("Schritt 79 - Projektschalter entfernt: " +
+                                      (HeizstabJeWaermepumpe.ProjektschalterVorhanden()
+                                          ? "NEIN (Fehler)" : "ja"));
+                }
+            }
+            Console.WriteLine();
+
+            // ---- Schritt 80: der Katalogverweis der WP-Projektkopie (Auftrag #299).
+            //      Drei Handgriffe in fester Reihenfolge - Spalte, Index, Nachtrag; alle
+            //      aus WaermepumpeKatalogverweis, DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_80_WpKatalogverweis bedient. NICHT ueber
+            //      SpalteSicherstellen: Dessen Typuebersetzung kennt nur Access-Typnamen
+            //      und schnitte das REFERENCES weg (wie bei Schritt 75).
+            //      Ergebnisneutral: Kein Rechenweg liest die Spalte.
+            if (!trocken)
+            {
+                if (!WaermepumpeKatalogverweis.SpalteVorhanden())
+                {
+                    DataRepository.ExecuteNonQuery(WaermepumpeKatalogverweis.SQL_SPALTE);
+                    angelegt++;
+                    Console.WriteLine("Schritt 80 - Spalte " + WaermepumpeKatalogverweis.TABELLE +
+                                      "." + WaermepumpeKatalogverweis.SPALTE + " angelegt.");
+                }
+                else
+                {
+                    Console.WriteLine("Schritt 80 - Spalte " + WaermepumpeKatalogverweis.TABELLE +
+                                      "." + WaermepumpeKatalogverweis.SPALTE + ": bereits vorhanden.");
+                }
+
+                DataRepository.ExecuteNonQuery(WaermepumpeKatalogverweis.SQL_INDEX);
+
+                long nachzutragen = Zahl(WaermepumpeKatalogverweis.Zaehlung());
+                Console.WriteLine("Schritt 80 - Projektkopien mit eindeutigem Katalogsatz: " +
+                                  nachzutragen + ".");
+                if (nachzutragen > 0)
+                    DataRepository.ExecuteNonQuery(WaermepumpeKatalogverweis.SqlNachtrag());
+                Console.WriteLine("Schritt 80 - offen jetzt " +
+                                  Zahl(WaermepumpeKatalogverweis.Zaehlung()) +
+                                  " (erwartet 0), ohne Verweis geblieben " +
+                                  Zahl(WaermepumpeKatalogverweis.ZaehlungOhneVerweis()) + ".");
             }
             Console.WriteLine();
 
