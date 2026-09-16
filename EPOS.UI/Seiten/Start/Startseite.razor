@@ -298,6 +298,28 @@
     /// <summary>Eine Kachel wurde angeklickt; übergeben wird ihr Schlüssel.</summary>
     [Parameter] public Action<string>? Geklickt { get; set; }
 
+    /// <summary>
+    /// Die Kachel „Neues Projekt" wurde gewählt (Anwenderentscheid 16.09.2026) —
+    /// gemeldet, BEVOR der Kachelweg der Hülle läuft.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Wozu die zweite Meldung.</b> Der Weg selbst bleibt unangetastet: Die Hülle
+    /// bekommt den Schlüssel wie bisher über <see cref="Geklickt"/> und tut, was sie
+    /// seit jeher tut (das Projekt dieses Laufs als „zuletzt geöffnet" vormerken, den
+    /// Assistenten in der Betriebsart NEU öffnen). Was sie NICHT sagen kann, ist,
+    /// von welchem Einstieg der Lauf kommt — der Weg führt über
+    /// <c>Dienste.Navigation</c> und trägt nur die Betriebsart. Genau das meldet
+    /// diese Zeile dem Wirt: Der nächste Assistentenlauf ist eine NEUANLAGE und
+    /// beginnt auf der Projektkonfiguration (<c>AssistentEinstieg.Neuanlage</c>).
+    /// </para>
+    /// <para>
+    /// Ohne Delegat geschieht nichts — dann ist es der Lauf von vorher, mit der
+    /// Komponentenauswahl als erstem Schritt.
+    /// </para>
+    /// </remarks>
+    [Parameter] public EventCallback ProjektNeuGewaehlt { get; set; }
+
     /// <summary>Die Variantengruppe des offenen Projekts (Stamm zuerst).</summary>
     [Parameter] public Func<IReadOnlyList<(int Id, string Name)>>? Varianten { get; set; }
 
@@ -369,6 +391,26 @@
     /// meint sie die ANSICHT.
     /// </remarks>
     [Parameter] public string Marke { get; set; } = "";
+
+    /// <summary>
+    /// Der REITER, mit dem die Seite aufmachen soll (Anwenderentscheid 16.09.2026);
+    /// leer = der erste, „Projekt".
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Der Wirt setzt ihn, wenn er die Seite mit einem Auftrag zeigt — nach dem
+    /// Anlegen eines Projekts im Assistenten ist das der Reiter „Wärmebedarf"
+    /// (<c>Reiterschluessel.Waermebedarf</c>): „dann mit Weiter auf die Kachel
+    /// Wärmebedarf springen".
+    /// </para>
+    /// <para>
+    /// <b>Er wirkt, wenn er sich ÄNDERT</b> — dieselbe Bauart wie
+    /// <see cref="Marke"/> —, und nur auf einen Reiter, der auch bedienbar ist:
+    /// Ohne offenes Projekt sind die Reiter 2 bis 6 gesperrt (<c>:80</c>), und ein
+    /// Wunsch hebt keine Sperre auf.
+    /// </para>
+    /// </remarks>
+    [Parameter] public string Reiterwunsch { get; set; } = "";
 
     /// <summary>Die Weiche der Solarthermiekachel wurde umgestellt.</summary>
     [Parameter] public Action<bool>? SolarartGewaehlt { get; set; }
@@ -544,6 +586,13 @@
 
     /// <summary>Der stehende Reiter „Simulation" — er liefert seine Marke (#220).</summary>
     private SimulationReiter? _simulationReiter;
+
+    /// <summary>
+    /// Der zuletzt ANGEWANDTE Reiterwunsch (16.09.2026); der Sentinel heisst
+    /// „noch keiner" und ist deshalb kein leerer Text — ein leerer Wunsch ist ein
+    /// gültiger Wert und heißt „keiner".
+    /// </summary>
+    private string _reiterwunschAngewandt = "\u0000";
 
     /// <summary>Die zuletzt ANGEWANDTE Marke; der Sentinel heisst „noch keine" (#220).</summary>
     private string _markeAngewandt = "\u0000";
@@ -757,9 +806,17 @@
     //  Die Kacheln
     // =====================================================================
 
-    private void BeiKachel(string schluessel)
+    private async Task BeiKachel(string schluessel)
     {
         if (string.IsNullOrEmpty(schluessel)) return;
+
+        // ANWENDERENTSCHEID 16.09.2026: „Neues Projekt" fuehrt in den Assistenten,
+        // und zwar OHNE die Komponentenauswahl - gleich auf die Projektkonfiguration.
+        // Der Weg dorthin bleibt der der Huelle (Geklickt, gleich darunter); dass es
+        // eine NEUANLAGE ist, weiss nur diese Kachel, und sie meldet es dem Wirt,
+        // bevor der Weg laeuft. Ohne Wirt bleibt es der Lauf von vorher.
+        if (schluessel == Kachelschluessel.ProjektNeu && ProjektNeuGewaehlt.HasDelegate)
+            await ProjektNeuGewaehlt.InvokeAsync();
 
         // AUFTRAG #207: Die zwei Simulationswege fuehren in EINE freie Ansicht der
         // AppWurzel, und die MARKE sagt, wo sie aufmacht - der Knopf bei der
@@ -868,9 +925,32 @@
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        ReiterwunschAnwenden();
+
         if (string.Equals(Marke, _markeAngewandt, StringComparison.Ordinal)) return;
         _markeAngewandt = Marke;
         MarkeAnwenden(Marke);
+    }
+
+    /// <summary>
+    /// Holt den Reiter nach vorn, den der Wirt gewünscht hat (16.09.2026) — wie die
+    /// Marke: beim WECHSEL des Wunsches, nicht bei jedem Zeichenlauf; sonst käme
+    /// der Anwender von diesem Reiter nicht mehr weg.
+    ///
+    /// <para>Ein unbekannter Schlüssel und ein gesperrter Reiter tun nichts: Ohne
+    /// offenes Projekt sind die Reiter 2 bis 6 gesperrt, und ein Wunsch hebt keine
+    /// Sperre auf.</para>
+    /// </summary>
+    private void ReiterwunschAnwenden()
+    {
+        if (string.Equals(Reiterwunsch, _reiterwunschAngewandt, StringComparison.Ordinal)) return;
+        _reiterwunschAngewandt = Reiterwunsch;
+
+        if (string.IsNullOrEmpty(Reiterwunsch)) return;
+        if (Array.IndexOf(Reiterschluessel.Alle, Reiterwunsch) < 0) return;
+        if (!ProjektOffen && Reiterwunsch != Reiterschluessel.Projekt) return;
+
+        _reiter = Reiterwunsch;
     }
 
     /// <summary>

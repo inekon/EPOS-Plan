@@ -89,6 +89,19 @@
     /// </summary>
     [Parameter] public bool WeiterFrei { get; set; } = true;
 
+    /// <summary>
+    /// „Zurück" auf dem ERSTEN aktiven Schritt — der Weg AUS dem Ablauf heraus.
+    ///
+    /// <para><b>Ohne Delegat bleibt alles, wie es war:</b> Gibt es keinen vorigen
+    /// aktiven Schritt, ist der Knopf gesperrt (wörtlich <c>WizardParent.Back</c>).
+    /// Mit Delegat bleibt er bedienbar und MELDET den Rückweg — der Rahmen geht ihn
+    /// nicht selbst, denn wohin es aus dem Ablauf heraus führt, weiß nur der Wirt.
+    /// Das braucht der Einstieg <c>AssistentEinstieg.Neuanlage</c>: Dort ist die
+    /// Projektkonfiguration der einzige Schritt, und „Zurück" führt auf die
+    /// Startseite.</para>
+    /// </summary>
+    [Parameter] public EventCallback Zurueckgetreten { get; set; }
+
     // =====================================================================
     // Texte - deutscher Rueckfall wie in allen Dialogen
     // =====================================================================
@@ -137,7 +150,12 @@
 
     private string WeiterBeschriftung => LetzteAktive() ? SpeichernText : WeiterText;
 
-    private bool ZurueckMoeglich => NaechsteAktive(-1) != Schritt;
+    /// <summary>
+    /// „Zurück" geht, solange es einen vorigen aktiven Schritt gibt — oder solange
+    /// der Wirt den Rückweg AUS dem Ablauf heraus übernimmt
+    /// (<see cref="Zurueckgetreten"/>).
+    /// </summary>
+    private bool ZurueckMoeglich => NaechsteAktive(-1) != Schritt || Zurueckgetreten.HasDelegate;
 
     private bool WeiterMoeglich => WeiterFrei;
 
@@ -150,7 +168,12 @@
     private Task BeiZurueck()
     {
         int ziel = NaechsteAktive(-1);
-        return ziel == Schritt ? Task.CompletedTask : Wechseln(ziel);
+        if (ziel != Schritt) return Wechseln(ziel);
+
+        // Kein voriger Schritt: Entweder der Wirt nimmt den Rueckweg (dann fuehrt er
+        // aus dem Ablauf heraus), oder es geschieht nichts - der Knopf ist dann
+        // ohnehin gesperrt.
+        return Zurueckgetreten.HasDelegate ? Zurueckgetreten.InvokeAsync() : Task.CompletedTask;
     }
 
     private Task BeiWeiter()

@@ -13,6 +13,16 @@
    ausschliesslich ueber diese Nummern an - hier darf nichts umsortiert werden.
    (PUFFER_ITEM = 13 ist bis heute eine Konstante ohne Seite.)
 
+   ZWEI EINSTIEGE (Einstieg, Anwenderentscheid 16.09.2026). Der VOLLSTAENDIGE Lauf
+   beginnt beim Komponentenschritt und geht ueber jeden freigeschalteten Schritt -
+   das ist der Lauf seit jeher. Die NEUANLAGE (Startkachel "Neues Projekt") laesst
+   ihn weg: Sie beginnt auf der Projektkonfiguration, die dort ihr einziger Schritt
+   ist, ihr Hauptknopf heisst "Weiter ▶" und meldet nach dem Anlegen das ZIEL
+   (Angelegt), und "Zurueck" fuehrt aus dem Assistenten heraus. Die Komponenten
+   waehlte dieser Schritt fuer ein Projekt aus, das es noch gar nicht gab; sie
+   kommen jetzt ueber die Reiter der Startseite. Der Schritt selbst bleibt - jeder
+   andere Einstieg, vor allem die Betriebsart BEARBEITEN, erreicht ihn unveraendert.
+
    KEINE DATENBANK (Hausregel EPOS.UI). Je Seite kommt ein fertiger
    Parametersatz herein - dasselbe Woerterbuch, das die WinForms-Huelle bisher an
    BlazorAssistentSeite gab. Es wird bei JEDEM Betreten neu erfragt, damit ein
@@ -70,6 +80,11 @@
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@Meldungssatz" />
     }
 
+    @* DIE KNOPFLEISTE IM EINSTIEG NEUANLAGE (16.09.2026). Sie ist dieselbe -
+       Abbrechen · ◀ Zurueck · Hauptknopf -, nur sagen zwei Gaben etwas anderes:
+       Der Hauptknopf traegt den WEITER-Text (der Ablauf geht weiter, er hoert
+       nicht auf), und „Zurueck" fuehrt aus dem Ablauf heraus, weil es vor der
+       Projektkonfiguration keinen Schritt mehr gibt. *@
     <Assistent Seiten="@_schritte"
                Schritt="@_schritt"
                SchrittChanged="BeiSchritt"
@@ -77,10 +92,11 @@
                WeiterFrei="@WeiterFrei"
                Abgebrochen="BeiAbbrechen"
                Gespeichert="BeiSpeichern"
+               Zurueckgetreten="@ZurueckHinaus"
                AbbrechenText="@AbbrechenText"
                ZurueckText="@ZurueckText"
                WeiterText="@WeiterText"
-               SpeichernText="@SpeichernText" />
+               SpeichernText="@HauptknopfText" />
 
     @* DIE RUECKFRAGE beim Verlassen (Anwenderentscheid 62b-E-1, 11.09.2026).
 
@@ -114,6 +130,29 @@
     /// (<c>AssistentCtrl.BETRIEBSART_NEU</c> / <c>…_BEARBEITEN</c>).
     /// </summary>
     [Parameter] public int Betriebsart { get; set; }
+
+    /// <summary>
+    /// Der EINSTIEG in diesen Lauf (Anwenderentscheid 16.09.2026); Vorgabe
+    /// <see cref="AssistentEinstieg.Vollstaendig"/> — der Lauf über alle
+    /// freigeschalteten Schritte, beginnend bei der Komponentenauswahl.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b><see cref="AssistentEinstieg.Neuanlage"/> ist der Weg der Startkachel
+    /// „Neues Projekt".</b> Dort ist die Komponentenauswahl gegenstandslos: Das
+    /// Projekt gibt es noch gar nicht, es entsteht LEER, und seine Komponenten kommen
+    /// hinterher über die Reiter der Startseite. Der Lauf beginnt deshalb auf der
+    /// Projektkonfiguration, sie ist sein einziger freigeschalteter Schritt, der
+    /// Hauptknopf heißt „Weiter ▶" (er legt an und meldet das Ziel über
+    /// <see cref="Angelegt"/>), und „Zurück" führt aus dem Assistenten heraus.
+    /// </para>
+    /// <para>
+    /// <b>Der Schritt „Komponenten" wird dabei nicht abgeschafft</b>, nur
+    /// übersprungen: Jeder andere Einstieg — vor allem die Betriebsart BEARBEITEN —
+    /// erreicht ihn unverändert.
+    /// </para>
+    /// </remarks>
+    [Parameter] public AssistentEinstieg Einstieg { get; set; } = AssistentEinstieg.Vollstaendig;
 
     /// <summary>
     /// Der PARAMETERSATZ einer Seite — wird bei jedem Betreten neu erfragt.
@@ -178,6 +217,41 @@
 
     /// <summary>Der Lauf ist zu Ende — abgebrochen (<c>false</c>) oder gespeichert (<c>true</c>).</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>
+    /// <b>Das Projekt ist angelegt — und es geht WEITER</b> (Einstieg
+    /// <see cref="AssistentEinstieg.Neuanlage"/>, 16.09.2026). Übergeben wird das
+    /// ZIEL (<see cref="NeuanlageZiel"/>), zu dem der Wirt wechseln soll.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Die Seite ruft KEINE Plattformansicht (Hausregel <c>EPOS.UI/Dienste</c>): Sie
+    /// meldet das Ziel, und der Wirt — unter Windows wie auf iOS die
+    /// <c>AppWurzel</c> — übersetzt es in den Ansichtswechsel. Geschrieben ist zu
+    /// diesem Zeitpunkt alles: Es ist derselbe Speicherweg, den der Knopf
+    /// „Speichern" geht (<see cref="SpeicherLauf"/>), und der setzt das neue Projekt
+    /// über die Hülle auch aktiv.
+    /// </para>
+    /// <para>
+    /// <b>Ohne Delegat endet der Lauf wie bisher</b> mit
+    /// <see cref="Geschlossen"/> (<c>true</c>) — die Hausregel „jede Seite zeichnet
+    /// auch ohne Gaben" gilt für den Rückweg genauso.
+    /// </para>
+    /// </remarks>
+    [Parameter] public EventCallback<string> Angelegt { get; set; }
+
+    /// <summary>
+    /// Wohin es nach dem Anlegen weitergeht — gemeldet über <see cref="Angelegt"/>;
+    /// Vorgabe ist der Reiter „Wärmebedarf" der Startseite
+    /// (<c>Reiterschluessel.Waermebedarf</c>, Anwenderentscheid 16.09.2026: „dann mit
+    /// Weiter auf die Kachel Wärmebedarf springen").
+    /// </summary>
+    /// <remarks>
+    /// Ein Schlüssel und keine Ansicht: Die Seite kennt den Reiter nicht, sie NENNT
+    /// ihn. Ein Wirt, der ihn nicht kennt, bleibt auf seiner Startansicht stehen.
+    /// </remarks>
+    [Parameter] public string NeuanlageZiel { get; set; }
+        = EPOS.UI.Seiten.Start.Reiterschluessel.Waermebedarf;
 
     /// <summary>
     /// Hat der Lauf Eingaben, die noch nicht geschrieben sind? (Anwenderentscheid
@@ -287,6 +361,13 @@
     /// <summary>Zahl der Assistentenseiten.</summary>
     public const int SEITEN = 13;
 
+    /// <summary>
+    /// Der Schritt „Projekt" — die Projektkonfiguration
+    /// (<c>WizardItemClass.PROJEKT_ITEM</c>). Der Einstieg
+    /// <see cref="AssistentEinstieg.Neuanlage"/> beginnt hier.
+    /// </summary>
+    public const int PROJEKTKOPF = WizardItemClass.PROJEKT_ITEM;
+
     private int _schritt;
     private int _markiertId;
     private string _markiertName = "";
@@ -328,10 +409,53 @@
     /// <summary>Wurde <see cref="VorauswahlId"/> schon verbraucht?</summary>
     private bool _vorauswahlVerbraucht;
 
+    /// <summary>Läuft dieser Lauf als reine PROJEKTANLAGE? (16.09.2026.)</summary>
+    private bool Neuanlage => Einstieg == AssistentEinstieg.Neuanlage;
+
+    /// <summary>
+    /// Die Beschriftung des Hauptknopfes auf der letzten aktiven Seite. In der
+    /// Neuanlage steht dort „Weiter ▶" statt „Speichern": Der Anwender legt an und
+    /// geht weiter — er beendet nichts.
+    /// </summary>
+    /// <remarks>
+    /// Es ist der VORHANDENE Text (<c>WIZ_BTN_WEITER</c>), kein neuer Schlüssel:
+    /// Derselbe Knopf trägt ihn auf jeder Seite vor der letzten.
+    /// </remarks>
+    private string HauptknopfText => Neuanlage ? WeiterText : SpeichernText;
+
+    /// <summary>
+    /// Der Rückweg des Rahmens, wenn es keinen vorigen Schritt gibt — nur in der
+    /// Neuanlage besetzt; sonst bleibt „Zurück" auf dem ersten Schritt gesperrt wie
+    /// bisher.
+    /// </summary>
+    private EventCallback ZurueckHinaus
+        => Neuanlage ? EventCallback.Factory.Create(this, BeiZurueckHinaus) : default;
+
+    /// <summary>Der zuletzt ANGEWANDTE Einstieg; <c>null</c> heisst „noch keiner".</summary>
+    private AssistentEinstieg? _einstiegAngewandt;
+
     protected override void OnParametersSet()
     {
+        EinstiegAnwenden();
         Vorauswahl();
         SchritteBauen();
+    }
+
+    /// <summary>
+    /// Der EINSTIEG entscheidet, WO der Lauf aufmacht — angewandt, wenn er sich
+    /// ändert (dieselbe Bauart wie die Marke der Startseite), nicht bei jedem
+    /// Zeichenlauf: Danach führt <c>_schritt</c> sein eigenes Leben.
+    ///
+    /// <para>Die Neuanlage macht auf der Projektkonfiguration auf; der vollständige
+    /// Lauf beginnt, wo er ohnehin beginnt — ein STEHENDER Lauf wird dabei nicht
+    /// zurückgesetzt.</para>
+    /// </summary>
+    private void EinstiegAnwenden()
+    {
+        if (_einstiegAngewandt == Einstieg) return;
+        _einstiegAngewandt = Einstieg;
+
+        if (Neuanlage) _schritt = PROJEKTKOPF;
     }
 
     /// <summary>
@@ -389,10 +513,27 @@
             _schritte.Add(new AssistentSchritt
             {
                 Titel = Titel(nr),
-                Aktiv = SeiteAktiv is null || SeiteAktiv(nr),
+                Aktiv = SchrittAktiv(nr),
                 Inhalt = nr == _schritt ? Seiteninhalt(nr) : null
             });
         }
+    }
+
+    /// <summary>
+    /// Ist der Schritt freigeschaltet? Gewöhnlich fragt das der Wirt
+    /// (<see cref="SeiteAktiv"/>, der Komponentenbestand des Projekts).
+    ///
+    /// <para><b>In der Neuanlage ist es EIN Schritt</b> (16.09.2026): die
+    /// Projektkonfiguration. Der Komponentenschritt entfällt dort — er wählte
+    /// Fachschritte für ein Projekt aus, das es noch nicht gibt —, und die zwölf
+    /// Fachschritte kommen hinterher über die Reiter der Startseite. „Weiter" wird
+    /// damit von selbst zum Anlegen-Knopf: Es gibt keinen nächsten aktiven
+    /// Schritt.</para>
+    /// </summary>
+    private bool SchrittAktiv(int nr)
+    {
+        if (Neuanlage) return nr == PROJEKTKOPF;
+        return SeiteAktiv is null || SeiteAktiv(nr);
     }
 
     private static string Titel(int nr) => nr switch
@@ -639,8 +780,31 @@
     {
         if (!SpeicherLauf()) return;
 
+        // NEUANLAGE (16.09.2026): Der Lauf hoert hier nicht auf - das Projekt ist
+        // angelegt und aktiv, und der Anwender will dorthin, wo er weiterarbeitet.
+        // Die Seite NENNT das Ziel; den Wechsel macht der Wirt.
+        if (Neuanlage && Angelegt.HasDelegate)
+        {
+            await Angelegt.InvokeAsync(NeuanlageZiel);
+            return;
+        }
+
         await Geschlossen.InvokeAsync(true);
     }
+
+    /// <summary>
+    /// „Zurück" auf der Projektkonfiguration der NEUANLAGE: Es gibt keinen vorigen
+    /// Schritt, also führt der Knopf aus dem Assistenten heraus — auf die
+    /// Startansicht des Wirtes (unter Windows die Startseite mit dem Reiter
+    /// „Projekt", von dem der Anwender gekommen ist).
+    /// </summary>
+    /// <remarks>
+    /// <b>Ohne Rückfrage</b>, anders als „Abbrechen": Der Knopf ist hier der
+    /// Rückschritt eines Ablaufs und nicht sein Abbruch — der Anwender geht damit
+    /// eine Seite zurück, wie er es auf jedem anderen Schritt täte. Geschrieben wird
+    /// dabei nichts.
+    /// </remarks>
+    private Task BeiZurueckHinaus() => Geschlossen.InvokeAsync(false);
 
     /// <summary>
     /// DER Speicherweg des Knopfes — Prüfung der stehenden Seite, Übernahme des
