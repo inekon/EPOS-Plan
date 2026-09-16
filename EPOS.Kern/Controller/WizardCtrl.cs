@@ -1167,19 +1167,40 @@ namespace WindowsFormsApplication1
         /// Schreibt die gesicherten Stranglisten auf die NEUEN Anlagenzeilen zurueck.
         ///
         /// <para>
-        /// Geschrieben wird ausschliesslich auf Anlagen, die JETZT keine Strangzeile
-        /// fuehren. Damit ist die Methode idempotent, sie ueberschreibt nichts, was der
-        /// Dialog gerade gespeichert hat, und eine im Dialog neu hinzugekommene Anlage
-        /// bleibt ohne Strang - dort gilt wie bisher der vereinfachte Weg.
+        /// Geschrieben wird ausschliesslich auf Anlagen, fuer die der Block ST1 NICHTS
+        /// geschrieben hat und die JETZT keine Strangzeile fuehren. Damit ist die Methode
+        /// idempotent, sie ueberschreibt nichts, was der Dialog gerade gespeichert hat,
+        /// und eine im Dialog neu hinzugekommene Anlage bleibt ohne Strang - dort gilt
+        /// wie bisher der vereinfachte Weg.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>Das Kriterium ist "ST1 hat hier geschrieben", nicht "die Anlage fuehrt
+        /// keine Strangzeile"</b> (Anwenderentscheid 16.09.2026). Die beiden fielen
+        /// auseinander, sobald der Anwender im PV-Dialog die LETZTE Strangzeile entfernt:
+        /// Die leere Liste ist ein gueltiger Loeschauftrag,
+        /// <c>AnlageStrangCtrl.SchreibenJeAnlage</c> loescht die Zeilen und meldet
+        /// <c>true</c> - und danach sah die geleerte Anlage aus wie eine nie angefasste.
+        /// Die Rettung trug den Vorzustand wieder ein, waehrend der Anwender Erfolg
+        /// gemeldet bekam. <paramref name="vomDialogGeschrieben"/> haelt die Anlagen-Ids
+        /// fest, fuer die ST1 gelaufen ist; sie bleiben hier unberuehrt, gleich ob die
+        /// Liste gefuellt oder leer war.
+        /// </para>
+        ///
+        /// <para>
+        /// <b>NULL heisst weiterhin "nicht angefasst".</b> <c>PV_Straenge</c> ist nur
+        /// dann gesetzt, wenn der PV-Dialog die Anlage in dieser Sitzung hergegeben hat
+        /// (<c>PhotovoltaikHuelle.StraengeZuModell</c>, gespeist aus
+        /// <c>StraengeZuZeile</c> und damit aus dem BESTAND). Jede andere Anlage - jeder
+        /// andere Anlagentyp, jede PV-Anlage eines Speicherlaufs ohne geoeffneten Dialog -
+        /// erreicht ST1 gar nicht und wird hier wie bisher bedient. Genau dafuer gibt es
+        /// die Rettung: Der Del+Add-Speicherweg verloere sonst ihre Straenge.
         /// </para>
         ///
         /// <para>
         /// <b>Ein GESCHEITERTES Schreiben der Dialogliste erreicht diese Methode nicht
         /// mehr</b> (NL-Q1): Der Block ST1 in <see cref="Add_WP_Waermeerzeuger"/> steigt
         /// bei einem Fehlschlag mit <c>false</c> aus, der Lauf wird zurueckgenommen.
-        /// Diese Methode kann die Eingabe des Dialogs also nicht mehr still durch den
-        /// Vorzustand ersetzen; sie bedient nur noch Anlagen, die der Dialog GAR NICHT
-        /// angefasst hat (<c>PV_Straenge == null</c>).
         /// </para>
         ///
         /// <para>
@@ -1193,7 +1214,14 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>BEST EFFORT</b> - ein gelungenes Speichern scheitert nicht daran.</para>
         /// </summary>
-        private void StraengeWiederherstellen(int projektID)
+        /// <param name="projektID">Das Projekt, dessen Anlagenzeilen gerade neu geschrieben wurden.</param>
+        /// <param name="vomDialogGeschrieben">
+        /// Die NEUEN Anlagen-Ids, fuer die der Block ST1 die Dialogliste geschrieben hat
+        /// (<c>null</c> = keine). Der Zustand gehoert dem LAUF: Er entsteht als oertliche
+        /// Menge in <see cref="Add_WP_Waermeerzeuger"/> und endet mit ihm - kein Feld,
+        /// kein statischer Merker.
+        /// </param>
+        private void StraengeWiederherstellen(int projektID, HashSet<int> vomDialogGeschrieben)
         {
             List<StrangSicherung> sicherung = m_StrangSicherung;
             int projektDerSicherung = m_StrangProjekt;
@@ -1233,6 +1261,12 @@ namespace WindowsFormsApplication1
                 {
                     int idAnlage = SpZahl(r, "ID");
                     if (idAnlage <= 0 || hatStraenge.Contains(idAnlage)) continue;
+
+                    // Der Dialog hat fuer diese Anlage GESCHRIEBEN - auch dann, wenn er
+                    // dabei alles entfernt hat. Seine Eingabe ist die Wahrheit; die
+                    // Rettung laesst sie in Ruhe.
+                    if (vomDialogGeschrieben != null && vomDialogGeschrieben.Contains(idAnlage))
+                        continue;
 
                     StrangSicherung treffer = StrangTreffer(sicherung, SpZahl(r, "ID_Type"),
                                                             SpText(r, "Bezeichner"));
@@ -1638,6 +1672,11 @@ namespace WindowsFormsApplication1
                 List<WErzeugerModel> geschrieben = new List<WErzeugerModel>();
                 bool feldHinweisGezeigt = false;
 
+                // ST1: Fuer WELCHE Anlagen der Block ST1 die Dialogliste geschrieben hat.
+                // Der Zustand gehoert dem LAUF und endet mit ihm - StraengeWiederherstellen
+                // bekommt ihn unten als Argument, nicht als Feld (Begruendung dort).
+                HashSet<int> strangGeschrieben = new HashSet<int>();
+
                 foreach (var item in list)
                 {
                     // Ä24: Gerätestand VOR der Materialisierung merken — tauscht
@@ -1826,9 +1865,11 @@ namespace WindowsFormsApplication1
                     // koennen erst HIER geschrieben werden - die Anlagen-Id entsteht eine
                     // Zeile darueber, und vorher gibt es nichts, worauf sie zeigen
                     // koennten. NULL heisst "nicht angefasst" und ueberlaesst die Zeile
-                    // der Rettung weiter unten; eine gesetzte Liste ist die neue Wahrheit
-                    // und hat Vorrang, weil StraengeWiederherstellen nur Anlagen OHNE
-                    // Straenge bedient.
+                    // der Rettung weiter unten; eine GESETZTE Liste ist die neue Wahrheit
+                    // und hat Vorrang - die Anlage wird in strangGeschrieben vermerkt und
+                    // von der Rettung uebergangen. Das gilt fuer die LEERE Liste genauso
+                    // wie fuer die gefuellte: "alle entfernt" ist eine Eingabe
+                    // (Anwenderentscheid 16.09.2026).
                     //
                     // KEIN BEST EFFORT (NL-Q1): Ein Fehlschlag NIMMT DEN LAUF ZURUECK -
                     // der Rueckgabewert wird ausgewertet, und ein false faehrt aus der
@@ -1850,9 +1891,9 @@ namespace WindowsFormsApplication1
                     //    AssistentCtrl.Speichern laesst den Vorgang der Klammer aus
                     //    iU9-W16a-O-1 zuruecktreten. Von diesem Speichern bleibt nichts;
                     //    der Aufrufer zeigt EINE Meldung, die den Schritt nennt.
-                    // 3. WARUM DAS return VOR DIE RETTUNG GEHOERT.
-                    //    StraengeWiederherstellen weiter unten bedient jede Anlage OHNE
-                    //    Strangzeile - und ohne dieses return traege es genau hier die
+                    // 3. WARUM DAS return VOR DIE RETTUNG GEHOERT. Ein Fehlschlag traegt
+                    //    die Anlage NICHT in strangGeschrieben ein - ohne dieses return
+                    //    traege StraengeWiederherstellen genau hier die
                     //    Liste des VORZUSTANDS wieder ein. Die Eingabe des Dialogs kehrte
                     //    sich still um, und der Anwender bekaeme Erfolg gemeldet. Das
                     //    return endet den Lauf davor; die Rettung kommt nicht mehr zum
@@ -1887,6 +1928,13 @@ namespace WindowsFormsApplication1
                                               "wird zurueckgenommen.");
                             return false;
                         }
+
+                        // ST1 HAT fuer diese Anlage geschrieben. Das ist das Kennzeichen,
+                        // an dem StraengeWiederherstellen sie uebergeht - und zwar auch
+                        // dann, wenn die Liste LEER war: "alle entfernt" ist eine Eingabe
+                        // des Anwenders, keine Luecke, die zu fuellen waere
+                        // (Anwenderentscheid 16.09.2026).
+                        strangGeschrieben.Add(item.ID);
                     }
 
                     geschrieben.Add(item);
@@ -1968,8 +2016,10 @@ namespace WindowsFormsApplication1
                 // die Rettung dahinter, loeschte der Aufraeumlauf genau die Module,
                 // deren Strangzeile eine Zeile spaeter zurueckkaeme. (ID_Wechselrichter
                 // ist dabei gleichgueltig - Tab_Wechselrichter ist keine der sieben
-                // Geraetetabellen des Aufraeumlaufs.)
-                StraengeWiederherstellen(projektID);
+                // Geraetetabellen des Aufraeumlaufs.) Uebergangen werden die Anlagen, fuer
+                // die der Block ST1 oben geschrieben hat - auch die, deren Dialogliste
+                // LEER war.
+                StraengeWiederherstellen(projektID, strangGeschrieben);
 
                 // FS1: Die Fachspalten (KWKG je Anlage, Steuerwahl/Hilfsenergie,
                 // Quell-Einstellungen) auf die NEUEN Anlagenzeilen zurueck - ebenfalls

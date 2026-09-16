@@ -513,31 +513,38 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>BEFUND, nicht Forderung: Eine GELEERTE Dialogliste hebt sich im
-        /// Del+Add-Speicherweg auf.</b> Der Fall hält das HEUTIGE Verhalten fest; ob es
-        /// so bleibt, ist eine offene Fachfrage.
+        /// <b>Eine GELEERTE Dialogliste WIRKT</b> (Anwenderentscheid 16.09.2026): Entfernt
+        /// der Anwender im PV-Dialog die letzte Strangzeile und speichert, führt die
+        /// Anlage danach keine Strangzeile — und die Rettung trägt nichts nach.
         ///
         /// <para><b>Die Kette.</b> Der PV-Dialog reicht die Stränge unbedingt
         /// heraus — <c>PhotovoltaikHuelle.StraengeZuModell</c> liefert bei leerer
         /// Maskenliste eine LEERE Liste, nie <c>null</c>. Der Block ST1 in
-        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c> schreibt sie, denn <c>null</c> hieße
+        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c> schreibt sie, denn <c>null</c> heißt
         /// „nicht angefasst", eine leere Liste dagegen „alle entfernt":
         /// <c>SchreibenJeAnlage</c> löscht die Zeilen und meldet
-        /// <b><c>true</c></b> — ein GELUNGENES Schreiben. Danach führt die Anlage keine
-        /// Strangzeile, und genau solche Anlagen bedient
-        /// <c>StraengeWiederherstellen</c>: Es trägt die Liste des Vorzustands wieder
-        /// ein.</para>
+        /// <b><c>true</c></b> — ein GELUNGENES Schreiben.</para>
         ///
-        /// <para><b>Warum NL-Q1 das nicht erledigt.</b> Der Rückzug aus NL-Q1 greift bei
-        /// einem FEHLSCHLAG. Hier gelingt das Schreiben — es gibt nichts
-        /// zurückzunehmen, der Lauf endet nicht, und die Rettung kommt sehr wohl zum
-        /// Zuge. Der Befund ist damit BESTÄTIGT und nicht erledigt; er sitzt an einer
-        /// anderen Stelle als NL-Q1, nämlich in der Frage, woran
+        /// <para><b>Woran es hing.</b> Danach führt die Anlage keine Strangzeile — und
+        /// genau daran hing <c>StraengeWiederherstellen</c> sein Kriterium: Es trug die
+        /// Liste des Vorzustands wieder ein, während der Anwender „Daten erfolgreich
+        /// aktualisiert" las. Das Kriterium lautet jetzt <b>„ST1 hat für diese Anlage
+        /// nichts geschrieben"</b>; die Menge der geschriebenen Anlagen-Ids gehört dem
+        /// Speicherlauf und wird an die Rettung übergeben.</para>
+        ///
+        /// <para><b>Warum NL-Q1 das nicht erledigt hat.</b> Der Rückzug aus NL-Q1 greift
+        /// bei einem FEHLSCHLAG. Hier gelingt das Schreiben — es gibt nichts
+        /// zurückzunehmen, der Lauf endet nicht. Der Befund saß an einer anderen Stelle:
+        /// nicht im Fehlschlag, sondern in der Frage, woran
         /// <c>StraengeWiederherstellen</c> eine „vom Dialog geleerte" Anlage von einer
         /// „vom Dialog nicht angefassten" unterscheidet.</para>
+        ///
+        /// <para><b>Der Gegenfall steht daneben:</b>
+        /// <see cref="Die_Strang_Rettung_bedient_weiter_die_vom_Dialog_nicht_angefasste_Anlage"/>
+        /// — ohne ihn wäre nur die halbe Zusage belegt.</para>
         /// </summary>
         [Fact]
-        public void Eine_geleerte_Dialogliste_traegt_die_Strang_Rettung_heute_wieder_ein()
+        public void Eine_geleerte_Dialogliste_wirkt_und_die_Rettung_traegt_nichts_nach()
         {
             if (!_db.Vorhanden) return;
 
@@ -586,11 +593,105 @@ namespace EPOS.Kern.Tests
             int neueId = AnlagenId(bezeichner);
             Assert.True(neueId > 0);
 
-            // HEUTE: Die geleerte Liste ist wieder gefuellt - mit dem Vorzustand.
-            Assert.Equal(new[] { "Alt Ost", "Alt West" },
-                         ctrl.LesenJeAnlage(neueId).Select(z => z.Bezeichner).ToArray());
+            // Die geleerte Liste WIRKT: Die Anlage fuehrt keine Strangzeile mehr, und die
+            // Rettung hat nichts nachgetragen.
+            Assert.Empty(ctrl.LesenJeAnlage(neueId));
 
             AnlageLoeschen(neueId);
+            WechselrichterLoeschen(geraet);
+        }
+
+        /// <summary>
+        /// <b>DER GEGENFALL zur geleerten Dialogliste: Die Rettung bleibt, wofür es sie
+        /// gibt.</b> Eine Anlage, die der PV-Dialog GAR NICHT angefasst hat
+        /// (<c>PV_Straenge == null</c>), bekommt ihre Stränge weiterhin zurück — auch
+        /// dann, wenn im SELBEN Speicherlauf eine andere Anlage geleert wurde.
+        ///
+        /// <para><b>Warum der Fall gebraucht wird.</b> Das neue Kriterium „ST1 hat für
+        /// diese Anlage geschrieben" könnte die Rettung versehentlich stilllegen — etwa,
+        /// wenn es am LAUF statt an der ANLAGE hinge. Der Fall fährt beide Anlagen durch
+        /// EINEN <c>Del_Projekt_Waermeerzeuger</c> + <c>Add_WP_Waermeerzeuger</c> und
+        /// misst die unangetastete: Sie führt ihre zwei Stränge danach wieder.</para>
+        ///
+        /// <para>Der Del+Add-Speicherweg verlöre sie sonst — die Löschweitergabe nimmt
+        /// jede Strangzeile mit, und ohne geöffneten Dialog schreibt ST1 nichts nach.
+        /// Genau dafür gibt es <c>StraengeWiederherstellen</c>.</para>
+        /// </summary>
+        [Fact]
+        public void Die_Strang_Rettung_bedient_weiter_die_vom_Dialog_nicht_angefasste_Anlage()
+        {
+            if (!_db.Vorhanden) return;
+
+            string geleert = "ST1 Gegenprobe geleert";
+            string unberuehrt = "ST1 Gegenprobe unberuehrt";
+
+            var anlageGeleert = new WErzeugerCtrl
+            {
+                ID_Projekt = TESTPROJEKT,
+                Bezeichner = geleert,
+                ID_Type = WizardItemClass.PV_TYP,
+                ID_PV = ModulAnlegen(),
+                PV_Leistung = 21
+            };
+            Assert.True(anlageGeleert.Insert());
+            int idGeleert = AnlagenId(geleert);
+
+            var anlageUnberuehrt = new WErzeugerCtrl
+            {
+                ID_Projekt = TESTPROJEKT,
+                Bezeichner = unberuehrt,
+                ID_Type = WizardItemClass.PV_TYP,
+                ID_PV = ModulAnlegen(),
+                // Eine ANDERE Modulzahl als die erste Anlage: Sonst meldete
+                // AnlagenEindeutigkeit.FeldHinweisPruefen die exakte Wiederholung
+                // (Neigung UND Azimut UND Modulanzahl gleich).
+                PV_Leistung = 22
+            };
+            Assert.True(anlageUnberuehrt.Insert());
+            int idUnberuehrt = AnlagenId(unberuehrt);
+
+            int geraet = WechselrichterAnlegen("ST1 Gegenprobe 5000TL");
+
+            // Der VORZUSTAND: BEIDE Anlagen fuehren Straenge.
+            var ctrl = new AnlageStrangCtrl();
+            Assert.True(ctrl.SchreibenJeAnlage(idGeleert, new List<AnlageStrangModel>
+            {
+                new AnlageStrangModel { Bezeichner = "Weg Ost", ID_Wechselrichter = geraet,
+                                        Mppt = 1, Module_Reihe = 11 }
+            }));
+            Assert.True(ctrl.SchreibenJeAnlage(idUnberuehrt, new List<AnlageStrangModel>
+            {
+                new AnlageStrangModel { Bezeichner = "Bleibt Ost", ID_Wechselrichter = geraet,
+                                        Mppt = 1, Module_Reihe = 11 },
+                new AnlageStrangModel { Bezeichner = "Bleibt West", ID_Wechselrichter = geraet,
+                                        Mppt = 2, Module_Reihe = 10 }
+            }));
+
+            // Der Dialog hat die eine Anlage GELEERT und die andere NIE GESEHEN.
+            anlageGeleert.PV_Straenge = new List<AnlageStrangModel>();
+            anlageUnberuehrt.PV_Straenge = null;
+
+            var wizard = new WizardCtrl();
+            using (DbVorgang vorgang = DataRepository.Vorgang())
+            {
+                Assert.True(wizard.Del_Projekt_Waermeerzeuger(
+                    TESTPROJEKT, WizardItemClass.PV_TYP, vorgang));
+                Assert.True(wizard.Add_WP_Waermeerzeuger(
+                    TESTPROJEKT,
+                    new List<WErzeugerModel> { anlageGeleert, anlageUnberuehrt }, vorgang));
+
+                vorgang.Commit();
+            }
+
+            int neuUnberuehrt = AnlagenId(unberuehrt);
+            Assert.True(neuUnberuehrt > 0);
+
+            // DAS MASS DIESES FALLES: Die unangetastete Anlage hat ihre Straenge zurueck.
+            Assert.Equal(new[] { "Bleibt Ost", "Bleibt West" },
+                         ctrl.LesenJeAnlage(neuUnberuehrt).Select(z => z.Bezeichner).ToArray());
+
+            AnlageLoeschen(neuUnberuehrt);
+            AnlageLoeschen(AnlagenId(geleert));
             WechselrichterLoeschen(geraet);
         }
 
