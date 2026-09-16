@@ -23,7 +23,7 @@
    Projektlisten - er zeigt, was der Wirt hineingibt, und nur dort, wo der Wirt es
    will (im Bestand: Betriebsart BEARBEITEN auf Schritt 0).
 
-   TASTATUR: Die drei Fussknoepfe sind Knoepfe und damit von selbst erreichbar.
+   TASTATUR: Die Fussknoepfe sind Knoepfe und damit von selbst erreichbar.
    Enter ist NICHT belegt - ein versehentliches Enter waere hier ein Seitenwechsel
    oder ein Speichern (Lehre A-7 aus B5b). *@
 
@@ -45,8 +45,11 @@
     <div class="epos-assistent-fuss">
         <button type="button" class="epos-knopf" disabled="@(!AbbrechenMoeglich)"
                 @onclick="BeiAbbrechen">@AbbrechenText</button>
-        <button type="button" class="epos-knopf" disabled="@(!ZurueckMoeglich)"
-                @onclick="BeiZurueck">@ZurueckText</button>
+        @if (ZurueckAnzeigen)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!ZurueckMoeglich)"
+                    @onclick="BeiZurueck">@ZurueckText</button>
+        }
         <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!WeiterMoeglich)"
                 @onclick="BeiWeiter">@WeiterBeschriftung</button>
     </div>
@@ -90,17 +93,17 @@
     [Parameter] public bool WeiterFrei { get; set; } = true;
 
     /// <summary>
-    /// „Zurück" auf dem ERSTEN aktiven Schritt — der Weg AUS dem Ablauf heraus.
+    /// Wird „◀ Zurück" überhaupt GEZEICHNET? Vorgabe <c>true</c> — der Ablauf hat
+    /// mehrere Schritte, und auf dem ersten ist der Knopf gesperrt (wörtlich
+    /// <c>WizardParent.Back</c>).
     ///
-    /// <para><b>Ohne Delegat bleibt alles, wie es war:</b> Gibt es keinen vorigen
-    /// aktiven Schritt, ist der Knopf gesperrt (wörtlich <c>WizardParent.Back</c>).
-    /// Mit Delegat bleibt er bedienbar und MELDET den Rückweg — der Rahmen geht ihn
-    /// nicht selbst, denn wohin es aus dem Ablauf heraus führt, weiß nur der Wirt.
-    /// Das braucht der Einstieg <c>AssistentEinstieg.Neuanlage</c>: Dort ist die
-    /// Projektkonfiguration der einzige Schritt, und „Zurück" führt auf die
-    /// Startseite.</para>
+    /// <para><b><c>false</c> lässt ihn weg</b> statt ihn zu sperren: Wo ein Lauf aus
+    /// EINEM Schritt besteht, gibt es kein Zurück — „es gibt kein Zurück in diesem
+    /// Dialog, stattdessen Abbrechen (oder Kreuz zum Schließen)" (Anwenderentscheid
+    /// 16.09.2026). Ein dauerhaft gesperrter Knopf wäre dort eine Behauptung, die
+    /// nie eingelöst wird; die Knopfleiste heißt dann <b>Abbrechen · Weiter ▶</b>.</para>
     /// </summary>
-    [Parameter] public EventCallback Zurueckgetreten { get; set; }
+    [Parameter] public bool ZurueckAnzeigen { get; set; } = true;
 
     // =====================================================================
     // Texte - deutscher Rueckfall wie in allen Dialogen
@@ -151,11 +154,11 @@
     private string WeiterBeschriftung => LetzteAktive() ? SpeichernText : WeiterText;
 
     /// <summary>
-    /// „Zurück" geht, solange es einen vorigen aktiven Schritt gibt — oder solange
-    /// der Wirt den Rückweg AUS dem Ablauf heraus übernimmt
-    /// (<see cref="Zurueckgetreten"/>).
+    /// „Zurück" geht, solange es einen vorigen aktiven Schritt gibt — sonst ist der
+    /// Knopf gesperrt (wörtlich <c>WizardParent.Back</c>). Wo es gar kein Zurück
+    /// gibt, wird er nicht gezeichnet (<see cref="ZurueckAnzeigen"/>).
     /// </summary>
-    private bool ZurueckMoeglich => NaechsteAktive(-1) != Schritt || Zurueckgetreten.HasDelegate;
+    private bool ZurueckMoeglich => NaechsteAktive(-1) != Schritt;
 
     private bool WeiterMoeglich => WeiterFrei;
 
@@ -167,13 +170,10 @@
 
     private Task BeiZurueck()
     {
-        int ziel = NaechsteAktive(-1);
-        if (ziel != Schritt) return Wechseln(ziel);
-
-        // Kein voriger Schritt: Entweder der Wirt nimmt den Rueckweg (dann fuehrt er
-        // aus dem Ablauf heraus), oder es geschieht nichts - der Knopf ist dann
+        // Kein voriger aktiver Schritt: Es geschieht nichts - der Knopf ist dann
         // ohnehin gesperrt.
-        return Zurueckgetreten.HasDelegate ? Zurueckgetreten.InvokeAsync() : Task.CompletedTask;
+        int ziel = NaechsteAktive(-1);
+        return ziel == Schritt ? Task.CompletedTask : Wechseln(ziel);
     }
 
     private Task BeiWeiter()

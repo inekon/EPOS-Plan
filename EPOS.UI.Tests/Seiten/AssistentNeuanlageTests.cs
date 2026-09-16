@@ -19,9 +19,14 @@ namespace EPOS.UI.Tests.Seiten;
 ///
 /// <para>Geprüft wird der ganze Weg in seinen drei Stücken: die Kachel meldet den
 /// Einstieg (<c>Startseite</c>), der Assistent läuft im Modus
-/// <see cref="AssistentEinstieg.Neuanlage"/> (ein Schritt, drei Knöpfe, „Weiter ▶"
+/// <see cref="AssistentEinstieg.Neuanlage"/> (ein Schritt, zwei Knöpfe, „Weiter ▶"
 /// legt an und nennt sein Ziel), und die <c>AppWurzel</c> übersetzt das Ziel in den
 /// Ansichtswechsel auf den Reiter „Wärmebedarf".</para>
+///
+/// <para><b>Kein Zurück</b> (Anwenderentscheid 16.09.2026): „Es gibt kein Zurück in
+/// diesem Dialog, stattdessen Abbrechen (oder Kreuz zum Schließen)." Die Leiste heißt
+/// deshalb <b>Abbrechen · Weiter ▶</b>, und der Kopf der Ansicht trägt das
+/// <c>Schliesskreuz</c> — es geht denselben Weg wie „Abbrechen".</para>
 ///
 /// <para>Was NICHT geprüft wird, weil es unverändert bleibt: der vollständige Lauf
 /// mit dem Komponentenschritt (<c>AssistentTests</c>) — er steht hier nur als
@@ -84,8 +89,31 @@ public class AssistentNeuanlageTests : EposBunitContext
         => cut.Find(".epos-assistent-fuss").QuerySelectorAll("button");
 
     private static IElement Abbrechen(IRenderedComponent<AssistentSeite> cut) => Fussknoepfe(cut)[0];
+
+    /// <summary>
+    /// „◀ Zurück" — der zweite Fussknopf des VOLLSTÄNDIGEN Laufs. In der Neuanlage
+    /// steht er nicht da (Anwenderentscheid 16.09.2026); wer ihn dort sucht, greift
+    /// daneben, und genau das soll er.
+    /// </summary>
     private static IElement Zurueck(IRenderedComponent<AssistentSeite> cut) => Fussknoepfe(cut)[1];
-    private static IElement Weiter(IRenderedComponent<AssistentSeite> cut) => Fussknoepfe(cut)[2];
+
+    /// <summary>
+    /// Der HAUPTKNOPF — immer der LETZTE der Leiste: in der Neuanlage der zweite von
+    /// zweien, im vollständigen Lauf der dritte von dreien.
+    /// </summary>
+    private static IElement Weiter(IRenderedComponent<AssistentSeite> cut)
+    {
+        IHtmlCollection<IElement> knoepfe = Fussknoepfe(cut);
+        return knoepfe[knoepfe.Length - 1];
+    }
+
+    /// <summary>Das Schließkreuz im Kopf der Ansicht (✕ = Esc = Abbrechen).</summary>
+    private static IElement Schliesskreuz(IRenderedComponent<AssistentSeite> cut)
+        => cut.Find(".epos-seite-kopf .epos-dialog-zu");
+
+    private static IHtmlCollection<IElement> Rueckfrageknoepfe(
+        IRenderedComponent<AssistentSeite> cut)
+        => cut.Find(".epos-rueckfrage").QuerySelectorAll(".epos-leiste button");
 
     /// <summary>
     /// <b>Der Lauf beginnt auf der PROJEKTKONFIGURATION</b> — und der
@@ -104,8 +132,9 @@ public class AssistentNeuanlageTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Gegenprobe:</b> Der vollständige Lauf ist unverändert — er beginnt auf
-    /// dem Komponentenschritt mit seinen dreizehn Kacheln, und „Zurück" ist dort
-    /// gesperrt, weil es aus ihm keinen Rückweg gibt.
+    /// dem Komponentenschritt mit seinen dreizehn Kacheln, seine Leiste trägt
+    /// weiterhin DREI Knöpfe, und „◀ Zurück" steht dort — gesperrt, weil es vor
+    /// dem ersten Schritt keinen gibt.
     /// </summary>
     [Fact]
     public void Der_vollstaendige_Lauf_beginnt_weiterhin_bei_den_Komponenten()
@@ -114,27 +143,105 @@ public class AssistentNeuanlageTests : EposBunitContext
 
         Assert.Equal(0, cut.Instance.Schritt);
         Assert.Equal(13, cut.FindAll(".epos-kachel").Count);
+
+        Assert.Equal(3, Fussknoepfe(cut).Length);
+        Assert.Equal("◀ Zurück", Zurueck(cut).TextContent);
         Assert.True(Zurueck(cut).HasAttribute("disabled"));
     }
 
     /// <summary>
-    /// Die Knopfleiste des Bildschirmfotos: <b>Abbrechen · ◀ Zurück · Weiter ▶</b>.
-    /// „Weiter ▶" steht dort, wo im vollständigen Lauf „Speichern" stünde — der
-    /// Ablauf hört hier nicht auf —, und „Zurück" ist bedienbar, obwohl es keinen
-    /// vorigen Schritt gibt: Es führt aus dem Assistenten heraus.
+    /// Die Knopfleiste der Neuanlage: <b>Abbrechen · Weiter ▶</b>, mehr nicht
+    /// (Anwenderentscheid 16.09.2026: „Es gibt kein Zurück in diesem Dialog,
+    /// stattdessen Abbrechen (oder Kreuz zum Schließen)"). „Weiter ▶" steht dort, wo
+    /// im vollständigen Lauf „Speichern" stünde — der Ablauf hört hier nicht auf.
     /// </summary>
     [Fact]
-    public void Die_Knopfleiste_heisst_Abbrechen_Zurueck_Weiter()
+    public void Die_Knopfleiste_heisst_Abbrechen_Weiter()
     {
         var cut = Neuanlage();
 
-        Assert.Equal(3, Fussknoepfe(cut).Length);
+        Assert.Equal(2, Fussknoepfe(cut).Length);
         Assert.Equal("Abbrechen", Abbrechen(cut).TextContent);
-        Assert.Equal("◀ Zurück", Zurueck(cut).TextContent);
         Assert.Equal("Weiter ▶", Weiter(cut).TextContent);
 
-        Assert.False(Zurueck(cut).HasAttribute("disabled"));
         Assert.Contains("epos-knopf--primaer", Weiter(cut).ClassList);
+    }
+
+    /// <summary>
+    /// <b>Kein „◀ Zurück" in der Neuanlage — und zwar keins, das nur GESPERRT ist:</b>
+    /// Der Knopf wird gar nicht gezeichnet. Ein dauerhaft gesperrter Knopf wäre eine
+    /// Behauptung, die nie eingelöst wird; hinaus führen „Abbrechen" und das
+    /// Schließkreuz.
+    /// </summary>
+    [Fact]
+    public void Die_Neuanlage_zeichnet_keinen_Zurueck_Knopf()
+    {
+        var cut = Neuanlage();
+
+        Assert.DoesNotContain("◀ Zurück", cut.Find(".epos-assistent-fuss").TextContent,
+                              StringComparison.Ordinal);
+        Assert.Empty(Fussknoepfe(cut).Where(k => k.HasAttribute("disabled")));
+    }
+
+    // =====================================================================
+    //  Das Schliesskreuz im Kopf der Ansicht
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Das Kreuz steht beim Titel</b> (Hausregel EPOS.UI) — in BEIDEN Einstiegen,
+    /// und genau EINMAL: Die Ansicht liegt in keiner <c>Ueberlagerung</c>, ein
+    /// zweites Kreuz kann es hier also nicht geben.
+    /// </summary>
+    [Theory]
+    [InlineData(AssistentEinstieg.Neuanlage)]
+    [InlineData(AssistentEinstieg.Vollstaendig)]
+    public void Beide_Einstiege_tragen_genau_ein_Schliesskreuz(AssistentEinstieg einstieg)
+    {
+        var cut = Neuanlage(einstieg: einstieg);
+
+        Assert.Single(cut.FindAll(".epos-dialog-zu"));
+        Assert.Equal("✕", Schliesskreuz(cut).TextContent);
+    }
+
+    /// <summary>
+    /// <b>Das Kreuz wirkt wie „Abbrechen":</b> derselbe Weg, dieselbe Rückfrage aus
+    /// 62b-E-1 — und „Verwerfen" endet den Lauf mit <c>Geschlossen(false)</c>, ohne
+    /// zu schreiben.
+    /// </summary>
+    [Fact]
+    public void Das_Schliesskreuz_wirkt_wie_Abbrechen()
+    {
+        bool? ende = null;
+        int gespeichert = 0;
+        var cut = Neuanlage(speichern: () => { gespeichert++; return null; },
+                            geschlossen: ok => ende = ok,
+                            geaendert: () => true);
+
+        Schliesskreuz(cut).Click();
+
+        Assert.Single(cut.FindAll(".epos-rueckfrage"));
+        Assert.Null(ende);                       // noch ist nichts entschieden
+
+        Rueckfrageknoepfe(cut)[1].Click();       // Verwerfen
+
+        Assert.False(ende);
+        Assert.Equal(0, gespeichert);
+    }
+
+    /// <summary>
+    /// Ohne ungespeicherte Eingaben geht das Kreuz unmittelbar hinaus — wie
+    /// „Abbrechen" auch (62b-E-1, Festlegung 1): Es ist nichts zu verlieren.
+    /// </summary>
+    [Fact]
+    public void Ohne_Aenderungen_schliesst_das_Kreuz_ohne_Rueckfrage()
+    {
+        bool? ende = null;
+        var cut = Neuanlage(geschlossen: ok => ende = ok);
+
+        Schliesskreuz(cut).Click();
+
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.False(ende);
     }
 
     /// <summary>
@@ -226,24 +333,6 @@ public class AssistentNeuanlageTests : EposBunitContext
         Weiter(cut).Click();
 
         Assert.True(ende);
-    }
-
-    /// <summary>
-    /// <b>„Zurück" führt aus dem Assistenten heraus</b> — es gibt keinen vorigen
-    /// Schritt, also ist es der Rückweg auf die Startansicht. Ohne Rückfrage, auch
-    /// mit Eingaben: Der Knopf ist der Rückschritt eines Ablaufs, nicht sein
-    /// Abbruch.
-    /// </summary>
-    [Fact]
-    public void Zurueck_meldet_den_Rueckweg_ohne_Rueckfrage()
-    {
-        bool? ende = null;
-        var cut = Neuanlage(geschlossen: ok => ende = ok, geaendert: () => true);
-
-        Zurueck(cut).Click();
-
-        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
-        Assert.False(ende);
     }
 
     /// <summary>
@@ -407,11 +496,14 @@ public class AssistentNeuanlageTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-assistentseite"));
         Assert.Single(cut.FindAll(".epos-projektkopf"));
         Assert.Empty(cut.FindAll(".epos-kachel"));
-        Assert.Equal("Weiter ▶",
-                     cut.Find(".epos-assistent-fuss").QuerySelectorAll("button")[2].TextContent);
+
+        // Zwei Knoepfe, kein „Zurueck" - und der zweite ist der Hauptknopf.
+        IHtmlCollection<IElement> fuss = cut.Find(".epos-assistent-fuss").QuerySelectorAll("button");
+        Assert.Equal(2, fuss.Length);
+        Assert.Equal("Weiter ▶", fuss[1].TextContent);
 
         // (2) „Weiter ▶" legt an und die Wurzel wechselt auf den Waermebedarf.
-        cut.Find(".epos-assistent-fuss").QuerySelectorAll("button")[2].Click();
+        fuss[1].Click();
         cut.Render();
 
         Assert.Equal(1, gespeichert);

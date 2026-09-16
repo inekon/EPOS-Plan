@@ -18,7 +18,8 @@
    das ist der Lauf seit jeher. Die NEUANLAGE (Startkachel "Neues Projekt") laesst
    ihn weg: Sie beginnt auf der Projektkonfiguration, die dort ihr einziger Schritt
    ist, ihr Hauptknopf heisst "Weiter ▶" und meldet nach dem Anlegen das ZIEL
-   (Angelegt), und "Zurueck" fuehrt aus dem Assistenten heraus. Die Komponenten
+   (Angelegt), und ein "Zurueck" gibt es dort nicht - hinaus fuehren "Abbrechen"
+   und das Schliesskreuz. Die Komponenten
    waehlte dieser Schritt fuer ein Projekt aus, das es noch gar nicht gab; sie
    kommen jetzt ueber die Reiter der Startseite. Der Schritt selbst bleibt - jeder
    andere Einstieg, vor allem die Betriebsart BEARBEITEN, erreicht ihn unveraendert.
@@ -68,8 +69,15 @@
        staende der Anwender unter dem Menueband vor dreizehn Schritten ohne
        Ueberschrift. Dieselbe Loesung wie bei der Simulationskonfiguration, der
        ersten Fachseite, die frei wurde - und mit den Hausklassen der Seitenkoepfe. *@
+    @* DAS KREUZ STEHT BEIM TITEL (Hausregel EPOS.UI, Anwenderentscheid
+       16.09.2026: „stattdessen Abbrechen (oder Kreuz zum Schliessen)"). Es wirkt
+       genau wie „Abbrechen": derselbe Weg, dieselbe Rueckfrage - und es steht in
+       BEIDEN Einstiegen da, denn der Weg nach draussen haengt nicht daran, wo der
+       Lauf aufmacht. Ein zweites Kreuz gibt es nicht: Die Ansicht liegt in keiner
+       Ueberlagerung, sie ist eine Ansicht der AppWurzel. *@
     <div class="epos-seite-kopf">
         <h1 class="epos-seite-titel">@TitelText</h1>
+        <Schliesskreuz Geschlossen="BeiAbbrechen" />
     </div>
 
     @if (!string.IsNullOrEmpty(_meldung))
@@ -80,11 +88,11 @@
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@Meldungssatz" />
     }
 
-    @* DIE KNOPFLEISTE IM EINSTIEG NEUANLAGE (16.09.2026). Sie ist dieselbe -
-       Abbrechen · ◀ Zurueck · Hauptknopf -, nur sagen zwei Gaben etwas anderes:
-       Der Hauptknopf traegt den WEITER-Text (der Ablauf geht weiter, er hoert
-       nicht auf), und „Zurueck" fuehrt aus dem Ablauf heraus, weil es vor der
-       Projektkonfiguration keinen Schritt mehr gibt. *@
+    @* DIE KNOPFLEISTE IM EINSTIEG NEUANLAGE (Anwenderentscheid 16.09.2026): nur
+       Abbrechen · Weiter ▶. „Es gibt kein Zurueck in diesem Dialog, stattdessen
+       Abbrechen (oder Kreuz zum Schliessen)" - der Knopf wird deshalb gar nicht
+       erst gezeichnet, statt dauerhaft gesperrt dazustehen. Und der Hauptknopf
+       traegt den WEITER-Text: Der Ablauf geht weiter, er hoert nicht auf. *@
     <Assistent Seiten="@_schritte"
                Schritt="@_schritt"
                SchrittChanged="BeiSchritt"
@@ -92,7 +100,7 @@
                WeiterFrei="@WeiterFrei"
                Abgebrochen="BeiAbbrechen"
                Gespeichert="BeiSpeichern"
-               Zurueckgetreten="@ZurueckHinaus"
+               ZurueckAnzeigen="@(!Neuanlage)"
                AbbrechenText="@AbbrechenText"
                ZurueckText="@ZurueckText"
                WeiterText="@WeiterText"
@@ -144,7 +152,9 @@
     /// hinterher über die Reiter der Startseite. Der Lauf beginnt deshalb auf der
     /// Projektkonfiguration, sie ist sein einziger freigeschalteter Schritt, der
     /// Hauptknopf heißt „Weiter ▶" (er legt an und meldet das Ziel über
-    /// <see cref="Angelegt"/>), und „Zurück" führt aus dem Assistenten heraus.
+    /// <see cref="Angelegt"/>), und ein „◀ Zurück" wird dort nicht gezeichnet —
+    /// hinaus führen „Abbrechen" und das Schließkreuz (Anwenderentscheid
+    /// 16.09.2026).
     /// </para>
     /// <para>
     /// <b>Der Schritt „Komponenten" wird dabei nicht abgeschafft</b>, nur
@@ -422,14 +432,6 @@
     /// Derselbe Knopf trägt ihn auf jeder Seite vor der letzten.
     /// </remarks>
     private string HauptknopfText => Neuanlage ? WeiterText : SpeichernText;
-
-    /// <summary>
-    /// Der Rückweg des Rahmens, wenn es keinen vorigen Schritt gibt — nur in der
-    /// Neuanlage besetzt; sonst bleibt „Zurück" auf dem ersten Schritt gesperrt wie
-    /// bisher.
-    /// </summary>
-    private EventCallback ZurueckHinaus
-        => Neuanlage ? EventCallback.Factory.Create(this, BeiZurueckHinaus) : default;
 
     /// <summary>Der zuletzt ANGEWANDTE Einstieg; <c>null</c> heisst „noch keiner".</summary>
     private AssistentEinstieg? _einstiegAngewandt;
@@ -791,20 +793,6 @@
 
         await Geschlossen.InvokeAsync(true);
     }
-
-    /// <summary>
-    /// „Zurück" auf der Projektkonfiguration der NEUANLAGE: Es gibt keinen vorigen
-    /// Schritt, also führt der Knopf aus dem Assistenten heraus — auf die
-    /// Startansicht des Wirtes (unter Windows die Startseite mit dem Reiter
-    /// „Projekt", von dem der Anwender gekommen ist).
-    /// </summary>
-    /// <remarks>
-    /// <b>Ohne Rückfrage</b>, anders als „Abbrechen": Der Knopf ist hier der
-    /// Rückschritt eines Ablaufs und nicht sein Abbruch — der Anwender geht damit
-    /// eine Seite zurück, wie er es auf jedem anderen Schritt täte. Geschrieben wird
-    /// dabei nichts.
-    /// </remarks>
-    private Task BeiZurueckHinaus() => Geschlossen.InvokeAsync(false);
 
     /// <summary>
     /// DER Speicherweg des Knopfes — Prüfung der stehenden Seite, Übernahme des
