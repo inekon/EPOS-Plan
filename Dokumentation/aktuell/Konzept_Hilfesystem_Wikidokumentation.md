@@ -814,6 +814,18 @@ die Quelle (Regel 3 des Abschnitts „Bedienungsseiten mit Repo-Quelle"), lädt,
 in diesem Konzept und veröffentlicht die gesammelten Logbuch-Einträge in einem Zug; die Versionsnummer
 für das Logbuch erfragt die Orchestrierung beim Anwender.
 
+### 13.4 Logbuch-Einträge knapp
+
+**Regel:** Das Update-Logbuch nennt je Version nur die wesentlichen Änderungen, die ein Anwender
+sieht oder deren Ergebnis er in Händen hat: eine neue oder geänderte Bedienung, ein neuer Rechenweg,
+eine entfallene Funktion, eine behobene Störung, die Anwenderdaten betraf. Ein Eintrag ist ein bis
+zwei Sätze mit Datum („Seit 16.09.2026 …“). Er nennt keine Einzelheiten der Umsetzung — keine
+Dateien, Tabellen, Spalten, Schlüssel, Klassen, Testzahlen, Fehlerursachen — und keine
+Kleinigkeiten: geänderte Beschriftungen, Hinweise, Tooltips, interne Umbauten, Behebungen ohne
+sichtbare Bedienänderung. Was zu klein für das Logbuch ist, steht nur in der Statusdatei und im
+Protokoll. Mehrere Aufträge derselben Version, die dasselbe Thema betreffen, werden zu einem Eintrag
+zusammengezogen.
+
 ## Dokumentationspflege Speicherauslegung – 11.09.2026
 
 Nach Implementierung und Prüfung wurden die vorhandenen Wiki-Seiten Programm Dokumentation/Stromspeicher (Revision 533), Simulationsergebnisse (532), Kosten (531) und Berechnung/Stromspeicher (534) ergänzt. Die Seiten wurden nicht umbenannt; bestehende Anker bleiben erhalten. Die neuen Bedienanker auslegung-optimieren, auslegung-kosten, auslegung-csv und auslegung-profile liegen auf der vorhandenen Stromspeicherseite. Die fachliche Ergänzung ist unter auslegung-kosten-zeitreihen erreichbar. Alle vier Texte wurden über die MediaWiki-API nach dem Speichern wieder gelesen und verglichen.

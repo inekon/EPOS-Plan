@@ -6831,11 +6831,10 @@ neutralen `.resx` und lässt sich nicht nach Commits schneiden.
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 nennt der Hilfe-Assistent die gemeinte Maske, wenn er Felder nicht füllen
-> kann: Ist die Maske nicht geöffnet, sagt die Antwort ihren Namen und mit welcher Aktion
-> sie sich öffnen lässt, statt eine Liste technischer Bezeichnungen auszugeben. Passen die
-> genannten Felder auf mehrere Masken, erscheint weiterhin eine Auswahl — jetzt mit den
-> Namen, unter denen die Masken im Programm stehen.
+> Seit 16.09.2026 nennt der Hilfe-Assistent beim Ausfüllen von Feldern den Namen der gemeinten
+> Maske und, falls sie nicht geöffnet ist, wie sie sich öffnen lässt, statt technischer
+> Bezeichnungen. Passen die Felder auf mehrere Masken, zeigt er eine Auswahl mit deren Namen im
+> Programm.
 
 ## #295 — Das Kreuz steht beim Titel (15./16.09.2026, Nachtrag aus dem Merge)
 
@@ -6897,10 +6896,9 @@ herausgelöste `Abbrechen()`, die auch Esc ruft. Die Bauart-C-Restliste der
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 lässt sich jeder Dialog über ein Schließkreuz rechts oben in der Kopfzeile
-> schließen. Das Kreuz wirkt wie die Esc-Taste und wie „Abbrechen": Eingaben werden
-> verworfen, es wird nichts gespeichert. Kein Kreuz tragen Rückfragen, laufende Vorgänge und
-> die Schritte des Assistenten — dort würde ein Schließen den Ablauf unterbrechen.
+> Seit 16.09.2026 lässt sich jeder Dialog über ein Schließkreuz oben rechts schließen; es wirkt
+> wie „Abbrechen" und verwirft ungespeicherte Eingaben. Rückfragen, laufende Vorgänge und die
+> Schritte des Assistenten tragen kein Kreuz.
 
 ## #296 — Alle sechs Erzeuger im Schema des Heizkessels (15./16.09.2026, Nachtrag aus dem Merge)
 
@@ -6978,14 +6976,11 @@ Welle wäre es ein Merge-Risiko gewesen.
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 stehen in den Dialogen für Heizkessel, BHKW, Photovoltaik, Stromspeicher,
-> Pufferspeicher und Solarkollektoren alle Daten des gewählten Katalogsatzes im
-> Modulbereich: Der Abschnitt „Alle Daten anzeigen" klappt sie auf, die Felder lassen sich
-> dort ändern und mit einem eigenen Knopf speichern. Der Bearbeiten-Dialog zeigt nur noch
-> die Stammdaten; Kosten, BEHG-Angaben und Emissionen sind dort nicht mehr vorhanden und
-> werden im aufgeklappten Bereich gepflegt. Der Knopf „Bearbeiten…" steht im Modulbereich
-> unter den Kostenknöpfen, „Neu" und „Löschen" bei der Liste. Die getrennte Administration
-> der Erzeuger ist nicht mehr vorhanden.
+> Seit 16.09.2026 zeigen die Dialoge der sechs Energieerzeuger (Heizkessel, BHKW, Photovoltaik,
+> Stromspeicher, Pufferspeicher, Solarkollektoren) im aufklappbaren Bereich „Alle Daten
+> anzeigen" alle Katalogdaten des gewählten Geräts zum Ändern; Kosten und Emissionen stehen
+> jetzt dort statt im Bearbeiten-Dialog. Die getrennte Administration der Erzeuger ist nicht
+> mehr vorhanden.
 
 ## #297 — Bearbeiten nach oben, alle Daten offen, die Konfiguration als eigener Dialog (16.09.2026)
 
@@ -7104,23 +7099,17 @@ Heizkessel und BHKW die Nachbarschaft des Brennstoffpaars. Neu sind
 
 **Logbuch-Vorschlag Erzeuger** (Version 1.2.0.2):
 
-> Seit 16.09.2026 steht der Knopf „Bearbeiten…" in den Dialogen der Erzeuger gleich unter der
-> Modulzeile, in einer Zeile mit den Kostenknöpfen. Der Bereich „Alle Daten" darunter ist beim
-> Öffnen des Dialogs bereits aufgeklappt: Alle Daten des gewählten Katalogsatzes stehen sofort
-> sichtbar und bearbeitbar da, zuklappen lässt sich der Bereich weiterhin. In den Dialogen für
-> Heizkessel und BHKW stehen „Brennstoff Typ" und „Brennstoff Variante" untereinander.
+> Seit 16.09.2026 steht der Knopf „Bearbeiten…" in den Erzeuger-Dialogen gleich unter der
+> Modulzeile, und der Bereich „Alle Daten" (zusammengezogen mit dem Eintrag zu #296) ist beim
+> Öffnen bereits aufgeklappt. Bei Heizkessel und BHKW stehen „Brennstoff Typ" und „Brennstoff
+> Variante" jetzt untereinander.
 
 **Logbuch-Vorschlag Wärmepumpe und Simulation** (Version 1.2.0.2):
 
-> Seit 16.09.2026 heißt der Bereich „Wärmeerzeuger Spitzenlast" des Wärmepumpendialogs
-> „Konfiguration" und ist ein eigener Dialog. Er lässt sich an zwei Stellen öffnen: im
-> Wärmepumpendialog über den Knopf „Konfiguration" und unter Simulation > Konfiguration über
-> den Knopf „Konfiguration" an der Karte der Anlage, an der Stelle des Balkens „Parameter für
-> die Simulation". Dieser Knopf steht an den Karten von Wärmepumpe, Heizkessel und BHKW und
-> führt zu den Parametern, mit denen die Anlage in die Simulation geht — Heizstab und
-> Betriebsbereitschaft stehen dort. Der Dialog „Parameter Bearbeiten…" ist nicht mehr
-> vorhanden; die Daten der Wärmepumpe stehen samt Kennliniendaten direkt im
-> Wärmepumpendialog.
+> Seit 16.09.2026 heißt der Bereich „Wärmeerzeuger Spitzenlast" im Wärmepumpendialog
+> „Konfiguration" und lässt sich als eigener Dialog auch aus Simulation > Konfiguration öffnen
+> (ebenso bei Heizkessel und BHKW). Der Dialog „Parameter Bearbeiten…" entfällt; seine Angaben
+> samt Kennlinie stehen jetzt direkt im Wärmepumpendialog.
 
 ## #298 — Die Stammfelder ändern die Anlage, die Übernahme den Katalog (16.09.2026)
 
@@ -7225,18 +7214,11 @@ weiche Sperren, Vorschautexte, Übernahme mit und ohne Kennlinienschalter, Abbre
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 gelten die Stammdaten im Wärmepumpendialog einer Anlage nur für diese
-> Anlage in diesem Projekt: Firma, Beschreibung, Typ, Regelung, Aufstellung, Baujahr,
-> Nennleistung und die Leistung des Heizstabs gehen mit „OK" in die Projektdaten; der Katalog
-> bleibt unberührt, und andere Projekte mit derselben Wärmepumpe behalten ihre Werte. Einen
-> eigenen Speichern-Knopf für diese Felder gibt es nicht. Auch die Kennliniendaten im selben
-> Dialog gehören zur Anlage und lassen sich dort bearbeiten. Der Knopf „In Stamm
-> übernehmen…" schreibt die Daten der Anlage auf Wunsch in den Katalog zurück. Vor dem
-> Übernehmen nennt er den Katalogsatz, der überschrieben wird, und die Zahl der anderen
-> Projekte, die eine eigene Kopie besitzen und unverändert bleiben; ein Schalter nimmt die
-> Kennlinien mit. Ist kein Katalogsatz dieses Namens vorhanden, wird einer angelegt;
-> ausgelieferte Katalogsätze werden nicht überschrieben. Der Name der Anlage ist im
-> Anlagendialog nur lesbar — über ihn ist die Anlage dem Katalogsatz zugeordnet.
+> Seit 16.09.2026 ändern die Stammdaten einer Wärmepumpe im Anlagendialog (z. B. Nennleistung,
+> Heizstableistung, Kennlinien) nur noch diese Anlage im aktuellen Projekt statt des
+> Katalogeintrags; andere Projekte mit derselben Wärmepumpe bleiben unverändert. Über „In Stamm
+> übernehmen…" lassen sich die Werte auf Wunsch — mit Warnung vor dem Überschreiben — in den
+> Katalog zurückschreiben.
 
 ## #299 — Wärmepumpe: Heizstab je Anlage, Katalogkopplung über ID, Kühlleistung wählbar (16.09.2026)
 
@@ -7298,11 +7280,11 @@ leer. 23 neue Testmethoden (Kern 10, Oberfläche 13).
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 wird der Heizstab je Wärmepumpe eingestellt (Konfiguration der Anlage,
-> Schalter „Heizstab mitrechnen"); die projektweite Einstellung ist entfallen und wurde auf
-> alle Wärmepumpen des Projekts übertragen. Die Kühlleistung einer Wärmepumpe ist in der
-> Katalogauswahl als Spalte und Filter „nur mit Kühlfunktion" wählbar und im Anlagendialog
-> bearbeitbar. Anwendereinstellungen bleiben beim Versionswechsel erhalten.
+> Seit 16.09.2026 wird der Heizstab je Wärmepumpe eingestellt (Schalter „Heizstab mitrechnen"
+> an der Anlage) statt projektweit, und die Kühlleistung ist bei der Katalogauswahl als Spalte
+> und Filter „nur mit Kühlfunktion" wählbar sowie im Anlagendialog bearbeitbar. Außerdem
+> bleiben Anwendereinstellungen beim Versionswechsel jetzt erhalten, die zuvor zurückgesetzt
+> wurden.
 
 ## #300 — Neues Projekt: der Assistent startet in der Projektkonfiguration (16.09.2026)
 
@@ -7320,19 +7302,36 @@ Rückfrage zur Startseite, „Abbrechen" fragt weiterhin nach. Das Menü „Proj
 iOS-Projektliste behalten den vollständigen Assistenten mit Komponentenauswahl — nur die
 Kachel ändert ihr Verhalten. Es kommen keine neuen Ressourcen und keine Hüllenänderung hinzu.
 
-**Was offen bleibt.** Zwei Fragen, beide Anwenderentscheid. Soll „bei Neuanlage" auch für das
-Menü „Projekt → Neu…" und den iOS-Knopf gelten, sodass allein die Betriebsart entscheidet?
-Und: „Zurück" auf der Projektkonfiguration verwirft einen eingegebenen Projektnamen ohne
-Rückfrage — die Alternative wäre dieselbe Rückfrage wie bei „Abbrechen".
+**Was offen bleibt.** Eine Frage, Anwenderentscheid: Soll „bei Neuanlage" auch für das Menü
+„Projekt → Neu…" und den iOS-Knopf gelten, sodass allein die Betriebsart entscheidet? Die
+zweite Frage — „Zurück" verwirft einen eingegebenen Projektnamen ohne Rückfrage — ist mit
+dem Nachtrag vom 16.09.2026 erledigt: Der Zurück-Knopf entfällt in der Neuanlage vollständig,
+an seine Stelle tritt das Schließkreuz, das denselben Weg wie „Abbrechen" nimmt.
 
 **Prüfung.** 13 neue Facts (`EPOS.UI.Tests/Seiten/AssistentNeuanlageTests.cs`); das Gate lief
 gemeinsam mit #299 (Zahlen dort).
 
+**Nachtrag 16.09.2026 (Commit `c899de4b`).** Anwenderentscheid: „Es gibt kein Zurück in
+diesem Dialog, stattdessen Abbrechen (oder Kreuz zum Schließen)." Die Knopfleiste der
+Neuanlage wird zu Abbrechen / Weiter ▶: Der Zurück-Knopf wird über die Baustein-Gabe
+`ZurueckAnzeigen` nicht mehr gezeichnet, die Gabe `Zurueckgetreten` und der Weg „Zurück ohne
+Rückfrage" entfallen. Dabei fiel auf, dass die Assistentenseite in keinem Einstieg — weder
+Neuanlage-Kachel noch vollständigem Assistenten — ein Schließkreuz trug; die Wache
+`SchliesskreuzWacheTests` prüft nur Dialoge und Überlagerungen, nicht Seiten. Sie trägt jetzt
+in beiden Einstiegen genau eins, das denselben Weg wie „Abbrechen" nimmt (Rückfrage bei
+Änderungen, ohne Änderungen sofort); neue CSS-Regel `.epos-seite-kopf .epos-dialog-zu`.
+`EPOS.UI.Tests/Seiten/AssistentNeuanlageTests.cs` zählt danach 17 Methoden / 19 Fälle
+(Knopfleiste, kein Zurück-Knopf, Kreuz in beiden Einstiegen, Kreuz wirkt wie Abbrechen,
+Gegenprobe vollständiger Lauf mit drei Knöpfen). Gate: Kern-Filter 0 Fehler, `EPOS.UI.Tests`
+4 523/4 523, `EPOS.Kern.Tests` 3 074/3 075 (einzig rot: bekannt fremd
+`SpeicherFlottenGroessenCtrlTests.Die_Fusszeile_der_Karte_nennt_den_Feinpunkt`).
+
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
 > Seit 16.09.2026 startet die Kachel „Neues Projekt" den Assistenten direkt in der
-> Projektkonfiguration; mit „Weiter" gelangt man zur Kachel Wärmebedarf. Über das Menü
-> „Projekt → Neu…" bleibt der vollständige Assistent mit Komponentenauswahl erreichbar.
+> Projektkonfiguration; „Weiter" führt zur Kachel Wärmebedarf, „Abbrechen" oder das
+> Schließkreuz verlassen den Dialog. Über das Menü „Projekt → Neu…" bleibt der vollständige
+> Assistent mit Komponentenauswahl weiterhin erreichbar.
 
 ## #301 — Berichte & Kosten: Kosten nach Rückwechsel auf Stamm, Kostenfaktor-Löschen ohne Kaskade (16.09.2026)
 
@@ -7410,8 +7409,7 @@ ihren Schemastand hält — jede Arbeitskopie wird im Test selbst nachgezogen.
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 zeigt die Seite „Kosten" nach dem Wechsel von einer Variante zurück auf das
-> Stammprojekt wieder dessen Kosten. Ein Kostenfaktor, der in Projekt- oder
-> Vorlagenpositionen verwendet wird, lässt sich in der Administration Kostenfaktoren nicht
-> mehr löschen; die Meldung nennt die Anzahl der Positionen und Projekte. Bisher gingen dabei
-> Kostenpositionen in allen Projekten verloren, die diesen Kostenfaktor nutzten.
+> Seit 16.09.2026 zeigt die Seite „Kosten" nach einem Wechsel von einer Variante zurück auf das
+> Stammprojekt wieder dessen Kosten. Ein Kostenfaktor, der in Projekten verwendet wird, lässt
+> sich nicht mehr löschen; bisher gingen dabei Kostenpositionen in allen betroffenen Projekten
+> verloren.
