@@ -390,4 +390,42 @@ pro Anlage — kein Stilbruch zwischen ihnen.
 Senkenketten. **Erwartet:** Der Hinweisbereich zeigt zu den Senken **nichts**, und die
 Senkenketten des Ziels sind die der Quelle.
 
+## 9. Nachtrag 16.09.2026 (`#307`) — die Nebenbemerkung berichtigt
+
+Der letzte Punkt aus Abschnitt 1.3 war eine offene Frage: `KiAktionenUebernahme` sagte
+über die Komponentenübernahme, die Transaktionsklammer schließe „einen Teilzustand aus
+halb übernommenen Komponenten" aus — für die Schritte 8 und 9 galt das nie, sie laufen
+ABSICHTLICH nach dem Commit (Abschnitt 1.2). **Anwenderentscheid 16.09.2026:
+richtigstellen, nichts am Verhalten ändern.**
+
+**Zwei Stellen behaupteten dasselbe:** der Entwicklerkommentar in
+`KiAktionenUebernahme.KomponenteUebernehmen()` und, gewichtiger, die Registertabelle in
+[`Konzept_KI-Assistent_Aufgabensteuerung.md`](../../../aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md)
+Zeile 601 — dort steht sie in `aktuell/`, also als Arbeitsgrundlage. Beide sind jetzt
+berichtigt: Der Hauptteil ist geklammert, Schritt 8 (`SenkenNachziehen`) und Schritt 9
+(`VariantenNachziehen`) laufen danach, ein Teilzustand ist möglich und wird seit `NL-Q2`
+gemeldet (`BK_KOMP_HINW_SENKEN`, `BK_KOMP_HINW_VARIANTE`). Der mitgeführte Zeilenverweis
+`KomponentenUebernahmeCtrl:283` war ebenfalls überholt — er zeigt heute auf die
+Senkenleseschleife vor der Transaktion, nicht mehr auf sie — und ist durch den
+Methodennamen `KomponentenUebernahmeCtrl.Uebernehmen` ersetzt.
+
+**Dritte Fundstelle, im Quelltext:** Der Klassenkopf von `KomponentenUebernahmeCtrl`
+sagte noch „Schritt 9 meldet das über seine Hinweise, Schritt 8 nicht" (Abschnitt 1,
+`<para>` „Damit liegen diese beiden Schritte ausserhalb der Klammer"). Das stimmte, bevor
+`NL-Q2` umgesetzt wurde (#306) — seither melden beide Schritte gleich, und dieser Satz war
+beim Nachziehen der zwei Kommentarstellen in #306 (Abschnitt 7.1) nicht mitgenommen
+worden. Berichtigt.
+
+**Kein Anwendertext behauptet dasselbe.** Geprüft: der Wirkungs- und Vorschautext der
+Aktion (`KI_REG_WIRKUNG_KOMPONENTE_UEBERNEHMEN`, `KI_REG_VORSCHAU_KOMPONENTE_UEBERNEHMEN`)
+sagt nur „nicht umkehrbar" und nennt die Stückzahlen — das stimmt und bleibt unverändert.
+Auch `KiAktionsTexte`, `KiKern.Tests/Registerabbild.cs`,
+`EPOS.Kern.Tests/KiRegisterS3Tests.cs`, das Wiki (`Projekte/Wiki/*`) und die übrigen
+`Dokumentation/aktuell/`-Papiere führen die Behauptung nicht. **Keine Codezeile geändert**,
+kein neuer Ressourcenschlüssel. Gate: Kern-Filter 0 Fehler / 5 Warnungen (keine neue,
+Schranke 7), `EPOS.Kern.Tests` 3 111/3 111, `EPOS.UI.Tests` 4 530/4 530, SpeicherEngine
+370/370, KiKern 499/499, SpeicherPlanung 27/28 (1 übersprungen), `DokumentationLinkWacheTests`
+7/7, `RepositoryOrdnungWacheTests` 10/10. Kein Schemaschritt, keine neue Referenzbasis,
+kein iOS-Lauf.
+
 

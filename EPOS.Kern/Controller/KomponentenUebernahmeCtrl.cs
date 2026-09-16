@@ -60,8 +60,9 @@ namespace WindowsFormsApplication1
     ///
     /// <para>
     /// <b>Damit liegen diese beiden Schritte ausserhalb der Klammer.</b> Scheitert einer,
-    /// steht der Austausch bereits fest und lässt sich nicht mehr zurücknehmen; Schritt 9
-    /// meldet das über seine Hinweise, Schritt 8 nicht. Nachgemessen in
+    /// steht der Austausch bereits fest und lässt sich nicht mehr zurücknehmen; seit
+    /// NL-Q2 melden beide Schritte das über ihre Hinweise (Schritt 8
+    /// <c>BK_KOMP_HINW_SENKEN</c>, Schritt 9 <c>BK_KOMP_HINW_VARIANTE</c>). Nachgemessen in
     /// <c>EPOS.Kern.Tests/UebernahmeNachzugTests</c>.
     /// </para>
     /// </summary>
