@@ -409,6 +409,8 @@ Konzept N1.25 („rund 3–5 PT").
 
 ## 4. Was die Stufe GA entfernt
 
+**Mit E23 (16.09.2026) gegenstandslos:** Der Anwender hat entschieden, dass der Altweg dauerhaft bleibt; eine Stufe GA gibt es nicht mehr (Konzept N1.28). Dieses Kapitel bleibt als Befund stehen, was ein Rückbau umfasst hätte; zu tun ist davon nichts. Die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` sind ein gewöhnlicher Aufräumpunkt ohne Stufe.
+
 ### 4.1 Datenbank
 
 | Gegenstand | Was geschieht |

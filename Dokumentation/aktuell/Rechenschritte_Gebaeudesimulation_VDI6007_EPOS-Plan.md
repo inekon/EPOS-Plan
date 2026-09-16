@@ -40,7 +40,8 @@ in K/W, Leitwerte G in W/K, Kapazitäten C in J/K.
 **modellfreien Vorbereitungsschritt** (Bewohnerzahl aus der Nutzfläche, Skalierungsfaktor nach E8,
 Klimareihen) und danach über **eine einzige Weiche** genau ein Rechenmodul (E20). **Dieses Papier
 beschreibt das Modul `Gebaeude/`** — den VDI-Weg. Der Tagesbilanz-Weg wird Zeichen für Zeichen in
-das Modul `Altweg/` verschoben, bekommt keine neue Funktion und endet mit Stufe GA; er wird hier nur
+das Modul `Altweg/` verschoben, bekommt keine neue Funktion und **bleibt dauerhaft als
+eingefrorener Bestandsweg** neben dem VDI-Weg stehen (E23, 16.09.2026); er wird hier nur
 dort genannt, wo eine Zahl gegen ihn gehalten wird. **Keines der beiden Module ruft das andere.**
 Die Kälteseite verlässt denselben Lauf über die zweite Fassade `SimulationKaeltebedarf` (E21) — es
 gibt keine zweite Gebäuderechnung für sie.
@@ -709,8 +710,8 @@ der ganze Fahrplan um eine Stunde.
 `Tab_Gebaeude.Wochenende` wird im Kern nur gelesen und zurückgeschrieben; sie geht in **keine**
 Rechnung ein und ist deshalb auch hier keine Bedingung. Die Maske ist `WE[365]` aus
 `KlimakalenderLesen` — dieselbe Quelle wie der Altweg (und derselbe UTC-Tageskalender),
-damit beide Wege denselben Kalender rechnen und der Vergleich alt/neu im Bedarfsdialog gültig
-bleibt, solange es ihn gibt (bis Stufe GA).
+damit beide Wege denselben Kalender rechnen und der Vergleich alt/neu im Bedarfsdialog **dauerhaft**
+gültig bleibt (E23).
 Ferien haben Vorrang vor dem Wochenende.
 
 **Ferien:** Zeiträume laufen nach Tagesindex 1…365. Geprüft wird nur ein **aktiver** Fahrplan
@@ -982,8 +983,9 @@ Zwei harte Bedingungen bleiben, jede aus eigenem Grund:
 - Der Tagesbilanz-Weg selbst ändert sich nicht — weder seine Gewichte noch sein Vorlauf von
   15 Tagen. Er wird **Zeichen für Zeichen nach `Altweg/` verschoben** und bekommt danach keine
   Funktion mehr, nur noch Fehlerbehebung; die Verschiebung ist mit einem **byte-gleichen**
-  Referenzlauf abzunehmen, bevor dieses Modul angebunden wird (E20). Mit Stufe GA entfällt er
-  ganz — Zeitpunkt offen (Q24).
+  Referenzlauf abzunehmen, bevor dieses Modul angebunden wird (E20). Er **bleibt dauerhaft** als
+  eingefrorener Bestandsweg — ohne Kühllast (0 mit benanntem Hinweis), ohne Anlagenkopplung, ohne
+  Zonen (E23, 16.09.2026).
 
 ---
 
@@ -1326,11 +1328,11 @@ Jede Zeile ist eine bewusste Festlegung, keine Lücke. Die Begründung steht jew
 
 **Was hier nicht steht: der Unterschied zum bisherigen Rechenweg.** Diese Tabelle führt
 Abweichungen von der **Richtlinie**. Der Tagesbilanz-Weg ist nach E20 kein zweiter, gleichrangiger
-Weg, gegen den hier abgegrenzt würde, sondern der **Übergangsweg (Altweg)**, den dieses Modul
-ablöst: eigenes Modul, keine neue Funktion, Ende mit Stufe GA. Wo eine Zeile ihn unten nennt, geht
-es um eine Zahl, die bei ihm bleibt. Wer beide Wege an einem Gebäude nebeneinander sehen will,
-findet sie im **Vergleich alt/neu im Bedarfsdialog**; er entsteht mit G2 und **entfällt mit GA**,
-weil es danach nur noch einen Rechenweg gibt, mit dem sich vergleichen ließe.
+Weg, gegen den hier abgegrenzt würde, sondern der **Bestandsweg (Altweg)**, den der VDI-Weg als
+Vorgabe ablöst: eigenes Modul, keine neue Funktion, **dauerhaft eingefroren** (E23, 16.09.2026). Wo
+eine Zeile ihn unten nennt, geht es um eine Zahl, die bei ihm bleibt. Wer beide Wege an einem
+Gebäude nebeneinander sehen will, findet sie im **Vergleich alt/neu im Bedarfsdialog**; er entsteht
+mit G2 und **bleibt dauerhaft**, weil es dauerhaft zwei Rechenwege gibt.
 
 | # | Abweichung | Was die Richtlinie sagt | Warum in EPOS-Plan | Verweis |
 |---|---|---|---|---|
@@ -1345,7 +1347,7 @@ weil es danach nur noch einen Rechenweg gibt, mit dem sich vergleichen ließe.
 | 9 | **a_kon = 0,09** als Vorgabe | Blatt 2, Tabelle A5: je Verglasung 0,02 bis 0,09, mit innen liegendem Sonnenschutz bis 0,52 | 0,09 gilt für 3-fach-Wärmeschutz. Die Tabellenwerte aus Blatt 2 sind je Verglasungsart zu übernehmen | Konzept N1.3 |
 | 10 | **α_kon,i = 2,7** global, **α_A = 25** als Festwert | Blatt 1, Seite 10: die konvektiven Werte sind je Bauteil vorzugeben (Testräume 1,7 Boden/Decke, 2,7 Wände/Fenster, 5,0 Kühldecke, außen 20,0); Gl. (38) legt nur die Summenbildung α_A = α_kon,A + α_str,A fest | Im Klassenweg gibt es keine Bauteile, nur zwei Gruppen; α_A = 25 ist die Summe der Testraumwerte 20,0 + 5,0, **kein gesetzter Normwert** (1.3). Die Normtestfälle laufen mit den Bauteilwerten; für Testbeispiel 11 ist der eigene Kühldeckenknoten die **vermutete** Ursache und die offene Aufgabe (10.3) | Konzept N1.3 |
 | 11 | **c·ρ = 0,34 Wh/(m³K)** | Testbeispiel 12 schreibt 1,1953 kJ/(m³K) = 0,332 vor | 0,34 stammt aus DIN EN 12831 und gilt für Projektrechnungen; die Normfälle rechnen mit 1,1953 | Konzept N1.3 |
-| 12 | **Bestandsgewichte gestrichen** (0,83 / 0,95 / 0,45 / 0,83) | — (die Gewichte sind eine Kalibrierung, keine Norm) | Im Stundenmodell gehen die Transmissionsverluste ungewichtet mit U·A ein; jede Fläche bekommt statt dessen ihre eigene Randbedingung. Faktor **und** Randbedingung wären eine doppelte Minderung. Der Altweg behält seine Gewichte, solange es ihn gibt; mit Stufe GA verschwinden sie mit ihm | Entscheid E2, E20, Konzept N1.6 |
+| 12 | **Bestandsgewichte gestrichen** (0,83 / 0,95 / 0,45 / 0,83) | — (die Gewichte sind eine Kalibrierung, keine Norm) | Im Stundenmodell gehen die Transmissionsverluste ungewichtet mit U·A ein; jede Fläche bekommt statt dessen ihre eigene Randbedingung. Faktor **und** Randbedingung wären eine doppelte Minderung. Der Altweg behält seine Gewichte dauerhaft — er ist der eingefrorene Bestandsweg (E23) | Entscheid E2, E20, E23, Konzept N1.6 |
 | 13 | **Validierung nur gegen Blatt 1** | Blatt 3 verweist zur Validierung auf Testbeispiele der VDI 2078 bzw. VDI 6020 | Deren Referenzergebnisse liegen nur auf den Datenträgern und setzen TRY05 Würzburg voraus; beides wird nach Entscheid E5 nicht beschafft. Ausgewiesen wird deshalb „validiert an den zwölf Testbeispielen der VDI 6007 Blatt 1" — nicht „validiert nach VDI 6020/2078" | Konzept N1.10 (E5), N1.11 (E6) |
 | 14 | **Der Klassenweg gibt die Katalog-U-Werte nicht wieder** | Der U-Wert enthält R_si; das Netz führt den inneren Übergang über (25)–(28) und die Dreieckschaltung — beide sind im Bauteilweg widerspruchsfrei, weil R_1 und R_Rest aus den Schichten folgen | Im Klassenweg wird R_si/A vom U-Wert abgezogen, im Netz liegt an seiner Stelle R_conv,AW parallel (R_conv,IW + R_rad) = R_innen,eff. Der wirksame Leitwert ist deshalb kleiner als Σ(U·A)_opak — für das Gebäude aus Kapitel 9 607,48 statt 686,95 W/K (−11,6 %). Der Abzug bleibt, weil der innere Übergang sonst zweimal zählt; die Minderung ist je Referenzgebäude auszuweisen, bevor die Basis neu eingefroren wird. Mit G3 entfällt die Frage | A4, 9.6, 10.4 |
 | 15 | **Verteilung der Strahlungslasten flächenproportional** | (45)/(46): die bestrahlte Fläche und die zu ihr parallelen Bauteile werden nicht beaufschlagt, Gewichte mit A_v je Orientierung | `Tab_Gebaeude` führt keine opaken Flächen je Orientierung, also ist A_v nicht rechenbar; in G1 gilt A_v = 0. Mit dem Bauteilkatalog (G3) oder neuen Spalten in 1.1 wird auf (45)/(46) umgestellt | E3, E4 |
@@ -1367,7 +1369,7 @@ weil es danach nur noch einen Rechenweg gibt, mit dem sich vergleichen ließe.
   — der Entscheid: Stundenmodell als Vorgabemodell, eine Naht, Neu-Einfrieren der Basis.
 - [`ADR-006_Trennung_Altweg_VDI6007.md`](ADR-006_Trennung_Altweg_VDI6007.md)
   — die Trennung der Rechenwege: Weiche am Eingang, modellfreier Vorbereitungsschritt, Modul
-  `Altweg/` als befristeter Übergang, Stufe GA.
+  `Altweg/` als dauerhafter, eingefrorener Bestandsweg (E23).
 - [`Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md`](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md)
   — die Kälteseite: Vorzeichenregel (3.3), vierter Kanal `KUEHLUNG`, Kälteerzeuger und Deckung,
   Kennzahlen, Stufen KU0–KU3.
