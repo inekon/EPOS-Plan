@@ -2158,6 +2158,54 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SPALTE_BOOSTER_LESEPUNKT = "Booster_Lesepunkt";
 
+        /// <summary>
+        /// <b>Die Kaskade dieses Projekts hat der Anwender gepflegt</b> —
+        /// <c>Tab_Einstellungen.Kaskade_Gepflegt</c> (Schemaschritt 82,
+        /// Anwenderentscheid vom 16.09.2026). <b>0 = niemand hat von Hand umgeordnet</b>
+        /// (die Vorbelegung), <b>1 = aufnehmen, entfernen oder verschieben ist
+        /// geschehen</b>.
+        ///
+        /// <para><b>Wozu.</b> <c>Tab_Einstellungen.Tool_1..4</c> trägt die BELEGUNG, nicht
+        /// die ABSICHT. Wer einen Heizkessel mit „×" aus der Kaskade nimmt, hinterlässt
+        /// einen leeren Platz — und genau der ist die Bedingung, unter der
+        /// <c>KonfigurationCtrl.HeizkesselNachziehen</c> ihn beim nächsten Lesen der
+        /// Konfiguration wieder aufnimmt. Diese Spalte hält die Absicht fest: Steht sie
+        /// auf 1, zieht die Automatik nicht mehr nach — die Pflege der Kaskade gehört ab
+        /// dann dem Anwender, auch wenn er später eine neue Kesselanlage anlegt.</para>
+        ///
+        /// <para><b>Nur zielgenau schreiben.</b> Dasselbe Muster wie
+        /// <see cref="SPALTE_KANAL_KNAPPHEITSREIHENFOLGE"/> und
+        /// <see cref="SPALTE_BOOSTER_LESEPUNKT"/>: ANGEHÄNGT, NAMENSBASIERT gelesen
+        /// (<c>KonfigurationCtrl.ZeileUebernehmen</c>) und über ein eigenes UPDATE
+        /// geschrieben (<c>KonfigurationCtrl.KaskadeGepflegtSchreiben</c>) — die
+        /// Ordinalkette <c>row[0]…row[21]</c> bleibt unberührt.</para>
+        ///
+        /// <para><b>0/1 mit <c>CHECK</c></b> nach der Hausregel aus BETRIEB_SQLITE.md
+        /// Abschnitt 6; die Typdefinition kommt aus <c>StilleDb.SqliteSpaltenTyp</c>
+        /// („YESNO"). <c>Tab_Einstellungen</c> ist STRICT, und ein
+        /// <c>ALTER TABLE … ADD COLUMN</c> mit INTEGER-Typ und <c>DEFAULT 0</c> ist dort
+        /// zulässig — ein Tabellenneubau wäre unnötig.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/>: dieselbe Begründung
+        /// wie bei <see cref="SPALTE_BOOSTER_LESEPUNKT"/>.</para>
+        /// </summary>
+        public const string SPALTE_KASKADE_GEPFLEGT = "Kaskade_Gepflegt";
+
+        /// <summary>
+        /// Schritt 82 der Migration: die EINE Merkspalte an <c>Tab_Einstellungen</c>.
+        /// Begründung, Vorbelegung und Leseweg stehen bei
+        /// <see cref="SPALTE_KASKADE_GEPFLEGT"/>.
+        ///
+        /// <para><b>KEIN DML und ergebnisNEUTRAL.</b> Die Spalte steht im ganzen Bestand
+        /// auf 0, und 0 heisst „wie bisher": Die Automatik greift unverändert. Kein
+        /// Rechenweg liest sie — sie entscheidet allein darüber, ob
+        /// <c>HeizkesselNachziehen</c> eingreift.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt82_KaskadeGepflegt =
+        {
+            new SchemaSpalte(TAB_EINSTELLUNGEN, SPALTE_KASKADE_GEPFLEGT, "YESNO"),  // nur anhängen!
+        };
+
         // =====================================================================
         // S1 - Spalten der Senkenliste Z_AnlageSenke (Migrationsschritt 50)
         //   Konzept Brauchwasser/Heizung/Pufferspeicher § 5.1

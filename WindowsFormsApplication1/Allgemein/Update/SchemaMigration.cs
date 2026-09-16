@@ -2999,6 +2999,37 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_81_PROJEKTWERTE_LOESCHSCHUTZ = 81;
 
+        /// <summary>
+        /// Schritt 82 — die <b>Merkspalte der gepflegten Kaskade</b> (Auftrag <b>#303</b>,
+        /// Anwenderentscheid vom 16.09.2026). Name, Bedeutung und Leseweg stehen bei
+        /// <see cref="SchemaKatalog.SPALTE_KASKADE_GEPFLEGT"/>, die Spaltenliste bei
+        /// <see cref="SchemaKatalog.Schritt82_KaskadeGepflegt"/>.
+        ///
+        /// <para><b>Wozu.</b> <c>Tab_Einstellungen.Tool_1..4</c> trägt die BELEGUNG, nicht
+        /// die ABSICHT. Wer den Heizkessel mit „×" aus der Kaskade nahm, fand ihn beim
+        /// nächsten Lesen der Konfiguration wieder darin: <c>Kaskade.Entfernen</c> setzt
+        /// den Platz leer, und ein leerer Platz ist genau die Bedingung, unter der
+        /// <c>KonfigurationCtrl.HeizkesselNachziehen</c> ihn erneut aufnimmt. Die neue
+        /// Spalte hält fest, dass der Anwender die Kaskade selbst in die Hand genommen
+        /// hat; steht sie auf 1, zieht die Automatik nicht mehr nach.</para>
+        ///
+        /// <para><b>Eine Spalte, kein Tabellenneubau.</b> <c>Tab_Einstellungen</c> ist
+        /// STRICT, und dort lässt <c>ALTER TABLE … ADD COLUMN</c> INTEGER zu; mit
+        /// <c>DEFAULT 0</c> ist auch <c>NOT NULL</c> erlaubt. Die Typdefinition kommt
+        /// wie bei jeder Ja/Nein-Spalte dieses Schemas aus
+        /// <c>StilleDb.SqliteSpaltenTyp</c> („YESNO") und lautet damit
+        /// <c>INTEGER NOT NULL DEFAULT 0 CHECK ("Kaskade_Gepflegt" IN (0,1))</c>.</para>
+        ///
+        /// <para><b>KEIN DML und ergebnisneutral:</b> Der Schritt legt die Spalte an und
+        /// schreibt keinen Wert. Im ganzen Bestand steht dort 0, und 0 heißt „wie
+        /// bisher" — die Automatik greift unverändert. Kein Rechenweg liest die
+        /// Spalte.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte.</para>
+        /// </summary>
+        public const int SCHRITT_82_KASKADE_GEPFLEGT = 82;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3988,6 +4019,20 @@ namespace WindowsFormsApplication1
                         "und allen Gewerken, ohne Rueckfrage und ohne Spur. Nur der " +
                         "Controller haelte dagegen; jeder Weg an ihm vorbei nicht.",
                         Schritt_81_ProjektWerteLoeschschutz),
+
+            // AUFTRAG #303 vom 16.09.2026 (Anwenderentscheid: "die Merkspalte"). EINE
+            // Ja/Nein-Spalte an Tab_Einstellungen; Name und Spaltenliste stehen in
+            // SchemaKatalog - EINE Quelle fuer Migration, Testdatenbankschema und
+            // Nachweis. Ergebnisneutral: kein DML, im Bestand ueberall 0, und 0 heisst
+            // "wie bisher".
+            new Schritt(SCHRITT_82_KASKADE_GEPFLEGT,
+                        "Tab_Einstellungen bekommt die Merkspalte Kaskade_Gepflegt " +
+                        "(0/1, NOT NULL DEFAULT 0) (Auftrag #303)",
+                        "Ein Heizkessel, den der Anwender aus der Kaskade nimmt, " +
+                        "stuende beim naechsten Lesen der Konfiguration wieder darin - " +
+                        "die Automatik kann \"nie belegt\" nicht von \"herausgenommen\" " +
+                        "unterscheiden, solange nur die Belegung gespeichert ist.",
+                        Schritt_82_KaskadeGepflegt),
         };
 
         /// <summary>
@@ -5565,6 +5610,36 @@ namespace WindowsFormsApplication1
                     ", die fuenf Indizes stehen wieder. Ein geloeschter Kostenfaktor " +
                     "reisst ab hier keine Projektposition mehr mit; es aendert sich kein " +
                     "Wert und keine Id - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 82 - die Merkspalte der gepflegten Kaskade (Auftrag #303)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 82 — Anlass, Anweisung und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_82_KASKADE_GEPFLEGT"/> und bei
+        /// <see cref="SchemaKatalog.SPALTE_KASKADE_GEPFLEGT"/>.
+        ///
+        /// <para><b>Wortgleich zum Spaltenteil von
+        /// <see cref="Schritt_70_PvStrangpruefung"/></b>: Spaltenliste aus dem Kern,
+        /// Typdefinition aus <c>StilleDb.SqliteSpaltenTyp</c>, kein DML. Hier steht keine
+        /// abgeschriebene DDL.</para>
+        /// </summary>
+        private static bool Schritt_82_KaskadeGepflegt(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt82_KaskadeGepflegt)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("82: " + SchemaKatalog.TAB_EINSTELLUNGEN + "." +
+                    SchemaKatalog.SPALTE_KASKADE_GEPFLEGT + " steht (0/1, NOT NULL " +
+                    "DEFAULT 0). KEIN DML: Im Bestand steht ueberall 0, und 0 heisst " +
+                    "\"die Kaskade hat niemand von Hand angefasst\" - die Automatik " +
+                    "KonfigurationCtrl.HeizkesselNachziehen greift damit unveraendert. " +
+                    "KEIN Rechenweg liest die Spalte, der Referenzlauf bleibt " +
+                    "byte-gleich.");
             return true;
         }
 

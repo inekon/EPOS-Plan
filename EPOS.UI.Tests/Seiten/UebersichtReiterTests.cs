@@ -468,6 +468,83 @@ public class UebersichtReiterTests : EposBunitContext
     }
 
     // =====================================================================
+    //  Die Meldung wird handlungsfähig (Anwenderentscheid vom 16.09.2026)
+    // =====================================================================
+
+    private static UebersichtDaten MitAngebot(bool moeglich, string sperrgrund = "")
+    {
+        UebersichtDaten daten = Daten();
+        daten.OhnePlatzAngebote = new[]
+        {
+            new Platzangebot(4711, "LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ",
+                             "Wärmepumpe „WP 1“ ist im Projekt angelegt, aber nicht in der Kaskade.",
+                             moeglich, sperrgrund)
+        };
+        return daten;
+    }
+
+    /// <summary>
+    /// Ist ein Platz frei, trägt die Meldung einen Knopf — und er meldet die ANLAGE,
+    /// nicht die Erzeugerart: Die Konfigurationsseite hebt damit genau eine Karte hervor.
+    /// </summary>
+    [Fact]
+    public void Ein_Erzeuger_ohne_Platz_bekommt_einen_Knopf_mit_der_Anlagennummer()
+    {
+        int gemeldet = 0;
+        var seite = Render<UebersichtReiter>(p =>
+        {
+            p.Add(x => x.Kennzahlen, Zahlen());
+            p.Add(x => x.Daten, MitAngebot(true));
+            p.Add(x => x.Aufnehmen, EventCallback.Factory.Create<int>(this, id => gemeldet = id));
+        });
+
+        var knopf = seite.Find("button.epos-warnbanner-aktion");
+        Assert.Contains("Konfiguration", knopf.TextContent);
+
+        knopf.Click();
+        Assert.Equal(4711, gemeldet);
+    }
+
+    /// <summary>
+    /// Ist KEIN Platz frei, steht kein Knopf da, sondern der Grund — ein Knopf, der
+    /// nichts täte, wäre schlimmer als keiner.
+    /// </summary>
+    [Fact]
+    public void Ohne_freien_Platz_steht_der_Grund_statt_eines_Knopfes()
+    {
+        var seite = Render<UebersichtReiter>(p =>
+        {
+            p.Add(x => x.Kennzahlen, Zahlen());
+            p.Add(x => x.Daten, MitAngebot(false, "Die vier Plätze der Kaskade sind belegt."));
+            p.Add(x => x.Aufnehmen, EventCallback.Factory.Create<int>(this, _ => { }));
+        });
+
+        Assert.Empty(seite.FindAll("button.epos-warnbanner-aktion"));
+        Assert.Contains("Die vier Plätze der Kaskade sind belegt.",
+                        seite.Find("span.epos-warnbanner-text").TextContent);
+    }
+
+    /// <summary>
+    /// Ohne eingelegten Weg gibt es keinen Knopf (Hausregel „kein Delegat, kein Knopf")
+    /// — die Meldung selbst steht trotzdem.
+    /// </summary>
+    [Fact]
+    public void Ohne_Aufnahmeweg_bleibt_die_Meldung_ohne_Knopf()
+    {
+        var seite = Zeichnen(MitAngebot(true));
+
+        Assert.Empty(seite.FindAll("button.epos-warnbanner-aktion"));
+        Assert.Contains("nicht in der Kaskade", seite.Find("span.epos-warnbanner-text").TextContent);
+    }
+
+    /// <summary>Die Gegenprobe: Ohne Angebot steht kein Banner über dem Dashboard.</summary>
+    [Fact]
+    public void Ohne_Angebot_steht_kein_Banner()
+    {
+        Assert.Empty(Zeichnen(Daten()).FindAll("div.epos-warnbanner"));
+    }
+
+    // =====================================================================
     //  Der Fuß
     // =====================================================================
 

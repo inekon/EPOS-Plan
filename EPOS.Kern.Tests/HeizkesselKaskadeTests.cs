@@ -212,6 +212,206 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        // =================================================================
+        // DIE MERKSPALTE: die Kaskade, die der Anwender gepflegt hat
+        // (Anwenderentscheid vom 16.09.2026, Schemaschritt 82)
+        // =================================================================
+
+        /// <summary>Setzt die Merkspalte und gibt den vorherigen Stand zurueck.</summary>
+        private static bool GepflegtSetzen(int idProjekt, bool wert)
+        {
+            bool vorher = KonfigurationCtrl.KaskadeGepflegtLesen(idProjekt);
+            Assert.True(KonfigurationCtrl.KaskadeGepflegtSchreiben(idProjekt, wert));
+            return vorher;
+        }
+
+        /// <summary>Schreibt die vier Waermeplaetze eines Projekts unmittelbar.</summary>
+        private static void PlaetzeSchreiben(int idProjekt, string t1, string t2, string t3, string t4)
+        {
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Einstellungen SET Tool_1 = ?, Tool_2 = ?, Tool_3 = ?, Tool_4 = ? " +
+                "WHERE ID_Projekt = ?",
+                new DbParam("?", t1), new DbParam("?", t2), new DbParam("?", t3),
+                new DbParam("?", t4), new DbParam("?", idProjekt));
+        }
+
+        /// <summary>
+        /// <b>Der Fall, den es bisher nicht gab.</b> Der Anwender nimmt den Heizkessel
+        /// mit „×" aus der Kaskade; damit ist sie GEPFLEGT. Das naechste Lesen der
+        /// Konfiguration zieht ihn nicht mehr nach — er bleibt draussen, obwohl das
+        /// Projekt die Kesselanlage weiterhin fuehrt.
+        /// </summary>
+        [Fact]
+        public void Ein_entfernter_Kessel_bleibt_draussen()
+        {
+            if (!_db.Vorhanden) return;
+
+            // Ausgangslage: der Kessel steht auf Tool_4 (die Automatik hat ihn geholt).
+            KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(PROJEKT_LUECKE);
+            Assert.Equal(DbWerte.ERZEUGER_HEIZKESSEL, Kaskade.Lesen(konfig)[3]);
+
+            // Der Handgriff des Anwenders: entfernen. Die Huelle schreibt beides weg -
+            // den leeren Platz und die Marke.
+            Assert.True(Kaskade.Entfernen(konfig, DbWerte.ERZEUGER_HEIZKESSEL));
+            List<string> ohneKessel = Kaskade.Lesen(konfig);
+            PlaetzeSchreiben(PROJEKT_LUECKE, ohneKessel[0], ohneKessel[1], ohneKessel[2], ohneKessel[3]);
+            bool vorher = GepflegtSetzen(PROJEKT_LUECKE, true);
+
+            try
+            {
+                // Das naechste Lesen laesst ihn draussen - in Modell UND Datenbank.
+                KonfigurationModel zweiteLesung = KonfigurationCtrl.LiesProjekt(PROJEKT_LUECKE);
+                Assert.True(zweiteLesung.Kaskade_Gepflegt);
+                Assert.DoesNotContain(DbWerte.ERZEUGER_HEIZKESSEL, Kaskade.Lesen(zweiteLesung));
+                Assert.DoesNotContain(DbWerte.ERZEUGER_HEIZKESSEL, PlaetzeAusDerDatenbank(PROJEKT_LUECKE));
+            }
+            finally
+            {
+                // Aufraeumen: der Ausgangsstand dieser Arbeitskopie.
+                GepflegtSetzen(PROJEKT_LUECKE, vorher);
+                PlaetzeSchreiben(PROJEKT_LUECKE, "", DbWerte.ERZEUGER_SOLARTHERMIE,
+                                 DbWerte.ERZEUGER_WAERMEPUMPE, "");
+            }
+        }
+
+        /// <summary>
+        /// <b>Auch eine NEUE Kesselanlage holt die Automatik nicht zurueck.</b> Das ist
+        /// die bewusste Folge des Entscheids: Wer die Kaskade einmal von Hand angefasst
+        /// hat, pflegt sie ab dann selbst. Gemessen an derselben Bedingung, die die
+        /// Automatik sonst ausloest — das Projekt fuehrt eine Kesselanlage, die Kaskade
+        /// fuehrt keinen Kessel.
+        /// </summary>
+        [Fact]
+        public void Eine_gepflegte_Kaskade_bleibt_auch_ohne_jeden_Platz_unberuehrt()
+        {
+            if (!_db.Vorhanden) return;
+
+            bool vorher = GepflegtSetzen(PROJEKT_LUECKE, true);
+            PlaetzeSchreiben(PROJEKT_LUECKE, "", "", "", "");
+
+            try
+            {
+                KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(PROJEKT_LUECKE);
+                Assert.Equal(new List<string> { "", "", "", "" }, Kaskade.Lesen(konfig));
+                Assert.Equal(new List<string> { "", "", "", "" }, PlaetzeAusDerDatenbank(PROJEKT_LUECKE));
+            }
+            finally
+            {
+                GepflegtSetzen(PROJEKT_LUECKE, vorher);
+                PlaetzeSchreiben(PROJEKT_LUECKE, "", DbWerte.ERZEUGER_SOLARTHERMIE,
+                                 DbWerte.ERZEUGER_WAERMEPUMPE, "");
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Gegenprobe.</b> Bei <c>Kaskade_Gepflegt = 0</c> greift die Automatik
+        /// unveraendert — genau das haelt die dreizehn Referenzprojekte byte-gleich, denn
+        /// im ganzen Bestand steht dort 0.
+        /// </summary>
+        [Fact]
+        public void Ohne_Marke_greift_die_Automatik_weiterhin()
+        {
+            if (!_db.Vorhanden) return;
+
+            bool vorher = GepflegtSetzen(PROJEKT_LUECKE, false);
+            PlaetzeSchreiben(PROJEKT_LUECKE, "", DbWerte.ERZEUGER_SOLARTHERMIE,
+                             DbWerte.ERZEUGER_WAERMEPUMPE, "");
+
+            try
+            {
+                KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(PROJEKT_LUECKE);
+                Assert.False(konfig.Kaskade_Gepflegt);
+                Assert.Equal(DbWerte.ERZEUGER_HEIZKESSEL, Kaskade.Lesen(konfig)[3]);
+                Assert.Contains(DbWerte.ERZEUGER_HEIZKESSEL, PlaetzeAusDerDatenbank(PROJEKT_LUECKE));
+            }
+            finally
+            {
+                GepflegtSetzen(PROJEKT_LUECKE, vorher);
+                PlaetzeSchreiben(PROJEKT_LUECKE, "", DbWerte.ERZEUGER_SOLARTHERMIE,
+                                 DbWerte.ERZEUGER_WAERMEPUMPE, "");
+            }
+        }
+
+        /// <summary>
+        /// <b>Alle dreizehn Referenzprojekte stehen auf 0.</b> Dort ordnet niemand von
+        /// Hand um — deshalb bleibt die Basis R8 gueltig, und deshalb darf dieser
+        /// Schemaschritt kein Rechenergebnis verschieben.
+        /// </summary>
+        [Fact]
+        public void Kein_Projekt_der_Testdatenbank_traegt_die_Marke()
+        {
+            if (!_db.Vorhanden) return;
+
+            object zahl = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM Tab_Einstellungen WHERE [" +
+                SchemaKatalog.SPALTE_KASKADE_GEPFLEGT + "] <> 0");
+
+            Assert.Equal(0, System.Convert.ToInt32(zahl));
+        }
+
+        /// <summary>
+        /// <b>Ein Projekt OHNE Kesselanlage bleibt unberuehrt — mit und ohne Marke.</b>
+        /// Die Marke ist eine Sperre, kein Ausloeser: Sie legt nie einen Platz an.
+        /// </summary>
+        [Fact]
+        public void Ohne_Kesselanlage_aendert_die_Marke_nichts()
+        {
+            if (!_db.Vorhanden) return;
+
+            List<string> ausgangslage = PlaetzeAusDerDatenbank(PROJEKT_OHNE_KESSEL);
+            bool vorher = GepflegtSetzen(PROJEKT_OHNE_KESSEL, true);
+
+            try
+            {
+                KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(PROJEKT_OHNE_KESSEL);
+                Assert.DoesNotContain(DbWerte.ERZEUGER_HEIZKESSEL, Kaskade.Lesen(konfig));
+                Assert.Equal(ausgangslage, PlaetzeAusDerDatenbank(PROJEKT_OHNE_KESSEL));
+            }
+            finally
+            {
+                GepflegtSetzen(PROJEKT_OHNE_KESSEL, vorher);
+            }
+        }
+
+        /// <summary>
+        /// <b>Auch das VERSCHIEBEN macht die Kaskade zu einer gepflegten.</b> Gemessen an
+        /// dem, was die Simulationskonfiguration tut: erst der Handgriff
+        /// (<see cref="Kaskade.Verschieben"/>), dann die Marke in die Datenbank. Danach
+        /// haelt die Reihenfolge auch dann, wenn der Kessel spaeter einmal keinen Platz
+        /// mehr haette.
+        /// </summary>
+        [Fact]
+        public void Verschieben_macht_die_Kaskade_zu_einer_gepflegten()
+        {
+            if (!_db.Vorhanden) return;
+
+            KonfigurationModel konfig = KonfigurationCtrl.LiesProjekt(PROJEKT_LUECKE);
+            Assert.Equal(DbWerte.ERZEUGER_HEIZKESSEL, Kaskade.Lesen(konfig)[3]);
+
+            bool vorher = KonfigurationCtrl.KaskadeGepflegtLesen(PROJEKT_LUECKE);
+
+            try
+            {
+                // Der Handgriff: der Kessel rueckt einen Rang nach vorn.
+                Assert.True(Kaskade.Verschieben(konfig, DbWerte.ERZEUGER_HEIZKESSEL, -1));
+                List<string> gewaehlt = Kaskade.Lesen(konfig);
+                PlaetzeSchreiben(PROJEKT_LUECKE, gewaehlt[0], gewaehlt[1], gewaehlt[2], gewaehlt[3]);
+                Assert.True(KonfigurationCtrl.KaskadeGepflegtSchreiben(PROJEKT_LUECKE, true));
+
+                // Die Marke steht in der Datenbank und kommt beim Lesen zurueck.
+                Assert.True(KonfigurationCtrl.KaskadeGepflegtLesen(PROJEKT_LUECKE));
+                KonfigurationModel zweiteLesung = KonfigurationCtrl.LiesProjekt(PROJEKT_LUECKE);
+                Assert.True(zweiteLesung.Kaskade_Gepflegt);
+                Assert.Equal(gewaehlt, Kaskade.Lesen(zweiteLesung));
+            }
+            finally
+            {
+                GepflegtSetzen(PROJEKT_LUECKE, vorher);
+                PlaetzeSchreiben(PROJEKT_LUECKE, "", DbWerte.ERZEUGER_SOLARTHERMIE,
+                                 DbWerte.ERZEUGER_WAERMEPUMPE, "");
+            }
+        }
+
         /// <summary>
         /// <b>Die Wirkung.</b> Der Lauf des Projekts 1007 rechnet den Kessel jetzt: Er
         /// deckt die Restwaerme, die vorher ungedeckt blieb.

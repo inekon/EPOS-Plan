@@ -98,7 +98,13 @@ namespace WindowsFormsApplication1
                 // #190: Warum steht hier 0,00, obwohl das Projekt den Kessel fuehrt?
                 // Weil er auf keinem Platz steht. Die Antwort kommt aus DERSELBEN
                 // Vorpruefung, die das Laufprotokoll speist.
-                OhneKaskadenplatz = OhneKaskadenplatz(tool)
+                OhneKaskadenplatz = OhneKaskadenplatz(tool),
+
+                // Anwenderentscheid 16.09.2026 (Punkt c): DIE MELDUNG WIRD
+                // HANDLUNGSFAEHIG. Keine Automatik fuer andere Erzeugerarten - der
+                // Anwender entscheidet je Projekt, aber mit einem Handgriff statt mit
+                // einem Hinweis.
+                OhnePlatzAngebote = Platzangebote(tool)
             };
 
             return d;
@@ -330,6 +336,49 @@ namespace WindowsFormsApplication1
                 if (b != null && !string.IsNullOrEmpty(b.Steuerwert)) ohne.Add(b.Steuerwert);
 
             return ohne;
+        }
+
+        /// <summary>
+        /// Dieselben Befunde als ANGEBOT (Anwenderentscheid vom 16.09.2026, Punkt c):
+        /// je angelegtem Erzeuger ohne Platz ein Satz und — wenn ein Platz frei ist —
+        /// der Weg in die Simulationskonfiguration.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>EINE Vorpruefung, zwei Ausgaenge.</b> Der Zusatz „(nicht in der
+        /// Kaskade)" an der Tabellenzeile und diese Liste kommen aus demselben Aufruf
+        /// von <c>SimulationLaufCtrl.ErzeugerOhneKaskadenplatz</c>; ein zweiter Vergleich
+        /// in der Anzeige waere eine zweite Wahrheit.</para>
+        /// <para><b>Gemessen wird am LAUF</b> (<c>SimulationControl.tool</c>), nicht an
+        /// einer frisch gelesenen Konfiguration: Die Meldung gehoert zu diesem Ergebnis,
+        /// und der freie Platz ist die Aussage ueber genau die Kaskade, die gerechnet
+        /// hat.</para>
+        /// <para><b>Ein Angebot je ANLAGE</b>, nicht je Erzeugerart: Die Karte, die die
+        /// Konfigurationsseite hervorhebt, ist eine Anlage. Fuehrt ein Projekt zwei
+        /// Waermepumpen ohne Platz, stehen zwei Saetze da — genau wie im Laufprotokoll.</para>
+        /// </remarks>
+        private List<Platzangebot> Platzangebote(string[] tool)
+        {
+            var angebote = new List<Platzangebot>();
+
+            foreach (Warnbefund b in SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(m_ID_Projekt, tool))
+            {
+                if (b == null || string.IsNullOrEmpty(b.Steuerwert)) continue;
+
+                bool moeglich = SimulationLaufCtrl.AufnahmeMoeglich(tool, b.Steuerwert);
+                bool strom = b.Steuerwert == DbWerte.ERZEUGER_PHOTOVOLTAIK ||
+                             b.Steuerwert == DbWerte.ERZEUGER_STROMSPEICHER;
+
+                angebote.Add(new Platzangebot(
+                    b.ID_Anlage,
+                    b.Kriterium ?? "",
+                    b.Text ?? "",
+                    moeglich,
+                    moeglich ? ""
+                             : (strom ? MyResource.Resource.SIM_W_STROMPLATZ_BELEGT
+                                      : MyResource.Resource.SIM_W_KASKADE_VOLL)));
+            }
+
+            return angebote;
         }
 
         /// <summary>

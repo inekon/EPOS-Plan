@@ -428,6 +428,15 @@ body {
     .epos-warnbanner-erklaeren { color: LinkText; }
 }
 
+/* Der Handgriff an der Meldung (Anwenderentscheid vom 16.09.2026): ein echter
+   Hausknopf und kein Verweis - er TUT etwas, statt zu erklaeren. Er steht links
+   von „erklaeren lassen" und schrumpft nicht mit, wenn der Text lang wird. */
+.epos-warnbanner-aktion {
+    flex: 0 0 auto;
+    align-self: center;
+    white-space: nowrap;
+}
+
 /* Hinweis: der Ton der Hinweisflaechen der Startmaske (KARTE_FLAECHE_HOVER). */
 .epos-warnbanner--hinweis {
     border-color: var(--epos-karte-rahmen-hover);

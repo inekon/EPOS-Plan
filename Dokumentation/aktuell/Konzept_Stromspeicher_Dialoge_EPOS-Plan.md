@@ -854,8 +854,18 @@ kommen aus Schritt 2** (€/kW, €/kWh, Betrieb) und werden mit der gesuchten G
 **außer** die Einheit trägt „eigene Kosten"; dann gelten ihre Werte, und die Pauschalen
 (Investition, fixer Betrieb, Ersatzkosten, Ersatzintervall, Restwert) gehen ungeskaliert in jeden
 Kandidaten ein. Ein Größenlauf braucht außerdem eine Vorlage mit **positiver Richtungsleistung**,
-sonst weist der Optimierer ihn benannt ab. Ob diese Größen neutralisiert werden sollen, ist eine
-offene Frage an den Anwender; die Anzeige ist davon unberührt.
+sonst weist der Optimierer ihn benannt ab.
+
+**Diese Größen bleiben stehen, sie werden nicht neutralisiert.** Peak-Reserve,
+Grenzverschleißkosten, Betriebs- und Durchsatzkosten, Ersatz, Restwert und Alterungskurve gelten
+im Größenlauf so, wie die Achsenvorlage sie trägt — auch dann, wenn diese Vorlage aus einer
+Projektanlage oder aus einem Katalogsatz entstanden ist. Was das heißt, gehört dazu: Es sind dann
+die Werte **dieser einen Anlage**, und sie gelten an **jedem Rasterpunkt** des Laufs. Wer andere
+will, ändert sie in Schritt 1 oder 2; der nächste Lauf rechnet mit den geänderten. Welcher
+Kennwert vom Gerät kommt und welcher Eingabe des Anwenders bleibt, sagt die Tabelle in **8.9** —
+sichtbar an jedem Kandidaten in der Spalte „Herleitung"
+(`SpeicherFlottenAnzeigeCtrl.Herleitung`, ebenfalls 8.9). Eine zweite Auskunft daneben wäre eine
+zweite Wahrheit über dieselben sechs Größen. Die Anzeige ist davon unberührt.
 
 **Umsetzung:** Auftrag **#273** — `OptimierungBlock` (Kopf einspaltig, Suchraum ohne Produktzeile
 unter G), neuer Baustein `OptimierungsergebnisBlock`, Station 5 mit zwei `Gruppenkopf`-Rubriken,

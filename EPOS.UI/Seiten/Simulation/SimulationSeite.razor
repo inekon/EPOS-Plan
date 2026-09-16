@@ -134,7 +134,8 @@
         <div class="@Blattklasse(SimulationSchritt.Ergebnis)">
             <SimulationErgebnisSeite @ref="_ergebnisSeite" @attributes="Dienste.Ergebnis"
                                      Automatikstart="false" StartBlatt="@_startBlatt"
-                                     StandGeaendert="ErgebnisStandGemeldet" />
+                                     StandGeaendert="ErgebnisStandGemeldet"
+                                     ErzeugerAufnehmen="ZurKarteInSchritt1" />
         </div>
     }
 
@@ -359,6 +360,27 @@
     private void SchrittVerweigert(string schluessel)
     {
         if (schluessel == SimulationSchritt.Ergebnis) _hinweis = ErgebnisGesperrtText;
+    }
+
+    /// <summary>
+    /// Der Weg von der Meldung „Erzeuger ohne Kaskadenplatz" zur Handlung
+    /// (Anwenderentscheid vom 16.09.2026): zurück nach Schritt ① und dort die Karte
+    /// dieser Anlage hervorheben. Aufgenommen wird sie mit „+ aufnehmen" an der Karte
+    /// — der EINE Weg, der die Kaskade auch als GEPFLEGTE merkt.
+    /// </summary>
+    /// <remarks>
+    /// <b>Warum die Ansicht das tut und nicht die Ergebnisseite.</b> Sie ist der Wirt
+    /// beider Blätter und die einzige Stelle, die den Schritt wechseln kann. Und sie
+    /// kommt ohne Neuaufbau aus: Beide Blätter bleiben montiert, Schritt ① hält seinen
+    /// Arbeitsstand, und die Hervorhebung ist eine Anzeigevorliebe wie die Auswahl aus
+    /// dem Schema.
+    /// </remarks>
+    private void ZurKarteInSchritt1(int idAnlage)
+    {
+        _hinweis = "";
+        _konfigMontiert = true;
+        _schritt = SimulationSchritt.Konfiguration;
+        _konfigSeite?.KarteHervorheben(idAnlage);
     }
 
     /// <summary>Sichtbar ist genau ein Blatt; das andere bleibt stehen und schweigt.</summary>

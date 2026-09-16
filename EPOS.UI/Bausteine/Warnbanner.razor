@@ -46,6 +46,19 @@
     <div class="epos-warnbanner epos-warnbanner--@Klasse" role="alert">
         <span class="epos-warnbanner-symbol" aria-hidden="true">@Zeichen</span>
         <span class="epos-warnbanner-text">@Text</span>
+        @if (AktionSichtbar)
+        {
+            @* DER WEG VON DER MELDUNG ZUR HANDLUNG (Anwenderentscheid vom
+               16.09.2026). Eine Meldung, die eine Abhilfe nennt, darf den Griff
+               dorthin gleich mitbringen; ohne eingelegten Rueckruf gibt es ihn
+               nicht (Hausregel „kein Delegat, kein Knopf").
+
+               Er steht VOR „erklaeren lassen": Wer handeln kann, soll den
+               Handgriff zuerst sehen. Die Klasse ist der Hausknopf - das Banner
+               bekommt keine eigene Knopffarbe. *@
+            <button type="button" class="epos-knopf epos-warnbanner-aktion"
+                    title="@AktionKurztext" @onclick="Aktion">@AktionText</button>
+        }
         @if (ErklaerenSichtbar)
         {
             @* „ERKLAEREN LASSEN" (Auftrag #199, Stufe S1, Weg 2).
@@ -79,6 +92,30 @@
 
     /// <summary>Das Banner ist verfallen - der Wirt darf seine Meldung vergessen.</summary>
     [Parameter] public EventCallback Verfallen { get; set; }
+
+    // =====================================================================
+    //  Der Handgriff an der Meldung (Anwenderentscheid vom 16.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Rückruf des Handgriffs, den die Meldung anbietet; ohne ihn steht kein Knopf
+    /// (Hausregel „kein Delegat, kein Knopf").
+    /// </summary>
+    /// <remarks>
+    /// <b>Er gehört dem Wirt, nicht dem Banner.</b> Was die Abhilfe ist, weiß nur die
+    /// Seite, die die Meldung zeigt — das Banner trägt nur den Griff dorthin.
+    /// </remarks>
+    [Parameter] public EventCallback Aktion { get; set; }
+
+    /// <summary>Beschriftung des Knopfes; leer = kein Knopf, auch mit Rückruf.</summary>
+    [Parameter] public string AktionText { get; set; } = "";
+
+    /// <summary>Kurztext am Knopf; leer = keiner.</summary>
+    [Parameter] public string AktionKurztext { get; set; } = "";
+
+    /// <summary>Steht der Handgriff? (Prüfhilfe für Tests.)</summary>
+    public bool AktionSichtbar
+        => Aktion.HasDelegate && !string.IsNullOrWhiteSpace(AktionText);
 
     // =====================================================================
     //  „erklären lassen" (Auftrag #199, Stufe S1, Weg 2)
