@@ -124,16 +124,16 @@ bleibt grün.
 
 ## 6. Abnahme
 
-| | vorher | nachher |
+| | vorher (`32300bc1`) | nachher (`25ed6f19`, nach Merge) |
 |---|---|---|
-| Kern-Filter Release | 0 Fehler, 6 Warnungen | 0 Fehler, 6 Warnungen (unverändert, keine neue) |
+| Kern-Filter Release | 0 Fehler, 6 Warnungen | 0 Fehler, 5 Warnungen |
 | Windows-Schale (`EnableWindowsTargeting=true`) | — | 0 Fehler, 5 Warnungen (Bestand) |
-| `EPOS.Kern.Tests` | 3 090 / 3 090 | 3 093 / 3 093 |
-| `EPOS.UI.Tests` | 4 526 / 4 526 | 4 526 / 4 526 |
+| `EPOS.Kern.Tests` | 3 090 / 3 090 | 3 104 / 3 104 |
+| `EPOS.UI.Tests` | 4 526 / 4 526 | 4 530 / 4 530 |
 | `SpeicherEngine.Tests` | 370 / 370 | 370 / 370 |
 | `KiKern.Tests` | 499 / 499 | 499 / 499 |
 | `SpeicherPlanung.Tests` | 27 / 28 (1 übersprungen) | 27 / 28 (1 übersprungen) |
-| `SqlDialektPruefer` | — | 1 460 Texte, 0 Fundstellen |
+| `SqlDialektPruefer` | 1 460 Texte, 0 Fundstellen | 1 462 Texte, 0 Fundstellen |
 | `ChartProben` | — | 64 Bilder, 0 Verstöße |
 | Referenzlauf gegen `2026-09-16_R8_Heizkessel_Kaskade` (5 Projekte) | 5/5 PASS, byte-gleich | 5/5 PASS, byte-gleich (1 656 417 Werte) |
 
@@ -141,9 +141,11 @@ Beide Testläufe zweimal gefahren: einmal in der Standardkultur, einmal unter
 `LC_ALL=en_US.UTF-8` — beide Male dieselben Zahlen. **Kein iOS-Lauf** (die Änderung trifft
 die iOS-Hülle nicht).
 
-Die sieben Warnungen des Zweigkopfs (`CS0108` ×2, `CS0109` ×2, `WFO0003`, `xUnit2000`,
-`xUnit2029`) sind Bestand und wurden nicht angefasst; im Kern-Filter sind davon sechs
-sichtbar, vorher wie nachher dieselben.
+Die Mehrzahlen nach dem Merge stammen aus dem Zweig, nicht aus dieser Arbeit; eigener Zuwachs
+sind die drei Fälle in `EPOS.Kern.Tests`. **Keine neue Warnung.** Die Warnungen des
+Zweigkopfs (`CS0108` ×2, `CS0109` ×2, `xUnit2000`, dazu `WFO0003` in der Windows-Schale) sind
+Bestand und wurden nicht angefasst; die sechste des Ausgangsstands (`xUnit2029`) hat der Zweig
+selbst behoben.
 
 ## 7. Abnahmepunkte auf Windows
 
