@@ -108,7 +108,11 @@ namespace Testdatenbankschema
     /// <c>Tab_ProjektWerte</c> neu auf, damit der Fremdschluessel auf
     /// <c>Tab_Kostenfaktor</c> <c>ON DELETE RESTRICT</c> statt <c>CASCADE</c> traegt -
     /// aus <c>ProjektWerteLoeschschutz</c>. Ergebnisneutral: Zeilen, IDs und
-    /// AUTOINCREMENT-Stand bleiben, nur die Loeschregel wechselt.</para>
+    /// AUTOINCREMENT-Stand bleiben, nur die Loeschregel wechselt. <b>Schritt 82</b>
+    /// (Auftrag #303) haengt <c>Tab_Einstellungen</c> die Merkspalte
+    /// <c>Kaskade_Gepflegt</c> an (0/1, <c>NOT NULL DEFAULT 0</c>) - aus
+    /// <c>SchemaKatalog.Schritt82_KaskadeGepflegt</c>. Ergebnisneutral: kein DML, im
+    /// Bestand ueberall 0, und 0 heisst "wie bisher".</para>
     /// </summary>
     internal static class Program
     {
@@ -119,7 +123,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 81) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 82) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -268,6 +272,17 @@ namespace Testdatenbankschema
             foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 72, trocken);
+
+            // ---- Schritt 82: die Merkspalte der gepflegten Kaskade (Auftrag #303).
+            //      EINE Ja/Nein-Spalte an Tab_Einstellungen, kein DML. Die Quelle ist
+            //      dieselbe, aus der sich SchemaMigration.Schritt_82_KaskadeGepflegt
+            //      bedient. Ergebnisneutral: Im Bestand steht ueberall 0, und 0 heisst
+            //      "die Kaskade hat niemand von Hand angefasst" - die Automatik
+            //      KonfigurationCtrl.HeizkesselNachziehen greift unveraendert. Die
+            //      dreizehn Referenzprojekte behalten damit ihre Kaskade.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt82_KaskadeGepflegt)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 82, trocken);
 
             tabellen += TabelleSicherstellen("Tab_SpeicherAuslegung", SpeicherAuslegungCtrl.SQL_TABELLE, 73, trocken);
             if (!trocken) DataRepository.ExecuteNonQuery(SpeicherAuslegungCtrl.SQL_INDEX);
