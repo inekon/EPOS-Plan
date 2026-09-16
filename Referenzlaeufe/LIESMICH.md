@@ -298,6 +298,29 @@ Basis im Arbeitsbaum.
 > Bemessungsart ohne Satz, er schreibt keinen Wert. Die Photovoltaik-Anlagen der
 > Referenzprojekte sind nicht angefasst.
 
+> **Nachtrag: Schemastand 80 (Auftrag #299), die Basis bleibt.** Zwei Migrationsschritte,
+> ein Anwenderentscheid vom 16.09.2026. Schritt **79**
+> (`SCHRITT_79_HEIZSTAB_JE_WP`) übergibt den Heizstab an die **Wärmepumpen-Anlagen**:
+> Bis dahin las der Lauf ausschließlich den projektweiten Schalter
+> `Tab_Einstellungen.WP_Heizstab`, obwohl die Zuheizleistung je Gerät in `Tab_WP.Heizung`
+> steht. Die Übernahme setzt an jeder Anlage mit `ID_Type = 1` den Wert des
+> Projektschalters ihres Projekts, danach entfernt der Schritt die Projektspalte
+> (`EPOS.Kern/Allgemein/Update/HeizstabJeWaermepumpe.cs`) — der erste Schritt des
+> SQLite-Zweigs, der eine **Spalte entfernt**. **Betroffen waren genau sieben
+> Wärmepumpen-Anlagen** (Projekte 1007, 1019 ×2, 1023 ×2, 1024, 1046), alle von 0 auf 1;
+> Anlagen anderer Arten sind unberührt (im Bestand stand dort ausnahmslos 0). Schritt
+> **80** (`SCHRITT_80_WP_KATALOGVERWEIS`) gibt `Tab_WP` den nullbaren Katalogverweis
+> `ID_Stamm` samt Index `Tab_WP_ID_Stamm` und trägt ihn bei **eindeutigem** Bezeichner
+> nach (`EPOS.Kern/Allgemein/Update/WaermepumpeKatalogverweis.cs`): **29 von 29
+> Projektkopien** haben ihn bekommen, keine blieb ohne. Kein Rechenweg liest die Spalte.
+> Stand der Datei: **Schemastand 80**, **70 770 688 Byte**, **120 Tabellen, davon 119
+> STRICT**, **25 Projekte**; `PRAGMA integrity_check` = `ok`, `PRAGMA foreign_key_check`
+> bleibt leer. **Der Referenzlauf ist 5/5 byte-gleich gegen diese Basis** (135 von 135
+> Dateien, Toleranzvergleich 5/5 PASS, 1 586 257 Werte): Die Übernahme erhält die
+> Semantik Zeichen für Zeichen — 1007 und 1046 rechnen ihre Heizstabphase weiter
+> (26,63 MWh Heizstabstrom), 1017 und 1030 weiter ohne. Die Basis wird nicht neu
+> eingefroren, und **keine der drei Einfrierregeln ist berührt**.
+
 ## Was hier liegt
 
 | Pfad | Inhalt |
