@@ -1418,8 +1418,6 @@ neue Maske `Form_Betriebskosten`.
 | `VDI_SP_POSITION` · `VDI_SP_BEMESSUNG` · `VDI_SP_SATZ` · `VDI_SP_NETTO` · `VDI_SP_BRUTTO` · `VDI_SP_BEZUG` | die sechs Spaltenköpfe | dito | dieselbe |
 | `VDI_POS_ANZ_*` (11 Schlüssel) | Anzeigenamen der elf Positionen | dito | `Form_Betriebskosten.PositionName` |
 | `VDI_BEM_ANZ_*` (5 Schlüssel) | Anzeigenamen der fünf Bemessungsarten | dito | `Form_Betriebskosten.BemessungName` |
-| `VDI_BEZUG_*` (6 Schlüssel) | Anzeigenamen der Bezugsgrößen | dito | `Form_Betriebskosten.BezugName` |
-| `VDI_BEZUG_FEHLT` | nicht ermittelbar (Simulationslauf oder Investitionsposition fehlt) | cannot be determined (…) | `Form_Betriebskosten.Bezugstext` |
 | `VDI_EMPFEHLUNG` | VDI 2067: {0}–{1} % | dito | dieselbe |
 | `VDI_ERSETZT` | Durch die Satzangabe ersetzt — der Betrag wird berechnet … | Replaced by the rate … | `Form_Betriebskosten.ZeileNachziehen` (Hinweis am gesperrten Feld) |
 | `VDI_VBH_NAEHERUNG` | Näherung: „Vollbenutzungsstunden" sind Wärme geteilt durch Leistung … | Approximation: … | `Form_Betriebskosten.Aufbauen`, Fußhinweis |
@@ -1429,6 +1427,13 @@ neue Maske `Form_Betriebskosten`.
 | `VDI_BTN_OK` · `VDI_BTN_ABBRUCH` | Übernehmen · Abbrechen | Apply · Cancel | `Form_Betriebskosten.Aufbauen` |
 | `VDI_GESPEICHERT` | {0} Betriebskostenpositionen nach VDI 2067 gespeichert. | {0} operating cost items to VDI 2067 saved. | `Form_Kosten.btnBetriebskostenVdi_Click` |
 
+**Entfallen (7)**
+
+| Schlüssel | Grund |
+|---|---|
+| `VDI_BEZUG_INVEST_BHKW` · `VDI_BEZUG_INVEST_KESSEL` · `VDI_BEZUG_INVEST_GESAMT` · `VDI_BEZUG_STROM` · `VDI_BEZUG_VBH` · `VDI_BEZUG_BRENNSTOFF` | Anzeigenamen der sechs Bezugsgrößen. Der Bezugsgrößenkatalog ist entfallen; die Empfehlungsbereiche nach VDI 2067 stehen an der Position einer Kostenvorlage (`Tab_KostenVorlagePosition`, Spalten `Empfehlung_von`/`Empfehlung_bis`) und erscheinen am Satzfeld des Komponenten-Kostendialogs. Repo-weit ohne Fundstelle, aus `Resource.resx`, `Resource.en-US.resx` und `Resource.Designer.cs` entfernt. |
+| `VDI_BEZUG_FEHLT` | „nicht ermittelbar (Simulationslauf oder Investitionsposition fehlt)" — die Meldung hing an derselben Rechnung und fällt mit ihr. Ebenso ohne Fundstelle und aus allen drei Dateien entfernt. |
+
 **Nicht lokalisiert — und warum**
 
 | Wert | Grund |
@@ -1437,7 +1442,6 @@ neue Maske `Form_Betriebskosten`.
 | `"BETRAG"`, `"PROZENT_INVESTITION"`, `"EUR_PRO_H"`, `"EUR_PRO_KWH"`, `"PROZENT_BRENNSTOFFKOSTEN"` (`DbWerte.BEMESSUNG_*`) | dito — Inhalt von `Tab_ProjektWerte.Bemessung`. Der Anzeigename steht getrennt als `VDI_BEM_ANZ_*`; die ComboBox trägt `Form_Betriebskosten.BemessungItem`, das den **Wert** hält und den **Namen** anzeigt (Muster `Form_Gesetzesparameter.KlasseItem`). Kein Anzeigetext ist je Steuerwert. |
 | Die elf Positionsbezeichnungen (`DbWerte.VDI_POS_*`, z. B. `"Wartung BHKW"`) | **Persistenzwerte** — sie stehen als `Tab_Kostenfaktor.Bezeichnung` in der Datenbank, werden in SQL damit verglichen und ordnen der Position im Code ihre Bezugsgröße zu. Deutsch und eingefroren wie die vier Nebenkostenposten aus der Kostenübernahme (`KOSTENPOSTEN_MONTAGE` & Co.). Der Anzeigetext kommt getrennt aus `VDI_POS_ANZ_*`. |
 | `"Betriebskosten VDI 2067"` (`DbWerte.KOSTEN_GRUPPE_BETRIEB_VDI`) | dito — Wert in `Tab_ProjektWerte.Gruppe` und `Tab_KostenGruppenKatalog.GruppenName`, wie `KOSTEN_GRUPPE_ALLGEMEIN`. |
-| `"INVEST_BHKW"`, `"VBH_BHKW"` & Co. (`BetriebskostenCtrl.BEZUG_*`) | **Schlüssel**, nicht Anzeige: sprachneutral und ASCII, stehen nirgends in der Datenbank und nirgends auf dem Bildschirm. Der Anzeigename ist `VDI_BEZUG_*`. |
 | `"%"`, `"€/h"`, `"€/kWh"`, `"€"`, `"h/a"`, `"kWh/a"` (`BetriebskostenCtrl.SatzEinheit` / `MengenEinheit`) | reine **Einheitenzeichen ohne Wortbestand**, in beiden Sprachen gleich — dieselbe Ausnahme wie bei den typografischen Marken. |
 
 ---

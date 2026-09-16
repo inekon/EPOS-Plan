@@ -77,9 +77,11 @@ nummerierter Schritt über `SchemaMigration`.
 
 ### 1.6 VDI 2067 im Bestand
 
-Die zwölf Betriebskostenpositionen nach VDI 2067 stehen mit ihren Empfehlungsbereichen als Konstanten in
-`BetriebskostenCtrl` — nicht in einer editierbaren Tabelle. Instandsetzungs- und Wartungssätze je
-Technik (VDI 2067 Blatt 1, Tabelle A2) gibt es im Datenmodell nicht.
+Die Empfehlungsbereiche nach VDI 2067 stehen an der **Position einer Kostenvorlage**
+(`Tab_KostenVorlagePosition`, Spalten `Empfehlung_von`/`Empfehlung_bis`, gesät aus
+`SchemaKatalog.Schritt39_Vorlagen`): über die Vorlagenpflege änderbar und als Hinweis am Satzfeld des
+Komponenten-Kostendialogs sichtbar. Instandsetzungs- und Wartungssätze je Technik (VDI 2067 Blatt 1,
+Tabelle A2) gibt es im Datenmodell nicht.
 
 ## 2. Zielbild
 

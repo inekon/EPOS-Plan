@@ -7284,11 +7284,15 @@ Rückfrage zur Startseite, „Abbrechen" fragt weiterhin nach. Das Menü „Proj
 iOS-Projektliste behalten den vollständigen Assistenten mit Komponentenauswahl — nur die
 Kachel ändert ihr Verhalten. Es kommen keine neuen Ressourcen und keine Hüllenänderung hinzu.
 
-**Was offen bleibt.** Eine Frage, Anwenderentscheid: Soll „bei Neuanlage" auch für das Menü
-„Projekt → Neu…" und den iOS-Knopf gelten, sodass allein die Betriebsart entscheidet? Die
-zweite Frage — „Zurück" verwirft einen eingegebenen Projektnamen ohne Rückfrage — ist mit
-dem Nachtrag vom 16.09.2026 erledigt: Der Zurück-Knopf entfällt in der Neuanlage vollständig,
-an seine Stelle tritt das Schließkreuz, das denselben Weg wie „Abbrechen" nimmt.
+**Was offen bleibt.** Beide Fragen sind erledigt. Die erste — soll „bei Neuanlage" auch für
+das Menü „Projekt → Neu…" und den iOS-Knopf gelten, sodass allein die Betriebsart
+entscheidet? — ist mit dem Nachtrag vom 16.09.2026 (Commit `934b7fc2`) erledigt: Der Einstieg
+Neuanlage gilt jetzt für jede Neuanlage, Menü und iOS-Knopf starten wie die Kachel in der
+Projektkonfiguration; BEARBEITEN zeigt weiterhin den vollständigen Assistenten mit
+Komponentenauswahl. Die zweite — „Zurück" verwirft einen eingegebenen Projektnamen ohne
+Rückfrage — ist mit dem Nachtrag vom 16.09.2026 (Commit `c899de4b`) erledigt: Der
+Zurück-Knopf entfällt in der Neuanlage vollständig, an seine Stelle tritt das Schließkreuz,
+das denselben Weg wie „Abbrechen" nimmt.
 
 **Prüfung.** 13 neue Facts (`EPOS.UI.Tests/Seiten/AssistentNeuanlageTests.cs`); das Gate lief
 gemeinsam mit #299 (Zahlen dort).
@@ -7307,6 +7311,15 @@ in beiden Einstiegen genau eins, das denselben Weg wie „Abbrechen" nimmt (Rüc
 Gegenprobe vollständiger Lauf mit drei Knöpfen). Gate: Kern-Filter 0 Fehler, `EPOS.UI.Tests`
 4 523/4 523, `EPOS.Kern.Tests` 3 074/3 075 (einzig rot: bekannt fremd
 `SpeicherFlottenGroessenCtrlTests.Die_Fusszeile_der_Karte_nennt_den_Feinpunkt`).
+
+**Nachtrag 16.09.2026, Anwenderentscheide (Commit `934b7fc2`).** Antwort auf die offene
+Frage aus „Was offen bleibt": (1 Ja) Der Einstieg Neuanlage gilt für jede Neuanlage — Kachel,
+Menü „Projekt → Neu…" und der iOS-Knopf der Projektliste starten in der Projektkonfiguration,
+allein die Betriebsart NEU entscheidet; die Kachelmerker (`_neuanlageWunsch`,
+`BeiNeuanlageKachel`) und die Startseiten-Gabe `ProjektNeuGewaehlt` entfallen, BEARBEITEN
+zeigt weiterhin den vollständigen Assistenten mit Komponentenauswahl. (2 OK) Das
+Schließkreuz bleibt auch im vollständigen Assistenten. 21 Fälle (Menüweg NEU startet in der
+Projektkonfiguration; Gegenprobe BEARBEITEN; Ende-zu-Ende über die Kachel).
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
@@ -7448,12 +7461,64 @@ dem zusammengeführten Stand. Kern-Filter 0 Fehler; `EPOS.Kern.Tests` 3082/3083,
 `SpeicherFlottenGroessenCtrlTests.Die_Fusszeile_der_Karte_nennt_den_Feinpunkt`; Windows-Schale
 0 Fehler; SqlDialektPruefer 1458 Texte, 0 Fundstellen; Referenzlauf 5/5 PASS.
 
-**Was offen bleibt.** Zwei Punkte: ein Aufräum-Entscheid zu den aufruferlosen
-Betriebskosten-Methoden (`BetriebskostenCtrl.Lies(int, Bezugsgroessen)`, `Speichere(int,
-List<Zeile>)`, `LiesBezugsgroessen`, `Bezugsgroessen`, `Zeile`); der `SqlDialektPruefer`
-öffnet die Testdatenbank schreibend und hinterlässt `-wal`/`-shm`-Dateien (gitignored) —
-`mode=ro&immutable=1` im Prüfer würde das abstellen. Aus #301 bleibt nichts offen, was nicht
-mit #302 erledigt ist.
+**Was offen bleibt.** Beide Punkte sind mit dem Nachtrag vom 16.09.2026 erledigt (siehe
+unten): die aufruferlosen Betriebskosten-Methoden sind entfernt (Commit `de624db9`), der
+`SqlDialektPruefer` öffnet die Testdatenbank seither nur lesend (Commit `88f58dbf`).
+**Neuer offener Punkt, mit dem zweiten Nachtrag erledigt:** Mit dem Wegfall von `Lies`
+war auch der VDI-Katalog in `BetriebskostenCtrl` (`Katalog`, Typ `Position`, `Finde`, die sechs
+`BEZUG_*`) ohne Leser; er blieb zunächst stehen, weil
+`WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` (Zeile ~828) ihn als die eine
+Stelle nannte, an der die VDI-Empfehlungsbereiche (`EmpfehlungVon`/`EmpfehlungBis`, § 7.6)
+leben, und deshalb keine Datenbankspalten dafür anlegt. Der Anwender hat am 16.09.2026
+„beides entfernen" entschieden (Commit `605531ab`, zweiter Nachtrag unten). Aus #301 bleibt
+nichts offen, was nicht mit #302 erledigt ist.
+
+**Nachtrag 16.09.2026, Anwenderentscheide (Commits `de624db9`, `88f58dbf`).** Antwort auf die
+zwei offenen Punkte aus „Was offen bleibt": (3 Aufräumen) `BetriebskostenCtrl` —
+`Lies`/`Speichere` samt den in `e2784cf9` ergänzten `idAnlage`-Überladungen,
+`LiesBezugsgroessen`, die Typen `Bezugsgroessen` und `Zeile` und drei private Helfer
+(`LetztesErgebnis`, `ModulSumme`, `LiesBrennstoffkosten`) sind entfernt (925 → 624 Zeilen);
+geblieben, weil Aufrufer da sind: `Betrag`, `SatzEinheit`, `MengenEinheit`,
+`Kaskadensummen`, `InvestSummeFuer`. Die Tests `BetriebskostenAnlagenbezugTests` prüfen
+jetzt den lebenden Weg der Kostenseite (`KostenProjektPositionenCtrl.Lies/Neu/Speichern` mit
+Anlagenbezug; Projekt 1030, Anlagen 14920/14921). (4 Empfehlung)
+`Werkzeuge/SqlDialektPruefer/pruefer.py` öffnet die Testdatenbank als file-URI mit
+`mode=ro&immutable=1`; keine `-wal`/`-shm`-Reste mehr; Ergebnis unverändert 1460 Texte, 0
+Fundstellen; Werkzeug-LIESMICH ergänzt. **Prüfung** (Commit-Stand `88f58dbf`): Kern-Filter 0
+Fehler; `EPOS.UI.Tests` 4532/4532; `EPOS.Kern.Tests` 3100/3101 (einzig rot: bekannt fremd
+`SpeicherFlottenGroessenCtrlTests.Die_Fusszeile_der_Karte_nennt_den_Feinpunkt`);
+Windows-Schale 0 Fehler.
+
+**Nachtrag 2 vom 16.09.2026, Anwenderentscheid (Commit `605531ab`).** Antwort auf den neuen
+offenen Punkt: **beides entfernen**. **Befund:** Der VDI-Katalog war eine tote Zweitkopie der
+Normdaten — die Empfehlungsbereiche nach VDI 2067 leben an der Position einer Kostenvorlage
+(`Tab_KostenVorlagePosition`, Spalten `Empfehlung_von`/`Empfehlung_bis`, gesät aus
+`SchemaKatalog.Schritt39_Vorlagen`), sind über die Vorlagenpflege änderbar — die Konstanten
+waren es nicht — und erscheinen über `KostenKomponenteHuelle.EmpfehlungText` am Satzfeld.
+`Katalog`, der Typ `Position`, `Finde` und die sechs `BEZUG_*` sind entfernt (625 → 418
+Zeilen); der Kommentar zu Schritt 27 in `SchemaMigration` und die Zeile in `DbWerte` nennen
+jetzt den lebenden Ort, `EndenergieAufloeser` verweist im Klartext statt auf `BEZUG_VBH_BHKW`.
+
+**Folgearbeiten zum selben Entscheid.** (1) Sieben Ressourcenschlüssel ohne Verwender —
+`VDI_BEZUG_INVEST_BHKW`, `…_INVEST_KESSEL`, `…_INVEST_GESAMT`, `VDI_BEZUG_STROM`,
+`VDI_BEZUG_VBH`, `VDI_BEZUG_BRENNSTOFF`, `VDI_BEZUG_FEHLT` — je Schlüssel geprüft (kein
+Codeverwender, kein dynamisches `GetString`) und aus `Resource.resx`, `Resource.en-US.resx`
+und `Resource.Designer.cs` entfernt; Designer über `Werkzeuge/ResourceDesigner` neu erzeugt,
+6 331 → 6 324 Einträge, Prüflauf „unverändert; wiederholbar". (2) `Lokalisierung_Katalog.md`:
+die beiden Katalogzeilen der `VDI_BEZUG_*` und die Zeile der `BEZUG_*`-Konstanten aus „Nicht
+lokalisiert" gestrichen, dafür ein Abschnitt „Entfallen (7)" nach dem Muster der Datei.
+(3) `Konzept_Nutzungsdauer_AfA_EPOS-Plan.md`, Abschnitt 1.6: Die Aussage „stehen mit ihren
+Empfehlungsbereichen als Konstanten in `BetriebskostenCtrl` — nicht in einer editierbaren
+Tabelle" ist durch den gültigen Stand ersetzt. (4) Zwei tote Kommentare auf den lebenden Weg
+umformuliert: `SchemaKatalog.SPALTE_KVP_IST_PFLICHT` (jetzt
+`KostenProjektPositionenCtrl.Loeschen`/`…Speichern` statt `BetriebskostenCtrl.Speichere`) und
+der Klassenkopf von `BetriebskostenAnlagenbezugTests`.
+
+**Prüfung** (Commit-Stand `605531ab` samt Folgearbeiten): Kern-Filter 0 Fehler / 5 Warnungen
+(Bestand); `EPOS.Kern.Tests` 3100/3101, `EPOS.UI.Tests` 4532/4532, KiKern 499/499,
+SpeicherEngine 370/370, SpeicherPlanung 27/28 (1 übersprungen) — einzig rot der bekannt
+fremde `SpeicherFlottenGroessenCtrlTests.Die_Fusszeile_der_Karte_nennt_den_Feinpunkt`;
+Windows-Schale 0 Fehler. Kein Referenzlauf nötig: keine Zeile am Rechenweg.
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
