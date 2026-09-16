@@ -252,13 +252,17 @@ namespace WindowsFormsApplication1
         /// Genau so sieht das Referenzprojekt 1007 aus (Kessel angelegt,
         /// <c>Tool_1..4 = ('', Solarthermie, Waermepumpe, '')</c>).</para>
         ///
-        /// <para><b>Sie MELDET, sie aendert nichts</b> — Anwenderentscheid <b>HK-E-1a</b>
-        /// vom 11.09.2026: Erzeuger ohne Kaskadenplatz werden gemeldet, nicht automatisch
-        /// aufgenommen; die Referenzbasis R7 bleibt. Kein Platz wird hier belegt, das
-        /// waere eine Ergebnisaenderung an jedem Bestandsprojekt mit einer solchen
-        /// Luecke. Der Weg zurueck steht im Text: die Simulationskonfiguration blendet
-        /// ihre verfuegbaren Karten ein, „+ aufnehmen" bleibt der Handgriff des
-        /// Anwenders.</para>
+        /// <para><b>Sie MELDET, sie aendert nichts.</b> Kein Platz wird hier belegt; der
+        /// Weg zurueck steht im Text: die Simulationskonfiguration blendet ihre
+        /// verfuegbaren Karten ein, „+ aufnehmen" ist der Handgriff des Anwenders.</para>
+        ///
+        /// <para><b>DER HEIZKESSEL KOMMT HIER NICHT MEHR VOR</b> — Anwenderentscheid
+        /// <b>HK-E-1</b> vom 15.09.2026 („Umsetzen"): Er bekommt seinen Platz
+        /// automatisch, nachrangig am hinteren Ende, beim Lesen der Konfiguration
+        /// (<c>KonfigurationCtrl.HeizkesselNachziehen</c>). Wenn diese Pruefung laeuft,
+        /// ist die Luecke fuer ihn deshalb bereits geschlossen. Gemeldet werden nur noch
+        /// Waermepumpe, Solarthermie, BHKW, Photovoltaik und Stromspeicher — der
+        /// Entscheid nennt allein den Heizkessel.</para>
         ///
         /// <para>Gelesen wird ueber <see cref="StilleDb"/> — dialogfrei, weil derselbe
         /// Weg im unbeaufsichtigten Referenz- und CI-Lauf benutzt wird.</para>

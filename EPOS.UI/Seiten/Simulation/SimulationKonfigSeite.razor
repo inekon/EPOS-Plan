@@ -116,9 +116,16 @@
                        aufgenommener Erzeuger STILL hinter dem Schalter am Spaltenende:
                        Der Anwender legte einen Heizkessel an, die Simulation rechnete
                        ihn nie, und nichts auf dieser Seite sagte warum. Die Leiste
-                       nennt die Zahl; AUFGENOMMEN wird weiterhin von Hand
-                       (Anwenderentscheid HK-E-1a vom 11.09.2026 - kein automatisches
-                       Aufnehmen, sonst aenderten sich Ergebnisse im Bestand). *@
+                       nennt die Zahl.
+
+                       HK-E-1 (Anwenderentscheid 15.09.2026, „Umsetzen"): DER HEIZKESSEL
+                       ZAEHLT NICHT MEHR MIT. Ein Heizkessel, den das Projekt fuehrt,
+                       bekommt seinen Kaskadenplatz automatisch - nachrangig, am hinteren
+                       Ende - beim Lesen der Konfiguration
+                       (KonfigurationCtrl.HeizkesselNachziehen). Diese Seite zeigt ihn
+                       deshalb bereits aufgenommen, und die Pfeile der Kachel ordnen ihn
+                       um wie jeden anderen. Die Leiste nennt nur noch die uebrigen
+                       Erzeugerarten; AUFGENOMMEN werden sie weiterhin von Hand. *@
                     @if (LueckeAnzahl > 0)
                     {
                         <div class="epos-simkonfig-luecke" role="alert">
