@@ -2905,7 +2905,7 @@ Please select a different buffer storage or change the heat sink of one of the u
     <value>✔ Configuration saved successfully</value>
   </data>
   <data name="SIM_STATUS_SENKE_FEHLER" xml:space="preserve">
-    <value>⚠ The heat sink could not be saved completely</value>
+    <value>⚠ The heat sink was not saved — the system is unchanged</value>
   </data>
   <data name="SIM_STATUS_SENKE_GESPEICHERT" xml:space="preserve">
     <value>✔ Heat sink saved ({0})</value>
@@ -5958,6 +5958,9 @@ Depending on the project size this takes several minutes. Continue?</value>
   </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Table {0} could not be read — its data is missing from the copy.</value>
+  </data>
+  <data name="BK_KOMP_HINW_SENKEN" xml:space="preserve">
+    <value>The heat sinks of unit "{0}" could not be created — the unit uses the default heating circuit (both).</value>
   </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>The operating parameters of storage variant "{0}" could not be created.</value>

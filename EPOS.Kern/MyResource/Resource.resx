@@ -2921,7 +2921,7 @@ Bitte einen anderen Pufferspeicher wählen oder die Wärmesenke einer der beteil
     <value>✔ Konfiguration erfolgreich gespeichert</value>
   </data>
   <data name="SIM_STATUS_SENKE_FEHLER" xml:space="preserve">
-    <value>⚠ Die Wärmesenke konnte nicht vollständig gespeichert werden</value>
+    <value>⚠ Die Wärmesenke wurde nicht gespeichert — die Anlage ist unverändert</value>
   </data>
   <data name="SIM_STATUS_SENKE_GESPEICHERT" xml:space="preserve">
     <value>✔ Wärmesenke gespeichert ({0})</value>
@@ -5974,6 +5974,9 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   </data>
   <data name="BK_KOMP_HINW_KINDTABELLE" xml:space="preserve">
     <value>Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie.</value>
+  </data>
+  <data name="BK_KOMP_HINW_SENKEN" xml:space="preserve">
+    <value>Die Wärmesenken der Anlage „{0}" konnten nicht angelegt werden — die Anlage rechnet mit der Vorbelegung Heizkreis (beides).</value>
   </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden.</value>

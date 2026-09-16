@@ -47,13 +47,22 @@ namespace WindowsFormsApplication1
     /// <para>
     /// TRANSAKTION. Löschen und Anlegen laufen in EINER Transaktion
     /// (<see cref="DataRepository.Vorgang"/>): ein Abbruch in der Mitte ließe
-    /// sonst ein Projekt ohne Gewerk zurück. Die Betriebsführung des Stromspeichers
-    /// entsteht bewusst NACH dem Commit über
-    /// <see cref="StromspeicherVarianteCtrl.Insert"/> und
-    /// <see cref="StromspeicherVarianteCtrl.SetzeAktiv"/> — die Anlagen-ID ist ein
-    /// AutoWert und steht erst danach fest, und die Zusage „genau eine aktive Variante je
-    /// Projekt" hat dort ihre EINE Schreibstelle (dieselbe Begründung wie in
-    /// <c>StromspeicherKontextMenuCtrl</c>).
+    /// sonst ein Projekt ohne Gewerk zurück. Die Senkenlisten (Schritt 8) und die
+    /// Betriebsführung des Stromspeichers (Schritt 9) entstehen NACH dem Commit — beide
+    /// beschaffen sich die neuen Anlagen-IDs über eine ZWEITE Verbindung
+    /// (<c>NeueAnlagenIds</c> und <c>AnlageFinden</c> lesen über
+    /// <see cref="DataRepository"/>), und dort ist eine noch nicht festgeschriebene Zeile
+    /// unsichtbar. Für die Betriebsführung kommt hinzu, dass die Zusage „genau eine
+    /// aktive Variante je Projekt" in
+    /// <see cref="StromspeicherVarianteCtrl.SetzeAktiv"/> ihre EINE Schreibstelle hat
+    /// (dieselbe Begründung wie in <c>StromspeicherKontextMenuCtrl</c>).
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Damit liegen diese beiden Schritte ausserhalb der Klammer.</b> Scheitert einer,
+    /// steht der Austausch bereits fest und lässt sich nicht mehr zurücknehmen; Schritt 9
+    /// meldet das über seine Hinweise, Schritt 8 nicht. Nachgemessen in
+    /// <c>EPOS.Kern.Tests/UebernahmeNachzugTests</c>.
     /// </para>
     /// </summary>
     public class KomponentenUebernahmeCtrl
@@ -266,7 +275,8 @@ namespace WindowsFormsApplication1
             // der Anlagenkopie miterfasst — bis Paket L startete jede übernommene
             // Komponente mit der Rang-1-Vorbelegung (Heizkreis/Beides) statt mit der
             // Senkenkette der Quelle. Gelesen VOR der Transaktion, geschrieben NACH dem
-            // Commit (die Anlagen-ID ist ein AutoWert, Muster VariantenNachziehen).
+            // Commit (die neuen Anlagen-IDs werden über eine zweite Verbindung gelesen,
+            // Muster VariantenNachziehen).
             var quellSenken = new Dictionary<int, List<Z_AnlageSenkeModel>>();
             {
                 var senkeCtrl = new Z_AnlageSenkeCtrl();
@@ -425,9 +435,33 @@ namespace WindowsFormsApplication1
             }
 
             // --- 8) Senkenlisten der Quelle nachziehen (nach dem Commit) --------------
-            // A1-O2. NACH dem Commit aus demselben Grund wie die Betriebsführung unten:
-            // Die Anlagen-ID ist ein AutoWert und steht erst danach fest, und
-            // Z_AnlageSenkeCtrl.SchreibenJeAnlage führt seine eigene Transaktion.
+            // A1-O2, nachgemessen in der Nachlese zur Senkenklammer
+            // (EPOS.Kern.Tests/UebernahmeNachzugTests).
+            //
+            // WARUM NACH DEM COMMIT - der Grund, der trägt: Beide Schritte lesen ihre
+            // neuen Anlagen-IDs über eine ZWEITE Verbindung (NeueAnlagenIds und
+            // AnlageFinden gehen über DataRepository, nicht über v), und dort ist eine
+            // noch nicht festgeschriebene Zeile unsichtbar.
+            //
+            // NICHT, weil die ID erst mit dem Commit entstünde: Sie steht schon beim
+            // INSERT fest (last_insert_rowid, DbVorgang.EinfuegenUndId) - der Bestand
+            // nutzt das an DERSELBEN Einfügeanweisung in
+            // SpeicherFlottenStudieCtrl.EinheitenInProjektUebernehmen. Und seit
+            // iU9-W16a-O-1 ist auch die eigene Transaktion von
+            // Z_AnlageSenkeCtrl.SchreibenJeAnlage kein Hindernis mehr: Unter einer
+            // angemeldeten Vorgangsklammer wird daraus ein Sicherungspunkt auf DIESER
+            // Verbindung.
+            //
+            // BEIDE Schritte unter die Klammer zu ziehen, wäre also möglich - es ist
+            // aber eine Fachentscheidung und keine Aufräumarbeit: Ein Fehlschlag hier
+            // nähme dann die ganze Übernahme mit zurück, statt sie stehen zu lassen.
+            //
+            // WAS GILT (NL-Q2): Die Übernahme bleibt stehen, der Fehlschlag wird
+            // GEMELDET. Der Rückgabewert von SchreibenJeAnlage geht als
+            // BK_KOMP_HINW_SENKEN in "warnungen" - derselbe Kanal und dieselbe Form wie
+            // bei Schritt 9 (BK_KOMP_HINW_VARIANTE). Die beiden Nachbarschritte
+            // behandeln denselben Fall damit gleich, und die Transaktionsgrenze bleibt,
+            // wo sie ist.
             SenkenNachziehen(idZiel, plan, quellAnlagen, quellAnlagenIds, quellSenken,
                              pufferAbbildungNachher, warnungen);
 
@@ -1083,7 +1117,21 @@ namespace WindowsFormsApplication1
                     });
                 }
 
-                ctrl.SchreibenJeAnlage(neueAnlage, zeilen);
+                // MELDEN, NICHT ZURÜCKNEHMEN (NL-Q2). SchreibenJeAnlage meldet ein
+                // Scheitern über den Rückgabewert (und auf der Konsole), nicht über eine
+                // Ausnahme; fängt es ab und rollt seine eigenen Zeilen zurück. Der
+                // Hauptvorgang ist zu diesem Zeitpunkt festgeschrieben und die Übernahme
+                // ausdrücklich nicht umkehrbar — deshalb geht der Fehlschlag in denselben
+                // Hinweiskanal und in dieselbe Form wie beim Nachbarschritt 9
+                // (VariantenNachziehen, BK_KOMP_HINW_VARIANTE): eine Zeile je Anlage,
+                // benannt über ihren Bezeichner. Der Lauf macht mit der nächsten Anlage
+                // weiter, "Uebernehmen" meldet wie bisher true.
+                //
+                // Ein "continue" wie bei Schritt 9 steht hier nicht: Der Aufruf IST die
+                // letzte Anweisung des Schleifenrumpfes.
+                if (!ctrl.SchreibenJeAnlage(neueAnlage, zeilen))
+                    warnungen.Add(string.Format(MyResource.Resource.BK_KOMP_HINW_SENKEN,
+                                                quellAnlagen[i].Bezeichner));
             }
 
             if (verloren > 0)
@@ -1117,8 +1165,9 @@ namespace WindowsFormsApplication1
         /// Invariante „genau eine aktive Variante je Projekt" über
         /// <see cref="StromspeicherVarianteCtrl.SetzeAktiv"/> her — der einzigen
         /// Schreibstelle für <c>Aktiv</c>.
-        /// Die Zuordnung läuft über (Typ, Bezeichner): die Anlagen-ID ist ein AutoWert und
-        /// steht erst nach dem Commit fest; der Bezeichner IST der Variantenname.
+        /// Die Zuordnung läuft über (Typ, Bezeichner): Die neuen Anlagen-IDs werden über
+        /// eine zweite Verbindung gelesen und sind dort erst nach dem Commit sichtbar
+        /// (siehe Schritt 8); der Bezeichner IST der Variantenname.
         /// </summary>
         private static void VariantenNachziehen(int idZiel, List<WErzeugerCtrl> quellAnlagen,
                                                 List<int> quellAnlagenIds,

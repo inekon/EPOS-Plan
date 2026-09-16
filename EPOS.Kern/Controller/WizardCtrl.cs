@@ -1174,6 +1174,15 @@ namespace WindowsFormsApplication1
         /// </para>
         ///
         /// <para>
+        /// <b>Ein GESCHEITERTES Schreiben der Dialogliste erreicht diese Methode nicht
+        /// mehr</b> (NL-Q1): Der Block ST1 in <see cref="Add_WP_Waermeerzeuger"/> steigt
+        /// bei einem Fehlschlag mit <c>false</c> aus, der Lauf wird zurueckgenommen.
+        /// Diese Methode kann die Eingabe des Dialogs also nicht mehr still durch den
+        /// Vorzustand ersetzen; sie bedient nur noch Anlagen, die der Dialog GAR NICHT
+        /// angefasst hat (<c>PV_Straenge == null</c>).
+        /// </para>
+        ///
+        /// <para>
         /// <b>Der Wechselrichter einer geretteten Strangzeile kann fort sein.</b>
         /// <c>Z_AnlageStrang.ID_Wechselrichter</c> steht unter einer ERZWUNGENEN
         /// Beziehung auf <c>Tab_Wechselrichter</c>; zeigt die Id auf keine Projektkopie
@@ -1819,14 +1828,64 @@ namespace WindowsFormsApplication1
                     // koennten. NULL heisst "nicht angefasst" und ueberlaesst die Zeile
                     // der Rettung weiter unten; eine gesetzte Liste ist die neue Wahrheit
                     // und hat Vorrang, weil StraengeWiederherstellen nur Anlagen OHNE
-                    // Straenge bedient. BEST EFFORT wie die Nachbarn.
+                    // Straenge bedient.
+                    //
+                    // KEIN BEST EFFORT (NL-Q1): Ein Fehlschlag NIMMT DEN LAUF ZURUECK -
+                    // der Rueckgabewert wird ausgewertet, und ein false faehrt aus der
+                    // Methode heraus wie bei den Nachbarzeilen darueber
+                    // (SpVariantenVerwerfen/FachspaltenVerwerfen, return false).
+                    //
+                    // 1. WARUM DIESE ZEILE NICHT IST WIE IHRE NACHBARN. Die drei
+                    //    "best effort"-Stellen im selben Rumpf
+                    //    (ZuordnungReparieren/AnkerNachziehen,
+                    //    PflichtpositionenSicherstellen, GeraeteWaisen.Aufraeumen) sind
+                    //    NACHSORGE, die der Lauf selbst anstoesst: Kostenanker heilen,
+                    //    Pflichtpositionen ergaenzen, Waisen aufraeumen. Was dort
+                    //    ausfaellt, holt der naechste Lauf oder ein Migrationsschritt
+                    //    nach. Diese Zeile schreibt dagegen, WAS DER ANWENDER GERADE
+                    //    EINGEGEBEN HAT - eine verlorene Strangliste holt niemand nach.
+                    // 2. WOHIN DAS false GEHT. Der Ruf kommt aus AssistentCtrl.Anlegen
+                    //    bzw. .Fortschreiben; beide melden den Schritt namentlich als
+                    //    "Add_WP_Waermeerzeuger" (AssistentErgebnis, Entscheid E-4), und
+                    //    AssistentCtrl.Speichern laesst den Vorgang der Klammer aus
+                    //    iU9-W16a-O-1 zuruecktreten. Von diesem Speichern bleibt nichts;
+                    //    der Aufrufer zeigt EINE Meldung, die den Schritt nennt.
+                    // 3. WARUM DAS return VOR DIE RETTUNG GEHOERT.
+                    //    StraengeWiederherstellen weiter unten bedient jede Anlage OHNE
+                    //    Strangzeile - und ohne dieses return traege es genau hier die
+                    //    Liste des VORZUSTANDS wieder ein. Die Eingabe des Dialogs kehrte
+                    //    sich still um, und der Anwender bekaeme Erfolg gemeldet. Das
+                    //    return endet den Lauf davor; die Rettung kommt nicht mehr zum
+                    //    Zuge.
+                    // 4. DAS catch BLEIBT. AnlageStrangCtrl.SchreibenJeAnlage faengt
+                    //    heute jeden Datenbankfehler selbst ab, rollt zurueck und meldet
+                    //    ihn ueber den RUECKGABEWERT; hierher kommt praktisch nichts
+                    //    durch. Faellt das einmal anders aus, fuehrt der Wurf denselben
+                    //    Weg wie ein false - und nicht am Rueckzug vorbei.
                     if (item.PV_Straenge != null && item.ID > 0)
                     {
-                        try { new AnlageStrangCtrl().SchreibenJeAnlage(item.ID, item.PV_Straenge); }
+                        bool straengeGeschrieben;
+                        try
+                        {
+                            straengeGeschrieben =
+                                new AnlageStrangCtrl().SchreibenJeAnlage(item.ID, item.PV_Straenge);
+                        }
                         catch (Exception exStrang)
                         {
                             Console.WriteLine("Die Straenge der Anlage \"" + item.Bezeichner +
                                               "\" konnten nicht geschrieben werden: " + exStrang.Message);
+                            straengeGeschrieben = false;
+                        }
+
+                        if (!straengeGeschrieben)
+                        {
+                            string grund = "die Straenge des PV-Dialogs sind nicht geschrieben worden";
+                            SpVariantenVerwerfen(grund);
+                            FachspaltenVerwerfen(grund);
+                            Console.WriteLine("Die Strangliste der Anlage \"" + item.Bezeichner +
+                                              "\" konnte nicht gespeichert werden - das Speichern " +
+                                              "wird zurueckgenommen.");
+                            return false;
                         }
                     }
 
