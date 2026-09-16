@@ -1,0 +1,2047 @@
+# Konzept: Gebäudesimulation EPOS-Plan — dynamisches Gebäudemodell nach VDI 6007 und IFC-Import
+
+**Rev. 1 — 15.09.2026 — Prüfung, Prototyp und Vorschlag, zur Entscheidung durch Philipp**
+
+Auftrag (Anwender, 15.09.2026, im Wortlaut):
+
+> „Gebäudesimulation EPOS-Plan: Konzept und Umsetzung." — „Es soll geprüft werden, ob der
+> Datenimport für das Gebäudemodell im IFC-Format verwendet werden kann und wie das in
+> EPOS-Plan umgesetzt werden kann." — „Erstelle zuerst ein Konzept."
+
+Leitplanken des Anwenders (15.09.2026): **Stundenwerte als Basis. Neuschreiben nach
+Spezifikation, Datenmodell und Lösungsschema übernehmen. Prüfen der Simulationsdaten aus dem
+bestehenden Gebäudemodell. IFC-Import prüfen.**
+
+Grundlage: das Material unter `Z:\…\15-Anleitungen_Literatur\Simulation-Gebäudemodell`
+(`vdi6007_gebaeudemodell.py`, `VDI6007_VisualStudio.zip`, `VDI6007_Dokumentation_DotNet.docx`,
+`VDI_6007_Gebaeudemodell_Anleitung.docx`, `vdi6007_ergebnisse.png`); der Codestand des Zweigs
+`ios_migration_september` vom 15.09.2026 (`SimulationWaermebedarf.cs`, `BhkwPlan.cs`,
+`SolarPVGISCalculator.cs`, `KlimaImportAblauf.cs`, `sql/schema/001_grundschema.sql`,
+Referenzbasis `2026-09-11_R7_Speicherflotte`); eine IFC-Recherche mit Quellen vom 15.09.2026;
+eine Datenprüfung gegen die Testdatenbank (Kapitel 3) und ein außerhalb des Repositoriums
+gebauter Prototyp, der gegen die zwölf Normtestfälle und gegen das heutige Modell gefahren
+wurde (Kapitel 5). Den Rechenweg des Bestands beschreibt das überholte Papier
+[`WP-Plan_Doku_Waermebedarf_Deckung_Pufferspeicher.md`](../ueberholt/WP-Plan_Doku_Waermebedarf_Deckung_Pufferspeicher.md)
+(Codestand Juni 2026, damals noch über die native DLL); dieses Papier setzt darauf auf.
+Bauform und Abnahme folgen dem Vorbild des PV-Zweigs
+([`Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`](Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md),
+Stufe E2: ein wählbares Modell, das Bestandsmodell unberührt).
+
+Alle Zahlen dieses Papiers sind gerechnet, nicht geschätzt; Datei- und Zeilenbelege wurden
+in einer zweiten Runde gegengelesen. Die Prüfwerkzeuge (Datenbankprobe, Prototyp, Adapter)
+liegen außerhalb des Repositoriums und sind keine Auslieferung.
+
+---
+
+## 0. Das Ergebnis in acht Punkten
+
+1. **Das Material auf Z: taugt als Vorlage, nicht als Rechenkern.** Sein Löser setzt die
+   Systemmatrix bewusst diagonal an; dem Massenknoten der Außenbauteile fehlt die
+   Rückkopplung, der Normtestfall 1 wird um rund 20 K verfehlt (Toleranz 0,1 K). Der Prototyp
+   belegt es in Gegenrichtung: mit künstlich diagonaler Matrix versagt der sonst bestandene
+   Löser in allen zwölf Testfällen um bis zu 304 K.
+2. **Der neu geschriebene Löser besteht alle zwölf Normtestfälle an der AixLib-Prüfschwelle
+   0,15 K / 1,5 W** (0,05–0,14 K bzw. 0,6–1,5 W). Drei Fälle liegen knapp: Testfall 11
+   besteht nur mit Nachbildung des 120-s-Messfensters der Referenz (roh 4,9 W), 9 und 10 mit
+   0,01 K Reserve; an der Normschwelle 0,1 K / 1 W bleiben damit vier Fälle offen (6, 9, 10,
+   11). Ob die Rundung der Referenztabellen sie erklärt, wird in G0 vor der Übernahme
+   geklärt — das ist der einzige offene technische Punkt des Vorschlags. Der Löser ist
+   reines C# ohne Abhängigkeit, 984 Zeilen, und wird in Stufe G0 in den Kern übertragen.
+3. **Der Bestand rechnet ein Tageslast-Modell mit einer Kapazität** auf Tagesmittel-Klima und
+   verteilt die Tageslast über Tagesprofile auf Stunden. Die Datenbank trägt die
+   **Bilanzgrößen** (Flächen, U-Werte, Gesamtkapazität, Nutzung, Sollwerte); neun weitere
+   Größen sind Vorgaben, keine Daten (3.8). Die Klimadaten liegen stündlich vor, lückenlos,
+   mit Global-, Direkt- und Diffusstrahlung.
+4. **Der Prototyp läuft aus den vorhandenen Feldern** auf allen zwölf Projekten mit Gebäude
+   und trifft die Katalogkennzahl kWh/m²a zu 86–100 % (das heutige Modell 48–88 %). Er liegt
+   je Projekt 7–33 % über dem Tagesmodell. Die versteckten Kalibrierfaktoren
+   0,83/0,95/0,45/0,83 im Bestand und der rohe g-Wert erklären diese Abweichung vollständig
+   und darüber hinaus (+21 bis +42 Prozentpunkte); die Modellstruktur wirkt gegenläufig und
+   senkt den Bedarf bei gleichen Randbedingungen um 5 bis 13 %. Die Abweichung ist also
+   Parametrierung, nicht Physik. Auf Tagesebene stimmen beide Modelle mit r = 0,98–0,997
+   überein.
+5. **Vorschlag: ein Ein-Zonen-Modell 7R2C nach VDI 6007-1 als zweites, je Gebäude wählbares
+   Rechenmodell.** Das Tagesmodell bleibt Zeichen für Zeichen bestehen und Vorgabe; die
+   Referenzbasis bleibt gültig, solange kein Referenzprojekt umgestellt wird.
+6. **Drei Datenbefunde sind unabhängig vom Modell zu beheben:** ein Gebäude der
+   Testdatenbank trägt den stillen Rückfallwert `Bauweise = 50 Wh/K` (drückt das Tagesmodell
+   um 34 %), der Rechenweg teilt ungeschützt durch `Wohnflaeche`, und der Raumtemperatur-
+   Zustand des Bestands ist ein statisches Feld — das Ergebnis hängt an der Zeilenreihenfolge.
+7. **IFC-Import ist machbar** — mit reinem C# im Kern (xBIM Essentials, net10.0, CDDL-1.0)
+   ohne Geometriekernel, über einen Zuordnungsdialog mit Vorgaben je Baualtersklasse. IFC
+   liefert Rohmaterial wechselnder Qualität, nie fertige Modelldaten; für den Wohnbestand ist
+   die Ausbeute gering. gbXML ist eine spätere Ergänzung.
+8. **Reihenfolge:** G0 Löser mit Normtests im Kern → G1 Anbindung als wählbares Modell → G2
+   Ergebnisdarstellung → G3 Bauteilkatalog mit Schichtaufbau → G4 IFC-Import → G5
+   Geometrieableitung und gbXML (bei Bedarf).
+
+---
+
+## 1. Befund A — das Material auf Z:
+
+### 1.1 Was vorliegt
+
+| Datei | Inhalt | Urteil |
+|---|---|---|
+| `vdi6007_gebaeudemodell.py` (1 211 Zeilen) | Einzonenmodell 7R2C, Bauteilreduktion per Kettenmatrix (Periode 24 h), Zeitschritt 3 600 s, Gauß-Seidel für die masselosen Knoten, Testfall 1 und ein Winterszenario, matplotlib-Bild | Struktur brauchbar, Löser falsch (1.2), keine Tests |
+| `VDI6007_VisualStudio.zip` (net8.0, ein Exe-Projekt, keine NuGet-Abhängigkeit) | dieselbe Physik als C# (`WallLayer`, `BuildingElement`, `RcParameters`, `ChainMatrixReducer`, `ThermalZoneModel`, `ZoneInputs`/`ZoneOutputs`), plus `PhiSolar`-Eingang und drei Testräume | 1:1 portiert samt Fehler; kein Testprojekt |
+| `VDI6007_Dokumentation_DotNet.docx` | zwölf Kapitel: Blätter 1–3 der Richtlinie, die sieben Widerstände und zwei Kapazitäten, Knotenbilanzen, Zustandsraum, Diskretisierung, **die zwölf Normtestfälle** mit Toleranz ±0,1 K / ±1 W, Standardwerte 2,7 / 25 / 5 W/(m²K), Vergleich mit ISO 13790 und ISO 52016 | **die brauchbarste Datei — die Spezifikation** |
+| `VDI_6007_Gebaeudemodell_Anleitung.docx` | allgemeine Programmieranleitung mit anderem Netzwerk (Kettentopologie R3–C2–R2–C1–R1) und erfundenen Testfällen „TF 1–5"; Blatt 3 falsch als Heiz-/Kühlsysteme bezeichnet | nicht Spezifikation, nicht Bedienungsanleitung |
+| `vdi6007_ergebnisse.png` | Verlauf des Testfalls 1 und des Szenarios | dokumentiert den Fehlerzustand |
+
+Beide Docx sind maschinell erzeugt (Autor „Un-named", 07.02.2026) und nicht redaktionell
+geprüft. Die in der Docx als „Referenzwerte VDI 6007 Testraum 1, Bauweise S" genannten
+RC-Werte (R_1,IW = 0,000596 K/W, C_1,IW = 14 836 000 J/K, R_1,AW = 0,00437 K/W,
+R_Rest,AW = 0,04277 K/W, C_1,AW = 1 600 800 J/K) sind die Parameter des AixLib-Testfalls 1
+(5.3) — der Code des Materials reproduziert sie nicht.
+
+### 1.2 Der Strukturfehler
+
+Das 7R2C-Modell hat zwei Zustandsgrößen (die Temperaturen der Massenknoten θ_m,AW und
+θ_m,IW) und drei algebraische Knoten (Oberfläche AW, Oberfläche IW, Raumluft). Der
+Massenknoten der Außenbauteile hängt an **zwei** Widerständen: R_Rest,AW nach außen und
+R_1,AW zur Innenoberfläche. Das Material setzt die Systemmatrix **bewusst diagonal**
+(`a12 = a21 = 0`) und lässt den Term `+G_1,AW · θ_s,AW / C_1,AW` in der Zustandsgleichung weg.
+Der Massenknoten hat damit nur noch eine Quelle und läuft stationär auf
+
+```
+θ_m,AW,∞ = θ_eq · R_1,AW / (R_1,AW + R_Rest,AW)
+```
+
+statt auf θ_eq. Mit den vom Code selbst erzeugten Parametern (R_1,AW = 0,00734 K/W,
+R_Rest,AW = 0,169 K/W) ergibt das bei θ_eq = 22 °C einen Stationärwert von **0,9 °C** — die
+Außenwand wird zur künstlichen Kältesenke, die Energiebilanz ist nicht geschlossen.
+Nachrechnung des Testfalls 1 (schwere Bauweise, 1 000 W konvektiv 6–18 Uhr, θ_a = 22 °C
+konstant): Tag 60 max/min **10,7 / 4,4 °C** statt der Sollwerte um 28 / 26 °C. Die Werte decken
+sich mit dem mitgelieferten Bild. Der Prototyp (5.2) zeigt dieselbe Signatur, wenn man seine
+Matrix künstlich diagonalisiert: der Nebendiagonalterm ist im Testfall 1 rund 70 % des
+Diagonalterms — kein Korrekturglied, sondern der dominierende Beitrag.
+
+Dazu kommen: die Lastbestimmung schätzt Φ_hc linear ohne Iteration und verfehlt den Sollwert
+um rund 2 K (im Bild: Sollwert 20 °C, erreicht 22 °C); die Bauteilreduktion liest R_1 und C_1
+aus `Z = a12/a22` der Kettenmatrix und trifft die AixLib-Werte des Normtestraums nicht
+(R_Rest,AW um +295 %, R_1,IW um +117 %).
+
+### 1.3 Was fehlt
+
+Kein Fenstermodell (kein U_w, kein g-Wert, kein Rahmenanteil), kein Strahlungsmodell (die
+äquivalente Außentemperatur wird von außen als Skalar hereingereicht, nur im Demo hart
+verdrahtet), keine Orientierungen, keine Erdreichkopplung, keine Nachbarzonen, kein
+Klimadatenformat (beide Fassungen erzeugen Sinusprofile im Code), kein 8760-Raster, keine
+Datei-Ausgabe, keine Tests, keine Trennung Bibliothek/Konsole (`Console.WriteLine` im Kern,
+`print` mitten in der Reduktion).
+
+### 1.4 Lizenz
+
+Die README des C#-Projekts sagt nur „Dieses Projekt dient Lehr- und Studienzwecken". DlEs.darf.anwendung in epos-plan finden.
+
+### 1.5 Was übernommen wird
+
+| übernommen | neu |
+|---|---|
+| Datenmodell Schicht → Bauteil → Bauteilart (Außen/Innen) → Zone, deutsch benannt (`Bauteilschicht`, `Bauteil`, `Bauteilart`, `ErsatzparameterRC`, `Zonenrandbedingungen`, `Zonenergebnis`, `Zonenmodell`) | Systemmatrix voll besetzt, algebraische Elimination der masselosen Knoten |
+| Lösungsschema: exakte Diskretisierung für stückweise konstante Eingänge, Zeitschritt 1 h | Bauteilreduktion nach Norm mit Nachweis gegen die Normwerte |
+| Kettenmatrix-Mechanik (γ = ξ(1+j), cosh/sinh, `System.Numerics.Complex`) als Baustein | Regelung: exakte Lastbestimmung, Leistungsgrenze, Sollwertfahrplan |
+| Standardwerte h_conv = 2,7, h_a = 25, h_rad = 5 W/(m²K) | Fenster, Solar je Orientierung, Erdreich, Klimaschnittstelle 8760, Vorlauf |
+| die zwölf Testfälle der Docx als Prüfliste | Testprojekt mit Assert gegen die Normtoleranz |
+
+---
+
+## 2. Befund B — der Rechenweg des Bestands
+
+### 2.1 Der Weg heute
+
+Einstieg ist `SimulationWaermebedarf.Waermebedarf_berechnen(ID_Projekt, ID_Klimaregion)`
+(`EPOS.Kern/Allgemein/Simulation/SimulationWaermebedarf.cs:128`). Je Gebäude ruft
+`HeizwaermeEinesGebaeudes` (`:566-611`) die Tagesrechnung `Berechnung_Gebaeude_Tageswerte`
+(`:684-888`), die für jeden der 365 Tage drei aus `BHKWPLAN.DLL` portierte Physikfunktionen
+aus `EPOS.Kern/Allgemein/BhkwPlan.cs` zieht:
+
+- `SolareGewinneC` (`:311-318`): `(E_N·A_N + ((E_O+E_W)/2)·A_OW + E_S·A_S)·g` — **eine**
+  gemeinsame Ost/West-Fensterfläche, Tageswerte der Strahlung, der g-Wert roh (`:316`).
+- `SpezWaermeverlusteC` (`:342-362`, Gewichte im Code `:347-353`): Transmission
+  `0,83·U_W·A_W + U_F·A_F + 0,95·U_D·A_D + 0,45·U_G·A_G + U_S·A_S`, Wärmebrücken
+  `(ψ₁L₁+ψ₂L₂+ψ₃L₃)·0,83`, Lüftung `f·(A_Wohn·h)·1,2·n·0,2778` (im Code `0.2777…`, also
+  1/3,6 — zusammen 0,3333 Wh/(m³K)) mit `f = 1 + 0,025·θ_a` für θ_a < 0 (`:355-359`).
+- `TaeglHeizlastWG` (`:388-436`): 24-Stunden-Schleife mit Sollwertfahrplan (7–22 Uhr Tag,
+  sonst Nacht, Wochenend- und Ferienabsenkung), Heizlast
+  `(T_prev − θ_a)·L + (T_soll − T_prev)·C − Q_i` (`:418`), solare Entlastung `4·Q_sol` nur in
+  den Stunden 9–14 (`:420`, `:428`), Fortschreibung `T = e^(−L/C)·T_prev + (1 − e^(−L/C))·(…)/L`
+  (`:426`), Kappung auf `Maximaleraumtemperatur` (`:430`), Rückgabe
+  `acc · gesamtflaeche / wohnflaeche` (`:435`). **`C` ist `Bauweise`** — die einzige
+  thermische Masse.
+
+Die Tageslast wird über ein 24-h-Tagesprofil je Tagtyp (`Abfrage_Tagverteilung`, 120 bzw.
+192 Werte; `BhkwPlan.StdWerte` `:259-289`) auf Stunden verteilt; die Weiche ist allein
+`Typ == "Wohngebaeude  VDI 2067"` (zwei Leerzeichen, `SimulationWaermebedarf.cs:601-608`),
+das Feld `Wohngebaeude_Nicht_Wohngebaeude` steuert nur die Katalogauswahl
+(`GebaeudeCtrl.cs:23`, `GebaeudeStammCtrl.cs:83-84`; ein Treffer in der Testdatenbank,
+Gebäude 10632) und geht in keine Rechnung ein. Die Gebäudereihe entsteht in Watt und wird
+einmal nach kW gebracht (`:222`); der Kanal `HEIZUNG` führt kW je
+Stunde, `waermebedarf_gebaeude.csv` des Referenzlaufs dagegen den ungewandelten
+Gebäudevektor in W (`Referenzlauf/Ergebnisexport.cs:59`), `aggregate.csv` MWh und kW.
+Externe Lastgänge, Prozesswärme und Brauchwasser gehen in ihre Kanäle
+(`Kanal.HEIZUNG/BRAUCHWASSER/PROZESS`, `SimulationKanaele.cs:426-472`); `Waermebedarf` ist die
+Kanalsumme (`SimulationWaermebedarf.SummenvektorAusKanaelen`, `SimulationWaermebedarf.cs:439`). **Ein Gebäudemodell ersetzt einen Summanden
+des Kanals `HEIZUNG`** — Projekt 1041 der Testdatenbank ist der Mischfall (59,35 MWh Gebäude
+plus 65,43 MWh externe Ganglinie im selben Kanal), Projekt 1030 hat gar kein Gebäude.
+
+Vier Eigenheiten, die das neue Modell nicht erben darf:
+
+1. **Statischer Zustand.** `_prevRoomTemp` ist ein statisches Feld (`BhkwPlan.cs:51`), wird
+   nur bei `day == 1` auf die Nachtabsenkung gesetzt (`:398`) und sonst über alle Aufrufe
+   fortgeschrieben (`:433`); `ResetState()` (`:54`) ruft die Produktion nirgends. Gebäude i+1
+   startet seinen Vorlauf (Tage 350–364, `SimulationWaermebedarf.cs:748-814`) mit der
+   Endtemperatur von Gebäude i — das Projektergebnis hängt an der Zeilenreihenfolge.
+2. **Keine Nullprüfung.** `:435` teilt durch `wohnflaeche`, `SimulationWaermebedarf.cs:571`
+   und `:653` durch `Flaeche_Nutzer`, `:651` durch das Rechenergebnis `VerbrauchAlt`; eine 0
+   ergibt NaN oder Unendlich ohne Meldung. Der Dialog ist
+   abgesichert (`Gebaeudebauweise.cs:44`), der Rechenweg nicht.
+3. **Zwei Zeitbasen.** Die Tageswerte kommen roh in UTC-Tagen (`KlimadatenCtrl.cs:37`), die
+   Stundentemperatur für Wärmepumpe und Erdreich ortszeitkorrigiert
+   (`SolardatenCtrl.ReadOrtszeit`, `:156-208`; dokumentiert in
+   `SimulationWaermebedarf.cs:903-911`).
+4. **Namensfalle.** Die Spalte heißt `Fensterflaeche_Ost_West`
+   (`001_grundschema.sql:1144`), das Modellfeld `Fensterflaeche_Ost`
+   (`EPOS.Kern/Model/ProjektGebaeudeModel.cs:26`, im Laufweg gefüllt aus Spalte 14 der
+   Sicht in `ProjektGebaeudeCtrl.cs:56`, im Katalogweg in `GebaeudeCtrl.cs:66`); der
+   Aufruf `SolareGewinneC(…, item.Fensterflaeche_Ost, …)` (`:826`) meint die Summenfläche.
+
+Im ganzen Kern gibt es weder Gradtagzahl noch Heizgrenz- noch Normaußentemperatur; die
+Skalierung vom Katalog- auf das Projektgebäude ist eine reine Nachmultiplikation des
+Ergebnisses mit `Z_AuswahlWohnflaeche / Wohnflaeche` (`:435`), die Verbrauchs-Rückrechnung
+(`Bewohner_und_Flaeche_berechnen`, `:613-656`) bestimmt daraus eine fiktive Fläche.
+`GebaeudeBedarfCtrl.Rechnen` (`EPOS.Kern/Controller/GebaeudeBedarfCtrl.cs:94-136`) ruft für
+**ein** Gebäude dieselben Methoden wie der Lauf — Regel „Eine Auskunft ruft den Rechenweg
+des Laufs".
+
+### 2.2 Datenmodell Gebäude
+
+`Tab_Gebaeude` (`sql/schema/001_grundschema.sql:1131-1188`, STRICT) ist die Projektkopie des
+Katalogs `Tab_Gebaeude_STAMM`; die Kopie zieht `GebaeudeStammCtrl.CopyFromStamm` (`:439`).
+Sie führt:
+
+| Gruppe | Spalten | für VDI 6007 |
+|---|---|---|
+| Hülle | `Flaeche_Außenwand`, `gesamte_Fensterflaeche`, `Dachflaeche`, `Grundflaeche`, `Sonstige_Flaechen`; `k_Wert_Außenwand/Fenster/Dachflaeche/Grundflaeche/Sonstiges` | Außenbauteile und Fenster: vollständig für den Klassenweg (4.3) |
+| Wärmebrücken | `WBVK_*` mit `Abmessung_*` (drei Paare ψ·L) | masseloser Zusatzleitwert |
+| Fenster | `Fensterflaeche_Sued`, `Fensterflaeche_Ost_West`, `Fensterflaeche_Nord`, `Fensterdurchlassgrad` | **Ost und West nur gemeinsam** — zu trennen (6.1) |
+| Masse | `Bauweise` = Wohnfläche × 20 / 50 / 100 Wh/(m²K) (`EPOS.Kern/Allgemein/Gebaeudebauweise.cs:22-67`, Rückfall `50` bei Index außerhalb 0–2, `:66`) | Gesamtkapazität; Aufteilung Außen/Innen fehlt |
+| Nutzung | `Interne_Waermegewinne` (W), `Luftwechselrate` (1/h), `Raumhoehe` (m), `Wohnflaeche`, `Wohnflaeche_gesamt`, `Bewohner`, `Flaeche_Nutzer` (m²/Person) | vorhanden; Einheiten in 3.3 belegt |
+| Sollwerte | `Raumsolltemperatur_Tag/Nachtabsenkung/Wochenende/Ferien`, `Maximaleraumtemperatur`, `Wochenende`, `Ferien`, `Ferienbeginn/-ende_1…4` (Tag des Jahres) | Sollwertfahrplan übernommen; Ferienzeiträume einheitlich nach Tagesindex, Werte über 365 benannt abgelehnt (3.3) |
+| Klassen | `Baualtersklasse`, `Gebaeudeart`, `Wohngebaeude_Nicht_Wohngebaeude`, `Typ` | Vorgaben je Klasse (IFC, 7.6); **kein Baujahr als Zahl** |
+| Verbrauch | `WW_Bedarf`, `spez_Waermeverbrauch` (kWh/m²a), `Waermebedarf` (kW); `Z_ProjektGebaeude.Wohnflaeche_Waermebedarf`, `Einheit_Waermebedarf_Wohnflaeche`, `Jahresnutzungsgrad` (`:2873-2881`) | Skalierung bleibt (4.7) |
+
+Nicht vorhanden: Neigungen, freie Azimute, Verschattung, Rahmenanteil, Innenbauteile,
+Schichtaufbauten, Absorptionsgrade, Randbedingung der Grundfläche (Erdreich, Keller,
+Außenluft), eine Heizleistungsgrenze. `Tab_Projekt` führt nur `ID_Klimaregion`;
+`energy_project_settings` trägt keine Gebäudedaten.
+
+**Falle für jeden Schemaschritt:** `ProjektGebaeudeCtrl.ReadAll`
+(`EPOS.Kern/Controller/ProjektGebaeudeCtrl.cs:26-104`) liest die Sicht
+`Abfrage_Projektgebaeude` (`sql/schema/002_views.sql:89-91`, feste Spaltenliste, endet auf
+`Tab_Gebaeude.ID`) **nach Spaltenindex** `row[0]…row[57]`. Neue Spalten erreichen den Leser
+nur über die Sicht: Schemaschritt 77 muss **beides** tun — die Sicht neu aufbauen (`DROP
+VIEW` + `CREATE VIEW`, neue Spalten hinter `Tab_Gebaeude.ID`; SQLite kennt kein `ALTER VIEW`)
+**und** den Leser auf Namenszugriff umstellen (wie `GebaeudeCtrl.MapRowToModel`), damit
+künftige Spalten die Zuordnung nicht mehr still verschieben (6.2).
+
+Letzter Schemaschritt: 76 (`EPOS.Kern/Allgemein/Update/SchemaStand.cs:93`); Reihenfolge für
+einen neuen Schritt: Konstante → Methode → `SCHRITTE`-Eintrag in
+`WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` → `Zielversion`;
+Spaltendefinitionen in `EPOS.Kern/Allgemein/Update/SchemaKatalog.cs` (Muster `Schritt70_*`),
+Rahmen [`ADR-001`](ADR-001_Schema-Ausrollung.md).
+
+### 2.3 Klimadaten
+
+Quelle ist PVGIS-TMY (`EPOS.Kern/Allgemein/SolarPVGISCalculator.cs:100`), Ablauf in
+`EPOS.Kern/Allgemein/Import/KlimaImportAblauf.cs`. `Tab_Solar` (`001_grundschema.sql:2153-2182`)
+führt **8 760 Zeilen je Klimaregion** mit `Temperatur` (°C), `Globalstrahlung` (GHI),
+`Direktstrahlung` (**DNI, normal**), `Diffusstrahlung` (DHI), `Sonnenwinkel` (Höhenwinkel,
+Grad) und `Sol_Nord/Ost/Sued/West` (W/m² auf senkrechter Fassade); keine Zeitspalte,
+Reihenfolge `ORDER BY ID` = UTC, die Ortszeit-Korrektur sitzt beim Lesen
+(`SolarZeitbasis.cs`, `SolardatenCtrl.ReadOrtszeit`: ganze Zeilen um 1 h MEZ bzw. 2 h MESZ
+verschoben, EU-Regel, Warnung bei ≠ 8 760 Zeilen). Die vier Fassadenwerte entstehen beim
+Import über `SolarCalculator.CalculateHourly` (Neigung 90°, Azimut Süd 0, Ost −90, Nord 180,
+West 90; `KlimaImportAblauf.cs:132-136`, `:305-338`) mit **isotroper** Transposition und
+Albedo 0,2. Daneben gibt es `Sonnengeometrie` (`SolarPVGISCalculator.cs:353-384`) und
+**Hay-Davies** (`CalculateHourlyHayDavies`, `SolarPVGISCalculator.cs:455-482`); Perez nicht. `Tab_Klimadaten` (365 Tage) trägt
+24-h-Mittel derselben Größen (`GetDailyAverages`, `:494-502`; `Sonnenwinkel` als
+Tagesmaximum), `WE` (Sa/So, `KlimaImportAblauf.cs:354`), `TagTyp_W` (2 = trüber Tag, Diffus >
+½ Global, `:355`), `TagTyp_NW` (Quartal × Werktag/Wochenende). Windgeschwindigkeit und
+Feuchte liest der TMY-Import, schreibt sie aber nicht.
+
+**Folge für das Konzept:** Das Gebäudemodell braucht **keine neue Klimaquelle**. Stündliche
+Außentemperatur, GHI/DNI/DHI und Sonnengeometrie liegen vor; das Modell rechnet die
+Fassaden- und Fensterstrahlung je Orientierung und Neigung selbst mit Hay-Davies (die
+isotropen `Sol_*`-Spalten bleiben dem Bestandsweg; 3.4 zeigt, dass sie für Nord zu hoch sind).
+
+### 2.4 Ergebnisse und Referenzlauf
+
+Ergebnistabellen: `Tab_Ergebnis` mit `Tab_ErgebnisEnergiebedarf` (`Waermebedarf_Gesamt`,
+`Waermelast_Max`, `Waermebedarf_Heizung/Brauchwasser/Prozess`; `:850-863`), geschrieben aus
+`SimulationLaufCtrl.ErgebnisSpeichern` (`:210`) über `ErgebnisCtrl`. Anzeige über
+`SimulationErgebnisCtrl.Bedarf` (`:813-828`), Hülle `EPOS.UI.Daten/Bedarf/BedarfErgebnisHuelle.cs`,
+Seite `EPOS.UI/Seiten/Simulation/SimulationErgebnisSeite.razor`; Regeln in
+[`Doku_Simulationsergebnis_Darstellung.md`](Doku_Simulationsergebnis_Darstellung.md).
+
+Der Referenzlauf vergleicht je Projekt `aggregate.csv` und die Vektordateien aus
+`Referenzlauf/Ergebnisexport.cs:58-67` — darunter **`waermebedarf_gebaeude.csv`**, die ein
+neues Gebäudemodell unmittelbar trifft. Toleranz `Referenzlauf/Vergleich.cs:43-44`: relativ
+1e‑4 ab Betrag 1, sonst absolut 0,01, je Skalar und je Vektorelement. Der heutige Lauf aller
+dreizehn Projekte samt Anlagensimulation dauert 4 s (`protokoll.txt` der Basis). Solange das
+neue Modell **abwählbar** ist und die Referenzprojekte auf dem Bestandsweg bleiben, bleibt
+die Basis gültig.
+
+### 2.5 Andockpunkte
+
+1. `SimulationWaermebedarf.HeizwaermeEinesGebaeudes` (`:566`) — der Umschaltpunkt je Gebäude
+   (Muster `SimulationPV.cs:700-709`: ein Textwert entscheidet).
+2. Ein Persistenzwert in `EPOS.Kern/Allgemein/DbWerte.cs` (Muster
+   `PV_MODELL_EINFACH/ERWEITERT`, `:2173/2180`) plus Spalte an `Tab_Gebaeude` und `_STAMM`.
+3. Dialoge `EPOS.UI/Dialoge/Bedarf/GebaeudeDialog.razor` (Gruppe „Verbrauch" ab `:153`),
+   `GebaeudeKatalogDialog.razor`, `GebaeudeBedarfDialog.razor` (`:117`).
+4. Die Gebäudehülle sitzt **heute in der Windows-Schale**
+   (`WindowsFormsApplication1/Views/Gebäude/GebaeudeHuelle.cs:322-350`); `EPOS.UI.Daten` hat
+   für Gebäude noch keine Hülle. Eine neue Naht gehört nach `EPOS.UI.Daten`.
+5. Texte in `EPOS.Kern/MyResource/*.resx` beider Sprachen, danach `Werkzeuge/ResourceDesigner`.
+
+### 2.6 Grenzen des Tagesmodells — warum ein zweites Modell
+
+Das Tagesmodell kennt eine Kapazität, verteilt Solargewinne pauschal auf 9–14 Uhr mit dem
+Faktor 4 (das erhält die Tagesenergie, aber als Rechteck: die Mittagsstunden bekommen mehr,
+als sie nutzen können, die Randstunden nichts), kappt die Raumtemperatur hart und verliert
+die Energie, kennt weder Strahlungs- noch Oberflächenknoten, keine Aufheizspitze nach
+Absenkung als Folge der Bauteilmasse, keine Kühllast, keine operative Temperatur und keine
+Ost/West-Trennung. Bei kleiner Kapazität bricht es zusammen (5.11). Für Jahresmengen ist es
+brauchbar und über die Verbrauchs-Rückrechnung kalibrierbar; für Spitzenlast,
+Absenkverhalten, sommerliche Überhitzung, Fensterorientierung, Bauteilaufbauten und die
+Kopplung an Vorlauftemperaturen und Wärmepumpenfahrpläne braucht es ein stündliches,
+physikalisch geschlossenes Modell. Dafür ist VDI 6007-1 die Referenz — und die Datenlage im
+Bestand trägt es (Kapitel 3 und 5).
+
+---
+
+## 3. Prüfung der Bestandsdaten (gemessen)
+
+Geprüft am 15.09.2026 gegen `Referenzlaeufe/Kenndaten_Test.sqlite` (nur lesend,
+`Mode=ReadOnly`) und die Basis `2026-09-11_R7_Speicherflotte` mit einer Konsolenprobe
+(`Microsoft.Data.Sqlite` 10.0.11 aus `Directory.Packages.props:20`) außerhalb des
+Repositoriums. Die Leseart ist nachgewiesen: die Probe rechnet die drei Physikfunktionen des
+Bestands nach und trifft die Jahressumme von `waermebedarf_gebaeude.csv` jedes Projekts auf
+unter 0,01 % (1007: 53 072 nachgerechnet gegen 53 071,74 kWh).
+
+### 3.1 Umfang
+
+Dreizehn Referenzprojekte, **15 Gebäudezeilen**, effektiv **acht verschiedene
+Katalogbauten** (1007/1046, 1023/1024/1039 und 1040/1041/1042/1045 teilen Zeilen). Projekt **1030 hat
+kein Gebäude** (6 137,56 MWh rein aus Ganglinie), Projekt **1041 ist ein Mischfall** (Gebäude
+plus externe Ganglinie im Heizkanal). Zwei Klimaorte: Stuttgart (elf Regionen, je Projekt
+eine Kopie) und München (zwei); `Klimazone_DIN4710` ist in allen dreizehn Regionen NULL
+oder 0. Alle 15 Zeilen nehmen den Flächenweg (`Einheit_Waermebedarf_Wohnflaeche =
+„Wohnfläche [m²]"`); der Verbrauchsweg `Bewohner_und_Flaeche_berechnen` wird in der
+Referenz nie betreten. Textwerte der 15 Zeilen: `Typ` = „Wohngebaeude  VDI 2067" (10×),
+„Wohnblock" (4), „Hotel" (1); `Baualtersklasse` A (9), F (3), D (1), G (1), H (1);
+`Gebaeudeart` Einfamilienhaus (9), großes Mehrfamilienhaus (4), Mehrfamilienhaus (1),
+Hotel (1). Projekt
+1007 heißt in der Basis „Laurentiuskirche", trägt aber `Typ` Wohngebäude und `Gebaeudeart`
+Einfamilienhaus — die Typangaben sind nicht belastbar.
+
+### 3.2 Vollständigkeit (15 Zeilen)
+
+| Feldgruppe | gefüllt | Befund |
+|---|---|---|
+| Geometrie (Wohnfläche, Außenwand, Fenster, Dach, Grund, Raumhöhe), U-Werte AW/Fenster/Dach/Grund, Fenster Süd und Ost/West, Bauweise, innere Gewinne, Luftwechsel, g-Wert, Wärmebrücken ψ, Sollwerte Tag/Nacht/Max | 15/15 | vollständig |
+| `k_Wert_Sonstiges` · `Sonstige_Flaechen` | 7/15 | sonst 0 — zulässig |
+| `Fensterflaeche_Nord` | 12/15 | sonst 0 |
+| `Abmessung_Anschluß_Außenwand_Kellerdecke` | 11/15 | sonst 0 |
+| `Waermebedarf` (kW), `spez_Waermeverbrauch` | 11/15 | Katalogkennzahlen |
+| Wochenend-/Ferien-Sollwerte und -Flags, Ferienzeiträume | 0/15 wirksam | `Ferienbeginn_1` überall 366 (= aus), Flags 0 |
+| `Wohnflaeche` = `Wohnflaeche_gesamt` | 15/15 gleich | das Paar trägt keine Information |
+| `Luftwechselrate` | 15/15 = 0,7 | Einheitswert, keine Differenzierung |
+| `Z_ProjektGebaeude.Jahresnutzungsgrad` | 15/15 = 1 | — |
+
+### 3.3 Einheiten und Semantik (mit Codebeleg)
+
+| Feld | Einheit / Bedeutung | Beleg |
+|---|---|---|
+| `Interne_Waermegewinne` | **W**, Leistung des ganzen Katalogbaus, zeitlich konstant | `pHzg = … − innereGewinne` mit L in W/K, `BhkwPlan.cs:418` |
+| `Bauweise` | **Wh/K**; spezifisch 20 / 50 / 100 Wh/(m²K) für leicht / schwer / sehr schwer | `a = 1 − exp(−L/C)` bei Stundenschritt, `:426`; `Gebaeudebauweise.cs:24-32` |
+| `Luftwechselrate` | 1/h | `V·1,2·n·0,2778` = W/K, `:355-359` |
+| `Fensterdurchlassgrad` | g-Wert 0–1, roh (kein F_F, F_S, F_W) | `:316`; Daten 0,59–0,75 |
+| `Ferienbeginn_n` / `Ferienende_n` | Tag des Jahres. **Zeitraum 1** ist der Jahreswechselblock (Beginn…365 **und** 0…Ende, ohne `−1`-Versatz); nur sein Beginn ist mit `≤ 365` geriegelt, `366` heißt dort „aus". **Zeiträume 2–4** laufen `Beginn−1 … Ende` und prüfen nur `> 0`. Ein `Ferienende_n = 366` greift in allen vier Zeiträumen über das Feld `bool[365]` hinaus. Das VDI-6007-Modell bildet den Fahrplan nach Tagesindex 1…365 einheitlich ab und lehnt Werte über 365 benannt ab (4.8) — an dieser Stelle bewusst nicht zeichengleich zum Bestand | `SimulationWaermebedarf.cs:59`, `:700-732` |
+| `Ferien`, `Wochenende` | Flags; Ferien wirksam ab 0,9 und `Raumsolltemperatur_Ferien ≥ 1`; WE nur bei `Raumsolltemperatur_Wochenende > 5` | `:689-699`, `:777-780` |
+| `k_Wert_*` | W/(m²K), im Bestand mit festen Gewichten 0,83 / 1,0 / 0,95 / 0,45 / 1,0 | `:347-353` |
+| `WBVK_*`, `Abmessung_*` | ψ in W/(mK), Länge in m, Summe × 0,83 | `:353` |
+| `Wohnflaeche` | m², Nenner der Skalierung; `Wohnflaeche_gesamt` Basis für Bewohner und Verbrauchsweg | `:435`; `SimulationWaermebedarf.cs:641-648` |
+| `Flaeche_Nutzer` | m²/Person (`Bewohner = Fläche / Flaeche_Nutzer`) | `:571` |
+| `spez_Waermeverbrauch`, `Waermebedarf` | kWh/(m²a) bzw. kW — Katalogkennzahlen, keine Rechnungseingänge | — |
+| `WW_Bedarf` | kWh/a, im Lauf ohne Wirkung | `AbweichungsErmittler.cs:128` |
+| `Tab_Solar.Sol_*` | W/m² auf senkrechter Fassade, stündlich, isotrop | `KlimaImportAblauf.cs:132-136`, `:305-338` |
+| `Tab_Klimadaten.*` | 24-h-Mittel; `Sonnenwinkel` Tagesmaximum; `WE` 0/1; `TagTyp_W` 1/2; `TagTyp_NW` 1–8 | `SolarPVGISCalculator.cs:494-502`; `KlimaImportAblauf.cs:354-374` |
+
+### 3.4 Plausibilität und Datenfehler
+
+| Geb | Projekte | Wfl m² | U_AW | U_F | U_D | U_G | Bauweise Wh/K | spez. Wh/(m²K) | Q_i W/m² | g |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 10614 | 1007, 1046 | 74 | 0,81 | 2,5 | 0,35 | 0,35 | 3 700 | 50 | 2,84 | 0,70 |
+| 10576 | 1008 | 304 | 0,48 | 1,4 | 0,21 | 0,47 | **50** | **0,16** | 1,84 | 0,59 |
+| 10577 | 1008 | 74 | 0,81 | 2,5 | 0,35 | 0,35 | 3 700 | 50 | 2,84 | 0,70 |
+| 10599 | 1017 | 744 | 0,28 | 1,3 | 0,29 | 0,39 | 37 220 | 50 | 2,07 | 0,62 |
+| 10632 | 1018 | 1 975 | 0,76 | 1,8 | 0,30 | 0,55 | 98 765 | 50 | 2,26 | 0,70 |
+| 10628 | 1023, 1024, 1039 | 3 596 | 0,45 | 2,5 | 0,58 | 1,14 | 179 800 | 50 | 2,10 | 0,70 |
+| 10642 | 1039 | 130 | 1,35 | 2,8 | 1,10 | 1,19 | 13 000 | 100 | 3,23 | 0,70 |
+| 10643 | 1039 | 201 | 2,90 | 2,8 | 0,80 | 0,80 | 10 050 | 50 | 2,30 | 0,75 |
+| 10645 | 1040/1041/1042/1045 | 201 | 1,84 | 2,8 | 0,80 | 0,80 | 10 050 | 50 | 2,30 | 0,75 |
+
+- U-Werte 0,28–2,90 (Wand), 1,3–2,8 (Fenster), 0,21–1,10 (Dach), 0,35–1,19 (Grund) W/(m²K):
+  Bestandsspanne, plausibel. `gesamte_Fensterflaeche` = Süd + Ost/West + Nord in allen
+  15 Zeilen exakt. Innere Gewinne 1,84–3,23 W/m² am unteren Rand (DIN V 18599 Wohnen rund
+  2,1). `Flaeche_Nutzer` 18–38 m²/Person, `Bewohner` konsistent.
+- **Datenfehler 10576:** `Bauweise = 50 Wh/K` bei 304 m² ist der nackte Rückfallwert aus
+  `Gebaeudebauweise.cs:66` (0,16 statt 50 Wh/(m²K)). Die Zeitkonstante des Tagesmodells
+  bricht damit auf Minuten zusammen; das Tagesmodell verliert den Sollwertbezug und liefert
+  54 statt rund 82 kWh/m²a (5.11). Nichts warnt.
+- **Katalogkennzahl gegen Lauf:** das Tagesmodell erreicht `spez_Waermeverbrauch` nur zu
+  48–88 % (10576: 54,1 gegen 112,5; 10614: 156,1 gegen 212; 10643: 394,9 gegen 451).
+- `Sol_Nord` = 431,6 kWh/(m²a) (Stuttgart) ist für eine senkrechte Nordfassade zu hoch
+  (Messwerte in Deutschland rund 300–350): isotropes Diffusmodell plus Albedo 0,2 ohne
+  Horizontaufhellungsdefizit. Deshalb rechnet das Gebäudemodell die Fassadenstrahlung mit
+  Hay-Davies selbst (4.4).
+
+### 3.5 Klimadaten
+
+`Tab_Solar` ist in allen dreizehn Regionen vollständig (8 760 Zeilen, kein NULL). Stuttgart:
+Temperatur −18,2 … 33,5 °C, Mittel 9,88 °C; GHI 1 220,8 kWh/(m²a); DNI 1 203; DHI 574; die
+isotropen Fassadenwerte Süd 935, Ost 777, West 711, Nord 432 kWh/(m²a). München: Mittel
+9,58 °C, GHI 1 201,9 kWh/(m²a). Die Speicherstunde mit der größten Jahressumme
+Globalstrahlung ist Index 11 — bei 9,18° Ost liegt der wahre Mittag bei 11:15 UTC, die
+Ablage ist also UTC. Ost und West liegen stündlich getrennt vor (Jahresmittel 88,7 gegen
+81,1 W/m²).
+
+### 3.6 Skalierung je Projekt
+
+| Projekt | Geb | Nenner `Wohnflaeche` | Zähler `Wohnflaeche_Waermebedarf` | Faktor |
+|---|---|---|---|---|
+| 1007, 1046 | 10614/10652 | 74 | 340 | **4,5946** |
+| 1008 | 10576 | 304 | 800 | **2,6316** |
+| 1008 | 10577 | 74 | 74 | 1 |
+| 1017 | 10599 | 744,4 | 744 | 0,9995 |
+| 1018 | 10632 | 1 975,3 | 500 | **0,2531** |
+| 1023, 1024, 1039 | 10628/29/44 | 3 596 | 3 596 | 1 |
+| 1039 | 10642, 10643 | 130, 201 | 130, 201 | 1 |
+| 1040/1041/1042/1045 | 10645/46/47/51 | 201 | 201 | 1 |
+
+Der Faktor ist eine reine Nachmultiplikation (Gegenprobe: 10577 × 4,5946 = 10614 auf
+0,008 %). Bei 1007 wird eine 74-m²-Hülle mit 114 m² Außenwand auf 340 m² Wohnfläche
+gedehnt, bei 1018 auf ein Viertel gestaucht. Für ein Ein-Kapazitäten-Modell ist das ein
+Multiplikator; für ein Modell, in dem Flächen Kapazität und Strahlungsaustausch tragen, ist
+es physikalisch unscharf — aber deterministisch und mit dem Bestand vergleichbar (4.7).
+
+### 3.7 Referenzwerte je Projekt (Basis `2026-09-11_R7_Speicherflotte`)
+
+| Projekt | wirksame Fläche m² | Gebäude-Jahresheizwärme kWh | kWh/(m²a) | Max kW | Speicherindex des Maximums |
+|---|---|---|---|---|---|
+| 1007, 1046 | 340 | 53 071,7 | 156,1 | 34,99 | 451 |
+| 1008 | 874 | 54 817,8 | 62,7 | 37,82 | 1 362 |
+| 1017 | 744 | 62 964,7 | 84,6 | 35,95 | 426 |
+| 1018 | 500 | 46 881,4 | 93,8 | 34,10 | 8 371 |
+| 1023, 1024 | 3 596 | 329 796,5 | 91,7 | 193,96 | 8 357 |
+| 1030 | — | 0 | — | — | — |
+| 1039 | 3 927 | 445 619,7 | 113,5 | 253,02 | 426 |
+| 1040, 1041, 1042, 1045 | 201 | 59 354,1 | 295,3 | 37,29 | 1 387 |
+
+Speicherindex 0-basiert in UTC-Reihenfolge (der Gebäudeweg wendet die Ortszeitregel nicht
+an); Uhrzeiten werden hier bewusst nicht genannt. `waermebedarf_gebaeude.csv` steht in W,
+`waermebedarf.csv` in kW, `aggregate.csv` in MWh (Last in kW).
+
+### 3.8 Bewertung
+
+**Klimadaten: vollständig ausreichend.** **Gebäudedaten: ausreichend zum Start, nicht zum
+Abschluss.** Der Klassenweg (4.3) fährt aus den vorhandenen Feldern; jede der folgenden
+Größen ist dabei eine Annahme mit Vorgabewert, kein Datum: Aufteilung der Kapazität in
+Außen- und Innenbauteile, Innenbauteilfläche, R_1 aus U-Wert, Aufteilung Ost/West der
+Fensterfläche, Rahmen-, Verschattungs- und Winkelfaktor, Absorptionsgrad, Randbedingung der
+Grundfläche, Trennung Infiltration/Nutzerlüftung. Was davon die Jahresenergie bewegt und was
+nicht, misst Kapitel 5.9; daraus folgen die Pflichtfelder in 6.1.
+
+---
+
+## 4. Zielbild und Rechenweg
+
+### 4.1 Grundsatz: zweites Modell, wählbar je Gebäude
+
+- **Ein Feld entscheidet:** `Tab_Gebaeude.Gebaeude_Modell` (NULL = Tagesbilanz, Wert
+  `VDI6007`), Persistenzwerte `GEBAEUDE_MODELL_TAGESBILANZ` / `GEBAEUDE_MODELL_VDI6007` in
+  `DbWerte`. `HeizwaermeEinesGebaeudes` verzweigt; alles Weitere (Skalierung, Kanal, Summen,
+  Dauerlinie, Energieprobe, Mischfälle mit Ganglinien) bleibt unverändert.
+- **Das Tagesmodell bleibt Zeichen für Zeichen.** Kein Referenzprojekt wechselt in diesem
+  Konzept; die Basis bleibt gültig. Ein neues Referenzprojekt mit VDI 6007 wird bewusst
+  angelegt und die Basis dann neu eingefroren (10.4).
+- **Die Physik lebt in einer reinen Rechenklasse** ohne `DataRepository` und ohne
+  `SimulationProtokoll` (Vorbild `EPOS.Kern/Allgemein/Simulation/PvErweitertesModell.cs`):
+  Namensraum `EPOS.Kern/Allgemein/Simulation/Gebaeude/`, Klassen `Zonenmodell7R2C`
+  (Löser), `ErsatzparameterRC` (Record), `Bauteilreduktion` (Kettenmatrix, G3),
+  `GebaeudeModellEingang` (baut aus `ProjektGebaeudeModel` und den Klimareihen die
+  Randbedingungen), `GebaeudeModellErgebnis` (Reihen und Kennzahlen). `double` durchgehend
+  (`DoubleWacheTests`), Einheiten am Feldnamen (`EinheitenWacheTests`), **Zustand je
+  Instanz, nichts Statisches** (2.1, Punkt 1).
+- **Eine Zone je Gebäude.** Mehrzonen sind Abgrenzung (Kapitel 15); ein Projekt mit
+  mehreren Gebäuden rechnet je Gebäude eine Zone und summiert, wie heute.
+
+### 4.2 Das Modell 7R2C
+
+Knoten: zwei Massenknoten θ_m,AW (Außenbauteile) und θ_m,IW (Innenbauteile) mit den
+Kapazitäten C_1,AW und C_1,IW; drei algebraische Knoten θ_s,AW, θ_s,IW (Innenoberflächen)
+und θ_air (Raumluft, Luftkapazität null wie in den Normtestfällen). Widerstände:
+
+| Widerstand | zwischen | Wert |
+|---|---|---|
+| R_Rest,AW | θ_eq,AW ↔ θ_m,AW | aus Reduktion (4.3), einschließlich äußerem Übergang 1/(h_a·A) |
+| R_1,AW | θ_m,AW ↔ θ_s,AW | aus Reduktion |
+| R_1,IW | θ_m,IW ↔ θ_s,IW | aus Reduktion |
+| R_conv,AW | θ_s,AW ↔ θ_air | 1 / (h_conv · A_AW), h_conv = 2,7 W/(m²K) |
+| R_conv,IW | θ_s,IW ↔ θ_air | 1 / (h_conv · A_IW) |
+| R_rad | θ_s,AW ↔ θ_s,IW | 1 / (h_rad,i · A_rad), h_rad,i = 5 W/(m²K) (**innerer** Strahlungsaustausch), Bezugsfläche wie in den Testfällen |
+| R_ext | θ_out ↔ θ_air | 1 / H_ext, **H_ext = H_ve + U_w·A_w + Σψ·L**, H_ve = n · V · 0,34 Wh/(m³K) — Fenster und Wärmebrücken laufen masselos im selben Zweig wie die Lüftung |
+
+Knotenbilanzen (Φ in W, Widerstände in K/W):
+
+```
+C_AW · dθ_m,AW/dt = (θ_eq − θ_m,AW)/R_Rest,AW + (θ_s,AW − θ_m,AW)/R_1,AW
+C_IW · dθ_m,IW/dt = (θ_s,IW − θ_m,IW)/R_1,IW
+0 = (θ_m,AW − θ_s,AW)/R_1,AW + (θ_air − θ_s,AW)/R_conv,AW + (θ_s,IW − θ_s,AW)/R_rad + Φ_rad,AW
+0 = (θ_m,IW − θ_s,IW)/R_1,IW + (θ_air − θ_s,IW)/R_conv,IW + (θ_s,AW − θ_s,IW)/R_rad + Φ_rad,IW
+0 = (θ_s,AW − θ_air)/R_conv,AW + (θ_s,IW − θ_air)/R_conv,IW + (θ_out − θ_air)/R_ext + Φ_conv + Φ_h
+```
+
+Der Luftknoten wird aufgelöst, die beiden Oberflächengleichungen bilden ein konstantes
+2×2-System `M·θ_s = K·x + v`; Einsetzen in die Zustandsgleichungen ergibt `dx/dt = A·x + b`
+mit **voll besetzter 2×2-Matrix A** (`A = C⁻¹(K·M⁻¹·K − diag(G_1+G_Rest, G_2))`). Der
+Nebendiagonalterm verschwindet nur ohne Strahlungskopplung und ohne gemeinsamen Luftknoten
+— genau das hatte das Material weggeworfen. Beide Eigenwerte sind reell und negativ
+(Testfall 1: Zeitkonstanten 264 h und 5,3 h). Die exakte Diskretisierung für stückweise
+konstante Eingänge, Δt = 3 600 s:
+
+```
+x(h) = Φ·x₀ + Γ·b,   Stundenmittel (1/h)·(Γ·x₀ + Ψ·b)
+Φ = exp(A·h),   Γ = ∫₀ʰ exp(A·τ)dτ,   Ψ = ∫₀ʰ∫₀^τ exp(A·s)ds dτ
+```
+
+Die drei Matrixfunktionen entstehen geschlossen über die Sylvester-Formel aus den beiden
+Eigenwerten (Reihenentwicklung nahe null gegen Auslöschung). Das ist unbedingt stabil,
+deterministisch, und liefert **Endwert und Stundenmittel exakt** — das Stundenmittel ist
+zwingend, weil die Normreferenz gleitende Stundenmittel vergleicht. Strahlungslasten (innere,
+solare, Heizanteil) werden flächenproportional auf die Oberflächenknoten verteilt,
+konvektive auf die Luft. Die operative Temperatur θ_op = 0,5·θ_air + 0,5·θ̄_s
+(flächengewichtet) ist Kennzahl.
+
+### 4.3 Bauteilreduktion — zwei Wege
+
+**Klassenweg (G1, ohne neue Eingaben):** Die Datenbank kennt U-Werte, Flächen und die
+Bauweise als Gesamtkapazität. Daraus:
+
+```
+C_ges     = Bauweise [Wh/K] · 3 600 J/Wh                      (die drei EPOS-Bauarten ergeben 72 / 180 / 360 kJ/(m²K) je m² Wohnfläche;
+                                                                DIN EN ISO 13790 Tab. 12 kennt fünf Klassen 80 / 110 / 165 / 260 / 370 für
+                                                                sehr leicht / leicht / mittel / schwer / sehr schwer — die EPOS-Namen sind um
+                                                                eine Stufe verschoben: EPOS „leicht" = ISO sehr leicht, EPOS „schwer" = ISO mittel)
+C_1,AW    = a_AW · C_ges,   C_1,IW = (1 − a_AW) · C_ges          (a_AW = Masseanteil_Aussen, Vorgabe 0,3)
+A_AW,opak = Flaeche_Außenwand + Dachflaeche + Grundflaeche + Sonstige_Flaechen
+R_1,AW    = 1 / (h_ms · A_AW,opak)                               (h_ms = 9,1 W/(m²K), DIN EN ISO 13790 12.2.2)
+R_Rest,AW = 1 / Σ(U·A)_opak − R_1,AW − R_si / A_AW,opak          (R_si = 0,13 m²K/W: der innere Übergang steckt im U-Wert
+                                                                und wird im Modell durch R_conv und R_rad ersetzt; wird der Ausdruck ≤ 0 —
+                                                                rechnerisch ab mittlerem U über 4,17 W/(m²K) —, bricht die Rechnung mit
+                                                                benanntem Fehler ab, keine Klemme; für alle Referenzgebäude bleibt er positiv,
+                                                                Minimum 5,3·10⁻⁴ K/W bei 10643)
+A_IW      = f_IW · Wohnflaeche                                    (f_IW = Innenflaechenfaktor, Vorgabe 2,5 — A_m/A_f nach ISO 13790)
+R_1,IW    = 1 / (h_ms · A_IW)
+```
+
+**Warum der Abzug — und was er kostet.** Im Netz tritt an die Stelle von R_si nicht 1/R_si,
+sondern R_innen,eff = R_conv,AW ∥ (R_conv,IW + R_rad): R_rad ist im 2-K-Netz kein
+Luft-Oberflächen-Widerstand, sondern der Austausch zwischen den beiden Oberflächenknoten. Der
+Klassenweg gibt die Katalog-U-Werte deshalb bewusst nicht wieder — für das Gebäude aus
+[Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 9 sind es 607,48 statt
+686,95 W/K, also 11,6 % weniger. Herleitung und Zahlen: Rechenschritte 2, Schritt A4.
+
+**Die Gewichte 0,83 / 0,95 / 0,45 / 0,83 des Bestands entfallen.** Sie sind keine Physik,
+sondern eine Kalibrierung der alten DLL; sie senken den Verlustkoeffizienten um 13–21 %
+(5.10), und der ungewichtete Ansatz trifft die Katalogkennzahl besser (5.5). **Bewusste
+Abweichung von ISO 13790:** dort hängt h_ms an der einen wirksamen Speicherfläche
+A_m = 2,5·A_f; hier wird der Koeffizient auf beide Massepfade des 7R2C-Netzes angewandt.
+Die Prüfung 5.9 zeigt: a_AW zwischen 0,2 und 0,5 und die Lage des Massenknotens (innen oder
+Wandmitte) ändern die Jahresenergie um höchstens 0,1 % — die RC-Strukturparameter sind kein
+Streitpunkt, die Randbedingungen sind es; für Leistungs- und Kühlgrenze löst G3 sie durch
+den Bauteilweg ab.
+
+**Bauteilweg (G3, mit Schichtaufbau):** Je Bauteil Schichten (d, λ, ρ, c) von innen nach
+außen; Reduktion nach VDI 6007-1 (Kettenmatrix im Frequenzbereich, Bezugsperiode und
+Identifikation nach Norm), Aggregation mehrerer Bauteile über Parallelschaltung (ΣC, Σ1/R);
+Innenbauteile symmetrisch bis zur Mittelebene. **Nachweis:** die Reduktion der
+Normtestraum-Konstruktionen (Bauweise S und L) muss die in der Norm genannten R_1, R_Rest,
+C_1 treffen — das Material tat es nicht (1.2). Liegt für ein Gebäude ein Bauteilkatalog vor,
+gilt der Bauteilweg, sonst der Klassenweg; der U-Wert je Bauteil folgt dann aus den
+Schichten und überschreibt `k_Wert_*` in der Anzeige mit Herkunftskennzeichen.
+
+### 4.4 Randbedingungen
+
+- **Außentemperatur** θ_out(h) aus `Tab_Solar.Temperatur` im Ortszeit-Lesepfad
+  (`ReadOrtszeit`) — das Gebäudemodell rechnet in **einer** Zeitbasis (Ortszeit, wie PV und
+  Solarthermie) und braucht `Tab_Klimadaten` nicht mehr; Wochenendtage folgen aus dem
+  Wochentag des 1. Januar des Referenzjahres der Zeitbasis
+  (`SolardatenCtrl.Referenzjahr(idProjekt)`, `:222`) — ein Test hält die Maske gegen
+  `Tab_Klimadaten.WE` derselben Region (`KlimaImportAblauf.cs:354`).
+- **Eine äquivalente Außentemperatur am AW-Massepfad**, U·A-gewichtet aus den Bauteilen
+  (wie `T_EqAir` der Norm): `θ_eq = (Σ_opak U·A·θ_eq,k + U_G·A_G·θ_grund) / Σ(U·A)_opak`.
+  Für Wand, Dach und Sonstiges gilt in G1 `θ_eq,k = θ_out` (Parität mit dem Bestand). Der
+  Schalter `Aussenbauteile_Strahlung` (Vorgabe aus) setzt
+  `θ_eq,k = θ_out + (α·I_k − F_r·ε·ΔE_r,k)/h_a` mit α = 0,6 und h_a = 25 W/(m²K) als
+  **Summe** aus äußerem Konvektions- und Strahlungsübergang — dieselbe Formel, die 5.3 als
+  `α·H_sol/(h_rad,a + h_conv,a)` schreibt — und dem langwelligen Verlust
+  **bewölkungsabhängig nach VDI 6007-1** (F_r = 0,5 Wand, 1,0 Dach). Die Pauschale
+  „+0,6·I/25 − 3 K" ist keine Physik und wird nicht übernommen. Ihre Wirkung von +3,2 bis
+  +7,1 % (5.8) zeigt zugleich die Größenordnung des in G1 abgeschalteten Strahlungsterms:
+  mit ihm träfe der Prototyp die Katalogkennzahl zu 91–99 % statt zu 86–95 %. Der Schalter
+  ist deshalb in G1 vorzusehen und in G2 mit der Normformel zu füllen.
+- **Grundfläche** nach `Grundflaeche_Randbedingung` (6.1): **Erdreich** (Vorgabe) mit
+  Kusuda-Temperatur in 1 m Tiefe aus Jahresmittel und **erster Harmonischer** der
+  Außenluft (nicht (max−min)/2 der Tagesmittel: das ergäbe 18,8 K Amplitude und −3,0 °C
+  Erdreich; aus den Stundenextremen sogar 25,9 K);
+  Temperaturleitfähigkeit 0,06 m²/d, Dämpfung 0,68, Phasenverzug 22 Tage — Stuttgart
+  3,5 … 16,3 °C. **Unbeheizter Keller:** Reduktionsfaktor 0,5 gegen θ_out.
+  **Außenluft:** θ_out. Der Unterschied zwischen Erdreich und dem Bestandsfaktor 0,45 beträgt
+  2,3–14,1 % der Jahresenergie, streng nach Grundflächenanteil (5.8) — deshalb ein Feld.
+- **Solar durch Fenster** je Orientierung o ∈ {N, O, S, W} (G3: je Bauteil mit Neigung):
+  `Φ_sol = Σ_o A_w,o · g · F_F · F_S · F_W · I_o(h)`; `I_o` rechnet das Modell mit
+  `CalculateHourlyHayDavies` aus GHI/DNI/DHI und Sonnengeometrie (die isotropen `Sol_*` sind
+  für Nord rund 25 % zu hoch, 3.4). F_F = 1 − `Rahmenanteil` (Vorgabe 0,3, also 0,7; eine
+  Vorgabe je Baualter setzt eine Tabelle `Baualtersklasse` → Baujahrspanne voraus, die es
+  heute nicht gibt, 6.1), F_S = `Verschattungsfaktor` (Vorgabe 0,9 frei stehend, 0,8 Reihe,
+  0,7 Innenstadt), F_W = 0,9 (Winkelkorrektur, ISO 13790). `Fensterflaeche_Ost` und `_West`
+  getrennt (6.1); solange NULL: je die Hälfte der Summenfläche. Eintrag radiativ auf die
+  Oberflächen mit **9 % konvektiv an die Luft** — wie in den Normtestfällen und im Prototyp
+  (5.3); die Verteilung auf AW und IW folgt `splitFacVal`. F_F·F_S = 0,63 gegen den
+  rohen g-Wert des Bestands ist der zweitgrößte Einzelposten (5.10): beim größten
+  Katalogbau sind die Solargewinne das 6,5-fache der inneren Gewinne.
+- **Fenster (Transmission)** masselos mit U_w·A_w; **Wärmebrücken** Σψ·L masselos.
+- **Lüftung** H_ve = `Luftwechselrate` · V · 0,34 Wh/(m³K), V = `Wohnflaeche` · `Raumhoehe`;
+  ohne den Temperaturfaktor des Bestands (der rechnet mit 0,3333 Wh/(m³K),
+  `BhkwPlan.cs:357/359` — der reine Zahlenwechsel hebt H_ve um 2 %). G2: Trennung Infiltration (Vorgabe 0,3 1/h) und
+  Nutzerlüftung (0,4 1/h) sowie eine **Sommerlüftungsregel** (n auf 2,0 1/h, wenn
+  θ_air > 23 °C und θ_out < θ_air − 2 K), ohne die das Modell 184–1 425 Stunden über 24 °C
+  meldet (5.7).
+- **Innere Gewinne** `Interne_Waermegewinne` (W), 50 % konvektiv / 50 % radiativ, in G1
+  zeitlich konstant; ein Wochenprofil ist G2+.
+- **Sollwerte** wie im Bestand: Stunden 7–22 `Raumsolltemperatur_Tag`, sonst
+  `Nachtabsenkung`, an Wochenendtagen (wenn `Wochenende` gesetzt und der Sollwert > 5)
+  `Wochenende`, in Ferienzeiträumen `Ferien` — einheitlich nach Tagesindex 1…365, Werte
+  über 365 benannt abgelehnt (3.3); obere Grenze `Maximaleraumtemperatur`.
+
+### 4.5 Regelung, Heizen, Kühlen
+
+- **Ideale Heizung, kontinuierlich:** die Lufttemperatur ist algebraisch, also hält die
+  Regelung θ_air = θ_soll **zu jedem Zeitpunkt** der Stunde; die Leistung ist dann eine
+  affine Funktion des Zustands, ihr Stundenmittel folgt exakt über Ψ. So vergleicht es die
+  Norm; eine „Sollwert am Schrittende"-Variante ergäbe in den Lastfällen andere
+  Stundenmittel. Bei Umschaltungen innerhalb der Stunde (Sollwertsprung, Übergang
+  Heizen/frei) sucht der Löser den Umschaltzeitpunkt per Bisektion (bis zu 60 Schritte);
+  das ist die einzige Iteration, und sie ist deterministisch.
+- Φ_h ≥ 0, optional Φ_h ≤ `Heizleistung_Max` (NULL = unbegrenzt). Strahlungsanteil der
+  Heizung `Heizung_Strahlungsanteil` (Vorgabe 0,3 für Heizkörper; 0 = rein konvektiv; der
+  Prototyp lief mit 0).
+- **Spitzenlast:** ohne Leistungsgrenze fällt die Jahresspitze in elf von zwölf
+  Referenzprojekten auf dieselbe Stunde (Index 1 398) — die erste nach Ende der
+  Nachtabsenkung am kältesten Tag; nur Projekt 1018 (München) weicht ab. Sie liegt je nach
+  Projekt −10 bis +57 % neben der Spitze des Tagesmodells (über alle zwölf Projekte
+  zusammen +29 %); als gleitendes Tagesmittel schrumpft der Abstand auf +18 % (5.6). Das ist
+  Physik (Aufheizen nach Absenkung), aber kein Auslegungswert. `Waermelast_Max` bleibt
+  unverändert das Maximum des Kanalsummenvektors des Projekts
+  (`SimulationWaermebedarf.cs:401`), damit Dauerlinie, Deckung und Anzeige eine Basis
+  behalten; das Modell führt **zusätzlich je Gebäude** drei Kennzahlen: Spitze (Stunde),
+  Spitze als gleitendes Tagesmittel, 95-%-Quantil der Stundenlast (Q7).
+- **Kappung an `Maximaleraumtemperatur`** als ideale Kühlung: die dafür nötige Leistung wird
+  als Reihe `Kuehlbedarf` geführt — **informativ**, kein vierter Kanal (es gibt keinen:
+  `DbWerte.cs:1260-1271`). Sie ist das Maß für sommerliche Überhitzung.
+- Kein Totband, keine Reglerdynamik: das Modell liefert den Bedarf, die Deckung rechnet
+  `SimulationControl` wie heute.
+
+### 4.6 Zeitraster, Vorlauf, Ergebnisreihen
+
+Festes Raster 8 760 Stunden ohne Schaltjahr, in Ortszeit. **Vorlauf:** 30 Tage (die letzten
+30 Tage des Jahres) vor dem 1. Januar, Ergebnisse verworfen — statt der 15 Tage des Bestands;
+die gemessenen Zeitkonstanten der Referenzgebäude liegen bei 7,5–24,8 h (5.7), 30 Tage sind
+rund das Dreißigfache; die langsameren Normtesträume (bis 264 h, 4.2) deckt der Vorlauf auf
+unter 0,1 K ab — der Nachweis dafür gehört in G0. Ergebnis je Gebäude: `Heizlast[8760]` (W → kW, in `Kanal.HEIZUNG`),
+`Raumtemperatur[8760]`, `OperativeTemperatur[8760]`, `Kuehlbedarf[8760]`; Kennzahlen:
+Jahresheizwärme, die drei Spitzenwerte (4.5), Kühlenergie, Stunden mit Kühlbedarf, mittlere
+Raumtemperatur in der Heizzeit.
+
+### 4.7 Skalierung und Verbrauchs-Rückrechnung
+
+Die Rechnung läuft mit den Katalogdaten des Gebäudes; das Ergebnis wird — wie heute — mit
+dem Faktor `Z_AuswahlWohnflaeche / Wohnflaeche` nachmultipliziert. Damit bleibt die
+Verbrauchs-Rückrechnung eine **Verhältnisrechnung** mit einem einzigen Kataloglauf
+(`VerbrauchNeu / VerbrauchAlt`), unabhängig davon, dass das Modell selbst stückweise linear
+ist (Nullstunden, Kappung, Leistungsgrenze). Das ist deterministisch und mit dem Bestand
+vergleichbar; physikalisch sauberer ist die echte Hülle — die liefern der Bauteilkatalog (G3)
+und der IFC-Import (G4), dann entfällt die Nachmultiplikation für diese Gebäude.
+
+### 4.8 Determinismus, Rechenzeit, Prüfungen
+
+Reine 2×2-Arithmetik ohne Zufall; Zustand je Instanz; zwei Läufe liefern byte-gleiche
+Reihen. Rechenzeit rund 5 ms je Gebäude und Jahr, Planungsgröße 10 ms (5.13); die dreizehn
+Referenzprojekte bleiben damit unter 0,2 s gegenüber den 4 s des heutigen Gesamtlaufs. Harte
+Prüfungen vor der Rechnung (benannte Fehler, kein stiller Rückfall): `Wohnflaeche > 0`,
+`Flaeche_Nutzer > 0`, `Raumhoehe > 0`, `VerbrauchAlt > 0` vor der Rückrechnung,
+`5 ≤ Bauweise/Wohnflaeche ≤ 200 Wh/(m²K)`, 0 < g ≤ 1, U-Werte 0,1–6 W/(m²K), R_Rest,AW > 0
+(4.3), Ferientage 1…365, Summe der Fensterflächen = `gesamte_Fensterflaeche`. Es gelten
+`DoubleWacheTests`, `EinheitenWacheTests`, `RechenrandTests`, `ParallelitaetWacheTests`;
+keine Windows-API, keine NuGet-Abhängigkeit im Modell (`System.Numerics.Complex` für G3 ist
+BCL).
+
+---
+
+## 5. Prototyp: Validierung und Vergleich (gemessen)
+
+Der Prototyp ist ein Konsolenprojekt außerhalb des Repositoriums (net10.0, reines C#, kein
+NuGet, 984 Zeilen in sieben Dateien: 2×2-Matrixfunktionen, Zonennetz, Eliminierung,
+Zeitschritt mit Ereignisbehandlung, Testfall-Lader, Kommandozeile). Er ist der Vorläufer
+der Stufe G0 und wird nicht als Ganzes übernommen, sondern nach Hausregeln in
+`EPOS.Kern/Allgemein/Simulation/Gebaeude/` neu benannt und mit Tests eingebaut.
+
+### 5.1 Herkunft und Lizenz der Referenzdaten
+
+Die Referenzwerte der zwölf Testfälle (Parameter, Randbedingungen, Referenzreihen für
+Tag 1, 10 und 60, je 72 Prüfpunkte) stammen aus den Validierungsmodellen
+`AixLib.ThermalZones.ReducedOrder.Validation.VDI6007.TestCase1…12` (RWTH Aachen, E.ON ERC,
+EBC; **überarbeitete 3-Klausel-BSD-Lizenz mit Zusatzabsatz zur Rückgabe von
+Verbesserungen**, Wortlaut in `AixLib/UsersGuide/License.mo` — nicht identisch mit SPDX
+`BSD-3-Clause`, deshalb ist der AixLib-Wortlaut selbst mitzuliefern; Vermerk „Copyright (c)
+2010-2018, RWTH Aachen University, E.ON Energy Research Center, Institute for Energy
+Efficient Buildings and Indoor Climate"). Die Tabellen dort geben die Normwerte der
+VDI 6007 Blatt 1 wieder; die Richtlinie selbst lag nicht vor. **Offen bleibt, ob die
+Zahlenwerte von dieser Lizenz gedeckt sind** — der VDI hält das Urheberrecht an den
+Normtabellen. Vor der Abnahme ist die Richtlinie zu beziehen und die Zitierfähigkeit zu
+klären, oder die Referenzreihen bleiben interne Prüfdaten und werden nicht ausgeliefert (Q2). Aus AixLib wurden außerdem die Formeln der äquivalenten Außentemperatur
+(`PartialVDI6007.mo`, `VDI6007.mo`) und der Strahlungsverteilung (`splitFacVal.mo`) gelesen
+und nachgebaut — kein Quelltext übernommen, aber die Herkunft ist zu nennen, und
+Copyright-Vermerk sowie Haftungsausschluss der BSD-Lizenz gehören zu jedem Test, der die
+Zahlen führt. Vom Material auf Z: stammt keine Zeile (1.4).
+
+### 5.2 Validierung gegen die zwölf Normtestfälle
+
+Prüfschwelle wie AixLib (0,15 K bzw. 1,5 W; die Norm nennt 0,1 K / 1 W bei gerundeten
+Referenztabellen, die Rundung allein trägt bis 0,05 K bzw. 0,5 W). Abweichung = Simulation −
+Referenz, Maximum über 72 Punkte; die Werte wurden in einer zweiten Runde aus den
+Rohdateien unabhängig nachgerechnet und bestätigt.
+
+| Testfall | Größe | max. Abweichung | bestanden |
+|---|---|---|---|
+| 1 konvektive Last, Bauweise S | θ_air | 0,055 K | ja |
+| 2 radiative Last, S | θ_air | 0,052 K | ja |
+| 3 konvektiv, Bauweise L | θ_air | 0,059 K | ja |
+| 4 radiativ, L | θ_air | 0,056 K | ja |
+| 5 solare Last durch Fenster | θ_air | 0,058 K | ja |
+| 6 Sollwertregelung, Leistung | Φ | 1,499 W | ja (knapp) |
+| 7 Sollwertregelung mit Grenze | Φ | 0,639 W | ja |
+| 8 zwei Fensterorientierungen, θ_eq | θ_air | 0,050 K | ja |
+| 9 wie 8 mit langwelligem Austausch | θ_air | 0,136 K | ja (knapp) |
+| 10 Erdreich/Nachbarraum über θ_eq | θ_air | 0,143 K | ja (knapp) |
+| 11 Kühldecke (Senke am IW-Oberflächenknoten) | Φ | 4,92 W roh / 1,376 W mit nachgebildetem 120-s-Messfenster | nein / ja¹ |
+| 12 Lüftung | θ_air | 0,054 K | ja |
+
+¹ mit Nachbildung des 120-s-Messfensters, das AixLib beim Moduswechsel schaltet; ohne sie
+70 von 72 Punkten, zwei Umschaltstunden bei 4,9 W (PID-Transiente der Referenz, mit idealer
+Regelung nicht nachbildbar). In den Testfällen 1–5, 8 und 12 wechselt die Abweichung das
+Vorzeichen um null und bleibt unter 0,06 K — das ist die Rundungsauflösung der Referenz,
+kein Modellfehler. Testfälle 9 und 10 zeigen einen Drift von +0,06 bis +0,09 K über 60
+Tage, dort wirken langwelliger Austausch bzw. Erdreichanteil in θ_eq; die Reserve zur
+Schwelle ist nur 0,01 K — **das ist der empfindlichste Punkt für den Einsatz mit realen
+Wetterdaten** und wird in G0 vor der Übernahme geklärt (Kandidaten: Stützstellen der
+Himmelsstrahlung in der ersten Tagesstunde, Nichtlinearität der Himmelstemperatur innerhalb
+der Stunde). Testfall 6 liegt bei 1,499 W: ganzzahlige Referenz plus Integratortoleranz der
+Referenz; die Parametrierung ist als Ursache ausgeschlossen (exakte statt gerundete
+Parameter ändern 0,03 W).
+
+**Gegenprobe des Strukturfehlers:** mit künstlich diagonaler Systemmatrix versagt derselbe
+Löser in allen Fällen — Testfall 1: 304 K, Testfall 6: 11 491 W, Testfall 12: 202 K.
+
+### 5.3 Abbildung der Normfälle auf das Netz
+
+R_Rest,AW enthält den äußeren Übergang (Testfall 1: 0,03896 + 0,00381 = 0,04277 K/W — der
+Wert der Docx); radiative innere Lasten flächenproportional auf AW, Fenster und IW; die
+Fenster-Solarverteilung nach `splitFacVal` (bei einer Orientierung geht der gesamte
+Fenstersolareintrag auf die IW-Oberfläche); 9 % des Fenstersolareintrags konvektiv an die
+Luft; θ_eq je Wand mit langwelligem Anteil `(T_Himmel − T_Luft)·h_rad/(h_rad + h_a)` und
+kurzwelligem `H_sol·α/(h_rad + h_a)`; Sonnenschutz g = 0,15 ab 100 W/m²; Lüftung
+Testfall 12 über Massenstrom. Vorzeichen der Leistungsreferenz: Testfall 6 negativ =
+Heizen, 7 und 11 positiv. Die Luftkapazität (0,1 m³ nur in Testfall 12) ist vernachlässigt
+(Zeitkonstante 0,4 s).
+
+### 5.4 Abbildung der Bestandsdaten (Klassenweg, wie in 4.3 und 4.4)
+
+Umgesetzt wie vorgegeben; vier bewusste Festlegungen: Fenster und Wärmebrücken laufen als
+masseloser Leitwert über denselben Zweig wie die Lüftung (algebraisch identisch); eine
+U·A-gewichtete äquivalente Außentemperatur am einen AW-Massepfad; Strahlung nur auf AW und
+IW normiert (kein Fensteroberflächenknoten); Kusuda mit harmonischer Amplitude. Die
+Fassadenstrahlung kam aus den isotropen `Sol_*`-Spalten — der Hay-Davies-Weg aus 4.4 ist im
+Prototyp **nicht** gemessen; seine Wirkung wird in G1 ausgewiesen.
+Sollwertfenster 7–22 Uhr wie im Bestand; Wochenend- und Ferienlogik implementiert, in
+allen 15 Zeilen wirkungslos (3.2); Heizung ideal, unbegrenzt, konvektiv; keine Kühlung,
+freier Lauf über den Sollwert; Zeitreihen in Speicherreihenfolge (UTC) für **beide** Modelle,
+damit die Ortszeitverschiebung aus dem Vergleich herausfällt; Vorlauf 30 Tage.
+
+### 5.5 Jahresheizwärme je Projekt und Gebäude
+
+Referenz „heute" ist `waermebedarf_gebaeude.csv` der Basis; je Gebäude nachgerechnet und
+auf 0,001 % bestätigt.
+
+| Projekt | Geb | m² | Prototyp kWh | heute kWh | Abw. | Prototyp kWh/(m²a) | heute | Katalog |
+|---|---|---|---|---|---|---|---|---|
+| 1007, 1046 | 10614 | 340 | 62 566 | 53 072 | +17,9 % | 184,0 | 156,1 | 212 |
+| 1008 | 10576 | 800 | 90 216 | 43 267 | **+108,5 %** | 112,8 | 54,1 | 112,5 |
+| 1008 | 10577 | 74 | 13 617 | 11 551 | +17,9 % | 184,0 | 156,1 | 212 |
+| 1017 | 10599 | 744 | 83 751 | 62 965 | +33,0 % | 112,6 | 84,6 | 118 |
+| 1018 | 10632 | 500 | 62 332 | 46 881 | +33,0 % | 124,7 | 93,8 | 136 |
+| 1023, 1024 | 10628 | 3 596 | 412 781 | 329 797 | +25,2 % | 114,8 | 91,7 | 130 |
+| 1039 | 10642 | 130 | 39 982 | 36 451 | +9,7 % | 307,6 | 280,4 | 338 |
+| 1039 | 10643 | 201 | 77 705 | 79 373 | −2,1 % | 386,6 | 394,9 | 451 |
+| 1040/1041/1042/1045 | 10645 | 201 | 63 677 | 59 354 | +7,3 % | 316,8 | 295,3 | — |
+
+Der Prototyp liegt je Projekt 7–33 % über dem Tagesmodell (10576 ist der Datenfehler, 5.11;
+das Einzelgebäude 10643 liegt 2 % darunter) und trifft die Katalogkennzahl
+`spez_Waermeverbrauch` zu **86–100 %** (85,7 % bei 10643 bis 100,3 % bei der fehlerhaften
+Zeile 10576; ohne sie 86–95 %), das Tagesmodell zu 48–88 %. Auf Tagesebene stimmen beide Modelle mit r = 0,982–0,997 überein (Stundenreihe
+r = 0,74–0,93); der Bruch sitzt in der Stundenverteilung, nicht in der Bilanz.
+
+**Die Vergleichszahlen dieses Abschnitts sind ohne den Abzug R_si/A in R_Rest,AW entstanden**
+(4.3): der Prototyp rechnet ohne ihn, ebenso die 86–100 % der Katalogkennzahl. Mit dem Abzug
+steigt der Jahresbedarf um rund 12 % —
+[Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 9.6 misst am Gebäude 10645
++11,8 % aus dem Abzug allein und +12,9 % zusammen mit F_W = 0,9. Die Wirkung ist **je
+Referenzgebäude auszuweisen, bevor die Basis neu eingefroren wird**.
+
+### 5.6 Spitzenlast und Tagesprofil
+
+| Projekt | Prototyp max kW | Index | heute max kW | Index | Prototyp Tagesmittel-Max kW | heute |
+|---|---|---|---|---|---|---|
+| 1007, 1046 | 39,66 | 1 398 | 34,99 | 451 | 25,31 | 21,44 |
+| 1008 | 54,88 | 1 398 | 37,82 | 1 362 | 39,01 | 23,17 |
+| 1017 | 56,45 | 1 398 | 35,95 | 426 | 32,57 | 26,82 |
+| 1018 | 33,26 | 438 | 34,10 | 8 371 | 22,06 | 19,35 |
+| 1023, 1024 | 276,60 | 1 398 | 193,96 | 8 357 | 171,33 | 144,11 |
+| 1039 | 334,84 | 1 398 | 253,02 | 426 | 214,14 | 185,41 |
+| 1040/1041/1042/1045 | 33,56 | 1 398 | 37,29 | 1 387 | 24,03 | 22,85 |
+
+(Speicherindex 0-basiert, UTC.) In elf von zwölf Projekten liegt die Prototyp-Spitze auf
+demselben Index — die erste Stunde nach Ende der Nachtabsenkung am kältesten Tag des
+Stuttgarter Datensatzes: der ideale, unbegrenzte Heizer deckt den Sollwertsprung 18 → 20 °C
+in einer Stunde. Das Tagesmodell kennt diese Spitze nicht, weil es die Tagessumme über eine
+Verteilungstabelle streut; der heutige Spitzenlastvergleich vergleicht Physik mit einer
+Tabelle. Die Stundenspitze liegt je Projekt −10 % (1040/1041/1042/1045) bis +57 % (1017)
+neben der des Tagesmodells, über alle zwölf Projekte summiert +29 %; als gleitendes
+Tagesmittel schrumpft der Abstand auf +18 %.
+
+Jahressumme je Tagesstunde (UTC), Projekt 1045, kWh:
+
+| Stunde | 0 | 3 | 6 | 7 | 8 | 12 | 18 | 20 | 23 |
+|---|---|---|---|---|---|---|---|---|---|
+| Prototyp | 2 376 | 2 880 | **4 389** | 3 910 | 3 379 | 2 132 | 2 489 | 2 819 | 2 165 |
+| heute | 1 008 | 995 | 2 717 | 3 647 | 3 820 | 2 630 | 3 573 | 3 681 | 1 064 |
+
+Die Maxima des Tagesmodells liegen bei Stunde 9 (3 833 kWh) und 19 (3 875 kWh), die der
+Spaltenauswahl fehlen. Das Tagesmodell zeigt ein Zwei-Buckel-Profil (7–9 h und 18–21 h) mit gekappter Nacht; der
+Prototyp eine Aufheizspitze um 6–7 h und eine physikalische Grundlast in der Nacht. Die
+Nachtabsenkung steckt im Bestand nicht in der Physik, sondern im Verteilungsprofil. Zugleich
+hat der Prototyp 2 092 Nullstunden gegen 936: das Tagesprofil schmiert an Übergangstagen
+Last auf alle Stunden, der Prototyp läuft bei Solargewinn frei.
+
+**Monatsmuster** (1007, kWh): Prototyp 11 314 / 12 140 / 9 238 / 2 161 / 1 403 / 1 141 / 24 /
+611 / 955 / 5 758 / 7 483 / 10 339; heute 10 009 / 10 533 / 7 452 / 1 521 / 1 066 / 896 / 15 /
+413 / 698 / 4 797 / 6 279 / 9 392. Die Abweichung ist im Hochwinter klein (bei 1007 +10
+bis +24 %, bei 1040/1041/1042/1045 +1 bis +3 %; Ausnahme 1008 mit dem Datenfehler) und in
+der Übergangszeit groß (+20 bis +180 %), wo solare und innere Gewinne die Bilanz
+bestimmen; im Juli liefert das Tagesmodell bei 1017 und 1023/1024 null, dort ist der
+relative Vergleich nicht definiert. Das Muster ist in allen Projekten dasselbe, die Höhe
+nicht.
+
+### 5.7 Raumtemperatur und Überhitzung
+
+Bei `Maximaleraumtemperatur` = 24 °C in allen Zeilen, ohne Kühlung, ohne Sommerlüftung
+(n = 0,7 konstant), ohne Sonnenschutz: Jahresmittel der Lufttemperatur 19,7–21,1 °C,
+**184 bis 1 425 Stunden über 24 °C** (2–16 % des Jahres); Zeitkonstanten C/H 7,5–24,8 h,
+bei 10576 0,09 h (Datenfehler). Das Tagesmodell kappt hier und wirft die Information weg.
+Für G2 folgt daraus die Sommerlüftungsregel (4.4); die Überhitzungsstunden haben in EPOS
+heute keinen Empfänger (kein Kühlkanal).
+
+### 5.8 Varianten
+
+| Variante | Wirkung auf die Jahresheizwärme |
+|---|---|
+| θ_eq = θ_out + 0,6·I/25 − 3 K (Pauschale) | **+3,2 bis +7,1 %** in allen Projekten — falsche Richtung; −3 K wirkt Tag und Nacht, +0,6·I/25 im Jahresmittel nur +1,4 K. Für G1 nicht zulässig; α und ΔE_r getrennt, Himmelsaustausch bewölkungsabhängig (4.4) |
+| Erdreich: Bestandsfaktor 0,45 statt Kusuda | **−2,3 bis −14,1 %**, streng nach Anteil U_G·A_G an Σ(U·A)_opak (10 % bis 46 %). Nicht äquivalent: Kusuda schickt die volle Fläche gegen 3,5–16,3 °C, der Faktor 45 % der Fläche gegen −18 … +34 °C. Die Beschreibungen der Katalogbauten nennen alle drei Fälle (unbeheizter Keller, Kellerdecke, Gewölbe) — deshalb das Feld `Grundflaeche_Randbedingung` |
+
+### 5.9 Empfindlichkeit (Projekt 1045, Gebäude 10645, Basis 63 677 kWh)
+
+| Variante | Δ Jahresenergie | Δ Spitze | Stunden > 24 °C |
+|---|---|---|---|
+| C_1,AW / C_1,IW = 0,2 / 0,8 | −0,07 % | −0,5 % | 491 |
+| C_1,AW / C_1,IW = 0,5 / 0,5 | +0,10 % | +0,4 % | 501 |
+| Massenknoten in Wandmitte (R_1 = R_Rest) | +0,06 % | −1,0 % | 509 |
+| F_S 0,7 statt 0,9 | **+2,67 %** | +0,1 % | 390 |
+| ohne F_F·F_S (g roh wie Bestand) | **−6,43 %** | −0,1 % | 856 |
+| Bestandsgewichte 0,83/0,95/0,45/0,83 und Lüftung mit 1/3 | **−12,97 %** | −7,5 % | 630 |
+| beides (Bestands-Randbedingungen) | **−19,25 %** | −7,7 % | 1 082 |
+| Erdreich 0,45 | −2,30 % | +0,9 % | 574 |
+
+**Die RC-Strukturparameter sind für die Jahresenergie irrelevant (≤ 0,1 %)** und für die
+Spitze fast (≤ 1 %): bei idealer, unbegrenzter Regelung bestimmt die Kapazitätsaufteilung
+nur die Verteilung im Tag. Sie wird wichtig, sobald Leistungsgrenze, Speicherhysterese oder
+Kühlgrenze dazukommen. **F_S schlägt mit 2,7 % je 0,2 durch**, F_F·F_S zusammen mit 6,4 %.
+
+### 5.10 Zerlegung der Abweichung: Parametrierung gegen Modellstruktur
+
+| Projekt | gesamt | davon ungewichtete U·A statt 0,83/0,95/0,45 | davon F_F·F_S = 0,63 statt roh | Rest = Modellstruktur |
+|---|---|---|---|---|
+| 1007, 1046 | +17,9 % | +16,1 | +10,9 | **−9,1** |
+| 1017 | +33,0 % | +24,1 | +14,0 | −5,1 |
+| 1018 | +33,0 % | +25,6 | +16,0 | −8,6 |
+| 1023, 1024 | +25,2 % | +17,2 | +15,6 | −7,6 |
+| 1039 | +19,0 % | +16,3 | +12,9 | −10,2 |
+| 1040/1041/1042/1045 | +7,3 % | +13,9 | +6,8 | **−13,4** |
+
+Der ungewichtete Ansatz liegt bei den acht Katalogbauten 14,9–26,4 % über dem gewichteten
+(10614: 234,1 gegen 203,7 W/K; 10632: 4 440 gegen 3 636 W/K); umgekehrt gelesen senken die
+Gewichte den Verlustkoeffizienten um 13,0–20,9 %. Bei gleichen Randbedingungen
+liefert das 7R2C **5–13 % weniger** als das Tagesmodell — aus vier Gründen: der stündliche
+Solareintrag statt des 6-Stunden-Rechtecks (die Randstunden werden verwertet, die
+Mittagsübermenge nicht mehr verworfen), zwei Kapazitäten statt einer (die Innenbauteile
+tragen den Solareintrag in den Abend), keine harte Kappung mit Energieverlust, und die
+physikalische statt tabellarische Stundenverteilung.
+
+### 5.11 Sonderfall 10576: der stille Rückfallwert
+
+| | kWh/a | kWh/(m²a) |
+|---|---|---|
+| Tagesmodell mit `Bauweise = 50 Wh/K` (Ist) | 43 267 | 54,1 |
+| Tagesmodell mit 15 200 Wh/K (korrigiert, 50 Wh/(m²K)) | 65 773 | 82,2 |
+| Prototyp mit 50 Wh/K | 90 216 | 112,8 |
+| Prototyp mit 15 200 Wh/K | 83 374 | 104,2 |
+| Katalogkennzahl | — | 112,5 |
+
+Das Tagesmodell reagiert auf die Korrektur mit +52 %, der Prototyp mit −7,6 %: bei C → 0
+wird im Bestand `(T_soll − T_prev)·C` zu null und `1 − e^(−L/C)` zu eins, die
+Fortschreibung verliert den Sollwertbezug und heizt gegen die eigene Vorstunde. Der
+Prototyp ist gegen kleine Kapazitäten robust (Regelung am algebraischen Luftknoten). Eine
+Plausibilitätsgrenze auf `Bauweise` (4.8) ist die billigste Verbesserung im ganzen Paket;
+die Korrektur der Testdatenbank verändert das Referenzergebnis von Projekt 1008. Dafür gibt
+es heute **keine** Einfrierregel — die drei bestehenden (`Referenzlaeufe/LIESMICH.md:57/79/100`)
+decken Emissionsfaktoren, PV-Modulkoeffizienten und den Flottenstand 1046. G1 legt deshalb
+mit dem Schritt GB (Kapitel 11) eine vierte Einfrierregel „gesäte Gebäudedaten" an (10.4, Q22).
+
+### 5.12 Ost/West-Trennung — gemessen
+
+Die Datenbank führt Ost und West als eine Summenfläche; der Prototyp teilt hälftig. Gemessen
+wurde die volle Spanne — dieselbe Fläche ganz nach Ost bzw. ganz nach West — mit den
+stündlich getrennten Strahlungsreihen (Ost liegt in der Jahressumme 7,3 % (München) bis 9,3 % (Stuttgart) über West,
+Tagesmaximum Ost bei Index 8, West bei Index 14).
+
+| Größe | Spanne 100 % Ost gegen 100 % West, bezogen auf den 50/50-Fall | 50/50 liegt |
+|---|---|---|
+| Jahresheizwärme | 0,7–2,5 % (1023: 408 677 gegen 418 831 kWh) | innerhalb 1 % der Mitte |
+| Stundenspitze | ≤ 0,48 %; Speicherindex in allen Varianten gleich (Stunde ohne Einstrahlung) | — |
+| Tagesmittel-Maximum | ≤ 1,0 % | — |
+| Jahressumme der Morgenstunden (5–9 UTC) | −6,1 % bis +10,3 % | — |
+| Jahressumme der Abendstunden (15–19 UTC) | −3,4 % bis +3,9 % | — |
+| Stunden über 24 °C | −3,6 % bis +8,2 % | — |
+
+**Die starke Behauptung „ohne Ost/West-Trennung ist die Morgen-/Abendspitze nicht
+darstellbar" ist widerlegt.** Die Morgen-/Abendasymmetrie ist auch ohne Trennung da und
+dominant (Morgensumme 1,12- bis 1,74-mal Abendsumme) — sie stammt aus Nachtabsenkung und
+Temperaturgang, nicht aus der Fensterorientierung. Richtig bleibt die schwache Fassung: wer
+Morgen- und Abendsummen auf besser als rund 5 % auflösen will, braucht die getrennten
+Flächen; die Klimadaten geben es her, es fehlt allein die Flächenaufteilung. Die Trennung
+bleibt deshalb empfohlen (billig, die Daten liegen vor), ist aber kein Pflichtfeld für G1.
+
+### 5.13 Rechenzeit — gemessen
+
+Release ohne Debugger, globaler Warmlauf, danach zehn Wiederholungen je Fall, Median; die
+Stoppuhr umschließt nur die Zeitschrittschleife.
+
+| Fall | Regelung | Schritte | Median | Umschaltereignisse |
+|---|---|---|---|---|
+| EPOS-Jahreslauf, Median über 15 Gebäude (9 480 Schritte inkl. Vorlauf) | ideal, Φ ≥ 0, unbegrenzt | 9 480 | **5,09 ms** (4,5–9,1) | 203–826 je Jahr |
+| Testfall 7 (ideal, ±500 W) | geregelt | 1 440 | 0,56 ms (3,7 ms je 9 480) | 3 |
+| Testfall 1 (Freilauf) | — | 1 440 | 0,33 ms (2,1 ms je 9 480) | 0 |
+| Testfall 11 (Kühldecke, ±500 W) | geregelt | 1 440 | 2,63 ms (17 ms je 9 480) | 239 |
+
+Je Umschaltereignis (Bisektion des Umschaltzeitpunkts) fallen rund 7 µs an, das erklärt die
+Spanne 4,5–9,1 ms zwischen den Gebäuden vollständig. Frühere Zahlen von 87–121 ms je Jahr
+waren Hochrechnungen aus einem kalten Lauf mit gestufter JIT-Kompilierung (der erste Aufruf
+in einem frischen Prozess kostet rund 0,25 s, der dritte 10 ms); 2,35 s für rund 100 Läufe
+enthielten Prozessstart, JSON-Einlesen und CSV-Ausgabe. **Planungsgröße: 10 ms je Gebäude
+und Jahr** — die dreizehn Referenzprojekte kosten damit unter 0,2 s zusätzlich zu den 4 s
+des heutigen Gesamtlaufs.
+
+### 5.14 Was daraus für G1 folgt
+
+1. Fenster Ost und West getrennt erfassen; Migration hälftig mit Kennzeichen „geschätzt".
+   Gemessen wirkt die Trennung klein (5.12: Jahresenergie ≤ 2,5 %, Spitze ≤ 0,5 %,
+   Morgensumme bis 10 %) — empfohlen, nicht Pflicht.
+2. Verschattungsfaktor und Rahmenanteil als Felder mit Vorgaben je Lage und Baualter — der
+   größte geratene Hebel (6,4 %).
+3. Die Bestandsgewichte 0,83/0,95/0,45/0,83 im VDI-6007-Weg streichen (Q16).
+4. Randbedingung der Grundfläche als Feld (Erdreich, unbeheizter Keller, Außenluft).
+5. Harte Plausibilitätsprüfungen statt stiller Rückfälle; `Bauweise` in der Testdatenbank
+   korrigieren.
+6. Kapazitätsaufteilung 0,3/0,7, A_IW = 2,5·A_f, h_ms 9,1 als Vorgaben — unkritisch.
+7. Spitzenlast dreifach ausweisen; Leistungsgrenze als Option.
+8. Eine Zeitbasis (Ortszeit) und Zustand je Instanz.
+9. Hay-Davies für die Fassadenstrahlung im Modell; Nordfassade sonst zu hoch.
+10. Kein Absorptions-/Abstrahlungsterm in G1 (Schalter vorhanden, Pauschale verboten).
+
+Einschränkung, die stehen bleibt: die Referenz stammt aus dem Tagesmodell, Übereinstimmung
+wäre kein Gütebeweis. Der Gütebeweis des Lösers sind die zwölf Normtestfälle; dieser
+Vergleich zeigt, wo und warum die Modelle auseinanderlaufen. Belastbar gegen die Wirklichkeit
+validieren ließe sich EPOS erst an gemessenen Verbräuchen — in den dreizehn Projekten
+kommen keine vor.
+
+---
+
+## 6. Datenmodell und Migration
+
+### 6.1 Schemaschritt 77 — `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`
+
+Alle neuen Spalten ohne DDL-DEFAULT auf Fachwerten; **NULL = Vorgabe** (Hausregel aus dem
+PV-Zweig). Beide Tabellen, weil der Katalog in das Projekt kopiert wird.
+
+| Spalte | Typ | Bedeutung | NULL bedeutet |
+|---|---|---|---|
+| `Gebaeude_Modell` | TEXT | `VDI6007` oder NULL | Tagesbilanz |
+| `Fensterflaeche_Ost` | REAL m² | Fenster Ost | ½ `Fensterflaeche_Ost_West` |
+| `Fensterflaeche_West` | REAL m² | Fenster West | ½ `Fensterflaeche_Ost_West` |
+| `Rahmenanteil` | REAL | Anteil Rahmen an der Fensterfläche | 0,3 |
+| `Verschattungsfaktor` | REAL | F_S | 0,9 |
+| `Grundflaeche_Randbedingung` | TEXT | `ERDREICH`, `KELLER`, `AUSSENLUFT` | Erdreich |
+| `Masseanteil_Aussen` | REAL | a_AW | 0,3 |
+| `Innenflaechenfaktor` | REAL | f_IW = A_IW / Wohnfläche | 2,5 |
+| `Heizung_Strahlungsanteil` | REAL | radiativer Anteil der Heizung | 0,3 |
+| `Heizleistung_Max` | REAL kW | Leistungsgrenze der idealen Heizung | unbegrenzt |
+| `Aussenbauteile_Strahlung` | INTEGER `NOT NULL DEFAULT 0 CHECK ("Aussenbauteile_Strahlung" IN (0,1))` | θ_eq mit Absorption und Abstrahlung | — (Schalter, kein Fachwert: hier gilt die Boolean-Regel aus `BETRIEB_SQLITE.md`) |
+
+**Mit G2 kommen drei Spalten in Schemaschritt 78:** `Luftwechsel_Infiltration` (REAL 1/h,
+NULL = 0,3), `Luftwechsel_Nutzer` (REAL 1/h, NULL = 0,4), `Sommerlueftung` (INTEGER
+`NOT NULL DEFAULT 0 CHECK (… IN (0,1))`). Eine Vorgabe des Rahmenanteils je Baualter
+braucht eine Tabelle `Baualtersklasse` → Baujahrspanne, die es heute nicht gibt (die Klasse
+ist ein Buchstabe, 3.1); sie kommt, wenn überhaupt, mit `Baujahr` im IFC-Schritt (7.6).
+
+Der Bestandsweg liest keine dieser Spalten; `Fensterflaeche_Ost_West` bleibt, damit
+`SolareGewinneC` unverändert rechnet. Der Dialog pflegt Ost und West getrennt und schreibt
+die Summe in `Ost_West` mit — eine Wahrheit im Dialog, zwei Leser im Kern; das Modellfeld
+`Fensterflaeche_Ost` wird dabei in `Fensterflaeche_OstWest` umbenannt, damit die Namensfalle
+(2.1, Punkt 4) verschwindet. `Baujahr` (INTEGER) kommt erst mit dem IFC-Schritt (7.6),
+zusammen mit Herkunftskennzeichen.
+
+### 6.2 Sicht neu aufbauen, Leser auf Namen
+
+Die Sicht `Abfrage_Projektgebaeude` hat eine feste Spaltenliste
+(`sql/schema/002_views.sql:89-91`); neue Spalten von `Tab_Gebaeude` erreichen den Leser nur,
+wenn Schemaschritt 77 die Sicht neu aufbaut (`DROP VIEW` + `CREATE VIEW`, neue Spalten
+hinter `Tab_Gebaeude.ID`; SQLite kennt kein `ALTER VIEW`; das Schemaskript und der
+Migrationsschritt führen dieselbe Definition). Zugleich wird `ProjektGebaeudeCtrl.ReadAll`
+von Index- auf Namenszugriff umgestellt (Muster `GebaeudeCtrl.MapRowToModel`), mit einem
+Test, der alle 58 Bestandsfelder gegen die Testdatenbank hält, bevor eine Spalte hinzukommt.
+Ohne beides verschiebt jeder Schemaschritt die Zuordnung still oder liefert die neuen
+Werte gar nicht.
+
+### 6.3 Stufe G3 — Bauteilkatalog
+
+| Tabelle | Spalten (Auszug) |
+|---|---|
+| `Tab_Baustoff_STAMM` | `ID`, `Bezeichner`, `Lambda` W/(mK), `Rho` kg/m³, `cp` J/(kgK), `Quelle`, `ReadOnly` |
+| `Tab_Bauteil` | `ID`, `ID_Gebaeude`, `Bezeichnung`, `Bauteilart` (Außenwand, Dach, Bodenplatte, Fenster, Innenwand, Decke, Sonstiges), `Azimut` °, `Neigung` °, `Flaeche` m², `U_Wert` (NULL = aus Schichten), `g_Wert`, `Rahmenanteil`, `Verschattungsfaktor`, `Randbedingung`, `IstAussen` 0/1, `Herkunft` (manuell, Katalog, IFC) |
+| `Tab_Bauteilschicht` | `ID`, `ID_Aufbau` (FK → `Tab_Bauteilaufbau`, Mehrzonenkonzept 4.2), `Reihenfolge` (innen → außen), `ID_Baustoff`, `Dicke` m |
+
+Beziehungen über IDs, STRICT, Migration als eigener Schritt; ein Baustoffkatalog mit
+Standardwerten (DIN 4108-4 / DIN EN ISO 10456) wird gesät. Der Bauteilkatalog ist zugleich das
+Ziel des IFC-Imports auf Bauteilebene (7.6) und ersetzt für diese Gebäude die
+Nachmultiplikation (4.7).
+
+**Angleichung an das Mehrzonenkonzept.** Die Schicht hängt am wiederverwendbaren **Aufbau**
+(`Tab_Bauteilaufbau` / `_STAMM`), nicht unmittelbar am Bauteil, und die Namensspalte heißt
+hausüblich `Bezeichner`. `Tab_Bauteil`, `Tab_Bauteilschicht` und `Tab_Baustoff(_STAMM)` entstehen
+**einmal** — hier mit G3 und bereits in dieser Form; eine zweite Anlage derselben Tabellen in
+einer späteren Stufe wäre ein Umbauschritt und nicht ergebnisneutral. Die vollständigen
+Spaltenlisten samt Kopier- und Katalogregeln stehen im
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md), 3.5 und 4.2.
+
+### 6.4 Persistenzwerte
+
+Spalte `Gebaeude_Modell` und Werte nach dem PV-Vorbild (`Tab_Energieanlagen.PV_Modell`,
+`DbWerte.cs:2173/2180`): `DbWerte.GEBAEUDE_MODELL_TAGESBILANZ = "TAGESBILANZ"`, `GEBAEUDE_MODELL_VDI6007 = "VDI6007"`,
+`GRUND_ERDREICH/KELLER/AUSSENLUFT`; gelesen ausschließlich in `HeizwaermeEinesGebaeudes`, im
+Eingangsbauer und in der Anzeige.
+
+---
+
+## 7. IFC-Import
+
+### 7.1 Das Ergebnis in einem Satz
+
+**IFC kann das Gebäudemodell speisen, liefert die VDI-6007-Daten aber nicht fertig, sondern
+Rohmaterial wechselnder Qualität** — ein reiner C#-Leser ohne Geometriekernel reicht für
+eine erste Stufe, plattformfrei bis iOS; die eigentliche Arbeit liegt im Zuordnungsdialog
+und in den Vorgabewerten. Kein ernsthaftes Energiewerkzeug verlässt sich auf die Exporte
+der Autorensysteme — IDA ICE, Hottgenroth, bim2sim rekonstruieren und reichern an.
+
+### 7.2 Was IFC trägt
+
+Geprüft gegen IFC 4.3.2 (ISO 16739-1:2024) und IFC4 ADD2 TC1 (Quellen: buildingSMART
+Lexical, 15.09.2026).
+
+| Modellgröße | IFC-Quelle | Hinweis |
+|---|---|---|
+| Wohnfläche, Raumhöhe, Volumen | `IfcSpace` + `Qto_SpaceBaseQuantities` (`NetFloorArea`, `Height`, `NetVolume`) | Zonen über `IfcZone` (nicht hierarchisch, Mehrfachzuordnung möglich) |
+| U-Werte, außen/innen | `Pset_WallCommon`, `Pset_SlabCommon`, `Pset_RoofCommon`, `Pset_WindowCommon`, `Pset_DoorCommon`: `ThermalTransmittance`, `IsExternal` | optional; Revit schreibt `ThermalTransmittance` nur mit gemapptem Shared Parameter |
+| g-Wert | `Pset_DoorWindowGlazingType.SolarHeatGainTransmittance` (= g nach Spezifikation), `ThermalTransmittanceSummer/Winter` | selten gefüllt |
+| Flächen | `Qto_WallBaseQuantities.GrossSideArea` (ohne Öffnungsabzug) / `NetSideArea` (mit); `Qto_WindowBaseQuantities.Area`; `Qto_SlabBaseQuantities.GrossArea` | Revit nur mit Häkchen „Basismengen" |
+| Schichtaufbau, Stoffwerte | `IfcMaterialLayerSet`/`IfcMaterialLayer` + `Pset_MaterialThermal` (λ, c), `Pset_MaterialCommon` (ρ) | vollständiger Eingang für die Reduktion (G3) |
+| Orientierung, Ort | `TrueNorth` (optional, Vorgabe [0,1], bei `IfcMapConversion` nur informativ), `IfcSite.RefLatitude/RefLongitude` (`IfcCompoundPlaneAngleMeasure` = **`LIST [3:4] OF INTEGER`**: Grad, Minuten, Sekunden, optional Millionstel-Sekunden, alle mit gleichem Vorzeichen — nicht Dezimalgrad) | zwei klassische Importfallen; `IfcZone` kann laut Schema auch Zonen enthalten, Schachtelung ist zu entschachteln |
+| Raumgrenzen | `IfcRelSpaceBoundary`, ab IFC4 `…1stLevel`/`…2ndLevel` (Typ 2a Raum gegenüber, 2b Bauteil gegenüber); Fenster über `ParentBoundary`, Eltern- und Kindfläche **überlappen** | 1st Level ist laut Norm nicht für thermische Analysen nutzbar |
+| Nutzung | `Pset_SpaceThermalRequirements` (in IFC 4.3 entfallen), `Pset_SpaceOccupancyRequirements`, `Pset_SpaceThermalLoad` (alle Werte als `IfcPowerMeasure` typisiert, auch die Luftwechselrate — Schemafehler) | nicht belastbar |
+| Baujahr | `Pset_BuildingCommon.YearOfConstruction` als `IfcLabel` (**Text**) | „ca. 1965" parsen |
+
+**Space Boundaries sind in keiner Haupt-MVD Pflicht** (Reference View 1.2 nennt sie nicht;
+Design Transfer View ist Entwurf; die eigene „Space Boundary Add-on View" ist ein Anhang zur
+IFC2x3-Koordinationsansicht). Ein zertifizierungskonformer IFC4-Export enthält also weder
+2nd-Level-Grenzen noch garantiert U-Werte.
+
+### 7.3 Was die Autorensysteme liefern
+
+| System | `IfcSpace` | Space Boundaries | thermische Psets |
+|---|---|---|---|
+| Revit | ja (Option) | Option none / 1st / 2nd Level | `ThermalTransmittance` nur mit Mapping |
+| Archicad | ja (Zonen) | an/aus, immer 2nd Level — aber als **Basisklasse `IFCRELSPACEBOUNDARY` mit `Name='2ndLevel'`**, nicht als `…2ndLevel`-Entität | über Übersetzer |
+| Allplan | ja | nein (belegt für Version 2023) | begrenzt |
+| Vectorworks | ja | nicht dokumentiert; Energiepfad ist gbXML | — |
+
+Erfahrungsbefund der Literatur (RWTH, Automation in Construction 2025): Zertifizierung
+garantiert keine vollständigen Energiedaten; 2nd-Level-Geometrie kommt, die Gegenstücke in
+Nachbarzonen fehlen; Geometriefehler und Datenverlust sind in den ausgewerteten
+Interoperabilitätsstudien die Regel, nicht die Ausnahme (Fundstelle vor G4 nachtragen).
+Deutsche Praxis (Plancal nova): „das Architekturmodell ist in der Regel für
+eine thermische Betrachtung nicht geeignet" — mehrschalige Wände als mehrere Elemente, Putz
+und Beläge als eigene Bauteile, U-Werte fehlen.
+
+### 7.4 Bibliotheken (Stand 15.09.2026, aus NuGet und GitHub verifiziert)
+
+| Bibliothek | Version | Lizenz | Zielrahmen | nativ? | IFC | Geometrie |
+|---|---|---|---|---|---|---|
+| **Xbim.Essentials** (`Xbim.Ifc4`, `Xbim.Ifc4x3`, `Xbim.IO.MemoryModel`) | 6.1.605 | CDDL-1.0 | **net10.0**, net8.0, netstandard2.0/2.1 | **rein verwaltet** | 2x3, 4, 4.3 | nein |
+| Xbim.Geometry (`Xbim.Geometry.Engine.Interop`) | 6.3.891-netcore (**Vorabversion**), stabil zuletzt 5.1.820 (nur net472) | CDDL-1.0, **zieht `Xbim.Geometry.Occt` 7.8.1 unter LGPL-2.1 + OCCT-exception-1.0 nach** | net472, net8.0 | **C++/CLI, nur Windows** (`Ijwhost.dll`, `win-x64`) | dito | ja (OCCT) |
+| **GeometryGymIFC_Core** | 26.8.17 | MIT | netstandard2.0, net6–8 | rein verwaltet | 2x3, 4, 4.3, 4.4 | nein |
+| ara3d/IFC-toolkit | Vorabversion | MIT | net8.0 | optional web-ifc-DLL | STEP | über C++ |
+| Hypar.IFC4 | 1.2.0 | MIT | net6.0 | nein | 4 | nein; seit 2023 ohne Pflege |
+| IfcOpenShell | — | LGPL-3.0 | C++/Python | ja | alle | ja; **keine gepflegte .NET-Anbindung** |
+| web-ifc | 0.0.77 | MPL-2.0 | WASM/C++ | ja | alle | ja |
+| BIMserver | — | AGPL-3.0 | Java | Server | alle | ja — ausgeschlossen |
+
+Die Entity-Factory von xBIM ist generierter Code (1 438 `case`-Zweige), kein
+`Reflection.Emit` — AOT-tauglich. iOS-Risiko ist das Trimming (`ExpressMetaData` nutzt
+`module.GetTypes()`); Abhilfe ist ein `TrimmerRootDescriptor`, früh im iOS-Lauf zu prüfen.
+**CDDL-1.0 ist Datei-Copyleft.** Die Einbindung in ein proprietäres Produkt ist zulässig
+(§ 3.6 „Larger Work"), die eigene Binärfassung darf unter eigener Lizenz ausgeliefert werden
+(§ 3.5). Drei Auflagen bleiben: (1) § 3.1 — der Quelltext **aller** ausgelieferten
+CDDL-Dateien muss unter CDDL verfügbar sein, auch wenn nichts geändert wurde; der dauerhafte
+Verweis auf die xBIM-Quellen (github.com/xBimTeam bzw. die NuGet-Quellpakete) genügt und ist
+dem Empfänger mitzuteilen; (2) § 3.4 — Copyright-, Patent- und Markenvermerke bleiben
+stehen, eigene Änderungen an CDDL-Dateien sind zu kennzeichnen; (3) der Lizenztext wird mit
+ausgeliefert (Installationspaket: Lizenzhinweise). Daraus die Regel: **xBIM nur als
+NuGet-Paket einbinden, nie forken.** LGPL (IfcOpenShell) und GPL (IFC2SB) scheiden für den
+Kern aus; **auch `Xbim.Geometry` fällt damit aus dem Kern** — nicht nur wegen C++/CLI,
+sondern weil OCCT unter LGPL-2.1 steht und selbst in der Windows-Schale dynamische Bindung
+und Austauschbarkeit nachzuweisen wären. MPL-2.0 (web-ifc) ist ebenfalls Datei-Copyleft und
+nur für den optionalen ara3d-Pfad zu prüfen, nicht für den Kern.
+
+**Empfehlung:** `Xbim.Ifc2x3` + `Xbim.Ifc4` + `Xbim.Ifc4x3` + `Xbim.IO.MemoryModel` (oder das
+Metapaket `Xbim.Essentials` 6.1.605) im Kern; `GeometryGymIFC_Core` (MIT) als
+Ausweg, falls CDDL nicht freigegeben wird; `Xbim.Geometry` **nie im Kern**, allenfalls in der
+Windows-Schale für eine Vorschau, auf iOS benannt abgelehnt — dasselbe Muster wie
+`Google.OrTools`.
+
+### 7.5 Ohne Geometriekernel — Regeln und Fallen
+
+Was ohne Kernel geht: U-Werte und `IsExternal` aus Psets; Bruttoflächen aus den
+Quantity-Sets; Fensterflächen aus `Qto_WindowBaseQuantities`; Volumen als Summe der
+Raumvolumen; thermische Masse aus Schichtaufbau und Stoffwerten; **Azimut** aus der Kette
+`IfcLocalPlacement` → `'Axis'`-Repräsentation der Wand (bei `IfcMaterialLayerSetUsage`
+zwingend, parallel zur x-Achse des Objektsystems) → `TrueNorth` — reine Matrixmultiplikation.
+
+Die Fallen, die der Leser kennen muss:
+
+1. Quantities fehlen oft → Rückfall Länge × Höhe aus `IfcExtrudedAreaSolid`; scheitert bei
+   nicht-prismatischen Wänden.
+2. Fensterabzug: `GrossSideArea` ohne, `NetSideArea` mit Abzug; Fenster über
+   `IfcRelVoidsElement` → `IfcOpeningElement` → `IfcRelFillsElement`. Nie mischen.
+3. Gedrehte Gebäude: `TrueNorth` fehlt oder steht neben `IfcMapConversion` (dann nicht
+   addieren).
+4. `IsExternal` fehlt oder ist falsch → Rückfall: eine Wand ist außen, wenn nur **eine**
+   Raumgrenze auf sie zeigt.
+5. Mehrschalige Wände als mehrere Elemente → über gemeinsame Grenze oder Achslage
+   zusammenfassen.
+6. Drei optionale Höhenbezüge (`IfcSite.RefElevation`, `IfcBuilding.ElevationOfRefHeight`,
+   `IfcBuildingStorey.Elevation`).
+7. `YearOfConstruction` ist Text.
+8. Nachbarbebauung fehlt praktisch immer → Verschattung bleibt Eingabe.
+9. Archicad-Grenzen nur über `Name`/`Description` erkennbar (7.3).
+
+Für Ein- und Mehrfamilienhäuser mit rechteckigem Grundriss reicht das; für gegliederte
+Nichtwohngebäude ohne Quantities wird es unzuverlässig — dort braucht es Stufe G5.
+
+### 7.6 Der Importweg in EPOS-Plan
+
+1. **Einstieg** im Gebäudedialog: Knopf „Aus IFC-Datei übernehmen …" (und im
+   Katalogdialog). Die Dateiwahl läuft über `IDateiDienst` (`EPOS.Kern/Allgemein/Dienste/`),
+   also auf beiden Plattformen; `KeineDateiwahl` lehnt benannt ab.
+2. **Leser** `EPOS.Kern/Allgemein/Import/Ifc/IfcImportAblauf.cs` (Muster
+   `KatalogImportAblauf`, `KlimaImportAblauf`) öffnet die Datei mit `Xbim.IO.MemoryModel`,
+   erkennt Schema (2x3 / 4 / 4.3) und liefert einen `IfcImportSatz`: je Zielfeld Wert,
+   **Herkunft** (`IFC`, `Vorgabe`, `leer`) und Beleg (Entität, Pset). Größenlimit für Blazor
+   Hybrid (Vorschlag 50 MB), Fehler benannt.
+3. **Zuordnung** in G4a auf `Tab_Gebaeude`: Wohnfläche und Raumhöhe aus den Räumen;
+   Volumen; U-Werte je Bauteilgruppe **flächengewichtet** auf die fünf Kategorien
+   `k_Wert_Außenwand/Fenster/Dachflaeche/Grundflaeche/Sonstiges`; Fensterflächen über den
+   Azimut in die vier Sektoren (Sektorbreite 90°, Mitte N/O/S/W) — Ost und West getrennt
+   (6.1); g-Wert → `Fensterdurchlassgrad`; Schichtaufbau → `Bauweise` (Summe ρ·c·d der
+   raumseitigen Schichten bis 10 cm, ISO 13786-Näherung); Bodenplatte gegen Erdreich oder
+   Keller → `Grundflaeche_Randbedingung`; `YearOfConstruction` → `Baujahr` →
+   `Baualtersklasse`. In G4b (mit G3) zusätzlich je Bauteil eine Zeile in `Tab_Bauteil` mit
+   Schichten und Azimut — dann echte Hülle statt Nachmultiplikation.
+4. **Vorgaben**: Was IFC nicht liefert, wird je `Baualtersklasse` vorbelegt (Typgebäude
+   TABULA/IWU, Zenodo 2025 — Record und Datensatzlizenz vor G4 eintragen) und **sichtbar
+   als Vorgabe markiert**. Pflicht sind nur
+   Wohnfläche und Raumhöhe (Q11).
+5. **Dialog** `IfcZuordnungDialog.razor`: Tabelle Feld | IFC-Wert | Beleg | Vorgabe |
+   übernehmen; OK schreibt, Abbrechen verwirft (Hausmuster OK/Abbrechen). Nichts wird ohne OK
+   geschrieben; die Plausibilitätsprüfungen aus 4.8 laufen vor dem Schreiben.
+6. **Nachweise**: KIT-Datei `AC20-FZK-Haus.ifc` (Archicad 20, IFC4, 8 Räume, 81 Raumgrenzen,
+   33 U-Werte, Nutzung uneingeschränkt mit Namensnennung im vorgegebenen Wortlaut) als
+   Importprobe unter
+   `Referenzlaeufe/Importproben/` mit Quellenvermerk; Tests: Schema erkannt, Räume gezählt,
+   Sektorzuordnung, Herkunft je Feld, Archicad-Grenzen erkannt, Größenlimit greift.
+
+### 7.7 gbXML
+
+Schema 8.01 (Januar 2026), thermische Zonentopologie ist Teil des Schemas; Archicad und
+Revit exportieren gbXML mit Raumbegrenzungen zuverlässiger als IFC. Aber: kein
+ISO-Standard, Lizenz des Schemas ungeklärt (keine Angabe auffindbar — vor G5 eine
+schriftliche Nutzungserlaubnis für das XSD einholen), im DACH-Raum schwach verbreitet
+(Solar-Computer, DDS-CAD, AX3000; Hottgenroth und ZUB Helena ohne dokumentierten
+gbXML-Import); der deutsche Nachweisweg (DIN V 18599, VDI 2552 Blatt 11.9) läuft auf IFC.
+**Ergänzung, nicht Ersatz — Stufe G5, reines XSD-Deserialisieren, 10–15 PT.**
+
+### 7.8 Testdateien
+
+| Datei | Quelle | Räume | Raumgrenzen | U-Werte | Nutzung |
+|---|---|---|---|---|---|
+| `AC20-FZK-Haus.ifc` (EFH, IFC4, 2,5 MB) | KIT/IAI | 8 | 81 (Basisklasse, `2ndLevel`/`2a`) | 33, 7× `Pset_SpaceThermalRequirements` | frei mit Namensnennung |
+| `AC-20-Smiley-West-10-Bldg` (Reihenhaus) | KIT/IAI | 140 | 1 689 | 180 | frei mit Namensnennung |
+| `AC20-Institute-Var-2.ifc` (Büro) | KIT/IAI | 83 | 1 000 | **0** | frei mit Namensnennung |
+| `FM_ARC_DigitalHub_with_SB.ifc` (Revit 2019) | RWTH E3D GitLab | 59 | 1 560 / 2 582 echte 1st/2nd-Entitäten | 719, 85× Glazing-Pset | **keine Lizenzdatei — Rückfrage** |
+| Duplex Apartment (IFC2x3) | buildingSMART Community | 21 | 265, nur 1st Level | 0 | frei; Git LFS |
+
+Die Zahlen wurden am 15.09.2026 durch Herunterladen und Auszählen der Dateien geprüft.
+Das Open-IFC-Model-Repositorium der Universität Auckland ist leer; die bim2sim-Testdaten
+führen keine Lizenz.
+
+### 7.9 Praxisrelevanz und Grenzen
+
+Für die Zielgruppe Heizungserneuerung im Bestand (VDI 4645, EFH/MFH) liegt praktisch kein
+Modellbestand vor; IFC-Modelle kommen aus Neubau und großer Sanierung im Nichtwohnbereich
+sowie aus Scan-to-BIM. **IFC ist ein Komfortweg für Nichtwohn- und Quartiersprojekte, kein
+Ersatz für die Eingabe** — und er lohnt erst, wenn das Gebäudemodell (G0–G2) steht, sonst
+importiert man in ein Tagesmodell, das die Daten nicht nutzt. **Ein IFC-Betrachter gehört nicht zum
+Import** — was EPOS-Plan stattdessen zeigt, steht in Nachtrag N1.16 (Entscheid E11).
+
+---
+
+## 8. Oberfläche
+
+### 8.1 Gebäudedialog
+
+Neue Gruppe **„Rechenmodell"** in `GebaeudeDialog.razor` und `GebaeudeKatalogDialog.razor`:
+Klappliste Tagesbilanz | VDI 6007 (stündlich); bei VDI 6007 erscheinen die Parameterfelder
+aus 6.1 (Fenster Ost / West getrennt, Rahmenanteil, Verschattung, Randbedingung der
+Grundfläche, Masseanteil außen, Innenflächenfaktor, Strahlungsanteil Heizung,
+Heizleistungsgrenze, Schalter Außenbauteile mit Strahlung) mit Vorgabe-Anzeige („Vorgabe
+0,3"); der Infobutton auf die Wiki-Seite kommt mit G2, zusammen mit der Seite selbst. Die
+Gruppe „Verbrauch" bleibt. Knopf „Aus IFC-Datei
+übernehmen …" ab G4. Plausibilitätsmeldungen (4.8) erscheinen benannt beim Speichern.
+
+### 8.2 Bedarfsdialog und Ergebnis
+
+`GebaeudeBedarfDialog.razor` zeigt bei VDI 6007 zusätzlich: Raumtemperatur-Jahresverlauf
+(Luft und operativ, mit Sollwertband), Kühlbedarf informativ, die Kennzahlen aus 4.6 mit den
+drei Spitzenwerten, und den Vergleich „Tagesbilanz | VDI 6007" für dasselbe Gebäude (beide
+Wege sind Auskünfte über `GebaeudeBedarfCtrl`). Reihenfolge und Steuerzeile nach
+`Doku_Simulationsergebnis_Darstellung.md`.
+
+### 8.3 Hülle nach `EPOS.UI.Daten`
+
+Die Gebäudehülle wandert aus der Windows-Schale nach `EPOS.UI.Daten/Bedarf/GebaeudeHuelle.cs`
+(DTO `GebaeudeBedarfDaten` erweitert um Modellwahl und Parameter; keine 8 760 Werte im
+DTO, Bilder über Delegat). Das ist ohnehin für iOS fällig und wird mit G1 erledigt.
+
+### 8.4 Menü
+
+Kein neuer Menüpunkt für G0–G2. Der Baustoffkatalog (G3) bekommt einen Punkt unter
+Administration (Menü ist Daten: `Menuetabelle.cs`), der IFC-Import läuft aus dem
+Gebäudedialog, nicht aus „Datenimport" (er ist projektbezogen, kein Katalogimport).
+
+### 8.5 Texte
+
+Alle neuen Schlüssel in `Resource.resx` und `Resource.en-US.resx` (Glossar:
+`Glossar_Lokalisierung.md`), danach `Werkzeuge/ResourceDesigner`.
+
+---
+
+## 9. Bericht, Diagramme, Wiki
+
+- `KennzahlenKatalog.cs`: Rechenmodell des Gebäudes als Text, die drei Spitzenwerte,
+  Kühlenergie und Stunden mit Kühlbedarf als Kennzahlen; `AbweichungsErmittler.cs` führt
+  das Rechenmodell im Variantenvergleich.
+- `ChartRenderer.cs`: ein neues Bild „Raumtemperatur" (Jahresverlauf, Sollwertband) —
+  `Proben/ChartProben` bekommt die Gegenprobe (Maße, Farben, Determinismus).
+- Wiki: neue Seite „Gebäudemodell VDI 6007" (Funktion, Parameter, Vorgaben, Grenzen; ohne
+  Hersteller- und Produktdaten), Erweiterung der Seite Gebäude; Logbuch-Eintrag mit der
+  Version beim Upload (Regel Konzept Hilfesystem 13.3).
+
+---
+
+## 10. Tests und Abnahme
+
+### 10.1 Normtestfälle
+
+Die zwölf Testfälle der VDI 6007-1 (Testraum 52,5 m³ / 17,5 m², Bauweise S und L; siehe
+5.2) werden als xUnit-Fälle `GebaeudeModellNormfallTests` gebaut, Referenzdaten aus AixLib
+(überarbeitete 3-Klausel-BSD-Lizenz mit Zusatzabsatz, Wortlaut und Copyright-Vermerk im
+Test, Zitierfähigkeit der Normwerte vorab geklärt — 5.1), Schwelle 0,15 K / 1,5 W wie dort, mit Ausweis der
+tatsächlichen Abweichung; ein weiterer Test hält die diagonalisierte Matrix als
+Negativprobe. Dazu die Bauteilreduktion (G3) gegen die Normwerte der Testräume — dafür ist
+die Richtlinie zu beschaffen (Q2).
+
+### 10.2 Reine Rechenproben
+
+Ohne Datenbank: Grenzfälle (C → sehr groß: Temperatur konstant; R_ve → 0: θ_air = θ_out;
+Φ_h = 0 und stationär: Bilanz geschlossen), Skalierung (alle Flächen und die Masse mit s
+ergeben s-fache Last), Determinismus (zwei Läufe byte-gleich, zwei Gebäude in beliebiger
+Reihenfolge gleich), Eigenwerte reell und negativ für alle Klassenparameter der
+Testdatenbank, Lastbestimmung hält den Sollwert auf 1e‑9 K, Kappung liefert Kühlleistung
+≥ 0, Vorlauf konvergiert, Plausibilitätsprüfungen werfen benannte Fehler.
+
+### 10.3 Datenbankfälle
+
+`[Collection("Testdatenbank")]` mit `Kulturvorrichtung`: `GebaeudeBedarfCtrl` liefert für ein
+umgestelltes Gebäude dieselbe Reihe wie der Lauf (Muster `GebaeudeBedarfCtrlTests`);
+Schemaschritt 77 auf der Testdatenbank; Namensleser hält alle Felder; Ost/West-Summe
+konsistent; Mischfall Gebäude plus Ganglinie (Projekt 1041) summiert richtig.
+
+### 10.4 Referenzlauf und das positive Abnahmekriterium
+
+- **Bestandsprojekte:** unverändert gegen `2026-09-11_R7_Speicherflotte` — die Abnahmesperre von G1.
+- **Neues Referenzprojekt** (Kopie eines Einzelgebäude-Projekts, etwa 1045, mit
+  `Gebaeude_Modell = VDI6007`) in der Testdatenbank; mit G1 wird die Basis neu eingefroren und
+  in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) begründet
+  (neue, vierte Einfrierregel „gesäte Gebäudedaten": `Tab_Gebaeude(_STAMM)` mit `Bauweise`,
+  U-Werten, Flächen, Sollwerten, `Luftwechselrate`, `Fensterdurchlassgrad` — auch in den
+  Abschnitt „Regressionsnetz" der `CLAUDE.md`). Die neuen Reihen `raumtemperatur.csv`,
+  `operative_temperatur.csv` und `kuehlbedarf.csv` exportiert `Ergebnisexport` nur für
+  VDI-6007-Gebäude, damit die Bestandsordner byte-gleich bleiben.
+- **Positives Kriterium für G1**, weil gemessene Verbräuche fehlen: (1) die Normtests
+  bestehen; (2) der Kern reproduziert die Zahlen des Prototyps aus Kapitel 5 innerhalb 1e‑6
+  relativ **in einem Prüfmodus mit den Randbedingungen des Prototyps** (UTC-Reihenfolge,
+  isotrope `Sol_*`-Spalten, kein Absorptionsterm; der Prototyp ist die unabhängige
+  Zweitimplementierung), und der Unterschied zwischen Prüfmodus und Auslieferungsweg
+  (Ortszeit, Hay-Davies) wird je Referenzprojekt als Zahl ausgewiesen und begründet;
+  (3) Tagessummen-Korrelation zum Tagesmodell r ≥ 0,98; (4) Katalogkennzahl
+  `spez_Waermeverbrauch` innerhalb des Abnahmefensters 85–105 %, wo sie gefüllt ist
+  (gemessen 86–100 %, 5.5).
+- Die Korrektur von `Bauweise` in Gebäude 10576 (Q22), die Warnungen im Tagesmodell (Q18)
+  und der Instanzzustand statt `_prevRoomTemp` (Q23) ändern die Referenzergebnisse von 1008
+  und 1039; sie bilden den eigenen Einfrierschritt GB (Kapitel 11).
+
+### 10.5 Wächter
+
+`DoubleWache`, `EinheitenWache`, `RechenrandTests`, `ParallelitaetWache`,
+`DokumentationLinkWache`, `RepositoryOrdnungWache`, `WikiProduktdatenWache` — unverändert;
+dazu die Hüllenwegwache, sobald die Gebäudehülle wandert (8.3).
+
+---
+
+## 11. Vorschlag in Stufen
+
+| Stufe | Inhalt | Abnahme | Aufwand |
+|---|---|---|---|
+| **G0 — Löser und Normtests im Kern** | `Zonenmodell7R2C`, `ErsatzparameterRC`, Diskretisierung, Regelung nach Hausregeln neu benannt (der Prototyp ist die Vorlage); `GebaeudeModellNormfallTests` und Rechenproben (10.1, 10.2); Klärung des Drifts in Testfall 9/10; keine Datenbank, keine Oberfläche | zwölf Normtestfälle bestanden; Kern-Filter grün | klein, 2–4 PT |
+| **G1 — Anbindung als wählbares Modell** | Schemaschritt 77, Namensleser, `DbWerte`, `GebaeudeModellEingang` (Klassenweg 4.3, Randbedingungen 4.4, Hay-Davies je Orientierung), Plausibilitätsprüfungen, Vorlauf, Verzweigung in `HeizwaermeEinesGebaeudes`, Dialoggruppe „Rechenmodell", Hülle nach `EPOS.UI.Daten`, Texte | Referenzlauf der Bestandsprojekte unverändert; neues Referenzprojekt, Basis neu eingefroren; Kriterien 10.4 | mittel, 6–10 PT |
+| **GB — Bestandsbefunde** | Warnungen statt stiller NaN im Tagesmodell (Q18), `_prevRoomTemp` als Instanzzustand mit `ResetState` je Gebäude (Q23), Korrektur 10576 in der Testdatenbank (Q22), vierte Einfrierregel „gesäte Gebäudedaten" | Referenzergebnisse von 1008 und 1039 ändern sich — eigener, begründeter Einfrierschritt | klein, 1–2 PT |
+| **G2 — Ergebnisdarstellung** | Raumtemperatur, Kühlbedarf informativ, drei Spitzenwerte, Bild, Bericht, Vergleich Tagesbilanz/VDI 6007 im Bedarfsdialog, Sommerlüftungsregel und Infiltration/Nutzerlüftung, Wiki-Seite | ChartProben grün; Sichtabnahme Windows | klein–mittel, 3–5 PT |
+| **G3 — Bauteilkatalog** | `Tab_Baustoff_STAMM`, `Tab_Bauteil`, `Tab_Bauteilschicht`, Baustoffdialog, Bauteilweg mit Kettenmatrix-Reduktion und Normnachweis, geneigte Fenster, echte Hülle statt Nachmultiplikation | Reduktion trifft die Normwerte der Testräume; Bauteilweg = Klassenweg im Grenzfall gleicher U und C | mittel–groß, 8–12 PT |
+| **G4 — IFC-Import Stufe 1** | `Xbim.Ifc4` im Kern, `IfcImportAblauf`, `IfcImportSatz`, Zuordnungsdialog, Vorgaben je Baualtersklasse, `Baujahr`, Importprobe KIT, iOS-Trimming-Nachweis | Importprobe bestanden; Windows-Nachweis; iOS-Lauf nach Rückfrage | mittel–groß, 10–20 PT (mit G3-Anbindung +5) |
+| **G5 — Geometrieableitung, gbXML** | eigene Auswertung von `IfcExtrudedAreaSolid` und Placement-Kette, Öffnungsabzug; gbXML-Leser | nur bei Bedarf aus der Praxis | groß, 30–60 PT; gbXML 10–15 PT |
+
+Aufwände sind Größenordnungen für Entwicklung und Nachweis; Agentenarbeit verkürzt die
+Kalenderzeit, nicht die Prüfzeit. **Summen:** G0+G1 8–14 PT; G0–GB 9–16 PT; G0–G2
+12–21 PT; G0–G3 20–33 PT; G0–G4 30–58 PT.
+
+---
+
+## 12. Größenordnungen
+
+- **Rechenzeit:** rund 5 ms je Gebäude und Jahr, Planungsgröße 10 ms (5.13); die
+  dreizehn Referenzprojekte bleiben mit unter 0,2 s deutlich unter
+  den 4 s des heutigen Gesamtlaufs.
+- **Genauigkeit:** Löser auf 0,05–0,14 K gegen die Normtestfälle. Die Jahresheizwärme
+  realer Gebäude hängt weit stärker an Randbedingungen als an der Modellstruktur — gemessen:
+  RC-Aufteilung ≤ 0,1 %, Verschattung 2,7 % je 0,2, Rahmen und Verschattung zusammen 6,4 %,
+  Erdreich 2–14 %, Bestandsgewichte 13–21 % (5.9, 5.10).
+- **Abweichung zum Tagesmodell:** je Projekt +7 bis +33 % Jahresenergie — mehr als
+  vollständig Parametrierung, gegenläufig 5–13 % Modellstruktur; Spitzenlast je Projekt
+  −10 bis +57 % (Stunde), in der Summe +29 %, als Tagesmittel +18 %.
+- **Datenbank:** elf Spalten in zwei Tabellen (G1); drei Spalten (G2); drei Tabellen (G3);
+  eine Spalte und Herkunftskennzeichen (G4).
+- **Abhängigkeiten:** G0–G3 ohne NuGet; G4 `Xbim.Ifc4`/`Xbim.IO.MemoryModel` (rund 10 MB
+  Assemblies, rein verwaltet).
+
+---
+
+## 13. Fragen mit Empfehlung
+
+| Nr. | Frage | Empfehlung |
+|---|---|---|
+| **Q1** | Modellwahl je Gebäude mit Vorgabe Tagesbilanz — oder VDI 6007 als Vorgabe für neue Gebäude? | **Je Gebäude, Vorgabe Tagesbilanz**; Vorgabe erst umstellen, wenn G2 abgenommen und die Wiki-Seite steht — **siehe Nachtrag 1 (entschieden: Stundenwerte)** |
+| **Q2** | Quelle der Normreferenzwerte: die Richtlinie (liegt VDI 6007-1 bei INEKON vor?) oder die AixLib-Validierungsmodelle (überarbeitete BSD-Lizenz, 5.1)? Dürfen die Normzahlen in ausgelieferten Tests stehen? | **AixLib mit Quellenvermerk und Lizenzwortlaut** für die Tests (so lief der Prototyp); **die Richtlinie beziehen** — für die Zitierfähigkeit der Zahlen und den Nachweis der Bauteilreduktion (G3); bis dahin bleiben die Referenzreihen interne Prüfdaten — **siehe Nachtrag 1 (Richtlinie liegt vor)** |
+| **Q3** | Thermische Masse in G1 aus der Bauweise-Klasse mit Aufteilung 0,3 / 0,7 — oder gleich Schichtaufbau? | **Klassenweg in G1** (gemessen unkritisch, ≤ 0,1 %); Schichtaufbau in G3 |
+| **Q4** | Erdreich: Kusuda (harmonische Amplitude) als Vorgabe, Keller und Außenluft als Feldwerte? | **Ja**; der Bestandsfaktor 0,45 wird nicht nachgebaut |
+| **Q5** | Opake Außenbauteile mit Absorption und Abstrahlung in G1? | **Aus (Parität), Schalter vorhanden**; die Pauschale −3 K ist verboten; Normformel in G2 nachrüsten |
+| **Q6** | Fensterpfad im Netz (Teil des Lüftungszweigs, wie im Prototyp, oder eigener Oberflächenknoten)? | **Wie im Prototyp** (validiert über Testfälle 5, 8, 9); ein Fensterknoten erst mit G3 — **siehe Nachtrag 1** |
+| **Q7** | `Heizleistung_Max` als Option; wie werden die drei Spitzenwerte je Gebäude neben `Waermelast_Max` geführt? | **Option ja, NULL = unbegrenzt. `Waermelast_Max` bleibt unverändert das Maximum des Kanalsummenvektors** (`SimulationWaermebedarf.cs:401`), damit Dauerlinie, Deckung und Anzeige eine Basis behalten; Stundenspitze, gleitendes Tagesmittel und 95-%-Quantil werden **zusätzlich je Gebäude** ausgewiesen und im Bericht daneben gestellt. Wer die Aufheizspitze nicht auslegen will, setzt `Heizleistung_Max`; Rückrechnung ohne Grenze |
+| **Q8** | Kühlung als vierter Kanal? | **Nein — informativ** (Kühlenergie, Stunden); ein Kanal ist ein eigenes Konzept |
+| **Q9** | IFC-Bibliothek: xBIM (CDDL-1.0 mit Quelltextpflicht für die ausgelieferten CDDL-Dateien, 7.4) oder GeometryGymIFC (MIT)? | **xBIM als NuGet-Paket, nie geforkt**; Lizenzentscheid dokumentieren, Lizenztext und Quellenverweis ins Installationspaket |
+| **Q10** | IFC-Import auch auf iOS? | **Ja, Kern-Weg ist plattformfrei**; Trimming-Nachweis im iOS-Lauf nach Rückfrage; Größenlimit 50 MB |
+| **Q11** | Pflichtfelder des Imports und Vorgaben je Baualtersklasse (TABULA/IWU)? | **Nur Wohnfläche und Raumhöhe Pflicht**, Rest Vorgabe mit Herkunftsmarke |
+| **Q12** | KIT-Datei `AC20-FZK-Haus.ifc` (2,5 MB) als Importprobe ins Repositorium (`Referenzlaeufe/Importproben/`)? RWTH- und bim2sim-Dateien nur nach Lizenzklärung? | **KIT ja** (Quellenvermerk), **RWTH/bim2sim nein**, bis die Nutzung geklärt ist |
+| **Q13** | gbXML? | **G5, erst bei Bedarf aus der Praxis** |
+| **Q14** | Neues Referenzprojekt mit VDI 6007 in der Testdatenbank und Neu-Einfrieren der Basis mit G1? | **Ja** — sonst ist das Modell im Regressionsnetz unsichtbar |
+| **Q15** | Reihenfolge G0 → G1 → G2 → G3 → G4 → G5; G0 und G1 als erste Beauftragung? | **Ja**, G0 zuerst — ohne bestandene Normtests keine Anbindung |
+| **Q16** | Die Bestandsgewichte 0,83 / 0,95 / 0,45 / 0,83 im VDI-6007-Weg streichen? | **Ja** — sie sind Kalibrierung, keine Physik; der ungewichtete Weg trifft die Katalogkennzahl zu 86–100 % |
+| **Q17** | Verschattungsfaktor und Rahmenanteil als Felder mit Vorgabe je Lage (0,9 / 0,8 / 0,7) bzw. 0,3? | **Ja** — der größte geratene Hebel (6,4 %); eine Vorgabe je Baualter erst, wenn `Baujahr` vorliegt (G4) |
+| **Q18** | Harte Plausibilitätsprüfungen (4.8) im VDI-6007-Weg; im Tagesmodell nur Warnung, um die Basis nicht zu berühren? | **Ja, so** |
+| **Q19** | Sommerlüftungsregel und Trennung Infiltration/Nutzerlüftung in G2? | **Ja, G2** — für die Jahresheizwärme unerheblich, für die Überhitzungskennzahl entscheidend |
+| **Q20** | Fassadenstrahlung im Gebäudemodell mit Hay-Davies aus GHI/DNI/DHI statt der isotropen `Sol_*`-Spalten? | **Ja** — Nord ist isotrop rund 25 % zu hoch; die Spalten bleiben dem Bestandsweg — **siehe Nachtrag 1** |
+| **Q21** | Eine Zeitbasis (Ortszeit) für das Gebäudemodell, wie PV und Solarthermie? | **Ja** — das Modell braucht `Tab_Klimadaten` nicht |
+| **Q22** | `Bauweise` von Gebäude 10576 in der Testdatenbank auf 15 200 Wh/K korrigieren (Projekt 1008 ändert sich, Basis neu einfrieren) und dafür eine vierte Einfrierregel „gesäte Gebäudedaten" anlegen? | **Ja, im Einfrierschritt GB** (Kapitel 11) |
+| **Q23** | Statischen Zustand `_prevRoomTemp` im Bestand beheben (Instanzzustand, `ResetState` je Gebäude)? Das ändert Projekte mit mehreren Gebäuden (1008, 1039) und damit die Basis | **Ja, aber als eigener, begründeter Einfrierschritt** — nicht still mit G1 |
+
+---
+
+## 14. Risiken
+
+| Risiko | Wirkung | Gegenmaßnahme |
+|---|---|---|
+| Drift in Testfall 9 und 10 (0,01 K Reserve, 5.2) | Löser könnte mit realen Wetterdaten aus der Normtoleranz laufen | Ursache in G0 klären (Stützstellen der Himmelsstrahlung, Nichtlinearität der Himmelstemperatur); Test weist die Reserve aus |
+| Normreferenzwerte nur über AixLib (Lizenz, Zitierfähigkeit, 5.1) | Tests dürfen die Zahlen nicht ausliefern | Richtlinie beziehen; Referenzreihen bis dahin interne Prüfdaten (Q2) |
+| Mehrfaches Neu-Einfrieren der Basis (G1, GB) | Regressionsnetz zeitweise ohne belastbare Basis | jeden Einfrierschritt einzeln begründen; Reihenfolge Kapitel 16 |
+| CDDL-Auflagen für xBIM (7.4) | G4 ohne Bibliothek, wenn die Freigabe fehlt | NuGet-Einbindung ohne Fork; MIT-Ausweg GeometryGymIFC (Q9) |
+| iOS-Trimming mit xBIM (7.4) | IFC-Import auf iOS nicht lauffähig | `TrimmerRootDescriptor`, früher iOS-Lauf nach Rückfrage (Q10) |
+| Keine Validierung an Messwerten (5.14) | Katalogkennzahl bleibt die einzige äußere Referenz | ein Projekt mit gemessenem Verbrauch in die Testdatenbank aufnehmen, sobald eines vorliegt |
+| Nachmultiplikation der Hülle mit Faktor 0,25–4,6 (3.6) | Kapazität und Strahlungsaustausch physikalisch unscharf | echte Hülle mit G3/G4; bis dahin im Bericht ausgewiesen |
+| Überhitzungsstunden ohne Nutzerlüftung (bis 1 425 h, 5.7) | Kühlkennzahl in G1 überzeichnet | Sommerlüftungsregel in G2; Kennzahl bis dahin als vorläufig gekennzeichnet |
+
+---
+
+## 15. Abgrenzung — was dieses Papier nicht behandelt
+
+Mehrzonenmodelle und Nachbarräume (Testfall 10 wird als Test gebaut, nicht als Funktion),
+Feuchtebilanz, Kühlung als Kanal und Kältemaschinen, Flächenheizsysteme als
+Bauteilaktivierung (Testfall 11 nur als Test), die Kopplung von Vorlauftemperatur und
+Wärmepumpen-Fahrplan an die Raumtemperatur, sommerlicher Wärmeschutz als Nachweis nach
+DIN 4108-2, Nachweise nach GEG/DIN V 18599, Verschattung durch Nachbarbebauung (nur als
+Faktor), Lüftung mit Wärmerückgewinnung (kann als wirksamer Luftwechsel eingegeben werden),
+Nutzungsprofile für Nichtwohngebäude (SIA 2024 / DIN V 18599-10), Scan-to-BIM-Aufnahmen,
+gbXML-Details, die Validierung an gemessenen Verbräuchen (dafür fehlen Daten im Repositorium).
+
+Ebenfalls nicht behandelt: **ein vollwertiger 3D-IFC-Betrachter mit Geometriekernel** — benannt
+abgelehnt; was stattdessen gebaut wird, steht in Nachtrag N1.16 (Entscheid E11).
+
+---
+
+## 16. Reihenfolge
+
+1. Entscheide Q1–Q23.
+2. **G0** in einem Worktree: Löser, Normtests, Rechenproben, Klärung Testfall 9/10; Abnahme
+   Kern-Filter grün.
+3. **G1**: Schemaschritt 77 und Namensleser zuerst (eigener Merge, Referenzlauf
+   unverändert), dann Anbindung, Prüfungen, Dialog, Hülle; neues Referenzprojekt, Basis neu
+   einfrieren; Statuszeile und Protokoll.
+4. **GB**: Warnungen im Tagesmodell, Instanzzustand statt `_prevRoomTemp`, Korrektur 10576,
+   vierte Einfrierregel — eigener, begründeter Einfrierschritt.
+5. **G2**, dann **G3**; **G4** erst, wenn G2 im Feld ist. Wiki-Seite mit G2, Logbuch beim
+   Upload.
+
+---
+
+## Nachtrag 1 (15.09.2026) — Entscheid zu Q1, die Richtlinie liegt vor, Erläuterungen
+
+Anlass: der Anwender hat Q1 entschieden („Stundenwerte"), die drei Blätter der VDI 6007
+als PDF bereitgestellt (`Z:\…\Simulation-Gebäudemodell\VDI 6007 Blatt 1/2/3`) und um
+Erläuterungen zu Q16, Q9 und Q14/Q22/Q23 gebeten. Die Richtlinie wurde als Text ausgezogen
+und gegen die Kapitel 4, 5 und 10 gehalten (Befund I,
+[`Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md`](Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md)).
+Die Kapitel 0–16 bleiben als Rev. 1 stehen; was dieser Nachtrag ändert, gilt vor ihnen.
+
+### N1.1 Entscheid E1 — Q1: Stundenwerte als Vorgabe
+
+Anwender, 15.09.2026: „Modellwahl je Gebäude mit Vorgabe Tagesbilanz (Q1): Stundenwerte."
+und auf Nachfrage: „feste Entscheidung!". **Entscheid E1, endgültig: das Stundenmodell
+VDI 6007 ist das Rechenmodell für alle Gebäude — neue wie bestehende.** Die Tagesbilanz
+bleibt nur als bewusst je Gebäude wählbare Ausnahme erhalten (Vergleich, Übergang), sie ist
+keine Vorgabe mehr. Damit kehrt sich die NULL-Semantik von 6.1 um: `Gebaeude_Modell` NULL =
+`VDI6007`; die Tagesbilanz ist der ausdrücklich gesetzte Wert `TAGESBILANZ`. Der
+Migrationsschritt schreibt **nichts** in bestehende Zeilen; alle Gebäude folgen der Vorgabe.
+
+Folgen:
+
+- **Bestehende Projekte liefern nach dem Update andere Zahlen** — Jahresheizwärme je
+  Projekt +7 bis +33 % gegenüber dem Tagesmodell (5.5), andere Spitzenlast, dazu
+  Kühlbedarf und Überhitzungsstunden als neue Kennzahlen. Das ist gewollt und wird im
+  Wiki-Logbuch mit Version und Begründung veröffentlicht; der Bedarfsdialog zeigt beide
+  Wege nebeneinander (8.2), damit der Unterschied je Gebäude erklärbar ist.
+- **Die Referenzbasis wird mit G1 vollständig neu eingefroren:** alle dreizehn
+  Referenzprojekte rechnen stündlich. Das Regressionsnetz für den Bestandsweg bleibt
+  trotzdem erhalten — ein Test setzt jedes Referenzprojekt ausdrücklich auf
+  `TAGESBILANZ` und hält es gegen die letzte Bestandsbasis (nach GB); die Abnahmesperre
+  „Bestandsprojekte unverändert" aus 10.4 gilt damit für den ausdrücklich gewählten
+  Bestandsweg, nicht mehr für die Vorgabe.
+- **G2 gehört in dieselbe Auslieferung wie G1**, weil jedes Gebäude stündlich rechnet:
+  Ergebnisdarstellung, Sommerlüftungsregel und Infiltration/Nutzerlüftung, Wiki-Seite.
+  Ohne sie sähe der Anwender Kühlbedarf und Überhitzungsstunden ohne Erklärung.
+- **GB rückt vor G1:** die Bestandsbefunde (Warnungen, Instanzzustand, Korrektur 10576,
+  vierte Einfrierregel) werden zuerst als eigener Einfrierschritt auf dem Bestandsweg
+  abgenommen; erst danach folgt die große Neueinfrierung mit G1. So bleibt getrennt
+  nachvollziehbar, was der Bestand und was das neue Modell verändert hat.
+- Kapitel 16 liest sich neu: **G0 → GB → G1 + G2 gemeinsam → G3 → G4 → G5.**
+
+### N1.2 Q2 — die Richtlinie liegt vor
+
+- **Ausgaben:** Blatt 1 (Raummodell) 2015-06, Blatt 2 (Fenstermodell) 2012-03, Blatt 3
+  (solare Einstrahlung) 2015-06, jeweils Weißdruck, Bezug über Beuth-Abonnements
+  (Fingerabdruck je Seite, DRM). Die Lizenzierung ist plausibel; die PDFs sind
+  personalisiert, jede Weitergabe rückverfolgbar.
+- **Die Referenzwerte stehen in der Richtlinie:** Blatt 1, Anhang A1, Tabellen A1.3 bis
+  A12.3 (Seiten 41–63), je Testfall **zwei Programmspalten**, Tag 1, 10 und 60, Stunden
+  1–24, Lufttemperatur, operative Temperatur und Heiz-/Kühllast. Die **Prüfregel** (6.6,
+  Seite 31): Ergebnis im **Band zwischen Programm 1 und 2, ± 0,1 K bzw. ± 1 W**; die
+  Prüfgröße ist das **Blockmittel der Stunde** (Seiten 24 und 38), nicht der Momentanwert
+  und nicht ein gleitendes Mittel. Seite 38 nennt einen **Datenträger mit
+  Excel-Arbeitsmappen** aller Eingaben und Ergebnisse — zu prüfen, ob er zum Abonnement
+  gehört; dann ist die Übernahme ein Import statt 1 728 bis 5 200 abgetippter Zahlen.
+- **Neubewertung der Validierung (5.2):** die AixLib-Reihen sind die Normzahlen selbst
+  (+273,15 K), aber je Fall nur **eine** der beiden Programmspalten. Gegen das Normband
+  gilt: Testfall 9 bestanden (Band 41,2–41,5 °C, Prototyp 41,436), Testfall 10 bestanden
+  mit 0,057 K Reserve — die „knappe" Bewertung war ein Artefakt des Einspaltenvergleichs.
+  **Testfall 11 fällt durch** (Tag 60, Stunde 10: −126,3 W gegen Band −120 … −123 W, 3,3 W
+  daneben); die Nachbildung des 120-s-Messfensters aus 5.2 entfällt, der Fall wird in G0
+  gelöst (Verdacht: α_kon der Kühldecke 5,0 je Bauteil und die Zuordnung des
+  Flächenkühlanteils als Strahlungsquelle auf IW, Gl. (51)/(53), Seite 22–23).
+  **Testfall 6:** die Norm definiert Heizlast **positiv** (Seite 9, Tabelle A6.3); die
+  AixLib-Reihe für Fall 6 ist gedreht, 5.3 („Testfall 6 negativ = Heizen") ist normwidrig.
+  Betragsmäßig liegt der Prototyp mit 765,48 W 0,48 W außerhalb des Bands 763–765 W —
+  grenzwertig im Rundungsband der ganzzahligen Tabelle. Stand damit: **zehn Fälle sicher,
+  Fall 6 grenzwertig, Fall 11 offen.**
+- **Rechtslage:** die interne Validierung mit der lizenzierten Ausgabe ist der
+  bestimmungsgemäße Gebrauch. Das **Ausliefern der Normzahlen in Testdateien** eines
+  Produkts ist eine Vervielfältigung (Vorbemerkung Seite 2) und bedarf einer Klärung mit
+  dem VDI. Deshalb: Normzahlen als **nicht ausgeliefertes Prüfmittel** führen — lokal
+  beizustellende Datei außerhalb des Installationspakets, im Repositorium nur mit
+  Zugriffsbeschränkung oder gar nicht; die ausgelieferten Tests tragen nur Abweichungen
+  und Bestanden-Kriterium. AixLib entfällt als Referenzquelle; die nachgebauten Formeln
+  (θ_eq, Strahlungsverteilung) werden gegen Blatt 1 Gl. (32)–(46) belegt.
+- **Blatt 2 und 3 brauchen fremde Prüfbeispiele:** Blatt 3, Abschnitt 13 verweist auf VDI
+  2078 (Testbeispiele 7–10) bzw. VDI 6020 (8–10); Blatt 2 auf seinen Anhang A5 und den
+  Datenträger. Für einen normkonformen Nachweis des Strahlungswegs (G1/G2) ist **VDI 6020
+  oder VDI 2078 zu beschaffen** — neuer Beschaffungspunkt neben Q2.
+- **Q2, neue Fassung:** Referenzwerte aus der Richtlinie, Prüfregel Band ± 0,1 K / ± 1 W,
+  Quellenangabe „VDI 6007 Blatt 1:2015-06, Tabelle An.3"; Datenträger prüfen; Normzahlen
+  nicht ausliefern; VDI 6020/2078 beschaffen.
+
+### N1.3 Korrekturen am Rechenweg aus der Richtlinie
+
+| Stelle | Befund aus Blatt 1–3 | Folge |
+|---|---|---|
+| 4.2, Bezeichnungen | „7R2C" steht nicht in der Richtlinie; sie sagt **2-K-Modell** und benennt R_1,IW, R_1,AW, R_Rest,AW, R_α;kon;IW, R_α;kon;AW, R_α;str;AW/IW (Dreieck, per Stern-Dreieck-Transformation Gl. (55)–(57)) und R_Lue | Normbezeichnungen in Code und Doku; „7R2C" nur als Kurzform |
+| 4.2, h_conv | α_kon ist **je Bauteil** vorzugeben (Seite 10): Testräume 1,7 Boden/Decke, 2,7 Wände/Fenster, 5,0 Kühldecke; ein globales 2,7 trifft Testfall 11 nicht | R_conv,AW und R_conv,IW als Parallelschaltung über die Bauteile; 2,7 nur Vorgabe für Wände im Klassenweg; G0 |
+| 4.2, Fensterpfad (Q6) | die Norm führt Fenster **im AW-Zweig** (R_1,AF = R_AF/6, Gl. (25)–(28), parallel nach den Wänden) und in θ_A,eq,gew (Gl. (41)); der Prototyp koppelt Fenster direkt an die Luft | Q6 ist durch die Testfälle **nicht** belegt (sie liefen nach 5.3 über den Normweg); der Klassenweg von G1 bleibt als bewusste Abweichung erlaubt, G3 stellt auf Gl. (25)–(28) um |
+| 4.2, „gleitende Stundenmittel" | Norm: **Blockmittel** je Stunde („n-te Stunde") | Wort „gleitend" streichen (gilt auch für die Spitzenlast-Kennzahl in 4.5: „Tagesmittel" = Mittel über 24 Blockstunden) |
+| 4.3, Innenbauteile | „symmetrisch bis zur Mittelebene" droht doppelt zu halbieren: die Norm baut die Kettenmatrix über den **vollständigen** Aufbau (Gl. (11)) und reduziert erst danach (Seite 14) | Formulierung ersetzen; G3 |
+| 4.3, Nachweis der Reduktion | die Richtlinie nennt **keine** Soll-RC-Werte (die Zahlen aus 1.1 stammen aus AixLib); sie gibt Schichtaufbau (Tabellen A.1.1 Typraum S, A.3.1 Typraum L) **und** Ergebnisreihen | Nachweis in G3: Reduktion nach Gl. (11)–(17) aus A.1.1/A.3.1, Simulation, Treffen von A1.3/A3.3 im Band; Bezugsperioden 7 Tage je Bauteil (2 Tage bei raumseitig abgedeckter Speichermasse), 5 Tage für den Raum |
+| 4.4, θ_eq | F_r ist der **geometrische** Sichtfaktor φ = (1 + cos γ_F)/2 (Gl. (36a)); die Bewölkung steckt allein in der Gegenstrahlung E_Atm der Klimadaten (Blatt 3 Gl. (85)); für **transparente** Flächen entfällt der kurzwellige Term (Gl. (39)); α_A = α_kon,A + α_str,A (Gl. (38)) | Formulierung korrigieren; Gl. (32)–(38) zitieren |
+| 4.4, α = 0,6 | kein Normwert; Testfälle 8/9 rechnen a = 0,70 und ε = 0,90 | als EPOS-Vorgabe deklarieren, Feld je Bauteil in G3 |
+| 4.4, 9 % konvektiv | a_kon = 0,09 gilt **nur für die Testbeispiele** (3-fach-Wärmeschutzverglasung); Blatt 2, Tabelle A5 nennt je Verglasung 0,02 (Einfachglas) bis 0,09 (3-fach) und mit innen liegendem Sonnenschutz bis 0,52 | a_kon je Verglasung/Sonnenschutz aus Blatt 2 Tabelle A5/A6; 0,09 nur Vorgabe für 3-fach-Wärmeschutz |
+| 4.4, Rahmenanteil F_F | kein Begriff der VDI 6007; Blatt 2 schließt Rahmen ausdrücklich aus (Abschnitt 9); Testfälle 0 % | als EPOS-Vorgabe außerhalb der Norm kennzeichnen (Quelle DIN V 18599) |
+| 4.4, F_W = 0,9 | Norm: winkelabhängige Korrektur korg getrennt für direkt, diffus klar, diffus bedeckt, Boden (Blatt 3, 8.1, Gl. (59)–(61)) | 0,9 als Näherung; korg in G3 |
+| 4.4, F_S | Verschattung ist in Blatt 3, Abschnitt 12 geometrisch geregelt | Pauschalfaktoren als Vereinfachung kennzeichnen |
+| 4.4, Erdreich (Q4) | VDI 6007-1 hat **kein** Erdreichmodell; erdberührte und kellerangrenzende Bauteile laufen über θ_NR,eq (Gl. (40)) mit **vorzugebender** Nachbarraumtemperatur | Kusuda ist eine EPOS-Ergänzung außerhalb der Norm (verletzt sie nicht); Quelle nennen; `KELLER` = θ_NR,eq mit vorgegebener Kellertemperatur statt Faktor 0,5 |
+| 4.4, H_ve | Testbeispiel 12 schreibt c·ρ = 1,1953 kJ/(m³K) = 0,332 Wh/(m³K) vor; der Bestandswert 0,3333 liegt näher an der Norm als 0,34 | Normfälle mit 1,1953; für Projekte Quelle des 0,34 (DIN EN 12831) nennen; das Argument „Zahlenwechsel hebt H_ve um 2 %" entfällt |
+| 4.4 / 2.3, Strahlungsmodell (Q20) | Blatt 3 schreibt **Aydinli/Krochmann** vor: bedeckter Himmel rotationssymmetrisch, klarer Himmel anisotrop, Mischung über die Sonnenwahrscheinlichkeit aus dem **Bedeckungsgrad**; Albedo 0,2 (Regelwert); Koordinaten des TRY-Referenzorts, nicht des Projektorts | isotrop (Bestand) ist nicht normkonform, **Hay-Davies auch nicht** — als bewusste Abweichung führen; der Bedeckungsgrad fehlt in `Tab_Solar` (PVGIS liefert ihn nicht), Normkonformität wäre erst mit einer TRY-Quelle erreichbar |
+| 4.5 / 5.3, Vorzeichen | Heizlast positiv (Seite 9) | Konvention übernehmen; AixLib-Reihe für Fall 6 beim Einlesen spiegeln |
+| 5.1 | „die Richtlinie selbst lag nicht vor" | überholt, siehe N1.2 |
+| 5.2 / 10.1, Prüfschwelle | 0,15 K / 1,5 W gegen eine Reihe (AixLib) | **Band P1…P2 ± 0,1 K / ± 1 W** nach 6.6; Fußnote 1 zu Fall 11 streichen |
+| 4.8 | Blatt 1, **Abschnitt 6.4, Seite 27**: E = 0 ab Z > 170 als Abschneidegrenze des abklingenden Exponentialterms (**Unterlauf**, nicht Überlauf — alle Eigenwerte sind negativ). Der Programmierhinweis 6.8 (Seiten 36–37) trägt anderes: das Verbot des stillen Rückfalls und die Behandlung der Division durch null | deckungsgleich; Grenze für exp(−Z) in G0 übernehmen ([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 1.3 und 5) |
+
+Bestätigt hat die Richtlinie: die zwei Massenknoten mit voll besetzter Systemmatrix
+(Bild 3, Seite 17), Stundenschritt mit Stundenmitteln, θ_op als Mittel aus Luft- und
+flächengewichteter Oberflächentemperatur (Gl. (103)), die flächenproportionale Verteilung
+der Strahlungslasten mit Ausschluss der Fensterfläche (Gl. (43)–(46)), h_rad = 5 innen
+(Gl. (30)), h_a = 25 als Summe, die U·A-gewichtete äquivalente Außentemperatur
+(Gl. (41)/(42)), die ideale Regelung mit Sollwerthaltung über die Stunde (Gl. (96)–(102)).
+
+### N1.4 Erläuterungen
+
+**Q16 — die Bestandsgewichte im neuen Weg streichen.** Der heutige Rechenweg multipliziert
+die Transmissionsverluste nicht mit dem echten U·A, sondern mit 0,83·U·A für die
+Außenwand, 0,95 für das Dach, 0,45 für die Bodenplatte und 0,83 für die Wärmebrücken
+(`BhkwPlan.cs:347-353`); Fenster und Sonstiges gehen voll ein. Die Faktoren stammen aus
+BHKW-Plan, eine Herleitung gibt es nicht; sie ähneln den Temperatur-Minderungsfaktoren der
+Heizlastnorm (Erdreich, unbeheizte Räume) und wirken zugleich als Kalibrierung des
+Tagesmodells auf beobachtete Verbräuche. Wirkung: der Verlustkoeffizient ist 13–21 %
+kleiner, das Tagesmodell trifft die Katalogkennzahl kWh/m²a nur zu 48–88 %. Der
+VDI-6007-Weg rechnet mit den echten U·A und gibt jeder Fläche eine eigene Randbedingung:
+Erdreich oder Keller bekommen ihre Temperatur über das Feld `Grundflaeche_Randbedingung`,
+Wärmebrücken zählen voll. Faktor **und** Randbedingung zusammen wären eine doppelte
+Minderung. Gemessen: ohne die Gewichte trifft der Prototyp die Katalogkennzahl zu
+86–100 % (5.5). „Streichen" heißt: **nur im neuen Weg**. Das Tagesmodell behält seine
+Gewichte, weil daran die Referenzbasis und die Kalibrierung bestehender Projekte hängen;
+der Bedarfsdialog zeigt beide Wege nebeneinander (8.2), damit der Unterschied erklärbar
+bleibt.
+
+**Q9 — xBIM unter CDDL-Auflagen.** xBIM ist die freie .NET-Bibliothek, die IFC-Dateien
+liest (Essentials: rein verwaltet, läuft auf Windows und iOS). Ihre Lizenz CDDL-1.0 ist ein
+**Datei-Copyleft**: nur die Dateien von xBIM selbst bleiben unter CDDL, unser Code bleibt
+proprietär, und das Gesamtprodukt darf unter eigener Lizenz ausgeliefert werden (§ 3.5 und
+§ 3.6 „Larger Work"). Drei Auflagen bleiben: (1) der Quelltext der ausgelieferten
+CDDL-Dateien muss verfügbar sein, auch wenn wir nichts ändern — ein dauerhafter Verweis
+auf die xBIM-Quellen (GitHub, NuGet-Quellpakete) im Lizenzhinweis genügt; (2) Copyright-
+und Lizenzvermerke bleiben stehen, eigene Änderungen an CDDL-Dateien wären zu kennzeichnen
+und offenzulegen; (3) der Lizenztext liegt im Installationspaket bei (Seite
+„Lizenzhinweise", wie für andere Fremdbibliotheken). Praktische Regel: **xBIM nur als
+unverändertes NuGet-Paket einbinden, nie forken oder patchen** — dann gibt es nichts
+offenzulegen. Was nicht geht: `Xbim.Geometry`, weil es Windows-gebunden ist und die
+Geometriebibliothek OCCT unter LGPL nachzieht. Der Ausweg, falls CDDL nicht freigegeben
+wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres Ökosystem).
+
+**Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
+Referenzbasis ist der eingefrorene Ergebnissatz der dreizehn Testprojekte
+(`Referenzlaeufe/2026-09-11_R7_Speicherflotte`); jede Änderung am Rechenweg wird gegen sie
+gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
+gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
+**Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
+PV-Modulkoeffizienten, Flottenstand des Projekts 1046. Gebäudedaten fehlen in dieser Liste.
+Daraus die drei Fragen: **Q14** — ein neues Referenzprojekt mit VDI 6007 erzeugt neue
+Ergebnisse, also eine neue Basis; ohne dieses Projekt prüft kein Test das neue Modell.
+**Q22** — die Korrektur des Rückfallwerts `Bauweise = 50 Wh/K` in Gebäude 10576 ändert
+Projekt 1008 (+52 % im Tagesmodell); das bricht die Basis, und weil es keine Regel dafür
+gibt, geschähe es unbemerkt — deshalb die **vierte Einfrierregel „gesäte Gebäudedaten"**
+(`Tab_Gebaeude(_STAMM)`: Bauweise, U-Werte, Flächen, Sollwerte, Luftwechsel, g-Wert),
+eingetragen in `Referenzlaeufe/LIESMICH.md` und in den Abschnitt „Regressionsnetz" der
+`CLAUDE.md`. **Q23** — der statische Raumtemperatur-Zustand des Bestands macht das Ergebnis
+von der Zeilenreihenfolge abhängig; die Behebung ändert Projekte mit mehreren Gebäuden
+(1008, 1039) geringfügig, also wieder die Basis. Jeder dieser Punkte wird als **eigener,
+begründeter Einfrierschritt** geführt (Stufe GB), damit hinterher nachvollziehbar bleibt,
+welche Zahl sich aus welchem Grund geändert hat; ein Einfrierschritt kostet Referenzlauf,
+Vergleich, Begründung in `Referenzlaeufe/LIESMICH.md` und einen grünen CI-Lauf.
+
+### N1.5 Was sich an den Entscheiden ändert
+
+| Nr. | Stand nach Nachtrag 1 |
+|---|---|
+| Q1 | **endgültig entschieden (E1): Stundenmodell für alle Gebäude, auch bestehende**; Tagesbilanz nur als ausdrücklich wählbare Ausnahme; Basis wird mit G1 vollständig neu eingefroren, Bestandsweg über ausdrückliche Wahl weiter regressionsgeprüft |
+| Q2 | Referenzwerte aus der Richtlinie, Band ± 0,1 K / ± 1 W, Normzahlen nicht ausliefern, Datenträger prüfen, VDI 6020 oder 2078 beschaffen |
+| Q6 | Fensterpfad des Klassenwegs ist eine bewusste Abweichung, nicht durch Testfälle belegt; G3 stellt auf den Normweg um |
+| Q20 | Hay-Davies bleibt Empfehlung für G1, aber als Abweichung von Blatt 3 (Aydinli/Krochmann braucht den Bedeckungsgrad) gekennzeichnet |
+| Q16 | **entschieden (E2): Gewichte im Stundenmodell gestrichen; der Gebäudedialog zeigt je Bauteil U, A und U·A ohne verdeckte Faktoren** (N1.6) |
+| Q9 | **entschieden (E3, nach Empfehlung): xBIM Essentials als unverändertes NuGet-Paket unter CDDL-1.0**, Lizenztext und Quellenverweis im Installationspaket, nie geforkt; `Xbim.Geometry` nicht; Ausweg GeometryGymIFC (MIT), falls die CDDL-Auflagen später nicht tragbar sind (N1.7) |
+| Q22, Q23 | **entschieden (E4, nach Empfehlung): Korrektur `Bauweise` 10576 auf 15 200 Wh/K und Instanzzustand statt `_prevRoomTemp` im eigenen Einfrierschritt GB vor G1, dazu die vierte Einfrierregel (gesäte Gebäudedaten)** in `Referenzlaeufe/LIESMICH.md` und `CLAUDE.md` (N1.8); Q14 ist mit E1 erledigt |
+| G0 | zusätzlich: Testfall 11 lösen, Testfall 6 klären, α_kon je Bauteil, Vorzeichen, Band-Prüfregel, Normzahlen als nicht ausgeliefertes Prüfmittel |
+| Reihenfolge | G0 → GB → G1 + G2 gemeinsam → G3 → G4 → G5 |
+| Q14 | entschieden mit E1: alle dreizehn Referenzprojekte werden mit G1 auf das Stundenmodell umgestellt und neu eingefroren; ein zusätzliches Referenzprojekt ist nicht mehr nötig |
+
+### N1.6 Entscheid E2 — Q16: Bestandsgewichte gestrichen, Dialog auf U·A
+
+Anwender, 15.09.2026: „Q16 — Bestandsgewichte streichen: Daten für die U-Werte können
+mit U·A gerechnet werden → Dialog anpassen. Für späteren VDI-Weg nötig. Auch für
+IFC-Datei-Import."
+
+**Entscheid E2:** Im Stundenmodell gehen die Transmissionsverluste ungewichtet mit U·A
+ein (4.3); die Faktoren 0,83 / 0,95 / 0,45 / 0,83 bleiben allein dem ausdrücklich gewählten
+Tagesbilanz-Weg, dessen Rechnung sich nicht ändert. Der Gebäudedialog wird auf diese
+Größen umgebaut:
+
+- Je Bauteilgruppe — Außenwand, Fenster, Dach, Bodenplatte, Sonstiges, die drei
+  Wärmebrücken — eine Zeile mit U bzw. ψ, A bzw. L, dem Produkt **U·A in W/K** und der
+  Randbedingung (Außenluft, Erdreich, Keller); darunter die Summe H_T, der
+  Lüftungsleitwert H_ve aus Luftwechsel und Volumen und H_ges — sichtbar, ohne verdeckte
+  Faktoren. Im Tagesbilanz-Weg zeigt der Dialog daneben den gewichteten Wert, damit der
+  Unterschied je Gebäude erklärbar bleibt.
+- Diese Zeilen sind die **gemeinsame Zielstruktur** für den Klassenweg (4.3), den
+  Bauteilweg (G3, dann je Bauteil statt je Gruppe) und den IFC-Import (7.6: U-Werte je
+  Bauteilgruppe flächengewichtet, Flächen aus den Quantity-Sets — dieselben Zeilen mit
+  Herkunftskennzeichen IFC / Vorgabe / manuell).
+- Umsetzung: die U·A-Anzeige mit G1 (Dialoggruppe „Rechenmodell" wird zur Gruppe
+  „Hülle und Rechenmodell"), die Herkunftskennzeichen mit G4; die Kennzahl H_T wandert in
+  `KennzahlenKatalog.cs` und den Bericht (Kapitel 9).
+
+### N1.7 Entscheid E3 — Q9: xBIM nach Empfehlung
+
+Anwender, 15.09.2026: „Q9: Empfehlung." **Entscheid E3:** der IFC-Import (G4) benutzt
+`Xbim.Essentials` 6.1.605 (`Xbim.Ifc2x3`, `Xbim.Ifc4`, `Xbim.Ifc4x3`, `Xbim.IO.MemoryModel`)
+im Kern als **unverändertes NuGet-Paket** unter CDDL-1.0 (7.4): Lizenztext und dauerhafter
+Verweis auf die xBIM-Quellen kommen in die Lizenzhinweise des Installationspakets,
+Copyright-Vermerke bleiben stehen, es wird nichts geforkt oder gepatcht. `Xbim.Geometry`
+bleibt draußen (Windows-gebunden, LGPL über OCCT). Fällt die CDDL-Freigabe später weg,
+ist `GeometryGymIFC_Core` (MIT) der Ausweg mit gleichem Leseumfang ohne Geometrie. Die
+Paketversion wird in `Directory.Packages.props` geführt; der iOS-Trimming-Nachweis
+(Q10) bleibt Teil von G4.
+
+### N1.8 Entscheid E4 — Q14, Q22, Q23: Neu-Einfrieren nach Empfehlung
+
+Anwender, 15.09.2026: „Q14, Q22, Q23: Empfehlung." **Entscheid E4:**
+
+- **Q22:** `Bauweise` von Gebäude 10576 wird in der Testdatenbank auf 15 200 Wh/K
+  (50 Wh/(m²K) × 304 m²) korrigiert. Zugleich entsteht die **vierte Einfrierregel „gesäte
+  Gebäudedaten"** (`Tab_Gebaeude(_STAMM)`: `Bauweise`, U-Werte, Flächen, Sollwerte,
+  `Luftwechselrate`, `Fensterdurchlassgrad`) in `Referenzlaeufe/LIESMICH.md` und im
+  Abschnitt „Regressionsnetz" der `CLAUDE.md`.
+- **Q23:** der statische Zustand `_prevRoomTemp` wird durch einen Instanzzustand mit
+  `ResetState` je Gebäude ersetzt; das Tagesmodell wird damit reihenfolgeunabhängig.
+- Beides läuft als **eigener Einfrierschritt GB vor G1** auf dem Bestandsweg: Referenzlauf,
+  Vergleich, Begründung in `Referenzlaeufe/LIESMICH.md`, grüner CI-Lauf; die neue Basis
+  ist die letzte reine Bestandsbasis, gegen die der ausdrücklich gewählte Tagesbilanz-Weg
+  später regressionsgeprüft wird (N1.1).
+- **Q14** ist mit E1 erledigt: alle dreizehn Referenzprojekte werden mit G1 auf das
+  Stundenmodell umgestellt und die Basis erneut eingefroren; ein zusätzliches
+  Referenzprojekt entfällt.
+
+### N1.9 VDI 6020:2022 und VDI 2078:2015 liegen vor (Befund K)
+
+Der Anwender hat beide Richtlinien nachgereicht
+([`Gebaeudesimulation/2026-09-15_Befund_K_VDI6020_VDI2078_Abgleich.md`](Gebaeudesimulation/2026-09-15_Befund_K_VDI6020_VDI2078_Abgleich.md)).
+Was sich daraus ändert:
+
+- **Lizenzlage:** VDI 2078 trägt denselben Beuth-Abo-Fingerabdruck wie Blatt 1 und 3
+  (plausibel lizenziert). **VDI 6020:2022 trägt die Ausdruck-Fußzeile einer
+  IP-Hochschullizenz** (Universität Tübingen, „ip-user", Ausdruck am 15.09.2026); solche
+  Lizenzen decken in aller Regel keine kommerzielle Produktentwicklung. Herkunft klären,
+  eigene Lizenz beziehen; bis dahin nichts aus VDI 6020:2022 in Code, Testdaten oder
+  Auslieferung übernehmen — dieser Nachtrag zitiert nur.
+- **Rückhalt für E1:** VDI 6020, 6.2.3.4 (Seite 45) erklärt 1-Kapazitäten-Modelle für
+  Ganzjahressimulationen „ohne Ausnahme" für ungeeignet, einschließlich des
+  Abschätzverfahrens der VDI 2078 und der analogen Rechnung in DIN V 18599. Der
+  Tagesbilanz-Weg des Bestands ist damit als Jahresrechenverfahren normativ
+  disqualifiziert und bleibt nur als bewusst gewählte Ausnahme.
+- **Referenzergebnisse stehen in keiner der beiden Richtlinien gedruckt** — nur als
+  Excel-Arbeitsmappen auf den Datenträgern (VDI 6020 7.3/9.1/Anhang C2, VDI 2078
+  Anhang C2). Dazu fehlen die Klimareihen TRY05 Würzburg (DWD 1986) für alle Jahresfälle
+  und TRY03 Hamburg / TRY12 Mannheim (DWD 2004) für VDI 2078 Testbeispiele 4 und 6. Der
+  Beschaffungspunkt aus N1.2 lautet neu: **Datenträger bzw. Downloadpakete zu VDI 6007
+  Blatt 1, VDI 2078 und VDI 6020, die DWD-TRY-Datensätze, und eine eigene Lizenz der
+  VDI 6020:2022.**
+- **Nachweisweg für den Strahlungsweg:** VDI 6020 lässt „das Strahlungsmodell der VDI 6007
+  Blatt 3 oder ein adäquates Modell" zu (5.1.11); VDI 2078, 9.1, **Fall B** regelt den
+  Nachweis für einen Rechenkern nach Blatt 1 mit anderem Strahlungsmodell: Blatt-1-Fälle
+  nach Fall A (Typ 1, ± 0,1 K / ± 1 W), die VDI-2078-Testbeispiele 7–10 nach Typ 2
+  (**± 0,2 °C / ± 5 W je Stunde, absolut**), die übrigen statistisch (Typ 3). Hay-Davies
+  (Q20) ist damit kein Normverstoß, aber die Typ-2-Schwelle wird er auf Nord- und Ostflächen
+  nach aller Erfahrung reißen. Solange Testbeispiele 7–10 nicht bestanden sind, ist nur
+  „Rechenkern nach VDI 6007 Blatt 1" belegbar, nicht „validiert nach VDI 6020/2078".
+  VDI 6020 5.1.11 fordert außerdem den Bedeckungsgrad oder die Sonnenwahrscheinlichkeit als
+  Klimaparameter — `Tab_Solar` führt ihn nicht (PVGIS liefert ihn nicht).
+- **Neue Pflicht- und Kürfälle:** G0 unverändert (Blatt 1, 1–12, Band). **G1 Pflicht:
+  VDI 2078 Testbeispiel 7.1/7.2** (Sonnenstand, Umrechnung, langwelliger Austausch, korg
+  und g_dir; Eingaben vollständig gedruckt in Anhang A1 und B1, ohne TRY rechenbar; ohne
+  Datenträger nur qualitativ gegen die Verlaufsbilder Seite 72). **G1 empfohlen:
+  Testbeispiel 10** (Umrechnung auf N, S, O, W, horizontal, vor und hinter der Verglasung —
+  der Fall, an dem sich Hay-Davies gegen Aydinli/Krochmann quantifiziert; braucht TRY05).
+  **G2 empfohlen: VDI 6020 Testbeispiel 16.1/16.2** (Fensterlüftung ohne Kühlung,
+  Übertemperaturgradstunden — deckt sich mit der Sommerlüftungsregel). Später optional: 8/9,
+  12/13, 14/15. Nicht relevant: VDI 2078 Anhang D (1-K) und Testbeispiele 1–6.
+  Abnahmekriterien 10.1/10.4 bekommen mit G1 eine Zeile „Strahlungsweg: VDI 2078
+  Testbeispiel 7, Typ 2".
+- **Genauigkeitserwartung:** VDI 2078, Tabellen 9/10 (Seiten 82–85) messen das 2-K-Modell
+  selbst gegen das n-K-Referenzmodell: Mittelwert der stündlichen Abweichung bis
+  0,64–0,75 K bzw. 17–41 W, Standardabweichung bis 1,1 K. Die Modellklasse trägt eine
+  Unschärfe dieser Größenordnung; die gemessenen 86–100 % Katalogtreffer (5.5) liegen im
+  Rahmen.
+- **Korrekturen an N1.3:** der Eintrag zum Rahmenanteil war zu scharf — VDI 6020 5.1.15
+  (Seite 17) regelt den Fensterrahmen ausdrücklich (Verglasung und Rahmen als ein oder zwei
+  Bauteile), nur Blatt 2 schließt ihn aus; Quelle ist VDI 6020/2078, nicht DIN V 18599.
+  c·ρ der Luft: 1,1953 kJ/(m³K) gilt für Blatt-1-Testfall 12, 1,2 kJ/(m³K) für die
+  VDI-6020-Beispiele (Seite 51). VDI 6020 5.1.17 und VDI 2078 5.2.1 erlauben, die
+  Diffusstrahlung bei Eigen- und Fremdbeschattung unkorrigiert zu lassen — das entlastet
+  die Pauschalfaktoren F_S; für die Direktstrahlung bleibt Blatt 3, Abschnitt 12.
+- **Neu aufzunehmen:** die **Bemaßungsregel** VDI 6020 5.1.2 (Seite 13) — Außenbauteile
+  nach dem Bruttomaß der Außenseite, Innenbauteile nach lichten Maßen; sie gehört in den
+  Gebäudedialog nach E2 (U·A je Bauteil) und in die Zuordnungsregel des IFC-Imports (7.6:
+  `GrossSideArea`, nicht `NetSideArea`). Die **Anlagenschnittstelle** VDI 6020 5.3.3,
+  Gl. (4)–(8) (Seiten 29–31): Q̇_HK,Raum → Zuluftanteil + Restbedarf → Nutzenergiebedarf ist
+  die normative Übergabegröße vom Gebäudemodell an `SimulationControl`; Erzeuger,
+  Wärmepumpe und Speicher kommen in beiden Richtlinien nicht vor — die Deckungsrechnung
+  bleibt normfrei. Die **Heating Design Period** (VDI 6020 Anhang A1, informativ) ist der
+  normnahe Kandidat für eine Auslegungsheizlast im Stundenmodell (14 Tage bedeckt, 4 Tage
+  Anlauf, Heating Design Day) — Abgrenzung, für ein späteres Papier.
+- **Namensfalle:** „Testbeispiel 11" ist in VDI 6020 seit 2022 unbelegt, „Testfall 11" im
+  Konzept meint den Kühldeckenfall aus Blatt 1. In allen Papieren die Richtlinie mitnennen.
+
+### N1.10 Entscheid E5 — Datenträger und TRY: die vorliegenden TMY-Daten
+
+Anwender, 15.09.2026: „Datenträger, TRY-Daten: verwende vorliegende TMY-Daten." **Entscheid
+E5:** es werden weder die Datenträger der Richtlinien noch DWD-Testreferenzjahre beschafft.
+Klimabasis des Gebäudemodells sind die vorhandenen PVGIS-TMY-Reihen in `Tab_Solar` (2.3):
+Temperatur, Global-, Direkt- und Diffusstrahlung, Sonnenwinkel je Stunde.
+
+Folgen:
+
+- **G0 bleibt vollständig:** die zwölf Testfälle der VDI 6007 Blatt 1 brauchen kein
+  Klima — ihre Eingaben und Referenzwerte stehen gedruckt im Text (N1.2); Testfall 5 und
+  8–10 führen die Einstrahlung bereits als Tabellenwerte.
+- **Die Testbeispiele 8–16 der VDI 6020 und 8–16 der VDI 2078 sind nicht nachrechenbar:**
+  sie setzen TRY05 Würzburg voraus, und ihre Referenzergebnisse liegen nur auf den
+  Datenträgern. Der Nachweis des Strahlungswegs nach VDI 2078, 9.1, Fall B (Typ 2,
+  ± 0,2 °C / ± 5 W) ist damit **nicht** führbar. EPOS-Plan weist aus: „Rechenkern nach
+  VDI 6007 Blatt 1, validiert an den zwölf Testbeispielen" — nicht „validiert nach
+  VDI 6020/2078". Das steht so in Wiki und Bericht.
+- **Was den Strahlungsweg stattdessen absichert (G1):** (1) VDI 2078, Testbeispiel 7.1
+  (Einstrahlung außen auf 1 m² für CDP und CDD aus den gedruckten Klimaparametern,
+  Anhang A1 und B1) — rechenbar ohne TRY, Abgleich qualitativ gegen die gedruckten
+  Verlaufsbilder (Seite 72); (2) ein **interner Modellvergleich auf den TMY-Daten**: das
+  Verfahren nach Blatt 3 (Aydinli/Krochmann, Gl. (29)–(50)) wird neben Hay-Davies
+  implementiert und auf den dreizehn Klimaregionen je Orientierung und Neigung gegen
+  Hay-Davies gehalten; berichtet werden Jahressumme, Stundenabweichung und der Anteil der
+  Stunden innerhalb ± 5 W/m². Das ist kein Normnachweis, aber die Zahl, die die Wahl des
+  Transpositionsmodells (Q20) trägt. Fällt der Unterschied klein aus, bleibt Hay-Davies;
+  sonst wird Blatt 3 der Weg.
+- **Bedeckungsgrad und Sonnenwahrscheinlichkeit** (Blatt 3, Gl. (47)–(49); VDI 6020 5.1.11)
+  liefert PVGIS nicht. Ersatz: die Sonnenwahrscheinlichkeit wird je Stunde aus dem
+  Diffusanteil geschätzt (SSW ≈ 1 − Diffus/Global bei Sonne über dem Horizont, geklemmt
+  auf 0…1); als Abweichung von Blatt 3 dokumentiert.
+- **Langwelliger Austausch außen** (Blatt 1, Gl. (33)–(37)): der PVGIS-TMY-Abruf führt neben
+  Temperatur, Strahlung, Wind und Feuchte auch die atmosphärische Gegenstrahlung; in G1 ist
+  zu prüfen, ob `KlimaImportAblauf` sie erhält, und sie dann als neue Spalte in `Tab_Solar`
+  zu persistieren (Schemaschritt mit G1; Bestandsregionen bekommen den Wert beim nächsten
+  Klimaimport, bis dahin Rückfall auf die Schätzung nach Blatt 3, Gl. (84)–(88) mit der
+  Sonnenwahrscheinlichkeit von oben). Wind und Feuchte werden bei der Gelegenheit ebenfalls
+  persistiert (2.3).
+- **Zeitbasis:** PVGIS-TMY steht in UTC (2.3); das Gebäudemodell rechnet in Ortszeit über
+  `ReadOrtszeit` (4.4). Der Sonnenstand nach Blatt 3 wird zur Stundenmitte gerechnet
+  (Seite 11) — das ist mit `Sonnengeometrie` abzugleichen (G1).
+- **Beschaffungspunkte, neuer Stand:** offen bleibt allein die Lizenzfrage zur VDI 6020:2022
+  (N1.9); Datenträger und TRY entfallen.
+
+### N1.11 Entscheid E6 — VDI 6020:2022 nur zu Forschungszwecken
+
+Anwender, 15.09.2026: „VDI 6020:2022 Nutzung nur zu Forschung." **Entscheid E6:** die
+vorliegende VDI 6020:2022 ist eine Forschungslizenz. Sie dient allein dem Verständnis; **nichts
+daraus geht in Code, Tests, Testdaten, Wiki, Bericht oder Auslieferung**, und keine Produktregel
+wird auf sie gestützt. Für das Produkt tragen ausschließlich die lizenzierten Quellen: VDI 6007
+Blatt 1–3 (2015/2012), VDI 2078:2015 und die zitierten DIN-/ISO-Normen. Folgen für die
+Aussagen aus N1.9:
+
+| Aussage aus N1.9 | Stand nach E6 |
+|---|---|
+| 1-K-Modelle für Jahressimulationen ungeeignet (VDI 6020 6.2.3.4) | bleibt Hintergrundwissen zu E1; die Begründung von E1 im Wiki und im Bericht nennt die Messergebnisse (Kapitel 5) und VDI 6007 Blatt 1, nicht VDI 6020 |
+| Typ-2-Schwelle ± 0,2 °C / ± 5 W, Validierungsfälle A/B, Testbeispiel 7 | stammen aus **VDI 2078**, 9.1/9.2 — bleiben Produktgrundlage |
+| Bemaßungsregel Bruttomaß außen / lichte Maße innen (VDI 6020 5.1.2) | für den Gebäudedialog (E2) und den IFC-Import aus VDI 2078, Abschnitt 6, bzw. DIN EN ISO 13789 belegen — in G1 zu prüfen; bis dahin gilt die Regel als Arbeitsannahme ohne Normzitat |
+| Anlagenschnittstelle Gl. (4)–(8) | Hintergrund; die Übergabegröße Q̇_HK,Raum an `SimulationControl` wird ohne Normzitat definiert (4.6) |
+| Bedeckungsgrad als Klimaparameter (VDI 6020 5.1.11) | die Anforderung folgt für das Produkt aus VDI 6007 Blatt 3, Gl. (47)–(49) — unverändert |
+| Testbeispiele 14–16, Heating Design Period, Konformitätserklärung | Forschung; keine Produktplanung darauf |
+| Testbeispiele 1–7 | identisch mit VDI 6007 Blatt 1 — dort belegt |
+
+Der Befund K bleibt als Lesenotiz unter `Gebaeudesimulation/` mit dem Vermerk der
+Nutzungsbeschränkung; die Textfassung unter `epos-spike\vdi\VDI6020_2022.txt` wird nach
+Abschluss der Konzeptphase gelöscht. Die Statuszeile „Lizenz VDI 6020" ist damit
+entschieden; eine Produktlizenz wird nicht beschafft.
+
+### N1.12 Entscheide E7 und E8 — Einzonenmodell zuerst, Mehrzonen über IFC, Skalierung bleibt
+
+Anwender, 15.09.2026: „Als erstes soll die Gebäudesimulation nach VDI 6007 ein Einzonenmodell
+analog zum bestehenden verwenden. Mit dem Import einer IFC-Datei soll ein Mehrzonenmodell
+möglich sein. Dazu muss ein Konzept erstellt werden, wie die Eingaben für die Zonen und die
+importierten Materialdaten und Flächen erfolgen kann." — und: „Übernommen werden aus dem
+bisherigen Gebäudemodell soll die Skalierung: die Hochrechnung des Energiebedarfs auf eine
+andere Fläche/Volumen."
+
+**Entscheid E7:** Die Stufen G0 bis G2 bauen das **Einzonenmodell** — eine Zone je Gebäude,
+Eingaben wie im Bestand (Kapitel 4.1, 4.3 Klassenweg), Datenquelle `Tab_Gebaeude`. Das
+**Mehrzonenmodell** ist eine spätere Stufe, die auf dem Bauteilkatalog (G3) und dem
+IFC-Import (G4) aufsetzt: Zonen, Bauteile je Zone mit Flächen und Orientierung, Aufbauten
+mit importierten Materialdaten. Es bekommt ein eigenes Konzeptpapier
+(`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`, in Arbeit) mit dem Rechenweg der
+Zonenkopplung nach VDI 6007 Blatt 1 (nicht adiabate Innenbauteile über θ_NR,eq, Gl. (40)),
+dem Datenmodell Zone → Bauteil → Aufbau → Schicht → Baustoff, den Dialogen für die
+Zoneneingabe und den Zuordnungsregeln des Imports. Ohne Zonendaten rechnet ein Gebäude
+weiter als eine Zone; das Einzonenmodell bleibt davon unberührt.
+
+**Entscheid E8:** Die **Skalierung des Bestands bleibt im Stundenmodell erhalten**, wie in
+4.7 beschrieben: die Rechnung läuft mit den Katalogdaten des Gebäudes, das Ergebnis wird mit
+dem Faktor `Z_AuswahlWohnflaeche / Wohnflaeche` auf die Projektfläche hochgerechnet
+(`BhkwPlan.cs:435`, Argumente `:392`), und die Verbrauchs-Rückrechnung über die fiktive
+Fläche (`Bewohner_und_Flaeche_berechnen`, `SimulationWaermebedarf.cs:613-656`) bleibt eine
+Verhältnisrechnung mit einem Kataloglauf. Beides gilt für den Klassenweg (Einzonenmodell
+aus `Tab_Gebaeude`). Für Gebäude mit echter Hülle aus Bauteilkatalog oder IFC (G3/G4)
+entfällt die Nachmultiplikation, weil die Flächen dann das Projektgebäude selbst beschreiben; das
+Volumen folgt aus Zonenflächen und Raumhöhen. Die Statusdatei führt beide Entscheide.
+
+### N1.13 Entscheid E9 — Import und Export von gbXML und IFC
+
+Anwender, 15.09.2026: „Der Import und Export von gbXML und IFC sollen möglich sein."
+**Entscheid E9:** EPOS-Plan tauscht Gebäudedaten in beide Richtungen und in beiden Formaten.
+Das ändert gegenüber Rev. 1: der gbXML-Import (bisher Kür in G5, Q13) wird Pflicht, und es
+kommen zwei Exporte hinzu, die Rev. 1 nicht kannte. Gegenstand des Exports ist das
+Gebäudemodell von EPOS-Plan — im Einzonenmodell die Hülle nach E2 (Bauteilgruppen mit U·A,
+Fenster je Orientierung, Volumen), im Mehrzonenmodell (E7) Zonen, Bauteile je Zone mit
+Fläche und Orientierung, Aufbauten, Schichten und Baustoffe — samt Ergebnissen
+(Heizwärmebedarf je Zone und Jahr, Spitzenlast) als Eigenschaften. Ein Export ohne
+Geometriekernel liefert **keine Gebäudegeometrie**, sondern ein semantisches Modell:
+in IFC Objekte mit Eigenschaften und Mengen ohne Körperdarstellung (bzw. bei zuvor
+importierten Dateien die Rückgabe der Datei mit angereicherten Eigenschaftssätzen), in
+gbXML Flächen als Rechteckgeometrie aus Fläche, Azimut, Neigung. Was die Zielwerkzeuge
+(Archicad, Revit, IDA ICE, DesignBuilder, Solar-Computer, Hottgenroth) damit anfangen
+können, ist Gegenstand der Prüfung. Das Konzept dazu entsteht als eigenes Papier
+(`Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`), nachdem das Mehrzonenmodell steht, weil
+der Export dessen Datenmodell abbildet. Stufen: gbXML-Import neben dem IFC-Import in G4,
+Exporte als G7.
+
+### N1.14 Normband-Validierung aller zwölf Testfälle (Befund J)
+
+Die Tabellen A1.3 bis A12.3 der Blatt 1 wurden von zwei unabhängigen Lesern (Textfassung
+und Wortkoordinaten) ausgezogen, mit einer Drittlesung und gegen die AixLib-Reihen
+abgeglichen: **6 192 Zellen, null Abweichungen** zwischen den Lesungen; die AixLib-Reihen
+sind in 864 Zellen zeichengleich die Normzahlen (Programm 1; Fall 11 Programm 2; Fall 6 mit
+gedrehtem Vorzeichen). Der Prototyp wurde dann für alle zwölf Fälle nach der Normregel 6.6
+geprüft — Band [min(P1,P2) − tol, max(P1,P2) + tol], tol = 0,1 K bzw. 1 W, Prüfgröße das
+Stundenmittel, Tag 1, 10 und 60, Luft- und operative Temperatur und Last
+([`Gebaeudesimulation/2026-09-15_Befund_J_Normband_Validierung.md`](Gebaeudesimulation/2026-09-15_Befund_J_Normband_Validierung.md)).
+
+| Ergebnis | Zahl |
+|---|---|
+| geprüfte Zellen (12 Fälle × 3 Größen × 3 Tage × 24 Stunden) | 2 592, davon 2 553 im Band |
+| Prüfungen Fall × Größe | **30 von 36 bestanden** |
+| Fälle vollständig im Band | **8 von 12** (1, 2, 3, 4, 5, 7, 8, 12) |
+| Fall 6, Last | bis 0,50 W über dem Band in 14 Stunden — phasenstarr zum Sollwertprofil, keine Parametervariation räumt es ab; ein echter, kleiner Modellrest (0,2 % der Spitzenlast) |
+| Fall 9, Luft und operativ | 0,011 K bzw. 0,006 K in je einer Stunde |
+| Fall 10, Luft und operativ | 0,024 K (8 Stunden) bzw. 0,060 K (11 Stunden) |
+| Fall 11, Last | **3,9 W in Stunde 10 der Tage 10 und 60** — die Umschaltstunde Heizen → Kühlen; der Umschaltzeitpunkt liegt rund 45 s zu früh; Hypothese: die Kühldecke braucht einen eigenen Oberflächenknoten (α_kon 5,0 nur dort), das Ein-Knoten-IW löst ihn nicht auf |
+| Rechenzeit | 12 Fälle × 1 440 Schritte in 1,32 s samt Prozessstart; 6–120 ms je 8 760 Schritte |
+
+Zwei Folgerungen für G0: (1) Die Fälle 9 und 10 hängen an der Lesart von Abschnitt 6.6 —
+die Norm druckt auf 0,1 K; bezieht man die Druckrundung ein, verschwinden ihre
+Überschreitungen (maximal 0,06 K). Das ist eine Auslegungsfrage, die G0 mit dem Anwender
+festlegt; bis dahin zählen die Fälle als knapp nicht bestanden. (2) Fall 11 ist der
+einzige substanzielle Befund; G0 löst ihn über getrennte Innenoberflächen (Kühldecke als
+eigener Knoten) oder weist ihn als bekannte Grenze aus. Die operative Temperatur ist in
+10 von 12 Fällen vollständig im Band — sie hat allerdings keinen externen Beleg (die
+AixLib-Reihen führen sie nicht), ihre 1 728 Normzellen tragen allein die drei
+übereinstimmenden Lesungen. Gegen die VDI-6020-Spalte der Fälle 1–7 weicht der Prototyp
+erwartungsgemäß ab (bis 2,2 K, 66 W): er rechnet das 2-K-Modell der VDI 6007, nicht das
+Referenzverfahren der VDI 6020. Der Ausweis im Produkt lautet damit: **„Rechenkern nach
+VDI 6007 Blatt 1; acht der zwölf Testbeispiele vollständig im Normband, drei innerhalb
+0,06 K bzw. 0,5 W, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung)"** — bis G0
+die offenen Punkte schließt.
+
+### N1.15 Entscheid E10 — Druckrundung als Toleranz
+
+Anwender, 15.09.2026: „Druckrundung als Toleranz zulassen (Fälle 9 und 10)." **Entscheid
+E10:** Die Referenzwerte der Tabellen A1.3–A12.3 sind gedruckte Rundungen — Temperaturen auf
+0,1 K, Lasten auf 1 W. Ein gedruckter Wert steht für ein Intervall von ± einer halben
+Druckstelle um den wahren Wert; die Prüfregel 6.6 wird auf den wahren Wert bezogen. Das
+Prüfband lautet damit
+
+```
+[min(P1,P2) − tol − ½ Druckstelle,  max(P1,P2) + tol + ½ Druckstelle]
+  Temperaturen: tol = 0,1 K, ½ Druckstelle = 0,05 K  →  ± 0,15 K
+  Lasten:       tol = 1 W,   ½ Druckstelle = 0,5 W   →  ± 1,5 W
+```
+
+Die Regel wird einheitlich auf alle Größen angewandt, nicht nur auf die vom Anwender
+genannten Fälle 9 und 10 — sonst hinge das Urteil an der Größe statt an der Regel. Folgen
+für den Stand aus N1.14: Fall 9 (0,011 K) und Fall 10 (0,060 K) bestehen; **Fall 6 (0,50 W)
+besteht ebenfalls**, weil seine größte Überschreitung unter der halben Druckstelle liegt;
+Fall 11 bleibt offen: seine zwei Umschaltstunden liegen **um 3,4 W bzw. 2,8 W** neben dem Band
+nach E10 (gegen das strenge Band ohne Druckrundung 3,9 W bzw. 3,3 W;
+[Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 10.3). Damit sind **35 von 36 Prüfungen bestanden und 11 von 12
+Fällen vollständig im Band**. Für G0 heißt das: `GebaeudeModellNormfallTests` prüfen mit
+diesem Band und weisen die Reserve aus; offen bleibt allein Testfall 11. Die **wahrscheinlichste
+Ursache** — das Ein-Knoten-Innenbauteil trennt die Kühldecke (α_kon = 5,0) nicht von den übrigen
+Innenflächen, der Umschaltzeitpunkt liegt dadurch rund 45 s zu früh — ist **diagnostisch belegt,
+aber nicht bewiesen**; bewiesen ist der Umschaltversatz, nicht seine Ursache, und ein Nachweis
+bräuchte ein Modell mit getrenntem Deckenknoten (Rechenschritte 10.3). Der Produktausweis lautet neu: **„Rechenkern nach VDI 6007
+Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel
+11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung)"** — bis G0
+auch diesen Punkt schließt.
+
+### N1.16 Entscheid E11 — Gebäudebetrachter: Grundriss und schematische Körper
+
+Anwender, 15.09.2026: „ergänze im Konzept: ifc Viewer — Variante: 2D-Grundriss je Geschoss aus den
+Raumgrenzen (SVG in einer Razor-Komponente) und Schematische Körper aus EPOS-Daten (Quader je Zone,
+Platte je Bauteil) — Zusammen gebaut."
+
+**Entscheid E11: ein Gebäudebetrachter, zwei Ansichten, ein Datenmodell.** EPOS-Plan bekommt keinen
+IFC-Betrachter, sondern eine eigene Ansicht auf das eigene Gebäudemodell. Beide Ansichten lesen
+dieselbe Quelle: ein **Zonengeometrie-Modell** im Rechenkern (Arbeitsname; den endgültigen Namen
+setzt das Architekturpapier — es führt das Modell als `Zonengeometrie` mit `Zonenumriss`,
+[Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 1.3) mit je Zone einem
+Grundrisspolygon, einer Höhe, einem Geschoss und der
+Zuordnung der Bauteile zu den Polygonkanten bzw. zu Boden und Decke.
+
+**Woher das Polygon kommt.** Mit IFC aus den **Raumgrenzen** (`IfcRelSpaceBoundary`) — nach Befund P, 2.3
+sind die Polygonflächen ohne Geometriekernel zu rechnen
+([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md), 6.2). Ohne IFC aus Zonenfläche und dem
+Seitenverhältnis der Bauteilgruppen: h = V/A, l = A_NS/(2·h), b = A_OW/(2·h) — dieselbe Herleitung
+wie die synthetische Quadergeometrie in G7b des Datenaustauschkonzepts. Beim Einzonenmodell (E7) ist
+das ein Quader je Gebäude.
+
+| Teil | Technik | Stufe | Aufwand |
+|---|---|---|---|
+| **Zonengeometrie-Modell** (gemeinsames Fundament) | Kern, plattformfrei: Polygon, Höhe, Geschoss, Zuordnung der Bauteile zu Kanten, Boden und Decke | **G6c** | 3–5 PT |
+| **Ansicht 1 — 2D-Grundriss je Geschoss** | SVG in einer Razor-Komponente, **keine Bibliothek**; Räume und Zonen als Polygone, Farbe je Zone, Klick auf einen Raum wählt die Zone bzw. ordnet sie zu | **G6c** — Zuordnungsdialog des IFC-Imports; der gbXML-Import speist dieselbe Ansicht über `Space`/`Zone` | 3–5 PT |
+| **Ansicht 2 — schematische Körper** | Polygon um die Höhe extrudiert (bei Rechteckgrundriss ein Quader je Zone), Platte je Bauteil an Kante, Boden und Decke; three.js (MIT) **lokal** unter `EPOS.UI/wwwroot`, nie vom CDN | **G7b** — Sichtprüfung dessen, was der gbXML-Export (`PolyLoop`) und der IFC-Export G7e (`IfcExtrudedAreaSolid`) schreiben | 4–7 PT |
+| | | **zusammen** | **10–17 PT** |
+
+**Die Ansicht ist der Prüfstand der Exporte, nicht ihr Beiwerk.** G7b und G7e lesen dasselbe
+Zonengeometrie-Modell und **schreiben** es nur noch; sie sparen dadurch 3–5 PT. Getrennt gebaut wären
+es 10–20 PT plus eine zweite, abweichende Geometrie — und zwei Bilder desselben Gebäudes, die nicht
+zueinander passen.
+
+**Regeln.**
+
+- **Eine Komponente** mit Umschalter „Grundriss | Körper" (Arbeitsname `GebaeudeAnsicht.razor`).
+- **„schematisch" steht sichtbar in der Oberfläche.** Ohne IFC ist die Anordnung der Zonen zueinander
+  erfunden (Reihung je Geschoss); die Kennzeichnung ist dieselbe Pflicht wie bei den Exporten.
+- **three.js kommt auf die Lizenzhinweisseite** (Frage U10) — wie jeder andere ausgelieferte
+  Fremdanteil.
+- **iOS:** WebGL läuft in der WebView; kleine Dreieckszahl, kein Speicherproblem.
+- **Abnahme:** bunit-Test der Komponente; **Determinismus der Geometrie** als Probe — gleiche Eingabe
+  ergibt gleiche Polygone und einen byteweise gleichen Export.
+
+**Benannt abgelehnt.** Ein **vollwertiger 3D-IFC-Betrachter** (web-ifc mit three.js in der WebView,
+15–25 PT, MPL-2.0, auf iOS speicherkritisch) und die **native xBIM Geometry Engine** (nur Windows,
+OCCT unter LGPL, gegen [`ADR-003`](ADR-003_IFC_xBIM_ohne_Geometriekernel.md)). Beides bleibt eine
+spätere Option **nur bei Bedarf aus der Praxis** und ist nicht geplant. „Datei extern öffnen" bleibt
+als Handgriff über `Dienste.Datei` zulässig.
+
+Die Einzelheiten stehen als **Nachtrag 1** im
+[Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) (Kapitel 14: gemeinsames
+Modell, beide Exporte, Proben, Aufwand) und als Abschnitt 6.7 im
+[Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (Grundrissansicht im
+Zuordnungsdialog).

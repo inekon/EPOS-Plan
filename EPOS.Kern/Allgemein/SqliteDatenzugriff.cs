@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Microsoft.Data.Sqlite;
+using SQLitePCL;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Microsoft.Data.Sqlite;
 using WindowsFormsApplication1.Allgemein;
 
 namespace WindowsFormsApplication1
@@ -431,6 +433,7 @@ namespace WindowsFormsApplication1
         // Für INSERT, UPDATE, DELETE
         public bool ExecuteSQL(string sql, params DbParam[] parameters)
         {
+
             try
             {
                 using (Leihverbindung leihe = Vorgangsklammer.Leihe())
