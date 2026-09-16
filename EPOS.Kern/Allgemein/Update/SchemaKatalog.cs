@@ -1924,9 +1924,9 @@ namespace WindowsFormsApplication1
         /// fallen bei jeder Anlage an; sie werden mit der Komponente angelegt und sind
         /// im Projekt <b>nicht löschbar</b>. Wer keine Kosten ansetzen will, setzt den
         /// Satz auf 0 — die Zeile bleibt dann mit 0,00 €/a stehen und ist im Bericht als
-        /// bewusst angesetzte Null erkennbar (Muster
-        /// <c>BetriebskostenCtrl.Speichere</c>: eine ungepflegte Zeile verschwindet nicht,
-        /// sie wird 0).
+        /// bewusst angesetzte Null erkennbar: <c>KostenProjektPositionenCtrl.Loeschen</c>
+        /// verweigert die Pflichtzeile, <c>…Speichern</c> sichert den Satz 0 — eine
+        /// ungepflegte Zeile verschwindet nicht, sie wird 0.
         /// <para>NULL bzw. False = gewöhnliche Position. Access legt YESNO durchgängig
         /// mit False an; die Vorbelegung ist damit der Wert, der nichts auslöst.</para>
         /// </summary>

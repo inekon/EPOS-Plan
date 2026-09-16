@@ -6468,27 +6468,6 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="VDI_BEM_ANZ_PROZ_BRENNSTOFF" xml:space="preserve">
     <value>% der Brennstoffkosten</value>
   </data>
-  <data name="VDI_BEZUG_INVEST_BHKW" xml:space="preserve">
-    <value>Investition BHKW</value>
-  </data>
-  <data name="VDI_BEZUG_INVEST_KESSEL" xml:space="preserve">
-    <value>Investition Heizkessel</value>
-  </data>
-  <data name="VDI_BEZUG_INVEST_GESAMT" xml:space="preserve">
-    <value>Investitionssumme des Projekts</value>
-  </data>
-  <data name="VDI_BEZUG_STROM" xml:space="preserve">
-    <value>Stromerzeugung BHKW</value>
-  </data>
-  <data name="VDI_BEZUG_VBH" xml:space="preserve">
-    <value>Vollbenutzungsstunden BHKW (Näherung)</value>
-  </data>
-  <data name="VDI_BEZUG_BRENNSTOFF" xml:space="preserve">
-    <value>Summe Brennstoffkosten</value>
-  </data>
-  <data name="VDI_BEZUG_FEHLT" xml:space="preserve">
-    <value>nicht ermittelbar (Simulationslauf oder Investitionsposition fehlt)</value>
-  </data>
   <data name="VDI_EMPFEHLUNG" xml:space="preserve">
     <value>VDI 2067: {0}–{1} %</value>
   </data>

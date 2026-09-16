@@ -21,10 +21,10 @@ namespace EPOS.Kern.Tests
     /// heute die Kostenseite an: <c>KostenProjektPositionenCtrl.Lies(…, idAnlage)</c> und
     /// <c>KostenProjektPositionenCtrl.Neu(…, idAnlage)</c>, darunter
     /// <c>KostenPositionCtrl.FindePosition</c> bzw. <c>SetzeBetrag</c> — beide mit
-    /// Anlagenbezug. Die gleichnamigen Glieder des alten WinForms-Betriebskostendialogs
-    /// (<c>BetriebskostenCtrl.Lies</c>/<c>…Speichere</c> samt ihren Zeilen- und
-    /// Bezugsgroessentypen) sind mit dem Dialog gefallen; ein Test auf sie haette nur
-    /// noch sich selbst geprueft.</para>
+    /// Anlagenbezug; gesichert wird ueber <c>KostenProjektPositionenCtrl.Speichern</c>.
+    /// Einen zweiten Lese- oder Schreibweg fuer Betriebspositionen gibt es nicht mehr:
+    /// Der alte WinForms-Betriebskostendialog ist mit seinen Zeilen- und
+    /// Bezugsgroessentypen gefallen.</para>
     ///
     /// <para><b>Die Messlatte.</b> Projekt 1030 „Referenz BHKW-Kaskade" fuehrt ZWEI
     /// BHKW-Anlagen (14920, 14921) und zu beiden Betriebspositionen der Komponente BHKW —

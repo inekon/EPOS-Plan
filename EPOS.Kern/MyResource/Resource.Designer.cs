@@ -51765,69 +51765,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Brennstoffkosten ähnelt.
-        /// </summary>
-        public static string VDI_BEZUG_BRENNSTOFF {
-            get {
-                return ResourceManager.GetString("VDI_BEZUG_BRENNSTOFF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die nicht ermittelbar (Simulationslauf oder Investitionsposition fehlt) ähnelt.
-        /// </summary>
-        public static string VDI_BEZUG_FEHLT {
-            get {
-                return ResourceManager.GetString("VDI_BEZUG_FEHLT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investition BHKW ähnelt.
-        /// </summary>
-        public static string VDI_BEZUG_INVEST_BHKW {
-            get {
-                return ResourceManager.GetString("VDI_BEZUG_INVEST_BHKW", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionssumme des Projekts ähnelt.
-        /// </summary>
-        public static string VDI_BEZUG_INVEST_GESAMT {
-            get {
-                return ResourceManager.GetString("VDI_BEZUG_INVEST_GESAMT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investition Heizkessel ähnelt.
-        /// </summary>
-        public static string VDI_BEZUG_INVEST_KESSEL {
-            get {
-                return ResourceManager.GetString("VDI_BEZUG_INVEST_KESSEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stromerzeugung BHKW ähnelt.
-        /// </summary>
-        public static string VDI_BEZUG_STROM {
-            get {
-                return ResourceManager.GetString("VDI_BEZUG_STROM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden BHKW (Näherung) ähnelt.
-        /// </summary>
-        public static string VDI_BEZUG_VBH {
-            get {
-                return ResourceManager.GetString("VDI_BEZUG_VBH", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string VDI_BTN_ABBRUCH {
