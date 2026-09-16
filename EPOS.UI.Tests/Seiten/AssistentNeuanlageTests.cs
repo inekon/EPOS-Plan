@@ -17,8 +17,14 @@ namespace EPOS.UI.Tests.Seiten;
 /// mit der Projektkonfiguration starten und dann mit Weiter … auf die Kachel
 /// Wärmebedarf springen."
 ///
-/// <para>Geprüft wird der ganze Weg in seinen drei Stücken: die Kachel meldet den
-/// Einstieg (<c>Startseite</c>), der Assistent läuft im Modus
+/// <para><b>Jede Neuanlage, gleich woher</b> (Anwenderentscheid 16.09.2026, zweite
+/// Runde — „die Neuanlage startet immer in der Projektkonfiguration"): Nicht nur die
+/// Startkachel, auch das Menü „Projekt → Neu…", der Knopf „Neues Projekt…" der
+/// Projektliste (iOS) und der Ruf des Kerns über <c>Masken.Assistent</c> steigen bei
+/// der Projektkonfiguration ein. In der <c>AppWurzel</c> entscheidet darum allein die
+/// BETRIEBSART; einen Merker, der den WEG unterscheidet, gibt es nicht mehr.</para>
+///
+/// <para>Geprüft wird der ganze Weg in seinen Stücken: der Assistent läuft im Modus
 /// <see cref="AssistentEinstieg.Neuanlage"/> (ein Schritt, zwei Knöpfe, „Weiter ▶"
 /// legt an und nennt sein Ziel), und die <c>AppWurzel</c> übersetzt das Ziel in den
 /// Ansichtswechsel auf den Reiter „Wärmebedarf".</para>
@@ -350,7 +356,7 @@ public class AssistentNeuanlageTests : EposBunitContext
     }
 
     // =====================================================================
-    //  Die Kachel „Neues Projekt" meldet den Einstieg
+    //  Die Startkacheln und der Reiterwunsch
     // =====================================================================
 
     private static IReadOnlyList<StartKachel> Startkacheln() => new[]
@@ -376,25 +382,25 @@ public class AssistentNeuanlageTests : EposBunitContext
     };
 
     /// <summary>
-    /// Die Kachel meldet den EINSTIEG — und zwar VOR dem Kachelweg der Hülle: Der
-    /// Wirt muss wissen, was für ein Lauf gleich aufgeht, bevor er aufgeht.
-    /// Jede andere Kachel meldet ihn nicht.
+    /// Die Kachel geht den GEWÖHNLICHEN Weg — und nur den (Anwenderentscheid
+    /// 16.09.2026, zweite Runde): Sie meldet nichts nebenher, denn den Einstieg
+    /// entscheidet die <c>AppWurzel</c> an der Betriebsart. Jede Kachel reicht ihren
+    /// Schlüssel über <c>Geklickt</c> an die Hülle, mehr nicht.
     /// </summary>
     [Fact]
-    public void Nur_die_Kachel_Neues_Projekt_meldet_den_Einstieg()
+    public void Die_Kachel_Neues_Projekt_geht_den_gewoehnlichen_Weg()
     {
         List<string> reihenfolge = new List<string>();
 
         var cut = Render<Startseite>(p => p
             .Add(x => x.Kacheln, () => Startkacheln())
             .Add(x => x.ProjektId, () => 1030)
-            .Add(x => x.Geklickt, s => reihenfolge.Add("weg:" + s))
-            .Add(x => x.ProjektNeuGewaehlt, () => reihenfolge.Add("einstieg")));
+            .Add(x => x.Geklickt, s => reihenfolge.Add("weg:" + s)));
 
         cut.FindAll(".epos-kachel")[0].Click();
         cut.FindAll(".epos-kachel")[1].Click();
 
-        Assert.Equal(new[] { "einstieg", "weg:" + Kachelschluessel.ProjektNeu,
+        Assert.Equal(new[] { "weg:" + Kachelschluessel.ProjektNeu,
                              "weg:" + Kachelschluessel.ProjektZuletzt }, reihenfolge);
     }
 
@@ -518,30 +524,66 @@ public class AssistentNeuanlageTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Jeder andere Einstieg bleibt vollständig.</b> Der Menüweg „Projekt →
-    /// Neu…" und der Ruf des Kerns über <c>Masken.Assistent</c> öffnen den
-    /// Assistenten unverändert auf dem Komponentenschritt — der Modus hängt an der
-    /// KACHEL, nicht an der Betriebsart.
+    /// Der Gabensatz der Hülle je Betriebsart — dreizehn leere Kacheln für den
+    /// Komponentenschritt, sonst das Nötigste. Die Hülle baut ihn je Lauf neu; hier
+    /// hängt er an nichts als der Betriebsart, die der Wirt hereinreicht.
     /// </summary>
-    [Theory]
-    [InlineData("PROJEKT_NEU")]
-    [InlineData("ASSISTENT")]
-    public void Ohne_die_Kachel_bleibt_es_beim_vollstaendigen_Lauf(string schluessel)
-    {
-        var assistent = new Dictionary<string, object>
+    private static IReadOnlyDictionary<string, object>? Assistentgaben(int betriebsart)
+        => new Dictionary<string, object>
         {
-            ["Betriebsart"] = AssistentCtrl.BETRIEBSART_NEU,
+            ["Betriebsart"] = betriebsart,
             ["SeiteAktiv"] = new Func<int, bool>(nr => true),
             ["SeiteGaben"] = new Func<int, IReadOnlyDictionary<string, object>?>(Gaben),
             ["HatAenderungen"] = new Func<bool>(() => false)
         };
 
+    private IRenderedComponent<AppWurzel> Wurzel()
+    {
         Services.AddSingleton<IProjektQuelle>(new TestProjektquelle(Array.Empty<ProjektZeile>()));
-        var cut = Render<AppWurzel>(p => p
+        return Render<AppWurzel>(p => p
             .Add(x => x.AssistentGaben,
-                 new Func<int, IReadOnlyDictionary<string, object>?>(_ => assistent)));
+                 new Func<int, IReadOnlyDictionary<string, object>?>(Assistentgaben)));
+    }
+
+    /// <summary>
+    /// <b>JEDE Neuanlage startet in der Projektkonfiguration</b> (Anwenderentscheid
+    /// 16.09.2026, zweite Runde): Der Menüweg „Projekt → Neu…" unter Windows
+    /// (<c>PROJEKT_NEU</c>) und der Ruf des Kerns über <c>Masken.Assistent</c>
+    /// (<c>ASSISTENT</c>) tragen beide die Betriebsart NEU — und die entscheidet
+    /// allein. Denselben Weg nimmt der Knopf „Neues Projekt…" der Projektliste auf
+    /// iOS: Er zeigt <c>Seitenschluessel.ProjektNeu</c>, und der Schlüssel setzt die
+    /// Betriebsart NEU von selbst.
+    /// </summary>
+    [Theory]
+    [InlineData("PROJEKT_NEU")]
+    [InlineData("ASSISTENT")]
+    public void Jeder_Weg_mit_Betriebsart_NEU_startet_in_der_Projektkonfiguration(
+        string schluessel)
+    {
+        var cut = Wurzel();
 
         Assert.True(cut.Instance.OeffneMaske(schluessel, AssistentCtrl.BETRIEBSART_NEU));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-assistentseite"));
+        Assert.Single(cut.FindAll(".epos-projektkopf"));
+        Assert.Empty(cut.FindAll(".epos-kachel"));
+    }
+
+    /// <summary>
+    /// <b>Die Gegenprobe: BEARBEITEN bleibt der vollständige Lauf.</b> Der Schritt
+    /// „Komponenten" ist nicht abgeschafft, nur für die Neuanlage übersprungen — über
+    /// die Betriebsart BEARBEITEN steht er unverändert am Anfang, mit seinen dreizehn
+    /// Kacheln, und die Projektkonfiguration ist dort ein Schritt unter vielen.
+    /// </summary>
+    [Theory]
+    [InlineData("PROJEKT_BEARBEITEN")]
+    [InlineData("ASSISTENT")]
+    public void Der_Weg_BEARBEITEN_zeigt_weiterhin_den_vollstaendigen_Lauf(string schluessel)
+    {
+        var cut = Wurzel();
+
+        Assert.True(cut.Instance.OeffneMaske(schluessel, AssistentCtrl.BETRIEBSART_BEARBEITEN));
         cut.Render();
 
         Assert.Single(cut.FindAll(".epos-assistentseite"));

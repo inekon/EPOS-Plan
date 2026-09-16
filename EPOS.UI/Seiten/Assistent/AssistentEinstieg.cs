@@ -9,8 +9,8 @@
 /// Sie schaltet die zwölf Fachschritte frei. Für ein Projekt, das es noch gar
 /// nicht gibt, ist diese Wahl gegenstandslos — der Anwender sieht dreizehn
 /// Kacheln, bevor er einen Projektnamen vergeben hat, und die Komponenten kommen
-/// hinterher ohnehin über die Reiter der Startseite. Die Startkachel „Neues
-/// Projekt" steigt deshalb bei der PROJEKTKONFIGURATION ein.</para>
+/// hinterher ohnehin über die Reiter der Startseite. Jede NEUANLAGE steigt deshalb
+/// bei der PROJEKTKONFIGURATION ein — gleich, von welchem Weg sie kommt.</para>
 ///
 /// <para><b>Es ist ein Modus des LAUFS, keine zweite Seite.</b> Der Schritt
 /// „Komponenten" bleibt stehen und ist über jeden anderen Einstieg unverändert

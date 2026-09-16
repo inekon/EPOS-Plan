@@ -298,28 +298,6 @@
     /// <summary>Eine Kachel wurde angeklickt; übergeben wird ihr Schlüssel.</summary>
     [Parameter] public Action<string>? Geklickt { get; set; }
 
-    /// <summary>
-    /// Die Kachel „Neues Projekt" wurde gewählt (Anwenderentscheid 16.09.2026) —
-    /// gemeldet, BEVOR der Kachelweg der Hülle läuft.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <b>Wozu die zweite Meldung.</b> Der Weg selbst bleibt unangetastet: Die Hülle
-    /// bekommt den Schlüssel wie bisher über <see cref="Geklickt"/> und tut, was sie
-    /// seit jeher tut (das Projekt dieses Laufs als „zuletzt geöffnet" vormerken, den
-    /// Assistenten in der Betriebsart NEU öffnen). Was sie NICHT sagen kann, ist,
-    /// von welchem Einstieg der Lauf kommt — der Weg führt über
-    /// <c>Dienste.Navigation</c> und trägt nur die Betriebsart. Genau das meldet
-    /// diese Zeile dem Wirt: Der nächste Assistentenlauf ist eine NEUANLAGE und
-    /// beginnt auf der Projektkonfiguration (<c>AssistentEinstieg.Neuanlage</c>).
-    /// </para>
-    /// <para>
-    /// Ohne Delegat geschieht nichts — dann ist es der Lauf von vorher, mit der
-    /// Komponentenauswahl als erstem Schritt.
-    /// </para>
-    /// </remarks>
-    [Parameter] public EventCallback ProjektNeuGewaehlt { get; set; }
-
     /// <summary>Die Variantengruppe des offenen Projekts (Stamm zuerst).</summary>
     [Parameter] public Func<IReadOnlyList<(int Id, string Name)>>? Varianten { get; set; }
 
@@ -806,17 +784,15 @@
     //  Die Kacheln
     // =====================================================================
 
-    private async Task BeiKachel(string schluessel)
+    private void BeiKachel(string schluessel)
     {
         if (string.IsNullOrEmpty(schluessel)) return;
 
-        // ANWENDERENTSCHEID 16.09.2026: „Neues Projekt" fuehrt in den Assistenten,
-        // und zwar OHNE die Komponentenauswahl - gleich auf die Projektkonfiguration.
-        // Der Weg dorthin bleibt der der Huelle (Geklickt, gleich darunter); dass es
-        // eine NEUANLAGE ist, weiss nur diese Kachel, und sie meldet es dem Wirt,
-        // bevor der Weg laeuft. Ohne Wirt bleibt es der Lauf von vorher.
-        if (schluessel == Kachelschluessel.ProjektNeu && ProjektNeuGewaehlt.HasDelegate)
-            await ProjektNeuGewaehlt.InvokeAsync();
+        // ANWENDERENTSCHEID 16.09.2026: „Neues Projekt" fuehrt in den Assistenten, und
+        // zwar OHNE die Komponentenauswahl - gleich auf die Projektkonfiguration. Die
+        // Kachel tut dafuer nichts Eigenes mehr: Ihr Weg bleibt der der Huelle (Geklickt,
+        // gleich darunter), und den Einstieg entscheidet die AppWurzel an der Betriebsart
+        // NEU - fuer jeden Weg gleich.
 
         // AUFTRAG #207: Die zwei Simulationswege fuehren in EINE freie Ansicht der
         // AppWurzel, und die MARKE sagt, wo sie aufmacht - der Knopf bei der
