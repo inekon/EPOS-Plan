@@ -11,29 +11,37 @@
    Anordnung des Vorbilds, gemessen an Wizard_WPItem.resx (1126 x 752):
 
      LINKS  (x 16..560)  Auswahl (label_WP 16/13, listBox_WP 21/40,
-                         btn_Katalog 286/10), darunter "Waermeerzeuger
-                         Spitzenlast:" (label7 22/82) mit dem Heizstab-Haekchen
-                         (26/105), "Ein Spitzenlast Waermeerzeuger kann
-                         notwendig sein aufgrund:" (label18 22/173) und den zwei
-                         Unterpunkten label19 (54/207) und label20 (54/277) mit
-                         ihren Haekchen, Betriebsart (118/339),
-                         Bivalenztemperatur (438/342) und den DREI FARBIGEN
-                         ERKLAERKAESTEN label21/22/23 (54/381, 54/447, 54/512 -
-                         gruen 128,255,128 / gelb 255,255,128 / Aqua).
+                         btn_Katalog 286/10).
      MITTE  (x 537..748) groupBox3 "Auslegung fuer Verteilung" (32, 211x111) und
                          darunter "Nutzungsdauer 20 a" (label31 532/158).
-     RECHTS (x 693..1122) groupBox2 "Waermepumpen Kenndaten" (32, 348x320) in der
-                         Reihenfolge Nennleistung, Waermepumpentyp,
-                         Leistungsstufen, Hersteller, Baujahr, Bezeichnung,
-                         Heizstab, Kosten, Parameter - darunter "Kenndaten
-                         Kennlinien:" (label24 693/355) und tabControl1
-                         (693/381, 429x260).
+     RECHTS (x 693..1122) groupBox2 "Waermepumpen Kenndaten" (32, 348x320) -
+                         darunter "Kenndaten Kennlinien:" (label24 693/355) und
+                         tabControl1 (693/381, 429x260).
 
-   DIE HAEKCHEN TRAGEN WIEDER IHREN EIGENEN TEXT. label7 und label19 sind im
+   WAS SICH AM 16.09.2026 GEAENDERT HAT (Anwenderentscheid nach den Bildschirm-
+   fotos des Waermepumpendialogs):
+
+     * DIE GRUPPE "Waermeerzeuger Spitzenlast:" IST AUS DEM DIALOGKOERPER
+       VERSCHWUNDEN. Ihre Ueberschrift benannte nur den ERSTEN Schalter - die
+       elektrische Nachheizung -, obwohl darunter Sperrzeit, bivalenter Betrieb,
+       Bivalenztemperatur und der Energietraeger standen. Der Block heisst
+       seither "Konfiguration", steht im Baustein WaermepumpeKonfiguration und
+       geht hier ueber den Knopf "Konfiguration…" in einer Ueberlagerung auf;
+       den zweiten Weg dorthin fuehrt Simulation > Konfiguration. Die
+       Ueberlagerung traegt Titel und Kreuz, ihr OK prueft dieselben Regeln wie
+       das OK des Dialogs, ihr Abbrechen schreibt den gesicherten Stand zurueck.
+     * DIE KENNDATEN SIND EIN MODULBEREICH wie bei den sechs Erzeugern: Unter
+       dem Gruppenkopf steht EINE Knopfzeile (Kosten und Konfiguration links,
+       Kennlinieneditor rechts), darunter ALLE Parameter des Stammgeraets,
+       unmittelbar und BEARBEITBAR (Baustein WaermepumpeStammFelder), mit einem
+       eigenen Speichernknopf. Die sechs nur lesenden Kenndatenfelder und der
+       Knopf "Parameter Bearbeiten…" samt seiner Ueberlagerung sind damit
+       entfallen - kein Feld steht zweimal da.
+
+   DIE HAEKCHEN TRAGEN IHREN EIGENEN TEXT (W7-E-2). label7 und label19 sind im
    Vorbild UEBERSCHRIFTEN; die Kaestchen daneben heissen "Elektrische
    Nachheizung aktivieren (falls vorhanden)" und "Sperrzeit durch
-   Energieversorger". Bis W7-E-2 stand die Ueberschrift AM Kaestchen und der
-   eigentliche Text fehlte.
+   Energieversorger". Sie stehen jetzt im Baustein WaermepumpeKonfiguration.
 
    DER TITEL STEHT EINMAL. Wer die Ansicht in einer Ueberlagerung zeigt, gibt
    TitelText leer - dann zeichnet der Dialog keinen zweiten Kopf. Das
@@ -70,19 +78,23 @@
    nicht: Der Aufbau fuellt aus den Daten, und NUR ein Klick auf eine
    Listenzeile wechselt die Id - samt der Stammfelder am Datensatz (Ä23).
 
-   ZWEI SICHTBARKEITSREGELN, woertlich uebernommen: Die Betriebsart erscheint
-   nur bei bivalentem Betrieb; die Bivalenztemperatur nur, wenn sie
-   RECHENWIRKSAM ist - Teilparallel- oder Alternativbetrieb
-   (BivalenztemperaturSichtbarkeitSetzen:645). Die drei Erklaerkaesten stehen
-   dagegen IMMER, wie im Vorbild (label21/22/23 kannten keine Sichtbarkeitsregel):
-   Sie erklaeren die Wahl, die der Anwender erst treffen soll. Die
+   DIE ZWEI SICHTBARKEITSREGELN (Betriebsart nur bei bivalentem Betrieb,
+   Bivalenztemperatur nur, wo sie rechenwirksam ist) stehen seit dem 16.09.2026
+   im Baustein WaermepumpeKonfiguration - woertlich, wie sie hier standen. Die
    Pufferspeichergruppe wird GAR NICHT gezeichnet (Ä19); ihre Werte laufen im
    Datensatz mit.
 
-   DIE KOSTENZEILE (Ä19/Ä22/Ä25) ersetzt die Modulkosten: ein Knopf und die
-   Summen dieser Anlage. Ohne gespeicherte Anlagenzeile bleibt er gesperrt und
-   sagt im Tooltip warum - hier zusaetzlich als Herleitungszeile, weil ein
-   Tooltip auf einem Beruehrungsgeraet nicht erreichbar ist.
+   DIE KOSTENZEILE (Ä19/Ä22/Ä25) ersetzt die Modulkosten: ein Knopf - seit dem
+   16.09.2026 in der Knopfzeile oben - und die Summen dieser Anlage. Ohne
+   gespeicherte Anlagenzeile bleibt er gesperrt und sagt im Tooltip warum - hier
+   zusaetzlich als Herleitungszeile, weil ein Tooltip auf einem
+   Beruehrungsgeraet nicht erreichbar ist.
+
+   DIE STAMMFELDER GEHOEREN DEM KATALOG (Tab_WP_STAMM), nicht der Projektkopie.
+   Das war schon so, als der Knopf "Parameter Bearbeiten…" die Stammdatenpflege
+   oeffnete; nur steht das Raster jetzt unmittelbar im Dialog. Zugeordnet wird
+   ueber den BEZEICHNER, denn Daten.IdWp ist bei einer gespeicherten Anlage die
+   Id der Projektkopie (StammfelderNachziehen).
 
    TASTATUR: Esc bricht ab - aber erst, wenn keine Ueberlagerung offen ist.
    Enter ist nicht belegt. *@
@@ -109,7 +121,7 @@
 
     <div class="epos-wp-spalten">
 
-        @* ================= LINKS: Auswahl, Spitzenlast, Betrieb ============ *@
+        @* ================= LINKS: Auswahl der Waermepumpe ================= *@
         <div class="epos-wp-spalte epos-wp-spalte--links">
 
             @* EINGEBETTET (W7-B-3 Nachtrag, 08.09.2026): In der Waermepumpen
@@ -159,104 +171,14 @@
             </div>
             }
 
-            <Gruppenkopf Titel="@GruppeSpitzenlast">
-                <KindInhalt>
-                    @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt HIER,
-                       weil dieser Abschnitt den Rechenweg parametriert - Heizstab, Sperrzeit,
-                       bivalenter Betrieb und Bivalenztemperatur. Der Fensterknopf oben rechts
-                       bleibt, was er ist. *@
-                    <div class="epos-berechnungshilfe">
-                        <InfoKnopf Schluessel="Form_WP.Berechnung"
-                                   StandardKurztext="Berechnungsweg Wärmepumpe" />
-                    </div>
-                    @* Formularraster, EINSPALTIG (iU8-E-2, Paket P1): Der Block ist eine
-                       Regel, die sich von oben nach unten aufblaettert; zwei Spalten
-                       stellten den Schalter "Sperrzeit" neben den Schalter "Heizstab". *@
-                    <Formularraster Einspaltig="true">
-                        <KindInhalt>
-                            <Schalter Bezeichnung="@LabelHeizstab" Wert="@Daten.Heizstab"
-                                      WertChanged="w => Daten.Heizstab = w" Aktiv="@(!NurLesen)" />
-
-                            <Herleitungszeile Text="@HinweisSpitzenlast" />
-
-                            <Formulargruppe Titel="@LabelSperrzeit">
-                                <KindInhalt>
-                                    <Schalter Bezeichnung="@LabelSperrzeitSchalter" Wert="@Daten.Sperrung"
-                                              WertChanged="w => Daten.Sperrung = w" Aktiv="@(!NurLesen)" />
-                                    <span class="@Huelle(MANGEL_VON)">
-                                        <Ganzzahlfeld Bezeichnung="@LabelVon" Feldname="@LabelVon"
-                                                      Wert="@Daten.SperrzeitVon"
-                                                      WertChanged="w => Daten.SperrzeitVon = w"
-                                                      Aktiv="@(!NurLesen)" />
-                                    </span>
-                                    <span class="@Huelle(MANGEL_BIS)">
-                                        <Ganzzahlfeld Bezeichnung="@LabelBis" Feldname="@LabelBis"
-                                                      Einheit="@EinheitStundeTag" Wert="@Daten.SperrzeitBis"
-                                                      WertChanged="w => Daten.SperrzeitBis = w"
-                                                      Aktiv="@(!NurLesen)" />
-                                    </span>
-                                </KindInhalt>
-                            </Formulargruppe>
-
-                            <Formulargruppe Titel="@HinweisBetrieb">
-                                <KindInhalt>
-                                    <Schalter Bezeichnung="@LabelBivalent" Wert="@Daten.BivalenterBetrieb"
-                                              WertChanged="BivalentSetzen" Aktiv="@(!NurLesen)" />
-
-                                    @if (Daten.BivalenterBetrieb)
-                                    {
-                                        <span class="@Huelle(MANGEL_BETRIEBSART)">
-                                            <Auswahlfeld Bezeichnung="@LabelBetriebsart" Eintraege="@Betriebsarten"
-                                                         Auswahl="@BetriebsartIndex" Aktiv="@(!NurLesen)"
-                                                         AuswahlChanged="BetriebsartSetzen" Platzhalter="" />
-                                        </span>
-
-                                        @if (BivalenztemperaturSichtbar)
-                                        {
-                                            <Zahlenfeld Bezeichnung="@LabelAbschalttemp" Einheit="@EinheitGrad"
-                                                        Feldname="@LabelAbschalttempKurz" Wert="@Daten.Abschaltpunkt"
-                                                        WertChanged="w => Daten.Abschaltpunkt = w"
-                                                        Aktiv="@(!NurLesen)" />
-                                        }
-                                    }
-                                </KindInhalt>
-                            </Formulargruppe>
-
-                            @* ET-5 (Anwenderentscheid 08.09.2026): der Energietraeger der
-                               Waermepumpe in der Gliederung des Katalogs (Gruppe > Art) -
-                               Vorgabe der Stromtraeger des Projekts; gespeichert je Anlage
-                               (Tab_Energieanlagen.ID_Carrier) wie bei Kessel und BHKW. *@
-                            @if (Traegerkatalog.Count > 0)
-                            {
-                                <Formulargruppe Titel="@GruppeEnergietraeger">
-                                    <KindInhalt>
-                                        <EnergietraegerWahl Eintraege="@Traegerkatalog"
-                                                            LabelGruppe="@LabelTraegerGruppe" LabelArt="@LabelTraegerArt"
-                                                            Auswahl="@(Daten.CarrierId > 0 ? Daten.CarrierId : null)"
-                                                            Aktiv="@(!NurLesen)" AuswahlChanged="TraegerSetzen" />
-                                    </KindInhalt>
-                                </Formulargruppe>
-                            }
-                        </KindInhalt>
-                    </Formularraster>
-
-                    @* Die DREI Erklaerkaesten des Vorbilds - gruen, gelb, tuerkis, in
-                       derselben Reihenfolge wie label21/22/23. Die gewaehlte Betriebsart
-                       ist hervorgehoben; das ersetzt die einzelne Herleitungszeile, die
-                       hier bis W7-E-2 stand. *@
-                    <div class="epos-wp-erklaerungen">
-                        <p class="epos-wp-erklaerung epos-wp-erklaerung--gruen @Kastenstand(DbWerte.WP_BETRIEBSART_ALTERNATIV)">
-                            @ErlaeuterungAlternativ
-                        </p>
-                        <p class="epos-wp-erklaerung epos-wp-erklaerung--gelb @Kastenstand(DbWerte.WP_BETRIEBSART_PARALLEL)">
-                            @ErlaeuterungParallel
-                        </p>
-                        <p class="epos-wp-erklaerung epos-wp-erklaerung--tuerkis @Kastenstand(DbWerte.WP_BETRIEBSART_TEILPARALLEL)">
-                            @ErlaeuterungTeilparallel
-                        </p>
-                    </div>
-                </KindInhalt>
-            </Gruppenkopf>
+            @* HIER STAND DIE GRUPPE "Waermeerzeuger Spitzenlast:" (bis 16.09.2026).
+               Anwenderentscheid vom 16.09.2026: Die Ueberschrift benannte nur den
+               ERSTEN Schalter - die elektrische Nachheizung -, obwohl darunter
+               Sperrzeit, bivalenter Betrieb, Bivalenztemperatur und der Energietraeger
+               standen. Der Block heisst seither "Konfiguration", steht im Baustein
+               WaermepumpeKonfiguration und ist von ZWEI Stellen aus erreichbar: hier
+               ueber den Knopf "Konfiguration…" in der Knopfzeile der Kenndaten und aus
+               Simulation > Konfiguration. *@
         </div>
 
         @* ================= MITTE: Auslegung fuer Verteilung ================ *@
@@ -295,36 +217,45 @@
         <div class="epos-wp-spalte epos-wp-spalte--rechts">
             <Gruppenkopf Titel="@GruppeKenndaten">
                 <KindInhalt>
-                    @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
-                       Feldpaare je Zeile, sobald die Spalte breit genug ist
-                       (iU8-E-2, Paket P1). Die Reihenfolge ist die des Vorbilds
-                       (groupBox2 von oben nach unten). *@
-                    <Formularraster>
-                        <KindInhalt>
-                            <Textfeld Bezeichnung="@LabelNennleistung" Wert="@Daten.Nennleistung.ToString()"
-                                      NurLesen="true" Kurz="true" />
-                            <Textfeld Bezeichnung="@LabelTyp" Wert="@Daten.Typ" NurLesen="true" />
-                            <Textfeld Bezeichnung="@LabelRegelung" Wert="@Daten.Regelung" NurLesen="true" />
-                            <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma" NurLesen="true" />
-                            <Textfeld Bezeichnung="@LabelBaujahr" Wert="@Daten.Baujahr.ToString()" NurLesen="true"
-                                      Kurz="true" />
-                            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung" NurLesen="true" />
-                            <span class="@Huelle(MANGEL_HEIZSTAB)">
-                                <Ganzzahlfeld Bezeichnung="@LabelPHeizstab" Einheit="@EinheitKw"
-                                              Feldname="@LabelPHeizstabKurz" Wert="@Daten.HeizstabLeistung"
-                                              WertChanged="w => Daten.HeizstabLeistung = w" Aktiv="@(!NurLesen)" />
-                            </span>
-                        </KindInhalt>
-                    </Formularraster>
+                    @* DIE KNOPFZEILE STEHT OBEN (Anwenderentscheid 16.09.2026, dieselbe
+                       Bauart wie in den sechs Erzeugerdialogen): EINE Zeile unmittelbar
+                       unter dem Gruppenkopf - links die Kosten und der Weg in die
+                       Konfiguration, rechts der Kennlinieneditor, dazwischen der Fueller.
 
-                    @* --- Ä19: die Kostenzeile statt der Modulkosten ---------------- *@
-                    <div class="epos-kostenleiste">
+                       "Parameter Bearbeiten…" ist mit demselben Entscheid ENTFALLEN. Der
+                       Knopf oeffnete die ganze Stammdatenpflege in einer Ueberlagerung,
+                       nur um ein Feldraster zu zeigen; dieses Raster steht jetzt
+                       unmittelbar darunter (WaermepumpeStammFelder) und ist bearbeitbar. *@
+                    <div class="epos-leiste">
                         @if (KostenOeffnen is not null)
                         {
                             <button type="button" class="epos-knopf" disabled="@(NurLesen || !_kostenBereit)"
                                     title="@(_kostenBereit ? TipKosten : TipKostenNeu)"
                                     @onclick="BeiKosten">@BtnKostenText</button>
                         }
+                        <button type="button" class="epos-knopf" disabled="@NurLesen"
+                                @onclick="KonfigurationOeffnen">@BtnKonfigurationText</button>
+                        <span class="epos-leiste-fueller"></span>
+                        @if (Kennlinien is not null)
+                        {
+                            <button type="button" class="epos-knopf" disabled="@(_stammId <= 0)"
+                                    @onclick="BeiKenndaten">@BtnKenndatenText</button>
+                        }
+                    </div>
+
+                    @* H13 (06.09.2026): Der Weg in die Wikirubrik "Berechnung". Er sitzt
+                       HIER, weil dieser Abschnitt die Kennwerte fuehrt, die der Rechenweg
+                       spaeter liest - Nennleistung, Heizstab, Leistungsstufen. Der
+                       Fensterknopf oben rechts bleibt, was er ist. *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="Form_WP.Berechnung"
+                                   StandardKurztext="Berechnungsweg Wärmepumpe" />
+                    </div>
+
+                    @* --- Ä19: die Kostenzeile statt der Modulkosten ----------------
+                       Der KNOPF ist in die Knopfzeile oben gewandert; hier stehen nur
+                       noch die Summen dieser Anlage. *@
+                    <div class="epos-kostenleiste">
                         <span class="epos-kostenleiste-hinweis">@Kostensummen</span>
                     </div>
                     @if (!_kostenBereit && KostenOeffnen is not null)
@@ -332,10 +263,48 @@
                         <Herleitungszeile Text="@TipKostenNeu" />
                     }
 
-                    <div class="epos-leiste">
-                        <button type="button" class="epos-knopf" disabled="@NurLesen"
-                                @onclick="BeiStammdialog">@BtnParameterText</button>
-                    </div>
+                    @* ALLE PARAMETER DES STAMMGERAETS - unmittelbar und BEARBEITBAR
+                       (Anwenderentscheid 16.09.2026: "alle Parameter direkt im Dialog
+                       zugaenglich"). Dasselbe Feldraster, das die Stammdatenpflege zeigt;
+                       die sechs nur lesenden Kenndatenfelder sind damit entfallen - kein
+                       Feld steht zweimal da.
+
+                       GEMEINT IST DER KATALOGSATZ (Tab_WP_STAMM), nicht die Projektkopie:
+                       Der Knopf "Parameter Bearbeiten…" oeffnete bis hierher genau diese
+                       Maske, und der Speicherweg ist derselbe geblieben. Die Zuordnung
+                       laeuft ueber den BEZEICHNER (StammfelderNachziehen) - bei einer
+                       gespeicherten Anlage ist Daten.IdWp die Id der PROJEKTKOPIE. *@
+                    <WaermepumpeStammFelder Daten="@_stamm" Texte="@StammfelderTexte"
+                                            Aktiv="@(!NurLesen)" Geaendert="StammfeldGeaendert" />
+
+                    @if (_stammMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="@_stammStufe" Text="@_stammMeldung" />
+                    }
+
+                    @if (StammSpeichern is not null)
+                    {
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf" disabled="@(NurLesen || _stammId <= 0)"
+                                    @onclick="StammfelderSpeichern">@BtnStammSpeichernText</button>
+                        </div>
+                    }
+
+                    @* Die Heizstableistung gehoert der ANLAGE (Tab_Energieanlagen.Heizung)
+                       und nicht dem Katalogsatz - sie bleibt deshalb hier stehen, unter den
+                       Stammfeldern, und traegt den Namen, mit dem die Pflichtmeldung sie
+                       nennt ("Leistung Heizstab"): Der Katalogsatz fuehrt daneben seinen
+                       eigenen "Heizstab", und zwei gleich beschriftete Felder in einem Block
+                       waeren nicht auseinanderzuhalten. *@
+                    <Formularraster>
+                        <KindInhalt>
+                            <span class="@Huelle(MANGEL_HEIZSTAB)">
+                                <Ganzzahlfeld Bezeichnung="@LabelPHeizstabKurz" Einheit="@EinheitKw"
+                                              Feldname="@LabelPHeizstabKurz" Wert="@Daten.HeizstabLeistung"
+                                              WertChanged="w => Daten.HeizstabLeistung = w" Aktiv="@(!NurLesen)" />
+                            </span>
+                        </KindInhalt>
+                    </Formularraster>
                 </KindInhalt>
             </Gruppenkopf>
 
@@ -432,23 +401,55 @@
         }
     </div>
 
-    @* --- Ueberlagerung 1: der Stammdialog ("Parameter Bearbeiten...") ------- *@
-    <Ueberlagerung Offen="@(_stammGaben is not null)"
-                   Titel="@BtnParameterText" Geschlossen="() => _stammGaben = null">
+    @* --- Ueberlagerung 1: die KONFIGURATION (16.09.2026) --------------------
+       Der Block, der bis hierher als Gruppe "Waermeerzeuger Spitzenlast:" in der
+       linken Spalte stand. Er schreibt unmittelbar in Daten; damit "Abbrechen" keine
+       Behauptung ist, haelt der Dialog beim Oeffnen eine Kopie der acht
+       Konfigurationsfelder und schreibt sie beim Abbrechen zurueck (Hausregel
+       "Geschrieben wird im OK-Weg").
+
+       DIE PRUEFUNG STEHT AN BEIDEN AUSGAENGEN: hier beim OK der Ueberlagerung und
+       weiterhin beim OK des Dialogs - dieselbe Regel, EINE Stelle
+       (KonfigurationsFehler). *@
+    <Ueberlagerung Offen="@_konfigOffen" Titel="@GruppeKonfiguration"
+                   Geschlossen="KonfigurationAbbrechen">
         <KindInhalt>
-            @if (_stammGaben is not null)
+            @if (_konfigOffen)
             {
-                @* Ein Titel, eine Stelle: die Ueberlagerung traegt den Titel. Der Satz
-                   der Huelle (WaermepumpeStammHuelle.Gaben, derselbe wie fuer das eigene
-                   Fenster) bringt seinen TitelText mit und bleibt unveraendert - hier
-                   bleibt nur der Kopf des Stammdialogs aus. *@
-                <WaermepumpeStammDialog @attributes="_stammGaben" TitelAnzeigen="false"
-                                        Geschlossen="StammdialogFertig" />
+                <WaermepumpeKonfiguration Daten="@Daten" Traegerkatalog="@Traegerkatalog"
+                                          Texte="@KonfigTexte" Aktiv="@(!NurLesen)"
+                                          Geaendert="KonfigurationGeaendert" />
+
+                @if (_konfigWarnung.Length > 0)
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@_konfigWarnung" />
+                }
+
+                <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                                 Ergebnis="KonfigurationErgebnis" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    @* --- Ueberlagerung 2: der Modulkatalog ---------------------------------- *@
+    @* --- Ueberlagerung 2: der Kennlinieneditor (16.09.2026) -----------------
+       Derselbe Weg, den bis hierher die Stammdatenpflege hinter "Parameter
+       Bearbeiten…" fuehrte: Der Editor bearbeitet die Kennlinien des KATALOGSATZES
+       (Tab_Kenndaten_STAMM). Die Bilder unten zeigen dagegen die des Projekts - so
+       war es auch vorher, nur eine Ueberlagerung tiefer. *@
+    <Ueberlagerung Offen="@(_kennlinienZeilen is not null)"
+                   Titel="@BtnKenndatenText" Geschlossen="() => KenndatenFertig(null)">
+        <KindInhalt>
+            @if (_kennlinienZeilen is not null)
+            {
+                @* Ein Titel, eine Stelle: die Ueberlagerung traegt den Titel. *@
+                <KennlinienEditorDialog Zeilen="_kennlinienZeilen" IdWp="@_stammId"
+                                        NurLesen="@(NurLesen || _stamm.NurLesen)" TitelText=""
+                                        Geschlossen="KenndatenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung 3: der Modulkatalog ---------------------------------- *@
     <Ueberlagerung Offen="@_katalogOffen"
                    Titel="@BtnKatalogText" Geschlossen="() => _katalogOffen = false">
         <KindInhalt>
@@ -523,16 +524,32 @@
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
 
 
-    /// <summary>Der Parametersatz des Stammdialogs für „Parameter Bearbeiten…".</summary>
-    [Parameter] public Func<IReadOnlyDictionary<string, object>>? StammGaben { get; set; }
+    /// <summary>
+    /// <b>Der KATALOGSATZ zu einer Stammkatalog-Id</b> (<c>WaermepumpeStammHuelle.SatzZu</c>,
+    /// also <c>Tab_WP_STAMM</c>) — seit dem 16.09.2026 stehen dessen Felder unmittelbar im
+    /// Kenndatenblock, statt hinter „Parameter Bearbeiten…" in einer Überlagerung.
+    ///
+    /// <para><b>Nicht zu verwechseln mit <see cref="Stammdaten"/>:</b> Jener Weg liest
+    /// Projektkopie VOR Stammkatalog und füllt damit die Anzeigefelder der Anlage; dieser
+    /// liest ausschließlich den Katalog, weil nur dorthin auch zurückgeschrieben wird.</para>
+    /// </summary>
+    [Parameter] public Func<int, WaermepumpeStammDaten?>? StammSatz { get; set; }
+
+    /// <summary>
+    /// Schreibt den Katalogsatz (<c>WaermepumpeStammHuelle.Speichern</c>, zweiter Parameter
+    /// <c>true</c> = anlegen — hier immer <c>false</c>). OHNE Delegat kein Speichernknopf.
+    /// </summary>
+    [Parameter] public Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>? StammSpeichern { get; set; }
+
+    /// <summary>Die Kennlinien eines KATALOGSATZES für den Editor (<c>KenndatenCtrl.LiesStamm</c>).</summary>
+    [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>>? Kennlinien { get; set; }
+
+    /// <summary>Schreibt den Editorstand zurück (<c>KenndatenCtrl.Abgleichen</c>).</summary>
+    [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>, bool>? KennlinienAbgleichen { get; set; }
 
     /// <summary>ET‑5 (08.09.2026): der Trägerkatalog in der Gliederung Gruppe › Art; leer = kein Feld.</summary>
     [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
         = Array.Empty<EnergietraegerWahl.Eintrag>();
-
-    [Parameter] public string GruppeEnergietraeger { get; set; } = "Energieträger";
-    [Parameter] public string LabelTraegerGruppe { get; set; } = "Energieträger:";
-    [Parameter] public string LabelTraegerArt { get; set; } = "Art:";
 
     /// <summary>
     /// Nur ansehen, nicht ändern (iU9-W7.5). Der Weg „Ansicht" der Verwaltung zeigt
@@ -595,46 +612,26 @@
     /// <summary>
     /// Spaltenkopf „Typ" beider Listen (W7‑B‑1) — gemeint ist die MODELLBEZEICHNUNG
     /// (<c>Bezeichner</c>). Der Wärmepumpentyp „Luft-Wasser" heißt im Kenndatenblock
-    /// weiter <see cref="LabelTyp"/>.
+    /// weiter „Wärmepumpentyp" (<c>WaermepumpeStammFelderTexte.LabelTyp</c>).
     /// </summary>
     [Parameter] public string SpalteTyp { get; set; } = "Typ";
 
     [Parameter] public string GruppeKenndaten { get; set; } = "Wärmepumpen Kenndaten";
     [Parameter] public string GruppeAuslegung { get; set; } = "Auslegung für Verteilung";
 
-    /// <summary>Überschrift des linken Blocks — <c>label7</c> des Vorbilds.</summary>
-    [Parameter] public string GruppeSpitzenlast { get; set; } = "Wärmeerzeuger Spitzenlast:";
+    /// <summary>
+    /// Titel der Überlagerung hinter „Konfiguration…" (<c>WPA_GRP_KONFIGURATION</c>,
+    /// Anwenderentscheid 16.09.2026). Der Block hieß bis dahin „Wärmeerzeuger
+    /// Spitzenlast:" — ein Name, der nur den ersten Schalter traf.
+    /// </summary>
+    [Parameter] public string GruppeKonfiguration { get; set; } = "Konfiguration";
 
-    [Parameter] public string LabelBeschreibung { get; set; } = "Bezeichnung";
-    [Parameter] public string LabelHersteller { get; set; } = "Hersteller";
-    [Parameter] public string LabelTyp { get; set; } = "Wärmepumpentyp";
-    [Parameter] public string LabelRegelung { get; set; } = "Leistungsstufen";
-    [Parameter] public string LabelBaujahr { get; set; } = "Baujahr";
-    [Parameter] public string LabelNennleistung { get; set; } = "Nennleistung";
-    [Parameter] public string LabelPHeizstab { get; set; } = "Heizstab";
     [Parameter] public string LabelPHeizstabKurz { get; set; } = "Leistung Heizstab";
     [Parameter] public string LabelVorlauf { get; set; } = "Vorlauf";
     [Parameter] public string LabelRuecklauf { get; set; } = "Rücklauf";
     [Parameter] public string LabelRuecklaufKurz { get; set; } = "Rücklauf";
 
-    /// <summary>Text des Heizstab-HÄKCHENS — <c>checkBox_Heizstab.Text</c> des Vorbilds.</summary>
-    [Parameter] public string LabelHeizstab { get; set; } =
-        "Elektrische Nachheizung aktivieren (falls vorhanden)";
-
-    /// <summary>Unterpunkt über der Sperrzeit — <c>label19</c> des Vorbilds.</summary>
-    [Parameter] public string LabelSperrzeit { get; set; } =
-        "Wärmepumpenleistung / maximale Betriebszeit:";
-
-    /// <summary>Text des Sperrzeit-HÄKCHENS — <c>checkBox_Sperrzeit.Text</c> des Vorbilds.</summary>
-    [Parameter] public string LabelSperrzeitSchalter { get; set; } = "Sperrzeit durch Energieversorger";
-
-    [Parameter] public string LabelVon { get; set; } = "Sperrzeit von";
-    [Parameter] public string LabelBis { get; set; } = "Sperrzeit bis";
     [Parameter] public string LabelNutzungszeit { get; set; } = "Nutzungsdauer";
-    [Parameter] public string LabelBivalent { get; set; } = "Bivalenter Betrieb";
-    [Parameter] public string LabelBetriebsart { get; set; } = "Betriebsart";
-    [Parameter] public string LabelAbschalttemp { get; set; } = "Bivalenztemperatur";
-    [Parameter] public string LabelAbschalttempKurz { get; set; } = "Bivalenztemperatur";
     [Parameter] public string LabelKennlinien { get; set; } = "Kenndaten Kennlinien:";
 
     /// <summary>Beschriftung des Extrapolationsschalters (<c>SIM_EXTRAPOLATION_SCHALTER</c>).</summary>
@@ -670,22 +667,33 @@
         "Es gibt keinen Katalogsatz gleichen Namens — die Kennlinien lassen sich nicht übernehmen.";
     [Parameter] public string EinheitKw { get; set; } = "kW";
     [Parameter] public string EinheitGrad { get; set; } = "°C";
-    [Parameter] public string EinheitStundeTag { get; set; } = "h/Tag";
 
     /// <summary>Einheit der Nutzungsdauer — <c>label34</c> des Vorbilds, Jahre.</summary>
     [Parameter] public string EinheitJahr { get; set; } = "a";
 
     [Parameter] public string BtnKatalogText { get; set; } = "📋  Modul-Katalog...";
-    [Parameter] public string BtnParameterText { get; set; } = "Parameter Bearbeiten...";
+
+    /// <summary>Der Knopf in die Konfiguration (<c>WPA_BTN_KONFIGURATION</c>, 16.09.2026).</summary>
+    [Parameter] public string BtnKonfigurationText { get; set; } = "Konfiguration…";
+
+    /// <summary>Der Knopf in den Kennlinieneditor (<c>WPS_BTN_KENNDATEN</c>).</summary>
+    [Parameter] public string BtnKenndatenText { get; set; } = "Kennliniendaten Ansicht/Bearbeiten...";
+
+    /// <summary>Der Speichernknopf der Stammfelder (<c>ADM_BTN_SPEICHERN</c>).</summary>
+    [Parameter] public string BtnStammSpeichernText { get; set; } = "Speichern";
+
     [Parameter] public string BtnKostenText { get; set; } = "Kosten bearbeiten…";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string SchliessenText { get; set; } = "Schließen";
 
-    [Parameter] public string HinweisSpitzenlast { get; set; } =
-        "Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:";
-    [Parameter] public string HinweisBetrieb { get; set; } =
-        "Außentemperaturgesteuerter Betrieb:";
+    /// <summary>Meldung beim Speichern eines Auslieferungssatzes (<c>WPS_MSG_READONLY_SPEICHERN</c>).</summary>
+    [Parameter] public string MeldungReadOnlySpeichern { get; set; } =
+        "Diese Wärmepumpe ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden.";
+
+    /// <summary>Hinweis vor dem Kennlinieneditor eines Auslieferungssatzes (<c>WPS_MSG_READONLY_KENNDATEN</c>).</summary>
+    [Parameter] public string MeldungReadOnlyKenndaten { get; set; } =
+        "Diese Wärmepumpe ist schreibgeschützt (ReadOnly). Die Kennliniendaten können nur angesehen, nicht geändert werden.";
 
     /// <summary>Vorschlagszeile unter dem Rücklauffeld; <c>{0}</c> ist die Werteliste.</summary>
     [Parameter] public string RuecklaufFormat { get; set; } = "Übliche Werte: {0} °C";
@@ -703,12 +711,15 @@
     /// <summary>Warnung bei fehlender Pflichtangabe; <c>{0}</c> ist der Feldname.</summary>
     [Parameter] public string WarnungFeldFormat { get; set; } = "Bitte {0} eingeben.";
 
-    /// <summary>Erläuterung zur gewählten Betriebsart (die drei langen Labels der Karte).</summary>
-    [Parameter] public string ErlaeuterungAlternativ { get; set; } = Resource.WPA_ERL_ALTERNATIV;
+    /// <summary>
+    /// Die Beschriftungen der KONFIGURATION — EIN Bündel (Hausregel „ab etwa zehn
+    /// Anzeigetexten"). Es füllt sich selbst aus <c>MyResource</c>; die Hülle muss
+    /// nichts beisteuern.
+    /// </summary>
+    [Parameter] public WaermepumpeKonfigurationTexte KonfigTexte { get; set; } = new();
 
-    [Parameter] public string ErlaeuterungParallel { get; set; } = Resource.WPA_ERL_PARALLEL;
-
-    [Parameter] public string ErlaeuterungTeilparallel { get; set; } = Resource.WPA_ERL_TEILPARALLEL;
+    /// <summary>Die Beschriftungen des Stamm-Feldrasters — EIN Bündel, ebenfalls selbstfüllend.</summary>
+    [Parameter] public WaermepumpeStammFelderTexte StammfelderTexte { get; set; } = new();
 
     /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Wizard_WPItem.btn_Help";
@@ -723,11 +734,35 @@
     private bool _extrapolation = true;          // W10b-B-3, Vorbelegung "an"
     private int _extrapolationSchluessel;        // @key des Schalters (Neuaufbau nach Fehlschlag)
 
-    private IReadOnlyDictionary<string, object>? _stammGaben;
     private bool _katalogOffen;
     private bool _kostenBereit;
     private string _blatt = "COP";
     private string _warnung = "";
+
+    // --- Die KONFIGURATION in der Ueberlagerung (16.09.2026) -------------------
+    private bool _konfigOffen;
+    private string _konfigWarnung = "";
+
+    /// <summary>
+    /// Der Stand der acht Konfigurationsfelder beim ÖFFNEN der Überlagerung. Der
+    /// Baustein schreibt unmittelbar in <see cref="Daten"/>; ohne diese Kopie wäre
+    /// „Abbrechen" eine Behauptung, die nicht stimmt.
+    /// </summary>
+    private WaermepumpeAnlageDaten? _konfigSicherung;
+
+    // --- Die STAMMFELDER im Kenndatenblock (16.09.2026) ------------------------
+
+    /// <summary>Der bearbeitete KATALOGSATZ; nie <c>null</c>, damit der Block ohne Gaben zeichnet.</summary>
+    private WaermepumpeStammDaten _stamm = new();
+
+    /// <summary>Seine Id im STAMMKATALOG (<c>Tab_WP_STAMM</c>); 0 = kein Katalogsatz dieses Namens.</summary>
+    private int _stammId;
+
+    private string _stammMeldung = "";
+    private WarnStufe _stammStufe = WarnStufe.Hinweis;
+
+    /// <summary>Die Zeilen des Kennlinieneditors; <c>null</c> = er steht nicht.</summary>
+    private List<KennlinienZeile>? _kennlinienZeilen;
 
     // --- Rueckmeldung des Kennlinien-Nachholens (W7-B-3) ------------------------
     private string _kennlinienMeldung = "";
@@ -752,67 +787,14 @@
     private string Huelle(string schluessel)
         => _mangel == schluessel ? "epos-feldhuelle epos-feldhuelle--mangel" : "epos-feldhuelle";
 
-    /// <summary>Zusatzklasse des Erklärkastens, dessen Betriebsart gewählt ist.</summary>
-    private string Kastenstand(string betriebsart)
-        => Daten.BivalenterBetrieb && Daten.Betriebsart == betriebsart
-            ? "epos-wp-erklaerung--aktiv" : "";
-
     /// <summary>Steht der Modulkatalog? Prüfhilfe für die Tests.</summary>
     public bool KatalogOffen => _katalogOffen;
 
-    /// <summary>Steht der Stammdialog? Prüfhilfe für die Tests.</summary>
-    public bool StammdialogOffen => _stammGaben is not null;
+    /// <summary>Steht die Konfiguration? Prüfhilfe für die Tests.</summary>
+    public bool KonfigurationOffen => _konfigOffen;
 
-    /// <summary>ET‑5: die Trägerwahl schreibt in die Daten; der OK-Weg trägt sie ins Modell (<c>NachModell</c>).</summary>
-    private void TraegerSetzen(int? id)
-    {
-        if (id.HasValue) Daten.CarrierId = id.Value;
-    }
-
-    /// <summary>Die drei Betriebsarten — STEUERWERTE aus <c>DbWerte</c>, keine Anzeigetexte.</summary>
-    private static readonly string[] BETRIEBSARTEN =
-    {
-        DbWerte.WP_BETRIEBSART_ALTERNATIV,
-        DbWerte.WP_BETRIEBSART_PARALLEL,
-        DbWerte.WP_BETRIEBSART_TEILPARALLEL
-    };
-
-    private IReadOnlyList<(int Id, string Text)> Betriebsarten
-    {
-        get
-        {
-            var l = new List<(int, string)>();
-            for (int i = 0; i < BETRIEBSARTEN.Length; i++) l.Add((i, BETRIEBSARTEN[i]));
-            return l;
-        }
-    }
-
-    /// <summary>
-    /// Der Index der gewählten Betriebsart — TOLERANT gelesen (W7‑B‑2): Ein Altwert
-    /// wie „parallelbetrieb" oder „Bivalent-parallel" steht damit als Parallelbetrieb
-    /// in der Klappliste, statt sie leer zu lassen.
-    /// </summary>
-    private int? BetriebsartIndex
-    {
-        get
-        {
-            string wert = DbWerte.BetriebsartOderDefault(Daten.Betriebsart);
-            for (int i = 0; i < BETRIEBSARTEN.Length; i++)
-                if (string.Equals(BETRIEBSARTEN[i], wert, StringComparison.Ordinal)) return i;
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Die Bivalenztemperatur erscheint genau dann, wenn sie RECHENWIRKSAM ist:
-    /// bivalenter Betrieb UND eine Betriebsart, die <c>Abschaltpunkt</c> auswertet —
-    /// Teilparallelbetrieb (seit jeher) und Alternativbetrieb (seit K-3). Im
-    /// Parallelbetrieb bleibt der Wert wirkungslos und das Feld verborgen.
-    /// </summary>
-    private bool BivalenztemperaturSichtbar
-        => Daten.BivalenterBetrieb &&
-           (Daten.Betriebsart == DbWerte.WP_BETRIEBSART_TEILPARALLEL ||
-            Daten.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV);
+    /// <summary>Steht der Kennlinieneditor? Prüfhilfe für die Tests.</summary>
+    public bool KennlinieneditorOffen => _kennlinienZeilen is not null;
 
     private string RuecklaufVorschlagszeile
         => string.Format(RuecklaufFormat, string.Join(", ", RuecklaufVorschlaege));
@@ -866,7 +848,7 @@
         await _wurzel.FocusAsync();
     }
 
-    /// <summary>Vorlaufstufen, Bilder und Kostenzeile zum aktuellen Gerät nachziehen.</summary>
+    /// <summary>Vorlaufstufen, Bilder, Kostenzeile und Stammfelder zum aktuellen Gerät nachziehen.</summary>
     private void Auffrischen()
     {
         _vorlaufstufen = (Vorlaeufe is not null && Daten.IdWp > 0)
@@ -874,6 +856,44 @@
         _bilder = (Bilder is not null && Daten.IdWp > 0)
             ? Bilder(Daten.IdWp) : KennlinienBilder.Leer;
         _kostenBereit = KostenBereit?.Invoke() ?? false;
+        StammfelderNachziehen();
+    }
+
+    /// <summary>
+    /// Den KATALOGSATZ zur gewählten Wärmepumpe holen (16.09.2026).
+    ///
+    /// <para><b>Über den BEZEICHNER, nicht über <c>Daten.IdWp</c>:</b> Bei einer
+    /// gespeicherten Anlage ist <c>IdWp</c> die Id der PROJEKTKOPIE (<c>Tab_WP</c>) —
+    /// mit ihr in <c>Tab_WP_STAMM</c> zu schreiben träfe einen fremden Katalogsatz oder
+    /// gar keinen. Die Stammliste führt beides nebeneinander, Id und Bezeichner; sie ist
+    /// deshalb der Weg.</para>
+    ///
+    /// <para>Ohne Delegat (oder ohne Katalogsatz dieses Namens) steht ein Satz aus den
+    /// Anlagenfeldern da — die Anlagenzeile trägt die Stammfelder seit Ä23 mit. Gespeichert
+    /// wird dann nichts: Der Knopf erscheint nur mit <see cref="StammSpeichern"/> und
+    /// bleibt ohne Katalog-Id gesperrt.</para>
+    /// </summary>
+    private void StammfelderNachziehen()
+    {
+        _stammId = _stammliste.FirstOrDefault(z => z.Bezeichner == Daten.Bezeichner)?.Id ?? 0;
+
+        WaermepumpeStammDaten? satz = (StammSatz is not null && _stammId > 0)
+            ? StammSatz(_stammId) : null;
+
+        _stamm = satz ?? new WaermepumpeStammDaten
+        {
+            Id = _stammId,
+            Name = Daten.Bezeichner,
+            Firma = Daten.Firma,
+            Beschreibung = Daten.Beschreibung,
+            Typ = Daten.Typ,
+            Regelung = Daten.Regelung,
+            Baujahr = Daten.Baujahr,
+            Nennleistung = Daten.Nennleistung,
+            Heizstab = Daten.HeizstabLeistung,
+            Modulkosten = Daten.Modulkosten
+        };
+        _stammMeldung = "";
     }
 
     /// <summary>
@@ -934,19 +954,8 @@
         Auffrischen();
     }
 
-    private void BivalentSetzen(bool an)
-    {
-        Daten.BivalenterBetrieb = an;
-    }
-
-    private void BetriebsartSetzen(int? index)
-    {
-        Daten.Betriebsart = (index is int i && i >= 0 && i < BETRIEBSARTEN.Length)
-            ? BETRIEBSARTEN[i] : "";
-    }
-
     // =================================================================================
-    // Kosten, Katalog, Stammdialog
+    // Kosten, Katalog, Konfiguration, Stammfelder, Kennlinieneditor
     // =================================================================================
 
     private async Task BeiKosten()
@@ -1002,21 +1011,96 @@
         _kennlinienStufe = WarnStufe.Fehler;
     }
 
-    private void BeiStammdialog()
+    // ---------------------------------------------------------------------------------
+    // Die Konfiguration in der Ueberlagerung (16.09.2026)
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>
+    /// „Konfiguration…" — die acht Felder werden gesichert, BEVOR der Baustein in
+    /// <see cref="Daten"/> schreibt; „Abbrechen" schreibt sie zurück.
+    /// </summary>
+    private void KonfigurationOeffnen()
     {
-        if (StammGaben is null) return;
-        _stammGaben = StammGaben();
+        if (NurLesen) return;
+        _konfigSicherung = Daten.Kopie();
+        _konfigWarnung = "";
+        _konfigOffen = true;
+    }
+
+    /// <summary>Der Baustein hat geschrieben — die Meldung der Überlagerung verfällt.</summary>
+    private void KonfigurationGeaendert()
+    {
+        _konfigWarnung = "";
     }
 
     /// <summary>
-    /// Nach dem Stammdialog werden die Anzeigefelder nachgezogen — der Vorläufer las
-    /// dafür das Gerät erneut (<c>btn_WP_Click</c>:596). Die Stammliste wird ebenfalls
-    /// neu gezogen: Im Dialog kann eine Wärmepumpe angelegt oder gelöscht worden sein.
+    /// OK prüft und schließt; ein Mangel hält die Überlagerung offen und nennt ihn DORT —
+    /// der Anwender soll das Feld sehen, das gemeint ist.
     /// </summary>
-    private void StammdialogFertig(bool _)
+    private void KonfigurationErgebnis(bool ok)
     {
-        _stammGaben = null;
+        if (!ok) { KonfigurationAbbrechen(); return; }
+
+        (string? fehler, string feld) = KonfigurationsFehler();
+        if (fehler is not null) { _konfigWarnung = fehler; _mangel = feld; return; }
+
+        _konfigWarnung = "";
+        _konfigSicherung = null;
+        _konfigOffen = false;
+    }
+
+    /// <summary>Abbrechen, ✕ und Esc: der gesicherte Stand geht zurück in <see cref="Daten"/>.</summary>
+    private void KonfigurationAbbrechen()
+    {
+        if (_konfigSicherung is WaermepumpeAnlageDaten alt)
+        {
+            Daten.Heizstab = alt.Heizstab;
+            Daten.Sperrung = alt.Sperrung;
+            Daten.SperrzeitVon = alt.SperrzeitVon;
+            Daten.SperrzeitBis = alt.SperrzeitBis;
+            Daten.BivalenterBetrieb = alt.BivalenterBetrieb;
+            Daten.Betriebsart = alt.Betriebsart;
+            Daten.Abschaltpunkt = alt.Abschaltpunkt;
+            Daten.CarrierId = alt.CarrierId;
+        }
+        _konfigSicherung = null;
+        _konfigWarnung = "";
+        _konfigOffen = false;
+    }
+
+    // ---------------------------------------------------------------------------------
+    // Die Stammfelder im Kenndatenblock (16.09.2026)
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>Eine Eingabe im Feldraster — die alte Meldung gilt nicht mehr.</summary>
+    private void StammfeldGeaendert() => _stammMeldung = "";
+
+    /// <summary>
+    /// „Speichern" der Stammfelder — <b>derselbe Weg, den der Stammdialog geht</b>
+    /// (<c>WaermepumpeStammHuelle.Speichern</c>, Änderung: <c>neu = false</c>). Danach
+    /// werden die Stammliste und die Anzeigefelder der Anlage nachgezogen, genau wie es
+    /// bis zum 16.09.2026 <c>StammdialogFertig</c> tat.
+    /// </summary>
+    private void StammfelderSpeichern()
+    {
+        if (StammSpeichern is null || _stammId <= 0) return;
+
+        // ReadOnly-Sperre wie in der Stammdatenpflege: Ein Auslieferungssatz wird nicht
+        // geschrieben, und der Dialog sagt warum, statt still nichts zu tun.
+        if (_stamm.NurLesen)
+        {
+            _stammMeldung = MeldungReadOnlySpeichern;
+            _stammStufe = WarnStufe.Hinweis;
+            return;
+        }
+
+        KatalogSpeicherErgebnis ergebnis = StammSpeichern(_stamm, false);
+        _stammStufe = ergebnis.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung;
+        if (!ergebnis.Ok) { _stammMeldung = ergebnis.Meldung; return; }
+
+        // Die Stammliste kann sich geaendert haben (ein umbenannter Satz).
         _stammliste = Stammliste?.Invoke() ?? Array.Empty<WaermepumpeStammZeile>();
+        if (!string.IsNullOrEmpty(ergebnis.Name)) Daten.Bezeichner = ergebnis.Name;
 
         WaermepumpeStammDaten? stamm = Stammdaten?.Invoke(Daten.IdWp);
         if (stamm is not null)
@@ -1029,6 +1113,33 @@
             Daten.Modulkosten = stamm.Modulkosten;
             Daten.Nennleistung = stamm.Nennleistung ?? 0;
         }
+        Auffrischen();
+        _stammMeldung = ergebnis.Meldung;
+    }
+
+    // ---------------------------------------------------------------------------------
+    // Der Kennlinieneditor (16.09.2026 aus der Stammdatenpflege uebernommen)
+    // ---------------------------------------------------------------------------------
+
+    private void BeiKenndaten()
+    {
+        if (Kennlinien is null || _stammId <= 0) return;
+
+        // Der Hinweis kommt wie in der Stammdatenpflege VOR dem Oeffnen.
+        if (_stamm.NurLesen)
+        {
+            _stammMeldung = MeldungReadOnlyKenndaten;
+            _stammStufe = WarnStufe.Hinweis;
+        }
+        _kennlinienZeilen = Kennlinien(_stammId).Select(z => z.Kopie()).ToList();
+    }
+
+    private void KenndatenFertig(IReadOnlyList<KennlinienZeile>? stand)
+    {
+        _kennlinienZeilen = null;
+        if (stand is null || NurLesen || _stamm.NurLesen) return;   // Abbruch oder ReadOnly
+
+        KennlinienAbgleichen?.Invoke(_stammId, stand);
         Auffrischen();
     }
 
@@ -1044,22 +1155,57 @@
     /// </summary>
     private (string? Meldung, string Feld) ErsterFehler()
     {
-        if (string.IsNullOrEmpty(Daten.Betriebsart) && Daten.BivalenterBetrieb)
-            return (WarnungBetriebsart, MANGEL_BETRIEBSART);
+        (string? konfig, string konfigFeld) = KonfigurationsFehler();
+        if (konfig is not null && konfigFeld == MANGEL_BETRIEBSART) return (konfig, konfigFeld);
+
         if (string.IsNullOrEmpty(Daten.Bezeichner))
             return (WarnungWaermepumpe, "");
 
         string? temperatur = TemperaturenPruefen?.Invoke(Daten.Vorlauf, Daten.Ruecklauf);
         if (temperatur is not null) return (temperatur, MANGEL_TEMPERATUR);
 
-        if (Daten.SperrzeitVon is null) return (string.Format(WarnungFeldFormat, LabelVon), MANGEL_VON);
-        if (Daten.SperrzeitBis is null) return (string.Format(WarnungFeldFormat, LabelBis), MANGEL_BIS);
+        if (konfig is not null) return (konfig, konfigFeld);
+
         if (Daten.Nutzungszeit is null) return (string.Format(WarnungFeldFormat, LabelNutzungszeit), MANGEL_NUTZUNG);
         if (Daten.HeizstabLeistung is null) return (string.Format(WarnungFeldFormat, LabelPHeizstabKurz), MANGEL_HEIZSTAB);
 
         // Die Bivalenztemperatur ist je nach Betriebsart ausgeblendet - ein leeres
         // Feld ist deshalb erlaubt und laesst den bisherigen Wert stehen.
         return (null, "");
+    }
+
+    /// <summary>
+    /// Die Prüfregeln, die an den Feldern der KONFIGURATION hängen — EINE Stelle für
+    /// beide Ausgänge: das OK der Überlagerung und das OK des Dialogs
+    /// (<see cref="ErsterFehler"/>).
+    /// </summary>
+    private (string? Meldung, string Feld) KonfigurationsFehler()
+    {
+        if (string.IsNullOrEmpty(Daten.Betriebsart) && Daten.BivalenterBetrieb)
+            return (WarnungBetriebsart, MANGEL_BETRIEBSART);
+        if (Daten.SperrzeitVon is null)
+            return (string.Format(WarnungFeldFormat, KonfigTexte.LabelVon), MANGEL_VON);
+        if (Daten.SperrzeitBis is null)
+            return (string.Format(WarnungFeldFormat, KonfigTexte.LabelBis), MANGEL_BIS);
+        return (null, "");
+    }
+
+    /// <summary>
+    /// Ein Mangel an einem Feld der KONFIGURATION öffnet die Überlagerung und meldet ihn
+    /// DORT (16.09.2026). Ein Band, das ein Feld nennt, das der Anwender gar nicht sehen
+    /// kann, hilft nicht weiter — dieselbe Überlegung wie bei W7‑B‑2.
+    /// </summary>
+    private void MangelSetzen(string? fehler, string feld)
+    {
+        _warnung = fehler ?? "";
+        _mangel = feld;
+
+        if (fehler is null || NurLesen) return;
+        if (feld is not (MANGEL_BETRIEBSART or MANGEL_VON or MANGEL_BIS)) return;
+
+        if (!_konfigOffen) _konfigSicherung = Daten.Kopie();
+        _konfigWarnung = fehler;
+        _konfigOffen = true;
     }
 
     /// <summary>
@@ -1070,8 +1216,7 @@
     public string? Pruefen()
     {
         (string? fehler, string feld) = ErsterFehler();
-        _warnung = fehler ?? "";
-        _mangel = feld;
+        MangelSetzen(fehler, feld);
         return fehler;
     }
 
@@ -1084,7 +1229,7 @@
         }
 
         (string? fehler, string feld) = ErsterFehler();
-        if (fehler is not null) { _warnung = fehler; _mangel = feld; return; }
+        if (fehler is not null) { MangelSetzen(fehler, feld); return; }
 
         _warnung = "";
         _mangel = "";
@@ -1097,7 +1242,8 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen werten Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || Eingebettet || _stammGaben is not null || _katalogOffen) return Task.CompletedTask;
+        if (e.Key != "Escape" || Eingebettet || _konfigOffen ||
+            _kennlinienZeilen is not null || _katalogOffen) return Task.CompletedTask;
         return Abbrechen();
     }
 }

@@ -2,6 +2,7 @@
 using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Waermepumpe;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
@@ -13,8 +14,15 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// Detailansicht einer Wärmepumpen-Anlage (iU9-W7.4). Soll ist die Feldkarte von
-/// <c>Wizard_WPItem</c>: 47 Zeilen in drei Gruppen, zwei Reiterblätter mit den
-/// Kennlinienbildern, die Kostenzeile — und OHNE die Pufferspeichergruppe (Ä19).
+/// <c>Wizard_WPItem</c>: 47 Zeilen, zwei Reiterblätter mit den Kennlinienbildern, die
+/// Kostenzeile — und OHNE die Pufferspeichergruppe (Ä19).
+///
+/// <para><b>Seit dem 16.09.2026 stehen ZWEI Gruppen im Dialogkörper.</b> Der Block
+/// „Wärmeerzeuger Spitzenlast:" heißt „Konfiguration", liegt im Baustein
+/// <c>WaermepumpeKonfiguration</c> und geht über den gleichnamigen Knopf in einer
+/// <c>Ueberlagerung</c> auf; die Kenndaten sind ein Modulbereich mit Knopfzeile und den
+/// bearbeitbaren Stammfeldern. Die Regeln der beiden Bausteine halten
+/// <c>WaermepumpeKonfigurationTests</c> und <c>WaermepumpeStammFelderTests</c>.</para>
 /// </summary>
 public class WaermepumpeAnlageDialogTests : EposBunitContext
 {
@@ -85,7 +93,9 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Func<bool>? kostenBereit = null,
         Func<(double, double)>? kostensumme = null,
         Func<Task>? kostenOeffnen = null,
-        Func<IReadOnlyDictionary<string, object>>? stammGaben = null,
+        Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>? stammSpeichern = null,
+        Func<int, IReadOnlyList<KennlinienZeile>>? kennlinien = null,
+        Func<int, IReadOnlyList<KennlinienZeile>, bool>? kennlinienAbgleichen = null,
         Action<bool>? geschlossen = null,
         IReadOnlyList<EnergietraegerWahl.Eintrag>? traegerkatalog = null,
         bool eingebettet = false,
@@ -122,28 +132,46 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
                     .MitZahl(Katalogfilterprofil.SpCop, 4.1, 2)
             })
             .Add(x => x.Katalogprofil, Katalogfilterprofil.Finde(Anlagenart.Waermepumpe))
-            .Add(x => x.StammGaben, stammGaben)
+            // 16.09.2026: der KATALOGSATZ und sein Speicherweg stehen unmittelbar im
+            // Kenndatenblock; „Parameter Bearbeiten…" und die Gabe StammGaben sind entfallen.
+            .Add(x => x.StammSatz, Stamm)
+            .Add(x => x.StammSpeichern, stammSpeichern)
+            .Add(x => x.Kennlinien, kennlinien)
+            .Add(x => x.KennlinienAbgleichen, kennlinienAbgleichen)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
     private static IElement Knopf(IRenderedComponent<WaermepumpeAnlageDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+
+    /// <summary>Die Überlagerung „Konfiguration" öffnen — der Weg zu den acht Feldern.</summary>
+    private static void KonfigurationOeffnen(IRenderedComponent<WaermepumpeAnlageDialog> cut)
+        => Knopf(cut, "Konfiguration…").Click();
+
+    /// <summary>Der Block der Konfiguration; er steht seit dem 16.09.2026 in der Überlagerung.</summary>
+    private static IElement Konfiguration(IRenderedComponent<WaermepumpeAnlageDialog> cut)
+        => cut.Find(".epos-ueberlagerung .epos-wp-konfiguration");
+
+    /// <summary>Ein Knopf INNERHALB der Überlagerung — OK und Abbrechen gibt es zweimal.</summary>
+    private static IElement Ueberlagerungsknopf(IRenderedComponent<WaermepumpeAnlageDialog> cut, string text)
+        => cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
+              .First(b => b.TextContent.Trim() == text);
 
     // =================================================================================
     // Feldbestand
     // =================================================================================
 
     /// <summary>
-    /// Die drei Blöcke stehen seit <b>W7‑E‑2</b> in der Reihenfolge des Vorbilds —
-    /// links Spitzenlast, in der Mitte die Auslegung, rechts die Kenndaten.
+    /// <b>ZWEI Gruppen seit dem 16.09.2026.</b> „Wärmeerzeuger Spitzenlast:" ist aus dem
+    /// Dialogkörper verschwunden — der Block heißt „Konfiguration" und steht in einer
+    /// Überlagerung hinter dem gleichnamigen Knopf.
     /// </summary>
     [Fact]
-    public void Die_drei_Gruppen_und_die_zwei_Reiter_stehen()
+    public void Die_zwei_Gruppen_und_die_zwei_Reiter_stehen()
     {
         var cut = Aufbauen();
 
         var gruppen = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Wärmeerzeuger Spitzenlast:", "Auslegung für Verteilung",
-                             "Wärmepumpen Kenndaten" }, gruppen);
+        Assert.Equal(new[] { "Auslegung für Verteilung", "Wärmepumpen Kenndaten" }, gruppen);
 
         var reiter = cut.FindAll(".epos-reiter-knopf").Select(b => b.TextContent.Trim()).ToList();
         Assert.Equal(new[] { "COP", "Leistung" }, reiter);
@@ -164,16 +192,78 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
                               t => t.Contains("rende MIX"));
     }
 
+    /// <summary>
+    /// <b>Die Stammfelder sind seit dem 16.09.2026 BEARBEITBAR</b> (Anwenderentscheid:
+    /// „alle Parameter direkt im Dialog zugänglich"), und „Speichern" geht denselben Weg,
+    /// den bis dahin die Stammdatenpflege hinter „Parameter Bearbeiten…" ging.
+    /// </summary>
     [Fact]
-    public void Die_Stammfelder_sind_nur_lesbar()
+    public void Die_Stammfelder_sind_bearbeitbar_und_Speichern_ruft_den_Stammweg()
+    {
+        var gespeichert = new List<(WaermepumpeStammDaten Satz, bool Neu)>();
+        var cut = Aufbauen(stammSpeichern: (d, neu) =>
+        {
+            gespeichert.Add((d, neu));
+            return new KatalogSpeicherErgebnis(true, "Gespeichert", d.Name);
+        });
+
+        var gruppe = cut.FindAll(".epos-gruppenkopf-koerper")[1];   // rechts: Kenndaten
+        Assert.Empty(gruppe.QuerySelectorAll("input[readonly]"));
+
+        // Der Katalogsatz steht da, wie ihn StammSatz geliefert hat.
+        var felder = cut.FindComponent<WaermepumpeStammFelder>();
+        Assert.Equal("WP Alpha", felder.Instance.Daten.Name);
+
+        gruppe.QuerySelectorAll("input[type=text]")[0].Input("WP Alpha neu");
+        Knopf(cut, "Speichern").Click();
+
+        Assert.Single(gespeichert);
+        Assert.Equal("WP Alpha neu", gespeichert[0].Satz.Name);
+        Assert.False(gespeichert[0].Neu);           // geaendert, nicht angelegt
+        Assert.Contains("Gespeichert", cut.Markup);
+    }
+
+    /// <summary>Ohne Speicherweg kein Knopf (Hausregel seit W2).</summary>
+    [Fact]
+    public void Ohne_Stamm_Speicherweg_gibt_es_keinen_Speichernknopf()
     {
         var cut = Aufbauen();
-        var gruppe = cut.FindAll(".epos-gruppenkopf-koerper")[2];   // rechts: Kenndaten
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()), t => t == "Speichern");
+    }
 
-        // Beschreibung, Hersteller, Typ, Regelung, Baujahr, Nennleistung.
-        Assert.Equal(6, gruppe.QuerySelectorAll("input[readonly]").Length);
-        // Der Heizstab ist das EINZIGE bearbeitbare Feld der Gruppe.
-        Assert.Single(gruppe.QuerySelectorAll("input:not([readonly])"));
+    /// <summary>
+    /// „Parameter Bearbeiten…" gibt es nicht mehr (16.09.2026) — der Knopf öffnete die
+    /// ganze Stammdatenpflege in einer Überlagerung, nur um ein Feldraster zu zeigen.
+    /// </summary>
+    [Fact]
+    public void Den_Knopf_Parameter_Bearbeiten_gibt_es_nicht_mehr()
+    {
+        var cut = Aufbauen();
+
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
+                              t => t.StartsWith("Parameter Bearbeiten", StringComparison.Ordinal));
+        Assert.Empty(cut.FindComponents<WaermepumpeStammDialog>());
+    }
+
+    /// <summary>
+    /// <b>Die Knopfzeile steht direkt unter dem Kenndaten-Kopf</b> (16.09.2026, dieselbe
+    /// Bauart wie in den sechs Erzeugerdialogen): links Kosten und Konfiguration, rechts
+    /// der Kennlinieneditor, dazwischen der Füller.
+    /// </summary>
+    [Fact]
+    public void Die_Knopfzeile_steht_direkt_unter_dem_Kenndaten_Kopf()
+    {
+        var cut = Aufbauen(kostenOeffnen: () => Task.CompletedTask,
+                           kennlinien: _ => Array.Empty<KennlinienZeile>());
+
+        var gruppe = cut.FindAll(".epos-gruppenkopf-koerper")[1];
+        var erstes = gruppe.Children[0];
+
+        Assert.Contains("epos-leiste", erstes.ClassName);
+        Assert.Equal(new[] { "Kosten bearbeiten…", "Konfiguration…",
+                             "Kennliniendaten Ansicht/Bearbeiten..." },
+                     erstes.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.NotNull(erstes.QuerySelector(".epos-leiste-fueller"));
     }
 
     [Fact]
@@ -181,27 +271,31 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
         var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
-        var schalter = cut.FindAll(".epos-schalter").Select(e => e.TextContent.Trim()).ToList();
 
+        // Die Stammfelder des Katalogsatzes und die Felder der Anlage.
         foreach (string soll in new[]
                  {
-                     "Bezeichnung", "Hersteller", "Wärmepumpentyp", "Leistungsstufen",
-                     "Baujahr", "Nennleistung", "Heizstab", "Vorlauf", "Rücklauf",
-                     "Sperrzeit von", "Sperrzeit bis", "Nutzungsdauer"
+                     "Name", "Hersteller", "Beschreibung", "Wärmepumpentyp", "Leistungsstufen",
+                     "Aufstellung", "Baujahr", "Nennleistung", "Heizstab", "Kühlleistung",
+                     "Leistung Heizstab", "Vorlauf", "Rücklauf", "Nutzungsdauer"
                  })
             Assert.Contains(soll, texte);
 
-        // W7-E-2: label7 und label19 sind im Vorbild UEBERSCHRIFTEN, nicht die
-        // Beschriftungen der Kaestchen - sie stehen als Gruppentitel bzw. als
-        // Zwischenueberschrift im Formularraster.
-        Assert.Contains("Wärmeerzeuger Spitzenlast:",
-                        cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
+        // Die Konfigurationsfelder stehen NICHT mehr im Dialogkoerper.
+        Assert.DoesNotContain("Sperrzeit von", texte);
+        Assert.DoesNotContain("Wärmeerzeuger Spitzenlast:",
+                              cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
+
+        KonfigurationOeffnen(cut);
+        Assert.Contains("Sperrzeit von",
+                        cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
         Assert.Contains("Wärmepumpenleistung / maximale Betriebszeit:",
                         cut.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent.Trim()));
-        Assert.Contains("Bivalenter Betrieb", schalter);
+        Assert.Contains("Bivalenter Betrieb",
+                        cut.FindAll(".epos-schalter").Select(e => e.TextContent.Trim()));
     }
 
-    /// <summary>Die Maske ist lokalisiert (39 englische Texte, W7.9).</summary>
+    /// <summary>Die Maske ist lokalisiert (W7.9).</summary>
     [Fact]
     public void Die_englischen_Texte_lassen_sich_setzen()
     {
@@ -209,13 +303,15 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
             .Add(x => x.Daten, Voll())
             .Add(x => x.Stammliste, () => Stammliste)
             .Add(x => x.TitelText, "Detail view")
-            .Add(x => x.LabelBivalent, "Bivalent operation")
+            .Add(x => x.GruppeKonfiguration, "Configuration")
+            .Add(x => x.BtnKonfigurationText, "Configuration…")
             .Add(x => x.LabelNutzungszeit, "Duration of use"));
 
         Assert.Equal("Detail view", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Contains("Duration of use", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
-        Assert.Contains(cut.FindAll(".epos-schalter").Select(e => e.TextContent.Trim()),
-                        t => t == "Bivalent operation");
+
+        cut.FindAll("button").First(b => b.TextContent.Trim() == "Configuration…").Click();
+        Assert.Equal("Configuration", cut.Find(".epos-ueberlagerung-titel").TextContent);
     }
 
     // =================================================================================
@@ -253,7 +349,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     public void Die_Vorlaufliste_kommt_aus_den_Kennlinien()
     {
         var cut = Aufbauen();
-        var stufen = cut.FindAll(".epos-gruppenkopf-koerper")[1]
+        var stufen = cut.FindAll(".epos-gruppenkopf-koerper")[0]
                         .QuerySelectorAll("select option").Select(o => o.TextContent).ToList();
         Assert.Equal(new[] { "35", "45", "55" }, stufen);
     }
@@ -266,7 +362,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         daten.Vorlauf = 60;
         var cut = Aufbauen(daten);
 
-        var stufen = cut.FindAll(".epos-gruppenkopf-koerper")[1]
+        var stufen = cut.FindAll(".epos-gruppenkopf-koerper")[0]
                         .QuerySelectorAll("select option").Select(o => o.TextContent).ToList();
         Assert.Equal(new[] { "60", "35", "45", "55" }, stufen);
     }
@@ -279,7 +375,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         var daten = Voll();
         var cut = Aufbauen(daten);
 
-        var auslegung = cut.FindAll(".epos-gruppenkopf-koerper")[1];
+        var auslegung = cut.FindAll(".epos-gruppenkopf-koerper")[0];
         auslegung.QuerySelectorAll("input")[0].Input("26");
         Assert.Equal(26, daten.Ruecklauf);
 
@@ -291,42 +387,24 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     // Sichtbarkeitsregeln
     // =================================================================================
 
+    /// <summary>
+    /// Die Sichtbarkeitsregeln selbst hält seit dem 16.09.2026
+    /// <c>WaermepumpeKonfigurationTests</c>; hier steht, dass der Dialog sie durch die
+    /// Überlagerung hindurch zeigt.
+    /// </summary>
     [Fact]
     public void Die_Betriebsart_erscheint_erst_mit_bivalentem_Betrieb()
     {
         var cut = Aufbauen();
-        var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
-        Assert.DoesNotContain("Betriebsart", texte);
+        KonfigurationOeffnen(cut);
 
-        cut.FindAll(".epos-schalter input[type=checkbox]")[2].Change(true);   // Bivalenter Betrieb
+        Assert.DoesNotContain("Betriebsart",
+                              cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
+
+        Konfiguration(cut).QuerySelectorAll(".epos-schalter input[type=checkbox]")[2]
+                          .Change(true);                                  // Bivalenter Betrieb
 
         Assert.Contains("Betriebsart", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
-    }
-
-    [Fact]
-    public void Die_Bivalenztemperatur_erscheint_nur_wo_sie_rechenwirksam_ist()
-    {
-        var daten = Voll();
-        daten.BivalenterBetrieb = true;
-        var cut = Aufbauen(daten);
-
-        // Ohne Betriebsart: kein Feld.
-        Assert.DoesNotContain("Bivalenztemperatur",
-                              cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
-
-        IElement Betriebsart() => cut.FindAll(".epos-gruppenkopf-koerper")[0].QuerySelectorAll("select")[0];
-
-        // Parallelbetrieb wertet den Abschaltpunkt NICHT aus - kein Feld.
-        Betriebsart().Change("1");
-        Assert.DoesNotContain("Bivalenztemperatur",
-                              cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
-
-        // Alternativ- und Teilparallelbetrieb werten ihn aus.
-        Betriebsart().Change("0");
-        Assert.Contains("Bivalenztemperatur", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
-
-        Betriebsart().Change("2");
-        Assert.Contains("Bivalenztemperatur", cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
     }
 
     [Fact]
@@ -335,9 +413,10 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         var daten = Voll();
         daten.BivalenterBetrieb = true;
         var cut = Aufbauen(daten);
+        KonfigurationOeffnen(cut);
 
-        var werte = cut.FindAll(".epos-gruppenkopf-koerper")[0]
-                       .QuerySelectorAll("select option").Select(o => o.TextContent).ToList();
+        var werte = Konfiguration(cut).QuerySelectorAll("select option")
+                                      .Select(o => o.TextContent).ToList();
 
         // Der leere erste Eintrag ist der Platzhalter - er entspricht der leeren
         // ComboBox des Vorlaeufers, bei der btn_Beenden "Bitte Betriebsart
@@ -351,11 +430,18 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     // Kostenzeile
     // =================================================================================
 
+    /// <summary>
+    /// Der Kostenknopf steht seit dem 16.09.2026 in der Knopfzeile oben; in der
+    /// Kostenzeile bleiben nur die Summen.
+    /// </summary>
     [Fact]
     public void Ohne_Delegat_gibt_es_keinen_Kostenknopf()
     {
         var cut = Aufbauen();
+
         Assert.Empty(cut.FindAll(".epos-kostenleiste button"));
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
+                              t => t == "Kosten bearbeiten…");
     }
 
     [Fact]
@@ -363,7 +449,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     {
         var cut = Aufbauen(kostenOeffnen: () => Task.CompletedTask);
 
-        Assert.False(cut.Find(".epos-kostenleiste button").HasAttribute("disabled"));
+        Assert.False(Knopf(cut, "Kosten bearbeiten…").HasAttribute("disabled"));
         Assert.Equal("Invest 12.000 € · Betrieb 340 €/a",
                      cut.Find(".epos-kostenleiste-hinweis").TextContent.Trim());
     }
@@ -377,7 +463,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         // Beruehrungsgeraet nicht erreichbar.
         var cut = Aufbauen(kostenBereit: () => false, kostenOeffnen: () => Task.CompletedTask);
 
-        Assert.True(cut.Find(".epos-kostenleiste button").HasAttribute("disabled"));
+        Assert.True(Knopf(cut, "Kosten bearbeiten…").HasAttribute("disabled"));
         Assert.Equal("Invest — · Betrieb —", cut.Find(".epos-kostenleiste-hinweis").TextContent.Trim());
         Assert.Contains(cut.FindAll(".epos-herleitung").Select(e => e.TextContent),
                         t => t.Contains("zuerst mit OK anlegen"));
@@ -495,14 +581,6 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Ohne_StammGaben_bleibt_der_Parameterknopf_wirkungslos()
-    {
-        var cut = Aufbauen();
-        Knopf(cut, "Parameter Bearbeiten...").Click();
-        Assert.False(cut.Instance.StammdialogOffen);
-    }
-
-    [Fact]
     public void Abbrechen_und_Esc_melden_false()
     {
         bool? ergebnis = null;
@@ -525,8 +603,13 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         var daten = Voll();
         var cut = Aufbauen(daten);
 
-        var spitzenlast = cut.FindAll(".epos-gruppenkopf-koerper")[0];
-        spitzenlast.QuerySelectorAll("input[type=text]")[0].Input("3");
+        // Die Auslegung steht im Dialogkoerper...
+        cut.FindAll(".epos-gruppenkopf-koerper")[0].QuerySelectorAll("input[type=text]")[0].Input("26");
+        Assert.Equal(26, daten.Ruecklauf);
+
+        // ...die Konfiguration in ihrer Ueberlagerung, und auch sie schreibt in DENSELBEN Satz.
+        KonfigurationOeffnen(cut);
+        Konfiguration(cut).QuerySelectorAll("input[type=text]")[0].Input("3");
 
         Assert.Equal(3, daten.SperrzeitVon);
     }
@@ -556,20 +639,25 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Das ✕ der Ueberlagerung "Parameter Bearbeiten..." bricht NUR die Ebene ab - der
-    /// Stammdialog schreibt ohnehin sofort, das Kreuz uebernimmt hier nichts weiter.
+    /// Das ✕ der Ueberlagerung „Konfiguration" wirkt wie Abbrechen: Es schliesst NUR die
+    /// Ebene und schreibt den gesicherten Stand zurueck (Hausregel „✕ = Esc = Abbrechen").
     /// </summary>
     [Fact]
-    public void Ueberlagerungskreuz_des_Stammdialogs_schliesst_nur_die_Ebene()
+    public void Ueberlagerungskreuz_der_Konfiguration_schliesst_nur_die_Ebene_und_verwirft()
     {
-        var cut = Aufbauen(stammGaben: () => new Dictionary<string, object>());
+        var daten = Voll();
+        var cut = Aufbauen(daten);
 
-        Knopf(cut, "Parameter Bearbeiten...").Click();
-        Assert.True(cut.Instance.StammdialogOffen);
+        KonfigurationOeffnen(cut);
+        Assert.True(cut.Instance.KonfigurationOffen);
+
+        Konfiguration(cut).QuerySelectorAll("input[type=text]")[0].Input("7");
+        Assert.Equal(7, daten.SperrzeitVon);
 
         cut.Find(".epos-ueberlagerung-zu").Click();
 
-        Assert.False(cut.Instance.StammdialogOffen);
+        Assert.False(cut.Instance.KonfigurationOffen);
+        Assert.Equal(0, daten.SperrzeitVon);        // der Stand beim Oeffnen
     }
 
     /// <summary>Das ✕ der Ueberlagerung "Modul-Katalog..." bricht ab, ohne zu uebernehmen.</summary>
@@ -590,33 +678,106 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Ein Titel, eine Stelle (W11b-B-9): Die Ueberlagerung „Parameter Bearbeiten..."
-    /// trägt Titel und Kreuz; der Stammdialog darin zeichnet keinen zweiten Kopf —
-    /// obwohl sein Parametersatz (<c>WaermepumpeStammHuelle.Gaben</c>, derselbe wie
-    /// für das eigene Fenster) einen <c>TitelText</c> mitbringt. Der Wirt setzt
-    /// <c>TitelAnzeigen="false"</c>; <c>TitelText</c> bleibt für die
-    /// Assistentenmeldung erhalten.
+    /// <b>Der Knopf „Konfiguration…" öffnet die Überlagerung mit dem Titel
+    /// „Konfiguration" und den Konfigurationsfeldern</b> (Anwenderentscheid 16.09.2026).
+    /// Ein Titel, eine Stelle: Die Überlagerung trägt Titel und Kreuz, der Baustein
+    /// darin keinen eigenen Kopf.
     /// </summary>
     [Fact]
-    public void Der_Titel_des_Stammdialogs_erscheint_genau_einmal()
+    public void Der_Knopf_Konfiguration_oeffnet_die_Ueberlagerung_mit_den_Feldern()
     {
-        var cut = Aufbauen(stammGaben: () => new Dictionary<string, object>
-        {
-            ["TitelText"] = "Datenbank Wärmepumpen"      // wie WaermepumpeStammHuelle.Gaben
-        });
+        var cut = Aufbauen();
+        Assert.False(cut.Instance.KonfigurationOffen);
 
-        Knopf(cut, "Parameter Bearbeiten...").Click();
+        KonfigurationOeffnen(cut);
 
-        var ueberlagerung = cut.Find(".epos-ueberlagerung");
-        Assert.Equal("Parameter Bearbeiten...", cut.Find(".epos-ueberlagerung-titel").TextContent);
+        Assert.True(cut.Instance.KonfigurationOffen);
+        Assert.Equal("Konfiguration", cut.Find(".epos-ueberlagerung-titel").TextContent);
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+
+        var block = Konfiguration(cut);
+        Assert.Contains("Elektrische Nachheizung aktivieren (falls vorhanden)", block.TextContent);
+        Assert.Contains("Sperrzeit durch Energieversorger", block.TextContent);
+        Assert.Contains("Bivalenter Betrieb", block.TextContent);
+        Assert.Equal(3, block.QuerySelectorAll(".epos-wp-erklaerung").Length);
+
+        // OK und Abbrechen der Ueberlagerung stehen DARIN, der Baustein traegt keinen Kopf.
+        var ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Contains(ueberlagerung.QuerySelectorAll("button").Select(b => b.TextContent.Trim()),
+                        t => t == "OK");
         Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-titel"));
-        Assert.Empty(ueberlagerung.QuerySelectorAll(".epos-dialog-zu"));
-        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-dialog-kopf--ohnetitel"));
 
         // Der Kopf der Detailansicht selbst steht weiterhin genau einmal.
         Assert.Single(cut.FindAll(".epos-dialog-titel"));
         Assert.Single(cut.FindAll(".epos-dialog-zu"));
+    }
+
+    /// <summary>
+    /// <b>Abbrechen verwirft die Änderung, OK übernimmt sie in <c>Daten</c></b>
+    /// (Hausregel „Geschrieben wird im OK-Weg"). Der Baustein schreibt unmittelbar in
+    /// den Satz; der Dialog sichert deshalb beim Öffnen die acht Felder.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_verwirft_die_Aenderung_OK_uebernimmt_sie()
+    {
+        var daten = Voll();
+        var cut = Aufbauen(daten);
+
+        KonfigurationOeffnen(cut);
+        Konfiguration(cut).QuerySelectorAll("input[type=text]")[1].Input("9");   // Sperrzeit bis
+        Assert.Equal(9, daten.SperrzeitBis);
+
+        Ueberlagerungsknopf(cut, "Abbrechen").Click();
+
+        Assert.False(cut.Instance.KonfigurationOffen);
+        Assert.Equal(0, daten.SperrzeitBis);                                     // verworfen
+
+        KonfigurationOeffnen(cut);
+        Konfiguration(cut).QuerySelectorAll("input[type=text]")[1].Input("9");
+        Ueberlagerungsknopf(cut, "OK").Click();
+
+        Assert.False(cut.Instance.KonfigurationOffen);
+        Assert.Equal(9, daten.SperrzeitBis);                                     // uebernommen
+    }
+
+    /// <summary>
+    /// Die Prüfregeln der Konfiguration laufen im OK-Weg der Überlagerung — und halten
+    /// sie offen, statt den Mangel in einem Dialog zu melden, in dem das Feld gar nicht
+    /// steht.
+    /// </summary>
+    [Fact]
+    public void OK_der_Ueberlagerung_haelt_sie_bei_einem_Mangel_offen()
+    {
+        var daten = Voll();
+        daten.BivalenterBetrieb = true;
+        daten.Betriebsart = "";
+        var cut = Aufbauen(daten);
+
+        KonfigurationOeffnen(cut);
+        Ueberlagerungsknopf(cut, "OK").Click();
+
+        Assert.True(cut.Instance.KonfigurationOffen);
+        Assert.Contains("Bitte Betriebsart auswählen!",
+                        cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// Umgekehrt: Ein Mangel an einem Feld der Konfiguration ÖFFNET beim OK des Dialogs
+    /// die Überlagerung — ein Band, das ein unsichtbares Feld nennt, hilft nicht weiter
+    /// (dieselbe Überlegung wie W7‑B‑2).
+    /// </summary>
+    [Fact]
+    public void OK_des_Dialogs_oeffnet_die_Konfiguration_wenn_dort_ein_Feld_fehlt()
+    {
+        var daten = Voll();
+        daten.SperrzeitVon = null;
+        var cut = Aufbauen(daten);
+
+        Knopf(cut, "OK").Click();
+
+        Assert.True(cut.Instance.KonfigurationOffen);
+        Assert.Contains("Sperrzeit von",
+                        cut.Find(".epos-ueberlagerung .epos-warnbanner").TextContent);
     }
 
     /// <summary>
@@ -765,12 +926,14 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         daten.BivalenterBetrieb = true;
         daten.Betriebsart = "parallelbetrieb";          // Altwert aus der Datenbank
         var cut = Aufbauen(daten, geschlossen: b => ergebnis = b);
+        KonfigurationOeffnen(cut);
 
-        var betriebsart = cut.FindAll(".epos-formularraster select")
+        var betriebsart = Konfiguration(cut).QuerySelectorAll("select")
                              .First(s => s.QuerySelectorAll("option")
                                           .Any(o => o.TextContent == DbWerte.WP_BETRIEBSART_PARALLEL));
         Assert.Equal("1", betriebsart.GetAttribute("value"));   // Parallelbetrieb steht gewählt
 
+        Ueberlagerungsknopf(cut, "OK").Click();
         Knopf(cut, "OK").Click();
         Assert.True(ergebnis);
     }
@@ -815,19 +978,23 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     /// „das genannte Feld wird markiert": Das Band nennt das Feld, und das Feld
     /// selbst trägt die Mängelklasse — ein Band allein hilft in einem Dialog mit
     /// dreißig Feldern nicht weiter.
+    ///
+    /// <para>Geprüft an der Nutzungsdauer: Sie steht im Dialogkörper. Ein Mangel an
+    /// einem Feld der KONFIGURATION öffnet seit dem 16.09.2026 stattdessen deren
+    /// Überlagerung (<c>OK_des_Dialogs_oeffnet_die_Konfiguration_wenn_dort_ein_Feld_fehlt</c>).</para>
     /// </summary>
     [Fact]
     public void W7_B_2_Das_bemaengelte_Feld_ist_markiert()
     {
         var daten = Voll();
-        daten.SperrzeitVon = null;
+        daten.Nutzungszeit = null;
         var cut = Aufbauen(daten);
 
         Knopf(cut, "OK").Click();
 
-        Assert.Contains("Sperrzeit von", cut.Find(".epos-dialog-fuss .epos-warnbanner").TextContent);
+        Assert.Contains("Nutzungsdauer", cut.Find(".epos-dialog-fuss .epos-warnbanner").TextContent);
         var mangel = cut.Find(".epos-feldhuelle--mangel .epos-feld");
-        Assert.Contains("Sperrzeit von", mangel.TextContent);
+        Assert.Contains("Nutzungsdauer", mangel.TextContent);
     }
 
     // =====================================================================
@@ -861,8 +1028,11 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     /// <summary>
     /// <b>W7‑E‑2:</b> „Dialoganordnung sehr unübersichtlich — versuche den Dialog
     /// angelehnt an die alte Version zu gestalten." Drei Spalten wie im Vorbild:
-    /// links Auswahl und Spitzenlast, in der Mitte die Auslegung, rechts Kenndaten
-    /// und Kennlinien.
+    /// links die Auswahl, in der Mitte die Auslegung, rechts Kenndaten und Kennlinien.
+    ///
+    /// <para>Seit dem 16.09.2026 steht links NUR noch die Auswahl — die Gruppe
+    /// „Wärmeerzeuger Spitzenlast:" ist als „Konfiguration" in die Überlagerung
+    /// gewandert.</para>
     /// </summary>
     [Fact]
     public void W7_E_2_Die_drei_Spalten_stehen_in_der_Reihenfolge_des_Vorbilds()
@@ -872,8 +1042,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
         Assert.Equal(3, spalten.Count);
         Assert.NotNull(spalten[0].QuerySelector(".epos-wp-auswahl"));
-        Assert.Contains("Wärmeerzeuger Spitzenlast:",
-                        spalten[0].QuerySelectorAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
+        Assert.Empty(spalten[0].QuerySelectorAll(".epos-gruppenkopf-titel"));
         Assert.Contains("Auslegung für Verteilung",
                         spalten[1].QuerySelectorAll(".epos-gruppenkopf-titel").Select(e => e.TextContent.Trim()));
         Assert.Contains("Wärmepumpen Kenndaten",
@@ -885,14 +1054,17 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     /// Die DREI farbigen Erklärkästen des Vorbilds (label21 grün, label22 gelb,
     /// label23 türkis) — sie standen dort ALLE DREI und immer, weil sie die Wahl
     /// der Betriebsart erklären. Die Texte sind wortgleich aus der alten
-    /// <c>.resx</c> und stehen in <c>MyResource</c>.
+    /// <c>.resx</c> und stehen in <c>MyResource</c>; seit dem 16.09.2026 zeichnet sie
+    /// der Baustein <c>WaermepumpeKonfiguration</c> in der Überlagerung.
     /// </summary>
     [Fact]
-    public void W7_E_2_Die_drei_farbigen_Erklaerkaesten_stehen_links()
+    public void W7_E_2_Die_drei_farbigen_Erklaerkaesten_stehen_in_der_Konfiguration()
     {
         var cut = Aufbauen();
-        var kaesten = cut.FindAll(".epos-wp-spalten > div")[0]
-                         .QuerySelectorAll(".epos-wp-erklaerung");
+        Assert.Empty(cut.FindAll(".epos-wp-erklaerung"));
+
+        KonfigurationOeffnen(cut);
+        var kaesten = Konfiguration(cut).QuerySelectorAll(".epos-wp-erklaerung");
 
         Assert.Equal(3, kaesten.Length);
         Assert.Contains("epos-wp-erklaerung--gruen", kaesten[0].ClassName);
@@ -934,7 +1106,10 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     public void W7_E_2_Die_Haekchen_tragen_die_Texte_des_Vorbilds()
     {
         var cut = Aufbauen();
-        var schalter = cut.FindAll(".epos-schalter").Select(e => e.TextContent.Trim()).ToList();
+        KonfigurationOeffnen(cut);
+
+        var schalter = Konfiguration(cut).QuerySelectorAll(".epos-schalter")
+                                         .Select(e => e.TextContent.Trim()).ToList();
 
         Assert.Contains("Elektrische Nachheizung aktivieren (falls vorhanden)", schalter);
         Assert.Contains("Sperrzeit durch Energieversorger", schalter);
@@ -1078,6 +1253,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
             new EnergietraegerWahl.Eintrag(60, "Strom", "Elektrische Energie"),
             new EnergietraegerWahl.Eintrag(58, "Strom", "Elektrische Energie 2")
         });
+        KonfigurationOeffnen(cut);
 
         var wahl = cut.Find(".epos-traegerwahl");
         var selects = wahl.QuerySelectorAll("select");
@@ -1096,6 +1272,7 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     public void Ohne_Traegerkatalog_steht_keine_Traegerwahl()
     {
         var cut = Aufbauen();
+        KonfigurationOeffnen(cut);
         Assert.Empty(cut.FindAll(".epos-traegerwahl"));
     }
 

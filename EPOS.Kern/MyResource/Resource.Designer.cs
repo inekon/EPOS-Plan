@@ -2899,15 +2899,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff: ähnelt.
-        /// </summary>
-        public static string BHKWV_LBL_TRAEGER {
-            get {
-                return ResourceManager.GetString("BHKWV_LBL_TRAEGER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauf ähnelt.
         /// </summary>
         public static string BHKWV_LBL_VORLAUF {
@@ -42035,11 +42026,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter für die Simulation ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration… ähnelt.
         /// </summary>
-        public static string SIMKONF_GRP_LAUFPARAMETER {
+        public static string SIMKONF_BTN_KONFIGURATION {
             get {
-                return ResourceManager.GetString("SIMKONF_GRP_LAUFPARAMETER", resourceCulture);
+                return ResourceManager.GetString("SIMKONF_BTN_KONFIGURATION", resourceCulture);
             }
         }
         
@@ -42053,11 +42044,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung — sie gilt für alle Wärmepumpen des Projekts; nur wenn sie gesetzt ist, rechnet die Simulation eine Heizstabphase. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Elektrische Nachheizung aktivieren (falls vorhanden)“ oben gehört dagegen zu dieser Anlage: Sie hebt die Anlage in die elektrische Welt und entscheidet über ihren Energieträger, nicht über den Rechenweg. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_HEIZSTAB_ANLAGE {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_HEIZSTAB_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wirkt nur, wenn das Projekt einen Wärmebedarf führt: Die Verluste werden stündlich umgelegt und anteilig auf die Bedarfskanäle verteilt. Vorgabe 0 %. ähnelt.
         /// </summary>
         public static string SIMKONF_HRL_NETZVERLUSTE {
             get {
                 return ResourceManager.GetString("SIMKONF_HRL_NETZVERLUSTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung — sie gilt für alle Anlagen dieser Art im Projekt. ähnelt.
+        /// </summary>
+        public static string SIMKONF_HRL_PROJEKTWEIT {
+            get {
+                return ResourceManager.GetString("SIMKONF_HRL_PROJEKTWEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konfiguration der Wärmepumpe konnte nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string SIMKONF_MSG_WP_KONFIG_FEHLER {
+            get {
+                return ResourceManager.GetString("SIMKONF_MSG_WP_KONFIG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration · {0} ähnelt.
+        /// </summary>
+        public static string SIMKONF_TITEL_KONFIGURATION {
+            get {
+                return ResourceManager.GetString("SIMKONF_TITEL_KONFIGURATION", resourceCulture);
             }
         }
         
@@ -54926,11 +54962,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter Bearbeiten... ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration… ähnelt.
         /// </summary>
-        public static string WPA_BTN_PARAMETER {
+        public static string WPA_BTN_KONFIGURATION {
             get {
-                return ResourceManager.GetString("WPA_BTN_PARAMETER", resourceCulture);
+                return ResourceManager.GetString("WPA_BTN_KONFIGURATION", resourceCulture);
             }
         }
         
@@ -54998,11 +55034,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenlast und Betrieb ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration ähnelt.
         /// </summary>
-        public static string WPA_GRP_SPITZENLAST {
+        public static string WPA_GRP_KONFIGURATION {
             get {
-                return ResourceManager.GetString("WPA_GRP_SPITZENLAST", resourceCulture);
+                return ResourceManager.GetString("WPA_GRP_KONFIGURATION", resourceCulture);
             }
         }
         
@@ -55048,15 +55084,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_ABSCHALTTEMP {
             get {
                 return ResourceManager.GetString("WPA_LBL_ABSCHALTTEMP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung ähnelt.
-        /// </summary>
-        public static string WPA_LBL_BESCHREIBUNG {
-            get {
-                return ResourceManager.GetString("WPA_LBL_BESCHREIBUNG", resourceCulture);
             }
         }
         
@@ -55120,15 +55147,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_LBL_SPERRZEIT {
             get {
                 return ResourceManager.GetString("WPA_LBL_SPERRZEIT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeerzeuger Spitzenlast: ähnelt.
-        /// </summary>
-        public static string WPA_LBL_SPITZENLAST {
-            get {
-                return ResourceManager.GetString("WPA_LBL_SPITZENLAST", resourceCulture);
             }
         }
         

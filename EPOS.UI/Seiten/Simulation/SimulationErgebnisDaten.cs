@@ -178,6 +178,26 @@ public sealed class ParameterDaten
 
     // ---- P5: Heizkessel ----
     public double Bereitschaft;
+
+    /// <summary>
+    /// Die ARBEITSKOPIE für einen Dialog, der erst im OK-Weg schreiben darf
+    /// (Anwenderwunsch 16.09.2026, <c>KomponentenKonfigurationDialog</c>).
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Speicher"/> wird als REFERENZ übernommen: Der Block gehört dem
+    /// Ergebnisreiter „Stromspeicher" (W11b‑B‑28) und wird von keinem Dialog
+    /// bearbeitet, der eine Kopie bräuchte.
+    /// </remarks>
+    public ParameterDaten Kopie() => new ParameterDaten
+    {
+        Netzverluste = Netzverluste,
+        NetzverlusteEinheit = NetzverlusteEinheit,
+        Betriebsart = Betriebsart,
+        UntersteLeistungsgrenze = UntersteLeistungsgrenze,
+        Speicher = Speicher,
+        Heizstab = Heizstab,
+        Bereitschaft = Bereitschaft
+    };
 }
 
 // =========================================================================

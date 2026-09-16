@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Waermepumpe;
 
 namespace WindowsFormsApplication1
 {
@@ -49,6 +51,36 @@ namespace WindowsFormsApplication1
         /// die benannte Ablehnung. Leer = er geht.
         /// </summary>
         internal string WaermepumpeSperrgrund = "";
+
+        // =================================================================
+        //  Die Konfiguration EINER Wärmepumpen-Anlage (Anwenderwunsch 16.09.2026)
+        // =================================================================
+        //
+        // Der Konfigurationsknopf an der Wärmepumpenkarte von Schritt ① zeigt die
+        // Konfiguration DIESER Anlage - elektrische Nachheizung, Sperrzeit,
+        // bivalenter Betrieb, Energieträger. Gelesen und geschrieben wird über die
+        // Abbildungen der Wärmepumpen-Hülle (AusModell/NachModell) und ihren
+        // Speicherweg; beides steht in der Schale, nicht hier.
+        //
+        // OHNE DIESE WEGE bleibt der Knopf stehen, der Dialog zeigt aber nur die
+        // PROJEKTEINSTELLUNG "mit Heizstab (falls vorhanden)". Das ist keine stille
+        // Auslassung: Sie ist der einzige Heizstab-Wert, den der Rechenweg überhaupt
+        // liest, und der Dialog sagt an seiner Herleitungszeile, was er zeigt.
+
+        /// <summary>
+        /// Die Anlagendaten EINER Wärmepumpe als frische Kopie (<c>idProjekt</c>,
+        /// <c>Tab_Energieanlagen.ID</c>); <c>null</c> = keine Anlage dieser Id.
+        /// </summary>
+        internal Func<int, int, WaermepumpeAnlageDaten> WaermepumpeKonfigLesen;
+
+        /// <summary>
+        /// Schreibt die Anlagendaten zurück (<c>idProjekt</c>,
+        /// <c>Tab_Energieanlagen.ID</c>, Feldsatz); <c>true</c> = geschrieben.
+        /// </summary>
+        internal Func<int, int, WaermepumpeAnlageDaten, bool> WaermepumpeKonfigSchreiben;
+
+        /// <summary>Der Trägerkatalog der Energieträgerwahl; <c>null</c> = keine Wahl.</summary>
+        internal Func<IReadOnlyList<EnergietraegerWahl.Eintrag>> WaermepumpeTraegerkatalog;
 
         /// <summary>Die Naht einer Schale, die keinen der Wege anbietet.</summary>
         internal static SimulationPlattformwege Ohne(string sperrgrund)

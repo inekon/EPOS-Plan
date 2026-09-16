@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Waermepumpe;
 using Microsoft.AspNetCore.Components;
 
@@ -87,10 +88,12 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
+
+                // ET-5: Die drei Beschriftungen der Traegerwahl stehen seit dem
+                // 16.09.2026 im Textbuendel WaermepumpeKonfigurationTexte (dieselben
+                // Schluessel ETW_GRP_TITEL / ETW_LBL_GRUPPE / ETW_LBL_ART, nur fuellt
+                // das Buendel sie selbst) - der Block gehoert jetzt der Konfiguration.
                 ["Traegerkatalog"] = ErzeugerTraegerHuelle.Katalog(DbWerte.ERZEUGER_WAERMEPUMPE),
-                ["GruppeEnergietraeger"] = ErzeugerTraegerHuelle.GruppenTitel,
-                ["LabelTraegerGruppe"] = ErzeugerTraegerHuelle.LabelGruppe,
-                ["LabelTraegerArt"] = ErzeugerTraegerHuelle.LabelArt,
 
                 ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
                 ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(VorlaeufeZu),
@@ -135,8 +138,26 @@ namespace WindowsFormsApplication1
                 // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
                 ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
                     n => ParameterUebersichtCtrl.Werte(Anlagenart.Waermepumpe, n, KatalogBrowserHuelle.Text)),
-                ["StammGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    WaermepumpeStammHuelle.Gaben),
+
+                // --- Die STAMMFELDER im Kenndatenblock (Anwenderentscheid 16.09.2026) ---
+                //
+                // "Parameter Bearbeiten..." ist entfallen; damit auch die Gabe StammGaben,
+                // die den ganzen Stammdialog in eine Ueberlagerung stellte. An ihrer Stelle
+                // stehen DREI Wege DESSELBEN Dialogs: der Katalogsatz, sein Speicherweg und
+                // der Kennlinieneditor. Sie kommen aus WaermepumpeStammHuelle - es ist
+                // derselbe Weg, den die Stammdatenpflege geht, nur ohne ihre Liste.
+                //
+                // SatzZu liest Tab_WP_STAMM, NICHT die Projektkopie: Geschrieben wird in den
+                // Katalog, und dorthin gehoert auch die Id. Der Anlagendialog sucht sie ueber
+                // den Bezeichner, weil Daten.IdWp bei einer gespeicherten Anlage die Id der
+                // Projektkopie traegt.
+                ["StammSatz"] = new Func<int, WaermepumpeStammDaten>(WaermepumpeStammHuelle.SatzZu),
+                ["StammSpeichern"] = new Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>(
+                    WaermepumpeStammHuelle.Speichern),
+                ["Kennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(
+                    WaermepumpeStammHuelle.KennlinienZu),
+                ["KennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
+                    WaermepumpeStammHuelle.KennlinienAbgleichen),
 
                 ["TitelText"] = Text_("WPA_TITEL", "Detailansicht"),
                 ["LabelWpAuswahl"] = Text_("WPA_LBL_WP", "Wärmepumpen Auswahl:"),
@@ -150,35 +171,18 @@ namespace WindowsFormsApplication1
                 ["GruppeKenndaten"] = Text_("WPA_GRP_KENNDATEN", "Wärmepumpen Kenndaten"),
                 ["GruppeAuslegung"] = Text_("WPA_GRP_AUSLEGUNG", "Auslegung für Verteilung"),
 
-                // W7-E-2: Ueberschrift des linken Blocks - label7 des Vorbilds.
-                ["GruppeSpitzenlast"] = Text_("WPA_LBL_SPITZENLAST", "Wärmeerzeuger Spitzenlast:"),
-                ["LabelBeschreibung"] = Text_("WPA_LBL_BESCHREIBUNG", "Bezeichnung"),
-                ["LabelHersteller"] = Text_("WPS_LBL_HERSTELLER", "Hersteller"),
-                ["LabelTyp"] = Text_("WPS_LBL_TYP", "Wärmepumpentyp"),
-                ["LabelRegelung"] = Text_("WPS_LBL_REGELUNG", "Leistungsstufen"),
-                ["LabelBaujahr"] = Text_("WPS_LBL_BAUJAHR", "Baujahr"),
-                ["LabelNennleistung"] = Text_("WPS_LBL_NENNLEISTUNG", "Nennleistung"),
-                ["LabelPHeizstab"] = Text_("WPS_LBL_HEIZSTAB", "Heizstab"),
+                // Anwenderentscheid 16.09.2026: Der Block hiess "Wärmeerzeuger
+                // Spitzenlast:" (WPA_LBL_SPITZENLAST) und benannte damit nur den ersten
+                // Schalter. Er heisst jetzt "Konfiguration" und traegt den Titel der
+                // Ueberlagerung; seine Beschriftungen stehen im Textbuendel.
+                ["GruppeKonfiguration"] = Text_("WPA_GRP_KONFIGURATION", "Konfiguration"),
+                ["BtnKonfigurationText"] = Text_("WPA_BTN_KONFIGURATION", "Konfiguration…"),
+
                 ["LabelPHeizstabKurz"] = Text_("WPA_LBL_PHEIZSTAB", "Leistung Heizstab"),
                 ["LabelVorlauf"] = Text_("WPA_LBL_VORLAUF", "Vorlauf"),
                 ["LabelRuecklauf"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
                 ["LabelRuecklaufKurz"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
-                // W7-E-2: Die Haekchen tragen wieder ihren EIGENEN Text
-                // (checkBox_Heizstab / checkBox_Sperrzeit des Vorbilds); label7 und
-                // label19 sind dort Ueberschriften.
-                ["LabelHeizstab"] = Text_("WPA_CHK_HEIZSTAB",
-                    "Elektrische Nachheizung aktivieren (falls vorhanden)"),
-                ["LabelSperrzeit"] = Text_("WPA_LBL_SPERRZEIT",
-                    "Wärmepumpenleistung / maximale Betriebszeit:"),
-                ["LabelSperrzeitSchalter"] = Text_("WPA_CHK_SPERRZEIT",
-                    "Sperrzeit durch Energieversorger"),
-                ["LabelVon"] = Text_("WPA_LBL_VON", "Sperrzeit von"),
-                ["LabelBis"] = Text_("WPA_LBL_BIS", "Sperrzeit bis"),
                 ["LabelNutzungszeit"] = Text_("WPA_LBL_NUTZUNGSZEIT", "Nutzungsdauer"),
-                ["LabelBivalent"] = Text_("WPA_LBL_BIVALENT", "Bivalenter Betrieb"),
-                ["LabelBetriebsart"] = Text_("WPA_LBL_BETRIEBSART", "Betriebsart"),
-                ["LabelAbschalttemp"] = Text_("WPA_LBL_ABSCHALTTEMP", "Bivalenztemperatur"),
-                ["LabelAbschalttempKurz"] = Text_("WPA_LBL_ABSCHALTTEMP", "Bivalenztemperatur"),
                 ["LabelKennlinien"] = Text_("WPS_LBL_KENNLINIEN", "Kenndaten Kennlinien:"),
                 ["HerleitungKatalog"] = Text_("WPA_HERLEITUNG_KATALOG",
                     "Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien."),
@@ -194,7 +198,12 @@ namespace WindowsFormsApplication1
                 ["RuecklaufFormat"] = Text_("WPA_RUECKLAUF_VORSCHLAG", "Übliche Werte: {0} °C"),
                 ["SchliessenText"] = Text_("WPV_BTN_SCHLIESSEN", "Schließen"),
                 ["BtnKatalogText"] = Text_("WPK_BTN_KATALOG", "📋  Modul-Katalog..."),
-                ["BtnParameterText"] = Text_("WPA_BTN_PARAMETER", "Parameter Bearbeiten..."),
+                ["BtnKenndatenText"] = Text_("WPS_BTN_KENNDATEN", "Kennliniendaten Ansicht/Bearbeiten..."),
+                ["BtnStammSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
+                ["MeldungReadOnlySpeichern"] = Text_("WPS_MSG_READONLY_SPEICHERN",
+                    "Diese Wärmepumpe ist schreibgeschützt (ReadOnly) und kann nicht gespeichert werden."),
+                ["MeldungReadOnlyKenndaten"] = Text_("WPS_MSG_READONLY_KENNDATEN",
+                    "Diese Wärmepumpe ist schreibgeschützt (ReadOnly). Die Kennliniendaten können nur angesehen, nicht geändert werden."),
                 ["BtnKostenText"] = Text_("WPI_BTN_KOSTEN", "Kosten bearbeiten…"),
                 ["TipKosten"] = Text_("WPI_TIP_KOSTEN",
                     "Kostenverwaltung dieser Anlage öffnen (Projektmodus)."),
@@ -202,10 +211,6 @@ namespace WindowsFormsApplication1
                     "Kosten werden je ANLAGE gepflegt — die Wärmepumpe zuerst mit OK anlegen und speichern; danach über „Ändern..“ die Kosten bearbeiten."),
                 ["TextKostenKeine"] = Text_("WPI_KOSTEN_KEINE", "Invest — · Betrieb —"),
                 ["TextKostenSummen"] = Text_("WPI_KOSTEN_SUMMEN", "Invest {0:N0} € · Betrieb {1:N0} €/a"),
-                ["HinweisSpitzenlast"] = Text_("WPA_HINWEIS_SPITZENLAST",
-                    "Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:"),
-                ["HinweisBetrieb"] = Text_("WPA_HINWEIS_BETRIEB",
-                    "Außentemperaturgesteuerter Betrieb:"),
                 ["WarnungBetriebsart"] = Text_("WPA_MSG_BETRIEBSART", "Bitte Betriebsart auswählen!"),
                 ["WarnungWaermepumpe"] = Text_("WPA_MSG_WAERMEPUMPE", "Bitte Wärmepumpe auswählen!"),
                 ["WarnungFeldFormat"] = Text_("WPA_MSG_FELD", "Bitte {0} eingeben."),

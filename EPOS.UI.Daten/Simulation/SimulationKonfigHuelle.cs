@@ -246,6 +246,15 @@ namespace WindowsFormsApplication1
                 ["BtnPufferVerwalten"] = MyResource.Resource.PSP_BTN_PUFFER_VERWALTEN,
                 ["BtnStromspeicherAuslegen"] = MyResource.Resource.SIM_BTN_SP_AUSLEGUNG,
 
+                // ANWENDERWUNSCH 16.09.2026: der Knopf an der Erzeugerkarte, der den
+                // Konfigurationsdialog oeffnet - derselbe Wortlaut wie der Knopf in der
+                // Detailansicht der Waermepumpe (WPA_BTN_KONFIGURATION).
+                ["BtnKonfigurationText"] = MyResource.Resource.SIMKONF_BTN_KONFIGURATION,
+
+                // Der Titel der UEBERLAGERUNG ueber dem Konfigurationsdialog;
+                // {0} = der Titel der Karte ("Konfiguration · Heizkessel").
+                ["KonfigTitelText"] = MyResource.Resource.SIMKONF_TITEL_KONFIGURATION,
+
                 ["LesepunktText"] = MyResource.Resource.SIM_BOOSTER_LESEPUNKT_SCHALTER,
 
                 ["BtnSpeichern"] = MyResource.Resource.SIM_KONFIG_BTN_SPEICHERN,
@@ -254,6 +263,10 @@ namespace WindowsFormsApplication1
                 ["StatusLesepunktDavor"] = MyResource.Resource.SIM_STATUS_LESEPUNKT_DAVOR,
                 ["StatusLesepunktDanach"] = MyResource.Resource.SIM_STATUS_LESEPUNKT_DANACH,
                 ["StatusEinstellungFehler"] = MyResource.Resource.SIM_STATUS_EINSTELLUNG_FEHLER,
+
+                // Die Konfiguration der Waermepumpen-ANLAGE liess sich nicht schreiben;
+                // die projektweiten Werte melden ueber StatusEinstellungFehler.
+                ["StatusKonfigFehler"] = MyResource.Resource.SIMKONF_MSG_WP_KONFIG_FEHLER,
 
                 ["SchemaLeerText"] = MyResource.Resource.SIM_SCHEMA_LEER,
                 ["SchemaWarnungText"] = MyResource.Resource.SIM_SCHEMA_WARNUNG,

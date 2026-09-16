@@ -307,12 +307,13 @@ public class SimulationKonfigSeiteTests : BunitContext
     }
 
     /// <summary>
-    /// Die drei Erzeugerwerte stehen an DER Karte, die sie betreffen — BHKW
-    /// (Betriebsart und untere Leistungsgrenze), Wärmepumpe (Heizstab),
-    /// Heizkessel (Betriebsbereitschaft). Und jeder schreibt sofort.
+    /// <b>Anwenderwunsch 16.09.2026</b> (Screenshots „Simulation → Konfiguration"):
+    /// „Erstelle dort einen Knopf anstelle des blauen Balkens ‚Parameter für die
+    /// Simulation' mit dem Konfigurationsdialog." An der Karte steht seither GENAU
+    /// EIN Knopf — und nur an den drei Arten, die überhaupt Parameter führen.
     /// </summary>
     [Fact]
-    public void Jeder_Erzeugerparameter_steht_an_seiner_Karte_und_schreibt_sofort()
+    public void Jede_Karte_mit_Parametern_traegt_den_Konfigurationsknopf()
     {
         var seite = SeiteMitParametern();
 
@@ -320,47 +321,210 @@ public class SimulationKonfigSeiteTests : BunitContext
         // der Textschalter am Spaltenende holt sie hervor.
         seite.Find("button.epos-simkonfig-verfuegbar").Click();
 
-        IElement bhkw = Karte(seite, "BHKW · Modul 1");
-        IElement kessel = Karte(seite, "Heizkessel");
-        IElement wp = Karte(seite, "Wärmepumpe");
+        foreach (string titel in new[]
+                 { "BHKW · Modul 1", "BHKW · Modul 2", "Heizkessel", "Wärmepumpe" })
+        {
+            IElement karte = Karte(seite, titel);
+            Assert.Single(karte.QuerySelectorAll("div.epos-erzeugerkachel-parameter"));
 
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_GRP_BETRIEBSART,
-                        bhkw.TextContent);
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE,
-                        bhkw.TextContent);
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_CHK_HEIZSTAB,
-                        wp.TextContent);
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_BEREITSCHAFT,
-                        kessel.TextContent);
+            IElement knopf = karte
+                .QuerySelector("div.epos-erzeugerkachel-parameter button")!;
+            Assert.Equal("Konfiguration…", knopf.TextContent.Trim());
+        }
 
-        // Die Betriebsart steht auf „stromgefuehrt" (1) - der dritte Knopf waehlt 2.
-        bhkw.QuerySelectorAll("input[type='radio']")[2].Change(true);
-        wp.QuerySelector("input[type='checkbox']")!.Change(false);
-        kessel.QuerySelectorAll("input")[0].Input("7500");
+        // Die Felder selbst stehen NICHT mehr an der Karte - sie sind im Dialog.
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMERG_GRP_BETRIEBSART,
+                              Karte(seite, "BHKW · Modul 1").TextContent);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMERG_CHK_HEIZSTAB,
+                              Karte(seite, "Wärmepumpe").TextContent);
+        Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_BEREITSCHAFT,
+                              Karte(seite, "Heizkessel").TextContent);
 
-        Assert.Equal(new[] { "betriebsart:2", "heizstab:False", "bereitschaft:7500" },
-                     _geschrieben);
+        // Und kein Feld hat beim Zeichnen geschrieben.
+        Assert.Empty(_geschrieben);
     }
 
     /// <summary>
-    /// NUR AN DER ERSTEN KARTE IHRER ART: Das Projekt führt zwei BHKW-Module, die
-    /// fünf Werte gelten aber projektweit — an beiden Karten stünde dieselbe
-    /// Betriebsart zweimal.
+    /// KEIN KNOPF OHNE INHALT: Photovoltaik, Stromspeicher, Solarthermie und
+    /// Pufferspeicher führen keinen Laufparameter — ein Knopf, der einen leeren
+    /// Dialog öffnet, ist keiner.
     /// </summary>
     [Fact]
-    public void Ein_zweites_Modul_derselben_Art_traegt_keinen_zweiten_Parameterblock()
+    public void Eine_Karte_ohne_Parameter_traegt_keinen_Knopf()
+    {
+        var seite = SeiteMitParametern();
+        seite.Find("button.epos-simkonfig-verfuegbar").Click();
+
+        Assert.Empty(Karte(seite, "Photovoltaik · PV 1")
+                         .QuerySelectorAll("div.epos-erzeugerkachel-parameter"));
+        Assert.Empty(Karte(seite, "Stromspeicher")
+                         .QuerySelectorAll("div.epos-erzeugerkachel-parameter"));
+
+        // Vier Bereiche: zwei BHKW-Module, Heizkessel, Waermepumpe.
+        Assert.Equal(4, seite.FindAll("div.epos-erzeugerkachel-parameter").Count);
+    }
+
+    /// <summary>
+    /// Der Klick öffnet die Überlagerung, und sie trägt den Titel der Karte —
+    /// „Konfiguration · BHKW · Modul 2". AUCH am zweiten Modul: Bis zum
+    /// 16.09.2026 stand der Block nur an der ersten Karte je Art; ein Knopf
+    /// verdoppelt keine Eingabe, und wer die Konfiguration des zweiten Moduls
+    /// sucht, soll sie an dessen Karte finden.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_oeffnet_die_Ueberlagerung_mit_dem_Kartentitel()
+    {
+        var seite = SeiteMitParametern();
+        Assert.Equal("Keine", seite.Instance.OffenerEditor);
+
+        Knopf(seite, "BHKW · Modul 2").Click();
+
+        Assert.Equal("Komponentenkonfig", seite.Instance.OffenerEditor);
+        Assert.Equal("Konfiguration · BHKW · Modul 2",
+                     seite.Find("h2.epos-ueberlagerung-titel").TextContent);
+
+        // Der Dialog zeigt die BHKW-Felder - und keinen zweiten Titel (der Kopf der
+        // Ueberlagerung traegt ihn).
+        IElement bereich = seite.Find("div.epos-ueberlagerung");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_GRP_BETRIEBSART,
+                        bereich.TextContent);
+        Assert.Empty(bereich.QuerySelectorAll("h1.epos-dialog-titel"));
+    }
+
+    /// <summary>
+    /// <b>OK schreibt, Abbrechen nicht</b> — die Hausregel „geschrieben wird im
+    /// OK-Weg" (EPOS.UI/CLAUDE.md, „Bedienung"). Bis zum 16.09.2026 schrieb jedes
+    /// Feld an der Karte SOFORT; mit dem Dialog gibt es einen Arbeitsstand, und
+    /// Abbrechen nimmt ihn zurück.
+    /// </summary>
+    [Fact]
+    public void Der_Dialog_schreibt_im_OK_Weg_und_bei_Abbrechen_nicht()
     {
         var seite = SeiteMitParametern();
 
-        Assert.Empty(Karte(seite, "BHKW · Modul 2")
-                         .QuerySelectorAll("div.epos-erzeugerkachel-parameter"));
+        // --- Abbrechen: die Betriebsart bleibt, wo sie war ---
+        Knopf(seite, "BHKW · Modul 1").Click();
+        seite.Find("div.epos-ueberlagerung").QuerySelectorAll("input[type='radio']")[2]
+             .Change(true);
+        Leiste(seite, 0).Click();                       // Abbrechen
 
-        // Zwei Bereiche: BHKW und Heizkessel - die Waermepumpe ist zugeklappt.
-        Assert.Equal(2, seite.FindAll("div.epos-erzeugerkachel-parameter").Count);
+        Assert.Equal("Keine", seite.Instance.OffenerEditor);
+        Assert.Empty(_geschrieben);
 
-        // Mit ihr sind es drei, und das zweite BHKW-Modul bleibt ohne.
+        // --- OK: nur der GEAENDERTE Wert geht seinen Weg ---
+        Knopf(seite, "BHKW · Modul 1").Click();
+        seite.Find("div.epos-ueberlagerung").QuerySelectorAll("input[type='radio']")[2]
+             .Change(true);
+        Leiste(seite, 1).Click();                       // OK
+
+        Assert.Equal(new[] { "betriebsart:2" }, _geschrieben);
+        Assert.Equal(2, seite.Instance.Laufparameter.Betriebsart);
+    }
+
+    /// <summary>
+    /// Heizkessel und Wärmepumpe gehen denselben Weg — jeder über den Delegaten,
+    /// der bis zum 16.09.2026 am Feld der Karte hing.
+    /// </summary>
+    [Fact]
+    public void Heizkessel_und_Waermepumpe_schreiben_ihre_Werte_im_OK_Weg()
+    {
+        var seite = SeiteMitParametern();
         seite.Find("button.epos-simkonfig-verfuegbar").Click();
-        Assert.Equal(3, seite.FindAll("div.epos-erzeugerkachel-parameter").Count);
+
+        Knopf(seite, "Heizkessel").Click();
+        seite.Find("div.epos-ueberlagerung").QuerySelectorAll("input")[0].Input("7500");
+        Leiste(seite, 1).Click();
+
+        Knopf(seite, "Wärmepumpe").Click();
+        seite.Find("div.epos-ueberlagerung")
+             .QuerySelector("input[type='checkbox']")!.Change(false);
+        Leiste(seite, 1).Click();
+
+        Assert.Equal(new[] { "bereitschaft:7500", "heizstab:False" }, _geschrieben);
+    }
+
+    /// <summary>
+    /// <b>Die Naht zur Anlage</b>: Führt die Kartenzeile eine Wärmepumpen-Anlage und
+    /// bietet die Plattform den Weg an, holt der Dialog ihre Anlagendaten und gibt
+    /// sie beim OK zurück. Ohne die Delegaten (iOS, Proben) bleibt der Knopf stehen
+    /// und der Dialog zeigt allein die Projekteinstellung.
+    /// </summary>
+    [Fact]
+    public void Die_Waermepumpenkonfiguration_wird_geladen_und_im_OK_Weg_gespeichert()
+    {
+        var geladen = new List<int>();
+        var gespeichert = new List<int>();
+        var anlage = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten
+        {
+            Bezeichner = "WP 1", Heizstab = false, Sperrung = true
+        };
+
+        SimulationParameterDienste dienste = Parameterdienste();
+        dienste.WaermepumpeKonfigurationLaden = id => { geladen.Add(id); return anlage; };
+        dienste.WaermepumpeKonfigurationSpeichern = (id, d) => { gespeichert.Add(id); return true; };
+
+        var seite = Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, DiensteMitWpAnlage())
+            .Add(x => x.Parameter, dienste)
+            .Add(x => x.StartProjekt, 1030));
+
+        Knopf(seite, "Wärmepumpe · WP 1").Click();
+        Assert.Equal(new[] { 14930 }, geladen);
+        Assert.NotNull(seite.FindComponent<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKonfiguration>());
+
+        Leiste(seite, 1).Click();
+        Assert.Equal(new[] { 14930 }, gespeichert);
+    }
+
+    /// <summary>Ohne die Naht bleibt der Knopf — der Dialog zeigt die Projekteinstellung.</summary>
+    [Fact]
+    public void Ohne_Naht_zeigt_die_Waermepumpe_nur_die_Projekteinstellung()
+    {
+        var seite = Render<SimulationKonfigSeite>(p => p
+            .Add(x => x.Dienste, DiensteMitWpAnlage())
+            .Add(x => x.Parameter, Parameterdienste())
+            .Add(x => x.StartProjekt, 1030));
+
+        Knopf(seite, "Wärmepumpe · WP 1").Click();
+
+        IElement bereich = seite.Find("div.epos-ueberlagerung");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_CHK_HEIZSTAB,
+                        bereich.TextContent);
+        Assert.Empty(seite.FindComponents<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeKonfiguration>());
+    }
+
+    /// <summary>Der Konfigurationsknopf EINER Karte über ihren Titel.</summary>
+    private static IElement Knopf(IRenderedComponent<SimulationKonfigSeite> seite, string titel)
+        => Karte(seite, titel).QuerySelector("div.epos-erzeugerkachel-parameter button")!;
+
+    /// <summary>Ein Knopf der Schlussleiste IM Dialog: 0 = Abbrechen, 1 = OK.</summary>
+    private static IElement Leiste(IRenderedComponent<SimulationKonfigSeite> seite, int platz)
+        => seite.Find("div.epos-ueberlagerung").QuerySelectorAll("div.epos-leiste button")[platz];
+
+    /// <summary>
+    /// Wie <see cref="Dienste"/>, aber mit einer AUFGENOMMENEN Wärmepumpe samt
+    /// Anlagen-Id — die Probe für die Naht zur Anlagenkonfiguration.
+    /// </summary>
+    private SimulationKonfigDienste DiensteMitWpAnlage()
+    {
+        SimulationKonfigDienste dienste = Dienste();
+        dienste.Laden = _ => new SimulationKonfigDaten
+        {
+            IdProjekt = 1030,
+            Gruppen = new List<KachelGruppe>
+            {
+                new KachelGruppe
+                {
+                    Titel = "Wärmeerzeuger",
+                    Zeilen = new List<ErzeugerZeile>
+                    {
+                        Waerme("Wärmepumpe", "1", "Wärmepumpe · WP 1", 14930, true, true)
+                    }
+                }
+            },
+            Stromspeicherstand = _spStand
+        };
+        return dienste;
     }
 
     /// <summary>Die Erzeugerkarte EINES Erzeugers über ihren Titel.</summary>

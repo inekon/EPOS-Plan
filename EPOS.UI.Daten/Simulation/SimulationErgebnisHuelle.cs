@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Waermepumpe;
 using EPOS.UI.Seiten.Simulation;
 using Microsoft.AspNetCore.Components;
 using SkiaSharp;
@@ -607,7 +608,23 @@ namespace WindowsFormsApplication1
                 },
                 HeizstabSchreiben = wert => KonfigSchreiben(m => m.m_WP_Heizstab = wert),
                 BereitschaftSchreiben = wert =>
-                    KonfigSchreiben(m => m.m_Kessel_Betriebsbereitschaft = (int)wert)
+                    KonfigSchreiben(m => m.m_Kessel_Betriebsbereitschaft = (int)wert),
+
+                // ANWENDERWUNSCH 16.09.2026: Der Konfigurationsknopf der
+                // Waermepumpenkarte zeigt die Konfiguration DIESER Anlage. Sie steht
+                // in Tab_Energieanlagen, ihre Abbildung auf den Feldsatz liegt in der
+                // Schale (WaermepumpeAnlageHuelle.AusModell/NachModell) - deshalb die
+                // Naht. Ohne sie zeigt der Dialog nur die Projekteinstellung.
+                WaermepumpeKonfigurationLaden = _wege.WaermepumpeKonfigLesen == null
+                    ? (Func<int, WaermepumpeAnlageDaten>)null
+                    : idAnlage => _wege.WaermepumpeKonfigLesen(m_ID_Projekt, idAnlage),
+
+                WaermepumpeKonfigurationSpeichern = _wege.WaermepumpeKonfigSchreiben == null
+                    ? (Func<int, WaermepumpeAnlageDaten, bool>)null
+                    : (idAnlage, daten) =>
+                        _wege.WaermepumpeKonfigSchreiben(m_ID_Projekt, idAnlage, daten),
+
+                WaermepumpeTraegerkatalog = _wege.WaermepumpeTraegerkatalog
             };
         }
 

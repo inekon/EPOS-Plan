@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using EPOS.UI.Bausteine;
+using EPOS.UI.Dialoge.Waermepumpe;
 using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Seiten.Simulation;
@@ -289,8 +291,12 @@ public sealed class SimulationAnsichtDienste
 /// unverändert. Ein eigener Weg über die Konfigurationshülle wäre ein zweiter
 /// Stand derselben Zahlen.</para>
 ///
-/// <para><b>Jedes Feld schreibt sofort</b> — dieselbe Hausregel wie im
-/// abgelösten Reiter (W11b‑B‑29); es gibt keinen Speichernknopf für diese fünf.</para>
+/// <para><b>Die Netzverluste schreiben sofort</b> — dieselbe Hausregel wie im
+/// abgelösten Reiter (W11b‑B‑29). Die DREI ERZEUGERWERTE schreiben seit dem
+/// Anwenderwunsch vom 16.09.2026 im OK-Weg des
+/// <c>KomponentenKonfigurationDialog</c>: An der Erzeugerkarte steht nur noch sein
+/// Knopf, und ein Dialog mit Abbrechen darf nichts vorher geschrieben haben.
+/// Dieselben Delegaten, derselbe Zielort — nur ein anderer Auslöser.</para>
 /// </summary>
 public sealed class SimulationParameterDienste
 {
@@ -311,4 +317,42 @@ public sealed class SimulationParameterDienste
 
     /// <summary>Die Betriebsbereitschaft des Heizkessels [h/a].</summary>
     public Action<double>? BereitschaftSchreiben;
+
+    // =====================================================================
+    //  Die Konfiguration EINER Wärmepumpen-Anlage (Anwenderwunsch 16.09.2026)
+    // =====================================================================
+    //
+    // Der Konfigurationsdialog der Karte zeigt bei der Wärmepumpe nicht nur die
+    // projektweite Heizstab-Einstellung, sondern die Konfiguration DIESER Anlage:
+    // elektrische Nachheizung, Sperrzeit, bivalenter Betrieb, Energieträger. Sie
+    // steht in Tab_Energieanlagen und nicht in Tab_Einstellungen — deshalb ein
+    // eigener Lese- und Schreibweg statt eines weiteren Schalters.
+    //
+    // DIE DREI SIND OPTIONAL. Wo sie fehlen (iOS, Proben), zeigt der Dialog bei der
+    // Wärmepumpe allein die PROJEKTEINSTELLUNG; der Knopf bleibt stehen, denn die
+    // gibt es überall. Still fällt nichts aus — der Dialog sagt an seiner
+    // Herleitungszeile, was er zeigt.
+
+    /// <summary>
+    /// Die Anlagendaten EINER Wärmepumpe (<c>Tab_Energieanlagen.ID</c> der
+    /// Kartenzeile) als frische ARBEITSKOPIE; <c>null</c> = kein Weg oder keine
+    /// Anlage dieser Id.
+    /// </summary>
+    public Func<int, WaermepumpeAnlageDaten?>? WaermepumpeKonfigurationLaden;
+
+    /// <summary>
+    /// Schreibt die Anlagendaten zurück (<c>Tab_Energieanlagen.ID</c>, Feldsatz);
+    /// <c>true</c> = geschrieben. Der Aufrufer meldet den Fehlschlag.
+    /// </summary>
+    public Func<int, WaermepumpeAnlageDaten, bool>? WaermepumpeKonfigurationSpeichern;
+
+    /// <summary>
+    /// Der Trägerkatalog der Energieträgerwahl; <c>null</c> = keine Wahl. Er wird
+    /// beim Öffnen des Dialogs EINMAL gerufen, nicht je Zeichenlauf.
+    /// </summary>
+    public Func<IReadOnlyList<EnergietraegerWahl.Eintrag>>? WaermepumpeTraegerkatalog;
+
+    // KEIN Weg fuer die TEXTE: Das Buendel WaermepumpeKonfigurationTexte fuellt sich
+    // selbst aus MyResource in der Oberflaechensprache - die Huelle muss nichts
+    // beisteuern, und ein Delegat dafuer waere eine Naht ohne Gegenueber.
 }

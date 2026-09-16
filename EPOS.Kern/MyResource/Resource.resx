@@ -11602,9 +11602,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BHKWV_LBL_NAME" xml:space="preserve">
     <value>Modul-Name:</value>
   </data>
-  <data name="BHKWV_LBL_TRAEGER" xml:space="preserve">
-    <value>Brennstoff:</value>
-  </data>
   <data name="BHKWV_LBL_HERSTELLER" xml:space="preserve">
     <value>Hersteller:</value>
   </data>
@@ -11998,12 +11995,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="WPA_GRP_AUSLEGUNG" xml:space="preserve">
     <value>Auslegung für Verteilung</value>
   </data>
-  <data name="WPA_GRP_SPITZENLAST" xml:space="preserve">
-    <value>Spitzenlast und Betrieb</value>
-  </data>
-  <data name="WPA_LBL_BESCHREIBUNG" xml:space="preserve">
-    <value>Bezeichnung</value>
-  </data>
   <data name="WPA_LBL_PHEIZSTAB" xml:space="preserve">
     <value>Leistung Heizstab</value>
   </data>
@@ -12012,9 +12003,6 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="WPA_LBL_RUECKLAUF" xml:space="preserve">
     <value>Rücklauf</value>
-  </data>
-  <data name="WPA_LBL_SPITZENLAST" xml:space="preserve">
-    <value>Wärmeerzeuger Spitzenlast:</value>
   </data>
   <data name="WPA_LBL_SPERRZEIT" xml:space="preserve">
     <value>Wärmepumpenleistung / maximale Betriebszeit:</value>
@@ -12036,9 +12024,6 @@ Soll er trotzdem überschrieben werden?</value>
   </data>
   <data name="WPA_LBL_ABSCHALTTEMP" xml:space="preserve">
     <value>Bivalenztemperatur</value>
-  </data>
-  <data name="WPA_BTN_PARAMETER" xml:space="preserve">
-    <value>Parameter Bearbeiten...</value>
   </data>
   <data name="WPA_HINWEIS_SPITZENLAST" xml:space="preserve">
     <value>Ein Spitzenlast Wärmeerzeuger kann notwendig sein aufgrund:</value>
@@ -18423,9 +18408,6 @@ Möchten Sie das zulassen?</value>
   <data name="SIMKONF_HRL_NETZVERLUSTE" xml:space="preserve">
     <value>Wirkt nur, wenn das Projekt einen Wärmebedarf führt: Die Verluste werden stündlich umgelegt und anteilig auf die Bedarfskanäle verteilt. Vorgabe 0 %.</value>
   </data>
-  <data name="SIMKONF_GRP_LAUFPARAMETER" xml:space="preserve">
-    <value>Parameter für die Simulation</value>
-  </data>
   <data name="SP_GRP_EINZELANLAGE" xml:space="preserve">
     <value>Einzelanlage (klassischer Projektlauf)</value>
   </data>
@@ -19325,5 +19307,29 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ETV_KAT_ANIMAL_FAT" xml:space="preserve">
     <value>Tierische Fette</value>
+  </data>
+  <data name="WPA_GRP_KONFIGURATION" xml:space="preserve">
+    <value>Konfiguration</value>
+  </data>
+  <data name="WPA_BTN_KONFIGURATION" xml:space="preserve">
+    <value>Konfiguration…</value>
+  </data>
+  <data name="SIMKONF_BTN_KONFIGURATION" xml:space="preserve">
+    <value>Konfiguration…</value>
+  </data>
+  <data name="SIMKONF_TITEL_KONFIGURATION" xml:space="preserve">
+    <value>Konfiguration · {0}</value>
+  </data>
+  <data name="SIMKONF_MSG_WP_KONFIG_FEHLER" xml:space="preserve">
+    <value>Die Konfiguration der Wärmepumpe konnte nicht gespeichert werden.</value>
+  </data>
+  <data name="SIMKONF_HRL_PROJEKTWEIT" xml:space="preserve">
+    <value>Projekteinstellung — sie gilt für alle Anlagen dieser Art im Projekt.</value>
+  </data>
+  <data name="SIMKONF_HRL_HEIZSTAB" xml:space="preserve">
+    <value>Projekteinstellung — sie gilt für alle Wärmepumpen des Projekts; nur wenn sie gesetzt ist, rechnet die Simulation eine Heizstabphase.</value>
+  </data>
+  <data name="SIMKONF_HRL_HEIZSTAB_ANLAGE" xml:space="preserve">
+    <value>„Elektrische Nachheizung aktivieren (falls vorhanden)“ oben gehört dagegen zu dieser Anlage: Sie hebt die Anlage in die elektrische Welt und entscheidet über ihren Energieträger, nicht über den Rechenweg.</value>
   </data>
 </root>

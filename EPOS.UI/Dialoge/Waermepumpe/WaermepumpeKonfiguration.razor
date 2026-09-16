@@ -1,0 +1,228 @@
+﻿@* Die KONFIGURATION einer Waermepumpen-Anlage - der Block, der bis zum 16.09.2026
+   im Anlagendialog unter der Ueberschrift "Waermeerzeuger Spitzenlast:" stand.
+
+   DER NAME. Die alte Ueberschrift benannte nur den ERSTEN Schalter - die
+   elektrische Nachheizung. Darunter standen aber Sperrzeit, bivalenter Betrieb,
+   Bivalenztemperatur und der Energietraeger, also alles, was den Rechenweg der
+   Waermepumpe parametriert. Anwenderentscheid vom 16.09.2026: "Die Bezeichnung
+   'Waermeerzeuger Spitzenlast' bezieht sich nur auf die elektrische Nachheizung -
+   Titel aendern auf 'Konfiguration'."
+
+   ZWEI WIRTE, EIN BLOCK. Der Baustein wird an zwei Stellen gezeichnet:
+   im WaermepumpeAnlageDialog in der Ueberlagerung hinter dem Knopf
+   "Konfiguration…" und in Simulation > Konfiguration. Deshalb steht er HIER und
+   nicht in einem der beiden Wirte - zwei Fassungen derselben Maske sind seit iZ5
+   verboten.
+
+   DER BAUSTEIN SCHREIBT IN DIE HEREINGEREICHTEN DATEN. Er fuehrt keinen eigenen
+   Stand: Jedes Feld bindet unmittelbar an WaermepumpeAnlageDaten, und jede
+   Aenderung meldet Geaendert. Ob eine Aenderung wieder verworfen werden kann,
+   entscheidet der WIRT - der Anlagendialog haelt dafuer beim Oeffnen eine Kopie
+   der acht Konfigurationsfelder und schreibt sie beim Abbrechen zurueck.
+
+   KEIN GRUPPENKOPF, KEINE KOSTENKNOEPFE. Den Titel traegt der Wirt: im
+   Anlagendialog die Ueberlagerung ("Ein Titel, eine Stelle"), in der Simulation
+   deren eigener Abschnitt.
+
+   ZWEI SICHTBARKEITSREGELN, woertlich aus dem Anlagendialog uebernommen: Die
+   Betriebsart erscheint nur bei bivalentem Betrieb; die Bivalenztemperatur nur,
+   wenn sie RECHENWIRKSAM ist - Teilparallel- oder Alternativbetrieb. Die drei
+   Erklaerkaesten stehen dagegen IMMER, wie im Vorbild (label21/22/23 kannten
+   keine Sichtbarkeitsregel): Sie erklaeren die Wahl, die der Anwender erst
+   treffen soll; der gewaehlte Kasten ist hervorgehoben.
+
+   OHNE GABEN ZEICHNET ER (Hausregel EPOS.UI): Daten ist ein leerer Satz, der
+   Traegerkatalog leer - dann bleibt die Traegergruppe aus -, und das Textbuendel
+   fuellt sich selbst aus MyResource mit deutschem Rueckfall. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using WindowsFormsApplication1
+
+<div class="epos-wp-konfiguration">
+
+    @* Formularraster, EINSPALTIG (iU8-E-2, Paket P1): Der Block ist eine Regel, die
+       sich von oben nach unten aufblaettert; zwei Spalten stellten den Schalter
+       "Sperrzeit" neben den Schalter "Heizstab". *@
+    <Formularraster Einspaltig="true">
+        <KindInhalt>
+            <Schalter Bezeichnung="@Texte.LabelHeizstab" Wert="@Daten.Heizstab"
+                      WertChanged="BeiHeizstab" Aktiv="@Aktiv" />
+
+            <Herleitungszeile Text="@Texte.HinweisSpitzenlast" />
+
+            <Formulargruppe Titel="@Texte.GruppeSperrzeit">
+                <KindInhalt>
+                    <Schalter Bezeichnung="@Texte.LabelSperrzeitSchalter" Wert="@Daten.Sperrung"
+                              WertChanged="BeiSperrung" Aktiv="@Aktiv" />
+                    <Ganzzahlfeld Bezeichnung="@Texte.LabelVon" Feldname="@Texte.LabelVon"
+                                  Wert="@Daten.SperrzeitVon" WertChanged="BeiSperrzeitVon"
+                                  Aktiv="@Aktiv" />
+                    <Ganzzahlfeld Bezeichnung="@Texte.LabelBis" Feldname="@Texte.LabelBis"
+                                  Einheit="@Texte.EinheitStundeTag" Wert="@Daten.SperrzeitBis"
+                                  WertChanged="BeiSperrzeitBis" Aktiv="@Aktiv" />
+                </KindInhalt>
+            </Formulargruppe>
+
+            <Formulargruppe Titel="@Texte.GruppeBetrieb">
+                <KindInhalt>
+                    <Schalter Bezeichnung="@Texte.LabelBivalent" Wert="@Daten.BivalenterBetrieb"
+                              WertChanged="BeiBivalent" Aktiv="@Aktiv" />
+
+                    @if (Daten.BivalenterBetrieb)
+                    {
+                        <Auswahlfeld Bezeichnung="@Texte.LabelBetriebsart" Eintraege="@Betriebsarten"
+                                     Auswahl="@BetriebsartIndex" Aktiv="@Aktiv"
+                                     AuswahlChanged="BeiBetriebsart" Platzhalter="" />
+
+                        @if (BivalenztemperaturSichtbar)
+                        {
+                            <Zahlenfeld Bezeichnung="@Texte.LabelAbschalttemp" Einheit="@Texte.EinheitGrad"
+                                        Feldname="@Texte.LabelAbschalttempKurz" Wert="@Daten.Abschaltpunkt"
+                                        WertChanged="BeiAbschaltpunkt" Aktiv="@Aktiv" />
+                        }
+                    }
+                </KindInhalt>
+            </Formulargruppe>
+
+            @* ET-5 (Anwenderentscheid 08.09.2026): der Energietraeger der Waermepumpe in
+               der Gliederung des Katalogs (Gruppe > Art) - Vorgabe der Stromtraeger des
+               Projekts; gespeichert je Anlage (Tab_Energieanlagen.ID_Carrier) wie bei
+               Kessel und BHKW. *@
+            @if (Traegerkatalog.Count > 0)
+            {
+                <Formulargruppe Titel="@Texte.GruppeEnergietraeger">
+                    <KindInhalt>
+                        <EnergietraegerWahl Eintraege="@Traegerkatalog"
+                                            LabelGruppe="@Texte.LabelTraegerGruppe"
+                                            LabelArt="@Texte.LabelTraegerArt"
+                                            Auswahl="@(Daten.CarrierId > 0 ? Daten.CarrierId : null)"
+                                            Aktiv="@Aktiv" AuswahlChanged="BeiTraeger" />
+                    </KindInhalt>
+                </Formulargruppe>
+            }
+        </KindInhalt>
+    </Formularraster>
+
+    @* Die DREI Erklaerkaesten des Vorbilds - gruen, gelb, tuerkis, in derselben
+       Reihenfolge wie label21/22/23. Die gewaehlte Betriebsart ist hervorgehoben. *@
+    <div class="epos-wp-erklaerungen">
+        <p class="epos-wp-erklaerung epos-wp-erklaerung--gruen @Kastenstand(DbWerte.WP_BETRIEBSART_ALTERNATIV)">
+            @Texte.ErlaeuterungAlternativ
+        </p>
+        <p class="epos-wp-erklaerung epos-wp-erklaerung--gelb @Kastenstand(DbWerte.WP_BETRIEBSART_PARALLEL)">
+            @Texte.ErlaeuterungParallel
+        </p>
+        <p class="epos-wp-erklaerung epos-wp-erklaerung--tuerkis @Kastenstand(DbWerte.WP_BETRIEBSART_TEILPARALLEL)">
+            @Texte.ErlaeuterungTeilparallel
+        </p>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Der bearbeitete Satz — DASSELBE DTO, das der Anlagendialog führt. Der Baustein
+    /// schreibt AN ORT UND STELLE hinein; wer verwerfen können will, hält vorher eine
+    /// Kopie (so der Anlagendialog beim Öffnen seiner Überlagerung).
+    /// </summary>
+    [Parameter] public WaermepumpeAnlageDaten Daten { get; set; } = new();
+
+    /// <summary>
+    /// ET‑5: der Trägerkatalog in der Gliederung Gruppe › Art. <b>Leer = keine
+    /// Trägergruppe</b> — genau wie im Anlagendialog vor dem Herauslösen.
+    /// </summary>
+    [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
+        = Array.Empty<EnergietraegerWahl.Eintrag>();
+
+    /// <summary>Die Beschriftungen — EIN Bündel; es füllt sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public WaermepumpeKonfigurationTexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Bedienbar? <c>false</c> sperrt jedes Feld — der Weg „Ansicht" der Wärmepumpen
+    /// Verwaltung reicht das <c>NurLesen</c> seines Wirts durch.
+    /// </summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Jede Eingabe meldet sich. Der Wirt schreibt daraufhin nichts — der Baustein hat
+    /// schon geschrieben —, sondern zieht nach, was von den Werten abhängt (Warnband,
+    /// Summenzeile, Sperren).
+    /// </summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die drei Betriebsarten — STEUERWERTE aus <c>DbWerte</c>, keine Anzeigetexte.</summary>
+    private static readonly string[] BETRIEBSARTEN =
+    {
+        DbWerte.WP_BETRIEBSART_ALTERNATIV,
+        DbWerte.WP_BETRIEBSART_PARALLEL,
+        DbWerte.WP_BETRIEBSART_TEILPARALLEL
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Betriebsarten
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            for (int i = 0; i < BETRIEBSARTEN.Length; i++) l.Add((i, BETRIEBSARTEN[i]));
+            return l;
+        }
+    }
+
+    /// <summary>
+    /// Der Index der gewählten Betriebsart — TOLERANT gelesen (W7‑B‑2): Ein Altwert
+    /// wie „parallelbetrieb" oder „Bivalent-parallel" steht damit als Parallelbetrieb
+    /// in der Klappliste, statt sie leer zu lassen.
+    /// </summary>
+    private int? BetriebsartIndex
+    {
+        get
+        {
+            string wert = DbWerte.BetriebsartOderDefault(Daten.Betriebsart);
+            for (int i = 0; i < BETRIEBSARTEN.Length; i++)
+                if (string.Equals(BETRIEBSARTEN[i], wert, StringComparison.Ordinal)) return i;
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Die Bivalenztemperatur erscheint genau dann, wenn sie RECHENWIRKSAM ist:
+    /// bivalenter Betrieb UND eine Betriebsart, die <c>Abschaltpunkt</c> auswertet —
+    /// Teilparallelbetrieb (seit jeher) und Alternativbetrieb (seit K-3). Im
+    /// Parallelbetrieb bleibt der Wert wirkungslos und das Feld verborgen.
+    /// </summary>
+    public bool BivalenztemperaturSichtbar
+        => Daten.BivalenterBetrieb &&
+           (Daten.Betriebsart == DbWerte.WP_BETRIEBSART_TEILPARALLEL ||
+            Daten.Betriebsart == DbWerte.WP_BETRIEBSART_ALTERNATIV);
+
+    /// <summary>Zusatzklasse des Erklärkastens, dessen Betriebsart gewählt ist.</summary>
+    private string Kastenstand(string betriebsart)
+        => Daten.BivalenterBetrieb && Daten.Betriebsart == betriebsart
+            ? "epos-wp-erklaerung--aktiv" : "";
+
+    // =================================================================================
+    // Die Eingaben — jede schreibt in Daten und meldet
+    // =================================================================================
+
+    private Task BeiHeizstab(bool wert)      { Daten.Heizstab = wert;          return Melden(); }
+    private Task BeiSperrung(bool wert)      { Daten.Sperrung = wert;          return Melden(); }
+    private Task BeiSperrzeitVon(int? wert)  { Daten.SperrzeitVon = wert;      return Melden(); }
+    private Task BeiSperrzeitBis(int? wert)  { Daten.SperrzeitBis = wert;      return Melden(); }
+    private Task BeiBivalent(bool wert)      { Daten.BivalenterBetrieb = wert; return Melden(); }
+    private Task BeiAbschaltpunkt(double? w) { Daten.Abschaltpunkt = w;        return Melden(); }
+
+    private Task BeiBetriebsart(int? index)
+    {
+        Daten.Betriebsart = (index is int i && i >= 0 && i < BETRIEBSARTEN.Length)
+            ? BETRIEBSARTEN[i] : "";
+        return Melden();
+    }
+
+    /// <summary>ET‑5: die Trägerwahl schreibt in die Daten; der OK-Weg des Wirts trägt sie ins Modell.</summary>
+    private Task BeiTraeger(int? id)
+    {
+        if (id.HasValue) Daten.CarrierId = id.Value;
+        return Melden();
+    }
+
+    private Task Melden() => Geaendert.InvokeAsync();
+}

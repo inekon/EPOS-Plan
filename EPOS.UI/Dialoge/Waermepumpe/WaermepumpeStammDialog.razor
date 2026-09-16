@@ -38,7 +38,6 @@
    schreiben sofort. *@
 
 @namespace EPOS.UI.Dialoge.Waermepumpe
-@using System.Globalization
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
 @implements IDisposable
@@ -119,80 +118,20 @@
                         <InfoKnopf Schluessel="Form_WP_Stamm.Berechnung"
                                    StandardKurztext="Berechnung: Wärmepumpe" />
                     </div>
-                    @* Die Feldpaare von Hand entfallen - das Formularraster stellt zwei
-                       Feldpaare je Zeile, sobald die Spalte breit genug ist
-                       (iU8-E-2, Paket P1). *@
-                    <Formularraster>
-                        <KindInhalt>
-                    <Textfeld Bezeichnung="@LabelName" Wert="@Daten.Name"
-                              WertChanged="w => Daten.Name = w" />
-                    <Textfeld Bezeichnung="@LabelHersteller" Wert="@Daten.Firma"
-                              WertChanged="w => Daten.Firma = w" />
-                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@Daten.Beschreibung"
-                              WertChanged="w => Daten.Beschreibung = w" Mehrzeilig="true" Zeilen="3" />
+                    @* DAS FELDRASTER STEHT SEIT DEM 16.09.2026 IM BAUSTEIN
+                       WaermepumpeStammFelder. Es zeichnet dieselben Felder in
+                       derselben Reihenfolge wie zuvor hier - nur eben auch in der
+                       DETAILANSICHT einer Anlage, wo der Anwender die Parameter des
+                       Stammgeraets jetzt unmittelbar bearbeitet, statt den Umweg
+                       "Parameter Bearbeiten…" zu nehmen. Zwei Fassungen desselben
+                       Rasters waeren genau das, was die Hausregel seit iZ5 verbietet.
 
-                    <Auswahlfeld Bezeichnung="@LabelTyp" Eintraege="@Eintraege(Typen, Daten.Typ)"
-                                 Auswahl="@Index(Typen, Daten.Typ)"
-                                 AuswahlChanged="i => Daten.Typ = Wert(Typen, Daten.Typ, i)" />
-                    <Auswahlfeld Bezeichnung="@LabelRegelung" Eintraege="@Eintraege(Leistungsstufen, Daten.Regelung)"
-                                 Auswahl="@Index(Leistungsstufen, Daten.Regelung)"
-                                 AuswahlChanged="i => Daten.Regelung = Wert(Leistungsstufen, Daten.Regelung, i)" />
-                    <Auswahlfeld Bezeichnung="@LabelAufstellung" Eintraege="@Eintraege(Aufstellungen, Daten.Aufstellung)"
-                                 Auswahl="@Index(Aufstellungen, Daten.Aufstellung)"
-                                 AuswahlChanged="i => Daten.Aufstellung = Wert(Aufstellungen, Daten.Aufstellung, i)" />
-                    <Auswahlfeld Bezeichnung="@LabelBaujahr" Eintraege="@Baujahreintraege"
-                                 Auswahl="@Daten.Baujahr"
-                                 AuswahlChanged="i => Daten.Baujahr = i" />
-                    <Ganzzahlfeld Bezeichnung="@LabelNennleistung" Einheit="@EinheitKw"
-                                  Feldname="@LabelNennleistung" Wert="@Daten.Nennleistung"
-                                  WertChanged="w => Daten.Nennleistung = w" />
-                    <Ganzzahlfeld Bezeichnung="@LabelHeizstab" Einheit="@EinheitKw"
-                                  Feldname="@LabelHeizstab" Wert="@Daten.Heizstab"
-                                  WertChanged="w => Daten.Heizstab = w" />
-                    <Zahlenfeld Bezeichnung="@LabelKuehlleistung" Einheit="@EinheitKw"
-                                Wert="@Daten.Kuehlleistung" Aktiv="false" />
-
-                    @* --- Modulkosten, nur lesend (W14a-O-1) ------------------------
-                       KEIN EINGABEFELD, sondern ein <span> in der Rasterzelle. Ein
-                       gesperrtes Feld sagte "hier koenntest du tippen, nur jetzt
-                       nicht"; hier gibt es nichts zu tippen - gepflegt werden
-                       Geraetekosten in der Kostenverwaltung (Ä19), und der Wert im
-                       Datensatz wird nur durchgereicht. Die Klassen sind die des
-                       Hauses: .epos-feld traegt im Formularraster die
-                       Beschriftungsspalte, .epos-feld-zeile setzt Wert und Einheit
-                       nebeneinander.
-
-                       WOHER DER WERT KOMMT, ist der Befund W14a-O-2: aus dem
-                       BESTAND - Auslieferung, Migration oder die Maske vor Ä19.
-                       KEIN Importweg schreibt die Spalte (KatalogImportSatz.NachStamm
-                       setzt sie nicht, WPStammCtrl.UpdateImport laesst sie beim
-                       Ueberschreiben stehen); WPCtrl.CopyFromStamm:263 traegt sie nur
-                       ins Projekt weiter. Die Herleitungszeile sagte deshalb bis
-                       W14a-O-2 faelschlich "Herstellerimport"; seit dem Anwender-
-                       entscheid vom 06.09.2026 (Weg a) heisst sie "aus dem
-                       Datenbestand".
-
-                       DIE EINHEIT IST EURO, nicht €/kW: TechnikPlanwertCtrl:344 nimmt
-                       den Wert als Basis "Modulpreis" UNVERAENDERT als Betrag - anders
-                       als bei Photovoltaik (Preis JE MODUL x Stueckzahl) und
-                       Stromspeicher (€/kWh x kWh) wird hier nichts multipliziert. *@
-                    <div class="epos-feld">
-                        <span class="epos-feld-text">@LabelModulkosten</span>
-                        <span class="epos-feld-zeile">
-                            <span class="epos-lesewert">@ModulkostenText</span>
-                            @if (HatModulkosten)
-                            {
-                                <span class="epos-einheit">@EinheitEuro</span>
-                            }
-                        </span>
-                    </div>
-                    <Herleitungszeile Text="@HerleitungModulkosten" />
-                    @if (!HatModulkosten)
-                    {
-                        <Herleitungszeile Text="@HinweisModulkostenLeer" />
-                    }
-                        </KindInhalt>
-                    </Formularraster>
+                       Die Beschriftungen kommen weiterhin aus DIESER Huelle: Der
+                       Dialog legt seine Einzelgaben in OnParametersSet in das Buendel
+                       (siehe Felderbuendel). *@
+                    <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte"
+                                            Typen="@Typen" Leistungsstufen="@Leistungsstufen"
+                                            Aufstellungen="@Aufstellungen" Baujahre="@Baujahre" />
 
                     @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
                        (06.09.2026). Gerade hier ist er die Auskunft, die im Bestand
@@ -487,32 +426,35 @@
     public bool KennlinieneditorOffen => _kennlinien is not null;
 
     /// <summary>
-    /// Führt der Satz einen Planwert im Datenbestand? (W14a‑O‑1, Wortlaut W14a‑O‑2)
-    ///
-    /// <para><b>0 und NULL sind dasselbe.</b> <c>Tab_WP_STAMM.Modulkosten</c> ist eine
-    /// INTEGER-Spalte; ein NULL kommt als 0 im Datensatz an
-    /// (<c>WPStammCtrl</c>:677), und <c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge
-    /// ≤ 0 („0 gilt als ungepflegt"). Eine 0 ist hier also wirklich „kein Planwert"
-    /// und nicht der Betrag null Euro.</para>
+    /// Die Beschriftungen des Feldrasters (<c>WaermepumpeStammFelder</c>). Der Baustein
+    /// füllt sein Bündel selbst aus <c>MyResource</c>; DIESER Dialog bezieht seine Texte
+    /// aber seit jeher als Einzelgaben aus der Hülle — deshalb legt er sie in
+    /// <see cref="OnParametersSet"/> hier ab. So bleibt die Hülle unverändert, und ein
+    /// Prüfstand kann weiterhin eine einzelne Beschriftung setzen.
     /// </summary>
-    private bool HatModulkosten => Daten.Modulkosten > 0;
-
-    /// <summary>
-    /// Der Anzeigetext der Modulkosten — die rohe Zahl in der Kultur des Anwenders,
-    /// ohne Tausenderpunkt, genau wie <c>ParameterUebersichtCtrl.Anzeige</c> sie in den
-    /// Aufklapper schreibt: Wer Raster und Übersicht nebeneinanderlegt, liest dieselben
-    /// Ziffern. Ohne Planwert steht derselbe Halbgeviertstrich da, den auch der
-    /// Verwendungskatalog für „kein Wert" führt (<c>ParameterVerwendung.LEER</c>).
-    /// </summary>
-    private string ModulkostenText => HatModulkosten
-        ? Daten.Modulkosten.ToString(CultureInfo.CurrentCulture)
-        : "–";
+    private WaermepumpeStammFelderTexte _felderTexte = new();
 
     protected override void OnParametersSet()
     {
         // Der Kopf der WAHLSPALTE kommt weiter über den eigenen Text der Hülle
         // (KFAK_SP_WAHL) — dasselbe Wort in allen neun Katalogdialogen.
         Filtertexte.SpalteWahl = SpalteWahl;
+
+        _felderTexte.LabelName = LabelName;
+        _felderTexte.LabelHersteller = LabelHersteller;
+        _felderTexte.LabelBeschreibung = LabelBeschreibung;
+        _felderTexte.LabelTyp = LabelTyp;
+        _felderTexte.LabelRegelung = LabelRegelung;
+        _felderTexte.LabelAufstellung = LabelAufstellung;
+        _felderTexte.LabelBaujahr = LabelBaujahr;
+        _felderTexte.LabelNennleistung = LabelNennleistung;
+        _felderTexte.LabelHeizstab = LabelHeizstab;
+        _felderTexte.LabelKuehlleistung = LabelKuehlleistung;
+        _felderTexte.LabelModulkosten = LabelModulkosten;
+        _felderTexte.HerleitungModulkosten = HerleitungModulkosten;
+        _felderTexte.HinweisModulkostenLeer = HinweisModulkostenLeer;
+        _felderTexte.EinheitKw = EinheitKw;
+        _felderTexte.EinheitEuro = EinheitEuro;
     }
 
     protected override void OnInitialized()
@@ -628,51 +570,6 @@
         _bilder = (Bilder is not null && _gewaehlteId > 0)
             ? Bilder(_gewaehlteId, _kuehlung)
             : KennlinienBilder.Leer;
-    }
-
-    // =================================================================================
-    // Die Klapplisten mit freiem Bestandswert
-    // =================================================================================
-
-    /// <summary>
-    /// Die Einträge einer Klappliste. Steht der aktuelle Wert NICHT in der festen
-    /// Liste, wird er vorangestellt — der Vorläufer hatte dort eine frei beschreibbare
-    /// <c>ComboBox</c> und zeigte auch einen Wert, den die Liste nicht führt. Ein
-    /// <c>select</c> würde ihn sonst still verwerfen (Abweichung A-16).
-    /// </summary>
-    private IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<string> feste, string wert)
-    {
-        var l = new List<(int, string)>();
-        if (!string.IsNullOrEmpty(wert) && !feste.Contains(wert)) l.Add((-1, wert));
-        for (int i = 0; i < feste.Count; i++) l.Add((i, feste[i]));
-        return l;
-    }
-
-    private int? Index(IReadOnlyList<string> feste, string wert)
-    {
-        if (string.IsNullOrEmpty(wert)) return null;
-        for (int i = 0; i < feste.Count; i++)
-            if (string.Equals(feste[i], wert, StringComparison.Ordinal)) return i;
-        return -1;   // Bestandswert ausserhalb der festen Liste (A-16)
-    }
-
-    private string Wert(IReadOnlyList<string> feste, string bisher, int? index)
-    {
-        if (index is null) return "";
-        if (index.Value < 0) return bisher;
-        return index.Value < feste.Count ? feste[index.Value] : bisher;
-    }
-
-    /// <summary>Die Baujahre als Einträge; der Wert IST die Jahreszahl.</summary>
-    private IReadOnlyList<(int Id, string Text)> Baujahreintraege
-    {
-        get
-        {
-            var l = new List<(int, string)>();
-            if (Daten.Baujahr is int j && !Baujahre.Contains(j)) l.Add((j, j.ToString()));
-            foreach (int jahr in Baujahre) l.Add((jahr, jahr.ToString()));
-            return l;
-        }
     }
 
     // =================================================================================

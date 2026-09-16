@@ -198,21 +198,29 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     /// <summary>
-    /// Maskenname → Razor-Datei, repo-relativ. Die EINE Zuordnungstabelle für die
+    /// Maskenname → Razor-Datei(en), repo-relativ. Die EINE Zuordnungstabelle für die
     /// Markup-Probe (Auftrag vom 15.09.2026).
     /// </summary>
     /// <remarks>
-    /// Sie ist bewusst getrennt von <see cref="Masken"/>: Dort steht das
+    /// <para>Sie ist bewusst getrennt von <see cref="Masken"/>: Dort steht das
     /// DATEN-OBJEKT (was der Dialog anmeldet), hier die DATEI (was der Anwender
     /// sieht). Bei der Simulations- und der Stromspeicher-Ansicht fallen beide
-    /// auseinander — siehe <see cref="OhneMarkupprobe"/>.
+    /// auseinander — siehe <see cref="OhneMarkupprobe"/>.</para>
+    ///
+    /// <para><b>Eine Maske darf aus MEHREREN Dateien bestehen</b> (mit <c>;</c>
+    /// getrennt): Wandert das Feldraster eines Dialogs in einen eigenen Baustein, weil
+    /// ein zweiter Wirt dieselben Felder zeigt, steht das Feld weiterhin vor dem
+    /// Anwender — nur eben in der Kinddatei. Für <c>Form_WP</c> ist das seit #297 so:
+    /// <c>WaermepumpeStammFelder</c> trägt das Raster, und der Anlagendialog der
+    /// Wärmepumpe bettet es genauso ein wie die Stammdatenpflege.</para>
     /// </remarks>
     public static TheoryData<string, string> Markupdateien() => new()
     {
         { KiMaskennamen.HEIZKESSEL,       "EPOS.UI/Dialoge/Erzeuger/HeizkesselKatalogDialog.razor" },
         { KiMaskennamen.PHOTOVOLTAIK,     "EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor" },
         { KiMaskennamen.PUFFERSPEICHER,   "EPOS.UI/Dialoge/Erzeuger/PufferSpKatalogDialog.razor" },
-        { KiMaskennamen.WAERMEPUMPE,      "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor" },
+        { KiMaskennamen.WAERMEPUMPE,      "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor;" +
+                                          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
         { KiMaskennamen.KOSTENVERWALTUNG, "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" }
     };
 
@@ -355,9 +363,10 @@ public class KiDialogkatalogTests
 
         foreach (object[] zeile in Markupdateien())
         {
-            string datei = (string)zeile[1];
-            Assert.True(File.Exists(Path.Combine(Wurzel(), datei.Replace('/', Path.DirectorySeparatorChar))),
-                        datei);
+            foreach (string datei in Dateien((string)zeile[1]))
+                Assert.True(File.Exists(Path.Combine(Wurzel(),
+                                                     datei.Replace('/', Path.DirectorySeparatorChar))),
+                            datei);
             felder += KiDialoge.Katalog.Finde((string)zeile[0])!.Felder.Count;
         }
 
@@ -381,10 +390,20 @@ public class KiDialogkatalogTests
         => Regex.IsMatch(markup, @"\." + Regex.Escape(eigenschaft) + @"\b");
 
     /// <summary>
-    /// Der Inhalt einer Razor-Datei OHNE Kommentare: <c>@* … *@</c> und jede Zeile,
-    /// die (nach Einrückung) mit <c>//</c> oder <c>///</c> beginnt.
+    /// Die einzelnen Dateien einer Maske — eine Zeile der Zuordnungstabelle trägt sie
+    /// mit <c>;</c> getrennt (siehe <see cref="Markupdateien"/>).
     /// </summary>
-    private static string MarkupOhneKommentare(string repopfad)
+    private static string[] Dateien(string eintrag)
+        => eintrag.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    /// <summary>
+    /// Der Inhalt der Razor-Datei(en) einer Maske OHNE Kommentare: <c>@* … *@</c> und
+    /// jede Zeile, die (nach Einrückung) mit <c>//</c> oder <c>///</c> beginnt.
+    /// </summary>
+    private static string MarkupOhneKommentare(string eintrag)
+        => string.Join("\n", Dateien(eintrag).Select(EineDateiOhneKommentare));
+
+    private static string EineDateiOhneKommentare(string repopfad)
     {
         string voll = Path.Combine(Wurzel(), repopfad.Replace('/', Path.DirectorySeparatorChar));
         Assert.True(File.Exists(voll), repopfad);

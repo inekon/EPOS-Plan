@@ -11595,9 +11595,6 @@ Overwrite it anyway?</value>
   <data name="BHKWV_LBL_NAME" xml:space="preserve">
     <value>Module name:</value>
   </data>
-  <data name="BHKWV_LBL_TRAEGER" xml:space="preserve">
-    <value>Fuel:</value>
-  </data>
   <data name="BHKWV_LBL_HERSTELLER" xml:space="preserve">
     <value>Manufacturer:</value>
   </data>
@@ -11991,12 +11988,6 @@ Overwrite it anyway?</value>
   <data name="WPA_GRP_AUSLEGUNG" xml:space="preserve">
     <value>Design for distribution</value>
   </data>
-  <data name="WPA_GRP_SPITZENLAST" xml:space="preserve">
-    <value>Peak load and operation</value>
-  </data>
-  <data name="WPA_LBL_BESCHREIBUNG" xml:space="preserve">
-    <value>Designation</value>
-  </data>
   <data name="WPA_LBL_PHEIZSTAB" xml:space="preserve">
     <value>Heating rod power</value>
   </data>
@@ -12005,9 +11996,6 @@ Overwrite it anyway?</value>
   </data>
   <data name="WPA_LBL_RUECKLAUF" xml:space="preserve">
     <value>Rewind</value>
-  </data>
-  <data name="WPA_LBL_SPITZENLAST" xml:space="preserve">
-    <value>Heat generator peak load:</value>
   </data>
   <data name="WPA_LBL_SPERRZEIT" xml:space="preserve">
     <value>Heat pump performance / maximum operating time:</value>
@@ -12029,9 +12017,6 @@ Overwrite it anyway?</value>
   </data>
   <data name="WPA_LBL_ABSCHALTTEMP" xml:space="preserve">
     <value>Bivalent temperature</value>
-  </data>
-  <data name="WPA_BTN_PARAMETER" xml:space="preserve">
-    <value>Edit...</value>
   </data>
   <data name="WPA_HINWEIS_SPITZENLAST" xml:space="preserve">
     <value>A peak load heat generator may be necessary due to:</value>
@@ -18416,9 +18401,6 @@ Do you want to allow this?</value>
   <data name="SIMKONF_HRL_NETZVERLUSTE" xml:space="preserve">
     <value>Only effective if the project has a heat demand: the losses are spread over the year and distributed pro rata across the demand channels. Default 0 %.</value>
   </data>
-  <data name="SIMKONF_GRP_LAUFPARAMETER" xml:space="preserve">
-    <value>Simulation parameters</value>
-  </data>
   <data name="SP_GRP_EINZELANLAGE" xml:space="preserve">
     <value>Single unit (classic project run)</value>
   </data>
@@ -19318,5 +19300,29 @@ Do you want to allow this?</value>
   </data>
   <data name="ETV_KAT_ANIMAL_FAT" xml:space="preserve">
     <value>Animal fats</value>
+  </data>
+  <data name="WPA_GRP_KONFIGURATION" xml:space="preserve">
+    <value>Configuration</value>
+  </data>
+  <data name="WPA_BTN_KONFIGURATION" xml:space="preserve">
+    <value>Configuration…</value>
+  </data>
+  <data name="SIMKONF_BTN_KONFIGURATION" xml:space="preserve">
+    <value>Configuration…</value>
+  </data>
+  <data name="SIMKONF_TITEL_KONFIGURATION" xml:space="preserve">
+    <value>Configuration · {0}</value>
+  </data>
+  <data name="SIMKONF_MSG_WP_KONFIG_FEHLER" xml:space="preserve">
+    <value>The heat pump configuration could not be saved.</value>
+  </data>
+  <data name="SIMKONF_HRL_PROJEKTWEIT" xml:space="preserve">
+    <value>Project setting — applies to all units of this type in the project.</value>
+  </data>
+  <data name="SIMKONF_HRL_HEIZSTAB" xml:space="preserve">
+    <value>Project setting — applies to all heat pumps in the project; only when it is set does the simulation calculate an electric heater phase.</value>
+  </data>
+  <data name="SIMKONF_HRL_HEIZSTAB_ANLAGE" xml:space="preserve">
+    <value>“Activate electric afterheating (if available)” above belongs to this unit instead: it moves the unit into the electric world and decides its energy carrier, not the calculation path.</value>
   </data>
 </root>

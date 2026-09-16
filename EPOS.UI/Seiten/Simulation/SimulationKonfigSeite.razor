@@ -26,6 +26,9 @@
    Huelle (Views/Simulation/SimulationKonfigHuelle.cs) haelt die Controller. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@* Komponentenart und KomponentenKonfigurationDialog (Anwenderwunsch 16.09.2026);
+   die uebrigen Dialoge dieses Ordners stehen unten weiterhin voll ausgeschrieben. *@
+@using EPOS.UI.Dialoge.Simulation
 @implements IDisposable
 
 <div class="epos-simkonfig">
@@ -336,6 +339,25 @@
         </Ueberlagerung>
     }
 
+    @* DIE KONFIGURATION EINER KOMPONENTE (Anwenderwunsch 16.09.2026): „Erstelle
+       dort einen Knopf anstelle des blauen Balkens ‚Parameter für die Simulation'
+       mit dem Konfigurationsdialog." Der Titel steht an der ÜBERLAGERUNG, der
+       Dialog zeichnet deshalb weder Titel noch Kreuz (TitelAnzeigen="false") -
+       dasselbe Muster wie Betriebsmodus und Wärmesenke darüber. *@
+    @if (_konfigWerte is not null && _ebene1 == Editor.Komponentenkonfig)
+    {
+        <Ueberlagerung Offen="true" Titel="@_konfigTitel" Geschlossen="Ebene1Schliessen">
+            <KindInhalt>
+                <EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationDialog
+                    TitelAnzeigen="false" Komponente="@_konfigArt" Werte="@_konfigWerte"
+                    Anlage="@_konfigAnlage" Traegerkatalog="@_konfigKatalog"
+                    HilfeSchluessel="@HilfeSchluesselBerechnung"
+                    HilfeKurztext="@HilfeKurztextBerechnung"
+                    NurLesen="@_daten.Gesperrt" Geschlossen="KonfigFertig" />
+            </KindInhalt>
+        </Ueberlagerung>
+    }
+
     @if (_gaben1 is not null && _ebene1 == Editor.Pufferverwaltung)
     {
         <Ueberlagerung Offen="true" Titel="@VerwaltungTitel" Geschlossen="Ebene1Schliessen">
@@ -435,11 +457,14 @@
     /// sein Ergebnis: Die Netzverluste gehören zum Wärmebedarf des Projekts, die
     /// drei Erzeugerwerte an die Karte des Erzeugers, den sie betreffen — dorthin,
     /// wo der Anwender ihn ohnehin konfiguriert.</para>
-    /// <para><b>Jedes Feld schreibt sofort</b>, wie im abgelösten Reiter; der Knopf
-    /// „Konfiguration speichern" darunter gehört der Kaskade und nicht diesen fünf.
-    /// Der Schreibweg ist derselbe geblieben (<c>KonfigSchreiben</c> der
-    /// Ergebnishülle), die Werte landen in denselben Spalten von
-    /// <c>Tab_Einstellungen</c>.</para>
+    /// <para><b>Die Netzverluste schreiben sofort</b>, wie im abgelösten Reiter; der
+    /// Knopf „Konfiguration speichern" darunter gehört der Kaskade und nicht diesen
+    /// Werten. <b>Die drei Erzeugerwerte schreiben seit dem Anwenderwunsch vom
+    /// 16.09.2026 im OK-Weg des <c>KomponentenKonfigurationDialog</c></b> — an der
+    /// Karte steht nur noch sein Knopf, und wo ein Dialog Abbrechen anbietet, darf
+    /// nichts vorher geschrieben sein (Hausregel „Bedienung"). Der Schreibweg selbst
+    /// ist derselbe geblieben (<c>KonfigSchreiben</c> der Ergebnishülle), die Werte
+    /// landen in denselben Spalten von <c>Tab_Einstellungen</c>.</para>
     /// </remarks>
     [Parameter] public SimulationParameterDienste? Parameter { get; set; }
 
@@ -516,6 +541,18 @@
     /// <summary>SIM_BTN_SP_AUSLEGUNG (#274) — der Knopf unter der Pufferverwaltung.</summary>
     [Parameter] public string BtnStromspeicherAuslegen { get; set; } = "Stromspeicher auslegen…";
 
+    /// <summary>
+    /// SIMKONF_BTN_KONFIGURATION — der Knopf an der Erzeugerkarte, der den
+    /// Konfigurationsdialog öffnet (Anwenderwunsch 16.09.2026).
+    /// </summary>
+    [Parameter] public string BtnKonfigurationText { get; set; } = "Konfiguration…";
+
+    /// <summary>
+    /// Die Vorlage des Überlagerungstitels; <c>{0}</c> = der Titel der Karte
+    /// („Konfiguration · Heizkessel").
+    /// </summary>
+    [Parameter] public string KonfigTitelText { get; set; } = "Konfiguration · {0}";
+
     [Parameter] public string LesepunktText { get; set; }
         = "Booster liest Speicherzustand vom Stundenanfang (konservativ)";
 
@@ -529,6 +566,14 @@
         = "Der Booster liest den Speicherzustand nach der vorrangigen Anlage.";
     [Parameter] public string StatusEinstellungFehler { get; set; }
         = "Die Einstellung konnte nicht gespeichert werden.";
+
+    /// <summary>
+    /// Die Konfiguration der Wärmepumpen-ANLAGE ließ sich nicht schreiben
+    /// (Anwenderwunsch 16.09.2026). Die projektweiten Werte melden über ihre
+    /// eigenen Delegaten.
+    /// </summary>
+    [Parameter] public string StatusKonfigFehler { get; set; }
+        = "Die Konfiguration der Wärmepumpe konnte nicht gespeichert werden.";
 
     [Parameter] public string SchemaLeerText { get; set; }
         = "Für dieses Projekt ist noch keine Hydraulik konfiguriert.";
@@ -734,14 +779,32 @@
     /// </summary>
     private void Neuladen()
     {
-        _daten = Dienste?.Laden?.Invoke(IdProjekt) ?? new SimulationKonfigDaten();
         _parameter = Parameter?.Laden?.Invoke() ?? new ParameterDaten();
+        KachelnNeuladen();
+    }
+
+    /// <summary>
+    /// Nur die KACHELN neu laden — ohne die Laufparameter.
+    /// </summary>
+    /// <remarks>
+    /// Der Weg nach dem OK des Konfigurationsdialogs: Dort ist der eben
+    /// geschriebene Stand schon der gezeigte (die Arbeitskopie wird zu
+    /// <see cref="_parameter"/>), ein zweites Lesen über <c>Laden</c> wäre nur die
+    /// Gelegenheit, ihn wieder zu verlieren. Die KACHELN müssen dagegen neu kommen:
+    /// Die Wärmepumpen-Konfiguration ändert Betriebsart und Sperrzeit der Anlage,
+    /// und beide stehen als Chip auf der Karte.
+    /// </remarks>
+    private void KachelnNeuladen()
+    {
+        _daten = Dienste?.Laden?.Invoke(IdProjekt) ?? new SimulationKonfigDaten();
         AnsichtszustandAnwenden();
         SchemaAuffrischen();
     }
 
     // =====================================================================
-    // Die fünf Laufparameter (#216) — jedes Feld schreibt sofort
+    // Die Laufparameter (#216) — die Netzverluste schreiben sofort, die drei
+    // Erzeugerwerte seit dem Anwenderwunsch vom 16.09.2026 im OK-Weg des
+    // Konfigurationsdialogs (siehe KonfigurationOeffnen / KonfigFertig)
     // =====================================================================
 
     private void NetzverlusteGesetzt(double? wert)
@@ -752,127 +815,56 @@
     }
 
     /// <summary>
-    /// Die drei Betriebsarten des BHKW. Die Steuerwerte 0/1/2 sind die des
-    /// Vorläufers (<c>RadioButton.Tag</c>, <c>bhkwSimulationsArt</c>) und stehen so
-    /// in <c>Tab_Einstellungen</c>.
-    /// </summary>
-    private static readonly (int Id, string Text)[] BETRIEBSARTEN =
-    {
-        (0, Resource.SIMERG_OPT_WAERMEGEFUEHRT),
-        (1, Resource.SIMERG_OPT_STROMGEFUEHRT),
-        (2, Resource.SIMERG_OPT_OHNE_EINSPEISUNG)
-    };
-
-    private void BetriebsartGesetzt(int? wert)
-    {
-        _parameter.Betriebsart = wert ?? 0;
-        Parameter?.BetriebsartSchreiben?.Invoke(_parameter.Betriebsart);
-    }
-
-    private void LeistungsgrenzeGesetzt(int? wert)
-    {
-        _parameter.UntersteLeistungsgrenze = wert ?? 0;
-        Parameter?.LeistungsgrenzeSchreiben?.Invoke(_parameter.UntersteLeistungsgrenze);
-    }
-
-    private void HeizstabGesetzt(bool wert)
-    {
-        _parameter.Heizstab = wert;
-        Parameter?.HeizstabSchreiben?.Invoke(wert);
-    }
-
-    private void BereitschaftGesetzt(double? wert)
-    {
-        _parameter.Bereitschaft = wert ?? 0.0;
-        Parameter?.BereitschaftSchreiben?.Invoke(_parameter.Bereitschaft);
-    }
-
-    /// <summary>
-    /// Der Parameterbereich EINER Erzeugerkarte; <c>null</c> = dieser Erzeuger hat
-    /// keinen (dann steht der Bereich gar nicht da).
+    /// Der Parameterbereich EINER Erzeugerkarte — seit dem Anwenderwunsch vom
+    /// 16.09.2026 der KNOPF in die Konfiguration; <c>null</c> = diese Erzeugerart
+    /// hat keine Parameter (dann steht der Bereich gar nicht da).
     /// </summary>
     /// <remarks>
-    /// Welche Karte welches Feld zeigt, entscheidet ihr <c>DbWert</c> — dieselbe
-    /// Zuordnung, die bis #216 <c>BlattZuTool</c> der Hülle für die vier
-    /// Unterblätter des Reiters „Parameter" traf. Die Beschriftungen sind
-    /// unverändert dieselben Ressourcen wie dort.
+    /// <para><b>Anwenderwunsch 16.09.2026</b> (Screenshots „Simulation →
+    /// Konfiguration"): „Erstelle dort einen Knopf anstelle des blauen Balkens
+    /// ‚Parameter für die Simulation' mit dem Konfigurationsdialog. Dies soll für
+    /// alle Komponenten so erfolgen." Bis hierher stand an der Karte ein Gruppenkopf
+    /// (<c>SIMKONF_GRP_LAUFPARAMETER</c>) mit den Feldern darunter; beides ist in
+    /// den <c>KomponentenKonfigurationDialog</c> gewandert.</para>
+    ///
+    /// <para><b>An JEDER Karte ihrer Art, nicht nur an der ersten.</b> Bis hierher
+    /// stand der Block nur an der ersten Karte je Art — die Werte gelten ja
+    /// projektweit, und an jeder Karte stünden dieselben Felder so oft da, wie es
+    /// Module gibt. Ein KNOPF ist etwas anderes als ein Feld: Er verdoppelt keine
+    /// Eingabe, und wer die Konfiguration des zweiten BHKW-Moduls sucht, soll sie an
+    /// dessen Karte finden. Dass der Inhalt dem Projekt gehört, sagt der Dialog an
+    /// jedem Wert (Herleitungszeile „Projekteinstellung …").</para>
+    ///
+    /// <para><b>Vier Arten tragen keinen Knopf</b> — Solarthermie, Photovoltaik,
+    /// Stromspeicher und Pufferspeicher haben keinen Laufparameter, und ein Knopf,
+    /// der einen leeren Dialog öffnet, ist keiner.</para>
     /// </remarks>
     private RenderFragment? Erzeugerparameter(ErzeugerZeile zeile)
     {
         if (Parameter?.Laden is null) return null;
+        if (ArtZu(zeile.DbWert) == Komponentenart.Keine) return null;
 
-        // NUR AN DER ERSTEN KARTE IHRER ART. Ein Projekt kann mehrere Module
-        // derselben Erzeugerart fuehren (zwei BHKW-Module = zwei Karten), die
-        // fuenf Werte gelten aber PROJEKTWEIT - an jeder Karte stuenden sie so
-        // oft da, wie es Module gibt, und jede Eingabe schriebe dieselbe Spalte.
-        // Dieselbe Regel, nach der auch ▲▼ und × nur an der ersten Karte stehen.
-        if (!ReferenceEquals(zeile, ErsteIhrerArt(zeile.DbWert))) return null;
-
-        return zeile.DbWert switch
-        {
-            WindowsFormsApplication1.DbWerte.ERZEUGER_BHKW => ParameterBhkw,
-            WindowsFormsApplication1.DbWerte.ERZEUGER_WAERMEPUMPE => ParameterWaermepumpe,
-            WindowsFormsApplication1.DbWerte.ERZEUGER_HEIZKESSEL => ParameterHeizkessel,
-            _ => null
-        };
+        return KonfigurationsKnopf(zeile);
     }
 
-    /// <summary>Die erste Zeile dieser Erzeugerart über alle Gruppen; <c>null</c> = keine.</summary>
-    private ErzeugerZeile? ErsteIhrerArt(string dbWert)
+    /// <summary>
+    /// Die Komponentenart einer Kartenzeile — die EINE Zuordnung von
+    /// <c>DbWerte.ERZEUGER_*</c> auf die Aufzählung des Dialogs.
+    /// </summary>
+    private static Komponentenart ArtZu(string dbWert) => dbWert switch
     {
-        foreach (KachelGruppe gruppe in _daten.Gruppen)
-            foreach (ErzeugerZeile zeile in gruppe.Zeilen)
-                if (string.Equals(zeile.DbWert, dbWert, StringComparison.Ordinal)) return zeile;
+        WindowsFormsApplication1.DbWerte.ERZEUGER_BHKW => Komponentenart.Bhkw,
+        WindowsFormsApplication1.DbWerte.ERZEUGER_WAERMEPUMPE => Komponentenart.Waermepumpe,
+        WindowsFormsApplication1.DbWerte.ERZEUGER_HEIZKESSEL => Komponentenart.Heizkessel,
+        _ => Komponentenart.Keine
+    };
 
-        return null;
-    }
-
-    private bool ParameterAktiv => !_daten.Gesperrt;
-
-    private RenderFragment ParameterKopf => @<Gruppenkopf Titel="@Resource.SIMKONF_GRP_LAUFPARAMETER" />;
-
-    private RenderFragment ParameterBhkw => @<div class="epos-simkonfig-felder">
-        @ParameterKopf
-        <Formularraster Einspaltig="true">
-            <KindInhalt>
-                <Optionsgruppe Bezeichnung="@Resource.SIMERG_GRP_BETRIEBSART"
-                               Eintraege="@BETRIEBSARTEN" Auswahl="@_parameter.Betriebsart"
-                               Aktiv="@ParameterAktiv" AuswahlChanged="BetriebsartGesetzt" />
-
-                @* W6-E-7 (07.09.2026): DIE PROJEKTWEITE UNTERGRENZE - hier und nur
-                   hier. Das Feld fuehrt Tab_Einstellungen.Leistungsgrenze, traegt
-                   seine Einheit am Feld und sagt in der Herleitungszeile, was 0
-                   bedeutet - denn seit W6-E-7 rechnet 0 als 0 und nicht mehr still
-                   als 30 %. *@
-                <Ganzzahlfeld Bezeichnung="@Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE" Einheit="%"
-                              Wert="@_parameter.UntersteLeistungsgrenze" Min="0" Max="100"
-                              Aktiv="@ParameterAktiv" WertChanged="LeistungsgrenzeGesetzt" />
-                <Herleitungszeile Text="@Resource.SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" />
-            </KindInhalt>
-        </Formularraster>
-        <p class="epos-simkonfig-info">@Resource.SIMERG_INFO_BHKW</p>
-    </div>;
-
-    private RenderFragment ParameterWaermepumpe => @<div class="epos-simkonfig-felder">
-        @ParameterKopf
-        <Formularraster Einspaltig="true">
-            <KindInhalt>
-                <Schalter Bezeichnung="@Resource.SIMERG_CHK_HEIZSTAB" Wert="@_parameter.Heizstab"
-                          Aktiv="@ParameterAktiv" WertChanged="HeizstabGesetzt" />
-            </KindInhalt>
-        </Formularraster>
-    </div>;
-
-    private RenderFragment ParameterHeizkessel => @<div class="epos-simkonfig-felder">
-        @ParameterKopf
-        <Formularraster Einspaltig="true">
-            <KindInhalt>
-                <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_BEREITSCHAFT"
-                            Wert="@_parameter.Bereitschaft" Einheit="h/a"
-                            Aktiv="@ParameterAktiv" WertChanged="BereitschaftGesetzt" />
-            </KindInhalt>
-        </Formularraster>
-    </div>;
+    // KEINE eigene Stilklasse: Der Knopf ist der Hausknopf (epos-knopf) im
+    // vorhandenen Platzhalter der Kachel (epos-erzeugerkachel-parameter) - das
+    // Stilblatt bleibt unberuehrt.
+    private RenderFragment<ErzeugerZeile> KonfigurationsKnopf => zeile =>
+        @<button type="button" class="epos-knopf" disabled="@_daten.Gesperrt"
+                 @onclick="() => KonfigurationOeffnen(zeile)">@BtnKonfigurationText</button>;
 
     /// <summary>
     /// Traegt Auswahl und Aufklappzustand in die frisch geladenen Kacheln nach.
@@ -1235,7 +1227,10 @@
         Pufferverwaltung,
         QuellePuffer,
         Quellprofil,
-        QuelleErdreich
+        QuelleErdreich,
+
+        /// <summary>Die Konfiguration einer Komponente (Anwenderwunsch 16.09.2026).</summary>
+        Komponentenkonfig
     }
 
     private Editor _ebene1 = Editor.Keine;
@@ -1263,10 +1258,40 @@
     /// <summary>Der offene Editor der zweiten Ebene (Pruefhilfe).</summary>
     public string OffenerUntereditor => _ebene2.ToString();
 
+    // ---- Die Konfiguration einer Komponente (Anwenderwunsch 16.09.2026) ----
+
+    /// <summary>Die Art, deren Konfiguration offen steht.</summary>
+    private Komponentenart _konfigArt = Komponentenart.Keine;
+
+    /// <summary>
+    /// Die ARBEITSKOPIE der projektweiten Laufparameter, solange der Dialog steht;
+    /// <c>null</c> = keiner offen. Abbrechen wirft sie weg, OK macht sie zum Stand.
+    /// </summary>
+    private ParameterDaten? _konfigWerte;
+
+    /// <summary>
+    /// Die Arbeitskopie der Anlagendaten der Wärmepumpe; <c>null</c> = keine Naht
+    /// (dann zeigt der Dialog nur die Projekteinstellung).
+    /// </summary>
+    private EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? _konfigAnlage;
+
+    /// <summary>Der Titel der offenen Konfiguration (Prüfhilfe).</summary>
+    private string _konfigTitel = "";
+
+    /// <summary>
+    /// Der Trägerkatalog der Energieträgerwahl — EINMAL beim Öffnen geholt, nicht je
+    /// Zeichenlauf: Der Delegat liest die Datenbank.
+    /// </summary>
+    private IReadOnlyList<EnergietraegerWahl.Eintrag> _konfigKatalog
+        = Array.Empty<EnergietraegerWahl.Eintrag>();
+
     private void Ebene1Schliessen()
     {
         _ebene1 = Editor.Keine;
         _gaben1 = null;
+        _konfigArt = Komponentenart.Keine;
+        _konfigWerte = null;
+        _konfigAnlage = null;
     }
 
     private void Ebene2Schliessen()
@@ -1562,6 +1587,97 @@
         if (_gaben1 is null) return;
 
         _ebene1 = Editor.Pufferverwaltung;
+    }
+
+    // ---- Die Konfiguration einer Komponente (Anwenderwunsch 16.09.2026) ----
+
+    /// <summary>
+    /// Öffnet die Konfiguration DIESER Karte. Der Dialog bekommt ARBEITSKOPIEN —
+    /// erst sein OK schreibt, Abbrechen wirft sie weg.
+    /// </summary>
+    private void KonfigurationOeffnen(ErzeugerZeile zeile)
+    {
+        Komponentenart art = ArtZu(zeile.DbWert);
+        if (art == Komponentenart.Keine || Parameter?.Laden is null) return;
+
+        _zeile = zeile;
+        _konfigArt = art;
+        _konfigWerte = _parameter.Kopie();
+        _konfigTitel = string.Format(KonfigTitelText, zeile.Kachel.Titel);
+
+        // DIE ANLAGENDATEN DER WAERMEPUMPE - nur, wenn die Plattform den Weg
+        // anbietet UND die Kartenzeile eine Anlage fuehrt. Fehlt er (iOS, Proben),
+        // zeigt der Dialog allein die PROJEKTEINSTELLUNG; still weggelassen wird
+        // nichts, der Dialog sagt an seiner Herleitungszeile, was er zeigt.
+        _konfigAnlage = art == Komponentenart.Waermepumpe && zeile.IdAnlage > 0
+            ? Parameter?.WaermepumpeKonfigurationLaden?.Invoke(zeile.IdAnlage)
+            : null;
+
+        // Das Textbuendel der Komponente fuellt sich SELBST aus MyResource; nur der
+        // Traegerkatalog kommt aus der Datenbank und damit ueber die Naht.
+        if (_konfigAnlage is not null)
+            _konfigKatalog = Parameter?.WaermepumpeTraegerkatalog?.Invoke()
+                             ?? Array.Empty<EnergietraegerWahl.Eintrag>();
+
+        _ebene1 = Editor.Komponentenkonfig;
+    }
+
+    /// <summary>
+    /// Der OK-Weg: Geschrieben wird HIER und nur hier — projektweite Werte über
+    /// dieselben Delegaten, die bis zum 16.09.2026 an jedem Feld der Karte hingen,
+    /// die Anlagendaten der Wärmepumpe über die Naht. Abbrechen schreibt nichts.
+    /// </summary>
+    private void KonfigFertig(bool ok)
+    {
+        ErzeugerZeile? zeile = _zeile;
+        Komponentenart art = _konfigArt;
+        ParameterDaten? werte = _konfigWerte;
+        EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten? anlage = _konfigAnlage;
+
+        Ebene1Schliessen();
+
+        if (!ok || werte is null) return;
+
+        // JE WERT EINER, und nur der geaenderte: Der Schreibweg ist je Wert benannt
+        // (Hausregel „Bedienung"), und eine unberuehrte Zahl schreibt nicht.
+        switch (art)
+        {
+            case Komponentenart.Bhkw:
+                if (werte.Betriebsart != _parameter.Betriebsart)
+                    Parameter?.BetriebsartSchreiben?.Invoke(werte.Betriebsart);
+                if (werte.UntersteLeistungsgrenze != _parameter.UntersteLeistungsgrenze)
+                    Parameter?.LeistungsgrenzeSchreiben?.Invoke(werte.UntersteLeistungsgrenze);
+                break;
+
+            case Komponentenart.Waermepumpe:
+                if (werte.Heizstab != _parameter.Heizstab)
+                    Parameter?.HeizstabSchreiben?.Invoke(werte.Heizstab);
+                break;
+
+            case Komponentenart.Heizkessel:
+                if (werte.Bereitschaft != _parameter.Bereitschaft)
+                    Parameter?.BereitschaftSchreiben?.Invoke(werte.Bereitschaft);
+                break;
+        }
+
+        // Der Arbeitsstand IST jetzt der gezeigte Stand - ein zweites Lesen ueber
+        // Laden waere nur die Gelegenheit, ihn wieder zu verlieren.
+        _parameter = werte;
+
+        Func<int, EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten, bool>? speichern
+            = Parameter?.WaermepumpeKonfigurationSpeichern;
+
+        if (art != Komponentenart.Waermepumpe || anlage is null || zeile is null ||
+            speichern is null)
+            return;
+
+        if (!speichern(zeile.IdAnlage, anlage))
+            Melden(StatusKonfigFehler, WarnStufe.Fehler);
+
+        // DANACH IMMER: Die Anlagenzeilen sind neu geschrieben - Betriebsart und
+        // Sperrzeit stehen als Chip auf der Karte, und die Anlagen-Ids koennen
+        // dabei gewechselt haben (der Speicherweg loescht und legt neu an).
+        KachelnNeuladen();
     }
 
     private void VerwaltungFertig(int idPuffer)

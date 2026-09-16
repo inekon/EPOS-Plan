@@ -1,0 +1,210 @@
+﻿@* DAS FELDRASTER EINES WAERMEPUMPEN-STAMMSATZES - herausgeloest aus
+   WaermepumpeStammDialog am 16.09.2026.
+
+   WARUM. Der Anwenderentscheid vom 16.09.2026 verlangt, dass in der Detailansicht
+   einer Anlage "alle Parameter direkt im Dialog zugaenglich" sind; der Umweg
+   "Parameter Bearbeiten…" in eine Ueberlagerung mit der ganzen Stammdatenpflege
+   ist damit entfallen. Die Felder muessen also an ZWEI Stellen stehen - und
+   stehen deshalb in EINEM Baustein: Zwei Fassungen derselben Maske sind seit iZ5
+   verboten.
+
+   WAS HIER NICHT STEHT: die Liste, die Kennlinienbilder, der Kennlinieneditor und
+   die Katalogpflege (Neu, Loeschen, Speichern). Das sind Aktionen auf dem
+   KATALOG; sie bleiben in der Stammdatenpflege bzw. beim jeweiligen Wirt. Dieser
+   Baustein zeichnet nur die Felder EINES Satzes.
+
+   MODULKOSTEN STEHEN NUR LESEND DA (Anwenderentscheid W14a-O-1 vom 06.09.2026):
+   kein Eingabefeld, sondern ein <span> in der Rasterzelle mit Herleitungszeile
+   darunter. Gepflegt werden Geraetekosten in der Kostenverwaltung (Ä19); der Wert
+   im Datensatz wird nur durchgereicht. Dasselbe gilt fuer die Kuehlleistung: Sie
+   kommt aus den Kuehl-Kenndaten und wird hier nur angezeigt.
+
+   DIE KLAPPLISTEN TRAGEN EINEN BESTANDSWERT MIT (Abweichung A-16): Der Vorlaeufer
+   hatte frei beschreibbare ComboBoxen; ein <select> wuerde einen Wert, den die
+   feste Liste nicht fuehrt, still verwerfen. *@
+
+@namespace EPOS.UI.Dialoge.Waermepumpe
+@using System.Globalization
+
+<Formularraster>
+    <KindInhalt>
+        <Textfeld Bezeichnung="@Texte.LabelName" Wert="@Daten.Name"
+                  WertChanged="BeiName" NurLesen="@(!Aktiv)" />
+        <Textfeld Bezeichnung="@Texte.LabelHersteller" Wert="@Daten.Firma"
+                  WertChanged="BeiFirma" NurLesen="@(!Aktiv)" />
+        <Textfeld Bezeichnung="@Texte.LabelBeschreibung" Wert="@Daten.Beschreibung"
+                  WertChanged="BeiBeschreibung" NurLesen="@(!Aktiv)" Mehrzeilig="true" Zeilen="3" />
+
+        <Auswahlfeld Bezeichnung="@Texte.LabelTyp" Eintraege="@Eintraege(Typen, Daten.Typ)"
+                     Auswahl="@Index(Typen, Daten.Typ)" Aktiv="@Aktiv"
+                     AuswahlChanged="BeiTyp" />
+        <Auswahlfeld Bezeichnung="@Texte.LabelRegelung" Eintraege="@Eintraege(Leistungsstufen, Daten.Regelung)"
+                     Auswahl="@Index(Leistungsstufen, Daten.Regelung)" Aktiv="@Aktiv"
+                     AuswahlChanged="BeiRegelung" />
+        <Auswahlfeld Bezeichnung="@Texte.LabelAufstellung" Eintraege="@Eintraege(Aufstellungen, Daten.Aufstellung)"
+                     Auswahl="@Index(Aufstellungen, Daten.Aufstellung)" Aktiv="@Aktiv"
+                     AuswahlChanged="BeiAufstellung" />
+        <Auswahlfeld Bezeichnung="@Texte.LabelBaujahr" Eintraege="@Baujahreintraege"
+                     Auswahl="@Daten.Baujahr" Aktiv="@Aktiv"
+                     AuswahlChanged="BeiBaujahr" />
+        <Ganzzahlfeld Bezeichnung="@Texte.LabelNennleistung" Einheit="@Texte.EinheitKw"
+                      Feldname="@Texte.LabelNennleistung" Wert="@Daten.Nennleistung"
+                      WertChanged="BeiNennleistung" Aktiv="@Aktiv" />
+        <Ganzzahlfeld Bezeichnung="@Texte.LabelHeizstab" Einheit="@Texte.EinheitKw"
+                      Feldname="@Texte.LabelHeizstab" Wert="@Daten.Heizstab"
+                      WertChanged="BeiHeizstab" Aktiv="@Aktiv" />
+        <Zahlenfeld Bezeichnung="@Texte.LabelKuehlleistung" Einheit="@Texte.EinheitKw"
+                    Wert="@Daten.Kuehlleistung" Aktiv="false" />
+
+        @* --- Modulkosten, nur lesend (W14a-O-1) --------------------------------
+           KEIN EINGABEFELD, sondern ein <span> in der Rasterzelle. Ein gesperrtes
+           Feld sagte "hier koenntest du tippen, nur jetzt nicht"; hier gibt es
+           nichts zu tippen. Die Klassen sind die des Hauses: .epos-feld traegt im
+           Formularraster die Beschriftungsspalte, .epos-feld-zeile setzt Wert und
+           Einheit nebeneinander. *@
+        <div class="epos-feld">
+            <span class="epos-feld-text">@Texte.LabelModulkosten</span>
+            <span class="epos-feld-zeile">
+                <span class="epos-lesewert">@ModulkostenText</span>
+                @if (HatModulkosten)
+                {
+                    <span class="epos-einheit">@Texte.EinheitEuro</span>
+                }
+            </span>
+        </div>
+        <Herleitungszeile Text="@Texte.HerleitungModulkosten" />
+        @if (!HatModulkosten)
+        {
+            <Herleitungszeile Text="@Texte.HinweisModulkostenLeer" />
+        }
+    </KindInhalt>
+</Formularraster>
+
+@code {
+    /// <summary>Der bearbeitete Satz. Der Baustein schreibt beim Tippen AN ORT UND STELLE hinein.</summary>
+    [Parameter] public WaermepumpeStammDaten Daten { get; set; } = new();
+
+    /// <summary>Die Beschriftungen — EIN Bündel; es füllt sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public WaermepumpeStammFelderTexte Texte { get; set; } = new();
+
+    /// <summary>Bedienbar? <c>false</c> sperrt jedes Feld (Weg „Ansicht" eines Wirts).</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Jede Eingabe meldet sich — der Wirt zieht daraufhin Sperren und Knöpfe nach.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Die vier Wärmepumpentypen (<c>SetControls</c>:219-222).</summary>
+    [Parameter] public IReadOnlyList<string> Typen { get; set; } = new[]
+        { "Sole-Wasser", "Wasser-Wasser", "Luft-Wasser", "Luft-Luft-Klimagerät" };
+
+    /// <summary>Die drei Leistungsstufen (<c>SetControls</c>:223-225).</summary>
+    [Parameter] public IReadOnlyList<string> Leistungsstufen { get; set; } = new[]
+        { "einstufig", "zweistufig", "stetig" };
+
+    /// <summary>Die vier Aufstellungsarten (<c>SetControls</c>:226-229).</summary>
+    [Parameter] public IReadOnlyList<string> Aufstellungen { get; set; } = new[]
+        { "Außenaufstellung", "Innen- oder Außenaufstellung", "Innenaufstellung", "ohne Typenbeschreibung" };
+
+    /// <summary>
+    /// Die zehn Baujahre 2025…2016. <b>Befund W7‑O‑2:</b> Der Vorläufer trug „2024"
+    /// ZWEIMAL und „2022" gar nicht — hier steht die Reihe vollständig (A-15).
+    /// </summary>
+    [Parameter] public IReadOnlyList<int> Baujahre { get; set; } = new[]
+        { 2025, 2024, 2023, 2022, 2021, 2020, 2019, 2018, 2017, 2016 };
+
+    /// <summary>
+    /// Führt der Satz einen Planwert im Datenbestand? (W14a‑O‑1) <b>0 und NULL sind
+    /// dasselbe:</b> <c>Tab_WP_STAMM.Modulkosten</c> ist eine INTEGER-Spalte, und
+    /// <c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge ≤ 0.
+    /// </summary>
+    private bool HatModulkosten => Daten.Modulkosten > 0;
+
+    /// <summary>
+    /// Der Anzeigetext der Modulkosten — die rohe Zahl in der Kultur des Anwenders, ohne
+    /// Tausenderpunkt, genau wie <c>ParameterUebersichtCtrl.Anzeige</c> sie in den
+    /// Aufklapper schreibt. Ohne Planwert steht derselbe Halbgeviertstrich da, den auch
+    /// der Verwendungskatalog für „kein Wert" führt.
+    /// </summary>
+    private string ModulkostenText => HatModulkosten
+        ? Daten.Modulkosten.ToString(CultureInfo.CurrentCulture)
+        : "–";
+
+    // =================================================================================
+    // Die Eingaben
+    // =================================================================================
+
+    private Task BeiName(string wert)         { Daten.Name = wert;         return Melden(); }
+    private Task BeiFirma(string wert)        { Daten.Firma = wert;        return Melden(); }
+    private Task BeiBeschreibung(string wert) { Daten.Beschreibung = wert; return Melden(); }
+    private Task BeiNennleistung(int? wert)   { Daten.Nennleistung = wert; return Melden(); }
+    private Task BeiHeizstab(int? wert)       { Daten.Heizstab = wert;     return Melden(); }
+
+    private Task BeiTyp(int? index)
+    {
+        Daten.Typ = Wert(Typen, Daten.Typ, index);
+        return Melden();
+    }
+
+    private Task BeiRegelung(int? index)
+    {
+        Daten.Regelung = Wert(Leistungsstufen, Daten.Regelung, index);
+        return Melden();
+    }
+
+    private Task BeiAufstellung(int? index)
+    {
+        Daten.Aufstellung = Wert(Aufstellungen, Daten.Aufstellung, index);
+        return Melden();
+    }
+
+    private Task BeiBaujahr(int? jahr)
+    {
+        Daten.Baujahr = jahr;
+        return Melden();
+    }
+
+    private Task Melden() => Geaendert.InvokeAsync();
+
+    // =================================================================================
+    // Die Klapplisten mit freiem Bestandswert (A-16)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Einträge einer Klappliste. Steht der aktuelle Wert NICHT in der festen Liste,
+    /// wird er vorangestellt — sonst verwürfe ein <c>select</c> ihn still.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<string> feste, string wert)
+    {
+        var l = new List<(int, string)>();
+        if (!string.IsNullOrEmpty(wert) && !feste.Contains(wert)) l.Add((-1, wert));
+        for (int i = 0; i < feste.Count; i++) l.Add((i, feste[i]));
+        return l;
+    }
+
+    private int? Index(IReadOnlyList<string> feste, string wert)
+    {
+        if (string.IsNullOrEmpty(wert)) return null;
+        for (int i = 0; i < feste.Count; i++)
+            if (string.Equals(feste[i], wert, StringComparison.Ordinal)) return i;
+        return -1;   // Bestandswert ausserhalb der festen Liste (A-16)
+    }
+
+    private string Wert(IReadOnlyList<string> feste, string bisher, int? index)
+    {
+        if (index is null) return "";
+        if (index.Value < 0) return bisher;
+        return index.Value < feste.Count ? feste[index.Value] : bisher;
+    }
+
+    /// <summary>Die Baujahre als Einträge; der Wert IST die Jahreszahl.</summary>
+    private IReadOnlyList<(int Id, string Text)> Baujahreintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>();
+            if (Daten.Baujahr is int j && !Baujahre.Contains(j)) l.Add((j, j.ToString()));
+            foreach (int jahr in Baujahre) l.Add((jahr, jahr.ToString()));
+            return l;
+        }
+    }
+}

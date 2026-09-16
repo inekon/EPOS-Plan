@@ -1,0 +1,297 @@
+﻿@* Die KONFIGURATION EINER KOMPONENTE der Simulation (Anwenderwunsch 16.09.2026,
+   Screenshots „Simulation → Konfiguration"): „Erstelle dort einen Knopf anstelle des
+   blauen Balkens ‚Parameter für die Simulation' mit dem Konfigurationsdialog. Dies
+   soll für alle Komponenten so erfolgen … Nimm auch die bestehenden Parameter (z. B.
+   Wärmepumpe ‚mit Heizstab (falls vorhanden)', Heizkessel ‚Betriebsbereitschaft') in
+   den Konfigurationsdialog."
+
+   WAS HIER HEREINWANDERT. Die drei Parameterblöcke, die bis hierher offen an der
+   Erzeugerkarte standen (Auftrag #216): BHKW-Betriebsart samt unterer
+   Leistungsgrenze, Heizstab der Wärmepumpe, Betriebsbereitschaft des Heizkessels.
+   Sie sind dieselben Felder mit denselben Ressourcen — nur nicht mehr auf der
+   Karte, sondern hinter ihrem Knopf.
+
+   DER DIALOG SCHREIBT NICHT. Er bearbeitet, was der Wirt ihm reicht: eine
+   ARBEITSKOPIE der projektweiten Laufparameter und - bei der Wärmepumpe - eine
+   Arbeitskopie der Anlagendaten. OK meldet true, Abbrechen false; geschrieben wird
+   im OK-Weg der Seite über ihre Delegaten. Damit gilt hier die Hausregel aus
+   EPOS.UI/CLAUDE.md („Bedienung"): sammeln und erst im OK-Weg schreiben - die
+   Sofortschreibung der Karte ist mit dem Balken gefallen.
+
+   VIER ARTEN OHNE PARAMETER. Solarthermie, Photovoltaik, Stromspeicher und
+   Pufferspeicher führen keinen Laufparameter. Für sie gibt es Komponentenart.Keine,
+   und die Seite setzt an ihre Karten gar keinen Knopf.
+
+   PROJEKTWEIT ODER JE ANLAGE - das steht an jedem Feld. Die drei alten Werte gelten
+   dem PROJEKT (Tab_Einstellungen); ein Projekt kann mehrere Module derselben Art
+   führen, der Knopf steht trotzdem an jeder Karte (der Anwender soll ihn finden).
+   Die Wärmepumpen-Konfiguration dagegen gehört DIESER Anlage. Ohne Beschriftung
+   wäre das nicht zu erkennen - deshalb trägt jeder projektweite Wert seine
+   Herleitungszeile.
+
+   EIN DIALOG IN EINEM DIALOG. Er erscheint als Ueberlagerung der
+   SimulationKonfigSeite; DIE trägt dann Titel und Kreuz, und der Wirt setzt
+   TitelAnzeigen="false" (Anwenderbefund 15.09.2026: „Doppeltes Kreuz dürfen nicht
+   sein!"). Muster: BetriebsmodusDialog, WaermesenkeDialog. *@
+
+@namespace EPOS.UI.Dialoge.Simulation
+@using EPOS.UI.Dialoge.Waermepumpe
+@using EPOS.UI.Seiten.Simulation
+
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Titel</h1>
+        }
+        @if (HilfeSchluessel.Length > 0)
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@HilfeKurztext" />
+        }
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(false))" />
+        }
+    </div>
+
+    <div class="epos-simkonfig-felder">
+
+        @* ---------------------------------------------------------- Wärmepumpe *@
+        @if (Komponente == Komponentenart.Waermepumpe)
+        {
+            @* DIE KONFIGURATION DIESER ANLAGE - elektrische Nachheizung, Sperrzeit,
+               bivalenter Betrieb und Energieträger. Sie kommt als eigene Komponente
+               aus dem Wärmepumpen-Anlagendialog; ohne Anlagendaten (keine Naht auf
+               dieser Plattform, oder eine Kartenzeile ohne Anlage) bleibt sie weg
+               und es steht nur die Projekteinstellung darunter. *@
+            @if (Anlage is not null)
+            {
+                <WaermepumpeKonfiguration Daten="@Anlage" Traegerkatalog="@Traegerkatalog"
+                                          Texte="@Texte" Aktiv="@(!NurLesen)"
+                                          Geaendert="Neugezeichnet" />
+            }
+
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Schalter Bezeichnung="@Resource.SIMERG_CHK_HEIZSTAB" Wert="@Werte.Heizstab"
+                              Aktiv="@(!NurLesen)" WertChanged="w => Werte.Heizstab = w" />
+                    <Herleitungszeile Text="@HinweisHeizstab" />
+                    @if (Anlage is not null)
+                    {
+                        <Herleitungszeile Text="@HinweisHeizstabAnlage" />
+                    }
+                </KindInhalt>
+            </Formularraster>
+        }
+
+        @* ---------------------------------------------------------- Heizkessel *@
+        @if (Komponente == Komponentenart.Heizkessel)
+        {
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Zahlenfeld Bezeichnung="@Resource.SIMERG_LBL_BEREITSCHAFT"
+                                Wert="@Werte.Bereitschaft" Einheit="h/a"
+                                Aktiv="@(!NurLesen)" WertChanged="BereitschaftGesetzt" />
+                    <Herleitungszeile Text="@HinweisProjektweit" />
+                </KindInhalt>
+            </Formularraster>
+        }
+
+        @* ---------------------------------------------------------------- BHKW *@
+        @if (Komponente == Komponentenart.Bhkw)
+        {
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <Optionsgruppe Bezeichnung="@Resource.SIMERG_GRP_BETRIEBSART"
+                                   Eintraege="@BETRIEBSARTEN" Auswahl="@Werte.Betriebsart"
+                                   Aktiv="@(!NurLesen)" AuswahlChanged="BetriebsartGesetzt" />
+
+                    @* W6-E-7 (07.09.2026): DIE PROJEKTWEITE UNTERGRENZE - hier und nur
+                       hier. Das Feld führt Tab_Einstellungen.Leistungsgrenze, trägt seine
+                       Einheit am Feld und sagt in der Herleitungszeile, was 0 bedeutet -
+                       denn seit W6-E-7 rechnet 0 als 0 und nicht mehr still als 30 %. *@
+                    <Ganzzahlfeld Bezeichnung="@Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE" Einheit="%"
+                                  Wert="@Werte.UntersteLeistungsgrenze" Min="0" Max="100"
+                                  Aktiv="@(!NurLesen)" WertChanged="LeistungsgrenzeGesetzt" />
+                    <Herleitungszeile Text="@Resource.SIMERG_HRL_UNTERE_LEISTUNGSGRENZE" />
+                    <Herleitungszeile Text="@HinweisProjektweit" />
+                </KindInhalt>
+            </Formularraster>
+
+            <p class="epos-simkonfig-info">@Resource.SIMERG_INFO_BHKW</p>
+        }
+
+    </div>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // =====================================================================
+    // Was hereinkommt
+    // =====================================================================
+
+    /// <summary>
+    /// Die Art, deren Felder der Dialog zeigt. <c>Keine</c> = der Dialog ist leer;
+    /// die Seite öffnet ihn dann gar nicht erst.
+    /// </summary>
+    [Parameter] public Komponentenart Komponente { get; set; } = Komponentenart.Keine;
+
+    /// <summary>
+    /// Die ARBEITSKOPIE der projektweiten Laufparameter (<c>Tab_Einstellungen</c>).
+    /// Der Dialog ändert sie an Ort und Stelle; der Wirt schreibt im OK-Weg und
+    /// verwirft sie bei Abbrechen.
+    /// </summary>
+    [Parameter] public ParameterDaten Werte { get; set; } = new ParameterDaten();
+
+    /// <summary>
+    /// Die ARBEITSKOPIE der Anlagendaten DIESER Wärmepumpe; <c>null</c> = die
+    /// Plattform bietet den Weg nicht an oder die Kartenzeile führt keine Anlage.
+    /// Dann steht in der Wärmepumpe nur die Projekteinstellung.
+    /// </summary>
+    [Parameter] public WaermepumpeAnlageDaten? Anlage { get; set; }
+
+    /// <summary>Der Trägerkatalog der Energieträgerwahl; leer = keine Wahl.</summary>
+    [Parameter] public IReadOnlyList<EnergietraegerWahl.Eintrag> Traegerkatalog { get; set; }
+        = Array.Empty<EnergietraegerWahl.Eintrag>();
+
+    /// <summary>
+    /// Die Texte der Wärmepumpen-Konfiguration. Das Bündel füllt sich SELBST aus
+    /// <c>MyResource</c> in der Oberflächensprache — die Hülle muss nichts
+    /// beisteuern, und der Wirt setzt es nur, wenn er einen eigenen Wortlaut will.
+    /// </summary>
+    [Parameter] public WaermepumpeKonfigurationTexte Texte { get; set; }
+        = new WaermepumpeKonfigurationTexte();
+
+    /// <summary>true = nur ansehen (die Seite ist gesperrt).</summary>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>
+    /// Zeichnet der Dialog Titel und Schließkreuz selbst? In der Überlagerung der
+    /// Seite trägt DIE beides — dort steht <c>false</c>.
+    /// </summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>true = OK (der Wirt schreibt), false = Abbrechen/Esc/✕.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    // ---- Texte -----------------------------------------------------------
+    // Der Dialog steht als ÜBERLAGERUNG in der SimulationKonfigSeite, und die
+    // reicht ihm KEINEN Parametersatz. Seine Texte holt er deshalb selbst aus
+    // MyResource (Muster der SpeichernLeiste-Texte weiter unten); ein Wirt, der
+    // einen eigenen Wortlaut will, überschreibt sie als Gabe.
+
+    /// <summary>SIMKONF_TITEL_KONFIGURATION — die Vorlage des Titels; <c>{0}</c> = der Kartentitel.</summary>
+    [Parameter] public string TitelText { get; set; } = Resource.SIMKONF_TITEL_KONFIGURATION;
+
+    /// <summary>Der Kartentitel, der im Titel an der Stelle <c>{0}</c> steht.</summary>
+    [Parameter] public string Bezeichner { get; set; } = "";
+
+    /// <summary>
+    /// Der Hilfeschlüssel des WIRTS — ohne ihn steht kein Infoknopf im Kopf
+    /// („kein Delegat, kein Knopf").
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Dialog nennt KEINEN eigenen Schlüssel.</b> Er ist die Überlagerung
+    /// EINER Seite und führt auf deren Rechenweg-Rubrik; die Seite reicht ihm
+    /// deshalb ihren <c>HilfeSchluesselBerechnung</c> herein. Ein zweiter, gleicher
+    /// Schlüssel im Markup wäre ein zweiter Weg auf dieselbe Wikiseite, den
+    /// <c>help_mapping.txt</c> nicht mehr zeigte (Wächter
+    /// <c>BerechnungsknopfTests.Jeder_Schluessel_gehoert_genau_einem_Dialog</c>).
+    /// </remarks>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    [Parameter] public string HilfeKurztext { get; set; }
+        = "Berechnungsweg: Simulationsablauf";
+
+    /// <summary>SIMKONF_HRL_PROJEKTWEIT — die Herleitungszeile unter jedem PROJEKTWEITEN Wert.</summary>
+    [Parameter] public string HinweisProjektweit { get; set; }
+        = Resource.SIMKONF_HRL_PROJEKTWEIT;
+
+    /// <summary>
+    /// SIMKONF_HRL_HEIZSTAB — die Herleitungszeile unter dem projektweiten Heizstab.
+    /// Sie sagt ausdrücklich, dass DIESER Schalter den Rechenweg entscheidet.
+    /// </summary>
+    /// <remarks>
+    /// <b>Befund 16.09.2026.</b> Der Lauf liest ausschließlich
+    /// <c>Tab_Einstellungen.WP_Heizstab</c>: <c>SimulationControl</c> reicht ihn an
+    /// <c>SimulationWaermepumpe.Mit_Heizstab</c>, und <c>Heizstabphase</c> steigt ohne
+    /// ihn sofort wieder aus. Die Zuheizleistung je Modul begrenzt danach
+    /// <c>Tab_WP.Heizung</c>.
+    /// </remarks>
+    [Parameter] public string HinweisHeizstab { get; set; } = Resource.SIMKONF_HRL_HEIZSTAB;
+
+    /// <summary>
+    /// SIMKONF_HRL_HEIZSTAB_ANLAGE — die zweite Herleitungszeile; nur, wenn die
+    /// Anlagenkonfiguration darüber steht: Sie trennt die beiden gleichnamigen Schalter.
+    /// </summary>
+    [Parameter] public string HinweisHeizstabAnlage { get; set; }
+        = Resource.SIMKONF_HRL_HEIZSTAB_ANLAGE;
+
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    // =====================================================================
+    // Anzeige
+    // =====================================================================
+
+    private ElementReference _wurzel;
+
+    /// <summary>Der berechnete Titel — Bauart b der Hausregel (Vorlage + Einsetzung).</summary>
+    public string Titel => string.IsNullOrEmpty(Bezeichner)
+        ? TitelText.Replace(" · {0}", "").Replace("{0}", "")
+        : string.Format(TitelText, Bezeichner);
+
+    /// <summary>
+    /// Die drei Betriebsarten des BHKW. Die Steuerwerte 0/1/2 sind die des
+    /// Vorläufers (<c>RadioButton.Tag</c>, <c>bhkwSimulationsArt</c>) und stehen so
+    /// in <c>Tab_Einstellungen</c>.
+    /// </summary>
+    private static readonly (int Id, string Text)[] BETRIEBSARTEN =
+    {
+        (0, Resource.SIMERG_OPT_WAERMEGEFUEHRT),
+        (1, Resource.SIMERG_OPT_STROMGEFUEHRT),
+        (2, Resource.SIMERG_OPT_OHNE_EINSPEISUNG)
+    };
+
+    protected override async Task OnAfterRenderAsync(bool ersteAnzeige)
+    {
+        // Der Fokus gehoert dem Dialog, sobald er steht - sonst liefe Esc an ihm
+        // vorbei (Muster der Nachbardialoge).
+        if (ersteAnzeige) await _wurzel.FocusAsync();
+    }
+
+    // =====================================================================
+    // Die Felder — sie ändern NUR die Arbeitskopie
+    // =====================================================================
+
+    private void BetriebsartGesetzt(int? wert) => Werte.Betriebsart = wert ?? 0;
+
+    private void LeistungsgrenzeGesetzt(int? wert) => Werte.UntersteLeistungsgrenze = wert ?? 0;
+
+    private void BereitschaftGesetzt(double? wert) => Werte.Bereitschaft = wert ?? 0.0;
+
+    /// <summary>
+    /// Die Wärmepumpen-Konfiguration hat an der Arbeitskopie etwas geändert — nur
+    /// zeichnen; geschrieben wird im OK-Weg des Wirts.
+    /// </summary>
+    private void Neugezeichnet() => StateHasChanged();
+
+    // =====================================================================
+    // Schließen
+    // =====================================================================
+
+    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    /// <summary>
+    /// Esc bricht ab. Enter ist NICHT belegt: Der Dialog schreibt über den Wirt in
+    /// die Datenbank, und die Hausregel lässt Enter nur in reinen Entscheidungs-
+    /// dialogen zu.
+    /// </summary>
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") await Geschlossen.InvokeAsync(false);
+    }
+}

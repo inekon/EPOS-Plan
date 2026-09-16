@@ -186,6 +186,47 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.Single(cut.FindAll("button"), b => b.TextContent.Trim() == "OK");
     }
 
+    /// <summary>
+    /// <b>Die zweite Wirtsform zeichnet die Knopfzeile mit</b> (#297, 16.09.2026).
+    /// Der Kenndatenblock der eingebetteten Detailansicht führt seine Knopfzeile oben
+    /// — „Konfiguration…" und der Kennlinienweg —, und „Parameter Bearbeiten…" gibt es
+    /// nicht mehr. Ohne diesen Fall bliebe der Umbau des Anlagendialogs nur im Fenster
+    /// geprüft, obwohl ihn der Anwender zuerst HIER sieht.
+    /// </summary>
+    [Fact]
+    public void Eingebettet_steht_die_Knopfzeile_des_Kenndatenblocks()
+    {
+        var cut = Aufbauen();
+
+        var knoepfe = cut.FindAll(".epos-wp-eingebettet .epos-leiste button")
+                         .Select(b => b.TextContent.Trim()).ToList();
+
+        Assert.Contains("Konfiguration…", knoepfe);
+        Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
+                              t => t.Contains("Parameter Bearbeiten", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// <b>Und die Konfiguration geht eingebettet auf.</b> Die Überlagerung gehört dem
+    /// Anlagendialog; sie muss also auch dann erscheinen, wenn er selbst schon in
+    /// einem Wirt steckt (Anwenderbefund 15.09.2026 „Doppeltes Kreuz dürfen nicht
+    /// sein!" — sie trägt Titel und ✕, die Detailansicht darunter keins).
+    /// </summary>
+    [Fact]
+    public void Eingebettet_oeffnet_die_Konfigurations_Ueberlagerung()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(".epos-wp-konfiguration"));
+
+        Knopf(cut, "Konfiguration…").Click();
+
+        Assert.Single(cut.FindAll(".epos-wp-konfiguration"));
+        // Der Titel steht an der UEBERLAGERUNG (WPA_GRP_KONFIGURATION), der Baustein
+        // darunter traegt keinen eigenen Gruppenkopf.
+        Assert.Equal("Konfiguration", cut.Find(".epos-ueberlagerung-titel").TextContent.Trim());
+    }
+
     [Fact]
     public void Ohne_Zeile_steht_der_Leersatz()
     {

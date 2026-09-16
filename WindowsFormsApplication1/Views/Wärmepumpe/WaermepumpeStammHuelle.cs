@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
                 ["Loeschen"] = new Func<string, bool>(Loeschen),
                 ["Kennlinien"] = new Func<int, IReadOnlyList<KennlinienZeile>>(KennlinienZu),
                 ["KennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
-                    (idWp, zeilen) => KenndatenCtrl.Abgleichen(idWp, NachModell(zeilen))),
+                    KennlinienAbgleichen),
                 // W14a-E-8 (06.09.2026): der Aufklapper „Alle Parameter und ihre
                 // Verwendung anzeigen" unter dem Stammdatenblock. Er ist hier die
                 // Auskunft, die im Bestand fehlte: Die Maske zeigt elf der achtzehn
@@ -163,7 +163,12 @@ namespace WindowsFormsApplication1
             return new WPStammCtrl().Katalogfilterzeilen();
         }
 
-        private static WaermepumpeStammDaten SatzZu(int id)
+        /// <summary>
+        /// Ein Satz des STAMMKATALOGS zu seiner Id. <b>Seit dem 16.09.2026 auch der Weg
+        /// des Anlagendialogs</b> (Gabe <c>StammSatz</c>): Dort stehen die Parameter des
+        /// Stammgeräts unmittelbar im Kenndatenblock, statt hinter „Parameter Bearbeiten…".
+        /// </summary>
+        internal static WaermepumpeStammDaten SatzZu(int id)
         {
             var ctrl = new WPStammCtrl();
             ctrl.ReadAll("ID=" + id);
@@ -229,7 +234,7 @@ namespace WindowsFormsApplication1
         /// <c>Ganzzahlfeld</c> einen leeren Wert als <c>null</c>, und daraus wird 0 —
         /// derselbe Ausgang, weil bei einer Neuanlage 0 der Ausgangswert ist.
         /// </summary>
-        private static KatalogSpeicherErgebnis Speichern(WaermepumpeStammDaten daten, bool neu)
+        internal static KatalogSpeicherErgebnis Speichern(WaermepumpeStammDaten daten, bool neu)
         {
             var ctrl = new WPStammCtrl();
 
@@ -267,7 +272,11 @@ namespace WindowsFormsApplication1
         // Kennlinien: zwischen Editor und Kern uebersetzen
         // =================================================================================
 
-        private static IReadOnlyList<KennlinienZeile> KennlinienZu(int idWp)
+        /// <summary>
+        /// Die Kennlinien eines KATALOGSATZES für den Editor — seit dem 16.09.2026 auch
+        /// der Weg des Anlagendialogs (Gabe <c>Kennlinien</c>).
+        /// </summary>
+        internal static IReadOnlyList<KennlinienZeile> KennlinienZu(int idWp)
         {
             var liste = new List<KennlinienZeile>();
             foreach (KenndatenModel m in KenndatenCtrl.LiesStamm(idWp))
@@ -280,6 +289,15 @@ namespace WindowsFormsApplication1
                     Ptherm = m.m_nPTherm
                 });
             return liste;
+        }
+
+        /// <summary>
+        /// Der Rückschreibweg des Kennlinieneditors — seit dem 16.09.2026 auch der Weg des
+        /// Anlagendialogs (Gabe <c>KennlinienAbgleichen</c>).
+        /// </summary>
+        internal static bool KennlinienAbgleichen(int idWp, IReadOnlyList<KennlinienZeile> zeilen)
+        {
+            return KenndatenCtrl.Abgleichen(idWp, NachModell(zeilen));
         }
 
         private static IReadOnlyList<KenndatenModel> NachModell(IReadOnlyList<KennlinienZeile> zeilen)
