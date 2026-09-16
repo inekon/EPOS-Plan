@@ -145,7 +145,7 @@ Protokoll unter
 **`2026-09-11_R7_Speicherflotte/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **345 CSV**, **1 937 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite` (**Schemastand 73**;
-die Datei selbst steht auf **Schemastand 78** — der Lauf gegen diese Basis bleibt davon
+die Datei selbst steht auf **Schemastand 81** — der Lauf gegen diese Basis bleibt davon
 byte-gleich, siehe die Nachträge am Ende des Abschnitts). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, **1046**) jeden Push, `ios.yml` den
 iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht getrennt nach. Sie ist die **einzige**
@@ -320,6 +320,36 @@ Basis im Arbeitsbaum.
 > Semantik Zeichen für Zeichen — 1007 und 1046 rechnen ihre Heizstabphase weiter
 > (26,63 MWh Heizstabstrom), 1017 und 1030 weiter ohne. Die Basis wird nicht neu
 > eingefroren, und **keine der drei Einfrierregeln ist berührt**.
+
+> **Nachtrag: Schemastand 81 (Auftrag #302), die Basis bleibt.** Ein Migrationsschritt,
+> ein Befund des Anwenders vom 16.09.2026. Schritt **81**
+> (`SCHRITT_81_PROJEKTWERTE_LOESCHSCHUTZ`) stellt den Fremdschlüssel
+> `Tab_ProjektWerte.StammID → Tab_Kostenfaktor(StammID)` von `ON DELETE CASCADE` auf
+> **`ON DELETE RESTRICT`**; `ON UPDATE CASCADE` bleibt. Bis dahin riss **ein** gelöschter
+> Katalogeintrag im Dialog „Administration Kostenfaktoren" **jede** Projektposition
+> derselben `StammID` mit — quer durch alle Projekte und alle Gewerke, ohne dass die
+> Rückfrage davon etwas nannte. In dieser Datei betraf das **46 der 65 löschbaren
+> Katalogeinträge**; nachgerechnet: „Planung / Baunebenkosten" (`StammID` 114) nahm 6
+> Positionen aus 5 Projekten mit, „Wärmepumpe (Aggregat)" (108) 4 aus 4 Projekten,
+> darunter drei Wärmepumpen-Investitionen von je 13.000,00 €. Die Kaskade war nie
+> gewollt: Dieselbe Beziehung an `Tab_KostenVorlagePosition.StammID` trägt gar keinen
+> Fremdschlüssel. SQLite ändert keine Fremdschlüsselregel per `ALTER TABLE`, der Schritt
+> ist deshalb der **zweite Tabellenneubau** des SQLite-Zweigs nach Schritt 74
+> (`EPOS.Kern/Allgemein/Update/ProjektWerteLoeschschutz.cs`): Kopie unter Hilfsnamen,
+> `INSERT … SELECT` über die 24 namentlich genannten Spalten, `DROP`, `RENAME`, die fünf
+> Indizes neu — alles in **einer** Transaktion. Zwei Zugaben gegenüber Schritt 74: Der
+> **AUTOINCREMENT-Stand** reist mit (sonst käme eine vergebene `ID` ein zweites Mal
+> heraus), und die Umbenennung läuft unter `PRAGMA legacy_alter_table`, weil die Sicht
+> `Abfrage_Kostenfaktoren` diese Tabelle liest. Stand der Datei: **Schemastand 81**,
+> **70 770 688 Byte** (unverändert), **120 Tabellen, davon 119 STRICT**, **25 Projekte**;
+> `Tab_ProjektWerte` führt weiterhin **175 Zeilen** mit demselben Zählerstand
+> (`sqlite_sequence` = 101 600 605) und denselben fünf Indizes, `PRAGMA integrity_check`
+> = `ok`, `PRAGMA foreign_key_check` bleibt leer, und
+> `PRAGMA foreign_key_list('Tab_ProjektWerte')` nennt für `Tab_Kostenfaktor` jetzt
+> `CASCADE` / `RESTRICT`. **Der Referenzlauf ist 5/5 byte-gleich gegen diese Basis** (135
+> von 135 Dateien, Toleranzvergleich 5/5 PASS, 1 586 257 Werte): Der Schritt kopiert
+> Zeilen, er rechnet nicht. Die Basis wird nicht neu eingefroren, und **keine der drei
+> Einfrierregeln ist berührt**.
 
 ## Was hier liegt
 
