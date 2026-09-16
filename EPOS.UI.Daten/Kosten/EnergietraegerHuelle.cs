@@ -55,6 +55,9 @@ namespace WindowsFormsApplication1
         private List<EnergyCarrier> _traeger = new List<EnergyCarrier>();
         private EnergyCarrier _gewaehlt;
 
+        /// <summary>ET‑6: Name des Trägers, den das letzte „Entfernen" nach sich gezogen hat.</summary>
+        private string _stromZugeordnet = "";
+
         /// <summary>
         /// ET‑3 (08.09.2026): je Träger seine VERWENDUNG im Projekt (wer ihn beiträgt, ob er
         /// zugeordnet ist) — die Liste zeigt sie als Kurztext und markiert Unzugeordnete.
@@ -183,6 +186,15 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Liste"] = Listeneintraege(),
+                // ET-5 (Anwenderbefund 16.09.2026): Die Liste war ein EINGEFRORENER Wert -
+                // der Gabensatz lebt so lange wie der Dialog, also stand nach "Entfernen",
+                // "Loeschen", "Neu...", "Variante", der Uebernahme und dem Stamm-Speichern
+                // immer noch der Stand des Oeffnens da. Derselbe Rueckweg wie bei
+                // FreieLaden (ET-1) und KostenfaktorKatalogHuelle.NeuLaden: KEIN zweites
+                // ListeLaden() - die Schreibwege unten rufen es selbst, und ein weiteres
+                // zoege StromTraegerSicherstellen ein zweites Mal.
+                ["ListeNeuLaden"] =
+                    new Func<IReadOnlyList<EnergietraegerDialog.EnergietraegerListe>>(Listeneintraege),
                 ["TraegerVorwahl"] = traegerId > 0 ? (int?)traegerId : null,
                 ["Katalogkontext"] = Katalogkontext,
                 ["Gruppen"] = Gruppen(),
@@ -226,6 +238,9 @@ namespace WindowsFormsApplication1
                 ["TraegerLoeschen"] = new Func<ValueTuple<bool, string>>(TraegerLoeschen),
                 ["InsProjekt"] = new Func<IReadOnlyList<int>, int>(InsProjekt),
                 ["AusProjekt"] = new Func<ValueTuple<bool, string>>(AusProjekt),
+                // ET-6: Der Name des Stromtraegers, den ListeLaden nach dem Entfernen
+                // WIEDER zugeordnet hat - leer, wenn nichts nachgezogen wurde.
+                ["StromZugeordnet"] = new Func<string>(StromZugeordnet),
                 // ET-1 (Anwenderbefund 08.09.2026, "Die Energietraegerverwaltung funktioniert
                 // nicht"): Die freien Katalogtraeger kamen NIE an - "Aus Katalog uebernehmen..."
                 // meldete immer "alle bereits zugeordnet". FreieLaden liest sie bei jedem
@@ -265,7 +280,9 @@ namespace WindowsFormsApplication1
                 ["EntfernenText"] = T("KDLG_ET_BTN_ENTFERNEN", "Entfernen"),
                 ["LabelStammName"] = T("KDLG_ET_STAMM_NAME", "Bezeichnung:"),
                 ["LabelStammGruppe"] = T("KDLG_ET_STAMM_GRUPPE", "Gruppe:"),
-                ["StammSpeichernText"] = T("KDLG_ET_STAMM_SPEICHERN", "Übernehmen"),
+                // ET-7: „Bezeichnung speichern" statt „Übernehmen" — drei Knöpfe desselben
+                // Dialogs hießen „übernehmen" (Kataloguebernahme, Katalogwerte, Stammkopf).
+                ["StammSpeichernText"] = T("KDLG_ET_STAMM_SPEICHERN", "Bezeichnung speichern"),
                 ["KarteProfilTitel"] = T("KPROF_KARTE_PROFIL_TITEL", "Kostenprofil"),
                 ["KarteProfilInfo"] = T("KPROF_KARTE_PROFIL_INFO",
                     "Monatliche Preisniveaus des Strombezugs pflegen."),
@@ -283,6 +300,8 @@ namespace WindowsFormsApplication1
                     "Träger „{0}\" aus dem Projekt entfernen? (Der Katalogeintrag bleibt.)"),
                 ["VorlageGesperrt"] = T("KDLG_ET_LOESCHEN_GESPERRT",
                     "Der Träger wird verwendet und bleibt erhalten: {0}"),
+                ["VorlageStromZugeordnet"] = T("KDLG_ET_STROM_ZUGEORDNET",
+                    "Das Projekt führt elektrische Anlagen; der Stromträger „{0}\" wurde zugeordnet."),
                 ["MeldungStammLeer"] = T("KDLG_ET_STAMM_FEHLER", "Bezeichnung darf nicht leer sein."),
                 ["TitelKostenprofil"] = MyResource.Resource.PREIS_PROFIL_TITEL,
                 ["TitelSpotpreis"] = MyResource.Resource.PREIS_IMPORT_TITEL,
@@ -1944,14 +1963,46 @@ namespace WindowsFormsApplication1
             return letzter;
         }
 
+        /// <summary>
+        /// ET‑6 (Anwenderbefund 16.09.2026): Entfernt der Anwender den Stromträger eines
+        /// Projekts mit Wärmepumpe, Photovoltaik, Stromspeicher oder Heizstab, ordnet
+        /// <c>StromTraegerSicherstellen</c> im selben Atemzug wieder einen zu — bis hierher
+        /// STILL, und der Anwender hielt das für den Fehler, der gerade behoben wird.
+        ///
+        /// <para>Der Kern bleibt unberührt: <b>Die Wiederzuordnung selbst ist
+        /// Anwenderentscheid ET‑2 vom 08.09.2026.</b> Sie wird nur benannt. Gemessen wird
+        /// an den ZUGEORDNETEN Trägern vor und nach dem Entfernen — die Rückgabe von
+        /// <c>StromTraegerSicherstellen</c> taugt dafür nicht, weil sie auch dann eine Id
+        /// nennt, wenn der Träger längst zugeordnet war (idempotenter Fall).</para>
+        /// </summary>
         private ValueTuple<bool, string> AusProjekt()
         {
+            _stromZugeordnet = "";
             if (_gewaehlt == null) return new ValueTuple<bool, string>(false, "");
+
+            int entfernt = _gewaehlt.ID;
+            var vorher = new List<int>();
+            foreach (EnergyCarrier c in _traeger)
+                if (c.ID != entfernt && ListenZugeordnet(c.ID)) vorher.Add(c.ID);
+
             string grund;
-            bool ok = EnergietraegerKatalogCtrl.AusProjektEntfernen(_projektId, _gewaehlt.ID, out grund);
-            if (ok) { ListeLaden(); _gewaehlt = null; _stand = null; }
-            return new ValueTuple<bool, string>(ok, grund ?? "");
+            bool ok = EnergietraegerKatalogCtrl.AusProjektEntfernen(_projektId, entfernt, out grund);
+            if (!ok) return new ValueTuple<bool, string>(false, grund ?? "");
+
+            ListeLaden();
+            foreach (EnergyCarrier c in _traeger)
+            {
+                if (!ListenZugeordnet(c.ID) || vorher.Contains(c.ID)) continue;
+                _stromZugeordnet = c.Name;
+                break;
+            }
+            _gewaehlt = null;
+            _stand = null;
+            return new ValueTuple<bool, string>(true, "");
         }
+
+        /// <summary>ET‑6: der Träger, den das Entfernen nach sich gezogen hat; leer = keiner.</summary>
+        private string StromZugeordnet() { return _stromZugeordnet; }
 
         // =====================================================================
         // Unterdialoge

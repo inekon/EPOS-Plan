@@ -20694,11 +20694,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung speichern ähnelt.
         /// </summary>
         public static string KDLG_ET_STAMM_SPEICHERN {
             get {
                 return ResourceManager.GetString("KDLG_ET_STAMM_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt elektrische Anlagen; der Stromträger „{0}“ wurde zugeordnet. ähnelt.
+        /// </summary>
+        public static string KDLG_ET_STROM_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("KDLG_ET_STROM_ZUGEORDNET", resourceCulture);
             }
         }
         

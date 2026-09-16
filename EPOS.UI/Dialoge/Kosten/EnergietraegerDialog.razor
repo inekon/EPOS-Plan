@@ -312,9 +312,21 @@
     // Vorbelegung und Datenseite
     // =====================================================================
 
-    /// <summary>Die Trägerliste unter ihren Gruppen (Ä13).</summary>
+    /// <summary>
+    /// Die Trägerliste unter ihren Gruppen (Ä13) — der ANFANGSSTAND. Gelesen wird
+    /// danach <c>_liste</c>; nachgezogen wird über <see cref="ListeNeuLaden"/>.
+    /// </summary>
     [Parameter] public IReadOnlyList<EnergietraegerListe> Liste { get; set; }
         = Array.Empty<EnergietraegerListe>();
+
+    /// <summary>
+    /// ET‑5 (Anwenderbefund 16.09.2026): Holt die Trägerliste FRISCH aus der Hülle.
+    /// Ohne diesen Delegaten bliebe die Liste der eingefrorene Wert, den der Gabensatz
+    /// beim Öffnen gebaut hat — ein entfernter Träger stünde weiter da, ein neuer fehlte,
+    /// und ein umbenannter trüge seinen alten Namen. Dasselbe Muster wie
+    /// <see cref="FreieLaden"/> (ET‑1) und <c>KostenfaktorKatalogDialog.NeuLaden</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<EnergietraegerListe>>? ListeNeuLaden { get; set; }
 
     /// <summary>Vorwahl in der Liste; <c>null</c> = der erste Träger.</summary>
     [Parameter] public int? TraegerVorwahl { get; set; }
@@ -439,6 +451,14 @@
     /// <summary>Löst die Zuordnung des gewählten Trägers; der Grund erklärt ein „nein".</summary>
     [Parameter] public Func<(bool Erfolg, string Grund)>? AusProjekt { get; set; }
 
+    /// <summary>
+    /// ET‑6: Nennt nach <see cref="AusProjekt"/> den Träger, den das Projekt im selben
+    /// Atemzug WIEDER bekommen hat (ein Projekt mit elektrischer Anlage behält seinen
+    /// Stromträger, Anwenderentscheid ET‑2 vom 08.09.2026); leer = keiner. Ohne diesen
+    /// Delegaten sagt der Dialog nichts dazu.
+    /// </summary>
+    [Parameter] public Func<string>? StromZugeordnet { get; set; }
+
     // ---- Unterdialoge -----------------------------------------------------
 
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? KostenprofilGaben { get; set; }
@@ -496,7 +516,7 @@
     [Parameter] public string EntfernenText { get; set; } = "Entfernen";
     [Parameter] public string LabelStammName { get; set; } = "Bezeichnung:";
     [Parameter] public string LabelStammGruppe { get; set; } = "Gruppe:";
-    [Parameter] public string StammSpeichernText { get; set; } = "Übernehmen";
+    [Parameter] public string StammSpeichernText { get; set; } = "Bezeichnung speichern";
     [Parameter] public string KarteProfilTitel { get; set; } = "Kostenprofil";
     [Parameter] public string KarteProfilInfo { get; set; }
         = "Monatliche Preisniveaus des Strombezugs pflegen.";
@@ -513,6 +533,9 @@
         = "Träger „{0}\" aus dem Projekt entfernen? (Der Katalogeintrag bleibt.)";
     [Parameter] public string VorlageGesperrt { get; set; }
         = "Der Träger wird verwendet und bleibt erhalten: {0}";
+    /// <summary>ET‑6: Der Hinweis nach einem Entfernen, das einen Stromträger nach sich zog.</summary>
+    [Parameter] public string VorlageStromZugeordnet { get; set; }
+        = "Das Projekt führt elektrische Anlagen; der Stromträger „{0}\" wurde zugeordnet.";
     [Parameter] public string MeldungStammLeer { get; set; } = "Bezeichnung darf nicht leer sein.";
     [Parameter] public string TitelKostenprofil { get; set; } = "Kostenprofil";
     [Parameter] public string TitelSpotpreis { get; set; } = "Spotpreis-Import";
@@ -534,6 +557,14 @@
     private bool _ersterAufbau = true;
 
     private EnergietraegerAnsicht _ansicht = new();
+
+    /// <summary>
+    /// ET‑5: Die EIGENE Kopie der Trägerliste. Der Parameter <see cref="Liste"/> ist der
+    /// Anfangsstand des Gabensatzes und ändert sich nie — gelesen wird deshalb ausschließlich
+    /// hier, und nach jedem listenverändernden Schritt zieht <see cref="ListeNachziehen"/> nach.
+    /// </summary>
+    private IReadOnlyList<EnergietraegerListe> _liste = Array.Empty<EnergietraegerListe>();
+
     private int? _traegerId;
     private string _suche = "";
     private string _stammName = "";
@@ -572,10 +603,42 @@
     /// <summary>Welcher Unterdialog steht (Prüfhilfe für Tests).</summary>
     public Unterdialog OffenerUnterdialog => _unterArt;
 
+    /// <summary>Die angezeigte Trägerliste (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<EnergietraegerListe> Angezeigt => _liste;
+
     protected override void OnInitialized()
     {
+        _liste = Liste;
         _traegerId = TraegerVorwahl ?? ErsterTraeger();
         if (_traegerId.HasValue) Laden(_traegerId.Value);
+    }
+
+    /// <summary>
+    /// ET‑5: Die Liste FRISCH aus der Hülle holen — nach jedem Schritt, der sie verändert
+    /// (Entfernen, Löschen, Übernahme, Neu, Variante, Stamm-Speichern, Speichern).
+    ///
+    /// <para>Steht der gewählte Träger danach nicht mehr in der Liste, hat die Markierung
+    /// keinen Gegenstand mehr: Sie fällt weg und die Karte wird leer. Ohne Delegat bleibt
+    /// die Liste stehen — ein Prüfstand ohne Hülle ändert sich dadurch nicht.</para>
+    /// </summary>
+    private void ListeNachziehen()
+    {
+        if (ListeNeuLaden is null) return;
+        _liste = ListeNeuLaden() ?? Array.Empty<EnergietraegerListe>();
+
+        if (!_traegerId.HasValue || Steht(_traegerId.Value)) return;
+        _traegerId = null;
+        _ansicht = new EnergietraegerAnsicht();
+    }
+
+    /// <summary>Steht der Träger in der Liste?</summary>
+    private bool Steht(int id)
+    {
+        foreach (EnergietraegerListe e in _liste)
+        {
+            if (e.Traeger == id) return true;
+        }
+        return false;
     }
 
     /// <summary>Die Karte neu holen und den Stammkopf mitziehen (Ä9).</summary>
@@ -596,7 +659,7 @@
 
     private int? ErsterTraeger()
     {
-        foreach (EnergietraegerListe e in Liste)
+        foreach (EnergietraegerListe e in _liste)
         {
             if (e.Traeger.HasValue) return e.Traeger.Value;
         }
@@ -623,12 +686,12 @@
     {
         get
         {
-            if (string.IsNullOrWhiteSpace(_suche)) return Liste;
+            if (string.IsNullOrWhiteSpace(_suche)) return _liste;
 
             var treffer = new List<EnergietraegerListe>();
             EnergietraegerListe? kopf = null;
             string gruppe = "";
-            foreach (EnergietraegerListe e in Liste)
+            foreach (EnergietraegerListe e in _liste)
             {
                 if (e.Traeger is null) { kopf = e; gruppe = e.Text; continue; }
                 if (!VdiAuswahlFilter.Passt(_suche, e.Text, gruppe)) continue;
@@ -801,6 +864,9 @@
             Melden(MeldungStammLeer, WarnStufe.Warnung);
             return;
         }
+        // ET-5: Die Bezeichnung steht in der Liste — ohne Nachziehen trüge der Eintrag
+        // weiter den alten Namen, während der Kartenkopf schon den neuen zeigte.
+        ListeNachziehen();
         Melden("");
     }
 
@@ -815,14 +881,22 @@
         _namensGaben = null;
         if (name is null || TraegerNeu is null) return;
         int id = TraegerNeu(name);
-        if (id > 0) { _traegerId = id; Laden(id); }
+        if (id <= 0) return;
+        // ET-5: erst die Liste, dann die Markierung — der neue Träger steht sonst nicht
+        // darin, und ListeNachziehen nähme die Markierung gleich wieder weg.
+        ListeNachziehen();
+        _traegerId = id;
+        Laden(id);
     }
 
     private void VarianteAnlegen()
     {
         if (TraegerVariante is null) return;
         int id = TraegerVariante();
-        if (id > 0) { _traegerId = id; Laden(id); }
+        if (id <= 0) return;
+        ListeNachziehen();
+        _traegerId = id;
+        Laden(id);
     }
 
     private void LoeschenFragen()
@@ -833,8 +907,17 @@
         {
             if (TraegerLoeschen is null) return Task.CompletedTask;
             (bool erfolg, string grund) = TraegerLoeschen();
-            if (!erfolg) Melden(string.Format(VorlageGesperrt, grund), WarnStufe.Warnung);
-            else { _traegerId = null; _ansicht = new EnergietraegerAnsicht(); Melden(""); }
+            if (!erfolg)
+            {
+                Melden(string.Format(VorlageGesperrt, grund), WarnStufe.Warnung);
+                return Task.CompletedTask;
+            }
+            // ET-5: Der gelöschte Träger verschwindet aus der Liste; Markierung und
+            // Karte bleiben leer (so war es schon, und so bleibt es).
+            ListeNachziehen();
+            _traegerId = null;
+            _ansicht = new EnergietraegerAnsicht();
+            Melden("");
             return Task.CompletedTask;
         };
     }
@@ -860,7 +943,12 @@
         _uebernahmeOffen = false;
         if (InsProjekt is null) return;
         int letzter = InsProjekt(_uebernahmeWahl);
-        if (letzter > 0) { _traegerId = letzter; Laden(letzter); }
+        if (letzter <= 0) return;
+        // ET-5: Bis hierher setzte dieser Weg _traegerId auf einen Träger, der in der
+        // Liste GAR NICHT stand — Liste ohne Markierung, Karte mit neuem Träger.
+        ListeNachziehen();
+        _traegerId = letzter;
+        Laden(letzter);
     }
 
     private void EntfernenFragen()
@@ -871,8 +959,23 @@
         {
             if (AusProjekt is null) return Task.CompletedTask;
             (bool erfolg, string grund) = AusProjekt();
-            if (!erfolg) Melden(string.Format(VorlageGesperrt, grund), WarnStufe.Warnung);
-            else { _traegerId = null; _ansicht = new EnergietraegerAnsicht(); Melden(""); }
+            if (!erfolg)
+            {
+                Melden(string.Format(VorlageGesperrt, grund), WarnStufe.Warnung);
+                return Task.CompletedTask;
+            }
+            // ET-5: Der entfernte Träger verschwindet aus der Liste.
+            ListeNachziehen();
+            _traegerId = null;
+            _ansicht = new EnergietraegerAnsicht();
+
+            // ET-6: Hat das Projekt seinen Stromträger im selben Atemzug WIEDER bekommen
+            // (elektrische Anlage im Projekt, Anwenderentscheid ET-2), wird das GESAGT —
+            // sonst sieht der Anwender einen Träger, den er gerade loswerden wollte, und
+            // hält ihn für den Fehler.
+            string strom = StromZugeordnet is null ? "" : StromZugeordnet();
+            Melden(string.IsNullOrEmpty(strom)
+                       ? "" : string.Format(VorlageStromZugeordnet, strom), WarnStufe.Hinweis);
             return Task.CompletedTask;
         };
     }
@@ -887,7 +990,7 @@
 
     private string TraegerName(int id)
     {
-        foreach (EnergietraegerListe e in Liste)
+        foreach (EnergietraegerListe e in _liste)
         {
             if (e.Traeger == id) return e.Text.Trim();
         }
@@ -952,6 +1055,9 @@
         // Die Hülle hat die Preishistorie neu gelesen und den Übernahmehinweis
         // gelöscht; die Ansicht folgt, damit beides sofort dasteht.
         Nachziehen();
+        // ET-5: Speichern kann den Träger dem Projekt ZUORDNEN (ET-3) — dann trägt
+        // sein Listeneintrag die Marke „nicht zugeordnet" zu Unrecht weiter.
+        ListeNachziehen();
         // Ein Träger ohne Preis oder CO₂-Wert lässt sich speichern — er wird dabei
         // aber benannt, nicht stillschweigend hingenommen.
         Melden(SpeichernHinweis is null ? "" : SpeichernHinweis(), WarnStufe.Hinweis);

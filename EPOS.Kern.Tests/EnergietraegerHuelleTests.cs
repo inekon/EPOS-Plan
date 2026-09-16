@@ -761,5 +761,180 @@ namespace EPOS.Kern.Tests
             Assert.Contains(DbWerte.ERZEUGER_SOLARTHERMIE, (string)gaben["KontextText"]);
             Assert.Contains("kein eigener", (string)gaben["KontextText"]);
         }
+
+        // =================================================================
+        // ET-5 / ET-6 (Anwenderbefund 16.09.2026): der Rueckweg der Liste
+        // =================================================================
+
+        /// <summary>Projekt 1024 — acht Traegerzuordnungen, Waermepumpe mit Heizstab.</summary>
+        private const int PROJEKT_1024 = 1024;
+
+        /// <summary>„Heizoel L" — 1024 zugeordnet, von KEINER Anlage gehalten.</summary>
+        private const int OHNE_ANLAGE = 62;
+
+        private static IReadOnlyList<EnergietraegerDialog.EnergietraegerListe> Neugeladen(
+            IReadOnlyDictionary<string, object> gaben)
+        {
+            return ((Func<IReadOnlyList<EnergietraegerDialog.EnergietraegerListe>>)
+                    gaben["ListeNeuLaden"])();
+        }
+
+        private static bool Waehlen(IReadOnlyDictionary<string, object> gaben, int traegerId)
+        {
+            return ((Func<int, EnergietraegerAnsicht>)gaben["TraegerLaden"])(traegerId) != null;
+        }
+
+        private static ValueTuple<bool, string> Entfernen(IReadOnlyDictionary<string, object> gaben)
+        {
+            return ((Func<ValueTuple<bool, string>>)gaben["AusProjekt"])();
+        }
+
+        private static bool Steht(IReadOnlyList<EnergietraegerDialog.EnergietraegerListe> liste, int id)
+        {
+            foreach (EnergietraegerDialog.EnergietraegerListe e in liste)
+                if (e.Traeger == id) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// ET-5: Der Wert <c>["Liste"]</c> ist der Stand des OEFFNENS und bleibt es —
+        /// der Gabensatz lebt so lange wie der Dialog. Frisch wird die Liste nur ueber
+        /// den Delegaten <c>ListeNeuLaden</c>; genau er fehlte, weshalb ein entfernter
+        /// Traeger in der Oberflaeche stehen blieb.
+        /// </summary>
+        [Fact]
+        public void ListeNeuLaden_liefert_den_frischen_Stand_der_eingefrorene_Wert_nicht()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var huelle = new EnergietraegerHuelle(PROJEKT_1024);
+            IReadOnlyDictionary<string, object> gaben = huelle.Gaben(OHNE_ANLAGE);
+            Assert.True(Steht(Neugeladen(gaben), OHNE_ANLAGE));
+
+            Assert.True(Waehlen(gaben, OHNE_ANLAGE));
+            ValueTuple<bool, string> e = Entfernen(gaben);
+            Assert.True(e.Item1);
+
+            // Der Delegat sieht den neuen Stand ...
+            Assert.False(Steht(Neugeladen(gaben), OHNE_ANLAGE));
+            // ... der eingefrorene Wert nicht. Das ist der Befund, kein Fehler:
+            // Deshalb liest die Komponente ab ET-5 ueber den Delegaten.
+            Assert.True(Steht(
+                (IReadOnlyList<EnergietraegerDialog.EnergietraegerListe>)gaben["Liste"], OHNE_ANLAGE));
+        }
+
+        /// <summary>
+        /// ET-6: Ohne Wiederzuordnung sagt die Huelle nichts — der Hinweis ist kein
+        /// Begleittext des Entfernens, sondern die Antwort auf ein Ereignis.
+        /// </summary>
+        [Fact]
+        public void Ein_gewoehnliches_Entfernen_nennt_keinen_Stromtraeger()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var huelle = new EnergietraegerHuelle(PROJEKT_1024);
+            IReadOnlyDictionary<string, object> gaben = huelle.Gaben(OHNE_ANLAGE);
+            Assert.True(Waehlen(gaben, OHNE_ANLAGE));
+
+            Assert.True(Entfernen(gaben).Item1);
+            Assert.Equal("", ((Func<string>)gaben["StromZugeordnet"])());
+        }
+
+        /// <summary>
+        /// ET-6: <c>ListeLaden</c> ruft vor jedem Lesen
+        /// <c>ProjektEnergietraegerCtrl.StromTraegerSicherstellen</c>. Verliert ein
+        /// Projekt mit elektrischer Welt dabei seinen letzten zugeordneten Stromtraeger,
+        /// ordnet der Aufruf im selben Atemzug den Auslieferungstraeger zu — bis hierher
+        /// STILL. Der Kern bleibt, wie er ist (Anwenderentscheid ET-2 vom 08.09.2026);
+        /// die Huelle NENNT den Traeger, damit der Dialog es sagen kann.
+        ///
+        /// <para>Der Stand wird hier hergestellt: Waermepumpe und Photovoltaik des
+        /// Projekts 1045 waehlen „Elektrische Energie 2" (Katalogtraeger, dem Projekt
+        /// NICHT zugeordnet — ET-5-Anlagenwahl vom 08.09.2026), zugeordnet ist allein
+        /// „Elektrische Energie". Damit haelt die elektrische Welt den zugeordneten
+        /// Traeger nicht fest, sein Entfernen ist erlaubt, und der Wiederzuordner
+        /// greift.</para>
+        /// </summary>
+        [Fact]
+        public void Das_Entfernen_nennt_den_wieder_zugeordneten_Stromtraeger()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            const int PROJEKT_1045 = 1045;
+            const int STROM_2 = 58;
+
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_Energieanlagen SET ID_Carrier = ? " +
+                "WHERE ID_Projekt = ? AND (ID_WP > 0 OR ID_PV > 0 OR ID_SP > 0)",
+                new DbParam("@c", STROM_2), new DbParam("@p", PROJEKT_1045));
+            Assert.True(EnergietraegerKatalogCtrl.InsProjekt(PROJEKT_1045, STROM));
+
+            var huelle = new EnergietraegerHuelle(PROJEKT_1045);
+            IReadOnlyDictionary<string, object> gaben = huelle.Gaben(STROM);
+            Assert.True(Steht(Neugeladen(gaben), STROM));
+            Assert.True(Waehlen(gaben, STROM));
+
+            ValueTuple<bool, string> e = Entfernen(gaben);
+            Assert.True(e.Item1);
+
+            // Der Traeger ist wieder da - und die Huelle sagt, WELCHER.
+            string name = ((Func<string>)gaben["StromZugeordnet"])();
+            Assert.False(string.IsNullOrEmpty(name));
+            Assert.True(Steht(Neugeladen(gaben), STROM));
+        }
+
+        /// <summary>
+        /// Der Hinweistext kommt aus dem Ressourcenkatalog und folgt der
+        /// Oberflaechensprache (Regel seit iU9-W8) — er ist in BEIDEN Sprachen gepflegt.
+        /// </summary>
+        [Fact]
+        public void Der_Hinweis_zum_Stromtraeger_steht_in_beiden_Sprachen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string de, en;
+            using (var _ = new Kulturvorrichtung("de-DE"))
+                de = (string)new EnergietraegerHuelle(PROJEKT_1024).Gaben()["VorlageStromZugeordnet"];
+            using (var _ = new Kulturvorrichtung("en-US"))
+                en = (string)new EnergietraegerHuelle(PROJEKT_1024).Gaben()["VorlageStromZugeordnet"];
+
+            Assert.Contains("Stromträger", de);
+            Assert.Contains("{0}", de);
+            Assert.Contains("electricity carrier", en);
+            Assert.Contains("{0}", en);
+            Assert.NotEqual(de, en);
+        }
+
+        /// <summary>
+        /// ET-7: Der Stammkopf-Knopf heisst „Bezeichnung speichern" — drei Knoepfe
+        /// desselben Dialogs trugen „uebernehmen" (Kataloguebernahme, Katalogwerte,
+        /// Stammkopf), und das war die Ursache der Fehlerwartung des Anwenders.
+        /// </summary>
+        [Fact]
+        public void Der_Stammkopf_Knopf_heisst_nicht_wie_die_Uebernahme()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            using (var _ = new Kulturvorrichtung("de-DE"))
+            {
+                IReadOnlyDictionary<string, object> g = new EnergietraegerHuelle(0).Gaben();
+                Assert.Equal("Bezeichnung speichern", (string)g["StammSpeichernText"]);
+                Assert.NotEqual((string)g["UebernehmenKurzText"], (string)g["StammSpeichernText"]);
+            }
+            using (var _ = new Kulturvorrichtung("en-US"))
+            {
+                IReadOnlyDictionary<string, object> g = new EnergietraegerHuelle(0).Gaben();
+                Assert.Equal("Save name", (string)g["StammSpeichernText"]);
+                Assert.NotEqual((string)g["UebernehmenKurzText"], (string)g["StammSpeichernText"]);
+            }
+        }
     }
 }

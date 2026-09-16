@@ -9159,7 +9159,7 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
     <value>Bezeichnung:</value>
   </data>
   <data name="KDLG_ET_STAMM_SPEICHERN" xml:space="preserve">
-    <value>Übernehmen</value>
+    <value>Bezeichnung speichern</value>
   </data>
   <data name="KDLG_ET_BTN_ENTFERNEN" xml:space="preserve">
     <value>Entfernen</value>
@@ -9178,6 +9178,9 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   </data>
   <data name="KDLG_ET_ZUORDNUNG_FEHLGESCHLAGEN" xml:space="preserve">
     <value>Der Träger ließ sich dem Projekt nicht zuordnen.</value>
+  </data>
+  <data name="KDLG_ET_STROM_ZUGEORDNET" xml:space="preserve">
+    <value>Das Projekt führt elektrische Anlagen; der Stromträger „{0}“ wurde zugeordnet.</value>
   </data>
   <data name="ETW_GRP_TITEL" xml:space="preserve">
     <value>Energieträger</value>
