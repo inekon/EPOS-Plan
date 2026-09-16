@@ -6,6 +6,13 @@ namespace WindowsFormsApplication1
 {
     class KenndatenCtrl : KenndatenModel
     {
+        /// <summary>
+        /// Die WAERME-Kennlinien der PROJEKTKOPIEN (<c>ID_WP</c> = <c>Tab_WP.ID</c>) —
+        /// das Gegenstueck zu <see cref="WPStammCtrl.CURVE"/>, aus dem der Rechenweg
+        /// liest (<c>SimulationWaermepumpe.ModuleAufbauen</c>).
+        /// </summary>
+        public const string TABLE_PROJEKT = "Tab_Kenndaten";
+
         // --- Kompatibilitäts-Layer ---
         private List<KenndatenModel> _internalList = new List<KenndatenModel>();
 
@@ -141,10 +148,31 @@ namespace WindowsFormsApplication1
         /// IN den Editor, jene schreibt ihn zurück.</para>
         /// </summary>
         public static IReadOnlyList<KenndatenModel> LiesStamm(int idWp)
+            => Lies(WPStammCtrl.CURVE, idWp);
+
+        /// <summary>
+        /// Dieselbe Zeilenliste aus der PROJEKTKOPIE (<c>Tab_Kenndaten</c>) —
+        /// Anwenderentscheid 16.09.2026: Der Kennlinieneditor des ANLAGENDIALOGS
+        /// bearbeitet die Kennlinien DIESES Projekts, nicht die des Katalogs.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum nicht <see cref="ReihenProjekt"/>.</b> Jene Methode liefert die
+        /// Reihen fuer den RENDERER (Vorlaufstufen, Punkte je Reihe); der Editor braucht
+        /// die ZEILEN mit ihrer <c>ID</c> — ohne sie kann
+        /// <see cref="AbgleichenProjekt"/> geaenderte nicht von neuen Zeilen
+        /// unterscheiden. Dieselbe Form wie <see cref="LiesStamm"/>, nur aus der anderen
+        /// Tabelle.</para>
+        /// </remarks>
+        /// <param name="idWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
+        public static IReadOnlyList<KenndatenModel> LiesProjekt(int idWp)
+            => Lies(TABLE_PROJEKT, idWp);
+
+        /// <summary>Die Stuetzstellen EINER Kennlinientabelle als Zeilenliste.</summary>
+        private static IReadOnlyList<KenndatenModel> Lies(string tabelle, int idWp)
         {
             var liste = new List<KenndatenModel>();
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm FROM " + WPStammCtrl.CURVE +
+                "SELECT ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm FROM " + tabelle +
                 " WHERE ID_WP = ?",
                 new DbParam("@id", idWp));
             if (dt == null) return liste;
@@ -237,6 +265,37 @@ namespace WindowsFormsApplication1
         /// <param name="sollZeilen">Der Stand, den der Dialog zurückgibt.</param>
         /// <returns><c>false</c>, wenn nichts geschrieben wurde (die Transaktion ist dann zurückgerollt).</returns>
         public static bool Abgleichen(int idWp, IReadOnlyList<KenndatenModel> sollZeilen)
+            => AbgleichenIn(WPStammCtrl.CURVE, idWp, sollZeilen);
+
+        /// <summary>
+        /// Derselbe Abgleich auf den PROJEKTKENNLINIEN (<c>Tab_Kenndaten</c>) —
+        /// Anwenderentscheid 16.09.2026.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum es diesen Zwilling braucht.</b> Bis hierher gab es zu den
+        /// Projektkennlinien nur LESENDE Wege (<see cref="ReihenProjekt"/>,
+        /// <c>WPCtrl.KennlinienAusKatalog</c>, das Nachholen FEHLENDER Stuetzstellen).
+        /// Der Kennlinieneditor des Anlagendialogs schrieb deshalb in den KATALOG,
+        /// waehrend die Diagramme daneben die Projektkennlinien zeigten — was der Anwender
+        /// aenderte, sah er nicht, und was er sah, aenderte er nicht.</para>
+        /// <para><b>Gleiche Signatur, gleiche Pruefungen, gleiche Id-Vergabe</b> wie
+        /// <see cref="Abgleichen"/>; beide rufen denselben Rumpf. Der KUEHLZWEIG
+        /// (<c>Tab_Kenndaten_Kuehlung</c>) laeuft hier so wenig mit wie im Katalog-Abgleich
+        /// — der Editor bearbeitet die Waermekennlinien.</para>
+        /// </remarks>
+        /// <param name="idWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
+        /// <param name="sollZeilen">Der Stand, den der Editor zurueckgibt.</param>
+        public static bool AbgleichenProjekt(int idWp, IReadOnlyList<KenndatenModel> sollZeilen)
+            => AbgleichenIn(TABLE_PROJEKT, idWp, sollZeilen);
+
+        /// <summary>
+        /// Der Rumpf beider Abgleiche — EINE Fassung, damit Katalog und Projekt nicht
+        /// auseinanderlaufen. Die zwei Tabellen fuehren dieselben sechs Spalten; die
+        /// Stammtabelle hat zusaetzlich <c>ReadOnly</c>, das hier so wenig geschrieben
+        /// wird wie bisher (der Standardwert 0 gilt).
+        /// </summary>
+        private static bool AbgleichenIn(string tabelle, int idWp,
+                                         IReadOnlyList<KenndatenModel> sollZeilen)
         {
             if (idWp <= 0) return false;
             IReadOnlyList<KenndatenModel> soll = sollZeilen ?? (IReadOnlyList<KenndatenModel>)new List<KenndatenModel>();
@@ -245,7 +304,7 @@ namespace WindowsFormsApplication1
             // das DataSet vor dem Oeffnen des Dialogs las.
             var ist = new Dictionary<int, KenndatenModel>();
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm FROM " + WPStammCtrl.CURVE + " WHERE ID_WP = ?",
+                "SELECT ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm FROM " + tabelle + " WHERE ID_WP = ?",
                 new DbParam("@id", idWp));
             if (dt != null)
                 foreach (DataRow r in dt.Rows)
@@ -273,7 +332,7 @@ namespace WindowsFormsApplication1
                     // (1) Weggefallene Zeilen.
                     foreach (KenndatenModel a in ist.Values)
                         if (!behalten.Contains(a.m_ID))
-                            v.Ausfuehren("DELETE FROM " + WPStammCtrl.CURVE + " WHERE ID = ?",
+                            v.Ausfuehren("DELETE FROM " + tabelle + " WHERE ID = ?",
                                 new DbParam("@id", DbParamTyp.Integer) { Wert = a.m_ID });
 
                     // (2) Id-Vergabe wie im Vorlaeufer: EINMAL Max(ID) ueber die ganze
@@ -281,7 +340,7 @@ namespace WindowsFormsApplication1
                     //     damit die soeben geloeschten Zeilen mitzaehlen.
                     int naechsteId;
                     {
-                        object m = v.Skalar("SELECT Max(ID) FROM " + WPStammCtrl.CURVE);
+                        object m = v.Skalar("SELECT Max(ID) FROM " + tabelle);
                         naechsteId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                     }
 
@@ -293,7 +352,7 @@ namespace WindowsFormsApplication1
                         {
                             // (3) Neue Zeile.
                             v.Ausfuehren(
-                                "INSERT INTO " + WPStammCtrl.CURVE +
+                                "INSERT INTO " + tabelle +
                                 " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)",
                                 new DbParam("@id", DbParamTyp.Integer) { Wert = naechsteId++ },
                                 new DbParam("@wp", DbParamTyp.Integer) { Wert = idWp },
@@ -315,7 +374,7 @@ namespace WindowsFormsApplication1
                             Math.Abs(alt.m_nPTherm - s.m_nPTherm) < 1e-12) continue;
 
                         v.Ausfuehren(
-                            "UPDATE " + WPStammCtrl.CURVE +
+                            "UPDATE " + tabelle +
                             " SET ID_WP = ?, Vorlauf = ?, Temperatur = ?, COP = ?, Ptherm = ? WHERE ID = ?",
                             new DbParam("@wp", DbParamTyp.Integer) { Wert = idWp },
                             new DbParam("@vl", DbParamTyp.Integer) { Wert = s.m_nVorlauf },

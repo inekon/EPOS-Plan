@@ -54953,6 +54953,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Stamm übernehmen… ähnelt.
+        /// </summary>
+        public static string WPA_BTN_IN_STAMM {
+            get {
+                return ResourceManager.GetString("WPA_BTN_IN_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinien aus dem Katalog übernehmen ähnelt.
         /// </summary>
         public static string WPA_BTN_KENNLINIEN_KATALOG {
@@ -55246,6 +55255,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPA_TITEL {
             get {
                 return ResourceManager.GetString("WPA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string WPA_UEB_BTN_OK {
+            get {
+                return ResourceManager.GetString("WPA_UEB_BTN_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennlinien mitübernehmen (ersetzt Wärme- und Kühlkennlinien des Katalogsatzes) ähnelt.
+        /// </summary>
+        public static string WPA_UEB_CHK_KENNLINIEN {
+            get {
+                return ResourceManager.GetString("WPA_UEB_CHK_KENNLINIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt keinen Katalogsatz „{0}“. Er wird neu angelegt. ähnelt.
+        /// </summary>
+        public static string WPA_UEB_TEXT_NEU {
+            get {
+                return ResourceManager.GetString("WPA_UEB_TEXT_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz „{0}“ wird mit den Werten dieser Anlage überschrieben. {1} weitere Projekte führen bereits eine Kopie — sie ändern sich nicht. ähnelt.
+        /// </summary>
+        public static string WPA_UEB_TEXT_UEBERSCHREIBEN {
+            get {
+                return ResourceManager.GetString("WPA_UEB_TEXT_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Stamm übernehmen ähnelt.
+        /// </summary>
+        public static string WPA_UEB_TITEL {
+            get {
+                return ResourceManager.GetString("WPA_UEB_TITEL", resourceCulture);
             }
         }
         
@@ -56182,6 +56236,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WP_BTN_BEENDEN {
             get {
                 return ResourceManager.GetString("WP_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Projektdaten konnten nicht gespeichert werden. ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektgerät gespeichert ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Gerät steht nicht in diesem Projekt. ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_KEIN_SATZ {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_KEIN_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage ist noch nicht gespeichert; die Projektdaten entstehen mit dem ersten Speichern. ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz „{0}“ neu angelegt. ähnelt.
+        /// </summary>
+        public static string WP_STAMM_UEBERNAHME_MSG_ANGELEGT {
+            get {
+                return ResourceManager.GetString("WP_STAMM_UEBERNAHME_MSG_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übernahme in den Katalog ist fehlgeschlagen. ähnelt.
+        /// </summary>
+        public static string WP_STAMM_UEBERNAHME_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("WP_STAMM_UEBERNAHME_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssätze werden nicht überschrieben. ähnelt.
+        /// </summary>
+        public static string WP_STAMM_UEBERNAHME_MSG_READONLY {
+            get {
+                return ResourceManager.GetString("WP_STAMM_UEBERNAHME_MSG_READONLY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz „{0}“ überschrieben. ähnelt.
+        /// </summary>
+        public static string WP_STAMM_UEBERNAHME_MSG_UEBERSCHRIEBEN {
+            get {
+                return ResourceManager.GetString("WP_STAMM_UEBERNAHME_MSG_UEBERSCHRIEBEN", resourceCulture);
             }
         }
         

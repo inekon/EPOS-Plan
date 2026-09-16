@@ -753,6 +753,325 @@ namespace WindowsFormsApplication1
 
         #endregion
 
+        #region --- PROJEKT -> KATALOG UEBERNAHME ---
+
+        /// <summary>
+        /// Die FACHSPALTEN, die eine Uebernahme aus dem Projekt in den Katalog traegt —
+        /// alles ausser dem Bezeichner (dem Schluessel) und <c>ReadOnly</c> (dem
+        /// Kennzeichen der Auslieferung). <c>Tab_WP</c> fuehrt dieselben Spalten unter
+        /// denselben Namen; deshalb reicht EINE Liste fuer Lesen und Schreiben.
+        /// </summary>
+        private const string UEBERNAHME_SPALTEN =
+            "Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung, maxPtherm, " +
+            "Heizung, Regelung, Modulkosten, Laenge, Breite, Hoehe, Gewicht, Raum, " +
+            "Kuehlleistung, Bauart";
+
+        /// <summary>
+        /// Was eine Uebernahme VORFINDEN wird — damit die Oberflaeche ihre Rueckfrage
+        /// konkret stellen kann, statt allgemein zu warnen.
+        /// </summary>
+        /// <param name="Bezeichner">Der Name des Projektgeraets; „" = es gibt den Satz nicht.</param>
+        /// <param name="KatalogsatzVorhanden">Steht im Katalog bereits ein Satz gleichen Bezeichners?</param>
+        /// <param name="ReadOnly">Ist dieser Katalogsatz ein Auslieferungssatz? Dann wird er nicht ueberschrieben.</param>
+        /// <param name="AnzahlProjekteMitKopie">
+        /// Wie viele ANDERE Projekte fuehren eine eigene Kopie desselben Geraets? Sie
+        /// aendern sich durch die Uebernahme NICHT — der Satz, den sie tragen, ist ihrer.
+        /// </param>
+        public sealed record UebernahmeVorschauSatz(string Bezeichner,
+                                                    bool KatalogsatzVorhanden,
+                                                    bool ReadOnly,
+                                                    int AnzahlProjekteMitKopie);
+
+        /// <summary>
+        /// Was die Uebernahme eines Projektgeraets in den Katalog antreffen wird
+        /// (Anwenderentscheid 16.09.2026) — gelesen, nicht geschrieben.
+        /// </summary>
+        /// <remarks>
+        /// Die Oberflaeche formuliert daraus ihre Warnung („Katalogsatz ‚X' wird
+        /// ueberschrieben; N weitere Projekte fuehren bereits eine Kopie — sie aendern
+        /// sich nicht") und fragt ERST DANN. Die Zahl zaehlt ANDERE Projekte, das eigene
+        /// also nicht.
+        /// </remarks>
+        /// <param name="idWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
+        /// <param name="idProjekt">Das Projekt (<c>Tab_WP.ID_Projekt</c>).</param>
+        public static UebernahmeVorschauSatz UebernahmeVorschau(int idWp, int idProjekt)
+        {
+            var leer = new UebernahmeVorschauSatz("", false, false, 0);
+            if (idWp <= 0 || idProjekt <= 0) return leer;
+
+            try
+            {
+                object b = DataRepository.ExecuteScalar(
+                    "SELECT Bezeichner FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
+                    new DbParam("@id", idWp), new DbParam("@proj", idProjekt));
+                if (b == null || b == DBNull.Value) return leer;
+
+                string bezeichner = b.ToString();
+
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, ReadOnly FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
+                    new DbParam("@bez", bezeichner));
+                bool vorhanden = dt != null && dt.Rows.Count > 0;
+                bool geschuetzt = vorhanden && dt.Rows[0]["ReadOnly"] != DBNull.Value &&
+                                  Convert.ToBoolean(dt.Rows[0]["ReadOnly"]);
+
+                object n = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(DISTINCT ID_Projekt) FROM Tab_WP " +
+                    "WHERE Bezeichner = ? AND ID_Projekt <> ?",
+                    new DbParam("@bez", bezeichner), new DbParam("@proj", idProjekt));
+                int andere = (n == null || n == DBNull.Value) ? 0 : Convert.ToInt32(n);
+
+                return new UebernahmeVorschauSatz(bezeichner, vorhanden, geschuetzt, andere);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Uebernahmevorschau: " + ex.Message);
+                return leer;
+            }
+        }
+
+        /// <summary>
+        /// Traegt den Stand einer PROJEKTKOPIE in den KATALOG — der Knopf „In Stamm
+        /// uebernehmen" des Anlagendialogs (Anwenderentscheid 16.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Die Klammer ist der Bezeichner.</b> <c>Tab_WP</c> fuehrt kein
+        /// <c>ID_Stamm</c>; Projektkopie und Katalogsatz kennen einander nur ueber den
+        /// Namen. Also gilt: gleicher Bezeichner vorhanden → UPDATE, keiner → INSERT als
+        /// neuer Katalogsatz. Ein umbenannter Katalogsatz ist damit ein NEUER — die
+        /// Meldung sagt, was geschah.</para>
+        ///
+        /// <para><b>Auslieferungssaetze bleiben stehen.</b> Ein <c>ReadOnly</c>-Satz
+        /// gehoert zur Auslieferung; eine Ueberschreibung ginge beim naechsten
+        /// Datenbank-Update ohnehin verloren. Anders als der VDI-Import (Entscheidung 9.2
+        /// des Dublettenkonzepts) darf dieser Weg sie deshalb nicht anfassen — er lehnt
+        /// benannt ab.</para>
+        ///
+        /// <para><b>Andere Projekte aendern sich nicht.</b> Geschrieben wird allein der
+        /// Katalogsatz. Die Kopien anderer Projekte bleiben, wie sie sind; ihre Zahl
+        /// nennt <see cref="UebernahmeVorschau"/> vor der Rueckfrage.</para>
+        ///
+        /// <para><b><paramref name="mitKennlinien"/> ERSETZT die Katalogstuetzstellen</b>
+        /// — beide Tabellen, Waerme wie Kuehlung, wie
+        /// <see cref="UeberschreibeMitKennlinien"/> es beim Import tut: loeschen,
+        /// neu einfuegen. Der Katalogsatz fuehrt danach genau die Kennlinien der
+        /// Projektkopie, auch wenn sie leer ist.</para>
+        ///
+        /// <para>Alles in EINER Transaktion: Scheitert eine Kennlinienzeile, bleibt auch
+        /// der Kopf, wie er war.</para>
+        /// </remarks>
+        /// <param name="idWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
+        /// <param name="idProjekt">Das Projekt (<c>Tab_WP.ID_Projekt</c>).</param>
+        /// <param name="mitKennlinien">Auch die Stuetzstellen uebernehmen?</param>
+        public static SpeicherErgebnis UebernehmenAusProjekt(int idWp, int idProjekt,
+                                                             bool mitKennlinien)
+        {
+            if (idWp <= 0 || idProjekt <= 0)
+                return new SpeicherErgebnis(false, Text("WP_STAMM_UEBERNAHME_MSG_FEHLER",
+                    "Die Übernahme in den Katalog ist fehlgeschlagen."), "");
+
+            try
+            {
+                DataTable quelle = DataRepository.GetDataTable(
+                    "SELECT Bezeichner, " + UEBERNAHME_SPALTEN +
+                    " FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
+                    new DbParam("@id", idWp), new DbParam("@proj", idProjekt));
+                if (quelle == null || quelle.Rows.Count == 0)
+                    return new SpeicherErgebnis(false, WPCtrl.NichtGefunden(idWp), "");
+
+                DataRow satz = quelle.Rows[0];
+                string bezeichner = satz["Bezeichner"] == DBNull.Value
+                    ? "" : satz["Bezeichner"].ToString();
+
+                // (1) Der Katalogsatz gleichen Bezeichners. Tab_WP_STAMM fuehrt auf
+                //     Bezeichner keinen eindeutigen Schluessel - bei einer Dublette
+                //     wuerde ein Update BEIDE Saetze treffen (Klammer wie
+                //     HeizkesselStammCtrl.AnzeigefelderSchreiben).
+                DataTable katalog = DataRepository.GetDataTable(
+                    "SELECT ID, ReadOnly FROM " + TABLE + " WHERE Bezeichner = ? ORDER BY ID",
+                    new DbParam("@bez", bezeichner));
+                int anzahl = katalog == null ? 0 : katalog.Rows.Count;
+
+                if (anzahl > 1)
+                    return new SpeicherErgebnis(false,
+                        string.Format(MyResource.Resource.ADM_MEHRDEUTIG_TEXT, bezeichner, anzahl),
+                        bezeichner);
+
+                int katalogId = 0;
+                if (anzahl == 1)
+                {
+                    DataRow k = katalog.Rows[0];
+                    katalogId = k["ID"] != DBNull.Value ? Convert.ToInt32(k["ID"]) : 0;
+
+                    bool geschuetzt = k["ReadOnly"] != DBNull.Value && Convert.ToBoolean(k["ReadOnly"]);
+                    if (geschuetzt)
+                        return new SpeicherErgebnis(false,
+                            Text("IMP_KONFLIKT_HINWEIS_READONLY",
+                                 "Auslieferungssatz: Eine Überschreibung geht beim nächsten Datenbank-Update verloren.") +
+                            " " +
+                            Text("WP_STAMM_UEBERNAHME_MSG_READONLY",
+                                 "Auslieferungssätze werden nicht überschrieben."),
+                            bezeichner);
+                }
+
+                // (2) Die Stuetzstellen der Projektkopie - VOR der Transaktion gelesen,
+                //     wie in CopyFromStamm.
+                DataTable pw = null, pk = null;
+                if (mitKennlinien)
+                {
+                    pw = DataRepository.GetDataTable(
+                        "SELECT Vorlauf, Temperatur, COP, Ptherm FROM Tab_Kenndaten " +
+                        "WHERE ID_WP = ? ORDER BY ID", new DbParam("@id", idWp));
+                    pk = DataRepository.GetDataTable(
+                        "SELECT Vorlauf, Temperatur, COP, Pkuehl, [Last] FROM Tab_Kenndaten_Kuehlung " +
+                        "WHERE ID_WP = ? ORDER BY ID", new DbParam("@id", idWp));
+                }
+
+                bool neu = anzahl == 0;
+
+                using (DbVorgang v = DataRepository.Vorgang())
+                {
+                    try
+                    {
+                        if (neu)
+                        {
+                            var p = new List<DbParam>();
+                            p.Add(new DbParam("@bez", (object)bezeichner ?? DBNull.Value));
+                            p.AddRange(Uebernahmewerte(satz));
+                            p.Add(new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
+
+                            katalogId = v.EinfuegenUndId(
+                                "INSERT INTO " + TABLE + " (Bezeichner, " + UEBERNAHME_SPALTEN +
+                                ", ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                p.ToArray());
+                            if (katalogId <= 0) throw new InvalidOperationException(
+                                "Der Katalogsatz konnte nicht angelegt werden.");
+                        }
+                        else
+                        {
+                            var p = new List<DbParam>(Uebernahmewerte(satz));
+                            p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = katalogId });
+
+                            v.Ausfuehren(
+                                "UPDATE " + TABLE + " SET Firma = ?, Beschreibung = ?, Typ = ?, " +
+                                "Baujahr = ?, Aufstellung = ?, Nennleistung = ?, maxPtherm = ?, " +
+                                "Heizung = ?, Regelung = ?, Modulkosten = ?, Laenge = ?, Breite = ?, " +
+                                "Hoehe = ?, Gewicht = ?, Raum = ?, Kuehlleistung = ?, Bauart = ? " +
+                                "WHERE ID = ?",
+                                p.ToArray());
+                        }
+
+                        if (mitKennlinien)
+                        {
+                            v.Ausfuehren("DELETE FROM " + CURVE + " WHERE ID_WP = ?",
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = katalogId });
+                            v.Ausfuehren("DELETE FROM " + CURVE_K + " WHERE ID_WP = ?",
+                                new DbParam("@id", DbParamTyp.Integer) { Wert = katalogId });
+
+                            if (pw != null && pw.Rows.Count > 0)
+                            {
+                                int id;
+                                {
+                                    object m = v.Skalar("SELECT Max(ID) FROM " + CURVE);
+                                    id = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                                }
+                                foreach (DataRow r in pw.Rows)
+                                    v.Ausfuehren(
+                                        "INSERT INTO " + CURVE +
+                                        " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm, ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                        new DbParam("@id", DbParamTyp.Integer) { Wert = id++ },
+                                        new DbParam("@wp", DbParamTyp.Integer) { Wert = katalogId },
+                                        new DbParam("@vor", Feldwert(r, "Vorlauf")),
+                                        new DbParam("@tem", Feldwert(r, "Temperatur")),
+                                        new DbParam("@cop", Feldwert(r, "COP")),
+                                        new DbParam("@pth", Feldwert(r, "Ptherm")),
+                                        new DbParam("@ro", DbParamTyp.Boolean) { Wert = false });
+                            }
+
+                            if (pk != null && pk.Rows.Count > 0)
+                            {
+                                int id;
+                                {
+                                    object m = v.Skalar("SELECT Max(ID) FROM " + CURVE_K);
+                                    id = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
+                                }
+                                foreach (DataRow r in pk.Rows)
+                                    v.Ausfuehren(
+                                        "INSERT INTO " + CURVE_K +
+                                        " (ID, ID_WP, Vorlauf, Temperatur, COP, Pkuehl, [Last]) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                        new DbParam("@id", DbParamTyp.Integer) { Wert = id++ },
+                                        new DbParam("@wp", DbParamTyp.Integer) { Wert = katalogId },
+                                        new DbParam("@vor", Feldwert(r, "Vorlauf")),
+                                        new DbParam("@tem", Feldwert(r, "Temperatur")),
+                                        new DbParam("@cop", Feldwert(r, "COP")),
+                                        new DbParam("@pk", Feldwert(r, "Pkuehl")),
+                                        new DbParam("@last", Feldwert(r, "Last")));
+                            }
+                        }
+
+                        v.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        try { v.Rollback(); } catch { }
+                        Console.WriteLine("Fehler bei der Übernahme in den Katalog: " + ex.Message);
+                        return new SpeicherErgebnis(false, Text("WP_STAMM_UEBERNAHME_MSG_FEHLER",
+                            "Die Übernahme in den Katalog ist fehlgeschlagen."), bezeichner);
+                    }
+                }
+
+                return new SpeicherErgebnis(true, string.Format(
+                    neu
+                        ? Text("WP_STAMM_UEBERNAHME_MSG_ANGELEGT", "Katalogsatz „{0}“ neu angelegt.")
+                        : Text("WP_STAMM_UEBERNAHME_MSG_UEBERSCHRIEBEN", "Katalogsatz „{0}“ überschrieben."),
+                    bezeichner), bezeichner);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Übernahme in den Katalog: " + ex.Message);
+                return new SpeicherErgebnis(false, Text("WP_STAMM_UEBERNAHME_MSG_FEHLER",
+                    "Die Übernahme in den Katalog ist fehlgeschlagen."), "");
+            }
+        }
+
+        /// <summary>
+        /// Die Werte der siebzehn Fachspalten in der Reihenfolge von
+        /// <see cref="UEBERNAHME_SPALTEN"/> — EINE Stelle fuer INSERT und UPDATE, damit
+        /// Spaltenliste und Werte nicht auseinanderlaufen koennen.
+        /// </summary>
+        private static DbParam[] Uebernahmewerte(DataRow satz)
+        {
+            return new[]
+            {
+                new DbParam("@fir", Feldwert(satz, "Firma")),
+                new DbParam("@bes", Feldwert(satz, "Beschreibung")),
+                new DbParam("@typ", Feldwert(satz, "Typ")),
+                new DbParam("@bau", Feldwert(satz, "Baujahr")),
+                new DbParam("@auf", Feldwert(satz, "Aufstellung")),
+                new DbParam("@nen", Feldwert(satz, "Nennleistung")),
+                new DbParam("@max", Feldwert(satz, "maxPtherm")),
+                new DbParam("@hei", Feldwert(satz, "Heizung")),
+                new DbParam("@reg", Feldwert(satz, "Regelung")),
+                new DbParam("@mod", Feldwert(satz, "Modulkosten")),
+                new DbParam("@lae", Feldwert(satz, "Laenge")),
+                new DbParam("@bre", Feldwert(satz, "Breite")),
+                new DbParam("@hoe", Feldwert(satz, "Hoehe")),
+                new DbParam("@gew", Feldwert(satz, "Gewicht")),
+                new DbParam("@rau", Feldwert(satz, "Raum")),
+                new DbParam("@kue", Feldwert(satz, "Kuehlleistung")),
+                new DbParam("@bart", Feldwert(satz, "Bauart"))
+            };
+        }
+
+        /// <summary>Der rohe Spaltenwert; fehlende Spalte und <c>null</c> ergeben <c>DBNull</c>.</summary>
+        private static object Feldwert(DataRow satz, string spalte)
+        {
+            object v = satz.Table.Columns.Contains(spalte) ? satz[spalte] : DBNull.Value;
+            return v ?? DBNull.Value;
+        }
+
+        #endregion
+
         #region --- MAPPING ---
 
         private void MapDataTableToItems(DataTable dt)

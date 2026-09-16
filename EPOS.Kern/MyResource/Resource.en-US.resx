@@ -19325,4 +19325,46 @@ Do you want to allow this?</value>
   <data name="SIMKONF_HRL_HEIZSTAB_ANLAGE" xml:space="preserve">
     <value>“Activate electric afterheating (if available)” above belongs to this unit instead: it moves the unit into the electric world and decides its energy carrier, not the calculation path.</value>
   </data>
+  <data name="WP_PROJ_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Project unit saved</value>
+  </data>
+  <data name="WP_PROJ_MSG_FEHLER" xml:space="preserve">
+    <value>The project data could not be saved.</value>
+  </data>
+  <data name="WP_PROJ_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The unit has not been saved yet; the project data is created with the first save.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KEIN_SATZ" xml:space="preserve">
+    <value>The unit is not part of this project.</value>
+  </data>
+  <data name="WP_STAMM_UEBERNAHME_MSG_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>Catalogue record “{0}” overwritten.</value>
+  </data>
+  <data name="WP_STAMM_UEBERNAHME_MSG_ANGELEGT" xml:space="preserve">
+    <value>Catalogue record “{0}” created.</value>
+  </data>
+  <data name="WP_STAMM_UEBERNAHME_MSG_READONLY" xml:space="preserve">
+    <value>Factory data sets are not overwritten.</value>
+  </data>
+  <data name="WP_STAMM_UEBERNAHME_MSG_FEHLER" xml:space="preserve">
+    <value>The transfer to the catalogue failed.</value>
+  </data>
+  <data name="WPA_BTN_IN_STAMM" xml:space="preserve">
+    <value>Transfer to catalogue…</value>
+  </data>
+  <data name="WPA_UEB_TITEL" xml:space="preserve">
+    <value>Transfer to catalogue</value>
+  </data>
+  <data name="WPA_UEB_TEXT_UEBERSCHREIBEN" xml:space="preserve">
+    <value>The catalogue record “{0}” will be overwritten with the values of this unit. {1} further projects already hold a copy — they do not change.</value>
+  </data>
+  <data name="WPA_UEB_TEXT_NEU" xml:space="preserve">
+    <value>There is no catalogue record “{0}”. It will be created.</value>
+  </data>
+  <data name="WPA_UEB_CHK_KENNLINIEN" xml:space="preserve">
+    <value>Transfer characteristic curves as well (replaces heating and cooling curves of the catalogue record)</value>
+  </data>
+  <data name="WPA_UEB_BTN_OK" xml:space="preserve">
+    <value>Transfer</value>
+  </data>
 </root>

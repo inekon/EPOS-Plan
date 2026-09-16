@@ -32,46 +32,6 @@ namespace WindowsFormsApplication1
         {
         }
 
-        public bool Update()
-        {
-            try
-            {
-                string sql = @"UPDATE Tab_WP 
-                               SET Firma = ?, 
-                                   Beschreibung = ?, 
-                                   Typ = ?, 
-                                   Baujahr = ?, 
-                                   Aufstellung = ?, 
-                                   Nennleistung = ?, 
-                                   maxPTherm = ?, 
-                                   Heizung = ?, 
-                                   Regelung = ?, 
-                                   Modulkosten = ? 
-                               WHERE Bezeichner = ?";
-
-                DbParam[] ps = {
-                    new DbParam("@fir", Firma ?? (object)DBNull.Value),
-                    new DbParam("@bes", Beschreibung ?? (object)DBNull.Value),
-                    new DbParam("@typ", Typ ?? (object)DBNull.Value),
-                    new DbParam("@bau", Baujahr),
-                    new DbParam("@auf", Aufstellung ?? (object)DBNull.Value),
-                    new DbParam("@nen", Nennleistung),
-                    new DbParam("@max", maxPTherm),
-                    new DbParam("@hei", Heizung),
-                    new DbParam("@reg", Regelung ?? (object)DBNull.Value),
-                    new DbParam("@mod", Modulkosten),
-                    new DbParam("@nam", WPName ?? (object)DBNull.Value)
-                };
-
-                return DataRepository.ExecuteSQL(sql, ps);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Allgemeiner Fehler bei Update: " + ex.Message);
-                return false;
-            }
-        }
-
         public bool Delete()
         {
             try
@@ -194,6 +154,265 @@ namespace WindowsFormsApplication1
                 _internalList.Add(this);
             }
         }
+
+        #region --- PROJEKTGERAET SCHREIBEN (Tab_WP) ---
+
+        /// <summary>
+        /// Was ein Schreibversuch am PROJEKTGERAET ergeben hat — derselbe Zuschnitt wie
+        /// <see cref="WPStammCtrl.SpeicherErgebnis"/>.
+        /// </summary>
+        /// <param name="Ok">Wurde geschrieben?</param>
+        /// <param name="Meldung">Der Grund im Klartext, bereits lokalisiert.</param>
+        /// <param name="Name">Der Bezeichner des Geraets — er aendert sich hier nie.</param>
+        public sealed record SpeicherErgebnis(bool Ok, string Meldung, string Name);
+
+        /// <summary>
+        /// Die STAMMFELDER, die der Anlagendialog am Projektgeraet bearbeitet
+        /// (Anwenderentscheid 16.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Der Bezeichner steht nicht darin.</b> Er ist im Anlagendialog
+        /// unveraenderlich und zugleich die einzige Klammer zwischen Projektkopie und
+        /// Katalogsatz (<c>Tab_WP</c> fuehrt kein <c>ID_Stamm</c>) — wer ihn aendern
+        /// koennte, zerrisse sie.</para>
+        /// <para><b><c>null</c> heisst „unveraendert lassen"</b>, wie bei
+        /// <c>HeizkesselStammCtrl.AnzeigefelderHeizkessel</c>: Der Schreibweg liest den
+        /// Satz, legt die mitgegebenen Felder darueber und schreibt zurueck; ein
+        /// ausgelassenes Feld wuerde sonst als 0 oder leer ueber einen gepflegten Wert
+        /// laufen.</para>
+        /// </remarks>
+        /// <param name="Firma">Hersteller.</param>
+        /// <param name="Beschreibung">Beschreibung.</param>
+        /// <param name="Typ">Typ (Waermequelle).</param>
+        /// <param name="Regelung">Regelung / Leistungsstufen.</param>
+        /// <param name="Aufstellung">Aufstellungsart.</param>
+        /// <param name="Baujahr">Baujahr.</param>
+        /// <param name="Nennleistung">Nennleistung [kW].</param>
+        /// <param name="Heizung">Leistung des Heizstabs [kW] (Spalte <c>Tab_WP.Heizung</c>).</param>
+        public sealed record ProjektgeraetFelder(string Firma = null,
+                                                 string Beschreibung = null,
+                                                 string Typ = null,
+                                                 string Regelung = null,
+                                                 string Aufstellung = null,
+                                                 int? Baujahr = null,
+                                                 int? Nennleistung = null,
+                                                 int? Heizung = null);
+
+        /// <summary>Das kleinste zulaessige Baujahr.</summary>
+        public const int BAUJAHR_KLEINSTES = 1900;
+
+        /// <summary>
+        /// Das groesste zulaessige Baujahr: das naechste Kalenderjahr — ein Geraet darf
+        /// bestellt und mit dem kommenden Baujahr geplant sein.
+        /// </summary>
+        /// <remarks>
+        /// Der Stammdialog bietet eine geschlossene Klappliste der letzten zehn Jahre
+        /// an, laesst einen gespeicherten Wert ausserhalb der Liste aber stehen
+        /// (<c>WaermepumpeStammFelder.Baujahreintraege</c>). Eine Liste ist keine
+        /// Wertpruefung; der Kern zieht deshalb den weiten Rahmen, der einen Zahlendreher
+        /// („20025") faengt, ohne einen Altbestand abzulehnen.
+        /// </remarks>
+        public static int BaujahrGroesstes => DateTime.Now.Year + 1;
+
+        /// <summary>
+        /// Schreibt die STAMMFELDER in die PROJEKTKOPIE eines Geraets — der Speicherweg
+        /// des Waermepumpen-Anlagendialogs (Anwenderentscheid 16.09.2026).
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Warum nicht in den Katalog.</b> Die Felder Hersteller, Beschreibung,
+        /// Typ, Regelung, Aufstellung, Baujahr, Nennleistung und Heizstableistung standen
+        /// im Anlagendialog bisher fuer den KATALOGSATZ. Wer sie dort aenderte, aenderte
+        /// sie fuer jedes andere Projekt mit. Sie gehoeren zur Anlage dieses Projekts —
+        /// also in <c>Tab_WP</c>, und der Rechenweg liest genau diese Zeile
+        /// (<c>SimulationWaermepumpe.ModuleAufbauen</c>). In den Katalog kommt der Stand
+        /// nur auf ausdruecklichen Zuruf ueber
+        /// <see cref="WPStammCtrl.UebernehmenAusProjekt"/>.</para>
+        ///
+        /// <para><b>Adressiert wird ueber ID UND ID_Projekt, nie ueber den
+        /// Bezeichner.</b> <c>Tab_WP.Bezeichner</c> ist NICHT eindeutig: Dieselbe
+        /// Waermepumpe steht in der Testdatenbank in bis zu vier Projekten unter
+        /// demselben Namen. Genau daran starb die Vorgaengermethode <c>WPCtrl.Update()</c>
+        /// — sie filterte <c>WHERE Bezeichner = ?</c> OHNE Projekt und haette beim ersten
+        /// Aufruf die gleichnamigen Geraete ALLER Projekte ueberschrieben. Sie hatte im
+        /// ganzen Bestand keinen Aufrufer und ist mit diesem Auftrag entfallen; der
+        /// Projektfilter hier ist ihr Ersatz und zugleich die Lehre daraus.</para>
+        ///
+        /// <para><b>Read-modify-write.</b> Was der Aufrufer nicht mitgibt
+        /// (<c>null</c>), wird aus dem gelesenen Satz zurueckgeschrieben — auch
+        /// <c>NULL</c> bleibt <c>NULL</c>.</para>
+        /// </remarks>
+        /// <param name="idWp">Die Projektkopie (<c>Tab_WP.ID</c>).</param>
+        /// <param name="idProjekt">Das Projekt (<c>Tab_WP.ID_Projekt</c>).</param>
+        /// <param name="felder">Die zu schreibenden Felder; <c>null</c> = unveraendert.</param>
+        public static SpeicherErgebnis ProjektgeraetSchreiben(int idWp, int idProjekt,
+                                                              ProjektgeraetFelder felder)
+        {
+            if (felder == null || idWp <= 0 || idProjekt <= 0)
+                return new SpeicherErgebnis(false, Text("WP_PROJ_MSG_FEHLER",
+                    "Die Projektdaten konnten nicht gespeichert werden."), "");
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID, Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, " +
+                    "Nennleistung, Heizung, Regelung FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
+                    new DbParam("@id", idWp), new DbParam("@proj", idProjekt));
+
+                if (dt == null || dt.Rows.Count == 0)
+                    return new SpeicherErgebnis(false, NichtGefunden(idWp), "");
+
+                DataRow satz = dt.Rows[0];
+                string bezeichner = Spaltentext(satz, "Bezeichner");
+
+                string grund = FelderPruefen(felder);
+                if (!string.IsNullOrEmpty(grund))
+                    return new SpeicherErgebnis(false, grund, bezeichner);
+
+                bool ok = DataRepository.ExecuteSQL(
+                    "UPDATE Tab_WP SET Firma = ?, Beschreibung = ?, Typ = ?, Regelung = ?, " +
+                    "Aufstellung = ?, Baujahr = ?, Nennleistung = ?, Heizung = ? " +
+                    "WHERE ID = ? AND ID_Projekt = ?",
+                    new DbParam("@fir", Uebernommen(felder.Firma, satz, "Firma")),
+                    new DbParam("@bes", Uebernommen(felder.Beschreibung, satz, "Beschreibung")),
+                    new DbParam("@typ", Uebernommen(felder.Typ, satz, "Typ")),
+                    new DbParam("@reg", Uebernommen(felder.Regelung, satz, "Regelung")),
+                    new DbParam("@auf", Uebernommen(felder.Aufstellung, satz, "Aufstellung")),
+                    new DbParam("@bau", Uebernommen(felder.Baujahr, satz, "Baujahr")),
+                    new DbParam("@nen", Uebernommen(felder.Nennleistung, satz, "Nennleistung")),
+                    new DbParam("@hei", Uebernommen(felder.Heizung, satz, "Heizung")),
+                    new DbParam("@id", idWp),
+                    new DbParam("@proj", idProjekt));
+
+                return ok
+                    ? new SpeicherErgebnis(true, Text("WP_PROJ_MSG_GESPEICHERT",
+                        "Projektgerät gespeichert"), bezeichner)
+                    : new SpeicherErgebnis(false, Text("WP_PROJ_MSG_FEHLER",
+                        "Die Projektdaten konnten nicht gespeichert werden."), bezeichner);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler beim Schreiben des Projektgeraets: " + ex.Message);
+                return new SpeicherErgebnis(false, Text("WP_PROJ_MSG_FEHLER",
+                    "Die Projektdaten konnten nicht gespeichert werden."), "");
+            }
+        }
+
+        /// <summary>
+        /// Fuehrt das Projekt zu dieser Geraete-Id eine eigene KOPIE?
+        /// (<c>Tab_WP.ID = ? AND ID_Projekt = ?</c>)
+        /// </summary>
+        /// <remarks>
+        /// Die Frage entscheidet in der Oberflaeche ueber die WEICHE SPERRE zweier Knoepfe
+        /// des Anlagendialogs: Vor dem ersten Speichern traegt <c>ID_WP</c> die KATALOG-Id
+        /// — es gibt dann weder Projektkennlinien zu bearbeiten noch eine Projektzeile in
+        /// den Katalog zu uebernehmen. Der Dialog fragt lieber vorher, als hinterher eine
+        /// benannte Ablehnung zu zeigen.
+        /// </remarks>
+        public static bool ProjektgeraetVorhanden(int idWp, int idProjekt)
+        {
+            if (idWp <= 0 || idProjekt <= 0) return false;
+
+            try
+            {
+                object v = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_WP WHERE ID = ? AND ID_Projekt = ?",
+                    new DbParam("@id", idWp), new DbParam("@proj", idProjekt));
+                return v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fehler bei der Suche nach dem Projektgeraet: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Die benannte Ablehnung, wenn es die Projektkopie nicht gibt — mit dem
+        /// haeufigsten Grund zuerst.
+        /// </summary>
+        /// <remarks>
+        /// Die Anlagenzeile fuehrt in <c>ID_WP</c> bis zum ersten Speichern die
+        /// KATALOG-Id (<c>Tab_WP_STAMM.ID</c>, siehe
+        /// <see cref="WaermepumpeGeraeteCtrl"/>); erst der Speicherweg der Verwaltung
+        /// legt die Kopie ueber <see cref="CopyFromStamm(int,int)"/> an. Wer in diesem
+        /// Zustand speichert, bekommt den Grund genannt statt „Datensatz nicht
+        /// gefunden".
+        /// </remarks>
+        internal static string NichtGefunden(int idWp)
+        {
+            object v = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM " + WPStammCtrl.TABLE + " WHERE ID = ?",
+                new DbParam("@id", idWp));
+            bool istKatalogId = v != null && v != DBNull.Value && Convert.ToInt32(v) > 0;
+
+            return istKatalogId
+                ? Text("WP_PROJ_MSG_NICHT_GESPEICHERT",
+                       "Die Anlage ist noch nicht gespeichert; die Projektdaten entstehen mit dem ersten Speichern.")
+                : Text("WP_PROJ_MSG_KEIN_SATZ",
+                       "Das Gerät steht nicht in diesem Projekt.");
+        }
+
+        /// <summary>
+        /// Prueft die Zahlenfelder; der Rueckgabewert ist der Ablehnungsgrund im
+        /// Klartext oder <c>null</c>. Erst pruefen, dann schreiben — ein halb
+        /// uebernommener Satz entsteht so gar nicht.
+        /// </summary>
+        private static string FelderPruefen(ProjektgeraetFelder f)
+        {
+            if (f.Nennleistung.HasValue && f.Nennleistung.Value < 0)
+                return Negativ(Text("WPS_LBL_NENNLEISTUNG", "Nennleistung"));
+
+            if (f.Heizung.HasValue && f.Heizung.Value < 0)
+                return Negativ(Text("WPS_LBL_HEIZSTAB", "Heizstab"));
+
+            if (f.Baujahr.HasValue &&
+                (f.Baujahr.Value < BAUJAHR_KLEINSTES || f.Baujahr.Value > BaujahrGroesstes))
+                return string.Format(
+                    Text("KBROW_MSG_WERT_BEREICH", "„{0}“ muss zwischen {1} und {2} liegen."),
+                    Text("WPS_LBL_BAUJAHR", "Baujahr"),
+                    BAUJAHR_KLEINSTES.ToString(),
+                    BaujahrGroesstes.ToString());
+
+            return null;
+        }
+
+        /// <summary>Die Ablehnung eines negativen Wertes, im Wortlaut des Aufklappers.</summary>
+        private static string Negativ(string feldname)
+            => string.Format(Text("KBROW_MSG_WERT_NEGATIV", "„{0}“ darf nicht negativ sein."),
+                             feldname);
+
+        /// <summary>Der neue Text, sonst der gelesene Wert (<c>NULL</c> bleibt <c>NULL</c>).</summary>
+        private static object Uebernommen(string neu, DataRow satz, string spalte)
+            => neu ?? Spaltenwert(satz, spalte);
+
+        /// <summary>Die neue Zahl, sonst der gelesene Wert (<c>NULL</c> bleibt <c>NULL</c>).</summary>
+        private static object Uebernommen(int? neu, DataRow satz, string spalte)
+            => neu.HasValue ? (object)neu.Value : Spaltenwert(satz, spalte);
+
+        /// <summary>Der rohe Spaltenwert; fehlende Spalte und <c>null</c> ergeben <c>DBNull</c>.</summary>
+        private static object Spaltenwert(DataRow satz, string spalte)
+        {
+            object v = satz.Table.Columns.Contains(spalte) ? satz[spalte] : DBNull.Value;
+            return v ?? DBNull.Value;
+        }
+
+        /// <summary>Der Spaltenwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
+        private static string Spaltentext(DataRow satz, string spalte)
+        {
+            object v = Spaltenwert(satz, spalte);
+            return v == DBNull.Value ? "" : v.ToString();
+        }
+
+        /// <summary>Ressourcentext mit deutschem Rueckfall (Drei-Schichten-Regel).</summary>
+        private static string Text(string schluessel, string rueckfall)
+        {
+            string t = null;
+            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
+            catch { }
+            return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        #endregion
 
         #region --- STAMM -> PROJEKT KOPIE ---
 

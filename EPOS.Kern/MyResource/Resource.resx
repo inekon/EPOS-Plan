@@ -19332,4 +19332,46 @@ Möchten Sie das zulassen?</value>
   <data name="SIMKONF_HRL_HEIZSTAB_ANLAGE" xml:space="preserve">
     <value>„Elektrische Nachheizung aktivieren (falls vorhanden)“ oben gehört dagegen zu dieser Anlage: Sie hebt die Anlage in die elektrische Welt und entscheidet über ihren Energieträger, nicht über den Rechenweg.</value>
   </data>
+  <data name="WP_PROJ_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Projektgerät gespeichert</value>
+  </data>
+  <data name="WP_PROJ_MSG_FEHLER" xml:space="preserve">
+    <value>Die Projektdaten konnten nicht gespeichert werden.</value>
+  </data>
+  <data name="WP_PROJ_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Anlage ist noch nicht gespeichert; die Projektdaten entstehen mit dem ersten Speichern.</value>
+  </data>
+  <data name="WP_PROJ_MSG_KEIN_SATZ" xml:space="preserve">
+    <value>Das Gerät steht nicht in diesem Projekt.</value>
+  </data>
+  <data name="WP_STAMM_UEBERNAHME_MSG_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>Katalogsatz „{0}“ überschrieben.</value>
+  </data>
+  <data name="WP_STAMM_UEBERNAHME_MSG_ANGELEGT" xml:space="preserve">
+    <value>Katalogsatz „{0}“ neu angelegt.</value>
+  </data>
+  <data name="WP_STAMM_UEBERNAHME_MSG_READONLY" xml:space="preserve">
+    <value>Auslieferungssätze werden nicht überschrieben.</value>
+  </data>
+  <data name="WP_STAMM_UEBERNAHME_MSG_FEHLER" xml:space="preserve">
+    <value>Die Übernahme in den Katalog ist fehlgeschlagen.</value>
+  </data>
+  <data name="WPA_BTN_IN_STAMM" xml:space="preserve">
+    <value>In Stamm übernehmen…</value>
+  </data>
+  <data name="WPA_UEB_TITEL" xml:space="preserve">
+    <value>In Stamm übernehmen</value>
+  </data>
+  <data name="WPA_UEB_TEXT_UEBERSCHREIBEN" xml:space="preserve">
+    <value>Der Katalogsatz „{0}“ wird mit den Werten dieser Anlage überschrieben. {1} weitere Projekte führen bereits eine Kopie — sie ändern sich nicht.</value>
+  </data>
+  <data name="WPA_UEB_TEXT_NEU" xml:space="preserve">
+    <value>Es gibt keinen Katalogsatz „{0}“. Er wird neu angelegt.</value>
+  </data>
+  <data name="WPA_UEB_CHK_KENNLINIEN" xml:space="preserve">
+    <value>Kennlinien mitübernehmen (ersetzt Wärme- und Kühlkennlinien des Katalogsatzes)</value>
+  </data>
+  <data name="WPA_UEB_BTN_OK" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
 </root>
