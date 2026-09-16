@@ -255,9 +255,9 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
   „bisher/früher/vorher“, „Anwenderentscheid“, „Befund“, Auftrags-, Wellen- und
   Commit-Kürzel, „in Umsetzung, Stand …“ — auch nicht in HTML-Kommentaren. Zu jeder
   veröffentlichten Funktionsänderung einen Logbuch-Eintrag vorschlagen und die Versionsnummer
-  beim Anwender erfragen; Einträge knapp: nur wesentliche, für den Anwender sichtbare
-  Änderungen, ein bis zwei Sätze, keine Umsetzungseinzelheiten (Regel: Konzept Hilfesystem
-  13.4). Wiki-Entwürfe vor dem Veröffentlichen mit
+  beim Anwender erfragen; **Einträge knapp: ein Satz je wesentlicher, sichtbarer Änderung,
+  ohne Einzelheiten und Begründung; Kleinigkeiten bekommen keinen Eintrag (Regel: Konzept
+  Hilfesystem 13.4)**. Wiki-Entwürfe vor dem Veröffentlichen mit
   `seit (dem|der|W)|geändert|Entscheid|Befund|W\d+[a-z]?[‑-][A-Z][‑-]\d+|Stand:? *\d|bisher|früher|vorher|Bis dahin|Migrationsschritt`
   gegenlesen.
   **Keine Hersteller- und Produktdaten im Wiki:** kein Herstellername, keine Typbezeichnung,

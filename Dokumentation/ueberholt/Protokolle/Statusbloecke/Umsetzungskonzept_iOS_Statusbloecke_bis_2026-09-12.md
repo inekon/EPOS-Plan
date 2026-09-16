@@ -6831,10 +6831,7 @@ neutralen `.resx` und lässt sich nicht nach Commits schneiden.
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 nennt der Hilfe-Assistent beim Ausfüllen von Feldern den Namen der gemeinten
-> Maske und, falls sie nicht geöffnet ist, wie sie sich öffnen lässt, statt technischer
-> Bezeichnungen. Passen die Felder auf mehrere Masken, zeigt er eine Auswahl mit deren Namen im
-> Programm.
+> kein eigener Eintrag — zu klein für das Logbuch (Regel 13.4).
 
 ## #295 — Das Kreuz steht beim Titel (15./16.09.2026, Nachtrag aus dem Merge)
 
@@ -6896,9 +6893,7 @@ herausgelöste `Abbrechen()`, die auch Esc ruft. Die Bauart-C-Restliste der
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 lässt sich jeder Dialog über ein Schließkreuz oben rechts schließen; es wirkt
-> wie „Abbrechen" und verwirft ungespeicherte Eingaben. Rückfragen, laufende Vorgänge und die
-> Schritte des Assistenten tragen kein Kreuz.
+> Seit 16.09.2026 lässt sich jeder Dialog über ein Kreuz oben rechts schließen.
 
 ## #296 — Alle sechs Erzeuger im Schema des Heizkessels (15./16.09.2026, Nachtrag aus dem Merge)
 
@@ -6976,11 +6971,7 @@ Welle wäre es ein Merge-Risiko gewesen.
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 zeigen die Dialoge der sechs Energieerzeuger (Heizkessel, BHKW, Photovoltaik,
-> Stromspeicher, Pufferspeicher, Solarkollektoren) im aufklappbaren Bereich „Alle Daten
-> anzeigen" alle Katalogdaten des gewählten Geräts zum Ändern; Kosten und Emissionen stehen
-> jetzt dort statt im Bearbeiten-Dialog. Die getrennte Administration der Erzeuger ist nicht
-> mehr vorhanden.
+> Seit 16.09.2026 sind in den Dialogen der Energieerzeuger alle Gerätedaten direkt bearbeitbar.
 
 ## #297 — Bearbeiten nach oben, alle Daten offen, die Konfiguration als eigener Dialog (16.09.2026)
 
@@ -7099,17 +7090,12 @@ Heizkessel und BHKW die Nachbarschaft des Brennstoffpaars. Neu sind
 
 **Logbuch-Vorschlag Erzeuger** (Version 1.2.0.2):
 
-> Seit 16.09.2026 steht der Knopf „Bearbeiten…" in den Erzeuger-Dialogen gleich unter der
-> Modulzeile, und der Bereich „Alle Daten" (zusammengezogen mit dem Eintrag zu #296) ist beim
-> Öffnen bereits aufgeklappt. Bei Heizkessel und BHKW stehen „Brennstoff Typ" und „Brennstoff
-> Variante" jetzt untereinander.
+> kein eigener Eintrag — im Eintrag zu #296 enthalten.
 
 **Logbuch-Vorschlag Wärmepumpe und Simulation** (Version 1.2.0.2):
 
-> Seit 16.09.2026 heißt der Bereich „Wärmeerzeuger Spitzenlast" im Wärmepumpendialog
-> „Konfiguration" und lässt sich als eigener Dialog auch aus Simulation > Konfiguration öffnen
-> (ebenso bei Heizkessel und BHKW). Der Dialog „Parameter Bearbeiten…" entfällt; seine Angaben
-> samt Kennlinie stehen jetzt direkt im Wärmepumpendialog.
+> Seit 16.09.2026 haben Wärmepumpe, Heizkessel und BHKW einen eigenen Dialog „Konfiguration",
+> auch aus der Simulation erreichbar.
 
 ## #298 — Die Stammfelder ändern die Anlage, die Übernahme den Katalog (16.09.2026)
 
@@ -7214,11 +7200,8 @@ weiche Sperren, Vorschautexte, Übernahme mit und ohne Kennlinienschalter, Abbre
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 ändern die Stammdaten einer Wärmepumpe im Anlagendialog (z. B. Nennleistung,
-> Heizstableistung, Kennlinien) nur noch diese Anlage im aktuellen Projekt statt des
-> Katalogeintrags; andere Projekte mit derselben Wärmepumpe bleiben unverändert. Über „In Stamm
-> übernehmen…" lassen sich die Werte auf Wunsch — mit Warnung vor dem Überschreiben — in den
-> Katalog zurückschreiben.
+> Seit 16.09.2026 ändern die Stammdaten einer Wärmepumpe nur das Projekt; die Übernahme in den
+> Katalog ist eine eigene Funktion.
 
 ## #299 — Wärmepumpe: Heizstab je Anlage, Katalogkopplung über ID, Kühlleistung wählbar (16.09.2026)
 
@@ -7280,11 +7263,10 @@ leer. 23 neue Testmethoden (Kern 10, Oberfläche 13).
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 wird der Heizstab je Wärmepumpe eingestellt (Schalter „Heizstab mitrechnen"
-> an der Anlage) statt projektweit, und die Kühlleistung ist bei der Katalogauswahl als Spalte
-> und Filter „nur mit Kühlfunktion" wählbar sowie im Anlagendialog bearbeitbar. Außerdem
-> bleiben Anwendereinstellungen beim Versionswechsel jetzt erhalten, die zuvor zurückgesetzt
-> wurden.
+> Seit 16.09.2026 wird der Heizstab je Wärmepumpe eingestellt, und Wärmepumpen mit Kühlfunktion
+> sind in der Katalogauswahl filterbar.
+>
+> Seit 16.09.2026 bleiben Anwendereinstellungen beim Versionswechsel erhalten.
 
 ## #300 — Neues Projekt: der Assistent startet in der Projektkonfiguration (16.09.2026)
 
@@ -7328,10 +7310,7 @@ Gegenprobe vollständiger Lauf mit drei Knöpfen). Gate: Kern-Filter 0 Fehler, `
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 startet die Kachel „Neues Projekt" den Assistenten direkt in der
-> Projektkonfiguration; „Weiter" führt zur Kachel Wärmebedarf, „Abbrechen" oder das
-> Schließkreuz verlassen den Dialog. Über das Menü „Projekt → Neu…" bleibt der vollständige
-> Assistent mit Komponentenauswahl weiterhin erreichbar.
+> Seit 16.09.2026 startet „Neues Projekt" direkt in der Projektkonfiguration.
 
 ## #301 — Berichte & Kosten: Kosten nach Rückwechsel auf Stamm, Kostenfaktor-Löschen ohne Kaskade (16.09.2026)
 
@@ -7409,7 +7388,73 @@ ihren Schemastand hält — jede Arbeitskopie wird im Test selbst nachgezogen.
 
 **Logbuch-Vorschlag** (Version 1.2.0.2):
 
-> Seit 16.09.2026 zeigt die Seite „Kosten" nach einem Wechsel von einer Variante zurück auf das
-> Stammprojekt wieder dessen Kosten. Ein Kostenfaktor, der in Projekten verwendet wird, lässt
-> sich nicht mehr löschen; bisher gingen dabei Kostenpositionen in allen betroffenen Projekten
-> verloren.
+> Seit 16.09.2026 zeigt die Seite Kosten nach dem Wechsel zurück auf das Stammprojekt wieder
+> dessen Kosten, und verwendete Kostenfaktoren lassen sich nicht mehr löschen.
+
+## #302 — Kostenbereich: fünf Nebenbefunde behoben (16.09.2026)
+
+Anwenderentscheid 16.09.2026 zu den fünf offenen Punkten aus „Nach #301": „Nebenbefunde
+Kosten für einen eigenen Auftrag: Empfehlung" — alle fünf Punkte in einem Auftrag. Commit
+`e2784cf9`.
+
+**Punkt 1 — Papierkorb der Zeile „ohne Anlagenzuordnung" nennt Anzahl und Summe.** Neu im
+Kern `KostenProjektPositionenCtrl.LoseZaehlen(projekt, komponente, kategorie)` → Anzahl und
+angezeigte Summe, über denselben Leseweg, der „ohne Anlagenzuordnung" definiert;
+`KomponentenId(name)` ersetzt das Inline-SQL der Windows-Hülle. Die Rückfrage nennt jetzt
+Anzahl und Betrag (Ressource `BK_KOSTEN_LOSE_LOESCHEN_SUMME`); gibt es nichts zu löschen,
+entfällt die Rückfrage benannt (Fußzeile, `BK_KOSTEN_LOSE_KEINE`, Razor-Parameter
+`LoeschNichts`). `BK_KOSTEN_LOSE_LOESCHEN` entfernt.
+
+**Punkt 2 — Geräteanker loser Positionen beim Kopieren.** `AnkerNachziehen` setzt je
+Komponente zusätzlich `ID_AnlageGeraet = NULL` für Zeilen ohne gültige Anlage. Kein
+Schemaschritt: Alle vier Leser des Ankers fassen keine Zeile ohne gültige Anlage an, die
+toten Anker des Bestands sind inerte Daten; Testdatenbank unverändert.
+
+**Punkt 3 — Betriebskosten anlagenbewusst.** `BetriebskostenCtrl.Lies`/`Speichere` bekommen
+eine `idAnlage`-Überladung über `FindePosition`/`SetzeBetrag(…, idAnlage)`; die
+Bestandssignaturen delegieren mit 0. Befund dazu: `BetriebskostenCtrl.Lies(int,
+Bezugsgroessen)`, `Speichere(int, List<Zeile>)`, `LiesBezugsgroessen`, `Bezugsgroessen`,
+`Zeile` haben repoweit keinen Aufrufer mehr — Rest des alten WinForms-Betriebskostendialogs —,
+berichtigt statt entfernt; Aufräum-Entscheid offen. Die anlagenblinde
+`KostenPositionCtrl.SetzeBetrag`-Überladung bleibt, sie hat zwei weitere Aufrufer.
+
+**Punkt 4 — Löschen über die Id.** `ProjektCtrl.Delete(int)` ersetzt `Delete(string)`; die
+Vorarbeiten `PufferReferenzenLoesen`, `BerichtsKonfigurationEntfernen`,
+`VariantenVerknuepfungenEntfernen` arbeiten über die Id (drei Namensabfragen entfallen);
+`LoeschenMitVorarbeiten` und `VariantenCtrl.LoescheVariante` reichen die Id durch. Die
+Namensprüfung bleibt als Anzeige (`LoeschStand.Mehrdeutig`, Text `PROJ_MSG_NAME_MEHRDEUTIG`
+geändert): Bei doppeltem Namen fällt nur noch das gewählte Projekt.
+
+**Punkt 5 — Wächter Schemastand der Repo-Testdatenbank.** Neu
+`EPOS.Kern.Tests/TestdatenbankSchemastandWacheTests`: öffnet
+`Referenzlaeufe/Kenndaten_Test.sqlite` nur lesend (`mode=ro&immutable=1`, keine
+`-wal`/`-shm`-Reste) und hält `Tab_Applikation.SchemaVersion` gegen `SchemaStand.Zielversion`
+(beide 81).
+
+**Dateien.** `EPOS.Kern/Controller/{KostenProjektPositionenCtrl,BetriebskostenCtrl,
+ProjektCtrl,VariantenCtrl}.cs`, `EPOS.Kern/Model/ProjektAngaben.cs`, Ressourcen (resx beide
+Sprachen + Designer), `EPOS.UI/Seiten/Berichte/KostenSeite.razor`,
+`WindowsFormsApplication1/Views/BerichteKosten/KostenSeiteGaben.cs`, Tests
+`EPOS.Kern.Tests/{KostenProjektPositionenCtrlTests,ProjektpflegeTests,
+BetriebskostenAnlagenbezugTests,TestdatenbankSchemastandWacheTests}.cs`,
+`EPOS.UI.Tests/Seiten/KostenSeiteTests.cs`. 9 neue Testfälle, 4 nachgezogen; rot-vor/grün-nach
+belegt für Punkt 2 (3 tote Anker statt 0) und Punkt 3 (zweite Anlage bekam keine eigene
+Zeile).
+
+**Prüfung.** Worktree-Gate, per Cherry-Pick ohne Konflikt übernommen; das Gesamtgate läuft auf
+dem zusammengeführten Stand. Kern-Filter 0 Fehler; `EPOS.Kern.Tests` 3082/3083,
+`EPOS.UI.Tests` 4522/4522, KiKern 499/499, SpeicherEngine 370/370, SpeicherPlanung 27/28 (1
+übersprungen); einzig rot der bekannt fremde
+`SpeicherFlottenGroessenCtrlTests.Die_Fusszeile_der_Karte_nennt_den_Feinpunkt`; Windows-Schale
+0 Fehler; SqlDialektPruefer 1458 Texte, 0 Fundstellen; Referenzlauf 5/5 PASS.
+
+**Was offen bleibt.** Zwei Punkte: ein Aufräum-Entscheid zu den aufruferlosen
+Betriebskosten-Methoden (`BetriebskostenCtrl.Lies(int, Bezugsgroessen)`, `Speichere(int,
+List<Zeile>)`, `LiesBezugsgroessen`, `Bezugsgroessen`, `Zeile`); der `SqlDialektPruefer`
+öffnet die Testdatenbank schreibend und hinterlässt `-wal`/`-shm`-Dateien (gitignored) —
+`mode=ro&immutable=1` im Prüfer würde das abstellen. Aus #301 bleibt nichts offen, was nicht
+mit #302 erledigt ist.
+
+**Logbuch-Vorschlag** (Version 1.2.0.2):
+
+> kein eigener Eintrag — zu klein für das Logbuch (Regel 13.4).

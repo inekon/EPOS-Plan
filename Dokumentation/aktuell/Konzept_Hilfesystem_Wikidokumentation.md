@@ -816,15 +816,15 @@ für das Logbuch erfragt die Orchestrierung beim Anwender.
 
 ### 13.4 Logbuch-Einträge knapp
 
-**Regel:** Das Update-Logbuch nennt je Version nur die wesentlichen Änderungen, die ein Anwender
-sieht oder deren Ergebnis er in Händen hat: eine neue oder geänderte Bedienung, ein neuer Rechenweg,
-eine entfallene Funktion, eine behobene Störung, die Anwenderdaten betraf. Ein Eintrag ist ein bis
-zwei Sätze mit Datum („Seit 16.09.2026 …“). Er nennt keine Einzelheiten der Umsetzung — keine
-Dateien, Tabellen, Spalten, Schlüssel, Klassen, Testzahlen, Fehlerursachen — und keine
-Kleinigkeiten: geänderte Beschriftungen, Hinweise, Tooltips, interne Umbauten, Behebungen ohne
-sichtbare Bedienänderung. Was zu klein für das Logbuch ist, steht nur in der Statusdatei und im
-Protokoll. Mehrere Aufträge derselben Version, die dasselbe Thema betreffen, werden zu einem Eintrag
-zusammengezogen.
+**Regel:** Das Update-Logbuch nennt je Version nur die wesentlichen Änderungen, die ein Anwender in
+der Bedienung oder im Ergebnis bemerkt: eine neue oder geänderte Bedienung, ein neuer Rechenweg,
+eine entfallene Funktion, eine behobene Störung mit Wirkung auf Anwenderdaten. Ein Eintrag ist **ein
+Satz** mit Datum („Seit 16.09.2026 …“) — ohne Nebensatz, Beispiel, Klammer oder Begründung; er sagt,
+was jetzt anders ist, nicht warum und nicht wie. Er nennt keine Dateien, Tabellen, Felder,
+Schlüssel, Klassen, Testzahlen oder Ursachen. Kleinigkeiten — Beschriftungen, Hinweise, Tooltips,
+Knopfpositionen, interne Umbauten, Behebungen ohne sichtbare Bedienänderung — bekommen keinen
+Eintrag; sie stehen nur in Statusdatei und Protokoll. Mehrere Aufträge derselben Version zum selben
+Thema ergeben einen Eintrag. Richtwert: wenige Einträge je Version.
 
 ## Dokumentationspflege Speicherauslegung – 11.09.2026
 
