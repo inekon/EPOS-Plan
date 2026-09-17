@@ -139,11 +139,20 @@ namespace WindowsFormsApplication1
         /// Ergebnis: Nach der Faltung ist die Summe der Anteile der Arbeitspreis und die
         /// Summe ohne Beschaffung der bisherige Aufschlag — jede Preisreihe bleibt, wie
         /// sie war, der Referenzlauf byte-gleich.
+        /// Mit dem UMZUG DER EINSPEISEVERGÜTUNG (Schritt 84, Anwenderentscheid SP-E-5 (a)
+        /// vom 17.09.2026) steht das Ziel auf <b>84</b>: Die Trägerkarte trägt v_pv und
+        /// v_bhkw nicht mehr; die eine Quelle sind
+        /// <c>Tab_ProjektWirtschaftlichkeit.Einspeiseverguetung</c> und
+        /// <c>Einspeiseverguetung_KWK</c>. Der Schritt legt KEINE Spalte an — er rettet
+        /// nur die gepflegten Kartenwerte hinüber (<see cref="VerguetungUmzug"/>),
+        /// ct/kWh nach €/kWh, und lässt gepflegte Parameter unangetastet. Er ist
+        /// ergebnisneutral: Die Speicherwelt liest dieselbe Zahl, nur von der neuen
+        /// Stelle — der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 83;
+        public const int Zielversion = 84;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

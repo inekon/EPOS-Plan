@@ -232,8 +232,10 @@ namespace WindowsFormsApplication1
 
             Schalter(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN_EINZELN, ref m.Umlagen_Einzeln);
 
-            Zahl(dt, r, SchemaKatalog.SPALTE_VERGUETUNG_PV, ref m.Verguetung_PV);
-            Zahl(dt, r, SchemaKatalog.SPALTE_VERGUETUNG_BHKW, ref m.Verguetung_BHKW);
+            // SP-E-5 (a): Verguetung_PV/_BHKW werden NICHT MEHR GELESEN. Die
+            // Einspeiseverguetung steht bei den Wirtschaftlichkeitsparametern; die
+            // Spalten bleiben stehen, damit eine aeltere Programmfassung auf derselben
+            // Datei nicht auf einen fehlenden Namen laeuft.
 
             m.AusDatenbank = true;
             return m;
@@ -286,9 +288,7 @@ namespace WindowsFormsApplication1
                 Feld(SchemaKatalog.SPALTE_AUFSCHLAG_KWKG) +
                 Feld(SchemaKatalog.SPALTE_AUFSCHLAG_OFFSHORE) +
                 Feld(SchemaKatalog.SPALTE_AUFSCHLAG_STROMNEV19) +
-                "[" + SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN_EINZELN + "] = ?, " +
-                "[" + SchemaKatalog.SPALTE_VERGUETUNG_PV + "] = ?, " +
-                "[" + SchemaKatalog.SPALTE_VERGUETUNG_BHKW + "] = ? " +
+                "[" + SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN_EINZELN + "] = ? " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?";
 
             int betroffen = DataRepository.ExecuteNonQuery(sql,
@@ -311,8 +311,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@nev", DbParamTyp.Double) { Wert = m.Umlage_StromNEV19 },
                 new DbParam("@nevA", DbParamTyp.Boolean) { Wert = m.Umlage_StromNEV19_Aktiv },
                 new DbParam("@einzeln", DbParamTyp.Boolean) { Wert = m.Umlagen_Einzeln },
-                new DbParam("@vpv", DbParamTyp.Double) { Wert = m.Verguetung_PV },
-                new DbParam("@vbhkw", DbParamTyp.Double) { Wert = m.Verguetung_BHKW },
                 new DbParam("@proj", DbParamTyp.Integer) { Wert = m.ID_Projekt },
                 new DbParam("@eid", DbParamTyp.Integer) { Wert = m.ID_Energietraeger });
 

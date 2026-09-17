@@ -34471,15 +34471,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verguetung fuer eingespeisten Strom ähnelt.
-        /// </summary>
-        public static string PREIS_GRUPPE_VERGUETUNG {
-            get {
-                return ResourceManager.GetString("PREIS_GRUPPE_VERGUETUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die gueltige Preisversion fuehrt den Arbeitspreis 0 - es gilt die naechste Rueckfallstufe. ähnelt.
         /// </summary>
         public static string PREIS_HINWEIS_ARBEITSPREIS_NULL {
@@ -34503,6 +34494,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PREIS_HINWEIS_KEINE_SPOTREIHE {
             get {
                 return ResourceManager.GetString("PREIS_HINWEIS_KEINE_SPOTREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In den Wirtschaftlichkeitsparametern ist weder eine KWK- noch eine allgemeine Einspeiseverguetung gepflegt - v_bhkw rechnet mit 0 ct/kWh. ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_KEINE_VERGUETUNG_BHKW {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_KEINE_VERGUETUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In den Wirtschaftlichkeitsparametern ist keine Einspeiseverguetung gepflegt - v_pv rechnet mit 0 ct/kWh. ähnelt.
+        /// </summary>
+        public static string PREIS_HINWEIS_KEINE_VERGUETUNG_PV {
+            get {
+                return ResourceManager.GetString("PREIS_HINWEIS_KEINE_VERGUETUNG_PV", resourceCulture);
             }
         }
         
@@ -34899,24 +34908,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PREIS_LABEL_ARBEITSPREIS {
             get {
                 return ResourceManager.GetString("PREIS_LABEL_ARBEITSPREIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW v_bhkw ähnelt.
-        /// </summary>
-        public static string PREIS_LABEL_VERGUETUNG_BHKW {
-            get {
-                return ResourceManager.GetString("PREIS_LABEL_VERGUETUNG_BHKW", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik v_pv ähnelt.
-        /// </summary>
-        public static string PREIS_LABEL_VERGUETUNG_PV {
-            get {
-                return ResourceManager.GetString("PREIS_LABEL_VERGUETUNG_PV", resourceCulture);
             }
         }
         
@@ -54319,6 +54310,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPAR_BTN_SPEICHERN {
             get {
                 return ResourceManager.GetString("WPAR_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese beiden Saetze gelten fuer die ganze Anwendung: Sie bewerten den eingespeisten Strom in der Wirtschaftlichkeit UND stellen den Verkaufspreis, mit dem Stromspeicher und Speicherflotte rechnen (v_pv, v_bhkw). Ohne KWK-Satz gilt fuer BHKW-Strom der PV-Satz; ist gar nichts gepflegt, rechnet die Speicherwelt mit 0 und weist das im Protokoll aus. Fuehrt der PV-Verguetungsdialog die Verguetung, hat er fuer v_pv Vorrang. ähnelt.
+        /// </summary>
+        public static string WPAR_EINSP_HINWEIS {
+            get {
+                return ResourceManager.GetString("WPAR_EINSP_HINWEIS", resourceCulture);
             }
         }
         

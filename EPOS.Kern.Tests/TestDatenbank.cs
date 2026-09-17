@@ -283,6 +283,13 @@ namespace EPOS.Kern.Tests
                     SpalteSicherstellen(s);
                 StrompreisZerlegung.Falten();
 
+                // Schritt 84 (Entscheid SP-E-5 (a), 17.09.2026): der Umzug der
+                // Einspeiseverguetung von der Traegerkarte in die
+                // Wirtschaftlichkeitsparameter. REINER DATENSCHRITT - keine Spalte.
+                // DIESELBE Quelle wie in der Migration und im Werkzeug; Umziehen() ist
+                // wiederholbar und tut auf einer bereits umgezogenen Kopie nichts mehr.
+                VerguetungUmzug.Umziehen();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

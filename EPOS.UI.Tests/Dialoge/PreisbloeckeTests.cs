@@ -36,9 +36,7 @@ public class PreisbloeckeTests : EposBunitContext
         Netzentgelt = 7.5, NetzentgeltAktiv = true,
         Stromsteuer = 2.05, StromsteuerAktiv = true,
         Konzession = 1.32, KonzessionAktiv = true,
-        Umlagen = 1.2, UmlagenAktiv = true,
-        VerguetungPv = 8.2,
-        VerguetungBhkw = 6.4
+        Umlagen = 1.2, UmlagenAktiv = true
     };
 
     /// <summary>Klappt den Block auf — Vorgabe ist ZU.</summary>
@@ -57,8 +55,9 @@ public class PreisbloeckeTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-preiszeile"));
         Assert.Contains("Summe der Anteile: 40,32 ct/kWh", cut.Markup);
 
-        // Die zwei Vergütungsfelder stehen ausserhalb und sind immer sichtbar.
-        Assert.Equal(2, cut.FindAll("input[type=text]").Count);
+        // SP-E-5 (a): Zugeklappt steht KEIN Eingabefeld mehr da - die beiden
+        // Vergütungsfelder, die früher ausserhalb des Blocks standen, sind fort.
+        Assert.Empty(cut.FindAll("input[type=text]"));
     }
 
     [Fact]
@@ -74,8 +73,8 @@ public class PreisbloeckeTests : EposBunitContext
 
         // Beschaffung, Vertrieb, Netz, Stromsteuer, Konzession, Umlagen.
         Assert.Equal(6, cut.FindAll(".epos-preiszeile").Count);
-        // KEIN Gesamtaufschlagsfeld mehr: 6 Anteile + 2 Vergütungen.
-        Assert.Equal(8, cut.FindAll("input[type=text]").Count);
+        // KEIN Gesamtaufschlagsfeld und KEINE Vergütung mehr: die 6 Anteile.
+        Assert.Equal(6, cut.FindAll("input[type=text]").Count);
     }
 
     [Fact]
@@ -409,25 +408,32 @@ public class PreisbloeckeTests : EposBunitContext
 
 
     /// <summary>
-    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Die beiden Vergütungsfelder stehen
-    /// im <c>Formularraster</c> — Beschriftung neben dem Feld, Zahlenfeld kurz
-    /// mit der Einheit dahinter.
+    /// <b>SP-E-5 (a), Anwenderbefund 17.09.2026:</b> Die Gruppe „Vergütung für
+    /// eingespeisten Strom" ist von der Trägerkarte VERSCHWUNDEN — weder der
+    /// Gruppentitel noch die beiden Feldbeschriftungen stehen noch im Markup,
+    /// zugeklappt wie aufgeklappt.
     ///
-    /// <para>Die PREISBLÖCKE bleiben, wie sie sind: Ihre Zeilen tragen Schalter,
-    /// Wert und Schnellwahlknopf NEBENEINANDER; das ist eine Bearbeitungszeile,
-    /// keine Formularzeile, und der Raster darf dort nicht hinein.</para>
+    /// <para>Die drei PREISBLÖCKE bleiben, wie sie sind: Ihre Zeilen tragen
+    /// Schalter, Wert und Schnellwahlknopf NEBENEINANDER; das ist eine
+    /// Bearbeitungszeile, keine Formularzeile.</para>
     /// </summary>
     [Fact]
-    public void Die_Verguetung_steht_im_Formularraster_die_Anteile_nicht()
+    public void Die_Verguetungsgruppe_steht_nicht_mehr_auf_der_Traegerkarte()
     {
         var cut = Render<StrompreisDetails>(p => p.Add(x => x.Stand, StromStand()));
+
+        Assert.DoesNotContain("Vergütung für eingespeisten Strom", cut.Markup);
+        Assert.DoesNotContain("v_pv", cut.Markup);
+        Assert.DoesNotContain("v_bhkw", cut.Markup);
+
         Aufklappen(cut);
 
-        Assert.True(cut.FindAll(".epos-formularraster").Count >= 1);
-        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count >= 2);
+        Assert.DoesNotContain("Vergütung für eingespeisten Strom", cut.Markup);
+        Assert.DoesNotContain("v_pv", cut.Markup);
+        Assert.DoesNotContain("v_bhkw", cut.Markup);
 
-        // Die drei Preisblöcke stehen ausserhalb.
-        Assert.Empty(cut.FindAll(".epos-formularraster .epos-preisblock"));
+        // Die drei Preisblöcke stehen unverändert da.
         Assert.Equal(3, cut.FindAll(".epos-preisblock").Count);
+        Assert.Empty(cut.FindAll(".epos-formularraster .epos-preisblock"));
     }
 }

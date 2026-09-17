@@ -204,8 +204,8 @@ namespace WindowsFormsApplication1
             e.BezugspreisMittelCtKwh = mittel;
 
             // --- Verguetung (Fachkonzept 4.3) ----------------------------------
-            StromVerguetungsErgebnis verguetung = BaueVerguetungen(
-                idProjekt, aufschlagModel, anzahlIntervalle);
+            StromVerguetungsErgebnis verguetung = VerguetungenBauen(
+                idProjekt, anzahlIntervalle);
             e.VerguetungPvCtKwh = verguetung.PvCtKwh;
             e.VerguetungBhkwCtKwh = verguetung.BhkwCtKwh;
 
@@ -230,28 +230,64 @@ namespace WindowsFormsApplication1
                 throw new ArgumentOutOfRangeException(nameof(anzahlIntervalle));
 
             _hinweis = "";
-            StromAufschlagModel aufschlagModel;
-            using (DataRepository.EngineModus())
-            {
-                aufschlagModel = new StromAufschlagCtrl().ReadStrom(idProjekt);
-                if (!aufschlagModel.AusDatenbank)
-                    HinweisErgaenzen(MyResource.Resource.PREIS_HINWEIS_KEIN_STROMTRAEGER);
-            }
-
-            StromVerguetungsErgebnis ergebnis = BaueVerguetungen(
-                idProjekt, aufschlagModel, anzahlIntervalle);
+            StromVerguetungsErgebnis ergebnis = VerguetungenBauen(idProjekt, anzahlIntervalle);
             ergebnis.Hinweis = _hinweis;
             return ergebnis;
         }
 
-        private StromVerguetungsErgebnis BaueVerguetungen(
-            int idProjekt, StromAufschlagModel aufschlagModel, int anzahlIntervalle)
+        // =================================================================================
+        // DIE EINSPEISEVERGUETUNG STEHT BEI DEN WIRTSCHAFTLICHKEITSPARAMETERN
+        // - Anwenderentscheid SP-E-5 (a) vom 17.09.2026.
+        //
+        // Bis zu diesem Entscheid trug die Traegerkarte des Stromtraegers einen eigenen
+        // Block "Verguetung fuer eingespeisten Strom" mit v_pv und v_bhkw. Er war die
+        // ZWEITE Stelle fuer dieselbe Zahl: Die Wirtschaftlichkeit rechnete laengst mit
+        // Tab_ProjektWirtschaftlichkeit.Einspeiseverguetung und
+        // Einspeiseverguetung_KWK und hat den Block nie gelesen. Die Speicherwelt las
+        // ihn, die Wirtschaftlichkeit die Parameter - zwei Wahrheiten fuer denselben
+        // eingespeisten Strom, und welche galt, hing vom Rechenweg ab.
+        //
+        // AB HIER GIBT ES EINE QUELLE, und das ist der Parametersatz:
+        //
+        //     v_pv   = PV-Verguetungsdialog, wenn aktiv (Entscheid F7, unveraendert),
+        //              sonst Einspeiseverguetung
+        //     v_bhkw = Einspeiseverguetung_KWK, wenn gepflegt, sonst Einspeiseverguetung
+        //
+        // EINHEITEN. Der Parametersatz fuehrt beide Felder in EUR/kWh (so steht es an
+        // WirtschaftlichkeitParameter und so rechnet WirtschaftlichkeitCtrl damit), die
+        // Speicherwelt in ct/kWh. Umgerechnet wird genau hier, an der einen Naht.
+        //
+        // KEIN STILLER RUECKFALL. Ohne gepflegten Wert rechnet der Lauf mit 0 und SAGT
+        // das im Protokoll. Der frueher stille Rueckfall auf 5 ct/kWh war eine erfundene
+        // Zahl: Er stand als Vorgabe am Modellfeld und kam auch dann zum Zug, wenn das
+        // Projekt gar keinen Stromtraeger hatte.
+        // =================================================================================
+
+        /// <summary>ct/kWh je EUR/kWh.</summary>
+        private const double CT_JE_EUR = 100.0;
+
+        private StromVerguetungsErgebnis VerguetungenBauen(int idProjekt, int anzahlIntervalle)
         {
+            WirtschaftlichkeitParameter parameter = null;
+            try
+            {
+                using (DataRepository.EngineModus())
+                    parameter = new WirtschaftlichkeitCtrl().LadeParameter(idProjekt);
+            }
+            catch { /* ohne Parametersatz bleibt es bei "nicht gepflegt" */ }
+
+            double? evCt = GepflegtCtKwh(parameter == null
+                ? (double?)null : parameter.Einspeiseverguetung);
+            double? evKwkCt = GepflegtCtKwh(parameter == null
+                ? null : parameter.EinspeiseverguetungKWK);
+
+            double vpvCt = evCt ?? 0.0;
+            bool pvAusDialog = false;
+
             // ETAPPE P4 (Befund V4, Entscheidung F7): Ist der PV-Verguetungsdialog
             // AKTIV, ist ER die fuehrende Verguetungswahrheit - v_pv kommt aus dem
-            // Dialogsatz (Stufe 1, mengenunabhaengig), nicht mehr aus Verguetung_PV
-            // des Aufschlagsblocks. Inaktiv bleibt alles beim Bestand.
-            double vpvCt = aufschlagModel.Verguetung_PV;
+            // Dialogsatz (Stufe 1, mengenunabhaengig). Das bleibt unveraendert; SP-E-5
+            // tauscht nur die Quelle darunter aus.
             try
             {
                 ProjektPhotovoltaikCtrl pvc = new ProjektPhotovoltaikCtrl();
@@ -263,18 +299,42 @@ namespace WindowsFormsApplication1
                 if (fuehrend.HasValue)
                 {
                     vpvCt = fuehrend.Value;
+                    pvAusDialog = true;
                     HinweisErgaenzen("PV-Vergütungsdialog führt die Einspeisevergütung: " +
                                      vpvCt.ToString("N2") + " ct/kWh (V4/F7).");
                 }
             }
             catch { /* fuehrender Satz ist Komfort - der Lauf kippt daran nicht */ }
 
+            double vbhkwCt = evKwkCt ?? evCt ?? 0.0;
+
+            if (!pvAusDialog && !evCt.HasValue)
+                HinweisErgaenzen(MyResource.Resource.PREIS_HINWEIS_KEINE_VERGUETUNG_PV);
+            if (!evKwkCt.HasValue && !evCt.HasValue)
+                HinweisErgaenzen(MyResource.Resource.PREIS_HINWEIS_KEINE_VERGUETUNG_BHKW);
+
             return new StromVerguetungsErgebnis
             {
                 PvCtKwh = SpeicherEingang.KonstanteReihe(vpvCt, anzahlIntervalle),
-                BhkwCtKwh = SpeicherEingang.KonstanteReihe(
-                    aufschlagModel.Verguetung_BHKW, anzahlIntervalle)
+                BhkwCtKwh = SpeicherEingang.KonstanteReihe(vbhkwCt, anzahlIntervalle)
             };
+        }
+
+        /// <summary>
+        /// Ein gepflegter Parameterwert [EUR/kWh] als ct/kWh - oder <c>null</c>.
+        ///
+        /// <para><b>0 heisst "nicht gepflegt".</b> <c>Einspeiseverguetung</c> ist eine
+        /// NOT-NULL-freie REAL-Spalte, die ein aelterer Parametersatz mit 0 belegt; eine
+        /// Einspeisung, die nichts einbringt, und ein Feld, das niemand angefasst hat,
+        /// sind an dieser Zahl nicht zu unterscheiden. Die Anwendung entscheidet sich
+        /// fuer "nicht gepflegt" und sagt es - ein stiller Ersatzwert waere die
+        /// schlechtere Haelfte dieser Wahl.</para>
+        /// </summary>
+        private static double? GepflegtCtKwh(double? eurKwh)
+        {
+            if (!eurKwh.HasValue) return null;
+            if (eurKwh.Value == 0.0) return null;
+            return eurKwh.Value * CT_JE_EUR;
         }
 
         // =================================================================

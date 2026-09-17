@@ -928,9 +928,7 @@ namespace WindowsFormsApplication1
                 UmlageKwkg = m.Umlage_KWKG, UmlageKwkgAktiv = m.Umlage_KWKG_Aktiv,
                 UmlageOffshore = m.Umlage_Offshore, UmlageOffshoreAktiv = m.Umlage_Offshore_Aktiv,
                 UmlageStromNev19 = m.Umlage_StromNEV19,
-                UmlageStromNev19Aktiv = m.Umlage_StromNEV19_Aktiv,
-                VerguetungPv = m.Verguetung_PV,
-                VerguetungBhkw = m.Verguetung_BHKW
+                UmlageStromNev19Aktiv = m.Umlage_StromNEV19_Aktiv
             };
         }
 
@@ -947,8 +945,6 @@ namespace WindowsFormsApplication1
             m.Umlage_Offshore = s.UmlageOffshore; m.Umlage_Offshore_Aktiv = s.UmlageOffshoreAktiv;
             m.Umlage_StromNEV19 = s.UmlageStromNev19;
             m.Umlage_StromNEV19_Aktiv = s.UmlageStromNev19Aktiv;
-            m.Verguetung_PV = s.VerguetungPv;
-            m.Verguetung_BHKW = s.VerguetungBhkw;
         }
 
         private static BrennstoffBestandteileStand AusBrennstoffModell(BrennstoffBestandteilModel m)
@@ -2503,7 +2499,6 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["TitelDetails"] = MyResource.Resource.PREIS_GRUPPE_DETAILS,
-                ["TitelVerguetung"] = MyResource.Resource.PREIS_GRUPPE_VERGUETUNG,
                 ["GruppeBeschaffung"] = MyResource.Resource.PREIS_GRUPPE_BESCHAFFUNG,
                 ["GruppeNetz"] = MyResource.Resource.PREIS_GRUPPE_NETZ,
                 ["GruppeSteuern"] = MyResource.Resource.PREIS_GRUPPE_STEUERN,
@@ -2520,8 +2515,6 @@ namespace WindowsFormsApplication1
                 ["LabelArbeitspreis"] = MyResource.Resource.PREIS_LABEL_ARBEITSPREIS,
                 ["InArbeitspreisText"] = MyResource.Resource.PREIS_BTN_IN_ARBEITSPREIS,
                 ["VorlageRest"] = MyResource.Resource.PREIS_BTN_REST,
-                ["LabelVerguetungPv"] = MyResource.Resource.PREIS_LABEL_VERGUETUNG_PV,
-                ["LabelVerguetungBhkw"] = MyResource.Resource.PREIS_LABEL_VERGUETUNG_BHKW,
                 ["Einheit"] = DbWerte.PREISREIHE_EINHEIT_CT_KWH
             };
         }

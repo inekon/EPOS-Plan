@@ -108,21 +108,6 @@
             NETZENTGELT_VORGABE + UMLAGEN_VORGABE + STROMSTEUER_REDUZIERT +
             KONZESSION_VORGABE + VERTRIEB_VORGABE;
 
-        /// <summary>
-        /// Feste Einspeiseverguetung PV [ct/kWh] (Fachkonzept 4.3, Vorschlag 5) -
-        /// wertgleich dem bisherigen Platzhalter
-        /// <c>StromspeicherSimCtrl.VERGUETUNG_PV_CT_KWH</c>.
-        /// </summary>
-        public const double VERGUETUNG_PV_VORGABE = 5.0;
-
-        /// <summary>
-        /// Einspeise-/KWK-Erloes BHKW [ct/kWh]. Real liegt er meist ueber dem PV-Wert -
-        /// erst das macht die Merit-Order "PV vor BHKW" wirksam (Fachkonzept 2.2). Die
-        /// Vorbelegung bleibt trotzdem beim PV-Wert, weil eine hoehere Zahl eine
-        /// Behauptung ueber einen konkreten KWK-Vertrag waere.
-        /// </summary>
-        public const double VERGUETUNG_BHKW_VORGABE = 5.0;
-
         // --- Zeilenbezug ---
 
         /// <summary>Projekt (energy_project_settings.ID_Projekt).</summary>
@@ -189,13 +174,16 @@
         public double Umlage_StromNEV19 = UMLAGE_STROMNEV19_VORGABE;
         public bool Umlage_StromNEV19_Aktiv;
 
-        // --- Verguetung (Fachkonzept 4.3) ---
-
-        /// <summary>v_pv [ct/kWh].</summary>
-        public double Verguetung_PV = VERGUETUNG_PV_VORGABE;
-
-        /// <summary>v_bhkw [ct/kWh].</summary>
-        public double Verguetung_BHKW = VERGUETUNG_BHKW_VORGABE;
+        // --- Verguetung: NICHT MEHR HIER (Anwenderentscheid SP-E-5 (a), 17.09.2026) ---
+        //
+        // Die Traegerkarte trug bis zu diesem Entscheid v_pv und v_bhkw als eigenen
+        // Block. Gelesen hat ihn nur die Speicherwelt, die Wirtschaftlichkeit rechnete
+        // laengst mit Tab_ProjektWirtschaftlichkeit.Einspeiseverguetung und
+        // Einspeiseverguetung_KWK - zwei Wahrheiten fuer denselben eingespeisten Strom.
+        // Beide Verguetungen kommen ab hier aus den Wirtschaftlichkeitsparametern; die
+        // Quellenkette steht an StromPreisCtrl.VerguetungenBauen. Die Spalten
+        // Verguetung_PV/_BHKW bleiben im Schema stehen (Schemaschritt 84 zieht ihren
+        // Inhalt in die Parameter um), werden aber weder gelesen noch geschrieben.
 
         /// <summary>
         /// true, wenn die Zeile aus der Datenbank stammt. false heisst: Es gab keine
