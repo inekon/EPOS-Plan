@@ -144,6 +144,18 @@ public class SimulationSeiteTests : EposBunitContext
     private static IElement Speichern(IRenderedComponent<SimulationSeite> cut)
         => cut.Find("button.epos-simansicht-speichern");
 
+    /// <summary>„← zurück" der Werkzeugleiste — der BENANNTE Weg nach draußen.</summary>
+    private static IElement Rueckweg(IRenderedComponent<SimulationSeite> cut)
+        => cut.Find(".epos-simansicht-kopfaktionen button.epos-knopf:not(.epos-dialog-zu)");
+
+    /// <summary>Das Schließkreuz rechts außen — derselbe Weg, anderer Griff.</summary>
+    private static IElement Kreuz(IRenderedComponent<SimulationSeite> cut)
+        => cut.Find(".epos-simansicht-kopfaktionen .epos-dialog-zu");
+
+    /// <summary>Die drei Knöpfe der Rückfrage: Speichern · Verwerfen · Bleiben.</summary>
+    private static IReadOnlyList<IElement> Rueckfrageknoepfe(IRenderedComponent<SimulationSeite> cut)
+        => cut.FindAll("div.epos-rueckfrage div.epos-leiste button");
+
     /// <summary>Das SICHTBARE Blatt — das andere steht daneben und schweigt.</summary>
     private static IReadOnlyList<IElement> Sichtbar(IRenderedComponent<SimulationSeite> cut)
         => cut.FindAll(".epos-simansicht-blatt:not(.epos-simansicht-blatt--aus)");
@@ -202,9 +214,13 @@ public class SimulationSeiteTests : EposBunitContext
         Assert.Equal("Simulation", cut.Find("h1.epos-seite-titel").TextContent);
         Assert.Contains("B3-Kaskade", cut.Find(".epos-simansicht-kontext").TextContent);
 
-        var zurueck = cut.FindAll(".epos-simansicht-kopfaktionen button.epos-knopf");
+        var zurueck = cut.FindAll(".epos-simansicht-kopfaktionen button.epos-knopf:not(.epos-dialog-zu)");
         Assert.Single(zurueck);
         Assert.Equal("← zurück", zurueck[0].TextContent.Trim());
+
+        // Daneben das Kreuz (Anwenderwunsch 16.09.2026) - EIN benannter Rueckweg
+        // und EIN Kreuz, beide auf derselben Aktion.
+        Assert.Single(cut.FindAll(".epos-simansicht-kopfaktionen .epos-dialog-zu"));
     }
 
     // =====================================================================
@@ -600,6 +616,115 @@ public class SimulationSeiteTests : EposBunitContext
 
         Assert.Equal(EPOS.UI.Seiten.Assistent.AssistentVerlassen.Verwerfen, weg);
         Assert.Empty(cut.FindAll("[role='dialog']"));
+    }
+
+    // =====================================================================
+    //  Das Schliesskreuz im Kopf der Ansicht (Anwenderwunsch 16.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Das Kreuz steht beim Titel</b> — „Bereich Simulation: Ergänze ein
+    /// Schliessen button (Kreuz), analog zu den Dialogen Kreuzen zum Schliessen"
+    /// (Anwenderwunsch 16.09.2026). Es ist das LETZTE Kind der Kopfaktionen, also
+    /// rechts außen hinter „← zurück", und es gibt genau EINES: Die Ansicht liegt
+    /// in keiner <c>Ueberlagerung</c>, und die zwei eingebetteten Blätter zeichnen
+    /// keins.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_steht_rechts_aussen_in_der_Kopfleiste()
+    {
+        var cut = Zeigen(ergebnisDa: true);
+
+        IElement aktionen = cut.Find(".epos-simansicht-kopfaktionen");
+        IElement kreuz = Kreuz(cut);
+
+        Assert.Single(cut.FindAll(".epos-dialog-zu"));
+        Assert.Contains("epos-dialog-zu", aktionen.LastElementChild!.ClassName);
+        Assert.Equal("✕", kreuz.TextContent.Trim());
+        Assert.Equal("Schließen", kreuz.GetAttribute("aria-label"));
+        Assert.Equal("Schließen", kreuz.GetAttribute("title"));
+
+        // UND MIT BEIDEN BLAETTERN IM BAUM bleibt es bei dem einen: Weder die
+        // Konfigurations- noch die Ergebnisseite zeichnet ein eigenes Kreuz
+        // (Hausregel „Ein Titel, eine Stelle", eine Pille je Bildschirm, #221).
+        Schritte(cut)[1].Click();
+        Schritte(cut)[0].Click();
+        Assert.Equal(2, cut.FindAll(".epos-simansicht-blatt").Count);
+        Assert.Single(cut.FindAll(".epos-dialog-zu"));
+    }
+
+    /// <summary>
+    /// Ohne Änderung geht auch das Kreuz unmittelbar hinaus — wie „← zurück"
+    /// (62b‑E‑1): Es ist nichts zu verlieren.
+    /// </summary>
+    [Fact]
+    public void Ohne_Aenderung_fuehrt_das_Kreuz_unmittelbar_hinaus()
+    {
+        int zu = 0;
+        var cut = Zeigen(geschlossen: () => zu++);
+
+        Kreuz(cut).Click();
+
+        Assert.Equal(1, zu);
+        Assert.Empty(cut.FindAll("[role='dialog']"));
+    }
+
+    /// <summary>
+    /// <b>DIESELBE AKTION, nicht eine zweite Wahrheit:</b> Das Kreuz hängt an
+    /// <c>Verlassen</c>, stellt also dieselbe Rückfrage wie „← zurück" — nach
+    /// „Bleiben" steht die Ansicht samt Änderung weiter da, nach „Verwerfen" kommt
+    /// <c>Geschlossen</c>, und geschrieben wird dabei nichts. Ein Weg nach draußen,
+    /// der die Frage umginge, verwürfe die Konfiguration still.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_stellt_dieselbe_Rueckfrage_wie_der_Rueckweg()
+    {
+        int zu = 0;
+        var cut = Zeigen(geschlossen: () => zu++);
+
+        Verschieben(cut);
+        Kreuz(cut).Click();
+
+        Assert.Equal(0, zu);
+        Assert.Contains("Ungespeicherte Konfiguration", cut.Find("[role='dialog']").TextContent);
+
+        // „Bleiben" ist der dritte der drei Knoepfe - die Ansicht bleibt stehen.
+        Rueckfrageknoepfe(cut)[2].Click();
+
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("[role='dialog']")));
+        Assert.Equal(0, zu);
+        Assert.True(cut.Instance.Ungespeichert);
+        Assert.NotEmpty(cut.FindAll(".epos-simansicht-kopfaktionen"));
+
+        // Und derselbe Griff ein zweites Mal: „Verwerfen" geht hinaus, ohne zu
+        // schreiben - Wort fuer Wort der Fall des Rueckwegs.
+        Kreuz(cut).Click();
+        Rueckfrageknoepfe(cut)[1].Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(1, zu));
+        Assert.Equal(0, _gespeichert);
+    }
+
+    /// <summary>
+    /// Beide Wege nach draußen stehen nebeneinander und tun dasselbe: Der Text der
+    /// Rückfrage ist derselbe, gleich welcher Griff sie geöffnet hat („ergänze",
+    /// nicht „ersetze").
+    /// </summary>
+    [Fact]
+    public void Beide_Wege_nach_draussen_oeffnen_dieselbe_Frage()
+    {
+        var cut = Zeigen();
+
+        Verschieben(cut);
+        Rueckweg(cut).Click();
+        string ueberRueckweg = cut.Find("[role='dialog']").TextContent;
+        Rueckfrageknoepfe(cut)[2].Click();                       // Bleiben
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindAll("[role='dialog']")));
+
+        Kreuz(cut).Click();
+        string ueberKreuz = cut.Find("[role='dialog']").TextContent;
+
+        Assert.Equal(ueberRueckweg, ueberKreuz);
     }
 
     // =====================================================================
