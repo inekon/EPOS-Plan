@@ -570,6 +570,125 @@ Wasserstoff beim Gaskessel bleibt fachlich richtig und ist kein Restpunkt.
   EINEN Knopf (`WaermepumpeAnlageHuelle.KostenOeffnen` als `Func<Task>`), der Investitions-
   und Betriebskosten zusammen aufschlägt; ein Weg „Energiekosten…" fehlt, obwohl die
   Wärmepumpe Strom bezieht. Ob sie dieselbe Dreierleiste bekommt, ist Anwenderentscheid.
+  → Entschieden am 17.09.2026 („angleichen!"), umgesetzt als **ET‑10**, Abschnitt 11.
 - **Der Pufferspeicherdialog ist keine Assistentenseite** und führt seinen `Wizard`-Schalter
   nur aus dem Bestand mit; sein Prüfstand hat deshalb keinen Assistentenfall.
-- **Die nächste freie Befundnummer dieses Dialogs ist ET‑10.**
+- **Die nächste freie Befundnummer dieses Dialogs ist ET‑11.**
+
+---
+
+## 11. ET‑10 (17.09.2026) — die Wärmepumpe bekommt die Kostenleiste der Nachbarn
+
+**Auftrag:** Anwenderentscheid 17.09.2026 („angleichen!") auf den Nebenbefund aus Abschnitt 10.8.
+
+### 11.1 Befund
+
+| Nr. | Befund | Ursache |
+|---|---|---|
+| **ET‑10** | Der Wärmepumpendialog führte statt der `KostenKnoepfeLeiste` EINEN Knopf „Kosten bearbeiten…", der die Kostenverwaltung **immer auf der Investitionsseite** aufschlug (`betrieb: false`); den Betriebsteil musste der Anwender dort selbst suchen. Ein Weg „Energiekosten…" fehlte ganz, obwohl die Wärmepumpe Strom bezieht und der Kern die Einengung darauf seit den Aufträgen 268/311 führt (`EnergietraegerZulaessigkeit` gibt ihr `NUR_STROM`) | Der Dialog entstand in Welle iU9‑W7.4 als Abschrift von `Wizard_WPItem`, und dort gab es genau diesen einen Knopf (`btnKosten_Click`:566). Die `KostenKnoepfeLeiste` kam erst mit der Etappe KD6 für die Brenner und wurde bei den späteren vier Dialogen nachgezogen — die Wärmepumpe lag außerhalb dieser Familie und blieb stehen |
+
+**Was der Sammelknopf konnte, was die Leiste nicht kann.** Gemessen, nicht vermutet: Der Knopf
+hatte **keine** eigene Wärmepumpen-Kostenmaske hinter sich — er rief dieselbe
+`KostenKomponenteHuelle.OeffnenProjekt` wie die Brenner, nur mit `DbWerte.ERZEUGER_WAERMEPUMPE`
+und fest `betrieb: false`. Seine einzige eigene Leistung war die **weiche Sperre**: Kosten
+hängen an der ANLAGENZEILE, und die gibt es vor dem ersten Speichern nicht (Ä22); der Knopf
+war dann `disabled` und erklärte den Grund im Tooltip. Diese Sperre bleibt — nur anders
+gezeigt (siehe 11.2).
+
+### 11.2 Umsetzung
+
+- **Dialog** (`EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor`): Der Sammelknopf ist
+  durch `<KostenKnoepfeLeiste>` ersetzt, an derselben Stelle der Knopfzeile unter dem
+  Kenndaten-Kopf. Zwei Delegaten, drei Knöpfe — wie bei den Nachbarn: `KostenOeffnen` wird von
+  `Func<Task>` zu `Func<bool, Task>` (der Schalter `betrieb`), `EnergiekostenOeffnen` kommt neu
+  als `Func<WaermepumpeAnlageDaten, Task>` hinzu. Der Nachlauf nach der Rückkehr aus der
+  Kostenverwaltung (Bereitschaft und Summenzeile nachziehen) bleibt unverändert.
+- **Die weiche Sperre wandert von `disabled` auf „kein Delegat".** Die `KostenKnoepfeLeiste`
+  kennt kein `disabled` — ihre Regel lautet „ohne Weg kein Knopf", und sie umzubauen war
+  ausgeschlossen. Die Brückeneigenschaften des Dialogs geben deshalb `null` zurück, solange
+  `KostenBereit` falsch meldet oder der Dialog in „nur lesen" steht; die Leiste zeichnet dann
+  gar nichts. **Der Grund geht nicht verloren:** Die Herleitungszeile unter der Summenzeile
+  stand schon vorher da und nennt ihn im Klartext („die Wärmepumpe zuerst mit OK anlegen und
+  speichern") — auf einem Berührungsgerät ohnehin der einzige lesbare Ort, ein Tooltip ist dort
+  nicht erreichbar. „Nur lesen" sperrt mit: Alle drei Knöpfe führen in eine BEARBEITBARE
+  Verwaltung.
+- **Die `Wizard`-Weiche, die dem Dialog fehlte.** Die Leiste steht in allen sieben Dialogen
+  hinter `@if (!Wizard)`. Der Anlagendialog kannte den Schalter nicht, weil er kein eigener
+  Assistentenschritt ist — er steht **eingebettet** in der Wärmepumpen Verwaltung, und die ist
+  Schritt 7. Der Wirt reicht seinen Schalter jetzt durch (`Wizard="@Wizard"`, rechts von
+  `@attributes`).
+- **Naht** (`WindowsFormsApplication1/Views/Kosten/ErzeugerKostenwege.cs`): je eine Überladung
+  für einen Dialog, der seine Ids schon kennt — `Kosten(…, int idAnlage, bool betrieb)` und
+  `Energiekosten(…, int traegerId, int geraeteId)`. Die Wärmepumpe bearbeitet genau EINE Anlage;
+  es gibt dort keine Liste, aus der eine `ErzeugerZeile` gewählt würde, und damit auch nichts
+  über `AnlageZu` nachzuschlagen. Die beiden bestehenden `ErzeugerZeile`-Wege reichen an die
+  neuen weiter — Ziele, `Blazornachlauf` und die `projektId <= 0`-Weiche unverändert, jedes der
+  beiden modalen Fenster geht weiterhin an genau einer Stelle auf.
+- **Schale** (`Views/Wärmepumpe/WaermepumpeAnlageHuelle.cs`): belegt beide Delegaten nach dem
+  Muster von `HeizkesselHuelle` — mit `projektId > 0` als Weiche, sonst `null`. Der eigene
+  Windows-Weg `KostenOeffnen(besitzer, modell)` ist **entfallen**. `Energiekosten` bekommt
+  `CarrierId` und `IdWp` aus dem **Feldsatz**, nicht aus dem Hüllenmodell: Die Trägerwahl der
+  Überlagerung „Konfiguration" ändert sie (ET‑5), lange bevor ein OK sie schreibt, und der
+  Feldsatz ist dieselbe Instanz, die der Dialog bearbeitet.
+- **Am Kern nichts geändert.** Die Einengung auf Strom steht dort seit 268/311.
+- **Ressourcen:** `WPI_BTN_KOSTEN` und `WPI_TIP_KOSTEN` sind ungelesen geworden und aus beiden
+  `.resx` entfernt; die drei Beschriftungen kommen aus denselben `KDLG_KNOPF_INVEST` /
+  `KDLG_KNOPF_BETRIEB` / `KDLG_KNOPF_ENERGIE` wie bei den Nachbarn. `WPI_TIP_KOSTEN_NEU`,
+  `WPI_KOSTEN_KEINE` und `WPI_KOSTEN_SUMMEN` bleiben — sie tragen Herleitungszeile und
+  Summenzeile. `Resource.Designer.cs` neu erzeugt: 6 294 → 6 292 Einträge, zweiter Lauf +0.
+
+### 11.3 Nachweise
+
+- `KostenknopfWegeTests`: die Wärmepumpe steht jetzt in **beiden** Mengen — als siebter Wirt in
+  der Hüllentabelle (mit `ERZEUGER_WAERMEPUMPE` und drittem Knopf) und in der Liste der
+  Razor-Quellen, die die Leiste genau einmal hinter der `!Wizard`-Weiche zeichnen. Eine Ausnahme
+  für sie gab es nie, sie fehlte schlicht. 5 Fälle, unverändert in der Zahl.
+- `WaermepumpeAnlageDialogTests`: der Abschnitt „Kostenzeile" ist der Abschnitt „Die
+  Kostenleiste" geworden, im Muster der Heizkesselfälle — ohne Wege bleibt die Leiste leer; mit
+  beiden Wegen stehen drei Knöpfe in fester Reihenfolge; Invest und Betrieb gehen denselben Weg
+  und unterscheiden sich nur im Schalter; „Energiekosten…" nimmt Träger und Gerät der Anlage
+  mit; ein fehlender Weg nimmt seine Knöpfe mit; im Assistenten fehlt die Leiste; ohne
+  Anlagenzeile bleibt sie weg und der Grund ist lesbar; in der Ansicht „nur lesen" bleibt sie
+  weg. Dazu die Knopfzeile unter dem Kenndaten-Kopf mit den fünf Knöpfen in ihrer Reihenfolge.
+  3 → 9 Fälle; `EPOS.UI.Tests` 4 547 → 4 553.
+- **Zwei Gegenproben**, jede gefahren und zurückgebaut: `["EnergiekostenOeffnen"]` der
+  `WaermepumpeAnlageHuelle` umbenannt → die Wache rot mit „`WaermepumpeAnlageHuelle.cs:
+  ["EnergiekostenOeffnen"] fehlt.`"; `@if (!Wizard)` im Anlagendialog auf `@if (true)` gesetzt →
+  zwei Fälle rot (der Wachenfall und der neue bunit-Fall `Im_Assistenten_fehlt_die_Kostenleiste`).
+- Gate: Kern-Filter 0 Fehler / 5 Warnungen (keine neue, Schranke 7), Windows-Schale auf Linux
+  0 Fehler / 5 Warnungen (Bestand), `EPOS.Kern.Tests` 3 163/3 163, `EPOS.UI.Tests` 4 553/4 553,
+  SpeicherEngine 368/368, KiKern 499/499, SpeicherPlanung 27/28 (1 übersprungen) — **beide
+  Kulturen** —, Referenzlauf 5/5 PASS gegen `2026-09-16_R8_Heizkessel_Kaskade` (143 CSV,
+  1 656 417 Werte). Kein Schemaschritt, keine neue Referenzbasis, kein Rechenweg.
+
+### 11.4 Abnahmepunkte — A‑WP‑KL (Windows)
+
+| Nr. | Was |
+|---|---|
+| `A-WP-KL-1` | Projekt öffnen, Wärmepumpen Verwaltung, gespeicherte Anlage markieren: In der Knopfzeile unter „Kenndaten" stehen links ''Investitionskosten…'', ''Betriebskosten…'', ''Energiekosten…'' statt ''Kosten bearbeiten…'' |
+| `A-WP-KL-2` | ''Investitionskosten…'' und ''Betriebskosten…'' öffnen dieselbe Kostenverwaltung dieser Anlage, jeweils auf ihrer Seite; nach dem Schließen stimmt die Summenzeile ''Invest … · Betrieb …'' |
+| `A-WP-KL-3` | ''Energiekosten…'' öffnet die Energieträgerverwaltung des Projekts auf dem Träger dieser Wärmepumpe; die Kopfzeile nennt die Einengung auf Strom |
+| `A-WP-KL-4` | Träger in der Überlagerung ''Konfiguration'' umstellen, **ohne** OK, dann ''Energiekosten…'': die Verwaltung schlägt beim NEU gewählten Träger auf |
+| `A-WP-KL-5` | Neue Wärmepumpe anlegen, noch nicht gespeichert: keine drei Knöpfe, und die Zeile darunter nennt den Grund (''zuerst mit OK anlegen und speichern''); nach OK und erneutem Öffnen stehen sie |
+| `A-WP-KL-6` | Assistent (Projekt neu/bearbeiten), Schritt 7 „Wärmepumpe": keine Kostenknopfzeile in der eingebetteten Detailansicht |
+| — iOS | Nur benannt, nicht abgenommen: Der Anlagendialog ist dort nur über den Assistenten erreichbar, und dort bleibt die Leiste hinter `!Wizard` weg |
+
+### 11.5 Logbuch-Entwurf (Version beim Anwender offen) und Wiki
+
+**Logbuch (ein Satz):** „Der Wärmepumpendialog führt jetzt dieselben drei Kostenknöpfe wie die
+übrigen Erzeugerdialoge — Investitionskosten, Betriebskosten und Energiekosten."
+
+**Wiki-Quelle** `Projekte/Wiki/Programm Dokumentation - Kosten.wiki`, Absatz zu den Knopfzeilen
+der Erzeugerdialoge: Die Wärmepumpe steht nicht mehr als Ausnahme, sondern in der Reihe.
+Upload gebündelt und ausstehend.
+
+### 11.6 Ohne Auftrag beim Lesen gefunden
+
+- **Ein Hinweistext nennt einen Knopf, den es nicht mehr gibt.**
+  `Views/BerichteKosten/KostenSeiteGaben.cs` schreibt zu einer Anlage ohne eigene Positionen
+  „…„Kosten bearbeiten…" im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage"
+  (`BK_KOSTEN_ANLAGE_OHNE_POSITIONEN`, beide Sprachen). Der Name stimmte schon vorher nur für
+  die Wärmepumpe — die sechs anderen Anlagendialoge führen seit KD6 „Investitionskosten…" und
+  „Betriebskosten…" —, jetzt stimmt er für keinen mehr. Nur benannt, nicht angefasst: Die
+  Kostenseite gehört nicht zu diesem Auftrag.
+- **Die nächste freie Befundnummer dieses Dialogs ist ET‑11.**

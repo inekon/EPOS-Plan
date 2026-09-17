@@ -128,8 +128,13 @@
     @if (_anlageGaben is not null && _gewaehlt is not null)
     {
         <div class="epos-wp-eingebettet" @key="_gewaehlt">
+            @* Wizard geht MIT: Die eingebettete Ansicht traegt seit dem 17.09.2026
+               die KostenKnoepfeLeiste, und im Assistenten gibt es das Projekt noch
+               nicht, zu dem Kostenpositionen und Projekttraeger gehoerten. Die
+               Weiche steht dort, wo die Leiste steht - der Wirt nennt nur seinen
+               Betrieb. *@
             <WaermepumpeAnlageDialog @ref="_anlage" @attributes="_anlageGaben"
-                                     Eingebettet="true" TitelText="" />
+                                     Eingebettet="true" TitelText="" Wizard="@Wizard" />
         </div>
     }
     else

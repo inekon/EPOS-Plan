@@ -10,7 +10,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <summary>
 /// Die WACHE über die KOSTENKNÖPFE der Erzeuger-Projektdialoge — Auftrag 277.
 ///
-/// <para><b>Worum es geht.</b> Alle sechs Erzeugerdialoge zeichnen die
+/// <para><b>Worum es geht.</b> Alle sieben Anlagendialoge zeichnen die
 /// <c>KostenKnoepfeLeiste</c>. Ob ihre Knöpfe erscheinen und wohin sie führen,
 /// entscheidet allein der WIRT: Er legt <c>KostenOeffnen</c> und
 /// <c>EnergiekostenOeffnen</c> in seinen Parametersatz. Bleiben die Schlüssel weg,
@@ -55,6 +55,14 @@ public sealed class KostenknopfWegeTests
          "ERZEUGER_PHOTOVOLTAIK", true),
         ("WindowsFormsApplication1/Views/Stromspeicher/StromspeicherHuelle.cs",
          "ERZEUGER_STROMSPEICHER", true),
+
+        // Die WÄRMEPUMPE seit dem 17.09.2026 (Anwenderentscheid „angleichen!"). Bis
+        // dahin führte ihr Dialog EINEN Knopf „Kosten bearbeiten…", der Investitions-
+        // und Betriebskosten zusammen aufschlug, und gar keinen Weg „Energiekosten…" —
+        // obwohl sie Strom bezieht (die Einengung darauf steht seit Auftrag 268/311 im
+        // Kern). Sie ist damit kein Sonderfall mehr, sondern der siebte Wirt.
+        ("WindowsFormsApplication1/Views/Wärmepumpe/WaermepumpeAnlageHuelle.cs",
+         "ERZEUGER_WAERMEPUMPE", true),
 
         // Ohne Energieträger und damit ohne dritten Knopf.
         ("WindowsFormsApplication1/Views/Pufferspeicher/PufferspeicherHuelle.cs",
@@ -179,7 +187,7 @@ public sealed class KostenknopfWegeTests
     }
 
     /// <summary>
-    /// Die sechs Dialoge, die die Leiste zeichnen — ihre Razor-Quelle.
+    /// Die sieben Dialoge, die die Leiste zeichnen — ihre Razor-Quelle.
     /// </summary>
     private static readonly string[] Dialoge =
     {
@@ -189,14 +197,19 @@ public sealed class KostenknopfWegeTests
         "EPOS.UI/Dialoge/Erzeuger/StromspeicherDialog.razor",
         "EPOS.UI/Dialoge/Erzeuger/PufferspeicherDialog.razor",
         "EPOS.UI/Dialoge/Solarthermie/SolarkollektorenDialog.razor",
+
+        // Die Wärmepumpe steht eingebettet in der Wärmepumpen Verwaltung, und DIE ist
+        // Schritt 7 des Assistenten. Ihre Weiche ist derselbe Schalter, den der Wirt
+        // durchreicht.
+        "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor",
     };
 
     /// <summary>
     /// <b>Die zweite Plattform steht in derselben Wache.</b> Der einzige
-    /// plattformfreie Wirt dieser sechs Dialoge ist die Assistentenseite — und damit
+    /// plattformfreie Wirt dieser sieben Dialoge ist die Assistentenseite — und damit
     /// der einzige Weg, auf dem sie auf iOS erscheinen. Dort gibt es das Projekt noch
     /// nicht, zu dem Kostenpositionen und Projektträger gehörten; die Leiste steht
-    /// deshalb in JEDEM der sechs hinter einer <c>Wizard</c>-Weiche und wird gar nicht
+    /// deshalb in JEDEM von ihnen hinter einer <c>Wizard</c>-Weiche und wird gar nicht
     /// erst gezeichnet. Ohne diese Weiche zeigte der Assistent drei Knöpfe, die ins
     /// Leere führten.
     ///
@@ -206,7 +219,7 @@ public sealed class KostenknopfWegeTests
     /// Seitengaben über <c>AssistentPlattformwege.SeitenSperrgrund</c> ab.</para>
     /// </summary>
     [Fact]
-    public void Im_Assistenten_zeichnet_keiner_der_sechs_Dialoge_die_Leiste()
+    public void Im_Assistenten_zeichnet_keiner_der_Dialoge_die_Leiste()
     {
         var funde = new List<string>();
 
