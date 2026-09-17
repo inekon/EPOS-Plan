@@ -103,6 +103,27 @@
                                Aktiv="@AssistentSteht" />
                 }
                 <button type="button" class="epos-knopf" @onclick="Verlassen">@ZurueckText</button>
+
+                @* DAS KREUZ STEHT BEIM TITEL - auch im Kopf einer freien ANSICHT
+                   (Hausregel EPOS.UI; Anwenderwunsch 16.09.2026: „Bereich
+                   Simulation: Ergaenze ein Schliessen button (Kreuz), analog zu
+                   den Dialogen Kreuzen zum Schliessen"). Vorbild ist die Ansicht
+                   Assistent, nicht der Dialogfall.
+
+                   DIESELBE AKTION, NICHT EINE ZWEITE WAHRHEIT: Das Kreuz haengt
+                   an Verlassen - also an derselben Rueckfrage
+                   (Speichern/Verwerfen/Bleiben) und erst danach an Geschlossen.
+                   Es gibt keinen Weg nach draussen, der die Frage umgeht und
+                   eine ungespeicherte Konfiguration still verwirft.
+
+                   BEIDE WEGE STEHEN DA („ergaenze", nicht „ersetze"): „← zurueck"
+                   ist der benannte Rueckweg der Werkzeugleiste (#216) und sagt,
+                   WOHIN es geht - zurueck zum Aufrufer; das Kreuz ist der
+                   gewohnte Griff rechts aussen, den jeder Dialog des Hauses
+                   traegt. Ein zweites Kreuz gibt es nicht: Die Ansicht liegt in
+                   keiner Ueberlagerung, und die zwei eingebetteten Blaetter
+                   (Konfiguration, Ergebnis) zeichnen keins. *@
+                <Schliesskreuz Geschlossen="Verlassen" />
             </span>
         </div>
     </div>
