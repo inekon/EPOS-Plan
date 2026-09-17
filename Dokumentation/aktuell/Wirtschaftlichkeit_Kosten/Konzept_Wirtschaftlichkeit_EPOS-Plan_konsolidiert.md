@@ -929,18 +929,33 @@ Vorrang nur für Werte > 0: `custom_price_work` → `price_work` → null ⇒ En
 **Grundpreis:** einmal p. a. je Träger; `custom_price_base` gilt auch bei 0 (nur NULL fällt durch);
 wird nur addiert, wenn ein Arbeitspreis existiert.
 
-**Leistungspreis** — die einzige η-Division der Kostenkette:
+**Leistungspreis der Brennstoffträger** — die einzige η-Division der Kostenkette; Basis ist die
+vorgehaltene Anschlussleistung aus den Gerätedaten:
 
 ```
 kw = BHKW:  (P_el + P_therm) / η_gesamt        Kessel:  P_therm / η
      (η > 1,5 gilt als Prozentangabe ÷ 100; außerhalb (0;1,5] wird die Anlage übersprungen)
 Saisonreihe (12 Monatssätze) vor konstantem Satz
 Modus JAHR:  Satz × kw          Modus MONAT:  Satz × kw × 12
-Stromträger ausgenommen; kw ≤ 0 ⇒ kein Leistungspreis
+kw ≤ 0 ⇒ kein Leistungspreis
 ```
 
-**Netzbezug Strom:** `StromkostenNetz = Stromrestbedarf × 1000 × Preis + Grundpreis`. Im Tarifmodus
-ersetzt der Zonen- oder Rollenbetrag den Flat-Anteil; danach **immer** `+ AufschlagBetrag`.
+**Netzbezug Strom:** `StromkostenNetz = Stromrestbedarf × 1000 × Preis + Grundpreis +
+Leistungsanteil`. Der Leistungsanteil des Stromträgers bemisst sich an der **gemessenen
+Bezugsspitze**, nicht an einer Anlagenleistung — ein Stromanschluss wird nach der
+registrierten Leistung abgerechnet:
+
+```
+Spitze = Maximum der VIERTELSTUNDENreihe des Netzbezugs (dieselbe Reihe, die der Speicher
+         kappt); das Stundenmittel (StromMatrix.MaxBezugKW) glättet die Spitze und bleibt
+         der Tarifstruktur vorbehalten
+Modus JAHR:  Satz × Jahresspitze       Modus MONAT:  Σ₁₂ (Monatsspitze × Satz)
+Saisonreihe vor konstantem Satz:       Σ₁₂ (Monatssatz × Monatsspitze)
+Satz 0 / nicht gepflegt ⇒ kein Anteil; ohne Zeitreihen ⇒ kein Anteil, der Träger wird benannt
+```
+
+Im Tarifmodus ersetzt der Zonen- oder Rollenbetrag den **ganzen** Flat-Anteil samt
+Leistungsanteil; danach **immer** `+ AufschlagBetrag`.
 
 **Aufschlagsblock** (Schalter `Aufschlaege_Anwenden`, Vorgabe AUS):
 

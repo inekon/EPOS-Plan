@@ -5080,6 +5080,7 @@ namespace WindowsFormsApplication1
             erg.StromsteuerEntlastungJahr1 = eingabe.StromsteuerEntlastungJahr1;
             erg.SteuerHerkunft = eingabe.SteuerHerkunft;
             erg.StromkostenTarif = eingabe.StromkostenTarif;  // W3: Tarifmatrix
+            erg.BezugsspitzeKW = v.BezugsspitzeKW;            // SP-W1: Herleitungszeile
             erg.VermiedenArbeitJahr = eingabe.VermiedenArbeit;        // E5
             erg.VermiedenLeistungJahr = eingabe.VermiedenLeistung;
             erg.VermiedenGesamtJahr = eingabe.VermiedenGesamt;

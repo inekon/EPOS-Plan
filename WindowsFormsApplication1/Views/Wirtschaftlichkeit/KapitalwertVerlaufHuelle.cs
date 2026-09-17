@@ -131,7 +131,10 @@ namespace WindowsFormsApplication1
                         string szenario = SzenarioZu(szenarioId);
                         WirtschaftlichkeitParameter p = ctrl.LadeParameter(idStamm);
                         TarifParameter tarif = ctrl.LadeTarif(idStamm);
-                        bool mitZeitreihen = tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
+                        // SP-W1: auch der Leistungspreis des Stromträgers braucht den
+                        // frischen Lauf — seine Basis ist die Bezugsspitze.
+                        bool mitZeitreihen = tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0 ||
+                                             KostenEmissionRechner.StromLeistungspreisGepflegt(idStamm);
 
                         bool warGecacht = daten != null;
                         if (daten == null)   // Simulationsdaten nur einmal sammeln

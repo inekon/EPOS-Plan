@@ -435,6 +435,16 @@ namespace WindowsFormsApplication1
                                "Emissionsfaktor zugeordnet. Die CO₂-Kennzahlen stammen " +
                                "insoweit nicht aus den Projektdaten.");
 
+            // SP-W1: Dasselbe Muster für den Leistungspreis des Stromträgers. Er ist
+            // gepflegt, aber der Lauf hat keine Zeitreihen geführt — ohne Bezugsspitze
+            // gibt es keine Basis, und der Anteil entfällt. Das sieht wie ein zu
+            // günstiges Ergebnis aus, wenn es niemand sagt.
+            if (!string.IsNullOrEmpty(v.LeistungspreisOhneSpitze) && _warnungen != null)
+                _warnungen.Add((v.IstStamm ? "Stamm" : "Variante") + " '" + v.Anzeige +
+                               "': Für den Stromträger „" + v.LeistungspreisOhneSpitze +
+                               "“ ist ein Leistungspreis gepflegt, der Lauf führt aber keine " +
+                               "Bezugsspitze — der Leistungsanteil fehlt in den Energiekosten.");
+
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Dasselbe Muster für die
             // zweite stille Lücke der Kostenkette — ein Heizkessel hat Wärme erzeugt,
             // aber sein Brennstoffverbrauch steht nicht im Ergebnis. Die Kennzahlen
