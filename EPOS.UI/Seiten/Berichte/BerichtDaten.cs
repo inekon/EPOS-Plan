@@ -26,6 +26,18 @@ public sealed class VarianteZeile
     public string SimStand { get; set; } = "";
 
     /// <summary>
+    /// AUFTRAG VF-1 (Anwenderbefund 17.09.2026): <b>womit diese Version ihren
+    /// Stromspeicher rechnet</b> — „mit Speicherflotte: … · 2 Einheiten",
+    /// „Einzelspeicher: …" oder „ohne Stromspeicher".
+    ///
+    /// <para>Stamm und Varianten dürfen verschiedene Flotten führen; in der
+    /// Vergleichsgruppe stand das bis hierher nirgends, und eine Variante ohne Speicher
+    /// sah aus wie eine mit. Leer = nicht lesbar; dann bleibt die Zelle leer, statt
+    /// etwas zu behaupten.</para>
+    /// </summary>
+    public string Speicher { get; set; } = "";
+
+    /// <summary>
     /// Der Simulationszeitpunkt OHNE Kennzeichen („05.09.26 16:23"); leer = nie
     /// simuliert.
     ///

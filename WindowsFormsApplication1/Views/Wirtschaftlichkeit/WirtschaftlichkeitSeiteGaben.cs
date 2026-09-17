@@ -43,6 +43,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die Ids der Gruppe in Listenreihenfolge (Stamm zuerst) — für die Vergleichswahl (W5‑B‑5).</summary>
         private readonly List<int> _gruppe = new List<int>();
 
+        /// <summary>
+        /// Die gespeicherten Simulationsstände der Gruppe (VF-1, Teil C) — Grundlage des
+        /// Satzes „Ergebnisse aus gespeicherten Läufen vom …". Genommen wird der
+        /// ÄLTESTE: Er begrenzt, wie frisch die Tabelle insgesamt ist.
+        /// </summary>
+        private readonly List<DateTime> _simStaende = new List<DateTime>();
+
         /// <summary>Die geteilte Vergleichswahl der drei Seiten (W5‑B‑5); die Rahmenhülle setzt sie.</summary>
         internal Vergleichsauswahl Vergleich { get; set; } = new Vergleichsauswahl();
 
@@ -96,6 +103,7 @@ namespace WindowsFormsApplication1
                 ["SpalteArt"] = MyResource.Resource.BK_SP_ART,
                 ["SpalteBezeichner"] = MyResource.Resource.BK_SP_BEZEICHNER,
                 ["SpalteProjektname"] = MyResource.Resource.BK_SP_PROJEKTNAME,
+                ["SpalteSpeicher"] = MyResource.Resource.WIRT_ZEILE_SPEICHER,
                 ["SpalteSimulation"] = MyResource.Resource.BK_BER_SP_SIMULATION,
                 ["PhotovoltaikText"] = T("PVW_KNOPF", "Photovoltaik…"),
                 ["BhkwText"] = T("BHW_KNOPF", "BHKW-Wirtschaftlichkeit…"),
@@ -121,6 +129,7 @@ namespace WindowsFormsApplication1
             var zeilen = new List<VarianteZeile>();
             _namen.Clear();
             _gruppe.Clear();
+            _simStaende.Clear();
             try
             {
                 foreach (BerichtsDatenSammler.VariantenStatus st in
@@ -134,10 +143,15 @@ namespace WindowsFormsApplication1
                         Bezeichner = st.IstStamm ? MyResource.Resource.BK_ART_STAMMPROJEKT
                                                  : st.Variantenname,
                         Projektname = st.Projektname,
+                        // VF-1: Womit rechnet diese Version ihren Stromspeicher? Der Text
+                        // kommt aus der EINEN Kernmethode, die auch der Simulationsreiter
+                        // und die Vergleichstabelle nehmen.
+                        Speicher = SpeicherAnzeigeCtrl.SpeicherKontextText(st.IdProjekt),
                         SimStand = st.SimStandText,
                         IstStamm = st.IstStamm,
                         Auffaellig = !st.SimStand.HasValue || st.Veraltet
                     });
+                    if (st.SimStand.HasValue) _simStaende.Add(st.SimStand.Value);
                     _gruppe.Add(st.IdProjekt);
                     _namen[st.IdProjekt] = st.IstStamm
                         ? MyResource.Resource.BK_ART_STAMM
@@ -295,12 +309,58 @@ namespace WindowsFormsApplication1
             {
                 WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
                 TarifParameter t = _ctrl.LadeTarif(_idStamm);
-                return T("WIRT_PARAM_KOPF", "Parameter:") + " " + p.Nachweis(BerichtTexte.Kultur) +
+                string zeile = T("WIRT_PARAM_KOPF", "Parameter:") + " " + p.Nachweis(BerichtTexte.Kultur) +
                        " · " + T("WIRT_PARAM_REFERENZ", "Referenz: Stammprojekt · Restwert linear") +
                        " · " + t.Nachweis(BerichtTexte.Kultur) + " · " +
                        BilanzKonvention.Bestimme(p, new GesetzKatalog()).Ausweis(BerichtTexte.Kultur);
+
+                string gespeichert = GespeicherteLaeufeZeile(p, t);
+                return gespeichert.Length == 0 ? zeile : zeile + " · " + gespeichert;
             }
             catch { return ""; }
+        }
+
+        /// <summary>
+        /// AUFTRAG VF-1, Teil C (Anwenderbefund 17.09.2026): <b>Der Sammler rechnet nicht
+        /// immer neu — und das gehört gesagt.</b>
+        ///
+        /// <para>Frisch simuliert wird jedes Projekt der Gruppe nur, wenn der Lauf
+        /// Stundenreihen braucht (<see cref="MitZeitreihen"/>). Sonst nimmt der Sammler
+        /// ein VORHANDENES Simulationsergebnis — auch ein älteres. Bis hierher stand
+        /// darüber nirgends etwas: Der Anwender sah Zahlen, die aussahen wie eben
+        /// gerechnet.</para>
+        ///
+        /// <para><b>Der ÄLTESTE Stand der Gruppe</b> steht im Satz, nicht der neueste: Er
+        /// sagt, wie alt die Tabelle im schlechtesten Fall ist. Ohne einen einzigen
+        /// gespeicherten Lauf entfällt die Zeile — dann simuliert der Sammler ohnehin
+        /// jedes Projekt, weil ihm das Ergebnis fehlt.</para>
+        /// </summary>
+        private string GespeicherteLaeufeZeile(WirtschaftlichkeitParameter p, TarifParameter t)
+        {
+            if (MitZeitreihen(p, t) || _simStaende.Count == 0) return "";
+            DateTime aeltester = _simStaende[0];
+            foreach (DateTime d in _simStaende) if (d < aeltester) aeltester = d;
+            return string.Format(BerichtTexte.Kultur,
+                T("WIRT_PARAM_GESPEICHERT",
+                  "Ergebnisse aus gespeicherten Läufen vom {0}; nicht neu gerechnet"),
+                aeltester.ToString("dd.MM.yyyy HH:mm", BerichtTexte.Kultur));
+        }
+
+        /// <summary>
+        /// <b>Braucht der Lauf dieser Gruppe Stundenreihen?</b> — die EINE Herleitung für
+        /// den Rechenlauf und für den Ausweis in der Parameterzeile (VF-1).
+        ///
+        /// <para>W3: Tarifmatrix und KWKG-Split brauchen Stundenreihen; dann wird je
+        /// Projekt frisch in-memory simuliert. SP-W1: derselbe Grund für den
+        /// Leistungspreis des Stromträgers — seine Basis ist die Bezugsspitze aus der
+        /// Viertelstundenreihe, und die gibt es nur aus dem frischen Lauf. LS-E-2: Der
+        /// Leistungspreis zählt für die GANZE Gruppe, nicht nur für den Stamm — sonst
+        /// fiele er einer Variante still weg, die ihn als Einzige führt.</para>
+        /// </summary>
+        private bool MitZeitreihen(WirtschaftlichkeitParameter p, TarifParameter tarif)
+        {
+            return tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0 ||
+                   KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm, _gruppe);
         }
 
         // =====================================================================
@@ -596,12 +656,10 @@ namespace WindowsFormsApplication1
                 WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
                 TarifParameter tarif = _ctrl.LadeTarif(_idStamm);
 
-                // W3: Tarifmatrix und KWKG-Split brauchen Stundenreihen — dann
-                // wird je Projekt frisch in-memory simuliert. SP-W1: derselbe Grund für
-                // den Leistungspreis des Stromträgers — seine Basis ist die Bezugsspitze
-                // aus der Viertelstundenreihe, und die gibt es nur aus dem frischen Lauf.
-                bool mitZeitreihen = tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0 ||
-                                     KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm);
+                // Die Herleitung steht in MitZeitreihen — dieselbe, die auch die
+                // Parameterzeile ausweist (VF-1). Zwei Fassungen wären zwei Antworten:
+                // eine Zeile, die „nicht neu gerechnet" sagt, während gerechnet wird.
+                bool mitZeitreihen = MitZeitreihen(p, tarif);
 
                 _ergebnisse = await Task.Run(() =>
                 {
