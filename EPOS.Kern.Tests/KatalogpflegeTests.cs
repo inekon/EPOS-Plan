@@ -234,26 +234,32 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// <b>222 Zeilen in <c>Tab_Gesetzesparameter</c></b> — der Auslieferungsstand.
-        /// Die Dublettenpruefung der Maske laedt diese 222 Zeilen heute bei JEDEM Speichern
+        /// <b>226 Zeilen in <c>Tab_Gesetzesparameter</c></b> — der Auslieferungsstand.
+        /// Die Dublettenpruefung der Maske laedt diese Zeilen heute bei JEDEM Speichern
         /// vollstaendig neu (Befund W14c-B12).
+        ///
+        /// <para>Bis Auftrag US-1 waren es 222: Die Testdatenbank stand auf der
+        /// Katalog-Generation 6, weil <c>GesetzKatalog.StelleKatalogSicher</c> sie nie
+        /// erreicht hat. Seit das Werkzeug <c>Testdatenbankschema</c> die Nachsaat mit
+        /// zieht, steht sie auf Generation 7 — vier Zeilen mehr
+        /// (<c>STROMST_REDUZIERT_SATZ</c> und die drei UMLAGEN).</para>
         /// </summary>
         [Fact]
-        public void DerGesetzeskatalogFuehrt222Zeilen()
+        public void DerGesetzeskatalogFuehrt226Zeilen()
         {
             if (!_db.Vorhanden) return;
             object v = DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_Gesetzesparameter");
-            Assert.Equal(222, Convert.ToInt32(v, CultureInfo.InvariantCulture));
+            Assert.Equal(226, Convert.ToInt32(v, CultureInfo.InvariantCulture));
         }
 
         /// <summary>
-        /// <b>Neun Klassen aus der Datenbank</b> — die technische Klasse <c>SYSTEM</c>
+        /// <b>Zehn Klassen aus der Datenbank</b> — die technische Klasse <c>SYSTEM</c>
         /// (Markerzeile der Nachsaat) bleibt aussen vor. <c>EEG</c> ist dabei: Sie steht in
         /// der Datenbank, aber NICHT in der festen Achterliste des Zeilendialogs
-        /// (Befund W14c-B5).
+        /// (Befund W14c-B5). <c>UMLAGEN</c> kam mit der Generation 7 hinzu (Auftrag US-1).
         /// </summary>
         [Fact]
-        public void DerKatalogMeldetNeunKlassenOhneSystem()
+        public void DerKatalogMeldetZehnKlassenOhneSystem()
         {
             if (!_db.Vorhanden) return;
 
@@ -261,7 +267,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[]
             {
                 "CO2_PREIS", "EEG", "EF_BILANZ", "EF_NACHWEIS", "ENERGIESTEUER",
-                "KWKG", "PEF_NACHWEIS", "STROMSTEUER", "UMSATZSTEUER"
+                "KWKG", "PEF_NACHWEIS", "STROMSTEUER", "UMLAGEN", "UMSATZSTEUER"
             }, klassen.ToArray());
             Assert.DoesNotContain(DbWerte.GESETZ_KLASSE_SYSTEM, klassen);
         }
@@ -276,7 +282,8 @@ namespace EPOS.Kern.Tests
         [InlineData("ENERGIESTEUER", 15)]
         [InlineData("KWKG", 52)]
         [InlineData("PEF_NACHWEIS", 29)]
-        [InlineData("STROMSTEUER", 7)]
+        [InlineData("STROMSTEUER", 8)]
+        [InlineData("UMLAGEN", 3)]
         [InlineData("UMSATZSTEUER", 1)]
         public void JedeKlasseFuehrtIhreEingefroreneZeilenzahl(string klasse, int zeilen)
         {

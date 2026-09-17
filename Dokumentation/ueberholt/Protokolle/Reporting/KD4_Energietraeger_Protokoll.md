@@ -932,3 +932,157 @@ Kein Rechenweg, kein Schemaschritt, keine neue Referenzbasis.
 > Die Preisbestandteile eines Brennstoffträgers kommen ohne die Wahl „Gesamtwert /
 > aufgeschlüsselt" aus: Ausgewiesen werden die Summe der eingeschalteten Bestandteile und
 > ihr Abstand zum Arbeitspreis, und „In Arbeitspreis übernehmen" ist immer bedienbar.
+
+---
+
+## Nachtrag US-1 (17.09.2026) — die drei Umlagen-Katalogzeilen kommen in die Datenbank
+
+Erledigt den Nebenbefund (2) aus dem Aufräumen nach N4–N6 und aus N7: Die drei
+`UMLAGEN`-Zeilen, die `GesetzKatalog` mit der Saatgeneration 7 anlegt, standen in keiner
+Datenbank.
+
+### US1.1 Befund — gemessen, nicht vermutet
+
+`GesetzKatalog.Vorbelegung` sät die Klasse `UMLAGEN` mit einer Quelle aus Zeilenname und
+gemeinsamem Nachsatz. Mit dem längsten Namen ergab das mehr Zeichen, als
+`Tab_Gesetzesparameter` zulässt:
+
+| Zeile | Quelle vorher | Länge | Schranke |
+|---|---|---|---|
+| `UMLAGE_KWKG` | „KWKG-Umlage — Angabe des Anwenders vom 17.09.2026, Umlagen 2026 laut Veröffentlichung der Übertragungsnetzbetreiber" | 115 | 120 |
+| `UMLAGE_OFFSHORE` | „Offshore-Netzumlage — …" | **123** | 120 |
+| `UMLAGE_STROMNEV19` | „§ 19 StromNEV-Umlage — …" | **124** | 120 |
+
+Das `CHECK (length("Quelle") <= 120)` (`sql/schema/001_grundschema.sql`) wies die zweite
+Zeile ab. Die Saat schreibt über `StilleDb`; die schluckt jeden Fehler, gibt `-1` zurück und
+schreibt „SQLite Error 19" auf eine Konsole, die im Auslieferungsbetrieb niemand liest.
+`Einfuegen` machte daraus eine Ausnahme ohne Schlüssel und ohne Grund, und
+`StelleKatalogSicher` fing sie in einem **leeren `catch`** ab. Folge: Die Schleife brach bei
+der zweiten Zeile ab, die Markerzeile stieg **nicht** auf 7, und in
+`Referenzlaeufe/Kenndaten_Test.sqlite` stand keine einzige `UMLAGEN`-Zeile
+(`SELECT COUNT(*) … WHERE Klasse='UMLAGEN'` = 0). Gerechnet wurde weiterhin richtig — die
+Konstanten des `StrompreisZerlegungModel` sind die wertgleiche Rückfallebene —, aber Katalog
+und Schnellwahl führten die Sätze nicht.
+
+### US1.2 Die Quelle wird kürzer, der Inhalt bleibt
+
+Der gemeinsame Nachsatz lautet jetzt „Angabe des Anwenders vom 17.09.2026; Umlagen 2026 laut
+den Übertragungsnetzbetreibern" (77 → 85 Zeichen des Nachsatzes selbst). Inhalt unverändert:
+Anwenderangabe, Datum, Stichjahr, Herkunft.
+
+| Zeile | Quelle nachher | Länge |
+|---|---|---|
+| `UMLAGE_KWKG` | „KWKG-Umlage — Angabe des Anwenders vom 17.09.2026; Umlagen 2026 laut den Übertragungsnetzbetreibern" | 99 |
+| `UMLAGE_OFFSHORE` | „Offshore-Netzumlage — …" | 107 |
+| `UMLAGE_STROMNEV19` | „§ 19 StromNEV-Umlage — …" | 108 |
+
+### US1.3 Die Wache — damit es nicht wiederkommt
+
+`EPOS.Kern.Tests/GesetzkatalogSaatWacheTests`, drei Fälle:
+
+1. **`JedeSaatzeileBleibtInDenSchrankenDesSchemas`** — liest die
+   `CHECK (length("…") <= n)` des Blocks `CREATE TABLE "Tab_Gesetzesparameter"` **aus
+   `sql/schema/001_grundschema.sql`** (Schluessel 60, Klasse 40, Einheit 20, Status 12,
+   Quelle 120) und misst **jede** der 225 Saatzeilen gegen sie. Die Liste der gefundenen
+   Spalten wird selbst geprüft, damit ein umformuliertes Schema die Wache nicht still
+   abschaltet.
+2. **`DieNachsaatBringtDieDreiUmlagenzeilenInDieDatenbank`** — räumt auf einer eigenen
+   Arbeitskopie die Generation 7 ab, setzt die Markerzeile auf 6 zurück, ruft
+   `StelleKatalogSicher` und findet die drei Zeilen mit **0,446 / 0,941 / 1,559 ct/kWh**,
+   Stichjahr 2026, wieder. Der zweite Lauf legt nichts mehr an (Idempotenz).
+3. **`EinSaatfehlerStehtMitSchluesselUndGrundInDenWarnungen`** — stellt den Fehlschlag mit
+   einem Trigger auf der Arbeitskopie her und verlangt Schlüssel, Klasse, Stichjahr und
+   Grund in der Warnung.
+
+**Gegenproben** gefahren und zurückgebaut: (a) den alten Quelltext wieder eingesetzt → Fall 1
+rot mit „`UMLAGE_OFFSHORE` … Quelle hat 123 Zeichen, erlaubt sind 120" und „`UMLAGE_STROMNEV19`
+… 124"; (b) den Erwartungswert der KWKG-Umlage auf 0,447 gestellt → Fall 2 rot.
+
+### US1.4 Der stille Fehler trägt einen Namen
+
+Drei Stellen, keine mehr:
+
+* `StilleDb.LetzterSchreibfehler` — der Grund der zuletzt verschluckten schreibenden
+  Anweisung. Nur der Schreibweg führt ihn; die lesenden Methoden brauchen ihn nicht, ihre
+  Rückgabe `null` ist selbst die Aussage.
+* `GesetzKatalog.Einfuegen` nennt in seiner Ausnahme **Schlüssel, Klasse, Stichjahr und
+  Grund**; `StelleKatalogSicher` sammelt sie in `GesetzKatalog.SaatWarnungen` statt sie
+  wortlos zu verschlucken. **Am Ablauf ändert sich nichts** — der Abbruch bleibt, die
+  Markerzeile steigt bei einem Fehlschlag weiterhin nicht, der nächste Start versucht es
+  wieder.
+* `SchemaMigration.Ausfuehren` ruft nach den Schritten `GesetzKatalog.StelleKatalogSicher`
+  und schreibt Zahl und Warnungen in den Fehlerbericht — also in die Protokolldatei neben der
+  Datenbank. Der Ausgang der Migration hängt nicht daran: Der Katalog hat seine wertgleiche
+  Rückfallebene, ein Fehlschlag ist eine **Warnung**.
+
+### US1.5 Der Weg der Nachsaat in die Testdatenbank
+
+`Werkzeuge/Testdatenbankschema` zieht die Datei auf den Schemastand nach und **sät jetzt auch
+den Gesetzeskatalog nach** — kein Schemaschritt und deshalb ohne Nummer. Grund: Der Katalog
+sät sich generationsweise selbst nach, aber nur, wenn ihn jemand aufruft; die Testdatenbank
+startet nie ein Programm und stand deshalb auf der Generation ihres letzten
+Anwendungsstarts (6).
+
+Lauf auf `Referenzlaeufe/Kenndaten_Test.sqlite`: 0 Spalten, 0 Tabellen, **4 Zeilen
+nachgesät, Generation jetzt 7**, keine Warnung. Gemessen:
+
+| Größe | vorher | nachher |
+|---|---|---|
+| Zeilen in `Tab_Gesetzesparameter` | 222 | 226 |
+| Klassen ohne `SYSTEM` | 9 | 10 (neu `UMLAGEN`) |
+| `STROMSTEUER` | 7 | 8 (`STROMST_REDUZIERT_SATZ`) |
+| `UMLAGEN` | 0 | 3 |
+| Markerzeile `KATALOG_GENERATION` | 6 | 7 |
+
+Die eingefrorenen Zahlen in `EPOS.Kern.Tests/KatalogpflegeTests` sind mitgezogen.
+
+### US1.6 Gate
+
+| Prüfung | Ergebnis |
+|---|---|
+| `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler, 5 Warnungen (Bestand, Schranke 7) |
+| `dotnet build WindowsFormsApplication1 … -p:EnableWindowsTargeting=true` | 0 Fehler, 5 Warnungen (Bestand) |
+| `EPOS.Kern.Tests` | 3 181/3 181 |
+| `EPOS.UI.Tests` | 4 557/4 557 |
+| SpeicherEngine / KiKern / SpeicherPlanung | 368/368, 499/499, 27/28 (1 übersprungen) |
+| Beide Kulturen | normal und `LC_ALL=en_US.UTF-8` — gleiches Bild |
+| `SqlDialektPruefer` | 1 474 Texte, **0 Fundstellen** |
+| Referenzlauf 1030/1007/1017/1045/1046 gegen `2026-09-16_R8_Heizkessel_Kaskade` | **5/5 PASS**, 143 CSV, 1 656 417 Werte, **byte-gleich** |
+
+Kein Rechenweg, kein Schemaschritt, keine neue Referenzbasis. Dass die Nachsaat den
+Referenzlauf nicht berührt, ist damit **gemessen** und nicht behauptet: Zu jedem der vier
+Schlüssel führt der Kern eine wertgleiche Code-Rückfallebene
+(`StrompreisZerlegungModel.STROMSTEUER_REDUZIERT` 0,050 ct/kWh = 0,50 EUR/MWh; die drei
+Umlagen stecken wertgleich im gefalteten Arbeitspreis des Schemaschritts 83).
+
+### US1.7 Abnahmepunkte auf Windows
+
+| Nr. | Was zu sehen ist |
+|---|---|
+| `A-US1-1` | Katalogpflege, Bereich **`UMLAGEN`**: drei Zeilen — KWKG-Umlage 0,446, Offshore-Netzumlage 0,941, § 19 StromNEV-Umlage 1,559 ct/kWh, alle ab 2026, Status `GESICHERT` |
+| `A-US1-2` | Jede der drei Zeilen führt ihre Quelle vollständig, ohne abgeschnittenen Text |
+| `A-US1-3` | Bereich `STROMSTEUER` führt zusätzlich `STROMST_REDUZIERT_SATZ` (0,50 EUR/MWh, ab 2026) |
+| `A-US1-4` | Strompreis-Block, Schnellwahl „Stromsteuer energieintensiver Unternehmen": Die Herkunftszeile nennt **„Katalog: 0,5 EUR/MWh (ab 2026, …)"** statt der Rückfallebene. Die drei Umlagen haben bisher **keinen** Leser im Preisblock — sie sind Katalogzeilen zum Pflegen und Nachschlagen |
+| `A-US1-5` | Protokolldatei neben der Datenbank: nach dem ersten Start einer Bestandsdatenbank steht dort „Gesetzeskatalog: 4 Zeile(n) nachgesät (Generation 7)." und **keine** Warnung |
+
+### US1.8 Logbuch
+
+Kein Eintrag. Der Anwender sah bisher keine falsche Angabe — die Umlagen rechneten
+wertgleich aus der Rückfallebene; es fehlten Katalogzeilen, also eine hausinterne Sache.
+
+### US1.9 Nebenbefunde (gemessen, nicht angefasst)
+
+1. **Ein Saatfehler erzeugt bei jedem Start Dubletten.** Bricht die Nachsaatschleife ab,
+   bleibt die Markerzeile auf der alten Generation — die Zeilen, die **vor** der
+   fehlgeschlagenen schon angelegt wurden, legt der nächste Start ein zweites Mal an, mit
+   neuer `ID`. In der Saatgeneration 7 betraf das `STROMST_REDUZIERT_SATZ` und
+   `UMLAGE_KWKG`: Eine Bestandsdatenbank, die seit dem 17.09.2026 mehrfach gestartet wurde,
+   kann jede dieser beiden Zeilen mehrfach führen — sichtbar in der Katalogpflege.
+   **Die Ursache ist mit diesem Nachtrag weg** (die Saat läuft durch), die bereits
+   entstandenen Dubletten sind es nicht. Ein Entdoppelungsschritt nach dem Muster von
+   Schritt 76 (`ProjektEnergietraegerEindeutig`) wäre der Weg; er ist ein Schemaschritt und
+   gehörte nicht in diesen Auftrag.
+2. **Ein Kommentar nennt die falsche Generation.**
+   `StrompreisZerlegungModel.STROMSTEUER_REDUZIERT` sagt, der Katalogschlüssel
+   `GESETZ_STROMST_REDUZIERT` sei „mit der Saatgeneration 5 eingesät"; im Quelltext trägt
+   die Zeile die Generation **7**. Reiner Kommentarfehler ohne Wirkung.

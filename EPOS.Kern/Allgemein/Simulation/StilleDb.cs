@@ -105,9 +105,24 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Grund des zuletzt von <see cref="NonQuery"/> verschluckten Fehlers; leer,
+        /// solange die letzte schreibende Anweisung durchlief.
+        ///
+        /// AUFTRAG US-1, die eine Naht nach aussen: Diese Klasse schluckt jeden Fehler
+        /// und schreibt ihn auf die Konsole — der Aufrufer sieht nur die -1 und kann
+        /// deshalb nicht sagen, WARUM eine Zeile nicht ankam. Genau daran ist die Saat
+        /// der drei Umlagenzeilen unbemerkt gescheitert (CHECK auf die Laenge von
+        /// Quelle, SQLite Error 19). Nur der Schreibweg fuehrt diese Auskunft: Die
+        /// lesenden Methoden brauchen sie nicht, ihre Rueckgabe <c>null</c> ist selbst
+        /// schon die Aussage.
+        /// </summary>
+        public static string LetzterSchreibfehler { get; private set; } = "";
+
         /// <summary>Schreibende Anweisung; Anzahl betroffener Zeilen, -1 bei Fehler.</summary>
         public static int NonQuery(string sql, params DbParam[] parameter)
         {
+            LetzterSchreibfehler = "";
             try
             {
                 using (Leihverbindung leihe = Vorgangsklammer.Leihe())
@@ -118,6 +133,7 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
+                LetzterSchreibfehler = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
                 Console.WriteLine("StilleDb.NonQuery fehlgeschlagen: " + ex.Message);
                 return -1;
             }
