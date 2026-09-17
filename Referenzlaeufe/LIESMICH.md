@@ -148,7 +148,7 @@ Protokoll unter
 **`2026-09-16_R8_Heizkessel_Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 86**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
+(**Schemastand 87**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
 unverändert weiter — Schritt 83 faltet den Strom-Aufschlag in den Arbeitspreis, Schritt 84
 zieht die Einspeisevergütung von der Trägerkarte in die Wirtschaftlichkeitsparameter um,
 Schritt 85 entfernt die fünf Spalten, die beide ohne Leser zurückgelassen haben
@@ -162,7 +162,16 @@ Schritt 86 legt an `Tab_StromspeicherVariante` die zwei Steuergrößen der
 Lastspitzenkappung an (`PeakZiel_kW` REAL nullbar, `PeakZiel_Adaptiv` 0/1) und schreibt
 keinen Wert; gelesen werden sie nur bei der Berechnungsart „Lastspitzenkappung", und die
 führt im ganzen Bestand keine Variante — der Lauf ist auch nach diesem Schritt für alle
-fünf CI-Projekte byte-gleich, Projekt 1046 mitsamt seiner Flotte). Gegen
+fünf CI-Projekte byte-gleich, Projekt 1046 mitsamt seiner Flotte.
+Schritt 87 entdoppelt `Tab_Gesetzesparameter` und legt darüber den eindeutigen Index
+`idx_Gesetzesparameter_Eindeutig` (`Schluessel`, `Klasse`, `JahrVon`); in der
+Testdatenbank steht nichts zu entdoppeln — sie hat nie ein Programm gestartet, also auch
+nie abgebrochen gesät —, der Index allein ändert keinen Wert. Derselbe Schritt schaltet
+je Projekt jede aktive Speichervariante außer der mit der kleinsten `ID` ab; getroffen
+hat das genau eine Zeile: Projekt **1026**, Anlage 11280, Variante **13** (Variante 10
+bleibt aktiv). 1026 ist kein CI- und kein Basisprojekt, und `ReadAktiveVariante` nimmt
+ohnehin die kleinste `ID` — der Lauf ist auch nach Schritt 87 für alle fünf CI-Projekte
+byte-gleich). Gegen
 diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung
 zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.

@@ -151,12 +151,77 @@ Fälle wieder grün.
 
 ## 6. Offene Punkte
 
-* **Die Vergleichsgruppe steht auch auf den Seiten *Übersicht* und *Kosten*.** Dort trägt sie die
-  Speicherspalte nicht; der Auftrag nannte die Wirtschaftlichkeit. Ob die beiden Nachbarseiten
-  folgen sollen, ist zu entscheiden.
+* **Die Speicherspalte auf den Nachbarseiten — erledigt mit US-2 (17.09.2026).** Siehe
+  Abschnitt 7.
 * **`Tab_Berichtskonfiguration.KonfigJson` trägt Projekt-Ids** (`VariantenIds`). Heute unkritisch,
   weil die Tabelle nicht mitkopiert wird und `BerichtCtrl.Lade` ohne Zeile auf die
   Standardkonfiguration fällt. Wer die Ausnahme je aufhebt, braucht denselben Nachzug.
 * **Der Nachzug läuft nur beim Duplizieren.** Ein Projekt, das über `ProjektExportImportCtrl`
   ein- und ausgeht, trägt seine Ids aus dem Paket; dort ist nicht geprüft, ob `AnlageId` im
   Flotten-JSON mitwandert.
+
+---
+
+## 7. Nachtrag US-2 (17.09.2026) — die Speicherspalte auf allen Seiten von „Berichte & Kosten"
+
+**Anlass:** Nebenbefund 1 dieses Protokolls, vom Anwender ohne Einspruch übernommen.
+
+### 7.1 Befund: es gibt keine gemeinsame Quelle — und keine drei Tabellen
+
+Der Auftrag ging davon aus, dass die Vergleichsgruppe („Art / Bezeichner / Projektname /
+Simulation") auf *Übersicht*, *Kosten* und *Wirtschaftlichkeit* dieselbe Tabelle ist.
+Gemessen ist beides anders:
+
+1. **Als Tabelle steht sie nur noch auf *Wirtschaftlichkeit* und *Bericht*.** *Übersicht*
+   hat sie mit `W5-E-1` (05.09.2026) durch ein **Auswahlfeld** ersetzt — „die Tabelle
+   brauchte vier bis fünf Zeilen Höhe für eine Angabe, die in eine passt"; was sie sonst
+   noch sagte, steht seither in der leisen Statuszeile darunter. *Kosten* zeigt sie mit
+   `W5-B-5` (08.09.2026) als **Vergleichswahl** (Kästchen je Version) über einer Matrix,
+   die je Version eine **Spalte** führt.
+2. **Eine gemeinsame Quelle gibt es nicht.** `VarianteZeile` (`EPOS.UI/Seiten/Berichte/
+   BerichtDaten.cs`) ist zwar dieselbe Zeilenklasse für alle vier Seiten, aber gefüllt wird
+   sie **viermal getrennt**: `WirtschaftlichkeitSeiteGaben`, `BerichtSeiteGaben`,
+   `UebersichtSeiteGaben`, `KostenSeiteGaben`. Es sind also drei gleichartige Änderungen,
+   nicht eine.
+
+### 7.2 Umsetzung: derselbe Text, je Seite an ihrer Stelle
+
+Der Text kommt überall aus `SpeicherAnzeigeCtrl.SpeicherKontextText(idProjekt)` und trägt
+die vorhandene Ressource `WIRT_ZEILE_SPEICHER` (beide Sprachen, bereits in
+`SpeicherKontextTextTests` gewacht). Gezeigt wird er dort, wo die jeweilige Seite ihre
+Versionen gegenüberstellt:
+
+| Seite | Ort | Warum dort |
+|---|---|---|
+| *Bericht* | **Spalte** „Stromspeicher" in der Variantenliste, neben dem Projektnamen | dieselbe Tabelle wie auf der Wirtschaftlichkeit; hier wählt der Anwender, welche Versionen in den Bericht kommen |
+| *Übersicht* | **Satz** „Stromspeicher: …" in der leisen Statuszeile unter dem Auswahlfeld | dort steht seit `W5-E-1` alles, was die Tabelle einmal sagte (Simulationsstand samt „⚠") |
+| *Kosten* | **erste Zeile** der Gegenüberstellung, vor der ersten Geldzeile | dieselbe Stelle wie die Zeile `SPEICHER_KONTEXT` der Kennzahlentabelle; die Matrix führt je Version eine Spalte, aus der Spalte wird hier die Zeile |
+
+Ohne lesbaren Kontext bleibt die Zelle leer, der Satz weg, die Zeile aus — die Seite
+behauptet nichts. Auf *Kosten* liefert die Hülle die Zeile gar nicht erst, wenn keine
+einzige Version einen Text trägt.
+
+Die Statuszeile der *Übersicht* trennt beide Angaben mit einem Mittepunkt
+(`.epos-simstand-speicher::before`), damit „Simulation: …" und „Stromspeicher: …"
+nicht ineinanderlaufen.
+
+### 7.3 Nachweis
+
+Fünf neue bunit-Fälle: *Bericht* (Spaltenkopf an Stelle 4, drei Texte in der Tabelle),
+*Übersicht* (Satz in der Statuszeile für Stamm und Variante) und *Kosten* (erste Zeile der
+Matrix, beide Texte) — dazu je eine **Gegenprobe** „ohne Kontext": die Spalte bleibt leer,
+der Satz entfällt samt seinem Element, die Zeile fehlt und die Matrix zählt wieder drei
+Zeilen. Die bestehenden Zählfälle (`thead th`, `tbody tr`) sind mitgezogen.
+`EPOS.UI.Tests` 4 575 → 4 580.
+
+### 7.4 Logbuch (Entwurf, Version beim Anwender zu erfragen)
+
+> Die Vergleichsgruppe in „Berichte & Kosten" nennt jetzt auf allen Seiten, womit die
+> jeweilige Version ihren Stromspeicher rechnet.
+
+Ein zweiter Satz, **nur falls der Anwender die doppelten Katalogzeilen gesehen hat**:
+
+> Die Liste der gesetzlichen Parameter führt jeden Schlüssel je Stichjahr wieder nur
+> einmal.
+
+Die Entdoppelung selbst (Schemaschritt 87) ist Wartung und bekommt sonst keinen Eintrag.
