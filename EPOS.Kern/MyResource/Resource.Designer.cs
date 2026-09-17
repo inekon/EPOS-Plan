@@ -33508,6 +33508,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Variante übernehmen ähnelt.
+        /// </summary>
+        public static string PEAK_BTN_VARIANTE {
+            get {
+                return ResourceManager.GetString("PEAK_BTN_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang vor und nach der Kappung ähnelt.
         /// </summary>
         public static string PEAK_CHART_TITEL {
@@ -34098,6 +34107,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PEAK_MSG_SUCHE {
             get {
                 return ResourceManager.GetString("PEAK_MSG_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Peak-Ziel konnte nicht in die Speichervariante übernommen werden. ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_VARIANTE_FEHLER {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_VARIANTE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die aktive Speichervariante rechnet mit &quot;{0}&quot;. Soll sie auf die Lastspitzenkappung umgestellt werden? ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_VARIANTE_FRAGE {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_VARIANTE_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt führt keine aktive Speichervariante. ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_VARIANTE_KEINE {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_VARIANTE_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel {0} kW in die aktive Speichervariante übernommen. ähnelt.
+        /// </summary>
+        public static string PEAK_MSG_VARIANTE_OK {
+            get {
+                return ResourceManager.GetString("PEAK_MSG_VARIANTE_OK", resourceCulture);
             }
         }
         
@@ -40908,6 +40953,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_SPEICHER_OHNE_VARIANTE {
             get {
                 return ResourceManager.GetString("SIMENG_SPEICHER_OHNE_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung: Peak-Ziel {0} kW, Ladedeckel {1} kW, Netzbezugsspitze ohne Speicher {2} kW, mit Speicher {3} kW. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_PEAK_LAUF {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_PEAK_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Berechnungsart &quot;Lastspitzenkappung&quot; hat kein Peak-Ziel - gerechnet wird die Dauernutzung. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_PEAK_OHNE_ZIEL {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_PEAK_OHNE_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Peak-Ziel {0} kW liegt nicht unter der Netzbezugsspitze ohne Speicher ({1} kW): Die Kappung bleibt wirkungslos. Geladen wird hoechstens bis zu dieser Spitze. ähnelt.
+        /// </summary>
+        public static string SIMENG_SPEICHER_PEAK_ZIEL_ZU_HOCH {
+            get {
+                return ResourceManager.GetString("SIMENG_SPEICHER_PEAK_ZIEL_ZU_HOCH", resourceCulture);
             }
         }
         
@@ -48136,6 +48208,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung ähnelt.
+        /// </summary>
+        public static string SP_BERECHNUNG_ANZEIGE_PEAKSHAVING {
+            get {
+                return ResourceManager.GetString("SP_BERECHNUNG_ANZEIGE_PEAKSHAVING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Graustrom (Netzladung zulässig) ähnelt.
         /// </summary>
         public static string SP_BETRIEBSART_ANZEIGE_GRAUSTROM {
@@ -48982,6 +49063,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einzelspeicher: Lastspitzenkappung · Peak-Ziel {0} kW ähnelt.
+        /// </summary>
+        public static string SP_KONTEXT_EINZEL_PEAKSHAVING {
+            get {
+                return ResourceManager.GetString("SP_KONTEXT_EINZEL_PEAKSHAVING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  (adaptiv) ähnelt.
+        /// </summary>
+        public static string SP_KONTEXT_PEAK_ADAPTIV {
+            get {
+                return ResourceManager.GetString("SP_KONTEXT_PEAK_ADAPTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energie (Kapazität) [kWh]: ähnelt.
         /// </summary>
         public static string SP_LABEL_ENERGIE {
@@ -49171,6 +49270,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezugsspitze ohne Speicher im letzten Lauf: {0} kW. ähnelt.
+        /// </summary>
+        public static string SP_PARAM_HINWEIS_PEAKZIEL {
+            get {
+                return ResourceManager.GetString("SP_PARAM_HINWEIS_PEAKZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das SoC-Band einer Variante steht immer in % der Nennkapazität. ähnelt.
         /// </summary>
         public static string SP_PARAM_HINWEIS_SOC_EINHEIT {
@@ -49275,6 +49383,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_PARAM_LABEL_NUTZUNGSDAUER {
             get {
                 return ResourceManager.GetString("SP_PARAM_LABEL_NUTZUNGSDAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_PEAKZIEL {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_PEAKZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Peak-Ziel adaptiv nachziehen ähnelt.
+        /// </summary>
+        public static string SP_PARAM_LABEL_PEAKZIEL_ADAPTIV {
+            get {
+                return ResourceManager.GetString("SP_PARAM_LABEL_PEAKZIEL_ADAPTIV", resourceCulture);
             }
         }
         

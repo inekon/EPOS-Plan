@@ -322,6 +322,93 @@ namespace WindowsFormsApplication1
             catch (FormatException) { return 0.0; }
         }
 
+        /// <summary>
+        /// Die BERECHNUNGSART der aktiven Speichervariante eines Projekts, in der
+        /// Sprache des Anwenders - oder <c>null</c>, wenn das Projekt keine aktive
+        /// Variante fuehrt.
+        /// </summary>
+        /// <remarks>
+        /// Sie traegt die RUECKFRAGE des Knopfes „In Variante uebernehmen" (LS-E-1 (a)):
+        /// Fuehrt die Variante bereits die Lastspitzenkappung, wird ohne Frage
+        /// geschrieben; fuehrt sie eine ANDERE Art, wird gefragt, bevor der Anwender
+        /// seinen Rechenweg ungewollt austauscht.
+        /// </remarks>
+        /// <param name="idProjekt">Das Projekt; 0 = keines.</param>
+        public static string AktiveBerechnungsart(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+
+            try
+            {
+                StromspeicherVarianteModel v =
+                    new StromspeicherVarianteCtrl().AktiveVarianteSicherstellen(idProjekt);
+                if (v == null) return null;
+                return SpeicherAnzeigeCtrl.BerechnungsartText(v.Berechnungsart);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Berechnungsart der Speichervariante konnte nicht " +
+                                  "gelesen werden: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// SCHREIBT das Ergebnis der Maske „Lastspitzenkappung" in die AKTIVE
+        /// Speichervariante des Projekts (Entscheid LS-E-1 (a)): Berechnungsart,
+        /// Zielschwelle und Adaptiv-Flag in einem Zug.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der Ausgang der Maske.</b> Bis dahin war die Lastspitzenkappung eine
+        /// Rechnung OHNE Weg in den Projektlauf: Die Maske zeigte ihr Ergebnis und
+        /// vergass es. Dieser Knopf ist die Bruecke - danach rechnet der Projektlauf
+        /// genau die Kappung, die der Anwender hier gefunden hat.
+        /// </para>
+        /// <para>
+        /// <b>Ohne aktive Variante kein Schreiben.</b> Der Controller zieht sie mit
+        /// <c>AktiveVarianteSicherstellen</c> nach (dieselbe Selbstheilung wie im
+        /// Parameterreiter); findet er keine Speicheranlage, liefert er <c>false</c>,
+        /// und der Aufrufer meldet es.
+        /// </para>
+        /// <para>
+        /// Im ADAPTIVEN Fall wird die erreichte Schwelle MITGESCHRIEBEN, obwohl der Lauf
+        /// sie dann nicht liest: Sie ist die Zahl, die der Anwender vor sich hat, und
+        /// wer das Haekchen spaeter wegnimmt, findet sie vor statt eines leeren Feldes.
+        /// </para>
+        /// </remarks>
+        /// <param name="idProjekt">Das Projekt; 0 = keines.</param>
+        /// <param name="zielKw">Die Zielschwelle [kW]; 0 oder kleiner = keine.</param>
+        /// <param name="adaptiv">Die Schwelle zieht sich selbst nach.</param>
+        /// <returns><c>true</c>, wenn die Variante geschrieben wurde.</returns>
+        public static bool InVarianteUebernehmen(int idProjekt, double zielKw, bool adaptiv)
+        {
+            if (idProjekt <= 0) return false;
+
+            try
+            {
+                StromspeicherVarianteCtrl ctrl = new StromspeicherVarianteCtrl();
+                StromspeicherVarianteModel v = ctrl.AktiveVarianteSicherstellen(idProjekt);
+                if (v == null) return false;
+
+                v.Berechnungsart = DbWerte.SP_BERECHNUNG_PEAKSHAVING;
+                v.PeakZiel_kW = zielKw > 0.0 ? (double?)zielKw : null;
+                v.PeakZiel_Adaptiv = adaptiv;
+
+                // Der Excel-Kompatibilitaetsmodus gehoert der Dauernutzung (Fachkonzept
+                // 5.2) - er bliebe sonst still gesetzt und die Maske boete ihn nicht an.
+                v.Kompatibilitaetsmodus = false;
+
+                return ctrl.Update(v);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Das Peak-Ziel konnte nicht in die Speichervariante " +
+                                  "uebernommen werden: " + ex.Message);
+                return false;
+            }
+        }
+
         private static string Text(DataTable dt, DataRow row, string spalte)
         {
             if (!dt.Columns.Contains(spalte)) return "";

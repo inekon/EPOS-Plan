@@ -19278,4 +19278,46 @@ Möchten Sie das zulassen?</value>
   <data name="PREIS_REST" xml:space="preserve">
     <value>Nicht aufgeschlüsselter Rest: {0} ct/kWh</value>
   </data>
+  <data name="SP_BERECHNUNG_ANZEIGE_PEAKSHAVING" xml:space="preserve">
+    <value>Lastspitzenkappung</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PEAK_OHNE_ZIEL" xml:space="preserve">
+    <value>Die Berechnungsart "Lastspitzenkappung" hat kein Peak-Ziel - gerechnet wird die Dauernutzung.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PEAK_ZIEL_ZU_HOCH" xml:space="preserve">
+    <value>Das Peak-Ziel {0} kW liegt nicht unter der Netzbezugsspitze ohne Speicher ({1} kW): Die Kappung bleibt wirkungslos. Geladen wird hoechstens bis zu dieser Spitze.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PEAK_LAUF" xml:space="preserve">
+    <value>Lastspitzenkappung: Peak-Ziel {0} kW, Ladedeckel {1} kW, Netzbezugsspitze ohne Speicher {2} kW, mit Speicher {3} kW.</value>
+  </data>
+  <data name="SP_PARAM_LABEL_PEAKZIEL" xml:space="preserve">
+    <value>Peak-Ziel</value>
+  </data>
+  <data name="SP_PARAM_LABEL_PEAKZIEL_ADAPTIV" xml:space="preserve">
+    <value>Peak-Ziel adaptiv nachziehen</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_PEAKZIEL" xml:space="preserve">
+    <value>Netzbezugsspitze ohne Speicher im letzten Lauf: {0} kW.</value>
+  </data>
+  <data name="PEAK_BTN_VARIANTE" xml:space="preserve">
+    <value>In Variante übernehmen</value>
+  </data>
+  <data name="PEAK_MSG_VARIANTE_FRAGE" xml:space="preserve">
+    <value>Die aktive Speichervariante rechnet mit "{0}". Soll sie auf die Lastspitzenkappung umgestellt werden?</value>
+  </data>
+  <data name="PEAK_MSG_VARIANTE_OK" xml:space="preserve">
+    <value>Peak-Ziel {0} kW in die aktive Speichervariante übernommen.</value>
+  </data>
+  <data name="PEAK_MSG_VARIANTE_FEHLER" xml:space="preserve">
+    <value>Das Peak-Ziel konnte nicht in die Speichervariante übernommen werden.</value>
+  </data>
+  <data name="PEAK_MSG_VARIANTE_KEINE" xml:space="preserve">
+    <value>Das Projekt führt keine aktive Speichervariante.</value>
+  </data>
+  <data name="SP_KONTEXT_EINZEL_PEAKSHAVING" xml:space="preserve">
+    <value>Einzelspeicher: Lastspitzenkappung · Peak-Ziel {0} kW</value>
+  </data>
+  <data name="SP_KONTEXT_PEAK_ADAPTIV" xml:space="preserve">
+    <value> (adaptiv)</value>
+  </data>
 </root>

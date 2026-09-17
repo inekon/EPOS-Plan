@@ -735,8 +735,20 @@ namespace WindowsFormsApplication1
                     new Steuerwahl(DbWerte.SP_BERECHNUNG_DAUERNUTZUNG,
                                    MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG),
                     new Steuerwahl(DbWerte.SP_BERECHNUNG_ARBITRAGE,
-                                   MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ARBITRAGE)
+                                   MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ARBITRAGE),
+
+                    // LS-E-1 (a): Die Lastspitzenkappung ist eine BERECHNUNGSART des
+                    // Einzelspeichers - die eigene Maske bleibt daneben bestehen und
+                    // schreibt ihr Ergebnis ueber „In Variante uebernehmen" hierher.
+                    new Steuerwahl(DbWerte.SP_BERECHNUNG_PEAKSHAVING,
+                                   MyResource.Resource.SP_BERECHNUNG_ANZEIGE_PEAKSHAVING)
                 },
+
+                PeakZiel = v.PeakZiel_kW.HasValue ? v.PeakZiel_kW.Value : 0.0,
+                PeakZielAdaptiv = v.PeakZiel_Adaptiv,
+                PeakZielMoeglich =
+                    SpeicherAltstand.Berechnungsart(v.Berechnungsart) == DbWerte.SP_BERECHNUNG_PEAKSHAVING,
+                PeakHerleitung = PeakHerleitung(),
 
                 Kompatibilitaet = v.Kompatibilitaetsmodus,
 
@@ -773,6 +785,20 @@ namespace WindowsFormsApplication1
             Preisreihen(d, v);
             Preisinfo(d);
             return d;
+        }
+
+        /// <summary>
+        /// Die HERLEITUNGSZEILE unter dem Peak-Ziel: die Netzbezugsspitze OHNE Speicher
+        /// des letzten Laufs dieser Sitzung (LS-E-3). Leer, solange keiner gelaufen ist
+        /// — dann steht dort nichts, statt eine Zahl zu erfinden.
+        /// </summary>
+        private string PeakHerleitung()
+        {
+            StromspeicherLaufKontext kontext = sim != null ? sim.Speicherkontext : null;
+            if (kontext == null || !(kontext.PeakReferenzspitzeKw > 0.0)) return "";
+
+            return string.Format(MyResource.Resource.SP_PARAM_HINWEIS_PEAKZIEL,
+                                 kontext.PeakReferenzspitzeKw.ToString("N1", CultureInfo.CurrentCulture));
         }
 
         /// <summary>
@@ -960,6 +986,14 @@ namespace WindowsFormsApplication1
                 case SpeicherFeld.Ladeschwelle: aenderung = v => v.Ladeschwellwert = zahl; break;
                 case SpeicherFeld.Betriebsart: aenderung = v => v.Betriebsart = wert; break;
                 case SpeicherFeld.Berechnungsart: aenderung = v => v.Berechnungsart = wert; break;
+
+                // SCHEMASCHRITT 86. Die 0 bleibt eine 0 und wird NICHT zu NULL: Wer das
+                // Feld leert, sagt "kein Ziel", und genau das liest der Lauf als
+                // Ruckfall auf die Dauernutzung (benannt im Protokoll).
+                case SpeicherFeld.PeakZiel:
+                    aenderung = v => v.PeakZiel_kW = zahl > 0.0 ? (double?)zahl : null;
+                    break;
+                case SpeicherFeld.PeakZielAdaptiv: aenderung = v => v.PeakZiel_Adaptiv = ja; break;
                 case SpeicherFeld.Kompatibilitaet: aenderung = v => v.Kompatibilitaetsmodus = ja; break;
                 case SpeicherFeld.LadenPv: aenderung = v => v.PV_Zulaessig = ja; break;
                 case SpeicherFeld.LadenBhkw: aenderung = v => v.BHKW_Ueberschuss_Zulaessig = ja; break;
@@ -1026,6 +1060,7 @@ namespace WindowsFormsApplication1
                 case SpeicherFeld.Nutzungsdauer:
                 case SpeicherFeld.Leistungspreis:
                 case SpeicherFeld.Netzladeaufschlag:
+                case SpeicherFeld.PeakZiel:
                     return SpeicherParameterPruefung.NichtNegativ(zahl);
                 default:
                     return null;

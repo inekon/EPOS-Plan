@@ -257,7 +257,11 @@ namespace WindowsFormsApplication1
             // Preissteuerung braucht die Preisreihen, die BaueEingang beschafft
             // (p_netzlade und der Verkaufserlös stehen danach im Kontext).
             SpeicherEingang eingang = BaueEingang(sim, idProjekt, kontext.Variante);
-            ISpeicherStrategie strategie = BaueStrategie(kontext, parameter);
+
+            // Die LASTSPITZENKAPPUNG braucht den Eingang schon bei der Wahl: Ihre
+            // Messlatte ist die Netzbezugsspitze OHNE Speicher (LS-E-3), und die steht
+            // nur in den Reihen.
+            ISpeicherStrategie strategie = BaueStrategie(kontext, parameter, eingang);
 
             // Der Eingang geht MIT in den Kontext (W11b‑B‑26): Das Bild „Lastgang und
             // Speicherbetrieb" des Ergebnisreiters zeigt den Netzbezug ohne Speicher,
@@ -275,6 +279,16 @@ namespace WindowsFormsApplication1
                 kontext.Arbitrageergebnis = arb;
                 ergebnis = arb.Ergebnis;
                 HinweisErgaenzen(Planhinweis(arb));
+            }
+            else if (strategie is PeakShaving peak)
+            {
+                // Wie bei der Arbitrage steht der Netzpfadteil nicht im SpeicherErgebnis -
+                // er geht ueber den Kontext an Projektlauf, Ergebnisseite und Bericht.
+                PeakShavingErgebnis ps = peak.BerechnePeakShaving(eingang, parameter);
+                kontext.Peakshavingergebnis = ps;
+                kontext.NetzwirkungKw = NetzwirkungKw(ps);
+                ergebnis = ps.Basis;
+                HinweisErgaenzen(Peakhinweis(ps, kontext));
             }
             else
             {
@@ -330,7 +344,9 @@ namespace WindowsFormsApplication1
         /// </remarks>
         /// <param name="kontext">Lauf-Kontext mit Variante, Preisreihen und Kompatibilitätsflag.</param>
         /// <param name="parameter">Der Parametersatz — die Preissteuerung braucht Band, c_ver und N.</param>
-        private ISpeicherStrategie BaueStrategie(StromspeicherLaufKontext kontext, SpeicherParameter parameter)
+        private ISpeicherStrategie BaueStrategie(StromspeicherLaufKontext kontext,
+                                                 SpeicherParameter parameter,
+                                                 SpeicherEingang eingang)
         {
             SpeicherModus modus = kontext.Kompatibilitaetsmodus
                 ? SpeicherModus.ExcelKompatibilitaet
@@ -362,11 +378,179 @@ namespace WindowsFormsApplication1
                 return new Dauernutzung(SpeicherModus.Energetisch);
             }
 
+            if (berechnungsart == DbWerte.SP_BERECHNUNG_PEAKSHAVING)
+            {
+                PeakShaving peak = BauePeakShaving(kontext, parameter, eingang);
+                if (peak != null) return peak;
+
+                // Rueckfall mit Grund im Protokoll - der Grund steht schon drin.
+                return new Dauernutzung(SpeicherModus.Energetisch);
+            }
+
             if (berechnungsart != DbWerte.SP_BERECHNUNG_DAUERNUTZUNG)
                 HinweisErgaenzen(string.Format(MyResource.Resource.SIMENG_SPEICHER_BERECHNUNGSART,
                                                berechnungsart));
 
             return new Dauernutzung(modus);
+        }
+
+        /// <summary>
+        /// Baut die LASTSPITZENKAPPUNG des Einzelspeichers (Fachkonzept 6.3/6.4,
+        /// Entscheide LS-E-1 (a) und LS-E-3) - oder <c>null</c>, wenn die Variante kein
+        /// Peak-Ziel fuehrt; der Grund steht dann im Protokoll.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Gerechnet wird am NETZANSCHLUSS.</b> Die Steuergroesse ist die Netzlast
+        /// (Last minus PV minus BHKW), nicht der blanke Lastgang: Eine Kappung, die die
+        /// Erzeugung nicht sieht, entlaedt gegen eine Spitze, die es am Zaehler gar nicht
+        /// gibt. Das ist genau der Zweig
+        /// <c>PeakShaving.BerechneAmNetzanschluss</c>; die eigene Maske
+        /// „Lastspitzenkappung" bleibt bei ihrem reinen Lastgang, weil sie eine
+        /// importierte Reihe auswertet und keine Anlagenkette kennt.
+        /// </para>
+        /// <para>
+        /// <b>Drei Regeln, eine Schranke.</b> ENTLADEN geschieht oberhalb des Ziels, bis
+        /// P_max und SoC_min es tragen. GELADEN wird aus Erzeugungsueberschuss immer; aus
+        /// dem NETZ nur im Graustrombetrieb, und dann hoechstens bis zum LADEDECKEL.
+        /// Beides zusammen traegt das eine Feld
+        /// <c>PeakShavingParameter.LadedeckelKw</c>:
+        /// </para>
+        /// <list type="bullet">
+        ///   <item><description><b>Gruenstrom</b> - Deckel 0: Laden nur, solange die
+        ///     Netzlast negativ ist, also allein aus Ueberschuss (Quellen-Matrix 2.1).</description></item>
+        ///   <item><description><b>Graustrom</b> - Deckel <c>min(Ziel, Referenzspitze)</c>
+        ///     (LS-E-3): bis zum Ziel, aber nie ueber die Spitze, die es ohne Speicher
+        ///     ohnehin schon gab. Ein zu hoch gewaehltes Ziel darf die Spitze nicht
+        ///     ANHEBEN. Dieselbe Schranke zieht die Flotte
+        ///     (<c>FlottenSimulator</c>, Ladedeckel der Peak-Regel).</description></item>
+        /// </list>
+        /// <para>
+        /// <b>Ohne Ziel kein Lauf.</b> <c>PeakZiel_kW</c> NULL oder 0 und nicht adaptiv
+        /// heisst „nicht gepflegt": Der Lauf faellt BENANNT auf die Dauernutzung zurueck,
+        /// statt gegen eine erfundene Schwelle zu rechnen. Der adaptive Modus braucht
+        /// kein Ziel - er zieht die Schwelle selbst nach.
+        /// </para>
+        /// <para>
+        /// <b>Immer energetisch.</b> Der Excel-Kompatibilitaetsmodus gehoert der
+        /// Dauernutzung (Fachkonzept 5.2); die Parameterseite bietet ihn hier gar nicht
+        /// erst an.
+        /// </para>
+        /// </remarks>
+        private PeakShaving BauePeakShaving(StromspeicherLaufKontext kontext,
+                                            SpeicherParameter parameter,
+                                            SpeicherEingang eingang)
+        {
+            StromspeicherVarianteModel variante = kontext != null ? kontext.Variante : null;
+            if (variante == null || eingang == null)
+            {
+                HinweisErgaenzen(MyResource.Resource.SIMENG_SPEICHER_PEAK_OHNE_ZIEL);
+                return null;
+            }
+
+            bool adaptiv = variante.PeakZiel_Adaptiv;
+            double ziel = variante.PeakZiel_kW.HasValue ? variante.PeakZiel_kW.Value : 0.0;
+
+            if (!adaptiv && !(ziel > 0.0))
+            {
+                HinweisErgaenzen(MyResource.Resource.SIMENG_SPEICHER_PEAK_OHNE_ZIEL);
+                return null;
+            }
+
+            double referenzspitze = NetzbezugsspitzeKw(eingang);
+
+            // LS-E-3: Ein Ziel, das nicht UNTER der Bezugsspitze liegt, kappt nichts.
+            // Der Lauf wird deshalb nicht verweigert - er sagt es nur, und der Ladedeckel
+            // darunter sorgt dafuer, dass die Spitze wenigstens nicht steigt.
+            if (!adaptiv && ziel >= referenzspitze)
+                HinweisErgaenzen(string.Format(MyResource.Resource.SIMENG_SPEICHER_PEAK_ZIEL_ZU_HOCH,
+                                               Kw(ziel), Kw(referenzspitze)));
+
+            double deckel = parameter.Betriebsart == SpeicherBetriebsart.Graustrom
+                ? (adaptiv || ziel > referenzspitze ? referenzspitze : ziel)
+                : 0.0;
+
+            kontext.PeakReferenzspitzeKw = referenzspitze;
+            kontext.PeakLadedeckelKw = deckel;
+
+            PeakShavingParameter ps = new PeakShavingParameter
+            {
+                PZielKw = adaptiv ? 0.0 : ziel,
+                Adaptiv = adaptiv,
+
+                // L_P der Variante (Fachkonzept 4.4). Er traegt hier NUR die
+                // Eigenbewertung der Engine; der Leistungspreis des Projekts kommt aus
+                // der Netzbezugsspitze und dem Traeger (Ertrag_Leistungspreis bleibt 0).
+                LeistungspreisEurProKwA = variante.L_P > 0.0 ? variante.L_P : 0.0,
+                BezugspreisMittelCtKwh = Mittelwert(eingang.PreisCtKwh),
+                LadedeckelKw = deckel
+            };
+
+            return new PeakShaving(ps, SpeicherModus.Energetisch, netzanschlussAuslegung: true);
+        }
+
+        /// <summary>
+        /// Die NETZBEZUGSSPITZE OHNE SPEICHER [kW] der Reihen dieses Laufs - Last minus
+        /// PV minus BHKW, nichtnegativ genommen. Sie ist die Messlatte der
+        /// Lastspitzenkappung (LS-E-3) und dieselbe Groesse, die der Lauf danach als
+        /// <c>PAltMaxKw</c> wiederfindet.
+        /// </summary>
+        public static double NetzbezugsspitzeKw(SpeicherEingang eingang)
+        {
+            if (eingang == null) throw new ArgumentNullException(nameof(eingang));
+
+            double spitze = 0.0;
+            for (int i = 0; i < eingang.Anzahl; i++)
+            {
+                double bhkw = eingang.BhkwKw == null ? 0.0 : eingang.BhkwKw[i];
+                double netz = eingang.LastKw[i] - eingang.PvKw[i] - bhkw;
+                if (netz > spitze) spitze = netz;
+            }
+            return spitze;
+        }
+
+        /// <summary>
+        /// Die NETZWIRKUNG der Lastspitzenkappung je Intervall [kW]: um so viel sinkt der
+        /// Netzbezug. Begruendung und Abgrenzung zur Arbitrage stehen bei
+        /// <see cref="StromspeicherLaufKontext.NetzwirkungKw"/>.
+        /// </summary>
+        public static double[] NetzwirkungKw(PeakShavingErgebnis ergebnis)
+        {
+            if (ergebnis == null) throw new ArgumentNullException(nameof(ergebnis));
+
+            double[] ziel = new double[ergebnis.PNeuKw.Length];
+            for (int i = 0; i < ziel.Length; i++)
+            {
+                double ohne = ergebnis.PAltKw[i] > 0.0 ? ergebnis.PAltKw[i] : 0.0;
+                double mit = ergebnis.PNeuKw[i] > 0.0 ? ergebnis.PNeuKw[i] : 0.0;
+                ziel[i] = ohne - mit;
+            }
+            return ziel;
+        }
+
+        /// <summary>Protokollzeile zum Lauf der Lastspitzenkappung - sie erklaert die Spitzen.</summary>
+        private static string Peakhinweis(PeakShavingErgebnis ps, StromspeicherLaufKontext kontext)
+        {
+            return string.Format(MyResource.Resource.SIMENG_SPEICHER_PEAK_LAUF,
+                                 Kw(ps.ErreichteSchwelleKw),
+                                 Kw(kontext.PeakLadedeckelKw),
+                                 Kw(ps.PAltMaxKw > 0.0 ? ps.PAltMaxKw : 0.0),
+                                 Kw(ps.PNeuMaxKw > 0.0 ? ps.PNeuMaxKw : 0.0));
+        }
+
+        /// <summary>Eine Leistungsangabe in der Kultur des Anwenders, zwei Nachkommastellen.</summary>
+        private static string Kw(double wert)
+        {
+            return wert.ToString("0.##", CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>Arithmetisches Mittel einer Reihe; leere Reihe = 0.</summary>
+        private static double Mittelwert(double[] reihe)
+        {
+            if (reihe == null || reihe.Length == 0) return 0.0;
+            double summe = 0.0;
+            for (int i = 0; i < reihe.Length; i++) summe += reihe[i];
+            return summe / reihe.Length;
         }
 
         /// <summary>

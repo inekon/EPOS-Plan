@@ -3128,6 +3128,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_85_STROMPREIS_ALTSPALTEN = 85;
 
+        /// <summary>
+        /// Schritt 86 — die <b>Lastspitzenkappung als Berechnungsart</b> des
+        /// Einzelspeichers (Anwenderbefund 17.09.2026, Entscheide LS-E-1 (a)/LS-E-3).
+        ///
+        /// <para><c>Tab_StromspeicherVariante</c> bekommt die Zielschwelle
+        /// <c>PeakZiel_kW</c> (REAL, nullbar) und das Flag <c>PeakZiel_Adaptiv</c>
+        /// (0/1, <c>NOT NULL DEFAULT 0</c>). Die Spaltenliste steht bei
+        /// <see cref="SchemaKatalog.Schritt86_Lastspitzenkappung"/> — EINE Quelle für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Ergebnisneutral</b>: kein DML. Beide Spalten werden nur gelesen,
+        /// wenn die Variante <c>SP_BERECHNUNG_PEAKSHAVING</c> führt; das tut im Bestand
+        /// keine — der Referenzlauf bleibt byte-gleich.</para>
+        /// </summary>
+        public const int SCHRITT_86_LASTSPITZENKAPPUNG = 86;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4211,6 +4228,22 @@ namespace WindowsFormsApplication1
                         "naechste Leser koennte an ihr nicht erkennen, dass sie nicht " +
                         "mehr rechnet.",
                         Schritt_85_StrompreisAltspalten),
+
+            // ANWENDERBEFUND 17.09.2026 ("Leistungspreis bei Stamm und Variante gleich,
+            // obwohl der Speicher die Lastspitze senken muesste") samt den Entscheiden
+            // LS-E-1 (a) und LS-E-3. Zwei Spalten aus SchemaKatalog - EINE Quelle fuer
+            // Migration, Testdatenbankschema und Nachweis. Ergebnisneutral: kein DML,
+            // im Bestand fuehrt keine Variante die neue Berechnungsart.
+            new Schritt(SCHRITT_86_LASTSPITZENKAPPUNG,
+                        "Tab_StromspeicherVariante bekommt die Zielschwelle " +
+                        "PeakZiel_kW (REAL, nullbar) und das Flag PeakZiel_Adaptiv " +
+                        "(0/1, NOT NULL DEFAULT 0) (Entscheide LS-E-1 (a)/LS-E-3)",
+                        "Die Berechnungsart \"Lastspitzenkappung\" haette ohne die " +
+                        "zwei Spalten nichts, woraus sie ihre Zielschwelle lesen " +
+                        "koennte - der Lauf fiele in jedem Projekt benannt auf die " +
+                        "Dauernutzung zurueck, und die Klappliste boete eine Wahl " +
+                        "ohne Wirkung.",
+                        Schritt_86_Lastspitzenkappung),
         };
 
         /// <summary>
@@ -5957,6 +5990,37 @@ namespace WindowsFormsApplication1
                     "Keine von ihnen wird seit Schritt 83 bzw. 84 noch gelesen oder " +
                     "geschrieben, keine traegt eine Rechengroesse - der Referenzlauf " +
                     "bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 86 - die Lastspitzenkappung als Berechnungsart (LS-E-1 (a)/LS-E-3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 86 — Anlass, Anweisung und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_86_LASTSPITZENKAPPUNG"/> und bei
+        /// <see cref="SchemaKatalog.Schritt86_Lastspitzenkappung"/>.
+        ///
+        /// <para><b>Wortgleich zu <see cref="Schritt_82_KaskadeGepflegt"/></b>:
+        /// Spaltenliste aus dem Kern, Typdefinition aus
+        /// <c>StilleDb.SqliteSpaltenTyp</c>, kein DML. Hier steht keine abgeschriebene
+        /// DDL.</para>
+        /// </summary>
+        private static bool Schritt_86_Lastspitzenkappung(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt86_Lastspitzenkappung)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("86: " + SchemaKatalog.TAB_STROMSPEICHERVARIANTE + "." +
+                    SchemaKatalog.SPALTE_PEAKZIEL_KW + " (REAL, nullbar) und " +
+                    SchemaKatalog.TAB_STROMSPEICHERVARIANTE + "." +
+                    SchemaKatalog.SPALTE_PEAKZIEL_ADAPTIV + " (0/1, NOT NULL DEFAULT 0) " +
+                    "stehen. KEIN DML: Gelesen wird beides nur bei Berechnungsart " +
+                    "\"Lastspitzenkappung\", und die fuehrt im Bestand keine Variante - " +
+                    "NULL heisst \"kein Ziel gepflegt\" und faellt benannt auf die " +
+                    "Dauernutzung zurueck. Der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

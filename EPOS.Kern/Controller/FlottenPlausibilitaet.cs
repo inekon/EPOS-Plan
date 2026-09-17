@@ -305,14 +305,20 @@ namespace WindowsFormsApplication1
                         lage.PeakZielKw.ToString("0.#", k))
                 });
 
-            if (h > lage.ReferenzspitzeKw)
+            // LS-E-3: Beanstandet wird jedes Ziel, das NICHT UNTER der Referenzspitze
+            // liegt - auch das genau gleiche. Ein Ziel auf der Spitze kappt nichts: Die
+            // Last überschreitet es nie, und der Leistungspreis bleibt, wie er war.
+            // Dieselbe Schwelle zieht der Einzelspeicher
+            // (StromspeicherSimCtrl.BauePeakShaving).
+            if (h >= lage.ReferenzspitzeKw)
                 hinweise.Add(new FlottenHinweis
                 {
                     Kennung = FlottenHinweisKennung.PeakZielUeberReferenzspitze,
-                    Stufe = FlottenHinweisStufe.Hinweis,
+                    Stufe = FlottenHinweisStufe.Warnung,
                     Text = string.Format(k,
-                        "Peak-Ziel {0} kW liegt über der Referenzspitze ({1} kW): Die Kappung bleibt wirkungslos, " +
-                        "weil die Last das Ziel nie überschreitet.",
+                        "Peak-Ziel {0} kW liegt nicht unter der Referenzspitze ({1} kW): Die Kappung bleibt " +
+                        "wirkungslos, weil die Last das Ziel nie überschreitet. Geladen wird höchstens bis " +
+                        "zu dieser Spitze.",
                         h.ToString("0.#", k), lage.ReferenzspitzeKw.ToString("0.#", k))
                 });
         }

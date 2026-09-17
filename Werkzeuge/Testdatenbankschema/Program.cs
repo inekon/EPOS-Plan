@@ -131,7 +131,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 85), saet den Gesetzeskatalog nach");
+                                  " nach (Schritte 62 bis 86), saet den Gesetzeskatalog nach");
                 Console.WriteLine("  und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
@@ -292,6 +292,17 @@ namespace Testdatenbankschema
             foreach (SchemaSpalte s in SchemaKatalog.Schritt82_KaskadeGepflegt)
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 82, trocken);
+
+            // ---- Schritt 86: die Lastspitzenkappung als Berechnungsart des
+            //      Einzelspeichers (Entscheide LS-E-1 (a)/LS-E-3). ZWEI Spalten an
+            //      Tab_StromspeicherVariante, kein DML. Die Quelle ist dieselbe, aus der
+            //      sich SchemaMigration.Schritt_86_Lastspitzenkappung bedient.
+            //      Ergebnisneutral: Gelesen wird beides nur bei Berechnungsart
+            //      "Lastspitzenkappung", und die fuehrt im Bestand keine Variante - die
+            //      dreizehn Referenzprojekte rechnen unveraendert.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt86_Lastspitzenkappung)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 86, trocken);
 
             tabellen += TabelleSicherstellen("Tab_SpeicherAuslegung", SpeicherAuslegungCtrl.SQL_TABELLE, 73, trocken);
             if (!trocken) DataRepository.ExecuteNonQuery(SpeicherAuslegungCtrl.SQL_INDEX);

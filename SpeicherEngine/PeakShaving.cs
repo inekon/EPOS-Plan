@@ -283,6 +283,11 @@ namespace SpeicherEngine
             double[] geldwert = new double[n];
 
             double ziel = adaptiv ? 0.0 : _ps.PZielKw;
+
+            // LADEDECKEL (null = keiner): Er begrenzt NUR den Ladepfad. Ohne ihn ist
+            // die Ladeschranke wie bisher die Zielschwelle selbst - der Bestand
+            // (Maske, Flotte, Rastersuche, Excel-Kompatibilitaet) rechnet unveraendert.
+            double? deckel = _ps.LadedeckelKw;
             double stand = startSoC;
             double ladeenergie = 0.0;
             double entladeenergie = 0.0;
@@ -319,9 +324,11 @@ namespace SpeicherEngine
                 }
                 else
                 {
-                    // Laden, ohne die Schwelle zu reissen.
+                    // Laden, ohne die Schwelle zu reissen - und nicht ueber den
+                    // Ladedeckel hinaus, wenn einer gesetzt ist.
                     pc = maxPower;
-                    double schranke = ziel - last;
+                    double zielLaden = deckel.HasValue && deckel.Value < ziel ? deckel.Value : ziel;
+                    double schranke = zielLaden - last;
                     if (schranke < pc) pc = schranke;
                     schranke = (socMax - stand) / (etaCh * dt);
                     if (schranke < pc) pc = schranke;

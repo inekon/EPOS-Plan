@@ -63,6 +63,26 @@
         /// <summary>Berechnungsart; Werte aus DbWerte.SP_BERECHNUNG_*.</summary>
         public string Berechnungsart = DbWerte.SP_BERECHNUNG_DAUERNUTZUNG;
 
+        /// <summary>
+        /// Zielschwelle P_ziel [kW] der Berechnungsart "Lastspitzenkappung"
+        /// (<c>DbWerte.SP_BERECHNUNG_PEAKSHAVING</c>, Schemaschritt 86).
+        ///
+        /// <para>NULLBAR, und <c>null</c> heisst "nicht gepflegt": Der Projektlauf faellt
+        /// dann BENANNT auf die Dauernutzung zurueck, statt gegen eine erfundene
+        /// Schwelle zu rechnen (<c>StromspeicherSimCtrl.BaueStrategie</c>). Bei
+        /// <see cref="PeakZiel_Adaptiv"/> spielt der Wert keine Rolle - die Schwelle
+        /// zieht sich dann selbst nach.</para>
+        /// </summary>
+        public double? PeakZiel_kW;
+
+        /// <summary>
+        /// Adaptive Schwellensuche der Lastspitzenkappung (Schemaschritt 86). WAHR zieht
+        /// die Schwelle nach, statt gegen <see cref="PeakZiel_kW"/> zu rechnen; das
+        /// Ergebnis ist die niedrigste Spitze, die der Speicher haelt
+        /// (<c>SpeicherEngine.PeakShavingParameter.Adaptiv</c>).
+        /// </summary>
+        public bool PeakZiel_Adaptiv;
+
         /// <summary>Herkunft der Bezugspreisreihe; Werte aus DbWerte.SP_PREISQUELLE_*.</summary>
         public string Preisquelle = DbWerte.SP_PREISQUELLE_FIXPREIS;
 

@@ -15,6 +15,35 @@ Der Dialog '''Stromspeicher''' beschreibt den Batteriespeicher des Projekts. Er 
 * {{Anker|energietraeger}}'''Energieträger''' – im Detailblock der markierten Projektzeile wird der Träger in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Vorbelegt ist der Stromträger des Projekts. Beim reinen Katalogsatz erscheint die Wahl nicht.
 * {{Anker|im-projekt}}'''Speicher im Projekt''' – ein aufgenommener Stromspeicher erscheint in der [[Programm Dokumentation/Simulation#speicher-im-projekt|Simulationskonfiguration]] in der Spalte ''Speicher im Projekt'' als Kachel mit Namen und den ersten drei Kennwerten. Bearbeitet wird er dort unter ''Energiespeicher''. Ausgelegt wird er über den Knopf ''Stromspeicher auslegen…'' derselben Spalte.
 
+== Berechnungsart der Speichervariante ==
+{{Anker|berechnungsart}}
+
+Wie der Speicher im Projektlauf gefahren wird, bestimmt die '''Berechnungsart'''. Sie steht im Reiter ''Stromspeicher'' der detaillierten Simulation, Block ''Betriebsführung''.
+
+{| class="wikitable"
+! Berechnungsart !! Was der Speicher tut
+|-
+| '''Dauernutzung''' || Erzeugungsüberschuss aufnehmen und zur Deckung des Reststrombedarfs wieder abgeben.
+|-
+| '''Preissteuerung / Arbitrage''' || Nach dem Bezugspreis laden und verkaufen; braucht eine Preisreihe und die freigegebene Netzentladung.
+|-
+| '''Lastspitzenkappung''' || Auf ein Peak-Ziel am Netzanschluss fahren: entladen, sobald die Netzlast über dem Ziel liegt, und unter dem Ziel wieder aufladen.
+|}
+
+'''Peak-Ziel.''' Bei der Lastspitzenkappung erscheinen zwei weitere Felder:
+
+* '''Peak-Ziel [kW]''' – die Schwelle, auf die der Netzbezug gekappt werden soll. Ohne gepflegtes Ziel rechnet der Lauf die Dauernutzung und sagt es im Laufprotokoll.
+* '''Peak-Ziel adaptiv nachziehen''' – die Schwelle beginnt bei 0 und wird nur so weit nachgezogen, wie der Speicher sie nicht halten kann; sie fällt nie wieder. Das Zahlenfeld ist dann gesperrt, weil die Zahl keine Wirkung hätte.
+
+Unter den Feldern steht die '''Netzbezugsspitze ohne Speicher''' des letzten Laufs – die Messlatte. '''Das Ziel muss darunter liegen''': Ein Ziel auf oder über dieser Spitze kappt nichts, weil die Last es nie überschreitet. Der Lauf meldet das im Protokoll und lädt in diesem Fall höchstens bis zur vorhandenen Spitze, damit die Wiederaufladung keine neue, höhere Spitze erzeugt.
+
+'''Woher der Ladestrom kommt''', bestimmt die Betriebsart:
+
+* '''Grünstromspeicher''' – geladen wird ausschließlich aus Erzeugungsüberschuss. Gekappt wird, was der Ladezustand hergibt.
+* '''Graustromspeicher''' – zusätzlich aus dem Netz, aber höchstens bis zum Peak-Ziel. Diese Ladung erhöht den Netzbezug der betroffenen Viertelstunde und steht deshalb im Ergebnis.
+
+Was die Kappung wirtschaftlich bringt, steht in [[Programm Dokumentation/Wirtschaftlichkeit#energiekosten|Wirtschaftlichkeit]].
+
 == Stromspeicher-Auslegung ==
 {{Anker|auslegung-ansicht}}
 {{Anker|auslegung-optimieren}}
@@ -448,6 +477,13 @@ Die Ansicht gibt es auch auf dem iPad – mit '''einer''' Einschränkung: Die dr
 
 [[Kategorie:Programm Dokumentation]]
 
+
+== Maske Lastspitzenkappung ==
+{{Anker|maske-lastspitzenkappung}}
+
+Die eigene Maske '''Lastspitzenkappung''' wertet einen Lastgang aus – eine Ganglinie des Projekts, eine aus dem Katalog oder eine eingelesene Datei. Sie rechnet gegen ein festes oder ein nachgezogenes Ziel, zeigt Spitzen, Monatswerte und den Lastgang als Bild und schreibt fünf Spalten als CSV.
+
+'''„In Variante übernehmen"''' schreibt das Ergebnis in die '''aktive Speichervariante''' des Projekts: Berechnungsart ''Lastspitzenkappung'', die '''erreichte''' Schwelle als Peak-Ziel und die Einstellung ''adaptiv''. Danach rechnet der Projektlauf genau diese Kappung. Führt die Variante eine andere Berechnungsart, kommt vorher eine Rückfrage – so tauschen Sie Ihren Rechenweg nicht versehentlich aus. Gerechnet muss sein: Ohne Ergebnis gibt es nichts zu übernehmen. Ohne Projekt steht der Knopf nicht da.
 
 == Berechnung ==
 Lade- und Entladefahrweise, Wirkungsgrade und die Wirkung auf den Netzbezug stehen unter

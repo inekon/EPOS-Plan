@@ -2269,6 +2269,50 @@ namespace WindowsFormsApplication1
         };
 
         // =====================================================================
+        // Schritt 86 - die Lastspitzenkappung als Berechnungsart des Einzelspeichers
+        //   (Anwenderbefund 17.09.2026, Entscheide LS-E-1 (a) und LS-E-3)
+        // =====================================================================
+
+        /// <summary>
+        /// Zielschwelle P_ziel [kW] der Berechnungsart „Lastspitzenkappung"
+        /// (<c>DbWerte.SP_BERECHNUNG_PEAKSHAVING</c>). NULLBAR, und NULL heisst
+        /// „nicht gepflegt": Der Lauf fällt dann benannt auf die Dauernutzung zurück,
+        /// statt gegen eine erfundene Schwelle zu rechnen
+        /// (<c>StromspeicherSimCtrl.BaueStrategie</c>).
+        /// </summary>
+        public const string SPALTE_PEAKZIEL_KW = "PeakZiel_kW";
+
+        /// <summary>
+        /// Adaptive Schwellensuche der Lastspitzenkappung (0/1, <c>NOT NULL DEFAULT 0</c>).
+        /// 1 zieht die Schwelle nach, statt gegen <see cref="SPALTE_PEAKZIEL_KW"/> zu
+        /// rechnen (<c>SpeicherEngine.PeakShavingParameter.Adaptiv</c>).
+        /// </summary>
+        public const string SPALTE_PEAKZIEL_ADAPTIV = "PeakZiel_Adaptiv";
+
+        /// <summary>
+        /// Schritt 86 der Migration: die ZWEI Steuergrössen der Lastspitzenkappung an
+        /// <c>Tab_StromspeicherVariante</c>. Begründung und Leseweg stehen bei
+        /// <see cref="SPALTE_PEAKZIEL_KW"/> und <see cref="SPALTE_PEAKZIEL_ADAPTIV"/>.
+        ///
+        /// <para><b>KEIN DML und ergebnisNEUTRAL.</b> Keine Variante des Bestands führt
+        /// die neue Berechnungsart — im ganzen Bestand steht die Zielschwelle auf NULL
+        /// und das Adaptiv-Flag auf 0, und beides wird nur gelesen, wenn
+        /// <c>Berechnungsart = SP_BERECHNUNG_PEAKSHAVING</c> ist. Die dreizehn
+        /// Referenzprojekte rechnen unverändert; der Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para>Die zwei Spalten stehen BEWUSST NICHT in <see cref="Alle"/>: dieselbe
+        /// Begründung wie bei <see cref="SPALTE_KASKADE_GEPFLEGT"/> — die Rückfallebene
+        /// liest dort das Schema jeder genannten Tabelle, und
+        /// <c>Tab_StromspeicherVariante</c> legt ihr eigener Controller still an
+        /// (<c>StromspeicherVarianteCtrl.StelleTabelleSicher</c>).</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt86_Lastspitzenkappung =
+        {
+            new SchemaSpalte(TAB_STROMSPEICHERVARIANTE, SPALTE_PEAKZIEL_KW, "DOUBLE"),      // nur anhängen!
+            new SchemaSpalte(TAB_STROMSPEICHERVARIANTE, SPALTE_PEAKZIEL_ADAPTIV, "YESNO"),  // nur anhängen!
+        };
+
+        // =====================================================================
         // S1 - Spalten der Senkenliste Z_AnlageSenke (Migrationsschritt 50)
         //   Konzept Brauchwasser/Heizung/Pufferspeicher § 5.1
         //

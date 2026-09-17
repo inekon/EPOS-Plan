@@ -77,6 +77,18 @@ namespace WindowsFormsApplication1
                 ["MinimaleSchwelle"] = new Func<double[], PeakShavingEingaben, Task<double>>(Minimal),
                 ["Bild"] = new Func<PeakShavingErgebnis, bool, Task<byte[]>>(Bild),
                 ["CsvSpeichern"] = new Func<PeakShavingErgebnis, Task<bool>>(Csv),
+
+                // DER AUSGANG IN DIE SPEICHERVARIANTE (Entscheid LS-E-1 (a)). OHNE
+                // Projekt gibt es ihn nicht - es gaebe keine Variante, in die zu
+                // schreiben waere, und der Knopf bliebe eine Attrappe.
+                ["VarianteUebernehmen"] = projektId > 0
+                    ? new Func<double, bool, Task<bool>>((ziel, adaptiv) =>
+                        Task.Run(() => PeakShavingCtrl.InVarianteUebernehmen(projektId, ziel, adaptiv)))
+                    : null,
+                ["VariantenBerechnungsart"] = projektId > 0
+                    ? new Func<Task<string>>(() =>
+                        Task.Run(() => PeakShavingCtrl.AktiveBerechnungsart(projektId)))
+                    : null,
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
                     if (dlg != null) dlg.Schliessen(b);

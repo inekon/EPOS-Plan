@@ -89,6 +89,25 @@ public sealed class SpeicherParameterDaten
     public bool Kompatibilitaet;
     public bool KompatibilitaetMoeglich;
 
+    /// <summary>Zielschwelle P_ziel [kW] der Lastspitzenkappung; 0 heisst „nicht gepflegt".</summary>
+    public double PeakZiel;
+
+    /// <summary>Die Schwelle zieht sich selbst nach, statt gegen <see cref="PeakZiel"/> zu rechnen.</summary>
+    public bool PeakZielAdaptiv;
+
+    /// <summary>
+    /// Die zwei Peak-Felder gehoeren zur Berechnungsart „Lastspitzenkappung" und
+    /// stehen nur dort — bei jeder anderen Art waeren sie eine Eingabe ohne Wirkung.
+    /// </summary>
+    public bool PeakZielMoeglich;
+
+    /// <summary>
+    /// Die HERLEITUNGSZEILE unter dem Peak-Ziel: die Netzbezugsspitze ohne Speicher des
+    /// letzten Laufs. Leer, solange kein Lauf eine liefert — dann steht dort nichts,
+    /// statt eine Zahl zu erfinden.
+    /// </summary>
+    public string PeakHerleitung = "";
+
     public bool LadenAusPv;
     public bool LadenAusBhkw;
     public bool Netzentladung;
@@ -929,6 +948,12 @@ public static class SpeicherFeld
 
     public const string Betriebsart = "BETRIEBSART";
     public const string Berechnungsart = "BERECHNUNGSART";
+
+    /// <summary>Zielschwelle P_ziel [kW] der Lastspitzenkappung (Schemaschritt 86).</summary>
+    public const string PeakZiel = "PEAKZIEL";
+
+    /// <summary>Adaptive Schwellensuche der Lastspitzenkappung (Schemaschritt 86).</summary>
+    public const string PeakZielAdaptiv = "PEAKZIEL_ADAPTIV";
     public const string Kompatibilitaet = "KOMPATIBILITAET";
     public const string LadenPv = "LADEN_PV";
     public const string LadenBhkw = "LADEN_BHKW";

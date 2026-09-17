@@ -156,11 +156,20 @@ namespace WindowsFormsApplication1
         /// (<see cref="StrompreisAltspalten"/>). Der Schritt schreibt kein DML und ist
         /// ergebnisneutral: Keine der Spalten trägt eine Rechengröße, der Referenzlauf
         /// bleibt byte-gleich.
+        /// Mit der LASTSPITZENKAPPUNG ALS BERECHNUNGSART (Schritt 86, Anwenderbefund vom
+        /// 17.09.2026 und Entscheide LS-E-1 (a)/LS-E-3) steht das Ziel auf <b>86</b>:
+        /// <c>Tab_StromspeicherVariante</c> bekommt die Zielschwelle
+        /// <c>PeakZiel_kW</c> (REAL, nullbar) und das Flag <c>PeakZiel_Adaptiv</c>
+        /// (0/1, <c>NOT NULL DEFAULT 0</c>) — die Spaltenliste steht bei
+        /// <see cref="SchemaKatalog.Schritt86_Lastspitzenkappung"/>. Der Schritt ist
+        /// ergebnisneutral: Er legt zwei Spalten an und schreibt keinen Wert; beide
+        /// werden nur gelesen, wenn die Variante die neue Berechnungsart führt, und das
+        /// tut im Bestand keine — der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 85;
+        public const int Zielversion = 86;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

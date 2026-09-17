@@ -158,6 +158,18 @@ public static class FlottenSimulator
         var hilfsleistung = einheiten.Sum(x => x.HilfsverbrauchKw);
         var bisherigerPeak = 0.0;
 
+        // DIE REFERENZSPITZE [kW] - die hoechste Netzlast OHNE Flotte, Hilfsverbrauch
+        // eingerechnet. Sie deckelt das Laden (LS-E-3): Ein Peak-Ziel ueber ihr darf die
+        // Spitze nicht ANHEBEN, indem die Flotte bis zum Ziel nachlaedt. Liegt das Ziel
+        // wie im Regelfall darunter, ist min(Ziel, Referenzspitze) genau das Ziel - der
+        // Bestand rechnet dann Bit fuer Bit wie bisher.
+        var referenzspitzeKw = 0.0;
+        foreach (var r in input.Istwerte)
+        {
+            var nRef = r.LastKw - r.PvKw - r.BhkwKw + hilfsleistung;
+            if (nRef > referenzspitzeKw) referenzspitzeKw = nRef;
+        }
+
         // Diagnose (Aufgabe #183): nur fuer den Lauf MIT Flotte. Sie zaehlt mit und
         // greift in keinen Rechenweg ein.
         var diagnose = ergebnis.Diagnose;
@@ -282,7 +294,7 @@ public static class FlottenSimulator
                     nOhneSpeicher, release, peakZiel, AktuelleVerfuegbarkeit(input, einheiten, t));
 
             var interval = FuehreAus(row, einheiten, energie, soll, curtailRequest, o, peakZiel,
-                AktuelleVerfuegbarkeit(input, einheiten, t),
+                referenzspitzeKw, AktuelleVerfuegbarkeit(input, einheiten, t),
                 out var peakregelSperrtLaden, out var netzladeverbotSperrtLaden);
             if (einheiten.Count > 0)
             {
@@ -450,6 +462,7 @@ public static class FlottenSimulator
         double curtailRequest,
         FlottenSimulationOptionen o,
         double? peakZiel,
+        double referenzspitzeKw,
         IReadOnlyList<double> verfuegbarkeit,
         out bool peakregelSperrtLaden,
         out bool netzladeverbotSperrtLaden)
@@ -479,12 +492,18 @@ public static class FlottenSimulator
         var importLimit = o.NetzbezugGrenzeKw ?? double.MaxValue / 4;
         var exportLimit = o.NetzeinspeisungGrenzeKw ?? double.MaxValue / 4;
         var chargeCeiling = Math.Max(0, importLimit - n);
-        if (peakZiel.HasValue)
-            chargeCeiling = Math.Min(chargeCeiling, Math.Max(0, peakZiel.Value - n));
+        // LS-E-3: Geladen wird bis zum Peak-Ziel, aber nie ueber die Referenzspitze -
+        // sonst hoebe ein zu hoch gewaehltes Ziel die Spitze an, statt sie zu kappen.
+        // Liegt das Ziel darunter, ist der Deckel genau das Ziel (Regelfall).
+        var ladedeckelKw = peakZiel.HasValue
+            ? Math.Min(peakZiel.Value, referenzspitzeKw)
+            : (double?)null;
+        if (ladedeckelKw.HasValue)
+            chargeCeiling = Math.Min(chargeCeiling, Math.Max(0, ladedeckelKw.Value - n));
         if (!o.NetzladungErlaubt) chargeCeiling = Math.Min(chargeCeiling, Math.Max(0, -n));
         // Diagnose: WELCHE der beiden Regeln den Ladedeckel auf 0 gezogen hat.
-        peakregelSperrtLaden = peakZiel.HasValue &&
-            Math.Max(0, peakZiel.Value - n) <= Eps;
+        peakregelSperrtLaden = ladedeckelKw.HasValue &&
+            Math.Max(0, ladedeckelKw.Value - n) <= Eps;
         netzladeverbotSperrtLaden = !o.NetzladungErlaubt && Math.Max(0, -n) <= Eps;
         var allowed = Math.Max(total, -chargeCeiling);
         if (!o.BatterieexportErlaubt) allowed = Math.Min(allowed, Math.Max(0, n));
