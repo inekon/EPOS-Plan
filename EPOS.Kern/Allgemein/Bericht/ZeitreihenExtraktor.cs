@@ -108,6 +108,12 @@ namespace WindowsFormsApplication1
 
                 z.Reihen[ZeitreihenSatz.NETZBEZUG] = Stunden(sim, sim.Rest_Strombedarf_viertelstuendlich);
 
+                // Die BEZUGSSPITZE entsteht aus der VIERTELSTUNDENreihe, nicht aus der
+                // Zeile darüber: Das Stundenmittel glättet die Spitze, und bepreist
+                // wird die gemessene Viertelstundenleistung. Dieselbe Reihe, die der
+                // Speicher kappt — deshalb misst die Zahl den Effekt der Kappung.
+                z.Bezugsspitze = Netzbezugsspitze.AusReihe(sim.Rest_Strombedarf_viertelstuendlich);
+
                 // Restwärme (Referenz des letzten Gewerks → Kopie zwingend).
                 z.Reihen[ZeitreihenSatz.WAERMEREST] = D(sim.Rest_Waermebedarf_stuendlich);
 

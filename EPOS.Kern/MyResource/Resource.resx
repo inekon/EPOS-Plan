@@ -6495,6 +6495,9 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_ZEILE_STROMKOSTEN_RESTSTROM" xml:space="preserve">
     <value>Reststromkosten nach Tarif [€/a]</value>
   </data>
+  <data name="WIRT_ZEILE_BEZUGSSPITZE_STROM" xml:space="preserve">
+    <value>Bezugsspitze Strom [kW]</value>
+  </data>
   <data name="WIRT_ZEILE_CO2_BEHG" xml:space="preserve">
     <value>CO₂-Abgabe nach BEHG [€/a]</value>
   </data>

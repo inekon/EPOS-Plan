@@ -169,7 +169,11 @@ namespace WindowsFormsApplication1
 
                 // Ganglinien (Word) und Monatswerte (Excel) brauchen Stundenreihen;
                 // die sammelt der Lauf zusaetzlich ein (Konzept Kap. 6.2/9).
-                bool mitZeitreihen = konfig.IstAktiv(BerichtsKonfiguration.B_ERGEBNISSE);
+                // SP-W1: Ist am Stromträger ein Leistungspreis gepflegt, braucht auch
+                // die KOSTENseite des Berichts die Reihen — ohne Bezugsspitze fällt sein
+                // Leistungsanteil aus den Energiekosten.
+                bool mitZeitreihen = konfig.IstAktiv(BerichtsKonfiguration.B_ERGEBNISSE) ||
+                                     KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm);
 
                 BerichtsDaten daten = await Task.Run(() =>
                     new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,

@@ -84,15 +84,42 @@ namespace WindowsFormsApplication1
         public double? StromkostenNetz;    // €/a (Netzbezug)
 
         /// <summary>
-        /// Leistungspreis-Anteil der Brennstoffkosten [€/a] (Etappe KD4, Konzept
-        /// Kostendialoge § 7.1, Entscheidung FK6): Jahres- bzw. Monatsleistungspreis
-        /// der GASTRÄGER × vorgehaltene Anschlussleistung (Gerätedaten). In
+        /// Leistungspreis-Anteil der Energiekosten [€/a] (Konzept Kostendialoge § 7.1,
+        /// Entscheidung FK6): Jahres- bzw. Monatsleistungspreis der GASTRÄGER ×
+        /// vorgehaltene Anschlussleistung (Gerätedaten) PLUS der Leistungsanteil des
+        /// STROMTRÄGERS (Satz × Bezugsspitze, <see cref="BezugsspitzeKW"/>). In
         /// <see cref="Energiekosten"/> ENTHALTEN, hier getrennt ausgewiesen.
-        /// null = kein Träger mit gepflegtem Leistungspreis; der Stromträger bleibt
-        /// außen vor — sein Leistungspreis ist die Tarifstruktur (Schritt 21,
-        /// keine zweite Wahrheit).
+        /// null = kein Träger mit gepflegtem Leistungspreis.
+        ///
+        /// <para>Der Stromanteil steht NUR im Regelweg. Eine aktive Tarifstruktur und
+        /// das Rollenmodell ersetzen den ganzen Stromanteil samt seinem Leistungspreis
+        /// (<see cref="StromkostenNetz"/> wird herausgerechnet) — keine zweite
+        /// Wahrheit.</para>
         /// </summary>
         public double? EnergieLeistungsanteil;
+
+        /// <summary>
+        /// <b>Die Bezugsspitze des Netzbezugs [kW]</b> — Jahresmaximum der
+        /// Viertelstundenreihe dieses Laufs (<see cref="Netzbezugsspitze"/>);
+        /// <c>null</c> = der Lauf führte keine Zeitreihen.
+        ///
+        /// <para>Herleitungsgröße, keine Zahlung: Sie ist die Basis des
+        /// Strom-Leistungspreises und zugleich die Zahl, an der ein Anwender den
+        /// Effekt der Lastspitzenkappung abliest — Stamm gegen Speichervariante.</para>
+        /// </summary>
+        public double? BezugsspitzeKW;
+
+        /// <summary>
+        /// Name des Stromträgers, dessen gepflegter LEISTUNGSPREIS mangels Bezugsspitze
+        /// NICHT gerechnet werden konnte (der Lauf führte keine Zeitreihen);
+        /// <c>null</c> = kein solcher Fall.
+        ///
+        /// <para><b>Warum das gemeldet gehört.</b> Ein gepflegter Leistungspreis, der
+        /// still unter den Tisch fällt, sieht aus wie ein zu günstiges Ergebnis. Die
+        /// Fahne ist dieselbe Behandlung wie <see cref="CO2StrommixRueckfall"/>: Die
+        /// Ersatzannahme wird benannt, nicht verschwiegen.</para>
+        /// </summary>
+        public string LeistungspreisOhneSpitze;
         public double? CO2Gesamt;          // t/a
         public double? CO2Spezifisch;      // g/kWh Wärme
         public double? CO2Brennstoff;      // t/a nur BEHG-pflichtige Brennstoffe (Phase 7/W2)
@@ -391,6 +418,18 @@ namespace WindowsFormsApplication1
         }
 
         public Dictionary<string, double[]> Reihen = new Dictionary<string, double[]>();
+
+        /// <summary>
+        /// <b>Jahres- und Monatsspitze des Netzbezugs im VIERTELSTUNDENraster</b> [kW];
+        /// <c>null</c> = der Lauf hat keine verwertbare Reihe geliefert.
+        ///
+        /// <para>Eine SPITZE lässt sich aus <see cref="Reihen"/> nicht mehr gewinnen:
+        /// Die Reihe <see cref="NETZBEZUG"/> ist auf Stunden gemittelt, und das Mittel
+        /// glättet genau die Größe, die der Leistungspreis bepreist. Sie entsteht
+        /// deshalb beim Einsammeln aus der Viertelstundenreihe des Laufs und reist als
+        /// Skalar mit — nicht als vierzehnte Reihe zu 35 040 Werten.</para>
+        /// </summary>
+        public Netzbezugsspitze Bezugsspitze;
 
         /// <summary>
         /// Schlüssel der Wärmespeicher-Füllstandsreihen in STABILER Reihenfolge (die

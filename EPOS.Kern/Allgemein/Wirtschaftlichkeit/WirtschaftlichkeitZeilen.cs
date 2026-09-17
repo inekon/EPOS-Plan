@@ -142,6 +142,16 @@ namespace WindowsFormsApplication1
                                : MyResource.Resource.WIRT_ZEILE_STROMKOSTEN_BEZUG,
                            e => e.StromkostenTarif));
 
+            // Die BEZUGSSPITZE — eine HERLEITUNG, keine Geldzeile: Sie steht zwischen
+            // den Stromkosten und dem Rest, weil sie erklärt, wie der Leistungsanteil
+            // des Strompreises zustande kommt, und weil an ihr der Effekt der
+            // Lastspitzenkappung abzulesen ist (Stamm gegen Speichervariante). Sie
+            // erscheint nur, wenn irgendein Lauf der Gruppe Zeitreihen geführt hat —
+            // ohne sie stünde in jedem Bericht eine „—"-Zeile.
+            if (Irgendein(menge, e => e.BezugsspitzeKW.HasValue))
+                z.Add(Zahl("BEZUGSSPITZE_STROM", MyResource.Resource.WIRT_ZEILE_BEZUGSSPITZE_STROM,
+                           e => e.BezugsspitzeKW));
+
             if (Irgendein(menge, e => e.CO2AbgabeJahr > 0))
                 z.Add(Zahl("CO2_BEHG", MyResource.Resource.WIRT_ZEILE_CO2_BEHG,
                            e => (double?)e.CO2AbgabeJahr));

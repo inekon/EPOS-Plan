@@ -1058,6 +1058,22 @@ namespace WindowsFormsApplication1
         public double? StromkostenTarif;       // Bezugskosten nach Tarifmatrix [€/a] (null = Flat-Rechnung)
         public string Hinweis;                 // nicht-fataler Hinweis (z. B. Tarif ohne Stundenreihen)
 
+        /// <summary>
+        /// <b>Bezugsspitze Strom [kW]</b> — Jahresmaximum des Netzbezugs im
+        /// Viertelstundenraster dieses Laufs (<see cref="Netzbezugsspitze"/>);
+        /// <c>null</c> = der Lauf führte keine Zeitreihen.
+        ///
+        /// <para><b>Herleitung, keine Zahlung.</b> Sie ist die Basis des
+        /// Strom-Leistungspreises und die Zahl, an der der Vergleich den Effekt der
+        /// Lastspitzenkappung zeigt: Stamm gegen Speichervariante, bei nahezu gleicher
+        /// Arbeit.</para>
+        ///
+        /// <para><b>Nicht persistiert</b>, wie <see cref="KwkgModule"/> und
+        /// <see cref="Betriebskosten"/>: Sie entsteht mit dem Lauf, aus dem sie stammt,
+        /// und eine gespeicherte Spitze beschriebe einen anderen.</para>
+        /// </summary>
+        public double? BezugsspitzeKW;
+
         // Kennzahlen
         public double? Kapitalwert;            // absoluter Nettobarwert des Projekts [€]
         public double? KapitalwertDiff;        // KW gegenüber Stamm [€] (null beim Stamm)

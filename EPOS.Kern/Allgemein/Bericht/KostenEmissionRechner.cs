@@ -223,6 +223,8 @@ namespace WindowsFormsApplication1
                 v.KesselOhneVerbrauch = new List<string>();
                 v.StromTraegerRueckfall = null;
                 v.CO2TraegerRueckfall = null;
+                v.BezugsspitzeKW = null;
+                v.LeistungspreisOhneSpitze = null;
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
         }
@@ -233,6 +235,15 @@ namespace WindowsFormsApplication1
             v.EnergiekostenGrund = null;         // Auftrag #267 — frischer Lauf
             v.StromTraegerRueckfall = null;
             v.CO2TraegerRueckfall = null;        // Auftrag #293
+            v.LeistungspreisOhneSpitze = null;
+
+            // Die Bezugsspitze ist eine HERLEITUNG des Laufs, kein Preisergebnis: Sie
+            // steht auch dann an der Variante, wenn kein Leistungspreis gepflegt ist —
+            // dann trägt sie nichts zu den Kosten bei und bleibt reine Auskunft
+            // (Vergleichszeile „Bezugsspitze Strom").
+            v.BezugsspitzeKW = (v.Zeitreihen != null && v.Zeitreihen.Bezugsspitze != null &&
+                                v.Zeitreihen.Bezugsspitze.JahrKW > 0)
+                               ? (double?)v.Zeitreihen.Bezugsspitze.JahrKW : null;
 
             // BERECHNUNGSMODUS (F7) - EINMAL je Lauf gelesen und am Ergebnis vermerkt.
             // Der Vermerk ist der Grund, weshalb ein Bericht die Zahl richtig
@@ -305,8 +316,10 @@ namespace WindowsFormsApplication1
             // nicht. Eine gemeinsame Fahne machte aus dem einen Loch zwei.
             bool behgVollstaendig = verbrauchOhneTraeger <= 0;
 
-            // KD4/FK6: Leistungsanteil der Gasträger; der Stromträger bleibt außen
-            // vor (sein Leistungspreis ist die Tarifstruktur, Schritt 21).
+            // KD4/FK6: Leistungsanteil der BRENNSTOFFträger — Basis ist die
+            // vorgehaltene Anschlussleistung aus den Gerätedaten. Der STROMträger
+            // rechnet weiter unten mit seiner eigenen Basis (der gemessenen
+            // Bezugsspitze); beide Anteile laufen in dieselbe Summe.
             double leistungsAnteil = 0;
             bool leistungGepflegt = false;
             int stromCarrierId = Emissionsquelle.StromTraeger(v.IdProjekt);
@@ -378,13 +391,19 @@ namespace WindowsFormsApplication1
                     if (!ohnePreis.Contains(name)) ohnePreis.Add(name);
                 }
 
-                // Leistungspreis (Etappe KD4/FK6): Basis ist die VORGEHALTENE
-                // Anschlussleistung aus den Gerätedaten (§ 7.1-Umsetzung); Modus
-                // JAHR = Satz × kW, MONAT = Satz × kW × 12. Eine gepflegte
+                // Leistungspreis der BRENNSTOFFträger (Etappe KD4/FK6): Basis ist die
+                // VORGEHALTENE Anschlussleistung aus den Gerätedaten (§ 7.1-Umsetzung);
+                // Modus JAHR = Satz × kW, MONAT = Satz × kW × 12. Eine gepflegte
                 // Saisonreihe (FK6a) gilt vor dem konstanten Satz: Summe der zwölf
                 // Monatssätze × kW. Fehlt die Basis (keine plausible
                 // Geräteleistung), entsteht bewusst KEIN Anteil — ein Fantasiewert
                 // wäre schlimmer als ein fehlender.
+                //
+                // DER STROMTRÄGER BLEIBT HIER AUSSEN VOR — nicht, weil er keinen
+                // Leistungspreis hätte, sondern weil seine BASIS eine andere ist:
+                // Ein Stromanschluss wird nicht nach vorgehaltener Anlagenleistung
+                // abgerechnet, sondern nach der gemessenen Bezugsspitze. Sein Anteil
+                // entsteht deshalb im Netzbezugsblock weiter unten.
                 if ((info.ReihenSummeJeKW.HasValue || info.PreisLeistung.HasValue) &&
                     kv.Key != stromCarrierId)
                 {
@@ -442,6 +461,64 @@ namespace WindowsFormsApplication1
                 {
                     stromKosten = netzbezugMWh * 1000.0 * preistraeger.PreisArbeit.Value;
                     if (preistraeger.Grundpreis.HasValue) stromKosten += preistraeger.Grundpreis.Value;
+
+                    // ---- DER LEISTUNGSPREIS DES STROMTRÄGERS (Anwenderentscheid
+                    // 17.09.2026, SP-E-1 a / Q1 Viertelstunde) ----
+                    //
+                    // Der Strompreis setzt sich aus Arbeits-, Grund- UND
+                    // Leistungspreis zusammen. Ohne den dritten Bestandteil ging der
+                    // Effekt der Lastspitzenkappung im Variantenvergleich verloren:
+                    // Ein Speicher, der die Spitze halbiert, senkte die Energiekosten
+                    // um keinen Cent, weil nur die ARBEIT bepreist wurde — und die
+                    // ändert der Speicher kaum.
+                    //
+                    // BASIS IST DIE GEMESSENE BEZUGSSPITZE im Viertelstundenraster
+                    // (v.Zeitreihen.Bezugsspitze, gebildet aus derselben Reihe, die
+                    // der Speicher kappt), nicht die Anschlussleistung der Geräte:
+                    // Der Netzbetreiber misst die Viertelstundenleistung, und ein
+                    // Stundenmittel (StromMatrix.MaxBezugKW) fiele regelmäßig zu
+                    // niedrig aus.
+                    //
+                    // MODUS JAHR: Satz [€/(kW·a)] × Jahresspitze.
+                    // MODUS MONAT: Σ über 12 Monate (Monatsspitze × Satz [€/(kW·Mon)]).
+                    // SAISONREIHE (FK6a) geht vor, wie im Brennstoffzweig: Σ über
+                    // 12 Monate (Monatssatz × Monatsspitze).
+                    //
+                    // OHNE SPITZE KEIN ANTEIL, aber auch kein Schweigen: Führt der
+                    // Lauf keine Zeitreihen, wird der gepflegte Leistungspreis
+                    // benannt (v.LeistungspreisOhneSpitze) statt still zu entfallen.
+                    //
+                    // KEINE ZWEITE WAHRHEIT: Eine aktive Tarifstruktur ersetzt den
+                    // ganzen Stromanteil (WirtschaftlichkeitCtrl rechnet
+                    // v.StromkostenNetz heraus) — dieser Anteil ist deshalb
+                    // ausdrücklich TEIL von StromkostenNetz und fällt dort mit heraus.
+                    bool leistungStrom = preistraeger.ReiheJeKW != null ||
+                                         preistraeger.PreisLeistung.HasValue;
+                    if (leistungStrom)
+                    {
+                        Netzbezugsspitze spitze = v.Zeitreihen != null ? v.Zeitreihen.Bezugsspitze : null;
+                        if (spitze != null && spitze.JahrKW > 0)
+                        {
+                            double anteilStrom;
+                            if (preistraeger.ReiheJeKW != null)
+                            {
+                                anteilStrom = 0;
+                                for (int mo = 0; mo < 12; mo++)
+                                    anteilStrom += preistraeger.ReiheJeKW[mo] * spitze.MonatKW[mo];
+                            }
+                            else if (string.Equals(preistraeger.LeistungsModus,
+                                         DbWerte.LEISTUNGSPREIS_MODUS_MONAT, StringComparison.Ordinal))
+                                anteilStrom = preistraeger.PreisLeistung.Value * spitze.MonatssummeKW;
+                            else
+                                anteilStrom = preistraeger.PreisLeistung.Value * spitze.JahrKW;
+
+                            stromKosten += anteilStrom;
+                            leistungsAnteil += anteilStrom;
+                            leistungGepflegt = true;
+                        }
+                        else
+                            v.LeistungspreisOhneSpitze = TraegerName(stromCarrierKosten);
+                    }
 
                     // Der Vermerk steht NUR, wenn der Rückfall auch wirklich einen
                     // Betrag getragen hat — sonst behauptete die Hinweiszeile eine
@@ -585,6 +662,13 @@ namespace WindowsFormsApplication1
             /// (§ 7.1); Projektreihe vor Stammreihe löst
             /// <see cref="PreisreiheCtrl.ReadTraegerReihe"/> auf.</summary>
             public double? ReihenSummeJeKW;
+
+            /// <summary>FK6a — die ZWÖLF Monatssätze derselben Reihe [€/(kW·Monat)];
+            /// null = keine Reihe gepflegt. Der BRENNSTOFFzweig rechnet mit
+            /// <see cref="ReihenSummeJeKW"/>, weil seine Basis über das Jahr konstant
+            /// ist (die vorgehaltene Anschlussleistung); der STROMzweig braucht die
+            /// Sätze einzeln, weil jeder Monat seine eigene Bezugsspitze hat.</summary>
+            public double[] ReiheJeKW;
         }
 
         /// <summary>
@@ -719,6 +803,31 @@ namespace WindowsFormsApplication1
             return Emissionsquelle.KatalogStromTraeger(idProjekt);
         }
 
+        /// <summary>
+        /// <b>Trägt der bepreisende Stromträger dieses Projekts einen Leistungspreis?</b>
+        /// (konstanter Satz oder Saisonreihe, Projektwert vor Katalogwert, 0 zählt wie
+        /// überall als nicht gepflegt).
+        ///
+        /// <para><b>Wozu die Schale das braucht.</b> Der Leistungsanteil des Stroms
+        /// bemisst sich an der Bezugsspitze, und die gibt es nur aus einem frischen
+        /// Lauf mit eingesammelten Zeitreihen. Wer die Wirtschaftlichkeit rechnet, muss
+        /// also VORHER wissen, ob dieser Lauf gebraucht wird — dieselbe Frage, die
+        /// heute schon die Tarifstruktur und der KWKG-Bonus stellen.</para>
+        /// </summary>
+        public static bool StromLeistungspreisGepflegt(int idProjekt)
+        {
+            try
+            {
+                int traeger = Emissionsquelle.StromTraeger(idProjekt);
+                if (traeger <= 0) traeger = StandardStromTraeger(idProjekt);
+                if (traeger <= 0) return false;
+
+                TraegerInfo info = LadeTraeger(idProjekt, traeger);
+                return info.ReiheJeKW != null || info.PreisLeistung.HasValue;
+            }
+            catch { return false; }
+        }
+
         private static TraegerInfo LadeTraeger(int idProjekt, int carrierId)
         {
             var info = new TraegerInfo();
@@ -793,7 +902,20 @@ namespace WindowsFormsApplication1
                     {
                         double summe = 0;
                         foreach (double wert in werte) summe += wert;
-                        if (summe > 0) info.ReihenSummeJeKW = summe;
+                        if (summe > 0)
+                        {
+                            info.ReihenSummeJeKW = summe;
+
+                            // Dieselbe Reihe, monatsscharf — für den Stromzweig, der
+                            // jeden Satz mit SEINER Monatsspitze multipliziert. Eine
+                            // kürzere Reihe wird auf zwölf aufgefüllt (fehlende Monate
+                            // = 0), eine längere abgeschnitten; die Summe oben bleibt
+                            // unangetastet.
+                            var jeMonat = new double[12];
+                            for (int mo = 0; mo < 12 && mo < werte.Length; mo++)
+                                jeMonat[mo] = werte[mo];
+                            info.ReiheJeKW = jeMonat;
+                        }
                     }
                 }
             }

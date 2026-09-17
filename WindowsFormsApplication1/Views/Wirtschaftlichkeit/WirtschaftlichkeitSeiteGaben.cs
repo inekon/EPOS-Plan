@@ -597,8 +597,11 @@ namespace WindowsFormsApplication1
                 TarifParameter tarif = _ctrl.LadeTarif(_idStamm);
 
                 // W3: Tarifmatrix und KWKG-Split brauchen Stundenreihen — dann
-                // wird je Projekt frisch in-memory simuliert.
-                bool mitZeitreihen = tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
+                // wird je Projekt frisch in-memory simuliert. SP-W1: derselbe Grund für
+                // den Leistungspreis des Stromträgers — seine Basis ist die Bezugsspitze
+                // aus der Viertelstundenreihe, und die gibt es nur aus dem frischen Lauf.
+                bool mitZeitreihen = tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0 ||
+                                     KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm);
 
                 _ergebnisse = await Task.Run(() =>
                 {

@@ -53772,6 +53772,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsspitze Strom [kW] ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_BEZUGSSPITZE_STROM {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_BEZUGSSPITZE_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Abgabe nach BEHG [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_CO2_BEHG {
