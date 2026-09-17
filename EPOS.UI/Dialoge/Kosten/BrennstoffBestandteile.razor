@@ -3,18 +3,21 @@
    Vorbild: Views/Kosten/ucBrennstoffBestandteile.cs (863 Z.) und .Designer.cs —
    Konzept BHKW-Wirtschaftlichkeit § 4.1 und § 6.2, Etappe B2, Befund BW1.
 
-   DER UNTERSCHIED ZUM STROM-BLOCK. Beim Strom ist der Aufschlag ein ZUSCHLAG,
-   der auf den Arbeitspreis addiert wird. Hier ist die Zerlegung eine
-   AUFTEILUNG DESSELBEN Preises: Die Bestandteile stecken bereits im
-   Arbeitspreis. Es wird deshalb nie etwas addiert; die aussagekraeftige Groesse
-   ist die Summe der AKTIVEN Anteile.
+   DIESELBE BEDEUTUNG WIE BEIM STROM-BLOCK. Beide ZERLEGEN einen Preis: Die
+   Bestandteile stecken bereits im Arbeitspreis. Es wird nie etwas addiert; die
+   aussagekraeftige Groesse ist die Summe der AKTIVEN Anteile, und was der Preis
+   darueber hinaus enthaelt, nennt die Restzeile — negativ steht sie in
+   Warnfarbe, statt verschwiegen zu werden.
 
-   ZWEI MODI (§ 4.1). „Gesamtwert" (Vorbelegung): Der Arbeitspreis gilt, die
-   Bestandteile sind Transparenz, und die Restzeile nennt den nicht
-   aufgeschluesselten Rest — negativ steht er in Warnfarbe, statt verschwiegen
-   zu werden. „Aufgeschluesselt": Die Summe IST der Preis; der Knopf „In
-   Arbeitspreis uebernehmen" MELDET das nur — eingetragen wird der Wert vom
-   Wirt. Dieser Block schreibt den Preis nie selbst: Es gibt genau eine
+   KEIN MODUS. Bis zum Anwenderentscheid vom 17.09.2026 stand hier eine
+   Radiogruppe „Gesamtwert" / „aufgeschluesselt". Sie hat nie gerechnet: In
+   beiden Faellen war die Summe der aktiven Anteile die Zahl, die zaehlt. Ein
+   Anteil, den niemand gepflegt hat, ist inaktiv und traegt nichts bei — das
+   sagt alles, was die zwei Modi sagten. Denselben Weg ist der Strom gegangen.
+
+   DER KNOPF MELDET NUR. „In Arbeitspreis uebernehmen" sagt dem Wirt, dass der
+   Anwender die Summe im Arbeitspreisfeld haben moechte; eingetragen wird sie
+   dort. Dieser Block schreibt den Preis nie selbst: Es gibt genau eine
    Preiswahrheit, und die heisst energy_project_settings.custom_price_work.
 
    NULL HEISST „KEIN ANTEIL". Ein leeres Feld wird nicht durch einen
@@ -23,16 +26,13 @@
    belegbar, bleibt ihr Knopf gesperrt und der Kurztext nennt den Grund — eine
    geratene Zahl waere genau der Fehlertyp, den Leitentscheidung L3 verhindert.
 
-   In BEIDEN Modi bleiben die Komponentenfelder schreibbar: Es gibt hier kein
-   Override-Feld, das sie ersetzen koennte. *@
+   Die Komponentenfelder sind immer schreibbar: Es gibt hier kein Override-Feld,
+   das sie ersetzen koennte. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
 
 <Gruppenkopf Titel="@TitelBestandteile">
     <KindInhalt>
-        <Optionsgruppe Eintraege="@MODI" Auswahl="@(Stand.Aufgeschluesselt ? 1 : 0)"
-                       AuswahlChanged="BeiModus" />
-
         <p class="epos-untergruppe">@LabelSchnellwahl</p>
         <div class="epos-schnellwahl">
             @Schnellwahlknopf(SatzRegel, w => Stand.Energiesteuer = w, true)
@@ -61,7 +61,7 @@
         <p class="@(Anzeige.RestNegativ ? "epos-preisblock-rest epos-preisblock-rest--negativ"
                                         : "epos-preisblock-rest")">@Anzeige.RestText</p>
 
-        <button type="button" class="epos-knopf" disabled="@(!Stand.Aufgeschluesselt)"
+        <button type="button" class="epos-knopf"
                 @onclick="() => InArbeitspreis.InvokeAsync()">@InArbeitspreisText</button>
     </KindInhalt>
 </Gruppenkopf>
@@ -98,8 +98,6 @@
     [Parameter] public Schnellwahlsatz? SatzCo2 { get; set; }
 
     [Parameter] public string TitelBestandteile { get; set; } = "Preisbestandteile des Brennstoffs";
-    [Parameter] public string ModusAufgeschluesselt { get; set; } = "aufgeschlüsselt (Summe ist der Preis)";
-    [Parameter] public string ModusGesamtwert { get; set; } = "Gesamtwert (Arbeitspreis gilt)";
     [Parameter] public string LabelSchnellwahl { get; set; } = "Schnellwahl (Katalog):";
     [Parameter] public string LabelEnergiesteuer { get; set; } = "Energiesteuer";
     [Parameter] public string LabelCo2 { get; set; } = "CO₂-Anteil (BEHG)";
@@ -118,15 +116,6 @@
         => LabelArbeitspreis + ": " +
            ArbeitspreisCtKwh.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture) +
            " " + Einheit;
-
-    private (int Id, string Text)[] MODI
-        => new[] { (0, ModusGesamtwert), (1, ModusAufgeschluesselt) };
-
-    private async Task BeiModus(int? id)
-    {
-        Stand.Aufgeschluesselt = id == 1;
-        await Geaendert.InvokeAsync();
-    }
 
     private void Setzen(Action aendern)
     {

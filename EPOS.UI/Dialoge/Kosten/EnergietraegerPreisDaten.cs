@@ -92,13 +92,14 @@ public sealed class StrompreisDetailsStand
 /// <para><b>Ein LEERES Feld heißt „kein Anteil"</b> und ist deshalb
 /// <c>null</c>, nicht 0 — anders als beim Strom-Block, wo ein Vorschlagssatz
 /// einspringt (Konzept § 5.1, Falle aus E5).</para>
+///
+/// <para><b>Einen Modus gibt es nicht mehr.</b> Wie beim Strom sagt ein Anteil
+/// mit Wert und Aktiv-Schalter alles, was die zwei Modi sagten; die Summe der
+/// aktiven Anteile steht neben dem Arbeitspreis, der Unterschied in der
+/// Restzeile.</para>
 /// </summary>
 public sealed class BrennstoffBestandteileStand
 {
-    /// <summary><c>true</c> = aufgeschlüsselt (Summe ist der Preis),
-    /// <c>false</c> = Gesamtwert (Arbeitspreis gilt).</summary>
-    public bool Aufgeschluesselt { get; set; }
-
     public double? Energiesteuer { get; set; }
     public double? CO2 { get; set; }
     public double? Netzentgelt { get; set; }
@@ -114,13 +115,13 @@ public sealed class BrennstoffBestandteileStand
 /// Was die Hülle zu einem Stand ausrechnet: die Summenzeile und die Restzeile
 /// (iU9-W4.3).
 ///
-/// <para>Beides fällt aus derselben Rechnung
-/// (<c>StrompreisZerlegungCtrl.AlsPreiszerlegung</c> bzw.
-/// <c>BrennstoffBestandteilCtrl</c>) — die Formeln stehen in der Engine, nicht
-/// in der Oberfläche.</para>
+/// <para>Beides fällt für BEIDE Träger aus derselben Rechnung
+/// (<c>Preisanteile.SummeCtKwh</c> / <c>Preisanteile.RestCtKwh</c> über den
+/// Engine-Satz des jeweiligen Controllers) — die Formeln stehen in der Engine,
+/// nicht in der Oberfläche.</para>
 /// </summary>
 /// <param name="SummeText">Die fertige Summenzeile.</param>
-/// <param name="RestText">Die fertige Restzeile bzw. der Modushinweis.</param>
+/// <param name="RestText">Die fertige Restzeile.</param>
 /// <param name="RestNegativ">Der nicht aufgeschlüsselte Rest ist negativ — die
 /// ausgewiesenen Bestandteile sind zusammen teurer als der Preis. Das wird
 /// benannt, nicht geglättet.</param>

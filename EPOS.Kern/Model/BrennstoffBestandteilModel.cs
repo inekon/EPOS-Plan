@@ -9,16 +9,13 @@
     // energy_project_settings.custom_price_work und wird von ucFuelSettings gepflegt.
     // Hier stehen die Anteile, aus denen er BESTEHT.
     //
-    // Abgrenzung zum StrompreisZerlegungModel — und der Unterschied ist fachlich, nicht
-    // formal:
-    //
-    //   * Der Strom-Block ist ein AUFSCHLAG. Netzentgelt, Umlagen, Stromsteuer,
-    //     Konzession und Vertrieb werden auf den Bezugspreis ADDIERT.
-    //   * Dieser Block ist eine ZERLEGUNG. Energiesteuer, CO2-Anteil, Netz-/
-    //     Messentgelt und Vertrieb sind bereits IM erfassten Preis enthalten; sie
-    //     werden sichtbar gemacht, nicht aufgeschlagen (Konzept 4.1, Leitentscheidung
-    //     BW1). Deshalb gibt es hier auch keine Override-Spalte: Der erfasste Preis
-    //     ist der Gesamtwert.
+    // Abgrenzung zum StrompreisZerlegungModel: Beide ZERLEGEN denselben Preis —
+    // Energiesteuer, CO2-Anteil, Netz-/Messentgelt und Vertrieb sind bereits IM
+    // erfassten Preis enthalten und werden sichtbar gemacht, nicht aufgeschlagen
+    // (Konzept 4.1, Leitentscheidung BW1). Eine Override-Spalte gibt es hier nicht:
+    // Der erfasste Preis ist der Gesamtwert. Der EINE Unterschied ist die Bedeutung
+    // eines leeren Feldes — hier „kein Anteil" (null), beim Strom ein Vorschlagswert,
+    // der inaktiv danebensteht.
     //
     // Alle Werte in ct/kWh.
     // ---------------------------------------------------------------------------
@@ -69,23 +66,15 @@
         public double? Vertrieb;
         public bool Vertrieb_Aktiv;
 
-        // --- Modus ---
-
-        /// <summary>
-        /// Werte aus <see cref="DbWerte"/>.SP_AUFSCHLAG_MODUS_* — dieselben
-        /// Persistenzwerte wie beim Strom, kein zweites Vokabular für dieselbe
-        /// Unterscheidung. Den dritten Wert <c>KEINER</c> kennt der Strom-Block
-        /// allein: Hier wäre er wirkungsgleich mit <c>Gesamtwert</c>, weil die
-        /// vier Bestandteile keine Vorschlagswerte tragen.
-        ///
-        /// <para>Vorgabe ist <b>Gesamtwert</b>: „Der erfasste Preis ist der Preis, die
-        /// Bestandteile sind Ausweis." Das ist der Wert, der nichts auslöst, und
-        /// zugleich der Regelfall einer Lieferantenrechnung. Beim Strom heißt derselbe
-        /// Gedanke <c>Keiner</c> — dort sind die Komponenten ein Aufschlag auf einen
-        /// Nettopreis und tragen Vorschlagswerte, hier die Zerlegung eines
-        /// Bruttopreises ohne jede Vorbelegung.</para>
-        /// </summary>
-        public string Modus = DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT;
+        // --- KEIN MODUS (Anwenderentscheid 17.09.2026) ---
+        //
+        // Bis dahin entschied Anteil_Modus zwischen „Gesamtwert" und
+        // „aufgeschluesselt". Er hatte nie eine Rechenwirkung: Der aussagekraeftige
+        // Wert war in beiden Faellen die Summe der aktiven Anteile. Damit gilt hier
+        // dieselbe Regel wie beim Strom — ein Anteil ohne gesetzten Aktiv-Schalter
+        // traegt nichts bei, und was der Preis darueber hinaus enthaelt, nennt die
+        // Restzeile. Die Spalte energy_project_settings.Anteil_Modus bleibt im Schema
+        // stehen, wird aber weder gelesen noch geschrieben (Aufraeumkandidat).
 
         /// <summary>
         /// true, wenn die Zeile aus der Datenbank stammt. false heisst: Es gab keine

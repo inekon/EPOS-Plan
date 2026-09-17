@@ -10,15 +10,23 @@ namespace WindowsFormsApplication1
     // energy_project_settings (Konzept BHKW-Wirtschaftlichkeit § 5.1, Etappe B2
     // Paket A; Spalten aus SchemaMigration Schritt 60).
     //
-    // Bauform wie StrompreisZerlegungCtrl: durchgängig NAMENSBASIERT mit
-    // Columns.Contains-Wache, kein Zeichenkette-zu-Zahl, DDL-Vorsorge ohne Dialog.
+    // EIN BAUPLAN FÜR BEIDE TRÄGER: Vorsorge, Lesen und Schreiben der
+    // (Wert, Aktiv)-Paare, Summe und Rest stehen EINMAL in <see cref="Preisanteile"/>
+    // und werden von diesem Controller wie von StrompreisZerlegungCtrl benutzt —
+    // durchgängig NAMENSBASIERT mit Columns.Contains-Wache, kein
+    // Zeichenkette-zu-Zahl, DDL-Vorsorge ohne Dialog.
     //
     // DER EINE UNTERSCHIED — und er ist der Grund für diese eigene Klasse:
     // StrompreisZerlegungCtrl.Read lässt NULL auf die VORSCHLAGSWERTE des Modells
-    // zurückfallen. Dieser Controller tut das NICHT. NULL heisst hier „kein Anteil
-    // erfasst" und bleibt null (Konzept § 5.1, E5-Falle: bei Projekt 1030 wurden so
-    // 11,746 ct/kWh wirksam, obwohl alle fünf Flags aus waren). Die Werte sind
-    // deshalb double? und nicht double.
+    // zurückfallen (Preisanteile.Paar). Dieser Controller tut das NICHT
+    // (Preisanteile.PaarNullbar): NULL heisst hier „kein Anteil erfasst" und bleibt
+    // null (Konzept § 5.1, E5-Falle: bei Projekt 1030 wurden so 11,746 ct/kWh
+    // wirksam, obwohl alle fünf Flags aus waren). Die Werte sind deshalb double?
+    // und nicht double.
+    //
+    // KEIN MODUS MEHR (Anwenderentscheid 17.09.2026, wie beim Strom). Anteile mit
+    // Wert und Aktiv-Schalter sagen alles, was die zwei Modi sagten; die Spalte
+    // Anteil_Modus wird weder gelesen noch geschrieben.
     // ---------------------------------------------------------------------------
     public class BrennstoffBestandteilCtrl
     {
@@ -41,79 +49,33 @@ namespace WindowsFormsApplication1
             KOMP_ENERGIESTEUER, KOMP_CO2, KOMP_NETZENTGELT, KOMP_VERTRIEB
         };
 
+        /// <summary>Die Wertspalten der vier Bestandteile, in derselben Reihenfolge.</summary>
+        private static readonly string[] SPALTEN =
+        {
+            SchemaKatalog.SPALTE_BB_ENERGIESTEUER, SchemaKatalog.SPALTE_BB_CO2,
+            SchemaKatalog.SPALTE_BB_NETZENTGELT, SchemaKatalog.SPALTE_BB_VERTRIEB
+        };
+
         // =====================================================================
         // Vorsorge
         // =====================================================================
 
         /// <summary>
         /// Legt die Bestandteilsspalten an, falls die Migration noch nicht gelaufen ist —
-        /// die tolerante Rückfallebene nach dem Muster
-        /// <c>StrompreisZerlegungCtrl.StelleSpaltenSicher</c>.
+        /// die tolerante Rückfallebene, die sich dieser Träger mit dem Strom teilt
+        /// (<see cref="Preisanteile.SpaltenSicherstellen"/>).
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <b>Bewusst OHNE jede Vorbelegung</b> — und zwar auch ohne die des Modus, die
-        /// Migrationsschritt 60 vornimmt. Hier entstehen nur die Spalten, damit ein
-        /// Lesezugriff nicht scheitert; die Leseseite fällt dann auf die Vorgabe des
-        /// <see cref="BrennstoffBestandteilModel"/> zurück — denselben Wert
-        /// (<c>Gesamtwert</c>). Für die ANTEILE gibt es ohnehin nichts vorzubelegen:
-        /// NULL ist ihre fachliche Aussage, nicht ihr Mangel.
-        /// </para>
-        /// <para>
-        /// <b>Ohne Dialog.</b> Eine Vorsorge ist kein Bedienschritt. Das DDL läuft
-        /// deshalb über <see cref="StilleDb"/> statt über
-        /// <c>DataRepository.ExecuteSQL</c>, das seine Fehler selbst als Dialog zeigt und
-        /// damit am umschliessenden <c>try/catch</c> vorbeikäme. Echte Fehler bleiben
-        /// sichtbar: Scheitert das Anlegen wirklich (Datei schreibgeschützt, Datenbank
-        /// exklusiv geöffnet), meldet der nachfolgende Lese- bzw. Schreibzugriff über
-        /// <see cref="DataRepository"/> ganz regulär.
-        /// </para>
-        /// <para>
-        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, Schemaprobe statt
-        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-Spaltentypen statt
-        /// Access-Typen (S4d vorgezogen, Übersetzung in
-        /// <c>StilleDb.SqliteSpaltenTyp</c>).
-        /// </para>
-        /// <para>
-        /// Der Katalog führt hier nur EINE Tabelle; das Schema wird deshalb einmal
-        /// gelesen und für alle neun Spalten verwendet — dieselbe Sparsamkeit wie in
-        /// <c>SchemaMigration.SpaltenAnlegen</c>, ohne deren Tabellen-Wörterbuch zu
-        /// brauchen.
-        /// </para>
+        /// <b>Bewusst OHNE jede Vorbelegung.</b> Hier entstehen nur die Spalten, damit
+        /// ein Lesezugriff nicht scheitert; für die ANTEILE gibt es ohnehin nichts
+        /// vorzubelegen: NULL ist ihre fachliche Aussage, nicht ihr Mangel. Die
+        /// übrigen Zusagen — kein Dialog, Schema je Tabelle einmal gelesen, DDL über
+        /// <c>StilleDb</c> — stehen beim Helfer.
         /// </remarks>
         public static void StelleSpaltenSicher()
         {
-            try
-            {
-                HashSet<string> vorhanden = StilleDb.SpaltenNamen(TABLE);
-
-                // null = Tabelle gibt es (noch) nicht. Sie hier anzulegen ist nicht
-                // Aufgabe dieser Vorsorge - das erledigt das Kostenmodul.
-                if (vorhanden == null) return;
-
-                foreach (SchemaSpalte s in SchemaKatalog.Schritt60_BrennstoffBestandteile)
-                {
-                    if (vorhanden.Contains(s.Name)) continue;
-
-                    // Protokoll statt Dialog - siehe <remarks>. StilleDb.NonQuery
-                    // liefert -1 statt zu werfen.
-                    if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
-                            s.Tabelle, s.Name, s.TypDefinition)) < 0)
-                        Protokoll(s.Tabelle + "." + s.Name + ": Spalte konnte nicht angelegt werden.");
-                }
-            }
-            catch (Exception ex)
-            {
-                // Keine Verbindung, kein Schema - der eigentliche Zugriff meldet es.
-                Protokoll(ex.Message);
-            }
-        }
-
-        /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stören.</summary>
-        private static void Protokoll(string meldung)
-        {
-            try { Console.WriteLine("BrennstoffBestandteilCtrl.StelleSpaltenSicher: " + meldung); }
-            catch { }
+            Preisanteile.SpaltenSicherstellen(nameof(BrennstoffBestandteilCtrl),
+                                              SchemaKatalog.Schritt60_BrennstoffBestandteile);
         }
 
         // =====================================================================
@@ -148,13 +110,13 @@ namespace WindowsFormsApplication1
 
             DataRow r = dt.Rows[0];
 
-            Bestandteil(dt, r, SchemaKatalog.SPALTE_BB_ENERGIESTEUER, ref m.Energiesteuer, ref m.Energiesteuer_Aktiv);
-            Bestandteil(dt, r, SchemaKatalog.SPALTE_BB_CO2, ref m.CO2, ref m.CO2_Aktiv);
-            Bestandteil(dt, r, SchemaKatalog.SPALTE_BB_NETZENTGELT, ref m.Netzentgelt, ref m.Netzentgelt_Aktiv);
-            Bestandteil(dt, r, SchemaKatalog.SPALTE_BB_VERTRIEB, ref m.Vertrieb, ref m.Vertrieb_Aktiv);
+            Preisanteile.PaarNullbar(dt, r, SchemaKatalog.SPALTE_BB_ENERGIESTEUER, ref m.Energiesteuer, ref m.Energiesteuer_Aktiv);
+            Preisanteile.PaarNullbar(dt, r, SchemaKatalog.SPALTE_BB_CO2, ref m.CO2, ref m.CO2_Aktiv);
+            Preisanteile.PaarNullbar(dt, r, SchemaKatalog.SPALTE_BB_NETZENTGELT, ref m.Netzentgelt, ref m.Netzentgelt_Aktiv);
+            Preisanteile.PaarNullbar(dt, r, SchemaKatalog.SPALTE_BB_VERTRIEB, ref m.Vertrieb, ref m.Vertrieb_Aktiv);
 
-            string modus = Text(dt, r, SchemaKatalog.SPALTE_BB_MODUS);
-            if (modus.Length > 0) m.Modus = modus;
+            // Anteil_Modus wird NICHT gelesen: Die Spalte steht noch im Schema, hat
+            // aber keine Bedeutung mehr (Anwenderentscheid 17.09.2026).
 
             m.AusDatenbank = true;
             return m;
@@ -170,10 +132,18 @@ namespace WindowsFormsApplication1
         /// Emissionen, den Strom-Aufschlagsblock) nicht anfasst.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// <b>null wird DBNull, nicht 0.</b> Eine 0 wäre die Aussage „der Anteil ist
         /// null ct/kWh"; NULL ist die Aussage „es ist keiner erfasst". Der Unterschied
         /// ist genau der, den die Kohärenzprüfung braucht, und er muss deshalb auch den
         /// Weg in die Datenbank überstehen.
+        /// </para>
+        /// <para>
+        /// <b>Der Modus wird NICHT mehr geschrieben.</b> <c>Anteil_Modus</c> bleibt im
+        /// Schema stehen, rechnet und zeigt aber nichts mehr. Sie hier weiter zu
+        /// beschreiben hiesse, eine tote Wahrheit zu pflegen — denselben Weg ist der
+        /// Strom mit <c>Aufschlag_Modus</c> gegangen.
+        /// </para>
         /// </remarks>
         /// <returns>
         /// true, wenn eine Zeile geschrieben wurde. false heisst: Es gibt keine Zeile —
@@ -188,49 +158,29 @@ namespace WindowsFormsApplication1
 
             StelleSpaltenSicher();
 
+            // Seit dem Wegfall des Modus endet die SET-Liste mit einem Anteilspaar;
+            // SetzPaar haengt jedem ein Komma an, das letzte faellt wieder weg.
+            string satz = "";
+            foreach (string spalte in SPALTEN) satz += Preisanteile.SetzPaar(spalte);
+
             string sql =
-                "UPDATE [" + TABLE + "] SET " +
-                Feld(SchemaKatalog.SPALTE_BB_ENERGIESTEUER) +
-                Feld(SchemaKatalog.SPALTE_BB_CO2) +
-                Feld(SchemaKatalog.SPALTE_BB_NETZENTGELT) +
-                Feld(SchemaKatalog.SPALTE_BB_VERTRIEB) +
-                "[" + SchemaKatalog.SPALTE_BB_MODUS + "] = ? " +
+                "UPDATE [" + TABLE + "] SET " + satz.TrimEnd(' ', ',') + " " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?";
 
             int betroffen = DataRepository.ExecuteNonQuery(sql,
-                Wert("@est", m.Energiesteuer),
-                new DbParam("@estA", DbParamTyp.Boolean) { Wert = m.Energiesteuer_Aktiv },
-                Wert("@co2", m.CO2),
-                new DbParam("@co2A", DbParamTyp.Boolean) { Wert = m.CO2_Aktiv },
-                Wert("@netz", m.Netzentgelt),
-                new DbParam("@netzA", DbParamTyp.Boolean) { Wert = m.Netzentgelt_Aktiv },
-                Wert("@vt", m.Vertrieb),
-                new DbParam("@vtA", DbParamTyp.Boolean) { Wert = m.Vertrieb_Aktiv },
-                new DbParam("@modus", DbParamTyp.VarWChar)
-                {
-                    Wert = string.IsNullOrEmpty(m.Modus)
-                            ? DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT : m.Modus
-                },
+                Preisanteile.Wert("@est", m.Energiesteuer),
+                Preisanteile.Aktiv("@estA", m.Energiesteuer_Aktiv),
+                Preisanteile.Wert("@co2", m.CO2),
+                Preisanteile.Aktiv("@co2A", m.CO2_Aktiv),
+                Preisanteile.Wert("@netz", m.Netzentgelt),
+                Preisanteile.Aktiv("@netzA", m.Netzentgelt_Aktiv),
+                Preisanteile.Wert("@vt", m.Vertrieb),
+                Preisanteile.Aktiv("@vtA", m.Vertrieb_Aktiv),
                 new DbParam("@proj", DbParamTyp.Integer) { Wert = m.ID_Projekt },
                 new DbParam("@eid", DbParamTyp.Integer) { Wert = m.ID_Energietraeger });
 
             if (betroffen > 0) m.AusDatenbank = true;
             return betroffen > 0;
-        }
-
-        /// <summary>Wert- und Aktiv-Spalte eines Bestandteils als SET-Fragment.</summary>
-        private static string Feld(string spalte)
-        {
-            return "[" + spalte + "] = ?, [" + spalte + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX + "] = ?, ";
-        }
-
-        /// <summary>Ein DOUBLE-Parameter, der <c>null</c> als <c>DBNull</c> weitergibt.</summary>
-        private static DbParam Wert(string name, double? wert)
-        {
-            return new DbParam(name, DbParamTyp.Double)
-            {
-                Wert = wert.HasValue ? (object)wert.Value : DBNull.Value
-            };
         }
 
         // =====================================================================
@@ -251,12 +201,12 @@ namespace WindowsFormsApplication1
         /// die Zahl.
         /// </para>
         /// <para>
-        /// <b>Kein Modus im Satz.</b> Dieser Block zerlegt einen Preis, statt ihn zu
-        /// erhöhen; einen Gesamtaufschlag gibt es hier nicht (siehe
-        /// <see cref="BrennstoffBestandteilModel"/>). Seit SP-E-2 kennt auch die Engine
-        /// keinen Modus mehr — der aussagekräftige Wert ist in beiden Modi der Maske
-        /// <c>SummeAktivCtKwh</c> („soviel des Preises ist ausgewiesen"), und welcher
-        /// Modus gewählt ist, entscheidet allein die Anzeige.
+        /// <b>Kein Modus.</b> Dieser Block zerlegt einen Preis, statt ihn zu erhöhen;
+        /// einen Gesamtaufschlag gibt es hier nicht (siehe
+        /// <see cref="BrennstoffBestandteilModel"/>). Weder Engine noch Maske kennen
+        /// einen Modus — der aussagekräftige Wert ist <c>SummeAktivCtKwh</c> („soviel
+        /// des Preises ist ausgewiesen"), und was darüber hinaus im Arbeitspreis
+        /// steckt, nennt die Restzeile.
         /// </para>
         /// </remarks>
         public static Preiszerlegung AlsPreiszerlegung(BrennstoffBestandteilModel m)
@@ -272,47 +222,6 @@ namespace WindowsFormsApplication1
             };
 
             return new Preiszerlegung(k);
-        }
-
-        // =====================================================================
-        // Kleinigkeiten
-        // =====================================================================
-
-        /// <summary>
-        /// Übernimmt Wert UND Aktiv-Schalter eines Bestandteils. Fehlt die Spalte oder
-        /// steht NULL darin, bleibt der Wert <c>null</c> — „kein Anteil erfasst".
-        /// </summary>
-        /// <remarks>
-        /// <b>Warum der Schalter hier eigenständig gelesen wird.</b>
-        /// <c>StrompreisZerlegungCtrl.Komponente</c> liest ihn nur, wenn der WERT gepflegt
-        /// ist: Access kennt für YESNO kein NULL, und eine per <c>ADD COLUMN</c>
-        /// angelegte Spalte steht überall auf <c>False</c> — dort hätte das ohne diese
-        /// Wache jeden Aufschlag stillschweigend auf 0 gesetzt. Hier ist <c>False</c>
-        /// genau die richtige Aussage („Anteil nicht ausgewiesen"), es gibt keine
-        /// Vorgabe zu verteidigen. Der Schalter wird deshalb gelesen, wie er dasteht;
-        /// ein aktiver Schalter ohne Wert trägt 0 bei und ist damit ehrlich abgebildet.
-        /// </remarks>
-        private static void Bestandteil(DataTable dt, DataRow r, string spalte,
-                                        ref double? wert, ref bool aktiv)
-        {
-            if (!dt.Columns.Contains(spalte)) return;
-
-            object v = r[spalte];
-            if (v != null && v != DBNull.Value) wert = Convert.ToDouble(v);
-
-            string schalter = spalte + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX;
-            if (!dt.Columns.Contains(schalter)) return;
-
-            object s = r[schalter];
-            if (s == null || s == DBNull.Value) return;
-            aktiv = Convert.ToBoolean(s);
-        }
-
-        private static string Text(DataTable dt, DataRow r, string spalte)
-        {
-            if (!dt.Columns.Contains(spalte)) return "";
-            object v = r[spalte];
-            return (v == null || v == DBNull.Value) ? "" : v.ToString();
         }
     }
 }
