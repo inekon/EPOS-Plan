@@ -1,6 +1,6 @@
 # 04 · Energiekosten
 
-**Dialog:** Energieträger-Dialog mit `ucBrennstoffBestandteile` (B2) und `ucStromAufschlaege` ·
+**Dialog:** Energieträger-Dialog mit `BrennstoffBestandteile` und `StrompreisDetails` ·
 **Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#energie` · **Recht:** BEHG / EBeV 2030,
 EU-ETS 2, GEG Anlage 4 und 9 · **Code:** `StromMatrix`, `KostenEmissionRechner`,
 `energy_carrier` · `energy_price` · `energy_project_settings` · **Konzept:** § 2.5, § 3.5, § 3.11
@@ -11,8 +11,12 @@ EU-ETS 2, GEG Anlage 4 und 9 · **Code:** `StromMatrix`, `KostenEmissionRechner`
 0,00 · H_i 10,50 · H_s 11,60 kWh/m³ · Herleitung „→ 0,0720 €/kWh · Umrechnungsfaktor H_s/H_i =
 1,1048".
 
-**Gruppe Preisbestandteile** — Transparenz ohne Preiswirkung, die Grundlage der Kohärenzprüfung
-gegen die Steuerentlastungen (siehe `05`):
+**Gruppe Preisbestandteile des Brennstoffs** — Transparenz ohne Preiswirkung, die Grundlage der
+Kohärenzprüfung gegen die Steuerentlastungen (siehe `05`). Jeder Bestandteil trägt einen Wert und
+einen Aktiv-Schalter; nur eingeschaltete zählen, ein leeres Feld heißt „kein Anteil". Einen Modus
+gibt es nicht — ausgewiesen werden die Summe der aktiven Bestandteile und ihr Abstand zum
+Arbeitspreis („nicht aufgeschlüsselter Rest", negativ in Warnfarbe). Dieselbe Regel gilt für den
+Strompreis-Block:
 
 | Bestandteil | €/m³ | Herleitung |
 |---|---|---|
@@ -22,8 +26,8 @@ gegen die Steuerentlastungen (siehe `05`):
 | Beschaffung und Vertrieb | 0,4371 | Rest |
 | **Summe** | **0,7560** | deckungsgleich mit dem Arbeitspreis ✓ |
 
-Knöpfe „Schnellwahl aus Katalog…" und „In Arbeitspreis übernehmen" — der zweite schreibt nur auf
-Knopfdruck.
+Knöpfe „Schnellwahl aus Katalog…" und „In Arbeitspreis übernehmen" — der zweite MELDET nur, dass
+die Summe in das Arbeitspreisfeld soll; eingetragen wird sie dort, gespeichert mit „Speichern".
 
 **Gruppe Emissionen** — Anzeige folgt der Bilanzierungsvorgabe des Projekts (Entscheidungen D-1,
 E-1): **eine** Spalte, CO₂ *oder* CO₂-Äquivalent; SO₂ und NO_x werden geführt, aber hier nicht
