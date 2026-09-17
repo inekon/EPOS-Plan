@@ -116,11 +116,9 @@ klemmt das Ergebnis bei 0, ein negativer Summand erhöht den Reststrombedarf als
 sachgerecht. Die Reihe steht im `StromspeicherLaufKontext`; ist sie `null`, bleibt alles
 wie bisher.
 
-**Die Arbitrage bleibt unverändert — eigener Entscheid.** Ihr Netzladepfad liegt in einer
-getrennten Reihe und wird weiterhin **nicht** aufgeschlagen. Die Untererfassung ist damit
-gemessen und benannt, aber nicht behoben: Sie zu beheben wäre eine Änderung des Rechenwegs
-außerhalb dieses Auftrags, und der Referenzlauf bliebe nicht byte-gleich. Wer sie angeht,
-braucht dafür einen eigenen Auftrag und eine neue Referenzbasis.
+**Die Arbitrage blieb in diesem Auftrag unverändert** — ihr Netzladepfad liegt in einer
+getrennten Reihe und wurde nicht aufgeschlagen. Die Untererfassung war damit gemessen und
+benannt, aber nicht behoben. Das holt § 7 nach (Befund LS-2, Anwenderentscheid `LS-E-4` = (a)).
 
 ### 2.5 LS-E-3 auch für die Flotte
 
@@ -278,9 +276,7 @@ Alle sechs in **beiden** Sprachen.
 
 ## 6 Was offen bleibt
 
-1. **Die Untererfassung der Arbitrage.** Ihre Netzladung wird weiterhin nicht auf
-   `Rest_Strombedarf` aufgeschlagen (§ 2.4). Gemessen und benannt, bewusst nicht behoben —
-   das wäre eine Änderung des Rechenwegs mit neuer Referenzbasis.
+1. ~~**Die Untererfassung der Arbitrage.**~~ **Erledigt** in § 7.
 2. **Die Kopfzeile des Simulationsreiters** nimmt den Textbaustein aus § 2.6 erst auf,
    wenn der Speicherkontext der Nachbarwelle zusammengeführt ist.
 3. **Der adaptive Modus bleibt ein Greedy.** Er startet bei 0 und kann sich in der
@@ -288,3 +284,138 @@ Alle sechs in **beiden** Sprachen.
    dokumentierte Eigenschaft der verifizierten Vorlage. Wer die tatsächlich minimale Spitze
    braucht, nimmt `PeakShaving.MinimaleSchwelleKw` und rechnet mit festem Ziel — genau das
    bietet die eigene Maske an.
+
+---
+
+## 7 LS-2 — Die Netzladung der Arbitrage in der Bezugsreihe
+
+> Umsetzung 17.09.2026 auf `w-ls2` (Zweig aus `ios_migration_september`, Stand `7f364f71`).
+> Anlass: Nebenbefund 1 aus § 6, Anwenderentscheid `LS-E-4` = (a). Gate: Kern-Filter,
+> SQL-Dialekt-Prüfer und der **byte-gleiche** Referenzlauf gegen
+> `2026-09-16_R8_Heizkessel_Kaskade`.
+
+### 7.1 Der Befund
+
+Für die Berechnungsart **Arbitrage** (Preissteuerung) zog der Projektlauf allein die
+Entladung von `Rest_Strombedarf_viertelstuendlich` ab. Ihre **Netzladung** liegt in einer
+getrennten Reihe des `ArbitrageErgebnisses` (`LadungNetzAcKwh`) und wurde nicht
+aufgeschlagen: Netzbezug und Bezugsspitze waren untererfasst — und mit der Spitze seit der
+Leistungspreisrechnung auch der Leistungspreis.
+
+### 7.2 Was gebaut wurde
+
+Die Arbitrage füllt jetzt dieselbe **Netzwirkung** wie die Kappung. Der Projektlauf fragt
+nicht mehr nach der Berechnungsart: Wer einen Netzladepfad hat, legt seine Wirkung in die
+eine Reihe `StromspeicherLaufKontext.NetzwirkungKw`; wer keinen hat — die Dauernutzung lädt
+nur aus Überschuss —, lässt sie leer, und es bleibt Bit für Bit bei der Entladung.
+
+Die **Herleitung** unterscheidet sich, weil die Quellen sich unterscheiden, und steht für
+beide Arten an einer Stelle (`StromspeicherSimCtrl.NetzwirkungKw`):
+
+| Berechnungsart | Quelle | Herleitung |
+|---|---|---|
+| Lastspitzenkappung | `PAltKw`, `PNeuKw` (keine getrennte Netzladereihe) | `max(0, ohne) − max(0, mit)` |
+| Preissteuerung | `EntladungAcKwh`, `LadungNetzAcKwh` (getrennte Reihen) | `(Entladung − Netzladung) / 0,25 h` |
+
+Die zweite Zeile ist genau die Bilanz, die die Engine selbst führt
+(`netzbezugMitSpeicher += EDefizit − Entladung + Netzladung`, Fachkonzept 6.5) — Rechenkern
+und Projektlauf sagen damit dasselbe. `SubVectors` klemmt wie bisher bei 0; eine negative
+Wirkung erhöht den Reststrombedarf der Viertelstunde, in der geladen wird.
+
+**Der Verkauf bleibt draußen.** Er erhöht die **Einspeisung**, nicht den Bezug, und
+`Rest_Strombedarf` führt die Einspeisung nicht.
+
+**Ohne Netzladung ändert sich nichts — nachweislich.** Die Division durch 0,25 ist in
+IEEE-754 exakt, und die Subtraktion einer harten Null ändert keinen Wert: Ein Arbitragelauf
+im reinen Verkaufsbetrieb liefert dieselben Bits wie zuvor.
+
+### 7.3 Keine Doppelzählung
+
+Die **speichereigene** Wirtschaftlichkeit bleibt unverändert; sie rechnet die Netzladung
+schon heute als Kosten (`Kosten_Ladung` aus `ArbitrageKennzahlen.LadekostenEur`). Geprüft
+wurde, ob diese Größen in den Kapitalwert der **Projekt**wirtschaftlichkeit einfließen — das
+wäre die Doppelzählung, die `E5-1` verbietet:
+
+- `Ertrag_Bezugsersparnis`, `Ertrag_Verguetung_Entgangen`, `Ertrag_Netzerloes`,
+  `Kosten_Ladung`, `Jahresueberschuss` werden **nur** geschrieben und gelesen
+  (`ErgebnisCtrl`, `Tab_ErgebnisStromspeicher`) und **nur** angezeigt
+  (`SpeicherKennzahlenBlock`, `SimulationErgebnisHuelle`).
+- Die einzige Stelle, an der die Projektwirtschaftlichkeit die Speicherzeile überhaupt
+  anfasst, ist `EndenergieAufloeser.SpeicherEntladungKwh` — und sie liest allein
+  `Entladung_Gesamt` als **Bezugsgröße** eines Wartungssatzes „€ je kWh", keine Geldgröße.
+
+Die Netzladung erscheint damit **einmal** in den Energiekosten des Projekts (über den
+Netzbezug) und **einmal** in der eigenen Bewertung des Speichers — zwei getrennte
+Betrachtungen, die nicht addiert werden.
+
+### 7.4 Ausweis
+
+Der Reiter Stromspeicher führte die Netzladung bereits als eigene Kennzahl
+(`SP_ERG_LADUNG_NETZ`, `Ladung_Netz` in kWh/a). Neu ist eine Protokollzeile
+(`ARB_HINWEIS_NETZLADUNG_IM_BEZUG`, beide Sprachen): Sie nennt die geladene Menge und sagt,
+dass sie den Netzbezug der Viertelstunde erhöht — und damit gegebenenfalls die Bezugsspitze.
+
+### 7.5 Nachweis
+
+**Neu: `EPOS.Kern.Tests/ArbitrageNetzladungTests`, 7 Fälle.**
+
+- *Der Nachweisfall von Hand:* vier Viertelstunden, Grundlast 5 kW, 10 kWh Netzladung in der
+  zweiten, 1 kWh Entladung in der vierten. Wirkung `−40 kW` bzw. `+4 kW`; die Bezugsreihe
+  wird `5 / 45 / 5 / 1 kW` — die Spitze dieser Viertelstunde also **45 kW = 5 + 40**, die
+  Jahresarbeit **+10 kWh** aus der Ladung und **−1 kWh** aus der Entladung.
+- *Gegenprobe im selben Fall:* mit der blossen Entladung bleibt dieselbe Viertelstunde bei
+  5 kW — der Befund in einer Zeile.
+- *Am Engine-Lauf* (Tagesgang im Viertelstundenraster, billige Nacht, teurer Abend): Die
+  Wirkung ist über **jedes** Intervall `(Entladung − Netzladung) / dt`, negativ genau dort,
+  wo geladen wird, und der **Verkauf** rührt die Bezugsreihe nicht an.
+- *Ohne Netzladung* (Grünstrom, reiner Verkauf): Wirkung **exakt gleich** der Entladung.
+- *Die Naht:* Ein Arbitragelauf über `RechneAktiveVariante` legt seine Wirkung in den
+  Kontext; die **Dauernutzung** bekommt weiterhin **keine** Reihe.
+
+**Gegenprobe zum Haken:** Hängt man `kontext.NetzwirkungKw = NetzwirkungKw(arb)` aus, fällt
+`Der_Arbitragelauf_legt_seine_Netzwirkung_in_den_Kontext` — die anderen sechs bleiben grün,
+weil sie die Herleitung und nicht die Naht messen. Zurückgebaut, alle sieben grün.
+
+### 7.6 Gate und Referenzbasis
+
+- `dotnet build WP-Plan.Kern.slnf -c Release`: 0 Fehler, **5 Warnungen** (Schranke 7).
+- `dotnet test WP-Plan.Kern.slnf -c Release`: **8 719 grün**, 0 rot, 1 übersprungen
+  (`SpeicherEngine` 378, `KiKern` 499, `SpeicherPlanung` 27, `EPOS.Kern` 3 235, `EPOS.UI` 4 580).
+- `SqlDialektPruefer`: 1 488 SQL-Texte, **0 Fundstellen**.
+- **Referenzlauf: `R9 entfällt.`** Messung vorab: Keines der dreizehn Basisprojekte fährt
+  Arbitrage — alle neun Speichervarianten der Testdatenbank (Projekte 1007, 1017, 1046)
+  tragen `Berechnungsart = 'Dauernutzung'`, `Betriebsart = 'Grünstrom'`, `Netzentladung = 0`,
+  `A_Netzlade = 0`; die übrigen zehn Projekte führen überhaupt keine Speichervariante. Der
+  Lauf über alle dreizehn Projekte meldet `GESAMT: PASS` gegen
+  `2026-09-16_R8_Heizkessel_Kaskade` (3 882 737 Werte) und ist im **Byte-Vergleich**
+  (`diff -rq`) ohne einen einzigen Unterschied in den 357 CSV. Die Einfrierregel greift
+  nicht; die Basis bleibt R8.
+
+### 7.7 Wiki und Logbuch
+
+Fortgeschrieben sind `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` (ein
+Absatz „Netzladung zählt im Netzbezug" unter der Tabelle der Berechnungsarten: Netzladung
+erhöht Netzbezug und gegebenenfalls Bezugsspitze, der Verkauf erhöht die Einspeisung, die
+Menge steht im Protokoll und als Kennzahl) und
+`Programm Dokumentation - Wirtschaftlichkeit.wiki` (ein Satz in „Energiekosten und
+Bezugsspitze"). Beide gegengelesen — kein „seit …", kein Entscheid-, Wellen- oder
+Befundkürzel, keine Produktdaten. **Der Upload ist gebündelt und steht aus.**
+
+**Logbuch-Entwurf** (bestehende Version **1.2.0.2**, vom Anwender zu bestätigen), ein Satz:
+
+* Lädt ein Stromspeicher aus dem Netz, zählt diese Energie jetzt im Netzbezug des Projekts
+  und damit in Arbeits- und Leistungskosten.
+
+Die neue Protokollzeile ist eine Meldung im Laufprotokoll und bekommt nach Regel 13.4
+keinen eigenen Eintrag.
+
+### 7.8 Abnahme auf Windows
+
+| Nr. | Was | Erwartung |
+|---|---|---|
+| `A-LS2-1` | Ein Projekt mit Speichervariante **Arbitrage**, Betriebsart **Graustrom**, freigegebener Netzentladung und einer Preisreihe rechnen | Das Laufprotokoll nennt die aus dem Netz geladene Menge und sagt, dass sie den Netzbezug erhöht |
+| `A-LS2-2` | Reiter *Simulationsergebnisse* → *Stromspeicher* | Die Kennzahl „Ladung aus dem Netz" trägt dieselbe Menge |
+| `A-LS2-3` | Reiter *Berichte & Kosten* → Energiekosten und „Bezugsspitze Strom [kW]" gegen einen Lauf **ohne** Netzladung halten | Arbeit und Spitze liegen höher; die Differenz der Energiekosten ist Netzladung × Arbeitspreis (+ Leistungspreis × Spitzendifferenz, wenn die Ladung die Spitze trifft) |
+| `A-LS2-4` | Dieselbe Variante auf **Dauernutzung** stellen und rechnen | Netzbezug und Spitze wie zuvor — die Dauernutzung lädt nur aus Überschuss |
+
+Beide Sprachen.

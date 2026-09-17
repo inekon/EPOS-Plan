@@ -5244,6 +5244,9 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="ARB_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
     <value>Der Excel-Kompatibilitätsmodus gilt nur für die Dauernutzung – für die Preissteuerung gibt es keine Excel-Referenz. Gerechnet wird energetisch.</value>
   </data>
+  <data name="ARB_HINWEIS_NETZLADUNG_IM_BEZUG" xml:space="preserve">
+    <value>Preissteuerung: {0} kWh aus dem Netz geladen. Diese Menge erhöht den Netzbezug des Projekts in der Viertelstunde, in der sie geladen wird – und damit gegebenenfalls die Bezugsspitze.</value>
+  </data>
   <data name="ARB_HINWEIS_OHNE_NETZENTLADUNG" xml:space="preserve">
     <value>Preissteuerung ohne Entladung ins Netz: Ohne Verkaufsmöglichkeit trägt keine Paarung. Gerechnet wird die Dauernutzung.</value>
   </data>

@@ -816,7 +816,7 @@ auf die Dauernutzung zurück und sagt es im Protokoll.
 **Die Netzladung ist Teil der Spitzenwahrheit.** Der Projektlauf zieht für diese Berechnungsart nicht
 die bloße Entladung von `Rest_Strombedarf` ab, sondern die **Netzwirkung**
 `max(0, Netzlast ohne Speicher) − max(0, Netzlast mit Speicher)`; sie wird negativ, wo der Speicher aus
-dem Netz lädt. Die Arbitrage bleibt davon unberührt — ihr Netzladepfad liegt in einer getrennten Reihe.
+dem Netz lädt. Die Preissteuerung liefert dieselbe Größe auf eigenem Weg (6.5).
 
 ### 6.4 (d) Peak-Shaving — separate Funktionalität
 
@@ -919,6 +919,20 @@ k_ver = c_ver · C_nom / (C_nutz · η_dis) ≈ 3,29 ct/kWh          # aus 5.4
 Erlös ist der vermiedene Bezugspreis `p_bezug` (Eigenverbrauch) oder der Spoterlös (Netzentladung); die Ladeseite
 wird mit `p_netzlade` aus 4.4 bewertet, also im Default ohne Netzentgelt. Das Zyklenbudget begrenzt die kumulierte
 Entladeenergie. Der Verschleißterm ist hier **nicht** abschaltbar.
+
+**Die Netzladung zählt im Netzbezug des Projekts.** Sie liegt in einer getrennten Reihe (`LadungNetzAcKwh`),
+weil Lade- und Entladereihe des Ergebnisses eine feste, gegenläufige Bedeutung tragen. Der Projektlauf zieht
+für diese Berechnungsart deshalb nicht die bloße Entladung von `Rest_Strombedarf` ab, sondern die
+**Netzwirkung** `(Entladung − Netzladung) / Δt` — genau die Bilanz, die die Engine selbst führt
+(`Netzbezug mit Speicher = Defizit − Entladung + Netzladung`). Die Netzladung erhöht damit Netzbezug und
+Bezugsspitze der Viertelstunde, in der sie liegt, und über die Spitze auch den Leistungspreis. Der
+**Verkauf** bleibt draußen: Er erhöht die Einspeisung, nicht den Bezug. Ohne Netzladung — im reinen
+Verkaufsbetrieb — ist die Netzwirkung bitgleich die Entladung.
+
+Die **speichereigene** Bewertung bleibt davon unberührt: Sie führt die Netzladung schon als Kosten
+(`Kosten_Ladung`). Eine Doppelzählung entsteht nicht, weil weder `Kosten_Ladung` noch die `Ertrag_*`-Größen
+in den Kapitalwert der Projektwirtschaftlichkeit eingehen — sie werden ausschließlich gespeichert und
+angezeigt.
 
 Eine exakte Alternative wäre ein lineares Programm über das 24-Stunden-Fenster — mathematisch sauberer, bringt
 aber eine Solver-Abhängigkeit. Die im Projekt referenzierte Bibliothek `MathNet.Numerics` 5.0.0 enthält
