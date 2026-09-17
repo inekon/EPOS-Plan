@@ -19286,4 +19286,46 @@ Do you want to allow this?</value>
   <data name="PREIS_REST" xml:space="preserve">
     <value>Unitemised remainder: {0} ct/kWh</value>
   </data>
+  <data name="SP_BERECHNUNG_ANZEIGE_PEAKSHAVING" xml:space="preserve">
+    <value>Peak shaving</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PEAK_OHNE_ZIEL" xml:space="preserve">
+    <value>The calculation mode "Peak shaving" has no peak target - continuous use is calculated instead.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PEAK_ZIEL_ZU_HOCH" xml:space="preserve">
+    <value>The peak target of {0} kW is not below the grid peak without storage ({1} kW): capping has no effect. Charging is limited to that peak.</value>
+  </data>
+  <data name="SIMENG_SPEICHER_PEAK_LAUF" xml:space="preserve">
+    <value>Peak shaving: peak target {0} kW, charging cap {1} kW, grid peak without storage {2} kW, with storage {3} kW.</value>
+  </data>
+  <data name="SP_PARAM_LABEL_PEAKZIEL" xml:space="preserve">
+    <value>Peak target</value>
+  </data>
+  <data name="SP_PARAM_LABEL_PEAKZIEL_ADAPTIV" xml:space="preserve">
+    <value>Adjust peak target adaptively</value>
+  </data>
+  <data name="SP_PARAM_HINWEIS_PEAKZIEL" xml:space="preserve">
+    <value>Grid peak without storage in the last run: {0} kW.</value>
+  </data>
+  <data name="PEAK_BTN_VARIANTE" xml:space="preserve">
+    <value>Apply to variant</value>
+  </data>
+  <data name="PEAK_MSG_VARIANTE_FRAGE" xml:space="preserve">
+    <value>The active storage variant calculates with "{0}". Switch it to peak shaving?</value>
+  </data>
+  <data name="PEAK_MSG_VARIANTE_OK" xml:space="preserve">
+    <value>Peak target {0} kW applied to the active storage variant.</value>
+  </data>
+  <data name="PEAK_MSG_VARIANTE_FEHLER" xml:space="preserve">
+    <value>The peak target could not be applied to the storage variant.</value>
+  </data>
+  <data name="PEAK_MSG_VARIANTE_KEINE" xml:space="preserve">
+    <value>The project has no active storage variant.</value>
+  </data>
+  <data name="SP_KONTEXT_EINZEL_PEAKSHAVING" xml:space="preserve">
+    <value>Single storage: peak shaving · peak target {0} kW</value>
+  </data>
+  <data name="SP_KONTEXT_PEAK_ADAPTIV" xml:space="preserve">
+    <value> (adaptive)</value>
+  </data>
 </root>

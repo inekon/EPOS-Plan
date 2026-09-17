@@ -299,6 +299,13 @@ namespace EPOS.Kern.Tests
                          in StrompreisAltspalten.Anweisungen)
                     DataRepository.ExecuteNonQuery(a.Value);
 
+                // Schritt 86 (Entscheide LS-E-1 (a)/LS-E-3, 17.09.2026): die zwei
+                // Steuergroessen der Lastspitzenkappung an Tab_StromspeicherVariante.
+                // Wie in der Migration ueber ADD COLUMN, aus DERSELBEN Quelle; kein DML.
+                // Gelesen wird beides nur bei Berechnungsart "Lastspitzenkappung".
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt86_Lastspitzenkappung)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

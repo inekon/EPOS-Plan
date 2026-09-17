@@ -84,6 +84,8 @@ namespace WindowsFormsApplication1
                 return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_DAUERNUTZUNG;
             if (wert == DbWerte.SP_BERECHNUNG_ARBITRAGE)
                 return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_ARBITRAGE;
+            if (wert == DbWerte.SP_BERECHNUNG_PEAKSHAVING)
+                return MyResource.Resource.SP_BERECHNUNG_ANZEIGE_PEAKSHAVING;
             return wert ?? "";
         }
 
@@ -134,6 +136,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <summary>
         /// <b>Womit rechnet DIESES Projekt seinen Strom­speicher?</b> — der eine Satz, mit
         /// dem jede Ansicht eine Projektspalte beschriften kann (Auftrag VF-1,
         /// Anwenderbefund 17.09.2026).
@@ -167,9 +170,17 @@ namespace WindowsFormsApplication1
                 StromspeicherVarianteModel variante =
                     new StromspeicherVarianteCtrl().ReadAktiveVariante(idProjekt);
                 if (variante != null)
+                {
+                    // LS-1: Die LASTSPITZENKAPPUNG nennt zusaetzlich ihr Peak-Ziel - wie
+                    // die Flottenzeile es fuer das Betriebsziel tut. Jede andere
+                    // Berechnungsart bleibt beim blossen Namen.
+                    string peak = EinzelspeicherKontextText(variante);
+                    if (!string.IsNullOrEmpty(peak)) return peak;
+
                     return string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.SP_KONTEXT_EINZEL,
                         BerechnungsartText(SpeicherAltstand.Berechnungsart(variante.Berechnungsart)));
+                }
 
                 return MyResource.Resource.SP_KONTEXT_OHNE;
             }
@@ -211,6 +222,35 @@ namespace WindowsFormsApplication1
                                       : MyResource.Resource.FLOTTE_PEAKMODUS_FEST);
             }
             return zeile;
+        }
+
+        /// <summary>
+        /// Die KOPFZEILE des Einzelspeichers im Simulationsreiter, wenn er die
+        /// LASTSPITZENKAPPUNG rechnet: „Einzelspeicher: Lastspitzenkappung · Peak-Ziel
+        /// 80 kW (adaptiv)". Leer bei jeder anderen Berechnungsart — dann steht dort
+        /// die Zeile, die ohnehin schon dasteht.
+        /// </summary>
+        /// <remarks>
+        /// <para>Sie ist das Gegenstueck zur Flottenzeile: Der Anwender soll am Reiter
+        /// ablesen koennen, WAS gerechnet wurde, ohne die Parameterseite aufzuschlagen
+        /// (Anwenderbefund 17.09.2026 — Stamm und Variante trugen denselben
+        /// Leistungspreis, und nichts sagte, warum).</para>
+        /// <para>Ein TEXTBAUSTEIN, keine Seite: Wer den Speicherkontext des Reiters
+        /// zusammensetzt, nimmt ihn auf; die Zeile selbst gehoert dorthin, wo auch die
+        /// Flottenangabe steht.</para>
+        /// </remarks>
+        /// <param name="variante">Die aktive Speichervariante; <c>null</c> = keine.</param>
+        public static string EinzelspeicherKontextText(StromspeicherVarianteModel variante)
+        {
+            if (variante == null) return "";
+            if (SpeicherAltstand.Berechnungsart(variante.Berechnungsart) !=
+                DbWerte.SP_BERECHNUNG_PEAKSHAVING) return "";
+
+            double ziel = variante.PeakZiel_kW.HasValue ? variante.PeakZiel_kW.Value : 0.0;
+            string text = string.Format(MyResource.Resource.SP_KONTEXT_EINZEL_PEAKSHAVING,
+                                        ziel.ToString("0.##", CultureInfo.CurrentCulture));
+            if (variante.PeakZiel_Adaptiv) text += MyResource.Resource.SP_KONTEXT_PEAK_ADAPTIV;
+            return text;
         }
     }
 }

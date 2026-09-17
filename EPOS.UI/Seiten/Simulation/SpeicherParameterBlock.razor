@@ -121,6 +121,22 @@
                              Aktiv="@Aktiv"
                              AuswahlChanged="@(i => Wahl(SpeicherFeld.Berechnungsart, Daten.Berechnungsarten, i, BerechnungsartGesetzt))" />
 
+                @* DIE ZWEI PEAK-FELDER GEHOEREN ZUR LASTSPITZENKAPPUNG und stehen nur
+                   dort (LS-E-1 (a)): Bei jeder anderen Berechnungsart waeren sie eine
+                   Eingabe ohne Wirkung. Die Herleitungszeile darunter nennt die
+                   Netzbezugsspitze des letzten Laufs — die Messlatte, unter der das
+                   Ziel liegen muss (LS-E-3). *@
+                @if (Daten.PeakZielMoeglich)
+                {
+                    <Zahlenfeld Bezeichnung="@Resource.SP_PARAM_LABEL_PEAKZIEL" Wert="@Daten.PeakZiel"
+                                Einheit="kW" Aktiv="@(Aktiv && !Daten.PeakZielAdaptiv)"
+                                WertChanged="@(w => Zahl(SpeicherFeld.PeakZiel, w, v => Daten.PeakZiel = v))" />
+
+                    <Schalter Bezeichnung="@Resource.SP_PARAM_LABEL_PEAKZIEL_ADAPTIV"
+                              Wert="@Daten.PeakZielAdaptiv" Aktiv="@Aktiv"
+                              WertChanged="@(w => Schalten(SpeicherFeld.PeakZielAdaptiv, w, v => Daten.PeakZielAdaptiv = v))" />
+                }
+
                 <Schalter Bezeichnung="@Resource.SP_PARAM_LABEL_KOMPATIBILITAET"
                           Wert="@Daten.Kompatibilitaet"
                           Aktiv="@(Aktiv && Daten.KompatibilitaetMoeglich)"
@@ -128,6 +144,10 @@
             </KindInhalt>
         </Formularraster>
     </div>
+    @if (Daten.PeakZielMoeglich && !string.IsNullOrEmpty(Daten.PeakHerleitung))
+    {
+        <p class="epos-simerg-hinweis">@Daten.PeakHerleitung</p>
+    }
     <p class="epos-simerg-hinweis">@Resource.SP_PARAM_HINWEIS_KOMPATIBILITAET</p>
 
     <Gruppenkopf Titel="@Resource.SP_PARAM_GRUPPE_QUELLEN" />
@@ -279,6 +299,11 @@
         Daten.Berechnungsart = wert;
         Daten.KompatibilitaetMoeglich =
             string.Equals(wert, DbWerte.SP_BERECHNUNG_DAUERNUTZUNG, StringComparison.Ordinal);
+
+        // Dieselbe Regel für die zwei Peak-Felder: Sie gehören der Lastspitzenkappung
+        // und müssen mitlaufen, sonst stünden sie bis zum nächsten Lesen falsch da.
+        Daten.PeakZielMoeglich =
+            string.Equals(wert, DbWerte.SP_BERECHNUNG_PEAKSHAVING, StringComparison.Ordinal);
     }
 
     /// <summary>

@@ -79,9 +79,30 @@ namespace EPOS.Kern.Tests
 
             FlottenHinweis h = Assert.Single(hinweise,
                 x => x.Kennung == FlottenHinweisKennung.PeakZielUeberReferenzspitze);
-            Assert.Equal(FlottenHinweisStufe.Hinweis, h.Stufe);
+
+            // LS-E-3: Ein Ziel, das nicht unter der Referenzspitze liegt, ist eine
+            // WARNUNG - es kappt nichts, und der Anwender soll es nicht uebersehen.
+            Assert.Equal(FlottenHinweisStufe.Warnung, h.Stufe);
             Assert.Contains("wirkungslos", h.Text);
             Assert.DoesNotContain(hinweise, x => x.Kennung == FlottenHinweisKennung.PeakZielUnterTagesminimum);
+        }
+
+        /// <summary>
+        /// LS-E-3, die GRENZE: Ein Peak-Ziel GENAU AUF der Referenzspitze kappt
+        /// ebensowenig wie eines darueber - die Last ueberschreitet es nie. Bis dahin
+        /// blieb genau dieser Fall stumm (die Regel fragte nur nach "groesser").
+        /// </summary>
+        [Fact]
+        public void PeakZielGenauAufDerReferenzspitze_IstEbenfallsEineWarnung()
+        {
+            // Referenzspitze der Reihe = 100 kW (Last 100/50/100/60, ohne Erzeugung).
+            FlottenStudieKonfiguration f = Flotte(peakZiel: 100, netzladung: true);
+
+            List<FlottenHinweis> hinweise = FlottenPlausibilitaet.Pruefe(Eingang(100, 50, 100, 60), f, null);
+
+            FlottenHinweis h = Assert.Single(hinweise,
+                x => x.Kennung == FlottenHinweisKennung.PeakZielUeberReferenzspitze);
+            Assert.Equal(FlottenHinweisStufe.Warnung, h.Stufe);
         }
 
         [Fact]

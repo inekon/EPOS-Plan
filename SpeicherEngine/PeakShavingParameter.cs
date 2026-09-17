@@ -71,6 +71,35 @@ namespace SpeicherEngine
         public double BezugspreisMittelCtKwh { get; init; }
 
         /// <summary>
+        /// LADEDECKEL [kW]: hoechste Netzlast, die das LADEN erzeugen darf.
+        /// <c>null</c> heisst "kein eigener Deckel" - dann gilt wie bisher die
+        /// Zielschwelle selbst, und der Bestand rechnet unveraendert.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Das Feld trennt die beiden Rollen der Schwelle, die bis dahin eine waren:
+        /// ENTLADEN geschieht oberhalb <see cref="PZielKw"/> (bzw. der nachgezogenen
+        /// Schwelle), LADEN nur bis <c>min(Ziel, Ladedeckel)</c>. Zwei Faelle des
+        /// Einzelspeichers im Projektlauf brauchen genau das:
+        /// </para>
+        /// <list type="bullet">
+        ///   <item><description><b>Gruenstrom</b> - Deckel 0: Geladen wird
+        ///     ausschliesslich aus Erzeugungsueberschuss, also nur, solange die
+        ///     Netzlast negativ ist. Ohne Deckel lud der Speicher aus dem Netz,
+        ///     weil jede Last unterhalb der Schwelle Luft zum Laden laesst.</description></item>
+        ///   <item><description><b>Ziel ueber der Bezugsspitze</b> (LS-E-3) - Deckel
+        ///     bei der Referenzspitze: Ein zu hoch gewaehltes Ziel darf die Spitze
+        ///     nicht ANHEBEN. Ohne Deckel lud der Speicher bis zum Ziel und schuefe
+        ///     damit eine neue, hoehere Spitze.</description></item>
+        /// </list>
+        /// <para>
+        /// Auf das ENTLADEN wirkt der Deckel nicht: Er ist eine Schranke des
+        /// Ladepfads, keine zweite Zielschwelle.
+        /// </para>
+        /// </remarks>
+        public double? LadedeckelKw { get; init; }
+
+        /// <summary>
         /// Der Parametersatz der NACHZIEHENDEN Schwelle - P_ziel = 0 und
         /// <see cref="Adaptiv"/>, also genau die Betriebsweise, mit der die
         /// Peak-Shaving-Maske rechnet.
@@ -108,6 +137,9 @@ namespace SpeicherEngine
             if (!Adaptiv && PZielKw < 0.0)
                 throw new ArgumentOutOfRangeException(nameof(PZielKw), PZielKw,
                     "Die feste Zielschwelle darf nicht negativ sein.");
+            if (LadedeckelKw.HasValue && LadedeckelKw.Value < 0.0)
+                throw new ArgumentOutOfRangeException(nameof(LadedeckelKw), LadedeckelKw,
+                    "Der Ladedeckel darf nicht negativ sein.");
             if (LeistungspreisEurProKwA < 0.0)
                 throw new ArgumentOutOfRangeException(nameof(LeistungspreisEurProKwA), LeistungspreisEurProKwA,
                     "Der Leistungspreis darf nicht negativ sein.");

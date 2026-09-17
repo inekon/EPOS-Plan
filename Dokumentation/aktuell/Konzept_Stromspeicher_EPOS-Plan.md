@@ -804,6 +804,20 @@ die Zustandsfreiheit der Engine (8.1). **Wichtig:** Die gesamte Simulationskette
 Fortschrittsanzeige und Abbruchmöglichkeit auszuführen; die Engine selbst bleibt synchron und frei von
 UI-Bezügen, die Nebenläufigkeit liegt allein in der aufrufenden Formularschicht.
 
+**Die Lastspitzenkappung ist zugleich eine Berechnungsart der VARIANTE** (Entscheid LS-E-1 (a)):
+`Tab_StromspeicherVariante.Berechnungsart = Peak-Shaving`, dazu die zwei Steuergrößen `PeakZiel_kW`
+(REAL, nullbar) und `PeakZiel_Adaptiv` (0/1) aus Schemaschritt 86. Der Projektlauf baut daraus
+`SpeicherEngine.PeakShaving` am **Netzanschluss** — Steuergröße ist die Netzlast (Last − PV − BHKW),
+nicht der blanke Lastgang. Entladen wird oberhalb des Ziels bis an P_max und SoC_min; geladen wird aus
+Erzeugungsüberschuss immer, aus dem Netz nur im Graustrombetrieb und höchstens bis zum **Ladedeckel**
+`min(P_ziel, Referenzspitze)`. Ohne gepflegtes Ziel (NULL oder 0, nicht adaptiv) fällt der Lauf benannt
+auf die Dauernutzung zurück und sagt es im Protokoll.
+
+**Die Netzladung ist Teil der Spitzenwahrheit.** Der Projektlauf zieht für diese Berechnungsart nicht
+die bloße Entladung von `Rest_Strombedarf` ab, sondern die **Netzwirkung**
+`max(0, Netzlast ohne Speicher) − max(0, Netzlast mit Speicher)`; sie wird negativ, wo der Speicher aus
+dem Netz lädt. Die Arbitrage bleibt davon unberührt — ihr Netzladepfad liegt in einer getrennten Reihe.
+
 ### 6.4 (d) Peak-Shaving — separate Funktionalität
 
 **Zweck:** Kappung der Netzbezugsspitze zur Senkung des Leistungspreises. Der Algorithmus liegt aus der
@@ -812,6 +826,20 @@ und wird portiert, nicht neu entworfen.
 
 **Eingaben:** Lastgang nach 3.1 (bevorzugt importiert, inklusive Anlagen-Eigenbedarf), Speicherleistung P,
 SoC-Band, Schwelle P_ziel [kW], Adaptiv-Flag, Leistungspreis L_P [€/(kW·a)].
+
+**Die Maske hat einen Ausgang** (Entscheid LS-E-1 (a)): „In Variante übernehmen" schreibt Berechnungsart,
+erreichte Schwelle und Adaptiv-Flag in die aktive Speichervariante des Projekts. Führt die Variante eine
+andere Berechnungsart, wird vorher gefragt. Ohne Projekt steht der Knopf nicht da. Die Maske selbst rechnet
+unverändert auf dem reinen Lastgang — sie wertet eine importierte Reihe aus und kennt keine Anlagenkette.
+
+**Der LADEDECKEL trennt die zwei Rollen der Schwelle** (`PeakShavingParameter.LadedeckelKw`, Entscheid
+LS-E-3): Entladen geschieht oberhalb von P_ziel, geladen wird nur bis `min(P_ziel, Ladedeckel)`. `null`
+heißt „kein eigener Deckel" — dann gilt wie bisher die Schwelle selbst, und Maske, Flotte und Rastersuche
+rechnen unverändert. Der Einzelspeicher des Projektlaufs setzt ihn auf 0 (Grünstrom: laden nur aus
+Überschuss) bzw. auf die Referenzspitze (Graustrom mit zu hohem Ziel). **Ein Ziel, das nicht unter der
+Netzbezugsspitze ohne Speicher liegt, kappt nichts** — der Lauf warnt, und der Deckel verhindert, dass die
+Ladung eine neue, höhere Spitze erzeugt. Dieselbe Regel gilt für die Flotte
+(`FlottenSimulator`, `FlottenPlausibilitaet.PeakZielUeberReferenzspitze`).
 
 ```
 P_ziel = adaptiv ? 0 : P_ziel_vorgabe

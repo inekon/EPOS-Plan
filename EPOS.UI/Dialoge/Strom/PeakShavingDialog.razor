@@ -253,9 +253,21 @@
             <button type="button" class="epos-knopf" disabled="@_laeuft"
                     @onclick="BeiCsv">@CsvText</button>
         }
+        @* DER AUSGANG DER MASKE (LS-E-1 (a)): Bis dahin rechnete die
+           Lastspitzenkappung und vergass ihr Ergebnis - es gab keinen Weg in den
+           Projektlauf. Der Knopf schreibt Berechnungsart, Ziel und Adaptiv-Flag in die
+           AKTIVE Speichervariante; fuehrt die eine andere Art, wird vorher gefragt. *@
+        @if (VarianteUebernehmen is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@_laeuft"
+                    @onclick="BeiVarianteUebernehmen">@VarianteText</button>
+        }
         <span class="epos-leiste-fueller"></span>
         <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
     </div>
+
+    <Rueckfrage Offen="@_varianteFrageOffen" TitelText="@VarianteText" Frage="@_varianteFrage"
+                Beantwortet="VarianteBeantwortet" />
 
     @* ------------------- Die zwei Ueberlagerungen der Importkette ---------- *@
     <Ueberlagerung Offen="@_optionenOffen" Titel="" Schliessbar="false">
@@ -332,6 +344,21 @@
     [Parameter] public Func<PeakShavingErgebnis, Task<bool>>? CsvSpeichern { get; set; }
 
     /// <summary>
+    /// Schreibt Zielschwelle und Adaptiv-Flag in die AKTIVE Speichervariante des
+    /// Projekts und stellt sie auf die Lastspitzenkappung um (Entscheid LS-E-1 (a));
+    /// <c>false</c> heisst „nicht geschrieben" (keine Speicheranlage, Fehler). OHNE
+    /// Delegat - etwa ohne Projekt - gibt es den Knopf nicht.
+    /// </summary>
+    [Parameter] public Func<double, bool, Task<bool>>? VarianteUebernehmen { get; set; }
+
+    /// <summary>
+    /// Die Berechnungsart, die die aktive Variante HEUTE fuehrt, in der Sprache des
+    /// Anwenders; <c>null</c> = keine aktive Variante. Sie traegt die Rueckfrage: Nur
+    /// eine ABWEICHENDE Art wird erfragt, die Lastspitzenkappung selbst nicht.
+    /// </summary>
+    [Parameter] public Func<Task<string?>>? VariantenBerechnungsart { get; set; }
+
+    /// <summary>
     /// Der Dialog ist zu Ende. <b>Befund W12-B24, woertlich:</b> Der einzige
     /// Fussknopf des Vorlaeufers trug <c>DialogResult.Cancel</c> — es kommt immer
     /// <c>false</c> heraus.
@@ -403,6 +430,12 @@
     /// </summary>
     [Parameter] public string MeldungZahlUngueltig { get; set; } = Resource.HZKK_MSG_ZAHL;
 
+    [Parameter] public string VarianteText { get; set; } = Resource.PEAK_BTN_VARIANTE;
+    [Parameter] public string VorlageVarianteFrage { get; set; } = Resource.PEAK_MSG_VARIANTE_FRAGE;
+    [Parameter] public string VorlageVarianteOk { get; set; } = Resource.PEAK_MSG_VARIANTE_OK;
+    [Parameter] public string TextVarianteFehler { get; set; } = Resource.PEAK_MSG_VARIANTE_FEHLER;
+    [Parameter] public string TextVarianteKeine { get; set; } = Resource.PEAK_MSG_VARIANTE_KEINE;
+
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_PeakShaving.btn_Help";
 
     // =====================================================================
@@ -428,6 +461,9 @@
 
     private bool _laeuft;
     private string _fortschritt = "";
+
+    private bool _varianteFrageOffen;
+    private string _varianteFrage = "";
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
 
@@ -828,6 +864,56 @@
         if (_ergebnis is null) { Melden(TextKeinErgebnis, WarnStufe.Hinweis); return; }
         if (CsvSpeichern is null) return;
         await CsvSpeichern(_ergebnis);
+    }
+
+    // =====================================================================
+    // Der Ausgang in die Speichervariante (LS-E-1 (a))
+    // =====================================================================
+
+    /// <summary>
+    /// „In Variante uebernehmen". GERECHNET MUSS SEIN: Uebernommen wird die ERREICHTE
+    /// Schwelle des Laufs, nicht die Eingabe - im adaptiven Fall sind das zwei
+    /// verschiedene Zahlen, und nur die erreichte ist die, die der Speicher haelt.
+    /// </summary>
+    private async Task BeiVarianteUebernehmen()
+    {
+        if (_ergebnis is null) { Melden(TextKeinErgebnis, WarnStufe.Hinweis); return; }
+        if (VarianteUebernehmen is null) return;
+
+        // Die RUECKFRAGE nur bei einer ABWEICHENDEN Berechnungsart: Wer die
+        // Lastspitzenkappung schon fuehrt, tauscht seinen Rechenweg nicht aus.
+        string? art = VariantenBerechnungsart is null ? null : await VariantenBerechnungsart();
+        if (art is null) { Melden(TextVarianteKeine, WarnStufe.Warnung); return; }
+
+        if (!string.Equals(art, Resource.SP_BERECHNUNG_ANZEIGE_PEAKSHAVING, StringComparison.Ordinal))
+        {
+            _varianteFrage = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                           VorlageVarianteFrage, art);
+            _varianteFrageOffen = true;
+            return;
+        }
+
+        await VarianteSchreiben();
+    }
+
+    private async Task VarianteBeantwortet(bool? antwort)
+    {
+        _varianteFrageOffen = false;
+        if (antwort == true) await VarianteSchreiben();
+    }
+
+    private async Task VarianteSchreiben()
+    {
+        if (_ergebnis is null || VarianteUebernehmen is null) return;
+
+        double ziel = _ergebnis.ErreichteSchwelleKw;
+        bool ok = await VarianteUebernehmen(ziel, _adaptiv);
+
+        Melden(ok
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageVarianteOk,
+                            ziel.ToString("0.#", System.Globalization.CultureInfo.CurrentCulture))
+            : TextVarianteFehler,
+            ok ? WarnStufe.Hinweis : WarnStufe.Warnung);
     }
 
     // =====================================================================

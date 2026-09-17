@@ -167,7 +167,16 @@ namespace WindowsFormsApplication1
 
             if (ergebnis == null) return null;
 
-            double[] entladung = StromspeicherSimCtrl.EntladungLeistungKw(ergebnis);
+            // DIE NETZWIRKUNG, nicht die blosse Entladung (Befund LS-1). Fuehrt der
+            // Kontext eine eigene Reihe, gilt sie: Die Lastspitzenkappung darf im
+            // Graustrombetrieb aus dem NETZ laden, und diese Ladung ERHOEHT den
+            // Netzbezug des Intervalls - ohne sie waere die Spitze des Laufs zu
+            // niedrig. Fuer jede andere Berechnungsart bleibt es bei der Entladung;
+            // insbesondere die Arbitrage bleibt unveraendert (ihr Netzladepfad liegt in
+            // einer getrennten Reihe), damit der Referenzlauf byte-gleich bleibt.
+            double[] entladung = ctrl.LetzterKontext != null && ctrl.LetzterKontext.NetzwirkungKw != null
+                ? ctrl.LetzterKontext.NetzwirkungKw
+                : StromspeicherSimCtrl.EntladungLeistungKw(ergebnis);
             if (entladung.Length != Rest_Strombedarf_viertelstuendlich.Length)
             {
                 Protokoll.Warnung(string.Format(MyResource.Resource.SIMENG_SPEICHER_RASTER_ABWEICHUNG,

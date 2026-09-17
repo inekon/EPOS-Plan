@@ -105,6 +105,56 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public ArbitrageErgebnis Arbitrageergebnis;
 
+        /// <summary>
+        /// Das vollstaendige Ergebnis der LASTSPITZENKAPPUNG - Spitzen vor und nach der
+        /// Kappung, erreichte Schwelle, Monatsspitzen. <c>null</c> bei jeder anderen
+        /// Berechnungsart.
+        /// </summary>
+        /// <remarks>
+        /// Wie <see cref="Arbitrageergebnis"/> steht es NICHT im
+        /// <see cref="SpeicherErgebnis"/>: Dessen Reihen haben in der Simulationskette
+        /// eine feste, gegenlaeufige Bedeutung.
+        /// </remarks>
+        public PeakShavingErgebnis Peakshavingergebnis;
+
+        /// <summary>
+        /// Die NETZWIRKUNG des Speichers je Viertelstunde [kW] - um so viel sinkt der
+        /// Netzbezug des Intervalls. <c>null</c> heisst "wie bisher": Dann zieht der
+        /// Projektlauf allein die Entladung ab.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum es sie gibt</b> (Befund LS-1): Der Projektlauf zog bis dahin NUR die
+        /// Entladung von <c>Rest_Strombedarf_viertelstuendlich</c> ab. Fuer die
+        /// Dauernutzung stimmt das - sie laedt ausschliesslich aus Ueberschuss, und der
+        /// steht im Reststrombedarf ohnehin nicht mehr. Die LASTSPITZENKAPPUNG darf im
+        /// Graustrombetrieb aus dem NETZ laden; diese Ladung erhoeht den Netzbezug des
+        /// Intervalls und gehoert damit zur Spitzenwahrheit. Die Reihe ist deshalb
+        /// <c>max(0, Netzlast ohne Speicher) - max(0, Netzlast mit Speicher)</c> und
+        /// nicht die blosse Entladung.
+        /// </para>
+        /// <para>
+        /// <b>Die Arbitrage bleibt unberuehrt</b> (eigener Entscheid LS-1): Ihre
+        /// Netzladung liegt in einer getrennten Reihe und wird weiterhin NICHT
+        /// aufgeschlagen. Sie hier mitzunehmen waere eine Aenderung des Rechenwegs
+        /// AUSSERHALB des Auftrags - und der Referenzlauf bliebe nicht byte-gleich.
+        /// </para>
+        /// </remarks>
+        public double[] NetzwirkungKw;
+
+        /// <summary>
+        /// Netzbezugsspitze OHNE Speicher [kW] des Laufs - die Messlatte der
+        /// Lastspitzenkappung (LS-E-3). 0 bei jeder anderen Berechnungsart.
+        /// </summary>
+        public double PeakReferenzspitzeKw;
+
+        /// <summary>
+        /// Der wirksame LADEDECKEL [kW] der Lastspitzenkappung: hoechste Netzlast, die
+        /// das Laden erzeugen darf. 0 im Gruenstrombetrieb (Laden nur aus Ueberschuss),
+        /// sonst <c>min(Peak-Ziel, Referenzspitze)</c>.
+        /// </summary>
+        public double PeakLadedeckelKw;
+
         /// <summary>Vollständiges Ergebnis des Flottenlaufs, falls dieses Projekt eine übernommene Flotte nutzt.</summary>
         public FlottenStudienErgebnis Flottenergebnis;
 

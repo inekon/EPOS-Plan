@@ -133,8 +133,9 @@ namespace WindowsFormsApplication1
                 "PV_Zulaessig, BHKW_Ueberschuss_Zulaessig, BHKW_Stromgefuehrt, Netzentladung, " +
                 "SoC_Min_Prozent, SoC_Max_Prozent, Berechnungsart, Preisquelle, " +
                 "Kompatibilitaetsmodus, Kapitalzins, Nutzungsdauer, L_P, A_Netzlade, " +
-                "Aktiv, Ladeschwellwert, ID_Preisreihe, ID_Kostenprofil, Aufschlag_Anwenden) " +
-                "VALUES (?,?,?, ?,?,?,?, ?,?, ?,?, ?,?,?,?,?, ?,?, ?,?,?)";
+                "Aktiv, Ladeschwellwert, ID_Preisreihe, ID_Kostenprofil, Aufschlag_Anwenden, " +
+                "PeakZiel_kW, PeakZiel_Adaptiv) " +
+                "VALUES (?,?,?, ?,?,?,?, ?,?, ?,?, ?,?,?,?,?, ?,?, ?,?,?, ?,?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -161,7 +162,14 @@ namespace WindowsFormsApplication1
                     { Wert = m.ID_Preisreihe > 0 ? (object)m.ID_Preisreihe : DBNull.Value },
                 new DbParam("@kostenprofil", DbParamTyp.Integer)
                     { Wert = m.ID_Kostenprofil > 0 ? (object)m.ID_Kostenprofil : DBNull.Value },
-                new DbParam("@aufschlag", m.Aufschlag_Anwenden)
+                new DbParam("@aufschlag", m.Aufschlag_Anwenden),
+
+                // SCHEMASCHRITT 86. NULL heisst "kein Ziel gepflegt" - dieselbe FK-Regel
+                // wie bei den zwei Preisverweisen daruerber: Eine 0 waere hier eine
+                // ZAHL (Kappung auf 0 kW) und damit etwas anderes als "nicht gesetzt".
+                new DbParam("@peakziel", DbParamTyp.Double)
+                    { Wert = m.PeakZiel_kW.HasValue ? (object)m.PeakZiel_kW.Value : DBNull.Value },
+                new DbParam("@peakadaptiv", m.PeakZiel_Adaptiv)
             };
 
             if (!DataRepository.ExecuteSQL(sql, ps)) return -1;
@@ -188,7 +196,8 @@ namespace WindowsFormsApplication1
                 "Berechnungsart = ?, Preisquelle = ?, Kompatibilitaetsmodus = ?, " +
                 "Kapitalzins = ?, Nutzungsdauer = ?, L_P = ?, A_Netzlade = ?, " +
                 "Ladeschwellwert = ?, ID_Preisreihe = ?, ID_Kostenprofil = ?, " +
-                "Aufschlag_Anwenden = ? WHERE ID = ?";
+                "Aufschlag_Anwenden = ?, PeakZiel_kW = ?, PeakZiel_Adaptiv = ? " +
+                "WHERE ID = ?";
 
             DbParam[] ps = {
                 new DbParam("@anl", m.ID_Energieanlage),
@@ -212,6 +221,11 @@ namespace WindowsFormsApplication1
                 new DbParam("@kostenprofil", DbParamTyp.Integer)
                     { Wert = m.ID_Kostenprofil > 0 ? (object)m.ID_Kostenprofil : DBNull.Value },
                 new DbParam("@aufschlag", m.Aufschlag_Anwenden),
+
+                // SCHEMASCHRITT 86, Begruendung wie beim INSERT.
+                new DbParam("@peakziel", DbParamTyp.Double)
+                    { Wert = m.PeakZiel_kW.HasValue ? (object)m.PeakZiel_kW.Value : DBNull.Value },
+                new DbParam("@peakadaptiv", m.PeakZiel_Adaptiv),
                 new DbParam("@id", m.ID)
             };
 
@@ -402,6 +416,13 @@ namespace WindowsFormsApplication1
             m.A_Netzlade = D(r, "A_Netzlade", 0.0);
             m.Ladeschwellwert = D(r, "Ladeschwellwert", 0.0);
 
+            // SCHEMASCHRITT 86. Auf einer noch nicht migrierten Datenbank fehlen die
+            // zwei Spalten - dann bleibt die Vorbelegung des Modells stehen, also
+            // "kein Ziel gepflegt" und "nicht adaptiv". NULL bleibt NULL: Eine 0 waere
+            // die Kappung auf 0 kW und etwas anderes als "nicht gesetzt".
+            m.PeakZiel_kW = DOpt(r, SchemaKatalog.SPALTE_PEAKZIEL_KW);
+            m.PeakZiel_Adaptiv = B(r, SchemaKatalog.SPALTE_PEAKZIEL_ADAPTIV);
+
             // AP4 (Migrationsschritt 12a). Auf einer noch nicht migrierten Datenbank
             // fehlen die drei Spalten - dann bleibt die Vorbelegung des Modells stehen,
             // also "keine Reihe gewaehlt" und "Aufschlaege anwenden".
@@ -466,6 +487,9 @@ namespace WindowsFormsApplication1
                     "\"A_Netzlade\" REAL, " +
                     "\"Aktiv\" INTEGER NOT NULL DEFAULT 0 CHECK (\"Aktiv\" IN (0,1)), " +
                     "\"Ladeschwellwert\" REAL, " +
+                    // Schemaschritt 86 - die zwei Steuergroessen der Lastspitzenkappung.
+                    "\"PeakZiel_kW\" REAL, " +
+                    "\"PeakZiel_Adaptiv\" INTEGER NOT NULL DEFAULT 0 CHECK (\"PeakZiel_Adaptiv\" IN (0,1)), " +
                     "FOREIGN KEY (\"ID_Energieanlage\") REFERENCES \"Tab_Energieanlagen\" (\"ID\") ON DELETE CASCADE)";
 
                 // ohne Tabelle sind Index und Beziehung sinnlos
@@ -488,6 +512,13 @@ namespace WindowsFormsApplication1
 
         private static double D(DataRow r, string col, double vorgabe)
         { return (r.Table.Columns.Contains(col) && r[col] != DBNull.Value) ? Convert.ToDouble(r[col]) : vorgabe; }
+
+        /// <summary>Nullbare Zahl: fehlende Spalte und NULL bleiben <c>null</c>.</summary>
+        private static double? DOpt(DataRow r, string col)
+        {
+            if (!r.Table.Columns.Contains(col) || r[col] == DBNull.Value) return null;
+            return Convert.ToDouble(r[col]);
+        }
 
         private static bool B(DataRow r, string col)
         { return r.Table.Columns.Contains(col) && r[col] != DBNull.Value && Convert.ToBoolean(r[col]); }

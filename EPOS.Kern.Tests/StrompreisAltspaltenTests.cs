@@ -132,7 +132,10 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Zielversion_traegt_den_Schritt()
         {
-            Assert.Equal(85, SchemaStand.Zielversion);
+            // Die Zielversion zieht mit jedem weiteren Schritt weiter; beansprucht
+            // wird hier nur, dass SIE den Schritt 85 traegt.
+            Assert.True(SchemaStand.Zielversion >= 85,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 85.");
         }
 
         private static long Zahl(string sql)
