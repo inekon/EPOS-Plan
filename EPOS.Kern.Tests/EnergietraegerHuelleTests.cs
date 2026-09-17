@@ -763,6 +763,147 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        // ET-E-3 (Anwenderentscheid 17.09.2026): ohne Erzeugerart engt das PROJEKT ein
+        // =================================================================
+
+        private static IReadOnlyList<ValueTuple<int, string>> Freie(
+            IReadOnlyDictionary<string, object> gaben)
+        {
+            return ((Func<IReadOnlyList<ValueTuple<int, string>>>)gaben["FreieLaden"])();
+        }
+
+        /// <summary>Die Gruppe eines Trägers — aus der Datenbank, nicht aus dem Test.</summary>
+        private static string Gruppe(int carrierId)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT group_code FROM energy_carrier WHERE id = ?",
+                new DbParam("@id", carrierId));
+            return o == null || o == DBNull.Value ? "" : Convert.ToString(o).Trim();
+        }
+
+        [Fact]
+        public void Ohne_Erzeugerart_bietet_die_Uebernahme_nur_die_Traeger_der_Projektanlagen()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyList<string> vereinigung =
+                EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT);
+            Assert.NotNull(vereinigung);   // 1030: Gaskessel und zwei Gas-BHKW
+
+            IReadOnlyList<ValueTuple<int, string>> freie =
+                Freie(new EnergietraegerHuelle(PROJEKT).Gaben());
+
+            Assert.NotEmpty(freie);
+            foreach (ValueTuple<int, string> f in freie)
+                Assert.Contains(Gruppe(f.Item1), vereinigung);
+
+            // Die Einengung greift wirklich: der ganze freie Katalog ist größer.
+            Assert.True(freie.Count < EnergietraegerKatalogCtrl.NichtZugeordnete(PROJEKT).Count,
+                        "Die Übernahme wurde nicht eingeengt.");
+        }
+
+        [Fact]
+        public void Ein_zugeordneter_Traeger_ausserhalb_der_Vereinigung_bleibt_in_der_Liste()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyList<string> vereinigung =
+                EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT);
+            Assert.NotNull(vereinigung);
+            // Strom hält im Projekt 1030 keine Anlage - er ist trotzdem zugeordnet.
+            Assert.DoesNotContain(Gruppe(STROM), vereinigung);
+
+            IReadOnlyDictionary<string, object> gaben = new EnergietraegerHuelle(PROJEKT).Gaben();
+
+            // Die linke Liste führt die Träger des PROJEKTS; eine vorhandene Zuordnung
+            // wird nicht versteckt - eingeengt wird allein die Übernahme.
+            Assert.Contains(STROM, Ids(gaben));
+            foreach (ValueTuple<int, string> f in Freie(gaben))
+                Assert.NotEqual(STROM, f.Item1);
+        }
+
+        [Fact]
+        public void Im_Katalogkontext_bleibt_alles_frei()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyDictionary<string, object> gaben = new EnergietraegerHuelle(0).Gaben();
+
+            Assert.Equal("Kontext: Katalog (Stammdaten)", (string)gaben["KontextText"]);
+            Assert.Equal(KostenSummenCtrl.GetAllCarriers(0).Count, Ids(gaben).Count);
+        }
+
+        [Fact]
+        public void Mit_Erzeugerart_bleibt_es_beim_Einzelfall()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Eine Wärmepumpe in einem Gasprojekt: die Komponente gewinnt, nicht das Projekt.
+            IReadOnlyDictionary<string, object> gaben =
+                new EnergietraegerHuelle(PROJEKT).Gaben(0, DbWerte.ERZEUGER_WAERMEPUMPE);
+
+            IReadOnlyList<ValueTuple<int, string>> freie = Freie(gaben);
+            Assert.NotEmpty(freie);
+            foreach (ValueTuple<int, string> f in freie)
+                Assert.Equal(Gruppe(STROM), Gruppe(f.Item1));
+
+            string kopf = (string)gaben["KontextText"];
+            Assert.Contains(DbWerte.ERZEUGER_WAERMEPUMPE, kopf);
+            Assert.DoesNotContain("Anlagen des Projekts", kopf);
+        }
+
+        [Fact]
+        public void Die_Kopfzeile_nennt_die_Einengung_auf_die_Projektanlagen()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string kopf = (string)new EnergietraegerHuelle(PROJEKT).Gaben()["KontextText"];
+
+            Assert.Contains("Kontext: Projekt " + PROJEKT, kopf);
+            Assert.Contains("Anlagen des Projekts", kopf);
+            foreach (string g in EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT))
+                Assert.Contains(g, kopf);
+        }
+
+        [Fact]
+        public void Die_Kopfzeile_der_Projekteinengung_steht_auch_auf_Englisch()
+        {
+            using var _ = new Kulturvorrichtung("en-US");
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string kopf = (string)new EnergietraegerHuelle(PROJEKT).Gaben()["KontextText"];
+
+            Assert.Contains("Context: project " + PROJEKT, kopf);
+            Assert.Contains("project's systems", kopf);
+        }
+
+        [Fact]
+        public void Ein_Projekt_ohne_Anlagen_engt_die_Uebernahme_nicht_ein()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            const int OHNE_ANLAGEN = 19;
+            IReadOnlyDictionary<string, object> gaben = new EnergietraegerHuelle(OHNE_ANLAGEN).Gaben();
+
+            Assert.Equal("Kontext: Projekt " + OHNE_ANLAGEN, (string)gaben["KontextText"]);
+            Assert.Equal(EnergietraegerKatalogCtrl.NichtZugeordnete(OHNE_ANLAGEN).Count,
+                         Freie(gaben).Count);
+        }
+
+        // =================================================================
         // ET-5 / ET-6 (Anwenderbefund 16.09.2026): der Rueckweg der Liste
         // =================================================================
 

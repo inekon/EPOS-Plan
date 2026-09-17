@@ -141,6 +141,79 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Die zulässigen GRUPPEN eines ganzen PROJEKTS</b> — die VEREINIGUNG über
+        /// alle Anlagen des Projekts (Anwenderentscheid 17.09.2026: Ohne gewählte
+        /// Anlagenzeile engt die Energieträgerverwaltung nicht auf eine Komponente ein,
+        /// wohl aber auf das, was die Anlagen des Projekts überhaupt beziehen können).
+        /// Anlagenquelle ist <see cref="ProjektEnergietraegerCtrl.AnlagenMitTraeger"/>
+        /// (Komponente und Gerätezeile je Anlagenzeile); der Heizstab ist dort kein
+        /// eigener Eintrag und kommt über
+        /// <see cref="ProjektEnergietraegerCtrl.BrauchtStromTraeger"/> hinzu — dieselbe
+        /// Bedingung, die auch die Stromträger-Automatik stellt.
+        ///
+        /// <para><b>Die Regeln, die aus der Dreiwertigkeit von
+        /// <see cref="ZulaessigeGruppen"/> folgen:</b></para>
+        /// <list type="bullet">
+        ///   <item><description>Projekt ohne Anlage MIT Träger (kein Projekt, keine
+        ///     Anlagen, nur Solarthermie und Puffer) → <c>null</c>, also keine
+        ///     Einengung.</description></item>
+        ///   <item><description>Liefert EINE Anlage <c>null</c> (Kessel ohne Gerät darf
+        ///     alles verbrennen), ist die Vereinigung <c>null</c>: Was für eine Anlage
+        ///     offen ist, ist für das Projekt offen.</description></item>
+        ///   <item><description>Anlagen ohne Träger (Solarthermie, Pufferspeicher)
+        ///     tragen nichts bei — sie beziehen keine Energie.</description></item>
+        ///   <item><description>Sonst die Vereinigung der Gruppennamen, ohne Dubletten,
+        ///     in Katalogreihenfolge (zwei Wärmepumpen ergeben einmal „Strom").</description></item>
+        ///   <item><description>Bliebe nach der Einengung kein Katalogträger übrig, gilt
+        ///     <c>null</c> — wie im Einzelfall: eine leere Auswahlliste wäre eine
+        ///     Sackgasse.</description></item>
+        /// </list>
+        ///
+        /// <para>Eine LEERE Liste gibt dieser Weg NIE zurück: „das Projekt bezieht keine
+        /// Energie" ist keine Einengung, sondern der Fall „keine Anlage mit Träger".</para>
+        /// </summary>
+        /// <param name="projektId"><c>Tab_Projekt.ID</c>; 0 = kein Projektkontext.</param>
+        internal static IReadOnlyList<string> ZulaessigeGruppenFuerProjekt(int projektId)
+        {
+            if (projektId <= 0) return null;
+
+            var codes = new List<string>();
+
+            List<ProjektEnergietraegerCtrl.AnlagenEintrag> anlagen;
+            try { anlagen = ProjektEnergietraegerCtrl.AnlagenMitTraeger(projektId); }
+            catch { return null; }
+            if (anlagen == null) return null;
+
+            foreach (ProjektEnergietraegerCtrl.AnlagenEintrag a in anlagen)
+            {
+                IReadOnlyList<string> teil = Kategoriecodes(a.Komponente, a.GeraeteId);
+
+                // Eine Anlage ohne Einengung öffnet das ganze Projekt.
+                if (teil == null) return null;
+
+                // Leere Liste = Solarthermie/Puffer: sie tragen nichts bei.
+                foreach (string code in teil)
+                    if (code.Length > 0 && !codes.Contains(code)) codes.Add(code);
+            }
+
+            // Der Heizstab ist ein Merkmal der Anlagenzeile, kein Eintrag der
+            // Anlagenliste — er hebt sein Projekt aber in die elektrische Welt.
+            try
+            {
+                if (ProjektEnergietraegerCtrl.BrauchtStromTraeger(projektId)
+                 && !codes.Contains(CODE_STROM))
+                    codes.Add(CODE_STROM);
+            }
+            catch { }
+
+            // Keine Anlage mit Träger - keine Einengung.
+            if (codes.Count == 0) return null;
+
+            List<string> gruppen = GruppenZuCodes(codes);
+            return gruppen.Count == 0 ? null : (IReadOnlyList<string>)gruppen;
+        }
+
+        /// <summary>
         /// Passt ein Träger zu den zulässigen Gruppen? <paramref name="gruppen"/>
         /// <c>null</c> = keine Einengung (alles passt), leer = nichts passt.
         /// </summary>

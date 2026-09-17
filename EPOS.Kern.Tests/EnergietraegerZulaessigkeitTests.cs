@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -216,6 +217,128 @@ namespace EPOS.Kern.Tests
             Assert.False(EnergietraegerZulaessigkeit.PasstGruppe(new string[0], "Gas"));
             Assert.True(EnergietraegerZulaessigkeit.PasstGruppe(new[] { "Gas" }, "gas"));
             Assert.False(EnergietraegerZulaessigkeit.PasstGruppe(new[] { "Gas" }, ""));
+        }
+
+        // =================================================================
+        // ET-E-3: die Vereinigung ueber ALLE Anlagen des Projekts
+        // =================================================================
+
+        /// <summary>Projekt der Testdatenbank ohne jede Anlagenzeile.</summary>
+        private const int PROJEKT_OHNE_ANLAGEN = 19;
+
+        /// <summary>Projekt 1024: Elektrokessel, Öl-BHKW, Wärmepumpe mit Heizstab, zwei Puffer.</summary>
+        private const int PROJEKT_STROM_UND_OEL = 1024;
+
+        /// <summary>Projekt 1009: drei Wärmepumpen und zwei Gaskessel — jede Gruppe einmal.</summary>
+        private const int PROJEKT_ZWEI_WAERMEPUMPEN = 1009;
+
+        /// <summary>Ein Gaskessel des Projekts 1009 (Brennstoff 1 = Stadtgas, Kategorie 1 = Gas).</summary>
+        private const int KESSEL_DES_PROJEKTS_1009 = 1009230;
+
+        /// <summary>Projekt 1027: Gaskessel 1018324 und eine Wärmepumpe.</summary>
+        private const int PROJEKT_KESSEL_UND_WP = 1027;
+
+        /// <summary>Der Gaskessel des Projekts 1027.</summary>
+        private const int KESSEL_DES_PROJEKTS_1027 = 1018324;
+
+        [Fact]
+        public void Ein_Projekt_ohne_Anlagen_engt_nicht_ein()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.Null(EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT_OHNE_ANLAGEN));
+            // Ohne Projektkontext ebenso.
+            Assert.Null(EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(0));
+        }
+
+        [Fact]
+        public void Waermepumpe_und_Oelbrenner_vereinigen_Strom_und_Oel()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyList<string> gruppen =
+                EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT_STROM_UND_OEL);
+
+            Assert.NotNull(gruppen);
+            // Die Gruppennamen stehen in der Datenbank, nicht in diesem Test.
+            Assert.Contains(GruppeDesTraegers(TRAEGER_STROM), gruppen);
+            Assert.Contains(GruppeDesTraegers(TRAEGER_HEIZOEL), gruppen);
+            Assert.DoesNotContain(GruppeDesTraegers(TRAEGER_ERDGAS), gruppen);
+            Assert.DoesNotContain(GruppeDesTraegers(TRAEGER_FERNWAERME), gruppen);
+            Assert.Equal(2, gruppen.Count);
+        }
+
+        [Fact]
+        public void Mehrere_gleichartige_Anlagen_nennen_ihre_Gruppe_nur_einmal()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            IReadOnlyList<string> gruppen = EnergietraegerZulaessigkeit
+                .ZulaessigeGruppenFuerProjekt(PROJEKT_ZWEI_WAERMEPUMPEN);
+
+            Assert.NotNull(gruppen);
+
+            // Drei Wärmepumpen und zwei Gaskessel — die Vereinigung ist genau die der
+            // beiden Einzelfälle, jede Gruppe genau einmal.
+            var erwartet = new List<string>(
+                EnergietraegerZulaessigkeit.ZulaessigeGruppen(DbWerte.ERZEUGER_WAERMEPUMPE));
+            foreach (string g in EnergietraegerZulaessigkeit.ZulaessigeGruppen(
+                         DbWerte.ERZEUGER_HEIZKESSEL, KESSEL_DES_PROJEKTS_1009))
+                if (!erwartet.Contains(g)) erwartet.Add(g);
+            erwartet.Sort(StringComparer.CurrentCultureIgnoreCase);
+
+            Assert.Equal(erwartet, new List<string>(gruppen));
+            Assert.Contains(GruppeDesTraegers(TRAEGER_STROM), gruppen);
+            Assert.Contains(GruppeDesTraegers(TRAEGER_ERDGAS), gruppen);
+            Assert.Equal(gruppen.Count, new List<string>(gruppen).Distinct().Count());
+        }
+
+        [Fact]
+        public void Ein_Kessel_ohne_auswertbares_Geraet_oeffnet_das_ganze_Projekt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Ausgangslage: Gaskessel und Wärmepumpe engen auf zwei Gruppen ein.
+            IReadOnlyList<string> vorher =
+                EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT_KESSEL_UND_WP);
+            Assert.NotNull(vorher);
+            Assert.Contains(GruppeDesTraegers(TRAEGER_STROM), vorher);
+            Assert.Contains(GruppeDesTraegers(TRAEGER_ERDGAS), vorher);
+
+            // Ein Kessel ohne Brennstoff ist ein Kessel ohne Aussage — er darf alles
+            // verbrennen, und damit ist das ganze Projekt offen.
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Heizkessel SET Brennstoff = 0 WHERE ID = ?",
+                new DbParam("@id", KESSEL_DES_PROJEKTS_1027));
+
+            Assert.Null(EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT_KESSEL_UND_WP));
+        }
+
+        [Fact]
+        public void Ein_Projekt_nur_mit_Solarthermie_engt_nicht_ein()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            object o = DataRepository.ExecuteScalar("SELECT MIN(ID) FROM Tab_Solarkollektoren");
+            Assert.True(o != null && o != DBNull.Value);
+            int kollektor = Convert.ToInt32(o);
+
+            // Der Stand wird in der ARBEITSKOPIE aufgebaut: die Testdatenbank führt kein
+            // Projekt, das allein Solarthermie betreibt.
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO Tab_Energieanlagen (ID_Projekt, Bezeichner, ID_Solar) VALUES (?, ?, ?)",
+                new DbParam("@p", PROJEKT_OHNE_ANLAGEN),
+                new DbParam("@b", "Solarthermie (Prüfstand)"),
+                new DbParam("@s", kollektor));
+
+            // Solarthermie bezieht keine Energie — sie trägt nichts bei, und ein Projekt
+            // ohne Anlage MIT Träger wird nicht eingeengt.
+            Assert.Null(EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT_OHNE_ANLAGEN));
         }
 
         // =================================================================
