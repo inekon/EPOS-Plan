@@ -69,41 +69,41 @@ public sealed class WirtschaftlichkeitParameterTexte
         "{0}: gepflegte Werte — {1}");
 
     // -------------------------------------------- Bewertung (DIN EN 17463)
-    // ETAPPE W5-B-12 (VALERI-Luecke G6): das Freitextfeld "Nicht monetaere
-    // Wirkungen". Es steht in einem EIGENEN Abschnitt und nicht unter
-    // "Allgemein": Dort stehen Rechengroessen, hier steht eine Beschreibung -
-    // und die Norm verlangt sie ausdruecklich neben der Zahl.
-    public string GBewertung { get; } = T("WPAR_G_BEWERTUNG", "Bewertung nach DIN EN 17463");
-    public string NichtMonetaer { get; } = T("WPAR_NICHT_MONETAER", "Nicht monetäre Wirkungen:");
-    public string NichtMonetaerPlatz { get; } = T("WPAR_NICHT_MONETAER_PLATZ",
-        "z. B. Versorgungssicherheit, Arbeitssicherheit, Komfort, Außenwirkung, " +
-        "Erfüllung einer Auflage");
-    public string NichtMonetaerHinweis { get; } = T("WPAR_NICHT_MONETAER_HINWEIS",
-        "DIN EN 17463 verlangt zu jeder Bewertung eine Beschreibung dessen, was sich " +
-        "nicht in Euro fassen lässt. Der Text gehört zur Maßnahme als Ganzes und steht " +
-        "deshalb am Projekt, nicht je Variante; er erscheint im Bericht und auf der Seite " +
-        "unter „Nicht monetäre Wirkungen“. Bleibt er leer, entfällt die Zeile — eine " +
-        "leere Überschrift wäre keine Aussage.");
+    // AUFTRAG #325 (Anwenderwunsch 17.09.2026): Die vier Schluessel
+    // WPAR_G_BEWERTUNG, WPAR_NICHT_MONETAER, WPAR_NICHT_MONETAER_PLATZ und
+    // WPAR_NICHT_MONETAER_HINWEIS sind MITGEZOGEN auf die Seite
+    // "Wirtschaftlichkeit" (Seiten/Berichte/WirtschaftlichkeitSeite.razor) - das
+    // Freitextfeld steht jetzt dort, unter der Kennzahltabelle. Unbenannt und
+    // unveraendert; hier fuehrt der Dialog sie nicht mehr, weil er das Feld nicht
+    // mehr zeigt.
 
     // -------------------------------------------------------------- Strom
     public string GStrom { get; } = T("WPAR_G_STROM", "Strom — Einspeisung und Bezug");
     public string EinspeisungPv { get; } = T("WPAR_EINSP_PV", "Einspeisevergütung PV [€/kWh]:");
-    public string EinspeisungKwk { get; } = T("WPAR_EINSP_KWK",
-        "Einspeisevergütung KWK-Strom [€/kWh]:");
+
+    // AUFTRAG #325: WPAR_EINSP_KWK ist MITGEZOGEN in den Dialog
+    // "BHKW-Wirtschaftlichkeit" (BhkwWirtschaftlichkeitTexte.PEinspKwk) - der Satz
+    // steht bei der Anlage, deren Strom er verguetet.
 
     /// <summary>
-    /// SP-E-5 (a), 17.09.2026: Die beiden Sätze sind die EINE Quelle der
-    /// Einspeisevergütung — sie bewerten den eingespeisten Strom in der
-    /// Wirtschaftlichkeit und stellen zugleich <c>v_pv</c> und <c>v_bhkw</c> der
-    /// Speicherwelt. Die Trägerkarte trägt sie nicht mehr.
+    /// SP-E-5 (a), 17.09.2026: Der PV-Satz ist die EINE Quelle der
+    /// Einspeisevergütung für PV — er bewertet den eingespeisten Strom in der
+    /// Wirtschaftlichkeit und stellt zugleich <c>v_pv</c> der Speicherwelt. Die
+    /// Trägerkarte trägt ihn nicht mehr.
+    ///
+    /// <para>AUFTRAG #325: Er ist zugleich der Rückfall für <c>v_bhkw</c>, wenn kein
+    /// KWK-Satz gepflegt ist, und der Verkaufserlös der Arbitrage außerhalb des
+    /// Spotmarkts — deshalb bleibt er in DIESEM Dialog und wandert nicht in den
+    /// PV-Vergütungsdialog, der ohne PV-Anlage im Projekt nicht erreichbar wäre.</para>
     /// </summary>
     public string EinspeisungHinweis { get; } = T("WPAR_EINSP_HINWEIS",
-        "Diese beiden Sätze gelten für die ganze Anwendung: Sie bewerten den " +
-        "eingespeisten Strom in der Wirtschaftlichkeit UND stellen den Verkaufspreis, " +
-        "mit dem Stromspeicher und Speicherflotte rechnen (v_pv, v_bhkw). Ohne " +
-        "KWK-Satz gilt für BHKW-Strom der PV-Satz; ist gar nichts gepflegt, rechnet " +
-        "die Speicherwelt mit 0 und weist das im Protokoll aus. Führt der " +
-        "PV-Vergütungsdialog die Vergütung, hat er für v_pv Vorrang.");
+        "Dieser Satz gilt für die ganze Anwendung: Er bewertet den eingespeisten " +
+        "PV-Strom in der Wirtschaftlichkeit UND stellt den Verkaufspreis, mit dem " +
+        "Stromspeicher und Speicherflotte rechnen (v_pv) — und außerhalb des " +
+        "Spotmarkts auch den Verkaufserlös der Arbitrage. Ohne gepflegten KWK-Satz " +
+        "im Dialog „BHKW-Wirtschaftlichkeit“ gilt er auch für BHKW-Strom; ist gar " +
+        "nichts gepflegt, rechnet die Speicherwelt mit 0 und weist das im Protokoll " +
+        "aus. Führt der PV-Vergütungsdialog die Vergütung, hat er für v_pv Vorrang.");
 
     // --------------------------------------------------------------- BHKW
     /// <summary>

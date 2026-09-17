@@ -10055,6 +10055,9 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BHW_P_BONUS_EIGEN" xml:space="preserve">
     <value>Self-consumption bonus [ct/kWh] (0 = off):</value>
   </data>
+  <data name="BHW_P_EINSP_KWK_HINWEIS" xml:space="preserve">
+    <value>This rate applies to the whole application: it values exported CHP electricity in the economic assessment AND provides the selling price used by the electricity storage and the storage fleet for the CHP surplus (v_bhkw). 0 means "not maintained"; the PV rate from the economic parameters then applies to CHP electricity, and without it the storage calculation uses 0 and says so in the log. The CHP bonus comes on top - it does not replace the tariff.</value>
+  </data>
   <data name="BHW_P_BONUS_EINSP" xml:space="preserve">
     <value>Feed-in bonus [ct/kWh]:</value>
   </data>
@@ -10596,7 +10599,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>PV feed-in tariff [€/kWh]:</value>
   </data>
   <data name="WPAR_EINSP_HINWEIS" xml:space="preserve">
-    <value>Both rates apply to the whole application: they value exported electricity in the economic assessment AND provide the selling price used by the electricity storage and the storage fleet (v_pv, v_bhkw). Without a CHP rate the PV rate applies to CHP electricity; if nothing is maintained, the storage calculation uses 0 and says so in the log. Where the PV remuneration dialog leads the tariff, it takes precedence for v_pv.</value>
+    <value>This rate applies to the whole application: it values exported PV electricity in the economic assessment AND provides the selling price used by the electricity storage and the storage fleet (v_pv) - and, outside the spot market, the arbitrage selling revenue as well. Without a CHP rate maintained in the "CHP economics" dialog it also applies to CHP electricity; if nothing is maintained, the storage calculation uses 0 and says so in the log. Where the PV remuneration dialog leads the tariff, it takes precedence for v_pv.</value>
   </data>
   <data name="WPAR_G_ALLGEMEIN" xml:space="preserve">
     <value>General</value>
@@ -16081,6 +16084,9 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   </data>
   <data name="WIRT_NM_TITEL" xml:space="preserve">
     <value>Non-monetary effects</value>
+  </data>
+  <data name="WIRT_NM_GESPEICHERT" xml:space="preserve">
+    <value>Non-monetary effects saved.</value>
   </data>
   <data name="WIRT_NM_ZEILE" xml:space="preserve">
     <value>Non-monetary effects: {0}</value>

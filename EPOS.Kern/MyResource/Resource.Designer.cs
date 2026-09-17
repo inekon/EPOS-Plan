@@ -3475,6 +3475,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz gilt fuer die ganze Anwendung: Er bewertet den eingespeisten BHKW-Strom in der Wirtschaftlichkeit UND stellt den Verkaufspreis, mit dem Stromspeicher und Speicherflotte den BHKW-Ueberschuss rechnen (v_bhkw). 0 heisst &quot;nicht gepflegt&quot;; dann gilt fuer BHKW-Strom der PV-Satz aus den Wirtschaftlichkeits-Parametern, und ohne den rechnet die Speicherwelt mit 0 und weist das im Protokoll aus. Der KWK-Zuschlag kommt obendrauf - er ersetzt die Verguetung nicht. ähnelt.
+        /// </summary>
+        public static string BHW_P_EINSP_KWK_HINWEIS {
+            get {
+                return ResourceManager.GetString("BHW_P_EINSP_KWK_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Inbetriebnahme, Vorgabe je Anlage: ähnelt.
         /// </summary>
         public static string BHW_P_IBN {
@@ -53529,6 +53538,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetäre Wirkungen gespeichert. ähnelt.
+        /// </summary>
+        public static string WIRT_NM_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("WIRT_NM_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetäre Wirkungen ähnelt.
         /// </summary>
         public static string WIRT_NM_TITEL {
@@ -54449,7 +54467,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Diese beiden Saetze gelten fuer die ganze Anwendung: Sie bewerten den eingespeisten Strom in der Wirtschaftlichkeit UND stellen den Verkaufspreis, mit dem Stromspeicher und Speicherflotte rechnen (v_pv, v_bhkw). Ohne KWK-Satz gilt fuer BHKW-Strom der PV-Satz; ist gar nichts gepflegt, rechnet die Speicherwelt mit 0 und weist das im Protokoll aus. Fuehrt der PV-Verguetungsdialog die Verguetung, hat er fuer v_pv Vorrang. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Satz gilt fuer die ganze Anwendung: Er bewertet den eingespeisten PV-Strom in der Wirtschaftlichkeit UND stellt den Verkaufspreis, mit dem Stromspeicher und Speicherflotte rechnen (v_pv) - und ausserhalb des Spotmarkts auch den Verkaufserloes der Arbitrage. Ohne gepflegten KWK-Satz im Dialog &quot;BHKW-Wirtschaftlichkeit&quot; gilt er auch fuer BHKW-Strom; ist gar nichts gepflegt, rechnet die Speicherwelt mit 0 und weist das im Protokoll aus. Fuehrt der PV-Verguetungsdialog die Verguetung, hat er fuer v_pv Vor [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string WPAR_EINSP_HINWEIS {
             get {

@@ -15,10 +15,11 @@ namespace EPOS.UI.Tests.Seiten;
 /// drei programmatisch gebaute Knöpfe).
 ///
 /// <para>Soll ist die Feldkarte: vier Kennzahl-Karten, die Vergleichsgruppe
-/// mit Haken, die Szenariowahl, der Parameternachweis, die Vergleichstabelle,
-/// die Sicht-Knöpfe (Photovoltaik, BHKW, Strombezug — je nach Ausstattung),
-/// „Parameter…", „Verlauf…", „Berechnen" und der Abbrechen-Knopf während
-/// eines Laufs.</para>
+/// mit Haken, die Szenariowahl MIT dem Einstieg „Parameter…" daneben (AUFTRAG #325), der
+/// Parameternachweis, die Vergleichstabelle, der Bewertungsblock nach
+/// DIN EN 17463 darunter (AUFTRAG #325), die Sicht-Knöpfe (Photovoltaik, BHKW,
+/// Strombezug — je nach Ausstattung), „Verlauf…", „Berechnen" und der
+/// Abbrechen-Knopf während eines Laufs.</para>
 ///
 /// <para><b>Kulturpinnung</b> (Auftrag #267): Die Beschriftung des Rechenknopfs
 /// im Warnband kommt seit dem Ressourcennachtrag aus <c>MyResource</c>. Der
@@ -103,6 +104,24 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
     private static IReadOnlyList<IElement> Fussknoepfe(IRenderedComponent<WirtschaftlichkeitSeite> cut)
         => cut.FindAll(".epos-seite > .epos-leiste button");
+
+    /// <summary>
+    /// AUFTRAG #325 (Anwenderwunsch 17.09.2026): Der Einstieg „Parameter…" steht
+    /// nicht mehr in der Fussleiste, sondern OBEN in der Zeile der Szenariowahl. Die
+    /// Prüffälle fragen deshalb nach dem BEREICH und nicht nach einer Stellung in
+    /// einer Leiste — sonst verschiebt der nächste Umbau wieder acht Indizes.
+    /// </summary>
+    private static IElement Einstieg(IRenderedComponent<WirtschaftlichkeitSeite> cut,
+                                     WirtschaftlichkeitSeite.Unterdialog art)
+        => art == WirtschaftlichkeitSeite.Unterdialog.Parameter
+            ? cut.Find(".epos-seite-zeile button")
+            : Fussknoepfe(cut)[art switch
+            {
+                WirtschaftlichkeitSeite.Unterdialog.Photovoltaik => 0,
+                WirtschaftlichkeitSeite.Unterdialog.Bhkw => 1,
+                WirtschaftlichkeitSeite.Unterdialog.Strombezug => 2,
+                _ => 3                                   // Verlauf
+            }];
 
     // =====================================================================
     // Feldbestand (Feldkarte)
@@ -309,15 +328,61 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.Equal(4, cut.FindAll(".epos-kennzahlkachel").Count);
     }
 
+    /// <summary>
+    /// AUFTRAG #325: „Parameter…" ist aus der Fussleiste heraus — dort stehen noch
+    /// PV, BHKW, Strombezug, Verlauf und Berechnen. Der Einstieg selbst ist nicht
+    /// verschwunden, er steht in der Zeile der Szenariowahl.
+    /// </summary>
     [Fact]
     public void Die_drei_Sichtknoepfe_folgen_der_Ausstattung()
     {
         var alle = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
-        Assert.Equal(6, Fussknoepfe(alle).Count);   // PV, BHKW, Strom, Parameter, Verlauf, Berechnen
+        Assert.Equal(5, Fussknoepfe(alle).Count);   // PV, BHKW, Strom, Verlauf, Berechnen
 
         var ohne = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()),
                          stand: Standard(pv: false, bhkw: false, strom: false));
-        Assert.Equal(3, Fussknoepfe(ohne).Count);   // Parameter, Verlauf, Berechnen
+        Assert.Equal(2, Fussknoepfe(ohne).Count);   // Verlauf, Berechnen
+    }
+
+    /// <summary>
+    /// AUFTRAG #325 (Anwenderwunsch 17.09.2026): „button parameter nach oben … auf
+    /// Ebene Szenario". Der Knopf steht in DERSELBEN Zeile wie die Szenariowahl —
+    /// nicht mehr unter der langen Vergleichstabelle, wo ihn niemand fand —, trägt
+    /// dieselbe Beschriftung und öffnet denselben Bereich.
+    ///
+    /// <para>Kein Delegat, kein Knopf: Ohne Gaben steht er gar nicht da.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Parameter_Einstieg_steht_in_der_Zeile_der_Szenariowahl()
+    {
+        WirtschaftlichkeitSeite.Unterdialog gefragt = WirtschaftlichkeitSeite.Unterdialog.Keins;
+        var cut = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog a) =>
+        {
+            gefragt = a;
+            return LeererSatz();
+        }));
+
+        // Die Zeile trägt das Auswahlfeld UND den Knopf.
+        IElement zeile = cut.Find(".epos-seite-zeile");
+        Assert.Single(zeile.QuerySelectorAll("select"));
+        IElement knopf = zeile.QuerySelector("button")!;
+        Assert.Equal("Parameter…", knopf.TextContent.Trim());
+
+        // Und er steht NICHT mehr in der Fussleiste.
+        Assert.DoesNotContain(Fussknoepfe(cut), k => k.TextContent.Trim() == "Parameter…");
+
+        knopf.Click();
+        Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.Parameter, gefragt);
+        Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.Parameter, cut.Instance.OffenerUnterdialog);
+    }
+
+    /// <summary>Ohne Gaben kein Knopf — auch nicht oben (A-18 aus Welle 2).</summary>
+    [Fact]
+    public void Ohne_Gaben_steht_auch_oben_kein_Parameter_Knopf()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.Find(".epos-seite-zeile").QuerySelectorAll("button"));
     }
 
     /// <summary>
@@ -404,17 +469,137 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     // =====================================================================
+    // AUFTRAG #325 — Bewertung nach DIN EN 17463 auf der Seite
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Block steht unter der Kennzahltabelle und ist zugeklappt.</b>
+    /// Anwenderentscheid 17.09.2026: „heraus nehmen aus Parameter Dialog: 1.
+    /// Bewertung nach DIN EN 17463" — in die Wirtschaftlichkeitsseite, weil der Text
+    /// dort steht, wo auch der Kapitalwert steht.
+    ///
+    /// <para>Kein Delegat, kein Knopf: Ohne Schreibweg gibt es den Block nicht.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Bewertungsblock_steht_unter_der_Tabelle_und_haengt_am_Schreibweg()
+    {
+        var ohne = Zeige();
+        Assert.Empty(ohne.FindAll("button.epos-modulparameter-knopf"));
+
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => true));
+
+        IElement knopf = cut.Find("button.epos-modulparameter-knopf");
+        Assert.Equal("false", knopf.GetAttribute("aria-expanded"));
+        Assert.Contains("Bewertung nach DIN EN 17463", knopf.TextContent);
+
+        // Zugeklappt steht das Feld nicht da.
+        Assert.Empty(cut.FindAll("textarea"));
+        Assert.False(cut.Instance.BewertungOffen);
+
+        knopf.Click();
+
+        Assert.Equal("true", cut.Find("button.epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Single(cut.FindAll("textarea"));
+        Assert.True(cut.Instance.BewertungOffen);
+    }
+
+    /// <summary>
+    /// <b>Der Block zeigt den gepflegten Text und schreibt ihn auf Zuruf fort.</b>
+    /// Geschrieben wird über denselben Weg, den bis zu diesem Auftrag der
+    /// Parameterdialog nahm (<c>WirtschaftlichkeitCtrl.SpeichereParameter</c> in der
+    /// Hülle) — und erst auf Knopfdruck, nicht bei jedem Tastendruck.
+    /// </summary>
+    [Fact]
+    public void Der_Bewertungsblock_zeigt_den_gepflegten_Text_und_schreibt_ihn_fort()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.NichtMonetaer = "Versorgungssicherheit";
+
+        string? geschrieben = null;
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string t) =>
+        {
+            geschrieben = t;
+            return true;
+        }), stand: stand);
+
+        cut.Find("button.epos-modulparameter-knopf").Click();
+        Assert.Equal("Versorgungssicherheit", cut.Find("textarea").TextContent);
+
+        cut.Find("textarea").Input("Versorgungssicherheit, Arbeitsschutz");
+
+        // Bis zum Knopfdruck ist nichts geschrieben.
+        Assert.Null(geschrieben);
+
+        Speichernknopf(cut).Click();
+
+        Assert.Equal("Versorgungssicherheit, Arbeitsschutz", geschrieben);
+        Assert.Contains("gespeichert", cut.Instance.Status);
+    }
+
+    /// <summary>
+    /// <b>Nach erneutem Laden steht der Text wieder da.</b> Der Prüffall geht den
+    /// ganzen Weg: eingeben, speichern, den Stand neu aus der Quelle lesen lassen
+    /// (wie nach einem Seitenwechsel) und wieder aufklappen.
+    /// </summary>
+    [Fact]
+    public void Ein_gespeicherter_Text_steht_nach_erneutem_Laden_wieder_da()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string t) =>
+        {
+            // Die Hülle schreibt und liefert den Wert beim nächsten Laden zurück.
+            stand.NichtMonetaer = t;
+            return true;
+        }), stand: stand);
+
+        cut.Find("button.epos-modulparameter-knopf").Click();
+        cut.Find("textarea").Input("Erfüllung einer Auflage");
+        Speichernknopf(cut).Click();
+
+        // Zuklappen und die Seite frisch laden lassen — wie nach einem Seitenwechsel.
+        cut.Find("button.epos-modulparameter-knopf").Click();
+        cut.InvokeAsync(() => cut.Instance.Auffrischen());
+        cut.Find("button.epos-modulparameter-knopf").Click();
+
+        Assert.Equal("Erfüllung einer Auflage", cut.Find("textarea").TextContent);
+        Assert.Equal("Erfüllung einer Auflage", cut.Instance.NichtMonetaer);
+    }
+
+    /// <summary>
+    /// <b>Ein gescheitertes Schreiben SAGT es und behält die Eingabe.</b> Ein stiller
+    /// Fehlschlag wäre die Behauptung, der Text stünde in der Datenbank.
+    /// </summary>
+    [Fact]
+    public void Ein_gescheitertes_Schreiben_meldet_und_behaelt_die_Eingabe()
+    {
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => false));
+
+        cut.Find("button.epos-modulparameter-knopf").Click();
+        cut.Find("textarea").Input("Komfort");
+        Speichernknopf(cut).Click();
+
+        Assert.Single(cut.FindAll(".epos-warnbanner"));
+        Assert.Equal("Komfort", cut.Instance.NichtMonetaer);
+    }
+
+    /// <summary>Der Speichernknopf des Bewertungsblocks — er steht ohne Leiste da,
+    /// damit die Seite genau EINE Fussleiste behält.</summary>
+    private static IElement Speichernknopf(IRenderedComponent<WirtschaftlichkeitSeite> cut)
+        => cut.FindAll(".epos-seite > button.epos-knopf")
+              .First(k => k.TextContent.Trim() == "Speichern");
+
+    // =====================================================================
     // Unterdialoge in der Überlagerung
     // =====================================================================
 
     [Theory]
-    [InlineData(0, WirtschaftlichkeitSeite.Unterdialog.Photovoltaik)]
-    [InlineData(1, WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
-    [InlineData(2, WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
-    [InlineData(3, WirtschaftlichkeitSeite.Unterdialog.Parameter)]
-    [InlineData(4, WirtschaftlichkeitSeite.Unterdialog.Verlauf)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Parameter)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Verlauf)]
     public void Jeder_Sichtknopf_oeffnet_seinen_Bereich(
-        int knopf, WirtschaftlichkeitSeite.Unterdialog erwartet)
+        WirtschaftlichkeitSeite.Unterdialog erwartet)
     {
         WirtschaftlichkeitSeite.Unterdialog gefragt = WirtschaftlichkeitSeite.Unterdialog.Keins;
         var cut = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog a) =>
@@ -423,7 +608,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
             return LeererSatz();
         }));
 
-        Fussknoepfe(cut)[knopf].Click();
+        Einstieg(cut, erwartet).Click();
 
         Assert.Equal(erwartet, gefragt);
         Assert.Equal(erwartet, cut.Instance.OffenerUnterdialog);
@@ -439,17 +624,18 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     /// wenn dieser einen Titel mitbrächte.
     /// </summary>
     [Theory]
-    [InlineData(0)]   // Photovoltaik
-    [InlineData(1)]   // BHKW
-    [InlineData(2)]   // Strombezug
-    [InlineData(3)]   // Parameter
-    [InlineData(4)]   // Kapitalwert-Verlauf
-    public void Jede_Ueberlagerung_zeigt_nur_ein_Kreuz_und_einen_Titel(int knopf)
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Parameter)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Verlauf)]
+    public void Jede_Ueberlagerung_zeigt_nur_ein_Kreuz_und_einen_Titel(
+        WirtschaftlichkeitSeite.Unterdialog art)
     {
         var cut = Zeige(p => p.Add(x => x.Gaben,
             (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
 
-        Fussknoepfe(cut)[knopf].Click();
+        Einstieg(cut, art).Click();
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
@@ -480,7 +666,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
             .Add(x => x.Nachlauf, (WirtschaftlichkeitSeite.Unterdialog a, bool ok)
                 => ok ? "Parameter gespeichert — bitte neu berechnen." : ""));
 
-        Fussknoepfe(cut)[3].Click();                          // Parameter
+        Einstieg(cut, WirtschaftlichkeitSeite.Unterdialog.Parameter).Click();
         // Esc auf der Ueberlagerung schliesst ohne zu speichern.
         cut.Find(".epos-ueberlagerung").KeyDown("Escape");
 
@@ -548,17 +734,18 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     /// Überlagerung.
     /// </summary>
     [Theory]
-    [InlineData(0)]   // Photovoltaik
-    [InlineData(1)]   // BHKW
-    [InlineData(2)]   // Strombezug
-    [InlineData(3)]   // Parameter
-    [InlineData(4)]   // Verlauf
-    public void Kein_Unterdialog_zeigt_in_der_Ueberlagerung_einen_eigenen_Titel(int knopf)
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Parameter)]
+    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Verlauf)]
+    public void Kein_Unterdialog_zeigt_in_der_Ueberlagerung_einen_eigenen_Titel(
+        WirtschaftlichkeitSeite.Unterdialog art)
     {
         var cut = Zeige(p => p.Add(x => x.Gaben,
             (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
 
-        Fussknoepfe(cut)[knopf].Click();
+        Einstieg(cut, art).Click();
 
         Assert.Empty(cut.FindAll(".epos-ueberlagerung h1.epos-dialog-titel"));
         Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-ueberlagerung-titel"));
@@ -779,7 +966,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
         Assert.Empty(cut.FindAll(".epos-wirt-warnband"));
 
-        Fussknoepfe(cut)[3].Click();                          // Parameter
+        Einstieg(cut, WirtschaftlichkeitSeite.Unterdialog.Parameter).Click();
         var dialog = cut.FindComponent<WirtschaftlichkeitParameterDialog>();
         await cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
             new WirtParameterErgebnis(true)));
