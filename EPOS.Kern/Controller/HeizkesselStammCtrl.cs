@@ -60,11 +60,11 @@ namespace WindowsFormsApplication1
         /// Kostenmodul und steht deshalb nicht darin (Begründung dort). Ohne die Spalte
         /// scheitern aber <see cref="Insert"/>, <see cref="Update"/> und
         /// <c>HeizkesselCtrl.CopyFromStamm</c> sichtbar — genau das Fehlerbild, das
-        /// <c>StromAufschlagCtrl.StelleSpaltenSicher</c> für Schritt 12 abfängt.
+        /// <c>StrompreisZerlegungCtrl.StelleSpaltenSicher</c> für Schritt 12 abfängt.
         /// </para>
         /// <para>
         /// <b>Ohne Dialog, Schema je Tabelle.</b> Beides übernommen aus der korrigierten
-        /// Fassung von <c>StromAufschlagCtrl.StelleSpaltenSicher</c> (Commit 87483b4):
+        /// Fassung von <c>StrompreisZerlegungCtrl.StelleSpaltenSicher</c> (Commit 87483b4):
         /// Eine Vorsorge ist kein Bedienschritt und darf keine MessageBox zeigen, deshalb
         /// <see cref="StilleDb"/> statt <c>DataRepository.ExecuteSQL</c>;
         /// und das Schema wird je Tabelle gelesen, sonst greift die Existenzprüfung für

@@ -596,7 +596,7 @@ namespace WindowsFormsApplication1
             // und nichts zu melden (sonst stünde an jedem Projekt eine Zeile).
             if (!gebucht9b && !gebucht913 && !prodGewerbe) return;
 
-            int carrier = StromAufschlagCtrl.StromCarrierId(idProjekt);
+            int carrier = StrompreisZerlegungCtrl.StromCarrierId(idProjekt);
             if (carrier <= 0)
             {
                 Fall2Strom(lauf, T("KOH_GRUND_KEIN_STROMTRAEGER",
@@ -604,7 +604,7 @@ namespace WindowsFormsApplication1
                 return;
             }
 
-            StromAufschlagModel m = new StromAufschlagCtrl().Read(idProjekt, carrier);
+            StrompreisZerlegungModel m = new StrompreisZerlegungCtrl().Read(idProjekt, carrier);
 
             string grund = null;
             if (!m.AusDatenbank)
@@ -705,9 +705,9 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = nie gepflegt (oder Spalte/Zeile fehlt).
         /// </summary>
         /// <remarks>
-        /// <b>Warum nicht über <see cref="StromAufschlagCtrl.Read"/>.</b> Dessen Leseweg
+        /// <b>Warum nicht über <see cref="StrompreisZerlegungCtrl.Read"/>.</b> Dessen Leseweg
         /// lässt den Vorschlagssatz als ZAHL im Feld stehen
-        /// (<c>StromAufschlagModel.STROMSTEUER_REGELFALL</c> = 2,05 ct/kWh), auch wenn
+        /// (<c>StrompreisZerlegungModel.STROMSTEUER_REGELFALL</c> = 2,05 ct/kWh), auch wenn
         /// ihn niemand erfasst hat; rechnen tut er dort erst mit gesetztem
         /// Aktiv-Schalter. Für Fall 4 hilft das nicht: Der Rückfallwert IST der
         /// Katalogsatz, der Vergleich wäre zirkulär. Hier zählt allein, ob die Spalte
@@ -718,7 +718,7 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable dt = DataRepository.GetDataTable(
-                    "SELECT * FROM [" + StromAufschlagCtrl.TABLE + "] " +
+                    "SELECT * FROM [" + StrompreisZerlegungCtrl.TABLE + "] " +
                     "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
                     new DbParam("@proj", idProjekt),
                     new DbParam("@eid", carrierId));

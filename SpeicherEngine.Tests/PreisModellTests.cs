@@ -262,7 +262,7 @@ namespace SpeicherEngine.Tests
         }
 
         // =================================================================
-        // Aufschlagssatz - die ZERLEGUNG des Preises (SP-E-2, 17.09.2026)
+        // Preiszerlegung - die ZERLEGUNG des Preises (SP-E-2, 17.09.2026)
         // =================================================================
 
         /// <summary>
@@ -270,16 +270,16 @@ namespace SpeicherEngine.Tests
         /// (zusammen 11,746) ergibt einen Arbeitspreis von 38,0 ct/kWh - die
         /// Zahlen des Referenzprojekts 1017 nach der Faltung.
         /// </summary>
-        private static Aufschlagssatz Regelfall(bool beschaffungAktiv = true)
+        private static Preiszerlegung Regelfall(bool beschaffungAktiv = true)
         {
-            return new Aufschlagssatz(new[]
+            return new Preiszerlegung(new[]
             {
-                new Aufschlagskomponente("BESCHAFFUNG", 26.254, beschaffungAktiv),
-                new Aufschlagskomponente("VERTRIEB",     0.200, true),
-                new Aufschlagskomponente("NETZENTGELT",  6.440, true),
-                new Aufschlagskomponente("STROMSTEUER",  2.050, true),
-                new Aufschlagskomponente("KONZESSION",   0.110, true),
-                new Aufschlagskomponente("UMLAGEN",      2.946, true)
+                new Preisanteil("BESCHAFFUNG", 26.254, beschaffungAktiv),
+                new Preisanteil("VERTRIEB",     0.200, true),
+                new Preisanteil("NETZENTGELT",  6.440, true),
+                new Preisanteil("STROMSTEUER",  2.050, true),
+                new Preisanteil("KONZESSION",   0.110, true),
+                new Preisanteil("UMLAGEN",      2.946, true)
             });
         }
 
@@ -307,13 +307,13 @@ namespace SpeicherEngine.Tests
         [Fact]
         public void Reduzierte_Stromsteuer_Ergibt_Die_Zweite_Summe()
         {
-            Aufschlagssatz satz = new Aufschlagssatz(new[]
+            Preiszerlegung satz = new Preiszerlegung(new[]
             {
-                new Aufschlagskomponente("NETZENTGELT",  6.440, true),
-                new Aufschlagskomponente("UMLAGEN",      2.946, true),
-                new Aufschlagskomponente("STROMSTEUER",  0.050, true),
-                new Aufschlagskomponente("KONZESSION",   0.110, true),
-                new Aufschlagskomponente("VERTRIEB",     0.200, true)
+                new Preisanteil("NETZENTGELT",  6.440, true),
+                new Preisanteil("UMLAGEN",      2.946, true),
+                new Preisanteil("STROMSTEUER",  0.050, true),
+                new Preisanteil("KONZESSION",   0.110, true),
+                new Preisanteil("VERTRIEB",     0.200, true)
             });
 
             Assert.Equal(9.746, satz.SummeAktivCtKwh, 9);
@@ -327,11 +327,11 @@ namespace SpeicherEngine.Tests
         [Fact]
         public void Die_Drei_Einzelumlagen_Sind_Wertgleich_Dem_Summenfeld()
         {
-            Aufschlagssatz einzeln = new Aufschlagssatz(new[]
+            Preiszerlegung einzeln = new Preiszerlegung(new[]
             {
-                new Aufschlagskomponente("UMLAGE_KWKG",         0.446, true),
-                new Aufschlagskomponente("UMLAGE_OFFSHORE",     0.941, true),
-                new Aufschlagskomponente("UMLAGE_STROMNEV19",   1.559, true)
+                new Preisanteil("UMLAGE_KWKG",         0.446, true),
+                new Preisanteil("UMLAGE_OFFSHORE",     0.941, true),
+                new Preisanteil("UMLAGE_STROMNEV19",   1.559, true)
             });
 
             Assert.Equal(2.946, einzeln.SummeAktivCtKwh, 9);
@@ -340,11 +340,11 @@ namespace SpeicherEngine.Tests
         [Fact]
         public void Inaktive_Komponenten_Gehen_Nicht_In_Die_Summe_Ein()
         {
-            Aufschlagssatz satz = new Aufschlagssatz(new[]
+            Preiszerlegung satz = new Preiszerlegung(new[]
             {
-                new Aufschlagskomponente("NETZENTGELT", 6.440, true),
-                new Aufschlagskomponente("UMLAGEN",     2.946, false),
-                new Aufschlagskomponente("STROMSTEUER", 2.050, false)
+                new Preisanteil("NETZENTGELT", 6.440, true),
+                new Preisanteil("UMLAGEN",     2.946, false),
+                new Preisanteil("STROMSTEUER", 2.050, false)
             });
 
             Assert.Equal(6.440, satz.SummeAktivCtKwh, 9);
@@ -359,7 +359,7 @@ namespace SpeicherEngine.Tests
         [Fact]
         public void Eine_Inaktive_Beschaffung_Faellt_In_Beiden_Summen_Weg()
         {
-            Aufschlagssatz satz = Regelfall(beschaffungAktiv: false);
+            Preiszerlegung satz = Regelfall(beschaffungAktiv: false);
 
             Assert.Equal(11.746, satz.SummeAktivCtKwh, 9);
             Assert.Equal(11.746, satz.SummeAktivOhneCtKwh("BESCHAFFUNG"), 9);
@@ -384,13 +384,13 @@ namespace SpeicherEngine.Tests
         [Fact]
         public void Ein_Ungepflegter_Satz_Traegt_Nichts_Bei()
         {
-            Aufschlagssatz satz = new Aufschlagssatz(new[]
+            Preiszerlegung satz = new Preiszerlegung(new[]
             {
-                new Aufschlagskomponente("NETZENTGELT",  6.440, false),
-                new Aufschlagskomponente("UMLAGEN",      2.946, false),
-                new Aufschlagskomponente("STROMSTEUER",  2.050, false),
-                new Aufschlagskomponente("KONZESSION",   0.110, false),
-                new Aufschlagskomponente("VERTRIEB",     0.200, false)
+                new Preisanteil("NETZENTGELT",  6.440, false),
+                new Preisanteil("UMLAGEN",      2.946, false),
+                new Preisanteil("STROMSTEUER",  2.050, false),
+                new Preisanteil("KONZESSION",   0.110, false),
+                new Preisanteil("VERTRIEB",     0.200, false)
             });
 
             Assert.Equal(0.0, satz.SummeAktivCtKwh, 9);
@@ -398,20 +398,20 @@ namespace SpeicherEngine.Tests
         }
 
         [Fact]
-        public void Leerer_Aufschlagssatz_Ist_Null()
+        public void Leere_Preiszerlegung_Ist_Null()
         {
-            Aufschlagssatz satz = new Aufschlagssatz(Array.Empty<Aufschlagskomponente>());
+            Preiszerlegung satz = new Preiszerlegung(Array.Empty<Preisanteil>());
             Assert.Equal(0.0, satz.SummeAktivCtKwh);
             Assert.Equal(0.0, satz.SummeAktivOhneCtKwh("BESCHAFFUNG"));
         }
 
         [Fact]
-        public void Aufschlagssatz_Weist_Unbrauchbare_Eingaben_Zurueck()
+        public void Preiszerlegung_Weist_Unbrauchbare_Eingaben_Zurueck()
         {
-            Assert.Throws<ArgumentNullException>(() => new Aufschlagssatz(null!));
+            Assert.Throws<ArgumentNullException>(() => new Preiszerlegung(null!));
             Assert.Throws<ArgumentNullException>(
-                () => new Aufschlagssatz(new Aufschlagskomponente[] { null! }));
-            Assert.Throws<ArgumentException>(() => new Aufschlagskomponente("", 1.0, true));
+                () => new Preiszerlegung(new Preisanteil[] { null! }));
+            Assert.Throws<ArgumentException>(() => new Preisanteil("", 1.0, true));
         }
 
         // =================================================================

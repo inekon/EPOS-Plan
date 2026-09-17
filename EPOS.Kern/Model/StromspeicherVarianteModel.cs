@@ -81,11 +81,19 @@
         public int ID_Kostenprofil;
 
         /// <summary>
-        /// Aufschlaege auf die gewaehlte Preisquelle anwenden (Fachkonzept 4.2: "je
-        /// Quelle existiert das Flag 'Aufschlag anwenden'"). Vorbelegung WAHR - der
-        /// Bestandsfall Fixpreis rechnet den Arbeitspreis des Kostenmoduls plus
-        /// Aufschlaege. Auf FALSCH gesetzt ist die gewaehlte Reihe bereits ein
-        /// Vollpreis. AP4.
+        /// "Anteile auf Spot-/Profilpreis aufschlagen" - der Schalter gilt NUR fuer die
+        /// Preisquellen Spotmarkt und Kostenprofil (Fachkonzept 4.1 a/b).
+        ///
+        /// <para><b>Beim Fixpreis wirkt er nicht.</b> Dort IST der Arbeitspreis der
+        /// Traegerkarte der Vollpreis - die Preisanteile ZERLEGEN ihn, sie kommen nicht
+        /// auf ihn. Eine Spot- oder Profilreihe dagegen ist nur die BESCHAFFUNG; ihr
+        /// fehlen Netzentgelt, Steuern, Abgaben und Umlagen. Genau diese Summe (die
+        /// aktiven Anteile OHNE Beschaffung) schlaegt der Schalter auf die Reihe auf -
+        /// siehe <c>StromPreisCtrl</c>.</para>
+        ///
+        /// <para>Vorbelegung WAHR: Eine Spot- oder Profilreihe ohne die uebrigen Anteile
+        /// waere ein zu niedriger Bezugspreis. Auf FALSCH gesetzt ist die gewaehlte
+        /// Reihe bereits ein Vollpreis. AP4.</para>
         /// </summary>
         public bool Aufschlag_Anwenden = true;
 

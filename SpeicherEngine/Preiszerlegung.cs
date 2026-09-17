@@ -20,7 +20,7 @@ namespace SpeicherEngine
     /// wie bei <see cref="SpeicherEingang"/>.
     /// </para>
     /// </remarks>
-    public sealed class Aufschlagskomponente
+    public sealed class Preisanteil
     {
         /// <summary>Sprachneutraler ASCII-Schluessel des Anteils.</summary>
         public string Schluessel { get; }
@@ -33,7 +33,7 @@ namespace SpeicherEngine
 
         /// <summary>Erzeugt einen Anteil.</summary>
         /// <exception cref="ArgumentException">Wenn der Schluessel leer ist.</exception>
-        public Aufschlagskomponente(string schluessel, double wertCtKwh, bool aktiv)
+        public Preisanteil(string schluessel, double wertCtKwh, bool aktiv)
         {
             if (string.IsNullOrWhiteSpace(schluessel))
                 throw new ArgumentException("Der Schluessel eines Preisanteils darf nicht leer sein.",
@@ -85,12 +85,12 @@ namespace SpeicherEngine
     /// rechnet mit dem, was gepflegt ist, und behauptet nichts ueber Netzentgelte.
     /// </para>
     /// </remarks>
-    public sealed class Aufschlagssatz
+    public sealed class Preiszerlegung
     {
-        private readonly Aufschlagskomponente[] _komponenten;
+        private readonly Preisanteil[] _komponenten;
 
         /// <summary>Die Anteile in Eingabereihenfolge.</summary>
-        public IReadOnlyList<Aufschlagskomponente> Komponenten
+        public IReadOnlyList<Preisanteil> Komponenten
         {
             get { return _komponenten; }
         }
@@ -101,12 +101,12 @@ namespace SpeicherEngine
         /// </summary>
         /// <param name="komponenten">Anteilsliste, darf leer, aber nicht <c>null</c> sein.</param>
         /// <exception cref="ArgumentNullException">Wenn die Liste oder ein Eintrag <c>null</c> ist.</exception>
-        public Aufschlagssatz(IEnumerable<Aufschlagskomponente> komponenten)
+        public Preiszerlegung(IEnumerable<Preisanteil> komponenten)
         {
             if (komponenten == null) throw new ArgumentNullException(nameof(komponenten));
 
-            List<Aufschlagskomponente> liste = new List<Aufschlagskomponente>();
-            foreach (Aufschlagskomponente k in komponenten)
+            List<Preisanteil> liste = new List<Preisanteil>();
+            foreach (Preisanteil k in komponenten)
             {
                 if (k == null) throw new ArgumentNullException(nameof(komponenten),
                     "Die Anteilsliste enthaelt einen null-Eintrag.");

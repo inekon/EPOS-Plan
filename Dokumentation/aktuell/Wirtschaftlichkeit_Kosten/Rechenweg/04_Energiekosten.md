@@ -78,9 +78,10 @@ Netzbezug Strom
     Modus JAHR: Satz × Jahresspitze      Modus MONAT: Σ₁₂ (Monatsspitze × Satz)
     Saisonreihe vor konstantem Satz: Σ₁₂ (Monatssatz × Monatsspitze)
     Satz 0 / nicht gepflegt ⇒ kein Anteil ; keine Zeitreihen ⇒ kein Anteil, Träger wird benannt
-  Tarifmodus: Zonen- oder Rollenbetrag ersetzt den Flat-Anteil GANZ (samt Leistungsanteil) ;
-              danach IMMER + AufschlagBetrag
-  AufschlagBetrag = NetzbezugMWh × 1000 × WirksamCtKwh / 100
+  Tarifmodus: Zonen- oder Rollenbetrag ersetzt den Flat-Anteil GANZ (samt Leistungsanteil)
+  Kein Aufschlag: Die Preisanteile („Strompreis Details") ZERLEGEN den Arbeitspreis,
+                  sie kommen nicht auf ihn — es gibt genau eine Preiswahrheit, und das
+                  ist der Arbeitspreis der Trägerkarte
 
 CO₂ / BEHG als eigene Reihe
   behgBasisT [t/a] = CO2Brennstoff + (ohne Nachhaltigkeitsnachweis) BiogenBehgMenge × BehgOhneNachweis / 1000
@@ -119,7 +120,7 @@ sein — die Kohärenzprüfung (`05`) soll das anzeigen.
 
 | Nr. | Befund | Behandlung |
 |---|---|---|
-| ⚠ N3 | Ungepflegte Aufschlagsspalten lesen sich als Vorschlagswerte, nicht als 0 (+32 % Energiekosten) | Empfehlung: als 0 lesen, Vorschlag nur auf Knopfdruck übernehmen |
+| ✔ N3 | Ungepflegte Anteilsspalten lasen sich als Vorschlagswerte, nicht als 0 (+32 % Energiekosten) | erledigt: Die Anteile zerlegen den Arbeitspreis; ein ungepflegter Anteil ist inaktiv und trägt 0 bei, der Vorschlag steht nur im Feld und wird erst auf Knopfdruck übernommen |
 | — | CO₂ doppelt: Preisbestandteil und BEHG-Reihe | Kohärenzzeile „CO₂ im Arbeitspreis und BEHG-Reihe gleichzeitig aktiv" |
 | D-1 / E-1 | Emissionsspalte: eine Größe, Tooltip benennt Äquivalent/Vorkette | entschieden 30.08.2026 |
 | § 3.11 | Nachweis- und Bilanzsatz strikt trennen; Stichtag 01.01.2027 (GModG) mit Methodenwechsel für KWK | Katalog mit Gültig-ab-Datum, beide Sätze parallel |

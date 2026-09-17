@@ -346,8 +346,8 @@ eine Doppelzählung.
 Strom-Carrier), je Anteil ein Wert- und ein Aktiv-Feld (Schemaschritte 12 und 83); die Preishistorie
 bleibt in `energy_price`. Es gibt **keinen Modus und keinen Gesamtaufschlag**: „ein aktiver Anteil
 vorhanden" sagt alles, was ein Modus sagen könnte, und die Summe der Einzelanteile **ist** der
-Gesamtwert. Die Spalten `Aufschlag_Modus` und `Aufschlag_Override` bleiben ungelesen im Schema
-stehen.
+Gesamtwert. Die Spalten `Aufschlag_Modus` und `Aufschlag_Override` sind mit Schemaschritt 85
+entfallen.
 
 **Stromsteuer.** Änderbares Feld mit zwei Schnellwahlsätzen aus dem Gesetzeskatalog:
 **2,05 ct/kWh im Regelfall** (§ 3 StromStG) und **0,05 ct/kWh für energieintensive Unternehmen mit
@@ -359,7 +359,7 @@ steuerliche Fälle in einer Datei, kein Tippfehler.
 Katalogwerte mit **Stichjahr 2026** in `Tab_Gesetzesparameter` (Klasse `UMLAGEN`), Quelle „Angabe des
 Anwenders vom 17.09.2026, Umlagen 2026 laut Veröffentlichung der Übertragungsnetzbetreiber"; ihre
 Summe 2,946 ct/kWh ist wertgleich dem früheren Summenwert. Ebenso im Katalog: beide
-Stromsteuersätze. Die gleichnamigen Konstanten im `StromAufschlagModel` sind ausdrücklich
+Stromsteuersätze. Die gleichnamigen Konstanten im `StrompreisZerlegungModel` sind ausdrücklich
 **Rückfallebene**, nicht Quelle, und werden von einer Wache wertgleich gehalten. Netzentgelt Arbeit,
 Konzessionsabgabe und Vertrieb bleiben Vorschlagswerte des Modells — sie sind Marktgrößen, kein
 gesetzlicher Satz.
@@ -1083,7 +1083,7 @@ ist durch den Code nicht gedeckt: Genau das ist das Hausmuster (`Tab_Stromgangli
   einer neuen Tabelle `Tab_Preisreihe(Daten)`.
 
 **Schemaänderungen.** Neue Spalten in `Tab_Stromspeicher(_STAMM)` für die technischen Parameter, neue Tabelle
-`Tab_StromspeicherVariante` (7.3), Erweiterung von `energy_project_settings` um die Aufschlagskomponenten (4.2),
+`Tab_StromspeicherVariante` (7.3), Erweiterung von `energy_project_settings` um die Preisanteile (4.2),
 neue Tabelle `Tab_ErgebnisStromspeicher` (7.1). **Ausrollweg (nach Revalidierung): die versionierte
 `SchemaMigration`** nach `ADR-001_Schema-Ausrollung.md` — Katalogeinträge in
 `Allgemein/Update/SchemaKatalog.cs`, neuer Migrationsschritt mit `ZIEL_VERSION`-Anhebung in
@@ -1144,7 +1144,7 @@ Jede Stufe endet mit einem lauffähigen, vorführbaren Zwischenstand.
    Migration der projektweiten Ladeparameter nach 5.6, Klärung von `Modulkosten` und `Ladezustand`,
    Parameter-UI auf `tabPage_Stromspeicher_Parameter`, Ergebnistabelle `Tab_ErgebnisStromspeicher`.
 4. **Preis- und Vergütungsmodell.** Kostenprofil nach Vorbild `Form_Quellprofil`, Spotpreisimport mit
-   Zeitzonenbehandlung, Aufschlagskomponenten in `energy_project_settings`, Stromsteuer-Voreinstellungen,
+   Zeitzonenbehandlung, Preisanteile in `energy_project_settings`, Stromsteuer-Voreinstellungen,
    Override, Vergütungsregime, Netzladepreis, Preisversionierung. *Anforderungen 4 und 5 vollständig.*
 5. **Lastgangimport erweitern** (CSV/Excel, Dezimalkomma, Zeitstempel, Einheiten, Schaltjahr, Validierungs-
    protokoll) auf Basis des vorhandenen Imports. *Anforderung 3 vollständig.*

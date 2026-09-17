@@ -85,7 +85,7 @@ public class EnergietraegerDialogTests : EposBunitContext
         };
         if (strom)
         {
-            s.Aufschlaege = new StromAufschlaegeStand
+            s.Aufschlaege = new StrompreisDetailsStand
             {
                 Beschaffung = 9.75, BeschaffungAktiv = true,
                 Netzentgelt = 6.44, NetzentgeltAktiv = true

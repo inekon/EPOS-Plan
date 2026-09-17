@@ -128,11 +128,20 @@ namespace SpeicherEngine
         /// Verguetung fuer PV-Energie, die statt der Einspeisung in den Speicher geht.
         /// </summary>
         /// <remarks>
-        /// Dies ist der <b>Standardwert</b>. Getrennte Verguetungsreihen v_pv[i] und
-        /// v_bhkw[i] stehen im <see cref="SpeicherEingang"/>
+        /// <para>
+        /// Dies ist der <b>Rueckfallwert je Intervall</b>. Getrennte Verguetungsreihen
+        /// v_pv[i] und v_bhkw[i] stehen im <see cref="SpeicherEingang"/>
         /// (<see cref="SpeicherEingang.VerguetungPvCtKwh"/> /
         /// <see cref="SpeicherEingang.VerguetungBhkwCtKwh"/>); fehlt eine davon, gilt
         /// dieser Wert fuer alle Intervalle.
+        /// </para>
+        /// <para>
+        /// <b>Die Engine erfindet keine Zahl.</b> Sie rechnet mit dem, was das
+        /// Hauptprojekt setzt; ohne gepflegte Verguetung ist das <b>0</b>. Die Quelle
+        /// sind die Wirtschaftlichkeitsparameter des Projekts (Einspeiseverguetung bzw.
+        /// Einspeiseverguetung_KWK, umgerechnet EUR/kWh nach ct/kWh) - siehe
+        /// <c>StromPreisCtrl.VerguetungenBauen</c>.
+        /// </para>
         /// </remarks>
         public double VerguetungCtKwh { get; init; }
 

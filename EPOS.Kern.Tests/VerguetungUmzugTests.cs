@@ -246,10 +246,15 @@ namespace EPOS.Kern.Tests
         /// </summary>
         private static void Stand83Herstellen(int projekt, bool satzLoeschen)
         {
+            // Die Kartenspalten sind mit Schemaschritt 85 entfallen. Der Stand VOR
+            // Schritt 84 hatte sie - fuer diese Arbeitskopie kommen sie deshalb
+            // zurueck; sie verschwindet mit dem Prueflauf.
+            TestDatenbank.AltspaltenStrompreisWiederherstellen();
+
             DataRepository.ExecuteNonQuery(
                 "UPDATE [" + SchemaKatalog.ENERGY_PROJECT_SETTINGS + "] SET [" +
-                SchemaKatalog.SPALTE_VERGUETUNG_PV + "] = ?, [" +
-                SchemaKatalog.SPALTE_VERGUETUNG_BHKW + "] = ? WHERE ID_Projekt = ?",
+                StrompreisAltspalten.SPALTE_VERGUETUNG_PV + "] = ?, [" +
+                StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW + "] = ? WHERE ID_Projekt = ?",
                 new DbParam("@pv", DbParamTyp.Double) { Wert = KARTE_CT },
                 new DbParam("@bh", DbParamTyp.Double) { Wert = KARTE_CT },
                 new DbParam("@p", DbParamTyp.Integer) { Wert = projekt });

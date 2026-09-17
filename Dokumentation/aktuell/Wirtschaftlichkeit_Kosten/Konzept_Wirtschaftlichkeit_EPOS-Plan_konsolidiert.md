@@ -233,9 +233,9 @@ sachliche Grund für den Auszug.
 
 | Block | Inhalt |
 |---|---|
-| **Strom-Aufschläge** (`ucStromAufschlaege`) | Netzentgelt 6,440 · Umlagen 2,946 · Stromsteuer 2,050 (reduziert 0,050) · Konzession 0,110 · Vertrieb 0,200 ct/kWh; je Aktiv-Schalter, Live-Summe, rot markierter Rest; Schnellwahl seit B4 katalogbasiert, Unternehmensart hebt den passenden Knopf hervor |
+| **Strompreis Details** (`StrompreisDetails`) | Beschaffung (Rest-Vorschlag) · Vertrieb 0,200 · Netzentgelt 6,440 · Stromsteuer 2,050 (reduziert 0,050) · Konzessionsabgabe 0,110 · Umlagen 2,946 ct/kWh, wahlweise als KWKG 0,446 / Offshore 0,941 / § 19 StromNEV 1,559 einzeln; je Aktiv-Schalter, Live-Summe, Kohärenzzeile gegen den Arbeitspreis und Knopf „In Arbeitspreis übernehmen"; Schnellwahl katalogbasiert, Unternehmensart hebt den passenden Knopf hervor |
 | **Brennstoff-Bestandteile** (`ucBrennstoffBestandteile`, B2) | Energiesteuer · CO₂ · Netz-/Messentgelt · Vertrieb, Schnellwahl aus dem Katalog, „In Arbeitspreis übernehmen"; **ohne Preiswirkung** — reine Transparenz und Kohärenzgrundlage |
-| **Vergütungssätze** | `Verguetung_PV` 5,0 · `Verguetung_BHKW` 5,0 ct/kWh je Projekt und Träger |
+| **Vergütungssätze** | `Tab_ProjektWirtschaftlichkeit.Einspeiseverguetung` bzw. `Einspeiseverguetung_KWK` [€/kWh] je Projekt — die eine Quelle für Wirtschaftlichkeit und Speicherwelt |
 
 ### Die Trägerkarte: Einheiten, Preishistorie, Katalogübernahme
 
@@ -955,18 +955,20 @@ Satz 0 / nicht gepflegt ⇒ kein Anteil; ohne Zeitreihen ⇒ kein Anteil, der Tr
 ```
 
 Im Tarifmodus ersetzt der Zonen- oder Rollenbetrag den **ganzen** Flat-Anteil samt
-Leistungsanteil; danach **immer** `+ AufschlagBetrag`.
+Leistungsanteil.
 
-**Aufschlagsblock** (Schalter `Aufschlaege_Anwenden`, Vorgabe AUS):
+**Kein Aufschlag — die Anteile zerlegen den Arbeitspreis.** Die Preisanteile der
+Trägerkarte („Strompreis Details": Beschaffung, Vertrieb, Netzentgelt, Stromsteuer,
+Konzessionsabgabe, Umlagen) sagen, WORAUS der Arbeitspreis besteht; sie kommen nicht auf
+ihn. Es gibt genau eine Preiswahrheit, und das ist der Arbeitspreis des Trägers:
 
 ```
-AufschlagBetrag = NetzbezugMWh × 1000 × WirksamCtKwh / 100
-Regelfall: 6,440 + 2,946 + 2,050 + 0,110 + 0,200 = 11,746 ct/kWh
+Σ aktive Anteile   =  Arbeitspreis        (Kohärenzzeile, nie Summand)
+Σ ohne Beschaffung →  Spot-/Profilreihe    (dort IST die Reihe die Beschaffung)
 ```
 
-⚠ **Befund N3:** Ungepflegte (NULL-)Spalten lesen sich als **Vorschlagswerte**, nicht als 0 — ein
-ungepflegter Stromträger liefert 11,746 ct/kWh. Gemessen an Projekt 1030: **+360.603 €/a (+32 %),
-Kapitalwert −29,8 %.**
+Ein Anteil, der nicht gepflegt ist, ist 0 und inaktiv; die Vorschlagswerte stehen im Feld
+und werden erst auf Knopfdruck übernommen.
 
 **CO₂ / BEHG** als eigene Reihe:
 
@@ -1277,7 +1279,7 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 |---|---|
 | ⚠ **N1** | Kesselbrennstoff fehlt in Kosten, CO₂ und BEHG **ohne Meldung** — Folge von B-1; `kostenVollstaendig` bleibt true. |
 | N2 | 0 beim Grundpreis gültig, 0 beim Arbeitspreis „ungepflegt" — verschiedene Regeln, beide gewollt. |
-| ⚠ **N3** | Ungepflegte Aufschlagsspalten wirken als 11,746 ct/kWh, nicht als 0. |
+| ✔ **N3** | Ungepflegte Anteilsspalten wirkten als 11,746 ct/kWh, nicht als 0 — erledigt: Ein ungepflegter Anteil ist inaktiv und trägt 0 bei. |
 
 ## Steuern und Vergütungen
 
@@ -1438,7 +1440,7 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 
 | Doppelung | Stand |
 |---|---|
-| Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` gegen `const double` in `StromAufschlagModel` | wertgleich, ohne Kopplung: eine gepflegte Novelle erreicht den Aufschlagsblock nicht |
+| Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` gegen `const double` in `StrompreisZerlegungModel` | wertgleich, eine Wache hält beide zusammen; gekoppelt ist nichts: eine gepflegte Novelle erreicht die Modellkonstante nicht |
 | „Energieintensiv" an drei Orten — Unternehmensart, Schnellwahl im Trägerdialog, Katalogsatz | seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; gekoppelt ist weiterhin nichts |
 | BHKW-Einspeisevergütung an vier Orten | Vorrang eindeutig (aktiver Tarif schlägt Parameterwert), drei Felder zu viel |
 | Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | vier Tabellen; neue Spalten gehören an beide Stellen |

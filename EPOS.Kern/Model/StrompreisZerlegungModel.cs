@@ -18,9 +18,9 @@
     // und die uebrigen aktiven Anteile kommen darauf (Fachkonzept 4.1 a/b).
     //
     // Alle Werte in ct/kWh. Die Umrechnung aus dem EUR/kWh-Arbeitspreis macht der
-    // Controller (StromAufschlagCtrl), nicht die Datenbank.
+    // Controller (StrompreisZerlegungCtrl), nicht die Datenbank.
     // ---------------------------------------------------------------------------
-    public class StromAufschlagModel
+    public class StrompreisZerlegungModel
     {
         // --- Vorschlagswerte ------------------------------------------------
         //
@@ -192,7 +192,7 @@
         /// </summary>
         public bool AusDatenbank;
 
-        public StromAufschlagModel()
+        public StrompreisZerlegungModel()
         {
         }
     }
