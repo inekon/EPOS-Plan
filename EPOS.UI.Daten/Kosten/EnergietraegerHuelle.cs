@@ -29,7 +29,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Die Rechenwege bleiben, wo sie hingehören.</b> Der
     /// Einheitenprüfer (<see cref="EnergieEinheitenPruefung"/>) beantwortet
     /// weiter die Frage, ob eine Regel abgeschaltet werden darf und ob der
-    /// Träger kWh erreicht; die Aufschlagssätze rechnet
+    /// Träger kWh erreicht; die Preisanteile rechnet
     /// <see cref="StrompreisZerlegungCtrl"/> bzw.
     /// <see cref="BrennstoffBestandteilCtrl"/>. Es gibt keine zweite Fassung
     /// einer Fachregel, nur einen zweiten Leser.</para>
@@ -80,7 +80,7 @@ namespace WindowsFormsApplication1
         private List<EnergietraegerPreisCtrl.Preisbasis> _preisbasen
             = new List<EnergietraegerPreisCtrl.Preisbasis>();
         private List<UmrechnungsRegel> _regeln = new List<UmrechnungsRegel>();
-        private StrompreisZerlegungModel _aufschlagModell;
+        private StrompreisZerlegungModel _zerlegungModell;
         private BrennstoffBestandteilModel _bestandteilModell;
 
         /// <summary>
@@ -268,7 +268,7 @@ namespace WindowsFormsApplication1
                     EmissionskatalogAuswerten),
 
                 ["KarteTexte"] = KarteTexte(),
-                ["AufschlagTexte"] = AufschlagTexte(),
+                ["ZerlegungTexte"] = ZerlegungTexte(),
                 ["BestandteilTexte"] = BestandteilTexte(),
 
                 ["TitelText"] = T("KDLG_ET_TITEL", "Energieträgerverwaltung"),
@@ -605,24 +605,21 @@ namespace WindowsFormsApplication1
             a.StammName = _gewaehlt.Name ?? "";
             a.StammGruppe = GruppenIndex(_gewaehlt.GroupCode);
 
-            if (_stand.Aufschlaege != null && _aufschlagModell != null)
+            if (_stand.Zerlegung != null && _zerlegungModell != null)
             {
-                InStromModell(_stand.Aufschlaege, _aufschlagModell);
+                InStromModell(_stand.Zerlegung, _zerlegungModell);
                 SpeicherEngine.Preiszerlegung satz =
-                    StrompreisZerlegungCtrl.AlsPreiszerlegung(_aufschlagModell);
+                    StrompreisZerlegungCtrl.AlsPreiszerlegung(_zerlegungModell);
 
                 // SP-E-2: Der Block ZERLEGT den Arbeitspreis. Ausgewiesen werden
                 // deshalb die Summe der aktiven Anteile und — als Kohärenzzeile — ihr
                 // Abstand zum Arbeitspreis der Karte, nicht mehr ein „wirksamer
-                // Aufschlag". Wortlaut wie beim Brennstoffblock.
-                double summe = satz.SummeAktivCtKwh;
-                double rest = a.ArbeitspreisCtKwh - summe;
-
-                a.AufschlagAnzeige = new PreisblockAnzeige(
-                    string.Format(MyResource.Resource.PREIS_SUMME_AKTIV, Anzeige(summe)),
-                    string.Format(T("PREIS_REST", "Nicht aufgeschlüsselter Rest: {0} ct/kWh"),
-                                  Anzeige(rest)),
-                    rest < 0.0);
+                // Aufschlag". Denselben Weg geht der Brennstoffblock, Zeile für Zeile
+                // aus derselben Stelle (Preisblock).
+                a.ZerlegungAnzeige = Preisblock(
+                    satz, a.ArbeitspreisCtKwh,
+                    MyResource.Resource.PREIS_SUMME_AKTIV,
+                    T("PREIS_REST", "Nicht aufgeschlüsselter Rest: {0} ct/kWh"));
 
                 // Der Rest-Vorschlag für die Beschaffung: Arbeitspreis minus Summe der
                 // ÜBRIGEN aktiven Anteile. Er wird angeboten, nicht geschrieben — und
@@ -631,7 +628,7 @@ namespace WindowsFormsApplication1
                     satz.SummeAktivOhneCtKwh(StrompreisZerlegungCtrl.KOMP_BESCHAFFUNG);
                 double vorschlag = a.ArbeitspreisCtKwh - ohneBeschaffung;
                 a.BeschaffungVorschlag =
-                    (_aufschlagModell.Beschaffung == 0.0 || !_aufschlagModell.Beschaffung_Aktiv)
+                    (_zerlegungModell.Beschaffung == 0.0 || !_zerlegungModell.Beschaffung_Aktiv)
                     && a.ArbeitspreisCtKwh > 0.0 && vorschlag > 0.0
                         ? (double?)vorschlag
                         : null;
@@ -647,23 +644,15 @@ namespace WindowsFormsApplication1
             if (_stand.Bestandteile != null && _bestandteilModell != null)
             {
                 InBrennstoffModell(_stand.Bestandteile, _bestandteilModell);
-                double summe = BrennstoffBestandteilCtrl
-                    .AlsPreiszerlegung(_bestandteilModell).SummeAktivCtKwh;
-                bool aufgeschluesselt = _stand.Bestandteile.Aufgeschluesselt;
-                double rest = a.ArbeitspreisCtKwh - summe;
 
-                a.BestandteilAnzeige = new PreisblockAnzeige(
-                    string.Format(aufgeschluesselt
-                            ? T("BB_PREIS_AUS_BESTANDTEILEN", "Preis aus den Bestandteilen: {0} ct/kWh")
-                            : T("BB_SUMME_AKTIV", "Summe der aktiven Bestandteile: {0} ct/kWh"),
-                        Anzeige(summe)),
-                    aufgeschluesselt
-                        ? T("BB_REST_HINWEIS_MODUS",
-                            "Im Modus „aufgeschlüsselt\" ist die Summe der Bestandteile der Preis. "
-                            + "Der Arbeitspreis ändert sich erst, wenn Sie ihn übernehmen.")
-                        : string.Format(T("BB_REST", "Nicht aufgeschlüsselter Rest: {0} ct/kWh"),
-                                        Anzeige(rest)),
-                    !aufgeschluesselt && rest < 0.0);
+                // Kein Modus mehr (Anwenderentscheid 17.09.2026): Summe der aktiven
+                // Bestandteile, Rest gegen den Arbeitspreis — dieselbe Rechnung wie
+                // oben beim Strom, nur mit den Texten dieses Trägers.
+                a.BestandteilAnzeige = Preisblock(
+                    BrennstoffBestandteilCtrl.AlsPreiszerlegung(_bestandteilModell),
+                    a.ArbeitspreisCtKwh,
+                    T("BB_SUMME_AKTIV", "Summe der aktiven Bestandteile: {0} ct/kWh"),
+                    T("BB_REST", "Nicht aufgeschlüsselter Rest: {0} ct/kWh"));
 
                 a.SatzRegel = EnergiesteuerSatz(
                     WirtschaftlichkeitCtrl.EnergiesteuerSchluessel(_idBrennstoff, false),
@@ -695,6 +684,32 @@ namespace WindowsFormsApplication1
                 n++;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Die Summen- und Restzeile EINES Preisblocks — die eine Stelle, aus der
+        /// beide Träger ihre Zahlen beziehen.
+        /// </summary>
+        /// <remarks>
+        /// Gerechnet wird in <see cref="Preisanteile"/> über den Engine-Satz; hier
+        /// entstehen nur die beiden Texte. Ein NEGATIVER Rest heisst: Die
+        /// ausgewiesenen Anteile sind zusammen teurer als der Preis — das wird als
+        /// Warnfarbe benannt, nicht geglättet.
+        /// </remarks>
+        /// <param name="satz">Der Engine-Satz des Trägers.</param>
+        /// <param name="arbeitspreisCtKwh">Der Arbeitspreis der Trägerkarte [ct/kWh].</param>
+        /// <param name="vorlageSumme">Textvorlage der Summenzeile, ein Platzhalter.</param>
+        /// <param name="vorlageRest">Textvorlage der Restzeile, ein Platzhalter.</param>
+        private static PreisblockAnzeige Preisblock(SpeicherEngine.Preiszerlegung satz,
+                                                    double arbeitspreisCtKwh,
+                                                    string vorlageSumme, string vorlageRest)
+        {
+            double summe = Preisanteile.SummeCtKwh(satz);
+            double rest = Preisanteile.RestCtKwh(arbeitspreisCtKwh, satz);
+
+            return new PreisblockAnzeige(string.Format(vorlageSumme, Anzeige(summe)),
+                                         string.Format(vorlageRest, Anzeige(rest)),
+                                         rest < 0.0);
         }
 
         private static string Anzeige(double wert)
@@ -865,7 +880,7 @@ namespace WindowsFormsApplication1
 
         private void BloeckeAufbauen()
         {
-            _aufschlagModell = null;
+            _zerlegungModell = null;
             _bestandteilModell = null;
             if (_gewaehlt == null || _stand == null) return;
 
@@ -877,15 +892,15 @@ namespace WindowsFormsApplication1
                 try
                 {
                     StrompreisZerlegungCtrl.StelleSpaltenSicher();
-                    _aufschlagModell = new StrompreisZerlegungCtrl().Read(_projektId, _gewaehlt.ID);
-                    _stand.Aufschlaege = AusStromModell(_aufschlagModell);
+                    _zerlegungModell = new StrompreisZerlegungCtrl().Read(_projektId, _gewaehlt.ID);
+                    _stand.Zerlegung = AusStromModell(_zerlegungModell);
                 }
                 catch (Exception ex)
                 {
                     // Fehlende Strompreis-Details dürfen die Preispflege nicht
                     // blockieren — etwa ohne Migrationsschritt 12 oder 83.
                     Console.WriteLine("Die Strompreis-Details konnten nicht aufgebaut werden: " + ex.Message);
-                    _aufschlagModell = null;
+                    _zerlegungModell = null;
                 }
                 return;
             }
@@ -951,7 +966,6 @@ namespace WindowsFormsApplication1
         {
             return new BrennstoffBestandteileStand
             {
-                Aufgeschluesselt = m.Modus == DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT,
                 Energiesteuer = m.Energiesteuer, EnergiesteuerAktiv = m.Energiesteuer_Aktiv,
                 CO2 = m.CO2, CO2Aktiv = m.CO2_Aktiv,
                 Netzentgelt = m.Netzentgelt, NetzentgeltAktiv = m.Netzentgelt_Aktiv,
@@ -966,9 +980,6 @@ namespace WindowsFormsApplication1
             m.CO2 = s.CO2; m.CO2_Aktiv = s.CO2Aktiv;
             m.Netzentgelt = s.Netzentgelt; m.Netzentgelt_Aktiv = s.NetzentgeltAktiv;
             m.Vertrieb = s.Vertrieb; m.Vertrieb_Aktiv = s.VertriebAktiv;
-            m.Modus = s.Aufgeschluesselt
-                ? DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT
-                : DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT;
         }
 
         // =====================================================================
@@ -1248,10 +1259,10 @@ namespace WindowsFormsApplication1
             if (_stand == null) return;
 
             double ctKwh;
-            if (_stand.Aufschlaege != null && _aufschlagModell != null)
+            if (_stand.Zerlegung != null && _zerlegungModell != null)
             {
-                InStromModell(_stand.Aufschlaege, _aufschlagModell);
-                ctKwh = StrompreisZerlegungCtrl.AlsPreiszerlegung(_aufschlagModell).SummeAktivCtKwh;
+                InStromModell(_stand.Zerlegung, _zerlegungModell);
+                ctKwh = StrompreisZerlegungCtrl.AlsPreiszerlegung(_zerlegungModell).SummeAktivCtKwh;
             }
             else if (_stand.Bestandteile != null && _bestandteilModell != null)
             {
@@ -1413,10 +1424,10 @@ namespace WindowsFormsApplication1
 
             // AP4/B2: Die beiden Blöcke schreiben in DIESELBE Zeile und deshalb
             // ERST JETZT — vor dem Upsert gäbe es beim ersten Speichern keine.
-            if (_stand.Aufschlaege != null && _aufschlagModell != null)
+            if (_stand.Zerlegung != null && _zerlegungModell != null)
             {
-                InStromModell(_stand.Aufschlaege, _aufschlagModell);
-                new StrompreisZerlegungCtrl().Update(_aufschlagModell);
+                InStromModell(_stand.Zerlegung, _zerlegungModell);
+                new StrompreisZerlegungCtrl().Update(_zerlegungModell);
             }
             if (_stand.Bestandteile != null && _bestandteilModell != null)
             {
@@ -2494,7 +2505,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Texte der Strompreis-Details (SP-E-2/SP-E-3).</summary>
-        private static IReadOnlyDictionary<string, object> AufschlagTexte()
+        private static IReadOnlyDictionary<string, object> ZerlegungTexte()
         {
             return new Dictionary<string, object>
             {
@@ -2526,9 +2537,6 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["TitelBestandteile"] = T("BB_GRUPPE_BESTANDTEILE", "Preisbestandteile des Brennstoffs"),
-                ["ModusAufgeschluesselt"] = T("BB_MODUS_AUFGESCHLUESSELT",
-                    "aufgeschlüsselt (Summe ist der Preis)"),
-                ["ModusGesamtwert"] = T("BB_MODUS_GESAMTWERT", "Gesamtwert (Arbeitspreis gilt)"),
                 ["LabelSchnellwahl"] = T("BB_SCHNELLWAHL", "Schnellwahl (Katalog):"),
                 ["LabelEnergiesteuer"] = T("BB_KOMP_ENERGIESTEUER", "Energiesteuer"),
                 ["LabelCo2"] = T("BB_KOMP_CO2", "CO₂-Anteil (BEHG)"),

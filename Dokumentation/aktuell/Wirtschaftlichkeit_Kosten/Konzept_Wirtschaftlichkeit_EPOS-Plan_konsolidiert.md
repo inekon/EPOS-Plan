@@ -234,7 +234,7 @@ sachliche Grund für den Auszug.
 | Block | Inhalt |
 |---|---|
 | **Strompreis Details** (`StrompreisDetails`) | Beschaffung (Rest-Vorschlag) · Vertrieb 0,200 · Netzentgelt 6,440 · Stromsteuer 2,050 (reduziert 0,050) · Konzessionsabgabe 0,110 · Umlagen 2,946 ct/kWh, wahlweise als KWKG 0,446 / Offshore 0,941 / § 19 StromNEV 1,559 einzeln; je Aktiv-Schalter, Live-Summe, Kohärenzzeile gegen den Arbeitspreis und Knopf „In Arbeitspreis übernehmen"; Schnellwahl katalogbasiert, Unternehmensart hebt den passenden Knopf hervor |
-| **Brennstoff-Bestandteile** (`ucBrennstoffBestandteile`, B2) | Energiesteuer · CO₂ · Netz-/Messentgelt · Vertrieb, Schnellwahl aus dem Katalog, „In Arbeitspreis übernehmen"; **ohne Preiswirkung** — reine Transparenz und Kohärenzgrundlage |
+| **Preisbestandteile des Brennstoffs** (`BrennstoffBestandteile`) | Energiesteuer · CO₂ · Netz-/Messentgelt · Vertrieb, je Aktiv-Schalter, Schnellwahl aus dem Katalog; Summe der aktiven Bestandteile, Kohärenzzeile gegen den Arbeitspreis, nicht aufgeschlüsselter Rest (negativ in Warnfarbe) und Knopf „In Arbeitspreis übernehmen". **Kein Modus** — ein leeres Feld heißt „kein Anteil" und bekommt keinen Vorschlagswert; **ohne Preiswirkung**, reine Transparenz und Kohärenzgrundlage. Dieselbe Regel wie bei „Strompreis Details" |
 | **Vergütungssätze** | `Tab_ProjektWirtschaftlichkeit.Einspeiseverguetung` bzw. `Einspeiseverguetung_KWK` [€/kWh] je Projekt — die eine Quelle für Wirtschaftlichkeit und Speicherwelt |
 
 ### Die Trägerkarte: Einheiten, Preishistorie, Katalogübernahme

@@ -168,10 +168,10 @@
                 }
 
                 <EnergietraegerEinstellungen @attributes="KarteTexte"
-                                             AufschlagTexte="@AufschlagTexte"
+                                             ZerlegungTexte="@ZerlegungTexte"
                                              BestandteilTexte="@BestandteilTexte"
                                              Stand="@_ansicht.Stand"
-                                             AufschlagAnzeige="@_ansicht.AufschlagAnzeige"
+                                             ZerlegungAnzeige="@_ansicht.ZerlegungAnzeige"
                                              BeschaffungVorschlag="@_ansicht.BeschaffungVorschlag"
                                              BestandteilAnzeige="@_ansicht.BestandteilAnzeige"
                                              ArbeitspreisCtKwh="@_ansicht.ArbeitspreisCtKwh"
@@ -477,8 +477,8 @@
     /// <summary>Die Texte der Trägerkarte — als Satz, wie die der Preisblöcke.</summary>
     [Parameter] public IReadOnlyDictionary<string, object>? KarteTexte { get; set; }
 
-    /// <summary>Die Texte des Aufschlagsblocks (<c>PREIS_*</c>).</summary>
-    [Parameter] public IReadOnlyDictionary<string, object>? AufschlagTexte { get; set; }
+    /// <summary>Die Texte des Strom-Zerlegungsblocks (<c>PREIS_*</c>).</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? ZerlegungTexte { get; set; }
 
     /// <summary>Die Texte der Preiszerlegung (<c>BB_*</c>).</summary>
     [Parameter] public IReadOnlyDictionary<string, object>? BestandteilTexte { get; set; }

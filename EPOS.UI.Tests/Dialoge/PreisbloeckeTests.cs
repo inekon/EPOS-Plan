@@ -10,11 +10,14 @@ namespace EPOS.UI.Tests.Dialoge;
 /// („Strompreis Details", Anwenderentscheide SP-E-2/SP-E-3) und
 /// <c>BrennstoffBestandteile</c> (Konzept BHKW § 4.1).
 ///
-/// <para>Beide ZERLEGEN denselben Preis, statt ihn zu erhöhen. Soll beim Strom
-/// ist der Anwenderwortlaut vom 16.09.2026: ein einklappbarer Bereich, drei
-/// Gruppen, die Umlagen wahlweise als Summe oder einzeln, kein
-/// Gesamtaufschlagsfeld, eine Kohärenzzeile gegen den Arbeitspreis und ein
-/// Knopf „In Arbeitspreis übernehmen".</para>
+/// <para>Beide ZERLEGEN denselben Preis, statt ihn zu erhöhen, und beide tun es
+/// nach derselben Regel: Anteile mit Wert und Aktiv-Schalter, Summe der aktiven
+/// Anteile, Kohärenzzeile gegen den Arbeitspreis, Restzeile (negativ in
+/// Warnfarbe) und ein Knopf „In Arbeitspreis übernehmen", der nur MELDET.
+/// <b>Einen Modus kennt seit dem 17.09.2026 keiner von beiden mehr.</b></para>
+///
+/// <para>Der Unterschied bleibt die Anordnung: Der Strom-Block ist einklappbar
+/// und führt drei Gruppen, der Brennstoffblock vier Zeilen mit Schnellwahl.</para>
 /// </summary>
 public class PreisbloeckeTests : EposBunitContext
 {
@@ -270,7 +273,6 @@ public class PreisbloeckeTests : EposBunitContext
 
     private static BrennstoffBestandteileStand BrennStand() => new BrennstoffBestandteileStand
     {
-        Aufgeschluesselt = false,
         Energiesteuer = 0.55, EnergiesteuerAktiv = true,
         CO2 = 1.1, CO2Aktiv = true,
         Netzentgelt = 1.4, NetzentgeltAktiv = false,
@@ -352,32 +354,106 @@ public class PreisbloeckeTests : EposBunitContext
         Assert.False(stand.EnergiesteuerAktiv);
     }
 
+    /// <summary>
+    /// <b>Anwenderentscheid 17.09.2026:</b> Die Radiogruppe „Gesamtwert" /
+    /// „aufgeschlüsselt" ist FORT. Sie hat nie gerechnet — in beiden Fällen war die
+    /// Summe der aktiven Anteile die Zahl, die zählt. Denselben Weg ist der
+    /// Strom-Block mit SP-E-2 gegangen.
+    /// </summary>
     [Fact]
-    public void In_Arbeitspreis_uebernehmen_geht_nur_im_aufgeschluesselten_Modus()
+    public void Der_Brennstoff_Block_kennt_keinen_Modus_mehr()
     {
-        var stand = BrennStand();
-        var cut = Render<BrennstoffBestandteile>(p => p.Add(x => x.Stand, stand));
+        var cut = Render<BrennstoffBestandteile>(p => p.Add(x => x.Stand, BrennStand()));
 
-        var knopf = cut.FindAll("button")[^1];
-        Assert.True(knopf.HasAttribute("disabled"));
-
-        cut.FindAll(".epos-optionsgruppe input[type=radio]")[1].Change(true);
-        Assert.False(cut.FindAll("button")[^1].HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll(".epos-optionsgruppe"));
+        Assert.Empty(cut.FindAll("input[type=radio]"));
+        Assert.DoesNotContain("aufgeschlüsselt (Summe ist der Preis)", cut.Markup);
+        Assert.DoesNotContain("Gesamtwert", cut.Markup);
     }
 
+    /// <summary>
+    /// Der Knopf ist IMMER bedienbar und MELDET nur — eingetragen wird der Wert vom
+    /// Wirt. Ohne Modus gibt es keinen Zustand mehr, der ihn sperren könnte.
+    /// </summary>
     [Fact]
     public void Der_Knopf_meldet_nur_und_schreibt_nichts()
     {
         int gemeldet = 0;
         var stand = BrennStand();
-        stand.Aufgeschluesselt = true;
         var cut = Render<BrennstoffBestandteile>(p => p
             .Add(x => x.Stand, stand)
             .Add(x => x.InArbeitspreis, () => gemeldet++));
 
-        cut.FindAll("button")[^1].Click();
+        var knopf = cut.FindAll("button")[^1];
+        Assert.False(knopf.HasAttribute("disabled"));
+
+        knopf.Click();
 
         Assert.Equal(1, gemeldet);
+        Assert.Equal(0.55, stand.Energiesteuer);   // der Block schreibt keinen Preis
+    }
+
+    /// <summary>
+    /// Summe, Kohärenzzeile und Restzeile stehen beim Brennstoff wie beim Strom: drei
+    /// Zeilen in dieser Reihenfolge, der negative Rest in Warnfarbe. Beide Texte
+    /// kommen fertig aus der Hülle — die Komponente rechnet nichts.
+    /// </summary>
+    [Fact]
+    public void Summe_Kohaerenz_und_Rest_stehen_wie_beim_Strom()
+    {
+        var cut = Render<BrennstoffBestandteile>(p => p
+            .Add(x => x.Stand, BrennStand())
+            .Add(x => x.ArbeitspreisCtKwh, 1.2)
+            .Add(x => x.LabelArbeitspreis, "Arbeitspreis (Trägerdialog)")
+            .Add(x => x.Anzeige, new PreisblockAnzeige(
+                "Summe der aktiven Bestandteile: 1,65 ct/kWh",
+                "Nicht aufgeschlüsselter Rest: -0,45 ct/kWh", true)));
+
+        Assert.Contains("Summe der aktiven Bestandteile: 1,65 ct/kWh",
+                        cut.Find(".epos-preisblock-summe").TextContent);
+        Assert.Contains("Arbeitspreis (Trägerdialog): 1,2 ct/kWh", cut.Markup);
+
+        var rest = cut.Find(".epos-preisblock-rest");
+        Assert.Contains("Nicht aufgeschlüsselter Rest: -0,45 ct/kWh", rest.TextContent);
+        Assert.Contains("epos-preisblock-rest--negativ", rest.GetAttribute("class"));
+    }
+
+    /// <summary>
+    /// Ein positiver Rest steht ohne Warnfarbe da — die Regel ist dieselbe wie beim
+    /// Strom-Block.
+    /// </summary>
+    [Fact]
+    public void Ein_positiver_Rest_steht_ohne_Warnfarbe()
+    {
+        var cut = Render<BrennstoffBestandteile>(p => p
+            .Add(x => x.Stand, BrennStand())
+            .Add(x => x.Anzeige, new PreisblockAnzeige(
+                "Summe der aktiven Bestandteile: 1,65 ct/kWh",
+                "Nicht aufgeschlüsselter Rest: 4,79 ct/kWh", false)));
+
+        Assert.DoesNotContain("epos-preisblock-rest--negativ",
+                              cut.Find(".epos-preisblock-rest").GetAttribute("class"));
+    }
+
+    /// <summary>
+    /// Der Titel des Blocks kommt aus derselben Ressourcenzeile in BEIDEN Sprachen —
+    /// der CI-Läufer steht auf en-US.
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE", "Preisbestandteile des Brennstoffs")]
+    [InlineData("en-US", "Fuel price components")]
+    public void Der_Brennstoff_Block_traegt_seinen_Titel_in_beiden_Sprachen(
+        string kultur, string erwartet)
+    {
+        using var _ = new Kulturvorrichtung(kultur);
+
+        var cut = Render<BrennstoffBestandteile>(p => p
+            .Add(x => x.Stand, BrennStand())
+            .Add(x => x.TitelBestandteile,
+                 WindowsFormsApplication1.MyResource.Resource.BB_GRUPPE_BESTANDTEILE));
+
+        Assert.Contains(erwartet, cut.Markup);
+        Assert.Empty(cut.FindAll("input[type=radio]"));
     }
 
     [Fact]
@@ -392,7 +468,7 @@ public class PreisbloeckeTests : EposBunitContext
     }
 
     [Fact]
-    public void In_beiden_Modi_bleiben_die_Komponentenfelder_schreibbar()
+    public void Die_Komponentenfelder_bleiben_schreibbar()
     {
         var stand = BrennStand();
         var cut = Render<BrennstoffBestandteile>(p => p.Add(x => x.Stand, stand));

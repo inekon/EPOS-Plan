@@ -448,8 +448,11 @@ namespace WindowsFormsApplication1
                     }
                     else if (!hatI && !hatB)
                     {
+                        // Die Erzeugerdialoge fuehren „Investitionskosten…" und
+                        // „Betriebskosten…" (KDLG_KNOPF_INVEST / _BETRIEB); einen Knopf
+                        // „Kosten bearbeiten…" gibt es dort nicht mehr.
                         z.Kurztext = T("BK_KOSTEN_ANLAGE_OHNE_POSITIONEN",
-                            "Diese Anlage führt keine eigenen Positionen — „Kosten bearbeiten…“ im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage.");
+                            "Diese Anlage führt keine eigenen Positionen — „Investitionskosten…“ und „Betriebskosten…“ im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage.");
                     }
                     zeilen.Add(z);
                 }

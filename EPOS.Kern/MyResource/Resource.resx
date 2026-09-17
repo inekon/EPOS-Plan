@@ -9614,12 +9614,6 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="BB_GRUPPE_BESTANDTEILE" xml:space="preserve">
     <value>Preisbestandteile des Brennstoffs</value>
   </data>
-  <data name="BB_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
-    <value>aufgeschlüsselt (Summe ist der Preis)</value>
-  </data>
-  <data name="BB_MODUS_GESAMTWERT" xml:space="preserve">
-    <value>Gesamtwert (Arbeitspreis gilt)</value>
-  </data>
   <data name="BB_KOMP_ENERGIESTEUER" xml:space="preserve">
     <value>Energiesteuer</value>
   </data>
@@ -9656,17 +9650,11 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="BB_BTN_KEIN_SATZ" xml:space="preserve">
     <value>—</value>
   </data>
-  <data name="BB_PREIS_AUS_BESTANDTEILEN" xml:space="preserve">
-    <value>Preis aus den Bestandteilen: {0} ct/kWh</value>
-  </data>
   <data name="BB_SUMME_AKTIV" xml:space="preserve">
     <value>Summe der aktiven Bestandteile: {0} ct/kWh</value>
   </data>
   <data name="BB_REST" xml:space="preserve">
     <value>Nicht aufgeschlüsselter Rest: {0} ct/kWh</value>
-  </data>
-  <data name="BB_REST_HINWEIS_MODUS" xml:space="preserve">
-    <value>Im Modus „aufgeschlüsselt“ ist die Summe der Bestandteile der Preis. Der Arbeitspreis ändert sich erst, wenn Sie ihn übernehmen.</value>
   </data>
   <data name="BB_QUELLE" xml:space="preserve">
     <value>{0} {1} (ab {2}, {3})</value>
@@ -11324,7 +11312,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Anlage wählen</value>
   </data>
   <data name="BK_KOSTEN_ANLAGE_OHNE_POSITIONEN" xml:space="preserve">
-    <value>Diese Anlage führt keine eigenen Positionen — „Kosten bearbeiten…“ im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage.</value>
+    <value>Diese Anlage führt keine eigenen Positionen — „Investitionskosten…“ und „Betriebskosten…“ im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage.</value>
   </data>
   <data name="PVW_MELD_GESPEICHERT" xml:space="preserve">
     <value>PV-Vergütung gespeichert — bitte neu berechnen.</value>

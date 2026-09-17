@@ -17,6 +17,12 @@ namespace WindowsFormsApplication1
     //   AlsPreiszerlegung(m).SummeAktivCtKwh                 gegen den Arbeitspreis
     //   AlsPreiszerlegung(m).SummeAktivOhneCtKwh(BESCHAFFUNG) auf eine Spot-/Profilreihe
     //
+    // EIN BAUPLAN FUER BEIDE TRAEGER: Vorsorge, Lesen und Schreiben der
+    // (Wert, Aktiv)-Paare, Summe und Rest stehen EINMAL in Preisanteile und werden von
+    // diesem Controller wie von BrennstoffBestandteilCtrl benutzt. Der Unterschied
+    // bleibt benannt: Preisanteile.Paar (Strom, NULL laesst den Vorschlag stehen)
+    // gegen Preisanteile.PaarNullbar (Brennstoff, NULL bleibt null).
+    //
     // Durchgaengig NAMENSBASIERT mit Columns.Contains-Wache: Auf einer Datenbank, deren
     // Migration noch nicht durchgelaufen ist, liefert der Controller die Vorbelegung des
     // Modells statt einer Ausnahme - dasselbe Vorgehen wie StromspeicherVarianteCtrl.
@@ -68,84 +74,32 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Legt die Spalten der Preiszerlegung an, falls die Migration noch nicht
-        /// gelaufen ist - die tolerante Rueckfallebene nach dem Muster
-        /// <c>ErgebnisCtrl.StelleKesselSpaltenSicher</c>.
+        /// gelaufen ist — die tolerante Rückfallebene, die sich dieser Träger mit dem
+        /// Brennstoff teilt (<see cref="Preisanteile.SpaltenSicherstellen"/>).
         /// </summary>
         /// <remarks>
         /// <para>
         /// Bewusst OHNE Vorbelegung und OHNE Faltung: Hier entstehen nur die Spalten,
-        /// damit ein Lesezugriff nicht scheitert; die Leseseite faellt dann auf die
-        /// Vorgaben des <see cref="StrompreisZerlegungModel"/> zurueck. Die Faltung des
-        /// Bestands gehoert in den Migrationsschritt 83
-        /// (<see cref="StrompreisZerlegung"/>) - sie aendert Geldwerte und darf nicht
-        /// beilaeufig beim Oeffnen eines Dialogs laufen.
+        /// damit ein Lesezugriff nicht scheitert; die Leseseite fällt dann auf die
+        /// Vorgaben des <see cref="StrompreisZerlegungModel"/> zurück. Die Faltung des
+        /// Bestands gehört in den Migrationsschritt 83
+        /// (<see cref="StrompreisZerlegung"/>) — sie ändert Geldwerte und darf nicht
+        /// beiläufig beim Öffnen eines Dialogs laufen.
         /// </para>
         /// <para>
-        /// <b>JE TABELLE pruefen.</b> <c>SchemaKatalog.Schritt12_Preismodell</c> fuehrt
-        /// ZWEI Tabellen: die vierzehn Spalten an <c>energy_project_settings</c> und die
-        /// drei Preisquellen-Verweise an <c>Tab_StromspeicherVariante</c>. Wird das
-        /// Schema nur EINER Tabelle gelesen, greift die Existenzpruefung fuer die
-        /// Spalten der anderen nie - das <c>ALTER TABLE</c> lief dann bei jedem Oeffnen
-        /// der Kostenverwaltung erneut. Deshalb dasselbe Vorgehen wie in
-        /// <c>SchemaMigration.SpaltenAnlegen</c>: Schema je Tabelle, einmal gelesen und
-        /// gemerkt.
-        /// </para>
-        /// <para>
-        /// <b>Ohne Dialog.</b> Eine Vorsorge ist kein Bedienschritt - sie darf den
-        /// Anwender nicht mit MessageBoxen behelligen. Das DDL laeuft deshalb ueber
-        /// <see cref="StilleDb"/> statt ueber <c>DataRepository.ExecuteSQL</c>, das
-        /// seine Fehler selbst als Dialog zeigt. Echte Fehler bleiben sichtbar:
-        /// Scheitert das Anlegen wirklich, meldet der nachfolgende Zugriff ueber
-        /// <see cref="DataRepository"/> ganz regulaer.
+        /// <b>Zwei Tabellen.</b> <c>SchemaKatalog.Schritt12_Preismodell</c> führt die
+        /// vierzehn Spalten an <c>energy_project_settings</c> UND die drei
+        /// Preisquellen-Verweise an <c>Tab_StromspeicherVariante</c>; der Helfer liest
+        /// das Schema deshalb je Tabelle einmal.
         /// </para>
         /// </remarks>
         public static void StelleSpaltenSicher()
         {
-            try
-            {
-                // Schema je Tabelle - einmal gelesen, dann gemerkt.
-                Dictionary<string, HashSet<string>> schemaJeTabelle =
-                    new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
+            List<SchemaSpalte> alle = new List<SchemaSpalte>();
+            alle.AddRange(SchemaKatalog.Schritt12_Preismodell);
+            alle.AddRange(SchemaKatalog.Schritt83_Strompreisdetails);
 
-                List<SchemaSpalte> alle = new List<SchemaSpalte>();
-                alle.AddRange(SchemaKatalog.Schritt12_Preismodell);
-                alle.AddRange(SchemaKatalog.Schritt83_Strompreisdetails);
-
-                foreach (SchemaSpalte s in alle)
-                {
-                    HashSet<string> vorhanden;
-                    if (!schemaJeTabelle.TryGetValue(s.Tabelle, out vorhanden))
-                    {
-                        vorhanden = StilleDb.SpaltenNamen(s.Tabelle);
-                        schemaJeTabelle[s.Tabelle] = vorhanden;
-                    }
-
-                    // null = Tabelle gibt es (noch) nicht. Sie hier anzulegen ist nicht
-                    // Aufgabe dieser Vorsorge - das erledigen die Migration bzw.
-                    // StromspeicherVarianteCtrl.StelleTabelleSicher.
-                    if (vorhanden == null) continue;
-                    if (vorhanden.Contains(s.Name)) continue;
-
-                    // Protokoll statt Dialog - siehe <remarks>.
-                    if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
-                            s.Tabelle, s.Name, s.TypDefinition)) < 0)
-                        Protokoll(s.Tabelle + "." + s.Name + ": Spalte konnte nicht angelegt werden.");
-                    else
-                        vorhanden.Add(s.Name);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Keine Verbindung, kein Schema - der eigentliche Zugriff meldet es.
-                Protokoll(ex.Message);
-            }
-        }
-
-        /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stoeren.</summary>
-        private static void Protokoll(string meldung)
-        {
-            try { Console.WriteLine("StrompreisZerlegungCtrl.StelleSpaltenSicher: " + meldung); }
-            catch { }
+            Preisanteile.SpaltenSicherstellen(nameof(StrompreisZerlegungCtrl), alle);
         }
 
         // =====================================================================
@@ -220,15 +174,15 @@ namespace WindowsFormsApplication1
 
             DataRow r = dt.Rows[0];
 
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG, ref m.Beschaffung, ref m.Beschaffung_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_VERTRIEB, ref m.Vertrieb, ref m.Vertrieb_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_NETZENTGELT, ref m.Netzentgelt, ref m.Netzentgelt_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER, ref m.Stromsteuer, ref m.Stromsteuer_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_KONZESSION, ref m.Konzession, ref m.Konzession_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN, ref m.Umlagen, ref m.Umlagen_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_KWKG, ref m.Umlage_KWKG, ref m.Umlage_KWKG_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_OFFSHORE, ref m.Umlage_Offshore, ref m.Umlage_Offshore_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_STROMNEV19, ref m.Umlage_StromNEV19, ref m.Umlage_StromNEV19_Aktiv);
+            Preisanteile.Paar(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG, ref m.Beschaffung, ref m.Beschaffung_Aktiv);
+            Preisanteile.Paar(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_VERTRIEB, ref m.Vertrieb, ref m.Vertrieb_Aktiv);
+            Preisanteile.Paar(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_NETZENTGELT, ref m.Netzentgelt, ref m.Netzentgelt_Aktiv);
+            Preisanteile.Paar(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER, ref m.Stromsteuer, ref m.Stromsteuer_Aktiv);
+            Preisanteile.Paar(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_KONZESSION, ref m.Konzession, ref m.Konzession_Aktiv);
+            Preisanteile.Paar(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN, ref m.Umlagen, ref m.Umlagen_Aktiv);
+            Preisanteile.Paar(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_KWKG, ref m.Umlage_KWKG, ref m.Umlage_KWKG_Aktiv);
+            Preisanteile.Paar(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_OFFSHORE, ref m.Umlage_Offshore, ref m.Umlage_Offshore_Aktiv);
+            Preisanteile.Paar(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_STROMNEV19, ref m.Umlage_StromNEV19, ref m.Umlage_StromNEV19_Aktiv);
 
             Schalter(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN_EINZELN, ref m.Umlagen_Einzeln);
 
@@ -279,49 +233,43 @@ namespace WindowsFormsApplication1
 
             string sql =
                 "UPDATE [" + TABLE + "] SET " +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_VERTRIEB) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_NETZENTGELT) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_KONZESSION) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_KWKG) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_OFFSHORE) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_STROMNEV19) +
+                Preisanteile.SetzPaar(SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG) +
+                Preisanteile.SetzPaar(SchemaKatalog.SPALTE_AUFSCHLAG_VERTRIEB) +
+                Preisanteile.SetzPaar(SchemaKatalog.SPALTE_AUFSCHLAG_NETZENTGELT) +
+                Preisanteile.SetzPaar(SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER) +
+                Preisanteile.SetzPaar(SchemaKatalog.SPALTE_AUFSCHLAG_KONZESSION) +
+                Preisanteile.SetzPaar(SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN) +
+                Preisanteile.SetzPaar(SchemaKatalog.SPALTE_AUFSCHLAG_KWKG) +
+                Preisanteile.SetzPaar(SchemaKatalog.SPALTE_AUFSCHLAG_OFFSHORE) +
+                Preisanteile.SetzPaar(SchemaKatalog.SPALTE_AUFSCHLAG_STROMNEV19) +
                 "[" + SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN_EINZELN + "] = ? " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?";
 
             int betroffen = DataRepository.ExecuteNonQuery(sql,
                 new DbParam("@besch", DbParamTyp.Double) { Wert = m.Beschaffung },
-                new DbParam("@beschA", DbParamTyp.Boolean) { Wert = m.Beschaffung_Aktiv },
+                Preisanteile.Aktiv("@beschA", m.Beschaffung_Aktiv),
                 new DbParam("@vt", DbParamTyp.Double) { Wert = m.Vertrieb },
-                new DbParam("@vtA", DbParamTyp.Boolean) { Wert = m.Vertrieb_Aktiv },
+                Preisanteile.Aktiv("@vtA", m.Vertrieb_Aktiv),
                 new DbParam("@netz", DbParamTyp.Double) { Wert = m.Netzentgelt },
-                new DbParam("@netzA", DbParamTyp.Boolean) { Wert = m.Netzentgelt_Aktiv },
+                Preisanteile.Aktiv("@netzA", m.Netzentgelt_Aktiv),
                 new DbParam("@st", DbParamTyp.Double) { Wert = m.Stromsteuer },
-                new DbParam("@stA", DbParamTyp.Boolean) { Wert = m.Stromsteuer_Aktiv },
+                Preisanteile.Aktiv("@stA", m.Stromsteuer_Aktiv),
                 new DbParam("@kz", DbParamTyp.Double) { Wert = m.Konzession },
-                new DbParam("@kzA", DbParamTyp.Boolean) { Wert = m.Konzession_Aktiv },
+                Preisanteile.Aktiv("@kzA", m.Konzession_Aktiv),
                 new DbParam("@uml", DbParamTyp.Double) { Wert = m.Umlagen },
-                new DbParam("@umlA", DbParamTyp.Boolean) { Wert = m.Umlagen_Aktiv },
+                Preisanteile.Aktiv("@umlA", m.Umlagen_Aktiv),
                 new DbParam("@kwkg", DbParamTyp.Double) { Wert = m.Umlage_KWKG },
-                new DbParam("@kwkgA", DbParamTyp.Boolean) { Wert = m.Umlage_KWKG_Aktiv },
+                Preisanteile.Aktiv("@kwkgA", m.Umlage_KWKG_Aktiv),
                 new DbParam("@offs", DbParamTyp.Double) { Wert = m.Umlage_Offshore },
-                new DbParam("@offsA", DbParamTyp.Boolean) { Wert = m.Umlage_Offshore_Aktiv },
+                Preisanteile.Aktiv("@offsA", m.Umlage_Offshore_Aktiv),
                 new DbParam("@nev", DbParamTyp.Double) { Wert = m.Umlage_StromNEV19 },
-                new DbParam("@nevA", DbParamTyp.Boolean) { Wert = m.Umlage_StromNEV19_Aktiv },
+                Preisanteile.Aktiv("@nevA", m.Umlage_StromNEV19_Aktiv),
                 new DbParam("@einzeln", DbParamTyp.Boolean) { Wert = m.Umlagen_Einzeln },
                 new DbParam("@proj", DbParamTyp.Integer) { Wert = m.ID_Projekt },
                 new DbParam("@eid", DbParamTyp.Integer) { Wert = m.ID_Energietraeger });
 
             if (betroffen > 0) m.AusDatenbank = true;
             return betroffen > 0;
-        }
-
-        /// <summary>Wert- und Aktiv-Spalte eines Anteils als SET-Fragment.</summary>
-        private static string Feld(string spalte)
-        {
-            return "[" + spalte + "] = ?, [" + spalte + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX + "] = ?, ";
         }
 
         // =====================================================================
@@ -394,51 +342,6 @@ namespace WindowsFormsApplication1
         // =====================================================================
         // Kleinigkeiten
         // =====================================================================
-
-        /// <summary>
-        /// Uebernimmt Wert UND Aktiv-Schalter eines Anteils - aber nur, wenn der WERT
-        /// gepflegt ist.
-        /// </summary>
-        /// <remarks>
-        /// <b>Warum der Wert ueber den Schalter entscheidet.</b> Eine per
-        /// <c>ADD COLUMN … YESNO</c> angelegte Spalte steht in jeder bestehenden Zeile
-        /// sofort auf 0. Wuerde der Schalter fuer sich gelesen, staende jede Zeile, deren
-        /// Spalten die stille Rueckfallebene angelegt hat, auf „alle Anteile inaktiv" -
-        /// was hier zwar richtig waere, aber auch eine gepflegte Zeile traefe, deren
-        /// Wert die Migration erst noch anlegt. Der DOUBLE-Wert dagegen ist NULL, solange
-        /// nichts gepflegt wurde, und ist damit das verlaessliche Kennzeichen. Ist er
-        /// gepflegt, ist auch der Schalter gepflegt.
-        /// </remarks>
-        private static void Komponente(DataTable dt, DataRow r, string spalte,
-                                       ref double wert, ref bool aktiv)
-        {
-            if (!dt.Columns.Contains(spalte)) return;
-
-            object v = r[spalte];
-            if (v == null || v == DBNull.Value) return;   // nicht gepflegt -> Vorschlag bleibt, inaktiv
-
-            wert = Convert.ToDouble(v);
-
-            string schalter = spalte + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX;
-            if (!dt.Columns.Contains(schalter)) return;
-
-            object s = r[schalter];
-            if (s == null || s == DBNull.Value) return;
-            aktiv = Convert.ToBoolean(s);
-        }
-
-        /// <summary>
-        /// Uebernimmt einen Zahlenwert, wenn Spalte UND Wert vorhanden sind. NULL
-        /// laesst die Vorgabe stehen; das unterscheidet "nicht gepflegt" von einer
-        /// bewusst eingetragenen 0.
-        /// </summary>
-        private static void Zahl(DataTable dt, DataRow r, string spalte, ref double ziel)
-        {
-            if (!dt.Columns.Contains(spalte)) return;
-            object v = r[spalte];
-            if (v == null || v == DBNull.Value) return;
-            ziel = Convert.ToDouble(v);
-        }
 
         /// <summary>Uebernimmt einen Ja/Nein-Wert, wenn Spalte UND Wert vorhanden sind.</summary>
         private static void Schalter(DataTable dt, DataRow r, string spalte, ref bool ziel)

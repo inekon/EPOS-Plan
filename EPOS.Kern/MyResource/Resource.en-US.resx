@@ -9607,12 +9607,6 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="BB_GRUPPE_BESTANDTEILE" xml:space="preserve">
     <value>Fuel price components</value>
   </data>
-  <data name="BB_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
-    <value>itemised (the sum is the price)</value>
-  </data>
-  <data name="BB_MODUS_GESAMTWERT" xml:space="preserve">
-    <value>total value (work price applies)</value>
-  </data>
   <data name="BB_KOMP_ENERGIESTEUER" xml:space="preserve">
     <value>Energy tax</value>
   </data>
@@ -9649,17 +9643,11 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="BB_BTN_KEIN_SATZ" xml:space="preserve">
     <value>—</value>
   </data>
-  <data name="BB_PREIS_AUS_BESTANDTEILEN" xml:space="preserve">
-    <value>Price from the components: {0} ct/kWh</value>
-  </data>
   <data name="BB_SUMME_AKTIV" xml:space="preserve">
     <value>Sum of the active components: {0} ct/kWh</value>
   </data>
   <data name="BB_REST" xml:space="preserve">
     <value>Unitemised remainder: {0} ct/kWh</value>
-  </data>
-  <data name="BB_REST_HINWEIS_MODUS" xml:space="preserve">
-    <value>In mode “itemised” the sum of the components is the price. The work price only changes once you apply it.</value>
   </data>
   <data name="BB_QUELLE" xml:space="preserve">
     <value>{0} {1} (from {2}, {3})</value>
@@ -11317,7 +11305,7 @@ Overwrite it anyway?</value>
     <value>Select unit</value>
   </data>
   <data name="BK_KOSTEN_ANLAGE_OHNE_POSITIONEN" xml:space="preserve">
-    <value>This unit has no cost items of its own — use “Edit costs…” in the unit dialog or the cost management to maintain them per unit.</value>
+    <value>This unit has no cost items of its own — use “Investment costs…” and “Operating costs…” in the unit dialog or the cost management to maintain them per unit.</value>
   </data>
   <data name="PVW_MELD_GESPEICHERT" xml:space="preserve">
     <value>PV remuneration saved — please recalculate.</value>

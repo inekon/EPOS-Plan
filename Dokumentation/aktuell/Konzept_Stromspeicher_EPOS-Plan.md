@@ -349,6 +349,16 @@ vorhanden" sagt alles, was ein Modus sagen könnte, und die Summe der Einzelante
 Gesamtwert. Die Spalten `Aufschlag_Modus` und `Aufschlag_Override` sind mit Schemaschritt 85
 entfallen.
 
+**Dieselbe Regel gilt für den Brennstoff.** Der Block „Preisbestandteile des Brennstoffs"
+(Energiesteuer, CO₂-Anteil nach BEHG, Netz-/Messentgelt, Vertrieb an denselben
+`energy_project_settings`-Zeilen) zerlegt den Arbeitspreis nach denselben Schritten: Anteile mit
+Wert und Aktiv-Schalter, Summe der aktiven Anteile, Kohärenzzeile, Restzeile, Knopf „In
+Arbeitspreis übernehmen". Auch dort gibt es **keinen Modus**; der Unterschied zum Strom ist
+allein die Bedeutung eines leeren Feldes — beim Brennstoff „kein Anteil erfasst" (`NULL` bleibt
+`NULL`), beim Strom ein Vorschlagswert, der inaktiv daneben steht. Lesen, Schreiben, Summe und
+Rest stehen für beide Träger einmal in `Preisanteile`. Die Brennstoffspalte `Anteil_Modus` steht
+noch im Schema, wird aber weder gelesen noch geschrieben.
+
 **Stromsteuer.** Änderbares Feld mit zwei Schnellwahlsätzen aus dem Gesetzeskatalog:
 **2,05 ct/kWh im Regelfall** (§ 3 StromStG) und **0,05 ct/kWh für energieintensive Unternehmen mit
 Stromsteuerreduktion** (§ 9b StromStG). Damit ist auch der Widerspruch der V7-Mappe erklärt: Der

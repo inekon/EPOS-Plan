@@ -768,3 +768,167 @@ Keine neue Referenzbasis. Kein Push, kein CI- und kein iOS-Lauf.
 
 > Der Schalter der Speichervariante heißt jetzt „Anteile auf Spot-/Profilpreis aufschlagen"
 > und wirkt nur bei den Preisquellen Spotmarkt und Kostenprofil.
+
+## Befund N7 (17.09.2026) — eine Zerlegung für beide Träger: Brennstoff ohne Modus
+
+Anwenderentscheid 17.09.2026 auf die Fachfrage `Anteil_Modus`: **(a) Modus abschaffen**,
+wie beim Strom. Dazu zwei Reste aus den Aufräumwellen.
+
+### N7.1 Befund
+
+`BrennstoffBestandteile.razor` führte eine Radiogruppe „Gesamtwert (Arbeitspreis gilt)" /
+„aufgeschlüsselt (Summe ist der Preis)". **Sie hat nie gerechnet.** Der Kommentar des
+Controllers sagte es bereits: „welcher Modus gewählt ist, entscheidet allein die Anzeige";
+der Engine-Satz kennt seit SP-E-2 keinen Modus mehr, und in beiden Stellungen war
+`SummeAktivCtKwh` die Zahl, die zählt. Wirksam waren genau drei Unterschiede, alle in der
+Maske:
+
+| Stellung | Summenzeile | Restzeile | Knopf |
+|---|---|---|---|
+| Gesamtwert | „Summe der aktiven Bestandteile: …" | „Nicht aufgeschlüsselter Rest: …", negativ in Warnfarbe | **gesperrt** |
+| aufgeschlüsselt | „Preis aus den Bestandteilen: …" | Satz über den Modus statt einer Zahl | bedienbar |
+
+Der gesperrte Knopf war dabei die Falle: Wer die Summe in den Arbeitspreis übernehmen
+wollte, musste erst einen Modus wählen, der nichts bewirkt.
+
+Die Spalte `energy_project_settings.Anteil_Modus` (Schritt 60) trug den Wert. Gelesen wurde
+er in `BrennstoffBestandteilCtrl.Read`, geschrieben in `Update`, übersetzt in
+`EnergietraegerHuelle.AusBrennstoffModell`/`InBrennstoffModell`.
+
+### N7.2 Umsetzung — der Modus fällt
+
+- **Maske** (`EPOS.UI/Dialoge/Kosten/BrennstoffBestandteile.razor`): Radiogruppe fort, die
+  Parameter `ModusGesamtwert`/`ModusAufgeschluesselt` fort, der Knopf „In Arbeitspreis
+  übernehmen" ist immer bedienbar und MELDET nur — eingetragen wird der Wert vom Wirt.
+  Summenzeile, Kohärenzzeile und Restzeile stehen wie beim Strom, der negative Rest in
+  Warnfarbe.
+- **Stand** (`BrennstoffBestandteileStand`): `Aufgeschluesselt` entfallen.
+- **Modell** (`BrennstoffBestandteilModel`): Feld `Modus` entfallen.
+- **Controller** (`BrennstoffBestandteilCtrl`): `Read` liest `Anteil_Modus` nicht mehr,
+  `Update` schreibt sie nicht mehr. **Die Spalte bleibt im Schema stehen** — kein
+  Schemaschritt in dieser Aufgabe; sie ist als Aufräumkandidat vermerkt.
+- **Hülle** (`EnergietraegerHuelle`): `AusBrennstoffModell`/`InBrennstoffModell` ohne Modus;
+  die vier Textschlüssel des Modus sind aus `BestandteilTexte` entfallen.
+- **Ressourcen:** `BB_MODUS_GESAMTWERT`, `BB_MODUS_AUFGESCHLUESSELT`,
+  `BB_PREIS_AUS_BESTANDTEILEN` und `BB_REST_HINWEIS_MODUS` sind aus beiden Sprachen und dem
+  erzeugten Designer entfernt.
+
+`DbWerte.SP_AUFSCHLAG_MODUS_*` **bleiben**: Schemaschritt 83 (`StrompreisZerlegung`) liest
+den Bestandsstand der Strom-Altspalte `Aufschlag_Modus` und braucht die drei Werte für die
+Faltung. Der Kopfkommentar der Gruppe in `DbWerte` sagt das jetzt auch — er sprach vom
+„Modus des Aufschlagsblocks" als wäre er in Betrieb.
+
+### N7.3 Ein Bauplan — was doppelt war
+
+Gemessen wurde vorher, was die beiden Controller wirklich zweimal führten:
+
+| Doppelt | Stelle |
+|---|---|
+| Vorsorge (Schema je Tabelle lesen, `ALTER TABLE ADD COLUMN`, Protokoll statt Dialog) | je ~45 Zeilen in beiden `StelleSpaltenSicher` |
+| SET-Fragment `[x] = ?, [x_Aktiv] = ?, ` | `Feld(spalte)`, wortgleich in beiden |
+| `null` → `DBNull` als Zahlenparameter | `Wert(name, wert)` im Brennstoff, an neun Stellen von Hand im Strom |
+| Lesen eines (Wert, Aktiv)-Paares | `Komponente` / `Bestandteil` — **fachlich verschieden**, aber mit derselben Aktiv-Spalten-Wache |
+| Summe und Rest gegen den Arbeitspreis | `Ansicht()` der Hülle, zweimal dieselben drei Zeilen |
+
+Zusammengezogen in `EPOS.Kern/Controller/Preisanteile.cs` (statische Klasse, keine
+Basisklasse — die Controller teilen keinen Zustand):
+
+- `SpaltenSicherstellen(herkunft, spalten)` — eine Vorsorge für beide, Schema je Tabelle
+  einmal gelesen, ohne Dialog.
+- `Paar(...)` und `PaarNullbar(...)` — die zwei Spielarten des Lesens. Sie bleiben zwei,
+  weil sie fachlich zwei sind: Beim Strom lässt NULL den Vorschlag des Modells stehen
+  (inaktiv), beim Brennstoff bleibt NULL `null` („kein Anteil erfasst", E5-Falle). Die
+  gemeinsame Aktiv-Spalten-Wache steht einmal.
+- `SetzPaar(spalte)`, `Wert(name, wert)`, `Aktiv(name, wert)` — die Schreibseite.
+- `SummeCtKwh(satz)` und `RestCtKwh(arbeitspreis, satz)` — **die eine Stelle**, aus der
+  beide Träger Summe und Rest beziehen.
+
+Die Hülle hat dazu `Preisblock(satz, arbeitspreis, vorlageSumme, vorlageRest)`: Beide
+Blöcke bauen ihre `PreisblockAnzeige` jetzt aus einem Aufruf, mit ihren eigenen Texten.
+
+**Nicht** zusammengezogen wurden Spaltennamen, Komponentenlisten und der Zuschnitt des
+Satzes (Umlagen einzeln oder als Summe) — das ist je Träger verschieden. Die Razor-Blöcke
+bleiben zwei: verschiedene Gruppen, verschiedene Texte, beim Strom einklappbar.
+
+### N7.4 Rest 1 — der Hinweis nennt Knöpfe, die es gibt
+
+`BK_KOSTEN_ANLAGE_OHNE_POSITIONEN` nannte „Kosten bearbeiten…" — einen Knopf, den kein
+Erzeugerdialog mehr führt. Neu in beiden Sprachen: „Investitionskosten…" und
+„Betriebskosten…" (wortgleich mit `KDLG_KNOPF_INVEST`/`KDLG_KNOPF_BETRIEB`).
+`KostenSeiteGaben.cs` trägt denselben Text als Rückfall und einen Kommentar, der auf die
+beiden Schlüssel zeigt.
+
+### N7.5 Rest 2 — die Dialogseite heißt wie die Sache
+
+Reine Bezeichnerersetzung nach dem Muster des Aufräumschritts: `Stand.Aufschlaege` →
+`Stand.Zerlegung`, `AufschlagAnzeige` → `ZerlegungAnzeige`, `AufschlagTexte` →
+`ZerlegungTexte`, `_aufschlagModell` → `_zerlegungModell`. Betroffen:
+`EnergietraegerDaten.cs`, `EnergietraegerEinstellungen.razor`, `EnergietraegerDialog.razor`,
+`EnergietraegerHuelle.cs` und ein Prüffall. Die Spaltennamen `Aufschlag_*` und die
+Ressourcenschlüssel `PREIS_*` bleiben, wo sie sind.
+
+### N7.6 Prüffälle
+
+`EPOS.Kern.Tests/PreisanteileTests` (10 Fälle):
+
+| Fall | Was er hält |
+|---|---|
+| `Summe_und_Rest_des_Brennstoffs_kommen_aus_dem_gemeinsamen_Bauplan` | 1,65 ct/kWh aus zwei aktiven Anteilen, Rest 4,79 gegen 6,44; ein negativer Rest wird nicht abgeschnitten |
+| `Summe_und_Rest_des_Stroms_kommen_aus_demselben_Bauplan` | derselbe Weg für den Strom |
+| `Gleiche_Betraege_ergeben_bei_beiden_Traegern_dieselbe_Summe_und_denselben_Rest` | die Zusage des Bauplans — und der Hebel der Gegenprobe |
+| `Das_SET_Fragment_ist_fuer_beide_Traeger_dasselbe` | `[Anteil_CO2] = ?, [Anteil_CO2_Aktiv] = ?, ` und dasselbe für `Aufschlag_Netzentgelt` |
+| `Ein_nicht_erfasster_Anteil_wird_DBNull_und_nicht_null_Komma_null` | `null` → `DBNull`, eine erfasste 0 bleibt 0 |
+| `Das_Brennstoffmodell_fuehrt_kein_Modusfeld_mehr` | weder Feld noch Eigenschaft `Modus` |
+| `Die_Brennstoffanteile_gehen_ohne_Modus_hin_und_zurueck` | Schreiben und Lesen an der Testdatenbank (Projekt 1030, Gas 63); `null` bleibt `null`, ein aktiver Schalter ohne Wert bleibt aktiv |
+| `Ein_Bestandssatz_mit_altem_Modus_liest_sich_gleich` | eine Zeile mit `Anteil_Modus = 'Aufgeschluesselt'` liest sich wie eine mit `'Gesamtwert'`, und der Schreibweg lässt die Spalte stehen |
+| `Der_Hinweis_ohne_Positionen_nennt_die_heutigen_Knoepfe` (2 Kulturen) | Rest 1, beide Sprachen, ohne den alten Knopfnamen |
+
+`EPOS.UI.Tests/Dialoge/PreisbloeckeTests` — vier neue, zwei ersetzte Fälle:
+`Der_Brennstoff_Block_kennt_keinen_Modus_mehr` (keine Optionsgruppe, kein Radio, keiner der
+beiden Modustexte im Markup), `Der_Knopf_meldet_nur_und_schreibt_nichts` (nicht mehr
+gesperrt), `Summe_Kohaerenz_und_Rest_stehen_wie_beim_Strom`,
+`Ein_positiver_Rest_steht_ohne_Warnfarbe`, und
+`Der_Brennstoff_Block_traegt_seinen_Titel_in_beiden_Sprachen` (de-DE / en-US aus derselben
+Ressourcenzeile). Entfallen ist
+`In_Arbeitspreis_uebernehmen_geht_nur_im_aufgeschluesselten_Modus`;
+`In_beiden_Modi_bleiben_die_Komponentenfelder_schreibbar` heißt jetzt
+`Die_Komponentenfelder_bleiben_schreibbar`.
+
+**Gegenprobe:** `Preisanteile.RestCtKwh` versuchsweise um 0,001 ct/kWh falsch rechnen
+lassen. Ergebnis: **drei Fälle rot, darunter je einer je Träger**
+(`Summe_und_Rest_des_Brennstoffs_…`, `Summe_und_Rest_des_Stroms_…`,
+`Gleiche_Betraege_…`) — der gemeinsame Bauplan ist damit belegt, nicht behauptet.
+Zurückgebaut, danach wieder 10/10.
+
+### N7.7 Gate
+
+| Prüfung | Ergebnis |
+|---|---|
+| Kern-Filter `WP-Plan.Kern.slnf` Release | 0 Fehler / **5 Warnungen** (keine neue, Schranke 7) |
+| Windows-Schale (`EnableWindowsTargeting=true`) | 0 Fehler / 5 Warnungen (Bestand) |
+| `EPOS.Kern.Tests` | 3 177 / 3 177 (+10) |
+| `EPOS.UI.Tests` | 4 557 / 4 557 (+5 neu, 1 entfallen) |
+| `SpeicherEngine.Tests` / `KiKern.Tests` / `SpeicherPlanung.Tests` | 368/368 · 499/499 · 27/28 (1 übersprungen) |
+| Kulturen | beide — normal und `LC_ALL=en_US.UTF-8` |
+| `Resource.Designer.cs` | neu erzeugt, 6 291 → 6 287 Einträge, zweiter Lauf +0 |
+| `SqlDialektPruefer` | 1 474 Texte, **0 Fundstellen** |
+| Referenzlauf 1030/1007/1017/1045/1046 gegen `2026-09-16_R8_Heizkessel_Kaskade` | **5/5 PASS**, 143 CSV, 1 656 417 Werte, **byte-gleich** (`diff -rq` je Projekt: 0 Unterschiede) |
+
+Kein Rechenweg, kein Schemaschritt, keine neue Referenzbasis.
+
+### N7.8 Abnahmepunkte auf Windows
+
+| Nr. | Was zu sehen ist |
+|---|---|
+| `A-ZE1-1` | Energieträgerdialog, Brennstoffträger: Der Block „Preisbestandteile des Brennstoffs" führt **keine Wahl** „Gesamtwert / aufgeschlüsselt" mehr — vier Zeilen mit Schalter und Feld, darüber die Schnellwahl |
+| `A-ZE1-2` | Unter den Zeilen stehen Summe der aktiven Bestandteile, Arbeitspreis der Trägerkarte und der nicht aufgeschlüsselte Rest; ein negativer Rest steht in Warnfarbe |
+| `A-ZE1-3` | „In Arbeitspreis übernehmen" ist **immer** bedienbar; ein Klick trägt die Summe in das Arbeitspreisfeld der Karte, gespeichert wird erst mit „Speichern" |
+| `A-ZE1-4` | Ein Projekt, dessen Brennstoffträger bisher auf „aufgeschlüsselt" stand, zeigt dieselben Werte wie vorher; die Anteile sind unverändert |
+| `A-ZE1-5` | Kosten-Seite des Berichts: Eine Anlage ohne eigene Positionen trägt den Hinweis mit „Investitionskosten…" und „Betriebskosten…" — in beiden Sprachen, ohne „Kosten bearbeiten…" |
+| `A-ZE1-6` | Strom-Block „Strompreis Details" unverändert: dieselbe Summe, dieselbe Kohärenzzeile, derselbe Rest-Vorschlag für die Beschaffung |
+
+### N7.9 Logbuch-Entwurf (bestehende Version 1.2.0.2)
+
+> Die Preisbestandteile eines Brennstoffträgers kommen ohne die Wahl „Gesamtwert /
+> aufgeschlüsselt" aus: Ausgewiesen werden die Summe der eingeschalteten Bestandteile und
+> ihr Abstand zum Arbeitspreis, und „In Arbeitspreis übernehmen" ist immer bedienbar.

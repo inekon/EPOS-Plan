@@ -2,7 +2,7 @@
 
    Vorbild: Views/Kosten/ucFuelSettings.cs (2 103 Z.) und .Designer.cs — der
    groesste Baustein der Kostenseite, gewachsen ueber die Etappen K3
-   (Umrechnungsblock), AP4 (Aufschlaege), B2 (Preisbestandteile), KD4
+   (Umrechnungsblock), AP4 (Zerlegung), B2 (Preisbestandteile), KD4
    (Leistungspreis-Modus und Saisonreihen) und E3 (Emissions-Reiter).
 
    WAS DIE KOMPONENTE NICHT MEHR TUT. Der Vorlaeufer las und schrieb selbst:
@@ -189,10 +189,10 @@
     </Gruppenkopf>
 
     @* ================================================== Preisbloecke *@
-    @if (Stand.Aufschlaege is not null)
+    @if (Stand.Zerlegung is not null)
     {
-        <StrompreisDetails @attributes="AufschlagTexte" Stand="@Stand.Aufschlaege"
-                           Anzeige="@AufschlagAnzeige"
+        <StrompreisDetails @attributes="ZerlegungTexte" Stand="@Stand.Zerlegung"
+                           Anzeige="@ZerlegungAnzeige"
                            ArbeitspreisCtKwh="@ArbeitspreisCtKwh"
                            BeschaffungVorschlag="@BeschaffungVorschlag"
                            SatzRegelfall="@SatzRegelfall" SatzReduziert="@SatzReduziert"
@@ -352,8 +352,8 @@
     /// <summary>Der Bearbeitungsstand der Trägerkarte.</summary>
     [Parameter] public EnergietraegerStand Stand { get; set; } = new();
 
-    /// <summary>Summen- und Restzeile des Aufschlagsblocks (von der Hülle gerechnet).</summary>
-    [Parameter] public PreisblockAnzeige AufschlagAnzeige { get; set; } = new("", "", false);
+    /// <summary>Summen- und Restzeile des Strom-Zerlegungsblocks (von der Hülle gerechnet).</summary>
+    [Parameter] public PreisblockAnzeige ZerlegungAnzeige { get; set; } = new("", "", false);
 
     /// <summary>Dasselbe für die Preiszerlegung.</summary>
     [Parameter] public PreisblockAnzeige BestandteilAnzeige { get; set; } = new("", "", false);
@@ -362,11 +362,11 @@
     [Parameter] public double ArbeitspreisCtKwh { get; set; }
 
     /// <summary>
-    /// Die Texte des Aufschlagsblocks (<c>MyResource.PREIS_*</c>) — sie kommen
+    /// Die Texte des Strom-Zerlegungsblocks (<c>MyResource.PREIS_*</c>) — sie kommen
     /// als Satz herein, damit der verschachtelte Baustein sie nicht einzeln
     /// durchgereicht bekommen muss. Leer = die deutschen Vorgaben der Komponente.
     /// </summary>
-    [Parameter] public IReadOnlyDictionary<string, object>? AufschlagTexte { get; set; }
+    [Parameter] public IReadOnlyDictionary<string, object>? ZerlegungTexte { get; set; }
 
     /// <summary>Dasselbe für die Preiszerlegung (<c>BB_*</c>).</summary>
     [Parameter] public IReadOnlyDictionary<string, object>? BestandteilTexte { get; set; }

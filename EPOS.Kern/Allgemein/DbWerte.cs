@@ -1828,29 +1828,37 @@ namespace WindowsFormsApplication1
         public const string SP_EINHEIT_PROZENT = "%";
 
         // =====================================================================
-        // Preismodell — Modus des Aufschlagsblocks
-        //   energy_project_settings.Aufschlag_Modus
-        //   (Fachkonzept Stromspeicher 4.2)
-        //   Persistenzwert, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        // Preismodell — Modus des Aufschlagsblocks: NUR NOCH BESTANDSWERTE
+        //   Persistenzwerte, immer deutsch, eingefroren (Drei-Schichten-Regel)
+        //
+        // KEIN LEBENDER LESER MEHR. Weder der Strom- noch der Brennstoffblock kennt
+        // einen Modus: Ein Anteil mit Wert und Aktiv-Schalter sagt alles, was die
+        // Modi sagten (SP-E-2 fuer den Strom, Anwenderentscheid 17.09.2026 fuer den
+        // Brennstoff). Die drei Werte bleiben stehen, weil MIGRATIONSSCHRITT 83
+        // (StrompreisZerlegung) sie braucht: Er liest den BESTANDSSTAND der
+        // inzwischen entfernten Spalte energy_project_settings.Aufschlag_Modus, um
+        // zu entscheiden, wie ein Altbestand in den Arbeitspreis gefaltet wird.
+        //
+        // Die Brennstoffspalte Anteil_Modus steht noch im Schema, wird aber weder
+        // gelesen noch geschrieben (Aufraeumkandidat).
         // =====================================================================
 
         /// <summary>
-        /// <b>Vorgabe: gar kein Aufschlag.</b> Der wirksame Aufschlag ist 0 ct/kWh;
-        /// die fuenf Komponenten bleiben als VORSCHLAG sichtbar und lesbar, wirken
-        /// aber nicht. Eine nicht gepflegte Zeile bekommt diesen Modus von der
-        /// Leseseite — ein Aufschlag entsteht erst, wenn ihn jemand ausdruecklich
-        /// waehlt (Anwenderentscheid 14.09.2026).
+        /// Bestandswert „gar kein Aufschlag": Die Zeile hat nie einen Aufschlag
+        /// gerechnet. Schritt 83 legt ihre gepflegten Werte still, statt sie zu falten.
         /// </summary>
         public const string SP_AUFSCHLAG_MODUS_KEINER = "Keiner";
 
         /// <summary>
-        /// Der wirksame Aufschlag ist die Summe der aktiven Komponenten.
+        /// Bestandswert „aufgeschluesselt": Der wirksame Aufschlag war die Summe der
+        /// aktiven Komponenten. Schritt 83 faltet sie in den Arbeitspreis.
         /// </summary>
         public const string SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT = "Aufgeschluesselt";
 
         /// <summary>
-        /// Der Anwender traegt einen Gesamtaufschlag ein (Override); die Differenz zur
-        /// Komponentensumme wird als "nicht aufgeschluesselter Rest" ausgewiesen.
+        /// Bestandswert „Gesamtwert": Der Anwender trug einen Gesamtaufschlag ein
+        /// (Override). Er laesst sich nicht in Anteile zerlegen; Schritt 83 schlaegt
+        /// ihn deshalb vollstaendig auf den Arbeitspreis.
         /// </summary>
         public const string SP_AUFSCHLAG_MODUS_GESAMTWERT = "Gesamtwert";
 

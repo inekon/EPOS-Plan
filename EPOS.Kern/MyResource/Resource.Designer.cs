@@ -1916,33 +1916,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die aufgeschlüsselt (Summe ist der Preis) ähnelt.
-        /// </summary>
-        public static string BB_MODUS_AUFGESCHLUESSELT {
-            get {
-                return ResourceManager.GetString("BB_MODUS_AUFGESCHLUESSELT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert (Arbeitspreis gilt) ähnelt.
-        /// </summary>
-        public static string BB_MODUS_GESAMTWERT {
-            get {
-                return ResourceManager.GetString("BB_MODUS_GESAMTWERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Preis aus den Bestandteilen: {0} ct/kWh ähnelt.
-        /// </summary>
-        public static string BB_PREIS_AUS_BESTANDTEILEN {
-            get {
-                return ResourceManager.GetString("BB_PREIS_AUS_BESTANDTEILEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} (ab {2}, {3}) ähnelt.
         /// </summary>
         public static string BB_QUELLE {
@@ -1984,15 +1957,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BB_REST {
             get {
                 return ResourceManager.GetString("BB_REST", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Modus „aufgeschlüsselt“ ist die Summe der Bestandteile der Preis. Der Arbeitspreis ändert sich erst, wenn Sie ihn übernehmen. ähnelt.
-        /// </summary>
-        public static string BB_REST_HINWEIS_MODUS {
-            get {
-                return ResourceManager.GetString("BB_REST_HINWEIS_MODUS", resourceCulture);
             }
         }
         
@@ -4863,7 +4827,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Anlage führt keine eigenen Positionen — „Kosten bearbeiten…“ im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Anlage führt keine eigenen Positionen — „Investitionskosten…“ und „Betriebskosten…“ im Anlagendialog oder die Kostenverwaltung pflegt sie je Anlage. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_ANLAGE_OHNE_POSITIONEN {
             get {
