@@ -62,6 +62,10 @@ public class KostenSeiteTests : EposBunitContext
         VergleichSpalten = new[] { "Kennzahl", "Stamm", "WP klein" },
         Vergleich = new[]
         {
+            // AUFTRAG US-2: Der Speicherkontext steht GANZ OBEN, vor der ersten Geldzeile.
+            new MatrixZeile { Titel = "Stromspeicher",
+                              Zellen = new[] { "mit Speicherflotte: Lastspitzenkappung · 2 Einheiten",
+                                               "ohne Stromspeicher" } },
             new MatrixZeile { Titel = "Investition [€]", Zellen = new[] { "12.001,00 €", "9.500,00 €" } },
             new MatrixZeile { Titel = "Betrieb [€/a]", Zellen = new[] { "—", "120,00 €/a" } },
             new MatrixZeile { Titel = "Energie [€/a]", Zellen = new[] { "3.400,00 €/a", "—" } }
@@ -539,9 +543,51 @@ public class KostenSeiteTests : EposBunitContext
         var tabelle = cut.Find(".epos-kostenvergleich");
         Assert.Equal(new[] { "Kennzahl", "Stamm", "WP klein" },
                      tabelle.QuerySelectorAll("thead th").Select(t => t.TextContent).ToArray());
-        Assert.Equal(3, tabelle.QuerySelectorAll("tbody tr").Length);
-        Assert.Equal("9.500,00 €", tabelle.QuerySelectorAll("tbody tr")[0].QuerySelectorAll("td")[1].TextContent);
+        // Speicherkontext (US-2) + Investition, Betrieb, Energie
+        Assert.Equal(4, tabelle.QuerySelectorAll("tbody tr").Length);
+        Assert.Equal("9.500,00 €", tabelle.QuerySelectorAll("tbody tr")[1].QuerySelectorAll("td")[1].TextContent);
         Assert.Contains("Kosten im Vergleich", cut.Markup);
+    }
+
+    /// <summary>
+    /// AUFTRAG US-2: <b>Die Gegenüberstellung nennt je Version, womit sie ihren
+    /// Stromspeicher rechnet</b> — als ERSTE Zeile, vor der ersten Geldzeile: Sie ist der
+    /// Kontext, unter dem alles darunter zu lesen ist.
+    ///
+    /// <para>Die Vergleichsgruppe steht auf dieser Seite als Auswahl und nicht als
+    /// Tabelle (W5‑B‑5); die Spalte der Wirtschaftlichkeit (#320) wird hier deshalb zur
+    /// ZEILE. Ohne sie sieht eine Version ohne Speicher aus wie eine mit.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Kostengegenueberstellung_nennt_je_Version_den_Speicherkontext()
+    {
+        var cut = Zeige(p => p.Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { }));
+
+        var erste = cut.Find(".epos-kostenvergleich").QuerySelectorAll("tbody tr")[0];
+        Assert.Equal("Stromspeicher", erste.QuerySelectorAll("th, td")[0].TextContent);
+        Assert.Contains("mit Speicherflotte: Lastspitzenkappung · 2 Einheiten", erste.TextContent);
+        Assert.Contains("ohne Stromspeicher", erste.TextContent);
+    }
+
+    /// <summary>
+    /// GEGENPROBE: Ohne lesbaren Speicherkontext entfällt die Zeile — die Hülle liefert
+    /// sie dann gar nicht erst, und die Tabelle steht wie zuvor (US-2).
+    /// </summary>
+    [Fact]
+    public void Ohne_Speicherkontext_bleibt_die_Zeile_weg()
+    {
+        KostenStand stand = Standard();
+        stand.Vergleich = new[]
+        {
+            new MatrixZeile { Titel = "Investition [€]", Zellen = new[] { "12.001,00 €", "9.500,00 €" } },
+            new MatrixZeile { Titel = "Betrieb [€/a]", Zellen = new[] { "—", "120,00 €/a" } },
+            new MatrixZeile { Titel = "Energie [€/a]", Zellen = new[] { "3.400,00 €/a", "—" } }
+        };
+        var cut = Zeige(p => p.Add(x => x.VergleichGewaehlt, (IReadOnlyList<int> l) => { }), stand);
+
+        var tabelle = cut.Find(".epos-kostenvergleich");
+        Assert.Equal(3, tabelle.QuerySelectorAll("tbody tr").Length);
+        Assert.DoesNotContain("Stromspeicher", tabelle.TextContent);
     }
 
     [Fact]

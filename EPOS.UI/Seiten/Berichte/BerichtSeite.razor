@@ -65,6 +65,14 @@
                                     Property="@(z => z.Bezeichner)" Title="@SpalteBezeichner" />
                     <PropertyColumn TGridItem="VarianteZeile" TProp="string"
                                     Property="@(z => z.Projektname)" Title="@SpalteProjektname" />
+                    @* AUFTRAG US-2: Womit rechnet DIESE Version ihren Stromspeicher? Die
+                       Spalte steht neben dem Projektnamen wie auf der Wirtschaftlichkeit
+                       (#320) - sie gehoert zur Version, nicht zum Ergebnis, und Stamm und
+                       Varianten duerfen verschiedene Flotten fuehren. Auf dieser Seite
+                       entscheidet der Anwender, WELCHE Versionen in den Bericht kommen;
+                       ohne die Spalte sieht eine Version ohne Speicher aus wie eine mit. *@
+                    <PropertyColumn TGridItem="VarianteZeile" TProp="string"
+                                    Property="@(z => z.Speicher)" Title="@SpalteSpeicher" />
                     <TemplateColumn TGridItem="VarianteZeile" Title="@SpalteSimulation">
                         <span class="@(context.Auffaellig ? "epos-veraltet" : "")">@context.SimStand</span>
                     </TemplateColumn>
@@ -179,6 +187,9 @@
     [Parameter] public string SpalteArt { get; set; } = "Art";
     [Parameter] public string SpalteBezeichner { get; set; } = "Bezeichner";
     [Parameter] public string SpalteProjektname { get; set; } = "Projektname";
+
+    /// <summary>Kopf der Speicherkontextspalte (US-2, Muster #320).</summary>
+    [Parameter] public string SpalteSpeicher { get; set; } = "Stromspeicher";
     [Parameter] public string SpalteSimulation { get; set; } = "Simulation";
 
     [Parameter] public string AlleText { get; set; } = "Alle";

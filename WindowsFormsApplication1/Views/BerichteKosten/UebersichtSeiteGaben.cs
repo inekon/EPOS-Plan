@@ -178,6 +178,7 @@ namespace WindowsFormsApplication1
                 // Kopf "Simulation": er beschriftet jetzt die Statuszeile.
                 ["LabelVariante"] = T("BKS_LBL_VARIANTE", "Variante:"),
                 ["SpalteSimulation"] = MyResource.Resource.BK_BER_SP_SIMULATION,
+                ["SpalteSpeicher"] = MyResource.Resource.WIRT_ZEILE_SPEICHER,
                 ["SimNieText"] = T("BKS_SIM_NIE", "noch nicht simuliert"),
                 ["SimGrundFehlt"] = T("BKS_SIM_GRUND_FEHLT",
                     "Für diese Version liegt kein Simulationsergebnis vor."),
@@ -244,6 +245,11 @@ namespace WindowsFormsApplication1
                         Bezeichner = vi.IstStamm ? MyResource.Resource.BK_ART_STAMMPROJEKT
                                                  : vi.Variantenname,
                         Projektname = vi.Projektname,
+
+                        // AUFTRAG US-2: Womit rechnet diese Version ihren Stromspeicher?
+                        // Der Text kommt aus der EINEN Kernmethode, die auch der
+                        // Simulationsreiter und die Wirtschaftlichkeit nehmen (#320).
+                        Speicher = SpeicherAnzeigeCtrl.SpeicherKontextText(vi.IdProjekt),
                         SimStand = st != null ? st.SimStandText : "",
 
                         // Der REINE Zeitpunkt fuer die Statuszeile der Seite
