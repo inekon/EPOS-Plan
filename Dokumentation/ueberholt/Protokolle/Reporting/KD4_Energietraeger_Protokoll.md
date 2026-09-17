@@ -433,3 +433,153 @@ unberührt.
 
 Wiki-Quellen `Programm Dokumentation - Kosten.wiki` und `Programm Dokumentation -
 Wirtschaftlichkeit.wiki` sind fortgeschrieben; der Upload läuft gebündelt.
+
+## Befund N6 (17.09.2026) — die Einspeisevergütung verlässt die Trägerkarte
+
+> Anwenderbefund 17.09.2026 (Kosten → Energieträger, Stromträger): „Die ‚Vergütung für
+> eingespeisten Strom' (v_pv, v_bhkw) ist auf der Trägerkarte überflüssig und an der falschen
+> Stelle." Anwenderentscheid **SP-E-5 (a)**.
+
+### N6.1 Befund
+
+Der Block trug zwei Sätze, `Verguetung_PV` und `Verguetung_BHKW`, an
+`energy_project_settings` je (Projekt, Träger). **Gelesen hat ihn genau ein Rechenweg: die
+Speicherwelt** (`StromPreisCtrl.BaueVerguetungen`, von dort in Speicherauslegung,
+Flottenstudie und Stromspeichersimulation). Die **Wirtschaftlichkeit hat ihn nie angesehen** —
+sie rechnet seit jeher mit `Tab_ProjektWirtschaftlichkeit.Einspeiseverguetung` und
+`Einspeiseverguetung_KWK`. Es gab damit zwei Wahrheiten über denselben eingespeisten Strom,
+und welche galt, hing vom Rechenweg ab.
+
+Dazu ein stiller Ersatzwert: Die Modellfelder standen auf 5,0 ct/kWh, und diese Vorgabe kam
+auch dann zum Zug, wenn das Projekt **gar keine** Zeile in `energy_project_settings` hatte.
+Die Speicherprojekte 1007 und 1046 der Testdatenbank haben keine — sie rechneten mit einer
+Zahl, die nirgends steht. Denselben stillen Rückfall trugen
+`StromspeicherSimCtrl.StandardParameter` (`VerguetungCtKwh = 5,0`) und über ihn der Rückfall
+der Flottenstudie (`?? v.Basis.VerguetungCtKwh`).
+
+### N6.2 Umsetzung
+
+**Die Trägerkarte.** Die Gruppe „Vergütung für eingespeisten Strom" ist aus
+`StrompreisDetails.razor`, aus dem Bearbeitungsstand (`StromAufschlaegeStand`), aus der Hülle
+(`EnergietraegerHuelle`) und aus den Ressourcen entfernt (`PREIS_GRUPPE_VERGUETUNG`,
+`PREIS_LABEL_VERGUETUNG_PV`, `PREIS_LABEL_VERGUETUNG_BHKW` in beiden Sprachen). Die
+Modellfelder `Verguetung_PV`/`_BHKW` und die beiden Vorgabekonstanten sind fort;
+`StromAufschlagCtrl` liest und schreibt die Spalten nicht mehr. **Die Spalten selbst bleiben
+stehen** — kein DROP: Eine ältere Programmfassung auf derselben Datei soll nicht auf einen
+fehlenden Namen laufen.
+
+**Die neue Quellenkette** steht an genau einer Stelle,
+`StromPreisCtrl.VerguetungenBauen` (aufgerufen aus `BaueVerguetungen` und aus `Baue`):
+
+| Größe | Quelle |
+|---|---|
+| `v_pv` | PV-Vergütungsdialog, wenn aktiv (Entscheid F7, **unverändert**); sonst `Einspeiseverguetung` |
+| `v_bhkw` | `Einspeiseverguetung_KWK`, wenn gepflegt; sonst `Einspeiseverguetung` |
+
+**Einheiten.** Die Parameter führen €/kWh (so steht es an
+`WirtschaftlichkeitParameter.Einspeiseverguetung` und so rechnet `WirtschaftlichkeitCtrl`
+damit), die Speicherwelt ct/kWh. Umgerechnet wird an dieser einen Naht, Faktor 100.
+
+**Kein stiller Rückfall mehr.** Ohne gepflegten Wert rechnet der Lauf mit 0 und sagt es:
+`PREIS_HINWEIS_KEINE_VERGUETUNG_PV` bzw. `…_BHKW`, beide Sprachen, über `HinweisErgaenzen`
+ins Simulationsprotokoll. Eine gepflegte **0** in `Einspeiseverguetung` gilt als „nicht
+gepflegt" — die REAL-Spalte trägt keinen DDL-Default, aber jeder von der Maske angelegte Satz
+steht dort auf 0, und eine Einspeisung ohne Erlös ist an dieser Zahl von einem nie
+angefassten Feld nicht zu unterscheiden. Beim KWK-Satz ist die Frage nicht zu stellen: Seine
+Spalte ist nullbar, und eine gepflegte 0 heißt dort seit jeher „kein eigener KWK-Satz".
+`StromspeicherSimCtrl.VERGUETUNG_PV_CT_KWH`/`_BHKW_CT_KWH` (je 5,0) sind durch **eine**
+Konstante `VERGUETUNG_OHNE_PFLEGE_CT_KWH = 0,0` ersetzt; damit erfindet auch der Weg über
+`StandardParameter` — Flottenstudie und Dashboard-Kachel — keine Vergütung mehr.
+
+**Sichtbarkeit.** Die Maske der Wirtschaftlichkeitsparameter trägt unter „Strom — Einspeisung
+und Bezug" eine Herleitungszeile (`WPAR_EINSP_HINWEIS`, beide Sprachen): Die beiden Sätze
+bewerten den eingespeisten Strom in der Wirtschaftlichkeit **und** stellen den Verkaufspreis
+von Stromspeicher und Speicherflotte; ohne KWK-Satz gilt für BHKW-Strom der PV-Satz; ist gar
+nichts gepflegt, rechnet die Speicherwelt mit 0 und weist das aus; der PV-Vergütungsdialog hat
+für `v_pv` Vorrang. Am PV-Vergütungsdialog selbst ist nichts geändert.
+
+**Schemaschritt 84** (`VerguetungUmzug`, eine Quelle für Migration,
+`Werkzeuge/Testdatenbankschema` und `EPOS.Kern.Tests`): **reiner Datenschritt, keine Spalte.**
+Für jedes Projekt mit gepflegtem Kartenwert am Stromträger gilt
+`Einspeiseverguetung := Verguetung_PV / 100`, wenn dort nichts (oder 0) steht, und
+`Einspeiseverguetung_KWK := Verguetung_BHKW / 100`, wenn die Spalte NULL ist. **Gepflegte
+Parameter gewinnen.** Hat ein Projekt keinen Parametersatz, entsteht einer, der **nur** die
+Vergütung trägt — jede andere Spalte bleibt NULL und damit beim Vorgabewert der Klasse; eine
+abgeschriebene Vorgabeliste wäre die zweite Stelle für dieselben Zahlen. Führt ein Projekt
+mehrere Stromträger mit **verschiedenen** Kartenwerten, gewinnt der erste in der Reihenfolge
+der Träger-Id und das Protokoll sagt es; ein Mittelwert wäre eine erfundene Zahl. Der Schritt
+ist wiederholbar: Nach dem Lauf liefert `ZaehlungUmzug()` 0.
+
+**Testdatenbank auf Stand 84** — vier Projekte, alle mit Kartenwert 5,0/5,0 ct/kWh:
+
+| Projekt | vorher | nachher |
+|---|---|---|
+| 1017 (Träger 54 und 58) | kein Parametersatz | Satz angelegt, 0,05 / 0,05 €/kWh |
+| 1019 (Träger 60) | Satz mit `Einspeiseverguetung = 0`, KWK NULL | 0,05 / 0,05 €/kWh |
+| 1023 (Träger 60) | kein Parametersatz | Satz angelegt, 0,05 / 0,05 €/kWh |
+| 1024 (Träger 60) | kein Parametersatz | Satz angelegt, 0,05 / 0,05 €/kWh |
+| 1030 | Satz mit 0, KWK NULL, **kein Kartenwert** | unverändert 0 / NULL |
+
+Die Kartenspalten stehen unverändert da. Die Dateigröße bleibt gleich (70 770 688 Byte).
+
+### N6.3 Prüffälle (`EPOS.Kern.Tests/VerguetungUmzugTests`, 9 Fälle)
+
+| Fall | Was er festhält |
+|---|---|
+| `Ohne_Parametersatz_legt_der_Schritt_einen_an` | 1017 ohne Satz → 0,05/0,05 €/kWh; Zins, Betrachtungszeitraum und Vbh-Kontingent bleiben beim Vorgabewert; zweiter Lauf zählt 0 und schreibt nichts |
+| `Eine_gepflegte_Null_gilt_als_nicht_gepflegt` | 1019 mit 0/NULL → 0,05/0,05 €/kWh, Satz „ergaenzt" |
+| `Ein_gepflegter_Parameter_gewinnt` | 0,0912/0,1234 €/kWh überleben den Schritt unverändert |
+| `Ohne_Kartenwert_bleibt_der_Parametersatz_wie_er_ist` | 1030 bleibt bei 0 / NULL |
+| `Die_Verguetung_kommt_aus_den_Parametern_in_ct_je_kWh` | 0,05 €/kWh → `v_pv` = `v_bhkw` = 5,0 ct/kWh, kein Hinweis |
+| `Der_KWK_Satz_fuehrt_v_bhkw_sonst_gilt_der_allgemeine` | 0,08/0,12 → 8,0/12,0; 0,08/NULL → 8,0/8,0 |
+| `Ohne_gepflegte_Verguetung_null_und_benannter_Hinweis` (2×) | 0/NULL → 0,0/0,0 **und** der Hinweistext, `de-DE` und `en-US` |
+| `Der_Rueckfallwert_der_Speicherparameter_ist_null` | `VERGUETUNG_OHNE_PFLEGE_CT_KWH` und `StandardParameter(…).VerguetungCtKwh` stehen auf 0 |
+
+Dazu in `EPOS.UI.Tests/PreisbloeckeTests`: `Die_Verguetungsgruppe_steht_nicht_mehr_auf_der_Traegerkarte`
+(weder Gruppentitel noch `v_pv`/`v_bhkw` im Markup, zugeklappt wie aufgeklappt; die drei
+Preisblöcke stehen unverändert), die beiden Feldzählungen von 2 → 0 und 8 → 6 nachgezogen.
+
+**Gegenprobe** gefahren und zurückgebaut: Datenschritt ausgehängt (das Schreiben in
+`VerguetungUmzug.Umziehen` entfernt) → `Ohne_Parametersatz_legt_der_Schritt_einen_an` und
+`Eine_gepflegte_Null_gilt_als_nicht_gepflegt` **rot**, die übrigen sieben grün; wieder
+eingehängt → 9/9 grün.
+
+**Was die Gegenprobe NICHT zeigt, und das ist der wichtigste Befund dieses Auftrags:** Der
+**Referenzlauf taugt hier nicht als Wächter**. Gemessen wurde es vor jeder Änderung — beide
+Vergütungen fest auf 0 verdrahtet, Lauf über 1030, 1007, 1017, 1045, 1046: **kein einziges
+Byte** der 143 CSV ändert sich. Dasselbe Bild liefert der Lauf gegen die **nicht** migrierte
+Datenbank (Stand 83) mit dem neuen Code. Die fünf CI-Projekte hängen an `v_pv`/`v_bhkw`
+überhaupt nicht: Ihre Speicherbetriebsarten treffen keine Entscheidung am Verkaufspreis, und
+die Basis führt keinen Geldskalar. Byte-Gleichheit ist damit hier **kein** Nachweis, dass der
+Umzug gelungen ist — das sind die Prüffälle oben.
+
+### N6.4 Gate
+
+Kern-Filter 0 Fehler / 5 Warnungen (keine neue, Schranke 7), Windows-Schale
+(`-p:EnableWindowsTargeting=true`) 0 Fehler / 5 Warnungen (Bestand), `EPOS.Kern.Tests`
+3 162/3 162 (+9), `EPOS.UI.Tests` 4 546/4 546, SpeicherEngine 368/368, KiKern 499/499,
+SpeicherPlanung 27/28 (1 übersprungen), `Resource.Designer.cs` neu erzeugt (6 294 → 6 294
+Einträge, drei Schlüssel raus und drei herein, zweiter Lauf +0), SqlDialektPrüfer 1 473 Texte
+/ 0 Fundstellen, ChartProben 64 Bilder / 0 Verstöße, Referenzlauf **5/5 PASS und byte-gleich
+vor UND nach dem Datenschritt** (143 CSV, 1 656 417 Werte) gegen
+`2026-09-16_R8_Heizkessel_Kaskade`. Schemastand **83 → 84**, **keine neue Referenzbasis**,
+kein iOS- und kein CI-Lauf.
+
+Keine Geldgröße verschiebt sich: Die Wirtschaftlichkeit las die Kartenwerte nie, und die
+Speicherwelt liest dieselbe Zahl von der neuen Stelle.
+
+### N6.5 Abnahmepunkte auf Windows
+
+| Nr. | Was zu prüfen ist |
+|---|---|
+| `A-SP-E5-1` | Trägerkarte Strom: Die Gruppe „Vergütung für eingespeisten Strom" ist weg; „Strompreis Details" steht unverändert mit drei Gruppen und sechs Anteilen da |
+| `A-SP-E5-2` | Wirtschaftlichkeits-Parameter, Gruppe „Strom — Einspeisung und Bezug": Unter den beiden Feldern steht die Hinweiszeile, dass sie auch den Verkaufspreis der Speicherwelt stellen — deutsch und englisch |
+| `A-SP-E5-3` | Einspeisevergütung PV auf 0,08 €/kWh, KWK leer: Die Stromspeichersimulation rechnet mit v_pv = v_bhkw = 8 ct/kWh; mit KWK 0,12 €/kWh rechnet v_bhkw mit 12 ct/kWh |
+| `A-SP-E5-4` | Beide Felder auf 0 bzw. leer: Die Simulation rechnet mit 0 und schreibt den Hinweis „… ist keine Einspeisevergütung gepflegt …" ins Protokoll |
+| `A-SP-E5-5` | PV-Vergütungsdialog aktiv: Er führt v_pv weiterhin (Protokollzeile „PV-Vergütungsdialog führt die Einspeisevergütung"); v_bhkw kommt weiter aus den Parametern |
+| `A-SP-E5-6` | Migration einer Bestandsdatenbank auf Stand 84: Ein Projekt mit gepflegtem Kartenwert 5 ct/kWh trägt danach 0,05 €/kWh in den Parametern; ein Projekt mit schon gepflegtem Parameter behält seinen Wert; der zweite Migrationslauf ändert nichts |
+
+### N6.6 Logbuch-Entwurf (Version beim Anwender offen)
+
+> Die Vergütung für eingespeisten Strom wird nur noch bei den Wirtschaftlichkeits-Parametern
+> gepflegt; von dort rechnen auch Stromspeicher und Speicherflotte mit ihr.

@@ -314,6 +314,9 @@ Arbeitspreis = Beschaffung + Vertrieb + Arbeitspreis Netz
                + Stromsteuer + Konzessionsabgabe + Umlagen
 ```
 
+Vergütungssätze stehen **nicht** in dieser Zerlegung, sondern bei den Wirtschaftlichkeitsparametern
+(Abschnitt 4.3).
+
 Der **Arbeitspreis der Trägerkarte ist die eine Preiswahrheit** für jeden Leser — Wirtschaftlichkeit,
 Speichersimulation mit Preisquelle Fixpreis und Speicherauslegung rechnen mit ihm und mit nichts
 sonst. Die einzige Ausnahme sind die Quellen (a) Spotmarkt und (b) Kostenprofil: Dort **ist** die
@@ -371,10 +374,27 @@ Arbeitspreisfeld der Karte ein — gespeichert wird sie wie jede andere Preisang
 Für jede eingespeiste kWh wird ein Erlös `v[i]` [ct/kWh] angesetzt, ebenfalls als Zeitreihe (Standard konstant).
 Zwei Regime:
 
-* **Feste Einspeisevergütung** (Vorschlag 5 ct/kWh): `v[i]` konstant, unabhängig vom Spotpreis — der in der
+* **Feste Einspeisevergütung**: `v[i]` konstant, unabhängig vom Spotpreis — der in der
   V7-Mappe verwendete Fall.
-* **Direktvermarktung / anzulegender Wert** (Vorschlag 2 ct/kWh): Erlös = Spotpreis + Marktprämie, Marktprämie =
+* **Direktvermarktung / anzulegender Wert**: Erlös = Spotpreis + Marktprämie, Marktprämie =
   max(0, anzulegender Wert − Monatsmarktwert). Bei negativen Spotpreisen greift optional die Förderungsaussetzung.
+
+**Woher die Sätze kommen — eine Stelle.** Die Einspeisevergütung steht bei den
+**Wirtschaftlichkeitsparametern des Projekts** (`Tab_ProjektWirtschaftlichkeit.Einspeiseverguetung`
+und `Einspeiseverguetung_KWK`, beide in €/kWh). Die Trägerkarte trägt sie nicht; sie ist damit
+dieselbe Zahl, mit der auch die Wirtschaftlichkeit den eingespeisten Strom bewertet. Die
+Kette steht an genau einer Stelle (`StromPreisCtrl.BaueVerguetungen`):
+
+| Größe | Quelle |
+|---|---|
+| `v_pv` | PV-Vergütungsdialog, wenn er aktiv ist (er führt, mengenunabhängiger Satz des ersten Jahres); sonst `Einspeiseverguetung` |
+| `v_bhkw` | `Einspeiseverguetung_KWK`, wenn gepflegt; sonst `Einspeiseverguetung` |
+
+Umgerechnet wird an dieser einen Naht: €/kWh der Parameter mal 100 ergibt ct/kWh der
+Speicherwelt. **Ohne gepflegten Wert rechnet der Lauf mit 0 und sagt es** — im Hinweis des
+Preisergebnisses und damit im Simulationsprotokoll. Ein Ersatzwert wäre eine Zahl, die niemand
+eingetragen hat. Eine gepflegte 0 in `Einspeiseverguetung` gilt dabei als „nicht gepflegt"; beim
+KWK-Satz ist die Unterscheidung schärfer, weil seine Spalte NULL sein kann.
 
 Der gültige `v[i]` ist zugleich der **Opportunitätswert der Ladung** aus Eigenerzeugung. Jede Ladung aus PV/BHKW
 wird mit `−E_ch · v[i]/100` bewertet — exakt die Logik der verifizierten Spalte F. PV und BHKW können

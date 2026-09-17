@@ -148,9 +148,13 @@ Protokoll unter
 **`2026-09-16_R8_Heizkessel_Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 83**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
-unverändert weiter — Schritt 83 faltet den Strom-Aufschlag in den Arbeitspreis und ist
-dabei ergebnisneutral, der Lauf ist vor und nach dem Datenschritt byte-gleich). Gegen
+(**Schemastand 84**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
+unverändert weiter — Schritt 83 faltet den Strom-Aufschlag in den Arbeitspreis, Schritt 84
+zieht die Einspeisevergütung von der Trägerkarte in die Wirtschaftlichkeitsparameter um;
+beide sind ergebnisneutral, der Lauf ist vor und nach jedem der beiden Datenschritte
+byte-gleich. Bei Schritt 84 ist das doppelt belegt: Die fünf Projekte des CI-Laufs
+hängen an `v_pv`/`v_bhkw` überhaupt nicht — eine Gegenprobe mit beiden Sätzen auf 0
+liefert dieselben Bytes). Gegen
 diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung
 zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
