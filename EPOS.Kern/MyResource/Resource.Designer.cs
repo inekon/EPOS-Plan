@@ -20568,6 +20568,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme eingeengt auf die Anlagen des Projekts: {0} ähnelt.
+        /// </summary>
+        public static string KDLG_ET_KONTEXT_PROJEKTANLAGEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_KONTEXT_PROJEKTANLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger ähnelt.
         /// </summary>
         public static string KDLG_ET_LISTE {

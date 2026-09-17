@@ -8671,6 +8671,9 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_ET_KONTEXT_ALLE" xml:space="preserve">
     <value>for {0}: all energy carriers</value>
   </data>
+  <data name="KDLG_ET_KONTEXT_PROJEKTANLAGEN" xml:space="preserve">
+    <value>Catalogue transfer limited to the project's systems: {0}</value>
+  </data>
   <data name="KDLG_ET_LISTE" xml:space="preserve">
     <value>Energy carriers</value>
   </data>

@@ -123,6 +123,16 @@ namespace WindowsFormsApplication1
         /// <summary>true, wenn die Komponente gar keinen Energieträger bezieht (nur Hinweis).</summary>
         private bool _ohneTraeger;
 
+        /// <summary>
+        /// ET‑E‑3 (Anwenderentscheid 17.09.2026): die zulässigen Gruppen ALLER Anlagen des
+        /// Projekts (<see cref="EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt"/>);
+        /// <c>null</c> = keine Einengung. Sie gilt NUR ohne Komponentenkontext und NUR für die
+        /// Übernahme aus dem Katalog — die linke Liste bleibt vollständig, denn sie führt die
+        /// Träger, die dem PROJEKT zugeordnet sind; einen davon zu verstecken hieße, eine
+        /// vorhandene Zuordnung zu verschweigen.
+        /// </summary>
+        private IReadOnlyList<string> _projektGruppen;
+
         /// <summary>Der vorgewählte Träger der Komponente — er bleibt in der Liste, auch wenn er nicht passt.</summary>
         private int _vorwahl;
 
@@ -344,7 +354,30 @@ namespace WindowsFormsApplication1
 
             _ohneTraeger = gruppen != null && gruppen.Count == 0;
             _zulaessigeGruppen = _ohneTraeger ? null : gruppen;
+
+            // ET-E-3: Ohne Komponentenkontext (Menue Administration, Knopf auf der
+            // Kostenseite ohne gewaehlte Anlagenzeile) engt das PROJEKT ein - auf das,
+            // was seine Anlagen ueberhaupt beziehen koennen. Der Katalogkontext
+            // (_projektId <= 0) bleibt frei, und mit Erzeugerart bleibt es beim
+            // Einzelfall.
+            _projektGruppen = null;
+            if (_erzeugerart.Length == 0 && _projektId > 0)
+            {
+                try
+                {
+                    _projektGruppen =
+                        EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(_projektId);
+                }
+                catch { _projektGruppen = null; }
+            }
         }
+
+        /// <summary>
+        /// Die Gruppen, auf die die ÜBERNAHME aus dem Katalog eingeengt ist: die der
+        /// Komponente, sonst die des Projekts. <c>null</c> = keine Einengung.
+        /// </summary>
+        private IReadOnlyList<string> UebernahmeGruppen
+        { get { return _zulaessigeGruppen ?? _projektGruppen; } }
 
         /// <summary>Gilt eine Einengung? (Nur dann werden Liste und Übernahme gefiltert.)</summary>
         private bool Eingeengt { get { return _zulaessigeGruppen != null; } }
@@ -366,7 +399,16 @@ namespace WindowsFormsApplication1
                 : string.Format(CultureInfo.CurrentCulture,
                     T("KDLG_ET_KONTEXT_PROJEKT", "Kontext: Projekt {0}"), _projektId);
 
-            if (_erzeugerart.Length == 0) return kontext;
+            // ET-E-3: Ohne Komponentenkontext sagt die Kopfzeile, worauf die Uebernahme
+            // eingeengt ist - die Anlagen des Projekts.
+            if (_erzeugerart.Length == 0)
+            {
+                if (_projektGruppen == null) return kontext;
+                return kontext + " — " + string.Format(CultureInfo.CurrentCulture,
+                    T("KDLG_ET_KONTEXT_PROJEKTANLAGEN",
+                      "Übernahme eingeengt auf die Anlagen des Projekts: {0}"),
+                    string.Join(", ", _projektGruppen));
+            }
 
             string zusatz;
             if (_ohneTraeger)
@@ -490,7 +532,8 @@ namespace WindowsFormsApplication1
         /// ET‑1: die Katalogträger, die dem Projekt noch nicht zugeordnet sind, mit Gruppe.
         /// Auftrag 268: Mit Komponentenkontext bietet „Aus Katalog übernehmen…" nur die
         /// zulässigen an — was die Liste nicht zeigt, soll auch die Übernahme nicht
-        /// hereinholen.
+        /// hereinholen. ET‑E‑3: OHNE Komponentenkontext gilt dieselbe Regel für das ganze
+        /// Projekt — angeboten wird, was die Anlagen des Projekts beziehen können.
         /// </summary>
         private IReadOnlyList<ValueTuple<int, string>> Freie()
         {
@@ -498,9 +541,11 @@ namespace WindowsFormsApplication1
             if (_projektId <= 0) return liste;
             try
             {
+                IReadOnlyList<string> gruppen = UebernahmeGruppen;
                 foreach (EnergyCarrier c in EnergietraegerKatalogCtrl.NichtZugeordnete(_projektId))
                 {
-                    if (Eingeengt && !Passt(c)) continue;
+                    if (gruppen != null
+                     && !EnergietraegerZulaessigkeit.PasstGruppe(gruppen, c.GroupCode)) continue;
                     liste.Add(new ValueTuple<int, string>(c.ID,
                         (string.IsNullOrEmpty(c.GroupCode) ? "" : c.GroupCode + " › ") + c.Name));
                 }

@@ -349,3 +349,112 @@ speichern'') und ''Die Liste folgt jedem Schritt''. Upload gebündelt und ausste
   nicht zugeordnet ist: Dann hält niemand den zugeordneten Stromträger fest, sein Entfernen ist
   erlaubt, und `StromTraegerSicherstellen` legt ihn sofort wieder an. Genau dieser Stand ist im
   Prüffall hergestellt; ohne ihn bleibt das Banner aus — was der Gegenfall belegt.
+
+## 9. ET‑8 (17.09.2026) — ohne gewählte Anlagenzeile engt das PROJEKT die Katalogübernahme ein
+
+**Anwenderentscheid 17.09.2026 (ET‑E‑3, „Empfehlung") auf den Wunsch vom 16.09.2026:** „Die
+Auswahl-Liste der Energieträger könnte auf die möglichen Energieträger (nach verfügbaren
+Anlagen) eingeschränkt werden (Stromspeicher nur Strom, Heizung Heizöl nur Heizöl, …)."
+
+### 9.1 Befund
+
+| Nr. | Befund | Ursache |
+|---|---|---|
+| **ET‑8** | Die Einengung aus Abschnitt 7 greift nur, wenn in „Anlagenkomponenten" eine Zeile gewählt ist. Der Normalfall — Knopf ohne gewählte Zeile — öffnete die Verwaltung ohne jede Einengung: „Aus Katalog übernehmen…" bot den ganzen Katalog an, auch Träger, die keine Anlage des Projekts je beziehen kann | `KostenSeiteGaben.TraegerGaben` reicht ohne Zeile `Gaben(0, null, 0)`; `EnergietraegerZulaessigkeit` kannte bis dahin nur den EINZELfall (Erzeugerart + Gerät) und antwortet auf eine leere Erzeugerart mit „keine Einengung". Eine Aussage über die Anlagen eines ganzen Projekts gab es nicht |
+
+### 9.2 Umsetzung
+
+- **Kern — ein zweiter Weg, dieselbe Wahrheit.**
+  `EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(projektId)` bildet die
+  **Vereinigung** von `ZulaessigeGruppen(erzeugerart, geraeteId)` über alle Anlagen des
+  Projekts. Anlagenquelle ist `ProjektEnergietraegerCtrl.AnlagenMitTraeger` (Komponente und
+  Gerätezeile je Anlagenzeile); der Heizstab ist dort kein eigener Eintrag und kommt über
+  `ProjektEnergietraegerCtrl.BrauchtStromTraeger` hinzu — dieselbe Bedingung, die auch die
+  Stromträger-Automatik stellt. **Keine zweite Regel**: Die Kategorien je Anlage rechnet
+  weiterhin `Kategoriecodes`, die Übersetzung in Gruppen `GruppenZuCodes`.
+  Die Regeln stehen als Kommentar am Kopf des Weges:
+  - Projekt ohne Anlage mit Träger (kein Projekt, keine Anlagen, nur Solarthermie und
+    Puffer) → `null`, keine Einengung.
+  - Liefert EINE Anlage `null` (Kessel, dessen Gerät keinen auswertbaren Brennstoff trägt) →
+    die Vereinigung ist `null`: Was für eine Anlage offen ist, ist für das Projekt offen.
+  - Anlagen ohne Träger (Solarthermie, Pufferspeicher) tragen nichts bei.
+  - Sonst die Vereinigung der Gruppennamen, ohne Dubletten, in Katalogreihenfolge.
+  - Bliebe nach der Einengung kein Katalogträger übrig → `null`, wie im Einzelfall.
+  - Eine LEERE Liste gibt der Weg nie zurück: „das Projekt bezieht keine Energie" ist kein
+    eigener Fall, sondern „keine Anlage mit Träger".
+- **Hülle — die Einengung gilt der ÜBERNAHME, nicht der Liste.** `KontextSetzen` holt bei
+  leerer Erzeugerart und `_projektId > 0` die Projektvereinigung nach `_projektGruppen`;
+  `Freie()` filtert über `UebernahmeGruppen` (Komponente vor Projekt). Die linke Liste bleibt
+  unberührt: Sie führt im Projektkontext die Träger des PROJEKTS
+  (`KostenSummenCtrl.GetAllCarriers(projektId)`), und einen zugeordneten Träger zu verstecken,
+  hieße eine vorhandene Zuordnung zu verschweigen — genau das, was Abschnitt 7 für den
+  Einzelfall schon ausschließt. Mit Erzeugerart bleibt alles beim Einzelfall, im
+  Katalogkontext (`_projektId <= 0`) gilt keine Einengung.
+- **Anzeige — dieselbe Kopfzeile wie im Einzelfall.** `KontextText()` sagt jetzt auch ohne
+  Erzeugerart, worauf eingeengt ist: „Kontext: Projekt 1030 — Übernahme eingeengt auf die
+  Anlagen des Projekts: Gas, Wasserstoff". Ein neuer Schlüssel
+  `KDLG_ET_KONTEXT_PROJEKTANLAGEN` in beiden Sprachen, kein neuer Baustein im Dialog.
+- **Ohne Einengung bleibt die Kopfzeile, wie sie war** („Kontext: Projekt 19"), und die
+  Übernahme vollständig.
+
+### 9.3 Nachweise
+
+| Was | Wo | Ergebnis |
+|---|---|---|
+| Je Regel ein Fall gegen die Testdatenbank: Projekt 19 (ohne Anlagen) und `projektId = 0` → `null`; Projekt 1024 (Elektrokessel, Öl‑BHKW, Wärmepumpe mit Heizstab) → Strom und Öl, sonst nichts; Projekt 1009 (drei Wärmepumpen, zwei Gaskessel) → genau die Vereinigung der beiden Einzelfälle, jede Gruppe einmal; Projekt 1027 mit Kessel ohne Brennstoff (in der Arbeitskopie gesetzt) → `null`; Projekt 19 mit einer Solarthermie-Zeile (in der Arbeitskopie angelegt) → `null` | `EPOS.Kern.Tests/EnergietraegerZulaessigkeitTests.cs` | **5** neue Fälle (14 → 19) |
+| Ohne Erzeugerart ist `Freie()` auf die Vereinigung eingeengt und kleiner als der freie Katalog; der zugeordnete Träger außerhalb der Vereinigung (Strom in 1030) bleibt in der Liste und fehlt in der Übernahme; Katalogkontext bleibt frei; mit Erzeugerart bleibt der Einzelfall; Kopfzeile de/en; Projekt ohne Anlagen bleibt ohne Einengung | `EPOS.Kern.Tests/EnergietraegerHuelleTests.cs` | **7** neue Fälle (29 → 36) |
+| Die Kopfzeile der Projekteinengung im Dialog, beide Sprachen aus derselben Ressourcenzeile | `EPOS.UI.Tests/Dialoge/EnergietraegerDialogTests.cs` | **1** Theorie, 2 Fälle |
+| **Gegenprobe:** `ZulaessigeGruppenFuerProjekt` auf `null` festgenagelt | Kern- und Hüllenfälle | **7** Fälle rot (3 Kern, 4 Hülle) — die „keine Einengung"-Fälle blieben grün; wieder eingehängt, alles grün |
+| `Resource.Designer.cs` neu erzeugt | `Werkzeuge/ResourceDesigner` | 6 294 → 6 295 Einträge, +377 Zeichen, zweiter Lauf +0 (wiederholbar) |
+| Gate | Kern-Filter Release | 0 Fehler, 5 Warnungen (Bestand, keine neue; Schranke 7) |
+| Gate | Windows-Schale (`EnableWindowsTargeting`) | 0 Fehler, 5 Warnungen (Bestand) |
+| Gate | Tests, beide Kulturen (normal und `LC_ALL=en_US.UTF-8`) | `EPOS.Kern.Tests` 3 142/3 142 (+12), `EPOS.UI.Tests` 4 548/4 548 (+2), SpeicherEngine 370/370, KiKern 499/499, SpeicherPlanung 27/28 (1 übersprungen) |
+| Gate | `SqlDialektPruefer` | 1 460 Texte, 0 Fundstellen |
+| Referenzlauf | fünf Projekte gegen `2026-09-16_R8_Heizkessel_Kaskade` | 5/5 PASS — kein Rechenweg berührt, kein Schemaschritt, keine neue Basis |
+
+### 9.4 Abnahmepunkte — A‑ET‑E3 (Windows)
+
+1. **Projektkontext ohne gewählte Anlagenzeile** (Bericht & Kosten → Kosten →
+   „Energieträgerverwaltung…", in „Anlagenkomponenten" nichts gewählt): Die Kopfzeile nennt
+   „Übernahme eingeengt auf die Anlagen des Projekts: …" mit den Gruppen des Projekts.
+2. Im selben Stand „Aus Katalog übernehmen…": Angeboten werden nur Träger dieser Gruppen —
+   ein Gasprojekt bekommt keinen Stromträger zur Übernahme.
+3. Die Trägerliste links bleibt vollständig: Ein dem Projekt zugeordneter Träger außerhalb
+   der Gruppen steht weiter darin und lässt sich wählen und bearbeiten.
+4. **Mit gewählter Anlagenzeile** ändert sich nichts: Kopfzeile und Übernahme folgen der
+   Komponente („für Wärmepumpe: nur Gruppe Strom").
+5. **Katalogkontext** (Administration → Kosten → Energieträgerverwaltung…): Kopfzeile
+   „Kontext: Katalog (Stammdaten)", keine Einengung.
+6. **Projekt ohne Anlage mit Energieträger** (nur Puffer/Solarthermie): Kopfzeile ohne
+   Zusatz, Übernahme vollständig.
+7. **Beide Sprachen:** Die Kopfzeile steht auch auf Englisch („Catalogue transfer limited to
+   the project's systems: …").
+
+### 9.5 Logbuch-Entwurf (Version beim Anwender offen) und Wiki
+
+Ein Satz — mehr trägt der Eintrag nicht (Regel: Konzept Hilfesystem 13.4):
+
+> - Ohne gewählte Anlagenzeile bietet die Energieträgerverwaltung unter „Aus Katalog
+>   übernehmen…" nur noch die Energieträger an, die die Anlagen des Projekts beziehen
+>   können; die Kopfzeile nennt sie.
+
+**Wiki-Quelle** `Projekte/Wiki/Programm Dokumentation - Kosten.wiki`, Abschnitt
+„Energieträgerverwaltung": der Einleitungssatz zum Knopf ohne gewählte Zeile und ein neuer
+Punkt ''Einengung auf die Anlagen des Projekts'' (Anker `einengung-projekt`). Upload gebündelt
+und ausstehend.
+
+### 9.6 Stand des Restpunkts „Nach #268"
+
+`KostenOeffnen`/`EnergiekostenOeffnen` in `HeizkesselHuelle`/`BhkwHuelle` sind **weiterhin
+unbelegt** — diese Aufgabe berührt sie nicht: Sie ändert allein, was die Verwaltung ohne
+Komponentenkontext anbietet, nicht, wer sie öffnet. Der Punkt bleibt offen. Ebenso bleiben
+offen: „Tierische Fette" für das BHKW ohne Gerät, der UNIQUE-Index auf
+`energy_project_settings` und der Anlegedialog der iOS-Variante.
+
+### 9.7 Ohne Auftrag beim Lesen gefunden
+
+- **Eine Gaskomponente engt auf ZWEI Gruppen ein.** `GASEOUS_FUEL` führt im Katalog „Gas" und
+  „Wasserstoff"; ein Gaskessel bekommt beide angeboten. Das ist die gewollte Folge der Regel
+  „gerechnet wird über den Kategoriecode, angezeigt über die Gruppe" (Abschnitt 7) und fällt
+  in der Kopfzeile nun stärker auf, weil sie die Gruppen nennt.
+- **Die nächste freie Befundnummer dieses Dialogs ist ET‑9.**

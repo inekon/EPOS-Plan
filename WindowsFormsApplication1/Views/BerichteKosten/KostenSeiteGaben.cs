@@ -879,8 +879,9 @@ namespace WindowsFormsApplication1
         /// <para><b>Auftrag 268:</b> Ist in „Anlagenkomponenten" eine Zeile gewählt, geht
         /// ihre Komponente samt Gerät mit — die Verwaltung zeigt dann nur die Träger, die
         /// zu ihr passen, und springt auf den Träger dieser Anlage. Ohne gewählte Zeile
-        /// (<paramref name="zeile"/> null) bleibt es beim Projektkontext ohne Einengung.
-        /// Welche Träger zulässig sind, entscheidet der Kern
+        /// (<paramref name="zeile"/> null) gilt der Projektkontext: Die Übernahme aus dem
+        /// Katalog bietet dann an, was die Anlagen des GANZEN Projekts beziehen können
+        /// (ET‑E‑3). Welche Träger zulässig sind, entscheidet der Kern
         /// (<c>EnergietraegerZulaessigkeit</c>), nicht diese Hülle.</para>
         /// </summary>
         private IReadOnlyDictionary<string, object> TraegerGaben(KostenZeile zeile)
