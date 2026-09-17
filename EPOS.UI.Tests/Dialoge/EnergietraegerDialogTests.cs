@@ -1029,6 +1029,31 @@ public class EnergietraegerDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// ET‑E‑3 (Anwenderentscheid 17.09.2026): Ohne gewählte Anlagenzeile engt das
+    /// PROJEKT die Katalogübernahme ein — die Kopfzeile sagt worauf, in beiden Sprachen
+    /// aus derselben Ressourcenzeile.
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE", "Übernahme eingeengt auf die Anlagen des Projekts")]
+    [InlineData("en-US", "Catalogue transfer limited to the project's systems")]
+    public void Die_Kopfzeile_nennt_die_Einengung_auf_die_Anlagen_des_Projekts(
+        string kultur, string erwartet)
+    {
+        using var _ = new Kulturvorrichtung(kultur);
+
+        string text = "Kontext: Projekt 1030 — " + string.Format(
+            CultureInfo.CurrentCulture,
+            WindowsFormsApplication1.MyResource.Resource.KDLG_ET_KONTEXT_PROJEKTANLAGEN,
+            "Gas, Wasserstoff");
+
+        var cut = Zeige(katalog: false, mehr: p => p.Add(x => x.KontextText, text));
+
+        string kopfzeile = cut.Find(".epos-kontextzeile").TextContent;
+        Assert.Contains(erwartet, kopfzeile);
+        Assert.Contains("Gas, Wasserstoff", kopfzeile);
+    }
+
+    /// <summary>
     /// Mit Komponentenkontext kommt die Liste bereits eingeengt herein — der Dialog
     /// zeigt, was er bekommt, und die leere Gruppe fällt samt Kopf weg.
     /// </summary>

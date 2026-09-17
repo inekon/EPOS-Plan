@@ -8681,6 +8681,9 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_ET_KONTEXT_ALLE" xml:space="preserve">
     <value>für {0}: alle Energieträger</value>
   </data>
+  <data name="KDLG_ET_KONTEXT_PROJEKTANLAGEN" xml:space="preserve">
+    <value>Übernahme eingeengt auf die Anlagen des Projekts: {0}</value>
+  </data>
   <data name="KDLG_ET_LISTE" xml:space="preserve">
     <value>Energieträger</value>
   </data>
