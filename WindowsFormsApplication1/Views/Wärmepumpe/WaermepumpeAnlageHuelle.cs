@@ -19,10 +19,12 @@ namespace WindowsFormsApplication1
     /// bekommt eine KOPIE der Felder, und bei OK überträgt die Hülle sie zurück — in
     /// dasselbe Objekt, das der Aufrufer hält.</para>
     ///
-    /// <para><b>Die Kostenverwaltung bleibt ein ZWEITES Fenster</b> (Abweichung A-1 aus
-    /// Welle 6, unverändert): <see cref="KostenKomponenteHuelle"/> ist selbst eine
-    /// Blazor-Hülle, und ihre Verschmelzung zur <c>Ueberlagerung</c> bräuchte deren
-    /// Datenseite als Delegatensatz.</para>
+    /// <para><b>Die Kosten- und die Energieträgerverwaltung bleiben ZWEITE Fenster</b>
+    /// (Abweichung A-1 aus Welle 6, unverändert): <see cref="KostenKomponenteHuelle"/>
+    /// ist selbst eine Blazor-Hülle, und ihre Verschmelzung zur <c>Ueberlagerung</c>
+    /// bräuchte deren Datenseite als Delegatensatz. Beide gehen über
+    /// <c>ErzeugerKostenwege</c> auf — denselben Weg wie bei den sechs
+    /// Erzeugerdialogen.</para>
     /// </summary>
     internal static class WaermepumpeAnlageHuelle
     {
@@ -125,7 +127,36 @@ namespace WindowsFormsApplication1
                 ["KostenBereit"] = new Func<bool>(
                     () => WErzeugerCtrl.AnlagenzeileNachziehen(modell, projektId)),
                 ["Kostensumme"] = new Func<(double, double)>(() => Kostensumme(modell)),
-                ["KostenOeffnen"] = new Func<Task>(() => KostenOeffnen(besitzer, modell)),
+
+                // DIE KOSTENLEISTE DER NACHBARN (17.09.2026). Bis dahin stand hier EIN
+                // Weg "Kosten bearbeiten…", der die Kostenverwaltung immer auf der
+                // INVESTITIONSSEITE aufschlug (betrieb: false) und den Betriebsteil dem
+                // Anwender ueberliess; "Energiekosten…" gab es gar nicht, obwohl die
+                // Waermepumpe Strom bezieht. Beide Wege stehen jetzt einmal in
+                // ErzeugerKostenwege - derselbe Weg, den Heizkessel, BHKW,
+                // Photovoltaik, Stromspeicher, Pufferspeicher und Solarthermie gehen.
+                //
+                // OHNE PROJEKT BLEIBT DER WEG WEG und die Leiste zeichnet den Knopf gar
+                // nicht erst (ihre eigene Regel) - dieselbe Weiche wie in
+                // HeizkesselHuelle.
+                ["KostenOeffnen"] = projektId > 0
+                    ? new Func<bool, Task>(
+                        betrieb => ErzeugerKostenwege.Kosten(
+                            besitzer, projektId, DbWerte.ERZEUGER_WAERMEPUMPE,
+                            modell != null ? modell.ID : 0, betrieb))
+                    : null,
+
+                // Traeger und Geraet kommen aus dem FELDSATZ, nicht aus dem Modell: Die
+                // Traegerwahl der Ueberlagerung "Konfiguration" aendert sie, lange bevor
+                // ein OK sie schreibt (ET-5). Die Einengung auf STROM macht der Kern
+                // ueber die Erzeugerart (EnergietraegerZulaessigkeit: NUR_STROM).
+                ["EnergiekostenOeffnen"] = projektId > 0
+                    ? new Func<WaermepumpeAnlageDaten, Task>(
+                        stand => ErzeugerKostenwege.Energiekosten(
+                            besitzer, projektId, DbWerte.ERZEUGER_WAERMEPUMPE,
+                            stand != null ? stand.CarrierId : 0,
+                            stand != null ? stand.IdWp : 0))
+                    : null,
 
                 // W14a-E-10 / S2.2: derselbe Weg wie in der Verwaltung. OHNE die
                 // Spalte "im Projekt verwendet" - diese Maske fuehrt keine
@@ -226,9 +257,9 @@ namespace WindowsFormsApplication1
                 ["SchliessenText"] = Text_("WPV_BTN_SCHLIESSEN", "Schließen"),
                 ["BtnKatalogText"] = Text_("WPK_BTN_KATALOG", "📋  Modul-Katalog..."),
                 ["BtnKenndatenText"] = Text_("WPS_BTN_KENNDATEN", "Kennliniendaten Ansicht/Bearbeiten..."),
-                ["BtnKostenText"] = Text_("WPI_BTN_KOSTEN", "Kosten bearbeiten…"),
-                ["TipKosten"] = Text_("WPI_TIP_KOSTEN",
-                    "Kostenverwaltung dieser Anlage öffnen (Projektmodus)."),
+                ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
+                ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
+                ["KostenEnergieText"] = Text_("KDLG_KNOPF_ENERGIE", "Energiekosten…"),
                 ["TipKostenNeu"] = Text_("WPI_TIP_KOSTEN_NEU",
                     "Kosten werden je ANLAGE gepflegt — die Wärmepumpe zuerst mit OK anlegen und speichern; danach über „Ändern..“ die Kosten bearbeiten."),
                 ["TextKostenKeine"] = Text_("WPI_KOSTEN_KEINE", "Invest — · Betrieb —"),
@@ -433,34 +464,11 @@ namespace WindowsFormsApplication1
                         KostenSummenCtrl.KATEGORIE_BETRIEB, modell.ID));
         }
 
-        /// <summary>
-        /// „Kosten bearbeiten…" (<c>btnKosten_Click</c>:566) — ein ZWEITES Fenster
-        /// (A-1 aus Welle 6, unverändert).
-        ///
-        /// <para><b>Über den Nachlauf</b>, wie der gleichlautende Weg der Brenner
-        /// (<c>ErzeugerKostenwege.Kosten</c>): Die Kostenverwaltung ist ein modales
-        /// Fenster, und ein modales Fenster darf nie SYNCHRON aus einem
-        /// Blazor-Ereignis aufgehen (Befunde W13‑B‑1 und W15b‑B‑1). Der Projektname
-        /// wird noch davor gelesen — er kostet nur eine Abfrage und gehört nicht in
-        /// die nachgelagerte Nachricht.</para>
-        /// </summary>
-        private static Task KostenOeffnen(IWin32Window besitzer, WErzeugerModel modell)
-        {
-            if (modell == null || modell.ID_Projekt <= 0) return Task.CompletedTask;
-
-            string projektname = "";
-            try
-            {
-                var pc = new ProjektCtrl();
-                pc.ReadSingle(modell.ID_Projekt);
-                if (pc.rows > 0) projektname = pc.m_szProjektname;
-            }
-            catch { }
-
-            return Blazornachlauf.Nachgelagert(() =>
-                KostenKomponenteHuelle.OeffnenProjekt(besitzer, modell.ID_Projekt, projektname,
-                                                      DbWerte.ERZEUGER_WAERMEPUMPE, false, modell.ID));
-        }
+        // „Kosten bearbeiten…" (btnKosten_Click:566) fuehrte bis zum 17.09.2026 von hier
+        // aus in die Kostenverwaltung - EIN Knopf, immer auf der Investitionsseite, und
+        // ohne Weg in die Energietraegerverwaltung. Seit die Waermepumpe dieselbe
+        // KostenKnoepfeLeiste traegt wie die sechs Erzeugerdialoge, stehen beide Wege
+        // einmal in ErzeugerKostenwege; der eigene Weg hier ist damit entfallen.
 
         // =================================================================================
         // Abbildungen

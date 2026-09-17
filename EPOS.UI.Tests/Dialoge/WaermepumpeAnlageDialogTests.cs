@@ -92,7 +92,10 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Func<int?, int?, string?>? temperaturen = null,
         Func<bool>? kostenBereit = null,
         Func<(double, double)>? kostensumme = null,
-        Func<Task>? kostenOeffnen = null,
+        Func<bool, Task>? kostenOeffnen = null,
+        Func<WaermepumpeAnlageDaten, Task>? energiekosten = null,
+        bool wizard = false,
+        bool nurLesen = false,
         Func<int, IReadOnlyList<KennlinienZeile>>? kennlinien = null,
         Func<int, IReadOnlyList<KennlinienZeile>, bool>? kennlinienAbgleichen = null,
         Action<bool>? geschlossen = null,
@@ -118,6 +121,9 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
             .Add(x => x.KostenBereit, kostenBereit ?? (() => true))
             .Add(x => x.Kostensumme, kostensumme ?? (() => (12000d, 340d)))
             .Add(x => x.KostenOeffnen, kostenOeffnen)
+            .Add(x => x.EnergiekostenOeffnen, energiekosten)
+            .Add(x => x.Wizard, wizard)
+            .Add(x => x.NurLesen, nurLesen)
             .Add(x => x.Katalog, () => new[]
             {
                 // W14a-E-10 / S2.2: eine gewoehnliche Katalogfilterzeile, wie in
@@ -146,6 +152,9 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
 
     private static IElement Knopf(IRenderedComponent<WaermepumpeAnlageDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
+
+    /// <summary>Der Auswahlpfad der Kostenknöpfe — drei Stück, in dieser Reihenfolge.</summary>
+    private const string KOSTENKNOEPFE = ".epos-kostenleiste button.epos-knopf";
 
     /// <summary>Die Überlagerung „Konfiguration" öffnen — der Weg zu den acht Feldern.</summary>
     private static void KonfigurationOeffnen(IRenderedComponent<WaermepumpeAnlageDialog> cut)
@@ -528,14 +537,18 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     [Fact]
     public void Die_Knopfzeile_steht_direkt_unter_dem_Kenndaten_Kopf()
     {
-        var cut = Aufbauen(kostenOeffnen: () => Task.CompletedTask,
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask,
                            kennlinien: _ => Array.Empty<KennlinienZeile>());
 
         var gruppe = cut.FindAll(".epos-gruppenkopf-koerper")[1];
         var erstes = gruppe.Children[0];
 
+        // 17.09.2026: Links steht die KostenKnoepfeLeiste der sechs Erzeugerdialoge
+        // (drei Knoepfe) statt des einen Sammelknopfs "Kosten bearbeiten…".
         Assert.Contains("epos-leiste", erstes.ClassName);
-        Assert.Equal(new[] { "Kosten bearbeiten…", "Konfiguration…",
+        Assert.Equal(new[] { "Investitionskosten…", "Betriebskosten…", "Energiekosten…",
+                             "Konfiguration…",
                              "Kennliniendaten Ansicht/Bearbeiten..." },
                      erstes.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
         Assert.NotNull(erstes.QuerySelector(".epos-leiste-fueller"));
@@ -709,46 +722,154 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // Kostenzeile
+    // Die Kostenleiste
+    //
+    // 17.09.2026 (Anwenderentscheid „angleichen!"): Die Wärmepumpe trägt dieselbe
+    // KostenKnoepfeLeiste wie die sechs Erzeugerdialoge. Bis dahin stand hier EIN Knopf
+    // „Kosten bearbeiten…", der die Kostenverwaltung immer auf der Investitionsseite
+    // aufschlug, und gar kein Weg „Energiekosten…" — obwohl die Wärmepumpe Strom bezieht.
     // =================================================================================
 
     /// <summary>
-    /// Der Kostenknopf steht seit dem 16.09.2026 in der Knopfzeile oben; in der
-    /// Kostenzeile bleiben nur die Summen.
+    /// Der Leerlauf, den es zu vermeiden gilt: Ohne Wege der Hülle steht KEIN Knopf.
+    /// Die Summenzeile darunter bleibt — sie ist keine Schaltfläche.
     /// </summary>
     [Fact]
-    public void Ohne_Delegat_gibt_es_keinen_Kostenknopf()
+    public void Ohne_Wege_bleibt_die_Kostenleiste_leer()
     {
         var cut = Aufbauen();
 
-        Assert.Empty(cut.FindAll(".epos-kostenleiste button"));
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
         Assert.DoesNotContain(cut.FindAll("button").Select(b => b.TextContent.Trim()),
                               t => t == "Kosten bearbeiten…");
     }
 
     [Fact]
+    public void Mit_den_Wegen_stehen_die_drei_Knoepfe()
+    {
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        var knoepfe = cut.FindAll(KOSTENKNOEPFE);
+        Assert.Equal(3, knoepfe.Count);
+        Assert.Equal("Investitionskosten…", knoepfe[0].TextContent);
+        Assert.Equal("Betriebskosten…", knoepfe[1].TextContent);
+        Assert.Equal("Energiekosten…", knoepfe[2].TextContent);
+    }
+
+    /// <summary>
+    /// Beide Kostenknöpfe führen in dieselbe Maske dieser EINEN Anlage und
+    /// unterscheiden sich nur im Schalter <c>betrieb</c> — genau der Parameter, den
+    /// der Sammelknopf nie setzte (er schlug immer die Investitionsseite auf).
+    /// </summary>
+    [Fact]
+    public void Invest_und_Betrieb_gehen_denselben_Weg_mit_dem_Schalter()
+    {
+        var gerufen = new List<bool>();
+        var cut = Aufbauen(kostenOeffnen: b => { gerufen.Add(b); return Task.CompletedTask; },
+                           energiekosten: _ => Task.CompletedTask);
+
+        cut.FindAll(KOSTENKNOEPFE)[0].Click();
+        cut.FindAll(KOSTENKNOEPFE)[1].Click();
+
+        Assert.Equal(new[] { false, true }, gerufen.ToArray());
+    }
+
+    /// <summary>
+    /// „Energiekosten…" nimmt den FELDSATZ mit — Träger und Gerät dieser Anlage. Sie
+    /// stehen nicht im Modell der Hülle: Die Trägerwahl der Überlagerung
+    /// „Konfiguration" ändert sie, lange bevor ein OK sie schreibt.
+    /// </summary>
+    [Fact]
+    public void Energiekosten_nimmt_Traeger_und_Geraet_der_Anlage_mit()
+    {
+        WaermepumpeAnlageDaten? mitgegeben = null;
+        var daten = Voll();
+        daten.CarrierId = 5;
+
+        var cut = Aufbauen(daten: daten,
+                           kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: d => { mitgegeben = d; return Task.CompletedTask; });
+
+        cut.FindAll(KOSTENKNOEPFE)[2].Click();
+
+        Assert.NotNull(mitgegeben);
+        Assert.Equal(5, mitgegeben!.CarrierId);
+        Assert.Equal(77, mitgegeben!.IdWp);
+    }
+
+    /// <summary>
+    /// Nur einer der beiden Wege belegt: Dann steht auch nur sein Knopf
+    /// (die Regel der <c>KostenKnoepfeLeiste</c>, hier über den Dialog geprüft).
+    /// </summary>
+    [Fact]
+    public void Ein_fehlender_Weg_nimmt_seine_Knoepfe_mit()
+    {
+        var cut = Aufbauen(energiekosten: _ => Task.CompletedTask);
+
+        var knoepfe = cut.FindAll(KOSTENKNOEPFE);
+        Assert.Single(knoepfe);
+        Assert.Equal("Energiekosten…", knoepfe[0].TextContent);
+    }
+
+    /// <summary>
+    /// Im ASSISTENTEN fehlt die Leiste ganz: Dort gibt es das Projekt noch nicht, zu
+    /// dem Kostenpositionen und Projektträger gehörten. Dieselbe Weiche wie in den
+    /// sechs Erzeugerdialogen — die Wärmepumpen Verwaltung reicht den Schalter durch.
+    /// </summary>
+    [Fact]
+    public void Im_Assistenten_fehlt_die_Kostenleiste()
+    {
+        var cut = Aufbauen(wizard: true,
+                           kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+    }
+
+    [Fact]
     public void Mit_Anlagenzeile_zeigt_die_Kostenzeile_die_Summen()
     {
-        var cut = Aufbauen(kostenOeffnen: () => Task.CompletedTask);
+        var cut = Aufbauen(kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
 
-        Assert.False(Knopf(cut, "Kosten bearbeiten…").HasAttribute("disabled"));
+        Assert.Equal(3, cut.FindAll(KOSTENKNOEPFE).Count);
         Assert.Equal("Invest 12.000 € · Betrieb 340 €/a",
                      cut.Find(".epos-kostenleiste-hinweis").TextContent.Trim());
     }
 
+    /// <summary>
+    /// Ä22: Kosten und Träger hängen an der ANLAGENZEILE; bei einer noch nicht
+    /// gespeicherten Neuanlage gibt es sie nicht. Der Vorläufer sperrte den Knopf und
+    /// erklärte es im Tooltip; die Leiste kennt kein <c>disabled</c> — der Knopf
+    /// entfällt, und die Herleitungszeile nennt den Grund weiterhin im Klartext (ein
+    /// Tooltip ist auf einem Berührungsgerät ohnehin nicht erreichbar).
+    /// </summary>
     [Fact]
-    public void Ohne_Anlagenzeile_ist_der_Knopf_gesperrt_und_der_Grund_lesbar()
+    public void Ohne_Anlagenzeile_bleibt_die_Leiste_weg_und_der_Grund_ist_lesbar()
     {
-        // Ä22: Kosten haengen an der Anlagenzeile; bei einer noch nicht gespeicherten
-        // Neuanlage gibt es sie nicht. Der Tooltip des Vorlaeufers steht hier
-        // ZUSAETZLICH als Herleitungszeile - ein Tooltip ist auf einem
-        // Beruehrungsgeraet nicht erreichbar.
-        var cut = Aufbauen(kostenBereit: () => false, kostenOeffnen: () => Task.CompletedTask);
+        var cut = Aufbauen(kostenBereit: () => false,
+                           kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
 
-        Assert.True(Knopf(cut, "Kosten bearbeiten…").HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
         Assert.Equal("Invest — · Betrieb —", cut.Find(".epos-kostenleiste-hinweis").TextContent.Trim());
         Assert.Contains(cut.FindAll(".epos-herleitung").Select(e => e.TextContent),
                         t => t.Contains("zuerst mit OK anlegen"));
+    }
+
+    /// <summary>
+    /// „Nur ansehen": Alle drei Knöpfe führen in eine BEARBEITBARE Verwaltung — in
+    /// dieser Betriebsart bleiben sie weg, wie der Sammelknopf dort gesperrt war.
+    /// </summary>
+    [Fact]
+    public void In_der_Ansicht_bleibt_die_Kostenleiste_weg()
+    {
+        var cut = Aufbauen(nurLesen: true,
+                           kostenOeffnen: _ => Task.CompletedTask,
+                           energiekosten: _ => Task.CompletedTask);
+
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
     }
 
     // =================================================================================

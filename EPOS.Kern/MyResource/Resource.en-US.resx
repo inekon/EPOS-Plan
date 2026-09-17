@@ -9214,9 +9214,6 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="WP_BTN_BEENDEN" xml:space="preserve">
     <value>Finish</value>
   </data>
-  <data name="WPI_BTN_KOSTEN" xml:space="preserve">
-    <value>Edit costs…</value>
-  </data>
   <data name="WPI_KOSTEN_SUMMEN" xml:space="preserve">
     <value>Capex {0:N0} € · Opex {1:N0} €/a</value>
   </data>
@@ -9239,9 +9236,6 @@ They typically stem from a variant copy without this trade and keep entering the
   </data>
   <data name="BK_KOSTEN_LOSE_GELOESCHT" xml:space="preserve">
     <value>{0} item(s) of component “{1}” deleted.</value>
-  </data>
-  <data name="WPI_TIP_KOSTEN" xml:space="preserve">
-    <value>Open this plant's cost management (project mode).</value>
   </data>
   <data name="WPI_TIP_KOSTEN_NEU" xml:space="preserve">
     <value>Costs are maintained per PLANT — create and save the heat pump with OK first; then edit its costs via “Change..”.</value>

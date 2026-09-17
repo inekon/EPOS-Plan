@@ -55061,15 +55061,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten bearbeiten… ähnelt.
-        /// </summary>
-        public static string WPI_BTN_KOSTEN {
-            get {
-                return ResourceManager.GetString("WPI_BTN_KOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Invest — · Betrieb — ähnelt.
         /// </summary>
         public static string WPI_KOSTEN_KEINE {
@@ -55084,15 +55075,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPI_KOSTEN_SUMMEN {
             get {
                 return ResourceManager.GetString("WPI_KOSTEN_SUMMEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung dieser Anlage öffnen (Projektmodus). ähnelt.
-        /// </summary>
-        public static string WPI_TIP_KOSTEN {
-            get {
-                return ResourceManager.GetString("WPI_TIP_KOSTEN", resourceCulture);
             }
         }
         

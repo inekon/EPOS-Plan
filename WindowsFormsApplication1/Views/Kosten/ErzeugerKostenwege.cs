@@ -6,14 +6,20 @@ using EPOS.UI.Dialoge.Erzeuger;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die drei Wege hinter der <c>KostenKnoepfeLeiste</c> der BRENNER-Projektdialoge
-    /// (Heizkessel und BHKW) — „Investitionskosten…", „Betriebskosten…" und
-    /// „Energiekosten…".
+    /// Die drei Wege hinter der <c>KostenKnoepfeLeiste</c> der Anlagendialoge —
+    /// „Investitionskosten…", „Betriebskosten…" und „Energiekosten…".
     ///
-    /// <para><b>Warum hier und nicht zweimal.</b> Heizkessel- und BHKW-Hülle gehen
-    /// denselben Weg und unterscheiden sich nur in der Kostenkomponente
-    /// (<c>DbWerte.ERZEUGER_*</c>). Was beide gemeinsam brauchen, steht deshalb hier
-    /// einmal — dasselbe Muster wie <see cref="ErzeugerTraegerHuelle"/>.</para>
+    /// <para><b>Warum hier und nicht siebenmal.</b> Alle Hüllen gehen denselben Weg
+    /// und unterscheiden sich nur in der Kostenkomponente (<c>DbWerte.ERZEUGER_*</c>):
+    /// Heizkessel, BHKW, Photovoltaik, Stromspeicher, Pufferspeicher, Solarthermie und
+    /// seit dem 17.09.2026 die Wärmepumpe. Was sie gemeinsam brauchen, steht deshalb
+    /// hier einmal — dasselbe Muster wie <see cref="ErzeugerTraegerHuelle"/>.</para>
+    ///
+    /// <para><b>Zwei Zuschnitte, ein Weg.</b> Die Dialoge mit einer Anlagenliste
+    /// reichen ihre GEWÄHLTE <c>ErzeugerZeile</c> durch; die Wärmepumpe bearbeitet
+    /// genau EINE Anlage und kennt deren Anlagen-, Träger- und Geräte-Id selbst. Für
+    /// sie gibt es je eine Überladung, die diese Ids unmittelbar nimmt — die Ziele
+    /// und der Nachlauf bleiben dieselben.</para>
     ///
     /// <para><b>Der Bezug ist die GEWÄHLTE Anlagenzeile.</b> Der Dialog reicht sie
     /// durch (sie ist <c>null</c>, solange keine gewählt ist) — genau wie die
@@ -44,7 +50,21 @@ namespace WindowsFormsApplication1
         {
             if (projektId <= 0) return Task.CompletedTask;
 
-            int idAnlage = AnlageZu(projektId, erzeugerart, zeile);
+            return Kosten(besitzer, projektId, erzeugerart,
+                          AnlageZu(projektId, erzeugerart, zeile), betrieb);
+        }
+
+        /// <summary>
+        /// Derselbe Weg für einen Dialog, der SEINE Anlagenzeile schon kennt — die
+        /// Wärmepumpe. Sie bearbeitet genau eine Anlage; es gibt dort keine Liste, aus
+        /// der eine Zeile gewählt würde, und damit auch nichts nachzuschlagen. 0 =
+        /// noch nicht gespeichert; dann wählt die Verwaltung nur die Komponente vor.
+        /// </summary>
+        internal static Task Kosten(IWin32Window besitzer, int projektId, string erzeugerart,
+                                    int idAnlage, bool betrieb)
+        {
+            if (projektId <= 0) return Task.CompletedTask;
+
             string projektname = Projektname(projektId);
 
             return Blazornachlauf.Nachgelagert(() =>
@@ -70,6 +90,24 @@ namespace WindowsFormsApplication1
 
             int traegerId = zeile != null ? zeile.CarrierId : 0;
             int geraeteId = zeile != null ? zeile.GeraetId : 0;
+
+            return Energiekosten(besitzer, projektId, erzeugerart, traegerId, geraeteId);
+        }
+
+        /// <summary>
+        /// Derselbe Weg für die Wärmepumpe, die Träger und Gerät ihrer EINEN Anlage
+        /// schon kennt.
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="erzeugerart"/> geht auch hier immer mit — sie allein engt
+        /// die Wärmepumpe auf STROM ein
+        /// (<c>EnergietraegerZulaessigkeit.Kategoriecodes</c>: <c>NUR_STROM</c>,
+        /// Aufträge 268/311). Das Gerät ist die Zeile in <c>Tab_WP</c>.
+        /// </remarks>
+        internal static Task Energiekosten(IWin32Window besitzer, int projektId,
+                                           string erzeugerart, int traegerId, int geraeteId)
+        {
+            if (projektId <= 0) return Task.CompletedTask;
 
             return Blazornachlauf.Nachgelagert(() =>
                 EnergietraegerFenster.Oeffnen(besitzer, projektId, traegerId,

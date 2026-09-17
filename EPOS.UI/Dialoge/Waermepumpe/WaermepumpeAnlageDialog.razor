@@ -119,6 +119,7 @@
 @namespace EPOS.UI.Dialoge.Waermepumpe
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Kosten
 
 <div class="epos-dialog epos-wp-anlage @(Eingebettet ? "epos-dialog--eingebettet" : "")" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -243,12 +244,37 @@
                        Knopf oeffnete die ganze Stammdatenpflege in einer Ueberlagerung,
                        nur um ein Feldraster zu zeigen; dieses Raster steht jetzt
                        unmittelbar darunter (WaermepumpeStammFelder) und ist bearbeitbar. *@
+                    @* DIESELBE KOSTENLEISTE WIE BEI DEN NACHBARN (Anwenderentscheid
+                       17.09.2026 „angleichen!"). Bis dahin stand hier EIN Knopf
+                       „Kosten bearbeiten…", der Investitions- UND Betriebskosten
+                       zusammen aufschlug (immer auf der Investitionsseite), und ein
+                       Weg „Energiekosten…" fehlte ganz — obwohl die Waermepumpe
+                       Strom bezieht. Jetzt traegt sie die KostenKnoepfeLeiste der
+                       sechs Erzeugerdialoge: drei Knoepfe, zwei Delegaten.
+
+                       HINTER DER WIZARD-WEICHE wie dort: Im Assistenten gibt es das
+                       Projekt noch nicht, zu dem Kostenpositionen und Projekttraeger
+                       gehoerten; die Leiste bleibt dann weg, statt ins Leere zu
+                       zeigen. Der Assistent erreicht diese Ansicht eingebettet in
+                       der Waermepumpen Verwaltung (Schritt 7), die den Schalter
+                       durchreicht.
+
+                       DIE WEICHE SPERRE DES VORLAEUFERS BLEIBT, nur anders gezeigt:
+                       Kosten haengen an der ANLAGENZEILE, und die gibt es vor dem
+                       ersten Speichern nicht (Ä22). Der Vorlaeufer sperrte den Knopf
+                       und erklaerte es im Tooltip; die Leiste kennt kein disabled
+                       (ihre Regel: ohne Weg kein Knopf), deshalb entfaellt der Knopf
+                       hier und die Herleitungszeile unter der Kostenzeile nennt den
+                       Grund weiterhin im Klartext - auf einem Beruehrungsgeraet ist
+                       sie ohnehin der einzige lesbare Ort. *@
                     <div class="epos-leiste">
-                        @if (KostenOeffnen is not null)
+                        @if (!Wizard)
                         {
-                            <button type="button" class="epos-knopf" disabled="@(NurLesen || !_kostenBereit)"
-                                    title="@(_kostenBereit ? TipKosten : TipKostenNeu)"
-                                    @onclick="BeiKosten">@BtnKostenText</button>
+                            <KostenKnoepfeLeiste KostenOeffnen="@KostenLeiste"
+                                                 EnergiekostenOeffnen="@EnergieLeiste"
+                                                 InvestText="@KostenInvestText"
+                                                 BetriebText="@KostenBetriebText"
+                                                 EnergieText="@KostenEnergieText" />
                         }
                         <button type="button" class="epos-knopf" disabled="@NurLesen"
                                 @onclick="KonfigurationOeffnen">@BtnKonfigurationText</button>
@@ -553,14 +579,33 @@
     /// </summary>
     [Parameter] public Func<int?, int?, string?>? TemperaturenPruefen { get; set; }
 
-    /// <summary>Steht eine gespeicherte Anlagenzeile? Entscheidet über den Kostenknopf.</summary>
+    /// <summary>Steht eine gespeicherte Anlagenzeile? Entscheidet über die Kostenleiste.</summary>
     [Parameter] public Func<bool>? KostenBereit { get; set; }
 
     /// <summary>Investitions- und Betriebssumme dieser Anlage.</summary>
     [Parameter] public Func<(double Invest, double Betrieb)>? Kostensumme { get; set; }
 
-    /// <summary>Öffnet die Kostenverwaltung; ohne Delegat kein Knopf.</summary>
-    [Parameter] public Func<Task>? KostenOeffnen { get; set; }
+    /// <summary>
+    /// Öffnet die Kostenverwaltung dieser Anlage; der Schalter ist <c>betrieb</c>
+    /// (<c>false</c> = Investitions-, <c>true</c> = Betriebskosten) — genau der
+    /// Parameter der <see cref="KostenKnoepfeLeiste"/>. Ohne Delegat keine zwei Knöpfe.
+    /// </summary>
+    [Parameter] public Func<bool, Task>? KostenOeffnen { get; set; }
+
+    /// <summary>
+    /// Öffnet die Energieträgerverwaltung des Projekts, eingeengt auf Strom
+    /// (<c>EnergietraegerZulaessigkeit.Kategoriecodes</c> gibt der Wärmepumpe
+    /// <c>NUR_STROM</c>) und aufgeschlagen beim Träger dieser Anlage. Ohne Delegat
+    /// fehlt der dritte Knopf.
+    ///
+    /// <para><b>Der Feldsatz geht MIT</b> — <c>CarrierId</c> und <c>IdWp</c> daraus
+    /// sind Träger und Gerät, auf die die Verwaltung aufschlägt. Sie stehen nicht im
+    /// Modell der Hülle, sondern hier: Die Trägerwahl der Überlagerung
+    /// „Konfiguration" ändert sie, lange bevor ein OK sie schreibt. Das entspricht
+    /// der <c>ErzeugerZeile</c>, die die Nachbardialoge durchreichen — nur dass die
+    /// Wärmepumpe genau EINE Anlage führt und deshalb nichts zu wählen ist.</para>
+    /// </summary>
+    [Parameter] public Func<WaermepumpeAnlageDaten, Task>? EnergiekostenOeffnen { get; set; }
 
     /// <summary>
     /// Der Katalog für die Überlagerung „Modul-Katalog…" —
@@ -633,6 +678,14 @@
     /// OK/Abbrechen, ohne Esc. Der Wirt ruft <see cref="Pruefen"/> und übernimmt die Zeile.
     /// </summary>
     [Parameter] public bool Eingebettet { get; set; }
+
+    /// <summary>
+    /// Assistentenbetrieb: keine Kostenleiste. Die Ansicht steht dort eingebettet in
+    /// der Wärmepumpen Verwaltung (Schritt 7), die den Schalter durchreicht; ein
+    /// Projekt, zu dem Kostenpositionen und Projektträger gehörten, gibt es noch
+    /// nicht. Dieselbe Weiche tragen die sechs Erzeugerdialoge.
+    /// </summary>
+    [Parameter] public bool Wizard { get; set; }
 
     /// <summary>
     /// W10b‑B‑3 (08.09.2026): Vorbelegung des Schalters „Extrapolation der WP-Kennlinie
@@ -800,7 +853,13 @@
     [Parameter] public string MeldungUebernahmeReadOnly { get; set; } =
         "Auslieferungssätze werden nicht überschrieben.";
 
-    [Parameter] public string BtnKostenText { get; set; } = "Kosten bearbeiten…";
+    /// <summary>Die drei Beschriftungen der <see cref="KostenKnoepfeLeiste"/> —
+    /// dieselben Schlüssel wie bei den sechs Erzeugerdialogen
+    /// (<c>KDLG_KNOPF_INVEST</c>, <c>KDLG_KNOPF_BETRIEB</c>, <c>KDLG_KNOPF_ENERGIE</c>).</summary>
+    [Parameter] public string KostenInvestText { get; set; } = "Investitionskosten…";
+    [Parameter] public string KostenBetriebText { get; set; } = "Betriebskosten…";
+    [Parameter] public string KostenEnergieText { get; set; } = "Energiekosten…";
+
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string SchliessenText { get; set; } = "Schließen";
@@ -814,8 +873,13 @@
     /// <summary>Vorschlagszeile unter dem Rücklauffeld; <c>{0}</c> ist die Werteliste.</summary>
     [Parameter] public string RuecklaufFormat { get; set; } = "Übliche Werte: {0} °C";
 
-    [Parameter] public string TipKosten { get; set; } =
-        "Kostenverwaltung dieser Anlage öffnen (Projektmodus).";
+    /// <summary>
+    /// Der Grund, wenn es die Anlagenzeile noch nicht gibt (Ä22). Er stand beim
+    /// Vorläufer ZUSÄTZLICH im Tooltip des gesperrten Sammelknopfs; seit die
+    /// Kostenleiste dort steht, ist die Herleitungszeile sein einziger Ort — die
+    /// Leiste kennt kein <c>disabled</c>, und ein Tooltip ist auf einem
+    /// Berührungsgerät ohnehin nicht erreichbar.
+    /// </summary>
     [Parameter] public string TipKostenNeu { get; set; } =
         "Kosten werden je ANLAGE gepflegt — die Wärmepumpe zuerst mit OK anlegen und speichern; danach über „Ändern..“ die Kosten bearbeiten.";
     [Parameter] public string TextKostenKeine { get; set; } = "Invest — · Betrieb —";
@@ -1102,12 +1166,41 @@
     // Kosten, Katalog, Konfiguration, Stammfelder, Kennlinieneditor
     // =================================================================================
 
-    private async Task BeiKosten()
+    // --- Die Bruecke zur Kostenleiste ------------------------------------------
+    //
+    // Dasselbe Muster wie im HeizkesselDialog: Die Leiste bekommt einen Delegaten
+    // ODER null, und null heisst "kein Knopf". Hier haengt daran ZUSAETZLICH die
+    // weiche Sperre des Vorlaeufers - Kosten und Traeger dieser Anlage gibt es erst,
+    // wenn die Anlagenzeile gespeichert ist (Ä22), und in der Ansicht "nur lesen"
+    // fuehrte jeder der drei Knoepfe in eine BEARBEITBARE Verwaltung.
+    private Func<bool, Task>? KostenLeiste
+        => KostenOeffnen is null || NurLesen || !_kostenBereit
+               ? null
+               : (Func<bool, Task>)BeiKosten;
+
+    private Func<Task>? EnergieLeiste
+        => EnergiekostenOeffnen is null || NurLesen || !_kostenBereit
+               ? null
+               : (Func<Task>)BeiEnergiekosten;
+
+    /// <summary>
+    /// „Investitionskosten…" / „Betriebskosten…" — dieselbe Maske, unterschieden nur
+    /// durch <paramref name="betrieb"/>. Nach der Rückkehr werden Bereitschaft und
+    /// Summenzeile nachgezogen (der alte <c>KostenSummenAnzeigen</c>-Nachlauf).
+    /// </summary>
+    private async Task BeiKosten(bool betrieb)
     {
         if (KostenOeffnen is null) return;
-        await KostenOeffnen();
+        await KostenOeffnen(betrieb);
         _kostenBereit = KostenBereit?.Invoke() ?? false;   // KostenSummenAnzeigen nach der Rueckkehr
     }
+
+    /// <summary>
+    /// „Energiekosten…" — die Energieträgerverwaltung, eingeengt auf Strom. Der
+    /// Feldsatz geht mit; er trägt Träger und Gerät dieser Anlage.
+    /// </summary>
+    private Task BeiEnergiekosten()
+        => EnergiekostenOeffnen?.Invoke(Daten) ?? Task.CompletedTask;
 
     private void BeiKatalog()
     {
