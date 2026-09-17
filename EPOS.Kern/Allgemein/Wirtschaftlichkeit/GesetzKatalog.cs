@@ -658,6 +658,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static int ZuletztNachgesaet { get; private set; }
 
+        private static readonly List<string> _saatwarnungen = new List<string>();
+
+        /// <summary>
+        /// Was der letzte Lauf von <see cref="StelleKatalogSicher"/> NICHT einsäen
+        /// konnte — je Fehlschlag eine Zeile mit Schlüssel, Klasse, Stichjahr und Grund
+        /// (AUFTRAG US-1).
+        ///
+        /// <para><b>Warum es das gibt.</b> Die Nachsaat läuft über
+        /// <c>StilleDb</c>, und die schluckt jeden Fehler. Bis hierher endete ein
+        /// Fehlschlag deshalb in einem leeren <c>catch</c>: Der Katalog blieb ohne die
+        /// Zeile, der Rechenweg fiel wortlos auf seine Konstante zurück, und in keinem
+        /// Protokoll stand, welcher Schlüssel warum fehlt. Genau so sind die drei
+        /// Umlagenzeilen der Generation 7 verloren gegangen (CHECK auf die Länge von
+        /// Quelle). Die Liste ist eine reine Diagnosegröße — sie ändert am Ablauf
+        /// nichts, macht ihn aber nachlesbar (<c>SchemaMigration</c> schreibt sie in das
+        /// Migrationsprotokoll).</para>
+        /// </summary>
+        public static IReadOnlyList<string> SaatWarnungen
+        {
+            get { return _saatwarnungen.ToArray(); }
+        }
+
         /// <summary>
         /// Legt <c>Tab_Gesetzesparameter</c> an, falls sie fehlt, und sät sie
         /// <b>generationsweise</b> ein.
@@ -717,6 +739,7 @@ namespace WindowsFormsApplication1
         public static void StelleKatalogSicher()
         {
             ZuletztNachgesaet = 0;
+            _saatwarnungen.Clear();
             try
             {
                 try
@@ -754,9 +777,19 @@ namespace WindowsFormsApplication1
                     MarkerSetzen(ziel, ref id);
                     ZuletztNachgesaet = neu;
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    // AUFTRAG US-1: Der Abbruch bleibt, wie er war — die Markerzeile
+                    // steigt NICHT, der nächste Start versucht es wieder. Neu ist
+                    // allein, dass der Grund nicht mehr verschwindet.
+                    Warnen(ex);
+                }
             }
-            catch { /* ohne Tabelle greift die Code-Rückfallebene */ }
+            catch (Exception ex)
+            {
+                // ohne Tabelle greift die Code-Rückfallebene
+                Warnen(ex);
+            }
         }
 
         /// <summary>
@@ -828,6 +861,14 @@ namespace WindowsFormsApplication1
         /// ausgelöst. Nach aussen ändert sich nichts: Der Aufrufer fing die Ausnahme
         /// schon bisher wortlos ab.
         /// </summary>
+        /// <summary>Eine Warnung aufnehmen — Konsole und <see cref="SaatWarnungen"/>.</summary>
+        private static void Warnen(Exception ex)
+        {
+            string m = ex == null ? "unbekannter Fehler" : (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+            _saatwarnungen.Add(m);
+            Console.WriteLine("GesetzKatalog-Nachsaat: " + m);
+        }
+
         private static void Einfuegen(int id, string schluessel, string klasse,
                                       int jahrVon, double? wert, string einheit, string status, string quelle)
         {
@@ -846,7 +887,12 @@ namespace WindowsFormsApplication1
 
             if (betroffen < 0)
                 throw new InvalidOperationException(
-                    "Zeile " + id + " in Tab_Gesetzesparameter konnte nicht angelegt werden.");
+                    "Zeile " + id + " in Tab_Gesetzesparameter konnte nicht angelegt werden: " +
+                    "Schlüssel " + schluessel + ", Klasse " + klasse + ", ab " +
+                    jahrVon.ToString(CultureInfo.InvariantCulture) + " — " +
+                    (StilleDb.LetzterSchreibfehler.Length == 0
+                        ? "Grund nicht gemeldet"
+                        : StilleDb.LetzterSchreibfehler));
         }
 
         // ---------------------------------------------------------------------
@@ -1060,9 +1106,15 @@ namespace WindowsFormsApplication1
             // Katalog: Eine Jahreszeile ohne Beleg waere eine Behauptung.
             // =================================================================
             const string UMLAGEN = DbWerte.GESETZ_KLASSE_UMLAGEN;
+            // LAENGENSCHRANKE (Auftrag US-1). Tab_Gesetzesparameter fuehrt
+            // CHECK (length("Quelle") <= 120). Die erste Fassung dieser Quelle war mit
+            // dem Praefix "§ 19 StromNEV-Umlage — " 124 Zeichen lang; der CHECK schlug
+            // zu, StilleDb verschluckte den Fehler, und keine der drei Zeilen kam in die
+            // Datenbank. Diese Fassung bleibt mit dem laengsten Praefix bei 108 Zeichen.
+            // Der Inhalt ist derselbe: Anwenderangabe, Datum, Stichjahr, Herkunft.
             const string Q_UMLAGEN =
-                "Angabe des Anwenders vom 17.09.2026, Umlagen 2026 laut " +
-                "Veröffentlichung der Übertragungsnetzbetreiber";
+                "Angabe des Anwenders vom 17.09.2026; Umlagen 2026 laut den " +
+                "Übertragungsnetzbetreibern";
             l.Add(N(DbWerte.GESETZ_UMLAGE_KWKG, UMLAGEN, 2026, 0.446, CT, G,
                     "KWKG-Umlage — " + Q_UMLAGEN, 7));
             l.Add(N(DbWerte.GESETZ_UMLAGE_OFFSHORE, UMLAGEN, 2026, 0.941, CT, G,

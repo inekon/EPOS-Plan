@@ -3675,6 +3675,7 @@ namespace WindowsFormsApplication1
                 using (Schreibnaht.Freigabe(Schreibnaht.GRUND_MIGRATION))
                 {
                     erfolg = SchritteAbarbeitenSqlite(l);
+                    if (erfolg) KatalognachsaatProtokollieren(l);
                 }
             }
             catch (Exception ex)
@@ -3689,6 +3690,43 @@ namespace WindowsFormsApplication1
 
             ProtokollSchreiben(dbPfad, Fehlerbericht);
             return erfolg;
+        }
+
+        /// <summary>
+        /// <b>Die Nachsaat des Gesetzeskatalogs nachlesbar machen</b> (Auftrag US-1).
+        ///
+        /// <para><c>GesetzKatalog.StelleKatalogSicher</c> ist KEIN Migrationsschritt und
+        /// wird auch keiner — der Katalog ist eine Zusatztabelle ohne Fremdschlüssel,
+        /// und die Methode sät sich generationsweise selbst nach, idempotent, aus jeder
+        /// der drei Aufrufstellen heraus. Sie läuft hier nur ein Mal mehr, an der einen
+        /// Stelle, an der der Anwender ein geschriebenes Protokoll bekommt: Bis hierher
+        /// endete ein Saatfehler in einem leeren <c>catch</c> und stand allenfalls als
+        /// „SQLite Error 19" auf einer Konsole, die im Auslieferungsbetrieb niemand
+        /// sieht. Jetzt steht er mit Schlüssel und Grund in der Protokolldatei neben der
+        /// Datenbank.</para>
+        ///
+        /// <para>Der Ausgang der Migration hängt nicht daran: Der Katalog hat in
+        /// <c>GesetzKatalog.Vorbelegung</c> seine wertgleiche Rückfallebene, ein
+        /// Fehlschlag ist eine WARNUNG und kein Abbruch.</para>
+        /// </summary>
+        private static void KatalognachsaatProtokollieren(Lauf l)
+        {
+            try
+            {
+                GesetzKatalog.StelleKatalogSicher();
+
+                if (GesetzKatalog.ZuletztNachgesaet > 0)
+                    l.Zeile("Gesetzeskatalog: " + GesetzKatalog.ZuletztNachgesaet +
+                            " Zeile(n) nachgesät (Generation " +
+                            GesetzKatalog.AktuelleGeneration + ").");
+
+                foreach (string w in GesetzKatalog.SaatWarnungen)
+                    l.Zeile("WARNUNG Gesetzeskatalog: " + w);
+            }
+            catch (Exception ex)
+            {
+                l.Zeile("WARNUNG Gesetzeskatalog: Nachsaat nicht durchgeführt - " + Kurzmeldung(ex));
+            }
         }
 
         /// <summary>

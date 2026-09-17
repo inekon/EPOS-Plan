@@ -113,6 +113,14 @@ namespace Testdatenbankschema
     /// <c>Kaskade_Gepflegt</c> an (0/1, <c>NOT NULL DEFAULT 0</c>) - aus
     /// <c>SchemaKatalog.Schritt82_KaskadeGepflegt</c>. Ergebnisneutral: kein DML, im
     /// Bestand ueberall 0, und 0 heisst "wie bisher".</para>
+    ///
+    /// <para><b>Die Katalognachsaat</b> (Auftrag US-1) ist KEIN Schemaschritt und traegt
+    /// deshalb keine Nummer. <c>GesetzKatalog.StelleKatalogSicher</c> holt die noch
+    /// fehlenden Generationen von <c>Tab_Gesetzesparameter</c> nach - im Programm laeuft
+    /// das beim Start, die Testdatenbank startet aber nie ein Programm. Ohne diesen
+    /// Aufruf steht sie auf der Generation ihres letzten Anwendungsstarts; die Zeilen der
+    /// Generation 7 fehlten genau deshalb. Ergebnisneutral: Zu jedem Schluessel des
+    /// Katalogs fuehrt der Kern eine wertgleiche Code-Rueckfallebene.</para>
     /// </summary>
     internal static class Program
     {
@@ -123,7 +131,8 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 85) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 85), saet den Gesetzeskatalog nach");
+                Console.WriteLine("  und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -616,6 +625,30 @@ namespace Testdatenbankschema
                 }
                 Console.WriteLine("Schritt 85 - offen jetzt " + StrompreisAltspalten.Offen() +
                                   " (erwartet 0).");
+            }
+            Console.WriteLine();
+
+            // ---- KATALOGNACHSAAT (Auftrag US-1). KEIN Schemaschritt und deshalb ohne
+            //      Nummer: Tab_Gesetzesparameter steht seit dem Grundschema, und die
+            //      Zeilen kommen aus GesetzKatalog.Vorbelegung - DERSELBEN Quelle, aus
+            //      der sie auch beim Programmstart kommen. Der Katalog saet sich
+            //      generationsweise selbst nach, aber nur, wenn ihn jemand aufruft; in
+            //      der Testdatenbank tut das niemand. Sie stand deshalb auf der
+            //      Generation ihres letzten Anwendungsstarts, und die Zeilen der
+            //      Generation 7 (STROMST_REDUZIERT_SATZ und die drei UMLAGEN) fehlten in
+            //      jeder Probe, obwohl der Quelltext sie fuehrt.
+            //      Ergebnisneutral: Zu jedem dieser Schluessel rechnet der Kern bisher
+            //      mit seiner WERTGLEICHEN Code-Rueckfallebene; der Referenzlauf bleibt
+            //      byte-gleich. Wiederholbar: Ein zweiter Lauf saet nichts mehr nach.
+            if (!trocken)
+            {
+                GesetzKatalog.StelleKatalogSicher();
+                Console.WriteLine("Katalognachsaat - Gesetzeskatalog: " +
+                                  GesetzKatalog.ZuletztNachgesaet +
+                                  " Zeile(n) nachgesaet, Generation jetzt " +
+                                  GesetzKatalog.AktuelleGeneration + ".");
+                foreach (string w in GesetzKatalog.SaatWarnungen)
+                    Console.WriteLine("Katalognachsaat - WARNUNG: " + w);
             }
             Console.WriteLine();
 
