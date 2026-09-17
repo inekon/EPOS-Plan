@@ -49063,11 +49063,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einzelspeicher: {0} ähnelt.
+        /// </summary>
+        public static string SP_KONTEXT_EINZEL {
+            get {
+                return ResourceManager.GetString("SP_KONTEXT_EINZEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einzelspeicher: Lastspitzenkappung · Peak-Ziel {0} kW ähnelt.
         /// </summary>
         public static string SP_KONTEXT_EINZEL_PEAKSHAVING {
             get {
                 return ResourceManager.GetString("SP_KONTEXT_EINZEL_PEAKSHAVING", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Speicherflotte: {0} · {1} Einheiten ähnelt.
+        /// </summary>
+        public static string SP_KONTEXT_FLOTTE {
+            get {
+                return ResourceManager.GetString("SP_KONTEXT_FLOTTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Stromspeicher ähnelt.
+        /// </summary>
+        public static string SP_KONTEXT_OHNE {
+            get {
+                return ResourceManager.GetString("SP_KONTEXT_OHNE", resourceCulture);
             }
         }
         
@@ -53511,6 +53538,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse aus gespeicherten Läufen vom {0}; nicht neu gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_PARAM_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("WIRT_PARAM_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Parameter: ähnelt.
         /// </summary>
         public static string WIRT_PARAM_KOPF {
@@ -54101,6 +54137,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZEILE_RESTWERT {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_SPEICHER {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_SPEICHER", resourceCulture);
             }
         }
         

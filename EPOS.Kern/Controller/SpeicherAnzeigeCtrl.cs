@@ -136,6 +136,95 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <summary>
+        /// <b>Womit rechnet DIESES Projekt seinen Strom­speicher?</b> — der eine Satz, mit
+        /// dem jede Ansicht eine Projektspalte beschriften kann (Auftrag VF-1,
+        /// Anwenderbefund 17.09.2026).
+        ///
+        /// <para><b>Der Befund.</b> In der Vergleichsgruppe der Wirtschaftlichkeit stand
+        /// stumm eine Spalte „mit Flotte" neben einer „ohne" — der Anwender hielt die
+        /// Variante für „mit Speicher". Der Simulationsreiter sagt es seit jeher
+        /// (Herkunftszeile), die Wirtschaftlichkeit sagte es nicht.</para>
+        ///
+        /// <para><b>Drei Fälle, eine Herleitung.</b> Führt das Projekt eine AKTIVIERTE
+        /// Projektflotte, gilt sie — derselbe Text und dieselben Angaben wie im
+        /// Simulationsreiter (<see cref="FlottenKontextText"/>). Sonst entscheidet die
+        /// aktive Speichervariante mit ihrer Berechnungsart. Führt das Projekt beides
+        /// nicht, steht das auch da; eine leere Spalte wäre keine Auskunft.</para>
+        ///
+        /// <para><b>Diese eine Methode liest, ihre Nachbarn übersetzen nur.</b> Sie
+        /// beantwortet eine Frage über ein PROJEKT, und die steht in der Datenbank. Ein
+        /// Lesefehler liefert den leeren Text — die Auskunft ist Ausweis, kein Ergebnis,
+        /// und darf keine Ansicht zu Fall bringen.</para>
+        /// </summary>
+        /// <param name="idProjekt"><c>Tab_Projekt.ID</c>.</param>
+        public static string SpeicherKontextText(int idProjekt)
+        {
+            if (idProjekt <= 0) return "";
+            try
+            {
+                FlottenStudieKonfiguration flotte = SpeicherFlottenProjektCtrl.AktiveKonfiguration(idProjekt);
+                if (flotte != null && flotte.Einheiten != null && flotte.Einheiten.Count > 0)
+                    return FlottenKontextText(flotte, MyResource.Resource.SP_KONTEXT_FLOTTE);
+
+                StromspeicherVarianteModel variante =
+                    new StromspeicherVarianteCtrl().ReadAktiveVariante(idProjekt);
+                if (variante != null)
+                {
+                    // LS-1: Die LASTSPITZENKAPPUNG nennt zusaetzlich ihr Peak-Ziel - wie
+                    // die Flottenzeile es fuer das Betriebsziel tut. Jede andere
+                    // Berechnungsart bleibt beim blossen Namen.
+                    string peak = EinzelspeicherKontextText(variante);
+                    if (!string.IsNullOrEmpty(peak)) return peak;
+
+                    return string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.SP_KONTEXT_EINZEL,
+                        BerechnungsartText(SpeicherAltstand.Berechnungsart(variante.Berechnungsart)));
+                }
+
+                return MyResource.Resource.SP_KONTEXT_OHNE;
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>
+        /// Die Angaben EINER Flotte als Satz: Betriebsziel, Einheitenzahl und — wo es eines
+        /// gibt — das Peak-Ziel samt seinem Modus.
+        ///
+        /// <para><b>Eine Herleitung, zwei Rahmen.</b> Der Simulationsreiter sagt
+        /// „Gerechnet mit Speicherflotte: …" über den ANGEZEIGTEN LAUF, die
+        /// Wirtschaftlichkeit „mit Speicherflotte: …" über eine SPALTE. Verschieden ist nur
+        /// der Kopfsatz; was danach kommt, darf es nicht sein — deshalb kommt der Rahmen
+        /// als Format herein und die Angaben entstehen hier.</para>
+        /// </summary>
+        /// <param name="flotte">Der Lesestand der Flotte.</param>
+        /// <param name="kopfformat">
+        /// Das Format des Kopfsatzes mit <c>{0}</c> = Betriebsziel und <c>{1}</c> =
+        /// Einheitenzahl (<c>SIM_SP_HERKUNFT</c> bzw. <c>SP_KONTEXT_FLOTTE</c>).
+        /// </param>
+        public static string FlottenKontextText(FlottenStudieKonfiguration flotte, string kopfformat)
+        {
+            if (flotte == null) return "";
+            FlottenSimulationOptionen o = flotte.Optionen ?? new FlottenSimulationOptionen();
+            CultureInfo kultur = CultureInfo.CurrentCulture;
+
+            string zeile = string.Format(kultur, kopfformat,
+                SpeicherFlottenAnzeigeCtrl.Zieltext(o.Betriebsziel),
+                flotte.Einheiten == null ? 0 : flotte.Einheiten.Count);
+
+            if ((o.Betriebsziel == FlottenBetriebsziel.PeakShaving ||
+                 o.Betriebsziel == FlottenBetriebsziel.MultiUse) &&
+                o.WirtschaftlicherPeakZielwertKw.HasValue)
+            {
+                zeile += " · " + string.Format(kultur, MyResource.Resource.SIM_SP_HERKUNFT_PEAK,
+                    o.WirtschaftlicherPeakZielwertKw.Value.ToString("N2", kultur),
+                    o.PeakZielAdaptiv ? MyResource.Resource.FLOTTE_PEAKMODUS_ADAPTIV
+                                      : MyResource.Resource.FLOTTE_PEAKMODUS_FEST);
+            }
+            return zeile;
+        }
+
+        /// <summary>
         /// Die KOPFZEILE des Einzelspeichers im Simulationsreiter, wenn er die
         /// LASTSPITZENKAPPUNG rechnet: „Einzelspeicher: Lastspitzenkappung · Peak-Ziel
         /// 80 kW (adaptiv)". Leer bei jeder anderen Berechnungsart — dann steht dort

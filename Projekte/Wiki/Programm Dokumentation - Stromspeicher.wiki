@@ -114,6 +114,8 @@ Dafür steht vor jeder Einheit ein '''Auswahlkästchen''' und oben neben ''„+ 
 
 Der '''gespeicherte Auslegungsstand''' bleibt davon unberührt: Welche Flotte der gewöhnliche Projektlauf rechnet, entscheidet allein ''„Als Projektflotte übernehmen"'' in Schritt 5.
 
+'''In einer Variante''' gilt dasselbe für sich: Eine neu angelegte Variante übernimmt die Speicherflotte ihres Stammprojekts, samt Einheiten, Betriebsziel und Peak-Ziel, und die Einheiten zeigen dabei auf die Speicheranlagen der Variante. Danach führt jede Variante ihre eigene Speicherflotte; sie ändert sie für sich, und ''„Als Projektflotte übernehmen"'' wirkt je Projekt. Die Wirtschaftlichkeit nennt je Spalte, womit gerechnet wurde – siehe [[Programm Dokumentation/Wirtschaftlichkeit#speicherkontext|Stromspeicher in der Vergleichsgruppe]].
+
 Eine Einheit trägt entweder '''eigene Kosten''' oder sie übernimmt die gemeinsamen Sätze aus Schritt 2. Tragen alle Einheiten eigene Kosten, werden die gemeinsamen Sätze nicht gebraucht und auch nicht verlangt.
 
 '''Öffnen Sie die Ansicht ohne gespeicherten Stand''', steht hier je Speicheranlage des Projekts bereits eine Einheit – mit ihrer Kapazität, ihrer Leistung, ihren Wirkungsgraden und ihrem Ladezustandsband. Bei einer Anlage ist es genau eine Einheit; Sie brauchen also nichts anzulegen, um eine vorhandene Anlage auszulegen.

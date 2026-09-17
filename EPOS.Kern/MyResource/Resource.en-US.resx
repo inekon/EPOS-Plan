@@ -18986,6 +18986,21 @@ Do you want to allow this?</value>
   <data name="SIM_SP_KONFIG_VERWEIS" xml:space="preserve">
     <value>Change configuration → ①</value>
   </data>
+  <data name="SP_KONTEXT_FLOTTE" xml:space="preserve">
+    <value>with storage fleet: {0} · {1} units</value>
+  </data>
+  <data name="SP_KONTEXT_EINZEL" xml:space="preserve">
+    <value>Single storage unit: {0}</value>
+  </data>
+  <data name="SP_KONTEXT_OHNE" xml:space="preserve">
+    <value>without battery storage</value>
+  </data>
+  <data name="WIRT_ZEILE_SPEICHER" xml:space="preserve">
+    <value>Battery storage</value>
+  </data>
+  <data name="WIRT_PARAM_GESPEICHERT" xml:space="preserve">
+    <value>Results from stored runs of {0}; not recomputed</value>
+  </data>
   <data name="SIM_SP_KONFIG_VERWEIS_TIP" xml:space="preserve">
     <value>Opens step ① Configuration — “Size battery storage…” is there.</value>
   </data>

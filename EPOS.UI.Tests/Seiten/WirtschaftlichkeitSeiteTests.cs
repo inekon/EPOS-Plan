@@ -64,9 +64,11 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         {
             new VarianteZeile { IdProjekt = 1030, Art = "Stamm", Bezeichner = "(Stammprojekt)",
                                 Projektname = "Musterhaus", SimStand = "02.09.2026 10:00",
+                                Speicher = "mit Speicherflotte: Lastspitzenkappung · 2 Einheiten",
                                 IstStamm = true },
             new VarianteZeile { IdProjekt = 1031, Art = "Variante", Bezeichner = "WP klein",
-                                Projektname = "Musterhaus", SimStand = "", Auffaellig = true }
+                                Projektname = "Musterhaus", SimStand = "",
+                                Speicher = "ohne Stromspeicher", Auffaellig = true }
         },
         GewaehlteVarianten = new[] { 1030, 1031 },
         Szenarien = new[] { (0, "Erwartet"), (1, "Best Case"), (2, "Worst Case") },
@@ -112,11 +114,72 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         var cut = Zeige();
 
         Assert.Equal(4, cut.FindAll(".epos-kennzahlkachel").Count);
-        Assert.Equal(5, cut.FindAll(".epos-raster:not(.epos-matrix) thead th").Count);   // Wahlspalte + 4
+        // Wahlspalte + Art, Bezeichner, Projektname, Stromspeicher (VF-1), Simulation
+        Assert.Equal(6, cut.FindAll(".epos-raster:not(.epos-matrix) thead th").Count);
         Assert.Equal(2, cut.FindAll(".epos-raster tbody input[type=checkbox]").Count);
         Assert.Single(cut.FindAll("select"));                          // Szenario
         Assert.Contains("Referenz: Stammprojekt", cut.Find(".epos-herleitung-text").TextContent);
         Assert.Single(cut.FindAll(".epos-matrix"));
+    }
+
+    /// <summary>
+    /// AUFTRAG VF-1 (Anwenderbefund 17.09.2026): <b>Jede Zeile der Vergleichsgruppe sagt,
+    /// womit sie ihren Stromspeicher rechnet.</b>
+    ///
+    /// <para>Bis hierher stand da nichts: Eine Variante ohne Speicher sah aus wie eine
+    /// mit, und der Anwender las zwei Zahlen gegeneinander, die verschiedene Anlagen
+    /// meinten. Stamm und Varianten DÜRFEN verschiedene Flotten führen — die Spalte ist
+    /// die Antwort darauf, kein Hinweis auf einen Fehler.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Vergleichsgruppe_nennt_je_Zeile_den_Speicherkontext()
+    {
+        var cut = Zeige();
+
+        var koepfe = cut.FindAll(".epos-raster:not(.epos-matrix) thead th")
+                        .Select(e => e.TextContent.Trim()).ToList();
+        Assert.Contains("Stromspeicher", koepfe);
+
+        string tabelle = cut.Find(".epos-raster:not(.epos-matrix)").TextContent;
+        Assert.Contains("mit Speicherflotte: Lastspitzenkappung · 2 Einheiten", tabelle);
+        Assert.Contains("ohne Stromspeicher", tabelle);
+    }
+
+    /// <summary>
+    /// GEGENPROBE zur Spalte: Ohne lesbaren Kontext bleibt die Zelle leer — die Seite
+    /// erfindet nichts und fällt nicht aus (VF-1).
+    /// </summary>
+    [Fact]
+    public void Ohne_Speicherkontext_bleibt_die_Zelle_leer()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        foreach (VarianteZeile z in stand.Varianten) z.Speicher = "";
+        var cut = Zeige(stand: stand);
+
+        Assert.Contains("Stromspeicher",
+            cut.FindAll(".epos-raster:not(.epos-matrix) thead th").Select(e => e.TextContent.Trim()));
+        Assert.DoesNotContain("ohne Stromspeicher",
+            cut.Find(".epos-raster:not(.epos-matrix)").TextContent);
+    }
+
+    /// <summary>
+    /// AUFTRAG VF-1, Teil C: <b>Nimmt der Sammler gespeicherte Läufe, sagt es die
+    /// Parameterzeile.</b> Die Hülle hängt den Satz an; die Seite zeigt ihn an derselben
+    /// Stelle wie den übrigen Parameternachweis — ein zweiter Ort wäre ein zweiter
+    /// Nachweis.
+    /// </summary>
+    [Fact]
+    public void Die_Parameterzeile_traegt_den_Hinweis_auf_gespeicherte_Laeufe()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Parameterzeile += " · Ergebnisse aus gespeicherten Läufen vom 02.09.2026 10:00; " +
+                                "nicht neu gerechnet";
+        var cut = Zeige(stand: stand);
+
+        string zeile = cut.FindAll(".epos-herleitung-text")
+                          .Select(e => e.TextContent)
+                          .First(t => t.StartsWith("Parameter:"));
+        Assert.Contains("nicht neu gerechnet", zeile);
     }
 
     /// <summary>
