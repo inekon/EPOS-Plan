@@ -194,6 +194,19 @@ public sealed class WirtschaftlichkeitStand
     /// </summary>
     public string Wirkungszeile { get; set; } = "";
 
+    /// <summary>
+    /// AUFTRAG #325 (Anwenderwunsch 17.09.2026): der GEPFLEGTE Text der nicht
+    /// monetären Wirkungen — <c>WirtschaftlichkeitParameter.NichtMonetaer</c>, roh
+    /// und unformatiert. Er füllt den Bewertungsblock unter der Kennzahltabelle,
+    /// der ihn seit diesem Auftrag auch entgegennimmt.
+    ///
+    /// <para>Das ist NICHT <see cref="Wirkungszeile"/>: Die ist der fertig
+    /// formulierte Ausweis des Nachweisblocks („Nicht monetäre Wirkungen: …"), das
+    /// hier ist der Wert, den der Anwender eingibt. Eine zweite Wahrheit entsteht
+    /// daraus nicht — beide lesen dieselbe Modelleigenschaft.</para>
+    /// </summary>
+    public string NichtMonetaer { get; set; } = "";
+
     /// <summary>Die Kennzahlen und die Tabelle des vorgewählten Szenarios.</summary>
     public ErgebnisAnsicht Ansicht { get; set; } = new();
 

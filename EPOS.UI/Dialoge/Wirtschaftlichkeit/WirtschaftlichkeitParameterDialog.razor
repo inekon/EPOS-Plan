@@ -252,45 +252,50 @@
         </KindInhalt>
     </Gruppenkopf>
 
-    @* ------------------------------------- Bewertung (DIN EN 17463) *@
-    @* ETAPPE W5-B-12 (VALERI-Luecke G6, Anwenderentscheid 09.09.2026). Der
-       Kapitalwert ist nur die eine Haelfte der Norm; die andere ist die
-       BESCHREIBUNG dessen, was sich nicht in Euro fassen laesst. Bis hierher
-       gab es dafuer kein Feld - und ein Kapitalwert ohne diese Zeile behauptet
-       mehr, als er weiss.
+    @* ----------------------------------- Bewertung (DIN EN 17463): NICHT HIER *@
+    @* AUFTRAG #325 (Anwenderwunsch 17.09.2026): Die Gruppe "Bewertung nach
+       DIN EN 17463" ist herausgenommen und steht als aufklappbarer Block auf der
+       SEITE "Wirtschaftlichkeit", unter der Kennzahltabelle - dort, wo auch der
+       Kapitalwert steht; die Norm will beides nebeneinander.
 
-       EIGENER ABSCHNITT, nicht "Allgemein": Dort stehen Rechengroessen. Der
-       Text rechnet nichts; er steht neben der Zahl, so wie die Norm es
-       verlangt. Mehrzeilig ueber den Hausbaustein Textfeld - ein zweiter
-       Baustein waere ein zweiter Ort fuer dieselben Regeln. *@
-    <Gruppenkopf Titel="@_t.GBewertung" Symbol="📋">
-        <KindInhalt>
-            <Formularraster>
-                <KindInhalt>
-                    <Textfeld Bezeichnung="@_t.NichtMonetaer" Mehrzeilig="true" Zeilen="5"
-                              Platzhalter="@_t.NichtMonetaerPlatz"
-                              Wert="@(Parameter.NichtMonetaer ?? "")"
-                              WertChanged="@(w => Parameter.NichtMonetaer = w)" />
-                </KindInhalt>
-            </Formularraster>
-            <Herleitungszeile Text="@_t.NichtMonetaerHinweis" />
-        </KindInhalt>
-    </Gruppenkopf>
+       Es ist dasselbe Feld an derselben Modelleigenschaft
+       (WirtschaftlichkeitParameter.NichtMonetaer), nur an einer anderen
+       Eingabestelle. Der geladene Satz traegt den Text unveraendert weiter: Was
+       dieser Dialog nicht zeigt, schreibt er auch nicht. *@
 
     @* ------------------------------------------------------------ Strom *@
+    @* AUFTRAG #325 (Anwenderwunsch 17.09.2026): Der KWK-Satz ist HERAUSGENOMMEN -
+       er steht jetzt im Dialog "BHKW-Wirtschaftlichkeit", bei der Anlage, deren
+       Strom er verguetet.
+
+       DER PV-SATZ BLEIBT, und zwar aus einem gemessenen Grund (Haltepunkt des
+       Auftrags): Er wird auch dort gebraucht, wo das Projekt gar keine PV-Anlage
+       fuehrt - der Einstieg in den PV-Verguetungsdialog haengt aber an genau
+       dieser Anlage (WirtschaftlichkeitStand.MitPhotovoltaik). Zwei Rechenwege
+       lesen ihn ohne PV:
+
+         (a) StromPreisCtrl.VerguetungenBauen: v_bhkw = KWK-Satz, sonst PV-Satz -
+             ein Projekt mit BHKW und Stromspeicher, aber ohne PV, bewertet seinen
+             eingespeisten BHKW-Strom mit diesem Satz;
+         (b) StromPreisCtrl: der VERKAUFSERLOES der Arbitrage ist bei jeder
+             Preisquelle ausser Spotmarkt eine Kopie von v_pv - ein Speicher, der
+             ins Netz verkauft, braucht keine PV-Anlage.
+
+       Ein Satz, den die Rechnung braucht und den niemand mehr erreichen kann,
+       waere schlimmer als ein Abschnitt zu viel in diesem Dialog.
+
+       DER "BEZUG" AUS DEM GRUPPENTITEL steht nicht hier und stand auch nie hier:
+       Der Strombezug wird im Dialog "Strombezug" (Tarifsatz des Projekts), im
+       Arbeitspreis des Stromtraegers ("Strompreis Details" im
+       Energietraegerdialog) und in der Gruppe "Strompreis / Bezugsbewertung" des
+       PV-Verguetungsdialogs gepflegt. Der Titel bleibt unveraendert - an ihm ist
+       nichts zu aendern beauftragt. *@
     <Gruppenkopf Titel="@_t.GStrom" Symbol="⚡">
         <KindInhalt>
             <Formularraster>
                 <KindInhalt>
                     <Zahlenfeld Bezeichnung="@_t.EinspeisungPv" Wert="@Parameter.Einspeiseverguetung"
                                 WertChanged="@(w => Parameter.Einspeiseverguetung = w ?? Parameter.Einspeiseverguetung)"
-                                Min="0" Max="2" Nachkommastellen="4" />
-
-                    @* Ein KWK-Preis von 0 heisst "nicht gepflegt" - die Unterscheidung ist
-                       wichtig, weil eine gepflegte 0 sonst wie ein Preis wirkte. *@
-                    <Zahlenfeld Bezeichnung="@_t.EinspeisungKwk"
-                                Wert="@(Parameter.EinspeiseverguetungKWK ?? 0)"
-                                WertChanged="@(w => Parameter.EinspeiseverguetungKWK = w > 0 ? w : null)"
                                 Min="0" Max="2" Nachkommastellen="4" />
 
                     @* SP-E-2: Der Anzeigeschalter "Aufschlaege beruecksichtigen" ist
@@ -300,9 +305,9 @@
                 </KindInhalt>
             </Formularraster>
 
-            @* SP-E-5 (a): Die beiden Saetze stellen seit diesem Entscheid AUCH den
-               Verkaufspreis der Speicherwelt. Wer sie hier aendert, aendert die
-               Speicherrechnung mit - und das muss dort stehen, wo er sie aendert. *@
+            @* SP-E-5 (a): Der Satz stellt AUCH den Verkaufspreis der Speicherwelt.
+               Wer ihn hier aendert, aendert die Speicherrechnung mit - und das muss
+               dort stehen, wo er ihn aendert. *@
             <Herleitungszeile Text="@_t.EinspeisungHinweis" />
         </KindInhalt>
     </Gruppenkopf>

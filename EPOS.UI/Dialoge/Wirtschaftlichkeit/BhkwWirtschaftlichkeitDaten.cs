@@ -336,7 +336,7 @@ public sealed class BhkwAnlagenstand
 }
 
 /// <summary>
-/// Der ARBEITSSTAND der Projektvorgaben — genau die siebzehn Felder der Gruppen
+/// Der ARBEITSSTAND der Projektvorgaben — genau die achtzehn Felder der Gruppen
 /// 2 bis 4, die der Dialog pflegt.
 ///
 /// <para>Derselbe Grund und dieselbe Bauart wie bei
@@ -348,6 +348,18 @@ public sealed class BhkwAnlagenstand
 /// </summary>
 public sealed class BhkwVorgabenstand
 {
+    /// <summary>
+    /// Einspeiseverguetung KWK-Strom [EUR/kWh]; <c>null</c> = nicht gepflegt
+    /// (AUFTRAG #325, Anwenderwunsch 17.09.2026).
+    ///
+    /// <para><b>0 heisst „nicht gepflegt".</b> Die Regel zieht unveraendert mit:
+    /// Eine gepflegte 0 waere die Aussage „der eingespeiste KWK-Strom bringt
+    /// nichts ein" und laesst sich von einem nie angefassten Feld an dieser Zahl
+    /// nicht unterscheiden. Deshalb <c>null</c> — und der Rechenweg sagt es
+    /// (<c>StromPreisCtrl.GepflegtCtKwh</c>).</para>
+    /// </summary>
+    public double? EinspeiseverguetungKwk;
+
     /// <summary>Bonus Eigenstrom [ct/kWh] (2.1).</summary>
     public double KwkgBonus;
 
@@ -402,6 +414,7 @@ public sealed class BhkwVorgabenstand
     /// <summary>Der Stand, wie der Parametersatz geladen wurde.</summary>
     public static BhkwVorgabenstand Aus(WirtschaftlichkeitParameter p) => new BhkwVorgabenstand
     {
+        EinspeiseverguetungKwk = p.EinspeiseverguetungKWK,
         KwkgBonus = p.KwkgBonus,
         KwkgBonusEinspeisung = p.KwkgBonusEinspeisung,
         KwkgVbhJahresdeckel = p.KwkgVbhJahresdeckel,
@@ -430,7 +443,8 @@ public sealed class BhkwVorgabenstand
     /// einer Mehrbenutzerlage fremde Änderungen mit dem eigenen geladenen Stand.
     /// </summary>
     public bool Gleicht(WirtschaftlichkeitParameter p)
-        => KwkgBonus == p.KwkgBonus
+        => EinspeiseverguetungKwk == p.EinspeiseverguetungKWK
+        && KwkgBonus == p.KwkgBonus
         && KwkgBonusEinspeisung == p.KwkgBonusEinspeisung
         && KwkgVbhJahresdeckel == p.KwkgVbhJahresdeckel
         && KwkgVbhKontingent == p.KwkgVbhKontingent
@@ -451,6 +465,7 @@ public sealed class BhkwVorgabenstand
     /// <summary>Den Stand auf den geladenen Parametersatz legen — NUR im OK-Weg.</summary>
     public void Anwenden(WirtschaftlichkeitParameter p)
     {
+        p.EinspeiseverguetungKWK = EinspeiseverguetungKwk;
         p.KwkgBonus = KwkgBonus;
         p.KwkgBonusEinspeisung = KwkgBonusEinspeisung;
         p.KwkgVbhJahresdeckel = KwkgVbhJahresdeckel;
