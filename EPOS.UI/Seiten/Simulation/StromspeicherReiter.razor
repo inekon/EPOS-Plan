@@ -285,27 +285,16 @@
     /// Lesestand der aktivierten Projektflotte, den die Huelle ohnehin mitbringt. Der
     /// Reiter liest damit KEINEN Eingabestand mehr nach; die Betriebsfuehrung wird in
     /// der Auslegungsansicht gepflegt, erreichbar ueber Schritt ①.
+    ///
+    /// <para><b>VF-1: die Herleitung steht im Kern.</b> Dieselben Angaben beschriften seit
+    /// dem Anwenderbefund vom 17.09.2026 auch die Projektspalten der Wirtschaftlichkeit —
+    /// verschieden ist nur der Kopfsatz. Gebaut werden sie deshalb einmal, in
+    /// <c>SpeicherAnzeigeCtrl.FlottenKontextText</c>; hier steht nur noch, mit welchem
+    /// Rahmen dieser Reiter sie zeigt.</para>
     /// </remarks>
     public string Herkunftszeile(FlottenStudieKonfiguration flotte)
-    {
-        FlottenSimulationOptionen o = flotte.Optionen ?? new FlottenSimulationOptionen();
-        var kultur = System.Globalization.CultureInfo.CurrentCulture;
-        string zeile = string.Format(kultur, Resource.SIM_SP_HERKUNFT,
-            WindowsFormsApplication1.SpeicherFlottenAnzeigeCtrl.Zieltext(o.Betriebsziel),
-            flotte.Einheiten?.Count ?? 0);
-
-        if (o.Betriebsziel is (FlottenBetriebsziel.PeakShaving or FlottenBetriebsziel.MultiUse)
-            && o.WirtschaftlicherPeakZielwertKw is { } peak)
-        {
-            zeile += " · " + string.Format(kultur, Resource.SIM_SP_HERKUNFT_PEAK,
-                Zahl(peak),
-                o.PeakZielAdaptiv ? Resource.FLOTTE_PEAKMODUS_ADAPTIV
-                                  : Resource.FLOTTE_PEAKMODUS_FEST);
-        }
-        return zeile;
-    }
-
-    private static string Zahl(double wert) => wert.ToString("N2", System.Globalization.CultureInfo.CurrentCulture);
+        => WindowsFormsApplication1.SpeicherAnzeigeCtrl.FlottenKontextText(
+               flotte, Resource.SIM_SP_HERKUNFT);
 
     /// <summary>Die Rückmeldung des CSV-Schreibers (Pfad bzw. Fehlertext); leer = nichts zu melden.</summary>
     private string _csvMeldung = "";

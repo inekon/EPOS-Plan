@@ -109,6 +109,33 @@ namespace WindowsFormsApplication1
             var z = new List<WirtZeile>();
             if (menge == null) return z;
 
+            // AUFTRAG VF-1 (Anwenderbefund 17.09.2026): WOMIT rechnet diese Spalte?
+            //
+            // In der Vergleichsgruppe stand stumm eine Spalte „mit Flotte" neben einer
+            // „ohne" — der Anwender hielt die Variante für „mit Speicher". Der
+            // Simulationsreiter sagte es seit jeher, die Wirtschaftlichkeit nicht; und
+            // gerade sie ist der Ort, an dem zwei Zahlen gegeneinander gehalten werden.
+            //
+            // Die Zeile steht GANZ OBEN, vor der ersten Geldzeile: Sie ist der Kontext,
+            // unter dem alles darunter zu lesen ist. Stamm und Varianten dürfen
+            // verschiedene Flotten führen — die Zeile ist die Antwort darauf, nicht ein
+            // Hinweis auf eine Abweichung.
+            //
+            // Ohne lesbaren Kontext (kein Projektbezug, keine Datenbank — so laufen die
+            // Zeilenproben) entfällt sie wie jede andere Zeile ohne Wert.
+            Dictionary<int, string> speicher = Speicherkontexte(menge);
+            if (speicher.Count > 0)
+                z.Add(new WirtZeile
+                {
+                    Schluessel = "SPEICHER_KONTEXT",
+                    Titel = MyResource.Resource.WIRT_ZEILE_SPEICHER,
+                    Text = e =>
+                    {
+                        string t;
+                        return e != null && speicher.TryGetValue(e.IdProjekt, out t) ? t : "";
+                    }
+                });
+
             z.Add(Zahl("INVESTITION", MyResource.Resource.WIRT_ZEILE_INVESTITION,
                        e => (double?)e.Investition));
 
@@ -301,6 +328,24 @@ namespace WindowsFormsApplication1
                                       Func<WirtschaftlichkeitErgebnis, double?> wert)
         {
             return new WirtZeile { Schluessel = schluessel, Titel = titel, Wert = wert };
+        }
+
+        /// <summary>
+        /// Der Speicherkontext je PROJEKT der Gruppe (VF-1) — einmal gelesen, nicht je
+        /// Zelle: Die Zeilenliste entsteht bei jedem Szenariowechsel neu, und derselbe
+        /// Text stünde sonst mehrfach in der Datenbank nachgefragt.
+        /// </summary>
+        private static Dictionary<int, string> Speicherkontexte(
+            IList<WirtschaftlichkeitErgebnis> menge)
+        {
+            var karte = new Dictionary<int, string>();
+            foreach (WirtschaftlichkeitErgebnis e in menge)
+            {
+                if (e == null || e.IdProjekt <= 0 || karte.ContainsKey(e.IdProjekt)) continue;
+                string text = SpeicherAnzeigeCtrl.SpeicherKontextText(e.IdProjekt);
+                if (!string.IsNullOrEmpty(text)) karte[e.IdProjekt] = text;
+            }
+            return karte;
         }
 
         /// <summary>Klartext der Vermarktungsform (Persistenzwert ist ASCII, P6).</summary>
