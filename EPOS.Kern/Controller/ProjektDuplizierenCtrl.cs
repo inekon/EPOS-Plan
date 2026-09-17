@@ -384,6 +384,25 @@ namespace WindowsFormsApplication1
                 // (Befund 27.08.2026: WP-Positionen der Varianten 1038/1039).
                 int neuId = (int)(srcId + offset["Tab_Projekt"]);
                 try { KostenProjektPositionenCtrl.AnkerNachziehen(neuId); } catch { }
+
+                // VF-1 (Messung MV-1, 17.09.2026): Derselbe Grund, eine Schicht tiefer.
+                // Tab_SpeicherAuslegung.Daten ist für den generischen Lauf eine
+                // TEXT-Spalte; die Kennungen INNERHALB des Flotten-JSON
+                // (FlottenEinheit.AnlageId, die eingefrorene Kopie des
+                // Strompreisprofils) erreicht er nicht und zeigten in der Kopie weiter
+                // auf das QUELLprojekt. Weitergereicht wird nicht das Offset-Wörterbuch,
+                // sondern die BENANNTE Naht mit genau den zwei Versätzen, die ein
+                // JSON-Stand braucht; nachgezogen wird im zuständigen Controller.
+                try
+                {
+                    SpeicherAuslegungCtrl.KopieBezuegeNachziehen(new ProjektkopieVersatz
+                    {
+                        ZielProjektId = neuId,
+                        Anlagen = Versatz(offset, "Tab_Energieanlagen"),
+                        Kostenprofile = Versatz(offset, "Tab_Kostenprofil")
+                    });
+                }
+                catch { }
                 return neuId;
             }
             catch (Exception ex)
@@ -769,6 +788,21 @@ namespace WindowsFormsApplication1
                 return list;
             }
             catch { return null; }
+        }
+
+        /// <summary>
+        /// Der Versatz EINER Tabelle für den Nachzug der JSON-Stände (VF-1); 0, wenn die
+        /// Quelle dort keine Zeile führte.
+        /// </summary>
+        /// <remarks>
+        /// 0 ist hier keine Notlösung, sondern die richtige Antwort: Ohne Quellzeilen hat
+        /// die Kopie in dieser Tabelle ebenfalls keine — ein Bezug darauf ist dann
+        /// unauflösbar, und genau so behandelt ihn der Nachzug.
+        /// </remarks>
+        private static long Versatz(Dictionary<string, long> offset, string tabelle)
+        {
+            long o;
+            return offset != null && offset.TryGetValue(tabelle, out o) ? o : 0;
         }
 
         // offset(T) = MAX(T.pk) - MIN(pk der Quellzeilen) + 1.
