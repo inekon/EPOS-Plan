@@ -15,7 +15,7 @@ namespace WindowsFormsApplication1
     //   Einspeiseerlös         = Einspeisemenge × Einspeisepreis
     //
     // REINE FUNKTIONEN ÜBER DTOs (Leitentscheidung L9, Vorbild SpeicherEngine/
-    // Aufschlagsmodell.cs): kein Datenbankzugriff, keine Oberfläche, sprachneutrale
+    // Preiszerlegung.cs): kein Datenbankzugriff, keine Oberfläche, sprachneutrale
     // Schlüssel. Die Herleitungstexte entstehen mit einer übergebenen Kultur.
     // ---------------------------------------------------------------------------
 

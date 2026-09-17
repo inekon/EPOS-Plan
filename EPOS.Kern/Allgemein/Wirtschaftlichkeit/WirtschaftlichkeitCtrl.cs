@@ -638,8 +638,8 @@ namespace WindowsFormsApplication1
                     // SP-E-2: Der Aufschlagsschalter Aufschlaege_Anwenden wird NICHT
                     // MEHR GELESEN. Die Preisanteile zerlegen den Arbeitspreis, sie
                     // kommen nicht mehr auf ihn — es gibt nichts an- oder abzuschalten.
-                    // Die Spalte bleibt stehen, damit eine ältere Programmfassung auf
-                    // derselben Datei nicht auf einen fehlenden Namen läuft.
+                    // Die Spalte ist mit Schemaschritt 85 entfallen
+                    // (StrompreisAltspalten).
                     p.EinspeiseverguetungKWK = D(r, SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK);
 
                     // LEITENTSCHEIDUNGEN L12/L13 — Bilanzierungsangaben. Ein LEERER

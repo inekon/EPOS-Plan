@@ -34,9 +34,9 @@ public sealed record Schnellwahlsatz(string Beschriftung, string Herkunft,
 /// schreibt die Komponente in das übergebene Objekt, und die Hülle liest es
 /// beim Speichern zurück — genau die Arbeitsteilung von <c>InsModell</c> und
 /// <c>Uebernehmen</c>. Die Komponente kennt das Fachmodell
-/// <c>StromAufschlagModel</c> dabei nicht.</para>
+/// <c>StrompreisZerlegungModel</c> dabei nicht.</para>
 /// </summary>
-public sealed class StromAufschlaegeStand
+public sealed class StrompreisDetailsStand
 {
     // ---- Gruppe 1: Beschaffung und Vertrieb ----
 
@@ -115,7 +115,7 @@ public sealed class BrennstoffBestandteileStand
 /// (iU9-W4.3).
 ///
 /// <para>Beides fällt aus derselben Rechnung
-/// (<c>StromAufschlagCtrl.AlsAufschlagssatz</c> bzw.
+/// (<c>StrompreisZerlegungCtrl.AlsPreiszerlegung</c> bzw.
 /// <c>BrennstoffBestandteilCtrl</c>) — die Formeln stehen in der Engine, nicht
 /// in der Oberfläche.</para>
 /// </summary>

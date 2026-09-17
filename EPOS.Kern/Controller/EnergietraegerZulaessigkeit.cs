@@ -64,7 +64,7 @@ namespace WindowsFormsApplication1
         internal const string ERZEUGER_HEIZSTAB = "Heizstab";
 
         /// <summary>Kategoriecode der elektrischen Welt (<c>Tab_BrennstoffKategorien.Code</c>).</summary>
-        internal const string CODE_STROM = StromAufschlagCtrl.PRICING_MODEL_STROM;
+        internal const string CODE_STROM = StrompreisZerlegungCtrl.PRICING_MODEL_STROM;
 
         /// <summary>Kategoriecode der gasförmigen Brennstoffe.</summary>
         internal const string CODE_GASFOERMIG = "GASEOUS_FUEL";

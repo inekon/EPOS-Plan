@@ -34912,7 +34912,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlaege des Kostenmoduls anwenden ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteile auf Spot-/Profilpreis aufschlagen ähnelt.
         /// </summary>
         public static string PREIS_PARAM_CHK_AUFSCHLAG {
             get {
@@ -34926,15 +34926,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PREIS_PARAM_GRUPPE_PREISQUELLE {
             get {
                 return ResourceManager.GetString("PREIS_PARAM_GRUPPE_PREISQUELLE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aus, wenn die gewaehlte Reihe bereits ein Vollpreis ist (Fachkonzept 4.2). ähnelt.
-        /// </summary>
-        public static string PREIS_PARAM_HINWEIS_AUFSCHLAG {
-            get {
-                return ResourceManager.GetString("PREIS_PARAM_HINWEIS_AUFSCHLAG", resourceCulture);
             }
         }
         

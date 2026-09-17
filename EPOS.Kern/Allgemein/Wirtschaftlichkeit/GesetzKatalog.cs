@@ -1039,7 +1039,7 @@ namespace WindowsFormsApplication1
             // GENERATION 7 (Restpunkt S-6, Anwenderangabe vom 17.09.2026): der
             // reduzierte Satz energieintensiver Unternehmen. Er ist ANGEGEBEN, nicht
             // aus Regelsatz minus Entlastung gerechnet — L4 verbietet die Differenz.
-            // Wertgleich der bisherigen Rueckfallebene StromAufschlagModel
+            // Wertgleich der bisherigen Rueckfallebene StrompreisZerlegungModel
             // .STROMSTEUER_REDUZIERT (0,050 ct/kWh), die damit nur noch greift, wenn
             // der Katalog fuer das Bilanzjahr nichts liefert.
             l.Add(N(DbWerte.GESETZ_STROMST_REDUZIERT, STROMST, 2026, 0.50, EUR_MWH, G,

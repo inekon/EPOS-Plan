@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
         /// der Umfang der SIMULATIONS-Eingabespalten; <c>Tab_ProjektWerte</c> gehört zum
         /// Kostenmodul und steht deshalb nicht darin (Begründung dort). Dasselbe Muster
         /// wie <c>HeizkesselStammCtrl.StelleSpaltenSicher</c> für Schritt 15 und
-        /// <c>StromAufschlagCtrl.StelleSpaltenSicher</c> für Schritt 12.
+        /// <c>StrompreisZerlegungCtrl.StelleSpaltenSicher</c> für Schritt 12.
         /// </para>
         /// <para>
         /// <b>Ohne Dialog, Schema je Tabelle.</b> Eine Vorsorge ist kein Bedienschritt

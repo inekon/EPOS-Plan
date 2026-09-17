@@ -9,7 +9,7 @@
     // energy_project_settings.custom_price_work und wird von ucFuelSettings gepflegt.
     // Hier stehen die Anteile, aus denen er BESTEHT.
     //
-    // Abgrenzung zum StromAufschlagModel — und der Unterschied ist fachlich, nicht
+    // Abgrenzung zum StrompreisZerlegungModel — und der Unterschied ist fachlich, nicht
     // formal:
     //
     //   * Der Strom-Block ist ein AUFSCHLAG. Netzentgelt, Umlagen, Stromsteuer,
@@ -37,7 +37,7 @@
         // KEINE VORSCHLAGSWERTE. Alle vier stehen auf null, und null heisst „kein
         // Anteil erfasst" — nicht „nicht gepflegt, also Vorschlagswert".
         //
-        // Das ist der eine entscheidende Unterschied zum StromAufschlagModel, dessen
+        // Das ist der eine entscheidende Unterschied zum StrompreisZerlegungModel, dessen
         // Felder mit den Vorschlagswerten des Fachkonzepts vorbelegt sind und deren
         // Leseweg NULL wieder auf genau diese Werte zurückfallen lässt — bei Projekt
         // 1030 gemessene 11,746 ct/kWh trotz fünf abgeschalteter Flags (E5-Falle,

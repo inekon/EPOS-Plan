@@ -583,3 +583,188 @@ Speicherwelt liest dieselbe Zahl von der neuen Stelle.
 
 > Die Vergütung für eingespeisten Strom wird nur noch bei den Wirtschaftlichkeits-Parametern
 > gepflegt; von dort rechnen auch Stromspeicher und Speicherflotte mit ihr.
+
+
+## Aufräumen nach N4–N6 (17.09.2026) — die Zerlegung heißt so, die toten Spalten fallen weg
+
+> Auftrag des Orchestrators (`AR-SP`), gebündelte Nebenbefunde der Aufträge #313 und #314;
+> Regel „Was seine Aufgabe erfüllt hat, wird entfernt" (CLAUDE.md, Aufräumen).
+
+### AR.1 Befund
+
+Die Welle #312–#314 hat zwei Reste hinterlassen.
+
+**Erstens Namen, die etwas anderes sagen als der Gegenstand.** Seit SP‑E‑2 **zerlegen** die
+Preisanteile den Arbeitspreis, statt auf ihn zu kommen — die Typen hießen aber weiter
+„Aufschlag": `Aufschlagssatz`, `Aufschlagskomponente`, `StromAufschlagCtrl`,
+`StromAufschlagModel`, `StromAufschlaegeStand`, `AlsAufschlagssatz`. Ein Name, der das
+Gegenteil dessen behauptet, was die Klasse tut, ist die teuerste Sorte Altlast: Der nächste
+Leser glaubt ihm.
+
+**Zweitens fünf Spalten ohne Leser.** Schritt 83 hat den Modus abgeschafft und den
+Gesamtwert in den Arbeitspreis gefaltet, Schritt 84 die Vergütung umgezogen, und beide haben
+ihre Quellspalten mit Absicht stehen lassen — damit eine ältere Programmfassung auf derselben
+Datei nicht auf einen fehlenden Namen läuft. Diese Schonfrist ist mit der Auslieferung der
+Welle vorbei. Was bleibt, ist eine zweite, tote Wahrheit:
+
+| Spalte | Wer las sie | Seit wann nicht mehr |
+|---|---|---|
+| `energy_project_settings.Aufschlag_Modus` | der Modus der Zerlegung | Schritt 83 — es gibt keinen Modus mehr |
+| `energy_project_settings.Aufschlag_Override` | der Gesamtwert | Schritt 83 — in den Arbeitspreis gefaltet |
+| `energy_project_settings.Verguetung_PV` | die Speicherwelt | Schritt 84 — in die Parameter umgezogen |
+| `energy_project_settings.Verguetung_BHKW` | die Speicherwelt | Schritt 84 — in die Parameter umgezogen |
+| `Tab_ProjektWirtschaftlichkeit.Aufschlaege_Anwenden` | `RechneAufschlaege` | Schritt 83 — es gibt nichts an- oder abzuschalten |
+
+Dazu drei kleinere Reste: überholte Kommentare, die von einem „Standardwert" der Vergütung
+sprechen (der Rückfall ist seit N6 **0**), Papiere unter `Dokumentation/aktuell/`, die
+`AufschlagBetrag`/`WirksamCtKwh` noch als Rechenweg führen, und ein Variantenschalter, dessen
+Beschriftung („Aufschläge des Kostenmoduls anwenden") nicht mehr sagt, was er tut.
+
+### AR.2 Umbenennung
+
+| alt | neu |
+|---|---|
+| `SpeicherEngine/Aufschlagsmodell.cs` | `SpeicherEngine/Preiszerlegung.cs` (`git mv`) |
+| `Aufschlagskomponente` | `Preisanteil` |
+| `Aufschlagssatz` | `Preiszerlegung` |
+| `EPOS.Kern/Controller/StromAufschlagCtrl.cs` | `EPOS.Kern/Controller/StrompreisZerlegungCtrl.cs` (`git mv`) |
+| `StromAufschlagCtrl` | `StrompreisZerlegungCtrl` |
+| `EPOS.Kern/Model/StromAufschlagModel.cs` | `EPOS.Kern/Model/StrompreisZerlegungModel.cs` (`git mv`) |
+| `StromAufschlagModel` | `StrompreisZerlegungModel` |
+| `AlsAufschlagssatz` | `AlsPreiszerlegung` |
+| `StromAufschlaegeStand` | `StrompreisDetailsStand` |
+
+27 Dateien, **reine Bezeichnerersetzung** — kein Rechenweg, keine Signatur, keine
+Sichtbarkeit geändert. Die Umbenennung fasst `EPOS.UI.Daten/Kosten/EnergietraegerHuelle.cs`
+mit an; anders ist ein Typname nicht durchgängig zu wechseln, und mehr als die
+Bezeichnerersetzung steht dort nicht.
+
+**Was „Aufschlag" bleibt, und warum.** Bei der Spot- und Profilreihe wird tatsächlich
+aufgeschlagen: Die Reihe **ist** die Beschaffung, die übrigen aktiven Anteile kommen darauf.
+Deshalb behalten `AufschlagCtKwh` am Preisergebnis, `MitAufschlag` in `PreisModell`,
+`profilAufschlagCtKwh` in der Speicherauslegung, `Netzladeaufschlag`, `PpaSpotAufschlag` und
+`Tarifaufschlag` ihr Wort. Ebenso bleiben die **Spaltennamen** `Aufschlag_*` (kein Umbenennen
+im Schema) und die Ressourcenschlüssel `PREIS_*` — ihre Bedeutung stimmt. Und die
+Kommentare der Migrationsklasse `StrompreisZerlegung` (Schritt 83) sprechen weiter vom
+„Aufschlag": Sie beschreiben den Bestand, den der Schritt vorfindet.
+
+### AR.3 Schemaschritt 85 — `StrompreisAltspalten`
+
+Fünf `ALTER TABLE … DROP COLUMN`, **kein DML**, **kein Tabellenneubau**.
+
+**Warum DROP COLUMN reicht.** SQLite kann das seit 3.35. Es verweigert den Dienst, wenn die
+Spalte Primärschlüssel ist, unter einem Index oder einer UNIQUE-Bedingung steht, in einer
+**Tabellen**-CHECK-Bedingung, einer generierten Spalte, einem Trigger oder einer Sicht
+vorkommt. Gemessen an der Testdatenbank trifft nichts davon zu: Die drei Indizes über
+`energy_project_settings` liegen auf `ID_Energieträger`, `ID_Projekt` und `ID_Umrechnung`,
+der eindeutige auf `(ID_Projekt, ID_Energieträger)`; `Tab_ProjektWirtschaftlichkeit` führt
+einen eindeutigen Index auf `ID_Projekt`. Die CHECK-Bedingungen von `Aufschlag_Modus`
+(Textlänge ≤ 50) und `Aufschlaege_Anwenden` (`IN (0,1)`) sind **Spalten**bedingungen und
+fallen mit ihrer Spalte — an einer STRICT-Kopie mit denselben Bauformen gegengeprüft. Beide
+Tabellen sind STRICT; das ändert daran nichts.
+
+**Eine Quelle, drei Leser** — wortgleich zum Muster von `HeizstabJeWaermepumpe` (Schritt 79,
+dem einzigen anderen Entfernungsschritt des SQLite-Zweigs): `StrompreisAltspalten` im Kern
+hält Namen und Anweisungen, `SchemaMigration.Schritt_85_StrompreisAltspalten`,
+`Werkzeuge/Testdatenbankschema` und `EPOS.Kern.Tests/TestDatenbank` bedienen sich daraus.
+Der Spaltenname reist als **Argument** in die Bauweise, weil die Anweisung einen Namen nennt,
+den es nach dem Schritt nicht mehr gibt — sonst hielte ihr der `SqlDialektPruefer` die
+migrierte Messlatte entgegen.
+
+**Die Konstanten sind aus `SchemaKatalog` ausgezogen.** Der Katalog beschreibt die Spalten,
+die es **gibt**; die fünf Namen hält ab hier der Schritt, der sie wegnimmt. `Schritt12_Preismodell`,
+`StrompreisZerlegung` (83) und `VerguetungUmzug` (84) lesen sie von dort — die Kette legt sie
+an, liest sie, und Schritt 85 nimmt sie weg.
+
+**`sql/schema/*` bleibt unberührt.** Diese Dateien beschreiben den eingefrorenen Quellstand 61
+(„NICHT VON HAND AENDERN"), nicht den Zielstand; `WP_Heizstab` steht dort seit Schritt 79
+ebenso weiter drin. Geprüft, was die Nachbarn taten — sie haben sie nicht angefasst.
+
+**Idempotenz.** `StrompreisAltspalten.Anweisungen` gibt nur Anweisungen für Spalten heraus,
+die noch stehen. Nach dem Lauf ist `Offen()` = 0, und ein zweiter Lauf fasst nichts an.
+
+### AR.4 Kommentar- und Papierstellen
+
+| Stelle | was |
+|---|---|
+| `SpeicherEngine/SpeicherParameter.cs`, `SpeicherEingang.cs` | „Standardwert" → **Rückfallwert**, ohne gepflegte Vergütung **0**, Quelle Wirtschaftlichkeitsparameter (`StromPreisCtrl.VerguetungenBauen`) |
+| `EPOS.Kern/Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitDaten.cs`, `WirtschaftlichkeitCtrl.cs` | „Spalte bleibt ungelesen stehen" → mit Schritt 85 entfallen |
+| `EPOS.Kern/Model/StromspeicherVarianteModel.cs`, `SchemaKatalog` | der Variantenschalter gilt nur für Spot und Kostenprofil; beim Fixpreis wirkt er nicht |
+| `Dokumentation/aktuell/.../Rechenweg/04_Energiekosten.md` | Formelblock ohne `AufschlagBetrag`; Befund **N3 erledigt** |
+| `Dokumentation/aktuell/.../Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` | Aufschlagsblock → Zerlegung; Vergütungssätze auf die Parameter umgeschrieben; Trägerdialog-Zeile auf „Strompreis Details"; N3 erledigt; Doppelwahrheit Stromsteuer auf den neuen Typnamen |
+| `Dokumentation/aktuell/Konzept_Stromspeicher_EPOS-Plan.md` | `Aufschlag_Modus`/`_Override` **entfallen** statt „bleiben stehen"; `StrompreisZerlegungModel`; „Aufschlagskomponenten" → „Preisanteile" |
+| `Referenzlaeufe/LIESMICH.md` | Schemastand **85**, Schritt 85 benannt und als ergebnisneutral begründet |
+
+`VERGUETUNG_PV_VORGABE` gibt es nicht mehr; `AufschlagsModus` steht nur noch in der
+Statusdatei (dort als Geschichte richtig), `ucStromAufschlaege` nur noch als Verweis auf die
+abgelöste WinForms-Maske. `Dokumentation/ueberholt/` ist Geschichte und bleibt unberührt.
+
+### AR.5 Variantenschalter
+
+`Tab_StromspeicherVariante.Aufschlag_Anwenden` gilt seit SP‑E‑2 nur noch für die Preisquellen
+**Spotmarkt** und **Kostenprofil** (`StromPreisCtrl`: `reiheIstBeschaffung && v.Aufschlag_Anwenden`).
+Die Beschriftung heißt deshalb jetzt, was sie tut:
+
+| | alt | neu |
+|---|---|---|
+| `PREIS_PARAM_CHK_AUFSCHLAG` (de) | Aufschlaege des Kostenmoduls anwenden | **Anteile auf Spot-/Profilpreis aufschlagen** |
+| `PREIS_PARAM_CHK_AUFSCHLAG` (en) | Apply the surcharges from the cost module | **Add price components to the spot/profile price** |
+
+`PREIS_PARAM_HINWEIS_AUFSCHLAG` ist **entfallen**: Der `Schalter`-Baustein kennt keinen
+Hinweistext, der Schlüssel wurde von niemandem gelesen. Die Spalte selbst bleibt — sie trägt
+eine Anwenderangabe. Konzept Stromspeicher 4.1 a/b nennt den Schalter bereits richtig; in den
+Wiki-Quellen kommt er nicht vor.
+
+### AR.6 Nachweis
+
+**Schemafall** (Arbeitskopie der Testdatenbank, 84 → 85):
+
+| | vorher | nachher |
+|---|---|---|
+| Schemaversion | 84 | **85** |
+| Tabellen | 120 | 120 |
+| Spalten `energy_project_settings` | 44 | **40** (weg: Aufschlag_Modus, Aufschlag_Override, Verguetung_PV, Verguetung_BHKW; neu: keine) |
+| Spalten `Tab_ProjektWirtschaftlichkeit` | 51 | **50** (weg: Aufschlaege_Anwenden) |
+| Zeilen, alle 120 Tabellen | 1 602 377 | 1 602 377, **keine Tabelle abweichend** |
+| SHA-256 über alle übrigen Felder beider Tabellen | — | **gleich** |
+
+Der **zweite Lauf** liefert einen byte-identischen Schnappschuss: nichts angefasst.
+
+**Prüfstände.** 4 neue Fälle (`StrompreisAltspaltenTests`: der Schritt entfernt genau die
+fünf, ohne Zeile oder Nachbarspalte anzufassen; auf dem Zielstand nichts zu tun; fünf
+DROP COLUMN in fester Reihenfolge ohne DML; Zielversion 85). Die Nachweise der Schritte 83
+und 84 stellen die Altspalten auf ihrer **eigenen** Arbeitskopie wieder her
+(`TestDatenbank.AltspaltenStrompreisWiederherstellen`) — sie prüfen den Bestandsstand, und zu
+dem gehörten die Spalten. Keine Zahl eines bestehenden Falls hat sich geändert; kein Fall ist
+verloren gegangen (`EPOS.Kern.Tests` 3 162 → 3 166, alle anderen Projekte gleich).
+
+**Gate** (beide Kulturen, normal und `LC_ALL=en_US.UTF-8`):
+
+| | Ergebnis |
+|---|---|
+| Kern-Filter (Release) | 0 Fehler / **5 Warnungen** (Ausgangslage 5, Schranke 7) |
+| Windows-Schale (`EnableWindowsTargeting=true`) | 0 Fehler / 5 Warnungen (Bestand) |
+| `EPOS.Kern.Tests` | 3 166 / 3 166 |
+| `EPOS.UI.Tests` | 4 546 / 4 546 |
+| SpeicherEngine / KiKern / SpeicherPlanung | 368 / 499 / 27 von 28 (1 übersprungen) |
+| `Werkzeuge/Formularkarte.Tests` | 122 / 122 |
+| `SqlDialektPruefer` | 1 474 Texte, **0 Fundstellen** |
+| ChartProben | 64 Bilder, 0 Verstöße |
+| `Resource.Designer.cs` | 6 294 → **6 293** Einträge, zweiter Lauf **+0** |
+| Referenzlauf gegen `2026-09-16_R8_Heizkessel_Kaskade` | **5/5 PASS**, 143 CSV, 1 656 417 Werte — und **byte-gleich vor und nach** dem Schemaschritt |
+
+Keine neue Referenzbasis. Kein Push, kein CI- und kein iOS-Lauf.
+
+### AR.7 Abnahmepunkte
+
+| | |
+|---|---|
+| `A-AR-SP-1` | Stromspeicher → Parameter, Preisquelle **Spotmarkt** oder **Kostenprofil**: Der Schalter heißt „Anteile auf Spot-/Profilpreis aufschlagen" (englisch „Add price components to the spot/profile price"); ein- und ausgeschaltet ändert sich der ausgewiesene Bezugspreis um die Summe der aktiven Anteile ohne Beschaffung |
+| `A-AR-SP-2` | Dieselbe Seite mit Preisquelle **Fixpreis**: Der Schalter ändert am Bezugspreis nichts — dort zerlegen die Anteile den Arbeitspreis |
+| `A-AR-SP-3` | Kosten → Energieträger, Stromträger: „Strompreis Details" öffnet, rechnet und übernimmt wie zuvor; Speichern und Wiederöffnen halten jeden Wert |
+| `A-AR-SP-4` | Eine Bestandsdatenbank vom Stand 84 einmal starten: Die Migration meldet Schritt 85 mit fünf entfernten Spalten, ein zweiter Start meldet nichts mehr, und alle Zahlen des Projekts stehen unverändert |
+
+### AR.8 Logbuch-Entwurf (Version beim Anwender offen)
+
+> Der Schalter der Speichervariante heißt jetzt „Anteile auf Spot-/Profilpreis aufschlagen"
+> und wirkt nur bei den Preisquellen Spotmarkt und Kostenprofil.

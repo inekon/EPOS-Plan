@@ -30,7 +30,7 @@ namespace WindowsFormsApplication1
     /// Einheitenprüfer (<see cref="EnergieEinheitenPruefung"/>) beantwortet
     /// weiter die Frage, ob eine Regel abgeschaltet werden darf und ob der
     /// Träger kWh erreicht; die Aufschlagssätze rechnet
-    /// <see cref="StromAufschlagCtrl"/> bzw.
+    /// <see cref="StrompreisZerlegungCtrl"/> bzw.
     /// <see cref="BrennstoffBestandteilCtrl"/>. Es gibt keine zweite Fassung
     /// einer Fachregel, nur einen zweiten Leser.</para>
     ///
@@ -80,7 +80,7 @@ namespace WindowsFormsApplication1
         private List<EnergietraegerPreisCtrl.Preisbasis> _preisbasen
             = new List<EnergietraegerPreisCtrl.Preisbasis>();
         private List<UmrechnungsRegel> _regeln = new List<UmrechnungsRegel>();
-        private StromAufschlagModel _aufschlagModell;
+        private StrompreisZerlegungModel _aufschlagModell;
         private BrennstoffBestandteilModel _bestandteilModell;
 
         /// <summary>
@@ -608,8 +608,8 @@ namespace WindowsFormsApplication1
             if (_stand.Aufschlaege != null && _aufschlagModell != null)
             {
                 InStromModell(_stand.Aufschlaege, _aufschlagModell);
-                SpeicherEngine.Aufschlagssatz satz =
-                    StromAufschlagCtrl.AlsAufschlagssatz(_aufschlagModell);
+                SpeicherEngine.Preiszerlegung satz =
+                    StrompreisZerlegungCtrl.AlsPreiszerlegung(_aufschlagModell);
 
                 // SP-E-2: Der Block ZERLEGT den Arbeitspreis. Ausgewiesen werden
                 // deshalb die Summe der aktiven Anteile und — als Kohärenzzeile — ihr
@@ -628,7 +628,7 @@ namespace WindowsFormsApplication1
                 // ÜBRIGEN aktiven Anteile. Er wird angeboten, nicht geschrieben — und
                 // nur, solange die Beschaffung leer ist und ein Arbeitspreis dasteht.
                 double ohneBeschaffung =
-                    satz.SummeAktivOhneCtKwh(StromAufschlagCtrl.KOMP_BESCHAFFUNG);
+                    satz.SummeAktivOhneCtKwh(StrompreisZerlegungCtrl.KOMP_BESCHAFFUNG);
                 double vorschlag = a.ArbeitspreisCtKwh - ohneBeschaffung;
                 a.BeschaffungVorschlag =
                     (_aufschlagModell.Beschaffung == 0.0 || !_aufschlagModell.Beschaffung_Aktiv)
@@ -637,10 +637,10 @@ namespace WindowsFormsApplication1
                         : null;
 
                 a.SatzRegelfall = StromsteuerSatz(DbWerte.GESETZ_STROMST_REGELSATZ,
-                    StromAufschlagModel.STROMSTEUER_REGELFALL,
+                    StrompreisZerlegungModel.STROMSTEUER_REGELFALL,
                     !ReduzierterSatzEmpfohlen());
                 a.SatzReduziert = StromsteuerSatz(DbWerte.GESETZ_STROMST_REDUZIERT,
-                    StromAufschlagModel.STROMSTEUER_REDUZIERT,
+                    StrompreisZerlegungModel.STROMSTEUER_REDUZIERT,
                     ReduzierterSatzEmpfohlen());
             }
 
@@ -648,7 +648,7 @@ namespace WindowsFormsApplication1
             {
                 InBrennstoffModell(_stand.Bestandteile, _bestandteilModell);
                 double summe = BrennstoffBestandteilCtrl
-                    .AlsAufschlagssatz(_bestandteilModell).SummeAktivCtKwh;
+                    .AlsPreiszerlegung(_bestandteilModell).SummeAktivCtKwh;
                 bool aufgeschluesselt = _stand.Bestandteile.Aufgeschluesselt;
                 double rest = a.ArbeitspreisCtKwh - summe;
 
@@ -871,13 +871,13 @@ namespace WindowsFormsApplication1
 
             string modell = (_gewaehlt.PricingModel ?? "").ToUpperInvariant();
 
-            if (string.Equals(modell, StromAufschlagCtrl.PRICING_MODEL_STROM,
+            if (string.Equals(modell, StrompreisZerlegungCtrl.PRICING_MODEL_STROM,
                               StringComparison.OrdinalIgnoreCase))
             {
                 try
                 {
-                    StromAufschlagCtrl.StelleSpaltenSicher();
-                    _aufschlagModell = new StromAufschlagCtrl().Read(_projektId, _gewaehlt.ID);
+                    StrompreisZerlegungCtrl.StelleSpaltenSicher();
+                    _aufschlagModell = new StrompreisZerlegungCtrl().Read(_projektId, _gewaehlt.ID);
                     _stand.Aufschlaege = AusStromModell(_aufschlagModell);
                 }
                 catch (Exception ex)
@@ -914,9 +914,9 @@ namespace WindowsFormsApplication1
             "GASEOUS_FUEL", "LIQUID_FUEL", "SOLID_FUEL", "ANIMAL_FAT"
         };
 
-        private static StromAufschlaegeStand AusStromModell(StromAufschlagModel m)
+        private static StrompreisDetailsStand AusStromModell(StrompreisZerlegungModel m)
         {
-            return new StromAufschlaegeStand
+            return new StrompreisDetailsStand
             {
                 Beschaffung = m.Beschaffung, BeschaffungAktiv = m.Beschaffung_Aktiv,
                 Vertrieb = m.Vertrieb, VertriebAktiv = m.Vertrieb_Aktiv,
@@ -932,7 +932,7 @@ namespace WindowsFormsApplication1
             };
         }
 
-        private static void InStromModell(StromAufschlaegeStand s, StromAufschlagModel m)
+        private static void InStromModell(StrompreisDetailsStand s, StrompreisZerlegungModel m)
         {
             m.Beschaffung = s.Beschaffung; m.Beschaffung_Aktiv = s.BeschaffungAktiv;
             m.Vertrieb = s.Vertrieb; m.Vertrieb_Aktiv = s.VertriebAktiv;
@@ -1251,12 +1251,12 @@ namespace WindowsFormsApplication1
             if (_stand.Aufschlaege != null && _aufschlagModell != null)
             {
                 InStromModell(_stand.Aufschlaege, _aufschlagModell);
-                ctKwh = StromAufschlagCtrl.AlsAufschlagssatz(_aufschlagModell).SummeAktivCtKwh;
+                ctKwh = StrompreisZerlegungCtrl.AlsPreiszerlegung(_aufschlagModell).SummeAktivCtKwh;
             }
             else if (_stand.Bestandteile != null && _bestandteilModell != null)
             {
                 InBrennstoffModell(_stand.Bestandteile, _bestandteilModell);
-                ctKwh = BrennstoffBestandteilCtrl.AlsAufschlagssatz(_bestandteilModell).SummeAktivCtKwh;
+                ctKwh = BrennstoffBestandteilCtrl.AlsPreiszerlegung(_bestandteilModell).SummeAktivCtKwh;
             }
             else return;
 
@@ -1416,7 +1416,7 @@ namespace WindowsFormsApplication1
             if (_stand.Aufschlaege != null && _aufschlagModell != null)
             {
                 InStromModell(_stand.Aufschlaege, _aufschlagModell);
-                new StromAufschlagCtrl().Update(_aufschlagModell);
+                new StrompreisZerlegungCtrl().Update(_aufschlagModell);
             }
             if (_stand.Bestandteile != null && _bestandteilModell != null)
             {

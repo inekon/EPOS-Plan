@@ -14,8 +14,8 @@ namespace WindowsFormsApplication1
     // mehr auf ihn auf. Der Controller liefert deshalb zwei Summen und keinen
     // "wirksamen Aufschlag" mehr:
     //
-    //   AlsAufschlagssatz(m).SummeAktivCtKwh                 gegen den Arbeitspreis
-    //   AlsAufschlagssatz(m).SummeAktivOhneCtKwh(BESCHAFFUNG) auf eine Spot-/Profilreihe
+    //   AlsPreiszerlegung(m).SummeAktivCtKwh                 gegen den Arbeitspreis
+    //   AlsPreiszerlegung(m).SummeAktivOhneCtKwh(BESCHAFFUNG) auf eine Spot-/Profilreihe
     //
     // Durchgaengig NAMENSBASIERT mit Columns.Contains-Wache: Auf einer Datenbank, deren
     // Migration noch nicht durchgelaufen ist, liefert der Controller die Vorbelegung des
@@ -27,7 +27,7 @@ namespace WindowsFormsApplication1
     // Kulturregel: Es wird nirgends eine Zeichenkette in eine Zahl umgewandelt - die
     // Werte kommen typisiert aus der DataTable.
     // ---------------------------------------------------------------------------
-    public class StromAufschlagCtrl
+    public class StrompreisZerlegungCtrl
     {
         public const string TABLE = "energy_project_settings";
 
@@ -75,7 +75,7 @@ namespace WindowsFormsApplication1
         /// <para>
         /// Bewusst OHNE Vorbelegung und OHNE Faltung: Hier entstehen nur die Spalten,
         /// damit ein Lesezugriff nicht scheitert; die Leseseite faellt dann auf die
-        /// Vorgaben des <see cref="StromAufschlagModel"/> zurueck. Die Faltung des
+        /// Vorgaben des <see cref="StrompreisZerlegungModel"/> zurueck. Die Faltung des
         /// Bestands gehoert in den Migrationsschritt 83
         /// (<see cref="StrompreisZerlegung"/>) - sie aendert Geldwerte und darf nicht
         /// beilaeufig beim Oeffnen eines Dialogs laufen.
@@ -144,7 +144,7 @@ namespace WindowsFormsApplication1
         /// <summary>Protokolliert einen Vorsorge-Fehlschlag, ohne den Anwender zu stoeren.</summary>
         private static void Protokoll(string meldung)
         {
-            try { Console.WriteLine("StromAufschlagCtrl.StelleSpaltenSicher: " + meldung); }
+            try { Console.WriteLine("StrompreisZerlegungCtrl.StelleSpaltenSicher: " + meldung); }
             catch { }
         }
 
@@ -192,7 +192,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Liest die Preiszerlegung einer (Projekt, Energietraeger)-Zeile. Fehlt die
         /// Zeile oder fehlen die Spalten, kommt ein Modell mit den Vorgabewerten
-        /// zurueck und <see cref="StromAufschlagModel.AusDatenbank"/> steht auf false.
+        /// zurueck und <see cref="StrompreisZerlegungModel.AusDatenbank"/> steht auf false.
         /// </summary>
         /// <remarks>
         /// <b>NULL heisst „kein Anteil"</b> (dieselbe Regel wie beim Brennstoffblock,
@@ -203,9 +203,9 @@ namespace WindowsFormsApplication1
         /// dem niemand etwas eingestellt hat, rechnet weder mit 11,746 ct/kWh noch mit
         /// einem Modus, den niemand gewaehlt hat.
         /// </remarks>
-        public StromAufschlagModel Read(int idProjekt, int idEnergietraeger)
+        public StrompreisZerlegungModel Read(int idProjekt, int idEnergietraeger)
         {
-            StromAufschlagModel m = new StromAufschlagModel();
+            StrompreisZerlegungModel m = new StrompreisZerlegungModel();
             m.ID_Projekt = idProjekt;
             m.ID_Energietraeger = idEnergietraeger;
 
@@ -245,7 +245,7 @@ namespace WindowsFormsApplication1
         /// Die Preiszerlegung des Strom-Carriers eines Projekts - die Kurzform, die
         /// Simulation und Ergebnisanzeige brauchen.
         /// </summary>
-        public StromAufschlagModel ReadStrom(int idProjekt)
+        public StrompreisZerlegungModel ReadStrom(int idProjekt)
         {
             return Read(idProjekt, StromCarrierId(idProjekt));
         }
@@ -270,7 +270,7 @@ namespace WindowsFormsApplication1
         /// der Energietraeger ist dem Projekt nicht zugeordnet. Angelegt wird sie hier
         /// NICHT; das ist Sache des Kostenmoduls, das die Pflichtfelder kennt.
         /// </returns>
-        public bool Update(StromAufschlagModel m)
+        public bool Update(StrompreisZerlegungModel m)
         {
             if (m == null) throw new ArgumentNullException(nameof(m));
             if (m.ID_Projekt <= 0 || m.ID_Energietraeger <= 0) return false;
@@ -335,35 +335,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <b>Die Umlagen kommen EINMAL vor.</b> Steht
-        /// <see cref="StromAufschlagModel.Umlagen_Einzeln"/>, treten KWKG-, Offshore-
+        /// <see cref="StrompreisZerlegungModel.Umlagen_Einzeln"/>, treten KWKG-, Offshore-
         /// und § 19-StromNEV-Umlage an die Stelle des Summenfelds; sonst zaehlt allein
         /// das Summenfeld. Beides zugleich waere eine Doppelzaehlung.
         /// </remarks>
-        public static Aufschlagssatz AlsAufschlagssatz(StromAufschlagModel m)
+        public static Preiszerlegung AlsPreiszerlegung(StrompreisZerlegungModel m)
         {
             if (m == null) throw new ArgumentNullException(nameof(m));
 
-            List<Aufschlagskomponente> k = new List<Aufschlagskomponente>
+            List<Preisanteil> k = new List<Preisanteil>
             {
-                new Aufschlagskomponente(KOMP_BESCHAFFUNG, m.Beschaffung, m.Beschaffung_Aktiv),
-                new Aufschlagskomponente(KOMP_VERTRIEB, m.Vertrieb, m.Vertrieb_Aktiv),
-                new Aufschlagskomponente(KOMP_NETZENTGELT, m.Netzentgelt, m.Netzentgelt_Aktiv),
-                new Aufschlagskomponente(KOMP_STROMSTEUER, m.Stromsteuer, m.Stromsteuer_Aktiv),
-                new Aufschlagskomponente(KOMP_KONZESSION, m.Konzession, m.Konzession_Aktiv)
+                new Preisanteil(KOMP_BESCHAFFUNG, m.Beschaffung, m.Beschaffung_Aktiv),
+                new Preisanteil(KOMP_VERTRIEB, m.Vertrieb, m.Vertrieb_Aktiv),
+                new Preisanteil(KOMP_NETZENTGELT, m.Netzentgelt, m.Netzentgelt_Aktiv),
+                new Preisanteil(KOMP_STROMSTEUER, m.Stromsteuer, m.Stromsteuer_Aktiv),
+                new Preisanteil(KOMP_KONZESSION, m.Konzession, m.Konzession_Aktiv)
             };
 
             if (m.Umlagen_Einzeln)
             {
-                k.Add(new Aufschlagskomponente(KOMP_UMLAGE_KWKG, m.Umlage_KWKG, m.Umlage_KWKG_Aktiv));
-                k.Add(new Aufschlagskomponente(KOMP_UMLAGE_OFFSHORE, m.Umlage_Offshore, m.Umlage_Offshore_Aktiv));
-                k.Add(new Aufschlagskomponente(KOMP_UMLAGE_STROMNEV19, m.Umlage_StromNEV19, m.Umlage_StromNEV19_Aktiv));
+                k.Add(new Preisanteil(KOMP_UMLAGE_KWKG, m.Umlage_KWKG, m.Umlage_KWKG_Aktiv));
+                k.Add(new Preisanteil(KOMP_UMLAGE_OFFSHORE, m.Umlage_Offshore, m.Umlage_Offshore_Aktiv));
+                k.Add(new Preisanteil(KOMP_UMLAGE_STROMNEV19, m.Umlage_StromNEV19, m.Umlage_StromNEV19_Aktiv));
             }
             else
             {
-                k.Add(new Aufschlagskomponente(KOMP_UMLAGEN, m.Umlagen, m.Umlagen_Aktiv));
+                k.Add(new Preisanteil(KOMP_UMLAGEN, m.Umlagen, m.Umlagen_Aktiv));
             }
 
-            return new Aufschlagssatz(k);
+            return new Preiszerlegung(k);
         }
 
         /// <summary>
@@ -371,7 +371,7 @@ namespace WindowsFormsApplication1
         /// AKTIVEN Einzelumlagen, wenn sie einzeln gepflegt werden. Die Maske zeigt ihn
         /// im Kopf der Gruppe.
         /// </summary>
-        public static double UmlagenCtKwh(StromAufschlagModel m)
+        public static double UmlagenCtKwh(StrompreisZerlegungModel m)
         {
             if (m == null) throw new ArgumentNullException(nameof(m));
             if (!m.Umlagen_Einzeln) return m.Umlagen_Aktiv ? m.Umlagen : 0.0;
@@ -386,9 +386,9 @@ namespace WindowsFormsApplication1
         /// aktiven Anteile OHNE Beschaffung - denn die Reihe IST die Beschaffung
         /// (Fachkonzept 4.1 a/b).
         /// </summary>
-        public static double SummeOhneBeschaffungCtKwh(StromAufschlagModel m)
+        public static double SummeOhneBeschaffungCtKwh(StrompreisZerlegungModel m)
         {
-            return AlsAufschlagssatz(m).SummeAktivOhneCtKwh(KOMP_BESCHAFFUNG);
+            return AlsPreiszerlegung(m).SummeAktivOhneCtKwh(KOMP_BESCHAFFUNG);
         }
 
         // =====================================================================

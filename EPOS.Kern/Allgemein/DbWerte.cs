@@ -2514,7 +2514,7 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Eingesaet mit Saatgeneration 5</b> (Anwenderangabe vom 17.09.2026,
         /// Restpunkt S-6): 0,50 EUR/MWh = 0,050 ct/kWh — wertgleich der bisherigen
-        /// Rueckfallebene <c>StromAufschlagModel.STROMSTEUER_REDUZIERT</c>, die damit
+        /// Rueckfallebene <c>StrompreisZerlegungModel.STROMSTEUER_REDUZIERT</c>, die damit
         /// nur noch greift, wenn der Katalog fuer das Bilanzjahr nichts liefert. Der
         /// Satz ist ANGEGEBEN, nicht aus <see cref="GESETZ_STROMST_REGELSATZ"/> minus
         /// <see cref="GESETZ_STROMST_ENTLASTUNG_9B"/> gerechnet — Leitentscheidung L4

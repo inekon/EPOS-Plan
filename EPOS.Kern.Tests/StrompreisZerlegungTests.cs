@@ -32,14 +32,14 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ein_frisches_Modell_traegt_die_Vorschlagswerte_aber_keinen_aktiven_Anteil()
         {
-            StromAufschlagModel m = new StromAufschlagModel();
+            StrompreisZerlegungModel m = new StrompreisZerlegungModel();
 
             // Die Werte stehen als VORSCHLAG in den Feldern …
-            Assert.Equal(StromAufschlagModel.NETZENTGELT_VORGABE, m.Netzentgelt);
-            Assert.Equal(StromAufschlagModel.UMLAGEN_VORGABE, m.Umlagen);
-            Assert.Equal(StromAufschlagModel.STROMSTEUER_REGELFALL, m.Stromsteuer);
-            Assert.Equal(StromAufschlagModel.KONZESSION_VORGABE, m.Konzession);
-            Assert.Equal(StromAufschlagModel.VERTRIEB_VORGABE, m.Vertrieb);
+            Assert.Equal(StrompreisZerlegungModel.NETZENTGELT_VORGABE, m.Netzentgelt);
+            Assert.Equal(StrompreisZerlegungModel.UMLAGEN_VORGABE, m.Umlagen);
+            Assert.Equal(StrompreisZerlegungModel.STROMSTEUER_REGELFALL, m.Stromsteuer);
+            Assert.Equal(StrompreisZerlegungModel.KONZESSION_VORGABE, m.Konzession);
+            Assert.Equal(StrompreisZerlegungModel.VERTRIEB_VORGABE, m.Vertrieb);
 
             // … ohne Haken. Restpunkt „Nach #266" und E5-Restpunkt „Aktiv-Flags kein
             // verlässliches Aus": Ein Projekt, an dem niemand etwas eingestellt hat,
@@ -47,9 +47,9 @@ namespace EPOS.Kern.Tests
             Assert.False(m.Netzentgelt_Aktiv || m.Umlagen_Aktiv || m.Stromsteuer_Aktiv
                          || m.Konzession_Aktiv || m.Vertrieb_Aktiv || m.Beschaffung_Aktiv);
 
-            Aufschlagssatz satz = StromAufschlagCtrl.AlsAufschlagssatz(m);
+            Preiszerlegung satz = StrompreisZerlegungCtrl.AlsPreiszerlegung(m);
             Assert.Equal(0.0, satz.SummeAktivCtKwh);
-            Assert.Equal(0.0, StromAufschlagCtrl.SummeOhneBeschaffungCtKwh(m));
+            Assert.Equal(0.0, StrompreisZerlegungCtrl.SummeOhneBeschaffungCtKwh(m));
         }
 
         /// <summary>
@@ -61,12 +61,12 @@ namespace EPOS.Kern.Tests
         public void Die_Vorschlagswerte_sind_wertgleich_zum_Bestandsaufschlag()
         {
             Assert.Equal(AUFSCHLAG_REGELFALL,
-                         StromAufschlagModel.SUMME_OHNE_BESCHAFFUNG_REGELFALL, 9);
-            Assert.Equal(2.946, StromAufschlagModel.UMLAGEN_VORGABE, 9);
-            Assert.Equal(StromAufschlagModel.UMLAGEN_VORGABE,
-                         StromAufschlagModel.UMLAGE_KWKG_VORGABE
-                         + StromAufschlagModel.UMLAGE_OFFSHORE_VORGABE
-                         + StromAufschlagModel.UMLAGE_STROMNEV19_VORGABE, 9);
+                         StrompreisZerlegungModel.SUMME_OHNE_BESCHAFFUNG_REGELFALL, 9);
+            Assert.Equal(2.946, StrompreisZerlegungModel.UMLAGEN_VORGABE, 9);
+            Assert.Equal(StrompreisZerlegungModel.UMLAGEN_VORGABE,
+                         StrompreisZerlegungModel.UMLAGE_KWKG_VORGABE
+                         + StrompreisZerlegungModel.UMLAGE_OFFSHORE_VORGABE
+                         + StrompreisZerlegungModel.UMLAGE_STROMNEV19_VORGABE, 9);
         }
 
         /// <summary>
@@ -83,17 +83,17 @@ namespace EPOS.Kern.Tests
                 if (p.JahrVon == 2026 && p.Wert.HasValue) katalog[p.Schluessel] = p.Wert.Value;
 
             // Die drei Umlagen stehen in ct/kWh …
-            Assert.Equal(StromAufschlagModel.UMLAGE_KWKG_VORGABE,
+            Assert.Equal(StrompreisZerlegungModel.UMLAGE_KWKG_VORGABE,
                          katalog[DbWerte.GESETZ_UMLAGE_KWKG], 9);
-            Assert.Equal(StromAufschlagModel.UMLAGE_OFFSHORE_VORGABE,
+            Assert.Equal(StrompreisZerlegungModel.UMLAGE_OFFSHORE_VORGABE,
                          katalog[DbWerte.GESETZ_UMLAGE_OFFSHORE], 9);
-            Assert.Equal(StromAufschlagModel.UMLAGE_STROMNEV19_VORGABE,
+            Assert.Equal(StrompreisZerlegungModel.UMLAGE_STROMNEV19_VORGABE,
                          katalog[DbWerte.GESETZ_UMLAGE_STROMNEV19], 9);
 
             // … die beiden Stromsteuersätze in EUR/MWh (Faktor 10 auf ct/kWh).
-            Assert.Equal(StromAufschlagModel.STROMSTEUER_REGELFALL,
+            Assert.Equal(StrompreisZerlegungModel.STROMSTEUER_REGELFALL,
                          katalog[DbWerte.GESETZ_STROMST_REGELSATZ] / 10.0, 9);
-            Assert.Equal(StromAufschlagModel.STROMSTEUER_REDUZIERT,
+            Assert.Equal(StrompreisZerlegungModel.STROMSTEUER_REDUZIERT,
                          katalog[DbWerte.GESETZ_STROMST_REDUZIERT] / 10.0, 9);
         }
 
@@ -104,23 +104,23 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Umlagen_zaehlen_entweder_als_Summe_oder_einzeln()
         {
-            StromAufschlagModel m = new StromAufschlagModel();
+            StrompreisZerlegungModel m = new StrompreisZerlegungModel();
             m.Umlagen_Aktiv = true;
             m.Umlage_KWKG_Aktiv = true;
             m.Umlage_Offshore_Aktiv = true;
             m.Umlage_StromNEV19_Aktiv = true;
 
             m.Umlagen_Einzeln = false;
-            Assert.Equal(StromAufschlagModel.UMLAGEN_VORGABE,
-                         StromAufschlagCtrl.AlsAufschlagssatz(m).SummeAktivCtKwh, 9);
-            Assert.Equal(StromAufschlagModel.UMLAGEN_VORGABE,
-                         StromAufschlagCtrl.UmlagenCtKwh(m), 9);
+            Assert.Equal(StrompreisZerlegungModel.UMLAGEN_VORGABE,
+                         StrompreisZerlegungCtrl.AlsPreiszerlegung(m).SummeAktivCtKwh, 9);
+            Assert.Equal(StrompreisZerlegungModel.UMLAGEN_VORGABE,
+                         StrompreisZerlegungCtrl.UmlagenCtKwh(m), 9);
 
             m.Umlagen_Einzeln = true;
-            Assert.Equal(StromAufschlagModel.UMLAGEN_VORGABE,
-                         StromAufschlagCtrl.AlsAufschlagssatz(m).SummeAktivCtKwh, 9);
-            Assert.Equal(StromAufschlagModel.UMLAGEN_VORGABE,
-                         StromAufschlagCtrl.UmlagenCtKwh(m), 9);
+            Assert.Equal(StrompreisZerlegungModel.UMLAGEN_VORGABE,
+                         StrompreisZerlegungCtrl.AlsPreiszerlegung(m).SummeAktivCtKwh, 9);
+            Assert.Equal(StrompreisZerlegungModel.UMLAGEN_VORGABE,
+                         StrompreisZerlegungCtrl.UmlagenCtKwh(m), 9);
         }
 
         [Fact]
@@ -130,10 +130,10 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             // Es gibt keinen Energieträger 0 — der Leseweg fällt auf die Vorgabe.
-            StromAufschlagModel m = new StromAufschlagCtrl().Read(PROJEKT_GEFALTET, 0);
+            StrompreisZerlegungModel m = new StrompreisZerlegungCtrl().Read(PROJEKT_GEFALTET, 0);
 
             Assert.False(m.AusDatenbank);
-            Assert.Equal(0.0, StromAufschlagCtrl.AlsAufschlagssatz(m).SummeAktivCtKwh);
+            Assert.Equal(0.0, StrompreisZerlegungCtrl.AlsPreiszerlegung(m).SummeAktivCtKwh);
         }
 
         [Fact]
@@ -142,14 +142,14 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            int traeger = StromAufschlagCtrl.StromCarrierId(PROJEKT_UNGEPFLEGT);
+            int traeger = StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_UNGEPFLEGT);
             Assert.True(traeger > 0);
 
-            StromAufschlagModel m = new StromAufschlagCtrl().Read(PROJEKT_UNGEPFLEGT, traeger);
+            StrompreisZerlegungModel m = new StrompreisZerlegungCtrl().Read(PROJEKT_UNGEPFLEGT, traeger);
 
             Assert.True(m.AusDatenbank);   // die Zeile gibt es — gepflegt ist sie nicht
-            Assert.Equal(0.0, StromAufschlagCtrl.AlsAufschlagssatz(m).SummeAktivCtKwh);
-            Assert.Equal(0.0, StromAufschlagCtrl.SummeOhneBeschaffungCtKwh(m));
+            Assert.Equal(0.0, StrompreisZerlegungCtrl.AlsPreiszerlegung(m).SummeAktivCtKwh);
+            Assert.Equal(0.0, StrompreisZerlegungCtrl.SummeOhneBeschaffungCtKwh(m));
         }
 
         /// <summary>
@@ -163,12 +163,12 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            StromAufschlagModel m = new StromAufschlagCtrl().ReadStrom(PROJEKT_GEFALTET);
+            StrompreisZerlegungModel m = new StrompreisZerlegungCtrl().ReadStrom(PROJEKT_GEFALTET);
             Assert.True(m.AusDatenbank);
             Assert.True(m.Beschaffung_Aktiv);
 
-            double summe = StromAufschlagCtrl.AlsAufschlagssatz(m).SummeAktivCtKwh;
-            double ohne = StromAufschlagCtrl.SummeOhneBeschaffungCtKwh(m);
+            double summe = StrompreisZerlegungCtrl.AlsPreiszerlegung(m).SummeAktivCtKwh;
+            double ohne = StrompreisZerlegungCtrl.SummeOhneBeschaffungCtKwh(m);
 
             Assert.Equal(AUFSCHLAG_REGELFALL, ohne, 6);
             Assert.Equal(m.Beschaffung, summe - ohne, 6);
@@ -181,8 +181,8 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            StromAufschlagCtrl ctrl = new StromAufschlagCtrl();
-            StromAufschlagModel m = ctrl.ReadStrom(PROJEKT_GEFALTET);
+            StrompreisZerlegungCtrl ctrl = new StrompreisZerlegungCtrl();
+            StrompreisZerlegungModel m = ctrl.ReadStrom(PROJEKT_GEFALTET);
             Assert.True(m.AusDatenbank);
 
             m.Umlagen_Einzeln = true;
@@ -192,13 +192,13 @@ namespace EPOS.Kern.Tests
             m.Umlagen_Aktiv = false;
             Assert.True(ctrl.Update(m));
 
-            StromAufschlagModel neu = ctrl.Read(m.ID_Projekt, m.ID_Energietraeger);
+            StrompreisZerlegungModel neu = ctrl.Read(m.ID_Projekt, m.ID_Energietraeger);
             Assert.True(neu.Umlagen_Einzeln);
             Assert.Equal(0.446, neu.Umlage_KWKG, 9);
             Assert.Equal(0.941, neu.Umlage_Offshore, 9);
             Assert.Equal(1.559, neu.Umlage_StromNEV19, 9);
-            Assert.Equal(StromAufschlagModel.UMLAGEN_VORGABE,
-                         StromAufschlagCtrl.UmlagenCtKwh(neu), 9);
+            Assert.Equal(StrompreisZerlegungModel.UMLAGEN_VORGABE,
+                         StrompreisZerlegungCtrl.UmlagenCtKwh(neu), 9);
         }
 
         // =================================================================
@@ -218,7 +218,7 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            int traeger = StromAufschlagCtrl.StromCarrierId(PROJEKT_GEFALTET);
+            int traeger = StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_GEFALTET);
             Assert.True(traeger > 0);
 
             BestandsstandHerstellen(PROJEKT_GEFALTET, traeger,
@@ -233,12 +233,12 @@ namespace EPOS.Kern.Tests
             double nachher = ArbeitspreisCtKwh(PROJEKT_GEFALTET, traeger);
             Assert.Equal(vorher + AUFSCHLAG_REGELFALL, nachher, 6);
 
-            StromAufschlagModel m = new StromAufschlagCtrl().Read(PROJEKT_GEFALTET, traeger);
+            StrompreisZerlegungModel m = new StrompreisZerlegungCtrl().Read(PROJEKT_GEFALTET, traeger);
             Assert.True(m.Beschaffung_Aktiv);
             Assert.Equal(vorher, m.Beschaffung, 6);
-            Assert.Equal(nachher, StromAufschlagCtrl.AlsAufschlagssatz(m).SummeAktivCtKwh, 6);
+            Assert.Equal(nachher, StrompreisZerlegungCtrl.AlsPreiszerlegung(m).SummeAktivCtKwh, 6);
             Assert.Equal(AUFSCHLAG_REGELFALL,
-                         StromAufschlagCtrl.SummeOhneBeschaffungCtKwh(m), 6);
+                         StrompreisZerlegungCtrl.SummeOhneBeschaffungCtKwh(m), 6);
 
             // Wiederholbar: Ein zweiter Lauf findet nichts mehr.
             Assert.Equal(0, StrompreisZerlegung.ZaehlungFaltung());
@@ -256,7 +256,7 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            int traeger = StromAufschlagCtrl.StromCarrierId(PROJEKT_GEFALTET);
+            int traeger = StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_GEFALTET);
             Assert.True(traeger > 0);
 
             BestandsstandHerstellen(PROJEKT_GEFALTET, traeger,
@@ -269,14 +269,14 @@ namespace EPOS.Kern.Tests
             double nachher = ArbeitspreisCtKwh(PROJEKT_GEFALTET, traeger);
             Assert.Equal(vorher + 20.0, nachher, 6);
 
-            StromAufschlagModel m = new StromAufschlagCtrl().Read(PROJEKT_GEFALTET, traeger);
+            StrompreisZerlegungModel m = new StrompreisZerlegungCtrl().Read(PROJEKT_GEFALTET, traeger);
             Assert.True(m.Beschaffung_Aktiv);
             Assert.Equal(nachher, m.Beschaffung, 6);
             Assert.False(m.Netzentgelt_Aktiv || m.Umlagen_Aktiv || m.Stromsteuer_Aktiv
                          || m.Konzession_Aktiv || m.Vertrieb_Aktiv);
 
             // Die Werte selbst sind NICHT gelöscht — sie bleiben als Vorschlag stehen.
-            Assert.Equal(StromAufschlagModel.NETZENTGELT_VORGABE, m.Netzentgelt, 6);
+            Assert.Equal(StrompreisZerlegungModel.NETZENTGELT_VORGABE, m.Netzentgelt, 6);
         }
 
         /// <summary>
@@ -290,7 +290,7 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            int traeger = StromAufschlagCtrl.StromCarrierId(PROJEKT_GEFALTET);
+            int traeger = StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_GEFALTET);
             Assert.True(traeger > 0);
 
             BestandsstandHerstellen(PROJEKT_GEFALTET, traeger,
@@ -302,9 +302,9 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(vorher, ArbeitspreisCtKwh(PROJEKT_GEFALTET, traeger), 6);
 
-            StromAufschlagModel m = new StromAufschlagCtrl().Read(PROJEKT_GEFALTET, traeger);
-            Assert.Equal(0.0, StromAufschlagCtrl.AlsAufschlagssatz(m).SummeAktivCtKwh, 6);
-            Assert.Equal(StromAufschlagModel.NETZENTGELT_VORGABE, m.Netzentgelt, 6);
+            StrompreisZerlegungModel m = new StrompreisZerlegungCtrl().Read(PROJEKT_GEFALTET, traeger);
+            Assert.Equal(0.0, StrompreisZerlegungCtrl.AlsPreiszerlegung(m).SummeAktivCtKwh, 6);
+            Assert.Equal(StrompreisZerlegungModel.NETZENTGELT_VORGABE, m.Netzentgelt, 6);
         }
 
         // =================================================================
@@ -319,6 +319,11 @@ namespace EPOS.Kern.Tests
         private static void BestandsstandHerstellen(int projekt, int traeger,
                                                     string modus, double gesamtwert)
         {
+            // Modus und Gesamtwert sind mit Schemaschritt 85 entfallen. Der
+            // Bestandsstand VOR Schritt 83 hatte sie - fuer diese Arbeitskopie kommen
+            // sie deshalb zurueck; sie verschwindet mit dem Prueflauf.
+            TestDatenbank.AltspaltenStrompreisWiederherstellen();
+
             DataRepository.ExecuteNonQuery(
                 "UPDATE energy_project_settings SET " +
                 "Aufschlag_Netzentgelt = ?, Aufschlag_Netzentgelt_Aktiv = 1, " +
@@ -330,11 +335,11 @@ namespace EPOS.Kern.Tests
                 "Aufschlag_UmlagenEinzeln = 0, " +
                 "Aufschlag_Modus = ?, Aufschlag_Override = ? " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
-                new DbParam("@n", DbParamTyp.Double) { Wert = StromAufschlagModel.NETZENTGELT_VORGABE },
-                new DbParam("@u", DbParamTyp.Double) { Wert = StromAufschlagModel.UMLAGEN_VORGABE },
-                new DbParam("@s", DbParamTyp.Double) { Wert = StromAufschlagModel.STROMSTEUER_REGELFALL },
-                new DbParam("@k", DbParamTyp.Double) { Wert = StromAufschlagModel.KONZESSION_VORGABE },
-                new DbParam("@v", DbParamTyp.Double) { Wert = StromAufschlagModel.VERTRIEB_VORGABE },
+                new DbParam("@n", DbParamTyp.Double) { Wert = StrompreisZerlegungModel.NETZENTGELT_VORGABE },
+                new DbParam("@u", DbParamTyp.Double) { Wert = StrompreisZerlegungModel.UMLAGEN_VORGABE },
+                new DbParam("@s", DbParamTyp.Double) { Wert = StrompreisZerlegungModel.STROMSTEUER_REGELFALL },
+                new DbParam("@k", DbParamTyp.Double) { Wert = StrompreisZerlegungModel.KONZESSION_VORGABE },
+                new DbParam("@v", DbParamTyp.Double) { Wert = StrompreisZerlegungModel.VERTRIEB_VORGABE },
                 new DbParam("@m", DbParamTyp.VarWChar) { Wert = modus },
                 new DbParam("@o", DbParamTyp.Double) { Wert = gesamtwert },
                 new DbParam("@p", DbParamTyp.Integer) { Wert = projekt },

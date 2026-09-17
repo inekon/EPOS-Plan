@@ -123,7 +123,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 83) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 85) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -591,6 +591,31 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt 84 - " + zeile);
                 if (umzuziehen == 0)
                     Console.WriteLine("Schritt 84: nichts umzuziehen - kein gepflegter Kartenwert.");
+            }
+            Console.WriteLine();
+
+            // ---- Schritt 85: die Altspalten der Strompreis-Welle fallen weg.
+            //      REINER ENTFERNUNGSSCHRITT - kein DML. Die fuenf Spalten, die die
+            //      Schritte 83 und 84 ohne Leser zurueckgelassen haben (Aufschlag_Modus,
+            //      Aufschlag_Override, Verguetung_PV, Verguetung_BHKW,
+            //      Aufschlaege_Anwenden), werden entfernt. Anweisungen aus
+            //      StrompreisAltspalten - DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_85_StrompreisAltspalten bedient.
+            //      Ergebnisneutral: Keine der Spalten traegt eine Rechengroesse, der
+            //      Referenzlauf bleibt byte-gleich. Wiederholbar: Ein zweiter Lauf
+            //      findet keine der Spalten mehr.
+            if (!trocken)
+            {
+                int altspalten = StrompreisAltspalten.Offen();
+                Console.WriteLine("Schritt 85 - Altspalten der Strompreis-Welle: " + altspalten + ".");
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                         in StrompreisAltspalten.Anweisungen)
+                {
+                    DataRepository.ExecuteNonQuery(a.Value);
+                    Console.WriteLine("Schritt 85 - " + a.Key + ".");
+                }
+                Console.WriteLine("Schritt 85 - offen jetzt " + StrompreisAltspalten.Offen() +
+                                  " (erwartet 0).");
             }
             Console.WriteLine();
 

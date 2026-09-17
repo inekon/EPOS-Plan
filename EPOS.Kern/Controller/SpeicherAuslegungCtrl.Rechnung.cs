@@ -171,8 +171,8 @@ namespace WindowsFormsApplication1
                 // Steuern, Abgaben und Umlagen. Deshalb die Summe der aktiven Anteile
                 // OHNE Beschaffung; ein Fixpreis bekaeme hier gar nichts, er enthaelt
                 // die Anteile bereits.
-                StromAufschlagModel m = new StromAufschlagCtrl().ReadStrom(projektId);
-                profilAufschlagCtKwh = StromAufschlagCtrl.SummeOhneBeschaffungCtKwh(m);
+                StrompreisZerlegungModel m = new StrompreisZerlegungCtrl().ReadStrom(projektId);
+                profilAufschlagCtKwh = StrompreisZerlegungCtrl.SummeOhneBeschaffungCtKwh(m);
             }
 
             StromVerguetungsErgebnis projektVerguetung = null;

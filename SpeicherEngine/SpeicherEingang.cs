@@ -19,9 +19,11 @@ namespace SpeicherEngine
     /// <b>Optionale Reihen</b> (AP2): BHKW-Erzeugung und die getrennten
     /// Verguetungsreihen v_pv / v_bhkw. <c>null</c> bedeutet jeweils "nicht
     /// vorhanden": ohne BHKW-Reihe rechnet die Engine mit P_bhkw = 0, ohne
-    /// Verguetungsreihe mit dem Standardwert
-    /// <see cref="SpeicherParameter.VerguetungCtKwh"/>. Ein Eingang aus Stufe 1
-    /// verhaelt sich dadurch unveraendert.
+    /// Verguetungsreihe mit dem Rueckfallwert
+    /// <see cref="SpeicherParameter.VerguetungCtKwh"/> - der ohne gepflegte
+    /// Verguetung 0 ist und aus den Wirtschaftlichkeitsparametern des Projekts stammt,
+    /// nicht aus einer Zahl der Engine. Ein Eingang aus Stufe 1 verhaelt sich dadurch
+    /// unveraendert.
     /// </para>
     /// </remarks>
     public sealed class SpeicherEingang

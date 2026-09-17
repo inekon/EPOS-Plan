@@ -10,11 +10,11 @@ namespace WindowsFormsApplication1
     // energy_project_settings (Konzept BHKW-Wirtschaftlichkeit § 5.1, Etappe B2
     // Paket A; Spalten aus SchemaMigration Schritt 60).
     //
-    // Bauform wie StromAufschlagCtrl: durchgängig NAMENSBASIERT mit
+    // Bauform wie StrompreisZerlegungCtrl: durchgängig NAMENSBASIERT mit
     // Columns.Contains-Wache, kein Zeichenkette-zu-Zahl, DDL-Vorsorge ohne Dialog.
     //
     // DER EINE UNTERSCHIED — und er ist der Grund für diese eigene Klasse:
-    // StromAufschlagCtrl.Read lässt NULL auf die VORSCHLAGSWERTE des Modells
+    // StrompreisZerlegungCtrl.Read lässt NULL auf die VORSCHLAGSWERTE des Modells
     // zurückfallen. Dieser Controller tut das NICHT. NULL heisst hier „kein Anteil
     // erfasst" und bleibt null (Konzept § 5.1, E5-Falle: bei Projekt 1030 wurden so
     // 11,746 ct/kWh wirksam, obwohl alle fünf Flags aus waren). Die Werte sind
@@ -48,7 +48,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Legt die Bestandteilsspalten an, falls die Migration noch nicht gelaufen ist —
         /// die tolerante Rückfallebene nach dem Muster
-        /// <c>StromAufschlagCtrl.StelleSpaltenSicher</c>.
+        /// <c>StrompreisZerlegungCtrl.StelleSpaltenSicher</c>.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -126,7 +126,7 @@ namespace WindowsFormsApplication1
         /// <see cref="BrennstoffBestandteilModel.AusDatenbank"/> steht auf false.
         /// </summary>
         /// <remarks>
-        /// <b>NULL bleibt null.</b> Anders als <c>StromAufschlagCtrl.Read</c> setzt
+        /// <b>NULL bleibt null.</b> Anders als <c>StrompreisZerlegungCtrl.Read</c> setzt
         /// dieser Weg bei einem nicht gepflegten Wert KEINEN Vorschlagssatz ein. Ein
         /// Anteil, den niemand erfasst hat, ist kein Anteil — die Kohärenzprüfung (BW2)
         /// hängt genau an dieser Unterscheidung.
@@ -259,19 +259,19 @@ namespace WindowsFormsApplication1
         /// Modus gewählt ist, entscheidet allein die Anzeige.
         /// </para>
         /// </remarks>
-        public static Aufschlagssatz AlsAufschlagssatz(BrennstoffBestandteilModel m)
+        public static Preiszerlegung AlsPreiszerlegung(BrennstoffBestandteilModel m)
         {
             if (m == null) throw new ArgumentNullException(nameof(m));
 
-            List<Aufschlagskomponente> k = new List<Aufschlagskomponente>
+            List<Preisanteil> k = new List<Preisanteil>
             {
-                new Aufschlagskomponente(KOMP_ENERGIESTEUER, m.Energiesteuer ?? 0.0, m.Energiesteuer_Aktiv),
-                new Aufschlagskomponente(KOMP_CO2, m.CO2 ?? 0.0, m.CO2_Aktiv),
-                new Aufschlagskomponente(KOMP_NETZENTGELT, m.Netzentgelt ?? 0.0, m.Netzentgelt_Aktiv),
-                new Aufschlagskomponente(KOMP_VERTRIEB, m.Vertrieb ?? 0.0, m.Vertrieb_Aktiv)
+                new Preisanteil(KOMP_ENERGIESTEUER, m.Energiesteuer ?? 0.0, m.Energiesteuer_Aktiv),
+                new Preisanteil(KOMP_CO2, m.CO2 ?? 0.0, m.CO2_Aktiv),
+                new Preisanteil(KOMP_NETZENTGELT, m.Netzentgelt ?? 0.0, m.Netzentgelt_Aktiv),
+                new Preisanteil(KOMP_VERTRIEB, m.Vertrieb ?? 0.0, m.Vertrieb_Aktiv)
             };
 
-            return new Aufschlagssatz(k);
+            return new Preiszerlegung(k);
         }
 
         // =====================================================================
@@ -284,7 +284,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <b>Warum der Schalter hier eigenständig gelesen wird.</b>
-        /// <c>StromAufschlagCtrl.Komponente</c> liest ihn nur, wenn der WERT gepflegt
+        /// <c>StrompreisZerlegungCtrl.Komponente</c> liest ihn nur, wenn der WERT gepflegt
         /// ist: Access kennt für YESNO kein NULL, und eine per <c>ADD COLUMN</c>
         /// angelegte Spalte steht überall auf <c>False</c> — dort hätte das ohne diese
         /// Wache jeden Aufschlag stillschweigend auf 0 gesetzt. Hier ist <c>False</c>
