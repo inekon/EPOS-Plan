@@ -932,14 +932,14 @@ namespace WindowsFormsApplication1
                 ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
                 r++;
 
-                // Nachweisblock: vermiedene Kosten und Aufschlagsbetrag stehen
-                // AUSSERHALB des Zahlungsstroms — beide stecken schon in anderen
-                // Positionen, eine eigene Zeile wäre eine Doppelzählung.
+                // Nachweisblock: die vermiedenen Kosten stehen AUSSERHALB des
+                // Zahlungsstroms — sie stecken schon in anderen Positionen, eine eigene
+                // Zeile wäre eine Doppelzählung.
                 WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
                     x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
                 bool vermieden = e != null &&
                                  (e.VermiedenGesamtJahr != 0 || e.VermiedenArbeitJahr != 0);
-                if (e != null && (vermieden || e.AufschlagJahr != 0))
+                if (vermieden)
                 {
                     ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_NACHWEIS_TITEL;
                     ws.Cell(r, 1).Style.Font.Bold = true;
@@ -960,8 +960,6 @@ namespace WindowsFormsApplication1
                         nz(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG, e.VermiedenLeistungJahr);
                         nz(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT, e.VermiedenGesamtJahr);
                     }
-                    if (e.AufschlagJahr != 0)
-                        nz(MyResource.Resource.WIRT_ZEILE_AUFSCHLAG, e.AufschlagJahr);
                 }
                 r++;
             }

@@ -632,10 +632,14 @@ namespace WindowsFormsApplication1
                     string auf = Text(r, SchemaKatalog.SPALTE_PW_AUFTEILUNG);
                     if (auf.Length > 0) p.AufteilungMethode = auf;
 
-                    // ETAPPE E5 — Aufschlagsschalter und KWK-Einspeisevergütung. Beide
-                    // sind ohne ausdrückliche Angabe wirkungslos: YESNO liegt bei jeder
-                    // Bestandszeile auf False, DOUBLE bleibt NULL.
-                    p.AufschlaegeAnwenden = B(r, SchemaKatalog.SPALTE_PW_AUFSCHLAEGE);
+                    // ETAPPE E5 — die KWK-Einspeisevergütung; ohne ausdrückliche Angabe
+                    // wirkungslos (DOUBLE bleibt NULL).
+                    //
+                    // SP-E-2: Der Aufschlagsschalter Aufschlaege_Anwenden wird NICHT
+                    // MEHR GELESEN. Die Preisanteile zerlegen den Arbeitspreis, sie
+                    // kommen nicht mehr auf ihn — es gibt nichts an- oder abzuschalten.
+                    // Die Spalte bleibt stehen, damit eine ältere Programmfassung auf
+                    // derselben Datei nicht auf einen fehlenden Namen läuft.
                     p.EinspeiseverguetungKWK = D(r, SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK);
 
                     // LEITENTSCHEIDUNGEN L12/L13 — Bilanzierungsangaben. Ein LEERER
@@ -897,7 +901,6 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "] = ?, " +
-                    "[" + SchemaKatalog.SPALTE_PW_AUFSCHLAEGE + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BILANZJAHR + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "] = ?, " +
@@ -954,7 +957,6 @@ namespace WindowsFormsApplication1
                     { Wert = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
                     new DbParam("@auf", DbParamTyp.VarWChar, 30)
                     { Wert = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
-                    new DbParam("@aufs", DbParamTyp.Boolean) { Wert = p.AufschlaegeAnwenden },
                     new DbParam("@vkwk", DbParamTyp.Double)
                     { Wert = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
@@ -1020,7 +1022,6 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "], " +
-                    "[" + SchemaKatalog.SPALTE_PW_AUFSCHLAEGE + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BILANZJAHR + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "], " +
@@ -1051,7 +1052,7 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1080,7 +1081,6 @@ namespace WindowsFormsApplication1
                     { Wert = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
                     new DbParam("@auf", DbParamTyp.VarWChar, 30)
                     { Wert = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
-                    new DbParam("@aufs", DbParamTyp.Boolean) { Wert = p.AufschlaegeAnwenden },
                     new DbParam("@vkwk", DbParamTyp.Double)
                     { Wert = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
@@ -1674,7 +1674,6 @@ namespace WindowsFormsApplication1
             public double VermiedenArbeit;
             public double VermiedenLeistung;
             public double VermiedenGesamt;
-            public double AufschlagBetrag;
 
             // ETAPPE E7 — Aufschlüsselungen und Nachweise (reine Ausgabe).
             /// <summary>Anteil des PV-Überschusses am Einspeiseerlös [€/a].</summary>
@@ -1926,9 +1925,12 @@ namespace WindowsFormsApplication1
             if (steuerHinweis != null)
                 e.Hinweis = e.Hinweis == null ? steuerHinweis : e.Hinweis + " | " + steuerHinweis;
 
-            // ETAPPE E5: die Aufschläge auf den Strombezug — NACH den Steuerreihen,
-            // damit der Abgleich mit der § 9b-Entlastung beide Größen kennt.
-            RechneAufschlaege(v, p, e);
+            // SP-E-2: Hier stand bis zum Anwenderentscheid vom 17.09.2026 der
+            // Aufschlagssummand auf die Energiekosten. Er ist entfallen — die
+            // Preisanteile ZERLEGEN den Arbeitspreis des Stromträgers, sie kommen nicht
+            // mehr auf ihn. Was an Netzentgelt, Steuern, Abgaben und Umlagen im Preis
+            // steckt, steckt damit schon in `e.Energie`; ein zweiter Summand hier wäre
+            // genau die Doppelzählung, die der E5-Restpunkt benannt hat.
 
             // ETAPPE W5-B-9: die Ertragsaenderung des Szenarios - GANZ ZUM SCHLUSS, wenn
             // alle drei Erloespfade (Flat, Tarifmatrix, Rollenmodell) und der
@@ -2066,31 +2068,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schlägt Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe und Vertrieb auf
-        /// den Strombezug auf — <b>nur</b>, wenn das Projekt es ausdrücklich verlangt
-        /// (<see cref="WirtschaftlichkeitParameter.AufschlaegeAnwenden"/>, Vorgabe aus).
-        ///
-        /// <para><b>Eine Wahrheit für den wirksamen Aufschlag.</b> Gelesen wird derselbe
-        /// Block, mit dem die Speichersimulation rechnet
-        /// (<c>StromAufschlagCtrl.ReadStrom</c> ⇒ <c>Aufschlagssatz.WirksamCtKwh</c>:
-        /// Override im Modus Gesamtwert, sonst Summe der AKTIVEN Komponenten). Ein
-        /// eigener Rechenweg hier wäre die zweite Wahrheit, die das Fachkonzept des
-        /// Aufschlagsblocks gerade vermeidet.</para>
-        ///
-        /// <para><b>Der Betrag wird ausgewiesen, nicht versteckt.</b> Er steht als eigene
-        /// Ergebnisgröße und als Hinweiszeile mit Satz, Menge und Herkunft — sonst wäre
-        /// ein Drittel der Energiekosten eine stille Zahl. Zu beachten ist dabei: Ein
-        /// Trägersatz ohne gepflegte Werte liefert die VORSCHLAGSWERTE des Fachkonzepts
-        /// (in Summe 11,746 ct/kWh), nicht 0 — deshalb nennt der Hinweis den Satz.</para>
-        ///
-        /// <para><b>Abgleich mit der Stromsteuer aus E4.</b> Der Aufschlagsblock enthält
-        /// die Stromsteuer als BELASTUNG, § 9b StromStG die Entlastung als GUTSCHRIFT.
-        /// Zusammen sind sie kein Doppelansatz, sondern die zwei Seiten derselben
-        /// Vorschrift. Steht der Schalter dagegen auf AUS, während § 9b greift, enthält
-        /// der Kapitalwert eine Entlastung ohne die zugehörige Belastung — genau darauf
-        /// weist der Hinweis dann hin.</para>
-        /// </summary>
-        /// <summary>
         /// ETAPPE P4 (PV-Konzept § 4.4/§ 4.6): rechnet bei AKTIVEM Vergütungsdialog
         /// die jahresscharfe PV-Erlösreihe und ersetzt damit den PV-Anteil des
         /// konstanten Einspeiseerlöses. Stufe 2 (gemessener § 51-Ausfall, Spoterlös,
@@ -2179,85 +2156,6 @@ namespace WindowsFormsApplication1
                 stunden[h] = (viertel[h * 4] + viertel[h * 4 + 1] +
                               viertel[h * 4 + 2] + viertel[h * 4 + 3]) / 4.0;
             return stunden;
-        }
-
-        private void RechneAufschlaege(VariantenDaten v, WirtschaftlichkeitParameter p,
-                                       ProjektEingabe e)
-        {
-            // Netzbezug in der Fassung, die auch die Kosten getragen hat.
-            double netzbezugMWh = e.StromkostenTarif.HasValue && e.Matrix != null
-                ? e.Matrix.BezugGesamtMWh
-                : (v.Ergebnis.Energiebedarf != null ? v.Ergebnis.Energiebedarf.Stromrestbedarf : 0);
-
-            if (!p.AufschlaegeAnwenden)
-            {
-                // Der Widerspruch aus E4/E5 wird gemeldet, nicht verschwiegen.
-                if (e.StromsteuerEntlastungJahr1 > 0)
-                    Melde(e, "Hinweis: Die Stromsteuer-Entlastung nach § 9b wird gutgeschrieben, " +
-                             "obwohl die Stromsteuer im Bezugspreis nicht angesetzt ist (Schalter " +
-                             "„Aufschläge in der Wirtschaftlichkeit berücksichtigen\" aus). Der " +
-                             "Kapitalwert enthält damit eine Entlastung ohne die zugehörige Belastung.");
-                return;
-            }
-
-            if (netzbezugMWh <= 0)
-            {
-                Melde(e, "Aufschläge sollen berücksichtigt werden, es gibt aber keinen " +
-                         "Netzbezug (Jahressaldo ≤ 0) — kein Aufschlagsbetrag.");
-                return;
-            }
-
-            StromAufschlagModel m = null;
-            try { m = new StromAufschlagCtrl().ReadStrom(v.IdProjekt); }
-            catch { }
-            if (m == null || !m.AusDatenbank)
-            {
-                Melde(e, "Aufschläge sollen berücksichtigt werden, dem Projekt ist aber kein " +
-                         "Strom-Energieträger zugeordnet — kein Aufschlagsbetrag.");
-                return;
-            }
-
-            double ctKwh;
-            try { ctKwh = StromAufschlagCtrl.AlsAufschlagssatz(m).WirksamCtKwh; }
-            catch { return; }
-            if (ctKwh == 0)
-            {
-                Melde(e, StromAufschlagCtrl.Modus(m.Modus) == SpeicherEngine.AufschlagsModus.Keiner
-                    ? "Aufschläge sollen berücksichtigt werden, für den Strombezugspreis ist " +
-                      "aber „kein Aufschlag\" gewählt — kein Aufschlagsbetrag."
-                    : "Aufschläge sollen berücksichtigt werden, der wirksame Aufschlag ist " +
-                      "aber 0 ct/kWh (alle Komponenten inaktiv bzw. Gesamtwert 0).");
-                return;
-            }
-
-            double betrag = netzbezugMWh * 1000.0 * ctKwh / 100.0;
-            e.AufschlagBetrag = betrag;
-            if (e.Energie.HasValue) e.Energie = e.Energie.Value + betrag;
-
-            System.Globalization.CultureInfo k = BerichtTexte.Kultur;
-            string zerlegung =
-                StromAufschlagCtrl.Modus(m.Modus) == SpeicherEngine.AufschlagsModus.Gesamtwert
-                ? "Gesamtwert " + m.Override.ToString("N3", k) + " ct/kWh"
-                : "Netzentgelt " + Komponente(m.Netzentgelt, m.Netzentgelt_Aktiv, k) +
-                  " + Umlagen " + Komponente(m.Umlagen, m.Umlagen_Aktiv, k) +
-                  " + Stromsteuer " + Komponente(m.Stromsteuer, m.Stromsteuer_Aktiv, k) +
-                  " + Konzession " + Komponente(m.Konzession, m.Konzession_Aktiv, k) +
-                  " + Vertrieb " + Komponente(m.Vertrieb, m.Vertrieb_Aktiv, k);
-
-            Melde(e, "Aufschläge berücksichtigt: " + ctKwh.ToString("N3", k) + " ct/kWh (" +
-                     zerlegung + ") auf " + netzbezugMWh.ToString("N1", k) + " MWh Netzbezug = " +
-                     betrag.ToString("N2", k) + " €/a.");
-
-            if (e.StromsteuerEntlastungJahr1 > 0 && m.Stromsteuer_Aktiv)
-                Melde(e, "Stromsteuer: Belastung " + m.Stromsteuer.ToString("N3", k) +
-                         " ct/kWh im Bezugspreis und Entlastung nach § 9b als Gutschrift — " +
-                         "kein Doppelansatz, sondern die zwei Seiten derselben Vorschrift.");
-        }
-
-        /// <summary>Eine Aufschlagskomponente als Text; inaktive werden als solche benannt.</summary>
-        private static string Komponente(double wert, bool aktiv, System.Globalization.CultureInfo k)
-        {
-            return aktiv ? wert.ToString("N3", k) : "0 (inaktiv)";
         }
 
         /// <summary>Hängt eine Meldung an den Hinweis an, ohne vorhandene zu überschreiben.</summary>
@@ -5084,7 +4982,12 @@ namespace WindowsFormsApplication1
             erg.VermiedenArbeitJahr = eingabe.VermiedenArbeit;        // E5
             erg.VermiedenLeistungJahr = eingabe.VermiedenLeistung;
             erg.VermiedenGesamtJahr = eingabe.VermiedenGesamt;
-            erg.AufschlagJahr = eingabe.AufschlagBetrag;
+            // SP-E-2: Es gibt keinen Aufschlagsbetrag mehr — die Preisanteile zerlegen
+            // den Arbeitspreis und stecken damit in den Energiekosten. Die 0 bleibt
+            // stehen, weil die Spalte Tab_Ergebnis.AufschlagBetrag bleibt: Der
+            // Referenzexport liest die Ergebnistabellen per SELECT *, und eine Spalte
+            // ohne Wert wäre dort NULL statt 0.
+            erg.AufschlagJahr = 0.0;
             erg.EinspeiseerloesPvJahr = eingabe.ErloesPv;             // E7
             erg.EinspeiseerloesKwkJahr = eingabe.ErloesKwk;
 
@@ -5166,7 +5069,6 @@ namespace WindowsFormsApplication1
                 {
                     Jahr = Foerderbeginn(p),
                     Steuer = eingabe.SteuerEingabe,
-                    AufschlaegeAnwenden = p.AufschlaegeAnwenden,
                     EnergiesteuerEur = eingabe.EnergiesteuerJahr1,
                     StromsteuerBefreiungEur = eingabe.StromsteuerBefreiungJahr1,
                     StromsteuerEntlastungEur = eingabe.StromsteuerEntlastungJahr1

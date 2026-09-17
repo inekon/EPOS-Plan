@@ -4,46 +4,15 @@ using System.Collections.Generic;
 namespace SpeicherEngine
 {
     /// <summary>
-    /// Die drei Modi des Aufschlagsblocks (Fachkonzept 4.2).
-    /// </summary>
-    /// <remarks>
-    /// Die Zahlenwerte von <see cref="Aufgeschluesselt"/> und <see cref="Gesamtwert"/>
-    /// bleiben, wie sie waren; <see cref="Keiner"/> haengt sich hinten an. Der dritte
-    /// Modus ist zwar der VORGABEFALL, aber die Reihenfolge einer Aufzaehlung ist
-    /// keine Rangfolge - eine Umnummerierung waere allein Unruhe.
-    /// </remarks>
-    public enum AufschlagsModus
-    {
-        /// <summary>
-        /// Der wirksame Aufschlag ist die Summe der AKTIVEN Komponenten.
-        /// </summary>
-        Aufgeschluesselt = 0,
-
-        /// <summary>
-        /// Der Anwender traegt einen Gesamtaufschlag ein. Die Komponentenliste bleibt
-        /// sichtbar und informativ; die Abweichung des Gesamtwerts von der
-        /// Komponentensumme wird ausgewiesen.
-        /// </summary>
-        Gesamtwert = 1,
-
-        /// <summary>
-        /// <b>Vorgabe: gar kein Aufschlag.</b> Der wirksame Aufschlag ist 0 ct/kWh,
-        /// unabhaengig von Komponenten und Gesamtwert. Die Komponentenliste bleibt
-        /// sichtbar und informativ - sie ist der Vorschlag fuer den Fall, dass jemand
-        /// auf "aufgeschluesselt" umschaltet.
-        /// </summary>
-        Keiner = 2
-    }
-
-    /// <summary>
-    /// Eine Aufschlagskomponente: Wert [ct/kWh] und Aktiv-Schalter (Fachkonzept 4.2).
+    /// Ein Preisanteil des Strombezugs- oder Brennstoffpreises: Wert [ct/kWh] und
+    /// Aktiv-Schalter (Fachkonzept Stromspeicher 4.2, Konzept BHKW § 4.1).
     /// </summary>
     /// <remarks>
     /// <para>
     /// <b>Der Schluessel ist sprachneutral.</b> <see cref="Schluessel"/> traegt einen
-    /// ASCII-Bezeichner (<c>NETZENTGELT</c>, <c>UMLAGEN</c>, ...), keinen Anzeigetext -
-    /// Schicht 2 der Drei-Schichten-Regel. Die Beschriftung holt das Hauptprojekt aus
-    /// <c>MyResource</c>; die Engine kennt keine Oberflaechensprache.
+    /// ASCII-Bezeichner (<c>BESCHAFFUNG</c>, <c>NETZENTGELT</c>, ...), keinen
+    /// Anzeigetext - Schicht 2 der Drei-Schichten-Regel. Die Beschriftung holt das
+    /// Hauptprojekt aus <c>MyResource</c>; die Engine kennt keine Oberflaechensprache.
     /// </para>
     /// <para>
     /// Unveraenderlich: Ein Satz wird gebaut, gerechnet und weggeworfen. Damit kann
@@ -53,21 +22,21 @@ namespace SpeicherEngine
     /// </remarks>
     public sealed class Aufschlagskomponente
     {
-        /// <summary>Sprachneutraler ASCII-Schluessel der Komponente.</summary>
+        /// <summary>Sprachneutraler ASCII-Schluessel des Anteils.</summary>
         public string Schluessel { get; }
 
-        /// <summary>Wert der Komponente [ct/kWh]. Darf 0 sein.</summary>
+        /// <summary>Wert des Anteils [ct/kWh]. Darf 0 sein.</summary>
         public double WertCtKwh { get; }
 
-        /// <summary>true, wenn die Komponente in die Summe eingeht.</summary>
+        /// <summary>true, wenn der Anteil in die Summe eingeht.</summary>
         public bool Aktiv { get; }
 
-        /// <summary>Erzeugt eine Komponente.</summary>
+        /// <summary>Erzeugt einen Anteil.</summary>
         /// <exception cref="ArgumentException">Wenn der Schluessel leer ist.</exception>
         public Aufschlagskomponente(string schluessel, double wertCtKwh, bool aktiv)
         {
             if (string.IsNullOrWhiteSpace(schluessel))
-                throw new ArgumentException("Der Schluessel einer Aufschlagskomponente darf nicht leer sein.",
+                throw new ArgumentException("Der Schluessel eines Preisanteils darf nicht leer sein.",
                                             nameof(schluessel));
 
             Schluessel = schluessel;
@@ -75,7 +44,7 @@ namespace SpeicherEngine
             Aktiv = aktiv;
         }
 
-        /// <summary>Der Beitrag dieser Komponente zur Summe: der Wert, oder 0 wenn inaktiv.</summary>
+        /// <summary>Der Beitrag dieses Anteils zur Summe: der Wert, oder 0 wenn inaktiv.</summary>
         public double BeitragCtKwh
         {
             get { return Aktiv ? WertCtKwh : 0.0; }
@@ -83,51 +52,56 @@ namespace SpeicherEngine
     }
 
     /// <summary>
-    /// Der vollstaendige Aufschlagssatz eines Projekts (Fachkonzept 4.2): die
-    /// Komponentenliste, der Modus und der Override-Gesamtwert.
+    /// Die <b>Zerlegung EINES Preises</b> in seine Anteile (Fachkonzept Stromspeicher
+    /// 4.2 in der Fassung des Anwenderentscheids SP-E-2 vom 17.09.2026).
     /// </summary>
     /// <remarks>
     /// <para>
-    /// <b>Warum in der Engine und nicht im Controller.</b> Die Regel "wirksamer
-    /// Aufschlag = 0 ODER Summe der aktiven Komponenten ODER Override" entscheidet ueber
-    /// jeden Geldwert des Laufs. Sie steht deshalb dort, wo sie ohne Datenbank und
-    /// ohne Oberflaeche geprueft werden kann - genau die Trennung, mit der AP2b die
-    /// zwei Speichermodelle des Bestands beseitigt hat.
+    /// <b>Es wird nichts aufgeschlagen.</b> Der Satz beschreibt, WORAUS der
+    /// Arbeitspreis besteht - Beschaffung, Vertrieb, Netzentgelt, Steuern, Abgaben und
+    /// Umlagen -, er addiert nichts auf ihn. Die aussagekraeftige Groesse ist die
+    /// <see cref="SummeAktivCtKwh"/>; sie steht neben dem Arbeitspreis und wird mit ihm
+    /// verglichen (Kohaerenzzeile), nie zu ihm addiert. Damit gilt fuer den Strom
+    /// dieselbe Regel wie fuer den Brennstoff seit Etappe B2: <b>es gibt genau eine
+    /// Preiswahrheit, und das ist der Arbeitspreis des Traegers.</b>
+    /// </para>
+    /// <para>
+    /// <b>Die einzige Ausnahme ist die Spot- bzw. Profilreihe.</b> Dort IST die Reihe
+    /// die Beschaffung; was fehlt, sind die uebrigen Anteile. Dafuer - und nur dafuer -
+    /// gibt es <see cref="SummeAktivOhneCtKwh"/>: die Summe ohne einen benannten
+    /// Anteil. Der Aufrufer nennt den Schluessel, die Engine kennt keinen bevorzugten.
+    /// </para>
+    /// <para>
+    /// <b>Kein Modus mehr.</b> Bis SP-W2/W3 entschied ein Modus („kein Aufschlag" /
+    /// „Gesamtwert" / „aufgeschluesselt") ueber den wirksamen Wert. Er ist entfallen:
+    /// Ein Anteil, der nicht gepflegt ist, ist 0 und inaktiv, und die Summe ist damit
+    /// von selbst 0 - „ein aktiver Anteil vorhanden" sagt alles, was der Modus sagte.
+    /// Ein Gesamtwert-Override liess sich ohnehin nicht in Anteile zerlegen; er ist mit
+    /// Schemaschritt 83 in den Arbeitspreis gefaltet.
     /// </para>
     /// <para>
     /// <b>Die Vorschlagswerte stehen NICHT hier.</b> 6,44 / 2,946 / 2,05 / 0,11 /
-    /// 0,20 ct/kWh sind Vorbelegungen der Datenbank (Migrationsschritt 12) und
-    /// gehoeren dorthin - die Engine rechnet mit dem, was gepflegt ist, und
-    /// behauptet nichts ueber Netzentgelte.
+    /// 0,20 ct/kWh sind Katalog- und Vorbelegungswerte des Hauptprojekts - die Engine
+    /// rechnet mit dem, was gepflegt ist, und behauptet nichts ueber Netzentgelte.
     /// </para>
     /// </remarks>
     public sealed class Aufschlagssatz
     {
         private readonly Aufschlagskomponente[] _komponenten;
 
-        /// <summary>Die Komponenten in Eingabereihenfolge.</summary>
+        /// <summary>Die Anteile in Eingabereihenfolge.</summary>
         public IReadOnlyList<Aufschlagskomponente> Komponenten
         {
             get { return _komponenten; }
         }
 
-        /// <summary>Gewaehlter Modus.</summary>
-        public AufschlagsModus Modus { get; }
-
-        /// <summary>Gesamtaufschlag [ct/kWh] im Modus <see cref="AufschlagsModus.Gesamtwert"/>.</summary>
-        public double OverrideCtKwh { get; }
-
         /// <summary>
-        /// Erzeugt einen Aufschlagssatz. Die Komponentenliste wird kopiert; die
-        /// Instanz ist danach unveraenderlich.
+        /// Erzeugt eine Preiszerlegung. Die Anteilsliste wird kopiert; die Instanz ist
+        /// danach unveraenderlich.
         /// </summary>
-        /// <param name="komponenten">Komponentenliste, darf leer, aber nicht <c>null</c> sein.</param>
-        /// <param name="modus">Keiner, Aufgeschluesselt oder Gesamtwert.</param>
-        /// <param name="overrideCtKwh">Gesamtaufschlag; nur im Modus Gesamtwert wirksam.</param>
+        /// <param name="komponenten">Anteilsliste, darf leer, aber nicht <c>null</c> sein.</param>
         /// <exception cref="ArgumentNullException">Wenn die Liste oder ein Eintrag <c>null</c> ist.</exception>
-        public Aufschlagssatz(IEnumerable<Aufschlagskomponente> komponenten,
-                              AufschlagsModus modus = AufschlagsModus.Aufgeschluesselt,
-                              double overrideCtKwh = 0.0)
+        public Aufschlagssatz(IEnumerable<Aufschlagskomponente> komponenten)
         {
             if (komponenten == null) throw new ArgumentNullException(nameof(komponenten));
 
@@ -135,17 +109,16 @@ namespace SpeicherEngine
             foreach (Aufschlagskomponente k in komponenten)
             {
                 if (k == null) throw new ArgumentNullException(nameof(komponenten),
-                    "Die Komponentenliste enthaelt einen null-Eintrag.");
+                    "Die Anteilsliste enthaelt einen null-Eintrag.");
                 liste.Add(k);
             }
 
             _komponenten = liste.ToArray();
-            Modus = modus;
-            OverrideCtKwh = overrideCtKwh;
         }
 
         /// <summary>
-        /// Summe der AKTIVEN Komponenten [ct/kWh] - die Live-Summe der Oberflaeche.
+        /// Summe der AKTIVEN Anteile [ct/kWh] - die Live-Summe der Oberflaeche und die
+        /// Groesse, die gegen den Arbeitspreis gehalten wird.
         /// </summary>
         /// <remarks>
         /// Sequenzielle Summation ueber <see cref="Numerik.SummeSequenziell(double[])"/>: Der
@@ -154,56 +127,33 @@ namespace SpeicherEngine
         /// </remarks>
         public double SummeAktivCtKwh
         {
-            get
-            {
-                double[] beitraege = new double[_komponenten.Length];
-                for (int i = 0; i < _komponenten.Length; i++) beitraege[i] = _komponenten[i].BeitragCtKwh;
-                return Numerik.SummeSequenziell(beitraege);
-            }
+            get { return Summe(""); }
         }
 
         /// <summary>
-        /// Der Aufschlag, mit dem tatsaechlich gerechnet wird [ct/kWh]:
-        /// im Modus <see cref="AufschlagsModus.Aufgeschluesselt"/> die
-        /// <see cref="SummeAktivCtKwh"/>, im Modus
-        /// <see cref="AufschlagsModus.Gesamtwert"/> der <see cref="OverrideCtKwh"/>,
-        /// im Modus <see cref="AufschlagsModus.Keiner"/> exakt 0.
+        /// Summe der AKTIVEN Anteile [ct/kWh] <b>ohne</b> den Anteil mit diesem
+        /// Schluessel - der Satz, der auf eine Spot- oder Profilreihe gehoert, weil
+        /// diese Reihe die Beschaffung schon enthaelt (Fachkonzept 4.1 a/b).
         /// </summary>
-        public double WirksamCtKwh
+        /// <param name="schluessel">
+        /// Der auszulassende Schluessel; ein leerer oder unbekannter laesst nichts aus
+        /// und liefert damit <see cref="SummeAktivCtKwh"/>.
+        /// </param>
+        public double SummeAktivOhneCtKwh(string schluessel)
         {
-            get
-            {
-                if (Modus == AufschlagsModus.Keiner) return 0.0;
-                return Modus == AufschlagsModus.Gesamtwert ? OverrideCtKwh : SummeAktivCtKwh;
-            }
+            return Summe(schluessel);
         }
 
-        /// <summary>
-        /// Die Abweichung des Gesamtwerts von der Komponentensumme [ct/kWh]
-        /// (Fachkonzept 4.2): <c>Override - Summe der aktiven Komponenten</c>. In
-        /// jedem anderen Modus immer exakt 0.
-        /// </summary>
-        /// <remarks>
-        /// Beispiel des Fachkonzepts: Bei 20 ct/kWh Gesamtaufschlag und 11,746 ct/kWh
-        /// aufgeschluesselt liegt der Gesamtwert 8,254 ct/kWh darueber (Regelfall)
-        /// bzw. 10,254 ct/kWh im reduzierten Stromsteuerfall. Ein NEGATIVER Wert ist
-        /// zulaessig und bedeutet: Der eingetragene Gesamtwert liegt UNTER der
-        /// Komponentensumme - die Oberflaeche weist das aus, statt es zu
-        /// verschweigen, und macht daraus keinen Fehler.
-        /// </remarks>
-        public double NichtAufgeschluesselterRestCtKwh
+        private double Summe(string ohneSchluessel)
         {
-            get { return Modus == AufschlagsModus.Gesamtwert ? OverrideCtKwh - SummeAktivCtKwh : 0.0; }
-        }
-
-        /// <summary>
-        /// Legt den wirksamen Aufschlag auf eine Preisreihe (Kurzform fuer
-        /// <see cref="PreisModell.MitAufschlag"/> mit <see cref="WirksamCtKwh"/>).
-        /// </summary>
-        /// <exception cref="ArgumentNullException">Wenn <paramref name="reihe"/> <c>null</c> ist.</exception>
-        public double[] AufReihe(double[] reihe)
-        {
-            return PreisModell.MitAufschlag(reihe, WirksamCtKwh);
+            bool alle = string.IsNullOrEmpty(ohneSchluessel);
+            double[] beitraege = new double[_komponenten.Length];
+            for (int i = 0; i < _komponenten.Length; i++)
+                beitraege[i] = !alle && string.Equals(_komponenten[i].Schluessel, ohneSchluessel,
+                                                      StringComparison.Ordinal)
+                    ? 0.0
+                    : _komponenten[i].BeitragCtKwh;
+            return Numerik.SummeSequenziell(beitraege);
         }
     }
 }

@@ -191,16 +191,13 @@
     @* ================================================== Preisbloecke *@
     @if (Stand.Aufschlaege is not null)
     {
-        <StromAufschlaege @attributes="AufschlagTexte" Stand="@Stand.Aufschlaege"
-                          Anzeige="@AufschlagAnzeige"
-                          SatzRegelfall="@SatzRegelfall" SatzReduziert="@SatzReduziert"
-                          Geaendert="BeiPreisblock" />
-        <Kohaerenzzeile Text="@Stand.EffektivpreisText" />
-        @if (Stand.MitAufschlagSchalter)
-        {
-            <Schalter Bezeichnung="@AufschlagAnwendenText" Wert="@Stand.AufschlaegeAnwenden"
-                      WertChanged="BeiAufschlagAnwenden" />
-        }
+        <StrompreisDetails @attributes="AufschlagTexte" Stand="@Stand.Aufschlaege"
+                           Anzeige="@AufschlagAnzeige"
+                           ArbeitspreisCtKwh="@ArbeitspreisCtKwh"
+                           BeschaffungVorschlag="@BeschaffungVorschlag"
+                           SatzRegelfall="@SatzRegelfall" SatzReduziert="@SatzReduziert"
+                           Geaendert="BeiPreisblock"
+                           InArbeitspreis="() => InArbeitspreis.InvokeAsync()" />
     }
 
     @if (Stand.Bestandteile is not null)
@@ -407,8 +404,8 @@
     /// <summary>„In Arbeitspreis übernehmen" der Preiszerlegung.</summary>
     [Parameter] public EventCallback InArbeitspreis { get; set; }
 
-    /// <summary>Ä16: Der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen".</summary>
-    [Parameter] public EventCallback<bool> AufschlagAnwenden { get; set; }
+    /// <summary>Der Rest-Vorschlag für die Beschaffung [ct/kWh]; <c>null</c> = keiner.</summary>
+    [Parameter] public double? BeschaffungVorschlag { get; set; }
 
     /// <summary>„Katalog…" einer Emissionszeile (E4), mit dem Kürzel der Art.</summary>
     [Parameter] public EventCallback<string> KatalogFuerZeile { get; set; }
@@ -484,8 +481,6 @@
     [Parameter] public string SpalteFaktor { get; set; } = "Faktor";
     [Parameter] public string SpalteAktiv { get; set; } = "aktiv";
     [Parameter] public string RegelNeuText { get; set; } = "Regel hinzufügen";
-    [Parameter] public string AufschlagAnwendenText { get; set; }
-        = "Aufschläge in der Wirtschaftlichkeit berücksichtigen";
     [Parameter] public string LabelModus { get; set; } = "CO₂-Berechnung:";
     [Parameter] public string ModusCo2Text { get; set; } = "CO₂";
     [Parameter] public string ModusCo2eText { get; set; } = "CO₂-Äquivalent (GWP₁₀₀)";
@@ -560,12 +555,6 @@
     {
         Stand.ModusCo2e = id == 1;
         return Geaendert.InvokeAsync();
-    }
-
-    private Task BeiAufschlagAnwenden(bool an)
-    {
-        Stand.AufschlaegeAnwenden = an;
-        return AufschlagAnwenden.InvokeAsync(an);
     }
 
     private Task BeiPreisblock() => Geaendert.InvokeAsync();

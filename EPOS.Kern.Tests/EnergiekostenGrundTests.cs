@@ -158,11 +158,19 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Ein Projekt mit zugeordnetem Stromträger und Projektpreis rechnet
-        /// unverändert — die Etappe darf keine Bestandszahl verschieben.
+        /// Ein Projekt mit zugeordnetem Stromträger und Projektpreis rechnet aus
+        /// seinem Arbeitspreis — ohne Rückfall und ohne Fehlgrund.
+        ///
+        /// <para><b>Die Zahl ist mit Schemaschritt 83 gestiegen</b> (SP-E-2): Der
+        /// Strompreis von 1024 trug bis dahin 35,0 ct/kWh, und die 11,746 ct/kWh des
+        /// Aufschlagsblocks wirkten ausschließlich in der Speichersimulation. Seit der
+        /// Faltung stehen sie IM Arbeitspreis (46,746 ct/kWh) und damit in jeder
+        /// Rechnung, die ihn liest — genau der Bedeutungswechsel, den der Entscheid
+        /// verlangt. Die Simulationsergebnisse bleiben davon unberührt (Referenzlauf
+        /// byte-gleich); dies hier ist eine GELDgröße.</para>
         /// </summary>
         [Fact]
-        public void Ein_Projekt_mit_gepflegtem_Projektpreis_rechnet_unveraendert()
+        public void Ein_Projekt_mit_gepflegtem_Projektpreis_rechnet_aus_seinem_Arbeitspreis()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -170,7 +178,7 @@ namespace EPOS.Kern.Tests
             VariantenDaten v = Rechne(PROJEKT_MIT_STROM);
 
             Assert.True(v.Energiekosten.HasValue);
-            Assert.Equal(142696.06, v.Energiekosten.Value, 2);
+            Assert.Equal(188167.18, v.Energiekosten.Value, 2);
             Assert.Null(v.StromTraegerRueckfall);
             Assert.Null(v.EnergiekostenGrund);
         }

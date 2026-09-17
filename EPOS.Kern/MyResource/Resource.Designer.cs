@@ -19920,15 +19920,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge in der Wirtschaftlichkeit berücksichtigen ähnelt.
-        /// </summary>
-        public static string KDLG_AUFSCHLAG_ANWENDEN {
-            get {
-                return ResourceManager.GetString("KDLG_AUFSCHLAG_ANWENDEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle Beträge und alle Bezugsgrößen sind NETTO. Der Umsatzsteuersatz kommt aus dem Katalog „gesetzliche Parameter“. Eine gepflegte Satzangabe hat Vorrang — das Absolutfeld wird dann gesperrt, aber nicht geleert. ähnelt.
         /// </summary>
         public static string KDLG_BANNER {
@@ -20069,15 +20060,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_BTN_UEBERNAHME_PROJEKT {
             get {
                 return ResourceManager.GetString("KDLG_BTN_UEBERNAHME_PROJEKT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspreis inkl. Aufschläge: {0:N2} ct/kWh  (Arbeitspreis {1:N2} + Aufschlag {2:N2}) ähnelt.
-        /// </summary>
-        public static string KDLG_EFFEKTIVPREIS {
-            get {
-                return ResourceManager.GetString("KDLG_EFFEKTIVPREIS", resourceCulture);
             }
         }
         
@@ -29743,15 +29725,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen&quot; ist aus ähnelt.
-        /// </summary>
-        public static string KOH_GRUND_AUFSCHLAG_AUS {
-            get {
-                return ResourceManager.GetString("KOH_GRUND_AUFSCHLAG_AUS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kein Anteil erfasst ähnelt.
         /// </summary>
         public static string KOH_GRUND_BB_FEHLT {
@@ -29788,29 +29761,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die der Aufschlag ist als Gesamtwert erfasst und nicht aufgeschlüsselt ähnelt.
-        /// </summary>
-        public static string KOH_GRUND_STROM_GESAMTWERT {
-            get {
-                return ResourceManager.GetString("KOH_GRUND_STROM_GESAMTWERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die die Komponente Stromsteuer ist abgeschaltet ähnelt.
         /// </summary>
         public static string KOH_GRUND_STROM_INAKTIV {
             get {
                 return ResourceManager.GetString("KOH_GRUND_STROM_INAKTIV", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die fuer den Strombezugspreis ist &quot;kein Aufschlag&quot; gewaehlt ähnelt.
-        /// </summary>
-        public static string KOH_GRUND_STROM_KEIN_AUFSCHLAG {
-            get {
-                return ResourceManager.GetString("KOH_GRUND_STROM_KEIN_AUFSCHLAG", resourceCulture);
             }
         }
         
@@ -34444,6 +34399,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In Arbeitspreis übernehmen ähnelt.
+        /// </summary>
+        public static string PREIS_BTN_IN_ARBEITSPREIS {
+            get {
+                return ResourceManager.GetString("PREIS_BTN_IN_ARBEITSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest: {0} ähnelt.
+        /// </summary>
+        public static string PREIS_BTN_REST {
+            get {
+                return ResourceManager.GetString("PREIS_BTN_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Preis [ct/kWh] ähnelt.
         /// </summary>
         public static string PREIS_CHART_ACHSE_PREIS {
@@ -34462,38 +34435,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert entspricht der Summe der Komponenten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschaffung und Vertrieb ähnelt.
         /// </summary>
-        public static string PREIS_GESAMTWERT_GLEICH {
+        public static string PREIS_GRUPPE_BESCHAFFUNG {
             get {
-                return ResourceManager.GetString("PREIS_GESAMTWERT_GLEICH", resourceCulture);
+                return ResourceManager.GetString("PREIS_GRUPPE_BESCHAFFUNG", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert liegt {0} ct/kWh ueber der Summe der Komponenten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strompreis Details ähnelt.
         /// </summary>
-        public static string PREIS_GESAMTWERT_UEBER {
+        public static string PREIS_GRUPPE_DETAILS {
             get {
-                return ResourceManager.GetString("PREIS_GESAMTWERT_UEBER", resourceCulture);
+                return ResourceManager.GetString("PREIS_GRUPPE_DETAILS", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert liegt {0} ct/kWh unter der Summe der Komponenten ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzentgelte ähnelt.
         /// </summary>
-        public static string PREIS_GESAMTWERT_UNTER {
+        public static string PREIS_GRUPPE_NETZ {
             get {
-                return ResourceManager.GetString("PREIS_GESAMTWERT_UNTER", resourceCulture);
+                return ResourceManager.GetString("PREIS_GRUPPE_NETZ", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlaege auf den Strombezugspreis ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuern, Abgaben und Umlagen ähnelt.
         /// </summary>
-        public static string PREIS_GRUPPE_AUFSCHLAG {
+        public static string PREIS_GRUPPE_STEUERN {
             get {
-                return ResourceManager.GetString("PREIS_GRUPPE_AUFSCHLAG", resourceCulture);
+                return ResourceManager.GetString("PREIS_GRUPPE_STEUERN", resourceCulture);
             }
         }
         
@@ -34840,6 +34813,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschaffung ähnelt.
+        /// </summary>
+        public static string PREIS_KOMP_BESCHAFFUNG {
+            get {
+                return ResourceManager.GetString("PREIS_KOMP_BESCHAFFUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konzessionsabgabe ähnelt.
         /// </summary>
         public static string PREIS_KOMP_KONZESSION {
@@ -34849,11 +34831,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Netzentgelt Arbeit ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG-Umlage ähnelt.
+        /// </summary>
+        public static string PREIS_KOMP_KWKG {
+            get {
+                return ResourceManager.GetString("PREIS_KOMP_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis Netz ähnelt.
         /// </summary>
         public static string PREIS_KOMP_NETZENTGELT {
             get {
                 return ResourceManager.GetString("PREIS_KOMP_NETZENTGELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Offshore-Netzumlage ähnelt.
+        /// </summary>
+        public static string PREIS_KOMP_OFFSHORE {
+            get {
+                return ResourceManager.GetString("PREIS_KOMP_OFFSHORE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 19 StromNEV-Umlage ähnelt.
+        /// </summary>
+        public static string PREIS_KOMP_STROMNEV19 {
+            get {
+                return ResourceManager.GetString("PREIS_KOMP_STROMNEV19", resourceCulture);
             }
         }
         
@@ -34885,11 +34894,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtaufschlag ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis (Trägerkarte) ähnelt.
         /// </summary>
-        public static string PREIS_LABEL_GESAMTAUFSCHLAG {
+        public static string PREIS_LABEL_ARBEITSPREIS {
             get {
-                return ResourceManager.GetString("PREIS_LABEL_GESAMTAUFSCHLAG", resourceCulture);
+                return ResourceManager.GetString("PREIS_LABEL_ARBEITSPREIS", resourceCulture);
             }
         }
         
@@ -34908,33 +34917,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PREIS_LABEL_VERGUETUNG_PV {
             get {
                 return ResourceManager.GetString("PREIS_LABEL_VERGUETUNG_PV", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die aufgeschluesselt ähnelt.
-        /// </summary>
-        public static string PREIS_MODUS_AUFGESCHLUESSELT {
-            get {
-                return ResourceManager.GetString("PREIS_MODUS_AUFGESCHLUESSELT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwert ähnelt.
-        /// </summary>
-        public static string PREIS_MODUS_GESAMTWERT {
-            get {
-                return ResourceManager.GetString("PREIS_MODUS_GESAMTWERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die kein Aufschlag ähnelt.
-        /// </summary>
-        public static string PREIS_MODUS_KEINER {
-            get {
-                return ResourceManager.GetString("PREIS_MODUS_KEINER", resourceCulture);
             }
         }
         
@@ -35236,6 +35218,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aufgeschlüsselter Rest: {0} ct/kWh ähnelt.
+        /// </summary>
+        public static string PREIS_REST {
+            get {
+                return ResourceManager.GetString("PREIS_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 0,05 ähnelt.
         /// </summary>
         public static string PREIS_STROMSTEUER_REDUZIERT {
@@ -35344,11 +35335,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der aktiven Komponenten: {0} ct/kWh   |   wirksamer Aufschlag: {1} ct/kWh ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Anteile: {0} ct/kWh ähnelt.
         /// </summary>
         public static string PREIS_SUMME_AKTIV {
             get {
                 return ResourceManager.GetString("PREIS_SUMME_AKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umlagen aufschlüsseln ähnelt.
+        /// </summary>
+        public static string PREIS_UMLAGEN_EINZELN {
+            get {
+                return ResourceManager.GetString("PREIS_UMLAGEN_EINZELN", resourceCulture);
             }
         }
         
@@ -53763,15 +53763,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge auf den Strombezug [€/a] (in Energiekosten enthalten) ähnelt.
-        /// </summary>
-        public static string WIRT_ZEILE_AUFSCHLAG {
-            get {
-                return ResourceManager.GetString("WIRT_ZEILE_AUFSCHLAG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_BETRIEBSKOSTEN {
@@ -54319,15 +54310,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIZ_VERLASSEN_TITEL {
             get {
                 return ResourceManager.GetString("WIZ_VERLASSEN_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession, Vertrieb) berücksichtigen — Pflege im Energieträgerdialog (Strom) ähnelt.
-        /// </summary>
-        public static string WPAR_AUFSCHLAEGE {
-            get {
-                return ResourceManager.GetString("WPAR_AUFSCHLAEGE", resourceCulture);
             }
         }
         

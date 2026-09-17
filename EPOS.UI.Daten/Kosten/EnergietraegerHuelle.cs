@@ -226,7 +226,6 @@ namespace WindowsFormsApplication1
                 ["InArbeitspreis"] = EventCallback.Factory.Create(new object(), (Action)ArbeitspreisAusBestandteilen),
                 ["KatalogUebernehmen"] = EventCallback.Factory.Create(new object(),
                     (Action)KatalogwerteUebernehmen),
-                ["AufschlagAnwenden"] = EventCallback.Factory.Create<bool>(new object(), AufschlagAnwenden),
                 ["Speichern"] = new Func<bool>(Speichern),
                 ["SpeichernGrund"] = new Func<string>(SpeichernGrund),
                 ["SpeichernHinweis"] = new Func<string>(SpeichernHinweis),
@@ -611,18 +610,31 @@ namespace WindowsFormsApplication1
                 InStromModell(_stand.Aufschlaege, _aufschlagModell);
                 SpeicherEngine.Aufschlagssatz satz =
                     StromAufschlagCtrl.AlsAufschlagssatz(_aufschlagModell);
-                a.AufschlagAnzeige = new PreisblockAnzeige(
-                    string.Format(MyResource.Resource.PREIS_SUMME_AKTIV,
-                                  Anzeige(satz.SummeAktivCtKwh), Anzeige(satz.WirksamCtKwh)),
-                    Abweichungszeile(satz),
-                    false);
 
-                // Ä16: Bezugspreis = Arbeitspreis + wirksamer Aufschlag.
-                double arbeitCt = _stand.Arbeitspreis * 100.0;
-                _stand.EffektivpreisText = string.Format(
-                    T("KDLG_EFFEKTIVPREIS",
-                      "Bezugspreis inkl. Aufschläge: {0:N2} ct/kWh  (Arbeitspreis {1:N2} + Aufschlag {2:N2})"),
-                    arbeitCt + satz.WirksamCtKwh, arbeitCt, satz.WirksamCtKwh);
+                // SP-E-2: Der Block ZERLEGT den Arbeitspreis. Ausgewiesen werden
+                // deshalb die Summe der aktiven Anteile und — als Kohärenzzeile — ihr
+                // Abstand zum Arbeitspreis der Karte, nicht mehr ein „wirksamer
+                // Aufschlag". Wortlaut wie beim Brennstoffblock.
+                double summe = satz.SummeAktivCtKwh;
+                double rest = a.ArbeitspreisCtKwh - summe;
+
+                a.AufschlagAnzeige = new PreisblockAnzeige(
+                    string.Format(MyResource.Resource.PREIS_SUMME_AKTIV, Anzeige(summe)),
+                    string.Format(T("PREIS_REST", "Nicht aufgeschlüsselter Rest: {0} ct/kWh"),
+                                  Anzeige(rest)),
+                    rest < 0.0);
+
+                // Der Rest-Vorschlag für die Beschaffung: Arbeitspreis minus Summe der
+                // ÜBRIGEN aktiven Anteile. Er wird angeboten, nicht geschrieben — und
+                // nur, solange die Beschaffung leer ist und ein Arbeitspreis dasteht.
+                double ohneBeschaffung =
+                    satz.SummeAktivOhneCtKwh(StromAufschlagCtrl.KOMP_BESCHAFFUNG);
+                double vorschlag = a.ArbeitspreisCtKwh - ohneBeschaffung;
+                a.BeschaffungVorschlag =
+                    (_aufschlagModell.Beschaffung == 0.0 || !_aufschlagModell.Beschaffung_Aktiv)
+                    && a.ArbeitspreisCtKwh > 0.0 && vorschlag > 0.0
+                        ? (double?)vorschlag
+                        : null;
 
                 a.SatzRegelfall = StromsteuerSatz(DbWerte.GESETZ_STROMST_REGELSATZ,
                     StromAufschlagModel.STROMSTEUER_REGELFALL,
@@ -867,22 +879,12 @@ namespace WindowsFormsApplication1
                     StromAufschlagCtrl.StelleSpaltenSicher();
                     _aufschlagModell = new StromAufschlagCtrl().Read(_projektId, _gewaehlt.ID);
                     _stand.Aufschlaege = AusStromModell(_aufschlagModell);
-                    _stand.MitAufschlagSchalter = _projektId > 0;
-                    if (_projektId > 0)
-                    {
-                        try
-                        {
-                            _stand.AufschlaegeAnwenden = new WirtschaftlichkeitCtrl()
-                                .LadeParameter(_projektId).AufschlaegeAnwenden;
-                        }
-                        catch { }
-                    }
                 }
                 catch (Exception ex)
                 {
-                    // Ein fehlender Aufschlagsblock darf die Preispflege nicht
-                    // blockieren — etwa ohne Migrationsschritt 12.
-                    Console.WriteLine("Der Aufschlagsblock konnte nicht aufgebaut werden: " + ex.Message);
+                    // Fehlende Strompreis-Details dürfen die Preispflege nicht
+                    // blockieren — etwa ohne Migrationsschritt 12 oder 83.
+                    Console.WriteLine("Die Strompreis-Details konnten nicht aufgebaut werden: " + ex.Message);
                     _aufschlagModell = null;
                 }
                 return;
@@ -916,13 +918,17 @@ namespace WindowsFormsApplication1
         {
             return new StromAufschlaegeStand
             {
-                Wahl = Wahl(m.Modus),
+                Beschaffung = m.Beschaffung, BeschaffungAktiv = m.Beschaffung_Aktiv,
+                Vertrieb = m.Vertrieb, VertriebAktiv = m.Vertrieb_Aktiv,
                 Netzentgelt = m.Netzentgelt, NetzentgeltAktiv = m.Netzentgelt_Aktiv,
-                Umlagen = m.Umlagen, UmlagenAktiv = m.Umlagen_Aktiv,
                 Stromsteuer = m.Stromsteuer, StromsteuerAktiv = m.Stromsteuer_Aktiv,
                 Konzession = m.Konzession, KonzessionAktiv = m.Konzession_Aktiv,
-                Vertrieb = m.Vertrieb, VertriebAktiv = m.Vertrieb_Aktiv,
-                Override = m.Override,
+                Umlagen = m.Umlagen, UmlagenAktiv = m.Umlagen_Aktiv,
+                UmlagenEinzeln = m.Umlagen_Einzeln,
+                UmlageKwkg = m.Umlage_KWKG, UmlageKwkgAktiv = m.Umlage_KWKG_Aktiv,
+                UmlageOffshore = m.Umlage_Offshore, UmlageOffshoreAktiv = m.Umlage_Offshore_Aktiv,
+                UmlageStromNev19 = m.Umlage_StromNEV19,
+                UmlageStromNev19Aktiv = m.Umlage_StromNEV19_Aktiv,
                 VerguetungPv = m.Verguetung_PV,
                 VerguetungBhkw = m.Verguetung_BHKW
             };
@@ -930,67 +936,19 @@ namespace WindowsFormsApplication1
 
         private static void InStromModell(StromAufschlaegeStand s, StromAufschlagModel m)
         {
+            m.Beschaffung = s.Beschaffung; m.Beschaffung_Aktiv = s.BeschaffungAktiv;
+            m.Vertrieb = s.Vertrieb; m.Vertrieb_Aktiv = s.VertriebAktiv;
             m.Netzentgelt = s.Netzentgelt; m.Netzentgelt_Aktiv = s.NetzentgeltAktiv;
-            m.Umlagen = s.Umlagen; m.Umlagen_Aktiv = s.UmlagenAktiv;
             m.Stromsteuer = s.Stromsteuer; m.Stromsteuer_Aktiv = s.StromsteuerAktiv;
             m.Konzession = s.Konzession; m.Konzession_Aktiv = s.KonzessionAktiv;
-            m.Vertrieb = s.Vertrieb; m.Vertrieb_Aktiv = s.VertriebAktiv;
-            m.Override = s.Override;
+            m.Umlagen = s.Umlagen; m.Umlagen_Aktiv = s.UmlagenAktiv;
+            m.Umlagen_Einzeln = s.UmlagenEinzeln;
+            m.Umlage_KWKG = s.UmlageKwkg; m.Umlage_KWKG_Aktiv = s.UmlageKwkgAktiv;
+            m.Umlage_Offshore = s.UmlageOffshore; m.Umlage_Offshore_Aktiv = s.UmlageOffshoreAktiv;
+            m.Umlage_StromNEV19 = s.UmlageStromNev19;
+            m.Umlage_StromNEV19_Aktiv = s.UmlageStromNev19Aktiv;
             m.Verguetung_PV = s.VerguetungPv;
             m.Verguetung_BHKW = s.VerguetungBhkw;
-            m.Modus = Modustext(s.Wahl);
-        }
-
-        /// <summary>
-        /// Der Persistenztext des Aufschlagsmodus als Wahl der Maske. Alles, was
-        /// nicht ausdrücklich einer der beiden Rechenmodi ist, heißt „kein Aufschlag"
-        /// — dieselbe Regel wie in <c>StromAufschlagCtrl.Modus</c>.
-        /// </summary>
-        private static StromAufschlagWahl Wahl(string modus)
-        {
-            if (string.Equals(modus, DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT,
-                              StringComparison.Ordinal))
-                return StromAufschlagWahl.Gesamtwert;
-
-            if (string.Equals(modus, DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT,
-                              StringComparison.Ordinal))
-                return StromAufschlagWahl.Aufgeschluesselt;
-
-            return StromAufschlagWahl.Keiner;
-        }
-
-        /// <summary>Die Wahl der Maske als Persistenztext.</summary>
-        private static string Modustext(StromAufschlagWahl wahl)
-        {
-            switch (wahl)
-            {
-                case StromAufschlagWahl.Gesamtwert:
-                    return DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT;
-                case StromAufschlagWahl.Aufgeschluesselt:
-                    return DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT;
-                default:
-                    return DbWerte.SP_AUFSCHLAG_MODUS_KEINER;
-            }
-        }
-
-        /// <summary>
-        /// Die Zeile unter der Summe: Nur im Modus „Gesamtwert" gibt es zwei Zahlen,
-        /// die auseinanderlaufen können; dort steht, um wie viel der Gesamtwert über
-        /// oder unter der Komponentensumme liegt. Beides ist zulässig und deshalb
-        /// keine Warnung — in den anderen beiden Modi bleibt die Zeile leer.
-        /// </summary>
-        private static string Abweichungszeile(SpeicherEngine.Aufschlagssatz satz)
-        {
-            if (satz.Modus != SpeicherEngine.AufschlagsModus.Gesamtwert) return "";
-
-            double abweichung = satz.NichtAufgeschluesselterRestCtKwh;
-            if (abweichung == 0.0) return MyResource.Resource.PREIS_GESAMTWERT_GLEICH;
-
-            return string.Format(
-                abweichung > 0.0
-                    ? MyResource.Resource.PREIS_GESAMTWERT_UEBER
-                    : MyResource.Resource.PREIS_GESAMTWERT_UNTER,
-                Anzeige(Math.Abs(abweichung)));
         }
 
         private static BrennstoffBestandteileStand AusBrennstoffModell(BrennstoffBestandteilModel m)
@@ -1278,31 +1236,34 @@ namespace WindowsFormsApplication1
             Nachziehen();
         }
 
-        private void AufschlagAnwenden(bool an)
-        {
-            if (_projektId <= 0) return;
-            try
-            {
-                var ctrl = new WirtschaftlichkeitCtrl();
-                WirtschaftlichkeitParameter p = ctrl.LadeParameter(_projektId);
-                p.AufschlaegeAnwenden = an;
-                ctrl.SpeichereParameter(p);
-            }
-            catch { }
-        }
-
         /// <summary>
-        /// Trägt den Preis aus den Bestandteilen in das Arbeitspreisfeld ein —
-        /// der Rückweg von ct/kWh in die Abrechnungseinheit (wortgleich aus
-        /// <c>ArbeitspreisAusBestandteilen</c>). Ohne Heizwert gibt es keinen
+        /// Trägt die Summe der Anteile in das Arbeitspreisfeld ein — der Rückweg
+        /// von ct/kWh in die Abrechnungseinheit. Ohne Heizwert gibt es keinen
         /// Rückweg; dann bleibt das Feld, wie es war.
+        ///
+        /// <para><b>Ein Weg für beide Blöcke.</b> Ein Träger ist entweder Strom
+        /// („Strompreis Details", SP-E-2) oder Brennstoff („Preisbestandteile",
+        /// B2) — nie beides. Der Knopf heißt in beiden Fällen gleich, tut
+        /// dasselbe und schreibt nur das Kartenfeld; gespeichert wird mit
+        /// „Speichern".</para>
         /// </summary>
         private void ArbeitspreisAusBestandteilen()
         {
-            if (_stand == null || _stand.Bestandteile == null || _bestandteilModell == null) return;
-            InBrennstoffModell(_stand.Bestandteile, _bestandteilModell);
+            if (_stand == null) return;
 
-            double ctKwh = BrennstoffBestandteilCtrl.AlsAufschlagssatz(_bestandteilModell).SummeAktivCtKwh;
+            double ctKwh;
+            if (_stand.Aufschlaege != null && _aufschlagModell != null)
+            {
+                InStromModell(_stand.Aufschlaege, _aufschlagModell);
+                ctKwh = StromAufschlagCtrl.AlsAufschlagssatz(_aufschlagModell).SummeAktivCtKwh;
+            }
+            else if (_stand.Bestandteile != null && _bestandteilModell != null)
+            {
+                InBrennstoffModell(_stand.Bestandteile, _bestandteilModell);
+                ctKwh = BrennstoffBestandteilCtrl.AlsAufschlagssatz(_bestandteilModell).SummeAktivCtKwh;
+            }
+            else return;
+
             double jeEinheit;
 
             if (!_gewaehlt.HasHi) jeEinheit = ctKwh / 100.0;
@@ -2503,8 +2464,6 @@ namespace WindowsFormsApplication1
                 ["SpalteFaktor"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_FAKTOR,
                 ["SpalteAktiv"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_AKTIV,
                 ["RegelNeuText"] = MyResource.Resource.KOSTEN_UMRECHNUNG_NEU,
-                ["AufschlagAnwendenText"] = T("KDLG_AUFSCHLAG_ANWENDEN",
-                    "Aufschläge in der Wirtschaftlichkeit berücksichtigen"),
                 ["LabelModus"] = T("KDLG_EM_MODUS", "CO₂-Berechnung:"),
                 ["ModusCo2Text"] = T("KDLG_EM_MODUS_CO2", "CO₂"),
                 ["ModusCo2eText"] = T("KDLG_EM_MODUS_CO2E", "CO₂-Äquivalent (GWP₁₀₀)"),
@@ -2538,23 +2497,29 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>Die Texte des Aufschlagsblocks — wortgleich aus
-        /// <c>ucStromAufschlaege.TexteSetzen</c>.</summary>
+        /// <summary>Die Texte der Strompreis-Details (SP-E-2/SP-E-3).</summary>
         private static IReadOnlyDictionary<string, object> AufschlagTexte()
         {
             return new Dictionary<string, object>
             {
-                ["TitelAufschlag"] = MyResource.Resource.PREIS_GRUPPE_AUFSCHLAG,
+                ["TitelDetails"] = MyResource.Resource.PREIS_GRUPPE_DETAILS,
                 ["TitelVerguetung"] = MyResource.Resource.PREIS_GRUPPE_VERGUETUNG,
-                ["ModusKeiner"] = MyResource.Resource.PREIS_MODUS_KEINER,
-                ["ModusAufgeschluesselt"] = MyResource.Resource.PREIS_MODUS_AUFGESCHLUESSELT,
-                ["ModusGesamtwert"] = MyResource.Resource.PREIS_MODUS_GESAMTWERT,
+                ["GruppeBeschaffung"] = MyResource.Resource.PREIS_GRUPPE_BESCHAFFUNG,
+                ["GruppeNetz"] = MyResource.Resource.PREIS_GRUPPE_NETZ,
+                ["GruppeSteuern"] = MyResource.Resource.PREIS_GRUPPE_STEUERN,
+                ["LabelBeschaffung"] = MyResource.Resource.PREIS_KOMP_BESCHAFFUNG,
+                ["LabelVertrieb"] = MyResource.Resource.PREIS_KOMP_VERTRIEB,
                 ["LabelNetzentgelt"] = MyResource.Resource.PREIS_KOMP_NETZENTGELT,
-                ["LabelUmlagen"] = MyResource.Resource.PREIS_KOMP_UMLAGEN,
                 ["LabelStromsteuer"] = MyResource.Resource.PREIS_KOMP_STROMSTEUER,
                 ["LabelKonzession"] = MyResource.Resource.PREIS_KOMP_KONZESSION,
-                ["LabelVertrieb"] = MyResource.Resource.PREIS_KOMP_VERTRIEB,
-                ["LabelGesamtaufschlag"] = MyResource.Resource.PREIS_LABEL_GESAMTAUFSCHLAG,
+                ["LabelUmlagen"] = MyResource.Resource.PREIS_KOMP_UMLAGEN,
+                ["LabelUmlagenEinzeln"] = MyResource.Resource.PREIS_UMLAGEN_EINZELN,
+                ["LabelUmlageKwkg"] = MyResource.Resource.PREIS_KOMP_KWKG,
+                ["LabelUmlageOffshore"] = MyResource.Resource.PREIS_KOMP_OFFSHORE,
+                ["LabelUmlageStromNev"] = MyResource.Resource.PREIS_KOMP_STROMNEV19,
+                ["LabelArbeitspreis"] = MyResource.Resource.PREIS_LABEL_ARBEITSPREIS,
+                ["InArbeitspreisText"] = MyResource.Resource.PREIS_BTN_IN_ARBEITSPREIS,
+                ["VorlageRest"] = MyResource.Resource.PREIS_BTN_REST,
                 ["LabelVerguetungPv"] = MyResource.Resource.PREIS_LABEL_VERGUETUNG_PV,
                 ["LabelVerguetungBhkw"] = MyResource.Resource.PREIS_LABEL_VERGUETUNG_BHKW,
                 ["Einheit"] = DbWerte.PREISREIHE_EINHEIT_CT_KWH

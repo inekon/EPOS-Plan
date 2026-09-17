@@ -57,10 +57,6 @@ namespace WindowsFormsApplication1
         /// Steuerpfad im Lauf; dann gibt es nichts zu prüfen.</summary>
         public SteuerEingabe Steuer;
 
-        /// <summary>Schalter <c>Tab_ProjektWirtschaftlichkeit.Aufschlaege_Anwenden</c>:
-        /// Nur wenn er an ist, wirkt der Strom-Aufschlagsblock überhaupt auf den Preis.</summary>
-        public bool AufschlaegeAnwenden;
-
         /// <summary>Gebuchte Energiesteuer-Entlastung im Jahr 1 [€/a].</summary>
         public double EnergiesteuerEur;
 
@@ -101,16 +97,14 @@ namespace WindowsFormsApplication1
     /// beteiligten Anlagen und ihren Wahlen — ohne Betrag, ohne Sperre, ohne
     /// Zahlenänderung (<see cref="MischlageEnergiesteuer"/>).</para>
     ///
-    /// <para><b>Zwei Preisseiten mit zwei Leseregeln.</b> Für Brennstoffe gilt
-    /// <see cref="BrennstoffBestandteilCtrl"/>: <c>NULL</c> heißt „kein Anteil erfasst"
-    /// und bleibt <c>null</c>. Für Strom gilt der ältere <see cref="StromAufschlagCtrl"/>,
-    /// dessen Leseweg <c>NULL</c> auf den <b>Vorschlagssatz</b> 2,05 ct/kWh zurückfallen
-    /// lässt (E5-Falle, Konzept § 5.1). Ob ein Stromsteueranteil wirklich GEPFLEGT ist,
-    /// erkennt man deshalb nur an der rohen Spalte — <see cref="StromsteuerRoh"/> liest
-    /// sie eigens. Der Vorschlagswert taugt für Fall 2 (er wirkt im Preis wie ein
-    /// gepflegter Wert, sobald der Aufschlagsschalter an ist), aber nicht für Fall 4:
-    /// Einen nie erfassten Wert mit dem Katalog zu vergleichen wäre ein Vergleich des
-    /// Katalogs mit sich selbst.</para>
+    /// <para><b>Zwei Preisseiten, EINE Leseregel.</b> Für Brennstoffe wie für Strom gilt
+    /// seit SP-E-2: <c>NULL</c> heißt „kein Anteil erfasst". Beim Strom bleibt der
+    /// Vorschlagssatz von 2,05 ct/kWh zwar als Zahl im Feld stehen, sein Aktiv-Schalter
+    /// aber auf <c>false</c> — gerechnet wird mit ihm erst, wenn der Anwender ihn setzt.
+    /// Für Fall 4 (Satzvergleich mit dem Katalog) reicht das trotzdem nicht: Ob ein
+    /// Stromsteueranteil wirklich GEPFLEGT ist, sagt nur die rohe Spalte, und
+    /// <see cref="StromsteuerRoh"/> liest sie eigens. Einen nie erfassten Wert mit dem
+    /// Katalog zu vergleichen wäre ein Vergleich des Katalogs mit sich selbst.</para>
     /// </summary>
     internal static class KohaerenzPruefung
     {
@@ -579,13 +573,13 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Vergleicht die gebuchten Stromsteuergutschriften mit dem Stromsteueranteil des
-        /// Strom-Aufschlagsblocks.
+        /// Vergleicht die gebuchten Stromsteuergutschriften mit dem Stromsteueranteil der
+        /// Preiszerlegung „Strompreis Details".
         ///
-        /// <para><b>Der Schalter <c>Aufschlaege_Anwenden</c> entscheidet zuerst.</b> Steht
-        /// er aus, wirkt der ganze Aufschlagsblock nicht auf den Preis — dann ist die
-        /// Stromsteuer im angesetzten Bezugspreis nicht enthalten, gleichgültig was in den
-        /// Komponenten steht (<c>WirtschaftlichkeitCtrl.RechneAufschlaege</c>).</para>
+        /// <para><b>Der Aktiv-Schalter des Anteils entscheidet.</b> Seit SP-E-2 zerlegen
+        /// die Anteile den Arbeitspreis; ein aktiver Stromsteueranteil &gt; 0 heißt
+        /// damit: Die Stromsteuer steckt im angesetzten Bezugspreis. Es gibt keinen
+        /// Projektschalter mehr, der das ganze Feld abschalten könnte.</para>
         /// </summary>
         private static void Stromseite(int idProjekt, KohaerenzLauf lauf,
                                        CultureInfo kultur, List<KohaerenzHinweis> liste)
@@ -611,22 +605,11 @@ namespace WindowsFormsApplication1
             }
 
             StromAufschlagModel m = new StromAufschlagCtrl().Read(idProjekt, carrier);
-            SpeicherEngine.AufschlagsModus modus = StromAufschlagCtrl.Modus(m.Modus);
-            bool gesamtwert = modus == SpeicherEngine.AufschlagsModus.Gesamtwert;
 
             string grund = null;
-            if (!lauf.AufschlaegeAnwenden)
-                grund = T("KOH_GRUND_AUFSCHLAG_AUS",
-                    "der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen\" ist aus");
-            else if (!m.AusDatenbank)
+            if (!m.AusDatenbank)
                 grund = T("KOH_GRUND_KEIN_STROMTRAEGER",
                     "dem Projekt ist kein Strom-Energieträger zugeordnet");
-            else if (modus == SpeicherEngine.AufschlagsModus.Keiner)
-                grund = T("KOH_GRUND_STROM_KEIN_AUFSCHLAG",
-                    "für den Strombezugspreis ist „kein Aufschlag\" gewählt");
-            else if (gesamtwert)
-                grund = T("KOH_GRUND_STROM_GESAMTWERT",
-                    "der Aufschlag ist als Gesamtwert erfasst und nicht aufgeschlüsselt");
             else if (!m.Stromsteuer_Aktiv)
                 grund = T("KOH_GRUND_STROM_INAKTIV", "die Komponente Stromsteuer ist abgeschaltet");
             else if (m.Stromsteuer <= 0)
@@ -723,11 +706,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// <b>Warum nicht über <see cref="StromAufschlagCtrl.Read"/>.</b> Dessen Leseweg
-        /// lässt <c>NULL</c> auf den Vorschlagssatz zurückfallen
-        /// (<c>StromAufschlagModel.STROMSTEUER_REGELFALL</c> = 2,05 ct/kWh) — der Wert
-        /// sähe dann gepflegt aus, obwohl ihn niemand erfasst hat. Für Fall 2 ist das
-        /// richtig (der Vorschlagssatz wirkt tatsächlich im Preis), für Fall 4 nicht:
-        /// Der Rückfallwert IST der Katalogsatz, der Vergleich wäre zirkulär.
+        /// lässt den Vorschlagssatz als ZAHL im Feld stehen
+        /// (<c>StromAufschlagModel.STROMSTEUER_REGELFALL</c> = 2,05 ct/kWh), auch wenn
+        /// ihn niemand erfasst hat; rechnen tut er dort erst mit gesetztem
+        /// Aktiv-Schalter. Für Fall 4 hilft das nicht: Der Rückfallwert IST der
+        /// Katalogsatz, der Vergleich wäre zirkulär. Hier zählt allein, ob die Spalte
+        /// einen Wert trägt.
         /// </remarks>
         private static double? StromsteuerRoh(int idProjekt, int carrierId)
         {

@@ -1,0 +1,249 @@
+﻿@* „Strompreis Details" - die ZERLEGUNG des Arbeitspreises eines STROM-Traegers,
+   dazu die Verguetungssaetze (Anwenderbefund 16.09.2026, Entscheide SP-E-2/SP-E-3
+   vom 17.09.2026; Fachkonzept Stromspeicher 4.2/4.3).
+
+   ES WIRD NICHTS MEHR AUFGESCHLAGEN. Bis SP-W2/W3 addierte dieser Block fuenf
+   Saetze auf den Arbeitspreis. Jetzt sagt er, WORAUS der Arbeitspreis besteht -
+   dieselbe Bedeutung wie bei BrennstoffBestandteile:
+
+       Arbeitspreis = Beschaffung + Vertrieb + Arbeitspreis Netz
+                      + Stromsteuer + Konzessionsabgabe + Umlagen
+
+   Der Arbeitspreis der Traegerkarte ist die eine Wahrheit. Dieser Block schreibt
+   ihn nie selbst: Der Knopf „In Arbeitspreis uebernehmen" MELDET nur, dass der
+   Anwender die Summe dort haben moechte - eingetragen wird sie vom Wirt, und
+   gespeichert erst mit „Speichern". Denselben Weg geht der Brennstoffblock seit
+   Etappe B2.
+
+   KEIN MODUS UND KEIN GESAMTAUFSCHLAG MEHR. Ein Anteil, den niemand gepflegt hat,
+   ist inaktiv und traegt zur Summe nichts bei; „ein aktiver Anteil vorhanden" sagt
+   alles, was die drei Modi sagten. Das Feld „Gesamtaufschlag" ist entfallen - die
+   Summe der Einzelanteile IST der Gesamtwert (Anwenderwortlaut).
+
+   AUFKLAPPBAR, VORGABE ZU. Der Block ist der laengste der Traegerkarte und wird
+   selten gebraucht. Aufgeklappt wird mit dem Hausknopf (.epos-modulparameter-knopf,
+   Pfeil voran, aria-expanded); im Kopf steht auch eingeklappt die Summe der
+   aktiven Anteile - wer nur nachsehen will, muss nicht aufklappen.
+
+   DIE UMLAGEN STEHEN EINMAL. Entweder das Summenfeld ODER die drei Einzelposten
+   (KWKG, Offshore, § 19 StromNEV) - nie beides, sonst zaehlte derselbe Betrag
+   zweimal. Der Schalter „Umlagen aufschluesseln" ist eine Merkspalte.
+
+   GERECHNET WIRD IN DER ENGINE. Summe, Kohaerenzzeile und der Rest-Vorschlag fuer
+   die Beschaffung kommen als fertiger Text bzw. Zahl aus der Huelle; die Komponente
+   meldet nur, dass sich etwas geaendert hat. *@
+
+@namespace EPOS.UI.Dialoge.Kosten
+
+<Gruppenkopf Titel="@TitelDetails">
+    <KindInhalt>
+        <div class="epos-modulparameter">
+            <button type="button" class="epos-modulparameter-knopf"
+                    aria-expanded="@(_offen ? "true" : "false")"
+                    @onclick="() => _offen = !_offen">
+                <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_offen ? "▾" : "▸")</span>
+                <span>@KopfText</span>
+            </button>
+
+            @if (_offen)
+            {
+                @* --------------------------- 1. Beschaffung und Vertrieb *@
+                <p class="epos-untergruppe">@GruppeBeschaffung</p>
+                <div class="epos-preisblock">
+                    @Komponente(LabelBeschaffung, Stand.Beschaffung, w => Stand.Beschaffung = w,
+                                Stand.BeschaffungAktiv, w => Stand.BeschaffungAktiv = w, Restknopf)
+                    @Komponente(LabelVertrieb, Stand.Vertrieb, w => Stand.Vertrieb = w,
+                                Stand.VertriebAktiv, w => Stand.VertriebAktiv = w, null)
+                </div>
+
+                @* ---------------------------------------- 2. Netzentgelte *@
+                <p class="epos-untergruppe">@GruppeNetz</p>
+                <div class="epos-preisblock">
+                    @Komponente(LabelNetzentgelt, Stand.Netzentgelt, w => Stand.Netzentgelt = w,
+                                Stand.NetzentgeltAktiv, w => Stand.NetzentgeltAktiv = w, null)
+                </div>
+
+                @* ------------------------ 3. Steuern, Abgaben und Umlagen *@
+                <p class="epos-untergruppe">@GruppeSteuern</p>
+                <div class="epos-preisblock">
+                    @Komponente(LabelStromsteuer, Stand.Stromsteuer, w => Stand.Stromsteuer = w,
+                                Stand.StromsteuerAktiv, w => Stand.StromsteuerAktiv = w, Steuerknoepfe)
+                    @Komponente(LabelKonzession, Stand.Konzession, w => Stand.Konzession = w,
+                                Stand.KonzessionAktiv, w => Stand.KonzessionAktiv = w, null)
+
+                    @if (Stand.UmlagenEinzeln)
+                    {
+                        @Komponente(LabelUmlageKwkg, Stand.UmlageKwkg, w => Stand.UmlageKwkg = w,
+                                    Stand.UmlageKwkgAktiv, w => Stand.UmlageKwkgAktiv = w, null)
+                        @Komponente(LabelUmlageOffshore, Stand.UmlageOffshore, w => Stand.UmlageOffshore = w,
+                                    Stand.UmlageOffshoreAktiv, w => Stand.UmlageOffshoreAktiv = w, null)
+                        @Komponente(LabelUmlageStromNev, Stand.UmlageStromNev19, w => Stand.UmlageStromNev19 = w,
+                                    Stand.UmlageStromNev19Aktiv, w => Stand.UmlageStromNev19Aktiv = w, null)
+                    }
+                    else
+                    {
+                        @Komponente(LabelUmlagen, Stand.Umlagen, w => Stand.Umlagen = w,
+                                    Stand.UmlagenAktiv, w => Stand.UmlagenAktiv = w, null)
+                    }
+                </div>
+
+                <Schalter Bezeichnung="@LabelUmlagenEinzeln" Wert="@Stand.UmlagenEinzeln"
+                          WertChanged="@(w => Setzen(() => Stand.UmlagenEinzeln = w))" />
+
+                @* ------------------------------ Summe, Kohaerenz, Uebernahme *@
+                <p class="epos-preisblock-summe">@Anzeige.SummeText</p>
+                <Kohaerenzzeile Text="@ArbeitspreisZeile" />
+                <p class="@(Anzeige.RestNegativ ? "epos-preisblock-rest epos-preisblock-rest--negativ"
+                                                : "epos-preisblock-rest")">@Anzeige.RestText</p>
+
+                <button type="button" class="epos-knopf"
+                        @onclick="() => InArbeitspreis.InvokeAsync()">@InArbeitspreisText</button>
+            }
+        </div>
+    </KindInhalt>
+</Gruppenkopf>
+
+<Gruppenkopf Titel="@TitelVerguetung">
+    <KindInhalt>
+        <Formularraster>
+            <KindInhalt>
+                <Zahlenfeld Bezeichnung="@LabelVerguetungPv" Einheit="@Einheit"
+                            Wert="@Stand.VerguetungPv"
+                            WertChanged="@(w => Stand.VerguetungPv = w ?? Stand.VerguetungPv)" />
+                <Zahlenfeld Bezeichnung="@LabelVerguetungBhkw" Einheit="@Einheit"
+                            Wert="@Stand.VerguetungBhkw"
+                            WertChanged="@(w => Stand.VerguetungBhkw = w ?? Stand.VerguetungBhkw)" />
+            </KindInhalt>
+        </Formularraster>
+    </KindInhalt>
+</Gruppenkopf>
+
+@code {
+    /// <summary>Der Bearbeitungsstand — die Komponente schreibt hinein (siehe Datenklasse).</summary>
+    [Parameter] public StromAufschlaegeStand Stand { get; set; } = new();
+
+    /// <summary>Summenzeile und Kohärenzhinweis, von der Hülle gerechnet.</summary>
+    [Parameter] public PreisblockAnzeige Anzeige { get; set; } = new("", "", false);
+
+    /// <summary>Der Arbeitspreis des Trägers [ct/kWh], vom Wirt gesetzt.</summary>
+    [Parameter] public double ArbeitspreisCtKwh { get; set; }
+
+    /// <summary>
+    /// Der Rest-Vorschlag für die Beschaffung [ct/kWh]: Arbeitspreis minus Summe der
+    /// übrigen aktiven Anteile. <c>null</c> = kein sinnvoller Vorschlag (kein
+    /// Arbeitspreis, oder die Beschaffung ist bereits gepflegt). Er wird
+    /// VORGESCHLAGEN, nie still geschrieben.
+    /// </summary>
+    [Parameter] public double? BeschaffungVorschlag { get; set; }
+
+    /// <summary>Der Stand hat sich geändert — die Hülle rechnet neu.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// Der Anwender möchte die Summe der Anteile im Arbeitspreisfeld haben. Dieser
+    /// Block trägt sie nicht selbst ein.
+    /// </summary>
+    [Parameter] public EventCallback InArbeitspreis { get; set; }
+
+    /// <summary>Stromsteuer im Regelfall (§ 3 StromStG), Satz des Bilanzjahres.</summary>
+    [Parameter] public Schnellwahlsatz? SatzRegelfall { get; set; }
+
+    /// <summary>Reduzierter Satz energieintensiver Unternehmen (§ 9b StromStG).</summary>
+    [Parameter] public Schnellwahlsatz? SatzReduziert { get; set; }
+
+    [Parameter] public string TitelDetails { get; set; } = "Strompreis Details";
+    [Parameter] public string TitelVerguetung { get; set; } = "Vergütung für eingespeisten Strom";
+    [Parameter] public string GruppeBeschaffung { get; set; } = "Beschaffung und Vertrieb";
+    [Parameter] public string GruppeNetz { get; set; } = "Netzentgelte";
+    [Parameter] public string GruppeSteuern { get; set; } = "Steuern, Abgaben und Umlagen";
+    [Parameter] public string LabelBeschaffung { get; set; } = "Beschaffung";
+    [Parameter] public string LabelVertrieb { get; set; } = "Vertrieb";
+    [Parameter] public string LabelNetzentgelt { get; set; } = "Arbeitspreis Netz";
+    [Parameter] public string LabelStromsteuer { get; set; } = "Stromsteuer";
+    [Parameter] public string LabelKonzession { get; set; } = "Konzessionsabgabe";
+    [Parameter] public string LabelUmlagen { get; set; } = "Umlagen (Summe)";
+    [Parameter] public string LabelUmlagenEinzeln { get; set; } = "Umlagen aufschlüsseln";
+    [Parameter] public string LabelUmlageKwkg { get; set; } = "KWKG-Umlage";
+    [Parameter] public string LabelUmlageOffshore { get; set; } = "Offshore-Netzumlage";
+    [Parameter] public string LabelUmlageStromNev { get; set; } = "§ 19 StromNEV-Umlage";
+    [Parameter] public string LabelArbeitspreis { get; set; } = "Arbeitspreis (Trägerkarte)";
+    [Parameter] public string InArbeitspreisText { get; set; } = "In Arbeitspreis übernehmen";
+    [Parameter] public string VorlageRest { get; set; } = "Rest: {0}";
+    [Parameter] public string LabelVerguetungPv { get; set; } = "Photovoltaik v_pv";
+    [Parameter] public string LabelVerguetungBhkw { get; set; } = "BHKW v_bhkw";
+    [Parameter] public string Einheit { get; set; } = "ct/kWh";
+
+    /// <summary>Aufgeklappt? Vorgabe ist ZU (Anwenderwortlaut „einklappbarer Bereich").</summary>
+    private bool _offen;
+
+    /// <summary>Prüfhilfe für die Tests: Ist der Block gerade aufgeklappt?</summary>
+    public bool Offen => _offen;
+
+    /// <summary>
+    /// Die Kopfzeile des Aufklappknopfes: der Titel und — auch eingeklappt — die
+    /// Summe der aktiven Anteile.
+    /// </summary>
+    private string KopfText
+        => string.IsNullOrEmpty(Anzeige.SummeText)
+            ? TitelDetails
+            : TitelDetails + " — " + Anzeige.SummeText;
+
+    private string ArbeitspreisZeile
+        => LabelArbeitspreis + ": " +
+           ArbeitspreisCtKwh.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture) +
+           " " + Einheit;
+
+    private void Setzen(Action aendern)
+    {
+        aendern();
+        Geaendert.InvokeAsync();
+    }
+
+    /// <summary>Eine Anteilszeile: Schalter, Wertfeld, Einheit, optional Knöpfe.</summary>
+    private RenderFragment Komponente(string beschriftung, double wert, Action<double> setzen,
+                                      bool aktiv, Action<bool> setzenAktiv,
+                                      RenderFragment? knoepfe) => @<div class="epos-preiszeile">
+        <Schalter Bezeichnung="@beschriftung" Wert="@aktiv"
+                  WertChanged="@(w => Setzen(() => setzenAktiv(w)))" />
+        <Zahlenfeld Wert="@wert" Einheit="@Einheit"
+                    WertChanged="@(w => Setzen(() => setzen(w ?? wert)))" />
+        @knoepfe
+    </div>;
+
+    /// <summary>
+    /// Der Rest-Vorschlag für die Beschaffung. Er steht als KNOPF da, nicht als Wert
+    /// im Feld: Eine still eingetragene Zahl wäre eine Behauptung über den
+    /// Beschaffungspreis, die niemand aufgestellt hat.
+    /// </summary>
+    private RenderFragment Restknopf
+    {
+        get
+        {
+            if (!BeschaffungVorschlag.HasValue) return @<text></text>;
+            double v = BeschaffungVorschlag.Value;
+            string text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                        VorlageRest,
+                                        v.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture));
+            return @<span class="epos-schnellwahl">
+                <button type="button" class="epos-knopf epos-schnellwahl-knopf"
+                        @onclick="@(() => Setzen(() => { Stand.Beschaffung = v; Stand.BeschaffungAktiv = true; }))">@text</button>
+            </span>;
+        }
+    }
+
+    /// <summary>Die beiden Stromsteuer-Schnellwahlknöpfe (Etappe B4).</summary>
+    private RenderFragment Steuerknoepfe => @<span class="epos-schnellwahl">
+        @Schnellwahlknopf(SatzRegelfall)
+        @Schnellwahlknopf(SatzReduziert)
+    </span>;
+
+    private RenderFragment Schnellwahlknopf(Schnellwahlsatz? satz)
+    {
+        if (satz is null) return @<text></text>;
+        return @<button type="button"
+                        class="@(satz.Empfohlen ? "epos-knopf epos-schnellwahl-knopf epos-schnellwahl-knopf--empfohlen"
+                                                : "epos-knopf epos-schnellwahl-knopf")"
+                        title="@satz.Herkunft" disabled="@(!satz.CtKwh.HasValue)"
+                        @onclick="@(() => Setzen(() => { Stand.Stromsteuer = satz.CtKwh!.Value; Stand.StromsteuerAktiv = true; }))">@satz.Beschriftung</button>;
+    }
+}

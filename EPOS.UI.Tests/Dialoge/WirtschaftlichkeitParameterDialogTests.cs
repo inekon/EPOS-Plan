@@ -140,17 +140,10 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         // Zins, PreisE, PreisB, PreisI (4) + Szenarien 7×2 (14) + Einspeisung PV, KWK (2)
         Assert.Equal(FELDER_OHNE_ERZEUGER, cut.FindAll("input[inputmode=decimal]").Count);
         Assert.Single(cut.FindAll("input[inputmode=numeric]"));   // T
-        Assert.Single(cut.FindAll("input[type=checkbox]"));       // Aufschlaege (Anzeige)
+        // SP-E-2: Der Anzeigehaken „Aufschlaege beruecksichtigen" ist entfallen -
+        // die Preisanteile zerlegen den Arbeitspreis, statt auf ihn zu kommen.
+        Assert.Empty(cut.FindAll("input[type=checkbox]"));
         Assert.Empty(cut.FindAll("select"));
-    }
-
-    [Fact]
-    public void Der_Aufschlagshaken_zeigt_nur_an_und_ist_nicht_bedienbar()
-    {
-        // Ae16: Die Auswahl liegt im Energietraegerdialog.
-        var cut = Aufbauen(Satz());
-
-        Assert.True(cut.Find("input[type=checkbox]").HasAttribute("disabled"));
     }
 
     [Fact]
@@ -181,7 +174,7 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
                      cut.FindAll("input[inputmode=decimal]").Count);       // + CO2
         Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);   // + Bilanzjahr
         Assert.Equal(3, cut.FindAll("select").Count);                     // Park, Methode, Biomasse
-        Assert.Equal(2, cut.FindAll("input[type=checkbox]").Count);       // + Nachweis
+        Assert.Single(cut.FindAll("input[type=checkbox]"));               // Nachweis
         Assert.Single(cut.FindAll("button.epos-sprung"));                 // Katalogknopf
     }
 

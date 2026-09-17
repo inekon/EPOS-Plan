@@ -80,6 +80,9 @@ namespace WindowsFormsApplication1
         ///   <item><term>2</term><description>Nachtrag zu E2 (19.08.2026): <c>KWKG_AUSSCHREIBUNG_GRENZE_KW</c></description></item>
         ///   <item><term>3</term><description>Etappe E6 (19.08.2026): die beiden Anlagengrenzen des § 6 Abs. 3 Nr. 1 und des § 7 Abs. 3a</description></item>
         ///   <item><term>4</term><description>Leitentscheidungen L12/L13 (19.08.2026): Substitutionsfaktor und biogenes Verbrennungs-CO₂</description></item>
+        ///   <item><term>5</term><description>Etappe P2 (PV-Konzept § 6.2): die EEG-Sätze der Photovoltaik</description></item>
+        ///   <item><term>6</term><description>Etappe P4: die Jahresmarktwerte Solar</description></item>
+        ///   <item><term>7</term><description>SP-E-3-Q1/S-6 (17.09.2026): der reduzierte Stromsteuersatz und die drei Umlagen (KWKG, Offshore, § 19 StromNEV)</description></item>
         /// </list>
         /// </summary>
         public int Generation { get; private set; }
@@ -1032,6 +1035,40 @@ namespace WindowsFormsApplication1
                     "§ 2 StromStG — hocheffizient, fossile Anlagen, je kWh Energieertrag"));
             l.Add(N(DbWerte.GESETZ_STROMST_ERLAUBNISSCHWELLE, STROMST, 2026, 1000.0, KW, G,
                     "StromStG — Erlaubnisschwelle für Anlagenbetreiber"));
+
+            // GENERATION 7 (Restpunkt S-6, Anwenderangabe vom 17.09.2026): der
+            // reduzierte Satz energieintensiver Unternehmen. Er ist ANGEGEBEN, nicht
+            // aus Regelsatz minus Entlastung gerechnet — L4 verbietet die Differenz.
+            // Wertgleich der bisherigen Rueckfallebene StromAufschlagModel
+            // .STROMSTEUER_REDUZIERT (0,050 ct/kWh), die damit nur noch greift, wenn
+            // der Katalog fuer das Bilanzjahr nichts liefert.
+            l.Add(N(DbWerte.GESETZ_STROMST_REDUZIERT, STROMST, 2026, 0.50, EUR_MWH, G,
+                    "§ 9b StromStG — verbleibende Belastung energieintensiver " +
+                    "Unternehmen; Angabe des Anwenders vom 17.09.2026", 7));
+
+            // =================================================================
+            // Umlagen auf den Arbeitspreis des Strombezugs (SP-E-3-Q1)
+            //
+            // GENERATION 7. Bis zum Anwenderentscheid vom 17.09.2026 steckten die
+            // drei Saetze namenlos im Vorschlagswert 2,946 ct/kWh des
+            // Aufschlagsblocks („0,446 + 1,559 + 0,941"); jetzt tragen sie ihre
+            // Namen und ihr Stichjahr. Die Summe bleibt wertgleich — die Faltung
+            // des Schemaschritts 83 haengt daran.
+            //
+            // STICHJAHR 2026. Die Vorjahreswerte (KWKG 0,277; Offshore 0,816;
+            // § 19 StromNEV 1,558) gehoeren in Wiki und Protokoll, nicht in den
+            // Katalog: Eine Jahreszeile ohne Beleg waere eine Behauptung.
+            // =================================================================
+            const string UMLAGEN = DbWerte.GESETZ_KLASSE_UMLAGEN;
+            const string Q_UMLAGEN =
+                "Angabe des Anwenders vom 17.09.2026, Umlagen 2026 laut " +
+                "Veröffentlichung der Übertragungsnetzbetreiber";
+            l.Add(N(DbWerte.GESETZ_UMLAGE_KWKG, UMLAGEN, 2026, 0.446, CT, G,
+                    "KWKG-Umlage — " + Q_UMLAGEN, 7));
+            l.Add(N(DbWerte.GESETZ_UMLAGE_OFFSHORE, UMLAGEN, 2026, 0.941, CT, G,
+                    "Offshore-Netzumlage — " + Q_UMLAGEN, 7));
+            l.Add(N(DbWerte.GESETZ_UMLAGE_STROMNEV19, UMLAGEN, 2026, 1.559, CT, G,
+                    "§ 19 StromNEV-Umlage — " + Q_UMLAGEN, 7));
 
             // =================================================================
             // Energiesteuer — Grundlagen, Abschnitt 3

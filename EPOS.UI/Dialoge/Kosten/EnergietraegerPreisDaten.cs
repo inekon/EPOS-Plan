@@ -22,24 +22,13 @@ public sealed record Schnellwahlsatz(string Beschriftung, string Herkunft,
                                      double? CtKwh, bool Empfohlen = false);
 
 /// <summary>
-/// Die drei Modi des Aufschlagsblocks (Fachkonzept 4.2). Die Zahlenwerte sind
-/// zugleich die Ids der Optionsgruppe — die Reihenfolge der Maske.
-/// </summary>
-public enum StromAufschlagWahl
-{
-    /// <summary>Vorgabe: kein Aufschlag. Der Bezugspreis bleibt der Arbeitspreis.</summary>
-    Keiner = 0,
-
-    /// <summary>Ein Gesamtaufschlag; die Komponenten bleiben sichtbar, wirken aber nicht.</summary>
-    Gesamtwert = 1,
-
-    /// <summary>Die Summe der aktiven Komponenten ist der Aufschlag.</summary>
-    Aufgeschluesselt = 2
-}
-
-/// <summary>
-/// Der Bearbeitungsstand des Aufschlagsblocks eines STROM-Trägers
-/// (iU9-W4.3, Vorbild <c>ucStromAufschlaege</c>, Fachkonzept 4.2/4.3).
+/// Der Bearbeitungsstand der Preiszerlegung „Strompreis Details" eines
+/// STROM-Trägers (Anwenderentscheide SP-E-2/SP-E-3, Fachkonzept 4.2/4.3).
+///
+/// <para><b>Es sind Anteile, kein Aufschlag.</b> Die Werte sagen, woraus der
+/// Arbeitspreis besteht; addiert wird nichts. Ein Anteil ohne gesetzten
+/// Aktiv-Schalter trägt zur Summe nichts bei — einen Modus gibt es nicht
+/// mehr.</para>
 ///
 /// <para><b>Warum veränderlich.</b> Wie die Positionszeile der Kostenverwaltung
 /// schreibt die Komponente in das übergebene Objekt, und die Hülle liest es
@@ -49,31 +38,50 @@ public enum StromAufschlagWahl
 /// </summary>
 public sealed class StromAufschlaegeStand
 {
-    /// <summary>Der gewählte Modus; Vorgabe ist <see cref="StromAufschlagWahl.Keiner"/>.</summary>
-    public StromAufschlagWahl Wahl { get; set; } = StromAufschlagWahl.Keiner;
+    // ---- Gruppe 1: Beschaffung und Vertrieb ----
 
-    /// <summary>Die fünf Komponenten steuern den Aufschlag.</summary>
-    public bool Aufgeschluesselt => Wahl == StromAufschlagWahl.Aufgeschluesselt;
+    /// <summary>Beschaffung — der Anteil, der weder Netz noch Steuer, Abgabe
+    /// oder Umlage ist.</summary>
+    public double Beschaffung { get; set; }
+    public bool BeschaffungAktiv { get; set; }
 
-    /// <summary>Der Gesamtaufschlag steuert den Aufschlag.</summary>
-    public bool Gesamtwert => Wahl == StromAufschlagWahl.Gesamtwert;
-
-    public double Netzentgelt { get; set; }
-    public double Umlagen { get; set; }
-    public double Stromsteuer { get; set; }
-    public double Konzession { get; set; }
     public double Vertrieb { get; set; }
-
-    public bool NetzentgeltAktiv { get; set; }
-    public bool UmlagenAktiv { get; set; }
-    public bool StromsteuerAktiv { get; set; }
-    public bool KonzessionAktiv { get; set; }
     public bool VertriebAktiv { get; set; }
 
-    /// <summary>Der Gesamtaufschlag im Override-Modus.</summary>
-    public double Override { get; set; }
+    // ---- Gruppe 2: Netzentgelte ----
 
-    /// <summary>Vergütung für eingespeisten PV-Strom [ct/kWh] (Fachkonzept 4.3).</summary>
+    /// <summary>Arbeitspreis Netz.</summary>
+    public double Netzentgelt { get; set; }
+    public bool NetzentgeltAktiv { get; set; }
+
+    // ---- Gruppe 3: Steuern, Abgaben und Umlagen ----
+
+    public double Stromsteuer { get; set; }
+    public bool StromsteuerAktiv { get; set; }
+
+    public double Konzession { get; set; }
+    public bool KonzessionAktiv { get; set; }
+
+    /// <summary>Umlagen als Summenwert; wirksam, solange
+    /// <see cref="UmlagenEinzeln"/> aus ist.</summary>
+    public double Umlagen { get; set; }
+    public bool UmlagenAktiv { get; set; }
+
+    /// <summary>Statt des Summenfelds die drei Einzelumlagen pflegen.</summary>
+    public bool UmlagenEinzeln { get; set; }
+
+    public double UmlageKwkg { get; set; }
+    public bool UmlageKwkgAktiv { get; set; }
+
+    public double UmlageOffshore { get; set; }
+    public bool UmlageOffshoreAktiv { get; set; }
+
+    public double UmlageStromNev19 { get; set; }
+    public bool UmlageStromNev19Aktiv { get; set; }
+
+    // ---- Vergütung (Fachkonzept 4.3) ----
+
+    /// <summary>Vergütung für eingespeisten PV-Strom [ct/kWh].</summary>
     public double VerguetungPv { get; set; }
 
     /// <summary>Vergütung für eingespeisten BHKW-Strom [ct/kWh].</summary>

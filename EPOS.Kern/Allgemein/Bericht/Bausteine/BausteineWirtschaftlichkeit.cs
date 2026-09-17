@@ -379,7 +379,7 @@ namespace WindowsFormsApplication1
                 x.IdProjekt == idProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
             if (e == null) return;
             bool vermieden = e.VermiedenGesamtJahr != 0 || e.VermiedenArbeitJahr != 0;
-            if (!vermieden && e.AufschlagJahr == 0) return;
+            if (!vermieden) return;
 
             k.Ueberschrift3Roh(MyResource.Resource.WIRT_MJ_NACHWEIS_TITEL);
             k.HinweisRoh(MyResource.Resource.WIRT_MJ_NACHWEIS_HINWEIS);
@@ -401,8 +401,6 @@ namespace WindowsFormsApplication1
                 zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG, e.VermiedenLeistungJahr);
                 zeile(MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT, e.VermiedenGesamtJahr);
             }
-            if (e.AufschlagJahr != 0)
-                zeile(MyResource.Resource.WIRT_ZEILE_AUFSCHLAG, e.AufschlagJahr);
             k.Fuege(t);
             k.Beschriftung(" ");
         }
