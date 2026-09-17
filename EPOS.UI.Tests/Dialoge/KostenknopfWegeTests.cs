@@ -179,6 +179,69 @@ public sealed class KostenknopfWegeTests
     }
 
     /// <summary>
+    /// Die sechs Dialoge, die die Leiste zeichnen — ihre Razor-Quelle.
+    /// </summary>
+    private static readonly string[] Dialoge =
+    {
+        "EPOS.UI/Dialoge/Erzeuger/HeizkesselDialog.razor",
+        "EPOS.UI/Dialoge/Erzeuger/BhkwDialog.razor",
+        "EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor",
+        "EPOS.UI/Dialoge/Erzeuger/StromspeicherDialog.razor",
+        "EPOS.UI/Dialoge/Erzeuger/PufferspeicherDialog.razor",
+        "EPOS.UI/Dialoge/Solarthermie/SolarkollektorenDialog.razor",
+    };
+
+    /// <summary>
+    /// <b>Die zweite Plattform steht in derselben Wache.</b> Der einzige
+    /// plattformfreie Wirt dieser sechs Dialoge ist die Assistentenseite — und damit
+    /// der einzige Weg, auf dem sie auf iOS erscheinen. Dort gibt es das Projekt noch
+    /// nicht, zu dem Kostenpositionen und Projektträger gehörten; die Leiste steht
+    /// deshalb in JEDEM der sechs hinter einer <c>Wizard</c>-Weiche und wird gar nicht
+    /// erst gezeichnet. Ohne diese Weiche zeigte der Assistent drei Knöpfe, die ins
+    /// Leere führten.
+    ///
+    /// <para>Der Gegenstand ist dieselbe Hausregel wie beim Wirt: Ein Weg, den eine
+    /// Plattform nicht gehen kann, wird BENANNT weggelassen, nicht still angeboten.
+    /// Der Assistent selbst lehnt seine elf Schritte auf einer Schale ohne
+    /// Seitengaben über <c>AssistentPlattformwege.SeitenSperrgrund</c> ab.</para>
+    /// </summary>
+    [Fact]
+    public void Im_Assistenten_zeichnet_keiner_der_sechs_Dialoge_die_Leiste()
+    {
+        var funde = new List<string>();
+
+        foreach (string datei in Dialoge)
+        {
+            string quelltext = Lesen(datei);
+            string name = Path.GetFileName(datei);
+
+            var treffer = Regex.Matches(quelltext, @"<KostenKnoepfeLeiste\b");
+            if (treffer.Count != 1)
+            {
+                funde.Add(name + ": zeichnet die Leiste " + treffer.Count + "-mal statt einmal.");
+                continue;
+            }
+
+            // Die naechste @if-Weiche OBERHALB der Leiste muss !Wizard pruefen.
+            string davor = quelltext.Substring(0, treffer[0].Index);
+            int weiche = davor.LastIndexOf("@if", StringComparison.Ordinal);
+            if (weiche < 0)
+            {
+                funde.Add(name + ": die Leiste steht ohne Weiche.");
+                continue;
+            }
+
+            string bedingung = davor.Substring(weiche);
+            if (!Regex.IsMatch(bedingung, @"@if\s*\(\s*!\s*Wizard\b"))
+                funde.Add(name + ": die Weiche vor der Leiste prüft nicht !Wizard.");
+        }
+
+        Assert.True(funde.Count == 0,
+            "Im Assistenten gibt es keinen Kostenkontext — dort bleibt die Leiste weg, " +
+            "statt drei Knöpfe ins Leere zu zeigen.\n  " + string.Join("\n  ", funde));
+    }
+
+    /// <summary>
     /// <b>Gegenprobe:</b> Der Leser erkennt einen unbelegten Schlüssel wirklich —
     /// sonst wäre der erste Fall stumm und niemand merkte es.
     /// </summary>

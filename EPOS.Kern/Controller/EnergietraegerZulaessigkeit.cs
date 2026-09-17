@@ -23,7 +23,10 @@ namespace WindowsFormsApplication1
     ///     feste Brennstoffe. Ohne Gerät gibt es keine Einengung, denn ein Kessel kann
     ///     alles verbrennen und den Strom dazu.</description></item>
     ///   <item><description><b>BHKW</b> — gasförmige und flüssige Brennstoffe (darin
-    ///     Erdgas, Biogas und Heizöl); mit Gerät wie beim Kessel die Kategorie des
+    ///     Erdgas, Biogas und Heizöl) sowie tierische Fette (Anwenderentscheid
+    ///     17.09.2026: „Tierische Fette" ist ein BHKW-Brennstoff und gehört ohne Gerät
+    ///     in die Auswahl; die Kategorie führt im Katalog eine eigene Gruppe und fiele
+    ///     sonst durch); mit Gerät wie beim Kessel die Kategorie des
     ///     Geräts.</description></item>
     ///   <item><description><b>Solarthermie, Pufferspeicher</b> — sie beziehen keine
     ///     Energie und haben deshalb KEINEN Träger; dieselbe Aussage trifft
@@ -69,8 +72,22 @@ namespace WindowsFormsApplication1
         /// <summary>Kategoriecode der flüssigen Brennstoffe.</summary>
         internal const string CODE_FLUESSIG = "LIQUID_FUEL";
 
+        /// <summary>
+        /// Kategoriecode der tierischen Fette. Sie sind KEINE Untergruppe der flüssigen
+        /// Brennstoffe: <c>Tab_BrennstoffKategorien</c> führt sie als eigenen Code, und
+        /// der Katalog führt ihren Träger unter der eigenen Gruppe „Tierische Fette".
+        /// Ohne diesen Code fiele er aus der Auswahl des BHKW heraus.
+        /// </summary>
+        internal const string CODE_TIERFETT = "ANIMAL_FAT";
+
         private static readonly string[] NUR_STROM = { CODE_STROM };
-        private static readonly string[] BRENNBAR_BHKW = { CODE_GASFOERMIG, CODE_FLUESSIG };
+
+        /// <summary>
+        /// Was ein BHKW OHNE Gerät verbrennen darf: gasförmig, flüssig und tierische
+        /// Fette. Mit Gerät entscheidet allein die Kategorie des Geräts.
+        /// </summary>
+        private static readonly string[] BRENNBAR_BHKW =
+            { CODE_GASFOERMIG, CODE_FLUESSIG, CODE_TIERFETT };
         private static readonly string[] KEINE = new string[0];
 
         // =====================================================================
@@ -118,7 +135,8 @@ namespace WindowsFormsApplication1
             string code = KategoriecodeDesGeraets(erzeugerart, geraeteId);
             if (code.Length > 0) return new string[] { code };
 
-            // Ohne Gerät: Der Kessel bleibt offen, das BHKW bekommt gasförmig und flüssig.
+            // Ohne Gerät: Der Kessel bleibt offen, das BHKW bekommt gasförmig, flüssig
+            // und tierische Fette.
             return bhkw ? BRENNBAR_BHKW : null;
         }
 
