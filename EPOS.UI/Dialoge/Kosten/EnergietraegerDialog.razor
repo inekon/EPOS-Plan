@@ -172,6 +172,7 @@
                                              BestandteilTexte="@BestandteilTexte"
                                              Stand="@_ansicht.Stand"
                                              AufschlagAnzeige="@_ansicht.AufschlagAnzeige"
+                                             BeschaffungVorschlag="@_ansicht.BeschaffungVorschlag"
                                              BestandteilAnzeige="@_ansicht.BestandteilAnzeige"
                                              ArbeitspreisCtKwh="@_ansicht.ArbeitspreisCtKwh"
                                              SatzRegelfall="@_ansicht.SatzRegelfall"
@@ -187,7 +188,6 @@
                                              InArbeitspreis="ArbeitspreisUebernehmen"
                                              KatalogUebernehmen="KatalogwerteHolen"
                                              LueckeUebernehmen="LueckeOeffnen"
-                                             AufschlagAnwenden="AufschlagAnwendenSetzen"
                                              KatalogFuerZeile="KatalogZeileOeffnen"
                                              KatalogVerwalten="KatalogVerwaltenOeffnen"
                                              HistorieLoeschen="@HistorienzeileLoeschenWeg"
@@ -383,9 +383,6 @@
     /// Speichern NICHT — ein halbgepflegter Träger muss sich anlegen lassen.
     /// </summary>
     [Parameter] public Func<string>? SpeichernHinweis { get; set; }
-
-    /// <summary>Ä16: der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen".</summary>
-    [Parameter] public EventCallback<bool> AufschlagAnwenden { get; set; }
 
     /// <summary>Ä14: speichert die offene Trägerkarte. <c>false</c> = abgelehnt (K3-Riegel).</summary>
     [Parameter] public Func<bool>? Speichern { get; set; }
@@ -807,8 +804,6 @@
         await KatalogUebernehmen.InvokeAsync();
         Nachziehen();
     }
-
-    private Task AufschlagAnwendenSetzen(bool an) => AufschlagAnwenden.InvokeAsync(an);
 
     // =====================================================================
     // Übernahme aus der Kategorie — erst fragen, dann schreiben

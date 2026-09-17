@@ -248,3 +248,188 @@ Projekt mit Speichervariante und gepflegtem Leistungspreis auf der Trägerkarte 
 
 Wiki-Quellen `Programm Dokumentation - Kosten.wiki` und `Programm Dokumentation -
 Wirtschaftlichkeit.wiki` sind fortgeschrieben; der Upload läuft gebündelt.
+
+## Befund N5 (17.09.2026) — „Strompreis Details": der Aufschlagsblock wird zur Zerlegung des Arbeitspreises
+
+Anwenderbefund vom 16.09.2026, Anwenderentscheide vom 17.09.2026: **SP-E-2** = (a) (Zerlegung wie
+beim Brennstoff), **SP-E-3** (Felder und Schemaschritt), **SP-E-3-Q1** = (a) (Vorschlagswerte vom
+Anwender).
+
+### N5.1 Befund
+
+Der Block „Aufschläge auf den Strombezugspreis" trug fünf Sätze (Netzentgelt, Umlagen,
+Stromsteuer, Konzessionsabgabe, Vertrieb), die auf den Arbeitspreis **addiert** wurden — in der
+Speichersimulation immer, in der Wirtschaftlichkeit nur bei gesetztem Projektschalter
+`Aufschlaege_Anwenden`. Damit gab es **zwei Preiswahrheiten für denselben Strombezug**, und welche
+galt, hing vom Rechenweg ab. Dazu kamen drei Dinge, die der Anwender benannt hat: Der Bereich war
+nicht einklappbar, der „Gesamtaufschlag" stand als eigenes Eingabefeld neben der Summe seiner
+Teile, und der Anteil, der **nicht** zu den Aufschlägen gehört — die Beschaffung —, fehlte ganz.
+
+### N5.2 Umsetzung
+
+**Die Bedeutung.** Die Anteile zerlegen ab hier den Arbeitspreis:
+
+```
+Arbeitspreis = Beschaffung + Vertrieb + Arbeitspreis Netz
+               + Stromsteuer + Konzessionsabgabe + Umlagen
+```
+
+Der Arbeitspreis der Trägerkarte ist die eine Wahrheit; der Block wird mit ihm **verglichen**, nie
+zu ihm addiert. Je Leser:
+
+| Leser | Vorher | Ab N5 |
+|---|---|---|
+| Wirtschaftlichkeit (`RechneAufschlaege`) | Summand auf `e.Energie`, nur bei `Aufschlaege_Anwenden` | **entfallen** — die Anteile stecken im Arbeitspreis |
+| Speichersimulation, Preisquelle **Fixpreis** | Arbeitspreis + wirksamer Aufschlag | Arbeitspreis, sonst nichts |
+| Speichersimulation, **Spot/Profil** | Reihe + wirksamer Aufschlag | Reihe + Σ aktive Anteile **ohne Beschaffung**, nur bei gesetztem Variantenschalter |
+| Speicherauslegung, Quelle **Preisprofil** | Profil + wirksamer Aufschlag | Profil + Σ ohne Beschaffung |
+| `KohaerenzPruefung` (Stromsteuer) | Schalter + Modus + Aktiv-Flag | allein Aktiv-Flag und Wert des Anteils |
+
+**Der Modus ist ganz entfallen.** „Kein Aufschlag" / „Gesamtwert" / „aufgeschlüsselt" sagten
+zusammen nur, ob und wie viel gerechnet wird. Seit ein ungepflegter Anteil **inaktiv** ist und 0
+beiträgt (Leseregel „NULL heißt kein Anteil", dieselbe wie beim Brennstoff), sagt „ein aktiver
+Anteil vorhanden" dasselbe — die einfachere Wahrheit. `AufschlagsModus`, `WirksamCtKwh`,
+`OverrideCtKwh` und `NichtAufgeschluesselterRestCtKwh` sind aus der Engine verschwunden; geblieben
+sind `SummeAktivCtKwh` und das neue `SummeAktivOhneCtKwh(schluessel)`. Die Spalten
+`Aufschlag_Modus` und `Aufschlag_Override` bleiben ungelesen im Schema stehen, damit eine ältere
+Programmfassung auf derselben Datei nicht auf einen fehlenden Namen läuft.
+
+**Die Maske** (`EPOS.UI/Dialoge/Kosten/StrompreisDetails.razor`, aus `StromAufschlaege.razor`
+hervorgegangen): ein aufklappbarer Bereich „Strompreis Details" mit dem Hausmuster ▸/▾
+(`.epos-modulparameter-knopf`, `aria-expanded`), **Vorgabe zugeklappt**, die Summe der aktiven
+Anteile steht auch eingeklappt im Kopf. Drei Gruppen mit Zwischenüberschrift: *Beschaffung und
+Vertrieb*, *Netzentgelte*, *Steuern, Abgaben und Umlagen*. Die Umlagen stehen **einmal** —
+entweder als Summenfeld oder, über die Merkspalte „Umlagen aufschlüsseln", als KWKG-,
+Offshore- und § 19-StromNEV-Umlage; beides nebeneinander wäre eine Doppelzählung. Unten die
+Summe, die **Kohärenzzeile** gegen den Arbeitspreis der Karte, die Restzeile und der Knopf
+**„In Arbeitspreis übernehmen"**. Der Knopf *meldet* nur (Callback `InArbeitspreis`); eingetragen
+wird der Wert vom Wirt, gespeichert mit „Speichern" — dasselbe Muster wie beim Brennstoffblock.
+Die **Beschaffung** wird, solange sie leer ist, als **Rest** vorgeschlagen (Arbeitspreis − Σ
+übrige aktive Anteile) — als Knopf, nicht als stiller Feldwert. Das Feld „Gesamtaufschlag" und
+der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen" sind weg.
+
+**Schemaschritt 83** (`SchemaKatalog.Schritt83_Strompreisdetails`,
+`SchemaMigration.Schritt_83_Strompreisdetails`, Faltung in `StrompreisZerlegung`): neun Spalten an
+`energy_project_settings` — `Aufschlag_Beschaffung`, `Aufschlag_KWKG`, `Aufschlag_Offshore`,
+`Aufschlag_StromNEV19` je mit `_Aktiv`, dazu `Aufschlag_UmlagenEinzeln` (0/1, `NOT NULL DEFAULT 0`).
+Die fünf Bestandsspalten werden nur umbenannt und umgruppiert.
+
+**Die Faltung.** Wer bisher wirksam aufschlug, rechnete ab hier ohne den Aufschlag. Der Schritt
+setzt deshalb `Beschaffung := bisheriger wirksamer Arbeitspreis` und hebt den Arbeitspreis um den
+bisher wirksamen Aufschlag. Geschrieben wird, **wo die Vorrangkette liest**: in
+`energy_project_settings.custom_price_work` **und** in jede Preisversion des (Projekt, Träger) mit
+einem Arbeitspreis > 0 — `StromPreisCtrl.ArbeitspreisCtKwh` nimmt zuerst die Historie, eine
+Faltung allein in die Projekteinstellung käme bei jedem gepflegten Projekt nie an. Eine Version
+mit Arbeitspreis 0 bleibt unberührt (0 heißt „nicht gepflegt", die Kette überspringt sie). Ein
+**Gesamtwert** lässt sich nicht in Anteile zerlegen: Er wandert vollständig in den Arbeitspreis
+und in die Beschaffung, die Anteilsfelder bleiben als Vorschlag stehen und werden inaktiv, und die
+Zeile bekommt eine **Protokollzeile** mit Projekt, Träger und altem Aufschlag — eine erfundene
+Zuordnung wäre schlimmer als eine benannte Lücke. Zeilen mit gepflegten Werten **ohne** wirksamen
+Aufschlag werden stillgelegt (Aktiv-Schalter auf 0), nicht geleert: Ohne Modus rechneten sie sonst
+ab hier mit, obwohl sie es nie taten. Idempotent ist der Schritt über eine gepflegte Beschaffung —
+sie gibt es erst ab Schritt 83.
+
+In der Testdatenbank wurden fünf Zeilen gefaltet:
+
+| Projekt / Träger | Arbeitspreis vorher | Aufschlag | Arbeitspreis nachher | Beschaffung |
+|---|---|---|---|---|
+| 1017 / 54 | 38,000 ct/kWh | 11,746 | 49,746 | 38,000 |
+| 1017 / 58 | 32,000 | 11,746 | 43,746 | 32,000 |
+| 1019 / 60 | 35,000 | 11,746 | 46,746 | 35,000 |
+| 1023 / 60 | 35,000 | 11,746 | 46,746 | 35,000 |
+| 1024 / 60 | 35,000 | 11,746 | 46,746 | 35,000 |
+
+Danach ist Σ der aktiven Anteile der neue Arbeitspreis und Σ ohne Beschaffung der alte Aufschlag —
+**die Preisreihe jedes Laufs bleibt, wie sie war**. Genau das weist der byte-gleiche Referenzlauf
+nach.
+
+**Katalogwerte (SP-E-3-Q1).** Saatgeneration **7** des Gesetzeskatalogs, Stichjahr **2026**,
+Quelle „Angabe des Anwenders vom 17.09.2026, Umlagen 2026 laut Veröffentlichung der
+Übertragungsnetzbetreiber":
+
+| Anteil | 2025 (Vorjahr, nur hier) | **2026 (Katalogwert)** | Entwicklung |
+|---|---|---|---|
+| KWKG-Umlage | 0,277 | **0,446** | +61,0 % |
+| Offshore-Netzumlage | 0,816 | **0,941** | +15,3 % |
+| § 19 StromNEV-Umlage | 1,558 | **1,559** | +0,1 % |
+| Summe der Umlagen | 2,651 | **2,946** | +11,1 % |
+
+Die Summe 2,946 ist genau der bisherige Vorschlagswert `UMLAGEN_VORGABE` — die namenlose Klammer
+„0,446 + 1,559 + 0,941" des Fachkonzepts hat damit ihre Namen. Dazu eingesät: der reduzierte
+Stromsteuersatz `STROMST_REDUZIERT_SATZ` mit **0,50 EUR/MWh** (= 0,050 ct/kWh), **angegeben** und
+nicht als Differenz aus Regelsatz und § 9b-Entlastung geraten (Leitentscheidung L4) — damit ist
+Restpunkt **S-6** erledigt. Netzentgelt Arbeit 6,440, Stromsteuer 2,050, Konzessionsabgabe 0,110
+und Vertrieb 0,200 ct/kWh bleiben, wie sie waren. Restpunkt **C5** (Konstanten im Modell gegen
+Katalog) ist über eine Wache erledigt, die beide wertgleich hält; die Konstanten sind damit
+ausdrücklich Rückfallebene, nicht Quelle.
+
+### N5.3 Die E5-Restpunkte und „Nach #266"
+
+| Restpunkt | Stand |
+|---|---|
+| **Vorgabeverhalten** (E5) | **erledigt** — es gibt keinen Modus mehr; ein ungepflegter Anteil ist inaktiv und trägt 0 bei |
+| **Aktiv-Flags kein verlässliches Aus** (E5) | **erledigt** — der Aktiv-Schalter ist ab hier die einzige Aussage; ein nie gepflegter Wert steht als Vorschlag im Feld, aber ohne Haken |
+| **Doppelzählung Zeile/Energiekosten** (E5) | **erledigt** — die Zeile `WIRT_ZEILE_AUFSCHLAG` ist entfallen, weil es keinen zweiten Summanden mehr gibt |
+| **„Nach #266"** (Bestandsprojekte ohne Modus rechnen 0 statt 11,746) | **erledigt** — 0 ist ab hier die richtige und die einzige Antwort: Ein Projekt, an dem niemand etwas eingestellt hat, hat keine Anteile |
+
+### N5.4 Prüffälle
+
+- `EPOS.Kern.Tests/StrompreisZerlegungTests` (11 Fälle): Leseregel (frisches Modell, nie gepflegte
+  Zeile, fehlende Zeile), Katalog gegen Rückfallebene, Umlagen einmal, Schreiben/Lesen samt
+  Merkspalte, die gefaltete Zeile, und drei Fälle des Schemaschritts — Faltung „aufgeschlüsselt"
+  (Arbeitspreis + 11,746, Beschaffung := alter Preis, Wiederholbarkeit), Faltung „Gesamtwert"
+  (vollständig in den Arbeitspreis, Anteile inaktiv, Protokollzeile) und die Stilllegung gepflegter
+  Werte ohne wirksamen Aufschlag.
+- `SpeicherEngine.Tests/PreisModellTests` (Abschnitt Aufschlagssatz, umgeschrieben): Σ = Arbeitspreis,
+  Σ ohne Beschaffung = 11,746, die drei Einzelumlagen wertgleich dem Summenfeld, inaktive Anteile,
+  unbekannter Schlüssel, ungepflegter Satz.
+- `EPOS.UI.Tests/Dialoge/PreisbloeckeTests` (Strom, 11 Fälle): zugeklappt mit Summe im Kopf,
+  aufgeklappt drei Gruppen und sechs Anteile, Beschriftungen **deutsch und englisch**, der
+  Umlagenschalter tauscht Summenfeld gegen drei Einzelposten, Wertänderung, Stromsteuer-Schnellwahl,
+  empfohlener Satz, Rest-Vorschlag erst auf Klick, Summe/Kohärenz/Rest aus der Hülle, der
+  Übernahmeknopf meldet und schreibt nichts selbst.
+
+**Gegenproben** (gefahren und zurückgebaut): Übernahmeknopf ausgehängt → 1 rot; Faltung ausgehängt
+→ 1 rot.
+
+### N5.5 Gate
+
+Kern-Filter 0 Fehler / 5 Warnungen (keine neue, Schranke 7), Windows-Schale 0 Fehler / 5 Warnungen,
+`EPOS.Kern.Tests` 3 153/3 153, `EPOS.UI.Tests` 4 546/4 546, SpeicherEngine 368/368, KiKern 499/499,
+SpeicherPlanung 27/28 (1 übersprungen), `Resource.Designer.cs` neu erzeugt (6 296 → 6 294 Einträge,
+zweiter Lauf +0), SqlDialektPrüfer 1 468 Texte / 0 Fundstellen, ChartProben 64 Bilder /
+0 Verstöße, Referenzlauf **5/5 PASS und byte-gleich vor UND nach dem Datenschritt** (143 CSV)
+gegen `2026-09-16_R8_Heizkessel_Kaskade`. Schemastand **82 → 83**, **keine neue Referenzbasis**,
+kein iOS- und kein CI-Lauf.
+
+Eine Geldgröße hat sich mit Absicht verschoben und ist im Prüffall festgehalten:
+`EnergiekostenGrundTests` rechnet für Projekt 1024 jetzt 188 167,18 € statt 142 696,06 € — der
+Aufschlag, der dort bisher nur die Speichersimulation erreichte, steht seit der Faltung im
+Arbeitspreis und damit in jeder Rechnung, die ihn liest. Die Simulationsergebnisse sind davon
+unberührt.
+
+### N5.6 Abnahmepunkte auf Windows
+
+| Nr. | Was zu prüfen ist |
+|---|---|
+| `A-SP-W23-1` | Trägerkarte Strom: Der Bereich heißt „Strompreis Details", ist zugeklappt und nennt schon zugeklappt die Summe der Anteile; ▸/▾ klappt ihn auf |
+| `A-SP-W23-2` | Drei Gruppen mit ihren Überschriften, sechs Anteile, kein Feld „Gesamtaufschlag", kein Modusumschalter |
+| `A-SP-W23-3` | „Umlagen aufschlüsseln" tauscht das Summenfeld gegen KWKG, Offshore und § 19 StromNEV; die Summe bleibt gleich, wenn alle drei aktiv sind |
+| `A-SP-W23-4` | Beschaffung leer: Der Knopf „Rest: …" trägt Arbeitspreis − Σ übrige Anteile ein und schaltet den Anteil aktiv; ohne Klick ändert sich nichts |
+| `A-SP-W23-5` | „In Arbeitspreis übernehmen" setzt den Arbeitspreis der Karte auf die Summe; gespeichert wird erst mit „Speichern" |
+| `A-SP-W23-6` | Wirtschaftlichkeit: Der Schalter „Aufschläge … berücksichtigen" ist weg, die Berichtszeile „Aufschläge auf den Strombezug" erscheint in Word und Excel nicht mehr |
+| `A-SP-W23-7` | Migration einer Bestandsdatenbank auf Stand 83: Der Arbeitspreis eines Projekts, das aufgeschlagen hat, steht um den Aufschlag höher, die Beschaffung trägt den alten Preis, und die Speichersimulation liefert dieselben Zahlen wie vorher |
+
+### N5.7 Logbuch-Entwurf (Version beim Anwender offen)
+
+> Der Stromträger hat statt der Aufschläge einen einklappbaren Bereich „Strompreis Details", der
+> den Arbeitspreis in Beschaffung, Vertrieb, Netzentgelt, Stromsteuer, Konzessionsabgabe und
+> Umlagen zerlegt.
+>
+> Der ermittelte Preis lässt sich mit einem Knopf in den Arbeitspreis übernehmen.
+>
+> Der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen" ist nicht mehr vorhanden —
+> die Anteile stecken im Arbeitspreis und rechnen damit überall mit.
+
+Wiki-Quellen `Programm Dokumentation - Kosten.wiki` und `Programm Dokumentation -
+Wirtschaftlichkeit.wiki` sind fortgeschrieben; der Upload läuft gebündelt.

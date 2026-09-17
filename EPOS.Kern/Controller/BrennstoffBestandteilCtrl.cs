@@ -251,13 +251,12 @@ namespace WindowsFormsApplication1
         /// die Zahl.
         /// </para>
         /// <para>
-        /// <b>Kein Override.</b> Dieser Block zerlegt einen Preis, statt ihn zu
+        /// <b>Kein Modus im Satz.</b> Dieser Block zerlegt einen Preis, statt ihn zu
         /// erhöhen; einen Gesamtaufschlag gibt es hier nicht (siehe
-        /// <see cref="BrennstoffBestandteilModel"/>). Der Satz kommt deshalb mit
-        /// <c>overrideCtKwh = 0</c>, und im Modus <c>Gesamtwert</c> ist sein
-        /// <c>WirksamCtKwh</c> folgerichtig 0: Der erfasste Arbeitspreis bleibt
-        /// unverändert, die Bestandteile sind Ausweis. Der aussagekräftige Wert ist in
-        /// beiden Modi <c>SummeAktivCtKwh</c> — „soviel des Preises ist ausgewiesen".
+        /// <see cref="BrennstoffBestandteilModel"/>). Seit SP-E-2 kennt auch die Engine
+        /// keinen Modus mehr — der aussagekräftige Wert ist in beiden Modi der Maske
+        /// <c>SummeAktivCtKwh</c> („soviel des Preises ist ausgewiesen"), und welcher
+        /// Modus gewählt ist, entscheidet allein die Anzeige.
         /// </para>
         /// </remarks>
         public static Aufschlagssatz AlsAufschlagssatz(BrennstoffBestandteilModel m)
@@ -272,11 +271,7 @@ namespace WindowsFormsApplication1
                 new Aufschlagskomponente(KOMP_VERTRIEB, m.Vertrieb ?? 0.0, m.Vertrieb_Aktiv)
             };
 
-            AufschlagsModus modus = m.Modus == DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT
-                ? AufschlagsModus.Gesamtwert
-                : AufschlagsModus.Aufgeschluesselt;
-
-            return new Aufschlagssatz(k, modus, 0.0);
+            return new Aufschlagssatz(k);
         }
 
         // =====================================================================

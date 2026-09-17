@@ -90,9 +90,6 @@ public sealed class WirtschaftlichkeitParameterTexte
     public string EinspeisungPv { get; } = T("WPAR_EINSP_PV", "Einspeisevergütung PV [€/kWh]:");
     public string EinspeisungKwk { get; } = T("WPAR_EINSP_KWK",
         "Einspeisevergütung KWK-Strom [€/kWh]:");
-    public string Aufschlaege { get; } = T("WPAR_AUFSCHLAEGE",
-        "Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession, Vertrieb) " +
-        "berücksichtigen — Pflege im Energieträgerdialog (Strom)");
 
     // --------------------------------------------------------------- BHKW
     /// <summary>

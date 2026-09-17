@@ -4529,20 +4529,8 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PREIS_IMPORT_UNVOLLSTAENDIG" xml:space="preserve">
     <value>The series is INCOMPLETE - the filled hours are estimates.</value>
   </data>
-  <data name="PREIS_GRUPPE_AUFSCHLAG" xml:space="preserve">
-    <value>Surcharges on the electricity purchase price</value>
-  </data>
-  <data name="PREIS_MODUS_KEINER" xml:space="preserve">
-    <value>no surcharge</value>
-  </data>
-  <data name="PREIS_MODUS_AUFGESCHLUESSELT" xml:space="preserve">
-    <value>itemised</value>
-  </data>
-  <data name="PREIS_MODUS_GESAMTWERT" xml:space="preserve">
-    <value>total value</value>
-  </data>
   <data name="PREIS_KOMP_NETZENTGELT" xml:space="preserve">
-    <value>Grid usage fee (energy)</value>
+    <value>Grid charge (energy)</value>
   </data>
   <data name="PREIS_KOMP_UMLAGEN" xml:space="preserve">
     <value>Levies (total)</value>
@@ -4562,9 +4550,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
     <value>0.05</value>
   </data>
-  <data name="PREIS_LABEL_GESAMTAUFSCHLAG" xml:space="preserve">
-    <value>Total surcharge</value>
-  </data>
   <data name="PREIS_GRUPPE_VERGUETUNG" xml:space="preserve">
     <value>Feed-in remuneration</value>
   </data>
@@ -4575,16 +4560,7 @@ Please run the simulation with photovoltaics first.</value>
     <value>CHP v_bhkw</value>
   </data>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
-    <value>Sum of active components: {0} ct/kWh   |   effective surcharge: {1} ct/kWh</value>
-  </data>
-  <data name="PREIS_GESAMTWERT_UEBER" xml:space="preserve">
-    <value>Total value is {0} ct/kWh above the sum of the components</value>
-  </data>
-  <data name="PREIS_GESAMTWERT_UNTER" xml:space="preserve">
-    <value>Total value is {0} ct/kWh below the sum of the components</value>
-  </data>
-  <data name="PREIS_GESAMTWERT_GLEICH" xml:space="preserve">
-    <value>Total value equals the sum of the components</value>
+    <value>Sum of the components: {0} ct/kWh</value>
   </data>
   <data name="PREIS_IMPORT_TITEL" xml:space="preserve">
     <value>Import spot market prices</value>
@@ -6460,9 +6436,6 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   </data>
   <data name="WIRT_ZEILE_VERMIEDEN_GESAMT" xml:space="preserve">
     <value>Avoided cost, total [€/a] (disclosure)</value>
-  </data>
-  <data name="WIRT_ZEILE_AUFSCHLAG" xml:space="preserve">
-    <value>Surcharges on grid supply [€/a] (included in energy cost)</value>
   </data>
   <data name="WIRT_ZEILE_INVESTITION" xml:space="preserve">
     <value>Investment I₀ [€]</value>
@@ -9220,12 +9193,6 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_LP_STROM_TARIF_BTN" xml:space="preserve">
     <value>Tariff structure…</value>
   </data>
-  <data name="KDLG_AUFSCHLAG_ANWENDEN" xml:space="preserve">
-    <value>Apply surcharges in the profitability calculation</value>
-  </data>
-  <data name="KDLG_EFFEKTIVPREIS" xml:space="preserve">
-    <value>Purchase price incl. surcharges: {0:N2} ct/kWh  (energy rate {1:N2} + surcharge {2:N2})</value>
-  </data>
   <data name="WIRT_BTN_BHKW_TARIF" xml:space="preserve">
     <value>CHP tariff…</value>
   </data>
@@ -9763,17 +9730,8 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KOH_FALL4_STROMSTEUER" xml:space="preserve">
     <value>The electricity tax share on record, {0} ct/kWh, differs from the catalogue rate {1} {2} for {3} — that is {4} ct/kWh.</value>
   </data>
-  <data name="KOH_GRUND_AUFSCHLAG_AUS" xml:space="preserve">
-    <value>the switch "Apply surcharges in the economic analysis" is off</value>
-  </data>
   <data name="KOH_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>no electricity energy carrier is assigned to the project</value>
-  </data>
-  <data name="KOH_GRUND_STROM_KEIN_AUFSCHLAG" xml:space="preserve">
-    <value>the electricity purchase price is set to "no surcharge"</value>
-  </data>
-  <data name="KOH_GRUND_STROM_GESAMTWERT" xml:space="preserve">
-    <value>the surcharge is recorded as a total value and is not itemised</value>
   </data>
   <data name="KOH_GRUND_STROM_INAKTIV" xml:space="preserve">
     <value>the electricity tax component is switched off</value>
@@ -10648,9 +10606,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="PVV_SPRUNG_HINWEIS" xml:space="preserve">
     <value>Jumping to the tariff dialog closes this window and reopens it afterwards — please apply your entries first.</value>
-  </data>
-  <data name="WPAR_AUFSCHLAEGE" xml:space="preserve">
-    <value>Include surcharges (grid fee, levies, electricity tax, concession, sales) — maintained in the energy carrier dialog (electricity)</value>
   </data>
   <data name="WPAR_BTN_SPEICHERN" xml:space="preserve">
     <value>Save</value>
@@ -19297,5 +19252,44 @@ Do you want to allow this?</value>
   </data>
   <data name="ANL_KONFIG_MSG_NICHT_GEFUNDEN" xml:space="preserve">
     <value>Unit {0} was not found.</value>
+  </data>
+  <data name="PREIS_GRUPPE_DETAILS" xml:space="preserve">
+    <value>Electricity price details</value>
+  </data>
+  <data name="PREIS_GRUPPE_BESCHAFFUNG" xml:space="preserve">
+    <value>Procurement and sales</value>
+  </data>
+  <data name="PREIS_GRUPPE_NETZ" xml:space="preserve">
+    <value>Grid charges</value>
+  </data>
+  <data name="PREIS_GRUPPE_STEUERN" xml:space="preserve">
+    <value>Taxes, duties and levies</value>
+  </data>
+  <data name="PREIS_KOMP_BESCHAFFUNG" xml:space="preserve">
+    <value>Procurement</value>
+  </data>
+  <data name="PREIS_KOMP_KWKG" xml:space="preserve">
+    <value>CHP Act levy</value>
+  </data>
+  <data name="PREIS_KOMP_OFFSHORE" xml:space="preserve">
+    <value>Offshore grid levy</value>
+  </data>
+  <data name="PREIS_KOMP_STROMNEV19" xml:space="preserve">
+    <value>Section 19 StromNEV levy</value>
+  </data>
+  <data name="PREIS_UMLAGEN_EINZELN" xml:space="preserve">
+    <value>Itemise levies</value>
+  </data>
+  <data name="PREIS_LABEL_ARBEITSPREIS" xml:space="preserve">
+    <value>Working price (carrier card)</value>
+  </data>
+  <data name="PREIS_BTN_IN_ARBEITSPREIS" xml:space="preserve">
+    <value>Apply to working price</value>
+  </data>
+  <data name="PREIS_BTN_REST" xml:space="preserve">
+    <value>Remainder: {0}</value>
+  </data>
+  <data name="PREIS_REST" xml:space="preserve">
+    <value>Unitemised remainder: {0} ct/kWh</value>
   </data>
 </root>

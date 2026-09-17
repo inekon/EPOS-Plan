@@ -123,7 +123,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 82) und fuehrt danach VACUUM aus.");
+                                  " nach (Schritte 62 bis 83) und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
             }
@@ -544,6 +544,33 @@ namespace Testdatenbankschema
                                       " (erwartet " + zeilenVorher81 + ").");
                 else
                     Console.WriteLine("Schritt 81: nichts zu tun - die Loeschregel steht bereits.");
+            }
+            Console.WriteLine();
+
+            // ---- Schritt 83: die Strompreis-Details (Entscheide SP-E-2/SP-E-3).
+            //      Neun Spalten an energy_project_settings UND die Faltung des bisher
+            //      wirksamen Aufschlags in den Arbeitspreis. Spalten aus
+            //      SchemaKatalog.Schritt83_Strompreisdetails, Faltung aus
+            //      StrompreisZerlegung - DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_83_Strompreisdetails bedient.
+            //      DIESER SCHRITT SCHREIBT GELDWERTE, und gerade dadurch bleibt er
+            //      ergebnisneutral: Der Aufschlag kommt nicht mehr auf den Arbeitspreis,
+            //      also muss er DARIN stehen. Nach der Faltung ist die Summe der aktiven
+            //      Anteile der Arbeitspreis und die Summe ohne Beschaffung der alte
+            //      Aufschlag - jede Preisreihe bleibt, wie sie war, der Referenzlauf
+            //      byte-gleich. Wiederholbar: Ein zweiter Lauf findet nichts mehr.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt83_Strompreisdetails)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 83, trocken);
+
+            if (!trocken)
+            {
+                int zuFalten = StrompreisZerlegung.ZaehlungFaltung();
+                Console.WriteLine("Schritt 83 - Zeilen mit wirksamem Aufschlag: " + zuFalten + ".");
+                foreach (string zeile in StrompreisZerlegung.Falten())
+                    Console.WriteLine("Schritt 83 - " + zeile);
+                if (zuFalten == 0)
+                    Console.WriteLine("Schritt 83: nichts zu falten - kein wirksamer Aufschlag.");
             }
             Console.WriteLine();
 

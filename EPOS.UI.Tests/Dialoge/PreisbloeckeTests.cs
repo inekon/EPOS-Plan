@@ -6,15 +6,15 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Die beiden Preisblöcke des Energieträgers (iU9-W4.3):
-/// <c>StromAufschlaege</c> (Vorbild <c>ucStromAufschlaege</c>, 705 Z.) und
-/// <c>BrennstoffBestandteile</c> (Vorbild <c>ucBrennstoffBestandteile</c>,
-/// 863 Z.).
+/// Die beiden Preisblöcke des Energieträgers: <c>StrompreisDetails</c>
+/// („Strompreis Details", Anwenderentscheide SP-E-2/SP-E-3) und
+/// <c>BrennstoffBestandteile</c> (Konzept BHKW § 4.1).
 ///
-/// <para>Soll ist die Feldkarte: fünf bzw. vier Komponentenzeilen aus Schalter
-/// und Wertfeld, der Modusumschalter, die Schnellwahlknöpfe, Summen- und
-/// Restzeile — beim Strom zusätzlich Override und die zwei
-/// Vergütungsfelder.</para>
+/// <para>Beide ZERLEGEN denselben Preis, statt ihn zu erhöhen. Soll beim Strom
+/// ist der Anwenderwortlaut vom 16.09.2026: ein einklappbarer Bereich, drei
+/// Gruppen, die Umlagen wahlweise als Summe oder einzeln, kein
+/// Gesamtaufschlagsfeld, eine Kohärenzzeile gegen den Arbeitspreis und ein
+/// Knopf „In Arbeitspreis übernehmen".</para>
 /// </summary>
 public class PreisbloeckeTests : EposBunitContext
 {
@@ -26,152 +26,118 @@ public class PreisbloeckeTests : EposBunitContext
     }
 
     // =====================================================================
-    // Strom-Aufschläge
+    // Strompreis Details
     // =====================================================================
 
-    private static StromAufschlaegeStand StromStand(
-        StromAufschlagWahl wahl = StromAufschlagWahl.Aufgeschluesselt)
-        => new StromAufschlaegeStand
+    private static StromAufschlaegeStand StromStand() => new StromAufschlaegeStand
     {
-        Wahl = wahl,
+        Beschaffung = 26.254, BeschaffungAktiv = true,
+        Vertrieb = 2.0, VertriebAktiv = true,
         Netzentgelt = 7.5, NetzentgeltAktiv = true,
-        Umlagen = 1.2, UmlagenAktiv = true,
         Stromsteuer = 2.05, StromsteuerAktiv = true,
         Konzession = 1.32, KonzessionAktiv = true,
-        Vertrieb = 2.0, VertriebAktiv = true,
-        Override = 15.0,
+        Umlagen = 1.2, UmlagenAktiv = true,
         VerguetungPv = 8.2,
         VerguetungBhkw = 6.4
     };
 
-    [Fact]
-    public void Der_Strom_Block_zeigt_fuenf_Komponenten_Override_und_zwei_Verguetungen()
-    {
-        var cut = Render<StromAufschlaege>(p => p.Add(x => x.Stand, StromStand()));
+    /// <summary>Klappt den Block auf — Vorgabe ist ZU.</summary>
+    private static void Aufklappen(IRenderedComponent<StrompreisDetails> cut)
+        => cut.Find(".epos-modulparameter-knopf").Click();
 
-        Assert.Equal(5, cut.FindAll(".epos-preiszeile").Count);
-        Assert.Equal(5, cut.FindAll(".epos-preiszeile input[type=checkbox]").Count);
-        // 5 Komponenten + Override + zwei Vergütungen
-        Assert.Equal(8, cut.FindAll("input[type=text]").Count);
-        Assert.Equal(2, cut.FindAll(".epos-gruppenkopf").Count);
+    [Fact]
+    public void Der_Block_ist_zugeklappt_und_nennt_die_Summe_schon_im_Kopf()
+    {
+        var cut = Render<StrompreisDetails>(p => p
+            .Add(x => x.Stand, StromStand())
+            .Add(x => x.Anzeige, new PreisblockAnzeige("Summe der Anteile: 40,32 ct/kWh", "", false)));
+
+        Assert.False(cut.Instance.Offen);
+        Assert.Equal("false", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Empty(cut.FindAll(".epos-preiszeile"));
+        Assert.Contains("Summe der Anteile: 40,32 ct/kWh", cut.Markup);
+
+        // Die zwei Vergütungsfelder stehen ausserhalb und sind immer sichtbar.
+        Assert.Equal(2, cut.FindAll("input[type=text]").Count);
     }
 
     [Fact]
-    public void Die_Beschriftungen_stehen_wie_in_der_Feldkarte()
+    public void Aufgeklappt_stehen_drei_Gruppen_und_sechs_Anteile()
     {
-        var cut = Render<StromAufschlaege>(p => p
-            .Add(x => x.Stand, StromStand())
-            .Add(x => x.LabelNetzentgelt, "Netzentgelt Arbeit")
-            .Add(x => x.LabelUmlagen, "Umlagen (Summe)")
-            .Add(x => x.LabelStromsteuer, "Stromsteuer")
-            .Add(x => x.LabelKonzession, "Konzessionsabgabe")
-            .Add(x => x.LabelVertrieb, "Vertrieb"));
+        var cut = Render<StrompreisDetails>(p => p.Add(x => x.Stand, StromStand()));
+        Aufklappen(cut);
 
-        foreach (string text in new[] { "Netzentgelt Arbeit", "Umlagen (Summe)",
-                                        "Stromsteuer", "Konzessionsabgabe", "Vertrieb" })
+        Assert.True(cut.Instance.Offen);
+        Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
+        Assert.Equal(3, cut.FindAll(".epos-untergruppe").Count);
+        Assert.Equal(3, cut.FindAll(".epos-preisblock").Count);
+
+        // Beschaffung, Vertrieb, Netz, Stromsteuer, Konzession, Umlagen.
+        Assert.Equal(6, cut.FindAll(".epos-preiszeile").Count);
+        // KEIN Gesamtaufschlagsfeld mehr: 6 Anteile + 2 Vergütungen.
+        Assert.Equal(8, cut.FindAll("input[type=text]").Count);
+    }
+
+    [Fact]
+    public void Die_Beschriftungen_stehen_wie_im_Anwenderwortlaut()
+    {
+        var cut = Render<StrompreisDetails>(p => p.Add(x => x.Stand, StromStand()));
+        Aufklappen(cut);
+
+        foreach (string text in new[] { "Beschaffung und Vertrieb", "Netzentgelte",
+                                        "Steuern, Abgaben und Umlagen",
+                                        "Beschaffung", "Vertrieb", "Arbeitspreis Netz",
+                                        "Stromsteuer", "Konzessionsabgabe", "Umlagen (Summe)",
+                                        "Umlagen aufschlüsseln" })
             Assert.Contains(text, cut.Markup);
     }
 
     [Fact]
-    public void Im_Override_Modus_bleiben_die_Komponenten_lesbar_aber_gesperrt()
+    public void Die_englischen_Beschriftungen_kommen_als_Gabe_herein()
     {
-        var stand = StromStand(StromAufschlagWahl.Gesamtwert);
-        var cut = Render<StromAufschlaege>(p => p.Add(x => x.Stand, stand));
+        var cut = Render<StrompreisDetails>(p => p
+            .Add(x => x.Stand, StromStand())
+            .Add(x => x.TitelDetails, "Electricity price details")
+            .Add(x => x.GruppeBeschaffung, "Procurement and sales")
+            .Add(x => x.GruppeNetz, "Grid charges")
+            .Add(x => x.GruppeSteuern, "Taxes, duties and levies")
+            .Add(x => x.LabelBeschaffung, "Procurement")
+            .Add(x => x.LabelUmlagenEinzeln, "Itemise levies")
+            .Add(x => x.InArbeitspreisText, "Apply to working price"));
+        Aufklappen(cut);
 
-        // Sichtbar wie bisher (Fachkonzept 4.2), aber ohne Wirkung.
-        Assert.Equal(5, cut.FindAll(".epos-preiszeile").Count);
-        Assert.All(cut.FindAll(".epos-preiszeile input"), e => Assert.True(e.HasAttribute("disabled")));
-        // Der Override ist genau jetzt bedienbar.
-        Assert.False(cut.FindAll("input[type=text]")[5].HasAttribute("disabled"));
+        foreach (string text in new[] { "Electricity price details", "Procurement and sales",
+                                        "Grid charges", "Taxes, duties and levies",
+                                        "Procurement", "Itemise levies",
+                                        "Apply to working price" })
+            Assert.Contains(text, cut.Markup);
     }
 
-    // ---- Modus „kein Aufschlag" (Anwenderentscheid 14.09.2026) -----------
-
+    /// <summary>
+    /// Die Umlagen stehen EINMAL: entweder das Summenfeld oder die drei
+    /// Einzelposten. Der Schalter tauscht sie aus, statt sie nebeneinander zu
+    /// stellen.
+    /// </summary>
     [Fact]
-    public void Die_Optionsgruppe_bietet_drei_Modi_und_kein_Aufschlag_steht_zuerst()
-    {
-        var cut = Render<StromAufschlaege>(p => p
-            .Add(x => x.Stand, new StromAufschlaegeStand())
-            .Add(x => x.ModusKeiner, "kein Aufschlag")
-            .Add(x => x.ModusGesamtwert, "Gesamtwert")
-            .Add(x => x.ModusAufgeschluesselt, "aufgeschlüsselt"));
-
-        var knoepfe = cut.FindAll(".epos-optionsgruppe input[type=radio]");
-        Assert.Equal(3, knoepfe.Count);
-        Assert.Equal("kein Aufschlag",
-                     cut.FindAll(".epos-optionsgruppe .epos-feld-text")[0].TextContent);
-        // Ohne Zutun ist der erste Eintrag gewählt — die Vorgabe des Standes.
-        Assert.True(knoepfe[0].HasAttribute("checked"));
-    }
-
-    [Fact]
-    public void Ohne_Aufschlag_sind_Komponenten_und_Gesamtwert_gesperrt()
-    {
-        var cut = Render<StromAufschlaege>(p => p
-            .Add(x => x.Stand, StromStand(StromAufschlagWahl.Keiner)));
-
-        // Sichtbar und informativ, aber nichts davon rechnet.
-        Assert.Equal(5, cut.FindAll(".epos-preiszeile").Count);
-        Assert.All(cut.FindAll(".epos-preiszeile input"), e => Assert.True(e.HasAttribute("disabled")));
-        Assert.True(cut.FindAll("input[type=text]")[5].HasAttribute("disabled"));
-    }
-
-    [Fact]
-    public void Die_Restzeile_steht_nur_im_Modus_Gesamtwert()
-    {
-        var anzeige = new PreisblockAnzeige("Summe", "Gesamtwert liegt 0,93 ct/kWh unter …", false);
-
-        foreach (StromAufschlagWahl wahl in new[] { StromAufschlagWahl.Keiner,
-                                                    StromAufschlagWahl.Aufgeschluesselt })
-        {
-            var ohne = Render<StromAufschlaege>(p => p
-                .Add(x => x.Stand, StromStand(wahl))
-                .Add(x => x.Anzeige, anzeige));
-            Assert.Empty(ohne.FindAll(".epos-preisblock-rest"));
-            Assert.Single(ohne.FindAll(".epos-preisblock-summe"));
-        }
-
-        var mit = Render<StromAufschlaege>(p => p
-            .Add(x => x.Stand, StromStand(StromAufschlagWahl.Gesamtwert))
-            .Add(x => x.Anzeige, anzeige));
-        Assert.Single(mit.FindAll(".epos-preisblock-rest"));
-    }
-
-    [Fact]
-    public void Das_Umschalten_zwischen_allen_drei_Modi_kommt_im_Stand_an()
-    {
-        var stand = StromStand(StromAufschlagWahl.Keiner);
-        int gemeldet = 0;
-        var cut = Render<StromAufschlaege>(p => p
-            .Add(x => x.Stand, stand)
-            .Add(x => x.Geaendert, () => gemeldet++));
-
-        cut.FindAll(".epos-optionsgruppe input[type=radio]")[2].Change(true);
-        cut.WaitForAssertion(() => Assert.Equal(StromAufschlagWahl.Aufgeschluesselt, stand.Wahl));
-
-        cut.FindAll(".epos-optionsgruppe input[type=radio]")[1].Change(true);
-        cut.WaitForAssertion(() => Assert.Equal(StromAufschlagWahl.Gesamtwert, stand.Wahl));
-
-        cut.FindAll(".epos-optionsgruppe input[type=radio]")[0].Change(true);
-        cut.WaitForAssertion(() => Assert.Equal(StromAufschlagWahl.Keiner, stand.Wahl));
-
-        Assert.Equal(3, gemeldet);
-    }
-
-    [Fact]
-    public void Der_Modusumschalter_meldet_die_Aenderung()
+    public void Der_Umlagenschalter_tauscht_Summenfeld_gegen_drei_Einzelposten()
     {
         var stand = StromStand();
-        int gemeldet = 0;
-        var cut = Render<StromAufschlaege>(p => p
-            .Add(x => x.Stand, stand)
-            .Add(x => x.Geaendert, () => gemeldet++));
+        var cut = Render<StrompreisDetails>(p => p.Add(x => x.Stand, stand));
+        Aufklappen(cut);
 
-        cut.FindAll(".epos-optionsgruppe input[type=radio]")[0].Change(true);
+        Assert.Contains("Umlagen (Summe)", cut.Markup);
+        Assert.DoesNotContain("KWKG-Umlage", cut.Markup);
 
-        cut.WaitForAssertion(() => Assert.Equal(StromAufschlagWahl.Keiner, stand.Wahl));
-        Assert.False(stand.Aufgeschluesselt);
-        Assert.Equal(1, gemeldet);
+        // Der letzte Schalter des Blocks ist „Umlagen aufschlüsseln".
+        var schalter = cut.FindAll("input[type=checkbox]");
+        schalter[schalter.Count - 1].Change(true);
+
+        cut.WaitForAssertion(() => Assert.True(stand.UmlagenEinzeln));
+        Assert.Contains("KWKG-Umlage", cut.Markup);
+        Assert.Contains("Offshore-Netzumlage", cut.Markup);
+        Assert.Contains("§ 19 StromNEV-Umlage", cut.Markup);
+        Assert.DoesNotContain("Umlagen (Summe)", cut.Markup);
+        Assert.Equal(8, cut.FindAll(".epos-preiszeile").Count);
     }
 
     [Fact]
@@ -179,13 +145,14 @@ public class PreisbloeckeTests : EposBunitContext
     {
         var stand = StromStand();
         int gemeldet = 0;
-        var cut = Render<StromAufschlaege>(p => p
+        var cut = Render<StrompreisDetails>(p => p
             .Add(x => x.Stand, stand)
             .Add(x => x.Geaendert, () => gemeldet++));
+        Aufklappen(cut);
 
-        cut.FindAll(".epos-preiszeile input[type=text]")[0].Input("8,25");
+        cut.FindAll(".epos-preiszeile input[type=text]")[0].Input("30,5");
 
-        Assert.Equal(8.25, stand.Netzentgelt);
+        Assert.Equal(30.5, stand.Beschaffung);
         Assert.Equal(1, gemeldet);
     }
 
@@ -195,10 +162,11 @@ public class PreisbloeckeTests : EposBunitContext
         var stand = StromStand();
         stand.Stromsteuer = 0;
         stand.StromsteuerAktiv = false;
-        var cut = Render<StromAufschlaege>(p => p
+        var cut = Render<StrompreisDetails>(p => p
             .Add(x => x.Stand, stand)
             .Add(x => x.SatzRegelfall, new Schnellwahlsatz("2,05", "Katalog: 20,5 €/MWh", 2.05))
             .Add(x => x.SatzReduziert, new Schnellwahlsatz("0,05", "Rückfallebene", 0.05, true)));
+        Aufklappen(cut);
 
         cut.FindAll(".epos-schnellwahl-knopf")[0].Click();
 
@@ -209,10 +177,11 @@ public class PreisbloeckeTests : EposBunitContext
     [Fact]
     public void Der_empfohlene_Satz_steht_hervorgehoben_und_nennt_seine_Herkunft()
     {
-        var cut = Render<StromAufschlaege>(p => p
+        var cut = Render<StrompreisDetails>(p => p
             .Add(x => x.Stand, StromStand())
             .Add(x => x.SatzRegelfall, new Schnellwahlsatz("2,05", "Katalog: 20,5 €/MWh", 2.05))
             .Add(x => x.SatzReduziert, new Schnellwahlsatz("0,05", "Rückfallebene 0,05", 0.05, true)));
+        Aufklappen(cut);
 
         var knoepfe = cut.FindAll(".epos-schnellwahl-knopf");
         Assert.DoesNotContain("--empfohlen", knoepfe[0].ClassName);
@@ -220,30 +189,80 @@ public class PreisbloeckeTests : EposBunitContext
         Assert.Equal("Rückfallebene 0,05", knoepfe[1].GetAttribute("title"));
     }
 
+    /// <summary>
+    /// Der Rest-Vorschlag für die Beschaffung steht als KNOPF da und schreibt
+    /// erst auf Klick — eine still eingetragene Zahl wäre eine Behauptung über
+    /// den Beschaffungspreis, die niemand aufgestellt hat.
+    /// </summary>
     [Fact]
-    public void Summe_und_Rest_kommen_fertig_aus_der_Huelle()
+    public void Der_Rest_Vorschlag_schreibt_die_Beschaffung_erst_auf_Klick()
     {
-        var cut = Render<StromAufschlaege>(p => p
-            .Add(x => x.Stand, StromStand(StromAufschlagWahl.Gesamtwert))
-            .Add(x => x.Anzeige, new PreisblockAnzeige(
-                "Summe aktiv: 14,07 ct/kWh (wirksam 14,07)",
-                "Gesamtwert liegt 0,93 ct/kWh unter der Summe der Komponenten", false)));
+        var stand = StromStand();
+        stand.Beschaffung = 0;
+        stand.BeschaffungAktiv = false;
 
-        Assert.Equal("Summe aktiv: 14,07 ct/kWh (wirksam 14,07)",
-                     cut.Find(".epos-preisblock-summe").TextContent);
-        Assert.Equal("Gesamtwert liegt 0,93 ct/kWh unter der Summe der Komponenten",
-                     cut.Find(".epos-preisblock-rest").TextContent);
+        var cut = Render<StrompreisDetails>(p => p
+            .Add(x => x.Stand, stand)
+            .Add(x => x.BeschaffungVorschlag, 26.254));
+        Aufklappen(cut);
+
+        Assert.Equal(0.0, stand.Beschaffung);
+        var knopf = cut.FindAll(".epos-schnellwahl-knopf")[0];
+        Assert.Contains("26,254", knopf.TextContent);
+
+        knopf.Click();
+
+        Assert.Equal(26.254, stand.Beschaffung);
+        Assert.True(stand.BeschaffungAktiv);
     }
 
     [Fact]
-    public void Ein_Gesamtwert_unter_der_Komponentensumme_ist_kein_Alarm()
+    public void Ohne_Vorschlag_steht_kein_Restknopf()
     {
-        var cut = Render<StromAufschlaege>(p => p
-            .Add(x => x.Stand, StromStand(StromAufschlagWahl.Gesamtwert))
-            .Add(x => x.Anzeige, new PreisblockAnzeige(
-                "Summe", "Gesamtwert liegt 0,93 ct/kWh unter der Summe der Komponenten", false)));
+        var cut = Render<StrompreisDetails>(p => p.Add(x => x.Stand, StromStand()));
+        Aufklappen(cut);
 
-        Assert.DoesNotContain("--negativ", cut.Find(".epos-preisblock-rest").ClassName);
+        Assert.Empty(cut.FindAll(".epos-schnellwahl-knopf"));
+    }
+
+    [Fact]
+    public void Summe_Kohaerenzzeile_und_Rest_kommen_fertig_aus_der_Huelle()
+    {
+        var cut = Render<StrompreisDetails>(p => p
+            .Add(x => x.Stand, StromStand())
+            .Add(x => x.ArbeitspreisCtKwh, 38.0)
+            .Add(x => x.Anzeige, new PreisblockAnzeige(
+                "Summe der Anteile: 40,32 ct/kWh",
+                "Nicht aufgeschlüsselter Rest: -2,32 ct/kWh", true)));
+        Aufklappen(cut);
+
+        Assert.Equal("Summe der Anteile: 40,32 ct/kWh",
+                     cut.Find(".epos-preisblock-summe").TextContent);
+        Assert.Contains("38", cut.Find(".epos-kohaerenz-text").TextContent);
+        Assert.Equal("Nicht aufgeschlüsselter Rest: -2,32 ct/kWh",
+                     cut.Find(".epos-preisblock-rest").TextContent);
+        Assert.Contains("--negativ", cut.Find(".epos-preisblock-rest").ClassName);
+    }
+
+    /// <summary>
+    /// Der Knopf MELDET nur — eingetragen wird der Wert vom Wirt.
+    /// <b>Gegenprobe:</b> Ohne angehängten Rückruf meldet er nichts, und der
+    /// Fall unten fiele durch.
+    /// </summary>
+    [Fact]
+    public void Der_Uebernahmeknopf_meldet_und_schreibt_nichts_selbst()
+    {
+        var stand = StromStand();
+        int gerufen = 0;
+        var cut = Render<StrompreisDetails>(p => p
+            .Add(x => x.Stand, stand)
+            .Add(x => x.InArbeitspreis, () => gerufen++));
+        Aufklappen(cut);
+
+        cut.FindAll("button.epos-knopf")[^1].Click();
+
+        Assert.Equal(1, gerufen);
+        Assert.Equal(26.254, stand.Beschaffung);   // der Block schreibt keinen Preis
     }
 
     // =====================================================================
@@ -390,25 +409,25 @@ public class PreisbloeckeTests : EposBunitContext
 
 
     /// <summary>
-    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Gesamtaufschlag und die beiden
-    /// Vergütungsfelder stehen im <c>Formularraster</c> — Beschriftung neben dem
-    /// Feld, Zahlenfeld kurz mit der Einheit dahinter.
+    /// <b>iU8-E-2 / W14a-E-7 (Paket P2):</b> Die beiden Vergütungsfelder stehen
+    /// im <c>Formularraster</c> — Beschriftung neben dem Feld, Zahlenfeld kurz
+    /// mit der Einheit dahinter.
     ///
-    /// <para>Der PREISBLOCK darüber bleibt, wie er ist: Seine Zeilen tragen
-    /// Schalter, Wert und Schnellwahlknopf NEBENEINANDER; das ist eine
-    /// Bearbeitungszeile, keine Formularzeile, und der Raster darf dort nicht
-    /// hinein.</para>
+    /// <para>Die PREISBLÖCKE bleiben, wie sie sind: Ihre Zeilen tragen Schalter,
+    /// Wert und Schnellwahlknopf NEBENEINANDER; das ist eine Bearbeitungszeile,
+    /// keine Formularzeile, und der Raster darf dort nicht hinein.</para>
     /// </summary>
     [Fact]
-    public void Aufschlag_und_Verguetung_stehen_im_Formularraster()
+    public void Die_Verguetung_steht_im_Formularraster_die_Anteile_nicht()
     {
-        var cut = Render<StromAufschlaege>(p => p.Add(x => x.Stand, StromStand()));
+        var cut = Render<StrompreisDetails>(p => p.Add(x => x.Stand, StromStand()));
+        Aufklappen(cut);
 
-        Assert.True(cut.FindAll(".epos-formularraster").Count >= 2);
-        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count >= 3);
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 1);
+        Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count >= 2);
 
-        // Der Preisblock steht ausserhalb.
+        // Die drei Preisblöcke stehen ausserhalb.
         Assert.Empty(cut.FindAll(".epos-formularraster .epos-preisblock"));
-        Assert.Single(cut.FindAll(".epos-preisblock"));
+        Assert.Equal(3, cut.FindAll(".epos-preisblock").Count);
     }
 }

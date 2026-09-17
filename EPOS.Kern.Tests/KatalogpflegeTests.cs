@@ -343,8 +343,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void DieVorbelegungIstEingefroren()
         {
-            Assert.Equal(221, GesetzKatalog.Vorbelegung().Count);
-            Assert.Equal(6, GesetzKatalog.AktuelleGeneration);
+            Assert.Equal(225, GesetzKatalog.Vorbelegung().Count);
+            Assert.Equal(7, GesetzKatalog.AktuelleGeneration);
         }
 
         // ==================================================================

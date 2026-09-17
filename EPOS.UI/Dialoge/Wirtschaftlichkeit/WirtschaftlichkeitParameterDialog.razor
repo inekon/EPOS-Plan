@@ -293,9 +293,10 @@
                                 WertChanged="@(w => Parameter.EinspeiseverguetungKWK = w > 0 ? w : null)"
                                 Min="0" Max="2" Nachkommastellen="4" />
 
-                    @* Ae16: Die AUSWAHL liegt im Energietraegerdialog; hier nur noch Anzeige. *@
-                    <Schalter Bezeichnung="@_t.Aufschlaege" Wert="@Parameter.AufschlaegeAnwenden"
-                              Aktiv="false" />
+                    @* SP-E-2: Der Anzeigeschalter "Aufschlaege beruecksichtigen" ist
+                       entfallen. Die Preisanteile des Stromtraegers ZERLEGEN seinen
+                       Arbeitspreis ("Strompreis Details" im Energietraegerdialog), sie
+                       kommen nicht mehr auf ihn - es gibt nichts an- oder abzuschalten. *@
                 </KindInhalt>
             </Formularraster>
         </KindInhalt>

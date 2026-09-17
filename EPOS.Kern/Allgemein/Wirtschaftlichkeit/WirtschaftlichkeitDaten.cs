@@ -327,30 +327,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string AufteilungMethode = DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF;
 
-        // ---- ETAPPE E5 — zwei Projektangaben (Migrationsschritt 21) ----
-
-        /// <summary>
-        /// Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe, Vertrieb)
-        /// in der Jahreskostenrechnung berücksichtigen. <b>Vorgabe: aus.</b>
-        ///
-        /// <para>Die Aufschläge sind seit dem Stromspeicherpaket je Energieträger
-        /// gepflegt (<c>energy_project_settings.Aufschlag_*</c>, Vorschlagswerte in
-        /// Summe 11,746 ct/kWh), wirkten aber ausschließlich in der Speichersimulation.
-        /// Gemessen an den neun Referenzprojekten (Protokoll W4_E5, Abschnitt 4) hebt
-        /// ihre Berücksichtigung die Energiekosten um rund <b>32 %</b> und
-        /// verschlechtert den Kapitalwert um rund <b>30 %</b> — eine stille Übernahme
-        /// hätte jede gespeicherte Altrechnung entwertet. Deshalb eine ausdrückliche
-        /// Angabe je Projekt.</para>
-        ///
-        /// <para><b>Zusammenspiel mit der Stromsteuer aus E4:</b> Der Aufschlagsblock
-        /// enthält die Stromsteuer (2,05 ct/kWh ≙ 20,50 €/MWh) als BELASTUNG, die
-        /// Entlastung nach § 9b StromStG (20,00 €/MWh) als GUTSCHRIFT. Beide zusammen
-        /// sind kein Doppelansatz, sondern die zwei Seiten derselben Vorschrift.
-        /// Steht dieser Schalter dagegen auf AUS und ist § 9b aktiv, enthält der
-        /// Kapitalwert eine Entlastung ohne die zugehörige Belastung — das Ergebnis
-        /// weist genau darauf hin.</para>
-        /// </summary>
-        public bool AufschlaegeAnwenden;
+        // ---- ETAPPE E5 — eine Projektangabe (Migrationsschritt 21) ----
+        //
+        // Der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen" stand hier
+        // bis zum Anwenderentscheid SP-E-2: Die Preisanteile ZERLEGEN den Arbeitspreis
+        // und kommen nicht mehr auf ihn, also gibt es nichts an- oder abzuschalten. Die
+        // Spalte Aufschlaege_Anwenden bleibt ungelesen im Schema stehen.
 
         /// <summary>
         /// Vergütung für eingespeisten <b>KWK</b>-Strom [€/kWh]; <c>null</c> = nicht
@@ -581,10 +563,6 @@ namespace WindowsFormsApplication1
             if (HocheffizienzNachweis || RaeumlicherZusammenhang)
                 t += " · Stromsteuer: hocheffizient " + (HocheffizienzNachweis ? "ja" : "nein") +
                      ", räumlicher Zusammenhang " + (RaeumlicherZusammenhang ? "ja" : "nein");
-            // ETAPPE E5: Der Aufschlagsschalter gehört in die Nachweiszeile, sobald er
-            // an ist — er verändert den größten Kostenposten um rund ein Drittel.
-            if (AufschlaegeAnwenden)
-                t += " · Aufschläge auf den Strombezug berücksichtigt";
             if (EinspeiseverguetungKWK.HasValue && EinspeiseverguetungKWK.Value != 0)
                 t += " · Einspeisevergütung KWK " +
                      EinspeiseverguetungKWK.Value.ToString("N3", kultur) + " €/kWh";

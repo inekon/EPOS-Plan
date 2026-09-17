@@ -3030,6 +3030,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_82_KASKADE_GEPFLEGT = 82;
 
+        /// <summary>
+        /// Schritt 83 — die <b>Strompreis-Details</b> (Anwenderentscheide <b>SP-E-2</b>
+        /// und <b>SP-E-3</b> vom 17.09.2026). Spaltenliste bei
+        /// <see cref="SchemaKatalog.Schritt83_Strompreisdetails"/>, Faltung und
+        /// Begründung bei <see cref="StrompreisZerlegung"/>.
+        ///
+        /// <para><b>Wozu.</b> Der Block „Aufschläge auf den Strombezugspreis" trug fünf
+        /// Sätze, die auf den Arbeitspreis ADDIERT wurden — in der Speichersimulation
+        /// immer, in der Wirtschaftlichkeit nur bei gesetztem Projektschalter. Damit gab
+        /// es zwei Preiswahrheiten für denselben Strombezug. Ab hier ZERLEGEN die
+        /// Anteile den Arbeitspreis: <c>Arbeitspreis = Beschaffung + Vertrieb +
+        /// Arbeitspreis Netz + Stromsteuer + Konzessionsabgabe + Umlagen</c>.</para>
+        ///
+        /// <para><b>Neun Spalten.</b> Die Beschaffung (der Anteil, der bisher fehlte),
+        /// die drei Einzelumlagen (KWKG, Offshore, § 19 StromNEV) mit ihren
+        /// Aktiv-Schaltern und die Merkspalte „Umlagen aufschlüsseln". Die fünf Spalten
+        /// aus Schritt 12 bleiben, wie sie sind; sie werden nur anders benannt und
+        /// gruppiert.</para>
+        ///
+        /// <para><b>MIT DML, und zwar geldwirksam.</b> Wer bisher wirksam aufschlug,
+        /// rechnete ab hier ohne den Aufschlag. Der Schritt faltet ihn deshalb in den
+        /// Arbeitspreis — in <c>custom_price_work</c> UND in jede Preisversion des
+        /// (Projekt, Träger) mit einem Wert &gt; 0, weil die Vorrangkette zuerst die
+        /// Historie liest. Die Beschaffung bekommt den bisherigen Arbeitspreis.</para>
+        ///
+        /// <para><b>Ergebnisneutral trotz DML:</b> Nach der Faltung ist die Summe der
+        /// aktiven Anteile der neue Arbeitspreis und die Summe ohne Beschaffung der
+        /// alte Aufschlag. Jede Preisreihe bleibt damit, wie sie war; der Referenzlauf
+        /// ist byte-gleich. Ein nicht zerlegbarer Gesamtwert wandert vollständig in den
+        /// Arbeitspreis und bekommt eine Protokollzeile.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <see cref="SqliteSpalteAnlegen"/> überspringt eine
+        /// vorhandene Spalte; die Faltung findet nach ihrem Lauf keinen wirksamen
+        /// Aufschlag mehr (<c>StrompreisZerlegung.ZaehlungFaltung</c> = 0).</para>
+        /// </summary>
+        public const int SCHRITT_83_STROMPREISDETAILS = 83;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4033,6 +4070,22 @@ namespace WindowsFormsApplication1
                         "die Automatik kann \"nie belegt\" nicht von \"herausgenommen\" " +
                         "unterscheiden, solange nur die Belegung gespeichert ist.",
                         Schritt_82_KaskadeGepflegt),
+
+            // ANWENDERENTSCHEIDE SP-E-2/SP-E-3 vom 17.09.2026 ("Der Bereich soll als
+            // 'Strompreis Details' bezeichnet werden ... der hier ermittelte Preis mit
+            // einem Button 'uebernehmen in Arbeitspreis' uebernommen werden"). Neun
+            // Spalten aus SchemaKatalog und die Faltung aus StrompreisZerlegung - EINE
+            // Quelle fuer Migration, Testdatenbankschema und Nachweis.
+            new Schritt(SCHRITT_83_STROMPREISDETAILS,
+                        "energy_project_settings bekommt die Strompreis-Details " +
+                        "(Beschaffung, drei Einzelumlagen, Merkspalte); der bisher " +
+                        "wirksame Aufschlag wird in den Arbeitspreis gefaltet " +
+                        "(Entscheide SP-E-2/SP-E-3)",
+                        "Jedes Projekt, das bisher wirksam aufschlug, rechnete ab hier " +
+                        "mit einem um den Aufschlag ZU NIEDRIGEN Strombezugspreis - der " +
+                        "Aufschlag kommt nicht mehr auf den Arbeitspreis, und ohne die " +
+                        "Faltung staende er auch nicht darin.",
+                        Schritt_83_Strompreisdetails),
         };
 
         /// <summary>
@@ -5640,6 +5693,55 @@ namespace WindowsFormsApplication1
                     "KonfigurationCtrl.HeizkesselNachziehen greift damit unveraendert. " +
                     "KEIN Rechenweg liest die Spalte, der Referenzlauf bleibt " +
                     "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 83 - die Strompreis-Details (Entscheide SP-E-2/SP-E-3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 83 — Anlass, Spalten und Faltung stehen bei
+        /// <see cref="SCHRITT_83_STROMPREISDETAILS"/>, bei
+        /// <see cref="SchemaKatalog.Schritt83_Strompreisdetails"/> und bei
+        /// <see cref="StrompreisZerlegung"/>.
+        ///
+        /// <para><b>Erst die Spalten, dann das DML</b> - die Faltung schreibt in
+        /// <c>Aufschlag_Beschaffung</c>, die es vorher nicht gibt. Hier steht keine
+        /// abgeschriebene DDL und kein abgeschriebenes DML; beides kommt aus dem Kern,
+        /// aus DERSELBEN Quelle, aus der sich auch <c>Werkzeuge/Testdatenbankschema</c>
+        /// und der Nachweis in <c>EPOS.Kern.Tests</c> bedienen.</para>
+        /// </summary>
+        private static bool Schritt_83_Strompreisdetails(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt83_Strompreisdetails)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            int zuFalten = StrompreisZerlegung.ZaehlungFaltung();
+            System.Collections.Generic.IReadOnlyList<string> protokoll;
+            try
+            {
+                protokoll = StrompreisZerlegung.Falten();
+            }
+            catch (Exception ex)
+            {
+                l.Notiz("83: FEHLER bei der Faltung - " + ex.Message);
+                return false;
+            }
+
+            l.Notiz("83: " + SchemaKatalog.ENERGY_PROJECT_SETTINGS + " traegt die neun " +
+                    "Spalten der Strompreis-Details (Beschaffung, KWKG, Offshore, " +
+                    "StromNEV19 je mit Aktiv-Schalter, dazu UmlagenEinzeln). Die Anteile " +
+                    "ZERLEGEN ab hier den Arbeitspreis, sie kommen nicht mehr auf ihn; " +
+                    "der bisher wirksame Aufschlag ist in " +
+                    zuFalten.ToString(CultureInfo.InvariantCulture) +
+                    " Zeile(n) in den Arbeitspreis gefaltet worden. Summe der aktiven " +
+                    "Anteile = Arbeitspreis, Summe ohne Beschaffung = bisheriger " +
+                    "Aufschlag - jede Preisreihe bleibt, wie sie war, der Referenzlauf " +
+                    "byte-gleich.");
+
+            foreach (string zeile in protokoll) l.Notiz("83: " + zeile);
             return true;
         }
 

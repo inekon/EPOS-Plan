@@ -200,20 +200,12 @@ public sealed class EnergietraegerStand
 
     // ---- Preisblöcke ----------------------------------------------------
 
-    /// <summary>Aufschlagsblock — nur beim Stromträger belegt (AP4).</summary>
+    /// <summary>„Strompreis Details" — nur beim Stromträger belegt (SP-E-2).</summary>
     public StromAufschlaegeStand? Aufschlaege { get; set; }
 
     /// <summary>Preiszerlegung — nur bei der Brennstoff-Familie belegt (B2).</summary>
     public BrennstoffBestandteileStand? Bestandteile { get; set; }
 
-    /// <summary>„Bezugspreis inkl. Aufschläge: … ct/kWh" (Ä16); leer = kein Strom.</summary>
-    public string EffektivpreisText { get; set; } = "";
-
-    /// <summary>Ä16: Der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen".</summary>
-    public bool MitAufschlagSchalter { get; set; }
-
-    /// <summary>Sein Stand.</summary>
-    public bool AufschlaegeAnwenden { get; set; }
 
     // ---- Historie -------------------------------------------------------
 
@@ -300,7 +292,7 @@ public sealed class EnergietraegerAnsicht
     /// <summary>Der Bearbeitungsstand; <c>null</c> = kein Träger gewählt.</summary>
     public EnergietraegerStand? Stand { get; set; }
 
-    /// <summary>Summen- und Restzeile des Aufschlagsblocks.</summary>
+    /// <summary>Summen- und Kohärenzzeile der Strompreis-Details.</summary>
     public PreisblockAnzeige AufschlagAnzeige { get; set; } = new("", "", false);
 
     /// <summary>Dasselbe für die Preiszerlegung.</summary>
@@ -308,6 +300,12 @@ public sealed class EnergietraegerAnsicht
 
     /// <summary>Der Arbeitspreis in ct/kWh — Bezugsgröße der Restzeile.</summary>
     public double ArbeitspreisCtKwh { get; set; }
+
+    /// <summary>
+    /// Der Rest-Vorschlag für die Beschaffung [ct/kWh]: Arbeitspreis minus Summe
+    /// der übrigen aktiven Anteile. <c>null</c> = kein sinnvoller Vorschlag.
+    /// </summary>
+    public double? BeschaffungVorschlag { get; set; }
 
     public Schnellwahlsatz? SatzRegelfall { get; set; }
     public Schnellwahlsatz? SatzReduziert { get; set; }

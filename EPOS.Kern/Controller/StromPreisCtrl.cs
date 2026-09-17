@@ -58,10 +58,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string Preisversion = "";
 
-        /// <summary>Wirksamer Aufschlag [ct/kWh]; 0, wenn das Flag der Variante aus ist.</summary>
+        /// <summary>
+        /// Die aktiven Preisanteile OHNE Beschaffung [ct/kWh], die auf eine Spot- oder
+        /// Profilreihe kommen. <b>Beim Fixpreis immer 0</b> - der Arbeitspreis enthaelt
+        /// die Anteile bereits (SP-E-2). 0 auch dann, wenn der Variantenschalter
+        /// „Anteile auf Spot-/Profilpreis aufschlagen" aus ist.
+        /// </summary>
         public double AufschlagCtKwh;
 
-        /// <summary>Mittelwert der ENERGIEpreisreihe vor dem Aufschlag [ct/kWh].</summary>
+        /// <summary>Mittelwert der ENERGIEpreisreihe vor den Anteilen [ct/kWh].</summary>
         public double EnergiepreisMittelCtKwh;
 
         /// <summary>Mittelwert des fertigen Bezugspreises [ct/kWh] - fuer die Anzeige.</summary>
@@ -173,9 +178,20 @@ namespace WindowsFormsApplication1
                 energiereihe = BaueEnergiereihe(idProjekt, v, anzahlIntervalle, stichtag, e);
             }
 
-            // --- Aufschlag (Fachkonzept 4.2) -----------------------------------
-            Aufschlagssatz satz = StromAufschlagCtrl.AlsAufschlagssatz(aufschlagModel);
-            e.AufschlagCtKwh = v.Aufschlag_Anwenden ? satz.WirksamCtKwh : 0.0;
+            // --- Die Anteile auf Spot- und Profilreihen (Fachkonzept 4.1 a/b) ---
+            //
+            // SP-E-2: Die Anteile ZERLEGEN den Arbeitspreis; auf einen FIXPREIS kommt
+            // deshalb nichts mehr obendrauf - er enthaelt sie bereits. Eine Spot- oder
+            // Profilreihe dagegen IST nur die Beschaffung; ihr fehlen Netzentgelt,
+            // Steuern, Abgaben und Umlagen. Genau diese Summe - die aktiven Anteile
+            // OHNE Beschaffung - kommt dort dazu, und nur, wenn der Variantenschalter
+            // "Anteile auf Spot-/Profilpreis aufschlagen" an ist.
+            bool reiheIstBeschaffung = e.Quelle == DbWerte.SP_PREISQUELLE_SPOTMARKT
+                                    || e.Quelle == DbWerte.SP_PREISQUELLE_PROFIL;
+
+            e.AufschlagCtKwh = reiheIstBeschaffung && v.Aufschlag_Anwenden
+                ? StromAufschlagCtrl.SummeOhneBeschaffungCtKwh(aufschlagModel)
+                : 0.0;
 
             double min, max, mittel;
             PreisModell.Spannweite(energiereihe, out min, out max, out mittel);

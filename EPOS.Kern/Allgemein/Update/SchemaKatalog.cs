@@ -915,6 +915,68 @@ namespace WindowsFormsApplication1
         /// <summary>Einspeise-/KWK-Erlös BHKW v_bhkw [ct/kWh] (Fachkonzept 4.3).</summary>
         public const string SPALTE_VERGUETUNG_BHKW = "Verguetung_BHKW";
 
+        // =====================================================================
+        // Schritt 83 - die fehlenden Anteile der Preiszerlegung „Strompreis Details"
+        //   (Anwenderentscheide SP-E-2/SP-E-3 vom 17.09.2026)
+        //
+        //   Die fünf Spalten aus Schritt 12 bleiben, wie sie sind; sie werden nur
+        //   anders BENANNT und gruppiert. Neu sind der Anteil, der bisher fehlte
+        //   (Beschaffung), die drei Einzelumlagen und die Merkspalte, ob die Umlagen
+        //   einzeln gepflegt werden.
+        // =====================================================================
+
+        /// <summary>
+        /// Beschaffung [ct/kWh] — der Teil des Arbeitspreises, der weder Netz noch
+        /// Steuer, Abgabe oder Umlage ist (Anwenderbefund 16.09.2026: „außerdem fehlt
+        /// noch der Arbeitspreis, der nicht zu den Aufschlägen gehört").
+        /// </summary>
+        public const string SPALTE_AUFSCHLAG_BESCHAFFUNG = "Aufschlag_Beschaffung";
+
+        /// <summary>KWKG-Umlage [ct/kWh] — einer der drei Summanden von
+        /// <see cref="SPALTE_AUFSCHLAG_UMLAGEN"/>.</summary>
+        public const string SPALTE_AUFSCHLAG_KWKG = "Aufschlag_KWKG";
+
+        /// <summary>Offshore-Netzumlage [ct/kWh].</summary>
+        public const string SPALTE_AUFSCHLAG_OFFSHORE = "Aufschlag_Offshore";
+
+        /// <summary>§ 19 StromNEV-Umlage [ct/kWh].</summary>
+        public const string SPALTE_AUFSCHLAG_STROMNEV19 = "Aufschlag_StromNEV19";
+
+        /// <summary>
+        /// Merkspalte: Werden die Umlagen einzeln gepflegt (1) oder als Summenwert (0)?
+        /// Sie entscheidet, welche Felder die Maske zeigt und welche Anteile in die
+        /// Summe eingehen — nie beide zugleich.
+        /// </summary>
+        public const string SPALTE_AUFSCHLAG_UMLAGEN_EINZELN = "Aufschlag_UmlagenEinzeln";
+
+        /// <summary>
+        /// Schritt 83 der Migration — die neun Spalten der Preiszerlegung
+        /// „Strompreis Details" an <c>energy_project_settings</c>.
+        ///
+        /// <para><b>Kein DDL-DEFAULT auf den Wertspalten</b>, dieselbe Begründung wie
+        /// bei <see cref="Schritt12_Preismodell"/>: NULL heißt „kein Anteil erfasst",
+        /// und das ist etwas anderes als der Wert 0. Die Merkspalte
+        /// <see cref="SPALTE_AUFSCHLAG_UMLAGEN_EINZELN"/> ist eine Ja/Nein-Spalte und
+        /// steht wie jede andere auf <c>NOT NULL DEFAULT 0</c> — „Summenfeld" ist der
+        /// Bestandsfall.</para>
+        ///
+        /// <para><b>Der DML-Teil steht nicht hier</b>, sondern in
+        /// <c>StrompreisZerlegung</c>: Er faltet den bisher wirksamen Aufschlag in den
+        /// Arbeitspreis und ist damit mehr als eine Vorbelegung.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt83_Strompreisdetails =
+        {
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_BESCHAFFUNG, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_BESCHAFFUNG + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_KWKG, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_KWKG + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_OFFSHORE, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_OFFSHORE + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_STROMNEV19, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_STROMNEV19 + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_UMLAGEN_EINZELN, "YESNO"),
+        };
+
         /// <summary>
         /// Schritt 12 der Migration — der Aufschlagsblock und die Vergütungssätze an
         /// <c>energy_project_settings</c> (Fachkonzept Stromspeicher 4.2/4.3,

@@ -305,42 +305,66 @@ Der Spotimport der V7-Mappe erfolgte per `XLOOKUP` mit „nächstkleinerem Treff
 Zeitzonenspalten; die Prüfung ergab 99,986 % Übereinstimmung mit der CSV, die fünf Abweichungen liegen
 ausschließlich an den Umstellungsterminen. Im Neubau wird die Umstellung explizit behandelt.
 
-### 4.2 Aufschlagskomponenten
+### 4.2 Strompreis Details — die Zerlegung des Arbeitspreises
 
-Auf den Energiepreis (Quelle a oder b) wird ein Aufschlag addiert. Quelle (c) ist per Default ein Vollpreis; je
-Quelle existiert deshalb das Flag „Aufschlag anwenden". Felder Editierbar/Änderbar
-Umlagen als Summenwert darstellen, details informativ.
+Der Arbeitspreis des Stromträgers wird in seine Anteile **zerlegt**; addiert wird nichts:
 
-| Komponente | Vorschlagswert [ct/kWh] | aktiv |
-|---|---:|:--:|
-| Netzentgelt Arbeit | 6,440 | ✔ |
-| Umlagen (0,446 + 1,559 + 0,941) | 2,946 | ✔ |
-| **Stromsteuer** | **2,050 (Regelfall) / 0,050 (reduziert)** | ✔ |
-| Konzessionsabgabe | 0,110 | ✔ |
-| Vertrieb | 0,200 | ✔ |
-| **Summe (Regelfall / reduziert)** | **11,746 / 9,746** | |
+```
+Arbeitspreis = Beschaffung + Vertrieb + Arbeitspreis Netz
+               + Stromsteuer + Konzessionsabgabe + Umlagen
+```
 
+Der **Arbeitspreis der Trägerkarte ist die eine Preiswahrheit** für jeden Leser — Wirtschaftlichkeit,
+Speichersimulation mit Preisquelle Fixpreis und Speicherauslegung rechnen mit ihm und mit nichts
+sonst. Die einzige Ausnahme sind die Quellen (a) Spotmarkt und (b) Kostenprofil: Dort **ist** die
+Reihe die Beschaffung, und es fehlen ihr die übrigen Anteile. Nur dort — und nur bei gesetztem
+Variantenschalter „Anteile auf Spot-/Profilpreis aufschlagen" — gilt
+`p_bezug[i]` = Reihenwert + Summe der aktiven Anteile **ohne Beschaffung**.
 
-**Verankerung im Bestand (neu).** Im Kostenmodul existieren ausschließlich `grundpreis`, `arbeitspreis` und
-`leistungspreis` (plus Heizwert, Einheit, Emissionen). Netzentgelt, Umlagen, Stromsteuer, Konzessionsabgabe und
-Vertrieb gibt es weder als Feld noch als Tabelle — der Aufschlagsblock ist **vollständig neu**. Er wird als
-Erweiterung von **`energy_project_settings`** je (`ID_Projekt`, Strom-Carrier) spezifiziert, mit je Komponente
-einem Wert- und einem Aktiv-Feld plus Override-Wert; die Preishistorie bleibt in `energy_price`. Damit gilt
-`p_bezug[i]` = Arbeitspreis (oder Profil-/Spotwert) + Summe der aktiven Aufschläge.
+| Gruppe | Anteil | Vorschlagswert [ct/kWh] |
+|---|---|---:|
+| Beschaffung und Vertrieb | Beschaffung | Rest-Vorschlag: Arbeitspreis − Σ übrige aktive Anteile |
+| | Vertrieb | 0,200 |
+| Netzentgelte | Arbeitspreis Netz | 6,440 |
+| Steuern, Abgaben und Umlagen | **Stromsteuer** | **2,050 (Regelfall) / 0,050 (reduziert)** |
+| | Konzessionsabgabe | 0,110 |
+| | Umlagen (Summe) | 2,946 |
+| | — KWKG-Umlage | 0,446 |
+| | — Offshore-Netzumlage | 0,941 |
+| | — § 19 StromNEV-Umlage | 1,559 |
+| **Summe ohne Beschaffung (Regelfall / reduziert)** | | **11,746 / 9,746** |
 
-**Stromsteuer (Entscheidung).** Änderbares Feld mit zwei Voreinstellungen: **2,05 ct/kWh im Regelfall** und
-**0,05 ct/kWh für energieintensive Unternehmen mit Stromsteuerreduktion**. Damit ist der Widerspruch der
-V7-Mappe erklärt: Der Parameterblock führte 0,05 ct/kWh, die Variantenblätter derselben Mappe 2,05 ct/kWh — es
-handelt sich nicht um einen Tippfehler, sondern um zwei unterschiedliche steuerliche Fälle in einer Datei.
+Die Vorschlagswerte stehen als **Zahl** im Feld, ihr **Aktiv-Schalter aber auf aus**: Ein Anteil,
+den niemand gepflegt hat, trägt 0 bei. Die Umlagen stehen **einmal** — entweder als Summenfeld oder,
+über die Merkspalte „Umlagen aufschlüsseln", als die drei Einzelposten; beides nebeneinander wäre
+eine Doppelzählung.
 
-**Auflösung der Summen-Inkonsistenz.** Die Komponentensumme trifft den in der V7-Mappe verwendeten
-Gesamtaufschlag von 20 ct/kWh auch im Regelfall nicht (11,746 ct/kWh). Zwei Modi lösen das:
+**Verankerung.** Die Anteile liegen an **`energy_project_settings`** je (`ID_Projekt`,
+Strom-Carrier), je Anteil ein Wert- und ein Aktiv-Feld (Schemaschritte 12 und 83); die Preishistorie
+bleibt in `energy_price`. Es gibt **keinen Modus und keinen Gesamtaufschlag**: „ein aktiver Anteil
+vorhanden" sagt alles, was ein Modus sagen könnte, und die Summe der Einzelanteile **ist** der
+Gesamtwert. Die Spalten `Aufschlag_Modus` und `Aufschlag_Override` bleiben ungelesen im Schema
+stehen.
 
-* **„aufgeschlüsselt" (Standard):** Aufschlag = Summe der aktiven Komponenten, Flags und Werte frei setzbar,
-  Summe live angezeigt.
-* **„Gesamtwert (Override)":** Der Anwender trägt einen Gesamtaufschlag ein; die Komponentenliste bleibt sichtbar
-  und informativ, die Differenz wird als **„nicht aufgeschlüsselter Rest"** ausgewiesen (bei 20 ct/kWh:
-  8,254 ct/kWh im Regelfall, 10,254 ct/kWh im reduzierten Fall).
+**Stromsteuer.** Änderbares Feld mit zwei Schnellwahlsätzen aus dem Gesetzeskatalog:
+**2,05 ct/kWh im Regelfall** (§ 3 StromStG) und **0,05 ct/kWh für energieintensive Unternehmen mit
+Stromsteuerreduktion** (§ 9b StromStG). Damit ist auch der Widerspruch der V7-Mappe erklärt: Der
+Parameterblock führte 0,05 ct/kWh, die Variantenblätter derselben Mappe 2,05 ct/kWh — zwei
+steuerliche Fälle in einer Datei, kein Tippfehler.
+
+**Quelle der Vorschlagswerte.** KWKG-Umlage, Offshore-Netzumlage und § 19-StromNEV-Umlage stehen als
+Katalogwerte mit **Stichjahr 2026** in `Tab_Gesetzesparameter` (Klasse `UMLAGEN`), Quelle „Angabe des
+Anwenders vom 17.09.2026, Umlagen 2026 laut Veröffentlichung der Übertragungsnetzbetreiber"; ihre
+Summe 2,946 ct/kWh ist wertgleich dem früheren Summenwert. Ebenso im Katalog: beide
+Stromsteuersätze. Die gleichnamigen Konstanten im `StromAufschlagModel` sind ausdrücklich
+**Rückfallebene**, nicht Quelle, und werden von einer Wache wertgleich gehalten. Netzentgelt Arbeit,
+Konzessionsabgabe und Vertrieb bleiben Vorschlagswerte des Modells — sie sind Marktgrößen, kein
+gesetzlicher Satz.
+
+**Die Kohärenzzeile statt einer Restzeile.** Der Block stellt die Summe der aktiven Anteile neben den
+Arbeitspreis der Karte und nennt die Differenz („nicht aufgeschlüsselter Rest"); ein negativer Rest
+wird ausgewiesen, nicht geglättet. Der Knopf **„In Arbeitspreis übernehmen"** trägt die Summe in das
+Arbeitspreisfeld der Karte ein — gespeichert wird sie wie jede andere Preisangabe mit „Speichern".
 
 ### 4.3 Vergütung
 

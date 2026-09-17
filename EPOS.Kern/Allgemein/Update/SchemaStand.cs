@@ -130,11 +130,20 @@ namespace WindowsFormsApplication1
         /// <see cref="SchemaKatalog.Schritt82_KaskadeGepflegt"/>. Der Schritt ist
         /// ergebnisneutral: Er legt eine Spalte an und schreibt keinen Wert; im ganzen
         /// Bestand steht dort 0, und 0 heisst „wie bisher".
+        /// Mit den STROMPREIS-DETAILS (Schritt 83, Anwenderentscheide SP-E-2/SP-E-3 vom
+        /// 17.09.2026) steht das Ziel auf <b>83</b>: <c>energy_project_settings</c>
+        /// bekommt die Beschaffung, die drei Einzelumlagen und die Merkspalte
+        /// „Umlagen aufschlüsseln" (<see cref="SchemaKatalog.Schritt83_Strompreisdetails"/>),
+        /// und der bis dahin wirksame Aufschlag wird in den Arbeitspreis gefaltet
+        /// (<see cref="StrompreisZerlegung"/>). Der Schritt ändert Daten, aber kein
+        /// Ergebnis: Nach der Faltung ist die Summe der Anteile der Arbeitspreis und die
+        /// Summe ohne Beschaffung der bisherige Aufschlag — jede Preisreihe bleibt, wie
+        /// sie war, der Referenzlauf byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 82;
+        public const int Zielversion = 83;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

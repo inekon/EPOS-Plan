@@ -148,7 +148,10 @@ Protokoll unter
 **`2026-09-16_R8_Heizkessel_Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 82**). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
+(**Schemastand 83**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
+unverändert weiter — Schritt 83 faltet den Strom-Aufschlag in den Arbeitspreis und ist
+dabei ergebnisneutral, der Lauf ist vor und nach dem Datenschritt byte-gleich). Gegen
+diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung
 zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
 

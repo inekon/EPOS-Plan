@@ -2059,6 +2059,13 @@ namespace WindowsFormsApplication1
         /// Werte, Degression, Abschläge, § 51/§ 51a, Kappung.</summary>
         public const string GESETZ_KLASSE_EEG = "EEG";
 
+        /// <summary>
+        /// Umlagen auf den Arbeitspreis des Strombezugs (KWKG, Offshore-Netzumlage,
+        /// § 19 StromNEV) — die drei Summanden der Gruppe „Steuern, Abgaben und
+        /// Umlagen" in den Strompreis-Details (SP-E-3-Q1).
+        /// </summary>
+        public const string GESETZ_KLASSE_UMLAGEN = "UMLAGEN";
+
         // =====================================================================
         // EEG-Photovoltaik — Schlüssel der Klasse EEG (Etappe P2, Saat-Generation 5)
         //   Persistenzwerte, eingefroren (Drei-Schichten-Regel).
@@ -2505,27 +2512,32 @@ namespace WindowsFormsApplication1
         /// [ct/kWh oder EUR/MWh], die zweite Schnellwahl des Aufschlagsblocks
         /// (<c>ucStromAufschlaege</c>).
         ///
-        /// <para><b>Diese Zeile wird bewusst NICHT eingesaet.</b> B4 loest die
-        /// Konstanten in <c>StromAufschlagModel</c> als QUELLE ab (Befund A7), ohne eine
-        /// neue Zahl zu behaupten. Ein Restsatz nach § 9b ist kein eigener gesetzlicher
-        /// Steuersatz, sondern das, was nach der Entlastung stehen bleibt — und die
-        /// Leitentscheidung L4 verbietet ausdruecklich, ihn als Differenz aus
-        /// <see cref="GESETZ_STROMST_REGELSATZ"/> und
-        /// <see cref="GESETZ_STROMST_ENTLASTUNG_9B"/> zu RATEN. Solange niemand einen
-        /// belegten Satz pflegt, greift deshalb die Rueckfallebene
-        /// <c>StromAufschlagModel.STROMSTEUER_REDUZIERT</c> (0,050 ct/kWh).</para>
-        ///
-        /// <para><b>Nachpflege ohne Schemaschritt.</b> Wer den Satz belegen kann, legt
-        /// die Zeile in „Gesetzliche Parameter" (<c>Form_Gesetzesparameter</c>, Knopf
-        /// „Neu") mit Klasse <see cref="GESETZ_KLASSE_STROMSTEUER"/> und Einheit
-        /// <see cref="GESETZ_EINHEIT_CT_KWH"/> oder <see cref="GESETZ_EINHEIT_EUR_MWH"/>
-        /// an; die Schnellwahl liest sie ab dem naechsten Oeffnen des Traegerdialogs.
-        /// Der Schluessel steht hier, damit dieser Lesepfad ueberhaupt existiert —
-        /// eine leere Katalogzeile waere sonst wirkungslos.</para>
+        /// <para><b>Eingesaet mit Saatgeneration 5</b> (Anwenderangabe vom 17.09.2026,
+        /// Restpunkt S-6): 0,50 EUR/MWh = 0,050 ct/kWh — wertgleich der bisherigen
+        /// Rueckfallebene <c>StromAufschlagModel.STROMSTEUER_REDUZIERT</c>, die damit
+        /// nur noch greift, wenn der Katalog fuer das Bilanzjahr nichts liefert. Der
+        /// Satz ist ANGEGEBEN, nicht aus <see cref="GESETZ_STROMST_REGELSATZ"/> minus
+        /// <see cref="GESETZ_STROMST_ENTLASTUNG_9B"/> gerechnet — Leitentscheidung L4
+        /// verbietet ausdruecklich, ihn als Differenz zu RATEN.</para>
         ///
         /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
         /// </summary>
         public const string GESETZ_STROMST_REDUZIERT = "STROMST_REDUZIERT_SATZ";
+
+        // -------------------------------------------------- Schluessel Umlagen
+        //   Die drei Umlagen auf den Arbeitspreis des Strombezugs, die bis
+        //   SP-E-3-Q1 namenlos im Summenwert 2,946 ct/kWh steckten. Sie sind
+        //   Katalogwerte mit Stichjahr; eine Aenderung ist eine NEUE Jahreszeile.
+        //   Klasse GESETZ_KLASSE_UMLAGEN, Einheit GESETZ_EINHEIT_CT_KWH.
+
+        /// <summary>KWKG-Umlage [ct/kWh]. Persistenzwert, eingefroren.</summary>
+        public const string GESETZ_UMLAGE_KWKG = "UMLAGE_KWKG";
+
+        /// <summary>Offshore-Netzumlage [ct/kWh]. Persistenzwert, eingefroren.</summary>
+        public const string GESETZ_UMLAGE_OFFSHORE = "UMLAGE_OFFSHORE";
+
+        /// <summary>§ 19 StromNEV-Umlage [ct/kWh]. Persistenzwert, eingefroren.</summary>
+        public const string GESETZ_UMLAGE_STROMNEV19 = "UMLAGE_STROMNEV19";
 
         // ----------------------------------------------- Schluessel Energiesteuer
         //   Grundlagen, Abschnitt 3. EINHEITENFALLE: Erdgas je MWh, Heizoel je

@@ -81,11 +81,24 @@ Ist in der Tabelle ''Investitionskosten je Anlage'' eine Zeile gewählt, öffnet
 * {{Anker|fehlende-werte}}'''Fehlende Werte''' – trägt der gewählte Energieträger keinen Arbeitspreis, keinen Leistungspreis oder keinen CO₂-Wert, sagt die Karte es dort, wo der Wert gepflegt wird: die Preise im Reiter ''Preise & Umrechnung'', den CO₂-Wert im Reiter ''Emissionen''. Der Hinweis sperrt nichts – ein Träger ohne diese Werte lässt sich anlegen und speichern, und ''Speichern'' nennt die offenen Punkte erneut. Für die Wirtschaftlichkeitsrechnung muss der Arbeitspreis gesetzt sein; ohne CO₂-Wert rechnet die Emissionsbilanz diesen Träger mit 0.
 * {{Anker|wert-aus-kategorie}}'''Wert aus der Kategorie übernehmen''' – neben dem Hinweis steht der Weg, den fehlenden Wert von einem Energieträger derselben Kategorie zu leihen. Kategorie ist die Brennstoffkategorie des Trägers – Strom, gasförmige, flüssige und feste Brennstoffe, Wärme, tierische Fette –; die Gruppe darin darf eine andere sein. Der Weg legt die Träger dieser Kategorie vor, die den Wert tragen, jeden mit seinem Wert und dessen Einheit; daraus wird einer gewählt und bestätigt. Auch bei einem einzigen Vorschlag wird gefragt: Ohne Bestätigung wird nichts geschrieben. Trägt kein Träger der Kategorie den gesuchten Wert, sagt der Weg das und bietet nichts an.
 *: Einen '''Preis''' stellen nur Träger mit derselben Abrechnungseinheit, einen Leistungspreis zusätzlich nur solche mit demselben Modus (Jahr oder Monat); der CO₂-Faktor steht bei allen Trägern in g/kWh. Der übernommene Wert gilt im '''Projekt''', nicht im Katalog – andere Projekte bleiben unberührt. Unter dem Feld steht danach die Herleitung: welcher Wert von welchem Energieträger stammt.
-* {{Anker|aufschlaege}}'''Aufschläge auf den Strombezugspreis''' – bei einem Stromträger steht unter den Preisfeldern ein eigener Block. Er bietet drei Möglichkeiten zur Wahl:
-** '''kein Aufschlag''' – die Vorbelegung. Der Bezugspreis ist der Arbeitspreis; es wird nichts aufgeschlagen.
-** '''Gesamtwert''' – ein einziger Aufschlag in ct/kWh im Feld ''Gesamtaufschlag''. Unter der Summenzeile steht, um wie viel dieser Wert über oder unter der Summe der Komponenten liegt; beides ist zulässig.
-** '''aufgeschlüsselt''' – die fünf Komponenten ''Netzentgelt Arbeit'', ''Umlagen'', ''Stromsteuer'', ''Konzessionsabgabe'' und ''Vertrieb'' mit je einem Wert und einem Schalter. Der wirksame Aufschlag ist die Summe der eingeschalteten Komponenten. Zwei Knöpfe neben der Stromsteuer tragen den Regelsatz beziehungsweise den ermäßigten Satz des Bilanzjahres ein; hervorgehoben ist der Satz, der zur Unternehmensart des Projekts passt.
-*: In den beiden ersten Modi bleiben die Komponenten sichtbar und lesbar, sie rechnen nur nicht. Die Zeile ''Summe der aktiven Komponenten'' nennt daneben stets den wirksamen Aufschlag. Ob der Aufschlag auch in die Wirtschaftlichkeitsrechnung eingeht, entscheidet der Schalter unter dem Block; die Speicher- und Preisrechnung verwendet ihn unabhängig davon.
+* {{Anker|aufschlaege}}'''Strompreis Details''' – bei einem Stromträger steht unter den Preisfeldern ein einklappbarer Block. Er zerlegt den Arbeitspreis in seine Anteile; aufgeschlagen wird nichts. Auch eingeklappt nennt seine Kopfzeile die Summe der Anteile. Die Anteile stehen in drei Gruppen:
+** '''Beschaffung und Vertrieb''' – ''Beschaffung'' und ''Vertrieb''. Solange die Beschaffung leer ist, bietet ein Knopf den Rest an: Arbeitspreis abzüglich der übrigen eingeschalteten Anteile. Eingetragen wird er erst auf Klick.
+** '''Netzentgelte''' – ''Arbeitspreis Netz''.
+** '''Steuern, Abgaben und Umlagen''' – ''Stromsteuer'', ''Konzessionsabgabe'' und ''Umlagen''. Zwei Knöpfe neben der Stromsteuer tragen den Regelsatz beziehungsweise den ermäßigten Satz des Bilanzjahres ein; hervorgehoben ist der Satz, der zur Unternehmensart des Projekts passt. Der Schalter ''Umlagen aufschlüsseln'' ersetzt das Summenfeld durch die drei Einzelumlagen ''KWKG-Umlage'', ''Offshore-Netzumlage'' und ''§ 19 StromNEV-Umlage''; ihre Summe ist dann der Umlagenwert.
+*: Jeder Anteil hat einen Wert und einen Schalter. Nur eingeschaltete Anteile zählen; ein Feld ohne Schalter ist ein Vorschlag und rechnet nicht mit. Unter den Gruppen stehen die ''Summe der Anteile'', der Arbeitspreis der Trägerkarte zum Vergleich und der nicht aufgeschlüsselte Rest – ein negativer Rest wird ausgewiesen, nicht geglättet. Der Knopf ''In Arbeitspreis übernehmen'' trägt die Summe in das Arbeitspreisfeld ein; gespeichert wird sie wie jede andere Preisangabe mit ''Speichern''.
+*: Die gesetzlichen Umlagen des Stichjahres 2026 und das Vorjahr:
+*: {| class="wikitable"
+*: ! Umlage !! 2025 [ct/kWh] !! 2026 [ct/kWh]
+*: |-
+*: | KWKG-Umlage || 0,277 || 0,446
+*: |-
+*: | Offshore-Netzumlage || 0,816 || 0,941
+*: |-
+*: | § 19 StromNEV-Umlage || 1,558 || 1,559
+*: |-
+*: | Summe || 2,651 || 2,946
+*: |}
+*: Bei den Preisquellen ''Spotmarkt'' und ''Kostenprofil'' ist die Preisreihe selbst die Beschaffung. Dort kommen die übrigen eingeschalteten Anteile auf die Reihe, sofern die Speichervariante es verlangt; beim Fixpreis kommt nichts hinzu, weil der Arbeitspreis die Anteile bereits enthält.
 * {{Anker|traeger-je-anlage}}'''Träger je Anlage''' – in den Dialogen [[Programm Dokumentation/Wärmepumpe#energietraeger|Wärmepumpe]], [[Programm Dokumentation/Photovoltaik#energietraeger|Photovoltaik]] und [[Programm Dokumentation/Stromspeicher#energietraeger|Stromspeicher]] wird der Träger der einzelnen Anlage in zwei Stufen gewählt: ''Energieträger'' benennt die Gruppe (etwa Strom), ''Art'' den Träger dieser Gruppe (etwa Elektrische Energie). Angeboten werden nur die Gruppen, die zur Anlage passen – bei diesen drei Anlagen also die Gruppe Strom. Vorbelegt ist der Stromträger des Projekts. Preis, Aufschläge und Emissionsfaktor des Strombezugs folgen dieser Wahl.
 
 == Nutzungsdauern (AfA) ==

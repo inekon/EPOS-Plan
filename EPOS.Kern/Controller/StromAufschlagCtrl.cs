@@ -6,9 +6,16 @@ using SpeicherEngine;
 namespace WindowsFormsApplication1
 {
     // ---------------------------------------------------------------------------
-    // Zugriff auf den Aufschlagsblock und die Verguetungssaetze in
-    // energy_project_settings (Fachkonzept Stromspeicher 4.2/4.3, Arbeitspaket AP4;
-    // Spalten aus SchemaMigration Schritt 12a).
+    // Zugriff auf die Preiszerlegung „Strompreis Details" und die Verguetungssaetze in
+    // energy_project_settings (Fachkonzept Stromspeicher 4.2/4.3; Spalten aus
+    // SchemaMigration Schritt 12a und 83).
+    //
+    // BEDEUTUNG SEIT SP-E-2: Die Anteile ZERLEGEN den Arbeitspreis, sie schlagen nicht
+    // mehr auf ihn auf. Der Controller liefert deshalb zwei Summen und keinen
+    // "wirksamen Aufschlag" mehr:
+    //
+    //   AlsAufschlagssatz(m).SummeAktivCtKwh                 gegen den Arbeitspreis
+    //   AlsAufschlagssatz(m).SummeAktivOhneCtKwh(BESCHAFFUNG) auf eine Spot-/Profilreihe
     //
     // Durchgaengig NAMENSBASIERT mit Columns.Contains-Wache: Auf einer Datenbank, deren
     // Migration noch nicht durchgelaufen ist, liefert der Controller die Vorbelegung des
@@ -27,22 +34,32 @@ namespace WindowsFormsApplication1
         /// <summary>Preismodell-Code des Strom-Carriers in <c>pricing_model</c>.</summary>
         public const string PRICING_MODEL_STROM = "ELECTRICITY";
 
-        // --- Sprachneutrale Komponentenschluessel (Schicht 2 der Drei-Schichten-Regel) ---
+        // --- Sprachneutrale Anteilsschluessel (Schicht 2 der Drei-Schichten-Regel) ---
         //
         // Sie verbinden die Datenbankspalte, den Engine-Satz und den Anzeigetext, ohne
         // selbst Anzeigetext zu sein. Die Beschriftung holt die Oberflaeche ueber
         // MyResource.Resource.PREIS_KOMP_*.
 
+        public const string KOMP_BESCHAFFUNG = "BESCHAFFUNG";
+        public const string KOMP_VERTRIEB = "VERTRIEB";
         public const string KOMP_NETZENTGELT = "NETZENTGELT";
-        public const string KOMP_UMLAGEN = "UMLAGEN";
         public const string KOMP_STROMSTEUER = "STROMSTEUER";
         public const string KOMP_KONZESSION = "KONZESSION";
-        public const string KOMP_VERTRIEB = "VERTRIEB";
+        public const string KOMP_UMLAGEN = "UMLAGEN";
+        public const string KOMP_UMLAGE_KWKG = "UMLAGE_KWKG";
+        public const string KOMP_UMLAGE_OFFSHORE = "UMLAGE_OFFSHORE";
+        public const string KOMP_UMLAGE_STROMNEV19 = "UMLAGE_STROMNEV19";
 
-        /// <summary>Die fuenf Komponenten in Anzeigereihenfolge (Fachkonzept 4.2).</summary>
+        /// <summary>
+        /// Die Anteile in Anzeigereihenfolge - drei Gruppen (Beschaffung und Vertrieb;
+        /// Netzentgelte; Steuern, Abgaben und Umlagen). Die drei Einzelumlagen stehen
+        /// hier NICHT: Sie treten an die Stelle des Summenfelds, wenn
+        /// <c>Umlagen_Einzeln</c> gesetzt ist, und nie neben ihm.
+        /// </summary>
         public static readonly string[] KOMPONENTEN =
         {
-            KOMP_NETZENTGELT, KOMP_UMLAGEN, KOMP_STROMSTEUER, KOMP_KONZESSION, KOMP_VERTRIEB
+            KOMP_BESCHAFFUNG, KOMP_VERTRIEB, KOMP_NETZENTGELT,
+            KOMP_STROMSTEUER, KOMP_KONZESSION, KOMP_UMLAGEN
         };
 
         // =====================================================================
@@ -50,43 +67,36 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Legt die Aufschlagsspalten an, falls die Migration noch nicht gelaufen ist -
-        /// die tolerante Rueckfallebene nach dem Muster
+        /// Legt die Spalten der Preiszerlegung an, falls die Migration noch nicht
+        /// gelaufen ist - die tolerante Rueckfallebene nach dem Muster
         /// <c>ErgebnisCtrl.StelleKesselSpaltenSicher</c>.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// Bewusst OHNE Vorbelegung: Die Vorschlagswerte setzt Migrationsschritt 12d.
-        /// Hier entstehen nur die Spalten, damit ein Lesezugriff nicht scheitert; die
-        /// Leseseite faellt dann auf die Vorgaben des <see cref="StromAufschlagModel"/>
-        /// zurueck - dieselben Zahlen.
+        /// Bewusst OHNE Vorbelegung und OHNE Faltung: Hier entstehen nur die Spalten,
+        /// damit ein Lesezugriff nicht scheitert; die Leseseite faellt dann auf die
+        /// Vorgaben des <see cref="StromAufschlagModel"/> zurueck. Die Faltung des
+        /// Bestands gehoert in den Migrationsschritt 83
+        /// (<see cref="StrompreisZerlegung"/>) - sie aendert Geldwerte und darf nicht
+        /// beilaeufig beim Oeffnen eines Dialogs laufen.
         /// </para>
         /// <para>
         /// <b>JE TABELLE pruefen.</b> <c>SchemaKatalog.Schritt12_Preismodell</c> fuehrt
-        /// ZWEI Tabellen: die vierzehn Aufschlags- und Verguetungsspalten an
-        /// <c>energy_project_settings</c> und die drei Preisquellen-Verweise an
-        /// <c>Tab_StromspeicherVariante</c>. Wird das Schema nur EINER Tabelle gelesen,
-        /// greift die Existenzpruefung fuer die Spalten der anderen nie - das
-        /// <c>ALTER TABLE</c> lief dann bei jedem Oeffnen der Kostenverwaltung erneut und
-        /// quittierte mit "Field … already exists". Deshalb dasselbe Vorgehen wie in
+        /// ZWEI Tabellen: die vierzehn Spalten an <c>energy_project_settings</c> und die
+        /// drei Preisquellen-Verweise an <c>Tab_StromspeicherVariante</c>. Wird das
+        /// Schema nur EINER Tabelle gelesen, greift die Existenzpruefung fuer die
+        /// Spalten der anderen nie - das <c>ALTER TABLE</c> lief dann bei jedem Oeffnen
+        /// der Kostenverwaltung erneut. Deshalb dasselbe Vorgehen wie in
         /// <c>SchemaMigration.SpaltenAnlegen</c>: Schema je Tabelle, einmal gelesen und
         /// gemerkt.
         /// </para>
         /// <para>
         /// <b>Ohne Dialog.</b> Eine Vorsorge ist kein Bedienschritt - sie darf den
         /// Anwender nicht mit MessageBoxen behelligen. Das DDL laeuft deshalb ueber
-        /// <see cref="StilleDb"/> statt ueber
-        /// <c>DataRepository.ExecuteSQL</c>, das seine Fehler selbst als Dialog zeigt und
-        /// damit am umschliessenden <c>try/catch</c> vorbeikommt. Muster ist
-        /// <c>ErgebnisCtrl.ErgaenzeSpalte</c>. Echte Fehler bleiben sichtbar: Scheitert
-        /// das Anlegen wirklich (Datei schreibgeschuetzt, Datenbank exklusiv geoeffnet),
-        /// meldet der nachfolgende Lese- bzw. Schreibzugriff ueber
+        /// <see cref="StilleDb"/> statt ueber <c>DataRepository.ExecuteSQL</c>, das
+        /// seine Fehler selbst als Dialog zeigt. Echte Fehler bleiben sichtbar:
+        /// Scheitert das Anlegen wirklich, meldet der nachfolgende Zugriff ueber
         /// <see cref="DataRepository"/> ganz regulaer.
-        /// </para>
-        /// <para>
-        /// ARBEITSPAKET S4b: eigene Verbindung -> Zugriffsschicht, Schemaprobe statt
-        /// <c>GetOleDbSchemaTable</c> (S4c vorgezogen), SQLite-Spaltentypen statt
-        /// Access-Typen (S4d vorgezogen).
         /// </para>
         /// </remarks>
         public static void StelleSpaltenSicher()
@@ -97,7 +107,11 @@ namespace WindowsFormsApplication1
                 Dictionary<string, HashSet<string>> schemaJeTabelle =
                     new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
 
-                foreach (SchemaSpalte s in SchemaKatalog.Schritt12_Preismodell)
+                List<SchemaSpalte> alle = new List<SchemaSpalte>();
+                alle.AddRange(SchemaKatalog.Schritt12_Preismodell);
+                alle.AddRange(SchemaKatalog.Schritt83_Strompreisdetails);
+
+                foreach (SchemaSpalte s in alle)
                 {
                     HashSet<string> vorhanden;
                     if (!schemaJeTabelle.TryGetValue(s.Tabelle, out vorhanden))
@@ -116,6 +130,8 @@ namespace WindowsFormsApplication1
                     if (StilleDb.NonQuery(StilleDb.AlterTableAddColumn(
                             s.Tabelle, s.Name, s.TypDefinition)) < 0)
                         Protokoll(s.Tabelle + "." + s.Name + ": Spalte konnte nicht angelegt werden.");
+                    else
+                        vorhanden.Add(s.Name);
                 }
             }
             catch (Exception ex)
@@ -151,7 +167,7 @@ namespace WindowsFormsApplication1
 
             // ET-5 (Anwenderentscheid 08.09.2026): Der an der ANLAGE gewaehlte Stromtraeger
             // (Waermepumpe vor Heizstab vor Speicher vor Photovoltaik) gewinnt, wenn er dem
-            // Projekt zugeordnet ist - Preis, Aufschlaege und Emissionen lesen dieselbe Wahl.
+            // Projekt zugeordnet ist - Preis, Anteile und Emissionen lesen dieselbe Wahl.
             try
             {
                 int gewaehlt = ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(idProjekt);
@@ -174,17 +190,18 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Liest den Aufschlagsblock einer (Projekt, Energietraeger)-Zeile. Fehlt die
+        /// Liest die Preiszerlegung einer (Projekt, Energietraeger)-Zeile. Fehlt die
         /// Zeile oder fehlen die Spalten, kommt ein Modell mit den Vorgabewerten
         /// zurueck und <see cref="StromAufschlagModel.AusDatenbank"/> steht auf false.
         /// </summary>
         /// <remarks>
-        /// <b>Die Vorgabe ist "kein Aufschlag"</b> (Anwenderentscheid 14.09.2026): Eine
-        /// leere Modus-Spalte laesst <see cref="StromAufschlagModel.Modus"/> auf
-        /// <c>SP_AUFSCHLAG_MODUS_KEINER</c> stehen. Die fuenf Komponentenwerte kommen
-        /// weiterhin als VORSCHLAG mit - sie stehen in den Feldern, wirken aber erst im
-        /// Modus "aufgeschluesselt". Eine Zeile, in der ein Modus ausdruecklich steht,
-        /// behaelt ihn.
+        /// <b>NULL heisst „kein Anteil"</b> (dieselbe Regel wie beim Brennstoffblock,
+        /// Konzept § 5.1). Ein nicht gepflegter Wert laesst den VORSCHLAG des Modells in
+        /// der Maske stehen, sein Aktiv-Schalter bleibt aber auf false - die Summe einer
+        /// ungepflegten Zeile ist damit 0. Das loest den E5-Restpunkt „Aktiv-Flags kein
+        /// verlaessliches Aus" und den Restpunkt „Nach #266" in einem: Ein Projekt, an
+        /// dem niemand etwas eingestellt hat, rechnet weder mit 11,746 ct/kWh noch mit
+        /// einem Modus, den niemand gewaehlt hat.
         /// </remarks>
         public StromAufschlagModel Read(int idProjekt, int idEnergietraeger)
         {
@@ -203,27 +220,27 @@ namespace WindowsFormsApplication1
 
             DataRow r = dt.Rows[0];
 
-            // Nur was wirklich gepflegt ist, ueberschreibt die Vorgabe. NULL heisst
-            // "nicht gepflegt" - dann gilt der Vorschlagswert des Fachkonzepts.
+            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG, ref m.Beschaffung, ref m.Beschaffung_Aktiv);
+            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_VERTRIEB, ref m.Vertrieb, ref m.Vertrieb_Aktiv);
             Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_NETZENTGELT, ref m.Netzentgelt, ref m.Netzentgelt_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN, ref m.Umlagen, ref m.Umlagen_Aktiv);
             Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER, ref m.Stromsteuer, ref m.Stromsteuer_Aktiv);
             Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_KONZESSION, ref m.Konzession, ref m.Konzession_Aktiv);
-            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_VERTRIEB, ref m.Vertrieb, ref m.Vertrieb_Aktiv);
+            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN, ref m.Umlagen, ref m.Umlagen_Aktiv);
+            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_KWKG, ref m.Umlage_KWKG, ref m.Umlage_KWKG_Aktiv);
+            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_OFFSHORE, ref m.Umlage_Offshore, ref m.Umlage_Offshore_Aktiv);
+            Komponente(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_STROMNEV19, ref m.Umlage_StromNEV19, ref m.Umlage_StromNEV19_Aktiv);
 
-            Zahl(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_OVERRIDE, ref m.Override);
+            Schalter(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN_EINZELN, ref m.Umlagen_Einzeln);
+
             Zahl(dt, r, SchemaKatalog.SPALTE_VERGUETUNG_PV, ref m.Verguetung_PV);
             Zahl(dt, r, SchemaKatalog.SPALTE_VERGUETUNG_BHKW, ref m.Verguetung_BHKW);
-
-            string modus = Text(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_MODUS);
-            if (modus.Length > 0) m.Modus = modus;
 
             m.AusDatenbank = true;
             return m;
         }
 
         /// <summary>
-        /// Der Aufschlagsblock des Strom-Carriers eines Projekts - die Kurzform, die
+        /// Die Preiszerlegung des Strom-Carriers eines Projekts - die Kurzform, die
         /// Simulation und Ergebnisanzeige brauchen.
         /// </summary>
         public StromAufschlagModel ReadStrom(int idProjekt)
@@ -236,15 +253,20 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Schreibt den Aufschlagsblock zurueck - ein zielgenaues UPDATE ueber
+        /// Schreibt die Preiszerlegung zurueck - ein zielgenaues UPDATE ueber
         /// (Projekt, Energietraeger), das die uebrigen Spalten der Zeile (Arbeitspreis,
         /// Heizwert, Emissionen) nicht anfasst.
         /// </summary>
+        /// <remarks>
+        /// <b>Modus und Gesamtwert werden NICHT mehr geschrieben.</b> Die beiden Spalten
+        /// <c>Aufschlag_Modus</c> und <c>Aufschlag_Override</c> bleiben im Schema
+        /// stehen, rechnen aber nicht mehr mit (Schemaschritt 83). Sie hier weiter zu
+        /// beschreiben hiesse, eine tote Wahrheit zu pflegen.
+        /// </remarks>
         /// <returns>
         /// true, wenn eine Zeile geschrieben wurde. false heisst: Es gibt keine Zeile -
         /// der Energietraeger ist dem Projekt nicht zugeordnet. Angelegt wird sie hier
-        /// NICHT; das ist Sache des Kostenmoduls (<c>ucFuelSettings</c>), das die
-        /// Pflichtfelder kennt.
+        /// NICHT; das ist Sache des Kostenmoduls, das die Pflichtfelder kennt.
         /// </returns>
         public bool Update(StromAufschlagModel m)
         {
@@ -255,30 +277,40 @@ namespace WindowsFormsApplication1
 
             string sql =
                 "UPDATE [" + TABLE + "] SET " +
+                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG) +
+                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_VERTRIEB) +
                 Feld(SchemaKatalog.SPALTE_AUFSCHLAG_NETZENTGELT) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN) +
                 Feld(SchemaKatalog.SPALTE_AUFSCHLAG_STROMSTEUER) +
                 Feld(SchemaKatalog.SPALTE_AUFSCHLAG_KONZESSION) +
-                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_VERTRIEB) +
-                "[" + SchemaKatalog.SPALTE_AUFSCHLAG_MODUS + "] = ?, " +
-                "[" + SchemaKatalog.SPALTE_AUFSCHLAG_OVERRIDE + "] = ?, " +
+                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN) +
+                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_KWKG) +
+                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_OFFSHORE) +
+                Feld(SchemaKatalog.SPALTE_AUFSCHLAG_STROMNEV19) +
+                "[" + SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN_EINZELN + "] = ?, " +
                 "[" + SchemaKatalog.SPALTE_VERGUETUNG_PV + "] = ?, " +
                 "[" + SchemaKatalog.SPALTE_VERGUETUNG_BHKW + "] = ? " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?";
 
             int betroffen = DataRepository.ExecuteNonQuery(sql,
+                new DbParam("@besch", DbParamTyp.Double) { Wert = m.Beschaffung },
+                new DbParam("@beschA", DbParamTyp.Boolean) { Wert = m.Beschaffung_Aktiv },
+                new DbParam("@vt", DbParamTyp.Double) { Wert = m.Vertrieb },
+                new DbParam("@vtA", DbParamTyp.Boolean) { Wert = m.Vertrieb_Aktiv },
                 new DbParam("@netz", DbParamTyp.Double) { Wert = m.Netzentgelt },
                 new DbParam("@netzA", DbParamTyp.Boolean) { Wert = m.Netzentgelt_Aktiv },
-                new DbParam("@uml", DbParamTyp.Double) { Wert = m.Umlagen },
-                new DbParam("@umlA", DbParamTyp.Boolean) { Wert = m.Umlagen_Aktiv },
                 new DbParam("@st", DbParamTyp.Double) { Wert = m.Stromsteuer },
                 new DbParam("@stA", DbParamTyp.Boolean) { Wert = m.Stromsteuer_Aktiv },
                 new DbParam("@kz", DbParamTyp.Double) { Wert = m.Konzession },
                 new DbParam("@kzA", DbParamTyp.Boolean) { Wert = m.Konzession_Aktiv },
-                new DbParam("@vt", DbParamTyp.Double) { Wert = m.Vertrieb },
-                new DbParam("@vtA", DbParamTyp.Boolean) { Wert = m.Vertrieb_Aktiv },
-                new DbParam("@modus", DbParamTyp.VarWChar) { Wert = m.Modus ?? DbWerte.SP_AUFSCHLAG_MODUS_KEINER },
-                new DbParam("@over", DbParamTyp.Double) { Wert = m.Override },
+                new DbParam("@uml", DbParamTyp.Double) { Wert = m.Umlagen },
+                new DbParam("@umlA", DbParamTyp.Boolean) { Wert = m.Umlagen_Aktiv },
+                new DbParam("@kwkg", DbParamTyp.Double) { Wert = m.Umlage_KWKG },
+                new DbParam("@kwkgA", DbParamTyp.Boolean) { Wert = m.Umlage_KWKG_Aktiv },
+                new DbParam("@offs", DbParamTyp.Double) { Wert = m.Umlage_Offshore },
+                new DbParam("@offsA", DbParamTyp.Boolean) { Wert = m.Umlage_Offshore_Aktiv },
+                new DbParam("@nev", DbParamTyp.Double) { Wert = m.Umlage_StromNEV19 },
+                new DbParam("@nevA", DbParamTyp.Boolean) { Wert = m.Umlage_StromNEV19_Aktiv },
+                new DbParam("@einzeln", DbParamTyp.Boolean) { Wert = m.Umlagen_Einzeln },
                 new DbParam("@vpv", DbParamTyp.Double) { Wert = m.Verguetung_PV },
                 new DbParam("@vbhkw", DbParamTyp.Double) { Wert = m.Verguetung_BHKW },
                 new DbParam("@proj", DbParamTyp.Integer) { Wert = m.ID_Projekt },
@@ -288,7 +320,7 @@ namespace WindowsFormsApplication1
             return betroffen > 0;
         }
 
-        /// <summary>Wert- und Aktiv-Spalte einer Komponente als SET-Fragment.</summary>
+        /// <summary>Wert- und Aktiv-Spalte eines Anteils als SET-Fragment.</summary>
         private static string Feld(string spalte)
         {
             return "[" + spalte + "] = ?, [" + spalte + SchemaKatalog.SPALTE_AUFSCHLAG_AKTIV_SUFFIX + "] = ?, ";
@@ -299,46 +331,66 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Bildet den Aufschlagsblock auf den Engine-Satz ab (Fachkonzept 4.2). Ab hier
-        /// rechnet ausschliesslich die Engine - Summe, wirksamer Wert und der nicht
-        /// aufgeschluesselte Rest stehen dort und sind headless getestet.
+        /// Bildet die Preiszerlegung auf den Engine-Satz ab. Ab hier rechnet
+        /// ausschliesslich die Engine - beide Summen stehen dort und sind headless
+        /// getestet.
         /// </summary>
+        /// <remarks>
+        /// <b>Die Umlagen kommen EINMAL vor.</b> Steht
+        /// <see cref="StromAufschlagModel.Umlagen_Einzeln"/>, treten KWKG-, Offshore-
+        /// und § 19-StromNEV-Umlage an die Stelle des Summenfelds; sonst zaehlt allein
+        /// das Summenfeld. Beides zugleich waere eine Doppelzaehlung.
+        /// </remarks>
         public static Aufschlagssatz AlsAufschlagssatz(StromAufschlagModel m)
         {
             if (m == null) throw new ArgumentNullException(nameof(m));
 
             List<Aufschlagskomponente> k = new List<Aufschlagskomponente>
             {
+                new Aufschlagskomponente(KOMP_BESCHAFFUNG, m.Beschaffung, m.Beschaffung_Aktiv),
+                new Aufschlagskomponente(KOMP_VERTRIEB, m.Vertrieb, m.Vertrieb_Aktiv),
                 new Aufschlagskomponente(KOMP_NETZENTGELT, m.Netzentgelt, m.Netzentgelt_Aktiv),
-                new Aufschlagskomponente(KOMP_UMLAGEN, m.Umlagen, m.Umlagen_Aktiv),
                 new Aufschlagskomponente(KOMP_STROMSTEUER, m.Stromsteuer, m.Stromsteuer_Aktiv),
-                new Aufschlagskomponente(KOMP_KONZESSION, m.Konzession, m.Konzession_Aktiv),
-                new Aufschlagskomponente(KOMP_VERTRIEB, m.Vertrieb, m.Vertrieb_Aktiv)
+                new Aufschlagskomponente(KOMP_KONZESSION, m.Konzession, m.Konzession_Aktiv)
             };
 
-            return new Aufschlagssatz(k, Modus(m.Modus), m.Override);
+            if (m.Umlagen_Einzeln)
+            {
+                k.Add(new Aufschlagskomponente(KOMP_UMLAGE_KWKG, m.Umlage_KWKG, m.Umlage_KWKG_Aktiv));
+                k.Add(new Aufschlagskomponente(KOMP_UMLAGE_OFFSHORE, m.Umlage_Offshore, m.Umlage_Offshore_Aktiv));
+                k.Add(new Aufschlagskomponente(KOMP_UMLAGE_STROMNEV19, m.Umlage_StromNEV19, m.Umlage_StromNEV19_Aktiv));
+            }
+            else
+            {
+                k.Add(new Aufschlagskomponente(KOMP_UMLAGEN, m.Umlagen, m.Umlagen_Aktiv));
+            }
+
+            return new Aufschlagssatz(k);
         }
 
         /// <summary>
-        /// Der Persistenztext der Modus-Spalte als Engine-Modus (Fachkonzept 4.2).
+        /// Der Umlagenwert, der zaehlt [ct/kWh]: das Summenfeld, oder die Summe der drei
+        /// AKTIVEN Einzelumlagen, wenn sie einzeln gepflegt werden. Die Maske zeigt ihn
+        /// im Kopf der Gruppe.
         /// </summary>
-        /// <remarks>
-        /// <b>Nur die zwei ausdruecklichen Texte zaehlen.</b> Alles andere - leer,
-        /// <c>null</c>, ein unbekannter Bestandswert - ist "nicht gewaehlt" und heisst
-        /// <see cref="AufschlagsModus.Keiner"/>: kein Aufschlag. Die Leseseite setzt
-        /// denselben Vorgabewert, wenn die Zeile fehlt (Anwenderentscheid 14.09.2026).
-        /// </remarks>
-        public static AufschlagsModus Modus(string modusText)
+        public static double UmlagenCtKwh(StromAufschlagModel m)
         {
-            if (string.Equals(modusText, DbWerte.SP_AUFSCHLAG_MODUS_GESAMTWERT,
-                              StringComparison.Ordinal))
-                return AufschlagsModus.Gesamtwert;
+            if (m == null) throw new ArgumentNullException(nameof(m));
+            if (!m.Umlagen_Einzeln) return m.Umlagen_Aktiv ? m.Umlagen : 0.0;
 
-            if (string.Equals(modusText, DbWerte.SP_AUFSCHLAG_MODUS_AUFGESCHLUESSELT,
-                              StringComparison.Ordinal))
-                return AufschlagsModus.Aufgeschluesselt;
+            return (m.Umlage_KWKG_Aktiv ? m.Umlage_KWKG : 0.0)
+                 + (m.Umlage_Offshore_Aktiv ? m.Umlage_Offshore : 0.0)
+                 + (m.Umlage_StromNEV19_Aktiv ? m.Umlage_StromNEV19 : 0.0);
+        }
 
-            return AufschlagsModus.Keiner;
+        /// <summary>
+        /// Der Satz, der auf eine Spot- oder Profilreihe gehoert [ct/kWh]: die Summe der
+        /// aktiven Anteile OHNE Beschaffung - denn die Reihe IST die Beschaffung
+        /// (Fachkonzept 4.1 a/b).
+        /// </summary>
+        public static double SummeOhneBeschaffungCtKwh(StromAufschlagModel m)
+        {
+            return AlsAufschlagssatz(m).SummeAktivOhneCtKwh(KOMP_BESCHAFFUNG);
         }
 
         // =====================================================================
@@ -346,16 +398,16 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Uebernimmt Wert UND Aktiv-Schalter einer Komponente - aber nur, wenn der
-        /// WERT gepflegt ist.
+        /// Uebernimmt Wert UND Aktiv-Schalter eines Anteils - aber nur, wenn der WERT
+        /// gepflegt ist.
         /// </summary>
         /// <remarks>
-        /// <b>Warum der Wert ueber den Schalter entscheidet.</b> Access kennt fuer YESNO
-        /// kein NULL: Eine per <c>ADD COLUMN … YESNO</c> angelegte Spalte steht in jeder
-        /// bestehenden Zeile sofort auf <c>False</c>. Wuerde der Schalter fuer sich
-        /// gelesen, staende jede Zeile, deren Spalten die stille Rueckfallebene angelegt
-        /// hat (ohne Migrationsschritt 12d), auf "alle Komponenten inaktiv" - und der
-        /// Aufschlag waere stillschweigend 0. Der DOUBLE-Wert dagegen ist NULL, solange
+        /// <b>Warum der Wert ueber den Schalter entscheidet.</b> Eine per
+        /// <c>ADD COLUMN … YESNO</c> angelegte Spalte steht in jeder bestehenden Zeile
+        /// sofort auf 0. Wuerde der Schalter fuer sich gelesen, staende jede Zeile, deren
+        /// Spalten die stille Rueckfallebene angelegt hat, auf „alle Anteile inaktiv" -
+        /// was hier zwar richtig waere, aber auch eine gepflegte Zeile traefe, deren
+        /// Wert die Migration erst noch anlegt. Der DOUBLE-Wert dagegen ist NULL, solange
         /// nichts gepflegt wurde, und ist damit das verlaessliche Kennzeichen. Ist er
         /// gepflegt, ist auch der Schalter gepflegt.
         /// </remarks>
@@ -365,7 +417,7 @@ namespace WindowsFormsApplication1
             if (!dt.Columns.Contains(spalte)) return;
 
             object v = r[spalte];
-            if (v == null || v == DBNull.Value) return;   // nicht gepflegt -> Vorgabe bleibt
+            if (v == null || v == DBNull.Value) return;   // nicht gepflegt -> Vorschlag bleibt, inaktiv
 
             wert = Convert.ToDouble(v);
 
@@ -390,11 +442,13 @@ namespace WindowsFormsApplication1
             ziel = Convert.ToDouble(v);
         }
 
-        private static string Text(DataTable dt, DataRow r, string spalte)
+        /// <summary>Uebernimmt einen Ja/Nein-Wert, wenn Spalte UND Wert vorhanden sind.</summary>
+        private static void Schalter(DataTable dt, DataRow r, string spalte, ref bool ziel)
         {
-            if (!dt.Columns.Contains(spalte)) return "";
+            if (!dt.Columns.Contains(spalte)) return;
             object v = r[spalte];
-            return (v == null || v == DBNull.Value) ? "" : v.ToString();
+            if (v == null || v == DBNull.Value) return;
+            ziel = Convert.ToBoolean(v);
         }
     }
 }

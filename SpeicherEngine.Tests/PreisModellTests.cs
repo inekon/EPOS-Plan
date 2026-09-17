@@ -262,34 +262,47 @@ namespace SpeicherEngine.Tests
         }
 
         // =================================================================
-        // Aufschlagssatz (Fachkonzept 4.2)
+        // Aufschlagssatz - die ZERLEGUNG des Preises (SP-E-2, 17.09.2026)
         // =================================================================
 
-        /// <summary>Der Regelfall des Fachkonzepts 4.2: Summe 11,746 ct/kWh.</summary>
-        private static Aufschlagssatz Regelfall(AufschlagsModus modus = AufschlagsModus.Aufgeschluesselt,
-                                                double overrideWert = 0.0)
+        /// <summary>
+        /// Der Regelfall: Beschaffung 26,254 plus die fuenf uebrigen Anteile
+        /// (zusammen 11,746) ergibt einen Arbeitspreis von 38,0 ct/kWh - die
+        /// Zahlen des Referenzprojekts 1017 nach der Faltung.
+        /// </summary>
+        private static Aufschlagssatz Regelfall(bool beschaffungAktiv = true)
         {
             return new Aufschlagssatz(new[]
             {
+                new Aufschlagskomponente("BESCHAFFUNG", 26.254, beschaffungAktiv),
+                new Aufschlagskomponente("VERTRIEB",     0.200, true),
                 new Aufschlagskomponente("NETZENTGELT",  6.440, true),
-                new Aufschlagskomponente("UMLAGEN",      2.946, true),
                 new Aufschlagskomponente("STROMSTEUER",  2.050, true),
                 new Aufschlagskomponente("KONZESSION",   0.110, true),
-                new Aufschlagskomponente("VERTRIEB",     0.200, true)
-            }, modus, overrideWert);
+                new Aufschlagskomponente("UMLAGEN",      2.946, true)
+            });
         }
 
         [Fact]
-        public void Komponentensumme_Trifft_Den_Regelfall_Des_Fachkonzepts()
+        public void Die_Summe_Der_Anteile_Ist_Der_Arbeitspreis()
         {
-            Assert.Equal(11.746, Regelfall().SummeAktivCtKwh, 9);
-            Assert.Equal(11.746, Regelfall().WirksamCtKwh, 9);
-            Assert.Equal(0.0, Regelfall().NichtAufgeschluesselterRestCtKwh);
+            Assert.Equal(38.0, Regelfall().SummeAktivCtKwh, 9);
+        }
+
+        /// <summary>
+        /// Die Summe OHNE Beschaffung ist der Satz, der auf eine Spot- oder
+        /// Profilreihe gehoert - und wertgleich dem Aufschlag, mit dem der
+        /// Bestand bis SP-W2/W3 gerechnet hat: 11,746 ct/kWh.
+        /// </summary>
+        [Fact]
+        public void Die_Summe_Ohne_Beschaffung_Ist_Der_Satz_Auf_Die_Spotreihe()
+        {
+            Assert.Equal(11.746, Regelfall().SummeAktivOhneCtKwh("BESCHAFFUNG"), 9);
         }
 
         /// <summary>
         /// Reduzierte Stromsteuer (0,05 statt 2,05 ct/kWh) ergibt die zweite
-        /// Summe des Fachkonzepts: 9,746 ct/kWh.
+        /// Summe des Fachkonzepts: 9,746 ct/kWh ohne Beschaffung.
         /// </summary>
         [Fact]
         public void Reduzierte_Stromsteuer_Ergibt_Die_Zweite_Summe()
@@ -304,6 +317,24 @@ namespace SpeicherEngine.Tests
             });
 
             Assert.Equal(9.746, satz.SummeAktivCtKwh, 9);
+        }
+
+        /// <summary>
+        /// Die drei Einzelumlagen (KWKG 0,446 + Offshore 0,941 + § 19 StromNEV
+        /// 1,559) sind wertgleich dem Summenfeld 2,946 ct/kWh - die namenlose
+        /// Klammer des Fachkonzepts hat damit ihre Namen.
+        /// </summary>
+        [Fact]
+        public void Die_Drei_Einzelumlagen_Sind_Wertgleich_Dem_Summenfeld()
+        {
+            Aufschlagssatz einzeln = new Aufschlagssatz(new[]
+            {
+                new Aufschlagskomponente("UMLAGE_KWKG",         0.446, true),
+                new Aufschlagskomponente("UMLAGE_OFFSHORE",     0.941, true),
+                new Aufschlagskomponente("UMLAGE_STROMNEV19",   1.559, true)
+            });
+
+            Assert.Equal(2.946, einzeln.SummeAktivCtKwh, 9);
         }
 
         [Fact]
@@ -322,94 +353,48 @@ namespace SpeicherEngine.Tests
         }
 
         /// <summary>
-        /// Override-Modus: 20 ct/kWh der V7-Mappe gegen 11,746 ct/kWh
-        /// aufgeschluesselt ergibt 8,254 ct/kWh nicht aufgeschluesselten Rest -
-        /// die Zahl aus Fachkonzept 4.2.
+        /// Eine INAKTIVE Beschaffung laesst beide Summen zusammenfallen - der
+        /// ausgelassene Schluessel zieht nichts ab, was nicht drin ist.
         /// </summary>
         [Fact]
-        public void Override_Weist_Den_Nicht_Aufgeschluesselten_Rest_Aus()
+        public void Eine_Inaktive_Beschaffung_Faellt_In_Beiden_Summen_Weg()
         {
-            Aufschlagssatz satz = Regelfall(AufschlagsModus.Gesamtwert, 20.0);
+            Aufschlagssatz satz = Regelfall(beschaffungAktiv: false);
 
-            Assert.Equal(20.0, satz.WirksamCtKwh, 9);
             Assert.Equal(11.746, satz.SummeAktivCtKwh, 9);
-            Assert.Equal(8.254, satz.NichtAufgeschluesselterRestCtKwh, 9);
+            Assert.Equal(11.746, satz.SummeAktivOhneCtKwh("BESCHAFFUNG"), 9);
         }
 
-        /// <summary>Reduzierter Fall: 20 - 9,746 = 10,254 ct/kWh Rest.</summary>
+        /// <summary>
+        /// Ein leerer oder unbekannter Schluessel laesst nichts aus - dann ist
+        /// die Summe ohne ihn die volle Summe.
+        /// </summary>
         [Fact]
-        public void Override_Rest_Im_Reduzierten_Stromsteuerfall()
+        public void Ein_Unbekannter_Schluessel_Laesst_Nichts_Aus()
+        {
+            Assert.Equal(38.0, Regelfall().SummeAktivOhneCtKwh(""), 9);
+            Assert.Equal(38.0, Regelfall().SummeAktivOhneCtKwh("GIBTSNICHT"), 9);
+        }
+
+        /// <summary>
+        /// Ein ungepflegter Satz - jeder Anteil inaktiv - traegt 0 bei. Das ist
+        /// die Zusage aus dem Restpunkt „Nach #266": Ein Projekt, an dem niemand
+        /// etwas eingestellt hat, rechnet nicht mit 11,746 ct/kWh.
+        /// </summary>
+        [Fact]
+        public void Ein_Ungepflegter_Satz_Traegt_Nichts_Bei()
         {
             Aufschlagssatz satz = new Aufschlagssatz(new[]
             {
-                new Aufschlagskomponente("NETZENTGELT",  6.440, true),
-                new Aufschlagskomponente("UMLAGEN",      2.946, true),
-                new Aufschlagskomponente("STROMSTEUER",  0.050, true),
-                new Aufschlagskomponente("KONZESSION",   0.110, true),
-                new Aufschlagskomponente("VERTRIEB",     0.200, true)
-            }, AufschlagsModus.Gesamtwert, 20.0);
+                new Aufschlagskomponente("NETZENTGELT",  6.440, false),
+                new Aufschlagskomponente("UMLAGEN",      2.946, false),
+                new Aufschlagskomponente("STROMSTEUER",  2.050, false),
+                new Aufschlagskomponente("KONZESSION",   0.110, false),
+                new Aufschlagskomponente("VERTRIEB",     0.200, false)
+            });
 
-            Assert.Equal(10.254, satz.NichtAufgeschluesselterRestCtKwh, 9);
-        }
-
-        /// <summary>
-        /// Ein Gesamtwert UNTER der Komponentensumme ergibt einen negativen Rest -
-        /// er wird ausgewiesen, nicht verschwiegen.
-        /// </summary>
-        [Fact]
-        public void Override_Unter_Der_Summe_Ergibt_Negativen_Rest()
-        {
-            Aufschlagssatz satz = Regelfall(AufschlagsModus.Gesamtwert, 5.0);
-            Assert.Equal(-6.746, satz.NichtAufgeschluesselterRestCtKwh, 9);
-            Assert.Equal(5.0, satz.WirksamCtKwh, 9);
-        }
-
-        // ---- Modus „kein Aufschlag" (Vorgabe, Anwenderentscheid 14.09.2026) ----
-
-        /// <summary>
-        /// Im Modus Keiner ist der wirksame Aufschlag exakt 0 - unabhaengig davon,
-        /// was in den Komponenten und im Gesamtwert steht. Die Summe bleibt
-        /// ablesbar: Sie ist die Auskunft, nicht der Rechenwert.
-        /// </summary>
-        [Fact]
-        public void Kein_Aufschlag_Wirkt_Nicht_Und_Weist_Keinen_Rest_Aus()
-        {
-            Aufschlagssatz satz = Regelfall(AufschlagsModus.Keiner, 20.0);
-
-            Assert.Equal(0.0, satz.WirksamCtKwh, 9);
-            Assert.Equal(0.0, satz.NichtAufgeschluesselterRestCtKwh, 9);
-            Assert.Equal(11.746, satz.SummeAktivCtKwh, 9);
-        }
-
-        [Fact]
-        public void Kein_Aufschlag_Laesst_Die_Preisreihe_Unveraendert()
-        {
-            double[] roh = { 0.0, 10.0, -3.5 };
-            double[] mit = Regelfall(AufschlagsModus.Keiner, 20.0).AufReihe(roh);
-
-            Assert.Equal(roh, mit);
-        }
-
-        /// <summary>
-        /// Die beiden Rechenmodi bleiben, wie sie waren - der dritte haengt sich
-        /// hinten an, er nummeriert nicht um.
-        /// </summary>
-        [Fact]
-        public void Die_Zahlenwerte_Der_Beiden_Rechenmodi_Bleiben_Stehen()
-        {
-            Assert.Equal(0, (int)AufschlagsModus.Aufgeschluesselt);
-            Assert.Equal(1, (int)AufschlagsModus.Gesamtwert);
-            Assert.Equal(2, (int)AufschlagsModus.Keiner);
-        }
-
-        [Fact]
-        public void Aufschlagssatz_Legt_Den_Wirksamen_Wert_Auf_Die_Reihe()
-        {
-            double[] roh = { 0.0, 10.0 };
-            double[] mit = Regelfall().AufReihe(roh);
-
-            Assert.Equal(11.746, mit[0], 9);
-            Assert.Equal(21.746, mit[1], 9);
+            Assert.Equal(0.0, satz.SummeAktivCtKwh, 9);
+            Assert.Equal(0.0, satz.SummeAktivOhneCtKwh("BESCHAFFUNG"), 9);
         }
 
         [Fact]
@@ -417,7 +402,7 @@ namespace SpeicherEngine.Tests
         {
             Aufschlagssatz satz = new Aufschlagssatz(Array.Empty<Aufschlagskomponente>());
             Assert.Equal(0.0, satz.SummeAktivCtKwh);
-            Assert.Equal(0.0, satz.WirksamCtKwh);
+            Assert.Equal(0.0, satz.SummeAktivOhneCtKwh("BESCHAFFUNG"));
         }
 
         [Fact]

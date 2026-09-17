@@ -236,9 +236,10 @@ namespace WindowsFormsApplication1
                 z.Add(Zahl("VERMIEDEN_GESAMT", MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT,
                            e => (double?)e.VermiedenGesamtJahr));
             }
-            if (Irgendein(menge, e => e.AufschlagJahr != 0))
-                z.Add(Zahl("AUFSCHLAG", MyResource.Resource.WIRT_ZEILE_AUFSCHLAG,
-                           e => (double?)e.AufschlagJahr));
+            // SP-E-2: Die Zeile „Aufschläge auf den Strombezug" ist entfallen. Die
+            // Preisanteile zerlegen den Arbeitspreis und stecken damit vollständig in
+            // den Energiekosten; eine eigene Zeile wäre eine zweite Ansage derselben
+            // Zahl.
 
             // ETAPPE W5-B-10 (VALERI-Abgleich): Die Ersatzbeschaffungen wurden seit W1
             // GERECHNET, aber nie AUSGEWIESEN - sie steckten stumm in den Barwerten der

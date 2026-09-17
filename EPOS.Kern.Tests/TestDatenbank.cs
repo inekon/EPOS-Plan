@@ -269,6 +269,20 @@ namespace EPOS.Kern.Tests
                 // dastehen. Steht die Regel schon, tut der Aufruf nichts.
                 ProjektWerteLoeschschutz.Umbauen();
 
+                // Schritt 82 (Auftrag #303): die Merkspalte der gepflegten Kaskade.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt82_KaskadeGepflegt)
+                    SpalteSicherstellen(s);
+
+                // Schritt 83 (Entscheide SP-E-2/SP-E-3, 17.09.2026): die neun Spalten
+                // der Strompreis-Details UND die Faltung des bisher wirksamen
+                // Aufschlags in den Arbeitspreis. Erst die Spalten, dann das DML -
+                // die Faltung schreibt in Aufschlag_Beschaffung. DIESELBE Quelle wie in
+                // der Migration und im Werkzeug; Falten() ist wiederholbar und tut auf
+                // einer bereits gefalteten Kopie nichts mehr.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt83_Strompreisdetails)
+                    SpalteSicherstellen(s);
+                StrompreisZerlegung.Falten();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

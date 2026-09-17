@@ -167,8 +167,12 @@ namespace WindowsFormsApplication1
             double profilAufschlagCtKwh = 0.0;
             if (snapshot.Auslegung.Preisquelle == SpeicherAuslegungQuelle.Preisprofil)
             {
+                // SP-E-2: Das Preisprofil IST die Beschaffung - ihm fehlen Netzentgelt,
+                // Steuern, Abgaben und Umlagen. Deshalb die Summe der aktiven Anteile
+                // OHNE Beschaffung; ein Fixpreis bekaeme hier gar nichts, er enthaelt
+                // die Anteile bereits.
                 StromAufschlagModel m = new StromAufschlagCtrl().ReadStrom(projektId);
-                profilAufschlagCtKwh = StromAufschlagCtrl.AlsAufschlagssatz(m).WirksamCtKwh;
+                profilAufschlagCtKwh = StromAufschlagCtrl.SummeOhneBeschaffungCtKwh(m);
             }
 
             StromVerguetungsErgebnis projektVerguetung = null;
