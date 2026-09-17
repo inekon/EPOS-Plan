@@ -476,6 +476,11 @@ public static partial class SpeicherFlottenStudieCtrl
             {
                 Zeitstempel = zeiten[t], LastKw = e.LastKw[i], PvKw = e.PvKw[i], BhkwKw = e.BhkwKw?[i] ?? 0,
                 BezugspreisEuroProKWh = e.PreisCtKwh[i] / 100.0,
+                // SP-E-5 (a): Fehlt die Vergütungsreihe, gilt der Skalar des
+                // Parametersatzes - und der steht seit diesem Entscheid auf
+                // StromspeicherSimCtrl.VERGUETUNG_OHNE_PFLEGE_CT_KWH = 0. Der frühere
+                // stille Rückfall auf 5 ct/kWh ist damit auch hier fort; gerechnet wird
+                // mit dem, was gepflegt ist, und sonst mit 0.
                 PvVerkaufspreisEuroProKWh = (e.VerguetungPvCtKwh?[i] ?? v.Basis.VerguetungCtKwh) / 100.0,
                 BhkwVerkaufspreisEuroProKWh = (e.VerguetungBhkwCtKwh?[i] ?? v.Basis.VerguetungCtKwh) / 100.0,
                 BatterieVerkaufspreisEuroProKWh = verkauf ?? 0

@@ -103,20 +103,10 @@
     </KindInhalt>
 </Gruppenkopf>
 
-<Gruppenkopf Titel="@TitelVerguetung">
-    <KindInhalt>
-        <Formularraster>
-            <KindInhalt>
-                <Zahlenfeld Bezeichnung="@LabelVerguetungPv" Einheit="@Einheit"
-                            Wert="@Stand.VerguetungPv"
-                            WertChanged="@(w => Stand.VerguetungPv = w ?? Stand.VerguetungPv)" />
-                <Zahlenfeld Bezeichnung="@LabelVerguetungBhkw" Einheit="@Einheit"
-                            Wert="@Stand.VerguetungBhkw"
-                            WertChanged="@(w => Stand.VerguetungBhkw = w ?? Stand.VerguetungBhkw)" />
-            </KindInhalt>
-        </Formularraster>
-    </KindInhalt>
-</Gruppenkopf>
+@* SP-E-5 (a), Anwenderbefund 17.09.2026: Die Gruppe "Vergütung für eingespeisten
+   Strom" (v_pv, v_bhkw) ist hier ENTFALLEN. Sie war die zweite Stelle für dieselbe
+   Zahl - die Einspeisevergütung steht bei den Wirtschaftlichkeitsparametern, und von
+   dort holt sie seither auch die Speicherwelt. *@
 
 @code {
     /// <summary>Der Bearbeitungsstand — die Komponente schreibt hinein (siehe Datenklasse).</summary>
@@ -152,7 +142,6 @@
     [Parameter] public Schnellwahlsatz? SatzReduziert { get; set; }
 
     [Parameter] public string TitelDetails { get; set; } = "Strompreis Details";
-    [Parameter] public string TitelVerguetung { get; set; } = "Vergütung für eingespeisten Strom";
     [Parameter] public string GruppeBeschaffung { get; set; } = "Beschaffung und Vertrieb";
     [Parameter] public string GruppeNetz { get; set; } = "Netzentgelte";
     [Parameter] public string GruppeSteuern { get; set; } = "Steuern, Abgaben und Umlagen";
@@ -169,8 +158,6 @@
     [Parameter] public string LabelArbeitspreis { get; set; } = "Arbeitspreis (Trägerkarte)";
     [Parameter] public string InArbeitspreisText { get; set; } = "In Arbeitspreis übernehmen";
     [Parameter] public string VorlageRest { get; set; } = "Rest: {0}";
-    [Parameter] public string LabelVerguetungPv { get; set; } = "Photovoltaik v_pv";
-    [Parameter] public string LabelVerguetungBhkw { get; set; } = "BHKW v_bhkw";
     [Parameter] public string Einheit { get; set; } = "ct/kWh";
 
     /// <summary>Aufgeklappt? Vorgabe ist ZU (Anwenderwortlaut „einklappbarer Bereich").</summary>

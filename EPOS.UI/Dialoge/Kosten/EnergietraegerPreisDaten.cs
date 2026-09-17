@@ -79,13 +79,9 @@ public sealed class StromAufschlaegeStand
     public double UmlageStromNev19 { get; set; }
     public bool UmlageStromNev19Aktiv { get; set; }
 
-    // ---- Vergütung (Fachkonzept 4.3) ----
-
-    /// <summary>Vergütung für eingespeisten PV-Strom [ct/kWh].</summary>
-    public double VerguetungPv { get; set; }
-
-    /// <summary>Vergütung für eingespeisten BHKW-Strom [ct/kWh].</summary>
-    public double VerguetungBhkw { get; set; }
+    // ---- Vergütung: NICHT MEHR HIER (SP-E-5 (a), 17.09.2026) ----
+    // Sie steht bei den Wirtschaftlichkeitsparametern und stellt von dort auch den
+    // Verkaufspreis der Speicherwelt; die Trägerkarte kennt sie nicht mehr.
 }
 
 /// <summary>

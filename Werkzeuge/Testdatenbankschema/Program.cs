@@ -574,6 +574,26 @@ namespace Testdatenbankschema
             }
             Console.WriteLine();
 
+            // ---- Schritt 84: der Umzug der Einspeiseverguetung (Entscheid SP-E-5 (a)).
+            //      REINER DATENSCHRITT - keine Spalte. Die gepflegten Kartenwerte
+            //      Verguetung_PV/_BHKW ziehen in Tab_ProjektWirtschaftlichkeit um
+            //      (ct/kWh -> EUR/kWh); gepflegte Parameter gewinnen. Anweisungen aus
+            //      VerguetungUmzug - DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_84_VerguetungUmzug bedient.
+            //      Ergebnisneutral: Die Speicherwelt liest dieselbe Zahl von der neuen
+            //      Stelle, der Referenzlauf bleibt byte-gleich. Wiederholbar: Ein
+            //      zweiter Lauf findet nichts mehr.
+            if (!trocken)
+            {
+                int umzuziehen = VerguetungUmzug.ZaehlungUmzug();
+                Console.WriteLine("Schritt 84 - Projekte mit gepflegtem Kartenwert: " + umzuziehen + ".");
+                foreach (string zeile in VerguetungUmzug.Umziehen())
+                    Console.WriteLine("Schritt 84 - " + zeile);
+                if (umzuziehen == 0)
+                    Console.WriteLine("Schritt 84: nichts umzuziehen - kein gepflegter Kartenwert.");
+            }
+            Console.WriteLine();
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

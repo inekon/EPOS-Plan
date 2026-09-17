@@ -3067,6 +3067,40 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_83_STROMPREISDETAILS = 83;
 
+        /// <summary>
+        /// Schritt 84 — der <b>Umzug der Einspeisevergütung</b> von der Trägerkarte in
+        /// die Wirtschaftlichkeitsparameter (Anwenderentscheid <b>SP-E-5 (a)</b> vom
+        /// 17.09.2026). Anweisungen und Begründung stehen bei
+        /// <see cref="VerguetungUmzug"/>.
+        ///
+        /// <para><b>Wozu.</b> <c>energy_project_settings.Verguetung_PV</c> und
+        /// <c>Verguetung_BHKW</c> waren die zweite Stelle für dieselbe Zahl: Gelesen hat
+        /// sie nur die Speicherwelt, die Wirtschaftlichkeit rechnete von jeher mit
+        /// <c>Tab_ProjektWirtschaftlichkeit.Einspeiseverguetung</c> und
+        /// <c>Einspeiseverguetung_KWK</c>. Ab hier gibt es eine Quelle, und das ist der
+        /// Parametersatz.</para>
+        ///
+        /// <para><b>Keine Spalte, nur DML.</b> Der Schritt legt nichts an und löscht
+        /// nichts: Er trägt jeden gepflegten Kartenwert in die Parameter ein, wenn dort
+        /// nichts steht — <c>Einspeiseverguetung := Verguetung_PV / 100</c>,
+        /// <c>Einspeiseverguetung_KWK := Verguetung_BHKW / 100</c> (die Karte führt
+        /// ct/kWh, die Parameter €/kWh). Hat ein Projekt noch keinen Parametersatz, legt
+        /// er einen an, der NUR die Vergütung trägt; jede andere Spalte bleibt NULL und
+        /// damit beim Vorgabewert. <b>Gepflegte Parameter gewinnen</b> — überschrieben
+        /// wird nur die 0, und die heißt dort „nicht gepflegt".</para>
+        ///
+        /// <para><b>Ergebnisneutral trotz DML:</b> Die Speicherwelt liest dieselbe Zahl,
+        /// nur von der neuen Stelle (5 ct/kWh bleiben 0,05 €/kWh bleiben 5 ct/kWh). Der
+        /// Referenzlauf ist byte-gleich. Die Kartenspalten bleiben stehen, damit eine
+        /// ältere Programmfassung auf derselben Datei nicht auf einen fehlenden Namen
+        /// läuft; gelesen und geschrieben werden sie nicht mehr.</para>
+        ///
+        /// <para><b>Idempotenz:</b> Nach dem Lauf sind die Parameter gepflegt;
+        /// <c>VerguetungUmzug.ZaehlungUmzug</c> liefert dann 0, und ein zweiter Lauf
+        /// fasst nichts an.</para>
+        /// </summary>
+        public const int SCHRITT_84_VERGUETUNG_UMZUG = 84;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4086,6 +4120,19 @@ namespace WindowsFormsApplication1
                         "Aufschlag kommt nicht mehr auf den Arbeitspreis, und ohne die " +
                         "Faltung staende er auch nicht darin.",
                         Schritt_83_Strompreisdetails),
+
+            // ANWENDERENTSCHEID SP-E-5 (a) vom 17.09.2026 ("Die 'Verguetung fuer
+            // eingespeisten Strom' ist auf der Traegerkarte ueberfluessig und an der
+            // falschen Stelle"). Reiner Datenschritt aus VerguetungUmzug - EINE Quelle
+            // fuer Migration, Testdatenbankschema und Nachweis.
+            new Schritt(SCHRITT_84_VERGUETUNG_UMZUG,
+                        "die gepflegten Verguetungen der Traegerkarte ziehen in die " +
+                        "Wirtschaftlichkeitsparameter um (Entscheid SP-E-5 (a))",
+                        "Die Traegerkarte traegt v_pv und v_bhkw ab hier nicht mehr. " +
+                        "Ohne den Umzug verloere jedes Projekt, das dort eine " +
+                        "Verguetung gepflegt hatte, diese Zahl - die Speicherwelt " +
+                        "rechnete stillschweigend mit 0.",
+                        Schritt_84_VerguetungUmzug),
         };
 
         /// <summary>
@@ -5742,6 +5789,50 @@ namespace WindowsFormsApplication1
                     "byte-gleich.");
 
             foreach (string zeile in protokoll) l.Notiz("83: " + zeile);
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 84 - der Umzug der Einspeiseverguetung (Entscheid SP-E-5 (a))
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 84 — Anlass, Anweisungen und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_84_VERGUETUNG_UMZUG"/> und bei
+        /// <see cref="VerguetungUmzug"/>.
+        ///
+        /// <para><b>Reiner Datenschritt</b>: keine Spalte, kein Index, kein Umbau. Hier
+        /// steht kein abgeschriebenes DML; es kommt aus dem Kern, aus DERSELBEN Quelle,
+        /// aus der sich auch <c>Werkzeuge/Testdatenbankschema</c> und der Nachweis in
+        /// <c>EPOS.Kern.Tests</c> bedienen.</para>
+        /// </summary>
+        private static bool Schritt_84_VerguetungUmzug(Lauf l)
+        {
+            int umzuziehen = VerguetungUmzug.ZaehlungUmzug();
+            System.Collections.Generic.IReadOnlyList<string> protokoll;
+            try
+            {
+                protokoll = VerguetungUmzug.Umziehen();
+            }
+            catch (Exception ex)
+            {
+                l.Notiz("84: FEHLER beim Umzug der Verguetung - " + ex.Message);
+                return false;
+            }
+
+            l.Notiz("84: Die Einspeiseverguetung steht ab hier ausschliesslich in " +
+                    WirtschaftlichkeitCtrl.TAB_PARAMETER + " (Einspeiseverguetung, " +
+                    SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "). " +
+                    umzuziehen.ToString(CultureInfo.InvariantCulture) +
+                    " Projekt(e) mit gepflegtem Kartenwert sind umgezogen; ct/kWh der " +
+                    "Karte werden zu EUR/kWh der Parameter. Gepflegte Parameter " +
+                    "gewinnen, die Kartenspalten " + SchemaKatalog.SPALTE_VERGUETUNG_PV +
+                    "/" + SchemaKatalog.SPALTE_VERGUETUNG_BHKW + " bleiben unberuehrt " +
+                    "stehen und werden nicht mehr gelesen. Die Speicherwelt liest " +
+                    "dieselbe Zahl von der neuen Stelle - der Referenzlauf bleibt " +
+                    "byte-gleich.");
+
+            foreach (string zeile in protokoll) l.Notiz("84: " + zeile);
             return true;
         }
 

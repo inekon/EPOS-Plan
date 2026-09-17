@@ -82,21 +82,19 @@ namespace WindowsFormsApplication1
         public const double FIXPREIS_BEZUG_CT_KWH = 20.0;
 
         /// <summary>
-        /// Einspeisevergütung PV [ct/kWh] — <b>Rückfallwert</b>. Produktiv steht
-        /// <c>v_pv</c> in <c>energy_project_settings.Verguetung_PV</c> (Fachkonzept 4.3);
-        /// Migrationsschritt 12d belegt die Spalte mit genau diesem Wert vor, damit die
-        /// Umstellung auf AP4 an dieser Stelle ergebnisneutral ist.
+        /// Einspeisevergütung ohne gepflegten Wert [ct/kWh] — <b>0, und das ist eine
+        /// Aussage</b> (Anwenderentscheid SP-E-5 (a) vom 17.09.2026).
+        ///
+        /// <para>Produktiv stehen <c>v_pv</c> und <c>v_bhkw</c> in den
+        /// Wirtschaftlichkeitsparametern des Projekts
+        /// (<c>Tab_ProjektWirtschaftlichkeit.Einspeiseverguetung</c> bzw.
+        /// <c>Einspeiseverguetung_KWK</c>); die Quellenkette steht an
+        /// <c>StromPreisCtrl.VerguetungenBauen</c>. Bis SP-E-5 sprang hier ein
+        /// stiller Rückfall auf 5 ct/kWh ein — auch für ein Projekt, das nie eine
+        /// Vergütung gepflegt hatte. Diese Zahl war erfunden. Ohne gepflegten Wert
+        /// rechnet der Lauf ab hier mit 0 und sagt es im Protokoll.</para>
         /// </summary>
-        public const double VERGUETUNG_PV_CT_KWH = 5.0;
-
-        /// <summary>
-        /// Einspeise-/KWK-Erlös BHKW [ct/kWh] — <b>Rückfallwert</b> wie
-        /// <see cref="VERGUETUNG_PV_CT_KWH"/>; produktiv steht <c>v_bhkw</c> in
-        /// <c>energy_project_settings.Verguetung_BHKW</c> und ist getrennt pflegbar.
-        /// Der BHKW-Erlös liegt real meist über dem PV-Wert — erst das macht die
-        /// Merit-Order "PV vor BHKW" wirksam (Fachkonzept 2.2/4.3).
-        /// </summary>
-        public const double VERGUETUNG_BHKW_CT_KWH = 5.0;
+        public const double VERGUETUNG_OHNE_PFLEGE_CT_KWH = 0.0;
 
         /// <summary>Round-Trip-Wirkungsgrad, Standard nach Fachkonzept 5.2.</summary>
         public const double ETA_RT_STANDARD = 0.90;
@@ -752,7 +750,8 @@ namespace WindowsFormsApplication1
         /// Konstanten; jetzt liefert <see cref="StromPreisCtrl"/> alle drei Reihen —
         /// <c>p_bezug</c> je nach <c>Variante.Preisquelle</c> (Fixpreis, Kostenprofil,
         /// Spotreihe) zuzüglich der aktiven Aufschläge, dazu <c>v_pv</c> und
-        /// <c>v_bhkw</c> aus <c>energy_project_settings</c>. Hinweise des Controllers
+        /// <c>v_bhkw</c> aus den Wirtschaftlichkeitsparametern des Projekts
+        /// (SP-E-5 (a)). Hinweise des Controllers
         /// (fehlende Reihe, Rückfall auf den Fixpreis) laufen in
         /// <see cref="LetzterHinweis"/> und damit ins Simulationsprotokoll; die
         /// verwendete Preisversion steht anschließend in
@@ -1375,7 +1374,7 @@ namespace WindowsFormsApplication1
                 Kapitalzins = KAPITALZINS_STANDARD,
                 NutzungsdauerA = NUTZUNGSDAUER_STANDARD_A,
                 DegradationProA = 0.0,
-                VerguetungCtKwh = VERGUETUNG_PV_CT_KWH,
+                VerguetungCtKwh = VERGUETUNG_OHNE_PFLEGE_CT_KWH,
                 CVerEurProKwhZyklus = C_VER_STANDARD
             };
         }

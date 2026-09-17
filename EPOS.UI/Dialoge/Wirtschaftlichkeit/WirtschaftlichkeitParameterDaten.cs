@@ -91,6 +91,20 @@ public sealed class WirtschaftlichkeitParameterTexte
     public string EinspeisungKwk { get; } = T("WPAR_EINSP_KWK",
         "Einspeisevergütung KWK-Strom [€/kWh]:");
 
+    /// <summary>
+    /// SP-E-5 (a), 17.09.2026: Die beiden Sätze sind die EINE Quelle der
+    /// Einspeisevergütung — sie bewerten den eingespeisten Strom in der
+    /// Wirtschaftlichkeit und stellen zugleich <c>v_pv</c> und <c>v_bhkw</c> der
+    /// Speicherwelt. Die Trägerkarte trägt sie nicht mehr.
+    /// </summary>
+    public string EinspeisungHinweis { get; } = T("WPAR_EINSP_HINWEIS",
+        "Diese beiden Sätze gelten für die ganze Anwendung: Sie bewerten den " +
+        "eingespeisten Strom in der Wirtschaftlichkeit UND stellen den Verkaufspreis, " +
+        "mit dem Stromspeicher und Speicherflotte rechnen (v_pv, v_bhkw). Ohne " +
+        "KWK-Satz gilt für BHKW-Strom der PV-Satz; ist gar nichts gepflegt, rechnet " +
+        "die Speicherwelt mit 0 und weist das im Protokoll aus. Führt der " +
+        "PV-Vergütungsdialog die Vergütung, hat er für v_pv Vorrang.");
+
     // --------------------------------------------------------------- BHKW
     /// <summary>
     /// Die BHKW-Gruppe dieses Dialogs ist reiner VERWEIS: Sie sagt, wo die

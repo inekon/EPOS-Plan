@@ -4457,6 +4457,12 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PREIS_HINWEIS_KEIN_STROMTRAEGER" xml:space="preserve">
     <value>The project has no electricity energy carrier assigned - the default surcharge and feed-in values apply.</value>
   </data>
+  <data name="PREIS_HINWEIS_KEINE_VERGUETUNG_PV" xml:space="preserve">
+    <value>No feed-in tariff is maintained in the economic parameters - v_pv is calculated with 0 ct/kWh.</value>
+  </data>
+  <data name="PREIS_HINWEIS_KEINE_VERGUETUNG_BHKW" xml:space="preserve">
+    <value>Neither a CHP nor a general feed-in tariff is maintained in the economic parameters - v_bhkw is calculated with 0 ct/kWh.</value>
+  </data>
   <data name="PREIS_HINWEIS_KEIN_PROFIL" xml:space="preserve">
     <value>The variant is set to cost profile but none is selected - the fixed price is used instead.</value>
   </data>
@@ -4549,15 +4555,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="PREIS_STROMSTEUER_REDUZIERT" xml:space="preserve">
     <value>0.05</value>
-  </data>
-  <data name="PREIS_GRUPPE_VERGUETUNG" xml:space="preserve">
-    <value>Feed-in remuneration</value>
-  </data>
-  <data name="PREIS_LABEL_VERGUETUNG_PV" xml:space="preserve">
-    <value>Photovoltaics v_pv</value>
-  </data>
-  <data name="PREIS_LABEL_VERGUETUNG_BHKW" xml:space="preserve">
-    <value>CHP v_bhkw</value>
   </data>
   <data name="PREIS_SUMME_AKTIV" xml:space="preserve">
     <value>Sum of the components: {0} ct/kWh</value>
@@ -10615,6 +10612,9 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="WPAR_EINSP_PV" xml:space="preserve">
     <value>PV feed-in tariff [€/kWh]:</value>
+  </data>
+  <data name="WPAR_EINSP_HINWEIS" xml:space="preserve">
+    <value>Both rates apply to the whole application: they value exported electricity in the economic assessment AND provide the selling price used by the electricity storage and the storage fleet (v_pv, v_bhkw). Without a CHP rate the PV rate applies to CHP electricity; if nothing is maintained, the storage calculation uses 0 and says so in the log. Where the PV remuneration dialog leads the tariff, it takes precedence for v_pv.</value>
   </data>
   <data name="WPAR_G_ALLGEMEIN" xml:space="preserve">
     <value>General</value>
