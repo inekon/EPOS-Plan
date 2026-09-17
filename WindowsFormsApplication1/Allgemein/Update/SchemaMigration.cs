@@ -3145,6 +3145,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_86_LASTSPITZENKAPPUNG = 86;
 
+        /// <summary>
+        /// Schritt 87 — der <b>entdoppelte Gesetzeskatalog</b> (Anwenderentscheid
+        /// <b>US-E-1 (a)</b> vom 17.09.2026, Ausgangslage aus Auftrag <b>#319</b>).
+        ///
+        /// <para><c>Tab_Gesetzesparameter</c> führt ab hier höchstens EINE Zeile je
+        /// Schlüssel, Klasse und Stichjahr. Was die Pflegemaske seit jeher prüft
+        /// (<c>GesetzKatalog.Existiert</c>), hält ab hier die Datenbank; die
+        /// Anweisungen — die Entdoppelung des Bestands und der eindeutige Index — stehen
+        /// bei <see cref="GesetzesparameterEindeutig"/>. Dieselbe Bewegung wie in
+        /// Schritt 76 (<see cref="ProjektEnergietraegerEindeutig"/>).</para>
+        ///
+        /// <para><b>Warum es Dubletten gibt.</b> Die Katalogsaat läuft generationsweise
+        /// bei jedem Start und hebt ihren Marker erst, wenn die Generation durch ist.
+        /// Brach sie mittendrin ab — bis #319 tat das die Generation 7 am <c>CHECK</c>
+        /// auf die Länge von <c>Quelle</c> —, wurden die Zeilen VOR der Fehlstelle beim
+        /// nächsten Start noch einmal angelegt. #319 hat die Ursache behoben, nicht die
+        /// bereits entstandenen Zeilen.</para>
+        ///
+        /// <para><b>Beifang aus Auftrag #321:</b> Im selben Schritt fällt der zweite
+        /// Zustand, den die Anwendungslogik ausschließt und die Datenbank zuließ — zwei
+        /// aktive Speichervarianten in EINEM Projekt (Messlatte: Projekt 1026,
+        /// Anlage 11280, Varianten 10 und 13). Die Anweisung steht bei
+        /// <see cref="SpeicherVarianteAktivEindeutig"/>. Ein eigener Schemaschritt wäre
+        /// eine zweite Nummer für dieselbe Sache: „was die Datenbank zuließ, obwohl der
+        /// Schreibweg es ausschließt".</para>
+        ///
+        /// <para><b>Ergebnisneutral</b>: Behalten wird beide Male die KLEINSTE ID —
+        /// genau die Zeile, die jede Lesekette schon bisher genommen hat
+        /// (<c>ORDER BY Schluessel, JahrVon</c> bzw.
+        /// <c>ReadAktiveVariante … ORDER BY v.ID LIMIT 1</c>). Der Referenzlauf bleibt
+        /// byte-gleich; 1026 ist ohnehin kein Referenzprojekt.</para>
+        ///
+        /// <para><b>Idempotent:</b> Beide Entdoppelungen finden im zweiten Lauf nichts
+        /// mehr, der Index trägt <c>IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_87_GESETZESPARAMETER_EINDEUTIG = 87;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -3475,6 +3512,23 @@ namespace WindowsFormsApplication1
         /// sauberen Bestand bleibt die Zahl 0.
         /// </summary>
         public static int DatenTraegersaetzeEntdoppelt { get; private set; }
+
+        // --- Zaehlwerk der Entdoppelungen aus Schritt 87 (Entscheid US-E-1 (a)) --------
+
+        /// <summary>
+        /// Schritt 87: Dubletten in <c>Tab_Gesetzesparameter</c>, die die Entdoppelung
+        /// entfernt hat — Zeilen, die ein abgebrochener Saatlauf hinterließ und die keine
+        /// Lesekette erreichte. Auf einem sauberen Bestand bleibt die Zahl 0.
+        /// </summary>
+        public static int DatenGesetzeszeilenEntdoppelt { get; private set; }
+
+        /// <summary>
+        /// Schritt 87: überzählige AKTIVE Zeilen in <c>Tab_StromspeicherVariante</c>, die
+        /// der Schritt abgeschaltet hat — ein Zustand, den <c>SetzeAktiv</c> ausschließt
+        /// und den <c>ReadAktiveVariante</c> schon bisher überging. Auf einem sauberen
+        /// Bestand bleibt die Zahl 0.
+        /// </summary>
+        public static int DatenAktiveVariantenEntdoppelt { get; private set; }
 
         // --- Zählwerk der Einheiten-Konsistenz aus Schritt 25 (Etappe K2) --------------
 
@@ -4244,6 +4298,23 @@ namespace WindowsFormsApplication1
                         "Dauernutzung zurueck, und die Klappliste boete eine Wahl " +
                         "ohne Wirkung.",
                         Schritt_86_Lastspitzenkappung),
+
+            // ANWENDERENTSCHEID US-E-1 (a) vom 17.09.2026, Ausgangslage aus Auftrag #319.
+            // Entdoppelung und eindeutiger Index aus GesetzesparameterEindeutig, dazu der
+            // Beifang aus #321 (zwei aktive Speichervarianten in EINEM Projekt) aus
+            // SpeicherVarianteAktivEindeutig - DIESELBEN Quellen, aus denen sich auch
+            // Testdatenbankschema und Nachweis bedienen. Ergebnisneutral: Behalten wird
+            // beide Male die kleinste ID, genau die, die jede Lesekette schon nimmt.
+            new Schritt(SCHRITT_87_GESETZESPARAMETER_EINDEUTIG,
+                        "Tab_Gesetzesparameter fuehrt hoechstens EINE Zeile je " +
+                        "Schluessel, Klasse und Stichjahr (Entscheid US-E-1 (a)); im " +
+                        "selben Schritt bleibt je Projekt genau EINE aktive " +
+                        "Speichervariante",
+                        "Ohne den Index legt jeder abgebrochene Saatlauf des " +
+                        "Gesetzeskatalogs dieselben Zeilen erneut an - welcher Satz " +
+                        "dann gilt, entscheidet die Speicherreihenfolge, und der " +
+                        "Anwender pflegt womoeglich die Zeile, die niemand liest.",
+                        Schritt_87_GesetzesparameterEindeutig),
         };
 
         /// <summary>
@@ -6021,6 +6092,116 @@ namespace WindowsFormsApplication1
                     "\"Lastspitzenkappung\", und die fuehrt im Bestand keine Variante - " +
                     "NULL heisst \"kein Ziel gepflegt\" und faellt benannt auf die " +
                     "Dauernutzung zurueck. Der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 87 - der entdoppelte Gesetzeskatalog (Entscheid US-E-1 (a)),
+        //              dazu der Beifang aus #321: eine aktive Speichervariante je Projekt
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 87 — Anlass, Regel und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_87_GESETZESPARAMETER_EINDEUTIG"/> und ausführlich bei
+        /// <see cref="GesetzesparameterEindeutig"/> und
+        /// <see cref="SpeicherVarianteAktivEindeutig"/>.
+        ///
+        /// <para><b>Drei Handgriffe in fester Reihenfolge:</b> erst die Entdoppelung des
+        /// Katalogbestands, dann der eindeutige Index, zuletzt der Beifang. Umgekehrt
+        /// scheiterte die Anlage des Index an der ersten Dublette — und ein gescheiterter
+        /// Schemaschritt sperrt den Simulationsbereich.</para>
+        ///
+        /// <para><b>Jede entfernte Zeile bekommt ihre Protokollzeile.</b> Eine gelöschte
+        /// Katalogzeile ist nicht wiederzubeschaffen; der Anwender sieht vom Lauf nur das
+        /// Protokoll. Beide Quellen liefern die Zeilen als Sammeltext
+        /// (<c>group_concat</c>, Muster Schritt 69) — der SQLite-Zweig kann nur Skalare
+        /// lesen —, abgefragt VOR dem Schreiben.</para>
+        /// </summary>
+        private static bool Schritt_87_GesetzesparameterEindeutig(Lauf l)
+        {
+            // ---- Teil 1: der Gesetzeskatalog -------------------------------------
+            long ueberzaehlig = SqliteZahl(GesetzesparameterEindeutig.Zaehlung());
+            l.Notiz("87: ueberzaehlige Zeilen in " + GesetzesparameterEindeutig.TABELLE +
+                    ": " + (ueberzaehlig < 0
+                        ? "unbekannt"
+                        : ueberzaehlig.ToString(CultureInfo.InvariantCulture)) + ".");
+
+            // Die Zahl ist Auskunft, keine Bedingung (dieselbe Regel wie in Schritt 76):
+            // Bei -1 laeuft die Entdoppelung trotzdem - sie ist wiederholbar und loescht
+            // bei sauberem Bestand nichts.
+            if (ueberzaehlig != 0)
+            {
+                foreach (string zeile in PvKoeffizientenReparatur.Zerlege(
+                             SqliteText(GesetzesparameterEindeutig.Protokollabfrage())))
+                    l.Notiz("87: " + zeile);
+
+                if (!SqliteDml(l, GesetzesparameterEindeutig.SQL_ENTDOPPELN,
+                               "Entdoppelung " + GesetzesparameterEindeutig.TABELLE))
+                    return false;
+
+                long rest = SqliteZahl(GesetzesparameterEindeutig.Zaehlung());
+                if (rest > 0)
+                {
+                    l.LetzterFehler = GesetzesparameterEindeutig.TABELLE +
+                                      " fuehrt nach der Entdoppelung noch " + rest +
+                                      " ueberzaehlige Zeile(n).";
+                    l.Notiz("87: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+                if (ueberzaehlig > 0) DatenGesetzeszeilenEntdoppelt = (int)ueberzaehlig;
+            }
+
+            if (!SqliteDdl(l, GesetzesparameterEindeutig.SQL_INDEX,
+                           "Index " + GesetzesparameterEindeutig.INDEX))
+                return false;
+
+            l.Notiz("87: " + GesetzesparameterEindeutig.TABELLE + " fuehrt jetzt hoechstens " +
+                    "EINE Zeile je Schluessel, Klasse und Stichjahr; der eindeutige Index " +
+                    GesetzesparameterEindeutig.INDEX + " steht" +
+                    (DatenGesetzeszeilenEntdoppelt > 0
+                        ? " (" + DatenGesetzeszeilenEntdoppelt + " Dublette(n) entfernt)"
+                        : "") +
+                    ". Behalten wurde je Tripel die Zeile mit der kleinsten ID - genau " +
+                    "die, die jede Lesekette schon bisher genommen hat. KEIN " +
+                    "Rechenergebnis aendert sich.");
+
+            // ---- Teil 2: eine aktive Speichervariante je Projekt (Beifang #321) ---
+            long mehrfach = SqliteZahl(SpeicherVarianteAktivEindeutig.Zaehlung());
+            l.Notiz("87: ueberzaehlige AKTIVE Zeilen in " +
+                    SpeicherVarianteAktivEindeutig.TABELLE + ": " + (mehrfach < 0
+                        ? "unbekannt"
+                        : mehrfach.ToString(CultureInfo.InvariantCulture)) + ".");
+
+            if (mehrfach != 0)
+            {
+                foreach (string zeile in PvKoeffizientenReparatur.Zerlege(
+                             SqliteText(SpeicherVarianteAktivEindeutig.Protokollabfrage())))
+                    l.Notiz("87: " + zeile);
+
+                if (!SqliteDml(l, SpeicherVarianteAktivEindeutig.SQL_ENTDOPPELN,
+                               "Entdoppelung aktive " + SpeicherVarianteAktivEindeutig.TABELLE))
+                    return false;
+
+                long restAktiv = SqliteZahl(SpeicherVarianteAktivEindeutig.Zaehlung());
+                if (restAktiv > 0)
+                {
+                    l.LetzterFehler = SpeicherVarianteAktivEindeutig.TABELLE +
+                                      " fuehrt nach der Entdoppelung noch " + restAktiv +
+                                      " ueberzaehlige aktive Zeile(n).";
+                    l.Notiz("87: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+                if (mehrfach > 0) DatenAktiveVariantenEntdoppelt = (int)mehrfach;
+            }
+
+            l.Notiz("87: Jedes Projekt fuehrt jetzt hoechstens EINE aktive " +
+                    "Speichervariante" +
+                    (DatenAktiveVariantenEntdoppelt > 0
+                        ? " (" + DatenAktiveVariantenEntdoppelt + " abgeschaltet)"
+                        : "") +
+                    ". Behalten wurde je Projekt die aktive Zeile mit der kleinsten ID - " +
+                    "genau die, die ReadAktiveVariante schon bisher geliefert hat. KEIN " +
+                    "Rechenergebnis aendert sich.");
             return true;
         }
 

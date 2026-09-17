@@ -35,11 +35,14 @@ public class BerichtSeiteTests : BunitContext
         {
             new VarianteZeile { IdProjekt = 1030, Art = "Stamm", Bezeichner = "(Stammprojekt)",
                                 Projektname = "Musterhaus", SimStand = "02.09.2026 10:00",
+                                Speicher = "mit Speicherflotte: Lastspitzenkappung · 2 Einheiten",
                                 IstStamm = true },
             new VarianteZeile { IdProjekt = 1031, Art = "Variante", Bezeichner = "Kessel groß",
-                                Projektname = "Musterhaus", SimStand = "" , Auffaellig = true },
+                                Projektname = "Musterhaus", SimStand = "" ,
+                                Speicher = "ohne Stromspeicher", Auffaellig = true },
             new VarianteZeile { IdProjekt = 1032, Art = "Variante", Bezeichner = "WP klein",
-                                Projektname = "Musterhaus", SimStand = "01.09.2026 08:00" }
+                                Projektname = "Musterhaus", SimStand = "01.09.2026 08:00",
+                                Speicher = "Einzelspeicher: Dauernutzung" }
         },
         GewaehlteVarianten = new[] { 1030, 1031, 1032 },
         Bausteine = new[]
@@ -88,8 +91,8 @@ public class BerichtSeiteTests : BunitContext
         Assert.Equal("Bericht — Stamm: Musterhaus", cut.Instance.TitelText);
         Assert.Empty(cut.FindAll(".epos-dialog-titel"));
 
-        // Variantenliste: vier Spalten plus die Wahlspalte.
-        Assert.Equal(5, cut.FindAll(".epos-raster thead th").Count);
+        // Variantenliste: fuenf Spalten plus die Wahlspalte (US-2: Stromspeicher).
+        Assert.Equal(6, cut.FindAll(".epos-raster thead th").Count);
         Assert.Equal(3, Haken(cut).Count);
 
         // Bausteinliste (Mehrfachauswahl, ohne Sammelknoepfe).
@@ -116,7 +119,25 @@ public class BerichtSeiteTests : BunitContext
         Assert.Equal("Art", koepfe[1].TextContent.Trim());
         Assert.Equal("Bezeichner", koepfe[2].TextContent.Trim());
         Assert.Equal("Projektname", koepfe[3].TextContent.Trim());
-        Assert.Equal("Simulation", koepfe[4].TextContent.Trim());
+        Assert.Equal("Stromspeicher", koepfe[4].TextContent.Trim());
+        Assert.Equal("Simulation", koepfe[5].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// AUFTRAG US-2: <b>Die Variantenliste sagt je Zeile, womit sie ihren Stromspeicher
+    /// rechnet</b> — dieselbe Spalte wie auf der Wirtschaftlichkeit (#320). Auf dieser
+    /// Seite entscheidet der Anwender, WELCHE Versionen in den Bericht kommen; ohne die
+    /// Spalte sieht eine Version ohne Speicher aus wie eine mit.
+    /// </summary>
+    [Fact]
+    public void Die_Variantenliste_nennt_je_Zeile_den_Speicherkontext()
+    {
+        var cut = Zeige();
+
+        string tabelle = cut.Find(".epos-raster").TextContent;
+        Assert.Contains("mit Speicherflotte: Lastspitzenkappung · 2 Einheiten", tabelle);
+        Assert.Contains("ohne Stromspeicher", tabelle);
+        Assert.Contains("Einzelspeicher: Dauernutzung", tabelle);
     }
 
     [Fact]

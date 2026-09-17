@@ -2836,6 +2836,18 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     margin-left: 6px;
 }
 
+/* Der Speicherkontext der gewaehlten Version (Auftrag US-2) - dasselbe, was die
+   Wirtschaftlichkeit in ihrer Spalte "Stromspeicher" sagt. Er steht hinter dem
+   Simulationsstand in derselben leisen Zeile, durch einen Mittepunkt getrennt. */
+.epos-simstand-speicher {
+    margin-left: 6px;
+}
+
+.epos-simstand-speicher::before {
+    content: "·";
+    margin-right: 6px;
+}
+
 /* Die Vergleichswahl (W5-B-5, 08.09.2026): eine Zeile Schalter ueber der
    Tabelle, die sie steuert - Uebersicht, Kosten und Wirtschaftlichkeit. */
 .epos-vergleichswahl {

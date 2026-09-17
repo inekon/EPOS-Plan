@@ -131,7 +131,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 86), saet den Gesetzeskatalog nach");
+                                  " nach (Schritte 62 bis 87), saet den Gesetzeskatalog nach");
                 Console.WriteLine("  und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
@@ -635,6 +635,51 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt 85 - " + a.Key + ".");
                 }
                 Console.WriteLine("Schritt 85 - offen jetzt " + StrompreisAltspalten.Offen() +
+                                  " (erwartet 0).");
+            }
+            Console.WriteLine();
+
+            // ---- Schritt 87: der entdoppelte Gesetzeskatalog (Entscheid US-E-1 (a)).
+            //      Zwei Anweisungen in FESTER Reihenfolge - erst die Entdoppelung des
+            //      Bestands, dann der eindeutige Index; umgekehrt scheiterte die Anlage
+            //      an der ersten Dublette. Dazu der Beifang aus #321: je Projekt bleibt
+            //      genau EINE aktive Speichervariante. Beides kommt aus
+            //      GesetzesparameterEindeutig bzw. SpeicherVarianteAktivEindeutig -
+            //      DENSELBEN Quellen, aus denen sich
+            //      SchemaMigration.Schritt_87_GesetzesparameterEindeutig bedient.
+            //      Ergebnisneutral: Behalten wird beide Male die kleinste ID, genau die,
+            //      die jede Lesekette schon bisher genommen hat. Der Schritt steht VOR
+            //      der Katalognachsaat - die saet in eine entdoppelte Tabelle.
+            if (!trocken)
+            {
+                long dubletten = Zahl(GesetzesparameterEindeutig.Zaehlung());
+                Console.WriteLine("Schritt 87 - " + GesetzesparameterEindeutig.TABELLE +
+                                  ": ueberzaehlige Zeilen " + dubletten + ".");
+                if (dubletten > 0)
+                {
+                    foreach (string zeile in PvKoeffizientenReparatur.Zerlege(
+                                 Text(GesetzesparameterEindeutig.Protokollabfrage())))
+                        Console.WriteLine("Schritt 87 - " + zeile);
+                    DataRepository.ExecuteNonQuery(GesetzesparameterEindeutig.SQL_ENTDOPPELN);
+                }
+                DataRepository.ExecuteNonQuery(GesetzesparameterEindeutig.SQL_INDEX);
+                Console.WriteLine("Schritt 87 - Index " + GesetzesparameterEindeutig.INDEX +
+                                  ": " + Zahl(GesetzesparameterEindeutig.ZaehlungIndex()) +
+                                  " (erwartet 1), ueberzaehlig jetzt " +
+                                  Zahl(GesetzesparameterEindeutig.Zaehlung()) + ".");
+
+                long mehrfach = Zahl(SpeicherVarianteAktivEindeutig.Zaehlung());
+                Console.WriteLine("Schritt 87 - " + SpeicherVarianteAktivEindeutig.TABELLE +
+                                  ": ueberzaehlige AKTIVE Zeilen " + mehrfach + ".");
+                if (mehrfach > 0)
+                {
+                    foreach (string zeile in PvKoeffizientenReparatur.Zerlege(
+                                 Text(SpeicherVarianteAktivEindeutig.Protokollabfrage())))
+                        Console.WriteLine("Schritt 87 - " + zeile);
+                    DataRepository.ExecuteNonQuery(SpeicherVarianteAktivEindeutig.SQL_ENTDOPPELN);
+                }
+                Console.WriteLine("Schritt 87 - aktive Varianten ueberzaehlig jetzt " +
+                                  Zahl(SpeicherVarianteAktivEindeutig.Zaehlung()) +
                                   " (erwartet 0).");
             }
             Console.WriteLine();

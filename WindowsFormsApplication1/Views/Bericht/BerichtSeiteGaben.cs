@@ -67,6 +67,7 @@ namespace WindowsFormsApplication1
                 ["SpalteArt"] = MyResource.Resource.BK_SP_ART,
                 ["SpalteBezeichner"] = MyResource.Resource.BK_SP_BEZEICHNER,
                 ["SpalteProjektname"] = MyResource.Resource.BK_SP_PROJEKTNAME,
+                ["SpalteSpeicher"] = MyResource.Resource.WIRT_ZEILE_SPEICHER,
                 ["SpalteSimulation"] = MyResource.Resource.BK_BER_SP_SIMULATION,
                 ["AlleText"] = MyResource.Resource.BK_BER_BTN_ALLE,
                 ["KeineText"] = MyResource.Resource.BK_BER_BTN_KEINE,
@@ -114,6 +115,10 @@ namespace WindowsFormsApplication1
                         Bezeichner = st.IstStamm ? MyResource.Resource.BK_ART_STAMMPROJEKT
                                                  : st.Variantenname,
                         Projektname = st.Projektname,
+                        // AUFTRAG US-2: Womit rechnet diese Version ihren Stromspeicher?
+                        // Der Text kommt aus der EINEN Kernmethode, die auch der
+                        // Simulationsreiter und die Wirtschaftlichkeit nehmen (#320).
+                        Speicher = SpeicherAnzeigeCtrl.SpeicherKontextText(st.IdProjekt),
                         SimStand = st.SimStandText,
                         IstStamm = st.IstStamm,
                         Auffaellig = !st.SimStand.HasValue || st.Veraltet

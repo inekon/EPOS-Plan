@@ -123,6 +123,16 @@
             {
                 <span class="epos-veraltet" title="@Simulationsgrund">@WarnZeichen</span>
             }
+            @* AUFTRAG US-2: Womit rechnet DIESE Version ihren Stromspeicher? Die
+               Wirtschaftlichkeit sagt es seit #320 in einer Spalte der
+               Vergleichsgruppentabelle; diese Seite hat keine Tabelle mehr (W5-E-1,
+               Auswahlfeld statt Tabelle), und was die Tabelle sonst noch sagte, steht
+               seither genau hier - deshalb auch das. Leer = nicht lesbar; dann bleibt
+               der Satz weg, statt etwas zu behaupten. *@
+            @if (!string.IsNullOrEmpty(Speicherzeile))
+            {
+                <span class="epos-simstand-speicher">@Speicherzeile</span>
+            }
         }
     </p>
 
@@ -340,6 +350,13 @@
     /// </summary>
     [Parameter] public string SpalteSimulation { get; set; } = "Simulation";
 
+    /// <summary>
+    /// Das Wort vor dem Speicherkontext in der Statuszeile (AUFTRAG US-2) — dieselbe
+    /// Ressource wie der Spaltenkopf der Wirtschaftlichkeit (<c>WIRT_ZEILE_SPEICHER</c>),
+    /// damit beide Seiten dasselbe Wort benutzen.
+    /// </summary>
+    [Parameter] public string SpalteSpeicher { get; set; } = "Stromspeicher";
+
     [Parameter] public string SpalteAktion { get; set; } = "Aktion";
     [Parameter] public string AnlegenText { get; set; } = "Variante anlegen";
     [Parameter] public string LoeschenText { get; set; } = "Variante löschen";
@@ -534,6 +551,21 @@
             VarianteZeile? z = Markierte;
             return z is null || string.IsNullOrEmpty(z.SimZeitpunkt)
                 ? SimGrundFehlt : SimGrundVeraltet;
+        }
+    }
+
+    /// <summary>
+    /// Der Speicherkontext der gewählten Version als Satz: „Stromspeicher: mit
+    /// Speicherflotte …" (AUFTRAG US-2). Leer, wenn die Hülle nichts lesen konnte —
+    /// dann steht dort nichts, statt etwas zu behaupten.
+    /// </summary>
+    private string Speicherzeile
+    {
+        get
+        {
+            VarianteZeile? z = Markierte;
+            if (z is null || string.IsNullOrEmpty(z.Speicher)) return "";
+            return SpalteSpeicher + ": " + z.Speicher;
         }
     }
 

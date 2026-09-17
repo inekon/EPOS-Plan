@@ -204,6 +204,10 @@ namespace WindowsFormsApplication1
                         Bezeichner = vi.IstStamm ? MyResource.Resource.BK_ART_STAMMPROJEKT
                                                  : vi.Variantenname,
                         Projektname = vi.Projektname,
+                        // AUFTRAG US-2: Womit rechnet diese Version ihren Stromspeicher?
+                        // Der Text kommt aus der EINEN Kernmethode, die auch der
+                        // Simulationsreiter und die Wirtschaftlichkeit nehmen (#320).
+                        Speicher = SpeicherAnzeigeCtrl.SpeicherKontextText(vi.IdProjekt),
                         IstStamm = vi.IstStamm
                     });
                     _gruppe.Add(vi.IdProjekt);
@@ -217,6 +221,7 @@ namespace WindowsFormsApplication1
 
             stand.VergleichTitel = MyResource.Resource.BK_KOSTEN_LBL_VERGLEICH;
             var spalten = new List<string> { T("WIRT_SP_KENNZAHL", "Kennzahl") };
+            var speicher = new List<string>();
             var invest = new List<string>();
             var betrieb = new List<string>();
             var energie = new List<string>();
@@ -225,13 +230,29 @@ namespace WindowsFormsApplication1
                 if (!gewaehlt.Contains(v.IdProjekt)) continue;
                 spalten.Add(v.IstStamm ? v.Art
                             : (string.IsNullOrEmpty(v.Bezeichner) ? v.Projektname : v.Bezeichner));
+                speicher.Add(v.Speicher ?? "");
                 Kostenwerte w = v.IdProjekt == _idProjekt ? werteProjekt : Kostenwerte.Lies(_wirt, v.IdProjekt);
                 invest.Add(w.InvestText(kultur));
                 betrieb.Add(w.BetriebText(kultur));
                 energie.Add(w.EnergieText(kultur));
             }
             stand.VergleichSpalten = spalten;
-            stand.Vergleich = new List<MatrixZeile>
+
+            // AUFTRAG US-2: WOMIT rechnet diese Spalte? Die Zeile steht GANZ OBEN, vor
+            // der ersten Geldzeile - sie ist der Kontext, unter dem alles darunter zu
+            // lesen ist; dieselbe Stelle und dieselbe Ressource wie in der
+            // Kennzahlentabelle der Wirtschaftlichkeit (#320). Die Vergleichsgruppe
+            // steht auf dieser Seite als Auswahl, nicht als Tabelle (W5-B-5) - die
+            // Spalte der Wirtschaftlichkeit wird hier deshalb zur ZEILE. Ohne lesbaren
+            // Kontext entfaellt sie, wie jede andere Zeile ohne Wert.
+            var zeilen2 = new List<MatrixZeile>();
+            if (speicher.Exists(t => !string.IsNullOrEmpty(t)))
+                zeilen2.Add(new MatrixZeile
+                {
+                    Titel = MyResource.Resource.WIRT_ZEILE_SPEICHER,
+                    Zellen = speicher
+                });
+            zeilen2.AddRange(new List<MatrixZeile>
             {
                 new MatrixZeile
                 {
@@ -248,7 +269,8 @@ namespace WindowsFormsApplication1
                     Titel = MyResource.Resource.BK_KOSTEN_ENERGIE + " [" + MyResource.Resource.BK_KOSTEN_EINHEIT_EUR_A + "]",
                     Zellen = energie
                 }
-            };
+            });
+            stand.Vergleich = zeilen2;
         }
 
         /// <summary>Die Vergleichswahl der Seite (W5‑B‑5) in die geteilte Auswahl.</summary>

@@ -1086,3 +1086,123 @@ wertgleich aus der Rückfallebene; es fehlten Katalogzeilen, also eine hausinter
    `StrompreisZerlegungModel.STROMSTEUER_REDUZIERT` sagt, der Katalogschlüssel
    `GESETZ_STROMST_REDUZIERT` sei „mit der Saatgeneration 5 eingesät"; im Quelltext trägt
    die Zeile die Generation **7**. Reiner Kommentarfehler ohne Wirkung.
+
+---
+
+## Nachtrag US-2 (17.09.2026) — Schemaschritt 87 entdoppelt den Gesetzeskatalog
+
+**Anlass:** Restpunkt „Nach #319" (1) aus US1.9, Anwenderentscheid **US-E-1 = (a)**.
+Der Nachtrag US-1 hat die Ursache der Dubletten behoben, nicht die Dubletten selbst.
+
+### US2.1 Was in der Datenbank steht — und warum es dort steht
+
+Die Katalogsaat (`GesetzKatalog.StelleKatalogSicher`) liest den Marker
+`KATALOG_GENERATION`, sät alles mit höherer Generation ein und hebt den Marker **danach**.
+Brach die Schleife mittendrin ab, blieb der Marker unten, und die Zeilen **vor** der
+Fehlstelle legte der nächste Start ein zweites Mal an — mit neuer `ID`. Jeder Start eine
+weitere Zeile. Betroffen waren `STROMST_REDUZIERT_SATZ` und `UMLAGE_KWKG` der
+Generation 7.
+
+Warum das nicht nur Ordnungsliebe ist: `GesetzKatalog.Sicherstellen` liest
+`ORDER BY Schluessel, JahrVon` und baut je Schlüssel eine nach Stichjahr sortierte Reihe;
+„welcher Satz gilt im Jahr J" nimmt daraus die letzte Zeile mit `JahrVon <= J`. Bei zwei
+Zeilen desselben Stichjahrs entscheidet die Speicherreihenfolge — und wer in der
+Pflegemaske die eine bearbeitet, bearbeitet womöglich die, die niemand liest.
+
+### US2.2 Die Regel und ihre Herkunft
+
+Der Index steht über **(`Schluessel`, `Klasse`, `JahrVon`)** — genau dem Tripel, das die
+Pflegemaske seit jeher prüft (`GesetzKatalog.Existiert`, Meldung `GESETZ_MSG_DOPPELT`).
+Was die Anwendungslogik dort hält, hält ab hier die Datenbank; dieselbe Bewegung wie in
+Schritt 76 (`ProjektEnergietraegerEindeutig`).
+
+**Auf die `ID` verweist nichts.** `Tab_Gesetzesparameter` trägt keinen Fremdschlüssel,
+keine andere Tabelle verweist auf sie, und `GesetzZeile.Id` lebt nur während einer
+Pflegesitzung (Ändern/Löschen). Jede überzählige Zeile darf deshalb fallen; behalten wird
+je Tripel die **kleinste `ID`** — die zuerst gesäte und damit die, die jede Lesekette
+schon bisher genommen hat. Der Schritt ist ergebnisneutral.
+
+**Nur vollständig besetzte Tripel.** Entdoppelt wird ausschließlich, was der Index auch
+bindet: Zeilen mit `Schluessel`, `Klasse` **und** `JahrVon`. SQLite hält `NULL` in einem
+eindeutigen Index nie gegen `NULL`; eine Zeile mit leerer Schlüsselspalte wäre weder
+Dublette noch vom Index betroffen, und sie zu löschen hieße mehr wegzuräumen, als die
+Regel verlangt. Im Bestand gibt es keine solche Zeile.
+
+**Jede entfernte Zeile bekommt ihre Protokollzeile** (Schlüssel, Klasse, Stichjahr,
+entfernte `ID`). Eine gelöschte Katalogzeile ist nicht wiederzubeschaffen, und vom
+Schemalauf sieht der Anwender nur das Protokoll. Abgefragt wird vor dem Löschen, als
+Sammeltext über `group_concat` — der SQLite-Zweig der Migration kann nur Skalare lesen,
+Muster Schritt 69 (`PvKoeffizientenReparatur`).
+
+### US2.3 Die Saat lebt mit dem Index
+
+Mit dem Index wäre ein erneutes Einsäen derselben Zeile ein Fehlschlag — und `Einfuegen`
+warf bei einem Fehlschlag, brach damit die Generation ab und ließ den Marker unten. Genau
+das war die Ursache der Dubletten. Seit US-2 prüft der Saatlauf vorher, ob die Zeile schon
+dasteht, **übergeht sie benannt** (`SaatWarnungen`: „Schluessel X, Klasse Y, ab JJJJ nicht
+eingesaet: steht bereits — uebergangen, die Generation laeuft weiter") und zählt sie nicht
+als nachgesät. Ein echter Fehlschlag bricht weiterhin ab, wie bisher; unterschieden wird
+über eine zweite Probe im `catch`.
+
+### US2.4 Der Beifang aus #321 — eine aktive Speichervariante je Projekt
+
+Im selben Schritt fällt der zweite Zustand, den ein Schreibweg ausschließt und die
+Datenbank zuließ: zwei aktive Speichervarianten in **einem** Projekt. Kein eigener
+Schemaschritt — es ist dieselbe Sache, und der Auftrag ließ nur Schritt 87 zu.
+
+Geräumt wird **je Projekt**, nicht je Anlage: `SetzeAktiv` räumt projektweit ab
+(`WHERE ID_Energieanlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = ?)`),
+und `ReadAktiveVariante` liest projektweit mit `ORDER BY v.ID LIMIT 1`. Die schwächere
+Lesart „je Anlage" ließe genau den Zustand stehen, über den die Lesekette dann wieder
+stillschweigend hinwegginge. Für den gemeldeten Fall ist das Ergebnis dasselbe — die
+beiden Zeilen hängen an derselben Anlage.
+
+**Kein Teilindex** über `(ID_Energieanlage) WHERE Aktiv = 1`: Er erzwänge eine Reihenfolge
+der zwei `UPDATE` von `SetzeAktiv` und wäre eine zweite Wahrheit über dieselbe Regel. Die
+Entdoppelung ist deshalb wiederholbar statt abgesichert.
+
+### US2.5 Eine Quelle, drei Leser
+
+`GesetzesparameterEindeutig` und `SpeicherVarianteAktivEindeutig`
+(`EPOS.Kern/Allgemein/Update/`) tragen Spaltennamen, Indexname, Entdoppelung,
+Zählung und Protokollabfrage. Daraus bedienen sich `SchemaMigration.Schritt_87_…`,
+`Werkzeuge/Testdatenbankschema` und `EPOS.Kern.Tests/TestDatenbank`.
+`SchemaStand.Zielversion` 86 → **87**.
+
+### US2.6 Zahlen
+
+| Messung | vorher | nachher |
+|---|---|---|
+| `Tab_Gesetzesparameter`, Zeilen (Testdatenbank) | 226 | 226 |
+| überzählige Zeilen je Tripel | 0 | 0 |
+| `idx_Gesetzesparameter_Eindeutig` | fehlt | steht (eindeutig, drei Spalten) |
+| mehrfach aktive Speichervarianten je Projekt | 1 (Projekt 1026) | 0 |
+| `Tab_StromspeicherVariante` ID 13, `Aktiv` | 1 | 0 |
+| Schemastand der Testdatenbank | 86 | 87 |
+
+Die Testdatenbank hatte nichts zu entdoppeln: Sie hat nie ein Programm gestartet, also
+auch nie abgebrochen gesät.
+
+### US2.7 Nachweis
+
+* **`GesetzesparameterEindeutigTests`** (8 Fälle): Index über die drei Spalten und
+  eindeutig; saubere Messlatte; zweite Zeile desselben Tripels wird abgewiesen;
+  **Schemafall** — Arbeitskopie auf Stand 86 (Index gezogen), drei Zeilen desselben
+  Tripels, Entdoppelung behält die kleinste `ID`, **zwei** Protokollzeilen, danach lässt
+  sich der Index anlegen, zweiter Lauf ändert nichts und liefert keine Protokollzeile
+  mehr; Index **ohne** vorherige Entdoppelung scheitert; doppelte Saat warnt benannt,
+  Marker steigt, `ZuletztNachgesaet` = 0, keine Zeile kommt hinzu; Projekt 1026 je Projekt
+  **und** je Anlage sauber; Entdoppelung der aktiven Varianten mit Protokollzeile und
+  Wiederholbarkeit.
+* **Gegenprobe** gefahren und zurückgebaut: `SQL_ENTDOPPELN` um `AND 1 = 0` ergänzt →
+  Schemafall rot (7/8 statt 8/8); zurückgebaut → 8/8.
+* **Referenzlauf** 1030, 1007, 1017, 1045, 1046 gegen `2026-09-16_R8_Heizkessel_Kaskade`:
+  **5/5 PASS**, und die CSV vor und nach der Datenbankwandlung sind **byte-identisch**
+  (nur `protokoll.txt` unterscheidet sich, es trägt die Uhrzeit).
+* `SqlDialektPruefer`: 1 488 Texte, 0 Fundstellen.
+
+### US2.8 Wiki und Logbuch
+
+Kein Wiki-Eintrag zur Entdoppelung — sie ist Wartung. **Ein** Logbuch-Satz ist entworfen,
+weil der Anwender die Dubletten in der Katalogpflege gesehen haben kann; Version beim
+Anwender zu erfragen. Wortlaut siehe Abschnitt „Logbuch" im VF-1-Protokoll.

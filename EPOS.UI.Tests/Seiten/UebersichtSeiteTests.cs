@@ -38,10 +38,12 @@ public class UebersichtSeiteTests : EposBunitContext
     {
         new VarianteZeile { IdProjekt = 1030, Art = "Stamm", Bezeichner = "(Stammprojekt)",
                             Projektname = "Musterhaus", SimStand = "02.09.26 10:00",
-                            SimZeitpunkt = "02.09.26 10:00", IstStamm = true },
+                            SimZeitpunkt = "02.09.26 10:00",
+                            Speicher = "mit Speicherflotte: Lastspitzenkappung · 2 Einheiten",
+                            IstStamm = true },
         new VarianteZeile { IdProjekt = 1031, Art = "Variante", Bezeichner = "WP klein",
                             Projektname = "Musterhaus - WP klein", SimStand = "— (fehlt) ⚠",
-                            SimZeitpunkt = "", Auffaellig = true }
+                            SimZeitpunkt = "", Speicher = "ohne Stromspeicher", Auffaellig = true }
     };
 
     /// <summary>Die Gegenüberstellung (Stammzeile markiert) — ohne Aktionsspalte.</summary>
@@ -474,6 +476,47 @@ public class UebersichtSeiteTests : EposBunitContext
         Assert.Equal("polite", zeile.GetAttribute("aria-live"));
         Assert.Contains("Simulation: 02.09.26 10:00", zeile.TextContent);
         Assert.Empty(zeile.QuerySelectorAll(".epos-veraltet"));
+    }
+
+    /// <summary>
+    /// AUFTRAG US-2: <b>Die Statuszeile nennt auch, WOMIT die gewählte Version ihren
+    /// Stromspeicher rechnet.</b>
+    ///
+    /// <para>Die Wirtschaftlichkeit sagt es seit #320 in einer Spalte der
+    /// Vergleichsgruppentabelle. Diese Seite hat seit W5‑E‑1 keine Tabelle mehr, sondern
+    /// ein Auswahlfeld — und was die Tabelle sonst noch sagte, steht seither in dieser
+    /// leisen Zeile. Ohne den Satz sieht eine Version ohne Speicher aus wie eine
+    /// mit.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Statuszeile_nennt_auch_den_Speicherkontext_der_gewaehlten_Version()
+    {
+        var cut = Zeige();
+
+        IElement zeile = Simulationszeile(cut);
+        Assert.Contains("Stromspeicher: mit Speicherflotte: Lastspitzenkappung · 2 Einheiten",
+                        zeile.TextContent);
+
+        // Eine andere Version markiert — der Satz wechselt mit.
+        Assert.Contains("Stromspeicher: ohne Stromspeicher",
+                        Simulationszeile(Zeige(stand: Unterschiedsansicht())).TextContent);
+    }
+
+    /// <summary>
+    /// GEGENPROBE zum Speicherkontext: Ohne lesbaren Text steht dort NICHTS — die Seite
+    /// erfindet nichts und fällt nicht aus (US-2).
+    /// </summary>
+    [Fact]
+    public void Ohne_Speicherkontext_bleibt_die_Statuszeile_ohne_diesen_Satz()
+    {
+        UebersichtStand stand = Vergleichsansicht();
+        foreach (VarianteZeile z in stand.Zeilen) z.Speicher = "";
+        var cut = Zeige(stand: stand);
+
+        IElement zeile = Simulationszeile(cut);
+        Assert.Contains("Simulation: 02.09.26 10:00", zeile.TextContent);
+        Assert.DoesNotContain("Stromspeicher", zeile.TextContent);
+        Assert.Empty(zeile.QuerySelectorAll(".epos-simstand-speicher"));
     }
 
     /// <summary>Ohne Ergebnis: „noch nicht simuliert" samt „⚠" und Grund im Kurztext.</summary>

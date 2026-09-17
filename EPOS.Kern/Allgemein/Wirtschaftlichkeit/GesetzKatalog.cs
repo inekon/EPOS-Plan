@@ -769,10 +769,35 @@ namespace WindowsFormsApplication1
                     foreach (GesetzParameter p in Vorbelegung())
                     {
                         if (p.Generation <= gesaet) continue;
+
+                        // AUFTRAG US-2: Seit Schemaschritt 87 hält ein eindeutiger Index
+                        // (Schluessel, Klasse, JahrVon). Eine Zeile, die schon dasteht,
+                        // ist deshalb kein Grund mehr, die Generation abzubrechen — der
+                        // Abbruch war ja gerade die Ursache der Dubletten (#319). Sie
+                        // wird BENANNT übergangen und zählt nicht als nachgesät.
+                        if (StehtSchon(p))
+                        {
+                            WarnenDublette(p, "steht bereits");
+                            continue;
+                        }
+
                         id++;
-                        Einfuegen(id, p.Schluessel, p.Klasse, p.JahrVon, p.Wert,
-                                  p.Einheit, p.Status, p.Quelle);
-                        neu++;
+                        try
+                        {
+                            Einfuegen(id, p.Schluessel, p.Klasse, p.JahrVon, p.Wert,
+                                      p.Einheit, p.Status, p.Quelle);
+                            neu++;
+                        }
+                        catch (Exception ex)
+                        {
+                            // Zwischen Probe und INSERT kann der Index zugeschlagen
+                            // haben (zweiter Lauf, fremder Schreiber). Ist die Zeile
+                            // jetzt da, ist das derselbe Fall wie oben; sonst ist es ein
+                            // echter Fehlschlag und bricht die Generation wie bisher.
+                            if (!StehtSchon(p)) throw;
+                            id--;
+                            WarnenDublette(p, ex.Message);
+                        }
                     }
                     MarkerSetzen(ziel, ref id);
                     ZuletztNachgesaet = neu;
@@ -861,6 +886,46 @@ namespace WindowsFormsApplication1
         /// ausgelöst. Nach aussen ändert sich nichts: Der Aufrufer fing die Ausnahme
         /// schon bisher wortlos ab.
         /// </summary>
+        /// <summary>
+        /// Steht die Zeile schon da? Gefragt wird nach demselben Tripel, das der
+        /// eindeutige Index aus Schemaschritt 87 hält und das die Pflegemaske seit jeher
+        /// prüft (<see cref="Existiert"/>): Schlüssel, Klasse, Stichjahr.
+        ///
+        /// <para>Still über <see cref="StilleDb"/> wie der ganze Saatweg; eine nicht
+        /// lesbare Antwort heißt „steht nicht da" — dann versucht es der
+        /// <c>INSERT</c>, und der Index entscheidet.</para>
+        /// </summary>
+        private static bool StehtSchon(GesetzParameter p)
+        {
+            if (p == null) return false;
+
+            object anz = StilleDb.Scalar(
+                "SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER +
+                " WHERE Schluessel = ? AND Klasse = ? AND JahrVon = ?",
+                StilleDb.Par("@sch", DbParamTyp.VarWChar, p.Schluessel ?? ""),
+                StilleDb.Par("@kla", DbParamTyp.VarWChar, p.Klasse ?? ""),
+                StilleDb.Par("@jv", DbParamTyp.Integer, p.JahrVon));
+
+            if (anz == null || anz == DBNull.Value) return false;
+            try { return Convert.ToInt32(anz, CultureInfo.InvariantCulture) > 0; }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Eine übergangene Saatzeile benennen (AUFTRAG US-2) — Schlüssel, Klasse,
+        /// Stichjahr und Grund, in derselben Liste wie jede andere Saatwarnung.
+        /// </summary>
+        private static void WarnenDublette(GesetzParameter p, string grund)
+        {
+            string m = "Schluessel " + (p == null ? "?" : p.Schluessel) +
+                       ", Klasse " + (p == null ? "?" : p.Klasse) +
+                       ", ab " + (p == null ? "?" : p.JahrVon.ToString(CultureInfo.InvariantCulture)) +
+                       " nicht eingesaet: " + (string.IsNullOrEmpty(grund) ? "Dublette" : grund) +
+                       " — uebergangen, die Generation laeuft weiter.";
+            _saatwarnungen.Add(m);
+            Console.WriteLine("GesetzKatalog-Nachsaat: " + m);
+        }
+
         /// <summary>Eine Warnung aufnehmen — Konsole und <see cref="SaatWarnungen"/>.</summary>
         private static void Warnen(Exception ex)
         {
