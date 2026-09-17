@@ -132,9 +132,11 @@ namespace WindowsFormsApplication1
                         WirtschaftlichkeitParameter p = ctrl.LadeParameter(idStamm);
                         TarifParameter tarif = ctrl.LadeTarif(idStamm);
                         // SP-W1: auch der Leistungspreis des Stromträgers braucht den
-                        // frischen Lauf — seine Basis ist die Bezugsspitze.
+                        // frischen Lauf — seine Basis ist die Bezugsspitze. LS-E-2 (VF-1):
+                        // Er zählt für die ganze Gruppe; eine Variante, die ihn als Einzige
+                        // führt, verlöre ihren Leistungsanteil sonst still.
                         bool mitZeitreihen = tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0 ||
-                                             KostenEmissionRechner.StromLeistungspreisGepflegt(idStamm);
+                                             KostenEmissionRechner.StromLeistungspreisGepflegt(idStamm, varianten);
 
                         bool warGecacht = daten != null;
                         if (daten == null)   // Simulationsdaten nur einmal sammeln

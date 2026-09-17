@@ -47,6 +47,13 @@ namespace EPOS.Kern.Tests
         /// <summary><c>energy_carrier.id</c> von „Elektrische Energie".</summary>
         private const int STROM = 60;
 
+        /// <summary>
+        /// Die zweite Version der Gruppe für den Entscheid LS-E-2: Sie führt eine eigene
+        /// Zeile in <c>energy_project_settings</c> für den Stromträger — dort steht die
+        /// Projektübersteuerung, um die es geht.
+        /// </summary>
+        private const int PROJEKT_VERSION = 1030;
+
         /// <summary>Arbeitspreisanteil der Fälle unten: 19,08 MWh × 1 000 × 0,35 €/kWh.</summary>
         private const double ARBEIT = 6678.0;
 
@@ -310,6 +317,53 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual(de, en);
             Assert.Contains("kW", de);
             Assert.Contains("kW", en);
+        }
+
+        // =================================================================
+        // 6 — LS-E-2: der Leistungspreis der GRUPPE, nicht nur des Stamms
+        // =================================================================
+
+        /// <summary>
+        /// <b>Entscheid LS-E-2</b> (Auftrag VF-1): Ob die Wirtschaftlichkeit ihre Gruppe
+        /// mit Zeitreihen rechnet, entschied bis hierher allein der STAMM. Der
+        /// Leistungspreis ist aber eine Projektübersteuerung — eine Variante kann ihn
+        /// führen, ohne dass der Stamm es tut. Dann rechnete die Gruppe ohne Reihen, und
+        /// der Variante fiel der Leistungsanteil ihrer Energiekosten still weg, weil ihre
+        /// Bezugsspitze nie eingesammelt wurde.
+        ///
+        /// <para>Die Probe setzt den Satz NUR an der zweiten Version: Der Stamm allein
+        /// sagt weiter „nein", die Gruppe sagt „ja".</para>
+        /// </summary>
+        [Fact]
+        public void Der_Leistungspreis_einer_Variante_zaehlt_fuer_die_ganze_Gruppe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Der Katalog führt keinen Leistungspreis — sonst träfe er jedes Projekt.
+            Katalogpreise(0.35, 0.0, null);
+            Assert.False(KostenEmissionRechner.StromLeistungspreisGepflegt(PROJEKT_WP));
+            Assert.False(KostenEmissionRechner.StromLeistungspreisGepflegt(PROJEKT_VERSION));
+
+            // Nur die zweite Version bekommt den Satz.
+            DataRepository.ExecuteSQL(
+                "UPDATE energy_project_settings SET custom_price_power = ? " +
+                "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@l", 60.0), new DbParam("@p", PROJEKT_VERSION), new DbParam("@c", STROM));
+
+            Assert.True(KostenEmissionRechner.StromLeistungspreisGepflegt(PROJEKT_VERSION),
+                "Vorbedingung: Die Version führt den Satz.");
+
+            // Der Stamm ALLEIN sagt weiter „nein" …
+            Assert.False(KostenEmissionRechner.StromLeistungspreisGepflegt(PROJEKT_WP));
+            // … die GRUPPE sagt „ja".
+            Assert.True(KostenEmissionRechner.StromLeistungspreisGepflegt(
+                PROJEKT_WP, new List<int> { PROJEKT_WP, PROJEKT_VERSION }));
+
+            // Ohne Versionen bleibt es beim Stamm; eine leere Liste ändert nichts.
+            Assert.False(KostenEmissionRechner.StromLeistungspreisGepflegt(PROJEKT_WP, null));
+            Assert.False(KostenEmissionRechner.StromLeistungspreisGepflegt(
+                PROJEKT_WP, new List<int>()));
         }
 
         // =================================================================

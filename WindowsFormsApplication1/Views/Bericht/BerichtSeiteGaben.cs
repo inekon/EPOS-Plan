@@ -172,8 +172,11 @@ namespace WindowsFormsApplication1
                 // SP-W1: Ist am Stromträger ein Leistungspreis gepflegt, braucht auch
                 // die KOSTENseite des Berichts die Reihen — ohne Bezugsspitze fällt sein
                 // Leistungsanteil aus den Energiekosten.
+                // LS-E-2 (VF-1): Der Leistungspreis zählt für die GANZE Gruppe. Führt ihn
+                // nur eine Variante, fehlte ihr ohne Reihen der Leistungsanteil.
                 bool mitZeitreihen = konfig.IstAktiv(BerichtsKonfiguration.B_ERGEBNISSE) ||
-                                     KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm);
+                                     KostenEmissionRechner.StromLeistungspreisGepflegt(
+                                         _idStamm, konfig.VariantenIds);
 
                 BerichtsDaten daten = await Task.Run(() =>
                     new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,

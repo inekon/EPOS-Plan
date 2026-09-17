@@ -828,6 +828,33 @@ namespace WindowsFormsApplication1
             catch { return false; }
         }
 
+        /// <summary>
+        /// Dieselbe Frage für eine ganze VERGLEICHSGRUPPE (Entscheid LS-E-2, Auftrag VF-1):
+        /// Führt der Stamm <b>oder eine ihrer Versionen</b> einen Strom-Leistungspreis?
+        ///
+        /// <para><b>Warum nicht der Stamm allein.</b> Der Leistungspreis ist eine
+        /// Projektübersteuerung; eine Variante kann ihn führen, ohne dass der Stamm es tut.
+        /// Entschied allein der Stamm, rechnete die Wirtschaftlichkeit die Gruppe ohne
+        /// Zeitreihen — und der Variante fiel der Leistungsanteil ihrer Energiekosten
+        /// stillschweigend weg, weil ihre Bezugsspitze nie eingesammelt wurde.</para>
+        ///
+        /// <para>Die Frage wird je Projekt gestellt und beim ersten Treffer beendet; der
+        /// Stamm kommt zuerst, weil er der häufigste Träger ist.</para>
+        /// </summary>
+        /// <param name="idStamm">Das Stammprojekt der Gruppe.</param>
+        /// <param name="versionen">
+        /// Die übrigen Versionen der Gruppe (der Stamm darf darin stehen); <c>null</c> =
+        /// nur der Stamm.
+        /// </param>
+        public static bool StromLeistungspreisGepflegt(int idStamm, IEnumerable<int> versionen)
+        {
+            if (StromLeistungspreisGepflegt(idStamm)) return true;
+            if (versionen == null) return false;
+            foreach (int id in versionen)
+                if (id > 0 && id != idStamm && StromLeistungspreisGepflegt(id)) return true;
+            return false;
+        }
+
         private static TraegerInfo LadeTraeger(int idProjekt, int carrierId)
         {
             var info = new TraegerInfo();
