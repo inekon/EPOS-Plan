@@ -46,7 +46,11 @@ Die Recherche zu den Bibliotheken (Befund C, N, S; Gegenlesen IFC) ergab:
    und ein Sicherheitsrisiko weniger.
 4. **Speicher:** `MemoryModel` hält das Modell im Arbeitsspeicher (10 bis 20 MB je MB
    STEP-Text); ein iPad braucht ein benanntes Größenlimit.
-5. **Verwechslungsgefahr beim Export:** Eine Datei mit erfundener Anordnung ist
+5. **Paketgröße:** `Xbim.IO.MemoryModel` bringt mit `Xbim.Ifc2x3`, `Xbim.Ifc4` und
+   `Xbim.Ifc4x3` drei erzeugte Schema-Assemblies mit; sie wachsen in das iOS-App-Paket
+   hinein, und Trimming greift bei reflexiv erreichten Typen nur begrenzt. Wie groß der
+   Zuwachs ist, ist nicht gemessen.
+6. **Verwechslungsgefahr beim Export:** Eine Datei mit erfundener Anordnung ist
    gefährlicher als eine ohne Körper.
 
 ## Entscheidung
@@ -148,8 +152,10 @@ Quellenverweis begrenzt.
 - **Auslieferung:** Lizenzhinweisseite ist Vorbedingung; ohne sie ist der Import nicht
   auslieferbar.
 - **Später zu prüfen:** Trimming-Verhalten eines iOS-Gerätebaus (Simulatorbauten trimmen
-  nicht); Größenlimit auf dem iPad messen; Betrachter-Prüfmatrix für geometrielose Dateien
-  (rund 1 PT); vertragliche Zulässigkeit der Rückgabe veränderter Fremddateien vor S2.
+  nicht); Größenlimit auf dem iPad messen; **Paketgröße der iOS-App messen** (mit und ohne die
+  drei Schema-Assemblies, `ios-arm64`, getrimmt — Kraft 5); Betrachter-Prüfmatrix für
+  geometrielose Dateien (rund 1 PT); vertragliche Zulässigkeit der Rückgabe veränderter
+  Fremddateien vor S2.
 - **Gebäudebetrachter (E11):** kein IFC-Betrachter mit Geometriekernel; die Ansicht zeigt die
   Raumgrenzen als **2D-Grundriss** je Geschoss (SVG in einer Razor-Komponente) und **schematische
   Körper** aus dem Zonengeometrie-Modell (three.js unter MIT, lokal ausgeliefert) —
@@ -174,3 +180,7 @@ Quellenverweis begrenzt.
 6. [ ] **Zonengeometrie-Modell und Gebäudeansicht nach E11:** Modell im Kern und 2D-Grundriss im
        Zuordnungsdialog mit G6c, schematische Körper mit G7b; three.js lokal unter
        `EPOS.UI/wwwroot` und auf die Lizenzhinweisseite (Frage U10).
+7. [ ] **Paketgröße der iOS-App messen** (Kraft 5): je ein Bau `ios-arm64`, getrimmt, mit und
+       ohne die Paketzeile `Xbim.IO.MemoryModel`; den Zuwachs durch die drei Schema-Assemblies
+       hier eintragen. Fällt er erheblich aus, den Import auf der iOS-Schale benannt ablehnen
+       oder die Schemata einzeln referenzieren.

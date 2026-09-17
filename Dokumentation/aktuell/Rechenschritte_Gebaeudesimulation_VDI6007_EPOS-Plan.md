@@ -1,6 +1,11 @@
 # Rechenschritte der Gebäudesimulation nach VDI 6007 Blatt 1 in EPOS-Plan
 
-**Stand:** 16.09.2026
+**Stand:** 17.09.2026
+**Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet; Rev. 1 vom 16.09.2026**
+Rev. 2 zieht den Fensterzweig nach E14 durch alle Schritte (A7a, Schritt C, E7, θ_op, stationäre
+Probe), macht die Kühlung zum vierten Kanal mit den fünf Betriebsfällen und getrennten Heiz- und
+Kühlakkumulatoren, ergänzt Schritt H der Anlagenkopplung als Vorgriff (7.4) und ersetzt die festen
+Schemaschrittnummern durch die Papiernamen M3, M3-G2 und M4.
 **Zweck:** Das Rechenbuch des Stundenmodells. Es führt die Rechnung in Schritten vor — je
 Schritt die Formeln, die Eingaben mit Einheit und Datenquelle, die Ausgaben und die Stelle in
 der Reihenfolge. Damit kann ein Fachplaner ein Ergebnis nachvollziehen und ein Entwickler den
@@ -37,11 +42,12 @@ in K/W, Leitwerte G in W/K, Kapazitäten C in J/K.
 ## 0. Überblick
 
 **Wo diese Rechnung steht.** Die Fassade `SimulationWaermebedarf` ruft je Gebäude erst einen
-**modellfreien Vorbereitungsschritt** (Bewohnerzahl aus der Nutzfläche, Skalierungsfaktor nach E8,
-Klimareihen) und danach über **eine einzige Weiche** genau ein Rechenmodul (E20). **Dieses Papier
+**modellfreien Vorbereitungsschritt** (Klimareihen, Verbrauch und Flächen des Projekts) und danach
+über **eine einzige Weiche** genau ein Rechenmodul (E20). **Dieses Papier
 beschreibt das Modul `Gebaeude/`** — den VDI-Weg. Der Tagesbilanz-Weg wird Zeichen für Zeichen in
-das Modul `Altweg/` verschoben, bekommt keine neue Funktion und **bleibt dauerhaft als
-eingefrorener Bestandsweg** neben dem VDI-Weg stehen (E23, 16.09.2026); er wird hier nur
+das Modul `Altweg/` verschoben, bekommt keine neue Funktion und **bleibt für die Dauer des
+Übergangs als eingefrorener Bestandsweg** neben dem VDI-Weg stehen (E23, E26); abgelöst wird er
+mit der Stufe **GA — Altweg ablösen**, deren Zeitpunkt offen ist (Q24). Er wird hier nur
 dort genannt, wo eine Zahl gegen ihn gehalten wird. **Keines der beiden Module ruft das andere.**
 Die Kälteseite verlässt denselben Lauf über die zweite Fassade `SimulationKaeltebedarf` (E21) — es
 gibt keine zweite Gebäuderechnung für sie.
@@ -73,37 +79,40 @@ Die Rechnung in zwölf Sätzen:
    die Stunde aus zwei oder mehr Abschnitten zusammen. Das ist die einzige Iteration.
 9. Prüfgröße ist das **Blockmittel** der Stunde, nicht der Momentanwert am Stundenende.
 10. Je Gebäude entstehen vier Reihen (Heizlast, Raumluft-, operative Temperatur, Kühlbedarf)
-    und sieben Kennzahlen (Schritt G).
+    und acht Kennzahlen (Schritt G).
 11. Die Heizlastreihe geht in Watt in den vorhandenen Gebäudepuffer und von dort unverändert in
     den Kanal `HEIZUNG`; alles danach — Summen, Dauerlinie, Energieprobe, `Waermelast_Max` —
     bleibt Zeichen für Zeichen der Bestandsweg. Die Kühlbedarfsreihe desselben Laufs geht über die
     Kältefassade in den Kanal `KUEHLUNG` und **in keine dieser Rechnungen der Wärmeseite** (E21).
 12. Die Skalierung vom Katalogbau auf die Projektfläche und die Verbrauchs-Rückrechnung sind
-    eine Verhältnisrechnung **nach** der Simulation und ändern die Physik nicht. Sie sind ein
-    **Schritt dieses Moduls** — nachgebaut, nicht aus dem Altweg gerufen (8.3).
+    eine Verhältnisrechnung **nach** der Simulation und ändern die Physik nicht. Das Modul
+    liefert aus **einem** Aufruf die Reihe und den unskalierten Jahreswert `VerbrauchAltKwh`;
+    die Verhältnisrechnung und die Nachmultiplikation stehen in der Fassade **hinter der
+    Weiche** — nachgebaut, nicht aus dem Altweg gerufen (8.3).
 
 ```mermaid
 flowchart TD
     E1["Tab_Gebaeude<br/>U-Werte, Flaechen, Bauweise, Nutzung"] --> A["Schritt A/B<br/>Ersatzparameter RC<br/>C_AW, C_IW, R_1, R_Rest, R_conv, R_rad, R_ext"]
     E2["Tab_Solar<br/>UTC-Raster, keine Zeitspalte<br/>Temperatur, GHI, DNI, DHI, Sonnenwinkel"] --> Z["SolardatenCtrl.ReadOrtszeit<br/>Zeilen auf Ortszeit umsortiert<br/>TagUtc/StundeUtc bleiben an der Zeile"]
     Z --> E["Schritt E<br/>Randbedingungen je Stunde<br/>theta_out, theta_eq, Phi_sol, Phi_int, theta_soll"]
-    E3["Tab_Klimadaten.WE<br/>Wochenendmaske 365, UTC-Tage"] --> E
+    E3["Wochenendmaske aus dem Vorbereitungsschritt<br/>365 Tage, Wochentag des 1. Januar, Ortszeit<br/>Probe gegen Tab_Klimadaten.WE"] --> E
     A --> C["Schritt C<br/>Elimination der drei<br/>algebraischen Knoten<br/>dx/dt = A x + b"]
     C --> D["Schritt D<br/>exakte Diskretisierung<br/>Phi, Gamma, Psi fuer h = 3600 s"]
     D --> F["Schritt F<br/>Vorlauf 30 Tage<br/>+ 8760 Blockstunden<br/>Regelung, Bisektion"]
     E --> F
-    V["Vorbereitungsschritt — modellfrei, VOR der Weiche<br/>Bewohner aus der Nutzflaeche, Skalierungsfaktor E8,<br/>Klimareihen — kennt kein Rechenmodell"] --> E
+    V["Vorbereitungsschritt — modellfrei, VOR der Weiche<br/>Klimareihen, Wochenendmaske, Verbrauch und Flaechen<br/>kennt kein Rechenmodell"] --> E
     V --> S
     F --> G["Schritt G<br/>Reihen und Kennzahlen<br/>Heizlast W, Temperaturen, Kuehlbedarf"]
-    G --> S["Skalierung E8 — Schritt des VDI-Moduls<br/>Z_AuswahlWohnflaeche / Nutzflaeche<br/>Verbrauchs-Rueckrechnung, nachgebaut"]
+    G --> S["Skalierung E8 — Fassade, hinter der Weiche<br/>Z_AuswahlWohnflaeche / Nutzflaeche<br/>Verbrauchs-Rueckrechnung aus einem Lauf"]
     S --> K["Kanal HEIZUNG (kW)<br/>Summen, Dauerlinie, Energieprobe"]
     G --> KK["Fassade Kaeltebedarf<br/>Kanal KUEHLUNG (kWh)<br/>eigene Summe, Dauerlinie, Deckung"]
 ```
 
-**Zum Bild.** Der **Vorbereitungsschritt** steht links vor der Weiche: Er liefert Bewohnerzahl,
-Skalierungsfaktor und Klimareihen und kennt kein Rechenmodell (E20) — beide Rechenwege lesen sein
-Ergebnis, keiner ruft den anderen. Die **Skalierung nach E8 bleibt**, aber sie ist ein **Schritt des
-VDI-Moduls**: Es baut die Verhältnisrechnung nach (8.3), statt sie aus dem Altweg zu rufen. Die
+**Zum Bild.** Der **Vorbereitungsschritt** steht links vor der Weiche: Er liefert die Klimareihen
+samt Wochenendmaske sowie Verbrauch und Flächen des Projekts und kennt kein Rechenmodell (E20) —
+beide Rechenwege lesen sein Ergebnis, keiner ruft den anderen. Die **Skalierung nach E8 bleibt**;
+sie steht in der **Fassade hinter der Weiche** und rechnet mit dem, was der eine Lauf dieses Moduls
+zurückgibt (8.3) — aus dem Altweg gerufen wird nichts. Die
 Spalte heißt nach dem Umbenennungsschritt `Nutzflaeche` (E19); `Z_AuswahlWohnflaeche` behält seinen
 Namen. Der **Kühlbedarf** verlässt Schritt G auf einem eigenen Weg in den vierten Kanal (E12, E21) —
 aus **demselben** Lauf, nicht aus einer zweiten Rechnung.
@@ -115,20 +124,23 @@ aus **demselben** Lauf, nicht aus einer zweiten Rechnung.
 ### 1.1 Gebäudedaten
 
 Quelle ist `Tab_Gebaeude` — die Projektkopie des Katalogs `Tab_Gebaeude_STAMM` —, gelesen über
-die Sicht `Abfrage_Projektgebaeude`. Die mit **77** gekennzeichneten Spalten kommen mit
-Schemaschritt 77, die mit **78** gekennzeichneten mit dem G2-Schritt 78; nach Entscheid zu
-Frage U5 wird er mit 77 verschmolzen (dann fünfzehn Spalten je Tabelle und ein Sichtneubau,
-Umsetzungskonzept 1.6 und 1.7). Entschieden ist die Verschmelzung noch nicht;
-`SchemaStand.Zielversion` steht auf 76.
+die Sicht `Abfrage_Projektgebaeude`. Die Papiere nennen die Schemaschritte bei ihrem
+**Papiernamen**, nicht bei einer Nummer: Die mit **M3** gekennzeichneten Spalten kommen mit dem
+Gebäudespalten-Schritt **M3** (Stufe G1, zwölf Spalten je Tabelle), die mit **M3-G2**
+gekennzeichneten mit dem Gebäudespalten-Schritt der Stufe G2 (drei weitere Spalten je Tabelle);
+jeder der beiden bringt einen Sichtneubau (Umsetzungskonzept 1.6). Ob sie zu einem Schritt
+zusammengelegt werden, entscheidet die Beauftragung. Die **Nummer** wird erst dort vergeben und
+an `SchemaStand.Zielversion` abgelesen; beim Schreiben dieses Papiers steht sie auf **84**, die
+nächste freie Nummer ist **85** (`EPOS.Kern/Allgemein/Update/SchemaStand.cs:155`).
 
 „Vorgabe bei NULL" ist die Vorgabe **des Eingangsbauers**, nicht ein DDL-Vorgabewert: auf den
-**neuen** Fachwerten der Schritte 77/78 steht kein `DEFAULT` (Ausnahme der Schalter
+**neuen** Fachwerten aus M3 und M3-G2 steht kein `DEFAULT` (Ausnahme der Schalter
 `Aussenbauteile_Strahlung`, `NOT NULL DEFAULT 0`). Für die Bestandsspalten gilt das nicht —
 `Tab_Gebaeude.Luftwechselrate` trägt im Bestand `REAL DEFAULT 0`.
 
 | Größe | Zeichen | Einheit | Quelle (Tabelle.Spalte) | Vorgabe bei NULL | Plausibilitätsgrenze (Konzept 4.8) |
 |---|---|---|---|---|---|
-| Rechenmodell | — | — | `Tab_Gebaeude.Gebaeude_Modell` **77** | `VDI6007` (E1) | Wert aus `DbWerte.GEBAEUDE_MODELL_*` |
+| Rechenmodell | — | — | `Tab_Gebaeude.Gebaeude_Modell` **M3** | `VDI6007` (E1) | Wert aus `DbWerte.GEBAEUDE_MODELL_*` |
 | Nutzfläche des Katalogbaus (E13) | A_f | m² | `Tab_Gebaeude.Nutzflaeche` (bis zum Schemaschritt M3 noch `Wohnflaeche`, E19) | — (Pflicht) | > 0; beheizte Netto-Grundfläche (E13) |
 | Raumhöhe | H | m | `Tab_Gebaeude.Raumhoehe` | — (Pflicht) | > 0 |
 | Speichermasse | C_ges | Wh/K | `Tab_Gebaeude.Bauweise` | — (Pflicht) | 5 ≤ Bauweise/A_f ≤ 200 Wh/(m²K) |
@@ -144,41 +156,41 @@ Umsetzungskonzept 1.6 und 1.7). Entschieden ist die Verschmelzung noch nicht;
 | Sonstige Flächen | A_So | m² | `Tab_Gebaeude.Sonstige_Flaechen` | — | ≥ 0 |
 | Fensterfläche Süd | A_w,S | m² | `Tab_Gebaeude.Fensterflaeche_Sued` | — | Summe aller vier = A_w |
 | Fensterfläche Nord | A_w,N | m² | `Tab_Gebaeude.Fensterflaeche_Nord` | — | Summe aller vier = A_w |
-| Fensterfläche Ost | A_w,O | m² | `Tab_Gebaeude.Fensterflaeche_Ost` **77** | ½ `Fensterflaeche_Ost_West` | Summe aller vier = A_w |
-| Fensterfläche West | A_w,W | m² | `Tab_Gebaeude.Fensterflaeche_West` **77** | ½ `Fensterflaeche_Ost_West` | Summe aller vier = A_w |
+| Fensterfläche Ost | A_w,O | m² | `Tab_Gebaeude.Fensterflaeche_Ost` **M3** | ½ `Fensterflaeche_Ost_West` | Summe aller vier = A_w |
+| Fensterfläche West | A_w,W | m² | `Tab_Gebaeude.Fensterflaeche_West` **M3** | ½ `Fensterflaeche_Ost_West` | Summe aller vier = A_w |
 | Gesamtenergiedurchlassgrad | g | — | `Tab_Gebaeude.Fensterdurchlassgrad` | — | 0 < g ≤ 1 |
-| Rahmenanteil | 1 − F_F | — | `Tab_Gebaeude.Rahmenanteil` **77** | 0,3 (also F_F = 0,7) | 0 ≤ Wert < 1 |
-| Verschattungsfaktor | F_S | — | `Tab_Gebaeude.Verschattungsfaktor` **77** | 0,9 | 0 < F_S ≤ 1 |
+| Rahmenanteil | 1 − F_F | — | `Tab_Gebaeude.Rahmenanteil` **M3** | 0,3 (also F_F = 0,7) | 0 ≤ Wert < 1 |
+| Verschattungsfaktor | F_S | — | `Tab_Gebaeude.Verschattungsfaktor` **M3** | 0,9 | 0 < F_S ≤ 1 |
 | Wärmebrücken ψ (drei Paare) | ψ_k | W/(mK) | `Tab_Gebaeude.WBVK_Anschluß_Fenster_Wand`, `…_Wand_Dach`, `…_Außenwand_Kellerdecke` | 0 | ≥ 0 |
 | Wärmebrücken Länge (drei Paare) | L_k | m | `Tab_Gebaeude.Abmessung_Anschluß_…` | 0 | ≥ 0 |
 | Luftwechselrate | n | 1/h | `Tab_Gebaeude.Luftwechselrate` | — (DDL-Vorgabe **0**) | > 0 — die Prüfung trifft im Bestand auf 0, nicht auf NULL |
-| Infiltration (G2) | n_inf | 1/h | `Tab_Gebaeude.Luftwechsel_Infiltration` **78** | 0,3 | > 0 |
-| Nutzerlüftung (G2) | n_nutz | 1/h | `Tab_Gebaeude.Luftwechsel_Nutzer` **78** | 0,4 | ≥ 0 |
-| Sommerlüftung (G2) | — | 0/1 | `Tab_Gebaeude.Sommerlueftung` **78** | 0 | Schalter |
+| Infiltration (G2) | n_inf | 1/h | `Tab_Gebaeude.Luftwechsel_Infiltration` **M3-G2** | 0,3 | > 0 |
+| Nutzerlüftung (G2) | n_nutz | 1/h | `Tab_Gebaeude.Luftwechsel_Nutzer` **M3-G2** | 0,4 | ≥ 0 |
+| Sommerlüftung (G2) | — | 0/1 | `Tab_Gebaeude.Sommerlueftung` **M3-G2** | 0 | Schalter |
 | Innere Wärmegewinne | Φ_int | W | `Tab_Gebaeude.Interne_Waermegewinne` | 0 | ≥ 0, Leistung des ganzen Katalogbaus |
 | Sollwert Tag | θ_soll,Tag | °C | `Tab_Gebaeude.Raumsolltemperatur_Tag` | — (Pflicht) | Stunden 7…22 |
 | Sollwert Nacht | θ_soll,Nacht | °C | `Tab_Gebaeude.Raumsolltemperatur_Nachtabsenkung` | — | Stunden 23…6 |
 | Sollwert Wochenende | θ_soll,WE | °C | `Tab_Gebaeude.Raumsolltemperatur_Wochenende` | — | wirksam allein über **Wert > 5** und `WE[Tag]`; die Spalte `Wochenende` geht im Bestand in keine Rechnung ein |
 | Sollwert Ferien | θ_soll,Fer | °C | `Tab_Gebaeude.Raumsolltemperatur_Ferien` | — | wirksam nur mit Flag `Ferien` > 0,9; bei Wert < 1 setzt der Bestand `Ferien = 0` |
-| Obere Raumtemperatur | θ_max | °C | `Tab_Gebaeude.Maximaleraumtemperatur` | — | > θ_soll,Tag |
+| Obere Raumtemperatur | θ_max | °C | `Tab_Gebaeude.Maximaleraumtemperatur` | — | > θ_soll,Tag; ab KU1 tritt der Kühlsollwert θ_kuehl daneben (`Kuehl_Sollwert`, NULL = `Maximaleraumtemperatur`) und mit ihm die Kühlleistungsgrenze `Kuehlleistung_Max` (Kühlkonzept KU-S1, 7.1) |
 | Ferienzeiträume | — | Tag 1…365 | `Tab_Gebaeude.Ferienbeginn_1…4`, `Ferienende_1…4` | aus | **0 und 366 heißen „aus"** (alle fünfzehn gesäten Gebäude führen `Ferienbeginn_1 = 366`); benannt abgelehnt wird nur ein **aktiver** Fahrplan mit einem Tag außerhalb 1…365 |
-| Masseanteil außen | a_AW | — | `Tab_Gebaeude.Masseanteil_Aussen` **77** | 0,3 | 0 < a_AW < 1 |
-| Innenflächenfaktor | f_IW | — | `Tab_Gebaeude.Innenflaechenfaktor` **77** | 2,5 | > 0 |
-| Strahlungsanteil der Heizung | a_str,H | — | `Tab_Gebaeude.Heizung_Strahlungsanteil` **77** | 0,3 | 0 ≤ Wert ≤ 1 |
-| Heizleistungsgrenze | Φ_h,max | **kW** | `Tab_Gebaeude.Heizleistung_Max` **77** | unbegrenzt (`double.PositiveInfinity`) | > 0, wenn gesetzt; der Eingangsbauer bildet daraus **einmal** `Φ_h_max_W = 1 000 · Heizleistung_Max` |
-| Randbedingung Grundfläche | — | — | `Tab_Gebaeude.Grundflaeche_Randbedingung` **77** | `ERDREICH` | `ERDREICH` / `KELLER` / `AUSSENLUFT` |
-| Kellertemperatur | θ_NR | °C | `Tab_Gebaeude.Kellertemperatur` **77** | 10 | nur bei `KELLER` |
-| Strahlung auf Außenbauteile | — | 0/1 | `Tab_Gebaeude.Aussenbauteile_Strahlung` **77** | 0 (Schalter, `NOT NULL DEFAULT 0`) | — |
+| Masseanteil außen | a_AW | — | `Tab_Gebaeude.Masseanteil_Aussen` **M3** | 0,3 | 0 < a_AW < 1 |
+| Innenflächenfaktor | f_IW | — | `Tab_Gebaeude.Innenflaechenfaktor` **M3** | 2,5 | > 0 |
+| Strahlungsanteil der Heizung | a_str,H | — | `Tab_Gebaeude.Heizung_Strahlungsanteil` **M3** | 0,3 | 0 ≤ Wert ≤ 1 |
+| Heizleistungsgrenze | Φ_h,max | **kW** | `Tab_Gebaeude.Heizleistung_Max` **M3** | unbegrenzt (`double.PositiveInfinity`) | > 0, wenn gesetzt; der Eingangsbauer bildet daraus **einmal** `Φ_h_max_W = 1 000 · Heizleistung_Max` |
+| Randbedingung Grundfläche | — | — | `Tab_Gebaeude.Grundflaeche_Randbedingung` **M3** | `ERDREICH` | `ERDREICH` / `KELLER` / `AUSSENLUFT` |
+| Kellertemperatur | θ_NR | °C | `Tab_Gebaeude.Kellertemperatur` **M3** | 10 | nur bei `KELLER` |
+| Strahlung auf Außenbauteile | — | 0/1 | `Tab_Gebaeude.Aussenbauteile_Strahlung` **M3** | 0 (Schalter, `NOT NULL DEFAULT 0`) | — |
 | Projektfläche (Skalierung) | A_proj | m² | **Vorbereitungsschritt**, aus `Z_ProjektGebaeude.Wohnflaeche_Waermebedarf` über `Z_AuswahlWohnflaeche` | — | > 0 |
 | Katalogfläche (Basis der Rückrechnung) | A_alt | m² | **Vorbereitungsschritt**, aus `Tab_Gebaeude.Wohnflaeche_gesamt` | — (Pflicht) | > 0; `FlaecheAlt` in 8.3, Basis von `Bewohner` |
 | Einheit der Verbrauchseingabe | — | — | **Vorbereitungsschritt**, aus `Z_ProjektGebaeude.Einheit_Waermebedarf_Wohnflaeche` | `Wohnfläche [m²]` | Wertliste, siehe 8.3 |
 | Jahresnutzungsgrad der Altanlage | η | — | **Vorbereitungsschritt**, aus `Z_ProjektGebaeude.Jahresnutzungsgrad` | — | > 0, geht in `VerbrauchNeu` ein |
 | Bewohnerzahl | — | Personen | **Vorbereitungsschritt** (modellfrei, vor der Weiche) — nicht aus einem Aufruf des Altwegs | — | Fläche / `Flaeche_Nutzer`, siehe 8.3 |
-| Skalierungsfaktor (E8) | — | — | **Vorbereitungsschritt**; angewandt wird er als Schritt dieses Moduls (8.3) | 1 | > 0 |
+| Skalierungsfaktor (E8) | — | — | entsteht **nach** dem Lauf in der Fassade aus `VerbrauchAltKwh` und den Flächen des Vorbereitungsschritts (8.3) | 1 | > 0 |
 | Fläche je Person | — | m²/Person | `Tab_Gebaeude.Flaeche_Nutzer` | — | > 0 |
 | spezifischer Verbrauch | — | kWh/(m²a) | `Tab_Gebaeude.spez_Waermeverbrauch` | — | **reine Katalogkennzahl, kein Rechnungseingang** — sie geht allein in das Abnahmekriterium (Konzept 10.4 (4)) |
 
-**Zur Herkunft „Vorbereitungsschritt".** Die sechs so gekennzeichneten Größen liest das Modul
+**Zur Herkunft „Vorbereitungsschritt".** Die fünf so gekennzeichneten Größen liest das Modul
 `Gebaeude/` **nicht selbst aus der Datenbank** und ruft sie auch nicht aus dem Altweg ab: Sie
 stehen fertig bereit, wenn die Weiche das Modul ruft (E20). Der Vorbereitungsschritt kennt kein
 Rechenmodell — er fragt nicht, auf welchem Weg dieses Gebäude rechnet —, und beide Rechenwege lesen
@@ -194,12 +206,17 @@ Zahl ihre Quelle behält.
 | Direktstrahlung | I_dir,n | W/m² | `Tab_Solar.Direktstrahlung` | **DNI**, normal zur Sonne |
 | Diffusstrahlung horizontal | I_diff | W/m² | `Tab_Solar.Diffusstrahlung` | DHI |
 | Sonnenhöhe | γ_S | ° | `Tab_Solar.Sonnenwinkel` | Höhenwinkel |
-| Atmosphärische Gegenstrahlung | E_A | W/m² | `Tab_Solar.Gegenstrahlung` (eigener Schemaschritt) | NULL: Schätzung nach Blatt 3 (84)–(88) |
+| Atmosphärische Gegenstrahlung | E_A | W/m² | `Tab_Solar.Gegenstrahlung` (Klimaspalten-Schritt **M4**) | NULL: Δθ_lw = 0, α_str,A auf dem Rückfallwert aus 1.3 und α_A damit unverändert (E5); eine Schätzung nach Blatt 3 (84)–(88) ist ohne Bedeckungsgrad nicht rechenbar und wird nicht gebaut |
 | Ausstrahlung der Erdoberfläche | E_E | W/m² | aus θ_out abgeleitet, Blatt 3 Gl. (89) (Blatt 1 nennt sie E_E) | NULL bzw. E_A fehlt: Δθ_lw = 0, siehe E5 |
-| Windgeschwindigkeit | v_W | m/s | `Tab_Solar.Windgeschwindigkeit` (eigener Schemaschritt) | NULL: α_A bleibt 25 W/(m²K) |
-| Luftfeuchte | φ_L | % | `Tab_Solar.Luftfeuchte` (eigener Schemaschritt) | nicht rechenwirksam in G1/G2 |
-| Wochenendmaske | — | 0/1, 365 Tage | `Tab_Klimadaten.WE` über `KlimakalenderLesen` | dieselbe Quelle wie der Altweg; **UTC-Tage**, siehe E1 |
+| Luftfeuchte | φ_L | % | `Tab_Solar.Luftfeuchte` (Klimaspalten-Schritt **M4**) | nicht rechenwirksam in G1/G2 |
+| Wochenendmaske | — | 0/1, 365 Tage | **Vorbereitungsschritt**, aus dem Wochentag des 1. Januar des Referenzjahres (Ortszeit) | Probe gegen `Tab_Klimadaten.WE` derselben Klimaregion, siehe E8 |
 | Klimaregion | — | — | `Tab_Projekt.ID_Klimaregion` | Längen- und Breitengrad für den Sonnenstand |
+
+**Keine Windspalte.** Der Klimaspalten-Schritt **M4** legt `Gegenstrahlung` und `Luftfeuchte` an,
+also **zwei** Spalten. Eine Spalte `Windgeschwindigkeit` entsteht nicht: Es gibt keinen Leser für
+sie, weil der äußere Übergang α_A ein Festwert nach 1.3 bleibt und kein Schritt dieses Papiers
+eine windabhängige Bildung vorsieht. Kommt sie später, ist sie ein eigener Schemaschritt mit
+eigener Formel und eigener Stufe.
 
 Die isotropen **Tagesmittel** `Tab_Klimadaten.Sol_Nord/Ost/Sued/West` gehören dem
 Altweg (`KlimakalenderLesen`); die gleichnamigen **Stundenspalten** in `Tab_Solar`
@@ -214,7 +231,7 @@ Sie stehen im Quelltext, nicht in der Datenbank, und sind Teil des Rechenwegs.
 |---|---|---|---|---|
 | innerer Strahlungsübergang | α_str,i | 5,0 | W/(m²K) | VDI 6007-1, Gl. (30) |
 | innerer konvektiver Übergang, Wände | α_kon,i | 2,7 | W/(m²K) | Testräume der Richtlinie; je Bauteil vorzugeben (Blatt 1, Abschnitt 6.2) |
-| äußerer Übergang gesamt | α_A | 25 | W/(m²K) | Summe α_kon,A + α_str,A nach Gl. (38); der **Wert** 25 stammt aus den Testräumen der Richtlinie (20,0 + 5,0) und ist **kein gesetzter Normwert** — benannte Festlegung, Kapitel 11 |
+| äußerer Übergang gesamt | α_A | 25 | W/(m²K) | Summe α_kon,A + α_str,A nach Gl. (38); der **Wert** 25 stammt aus den Testräumen der Richtlinie (20,0 + 5,0) und ist **kein gesetzter Normwert** — benannte Festlegung, Kapitel 11; eine windabhängige Bildung ist nicht vorgesehen (1.2) |
 | Massen-Oberflächen-Koeffizient | h_ms | 9,1 | W/(m²K) | DIN EN ISO 13790, 12.2.2 — **EPOS-Klassenweg** |
 | innerer Wärmeübergangswiderstand | R_si | 0,13 | m²K/W | im U-Wert enthalten; im Netz tritt an seine Stelle das innere Oberflächennetz aus R_conv und R_rad — mit anderem Wert, siehe A4 |
 | Winkelkorrektur Fenster | F_W | 0,9 | — | Näherung für korg (Blatt 3, 8.1) — **EPOS-Vorgabe** |
@@ -222,7 +239,7 @@ Sie stehen im Quelltext, nicht in der Datenbank, und sind Teil des Rechenwegs.
 | Absorptionsgrad opaker Außenflächen | a_F | 0,6 | — | **EPOS-Vorgabe**, kein Normwert |
 | Wärmekapazität der Luft | c·ρ | 0,34 | Wh/(m³K) | DIN EN 12831; Normtestfall 12 rechnet 1,1953 kJ/(m³K) = 0,332 |
 | Tiefe der Erdreichtemperatur | z | 1,0 | m | Kusuda/Achenbach — **EPOS-Ergänzung** |
-| Temperaturleitfähigkeit Erdreich | α_Erd | 0,06 | m²/d | daraus Dämpfung 0,68 und Phasenverzug 22 d |
+| Temperaturleitfähigkeit Erdreich | α_Erd | 0,06 | m²/d | daraus Dämpfung 0,68 und Phasenverzug 22 d; wird der Kernklasse **ausdrücklich übergeben** (E6) |
 | Albedo | ρ_Umg | 0,2 | — | Blatt 3, 7.3, Regelwert |
 | Zeitschritt | h | 3 600 | s | Blatt 1, Abschnitt 6.4 |
 | Vorlauf | — | 30 | d | Konzept 4.6 |
@@ -251,10 +268,19 @@ die Spalte `Tab_Gebaeude.Nutzflaeche` (E19; bis dahin `Wohnflaeche`).
 **A2 — Bezugsflächen** (EPOS-Klassenweg, Konzept 4.3)
 
 ```
-A_AW,opak = A_AW + A_D + A_G + A_So   [m²]
+A_AW,opak = A_AW + A_D + A_G + A_So   [m²]      opake Außenbauteile — der Massepfad
+A_AW,ges  = A_AW,opak + A_w           [m²]      Außenbauteilgruppe einschließlich Fenster (E14)
 A_IW      = f_IW · A_f                [m²]      (f_IW Vorgabe 2,5, A_m/A_f nach ISO 13790)
-A_rad     = min(A_AW,opak, A_IW)      [m²]      Bezugsfläche des inneren Strahlungsaustauschs
+A_rad     = min(A_AW,ges, A_IW)       [m²]      Bezugsfläche des inneren Strahlungsaustauschs
 ```
+
+**Warum zwei Flächen.** Nach E14 endet der Fensterzweig am gemeinsamen Oberflächenknoten θ_s,AW
+(A7a). Überall dort, wo die Gruppe als **Oberfläche** auftritt, zählt die Fensterfläche deshalb
+mit: in R_conv,AW (A6), in A_rad, in der Strahlungsverteilung und in der Flächenwichtung von θ_op
+(E3, 8.1). Das ist die **Folgeentscheidung zu E14** — E14 selbst nennt nur die
+Strahlungsverteilung und die Gewichtung von θ_eq. Wo die Gruppe als **Speichermasse** auftritt —
+R_1,AW und R_Rest,AW vor dem Anschluss der Fenster sowie C_AW —, bleibt A_AW,opak stehen: Fenster
+tragen keine Masse.
 
 **A3 — Transmissionsleitwerte je Gruppe** (E2: ungewichtet, Konzept N1.6)
 
@@ -311,7 +337,7 @@ R_1,IW = 1 / (h_ms · A_IW)                                   [K/W]
 **A6 — Übergangswiderstände im Raum** (Gl. (30) für α_str; α_kon je Bauteil, Blatt 1, 6.2)
 
 ```
-R_conv,AW = 1 / (α_kon,i · A_AW,opak)                        [K/W]
+R_conv,AW = 1 / (α_kon,i · A_AW,ges)                         [K/W]   (mit Fenstern, A2)
 R_conv,IW = 1 / (α_kon,i · A_IW)                             [K/W]
 R_rad     = 1 / (α_str,i · A_rad)                            [K/W]
 ```
@@ -325,29 +351,50 @@ H_ext = H_ve + Σψ·L                                          [W/K]
 R_ext = 1 / H_ext                                            [K/W]
 ```
 
-In Stufe G2 tritt an die Stelle von n die Summe n_inf + n_nutz, in der Sommerlüftungsregel
-n = 2,0 1/h, solange θ_air > 23 °C **und** θ_out < θ_air − 2 K.
+In Stufe G2 tritt an die Stelle von n die Summe n_inf + n_nutz; die Sommerlüftungsregel schaltet
+auf n = 2,0 1/h. **Wann** sie schaltet, legt 7.2 fest: ausgewertet wird **einmal je Stunde am
+Stundenbeginn** mit θ_air und θ_out der Vorstunde, der Zustand gilt die ganze Stunde, mit einer
+Hysterese von 1 K und einer Mindestverweildauer von einer Stunde. Die Schwelle ist bis KU1
+23 °C, ab KU1 θ_kuehl − 3 K.
 
-**A7a — Fensterpfad im Außenwandzweig** (Entscheid **E14**, Normweg (25)–(28), Muster B6)
+**Σψ·L bleibt im masselosen Zweig.** Nach E14 trägt H_ext nur noch Lüftung und Wärmebrücken; die
+Wärmebrücken hängen damit ohne Speichermasse, ohne inneres Oberflächennetz und ohne eigene
+äquivalente Außentemperatur unmittelbar zwischen θ_out und dem Luftknoten — für das Gebäude aus
+Kapitel 9 knapp ein Drittel von H_ext. Das ist eine **benannte Abweichung** (Kapitel 11,
+Zeile 16); ihre Wirkung wird in G0 einmal gemessen, indem derselbe Fall mit Σψ·L im masselosen
+Zweig und mit Σψ·L in der Außenwandgruppe gerechnet wird.
+
+**A7a — Fensterpfad in der Außenwandgruppe** (Entscheid **E14**, Normweg (25)–(28), Muster B6)
 
 ```
-R_AF      = 1 / (U·A)_w                                      [K/W]
+R_AF      = (1/U_w − 1/α_I − 1/α_A) / A_w                    [K/W]   (26)
 R_1,AF    = R_AF / 6                                         [K/W]
 R_Rest,AF = 5/6 · R_AF                                       [K/W]
 ```
 
-Die Fensterzweige werden **nach** den Wänden parallel an den gemeinsamen Oberflächenknoten
-θ_s,AW geschaltet (Klemmfälle (28a)–(28c) wie in B6); die Kapazität der Wände bleibt
-unverändert. Die Fensterfläche A_w zählt damit in der Flächenwichtung der Oberflächen, in der
-Strahlungsverteilung (Schritt E) und in der Gewichtung der äquivalenten Außentemperatur nach
-(41). Der Weg des Prototyps — Fenster als masseloser Widerstand am Luftknoten in R_ext —
-**entfällt für das Produkt**; er bleibt die Konvention, in der die Zahlen in Kapitel 9 entstanden
-sind (Konzept N1.19, Kapitel 11, Zeile 4).
+α_I ist der innere Übergang, der im U-Wert des Fensters steckt (α_I = 1/R_si nach 1.3), α_A der
+äußere aus 1.3. **Kein Klemmwert:** Wird R_AF ≤ 0, bricht die Rechnung mit benanntem Fehler ab —
+dieselbe Regel wie in A4 (Blatt 1, 6.8). Die kürzere Form R_AF = 1/(U·A)_w wäre falsch: Sie ließe
+beide Übergänge im Zweig stehen, obwohl im Netz an ihrer Stelle das innere Oberflächennetz
+(R_conv, R_rad) und der äußere Übergang in θ_A,eq liegen; der Übergang zählte zweimal.
 
-**Ausgabe von Schritt A** ist der Datensatz `ErsatzparameterRC`: C_AW, C_IW [J/K]; R_Rest,AW,
-R_1,AW, R_1,IW, R_conv,AW, R_conv,IW, R_rad, R_ext und — nach E14 — R_1,AF, R_Rest,AF [K/W];
-dazu A_AW,opak, A_IW, A_w [m²] und
-Σ(U·A)_opak [W/K] für Schritt E. Für die Knotenrechnung werden daraus die Leitwerte
+**Zusammenfassung zu einem Zweig.** Der Fensterzweig wird **nach** den Wänden parallel an den
+gemeinsamen Oberflächenknoten θ_s,AW geschaltet, (27)/(28). Danach trägt die Außenwandgruppe
+wieder **genau ein** Paar R_1,AW / R_Rest,AW — das der zusammengefassten Gruppe aus Wänden und
+Fenstern —, und Schritt C bleibt bei fünf Knoten mit einem G_1 und einem G_Rest (4.1). Greift
+einer der Klemmfälle (28a)–(28c) der Richtlinie, gilt der dort festgelegte Wert; die Kapazität
+C_AW der Wände bleibt in jedem Fall unverändert.
+
+Die Fensterfläche A_w zählt damit in der Flächenwichtung der Oberflächen (A2), in der
+Strahlungsverteilung (Schritt E), in der Gewichtung der äquivalenten Außentemperatur nach (41)
+(E7) und in θ_op (8.1). Der Weg des Prototyps — Fenster als masseloser Widerstand am Luftknoten
+in R_ext — **entfällt für das Produkt**; er bleibt die Konvention, in der die Zahlen in Kapitel 9
+entstanden sind (Konzept N1.19, Kapitel 11, Zeile 4).
+
+**Ausgabe von Schritt A** ist der Datensatz `ErsatzparameterRC`: C_AW, C_IW [J/K]; R_Rest,AW und
+R_1,AW — beide **nach** dem Anschluss der Fenster (A7a) —, R_1,IW, R_conv,AW, R_conv,IW, R_rad,
+R_ext [K/W]; dazu A_AW,opak, A_AW,ges, A_IW, A_w [m²] sowie Σ(U·A)_opak und (U·A)_w [W/K] für
+Schritt E. Für die Knotenrechnung werden daraus die Leitwerte
 G_1 = 1/R_1,AW, G_2 = 1/R_1,IW, G_Rest = 1/R_Rest,AW, G_cAW = 1/R_conv,AW,
 G_cIW = 1/R_conv,IW, G_rad = 1/R_rad und G_ext = 1/R_ext gebildet [W/K].
 
@@ -402,6 +449,12 @@ C_IW · dθ_m,IW/dt = G_2·(θ_s,IW − θ_m,IW)
 0 = G_2·(θ_m,IW − θ_s,IW) + G_cIW·(θ_air − θ_s,IW) + G_rad·(θ_s,AW − θ_s,IW) + Φ_rad,IW
 0 = G_cAW·(θ_s,AW − θ_air) + G_cIW·(θ_s,IW − θ_air) + G_ext·(θ_out − θ_air) + Φ_conv + Φ_h
 ```
+
+**Wo die Fenster sitzen.** G_1 = 1/R_1,AW und G_Rest = 1/R_Rest,AW sind die Leitwerte der
+**zusammengefassten** Außenwandgruppe — Wände und Fenster, nach (27)/(28) zu einem Zweig
+verbunden (A7a). Deshalb bleibt es bei fünf Knoten und bei je einem G_1 und einem G_Rest; der
+Fensterzweig ist kein zusätzlicher Pfad in diesem Bild. G_ext der Luftbilanz trägt nach E14 nur
+noch Lüftung und Wärmebrücken (A7).
 
 θ_eq ist die U·A-gewichtete äquivalente Außentemperatur aus Schritt E (Gl. (41)/(42)).
 Der Dreieckssatz der Richtlinie — R_α;kon;IW, R_α;kon;AW, R_α;str;AW/IW mit der
@@ -543,11 +596,11 @@ Zeitkonstanten τ_i = −1/λ_i, die für die Bemessung des Vorlaufs gebraucht w
 
 ## 6. Schritt E — Klimaweg je Stunde
 
-Alles in diesem Schritt geschieht im Eingangsbauer `GebaeudeModellEingang` und ergibt acht
+Alles in diesem Schritt geschieht im Eingangsbauer `GebaeudeModellEingang` und ergibt sieben
 Reihen zu 8 760 Werten. Das Modell hat **einen** Lesepfad: Ortszeit über `ReadOrtszeit` (wie PV
-und Solarthermie); `Tab_Klimadaten` wird allein für die Wochenendmaske gebraucht. Zwei
-Zeitbezüge bleiben darin stehen und sind beide gewollt: der **Sonnenstand rechnet auf UTC**
-(E1), und die Wochenendmaske `WE[365]` trägt **UTC-Tage** (E8) — genau wie im Altweg.
+und Solarthermie). Ein Zeitbezug bleibt darin stehen und ist gewollt: der **Sonnenstand rechnet
+auf UTC** (E1). Die Wochenendmaske kommt aus dem modellfreien Vorbereitungsschritt und steht auf
+dem **Ortszeit-Kalender** (E8); `Tab_Klimadaten` trägt allein die Probe dagegen.
 
 **E1 — Sonnenstand** (Blatt 3, Abschnitt 5)
 
@@ -586,17 +639,16 @@ mit F_F = 1 − Rahmenanteil,  F_S = Verschattungsfaktor,  F_W = 0,9
 Vom Ergebnis gehen **a_kon** (Vorgabe 0,09 für 3-fach-Wärmeschutz, je Verglasung aus Blatt 2
 Tabelle A5) konvektiv an die Luft, der Rest radiativ auf die beiden Oberflächenknoten.
 
-**Bezugsflächen — Festlegung für den Klassenweg.** Die Fenster tragen im 2-K-Netz **keinen**
-Oberflächenknoten (benannte Abweichung, Kapitel 11, Zeile 4). Daraus:
+**Bezugsflächen — Festlegung für den Klassenweg.** Nach E14 endet der Fensterzweig am
+Oberflächenknoten θ_s,AW (A7a); die Fensterfläche gehört damit zur Oberflächengruppe:
 
 ```
-A_AW,opak = A_AW + A_D + A_G + A_So                          [m²]   (aus A2)
-A_Raum    = A_AW,opak + A_IW                                 [m²]   ohne die Fensterfläche
+A_AW,ges  = A_AW,opak + A_w                                  [m²]   (aus A2)
+A_Raum    = A_AW,ges + A_IW                                  [m²]   mit der Fensterfläche
 ```
 
-In (43)–(46) steht „A_AW" für A_AW,opak; die Fensterfläche zählt in A_Raum **nicht** mit.
-
-Dieselbe Definition gilt für die Flächenwichtung von θ_op (8.1) und für E4.
+In (43)–(46) steht „A_AW" für A_AW,ges. Dieselbe Definition gilt für die Flächenwichtung von
+θ_op (8.1) und für E4.
 
 **Verteilung.** Die Richtlinie verteilt nach (45)/(46): die bestrahlte Fläche selbst und die zu
 ihr parallelen Bauteile werden nicht beaufschlagt, Gewicht (A_AW − A_v)/(A_Raum − A_v) bzw.
@@ -607,26 +659,30 @@ gilt in G1 A_v = 0, und die Verteilung ist flächenproportional:
 
 ```
 Φ_sol,Luft = a_kon · Φ_sol
-Φ_sol,AW   = (1 − a_kon) · Φ_sol · A_AW,opak / A_Raum
-Φ_sol,IW   = (1 − a_kon) · Φ_sol · A_IW      / A_Raum
+Φ_sol,AW   = (1 − a_kon) · Φ_sol · A_AW,ges / A_Raum
+Φ_sol,IW   = (1 − a_kon) · Φ_sol · A_IW     / A_Raum
 ```
 
 (45)/(46) mit A_v sind Voraussetzung des **Bauteilwegs G3**; sie werden dort gerechnet, sobald
 die opaken Flächen je Orientierung vorliegen — entweder aus dem Bauteilkatalog oder als neue
-Spalten in 1.1.
+Spalten in 1.1. Bis dahin ist die flächenproportionale Verteilung eine **benannte Abweichung**
+(Kapitel 11, Zeile 15); ihre Wirkung wird in **G0** einmal gemessen, indem derselbe Lauf mit
+A_v = 0 gegen einen Lauf mit A_v aus den Fensterflächen je Orientierung gehalten wird.
 
 **E4 — innere Lasten** (Verteilung nach (43)/(44), im Klassenweg flächenproportional wie E3)
 
 ```
 Φ_int,conv = 0,5 · Interne_Waermegewinne                     [W]
 Φ_int,rad  = 0,5 · Interne_Waermegewinne                     [W]
-Φ_int,AW   = Φ_int,rad · A_AW,opak / A_Raum
-Φ_int,IW   = Φ_int,rad · A_IW      / A_Raum
+Φ_int,AW   = Φ_int,rad · A_AW,ges / A_Raum
+Φ_int,IW   = Φ_int,rad · A_IW     / A_Raum
 ```
 
 In G1 sind die inneren Lasten zeitlich konstant; ein Wochenprofil ist G2+. Für den Löser wird je
 Oberflächenknoten die **Summe** aus solarem und innerem Strahlungsanteil gebraucht:
-Φ_rad,AW = Φ_sol,AW + Φ_int,AW und Φ_rad,IW = Φ_sol,IW + Φ_int,IW (Schritt C, 4.1).
+Φ_rad,AW = Φ_sol,AW + Φ_int,AW und Φ_rad,IW = Φ_sol,IW + Φ_int,IW, dazu die konvektive Last
+Φ_conv = Φ_sol,Luft + Φ_int,conv (Schritt C, 4.1). **Diese drei Summen bildet der Eingangsbauer**,
+nicht der Löser: Die Aufteilung 0,5/0,5 und die Flächengewichte stehen hier, in E3 und E4.
 
 **E5 — äquivalente Außentemperatur je Fläche** (Gl. (32)–(40))
 
@@ -676,9 +732,16 @@ Tagesmittel (Ausgleich nach kleinsten Quadraten), d_min der Tag ihres Minimums. 
 darf **nicht** als (max − min)/2 gebildet werden — das ergäbe eine etwa doppelt so große
 Schwankung.
 
-**Kein neuer Kusuda-Code, aber eigene Parameter.** Gerechnet wird mit der vorhandenen Klasse
-`ErdreichTemperatur` (`JahresprofilKollektor`); sie ist mit **z = 1,0 m und α_Erd = 0,06 m²/d
-aus 1.3** zu rufen, woraus D = 0,6847 und Δt = 22,00 d folgen. Ihre Vorgaben gelten dem
+**Kein neuer Kusuda-Code, aber eine benannte Codeänderung.** Gerechnet wird mit der vorhandenen
+Klasse `ErdreichTemperatur`. Ihre heutige Form
+`JahresprofilKollektor(double[] aussentemp8760, double tiefeM, string bodentyp)`
+(`EPOS.Kern/Allgemein/Simulation/ErdreichTemperatur.cs:411`) nimmt **keine**
+Temperaturleitfähigkeit entgegen — dort folgt sie aus dem Bodentyp des Katalogs. Das
+Gebäudemodell braucht aber **z = 1,0 m und α_Erd = 0,06 m²/d aus 1.3**, woraus D = 0,6847 und
+Δt = 22,00 d folgen. Deshalb bekommt die Klasse in **Stufe G1** eine **Überladung mit
+ausdrücklicher Temperaturleitfähigkeit**; das ist eine benannte Codeänderung und gehört in die
+Stufenliste — kein stiller Rückgriff auf einen Katalogschlüssel, dessen Wert zufällig passt. Die
+Vorgaben der Bestandsform gelten dem
 Erdkollektor der Wärmepumpe, nicht der Bodenplatte: Verlegetiefe 1,5 m und Bodentyp aus dem
 Katalog ergeben Dämpfung 0,69 und Phasenverzug 21,4 d, und der Ausgleich läuft dort über zwölf
 Monatsmittel statt über die 365 Tagesmittel. Beide Unterschiede sind bei der Umsetzung
@@ -687,9 +750,15 @@ auszuweisen; mit den Kollektorvorgaben ändern sich die Zahlen in 9.4.
 **E7 — U·A-gewichtete äquivalente Außentemperatur am einen Massepfad** (Gl. (41)/(42))
 
 ```
-θ_eq(h) = [ (U·A)_AW·θ_A,eq,AW + (U·A)_D·θ_A,eq,D + (U·A)_So·θ_A,eq,So + (U·A)_G·θ_grund ]
-          / Σ(U·A)_opak                                       [°C]
+θ_eq(h) = [ (U·A)_AW·θ_A,eq,AW + (U·A)_D·θ_A,eq,D + (U·A)_So·θ_A,eq,So + (U·A)_G·θ_grund
+            + (U·A)_w·θ_A,eq,w ]
+          / ( Σ(U·A)_opak + (U·A)_w )                         [°C]
 ```
+
+Die Gewichtung läuft über **alle** Außenflächen einschließlich der Fenster — das ist die Folge
+von E14 (A7a): Der Fensterzweig hängt an derselben Gruppe wie die Wände, also gehört er in
+dieselbe Gewichtung. Für die transparente Fläche entfällt der kurzwellige Term (39), sodass
+θ_A,eq,w = θ_out + Δθ_lw,w gilt.
 
 **E8 — Sollwertfahrplan**
 
@@ -708,10 +777,13 @@ der ganze Fahrplan um eine Stunde.
 
 **Wochenende:** die Absenkung hängt allein an θ_soll,WE > 5 und `WE[Tag]`. Die Spalte
 `Tab_Gebaeude.Wochenende` wird im Kern nur gelesen und zurückgeschrieben; sie geht in **keine**
-Rechnung ein und ist deshalb auch hier keine Bedingung. Die Maske ist `WE[365]` aus
-`KlimakalenderLesen` — dieselbe Quelle wie der Altweg (und derselbe UTC-Tageskalender),
-damit beide Wege denselben Kalender rechnen und der Vergleich alt/neu im Bedarfsdialog **dauerhaft**
-gültig bleibt (E23).
+Rechnung ein und ist deshalb auch hier keine Bedingung. Die Maske `WE[365]` bildet der
+**modellfreie Vorbereitungsschritt** aus dem Wochentag des 1. Januar des Referenzjahres der
+Zeitbasis — also auf dem **Ortszeit**-Kalender, auf dem auch die Bilanz läuft. Eine Probe hält
+sie gegen `Tab_Klimadaten.WE` derselben Klimaregion; weicht sie ab, ist das ein Befund der Probe,
+keine stille Korrektur. Damit steht der Sollwertfahrplan auf derselben Zeitbasis wie die
+Randbedingungen; die Frage **U7** (Ortszeit- oder UTC-Kalender für die Maske) bleibt bis zur
+Beauftragung von G1 offen und steht im Register.
 Ferien haben Vorrang vor dem Wochenende.
 
 **Ferien:** Zeiträume laufen nach Tagesindex 1…365. Geprüft wird nur ein **aktiver** Fahrplan
@@ -719,10 +791,13 @@ Ferien haben Vorrang vor dem Wochenende.
 alle fünfzehn gesäten Gebäude der Testdatenbank führen `Ferienbeginn_1 = 366`. Benannt abgelehnt
 wird ein Tag außerhalb 1…365 in einem aktiven Fahrplan.
 
-**Ausgabe von Schritt E** sind acht Reihen zu 8 760 Werten: `ThetaOut`, `ThetaEq`, `PhiSolarAW`,
-`PhiSolarIW`, `PhiSolarLuft` (der a_kon-Anteil), `PhiIntern`, `ThetaSoll`, `ThetaMax`.
-`PhiIntern` führt die **konstante Gesamtleistung** `Interne_Waermegewinne`; die Aufteilung
-0,5/0,5 und die Flächengewichte aus E4 bildet erst der Löser.
+**Ausgabe von Schritt E** sind sieben Reihen zu 8 760 Werten: `ThetaOut`, `ThetaEq`, die drei
+fertigen Lasten `PhiRadAW`, `PhiRadIW`, `PhiConv` sowie `ThetaSoll` und `ThetaMax` (ab KU1 tritt
+`ThetaKuehl` daneben). Die Aufteilung der inneren Lasten 0,5/0,5 und die Flächengewichte aus E3
+und E4 bildet **der Eingangsbauer**, nicht der Löser: Er kennt A_AW,ges, A_IW und a_kon ohnehin,
+und der Löser bekommt genau die drei Lasten, die seine Knotenbilanzen brauchen (4.1). Die
+Zwischengrößen `PhiSolarAW`, `PhiSolarIW`, `PhiSolarLuft` und `Interne_Waermegewinne` bleiben im
+Eingangsbauer und sind dort prüfbar, verlassen ihn aber nicht.
 
 ---
 
@@ -731,11 +806,13 @@ wird ein Tag außerhalb 1…365 in einem aktiven Fahrplan.
 ### 7.1 Ablauf
 
 ```
-Eingang:  ErsatzparameterRC p, acht Randreihen, Vorlauflaenge 30 Tage
+Eingang:  ErsatzparameterRC p, sieben Randreihen, Vorlauflaenge 30 Tage
 Zustand:  x = (theta_m,AW, theta_m,IW), Startwert theta_soll der ersten Stunde
 
-Einheiten: Q und Phi_h in W, Phi_h_max = 1000 * Heizleistung_Max [kW] -> W
-           (NULL = double.PositiveInfinity), Temperaturen in K bzw. Grad C
+Einheiten: Q, Phi_h und Phi_c in W, Temperaturen in K bzw. Grad C
+           Phi_h_max   = 1000 * Heizleistung_Max  [kW] -> W  (NULL = PositiveInfinity)
+           Phi_c_max   = 1000 * Kuehlleistung_Max [kW] -> W  (ab KU1; davor unbegrenzt)
+           theta_kuehl = Kuehl_Sollwert                      (NULL = Maximaleraumtemperatur)
 
 Loeser aufbauen:
     A_frei, b-Struktur   aus p und dem Lueftungsleitwert          (Schritt C, Fall 1)
@@ -747,33 +824,48 @@ Vorlauf:
 
 Jahr:
     fuer h = 0 bis 8759:
-        (Q[h], theta_air[h], theta_op[h], Kuehl[h]) = Stundenschritt(h)
+        (Q_heiz[h], Q_kuehl[h], theta_air[h], theta_op[h]) = Stundenschritt(h)
 
 Stundenschritt(h):
-    t = 0;  akkQ = 0;  akkAir = 0;  akkS = (0, 0);  Abschnitte = 0
-    solange t < 3600 s und Abschnitte < 60:
+    Lueftungszustand EINMAL je Stunde bestimmen (7.2, Sommerlueftung ab G2):
+        Grundlage sind theta_air und theta_out der Vorstunde, Hysterese 1 K,
+        Mindestverweildauer 1 h; der Zustand gilt die ganze Stunde und waehlt
+        den Satz Phi, Gamma, Psi des freien Laufs
+
+    t = 0;  akkQ_heiz = 0;  akkQ_kuehl = 0;  akkAir = 0;  akkS = (0, 0);  Abschnitte = 0
+    solange t < 3600 s:
+        wenn Abschnitte = 60:
+            benannter Fehler mit Gebaeude, Jahresstunde, Zahl der Abschnitte und
+            Fallfolge — kein Teilstundenergebnis, keine Ausgabe dieser Stunde
         Abschnitte = Abschnitte + 1
         rest = 3600 - t
-        Lasten und Sollwert der Stunde h einsetzen
+        Lasten und Sollwerte der Stunde h einsetzen
+        ab AK1: Schritt H einschieben (7.4)
 
-        Betriebsfall waehlen:
-            Q0 = Phi_h(x)   im geregelten System
-            wenn Q0 > Phi_h_max:  Fall = Grenze oben, Q_fest = Phi_h_max
-            sonst wenn Q0 < 0:
-                wenn theta_air im freien Lauf > theta_max:  Fall = Kuehlung, Sollwert = theta_max
-                sonst:                                      Fall = frei,     Q_fest = 0
-            sonst:                                          Fall = geregelt
+        Betriebsfall waehlen — fuenf Faelle (Kuehlkonzept 3.2):
+            Q0 = Phi_h(x)   im geregelten System auf theta_soll
+            wenn Q0 > Phi_h_max:   Fall = Heizgrenze,       Q_fest = +Phi_h_max
+            sonst wenn Q0 > 0:     Fall = Heizen geregelt
+            sonst:
+                Qc0 = -Phi_h(x)  im geregelten System auf theta_kuehl
+                wenn Qc0 <= 0:              Fall = Totband,         Q_fest = 0
+                sonst wenn Qc0 > Phi_c_max: Fall = Kuehlgrenze,     Q_fest = -Phi_c_max
+                sonst:                      Fall = Kuehlen geregelt
 
         Gueltigkeit am Ende des Restintervalls pruefen, ueber das Verletzungsmass v
         mit der Regel "v <= 0 heisst Fall weiterhin gueltig":
-            geregelt:                  v = max( Phi_h(x) - Phi_h_max , 0 - Phi_h(x) )
-            Leistung fest auf Q_fest:  v = (Q_fest > 0) ? theta_air(x) - theta_soll
-                                                       : theta_soll  - theta_air(x)
+            Heizen geregelt:   v = max( Phi_h(x) - Phi_h_max , 0 - Phi_h(x) )
+            Heizgrenze:        v = theta_air(x) - theta_soll
+            Totband:           v = max( theta_soll - theta_air(x) ,
+                                        theta_air(x) - theta_kuehl )
+            Kuehlen geregelt:  v = max( Phi_c(x) - Phi_c_max , 0 - Phi_c(x) )
+            Kuehlgrenze:       v = theta_kuehl - theta_air(x)
         Im Klartext:
-            geregelt:                       gueltig solange 0 <= Phi_h(x) <= Phi_h_max
-            Grenze oben (Q_fest > 0):       gueltig solange theta_air(x) <= theta_soll
-            frei, Heizfall (Q = 0):         gueltig solange theta_air(x) >= theta_soll
-            Kuehlfall (Sollwert theta_max): gueltig solange theta_air(x) <= theta_max
+            Heizen geregelt:   gueltig solange 0 <= Phi_h(x) <= Phi_h_max
+            Heizgrenze:        gueltig solange theta_air(x) <= theta_soll
+            Totband (Q = 0):   gueltig solange theta_soll <= theta_air(x) <= theta_kuehl
+            Kuehlen geregelt:  gueltig solange 0 <= Phi_c(x) <= Phi_c_max
+            Kuehlgrenze:       gueltig solange theta_air(x) >= theta_kuehl
 
         wenn am Ende verletzt:
             tau = Bisektion der ersten Nullstelle des Verletzungsmasses, 60 Halbierungen
@@ -781,17 +873,44 @@ Stundenschritt(h):
             tau = rest
 
         x_mittel = (Gamma(tau)*x + Psi(tau)*b) / tau
-        akkQ   += Q(x_mittel) * tau        (bzw. Q_fest * tau in den Grenzfaellen)
-        akkAir += theta_air(x_mittel) * tau
-        akkS   += (S_C*x_mittel + S_D) * tau
-        x       = Phi(tau)*x + Gamma(tau)*b
-        t      += tau
+        Q        = Q(x_mittel)   (bzw. Q_fest in den Grenzfaellen und im Totband)
+        akkQ_heiz  += max( Q, 0) * tau
+        akkQ_kuehl += max(-Q, 0) * tau
+        akkAir     += theta_air(x_mittel) * tau
+        akkS       += (S_C*x_mittel + S_D) * tau
+        x           = Phi(tau)*x + Gamma(tau)*b
+        t          += tau
 
-    Q_Stunde        = akkQ / 3600                      (Blockmittel, W)
+    Q_heiz_Stunde   = akkQ_heiz  / 3600                (Blockmittel, W)
+    Q_kuehl_Stunde  = akkQ_kuehl / 3600                (Blockmittel, W)
     theta_air_Std   = akkAir / 3600                    (Blockmittel, °C)
     theta_s_Std     = akkS / 3600                      (Blockmittel der Oberflaechen, °C)
     theta_op_Std    = 0,5*theta_air_Std + 0,5*flaechengewichtetes Mittel von theta_s_Std
 ```
+
+**Der Abschnittsdeckel ist ein Fehler, kein Rückfall.** Sechzig Abschnitte in einer Stunde heißen,
+dass die Fallfolge nicht zur Ruhe kommt. Wird der Deckel erreicht, bricht die Rechnung mit
+benanntem Fehler ab und nennt Gebäude, Jahresstunde, Zahl der Abschnitte und die Folge der
+Betriebsfälle. Ein Teilstundenergebnis entsteht **nicht**: ein akkQ, das nur einen Teil der Stunde
+deckt und trotzdem durch 3 600 s geteilt wird, wäre eine stille Falschzahl (Blatt 1, 6.8 verbietet
+den stillen Rückfall). 10.4 führt dafür eine Rechenprobe.
+
+**Heiz- und Kühlanteil werden je Abschnitt getrennt akkumuliert.** Eine Stunde kann beides
+enthalten — Aufheizen am Morgen, Übertemperatur danach. Würde erst das vorzeichenbehaftete
+Blockmittel gebildet und davon der Betrag genommen, verschwände der kleinere Anteil spurlos. Mit
+akkQ_heiz und akkQ_kuehl bleiben beide stehen, und die Zusicherung des Kühlkonzepts 3.3 — „in
+keiner Stunde sind beide größer null" — wird eine **echte Probe** statt einer Folge der
+Schreibweise.
+
+**Der Lüftungszustand wechselt innerhalb der Stunde nicht.** Er wird am Stundenbeginn bestimmt
+(7.2) und gilt die ganze Stunde. Deshalb braucht die Sommerlüftung **kein** eigenes
+Verletzungsmaß und erzeugt keinen weiteren Umschaltgrund; die Bisektion sucht allein die Grenzen
+der fünf Betriebsfälle.
+
+**Vor KU1** ist θ_kuehl = `Maximaleraumtemperatur` und Φ_c,max unbegrenzt. Dann ist „Kühlen
+geregelt" genau die Kappung an θ_max, „Kühlgrenze" tritt nie ein, und das Totband ist der frühere
+freie Lauf. Die Struktur des Lösers ist damit schon in G1 die der Stufe KU1 — KU1 füllt nur die
+beiden Spalten.
 
 **Zeitbezug aller drei Prüfgrößen.** Heiz-/Kühllast, Raumluft- **und** operative Temperatur sind
 Blockmittel; Momentanwerte am Schrittende bilden die Verhältnisse nicht korrekt ab (Blatt 1,
@@ -808,8 +927,13 @@ in der Beispielstunde 1 399 (9.5) sind es 0,054 K, mehr als ein Drittel des Prü
   Konzept 4.2, 5.7) deckt der Vorlauf die Anfangsabweichung auf unter 0,1 K ab — 720 h sind das
   29- bis 96-fache. Für die **langsameren Normtesträume** (bis rund 264 h) reicht er nicht:
   720/264 = 2,73, und der Restfaktor exp(−2,73) = 0,065 bleibt nur unter 0,1 K, wenn die
-  Anfangsabweichung unter 1,5 K liegt. Dort ist der Vorlauf je Fall zu prüfen (10.5). Der
-  Nachweis ist eine Rechenprobe in G0.
+  Anfangsabweichung unter 1,5 K liegt. Dort ist der Vorlauf je Fall zu prüfen (10.5).
+  **Für Projektläufe bleiben die 30 Tage fest** — eine feste Länge hält den Lauf
+  deterministisch und die Rechenzeit vorhersagbar. Für die **Normtests** bekommt G0 statt dessen
+  ein deterministisches Abbruchkriterium: Der Vorlauf wird verlängert, bis sich der Zustand
+  zweier aufeinanderfolgender Vorlaufwochen um weniger als 0,01 K unterscheidet, höchstens aber
+  zwölf Wochen; wird die Grenze erreicht, ist das ein benannter Fehler und kein stiller
+  Weiterlauf. Der Nachweis ist eine Rechenprobe in G0.
 - **Ideale Regelung, kontinuierlich.** Weil der Luftknoten kapazitätslos ist, hält die Regelung
   θ_air = θ_soll zu **jedem** Zeitpunkt der Stunde. Die Leistung ist dann affin im Zustand und
   ihr Stundenmittel folgt exakt über Ψ. Eine „Sollwert am Schrittende"-Variante ergäbe in den
@@ -817,36 +941,123 @@ in der Beispielstunde 1 399 (9.5) sind es 0,054 K, mehr als ein Drittel des Prü
 - **Bisektion.** Die einzige Iteration, höchstens 60 Halbierungen, deterministisch. Sie
   bestimmt den Zeitpunkt, an dem das Verletzungsmaß des laufenden Betriebsfalls sein Vorzeichen
   wechselt. Jede Halbierung kostet eine Neuberechnung von Φ(τ) und Γ(τ).
-- **Kühlung.** Die Kappung an θ_max wird als ideale Kühlung gerechnet; die dafür nötige
-  Leistung wird als Reihe `Kuehlbedarf` geführt — informativ, kein vierter Kanal.
+- **Sommerlüftung (ab G2).** Der Luftwechsel springt nach einer Regel, die von θ_air abhängt —
+  also von einer Größe, die erst aus der Rechnung mit dem gewählten Luftwechsel folgt. Deshalb
+  wird die Regel **einmal je Stunde am Stundenbeginn** ausgewertet, mit θ_air und θ_out der
+  **Vorstunde**, und der gewählte Zustand gilt die ganze Stunde. Dazu gehören eine **Hysterese
+  von 1 K** (das Zurückschalten verlangt 1 K Abstand zur Einschaltschwelle) und eine
+  **Mindestverweildauer von einer Stunde**. Die Schwelle ist bis KU1 23 °C, ab KU1
+  θ_kuehl − 3 K. Weil der Zustand innerhalb der Stunde fest ist, bleibt es bei den fünf
+  Verletzungsmaßen aus 7.1.
+- **Kühlung.** Die Kühllast ist **kein Nebenprodukt**. Sie entsteht in den Fällen „Kühlen
+  geregelt" und „Kühlgrenze" auf dem Kühlsollwert θ_kuehl (NULL = `Maximaleraumtemperatur`) mit
+  der Grenze Φ_c,max = 1 000 · `Kuehlleistung_Max`, wird als Reihe `KuehlbedarfKwh` geführt und
+  verlässt den Lauf über die Fassade `SimulationKaeltebedarf` in den **vierten Kanal**
+  `KUEHLUNG` — mit eigener Summe, eigener Dauerlinie und eigenem Deckungszweig (E12, E21; 8.1).
+  Die fünf Betriebsfälle sind die des [Kühlkonzepts](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md)
+  3.2.
 - **Strahlungsanteil der Heizung.** Mit `Heizung_Strahlungsanteil` > 0 wird Φ_h nach (49)–(54)
-  auf Luft und Oberflächen aufgeteilt; das ändert c_Q und d_Q, nicht die Struktur.
-- **Kein Totband, keine Reglerdynamik.** Das Modell liefert den Bedarf; die Deckung rechnet
-  `SimulationControl` wie bisher.
+  auf Luft und Oberflächen aufgeteilt; das ändert c_Q und d_Q, nicht die Struktur. Die
+  **Kühlleistung** wirkt in KU1 dagegen **rein konvektiv** am Luftknoten — KU-S1 führt keinen
+  Strahlungsanteil der Kühlübergabe. Erst AK1 bringt ihn, aus derselben Quelle wie den der
+  Heizübergabe (Anlagenkopplung 7.1).
+- **Kein Reglertotband, keine Reglerdynamik.** Der Bereich zwischen θ_soll und θ_kuehl ist der
+  Abstand **zweier Sollwerte**, nicht die Hysterese eines Reglers (Kühlkonzept 3.2). Das Modell
+  liefert den Bedarf; die Deckung rechnet `SimulationControl` wie bisher.
 
 ### 7.3 Eine Stunde im Bild
 
 ```mermaid
 flowchart TD
-    S["Stundenbeginn<br/>Zustand x, Lasten und Sollwert der Stunde h"] --> Q["Q0 = Phi_h(x) im geregelten System"]
+    S["Stundenbeginn<br/>Lueftungszustand fuer die ganze Stunde<br/>Zustand x, Lasten und Sollwerte der Stunde h"] --> Q["Q0 = Phi_h(x) im geregelten System auf theta_soll"]
     Q --> P{"Betriebsfall"}
-    P -->|"0 &lt;= Q0 &lt;= Phi_h,max"| R["geregelt: theta_air = theta_soll"]
-    P -->|"Q0 &gt; Phi_h,max"| L["Grenze oben: Q fest, freier Lauf"]
-    P -->|"Q0 &lt; 0"| K{"theta_air im freien Lauf &gt; theta_max?"}
-    K -->|nein| A["frei: Q = 0"]
-    K -->|ja| C["Kuehlung: theta_air = theta_max, Q &lt; 0"]
+    P -->|"0 &lt; Q0 &lt;= Phi_h,max"| R["Heizen geregelt: theta_air = theta_soll"]
+    P -->|"Q0 &gt; Phi_h,max"| L["Heizgrenze: Q fest auf Phi_h,max"]
+    P -->|"Q0 &lt;= 0"| K{"Qc0 = -Phi_h(x) auf theta_kuehl"}
+    K -->|"Qc0 &lt;= 0"| A["Totband: Q = 0, freier Lauf"]
+    K -->|"0 &lt; Qc0 &lt;= Phi_c,max"| C["Kuehlen geregelt: theta_air = theta_kuehl"]
+    K -->|"Qc0 &gt; Phi_c,max"| CG["Kuehlgrenze: Q fest auf -Phi_c,max"]
     R --> V{"Fall am Ende der Reststunde noch gueltig?"}
     L --> V
     A --> V
     C --> V
+    CG --> V
     V -->|ja| M["tau = Rest der Stunde"]
     V -->|nein| B["Bisektion: 60 Halbierungen<br/>tau = Umschaltzeitpunkt"]
-    M --> I["Mittelwert ueber Gamma und Psi<br/>akkQ += Q * tau, x = Phi*x + Gamma*b"]
+    M --> I["Mittelwert ueber Gamma und Psi<br/>akkQ_heiz und akkQ_kuehl getrennt<br/>x = Phi*x + Gamma*b"]
     B --> I
     I --> W{"t &lt; 3600 s?"}
     W -->|ja| Q
-    W -->|nein| E["Blockmittel Q und theta_air<br/>Oberflaechen, theta_op"]
+    W -->|nein| E["Blockmittel Heizlast, Kuehllast, theta_air<br/>Oberflaechen, theta_op"]
 ```
+
+Mit AK1 tritt zwischen „Lasten und Sollwerte der Stunde h" und „Betriebsfall" der **Schritt H**
+(7.4); ohne Anlagenkopplung bleibt das Bild, wie es hier steht.
+
+### 7.4 Schritt H — Einschub der Anlagenkopplung (Vorgriff, gilt ab AK1)
+
+Dieses Unterkapitel beschreibt, was sich an Schritt F ändert, **sobald** die Anlagenkopplung
+beauftragt ist. Bis dahin ist es Vorgriff und ändert an G1, G2 und KU1 nichts. Hergeleitet ist
+der Schritt in der
+[Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md), 10.1 und 10.2; hier
+steht seine Stelle in der Stundenschleife.
+
+**Wo er sitzt.** Schritt H ist kein achter Schritt am Ende, sondern ein **Einschub in Schritt F**
+— genau zwischen „Lasten und Sollwerte der Stunde h einsetzen" und „Betriebsfall wählen" (7.1).
+Er läuft **je Abschnitt**, weil er von der aktuellen Raumlufttemperatur abhängt.
+
+**Zwei Vorarbeiten in Schritt E.** Sie geschehen einmal je Gebäude, nicht je Stunde, und gehören
+deshalb in den Eingangsbauer (Schritt E):
+
+```
+Vorlaufreihe        theta_V[8760]   aus der Heizkurve oder als Festwert je Anlage
+Uebergabekennwerte  Phi_N, n, W_H, dtheta_m_N aus dem Auslegungspunkt der Uebergabe
+ab AK2              Anlagenverfuegbarkeit[8760] aus dem Anlagenfahrplan
+```
+
+**Einheiten.** Schritt H rechnet **in W und W/K**, wie der ganze Löser (1.3, 7.1). Die
+Übergabekennwerte stehen in der Anlagenwelt in kW und kW/K; die Umrechnung geschieht **einmal im
+Eingangsbauer**, nicht verstreut in der Stundenschleife. Auch die Abbruchschwelle der
+Newton-Iteration in H2 ist danach eine Schwelle in W.
+
+**Der zusätzliche Betriebsfall.** Zu den fünf Fällen aus 7.1 tritt „**Übergabe begrenzt**" — in
+der Zählung der Anlagenkopplung der vierte Fall. Er greift, sobald eine Grenze wirkt oder das
+Proportionalband Xp > 0 ist; die Verzweigung lautet in **allen** Papieren gleich:
+„Φ_verlangt ≤ Φ_ue,max **und** Xp = 0" führt in den geregelten Fall des Bestands, alles andere in
+„Übergabe begrenzt" (Anlagenkopplung 3.7, Bild 6.1, 10.2 H5).
+
+**Der Leitwert hängt vom Sättigungszustand ab.** Die Übergabe wird als Sekantenleitwert in den
+freien Lauf gehängt, θ_H = θ_i + Φ/G. Welches G gilt, entscheidet y = clamp((θ_soll − θ_i)/Xp, 0, 1):
+
+```
+Regelbereich (0 < y < 1):  G = Phi_ue_max / Xp  +  y * G_H
+gesaettigt   (y = 1):      G = G_H
+```
+
+G_H ist die Ableitung der voll geöffneten Übergabekennlinie nach θ_i (Anlagenkopplung 3.3). Im
+Regelbereich ist der erste Summand der maßgebliche: Dort bewegt der Regler das Ventil, und die
+Steigung der geregelten Kennlinie ist um Φ_ue,max/Xp steiler als die der offenen.
+
+**θ_R und θ_m werden nach der Begrenzung neu gebildet.** Erst wird die gelieferte Leistung Φ
+bestimmt (Proportionalband, Übergabe, `Heizleistung_Max`, ab AK2 Verfügbarkeit), dann folgen
+Rücklauf und mittlere Heizmitteltemperatur **aus dieser Leistung**. Bei konstantem Massenstrom
+gilt θ_R = θ_V − Φ/W_H — bei Teillast also eine kleinere Spreizung. Die Werte aus dem Zwischenschritt
+mit voll geöffnetem Ventil dürfen nicht zurückgegeben werden; sie gehören zu einer Leistung, die
+gar nicht geliefert wird, und würden Erzeugerkennlinie und Ausweis verfälschen.
+
+**Das Verletzungsmaß ist zweiseitig, je Sättigungszustand.** Die Kennlinie des P-Reglers hat zwei
+Knicke: bei y = 0 (der Raum erreicht den Sollwert) und bei y = 1 (die Übergabe geht in die
+Sättigung). Beide müssen die Bisektion treffen:
+
+```
+gesaettigt (y = 1):        gueltig solange  theta_air(x) <= theta_soll - Xp
+                           v = theta_air(x) - (theta_soll - Xp)
+Regelbereich (0 < y < 1):  gueltig solange  theta_soll - Xp <= theta_air(x) <= theta_soll
+                           v = max( theta_soll - Xp - theta_air(x) ,
+                                    theta_air(x) - theta_soll )
+```
+
+Mit Xp = 0 fällt beides zusammen, und der Fall verhält sich wie „Heizgrenze" aus 7.1.
 
 ---
 

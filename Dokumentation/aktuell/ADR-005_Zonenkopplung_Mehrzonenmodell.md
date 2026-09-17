@@ -38,7 +38,10 @@ Luftaustausch zwischen Zonenpaaren.
 3. **Luftaustausch zwischen Zonen** koppelt die Luftknoten unmittelbar und ist der Grund,
    warum eine Kopplung über die Vorstunde zu weit hinkt.
 4. **Rechenzeit:** rund 5 ms je Zone und Jahr; 50 Zonen mit mehreren Durchläufen je Stunde
-   liegen bei 0,75 bis 1,5 s je Gebäude und Jahr — tragbar, weil nur Mehrzonengebäude sie zahlen.
+   liegen bei **rund 1,1 bis 2,0 s je Gebäude und Jahr** — einschließlich des ungekoppelten
+   Vorlaufs der 4-K-Zuordnung und des zweiten Vorlaufs aus der Konvergenzprobe
+   ([Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md), 2.9). Tragbar, weil nur
+   Mehrzonengebäude sie zahlen.
 5. **Nachweisbarkeit:** Es gibt keinen Normtestfall für gekoppelte Zonen; der Nachweis
    muss aus Grenzfällen kommen (eine Zone = Einzonenmodell; zwei identische Zonen ohne
    Austausch = zwei Einzonenmodelle; exaktes Gesamtsystem für N = 2 als Orakel).

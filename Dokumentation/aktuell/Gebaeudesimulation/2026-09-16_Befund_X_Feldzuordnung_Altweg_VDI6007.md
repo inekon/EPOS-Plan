@@ -409,12 +409,18 @@ Konzept N1.25 („rund 3–5 PT").
 
 ## 4. Was die Stufe GA entfernt
 
-**Mit E23 (16.09.2026) gegenstandslos:** Der Anwender hat entschieden, dass der Altweg dauerhaft bleibt; eine Stufe GA gibt es nicht mehr (Konzept N1.28). Dieses Kapitel bleibt als Befund stehen, was ein Rückbau umfasst hätte; zu tun ist davon nichts. Die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` sind ein gewöhnlicher Aufräumpunkt ohne Stufe.
+**Dieses Kapitel ist die Grundlage der Stufe GA; ihr Zeitpunkt ist offen (Q24, E26).** Nach E23
+und E26 (17.09.2026, Konzept N1.28 und N1.31) bleibt der Altweg jetzt als Übergang, und der
+VDI-Weg löst ihn später vollständig ab. Die Aufstellung unten ist die Erhebung, aus der das
+Umsetzungskonzept in Kapitel 6 die Löschliste der Stufe GA führt; verbindlich wird der Umfang
+dort und über Q25. Die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` gehören in dieselbe
+Liste.
 
 ### 4.1 Datenbank
 
 | Gegenstand | Was geschieht |
 |---|---|
+| `Fensterflaeche_Ost` und `_West` | **zuerst einmalig füllen:** je die Hälfte von `Fensterflaeche_Ost_West`, wo sie noch NULL sind — erst danach darf das Bestandsfeld fallen (die NULL-Vorgabe des Vorbereitungsschritts ist eine Abhängigkeit nur für den Übergang) |
 | `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` | `DROP COLUMN` für **`Gebaeude_Modell`**, **`Fensterflaeche_Ost_West`**, **`Wochenende`**, **`Ferien`** (je Tabelle 4 Spalten) |
 | Sicht `Abfrage_Projektgebaeude` | Neubau aus `GebaeudeSchema.SQL_VIEW_NEU` ohne die vier Spalten; `ProjektGebaeudeCtrl` (dann Namensleser) zieht mit |
 | `Tab_DBTagV`, `Tab_DBTagVDaten` | verlieren ihren einzigen Rechenleser (`DBTagesVeteilung:670`). Ob die Tabellen und der `GebaeudetypDialog` bleiben, ist eine eigene Frage (5.2) |
@@ -439,7 +445,8 @@ Konzept N1.25 („rund 3–5 PT").
 | Abschnitt **„Übergang: Tagesbilanz"** | die vier Felder aus 1.5 samt Aufklapplogik |
 | Spalte **„Modell"** in der Projektliste des Gebäudedialogs | Umsetzungskonzept 2.7 Punkt 1 |
 | **Vergleich alt/neu** im Bedarfsdialog | die vierspaltige Tabelle und `GebaeudeBedarfDaten.Vergleich` (Umsetzungskonzept 2.7) |
-| Ausweis **„Tagesbilanz (Übergangsweg)"** in Bericht und Bedarfsdialog | Konzept N1.25 Punkt 5; danach gilt allein der Produktausweis nach E10 |
+| Ausweis **„Tagesbilanz (Bestandsweg)"** in Bericht und Bedarfsdialog | Konzept N1.25 Punkt 5; danach gilt allein der Produktausweis nach E10 |
+| **Schreibstellen der Flags `Wochenende` und `Ferien`** | `GebaeudeKatalogDialog.razor:809` und `:811` setzen sie beim Übernehmen des zweiten Reiters auf 0/1; die Träger stehen in `GebaeudeKatalogDaten.cs:139` und `:142`. Sie entfallen mit den Spalten; bis dahin bleiben sie, damit ein Gebäude auf dem Altweg dieselben Werte behält (X1) |
 
 ### 4.4 Tests und Nachweise
 

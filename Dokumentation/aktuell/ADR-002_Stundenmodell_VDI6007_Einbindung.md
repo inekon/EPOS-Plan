@@ -1,13 +1,13 @@
 # ADR-002: Stundenmodell VDI 6007 als Vorgabemodell — Einbindung mit einer Naht und Neu-Einfrieren der Basis
 
 **Status:** Angenommen (15.09.2026, Anwenderentscheide E1, E2, E4, E8, E10)
-**Ergänzung (16.09.2026, E20):** Die „eine Naht" ist seit [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) eine **Weiche am Eingang** der Gebäudebedarfsrechnung zwischen zwei getrennten Modulen (`Altweg/`, `Gebaeude/`); der Tagesbilanz-Weg ist ein eingefrorener Bestandsweg, der nach E23 dauerhaft bleibt. Alles Übrige dieses ADR gilt unverändert.
+**Ergänzung (16.09.2026, E20; 17.09.2026, E26):** Die „eine Naht" ist seit [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) eine **Weiche am Eingang** der Gebäudebedarfsrechnung zwischen zwei getrennten Modulen (`Altweg/`, `Gebaeude/`); der Tagesbilanz-Weg ist ein eingefrorener Bestandsweg, der nach E23 jetzt bleibt und nach E26 mit der Stufe GA abgelöst wird (Zeitpunkt offen, Q24). Alles Übrige dieses ADR gilt unverändert, **mit Ausnahme von Entscheidung 3, Satz 3** (Flächen- und Bewohnerrechnung).
 **Datum:** 15.09.2026
 **Entscheider:** Anwender (Projektverantwortung EPOS-Plan)
 **Betrifft:** [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 (Kapitel 4, 6, 10 und Nachtrag 1), [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 (Kapitel 1 und 4), Einfrierregeln des Regressionsnetzes in der Wurzel-`CLAUDE.md`
-**Berührte Bereiche:** `EPOS.Kern/Allgemein/Simulation/`, `EPOS.Kern/Allgemein/BhkwPlan.cs`, Schemaschritte 77 und 78, `Referenzlaeufe/`
+**Berührte Bereiche:** `EPOS.Kern/Allgemein/Simulation/`, `EPOS.Kern/Allgemein/BhkwPlan.cs`, Gebäudespalten-Schritt (Papiername M3) und Klimaspalten-Schritt (M4), `Referenzlaeufe/`
 
 ---
 
@@ -72,9 +72,11 @@ diente der Entwicklung; maßgeblich ist nach Nachtrag N1.2 allein das Normband.
 3. **Die Einbindung hat eine Naht.** Die Verzweigung zwischen Tagesmodell und Stundenmodell
    sitzt in `HeizwaermeEinesGebaeudes`; der Watt-Puffer, die Umrechnung nach kW, der
    Kanal HEIZUNG und `Waermelast_Max` als Maximum des Kanalsummenvektors bleiben unberührt.
-   Die Flächen- und Bewohnerrechnung, die vor der Verzweigung läuft und selbst das
-   Tagesmodell ruft, folgt derselben Modellwahl, damit die Skalierung nicht zwei Modelle
-   mischt (Gegenlesen des Umsetzungskonzepts, Eintrag H4).
+   Satz 3 dieser Entscheidung („Die Flächen- und Bewohnerrechnung … folgt derselben
+   Modellwahl") ist durch E20 und [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) ersetzt: Der
+   Vorbereitungsschritt läuft vor der Weiche und kennt keine Modellwahl; er liefert nur, was
+   ohne Modellauf feststeht. Bewohnerzahl und Skalierungsfaktor nach E8 entstehen je Modul aus
+   dessen erstem Lauf, die Fassade führt die Schleife.
 4. **Die Bestandsgewichte entfallen im Stundenmodell** (E2). Der Gebäudedialog zeigt je
    Bauteil U, A und U·A ohne verdeckte Faktoren; dieselbe Zielstruktur trägt später den
    IFC- und den gbXML-Import.
@@ -108,7 +110,7 @@ kann später nicht mehr sagen, welche Abweichung Erbe und welche Absicht ist; Li
 
 ### Option B: Tagesmodell bleibt Vorgabe, Stundenmodell wählbar je Gebäude
 
-Beide Modelle dauerhaft nebeneinander, neue Gebäude mit Vorgabe Tagesbilanz.
+Beide Modelle ohne vorgesehenes Ende nebeneinander, neue Gebäude mit Vorgabe Tagesbilanz.
 
 | Dimension | Bewertung |
 |---|---|
@@ -151,7 +153,7 @@ Wärmeversorgungskonzept mit vielen Varianten braucht Millisekunden je Gebäude.
 ## Abwägung
 
 Die Entscheidung fällt zwischen B und C, denn A scheidet an der Richtigkeit und D an der
-Plattform aus. B schont die Basis, kauft das aber mit zwei dauerhaften Rechenwegen; C kostet
+Plattform aus. B schont die Basis, kauft das aber mit zwei Rechenwegen ohne Ende; C kostet
 einmal das Neu-Einfrieren und liefert dafür ein einziges, nachgewiesenes Modell. Da der
 Prototyp die Normtestfälle bereits besteht und die Abweichung zum Bestand quantifiziert ist
 (Befund F: die Parametrierung, nicht die Struktur, trägt den Löwenanteil), ist der Wechsel
@@ -180,8 +182,9 @@ vom Modellwechsel, sodass jede spätere Abweichung eindeutig zuzuordnen bleibt.
        lokal beizustellende Datei, Fall 11 mit Deckenknoten.
 2. [ ] GB: Warnungen statt NaN, Instanzzustand statt `_prevRoomTemp`, Korrektur Gebäude
        10576, Grenze 100 Gebäude, vierte Einfrierregel; eigener Einfrierschritt.
-3. [ ] Schemaschritte 77/78 (Zusammenlegung nach Frage U5), `Tab_Solar`-Schritt, Sicht
-       `Abfrage_Projektgebaeude` neu aufbauen.
+3. [ ] Gebäudespalten-Schritt M3 und Klimaspalten-Schritt M4 (Zusammenlegung nach Frage U5),
+       `Tab_Solar`-Schritt, Sicht `Abfrage_Projektgebaeude` neu aufbauen. Die Schrittnummern
+       werden erst bei der Beauftragung an `SchemaStand.Zielversion` abgelesen.
 4. [ ] G1 + G2: Verzweigung, Vorlauf, Skalierung, Dialogumbau, Ergebnisdarstellung; Basis
        neu einfrieren, Statuszeile in
        [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md).

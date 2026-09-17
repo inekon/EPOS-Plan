@@ -1,6 +1,10 @@
 # Konzept: Datenaustausch gbXML und IFC — Import und Export (EPOS-Plan)
 
-**Rev. 1 — 15.09.2026 — Prüfung und Vorschlag, zur Entscheidung durch Philipp**
+**Rev. 2 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
+
+> **Was Rev. 2 ändert:** 7.4 nennt keine festen Schrittnummern mehr — die Gebäudespalten-Schritte
+> tragen die Papiernamen **M3** und **M4**, der Zielstand wird an `SchemaStand.Zielversion`
+> abgelesen; sonst bleibt der Stand der Rev. 1.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -1118,12 +1122,15 @@ des Aufbaus, und ihre Stoffwerte sind ohnehin Kopien zum Zeitpunkt der Zuordnung
 
 ### 7.4 Schemaschritt
 
-`EPOS.Kern/Allgemein/Update/SchemaStand.cs:93` steht auf `Zielversion = 76`. Vergeben sind danach:
-**77** für G1; ob die drei G2-Spalten dort mit hineinlaufen, ist **offen** (Umsetzungskonzept 1.7,
-Frage **U5** — dort als Empfehlung, nicht als Entscheid) — sonst **78**. Dazu ein eigener Schritt
-für die `Tab_Solar`-Klimaspalten und die Mehrzonenschritte **S-A** bis **S-D**. (**S-E** ist der
-Umbau von `GebaeudeStammCtrl.CopyFromStamm` und läuft als eigener Einfrierschritt mit **G1**; er
-berührt die Nummernfolge nicht — Mehrzonenkonzept 4.4.)
+**Schrittnummern stehen in keinem Papier.** Der Zielstand wird bei der Beauftragung an
+`SchemaStand.Zielversion` abgelesen (`EPOS.Kern/Allgemein/Update/SchemaStand.cs`); beim Schreiben
+dieses Papiers steht er auf **84**, die nächste freie Nummer ist damit **85**. Bis zur Beauftragung
+tragen die Schritte nur ihre Papiernamen: **M3** für die Gebäudespalten (G1) und **M4** für die
+Klimaspalten (G2) — ob beide zusammenlaufen, ist **offen** (Umsetzungskonzept 1.7, Frage **U5** —
+dort als Empfehlung, nicht als Entscheid). Dazu ein eigener Schritt für die
+`Tab_Solar`-Klimaspalten und die Mehrzonenschritte **S-A** bis **S-D** sowie **S-G**
+(Mehrzonenkonzept 4.4). (**S-E** ist der Umbau von `GebaeudeStammCtrl.CopyFromStamm` und läuft als
+eigener Einfrierschritt mit **G1**; er berührt die Nummernfolge nicht.)
 
 Der Schritt dieses Papiers heißt hier **S-F** und bekommt die nächste freie Nummer **hinter den
 Mehrzonenschritten**; die Zahl bleibt offen, bis die Reihenfolge der Auslieferung feststeht. Inhalt:
