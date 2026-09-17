@@ -37,6 +37,12 @@ namespace EPOS.Kern.Tests
         /// <summary>„Fernwärme" (Gruppe Fernwärme).</summary>
         private const int TRAEGER_FERNWAERME = 51;
 
+        /// <summary>
+        /// Der Träger der Kategorie ANIMAL_FAT (Gruppe „Tierische Fette") — ein
+        /// BHKW-Brennstoff mit EIGENEM Kategoriecode, nicht Teil der flüssigen.
+        /// </summary>
+        private const int TRAEGER_TIERFETT = 69;
+
         private static string Text(IReadOnlyList<string> gruppen)
         {
             return gruppen == null ? "<alle>" : string.Join("|", gruppen);
@@ -137,7 +143,7 @@ namespace EPOS.Kern.Tests
         // =================================================================
 
         [Fact]
-        public void Ein_BHKW_ohne_Geraet_bekommt_gasfoermig_und_fluessig()
+        public void Ein_BHKW_ohne_Geraet_bekommt_gasfoermig_fluessig_und_tierische_Fette()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -148,8 +154,37 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(gruppen);
             Assert.Contains(GruppeDesTraegers(TRAEGER_ERDGAS), gruppen);
             Assert.Contains(GruppeDesTraegers(TRAEGER_HEIZOEL), gruppen);
+            Assert.Contains(GruppeDesTraegers(TRAEGER_TIERFETT), gruppen);
             Assert.DoesNotContain(GruppeDesTraegers(TRAEGER_STROM), gruppen);
             Assert.DoesNotContain(GruppeDesTraegers(TRAEGER_FERNWAERME), gruppen);
+        }
+
+        /// <summary>
+        /// „Tierische Fette" führt eine EIGENE Gruppe und einen eigenen Kategoriecode —
+        /// der Träger fiele deshalb durch, wenn nur gasförmig und flüssig zugelassen
+        /// wären. Die Gegenprobe steht im selben Fall: Der Kessel OHNE Gerät nimmt ihn
+        /// ohnehin (keine Einengung), ein Öl-BHKW dagegen nicht.
+        /// </summary>
+        [Fact]
+        public void Tierische_Fette_sind_am_BHKW_ohne_Geraet_zulaessig()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Der Träger trägt wirklich den eigenen Code - sonst prüfte der Fall nichts.
+            Assert.Equal(EnergietraegerZulaessigkeit.CODE_TIERFETT,
+                         PricingModelDesTraegers(TRAEGER_TIERFETT));
+
+            Assert.True(EnergietraegerZulaessigkeit.IstZulaessig(
+                DbWerte.ERZEUGER_BHKW, TRAEGER_TIERFETT));
+
+            // Mit Gerät zählt allein die Kategorie des Geräts.
+            Assert.False(EnergietraegerZulaessigkeit.IstZulaessig(
+                DbWerte.ERZEUGER_BHKW, BHKW_OEL, TRAEGER_TIERFETT));
+
+            // Die elektrische Welt bleibt unberührt.
+            Assert.False(EnergietraegerZulaessigkeit.IstZulaessig(
+                DbWerte.ERZEUGER_WAERMEPUMPE, TRAEGER_TIERFETT));
         }
 
         [Fact]
@@ -346,6 +381,15 @@ namespace EPOS.Kern.Tests
         // =================================================================
 
         /// <summary>Der Gruppenname eines Trägers — aus der Datenbank, nicht aus dem Test.</summary>
+        /// <summary><c>energy_carrier.pricing_model</c> — der KATEGORIECODE des Trägers.</summary>
+        private static string PricingModelDesTraegers(int carrierId)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT pricing_model FROM energy_carrier WHERE id = ?",
+                new DbParam("@id", carrierId));
+            return o == null || o == DBNull.Value ? "" : Convert.ToString(o).Trim();
+        }
+
         private static string GruppeDesTraegers(int carrierId)
         {
             object o = DataRepository.ExecuteScalar(
