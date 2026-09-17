@@ -458,3 +458,118 @@ offen: „Tierische Fette" für das BHKW ohne Gerät, der UNIQUE-Index auf
   „gerechnet wird über den Kategoriecode, angezeigt über die Gruppe" (Abschnitt 7) und fällt
   in der Kopfzeile nun stärker auf, weil sie die Gruppen nennt.
 - **Die nächste freie Befundnummer dieses Dialogs ist ET‑9.**
+
+## 10. ET‑9 (17.09.2026) — die Kostenknöpfe der Erzeugerdialoge, nachgemessen
+
+**Auftrag:** Restpunkt „Nach #268" — „Heizkessel- und BHKW-Dialog zeichnen die Kostenleiste,
+aber `KostenOeffnen`/`EnergiekostenOeffnen` sind in `HeizkesselHuelle`/`BhkwHuelle` unbelegt
+(drei Knöpfe ohne Wirkung)"; dazu „Tierische Fette" (`ANIMAL_FAT`) für das BHKW ohne Gerät.
+
+### 10.1 Befund
+
+| Nr. | Befund | Ursache |
+|---|---|---|
+| **ET‑9** | **Der Restpunkt war überholt, nicht offen.** Alle sechs Erzeugerdialoge sind auf Windows vollständig verdrahtet: `HeizkesselHuelle`, `BhkwHuelle`, `PhotovoltaikHuelle` und `StromspeicherHuelle` belegen `KostenOeffnen` UND `EnergiekostenOeffnen`, `PufferspeicherHuelle` und `SolarkollektorHuelle` belegen `KostenOeffnen` und lassen den dritten Knopf samt Beschriftung weg (sie beziehen keinen Energieträger). Alle sechs gehen über die eine Naht `ErzeugerKostenwege`, je mit ihrer `DbWerte.ERZEUGER_*`-Komponente, und `Energiekosten` reicht Träger UND Gerät der gewählten Zeile durch. Die Wache `EPOS.UI.Tests/Dialoge/KostenknopfWegeTests` hält das seit derselben Runde | Der Satz „bleiben unbelegt" in Abschnitt 9.6 und in der Statuszeile ist **aus dem Gedächtnis fortgeschrieben** worden, statt am Quelltext nachgemessen: Die Verdrahtung entstand am 15.09.2026, die Fortschreibung des Restpunkts am 17.09.2026 übernahm den alten Wortlaut |
+| **ET‑9a** | „Tierische Fette" (`ANIMAL_FAT`) fehlte dem BHKW **ohne** Gerät | `BRENNBAR_BHKW` in `EnergietraegerZulaessigkeit` führte nur `GASEOUS_FUEL` und `LIQUID_FUEL`. Tierische Fette sind keine Untergruppe der flüssigen Brennstoffe, sondern ein eigener Code in `Tab_BrennstoffKategorien` mit eigener Katalog-Gruppe — der Träger fiel deshalb ganz heraus |
+| **ET‑9b** | Der UNIQUE-Index auf `energy_project_settings` steht **bereits** | Schemaschritt 76 legt `idx_EnergyProjectSettings_Traeger` über `(ID_Projekt, ID_Energieträger)` an; in der Testdatenbank (Schemastand 76) ist er vorhanden. Der Restpunkt zählte ihn weiter als offen |
+
+### 10.2 Die Messtabelle — je Dialog, je Knopf, je Plattform
+
+Gemessen am Quelltext, nicht an der Erinnerung. „Windows" ist der Weg über die Hülle,
+„plattformfrei" der einzige Weg, auf dem diese Dialoge ohne Windows-Schale erscheinen: die
+Assistentenseite (und damit iOS).
+
+| Dialog | Investitionskosten… | Betriebskosten… | Energiekosten… | plattformfrei / iOS |
+|---|---|---|---|---|
+| Heizkessel | verdrahtet | verdrahtet | verdrahtet (mit Erzeugerart und Geräte-Id) | Leiste bleibt weg (`!Wizard`) |
+| BHKW | verdrahtet | verdrahtet | verdrahtet (mit Erzeugerart und Geräte-Id) | Leiste bleibt weg (`!Wizard`) |
+| Photovoltaik | verdrahtet | verdrahtet | verdrahtet | Leiste bleibt weg (`!Wizard`) |
+| Stromspeicher | verdrahtet | verdrahtet | verdrahtet | Leiste bleibt weg (`!Wizard`) |
+| Pufferspeicher | verdrahtet | verdrahtet | benannt abgelehnt — kein Träger | keine Assistentenseite |
+| Solarthermie | verdrahtet | verdrahtet | benannt abgelehnt — kein Träger | Leiste bleibt weg (`!Wizard`) |
+
+**Kein Knopf ohne Wirkung.** Die zwei benannten Ablehnungen sind zwei Ablehnungen, keine
+Lücken: Ohne Delegat zeichnet die `KostenKnoepfeLeiste` den Knopf gar nicht erst, und die
+Wache verbietet der Hülle zugleich, seine Beschriftung stehen zu lassen.
+
+**Warum auf iOS nichts nachzurüsten ist.** `AppWurzel` führt diese sechs Dialoge nicht als
+eigene Ansicht; ihr einziger plattformfreier Wirt ist `AssistentSeite`. Dort gibt es das
+Projekt noch nicht, zu dem Kostenpositionen und Projektträger gehörten — die Leiste steht
+deshalb in allen sechs hinter `@if (!Wizard)`. Und der Assistent selbst lehnt seine elf
+Erzeugerschritte auf einer Schale ohne Seitengaben **benannt** ab
+(`AssistentPlattformwege.SeitenSperrgrund`, `AssistentPlattformwege.Ohne(...)` in
+`IosProjektQuelle`). Ein Schlüssel `ENERGIETRAEGER_VERWALTUNG` in `AppWurzel` wäre damit
+gegenstandslos: Es gibt auf iOS keinen Erzeugerdialog, aus dem heraus er gerufen würde — die
+Rubrik Kostenverwaltung fehlt dort insgesamt (Restpunkt „Nach #269").
+
+### 10.3 Umsetzung
+
+- **`EnergietraegerZulaessigkeit`** (Kern): neuer Kategoriecode `CODE_TIERFETT = "ANIMAL_FAT"`
+  mit Begründung am Feld, `BRENNBAR_BHKW` um ihn erweitert, Kopfkommentar und die Zeile am
+  Rückgabepunkt nachgezogen. **Keine zweite Regel:** Mit Gerät entscheidet weiterhin allein
+  die Kategorie des Geräts, die Dreiwertigkeit von `ZulaessigeGruppen` bleibt, und
+  `ZulaessigeGruppenFuerProjekt` erbt die Erweiterung, ohne selbst angefasst zu werden.
+- **`KostenknopfWegeTests`** (Wache): ein Fall mehr, der die sechs Razor-Quellen liest und
+  prüft, dass die `KostenKnoepfeLeiste` in jeder genau einmal und hinter einer
+  `@if (!Wizard…)`-Weiche steht. Die Verdrahtung der Wirte war schon gewacht; gewacht ist
+  jetzt auch die zweite Plattform.
+- **Nichts an `EnergietraegerDialog`, `EnergietraegerHuelle.Gaben`, der Einengung, den
+  Strompreis-Details, am Schema oder am Rechenweg.**
+
+### 10.4 Nachweise
+
+- `EnergietraegerZulaessigkeitTests`: der BHKW-Fall ohne Gerät nennt jetzt auch die Gruppe der
+  tierischen Fette; ein neuer Fall hält fest, dass der Träger den EIGENEN Kategoriecode trägt
+  (sonst prüfte der Fall nichts), am BHKW ohne Gerät zulässig ist, am Öl-BHKW nicht und an der
+  Wärmepumpe nicht. 18 → 20 Fälle.
+- `KostenknopfWegeTests`: 4 → 5 Fälle.
+- **Drei Gegenproben**, jede gefahren und zurückgebaut:
+  `CODE_TIERFETT` aus `BRENNBAR_BHKW` ausgehängt → 2 Kernfälle rot;
+  `["EnergiekostenOeffnen"]` der `HeizkesselHuelle` umbenannt → die Wache rot;
+  `@if (!Wizard)` im Heizkesseldialog auf `@if (true)` gesetzt → der neue Wachenfall und der
+  bestehende bunit-Fall `Im_Assistenten_fehlen_OK_Abbrechen_und_die_Kostenleiste` rot.
+- Die bunit-Abdeckung je Dialog stand bereits: Knopf ruft den Callback, beide Kostenknöpfe
+  nehmen die gewählte Zeile mit, ohne Wege bleibt die Leiste leer, im Assistenten fehlt sie.
+  Kein doppelter Fall dazugeschrieben.
+
+### 10.5 Abnahmepunkte — A‑N268 (Windows)
+
+| Nr. | Was |
+|---|---|
+| `A-N268-1` | Projekt öffnen, Heizkesselverwaltung: über der Modulliste stehen ''Investitionskosten…'', ''Betriebskosten…'', ''Energiekosten…''; alle drei gehen auf |
+| `A-N268-2` | Dieselbe Probe im BHKW-, Photovoltaik- und Stromspeicherdialog |
+| `A-N268-3` | Pufferspeicher- und Solarthermiedialog: genau zwei Knöpfe, kein ''Energiekosten…'' |
+| `A-N268-4` | Mit gewählter Anlagenzeile öffnet ''Energiekosten…'' die Energieträgerverwaltung auf dem Träger dieser Anlage; die Kopfzeile nennt die Einengung, etwa ''für Heizkessel: nur Gruppe Gas'' |
+| `A-N268-5` | Ohne gewählte Zeile im BHKW-Dialog: ''Aus Katalog übernehmen…'' bietet Gas, Öl **und** Tierische Fette an |
+| `A-N268-6` | Mit gewähltem Öl-BHKW: Tierische Fette werden nicht angeboten |
+| `A-N268-7` | Assistent (Projekt neu/bearbeiten), Schritte Spitzenkessel und BHKW: keine Kostenknopfzeile |
+| — iOS | Nur benannt, nicht abgenommen: Die sechs Erzeugerdialoge sind auf iOS nicht erreichbar; der Assistent lehnt seine Erzeugerschritte benannt ab |
+
+### 10.6 Logbuch-Entwurf (Version beim Anwender offen) und Wiki
+
+**Logbuch (ein Satz):** „Ein BHKW ohne Gerätebezug bekommt in der Energieträgerverwaltung auch
+die tierischen Fette angeboten."
+
+**Wiki-Quelle** `Projekte/Wiki/Programm Dokumentation - Kosten.wiki`, Abschnitt
+„Energieträgerverwaltung": die Aufzählung der zulässigen Träger um die tierischen Fette
+ergänzt und ein Absatz zu den Knopfzeilen der Erzeugerdialoge als zweitem Weg in den Dialog.
+Upload gebündelt und ausstehend.
+
+### 10.7 Stand des Restpunkts „Nach #268"
+
+Erledigt: die Kostenknöpfe (schon vorher, jetzt nachgemessen und gewacht), „Tierische Fette"
+und der UNIQUE-Index (mit Schemaschritt 76). **Offen bleibt einzig** der iOS-Varianten-
+Anlegedialog: `IProjektQuelle.Energietraeger()` kennt keine Kategorie, der Dialog bietet
+deshalb alle Träger an. Das ist ein Eingriff in eine `Dienste`-Schnittstelle samt iOS-Adapter
+und gehört in den Auftrag, der den Schreibweg dort schließt (iU10).
+Wasserstoff beim Gaskessel bleibt fachlich richtig und ist kein Restpunkt.
+
+### 10.8 Ohne Auftrag beim Lesen gefunden
+
+- **Der Wärmepumpendialog tanzt aus der Reihe.** Er trägt keine `KostenKnoepfeLeiste`, sondern
+  EINEN Knopf (`WaermepumpeAnlageHuelle.KostenOeffnen` als `Func<Task>`), der Investitions-
+  und Betriebskosten zusammen aufschlägt; ein Weg „Energiekosten…" fehlt, obwohl die
+  Wärmepumpe Strom bezieht. Ob sie dieselbe Dreierleiste bekommt, ist Anwenderentscheid.
+- **Der Pufferspeicherdialog ist keine Assistentenseite** und führt seinen `Wizard`-Schalter
+  nur aus dem Bestand mit; sein Prüfstand hat deshalb keinen Assistentenfall.
+- **Die nächste freie Befundnummer dieses Dialogs ist ET‑10.**
