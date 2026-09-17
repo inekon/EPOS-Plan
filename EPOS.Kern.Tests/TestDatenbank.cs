@@ -306,6 +306,19 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt86_Lastspitzenkappung)
                     SpalteSicherstellen(s);
 
+                // Schritt 87 (Entscheid US-E-1 (a), 17.09.2026): der entdoppelte
+                // Gesetzeskatalog samt eindeutigem Index, dazu der Beifang aus #321 -
+                // je Projekt genau EINE aktive Speichervariante. Beides in FESTER
+                // Reihenfolge aus DERSELBEN Quelle wie in der Migration und im Werkzeug;
+                // erst entdoppeln, dann den Index anlegen. Jeder Handgriff ist fuer sich
+                // wiederholbar (IF NOT EXISTS am Index, die DML finden nichts mehr).
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                         in GesetzesparameterEindeutig.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value);
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                         in SpeicherVarianteAktivEindeutig.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

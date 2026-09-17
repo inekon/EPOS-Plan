@@ -165,11 +165,23 @@ namespace WindowsFormsApplication1
         /// ergebnisneutral: Er legt zwei Spalten an und schreibt keinen Wert; beide
         /// werden nur gelesen, wenn die Variante die neue Berechnungsart führt, und das
         /// tut im Bestand keine — der Referenzlauf bleibt byte-gleich.
+        /// Mit dem ENTDOPPELTEN GESETZESKATALOG (Schritt 87, Anwenderentscheid
+        /// US-E-1 (a) vom 17.09.2026) steht das Ziel auf <b>87</b>:
+        /// <c>Tab_Gesetzesparameter</c> führt ab hier höchstens EINE Zeile je Schlüssel,
+        /// Klasse und Stichjahr. Was die Pflegemaske seit jeher prüft
+        /// (<c>GesetzKatalog.Existiert</c>), hält ab hier die Datenbank; die Anweisungen
+        /// — die Entdoppelung des Bestands und der eindeutige Index — stehen bei
+        /// <see cref="GesetzesparameterEindeutig"/>, und jede entfernte Zeile bekommt
+        /// ihre Protokollzeile. Im selben Schritt fällt der zweite Zustand, den ein
+        /// Schreibweg ausschließt und die Datenbank zuließ: zwei aktive
+        /// Speichervarianten in EINEM Projekt (<see cref="SpeicherVarianteAktivEindeutig"/>).
+        /// Der Schritt ist ergebnisneutral — behalten wird beide Male die kleinste ID,
+        /// genau die Zeile, die jede Lesekette schon bisher genommen hat.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 86;
+        public const int Zielversion = 87;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
