@@ -102,7 +102,7 @@ namespace WindowsFormsApplication1
     /// </para>
     /// <para>
     /// <b>Rechenfrei.</b> Der Controller liest und waehlt aus; jede Formel steht in der
-    /// Engine (<c>PreisModell</c>, <c>Aufschlagssatz</c>) und ist dort headless getestet.
+    /// Engine (<c>PreisModell</c>, <c>Preiszerlegung</c>) und ist dort headless getestet.
     /// </para>
     /// <para>
     /// <b>Kulturregel.</b> Zahlen kommen typisiert aus der <see cref="DataTable"/>; die
@@ -162,14 +162,14 @@ namespace WindowsFormsApplication1
 
             StromspeicherVarianteModel v = variante ?? new StromspeicherVarianteModel();
 
-            StromAufschlagModel aufschlagModel;
+            StrompreisZerlegungModel aufschlagModel;
             double[] energiereihe;
 
             // Der gesamte Datenzugriff liegt in einem einzigen dialogfreien Block -
             // dieselbe Regel wie in StromspeicherSimCtrl.LeseParameter.
             using (DataRepository.EngineModus())
             {
-                StromAufschlagCtrl aufschlagCtrl = new StromAufschlagCtrl();
+                StrompreisZerlegungCtrl aufschlagCtrl = new StrompreisZerlegungCtrl();
                 aufschlagModel = aufschlagCtrl.ReadStrom(idProjekt);
 
                 if (!aufschlagModel.AusDatenbank)
@@ -190,7 +190,7 @@ namespace WindowsFormsApplication1
                                     || e.Quelle == DbWerte.SP_PREISQUELLE_PROFIL;
 
             e.AufschlagCtKwh = reiheIstBeschaffung && v.Aufschlag_Anwenden
-                ? StromAufschlagCtrl.SummeOhneBeschaffungCtKwh(aufschlagModel)
+                ? StrompreisZerlegungCtrl.SummeOhneBeschaffungCtKwh(aufschlagModel)
                 : 0.0;
 
             double min, max, mittel;
@@ -367,7 +367,7 @@ namespace WindowsFormsApplication1
         {
             e.Quelle = DbWerte.SP_PREISQUELLE_FIXPREIS;
 
-            int carrier = StromAufschlagCtrl.StromCarrierId(idProjekt);
+            int carrier = StrompreisZerlegungCtrl.StromCarrierId(idProjekt);
             double preisCtKwh = ArbeitspreisCtKwh(idProjekt, carrier, Stichtag(stichtag, 0), e);
 
             return SpeicherEingang.KonstanteReihe(preisCtKwh, anzahl);

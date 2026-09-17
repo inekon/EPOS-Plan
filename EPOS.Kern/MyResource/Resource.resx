@@ -4714,10 +4714,7 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
     <value>{0} ({1}, {2} Werte)</value>
   </data>
   <data name="PREIS_PARAM_CHK_AUFSCHLAG" xml:space="preserve">
-    <value>Aufschlaege des Kostenmoduls anwenden</value>
-  </data>
-  <data name="PREIS_PARAM_HINWEIS_AUFSCHLAG" xml:space="preserve">
-    <value>Aus, wenn die gewaehlte Reihe bereits ein Vollpreis ist (Fachkonzept 4.2).</value>
+    <value>Anteile auf Spot-/Profilpreis aufschlagen</value>
   </data>
   <data name="PREIS_PARAM_INFO" xml:space="preserve">
     <value>Energiepreis im Mittel {0} ct/kWh + Aufschlag {1} ct/kWh = Bezugspreis {2} ct/kWh   |   Preisversion: {3}</value>

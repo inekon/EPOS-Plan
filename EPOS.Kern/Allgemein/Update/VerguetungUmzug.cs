@@ -151,8 +151,8 @@ namespace WindowsFormsApplication1
 
             DataTable karte = DataRepository.GetDataTable(
                 "SELECT eps.ID_Projekt, eps.[ID_Energieträger], " +
-                "eps.[" + SchemaKatalog.SPALTE_VERGUETUNG_PV + "] AS vpv, " +
-                "eps.[" + SchemaKatalog.SPALTE_VERGUETUNG_BHKW + "] AS vbhkw " +
+                "eps.[" + StrompreisAltspalten.SPALTE_VERGUETUNG_PV + "] AS vpv, " +
+                "eps.[" + StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW + "] AS vbhkw " +
                 "FROM [" + TABELLE_KARTE + "] AS eps " +
                 "INNER JOIN " + TABELLE_TRAEGER + " AS ec ON eps.[ID_Energieträger] = ec.id " +
                 "WHERE ec.pricing_model = ? " +

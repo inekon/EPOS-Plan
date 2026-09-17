@@ -37,7 +37,7 @@ namespace WindowsFormsApplication1
     ///     <c>KESSEL_TYP</c>.</description></item>
     ///   <item><description><b>Wärmepumpe</b>, <b>Photovoltaik</b>, <b>Stromspeicher</b>
     ///     und ein gesetzter <b>Heizstab</b> — der Stromträger des Projekts
-    ///     (<see cref="StromAufschlagCtrl.StromCarrierId"/>). Sie führen keinen eigenen
+    ///     (<see cref="StrompreisZerlegungCtrl.StromCarrierId"/>). Sie führen keinen eigenen
     ///     Trägerverweis; ihre Energie ist elektrische Energie, und genau die rechnet
     ///     der <c>KostenEmissionRechner</c> über den Netzbezugspfad ab.</description></item>
     ///   <item><description><b>Solarthermie</b> und <b>Pufferspeicher</b> — KEIN
@@ -86,7 +86,7 @@ namespace WindowsFormsApplication1
     /// 60 „Elektrische Energie"). Für den BRENNSTOFFWEG hat dann der dem Projekt
     /// ZUGEORDNETE Träger Vorrang, sonst der mit der kleinsten Nummer — dieselbe
     /// Auflösung wie in <c>ErgebnisCtrl.CarrierIdFuerProjekt</c> und dieselbe
-    /// Ordnungsregel wie in <see cref="StromAufschlagCtrl.StromCarrierId"/>
+    /// Ordnungsregel wie in <see cref="StrompreisZerlegungCtrl.StromCarrierId"/>
     /// (<see cref="Auswahl"/>).
     /// </para>
     ///
@@ -358,7 +358,7 @@ namespace WindowsFormsApplication1
         ///   <item><description><b>Was das Projekt schon führt.</b> Ist dem Projekt
         ///     in <c>energy_project_settings</c> bereits ein Träger mit
         ///     <c>pricing_model = ELECTRICITY</c> zugeordnet, gilt der
-        ///     (<see cref="StromAufschlagCtrl.StromCarrierId"/> — dieselbe Auswahl,
+        ///     (<see cref="StrompreisZerlegungCtrl.StromCarrierId"/> — dieselbe Auswahl,
         ///     die Strompreis, Aufschläge und <c>KostenEmissionRechner</c> nutzen).
         ///     Eine Entscheidung des Anwenders wird nicht überstimmt.</description></item>
         ///   <item><description><b>Sonst der Auslieferungsträger des Katalogs</b>
@@ -392,7 +392,7 @@ namespace WindowsFormsApplication1
             if (projektID <= 0 || !BrauchtStromTraeger(projektID)) return 0;
             try
             {
-                int vorhanden = StromAufschlagCtrl.StromCarrierId(projektID);
+                int vorhanden = StrompreisZerlegungCtrl.StromCarrierId(projektID);
                 if (vorhanden > 0) return vorhanden;
             }
             catch { }
@@ -447,7 +447,7 @@ namespace WindowsFormsApplication1
                 if (katalog == null) { katalog = Katalog(); zugeordnet = Zugeordnete(projektID); }
                 Traeger t = Zeile(katalog, idCarrier);
                 if (t == null || !zugeordnet.Contains(idCarrier)) continue;
-                if (!string.Equals(t.Preismodell, StromAufschlagCtrl.PRICING_MODEL_STROM,
+                if (!string.Equals(t.Preismodell, StrompreisZerlegungCtrl.PRICING_MODEL_STROM,
                                    StringComparison.OrdinalIgnoreCase)) continue;
 
                 bester = idCarrier;
@@ -464,7 +464,7 @@ namespace WindowsFormsApplication1
             // Stufe 1 - der dem Projekt bereits zugeordnete Stromtraeger.
             try
             {
-                int id = StromAufschlagCtrl.StromCarrierId(projektID);
+                int id = StrompreisZerlegungCtrl.StromCarrierId(projektID);
                 if (id > 0) return id;
             }
             catch { }
@@ -521,7 +521,7 @@ namespace WindowsFormsApplication1
             int besterRang = -1, bester = 0;
             foreach (Traeger t in katalog)
             {
-                if (!string.Equals(t.Preismodell, StromAufschlagCtrl.PRICING_MODEL_STROM,
+                if (!string.Equals(t.Preismodell, StrompreisZerlegungCtrl.PRICING_MODEL_STROM,
                                    StringComparison.OrdinalIgnoreCase))
                     continue;
 

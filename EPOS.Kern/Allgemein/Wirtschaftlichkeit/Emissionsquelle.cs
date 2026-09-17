@@ -306,7 +306,7 @@ namespace WindowsFormsApplication1
         {
             if (idProjekt <= 0) return 0;
 
-            // ET-5 (08.09.2026): dieselbe Wahl wie StromAufschlagCtrl.StromCarrierId - der an
+            // ET-5 (08.09.2026): dieselbe Wahl wie StrompreisZerlegungCtrl.StromCarrierId - der an
             // der Anlage gewaehlte, dem Projekt zugeordnete Stromtraeger. Ohne Anlagenwahl
             // (aller Bestand vor ET-5) bleibt der Weg darunter unveraendert.
             try

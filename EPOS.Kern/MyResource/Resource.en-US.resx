@@ -4698,10 +4698,7 @@ Please run the simulation with photovoltaics first.</value>
     <value>{0} ({1}, {2} values)</value>
   </data>
   <data name="PREIS_PARAM_CHK_AUFSCHLAG" xml:space="preserve">
-    <value>Apply the surcharges from the cost module</value>
-  </data>
-  <data name="PREIS_PARAM_HINWEIS_AUFSCHLAG" xml:space="preserve">
-    <value>Switch off if the selected series is already a full price (concept 4.2).</value>
+    <value>Add price components to the spot/profile price</value>
   </data>
   <data name="PREIS_PARAM_INFO" xml:space="preserve">
     <value>Mean energy price {0} ct/kWh + surcharge {1} ct/kWh = purchase price {2} ct/kWh   |   price version: {3}</value>

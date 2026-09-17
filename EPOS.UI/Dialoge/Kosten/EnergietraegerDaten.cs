@@ -201,7 +201,7 @@ public sealed class EnergietraegerStand
     // ---- Preisblöcke ----------------------------------------------------
 
     /// <summary>„Strompreis Details" — nur beim Stromträger belegt (SP-E-2).</summary>
-    public StromAufschlaegeStand? Aufschlaege { get; set; }
+    public StrompreisDetailsStand? Aufschlaege { get; set; }
 
     /// <summary>Preiszerlegung — nur bei der Brennstoff-Familie belegt (B2).</summary>
     public BrennstoffBestandteileStand? Bestandteile { get; set; }

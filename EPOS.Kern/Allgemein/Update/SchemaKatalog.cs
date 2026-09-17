@@ -883,7 +883,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Namen der Aufschlagsspalten in <c>energy_project_settings</c>. EINE Wahrheit
-        /// für Migration, Leseseite (<c>StromAufschlagCtrl</c>) und Oberfläche
+        /// für Migration, Leseseite (<c>StrompreisZerlegungCtrl</c>) und Oberfläche
         /// (<c>ucStromAufschlaege</c>) — dasselbe Muster wie
         /// <see cref="SPALTE_KASKADE_ZWEIKANALIG"/>.
         ///
@@ -900,20 +900,13 @@ namespace WindowsFormsApplication1
         public const string SPALTE_AUFSCHLAG_KONZESSION = "Aufschlag_Konzession";
         public const string SPALTE_AUFSCHLAG_VERTRIEB = "Aufschlag_Vertrieb";
 
-        /// <summary>Namenszusatz der Aktiv-Schalter je Aufschlagskomponente.</summary>
+        /// <summary>Namenszusatz der Aktiv-Schalter je Preisanteil.</summary>
         public const string SPALTE_AUFSCHLAG_AKTIV_SUFFIX = "_Aktiv";
 
-        /// <summary>Modus des Aufschlagsblocks (Werte aus <c>DbWerte.SP_AUFSCHLAG_MODUS_*</c>).</summary>
-        public const string SPALTE_AUFSCHLAG_MODUS = "Aufschlag_Modus";
-
-        /// <summary>Gesamtaufschlag im Override-Modus [ct/kWh].</summary>
-        public const string SPALTE_AUFSCHLAG_OVERRIDE = "Aufschlag_Override";
-
-        /// <summary>Einspeisevergütung PV v_pv [ct/kWh] (Fachkonzept 4.3).</summary>
-        public const string SPALTE_VERGUETUNG_PV = "Verguetung_PV";
-
-        /// <summary>Einspeise-/KWK-Erlös BHKW v_bhkw [ct/kWh] (Fachkonzept 4.3).</summary>
-        public const string SPALTE_VERGUETUNG_BHKW = "Verguetung_BHKW";
+        // Modus, Gesamtwert (Override) und die beiden Vergütungssätze der Trägerkarte
+        // stehen hier NICHT mehr: Schritt 85 entfernt sie, und ihre Namen hält seither
+        // <see cref="StrompreisAltspalten"/> — der Schritt, der sie wegnimmt. Dieser
+        // Katalog beschreibt die Spalten, die es GIBT.
 
         // =====================================================================
         // Schritt 83 - die fehlenden Anteile der Preiszerlegung „Strompreis Details"
@@ -1012,7 +1005,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly SchemaSpalte[] Schritt12_Preismodell =
         {
-            // --- Aufschlagskomponenten: Wert [ct/kWh] + Aktiv-Schalter --------------
+            // --- Preisanteile: Wert [ct/kWh] + Aktiv-Schalter --------------
             new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_NETZENTGELT, "DOUBLE"),
             new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_NETZENTGELT + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
             new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_UMLAGEN, "DOUBLE"),
@@ -1025,12 +1018,12 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_VERTRIEB + SPALTE_AUFSCHLAG_AKTIV_SUFFIX, "YESNO"),
 
             // --- Modus und Gesamtwert (Override, Fachkonzept 4.2) -------------------
-            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_MODUS, "TEXT(50)"),
-            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_AUFSCHLAG_OVERRIDE, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, StrompreisAltspalten.SPALTE_AUFSCHLAG_MODUS, "TEXT(50)"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, StrompreisAltspalten.SPALTE_AUFSCHLAG_OVERRIDE, "DOUBLE"),
 
             // --- Vergütung (Fachkonzept 4.3) ---------------------------------------
-            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_VERGUETUNG_PV, "DOUBLE"),
-            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_VERGUETUNG_BHKW, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, StrompreisAltspalten.SPALTE_VERGUETUNG_PV, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW, "DOUBLE"),
 
             // --- Preisquellen-Verweise an der Speichervariante ----------------------
             //
@@ -1041,12 +1034,16 @@ namespace WindowsFormsApplication1
             // Datum. NULL bedeutet „nicht gewählt" (FK-Regel des Katalogs), der
             // Controller sucht dann die zum Simulationsjahr passende Reihe selbst.
             //
-            // `Aufschlag_Anwenden` ist das Flag aus Fachkonzept 4.2 („je Quelle
-            // existiert das Flag 'Aufschlag anwenden'"). YESNO ohne DEFAULT; die
+            // `Aufschlag_Anwenden` trägt den Schalter „Anteile auf Spot-/Profilpreis
+            // aufschlagen". Er gilt NUR für die Preisquellen Spotmarkt und Kostenprofil:
+            // Eine solche Reihe IST die Beschaffung, ihr fehlen Netzentgelt, Steuern,
+            // Abgaben und Umlagen. Beim Fixpreis wirkt er nicht — dort zerlegen die
+            // Anteile den Arbeitspreis, statt auf ihn zu kommen. YESNO ohne DEFAULT; die
             // Vorbelegung auf WAHR setzt der DML-Teil des Schritts — dieselbe Bauform
             // wie `Extrapolation_erlaubt` in Schritt 7, und aus demselben Grund: Ein
             // per ADD COLUMN angehängtes Ja/Nein-Feld steht in allen Bestandszeilen auf
-            // FALSCH, und „keine Aufschläge" wäre die stille Ergebnisänderung.
+            // FALSCH, und eine Spotreihe ohne die übrigen Anteile wäre die stille
+            // Ergebnisänderung.
             new SchemaSpalte(TAB_STROMSPEICHERVARIANTE, SPALTE_VARIANTE_ID_PREISREIHE, "LONG"),
             new SchemaSpalte(TAB_STROMSPEICHERVARIANTE, SPALTE_VARIANTE_ID_KOSTENPROFIL, "LONG"),
             new SchemaSpalte(TAB_STROMSPEICHERVARIANTE, SPALTE_VARIANTE_AUFSCHLAG_ANWENDEN, "YESNO"),
@@ -1058,7 +1055,10 @@ namespace WindowsFormsApplication1
         /// <summary>Verweis auf das gewählte Kostenprofil (<c>Tab_Kostenprofil.ID</c>), NULL = keines.</summary>
         public const string SPALTE_VARIANTE_ID_KOSTENPROFIL = "ID_Kostenprofil";
 
-        /// <summary>Flag „Aufschlag anwenden" der Variante (Fachkonzept 4.2).</summary>
+        /// <summary>
+        /// Schalter „Anteile auf Spot-/Profilpreis aufschlagen" der Variante
+        /// (Fachkonzept 4.1 a/b) — ohne Wirkung bei der Preisquelle Fixpreis.
+        /// </summary>
         public const string SPALTE_VARIANTE_AUFSCHLAG_ANWENDEN = "Aufschlag_Anwenden";
 
         // =====================================================================
@@ -3311,23 +3311,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SPALTE_TARIF_GUELTIGAB = "Tarif_GueltigAb";
 
-        /// <summary>
-        /// ETAPPE E5 — Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession,
-        /// Vertrieb) in der Jahreskostenrechnung der Wirtschaftlichkeit berücksichtigen.
-        ///
-        /// <b>Der Schalter existiert, WEIL die Wirkung groß ist.</b> Gemessen an den
-        /// neun Referenzprojekten (Protokoll W4_E5, Abschnitt 4) steigen die
-        /// Energiekosten um rund 32 %, der Kapitalwert verschlechtert sich um 30 %.
-        /// Die Aufschläge sind seit dem Stromspeicherpaket je Energieträger gepflegt,
-        /// wirkten bisher aber ausschließlich in der Speichersimulation. Eine stille
-        /// Übernahme in die Wirtschaftlichkeit hätte jede gespeicherte Altrechnung
-        /// entwertet — deshalb eine ausdrückliche Projektangabe, Vorgabe AUS.
-        ///
-        /// <b>YESNO kennt kein NULL:</b> Access belegt die Spalte bei jeder
-        /// Bestandszeile mit <c>False</c> — genau die gewollte Vorbelegung, deshalb
-        /// kein eigener DML-Schritt.
-        /// </summary>
-        public const string SPALTE_PW_AUFSCHLAEGE = "Aufschlaege_Anwenden";
+        // Der Projektschalter „Aufschläge berücksichtigen" (Etappe E5) steht hier NICHT
+        // mehr: Er ist mit Schritt 83 entfallen — die Preisanteile ZERLEGEN den
+        // Arbeitspreis, sie kommen nicht mehr auf ihn. Schritt 85 entfernt die Spalte,
+        // und ihren Namen hält seither <see cref="StrompreisAltspalten"/>.
 
         /// <summary>
         /// ETAPPE E5 — Vergütung für eingespeisten <b>KWK</b>-Strom [€/kWh].
@@ -3432,7 +3419,7 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PROJEKTTARIF, "Einsp_Grundpreis", "DOUBLE"),
 
             // Zwei Projektangaben der Wirtschaftlichkeit.
-            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_AUFSCHLAEGE,      "YESNO"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, StrompreisAltspalten.SPALTE_AUFSCHLAEGE_ANWENDEN, "YESNO"),
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_KWK,   "DOUBLE"),
         };
 
@@ -3782,8 +3769,8 @@ namespace WindowsFormsApplication1
         ///
         /// <b>YESNO kennt kein NULL:</b> Access belegt die Spalte in jeder
         /// Bestandszeile mit <c>False</c> — genau die gewollte Vorbelegung („kein
-        /// Pauschalmodus"), deshalb kein eigener DML-Schritt. Dasselbe Muster wie
-        /// <see cref="SPALTE_PW_AUFSCHLAEGE"/>.
+        /// Pauschalmodus"), deshalb kein eigener DML-Schritt. Dasselbe Muster wie bei
+        /// <see cref="SPALTE_PW_VERGUETUNG_KWK"/>.
         /// </summary>
         public const string SPALTE_PW_KWKG_PAUSCHALMODUS = "KWKG_Pauschalmodus";
 
@@ -4072,7 +4059,7 @@ namespace WindowsFormsApplication1
         /// Kostenmoduls. <c>energy_project_settings</c> gehört zu einem anderen Bereich
         /// mit eigenem Lebenszyklus; für den Aufschlagsblock gibt es die eigene,
         /// tolerante Vorsorge unmittelbar vor dem Zugriff
-        /// (<c>StromAufschlagCtrl.StelleSpaltenSicher</c>) — dasselbe Muster wie bei den
+        /// (<c>StrompreisZerlegungCtrl.StelleSpaltenSicher</c>) — dasselbe Muster wie bei den
         /// Brennstoffspalten des BHKW.
         ///
         /// <see cref="Schritt13_Mindestfuellstand"/> steht sehr wohl hier, und zwar

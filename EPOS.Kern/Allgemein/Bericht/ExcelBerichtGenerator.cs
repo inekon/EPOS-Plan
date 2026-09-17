@@ -554,7 +554,7 @@ namespace WindowsFormsApplication1
             //
             // e.Hinweis erschien in Excel BISHER NIRGENDS. Darin stehen sämtliche
             // Begründungen der Etappen E2 bis E6: warum eine Gutschrift 0 ist, welcher
-            // Aufschlagssatz angesetzt wurde, welche Anlage am Stichtag scheitert, wie
+            // Preiszerlegung angesetzt wurde, welche Anlage am Stichtag scheitert, wie
             // die vermiedenen Kosten entstehen. Ein Excel-Nutzer erfuhr davon nichts.
             // Ausgegeben wird EINMAL aus dem Szenario „Erwartet" — wie in Word; die
             // Texte sind über die Szenarien gleich, und dreimal derselbe Absatz wäre

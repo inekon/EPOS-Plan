@@ -214,7 +214,7 @@ namespace WindowsFormsApplication1
         ///        (Spotreihe nach dem Ganglinienmuster, Fachkonzept 8.4),
         ///   12c  neue Tabelle <c>Tab_Kostenprofil</c> (12 Monats- und 168 Wochenwerte
         ///        als ";"-Zeichenketten, Muster <c>Form_Quellprofil</c>),
-        ///   12d  einmaliges DML: Vorbelegung der fuenf Aufschlagskomponenten, des
+        ///   12d  einmaliges DML: Vorbelegung der fuenf Preisanteile, des
         ///        Modus und der beiden Verguetungssaetze - AUSSCHLIESSLICH fuer Zeilen
         ///        des Strom-Carriers (Fachkonzept 4.2).
         ///
@@ -2163,7 +2163,7 @@ namespace WindowsFormsApplication1
         /// bleiben NULL, und NULL heißt hier <b>„kein Anteil"</b>, nicht „nicht gepflegt,
         /// also Vorschlagswert". Schritt 12 macht es für den STROM anders herum: Sein
         /// DML-Teil belegt die fünf Komponenten mit den Vorschlagswerten des
-        /// Fachkonzepts vor, und <c>StromAufschlagCtrl.Read</c> setzt bei NULL denselben
+        /// Fachkonzepts vor, und <c>StrompreisZerlegungCtrl.Read</c> setzt bei NULL denselben
         /// Vorschlag — bei Projekt 1030 gemessene 11,746 ct/kWh trotz fünf abgeschalteter
         /// Flags (E5-Falle, Konzept § 5.1). Eine solche Vorbelegung wäre hier eine
         /// Behauptung über eine konkrete Lieferantenrechnung: Wieviel Energiesteuer im
@@ -3100,6 +3100,33 @@ namespace WindowsFormsApplication1
         /// fasst nichts an.</para>
         /// </summary>
         public const int SCHRITT_84_VERGUETUNG_UMZUG = 84;
+
+        /// <summary>
+        /// Schritt 85 — die <b>Altspalten der Strompreis-Welle</b> fallen weg
+        /// (Aufräumen nach den Schritten 83 und 84). Anweisungen und Begründung stehen
+        /// bei <see cref="StrompreisAltspalten"/>.
+        ///
+        /// <para><b>Wozu.</b> Die Schritte 83 und 84 haben fünf Spalten ohne Leser
+        /// zurückgelassen — <c>energy_project_settings.Aufschlag_Modus</c>,
+        /// <c>Aufschlag_Override</c>, <c>Verguetung_PV</c>, <c>Verguetung_BHKW</c> und
+        /// <c>Tab_ProjektWirtschaftlichkeit.Aufschlaege_Anwenden</c>. Sie standen mit
+        /// Absicht dort: Eine ältere Programmfassung auf derselben Datei sollte nicht
+        /// auf einen fehlenden Namen laufen. Beide Schritte sind ausgeliefert, die
+        /// Schonfrist ist vorbei — eine Spalte, die niemand mehr liest und niemand mehr
+        /// schreibt, ist eine zweite, tote Wahrheit.</para>
+        ///
+        /// <para><b>Kein DML, kein Tabellenneubau.</b> Keine der fünf Spalten trägt eine
+        /// Rechengröße; der Schritt entfernt nur. SQLite kann <c>DROP COLUMN</c> seit
+        /// 3.35, und keine der Spalten steht unter einem Index, in einem Fremdschlüssel
+        /// oder in einer Tabellen-CHECK-Bedingung. Der Referenzlauf ist
+        /// <b>byte-gleich</b>.</para>
+        ///
+        /// <para><b>Idempotenz:</b> <c>StrompreisAltspalten.Anweisungen</c> gibt nur
+        /// Anweisungen für Spalten heraus, die noch stehen; nach dem Lauf ist
+        /// <c>StrompreisAltspalten.Offen()</c> = 0 und ein zweiter Lauf fasst nichts
+        /// an.</para>
+        /// </summary>
+        public const int SCHRITT_85_STROMPREIS_ALTSPALTEN = 85;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -4133,6 +4160,19 @@ namespace WindowsFormsApplication1
                         "Verguetung gepflegt hatte, diese Zahl - die Speicherwelt " +
                         "rechnete stillschweigend mit 0.",
                         Schritt_84_VerguetungUmzug),
+
+            // AUFRAEUMEN NACH DEN SCHRITTEN 83 UND 84. Fuenf Spalten ohne Leser fallen
+            // weg; die Namen und die Anweisungen kommen aus StrompreisAltspalten - EINE
+            // Quelle fuer Migration, Testdatenbankschema und Nachweis.
+            new Schritt(SCHRITT_85_STROMPREIS_ALTSPALTEN,
+                        "die fuenf Altspalten der Strompreis-Welle fallen weg " +
+                        "(Aufschlag_Modus, Aufschlag_Override, Verguetung_PV, " +
+                        "Verguetung_BHKW, Aufschlaege_Anwenden)",
+                        "Jede der fuenf Spalten waere eine zweite, tote Wahrheit: " +
+                        "Sie traegt einen Wert, den kein Leser mehr abfragt - und der " +
+                        "naechste Leser koennte an ihr nicht erkennen, dass sie nicht " +
+                        "mehr rechnet.",
+                        Schritt_85_StrompreisAltspalten),
         };
 
         /// <summary>
@@ -5826,13 +5866,59 @@ namespace WindowsFormsApplication1
                     umzuziehen.ToString(CultureInfo.InvariantCulture) +
                     " Projekt(e) mit gepflegtem Kartenwert sind umgezogen; ct/kWh der " +
                     "Karte werden zu EUR/kWh der Parameter. Gepflegte Parameter " +
-                    "gewinnen, die Kartenspalten " + SchemaKatalog.SPALTE_VERGUETUNG_PV +
-                    "/" + SchemaKatalog.SPALTE_VERGUETUNG_BHKW + " bleiben unberuehrt " +
+                    "gewinnen, die Kartenspalten " + StrompreisAltspalten.SPALTE_VERGUETUNG_PV +
+                    "/" + StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW + " bleiben unberuehrt " +
                     "stehen und werden nicht mehr gelesen. Die Speicherwelt liest " +
                     "dieselbe Zahl von der neuen Stelle - der Referenzlauf bleibt " +
                     "byte-gleich.");
 
             foreach (string zeile in protokoll) l.Notiz("84: " + zeile);
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 85 - die Altspalten der Strompreis-Welle fallen weg
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 85 — Anlass, Anweisungen und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_85_STROMPREIS_ALTSPALTEN"/> und bei
+        /// <see cref="StrompreisAltspalten"/>.
+        ///
+        /// <para><b>Reiner Entfernungsschritt</b>: kein DML, kein Umbau. Hier steht keine
+        /// abgeschriebene DDL; sie kommt aus dem Kern, aus DERSELBEN Quelle, aus der sich
+        /// auch <c>Werkzeuge/Testdatenbankschema</c> und der Nachweis in
+        /// <c>EPOS.Kern.Tests</c> bedienen. <c>StrompreisAltspalten.Anweisungen</c> lässt
+        /// bereits entfernte Spalten aus - deshalb braucht es hier keine eigene
+        /// Idempotenzabfrage.</para>
+        /// </summary>
+        private static bool Schritt_85_StrompreisAltspalten(Lauf l)
+        {
+            int offen = StrompreisAltspalten.Offen();
+
+            foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                     in StrompreisAltspalten.Anweisungen)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            int rest = StrompreisAltspalten.Offen();
+            if (rest != 0)
+            {
+                l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
+                                  " der fuenf Altspalten steht nach dem Schritt noch.";
+                l.Notiz("85: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("85: " + offen.ToString(CultureInfo.InvariantCulture) +
+                    " Altspalte(n) der Strompreis-Welle entfernt (" +
+                    StrompreisAltspalten.SPALTE_AUFSCHLAG_MODUS + ", " +
+                    StrompreisAltspalten.SPALTE_AUFSCHLAG_OVERRIDE + ", " +
+                    StrompreisAltspalten.SPALTE_VERGUETUNG_PV + ", " +
+                    StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW + ", " +
+                    StrompreisAltspalten.SPALTE_AUFSCHLAEGE_ANWENDEN + "). KEIN DML: " +
+                    "Keine von ihnen wird seit Schritt 83 bzw. 84 noch gelesen oder " +
+                    "geschrieben, keine traegt eine Rechengroesse - der Referenzlauf " +
+                    "bleibt byte-gleich.");
             return true;
         }
 
@@ -6019,7 +6105,7 @@ namespace WindowsFormsApplication1
         //              Preisreihe, Kostenprofil, Vorbelegung
         // =================================================================================
 
-        // Die Vorschlagswerte des Fachkonzepts 4.2 stehen im Modell StromAufschlagModel -
+        // Die Vorschlagswerte des Fachkonzepts 4.2 stehen im Modell StrompreisZerlegungModel -
         // EINE Wahrheit für Migration, Leseseite und Oberfläche, dieselbe Aufteilung wie
         // bei StromspeicherVarianteModel und Schritt 11d.
 

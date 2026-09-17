@@ -29,7 +29,7 @@ public class PreisbloeckeTests : EposBunitContext
     // Strompreis Details
     // =====================================================================
 
-    private static StromAufschlaegeStand StromStand() => new StromAufschlaegeStand
+    private static StrompreisDetailsStand StromStand() => new StrompreisDetailsStand
     {
         Beschaffung = 26.254, BeschaffungAktiv = true,
         Vertrieb = 2.0, VertriebAktiv = true,

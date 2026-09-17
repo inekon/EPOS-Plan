@@ -332,7 +332,8 @@ namespace WindowsFormsApplication1
         // Der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen" stand hier
         // bis zum Anwenderentscheid SP-E-2: Die Preisanteile ZERLEGEN den Arbeitspreis
         // und kommen nicht mehr auf ihn, also gibt es nichts an- oder abzuschalten. Die
-        // Spalte Aufschlaege_Anwenden bleibt ungelesen im Schema stehen.
+        // Spalte Aufschlaege_Anwenden ist mit Schemaschritt 85 entfallen
+        // (StrompreisAltspalten).
 
         /// <summary>
         /// Vergütung für eingespeisten <b>KWK</b>-Strom [€/kWh]; <c>null</c> = nicht

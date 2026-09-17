@@ -148,11 +148,19 @@ namespace WindowsFormsApplication1
         /// ct/kWh nach €/kWh, und lässt gepflegte Parameter unangetastet. Er ist
         /// ergebnisneutral: Die Speicherwelt liest dieselbe Zahl, nur von der neuen
         /// Stelle — der Referenzlauf bleibt byte-gleich.
+        /// Mit dem WEGFALL DER ALTSPALTEN (Schritt 85, Aufräumen nach 83 und 84) steht
+        /// das Ziel auf <b>85</b>: Die fünf Spalten, die die beiden Schritte ohne Leser
+        /// zurückgelassen haben — <c>Aufschlag_Modus</c>, <c>Aufschlag_Override</c>,
+        /// <c>Verguetung_PV</c>, <c>Verguetung_BHKW</c> und
+        /// <c>Tab_ProjektWirtschaftlichkeit.Aufschlaege_Anwenden</c> — fallen weg
+        /// (<see cref="StrompreisAltspalten"/>). Der Schritt schreibt kein DML und ist
+        /// ergebnisneutral: Keine der Spalten trägt eine Rechengröße, der Referenzlauf
+        /// bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 84;
+        public const int Zielversion = 85;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

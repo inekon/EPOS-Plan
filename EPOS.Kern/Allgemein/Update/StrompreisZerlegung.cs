@@ -188,7 +188,7 @@ namespace WindowsFormsApplication1
                 Zeile z = new Zeile();
                 z.Projekt = Ganzzahl(dt, r, "ID_Projekt");
                 z.Traeger = Ganzzahl(dt, r, "ID_Energieträger");
-                z.Modus = Text(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_MODUS);
+                z.Modus = Text(dt, r, StrompreisAltspalten.SPALTE_AUFSCHLAG_MODUS);
 
                 double summe = 0.0;
                 bool gepflegt = false;
@@ -204,7 +204,7 @@ namespace WindowsFormsApplication1
                 z.BereitsGefaltet =
                     Zahl(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_BESCHAFFUNG).HasValue;
 
-                double over = Zahl(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_OVERRIDE) ?? 0.0;
+                double over = Zahl(dt, r, StrompreisAltspalten.SPALTE_AUFSCHLAG_OVERRIDE) ?? 0.0;
                 z.Gesamtwert = string.Equals(z.Modus, MODUS_GESAMTWERT, StringComparison.Ordinal)
                                && over != 0.0;
 
@@ -370,7 +370,7 @@ namespace WindowsFormsApplication1
         private static void ModusSetzen(int projekt, int traeger, string modus)
         {
             DataRepository.ExecuteNonQuery(
-                "UPDATE [" + TABELLE + "] SET [" + SchemaKatalog.SPALTE_AUFSCHLAG_MODUS + "] = ? " +
+                "UPDATE [" + TABELLE + "] SET [" + StrompreisAltspalten.SPALTE_AUFSCHLAG_MODUS + "] = ? " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
                 new DbParam("@m", DbParamTyp.VarWChar) { Wert = modus },
                 new DbParam("@p", DbParamTyp.Integer) { Wert = projekt },

@@ -290,6 +290,15 @@ namespace EPOS.Kern.Tests
                 // wiederholbar und tut auf einer bereits umgezogenen Kopie nichts mehr.
                 VerguetungUmzug.Umziehen();
 
+                // Schritt 85 (Aufraeumen nach 83 und 84): die fuenf Altspalten der
+                // Strompreis-Welle fallen weg. REINER ENTFERNUNGSSCHRITT - kein DML.
+                // Er steht NACH 83 und 84, weil beide Modus, Override und die
+                // Verguetungen noch lesen. DIESELBE Quelle wie in der Migration und im
+                // Werkzeug; Anweisungen laesst bereits entfernte Spalten aus.
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                         in StrompreisAltspalten.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
@@ -322,6 +331,34 @@ namespace EPOS.Kern.Tests
             if (DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return;
             DataRepository.ExecuteNonQuery("ALTER TABLE \"" + s.Tabelle + "\" ADD COLUMN \"" + s.Name + "\" "
                                            + StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition));
+        }
+
+        /// <summary>
+        /// Stellt die fuenf Altspalten wieder her, die Schemaschritt 85 entfernt hat -
+        /// AUSSCHLIESSLICH fuer die Nachweise der Schritte 83 und 84.
+        ///
+        /// <para><b>Wozu.</b> Beide Schritte lesen Spalten, die es auf dem Zielstand
+        /// nicht mehr gibt. Ihre Pruefstaende stellen den BESTANDSSTAND her, gegen den
+        /// sie gerechnet haben - dazu gehoeren diese Spalten. Sie entstehen auf der
+        /// Arbeitskopie eines einzelnen Prueflaufs und verschwinden mit ihr; die
+        /// Quelldatei bleibt unberuehrt.</para>
+        ///
+        /// <para>Die Namen kommen aus <see cref="StrompreisAltspalten"/>, derselben
+        /// Quelle, aus der sich der Schritt bedient, der sie entfernt. Typen wie in
+        /// <c>SchemaKatalog.Schritt12_Preismodell</c>.</para>
+        /// </summary>
+        public static void AltspaltenStrompreisWiederherstellen()
+        {
+            SpalteSicherstellen(new SchemaSpalte(StrompreisAltspalten.TABELLE_TRAEGERKARTE,
+                                                 StrompreisAltspalten.SPALTE_AUFSCHLAG_MODUS, "TEXT(50)"));
+            SpalteSicherstellen(new SchemaSpalte(StrompreisAltspalten.TABELLE_TRAEGERKARTE,
+                                                 StrompreisAltspalten.SPALTE_AUFSCHLAG_OVERRIDE, "DOUBLE"));
+            SpalteSicherstellen(new SchemaSpalte(StrompreisAltspalten.TABELLE_TRAEGERKARTE,
+                                                 StrompreisAltspalten.SPALTE_VERGUETUNG_PV, "DOUBLE"));
+            SpalteSicherstellen(new SchemaSpalte(StrompreisAltspalten.TABELLE_TRAEGERKARTE,
+                                                 StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW, "DOUBLE"));
+            SpalteSicherstellen(new SchemaSpalte(StrompreisAltspalten.TABELLE_PARAMETER,
+                                                 StrompreisAltspalten.SPALTE_AUFSCHLAEGE_ANWENDEN, "YESNO"));
         }
 
         /// <summary>

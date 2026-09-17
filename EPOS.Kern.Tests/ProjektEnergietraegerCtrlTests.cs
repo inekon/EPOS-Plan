@@ -38,7 +38,7 @@ namespace EPOS.Kern.Tests
 
             Assert.True(id > 0);
             Assert.Equal(1, Stromzeilen(PROJEKT_OHNE_STROM));
-            Assert.Equal(id, StromAufschlagCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
+            Assert.Equal(id, StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
             // Der Auslieferungstraeger des Katalogs (BK1: Code "Elektrische Energie").
             Assert.Equal(ProjektEnergietraegerCtrl.StandardStromTraeger(PROJEKT_OHNE_STROM), id);
         }
@@ -67,7 +67,7 @@ namespace EPOS.Kern.Tests
 
             int id = ProjektEnergietraegerCtrl.StromTraegerSicherstellen(PROJEKT_MIT_STROM);
 
-            Assert.Equal(StromAufschlagCtrl.StromCarrierId(PROJEKT_MIT_STROM), id);
+            Assert.Equal(StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_MIT_STROM), id);
             Assert.Equal(vorher, Stromzeilen(PROJEKT_MIT_STROM));
         }
 
@@ -103,14 +103,14 @@ namespace EPOS.Kern.Tests
             Assert.True(standard > 0 && standard != VARIANTE_STROM);
             Assert.True(new WizardCtrl().TraegerSatzAnlegen(PROJEKT_OHNE_STROM, VARIANTE_STROM));
             // Ohne Anlagenwahl gilt die bisherige Regel: die kleinste Id der Zuordnungen.
-            Assert.Equal(Math.Min(standard, VARIANTE_STROM), StromAufschlagCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
+            Assert.Equal(Math.Min(standard, VARIANTE_STROM), StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
 
             DataRepository.ExecuteSQL(
                 "UPDATE Tab_Energieanlagen SET ID_Carrier = ? WHERE ID_Projekt = ? AND ID_WP > 0",
                 new DbParam("@c", VARIANTE_STROM), new DbParam("@p", PROJEKT_OHNE_STROM));
 
             Assert.Equal(VARIANTE_STROM, ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_OHNE_STROM));
-            Assert.Equal(VARIANTE_STROM, StromAufschlagCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
+            Assert.Equal(VARIANTE_STROM, StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
             Assert.Equal(VARIANTE_STROM, Emissionsquelle.StromTraeger(PROJEKT_OHNE_STROM));
             Assert.Contains(ProjektEnergietraegerCtrl.Verwendete(PROJEKT_OHNE_STROM),
                             v => v.CarrierId == VARIANTE_STROM
@@ -130,7 +130,7 @@ namespace EPOS.Kern.Tests
 
             // 58 ist dem Projekt NICHT zugeordnet - die Wahl greift erst mit der Zuordnung.
             Assert.Equal(0, ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_OHNE_STROM));
-            Assert.Equal(standard, StromAufschlagCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
+            Assert.Equal(standard, StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_OHNE_STROM));
         }
     }
 }
