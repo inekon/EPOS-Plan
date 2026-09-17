@@ -274,11 +274,13 @@ namespace WindowsFormsApplication1
             {
                 // Der Netzpfadteil steht nicht im SpeicherErgebnis (dessen Reihen haben
                 // in der Simulationskette eine feste, gegenläufige Bedeutung) - er geht
-                // über den Kontext an Ergebnisseite und Persistenz.
+                // über den Kontext an Projektlauf, Ergebnisseite und Persistenz.
                 ArbitrageErgebnis arb = arbitrage.BerechneMitPlan(eingang, parameter);
                 kontext.Arbitrageergebnis = arb;
+                kontext.NetzwirkungKw = NetzwirkungKw(arb);
                 ergebnis = arb.Ergebnis;
                 HinweisErgaenzen(Planhinweis(arb));
+                HinweisErgaenzen(Netzladehinweis(arb));
             }
             else if (strategie is PeakShaving peak)
             {
@@ -312,6 +314,25 @@ namespace WindowsFormsApplication1
                                  plan.VerworfenPfad,
                                  plan.VerschleissCtKwh.ToString("0.000", CultureInfo.CurrentCulture),
                                  arb.Kennzahlen.BudgetauslastungProzent.ToString("0.0", CultureInfo.CurrentCulture));
+        }
+
+        /// <summary>
+        /// Protokollzeile zur NETZLADUNG der Preissteuerung — <c>null</c>, wenn keine
+        /// Kilowattstunde aus dem Netz kam (reiner Verkaufsbetrieb).
+        /// </summary>
+        /// <remarks>
+        /// Sie steht da, weil die Netzladung seit Befund LS-2 im NETZBEZUG des Projekts
+        /// erscheint: Der Anwender soll die Zahl im Protokoll wiederfinden, mit der sein
+        /// Bezug und seine Bezugsspitze steigen. Der Reiter Stromspeicher führt sie
+        /// ohnehin als eigene Kennzahl (<c>SP_ERG_LADUNG_NETZ</c>).
+        /// </remarks>
+        private static string Netzladehinweis(ArbitrageErgebnis arb)
+        {
+            double kwh = arb.Kennzahlen.LadungNetzKwh;
+            if (kwh <= 0.0) return null;
+
+            return string.Format(MyResource.Resource.ARB_HINWEIS_NETZLADUNG_IM_BEZUG,
+                                 kwh.ToString("N0", CultureInfo.CurrentCulture));
         }
 
         /// <summary>
@@ -511,9 +532,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die NETZWIRKUNG der Lastspitzenkappung je Intervall [kW]: um so viel sinkt der
-        /// Netzbezug. Begruendung und Abgrenzung zur Arbitrage stehen bei
+        /// Netzbezug. Begruendung und Abgrenzung stehen bei
         /// <see cref="StromspeicherLaufKontext.NetzwirkungKw"/>.
         /// </summary>
+        /// <remarks>
+        /// Die Kappung fuehrt KEINE getrennte Netzladereihe - ihre Netzladung steckt in
+        /// <c>LadungAcKwh</c>. Ihre Netzwirkung kommt deshalb aus den beiden Lastgaengen,
+        /// die die Engine ohnehin fuehrt: <c>max(0, ohne Speicher) - max(0, mit
+        /// Speicher)</c>.
+        /// </remarks>
         public static double[] NetzwirkungKw(PeakShavingErgebnis ergebnis)
         {
             if (ergebnis == null) throw new ArgumentNullException(nameof(ergebnis));
@@ -525,6 +552,49 @@ namespace WindowsFormsApplication1
                 double mit = ergebnis.PNeuKw[i] > 0.0 ? ergebnis.PNeuKw[i] : 0.0;
                 ziel[i] = ohne - mit;
             }
+            return ziel;
+        }
+
+        /// <summary>
+        /// Die NETZWIRKUNG der Preissteuerung je Intervall [kW] - dieselbe Groesse wie
+        /// bei der Kappung und fuer denselben Zweck: Der Projektlauf zieht sie von
+        /// <c>Rest_Strombedarf_viertelstuendlich</c> ab (Befund LS-2).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum die Arbitrage ihre eigene Herleitung hat.</b> Sie fuehrt die
+        /// Netzladung in einer GETRENNTEN Reihe
+        /// (<see cref="ArbitrageErgebnis.LadungNetzAcKwh"/>), die Kappung nicht. Die
+        /// Wirkung ist deshalb unmittelbar die Differenz der beiden Netzpfade:
+        /// <c>Entladung - Netzladung</c>. Genau so bilanziert die Engine selbst
+        /// (<c>netzbezugMitSpeicher += EDefizit - Entladung + Netzladung</c>,
+        /// Fachkonzept 6.5) - Rechenkern und Projektlauf sagen damit dasselbe.
+        /// </para>
+        /// <para>
+        /// <b>Ohne Netzladung bleibt es die blosse Entladung</b>, Bit fuer Bit: Die
+        /// Division durch <see cref="INTERVALL_H"/> ist in IEEE-754 exakt, und die
+        /// Subtraktion einer harten Null aendert keinen Wert. Ein Arbitragelauf im
+        /// reinen Verkaufsbetrieb rechnet also wie zuvor.
+        /// </para>
+        /// <para>
+        /// Der Verkauf ins Netz steht bewusst NICHT hier: Er erhoeht die EINSPEISUNG,
+        /// und die fuehrt <c>Rest_Strombedarf</c> nicht (sie wird getrennt bilanziert).
+        /// </para>
+        /// </remarks>
+        public static double[] NetzwirkungKw(ArbitrageErgebnis ergebnis)
+        {
+            if (ergebnis == null) throw new ArgumentNullException(nameof(ergebnis));
+
+            double[] entladung = ergebnis.Ergebnis.EntladungAcKwh;
+            double[] netzladung = ergebnis.LadungNetzAcKwh;
+            if (netzladung.Length != entladung.Length)
+                throw new InvalidOperationException(string.Format(
+                    MyResource.Resource.SIMENG_SPEICHER_RASTER_ABWEICHUNG,
+                    netzladung.Length, entladung.Length));
+
+            double[] ziel = new double[entladung.Length];
+            for (int i = 0; i < ziel.Length; i++)
+                ziel[i] = (entladung[i] - netzladung[i]) / INTERVALL_H;
             return ziel;
         }
 

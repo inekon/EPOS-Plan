@@ -176,6 +176,18 @@ diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung
 zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
 
+> **Die Netzladung der Preissteuerung zählt im Netzbezug — die Basis bleibt unverändert,
+> belegt.** Der Projektlauf schlägt die Netzladung der Berechnungsart „Arbitrage" jetzt auf
+> `Rest_Strombedarf` auf (Netzwirkung `Entladung − Netzladung`, wie die Lastspitzenkappung
+> ihre eigene liefert). **Kein Basisprojekt ist betroffen:** Alle neun Speichervarianten der
+> Testdatenbank — Projekte 1007 (vier), 1017 (eine), 1046 (vier) — tragen
+> `Berechnungsart = 'Dauernutzung'`, `Betriebsart = 'Grünstrom'`, `Netzentladung = 0` und
+> `A_Netzlade = 0`; die übrigen zehn Basisprojekte führen überhaupt keine Speichervariante.
+> Die Dauernutzung lädt nur aus Überschuss und bekommt deshalb keine Netzwirkungsreihe — der
+> Lauf über alle dreizehn Projekte meldet `GESAMT: PASS` (3 882 737 Werte) und ist im
+> Byte-Vergleich ohne einen einzigen Unterschied in den 357 CSV. Die Einfrierregel greift
+> nicht.
+
 > **Anlass: der Anwenderentscheid HK‑E‑1 vom 15.09.2026, „Umsetzen".** Ein Wärmeerzeuger
 > rechnet nur, wenn seine Technologie in einem der vier Plätze `Tab_Einstellungen.Tool_1..4`
 > steht. Einen Heizkessel anzulegen legte aber keinen Platz an — die Anlage stand im Projekt

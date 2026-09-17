@@ -30,6 +30,8 @@ Wie der Speicher im Projektlauf gefahren wird, bestimmt die '''Berechnungsart'''
 | '''Lastspitzenkappung''' || Auf ein Peak-Ziel am Netzanschluss fahren: entladen, sobald die Netzlast über dem Ziel liegt, und unter dem Ziel wieder aufladen.
 |}
 
+'''Netzladung zählt im Netzbezug.''' Lädt der Speicher aus dem Netz – bei der Preissteuerung ebenso wie bei der Lastspitzenkappung, beides nur im Graustrombetrieb –, erhöht diese Energie den '''Netzbezug des Projekts''' in der Viertelstunde, in der sie geladen wird, und damit gegebenenfalls die '''Bezugsspitze'''. Arbeits- und Leistungskosten des Projekts enthalten sie also. Der '''Verkauf''' ins Netz wirkt umgekehrt: Er erhöht die Einspeisung, nicht den Bezug. Die aus dem Netz geladene Menge steht im Laufprotokoll und auf dem Reiter ''Stromspeicher'' als eigene Kennzahl.
+
 '''Peak-Ziel.''' Bei der Lastspitzenkappung erscheinen zwei weitere Felder:
 
 * '''Peak-Ziel [kW]''' – die Schwelle, auf die der Netzbezug gekappt werden soll. Ohne gepflegtes Ziel rechnet der Lauf die Dauernutzung und sagt es im Laufprotokoll.

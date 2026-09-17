@@ -1331,6 +1331,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteuerung: {0} kWh aus dem Netz geladen. Diese Menge erhöht den Netzbezug des Projekts in der Viertelstunde, in der sie geladen wird – und damit gegebenenfalls die Bezugsspitze. ähnelt.
+        /// </summary>
+        public static string ARB_HINWEIS_NETZLADUNG_IM_BEZUG {
+            get {
+                return ResourceManager.GetString("ARB_HINWEIS_NETZLADUNG_IM_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Grünstrombetrieb: Aus dem Netz wird nicht geladen. Geplant wird ausschließlich der Verkauf aus vorhandenem Ladezustand. ähnelt.
         /// </summary>
         public static string ARB_HINWEIS_NUR_VERKAUF {

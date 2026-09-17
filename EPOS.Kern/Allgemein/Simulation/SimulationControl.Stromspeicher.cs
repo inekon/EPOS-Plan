@@ -167,13 +167,15 @@ namespace WindowsFormsApplication1
 
             if (ergebnis == null) return null;
 
-            // DIE NETZWIRKUNG, nicht die blosse Entladung (Befund LS-1). Fuehrt der
-            // Kontext eine eigene Reihe, gilt sie: Die Lastspitzenkappung darf im
-            // Graustrombetrieb aus dem NETZ laden, und diese Ladung ERHOEHT den
-            // Netzbezug des Intervalls - ohne sie waere die Spitze des Laufs zu
-            // niedrig. Fuer jede andere Berechnungsart bleibt es bei der Entladung;
-            // insbesondere die Arbitrage bleibt unveraendert (ihr Netzladepfad liegt in
-            // einer getrennten Reihe), damit der Referenzlauf byte-gleich bleibt.
+            // DIE NETZWIRKUNG, nicht die blosse Entladung (Befunde LS-1 und LS-2).
+            // Fuehrt der Kontext eine eigene Reihe, gilt sie: Lastspitzenkappung UND
+            // Preissteuerung duerfen im Graustrombetrieb aus dem NETZ laden, und diese
+            // Ladung ERHOEHT den Netzbezug des Intervalls - ohne sie waeren Bezug und
+            // Spitze des Laufs zu niedrig. Der Lauf fragt hier NICHT nach der
+            // Berechnungsart: Wer einen Netzladepfad hat, legt seine Wirkung in die
+            // eine Reihe (StromspeicherSimCtrl.NetzwirkungKw); wer keinen hat - die
+            // Dauernutzung laedt nur aus Ueberschuss -, laesst sie leer, und es bleibt
+            // Bit fuer Bit bei der Entladung.
             double[] entladung = ctrl.LetzterKontext != null && ctrl.LetzterKontext.NetzwirkungKw != null
                 ? ctrl.LetzterKontext.NetzwirkungKw
                 : StromspeicherSimCtrl.EntladungLeistungKw(ergebnis);

@@ -127,17 +127,18 @@ namespace WindowsFormsApplication1
         /// <b>Warum es sie gibt</b> (Befund LS-1): Der Projektlauf zog bis dahin NUR die
         /// Entladung von <c>Rest_Strombedarf_viertelstuendlich</c> ab. Fuer die
         /// Dauernutzung stimmt das - sie laedt ausschliesslich aus Ueberschuss, und der
-        /// steht im Reststrombedarf ohnehin nicht mehr. Die LASTSPITZENKAPPUNG darf im
-        /// Graustrombetrieb aus dem NETZ laden; diese Ladung erhoeht den Netzbezug des
-        /// Intervalls und gehoert damit zur Spitzenwahrheit. Die Reihe ist deshalb
-        /// <c>max(0, Netzlast ohne Speicher) - max(0, Netzlast mit Speicher)</c> und
-        /// nicht die blosse Entladung.
+        /// steht im Reststrombedarf ohnehin nicht mehr.
         /// </para>
         /// <para>
-        /// <b>Die Arbitrage bleibt unberuehrt</b> (eigener Entscheid LS-1): Ihre
-        /// Netzladung liegt in einer getrennten Reihe und wird weiterhin NICHT
-        /// aufgeschlagen. Sie hier mitzunehmen waere eine Aenderung des Rechenwegs
-        /// AUSSERHALB des Auftrags - und der Referenzlauf bliebe nicht byte-gleich.
+        /// <b>Jede Berechnungsart mit NETZLADEPFAD fuellt sie</b> - die
+        /// LASTSPITZENKAPPUNG und die PREISSTEUERUNG (Befund LS-2). Beide duerfen im
+        /// Graustrombetrieb aus dem NETZ laden; diese Ladung erhoeht den Netzbezug des
+        /// Intervalls und gehoert damit zur Bezugs- und zur Spitzenwahrheit. Der
+        /// Projektlauf kennt nur DIESE eine Reihe und fragt nicht nach der
+        /// Berechnungsart; hergeleitet wird sie in
+        /// <c>StromspeicherSimCtrl.NetzwirkungKw</c> - aus den beiden Lastgaengen der
+        /// Kappung, aus <c>Entladung - Netzladung</c> bei der Preissteuerung, die ihre
+        /// Netzladung in einer getrennten Reihe fuehrt.
         /// </para>
         /// </remarks>
         public double[] NetzwirkungKw;

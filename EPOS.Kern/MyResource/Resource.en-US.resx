@@ -5228,6 +5228,9 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="ARB_HINWEIS_KOMPATIBILITAET" xml:space="preserve">
     <value>The Excel compatibility mode applies to continuous use only - there is no Excel reference for price control. The calculation runs with the energy model.</value>
   </data>
+  <data name="ARB_HINWEIS_NETZLADUNG_IM_BEZUG" xml:space="preserve">
+    <value>Price control: {0} kWh charged from the grid. This energy raises the project's grid supply in the quarter hour in which it is charged - and with it, where applicable, the supply peak.</value>
+  </data>
   <data name="ARB_HINWEIS_OHNE_NETZENTLADUNG" xml:space="preserve">
     <value>Price control without discharge to the grid: without a sales option no pairing is viable. Continuous use is calculated instead.</value>
   </data>
