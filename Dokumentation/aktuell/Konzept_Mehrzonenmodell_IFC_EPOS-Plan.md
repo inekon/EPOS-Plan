@@ -1,6 +1,14 @@
 # Konzept: Mehrzonenmodell aus IFC — Zonen, Bauteile, Materialdaten (EPOS-Plan)
 
-**Rev. 2 — 15.09.2026 — Prüfung und Vorschlag, zur Entscheidung durch Philipp**
+**Rev. 3 — 17.09.2026 — Prüfung 17.09.2026, E26 eingearbeitet**
+
+> **Was Rev. 3 ändert:** `Tab_Zone` und `Tab_Bauteil` entstehen mit **G3** (S-A bis S-C),
+> `Tab_Zonenluftstrom` und `ID_Nachbarzone` erst mit **G6b** im neuen Schritt **S-G**, und G6a legt
+> `Tab_Bauteilaufbau(_STAMM)` an (4.4, Kapitel 9); die Zonenspaltentabelle führt die Spalten aus
+> KU-S1 und AK-S1 (4.2); der Schreibweg ist ein Abgleich über die Ids statt Löschen + Neuanlegen
+> (4.1); bei N = 1 entfallen adiabater Vorlauf und Konvergenzprobe (2.4, 2.9, 8.1); die
+> Schemaschritte tragen Papiernamen statt fester Nummern (2.6, 4.4); die Summe G6 trägt den
+> Vorbehalt X1…X3 (Kapitel 0 und 9); M5 nennt die Kennzahl `Ueberhitzungsstunden`.
 
 > **Rev. 2 — Korrekturen des Gegenlesens vom 15.09.2026 eingearbeitet, Protokoll:
 > [Gegenlesen](Gebaeudesimulation/2026-09-15_Gegenlesen_Mehrzonenkonzept.md)** — dort auch die
@@ -86,15 +94,17 @@ Dieses Papier entscheidet nichts; es legt vor.
    `EPOS.Kern/Allgemein/Katalog/KatalogRegistry.cs:80`. Die Stolperstellen: die Kaskade beim
    Speichern (`AnlageStrangCtrl.cs:33-43`, `sql/schema/001_grundschema.sql:1187`) und der
    entnullende Kopierweg `GebaeudeStammCtrl.CopyFromStamm` (`…/GebaeudeStammCtrl.cs:439`, `:459`),
-   der „NULL = Vorgabe" bricht (Befund Q-1). Aufwand für G6: **40–62 PT** (mit dem Grundriss aus
-   dem Nachtrag unten); was Rev. 2 zwischen den Stufen verschiebt, steht in Kapitel 9.
+   der „NULL = Vorgabe" bricht (Befund Q-1). Aufwand für G6: **40–62 PT — ohne die
+   gbXML-Zonenregeln X1…X3 (Frage D16)** (mit dem Grundriss aus dem Nachtrag unten); was zwischen
+   den Stufen verschoben ist, steht in Kapitel 9.
 
 **Nachtrag zu Punkt 4 (Entscheid E11, 15.09.2026).** Dieselben Raumgrenzen, aus denen Flächen und
 Nachbarschaft entstehen, tragen auch den **Grundriss**. G6c baut daraus ein
 **Zonengeometrie-Modell** im Kern (je Zone Polygon, Höhe, Geschoss, Zuordnung der Bauteile zu
 Kanten, Boden und Decke) und zeigt es im Zuordnungsdialog als **2D-Grundriss je Geschoss** (6.7):
 SVG in einer Razor-Komponente, ein Klick auf einen Raum ordnet die Zone zu. Das sind **6–10 PT**
-zusätzlich in G6c, die **Summe G6 steht damit bei 40–62 PT** (Kapitel 9). Dieselbe Geometrie
+zusätzlich in G6c, die **Summe G6 steht damit bei 40–62 PT — ohne die gbXML-Zonenregeln X1…X3
+(Frage D16)** (Kapitel 9). Dieselbe Geometrie
 schreiben später die Exporte G7b und G7e
 ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md), Nachtrag 1); die zweite
 Ansicht — schematische Körper — hängt dort an G7b.
@@ -282,6 +292,12 @@ Trennflächen, aus dem die 4-K-Zuordnung fällt (2.2) — ein Durchlauf je Zone,
 50 Zonen. Er steckt in keiner der drei Spalten, weil er für jeden Kopplungsweg gleich anfällt;
 in 2.9 ist er in der Gesamtzeit mitgezählt.
 
+**Ausnahme N = 1.** Ein Gebäude mit genau einer Zone hat keine Trennfläche und keinen Nachbarn:
+Der adiabate Vorlauf entfällt, es wird nicht iteriert, und die Zone durchläuft genau denselben
+Code in genau derselben Reihenfolge wie die Einzonenrechnung. Das ist die Bedingung, unter der
+Probe 10 überhaupt bitgleich sein kann (8.1); ohne diese Ausnahme führten zwei zusätzliche
+Vorläufe den Einzonenfall in eine andere Gleitkommafolge.
+
 **Vorschlag: B als Produktweg.** In jeder Stunde wird über die Zonen in fester Reihenfolge
 iteriert; jede Zone rechnet ihren Stundenschritt mit den zuletzt bekannten Nachbartemperaturen
 **derselben** Stunde. Der Fixpunkt ist die Lösung des gekoppelten Systems, bis auf die
@@ -353,8 +369,10 @@ Alles, was Konzept 4.4 heute je Gebäude führt, wird je Zone geführt: die vier
 Höhe und Volumen. Im Bestand hängen Gewinne, die vier Sollwerte, Fläche, Höhe und der Luftwechsel
 am Gebäude (`EPOS.Kern/Model/ProjektGebaeudeModel.cs:23`, `:29-33`, `:44-45`, `:52`);
 `Heizung_Strahlungsanteil`, `Heizleistung_Max`, `Luftwechsel_Infiltration` und
-`Luftwechsel_Nutzer` **entstehen erst mit den Schemaschritten 77 und 78** (Konzept 6.1) und werden
-von dort je Zone übersteuerbar. **Die Vorgabenkaskade ist
+`Luftwechsel_Nutzer` **entstehen erst mit dem Gebäudespalten-Schritt M3 und dem
+Klimaspalten-Schritt M4** (Konzept 6.1) und werden von dort je Zone übersteuerbar. M3 und M4 sind
+Papiernamen; ihre Schrittnummern werden erst bei der Beauftragung an `SchemaStand.Zielversion`
+abgelesen. **Die Vorgabenkaskade ist
 die Bedienregel:** Jedes Zonenfeld darf NULL sein und bedeutet dann „Wert des Gebäudes"; der Dialog
 zeigt den geerbten Wert als Vorgabetext (Kapitel 5) — dieselbe Semantik, die Konzept 6.1 festlegt
 („kein DDL-DEFAULT auf Fachwerten; NULL = Vorgabe"), und deshalb ist Befund Q-1 (4.4) ein
@@ -412,7 +430,8 @@ Skalierung bleiben unverändert, und **kein Aufrufer außerhalb von `HeizwaermeE
 dass es Zonen gibt.** `SimulationWaermebedarf.Waermebedarf_Max` bleibt das Maximum des
 Kanalsummenvektors (`:401`); die Ergebnisgröße `Waermelast_Max` wird davon unverändert abgeleitet
 (`SimulationRunner.cs:358`, Konzept 4.5). **Die Skalierung** `Z_AuswahlWohnflaeche / Wohnflaeche`
-(Konzept 4.7, Entscheid E8) steht im Altweg — dem eingefrorenen Bestandsweg nach E20 und E23 — in
+(Konzept 4.7, Entscheid E8) steht im Altweg — dem eingefrorenen Bestandsweg nach E20 und E23, der
+nach E26 mit der Stufe GA abgelöst wird (Zeitpunkt offen, Q24) — in
 der Physikfunktion selbst (`EPOS.Kern/Allgemein/BhkwPlan.cs:435`, Argumente `:392`) — die in
 Entscheid E8 genannte Fundstelle
 in `SimulationWaermebedarf.cs` trifft den Kopfkommentar von `SummenvektorAusKanaelen` und ist dort
@@ -433,6 +452,8 @@ Kellerzone** ist deutlich träger, und ihr Anfangszustand wirkt über θ_NR,eq a
 beheizte Zone. **Vorschlag:** 30 Tage mit Konvergenzprobe — der Vorlauf wird ein zweites Mal
 gerechnet, und unterscheidet sich die Endtemperatur irgendeiner Zone um mehr als 0,05 K (die halbe
 Druckstelle aus Entscheid E10), wird auf 90 Tage verlängert und das benannt. **Offen (M6).**
+**Ausnahme N = 1:** Bei genau einer Zone entfallen der adiabate Vorlauf und die Konvergenzprobe;
+es bleibt beim Vorlauf der Einzonenrechnung (2.4, Probe 10 in 8.1).
 
 **Determinismus.** Reine 2×2-Arithmetik je Zone, Zustand je Instanz, nichts Statisches
 (Konzept 4.1), dazu die drei Festlegungen aus 2.4. Zwei Läufe desselben Modells liefern
@@ -445,7 +466,8 @@ nackter Parallelität frei.
 drei bis sechs Durchläufen 0,8–1,7 s für 50 Zonen und ein Jahr, einschließlich des zweiten Vorlaufs
 aus der Konvergenzprobe und der Umschaltsuche je Zone. **Dazu kommt der ungekoppelte Vorlauf mit
 adiabaten Trennflächen, aus dem die 4-K-Zuordnung fällt** (2.2): ein Durchlauf je Zone, rund
-0,25 s bei 50 Zonen, für jeden Kopplungsweg gleich — zusammen also rund **1,1–2,0 s**. Das liegt
+0,25 s bei 50 Zonen, für jeden Kopplungsweg gleich — zusammen also rund **1,1–2,0 s** (dieselbe
+Zahl in [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md), Kraft 4). Das liegt
 weit über der Planungsgröße 10 ms je Gebäude (Konzept 4.8), ist gegenüber den 4 s des
 heutigen Gesamtlaufs aber vertretbar — **und es fällt nur bei Mehrzonengebäuden an**. **Obergrenze 50 Zonen je Gebäude**:
 nicht, weil die Physik versagt, sondern weil ein IFC-Import mit 400 Räumen sonst unbemerkt einen
@@ -569,9 +591,11 @@ Umrechnung und einen Plausibilitätsriegel (500 ≤ c ≤ 3 000 J/(kgK) deckt Be
 § 3.6). Er entsteht mit G3 und ist die Voraussetzung des Mehrzonenimports. **`Tab_Bauteil`,
 `Tab_Bauteilschicht` und `Tab_Baustoff_STAMM` entstehen einmal — mit G3 und bereits in der hier
 vorgeschlagenen Form** (Bauteil an der Zone, Schicht am Aufbau, `Bezeichner` als Namensspalte);
-Kapitel 6.3 des Grundkonzepts ist dafür fortzuschreiben. G6a legt dann nur noch `Tab_Zone`,
-`Tab_Bauteilaufbau(_STAMM)` und `Tab_Zonenluftstrom` an — eine zweite Anlage derselben Tabellen
-wäre ein Umbauschritt und nicht ergebnisneutral.
+Kapitel 6.3 des Grundkonzepts ist dafür fortzuschreiben. **`Tab_Zone` entsteht ebenfalls mit G3**,
+weil `Tab_Bauteil.ID_Zone` NOT NULL auf sie zeigt und der Zonenreiter der Grundform schon dort
+steht. G6a legt dann nur noch `Tab_Bauteilaufbau(_STAMM)` an; `Tab_Zonenluftstrom` und
+`Tab_Bauteil.ID_Nachbarzone` kommen mit G6b (Schritt S-G, 4.4) — eine zweite Anlage derselben
+Tabellen wäre ein Umbauschritt und nicht ergebnisneutral.
 
 **Saat:** rund 60 Stoffe nach DIN 4108-4 / DIN EN ISO 10456 (Konzept 6.3) nach dem Muster der
 Nutzungsdauer-Saat — feste Id je Zeile („sie bleibt über alle Auslieferungen gleich",
@@ -655,12 +679,24 @@ Für Eltern-Kind-Strukturen gibt es drei erprobte Bauformen: (A) Kopf + Wertetab
 Bauteile und Schichten passt B**; ihr Klassenkopf (`AnlageStrangCtrl.cs:14-53`) beantwortet die
 Fragen, die hier anstehen: **kein zweites `ID_Projekt` am Kind** (`:20-23`, „eine zweite Wahrheit
 darüber könnte auseinanderlaufen"); **zwei Lesewege**, je Eltern für den Dialog (`:164`,
-`LesenJeAnlage`) und je Projekt über JOIN für den Rechenkern (`:135`, `LesenJeProjekt`); **Schreiben ist Löschen + Neuanlegen je Eltern in
-EINER Transaktion** (`:210`, Begründung `:25-31`) mit lückenlos neu vergebenen Rängen; und **die
+`LesenJeAnlage`) und je Projekt über JOIN für den Rechenkern (`:135`, `LesenJeProjekt`); und **die
 Kaskadenfalle** (`:33-43`) — `ON DELETE CASCADE` an einem Eltern, dessen Speicherweg Löschen +
 Neuanlegen ist, räumt jede Kindliste ab. **Für Zonen gilt das genauso**, weil
 `Tab_Gebaeude.ID_ProjektGebaeude` kaskadiert (`sql/schema/001_grundschema.sql:1187`); die Rettung
 steht dort, wo das Löschen steht (Vorbild `WizardCtrl.StraengeSichern`), nicht im Controller.
+
+**Der Schreibweg ist nicht Teil der Bauform.** Bauform B gilt hier für Aufbau und Struktur, nicht
+für das Speichern. `AnlageStrangCtrl` schreibt als Löschen + Neuanlegen je Eltern in einer
+Transaktion (`:210`, Begründung `:25-31`) mit lückenlos neu vergebenen Rängen — und vergibt damit
+neue Schlüssel. Genau daran hängen aber die Zuordnungen des Imports: `Tab_Bauteil.ID_Zone`,
+`Tab_Bauteil.ID_Aufbau`, `Tab_Bauteil.ID_Nachbarzone` und die Persistenz Zone ↔
+`Quellkennung` (Kapitel 6) zeigen auf Ids, die ein zweiter Speichervorgang sonst wegwirft.
+**Geschrieben wird deshalb als ein Aggregat je Gebäude durch Abgleich über die Ids** (Entfernen →
+Ändern → Anlegen) in **einer** Transaktion — Muster **A6** des
+[Registers](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md): Was in der Oberfläche fehlt, wird
+gelöscht;
+was vorhanden ist, wird über seine `ID` geändert; was neu ist, wird angelegt. Der `Rang` wird
+danach lückenlos neu gesetzt, ohne die Schlüssel anzurühren.
 
 Die DDL-Vorlage ist `EPOS.Kern/Allgemein/Update/AnlageStrangSchema.cs` mit vier Hausregeln:
 `STRICT`, `AUTOINCREMENT` am Schlüssel, **Kaskade nur zum Eltern** (der Katalogverweis kaskadiert
@@ -681,7 +717,15 @@ Projektware; wiederverwendbar ist der Bauteilaufbau, nicht die Zone).
 | `IstBeheizt` | INTEGER NOT NULL DEFAULT 1 CHECK (IN (0,1)) | — | Schalter, kein Fachwert (Boolean-Regel `BETRIEB_SQLITE.md`) |
 | `Raumsolltemperatur_Tag`, `_Nachtabsenkung`, `_Wochenende`, `_Ferien`, `Maximaleraumtemperatur`, `Heizung_Strahlungsanteil`, `Heizleistung_Max`, `Luftwechsel_Infiltration`, `Luftwechsel_Nutzer` | REAL | ja | NULL = Wert des Gebäudes |
 | `Interne_Waermegewinne`, `Bewohner` | REAL | ja | NULL = anteilig aus dem Gebäude (Flächenschlüssel) |
+| `Kuehl_Sollwert`, `Kuehlleistung_Max`, `Kuehl_Sollwert_Nacht` (REAL), `Kuehlung_Aktiv` (INTEGER, `CHECK (IN (0,1))`) | REAL / INTEGER | ja | **Block aus KU-S1**, sofern die Stufe steht: NULL = Wert des Gebäudes ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 7.1) |
+| `Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn` | TEXT / REAL / REAL | ja | **Block aus AK-S1**, sofern die Stufe steht: NULL = Wert des Gebäudes ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) 8.1); mehr trägt die Zone nicht |
 | `Herkunft`, `Quellkennung` | TEXT | ja | `GBXML`/`IFC`/`KATALOG`/`MANUELL`/`VORGABE` — Großbuchstaben, ASCII, Persistenzwerte in `DbWerte` (Muster `DbWerte.cs:2165-2214`), mit `CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` (Muster `Tab_Wechselrichter.Herkunft`); `Quellkennung` trägt die `IfcGloballyUniqueId` (Base64-22) oder die gbXML-`id`, `CHECK (length ≤ 64)` — Spaltenname, Wertebereich und Länge nach [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 1.4 (Zeile 2) und 7.3, Frage D9 |
+
+**Die beiden Blöcke aus KU-S1 und AK-S1** stehen hier, weil Kühlkonzept und Anlagenkopplung
+dieselben Spalten in der Zone verlangen. Sie werden nicht nachträglich angehängt: Steht die
+jeweilige Stufe schon, legt der Schritt, der `Tab_Zone` anlegt (S-C, 4.4), sie gleich mit an;
+steht sie noch nicht, bringt sie ihr eigener Schritt (KU-S1 bzw. AK-S1) an beide Tabellen. Mehr
+als die hier genannten Spalten trägt die Zone von beiden Stufen nicht.
 
 **`Tab_Bauteil`** — Bauform B an `Tab_Zone` (nicht am Gebäude: im Einzonenfall hängt es an der
 einen Zone, und die Abfragen bleiben gleich).
@@ -771,19 +815,25 @@ muss also still bleiben (`:4883-4891`).
 |---|---|---|
 | **S-A** | `Tab_Baustoff_STAMM` + `Tab_Baustoff` anlegen, Baustoffsaat schreiben (`ReadOnly = 1`), DDL und Saat in `BaustoffSchema.cs` nach Muster `NutzungsdauerSchema.cs:218/257/297` | ja — legt an und sät |
 | **S-B** | `Tab_Bauteilaufbau(_STAMM)` + `Tab_Bauteilschicht(_STAMM)` anlegen, Index `(ID_Aufbau, Reihenfolge)` | ja |
-| **S-C** | `Tab_Zone` + `Tab_Bauteil` + `Tab_Zonenluftstrom` anlegen, Indizes `(ID_Gebaeude, Rang)` und `(ID_Zone, Rang)`; `Tab_Zone` und `Tab_Bauteil` führen `Quellkennung` (Länge 64) und `Herkunft` mit `CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` — **nicht** `IfcGuid` (4.2; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 1.4/7.3, Frage D9) | ja, solange kein Rechenweg liest |
-| **S-D** | Registerpflege **ohne DDL**: `KatalogRegistry`-Einträge `BAUSTOFF` und `AUFBAU` (mit Datenblock), `SchemaKatalog`-Konstanten (`EPOS.Kern/Allgemein/Update/SchemaKatalog.cs:46`, `:47-51`), `ProjektDuplizierenCtrl.FK_MAP` und `KINDER`, `Seitenschluessel`, `Menuetabelle`, Ressourcen + `ResourceDesigner`, **und die sechs neuen Projekttabellen in `sql/tools/Reduziere-Testdatenbank.sql`** — `Tab_Zone`, `Tab_Bauteil`, `Tab_Zonenluftstrom` über den Unterausdruck auf `Tab_Gebaeude` (sie führen bewusst kein `ID_Projekt`, Vorbild `Tab_DBTagVDaten`), `Tab_Bauteilaufbau`, `Tab_Bauteilschicht`, `Tab_Baustoff` über `ID_Projekt` | ja |
+| **S-C** (mit **G3**) | `Tab_Zone` + `Tab_Bauteil` anlegen, Indizes `(ID_Gebaeude, Rang)` und `(ID_Zone, Rang)`; `Tab_Zone` und `Tab_Bauteil` führen `Quellkennung` (Länge 64) und `Herkunft` mit `CHECK (Herkunft IN ('GBXML','IFC','KATALOG','MANUELL','VORGABE'))` — **nicht** `IfcGuid` (4.2; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 1.4/7.3, Frage D9). Stehen KU-S1 bzw. AK-S1 schon, legt S-C deren Zonenspalten gleich mit an (4.2) | ja, solange kein Rechenweg liest |
+| **S-D** | Registerpflege **ohne DDL**: `KatalogRegistry`-Einträge `BAUSTOFF` und `AUFBAU` (mit Datenblock), `SchemaKatalog`-Konstanten (`EPOS.Kern/Allgemein/Update/SchemaKatalog.cs:46`, `:47-51`), `ProjektDuplizierenCtrl.FK_MAP` und `KINDER`, `Seitenschluessel`, `Menuetabelle`, Ressourcen + `ResourceDesigner`, **und die sechs neuen Projekttabellen in `sql/tools/Reduziere-Testdatenbank.sql`** — `Tab_Zone`, `Tab_Bauteil`, `Tab_Zonenluftstrom` über den Unterausdruck auf `Tab_Gebaeude` (sie führen bewusst kein `ID_Projekt`, Vorbild `Tab_DBTagVDaten`), `Tab_Bauteilaufbau`, `Tab_Bauteilschicht`, `Tab_Baustoff` über `ID_Projekt`. Jede Tabelle wird in dem Schritt eingetragen, der sie anlegt — `Tab_Zonenluftstrom` also erst mit S-G | ja |
+| **S-G** (mit **G6b**) | `Tab_Zonenluftstrom` anlegen und `Tab_Bauteil.ID_Nachbarzone` ergänzen, Index `(ID_Zone)`; beide haben vor der Zonenrechnung keinen Leser und gehören deshalb dorthin, wo der Rechenweg entsteht — **nicht** zu S-C (Softwarearchitektur 5) | ja, solange kein Rechenweg liest |
 | **S-E** | **S-E gehört nicht zu G6**: Der Umbau von `GebaeudeStammCtrl.CopyFromStamm`/`Insert`/`Overwrite` auf die Spaltenlisten-Bauweise (Befund Q-1) läuft als eigener, begründeter Einfrierschritt **mit G1**; in G6a bleibt davon nur das Mitkopieren der Zonen im schon umgebauten Kopierweg | **mit G1 nein** — in G6a ergebnisneutral, solange kein Projekt Zonen führt |
 
-Die Schritte S-A bis S-D werden als **nummerierte** Migrationsschritte nach ADR-001 geführt; die
-Nummern werden vergeben, wenn der Schemastand bei Beauftragung von G6a feststeht (77 und 78 sind
-mit G1/G2 belegt). Jede Nummer bekommt ihre Konstante (`SchemaMigration.cs:2762`), ihre
-Registrierung (`:3703`) und ihren Zweig (`:4893`).
+Die Schritte S-A bis S-D und S-G werden als **nummerierte** Migrationsschritte nach ADR-001
+geführt; die Nummern werden vergeben, wenn der Schemastand bei Beauftragung der jeweiligen Stufe
+feststeht. Die Gebäudespalten-Schritte tragen bis dahin die Papiernamen **M3** und **M4**; die
+Zahlen 77 und 78 sind im Bestand anderweitig vergeben (Softwarearchitektur 2.4, A11). Der
+Zielstand wird an `SchemaStand.Zielversion` abgelesen. Jede Nummer bekommt ihre Konstante
+(`SchemaMigration.cs:2762`), ihre Registrierung (`:3703`) und ihren Zweig (`:4893`).
 
-**S-A und der `Tab_Bauteil`/`Tab_Bauteilschicht`-Teil von S-B und S-C fallen nach 3.5 schon mit
-G3 an** — und zwar bereits in der hier vorgeschlagenen Form (Bauteil an der Zone, Schicht am
-Aufbau, `Bezeichner` als Namensspalte). Kommen sie von dort, übernimmt G6a sie unverändert; eine
-zweite Anlage derselben Tabellen in anderer Form wäre ein Umbauschritt und nicht ergebnisneutral.
+**S-A bis S-C fallen nach 3.5 schon mit G3 an** — also auch `Tab_Zone`, weil
+`Tab_Bauteil.ID_Zone` NOT NULL auf sie zeigt und der Zonenreiter der Grundform schon in G3 steht —
+und zwar bereits in der hier vorgeschlagenen Form (Bauteil an der Zone, Schicht am Aufbau,
+`Bezeichner` als Namensspalte). Kommen sie von dort, übernimmt G6a sie unverändert; eine zweite
+Anlage derselben Tabellen in anderer Form wäre ein Umbauschritt und nicht ergebnisneutral. G6a
+legt danach nur noch `Tab_Bauteilaufbau(_STAMM)` (S-B) an; `Tab_Zonenluftstrom` und
+`Tab_Bauteil.ID_Nachbarzone` kommen mit S-G und G6b.
 
 > **Befund Q-1 (hoch, Sperrpunkt).** `GebaeudeStammCtrl.CopyFromStamm`
 > (`EPOS.Kern/Controller/GebaeudeStammCtrl.cs:439`) ist ein handgeschriebener 55-Spalten-`INSERT`,
@@ -812,7 +862,8 @@ alle Schichten weg (`:168-175`). (4) **Bauteilart, Randbedingung und Herkunft si
 Persistenzwerte** (4.2), keine Anzeigetexte.
 
 **Referenzlauf.** Ein Schritt, der nur Tabellen anlegt und sät, ist ergebnisneutral; der Wortlaut
-dafür steht in `Referenzlaeufe/LIESMICH.md:236-245`. Das gilt für S-A bis S-D so lange, wie **kein
+dafür steht in `Referenzlaeufe/LIESMICH.md:236-245`. Das gilt für S-A bis S-D und S-G so lange,
+wie **kein
 Rechenweg sie liest**. Der Umbau aus S-E berührt den Referenzlauf und bekommt seinen eigenen,
 begründeten Einfrierschritt — **mit G1**, nicht mit G6. Nach jeder neuen SQL-Anweisung läuft `Werkzeuge/SqlDialektPruefer`.
 
@@ -1247,7 +1298,8 @@ in G6c (Kapitel 9).
 **Ergebnis je Zone.** Die vier Reihen aus Konzept 4.6 (`Heizlast`, `Raumtemperatur`,
 `OperativeTemperatur`, `Kuehlbedarf`) und die Kennzahlen entstehen je Zone; in den Kanal geht
 ausschließlich die Gebäudesumme (2.8). Unbeheizte Zonen tragen keine Heizlast, aber Temperatur und
-Überhitzungsstunden — **offen (M5)**, ob sie im Bedarfsdialog eigene Zeilen bekommen.
+die Kennzahl `Ueberhitzungsstunden` — **offen (M5)**, ob sie im Bedarfsdialog eigene Zeilen
+bekommen.
 
 **Bericht.** Vorbild ist die echte Tabelle je Teilobjekt, nicht der Eigenschaftsblock: Die
 Speichertemperaturen in `EPOS.Kern/Allgemein/Bericht/Bausteine/BausteineProjekt.cs:105-140` zeigen
@@ -1290,7 +1342,7 @@ Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei 
 | 7 | **Determinismus** — zwei Läufe; zusätzlich umgekehrte Eingabereihenfolge der Zonen | byte-gleiche Reihen (eigene Probe in `EPOS.Kern.Tests` und Referenzlauf) |
 | 8 | **Nichtkonvergenz und Pendelstunde** — künstlich stark gekoppelte Zonen, Höchstzahl erreicht; dazu eine Stunde, in der die Regelungszuordnung zwischen zwei Durchläufen umschlägt | **benannter Fehler**, Abbruch, kein stiller Rückfall (6.8, S. 36); in der Pendelstunde wird das Muster des ersten Durchlaufs gehalten und der Wechsel gezählt (2.4) |
 | 9 | **Grenzfälle der Bauteilzuordnung** — Zone ohne AW, Zone ohne IW, A_AW > A_IW | 6.8, S. 36/37 verlangt die Behandlung ausdrücklich: ohne zusammengefasste IW darf nicht durch deren Fläche geteilt werden; für einen Raum ohne AW ist die Koeffizientenmatrix mit 10¹² statt 0 zu belegen; der dritte Fall ist der Umschaltpunkt (29) → (31). Dazu die stehende Zusicherung **Σ B_v = 1 je Zone** (Gl. (42), 2.3) |
-| 10 | **Referenzlauf** — alle dreizehn Referenzprojekte, jedes Gebäude als **eine** Zone | **bitgleich** zur Einzonenrechnung **desselben Programmstands** (nach G3). Ohne diese Probe wird jede Mehrzonenstufe zu einem Einfrierschritt |
+| 10 | **Referenzlauf** — alle dreizehn Referenzprojekte, jedes Gebäude als **eine** Zone | **bitgleich** zur Einzonenrechnung **desselben Programmstands** (nach G3). Das trägt nur wegen der Ausnahme N = 1 (2.4, 2.9): bei genau einer Zone entfallen adiabater Vorlauf, Iteration und Konvergenzprobe, sodass derselbe Code in derselben Reihenfolge läuft. Ohne diese Probe wird jede Mehrzonenstufe zu einem Einfrierschritt |
 | 11 | **Reduktionspaar** — FB1 aus Testbeispiel 5 (IW, R₁/C₁) und Testbeispiel 10 (AW, C₁,korr nach Gl. (17)) | beide Reduktionsarten desselben Bauteils treffen ihre Ergebnistabellen im Band; **als Paar** abzunehmen (3.6) |
 | 12 | **Bezugsperiode** — derselbe Aufbau einmal mit und einmal ohne raumseitige Vorsatzschale mit Luftschicht | (10a)/(10b) schalten den Aufbau mit Vorsatzschale und Luftschicht auf T_BT = 2 d, denselben Aufbau ohne sie nicht; aufgeklebte Innendämmung schaltet in der Regel **nicht** (3.2); der Summenfuß des Schichtdialogs zeigt es (5.1) |
 | 12a | **R_rad-Umstellung ist im Einzonenfall ergebnisneutral** — ein Gebäude mit A_IW ≥ A_AW, einmal mit fester Bezugsfläche, einmal mit der Fallunterscheidung Gl. (29)/(31) | Gl. (29) greift, und die Reihen sind **bitgleich** zum Einzonenwert. Bricht die Probe, gehört die Umstellung mit eigenem Einfrierschritt zu G3 (2.2, Punkt 2) |
@@ -1323,9 +1375,10 @@ Die Auflage ist wie bei den KIT-Dateien Lizenztext und Vermerk.
 gesäten Bauteilen, Aufbauten und Schichten. Ohne das ist der Mehrzonenweg im Regressionsnetz
 unsichtbar — dasselbe Argument, mit dem E4 die Umstellung der dreizehn Projekte begründet. Die
 Basis wird mit G6 **einmal** neu eingefroren, begründet in `Referenzlaeufe/LIESMICH.md` nach Muster
-`:236-245`. Zugleich entsteht eine **fünfte Einfrierregel „gesäte Zonendaten"** (`Tab_Zone`,
-`Tab_Bauteil`, `Tab_Bauteilschicht`, `Tab_Baustoff(_STAMM)`) neben der vierten aus E4 — dort und im
-Abschnitt „Regressionsnetz" der Wurzel-`CLAUDE.md`. **Offen (M11):** bestehendes Projekt umstellen
+`:236-245`. Zugleich entsteht die **Einfrierregel „gesäte Zonendaten"** (`Tab_Zone`,
+`Tab_Bauteil`, `Tab_Bauteilschicht`, `Tab_Baustoff(_STAMM)`) neben der Regel aus E4 — dort und im
+Abschnitt „Regressionsnetz" der Wurzel-`CLAUDE.md`. Einfrierregeln werden **benannt**, nicht
+durchgezählt; die Zählung geht sonst mit jeder Stufe schief. **Offen (M11):** bestehendes Projekt umstellen
 oder ein vierzehntes anlegen.
 
 **Dialogtests** folgen dem Muster der 96 bunit-Klassen unter `EPOS.UI.Tests/Dialoge/`:
@@ -1340,11 +1393,11 @@ zu ziehen, sobald eine neue Spaltenart oder eine geänderte Zeilenhöhe entsteht
 
 | Stufe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
-| **G6a — Datenmodell und Pflege** | Schemaschritte S-A bis S-D (nummeriert nach ADR-001) samt Schema-Klassen und Testdatenbankwerkzeug; `Tab_Bauteil`, `Tab_Bauteilschicht` und `Tab_Baustoff(_STAMM)` entstehen schon mit G3 (3.5), G6a legt `Tab_Zone`, `Tab_Bauteilaufbau(_STAMM)` und `Tab_Zonenluftstrom` an; Baustoffsaat (rund 60 Stoffe, DIN 4108-4 / ISO 10456); Baustoff- **und Aufbaukatalog** in der Administration; Aufbau- und Schichteditor mit Summenfuß R/U/C und T_BT; Controller und Kopierwege; `FK_MAP`/`KINDER`; Bericht-Zonentabelle | Migrationstests grün, Auslieferungsvorlage grün (Katalog nicht leer), Referenzlauf **byte-gleich** (kein Leser), `SqlDialektPruefer` grün | **10–15 PT** |
-| **G6b — Zoneneingabe und Rechenweg** | Zonenreiter, Zonendialog, Bauteilliste, Bauteildialog, Hülle nach `EPOS.UI.Daten`; die Zonenschleife in `HeizwaermeEinesGebaeudes`; Gruppenbildung AW/IW mit adiabatem Vorlauf für die 4-K-Regel, Gl. (29)/(31), θ_NR,eq nach (40), Gewichtung (41)/(42) mit Σ B_v = 1; Gauß-Seidel mit fester Reihenfolge und den Schwellen 0,01 K / 0,1 W; unbeheizte Zonen; Konsistenzprüfungen; Proben 1–12 samt 12a | Testbeispiel 10 im Normband, Probe 10 **bitgleich zum Stand nach G3**, Probe 12a ergebnisneutral, Probe 6 gemessen und begründet | **12–18 PT** |
+| **G6a — Datenmodell und Pflege** | Schritt S-D und der Rest von S-B (nummeriert nach ADR-001) samt Schema-Klassen und Testdatenbankwerkzeug; `Tab_Zone`, `Tab_Bauteil`, `Tab_Bauteilschicht` und `Tab_Baustoff(_STAMM)` entstehen schon mit **G3** (S-A bis S-C, 3.5 und 4.4), **G6a legt `Tab_Bauteilaufbau(_STAMM)` an**, `Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone` kommen mit G6b (S-G); Baustoffsaat (rund 60 Stoffe, DIN 4108-4 / ISO 10456); Baustoff- **und Aufbaukatalog** in der Administration; Aufbau- und Schichteditor mit Summenfuß R/U/C und T_BT; Controller und Kopierwege; `FK_MAP`/`KINDER`; Bericht-Zonentabelle | Migrationstests grün, Auslieferungsvorlage grün (Katalog nicht leer), Referenzlauf **byte-gleich** (kein Leser), `SqlDialektPruefer` grün | **10–15 PT** |
+| **G6b — Zoneneingabe und Rechenweg** | Schritt **S-G** (`Tab_Zonenluftstrom`, `Tab_Bauteil.ID_Nachbarzone`); Zonenreiter, Zonendialog, Bauteilliste, Bauteildialog, Hülle nach `EPOS.UI.Daten`; die Zonenschleife in `HeizwaermeEinesGebaeudes`; Gruppenbildung AW/IW mit adiabatem Vorlauf für die 4-K-Regel, Gl. (29)/(31), θ_NR,eq nach (40), Gewichtung (41)/(42) mit Σ B_v = 1; Gauß-Seidel mit fester Reihenfolge und den Schwellen 0,01 K / 0,1 W; unbeheizte Zonen; Konsistenzprüfungen; Proben 1–12 samt 12a | Testbeispiel 10 im Normband, Probe 10 **bitgleich zum Stand nach G3** (trägt nur mit der Ausnahme N = 1, 2.4/2.9), Probe 12a ergebnisneutral, Probe 6 gemessen und begründet | **12–18 PT** |
 | **G6c — Zonenimport aus IFC** (mit **D16** auch aus gbXML) | Zonierungsregeln Z1…Z5 (samt Messung von `IfcSpatialZone`) und B1…B6; **mit Entscheid D16 zusätzlich die gbXML-Zonenregeln X1…X3** ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3, Frage **D16** in 11.1; `X4`, der Einzonen-Rückfall, gehört zu **G4c** und ist hier nicht enthalten) — in den 16–26 PT stecken X1…X3 noch **nicht**, ihr Zuwachs wird mit D16 beziffert; Polygonflächen, Normale, Azimut/Neigung; `CorrespondingBoundary` und Rekonstruktion; Persistenz der Zuordnung Zone ↔ `GlobalId` samt Dateikennung (Kapitel 6); Öffnungsabzug je Fläche; Schichtrichtung nach `DirectionSense` und Grenznormale; Namensabgleich N1…N7 mit Synonymtabelle; Zuordnungsdialog mit vier Abschnitten; Meldungen in beiden `.resx`; Importproben; **Zonengeometrie-Modell und 2D-Grundriss je Geschoss im Zuordnungsdialog (E11, 6.7)** | Proben 13–18 und die beiden Proben aus 6.7; iOS-Lauf nach Rückfrage (Trimming, Größenlimit gemessen) | **16–26 PT** |
-| **G6d — Referenzprojekt und Einfrieren** | Zonenprojekt in der Testdatenbank säen; fünfte Einfrierregel; Referenzlauf, Vergleich, Begründung; Wiki-Seite und Logbuch-Eintrag | grüner Kern-Lauf, neue Basis begründet | **2–3 PT** |
-| | **Summe G6** | | **40–62 PT** |
+| **G6d — Referenzprojekt und Einfrieren** | Zonenprojekt in der Testdatenbank säen; Einfrierregel „gesäte Zonendaten" (benannt, nicht durchgezählt); Referenzlauf, Vergleich, Begründung; Wiki-Seite und Logbuch-Eintrag | grüner Kern-Lauf, neue Basis begründet | **2–3 PT** |
+| | **Summe G6** | | **40–62 PT — ohne X1…X3 (D16)** |
 
 Aufwände sind Größenordnungen für Entwicklung und Nachweis; Agentenarbeit verkürzt die
 Kalenderzeit, nicht die Prüfzeit. Zum Vergleich: Befund Q beziffert Datenmodell, Pflege und Bericht
@@ -1352,9 +1405,10 @@ allein mit 18–27 PT — darin sind die Teile enthalten, die dieses Papier auf 
 Dialoganteile von G6b verteilt; Konzept 11 nennt für G3 8–12 PT, und das ist der **Rechenweg** der
 Bauteilreduktion, nicht das Datenmodell.
 
-**Rev. 2 verschiebt Arbeit zwischen den Stufen, nicht die Summe.** G6a gibt `Tab_Bauteil`,
-`Tab_Bauteilschicht` und `Tab_Baustoff(_STAMM)` an G3 ab (3.5) und behält Register-, Katalog- und
-Editorarbeit; dafür kommen zu **G6b** der adiabate Vorlauf der 4-K-Zuordnung (2.2) und Probe 12a
+**Die Stufen verschieben Arbeit untereinander, nicht die Summe.** G6a gibt `Tab_Zone`,
+`Tab_Bauteil`, `Tab_Bauteilschicht` und `Tab_Baustoff(_STAMM)` an G3 ab (3.5, 4.4) und behält
+Register-, Katalog- und Editorarbeit sowie `Tab_Bauteilaufbau(_STAMM)`; dafür kommen zu **G6b**
+der Schritt S-G, der adiabate Vorlauf der 4-K-Zuordnung (2.2) und Probe 12a
 (8.1), zu **G6c** der geometrische Öffnungsrückfall (6.2), die Messung von `IfcSpatialZone` (6.1),
 der Typweg der Schichtsätze über `IsTypedBy` (6.3), die Bauteilart `VORHANGFASSADE` (4.2) und die
 Persistenz der Zuordnung Zone ↔ `GlobalId` (Kapitel 6). Die Verschiebungen heben sich in der
@@ -1364,7 +1418,9 @@ Absatz.
 
 **Was E11 hinzufügt.** Der Gebäudebetrachter (Konzept N1.16, 15.09.2026) legt **6–10 PT** auf G6c:
 das **Zonengeometrie-Modell** im Kern (3–5 PT) und den **2D-Grundriss** im Zuordnungsdialog
-(3–5 PT, 6.7). Damit steht **G6c bei 16–26 PT** und die **Summe G6 bei 40–62 PT** statt 34–52 PT.
+(3–5 PT, 6.7). Damit steht **G6c bei 16–26 PT** und die **Summe G6 bei 40–62 PT** statt 34–52 PT —
+in beiden Zahlen stecken die gbXML-Zonenregeln X1…X3 **nicht**, ihr Zuwachs wird mit **D16**
+beziffert.
 Die zweite Ansicht — schematische Körper, 4–7 PT — hängt an G7b und steht im
 [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) (Nachtrag 1); sie ist hier
 **nicht** mitgezählt.
@@ -1385,7 +1441,7 @@ behoben sein.
 | **M2** | Raumseitenmaß oder Bruttomaß beim Import? | **Raumseitenmaß durchhalten und im Dialog benennen** (6.2). Das weicht von der Bemaßungsregel des Einzonenmodells ab (VDI 2078, 6.1, S. 18) und ist ein Entscheid; Probe 17 beziffert den Abstand vorher |
 | **M3** | Gilt die 4-K-Regel als feste Vorgabe oder je Trennfläche übersteuerbar? | **Vorgabe mit Übersteuerung je Trennfläche**, Anzeige des Δϑ als Beleg; gemessen wird es an den **gerechneten Raumkonditionen** eines adiabaten Vorlaufs, nicht an den Sollwerten (VDI 2078, 7.2, S. 46), und die Zuordnung fällt einmal vor dem Lauf, nie während (2.2). Nach dem Lauf wird eine Überschreitung von 4 K benannt |
 | **M4** | Kommt der Zonen-Luftaustausch in G6 oder später? | **In G6b**, als Paare mit `CHECK (ID_ZoneA < ID_ZoneB)`. Ohne ihn ist Treppenhaus und offene Küche nicht darstellbar — und er ist der Grund gegen Vorschlag A. Wer ihn streicht, kann A nehmen und spart 2–3 PT — **entschieden 16.09.2026 mit ADR-005 (E17): in G6b** |
-| **M5** | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **Ja** — sie tragen keine Heizlast, aber Temperatur und Überhitzungsstunden; ohne Zeile ist die Kellertemperatur unsichtbar, und sie ist der fachliche Gewinn (2.5) |
+| **M5** | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **Ja** — sie tragen keine Heizlast, aber Temperatur und die achte Gebäudekennzahl **`Ueberhitzungsstunden`** [h] (Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur`, ab KU1 über `Kuehl_Sollwert`) — derselbe Name und dieselbe Bildungsregel wie in Rechenschritte 8.2, Umsetzungskonzept 1.4 und Systementwurf F7; ohne Zeile ist die Kellertemperatur unsichtbar, und sie ist der fachliche Gewinn (2.5) |
 | **M6** | Vorlauf: 30 Tage mit Konvergenzprobe oder fest 90 Tage? | **30 Tage mit Probe** (2.9); feste 90 Tage kosten Rechenzeit ohne Aussage bei leichten Gebäuden |
 | **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen zwingend Z5 (6.5) |
 | **M8** | Mindestgröße einer Zone: max(2 m², 2 %)? | **Ja**, mit Zuschlag zum Nachbarn mit der größten gemeinsamen Grenzfläche; sonst werden aus der Institute-Datei 78 Zonen (6.1) |
@@ -1418,7 +1474,7 @@ behoben sein.
 
 ## 12. Abgrenzung — was dieses Papier nicht behandelt
 
-- **Das Einzonenmodell selbst** (Löser, Anbindung, Schemaschritt 77/78, Gebäudedialog, Klimaweg),
+- **Das Einzonenmodell selbst** (Löser, Anbindung, die Schritte M3 und M4, Gebäudedialog, Klimaweg),
   **die Bauteilreduktion als Stufe G3** (Kettenmatrix, Normnachweis an den Typräumen S und L) und
   **der Einzonen-IFC-Import G4** (Ablauf, Klassen, Meldungen, Paketverwaltung, iOS-Trimming) — das
   steht im Konzept, im Umsetzungskonzept und in Befund N; dieses Papier setzt es voraus.

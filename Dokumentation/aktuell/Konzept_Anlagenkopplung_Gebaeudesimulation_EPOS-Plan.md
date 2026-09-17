@@ -1,10 +1,17 @@
 # Konzept: Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur (Anlagenkopplung)
 
-> **Rev. 1 — Entscheid E22 (16.09.2026) ausgeführt; E23 (der Altweg bleibt dauerhaft als
-> eingefrorener Bestandsweg, die Stufe GA entfällt), E24 (die Fragen H1–H12 sind nach
+> **Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Altweg ist
+> **Übergang bis zur Stufe GA** (Zeitpunkt offen, Q24) statt dauerhafter Bestandsweg; die
+> Verteilung in AK2 ist als **Zweipass** samt Randfällen und zweiter Stufe auf die Zonen
+> ausgeschrieben; AK3 bekommt eine **Iterationsschranke**; Verfügbarkeits- und Begrenzungsgrund
+> sind zwei benannte Aufzählungen; Schritt H rechnet in W und W/K und berichtigt Leitwert im
+> Regelbereich, Rücklauf nach der Begrenzung und Verletzungsmaß; der Schemastand steht als Regel
+> statt als Zahl.
+> **Rev. 1** hatte E22 (16.09.2026) ausgeführt sowie E23, E24 (die Fragen H1–H12 sind nach
 > Empfehlung entschieden) und E25 (das Proportionalband des Raumreglers ist wählbar: 0,5 K, 1 K,
 > 2 K oder frei) eingearbeitet. Grundlagen:
-> [Konzept Gebäudesimulation](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Nachtrag **N1.27**,
+> [Konzept Gebäudesimulation](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Nachträge **N1.27**
+> und **N1.31**,
 > [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) (Iterationsmuster),
 > [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) (Trennung der Rechenwege, E20 und E23),
 > [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) (E12, E21),
@@ -16,7 +23,8 @@ Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
 **Auftrag, im Wortlaut (Entscheid E22):** „trage es als Nachtrag mit einer neuen Frage Q26 zum
 Stufenplan ein und schreibe ein eigenes Konzeptpapier dazu".
 
-**Stand:** 16.09.2026. **Fassung:** Rev. 1 — mit **E23** und **E24** fortgeschrieben.
+**Stand:** 17.09.2026. **Fassung:** Rev. 2 — mit **E23**, **E24**, **E25** und **E26**
+fortgeschrieben.
 
 **Zweck.** Dieses Papier ist das in N1.27 angekündigte eigene Konzept. Es beschreibt, was die
 Anlagenkopplung vom Heizkörper bis zum Wiki bedeutet: die Physik der Übergabe, Heizkurve und
@@ -33,7 +41,7 @@ das ist **Frage Q26**; sie wird im
 | Papier | Was dort steht, worauf dieses Papier aufsetzt |
 |---|---|
 | [Konzept Gebäudesimulation](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | Rechenweg (4), ideale Regelung und `Heizleistung_Max` (4.5), Zeitraster und Ergebnisreihen (4.6), Skalierung E8 (4.7), Gebäudespalten (6.1), Stufen (11), Fragen samt **Q26** (13), Abgrenzung (15), Nachträge **N1.25**, **N1.26**, **N1.27** |
-| [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) | die Trennung der Rechenwege (E20): Fassade `SimulationWaermebedarf` als **eine Weiche am Eingang**, modellfreier Vorbereitungsschritt `GebaeudeVorbereitung`, Module `Gebaeude/` und `Altweg/`; mit **E23** bleibt `Altweg/` dauerhaft als eingefrorener Bestandsweg, die Stufe GA entfällt |
+| [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) | die Trennung der Rechenwege (E20): Fassade `SimulationWaermebedarf` als **eine Weiche am Eingang**, modellfreier Vorbereitungsschritt `GebaeudeVorbereitung`, Module `Gebaeude/` und `Altweg/`; mit **E23** und **E26** bleibt `Altweg/` als eingefrorener Bestandsweg **für die Dauer des Übergangs** — die Stufe **GA** löst ihn ab, ihr Zeitpunkt ist offen (Q24) |
 | [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) | das Iterationsmuster: Gauß-Seidel je Stunde, feste Reihenfolge, Abbruchmaße (0,01 K bzw. 0,1 W), Höchstzahl, benannter Fehler — **AK3 erbt es** |
 | [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) | Klassen und Fassaden (1.2, 1.3), Abhängigkeitsregeln und `Modultrennungswache` (1.7), Integration des Laufs (4.1), Stufentabelle (5) |
 | [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | Systemmatrix und die drei Betriebsfälle (4.2–4.4), exakte Diskretisierung (5), **Stundenschleife Schritt F** (7) — dort wird Schritt **H** eingesetzt |
@@ -68,7 +76,8 @@ Quelltextbelege tragen `Datei:Zeile` und sind für dieses Papier **selbst nachge
    (`Anlagenverfuegbarkeit`) zwischen Anlagenseite und Gebäudemodul. **AK3** schließt den Kreis und
    **kippt den Grundsatz „erst Bedarf, dann Deckung"**: Der Bedarf wird Ergebnis der Deckung. Das
    ist der teuerste Satz dieses Papiers, und er steht in Kapitel 6. **Alle drei wirken auf
-   Gebäude des VDI-Wegs**; ein Gebäude auf dem Altweg — dem dauerhaften Bestandsweg nach **E23** —
+   Gebäude des VDI-Wegs**; ein Gebäude auf dem Altweg — dem Bestandsweg, der nach **E23** und
+   **E26** bis zu seiner Ablösung durch die Stufe **GA** weiterläuft (Zeitpunkt offen, Q24) —
    geht in Deckung, Verfügbarkeit und Kopplung als **feste Last** ein: sein Bedarfsvektor wie
    heute, ohne Rückwirkung und ohne Komfortstunden, im Bericht benannt (6.2, 6.4, 9.4).
 3. **Der größte sichtbare Gewinn kommt aus der billigsten Stufe.** AK1 kappt die **Aufheizspitze**,
@@ -157,13 +166,14 @@ dieses Papiers.
 | Laufordnung | erst Bedarf, dann Deckung | unverändert in AK1 und AK2; **AK3 kehrt sie um** |
 | Normstatus | Rechenkern nach VDI 6007 Blatt 1 (E10) | **unverändert** — das Raummodell ist dasselbe, die Erweiterung ist benannt |
 
-**Und was E23 daran ändert (16.09.2026).** Der Altweg wird nicht abgelöst, sondern bleibt
-**dauerhaft** als eingefrorener Bestandsweg neben dem VDI-Weg. Für die Anlagenkopplung heißt das:
-Es gibt **keinen Übergang, an dessen Ende ein einziger Bedarfsbegriff stünde**, sondern **zwei
-Bedarfsbegriffe je Gebäude nebeneinander** — der Kanal führt beide, die Deckung unterscheidet sie
-nicht; **nur der VDI-Weg hat eine Rückwirkung**. Ein Gebäude auf dem Altweg geht als **feste Last**
-ein (6.2, 6.4), und AK2 wie AK3 hängen deshalb nicht an einer Stufe GA, sondern an **AK1 und einer
-Feldphase** (12.1, 12.3).
+**Und was E23 und E26 daran ändern (16./17.09.2026).** Der Altweg läuft als eingefrorener
+Bestandsweg neben dem VDI-Weg weiter — **als Übergang**, den die Stufe **GA** ablöst, sobald der
+VDI-Weg bewährt genug ist; der Zeitpunkt ist offen (**Q24**). Für die Anlagenkopplung heißt das:
+Über die ganze Laufzeit dieses Vorhabens stehen **zwei Bedarfsbegriffe je Gebäude nebeneinander**
+— der Kanal führt beide, die Deckung unterscheidet sie nicht; **nur der VDI-Weg hat eine
+Rückwirkung**. Ein Gebäude auf dem Altweg geht als **feste Last** ein (6.2, 6.4). AK2 und AK3
+warten deshalb **nicht** auf die Stufe GA: Ihre Vorbedingung ist **AK1 und eine Feldphase**
+(12.1, 12.3); mit GA fällt der Sonderfall „feste Last" ersatzlos weg.
 
 ### 1.3 Was ausdrücklich **nicht** aufgehoben wird
 
@@ -230,7 +240,7 @@ zusammenwachsen können, ohne dass Nummern kollidieren.
 | **F-A15** | Die **Iteration** hat Abbruchmaße, eine Höchstzahl und einen **benannten Fehler** bei Nichtkonvergenz (Gebäude, Stunde, Beteiligte) — nie eine stille Näherung | ADR-005 | Rechenprobe: erzwungene Nichtkonvergenz erzeugt den benannten Fehler | AK3 |
 | **F-A16** | Die **Kälteseite** trägt zu jeder Größe der Wärmeseite ein Gegenstück — Kaltwasser-Vorlauf, Kühlkennlinie, Kühlflächenexponent, Überschreitungsstunden — **oder** die Abweichung steht benannt in der Abweichungsliste (7.4) | E21, E22 | Probe „Symmetrie der Anlagenkopplung" gegen die Liste in 7.4 | AK1/AK2 |
 | **F-A17** | Jede Stufe ist **je Projekt wählbar** und **je Gebäude schaltbar**, Vorgabe **aus**; ein Gebäude mit eingeschaltetem Heizkreis in einem Projekt ohne Kopplung trägt einen **benannten Hinweis**, keine stille Null | E22 | bunit-Fall am Gebäudedialog; Meldung in beiden Sprachen (9.5) | AK1 |
-| **F-A18** | Ein Gebäude auf dem **Altweg** (Tagesbilanz, Bestandsweg) bekommt **dauerhaft keine Anlagenkopplung** — benannter Hinweis, nie eine stille Null; der Altweg wird nicht angefasst und geht als **feste Last** in Verteilung und Deckung ein | E20, E23 | Rechenprobe „Altweg-Gebäude ohne Kopplung mit Hinweis"; `Modultrennungswache` grün | AK1 |
+| **F-A18** | Ein Gebäude auf dem **Altweg** (Tagesbilanz, Bestandsweg) bekommt **keine Anlagenkopplung, solange es dort rechnet** — benannter Hinweis, nie eine stille Null; der Altweg wird nicht angefasst und geht als **feste Last** in Verteilung und Deckung ein. Hinweis und Sonderfall gelten bis zur Ablösung (Stufe **GA**, Zeitpunkt offen) und stehen in deren Löschliste | E20, E23, E26 | Rechenprobe „Altweg-Gebäude ohne Kopplung mit Hinweis"; `Modultrennungswache` grün | AK1 |
 | **F-A19** | **Vorlauf- und Rücklaufmittel** je Gebäude sowie die **Heizkreisreihen** stehen im Referenzlauf-Export — **bedingt** geschrieben, damit die Bestandsordner byte-gleich bleiben | 8.3 | Referenzlauf: Projekte ohne Kopplung byte-gleich | AK1 |
 
 ### 2.2 Nichtfunktionale Anforderungen
@@ -252,11 +262,11 @@ zusammenwachsen können, ohne dass Nummern kollidieren.
 | # | Randbedingung | Wirkung |
 |---|---|---|
 | **B-A1** | **Wählbarkeit und Vorgabe „aus"** — die Stufe steht je Projekt, der Heizkreis je Gebäude; Vorgabe ist überall aus | Bestandsprojekte rechnen unverändert (N-A3) |
-| **B-A2** | **Ein Einfrierschritt je aktivierter Stufe**, einzeln begründet in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) | drei zusätzliche Einfrierschritte über die Laufzeit des Vorhabens, nicht einer |
+| **B-A2** | **Ein Einfrierschritt je aktivierter Stufe**, einzeln begründet in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md); die Stufe **GA** ist ein eigener, weiterer Anlass (E26) | drei zusätzliche Einfrierschritte über die Laufzeit des Vorhabens, nicht einer |
 | **B-A3** | **Normstatus** — das Raummodell bleibt VDI 6007 Blatt 1; Übergabe, Heizkurve und Fahrplan sind **EPOS-Erweiterungen**; die Normtestbeispiele rechnen weiter mit idealer Regelung; **E10** bleibt Wort für Wort | keine neue Normbeschaffung, keine Änderung am Produktausweis |
 | **B-A4** | **Kälteseite spiegelbildlich (E21)** — jede Größe bekommt ein Gegenstück oder eine benannte Abweichung | Kapitel 7 führt die Liste |
-| **B-A5** | **Modultrennung (E20)** — AK1 liegt vollständig in `Gebaeude/`; `Altweg/` wird nicht angefasst; der Wächter `Modultrennungswache` gilt unverändert | der Altweg bekommt keine Kopplung, weder jetzt noch später |
-| **B-A6** | **Zwei Bedarfsbegriffe nebeneinander (E23)** — AK2 setzt **AK1 abgenommen und eine Feldphase** voraus, AK3 folgt auf AK2 und eine Feldphase; der Altweg bleibt dauerhaft, seine Gebäude gehen als **feste Last** ein | der Kanal führt beide Begriffe, die Deckung unterscheidet sie nicht; **nur der VDI-Weg hat eine Rückwirkung** (6.2, 6.4) |
+| **B-A5** | **Modultrennung (E20)** — AK1 liegt in `Gebaeude/`, bis auf die Kennlinienwahl der Erzeugerseite (6.1); `Altweg/` wird nicht angefasst; der Wächter `Modultrennungswache` gilt unverändert | der Altweg bekommt keine Kopplung — er läuft bis zu seiner Ablösung unverändert weiter |
+| **B-A6** | **Zwei Bedarfsbegriffe nebeneinander (E23, E26)** — AK2 setzt **AK1 abgenommen und eine Feldphase** voraus, AK3 folgt auf AK2 und eine Feldphase; der Altweg läuft für die Dauer des Übergangs weiter, seine Gebäude gehen als **feste Last** ein | der Kanal führt beide Begriffe, die Deckung unterscheidet sie nicht; **nur der VDI-Weg hat eine Rückwirkung** (6.2, 6.4); mit der Stufe **GA** bleibt ein Bedarfsbegriff übrig |
 | **B-A7** | **E1 und E8** gelten unverändert: Stundenmodell als Vorgabe, Skalierung als Verhältnisrechnung innerhalb des Moduls | AK1 setzt **G2** voraus; die Skalierung ist mit begrenzter Übergabe nicht mehr proportional (**H7**) |
 | **B-A8** | [**ADR-001**](ADR-001_Schema-Ausrollung.md) — jede Schemaänderung ist ein nummerierter Schritt über `SchemaMigration`; **die Nummer vergibt der Schritt bei seiner Beauftragung** (A11) | dieses Papier führt `AK-S1` bis `AK-S3`, keine Zahlen |
 | **B-A9** | [**ADR-005**](ADR-005_Zonenkopplung_Mehrzonenmodell.md) — Gauß-Seidel je Stunde, feste Reihenfolge, Abbruchmaße, Höchstzahl, benannter Fehler | AK3 erbt das Muster; es wird nicht neu erfunden (6.3) |
@@ -390,6 +400,15 @@ theta_H = theta_i + Phi_ue / G_H
 (negative Rückkopplung) und verschlechtert die Kondition der Systemmatrix nicht. Wo
 `theta_m <= theta_i` ist, ist die Übergabe null und der Fall ist der freie Lauf.
 
+**Einheiten: der Rechenweg führt W und W/K, nicht kW.** Die Gleichungen dieses Kapitels stehen in
+kW, weil Auslegungspunkt und Nennleistung so eingegeben und angezeigt werden. Der Löser rechnet
+dagegen in W und W/K ([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 1.3
+und 7.1), und `G_H` tritt dort unmittelbar neben den Lüftungsleitwert `G_ext`. **Festlegung: Die
+Umrechnung geschieht einmal im Eingangsbauer** (`GebaeudeModellEingang`, 6.1); ab dort — also in
+ganz Schritt H — sind `Phi_N`, `Phi_ue`, `Phi_verlangt`, `Heizleistung_Max` und die Verfügbarkeit
+in **W**, `W_H` und `G_H` in **W/K**, und die Abbruchschwelle der Newton-Iteration ist in **W**
+gemessen (10.2). Zwei Umrechnungen an zwei Stellen wären die zweite Wahrheit, die N-A8 ausschließt.
+
 **(b) Der Strahlungsanteil.** Die Übergabe wird nach `Heizung_Strahlungsanteil` auf Luftknoten und
 Oberflächen aufgeteilt — dieselbe Aufteilung, die der Bestand für Φ_h vorsieht
 ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 4.5, Rechenschritte 7.2). Neu ist nur,
@@ -476,7 +495,7 @@ dann `Heizleistung_Max`. Wer beide setzt, bekommt die kleinere; der Dialog sagt 
 - **Die Verteilung im Gebäude.** Ein Vorlauf je Gebäude, kein Strangmodell, keine
   Rohrleitungsverluste innerhalb des Gebäudes. Die Wärmenetzverluste **zwischen** Gebäuden bleiben,
   wo sie sind: bei `Kanalsatz.NetzverlusteVerteilen`
-  (`EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs:686-716`).
+  (`EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs:686-715`).
 - **Einrohrsysteme.** Bei ihnen sinkt die Heizmitteltemperatur von Heizkörper zu Heizkörper; das
   ist ein eigenes Modell mit eigener Datenlage und wird **benannt abgelehnt**.
 
@@ -484,10 +503,17 @@ dann `Heizleistung_Max`. Wer beide setzt, bekommt die kleinere; der Dialog sagt 
 
 **Mit unbegrenzter Übergabe und Proportionalband null muss der gekoppelte Weg bitgleich wie die
 ideale Regelung rechnen.** Das ist keine Hoffnung, sondern eine **Bauvorschrift**: Der gekoppelte
-Zweig prüft zuerst, ob die verlangte Leistung innerhalb der Übergabe liegt, und wenn ja, rechnet er
-die Leistung **mit der Leistungsgleichung des idealen Falls**, ohne zusätzlichen Rechenschritt
-(Rechenschritte 4.3). Ist die Übergabe unbegrenzt, ist die Antwort auf die Frage immer „ja", und
-die Ergebnisse sind Bit für Bit dieselben.
+Zweig prüft zuerst, ob die verlangte Leistung innerhalb der Übergabe liegt **und ob das
+Proportionalband null ist** (`Xp = 0`); trifft beides zu, rechnet er die Leistung **mit der
+Leistungsgleichung des idealen Falls**, ohne zusätzlichen Rechenschritt (Rechenschritte 4.3). Ist
+die Übergabe unbegrenzt und das Band null, ist die Antwort auf die Frage immer „ja", und die
+Ergebnisse sind Bit für Bit dieselben.
+
+**Beide Bedingungen gehören zusammen.** Ein Proportionalband größer null erzeugt schon im
+Teillastbetrieb eine Leistung `y · Phi_ue,max` unterhalb dessen, was die ideale Regelung
+verlangte — der Raum liegt dann bewusst etwas unter dem Sollwert (4.4). Die Verzweigung allein
+nach „verlangte Leistung ≤ `Phi_ue,max`" würde dieses gewollte Verhalten überspringen; deshalb
+steht `Xp = 0` an jeder Stelle dieses Papiers neben ihr (Bild in 6.1, Schritt H5 in 10.2).
 
 Daraus folgen **zwei** Proben, nicht eine (11.1):
 
@@ -602,10 +628,10 @@ Nach AK1 begrenzen **zwei** Größen die Heizleistung, und die Reihenfolge ist b
 Phi_h(h) = min( Phi_verlangt , Phi_ue,max , Heizleistung_Max , Verfuegbarkeit )
 ```
 
-**Und jede greifende Grenze trägt einen Grund.** Die Ergebnisreihe führt je Stunde, **welche** der
-drei Grenzen gegriffen hat; daraus entsteht die Meldung im Bedarfsdialog und die Zeile im Bericht.
-Eine Leistung, die aus einem unbenannten Grund kleiner ist als der Bedarf, ist der Fehler, den
-dieses Papier an jeder Stelle ausschließt.
+**Und jede greifende Grenze trägt einen Grund.** Die Ergebnisreihe führt je Stunde den
+**`Begrenzungsgrund`** — eine der benannten Ausprägungen aus 5.3 —, und daraus entstehen die
+Meldung im Bedarfsdialog und die Zeile im Bericht. Eine Leistung, die aus einem unbenannten Grund
+kleiner ist als der Bedarf, ist der Fehler, den dieses Papier an jeder Stelle ausschließt.
 
 ---
 
@@ -663,9 +689,32 @@ Stelle, an der die beiden Vorlaufbegriffe aufeinandertreffen.
 readonly struct Anlagenverfuegbarkeit          // je Gebäude und Stunde
     LeistungKw        obere Schranke dessen, was in dieser Stunde ankommen kann
     VorlaufC          höchste Vorlauftemperatur, die die Anlagenseite in dieser Stunde stellt
-    Grund             KEINE_BEGRENZUNG | SPERRZEIT | ZEITPROGRAMM | LEISTUNGSGRENZE
-                      | SPEICHER_LEER | ABSCHALTPUNKT | KEIN_ERZEUGER
+    Grund             Verfuegbarkeitsgrund (siehe unten)
 ```
+
+**Zwei Aufzählungen, nicht eine — und sie werden im ganzen Papier gleich benutzt.** Die eine
+gehört der Anlagenseite und sagt, **warum die Anlage nicht mehr anbieten kann**; die andere gehört
+der Gebäudeseite und sagt, **welche Grenze die Leistung im Raum gekappt hat** (4.5, Schritt H in
+10.2). Sie zu vermengen wäre die zweite Wahrheit, die N-A8 ausschließt: Dieselbe Stunde kann eine
+leere Anlage **und** eine zu kleine Heizfläche haben.
+
+```
+enum Verfuegbarkeitsgrund      // Anlagenseite, entsteht im Anlagenfahrplan (AK2)
+    KEINE_BEGRENZUNG | SPERRZEIT | ZEITPROGRAMM | LEISTUNGSGRENZE | SPEICHER_LEER
+    | ABSCHALTPUNKT | UMSCHALTUNG | KEIN_ERZEUGER
+
+enum Begrenzungsgrund          // Gebaeudeseite, entsteht in Schritt H (AK1, AK2)
+    KEINE_BEGRENZUNG | VORLAUF_ANLAGE | VORLAUFGRENZE_KUEHLUNG | HEIZGRENZE
+    | UEBERGABE | HEIZLEISTUNG_MAX | VERFUEGBARKEIT | UMSCHALTUNG
+```
+
+**Die Paarungsregel.** Greift die Verfügbarkeit, trägt die Stunde gebäudeseitig `VERFUEGBARKEIT`,
+und der `Verfuegbarkeitsgrund` der Anlagenseite reist **daneben** mit — nicht an seiner Stelle.
+`UMSCHALTUNG` steht in beiden Aufzählungen, weil eine reversible Maschine an einem Kühltag für die
+Heizseite gar nicht erst zur Verfügung steht und die Übergabe dieser Seite dann nichts liefert
+(7.3). `VORLAUFGRENZE_KUEHLUNG` ist das Gegenstück zu `VORLAUF_ANLAGE` auf der Kälteseite (7.2).
+`HEIZLEISTUNG_MAX` heißt gebäudeseitig so und nicht `LEISTUNGSGRENZE`, damit es nicht mit der
+Grenzleistung des Erzeugers verwechselt wird.
 
 **Wo sie lebt.** Die Naht entsteht in einer neuen Klasse **`Anlagenfahrplan`** unter
 `EPOS.Kern/Allgemein/Simulation/` — **neben** den Fassaden, **nicht** im Modul `Gebaeude/`: Sie
@@ -730,12 +779,17 @@ Restbedarf daneben — und umgekehrt.
 ---
 ## 6. Kopplungsschema je Stufe
 
-### 6.1 AK1 — die Einbahnstraße, vollständig im Modul `Gebaeude/`
+### 6.1 AK1 — die Einbahnstraße, vollständig in `Gebaeude/` bis auf die Kennlinienwahl der Erzeugerseite
 
-**Nichts außerhalb des Moduls ändert sich.** Die Fassade `SimulationWaermebedarf` ruft weiterhin
-den modellfreien Vorbereitungsschritt, liest den Rechenweg und ruft genau ein Modul (E20,
+**Die Bedarfsrechnung liegt vollständig im Modul `Gebaeude/` — die Erzeugerseite ändert sich an
+genau einer Stelle.** Die Fassade `SimulationWaermebedarf` ruft weiterhin den modellfreien
+Vorbereitungsschritt, liest den Rechenweg und ruft genau ein Modul (E20,
 [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)); die Kaskade, die Deckung, die Kanäle, der Bericht
-bleiben, wo sie sind. Was hinzukommt, liegt zwischen `GebaeudeModellEingang` und `Zonenmodell2K`:
+bleiben, wo sie sind. Die **eine** Stelle außerhalb ist die **Kennlinienwahl der Wärmepumpe**: Sie
+liest heute den projektierten Festwert `Tab_Energieanlagen.Vorlauf`
+(`SimulationWaermepumpe.cs:600`, Stützstellenzahl `:604`) und bekommt mit AK1 den **gerechneten**
+Vorlauf (F-A8). Was im Modul hinzukommt, liegt zwischen `GebaeudeModellEingang` und
+`Zonenmodell2K`:
 
 | Wer | Was er neu tut | Datei (geplant) |
 |---|---|---|
@@ -745,6 +799,17 @@ bleiben, wo sie sind. Was hinzukommt, liegt zwischen `GebaeudeModellEingang` und
 | `Zonenmodell2K.Schritt(...)` | ein **vierter Betriebsfall** „Übergabe begrenzt" neben den drei vorhandenen; der geregelte Fall bleibt wörtlich, solange die Übergabe reicht (3.7) | `Gebaeude/Zonenmodell2K.cs` |
 | `Stundenergebnis` | trägt `VorlaufC`, `RuecklaufC` und den **Begrenzungsgrund** mit heraus | `Gebaeude/Zonenmodell2K.cs` |
 | `GebaeudeModellErgebnis` | führt `VorlaufMittelC`, `RuecklaufMittelC` und die drei Komfortgrößen (5.5) — mit Einheit im Namen (N-A7) | `Gebaeude/GebaeudeModellErgebnis.cs` |
+
+**Und die eine Zeile auf der Anlagenseite — außerhalb des Moduls:**
+
+| Wer | Was er neu tut | Datei (Bestand) |
+|---|---|---|
+| Kennlinienwahl der Wärmepumpe | nimmt statt `Tab_Energieanlagen.Vorlauf` den **gerechneten** Vorlauf des versorgten Gebäudes. **In AK1 je Stunde** zu der Stützstelle, die der gerechnete Vorlauf dieser Stunde trifft (nächstgelegene, bei Gleichstand die höhere, 3.4); versorgt eine Anlage **mehrere** Gebäude, gilt je Stunde das **bedarfsgewichtete Mittel** ihrer gerechneten Vorläufe. Liegt der Wert außerhalb der Stützstellen, gilt die Extrapolationsregel des Bestands samt Meldung (F-A8) | `EPOS.Kern/Allgemein/Simulation/SimulationWaermepumpe.cs:600`, `:604`, `:654` |
+
+Diese Zeile ist die Ausnahme von „alles in `Gebaeude/`", und sie ist **benannt**, nicht still: Sie
+liest keine Gebäudedaten und keine Altwegdaten, sondern nimmt eine fertige Ergebnisgröße des
+Moduls entgegen. Die `Modultrennungswache` bleibt unberührt (6.4), und der Aufwand steht als
+eigene Position in 12.2.
 
 **Die Reihenfolge innerhalb einer Stunde** (Einzelheiten und Formeln in Kapitel 10, Schritt H):
 
@@ -756,9 +821,9 @@ flowchart TD
     VG -->|nein| VF["theta_V = Heizkurve"]
     VB --> UE
     VF --> UE["Uebergabe bei theta_V und theta_air<br/>Phi_ue_max, Ruecklauf, Sekantenleitwert"]
-    UE --> R{"Verlangte Leistung kleiner gleich Phi_ue_max?"}
+    UE --> R{"Verlangte Leistung kleiner gleich Phi_ue_max und Xp gleich 0?"}
     R -->|ja| GE["geregelt: theta_air = theta_soll<br/>WOERTLICH die Bestandsgleichung"]
-    R -->|nein| BG["Uebergabe begrenzt<br/>Leitwert G_H gegen theta_H<br/>theta_air sinkt"]
+    R -->|nein| BG["Uebergabe begrenzt<br/>Leitwert im Regelbereich bzw. G_H<br/>theta_air sinkt"]
     GE --> LM{"Phi groesser Heizleistung_Max?"}
     BG --> LM
     LM -->|ja| LG["Leistung fest auf Heizleistung_Max<br/>Grund: Leistungsgrenze"]
@@ -777,7 +842,9 @@ flowchart TD
 **Warum das eine Einbahnstraße ist.** Die Vorlaufreihe kommt aus einer **Vorschrift** (Heizkurve
 oder Festwert), nicht aus dem Erzeugerlauf. Das Gebäude erfährt nichts über den Zustand der
 Anlage, und die Anlage erfährt vom Gebäude nur das, was sie heute auch erfährt: den Bedarfsvektor
-— nun einen kleineren und einen mit einem gerechneten Vorlauf daneben.
+— nun einen kleineren und einen mit einem gerechneten Vorlauf daneben. Dass dieser Vorlauf die
+Kennlinienreihe wählt, schließt den Kreis **nicht**: Die Wahl wirkt auf den Wirkungsgrad der
+Deckung, nicht auf den Bedarf. Der Kreis schließt sich erst mit AK3 (6.3).
 
 ### 6.2 AK2 — die neue Naht, und wo sie sitzt
 
@@ -787,38 +854,89 @@ Klimareihen. Danach läuft alles wie in AK1 — mit einer vierten Grenze in der 
 
 ```mermaid
 flowchart TD
-    VOR["GebaeudeVorbereitung<br/>modellfrei: Bewohner, Skalierung E8, Klima"] --> FP["Anlagenfahrplan (AK2)<br/>Sperrzeit, Zeitprogramm, Abschaltpunkt<br/>Grenzleistung, Speichervorrat"]
-    FP --> NAHT["Anlagenverfuegbarkeit<br/>8760 mal LeistungKw, VorlaufC, Grund"]
-    NAHT --> WEI{"Weiche: Rechenweg des Gebaeudes"}
-    WEI -->|"Tagesbilanz Bestandsweg"| ALT["Modul Altweg<br/>feste Last, keine Kopplung<br/>benannter Hinweis"]
-    WEI -->|"VDI 6007"| GEB["Modul Gebaeude<br/>Stundenschleife mit Schritt H"]
-    GEB --> FW["Fassade SimulationWaermebedarf<br/>Kanal HEIZUNG"]
-    GEB --> FK["Fassade SimulationKaeltebedarf<br/>Kanal KUEHLUNG"]
+    VOR["GebaeudeVorbereitung<br/>modellfrei: Bewohner, Skalierung E8, Klima"] --> WEI{"Weiche: Rechenweg je Gebaeude"}
+    VOR --> FP["Anlagenfahrplan (AK2)<br/>Sperrzeit, Zeitprogramm, Abschaltpunkt<br/>Grenzleistung, Speichervorrat"]
+    WEI -->|"VDI 6007"| P1["Pass 1: Modul Gebaeude<br/>Verfuegbarkeit unbegrenzt<br/>liefert den Schluessel der Stunde"]
+    WEI -->|"Tagesbilanz Bestandsweg"| ALT["Modul Altweg<br/>Bedarfsvektor wie heute<br/>feste Last, benannter Hinweis"]
+    P1 --> VT["Verteilung je Stunde<br/>proportional zum unbegrenzten Bedarf<br/>Randfall Summe null, Rundungsrest"]
+    ALT --> VT
+    FP --> VT
+    VT --> NAHT["Anlagenverfuegbarkeit je Gebaeude<br/>8760 mal LeistungKw, VorlaufC, Grund"]
+    NAHT --> P2["Pass 2: Modul Gebaeude<br/>Stundenschleife mit Schritt H"]
+    P2 --> FW["Fassade SimulationWaermebedarf<br/>Kanal HEIZUNG"]
+    P2 --> FK["Fassade SimulationKaeltebedarf<br/>Kanal KUEHLUNG"]
     ALT --> FW
     FW --> DECK["Deckung wie heute<br/>Kaskade, Speicher, Erzeuger"]
     FK --> DECK
-    GEB --> KOMF["Komfortstunden<br/>Kelvinstunden, laengste Strecke"]
+    P2 --> KOMF["Komfortstunden<br/>Kelvinstunden, laengste Strecke"]
     KOMF --> BER["Bedarfsdialog und Bericht"]
     DECK --> BER
 ```
 
-**Was die Fassaden dabei tun — und was nicht.** Sie verteilen wie bisher; sie rechnen das Gebäude
-nicht zweimal (E21). Der `Anlagenfahrplan` läuft **einmal je Projekt**, nicht je Gebäude; er ist
-eine Projekteigenschaft, weil die Erzeuger dem Projekt gehören. Gibt es mehrere Gebäude, teilen
-sie sich die Verfügbarkeit — und **wie** sie sie teilen, ist eine Entscheidung, die AK2 treffen
-muss: **Festlegung: proportional zum unbegrenzten Bedarf der Stunde**, wie es
-`Kanalsatz.NetzverlusteVerteilen` für die Netzverluste tut
-(`EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs:686-716`). Eine Reihenfolge nach Gebäude wäre
-willkürlich und nicht determinierbar, sobald jemand die Zeilenreihenfolge ändert.
+**Was die Fassaden dabei tun — und was nicht.** Sie verteilen wie bisher; keine von beiden rechnet
+das Gebäude für ihren eigenen Kanal ein zweites Mal (E21). Der `Anlagenfahrplan` läuft **einmal je
+Projekt**, nicht je Gebäude; er ist eine Projekteigenschaft, weil die Erzeuger dem Projekt gehören.
 
-**Gebäude auf dem Altweg gehen als feste Last ein (E23).** Ihr Bedarfsvektor entsteht wie heute im
-Modul `Altweg/` und wird von der Verteilung **wie ein unbegrenzter Bedarf** behandelt: Er zehrt an
-der Verfügbarkeit derselben Stunde, bekommt aber **keine Rückwirkung** — keine gesunkene
+**Die Verteilung ist ein Zweipass — anders geht sie nicht.** Gibt es mehrere Gebäude, teilen sie
+sich die Verfügbarkeit, und der Schlüssel dafür ist ihr **unbegrenzter** Bedarf derselben Stunde.
+Der steht erst fest, wenn die Gebäude gerechnet haben — die Naht entsteht aber vor der Weiche. Der
+Kreis wird deshalb nicht geschlossen, sondern **aufgeschnitten**:
+
+| Pass | Was gerechnet wird | Was daraus entsteht |
+|---|---|---|
+| **Pass 1** | jedes Gebäude des VDI-Wegs einmal mit **unbegrenzter Verfügbarkeit** — die drei übrigen Grenzen aus 4.5 wirken; Altweg-Gebäude liefern ihren Bedarfsvektor wie heute | je Stunde ein unbegrenzter Bedarf je Gebäude: der **Verteilungsschlüssel** |
+| **Verteilung** | die Schranke des `Anlagenfahrplans` wird je Stunde nach diesem Schlüssel auf die Gebäude aufgeteilt | `Anlagenverfuegbarkeit` je Gebäude und Stunde |
+| **Pass 2** | jedes Gebäude des VDI-Wegs noch einmal, nun mit seiner Schranke | Bedarf, Raumtemperatur, Komfortstunden, gerechneter Vorlauf |
+
+**Festlegung: proportional zum unbegrenzten Bedarf der Stunde**, wie es
+`Kanalsatz.NetzverlusteVerteilen` für die Netzverluste tut
+(`EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs:686-715`). Eine Reihenfolge nach Gebäude wäre
+willkürlich und nicht determinierbar, sobald jemand die Zeilenreihenfolge ändert. **Das Vorbild
+führt zwei weitere benannte Regeln, und beide gelten hier mit:**
+
+- **Randfall „Summe ≤ 0".** Ist der unbegrenzte Bedarf aller Gebäude in einer Stunde null — außerhalb
+  der Heizzeit —, ist die Verteilung gegenstandslos: **Jedes Gebäude bekommt die volle Schranke.**
+  Das Vorbild legt in diesem Fall den ganzen Betrag auf den Heizkanal (`:711`); hier ist nichts zu
+  verteilen, weil niemand etwas verlangt, und eine Division durch null darf nicht entstehen.
+- **Der Rundungsrest.** Die Summe der zugeteilten Anteile trifft die Schranke wegen der
+  Gleitkommarechnung nicht genau. Das Vorbild schlägt den Rest dem Heizkanal zu — einem **benannten**
+  Ort, nicht dem zuletzt bedienten Kanal (`:714`). Einen solchen Ort gibt es hier nicht.
+  **Festlegung: Der Rest wird nicht dem letzten Gebäude zugeschlagen**, sondern dem Gebäude mit dem
+  **größten Anteil** dieser Stunde, bei Gleichstand dem mit der kleineren Id. Damit hängt das
+  Ergebnis nicht an der Zeilenreihenfolge, und die Probe „zwei Gebäude in umgekehrter
+  Zeilenreihenfolge" (11.1) hält.
+
+**Und eine zweite Verteilungsstufe: vom Gebäude auf die Zonen.** Ab G6 hat ein Gebäude Zonen, und
+Schritt H vergleicht die verlangte Leistung einer **Zone** mit der Schranke (10.2, H4). Die
+Gebäudeschranke wird deshalb innerhalb des Gebäudes nach **demselben Schlüssel** weiterverteilt —
+unbegrenzter Bedarf der Stunde je Zone —, mit denselben beiden Regeln für Randfall und
+Rundungsrest. Bei **einer** Zone ist die zweite Stufe gegenstandslos: Die Zone bekommt die ganze
+Gebäudeschranke, und das Ergebnis ist bitgleich zum Einzonenfall ohne zweite Stufe.
+
+**Was der Zweipass kostet.** Pass 1 rechnet dieselbe Stundenschleife wie Pass 2; die Gebäudeseite
+von AK2 verdoppelt sich damit — rund 5 ms je Zone und Jahr werden rund 10 ms
+([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 4.8) und bleiben gegenüber dem
+Gesamtlauf von rund 4 s unerheblich. Pass 1 **entfällt**, wenn genau ein Gebäude an der
+Verfügbarkeit zehrt: Dann ist der Schlüssel trivial und die ganze Schranke gehört diesem Gebäude.
+
+**Gebäude auf dem Altweg gehen als feste Last ein (E23, E26).** Ihr Bedarfsvektor entsteht wie
+heute im Modul `Altweg/` und wird von der Verteilung **wie ein unbegrenzter Bedarf** behandelt: Er
+zehrt an der Verfügbarkeit derselben Stunde, bekommt aber **keine Rückwirkung** — keine gesunkene
 Raumtemperatur, keine Komfortstunden, keinen gerechneten Vorlauf. **Das ist der Kern von E23 für
 dieses Papier: zwei Bedarfsbegriffe je Projekt nebeneinander — der Kanal führt beide, die Deckung
 unterscheidet sie nicht; nur der VDI-Weg hat eine Rückwirkung.** Der Bericht nennt je Gebäude,
 welcher der beiden Begriffe gilt — sonst liest sich eine fehlende Komfortstunde wie ein gutes
 Ergebnis (9.4, 11.1).
+
+**Weil der Altweg ein Übergang ist, ist die Verteilung pfadabhängig — und das gehört gesagt.**
+Stellt der Anwender ein Altweg-Gebäude auf den VDI-Weg um, ändert sich sein Bedarfsvektor und
+damit der Verteilungsschlüssel jeder Stunde; die Verfügbarkeitsanteile **der übrigen Gebäude**
+verschieben sich, und ihre Komfortkennzahlen ändern sich, obwohl an ihnen nichts geändert wurde.
+Dasselbe geschieht in einem Zug mit der Stufe **GA**, die alle verbliebenen Altweg-Gebäude umstellt
+(Zeitpunkt offen, Q24). **Festlegung: Der Bericht nennt je Projekt, wie viele Gebäude als feste
+Last eingehen** — eine Komfortkennzahl aus einem gemischten Projekt ist ohne diese Zahl nicht
+vergleichbar. Die Umstellung ist kein Fehler, sondern das gewollte Ergebnis eines genaueren
+Modells; unbenannt wäre sie ein stiller Ergebnissprung.
 
 **Die Rückwirkung ist begrenzt und benannt.** In AK2 begrenzt die Anlagenseite die Ankunft, aber
 der Deckungslauf sieht den kleineren Bedarf **erst danach**. Ein Erzeuger, der wegen der
@@ -842,7 +960,7 @@ wird Zeichen für Zeichen übernommen:
 | Kopplungsgröße | Nachbarraumtemperatur θ_NR,eq | **Vorlauftemperatur** und **verfügbare Leistung** |
 | Verfahren | Gauß-Seidel innerhalb der Stunde, feste Reihenfolge | dasselbe |
 | Abbruchmaße | Zonenlufttemperatur ≤ 0,01 K **und** Zonenheizlast ≤ 0,1 W | Raumlufttemperatur ≤ 0,01 K, Heizlast ≤ 0,1 W, **zusätzlich Vorlauf ≤ 0,05 K** |
-| Höchstzahl | 50 Durchläufe, dann benannter Fehler | **20** Durchläufe, dann benannter Fehler mit Gebäude, Stunde und Beteiligten |
+| Höchstzahl | 50 Durchläufe, dann benannter Fehler | **20** Durchläufe, dann benannter Fehler mit Gebäude, Stunde und Beteiligten; im Mehrzonenfall zusätzlich **Produkt Zonen- × Anlagendurchläufe ≤ 120** (Grenzfallrechnung unten) |
 | Fallwechsel | Muster des ersten Durchlaufs wird festgehalten, Wechsel gezählt | ebenso, für Betriebsfall **und** Kaskadenreihenfolge |
 | Prüforakel | 4×4-Gesamtsystem für zwei Zonen | **ein Erzeuger ohne Speicher**: die gekoppelte Lösung ist dann eine skalare Fixpunktgleichung und geschlossen lösbar (11.2) |
 
@@ -868,15 +986,30 @@ scheitern. **Regel: früh scheitern und benennen**, statt spät zu scheitern.
 ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 4.8); bei drei bis sechs Durchläufen
 je Stunde sind das **15 bis 30 ms je Einzonengebäude und Jahr** — gegenüber dem heutigen
 Gesamtlauf von rund 4 s unerheblich. Kritisch wird erst die Verbindung mit dem Mehrzonenfall: 50
-Zonen × 6 Zonendurchläufe × 6 Anlagendurchläufe sind rund 9 s je Gebäude und Jahr. **Festlegung:
-Bei mehr als einer Zone wird die Anlageniteration außen und die Zonenkopplung innen geführt, und
-die Höchstzahlen multiplizieren sich — die Laufzeit ist vor der Abnahme von AK3 an einem echten
-Mehrzonengebäude zu messen, nicht zu schätzen** (N-A4).
+Zonen × 6 Zonendurchläufe × 6 Anlagendurchläufe sind 1 800 Zonenjahre, also rund **9 s** je Gebäude
+und Jahr. **Festlegung: Bei mehr als einer Zone wird die Anlageniteration außen und die
+Zonenkopplung innen geführt** — und dann multiplizieren sich die Höchstzahlen.
+
+**Der Grenzfall gehört ausgerechnet, nicht nur benannt.** Die Höchstzahlen sind 50 Zonendurchläufe
+([ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md)) und 20 Anlagendurchläufe (oben); bei 50 Zonen
+ergibt das im schlechtesten Fall 50 × 50 × 20 = **50 000 Zonenjahre**, also rund **250 s** — gut
+vier Minuten je Gebäude und Jahr, das Sechzigfache des heutigen Gesamtlaufs. Das ist keine
+Laufzeit, die eine Abnahme trägt, und es ist auch keine, die jemand als Fehler erkennt: Der Lauf
+bleibt „nur langsam".
+
+**Festlegung: Das Produkt aus Zonendurchläufen und Anlagendurchläufen einer Stunde ist auf 120
+beschränkt.** Wird es überschritten, gilt die Stunde als **nicht konvergiert**: Der Lauf endet mit
+dem benannten Fehler aus F-A15 (Gebäude, Stunde, Beteiligte, größte verbleibende Abweichung) und
+dem zuletzt erreichten Stand, nicht mit einer stillen Näherung. Die Schranke deckt den typischen
+Fall mit großem Abstand (6 × 6 = 36) und hält den schlechtesten Fall bei 50 Zonen auf 50 × 120 =
+6 000 Zonenjahre, also rund **30 s** je Gebäude und Jahr. **Die Laufzeit ist vor der Abnahme von
+AK3 an einem echten Mehrzonengebäude zu messen, nicht zu schätzen** (N-A4).
 
 ### 6.4 Was nichts davon berührt
 
-- **Den Altweg.** `Altweg/` bekommt keine Zeile — dauerhaft, denn der Bestandsweg bleibt (E23);
-  seine Gebäude reisen als **feste Last** durch Verteilung und Deckung (6.2). Die `Modultrennungswache`
+- **Den Altweg.** `Altweg/` bekommt keine Zeile — nicht in AK1, nicht in AK2, nicht in AK3 und auch
+  nicht später; der Bestandsweg läuft bis zu seiner Ablösung unverändert weiter (E23, E26). Seine
+  Gebäude reisen als **feste Last** durch Verteilung und Deckung (6.2). Die `Modultrennungswache`
   ([Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 1.7, AR16) gilt
   unverändert: `Gebaeude/` nennt nichts aus `Altweg/` und umgekehrt. Die neue Klasse
   `Anlagenfahrplan` liegt **außerhalb** beider Ordner und darf deshalb keinen von beiden nennen —
@@ -887,7 +1020,9 @@ Mehrzonengebäude zu messen, nicht zu schätzen** (N-A4).
   Anlagenkopplung verändert **Werte** in bestehenden Kanälen, keine Struktur — der teuerste Fehler
   des Kühlvorhabens (Kühlkonzept 4.2) kann sich hier nicht wiederholen.
 - **Die Deckungsrechnung** in AK1 und AK2: `SimulationControl` und `Kaskadenschleife` bleiben
-  wörtlich. Erst AK3 fasst sie an.
+  wörtlich. Erst AK3 fasst sie an. Die **eine** Zeile, die AK1 auf der Erzeugerseite ändert, ist die
+  Kennlinienwahl der Wärmepumpe (6.1) — sie wählt eine andere Stützstelle, sie ändert die
+  Reihenfolge der Deckung nicht.
 - **Brauchwasser und Prozesswärme.** Sie haben keine Raumtemperatur und keine Übergabe; ihr Bedarf
   bleibt, was er ist. Eine Vorlaufabhängigkeit der Brauchwasserbereitung wäre ein eigener
   Gegenstand und wird **benannt abgelehnt**.
@@ -900,6 +1035,18 @@ versorgt alle Zonen mit demselben Vorlauf, und jede Zone entnimmt ihm, was ihre 
 Raumtemperatur hergibt. Das ist die übliche Anlage, es kostet keine zusätzliche Eingabe am Gebäude,
 und es erzeugt genau den Effekt, den man kennt: Eine Zone mit zu kleiner Heizfläche bleibt kalt,
 während die Nachbarzone den Sollwert hält.
+
+**Daraus folgt die Rollenteilung Spalte für Spalte.** `Tab_Zone` bekommt **allein die drei
+Übergabespalten** `Uebergabe_Art`, `Uebergabe_Exponent` und `Uebergabe_Leistung_Nenn`; NULL heißt
+dort „Wert des Gebäudes" bzw. beim Nennwert „Anteil der Zonenfläche". Heizkurve, Auslegungspunkt,
+Proportionalband und Sollwertprofil bleiben **beim Gebäude** — sie beschreiben den einen Heizkreis
+und den einen Nutzungsfahrplan, und je Zone geführt wären sie vier Wege zu derselben Aussage
+(8.1, 8.5).
+
+**Und die Verfügbarkeit erreicht die Zone über eine zweite Verteilungsstufe** — die Gebäudeschranke
+der Stunde wird nach demselben Schlüssel auf die Zonen weiterverteilt (6.2). Ohne sie verglich
+Schritt H eine Zonenleistung mit einer Gebäudeschranke, und jede Zone hätte für sich die ganze
+Anlage zur Verfügung.
 
 Mehrere Heizkreise mit getrennten Heizkurven sind ein eigener Gegenstand und werden **benannt
 abgelehnt**; wer sie braucht, legt zwei Gebäude an.
@@ -916,7 +1063,7 @@ Gegenstück auf der Kälteseite — **oder** die Abweichung steht in der Liste (
 | Wärmeseite | Kälteseite | Bemerkung |
 |---|---|---|
 | Heizkurve `theta_V(theta_out)` | **Kühlkurve** `theta_V,k(theta_out)` — steigende Außentemperatur, **sinkender** Kaltwasser-Vorlauf | dieselbe Formel mit umgekehrtem Vorzeichen der Übertemperatur |
-| `Auslegung_Vorlauf` / `_Ruecklauf` | `Kuehl_Vorlauf` (bereits in `KU-S3` des Kühlkonzepts, 7.3) und ein Auslegungs-Kühlrücklauf | **`Kuehl_Vorlauf` wird damit doppelt gebraucht**: als Kennlinienwahl (KU2) und als Auslegungspunkt der Kühlübergabe (AK1). Eine Spalte, zwei Leser — kein zweites Feld |
+| `Auslegung_Vorlauf` / `_Ruecklauf` (Gebäude) | `Tab_WP.Kuehl_Vorlauf` (`KU-S3` des Kühlkonzepts, 7.3) samt fester Spreizung | **keine Symmetrie, sondern eine benannte Abweichung (7.4, Punkt 4)**: Der Auslegungspunkt der Kühlübergabe steht auf der **Anlagenseite**, nicht am Gebäude. Eine Spalte, zwei Leser — Kennlinienwahl (KU2) und Auslegungspunkt (AK1) — und **kein** gebäudeseitiges Spaltenpaar |
 | Heizkörperexponent `n` | **Kühlflächenexponent** `n_k` — EPOS-Vorgaben: Kühldecke 1,1; Gebläsekonvektor 1,0; Kaltwasser-Flächenkühlung 1,1 | Werte als EPOS-Vorgaben gekennzeichnet, wie in 3.1 |
 | `Heizung_Strahlungsanteil` | Strahlungsanteil der Kühlung | Vorgabe je Kühlübergabeart |
 | `Heizleistung_Max` | `Kuehlleistung_Max` (`KU-S1` des Kühlkonzepts, 7.1) | vorhanden, unverändert |
@@ -930,33 +1077,45 @@ Eine Kühlfläche darf nicht unter den Taupunkt der Raumluft gefahren werden, so
 aus. EPOS-Plan rechnet **keine Feuchtebilanz** (K5 des Kühlkonzepts), kann den Taupunkt also nicht
 bestimmen. **Festlegung: eine feste untere Grenze des Kaltwasser-Vorlaufs je Kühlübergabeart, als
 EPOS-Vorgabe (Flächenkühlung 16 °C, Gebläsekonvektor keine Grenze), einstellbar, benannt.** Die
-Kühlkurve wird an dieser Grenze gekappt, die Stunde trägt den Grund „Vorlaufgrenze Flächenkühlung",
-und der Bericht sagt in einem Satz, dass die Grenze eine **Vorgabe** ist und keine gerechnete
+Kühlkurve wird an dieser Grenze gekappt, die Stunde trägt den `Begrenzungsgrund`
+**`VORLAUFGRENZE_KUEHLUNG`** (5.3) — das Gegenstück zu `VORLAUF_ANLAGE` auf der Wärmeseite —, und
+der Bericht sagt in einem Satz, dass die Grenze eine **Vorgabe** ist und keine gerechnete
 Taupunktgrenze. Eine Feuchtebilanz bleibt ausgeschlossen (1.3).
 
 ### 7.3 Die Umschaltung greift nicht in die Kopplung ein
 
 Eine reversible Maschine ist nach K8a des Kühlkonzepts **je Tag** entweder Heiz- oder
 Kältemaschine. Die Anlagenkopplung ändert daran nichts: Der Fahrplan trägt für den jeweils anderen
-Betrieb die Verfügbarkeit **null** mit dem Grund `UMSCHALTUNG`, und die Übergabe der anderen Seite
+Betrieb die Verfügbarkeit **null** mit dem `Verfuegbarkeitsgrund` **`UMSCHALTUNG`** (5.3), die
+Stunde bekommt gebäudeseitig denselben `Begrenzungsgrund`, und die Übergabe der anderen Seite
 liefert entsprechend nichts. Das ist genau der Fall, der ohne AK2 als ungedeckte Kilowattstunde
 erscheint und mit AK2 als Komfortstunde — und es ist der Fall, den K8a als „Planungsbefund, kein
 Modellfehler" bezeichnet.
 
 ### 7.4 Die benannten Abweichungen von der Symmetrie
 
-Drei, und alle drei haben denselben Grund: Die Kälteseite ist jünger.
+Vier, und alle vier haben denselben Grund: Die Kälteseite ist jünger.
 
 1. **Keine Kühlkurve im Bestand, auch nicht als Festwert-Ersatz.** Der Heizseite steht
    `Tab_Energieanlagen.Vorlauf` (`:713`) als Bestands-Festwert zur Verfügung; die Kälteseite bekommt
    `Kuehl_Vorlauf` erst mit `KU-S3`. **Folge: Die Kälteseite der Anlagenkopplung setzt KU1 und KU2
-   voraus**, die Wärmeseite setzt nur G2 voraus (**H9**).
+   voraus**, die Wärmeseite setzt nur G1 und G2 voraus (**H9**).
 2. **Kein Altweg — und damit kein Bestandsweghinweis.** Die Kälteseite hat keinen
    Tagesbilanz-Weg (E20, E21, E23); der Hinweis aus F-A18 hat auf der Kälteseite kein Gegenstück,
-   weil es dort nichts gibt, worauf er zeigen könnte — und das bleibt so, denn der Bestandsweg
-   bleibt dauerhaft ohne Kälte.
+   weil es dort nichts gibt, worauf er zeigen könnte. Ein Altweg-Gebäude liefert Kältebedarf 0 mit
+   benanntem Hinweis (Kühlkonzept F-K18), und das bleibt so, bis die Stufe **GA** den Altweg ablöst
+   (Zeitpunkt offen, Q24).
 3. **Keine Kältenetzverluste** — das ist bereits eine benannte Abweichung des Kühlkonzepts (14) und
    bleibt eine; die Anlagenkopplung ändert daran nichts.
+4. **Der Auslegungspunkt der Kühlübergabe kommt aus der Anlage, nicht aus dem Gebäude.** Auf der
+   Wärmeseite ist er eine Gebäudeeigenschaft (`Auslegung_Vorlauf`/`_Ruecklauf` in `AK-S1`, 8.1);
+   auf der Kälteseite wird **`Tab_WP.Kuehl_Vorlauf`** gelesen — dieselbe Spalte, die KU2 für die
+   Kennlinienwahl führt — und dazu eine **feste Spreizung von 5 K** als EPOS-Vorgabe angesetzt.
+   `AK-S1` legt dafür **kein** gebäudeseitiges Spaltenpaar an. **Der Preis, benannt:** Versorgen
+   zwei Kältemaschinen mit verschiedenen Kaltwasser-Vorläufen dasselbe Gebäude, gilt je Stunde der
+   Vorlauf der Maschine, die in dieser Stunde deckt; eine gebäudeseitige Auslegung gäbe es dafür
+   nicht. Ein eigenes Paar `Kuehl_Auslegung_Vorlauf`/`_Ruecklauf` kommt, wenn ein Fall es verlangt
+   — nicht vorher.
 
 ---
 
@@ -965,9 +1124,11 @@ Drei, und alle drei haben denselben Grund: Die Kälteseite ist jünger.
 Die Schemaschritte tragen in diesem Papier **Papiernamen** (`AK-S1` …). **Die Nummer vergibt der
 Schritt bei seiner Beauftragung** — lückenlos aufsteigend nach `SchemaMigration`, wie ADR-001 und
 die [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.4 es verlangen
-(**A11**). Die nächste freie Nummer ist beim Schreiben dieses Papiers **82**
-(`EPOS.Kern/Allgemein/Update/SchemaStand.cs:127`, `Zielversion = 81`); **sie wird hier nicht
-verwendet** — die Gebäude-, Zonen- und Kühlschritte entstehen parallel und würden kollidieren.
+(**A11**). **Die Nummer steht in diesem Papier an keiner Stelle**, denn die Gebäude-, Zonen- und
+Kühlschritte entstehen parallel und würden kollidieren; sie wird **bei der Beauftragung** an
+`SchemaStand.Zielversion` abgelesen. Zur Einordnung, nicht zur Verwendung: Beim Schreiben dieser
+Fassung (17.09.2026) steht der Zielstand auf **84**, die nächste freie Nummer ist **85**
+(`EPOS.Kern/Allgemein/Update/SchemaStand.cs:155`).
 
 Für alle Spalten gilt ohne Ausnahme: **`STRICT`**, Beziehungen über IDs, Boolean als
 `INTEGER NOT NULL DEFAULT 0 CHECK (spalte IN (0,1))`, Textlänge als `CHECK (length(...))`,
@@ -976,8 +1137,11 @@ Für alle Spalten gilt ohne Ausnahme: **`STRICT`**, Beziehungen über IDs, Boole
 
 ### 8.1 `AK-S1` — Gebäude und Zone: der Heizkreis
 
-Dreizehn Spalten je Tabelle, also **26 `SchemaSpalte`-Einträge**; dazu dieselben Spalten in
-`Tab_Zone`, sobald es sie gibt (G6), mit der Rollenteilung aus 6.5.
+Dreizehn Spalten je Gebäudetabelle — `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`, also **26
+`SchemaSpalte`-Einträge** — und **eine Projektspalte** in `Tab_Einstellungen`, zusammen **27
+Einträge**. Dazu kommen in `Tab_Zone`, sobald es sie gibt (G6), **allein die drei Übergabespalten**
+`Uebergabe_Art`, `Uebergabe_Exponent` und `Uebergabe_Leistung_Nenn` nach der Rollenteilung aus 6.5;
+Heizkurve, Auslegungspunkt, Proportionalband und Sollwertprofil bleiben beim Gebäude.
 
 | Spalte | Typangabe | SQLite | NULL bedeutet | Stufe |
 |---|---|---|---|---|
@@ -994,6 +1158,18 @@ Dreizehn Spalten je Tabelle, also **26 `SchemaSpalte`-Einträge**; dazu dieselbe
 | `Heizkurve_Steilheit` | `DOUBLE` | REAL | 1,0 — die Kurve durch den Auslegungspunkt | AK1 |
 | `Regler_Proportionalband` | `DOUBLE` | REAL (K) | 1,0 (EPOS-Vorgabe, **H1**); der Wert aus Schnellwahl 0,5 / 1 / 2 K oder freier Eingabe (**E25**) | AK1 |
 | `Sollwertprofil` | `TEXT(1400)` | TEXT | die vier Bestandssollwerte und die Ferienmaske (4.3) | AK1 |
+
+**Und die eine Projektspalte — `AK-S1`, Projektebene:**
+
+| Tabelle | Spalte | Typangabe | SQLite | NULL bedeutet | Stufe |
+|---|---|---|---|---|---|
+| `Tab_Einstellungen` (`sql/schema/001_grundschema.sql:672-701`) | `Anlagenkopplung` | `TEXT(4)` | TEXT, `CHECK (Anlagenkopplung IN ('AUS','AK1','AK2','AK3'))` | **AUS** — kein DDL-DEFAULT auf einem Fachwert | AK1 |
+
+Die Tabelle ist eine reine Projekttabelle ohne Stammfassung, also **ein** `SchemaSpalte`-Eintrag,
+nicht zwei. Der Schalter entsteht **mit AK1**, obwohl er auch die Werte `AK2` und `AK3` zulässt:
+Ein Persistenzwert ohne Rechenweg wird im Dialog nicht angeboten (9.4, Kühlkonzept K7), aber die
+Spalte zweimal zu ändern wäre ein zweiter Schemaschritt für dieselbe Sache. Die Projektkopie und
+die Komponentenübernahme tragen ihn mit (11.3).
 
 **Warum `Heizkreis_Aktiv` **und** ein nullbares `Uebergabe_Art`.** Derselbe Grund wie bei
 `Kuehlung_Aktiv` im Kühlkonzept (7.1): Der Schalter trägt die Absicht, die Felder tragen die Werte.
@@ -1112,11 +1288,12 @@ erDiagram
         text Sollwertprofil "AK-S1 168 Wochenwerte"
     }
     Tab_Zone {
-        text Uebergabe_Art "NULL gleich Wert des Gebaeudes"
-        real Uebergabe_Leistung_Nenn "NULL gleich Anteil der Zonenflaeche"
+        text Uebergabe_Art "AK-S1 ab G6 NULL gleich Wert des Gebaeudes"
+        real Uebergabe_Exponent "AK-S1 ab G6 NULL gleich Wert des Gebaeudes"
+        real Uebergabe_Leistung_Nenn "AK-S1 ab G6 NULL gleich Anteil der Zonenflaeche"
     }
     Tab_Einstellungen {
-        text Anlagenkopplung "AK-S1 AUS oder AK1 oder AK2 oder AK3"
+        text Anlagenkopplung "AK-S1 Projektspalte NULL gleich AUS"
         int Extrapolation_erlaubt "Bestand"
     }
     Tab_Energieanlagen ||--o{ Tab_Kenndaten : "Kennlinie je Vorlauf"
@@ -1267,10 +1444,12 @@ nichts tut, gehört in keine Maske, die von Betriebszeiten handelt.
   „Raumtemperatur und Sollwert"** mit markierten Unterschreitungen. Beide Bilder bekommen ihre
   Gegenprobe in `Proben/ChartProben` (Maße, Farben, Determinismus).
 - **Der Restbedarf steht neben den Komfortstunden**, nie ohne sie (5.5).
-- **Der Bericht nennt je Gebäude den Rechenweg** (E23): Ein Gebäude auf dem Altweg trägt den
+- **Der Bericht nennt je Gebäude den Rechenweg** (E23, E26): Ein Gebäude auf dem Altweg trägt den
   Ausweis „Tagesbilanz (Bestandsweg)" und führt weder Komfortstunden noch Temperaturmittel — es
-  geht als **feste Last** in Verteilung und Deckung ein (6.2, F-A18). Ohne diesen Ausweis liest
-  sich eine fehlende Komfortstunde wie ein gutes Ergebnis.
+  geht als **feste Last** in Verteilung und Deckung ein (6.2, F-A18). Dazu nennt der Bericht je
+  Projekt **die Zahl der Gebäude, die als feste Last eingehen**, weil die Verteilung von ihnen
+  abhängt (6.2). Ohne diesen Ausweis liest sich eine fehlende Komfortstunde wie ein gutes Ergebnis.
+  Ausweis und Zahl entfallen mit der Stufe **GA** und stehen in deren Löschliste.
 - **Bericht** — ein Abschnitt „Heizkreis und Übergabe" mit den Auslegungsdaten, den beiden
   Temperaturmitteln und den Begrenzungsgründen als Stundenzahlen; ab AK2 die Komfortzeile. Der
   Ausweis nach E10 bleibt unverändert und bekommt **einen** Satz dazu: dass Übergabe, Heizkurve und
@@ -1286,7 +1465,7 @@ Sprachneutral im Kern, Text in der Oberfläche; je Meldung beide `.resx` und dan
 | Anlass | Stufe | Inhalt |
 |---|---|---|
 | Übergabe reicht nicht, Raumtemperatur fällt | **Info**, einmal je Gebäude und Lauf | Zahl der Stunden und größte Unterschreitung |
-| Gebäude auf dem Altweg mit aktivem Heizkreis | **Hinweis**, einmal je Gebäude und Lauf | „Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung — die Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet" (F-A18); der Schlüssel bleibt **dauerhaft** (E23) |
+| Gebäude auf dem Altweg mit aktivem Heizkreis | **Hinweis**, einmal je Gebäude und Lauf | „Tagesbilanz (Bestandsweg) rechnet keine Anlagenkopplung — die Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet" (F-A18); der Schlüssel gilt **für die Dauer des Übergangs** und steht als Eintrag **„Meldung ‚Altweg-Gebäude ohne Anlagenkopplung' samt Ressourcenschlüssel"** in der **Löschliste der Stufe GA** (E26, ADR-006) |
 | Heizkreis aktiv, Projektstufe „aus" | **Hinweis**, einmal je Gebäude | die Eingaben gelten, sobald die Stufe gesetzt ist (F-A17) |
 | Auslegungsvorlauf unter der Auslegungs-Raumtemperatur | **Fehler** | benannt, mit beiden Werten; der Lauf bricht für dieses Gebäude ab (Q18-Regel des Stundenwegs) |
 | Gerechneter Vorlauf außerhalb der Kennlinien-Stützstellen | **Hinweis**, einmal je Gerät und Vorlauf | wie auf der Heizseite heute (`SimulationWaermepumpe.cs:1900-1903`) |
@@ -1294,6 +1473,13 @@ Sprachneutral im Kern, Text in der Oberfläche; je Meldung beide `.resx` und dan
 | Sperrzeit und Zeitprogramm widersprechen sich | **Info** | die Sperrzeit gilt; Zahl der betroffenen Stunden |
 | Iteration nicht konvergiert (AK3) | **Fehler** | Gebäude, Stunde, Beteiligte, größte verbleibende Abweichung (F-A15) |
 | Flächenheizung: Aufheizzeit ohne Estrichmasse | **Info**, einmal je Lauf | die gerechnete Aufheizzeit ist zu kurz (3.6) |
+
+**Jeder Altweg-Sonderfall dieses Papiers wird bei seiner Entstehung in die Löschliste der Stufe GA
+eingetragen** — Regel aus [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md), Wortlaut in E26. Für die
+Anlagenkopplung sind das drei Einträge: die Meldung „Altweg-Gebäude ohne Anlagenkopplung" samt
+Ressourcenschlüssel (oben), die Behandlung als **feste Last** in Verteilung und Deckung (6.2) und
+der Ausweis des Rechenwegs samt der Zahl der festen Lasten im Bericht (9.4). Sie werden mit AK1
+und AK2 angelegt und mit GA in einem Zug entfernt; die Liste selbst führt das Umsetzungskonzept.
 
 ### 9.6 Maskenreihenfolge und Tests je Maske
 
@@ -1329,8 +1515,23 @@ Stunde geschehen:
 Schritt E, zusaetzlich:
     Sollwertvektor theta_soll[8760]   aus Sollwertprofil oder den vier Bestandswerten (4.3)
     Vorlaufreihe   theta_V[8760]      aus der Heizkurve (3.4) oder als Festwert je Anlage
-    Uebergabekennwerte                Phi_N, n, W_H, dtheta_m_N aus dem Auslegungspunkt (8.4)
-    ab AK2: Anlagenverfuegbarkeit[8760]  aus dem Anlagenfahrplan (5.3)
+    Uebergabekennwerte                Phi_N, n, W_H, dtheta_m_N aus dem Auslegungspunkt (8.4),
+                                      umgerechnet in W bzw. W/K (3.3)
+    ab AK2: Verfuegbarkeit[8760]      Schranke dieses Gebaeudes, aus Pass 1 und der
+                                      Verteilung (6.2) — in Pass 1 selbst unendlich
+```
+
+**Ab AK2 läuft Schritt E deshalb zweimal je Gebäude, und nur der zweite Lauf trägt eine Schranke.**
+Die Reihe `Verfuegbarkeit[8760]` ist **nicht** unmittelbar die Reihe des `Anlagenfahrplans`: Dessen
+projektweite Schranke wird erst durch die Verteilung zu einer Schranke **je Gebäude**, und dafür
+braucht die Verteilung den unbegrenzten Bedarf aus Pass 1 (6.2). Die Vorarbeiten oben sind davon
+unberührt — sie hängen nicht von der Schranke ab und werden **einmal** gebildet und für beide
+Pässe gehalten:
+
+```
+Pass 1 je Gebaeude des VDI-Wegs:  Verfuegbarkeit[h] = unendlich   -> unbegrenzter Bedarf
+Verteilung je Stunde:             Schranke des Anlagenfahrplans proportional auf die Gebaeude
+Pass 2 je Gebaeude des VDI-Wegs:  Verfuegbarkeit[h] = Anteil dieses Gebaeudes -> Ergebnis
 ```
 
 ### 10.2 Schritt H je Abschnitt einer Stunde
@@ -1338,62 +1539,122 @@ Schritt E, zusaetzlich:
 ```
 Schritt H (Uebergabe und Heizkreis), je Abschnitt der Stunde h:
 
+Einheiten (Muster Rechenschritte 7.1; Umrechnung einmal im Eingangsbauer, 3.3):
+          Leistungen Phi_N, Phi_ue_max, Phi_verlangt, Phi, Heizleistung_Max,
+          Verfuegbarkeit          [W]
+          Leitwerte  W_H, G_H, G                                    [W/K]
+          Temperaturen theta_V, theta_R, theta_m, theta_i, theta_soll, theta_H   [degC]
+          Proportionalband Xp     [K]        Exponent n   [-]
+
 Eingang:  theta_V[h], theta_soll[h], theta_i (aktuelle Raumlufttemperatur),
           Phi_N, n, W_H, dtheta_m_N, Xp (Proportionalband),
-          Heizleistung_Max, ab AK2 Verfuegbarkeit[h]
+          Heizleistung_Max, ab AK2 Verfuegbarkeit[h] (Schranke dieses Gebaeudes, 10.1)
 
 H1  Vorlauf festlegen
         theta_V = min( theta_V[h] , Vorlauf_Max der Anlage )
-        wenn begrenzt:  Grund = VORLAUF_ANLAGE
-        wenn theta_V <= theta_i:  Phi_ue_max = 0 ,  Grund = HEIZGRENZE ,  weiter bei H5
+        wenn begrenzt:  Begrenzungsgrund = VORLAUF_ANLAGE
+        wenn theta_V <= theta_i:  Phi_ue_max = 0 ,  Begrenzungsgrund = HEIZGRENZE ,
+                                  weiter bei H5
 
 H2  Uebergabe bei voll geoeffnetem Ventil
         loese  f(Phi) = Phi_N * ((theta_V - Phi/(2*W_H) - theta_i) / dtheta_m_N)^n - Phi = 0
         Newton, Startwert aus der linearisierten Form, hoechstens 8 Schritte,
-        Abbruch bei |f| < 1e-9 kW  (deterministisch, feste Obergrenze)
-        Phi_ue_max = Phi ;  theta_R = theta_V - Phi/W_H ;  theta_m = theta_V - Phi/(2*W_H)
+        Abbruch bei |f| < 1e-6 W  (deterministisch, feste Obergrenze)
+        Phi_ue_max = Phi
+        theta_m_offen = theta_V - Phi_ue_max/(2*W_H)      // nur fuer den Leitwert in H5
 
 H3  Regelung
         wenn Xp = 0:
+            y = 1
             Phi_verlangt = Leistungsgleichung des geregelten Falls (Rechenschritte 4.3)
         sonst:
             y = clamp( (theta_soll - theta_i) / Xp , 0 , 1 )
             Phi_verlangt = y * Phi_ue_max
 
 H4  Grenzen in fester Reihenfolge (4.5)
-        Phi = Phi_verlangt
-        wenn Phi > Phi_ue_max:        Phi = Phi_ue_max ,        Grund = UEBERGABE
-        wenn Phi > Heizleistung_Max:  Phi = Heizleistung_Max ,  Grund = LEISTUNGSGRENZE
+        Phi = Phi_verlangt ;  gekappt = nein
+        wenn Phi > Phi_ue_max:        Phi = Phi_ue_max ,        Begrenzungsgrund = UEBERGABE
+        wenn Phi > Heizleistung_Max:  Phi = Heizleistung_Max ,  Begrenzungsgrund = HEIZLEISTUNG_MAX ,
+                                      gekappt = ja
         ab AK2:
-        wenn Phi > Verfuegbarkeit[h]: Phi = Verfuegbarkeit[h] , Grund = Grund der Verfuegbarkeit
-        wenn nichts gegriffen hat:    Grund = KEINE_BEGRENZUNG
+        wenn Phi > Verfuegbarkeit[h]: Phi = Verfuegbarkeit[h] , Begrenzungsgrund = VERFUEGBARKEIT ,
+                                      gekappt = ja
+                                      (der Verfuegbarkeitsgrund der Stunde reist daneben mit, 5.3)
+        wenn nichts gegriffen hat:    Begrenzungsgrund = KEINE_BEGRENZUNG
 
-H5  Betriebsfall waehlen
-        Grund = KEINE_BEGRENZUNG und Xp = 0  ->  Fall "geregelt", WOERTLICH wie im Bestand
-        sonst                                ->  Fall "Uebergabe begrenzt":
-            Sekantenleitwert bilden (3.3)
-                G_H     = ( n*Phi/(theta_m-theta_i) ) / ( 1 + n*Phi/((theta_m-theta_i)*2*W_H) )
-                theta_H = theta_i + Phi/G_H
-            G_H und theta_H treten als zusaetzlicher Leitwert in den freien Lauf,
+H5  Betriebsfall und Leitwert
+        Begrenzungsgrund = KEINE_BEGRENZUNG und Xp = 0
+                  ->  Fall "geregelt", WOERTLICH wie im Bestand (3.7)
+        gekappt = ja  ->  Fall "Leistung fest" (Rechenschritte 4.4): Phi haengt in diesem
+                          Abschnitt nicht mehr von theta_i ab, also G = 0 und kein Leitwert
+        sonst     ->  Fall "Uebergabe begrenzt". Der Leitwert ist die Steigung DER
+                      GEFAHRENEN Kennlinie, und die haengt vom Saettigungszustand ab:
+
+            Steigung der voll geoeffneten Uebergabe (aus H2, 3.3):
+                G_H = ( n*Phi_ue_max/(theta_m_offen-theta_i) )
+                      / ( 1 + n*Phi_ue_max/((theta_m_offen-theta_i)*2*W_H) )
+
+            gesaettigt      (y = 1):        G = G_H
+            Regelbereich    (0 < y < 1):    G = Phi_ue_max/Xp + y * G_H
+
+            theta_H = theta_i + Phi/G
+            G und theta_H treten als zusaetzlicher Leitwert in den freien Lauf,
             aufgeteilt nach Heizung_Strahlungsanteil auf Luft und Oberflaechen
 
-H6  Rueckgabe an Schritt F
-        Phi , theta_V , theta_R , Grund , (G_H , theta_H)
+H6  Ruecklauf nach der Begrenzung, dann Rueckgabe an Schritt F
+        theta_R und theta_m gehoerten in H2 dem voll geoeffneten Ventil. Geliefert wird
+        aber Phi, nicht Phi_ue_max — also werden beide mit der gelieferten Leistung neu
+        gebildet, im Bild des konstanten Massenstroms (H-F2):
+                theta_R = theta_V - Phi/W_H
+                theta_m = theta_V - Phi/(2*W_H)
+        Rueckgabe:  Phi , theta_V , theta_R , Begrenzungsgrund , (G , theta_H)
         Schritt F bildet die Matrizen des Falls, prueft die Gueltigkeit bis zum
         Abschnittsende und setzt bei Verletzung die Bisektion an — unveraendert
 ```
 
-**Das Verletzungsmaß des neuen Falls** fügt sich in die Tabelle aus Rechenschritte 7.1 ein:
+**Warum der Leitwert im Regelbereich nicht `G_H` ist.** `G_H` ist die Ableitung der **voll
+geöffneten** Übergabe nach der Raumtemperatur. Im Proportionalband fährt die Anlage aber
+`Phi = y · Phi_ue,max` mit `y = (theta_soll − theta_i)/Xp`; leitet man das nach `theta_i` ab,
+kommt zum Anteil `y · G_H` der Beitrag des Reglers **`Phi_ue,max/Xp`** hinzu — und der ist bei
+einem Band von 1 K um ein Vielfaches größer. Nur wo der Regler voll offen steht (`y = 1`, also
+`theta_i ≤ theta_soll − Xp`), sind beide Steigungen gleich, und nur dort gilt `G = G_H`. Wird die
+Leistung hart gekappt (`Heizleistung_Max`, Verfügbarkeit), ist sie über dem Abschnitt konstant und
+es gibt gar keine Steigung — das ist Fall 3 des Bestands, den der Löser seit G0 rechnet.
+
+**Warum Rücklauf und Heizmitteltemperatur erst in H6 entstehen.** Ein Rücklauf, der zu einer
+Leistung gehört, die gar nicht geliefert wurde, wäre eine zweite Wahrheit (N-A8) — und er ginge
+über `Ruecklauf_Mittel` (8.3) und die Reihe `ruecklauf_<n>.csv` unmittelbar in Bericht und
+Wärmepumpenbewertung ein. Bei konstantem Massenstrom **steigt** der Rücklauf, wenn die Leistung
+gedrosselt wird; genau das ist die Aussage, die eine Brennwert- oder Wärmepumpenrechnung braucht.
+`Vorlauf_Mittel` und `Ruecklauf_Mittel` werden aus den Werten **nach** H6 gebildet.
+
+**Das Verletzungsmaß des neuen Falls ist zweiseitig.** Die Kennlinie des P-Reglers hat **zwei**
+Knicke: bei `y = 0` (der Raum erreicht den Sollwert) und bei `y = 1` (das Ventil steht voll offen,
+`theta_i = theta_soll − Xp`). Das Maß fügt sich je Sättigungszustand in die Tabelle aus
+Rechenschritte 7.1 ein:
 
 ```
-Uebergabe begrenzt:  gueltig, solange  theta_air(x) <= theta_soll
-                     (steigt die Raumtemperatur ueber den Sollwert, waere weniger
-                      Leistung noetig — der Fall wechselt nach "geregelt")
+Uebergabe begrenzt, gesaettigt (y = 1):
+    gueltig, solange  theta_air(x) <= theta_soll - Xp
+    (steigt die Raumtemperatur darueber, beginnt der Regler zu drosseln —
+     der Fall wechselt in den Regelbereich)
+
+Uebergabe begrenzt, Regelbereich (0 < y < 1):
+    gueltig, solange  theta_soll - Xp <= theta_air(x) <= theta_soll
+    (unten wechselt der Fall in den gesaettigten Zweig, oben nach "geregelt")
 ```
+
+Mit `Xp = 0` fallen beide Knicke zusammen: Der gesättigte Zweig behält `theta_air(x) <= theta_soll`,
+der Regelbereich verschwindet, und das Maß ist wörtlich das der idealen Regelung — der Grenzfall
+aus 3.7. Die Bisektion von Schritt F findet damit **beide** Umschaltzeitpunkte und nicht nur den
+oberen; ohne den unteren liefe der gesättigte Fall über den Knick hinaus weiter und rechnete im
+Proportionalband mit voller Leistung.
 
 ### 10.3 Ein Zahlenbeispiel mit runden Werten
 
-**Gebäude „Beispiel A"** — ein neutrales Beispiel, keine Produktdaten:
+**Gebäude „Beispiel A"** — ein neutrales Beispiel, keine Produktdaten. **Das Beispiel rechnet in
+kW und kW/K**, weil es von Hand nachvollziehbar sein soll; der Rechenweg führt W und W/K (3.3,
+10.2), und die Zahlen sind das Tausendfache.
 
 | Größe | Wert |
 |---|---|
@@ -1438,7 +1699,10 @@ Wärmepumpen-Kennlinie geht** (3.4): Sie liegt zwischen den Stützstellen, und d
 nächstgelegenen ändert den COP dieser Stunde spürbar. Genau dafür ist AK1 gebaut.
 
 **Fall 3 — Aufheizen nach der Nachtabsenkung.** `theta_out = −5,0 °C`, `theta_soll = 20,0 °C`, der
-Raum kommt mit `theta_i = 17,0 °C` aus der Absenkung:
+Raum kommt mit `theta_i = 17,0 °C` aus der Absenkung. **Das ist der gesättigte Fall:**
+`theta_soll − theta_i = 3,0 K` liegt über dem Proportionalband `Xp = 1,0 K`, also ist `y = 1`, das
+Ventil steht voll offen, und der Leitwert ist `G = G_H` (10.2, H5). Im Regelbereich — etwa bei
+`theta_i = 19,5 °C` — käme `Phi_ue,max/Xp` hinzu, und der Leitwert wäre um ein Vielfaches größer.
 
 ```
 Heizkurve:
@@ -1502,7 +1766,11 @@ Probe:  G_H * (theta_H - theta_i) = 0,348 * 25,4 = 8,85 kW
 | **Heizkurve monoton** | `theta_V` fällt streng monoton mit steigender Außentemperatur, für jeden zulässigen Exponenten und jede Steilheit | AK1 |
 | **Heizkreisbilanz** | `Phi_ue = W_H * (theta_V - theta_R)` auf 1e‑9 kW, für 10 000 zufällige zulässige Parametersätze | AK1 |
 | **Newton konvergiert** | höchstens 8 Schritte für jeden zulässigen Parametersatz; feste Schrittzahl als Obergrenze, keine Endlosschleife | AK1 |
-| **Sekantenleitwert** | `G_H * (theta_H - theta_i) = Phi_ue` auf 1e‑9 kW; `G_H > 0`, solange `theta_m > theta_i` (3.3) | AK1 |
+| **Sekantenleitwert** | `G * (theta_H - theta_i) = Phi` auf 1e‑6 W; `G > 0`, solange `theta_m > theta_i` (3.3) | AK1 |
+| **Leitwert je Sättigungszustand** | numerische Ableitung von `Phi(theta_i)` trifft `G` auf 1e‑6 W/K — **getrennt** im gesättigten Zweig (`G = G_H`) und im Regelbereich (`G = Phi_ue,max/Xp + y·G_H`); die Probe fällt, sobald beide Bereiche denselben Leitwert benutzen (10.2, H5) | AK1 |
+| **Rücklauf nach der Begrenzung** | Wird die Leistung gedrosselt, **steigt** der Rücklauf gegenüber dem voll geöffneten Ventil, und die Bilanz `Phi = W_H * (theta_V - theta_R)` hält auf 1e‑6 W (10.2, H6) | AK1 |
+| **Zwei Knicke, zwei Umschaltzeitpunkte** | Ein Abschnitt, der `theta_soll - Xp` **und** `theta_soll` überstreicht, erzeugt in der Bisektion zwei Fallwechsel; mit `Xp = 0` genau einen (10.2) | AK1 |
+| **Einheiten in Schritt H** | Alle Leistungen, die Schritt H führt, sind in W; ein Parametersatz in kW und derselbe in W ergeben dasselbe Ergebnis auf 1e‑9 relativ (3.3) | AK1 |
 | **Aufheizspitze** | Gegenüberstellung derselben Stunde mit und ohne Übergabe: **Spitze kleiner, Tagesenergie größer, Sollwert später erreicht** — alle drei zugleich, sonst ist ein Vorzeichen falsch | AK1 |
 | **Exponent wirkt in der richtigen Richtung** | größerer Exponent bei gleicher Übertemperatur unter dem Auslegungspunkt: kleinere Leistung | AK1 |
 | **Reglerband** | `Xp = 0` gleich Bestandsverhalten; `Xp > 0` senkt die mittlere Raumtemperatur in der Heizzeit, monoton mit `Xp` | AK1 |
@@ -1511,8 +1779,12 @@ Probe:  G_H * (theta_H - theta_i) = 0,348 * 25,4 = 8,85 kW
 | **Verfügbarkeit trägt immer einen Grund** | jede Stunde mit `LeistungKw` kleiner als der Bedarf hat einen Grund ungleich `KEINE_BEGRENZUNG` (F-A12) | AK2 |
 | **Komfortkennzahlen** | Schwelle 0 zählt mehr Stunden als Schwelle 1 K; Kelvinstunden ≥ Stundenzahl × Schwelle; längste Strecke ≤ Stundenzahl | AK2 |
 | **Verteilung auf mehrere Gebäude** | zwei Gebäude in umgekehrter Zeilenreihenfolge ergeben dasselbe Ergebnis (6.2, Proportionalregel) | AK2 |
+| **Zweipass trifft den Schlüssel** | Pass 1 liefert je Stunde denselben unbegrenzten Bedarf, den ein Lauf ohne Fahrplan liefert; ein Projekt, dessen Schranke nie greift, ergibt nach Pass 2 **byte-gleiche** Reihen (6.2) | AK2 |
+| **Verteilung: Randfall und Rundungsrest** | Summe der Anteile gleich der Schranke auf 1e‑9 relativ; in einer Stunde ohne Bedarf bekommt **jedes** Gebäude die volle Schranke; der Rest geht an das Gebäude mit dem größten Anteil, nicht an das letzte (6.2) | AK2 |
+| **Zweite Verteilungsstufe** | Ein Gebäude mit **einer** Zone rechnet mit zweiter Stufe **bitgleich** wie ohne; bei zwei Zonen ist die Summe der Zonenschranken gleich der Gebäudeschranke (6.2, 6.5) | AK2 (wirksam ab G6) |
 | **Altweg-Gebäude als feste Last** | Ein Projekt aus einem VDI-Gebäude und einem Altweg-Gebäude: Das Altweg-Gebäude zehrt an der Verfügbarkeit derselben Stunde, trägt aber **keine** Komfortstunden und **keinen** gerechneten Vorlauf. **Gegenprobe:** dasselbe Gebäude auf VDI 6007 trägt beides (E23, F-A18) | AK2 |
 | **Iteration konvergiert** | typischer Fall in ≤ 6 Durchläufen; erzwungene Nichtkonvergenz erzeugt den **benannten Fehler** mit Gebäude, Stunde und Beteiligten (F-A15) | AK3 |
+| **Iterationsschranke greift** | Ein erzwungener Fall, dessen Produkt aus Zonen- und Anlagendurchläufen 120 überschreitet, endet mit dem benannten Fehler und dem zuletzt erreichten Stand — nicht mit einer stillen Näherung (6.3) | AK3 |
 | **Determinismus** | zwei Läufe byte-gleich, auch mit Iteration; Fallwechsel werden gezählt, nicht verschwiegen (6.3) | AK1–AK3 |
 
 ### 11.2 Das Prüforakel für AK3
@@ -1553,7 +1825,8 @@ die Probe **„ein Erzeuger ohne Grenzen ist bitgleich zu AK1"** als Gate — da
 ### 11.4 Referenzprojekt, Einfrierschritte und die Reihenfolge, die Läufe spart
 
 **Die Einfrierkette der Gebäudesimulation** kennt GB, G1 + G2 (mit KU1) und G6d; KU2 kommt hinzu,
-eine Stufe GA gibt es mit **E23** nicht mehr
+und die Stufe **GA** schließt sie ab — sie ist mit **E26** ein eigener Einfrieranlass, ihr
+Zeitpunkt ist offen (**Q24**)
 ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 10.5,
 [Referenzlaeufe/LIESMICH.md](../../Referenzlaeufe/LIESMICH.md)). Die Anlagenkopplung fügt **je
 aktivierter Stufe einen** hinzu — und **jede Stufe erzeugt eine neue Datei**, also gibt es keinen
@@ -1584,15 +1857,24 @@ stateDiagram-v2
   Basis_G1G2 --> Basis_AK1 : AK1 — Heizkreis, EIN Projekt bewegt sich
   Basis_AK1 --> Basis_AK2 : AK2 — Fahrplan und Komfortstunden, nach einer Feldphase
   Basis_AK2 --> Basis_AK3 : AK3 — geschlossener Kreis
-  Basis_AK3 --> [*]
+  Basis_AK3 --> Basis_GA : GA — Altweg abloesen, Zeitpunkt offen (Q24)
+  Basis_GA --> [*]
 ```
+
+Die Stufe **GA** steht hier am Ende, weil sie die letzte des Stufenplans ist; sie ist **keine**
+Vorbedingung der AK-Stufen und kann jede von ihnen überholen, sobald das Ablösekriterium erfüllt
+ist (E26). Für dieses Papier hat sie genau eine Wirkung: Der Sonderfall „feste Last" und die drei
+Einträge aus 9.5 entfallen, und die Verteilung aus 6.2 kennt nur noch einen Bedarfsbegriff.
 
 **Das Referenzprojekt.** Ein Projekt der Testdatenbank (Kopie eines Einzelgebäude-Projekts)
 bekommt `Heizkreis_Aktiv = 1`, Übergabeart Radiator und eine gefahrene Heizkurve; mit AK2 zusätzlich
-eine Sperrzeit, die Komfortstunden erzeugt. **Eine neue, fünfte Einfrierregel** gehört dazu —
-„gesäte Auslegungsdaten der Übergabe" (Auslegungspunkt, Exponent, Zeitprogramm) — nach dem Muster
-der drei vorhandenen Regeln in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) und
-der vierten, die mit G1 entsteht. Ohne sie ändert die erste Saatkorrektur die Ergebnisse still.
+eine Sperrzeit, die Komfortstunden erzeugt. **Eine weitere Einfrierregel** gehört dazu — sie heißt
+**„gesäte Auslegungsdaten der Übergabe"** (Auslegungspunkt, Exponent, Zeitprogramm) und folgt dem
+Muster der vorhandenen Regeln in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md)
+sowie der Regel „gesäte Gebäudedaten", die mit G1 entsteht. **Einfrierregeln werden nach ihrem
+Gegenstand benannt, nicht durchgezählt** — eine Ordnungszahl wäre in jedem zweiten Papier eine
+andere ([Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.8). Ohne die
+Regel ändert die erste Saatkorrektur die Ergebnisse still.
 
 ### 11.5 CI, iOS und ChartProben
 
@@ -1623,9 +1905,9 @@ eingeschalteter Kopplung rechnen wollte, würde die Referenz verlassen** — die
 
 | Stufe | Inhalt | Vorbedingung | Abnahme | Basis | PT |
 |---|---|---|---|---|---|
-| **AK0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 15, Kühlkonzept 1.3/14, Systementwurf 12 und Umsetzungskonzept auf E22 und E23; die Fragen **H1–H12** sind mit **E24** entschieden (13.1), offen bleibt Q26 im Gebäudekonzept | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
-| **AK1** | **Heizkreis als Randbedingung.** Schemaschritte `AK-S1` und `AK-S3` (Wärmeteil) samt Sichtneubau und NULL-erhaltender Katalogkopie; Klasse `Waermeuebergabe`; Heizkurve und Sollwertvektor in `GebaeudeModellEingang`; vierter Betriebsfall in `Zonenmodell2K` samt Sekantenleitwert; `Stundenrand`/`Stundenergebnis` erweitert; gerechneter Vorlauf in die Kennlinienwahl; Gruppe „Wärmeübergabe" im Gebäudedialog samt Wochenraster-Baustein; Hülle nach `EPOS.UI.Daten`; zwei Kennzahlkacheln, Bild „Vorlauf und Rücklauf", Berichtsabschnitt; drei bedingte Reihen im Export; Texte, Meldungen, Wiki-Abschnitt | **G2 steht** (ohne Stundenmodell im Produkt keine stündliche Raumtemperatur); das Gebäudeschema mit `Heizleistung_Max` und `Heizung_Strahlungsanteil` ist ausgerollt | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kopplung byte-gleich; die beiden Grenzfallproben aus 11.1; `ChartProben` grün | **ja** | **9–13** |
-| **AK2** | **Erzeugerfahrplan als Verfügbarkeit.** Schemaschritt `AK-S2` (Zeitprogramm, `Vorlauf_Max`) und der Komfortteil von `AK-S3`; Klasse `Anlagenfahrplan` samt Naht `Anlagenverfuegbarkeit` (Profilweg, mit Speichervorrat über die Sperrdauer); Wochenraster im Erzeugerdialog; vierte Grenze in der Kette (4.5); Komfortkennzahlen, Bild „Raumtemperatur und Sollwert", Berichtszeile; Meldungen; Eintrag der neuen Klasse in die `Modultrennungswache` | **AK1 abgenommen und eine Feldphase** (B-A6); Gebäude auf dem Altweg gehen als feste Last ein (E23, 6.2) | Kern-Gate grün; Referenzlauf gegen die neue Basis; die vier AK2-Proben aus 11.1; Restbedarf und Komfortstunden stehen im Bericht nebeneinander (5.5) | **ja** | **11–15** |
+| **AK0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 15, Kühlkonzept 1.3/14, Systementwurf 12 und Umsetzungskonzept auf E22, E23 und **E26**; die Fragen **H1–H12** sind mit **E24** entschieden (13.1), offen bleibt Q26 im Gebäudekonzept | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
+| **AK1** | **Heizkreis als Randbedingung.** Schemaschritte `AK-S1` und `AK-S3` (Wärmeteil) samt Sichtneubau und NULL-erhaltender Katalogkopie; Klasse `Waermeuebergabe`; Heizkurve und Sollwertvektor in `GebaeudeModellEingang`; vierter Betriebsfall in `Zonenmodell2K` samt Sekantenleitwert; `Stundenrand`/`Stundenergebnis` erweitert; gerechneter Vorlauf in die Kennlinienwahl; Gruppe „Wärmeübergabe" im Gebäudedialog samt Wochenraster-Baustein; Hülle nach `EPOS.UI.Daten`; zwei Kennzahlkacheln, Bild „Vorlauf und Rücklauf", Berichtsabschnitt; drei bedingte Reihen im Export; **Kennlinienwahl der Wärmepumpe am gerechneten Vorlauf** (6.1, Erzeugerseite); Texte, Meldungen, Wiki-Abschnitt | **G1 und G2 stehen** (ohne Stundenmodell im Produkt keine stündliche Raumtemperatur); das Gebäudeschema mit `Heizleistung_Max` und `Heizung_Strahlungsanteil` ist ausgerollt | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kopplung byte-gleich; die beiden Grenzfallproben aus 11.1; `ChartProben` grün | **ja** | **10–15** |
+| **AK2** | **Erzeugerfahrplan als Verfügbarkeit.** Schemaschritt `AK-S2` (Zeitprogramm, `Vorlauf_Max`) und der Komfortteil von `AK-S3`; Klasse `Anlagenfahrplan` samt Naht `Anlagenverfuegbarkeit` (Profilweg, mit Speichervorrat über die Sperrdauer); **Zweipass der Verteilung** samt Randfall, Rundungsrest und zweiter Stufe auf die Zonen (6.2); Wochenraster im Erzeugerdialog; vierte Grenze in der Kette (4.5); Komfortkennzahlen, Bild „Raumtemperatur und Sollwert", Berichtszeile; Meldungen; Eintrag der neuen Klasse in die `Modultrennungswache` | **AK1 abgenommen und eine Feldphase** (B-A6); Gebäude auf dem Altweg gehen als feste Last ein (E23, E26, 6.2) | Kern-Gate grün; Referenzlauf gegen die neue Basis; die AK2-Proben aus 11.1; Restbedarf und Komfortstunden stehen im Bericht nebeneinander (5.5) | **ja** | **11–15** |
 | **AK3** | **Der geschlossene Kreis.** Iterationsrahmen `Anlagenkopplung` nach dem Muster von ADR-005 (feste Reihenfolge, drei Abbruchmaße, Höchstzahl 20, benannter Fehler); Umkehr der Laufordnung in `SimulationWaermebedarf`/`SimulationControl`; Vorlaufabhängige Kennlinienauswertung je Stunde für die Wärmepumpe; Ladezustand des Speichers in der Verfügbarkeit; raumgeführte Korrektur der Heizkurve (H2); Prüforakel, Vergleichsrechnung gegen AK2, **gemessene** Laufzeit | **AK2 abgenommen und eine Feldphase**; der Entscheid, ob überhaupt, fällt dann (**H6**, mit E24 so festgelegt) | Prüforakel getroffen; „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; Laufzeit an einem Mehrzonengebäude gemessen (N-A4); Referenzlauf gegen die neue Basis | **ja** | **23–38** |
 
 **Summen:** AK0 + AK1 = 10–15 PT; AK0–AK2 = 21–30 PT; AK0–AK3 = **44–68 PT**, jeweils zuzüglich

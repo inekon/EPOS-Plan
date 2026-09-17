@@ -1,12 +1,12 @@
-# ADR-006: Ablösung des Tagesbilanz-Wegs — zwei getrennte Rechenwege, der Altweg als eingefrorener Bestandsweg
+# ADR-006: Ablösung des Tagesbilanz-Wegs — zwei getrennte Rechenwege, der Altweg als Übergang bis zur Ablösung
 
 **Status:** Angenommen (16.09.2026, Entscheid E20 des Anwenders — Konzept-Nachtrag N1.25)
-**Ergänzung (16.09.2026, E23):** Die ursprüngliche Entscheidung 4 (Stufe GA — Altweg entfernen, Zeitpunkt Q24) ist aufgehoben; der Altweg bleibt **dauerhaft** als eingefrorenes Modul ohne neue Funktion, Referenzprojekt und Rückweg-Test bleiben. Der Text dieses ADR ist auf den Stand E20 + E23 gebracht (Konzept N1.28); die Entscheidungen 1 bis 3 und 5 gelten unverändert.
+**Ergänzung (16.09.2026, E23; 17.09.2026, E26):** E23 („GA: altweg soll bleiben") heißt: Der Altweg bleibt **jetzt** — als eingefrorenes Modul ohne neue Funktion, mit Referenzprojekt und Rückweg-Test. E26 stellt klar, dass dies ein **Übergang** ist: Der VDI-Weg löst den Altweg später vollständig ab und muss eigenständig arbeiten. Entscheidung 4 lautet deshalb wieder: Die Ablösung ist die **Stufe GA**, ihr Zeitpunkt ist offen (Q24), ihr Umfang ist Q25; bis dahin keine neue Funktion im Altweg. Der Text ist auf den Stand E20 + E23 + E26 gebracht (Konzept N1.25, N1.28, N1.31); die Entscheidungen 1 bis 3 und 5 gelten unverändert, 6 ist neu.
 **Datum:** 16.09.2026
 **Entscheider:** Anwender (Projektverantwortung EPOS-Plan)
 **Betrifft:** [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
-(Nachtrag N1.1, N1.25, N1.28, Kapitel 11 und 13), [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
-(Kapitel 1, 2 und 5), [`Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md`](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
+(Nachtrag N1.1, N1.25, N1.28, N1.31, Kapitel 11 und 13), [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+(Kapitel 1, 2, 5 und 6 — Löschliste der Stufe GA), [`Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md`](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
 (Kapitel 1, 3, 5 und 6), [`ADR-002`](ADR-002_Stundenmodell_VDI6007_Einbindung.md) (Ergänzungsvermerk)
 **Berührte Bereiche:** `EPOS.Kern/Allgemein/Simulation/` (Fassade, Modul `Altweg/`, Modul `Gebaeude/`),
 `EPOS.UI/Dialoge/Bedarf/`, `EPOS.UI.Daten/Bedarf/`, Gebäudespalten-Schemaschritt, `Referenzlaeufe/`
@@ -21,19 +21,21 @@ Einbindung als **eine Naht** im Bestandscode beschrieben: eine Verzweigung an de
 der Lauf heute das Tagesmodell ruft, der Tagesbilanz-Zweig „Zeichen für Zeichen" im selben Rumpf.
 Die Ausarbeitung hat daraus zwei Verzweigungspunkte (`SimulationWaermebedarf.cs:581` und `:647`),
 einen Gebäudedialog mit Modellreiter, dessen Felder je nach Modell versteckt oder gesperrt werden
-(Frage U2), und ein Referenzprojekt gemacht, das dauerhaft auf Tagesbilanz steht (Frage A15).
+(Frage U2), und ein Referenzprojekt gemacht, das bis zur Ablösung auf Tagesbilanz steht (Frage A15).
 
 Am 16.09.2026 hat der Anwender entschieden (E20): Die neue und die alte Berechnung werden
 **vollständig getrennt**, die neue **löst die alte ab**, die alte bleibt **nur als Übergang**, und
 **alle Dialoge und Eingaben** folgen der VDI-6007-Struktur. Am selben Tag hat er nachgeschärft (E23,
-„GA: altweg soll bleiben"): Der Altweg bleibt **dauerhaft** als eingefrorener Bestandsweg; eine Stufe,
-die ihn entfernt, gibt es nicht.
+„GA: altweg soll bleiben"): Der Altweg bleibt **jetzt** als eingefrorener Bestandsweg. Am 17.09.2026
+hat er dazu klargestellt (E26), dass das Altmodell nur noch als Übergang arbeitet und das Neumodell
+es später vollständig ablöst; die Ablösung ist die Stufe GA, ihr Zeitpunkt ist offen (Q24).
 
 ### Kräfte, die die Entscheidung formen
 
 1. **Zwei Rechenwege in einem Rumpf verlangsamen jede Änderung**: Jede Zeile des VDI-Wegs muss
    beweisen, dass sie den Tagesbilanz-Zweig nicht berührt. Getrennte Module machen diesen Beweis zu
-   einer Frage der Aufrufstruktur; der dauerhafte Rückweg-Test prüft dann ein abgeschlossenes Modul.
+   einer Frage der Aufrufstruktur; der Rückweg-Test prüft dann bis zur Ablösung ein abgeschlossenes
+   Modul.
 2. **Die Oberfläche kann nicht zwei Strukturen tragen**: Ein Dialog, der je nach Modell Felder
    versteckt, sperrt oder umdeutet, ist für den Anwender ein Rätsel und für die Tests ein
    Zustandsraum (U2). Ein Dialog in einer Struktur mit einem eingeklappten Zusatzabschnitt ist beides
@@ -60,18 +62,29 @@ die ihn entfernt, gibt es nicht.
    Bedarfsdialog werden nach den Eingaben des VDI-Wegs aufgebaut; die Modellparameter sind immer
    sichtbar und bearbeitbar. Felder, die nur der Altweg liest, erscheinen allein bei einem Gebäude
    auf dem Altweg in einem eingeklappten Abschnitt „Tagesbilanz (Bestandsweg)". Der Schalter heißt
-   „Rechenweg" mit Vorgabe „VDI 6007" und Wert „Tagesbilanz"; Schalter und Abschnitt bleiben
-   dauerhaft.
+   „Rechenweg" mit Vorgabe „VDI 6007" und Wert „Tagesbilanz"; Schalter und Abschnitt bleiben für
+   die Dauer des Übergangs und entfallen mit der Stufe GA.
 3. **Kein zweites Datenmodell.** Der Gebäudespalten-Schritt bringt die VDI-Spalten und die
-   Umbenennung nach E19; Altweg-Spalten bleiben dauerhaft unangetastet (E23). Ein
-   Befund je Feld weist die Klasse aus (nur Altweg, beide, nur VDI).
-4. **Der Altweg bleibt dauerhaft (E23).** Eine Stufe „Altweg entfernen" gibt es nicht; Modul,
-   Weiche, Schalter, Altweg-Spalten, das Referenzprojekt auf dem Altweg und der Rückweg-Test
-   bleiben. Der Altweg bekommt keine neue Funktion — nur Fehlerbehebung (GB) —, keine Kühllast,
-   keine Anlagenkopplung und keine Zonen; er ist Vergleichsmaßstab, kein zweites Produkt. Q24
-   (Ende des Übergangs) ist damit beantwortet: nie; Q25 (Umfang der Stufe GA) ist gegenstandslos.
+   Umbenennung nach E19; Altweg-Spalten bleiben für die Dauer des Übergangs unangetastet (E23) und
+   entfallen erst mit der Stufe GA. Ein Befund je Feld weist die Klasse aus (nur Altweg, beide,
+   nur VDI).
+4. **Der Altweg ist der Übergang; die Ablösung ist die Stufe GA (E23, E26).** Modul, Weiche,
+   Schalter, Altweg-Spalten, das Referenzprojekt auf dem Altweg und der Rückweg-Test bleiben,
+   solange der Übergang läuft. Der Altweg bekommt keine neue Funktion — nur Fehlerbehebung (GB) —,
+   keine Kühllast, keine Anlagenkopplung und keine Zonen; er ist Vergleichsmaßstab, kein zweites
+   Produkt. Die Ablösung ist die **Stufe GA — Altweg ablösen**, die letzte Stufe des Stufenplans:
+   ohne Termin und in keiner Summe (5–8 PT). **Q24** ist offen und fragt, wann der VDI-Weg bewährt
+   genug ist, dass GA beauftragt wird (empfohlenes Ablösekriterium: alle Referenz- und
+   Bestandsprojekte einmal auf VDI 6007 gerechnet und je Projekt erklärt; eine Feldphase von
+   mindestens einer Heizperiode ohne offenen Fehler; KU1 und, falls beauftragt, AK1 abgenommen;
+   die Ausbauprobe grün). **Q25** ist offen und fragt nach dem Umfang der Stufe GA; die Empfehlung
+   steht als Löschliste im Umsetzungskonzept, Kapitel 6.
 5. **Ausweis.** Ein Gebäude auf dem Altweg trägt „Tagesbilanz (Bestandsweg)" statt des
    Produktausweises nach E10.
+6. **Jeder Altweg-Sonderfall wird sofort eingetragen.** Jede Stufe, die einen Altweg-Sonderfall
+   einführt — Hinweistext, Ressourcenschlüssel, Sonderweg in Verteilung, Deckung oder Bericht —,
+   trägt ihn im selben Auftrag in die Löschliste der Stufe GA im Umsetzungskonzept, Kapitel 6,
+   ein. So bleibt der Umfang von GA vollständig, ohne dass er am Ende neu erhoben werden muss.
 
 ## Betrachtete Optionen
 
@@ -84,7 +97,8 @@ die ihn entfernt, gibt es nicht.
 | Oberfläche | ein Dialog mit zwei Zuständen (U2), Felder je nach Modell versteckt oder gesperrt |
 | Ende | keines vorgesehen |
 
-**Dafür:** kleinster erster Schritt. **Dagegen:** zwei Produkte in einem Rumpf, dauerhaft.
+**Dafür:** kleinster erster Schritt. **Dagegen:** zwei Produkte in einem Rumpf, ohne vorgesehenes
+Ende.
 
 ### Option B: Vollständige Trennung, Altweg als eingefrorenes Modul *(angenommen)*
 
@@ -94,11 +108,11 @@ die ihn entfernt, gibt es nicht.
 | Wartung | niedrig — der Altweg ist abgeschlossen, der VDI-Weg frei |
 | Oberfläche | eine Struktur, ein eingeklappter Zusatzabschnitt „Tagesbilanz (Bestandsweg)" |
 | Nachweis | Verschiebung byte-gleich gegen die Basis, dann Anbindung |
-| Ende | keines (E23) — der Altweg ist eingefroren, nicht befristet; Referenzprojekt und Rückweg-Test bleiben |
+| Ende | Stufe GA, Zeitpunkt offen (Q24, E26) — bis dahin bleiben Referenzprojekt und Rückweg-Test |
 
 **Dafür:** klare Grenzen, klare Oberfläche, ein abgeschlossener Altweg. **Dagegen:** ein zusätzlicher
-Nachweisschritt in G1; zwei Rechenwege dauerhaft brauchen Disziplin (kein Feature im Altweg) und
-halten Referenzprojekt und Rückweg-Test in jeder Basis.
+Nachweisschritt in G1; zwei Rechenwege nebeneinander brauchen bis zur Ablösung Disziplin (kein
+Feature im Altweg) und halten Referenzprojekt und Rückweg-Test in jeder Basis.
 
 ### Option C: Sofortige Entfernung des Tagesbilanz-Wegs mit G1 + G2
 
@@ -116,7 +130,8 @@ soll bleiben") und lässt den Anwender mit einem Zahlensprung von +7 bis +33 % o
 A ist der Weg, den ADR-002 beschrieben hat, und er ist billig — aber nur am ersten Tag. C ist
 sauber, aber hart gegenüber Bestandsprojekten und nimmt dem Anwender genau die Brücke, die er
 verlangt hat. B kostet einen Nachweisschritt mehr und liefert dafür, was E20 verlangt: Trennung,
-Ablösung, ein eingefrorener Bestandsweg (E20, E23). Die Weiche am Eingang ist die „eine Naht" aus
+Ablösung, ein eingefrorener Bestandsweg für die Dauer des Übergangs (E20, E23, E26). Die Ablösung
+selbst bleibt als Stufe GA im Plan. Die Weiche am Eingang ist die „eine Naht" aus
 ADR-002 in konsequenter Form; ADR-002 bleibt gültig und bekommt einen Ergänzungsvermerk.
 
 ## Konsequenzen
@@ -124,13 +139,14 @@ ADR-002 in konsequenter Form; ADR-002 bleibt gültig und bekommt einen Ergänzun
 - **Einfacher wird:** Der VDI-Weg kann ohne Rücksicht auf den Rumpf des Bestands gebaut werden;
   die Oberfläche hat eine Struktur; Tests des Dialogs kennen keinen Modellzustand mehr.
 - **Schwerer wird:** ein zusätzlicher byte-gleicher Nachweis der Verschiebung in G1; der
-  Abschnitt „Tagesbilanz (Bestandsweg)" im Dialog; zwei Rechenwege dauerhaft (E23) — Referenzprojekt
-  und Rückweg-Test in jeder Basis, gemeinsam genutzte Stellen zweifach zu prüfen.
-- **Offen bleibt:** nichts aus diesem ADR. Q24 ist mit E23 beantwortet (nie), Q25 gegenstandslos; der
-  Vergleich alt/neu im Bedarfsdialog (G2) bleibt dauerhaft.
-- **Gegenstandslos:** A16 (zweiter Verzweigungspunkt), U2 (Felder verstecken oder sperren), Q25.
-- **Angepasst:** A15 — das Referenzprojekt auf dem Altweg bleibt dauerhaft in der Basis, ebenso der
-  Rückweg-Test (E23).
+  Abschnitt „Tagesbilanz (Bestandsweg)" im Dialog; zwei Rechenwege nebeneinander bis zur Stufe GA
+  (E23, E26) — Referenzprojekt und Rückweg-Test in jeder Basis, gemeinsam genutzte Stellen
+  zweifach zu prüfen. Das bleibt ein Risiko, solange der Übergang läuft.
+- **Offen bleibt:** Q24 (wann GA beauftragt wird) und Q25 (Umfang der Stufe GA); der Vergleich
+  alt/neu im Bedarfsdialog (G2) bleibt, solange es beide Wege gibt, und entfällt mit GA.
+- **Gegenstandslos:** A16 (zweiter Verzweigungspunkt), U2 (Felder verstecken oder sperren).
+- **Angepasst:** A15 — das Referenzprojekt auf dem Altweg bleibt bis zur Stufe GA in der jeweils
+  aktuellen Basis, ebenso der Rückweg-Test (E23, E26); GA ist ein eigener Einfrieranlass.
 
 ## Aufgaben
 
@@ -142,8 +158,15 @@ ADR-002 in konsequenter Form; ADR-002 bleibt gültig und bekommt einen Ergänzun
        Vorbereitungsschritt bauen, Referenzlauf **byte-gleich**; erst dann den VDI-Weg anbinden.
 4. [ ] G1 + G2: Dialoge in VDI-Struktur mit eingeklapptem Abschnitt „Tagesbilanz (Bestandsweg)";
        Schalter „Rechenweg"; Ausweis „Tagesbilanz (Bestandsweg)".
-5. [x] Entscheid E23 (16.09.2026): Der Altweg bleibt dauerhaft, eine Stufe „Altweg entfernen"
-       entfällt; Q24 beantwortet, Q25 gegenstandslos (Konzept N1.28). Die Tagesverteilungstabellen
-       `Tab_DBTagV` und `Tab_DBTagV_Daten` behalten mit dem Altweg ihren Leser; ob die leserlosen
-       Spalten `WW_Bedarf` und `Waermebedarf` entfallen (Befund X), ist ein gewöhnlicher
-       Aufräumpunkt ohne eigene Stufe.
+5. [x] Entscheide E23 (16.09.2026) und E26 (17.09.2026): Der Altweg bleibt jetzt und arbeitet als
+       Übergang; die Ablösung ist die Stufe GA mit offenem Zeitpunkt. **Q24 und Q25 sind wieder
+       offen** (Konzept N1.28, N1.31). Die Tagesverteilungstabellen `Tab_DBTagV` und
+       `Tab_DBTagV_Daten` behalten mit dem Altweg ihren Leser und entfallen mit GA; die leserlosen
+       Spalten `WW_Bedarf` und `Waermebedarf` (Befund X) stehen in derselben Löschliste.
+6. [ ] Löschliste der Stufe GA im Umsetzungskonzept, Kapitel 6, führen und bei jedem Auftrag
+       fortschreiben, der einen Altweg-Sonderfall einführt (Entscheidung 6).
+7. [ ] Ausbauprobe einrichten: statisch in der Modultrennungswache (außer der Weiche in
+       `SimulationWaermebedarf`, dem Rückweg-Test und der Wache selbst nennt keine Datei des Kerns
+       `Altweg/`) und als Gate von GA (ein Bau mit umbenanntem Ordner `Altweg/` übersetzt nach
+       Entfernen der Weiche, und der Referenzlauf aller Projekte ohne Altweg-Gebäude bleibt
+       byte-gleich).
