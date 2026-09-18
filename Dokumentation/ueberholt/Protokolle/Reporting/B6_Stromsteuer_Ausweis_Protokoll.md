@@ -125,6 +125,16 @@ Abrechnungseinheit.
 | `Werkzeuge/ResourceDesigner` | zweiter Lauf +0 |
 | Referenzlauf 1030, 1007, 1017, 1045, 1046 gegen `2026-09-16_R8_Heizkessel_Kaskade` | alle fünf PASS, unverändert |
 
+**Nach dem Merge mit `origin/ios_migration_september`** (Stand „Merge #327") noch einmal ganz
+gefahren: Kern-Filter 0 Fehler / 5 Warnungen, `EPOS.Kern.Tests` 3 251/3 251,
+`EPOS.UI.Tests` 4 604/4 604, SpeicherEngine 378/378, KiKern 499/499, SpeicherPlanung 27/28 —
+beide Kulturen —, Windows-Schale 0 Fehler, SQL-Dialektprüfer 0 Fundstellen, Referenzlauf 5/5 PASS
+und **byte-gleich** zum Lauf davor (`diff -rq` ohne einen Unterschied). Drei Konflikte, alle
+inhaltlich zusammengeführt: die Statusdatei (beide Seiten; die eigene Zeile wandert von #324 auf
+**#328**, weil #324 bis #327 inzwischen vergeben sind), `WirtschaftlichkeitSeite.razor` (der
+Bewertungsblock aus #325 neben den Ressourcen-Vorgaben aus B6) und die Wiki-Quelle (der
+Bewertungsblock und die KWK-Einspeisevergütung aus #325 neben dem Modusabsatz aus B6).
+
 ## 6. Offene Punkte
 
 * **Der Befund B‑1 ist an der Testdatenbank nicht nachstellbar**, weil sie zu keinem Projekt
