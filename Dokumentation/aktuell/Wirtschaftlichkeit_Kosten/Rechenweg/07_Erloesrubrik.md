@@ -43,6 +43,36 @@ Kennzeichnung im Dialog: Vermerk `[Ausweis]` je Zeile, Summenzeile nur über Blo
 Differenz-Cashflows — die Referenzkosten laufen dort als Gegenposition; die Block-B-Kennzeichnung
 gilt für die **Absolutsicht**.
 
+**Drei Tiefen, drei Fragen.** Die Summe je Block und Komponente sagt, wie viel zusammenkommt; die
+Zeile nennt Menge, Satz und Herkunft in **einer** Spalte „Satz · Herkunft" (etwa „469,0 MWh × 5,5667 ct
+· Abs. 1 · Vorschlag, Katalog 2026"); Wahl und Herleitung stehen in der Überlagerung „Sätze und
+Herkunft" des BHKW-Dialogs (`05`). Ein von Hand gesetzter Satz steht in der Spalte als „eigener Wert
+6,00 — Vorschlag 5,5667". Block B zeigt je Komponente **eine** Zeile „Vermiedene Stromkosten wirksam"
+und trägt die Kette brutto − entgangene § 9b-Entlastung in der Herkunftsspalte; die Tabelle oben ist
+die ausgeschriebene Fassung derselben Zeilen.
+
+## Satz, Menge und Handeingabe je Zeile
+
+Je Zeile des Blocks A: woher der Satz kommt, welche Menge er trifft und was eine Handeingabe oder eine
+spätere Katalogänderung bewirkt — gemessen am Rechenkern (`KwkgSatzRechner`, `WirtschaftlichkeitCtrl`,
+`SteuerGutschriftRechner`, `GesetzKatalog`).
+
+| Zeile | Satz aus | Menge | Handeingabe · Katalogänderung |
+|---|---|---|---|
+| KWK-Zuschlag Einspeisung | `Tab_Energieanlagen.KWKG_Satz_Einspeisung` — das Feld **ist** der Satz (leer/0 = kein Zuschlag, kein Rückfall); der Vorschlag 5,5667 ct/kWh kommt aus `KwkgSatzRechner.Vorschlag` (Katalog `KWKG_ZUSCHLAG_EINSPEISUNG_*`, Stichtagsjahr = Inbetriebnahmejahr der Anlage, marginale Tranchen) und wird nur beim Übernehmen geschrieben | KWK-Einspeisung **netto** (Hilfsstrom abgezogen) × Deckelanteil des Jahres | Ein eigener Wert gilt dauerhaft und ungeprüft gegen die Staffel; eine Katalogänderung ändert nur den Vorschlag, nie den gespeicherten Satz. Der Modulnachweis führt Satz und Vorschlagsherleitung nebeneinander (`SatzAusAnlage`); ein Vergleich beider ist noch nicht gezeichnet (U23) |
+| KWK-Zuschlag Eigenstrom | `KWKG_Satz_Eigen` ebenso; Vorschlag 2,4167 ct/kWh nach dem Tatbestand `KWKG_Eigenstromfall` (`KWKG_ZUSCHLAG_EIGEN_N2_*`) | KWK-Eigenverbrauch **netto** × Deckelanteil | wie Einspeisung; zusätzlich: Tatbestand `KEINER` ⇒ 0 mit Meldung, leerer Tatbestand ⇒ Satz bleibt, Meldung „ungeprüft"; Nr. 1 über 100 kW ⇒ Vorschlag 0 |
+| Energiesteuer-Gutschrift Brennstoff | **nur Katalog**, jahresscharf: `ENERGIEST_53A5_ERDGAS` 4,42 €/MWh ab 2024 (§ 53a Abs. 5); die Wahl (`Energiesteuer_Wahl`, Anlage ?? Projekt) bestimmt den Schlüssel | gesamter BHKW-Brennstoff der Anlage, **brennwertbezogen**: 4.342,1 MWh (H_i) × eff_hs/eff_hi = 4.797,2 MWh (H_s); kein Kesselbrennstoff (Kessel mit § 53/53a ⇒ 0 mit Begründung); Nutzungsgrad 83 % ≥ 70 % | Keinen Satz von Hand; wer den Satz ändern will, pflegt die Katalogzeile (global, mit Herkunft im Ergebnis: `STEUER_HERKUNFT_FORMAT`). Eine neue Katalogzeile mit `JahrVon` wirkt beim nächsten Lauf im betreffenden Jahr von selbst |
+| Stromsteuer-Entlastung Netzbezug | nur Katalog: `STROMST_ENTLASTUNG_9B` 20,00 €/MWh ab 2026, Sockel `STROMST_SOCKELBETRAG_9B` 250 €/a | Netzbezug des Laufs (Restbezug **mit** Anlagen) | kein Satz von Hand; Bedingung Unternehmensart (Projekt); Katalogänderung wirkt jahresscharf |
+| Stromsteuer-Befreiung Eigenverbrauch (Block B) | nur Katalog: `STROMST_REGELSATZ` 20,50 €/MWh ab 2026 | KWK-Eigenverbrauch **brutto** aus der Strommatrix × Anteil der bestandenen Anlagen | kein Satz von Hand; Hocheffizienz, räumlicher Zusammenhang, Modus (Projekt); ohne Stundenreihen 0 mit Begründung |
+| Einspeiseerlös Strom | reiner Projektwert `Einspeiseverguetung_KWK` 0,0500 €/kWh (Zonen-/Rollentarif kann ihn ersetzen); kein Katalog, kein Vorschlag | KWK-Einspeisung der Strommatrix (`KwkEinspeisungGesamtMWh`) | Handeingabe ist der einzige Weg; leer oder 0 ⇒ keine KWK-Einspeiseerlöse, ohne Meldung; nominal konstant |
+| Energiesteuer-Entlastung Heizstoff (Kessel) | nur Katalog: `ENERGIEST_54_ERDGAS` 1,38 €/MWh ab 2024, Sockel 250 €/a einmal je Lauf | Kesselbrennstoff brennwertbezogen 2.272,3 MWh (H_s) | kein Satz von Hand; Bedingung Unternehmensart |
+| Vermiedene Netzentgelte (§ 18 StromNEV) | — | — | keine Zeile: der Rechenkern führt sie nicht, und für eine Anlage mit Inbetriebnahme 2026 gibt es sie nicht mehr (Auslaufregel des EnWG); die Rubrik ist hier vollständig |
+
+Der § 53a-Satz 4,42 €/MWh ist der **Erstattungsbetrag** (80 % des vollen Satzes 5,50 €/MWh), nicht die
+Reststeuer — Grundlagen § 3.3 und `GesetzKatalog`; Erdgas wird steuerlich brennwertbezogen bemessen
+(Grundlagen § 3.5). Der Faktor 1,1048 ist die auf vier Stellen gerundete Schreibweise von 11,6 ÷ 10,5;
+der Rechenkern rechnet mit dem ungerundeten Quotienten (Unterschied 0,5 €/a im Beispiel).
+
 ## Berechnungsgrundlage
 
 ```
@@ -95,3 +125,6 @@ darunter „abzüglich entgangener § 9b-Entlastung", mit dem effektiven Betrag 
 | E5 | Doppelzählung vermiedener Kosten | Block B nie addieren; Summenzeile nur Block A |
 | D-2 | eigene Rubrik in zwei Blöcken | entschieden 30.08.2026 |
 | — | Leistungsanteil der vermiedenen Kosten negativ | als Kernaussage ausweisen, nicht unterdrücken |
+| — | Die Vorschau des BHKW-Dialogs führte eine Summe „zahlungswirksam" (80.934,2 €), die weder der Variante 1 (82.644,2 €, § 9b auf 335,5 MWh) noch der Variante 3 (91.330,5 €, mit Photovoltaik) entsprach | Vorschau zeigt den Block Blockheizkraftwerk (76.184,2 €) und die projektweite § 9b-Zeile des Laufs „Beide Anlagen" getrennt — Mockup Abschnitt 5, `05` |
+| — | Spalte „Satz · Herkunft" je Zeile, Vermerk „eigener Wert — Vorschlag" | Mockup Abschnitt 7; Umsetzungsstand U23 (Vergleich Satz gegen Vorschlag im Nachweis) |
+| ⚠ S-1 | Hilfsstrom-Netting des Beispiels (70/30 auf die Nettoerzeugung) gegen die Kernregel „Eigen zuerst" — Zuschlag- und Einspeisezeile betroffen | Entscheid ausstehend, Einzelheiten in `05` und Umsetzungsstand U24 |
