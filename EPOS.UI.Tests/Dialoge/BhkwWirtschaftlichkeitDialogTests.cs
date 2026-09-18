@@ -427,19 +427,25 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     // Gruppe 2 — KWK-Zuschlag (Feldkarte 2.1 bis 2.11)
     // =====================================================================
 
+    /// <summary>
+    /// AUFTRAG #325 (Anwenderwunsch 17.09.2026): Die Gruppe fuehrt seither ZWOELF
+    /// Projektfelder — der Einspeisesatz des KWK-Stroms steht als ERSTES darin, vor
+    /// den Zuschlaegen: Er ist die Verguetung, der Zuschlag kommt obendrauf.
+    /// </summary>
     [Fact]
     public void Gruppe2_fuehrt_genau_die_elf_Projektfelder_der_Feldkarte()
     {
         var cut = Aufbauen();
         IElement g = Koerper(cut, 2);
 
-        Assert.Equal(6, Zahlenfelder(g));      // 2.1 2.2 2.3 2.4 2.5 2.8
+        Assert.Equal(7, Zahlenfelder(g));      // #325 + 2.1 2.2 2.3 2.4 2.5 2.8
         Assert.Equal(2, Auswahlfelder(g));     // 2.6 2.7
         Assert.Equal(1, Schalter(g));          // 2.9
         Assert.Equal(2, Datumsfelder(g));      // 2.10 2.11
 
         Assert.Equal(new[]
         {
+            "Einspeisevergütung KWK-Strom [€/kWh]:",
             "Bonus Eigenstrom [ct/kWh] (0 = aus):",
             "Bonus Einspeisung [ct/kWh]:",
             "Vbh-Deckel-Override [h/a]:",
@@ -452,6 +458,75 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
             "Stichtag, Vorgabe je Anlage:",
             "Inbetriebnahme, Vorgabe je Anlage:"
         }, Beschriftungen(g));
+    }
+
+    // =====================================================================
+    // AUFTRAG #325 — die Einspeiseverguetung des KWK-Stroms
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Satz steht hier und schreibt auf dieselbe Modelleigenschaft.</b>
+    /// Anwenderwunsch 17.09.2026: „heraus nehmen aus Parameter Dialog: … Strom —
+    /// Einspeisung und Bezug und in BHKW-Dialog". Es ist unveraendert
+    /// <c>WirtschaftlichkeitParameter.EinspeiseverguetungKWK</c> in EUR/kWh — der
+    /// Dialog hat nur die Eingabestelle uebernommen.
+    ///
+    /// <para>Und er schreibt wie jede andere Projektvorgabe dieses Dialogs ERST IM
+    /// OK-WEG: Bis dahin bleibt der hereingereichte Satz unangetastet.</para>
+    /// </summary>
+    [Fact]
+    public void Der_KWK_Einspeisesatz_steht_in_Gruppe_2_und_schreibt_den_Parametersatz()
+    {
+        var satz = new WirtschaftlichkeitParameter { EinspeiseverguetungKWK = 0.09 };
+        var zaehler = new Schreibzaehler();
+        var cut = Aufbauen(parameter: satz, speichereVorgaben: zaehler.Vorgaben);
+
+        // Das erste Dezimalfeld der Gruppe ist der Einspeisesatz, und es zeigt den
+        // geladenen Wert.
+        IElement feld = Koerper(cut, 2).QuerySelectorAll("input[inputmode=decimal]")[0];
+        Assert.Equal("0,0900", feld.GetAttribute("value"));
+
+        feld.Input("0,1234");
+
+        // Bis zum OK steht der geladene Satz unveraendert da.
+        Assert.Equal(0.09, satz.EinspeiseverguetungKWK);
+
+        OkKnopf(cut).Click();
+
+        Assert.Equal(0.1234, satz.EinspeiseverguetungKWK);
+        Assert.Contains("Vorgaben", zaehler.Wege);
+    }
+
+    /// <summary>
+    /// <b>0 heisst „nicht gepflegt"</b> — dieselbe Nullsemantik, die der Satz im
+    /// Parameterdialog hatte, und dieselbe, mit der <c>StromPreisCtrl</c> ihn liest.
+    /// Eine gepflegte 0 waere die Aussage „bringt nichts ein" und von einem nie
+    /// angefassten Feld an dieser Zahl nicht zu unterscheiden.
+    /// </summary>
+    [Fact]
+    public void Ein_KWK_Einspeisesatz_von_null_heisst_nicht_gepflegt()
+    {
+        var satz = new WirtschaftlichkeitParameter { EinspeiseverguetungKWK = 0.09 };
+        var cut = Aufbauen(parameter: satz, speichereVorgaben: _ => true);
+
+        Koerper(cut, 2).QuerySelectorAll("input[inputmode=decimal]")[0].Input("0");
+        OkKnopf(cut).Click();
+
+        Assert.Null(satz.EinspeiseverguetungKWK);
+    }
+
+    /// <summary>
+    /// Wer den Satz aendert, aendert die Speicherrechnung mit — und erfaehrt es an
+    /// Ort und Stelle (SP-E-5, sinngemaess je Satz).
+    /// </summary>
+    [Fact]
+    public void Der_KWK_Einspeisesatz_sagt_was_er_sonst_noch_bewegt()
+    {
+        var cut = Aufbauen();
+
+        string text = Koerper(cut, 2).TextContent;
+        Assert.Contains("v_bhkw", text);
+        Assert.Contains("nicht gepflegt", text);
     }
 
     [Fact]
@@ -507,7 +582,13 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         var cut = Aufbauen(new List<KwkgAnlagenAngabe>());
 
         Assert.True(cut.Find("button.epos-vorschlag").HasAttribute("disabled"));
-        Assert.Empty(Koerper(cut, 2).QuerySelectorAll("p.epos-herleitung"));
+
+        // AUFTRAG #325: Die Gruppe fuehrt seither EINE stehende Herleitungszeile - den
+        // Hinweis zum Einspeisesatz (SP-E-5). Die Zeilen des KATALOGVORSCHLAGS haengen
+        // weiter an einer gewaehlten Anlage; ohne sie steht keine davon da.
+        var zeilen = Koerper(cut, 2).QuerySelectorAll("p.epos-herleitung");
+        Assert.Single(zeilen);
+        Assert.Contains("v_bhkw", zeilen[0].TextContent);
     }
 
     // =====================================================================

@@ -75,6 +75,32 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string AOhneWahl { get; } = T("BHW_A_OHNE_WAHL", "Keine Anlage gewählt.");
 
     // ---------------------------------------------- Gruppe 2: KWK-Zuschlag
+    /// <summary>
+    /// AUFTRAG #325 (Anwenderwunsch 17.09.2026): Der Satz, mit dem der EINGESPEISTE
+    /// KWK-Strom vergütet wird, steht bei den Angaben des BHKW und nicht mehr in
+    /// einem Sammelabschnitt der Wirtschaftlichkeitsparameter. Der Schlüssel zieht
+    /// unverändert mit — es ist dasselbe Feld an derselben Modelleigenschaft
+    /// (<c>WirtschaftlichkeitParameter.EinspeiseverguetungKWK</c>), nur an einer
+    /// anderen Eingabestelle.
+    /// </summary>
+    public string PEinspKwk { get; } = T("WPAR_EINSP_KWK",
+        "Einspeisevergütung KWK-Strom [€/kWh]:");
+
+    /// <summary>
+    /// Was der Satz sonst noch bewegt (SP-E-5, sinngemäß für den KWK-Satz): Er
+    /// bewertet den eingespeisten BHKW-Strom in der Wirtschaftlichkeit UND stellt
+    /// den Verkaufspreis v_bhkw der Speicherwelt. Wer ihn ändert, muss erfahren,
+    /// was er damit noch ändert.
+    /// </summary>
+    public string PEinspKwkHinweis { get; } = T("BHW_P_EINSP_KWK_HINWEIS",
+        "Der Satz gilt für die ganze Anwendung: Er bewertet den eingespeisten " +
+        "BHKW-Strom in der Wirtschaftlichkeit UND stellt den Verkaufspreis, mit dem " +
+        "Stromspeicher und Speicherflotte den BHKW-Überschuss rechnen (v_bhkw). " +
+        "0 heißt „nicht gepflegt“; dann gilt für BHKW-Strom der PV-Satz aus den " +
+        "Wirtschaftlichkeits-Parametern, und ohne den rechnet die Speicherwelt mit 0 " +
+        "und weist das im Protokoll aus. Der KWK-Zuschlag kommt obendrauf — er " +
+        "ersetzt die Vergütung nicht.");
+
     public string PBonusEigen { get; } = T("BHW_P_BONUS_EIGEN", "Bonus Eigenstrom [ct/kWh] (0 = aus):");
     public string PBonusEinsp { get; } = T("BHW_P_BONUS_EINSP", "Bonus Einspeisung [ct/kWh]:");
     public string PDeckel { get; } = T("BHW_P_DECKEL", "Vbh-Deckel-Override [h/a]:");

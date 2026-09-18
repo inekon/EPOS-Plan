@@ -94,6 +94,11 @@ namespace WindowsFormsApplication1
                                      IReadOnlyDictionary<string, object>>(Unterdialog),
                 ["Nachlauf"] = new Func<WirtschaftlichkeitSeite.Unterdialog, bool, string>(Nachlauf),
 
+                // AUFTRAG #325 (Anwenderentscheid 17.09.2026): Der Freitext der nicht
+                // monetären Wirkungen wird auf der SEITE gepflegt, nicht mehr im
+                // Parameterdialog. Der Schreibweg ist derselbe, den der Dialog nahm.
+                ["WirkungSpeichern"] = new Func<string, bool>(WirkungSpeichern),
+
                 ["TitelText"] = T("WIRT_TITEL", "Wirtschaftlichkeit (Kapitalwertmethode DIN EN 17463)")
                                 + " — " + T("WIRT_STAMM", "Stamm:") + " " + _stammName,
                 ["LabelVarianten"] = T("WIRT_LBL_GRUPPE",
@@ -233,6 +238,10 @@ namespace WindowsFormsApplication1
             // darueber am PROJEKT und nicht an der Szenario- oder Vergleichswahl.
             stand.Wirkungszeile = Wirkungszeile();
 
+            // AUFTRAG #325: derselbe Wert, roh — der Bewertungsblock der Seite
+            // bearbeitet ihn, die Zeile darüber weist ihn aus.
+            stand.NichtMonetaer = NichtMonetaer();
+
             return stand;
         }
 
@@ -301,6 +310,43 @@ namespace WindowsFormsApplication1
                                      MyResource.Resource.WIRT_NM_ZEILE, text.Trim());
             }
             catch { return ""; }
+        }
+
+        /// <summary>
+        /// AUFTRAG #325 (Anwenderentscheid 17.09.2026): der GEPFLEGTE Freitext, roh —
+        /// das, was der Bewertungsblock der Seite zum Bearbeiten bekommt. Ein
+        /// Lesefehler liefert den leeren Text; der Block bleibt dann leer und
+        /// überschreibt nichts, solange der Anwender nicht selbst speichert.
+        /// </summary>
+        private string NichtMonetaer()
+        {
+            try
+            {
+                WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+                return p != null && p.NichtMonetaer != null ? p.NichtMonetaer : "";
+            }
+            catch { return ""; }
+        }
+
+        /// <summary>
+        /// AUFTRAG #325: Schreibt den Freitext fort — <b>derselbe Weg, den der
+        /// Parameterdialog nahm</b>: den vollständigen Parametersatz frisch lesen, das
+        /// eine Feld setzen, <c>SpeichereParameter</c>. So bleibt alles Übrige
+        /// unverändert stehen, auch wenn es eine andere Maske zwischenzeitlich
+        /// geändert hat.
+        /// </summary>
+        private bool WirkungSpeichern(string text)
+        {
+            try
+            {
+                WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+                if (p == null) return false;
+                p.NichtMonetaer = text ?? "";
+                if (!_ctrl.SpeichereParameter(p)) return false;
+                _parameterCache = p;
+                return true;
+            }
+            catch { return false; }
         }
 
         private string Parameterzeile()

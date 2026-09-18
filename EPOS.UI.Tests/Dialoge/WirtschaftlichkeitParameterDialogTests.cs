@@ -24,9 +24,13 @@ namespace EPOS.UI.Tests.Dialoge;
 ///       „Vorgaben“. Die Erwartet-Spalte ist Anzeige. Die Felder stehen im
 ///       Feldbestand ZWISCHEN Allgemein und Strom — daher die verschobenen Indizes
 ///       der Zahlenfelder unten.</item>
-/// <item>Bewertung nach DIN EN 17463 (immer, ETAPPE W5‑B‑12): das mehrzeilige
-///       Freitextfeld „Nicht monetäre Wirkungen“ (VALERI-Lücke G6)</item>
-/// <item>Strom (immer): Einspeisung PV, Einspeisung KWK, Aufschläge-Anzeige (3)</item>
+/// <item>Strom (immer): Einspeisung PV (1). AUFTRAG #325 (17.09.2026): Der
+///       KWK-Satz steht im Dialog „BHKW-Wirtschaftlichkeit", der Freitextblock
+///       „Bewertung nach DIN EN 17463" auf der Seite „Wirtschaftlichkeit“ — beide
+///       sind hier ausgezogen. Der PV-Satz BLEIBT: Zwei Rechenwege brauchen ihn
+///       auch ohne PV-Anlage im Projekt (v_bhkw-Rückfall und Arbitrage-Verkauf in
+///       <c>StromPreisCtrl</c>), und der PV-Vergütungsdialog wäre dann nicht
+///       erreichbar.</item>
 /// <item>BHKW (nur mit BHKW): Verweis + Sprungknopf</item>
 /// <item>Brennstoff (nur mit Brennstoff-Erzeuger): CO₂ + Katalogknopf + Park +
 ///       Referenzkessel + Bilanzjahr, Methode, Biomasse, Nachweis (7)</item>
@@ -50,12 +54,13 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     // ETAPPE W5-B-12 (09.09.2026): p_I bringt ein viertes Dezimalfeld nach
     // "Allgemein" und eine siebte Zeile in die Szenariotabelle - genau diese zwei
     // Zahlen aendern sich hier, der Rest rechnet sich daraus.
+    // AUFTRAG #325 (17.09.2026): Der KWK-Satz ist ausgezogen - die Stromgruppe
+    // fuehrt nur noch EIN Zahlenfeld, und die Indizes ruecken um eins nach.
     private const int ALLGEMEIN_FELDER = 4;
     private const int SZENARIO_FELDER = 14;
     private const int EINSPEISUNG_PV = ALLGEMEIN_FELDER + SZENARIO_FELDER;
-    private const int EINSPEISUNG_KWK = EINSPEISUNG_PV + 1;
-    private const int CO2 = EINSPEISUNG_KWK + 1;
-    private const int FELDER_OHNE_ERZEUGER = ALLGEMEIN_FELDER + SZENARIO_FELDER + 2;
+    private const int CO2 = EINSPEISUNG_PV + 1;
+    private const int FELDER_OHNE_ERZEUGER = ALLGEMEIN_FELDER + SZENARIO_FELDER + 1;
 
     private static WirtschaftlichkeitParameter Satz() => new WirtschaftlichkeitParameter
     {
@@ -133,17 +138,18 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
 
         Assert.Equal(new[] { "Allgemein",
                              "Szenarien — Best und Worst gegen den Erwartungsfall",
-                             "Bewertung nach DIN EN 17463",
                              "Strom — Einspeisung und Bezug" },
                      cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToArray());
 
-        // Zins, PreisE, PreisB, PreisI (4) + Szenarien 7×2 (14) + Einspeisung PV, KWK (2)
+        // Zins, PreisE, PreisB, PreisI (4) + Szenarien 7×2 (14) + Einspeisung PV (1)
         Assert.Equal(FELDER_OHNE_ERZEUGER, cut.FindAll("input[inputmode=decimal]").Count);
         Assert.Single(cut.FindAll("input[inputmode=numeric]"));   // T
         // SP-E-2: Der Anzeigehaken „Aufschlaege beruecksichtigen" ist entfallen -
         // die Preisanteile zerlegen den Arbeitspreis, statt auf ihn zu kommen.
         Assert.Empty(cut.FindAll("input[type=checkbox]"));
         Assert.Empty(cut.FindAll("select"));
+        // AUFTRAG #325: kein Freitextfeld mehr - der Bewertungsblock steht auf der Seite.
+        Assert.Empty(cut.FindAll("textarea"));
     }
 
     [Fact]
@@ -352,21 +358,35 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// VALERI-Lücke G6: Das mehrzeilige Freitextfeld nimmt die nicht monetären Wirkungen
-    /// auf und schreibt sie in den Parametersatz — von dort holen Bericht und Seite sie.
+    /// AUFTRAG #325 (Anwenderentscheid 17.09.2026): <b>Der Dialog führt die drei
+    /// ausgezogenen Abschnitte nicht mehr.</b> „Bewertung nach DIN EN 17463" steht auf
+    /// der Seite „Wirtschaftlichkeit", der KWK-Satz im Dialog
+    /// „BHKW-Wirtschaftlichkeit"; der PV-Satz bleibt (Haltepunkt des Auftrags).
+    ///
+    /// <para><b>Was er nicht zeigt, schreibt er auch nicht:</b> Ein geladener Freitext
+    /// geht wertgleich durch den Dialog hindurch — dieselbe Regel, mit der schon die
+    /// ausgezogenen BHKW-Gruppen behandelt werden.</para>
     /// </summary>
     [Fact]
-    public void Der_Freitext_der_nicht_monetaeren_Wirkungen_wird_uebernommen()
+    public void Die_drei_ausgezogenen_Abschnitte_stehen_nicht_mehr_im_Dialog()
     {
         WirtschaftlichkeitParameter satz = Satz();
-        var cut = Aufbauen(satz);
+        satz.NichtMonetaer = "Versorgungssicherheit, Arbeitsschutz";
+        satz.EinspeiseverguetungKWK = 0.09;
+        var cut = Aufbauen(satz, speichern: () => true);
 
-        var feld = cut.Find("textarea");
-        Assert.Equal("", feld.TextContent);
+        // Kein Freitextfeld, keine Bewertungsgruppe.
+        Assert.Empty(cut.FindAll("textarea"));
+        Assert.DoesNotContain("Bewertung nach DIN EN 17463", cut.Markup);
+        // Kein KWK-Satz - aber der PV-Satz steht da.
+        Assert.DoesNotContain("KWK-Strom", cut.Markup);
+        Assert.Contains("Einspeisevergütung PV", cut.Markup);
 
-        feld.Input("Versorgungssicherheit, Arbeitsschutz");
+        cut.Find(".epos-knopf--primaer").Click();
 
+        // Beides steht unverändert im Satz: Was der Dialog nicht zeigt, schreibt er nicht.
         Assert.Equal("Versorgungssicherheit, Arbeitsschutz", satz.NichtMonetaer);
+        Assert.Equal(0.09, satz.EinspeiseverguetungKWK);
     }
 
     private static IElement Zelle(IElement zeile, int nummer) =>
@@ -394,17 +414,26 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     // Nullsemantik
     // =====================================================================
 
+    /// <summary>
+    /// AUFTRAG #325, HALTEPUNKT: <b>Der PV-Satz bleibt in DIESEM Dialog.</b> Er wird
+    /// auch dort gebraucht, wo das Projekt gar keine PV-Anlage führt — der
+    /// PV-Vergütungsdialog hängt aber an genau dieser Anlage. Zwei Rechenwege belegen
+    /// es: <c>StromPreisCtrl.VerguetungenBauen</c> nimmt ihn als Rückfall für v_bhkw,
+    /// und der Verkaufserlös der Arbitrage ist außerhalb des Spotmarkts eine Kopie
+    /// von v_pv.
+    /// </summary>
     [Fact]
-    public void Ein_KWK_Preis_von_null_heisst_nicht_gepflegt()
+    public void Der_PV_Einspeisesatz_bleibt_im_Parameterdialog()
     {
         WirtschaftlichkeitParameter satz = Satz();
         var cut = Aufbauen(satz);
 
-        cut.FindAll("input[inputmode=decimal]")[EINSPEISUNG_KWK].Input("0,1200");
-        Assert.Equal(0.12, satz.EinspeiseverguetungKWK);
+        cut.FindAll("input[inputmode=decimal]")[EINSPEISUNG_PV].Input("0,1200");
+        Assert.Equal(0.12, satz.Einspeiseverguetung);
 
-        cut.FindAll("input[inputmode=decimal]")[EINSPEISUNG_KWK].Input("0");
-        Assert.Null(satz.EinspeiseverguetungKWK);
+        // Der Hinweis sagt, was der Satz sonst noch bewegt (SP-E-5).
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent.Contains("v_pv"));
     }
 
     [Fact]

@@ -119,10 +119,27 @@
         </KindInhalt>
     </Raster>
 
+    @* AUFTRAG #325 (Anwenderwunsch 17.09.2026): "button parameter nach oben …
+       auf Ebene Szenario". Der Einstieg in die Wirtschaftlichkeits-Parameter
+       stand bis hierher in der Fussleiste UNTER der langen Vergleichstabelle und
+       war auf dem Bildschirm des Anwenders nicht zu sehen - derselbe Befund, den
+       schon der Rechenknopf des Warnbandes hatte (#267). Er steht jetzt dort, wo
+       die Groessen gewaehlt werden, mit denen er rechnet.
+
+       KEINE EIGENE STILREGEL. Die Zeile ist eine .epos-seite-zeile, und die
+       richtet ihre Kinder an der UNTERKANTE aus (align-items: flex-end): Das
+       beschriftete Auswahlfeld und der unbeschriftete Knopf sitzen damit auf einer
+       Grundlinie, nicht versetzt. Dieselbe Bauform traegt die Variantenzeile der
+       Simulationsseite (Auswahlfeld + Knoepfe in einer Zeile). *@
     <div class="epos-seite-zeile">
         <Auswahlfeld Bezeichnung="@LabelSzenario" Eintraege="@_stand.Szenarien"
                      Auswahl="@_stand.SzenarioId" Aktiv="@(!_laeuft)"
                      AuswahlChanged="BeiSzenario" />
+        @if (Gaben is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@_laeuft"
+                    @onclick="() => Oeffne(Unterdialog.Parameter)">@ParameterText</button>
+        }
     </div>
 
     @* W5-B-9: Erst der Satz DIESES Szenarios, dann der Projekt-Parameternachweis.
@@ -193,6 +210,55 @@
         <Herleitungszeile Text="@_stand.Ansicht.Empfehlungszeile" />
     }
 
+    @* ------------------------------------ Bewertung nach DIN EN 17463 (#325) *@
+    @* AUFTRAG #325 (Anwenderentscheid 17.09.2026): "heraus nehmen aus Parameter
+       Dialog: 1. Bewertung nach DIN EN 17463". Der Text steht jetzt DA, WO AUCH
+       DER KAPITALWERT STEHT - die Norm will beides nebeneinander; in einem
+       Unterdialog stand er neben Rechengroessen, die ihn nichts angehen.
+
+       AUFKLAPPBAR ueber den Hausknopf .epos-modulparameter-knopf (W6-E-1, dieselbe
+       Form fuer denselben Zweck): Der Offen-Zustand gehoert der Seite und ueberlebt
+       jeden Auffrischlauf; aria-expanded sagt ihn an. Keine neue Stilregel.
+
+       DIESELBE WAHRHEIT, andere Eingabestelle: Es ist unveraendert
+       WirtschaftlichkeitParameter.NichtMonetaer. Die Zeile im Nachweisblock oben
+       (Wirkungszeile) bleibt der AUSWEIS - sie zeigt denselben Wert fertig
+       formuliert und entfaellt, solange nichts erfasst ist.
+
+       EINE SEITE HAT KEIN OK. Geschrieben wird deshalb auf Zuruf ueber den Knopf
+       daneben - nicht bei jedem Tastendruck (das Textfeld meldet jede Eingabe) und
+       nicht still beim Verlassen der Seite. Danach frischt die Seite auf, damit der
+       Ausweis oben dem folgt, was gerade geschrieben wurde. *@
+    @if (WirkungSpeichern is not null)
+    {
+        <button type="button" class="epos-modulparameter-knopf"
+                aria-expanded="@(_bewertungOffen ? "true" : "false")"
+                @onclick="BewertungUmschalten">
+            <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_bewertungOffen ? "▾" : "▸")</span>
+            <span>@BewertungTitel</span>
+        </button>
+
+        @if (_bewertungOffen)
+        {
+            <Formularraster>
+                <KindInhalt>
+                    <Textfeld Bezeichnung="@NichtMonetaerText" Mehrzeilig="true" Zeilen="5"
+                              Platzhalter="@NichtMonetaerPlatz" NurLesen="@_laeuft"
+                              Wert="@_nichtMonetaer"
+                              WertChanged="@(w => _nichtMonetaer = w)" />
+                </KindInhalt>
+            </Formularraster>
+            <Herleitungszeile Text="@NichtMonetaerHinweis" />
+            @* KEIN .epos-leiste um diesen einen Knopf: Die Fussleiste der Seite ist
+               genau eine, und eine zweite Leiste unmittelbar im Seitenwirt waere
+               keine Leiste mehr, sondern eine zweite Fussleiste mitten im Text.
+               Ein einzelner Knopf steht ohne Wirt - wie "Vorgaben" im
+               Parameterdialog. *@
+            <button type="button" class="epos-knopf" disabled="@_laeuft"
+                    @onclick="WirkungSchreiben">@BewertungSpeichernText</button>
+        }
+    }
+
     @if (_laeuft)
     {
         <div class="epos-fortschritt">
@@ -223,10 +289,10 @@
             <button type="button" class="epos-knopf" disabled="@_laeuft"
                     @onclick="() => Oeffne(Unterdialog.Strombezug)">@StrombezugText</button>
         }
+        @* AUFTRAG #325: "Parameter…" steht nicht mehr hier, sondern oben in der
+           Zeile der Szenariowahl. Die uebrigen Einstiege bleiben, wo sie sind. *@
         @if (Gaben is not null)
         {
-            <button type="button" class="epos-knopf" disabled="@_laeuft"
-                    @onclick="() => Oeffne(Unterdialog.Parameter)">@ParameterText</button>
             <button type="button" class="epos-knopf" disabled="@_laeuft"
                     @onclick="() => Oeffne(Unterdialog.Verlauf)">@VerlaufText</button>
         }
@@ -372,6 +438,18 @@
     /// </summary>
     [Parameter] public Func<Unterdialog, bool, string>? Nachlauf { get; set; }
 
+    /// <summary>
+    /// AUFTRAG #325 (Anwenderentscheid 17.09.2026): Schreibt die nicht monetären
+    /// Wirkungen fort (<c>WirtschaftlichkeitCtrl.SpeichereParameter</c> über die
+    /// Hülle); <c>true</c> = geschrieben. <b>Kein Delegat, kein Knopf</b> — ohne ihn
+    /// erscheint der Bewertungsblock gar nicht.
+    ///
+    /// <para>Es ist derselbe Speicherweg auf dieselbe Modelleigenschaft
+    /// (<c>Parameter.NichtMonetaer</c>), den bis zu diesem Auftrag der
+    /// Parameterdialog nahm — nur die Eingabestelle ist eine andere.</para>
+    /// </summary>
+    [Parameter] public Func<string, bool>? WirkungSpeichern { get; set; }
+
     /// <summary>Hilfeschlüssel — der der alten Maske.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "UcWirtschaftlichkeit.btn_Help";
 
@@ -414,6 +492,44 @@
     /// zum Stand passen — der Grund, warum der Knopf daneben steht.</summary>
     [Parameter] public string NachrechnenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN;
 
+    // ---- Bewertung nach DIN EN 17463 (AUFTRAG #325) ----------------------
+    //
+    // DIE VIER SCHLUESSEL ZIEHEN UNVERAENDERT MIT aus dem Parameterdialog:
+    // WPAR_G_BEWERTUNG, WPAR_NICHT_MONETAER, WPAR_NICHT_MONETAER_PLATZ und
+    // WPAR_NICHT_MONETAER_HINWEIS. Kein neuer, kein umbenannter Schluessel - es ist
+    // derselbe Abschnitt an einem anderen Ort. Der Speichernknopf nimmt
+    // WPAR_BTN_SPEICHERN, den es ebenfalls schon gibt.
+
+    /// <summary>Überschrift des Bewertungsblocks (Schlüssel <c>WPAR_G_BEWERTUNG</c>).</summary>
+    [Parameter] public string BewertungTitel { get; set; }
+        = BhwTexte.T("WPAR_G_BEWERTUNG", "Bewertung nach DIN EN 17463");
+
+    /// <summary>Beschriftung des Freitextfeldes (<c>WPAR_NICHT_MONETAER</c>).</summary>
+    [Parameter] public string NichtMonetaerText { get; set; }
+        = BhwTexte.T("WPAR_NICHT_MONETAER", "Nicht monetäre Wirkungen:");
+
+    /// <summary>Platzhalter im leeren Feld (<c>WPAR_NICHT_MONETAER_PLATZ</c>).</summary>
+    [Parameter] public string NichtMonetaerPlatz { get; set; }
+        = BhwTexte.T("WPAR_NICHT_MONETAER_PLATZ",
+            "z. B. Versorgungssicherheit, Arbeitssicherheit, Komfort, Außenwirkung, "
+            + "Erfüllung einer Auflage");
+
+    /// <summary>Herleitungszeile unter dem Feld (<c>WPAR_NICHT_MONETAER_HINWEIS</c>).</summary>
+    [Parameter] public string NichtMonetaerHinweis { get; set; }
+        = BhwTexte.T("WPAR_NICHT_MONETAER_HINWEIS", "");
+
+    /// <summary>Beschriftung des Schreibknopfs (<c>WPAR_BTN_SPEICHERN</c>).</summary>
+    [Parameter] public string BewertungSpeichernText { get; set; }
+        = BhwTexte.T("WPAR_BTN_SPEICHERN", "Speichern");
+
+    /// <summary>Meldung nach dem Schreiben (<c>WIRT_NM_GESPEICHERT</c>).</summary>
+    [Parameter] public string BewertungGespeichertText { get; set; }
+        = BhwTexte.T("WIRT_NM_GESPEICHERT", "Nicht monetäre Wirkungen gespeichert.");
+
+    /// <summary>Meldung, wenn das Schreiben scheitert (<c>WPAR_MSG_SPEICHERFEHLER</c>).</summary>
+    [Parameter] public string BewertungFehlerText { get; set; }
+        = BhwTexte.T("WPAR_MSG_SPEICHERFEHLER", "Der Parametersatz konnte nicht gespeichert werden.");
+
     /// <summary>Meldung beim Versuch, die Stammzeile abzuwählen.
     /// <inheritdoc cref="TitelText" path="/summary/text()[last()]"/></summary>
     [Parameter] public string MeldungStammReferenz { get; set; }
@@ -447,6 +563,21 @@
     /// <summary>Die gespeicherten Ergebnisse passen nicht mehr zum Stand — dann steht
     /// der Rechenknopf oben im Warnband (Auftrag #267).</summary>
     private bool _nachrechnen;
+
+    /// <summary>Steht der Bewertungsblock offen? (AUFTRAG #325) Der Zustand gehört der
+    /// Seite und überlebt jeden Auffrischlauf — das ist der Grund für den Knopf statt
+    /// eines <c>&lt;details&gt;</c>.</summary>
+    private bool _bewertungOffen;
+
+    /// <summary>Der Arbeitsstand des Freitextes (AUFTRAG #325). Geschrieben wird er
+    /// erst auf Zuruf; bis dahin bleibt der geladene Stand unangetastet.</summary>
+    private string _nichtMonetaer = "";
+
+    /// <summary>Steht der Bewertungsblock offen? (Prüfhilfe)</summary>
+    public bool BewertungOffen => _bewertungOffen;
+
+    /// <summary>Der Arbeitsstand des Freitextes (Prüfhilfe).</summary>
+    public string NichtMonetaer => _nichtMonetaer;
 
     /// <summary>Die Warnungen des Bandes (Prüfhilfe).</summary>
     public IReadOnlyList<string> Warnungen => _warnungen;
@@ -483,6 +614,12 @@
             if (z.IstStamm && !_gewaehlt.Contains(z.IdProjekt)) _gewaehlt.Add(z.IdProjekt);
 
         _status = _stand.Statuszeile ?? "";
+
+        // AUFTRAG #325: Der Freitext folgt dem frisch gelesenen Stand — er hängt am
+        // Projekt und nicht an Szenario oder Vergleichswahl. Ein OFFENER Block mit
+        // ungeschriebener Eingabe behält sie: Auffrischen läuft auch nach jedem
+        // Unterdialog, und der Anwender soll seinen halben Satz nicht dabei verlieren.
+        if (!_bewertungOffen) _nichtMonetaer = _stand.NichtMonetaer ?? "";
 
         // AUFTRAG #267: Warnband und Rechenweg folgen dem frisch gelesenen Stand.
         // Das Warnzeichen der Statuszeile ist die EINE Marke, mit der die Hülle
@@ -526,6 +663,45 @@
         _stand.SzenarioId = id ?? 0;
         if (Anzeigen is not null) _stand.Ansicht = Anzeigen(_stand.SzenarioId);
         WarnbandAuffrischen();          // #267: jedes Szenario hat seine eigenen Gründe
+    }
+
+    // =====================================================================
+    // Bewertung nach DIN EN 17463 (AUFTRAG #325)
+    // =====================================================================
+
+    /// <summary>
+    /// Auf- und zuklappen. Beim ÖFFNEN wird der geladene Stand geholt — wer den
+    /// Block aufmacht, soll sehen, was gespeichert ist, und nicht einen Rest von
+    /// vorhin. Beim Schließen bleibt nichts liegen: Was nicht geschrieben wurde,
+    /// ist nicht geschrieben, und der nächste Auffrischlauf setzt den Stand zurück.
+    /// </summary>
+    private void BewertungUmschalten()
+    {
+        _bewertungOffen = !_bewertungOffen;
+        if (_bewertungOffen) _nichtMonetaer = _stand.NichtMonetaer ?? "";
+    }
+
+    /// <summary>
+    /// Schreibt den Freitext fort — derselbe Weg, den bis zu diesem Auftrag der
+    /// Parameterdialog nahm. Danach frischt die Seite auf, damit der Ausweis im
+    /// Nachweisblock dem folgt, was gerade geschrieben wurde.
+    ///
+    /// <para>Scheitert das Schreiben, SAGT die Seite es und behält die Eingabe —
+    /// ein stiller Fehlschlag wäre die Behauptung, der Text stünde in der
+    /// Datenbank.</para>
+    /// </summary>
+    private void WirkungSchreiben()
+    {
+        if (_laeuft || WirkungSpeichern is null) return;
+
+        string text = _nichtMonetaer;
+        if (!WirkungSpeichern(text)) { _fehler = BewertungFehlerText; return; }
+
+        _fehler = "";
+        _stand.NichtMonetaer = text;
+        Auffrischen();
+        _nichtMonetaer = text;
+        _status = BewertungGespeichertText;
     }
 
     // =====================================================================

@@ -1,0 +1,1492 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ergebnis, Bandbreite, Herkunft</title>
+<style>
+:root{
+  --papier:#F5F7FA;
+  --karte:#FFFFFF;
+  --tinte:#16202F;
+  --tinte-weich:#4A5769;
+  --tinte-blass:#7C8798;
+  --linie:#DDE3EC;
+  --linie-stark:#C3CCDA;
+  --marine:#0F1F3D;
+  --marine-hell:#1A3261;
+  --erloes:#0B6B5B;
+  --erloes-grund:#E6F2EF;
+  --kosten:#B22222;
+  --kosten-grund:#FBEAEA;
+  --warn:#8A6100;
+  --warn-grund:#FFF6E0;
+  --warn-kante:#C88A00;
+  --ausweis:#5A6B85;
+  --ausweis-grund:#EDF1F7;
+  --code-grund:#F0F3F8;
+  --band:#BFDDD4;
+  --schatten:0 1px 2px rgba(15,31,61,.06), 0 8px 24px rgba(15,31,61,.08);
+  --schatten-fenster:0 2px 4px rgba(15,31,61,.12), 0 18px 44px rgba(15,31,61,.18);
+  --schrift:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"DejaVu Sans Mono","Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papier:#10151E; --karte:#171E2A; --tinte:#E4E9F1; --tinte-weich:#A7B2C3;
+    --tinte-blass:#78849A; --linie:#2A3444; --linie-stark:#3B4759;
+    --marine:#0F1F3D; --marine-hell:#3D63A8;
+    --erloes:#4FBFA6; --erloes-grund:#12302B; --kosten:#E77373; --kosten-grund:#331A1A;
+    --warn:#E0AE3E; --warn-grund:#33290F; --warn-kante:#C88A00;
+    --ausweis:#93A2BA; --ausweis-grund:#1D2532; --code-grund:#121926; --band:#1F4A42;
+    --schatten:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --papier:#10151E; --karte:#171E2A; --tinte:#E4E9F1; --tinte-weich:#A7B2C3;
+  --tinte-blass:#78849A; --linie:#2A3444; --linie-stark:#3B4759;
+  --marine:#0F1F3D; --marine-hell:#3D63A8;
+  --erloes:#4FBFA6; --erloes-grund:#12302B; --kosten:#E77373; --kosten-grund:#331A1A;
+  --warn:#E0AE3E; --warn-grund:#33290F; --warn-kante:#C88A00;
+  --ausweis:#93A2BA; --ausweis-grund:#1D2532; --code-grund:#121926; --band:#1F4A42;
+  --schatten:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--papier); color:var(--tinte);
+  font-family:var(--schrift); font-size:15px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0; text-wrap:balance; letter-spacing:-.01em}
+code,kbd,.mono,.svgmono{font-family:var(--mono)}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- Gerüst ---------- */
+.huelle{max-width:1180px;margin:0 auto;padding:0 16px 96px}
+@media (min-width:700px){.huelle{padding:0 24px 96px}}
+.kopf{padding:48px 0 32px;border-bottom:2px solid var(--tinte)}
+.augenbraue{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tinte-blass);margin-bottom:14px}
+.kopf h1{font-size:clamp(30px,5vw,50px);font-weight:700;line-height:1.05}
+.kopf .unter{margin-top:16px;max-width:64ch;color:var(--tinte-weich);font-size:16.5px}
+.stand{margin-top:26px;display:flex;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:11.5px}
+.stand span{background:var(--karte);border:1px solid var(--linie);border-radius:4px;
+  padding:4px 9px;color:var(--tinte-weich)}
+.stand span b{color:var(--tinte);font-weight:600}
+
+.hinweisband{margin:28px 0 0;padding:14px 18px;border-left:3px solid var(--warn-kante);
+  background:var(--warn-grund);color:var(--warn);border-radius:0 6px 6px 0;font-size:14px}
+
+/* ---------- Navigation ---------- */
+.rumpf{display:grid;grid-template-columns:200px 1fr;gap:48px;align-items:start;margin-top:44px}
+nav{position:sticky;top:20px;font-size:13.5px}
+nav .navtitel{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tinte-blass);padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--linie)}
+nav a{display:block;padding:6px 0 6px 12px;color:var(--tinte-weich);text-decoration:none;
+  border-left:2px solid var(--linie);line-height:1.35}
+nav a:hover{color:var(--tinte);border-left-color:var(--marine-hell)}
+nav a:focus-visible{outline:2px solid var(--marine-hell);outline-offset:2px}
+nav a.schwer{color:var(--tinte);font-weight:600}
+nav a.schwer::after{content:"Schwerpunkt";display:block;font-size:10px;font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--erloes)}
+@media (max-width:1040px){
+  .rumpf{grid-template-columns:1fr;gap:0}
+  nav{position:static;margin-bottom:32px}
+  nav .navliste{columns:2;gap:20px}
+}
+
+/* ---------- Abschnitt ---------- */
+section.kap{padding-top:52px;scroll-margin-top:16px}
+section.kap + section.kap{border-top:1px solid var(--linie);margin-top:20px}
+.kap-kopf{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.kap-kopf h2{font-size:28px;font-weight:700}
+.kap-marke{font-family:var(--mono);font-size:11px;color:var(--tinte-blass);
+  border:1px solid var(--linie-stark);border-radius:3px;padding:2px 7px}
+.kap-lead{color:var(--tinte-weich);max-width:74ch;margin:8px 0 26px}
+.zone{font-size:11.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--tinte-blass);display:flex;align-items:center;gap:10px;margin:34px 0 14px}
+.zone::after{content:"";flex:1;height:1px;background:var(--linie)}
+
+/* ---------- Seitenrahmen (die vorgeschlagene Oberfläche) ---------- */
+.seite{
+  --p-grund:#FAFBFC; --p-tinte:#1B1B1B; --p-weich:#5A5A5A; --p-linie:#D6DBE2; --p-feld:#FFFFFF;
+  font-family:"Segoe UI",Tahoma,sans-serif;font-size:13px;line-height:1.5;
+  background:var(--p-grund);color:var(--p-tinte);
+  border:1px solid #9AA6B8;border-radius:7px;overflow:hidden;box-shadow:var(--schatten-fenster);
+}
+.s-band{background:var(--marine);color:#fff;padding:9px 14px;display:flex;align-items:center;
+  gap:10px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
+.s-band .s-sub{margin-left:auto;font-weight:400;font-size:11.5px;color:#A9BDDF}
+.s-leib{padding:14px}
+.s-zeile{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.s-lab{color:var(--p-weich)}
+.s-combo{background:var(--p-feld);border:1px solid #8C97A8;border-radius:2px;
+  padding:3px 26px 3px 8px;position:relative;font-size:12.5px;min-width:150px}
+.s-combo::after{content:"\25BE";position:absolute;right:7px;top:2px;color:var(--p-weich);font-size:11px}
+.s-knopf{border:1px solid #8C97A8;background:linear-gradient(#FDFDFE,#EEF1F5);border-radius:4px;
+  padding:4px 14px;font-size:12.5px;color:var(--p-tinte)}
+.s-knopf.primaer{background:var(--marine-hell);border-color:var(--marine);color:#fff;font-weight:600}
+.s-herleitung{font-family:var(--mono);font-size:11px;color:var(--p-weich);line-height:1.55;
+  padding:3px 0}
+.s-herleitung b{color:#1A3261;font-weight:600}
+.s-info{color:var(--p-weich);font-size:11.5px;margin-top:8px}
+.s-warn{background:#FFF6E0;border:1px solid #E8CF95;border-left:3px solid #C88A00;color:#8A6100;
+  border-radius:0 4px 4px 0;padding:7px 10px;margin-top:10px;font-size:11.5px}
+.s-fuss{border-top:1px solid var(--p-linie);background:#F0F2F6;padding:8px 14px;display:flex;
+  gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+.s-fuss .s-status{margin-right:auto;color:var(--p-weich);font-size:11.5px}
+.s-klapp{border:1px solid var(--p-linie);border-radius:5px;background:var(--p-feld);margin-top:12px}
+.s-klapp > summary{padding:7px 12px;cursor:default;font-weight:600;font-size:12.5px;
+  list-style:none;display:flex;align-items:center;gap:8px}
+.s-klapp > summary::before{content:"\25B8";color:var(--p-weich)}
+.s-klapp[open] > summary::before{content:"\25BE"}
+.s-klapp > summary::-webkit-details-marker{display:none}
+.s-klapp .s-klappleib{padding:0 12px 12px;border-top:1px solid var(--p-linie);padding-top:10px}
+
+/* Empfehlungsband */
+.empf{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px}
+.empf-karte{border:1px solid var(--p-linie);border-radius:6px;background:var(--p-feld);
+  padding:11px 13px 12px;border-top:3px solid var(--p-linie)}
+.empf-karte.ja{border-top-color:#0B6B5B}
+.empf-karte.bedingt{border-top-color:#C88A00}
+.empf-karte.nein{border-top-color:#B22222}
+.empf-karte .ek-name{font-weight:600;font-size:13px;margin-bottom:2px}
+.empf-karte .ek-wert{font-family:var(--mono);font-size:21px;font-weight:700;
+  font-variant-numeric:tabular-nums;line-height:1.25}
+.empf-karte.ja .ek-wert{color:#0B6B5B}
+.empf-karte .ek-unter{font-size:11.5px;color:var(--p-weich)}
+.stufe{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;
+  text-transform:uppercase;padding:2px 8px;border-radius:11px;margin-top:7px}
+.stufe.ja{background:#E6F2EF;color:#0B6B5B;border:1px solid #0B6B5B}
+.stufe.bedingt{background:#FFF6E0;color:#8A6100;border:1px solid #C88A00}
+.stufe.nein{background:#FBEAEA;color:#B22222;border:1px solid #B22222}
+.vorschlag{margin-top:12px;background:#EDF3FB;border:1px solid #C3D4EA;border-left:3px solid #1A3261;
+  border-radius:0 5px 5px 0;padding:10px 13px;font-size:13px}
+.vorschlag b{color:#0F1F3D}
+
+/* Bandbreitenraster in der Seite */
+.s-raster{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.s-raster th{background:#E8ECF2;text-align:left;font-weight:600;padding:6px 10px;
+  border:1px solid var(--p-linie);white-space:nowrap}
+.s-raster td{border:1px solid var(--p-linie);padding:5px 10px;background:var(--p-feld)}
+.s-raster td.r,.s-raster th.r{text-align:right}
+.s-raster tr.stamm td{background:#F4F6FA;color:var(--p-weich)}
+.s-raster tr.summe td{background:#E8ECF2;font-weight:700;border-top:1.5px solid #9AA6B8}
+.s-raster .klein{display:block;color:var(--p-weich);font-size:10.5px;font-family:var(--mono);
+  margin-top:2px}
+.s-scroll{overflow-x:auto}
+
+/* ---------- Formelkarte ---------- */
+.formel{background:var(--code-grund);border:1px solid var(--linie);
+  border-left:3px solid var(--marine-hell);border-radius:0 7px 7px 0;padding:16px 18px;margin:0 0 14px}
+.formel pre{margin:0;font-family:var(--mono);font-size:12.5px;line-height:1.7;
+  white-space:pre;overflow-x:auto;color:var(--tinte)}
+.formel pre .kom{color:var(--tinte-blass)}
+.formel pre .hin{color:var(--erloes);font-weight:500}
+.normzeile{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
+.norm{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:12px;
+  background:var(--karte);border:1px solid var(--linie-stark);color:var(--tinte-weich)}
+.norm.gesetz{border-color:var(--marine-hell);color:var(--marine-hell);font-weight:500}
+
+/* ---------- Rechentafel ---------- */
+.tafel-huelle{overflow-x:auto;border:1px solid var(--linie);border-radius:7px;background:var(--karte);
+  box-shadow:var(--schatten)}
+table.tafel{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+table.tafel th{text-align:left;font-size:11.5px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--tinte-blass);padding:11px 14px;
+  border-bottom:1px solid var(--linie-stark);white-space:nowrap}
+table.tafel td{padding:9px 14px;border-bottom:1px solid var(--linie);vertical-align:top}
+table.tafel tr:last-child td{border-bottom:0}
+table.tafel td.r,table.tafel th.r{text-align:right;white-space:nowrap}
+table.tafel td.formelzelle{font-family:var(--mono);font-size:12px;color:var(--tinte-weich)}
+table.tafel tr.zwischen td{background:var(--code-grund);font-weight:600}
+table.tafel tr.ergebnis td{background:var(--erloes-grund);font-weight:700;color:var(--erloes);
+  border-top:1.5px solid var(--erloes);font-size:14.5px}
+table.tafel tr.ergebnis td.formelzelle{color:var(--erloes);font-weight:500}
+table.tafel .qz{display:block;font-size:11.5px;color:var(--tinte-blass);margin-top:3px;
+  font-family:var(--mono)}
+.plus{color:var(--erloes);font-weight:600}
+.minus{color:var(--kosten);font-weight:600}
+
+/* Markierungen */
+.marke{display:inline-block;font-family:var(--mono);font-size:10px;font-weight:500;
+  letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:3px;vertical-align:2px}
+.marke.kw{background:var(--erloes-grund);color:var(--erloes);border:1px solid var(--erloes)}
+.marke.aus{background:var(--ausweis-grund);color:var(--ausweis);border:1px solid var(--ausweis)}
+.marke.neu{background:var(--warn-grund);color:var(--warn);border:1px solid var(--warn-kante)}
+
+/* Befund */
+.befund{border:1px solid var(--linie);border-left:3px solid var(--warn-kante);background:var(--karte);
+  border-radius:0 7px 7px 0;padding:14px 18px;margin:16px 0;box-shadow:var(--schatten)}
+.befund h4{font-size:15px;font-weight:600;color:var(--warn);margin-bottom:5px}
+.befund p{margin:0;font-size:14px;color:var(--tinte-weich)}
+.befund p + p{margin-top:8px}
+
+/* Diagramm */
+.chart-karte{border:1px solid var(--linie);border-radius:7px;background:var(--karte);
+  padding:18px 20px 14px;box-shadow:var(--schatten);margin:18px 0}
+.chart-titel{font-weight:600;font-size:14px;margin-bottom:2px}
+.chart-unter{font-size:12.5px;color:var(--tinte-blass);margin-bottom:14px}
+.chart-karte svg{width:100%;max-width:720px;height:auto;display:block}
+.legende{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--tinte-weich);margin-top:12px}
+.legende i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;
+  vertical-align:-1px}
+
+p{margin:0 0 14px}
+p.eng{max-width:74ch}
+ul.liste{margin:0 0 16px;padding-left:20px;max-width:74ch}
+ul.liste li{margin-bottom:7px}
+ul.liste li::marker{color:var(--tinte-blass)}
+a{color:var(--marine-hell)}
+.abschluss{margin-top:64px;padding-top:26px;border-top:2px solid var(--tinte)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="huelle">
+
+<header class="kopf">
+  <div class="augenbraue">EPOS-Plan &middot; Wirtschaftlichkeit &middot; Entwurf der Ergebnisansicht</div>
+  <h1>Ergebnis, Bandbreite, Herkunft</h1>
+  <p class="unter">Ein Vorschlag f&uuml;r die Seite &bdquo;Wirtschaftlichkeit&ldquo;: zuerst die
+  Empfehlung, dann die Bandbreite aus ung&uuml;nstigem, erwartetem und g&uuml;nstigem Verlauf
+  nebeneinander, dann die Herkunft jeder Zahl &mdash; und f&uuml;r Blockheizkraftwerk und
+  Photovoltaik je eine eigene Ansicht, die zeigt, woraus Erl&ouml;s und Kosten dieser Anlage
+  entstehen.</p>
+  <div class="stand">
+    <span>Beispiel <b>Musterprojekt Gewerbepark</b></span>
+    <span>Zins &middot; Zeitraum <b>3,0 % &middot; 20 a</b></span>
+    <span>Rechtsstand <b>KWKG &middot; EnergieStG &middot; StromStG &middot; EEG</b></span>
+    <span>Norm <b>DIN EN 17463</b></span>
+  </div>
+  <div class="hinweisband">
+    <b>Entwurf, keine Umsetzung.</b> Die Ansichten auf dieser Seite sind Vorschl&auml;ge zur Abnahme.
+    Alle Zahlen stammen aus dem durchgerechneten Beispielprojekt dieses Ordners; die Kennzeichnung
+    <span class="marke neu">neu</span> steht an jeder Darstellung, die es heute noch nicht gibt.
+  </div>
+</header>
+
+<div class="rumpf">
+
+<nav>
+  <div class="navtitel">Aufbau</div>
+  <div class="navliste">
+    <a href="#heute">Was sich &auml;ndert</a>
+    <a href="#lohnt">1 Lohnt es sich?</a>
+    <a href="#sicher">2 Wie sicher ist das?</a>
+    <a href="#woraus">3 Woraus entsteht die Zahl?</a>
+    <a href="#annahmen">4 Was ist angenommen?</a>
+    <a href="#bhkw" class="schwer">5 Blockheizkraftwerk</a>
+    <a href="#pv" class="schwer">6 Photovoltaik</a>
+    <a href="#daten">Was der Entwurf braucht</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- =============================================================== HEUTE -->
+<section class="kap" id="heute">
+  <div class="kap-kopf"><h2>Was sich gegen&uuml;ber der heutigen Seite &auml;ndert</h2></div>
+  <p class="kap-lead">Die Rechnung bleibt, wie sie ist. Ge&auml;ndert wird die Reihenfolge, in der
+  die Seite antwortet, und die Form, in der sie es tut: Tafel statt Flie&szlig;text, drei Szenarien
+  nebeneinander statt hintereinander, Empfehlung oben statt unten.</p>
+
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Frage des Planers</th><th>Heute</th><th>Im Entwurf</th></tr></thead>
+      <tbody>
+        <tr><td><b>Lohnt es sich?</b></td>
+            <td>Ein Satz unter der Kennzahltabelle, am Ende der Seite</td>
+            <td>Kopf der Seite: Einstufung und Kapitalwertdifferenz je Version, darunter der
+                Vorschlag zur Entscheidung</td></tr>
+        <tr><td><b>Wie sicher ist das?</b></td>
+            <td>Ein Szenario, gew&auml;hlt &uuml;ber eine Klappliste; die Bandbreite steht nur im
+                Bericht</td>
+            <td>Ung&uuml;nstig &middot; Erwartet &middot; G&uuml;nstig nebeneinander, dazu ein Bild
+                der Spanne. Die Klappliste bleibt &mdash; f&uuml;r die Einzelheiten <em>eines</em>
+                Szenarios</td></tr>
+        <tr><td><b>Woraus entsteht die Zahl?</b></td>
+            <td>Eine Spalte Betr&auml;ge; kein Jahresverlauf auf der Seite</td>
+            <td>Gliederung mit Barwert <em>und</em> Nominalsumme, Br&uuml;ckendiagramm und der
+                Zahlungsstrom &uuml;ber alle Jahre</td></tr>
+        <tr><td><b>Was ist angenommen?</b></td>
+            <td>Drei Flie&szlig;textabs&auml;tze mit rund zwanzig durch Mittelpunkte getrennten
+                Angaben</td>
+            <td>Eine Tafel: je Gr&ouml;&szlig;e der wirksame Wert in allen drei Szenarien und die
+                Herkunft &bdquo;Vorgabe&ldquo; oder &bdquo;gepflegt&ldquo;</td></tr>
+        <tr><td><b>Woher kommen Verg&uuml;tung und Zuschlag?</b></td>
+            <td>Je eine Zeile mit dem Jahresbetrag</td>
+            <td>Je eine eigene Ansicht f&uuml;r Blockheizkraftwerk und Photovoltaik mit Mengen,
+                S&auml;tzen, Abz&uuml;gen und dem Jahresverlauf</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="zone">Das Beispiel, an dem alles gerechnet ist</div>
+  <p class="eng">Vier Versionen desselben Standorts. Das Stammprojekt ist der Weiterbetrieb &mdash;
+  die Unterlassensalternative, gegen die jede Variante gemessen wird.</p>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Version</th><th>Was sie enth&auml;lt</th><th class="r">Investition I&#8320;</th>
+        <th class="r">Betriebskosten</th><th class="r">Energiekosten</th><th class="r">Erl&ouml;se</th></tr></thead>
+      <tbody>
+        <tr><td><b>Stammprojekt</b> &mdash; Weiterbetrieb</td>
+            <td>Gas-Brennwertkessel, Strom vollst&auml;ndig aus dem Netz</td>
+            <td class="r num">&mdash;</td><td class="r num">2.400</td>
+            <td class="r num">560.016</td><td class="r num">31.230</td></tr>
+        <tr><td><b>Variante 1</b> &mdash; Blockheizkraftwerk</td>
+            <td>300 kW elektrisch / 355 kW thermisch, 5.500 h/a, Erdgas</td>
+            <td class="r num">234.772</td><td class="r num">59.564</td>
+            <td class="r num">409.435</td><td class="r num">82.644</td></tr>
+        <tr><td><b>Variante 2</b> &mdash; Photovoltaik</td>
+            <td>300 kWp, &Uuml;berschusseinspeisung, Direktvermarktung</td>
+            <td class="r num">192.150</td><td class="r num">8.131</td>
+            <td class="r num">535.392</td><td class="r num">39.916</td></tr>
+        <tr class="zwischen"><td><b>Variante 3</b> &mdash; beide Anlagen</td>
+            <td>Blockheizkraftwerk und Photovoltaik zusammen</td>
+            <td class="r num">426.922</td><td class="r num">65.295</td>
+            <td class="r num">384.811</td><td class="r num">91.331</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:10px;font-size:13px;color:var(--tinte-blass)">Betr&auml;ge in Euro; Betriebs-,
+  Energiekosten und Erl&ouml;se je Jahr, Stand des ersten Jahres. Der Preisabstand zwischen Strom
+  (28,80 ct/kWh) und Erdgas (7,20 ct/kWh) ist im Beispiel weit &mdash; die Ergebnisse fallen
+  entsprechend deutlich aus.</p>
+</section>
+
+<!-- =============================================================== LOHNT -->
+<section class="kap" id="lohnt">
+  <div class="kap-kopf"><h2>1 &nbsp;Lohnt es sich?</h2><span class="kap-marke">Kopf der Seite</span></div>
+  <p class="kap-lead">Ma&szlig;stab ist die <b>Kapitalwertdifferenz zum Stammprojekt</b>, nicht der
+  absolute Kapitalwert. Der absolute Wert ist bei jedem Versorgungskonzept negativ &mdash; W&auml;rme
+  und Strom kosten Geld. Entschieden wird, welche Version gegen&uuml;ber dem Weiterbetrieb besser
+  dasteht.</p>
+
+  <div class="seite">
+    <div class="s-band">Wirtschaftlichkeit &mdash; Musterprojekt Gewerbepark
+      <span class="s-sub">Lauf vom 17.09.2026 09:14 &middot; drei Szenarien gerechnet</span></div>
+    <div class="s-leib">
+      <div class="empf">
+        <div class="empf-karte ja">
+          <div class="ek-name">Variante 1 &mdash; Blockheizkraftwerk</div>
+          <div class="ek-wert">+1.637.086 &euro;</div>
+          <div class="ek-unter">Kapitalwertdifferenz, Szenario Erwartet</div>
+          <span class="stufe ja">empfohlen</span>
+        </div>
+        <div class="empf-karte ja">
+          <div class="ek-name">Variante 2 &mdash; Photovoltaik</div>
+          <div class="ek-wert">+217.622 &euro;</div>
+          <div class="ek-unter">Kapitalwertdifferenz, Szenario Erwartet</div>
+          <span class="stufe ja">empfohlen</span>
+        </div>
+        <div class="empf-karte ja">
+          <div class="ek-name">Variante 3 &mdash; beide Anlagen</div>
+          <div class="ek-wert">+1.854.708 &euro;</div>
+          <div class="ek-unter">Kapitalwertdifferenz, Szenario Erwartet</div>
+          <span class="stufe ja">empfohlen</span>
+        </div>
+      </div>
+      <div class="vorschlag">
+        <b>Vorschlag zur Entscheidung:</b> Variante 3 &bdquo;Blockheizkraftwerk und
+        Photovoltaik&ldquo; &mdash; h&ouml;chste Kapitalwertdifferenz unter den empfohlenen
+        Versionen (+1.854.708 &euro; gegen&uuml;ber dem Weiterbetrieb, Amortisation nach 2,6 Jahren).
+      </div>
+      <div class="s-herleitung" style="margin-top:10px">
+        Einstufung: <b>empfohlen</b>, wenn die Differenz in allen drei Szenarien positiv ist &middot;
+        <b>bedingt empfohlen</b>, wenn sie im Erwartungsfall positiv, im ung&uuml;nstigen Fall aber
+        nicht positiv ist &middot; <b>nicht empfohlen</b>, wenn sie schon im Erwartungsfall nicht
+        positiv ist.
+      </div>
+    </div>
+  </div>
+
+  <div class="zone">Die Kennzahlen dazu</div>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Kennzahl</th><th class="r">Blockheiz&shy;kraftwerk</th>
+        <th class="r">Photovoltaik</th><th class="r">Beide Anlagen</th><th>Bedeutung</th></tr></thead>
+      <tbody>
+        <tr><td><b>Kapitalwertdifferenz</b> zum Stamm <span class="marke kw">Entscheidung</span></td>
+            <td class="r num plus">+1.637.086 &euro;</td><td class="r num plus">+217.622 &euro;</td>
+            <td class="r num plus">+1.854.708 &euro;</td>
+            <td>das einzige Entscheidungskriterium der Norm</td></tr>
+        <tr><td>Annuit&auml;t der Differenz</td>
+            <td class="r num">110.038 &euro;/a</td><td class="r num">14.628 &euro;/a</td>
+            <td class="r num">124.665 &euro;/a</td>
+            <td>gleichm&auml;&szlig;iger Jahresvorteil &uuml;ber 20 Jahre</td></tr>
+        <tr><td>Dynamische Amortisation</td>
+            <td class="r num">1,70 a</td><td class="r num">7,99 a</td><td class="r num">2,64 a</td>
+            <td>nachrichtlich</td></tr>
+        <tr><td>Interner Zinsfu&szlig;</td>
+            <td class="r num">60,4 %</td><td class="r num">12,8 %</td><td class="r num">39,2 %</td>
+            <td>nachrichtlich &mdash; bei mehreren Vorzeichenwechseln mehrdeutig</td></tr>
+        <tr><td>W&auml;rmegestehungskosten</td>
+            <td class="r num">21,55 ct/kWh</td><td class="r num">26,44 ct/kWh</td>
+            <td class="r num">20,81 ct/kWh</td>
+            <td>Stammprojekt: 27,19 ct/kWh</td></tr>
+        <tr class="zwischen"><td>Nettobarwert absolut</td>
+            <td class="r num">&minus;6.265.626 &euro;</td><td class="r num">&minus;7.685.091 &euro;</td>
+            <td class="r num">&minus;6.048.005 &euro;</td>
+            <td>Stammprojekt: &minus;7.902.712 &euro;</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:12px" class="eng">Der absolute Nettobarwert steht bewusst <em>unter</em> der
+  Differenz und nicht &uuml;ber ihr: Er ist f&uuml;r jede Version negativ und taugt nicht zur
+  Entscheidung &mdash; nur der Abstand zum Weiterbetrieb tut das.</p>
+</section>
+
+<!-- =============================================================== SICHER -->
+<section class="kap" id="sicher">
+  <div class="kap-kopf"><h2>2 &nbsp;Wie sicher ist das?</h2><span class="kap-marke">Bandbreite</span></div>
+  <p class="kap-lead">Drei Szenarien nebeneinander statt hintereinander. Jedes rechnet den
+  vollst&auml;ndigen Lauf mit einem eigenen Satz aus Zins, Preissteigerungen, Investitions- und
+  Ertrags&auml;nderung und Nutzungsdauer &mdash; nicht einen Zuschlag auf das Ergebnis.</p>
+
+  <div class="seite">
+    <div class="s-band">Bandbreite der Kapitalwertdifferenz
+      <span class="s-sub">alle drei Szenarien, Vorgaben ungepflegt</span></div>
+    <div class="s-leib">
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Version</th><th class="r">Ung&uuml;nstig</th><th class="r">Erwartet</th>
+          <th class="r">G&uuml;nstig</th><th class="r">Spanne</th><th>Einstufung</th></tr></thead>
+        <tbody>
+          <tr class="stamm"><td>Stammprojekt &mdash; Weiterbetrieb</td>
+              <td class="r">Referenz</td><td class="r">Referenz</td><td class="r">Referenz</td>
+              <td class="r">&mdash;</td><td>Unterlassensalternative</td></tr>
+          <tr><td>Variante 1 &mdash; Blockheizkraftwerk</td>
+              <td class="r">1.481.921</td><td class="r"><b>1.637.086</b></td>
+              <td class="r">1.789.755</td><td class="r">307.834</td>
+              <td><span class="stufe ja">empfohlen</span></td></tr>
+          <tr><td>Variante 2 &mdash; Photovoltaik</td>
+              <td class="r">155.617</td><td class="r"><b>217.622</b></td>
+              <td class="r">282.202</td><td class="r">126.585</td>
+              <td><span class="stufe ja">empfohlen</span></td></tr>
+          <tr class="summe"><td>Variante 3 &mdash; beide Anlagen</td>
+              <td class="r">1.637.539</td><td class="r">1.854.708</td>
+              <td class="r">2.071.957</td><td class="r">434.418</td>
+              <td><span class="stufe ja">empfohlen</span></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-herleitung" style="margin-top:9px">
+        Kapitalwertdifferenz zum Stammprojekt in Euro. Die Szenarien rechnen mit
+        <b>Vorgaben</b>: Zins 2,0 / 3,0 / 4,0 % &middot; Preissteigerung Energie &minus;1,0 / 0,0 /
+        +1,0 %/a &middot; Investition &minus;10 / 0 / +10 % &middot; Ertr&auml;ge +10 / 0 / &minus;10 %
+        &middot; Nutzungsdauer +2 / 0 / &minus;2 a.
+      </div>
+      <div class="s-zeile" style="margin-top:12px">
+        <span class="s-lab">Einzelheiten anzeigen f&uuml;r Szenario:</span>
+        <span class="s-combo">Erwartet</span>
+        <span class="s-knopf">Parameter&hellip;</span>
+      </div>
+      <div class="s-info">Die Klappliste steuert nur die Tafeln darunter. Die Bandbreite bleibt
+      immer vollst&auml;ndig sichtbar.</div>
+    </div>
+  </div>
+
+  <div class="chart-karte">
+    <div class="chart-titel">Spanne der Kapitalwertdifferenz je Variante <span class="marke neu">neu</span></div>
+    <div class="chart-unter">Balken: ung&uuml;nstiger bis g&uuml;nstiger Verlauf &middot; Punkt:
+      Erwartungsfall &middot; Nulllinie links</div>
+    <svg viewBox="0 0 720 208" width="720" height="208" role="img" aria-label="Bandbreite der Kapitalwertdifferenz je Variante: BHKW 1,48 bis 1,79 Millionen Euro, Photovoltaik 0,16 bis 0,28 Millionen Euro, BHKW mit Photovoltaik 1,64 bis 2,07 Millionen Euro. Alle drei Spannen liegen vollstaendig im positiven Bereich.">
+  <line x1="196.0" y1="26" x2="196.0" y2="176" stroke="var(--linie-stark)" stroke-width="1"/>
+  <line x1="196.0" y1="30" x2="196.0" y2="164" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="196.0" y="180" text-anchor="middle" font-size="9.5" fill="var(--tinte-blass)" class="svgmono">0</text>
+  <line x1="306.2" y1="30" x2="306.2" y2="164" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="306.2" y="180" text-anchor="middle" font-size="9.5" fill="var(--tinte-blass)" class="svgmono">0,5 Mio</text>
+  <line x1="416.4" y1="30" x2="416.4" y2="164" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="416.4" y="180" text-anchor="middle" font-size="9.5" fill="var(--tinte-blass)" class="svgmono">1,0 Mio</text>
+  <line x1="526.6" y1="30" x2="526.6" y2="164" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="526.6" y="180" text-anchor="middle" font-size="9.5" fill="var(--tinte-blass)" class="svgmono">1,5 Mio</text>
+  <line x1="636.7" y1="30" x2="636.7" y2="164" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="636.7" y="180" text-anchor="middle" font-size="9.5" fill="var(--tinte-blass)" class="svgmono">2,0 Mio</text>
+  <text x="186.0" y="44.0" text-anchor="end" font-size="12" fill="var(--tinte)">BHKW</text>
+  <rect x="522.6" y="34.0" width="67.8" height="12" rx="3" fill="var(--band)"/>
+  <line x1="522.6" y1="31.0" x2="522.6" y2="49.0" stroke="var(--erloes)" stroke-width="2.5"/>
+  <line x1="590.4" y1="31.0" x2="590.4" y2="49.0" stroke="var(--erloes)" stroke-width="2.5"/>
+  <circle cx="556.8" cy="40.0" r="5.5" fill="var(--erloes)"/>
+  <text x="556.8" y="26.0" text-anchor="middle" font-size="10.5" fill="var(--erloes)" class="svgmono" font-weight="600">1.637.086 €</text>
+  <text x="186.0" y="91.0" text-anchor="end" font-size="12" fill="var(--tinte)">Photovoltaik</text>
+  <rect x="230.3" y="81.0" width="27.9" height="12" rx="3" fill="var(--band)"/>
+  <line x1="230.3" y1="78.0" x2="230.3" y2="96.0" stroke="var(--erloes)" stroke-width="2.5"/>
+  <line x1="258.2" y1="78.0" x2="258.2" y2="96.0" stroke="var(--erloes)" stroke-width="2.5"/>
+  <circle cx="244.0" cy="87.0" r="5.5" fill="var(--erloes)"/>
+  <text x="244.0" y="73.0" text-anchor="middle" font-size="10.5" fill="var(--erloes)" class="svgmono" font-weight="600">217.622 €</text>
+  <text x="186.0" y="138.0" text-anchor="end" font-size="12" fill="var(--tinte)">BHKW + Photovoltaik</text>
+  <rect x="556.9" y="128.0" width="95.7" height="12" rx="3" fill="var(--band)"/>
+  <line x1="556.9" y1="125.0" x2="556.9" y2="143.0" stroke="var(--erloes)" stroke-width="2.5"/>
+  <line x1="652.6" y1="125.0" x2="652.6" y2="143.0" stroke="var(--erloes)" stroke-width="2.5"/>
+  <circle cx="604.7" cy="134.0" r="5.5" fill="var(--erloes)"/>
+  <text x="604.7" y="120.0" text-anchor="middle" font-size="10.5" fill="var(--erloes)" class="svgmono" font-weight="600">1.854.708 €</text>
+  <text x="196.0" y="200" font-size="10.5" fill="var(--tinte-blass)">Kapitalwertdifferenz zum Stammprojekt [€] — links Worst, Punkt Erwartet, rechts Best</text>
+</svg>
+    <div class="legende">
+      <span><i style="background:var(--band)"></i>Spanne ung&uuml;nstig bis g&uuml;nstig</span>
+      <span><i style="background:var(--erloes);border-radius:50%"></i>Erwartungsfall</span>
+    </div>
+  </div>
+
+  <div class="befund">
+    <h4>Warum die Spanne bei der Photovoltaik enger wirkt und doch schwerer wiegt</h4>
+    <p>Die Photovoltaik spannt 126.585 &euro; um einen Erwartungswert von 217.622 &euro; &mdash; das
+    sind 58 % des Ergebnisses. Beim Blockheizkraftwerk sind es 307.834 &euro; um 1.637.086 &euro;,
+    also 19 %. Der absolute Balken ist beim Blockheizkraftwerk l&auml;nger, das Risiko liegt aber bei
+    der Photovoltaik: Ihre Erl&ouml;se h&auml;ngen an einer Ertragsannahme, die &plusmn;10 % streut,
+    w&auml;hrend beim Blockheizkraftwerk der gr&ouml;&szlig;te Posten eine <em>ersparte</em>
+    Stromrechnung ist.</p>
+  </div>
+</section>
+
+<!-- =============================================================== WORAUS -->
+<section class="kap" id="woraus">
+  <div class="kap-kopf"><h2>3 &nbsp;Woraus entsteht die Zahl?</h2>
+    <span class="kap-marke">Gliederung und Zahlungsstrom</span></div>
+  <p class="kap-lead">Sechs Bestandteile ergeben die Kapitalwertdifferenz: Investition,
+  Betriebskosten, Energiekosten, Erl&ouml;se, Ersatzbeschaffungen, Restwert. Jeder steht mit seinem
+  <b>Barwert</b> und mit seiner <b>Nominalsumme</b> &mdash; die erste Zahl entscheidet, die zweite
+  sagt, wie viel Geld tats&auml;chlich flie&szlig;t.</p>
+
+  <div class="seite">
+    <div class="s-band">Gliederung des Kapitalwerts &mdash; Szenario Erwartet
+      <span class="s-sub">Barwert gro&szlig;, Nominalsumme klein &middot; i = 3,0 % &middot; T = 20 a</span></div>
+    <div class="s-leib">
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Bestandteil</th><th class="r">Stammprojekt</th>
+          <th class="r">Blockheizkraftwerk</th><th class="r">Photovoltaik</th>
+          <th class="r">Beide Anlagen</th><th class="r">Differenz beide &minus; Stamm</th></tr></thead>
+        <tbody>
+          <tr><td>Investition I&#8320; <span class="klein">nach Zuschussabzug</span></td>
+              <td class="r">&mdash;</td>
+              <td class="r">&minus;234.772</td><td class="r">&minus;192.150</td>
+              <td class="r">&minus;426.922</td><td class="r">&minus;426.922</td></tr>
+          <tr><td>Betriebskosten</td>
+              <td class="r">&minus;35.706<span class="klein">nominal 48.000</span></td>
+              <td class="r">&minus;886.165<span class="klein">nominal 1.191.284</span></td>
+              <td class="r">&minus;120.971<span class="klein">nominal 162.622</span></td>
+              <td class="r">&minus;971.430<span class="klein">nominal 1.305.907</span></td>
+              <td class="r">&minus;935.724</td></tr>
+          <tr><td>Energiekosten</td>
+              <td class="r">&minus;8.331.624<span class="klein">nominal 11.200.320</span></td>
+              <td class="r">&minus;6.091.362<span class="klein">nominal 8.188.704</span></td>
+              <td class="r">&minus;7.965.281<span class="klein">nominal 10.707.840</span></td>
+              <td class="r">&minus;5.725.019<span class="klein">nominal 7.696.224</span></td>
+              <td class="r">+2.606.605</td></tr>
+          <tr><td>Erl&ouml;se</td>
+              <td class="r">+464.618<span class="klein">nominal 624.592</span></td>
+              <td class="r">+1.002.827<span class="klein">nominal 1.308.912</span></td>
+              <td class="r">+588.108<span class="klein">nominal 789.937</span></td>
+              <td class="r">+1.126.317<span class="klein">nominal 1.474.257</span></td>
+              <td class="r">+661.699</td></tr>
+          <tr><td>Ersatzbeschaffungen</td>
+              <td class="r">&mdash;</td>
+              <td class="r">&minus;132.149<span class="klein">nominal 205.884</span></td>
+              <td class="r">&minus;16.833<span class="klein">nominal 24.000</span></td>
+              <td class="r">&minus;148.982<span class="klein">nominal 229.884</span></td>
+              <td class="r">&minus;148.982</td></tr>
+          <tr><td>Restwert am Ende</td>
+              <td class="r">&mdash;</td>
+              <td class="r">+75.995<span class="klein">nominal 137.256</span></td>
+              <td class="r">+22.036<span class="klein">nominal 39.800</span></td>
+              <td class="r">+98.032<span class="klein">nominal 177.056</span></td>
+              <td class="r">+98.032</td></tr>
+          <tr class="summe"><td>Nettobarwert</td>
+              <td class="r">&minus;7.902.712</td><td class="r">&minus;6.265.626</td>
+              <td class="r">&minus;7.685.091</td><td class="r">&minus;6.048.005</td>
+              <td class="r">+1.854.708</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-warn">Die Energiekosten sind bei jeder Version die gr&ouml;&szlig;te Position
+      &mdash; und der eigentliche Hebel: Die Variante mit beiden Anlagen spart &uuml;ber 20 Jahre
+      2.606.605 &euro; Barwert an Energiekosten ein und gibt daf&uuml;r 426.922 &euro; Investition,
+      935.724 &euro; Mehrbetriebskosten und 148.982 &euro; Ersatzbeschaffungen aus.</div>
+    </div>
+  </div>
+
+  <div class="chart-karte">
+    <div class="chart-titel">Von der Investition zur Kapitalwertdifferenz <span class="marke neu">neu</span></div>
+    <div class="chart-unter">Variante 3 gegen&uuml;ber dem Stammprojekt &middot; Barwerte &middot;
+      Szenario Erwartet</div>
+    <svg viewBox="0 0 720 260" width="720" height="260" role="img" aria-label="Brückendiagramm der Kapitalwertdifferenz: Investition minus 426.922 Euro, Betriebskosten minus 935.724 Euro, ersparte Energiekosten plus 2.606.605 Euro, Erlöse plus 661.699 Euro, Ersatzbeschaffung minus 148.982 Euro, Restwert plus 98.032 Euro, Summe 1.854.708 Euro.">
+  <line x1="40" y1="124.4" x2="712" y2="124.4" stroke="var(--linie-stark)" stroke-width="1"/>
+  <text x="36" y="127.4" text-anchor="end" font-size="9.5" fill="var(--tinte-blass)" class="svgmono">0</text>
+  <rect x="44.0" y="124.4" width="74.0" height="20.0" fill="var(--kosten)" opacity="0.88"/>
+  <text x="81.0" y="118.4" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−426.922</text>
+  <text x="81.0" y="212.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Investition</text>
+  <text x="81.0" y="224.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">I₀</text>
+  <line x1="44.0" y1="144.4" x2="140.0" y2="144.4" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="140.0" y="144.4" width="74.0" height="43.9" fill="var(--kosten)" opacity="0.88"/>
+  <text x="177.0" y="138.4" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−935.724</text>
+  <text x="177.0" y="212.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Betriebskosten</text>
+  <line x1="140.0" y1="188.3" x2="236.0" y2="188.3" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="236.0" y="66.0" width="74.0" height="122.3" fill="var(--erloes)" opacity="0.88"/>
+  <text x="273.0" y="60.0" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">+2.606.605</text>
+  <text x="273.0" y="212.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Energiekosten</text>
+  <line x1="236.0" y1="66.0" x2="332.0" y2="66.0" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="332.0" y="34.9" width="74.0" height="31.1" fill="var(--erloes)" opacity="0.88"/>
+  <text x="369.0" y="28.9" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">+661.699</text>
+  <text x="369.0" y="212.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Erlöse</text>
+  <line x1="332.0" y1="34.9" x2="428.0" y2="34.9" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="428.0" y="34.9" width="74.0" height="7.0" fill="var(--kosten)" opacity="0.88"/>
+  <text x="465.0" y="28.9" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−148.982</text>
+  <text x="465.0" y="212.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Ersatzbeschaffung</text>
+  <line x1="428.0" y1="41.9" x2="524.0" y2="41.9" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="524.0" y="37.3" width="74.0" height="4.6" fill="var(--erloes)" opacity="0.88"/>
+  <text x="561.0" y="31.3" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">+98.032</text>
+  <text x="561.0" y="212.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Restwert</text>
+  <line x1="524.0" y1="37.3" x2="620.0" y2="37.3" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="620.0" y="37.3" width="74.0" height="87.0" fill="var(--marine-hell)"/>
+  <text x="657.0" y="30.3" text-anchor="middle" font-size="11" fill="var(--marine-hell)" class="svgmono" font-weight="700">1.854.708</text>
+  <text x="657.0" y="212.0" text-anchor="middle" font-size="10" fill="var(--tinte)" font-weight="600">ΔKW</text>
+  <text x="44" y="252" font-size="10.5" fill="var(--tinte-blass)">Barwerte gegenüber dem Stammprojekt, Szenario Erwartet — i = 3,0 %, T = 20 a</text>
+</svg>
+    <div class="legende">
+      <span><i style="background:var(--kosten)"></i>mindert die Differenz</span>
+      <span><i style="background:var(--erloes)"></i>mehrt die Differenz</span>
+      <span><i style="background:var(--marine-hell)"></i>Ergebnis</span>
+    </div>
+  </div>
+
+  <div class="zone">Der Zahlungsstrom &uuml;ber die Jahre</div>
+  <p class="eng">Die Norm verlangt den Zahlungsstrom je Jahr, nicht nur die Summe. Er zeigt, was
+  keine Summe zeigen kann: dass der Zuschlag f&uuml;r den Strom aus Kraft-W&auml;rme-Kopplung nach
+  zw&ouml;lf Jahren endet und dass in Jahr 12 und Jahr 15 eine Ersatzbeschaffung f&auml;llig wird.</p>
+
+  <div class="chart-karte">
+    <div class="chart-titel">Zahlungsstrom je Jahr &mdash; Variante 3 <span class="marke neu">neu</span></div>
+    <div class="chart-unter">nach unten Auszahlungen, nach oben Einzahlungen &middot; nominal,
+      unabgezinst</div>
+    <svg viewBox="0 0 720 282" width="720" height="282" role="img" aria-label="Gestapelte Jahresbalken des Zahlungsstroms über 20 Jahre: nach unten Energiekosten, Betriebskosten und Ersatzbeschaffungen, nach oben die Erlöse. Der KWK-Zuschlag fällt ab Jahr 2 und endet im Jahr 12; im Jahr 12 wird der Wechselrichter, im Jahr 15 das BHKW-Modul ersetzt.">
+  <line x1="40" y1="46.2" x2="712" y2="46.2" stroke="var(--linie-stark)" stroke-width="1"/>
+  <line x1="40" y1="90.4" x2="712" y2="90.4" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="36" y="93.4" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">−200k</text>
+  <line x1="40" y1="134.7" x2="712" y2="134.7" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="36" y="137.7" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">−400k</text>
+  <line x1="40" y1="178.9" x2="712" y2="178.9" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="36" y="181.9" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">−600k</text>
+  <text x="36" y="49.2" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">0</text>
+  <rect x="52.0" y="46.2" width="24.0" height="94.4" fill="#7A3B3B"/>
+  <rect x="81.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="81.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="81.0" y="39.2" width="24.0" height="7.0" fill="#0B6B5B"/>
+  <rect x="81.0" y="34.6" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="81.0" y="33.5" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="81.0" y="28.3" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="81.0" y="26.0" width="24.0" height="2.3" fill="#C8A227"/>
+  <rect x="110.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="110.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="110.0" y="39.7" width="24.0" height="6.6" fill="#0B6B5B"/>
+  <rect x="110.0" y="35.0" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="110.0" y="33.9" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="110.0" y="28.7" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="110.0" y="26.5" width="24.0" height="2.3" fill="#C8A227"/>
+  <rect x="139.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="139.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="139.0" y="40.1" width="24.0" height="6.1" fill="#0B6B5B"/>
+  <rect x="139.0" y="35.4" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="139.0" y="34.4" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="139.0" y="29.2" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="139.0" y="26.9" width="24.0" height="2.3" fill="#C8A227"/>
+  <rect x="168.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="168.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="168.0" y="40.5" width="24.0" height="5.7" fill="#0B6B5B"/>
+  <rect x="168.0" y="35.8" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="168.0" y="34.8" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="168.0" y="29.6" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="168.0" y="27.3" width="24.0" height="2.3" fill="#C8A227"/>
+  <rect x="197.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="197.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="197.0" y="40.9" width="24.0" height="5.3" fill="#0B6B5B"/>
+  <rect x="197.0" y="36.2" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="197.0" y="35.2" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="197.0" y="30.0" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="197.0" y="27.8" width="24.0" height="2.3" fill="#C8A227"/>
+  <rect x="226.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="226.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="226.0" y="40.9" width="24.0" height="5.3" fill="#0B6B5B"/>
+  <rect x="226.0" y="36.2" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="226.0" y="35.2" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="226.0" y="30.0" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="226.0" y="27.8" width="24.0" height="2.2" fill="#C8A227"/>
+  <rect x="255.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="255.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="255.0" y="40.9" width="24.0" height="5.3" fill="#0B6B5B"/>
+  <rect x="255.0" y="36.2" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="255.0" y="35.2" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="255.0" y="30.0" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="255.0" y="27.8" width="24.0" height="2.2" fill="#C8A227"/>
+  <rect x="284.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="284.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="284.0" y="40.9" width="24.0" height="5.3" fill="#0B6B5B"/>
+  <rect x="284.0" y="36.2" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="284.0" y="35.2" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="284.0" y="30.0" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="284.0" y="27.8" width="24.0" height="2.2" fill="#C8A227"/>
+  <rect x="313.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="313.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="313.0" y="40.9" width="24.0" height="5.3" fill="#0B6B5B"/>
+  <rect x="313.0" y="36.2" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="313.0" y="35.2" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="313.0" y="30.0" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="313.0" y="27.8" width="24.0" height="2.2" fill="#C8A227"/>
+  <rect x="342.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="342.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="342.0" y="40.9" width="24.0" height="5.3" fill="#0B6B5B"/>
+  <rect x="342.0" y="36.2" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="342.0" y="35.2" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="342.0" y="30.0" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="342.0" y="27.8" width="24.0" height="2.2" fill="#C8A227"/>
+  <rect x="371.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="371.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="371.0" y="40.9" width="24.0" height="5.3" fill="#0B6B5B"/>
+  <rect x="371.0" y="36.2" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="371.0" y="35.2" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="371.0" y="30.0" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="371.0" y="27.8" width="24.0" height="2.2" fill="#C8A227"/>
+  <rect x="400.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="400.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="400.0" y="145.8" width="24.0" height="5.3" fill="#7A3B3B"/>
+  <rect x="400.0" y="45.2" width="24.0" height="1.1" fill="#0B6B5B"/>
+  <rect x="400.0" y="40.5" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="400.0" y="39.4" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="400.0" y="34.2" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="400.0" y="32.1" width="24.0" height="2.2" fill="#C8A227"/>
+  <rect x="429.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="429.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="429.0" y="41.5" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="429.0" y="40.5" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="429.0" y="35.3" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="429.0" y="33.1" width="24.0" height="2.2" fill="#C8A227"/>
+  <rect x="458.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="458.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="458.0" y="41.5" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="458.0" y="40.5" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="458.0" y="35.3" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="458.0" y="33.1" width="24.0" height="2.2" fill="#C8A227"/>
+  <rect x="487.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="487.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="487.0" y="145.8" width="24.0" height="45.5" fill="#7A3B3B"/>
+  <rect x="487.0" y="41.5" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="487.0" y="40.5" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="487.0" y="35.3" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="487.0" y="33.1" width="24.0" height="2.1" fill="#C8A227"/>
+  <rect x="516.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="516.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="516.0" y="41.5" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="516.0" y="40.5" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="516.0" y="35.3" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="516.0" y="33.2" width="24.0" height="2.1" fill="#C8A227"/>
+  <rect x="545.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="545.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="545.0" y="41.5" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="545.0" y="40.5" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="545.0" y="35.3" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="545.0" y="33.2" width="24.0" height="2.1" fill="#C8A227"/>
+  <rect x="574.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="574.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="574.0" y="41.5" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="574.0" y="40.5" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="574.0" y="35.3" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="574.0" y="33.2" width="24.0" height="2.1" fill="#C8A227"/>
+  <rect x="603.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="603.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="603.0" y="41.5" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="603.0" y="40.5" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="603.0" y="35.3" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="603.0" y="33.2" width="24.0" height="2.1" fill="#C8A227"/>
+  <rect x="632.0" y="46.2" width="24.0" height="85.1" fill="#B22222"/>
+  <rect x="632.0" y="131.3" width="24.0" height="14.4" fill="#D4766B"/>
+  <rect x="632.0" y="41.5" width="24.0" height="4.7" fill="#2E9C86"/>
+  <rect x="632.0" y="40.5" width="24.0" height="1.1" fill="#63C0AC"/>
+  <rect x="632.0" y="35.3" width="24.0" height="5.2" fill="#9AD7C9"/>
+  <rect x="632.0" y="32.9" width="24.0" height="2.4" fill="#C8A227"/>
+  <text x="64.0" y="216" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">0</text>
+  <text x="209.0" y="216" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">5</text>
+  <text x="354.0" y="216" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">10</text>
+  <text x="412.0" y="216" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">12</text>
+  <text x="499.0" y="216" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">15</text>
+  <text x="644.0" y="216" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">20</text>
+  <line x1="412.0" y1="154.1" x2="412.0" y2="244" stroke="var(--warn-kante)" stroke-width="1.2"/>
+  <text x="412.0" y="254" text-anchor="middle" font-size="9" fill="var(--warn)" class="svgmono">Ersatz Wechselrichter</text>
+  <line x1="499.0" y1="194.3" x2="499.0" y2="228" stroke="var(--warn-kante)" stroke-width="1.2"/>
+  <text x="499.0" y="238" text-anchor="middle" font-size="9" fill="var(--warn)" class="svgmono">Ersatz BHKW-Modul</text>
+  <text x="52" y="274" font-size="10.5" fill="var(--tinte-blass)">Jahr — nominal, unabgezinst; Jahr 0 ist die Investition nach Zuschussabzug</text>
+</svg>
+    <div class="legende">
+      <span><i style="background:#B22222"></i>Energiekosten</span>
+      <span><i style="background:#D4766B"></i>Betriebskosten</span>
+      <span><i style="background:#7A3B3B"></i>Investition und Ersatz</span>
+      <span><i style="background:#0B6B5B"></i>Zuschlag Kraft-W&auml;rme-Kopplung</span>
+      <span><i style="background:#2E9C86"></i>Energiesteuer</span>
+      <span><i style="background:#63C0AC"></i>Stromsteuer</span>
+      <span><i style="background:#9AD7C9"></i>Einspeiseerl&ouml;s</span>
+      <span><i style="background:#C8A227"></i>Verg&uuml;tung Photovoltaik</span>
+    </div>
+  </div>
+
+  <div class="chart-karte">
+    <div class="chart-titel">Kumulierter Barwert der Differenz zum Stammprojekt <span class="marke neu">neu</span></div>
+    <div class="chart-unter">Der Nulldurchgang ist die dynamische Amortisation &middot; der Knick im
+      Jahr 15 ist der Ersatz des Motors</div>
+    <svg viewBox="0 0 720 210" width="720" height="210" role="img" aria-label="Kumulierter Barwert der Differenz zum Stammprojekt über 20 Jahre: Start bei minus 426.922 Euro, Nulldurchgang nach 2,64 Jahren, Endwert 1.756.676 Euro vor Restwert.">
+  <line x1="44" y1="138.4" x2="712" y2="138.4" stroke="var(--linie-stark)" stroke-width="1"/>
+  <text x="40" y="141.4" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">0</text>
+  <line x1="44" y1="108.3" x2="712" y2="108.3" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="111.3" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">0,5 Mio</text>
+  <line x1="44" y1="78.2" x2="712" y2="78.2" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="81.2" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">1,0 Mio</text>
+  <line x1="44" y1="48.0" x2="712" y2="48.0" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="51.0" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">1,5 Mio</text>
+  <polyline points="52.0,164.1 84.0,154.1 116.0,144.4 148.0,135.1 180.0,126.2 212.0,117.6 244.0,109.3 276.0,101.3 308.0,93.4 340.0,85.9 372.0,78.5 404.0,71.3 436.0,66.2 468.0,60.5 500.0,54.9 532.0,57.4 564.0,52.2 596.0,47.1 628.0,42.1 660.0,37.3 692.0,32.6" fill="none" stroke="var(--marine-hell)" stroke-width="2.4" stroke-linejoin="round"/>
+  <polygon points="52.0,138.4 52.0,164.1 84.0,154.1 116.0,144.4 148.0,135.1 180.0,126.2 212.0,117.6 244.0,109.3 276.0,101.3 308.0,93.4 340.0,85.9 372.0,78.5 404.0,71.3 436.0,66.2 468.0,60.5 500.0,54.9 532.0,57.4 564.0,52.2 596.0,47.1 628.0,42.1 660.0,37.3 692.0,32.6 692.0,138.4" fill="var(--marine-hell)" opacity="0.10"/>
+  <line x1="136.5" y1="26.0" x2="136.5" y2="138.4" stroke="var(--warn-kante)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <circle cx="136.5" cy="138.4" r="4" fill="var(--warn-kante)"/>
+  <text x="144.5" y="34.0" font-size="10" fill="var(--warn)" class="svgmono">dynamische Amortisation 2,64 a</text>
+  <text x="52.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">0</text>
+  <text x="212.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">5</text>
+  <text x="372.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">10</text>
+  <text x="532.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">15</text>
+  <text x="692.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">20</text>
+  <text x="696.0" y="24.6" text-anchor="end" font-size="10" fill="var(--marine-hell)" class="svgmono" font-weight="600">1.756.676 €</text>
+  <text x="52" y="202" font-size="10.5" fill="var(--tinte-blass)">Jahr — ohne Restwert; mit Restwert-Barwert 98.032 € ergibt sich ΔKW = 1.854.708 €</text>
+</svg>
+  </div>
+</section>
+
+<!-- =============================================================== ANNAHMEN -->
+<section class="kap" id="annahmen">
+  <div class="kap-kopf"><h2>4 &nbsp;Was ist angenommen?</h2><span class="kap-marke">Tafel statt Flie&szlig;text</span></div>
+  <p class="kap-lead">Heute steht das als eine lange Zeile mit Mittelpunkten, in der niemand den Zins
+  findet. Im Entwurf ist es eine Tafel: je Gr&ouml;&szlig;e der wirksame Wert in allen drei
+  Szenarien und die Herkunft &mdash; &bdquo;Vorgabe&ldquo; hei&szlig;t, dass niemand das Feld
+  angefasst hat und es einer ge&auml;nderten Projektangabe automatisch folgt.</p>
+
+  <div class="seite">
+    <div class="s-band">Annahmen und ihre Herkunft
+      <span class="s-sub">gepflegte Werte je Zeile haben Vorrang vor dem Parametersatz</span></div>
+    <div class="s-leib">
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Gr&ouml;&szlig;e</th><th class="r">Ung&uuml;nstig</th><th class="r">Erwartet</th>
+          <th class="r">G&uuml;nstig</th><th>Herkunft</th></tr></thead>
+        <tbody>
+          <tr><td>Kalkulationszins</td><td class="r">4,0 %</td><td class="r">3,0 %</td>
+              <td class="r">2,0 %</td><td>Vorgabe &mdash; Projektwert &plusmn; 1 %-Punkt</td></tr>
+          <tr><td>Preissteigerung Energie</td><td class="r">+1,0 %/a</td><td class="r">0,0 %/a</td>
+              <td class="r">&minus;1,0 %/a</td><td>Vorgabe &mdash; Projektwert &plusmn; 1 %-Punkt</td></tr>
+          <tr><td>Preissteigerung Betrieb</td><td class="r">+1,0 %/a</td><td class="r">0,0 %/a</td>
+              <td class="r">&minus;1,0 %/a</td><td>Vorgabe &mdash; Projektwert &plusmn; 1 %-Punkt</td></tr>
+          <tr><td>Preissteigerung Investition<span class="klein">wirkt auf Ersatz und Restwert</span></td>
+              <td class="r">+1,0 %/a</td><td class="r">0,0 %/a</td><td class="r">&minus;1,0 %/a</td>
+              <td>Vorgabe &mdash; leer hei&szlig;t &bdquo;wie Betrieb&ldquo;, nicht &bdquo;0 %&ldquo;</td></tr>
+          <tr><td>Investition</td><td class="r">+10 %</td><td class="r">0 %</td>
+              <td class="r">&minus;10 %</td><td>Vorgabe &mdash; wirkt nur auf ungepflegte Zeilen,
+              nie auf Zusch&uuml;sse</td></tr>
+          <tr><td>Ertr&auml;ge</td><td class="r">&minus;10 %</td><td class="r">0 %</td>
+              <td class="r">+10 %</td><td>Vorgabe &mdash; wirkt nicht auf gesetzliche
+              Erl&ouml;sreihen</td></tr>
+          <tr><td>Nutzungsdauer</td><td class="r">&minus;2 a</td><td class="r">0 a</td>
+              <td class="r">+2 a</td><td>Vorgabe &mdash; addiert, nicht skaliert; Untergrenze 1 a</td></tr>
+        </tbody>
+      </table>
+      </div>
+
+      <div class="zone" style="margin:18px 0 10px;color:#5A5A5A">Was daraus im Lauf wird</div>
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Wirkung auf Variante 3</th><th class="r">Ung&uuml;nstig</th>
+          <th class="r">Erwartet</th><th class="r">G&uuml;nstig</th></tr></thead>
+        <tbody>
+          <tr><td>Investition I&#8320;</td><td class="r">470.215</td><td class="r">426.922</td>
+              <td class="r">383.630</td></tr>
+          <tr><td>Ersatzbeschaffungen f&auml;llig im Jahr</td>
+              <td class="r">10 &middot; 13 &middot; 18</td><td class="r">12 &middot; 15</td>
+              <td class="r">14 &middot; 17</td></tr>
+          <tr><td>Restwert am Ende</td><td class="r">156.977</td><td class="r">177.056</td>
+              <td class="r">177.517</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-herleitung" style="margin-top:9px">
+        Die k&uuml;rzere Nutzungsdauer im ung&uuml;nstigen Fall verschiebt nicht nur den Zeitpunkt,
+        sie erzeugt einen dritten Ersatz: Die Hydraulik erreicht mit 18 Jahren den
+        Betrachtungszeitraum nicht mehr.
+      </div>
+
+      <details class="s-klapp" open>
+        <summary>Bewertung nach DIN EN 17463</summary>
+        <div class="s-klappleib">
+          <div class="s-herleitung"><b>Betrachtungszeitraum</b> 20 Jahre &middot; k&uuml;rzeste
+          gepflegte Nutzungsdauer 12 a, l&auml;ngste 25 a &rarr; Ersatzbeschaffung im Jahr 12 und 15,
+          Restwert am Ende angesetzt.</div>
+          <div class="s-herleitung"><b>Eigenverbrauch und Einspeisung</b> sind aus der
+          Stundensimulation abgeleitet, nicht als Annahme gesetzt.</div>
+          <div class="s-herleitung"><b>Vereinfachungen:</b> kein Endjahr je Kostenposition &mdash;
+          jede Position l&auml;uft bis zum Ende des Betrachtungszeitraums &middot; keine Alterung
+          au&szlig;er beim Ertrag der Photovoltaik &middot; die Energiekosten sind die
+          Gesamtrechnung des Simulationslaufs ab dem ersten Jahr.</div>
+          <div class="s-herleitung"><b>Nicht monet&auml;re Wirkungen:</b> Der Standort bleibt bei
+          Netzausfall &uuml;ber das Blockheizkraftwerk teilversorgt; die Eigenerzeugung mindert die
+          Abh&auml;ngigkeit vom Strommarkt. Die belegte Dachfl&auml;che steht anderen Nutzungen
+          nicht mehr zur Verf&uuml;gung.</div>
+          <div class="s-herleitung">Rechnung <b>nominal</b> &middot; Energie- und
+          Stromsteuerentlastungen ber&uuml;cksichtigt &middot; Ertragsteuern nicht
+          ber&uuml;cksichtigt &middot; keine Abschreibungen als Zahlung &middot; Restwert linear
+          &mdash; dokumentierte Abweichung.</div>
+        </div>
+      </details>
+    </div>
+    <div class="s-fuss">
+      <span class="s-status">Drei Szenarien gerechnet &middot; Annahmen aus Vorgaben, nichts gepflegt</span>
+      <span class="s-knopf">Parameter&hellip;</span>
+      <span class="s-knopf">Verlauf&hellip;</span>
+      <span class="s-knopf primaer">Bericht erzeugen</span>
+    </div>
+  </div>
+
+  <div class="befund">
+    <h4>Eine Vereinfachung, die im Bericht steht, ist eine Annahme &mdash; eine, die nicht dasteht, ist ein Fehler</h4>
+    <p>Der Block &bdquo;Bewertung nach DIN EN 17463&ldquo; ist aufgeklappt gezeichnet, damit sein
+    Inhalt hier sichtbar ist. Im Betrieb ist er zugeklappt: Er beantwortet keine Frage, die ein
+    Planer beim ersten Blick stellt &mdash; aber jede, die ein Pr&uuml;fer sp&auml;ter stellt.</p>
+  </div>
+</section>
+
+<!-- =============================================================== BHKW -->
+<section class="kap" id="bhkw">
+  <div class="kap-kopf"><h2>5 &nbsp;Blockheizkraftwerk</h2>
+    <span class="kap-marke">300 kW elektrisch &middot; 5.500 h/a</span></div>
+  <p class="kap-lead">Vier Rechtsgrundlagen, drei verschiedene Strommengen und eine Staffel, die
+  marginal rechnet. Die Ansicht bringt zusammen, was heute auf mehrere Zeilen verteilt ist, und zeigt
+  zu jedem Satz, woher er kommt &mdash; und wo der Zuschlag endet.</p>
+
+  <div class="seite">
+    <div class="s-band">Blockheizkraftwerk &mdash; woraus Erl&ouml;s und Kosten entstehen
+      <span class="s-sub">Jahr 1 &middot; netto &middot; Szenario Erwartet</span></div>
+    <div class="s-leib">
+
+      <div class="zone" style="margin:0 0 10px;color:#5A5A5A">Welche Vorschrift mit welcher Menge rechnet</div>
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Menge</th><th class="r">MWh/a</th><th>verwendet von</th><th>Grund</th></tr></thead>
+        <tbody>
+          <tr><td>Stromerzeugung brutto</td><td class="r">1.650,0</td>
+              <td>Stromsteuer-Befreiung &middot; Vollbenutzungsstunden</td>
+              <td>an den Generatorklemmen gemessen</td></tr>
+          <tr><td>&minus; Hilfsstrom (2,0 % des Brennstoffs)</td><td class="r">&minus;86,8</td>
+              <td>&mdash;</td><td>Neben- und Hilfsanlagen</td></tr>
+          <tr class="summe"><td>= Nettostromerzeugung</td><td class="r">1.563,2</td>
+              <td>Zuschlag Kraft-W&auml;rme-Kopplung</td><td>das ist der Strom, auf den gezahlt wird</td></tr>
+          <tr><td>davon Eigenverbrauch (70 %)</td><td class="r">1.094,2</td>
+              <td>Zuschlag Eigenstrom</td><td>aus der Stundensimulation</td></tr>
+          <tr><td>davon Einspeisung (30 %)</td><td class="r">469,0</td>
+              <td>Zuschlag Einspeisung &middot; Einspeiseerl&ouml;s</td><td>aus der Stundensimulation</td></tr>
+          <tr><td>Eigenverbrauch brutto (70 %)</td><td class="r">1.155,0</td>
+              <td>Stromsteuer-Befreiung</td><td>kein Abzug &mdash; andere Vorschrift</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-info">Der Abzug des Hilfsstroms wirkt <b>nur</b> auf die Mengen des Zuschlags.
+      Stromsteuer und Vollbenutzungsstunden bleiben brutto.</div>
+
+      <div class="zone" style="margin:22px 0 10px;color:#5A5A5A">Der Mischsatz &mdash; wie ein Steuertarif</div>
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Leistungsanteil</th><th class="r">Breite</th><th class="r">Einspeisung</th>
+          <th class="r">Beitrag</th><th class="r">Eigenstrom</th><th class="r">Beitrag</th></tr></thead>
+        <tbody>
+          <tr><td>bis 50 kW</td><td class="r">50 kW</td><td class="r">8,00 ct</td><td class="r">400</td>
+              <td class="r">4,00 ct</td><td class="r">200</td></tr>
+          <tr><td>&uuml;ber 50 bis 100 kW</td><td class="r">50 kW</td><td class="r">6,00 ct</td>
+              <td class="r">300</td><td class="r">3,00 ct</td><td class="r">150</td></tr>
+          <tr><td>&uuml;ber 100 bis 250 kW</td><td class="r">150 kW</td><td class="r">5,00 ct</td>
+              <td class="r">750</td><td class="r">2,00 ct</td><td class="r">300</td></tr>
+          <tr><td>&uuml;ber 250 kW</td><td class="r">50 kW</td><td class="r">4,40 ct</td>
+              <td class="r">220</td><td class="r">1,50 ct</td><td class="r">75</td></tr>
+          <tr class="summe"><td>Mischsatz bei 300 kW</td><td class="r">300 kW</td><td class="r">&mdash;</td>
+              <td class="r">1.670 &divide; 300 = <b>5,5667 ct</b></td><td class="r">&mdash;</td>
+              <td class="r">725 &divide; 300 = <b>2,4167 ct</b></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-herleitung">Marginal &uuml;ber die Leistungsanteile, nicht klassenweise &mdash;
+      eine Klassenlogik erg&auml;be bei 300 kW nur 4,40 ct/kWh, also <b>21 % zu wenig</b>. Der
+      Eigenstromsatz gilt nur, weil ein Tatbestand des Eigenstrombezugs erf&uuml;llt ist; ohne ihn
+      w&auml;re er null und der volle Jahresbonus halbiert.</div>
+
+      <div class="zone" style="margin:22px 0 10px;color:#5A5A5A">Der Zuschlag &uuml;ber die Jahre</div>
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th></tr></thead>
+        <tbody>
+          <tr><td>Bonus Einspeisung</td><td class="mono">469,0 MWh &times; 5,5667 ct</td>
+              <td class="r">26.107,8 &euro;</td></tr>
+          <tr><td>Bonus Eigenstrom</td><td class="mono">1.094,2 MWh &times; 2,4167 ct</td>
+              <td class="r">26.443,5 &euro;</td></tr>
+          <tr><td>Voller Jahresbonus</td><td class="mono">26.107,8 + 26.443,5</td>
+              <td class="r">52.551,3 &euro;</td></tr>
+          <tr><td>Deckelanteil im ersten Jahr</td>
+              <td class="mono">min(5.500 h; 3.300 h; 30.000 h) &divide; 5.500 h</td>
+              <td class="r">0,600</td></tr>
+          <tr class="summe"><td>Zuschlag Jahr 1</td><td class="mono">52.551,3 &times; 0,600</td>
+              <td class="r">31.530,8 &euro;</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-warn">Die Anlage l&auml;uft 5.500 h/a, verg&uuml;tet werden im ersten Jahr aber
+      nur 3.300 h &mdash; 60 % der Erzeugung. Der Jahresdeckel sinkt bis 2030 auf 2.500 h; das
+      Kontingent von 30.000 Vollbenutzungsstunden reicht dadurch &uuml;ber <b>zw&ouml;lf Jahre</b>.
+      Danach bleiben acht Jahre des Betrachtungszeitraums ohne Zuschlag.</div>
+    </div>
+  </div>
+
+  <div class="chart-karte">
+    <div class="chart-titel">Erl&ouml;se des Blockheizkraftwerks &uuml;ber 20 Jahre <span class="marke neu">neu</span></div>
+    <div class="chart-unter">Der Zuschlag f&auml;llt, endet im Jahr 12 und l&auml;sst die
+      &uuml;brigen Erl&ouml;se allein zur&uuml;ck</div>
+    <svg viewBox="0 0 720 208" width="720" height="208" role="img" aria-label="Gestapelte Jahresbalken der BHKW-Erlöse über 20 Jahre. Der KWK-Zuschlag fällt von 31.531 Euro auf 23.887 Euro, endet im Jahr 12 mit 4.777 Euro und ist danach null. Energiesteuer, Stromsteuer und Einspeiseerlös bleiben konstant bei zusammen 49.403 Euro.">
+  <line x1="44" y1="168.0" x2="712" y2="168.0" stroke="var(--linie-stark)" stroke-width="1"/>
+  <line x1="44" y1="126.8" x2="712" y2="126.8" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="129.8" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">25k</text>
+  <line x1="44" y1="85.6" x2="712" y2="85.6" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="88.6" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">50k</text>
+  <line x1="44" y1="44.4" x2="712" y2="44.4" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="47.4" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">75k</text>
+  <rect x="52.0" y="116.1" width="26.0" height="51.9" fill="#0B6B5B"/>
+  <rect x="52.0" y="81.1" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="52.0" y="73.3" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="52.0" y="34.7" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="84.0" y="119.2" width="26.0" height="48.8" fill="#0B6B5B"/>
+  <rect x="84.0" y="84.3" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="84.0" y="76.4" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="84.0" y="37.8" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="116.0" y="122.4" width="26.0" height="45.6" fill="#0B6B5B"/>
+  <rect x="116.0" y="87.4" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="116.0" y="79.6" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="116.0" y="41.0" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="148.0" y="125.5" width="26.0" height="42.5" fill="#0B6B5B"/>
+  <rect x="148.0" y="90.6" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="148.0" y="82.7" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="148.0" y="44.1" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="180.0" y="128.6" width="26.0" height="39.4" fill="#0B6B5B"/>
+  <rect x="180.0" y="93.7" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="180.0" y="85.9" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="180.0" y="47.3" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="212.0" y="128.6" width="26.0" height="39.4" fill="#0B6B5B"/>
+  <rect x="212.0" y="93.7" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="212.0" y="85.9" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="212.0" y="47.3" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="244.0" y="128.6" width="26.0" height="39.4" fill="#0B6B5B"/>
+  <rect x="244.0" y="93.7" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="244.0" y="85.9" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="244.0" y="47.3" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="276.0" y="128.6" width="26.0" height="39.4" fill="#0B6B5B"/>
+  <rect x="276.0" y="93.7" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="276.0" y="85.9" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="276.0" y="47.3" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="308.0" y="128.6" width="26.0" height="39.4" fill="#0B6B5B"/>
+  <rect x="308.0" y="93.7" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="308.0" y="85.9" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="308.0" y="47.3" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="340.0" y="128.6" width="26.0" height="39.4" fill="#0B6B5B"/>
+  <rect x="340.0" y="93.7" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="340.0" y="85.9" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="340.0" y="47.3" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="372.0" y="128.6" width="26.0" height="39.4" fill="#0B6B5B"/>
+  <rect x="372.0" y="93.7" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="372.0" y="85.9" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="372.0" y="47.3" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="404.0" y="160.1" width="26.0" height="7.9" fill="#0B6B5B"/>
+  <rect x="404.0" y="125.2" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="404.0" y="117.4" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="404.0" y="78.7" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="436.0" y="133.1" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="436.0" y="125.2" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="436.0" y="86.6" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="468.0" y="133.1" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="468.0" y="125.2" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="468.0" y="86.6" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="500.0" y="133.1" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="500.0" y="125.2" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="500.0" y="86.6" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="532.0" y="133.1" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="532.0" y="125.2" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="532.0" y="86.6" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="564.0" y="133.1" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="564.0" y="125.2" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="564.0" y="86.6" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="596.0" y="133.1" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="596.0" y="125.2" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="596.0" y="86.6" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="628.0" y="133.1" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="628.0" y="125.2" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="628.0" y="86.6" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <rect x="660.0" y="133.1" width="26.0" height="34.9" fill="#2E9C86"/>
+  <rect x="660.0" y="125.2" width="26.0" height="7.8" fill="#63C0AC"/>
+  <rect x="660.0" y="86.6" width="26.0" height="38.6" fill="#9AD7C9"/>
+  <line x1="433.0" y1="24.0" x2="433.0" y2="168.0" stroke="var(--warn-kante)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="440.0" y="33.0" font-size="10" fill="var(--warn)" class="svgmono">Kontingent erschöpft — ab hier ohne Zuschlag</text>
+  <text x="65.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">1</text>
+  <text x="193.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">5</text>
+  <text x="353.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">10</text>
+  <text x="417.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">12</text>
+  <text x="513.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">15</text>
+  <text x="673.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">20</text>
+  <text x="52" y="200" font-size="10.5" fill="var(--tinte-blass)">Jahr des Betrachtungszeitraums — nominal, Szenario Erwartet</text>
+</svg>
+    <div class="legende">
+      <span><i style="background:#0B6B5B"></i>Zuschlag Kraft-W&auml;rme-Kopplung</span>
+      <span><i style="background:#2E9C86"></i>Energiesteuer-Gutschrift</span>
+      <span><i style="background:#63C0AC"></i>Stromsteuer-Entlastung Netzbezug</span>
+      <span><i style="background:#9AD7C9"></i>Einspeiseerl&ouml;s Strom</span>
+    </div>
+  </div>
+
+  <div class="zone">Steuern, Brennstoff, Betrieb</div>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Position</th><th class="formelzelle">Rechnung</th><th class="r">Jahr 1</th>
+        <th class="r">Barwert &uuml;ber 20 a</th><th>Anmerkung</th></tr></thead>
+      <tbody>
+        <tr><td>Zuschlag Kraft-W&auml;rme-Kopplung</td>
+            <td class="formelzelle">52.551,3 &times; Deckelanteil je Jahr</td>
+            <td class="r num">31.530,8</td><td class="r num">242.389</td>
+            <td>nominal 286.644 &euro; &uuml;ber zw&ouml;lf Jahre</td></tr>
+        <tr><td>Energiesteuer-Gutschrift Brennstoff</td>
+            <td class="formelzelle">4.797,2 MWh &times; 4,42 &euro;/MWh</td>
+            <td class="r num">21.203,4</td><td class="r num">315.453</td>
+            <td>Brennwertmenge: 4.342,1 &times; 11,6 / 10,5 &middot; Nutzungsgrad 83 % &ge; 70 %</td></tr>
+        <tr><td>Stromsteuer-Entlastung Netzbezug</td>
+            <td class="formelzelle">max(0; 250,0 MWh &times; 20,00 &minus; 250)</td>
+            <td class="r num">4.750,0</td><td class="r num">70.668</td>
+            <td>nur produzierendes Gewerbe; h&auml;ngt am Restbezug, nicht an der Anlage</td></tr>
+        <tr><td>Einspeiseerl&ouml;s Strom</td>
+            <td class="formelzelle">469,0 MWh &times; 5,00 ct</td>
+            <td class="r num">23.450,0</td><td class="r num">348.877</td>
+            <td>nominal konstant</td></tr>
+        <tr class="zwischen"><td>Brennstoffkosten</td>
+            <td class="formelzelle">4.342.100 kWh &times; 0,0720 &euro;/kWh</td>
+            <td class="r num">&minus;312.631,2</td><td class="r num">&mdash;</td>
+            <td>Heizwertbezug; Grundpreis 180 &euro;/a zus&auml;tzlich</td></tr>
+        <tr><td>Wartung</td><td class="formelzelle">1.650.000 kWh &times; 0,0280 &euro;/kWh</td>
+            <td class="r num">&minus;46.200,00</td><td class="r num">&mdash;</td>
+            <td>Pflichtposition</td></tr>
+        <tr><td>Instandhaltung</td><td class="formelzelle">240.772,40 &euro; &times; 1,50 %</td>
+            <td class="r num">&minus;3.611,59</td><td class="r num">&mdash;</td>
+            <td>Pflichtposition; Bemessung auf die Investition der Anlage</td></tr>
+        <tr><td>Hilfsenergie</td><td class="formelzelle">312.631,20 &euro; &times; 2,00 %</td>
+            <td class="r num">&minus;6.252,62</td><td class="r num">&mdash;</td>
+            <td>Pflichtposition; entspricht 21.710 kWh Strom</td></tr>
+        <tr><td>Versicherung</td><td class="formelzelle">Jahresbetrag</td>
+            <td class="r num">&minus;1.100,00</td><td class="r num">&mdash;</td><td>&mdash;</td></tr>
+        <tr class="ergebnis"><td>Betriebskosten Blockheizkraftwerk</td>
+            <td class="formelzelle">46.200,00 + 3.611,59 + 6.252,62 + 1.100,00</td>
+            <td class="r num">&minus;57.164,21</td><td class="r num">&mdash;</td>
+            <td>je Jahr, Stand des ersten Jahres</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="zone">Was ausgewiesen, aber nicht gezahlt wird</div>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Position</th><th class="r">Jahr 1</th><th>Warum kein Zahlungsstrom</th></tr></thead>
+      <tbody>
+        <tr><td>Stromsteuer-Befreiung Eigenverbrauch <span class="marke aus">Ausweis</span></td>
+            <td class="r num">23.677,5 &euro;</td>
+            <td>Auf selbst erzeugten und selbst verbrauchten Strom entsteht gar keine Stromsteuer
+            &mdash; der Vorteil steckt bereits in der kleineren Bezugsrechnung</td></tr>
+        <tr><td>Vermiedene Stromkosten <span class="marke aus">Ausweis</span></td>
+            <td class="r num">339.753,6 &euro;</td>
+            <td>steckt im Reststrombetrag, der in den Kapitalwert eingeht; zus&auml;tzlich gebucht
+            w&auml;re es eine Doppelz&auml;hlung</td></tr>
+        <tr><td>abz&uuml;glich entgangener Stromsteuer-Entlastung</td>
+            <td class="r num">&minus;23.594,0 &euro;</td>
+            <td>Wer weniger Strom bezieht, bekommt auch weniger Entlastung zur&uuml;ck</td></tr>
+        <tr class="zwischen"><td>vermiedene Kosten wirksam</td>
+            <td class="r num">316.159,6 &euro;</td><td>Ausweis &mdash; nie in der Summe</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- =============================================================== PV -->
+<section class="kap" id="pv">
+  <div class="kap-kopf"><h2>6 &nbsp;Photovoltaik</h2>
+    <span class="kap-marke">300 kWp &middot; Direktvermarktung</span></div>
+  <p class="kap-lead">Der Gegenentwurf zum Blockheizkraftwerk: keine Staffel &uuml;ber
+  Leistungsanteile, daf&uuml;r ein anzulegender Wert, der degressiv altert, eine Marktpr&auml;mie als
+  Differenzgr&ouml;&szlig;e und zwei benannte Abz&uuml;ge &mdash; negative Preise und die
+  Begrenzung auf 60 % der Spitzenleistung.</p>
+
+  <div class="seite">
+    <div class="s-band">Photovoltaik &mdash; woraus Erl&ouml;s und Kosten entstehen
+      <span class="s-sub">Jahr 1 &middot; netto &middot; Szenario Erwartet</span></div>
+    <div class="s-leib">
+
+      <div class="zone" style="margin:0 0 10px;color:#5A5A5A">Ertrag und seine Aufteilung</div>
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Gr&ouml;&szlig;e</th><th class="r">Jahr 1</th><th class="r">Jahr 20</th>
+          <th>Herkunft</th></tr></thead>
+        <tbody>
+          <tr><td>Ertrag</td><td class="r">285,0 MWh</td><td class="r">259,1 MWh</td>
+              <td>Simulationslauf &middot; Alterung 0,50 %/a</td></tr>
+          <tr><td>davon Eigenverbrauch</td><td class="r">85,5 MWh</td><td class="r">77,7 MWh</td>
+              <td><b>aus der Stundensimulation abgeleitet</b>, nicht als Annahme gesetzt</td></tr>
+          <tr><td>davon Einspeisung</td><td class="r">199,5 MWh</td><td class="r">181,4 MWh</td>
+              <td>dieselbe Quelle</td></tr>
+          <tr class="summe"><td>Anzulegender Wert</td><td class="r">6,04 ct/kWh</td>
+              <td class="r">6,04 ct/kWh</td>
+              <td>100 kWp &times; 7,94 + 200 kWp &times; 5,09 = 1.812 &divide; 300 &mdash; gesetzlich
+              fest, steigt nicht mit den Preisen</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-info">Die Aufteilung in Eigenverbrauch und Einspeisung ist in EPOS-Plan
+      <b>gerechnet</b> und nicht geraten. Das ist ein Vorzug gegen&uuml;ber der reinen
+      Normrechnung, die sie als Annahme erfasst &mdash; und deshalb steht er hier.</div>
+
+      <div class="zone" style="margin:22px 0 10px;color:#5A5A5A">Wie die Verg&uuml;tung entsteht</div>
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Bestandteil</th><th>Rechnung</th><th class="r">&euro;/a</th>
+          <th>Rechtsgrundlage</th></tr></thead>
+        <tbody>
+          <tr><td>Spoterl&ouml;s</td><td class="mono">199.500 kWh &times; 4,50 ct</td>
+              <td class="r">8.977,50</td><td>Jahresmarktwert Solar</td></tr>
+          <tr><td>Marktpr&auml;mie</td><td class="mono">199.500 &times; (6,04 &minus; 4,50) ct</td>
+              <td class="r">3.072,30</td><td>Differenz zum anzulegenden Wert</td></tr>
+          <tr><td>Ausfall bei negativen Preisen</td>
+              <td class="mono">199.500 &times; 20 % &times; 1,54 ct</td>
+              <td class="r">&minus;614,46</td><td>nur die Pr&auml;mie entf&auml;llt, der
+              Spoterl&ouml;s bleibt</td></tr>
+          <tr><td>Direktvermarktungsentgelt</td><td class="mono">199.500 &times; 0,40 ct</td>
+              <td class="r">&minus;798,00</td><td>Kosten des Direktvermarkters</td></tr>
+          <tr><td>Begrenzung auf 60 % der Spitzenleistung</td>
+              <td class="mono">3.990 kWh &times; 6,04 ct</td><td class="r">&minus;241,00</td>
+              <td>Mengenverlust oberhalb 180 kW, mit dem anzulegenden Wert bewertet</td></tr>
+          <tr class="summe"><td>Verg&uuml;tung Jahr 1</td>
+              <td class="mono">8.977,50 + 3.072,30 &minus; 614,46 &minus; 798,00 &minus; 241,00</td>
+              <td class="r">10.396,34</td><td>eigene Reihe &uuml;ber 20 Jahre</td></tr>
+          <tr><td>Kompensation im letzten Verg&uuml;tungsjahr</td>
+              <td class="mono">39.900 kWh &times; 0,5 &times; 6,04 ct</td><td class="r">1.204,98</td>
+              <td>Einmalzahlung, auf ihr Jahr abgezinst &mdash; N&auml;herung</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-warn">Die beiden Abz&uuml;ge stehen als eigene Zeilen und nicht im Nettobetrag:
+      Ein Planer, der 10.396 &euro; sieht, muss erkennen k&ouml;nnen, dass 1.653 &euro; davon
+      abgezogen wurden und woran das liegt.</div>
+    </div>
+  </div>
+
+  <div class="chart-karte">
+    <div class="chart-titel">Von der Einspeisung zur Verg&uuml;tung <span class="marke neu">neu</span></div>
+    <div class="chart-unter">Jahr 1 &middot; die beiden Abz&uuml;ge und das Entgelt als benannte
+      Stufen</div>
+    <svg viewBox="0 0 660 216" width="660" height="216" role="img" aria-label="Brückendiagramm der PV-Vergütung im ersten Jahr: Spoterlös 8.977,50 Euro, Marktprämie 3.072,30 Euro, Abzug Paragraf 51 minus 614,46 Euro, Direktvermarktungsentgelt minus 798,00 Euro, 60-Prozent-Kappung minus 241,00 Euro, Summe 10.396,34 Euro.">
+  <line x1="36" y1="168.0" x2="652" y2="168.0" stroke="var(--linie-stark)" stroke-width="1"/>
+  <line x1="36" y1="111.2" x2="652" y2="111.2" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="32" y="114.2" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">5k</text>
+  <line x1="36" y1="54.4" x2="652" y2="54.4" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="32" y="57.4" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">10k</text>
+  <rect x="44.0" y="66.0" width="82.0" height="102.0" fill="var(--erloes)" opacity="0.88"/>
+  <text x="85.0" y="60.0" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">+8.977,50</text>
+  <text x="85.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Spoterlös</text>
+  <line x1="44.0" y1="66.0" x2="148.0" y2="66.0" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="148.0" y="31.1" width="82.0" height="34.9" fill="var(--erloes)" opacity="0.88"/>
+  <text x="189.0" y="25.1" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">+3.072,30</text>
+  <text x="189.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Marktprämie</text>
+  <line x1="148.0" y1="31.1" x2="252.0" y2="31.1" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="252.0" y="31.1" width="82.0" height="7.0" fill="var(--kosten)" opacity="0.88"/>
+  <text x="293.0" y="25.1" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−614,46</text>
+  <text x="293.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">§ 51 Ausfall</text>
+  <line x1="252.0" y1="38.1" x2="356.0" y2="38.1" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="356.0" y="38.1" width="82.0" height="9.1" fill="var(--kosten)" opacity="0.88"/>
+  <text x="397.0" y="32.1" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−798,00</text>
+  <text x="397.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">DV-Entgelt</text>
+  <line x1="356.0" y1="47.2" x2="460.0" y2="47.2" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="460.0" y="47.2" width="82.0" height="2.7" fill="var(--kosten)" opacity="0.88"/>
+  <text x="501.0" y="41.2" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−241,00</text>
+  <text x="501.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">60-%-Kappung</text>
+  <line x1="460.0" y1="49.9" x2="564.0" y2="49.9" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="564.0" y="49.9" width="82.0" height="118.1" fill="var(--marine-hell)"/>
+  <text x="605.0" y="42.9" text-anchor="middle" font-size="11" fill="var(--marine-hell)" class="svgmono" font-weight="700">10.396,34</text>
+  <text x="605.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte)" font-weight="600">Vergütung</text>
+  <text x="44" y="206" font-size="10.5" fill="var(--tinte-blass)">Jahr 1, netto — 199,5 MWh Einspeisung, anzulegender Wert 6,04 ct/kWh</text>
+</svg>
+    <div class="legende">
+      <span><i style="background:var(--erloes)"></i>Einzahlung</span>
+      <span><i style="background:var(--kosten)"></i>Abzug</span>
+      <span><i style="background:var(--marine-hell)"></i>Verg&uuml;tung</span>
+    </div>
+  </div>
+
+  <div class="chart-karte">
+    <div class="chart-titel">Verg&uuml;tung &uuml;ber 20 Jahre <span class="marke neu">neu</span></div>
+    <div class="chart-unter">Die Alterung senkt die Menge, der anzulegende Wert bleibt &mdash;
+      nominal 199.545 &euro;, Barwert 148.931 &euro;</div>
+    <svg viewBox="0 0 720 190" width="720" height="190" role="img" aria-label="Jahresbalken der PV-Vergütung über 20 Jahre: 10.396 Euro im ersten Jahr, durch die Degradation von 0,5 Prozent je Jahr auf 9.499 Euro im Jahr 19 fallend; im Jahr 20 kommt die Kompensation nach Paragraf 51a mit 1.205 Euro hinzu.">
+  <line x1="44" y1="150.0" x2="712" y2="150.0" stroke="var(--linie-stark)" stroke-width="1"/>
+  <line x1="44" y1="97.2" x2="712" y2="97.2" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="100.2" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">5k</text>
+  <line x1="44" y1="44.4" x2="712" y2="44.4" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="47.4" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">10k</text>
+  <rect x="52.0" y="40.3" width="26.0" height="109.7" fill="#C8A227"/>
+  <rect x="84.0" y="40.8" width="26.0" height="109.2" fill="#C8A227"/>
+  <rect x="116.0" y="41.3" width="26.0" height="108.7" fill="#C8A227"/>
+  <rect x="148.0" y="41.9" width="26.0" height="108.1" fill="#C8A227"/>
+  <rect x="180.0" y="42.4" width="26.0" height="107.6" fill="#C8A227"/>
+  <rect x="212.0" y="43.0" width="26.0" height="107.0" fill="#C8A227"/>
+  <rect x="244.0" y="43.5" width="26.0" height="106.5" fill="#C8A227"/>
+  <rect x="276.0" y="44.0" width="26.0" height="106.0" fill="#C8A227"/>
+  <rect x="308.0" y="44.6" width="26.0" height="105.4" fill="#C8A227"/>
+  <rect x="340.0" y="45.1" width="26.0" height="104.9" fill="#C8A227"/>
+  <rect x="372.0" y="45.6" width="26.0" height="104.4" fill="#C8A227"/>
+  <rect x="404.0" y="46.1" width="26.0" height="103.9" fill="#C8A227"/>
+  <rect x="436.0" y="46.7" width="26.0" height="103.3" fill="#C8A227"/>
+  <rect x="468.0" y="47.2" width="26.0" height="102.8" fill="#C8A227"/>
+  <rect x="500.0" y="47.7" width="26.0" height="102.3" fill="#C8A227"/>
+  <rect x="532.0" y="48.2" width="26.0" height="101.8" fill="#C8A227"/>
+  <rect x="564.0" y="48.7" width="26.0" height="101.3" fill="#C8A227"/>
+  <rect x="596.0" y="49.2" width="26.0" height="100.8" fill="#C8A227"/>
+  <rect x="628.0" y="49.7" width="26.0" height="100.3" fill="#C8A227"/>
+  <rect x="660.0" y="50.2" width="26.0" height="99.8" fill="#C8A227"/>
+  <rect x="660.0" y="37.5" width="26.0" height="12.7" fill="#8A6100"/>
+  <text x="686.0" y="31.5" text-anchor="end" font-size="9.5" fill="var(--warn)" class="svgmono">§ 51a</text>
+  <text x="65.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">1</text>
+  <text x="193.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">5</text>
+  <text x="353.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">10</text>
+  <text x="513.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">15</text>
+  <text x="673.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">20</text>
+  <text x="52" y="182" font-size="10.5" fill="var(--tinte-blass)">Jahr — Degradation 0,5 %/a wirkt auf die Menge, der anzulegende Wert bleibt</text>
+</svg>
+    <div class="legende">
+      <span><i style="background:#C8A227"></i>Verg&uuml;tung je Jahr</span>
+      <span><i style="background:#8A6100"></i>Kompensation im letzten Jahr</span>
+    </div>
+  </div>
+
+  <div class="zone">Kosten, Ersatz und Restwert</div>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Position</th><th class="formelzelle">Rechnung</th><th class="r">Betrag</th>
+        <th class="r">Nutzungsdauer</th><th>Wirkung</th></tr></thead>
+      <tbody>
+        <tr><td>Module</td><td class="formelzelle">300,00 kWp &times; 320,00 &euro;/kWp</td>
+            <td class="r num">96.000,00</td><td class="r num">25 a</td>
+            <td>Restwert 19.200 &euro; im Jahr 20</td></tr>
+        <tr><td>Wechselrichter</td><td class="formelzelle">300,00 kWp &times; 80,00 &euro;/kWp</td>
+            <td class="r num">24.000,00</td><td class="r num">12 a</td>
+            <td><b>Ersatz im Jahr 12</b>, Restwert 8.000 &euro;</td></tr>
+        <tr><td>Unterkonstruktion und Montage</td>
+            <td class="formelzelle">300,00 kWp &times; 150,00 &euro;/kWp</td>
+            <td class="r num">45.000,00</td><td class="r num">25 a</td>
+            <td>Restwert 9.000 &euro;</td></tr>
+        <tr><td>Elektroinstallation, Netzanschluss</td><td class="formelzelle">Betrag</td>
+            <td class="r num">18.000,00</td><td class="r num">25 a</td>
+            <td>Restwert 3.600 &euro;</td></tr>
+        <tr><td>Planung und Genehmigung</td>
+            <td class="formelzelle">183.000,00 &euro; &times; 5,00 %</td>
+            <td class="r num">9.150,00</td><td class="r">wie Zeitraum</td>
+            <td>kein Ersatz, kein Restwert</td></tr>
+        <tr class="zwischen"><td>Investition</td>
+            <td class="formelzelle">183.000,00 + 9.150,00</td><td class="r num">192.150,00</td>
+            <td class="r">&mdash;</td><td>640,50 &euro;/kWp &middot; kein Zuschuss</td></tr>
+        <tr><td>Betriebskosten</td>
+            <td class="formelzelle">3.600,00 + 960,75 + 480,38 + 600,00 + 90,00</td>
+            <td class="r num">5.731,13</td><td class="r">je Jahr</td>
+            <td>Wartung &middot; Instandhaltung &middot; Versicherung &middot; Monitoring &middot;
+            Hilfsenergie</td></tr>
+        <tr><td>Ersatz Wechselrichter</td><td class="formelzelle">24.000 &divide; 1,03<sup>12</sup> = 24.000 &divide; 1,4258</td>
+            <td class="r num minus">&minus;16.833</td><td class="r">Barwert</td>
+            <td>Jahr 12, nicht preisindiziert bei 0 %/a</td></tr>
+        <tr class="ergebnis"><td>Restwert am Ende</td>
+            <td class="formelzelle">39.800 &divide; 1,03<sup>20</sup> = 39.800 &divide; 1,8061</td>
+            <td class="r num">+22.036</td><td class="r">Barwert</td>
+            <td>&uuml;bersteigt den Barwert des Wechselrichtertauschs</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="befund">
+    <h4>Der Restwert wiegt bei der Photovoltaik schwerer als der Ersatz</h4>
+    <p>Der Barwert des Restwerts (22.036 &euro;) &uuml;bersteigt den des Wechselrichtertauschs
+    (16.833 &euro;). Beide Zahlen stehen deshalb als eigene Zeilen in der Gliederung und nicht als
+    Saldo &mdash; sonst verschw&auml;nde die gr&ouml;&szlig;te Modellannahme dieser Anlage in einer
+    Differenz.</p>
+    <p>Ausgewiesen, aber nicht gezahlt: der vermiedene Netzbezug von 24.624 &euro;/a
+    (85,5 MWh &times; 28,80 ct). Er steckt bereits in der kleineren Stromrechnung.</p>
+  </div>
+</section>
+
+<!-- =============================================================== DATEN -->
+<section class="kap" id="daten">
+  <div class="kap-kopf"><h2>Was der Entwurf an Daten braucht</h2></div>
+  <p class="kap-lead">Das meiste rechnet EPOS-Plan bereits &mdash; es wird nur nicht gezeigt oder
+  nicht an dieser Stelle gezeigt. Diese Aufstellung trennt beides.</p>
+
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Darstellung</th><th>Grundlage</th><th>Steht heute</th></tr></thead>
+      <tbody>
+        <tr><td>Einstufung und Vorschlag zur Entscheidung</td>
+            <td>gerechnet, mit denselben Texten f&uuml;r Seite und Bericht</td>
+            <td>als einzelner Satz unter der Tabelle; die Einstufung je Version nur im Bericht</td></tr>
+        <tr><td>Bandbreite nebeneinander</td>
+            <td>alle drei Szenarien werden gerechnet und liegen geladen vor</td>
+            <td>im Bericht nebeneinander, auf der Seite nur eines zur Zeit</td></tr>
+        <tr><td>Gliederung mit Barwert und Nominalsumme</td>
+            <td>Barwerte je Bestandteil liegen vor</td>
+            <td>Barwerte ja &mdash; die Nominalsummen nur im Bericht</td></tr>
+        <tr><td>Zahlungsstrom je Jahr</td>
+            <td>vollst&auml;ndig vorhanden, samt der einzelnen Erl&ouml;sreihen</td>
+            <td>nur im Wort- und Tabellenbericht; auf der Seite nirgends</td></tr>
+        <tr><td>Kumulierter Barwert mit Amortisation</td>
+            <td>vorhanden</td>
+            <td>im Verlaufsfenster als Bild; nicht auf der Seite</td></tr>
+        <tr><td>Verg&uuml;tungsreihe der Photovoltaik je Jahr</td>
+            <td>wird gerechnet und geht in den Kapitalwert ein</td>
+            <td>als Jahreswert; die Jahresreihe hat in der Mehrjahrestabelle noch keine
+            eigene Spalte</td></tr>
+        <tr><td>Aufschl&uuml;sselung der Erl&ouml;se in der Jahresreihe nach Bestandteilen</td>
+            <td>f&uuml;r Zuschlag und Steuern vorhanden</td>
+            <td>Marktpr&auml;mie, Abz&uuml;ge und Kompensation nur als Jahreswert, nicht als
+            Reihe</td></tr>
+        <tr><td>Bandbreite der Gliederung (Barwerte je Szenario)</td>
+            <td>je Szenario gerechnet</td>
+            <td>vorhanden &mdash; die Seite zeigt sie einzeln</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="befund">
+    <h4>Die Differenz zweier Zahlungsbilder ist kein Zahlungsbild</h4>
+    <p>Der kumulierte Barwert der Differenz l&auml;sst sich zeichnen &mdash; die Linie liegt vor. Ein
+    nach Bestandteilen gestapeltes Bild der <em>Differenz</em> je Jahr dagegen nicht: Die
+    Differenzlinien f&uuml;hren keine Einzelreihen. Das Bild oben zeigt deshalb den absoluten
+    Zahlungsstrom einer Version; wer die Differenz gestapelt sehen will, braucht daf&uuml;r einen
+    eigenen Weg.</p>
+  </div>
+</section>
+
+<footer class="abschluss">
+  <p class="eng"><b>Entwurf zur Abnahme.</b> Alle Zahlen stammen aus dem Beispielprojekt dieses
+  Ordners; die Investitionssumme des Blockheizkraftwerks ist auf 300 kW hochgerechnet, weil die
+  Kostentafel des Rechenwegs eine kleinere Baugr&ouml;&szlig;e tr&auml;gt. Welche Zahl woher kommt
+  und was daran abgeleitet ist, steht im Begleitpapier neben dieser Datei.</p>
+</footer>
+
+</main>
+</div>
+</div>
+</body>
+</html>

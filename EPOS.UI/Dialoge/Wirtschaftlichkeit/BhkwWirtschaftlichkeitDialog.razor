@@ -199,6 +199,27 @@
         <KindInhalt>
             <Formularraster>
                 <KindInhalt>
+                @* AUFTRAG #325 (Anwenderwunsch 17.09.2026): "heraus nehmen aus
+                   Parameter Dialog: … Strom — Einspeisung und Bezug und in
+                   BHKW-Dialog Kosten". Der Satz, mit dem der EINGESPEISTE KWK-Strom
+                   verguetet wird, steht jetzt hier - bei den Geldgroessen des BHKW
+                   und nicht mehr in einem Sammelabschnitt der
+                   Wirtschaftlichkeits-Parameter. Er steht VOR den Zuschlaegen, weil
+                   er die Verguetung ist und der Zuschlag obendrauf kommt.
+
+                   DIESELBE WAHRHEIT, andere Eingabestelle: Es ist unveraendert
+                   WirtschaftlichkeitParameter.EinspeiseverguetungKWK in EUR/kWh, und
+                   geschrieben wird er wie die uebrigen Projektvorgaben dieser Gruppe
+                   ueber den Arbeitsstand erst im OK-Weg.
+
+                   0 HEISST "NICHT GEPFLEGT" - die Regel zieht mit. Eine gepflegte 0
+                   waere die Aussage "bringt nichts ein" und von einem nie
+                   angefassten Feld an dieser Zahl nicht zu unterscheiden. *@
+                <Zahlenfeld Bezeichnung="@_t.PEinspKwk" Einheit="€/kWh"
+                            Min="0" Max="2" Nachkommastellen="4"
+                            Wert="@(_vorgaben.EinspeiseverguetungKwk ?? 0)"
+                            WertChanged="EinspeisungKwkP" />
+
                 <Zahlenfeld Bezeichnung="@_t.PBonusEigen" Einheit="ct/kWh"
                             Min="0" Max="30" Nachkommastellen="2"
                             Wert="@_vorgaben.KwkgBonus" WertChanged="BonusEigenP" />
@@ -243,6 +264,11 @@
                             Wert="@Tag(_vorgaben.KwkgInbetriebnahme)" WertChanged="IbnP" />
                 </KindInhalt>
             </Formularraster>
+
+            @* AUFTRAG #325 / SP-E-5 (a): Was der Einspeisesatz sonst noch bewegt.
+               Wer ihn aendert, aendert die Speicherrechnung mit - und das muss
+               dort stehen, wo er ihn aendert. *@
+            <Herleitungszeile Text="@_t.PEinspKwkHinweis" />
 
             @* Herleitungszeilen je Anlage - Bestand KwkgSatzRechner.Vorschlag. *@
             @foreach (string zeile in Herleitung())
@@ -682,6 +708,10 @@
     // Beim Anteil ist 0 ein GUELTIGER Wert ("keine Hilfsenergie", BF4) - er wird
     // deshalb als 0 geschrieben und nicht auf null abgebildet.
     private void HilfsAnteilA(double? w) => Setze(() => AktuellerStand!.HilfsenergieAnteil = w ?? 0);
+
+    // AUFTRAG #325: 0 heisst "nicht gepflegt" - dieselbe Nullsemantik, die der Satz
+    // im Parameterdialog hatte, und dieselbe, mit der StromPreisCtrl ihn liest.
+    private void EinspeisungKwkP(double? w) => Setze(() => _vorgaben.EinspeiseverguetungKwk = Positiv(w));
 
     private void BonusEigenP(double? w) => Setze(() => _vorgaben.KwkgBonus = w ?? 0);
     private void BonusEinspP(double? w) => Setze(() => _vorgaben.KwkgBonusEinspeisung = w ?? 0);

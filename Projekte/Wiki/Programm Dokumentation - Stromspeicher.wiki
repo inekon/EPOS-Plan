@@ -59,7 +59,7 @@ Sie beantwortet zwei Fragen. '''Welche Größe trägt sich?''' – dafür rechne
 === Erreichbarkeit ===
 {{Anker|auslegung-start}}
 
-Der Weg hinein führt über die '''Simulationskonfiguration''': Schritt '''① Konfiguration''' → Spalte ''Speicher im Projekt'' → '''„Stromspeicher auslegen…“''', gleich unter ''Pufferspeicher anlegen / verwalten…''. Der Knopf steht, sobald das Projekt einen Stromspeicher oder einen Flottenstand führt; darunter steht eine Zeile zum Stand des Mehrspeicherbetriebs. Die Ansicht '''wechselt''' dann an die Stelle der Konfiguration; der Knopf ''← zurück'' oben rechts führt nach '''① Konfiguration''' zurück.
+Der Weg hinein führt über die '''Simulationskonfiguration''': Schritt '''① Konfiguration''' → Spalte ''Speicher im Projekt'' → '''„Stromspeicher auslegen…“''', gleich unter ''Pufferspeicher anlegen / verwalten…''. Der Knopf steht, sobald das Projekt einen Stromspeicher oder einen Flottenstand führt; darunter steht eine Zeile zum Stand des Mehrspeicherbetriebs. Die Ansicht '''wechselt''' dann an die Stelle der Konfiguration; der Knopf ''← zurück'' oben rechts führt nach '''① Konfiguration''' zurück, und rechts außen daneben steht das Schließkreuz '''✕''', das dasselbe tut.
 
 '''Einen Menüpunkt gibt es dafür nicht''', und das ist Absicht: Die Zeitreihen für Last, Erzeugung und Preise stammen aus '''genau einem''' abgeschlossenen Simulationslauf, und den bringt die Simulation mit. Öffnen Sie die Ansicht ohne gerechneten Lauf, sagt sie es in einem Hinweis und bietet '''„Simulation rechnen"''' an, statt heimlich zu rechnen.
 
@@ -190,7 +190,7 @@ Jede Quelle wird einzeln gewählt:
 * '''PV''': verfügbare AC-Leistung aus der EPOS-PV-Simulation oder einer eigenen CSV-Datei. ''pv_kw'' liegt nach Wechselrichterverlusten und vor zusätzlicher Abregelung. ''Keine PV'' setzt die PV-Leistung auf null.
 * '''Bezugspreis''': EPOS-Tarif, editierbares Strompreisprofil oder eine separate CSV-Datei. ''buy_eur_kwh'' enthält bereits den effektiven variablen Bezugspreis; negative Werte sind erlaubt. Auf die importierte effektive Preisreihe werden keine weiteren Tarifaufschläge addiert. Das bestehende Strompreisprofil verwendet dagegen Monats- und Wochenstundenwerte in ct/kWh plus den Projektaufschlag.
 
-'''BHKW-Leistung und Einspeisevergütung''' kommen bei der Flotte immer aus dem vorbereiteten Projektlauf; die Batterieeinspeisung braucht einen '''eigenen''' Verkaufspreis – der Bezugspreis wird nie als Verkaufspreis verwendet. Die Einspeisevergütung selbst wird unter [[Programm Dokumentation/Wirtschaftlichkeit#einspeiseverguetung|Wirtschaftlichkeit → Parameter → Strom]] gepflegt: der PV-Satz für eingespeisten PV-Strom, der KWK-Satz für BHKW-Strom; ohne KWK-Satz gilt der PV-Satz. Ist keiner gepflegt, rechnet die Speicherbewertung mit 0 und sagt es im Protokoll.
+'''BHKW-Leistung und Einspeisevergütung''' kommen bei der Flotte immer aus dem vorbereiteten Projektlauf; die Batterieeinspeisung braucht einen '''eigenen''' Verkaufspreis – der Bezugspreis wird nie als Verkaufspreis verwendet. Die Einspeisevergütung selbst wird an zwei Stellen gepflegt: der PV-Satz unter [[Programm Dokumentation/Wirtschaftlichkeit#einspeiseverguetung|Wirtschaftlichkeit → Parameter → Strom]], der KWK-Satz im Dialog ''BHKW-Wirtschaftlichkeit''; ohne KWK-Satz gilt der PV-Satz. Ist keiner gepflegt, rechnet die Speicherbewertung mit 0 und sagt es im Protokoll.
 
 ==== CSV-Dateien laden ====
 {{Anker|auslegung-csv}}
@@ -467,6 +467,8 @@ Ein Knopf erscheint nur, wenn seine Abhilfe an dieser Stelle überhaupt möglich
 {{Anker|auslegung-verlassen}}
 
 Haben Sie Eingaben geändert und nicht gespeichert, fragt die Ansicht beim Verlassen: '''Speichern / Verwerfen / Bleiben'''. ''Esc'' bedeutet ''Bleiben''. Danach kehrt das Programm dorthin zurück, woher Sie kamen.
+
+'''← zurück''' und das Schließkreuz '''✕''' führen beide dorthin – sie tun dasselbe und stellen dieselbe Frage. '''Während einer Rechnung sind beide gesperrt''': Sie bleiben sichtbar, aber grau, bis der Lauf endet oder Sie ihn mit ''Abbrechen'' anhalten.
 
 === Auf dem iPad ===
 {{Anker|auslegung-ios}}

@@ -19,7 +19,9 @@ Wirtschaftlichkeit_Kosten/
 ├── LIESMICH.md                          diese Datei — Einstieg und Lesereihenfolge
 ├── Beispielprojekt.md                   die eine Zahlenquelle: Eingangsgrößen, Mengenbilanz, Preise
 ├── Mockups/
-│   └── Dialog_Formel_Zahlenprobe.html   alle acht Kategorien als Seite; lokal im Browser öffnen
+│   ├── Dialog_Formel_Zahlenprobe.html   alle acht Kategorien als Seite; lokal im Browser öffnen
+│   └── Ergebnis_Bandbreite_Herkunft.html  Entwurf der Ergebnisansicht: Empfehlung, Bandbreite,
+│                                     Herkunft der Zahl, Annahmen, je eine Ansicht für BHKW und PV
 └── Rechenweg/
     ├── 01_Investitionskosten_BHKW.md    Drei-Runden-Kaskade, Zuschussklemme
     ├── 02_Betriebskosten_BHKW.md        Pflichtpositionen, Hilfsenergie an der Endenergie
