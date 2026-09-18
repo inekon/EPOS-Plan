@@ -1,6 +1,6 @@
 # 05 · Vergütungen BHKW
 
-**Dialog:** `Form_BhkwWirtschaftlichkeit` — neu, BW9 (Konzept § 2.2) · **Mockup:**
+**Dialog:** `BhkwWirtschaftlichkeitDialog` (`EPOS.UI/Dialoge/Wirtschaftlichkeit/`) — BW9 (Konzept § 2.2) · **Mockup:**
 `../Mockups/Dialog_Formel_Zahlenprobe.html#bhkw` · **Recht:** § 2 Nr. 16 und Nr. 20, § 6 Abs. 3,
 § 7, § 8 KWKG 2025 · §§ 53, 53a, 54 EnergieStG · § 9 Abs. 1 Nr. 3, § 9b StromStG · **Code:**
 `KwkgAnlagenCtrl`, `WirtschaftlichkeitCtrl` (Erlösreihen `KWKG_ZUSCHLAG`, `KWKG_PAUSCHALE`,
@@ -8,22 +8,74 @@
 § 3.6, § 3.7, § 3.8, § 3.9
 
 Die dichteste Kategorie: vier Rechtsgrundlagen, drei verschiedene Strommengen und eine Staffel, die
-marginal rechnet statt klassenweise. Das Formular zeigt je Satz eine Zeile mit seiner Herkunft; Wahl
-und Herleitung stehen in einer Überlagerung, die mit einem Knopf übernimmt. Drei Tiefen, drei Fragen:
-Vorschau (wie viel?), Satzzeile (woher?), Überlagerung (wie entstanden?).
+marginal rechnet statt klassenweise. Das Formular führt die acht Gruppen des Dialogs in seiner Reihenfolge;
+die Sätze für Einspeisung und Eigenstrom sind Zahlenfelder bei der gewählten Anlage, unter jedem steht seine
+Herkunft. Wahl und Herleitung stehen in einer Überlagerung, die mit einem Knopf übernimmt. Drei Tiefen, drei
+Fragen: Vorschau (wie viel?), Feld mit Herkunftszeile (woher?), Überlagerung (wie entstanden?).
 
 ## Was der Dialog zeigt
 
-**Gruppe Anlagen** — Tabelle je BHKW-Modul (Anlage · P_el · Brennstoff · Stichtag · Inbetriebnahme
-· Anlagenart · Eigenstrom § 6 Abs. 3) mit Aufklappzeile: je Größe **eine Satzzeile** „gilt · Herkunft"
-(Satz Einspeisung 5,5667 ct/kWh — Vorschlag, Katalog KWKG 2025, § 7 Abs. 1, Stichtagsjahr 2026 · Satz
-Eigenstrom 2,4167 — § 7 Abs. 2 mit § 6 Abs. 3 Nr. 2 · Vbh-Kontingent 30.000 h — § 8 Abs. 1 · Jahresdeckel
-3.300 h/a (2026) — Staffel § 8 Abs. 4 · KWK-Strom Fall 1 · Energiesteuer § 53a Abs. 5 — Projektvorgabe),
-das Feld Hilfsenergieanteil [%] (Vorschlag BHKW 2–4 %, wirkt nur auf die KWKG-Nettostrommenge), das
-Warnband zum Jahresdeckel und der Knopf **„Sätze und Herkunft…"**, der die Überlagerung öffnet. Ein von
-Hand gesetzter Satz steht in seiner Satzzeile als „eigener Wert 6,00 ct/kWh — Vorschlag 5,5667" und
-bleibt stehen, bis er in der Überlagerung neu gesetzt wird. Klapplisten und Knöpfe „Vorschlag übernehmen"
-am Feld gibt es im Formular nicht.
+**Gruppe Anlagen** (`BHW_G1`) — Tabelle je BHKW-Modul mit den Spalten Wahl · Projekt · Anlage · P_el [kW] ·
+Brennstoff · Stichtag · Inbetriebnahme · Anlagenart; Warnzeilen nur, wenn sie zutreffen (Ausschreibung § 8a über
+500 kW, Stromsteuerbefreiung entfällt über 2.000 kW, Heizöl-Ausschluss ab Inbetriebnahme 2025).
+
+**Gruppe Angaben der gewählten Anlage** (`BHW_G1B`) — die zwölf Felder des Dialogs mit ihren Ressourcentexten;
+editierbar sind Zahlen- und Datumsfelder, die vier Wahlfelder stehen als Anzeigezeile und werden in der
+Überlagerung gewählt (U22):
+
+| Feld (Ressourcentext) | Baustein | Beispiel | Herkunftszeile darunter |
+|---|---|---|---|
+| Stichtag (Bestellung/Genehmigung): | Datumsfeld | 14.03.2026 | — |
+| Inbetriebnahme: | Datumsfeld | 01.10.2026 | — |
+| Anlagenart: | Anzeige (Klappliste im Dialog) | neue Anlage (§ 8 Abs. 1) | — |
+| Eigenstrom nach § 6 Abs. 3: | Anzeige (Klappliste im Dialog) | Nr. 2 — Kundenanlage / geschl. Netz | — |
+| **Satz Einspeisung [ct/kWh] (0 = kein Zuschlag):** | Zahlenfeld, ct/kWh | **5,5667** | Einspeisung 5,5667 ct/kWh — § 7 Abs. 1 KWKG 2025, Stichtagsjahr 2026: 50 × 8,00 + 50 × 6,00 + 150 × 5,00 + 50 × 4,40 = 1.670 ÷ 300 · Vorschlag gilt |
+| **Satz Eigenstrom [ct/kWh] (0 = kein Zuschlag):** | Zahlenfeld, ct/kWh | **2,4167** | Eigenstrom 2,4167 ct/kWh — § 7 Abs. 2 mit § 6 Abs. 3 Nr. 2: 50 × 4,00 + 50 × 3,00 + 150 × 2,00 + 50 × 1,50 = 725 ÷ 300 · Vorschlag gilt |
+| Vbh-Kontingent [h] (0 = nach § 8 abgeleitet): | Zahlenfeld, h | 30.000 | Kontingent 30.000 Vbh — § 8 Abs. 1, neue Anlage · Vorschlag gilt |
+| Vbh-Jahresdeckel [h/a] (0 = Staffel): | Zahlenfeld, h/a | 0 | Staffel § 8 Abs. 4 · 3.300 (2026) · 3.100 · 2.900 · 2.700 · ab 2030 2.500 (U25) |
+| Anteil Neuherstellungskosten [%] (§ 8 Abs. 2/3): | Zahlenfeld, % | 0,0 | nur modernisiert oder nachgerüstet; 0 = nicht gepflegt |
+| Energiesteuerentlastung (Anlage): | Anzeige (Klappliste im Dialog) | (Projektwert) → § 53a Abs. 5 | — |
+| Brennstoff auf Strom/Wärme (Anlage): | Anzeige (Klappliste im Dialog) | (Projektwert) → voller BHKW-Brennstoff | — |
+| Hilfsenergieanteil [% des Endenergiebedarfs] (0 = keine): | Zahlenfeld, % | 2,0 | Vorschlag BHKW 2–4 %. Bemessen wird am Endenergiebedarf (Brennstoff) dieser Anlage — nicht an den Kosten. |
+
+**Das Feld ist der Satz.** Der Rechenkern liest `SatzEinspCt` und `SatzEigenCt` der Anlage ohne Rückfall
+(`a.SatzEinspCt ?? 0`); leer oder 0 heißt „kein Zuschlag", die Vorschau zeigt dann 0 €. Wer den Satz ändert, tippt
+ihn ins Feld oder wählt ihn in der Überlagerung; weicht das Feld vom Katalog ab, heißt die Zeile darunter
+„eigener Wert 6,00 — Vorschlag 5,5667 ct/kWh — § 7 Abs. 1 …" (U23), der Weg zurück ist der Knopf „Vorschlag
+übernehmen" in der Überlagerung. Der Knopf „Sätze und Herkunft…" steht am Kopf der Gruppe. Das Warnband zum
+Deckelanteil („Die Anlage läuft 5.500 h/a, vergütet werden im ersten Jahr aber nur 3.300 h — 60 % der
+Erzeugung; weil der Deckel jährlich fällt, reicht das Kontingent über 12 Kalenderjahre") ist ein Vorschlag (U25),
+ebenso die vierstellige Anzeige der Sätze — der Dialog zeigt zwei Nachkommastellen, 5,5667 erscheint als 5,57 (U26).
+
+**Gruppe Projektweite KWK-Angaben** (`BHW_G2`) — Einspeisevergütung KWK-Strom [€/kWh] 0,0500 · Abschlag
+Negativstunden [%] 0,0 · Schalter Pauschale § 9 KWKG (nur bis 2 kWel, einmalig) · Stichtag (Bestellung/Genehmigung,
+§ 6) 14.03.2026 · Förderbeginn (Startjahr der Reihen) 01.10.2026; darunter die beiden Hinweiszeilen
+`BHW_P_EINSP_KWK_HINWEIS` (der Satz stellt auch v_bhkw der Speicherwelt; 0 = nicht gepflegt, dann gilt der PV-Satz)
+und `BHW_P_NUR_PROJEKTWEIT` (Satz, Kontingent, Deckel, Anlagenart, Tatbestand und Kostenanteil stehen an der Anlage).
+
+**Gruppe Energiesteuer (Projektvorgabe)** (`BHW_G3`) — Energiesteuerentlastung: § 53a Abs. 5 EnergieStG (1135) ·
+Brennstoff auf Strom/Wärme: voller BHKW-Brennstoff (§ 53 Abs. 2) — beide Anzeige, Wahl in der Überlagerung über den
+Knopf „Wahl und Herkunft…" — · Jahresnutzungsgrad [%] (0 = nicht erfasst) 83,0 (Zahlenfeld, Projektgröße, Schwelle
+des § 53a 70 %); darunter die Herkunftszeile des zuletzt gebuchten Laufs (`ENERGIEST_53A5_ERDGAS = 4,42 €/MWh,
+gültig ab 2024 (GESICHERT) — EnergieStG § 53a Abs. 5 …`). Einen Steuersatz von Hand gibt es nicht.
+
+**Gruppe Stromsteuer (Projektvorgabe)** (`BHW_G4`) — Unternehmensart: produzierendes Gewerbe (Anzeige) · Schalter
+Räumlicher Zusammenhang (4,5 km) gegeben ✓ · Schalter Hocheffizienz nachgewiesen ✓ · Modus § 9 Abs. 1 Nr. 3: Ausweis
+(nicht im Kapitalwert) (Anzeige; Spalte `Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) · Modushinweis · Knöpfe
+„Strombezug…" und „BHKW-Tarif…", die nur schreiben, wenn der Arbeitsstand vom geladenen Stand abweicht.
+
+**Gruppe Kohärenzprüfung (Energie- und Stromsteuer)** — die Zeilen des zuletzt gebuchten Laufs, ohne
+Rechenwirkung: im Beispiel „✓ Energiesteuer: Wahl und Preisanteil stimmen überein (BHKW 1)."; ohne Auffälligkeit
+„Keine Auffälligkeit im zuletzt gebuchten Lauf." Weitere Zeilen nur bei Abweichung (Entlastung ohne Steuer im
+Preis, Steuer im Preis ohne Entlastung, Satz gegen Katalog, § 53 neben § 54, Doppelzählung § 9 Nr. 3 im Modus Erlös).
+
+**Gruppe Hilfsstrom** (`BHW_G5`) — Basiszeile, Mengenkette aus dem Lauf („Stromerzeugung brutto 1.650,000 MWh/a −
+Hilfsstrom 86,842 MWh/a = Nettostromerzeugung 1.563,158 MWh/a · davon Eigenverbrauch 1.094,211 MWh/a, Einspeisung
+468,947 MWh/a") und die Doppelpflege-Warnung („Hilfsenergie doppelt gepflegt … BHKW 1 führt einen Hilfsenergieanteil
+von 2,00 % und zugleich eine aktive Hilfsenergie-Kostenposition …").
+
+**Gruppe Vorschau — zuletzt gebuchter Lauf** (`BHW_G6`) — die Erlösrubrik, siehe unten. Fußleiste: Abbrechen ·
+Speichern (schreibt erst die Anlagenzeilen, dann die Projektvorgaben; Abbrechen und Esc schreiben nichts).
 
 **Mengentafel** — welche Vorschrift rechnet mit welcher Menge. Das ist die wichtigste neue
 Darstellung dieser Kategorie:
@@ -41,16 +93,19 @@ Das Netting wirkt **ausschließlich** auf die KWKG-Zuschlagsmengen. Stromsteuer,
 Vollbenutzungsstunden bleiben brutto — keine Inkonsistenz, sondern Folge davon, dass nur § 7 KWKG
 auf „KWK-Strom" im Sinne des § 2 Nr. 16 zahlt.
 
-**Überlagerung „Sätze und Herkunft — BHKW 1"** — die Knöpfe „Sätze und Herkunft…" (Gruppe Anlagen) und
-„Wahl und Herkunft…" (Gruppe Steuern) öffnen sie über dem Formular; nach dem Hausmuster trägt sie Titel
-und Kreuz, der Inhalt hat keinen zweiten Kopf. Drei Gruppen, **ein** Knopf „Übernehmen":
+**Überlagerung „Sätze und Herkunft — BHKW 1"** (U22) — die Knöpfe „Sätze und Herkunft…" (Angaben der gewählten
+Anlage) und „Wahl und Herkunft…" (Energiesteuer) öffnen sie über dem Formular; nach dem Hausmuster trägt sie Titel
+und Kreuz, der Inhalt hat keinen zweiten Kopf. Drei Gruppen, **ein** Knopf „Übernehmen", der in die Felder des
+Formulars schreibt — gespeichert wird erst mit „Speichern":
 
 1. **KWK-Zuschlag — diese Anlage.** Anlagenart (§ 8) mit der Kontingentstufe je Option (neu → 30.000 ·
    modernisiert → 15.000 ab 25 % / 30.000 ab 50 % · nachgerüstet → 10.000 / 15.000 / 30.000) und dem
    Feld Anteil Neuherstellungskosten; Eigenstrom nach § 6 Abs. 3 mit dem Satz je Option (keiner → 0 ·
    Nr. 1 → nicht möglich bei 300 kW · Nr. 2 → 2,4167 · Nr. 3 → 3,9683 ct/kWh); KWK-Strom Fall 1
    (Nettostromerzeugung) oder Fall 2 (Vorrichtung zur Abwärmeabfuhr, Stromkennzahl σ, leer = 0,845 aus
-   P_el ÷ P_th). Darunter die Tafel **Größe · Vorschlag · Herkunft · eigener Wert · gilt**:
+   P_el ÷ P_th). Darunter die Tafel **Größe · Vorschlag · Herkunft · eigener Wert · gilt** — „eigener Wert" ist
+   je Größe ein Eingabefeld mit dem Platzhalter „leer = Vorschlag"; neben einem gesetzten Wert steht der Knopf
+   „Vorschlag übernehmen", der das Feld leert:
 
    ```
    Satz Einspeisung  5,5667 ct/kWh  KWKG_ZUSCHLAG_EINSPEISUNG_* · ab 2020 · § 7 Abs. 1:
@@ -62,9 +117,9 @@ und Kreuz, der Inhalt hat keinen zweiten Kopf. Drei Gruppen, **ein** Knopf „Ü
    ```
 
    Wirkung Jahr 1 (2026): 469,0 MWh × 5,5667 ct × 0,600 + 1.094,2 MWh × 2,4167 ct × 0,600 =
-   **31.530,8 €**. Leer heißt: Der Vorschlag gilt und wird beim Übernehmen in die Anlage geschrieben;
-   ein eigener Wert gilt dauerhaft — auch wenn der Katalog später einen anderen Vorschlag liefert —,
-   und die Satzzeile im Formular zeigt dann beide Werte.
+   **31.530,8 €**. Leer heißt: Der Vorschlag gilt und wird beim Übernehmen in das Feld des Formulars
+   geschrieben; ein eigener Wert gilt dauerhaft — auch wenn der Katalog später einen anderen Vorschlag liefert —,
+   das Feld trägt ihn, und die Herkunftszeile darunter nennt beide Werte („eigener Wert 6,00 — Vorschlag 5,5667").
 2. **Energiesteuer.** Projektvorgabe für alle Anlagen oder nur diese Anlage; Entlastung keine → 0 ·
    § 53 (Formular 1131) → 5,50 €/MWh, 26.384,3 €/a · § 53a Abs. 5 (Formular 1135) → 4,42 €/MWh,
    21.203,4 €/a · § 54 (Formular 1450) → 1,38 €/MWh − 250 €, 6.370,1 €/a, nur produzierendes Gewerbe;
@@ -79,13 +134,8 @@ und Kreuz, der Inhalt hat keinen zweiten Kopf. Drei Gruppen, **ein** Knopf „Ü
    `STROMST_REGELSATZ = 20,50 €/MWh, ab 2026`; Wirkung 4.750,0 € (Netzbezug 250,0 MWh, Lauf „Beide
    Anlagen") und 23.677,5 € (Ausweis).
 
-Projektweit bleiben in Gruppe 2: Einspeisevergütung KWK-Strom 0,0500 €/kWh · Abschlag Negativstunden
-[%] · Pauschale § 9 · Stichtag § 6 · Förderbeginn (Jahr 1 aller Reihen = 2026). **Warnband** in der
-Aufklappzeile: „Die Anlage läuft 5.500 h/a, vergütet werden 2026 aber nur 3.300 h — 60 % der Erzeugung.
-Weil der Deckel jährlich fällt, reicht das Kontingent über 12 Kalenderjahre."
-
-**Gruppe Steuern des Projekts** — eine Tafel Vorschrift · Satz · Menge · Jahr 1 · Herkunft und
-Bedingungen mit drei Zeilen und der Knopf „Wahl und Herkunft…" (dieselbe Überlagerung):
+**Steuern des Projekts** — Satz, Menge und Bedingungen je Vorschrift, im Papier als Tafel (die Wahl steht in den
+Gruppen Energiesteuer und Stromsteuer, Satz und Herkunft in der Überlagerung):
 
 | Vorschrift | Satz | Menge | Jahr 1 (2026) | Herkunft · Bedingungen |
 |---|---|---|---|---|
@@ -93,21 +143,8 @@ Bedingungen mit drei Zeilen und der Knopf „Wahl und Herkunft…" (dieselbe Üb
 | Stromsteuer-Entlastung § 9b | 20,00 €/MWh | 250,0 MWh Netzbezug | 4.750,0 € | Katalog ab 2026, Sockel 250 €/a · produzierendes Gewerbe ✓ · hängt am Restbezug, nicht an der Anlage |
 | Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 | 20,50 €/MWh | 1.155,0 MWh brutto | 23.677,5 € · Ausweis | Regelsatz ab 2026 · hocheffizient ✓ · ≤ 4,5 km ✓ · P_el ≤ 2 MW ✓ · CO₂ 242,1 < 270 g/kWh ✓ · Modus Ausweis |
 
-Dazu das Feld Jahresnutzungsgrad 83,0 % (Projektgröße, Schwelle 70 % — K5). Die Steuersätze kommen
-jahresscharf aus dem Katalog; einen Satz von Hand gibt es nicht. Die Wahl der Entlastung, die
-Unternehmensart und der Modus § 9 Abs. 1 Nr. 3 (Erlös/Ausweis, Vorgabe Ausweis — Spalte
-`Stromst_Befreiung_Modus`, Schemaschritt 88) stehen in der Überlagerung. Kohärenzzeile in Firebrick, wenn
-der erfasste Brennstoffpreis die Energiesteuer nicht ausweist; die Unternehmensart spielt bei §§ 53 und
-53a Abs. 5 keine Rolle, sie wirkt nur auf § 54 (Kessel) und § 9b (Netzbezug).
-
-**Gruppe Kohärenzprüfung** — ohne Rechenwirkung:
-
-| Prüfung | Befund |
-|---|---|
-| Energiesteuer im Gaspreis | 0,0638 €/m³ ausgewiesen · § 53a gewählt ✓ |
-| Satz gegen Katalog | 5,50 €/MWh × 11,6 kWh/m³ ÷ 1000 = 0,0638 €/m³ · deckungsgleich ✓ |
-| § 9b bei produzierendem Gewerbe | gewählt ✓ |
-| Doppelpflege Hilfsenergie | Anlagenanteil 2,0 % *und* Kostenposition aktiv — Warnung |
+Die Steuersätze kommen jahresscharf aus dem Katalog; einen Satz von Hand gibt es nicht. Die Unternehmensart spielt
+bei §§ 53 und 53a Abs. 5 keine Rolle, sie wirkt nur auf § 54 (Kessel) und § 9b (Netzbezug).
 
 **Vorschau Jahr 1 (2026)** — die Erlösrubrik des zuletzt gebuchten Laufs, gezeigt wird der Block
 Blockheizkraftwerk samt der projektweiten Zeile; die vollständige Rubrik mit Photovoltaik und Block B
@@ -265,4 +302,6 @@ Mockup zeigt die Reihe als Balkendiagramm.
 | R-U1 | § 53 neben § 53a — Entweder-oder | als Auswahl modelliert, mit dem Hauptzollamt zu klären |
 | R-U3 | Ausschluss fossiler flüssiger Brennstoffe (nur Sekundärquelle) | als Prüfkette „Heizöl-Neuanlage ab 2025" umgesetzt |
 | ⚠ **S-1** | **Hilfsstrom-Netting des Beispiels widerspricht dem Rechenkern:** Die Mengentafel teilt die Nettostromerzeugung 1.563,2 MWh im Verhältnis 70/30 (1.094,2 / 469,0 MWh, `Beispielprojekt.md` § 3); `HilfsstromRechner.NettoSplit` und die Formelkarte ziehen den Hilfsstrom **zuerst vom Eigenverbrauch** ab (Eigen' = 1.155,0 − 86,8 = 1.068,2 · Einsp' = 495,0 MWh — „Physik, keine Konvention"). Wirkung: Zuschlag Jahr 1 32.022,2 statt 31.530,8 €, Einspeiseerlös 24.750,0 statt 23.450,0 € (der Rechenkern bewertet die Einspeisung der Strommatrix, `KwkEinspeisungGesamtMWh`) | **Entscheid ausstehend** (Mockup, Anhang Umsetzungsstand U24): Folgt das Beispiel der Kernregel, sind die Zahlenproben der Abschnitte 5, 7 und 8 und `Beispielprojekt.md` neu zu rechnen; Katalog und Grundlagenpapier sagen zur Reihenfolge nichts, deshalb hier nicht geändert |
-| U22 | Überlagerung „Sätze und Herkunft" statt Klapplisten und Knöpfen „Vorschlag übernehmen" am Feld (Anwenderwunsch 18.09.2026) | Mockup Abschnitt 5; Konzept § 2.2 („Der Vorschlag steht am Feld, nicht als Sammelknopf") ist damit überholt und nachzuziehen |
+| U22 | Überlagerung „Sätze und Herkunft" mit Eingabefeld „eigener Wert" je Größe; die Zahlen-, Datums- und Schalterfelder bleiben im Formular, die sechs Klapplisten werden Anzeigezeilen, die Knöpfe „Vorschlag übernehmen" wandern in die Überlagerung (Anwenderwünsche 18.09.2026) | Mockup Abschnitt 5; Konzept § 2.2 („Der Vorschlag steht am Feld, nicht als Sammelknopf") ist damit überholt und nachzuziehen |
+| U25 | Staffelzeile unter dem Jahresdeckel und Warnband zum Deckelanteil — Anzeigen, die der Dialog nicht führt | Mockup Abschnitt 5, Anhang Umsetzungsstand |
+| U26 | Die Satzfelder zeigen zwei Nachkommastellen (`Nachkommastellen="2"`): 5,5667 erscheint als 5,57, wer das Feld anfasst, verliert zwei Stellen | Mockup Abschnitt 5, Anhang Umsetzungsstand: vier Nachkommastellen |

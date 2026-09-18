@@ -1,6 +1,6 @@
 # 06 · Vergütungen Photovoltaik
 
-**Dialog:** `Form_PhotovoltaikVerguetung` — Bestand, zugleich Stilmuster (Konzept § 2.3) ·
+**Dialog:** `PhotovoltaikVerguetungDialog` (`EPOS.UI/Dialoge/Wirtschaftlichkeit/`) — Bestand, zugleich Stilmuster (Konzept § 2.3) ·
 **Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#pv` · **Recht:** § 21, § 21c, § 51, § 51a,
 § 100 EEG · **Code:** `PvErloesRechner`, Erlösreihe `PV_VERGUETUNG` · **Konzept:** § 2.3, § 3.6
 (Photovoltaik / EEG)
@@ -11,18 +11,22 @@ Kürzungstatbestände — negative Preise und die 60-%-Kappung.
 
 ## Was der Dialog zeigt
 
-914 × 724, festes Fenster, Kopfband mit CheckBox „Vergütung anwenden", zwei Spalten.
+Schalter „Vergütung anwenden" im Kopf, dann sieben Gruppen in der Reihenfolge des Dialogs. Den Satz gibt der
+Anwender an **einer** Stelle ein: **AW-Override [ct/kWh] (0 = Katalog)** in der Gruppe „Anzulegender Wert"; leer
+oder 0 heißt, der Katalogwert gilt, und die Zeilen darunter sagen, wie er entsteht. Feste EV und Jahresmarktwert
+sind Herleitungszeilen, keine Felder.
 
-| Gruppe | Felder im Beispiel |
+| Gruppe (Ressourcentext) | Felder im Beispiel |
 |---|---|
-| **Anlage** | Installierte Leistung 300,00 kWp (rechnerisch, fett) · Override 0 · Inbetriebnahme 01.08.2026 · Radio Überschuss-/Volleinspeisung · Herleitung „Ertrag 285,0 MWh/a · Eigenverbrauch 85,5 · Einspeisung 199,5 MWh/a" |
-| **Vermarktung** | Radios: Feste Einspeisevergütung (nur ≤ 100 kW) · **Direktvermarktung mit Marktprämie** · Sonstige DV/PPA · DV-Entgelt 0,40 ct/kWh · Jahresmarktwert Solar 4,50 ct/kWh · Info „Ab 100 kW ist die Direktvermarktung Pflicht (§ 21 EEG)" |
-| **Anzulegender Wert** | AW gemischt **6,04 ct/kWh** · Herleitung „marginale Klassen, Katalogwerte zum Stichtag 08/2026: 100 kWp × 7,94 + 200 kWp × 5,09 = 1.812 ÷ 300 = 6,04 · Degression 0,99 je Halbjahresstichtag seit 01.02.2024" · AW-Override 0 · abgeleitete feste EV 5,64 (nur ≤ 100 kW) |
-| **§ 51 — negative Preise** | Anwenden: Automatisch · Status „ja — Anlage ≥ 100 kWp, Inbetriebnahme nach 25.02.2025" · iMSys-Einbaujahr 0 · Ausfallanteil 20,0 % (Pauschale) · CheckBox § 51a-Kompensation · Info „alternativ stundenscharf: a = Σ Einsp(Spot < 0) ÷ Σ Einsp" |
-| **60-%-Begrenzung** | Anwenden: Automatisch · Herleitung „Kappungsgrenze 0,6 × 300 kWp = 180 kW · Verlust = Σ max(0; Einsp_h − 180) = 3.990 kWh/a (1,4 %)" |
-| **Bezugsbewertung** | CheckBox „Netzbezug stundenscharf bewerten" · Hinweis > 2 MW Stromsteuer, > 1 MW Ausschreibung ⇒ AW-Override nötig |
+| **Anlage** | Zeile „Installierte Leistung: rechnerisch 300,0 kWp" · Zahlenfeld Override [kWp] (0 = keiner) 0,00 · Datumsfeld Inbetriebnahme 01.08.2026 · Zahlenfeld Degradation [%/a] 0,50 (wirkt nur in der Erlösreihe) · Optionsgruppe Einspeiseart: **Überschusseinspeisung** / Volleinspeisung · Warnzeilen nur über 1 MW (Ausschreibung, AW-Override nötig) und über 2 MW (Stromsteuer prüfen) |
+| **Anzulegender Wert** | Zahlenfeld **AW-Override [ct/kWh] (0 = Katalog)** 0,00 · Zeile „AW_mix: **6,04 ct/kWh**" (mit Override: „AW_mix: 7,00 ct/kWh (Override)") · Herleitung „marginale Klassen, Katalogwerte zum Stichtag 08/2026: 100 kWp × 7,94 + 200 kWp × 5,09 = 1.812 ÷ 300 · Degression 0,99 je Halbjahresstichtag ab 01.02.2024" · Zeile „Feste EV (AW − 0,40): 5,64 ct/kWh" |
+| **Vermarktung** | Optionsgruppe: Feste Einspeisevergütung (gesperrt: „Feste EV nur bis 100 kW (§ 21 Abs. 1 Nr. 1).") · **Direktvermarktung mit Marktprämie** · Sonstige Direktvermarktung / PPA · Keine Vergütung (unentgeltlich) (gesperrt ab 200 kW) · Zahlenfeld DV-Entgelt [ct/kWh] 0,40 · Zahlenfelder PPA-Festpreis [ct/kWh] (0 = keiner) und PPA-Aufschlag auf Spot [ct/kWh], gesperrt, solange keine sonstige Direktvermarktung gewählt ist · Hinweiszeile · Jahresmarktwert Solar 2026: 4,50 ct/kWh aus „Marktwerte importieren…" (Anzeige, U27) |
+| **Vergütungsausfall (§ 51 / § 51a)** | Klappliste Anwenden: Automatisch · Ganzzahlfeld iMSys-Einbaujahr (0 = keins) 0 · Zahlenfeld Ausfallanteil der Einspeisearbeit [%] 20,0 · Schalter § 51a-Kompensation (Laufzeitverlängerung) ✓ · Statuszeile „greift ab der ersten negativen Viertelstunde." (Anlage ≥ 100 kWp, Inbetriebnahme nach dem 25.02.2025) |
+| **Strompreis / Bezugsbewertung** | Schalter „Netzbezug stundenscharf aus Preiszeitreihe bewerten" · Hinweiszeile zur Stromsteuerfreiheit des Eigenverbrauchs (§ 9 StromStG) |
+| **60-%-Wirkleistungsbegrenzung (§ 9 Abs. 2 EEG)** | Klappliste Anwenden: **Ja** · Statuszeile „aktiv: Einspeisung auf 60 % der kWp begrenzt (ohne iMSys)." — „Automatisch" begrenzt nur bei fester Einspeisevergütung ohne iMSys, bei Direktvermarktung greift die Kappung nur mit „Ja" · Kappungsgrenze 0,6 × 300 kWp = 180 kW · Verlust = Σ max(0; Einsp_h − 180) = 3.990 kWh/a (1,4 %), messbar nur mit Stundenreihe |
+| **Vorschau** | eine Zeile „Einspeisung 199,5 MWh/a · Satz Jahr 1: 6,04 ct/kWh · Erlös Jahr 1: 10.396 €/a · Vergütungsausfall 39.900 kWh (614 €) · § 51a-Gutschrift 1.205 € (Jahr 20)" · Kennzahlzeile (Stromgestehungskosten und Autarkiegrad ohne Lauf als Gedankenstrich, Eigenverbrauchsquote 30,0 %) · Ertragszeile 285,0 / 85,5 / 199,5 MWh/a |
 
-**Vorschau Jahr 1 (2027, erstes volles Jahr):**
+**Vorschau Jahr 1 (2026), aufgeschlüsselt** (Vorschlag U27 — der Dialog zeigt die eine Zeile):
 
 | Position | Herleitung | € |
 |---|---|---|
@@ -34,8 +38,8 @@ Kürzungstatbestände — negative Preise und die 60-%-Kappung.
 | **Vergütung PV** | | **10.396,34** |
 | Vermiedener Netzbezug — Ausweis | 85,5 MWh × 28,80 ct | 24.624,00 |
 
-Fußleiste: Marktwerte importieren… · Einspeise-Tarif… · Abbrechen · Übernehmen · Status „Reihe über
-20 Jahre + Inbetriebnahmemonate".
+Knöpfe „Marktwerte importieren…" und „Einspeise-Tarif…" mit Sprunghinweis; Fußleiste: Abbrechen · Übernehmen;
+Statuszeile „Reihe über 20 volle Jahre ab dem Kalenderjahr der Inbetriebnahme".
 
 ## Berechnungsgrundlage
 
@@ -101,4 +105,6 @@ die Reihe folgt der Menge, der AW bleibt.
 | — | > 1 MW Ausschreibung: AW-Override nötig; > 2 MW Stromsteuer prüfen | Warnzeile im Bestand ✓ |
 | V-G5 | Jahresmarktwert, PPA-/DV-Preise: Best/Worst-Paar je Feld | Szenarioabdeckung (Konzept § 2.11.5), Etappe V-E |
 | V-G2 | Degradation wirkt auf die Einspeisemenge der Reihe | Attribut aus `03`, Vorgabe 0 |
+| — | Bei Direktvermarktung greift die 60-%-Kappung in Stellung „Automatisch" nicht (`PvErloesRechner`: AUTO = feste EV ohne iMSys); das Beispiel rechnet sie mit der Stellung „Ja" | Mockup Abschnitt 6 zeigt „Ja" mit Statuszeile „aktiv" |
+| U27 | Aufgeschlüsselte Vorschau (Spoterlös, Marktprämie, § 51, DV-Entgelt, Kappung, Summe, vermiedener Netzbezug) statt der einen Zeile; Jahresmarktwertzeile in der Gruppe Vermarktung — Marktwert-Override und Marktwertentwicklung haben im Dialog kein Feld | Mockup Abschnitt 6, Anhang Umsetzungsstand |
 | — | § 51a-Formel ist eine Näherung (Verlängerung der Vergütungsdauer um die Ausfallstunden) | im Bericht als Näherung deklarieren |
