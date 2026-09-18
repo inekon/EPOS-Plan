@@ -868,6 +868,9 @@ Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegza
   CO₂-Preisbestandteil im Arbeitspreis und BEHG-Reihe beschreiben denselben Betrag — **im
   Kapitalwert darf nur einer von beiden stehen**; die Kohärenzprüfung (§ 3.9) bekommt dafür eine
   Zeile.
+- Die BEHG-Abgabe entsteht allein aus dem Brennstoff (Kessel, BHKW): Die Variante „Photovoltaik" der
+  Kategorie 4 behält den Gas-Brennwertkessel und trägt dessen Abgabe weiter (26.857 €/a wie das
+  Stammprojekt); die Photovoltaik selbst trägt keine CO₂-Kosten (§ 3.5).
 - Die vermiedene Strommenge der Differenzmethode ist die **physisch** vermiedene (netto
   Eigenverbrauch BHKW + PV-Eigenverbrauch), nicht die brutto bemessene § 9-Menge.
 - Der KWKG-Eigenstromsatz braucht einen Tatbestand des § 6 Abs. 3; ohne ihn ist der Satz 0 und
@@ -1184,7 +1187,7 @@ möglich sein." Gemeint ist die PV-Vergütung, die der Reiter „Ertrag/Bonus" d
 im Vergütungsdialog (§ 2.3, `Rechenweg/06_Verguetungen_PV.md`) öffnen.
 
 **Warum ein eigener Abschnitt:** Wie § 2.9 (Referenz) und § 2.15 (Vergleichssicht) greift die
-Anforderung in die Frage ein, was je Gruppe und was je Stand gilt (Befund R‑1: Rahmenparameter je
+Anforderung in die Frage ein, was je Gruppe und was je Stand gilt (Regel R‑1: Rahmenparameter je
 Stammprojekt). § 2.9 wählt die Referenz je Gruppe, § 2.15 die Sicht je Sitzung; dieser Abschnitt löst
 eine Größe, die als gruppenweit galt, auf die Stände auf. § 2.13 bekommt keinen neuen Punkt: Die
 Vergütung ist keine Darstellungsfrage der Ergebnisansicht.
@@ -1267,7 +1270,7 @@ Vergütung ist keine Darstellungsfrage der Ergebnisansicht.
   findet im Ziel keinen Stamm → der Import legt die Stammwerte aus dem Paket als eigene Zeile an;
   fehlt der Stamm auch im Paket, gilt der Flat-Pfad mit Warnzeile.
 - Löschen des Stamms (`ProjektCtrl.Delete` löst die Verknüpfungen in `Tab_Variante`) → jede
-  übernehmende Variante erhält vorher die Stammwerte als eigene Zeile (`Uebernahme_Stamm = 0`); nie
+  übernehmende Variante erhält zuvor die Stammwerte als eigene Zeile (`Uebernahme_Stamm = 0`); nie
   stiller Verlust der Vergütung. Löschen einer Variante → ihre Zeile fällt mit (heute bleibt sie
   verwaist, weil die Tabelle keine Löschweitergabe hat — im selben Schritt nachrüsten).
 - Zwei Varianten, beide „übernehmen", der Stamm inaktiv → beide rechnen Flat wie heute; der
@@ -1625,6 +1628,11 @@ BEHG_t [€]       = behgBasisT × CO2-Preis(Kalenderjahr)
 Preis: Override `CO2_Preis > 0` (dann mit p_E fortgeschrieben), sonst Katalogpfad
 (2021–25: 25/30/30/45/55 · 2026/27: 65 · ab 2028: 80 als Prognose).
 ⚠ **Bedeutungsumkehr seit K6: 0 heißt „Pfad", nicht mehr „aus".**
+
+Die Abgabe entsteht allein aus dem Brennstoff der Anlagen — Kessel wie BHKW —, nie aus der
+Photovoltaik: Eine Variante, die neben der Photovoltaik den Kessel behält, trägt dessen Abgabe
+weiter (Kategorie 4 des Mockups: 2.056,7 MWh × 200,9 g/kWh × 65 €/t = 26.857 €/a, Stammprojekt wie
+Variante „Photovoltaik"); die Photovoltaik selbst trägt keine CO₂-Kosten.
 
 **Emissionsfaktor-Kette** (eine für alle Rechner): PROJEKT → KATALOG → STAMM → CARRIER → null.
 CO₂ in g/kWh, SO₂/NOₓ in mg/kWh. Strommix-Rückfall 435 g/kWh bei fehlendem Stromträger (mit
