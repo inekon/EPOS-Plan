@@ -18,8 +18,13 @@
 /// ist der Knopf gesperrt.</param>
 /// <param name="Empfohlen">Hebt den Knopf hervor (Strom: der Satz, der zur
 /// Unternehmensart des Projekts passt — BW4, Befund B3).</param>
+/// <param name="Anzeigewert">Derselbe Satz in der ANZEIGEEINHEIT des Trägers
+/// („0,0638 €/m³"); leer = keine zweite Einheit. Er entsteht an der
+/// Anzeigekante (<c>EnergietraegerPreiskarte.AnteilJeEinheit</c>) und steht in
+/// der Schnellwahl-Überlagerung neben dem Katalogsatz (ET-D-1).</param>
 public sealed record Schnellwahlsatz(string Beschriftung, string Herkunft,
-                                     double? CtKwh, bool Empfohlen = false);
+                                     double? CtKwh, bool Empfohlen = false,
+                                     string Anzeigewert = "");
 
 /// <summary>
 /// Der Bearbeitungsstand der Preiszerlegung „Strompreis Details" eines
@@ -125,4 +130,12 @@ public sealed class BrennstoffBestandteileStand
 /// <param name="RestNegativ">Der nicht aufgeschlüsselte Rest ist negativ — die
 /// ausgewiesenen Bestandteile sind zusammen teurer als der Preis. Das wird
 /// benannt, nicht geglättet.</param>
-public sealed record PreisblockAnzeige(string SummeText, string RestText, bool RestNegativ);
+/// <param name="KohaerenzText">Die EINE Summenzeile der Trägerkarte: „Summe der
+/// Bestandteile 0,7560 €/m³ — deckungsgleich mit dem Arbeitspreis" bzw. „… —
+/// weicht um 0,0120 €/m³ ab". Leer = die Karte zeigt weiter
+/// <see cref="SummeText"/> und die Arbeitspreiszeile getrennt.</param>
+/// <param name="Abweichend">Summe und Arbeitspreis gehen auseinander (Toleranz
+/// 0,0001 €/kWh). Die Kohärenzzeile steht dann auf „≠" — bis ET-D stand sie
+/// ausnahmslos auf „✓" und prüfte damit nichts.</param>
+public sealed record PreisblockAnzeige(string SummeText, string RestText, bool RestNegativ,
+                                       string KohaerenzText = "", bool Abweichend = false);

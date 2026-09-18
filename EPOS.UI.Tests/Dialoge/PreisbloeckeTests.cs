@@ -279,8 +279,17 @@ public class PreisbloeckeTests : EposBunitContext
         Vertrieb = null, VertriebAktiv = false
     };
 
+    /// <summary>Öffnet die Schnellwahl-Überlagerung (ET-D: EIN Knopf statt vier).</summary>
+    private static void Schnellwahl(IRenderedComponent<BrennstoffBestandteile> cut)
+        => cut.FindAll("button").First(b => b.TextContent.Contains("Schnellwahl")).Click();
+
+    /// <summary>
+    /// <b>ET-D-1 (a).</b> Vier Bestandteilzeilen, aber nur noch EIN Knopf
+    /// „Schnellwahl aus Katalog…". Die vier Sätze stehen in seiner Überlagerung —
+    /// je mit Herkunft und Jahr, nicht nur im <c>title</c>.
+    /// </summary>
     [Fact]
-    public void Der_Brennstoff_Block_zeigt_vier_Komponenten_und_vier_Schnellwahlknoepfe()
+    public void Der_Brennstoff_Block_zeigt_vier_Komponenten_und_einen_Schnellwahlknopf()
     {
         var cut = Render<BrennstoffBestandteile>(p => p
             .Add(x => x.Stand, BrennStand())
@@ -290,7 +299,33 @@ public class PreisbloeckeTests : EposBunitContext
             .Add(x => x.SatzCo2, new Schnellwahlsatz("BEHG: 1,10", "55 €/t × 201 g/kWh", 1.1)));
 
         Assert.Equal(4, cut.FindAll(".epos-preiszeile").Count);
+        Assert.Empty(cut.FindAll(".epos-schnellwahl-knopf"));
+        Assert.False(cut.Instance.SchnellwahlOffen);
+
+        Schnellwahl(cut);
+
+        Assert.True(cut.Instance.SchnellwahlOffen);
         Assert.Equal(4, cut.FindAll(".epos-schnellwahl-knopf").Count);
+        Assert.Equal(4, cut.FindAll(".epos-schnellwahl-zeile").Count);
+    }
+
+    /// <summary>
+    /// Der Satz in der ABRECHNUNGSEINHEIT steht in der Überlagerung neben der
+    /// Herkunft — vor der Übernahme, nicht danach.
+    /// </summary>
+    [Fact]
+    public void Die_Ueberlagerung_nennt_Herkunft_und_den_Satz_in_der_Abrechnungseinheit()
+    {
+        var cut = Render<BrennstoffBestandteile>(p => p
+            .Add(x => x.Stand, BrennStand())
+            .Add(x => x.SatzRegel, new Schnellwahlsatz("§ 2: 0,6076",
+                "5,50 €/MWh (ab 2026, EnergieStG § 2)", 0.6076, false, "0,0638 €/m³")));
+
+        Schnellwahl(cut);
+
+        Assert.Contains("5,50 €/MWh (ab 2026, EnergieStG § 2)",
+                        cut.Find(".epos-schnellwahl-herkunft").TextContent);
+        Assert.Equal("0,0638 €/m³", cut.Find(".epos-schnellwahl-ziel").TextContent);
     }
 
     [Fact]
@@ -300,6 +335,8 @@ public class PreisbloeckeTests : EposBunitContext
             .Add(x => x.Stand, BrennStand())
             .Add(x => x.Satz54, new Schnellwahlsatz("§ 54: —",
                 "Diesem Energieträger ist im Katalog kein Energiesteuersatz zugeordnet.", null)));
+
+        Schnellwahl(cut);
 
         var knopf = cut.Find(".epos-schnellwahl-knopf");
         Assert.True(knopf.HasAttribute("disabled"));
@@ -329,11 +366,15 @@ public class PreisbloeckeTests : EposBunitContext
             .Add(x => x.SatzRegel, new Schnellwahlsatz("§ 2: 0,55",
                 "5,5 €/MWh (ab 2024, EnergieStG)", 0.55)));
 
+        Schnellwahl(cut);
         cut.Find(".epos-schnellwahl-knopf").Click();
 
         Assert.Equal(0.55, stand.Energiesteuer);
         Assert.True(stand.EnergiesteuerAktiv);
         Assert.Equal("5,5 €/MWh (ab 2024, EnergieStG)", cut.Instance.Quelle);
+
+        // Die Ueberlagerung hat ihren Zweck erfuellt und schliesst sich.
+        Assert.False(cut.Instance.SchnellwahlOffen);
     }
 
     [Fact]
@@ -347,6 +388,7 @@ public class PreisbloeckeTests : EposBunitContext
             .Add(x => x.Stand, stand)
             .Add(x => x.SatzCo2, new Schnellwahlsatz("BEHG: 1,10", "55 €/t × 201 g/kWh", 1.1)));
 
+        Schnellwahl(cut);
         cut.Find(".epos-schnellwahl-knopf").Click();
 
         Assert.Equal(1.1, stand.CO2);
@@ -394,28 +436,134 @@ public class PreisbloeckeTests : EposBunitContext
     }
 
     /// <summary>
-    /// Summe, Kohärenzzeile und Restzeile stehen beim Brennstoff wie beim Strom: drei
-    /// Zeilen in dieser Reihenfolge, der negative Rest in Warnfarbe. Beide Texte
-    /// kommen fertig aus der Hülle — die Komponente rechnet nichts.
+    /// <b>ET-D-1.</b> EINE Summenzeile statt dreier: Die Kohärenzzeile trägt jetzt
+    /// die Summe der Bestandteile UND die Aussage, ob sie zum Arbeitspreis passt —
+    /// und sie steht auf „≠", wenn sie es nicht tut. Bis ET-D stand sie ausnahmslos
+    /// auf „✓". Die Restzeile bleibt, negativ in Warnfarbe.
     /// </summary>
     [Fact]
-    public void Summe_Kohaerenz_und_Rest_stehen_wie_beim_Strom()
+    public void Die_Kohaerenzzeile_meldet_eine_Abweichung()
     {
         var cut = Render<BrennstoffBestandteile>(p => p
             .Add(x => x.Stand, BrennStand())
             .Add(x => x.ArbeitspreisCtKwh, 1.2)
-            .Add(x => x.LabelArbeitspreis, "Arbeitspreis (Trägerdialog)")
             .Add(x => x.Anzeige, new PreisblockAnzeige(
                 "Summe der aktiven Bestandteile: 1,65 ct/kWh",
-                "Nicht aufgeschlüsselter Rest: -0,45 ct/kWh", true)));
+                "Nicht aufgeschlüsselter Rest: -0,45 ct/kWh", true,
+                "Summe der Bestandteile 0,1733 €/m³ — weicht um 0,0047 €/m³ ab", true)));
 
-        Assert.Contains("Summe der aktiven Bestandteile: 1,65 ct/kWh",
-                        cut.Find(".epos-preisblock-summe").TextContent);
-        Assert.Contains("Arbeitspreis (Trägerdialog): 1,2 ct/kWh", cut.Markup);
+        var zeile = cut.Find(".epos-kohaerenz");
+        Assert.Contains("weicht um 0,0047 €/m³ ab", zeile.TextContent);
+        Assert.Contains("epos-kohaerenz--abweichend", zeile.GetAttribute("class"));
+        Assert.Contains("≠", zeile.TextContent);
 
         var rest = cut.Find(".epos-preisblock-rest");
         Assert.Contains("Nicht aufgeschlüsselter Rest: -0,45 ct/kWh", rest.TextContent);
         Assert.Contains("epos-preisblock-rest--negativ", rest.GetAttribute("class"));
+    }
+
+    [Fact]
+    public void Deckungsgleich_steht_die_Kohaerenzzeile_auf_ok()
+    {
+        var cut = Render<BrennstoffBestandteile>(p => p
+            .Add(x => x.Stand, BrennStand())
+            .Add(x => x.Anzeige, new PreisblockAnzeige("", "", false,
+                "Summe der Bestandteile 0,7560 €/m³ — deckungsgleich mit dem Arbeitspreis",
+                false)));
+
+        var zeile = cut.Find(".epos-kohaerenz");
+        Assert.Contains("deckungsgleich mit dem Arbeitspreis", zeile.TextContent);
+        Assert.Contains("epos-kohaerenz--ok", zeile.GetAttribute("class"));
+    }
+
+    /// <summary>
+    /// <b>ET-D-1 (a), die Anzeigekante.</b> Die Felder stehen in der
+    /// Abrechnungseinheit; gerechnet und gespeichert wird weiter in ct/kWh.
+    /// 0,6076 ct/kWh sind bei Hi 10,5 kWh/m³ genau 0,0638 €/m³.
+    /// </summary>
+    [Fact]
+    public void Die_Bestandteile_stehen_in_der_Abrechnungseinheit()
+    {
+        var stand = BrennStand();
+        stand.Energiesteuer = 0.6076;
+        var cut = Render<BrennstoffBestandteile>(p => p
+            .Add(x => x.Stand, stand)
+            .Add(x => x.Heizwert, 10.5)
+            .Add(x => x.Einheit, "€/m³"));
+
+        var felder = cut.FindAll(".epos-preiszeile input[type=text]");
+        Assert.Equal("0,0638", felder[0].GetAttribute("value"));
+        Assert.Contains("€/m³", cut.Markup);
+
+        // Eine EINGABE geht denselben Weg zurueck - der Stand bleibt ct/kWh.
+        // Das Feld zeigt vier Nachkommastellen; was der Anwender ablesen und
+        // wieder eintippen kann, kommt deshalb auf vier Stellen genau zurueck.
+        felder[0].Input("0,0638");
+        Assert.Equal(0.6076, stand.Energiesteuer!.Value, 3);
+
+        // Ohne Rundung ist der Rueckweg der Hinweg: 0,063798 €/m³ -> 0,6076 ct/kWh.
+        Assert.Equal(0.6076,
+            WindowsFormsApplication1.EnergietraegerPreiskarte.AnteilCtKwh(
+                WindowsFormsApplication1.EnergietraegerPreiskarte.AnteilJeEinheit(0.6076, 10.5),
+                10.5), 9);
+    }
+
+    [Fact]
+    public void Ohne_Heizwert_bleiben_die_Bestandteile_in_ct_je_kWh()
+    {
+        var stand = BrennStand();
+        var cut = Render<BrennstoffBestandteile>(p => p
+            .Add(x => x.Stand, stand)
+            .Add(x => x.Heizwert, 0.0)
+            .Add(x => x.Einheit, "ct/kWh")
+            .Add(x => x.HinweisOhneHeizwert, "Ohne Heizwert stehen die Bestandteile in ct/kWh."));
+
+        Assert.Equal("0,5500", cut.FindAll(".epos-preiszeile input[type=text]")[0]
+                                  .GetAttribute("value"));
+        Assert.Contains("Ohne Heizwert stehen die Bestandteile in ct/kWh.", cut.Markup);
+    }
+
+    /// <summary>Je Zeile eine leise Herleitung — Netz und Vertrieb haben keine.</summary>
+    [Fact]
+    public void Energiesteuer_und_BEHG_tragen_eine_Herleitungszeile()
+    {
+        var cut = Render<BrennstoffBestandteile>(p => p
+            .Add(x => x.Stand, BrennStand())
+            .Add(x => x.Heizwert, 10.5)
+            .Add(x => x.Einheit, "€/m³")
+            .Add(x => x.HerleitungEnergiesteuer, "5,50 €/MWh (Hs)")
+            .Add(x => x.HerleitungCo2, "65 €/t × 2,109 kg/m³"));
+
+        var zeilen = cut.FindAll(".epos-preiszeile-herleitung");
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal("5,50 €/MWh (Hs)", zeilen[0].TextContent);
+        Assert.Equal("65 €/t × 2,109 kg/m³", zeilen[1].TextContent);
+    }
+
+    /// <summary>
+    /// Der Rest steht als VORSCHLAG am Feld, nicht als still gesetzter Wert —
+    /// derselbe Weg wie beim Strom.
+    /// </summary>
+    [Fact]
+    public void Der_Rest_wird_vorgeschlagen_und_erst_auf_Knopfdruck_uebernommen()
+    {
+        var stand = BrennStand();
+        var cut = Render<BrennstoffBestandteile>(p => p
+            .Add(x => x.Stand, stand)
+            .Add(x => x.Heizwert, 10.5)
+            .Add(x => x.Einheit, "€/m³")
+            .Add(x => x.VertriebVorschlag, 4.1619)
+            .Add(x => x.RestKnopfText, "Rest übernehmen"));
+
+        Assert.Null(stand.Vertrieb);
+
+        var zeile = cut.Find(".epos-vorschlagszeile");
+        Assert.Contains("0,437", zeile.TextContent);
+
+        zeile.QuerySelector("button")!.Click();
+
+        Assert.Equal(4.1619, stand.Vertrieb!.Value, 9);
+        Assert.True(stand.VertriebAktiv);
     }
 
     /// <summary>
@@ -440,8 +588,8 @@ public class PreisbloeckeTests : EposBunitContext
     /// der CI-Läufer steht auf en-US.
     /// </summary>
     [Theory]
-    [InlineData("de-DE", "Preisbestandteile des Brennstoffs")]
-    [InlineData("en-US", "Fuel price components")]
+    [InlineData("de-DE", "Preisbestandteile — Transparenz, ohne Preiswirkung")]
+    [InlineData("en-US", "Price components — transparency, no price effect")]
     public void Der_Brennstoff_Block_traegt_seinen_Titel_in_beiden_Sprachen(
         string kultur, string erwartet)
     {

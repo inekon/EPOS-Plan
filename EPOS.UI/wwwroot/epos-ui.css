@@ -2173,6 +2173,57 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     gap: var(--epos-rand);
 }
 
+/* --------------------------------------------------------------------------
+   ET-D: Die Traegerkarte steht in BLOECKEN, nicht in Reitern. Zwei Bloecke
+   nebeneinander, solange die Karte breit genug ist (--epos-zweispalten-umbruch,
+   900 CSS-Pixel); darunter untereinander. Dieselbe Schwelle wie beim
+   Katalogdialog und beim Formularraster - das Haus kennt EINE Umbruchbreite.
+
+   min-width: 0 an der Spalte ist Pflicht: Ein Flexkind hat als Mindestbreite
+   seinen Inhalt, und ein Raster darin sprengte sonst die Spalte, statt zu
+   rollen.
+   -------------------------------------------------------------------------- */
+.epos-blockspalten {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--epos-karte-rand);
+    align-items: flex-start;
+}
+
+.epos-blockspalte {
+    flex: 1 1 380px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+}
+
+/* Die leise Zeile unter einem Bestandteilfeld: Herleitung des Satzes. Sie
+   steht EINGERUECKT unter ihrem Feld, damit sie zu ihm gehoert und nicht zur
+   naechsten Zeile. */
+.epos-preiszeile-herleitung {
+    margin: 0 0 6px 24px;
+    color: var(--epos-text-leise);
+}
+
+/* Die Schnellwahl-Ueberlagerung: je Satz eine Zeile aus Knopf, Herkunft und
+   dem Satz in der Abrechnungseinheit. */
+.epos-schnellwahl-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: baseline;
+    margin: 4px 0;
+}
+
+.epos-schnellwahl-herkunft {
+    color: var(--epos-text-leise);
+}
+
+.epos-schnellwahl-ziel {
+    font-weight: 700;
+}
+
 .epos-traeger-name {
     margin: 0;
     font-size: var(--epos-schriftgroesse-kartentitel);

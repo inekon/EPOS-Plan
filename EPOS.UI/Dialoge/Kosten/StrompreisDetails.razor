@@ -160,8 +160,20 @@
     [Parameter] public string VorlageRest { get; set; } = "Rest: {0}";
     [Parameter] public string Einheit { get; set; } = "ct/kWh";
 
+    /// <summary>
+    /// Steht der Block schon beim Aufbau offen? Als Block B der Traegerkarte
+    /// (ET-D) ja — dort IST er der Bestandteilblock und nicht mehr ein Anhang
+    /// unter ihr. Wo er als eigener Abschnitt steht, bleibt es bei ZU.
+    /// </summary>
+    [Parameter] public bool VorgabeOffen { get; set; }
+
     /// <summary>Aufgeklappt? Vorgabe ist ZU (Anwenderwortlaut „einklappbarer Bereich").</summary>
     private bool _offen;
+
+    protected override void OnInitialized()
+    {
+        _offen = VorgabeOffen;
+    }
 
     /// <summary>Prüfhilfe für die Tests: Ist der Block gerade aufgeklappt?</summary>
     public bool Offen => _offen;

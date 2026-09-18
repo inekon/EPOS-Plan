@@ -110,6 +110,139 @@ namespace EPOS.Kern.Tests
             return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
         }
 
+        /// <summary>Die Ansicht EINER Hüllen-Instanz samt geladener Karte.</summary>
+        private static EnergietraegerAnsicht Ansicht(EnergietraegerHuelle h, int traegerId)
+        {
+            IReadOnlyDictionary<string, object> gaben = h.Gaben(traegerId);
+            var laden = (Func<int, EnergietraegerAnsicht>)gaben["TraegerLaden"];
+            return laden(traegerId);
+        }
+
+        // =================================================================
+        // ET-D: Die Anzeigekante der Preisbestandteile
+        // =================================================================
+
+        /// <summary>
+        /// <b>ET-D-1 (a).</b> Die Hülle nennt die Einheit AM WERT: Ein Gasträger
+        /// pflegt seine Bestandteile in €/Nm³, und der Heizwert ist der Faktor,
+        /// mit dem die Karte umrechnet. Gerechnet wird weiterhin in ct/kWh.
+        /// </summary>
+        [Fact]
+        public void Die_Bestandteile_kommen_in_der_Abrechnungseinheit_herein()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerAnsicht a = Ansicht(new EnergietraegerHuelle(PROJEKT), ERDGAS_E);
+
+            Assert.NotNull(a.Stand.Bestandteile);
+            Assert.Equal("€/Nm³", a.BestandteilEinheit);
+            Assert.Equal(10.5, a.BestandteilHeizwert, 9);
+            Assert.Equal("", a.BestandteilHinweis);
+        }
+
+        /// <summary>
+        /// Die Kohärenzzeile ist eine PRÜFUNG: Sie steht auf „abweichend", sobald
+        /// die Summe der Anteile den Arbeitspreis um mehr als 0,0001 €/kWh
+        /// verfehlt. Bis ET-D stand sie ausnahmslos auf „✓".
+        /// </summary>
+        [Fact]
+        public void Die_Kohaerenzzeile_meldet_eine_Abweichung()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(PROJEKT), ERDGAS_E, out stand);
+            Assert.NotNull(stand.Bestandteile);
+
+            // Ein Arbeitspreis und EIN Anteil, der ihn nicht deckt.
+            Feld(gaben, () => stand.Arbeitspreis = 0.7560);
+            stand.Bestandteile.Energiesteuer = 0.6076;
+            stand.Bestandteile.EnergiesteuerAktiv = true;
+            stand.Bestandteile.CO2 = null; stand.Bestandteile.CO2Aktiv = false;
+            stand.Bestandteile.Netzentgelt = null; stand.Bestandteile.NetzentgeltAktiv = false;
+            stand.Bestandteile.Vertrieb = null; stand.Bestandteile.VertriebAktiv = false;
+
+            EnergietraegerAnsicht a = ((Func<EnergietraegerAnsicht>)gaben["Nachrechnen"])();
+
+            Assert.True(a.BestandteilAnzeige.Abweichend);
+            Assert.Contains("weicht um", a.BestandteilAnzeige.KohaerenzText);
+            Assert.Contains("€/Nm³", a.BestandteilAnzeige.KohaerenzText);
+
+            // Der Rest wird vorgeschlagen, nicht geschrieben.
+            Assert.NotNull(a.VertriebVorschlag);
+            Assert.Null(stand.Bestandteile.Vertrieb);
+
+            // Deckt der Anteil den Preis, steht die Zeile auf „deckungsgleich".
+            stand.Bestandteile.Energiesteuer = a.ArbeitspreisCtKwh;
+            a = ((Func<EnergietraegerAnsicht>)gaben["Nachrechnen"])();
+
+            Assert.False(a.BestandteilAnzeige.Abweichend);
+            Assert.Contains("deckungsgleich", a.BestandteilAnzeige.KohaerenzText);
+        }
+
+        /// <summary>
+        /// Die Herleitung des BEHG-Anteils nennt Preis und CO₂-Masse JE
+        /// ABRECHNUNGSEINHEIT — „… €/t × 2,109 kg/Nm³" bei EF 200,9 g/kWh und
+        /// Hi 10,5.
+        /// </summary>
+        [Fact]
+        public void Die_BEHG_Herleitung_nennt_die_CO2_Masse_je_Abrechnungseinheit()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerAnsicht a = Ansicht(new EnergietraegerHuelle(PROJEKT), ERDGAS_E);
+
+            Assert.False(string.IsNullOrEmpty(a.HerleitungCo2));
+            Assert.Contains("€/t ×", a.HerleitungCo2);
+            Assert.Contains("kg/Nm³", a.HerleitungCo2);
+        }
+
+        /// <summary>
+        /// ET-D: Die Herleitungszeile des Blocks „Preis und Heizwert" nennt den
+        /// Preis je kWh und den Umrechnungsfaktor Hs/Hi = 11,6 / 10,5 = 1,1048.
+        /// </summary>
+        [Fact]
+        public void Die_Herleitungszeile_nennt_den_Faktor_Hs_durch_Hi()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerStand stand = Karte(new EnergietraegerHuelle(PROJEKT), ERDGAS_E);
+
+            Assert.StartsWith("→", stand.HerleitungPreis);
+            Assert.Contains("/kWh", stand.HerleitungPreis);
+            Assert.Contains("Hs/Hi = 1,1048", stand.HerleitungPreis);
+        }
+
+        /// <summary>
+        /// ET-D-2: Die Bilanzierungsmethode ist Projektsache; im Katalogkontext
+        /// steht sie gesperrt, und die Fußnote sagt, welche Größe gezeigt wird.
+        /// </summary>
+        [Fact]
+        public void Die_Bilanzierungsmethode_ist_im_Katalog_nur_lesbar()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            EnergietraegerStand projekt = Karte(new EnergietraegerHuelle(PROJEKT), ERDGAS_E);
+            Assert.False(projekt.ModusNurLesend);
+            Assert.Equal("", projekt.ModusHinweis);
+            Assert.Contains("CO₂", projekt.EmissionsFussnote);
+
+            EnergietraegerStand katalog = Karte(new EnergietraegerHuelle(0), ERDGAS_E);
+            Assert.True(katalog.ModusNurLesend);
+            Assert.Contains("Projektvorgabe", katalog.ModusHinweis);
+        }
+
         // =================================================================
         // B1 - Einheiten und der Kreis oeffnen - speichern - oeffnen
         // =================================================================
@@ -132,8 +265,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(11.6, stand.Brennwert, 6);
         }
 
+        /// <summary>
+        /// <b>UR-1 (Anwenderfoto 18.09.2026).</b> Der Wechsel auf die Preisbasis
+        /// „kWh" misst gegen den HEIZWERT. Bis ET-D stand hier der Faktor der
+        /// Regel 67 (<c>Nm³ → kWh</c>, <b>0,5</b> in der Testdatenbank) — dieser
+        /// Fall hat den Fehler als Zusicherung geführt.
+        /// </summary>
         [Fact]
-        public async Task Die_Preisbasis_rechnet_nur_den_Arbeitspreis_um()
+        public async Task Die_Preisbasis_rechnet_den_Arbeitspreis_mit_dem_Heizwert_um()
         {
             using var _ = new Kulturvorrichtung();
             using var db = new TestDatenbank();
@@ -146,13 +285,19 @@ namespace EPOS.Kern.Tests
             int kwh = IndexDerEinheit(stand, "kWh");
             Assert.True(kwh >= 0, "Erdgas E muss kWh als Preisbasis anbieten.");
 
-            double arbeitspreisVorher = stand.Arbeitspreis;
-            double faktor = 0.5;   // Regel 67: Nm³ -> kWh in der Testdatenbank
+            // Genau zwei Basen, und die zweite ist die Kilowattstunde.
+            Assert.Equal(2, stand.Preisbasen.Count);
+            Assert.Equal(1, kwh);
 
+            Feld(gaben, () => stand.Arbeitspreis = 0.735);   // €/Nm³
             await PreisbasisSetzen(gaben, kwh);
 
+            // 0,735 €/Nm³ ÷ 10,5 kWh/Nm³ = 0,07 €/kWh. Mit dem Regelfaktor 0,5
+            // stand hier 1,47 €/kWh.
+            Assert.Equal(0.07, stand.Arbeitspreis, 9);
+            Assert.NotEqual(1.47, stand.Arbeitspreis, 6);
+
             // Nur der Arbeitspreis folgt - Hi, Hs, Leistungs- und Grundpreis bleiben.
-            Assert.Equal(arbeitspreisVorher / faktor, stand.Arbeitspreis, 6);
             Assert.Equal(10.5, stand.Heizwert, 6);
             Assert.Equal(11.6, stand.Brennwert, 6);
 
@@ -160,6 +305,10 @@ namespace EPOS.Kern.Tests
             // Arbeitspreis nennt jetzt die Preisbasis.
             Assert.Equal("kWh/Nm³", stand.EinheitHeizwert);
             Assert.Equal("€/kWh", stand.EinheitArbeitspreis);
+
+            // Und zurück: derselbe Wert je Nm³, den wir eingegeben haben.
+            await PreisbasisSetzen(gaben, 0);
+            Assert.Equal(0.735, stand.Arbeitspreis, 9);
         }
 
         [Fact]
@@ -835,7 +984,7 @@ namespace EPOS.Kern.Tests
 
             IReadOnlyDictionary<string, object> gaben = new EnergietraegerHuelle(0).Gaben();
 
-            Assert.Equal("Kontext: Katalog (Stammdaten)", (string)gaben["KontextText"]);
+            Assert.Equal("Katalog · Preise netto", (string)gaben["KontextText"]);
             Assert.Equal(KostenSummenCtrl.GetAllCarriers(0).Count, Ids(gaben).Count);
         }
 
@@ -869,7 +1018,8 @@ namespace EPOS.Kern.Tests
 
             string kopf = (string)new EnergietraegerHuelle(PROJEKT).Gaben()["KontextText"];
 
-            Assert.Contains("Kontext: Projekt " + PROJEKT, kopf);
+            // ET-D: Die Kopfzeile nennt den PROJEKTNAMEN und die Preisstellung.
+            Assert.StartsWith(StartseiteCtrl.Projektname(PROJEKT) + " · Preise netto", kopf);
             Assert.Contains("Anlagen des Projekts", kopf);
             foreach (string g in EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT))
                 Assert.Contains(g, kopf);
@@ -884,7 +1034,7 @@ namespace EPOS.Kern.Tests
 
             string kopf = (string)new EnergietraegerHuelle(PROJEKT).Gaben()["KontextText"];
 
-            Assert.Contains("Context: project " + PROJEKT, kopf);
+            Assert.Contains("· prices net", kopf);
             Assert.Contains("project's systems", kopf);
         }
 
@@ -898,7 +1048,8 @@ namespace EPOS.Kern.Tests
             const int OHNE_ANLAGEN = 19;
             IReadOnlyDictionary<string, object> gaben = new EnergietraegerHuelle(OHNE_ANLAGEN).Gaben();
 
-            Assert.Equal("Kontext: Projekt " + OHNE_ANLAGEN, (string)gaben["KontextText"]);
+            Assert.Equal(StartseiteCtrl.Projektname(OHNE_ANLAGEN) + " · Preise netto",
+                         (string)gaben["KontextText"]);
             Assert.Equal(EnergietraegerKatalogCtrl.NichtZugeordnete(OHNE_ANLAGEN).Count,
                          Freie(gaben).Count);
         }

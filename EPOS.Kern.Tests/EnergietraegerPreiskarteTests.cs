@@ -180,5 +180,132 @@ namespace EPOS.Kern.Tests
             Assert.False(EnergietraegerPreiskarte.IstKwh("Nm³"));
             Assert.False(EnergietraegerPreiskarte.IstKwh(""));
         }
+
+        // =================================================================
+        // ET-D-1: Die Anzeigekante der Preisbestandteile
+        // =================================================================
+
+        /// <summary>
+        /// Der gerechnete Anteil steht in ct/kWh, der angezeigte in
+        /// €/Abrechnungseinheit. 0,6076 ct/kWh sind bei Hi 10,5 kWh/m³ genau
+        /// 0,063798 €/m³ — die Zahl des Mockups (0,0638 auf vier Stellen).
+        /// </summary>
+        [Fact]
+        public void Ein_Anteil_geht_ueber_den_Heizwert_in_die_Abrechnungseinheit()
+        {
+            Assert.Equal(0.063798, EnergietraegerPreiskarte.AnteilJeEinheit(0.6076, 10.5), 9);
+            Assert.Equal(0.6076, EnergietraegerPreiskarte.AnteilCtKwh(0.063798, 10.5), 9);
+        }
+
+        /// <summary>
+        /// Hin und zurück verliert keine Stelle, und die zweite Runde ändert
+        /// nichts mehr: Eine Anzeigekante, an der ein Wert bei jedem Hinsehen
+        /// wandert, wäre keine. Bei Hi = 1 (ein Träger, der in kWh abrechnet)
+        /// bleibt allein die Cent-Wandlung übrig; sie ist auf 12 Stellen genau
+        /// und danach ein Festpunkt.
+        /// </summary>
+        [Theory]
+        [InlineData(0.55, 1.0)]
+        [InlineData(0.6076, 1.0)]
+        [InlineData(2.05, 1.0)]
+        [InlineData(6.44, 1.0)]
+        [InlineData(0.1371, 1.0)]
+        [InlineData(0.0, 1.0)]
+        [InlineData(0.6076, 10.5)]
+        [InlineData(1.3711, 10.5)]
+        public void Hin_und_Rueckweg_verlieren_keine_Stelle(double ctKwh, double hi)
+        {
+            double hin = EnergietraegerPreiskarte.AnteilJeEinheit(ctKwh, hi);
+            double zurueck = EnergietraegerPreiskarte.AnteilCtKwh(hin, hi);
+            Assert.Equal(ctKwh, zurueck, 12);
+
+            // Festpunkt: Eine zweite Runde bewegt den Wert nicht mehr.
+            double zweite = EnergietraegerPreiskarte.AnteilCtKwh(
+                EnergietraegerPreiskarte.AnteilJeEinheit(zurueck, hi), hi);
+            Assert.True(zurueck.Equals(zweite));
+        }
+
+        /// <summary>
+        /// Ohne Heizwert gibt es keinen Weg in die Abrechnungseinheit — der Wert
+        /// bleibt stehen, und die Einheit bleibt ct/kWh.
+        /// </summary>
+        [Fact]
+        public void Ohne_Heizwert_bleibt_der_Anteil_in_ct_je_kWh()
+        {
+            Assert.Equal(0.6076, EnergietraegerPreiskarte.AnteilJeEinheit(0.6076, 0.0), 9);
+            Assert.Equal(0.6076, EnergietraegerPreiskarte.AnteilCtKwh(0.6076, 0.0), 9);
+            Assert.Equal("ct/kWh", EnergietraegerPreiskarte.AnteilEinheit("m³", 0.0));
+        }
+
+        [Theory]
+        [InlineData("m³", 10.5, "€/m³")]
+        [InlineData("L", 10.0, "€/L")]
+        [InlineData("kWh", 1.0, "ct/kWh")]
+        [InlineData("", 10.5, "ct/kWh")]
+        public void Die_Anzeigeeinheit_folgt_der_Abrechnungseinheit(
+            string abrechnungseinheit, double hi, string erwartet)
+        {
+            Assert.Equal(erwartet, EnergietraegerPreiskarte.AnteilEinheit(abrechnungseinheit, hi));
+        }
+
+        // =================================================================
+        // Hs/Hi und die CO2-Masse je Abrechnungseinheit
+        // =================================================================
+
+        [Fact]
+        public void Der_Faktor_Hs_durch_Hi_steht_nur_mit_beiden_Werten()
+        {
+            Assert.Equal(1.104762, EnergietraegerPreiskarte.FaktorHsHi(10.5, 11.6).Value, 6);
+            Assert.Null(EnergietraegerPreiskarte.FaktorHsHi(10.5, 0.0));
+            Assert.Null(EnergietraegerPreiskarte.FaktorHsHi(0.0, 11.6));
+        }
+
+        /// <summary>
+        /// Die Herleitung des BEHG-Anteils: 200,9 g/kWh × 10,5 kWh/m³ ÷ 1000 =
+        /// 2,109 kg CO₂ je m³; mit 65 €/t sind das 0,1371 €/m³.
+        /// </summary>
+        [Fact]
+        public void Die_CO2_Masse_je_Abrechnungseinheit_faellt_aus_Faktor_und_Heizwert()
+        {
+            double kg = EnergietraegerPreiskarte.Co2MasseJeEinheit(200.9, 10.5).Value;
+            Assert.Equal(2.10945, kg, 9);
+            Assert.Equal(0.13711425, kg * 65.0 / 1000.0, 9);
+
+            Assert.Null(EnergietraegerPreiskarte.Co2MasseJeEinheit(0.0, 10.5));
+            Assert.Null(EnergietraegerPreiskarte.Co2MasseJeEinheit(200.9, 0.0));
+        }
+
+        /// <summary>
+        /// Die Energiesteuer-Herleitung: 5,50 €/MWh sind brennwertbezogen —
+        /// 0,55 ct/kWh × Hs/Hi = 0,6076 ct/kWh, und das sind 0,0638 €/m³.
+        /// </summary>
+        [Fact]
+        public void Der_brennwertbezogene_Satz_kommt_ueber_Hs_durch_Hi_an()
+        {
+            double ctKwh = 5.50 / 10.0 * EnergietraegerPreiskarte.FaktorHsHi(10.5, 11.6).Value;
+            Assert.Equal(0.607619, ctKwh, 6);
+            Assert.Equal(0.0638, EnergietraegerPreiskarte.AnteilJeEinheit(ctKwh, 10.5), 4);
+        }
+
+        // =================================================================
+        // UR-1: Die Preisbasis rechnet mit dem Heizwert
+        // =================================================================
+
+        /// <summary>
+        /// Der Anwenderfall: 0,07 €/kWh eingegeben, 0,735 €/Nm³ gespeichert —
+        /// nicht 0,035 €/Nm³ (Regelfaktor 0,5). Der Weg zurück ist bitgleich für
+        /// den Faktor 1 (Preisbasis = Abrechnungseinheit).
+        /// </summary>
+        [Fact]
+        public void Die_Preisbasis_kWh_rechnet_mit_dem_Heizwert()
+        {
+            Assert.Equal(0.735, EnergietraegerPreiskarte.BasisArbeitspreis(0.07, 10.5), 9);
+            Assert.Equal(0.07, EnergietraegerPreiskarte.AnzeigeArbeitspreis(0.735, 10.5), 9);
+
+            // Faktor 1: unveraendert, Bit fuer Bit.
+            Assert.True((0.0638).Equals(
+                EnergietraegerPreiskarte.AnzeigeArbeitspreis(
+                    EnergietraegerPreiskarte.BasisArbeitspreis(0.0638, 1.0), 1.0)));
+        }
     }
 }

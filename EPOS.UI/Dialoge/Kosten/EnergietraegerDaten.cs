@@ -186,6 +186,13 @@ public sealed class EnergietraegerStand
     /// <summary>„0,65 € ÷ 8,00 kWh = 0,0812 €/kWh" bzw. „Direktabrechnung nach kWh".</summary>
     public string FormelText { get; set; } = "";
 
+    /// <summary>
+    /// Die HERLEITUNGSZEILE des Blocks „Preis und Heizwert" (ET-D):
+    /// „→ 0,0720 €/kWh · Umrechnungsfaktor Hs/Hi = 1,1048". Der Faktor steht nur
+    /// dabei, wenn Hi und Hs beide über null liegen. Leer = keine Zeile.
+    /// </summary>
+    public string HerleitungPreis { get; set; } = "";
+
     // ---- Umrechnungsblock (Etappe K3) ----------------------------------
 
     /// <summary>Die Regeln des Brennstoffs — Speicherkopie, siehe Zeilenklasse.</summary>
@@ -271,6 +278,21 @@ public sealed class EnergietraegerStand
     /// <summary>Der F3-Hinweis; leer = keiner.</summary>
     public string EmissionsHinweis { get; set; } = "";
 
+    /// <summary>
+    /// Die Fußnote des Emissionsblocks (ET-D-2): welche Größe gezeigt wird und
+    /// was weitergeführt, aber nicht gezeigt wird. Leer = keine Fußnote.
+    /// </summary>
+    public string EmissionsFussnote { get; set; } = "";
+
+    /// <summary>
+    /// Im Katalogkontext ist die Bilanzierungsmethode Projektsache und deshalb
+    /// nur lesbar; <see cref="ModusHinweis"/> sagt warum.
+    /// </summary>
+    public bool ModusNurLesend { get; set; }
+
+    /// <summary>Warum die Klappliste gesperrt ist; leer = sie ist es nicht.</summary>
+    public string ModusHinweis { get; set; } = "";
+
     /// <summary>Die drei Bestandsfelder — sie gelten, solange es keinen Katalog gibt.</summary>
     public double AltCO2 { get; set; }
     public double AltSO2 { get; set; }
@@ -313,6 +335,32 @@ public sealed class EnergietraegerAnsicht
     public Schnellwahlsatz? Satz53a { get; set; }
     public Schnellwahlsatz? Satz54 { get; set; }
     public Schnellwahlsatz? SatzCo2 { get; set; }
+
+    // ---- Die Anzeigekante der Preisbestandteile (ET-D-1) -----------------
+    // Gerechnet wird in ct/kWh; ANGEZEIGT und EINGEGEBEN wird in der
+    // Abrechnungseinheit. Umgerechnet wird genau einmal, in der Komponente,
+    // ueber EnergietraegerPreiskarte.AnteilJeEinheit / AnteilCtKwh.
+
+    /// <summary>„€/m³" bzw. „ct/kWh", solange kein Heizwert da ist.</summary>
+    public string BestandteilEinheit { get; set; } = "";
+
+    /// <summary>Heizwert je Abrechnungseinheit [kWh]; 0 = keiner, dann bleibt ct/kWh.</summary>
+    public double BestandteilHeizwert { get; set; }
+
+    /// <summary>Warum die Bestandteile in ct/kWh stehen; leer = sie tun es nicht.</summary>
+    public string BestandteilHinweis { get; set; } = "";
+
+    /// <summary>„5,50 €/MWh (Hs)" — die Herleitung der Energiesteuerzeile.</summary>
+    public string HerleitungEnergiesteuer { get; set; } = "";
+
+    /// <summary>„65 €/t × 2,109 kg/m³" — die Herleitung der BEHG-Zeile.</summary>
+    public string HerleitungCo2 { get; set; } = "";
+
+    /// <summary>
+    /// Der Rest-Vorschlag für „Beschaffung und Vertrieb" [ct/kWh] — Arbeitspreis
+    /// minus Summe der übrigen aktiven Anteile. <c>null</c> = kein Vorschlag.
+    /// </summary>
+    public double? VertriebVorschlag { get; set; }
 
     /// <summary>Zeigt die beiden Einstiegskacheln (Ä1: nur beim Stromträger).</summary>
     public bool MitStromkarten { get; set; }

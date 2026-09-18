@@ -140,6 +140,82 @@ namespace WindowsFormsApplication1
             return new Formelzeile { PreisJeKwh = ergebnis.ToString("N4", k) + " €", Text = text };
         }
 
+        // =================================================================
+        // Die ANZEIGEKANTE der Preisbestandteile (ET-D-1)
+        // =================================================================
+
+        /// <summary>
+        /// Ein Preisanteil, wie er ANGEZEIGT wird: aus <c>ct/kWh</c> in
+        /// <c>€/&lt;Abrechnungseinheit&gt;</c> über den Heizwert.
+        ///
+        /// <para><b>Gerechnet wird weiter in ct/kWh</b> (<see cref="Preisanteile"/>,
+        /// <c>BrennstoffBestandteilCtrl</c>, Speicherweg). Diese Funktion und ihre
+        /// Gegenrichtung <see cref="AnteilCtKwh"/> sind die EINE Stelle, an der ein
+        /// Anteil die Einheit wechselt — genau einmal, an der Anzeigekante.</para>
+        ///
+        /// <para>Ohne Heizwert (≤ 0) gibt es keinen Weg in die Abrechnungseinheit;
+        /// dann bleibt der Wert, wie er ist, und die Karte nennt weiter ct/kWh.</para>
+        /// </summary>
+        /// <param name="ctKwh">Der Anteil [ct/kWh].</param>
+        /// <param name="heizwert">Heizwert je Abrechnungseinheit [kWh]; ≤ 0 = keiner.</param>
+        public static double AnteilJeEinheit(double ctKwh, double heizwert)
+        {
+            if (heizwert <= 0.0) return ctKwh;
+            double euroJeKwh = ctKwh / 100.0;
+            return heizwert == 1.0 ? euroJeKwh : euroJeKwh * heizwert;
+        }
+
+        /// <summary>
+        /// Die Gegenrichtung von <see cref="AnteilJeEinheit"/>:
+        /// <c>€/&lt;Abrechnungseinheit&gt;</c> → <c>ct/kWh</c>.
+        /// </summary>
+        public static double AnteilCtKwh(double jeEinheit, double heizwert)
+        {
+            if (heizwert <= 0.0) return jeEinheit;
+            double ct = jeEinheit * 100.0;
+            return heizwert == 1.0 ? ct : ct / heizwert;
+        }
+
+        /// <summary>
+        /// Die Einheit eines Preisanteils an der Anzeigekante:
+        /// <c>€/&lt;Abrechnungseinheit&gt;</c>, solange ein Heizwert da ist —
+        /// sonst <c>ct/kWh</c>.
+        /// </summary>
+        public static string AnteilEinheit(string abrechnungseinheit, double heizwert)
+        {
+            string einheit = (abrechnungseinheit ?? "").Trim();
+            if (heizwert <= 0.0 || einheit.Length == 0 || IstKwh(einheit))
+                return DbWerte.PREISREIHE_EINHEIT_CT_KWH;
+            return "€/" + einheit;
+        }
+
+        /// <summary>Gramm je Kilogramm — die Brücke der CO₂-Masse.</summary>
+        private const double G_JE_KG = 1000.0;
+
+        /// <summary>
+        /// Die CO₂-MASSE je Abrechnungseinheit [kg]: Emissionsfaktor [g/kWh] ×
+        /// Heizwert [kWh je Einheit] ÷ 1000. Sie ist die Zahl, mit der die
+        /// BEHG-Herleitung rechnet („65 €/t × 2,109 kg/m³") — eine Masse, keine
+        /// Energiemenge. <c>null</c>, solange einer der beiden Werte fehlt.
+        /// </summary>
+        public static double? Co2MasseJeEinheit(double emissionsfaktorGKwh, double heizwert)
+        {
+            if (emissionsfaktorGKwh <= 0.0 || heizwert <= 0.0) return null;
+            return emissionsfaktorGKwh * heizwert / G_JE_KG;
+        }
+
+        /// <summary>
+        /// Der Umrechnungsfaktor Hs/Hi eines Trägers — die Brücke zwischen einem
+        /// BRENNWERTbezogenen Katalogsatz (€/MWh) und dem HEIZWERTbezogenen
+        /// Arbeitspreis. <c>null</c>, solange nicht beide Werte über null stehen;
+        /// dann gibt es keinen belegbaren Faktor.
+        /// </summary>
+        public static double? FaktorHsHi(double hi, double hs)
+        {
+            if (hi <= 0.0 || hs <= 0.0) return null;
+            return hs / hi;
+        }
+
         /// <summary>
         /// Die Effektivzeile „effektiv: 1 Nm³ = 10,50 kWh (Hi) / 11,60 kWh (Hs)"
         /// — über der ABRECHNUNGSEINHEIT, denn dort stehen Hi und Hs.
