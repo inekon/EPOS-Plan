@@ -1,16 +1,14 @@
 # Wirtschaftlichkeit und Kosten — Mockups und Rechenwege
 
-**Stand 02.09.2026** · Konzeptstand: `../Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`
-(führende Fassung) · `SchemaMigration.ZIEL_VERSION` = 61
+Führende Fassung: `../Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`.
 
-Dieser Ordner enthält die **visuellen Entwürfe** der Kostendialoge und zu jeder Kostenkategorie den
-**dokumentierten Rechenweg** — Formel, Rechtsgrundlage, Codestelle und eine durchgerechnete
-Zahlenprobe an einem einzigen Beispielprojekt. Er ist die ausgelagerte Detailfassung von § 2.12 des
-konsolidierten Konzepts.
+Dieser Ordner enthält das **Funktionsbild** der Kostendialoge und der Ergebnisseite sowie zu jeder
+Kostenkategorie den **dokumentierten Rechenweg** — Formel, Rechtsgrundlage, Codestelle und eine
+durchgerechnete Zahlenprobe an einem einzigen Beispielprojekt. Er ist die ausgelagerte Detailfassung
+von § 2.12 des konsolidierten Konzepts; maßgeblich bei Widerspruch ist das Konzept.
 
-> **Entwurf, keine Umsetzung.** Alle Dialoge sind Vorschläge zur Abnahme (Arbeitsregel des
-> Anwenders: erst Konzept, dann Code). Umgesetzt ist bislang nur die Pflichtpositionen-Etappe H1.
-> Maßgeblich bei Widerspruch ist das konsolidierte Konzept.
+Das Mockup beschreibt den Zustand **nach** der Umsetzung. Was davon noch nicht gebaut ist, steht
+gesammelt in seinem Anhang „Umsetzungsstand" — und nur dort.
 
 ## Struktur
 
@@ -19,9 +17,9 @@ Wirtschaftlichkeit_Kosten/
 ├── LIESMICH.md                          diese Datei — Einstieg und Lesereihenfolge
 ├── Beispielprojekt.md                   die eine Zahlenquelle: Eingangsgrößen, Mengenbilanz, Preise
 ├── Mockups/
-│   ├── Dialog_Formel_Zahlenprobe.html   alle acht Kategorien als Seite; lokal im Browser öffnen
-│   └── Ergebnis_Bandbreite_Herkunft.html  Entwurf der Ergebnisansicht: Empfehlung, Bandbreite,
-│                                     Herkunft der Zahl, Annahmen, je eine Ansicht für BHKW und PV
+│   └── Dialog_Formel_Zahlenprobe.html   das eine Mockup: alle acht Kategorien mit Dialog,
+│                                     Berechnungsgrundlage, Berechnungserläuterung, Ergebnisseite
+│                                     und den beiden Anhängen; lokal im Browser öffnen
 └── Rechenweg/
     ├── 01_Investitionskosten_BHKW.md    Drei-Runden-Kaskade, Zuschussklemme
     ├── 02_Betriebskosten_BHKW.md        Pflichtpositionen, Hilfsenergie an der Endenergie
@@ -34,15 +32,17 @@ Wirtschaftlichkeit_Kosten/
 ```
 
 Die Mockup-Seite ist zugleich als Artifact veröffentlicht:
-[Dialog, Formel, Zahlenprobe](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f).
+[Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f).
 Die HTML-Datei hier ist die Quelle; ein Redeploy erfolgt über den Artifact-Link (`url`), damit die
 Adresse stabil bleibt.
 
 ## Lesereihenfolge
 
 1. **`Beispielprojekt.md`** — ohne die Mengenbilanz sind die Zahlen der Rechenwege nicht prüfbar.
-2. **Die Mockup-Seite** — jede Kategorie ist dort dreigeteilt: Dialog · Berechnungsgrundlage ·
-   Berechnungserläuterung.
+2. **Die Mockup-Seite** — jede Kategorie ist dort vierfach dargestellt: Dialog ·
+   Berechnungsgrundlage · Berechnungserläuterung · Beschriftungen mit Ressourcenschlüsseln, je mit
+   einer Abnahmezeile. Kategorie 8 trägt die Ergebnisseite. Wer vor der Umsetzung liest, beginnt
+   mit dem Anhang „Umsetzungsstand".
 3. **`Rechenweg/05` und `06`** — die beiden Vergütungsseiten sind der Schwerpunkt des Auftrags.
 4. Die übrigen Rechenwege in Nummernfolge; `08` schließt mit dem Kapitalwert.
 
@@ -64,17 +64,24 @@ Satz · Menge (mit Herleitungszeile in Monospace) · Betrag · Runde** · Summen
 Zuschuss und I₀ · Warnband amber für Fachhinweise · Infozeile für die Mengenreihenfolge · Fußleiste
 mit Statuszeile, „Aus Vorlage übernehmen…", „+ Position", „Speichern".
 
-Für **Photovoltaik** dieselbe Form mit eigenen Anordnungen: Spalte *Nutzungsdauer* im
-Investitionsraster, Herleitung der kWp-Menge aus Modulanzahl × Modulleistung, Gruppe *Ersatz und
-Restwert* mit Barwerten, Kennzahl €/kWp, Betriebsseite ohne Endenergie-Bemessung, Gruppe *Ertrag und
-Degradation* — siehe `Rechenweg/03`.
+Die Spalte *Nutzungsdauer* und die Gruppe *Ersatz und Restwert* stehen **technikneutral** im
+Investitionsraster jeder Komponente — Ersatz und Restwert hängen an der einzelnen Position, nicht an
+der Technik. Für **Photovoltaik** kommen eigene Anordnungen hinzu: Herleitung der kWp-Menge aus
+Modulanzahl × Modulleistung, Kennzahl €/kWp, Betriebsseite ohne Endenergie-Bemessung, Gruppe *Ertrag
+und Degradation* — siehe `Rechenweg/03`.
 
 ## Herkunft der Zahlen
 
-Belegzahlen des Bestands sind in Mockup und Rechenwegen gekennzeichnet: Kaskadenprobe Projekt 1042
-(Delta +20.927,61 €), Mischsatz 300 kW (5,5667 ct/kWh), AW 300 kWp (6,04 ct/kWh),
-Höfingen-Kapitalwert (65.259 €). Alle übrigen Werte sind Annahmen des Beispielprojekts und als
-solche in `Beispielprojekt.md` aufgeführt.
+Jede Zahl des Mockups trägt eine von drei Klassen: **Beispielzahl** (aus `Beispielprojekt.md` oder
+daraus abgeleitet), **Beleg** (aus dem Datenbestand oder einer fremden Mappe nachgemessen:
+Kaskadenprobe Projekt 1042 mit Delta +20.927,61 €, Mischsatz 300 kW mit 5,5667 / 2,4167 ct/kWh,
+anzulegender Wert 300 kWp mit 6,04 ct/kWh, Aufschlagsmessung Projekt 1030, Höfingen-Kapitalwert
+65.259 €) und **abgeleitet** (allein für die Darstellung gebildet, etwa die interpolierten
+Zwischenwerte der beiden äußeren Verlaufskurven). Das Register steht im Anhang „Herkunft der Zahlen"
+des Mockups.
+
+Das Beispielprojekt rechnet durchgängig mit **einer** BHKW-Größe (300 kW, I₀ 234.772,40 €) und
+**einer** Jahr-1-Konvention (Kalenderjahr der Inbetriebnahme, hier 2026).
 
 ## Verwandte Dokumente
 

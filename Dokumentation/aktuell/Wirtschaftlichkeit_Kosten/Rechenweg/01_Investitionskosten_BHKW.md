@@ -13,12 +13,12 @@ nennt drei Beträge: Investition brutto, Zuschuss, I₀.
 
 | Position | Kostenart | Bemessung | Satz | Menge | Betrag | Runde |
 |---|---|---|---|---|---|---|
-| BHKW-Modul (Hauptposition) | ANSCHAFFUNG | € / kW elektrisch | 653,60 | 26,00 kW — Baugrößensumme | 16.993,60 | 1 |
-| Montage und Inbetriebnahme | ANSCHAFFUNG | % der Erzeugerkosten | 5,00 | 16.993,60 € — Basis: Hauptpositionen | 849,68 | 2 |
+| BHKW-Modul (Hauptposition) | ANSCHAFFUNG | € / kW elektrisch | 653,60 | 300,00 kW — Baugrößensumme | 196.080,00 | 1 |
+| Montage und Inbetriebnahme | ANSCHAFFUNG | % der Erzeugerkosten | 5,00 | 196.080,00 € — Basis: Hauptpositionen | 9.804,00 | 2 |
 | Hydraulik und Einbindung | ANSCHAFFUNG | Betrag | — | — | 13.000,00 | 1 |
-| Planung und Genehmigung | ANSCHAFFUNG | % der Investition | 10,00 | 30.843,28 € — Stufe: Anlage BHKW 1 | 3.084,33 | 3 |
-| Zuschuss BAFA | ZUSCHUSS | Betrag | — | — | 6.000,00 | — |
-| **Summe** | | Investition brutto 33.927,61 € · abzüglich Zuschuss 6.000,00 € | | | **27.927,61** | I₀ |
+| Planung und Genehmigung | ANSCHAFFUNG | % der Investition | 10,00 | 218.884,00 € — Stufe: Anlage BHKW 1 | 21.888,40 | 3 |
+| Zuschuss | ZUSCHUSS | Betrag | — | — | 6.000,00 | — |
+| **Summe** | | Investition brutto 240.772,40 € · abzüglich Zuschuss 6.000,00 € | | | **234.772,40** | I₀ |
 
 **Warnband:** „Der Zuschuss mindert I₀, nicht die Basis der Prozentpositionen. Ersatzbeschaffung und
 Restwert rechnen weiter mit dem Bruttobetrag."
@@ -26,9 +26,9 @@ Restwert rechnen weiter mit dem Bruttobetrag."
 Gerätewelt → gespeicherte Menge. Passt die Kostenart nicht zum Gewerk, bleibt die Zeile leer; es wird
 nie eine Ersatzzahl gebildet.
 
-*Die Investitionszahlen dieses Beispiels sind der belegten Kaskadenprobe des Projekts 1042
-nachgebildet (26 × 653,60; 5 %; 13.000; 10 %) — dort ergab dieselbe Kette ein Delta von genau
-+20.927,61 €.*
+*Die Sätze dieses Beispiels sind der belegten Kaskadenprobe des Projekts 1042 nachgebildet
+(653,60 €/kW; 5 %; 13.000 €; 10 %); dort ergab dieselbe Kette an einer Baugröße von 26,00 kW ein
+Delta von genau +20.927,61 €. Das Beispielprojekt rechnet durchgängig mit 300 kW.*
 
 ## Berechnungsgrundlage
 
@@ -73,16 +73,17 @@ Kaskadenbasis; `Ergebnis.Investition` bleibt brutto, nur I₀ ist netto.
 
 | Schritt | Rechnung | Ergebnis | Anmerkung |
 |---|---|---|---|
-| R1 BHKW-Modul | 26,00 × 653,60 | 16.993,60 € | Hauptposition — Basis für Runde 2 |
+| R1 BHKW-Modul | 300,00 × 653,60 | 196.080,00 € | Hauptposition — Basis für Runde 2 |
 | R1 Hydraulik | Betrag, fest | 13.000,00 € | keine Hauptposition, zählt nicht zur Erzeugerkosten-Basis |
-| R2 Montage 5 % | 16.993,60 × 5 / 100 | 849,68 € | Basis nur die Hauptposition |
-| **Basis für Runde 3** | 16.993,60 + 849,68 + 13.000,00 | **30.843,28 €** | alle Zeilen der Anlage, ohne Zuschuss |
-| R3 Planung 10 % | 30.843,28 × 10 / 100 | 3.084,33 € | Stufe „Anlage" greift |
-| **Investition brutto** | 16.993,60 + 849,68 + 13.000,00 + 3.084,33 | **33.927,61 €** | Ausweis; Basis für Ersatz und Restwert |
-| Zuschuss | min(6.000,00 ; 33.927,61) | − 6.000,00 € | Klemme greift nicht |
-| **I₀** | 33.927,61 − 6.000,00 | **27.927,61 €** | geht mit negativem Vorzeichen in Periode 0 |
+| R2 Montage 5 % | 196.080,00 × 5 / 100 | 9.804,00 € | Basis nur die Hauptposition |
+| **Basis für Runde 3** | 196.080,00 + 9.804,00 + 13.000,00 | **218.884,00 €** | alle Zeilen der Anlage, ohne Zuschuss |
+| R3 Planung 10 % | 218.884,00 × 10 / 100 | 21.888,40 € | Stufe „Anlage" greift |
+| **Investition brutto** | 196.080,00 + 9.804,00 + 13.000,00 + 21.888,40 | **240.772,40 €** | Ausweis; Basis für Ersatz und Restwert |
+| Zuschuss | min(6.000,00 ; 240.772,40) | − 6.000,00 € | Klemme greift nicht |
+| **I₀** | 240.772,40 − 6.000,00 | **234.772,40 €** | geht mit negativem Vorzeichen in Periode 0 |
 
-Der Kaskadenfaktor der beiden Prozentpositionen beträgt `1 + 0,05 + 0,10 × 1,05 = 1,155`. Die Kaskade
+Der Kaskadenfaktor auf die Hauptposition beträgt `1 + 0,05 + 0,10 × 1,05 = 1,155`; auf die übrigen
+Runde-1-Zeilen wirkt allein die dritte Runde (× 1,10). Die Kaskade
 wirkt multiplikativ — jede Runde vergrößert die Basis der nächsten; deshalb bewegt eine scheinbar
 kleine Prozentposition am Ende einen fünfstelligen Betrag.
 

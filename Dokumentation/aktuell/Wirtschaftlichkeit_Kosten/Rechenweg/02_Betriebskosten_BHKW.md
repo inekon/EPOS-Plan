@@ -18,10 +18,10 @@ gesperrtes Satzfeld.
 | Position | Bemessung | Satz | Herleitung | Betrag |
 |---|---|---|---|---|
 | Wartung BHKW — Pflicht · üblich 2,0–4,0 ct/kWh | € / kWh elektrisch | 0,0280 | × 1.650.000 kWh el · BHKW 1 | 46.200,00 🔒 |
-| Instandhaltung — Pflicht · üblich 1,0–2,0 % | % der Investition | 1,50 | × 33.927,61 € · Investition BHKW 1 | 508,91 🔒 |
+| Instandhaltung — Pflicht · üblich 1,0–2,0 % | % der Investition | 1,50 | × 240.772,40 € · Investition BHKW 1 | 3.611,59 🔒 |
 | Hilfsenergie — Pflicht · üblich 2,0–4,0 % (BHKW) | % der Endenergiekosten | 2,00 | × 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom | 6.252,62 🔒 |
 | Versicherung | Jahresbetrag | — | | 1.100,00 🗑 |
-| **Betriebskosten BHKW 1** | | | brutto 64.333,22 €/a | **54.061,53** |
+| **Betriebskosten BHKW 1** | | | brutto 68.025,41 €/a | **57.164,21** |
 
 **Warnband:** „Die Hilfsenergie ist zugleich als Anlagenanteil im BHKW-Dialog gepflegt (2,0 %).
 Doppelpflege — es zählt die Kostenposition, der Anlagenanteil wirkt nur auf die
@@ -68,7 +68,7 @@ Preisverhältnis Strom zu Brennstoff).
 
 **Basis „% der Investition" auf der Betriebsseite** (`InvestSummeFuer`): `SUM(EingegebenerWert)`
 Kategorie 1 ohne Zuschuss, stufig Anlage → Komponente → Projekt, **vor** Zuschussabzug —
-abgeleitete Beträge fehlen dort (Befund B-5). Im Mockup ist der Kaskadenbetrag 33.927,61 € gezeigt,
+abgeleitete Beträge fehlen dort (Befund B-5). Im Mockup ist der Kaskadenbetrag 240.772,40 € gezeigt,
 wie er nach Behebung von B-5 anzusetzen wäre.
 
 ## Berechnungserläuterung am Beispielprojekt
@@ -76,14 +76,14 @@ wie er nach Behebung von B-5 anzusetzen wäre.
 | Schritt | Rechnung | Ergebnis | Anmerkung |
 |---|---|---|---|
 | Wartung | 1.650.000 kWh × 0,0280 €/kWh | 46.200,00 €/a | Gruppe C, Menge aus dem Lauf |
-| Instandhaltung | 33.927,61 × 1,50 / 100 | 508,91 €/a | Gruppe B, Basis Investition der Anlage |
+| Instandhaltung | 240.772,40 × 1,50 / 100 | 3.611,59 €/a | Gruppe B, Basis Investition der Anlage |
 | 1 Endenergiemenge | 4.342,1 MWh × 1000 | 4.342.100 kWh | Brennstoff des BHKW aus dem jüngsten Lauf |
 | 2 Arbeitspreis | 0,7560 €/m³ ÷ 10,5 kWh/m³ | 0,0720 €/kWh | Heizwert als Umrechnung, keine η-Division |
 | **Endenergiekosten** | 4.342.100 × 0,0720 | **312.631,20 €/a** | Bezugsgröße der Prozentzeile |
 | 3 Hilfsenergie 2 % | 312.631,20 × 2,00 / 100 | 6.252,62 €/a | Weg A |
 | 4 Rückrechnung Strom | 6.252,62 € ÷ 0,288 €/kWh | 21.710 kWh/a | Plausibilität, ohne Rechenwirkung |
 | Versicherung | Jahresbetrag | 1.100,00 €/a | Gruppe A |
-| **Betriebskosten Jahr 1** | 46.200,00 + 508,91 + 6.252,62 + 1.100,00 | **54.061,53 €/a** | steigt mit p_B ab Jahr 2; brutto × 1,19 = 64.333,22 |
+| **Betriebskosten Jahr 1** | 46.200,00 + 3.611,59 + 6.252,62 + 1.100,00 | **57.164,21 €/a** | steigt mit p_B ab Jahr 2; brutto × 1,19 = 68.025,41 |
 
 Der Hilfsenergie-Satz von 2 % am **Brennstoff** entspricht 21.710 kWh Strom = 1,3 % der
 Bruttostromerzeugung. Ein Wärmepumpen-Satz von 2 % würde direkt an Stromkosten bemessen — deshalb
