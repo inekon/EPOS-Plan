@@ -135,7 +135,10 @@ namespace WindowsFormsApplication1
                         // frischen Lauf — seine Basis ist die Bezugsspitze. LS-E-2 (VF-1):
                         // Er zählt für die ganze Gruppe; eine Variante, die ihn als Einzige
                         // führt, verlöre ihren Leistungsanteil sonst still.
-                        bool mitZeitreihen = tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0 ||
+                        // BK1: Der KWKG-Zweig fragt KwkgAktivierung — die EINE Regel des
+                        // Kerns; die Sätze stehen seit Schemaschritt 89 je Anlage.
+                        bool mitZeitreihen = tarif.Aktiv ||
+                                             KwkgAktivierung.IstAktiv(idStamm, varianten) ||
                                              KostenEmissionRechner.StromLeistungspreisGepflegt(idStamm, varianten);
 
                         bool warGecacht = daten != null;

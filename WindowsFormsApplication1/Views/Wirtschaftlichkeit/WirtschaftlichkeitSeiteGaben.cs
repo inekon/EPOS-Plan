@@ -405,7 +405,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool MitZeitreihen(WirtschaftlichkeitParameter p, TarifParameter tarif)
         {
-            return tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0 ||
+            // BK1: dieselbe EINE Regel wie im Kern und in der Verlaufshülle.
+            return tarif.Aktiv || KwkgAktivierung.IstAktiv(_idStamm, _gruppe) ||
                    KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm, _gruppe);
         }
 

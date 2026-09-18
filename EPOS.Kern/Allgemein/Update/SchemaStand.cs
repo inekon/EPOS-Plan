@@ -189,11 +189,20 @@ namespace WindowsFormsApplication1
         /// Bestand bucht kein gespeicherter Lauf diese Reihe (Befund B-1) — die
         /// dreizehn Referenzprojekte rechnen unverändert, der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit der ANLAGENWAHRHEIT DES KWK-ZUSCHLAGS (Schritt 89, Etappe BK1) steht das
+        /// Ziel auf <b>89</b>: <c>Tab_Energieanlagen</c> bekommt die Spalte
+        /// <c>KWKG_Kostenanteil</c> (DOUBLE, NULL = nicht gepflegt) — die Spaltenliste
+        /// steht bei <see cref="SchemaKatalog.Schritt89_KwkAnlagenwahrheit"/>. Anders
+        /// als Schritt 88 trägt dieser Schritt ein DML: Er schreibt die KWKG-Vorgaben
+        /// des Projekts in jede BHKW-Anlagenzeile, die an der betreffenden Stelle leer
+        /// ist. Erst danach gibt der Rechenweg den Rückfall Anlage → Projekt auf. Der
+        /// Schritt ist ergebnisneutral — jede Anlage rechnet mit genau dem Wert, den ihr
+        /// der Rückfall bisher zugewiesen hat; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 88;
+        public const int Zielversion = 89;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

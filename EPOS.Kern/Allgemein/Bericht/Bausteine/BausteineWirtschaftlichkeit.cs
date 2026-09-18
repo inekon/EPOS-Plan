@@ -219,8 +219,11 @@ namespace WindowsFormsApplication1
             // gesammelt (Baustein „Ergebnisse je Variante" abgewählt), würde das
             // Diagramm andere Zahlen zeigen als die Tabellen darüber → entfallen
             // lassen und offen begründen (keine stillen Widersprüche).
+            // ETAPPE BK1: Der KWKG-Zweig fragt KwkgAktivierung — die EINE Regel, die
+            // auch der Rechenkern zieht. Die Projektsätze entscheiden nicht mehr.
             bool zeitreihenNoetig = (tarifP != null && tarifP.Aktiv) ||
-                                    p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
+                                    KwkgAktivierung.IstAktiv(daten.IdStamm,
+                                        daten.Varianten.Select(x => x.IdProjekt));
             if (zeitreihenNoetig &&
                 daten.Varianten.Any(v => v.Fehler == null && v.Zeitreihen == null))
             {

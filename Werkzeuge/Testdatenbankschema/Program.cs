@@ -326,6 +326,31 @@ namespace Testdatenbankschema
                                             WirtschaftlichkeitCtrl.SPALTE_STROMST_MODUS,
                                             "TEXT", 88, trocken);
 
+            // ---- Schritt 89: die Anlagenwahrheit des KWK-Zuschlags (Etappe BK1,
+            //      Entscheid BK-E-1 a). EINE Spalte an Tab_Energieanlagen UND neun
+            //      Datenanweisungen. Beide Quellen sind dieselben, aus denen sich
+            //      SchemaMigration.Schritt_89_KwkAnlagenwahrheit bedient:
+            //      SchemaKatalog.Schritt89_KwkAnlagenwahrheit (DDL) und
+            //      KwkAnlagenwahrheit (DML).
+            //      Ergebnisneutral: Jede BHKW-Anlage bekommt genau den Projektwert
+            //      eingetragen, den der Rueckfall Anlage -> Projekt ihr bisher
+            //      zugewiesen hat; eine gepflegte Anlagenzelle bleibt unangetastet. Die
+            //      Basis fuehrt ohnehin keine Geldgroesse - die dreizehn
+            //      Referenzprojekte bleiben byte-gleich.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt89_KwkAnlagenwahrheit)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 89, trocken);
+
+            foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
+            {
+                object offen = DataRepository.ExecuteScalar(KwkAnlagenwahrheit.Zaehlung(paar));
+                long z = offen == null || offen == DBNull.Value ? 0 : Convert.ToInt64(offen);
+                Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +
+                                  ": " + z + " Anlagenzeile(n) nachzutragen.");
+                if (!trocken && z > 0)
+                    DataRepository.ExecuteNonQuery(KwkAnlagenwahrheit.Uebertragung(paar));
+            }
+
             tabellen += TabelleSicherstellen("Tab_SpeicherAuslegung", SpeicherAuslegungCtrl.SQL_TABELLE, 73, trocken);
             if (!trocken) DataRepository.ExecuteNonQuery(SpeicherAuslegungCtrl.SQL_INDEX);
 
