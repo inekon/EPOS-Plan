@@ -279,14 +279,11 @@ namespace WindowsFormsApplication1
                                   "\"Preissteigerung_Betrieb\" REAL, " +
                                   "\"Einspeiseverguetung\" REAL, " +
                                   "\"CO2_Preis\" REAL, " +
-                                  "\"KWKG_Bonus\" REAL, " +
-                                  "\"KWKG_Vbh_Jahresdeckel\" REAL, " +
-                                  "\"KWKG_Vbh_Kontingent\" REAL, " +
-                                  // ETAPPE K6 (HF6/M-D): die vier KWKG-Projektangaben auch im
+                                  // ETAPPE K6 (HF6/M-D): die KWKG-Projektangaben auch im
                                   // CREATE — sonst hätte eine frisch angelegte Tabelle sie erst
-                                  // nach dem SpalteSicher-Nachzug weiter unten.
-                                  "\"KWKG_Tatbestand\" TEXT CHECK (length(\"KWKG_Tatbestand\") <= 30), " +
-                                  "\"KWKG_Anlagenart\" TEXT CHECK (length(\"KWKG_Anlagenart\") <= 20), " +
+                                  // nach dem SpalteSicher-Nachzug weiter unten. ETAPPE BK1a:
+                                  // Fünf der Fragmente sind mit Schemaschritt 90 entfallen
+                                  // (KwkgProjektaltspalten) — sie stehen nur noch dort.
                                   "\"KWKG_Kostenanteil\" REAL, " +
                                   "\"KWKG_Pauschalmodus\" INTEGER NOT NULL DEFAULT 0 CHECK (\"KWKG_Pauschalmodus\" IN (0,1)), " +
                                   // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): die vier
@@ -397,9 +394,6 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_ERGEBNIS, "CO2Abgabe", "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, "KWKGErloes", "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, "CO2_Preis", "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Bonus", "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Vbh_Jahresdeckel", "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Vbh_Kontingent", "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, "StromkostenTarif", "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, "HinweisText", "LONGTEXT");
                     // ETAPPE E2 (L6): die Bemessungsgrundlage der KWKG-Deckelung wird
@@ -409,22 +403,12 @@ namespace WindowsFormsApplication1
                     // Wahrheit gegenüber SchemaMigration, W4-Umsetzungsstand Abschnitt 6);
                     // ein Migrationsschritt dafür wäre der dritte Mechanismus.
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_KWKG_VBH_EL, "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Bonus_Einspeisung", "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, "ID_Kraftwerkspark", "LONG");
                     SpalteSicher(TAB_PARAMETER, "RefKessel_Wirkungsgrad", "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, "RefKessel_ID_Brennstoff", "LONG");
-                    bool phase9Neu = SpalteSicher(TAB_PARAMETER, "KWKG_Stichtag", "DATETIME");
+                    SpalteSicher(TAB_PARAMETER, "KWKG_Stichtag", "DATETIME");
                     SpalteSicher(TAB_PARAMETER, "KWKG_Inbetriebnahme", "DATETIME");
                     SpalteSicher(TAB_PARAMETER, "KWKG_Abschlag_Negativ", "DOUBLE");
-
-                    // Einmalige Migration (Phase 9): der bisherige Vorgabewert 3500 des
-                    // Deckels bedeutete „KWKG-2020-Standard" — in der neuen Override-
-                    // Semantik (0 = degressive Staffel) würde er die Staffel dauerhaft
-                    // aushebeln. Beim ersten Phase-9-Start auf 0 umstellen.
-                    if (phase9Neu)
-                        try { Ddl("UPDATE " + TAB_PARAMETER +
-                                        " SET KWKG_Vbh_Jahresdeckel = 0 WHERE KWKG_Vbh_Jahresdeckel = 3500"); }
-                        catch { }
 
                     // ETAPPE E4 — die drei Steuergutschriften und die Herkunft ihrer
                     // Sätze im ERGEBNIS. Additiv über denselben Weg wie die Spalten
@@ -453,13 +437,11 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS, "TEXT(20)");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
 
-                    // ETAPPE K6 (HF6/M-D) — die vier KWKG-Projektangaben. Regulär legt sie
+                    // ETAPPE K6 (HF6/M-D) — die verbliebenen KWKG-Projektangaben. Regulär legt sie
                     // Migrationsschritt 28 an; das hier ist die tolerante VORSORGE
                     // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls,
                     // Konzept § 9 Punkt 2). WERTE werden auch hier nicht vorbelegt: leer
                     // heißt „nicht angegeben", und genau das hält den Bestand unverändert.
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND, "TEXT(30)");
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART, "TEXT(20)");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO");
 
@@ -644,10 +626,6 @@ namespace WindowsFormsApplication1
                     p.PreissteigerungBetrieb = D(r, "Preissteigerung_Betrieb") ?? 0;
                     p.Einspeiseverguetung = D(r, "Einspeiseverguetung") ?? 0;
                     p.CO2Preis = D(r, "CO2_Preis") ?? 0;
-                    p.KwkgBonus = D(r, "KWKG_Bonus") ?? 0;
-                    p.KwkgVbhJahresdeckel = D(r, "KWKG_Vbh_Jahresdeckel") ?? p.KwkgVbhJahresdeckel;
-                    p.KwkgVbhKontingent = D(r, "KWKG_Vbh_Kontingent") ?? p.KwkgVbhKontingent;
-                    p.KwkgBonusEinspeisung = D(r, "KWKG_Bonus_Einspeisung") ?? 0;
                     p.IdKraftwerkspark = (int)(D(r, "ID_Kraftwerkspark") ?? 0);
                     p.RefKesselWirkungsgrad = D(r, "RefKessel_Wirkungsgrad") ?? p.RefKesselWirkungsgrad;
                     p.RefKesselIdBrennstoff = (int)(D(r, "RefKessel_ID_Brennstoff") ?? p.RefKesselIdBrennstoff);
@@ -657,13 +635,9 @@ namespace WindowsFormsApplication1
                         p.KwkgInbetriebnahme = Convert.ToDateTime(r["KWKG_Inbetriebnahme"]);
                     p.KwkgAbschlagNegativ = D(r, "KWKG_Abschlag_Negativ") ?? 0;
 
-                    // ETAPPE K6 — KWKG-Tatbestand, Anlagenart, Kostenanteil, Pauschale.
-                    // Ein LEERER Steuerwert heißt hier „nicht angegeben" und ist NICHT
-                    // gleichbedeutend mit KEINER bzw. NEUANLAGE: Ohne Erfassung rechnet
-                    // die Anwendung wie bisher und weist das aus (Begründung an
-                    // WirtschaftlichkeitParameter.KwkgTatbestand).
-                    p.KwkgTatbestand = Text(r, SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND);
-                    p.KwkgAnlagenart = Text(r, SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART);
+                    // ETAPPE K6 — Kostenanteil und Pauschale des Projekts. Tatbestand
+                    // und Anlagenart sind mit Schemaschritt 90 entfallen; beide stehen
+                    // seit Schritt 89 an der Anlage und werden dort geprüft.
                     p.KwkgKostenanteil = D(r, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL) ?? 0;
                     p.KwkgPauschalmodus = B(r, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS);
 
@@ -949,9 +923,7 @@ namespace WindowsFormsApplication1
                 int rows = DataRepository.ExecuteNonQuery(
                     "UPDATE " + TAB_PARAMETER + " SET Zinssatz = ?, Betrachtungszeitraum = ?, " +
                     "Preissteigerung_Energie = ?, Preissteigerung_Betrieb = ?, " +
-                    "Einspeiseverguetung = ?, CO2_Preis = ?, KWKG_Bonus = ?, " +
-                    "KWKG_Vbh_Jahresdeckel = ?, KWKG_Vbh_Kontingent = ?, " +
-                    "KWKG_Bonus_Einspeisung = ?, ID_Kraftwerkspark = ?, " +
+                    "Einspeiseverguetung = ?, CO2_Preis = ?, ID_Kraftwerkspark = ?, " +
                     "RefKessel_Wirkungsgrad = ?, RefKessel_ID_Brennstoff = ?, " +
                     "KWKG_Stichtag = ?, KWKG_Inbetriebnahme = ?, KWKG_Abschlag_Negativ = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_UNTERNEHMENSART + "] = ?, " +
@@ -967,8 +939,6 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "] = ?, " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND + "] = ?, " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "] = ?, " +
                     // ETAPPE W5-B-9 - die zwölf Szenariospalten. Reihenfolge wie in
@@ -998,10 +968,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@pb", p.PreissteigerungBetrieb),
                     new DbParam("@ev", p.Einspeiseverguetung),
                     new DbParam("@co2", p.CO2Preis),
-                    new DbParam("@kwkg", p.KwkgBonus),
-                    new DbParam("@vbhj", p.KwkgVbhJahresdeckel),
-                    new DbParam("@vbhk", p.KwkgVbhKontingent),
-                    new DbParam("@kwkgE", p.KwkgBonusEinspeisung),
                     new DbParam("@park", p.IdKraftwerkspark),
                     new DbParam("@refEta", p.RefKesselWirkungsgrad),
                     new DbParam("@refBs", p.RefKesselIdBrennstoff),
@@ -1036,13 +1002,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@bnw", DbParamTyp.VarWChar, 30)
                     { Wert = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
-                    // ETAPPE K6 — die leere Angabe muss LEER in die Datenbank: Sie ist die
-                    // Aussage „nicht angegeben" und damit etwas anderes als KEINER bzw.
-                    // NEUANLAGE. Deshalb hier bewusst KEIN Steuerwert(...)-Rückfall.
-                    new DbParam("@ktb", DbParamTyp.VarWChar, 30)
-                    { Wert = LeerAlsNull(p.KwkgTatbestand) },
-                    new DbParam("@kart", DbParamTyp.VarWChar, 20)
-                    { Wert = LeerAlsNull(p.KwkgAnlagenart) },
                     new DbParam("@kant", DbParamTyp.Double)
                     { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
                     new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
@@ -1079,8 +1038,7 @@ namespace WindowsFormsApplication1
                 return DataRepository.ExecuteSQL(
                     "INSERT INTO " + TAB_PARAMETER + " (ID, ID_Projekt, Zinssatz, Betrachtungszeitraum, " +
                     "Preissteigerung_Energie, Preissteigerung_Betrieb, Einspeiseverguetung, " +
-                    "CO2_Preis, KWKG_Bonus, KWKG_Vbh_Jahresdeckel, KWKG_Vbh_Kontingent, " +
-                    "KWKG_Bonus_Einspeisung, ID_Kraftwerkspark, RefKessel_Wirkungsgrad, " +
+                    "CO2_Preis, ID_Kraftwerkspark, RefKessel_Wirkungsgrad, " +
                     "RefKessel_ID_Brennstoff, KWKG_Stichtag, KWKG_Inbetriebnahme, " +
                     "KWKG_Abschlag_Negativ, " +
                     "[" + SchemaKatalog.SPALTE_PW_UNTERNEHMENSART + "], " +
@@ -1096,8 +1054,6 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "], " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND + "], " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "], " +
                     // ETAPPE W5-B-9 - die zwölf Szenariospalten, Reihenfolge wie im UPDATE.
@@ -1121,7 +1077,7 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1130,10 +1086,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@pb", p.PreissteigerungBetrieb),
                     new DbParam("@ev", p.Einspeiseverguetung),
                     new DbParam("@co2", p.CO2Preis),
-                    new DbParam("@kwkg", p.KwkgBonus),
-                    new DbParam("@vbhj", p.KwkgVbhJahresdeckel),
-                    new DbParam("@vbhk", p.KwkgVbhKontingent),
-                    new DbParam("@kwkgE", p.KwkgBonusEinspeisung),
                     new DbParam("@park", p.IdKraftwerkspark),
                     new DbParam("@refEta", p.RefKesselWirkungsgrad),
                     new DbParam("@refBs", p.RefKesselIdBrennstoff),
@@ -1168,10 +1120,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@bnw", DbParamTyp.VarWChar, 30)
                     { Wert = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
-                    new DbParam("@ktb", DbParamTyp.VarWChar, 30)
-                    { Wert = LeerAlsNull(p.KwkgTatbestand) },
-                    new DbParam("@kart", DbParamTyp.VarWChar, 20)
-                    { Wert = LeerAlsNull(p.KwkgAnlagenart) },
                     new DbParam("@kant", DbParamTyp.Double)
                     { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
                     new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
@@ -2298,8 +2246,11 @@ namespace WindowsFormsApplication1
         /// das Ergebnis <b>gewollt</b>: Der Deckel greift dann je Anlage statt über eine
         /// gemeinsame, leistungsgewichtete Vbh-Zahl.</para>
         ///
-        /// <para><b>Der Weg ohne zuordenbare Anlagenzeilen bleibt unverändert projektweit</b>
-        /// (<see cref="ReiheProjektweit"/>) — er ist derselbe Code wie vor E6.</para>
+        /// <para><b>ETAPPE BK1a: auch der Weg ohne zuordenbare Anlagenzeilen rechnet aus
+        /// den ANLAGEN</b> (<see cref="ReiheErsatzGewichtet"/>) — als eine
+        /// leistungsgewichtete virtuelle Gesamtanlage. Damit hat der Zuschlag nur noch
+        /// EINE Quelle; die elf KWKG-Spalten von <c>Tab_ProjektWirtschaftlichkeit</c>
+        /// rechnen nirgends mehr mit.</para>
         /// </summary>
         /// <param name="nachweise">ETAPPE E7: Wird je gerechnetem Modul um eine Zeile
         /// ergänzt (Satz, Vbh, Deckel, Kontingent, Herleitung nach § 7). Nur der Weg je
@@ -2313,27 +2264,12 @@ namespace WindowsFormsApplication1
             hinweis = null;
             var hinweise = new List<string>();   // Meldungen kombinieren, nie überschreiben
 
-            // ---------- ETAPPE K6: Eigenstrom-Tatbestand § 6 Abs. 3 (HF6) ----------
-            // Nach § 7 Abs. 2 gibt es den Zuschlag auf SELBST GENUTZTEN Strom nicht
-            // generell, sondern nur in den drei Tatbeständen des § 6 Abs. 3. Bis K6
-            // rechnete der projektweite Weg den eingetragenen Satz ungeprüft.
-            //
-            // ERGEBNISNEUTRAL FÜR DEN BESTAND, und das ist der Grund für die drei
-            // Zweige: Ein Bestandsprojekt hat die Angabe nie gemacht (Spalte NULL) —
-            // dort bleibt der Satz stehen und der Hinweis sagt, dass die Voraussetzung
-            // ungeprüft ist. Erst die AUSDRÜCKLICHE Wahl „keiner" nimmt den Satz weg.
-            double satzEigenProjekt = p.KwkgBonus;
-            string tatbestand = (p.KwkgTatbestand ?? "").Trim();
-            if (satzEigenProjekt > 0)
-            {
-                if (string.Equals(tatbestand, DbWerte.KWKG_EIGENFALL_KEINER, StringComparison.Ordinal))
-                {
-                    satzEigenProjekt = 0;
-                    hinweise.Add(MyResource.Resource.WIRT_KWKG_TATBESTAND_KEINER);
-                }
-                else if (tatbestand.Length == 0)
-                    hinweise.Add(MyResource.Resource.WIRT_KWKG_TATBESTAND_OFFEN);
-            }
+            // ETAPPE BK1a — DIE PRÜFUNG DES EIGENSTROM-TATBESTANDS STEHT JE ANLAGE.
+            // Bis hierher prüfte K6 den PROJEKTsatz an dieser Stelle. Beide Rechenwege
+            // holen Satz und Tatbestand jetzt aus der Anlage
+            // (<see cref="SatzEigenDerAnlage"/>) — der Regelweg seit BK1, der Ersatzweg
+            // seit BK1a. Eine zweite Prüfung am Projekt hätte nur noch Spalten gelesen,
+            // aus denen niemand mehr rechnet.
 
             // ETAPPE BK1 — DER AKTIVIERUNGSSCHALTER FRAGT DIE ANLAGEN, nicht mehr das
             // Projekt. Gerechnet wird, was an der Anlage steht (Rückfall aufgegeben);
@@ -2405,11 +2341,6 @@ namespace WindowsFormsApplication1
             }
 
             int foerderbeginn = Foerderbeginn(p);
-
-            // ETAPPE K6: das Vbh-Kontingent — Override, sonst nach § 8 aus der
-            // Anlagenart abgeleitet. Der Bestand trägt einen Override und bleibt
-            // dadurch unverändert (Begründung an KontingentDesProjekts).
-            double kontingentProjekt = KontingentDesProjekts(p, foerderbeginn, hinweise);
 
             // ------- Guard Kap. 8.4: Ausschreibungsgrenze und Heizöl, JE ANLAGE -------
             // NACHTRAG ZU E2 (Nutzerentscheidung 19.08.2026): Das Gesetz stellt auf die
@@ -2489,7 +2420,9 @@ namespace WindowsFormsApplication1
                 if (!p.KwkgInbetriebnahme.HasValue && oelGeraetezeile)
                     hinweise.Add(MyResource.Resource.WIRT_KWKG_HEIZOEL_OHNE_IBN_UNKLAR);
 
-                // ERSATZWEG: die projektweite Rechnung, Zeile für Zeile der Stand vor E6.
+                // ERSATZWEG: eine leistungsgewichtete virtuelle Gesamtanlage
+                // (Etappe BK1a) — die Rechenform des Stands vor E6, aber mit
+                // Eingangsgrößen aus den ANLAGEN statt aus dem Projekt.
                 //
                 // ETAPPE B3 Paket b: Er zieht dieselbe Minderung wie der Weg je Anlage —
                 // in der Sache greift sie hier allerdings nie, weil die fehlgeschlagene
@@ -2498,9 +2431,9 @@ namespace WindowsFormsApplication1
                 // stehen trotzdem in der Signatur: Der Ersatzweg soll nicht der eine
                 // Pfad sein, der beim nächsten Ausbau brutto rechnet.
                 double stromNettoMWh = Math.Max(0, stromMWh - hilfsstrom.GesamtMWh);
-                double[] ersatz = ReiheProjektweit(p, mitMatrix, eigenNettoMWh, einspNettoMWh,
-                                                   stromNettoMWh, vbh, foerderbeginn,
-                                                   satzEigenProjekt, kontingentProjekt, out jahr1);
+                double[] ersatz = ReiheErsatzGewichtet(v, p, mitMatrix, eigenNettoMWh, einspNettoMWh,
+                                                       stromNettoMWh, vbh, foerderbeginn,
+                                                       hinweise, out jahr1);
                 if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
                 return ersatz;
             }
@@ -2567,18 +2500,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die <b>projektweite</b> Zuschlagsreihe — der Rechenweg vor Etappe E6, Zeile für
-        /// Zeile unverändert. Er greift nur noch als ERSATZWEG, wenn sich Anlagen- und
-        /// Ergebnismodulzeilen nicht paaren lassen
-        /// (<see cref="KwkgAnlagenauswahl.Bestimmbar"/> = false): kein Anlagenbestand,
-        /// keine Modulzeilen, oder Namen und Anzahl passen nicht zusammen. Dann ist die
-        /// Projektsumme die einzige verfügbare Aussage.
+        /// <b>ETAPPE BK1a — der ERSATZWEG als leistungsgewichtete virtuelle
+        /// Gesamtanlage.</b> Er greift, wenn sich Anlagen- und Ergebnismodulzeilen nicht
+        /// paaren lassen (<see cref="KwkgAnlagenauswahl.Bestimmbar"/> = false): keine
+        /// Modulzeilen, oder Namen und Anzahl passen nicht zusammen. Dann fehlt die
+        /// Zuordnung <b>Menge → Anlage</b>, nicht aber die Anlage selbst.
+        ///
+        /// <para><b>Warum er nicht mehr projektweit rechnet.</b> Bis BK1a war er der
+        /// Rechenweg vor E6 und las seine vier Eingangsgrößen aus
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>. Seit BK1 gehört der Zuschlag der Anlage
+        /// (§ 7 KWKG bemisst den Satz an IHRER Leistung, § 8 das Kontingent an IHRER
+        /// Anlagenart); die Projektspalten waren damit eine zweite Wahrheit, die nur noch
+        /// dieser eine Zweig las — und mit Schemaschritt 90 fallen sie ganz. Der Zweig
+        /// bildet deshalb aus den Anlagen EINE virtuelle Gesamtanlage: Jede der vier
+        /// Größen ist das mit der elektrischen Nennleistung gewichtete Mittel über die
+        /// Anlagen, <c>g_i = P_el,i</c>, <c>G = Σ g_i</c>.</para>
+        ///
+        /// <para><b>Die Rechenform bleibt.</b> <c>bonusVoll</c>, der Negativpreis-
+        /// Abschlag, der Fallback ohne Stundenreihen (W2), die projektweiten
+        /// Vollbenutzungsstunden aus <see cref="VbhElektrisch"/> und die Jahresschleife
+        /// mit <c>rest</c> und <c>verguetet</c> sind Zeile für Zeile die von vorher — nur
+        /// die vier Eingangsgrößen wechseln die Herkunft. Bei EINER Anlage, die ihre
+        /// Vorgaben aus Schritt 89 trägt, ist das Ergebnis deshalb dieselbe Zahl wie vor
+        /// BK1a; bei mehreren gleichen Anlagen ebenso, weil das gewichtete Mittel
+        /// gleicher Werte dieser Wert ist.</para>
+        ///
+        /// <para><b>Der Jahresdeckel wird JE JAHR gemischt.</b> Anlagen mit verschiedenem
+        /// Förderbeginn stehen in demselben Kalenderjahr auf verschiedenen Stufen der
+        /// Staffel des § 8 Abs. 4; ein einmal gebildeter Mittelwert würde diesen Verlauf
+        /// einebnen. Der gewichtete Mittelwert entsteht deshalb in der Jahresschleife
+        /// neu, aus dem festen Deckel der Anlage oder aus IHRER Staffelstufe im Jahr
+        /// <c>beginn_i + t − 1</c>.</para>
+        ///
+        /// <para><b><c>G ≤ 0</c> — keine Anlage trägt eine elektrische Nennleistung.</b>
+        /// Dann gäbe eine Gewichtung mit 0 eine stille 0 für Satz, Kontingent und Deckel
+        /// und damit einen Zuschlag von 0 ohne Grund. Stattdessen wird arithmetisch
+        /// gemittelt und der Ersatz benannt (<c>WIRT_KWKG_ERSATZ_OHNE_LEISTUNG</c>).</para>
+        ///
+        /// <para><b>Die Hinweise werden LOKAL entdoppelt.</b> Satz- und Kontingentprüfung
+        /// laufen je Anlage und erzeugen bei N gleichartigen Anlagen N wortgleiche
+        /// Zeilen. Entdoppelt wird deshalb ordinal innerhalb dieses Weges — nicht gegen
+        /// die schon gesammelten Meldungen des Aufrufers, die aus anderen Prüfungen
+        /// stammen und zufällig gleich lauten könnten.</para>
         /// </summary>
-        /// <param name="satzEigenProjekt">ETAPPE K6: der Eigenstrom-Satz NACH der Prüfung
-        /// des § 6 Abs. 3 — identisch mit <c>p.KwkgBonus</c>, außer der Anwender hat den
-        /// Tatbestand ausdrücklich auf „keiner" gesetzt (dann 0).</param>
-        /// <param name="kontingentProjekt">ETAPPE K6: das Vbh-Kontingent — der Override
-        /// aus <c>p.KwkgVbhKontingent</c>, sonst der nach § 8 abgeleitete Wert.</param>
         /// <param name="mitMatrix">true = die Stundenreihen liefern einen Eigen-/
         /// Einspeise-Split; false = Fallback „alles ist Eigenverbrauch" (W2).</param>
         /// <param name="eigenNettoMWh">ETAPPE B3 Paket b: KWK-Eigenverbrauch des
@@ -2586,13 +2550,70 @@ namespace WindowsFormsApplication1
         /// <param name="einspNettoMWh">Ebenso die KWK-Einspeisung [MWh/a].</param>
         /// <param name="stromNettoMWh">Ebenso die Gesamterzeugung [MWh/a] — die
         /// Bezugsgröße des Fallbacks ohne Stundenreihen.</param>
-        private double[] ReiheProjektweit(WirtschaftlichkeitParameter p, bool mitMatrix,
-                                          double eigenNettoMWh, double einspNettoMWh,
-                                          double stromNettoMWh, double vbh, int foerderbeginn,
-                                          double satzEigenProjekt, double kontingentProjekt,
-                                          out double jahr1)
+        /// <param name="foerderbeginn">Förderbeginn des PROJEKTS; er gilt für jede
+        /// Anlage ohne eigenes Inbetriebnahmedatum.</param>
+        /// <param name="hinweise">Die Meldungsliste des Aufrufers — dieser Weg hängt
+        /// seine entdoppelten Meldungen hinten an.</param>
+        private double[] ReiheErsatzGewichtet(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                              bool mitMatrix, double eigenNettoMWh,
+                                              double einspNettoMWh, double stromNettoMWh,
+                                              double vbh, int foerderbeginn,
+                                              List<string> hinweise, out double jahr1)
         {
             jahr1 = 0;
+            List<BhkwAnlage> anlagen = BhkwAnlagen(v.IdProjekt);
+            if (anlagen.Count == 0) return null;
+
+            if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
+            List<KeyValuePair<int, double>> staffel = _staffelCache;
+
+            // Die Meldungen DIESES Weges, getrennt gesammelt (Begründung im Kopf).
+            var eigene = new List<string>();
+
+            double pelSumme = 0;
+            foreach (BhkwAnlage a in anlagen) pelSumme += a.PelKW;
+
+            bool nachLeistung = pelSumme > 0;
+            double gewichtSumme = nachLeistung ? pelSumme : anlagen.Count;
+
+            var gewicht = new double[anlagen.Count];
+            var beginnJeAnlage = new int[anlagen.Count];
+            var deckelFest = new double[anlagen.Count];
+
+            double satzEigen = 0, satzEinsp = 0, kontingent = 0;
+            for (int i = 0; i < anlagen.Count; i++)
+            {
+                BhkwAnlage a = anlagen[i];
+                gewicht[i] = nachLeistung ? a.PelKW : 1.0;
+                beginnJeAnlage[i] = a.Inbetriebnahme.HasValue ? a.Inbetriebnahme.Value.Year
+                                                              : foerderbeginn;
+                deckelFest[i] = a.VbhDeckel.HasValue && a.VbhDeckel.Value > 0
+                              ? a.VbhDeckel.Value : 0;
+
+                satzEigen += gewicht[i] * SatzEigenDerAnlage(a, eigene);
+                satzEinsp += gewicht[i] * (a.SatzEinspCt ?? 0);
+                kontingent += gewicht[i] * (a.VbhKontingent.HasValue && a.VbhKontingent.Value > 0
+                                          ? a.VbhKontingent.Value
+                                          : KontingentDerAnlage(a, beginnJeAnlage[i], eigene));
+            }
+            satzEigen /= gewichtSumme;
+            satzEinsp /= gewichtSumme;
+            kontingent /= gewichtSumme;
+
+            // Zuerst die Ansage, welcher Weg gerechnet wird, dann seine Einzelheiten.
+            hinweise.Add(string.Format(BerichtTexte.Kultur,
+                T("WIRT_KWKG_ERSATZ_GEWICHTET",
+                  "KWKG: Anlagen- und Ergebniszeilen ließen sich nicht zuordnen — " +
+                  "gerechnet wird mit einer leistungsgewichteten Gesamtanlage aus {0} " +
+                  "Anlagen ({1} kW_el)."),
+                anlagen.Count.ToString("N0", BerichtTexte.Kultur),
+                pelSumme.ToString("N0", BerichtTexte.Kultur)));
+            if (!nachLeistung)
+                hinweise.Add(T("WIRT_KWKG_ERSATZ_OHNE_LEISTUNG",
+                    "KWKG: Keine der Anlagen führt eine elektrische Nennleistung — die " +
+                    "Gesamtanlage wird deshalb arithmetisch gemittelt statt nach " +
+                    "Leistung gewichtet."));
+            Entdoppelt(eigene, hinweise);
 
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
             //  - W3-Split: getrennte Sätze auf KWK-Eigenstrom und -Einspeisung.
@@ -2601,31 +2622,56 @@ namespace WindowsFormsApplication1
             //    ohne gepflegten Anteil sind sie zeilengleich den Bruttomengen.
             double bonusVoll;
             if (mitMatrix)
-                bonusVoll = eigenNettoMWh * 1000.0 * (satzEigenProjekt / 100.0)
-                          + einspNettoMWh * 1000.0 * (p.KwkgBonusEinspeisung / 100.0);
+                bonusVoll = eigenNettoMWh * 1000.0 * (satzEigen / 100.0)
+                          + einspNettoMWh * 1000.0 * (satzEinsp / 100.0);
             else
-                bonusVoll = stromNettoMWh * 1000.0 * (satzEigenProjekt / 100.0);
+                bonusVoll = stromNettoMWh * 1000.0 * (satzEigen / 100.0);
             if (bonusVoll <= 0) return null;
 
-            if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
-            List<KeyValuePair<int, double>> staffel = _staffelCache;
             double abschlag = Math.Min(100.0, Math.Max(0.0, p.KwkgAbschlagNegativ)) / 100.0;
 
-            int T = Math.Max(1, p.Betrachtungszeitraum);
-            double[] reihe = new double[T + 1];
-            double rest = kontingentProjekt;
-            for (int t = 1; t <= T; t++)
+            int jahre = Math.Max(1, p.Betrachtungszeitraum);
+            double[] reihe = new double[jahre + 1];
+            double rest = kontingent;
+            for (int t = 1; t <= jahre; t++)
             {
                 if (rest <= 0) break;
-                double deckel = p.KwkgVbhJahresdeckel > 0
-                    ? p.KwkgVbhJahresdeckel                              // fester Override
-                    : StaffelDeckel(staffel, foerderbeginn + t - 1);     // KWKG-2025-Staffel
+
+                // Der Jahresdeckel der virtuellen Gesamtanlage — je Jahr neu gemischt
+                // (Begründung im Kopf).
+                double deckel = 0;
+                for (int i = 0; i < anlagen.Count; i++)
+                    deckel += gewicht[i] * (deckelFest[i] > 0
+                                          ? deckelFest[i]
+                                          : StaffelDeckel(staffel, beginnJeAnlage[i] + t - 1));
+                deckel /= gewichtSumme;
+
                 double verguetet = Math.Min(vbh, Math.Min(deckel, rest)) * (1.0 - abschlag);
                 reihe[t] = bonusVoll * (verguetet / vbh);
                 rest -= verguetet;   // Negativpreis-Stunden verbrauchen das Kontingent nicht
             }
             jahr1 = reihe[1];
             return reihe;
+        }
+
+        /// <summary>
+        /// Hängt <paramref name="quelle"/> an <paramref name="ziel"/> an und lässt dabei
+        /// jede wortgleiche Wiederholung INNERHALB der Quelle weg (Ordinalvergleich).
+        /// Gebraucht vom Ersatzweg: Seine Prüfungen laufen je Anlage und erzeugen bei N
+        /// gleichartigen Anlagen N gleiche Zeilen.
+        /// </summary>
+        private static void Entdoppelt(List<string> quelle, List<string> ziel)
+        {
+            var gesehen = new List<string>();
+            foreach (string s in quelle)
+            {
+                bool schon = false;
+                foreach (string g in gesehen)
+                    if (string.Equals(g, s, StringComparison.Ordinal)) { schon = true; break; }
+                if (schon) continue;
+                gesehen.Add(s);
+                ziel.Add(s);
+            }
         }
 
         /// <summary>
@@ -2885,9 +2931,11 @@ namespace WindowsFormsApplication1
         /// (<see cref="KwkgKontingentRechner"/>).
         ///
         /// <para><b>Warum je Anlage.</b> § 8 stellt auf die einzelne KWK-Anlage ab. Bis
-        /// BK1 gab es die Ableitung nur projektweit (<see cref="KontingentDesProjekts"/>);
-        /// eine Kaskade aus einem neuen und einem modernisierten Modul bekam damit für
-        /// beide dieselbe Stufe, obwohl ihnen verschiedene zustehen.</para>
+        /// BK1 gab es die Ableitung nur projektweit (aus Anlagenart und Kostenanteil
+        /// des Projekts); eine Kaskade aus einem neuen und einem
+        /// modernisierten Modul bekam damit für beide dieselbe Stufe, obwohl ihnen
+        /// verschiedene zustehen. Seit BK1a ist auch der Ersatzweg hier — die
+        /// projektweite Ableitung ist ersatzlos entfallen.</para>
         ///
         /// <para>Ohne erfasste Anlagenart liefert der Rechner 0 mit Begründung — das ist
         /// dieselbe Antwort wie am Projekt und kein stiller Ausfall: Eine Anlage ohne
@@ -3040,32 +3088,13 @@ namespace WindowsFormsApplication1
 
         // =====================================================================
         // ETAPPE K6 — Vbh-Kontingent nach § 8 und Pauschale nach § 9 KWKG
+        //
+        // ETAPPE BK1a: Die projektweite Ableitung des Kontingents ist entfallen. § 8
+        // stellt auf die einzelne Anlage ab; seit BK1 leitet KontingentDerAnlage aus
+        // IHRER Anlagenart und IHREM Kostenanteil ab, und seit BK1a gilt das für beide
+        // Rechenwege. Die Pauschale nach § 9 bleibt projektweit — sie hängt am Projekt,
+        // nicht an einer Anlage.
         // =====================================================================
-
-        /// <summary>
-        /// Das Vbh-Kontingent des Projekts [h]. <b>Der Override gewinnt:</b> Steht in
-        /// <c>KWKG_Vbh_Kontingent</c> ein Wert größer 0, gilt er unverändert — das ist
-        /// jede Bestandsdatenbank, und deshalb ändert Etappe K6 hier nichts. Erst ein
-        /// Kontingent von 0 <b>und</b> eine ausdrücklich erfasste Anlagenart lassen den
-        /// Wert nach § 8 KWKG ableiten (<see cref="KwkgKontingentRechner"/>).
-        /// </summary>
-        private double KontingentDesProjekts(WirtschaftlichkeitParameter p, int jahr,
-                                             List<string> hinweise)
-        {
-            if (p.KwkgVbhKontingent > 0) return p.KwkgVbhKontingent;
-            if (string.IsNullOrEmpty(p.KwkgAnlagenart)) return p.KwkgVbhKontingent;
-
-            if (_gesetze == null) _gesetze = new GesetzKatalog();
-            System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
-            KwkgKontingentVorschlag v = KwkgKontingentRechner.Ableiten(
-                p.KwkgAnlagenart, p.KwkgKostenanteil, jahr,
-                (s, j) => _gesetze.WertMitHerkunft(s, j), kultur);
-
-            if (hinweise != null)
-                hinweise.Add(string.Format(kultur, MyResource.Resource.WIRT_KWKG_KONTINGENT_ABGELEITET,
-                                           v.KontingentH.ToString("N0", kultur), v.Herleitung));
-            return v.KontingentH;
-        }
 
         /// <summary>
         /// ETAPPE K6 — die pauschale Vorauszahlung nach § 9 KWKG (Anlagen bis
@@ -3980,12 +4009,12 @@ namespace WindowsFormsApplication1
             /// <c>DbWerte.KWKG_EIGENFALL_*</c>; leer = keiner. Ohne Rechenwirkung.</summary>
             public string Eigenfall = "";
 
-            /// <summary>Überschreibwert des Einspeisesatzes [ct/kWh]; <c>null</c> =
-            /// Projektsatz <c>KwkgBonusEinspeisung</c>.</summary>
+            /// <summary>Einspeisesatz dieser Anlage [ct/kWh]; <c>null</c> oder 0 = kein
+            /// Satz (Etappe BK1a: die Projektvorgabe ist entfallen).</summary>
             public double? SatzEinspCt;
 
-            /// <summary>Überschreibwert des Eigenstromsatzes [ct/kWh]; <c>null</c> =
-            /// Projektsatz <c>KwkgBonus</c>.</summary>
+            /// <summary>Eigenstromsatz dieser Anlage [ct/kWh]; <c>null</c> oder 0 = kein
+            /// Satz (Etappe BK1a: die Projektvorgabe ist entfallen).</summary>
             public double? SatzEigenCt;
 
             /// <summary>Vbh-Kontingent dieser Anlage [h]; <c>null</c> = Projektwert.</summary>

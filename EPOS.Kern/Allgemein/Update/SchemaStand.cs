@@ -198,11 +198,30 @@ namespace WindowsFormsApplication1
         /// ist. Erst danach gibt der Rechenweg den Rückfall Anlage → Projekt auf. Der
         /// Schritt ist ergebnisneutral — jede Anlage rechnet mit genau dem Wert, den ihr
         /// der Rückfall bisher zugewiesen hat; der Referenzlauf bleibt byte-gleich.
+        /// Mit dem AUFRÄUMEN NACH DER ANLAGENWAHRHEIT (Schritt 90, Etappe BK1a) steht das
+        /// Ziel auf <b>90</b>. Der Schritt hat ZWEI Teile aus zwei Befunden, und beide
+        /// sind ergebnisneutral:
+        /// <list type="number">
+        ///   <item><description><b>DDL</b> — die sechs KWKG-Spalten von
+        ///     <c>Tab_ProjektWirtschaftlichkeit</c> fallen
+        ///     (<see cref="KwkgProjektaltspalten"/>). Seit Schritt 89 und Etappe BK1a
+        ///     rechnet KEIN Weg mehr mit ihnen: Der Regelweg je Anlage und der Ersatzweg
+        ///     (leistungsgewichtete virtuelle Gesamtanlage) lesen beide die Anlage.
+        ///     <c>KWKG_Kostenanteil</c> des Projekts bleibt samt Dialogfeld stehen
+        ///     (Anwenderentscheid BK1-Q1 c).</description></item>
+        ///   <item><description><b>DML</b> — die Nullzeilen der drei nicht
+        ///     anlagenfähigen Erfassungsgruppen in <c>Tab_ProjektWerte</c> fallen
+        ///     (<see cref="KostenErfassungsgruppenAltzeilen"/>). Es sind
+        ///     Hauptkomponentenzeilen der früheren Kostenmaske, ausnahmslos ohne Wert;
+        ///     kein heutiger Rechenweg legt sie an, und die Kostenseite zeigte sie unter
+        ///     „Anlagenkomponenten" ohne Kennzeichnung.</description></item>
+        /// </list>
+        /// Der Referenzlauf bleibt byte-gleich — keine der Größen steht in der Basis.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 89;
+        public const int Zielversion = 90;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

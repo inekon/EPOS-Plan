@@ -766,6 +766,45 @@ namespace Testdatenbankschema
             }
             Console.WriteLine();
 
+            // ---- Schritt 90: Aufraeumen nach der Anlagenwahrheit (Etappe BK1a,
+            //      Entscheide BK1-1 / BK1-Q1 (c) / BK1-Q2 (a) und K-WZ-1 (a)).
+            //      ZWEI TEILE. Beide Quellen sind dieselben, aus denen sich
+            //      SchemaMigration.Schritt_90_KwkgProjektaltspalten bedient:
+            //      KostenErfassungsgruppenAltzeilen (DML) und KwkgProjektaltspalten
+            //      (DDL). Reihenfolge wie dort: erst die Datenzeilen, dann die
+            //      Spalten. Der Schritt steht NACH Schritt 89 - der liest die sechs
+            //      Spalten als Quelle seiner Uebertragung.
+            //      Ergebnisneutral: Keine der sechs Spalten wird noch gelesen, und
+            //      jede entfernte Kostenzeile traegt 0,00 in jedem Wertfeld; der
+            //      Referenzlauf bleibt byte-gleich. Wiederholbar: Ein zweiter Lauf
+            //      findet weder eine Zeile noch eine Spalte.
+            if (!trocken)
+            {
+                int nullzeilen = KostenErfassungsgruppenAltzeilen.Offen();
+                Console.WriteLine("Schritt 90 - Nullzeilen der drei Erfassungsgruppen: " +
+                                  nullzeilen + ".");
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                         in KostenErfassungsgruppenAltzeilen.Anweisungen)
+                {
+                    DataRepository.ExecuteNonQuery(a.Value);
+                    Console.WriteLine("Schritt 90 - " + a.Key + ".");
+                }
+                Console.WriteLine("Schritt 90 - Nullzeilen offen jetzt " +
+                                  KostenErfassungsgruppenAltzeilen.Offen() + " (erwartet 0).");
+
+                int kwkgSpalten = KwkgProjektaltspalten.Offen();
+                Console.WriteLine("Schritt 90 - KWKG-Projektspalten: " + kwkgSpalten + ".");
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                         in KwkgProjektaltspalten.Anweisungen)
+                {
+                    DataRepository.ExecuteNonQuery(a.Value);
+                    Console.WriteLine("Schritt 90 - " + a.Key + ".");
+                }
+                Console.WriteLine("Schritt 90 - Spalten offen jetzt " +
+                                  KwkgProjektaltspalten.Offen() + " (erwartet 0).");
+            }
+            Console.WriteLine();
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

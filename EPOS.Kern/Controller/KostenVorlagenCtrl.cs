@@ -93,6 +93,27 @@ namespace WindowsFormsApplication1
             return false;
         }
 
+        /// <summary>
+        /// <b>Ist diese Kostenkomponente eine ERFASSUNGSGRUPPE?</b> (Anwenderentscheid
+        /// K-WZ-1.) Eine Erfassungsgruppe hat keine Anlage im Projektbaum — sie sammelt
+        /// Kosten, die zu keinem Gerät gehören (Wärmezentrale, Bauliche Anlagen,
+        /// Stromeinspeisung). Sie rechnet in der Wirtschaftlichkeit mit, aber sie ist
+        /// keine Anlagenzeile.
+        ///
+        /// <para><b>Die Regel steht hier und nicht in einer Schale.</b> Die Kostenseite
+        /// trennt ihre Zeilen danach: Eine Erfassungsgruppe erscheint mit Kennzeichnung
+        /// und Papierkorb, eine anlagenfähige Gruppe ohne gültige Zuordnung gelb. Stünde
+        /// die Unterscheidung in der Oberfläche, hätte jede Schale ihre eigene.</para>
+        ///
+        /// <para>Sie ist das Gegenstück zu <see cref="IstWaehlbar"/>: Was im
+        /// Komponenten-Wizard nicht zur Auswahl steht, kann keiner Anlage zugeordnet
+        /// werden. Ein leerer Name ist keine Gruppe.</para>
+        /// </summary>
+        public static bool IstErfassungsgruppe(string komponente)
+        {
+            return !string.IsNullOrEmpty(komponente) && !IstWaehlbar(komponente);
+        }
+
         /// <summary>Die wählbaren Kostenkomponenten (Ä7; ID, Name), Reihenfolge der Auslieferung.</summary>
         public static IList<KeyValuePair<int, string>> Komponenten()
         {

@@ -5702,6 +5702,12 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOSTEN_SP_SUMME" xml:space="preserve">
     <value>Investment [€]</value>
   </data>
+  <data name="BK_KOSTEN_ERFASSUNGSGRUPPE" xml:space="preserve">
+    <value>{0} — collection group (no plant)</value>
+  </data>
+  <data name="BK_KOSTEN_ERFASSUNGSGRUPPE_HINT" xml:space="preserve">
+    <value>This group is not assigned to any plant — it collects costs that belong to no device. It is included in the economic calculation; the bin deletes it after a prompt, and it can be edited in cost management.</value>
+  </data>
   <data name="BK_KOSTEN_SUMME" xml:space="preserve">
     <value>Total</value>
   </data>
@@ -7772,14 +7778,11 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="WIRT_KWKG_KONTINGENT_STUFE" xml:space="preserve">
     <value>{0} % of the new-build cost, tier from {1} % → {2} full-load hours ({3}, as of {4}); the minimum age of the replaced plant is not checked.</value>
   </data>
-  <data name="WIRT_KWKG_KONTINGENT_ABGELEITET" xml:space="preserve">
-    <value>CHP Act: full-load-hour quota derived from the plant category — {0} hours. {1}</value>
+  <data name="WIRT_KWKG_ERSATZ_GEWICHTET" xml:space="preserve">
+    <value>CHP Act: plant rows and result rows could not be matched — the calculation uses one virtual plant weighted by electrical output, formed from {0} plants ({1} kW_el).</value>
   </data>
-  <data name="WIRT_KWKG_TATBESTAND_OFFEN" xml:space="preserve">
-    <value>CHP Act: no self-consumption case under section 6(3) recorded — the bonus on self-used electricity is unchecked and is calculated with the entered rate as before.</value>
-  </data>
-  <data name="WIRT_KWKG_TATBESTAND_KEINER" xml:space="preserve">
-    <value>CHP Act: the case under section 6(3) is explicitly set to "none" — section 7(2) grants no bonus on self-used electricity; only the fed-in share is paid.</value>
+  <data name="WIRT_KWKG_ERSATZ_OHNE_LEISTUNG" xml:space="preserve">
+    <value>CHP Act: none of the plants records an electrical rated output — the virtual plant is therefore averaged arithmetically instead of weighted by output.</value>
   </data>
   <data name="WIRT_KWKG_PAUSCHALE" xml:space="preserve">
     <value>CHP Act: lump sum under section 9 selected — one-off advance payment of {0} EUR in year 0 ({1} ct/kWh × {2} full-load hours × {3} kW); the running bonus is waived in return.</value>

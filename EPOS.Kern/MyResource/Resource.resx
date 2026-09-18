@@ -5718,6 +5718,12 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOSTEN_SP_SUMME" xml:space="preserve">
     <value>Investition [€]</value>
   </data>
+  <data name="BK_KOSTEN_ERFASSUNGSGRUPPE" xml:space="preserve">
+    <value>{0} — Erfassungsgruppe (ohne Anlage)</value>
+  </data>
+  <data name="BK_KOSTEN_ERFASSUNGSGRUPPE_HINT" xml:space="preserve">
+    <value>Diese Gruppe ist keiner Anlage zugeordnet — sie sammelt Kosten, die zu keinem Gerät gehören. Sie rechnet in der Wirtschaftlichkeit mit; der Papierkorb löscht sie nach Rückfrage, bearbeiten lässt sie sich in der Kostenverwaltung.</value>
+  </data>
   <data name="BK_KOSTEN_SUMME" xml:space="preserve">
     <value>Gesamt</value>
   </data>
@@ -7779,14 +7785,11 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="WIRT_KWKG_KONTINGENT_STUFE" xml:space="preserve">
     <value>{0} % der Neuherstellungskosten, Stufe ab {1} % → {2} Vbh ({3}, Stand {4}); der Mindestabstand zur Inbetriebnahme der Altanlage wird nicht geprüft.</value>
   </data>
-  <data name="WIRT_KWKG_KONTINGENT_ABGELEITET" xml:space="preserve">
-    <value>KWKG: Vbh-Kontingent aus der Anlagenart abgeleitet — {0} Vbh. {1}</value>
+  <data name="WIRT_KWKG_ERSATZ_GEWICHTET" xml:space="preserve">
+    <value>KWKG: Anlagen- und Ergebniszeilen ließen sich nicht zuordnen — gerechnet wird mit einer leistungsgewichteten Gesamtanlage aus {0} Anlagen ({1} kW_el).</value>
   </data>
-  <data name="WIRT_KWKG_TATBESTAND_OFFEN" xml:space="preserve">
-    <value>KWKG: kein Eigenstrom-Tatbestand des § 6 Abs. 3 erfasst — der Zuschlag auf selbst genutzten Strom ist ungeprüft und wird wie bisher mit dem eingetragenen Satz gerechnet.</value>
-  </data>
-  <data name="WIRT_KWKG_TATBESTAND_KEINER" xml:space="preserve">
-    <value>KWKG: Tatbestand des § 6 Abs. 3 ausdrücklich auf „keiner“ gesetzt — auf selbst genutzten Strom gibt es nach § 7 Abs. 2 keinen Zuschlag; nur die Einspeisung wird vergütet.</value>
+  <data name="WIRT_KWKG_ERSATZ_OHNE_LEISTUNG" xml:space="preserve">
+    <value>KWKG: Keine der Anlagen führt eine elektrische Nennleistung — die Gesamtanlage wird deshalb arithmetisch gemittelt statt nach Leistung gewichtet.</value>
   </data>
   <data name="WIRT_KWKG_PAUSCHALE" xml:space="preserve">
     <value>KWKG: Pauschale nach § 9 gewählt — einmalige Vorauszahlung {0} € im Jahr 0 ({1} ct/kWh × {2} Vbh × {3} kW); der laufende Zuschlag entfällt dafür.</value>
