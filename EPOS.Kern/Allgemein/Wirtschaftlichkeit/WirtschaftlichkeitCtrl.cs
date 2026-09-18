@@ -1721,6 +1721,15 @@ namespace WindowsFormsApplication1
             public double VermiedenLeistung;
             public double VermiedenGesamt;
 
+            /// <summary>
+            /// ETAPPE B7 — die vermiedene Strommenge [MWh/a] (Bedarf ohne Anlage minus
+            /// Restbezug). Sie ist die Bemessungsgroesse der § 9b-Korrektur des
+            /// Ausweises (Konzept § 2.6, Klarstellung 1) und sonst nirgends im Spiel:
+            /// Der Kapitalwert rechnet unveraendert mit den tatsaechlichen
+            /// Reststromkosten.
+            /// </summary>
+            public double VermiedenMengeMWh;
+
             // ETAPPE E7 — Aufschlüsselungen und Nachweise (reine Ausgabe).
             /// <summary>Anteil des PV-Überschusses am Einspeiseerlös [€/a].</summary>
             public double ErloesPv;
@@ -2109,6 +2118,7 @@ namespace WindowsFormsApplication1
                 e.VermiedenArbeit = r.VermiedenArbeitEur;
                 e.VermiedenLeistung = r.VermiedenLeistungEur;
                 e.VermiedenGesamt = r.VermiedenGesamtEur;
+                e.VermiedenMengeMWh = r.VermiedenMengeMWh;   // B7
                 foreach (string h in r.Herleitung) Melde(e, h);
             }
         }
@@ -5070,6 +5080,38 @@ namespace WindowsFormsApplication1
             }
             erg.KwkgModule = eingabe.KwkgModule;
             erg.Betriebskosten = eingabe.Betriebskosten;
+            // ETAPPE B7 (Konzept § 3.5): die Energiekosten je Anlage — gebildet vom
+            // KostenEmissionRechner aus denselben Mengen und Preisen, aus denen
+            // erg.EnergiekostenJahr entstanden ist. Nur Ausweis, nur frischer Lauf.
+            if (v.EnergiekostenJeAnlage != null)
+                erg.EnergiekostenJeAnlage = v.EnergiekostenJeAnlage;
+
+            // ETAPPE B7 (Konzept § 2.6, Klarstellung 1) — die § 9b-KORREKTUR des
+            // AUSWEISES. Sie ruehrt den Kapitalwert nicht an: Angehaengt wird keine
+            // Reihe, veraendert wird keine; berechnet wird allein, um wie viel der
+            // ausgewiesene Vorteil zu hoch stuende, wenn die entgangene Entlastung
+            // fehlte. Die Bemessungsgroesse ist die vermiedene MENGE, nicht der
+            // Netzbezug — nur sie ist die Menge, die beide Seiten der Differenz
+            // unterscheidet.
+            //
+            // Die Unternehmensart kommt aus derselben Eingabe, mit der die
+            // Steuerrechnung gerechnet hat (B2), und die Pruefung ist dieselbe Funktion
+            // (SteuerGutschriftRechner.ProduzierendesGewerbe) — eine zweite Fassung
+            // waere eine zweite Antwort auf dieselbe Frage.
+            erg.VermiedenMengeMWh = eingabe.VermiedenMengeMWh;
+            if (eingabe.SteuerEingabe != null &&
+                SteuerGutschriftRechner.ProduzierendesGewerbe(eingabe.SteuerEingabe))
+            {
+                erg.ProduzierendesGewerbe = true;
+                if (eingabe.VermiedenMengeMWh > 0)
+                {
+                    if (_gesetze == null) _gesetze = new GesetzKatalog();
+                    double? satz = _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B,
+                                                 Foerderbeginn(p));
+                    if (satz.HasValue && satz.Value > 0)
+                        erg.VermiedenEntlastung9bJahr = satz.Value * eingabe.VermiedenMengeMWh;
+                }
+            }
             erg.Hinweis = eingabe.Hinweis;
 
             // Trägerzuordnungs-Etappe: Fiel die Emissionsrechnung mangels zugeordnetem

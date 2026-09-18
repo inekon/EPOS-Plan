@@ -7551,7 +7551,7 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
     <value>The preview has expired — nothing was changed. Please ask again.</value>
   </data>
   <data name="BILANZ_AUSWEIS" xml:space="preserve">
-    <value>Balancing: balance year {0} · CHP electricity {1} ({2}) · biomass {3} · {4}</value>
+    <value>Emission balance: balance year {0} · CHP electricity {1} ({2}) · biomass {3} · {4}</value>
   </data>
   <data name="BILANZ_METHODE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>with an electricity credit from the reference power plant</value>
@@ -19390,5 +19390,89 @@ Do you want to allow this?</value>
   </data>
   <data name="KOH_FALL4_EINHEIT_UNVERGLEICHBAR" xml:space="preserve">
     <value>{0}: the catalogue rate for {1} is given in {2}, while the project bills per {3}. Without the density of the energy carrier the two cannot be converted — the energy tax component in the price is not checked here.</value>
+  </data>
+  <data name="WIRT_ERL_KOPF_A" xml:space="preserve">
+    <value>Revenues and benefits — cash-effective (year 1)</value>
+  </data>
+  <data name="WIRT_ERL_KOPF_B" xml:space="preserve">
+    <value>Disclosure — never part of the total</value>
+  </data>
+  <data name="WIRT_ERL_A_KWKG" xml:space="preserve">
+    <value>CHP bonus (sec. 7 KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A1_EINSPEISUNG" xml:space="preserve">
+    <value>of which fed into the grid (sec. 7 (1) KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A2_EIGEN" xml:space="preserve">
+    <value>of which self-consumed (sec. 7 (2) KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax relief (sec. 53/53a resp. 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_STROMST_ENTLASTUNG" xml:space="preserve">
+    <value>Electricity tax relief on grid supply (sec. 9b StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_STROMST_BEFREIUNG" xml:space="preserve">
+    <value>Electricity tax exemption, self-consumption (sec. 9 (1) no. 3 StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_EINSPEISUNG" xml:space="preserve">
+    <value>Feed-in revenue, electricity [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_SUMME" xml:space="preserve">
+    <value>Total revenues and benefits, cash-effective [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_B1_BRUTTO" xml:space="preserve">
+    <value>Avoided electricity cost, gross [€/a] (disclosure)</value>
+  </data>
+  <data name="WIRT_ERL_B1_ABZUG_9B" xml:space="preserve">
+    <value>less forgone relief (sec. 9b StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_B1_EFFEKTIV" xml:space="preserve">
+    <value>Avoided electricity cost, effective [€/a] (disclosure)</value>
+  </data>
+  <data name="WIRT_GRUND_KWKG" xml:space="preserve">
+    <value>no CHP bonus rate maintained, or quota exhausted</value>
+  </data>
+  <data name="WIRT_GRUND_ENERGIESTEUER" xml:space="preserve">
+    <value>no relief provision selected, or no tax rate assigned</value>
+  </data>
+  <data name="WIRT_GRUND_NUR_PROD_GEWERBE" xml:space="preserve">
+    <value>manufacturing sector only; less the base amount of €250/a</value>
+  </data>
+  <data name="WIRT_GRUND_EINSPEISUNG" xml:space="preserve">
+    <value>no feed-in tariff maintained</value>
+  </data>
+  <data name="BK_KOSTEN_SP_CO2E" xml:space="preserve">
+    <value>CO₂ equivalent [g/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_REGEL" xml:space="preserve">
+    <value>{0} (GWP100). Origin of the CO₂ value: level „{1}“. Lookup chain: project value → active emission value → fuel master → carrier catalogue.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_NUR_CO2" xml:space="preserve">
+    <value>No emission type other than CO₂ is stored for this energy carrier — the equivalent value therefore equals the CO₂ factor. Origin: level „{0}“.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_IST_CO2E" xml:space="preserve">
+    <value>The stored value already is a CO₂ equivalent (level „{0}“) and is not summed up.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_OHNE_KATALOG" xml:space="preserve">
+    <value>The emission type catalogue holds no equivalence factors for this energy carrier — what is shown is the pure CO₂ factor of level „{0}“, not an equivalent.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_CO2" xml:space="preserve">
+    <value>CO₂ factor of level „{0}“. Lookup chain: project value → active emission value → fuel master → carrier catalogue.</value>
+  </data>
+  <data name="WIRT_ENK_KOPF" xml:space="preserve">
+    <value>Energy cost by plant [€/a]</value>
+  </data>
+  <data name="WIRT_ENK_ANLAGE" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="BHW_G6_OHNE_RUBRIK" xml:space="preserve">
+    <value>No run yet — the section fills once you press „Calculate“ on the economics tab.</value>
+  </data>
+  <data name="WIRT_ENK_ZEILE" xml:space="preserve">
+    <value>of which {0} [€/a]</value>
+  </data>
+  <data name="WIRT_ENK_NETZBEZUG" xml:space="preserve">
+    <value>Grid supply, electricity</value>
   </data>
 </root>

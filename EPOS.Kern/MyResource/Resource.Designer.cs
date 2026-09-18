@@ -3349,6 +3349,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Lauf — die Rubrik füllt sich mit „Berechnen“ im Reiter Wirtschaftlichkeit. ähnelt.
+        /// </summary>
+        public static string BHW_G6_OHNE_RUBRIK {
+            get {
+                return ResourceManager.GetString("BHW_G6_OHNE_RUBRIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kohärenzprüfung (Energie- und Stromsteuer) ähnelt.
         /// </summary>
         public static string BHW_G_KOHAERENZ {
@@ -4962,11 +4971,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Faktor der Ebene „{0}“. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_EMISSION_CO2 {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_EMISSION_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsfaktoren — CO₂ aus Ebene „{0}“, Berechnungsmodus {1}. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog. ähnelt.
         /// </summary>
         public static string BK_KOSTEN_EMISSION_HINT {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_EMISSION_HINT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der hinterlegte Wert ist bereits ein CO₂-Äquivalent (Ebene „{0}“) und wird nicht aufsummiert. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_EMISSION_IST_CO2E {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_EMISSION_IST_CO2E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Energieträger ist außer CO₂ keine weitere Emissionsart hinterlegt — der Äquivalentwert entspricht deshalb dem CO₂-Faktor. Herkunft: Ebene „{0}“. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_EMISSION_NUR_CO2 {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_EMISSION_NUR_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Artenkatalog führt für diesen Energieträger keine Äquivalenzfaktoren — ausgewiesen wird der reine CO₂-Faktor der Ebene „{0}“, nicht ein Äquivalent. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_EMISSION_OHNE_KATALOG {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_EMISSION_OHNE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (GWP100). Herkunft des CO₂-Wertes: Ebene „{1}“. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_EMISSION_REGEL {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_EMISSION_REGEL", resourceCulture);
             }
         }
         
@@ -5212,6 +5266,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_KOSTEN_SP_CO2 {
             get {
                 return ResourceManager.GetString("BK_KOSTEN_SP_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Äquivalent [g/kWh] ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_SP_CO2E {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_SP_CO2E", resourceCulture);
             }
         }
         
@@ -52773,6 +52836,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1} ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_ANLAGE {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten je Anlage [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_KOPF {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug Strom ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_NETZBEZUG {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_NETZBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon {0} [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ENK_ZEILE {
+            get {
+                return ResourceManager.GetString("WIRT_ENK_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Für {0} passt das Wirtschaftlichkeits-Ergebnis nicht zum Simulationslauf dieses Berichts — Bericht erneut erstellen. ähnelt.
         /// </summary>
         public static string WIRT_ERGEBNIS_VERALTET {
@@ -52782,11 +52881,146 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Einspeisung (§ 7 Abs. 1 KWKG) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A1_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A1_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Eigenstrom (§ 7 Abs. 2 KWKG) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A2_EIGEN {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A2_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeiseerlös Strom [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54 EnergieStG) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A_ENERGIESTEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Zuschlag (§ 7 KWKG) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A_KWKG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3 StromStG) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A_STROMST_BEFREIUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A_STROMST_BEFREIUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Entlastung Netzbezug (§ 9b StromStG) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A_STROMST_ENTLASTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A_STROMST_ENTLASTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Erlöse und Vorteile, zahlungswirksam [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A_SUMME {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abzüglich entgangener Entlastung (§ 9b StromStG) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_B1_ABZUG_9B {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_B1_ABZUG_9B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Stromkosten, brutto [€/a] (Ausweis) ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_B1_BRUTTO {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_B1_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Stromkosten, effektiv [€/a] (Ausweis) ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_B1_EFFEKTIV {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_B1_EFFEKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlöse und Vorteile — zahlungswirksam (Jahr 1) ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_KOPF_A {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_KOPF_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausweis — nicht in der Summe ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_KOPF_B {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_KOPF_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen. ähnelt.
         /// </summary>
         public static string WIRT_GRUND_BRENNSTOFFPREIS_FEHLT {
             get {
                 return ResourceManager.GetString("WIRT_GRUND_BRENNSTOFFPREIS_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Einspeisevergütung gepflegt ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Entlastungsnorm gewählt oder kein Steuersatz zugeordnet ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_ENERGIESTEUER {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_ENERGIESTEUER", resourceCulture);
             }
         }
         
@@ -52805,6 +53039,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_GRUND_KEIN_VERBRAUCH {
             get {
                 return ResourceManager.GetString("WIRT_GRUND_KEIN_VERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein KWK-Zuschlagssatz gepflegt oder Kontingent erschöpft ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_KWKG {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur produzierendes Gewerbe; abzüglich Sockelbetrag 250 €/a ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_NUR_PROD_GEWERBE {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_NUR_PROD_GEWERBE", resourceCulture);
             }
         }
         

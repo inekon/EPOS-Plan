@@ -622,7 +622,12 @@ namespace WindowsFormsApplication1
             // ETAPPE E7: EINE Zeilendefinition für Word, Excel und Ergebnisreiter.
             // Bis dahin stand dieselbe Liste dreimal im Code; die Zahlen liefen nicht
             // auseinander, das Drumherum aber schon.
-            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Kennzahlen(alle, tarif);
+            // ETAPPE B7: Die SICHTBARKEIT entscheidet seither dieselbe Regel wie im
+            // Reiter und im Excel-Blatt (WirtschaftlichkeitZeilen.Sichtbare) — bis
+            // dahin filterte Word gar nicht, der Reiter über die gewählten Spalten und
+            // Excel über den Szenarioblock. Drei Regeln, drei mögliche Tabellen.
+            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Sichtbare(
+                WirtschaftlichkeitZeilen.Kennzahlen(alle, tarif), alle);
 
             VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
             if (stamm == null) return;
@@ -650,15 +655,24 @@ namespace WindowsFormsApplication1
                     var tr = new TableRow();
                     // Der Titel kommt aus MyResource und ist damit bereits in der
                     // Berichtssprache — er darf NICHT noch einmal durch BerichtTexte.T().
-                    tr.Append(k.Zelle(z.Titel, w[0], false, null, JustificationValues.Left,
+                    //
+                    // ETAPPE B7: Die Rubrik trägt Überschriften, Unterzeilen und eine
+                    // Summe. Word hat kein Aufklappmuster, also steht der Einzug im
+                    // Text („    davon …") und die Überschrift fett — dieselbe Ordnung
+                    // wie im Reiter, mit den Mitteln der Tabelle.
+                    string titel = (z.Einzug > 0 ? "    " : "") + z.Titel;
+                    tr.Append(k.Zelle(titel, w[0], z.IstUeberschrift || z.IstSumme,
+                                      z.IstUeberschrift ? WordBerichtGenerator.HEAD_FILL : null,
+                                      JustificationValues.Left,
                                       false, WordBerichtGenerator.SCHRIFT_TABELLE));
                     for (int i = 0; i < spalten.Count; i++)
                     {
                         WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
                             x.IdProjekt == spalten[i].IdProjekt && x.Szenario == szenario);
-                        string txt = z.Anzeige(e, k.Kultur);
-                        tr.Append(k.Zelle(txt, w[i + 1], false,
-                            spalten[i].IstStamm ? WordBerichtGenerator.STAMM_FILL : null,
+                        string txt = z.IstUeberschrift ? "" : z.Anzeige(e, k.Kultur);
+                        tr.Append(k.Zelle(txt, w[i + 1], z.IstSumme,
+                            z.IstUeberschrift ? WordBerichtGenerator.HEAD_FILL
+                            : spalten[i].IstStamm ? WordBerichtGenerator.STAMM_FILL : null,
                             z.IstText ? JustificationValues.Left
                                       : (txt == "—" ? JustificationValues.Center : JustificationValues.Right),
                             false, WordBerichtGenerator.SCHRIFT_TABELLE));

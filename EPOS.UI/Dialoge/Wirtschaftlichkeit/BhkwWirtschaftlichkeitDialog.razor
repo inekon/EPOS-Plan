@@ -1026,31 +1026,46 @@
     }
 
     /// <summary>
-    /// Vorschau (Gruppe 6) - die gebuchten Jahr-1-Werte des EINEN Rechenwegs. Der
-    /// Dialog rechnet nichts nach: Ohne Lauf steht hier ein Hinweis statt einer Zahl.
+    /// Vorschau (Gruppe 6) — die Erloesrubrik des gebuchten Laufs, Zeile fuer Zeile
+    /// aus DERSELBEN Quelle wie Ergebnisreiter, Word und Excel
+    /// (<see cref="WirtschaftlichkeitZeilen.Kennzahlen"/>, gefiltert mit
+    /// <see cref="WirtschaftlichkeitZeilen.Sichtbare"/>).
+    ///
+    /// <para><b>ETAPPE B7.</b> Hier stand bis dahin eine EIGENE Liste aus fuenf von
+    /// Hand zusammengestellten Zahlen — unter anderem „Stromsteuer p. a." als Summe
+    /// aus Befreiung und Entlastung, also aus einer Position, die im Kapitalwert steht,
+    /// und einer, die nur ausgewiesen wird. Genau diese Vermischung trennt die Rubrik:
+    /// Block A ist Zahlung, Block B ist Ausweis. Eine zweite Liste an dieser Stelle
+    /// hiesse, die Trennung ein zweites Mal zu treffen — und beim naechsten Zusatz
+    /// eine der beiden zu vergessen.</para>
+    ///
+    /// <para>Der Dialog rechnet weiterhin nichts nach: Ohne gebuchten Lauf steht hier
+    /// ein Hinweis statt einer Zahl.</para>
     /// </summary>
     private IReadOnlyList<(string Titel, string Wert)> Vorschau()
     {
+        List<WirtschaftlichkeitErgebnis> alle = Ergebnisse();
         WirtschaftlichkeitErgebnis? e = null;
-        foreach (WirtschaftlichkeitErgebnis x in Ergebnisse())
+        foreach (WirtschaftlichkeitErgebnis x in alle)
             if (x.IdProjekt == IdStamm) { e = x; break; }
 
         if (e is null) return new[] { (_t.VOhneLauf, "") };
 
         var k = BhwTexte.Kultur;
-        return new[]
+        var zeilen = new List<(string, string)>();
+        foreach (WirtZeile z in WirtschaftlichkeitZeilen.Sichtbare(
+                     WirtschaftlichkeitZeilen.Kennzahlen(alle, null), alle))
         {
-            (_t.VZuschlag, Euro(e.KwkgErloesJahr1, k)),
-            (_t.VEnergiesteuer, Euro(e.EnergiesteuerJahr1, k)),
-            (_t.VStromsteuer, Euro(e.StromsteuerBefreiungJahr1 + e.StromsteuerEntlastungJahr1, k)),
-            (_t.VEinspeisung, Euro(e.EinspeiseerloesKwkJahr, k)),
-            (_t.VVermieden, Euro(e.VermiedenGesamtJahr, k)),
-            (string.Format(_t.VStand, e.Zeitstempel.ToString("g", k)), "")
-        };
+            // Nur die Rubrik — die uebrigen Kennzahlen stehen im Ergebnisreiter, und
+            // eine vollstaendige Tabelle waere in einem Anlagendialog kein Ueberblick.
+            if (z.Block != WirtZeile.BLOCK_A && z.Block != WirtZeile.BLOCK_B) continue;
+            zeilen.Add(((z.Einzug > 0 ? "    " : "") + z.Titel,
+                        z.IstUeberschrift ? "" : z.Anzeige(e, k)));
+        }
+        if (zeilen.Count == 0) zeilen.Add((_t.VOhneRubrik, ""));
+        zeilen.Add((string.Format(_t.VStand, e.Zeitstempel.ToString("g", k)), ""));
+        return zeilen;
     }
-
-    private static string Euro(double wert, System.Globalization.CultureInfo k) =>
-        wert.ToString("N0", k) + " €";
 
     // =====================================================================
     // Speichern und Schliessen

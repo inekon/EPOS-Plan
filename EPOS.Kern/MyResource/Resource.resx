@@ -7558,7 +7558,7 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
     <value>Die Vorschau ist verfallen — es wurde nichts geändert. Bitte neu fragen.</value>
   </data>
   <data name="BILANZ_AUSWEIS" xml:space="preserve">
-    <value>Bilanzierung: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4}</value>
+    <value>Emissionsbilanz: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4}</value>
   </data>
   <data name="BILANZ_METHODE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>mit Stromgutschrift über den Kraftwerkspark</value>
@@ -19397,5 +19397,89 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KOH_FALL4_EINHEIT_UNVERGLEICHBAR" xml:space="preserve">
     <value>{0}: Der Katalogsatz des Jahres {1} steht in {2}, das Projekt rechnet je {3}. Ohne Dichte des Energieträgers lässt sich beides nicht ineinander umrechnen — der Energiesteueranteil im Preis bleibt hier ungeprüft.</value>
+  </data>
+  <data name="WIRT_ERL_KOPF_A" xml:space="preserve">
+    <value>Erlöse und Vorteile — zahlungswirksam (Jahr 1)</value>
+  </data>
+  <data name="WIRT_ERL_KOPF_B" xml:space="preserve">
+    <value>Ausweis — nicht in der Summe</value>
+  </data>
+  <data name="WIRT_ERL_A_KWKG" xml:space="preserve">
+    <value>KWK-Zuschlag (§ 7 KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A1_EINSPEISUNG" xml:space="preserve">
+    <value>davon Einspeisung (§ 7 Abs. 1 KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A2_EIGEN" xml:space="preserve">
+    <value>davon Eigenstrom (§ 7 Abs. 2 KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_STROMST_ENTLASTUNG" xml:space="preserve">
+    <value>Stromsteuer-Entlastung Netzbezug (§ 9b StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_STROMST_BEFREIUNG" xml:space="preserve">
+    <value>Stromsteuer-Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3 StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_EINSPEISUNG" xml:space="preserve">
+    <value>Einspeiseerlös Strom [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_SUMME" xml:space="preserve">
+    <value>Summe Erlöse und Vorteile, zahlungswirksam [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_B1_BRUTTO" xml:space="preserve">
+    <value>Vermiedene Stromkosten, brutto [€/a] (Ausweis)</value>
+  </data>
+  <data name="WIRT_ERL_B1_ABZUG_9B" xml:space="preserve">
+    <value>abzüglich entgangener Entlastung (§ 9b StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_B1_EFFEKTIV" xml:space="preserve">
+    <value>Vermiedene Stromkosten, effektiv [€/a] (Ausweis)</value>
+  </data>
+  <data name="WIRT_GRUND_KWKG" xml:space="preserve">
+    <value>kein KWK-Zuschlagssatz gepflegt oder Kontingent erschöpft</value>
+  </data>
+  <data name="WIRT_GRUND_ENERGIESTEUER" xml:space="preserve">
+    <value>keine Entlastungsnorm gewählt oder kein Steuersatz zugeordnet</value>
+  </data>
+  <data name="WIRT_GRUND_NUR_PROD_GEWERBE" xml:space="preserve">
+    <value>nur produzierendes Gewerbe; abzüglich Sockelbetrag 250 €/a</value>
+  </data>
+  <data name="WIRT_GRUND_EINSPEISUNG" xml:space="preserve">
+    <value>keine Einspeisevergütung gepflegt</value>
+  </data>
+  <data name="BK_KOSTEN_SP_CO2E" xml:space="preserve">
+    <value>CO₂-Äquivalent [g/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_REGEL" xml:space="preserve">
+    <value>{0} (GWP100). Herkunft des CO₂-Wertes: Ebene „{1}“. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_NUR_CO2" xml:space="preserve">
+    <value>Für diesen Energieträger ist außer CO₂ keine weitere Emissionsart hinterlegt — der Äquivalentwert entspricht deshalb dem CO₂-Faktor. Herkunft: Ebene „{0}“.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_IST_CO2E" xml:space="preserve">
+    <value>Der hinterlegte Wert ist bereits ein CO₂-Äquivalent (Ebene „{0}“) und wird nicht aufsummiert.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_OHNE_KATALOG" xml:space="preserve">
+    <value>Der Artenkatalog führt für diesen Energieträger keine Äquivalenzfaktoren — ausgewiesen wird der reine CO₂-Faktor der Ebene „{0}“, nicht ein Äquivalent.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_CO2" xml:space="preserve">
+    <value>CO₂-Faktor der Ebene „{0}“. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog.</value>
+  </data>
+  <data name="WIRT_ENK_KOPF" xml:space="preserve">
+    <value>Energiekosten je Anlage [€/a]</value>
+  </data>
+  <data name="WIRT_ENK_ANLAGE" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="BHW_G6_OHNE_RUBRIK" xml:space="preserve">
+    <value>Noch kein Lauf — die Rubrik füllt sich mit „Berechnen“ im Reiter Wirtschaftlichkeit.</value>
+  </data>
+  <data name="WIRT_ENK_ZEILE" xml:space="preserve">
+    <value>davon {0} [€/a]</value>
+  </data>
+  <data name="WIRT_ENK_NETZBEZUG" xml:space="preserve">
+    <value>Netzbezug Strom</value>
   </data>
 </root>
