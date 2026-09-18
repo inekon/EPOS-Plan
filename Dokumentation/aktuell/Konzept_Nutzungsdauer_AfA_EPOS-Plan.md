@@ -1,7 +1,8 @@
 # Konzept: Nutzungsdauer je Technik und Positionsart aus einer AfA-Tabelle
 
-Stand 14.09.2026 — Konzept; Anwenderentscheid 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung. Umsetzung in zwei
-Aufträgen (Abschnitt 6).
+Stand 18.09.2026 — Anwenderentscheid 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung. **Die Stufen S1 und S2
+sind umgesetzt**; S3 (Instandsetzung, Wartung, Gerätekataloge) steht aus und braucht einen eigenen
+Entscheid (Abschnitte 3 und 6).
 
 **Anlass (Anwenderwunsch 14.09.2026, Bildschirmfoto der Kostenverwaltung):** „In allen Kostendialogen
 soll die Nutzungsdauer nach Technik/Kategorie standardmäßig vorbelegt werden können. Grundlage ist eine
@@ -125,17 +126,44 @@ Installation" → Montage). Der Vorlagenübernahme-Weg kopiert `NutzungsdauerID`
    Nutzungsdauer wird aus der Zeile der Positionsart, sonst aus dem Technik-Standard vorbelegt; eine
    Herleitungszeile unter dem Raster nennt die Quelle („Nutzungsdauer aus Nutzungsdauern (AfA): Heizkessel ·
    Wärmeerzeuger 20 a").
-2. **Bestehende Positionen**: Knopf „Nutzungsdauern vorbelegen" neben „+ Position hinzufügen" — füllt
-   leere Felder; mit Rückfrage „alle Werte ersetzen". Nichts geschieht still; geschrieben wird erst mit
+2. **Bestehende Positionen**: Knopf „Nutzungsdauern vorbelegen…" in der Leiste unter dem Raster, neben
+   „+ Position hinzufügen" — er füllt die LEEREN Felder und nennt die Zahl in der Statuszeile; tragen
+   danach noch Positionen einen Wert, der von der Vorgabe abweicht, folgt die Rückfrage mit ihrer Anzahl.
+   Ohne Bestätigung bleibt jeder gepflegte Wert stehen. Nichts geschieht still; geschrieben wird erst mit
    „Speichern"/„OK" wie bei jeder anderen Eingabe.
 3. **Positionsart je Zeile**: eine Klappliste im Zeileneditor „Position bearbeiten" (Technik ist durch die
-   Vorlage bekannt, die Liste zeigt die Zeilen dieser Technik plus die technikübergreifenden). Eine
-   Änderung der Positionsart setzt die Nutzungsdauer neu — als einmalige Kopie, wie bei der Katalog-
-   übernahme der Energieträger.
+   Vorlage bekannt, die Liste zeigt die Zeilen dieser Technik plus die technikübergreifenden, dazu eine
+   leere Zeile „keine — Standardzeile der Technik"). Eine Änderung der Positionsart setzt die
+   Nutzungsdauer neu — als einmalige Kopie, wie bei der Katalogübernahme der Energieträger. Ohne die
+   Tabelle steht das Feld gar nicht erst da.
+3a. **Herkunft je Zeile**: Unter dem Nutzungsdauerfeld des Rasters steht eine leise Zeile
+   „15 a · Vorgabe der Technik" — sonst „… · AfA-Tabelle: ‹Positionsart›" oder „… · eigener Wert".
+   Gemessen wird am WERT, nicht an einer Merkspalte: Der gepflegte Wert gilt als übernommen, solange er
+   der Vorgabe entspricht. Ohne gepflegte Dauer bleibt die Zeile weg; den Grund nennt die Tafel
+   „Ersatz und Restwert" (Abschnitt 2.4a).
 4. **Vorlagenübernahme ins Projekt**: Vorlagenwert, sonst Wert der Tabelle; Worst/Best unverändert
    (± 2 Jahre um den Wert).
 5. Die Gerätekataloge (BHKW, Heizkessel, Stromspeicher) behalten ihre eigenen Nutzungsdauer-Spalten;
    eine Vorbelegung dort ist Stufe S3 (ND-Q7).
+
+### 2.4a Tafel „Ersatz und Restwert" im Kostendialog
+
+Unter dem Raster der Investitionskosten steht im Projektmodus eine Gruppe „Ersatz und Restwert": je
+Position Betrag, Nutzungsdauer n, die Ersatzjahre innerhalb T mit dem Barwert der Ersatzbeschaffungen,
+der Restwert im Jahr T nominal und als Barwert und die Herkunft der Dauer; zuletzt eine Summenzeile der
+Komponente („3 von 4" Positionen mit Dauer). Erlös- und Zuschusszeilen bleiben außen vor — sie
+bekommen im Rechenkern weder Ersatz noch Restwert (K5).
+
+**Gerechnet wird nichts Neues.** Ersatzkette und linearer Restwert stehen als eigene Funktion im
+`KapitalwertRechner` (`Ersatz`, `Barwert`), die die Kapitalwertrechnung selbst durchläuft; die Tafel
+ruft dieselbe Funktion. Parameter sind i, T und das wirksame p_I der Gruppe. Die Tafel ist reine
+Anzeige — der Referenzlauf bleibt byte-gleich.
+
+**Über der Tafel** steht der Hinweis nach Konzept Wirtschaftlichkeit § 2.13 (3):
+„Betrachtungszeitraum {T} a über der Vorgabe {n} a der Technik {Technik}; {k} von {m}
+Investitionspositionen ohne Nutzungsdauer ({Liste}): kein Ersatz, kein Restwert gerechnet. Ist ein
+Ersatz fällig, ist der Kapitalwert zu günstig ausgewiesen." Er ist ein Prüfauftrag, keine
+Fehlermeldung, und bleibt weg, wo es nichts zu prüfen gibt.
 
 ### 2.5 Administrationsdialog „Nutzungsdauern (AfA)"
 
@@ -194,11 +222,15 @@ Restwert nach VDI 2067. Die Herleitungszeile und der Bericht nennen die Quelle d
 
 | Stufe | Umfang | Nachweis |
 |---|---|---|
-| **S1 Tabelle und Verwaltung** | Schema-Schritt (Tabelle, Saat, Spalten `NutzungsdauerID` mit Saat-Zuordnung, Zielversion +1, Testdatenbank), `NutzungsdauerCtrl`, Razor-Dialog mit plattformfreier Hülle, Menüpunkt (Wächter 59 → 60, 46 → 47), Ressourcen de/en, Auslieferungsvorlage | Kern-/bunit-Tests, SqlDialektPruefer, Referenzlauf 13/13 byte-gleich |
-| **S2 Vorbelegung** | Neue Position, Knopf „Nutzungsdauern vorbelegen", Positionsart im Zeileneditor, Vorlagenübernahme, Herleitungszeile; Wiki „Programm Dokumentation/Kosten" und Rechenwegseite Wirtschaftlichkeit; Logbuch | bunit-Fälle je Weg, Referenzlauf byte-gleich |
+| **S1 Tabelle und Verwaltung** — **umgesetzt** | Schema-Schritt (Tabelle, Saat, Spalten `NutzungsdauerID` mit Saat-Zuordnung, Zielversion +1, Testdatenbank), `NutzungsdauerCtrl`, Razor-Dialog mit plattformfreier Hülle, Menüpunkt (Wächter 59 → 60, 46 → 47), Ressourcen de/en, Auslieferungsvorlage | Kern-/bunit-Tests, SqlDialektPruefer, Referenzlauf 13/13 byte-gleich |
+| **S2 Vorbelegung** — **umgesetzt** | Neue Position, Knopf „Nutzungsdauern vorbelegen…", Positionsart im Zeileneditor, Vorlagenübernahme, Herleitung je Zeile, Tafel „Ersatz und Restwert" samt Hinweis; Wiki „Programm Dokumentation/Kosten" | bunit-Fälle je Weg, Kern-Fall gegen die Kapitalwertrechnung, Referenzlauf byte-gleich |
 | **S3 Instandsetzung und Wartung** | Spalten in der Tabelle sichtbar, `BetriebskostenCtrl` liest Sätze je Technik statt Konstanten; Vorbelegung der Gerätekataloge | eigener Entscheid, Referenzlauf mit Abweichungen nur in Betriebskosten → neue Basis |
 
-S1 und S2 lassen sich als ein Auftrag fahren; S3 nur nach Entscheid.
+S3 nur nach Entscheid. **Offen aus S2:** Die Hülle der Kostenverwaltung liegt weiter in der
+Windows-Schale (`WindowsFormsApplication1/Views/Kosten/KostenKomponenteHuelle.cs`); plattformfrei nach
+`EPOS.UI.Daten` gehört sie mit dem Schritt, der den Dialog auf iOS bringt. Ebenso offen: die
+Entkopplung von Ersatz und Restwert je Position, die geräteeigenen Dauerspalten und der Anschluss der
+Speicherflotte (Mockup-Anhang U39).
 
 ## 4. Fragen mit Empfehlung
 
@@ -226,7 +258,7 @@ Wirtschaftlichkeitsparameter. Die Betriebskostenprozentsätze nach VDI 2067 blei
 
 | Auftrag | Inhalt | Voraussetzung |
 |---|---|---|
-| A (Stufe S1) | Schema-Schritt mit `Tab_Nutzungsdauer`, Saat nach Tabelle 2.6, Spalten `NutzungsdauerID` in Vorlagen- und Projektposition mit Saat-Zuordnung, `NutzungsdauerCtrl`, Vorbelegung beim Anlegen und Übernehmen im Kern, Administrationsdialog mit plattformfreier Hülle, Menüpunkt, Ressourcen, Testdatenbank, Auslieferungsvorlage | nächster freier Schema-Schritt |
-| B (Stufe S2) | Kostenverwaltung: Knopf „Nutzungsdauern vorbelegen", Positionsart im Zeileneditor, Herleitungszeile; dafür die Hülle der Kostenverwaltung plattformfrei nach `EPOS.UI.Daten` (Windows-Adapter bleibt dünn); Wiki „Programm Dokumentation/Kosten", Logbuch | nach A |
+| A (Stufe S1) — **umgesetzt** | Schema-Schritt mit `Tab_Nutzungsdauer`, Saat nach Tabelle 2.6, Spalten `NutzungsdauerID` in Vorlagen- und Projektposition mit Saat-Zuordnung, `NutzungsdauerCtrl`, Vorbelegung beim Anlegen und Übernehmen im Kern, Administrationsdialog mit plattformfreier Hülle, Menüpunkt, Ressourcen, Testdatenbank, Auslieferungsvorlage | nächster freier Schema-Schritt |
+| B (Stufe S2) — **umgesetzt** | Kostenverwaltung: Knopf „Nutzungsdauern vorbelegen…", Positionsart im Zeileneditor, Herleitung je Zeile, Tafel „Ersatz und Restwert" mit Hinweis; Wiki „Programm Dokumentation/Kosten". Die Hülle der Kostenverwaltung bleibt vorerst in der Windows-Schale | nach A |
 | S3 | Instandsetzung/Wartung, Gerätekataloge | eigener Entscheid |
 

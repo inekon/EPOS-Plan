@@ -13,6 +13,7 @@ Der Dialog '''Kosten''' erfasst Investitions-, Betriebs- und Energiekosten je Ko
 * '''Energieträger auswählen''' – ordnet einer Kostenposition den Energieträger zu, über den sie abgerechnet wird.
 * '''Übernahme aus dem Technikmodul''' – die dort hinterlegten Anlagenkosten lassen sich auf Knopfdruck als Planwert übernehmen.
 * {{Anker|erfassungsgruppen}}'''Erfassungsgruppen''' – Wärmezentrale, Bauliche Anlagen und Stromeinspeisung sammeln Kosten, die zu keinem Gerät gehören. Auf der Kostenseite stehen sie unter den Anlagen, tragen den Zusatz ''Erfassungsgruppe (ohne Anlage)'' und lassen sich über den Papierkorb nach Rückfrage entfernen; in der Wirtschaftlichkeit rechnen sie mit.
+* {{Anker|ersatz-restwert}}'''Ersatz und Restwert''' – unter dem Positionsraster der Investitionskosten steht die Gruppe ''Ersatz und Restwert''. Sie zeigt je Position den Betrag, die Nutzungsdauer, die Ersatzjahre innerhalb des Betrachtungszeitraums mit dem Barwert der Ersatzbeschaffungen, den Restwert im letzten Jahr nominal und als Barwert sowie die Herkunft der Nutzungsdauer; die letzte Zeile summiert die Komponente und nennt, wie viele ihrer Positionen eine Nutzungsdauer tragen. Gerechnet wird mit denselben Formeln wie in der Wirtschaftlichkeit, mit Kalkulationszins, Betrachtungszeitraum und Preisänderungssatz der Investition aus den Wirtschaftlichkeitsparametern. Erlös- und Zuschusspositionen stehen nicht in der Tafel – sie werden weder ersetzt noch bewertet. Reicht der Betrachtungszeitraum über die Nutzungsdauer der Technik hinaus oder tragen Positionen keine Nutzungsdauer, steht über der Tafel ein Hinweis mit ihrer Zahl, ihren Namen und ihren Beträgen: Sie bekommen weder Ersatz noch Restwert, und der Kapitalwert fällt dadurch günstiger aus. Die Tafel zeigt an und rechnet nichts in die Kosten hinein.
 * {{Anker|summen}}'''Summen''' – werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen. Unter dem Positionsraster der Investitionskosten stehen die Nettosumme und die Bruttosumme mit dem Umsatzsteuersatz aus dem Katalog; führt die Komponente eine Erlös- oder Zuschussposition, nennt eine dritte Zeile die Investition brutto, den Zuschuss und die um ihn geminderte Investition I₀ – die Größe, mit der die Wirtschaftlichkeit rechnet. Bei der Photovoltaik steht daneben die Kennzahl ''spezifisch 640,00 €/kWp'': die Nettosumme je kWp installierter Leistung, im Beispiel 192.000,00 € bei 300 kWp. Führt die Anlage keine installierte Leistung, entfällt die Kennzahl.
 
 == Bemessung der Positionen ==
@@ -135,6 +136,13 @@ Der Dialog '''Nutzungsdauern (AfA)''' führt die rechnerische Nutzungsdauer je T
 * '''Speichern''' – Eingaben im Raster werden mit ''Speichern'' oder ''OK'' geschrieben; ''Abbrechen'' verwirft sie.
 
 Eine neu angelegte Investitionsposition und eine aus einer Kostenvorlage übernommene Position bekommen ihre Nutzungsdauer aus dieser Tabelle. Bereits erfasste Positionen behalten den Wert, der bei ihnen steht.
+
+=== Nutzungsdauern in den Kostendialogen ===
+{{Anker|nutzungsdauer-vorbelegen}}
+
+* '''Nutzungsdauern vorbelegen…''' – der Knopf in der Leiste unter dem Positionsraster der Investitionskosten füllt die leeren Nutzungsdauern aus der Tabelle; die Statuszeile nennt, wie viele Positionen einen Wert bekommen haben. Tragen Positionen bereits eine Nutzungsdauer, die von der Vorgabe abweicht, fragt das Programm mit ihrer Anzahl nach, bevor es sie überschreibt – ohne Bestätigung bleiben sie stehen. Geschrieben wird mit ''Speichern'' oder ''OK'' wie jede andere Eingabe.
+* '''Positionsart''' – der Zeileneditor hinter dem Stift führt die Klappliste ''Positionsart''. Sie zeigt die Zeilen der Technik dieser Position und danach die technikübergreifenden; die leere Zeile bedeutet ''Standardzeile der Technik''. Eine andere Positionsart setzt die Nutzungsdauer der Position auf den Wert dieser Zeile.
+* '''Herkunft der Nutzungsdauer''' – unter dem Feld steht in kleiner Schrift, woher der Wert stammt: ''Vorgabe der Technik'', ''AfA-Tabelle'' mit der Positionsart oder ''eigener Wert'', sobald der Wert von der Vorgabe abweicht. Ohne gepflegte Nutzungsdauer bleibt die Zeile leer; die Tafel [[#ersatz-restwert|Ersatz und Restwert]] nennt solche Positionen.
 
 == Kosten in der Speicherauslegung ==
 {{Anker|speicherauslegung-kosten}}
