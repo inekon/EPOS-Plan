@@ -1292,8 +1292,8 @@ Keine stillen Teilsummen
   Erzeugerkosten · je kW elektrisch · je kWp Leistung — die beiden Leistungsarten meinen dieselbe Größe. Die
   Herleitungszeile unter dem Betrag <span class="zk umg">umgesetzt U28</span>; der Summenfuß bleibt zweizeilig,
   weil die Komponente keine Zuschusszeile führt <span class="zk umg">umgesetzt U29</span>. Die Herleitung der
-  kWp aus Modulanzahl und Modulleistung <span class="zk vor">Vorschlag U35</span>; die Kennzahl „spezifisch
-  €/kWp" im Summenfuß <span class="zk vor">Vorschlag U34</span>; die Tafel „Ersatz und Restwert" steht in
+  kWp aus Modulanzahl und Modulleistung <span class="zk umg">umgesetzt U35</span>; die Kennzahl „spezifisch
+  €/kWp" im Summenfuß <span class="zk umg">umgesetzt U34</span>; die Tafel „Ersatz und Restwert" steht in
   Kategorie 1 <span class="zk vor">Vorschlag U30</span>.</p>
   <div class="fenster">
     <div class="f-band">Kostenverwaltung PV-Anlage 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
@@ -1321,7 +1321,7 @@ Keine stillen Teilsummen
             <td class="feld"><span class="f-eingabe links">PV-Module</span></td>
             <td class="feld"><span class="f-combo">je kWp Leistung</span></td>
             <td class="feld r"><span class="f-eingabe num">320,00</span> <span class="f-einheit">€/kWp</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 320,00 €/kWp × 300,00 kWp.">96.000,00<span class="klein">× 300,00 kWp · kWp der Anlage · Runde 1</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 320,00 €/kWp × 300,00 kWp.">96.000,00<span class="klein">× 300,00 kWp · kWp der Anlage · Runde 1 · 750 Module × 400 Wp = 300,00 kWp</span></td>
             <td class="feld r"><span class="f-eingabe num">25</span></td>
             <td><span class="f-zknopf" title="Eingabe Worst/Best Case">±</span></td>
           </tr>
@@ -1330,7 +1330,7 @@ Keine stillen Teilsummen
             <td class="feld"><span class="f-eingabe links">Wechselrichter</span></td>
             <td class="feld"><span class="f-combo">je kWp Leistung</span></td>
             <td class="feld r"><span class="f-eingabe num">80,00</span> <span class="f-einheit">€/kWp</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 80,00 €/kWp × 300,00 kWp.">24.000,00<span class="klein">× 300,00 kWp · kWp der Anlage · Runde 1</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 80,00 €/kWp × 300,00 kWp.">24.000,00<span class="klein">× 300,00 kWp · kWp der Anlage · Runde 1 · 750 Module × 400 Wp = 300,00 kWp</span></td>
             <td class="feld r"><span class="f-eingabe num">12</span></td>
             <td><span class="f-zknopf">±</span></td>
           </tr>
@@ -1339,7 +1339,7 @@ Keine stillen Teilsummen
             <td class="feld"><span class="f-eingabe links">Unterkonstruktion und Montage</span></td>
             <td class="feld"><span class="f-combo">je kWp Leistung</span></td>
             <td class="feld r"><span class="f-eingabe num">150,00</span> <span class="f-einheit">€/kWp</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 150,00 €/kWp × 300,00 kWp.">45.000,00<span class="klein">× 300,00 kWp · kWp der Anlage · Runde 1</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 150,00 €/kWp × 300,00 kWp.">45.000,00<span class="klein">× 300,00 kWp · kWp der Anlage · Runde 1 · 750 Module × 400 Wp = 300,00 kWp</span></td>
             <td class="feld r"><span class="f-eingabe num">25</span></td>
             <td><span class="f-zknopf">±</span></td>
           </tr>
@@ -1370,7 +1370,8 @@ Keine stillen Teilsummen
           </tr>
           <tr class="summe">
             <td colspan="7">Summe Investitionskosten netto: 192.150,00 €
-              <span style="font-weight:400;color:#5A5A5A;margin-left:14px">Summe brutto: 228.658,50 € (Umsatzsteuer 19 % aus dem Katalog)</span></td>
+              <span style="font-weight:400;color:#5A5A5A;margin-left:14px">Summe brutto: 228.658,50 € (Umsatzsteuer 19 % aus dem Katalog)</span>
+              <span style="font-weight:400;color:#5A5A5A;margin-left:14px">spezifisch 640,50 €/kWp</span></td>
           </tr>
         </tbody>
       </table>
@@ -1378,11 +1379,13 @@ Keine stillen Teilsummen
       <div class="f-info">Die Bezugsgröße der Zeilen „je kWp Leistung" ist die installierte Leistung der Anlage,
         gerechnet als Σ Modulleistung [W je Modul] × Modulanzahl ÷ 1000 (<span class="mono">PhotovoltaikCtrl.KwpSumme</span>,
         auf die Anlagenzeile eingegrenzt) — im Beispiel 750 Module × 400 Wp = 300,00 kWp. Die Zeile unter dem
-        Betrag nennt das Ergebnis und seine Herkunft („× 300,00 kWp · kWp der Anlage · Runde 1"), der
-        Werkzeugtipp die Rechnung („320,00 €/kWp × 300,00 kWp"). Die beiden Faktoren dahinter — Modulanzahl
-        und Modulleistung — zeigt der Dialog nicht; die Herleitungszeile mit beiden Größen
-        <span class="zk vor">Vorschlag U35</span> beugt dem vor, dass ein €/kWp-Satz je mit der Modulzahl
-        verwechselt wird (750 × 320 = 240.000 € statt 96.000 €). Fehlt der Anlage ein Modul mit Leistung, trägt
+        Betrag nennt Ergebnis, Herkunft und die beiden Faktoren („× 300,00 kWp · kWp der Anlage · Runde 1 ·
+        750 Module × 400 Wp = 300,00 kWp") <span class="zk umg">umgesetzt U35</span>, der
+        Werkzeugtipp die Rechnung („320,00 €/kWp × 300,00 kWp") und darunter dieselbe Faktorenzeile;
+        das beugt dem vor, dass ein €/kWp-Satz je mit der Modulzahl
+        verwechselt wird (750 × 320 = 240.000 € statt 96.000 €). Führt eine Anlage mehrere Stränge mit
+        verschiedenen Modultypen, nennt der Satz nur die Summe („Σ Module × Leistung = 390,00 kWp") — die
+        Glieder stünden sonst zu mehreren in EINER Rasterzeile. Fehlt der Anlage ein Modul mit Leistung, trägt
         der Betrag ein ⚠ und unter dem Raster steht „‚PV-Module‘: kein Gerät mit dieser Baugröße im Projekt".
         „% der Erzeugerkosten" (Runde 2) bemäße sich an der Hauptposition „PV-Module" — das Beispiel führt
         keine solche Zeile. Runde 3 nimmt die Stufe Anlage: alle Zeilen der PV-Anlage 1, 183.000,00 €.</div>
@@ -1392,7 +1395,8 @@ Keine stillen Teilsummen
         Zeile mit Kostenart Zuschuss. Ersatzbeschaffung und Restwert der Positionen — Wechselrichter n = 12 a
         → Ersatz im Jahr 12 mit 24.000,00 €, Restwert am Ende 39.800,00 € — rechnet der Dialog nicht vor; die
         Tafel dazu steht bei den Investitionskosten der Kategorie 1 <span class="zk vor">Vorschlag U30</span>.
-        Die Kennzahl „spezifisch 640,50 €/kWp" nennt der Summenfuß nicht <span class="zk vor">Vorschlag U34</span>.</div>
+        Unter den Summen steht die Kennzahl „spezifisch 640,50 €/kWp" — die Nettosumme je kWp installierter
+        Leistung <span class="zk umg">umgesetzt U34</span>; ohne gepflegte kWp entfällt sie.</div>
 
       <div class="f-knopfzeile"><span class="f-knopf">+ Position hinzufügen</span><span class="f-knopf">Aus Vorlage übernehmen…</span>
         <span class="f-knopf">Positionskatalog…</span></div>
@@ -1408,14 +1412,16 @@ Keine stillen Teilsummen
 
   <div class="zone">Dialog — Betriebskosten</div>
   <p class="eng">Die Optionsgruppe steht auf „Betriebskosten": Die Betragsspalte heißt „Betrag netto [€/a]", die
-  Spalte Nutzungsdauer bleibt leer, und die Klappliste Bemessung führt an der Photovoltaik drei Arten — fester
-  Jahresbetrag · % der Investition · je kWh elektrisch (der erzeugte Strom aus dem Lauf). Die Endenergie-Arten
+  Spalte Nutzungsdauer bleibt leer, und die Klappliste Bemessung führt an der Photovoltaik vier Arten — fester
+  Jahresbetrag · % der Investition · je kWh elektrisch (der erzeugte Strom aus dem Lauf) · je kWp Leistung. Die
+  Endenergie-Arten
   „% der Endenergiekosten" und „% des Endenergiebedarfs" stehen hier nicht: Der Endenergie-Auflöser liefert für
   die Photovoltaik keine Menge, und was keine Bezugsgröße haben kann, bietet die Klappliste nicht an. Die beiden
   Pflichtzeilen der Vorlage sind „Wartung / Inspektion PV-Anlage" und „Instandhaltung PV-Module / Gestell";
   Hilfsenergiekosten sind bei der Photovoltaik keine Pflicht und nur als Jahresbetrag erfassbar. Ein Wartungssatz
-  je kWp und Jahr — die branchenübliche Kennzahl — lässt sich im Betriebsraster nicht bemessen
-  <span class="zk vor">Vorschlag U33</span>; das Beispiel führt ihn als Jahresbetrag (12 €/kWp·a × 300 kWp).</p>
+  je kWp und Jahr — die branchenübliche Kennzahl — wird als „je kWp Leistung" bemessen, mit der Einheit
+  „€/kWp·a" hinter dem Satz <span class="zk umg">umgesetzt U33</span>; das Beispiel führt ihn als Jahresbetrag
+  (12 €/kWp·a × 300 kWp).</p>
   <div class="fenster">
     <div class="f-band">Kostenverwaltung PV-Anlage 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
@@ -1439,9 +1445,9 @@ Keine stillen Teilsummen
           <tr class="pflicht">
             <td><span class="f-zknopf" title="Position bearbeiten">✏️</span><span class="f-zknopf" title="Position löschen">🗑️</span></td>
             <td class="feld"><span class="f-eingabe links">Wartung / Inspektion PV-Anlage</span><span class="klein">Pflicht nach VDI 2067</span></td>
-            <td class="feld"><span class="f-combo">fester Jahresbetrag</span></td>
-            <td class="feld r"><span class="f-eingabe num">3.600,00</span> <span class="f-einheit">€/a</span></td>
-            <td class="r num gerechnet" title="Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.">🔗 3.600,00<span class="klein">Satz = Betrag</span></td>
+            <td class="feld"><span class="f-combo">je kWp Leistung</span></td>
+            <td class="feld r"><span class="f-eingabe num">12,00</span> <span class="f-einheit">€/kWp·a</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 12,00 €/kWp·a × 300,00 kWp.">3.600,00<span class="klein">× 300,00 kWp · kWp der Anlage · 750 Module × 400 Wp = 300,00 kWp</span></td>
             <td></td>
             <td><span class="f-zknopf" title="Eingabe Worst/Best Case">±</span></td>
           </tr>
@@ -1564,6 +1570,7 @@ Betrieb — keine Kaskade, keine Endenergie
   A  absolut   fester Jahresbetrag     Betrag = Satz
   B  Prozent   % der Investition       Betrag = Investitionssumme × Satz / 100     „× 192.150,00 € · Investitionssumme"
   C  Produkt   je kWh elektrisch       Betrag = erzeugter Strom [kWh] × Satz       „× 285.000,00 kWh · Lauf"
+  D  Produkt   je kWp Leistung         Betrag = kWp × Satz [€/kWp·a]               „× 300,00 kWp · kWp der Anlage"
   <span class="hin">Endenergie-Arten stehen nicht in der Klappliste: der EndenergieAufloeser liefert
   für die Photovoltaik null — Hilfsenergie nur als Jahresbetrag.</span>
 
@@ -1576,7 +1583,7 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
       <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th><th>Anmerkung</th></tr></thead>
       <tbody>
         <tr><td><span class="schritt">R1</span> Bezugsgröße</td><td class="formelzelle">750 × 400 ÷ 1000</td>
-            <td class="r num">300,00 kWp</td><td>KwpSumme der Anlagenzeile; der Dialog zeigt das Ergebnis, die Faktoren <span class="zk vor">Vorschlag U35</span></td></tr>
+            <td class="r num">300,00 kWp</td><td>KwpSumme der Anlagenzeile; die Herleitungszeile nennt das Ergebnis und die Faktoren <span class="zk umg">umgesetzt U35</span></td></tr>
         <tr><td><span class="schritt">R1</span> PV-Module</td><td class="formelzelle">300,00 × 320,00</td>
             <td class="r num">96.000,00 €</td><td>Hauptposition der Vorlage</td></tr>
         <tr><td><span class="schritt">R1</span> Wechselrichter</td><td class="formelzelle">300,00 × 80,00</td>
@@ -1591,8 +1598,8 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
             <td class="r num">9.150,00 €</td><td>Herleitungszeile „× 183.000,00 € · Stufe Anlage · Runde 3"</td></tr>
         <tr class="ergebnis"><td>I₀ — kapitalwertwirksam</td><td class="formelzelle">183.000,00 + 9.150,00</td>
             <td class="r num">192.150,00 €</td><td>Nettosumme des Summenfußes; brutto 228.658,50 €; 640,50 €/kWp</td></tr>
-        <tr><td><span class="schritt">B</span> Wartung</td><td class="formelzelle">12 €/kWp·a × 300 kWp, als Jahresbetrag erfasst</td>
-            <td class="r num">3.600,00 €/a</td><td>Pflicht; die Bemessung je kWp im Betriebsraster <span class="zk vor">Vorschlag U33</span></td></tr>
+        <tr><td><span class="schritt">B</span> Wartung</td><td class="formelzelle">12,00 × 300,00</td>
+            <td class="r num">3.600,00 €/a</td><td>Pflicht; Bemessung „je kWp Leistung", Satz 12,00 €/kWp·a <span class="zk umg">umgesetzt U33</span></td></tr>
         <tr><td><span class="schritt">B</span> Instandhaltung 0,50 %</td><td class="formelzelle">192.150,00 × 0,50 / 100</td>
             <td class="r num">960,75 €/a</td><td>Pflicht; „× 192.150,00 € · Investitionssumme"</td></tr>
         <tr><td><span class="schritt">B</span> Versicherung 0,25 %</td><td class="formelzelle">192.150,00 × 0,25 / 100</td>
@@ -1609,33 +1616,35 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
   <div class="zone">Beschriftungen und Ressourcenschlüssel</div>
   <p class="eng">Kopf, Kontextleiste, Reiter, Spalten, Abschlusszeile, Knöpfe und Fußleiste tragen dieselben
   Schlüssel wie in Kategorie 1; hier stehen die Schlüssel, die die Photovoltaik eigens braucht. Die als
-  <b>neu</b> gekennzeichneten gehören zu den Vorschlägen U33, U34 und U35.</p>
+  <b>neu</b> gekennzeichneten sind mit U33, U34 und U35 hinzugekommen.</p>
   <div class="tafel-huelle">
     <table class="tafel">
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
       <tbody>
         <tr><td>Bemessungen der Klappliste im Investitionsraster der Photovoltaik</td><td class="rs">BM_BETRAG · BM_P_INVESTITION · BM_P_ERZEUGER · BM_KW_ELEKTRISCH · BM_KWP</td><td>Zelle Bemessung (BemessungKatalog.Auswahl, Gewerk 3)</td></tr>
-        <tr><td>Bemessungen der Klappliste im Betriebsraster</td><td class="rs">BM_JAHRESBETRAG · BM_P_INVESTITION · BM_KWH_ELEKTRISCH</td><td>Zelle Bemessung</td></tr>
+        <tr><td>Bemessungen der Klappliste im Betriebsraster</td><td class="rs">BM_JAHRESBETRAG · BM_P_INVESTITION · BM_KWH_ELEKTRISCH · BM_KWP</td><td>Zelle Bemessung</td></tr>
         <tr><td>Herleitungszeile „× {0} · {1} · Runde {2}" · Herkunft „{0} der Anlage" mit der Größe „kWp" · „Stufe Anlage" · absolute Zeile „Satz = Betrag"</td><td class="rs">KDLG_HERL_BASIS · KDLG_HERK_ANLAGE · KDLG_GR_KWP · KDLG_HERK_STUFE_ANLAGE · KDLG_HERL_ABSOLUT</td><td>Zelle Betrag, Investitionskosten (U28)</td></tr>
         <tr><td>Herleitungszeile „× {0} · {1}" mit „Investitionssumme" bzw. „Lauf"</td><td class="rs">KDLG_HERL_BASIS_OHNE_RUNDE · KDLG_HERK_INVEST · KDLG_HERK_LAUF</td><td>Zelle Betrag, Betriebskosten (U28)</td></tr>
         <tr><td>Werkzeugtipps des Betragsfeldes · Gründe „kein Gerät mit dieser Baugröße im Projekt", „kein Simulationslauf"</td><td class="rs">KDLG_TT_BETRAG_BASIS_MENGE · KDLG_TT_BETRAG_BASIS_PROZENT · KDLG_TT_KETTE · KDLG_TT_OHNE_BASIS · KDLG_BASIS_GRUND_GERAET · KDLG_BASIS_GRUND_LAUF · KDLG_OHNE_BASIS_ZEILE</td><td>Zelle Betrag · Hinweiszeile unter dem Raster</td></tr>
         <tr><td>Pflichtpositionen „Wartung / Inspektion PV-Anlage" · „Instandhaltung PV-Module / Gestell" (Datenwerte der Vorlage) · Meldung beim Löschversuch</td><td class="rs">SchemaKatalog, Vorlagensaat Photovoltaik · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Rasterzeilen · Meldungszeile</td></tr>
         <tr><td>Summenfuß „Summe Investitionskosten netto: {0} €" · „Summe Betriebskosten netto: {0} €/a" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_INVEST · KDLG_SUMME_NETTO_BETRIEB · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Reiter „Ertrag/Bonus": Gruppenkopf, Erklärungssatz, Klappliste „Stammprojekt:", Knöpfe „PV-Vergütungsdialog öffnen…" · „Gesetzesparameter…"</td><td class="rs">KDLG_TAB_ERTRAG · KDLG_ERTRAG_G_PV · KDLG_ERTRAG_PV · KDLG_ERTRAG_PV_PROJEKT · KDLG_ERTRAG_PV_OEFFNEN · KDLG_ERTRAG_BTN_GESETZE</td><td>Reiterblatt Ertrag/Bonus</td></tr>
-        <tr><td>Herleitung „{0} Module × {1} Wp = {2} kWp" <b>neu</b></td><td class="rs">KDLG_HERL_KWP</td><td>Werkzeugtipp und Herleitungszeile der kWp-Zeilen (U35)</td></tr>
+        <tr><td>Herleitung „{0} Module × {1} Wp = {2} kWp" · bei mehreren Strängen „Σ Module × Leistung = {0} kWp" <b>neu</b></td><td class="rs">KDLG_HERL_KWP · KDLG_HERL_KWP_SUMME</td><td>Werkzeugtipp und Herleitungszeile der kWp-Zeilen (U35)</td></tr>
         <tr><td>Kennzahl „spezifisch {0} €/kWp" <b>neu</b></td><td class="rs">KDLG_KENN_EUR_KWP</td><td>Summenfuß der Photovoltaik (U34)</td></tr>
-        <tr><td>Bemessung „je kWp Leistung" mit Einheit „€/kWp·a" im Betriebsraster <b>neu</b></td><td class="rs">BM_KWP (FuerBetrieb)</td><td>Zelle Bemessung, Betriebskosten (U33)</td></tr>
+        <tr><td>Bemessung „je kWp Leistung" mit Einheit „€/kWp·a" im Betriebsraster <b>neu</b></td><td class="rs">BM_KWP (FuerBetrieb, EinheitBetrieb)</td><td>Zelle Bemessung, Betriebskosten (U33)</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="abnahme"><b>Abnahme:</b> I₀ = <span class="mono">192.150,00 €</span> ist die Nettosumme des
   Summenfußes, brutto <span class="mono">228.658,50 €</span>; Betriebskosten Jahr 1 =
-  <span class="mono">5.731,13 €/a</span>. Die Herleitungszeilen lauten „× 300,00 kWp · kWp der Anlage · Runde 1",
+  <span class="mono">5.731,13 €/a</span>. Die Herleitungszeilen lauten „× 300,00 kWp · kWp der Anlage · Runde 1 ·
+  750 Module × 400 Wp = 300,00 kWp",
   „× 183.000,00 € · Stufe Anlage · Runde 3" und auf der Betriebsseite „× 192.150,00 € · Investitionssumme"; die
   Bezugsgröße 300,00 kWp kommt aus derselben Rechnung wie Simulation und Vergütungsdialog. Die Klappliste
-  Bemessung führt an der Photovoltaik fünf Arten im Investitions- und drei im Betriebsraster, keine
-  Endenergie-Art; ohne Zuschusszeile bleibt der Summenfuß zweizeilig. Je Zeile sind Position, Bemessung, Satz
+  Bemessung führt an der Photovoltaik fünf Arten im Investitions- und vier im Betriebsraster, keine
+  Endenergie-Art; ohne Zuschusszeile bleibt der Summenfuß zweizeilig, die Kennzahl
+  <span class="mono">640,50 €/kWp</span> steht daneben. Je Zeile sind Position, Bemessung, Satz
   und Nutzungsdauer editierbar, der Betrag ist gerechnet und gesperrt. Die Degradation steht nicht in diesem
   Dialog.</div>
 </section>
@@ -2735,8 +2744,9 @@ Stromsteuer
           <span class="f-radio"><i></i></span><span class="f-lab" style="min-width:0">Volleinspeisung</span></div>
         <div class="f-info">Die rechnerische Leistung ist dieselbe kWp-Summe wie in Kategorie 3 (Modulleistung × Modulanzahl); ein
         Override ersetzt sie. Die Degradation wirkt nur in der Erlösreihe, nicht in der Stundensimulation; 0 = keine. Das Warnband
-        der Gruppe steht nur über 1 MW („über 1 MW: Ausschreibung — AW-Override nötig."); die zweite Warnung „über 2 MW: Stromsteuer
-        auf Eigenverbrauch prüfen." kann nicht erscheinen, weil die 1-MW-Prüfung zuerst greift <span class="zk vor">Vorschlag U36</span>.</div>
+        der Gruppe steht über 1 MW („über 1 MW: Ausschreibung — AW-Override nötig."); über 2 MW kommt die zweite Warnung
+        „über 2 MW: Stromsteuer auf Eigenverbrauch prüfen." daneben — zwei unabhängige Schwellen aus zwei Gesetzen, jede für
+        sich geprüft, beide Grenzen aus dem Gesetzeskatalog <span class="zk umg">umgesetzt U36</span>.</div>
       </div>
 
       <!-- Anzulegender Wert (PVW_G_AW) -->
@@ -4438,32 +4448,57 @@ Einstufung
             <td><span class="mono">EnergietraegerPreisCtrl.Preisbasen</span> ·
               <span class="mono">energy_project_settings</span></td>
             <td>Öffnen–Speichern–Öffnen hält die Preisbasis kWh, auch wenn der Brennstoff keine kWh-Regel führt</td></tr>
-        <tr><td class="mono">U33</td><td class="num">3</td>
+        <tr class="gestrichen"><td class="mono">U33</td><td class="num">3</td>
             <td>Bemessung „je kWp Leistung" auch im Betriebsraster der Photovoltaik (Wartungssatz in €/kWp·a — die
               branchenübliche Kennzahl); das Betriebsraster kennt nur fester Jahresbetrag, % der Investition und
               je kWh elektrisch</td>
             <td><span class="mono">BemessungKatalog.Alle</span> (BM_KWP, FuerBetrieb) ·
               <span class="mono">BetriebskostenCtrl.Betrag</span></td>
-            <td>Zahlenprobe: 12,00 €/kWp·a × 300,00 kWp = 3.600,00 €/a mit Herleitungszeile „× 300,00 kWp · kWp der Anlage"</td></tr>
-        <tr><td class="mono">U34</td><td class="num">3</td>
+            <td class="grund"><b>erledigt:</b> 12,00 €/kWp·a × 300,00 kWp = 3.600,00 €/a, Herleitungszeile
+              „× 300,00 kWp · kWp der Anlage". Ohne eine neue Formel: Der Rechenweg der Betriebskosten kennt die
+              Art längst (Menge × Satz), die Bezugsgröße kommt aus derselben kWp-Wahrheit wie auf der
+              Investitionsseite. Auf die Photovoltaik eingegrenzt wird die Auswahl von der Landkarte der
+              Bezugsgrößen, nicht von Hand — kein anderes Gewerk führt eine kWp-Größe. Die Einheit folgt dem
+              RASTER (<span class="mono">Info.EinheitBetrieb</span>): „€/kWp·a", weil eine Leistung kein Jahr
+              kennt; die Bezugsgröße bleibt „300,00 kWp". Die Herkunft der Betriebszeile ist nicht mehr pauschal
+              „Lauf" — führt das Gewerk zur Art eine Baugröße, ist es die Anlage. Referenzlauf byte-gleich: Die
+              Messlatte trägt keine einzige Zeile mit dieser Bemessung</td></tr>
+        <tr class="gestrichen"><td class="mono">U34</td><td class="num">3</td>
             <td>Kennzahl „spezifisch {0} €/kWp" im Summenfuß der Photovoltaik (Nettosumme ÷ kWp der Anlage)</td>
             <td><span class="mono">KostenSummenCtrl.FussText</span> · <span class="mono">Zeilenraster</span> ·
               <span class="mono">KDLG_KENN_EUR_KWP</span></td>
-            <td>Zahlenprobe: 192.150,00 € ÷ 300,00 kWp = 640,50 €/kWp; ohne kWp entfällt die Kennzahl</td></tr>
-        <tr><td class="mono">U35</td><td class="num">3</td>
+            <td class="grund"><b>erledigt:</b> 192.150,00 € ÷ 300,00 kWp = 640,50 €/kWp
+              (<span class="mono">KostenSummenCtrl.KennzahlText</span>). Reine Anzeige — der Zähler ist die
+              Nettosumme, die ohnehin unter dem Raster steht, der Nenner dieselbe kWp-Summe wie jede Bemessung
+              „je kWp". Leer außerhalb der Photovoltaik, ohne Projekt und ohne gepflegte kWp</td></tr>
+        <tr class="gestrichen"><td class="mono">U35</td><td class="num">3</td>
             <td>Herleitung der kWp mit beiden Größen — „{0} Module × {1} Wp = {2} kWp" — im Werkzeugtipp und in der
               Herleitungszeile der kWp-Zeilen; <span class="mono">BaugroesseHerleitung</span> liefert für die
               Photovoltaik leer, die Solarthermie hat ihre Herleitung</td>
             <td><span class="mono">TechnikPlanwertCtrl.BaugroesseHerleitung</span> ·
               <span class="mono">PhotovoltaikCtrl.KwpSumme</span> · <span class="mono">KDLG_HERL_KWP</span></td>
-            <td>Zahlenprobe: „750 Module × 400 Wp = 300,00 kWp"; ein Satz von 320,00 €/kWp ergibt 96.000,00 €, nie 240.000,00 €</td></tr>
-        <tr><td class="mono">U36</td><td class="num">6</td>
+            <td class="grund"><b>erledigt:</b> „750 Module × 400 Wp = 300,00 kWp", im Werkzeugtipp und in der
+              sichtbaren Herleitungszeile. Der Satz entsteht neben der Zahl, die er erklärt
+              (<span class="mono">PhotovoltaikCtrl.KwpHerleitung</span>), und gilt für beide Namen derselben
+              Größe („je kWp" und „je kW elektrisch"). Bei mehreren Strängen nennt er nur die Summe
+              („Σ Module × Leistung = 390,00 kWp") — dasselbe Muster wie die Solarthermie, gemessen an der
+              Ost/West-Anlage der Testdatenbank: Sie ist EINE Anlagenzeile mit EINEM Modultyp an einem
+              Wechselrichter, die lange Form entsteht dort gar nicht. Die sichtbare Zeile nennt seither JEDE
+              gerechnete Bezugsgröße, also auch die des Kollektorfelds</td></tr>
+        <tr class="gestrichen"><td class="mono">U36</td><td class="num">6</td>
             <td>Die Warnzeile „über 2 MW: Stromsteuer auf Eigenverbrauch prüfen." der Gruppe Anlage kann nie erscheinen:
               Die Prüfung auf 1 MW greift zuerst und deckt jede größere Anlage mit ab. Beide Warnungen sollen
               nebeneinander stehen können, sobald ihre Grenze überschritten ist</td>
             <td><span class="mono">PhotovoltaikVerguetungDialog.Anlagenwarnung</span> ·
               <span class="mono">PVW_WARN_AUSSCHREIBUNG</span> · <span class="mono">PVW_WARN_STROMSTEUER</span></td>
-            <td>bunit: 1.500 kWp zeigt die Ausschreibungswarnung, 2.500 kWp beide Warnungen</td></tr>
+            <td class="grund"><b>erledigt:</b> Zwei unabhängige Schwellen aus zwei Gesetzen, jede für sich
+              geprüft; über 2 MW stehen beide Banner nebeneinander
+              (<span class="mono">Anlagenwarnungen</span>). Dieselbe Prüfung steht im Kern nicht ein zweites
+              Mal — sie ist allein Sache des Dialogs. Ihre GRENZEN standen dort aber doppelt: 1000 und 2000 als
+              nackte Zahlen, obwohl der Gesetzeskatalog sie führt
+              (<span class="mono">EEG_AUSSCHREIBUNG_GRENZE_KW</span>, § 22 EEG ·
+              <span class="mono">STROMST_GRENZE_BEFREIUNG_9_1_3_KW</span>, § 9 Abs. 1 Nr. 3 StromStG); der
+              Dialog liest sie jetzt dort. bunit: 1.500 kWp eine Warnung, 2.500 kWp beide, 900 kWp keine</td></tr>
       </tbody>
     </table>
   </div>
