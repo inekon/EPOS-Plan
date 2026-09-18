@@ -1,7 +1,7 @@
 # 04 · Energiekosten
 
 **Dialog:** Energieträger-Dialog mit `BrennstoffBestandteile` und `StrompreisDetails` ·
-**Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#energie` · **Recht:** BEHG / EBeV 2030,
+**Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#energie` · **Recht:** BEHG / EBeV 2030,
 EU-ETS 2, GEG Anlage 4 und 9 · **Code:** `StromMatrix`, `KostenEmissionRechner`,
 `energy_carrier` · `energy_price` · `energy_project_settings` · **Konzept:** § 2.5, § 3.5, § 3.11
 

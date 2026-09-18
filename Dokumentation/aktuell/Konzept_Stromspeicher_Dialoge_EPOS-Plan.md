@@ -665,7 +665,7 @@ nicht nur ein Rechenknopf:
   Block „Wirtschaftliche Jahresprojektion" wandert nach 2 (dort, wo die Wiki-Seite ihn beschreibt).
 - **Schritt 2 Daten & Kosten:** Zeitreihen, Kostensätze, dazu Zins, Jahresprojektion, Projektlaufzeit,
   Restwert der Studie, Energie-Ausgleichswert (jedes Expertenfeld mit Erklärzeile aus 7.3).
-- **Schritt 4 Optimierung** (Aufbau wie das Mappenblatt; das hier ursprünglich genannte Mockup `stromspeicher-optimierung.html` lag nie im Repository — Befund 12.09.2026; das Mockup zu Kapitel 8 ist `Mockups/stromspeicher-optimierung-v2.html`):
+- **Schritt 4 Optimierung** (Aufbau wie das Mappenblatt; das hier ursprünglich genannte Mockup `stromspeicher-optimierung.html` lag nie im Repository — Befund 12.09.2026; das Mockup zu Kapitel 8 ist `Dokumentation/aktuell/Mockups/stromspeicher-optimierung-v2.html`):
   1. Kopf: **Ziel** (Kapitalwert gegenüber „ohne Speicher" — die Mappe kannte drei Zielgrößen, das
      Programm legt seit P1 eine fest) und die Wahl **„Nur die eingestellte Flotte bewerten"** oder
      **„Wirtschaftlich beste Größe suchen"**.
@@ -979,7 +979,7 @@ ist nicht berührt; die Referenzbasis R7 bleibt.
 - **Schritt 1:** Auswahlkästchen je Einheitenkarte, Knopf „Ausgewählte Einheiten in Projekt übernehmen" neben „Speicher hinzufügen",
   Rückfrage mit Anzahl, Erfolgsmeldung mit den angelegten Anlagen.
 - Formularraster-Regeln (iU8‑E‑2), Bedienblock fester Breite wie #233, Ablaufleiste unverändert. Das Mockup
-  `Mockups/stromspeicher-optimierung-v2.html` (Fassung vor dem Entscheid: Herkunftspillen, Methode an die Herkunft gebunden) wird auf
+  `Dokumentation/aktuell/Mockups/stromspeicher-optimierung-v2.html` (Fassung vor dem Entscheid: Herkunftspillen, Methode an die Herkunft gebunden) wird auf
   diesen Stand nachgezogen — Pillen fallen, jede Karte trägt den Schalter „variieren", unter S zeigt jede eingeschaltete Karte die
   Stückzahlzeile, unter G die Größenzeilen; Schritt 1 wird als zweite Ansicht mit Auswahl und Übernahmeknopf skizziert.
 

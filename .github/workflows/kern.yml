@@ -32,7 +32,7 @@ on:
   push:
     paths-ignore:
       - 'Projekte/Wiki/**'
-      - 'Mockups/**'
+      - 'Dokumentation/aktuell/Mockups/**'
       - 'Quellen/**'
       - 'Lizenzserver/**'
   pull_request:

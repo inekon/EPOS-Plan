@@ -1,4 +1,4 @@
-# Wirtschaftlichkeit und Kosten — Mockups und Rechenwege
+# Wirtschaftlichkeit und Kosten — Rechenwege und Zahlenprobe
 
 Führende Fassung: `../Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`.
 
@@ -7,8 +7,9 @@ Kostenkategorie den **dokumentierten Rechenweg** — Formel, Rechtsgrundlage, Co
 durchgerechnete Zahlenprobe an einem einzigen Beispielprojekt. Er ist die ausgelagerte Detailfassung
 von § 2.12 des konsolidierten Konzepts; maßgeblich bei Widerspruch ist das Konzept.
 
-Das Mockup beschreibt den Zustand **nach** der Umsetzung. Was davon noch nicht gebaut ist, steht
-gesammelt in seinem Anhang „Umsetzungsstand" — und nur dort.
+Das Mockup `../Mockups/Dialog_Formel_Zahlenprobe.html` beschreibt den Zustand **nach** der
+Umsetzung. Was davon noch nicht gebaut ist, steht gesammelt in seinem Anhang
+„Umsetzungsstand" — und nur dort.
 
 ## Struktur
 
@@ -16,10 +17,6 @@ gesammelt in seinem Anhang „Umsetzungsstand" — und nur dort.
 Wirtschaftlichkeit_Kosten/
 ├── LIESMICH.md                          diese Datei — Einstieg und Lesereihenfolge
 ├── Beispielprojekt.md                   die eine Zahlenquelle: Eingangsgrößen, Mengenbilanz, Preise
-├── Mockups/
-│   └── Dialog_Formel_Zahlenprobe.html   das eine Mockup: alle acht Kategorien mit Dialog,
-│                                     Berechnungsgrundlage, Berechnungserläuterung, Ergebnisseite
-│                                     und den beiden Anhängen; lokal im Browser öffnen
 └── Rechenweg/
     ├── 01_Investitionskosten_BHKW.md    Drei-Runden-Kaskade, Zuschussklemme
     ├── 02_Betriebskosten_BHKW.md        Pflichtpositionen, Hilfsenergie an der Endenergie
@@ -30,6 +27,11 @@ Wirtschaftlichkeit_Kosten/
     ├── 07_Erloesrubrik.md               Block A zahlungswirksam, Block B Ausweis, vermiedene Kosten
     └── 08_Wirtschaftlichkeit_Nutzungsdauer.md   Kapitalwert nach DIN EN 17463, Höfingen-Gegenprobe
 ```
+
+Die Mockups dieses Themas liegen mit allen übrigen unter `../Mockups/`: das konsolidierte
+`Dialog_Formel_Zahlenprobe.html` — alle acht Kategorien mit Dialog, Berechnungsgrundlage,
+Berechnungserläuterung, Ergebnisseite und den beiden Anhängen — und
+`Ergebnis_Bandbreite_Herkunft.html`; beide lokal im Browser öffnen.
 
 Die Mockup-Seite ist zugleich als Artifact veröffentlicht:
 [Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f).

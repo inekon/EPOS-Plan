@@ -1,7 +1,7 @@
 # 01 · Investitionskosten BHKW
 
 **Dialog:** `KostenKomponenteDialog` (`EPOS.UI/Dialoge/Kosten/`), Optionsgruppe „Investitionskosten" ·
-**Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#invest` · **Norm:** DIN EN 17463, 6.1 · **Code:**
+**Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#invest` · **Norm:** DIN EN 17463, 6.1 · **Code:**
 `BetriebskostenCtrl.Betrag`, `InvestKaskade`, `InvestSummeFuer`, Lesepunkt `Tab_ProjektWerte` mit
 `KategorieID = 1` · **Konzept:** § 3.2, § 3.3
 

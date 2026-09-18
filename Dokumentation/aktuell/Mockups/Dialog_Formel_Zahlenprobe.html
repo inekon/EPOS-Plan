@@ -1842,7 +1842,7 @@ Keine stillen Teilsummen
         darunter „<b>eigener Wert</b> 6,00 — Vorschlag 5,5667 ct/kWh — § 7 Abs. 1 …"; der Weg zurück ist der Knopf
         „Vorschlag übernehmen" in der Überlagerung. Graue Zeilen sind in der Anwendung Klapplisten
         <span class="zk vor">Vorschlag U22</span>; Staffelzeile und Warnband <span class="zk vor">Vorschlag U25</span>;
-        die Sätze mit vier Nachkommastellen <span class="zk vor">Vorschlag U26</span>.</div>
+        Herleitungszeile und Bericht mit vier Nachkommastellen <span class="zk vor">Vorschlag U26</span>.</div>
       </div>
 
       <!-- Gruppe 2: Projektweite KWK-Angaben (BHW_G2) -->
@@ -4123,12 +4123,13 @@ Einstufung
             <td>bunit: Staffelzeile nennt fünf Stufen aus dem Katalog; Warnband nur, wenn Vbh der Anlage über dem
               Deckel des ersten Jahres liegt</td></tr>
         <tr><td class="mono">U26</td><td class="num">5</td>
-            <td>Die Zahlenfelder Satz Einspeisung und Satz Eigenstrom zeigen zwei Nachkommastellen
-              (<span class="mono">Nachkommastellen="2"</span>): Der übernommene Vorschlag 5,5667 steht als „5,57" im
-              Feld, gerechnet wird mit 5,5667 — wer das Feld anfasst, verliert die dritte und vierte Stelle. Vier
-              Nachkommastellen, wie sie die Staffel des § 7 erzeugt</td>
-            <td><span class="mono">BhkwWirtschaftlichkeitDialog</span>, Gruppe 1b</td>
-            <td>bunit: Vorschlag übernommen ⇒ Feld zeigt „5,5667"; Eingabe „5,5667" bleibt wertgleich</td></tr>
+            <td>Die Zahlenfelder Satz Einspeisung und Satz Eigenstrom tragen vier Nachkommastellen, wie sie die
+              Staffel des § 7 erzeugt; der übernommene Vorschlag steht als „5,5667" im Feld und bleibt beim Anfassen
+              wertgleich. Offen ist allein die Anzeige daneben: Bericht und Herleitungszeile runden den Satz auf zwei
+              Stellen, so dass dieselbe Größe an zwei Orten verschieden aussieht</td>
+            <td><span class="mono">BhkwWirtschaftlichkeitDialog</span>, Gruppe 1b ·
+              <span class="mono">WirtschaftlichkeitZeilen</span></td>
+            <td>Berichtsprobe: Bericht und Herleitungszeile nennen den Satz mit denselben vier Stellen wie das Feld</td></tr>
         <tr><td class="mono">U27</td><td class="num">6</td>
             <td>Aufgeschlüsselte Vorschau des PV-Dialogs (Spoterlös, Marktprämie, § 51-Ausfall, DV-Entgelt, Kappung,
               Summe, vermiedener Netzbezug) statt der einen Zeile; dazu eine Herleitungszeile mit dem Jahresmarktwert
