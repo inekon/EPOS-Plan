@@ -1,20 +1,24 @@
 # 04 · Energiekosten
 
-**Dialog:** Energieträger-Dialog mit `BrennstoffBestandteile` und `StrompreisDetails` ·
+**Dialog:** `EnergietraegerDialog` (`EPOS.UI/Dialoge/Kosten/`) mit der Trägerkarte `EnergietraegerEinstellungen`,
+darin `BrennstoffBestandteile` bzw. `StrompreisDetails`; Hülle `EPOS.UI.Daten/Kosten/EnergietraegerHuelle.cs` ·
 **Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#energie` · **Recht:** BEHG / EBeV 2030,
 EU-ETS 2, GEG Anlage 4 und 9 · **Code:** `StromMatrix`, `KostenEmissionRechner`,
 `energy_carrier` · `energy_price` · `energy_project_settings` · **Konzept:** § 2.5, § 3.5, § 3.11
 
 ## Was der Dialog zeigt
 
-Die Trägerkarte steht in **vier Blöcken** ohne Reiter: A und B nebeneinander, darunter C und D
-über die volle Breite, dann die Preishistorie. Der Kopf nennt den Träger, die Zeile darunter
-Projekt und Preisstellung („… · Preise netto").
+Links die Trägerliste (Filterfeld, Gruppenköpfe, im Projektkontext „Aus Katalog übernehmen…" und
+„Entfernen"), rechts die Trägerkarte in **vier Blöcken** ohne Reiter: A und B nebeneinander, darunter C
+und D über die volle Breite, dann die Preishistorie. Der Kopf nennt den Träger („Energieträger — Erdgas"),
+die Zeile darunter Projekt und Preisstellung („… · Preise netto").
 
 **Block A · Preis und Heizwert:** Arbeitspreis 0,7560 €/m³ · Grundpreis 180 €/a · Leistungspreis
-0,00 €/(kW·a) samt Modus · H_i 10,50 · H_s 11,60 kWh/m³ · Effektivzeile „1 Nm³ = 10,50 kWh (H_i) /
-11,60 kWh (H_s)" · Herleitung „→ 0,0720 €/kWh · Umrechnungsfaktor H_s/H_i = 1,1048". Darunter die
-saisonalen Sätze, die Katalogübernahme und die Hinweise zu fehlenden oder geliehenen Werten.
+0,00 €/(kW·a) samt Modus · H_i 10,50 · H_s 11,60 kWh/m³ · Effektivzeile „effektiv: 1 m³ = 10,50 kWh (H_i) /
+11,60 kWh (H_s)" · Herleitung „→ 0,0720 €/kWh · Umrechnungsfaktor H_s/H_i = 1,1048" · Formelzeile
+„Formel: 0,76 €/m³ ÷ 10,50 kWh/m³ = 0,0720 €/kWh". Darunter die saisonalen Sätze (nur bei Trägern mit
+Leistungspreis), die Katalogübernahme (nur im Projektkontext) und die Hinweise zu fehlenden oder
+geliehenen Werten.
 
 **Block B · Preisbestandteile — Transparenz, ohne Preiswirkung** (beim Stromträger an derselben
 Stelle „Strompreis Details"). Er ist die Grundlage der Kohärenzprüfung gegen die
@@ -35,7 +39,7 @@ bleibt ct/kWh, und eine leise Zeile nennt den Grund.
 
 Die Summenzeile **prüft**: Weicht die Summe der aktiven Anteile um mehr als 0,0001 €/kWh vom
 Arbeitspreis ab, steht sie auf „≠" und nennt den Abstand. Darunter der nicht aufgeschlüsselte
-Rest, negativ in Warnfarbe.
+Rest („Nicht aufgeschlüsselter Rest: 0 ct/kWh"), negativ in Warnfarbe.
 
 Zwei Knöpfe: **„Schnellwahl aus Katalog…"** öffnet eine Überlagerung mit den Katalogsätzen — § 2,
 § 53a und § 54 EnergieStG sowie BEHG, je mit Herkunft, Jahr, Katalogwert (€/MWh bzw. €/t) und dem
@@ -62,6 +66,10 @@ belegt im Code nie dieselbe Variable (Konzept § 3.11).
 **Preisbasis** mit genau zwei Einträgen (Abrechnungseinheit und kWh, Faktor = Heizwert), die
 Basiseinheit und den Regelblock samt „Regel hinzufügen" und Verstoßbanner. Die Zeile darunter sagt,
 wozu er da ist: *Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert und Brennwert.*
+
+**Preishistorie:** Datumsfeld „Gültig ab" und Knopf „💾 Speichern" für die ganze Karte; je Preisstand eine
+Zeile mit Gültig ab · Heizwert [kWh/m³] · Basis Einheit · Arbeitspreis · Grundpreis [€/a] · Leistungspreis und
+dem Knopf „Löschen" mit Rückfrage. Ein neuer Stand entsteht beim Speichern, nicht beim Tippen.
 
 Einen Block „Aufschläge Netzbezug Strom" gibt es nicht — er ist durch die **Zerlegung** ersetzt:
 Die Anteile stecken im Arbeitspreis, sie kommen nicht auf ihn (Konzept § 3.5).

@@ -1636,13 +1636,20 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
 
 <!-- ======================= 4 ENERGIEKOSTEN ======================= -->
 <section class="kat" id="energie">
-  <div class="kat-kopf"><h2>4 · Energiekosten</h2><span class="kat-marke">energy_carrier · energy_project_settings</span></div>
+  <div class="kat-kopf"><h2>4 · Energiekosten</h2><span class="kat-marke">EnergietraegerDialog · Trägerkarte</span></div>
   <p class="kat-lead">Der Auftrag an diese Kategorie ist Transparenz: Energiesteuer und Stromsteuer stecken im
   Arbeitspreis, ohne dass man sie sieht. Der Bestandteil-Block macht sie sichtbar — ohne den Preis zu
   verändern, denn er ist die Grundlage der Kohärenzprüfung gegen die Steuerentlastungen. Auf der
   Ergebnisseite trägt die Zeile „Energiekosten" darunter je Anlage eine eingerückte davon-Zeile.</p>
 
   <div class="zone">Dialog — Energieträger</div>
+  <p class="eng">Gezeichnet ist die Trägerkarte im Projektkontext; links davon steht im Dialog die Trägerliste mit
+  Filterfeld, Gruppenköpfen und den Knöpfen „Aus Katalog übernehmen…" und „Entfernen". Beschriftungen sind die
+  Ressourcentexte der Anwendung, Feldarten die ihrer Bausteine: <b>editierbar</b> ist, was weiß mit dunklem Rand
+  steht — die Zahlenfelder und die Klappliste des Leistungspreises in Block A, je Bestandteil Schalter und
+  Zahlenfeld in Block B, Klappliste und Wertfelder in Block C, Klappliste, Regelraster und Schalter in Block D,
+  das Datumsfeld „Gültig ab" der Preishistorie; <b>gerechnet</b> sind die Herleitungs- und Kohärenzzeilen und die
+  Summenzeile der Emissionen. Die Klappliste der Bilanzierungsmethode ist im Katalogkontext gesperrt.</p>
   <div class="fenster">
     <div class="f-band">Energieträger — Erdgas<span class="f-sub">Musterprojekt Gewerbepark · Preise netto</span></div>
     <div class="f-leib">
@@ -1656,8 +1663,9 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
           <div class="f-zeile"><label>Leistungspreis</label><span class="f-eingabe num">0,00</span><span class="f-einheit">€ / kW · a</span><span class="f-combo">Jahresleistungspreis</span></div>
           <div class="f-zeile"><label>Heizwert H<sub>i</sub></label><span class="f-eingabe num">10,50</span><span class="f-einheit">kWh / m³</span></div>
           <div class="f-zeile"><label>Brennwert H<sub>s</sub></label><span class="f-eingabe num">11,60</span><span class="f-einheit">kWh / m³</span></div>
-          <div class="f-herleitung">1 m³ = <b>10,50 kWh</b> (H<sub>i</sub>) / <b>11,60 kWh</b> (H<sub>s</sub>)</div>
+          <div class="f-herleitung">effektiv: 1 m³ = <b>10,50 kWh</b> (H<sub>i</sub>) / <b>11,60 kWh</b> (H<sub>s</sub>)</div>
           <div class="f-herleitung">→ <b>0,0720 €/kWh</b> · Umrechnungsfaktor H<sub>s</sub>/H<sub>i</sub> = <b>1,1048</b></div>
+          <div class="f-herleitung">Formel: 0,76 €/m³ ÷ 10,50 kWh/m³ = <b>0,0720 €/kWh</b></div>
           <div class="f-knopfzeile"><span class="f-knopf">Saisonale Sätze…</span><span class="f-knopf">Katalogwerte übernehmen</span></div>
           <div class="f-info">Die Klappliste des Leistungspreises steht nur bei Trägern, die einen führen; die
           Saisonsätze sind zwölf Monatswerte und gehen dem konstanten Satz vor. Fehlt ein Preis, steht der
@@ -1677,6 +1685,7 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
           <div class="f-herleitung">Rest: <b>0,4371 €/m³</b> — Arbeitspreis abzüglich der übrigen aktiven Anteile
             <span class="f-knopf">Rest übernehmen</span></div>
           <div class="f-herleitung">Summe der Bestandteile <b>0,7560 €/m³</b> — deckungsgleich mit dem Arbeitspreis ✓</div>
+          <div class="f-herleitung">Nicht aufgeschlüsselter Rest: 0 ct/kWh</div>
           <div class="f-knopfzeile"><span class="f-knopf">Schnellwahl aus Katalog…</span><span class="f-knopf">In Arbeitspreis übernehmen</span></div>
           <div class="f-info">Weicht die Summe der aktiven Anteile um mehr als <b>0,0001 €/kWh</b> vom Arbeitspreis ab,
           steht dieselbe Zeile auf „≠" und nennt den Abstand; was der Preis darüber hinaus enthält, sagt die
@@ -1694,7 +1703,7 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
           <table class="f-raster">
             <thead><tr><th>Art</th><th class="r">Wert</th><th>Einheit</th><th>Quelle</th><th></th></tr></thead>
             <tbody>
-              <tr><td>Kohlendioxid</td><td class="r num">200,9</td><td>g/kWh</td>
+              <tr><td>Kohlendioxid</td><td class="feld r"><span class="f-eingabe num">200,9</span></td><td>g/kWh</td>
                   <td>EBeV 2030 Anlage 2 (H<sub>i</sub>)</td>
                   <td><span class="f-knopf">Katalog…</span></td></tr>
               <tr class="summe"><td>CO₂-Äquivalent gesamt (ausgewählte Arten)</td><td class="r num">200,90</td>
@@ -1727,9 +1736,11 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
       <!-- Preishistorie -->
       <div class="f-gruppe" style="margin-top:14px">
         <div class="f-titel">Preishistorie</div>
-        <div class="f-info">Je Preisstand eine Zeile — Gültig ab · Basis Einheit · Arbeitspreis · Grundpreis ·
-        Leistungspreis · Heizwert [kWh/m³] —, je Zeile der Knopf „Löschen" mit Rückfrage. Ein neuer Stand entsteht
-        beim Speichern, nicht beim Tippen.</div>
+        <div class="f-zeile eng"><label>Gültig ab</label><span class="f-eingabe links num">18.09.2026</span><span class="f-knopf primaer">💾 Speichern</span></div>
+        <div class="f-info">Je Preisstand eine Zeile — Gültig ab · Heizwert [kWh/m³] · Basis Einheit · Arbeitspreis ·
+        Grundpreis [€/a] · Leistungspreis —, dahinter je Zeile der Knopf „Löschen" mit Rückfrage „Preisstand vom … löschen?".
+        Ein neuer Stand entsteht beim Speichern mit dem Datum des Feldes, nicht beim Tippen; der Speichern-Knopf der
+        Gruppe schreibt die ganze Karte, wie „Speichern" in der Fußleiste.</div>
       </div>
     </div>
     <div class="f-fuss"><span class="f-knopf">Abbrechen</span><span class="f-knopf">Speichern</span><span class="f-knopf primaer">OK</span></div>
@@ -1934,7 +1945,11 @@ Keine stillen Teilsummen
         <tr><td>davon-Zeile „davon {0} [€/a]"</td><td class="rs">WIRT_ENK_DAVON</td><td>Zeilenkatalog</td></tr>
         <tr><td>davon-Zeile „davon Netzbezug Strom [€/a]"</td><td class="rs">WIRT_ENK_DAVON_NETZ</td><td>Zeilenkatalog</td></tr>
         <tr><td>Herleitung „{0} MWh × {1} €/kWh = {2} €"</td><td class="rs">WIRT_ENK_HERLEITUNG</td><td>Nachweisumschlag der Zeile (vorhanden)</td></tr>
+        <tr><td>Titel „Energieträger — {0}" · Kontextzeile „{0} · Preise netto" · Statuszusatz „ — gespeichert {0} Uhr"</td><td class="rs">ETV_TITEL_TRAEGER · ETV_KONTEXT_NETTO · ETV_KONTEXT_KATALOG_NETTO</td><td>Kopf des Dialogs</td></tr>
         <tr><td>Blockköpfe A, C und D der Trägerkarte</td><td class="rs">ETV_BLOCK_PREIS · ETV_BLOCK_EMISSIONEN · ETV_BLOCK_EINHEITEN</td><td>Trägerkarte, alle Träger</td></tr>
+        <tr><td>Felder des Blocks A: Arbeitspreis, Grundpreis, Leistungspreis mit Modus, Heizwert, Brennwert · Effektivzeile · Preiszeile · Formelzeile · Knöpfe „Saisonale Sätze…", „Katalogwerte übernehmen"</td><td class="rs">ETV_LBL_ARBEITSPREIS · ETV_LBL_GRUNDPREIS · ETV_LBL_LEISTUNGSPREIS · KDLG_LP_MODUS_JAHR · KDLG_LP_MODUS_MONAT · ETV_LBL_HEIZWERT · ETV_LBL_BRENNWERT · KOSTEN_UMRECHNUNG_EFFEKTIV · ETV_HERLEITUNG_PREIS · ETV_HERLEITUNG_HSHI · ETV_LBL_FORMEL · ETV_FORMEL_JE_EINHEIT · KDLG_LP_SAISON · ETV_BTN_KATALOGWERTE</td><td>Block A</td></tr>
+        <tr><td>Bestandteile des Blocks B · Restvorschlag „Rest: {0} {1}" mit Knopf · Restzeile „Nicht aufgeschlüsselter Rest: {0} ct/kWh" · Herleitungen „{0} {1} (Hs)" und „{0} €/t × {1} kg/{2}"</td><td class="rs">BB_KOMP_ENERGIESTEUER · BB_KOMP_CO2 · BB_KOMP_NETZENTGELT · BB_KOMP_VERTRIEB · BB_REST_VORSCHLAG · BB_BTN_REST · BB_REST · BB_HERLEITUNG_STEUER · BB_HERLEITUNG_CO2</td><td>Block B</td></tr>
+        <tr><td>Preishistorie: Gruppenkopf, Datumsfeld „Gültig ab", Knopf „💾 Speichern", Spalten, Knopf „Löschen" mit Rückfrage</td><td class="rs">ETV_TITEL_HISTORIE · ETV_LBL_GUELTIG_AB · ETV_BTN_SPEICHERN · ETV_SP_GUELTIG_AB · ETV_SP_HEIZWERT_EINHEIT · ETV_SP_BASISEINHEIT · ETV_SP_ARBEITSPREIS · ETV_SP_GRUNDPREIS · ETV_SP_LEISTUNGSPREIS · ETV_HISTORIE_LOESCHEN · ETV_HISTORIE_LOESCHFRAGE</td><td>Preishistorie</td></tr>
         <tr><td>Blockkopf „Preisbestandteile — Transparenz, ohne Preiswirkung" bzw. „Strompreis Details"</td><td class="rs">BB_GRUPPE_BESTANDTEILE · PREIS_GRUPPE_DETAILS</td><td>Block B, Brennstoff bzw. Strom</td></tr>
         <tr><td>Knöpfe „Schnellwahl aus Katalog…" und „In Arbeitspreis übernehmen"</td><td class="rs">BB_BTN_SCHNELLWAHL · BB_BTN_IN_ARBEITSPREIS</td><td>Fuß des Blocks B</td></tr>
         <tr><td>Summenzeile „Summe der Bestandteile {0} {1} — deckungsgleich / weicht um {2} ab"</td><td class="rs">BB_KOHAERENZ_OK · BB_KOHAERENZ_AB</td><td>Block B, über den Knöpfen</td></tr>
@@ -1949,7 +1964,10 @@ Keine stillen Teilsummen
   Variante 3 sind <span class="mono">384.811,20 €/a</span>, die BEHG-Reihe beginnt mit
   <span class="mono">56.699,50 €/a</span>. Ein ungepflegter Anteil trägt 0 bei — zwei Prüffälle pinnen
   das, einer gegen Projekt 1030. Nach dem Neuladen eines gespeicherten Laufs stehen die drei
-  davon-Zeilen wieder da.</div>
+  davon-Zeilen wieder da. Die Trägerkarte führt die vier Blöcke und die Preishistorie des Dialogs mit seinen
+  Feldern: fünf Zahlenfelder und eine Klappliste in Block A, je Bestandteil Schalter und Zahlenfeld in Block B,
+  Klappliste und Wertfelder in Block C, Klappliste und Regelraster in Block D, Datumsfeld und Speichern in der
+  Preishistorie; Effektiv-, Preis-, Formel-, Kohärenz- und Restzeile sind gerechnet.</div>
 </section>
 
 <!-- ======================= 5 VERGÜTUNGEN BHKW ======================= -->
