@@ -66,8 +66,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new WirtschaftlichkeitParameter().Zinssatz, p.Zinssatz, 9);
             Assert.Equal(new WirtschaftlichkeitParameter().Betrachtungszeitraum,
                          p.Betrachtungszeitraum);
-            Assert.Equal(new WirtschaftlichkeitParameter().KwkgVbhKontingent,
-                         p.KwkgVbhKontingent, 9);
+            Assert.Equal(new WirtschaftlichkeitParameter().KwkgStichtag, p.KwkgStichtag);
 
             // Wiederholbar: Ein zweiter Lauf findet nichts mehr.
             Assert.Equal(0, VerguetungUmzug.ZaehlungUmzug());

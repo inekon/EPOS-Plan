@@ -480,8 +480,17 @@ namespace WindowsFormsApplication1
                 }
 
                 // Positionen ohne (gueltigen) Anlagenbezug, in zwei Klassen
-                // (Ä24): nicht anlagenfaehige Erfassungsgruppen erscheinen als
-                // gewoehnliche Zeile, anlagenfaehige gelb.
+                // (Ä24): Erfassungsgruppen und anlagenfaehige Gruppen ohne
+                // gueltige Zuordnung.
+                //
+                // ANWENDERENTSCHEID K-WZ-1: Beide Klassen tragen jetzt eine
+                // Kennzeichnung und den Papierkorb - vorher stand eine
+                // Erfassungsgruppe als gewoehnliche Zeile unter der Ueberschrift
+                // "Anlagenkomponenten", und der Anwender konnte sie weder einordnen
+                // noch entfernen. Die beiden Texte bleiben getrennt, weil die Lage
+                // eine andere ist: Eine Erfassungsgruppe HAT keine Anlage (sie ist
+                // keine), eine gelbe Zeile hat ihre VERLOREN. Welche Zeile welche
+                // ist, entscheidet der Kern (KostenVorlagenCtrl.IstErfassungsgruppe).
                 var reste = new List<string>();
                 foreach (string k in investLose.Keys) reste.Add(k);
                 foreach (string k in betriebLose.Keys) if (!reste.Contains(k)) reste.Add(k);
@@ -492,21 +501,30 @@ namespace WindowsFormsApplication1
                     double invest, bWert;
                     bool hatI = investLose.TryGetValue(k, out invest);
                     bool hatB = betriebLose.TryGetValue(k, out bWert);
-                    if (KostenVorlagenCtrl.IstWaehlbar(k)) { resteGelb.Add(k); continue; }
+                    if (!KostenVorlagenCtrl.IstErfassungsgruppe(k)) { resteGelb.Add(k); continue; }
                     if (hatI) summe += invest;
                     if (hatB) summeBetrieb += bWert;
 
                     var z = new KostenZeile
                     {
                         Schluessel = schluessel++,
-                        Anzeige = k,
+                        Anzeige = string.Format(
+                            T("BK_KOSTEN_ERFASSUNGSGRUPPE", "{0} — Erfassungsgruppe (ohne Anlage)"), k),
                         Summe = hatI ? invest.ToString("N2", kultur) : "—",
-                        Betrieb = hatB ? bWert.ToString("N2", kultur) : "—"
+                        Betrieb = hatB ? bWert.ToString("N2", kultur) : "—",
+                        Art = ZeilenArt.OhneZuordnung,
+                        Loeschbar = true,
+                        Kurztext = T("BK_KOSTEN_ERFASSUNGSGRUPPE_HINT",
+                            "Diese Gruppe ist keiner Anlage zugeordnet — sie sammelt Kosten, die zu keinem Gerät gehören. Sie rechnet in der Wirtschaftlichkeit mit; der Papierkorb löscht sie nach Rückfrage, bearbeiten lässt sie sich in der Kostenverwaltung.")
                     };
+                    _loseKomponenten[z.Schluessel] = k;   // derselbe Loeschweg wie gelb
                     var gruppe = new ProjektEnergietraegerCtrl.AnlagenEintrag();
                     gruppe.Komponente = k;   // AnlageId 0: Verwaltung oeffnet die Komponente
                     _anlagen[z.Schluessel] = gruppe;
                     zeilen.Add(z);
+                    // NICHT in _nichtVerbaut: Die Statuszeile meldet dort
+                    // "Kostenpositionen ohne verbaute Anlage" - eine Erfassungsgruppe
+                    // hat nie eine gehabt, und die Meldung waere eine Fehlanzeige.
                 }
 
                 foreach (string k in resteGelb)

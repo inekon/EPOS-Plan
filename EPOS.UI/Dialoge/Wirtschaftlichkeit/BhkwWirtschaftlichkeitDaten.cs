@@ -371,26 +371,13 @@ public sealed class BhkwVorgabenstand
     /// </summary>
     public double? EinspeiseverguetungKwk;
 
-    /// <summary>Bonus Eigenstrom [ct/kWh] (2.1).</summary>
-    public double KwkgBonus;
-
-    /// <summary>Bonus Einspeisung [ct/kWh] (2.2).</summary>
-    public double KwkgBonusEinspeisung;
-
-    /// <summary>Vbh-Deckel-Override [h/a] (2.3).</summary>
-    public double KwkgVbhJahresdeckel;
-
-    /// <summary>Vbh-Kontingent gesamt [h] (2.4).</summary>
-    public double KwkgVbhKontingent;
+    // ETAPPE BK1a: Die vier KWKG-Rechengrößen des Projekts und die zwei
+    // Einordnungen (Tatbestand, Anlagenart) sind mit Schemaschritt 90 entfallen —
+    // sie gehören der Anlage. Der Rundtrip führt sie deshalb nicht mehr; ein Feld
+    // der Maske ändert sich dadurch nicht, sie standen hier nur zum Vergleich.
 
     /// <summary>Abschlag Negativstunden [%] (2.5).</summary>
     public double KwkgAbschlagNegativ;
-
-    /// <summary>Eigenstrom-Tatbestand § 6 Abs. 3 (2.6); leer = nicht angegeben.</summary>
-    public string KwkgTatbestand = "";
-
-    /// <summary>Anlagenart § 8 (2.7); leer = nicht angegeben.</summary>
-    public string KwkgAnlagenart = "";
 
     /// <summary>Anteil Neuherstellungskosten [%] (2.8).</summary>
     public double KwkgKostenanteil;
@@ -430,13 +417,7 @@ public sealed class BhkwVorgabenstand
     public static BhkwVorgabenstand Aus(WirtschaftlichkeitParameter p) => new BhkwVorgabenstand
     {
         EinspeiseverguetungKwk = p.EinspeiseverguetungKWK,
-        KwkgBonus = p.KwkgBonus,
-        KwkgBonusEinspeisung = p.KwkgBonusEinspeisung,
-        KwkgVbhJahresdeckel = p.KwkgVbhJahresdeckel,
-        KwkgVbhKontingent = p.KwkgVbhKontingent,
         KwkgAbschlagNegativ = p.KwkgAbschlagNegativ,
-        KwkgTatbestand = p.KwkgTatbestand ?? "",
-        KwkgAnlagenart = p.KwkgAnlagenart ?? "",
         KwkgKostenanteil = p.KwkgKostenanteil,
         KwkgPauschalmodus = p.KwkgPauschalmodus,
         KwkgStichtag = p.KwkgStichtag,
@@ -460,13 +441,7 @@ public sealed class BhkwVorgabenstand
     /// </summary>
     public bool Gleicht(WirtschaftlichkeitParameter p)
         => EinspeiseverguetungKwk == p.EinspeiseverguetungKWK
-        && KwkgBonus == p.KwkgBonus
-        && KwkgBonusEinspeisung == p.KwkgBonusEinspeisung
-        && KwkgVbhJahresdeckel == p.KwkgVbhJahresdeckel
-        && KwkgVbhKontingent == p.KwkgVbhKontingent
         && KwkgAbschlagNegativ == p.KwkgAbschlagNegativ
-        && KwkgTatbestand == (p.KwkgTatbestand ?? "")
-        && KwkgAnlagenart == (p.KwkgAnlagenart ?? "")
         && KwkgKostenanteil == p.KwkgKostenanteil
         && KwkgPauschalmodus == p.KwkgPauschalmodus
         && KwkgStichtag == p.KwkgStichtag
@@ -483,13 +458,7 @@ public sealed class BhkwVorgabenstand
     public void Anwenden(WirtschaftlichkeitParameter p)
     {
         p.EinspeiseverguetungKWK = EinspeiseverguetungKwk;
-        p.KwkgBonus = KwkgBonus;
-        p.KwkgBonusEinspeisung = KwkgBonusEinspeisung;
-        p.KwkgVbhJahresdeckel = KwkgVbhJahresdeckel;
-        p.KwkgVbhKontingent = KwkgVbhKontingent;
         p.KwkgAbschlagNegativ = KwkgAbschlagNegativ;
-        p.KwkgTatbestand = KwkgTatbestand;
-        p.KwkgAnlagenart = KwkgAnlagenart;
         p.KwkgKostenanteil = KwkgKostenanteil;
         p.KwkgPauschalmodus = KwkgPauschalmodus;
         p.KwkgStichtag = KwkgStichtag;

@@ -389,6 +389,31 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Stellt die sechs KWKG-Projektspalten wieder her, die Schemaschritt 90 entfernt
+        /// hat - AUSSCHLIESSLICH fuer den Nachweis dieses Schrittes.
+        ///
+        /// <para><b>Wozu.</b> Die Arbeitskopie steht bereits auf dem Zielstand; ohne die
+        /// Spalten haette der Nachweis nichts zu entfernen. Der Fall stellt den
+        /// Ausgangszustand deshalb selbst her. Die Spalten entstehen auf der Arbeitskopie
+        /// eines einzelnen Prueflaufs und verschwinden mit ihr; die Quelldatei bleibt
+        /// unberuehrt.</para>
+        ///
+        /// <para>Die Namen kommen aus <see cref="KwkgProjektaltspalten"/>, derselben
+        /// Quelle, aus der sich der Schritt bedient, der sie entfernt. Typen wie in den
+        /// Schritten 19/20 (Zahlen) und 28 (Texte).</para>
+        /// </summary>
+        public static void AltspaltenKwkgProjektWiederherstellen()
+        {
+            string t = KwkgProjektaltspalten.TABELLE;
+            SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.SPALTE_BONUS, "DOUBLE"));
+            SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.SPALTE_BONUS_EINSPEISUNG, "DOUBLE"));
+            SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.SPALTE_KONTINGENT, "DOUBLE"));
+            SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.SPALTE_JAHRESDECKEL, "DOUBLE"));
+            SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.SPALTE_TATBESTAND, "TEXT(30)"));
+            SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.SPALTE_ANLAGENART, "TEXT(20)"));
+        }
+
+        /// <summary>
         /// Sucht <c>Referenzlaeufe/Kenndaten_Test.sqlite</c> aufwaerts vom Laufordner.
         /// Der Testlauf steht in <c>bin/Release/net10.0</c>, die Datei in der Repo-Wurzel -
         /// wie tief das genau ist, haengt an der Bauart und wird deshalb nicht gezaehlt.

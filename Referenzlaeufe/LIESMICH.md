@@ -150,19 +150,40 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-18_R9_Kesselbrennstoff/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 89** — die Testdatenbank steht auf demselben Stand, die Basis ist darauf
-eingefroren).
+(**Schemastand 90** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
+Stand 90, und Schritt 90 ist ergebnisneutral, gemessen).
+Schritt 90 räumt hinter Schritt 89 auf und hat **zwei Teile**. Der **DDL-Teil** entfernt aus
+`Tab_ProjektWirtschaftlichkeit` die sechs KWKG-Spalten `KWKG_Bonus`,
+`KWKG_Bonus_Einspeisung`, `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`,
+`KWKG_Tatbestand` und `KWKG_Anlagenart`; seit Schritt 89 und dem Umbau des Ersatzwegs auf
+eine leistungsgewichtete virtuelle Gesamtanlage liest sie kein Rechenweg mehr.
+`KWKG_Kostenanteil` bleibt samt Dialogfeld stehen (Anwenderentscheid), ebenso Stichtag,
+Inbetriebnahme, Pauschalmodus und Abschlag Negativstunden. **Ergebnisneutral, gemessen
+auf dem Ersatzweg** (Projekt 1030, Modulzuordnung absichtlich verstellt): Der KWK-Zuschlag
+im Jahr 1 beträgt vor und nach dem Umbau **7.315,948722 €**, der Kapitalwert
+**−21.895.377,339395 €**, und die volle Reihe t = 1…20 ist zahlengleich. **Eine Ausnahme
+ist abgenommen:** Leert man das Vbh-Kontingent an Projekt UND Anlagen, rechnete der
+Ersatzweg bisher still mit dem Feldvorgabewert 30.000 h und lieferte dieselben
+7.315,948722 €; jetzt leitet er 0 h mit Begründung ab — 0,00 € Zuschlag und
+−21.954.815,753214 € Kapitalwert. Der **DML-Teil** entfernt aus `Tab_ProjektWerte` die
+Nullzeilen der drei nicht anlagenfähigen Erfassungsgruppen (Wärmezentrale, Bauliche
+Anlagen, Stromeinspeisung): Hauptkomponentenzeilen der früheren Kostenmaske, Gruppe
+„Allgemein", ausnahmslos 0,00. Getroffen hat er **elf Zeilen** — 1018 eine, 1019 sechs,
+1031 eine, 1032 drei (Kategorien 1 und 2); eine Gruppe mit irgendeiner Position mit Wert
+bleibt vollständig stehen. Keines der vier Projekte ist CI- oder Basisprojekt, und die
+Basis führt keine Kostengröße — der Lauf ist auch nach Schritt 90 für alle fünf
+CI-Projekte byte-gleich.
 **Ohne eigenen Schritt** trägt die Testdatenbank zusätzlich die Spalte
 `Nachweis_Json` an `Tab_ErgebnisWirtschaftlichkeit` — eine **Konservenspalte**: Diese
 Ergebnistabelle ist keine Schematabelle, sie entsteht und wächst erst beim ersten
 Programmlauf über `WirtschaftlichkeitCtrl.SpalteSicher`. Der SQL-Dialektprüfer löst das
 INSERT des Ergebnisses aber gegen genau diese Datei auf und meldete ohne die Spalte eine
 Fundstelle, die in der Anwendung keine ist; angelegt wird sie deshalb von
-`Werkzeuge/Testdatenbankschema` (leer, kein Wert, `Zielversion` bleibt 89), und der Lauf
-ist auch danach byte-gleich.
-Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
-**1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht
-getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
+`Werkzeuge/Testdatenbankschema` (leer, kein Wert, ohne eigene `Zielversion`), und der Lauf
+ist auch danach für alle fünf CI-Projekte byte-gleich. Gegen
+diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
+1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung
+zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
 
 > **Anlass: der Anwenderentscheid vom 18.09.2026, „Ja, neue Basis einfrieren".** Auftrag #331
 > hat zum Befund **`B-1`** der Wirtschaftlichkeit den Brennstoffverbrauch des Heizkessels aus

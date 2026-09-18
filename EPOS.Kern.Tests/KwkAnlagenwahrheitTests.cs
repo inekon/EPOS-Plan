@@ -18,7 +18,8 @@ namespace EPOS.Kern.Tests
     /// Kontingent an IHRER Anlagenart; eine Kaskade aus zwei verschieden alten Modulen
     /// war so nicht abbildbar. Dazu stand der Aktivierungsschalter
     /// <c>p.KwkgBonus &gt; 0 || p.KwkgBonusEinspeisung &gt; 0</c> an SECHS Stellen im
-    /// Haus.</para>
+    /// Haus. Die elf Projektspalten sind mit Schemaschritt 90 gefallen, soweit sie
+    /// eine Rechengröße trugen.</para>
     ///
     /// <para><b>Was hier festgehalten wird.</b> Fünf Dinge:
     /// <list type="number">
@@ -66,6 +67,17 @@ namespace EPOS.Kern.Tests
         /// </summary>
         private const double ZUSCHLAG_JAHR1_EUR = 7315.956634;
 
+        /// <summary>Eigenstrom-Satz, den Schritt 89 aus der Projektvorgabe von
+        /// <see cref="PROJEKT"/> in jede BHKW-Anlagenzeile geschrieben hat
+        /// [ct/kWh].</summary>
+        private const double SATZ_EIGEN_CT = 4.0;
+
+        /// <summary>Ebenso der Einspeisesatz [ct/kWh].</summary>
+        private const double SATZ_EINSP_CT = 8.0;
+
+        /// <summary>Ebenso das Vbh-Kontingent [h].</summary>
+        private const double KONTINGENT_H = 30000.0;
+
         // =================================================================
         // 1 — Schemaschritt 89
         // =================================================================
@@ -96,7 +108,7 @@ namespace EPOS.Kern.Tests
             // § 6 Abs. 3, die ihn trägt.
             Assert.Contains(KwkAnlagenwahrheit.Paare,
                 x => x.Anlage == SchemaKatalog.SPALTE_EA_KWKG_EIGENFALL &&
-                     x.Projekt == SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND);
+                     x.Projekt == KwkgProjektaltspalten.SPALTE_TATBESTAND);
         }
 
         /// <summary>Die Testdatenbank führt die neue Spalte — das Werkzeug
@@ -117,8 +129,17 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Die Vorgaben sind unten angekommen.</b> Beide BHKW-Module des Projekts
-        /// tragen jetzt die Sätze und das Kontingent, die vorher nur am Projekt
+        /// tragen die Sätze und das Kontingent, die vor Schritt 89 nur am Projekt
         /// standen — und zwar wertgleich.
+        ///
+        /// <para><b>Umgestellt mit Schemaschritt 90:</b> Die vier Projektspalten,
+        /// gegen die dieser Fall bis dahin verglich, gibt es nicht mehr
+        /// (<see cref="KwkgProjektaltspalten"/>). Die Zusicherung liegt seither an
+        /// <c>Tab_Energieanlagen</c> und misst gegen die Werte, die Projekt
+        /// <see cref="PROJEKT"/> vor dem Schritt trug — sie stehen hier als
+        /// Konstanten, damit ein Eingriff in den Datenschritt weiterhin auffällt.
+        /// Stichtag und Inbetriebnahme des Projekts bestehen fort und werden
+        /// deshalb weiter gegen den Parametersatz gehalten.</para>
         /// </summary>
         [Fact]
         public void Die_Projektvorgaben_stehen_an_den_Anlagen()
@@ -132,9 +153,9 @@ namespace EPOS.Kern.Tests
             WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(PROJEKT);
             foreach (KwkgAnlagenAngabe a in anlagen.Where(x => x.IdProjekt == PROJEKT))
             {
-                Assert.Equal(p.KwkgBonus, a.SatzEigenCt);
-                Assert.Equal(p.KwkgBonusEinspeisung, a.SatzEinspCt);
-                Assert.Equal(p.KwkgVbhKontingent, a.VbhKontingent);
+                Assert.Equal(SATZ_EIGEN_CT, a.SatzEigenCt);
+                Assert.Equal(SATZ_EINSP_CT, a.SatzEinspCt);
+                Assert.Equal(KONTINGENT_H, a.VbhKontingent);
                 Assert.Equal(p.KwkgStichtag, a.Stichtag);
                 Assert.Equal(p.KwkgInbetriebnahme, a.Inbetriebnahme);
             }
@@ -197,11 +218,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Gegenprobe zum alten Schalter.</b> Ein Projekt, dessen PROJEKTsätze
-        /// stehen, dessen ANLAGEN aber keinen Satz führen, ist NICHT aktiv — der alte
-        /// Ausdruck <c>p.KwkgBonus &gt; 0 || p.KwkgBonusEinspeisung &gt; 0</c> hätte
-        /// hier „aktiv" gesagt. Umgekehrt genügt EINE Anlage mit einem Satz, auch wenn
-        /// das Projekt schweigt.
+        /// <b>Die Gegenprobe zum alten Schalter.</b> Ein Projekt, dessen ANLAGEN
+        /// keinen Satz führen, ist NICHT aktiv — der alte Ausdruck
+        /// <c>p.KwkgBonus &gt; 0 || p.KwkgBonusEinspeisung &gt; 0</c> hätte hier noch
+        /// „aktiv" gesagt, solange die Projektspalten standen. Seit Schemaschritt 90
+        /// gibt es sie nicht mehr; die Anlagen sind die einzige Quelle, und EINE
+        /// Anlage mit einem Satz genügt.
         /// </summary>
         [Fact]
         public void Der_Schalter_fragt_die_Anlagen_und_nicht_das_Projekt()
@@ -209,15 +231,13 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(PROJEKT);
-            Assert.True(p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0,
-                        "Der Prüffall braucht ein Projekt mit gepflegten Projektsätzen.");
-            Assert.True(KwkgAktivierung.IstAktiv(PROJEKT));
+            Assert.True(KwkgAktivierung.IstAktiv(PROJEKT),
+                        "Der Prüffall braucht ein Projekt mit gepflegten Anlagensätzen.");
 
-            // Die Sätze der Anlagen weg — die PROJEKTsätze bleiben unangetastet.
+            // Die Sätze der Anlagen weg — es gibt keine zweite Quelle mehr.
             SaetzeDerAnlagenLeeren(PROJEKT);
             Assert.False(KwkgAktivierung.IstAktiv(PROJEKT),
-                         "Der Schalter liest noch die Projektvorgabe.");
+                         "Der Schalter liest noch eine andere Quelle als die Anlage.");
 
             // Eine einzige Anlage genügt, um die Gruppe wieder aktiv zu machen.
             var anlagen = new KwkgAnlagenCtrl().LadeGruppe(PROJEKT, "");
@@ -263,10 +283,9 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Gegenprobe dazu:</b> Nimmt man den Anlagen ihre Sätze wieder weg,
-        /// fällt der Zuschlag auf 0 — obwohl die PROJEKTsätze unverändert dastehen.
-        /// Damit ist bewiesen, dass die Zahl oben aus den Anlagen kommt und nicht mehr
-        /// aus dem Rückfall.
+        /// <b>Die Gegenprobe dazu:</b> Nimmt man den Anlagen ihre Sätze weg, fällt der
+        /// Zuschlag auf 0. Damit ist bewiesen, dass die Zahl oben aus den Anlagen
+        /// kommt und nicht mehr aus einem Rückfall.
         /// </summary>
         [Fact]
         public void Ohne_Anlagensaetze_gibt_es_trotz_Projektsaetzen_keinen_Zuschlag()
@@ -275,9 +294,6 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             SaetzeDerAnlagenLeeren(PROJEKT);
-
-            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(PROJEKT);
-            Assert.True(p.KwkgBonus > 0, "Die Projektsätze müssen für die Gegenprobe stehen bleiben.");
 
             WirtschaftlichkeitErgebnis e = Rechne();
             Assert.Equal(0.0, e.KwkgErloesJahr1);

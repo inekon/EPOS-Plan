@@ -872,6 +872,14 @@ namespace WindowsFormsApplication1
         /// „nicht gepflegt", und die YESNO-Spalte belegt Access selbst mit
         /// <c>False</c> — dem Wert ohne Pauschale.
         ///
+        /// <b>Fortgeschrieben mit Etappe BK1a:</b> Zwei der vier Spalten —
+        /// <c>KWKG_Tatbestand</c> und <c>KWKG_Anlagenart</c> — entfernt Schritt 90
+        /// wieder (<see cref="KwkgProjektaltspalten"/>); beide werden seit Schritt 89 an
+        /// der Anlage gepflegt und geprüft. Dieser Schritt bleibt unverändert — ein
+        /// Migrationsschritt wird nie rückwirkend geändert —, er legt sie weiterhin an
+        /// und holt ihre Namen jetzt von dort. <c>KWKG_Kostenanteil</c> und
+        /// <c>KWKG_Pauschalmodus</c> bleiben stehen.
+        ///
         /// <b>Warum die Katalogberichtigung hierher gehört.</b> Der Gesetzeskatalog sät
         /// sich generationsweise selbst nach (<c>GesetzKatalog.StelleKatalogSicher</c>),
         /// legt aber nur NEUE Zeilen an. Eine bereits gesäte Prognosezeile, die das
@@ -3241,6 +3249,42 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_89_KWK_ANLAGENWAHRHEIT = 89;
 
+        /// <summary>
+        /// <b>Schritt 90 — Aufräumen nach der Anlagenwahrheit</b> (Etappe BK1a,
+        /// Anwenderentscheide BK1-1, BK1-Q1 (c), BK1-Q2 (a) und K-WZ-1 (a)).
+        ///
+        /// <para>Der Schritt hat ZWEI Teile aus zwei Befunden. Sie stehen in EINEM
+        /// Schritt, weil sie dieselbe Auslieferung betreffen und beide
+        /// ergebnisneutral sind; ihre Quellen sind getrennt, jede mit ihrer eigenen
+        /// Begründung.</para>
+        ///
+        /// <para><b>DDL</b> — die sechs KWKG-Spalten von
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> fallen
+        /// (<see cref="KwkgProjektaltspalten"/>). Seit Schritt 89 steht der KWK-Zuschlag
+        /// an der Anlage, und seit Etappe BK1a rechnet auch der Ersatzweg ohne
+        /// zuordenbare Anlagenzeilen aus den Anlagen (leistungsgewichtete virtuelle
+        /// Gesamtanlage). Damit liest die sechs niemand mehr. <b>89 muss vor 90
+        /// laufen</b> — Schritt 89 liest sie als Quelle der Übertragung.</para>
+        ///
+        /// <para><b>DML</b> — die Nullzeilen der drei nicht anlagenfähigen
+        /// Erfassungsgruppen in <c>Tab_ProjektWerte</c> fallen
+        /// (<see cref="KostenErfassungsgruppenAltzeilen"/>). Es sind
+        /// Hauptkomponentenzeilen der früheren Kostenmaske ohne jeden Wert; kein
+        /// heutiger Rechenweg legt sie an, und die Kostenseite zeigte sie unter
+        /// „Anlagenkomponenten" ohne Kennzeichnung und ohne Papierkorb. Eine Gruppe
+        /// mit irgendeiner Position mit Wert bleibt vollständig stehen.</para>
+        ///
+        /// <para><b>Ergebnisneutral, und zwar gemessen:</b> Projekt 1030 rechnet auf
+        /// dem Ersatzweg denselben Zuschlag wie vorher; jede entfernte Kostenzeile
+        /// trägt 0,00 in jedem Wertfeld. Die Referenzbasis führt weder eine
+        /// KWKG-Projektgröße noch eine Kostengröße — der Referenzlauf bleibt
+        /// byte-gleich.</para>
+        ///
+        /// <para><b>Idempotent:</b> Beide Teile fragen vorher, ob es etwas zu tun
+        /// gibt (<c>Offen()</c>); der zweite Lauf fasst nichts an.</para>
+        /// </summary>
+        public const int SCHRITT_90_KWKG_PROJEKTALTSPALTEN = 90;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4401,6 +4445,23 @@ namespace WindowsFormsApplication1
                         "gerechnet werden - und der Anwender pflegt Felder, deren " +
                         "Wirkung davon abhaengt, ob ein zweites Feld anderswo leer ist.",
                         Schritt_89_KwkAnlagenwahrheit),
+
+            // AUFRAEUMEN NACH SCHRITT 89 (Etappe BK1a) - ZWINGEND HINTER 89, weil 89
+            // die sechs Spalten als Quelle liest. Zwei Teile, zwei Quellen:
+            // KwkgProjektaltspalten (DDL) und KostenErfassungsgruppenAltzeilen (DML) -
+            // je EINE Quelle fuer Migration, Testdatenbankschema und Nachweis.
+            new Schritt(SCHRITT_90_KWKG_PROJEKTALTSPALTEN,
+                        "die sechs KWKG-Projektspalten fallen weg (KWKG_Bonus, " +
+                        "KWKG_Bonus_Einspeisung, KWKG_Vbh_Kontingent, " +
+                        "KWKG_Vbh_Jahresdeckel, KWKG_Tatbestand, KWKG_Anlagenart), " +
+                        "und die Nullzeilen der drei Erfassungsgruppen werden entfernt",
+                        "Der KWK-Zuschlag gehoert der Anlage - jede der sechs Spalten " +
+                        "waere sonst eine zweite, tote Wahrheit. Die Nullzeilen der " +
+                        "Erfassungsgruppen stammen aus der frueheren Kostenmaske; sie " +
+                        "tragen keinen Wert, legt sie niemand mehr an, und auf der " +
+                        "Kostenseite standen sie ohne Kennzeichnung und ohne " +
+                        "Papierkorb.",
+                        Schritt_90_KwkgProjektaltspalten),
         };
 
         /// <summary>
@@ -6360,6 +6421,84 @@ namespace WindowsFormsApplication1
                     "Rueckfall Anlage -> Projekt bisher zugewiesen hat; eine gepflegte " +
                     "Anlagenzelle bleibt unangetastet. Ab hier gibt der Rechenweg den " +
                     "Rueckfall auf - § 7 und § 8 KWKG stellen auf die einzelne Anlage ab.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 90 - Aufraeumen nach der Anlagenwahrheit (DDL + DML)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 90 — Anlass, Anweisungen und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_90_KWKG_PROJEKTALTSPALTEN"/>, bei
+        /// <see cref="KwkgProjektaltspalten"/> (DDL) und bei
+        /// <see cref="KostenErfassungsgruppenAltzeilen"/> (DML).
+        ///
+        /// <para><b>Erst das DML, dann das DDL</b> — nicht aus einer Abhängigkeit
+        /// (die zwei Teile fassen verschiedene Tabellen an), sondern damit ein
+        /// abgebrochener Lauf die Datenzeilen nicht in einer Datenbank zurücklassen
+        /// kann, deren Spalten schon fehlen. Gezählt wird VOR jedem Teil, damit die
+        /// Notiz sagt, was der Schritt getan hat.</para>
+        ///
+        /// <para>Hier steht keine abgeschriebene Anweisung; beide kommen aus dem Kern,
+        /// aus DERSELBEN Quelle, aus der sich auch <c>Werkzeuge/Testdatenbankschema</c>
+        /// und der Nachweis in <c>EPOS.Kern.Tests</c> bedienen. Beide Listen lassen
+        /// bereits Erledigtes aus — deshalb braucht es hier keine eigene
+        /// Idempotenzabfrage.</para>
+        /// </summary>
+        private static bool Schritt_90_KwkgProjektaltspalten(Lauf l)
+        {
+            // ---------------- Teil 2 (DML): die Nullzeilen der Erfassungsgruppen ----
+            int zeilen = KostenErfassungsgruppenAltzeilen.Offen();
+            foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                     in KostenErfassungsgruppenAltzeilen.Anweisungen)
+                if (!SqliteDml(l, a.Value, "90: " + a.Key)) return false;
+
+            int zeilenRest = KostenErfassungsgruppenAltzeilen.Offen();
+            if (zeilenRest != 0)
+            {
+                l.LetzterFehler = zeilenRest.ToString(CultureInfo.InvariantCulture) +
+                                  " Nullzeile(n) der Erfassungsgruppen stehen nach dem Schritt noch.";
+                l.Notiz("90: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+            l.Notiz("90: " + zeilen.ToString(CultureInfo.InvariantCulture) +
+                    " Nullzeile(n) der drei Erfassungsgruppen (" +
+                    DbWerte.KOSTEN_KOMPONENTE_WAERMEZENTRALE + ", " +
+                    DbWerte.KOSTEN_KOMPONENTE_BAULICHE_ANLAGEN + ", " +
+                    DbWerte.KOSTEN_KOMPONENTE_STROMEINSPEISUNG + ") aus " +
+                    KostenErfassungsgruppenAltzeilen.TABELLE + " entfernt. " +
+                    "ERGEBNISNEUTRAL: Jede entfernte Zeile traegt 0,00 in jedem " +
+                    "Wertfeld; eine Gruppe mit irgendeiner Position mit Wert bleibt " +
+                    "vollstaendig stehen.");
+
+            // ---------------- Teil 1 (DDL): die sechs KWKG-Projektspalten ----------
+            int offen = KwkgProjektaltspalten.Offen();
+            foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                     in KwkgProjektaltspalten.Anweisungen)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            int rest = KwkgProjektaltspalten.Offen();
+            if (rest != 0)
+            {
+                l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
+                                  " der sechs KWKG-Projektspalten steht nach dem Schritt noch.";
+                l.Notiz("90: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("90: " + offen.ToString(CultureInfo.InvariantCulture) +
+                    " KWKG-Projektspalte(n) entfernt (" +
+                    KwkgProjektaltspalten.SPALTE_BONUS + ", " +
+                    KwkgProjektaltspalten.SPALTE_BONUS_EINSPEISUNG + ", " +
+                    KwkgProjektaltspalten.SPALTE_KONTINGENT + ", " +
+                    KwkgProjektaltspalten.SPALTE_JAHRESDECKEL + ", " +
+                    KwkgProjektaltspalten.SPALTE_TATBESTAND + ", " +
+                    KwkgProjektaltspalten.SPALTE_ANLAGENART + "). KEIN DML auf diesen " +
+                    "Spalten: Seit Schritt 89 und Etappe BK1a rechnet kein Weg mehr " +
+                    "mit ihnen - beide Rechenwege lesen die Anlage. " +
+                    KwkgProjektaltspalten.TABELLE + ".KWKG_Kostenanteil bleibt samt " +
+                    "Dialogfeld stehen (Anwenderentscheid BK1-Q1 c).");
             return true;
         }
 

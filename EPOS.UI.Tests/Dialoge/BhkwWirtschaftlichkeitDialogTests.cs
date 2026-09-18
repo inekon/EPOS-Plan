@@ -1299,7 +1299,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Null(anlagen[1].SatzEinspCt);
         Assert.Null(anlagen[1].Stichtag);
         Assert.Equal("", anlagen[1].Anlagenart);
-        Assert.Equal(0.0, p.KwkgBonus);
+        Assert.Equal(0.0, p.KwkgKostenanteil);
         Assert.False(p.KwkgPauschalmodus);
         Assert.False(p.HocheffizienzNachweis);
         Assert.Equal(DbWerte.ENERGIESTEUER_WAHL_KEINE, p.EnergiesteuerWahl);
@@ -1342,7 +1342,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
 
         Assert.Equal(0, z.Zugriffe);
         Assert.Null(anlagen[0].SatzEinspCt);
-        Assert.Equal(0.0, p.KwkgBonus);
+        Assert.Equal(0.0, p.KwkgKostenanteil);
     }
 
     /// <summary>

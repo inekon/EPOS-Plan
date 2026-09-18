@@ -119,7 +119,6 @@ namespace WindowsFormsApplication1
                         "nicht_monetaere_wirkungen", KiHilfe.Text(p.NichtMonetaer),
                         "einspeiseverguetung_eur_kwh", KiHilfe.Wert(p.Einspeiseverguetung),
                         "co2_preis_eur_t", KiHilfe.Wert(p.CO2Preis),
-                        "kwkg_bonus_ct_kwh", KiHilfe.Wert(p.KwkgBonus),
                         "id_kraftwerkspark", p.IdKraftwerkspark,
                         "refkessel_wirkungsgrad_prozent", KiHilfe.Wert(p.RefKesselWirkungsgrad),
                         "tarif_aktiv", t.Aktiv,

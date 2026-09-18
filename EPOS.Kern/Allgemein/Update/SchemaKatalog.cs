@@ -3642,8 +3642,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Warum die Spalte jetzt an die Anlage gehört.</b> Anlagenart und
         /// Kostenanteil standen bis hierher nur am Projekt
-        /// (<see cref="SPALTE_PW_KWKG_ANLAGENART"/>,
-        /// <see cref="SPALTE_PW_KWKG_KOSTENANTEIL"/>), obwohl § 8 auf die EINZELNE
+        /// (<c>KWKG_Anlagenart</c>, <see cref="SPALTE_PW_KWKG_KOSTENANTEIL"/>),
+        /// obwohl § 8 auf die EINZELNE
         /// Anlage abstellt: Ein modernisiertes 50-kW-Modul neben einem neuen 9-kW-Modul
         /// hat ein anderes Kontingent, und der Projektwert konnte nur eines von beiden
         /// treffen. Die Anlagenart hing schon seit Schritt 22 an der Anlage — ohne
@@ -3861,7 +3861,7 @@ namespace WindowsFormsApplication1
         /// <see cref="SPALTE_PW_AUFTEILUNG"/>.
         /// </summary>
         // ----------------------------------------------------------------------------
-        // ETAPPE BK1 — die FÜNF KWKG-Bestandsspalten von Tab_ProjektWirtschaftlichkeit
+        // ETAPPE BK1 — die KWKG-Bestandsspalten von Tab_ProjektWirtschaftlichkeit
         // bekommen hier ihren Namen.
         //
         // Sie entstehen NICHT in diesem Katalog: Sie stammen aus den frühen
@@ -3871,27 +3871,12 @@ namespace WindowsFormsApplication1
         // buchstabiert, wäre die zweite Wahrheit, die dieser Katalog verhindert. Die
         // Konstanten stehen deshalb hier und in keiner Schritt-Liste; angelegt wird
         // keine von ihnen.
+        //
+        // ETAPPE BK1a — SECHS der Namen stehen nicht mehr hier, sondern in
+        // KwkgProjektaltspalten: Schemaschritt 90 entfernt die Spalten, und wer eine
+        // Spalte entfernt, hält ihren Namen. Der Katalog der LEBENDEN Spalten soll
+        // keine Konstante führen, die nichts mehr beschreibt (Muster 79 und 85).
         // ----------------------------------------------------------------------------
-
-        /// <summary>Zuschlagssatz auf selbst genutzten KWK-Strom [ct/kWh] des Projekts
-        /// (0 = aus). <b>Seit Schemaschritt 89 ungelesen</b> — die Rechnung nimmt den
-        /// Satz der Anlage (<see cref="SPALTE_EA_KWKG_SATZ_EIGEN"/>).</summary>
-        public const string SPALTE_PW_KWKG_BONUS = "KWKG_Bonus";
-
-        /// <summary>Zuschlagssatz auf eingespeisten KWK-Strom [ct/kWh] des Projekts.
-        /// <b>Seit Schemaschritt 89 ungelesen</b> — siehe
-        /// <see cref="SPALTE_EA_KWKG_SATZ_EINSP"/>.</summary>
-        public const string SPALTE_PW_KWKG_BONUS_EINSPEISUNG = "KWKG_Bonus_Einspeisung";
-
-        /// <summary>Vbh-Kontingent des Projekts [h]. <b>Seit Schemaschritt 89 nur noch
-        /// vom projektweiten Ersatzweg gelesen</b> — die Rechnung je Anlage nimmt
-        /// <see cref="SPALTE_EA_KWKG_KONTINGENT"/>.</summary>
-        public const string SPALTE_PW_KWKG_KONTINGENT = "KWKG_Vbh_Kontingent";
-
-        /// <summary>Jahresdeckel-Override des Projekts [h/a]. <b>Seit Schemaschritt 89
-        /// nur noch vom projektweiten Ersatzweg gelesen</b> — siehe
-        /// <see cref="SPALTE_EA_KWKG_DECKEL"/>.</summary>
-        public const string SPALTE_PW_KWKG_JAHRESDECKEL = "KWKG_Vbh_Jahresdeckel";
 
         /// <summary>Bestell-/Genehmigungsdatum des Projekts (§ 6 KWKG 2025) — Vorgabe
         /// für Anlagen ohne eigenes Datum.</summary>
@@ -3900,20 +3885,6 @@ namespace WindowsFormsApplication1
         /// <summary>Inbetriebnahmedatum des Projekts. Es bleibt der <b>Förderbeginn</b>
         /// und damit das Startjahr aller jahresscharfen Reihen.</summary>
         public const string SPALTE_PW_KWKG_INBETRIEBNAHME = "KWKG_Inbetriebnahme";
-
-        public const string SPALTE_PW_KWKG_TATBESTAND = "KWKG_Tatbestand";
-
-        /// <summary>
-        /// K6 — Anlagenart nach § 8 KWKG, Steuerwerte
-        /// <c>DbWerte.KWKG_ANLAGENART_*</c>. Sie leitet das Vbh-Kontingent ab
-        /// (<c>KwkgKontingentRechner</c>) und wählt oberhalb von 2 MW den
-        /// Einspeisesatz. <c>NULL</c> = nicht angegeben; dann bleibt es beim
-        /// Override <c>KWKG_Vbh_Kontingent</c>, also beim Bestandswert.
-        ///
-        /// <b>Spaltenbreite.</b> Längster Steuerwert <c>NACHGERUESTET</c>
-        /// (13 Zeichen) → TEXT(20) laut Konzept § 8.1.
-        /// </summary>
-        public const string SPALTE_PW_KWKG_ANLAGENART = "KWKG_Anlagenart";
 
         /// <summary>
         /// K6 — Anteil an den Neuherstellungskosten [%] (§ 8 Abs. 2/3 KWKG). Er wählt
@@ -3961,8 +3932,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly SchemaSpalte[] Schritt28_KwkgTatbestand =
         {
-            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_TATBESTAND,   "TEXT(30)"),
-            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_ANLAGENART,   "TEXT(20)"),
+            // ETAPPE BK1a: Tatbestand und Anlagenart holen ihren Namen jetzt von
+            // KwkgProjektaltspalten — Schemaschritt 90 entfernt beide Spalten. Der
+            // Schritt 28 selbst bleibt unverändert: Ein Migrationsschritt wird nie
+            // rückwirkend geändert, er legt sie weiterhin an.
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT,
+                             KwkgProjektaltspalten.SPALTE_TATBESTAND,  "TEXT(30)"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT,
+                             KwkgProjektaltspalten.SPALTE_ANLAGENART,  "TEXT(20)"),
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE"),
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO"),
         };
