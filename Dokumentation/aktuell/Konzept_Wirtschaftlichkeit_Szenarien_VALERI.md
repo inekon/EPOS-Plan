@@ -519,10 +519,17 @@ ein zweiter Ort für dieselben Regeln, und ein eigener CSS-Block war nicht nöti
 * **G6 — der Freitext erscheint dreimal, jedes Mal nur wenn gepflegt:** im Word-Bericht
   als Überschrift 2 + Absatz unmittelbar **nach dem Vorschlagssatz** (erst die Zahl mit
   ihrer Bandbreite und der Empfehlung, dann das, was die Zahl nicht fassen kann), in
-  Excel als Zelle unter der Vorschlagszelle, auf der Seite als eigene Herleitungszeile
-  im Nachweisblock (`WirtschaftlichkeitStand.Wirkungszeile`, Muster
-  `Vereinfachungszeile`). Sie hängt am **Stand** und nicht an der Ansicht: Der Text
-  beschreibt die Maßnahme, nicht ein Szenario und nicht eine Vergleichswahl.
+  Excel als Zelle unter der Vorschlagszelle, auf der Seite im **Kopf des
+  Bewertungsblocks**, der ihn auch pflegt (`WirtschaftlichkeitStand.NichtMonetaer`).
+  Er hängt am **Stand** und nicht an der Ansicht: Der Text beschreibt die Maßnahme,
+  nicht ein Szenario und nicht eine Vergleichswahl.
+* **Auf der Seite steht er je Zustand an genau EINER Stelle.** Zugeklappt weist der Kopf
+  des Blocks ihn neben seinem Titel aus, mit dem vollen Text im `title`; aufgeklappt
+  trägt der Kopf nur seinen Titel, weil der Text dann im Feld darunter steht. Gekürzt
+  wird dabei im Browser (`.epos-modulparameter-ausweis`, `text-overflow`) und nicht im
+  Quelltext — eine zweite Kürzungsregel wäre eine zweite Wahrheit. **Die Berichte sind
+  davon unberührt:** Word und Excel lesen `WirtschaftlichkeitParameter.NichtMonetaer`
+  selbst und formulieren mit `WIRT_NM_TITEL` bzw. `WIRT_NM_ZEILE` ihre eigene Ausgabe.
 * **Ohne gepflegten Text entfällt der ganze Block**, Überschrift eingeschlossen. Eine
   leere Überschrift wäre keine Aussage, sondern eine Lücke mit Titel.
 

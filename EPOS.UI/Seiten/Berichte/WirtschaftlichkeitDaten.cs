@@ -183,27 +183,16 @@ public sealed class WirtschaftlichkeitStand
     public string Vereinfachungszeile { get; set; } = "";
 
     /// <summary>
-    /// ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026, VALERI-Lücke G6): die
-    /// <b>nicht monetären Wirkungen</b> als fertige Zeile — Komfort,
-    /// Versorgungssicherheit, Arbeitssicherheit und was sich sonst nicht in Euro fassen
-    /// lässt. Gepflegt wird der Text im Parameterdialog; er hängt am Projekt, nicht an
-    /// der Szenario- oder Vergleichswahl, und steht deshalb am Stand.
-    ///
-    /// <para>Leer = nichts erfasst; dann wird die Zeile gar nicht erst gezeichnet —
-    /// dieselbe Regel wie im Word- und Excel-Bericht.</para>
-    /// </summary>
-    public string Wirkungszeile { get; set; } = "";
-
-    /// <summary>
     /// AUFTRAG #325 (Anwenderwunsch 17.09.2026): der GEPFLEGTE Text der nicht
     /// monetären Wirkungen — <c>WirtschaftlichkeitParameter.NichtMonetaer</c>, roh
     /// und unformatiert. Er füllt den Bewertungsblock unter der Kennzahltabelle,
     /// der ihn seit diesem Auftrag auch entgegennimmt.
     ///
-    /// <para>Das ist NICHT <see cref="Wirkungszeile"/>: Die ist der fertig
-    /// formulierte Ausweis des Nachweisblocks („Nicht monetäre Wirkungen: …"), das
-    /// hier ist der Wert, den der Anwender eingibt. Eine zweite Wahrheit entsteht
-    /// daraus nicht — beide lesen dieselbe Modelleigenschaft.</para>
+    /// <para>AUFTRAG #328: Dieser Wert ist auf der Seite die EINZIGE Darstellung des
+    /// Textes. Zugeklappt weist der Kopf des Bewertungsblocks ihn aus, aufgeklappt
+    /// steht er im Feld darunter; eine zweite, fertig formulierte Zeile im
+    /// Nachweisblock gibt es nicht mehr. Der Bericht ist davon unberührt — Word und
+    /// Excel lesen <c>WirtschaftlichkeitParameter.NichtMonetaer</c> selbst.</para>
     /// </summary>
     public string NichtMonetaer { get; set; } = "";
 
