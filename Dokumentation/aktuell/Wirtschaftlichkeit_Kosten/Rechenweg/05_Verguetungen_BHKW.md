@@ -57,7 +57,8 @@ kumulierbar — je Anlage genau eine Wahl." · Info „Die Unternehmensart spiel
 ausweist.
 
 **Gruppe Stromsteuer:** Unternehmensart (führend) · Hocheffizienz nachgewiesen · räumlicher
-Zusammenhang ≤ 4,5 km · Modus § 9 Abs. 1 Nr. 3 (Erlös/Ausweis — **Lücke K3**, Spalte kommt mit B6) ·
+Zusammenhang ≤ 4,5 km · Modus § 9 Abs. 1 Nr. 3 (Erlös/Ausweis, Vorgabe Ausweis — Spalte
+`Stromst_Befreiung_Modus`, Schemaschritt 88) ·
 Herleitung „P_el 300 kW ≤ 2 MW ✓ · CO₂ 242,1 < 270 g/kWh ✓ · 1.155,0 MWh × 20,50 €/MWh = 23.677,5 €/a"
 und „§ 9b: 250,0 MWh × 20,00 − 250 = 4.750,0 €/a" · **Warnband:** „Auf selbst erzeugten und selbst
 verbrauchten Strom entsteht gar keine Stromsteuer — der Vorteil steckt bereits in der kleineren
@@ -207,16 +208,16 @@ Mockup zeigt die Reihe als Balkendiagramm.
 | Schritt | Rechnung | Ergebnis | Anmerkung |
 |---|---|---|---|
 | CO₂-Energieertrag | 200,9 × 4.342,1 / (1.650,0 + 1.953,9) | 242,1 g/kWh | < 270 ✓ (Heizöl 303 g/kWh würde scheitern) |
-| § 9 Abs. 1 Nr. 3 | 1.155,0 MWh (brutto) × 20,50 | 23.677,5 €/a | **Ausweis** nach B6; heute als Erlösreihe gebucht (B-1) |
+| § 9 Abs. 1 Nr. 3 | 1.155,0 MWh (brutto) × 20,50 | 23.677,5 €/a | **Ausweis** (Vorgabe, Schemaschritt 88); Erlösreihe nur bei ausdrücklicher Wahl ERLOES, mit Kohärenzwarnung |
 | § 9b | max(0, 250,0 × 20,00 − 250) | 4.750,0 €/a | Netzbezug, produzierendes Gewerbe |
 
 ## Befunde und offene Punkte
 
 | Nr. | Befund | Behandlung |
 |---|---|---|
-| ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 fehlt:** bei Anlagen mit Vorrichtung zur Abwärmeabfuhr (Notkühler) ist KWK-Strom = Nutzwärme × Stromkennzahl, nicht die Nettostromerzeugung; EPOS-Plan führt weder Kennzeichen noch Stromkennzahl und rechnet immer Fall 1 — Zuschlag für Notkühler-Anlagen **zu hoch** | Kennzeichen und Stromkennzahl je Anlage aufnehmen, Fall 2 rechnen — zu entscheiden |
-| ⚠ B-1 | § 9 Abs. 1 Nr. 3 als Erlösreihe gebucht — es entsteht aber gar keine Stromsteuer; gemessen 1.510,84 €/a auf beiden Pfaden (Projekt 1024) | Umstellung auf Ausweis (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) mit B6 entschieden |
-| K3 | Modusfeld § 9 Nr. 3 — Spalte kommt erst mit B6 (Schemaschritt 63) | im Mockup vorhanden, ausgegraut bis B6 |
+| ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 fehlt:** bei Anlagen mit Vorrichtung zur Abwärmeabfuhr (Notkühler) ist KWK-Strom = Nutzwärme × Stromkennzahl, nicht die Nettostromerzeugung; EPOS-Plan führt weder Kennzeichen noch Stromkennzahl und rechnet immer Fall 1 — Zuschlag für Notkühler-Anlagen **zu hoch** | **entschieden 18.09.2026 nach Empfehlung**: Kennzeichen und Stromkennzahl je Anlage (Schemaschritt 90, Vorschlag der Stromkennzahl aus P_el/P_th am Feld), Fall 2 in der Mengenbildung je Anlage; kein Referenzprojekt betroffen — Konzept § 3.6 |
+| ✔ B-1 | § 9 Abs. 1 Nr. 3 als Erlösreihe gebucht — es entsteht aber gar keine Stromsteuer; gemessen 1.510,84 €/a auf beiden Pfaden (Projekt 1024) | umgesetzt mit B6: Ausweis (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS, Schemaschritt 88); der Messwert zu 1024 ist am heutigen Stand der Testdatenbank nicht nachstellbar (Hocheffizienznachweis 0) |
+| ✔ K3 | Modusfeld § 9 Nr. 3 | erledigt mit B6: Schemaschritt 88, Feld offen, Vorgabe AUSWEIS |
 | K4 | Tabellenspalte „Brennstoff" ohne Leseweg | kleiner Leser `CarrierId` → Name in B5 |
 | K7 | Schreibweg der drei B5-Spalten fehlt (`KwkgAnlagenCtrl.Speichere` = 8 Spalten) | auf 11 Spalten erweitern — B5-Kernaufgabe |
 | R-U1 | § 53 neben § 53a — Entweder-oder | als Auswahl modelliert, mit dem Hauptzollamt zu klären |

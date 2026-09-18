@@ -470,7 +470,7 @@ a{color:var(--marine-hell)}
             <td class="r num">3.084,33</td><td class="num">3</td><td></td>
           </tr>
           <tr>
-            <td>Zuschuss BAFA</td><td>ZUSCHUSS</td><td>Betrag</td>
+            <td>Zuschuss</td><td>ZUSCHUSS</td><td>Betrag</td>
             <td class="r">—</td><td class="r">—</td><td class="r num">6.000,00</td><td class="num">—</td><td></td>
           </tr>
           <tr class="summe">
@@ -1146,7 +1146,7 @@ CO₂ / BEHG als eigene Reihe
           <div class="f-zeile eng"><label>Unternehmensart</label><span class="f-combo">produzierendes Gewerbe</span></div>
           <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Hocheffizienz nachgewiesen</span></div>
           <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Räumlicher Zusammenhang ≤ 4,5 km</span></div>
-          <div class="f-zeile eng"><label>Modus § 9 Abs. 1 Nr. 3 <span class="marke luecke">Lücke K3</span></label><span class="f-combo">Ausweis</span></div>
+          <div class="f-zeile eng"><label>Modus § 9 Abs. 1 Nr. 3</label><span class="f-combo">Ausweis (Vorgabe)</span></div>
           <div class="f-herleitung">
             <b>§ 9 Abs. 1 Nr. 3</b> — Befreiung Eigenverbrauch<br>
             P<sub>el</sub> 300 kW ≤ 2 MW ✓ · CO₂ 242,1 &lt; 270 g/kWh ✓<br>
@@ -1331,6 +1331,12 @@ Stromsteuer
     <p>EPOS-Plan führt weder ein Kennzeichen „Abwärmeabfuhr vorhanden" noch eine Stromkennzahl und rechnet
     immer den ersten Fall. Für Anlagen mit Notkühler fällt der Zuschlag damit <b>zu hoch</b> aus. Zu
     entscheiden, nicht stillschweigend zu lassen.</p>
+    <p><b>Entschieden 18.09.2026, nach Empfehlung:</b> Kennzeichen „Vorrichtung zur Abwärmeabfuhr" und
+    Stromkennzahl je Anlage — zwei weitere Felder neben den KWKG-Angaben der Anlage in Gruppe 1, die
+    Stromkennzahl mit Vorschlag aus P<sub>el</sub> / P<sub>th</sub> der Gerätezeile am Feld. Bei gesetztem
+    Kennzeichen rechnet die Mengenbildung je Anlage <span class="mono">Nutzwärme × Stromkennzahl</span>,
+    gedeckelt auf die Nettostromerzeugung. Einzelheiten und Messung: Tabelle am Ende dieser Seite,
+    Konzept § 3.6.</p>
   </div>
 </section>
 
@@ -1751,42 +1757,94 @@ Szenarien — VALERI-Vorrang
 <!-- ======================= OFFEN ======================= -->
 <section class="kat" id="offen">
   <div class="kat-kopf"><h2>Was vor der Umsetzung zu entscheiden ist</h2></div>
-  <p class="kat-lead">Sieben Punkte, die kein Entwurf für den Anwender entscheiden kann, weil sie Fachfragen
-  sind — nicht Fragen der Oberfläche.</p>
+  <p class="kat-lead">Sieben Punkte, die kein Entwurf für den Anwender entscheiden konnte, weil sie Fachfragen
+  sind — nicht Fragen der Oberfläche. <b>Entschieden am 18.09.2026.</b> Je Punkt: Empfehlung, Entscheid,
+  was folgt und was offen bleibt; Abweichungen von der Empfehlung sind als solche genannt. Maßgeblich
+  ist das Konzept, die Tabelle sagt dasselbe.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
-      <thead><tr><th>Nr.</th><th>Frage</th><th>Empfehlung</th><th>Wirkung</th></tr></thead>
+      <thead><tr><th>Nr.</th><th>Frage</th><th>Empfehlung</th><th>Entscheid</th><th>Was folgt · was offen bleibt</th></tr></thead>
       <tbody>
         <tr><td class="mono">K-1</td>
             <td>Anlagen mit Abwärmeabfuhr: KWK-Strom nach § 2 Nr. 16 Fall 2 rechnen (Nutzwärme × Stromkennzahl)?
               <span class="qz">Betrifft jedes BHKW mit Notkühler.</span></td>
             <td>Kennzeichen und Stromkennzahl je Anlage aufnehmen, Fall 2 rechnen</td>
-            <td><span class="marke luecke">Zuschlag heute zu hoch</span></td></tr>
+            <td><b>Empfehlung.</b> Kennzeichen und Stromkennzahl je Anlage; Fall 2 rechnen.</td>
+            <td>Zwei weitere Anlagenfelder neben den neun KWKG-Spalten von
+              <span class="mono">Tab_Energieanlagen</span> (nächster Schemaschritt 90) — der Zuschlag gehört
+              seit Schritt 89 ohnehin der Anlage; die Stromkennzahl bekommt ihren Vorschlag aus
+              P<sub>el</sub>/P<sub>th</sub> der Gerätezeile am Feld. Die Fallunterscheidung sitzt in der
+              Mengenbildung je Anlage (<span class="mono">WirtschaftlichkeitCtrl.ReiheJeAnlage</span>:
+              Nettostrom je Anlage = Klemmenstrom <span class="mono">StromVon</span> − Hilfsstrom; bei
+              Kennzeichen stattdessen Nutzwärme × Stromkennzahl, gedeckelt). <b>Referenzprojekte:</b>
+              nicht betroffen — von den dreizehn Basisprojekten führen 1017, 1018, 1024 und 1030 ein
+              BHKW, KWKG-Sätze trägt allein 1030, das Kennzeichen wäre dort nicht gesetzt, und die Basis
+              vergleicht keine Wirtschaftlichkeitsgrößen; keine neue Basis. <b>Offen:</b> ob die Nutzwärme
+              je Modul (Wärmeproduktion abzüglich Wärmeüberschuss) modulscharf im Ergebnismodell liegt.</td></tr>
         <tr><td class="mono">K-3</td>
             <td>Modus für § 9 Abs. 1 Nr. 3 — Erlösreihe oder Ausweis?</td>
             <td>Ausweis (Vorgabe), Spalte <span class="mono">Stromst_Befreiung_Modus</span></td>
-            <td>heute in keinem Lauf wirksam</td></tr>
+            <td><b>Bereits erledigt</b> — Statuszeile #328 (anderer Rechner): Schemaschritt 88, Spalte
+              <span class="mono">Stromst_Befreiung_Modus</span>, Vorgabe AUSWEIS.</td>
+            <td>Keine zweite Baustelle. Das Modusfeld in Kategorie 5 ist offen und schreibt mit OK; die
+              Erlösreihe entsteht nur bei ausdrücklicher Wahl ERLOES, mit Kohärenzwarnung. In keinem
+              Basisprojekt wirksam (Hocheffizienz- und Zusammenhangsnachweis stehen überall auf 0).</td></tr>
         <tr><td class="mono">B-1</td>
             <td>Kessel-Endenergie ist strukturell 0 — Verbrauch nachziehen oder Bemessung sperren?</td>
             <td>Verbrauch aus dem Lauf nachziehen; bis dahin Herleitungszeile „× 0 kWh" zeigen</td>
-            <td>Hilfsenergie am Kessel rechnet nicht</td></tr>
+            <td>→ Auftrag #331</td>
+            <td>wird dort behoben; hier kein Text.</td></tr>
         <tr><td class="mono">N-3</td>
             <td>Aufschläge: ungepflegte Spalten als Vorschlagswerte oder als 0 lesen?</td>
             <td>als 0 lesen, Vorschlag nur auf Knopfdruck übernehmen</td>
-            <td><span class="marke luecke">bis −29,8 % Kapitalwert</span></td></tr>
+            <td><b>Empfehlung.</b></td>
+            <td><b>Gemessen, was schon steht:</b> „als 0 lesen" ist umgesetzt — ein ungepflegter Anteil
+              bleibt inaktiv und trägt 0 bei, zwei Prüffälle pinnen das (einer gegen Projekt 1030); der
+              Vorschlag steht im Feld und wirkt erst mit dem Haken; Beschaffung (Rest) und Stromsteuer
+              (§ 3 / § 9b) haben Knöpfe am Feld. <b>Offen bleibt allein</b> ein Sammelknopf
+              „Vorschlagswerte übernehmen" — Bequemlichkeit, kein Fehler. <b>Nebenbefund:</b> Das
+              Speichern der Trägerkarte schreibt alle neun Anteile als Zahl zurück; „nie gepflegt" ist
+              danach nicht mehr von „auf den Vorschlag gesetzt und abgeschaltet" zu unterscheiden —
+              rechnerisch folgenlos.</td></tr>
         <tr><td class="mono">V-4</td>
             <td>Szenarien für alle Parameter — vor oder nach der Darstellungsetappe?</td>
             <td>danach; einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis</td>
-            <td>ergebnisneutral bis zur ersten Pflege</td></tr>
+            <td><b>Empfehlung: danach — mit Hinweistext.</b></td>
+            <td>Bis zur Etappe der vollständigen Parametersätze sagt ein Hinweis unter der Tafel „Was
+              ist angenommen?", was ein Szenario heute variiert — Kalkulationszins, die drei
+              Preissteigerungen (Energie, Betrieb, Investition/Ersatz), Investition ungepflegter
+              Positionen ±10 %, Erträge ±10 %, Nutzungsdauer ungepflegter Positionen ±2 a — und was in
+              allen dreien gleich bleibt: Betrachtungszeitraum, Energiepreise je Träger, Erlössätze,
+              Mengen der Simulation, gesetzliche Sätze. Wortlaut im Mockup der Ergebnisansicht und im
+              Konzept § 2.11.7.</td></tr>
         <tr><td class="mono">K-8</td>
             <td>Die Fußleiste von <span class="mono">UcWirtschaftlichkeit</span> ist voll — ein achter Knopf läge bei x = −50.</td>
             <td>Umschalter „Kennzahlen / ValERI-Bewertung" statt weiterem Knopf</td>
-            <td>reine Oberfläche</td></tr>
+            <td><b>Empfehlung.</b> Umschalter im Kopf der Seite; bestätigt zugleich V-1.</td>
+            <td>reine Oberfläche; der Knopf „Verlauf…" entfällt mit der Ergebnisansicht, weil der Verlauf
+              dort steht.</td></tr>
         <tr><td class="mono">V-G10</td>
             <td>XLSX mit sichtbaren Formeln — nur das ValERI-Blatt oder der ganze Bericht?</td>
             <td>nur das ValERI-Blatt; harte Muss-Anforderung der Norm (Abschnitt 9)</td>
-            <td>Ausgabe</td></tr>
+            <td><b>Abweichend von der Empfehlung: der ganze Bericht</b>, soweit ableitbar — das kippt
+              V-2.</td>
+            <td><b>Die Grenze ist gemessen:</b> Der Generator schreibt heute keine einzige Formel, und
+              keine Zahl des Parametersatzes erreicht eine Zelle. Stufenplan: <b>0</b> Parameterblock aus
+              echten Zellen (Zins, Zeitraum, drei Preissteigerungen, je Szenario) — Voraussetzung für
+              alles Weitere; <b>1</b> Mehrjahrestabelle: Energie als Fortschreibung, Netto als
+              Zeilensumme, Barwert als Netto × Abzinsungsfaktor, Kumuliert als Laufsumme — Betrieb ist
+              zwei verschieden eskalierte Töpfe mit springenden Basen und braucht zwei Terme oder eine
+              Hilfsspalte; <b>2</b> Nettobarwert und Annuität über NBW/RMZ, der interne Zinsfuß über eine
+              Differenzreihe, die das Blatt erst bekommen muss; <b>3</b> bemessene Betriebskostenzeilen
+              als Menge × Satz (die Spalte Herleitung bleibt für feste, szenariogepflegte und
+              unvollständige Positionen), Delta-Block des Vergleichsblatts als Zellbezug.
+              <b>Dauerhaft Werte:</b> Übersicht, Detailblätter mit Monatswerten, Strommengen-Matrix,
+              Emissionsbilanz, KWK-Modulblock, die Sensitivitätstafel (fünf Zeilen, jede eine Differenz
+              zweier neu gerechneter Zahlungsbilder), die Kosten-Kennzahlen (Grundpreise und ein
+              Leistungspreis aus der Viertelstunden-Bezugsspitze), Text- und Gesetzesnachweise. Ein
+              Formelbericht rechnet die Bewertung feststehender Jahresmengen nach, ersetzt keinen
+              Stundenlauf und schreibt nichts ins Projekt zurück. Konzept § 2.11.6.</td></tr>
       </tbody>
     </table>
   </div>
