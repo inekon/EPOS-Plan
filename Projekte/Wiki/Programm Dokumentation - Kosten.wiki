@@ -13,7 +13,7 @@ Der Dialog '''Kosten''' erfasst Investitions-, Betriebs- und Energiekosten je Ko
 * '''Energieträger auswählen''' – ordnet einer Kostenposition den Energieträger zu, über den sie abgerechnet wird.
 * '''Übernahme aus dem Technikmodul''' – die dort hinterlegten Anlagenkosten lassen sich auf Knopfdruck als Planwert übernehmen.
 * {{Anker|erfassungsgruppen}}'''Erfassungsgruppen''' – Wärmezentrale, Bauliche Anlagen und Stromeinspeisung sammeln Kosten, die zu keinem Gerät gehören. Auf der Kostenseite stehen sie unter den Anlagen, tragen den Zusatz ''Erfassungsgruppe (ohne Anlage)'' und lassen sich über den Papierkorb nach Rückfrage entfernen; in der Wirtschaftlichkeit rechnen sie mit.
-* {{Anker|summen}}'''Summen''' – werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen.
+* {{Anker|summen}}'''Summen''' – werden je Komponente und für das Gesamtprojekt fortlaufend ausgewiesen. Unter dem Positionsraster der Investitionskosten stehen die Nettosumme und die Bruttosumme mit dem Umsatzsteuersatz aus dem Katalog; führt die Komponente eine Erlös- oder Zuschussposition, nennt eine dritte Zeile die Investition brutto, den Zuschuss und die um ihn geminderte Investition I₀ – die Größe, mit der die Wirtschaftlichkeit rechnet.
 
 == Bemessung der Positionen ==
 {{Anker|bemessung}}
@@ -50,6 +50,7 @@ Die Bemessung heißt in jedem Gewerk nach der Größe, an der sie sich bemisst: 
 
 Die Auswahlliste eines Gewerks führt nur die Bemessungen, für die es dort auch eine Bezugsgröße gibt – dazu in jedem Gewerk den festen Betrag, den festen Jahresbetrag und die Prozentbemessungen, die ohne Anlagentechnik auskommen. Am Pufferspeicher ist das Volumen deshalb die einzige Bezugsgröße, die Liste bietet ''je Liter'' an; an der Photovoltaik stehen ''je kWp Leistung'' und ''je kW elektrisch'', nicht aber ''je kWh Kapazität'' – die gehört zum Stromspeicher. Auch die Standardvorlagen der Investitionskosten halten sich daran: Die Position ''Speicher'' des Pufferspeichers ist je Liter bemessen, die Position ''Batteriespeicher'' der Photovoltaik als fester Betrag. Trägt eine vorhandene Position eine andere Bemessung, bleibt diese in der Liste stehen, damit die Zeile ihren Wert behält.
 
+* {{Anker|herleitung}}'''Woher der Betrag kommt''' – unter dem Betrag einer gerechneten Position steht die Herleitung in kleiner Schrift: die Bezugsgröße mit ihrer Einheit, woher sie stammt, und auf der Investitionsseite die Runde, in der das Programm sie gerechnet hat – etwa ''× 300,00 kW · P_el der Anlage · Runde 1'' oder ''× 200.000,00 € · Hauptpositionen · Runde 2''. Eine Position mit festem Betrag trägt dort ''Satz = Betrag''. Auf der Betriebsseite entfällt die Runde; ihre Bezugsgrößen kommen aus dem Simulationslauf oder aus der Investitionssumme. Denselben Inhalt nennt auch der Kurztext des Betragsfeldes.
 * {{Anker|ohne-bezugsgroesse}}'''Ohne Bezugsgröße''' – findet das Programm zu einer Position keine, gilt der erfasste Betrag; bei einer satzbasierten Position ist das 0. Die Zeile trägt dann ein ⚠ am Betrag, und unter dem Raster steht der Grund: Die Bemessung passt nicht zu diesem Gewerk, es fehlt das Gerät oder seine Angabe, es fehlt ein Simulationslauf, oder es fehlen Investitionskosten.
 
 == Energieträgerverwaltung ==

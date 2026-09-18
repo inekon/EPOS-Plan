@@ -435,6 +435,7 @@ table.tafel .rs{font-family:var(--mono);font-size:11px;color:var(--marine-hell)}
 .zk.beleg{background:var(--erloes-grund);color:var(--erloes);border:1px solid var(--erloes)}
 .zk.abl{background:var(--warn-grund);color:var(--warn);border:1px solid var(--warn-kante)}
 .zk.vor{background:var(--warn-grund);color:var(--warn);border:1px solid var(--warn-kante);text-transform:none;letter-spacing:0}
+.zk.umg{background:var(--erloes-grund);color:var(--erloes);border:1px solid var(--erloes);text-transform:none;letter-spacing:0}
 .f-zeile.breit label,.f-zeile.breit .f-lab{min-width:330px}
 .f-eingabe.leer{color:#8C97A8;font-style:italic;text-align:left}
 .f-knopfzeile{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
@@ -654,9 +655,9 @@ a{color:var(--marine-hell)}
   bei Blockheizkraftwerk und Photovoltaik. Jede Zeile des Rasters ist eine kleine Maske: <b>editierbar</b> ist,
   was weiß mit dunklem Rand in der Zelle steht (Textfeld, Klappliste, Zahlenfeld mit Einheit dahinter);
   <b>gerechnet</b> ist grau und nie eingebbar. Gezeichnet ist der Projektmodus (Anlage BHKW 1). Die Zeile unter
-  dem Betrag mit Bezugsgröße, Herkunft und Kaskadenrunde steht in der Anwendung nur im Werkzeugtipp des
-  Betragsfeldes <span class="zk vor">Vorschlag U28</span>; der dreiteilige Summenfuß
-  <span class="zk vor">Vorschlag U29</span>; die Tafel „Ersatz und Restwert" unter dem Raster
+  dem Betrag mit Bezugsgröße, Herkunft und Kaskadenrunde steht im Raster und zusätzlich im Werkzeugtipp des
+  Betragsfeldes <span class="zk umg">umgesetzt U28</span>; der dreiteilige Summenfuß
+  <span class="zk umg">umgesetzt U29</span>; die Tafel „Ersatz und Restwert" unter dem Raster
   <span class="zk vor">Vorschlag U30</span>; der Knopf „Nutzungsdauern vorbelegen…"
   <span class="zk vor">Vorschlag U8</span>.</p>
   <div class="fenster">
@@ -741,7 +742,7 @@ a{color:var(--marine-hell)}
           </tr>
           <tr class="summe">
             <td colspan="7" style="font-weight:600;color:#1A3261">Investition brutto 240.772,40 € · Zuschuss 6.000,00 € · I₀ 234.772,40 €
-              <span class="zk vor">Vorschlag U29</span></td>
+              <span class="zk umg">umgesetzt U29</span></td>
           </tr>
         </tbody>
       </table>
@@ -755,10 +756,11 @@ a{color:var(--marine-hell)}
         Betrag ein ⚠ und unter dem Raster steht der Grund („‹Position›: kein Simulationslauf" · „kein Gerät mit
         dieser Baugröße im Projekt" · „keine Investitionskosten für diese Anlage erfasst") — nie eine stille 0.
         Eine Änderung lebt bis „Speichern" oder „OK" nur im Objekt; „Abbrechen" und Esc verwerfen sie.</div>
-      <div class="f-info">Der Summenfuß der Anwendung addiert die Beträge aller Zeilen, Erlös- und Zuschusszeilen mit
-        negativem Vorzeichen — die Nettosumme ist damit I₀, sie nennt aber weder die Investition brutto noch den Zuschuss.
-        Die dritte Zeile ergänzt beide <span class="zk vor">Vorschlag U29</span>: Der Zuschuss mindert I₀, nicht die
-        Basis der Prozentpositionen; Ersatzbeschaffung und Restwert rechnen weiter mit dem Bruttobetrag.</div>
+      <div class="f-info">Der Summenfuß addiert die Beträge aller Zeilen, Erlös- und Zuschusszeilen mit
+        negativem Vorzeichen — die Nettosumme ist damit I₀. Die dritte Zeile nennt beide Teile eigens
+        <span class="zk umg">umgesetzt U29</span> und steht nur, wenn die Komponente eine Erlös-/Zuschusszeile führt:
+        Der Zuschuss mindert I₀, nicht die Basis der Prozentpositionen; Ersatzbeschaffung und Restwert rechnen
+        weiter mit dem Bruttobetrag.</div>
 
       <div class="f-knopfzeile"><span class="f-knopf">+ Position hinzufügen</span><span class="f-knopf">Aus Vorlage übernehmen…</span>
         <span class="f-knopf">Positionskatalog…</span><span class="f-knopf">Nutzungsdauern vorbelegen…</span> <span class="zk vor">Vorschlag U8</span></div>
@@ -978,8 +980,8 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Fußleiste „Abbrechen" · „Speichern" · „OK" · Statuszeile „gespeichert {0} Uhr"</td><td class="rs">KDLG_BTN_ABBRECHEN · KDLG_BTN_SPEICHERN · ALLG_BTN_OK · KDLG_GESPEICHERT</td><td>Fußleiste</td></tr>
         <tr><td>Zeileneditor „Position bearbeiten": Bezeichnung, Kostenart, Erlös/Zuschuss, Empfehlung; Kostenarten</td><td class="rs">VPOS_TITEL · VPOS_LBL_BEZEICHNUNG · VPOS_LBL_KOSTENART · VPOS_CHK_ERLOES · VPOS_LBL_EMPFEHLUNG · VPOS_LBL_BIS · KOSTENART_KAPITALGEBUNDEN … KOSTENART_ZUSCHUSS</td><td>Überlagerung des Stifts</td></tr>
         <tr><td>Worst/Best · Übernahme · Löschrückfragen · Pflichtposition</td><td class="rs">KCASE_TITEL · KCASE_BEST_EUR · KCASE_WORST_EUR · KOSTEN_CASE_STARTJAHR · KUEB_TITEL · KUEB_LBL_ZIEL · KUEB_LBL_QUELLVORLAGE · KDLG_MSG_POS_LOESCHEN · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Überlagerungen und Rückfragen</td></tr>
-        <tr><td>Bezugsgrößenzeile „× {0} · {1} · Runde {2}" unter dem Betrag <b>neu</b></td><td class="rs">KDLG_HERL_BASIS</td><td>Zelle Betrag (U28)</td></tr>
-        <tr><td>Summenzeile „Investition brutto {0} · Zuschuss {1} · I₀ {2}" <b>neu</b></td><td class="rs">KDLG_SUM_BRUTTO · KDLG_SUM_ZUSCHUSS · KDLG_SUM_I0</td><td>Summenfuß (U29)</td></tr>
+        <tr><td>Bezugsgrößenzeile „× {0} · {1} · Runde {2}" unter dem Betrag, absolute Zeile „Satz = Betrag"</td><td class="rs">KDLG_HERL_BASIS · KDLG_HERL_ABSOLUT · KDLG_HERK_* · KDLG_GR_*</td><td>Zelle Betrag (U28)</td></tr>
+        <tr><td>Summenzeile „Investition brutto {0} · Zuschuss {1} · I₀ {2}"</td><td class="rs">KDLG_SUMME_DREITEILIG</td><td>Summenfuß (U29)</td></tr>
         <tr><td>Gruppenkopf „Ersatz und Restwert" · Spalten „Ersatzbeschaffung" · „Restwert im Jahr {0}" · „Herkunft der Dauer" <b>neu</b></td><td class="rs">KDLG_G_ERSATZ_RESTWERT · KDLG_SP_ERSATZ · KDLG_SP_RESTWERT · KDLG_SP_DAUERHERKUNFT</td><td>Gruppe unter dem Raster (U30)</td></tr>
         <tr><td>Knopf „Nutzungsdauern vorbelegen…" · Hinweiszeile Nutzungsdauer (Textmuster) <b>neu</b></td><td class="rs">KDLG_BTN_ND_VORBELEGEN · WIRT_ND_HINWEIS</td><td>Leiste · Dialog, Ergebnisseite, Bericht (U8)</td></tr>
         <tr><td>Parameter „Preissteigerung Investition [%/a]"</td><td class="rs">WIRT_PAR_P_I</td><td>WirtschaftlichkeitParameterDialog</td></tr>
@@ -1009,7 +1011,8 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
   <p class="eng">Dasselbe Fenster wie in Kategorie 1, die Optionsgruppe steht auf „Betriebskosten": Die Betragsspalte
   heißt „Betrag netto [€/a]", die Spalte Nutzungsdauer bleibt leer, die Bemessungen der Klappliste sind die des
   Betriebsrasters. <b>Editierbar</b> ist, was weiß mit dunklem Rand in der Zelle steht; <b>gerechnet</b> ist
-  grau. Die Herleitungszeile unter dem Betrag <span class="zk vor">Vorschlag U28</span>; hinterlegte Pflichtzeilen
+  grau. Die Herleitungszeile unter dem Betrag <span class="zk umg">umgesetzt U28</span> — sie nennt hier keine
+  Runde, weil die Betriebsseite keine Kaskade kennt; hinterlegte Pflichtzeilen
   mit Schloss, der Empfehlungsbereich als Zeile, der Laufstand über dem Raster, die Gruppe „Endenergie je
   Komponente" und die Doppelpflege-Warnung <span class="zk vor">Vorschlag U31</span>.</p>
   <div class="fenster">
@@ -1247,7 +1250,7 @@ Keine stillen Teilsummen
         <tr><td>Pflichtpositionen „Wartung BHKW" · „Instandhaltung BHKW" · „Hilfsenergiekosten" (Datenwerte) · Meldung beim Löschversuch</td><td class="rs">DbWerte.VDI_POS_* · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Rasterzeilen · Meldungszeile</td></tr>
         <tr><td>Summenfuß „Summe Betriebskosten netto: {0} €/a" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_BETRIEB · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Grund „kein Simulationslauf" unter dem Raster</td><td class="rs">KDLG_BASIS_GRUND_LAUF · KDLG_OHNE_BASIS_ZEILE</td><td>Hinweiszeile unter dem Raster</td></tr>
-        <tr><td>Herleitungszeile „× {0} kWh · {1}" unter dem Betrag <b>neu</b></td><td class="rs">KDLG_HERL_BASIS</td><td>Prozent- und Produktzeilen des Rasters (U28)</td></tr>
+        <tr><td>Herleitungszeile „× {0} kWh · {1}" unter dem Betrag — ohne Runde</td><td class="rs">KDLG_HERL_BASIS_OHNE_RUNDE · KDLG_HERK_LAUF</td><td>Prozent- und Produktzeilen des Rasters (U28)</td></tr>
         <tr><td>Laufstand „Mengen stammen aus dem Simulationslauf vom {0}" <b>neu</b></td><td class="rs">KDLG_LAUFSTAND</td><td>über dem Raster (U31)</td></tr>
         <tr><td>Gruppenkopf „Endenergie je Komponente" · Hinweis „Einsatz steckt im Reststrombedarf" <b>neu</b></td><td class="rs">KDLG_G_ENDENERGIE · KDLG_HINW_ELEKTROKESSEL</td><td>Gruppe unter dem Raster (U31)</td></tr>
         <tr><td>Doppelpflege Hilfsenergie — derselbe Text wie in der Kohärenzprüfung des BHKW-Dialogs</td><td class="rs">KOH_HILFSENERGIE_DOPPELT</td><td>BhkwWirtschaftlichkeitDialog; im Kostendialog neu (U31)</td></tr>
@@ -4191,20 +4194,22 @@ Einstufung
             <td><span class="mono">PhotovoltaikVerguetungDialog</span> · <span class="mono">PvErloesRechner</span></td>
             <td>bunit: sieben Vorschauzeilen aus <span class="mono">PvErloesErgebnis</span>, Summe = Erlös Jahr 1 der
               Einzeilenvorschau; Jahresmarktwertzeile nennt Jahr und Quelle</td></tr>
-        <tr><td class="mono">U28</td><td>1 · 2</td>
+        <tr class="gestrichen"><td class="mono">U28</td><td>1 · 2</td>
             <td>Herleitungszeile unter dem Betrag jeder gerechneten Rasterzeile: Bezugsgröße, Herkunft (P<sub>el</sub> der
-              Anlage · Hauptpositionen · Stufe Anlage · Lauf) und Kaskadenrunde. Die Anwendung führt beides nur im
-              Werkzeugtipp des Betragsfeldes (<span class="mono">KDLG_TT_BETRAG_BASIS_*</span>)</td>
-            <td><span class="mono">VorlagenZeile.razor</span> · <span class="mono">KostenKomponenteHuelle.BasisKurztext</span> ·
+              Anlage · Hauptpositionen · Stufe Anlage · Lauf) und Kaskadenrunde</td>
+            <td><span class="mono">VorlagenZeile.razor</span> · <span class="mono">KostenHerleitung</span> ·
               <span class="mono">InvestKaskade</span></td>
-            <td>bunit: jede Zeile mit Bezugsgröße trägt die Zeile, eine absolute Zeile „Satz = Betrag"; Zahlenprobe
-              300,00 kW · 196.080,00 € · 218.884,00 € · 1.650.000 kWh · 312.631,20 €</td></tr>
-        <tr><td class="mono">U29</td><td class="num">1</td>
-            <td>Dreiteiliger Summenfuß „Investition brutto · Zuschuss · I₀" unter der Nettosumme. Der Summenfuß der
-              Anwendung addiert alle Zeilen (Erlös- und Zuschusszeilen negativ) und nennt weder die Bruttoinvestition
-              noch den Zuschuss</td>
-            <td><span class="mono">KostenKomponenteHuelle.Summen</span> · <span class="mono">Zeilenraster</span></td>
-            <td>Zahlenprobe: 240.772,40 · 6.000,00 · 234.772,40 €; ohne Zuschusszeile entfällt die Zeile</td></tr>
+            <td class="grund"><b>erledigt:</b> Der Text entsteht im Kern (<span class="mono">KostenHerleitung.Bilde</span>);
+              Werkzeugtipp und sichtbare Zeile speisen sich aus derselben Methode, der Werkzeugtipp bleibt wortgleich.
+              Die Kaskade schreibt Runde und Herkunft beim Ableiten mit. Auf der Betriebsseite entfällt die Runde.
+              Ohne Bezugsgröße bleibt es beim ⚠ und beim Grund unter dem Raster, im Stammkontext bleibt die Zeile weg</td></tr>
+        <tr class="gestrichen"><td class="mono">U29</td><td class="num">1</td>
+            <td>Dreiteiliger Summenfuß „Investition brutto · Zuschuss · I₀" unter der Nettosumme</td>
+            <td><span class="mono">KostenSummenCtrl.Fuss</span> · <span class="mono">KostenKomponenteHuelle.Summen</span> ·
+              <span class="mono">Zeilenraster</span></td>
+            <td class="grund"><b>erledigt:</b> Die Trennung rechnet der Kern; der Nachweis hält I₀ gegen
+              <span class="mono">WirtschaftlichkeitCtrl.LiesInvestitionen</span> abzüglich Zuschuss — dieselbe Zahl.
+              Ohne Erlös-/Zuschusszeile entfällt die Zeile, weil netto dann I₀ ist</td></tr>
         <tr><td class="mono">U30</td><td class="num">1</td>
             <td>Gruppe „Ersatz und Restwert" unter dem Raster der Investitionskosten: je Position Nutzungsdauer,
               Ersatzjahr, Restwert im Jahr T und Herkunft der Dauer, je Komponente die Summe — mit U8 (Knopf

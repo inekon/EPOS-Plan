@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -341,6 +342,85 @@ namespace WindowsFormsApplication1
             }
             catch { }
             return namen;
+        }
+
+        // =====================================================================
+        // U29 — der dreiteilige Summenfuß der Investitionsseite
+        // =====================================================================
+
+        /// <summary>
+        /// Die drei Beträge unter dem Positionsraster der Investitionskosten.
+        /// </summary>
+        internal sealed class Investitionsfuss
+        {
+            /// <summary>Investition BRUTTO [€] — alle Zeilen ohne Erlös-/Zuschusskennzeichen.</summary>
+            public double Brutto;
+
+            /// <summary>Zuschuss [€], POSITIV ausgewiesen — die Erlös-/Zuschusszeilen.</summary>
+            public double Zuschuss;
+
+            /// <summary>I₀ [€] = <see cref="Brutto"/> − <see cref="Zuschuss"/>.</summary>
+            public double Investition;
+
+            /// <summary>Führt die Komponente überhaupt eine Erlös-/Zuschusszeile?
+            /// Ohne sie ist I₀ die Nettosumme, und die dritte Zeile sagte nichts Neues.</summary>
+            public bool MitZuschuss;
+        }
+
+        /// <summary>
+        /// U29: Investition brutto, Zuschuss und I₀ aus den Zeilen EINER Komponente.
+        ///
+        /// <para><b>Warum im Kern.</b> Der Summenfuß des Dialogs bildete bis hierher
+        /// nur die Nettosumme (Erlöszeilen negativ) — die Bruttoinvestition und der
+        /// Zuschuss standen nirgends, obwohl die Kapitalwertrechnung genau mit dieser
+        /// Trennung arbeitet (<c>WirtschaftlichkeitCtrl.LiesInvestitionen</c>, K5:
+        /// Zuschüsse mindern I₀, nicht die Basis der Prozentpositionen). Die Trennung
+        /// gehört deshalb an EINE Stelle.</para>
+        ///
+        /// <para><b>I₀ ist die Nettosumme.</b> Die bestehende Zeile addiert alle
+        /// Beträge und zieht die Erlös-/Zuschusszeilen ab; das ist Wort für Wort
+        /// <see cref="Investitionsfuss.Brutto"/> − <see cref="Investitionsfuss.Zuschuss"/>.
+        /// Die neue Zeile rechnet also nichts anderes, sie benennt die beiden Teile.</para>
+        /// </summary>
+        /// <param name="positionen">Die Zeilen der Komponente; <c>null</c>-Beträge
+        /// zählen nicht mit (nicht gepflegt heißt nicht 0).</param>
+        internal static Investitionsfuss Fuss(IEnumerable<KostenVorlagenPosition> positionen)
+        {
+            var f = new Investitionsfuss();
+            if (positionen == null) return f;
+
+            foreach (KostenVorlagenPosition p in positionen)
+            {
+                if (p == null || !p.BetragNetto.HasValue) continue;
+                if (p.IstErloes)
+                {
+                    // Der Betrag wird positiv erfasst; ein versehentlich negativer Wert
+                    // würde die Investition ERHÖHEN — dieselbe Regel wie in
+                    // WirtschaftlichkeitCtrl.LiesInvestitionen (K5).
+                    f.Zuschuss += Math.Abs(p.BetragNetto.Value);
+                    f.MitZuschuss = true;
+                }
+                else f.Brutto += p.BetragNetto.Value;
+            }
+            f.Investition = f.Brutto - f.Zuschuss;
+            return f;
+        }
+
+        /// <summary>
+        /// U29: Die dritte Zeile des Summenfußes, fertig gesetzt — leer, solange die
+        /// Komponente keine Erlös-/Zuschusszeile führt (dann ist netto = I₀).
+        /// </summary>
+        internal static string FussText(Investitionsfuss f)
+        {
+            if (f == null || !f.MitZuschuss) return "";
+            CultureInfo k = CultureInfo.CurrentCulture;
+            return string.Format(k, MyResource.Resource.KDLG_SUMME_DREITEILIG,
+                                 Geld(f.Brutto, k), Geld(f.Zuschuss, k), Geld(f.Investition, k));
+        }
+
+        private static string Geld(double wert, CultureInfo k)
+        {
+            return wert.ToString("#,##0.00", k) + " " + DbWerte.KOSTEN_EINHEIT_EURO;
         }
     }
 }

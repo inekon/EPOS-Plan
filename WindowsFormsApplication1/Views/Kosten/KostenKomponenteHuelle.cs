@@ -518,126 +518,31 @@ namespace WindowsFormsApplication1
 
         /// <summary>Betragsfeld nach Kopplungsregel (KL4/§ 5.4) — wortgleich aus
         /// <c>ucVorlagenZeile.KopplungAnwenden</c>.
-        /// <para><b>ANWENDERBEFUND W5‑B‑7 (08.09.2026):</b> Im Projektmodus nennt der
-        /// Werkzeugtipp die BEZUGSGRÖSSE, mit der gerechnet wurde — „3 % von
-        /// 5.660,00 €". Sie kommt aus derselben Kaskade wie der Betrag
-        /// (<see cref="InvestKaskade"/>), nicht aus einer zweiten Rechnung.</para></summary>
+        /// <para><b>U28:</b> Werkzeugtipp, Kennzeichen „ohne Bezugsgröße" und die
+        /// sichtbare Herleitungszeile kommen fertig aus <see cref="KostenHerleitung"/>
+        /// — EINE Methode für alle drei. Die Hülle formatiert davon nichts mehr
+        /// selbst; sie setzt nur noch die Betragszahl, die aus dem Arbeitsstand
+        /// kommt.</para></summary>
         private void KopplungAnwenden(KostenPositionZeile z, KostenVorlagenPosition p,
                                       BemessungKatalog.Info info,
                                       KostenProjektPositionenCtrl.Zeile pz = null)
         {
-            bool absolut = info != null && info.Absolut;
-            if (absolut)
-            {
-                z.BetragText = ZahlText(z.Satz);
-                z.Kette = true;
-                z.BetragKurztext = T("KDLG_TT_KETTE",
-                    "Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.");
-            }
-            else if (ProjektModus)
-            {
-                z.BetragText = p != null ? ZahlText(p.BetragNetto) : "";
-                z.Kette = false;
-                z.BetragKurztext = BasisKurztext(p, info, pz);
-            }
-            else
-            {
-                z.BetragText = "—";
-                z.Kette = false;
-                z.BetragKurztext = T("KDLG_TT_BETRAG_ADMIN",
-                    "Bezugsgröße erst im Projekt bekannt — der Betrag entsteht bei der Übernahme.");
-            }
+            KostenHerleitung.Angabe a =
+                KostenHerleitung.Bilde(p, KomponentenId, pz, ProjektModus);
 
-            // ANWENDERBEFUND 14.09.2026: KEIN STILLES 0. Den Grund baut BasisKurztext
-            // seit H4c — aber nur als Werkzeugtipp des Betragsfeldes; im
-            // Raster stand die 0 des Anwenderentscheids I-2 ohne ein Wort dazu. Das
-            // Kennzeichen trägt die Zeile jetzt sichtbar, und der Dialog sammelt die
-            // Gründe unter dem Raster. GENAU DIESELBE Bedingung wie in BasisKurztext:
-            // keine Bezugsgröße UND ein nennbarer Grund — eine absolute Bemessung
-            // braucht keine und trägt deshalb auch kein Zeichen.
-            z.OhneBasis = pz != null && !pz.Basis.HasValue &&
-                          GrundText(pz.BasisGrund).Length > 0;
+            if (a.Absolut) z.BetragText = ZahlText(z.Satz);
+            else if (ProjektModus) z.BetragText = p != null ? ZahlText(p.BetragNetto) : "";
+            else z.BetragText = "—";
+
+            z.Kette = a.Kette;
+            z.BetragKurztext = a.Kurztext;
+            z.OhneBasis = a.OhneBasis;
+            z.Herleitung = a.Zeile;
 
             // Die Herleitung einer GERECHNETEN Bezugsgröße kommt fertig aus dem Kern
             // (TechnikPlanwertCtrl.BaugroesseHerleitung); die Hülle reicht sie nur
             // durch — die Formel steht an EINER Stelle.
             z.BasisHerleitung = pz != null ? (pz.BasisHerleitung ?? "") : "";
-        }
-
-        /// <summary>
-        /// W5‑B‑7: Der Werkzeugtipp des Betragsfelds im Projektmodus. Kennt die Zeile
-        /// ihre Bezugsgröße, steht sie darin („3 % von 5.660,00 €" bzw.
-        /// „1,50 €/kW × 30,00 kW"); sonst bleibt der Bestandssatz stehen.
-        /// <para>Die Einheit der Bezugsgröße fällt aus der Satzeinheit: „%" bemisst sich
-        /// an einem Geldbetrag, „€/kW" an kW. Einheitenzeichen werden nicht übersetzt
-        /// (dokumentierte Ausnahme, <c>BetriebskostenCtrl.SatzEinheit</c>).</para>
-        /// </summary>
-        private string BasisKurztext(KostenVorlagenPosition p, BemessungKatalog.Info info,
-                                     KostenProjektPositionenCtrl.Zeile pz)
-        {
-            string bestand = T("KDLG_TT_BETRAG_PROJEKT",
-                "Aus Satz und Bezugsgröße des Projekts berechnet.");
-
-            // ANWENDERBEFUND 10.09.2026 (H4c): Ohne Bezugsgröße nennt der Werkzeugtipp
-            // den GRUND. Bis hierher stand dort derselbe Satz wie bei einer gerechneten
-            // Zeile — und im Feld die 0 des Anwenderentscheids I-2; wer den Satz
-            // gepflegt hatte, konnte nicht sehen, woran es lag.
-            if (pz != null && !pz.Basis.HasValue)
-            {
-                string grund = GrundText(pz.BasisGrund);
-                if (grund.Length > 0)
-                    return string.Format(T("KDLG_TT_OHNE_BASIS",
-                        "Keine Bezugsgröße: {0}. Es gilt der erfasste Betrag."), grund);
-            }
-
-            if (pz == null || !pz.Basis.HasValue || p == null || !p.Satz.HasValue || info == null)
-                return bestand;
-
-            string einheit = EinheitVon(info);
-            string satz = ZahlText(p.Satz) + " " + einheit;
-            bool prozent = string.Equals(einheit, "%", StringComparison.Ordinal);
-            string basisEinheit = prozent
-                ? DbWerte.KOSTEN_EINHEIT_EURO
-                : (einheit.StartsWith("€/", StringComparison.Ordinal)
-                    ? einheit.Substring(2) : "");
-            string basis = (pz.Basis.Value.ToString("#,##0.00", CultureInfo.CurrentCulture) +
-                            " " + basisEinheit).Trim();
-
-            return string.Format(prozent
-                    ? T("KDLG_TT_BETRAG_BASIS_PROZENT",
-                        "Aus Satz und Bezugsgröße des Projekts berechnet: {0} von {1}.")
-                    : T("KDLG_TT_BETRAG_BASIS_MENGE",
-                        "Aus Satz und Bezugsgröße des Projekts berechnet: {0} × {1}."),
-                satz, basis);
-        }
-
-        /// <summary>
-        /// H4c: Der Klartext zum Steuerwert <c>WirtschaftlichkeitCtrl.BASISGRUND_*</c>.
-        /// Die Zuordnung Art↔Gewerk kennt der Kern, die Sprache kennt die Oberfläche
-        /// (Drei-Schichten-Regel, Konzept 13.6). Leerer Steuerwert = die Bemessungsart
-        /// braucht überhaupt keine Bezugsgröße; dann bleibt der Bestandssatz stehen.
-        /// </summary>
-        private string GrundText(string grund)
-        {
-            switch (grund)
-            {
-                case WirtschaftlichkeitCtrl.BASISGRUND_GEWERK:
-                    return T("KDLG_BASIS_GRUND_GEWERK",
-                             "Die Bemessungsart passt nicht zu diesem Gewerk");
-                case WirtschaftlichkeitCtrl.BASISGRUND_GERAET:
-                    return T("KDLG_BASIS_GRUND_GERAET",
-                             "kein Gerät mit dieser Baugröße im Projekt");
-                case WirtschaftlichkeitCtrl.BASISGRUND_LAUF:
-                    return T("KDLG_BASIS_GRUND_LAUF", "kein Simulationslauf");
-                case WirtschaftlichkeitCtrl.BASISGRUND_INVEST:
-                    return T("KDLG_BASIS_GRUND_INVEST",
-                             "keine Investitionskosten für diese Anlage erfasst");
-                case WirtschaftlichkeitCtrl.BASISGRUND_KONSERVE:
-                    return T("KDLG_BASIS_GRUND_KONSERVE",
-                             "die Bezugsgröße dieser Art wird nicht ermittelt, sie ist zu pflegen");
-                default:
-                    return "";
-            }
         }
 
         private static string EmpfehlungText(KostenVorlagenPosition p, string einheit)
@@ -788,15 +693,23 @@ namespace WindowsFormsApplication1
         /// Der Summenfuß (§ 5.2) — wortgleich aus <c>SummenAnzeigen</c>: nur
         /// absolute Positionen tragen einen Betrag, Erlöse mit negativem Ausweis
         /// (L7); Brutto ist reine Anzeige (KL5).
+        /// <para><b>U29:</b> Auf der Investitionsseite kommt eine dritte Zeile dazu,
+        /// sobald die Komponente eine Erlös-/Zuschusszeile führt: Investition brutto,
+        /// Zuschuss und I₀. Sie rechnet nichts Neues — die Nettosumme IST I₀ —,
+        /// sondern benennt die beiden Teile. Gebildet wird sie im Kern
+        /// (<see cref="KostenSummenCtrl.Fuss"/>), damit der Dialog dieselbe Trennung
+        /// zeigt, mit der die Kapitalwertrechnung arbeitet (K5).</para>
         /// </summary>
         private IReadOnlyList<ValueTuple<string, bool>> Summen()
         {
+            var positionen = new List<KostenVorlagenPosition>();
             double netto = 0;
             foreach (KostenPositionZeile z in _zeilen)
             {
                 Bindung b;
                 if (!_bindungen.TryGetValue(z, out b)) continue;
                 KostenVorlagenPosition p = b.Position;
+                positionen.Add(p);
                 if (!p.BetragNetto.HasValue) continue;
                 netto += p.IstErloes ? -p.BetragNetto.Value : p.BetragNetto.Value;
             }
@@ -817,6 +730,13 @@ namespace WindowsFormsApplication1
                 liste.Add(new ValueTuple<string, bool>(string.Format(
                     T("KDLG_SUMME_BRUTTO", "Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"),
                     bruttoText, ust.Value.ToString("0.#", CultureInfo.CurrentCulture)), false));
+            }
+
+            if (_invest)
+            {
+                string dreiteilig = KostenSummenCtrl.FussText(KostenSummenCtrl.Fuss(positionen));
+                if (dreiteilig.Length > 0)
+                    liste.Add(new ValueTuple<string, bool>(dreiteilig, true));
             }
             return liste;
         }

@@ -21045,6 +21045,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aperturfläche ähnelt.
+        /// </summary>
+        public static string KDLG_GR_APERTUR {
+            get {
+                return ResourceManager.GetString("KDLG_GR_APERTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapazität ähnelt.
+        /// </summary>
+        public static string KDLG_GR_KAPAZITAET {
+            get {
+                return ResourceManager.GetString("KDLG_GR_KAPAZITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kollektorfeld ähnelt.
+        /// </summary>
+        public static string KDLG_GR_KOLLEKTORFELD {
+            get {
+                return ResourceManager.GetString("KDLG_GR_KOLLEKTORFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWp ähnelt.
+        /// </summary>
+        public static string KDLG_GR_KWP {
+            get {
+                return ResourceManager.GetString("KDLG_GR_KWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistung ähnelt.
+        /// </summary>
+        public static string KDLG_GR_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KDLG_GR_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung ähnelt.
+        /// </summary>
+        public static string KDLG_GR_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("KDLG_GR_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_el ähnelt.
+        /// </summary>
+        public static string KDLG_GR_PEL {
+            get {
+                return ResourceManager.GetString("KDLG_GR_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_therm ähnelt.
+        /// </summary>
+        public static string KDLG_GR_PTHERM {
+            get {
+                return ResourceManager.GetString("KDLG_GR_PTHERM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen ähnelt.
+        /// </summary>
+        public static string KDLG_GR_VOLUMEN {
+            get {
+                return ResourceManager.GetString("KDLG_GR_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} der Anlage ähnelt.
+        /// </summary>
+        public static string KDLG_HERK_ANLAGE {
+            get {
+                return ResourceManager.GetString("KDLG_HERK_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hauptpositionen ähnelt.
+        /// </summary>
+        public static string KDLG_HERK_HAUPT {
+            get {
+                return ResourceManager.GetString("KDLG_HERK_HAUPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investitionssumme ähnelt.
+        /// </summary>
+        public static string KDLG_HERK_INVEST {
+            get {
+                return ResourceManager.GetString("KDLG_HERK_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lauf ähnelt.
+        /// </summary>
+        public static string KDLG_HERK_LAUF {
+            get {
+                return ResourceManager.GetString("KDLG_HERK_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe Anlage ähnelt.
+        /// </summary>
+        public static string KDLG_HERK_STUFE_ANLAGE {
+            get {
+                return ResourceManager.GetString("KDLG_HERK_STUFE_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe Komponente ähnelt.
+        /// </summary>
+        public static string KDLG_HERK_STUFE_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("KDLG_HERK_STUFE_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufe Projekt ähnelt.
+        /// </summary>
+        public static string KDLG_HERK_STUFE_PROJEKT {
+            get {
+                return ResourceManager.GetString("KDLG_HERK_STUFE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW/m² × {1} m² × {2} Module = {3} kW ähnelt.
         /// </summary>
         public static string KDLG_HERLEITUNG_SOLAR_KW {
@@ -21059,6 +21203,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_HERLEITUNG_SOLAR_KW_FLAECHE {
             get {
                 return ResourceManager.GetString("KDLG_HERLEITUNG_SOLAR_KW_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz = Betrag ähnelt.
+        /// </summary>
+        public static string KDLG_HERL_ABSOLUT {
+            get {
+                return ResourceManager.GetString("KDLG_HERL_ABSOLUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die × {0} · {1} · Runde {2} ähnelt.
+        /// </summary>
+        public static string KDLG_HERL_BASIS {
+            get {
+                return ResourceManager.GetString("KDLG_HERL_BASIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die × {0} · {1} ähnelt.
+        /// </summary>
+        public static string KDLG_HERL_BASIS_OHNE_RUNDE {
+            get {
+                return ResourceManager.GetString("KDLG_HERL_BASIS_OHNE_RUNDE", resourceCulture);
             }
         }
         
@@ -21483,6 +21654,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_SUMME_BRUTTO {
             get {
                 return ResourceManager.GetString("KDLG_SUMME_BRUTTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition brutto {0} · Zuschuss {1} · I₀ {2} ähnelt.
+        /// </summary>
+        public static string KDLG_SUMME_DREITEILIG {
+            get {
+                return ResourceManager.GetString("KDLG_SUMME_DREITEILIG", resourceCulture);
             }
         }
         

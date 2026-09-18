@@ -320,4 +320,61 @@ public class VorlagenZeileTests : BunitContext
         Assert.Equal("Aus Satz und Bezugsgröße berechnet.",
                      cut.Find(".epos-zr-text").GetAttribute("title"));
     }
+
+    // =====================================================================
+    // U28 — die Herleitungszeile unter dem Betrag
+    // =====================================================================
+
+    /// <summary>
+    /// Eine gerechnete Zeile trägt die Herleitung SICHTBAR unter dem Betrag —
+    /// Bezugsgröße, Herkunft und Kaskadenrunde. Der Text kommt fertig aus dem
+    /// Kern; die Zeile zeigt ihn nur.
+    /// </summary>
+    [Fact]
+    public void Eine_Zeile_mit_Bezugsgroesse_traegt_die_Herleitung_unter_dem_Betrag()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.Herleitung, "× 300,00 kW · P_el der Anlage · Runde 1"));
+
+        var zeile = cut.Find(".epos-zr-herleitung");
+        Assert.Equal("× 300,00 kW · P_el der Anlage · Runde 1", zeile.TextContent);
+        // Sie steht IN der Betragszelle, unter der Zahl — nicht in einer eigenen Spur.
+        Assert.Equal("1200", cut.Find(".epos-zr-text .epos-zr-betrag").TextContent);
+        Assert.Contains("epos-herleitung", zeile.ClassName);
+    }
+
+    /// <summary>Eine absolute Zeile sagt genau das — sie hat keine Bezugsgröße und
+    /// braucht auch keine.</summary>
+    [Fact]
+    public void Eine_absolute_Zeile_traegt_Satz_gleich_Betrag()
+    {
+        var cut = Zeige(p => p.Add(x => x.Herleitung, "Satz = Betrag"));
+
+        Assert.Equal("Satz = Betrag", cut.Find(".epos-zr-herleitung").TextContent);
+    }
+
+    /// <summary>Im Stammkontext (und überall dort, wo eine Bezugsgröße fehlt) gibt
+    /// der Kern keinen Text heraus — dann bleibt die Zeile weg.</summary>
+    [Fact]
+    public void Ohne_Herleitungstext_bleibt_die_Zeile_weg()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-zr-herleitung"));
+    }
+
+    /// <summary>Die Herleitungszeile ersetzt den Werkzeugtipp nicht — er nennt
+    /// dieselbe Rechnung vollständig, auch wo die Zelle abschneidet.</summary>
+    [Fact]
+    public void Die_Herleitungszeile_laesst_den_Werkzeugtipp_stehen()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.BetragKurztext,
+                 "Aus Satz und Bezugsgröße des Projekts berechnet: 653,60 €/kW × 300,00 kW.")
+            .Add(x => x.Herleitung, "× 300,00 kW · P_el der Anlage · Runde 1"));
+
+        Assert.Equal("Aus Satz und Bezugsgröße des Projekts berechnet: 653,60 €/kW × 300,00 kW.",
+                     cut.Find(".epos-zr-text").GetAttribute("title"));
+        Assert.Single(cut.FindAll(".epos-zr-herleitung"));
+    }
 }

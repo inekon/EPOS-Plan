@@ -15,9 +15,11 @@ elektrisch; „je kWh" und „je Stunde" nur, wo eine Bestandszeile sie trägt).
 (Wartung BHKW, Instandhaltung BHKW, Hilfsenergiekosten — Schemaschritt 59) tragen denselben Papierkorb wie jede
 Zeile; der Löschversuch antwortet „… ist eine Pflichtposition dieser Komponente und kann nicht gelöscht werden.
 Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen." Der Empfehlungsbereich ist der Werkzeugtipp des Satzfeldes
-(„Empfehlung: 1,00 – 2,00 %"), die Bezugsgröße der des Betragsfeldes („1,50 % von 240.772,40 €"). Absolute
+(„Empfehlung: 1,00 – 2,00 %"), die Bezugsgröße der des Betragsfeldes („1,50 % von 240.772,40 €"). Unter dem
+Betrag jeder gerechneten Zeile steht Bezugsgröße und Herkunft als leise Zeile („× 1.650.000,00 kWh · Lauf");
+eine Runde nennt sie hier nicht, weil die Betriebsseite keine Kaskade kennt. Absolute
 Positionen spiegeln den Satz im Betrag (🔗). Was das Mockup darüber hinaus zeigt, steht im Anhang
-Umsetzungsstand: Herleitungszeile (U28); Schloss statt Papierkorb, Empfehlungszeile, Laufstand über dem Raster,
+Umsetzungsstand: Schloss statt Papierkorb, Empfehlungszeile, Laufstand über dem Raster,
 Gruppe „Endenergie je Komponente" und die Doppelpflege-Warnung im Kostendialog (U31).
 
 | Position | Bemessung | Satz | Bezugsgröße (Werkzeugtipp) | Betrag |

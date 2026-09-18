@@ -207,6 +207,76 @@ public class KostenKomponenteDialogTests : BunitContext
                         cut.Find(".epos-zr-summenzelle").TextContent);
     }
 
+    // =====================================================================
+    // U29 — der dreiteilige Summenfuß der Investitionsseite
+    // =====================================================================
+
+    /// <summary>
+    /// Führt die Komponente eine Zuschusszeile, nennt der Fuß unter der
+    /// Nettosumme die Bruttoinvestition, den Zuschuss und I₀ — drei Zeilen, die
+    /// dritte betont. Gebildet wird sie in der Hülle über den Kern
+    /// (<c>KostenSummenCtrl.Fuss</c>); der Dialog zeigt, was im Stand steht.
+    /// </summary>
+    [Fact]
+    public void Mit_Zuschusszeile_traegt_der_Fuss_Bruttoinvestition_Zuschuss_und_I0()
+    {
+        KostenKomponenteStand s = Standard();
+        s.Summen = new[]
+        {
+            ("Summe Investitionskosten netto: 234.772,40 €", true),
+            ("Summe brutto: 279.379,16 € (Umsatzsteuer 19 % aus dem Katalog)", false),
+            ("Investition brutto 240.772,40 € · Zuschuss 6.000,00 € · I₀ 234.772,40 €", true),
+        };
+
+        var cut = Zeige(stand: s);
+
+        var zellen = cut.FindAll(".epos-zr-summenzelle");
+        Assert.Equal(3, zellen.Count);
+        Assert.Equal("Investition brutto 240.772,40 € · Zuschuss 6.000,00 € · I₀ 234.772,40 €",
+                     zellen[2].TextContent);
+        Assert.Contains("epos-zr-summenzelle--stark", zellen[2].ClassName);
+    }
+
+    /// <summary>Gegenprobe: Ohne Zuschusszeile gibt der Kern keinen dritten Text
+    /// heraus — dann bleibt es bei Netto und Brutto, weil netto = I₀ ist.</summary>
+    [Fact]
+    public void Ohne_Zuschusszeile_bleibt_der_dreiteilige_Fuss_weg()
+    {
+        KostenKomponenteStand s = Standard();
+        s.Summen = new[]
+        {
+            ("Summe Investitionskosten netto: 240.772,40 €", true),
+            ("Summe brutto: 286.519,16 € (Umsatzsteuer 19 % aus dem Katalog)", false),
+        };
+
+        var cut = Zeige(stand: s);
+
+        Assert.Equal(2, cut.FindAll(".epos-zr-summenzelle").Count);
+        Assert.DoesNotContain("Investition brutto", cut.Markup);
+    }
+
+    // =====================================================================
+    // U28 — die Herleitungszeile wandert bis in die Rasterzeile durch
+    // =====================================================================
+
+    /// <summary>
+    /// Der Dialog reicht die Herleitung des Kerns an die Zeile weiter — sie steht
+    /// unter dem Betrag, eine je gerechneter Zeile.
+    /// </summary>
+    [Fact]
+    public void Die_Herleitung_des_Standes_steht_unter_dem_Betrag_der_Zeile()
+    {
+        KostenKomponenteStand s = Standard();
+        KostenPositionZeile erste = s.Zeilen[0];
+        erste.Herleitung = "× 300,00 kW · P_el der Anlage · Runde 1";
+
+        var cut = Zeige(stand: s);
+
+        var herleitungen = cut.FindAll(".epos-zr-herleitung");
+        Assert.Single(herleitungen);
+        Assert.Equal("× 300,00 kW · P_el der Anlage · Runde 1", herleitungen[0].TextContent);
+    }
+
     [Fact]
     public void Jede_Position_erscheint_als_eigene_Zeile()
     {
