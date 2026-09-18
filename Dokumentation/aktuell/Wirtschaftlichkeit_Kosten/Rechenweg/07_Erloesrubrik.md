@@ -20,8 +20,8 @@ dieselbe Ersparnis zweimal.
 | Energiesteuer BHKW-Brennstoff | § 53a Abs. 5 EnergieStG | 4.797,2 MWh (H_s) | 4,42 €/MWh | 21.203,4 | dauerhaft · jährlicher Antrag |
 | Stromsteuer-Entlastung Netzbezug | § 9b StromStG | 250,0 MWh | 20,00 €/MWh | 4.750,0 | nur produzierendes Gewerbe |
 | Einspeiseerlös Strom | Tarif / Projektwert | 495,0 MWh | 5,00 ct | 24.750,0 | nominal konstant |
-| PV-Vergütung | § 21 · § 51 EEG | 199,5 MWh | Reihe | 10.396,3 | 20 a + IBN-Monate |
-| **Summe Block A** | | | | **93.121,9** | |
+| PV-Vergütung | § 21 · § 51 EEG | 159,6 von 199,5 MWh | Reihe (`06`) | 9.001,4 | 20 a + IBN-Monate |
+| **Summe Block A** | | | | **91.727,0** | |
 
 Nicht im Beispiel, aber Teil der Rubrik: KWKG-Pauschale § 9 (≤ 2 kW_el, einmalig, schließt A1/A2
 aus) · Energiesteuer Kesselbrennstoff § 54 (nur produzierendes Gewerbe, Sockel 250 €/a) · Restwert
@@ -127,6 +127,6 @@ darunter „abzüglich entgangener § 9b-Entlastung", mit dem effektiven Betrag 
 | E5 | Doppelzählung vermiedener Kosten | Block B nie addieren; Summenzeile nur Block A |
 | D-2 | eigene Rubrik in zwei Blöcken | entschieden 30.08.2026 |
 | — | Leistungsanteil der vermiedenen Kosten negativ | als Kernaussage ausweisen, nicht unterdrücken |
-| — | Die Vorschau des BHKW-Dialogs führte eine Summe „zahlungswirksam" (80.934,2 €), die weder der Variante 1 (84.435,6 €, § 9b auf 335,5 MWh) noch der Variante 3 (93.121,9 €, mit Photovoltaik) entsprach | Vorschau zeigt den Block Blockheizkraftwerk (77.975,6 €) und die projektweite § 9b-Zeile des Laufs „Beide Anlagen" getrennt — Mockup Abschnitt 5, `05` |
+| — | Die Vorschau des BHKW-Dialogs führte eine Summe „zahlungswirksam" (80.934,2 €), die weder der Variante 1 (84.435,6 €, § 9b auf 335,5 MWh) noch der Variante 3 (91.727,0 €, mit Photovoltaik) entsprach | Vorschau zeigt den Block Blockheizkraftwerk (77.975,6 €) und die projektweite § 9b-Zeile des Laufs „Beide Anlagen" getrennt — Mockup Abschnitt 5, `05` |
 | — | Spalte „Satz · Herkunft" je Zeile, Vermerk „eigener Wert — Vorschlag" | Mockup Abschnitt 7; Umsetzungsstand U23 (Vergleich Satz gegen Vorschlag im Nachweis) |
-| ✔ S-1 | Hilfsstrom-Netting des Beispiels gegen die Kernregel „Eigen zuerst" — Zuschlag- und Einspeisezeile betroffen | erledigt (U24): Zuschlag 32.022,2 €, Einspeiseerlös 24.750,0 €, Block A der Variante 3 93.121,9 €/a; Einzelheiten in `05` |
+| ✔ S-1 | Hilfsstrom-Netting des Beispiels gegen die Kernregel „Eigen zuerst" — Zuschlag- und Einspeisezeile betroffen | erledigt (U24): Zuschlag 32.022,2 €, Einspeiseerlös 24.750,0 €, Block A der Variante 3 91.727,0 €/a; Einzelheiten in `05` |

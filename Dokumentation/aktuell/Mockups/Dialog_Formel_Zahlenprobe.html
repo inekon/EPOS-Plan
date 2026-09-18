@@ -586,11 +586,11 @@ a{color:var(--marine-hell)}
         <tr><td><b>Variante 2</b> — Photovoltaik</td>
             <td>300 kWp, Überschusseinspeisung, Direktvermarktung</td>
             <td class="r num">192.150</td><td class="r num">8.131</td>
-            <td class="r num">535.392</td><td class="r num">39.916</td></tr>
+            <td class="r num">535.392</td><td class="r num">38.521</td></tr>
         <tr class="zwischen"><td><b>Variante 3</b> — beide Anlagen</td>
             <td>Blockheizkraftwerk und Photovoltaik zusammen</td>
             <td class="r num">426.922</td><td class="r num">65.295</td>
-            <td class="r num">384.811</td><td class="r num">93.122</td></tr>
+            <td class="r num">384.811</td><td class="r num">91.727</td></tr>
       </tbody>
     </table>
   </div>
@@ -2681,124 +2681,135 @@ Stromsteuer
   Zuschlag, dafür ein anzulegender Wert, der degressiv altert, eine Marktprämie als Differenzgröße und
   zwei Kürzungstatbestände — negative Preise und die Begrenzung auf 60 % der Spitzenleistung. Den Satz
   gibt der Anwender an <b>einer</b> Stelle ein: <b>AW-Override [ct/kWh] (0 = Katalog)</b> in der Gruppe
-  „Anzulegender Wert"; leer oder 0 heißt, der Katalogwert gilt und die Zeilen darunter sagen, wie er entsteht.</p>
+  „Anzulegender Wert"; leer oder 0 heißt, der Katalogwert gilt und die Zeilen darunter sagen, wie er entsteht.
+  Die Zahlen dieser Kategorie kommen aus dem <span class="mono">PvErloesRechner</span>, so wie die Vorschau
+  des Dialogs rechnet: Stufe 1, ohne Stundenreihe.</p>
 
   <div class="zone">Dialog</div>
-  <p class="eng">Sieben Gruppen in der Reihenfolge des Dialogs, Beschriftungen aus den Ressourcentexten der
-  Anwendung. <b>Editierbar</b>: Zahlenfelder (die Einheit steht in der Beschriftung, wie im Dialog), das
-  Datumsfeld, die Optionsgruppen, die Klapplisten „Anwenden" und die Schalter. <b>Gesperrt</b> (grau): die
-  PPA-Felder, solange keine sonstige Direktvermarktung gewählt ist, und die Option „Feste Einspeisevergütung"
-  über 100 kW. Der anzulegende Wert, die feste EV und der Jahresmarktwert sind Herleitungszeilen — keine Felder.</p>
+  <p class="eng">Sieben Gruppen untereinander in der Reihenfolge des Dialogs, Beschriftungen aus den
+  Ressourcentexten der Anwendung, darüber der Schalter „Vergütung anwenden". <b>Editierbar</b>: die
+  Zahlenfelder (die Einheit steht in der Beschriftung, wie im Dialog), das Datumsfeld, das Ganzzahlfeld, die
+  beiden Optionsgruppen, die beiden Klapplisten „Anwenden" und die drei Schalter. <b>Gesperrt</b> (grau): das
+  DV-Entgelt außerhalb der Marktprämie, die PPA-Felder, solange keine sonstige Direktvermarktung gewählt ist,
+  die Option „Feste Einspeisevergütung" über 100 kW und „Keine Vergütung" ab 200 kW. Alles Übrige sind
+  Herleitungszeilen — installierte Leistung, anzulegender Wert samt Katalogherleitung, feste EV, die Statuszeilen,
+  Vorschau und Kennzahlen. Die aufgeschlüsselte Vorschau am Ende <span class="zk vor">Vorschlag U27</span>.</p>
   <div class="fenster">
     <div class="f-band">PV-Vergütung (EEG)<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
       <div class="f-zeile"><span class="f-check an"><i></i></span><span class="f-lab" style="min-width:0">Vergütung anwenden</span></div>
 
-      <div class="f-spalten" style="margin-top:8px">
-        <div>
-          <!-- Anlage (PVW_G_ANLAGE) -->
-          <div class="f-gruppe">
-            <div class="f-titel">☀ Anlage</div>
-            <div class="f-herleitung">Installierte Leistung: <b>rechnerisch 300,0 kWp</b></div>
-            <div class="f-zeile breit"><label>Override [kWp] (0 = keiner):</label><span class="f-eingabe num">0,00</span></div>
-            <div class="f-zeile breit"><label>Inbetriebnahme:</label><span class="f-eingabe links num">01.08.2026</span></div>
-            <div class="f-zeile breit"><label>Degradation [%/a]:</label><span class="f-eingabe num">0,50</span></div>
-            <div class="f-lab" style="font-weight:600;margin:6px 0 2px">Einspeiseart</div>
-            <div class="f-zeile eng"><span class="f-radio an"><i></i></span><span class="f-lab">Überschusseinspeisung</span>
-              <span class="f-radio"><i></i></span><span class="f-lab" style="min-width:0">Volleinspeisung</span></div>
-            <div class="f-info">Die Degradation wirkt nur in der Erlösreihe, nicht in der Stundensimulation; 0 = keine.
-            Warnzeilen der Gruppe nur, wenn sie zutreffen: über 1 MW Ausschreibung (AW-Override nötig), über 2 MW Stromsteuer prüfen.</div>
-          </div>
+      <!-- Anlage (PVW_G_ANLAGE) -->
+      <div class="f-gruppe" style="margin-top:8px">
+        <div class="f-titel">☀ Anlage</div>
+        <div class="f-herleitung">Installierte Leistung: <b>rechnerisch 300,0 kWp</b></div>
+        <div class="f-zeile breit"><label>Override [kWp] (0 = keiner):</label><span class="f-eingabe num">0,00</span></div>
+        <div class="f-zeile breit"><label>Inbetriebnahme:</label><span class="f-eingabe links num">01.08.2026</span></div>
+        <div class="f-zeile breit"><label>Degradation [%/a]:</label><span class="f-eingabe num" title="Jährlicher Leistungsverlust der Module. Wirkt nur in der Erlösreihe, nicht in der Stundensimulation des Basisjahres. 0 = keine Degradation; typisch sind 0,3 bis 0,5 %/a.">0,50</span></div>
+        <div class="f-lab" style="font-weight:600;margin:6px 0 2px">Einspeiseart</div>
+        <div class="f-zeile eng"><span class="f-radio an"><i></i></span><span class="f-lab">Überschusseinspeisung</span>
+          <span class="f-radio"><i></i></span><span class="f-lab" style="min-width:0">Volleinspeisung</span></div>
+        <div class="f-info">Die rechnerische Leistung ist dieselbe kWp-Summe wie in Kategorie 3 (Modulleistung × Modulanzahl); ein
+        Override ersetzt sie. Die Degradation wirkt nur in der Erlösreihe, nicht in der Stundensimulation; 0 = keine. Das Warnband
+        der Gruppe steht nur über 1 MW („über 1 MW: Ausschreibung — AW-Override nötig."); die zweite Warnung „über 2 MW: Stromsteuer
+        auf Eigenverbrauch prüfen." kann nicht erscheinen, weil die 1-MW-Prüfung zuerst greift <span class="zk vor">Vorschlag U36</span>.</div>
+      </div>
 
-          <!-- Anzulegender Wert (PVW_G_AW) -->
-          <div class="f-gruppe" style="margin-top:12px">
-            <div class="f-titel">€ Anzulegender Wert</div>
-            <div class="f-zeile breit"><label>AW-Override [ct/kWh] (0 = Katalog):</label><span class="f-eingabe num">0,00</span></div>
-            <div class="f-herleitung">AW_mix: <b>6,04 ct/kWh</b></div>
-            <div class="f-herleitung">marginale Klassen, Katalogwerte zum Stichtag 08/2026: 100 kWp × 7,94 + 200 kWp × 5,09 = 1.812 ÷ 300 ·
-            Degression 0,99 je Halbjahresstichtag ab 01.02.2024</div>
-            <div class="f-herleitung">Feste EV (AW − 0,40): <b>5,64 ct/kWh</b></div>
-            <div class="f-info"><b>Hier steht der Satz.</b> Leer oder 0 = der Katalogwert 6,04 gilt; ein Wert im Feld ersetzt ihn, und die
-            Zeile darunter trägt dann „AW_mix: 7,00 ct/kWh (Override)". Zurück zum Katalog: das Feld auf 0 setzen.
-            Die feste EV ist abgeleitet und kein Feld.</div>
-          </div>
+      <!-- Anzulegender Wert (PVW_G_AW) -->
+      <div class="f-gruppe" style="margin-top:12px">
+        <div class="f-titel">€ Anzulegender Wert</div>
+        <div class="f-zeile breit"><label>AW-Override [ct/kWh] (0 = Katalog):</label><span class="f-eingabe num">0,00</span></div>
+        <div class="f-herleitung">AW_mix: <b>6,04 ct/kWh</b></div>
+        <div class="f-herleitung">IBN 01.08.2026: 6 Degressionsschritte (1 %/Halbjahr ab 01.02.2024), Faktor 0,9415. bis 10 kW: 10 kW × 8,10 ct/kWh;
+        bis 40 kW: 30 kW × 7,06 ct/kWh; bis 100 kW: 60 kW × 5,84 ct/kWh; bis 400 kW: 200 kW × 5,84 ct/kWh; AW_mix = 6,04 ct/kWh (Überschusseinspeisung).</div>
+        <div class="f-herleitung">Feste EV (AW − 0,40): <b>5,64 ct/kWh</b></div>
+        <div class="f-info"><b>Hier steht der Satz.</b> Leer oder 0 = der Katalogwert 6,04 gilt; ein Wert im Feld ersetzt ihn, und die
+        erste Zeile darunter trägt dann „AW_mix: 7,00 ct/kWh (Override)". Zurück zum Katalog: das Feld auf 0 setzen. Die Klassen
+        sind marginale Tranchen mit den gerundeten Tabellenwerten zum Stichtag; die feste EV ist abgeleitet, kein Feld, und bei
+        300 kWp nicht wählbar.</div>
+      </div>
 
-          <!-- Vermarktung (PVW_G_VERMARKTUNG) -->
-          <div class="f-gruppe" style="margin-top:12px">
-            <div class="f-titel">⇄ Vermarktung</div>
-            <div class="f-zeile eng" style="opacity:.55"><span class="f-radio"><i></i></span><span class="f-lab">Feste Einspeisevergütung</span><span class="f-einheit">gesperrt: Feste EV nur bis 100 kW (§ 21 Abs. 1 Nr. 1).</span></div>
-            <div class="f-zeile eng"><span class="f-radio an"><i></i></span><span class="f-lab">Direktvermarktung mit Marktprämie</span></div>
-            <div class="f-zeile eng"><span class="f-radio"><i></i></span><span class="f-lab">Sonstige Direktvermarktung / PPA</span></div>
-            <div class="f-zeile eng" style="opacity:.55"><span class="f-radio"><i></i></span><span class="f-lab">Keine Vergütung (unentgeltlich)</span><span class="f-einheit">gesperrt: nur unter 200 kW (§ 21c)</span></div>
-            <div class="f-zeile breit"><label>DV-Entgelt [ct/kWh]:</label><span class="f-eingabe num">0,40</span></div>
-            <div class="f-zeile breit"><label>PPA-Festpreis [ct/kWh] (0 = keiner):</label><span class="f-eingabe gesperrt num">0,00</span><span class="f-einheit">nur bei sonstiger Direktvermarktung</span></div>
-            <div class="f-zeile breit"><label>PPA-Aufschlag auf Spot [ct/kWh]:</label><span class="f-eingabe gesperrt num">0,00</span><span class="f-einheit">nur bei sonstiger Direktvermarktung</span></div>
-            <div class="f-herleitung">Feste EV nur bis 100 kW (§ 21 Abs. 1 Nr. 1).</div>
-            <div class="f-herleitung">Jahresmarktwert Solar 2026: <b>4,50 ct/kWh</b> — aus „Marktwerte importieren…"</div>
-            <div class="f-info">Der Jahresmarktwert ist kein Feld dieses Dialogs; er kommt aus dem Marktwert-Import, seine
-            Fortschreibung aus den Szenarien <span class="zk vor">Vorschlag U27</span>.</div>
-          </div>
-        </div>
+      <!-- Vermarktung (PVW_G_VERMARKTUNG) -->
+      <div class="f-gruppe" style="margin-top:12px">
+        <div class="f-titel">⇄ Vermarktung</div>
+        <div class="f-zeile eng" style="opacity:.55"><span class="f-radio"><i></i></span><span class="f-lab">Feste Einspeisevergütung</span><span class="f-einheit">gesperrt über 100 kW</span></div>
+        <div class="f-zeile eng"><span class="f-radio an"><i></i></span><span class="f-lab">Direktvermarktung mit Marktprämie</span></div>
+        <div class="f-zeile eng"><span class="f-radio"><i></i></span><span class="f-lab">Sonstige Direktvermarktung / PPA</span></div>
+        <div class="f-zeile eng" style="opacity:.55"><span class="f-radio"><i></i></span><span class="f-lab">Keine Vergütung (unentgeltlich)</span><span class="f-einheit">gesperrt ab 200 kW</span></div>
+        <div class="f-zeile breit"><label>DV-Entgelt [ct/kWh]:</label><span class="f-eingabe num">0,40</span><span class="f-einheit">nur bei Marktprämie</span></div>
+        <div class="f-zeile breit"><label>PPA-Festpreis [ct/kWh] (0 = keiner):</label><span class="f-eingabe gesperrt num">0,00</span><span class="f-einheit">nur bei sonstiger Direktvermarktung</span></div>
+        <div class="f-zeile breit"><label>PPA-Aufschlag auf Spot [ct/kWh]:</label><span class="f-eingabe gesperrt num">0,00</span><span class="f-einheit">nur bei sonstiger Direktvermarktung</span></div>
+        <div class="f-herleitung">Feste EV nur bis 100 kW (§ 21 Abs. 1 Nr. 1 EEG).</div>
+        <div class="f-info">Wird die gewählte Form unzulässig (Leistung oder Inbetriebnahme geändert), schaltet der Dialog auf
+        Marktprämie um. Der <b>Jahresmarktwert</b> ist kein Feld und keine Zeile dieses Dialogs: Der Rechner nimmt den amtlichen
+        Wert des Kalenderjahres aus dem Marktwert-Import, ersatzweise den letzten bekannten Wert (2025: 4,508 ct/kWh),
+        fortgeschrieben mit der Marktwertentwicklung des Modells. Das Beispiel rechnet mit importierten
+        <b>4,50 ct/kWh</b> für 2026. Die Zeile dazu <span class="zk vor">Vorschlag U27</span>.</div>
+      </div>
 
-        <div>
-          <!-- Verguetungsausfall (PVW_G_51) -->
-          <div class="f-gruppe">
-            <div class="f-titel">Vergütungsausfall (§ 51 / § 51a)</div>
-            <div class="f-zeile breit"><label>Anwenden:</label><span class="f-combo">Automatisch</span></div>
-            <div class="f-zeile breit"><label>iMSys-Einbaujahr (0 = keins):</label><span class="f-eingabe num">0</span></div>
-            <div class="f-zeile breit"><label>Ausfallanteil der Einspeisearbeit [%]:</label><span class="f-eingabe num">20,0</span><span class="f-einheit">%</span></div>
-            <div class="f-zeile breit"><span class="f-check an"><i></i></span><span class="f-lab" style="min-width:0">§ 51a-Kompensation (Laufzeitverlängerung)</span></div>
-            <div class="f-herleitung">greift ab der ersten negativen Viertelstunde.</div>
-            <div class="f-info">Anlage ≥ 100 kWp, Inbetriebnahme nach dem 25.02.2025. Alternativ stundenscharf aus der Spotpreis-Zeitreihe:
-            <span class="mono">a = Σ Einsp(Spot &lt; 0) ÷ Σ Einsp</span></div>
-          </div>
+      <!-- Verguetungsausfall (PVW_G_51) -->
+      <div class="f-gruppe" style="margin-top:12px">
+        <div class="f-titel">Vergütungsausfall (§ 51 / § 51a)</div>
+        <div class="f-zeile breit"><label>Anwenden:</label><span class="f-combo">Automatisch</span></div>
+        <div class="f-zeile breit"><label>iMSys-Einbaujahr (0 = keins):</label><span class="f-eingabe num">0</span></div>
+        <div class="f-zeile breit"><label>Ausfallanteil der Einspeisearbeit [%]:</label><span class="f-eingabe num">20,0</span><span class="f-einheit">%</span></div>
+        <div class="f-zeile breit"><span class="f-check an"><i></i></span><span class="f-lab" style="min-width:0">§ 51a-Kompensation (Laufzeitverlängerung)</span></div>
+        <div class="f-herleitung">greift ab der ersten negativen Viertelstunde.</div>
+        <div class="f-info">„Automatisch": Inbetriebnahme ab dem 25.02.2025 und Anlage ≥ 100 kWp → ja; darunter erst ab dem Jahr nach dem
+        iMSys-Einbau. Stufe 1 rechnet mit der Pauschale; mit Spotpreisreihe wird der Anteil gemessen:
+        <span class="mono">a = Σ Einsp(Spot &lt; 0) ÷ Σ Einsp</span>. Die Ausfallarbeit — 20 % von 199,5 MWh = 39.900 kWh — wird
+        <b>abgeregelt</b>: Sie bringt weder Spoterlös noch Prämie und trägt kein DV-Entgelt; die Vorschau weist sie als entgangenen
+        anzulegenden Wert aus (2.410 €).</div>
+      </div>
 
-          <!-- Bezugsbewertung (PVW_G_BEZUG) -->
-          <div class="f-gruppe" style="margin-top:12px">
-            <div class="f-titel">Strompreis / Bezugsbewertung</div>
-            <div class="f-zeile"><span class="f-check"><i></i></span><span class="f-lab" style="min-width:0">Netzbezug stundenscharf aus Preiszeitreihe bewerten</span></div>
-            <div class="f-herleitung">Eigenverbrauch aus Anlagen ≤ 2 MW im räumlichen Zusammenhang ist stromsteuerfrei (§ 9 StromStG);
-            bei Lieferung an Dritte gelten andere Regeln.</div>
-          </div>
+      <!-- Bezugsbewertung (PVW_G_BEZUG) -->
+      <div class="f-gruppe" style="margin-top:12px">
+        <div class="f-titel">Strompreis / Bezugsbewertung</div>
+        <div class="f-zeile"><span class="f-check"><i></i></span><span class="f-lab" style="min-width:0">Netzbezug stundenscharf aus Preiszeitreihe bewerten</span></div>
+        <div class="f-herleitung">Eigenverbrauch aus Anlagen ≤ 2 MW im räumlichen Zusammenhang ist stromsteuerfrei (§ 9 StromStG);
+        bei Lieferung an Dritte gelten andere Regeln.</div>
+      </div>
 
-          <!-- Kappung (PVW_G_KAPPUNG) -->
-          <div class="f-gruppe" style="margin-top:12px">
-            <div class="f-titel">60-%-Wirkleistungsbegrenzung (§ 9 Abs. 2 EEG)</div>
-            <div class="f-zeile breit"><label>Anwenden:</label><span class="f-combo">Ja</span></div>
-            <div class="f-herleitung">aktiv: Einspeisung auf 60 % der kWp begrenzt (ohne iMSys).</div>
-            <div class="f-info">„Automatisch" begrenzt nur bei fester Einspeisevergütung ohne iMSys — bei Direktvermarktung
-            greift die Kappung nur mit „Ja". Kappungsgrenze 0,6 × 300 kWp = 180 kW ·
-            Verlust = Σ max(0 ; Einsp<sub>h</sub> − 180) = <b>3.990 kWh/a</b> (1,4 %), messbar nur mit Stundenreihe.</div>
-          </div>
+      <!-- Kappung (PVW_G_KAPPUNG) -->
+      <div class="f-gruppe" style="margin-top:12px">
+        <div class="f-titel">60-%-Wirkleistungsbegrenzung (§ 9 Abs. 2 EEG)</div>
+        <div class="f-zeile breit"><label>Anwenden:</label><span class="f-combo">Ja</span></div>
+        <div class="f-herleitung">aktiv: Einspeisung auf 60 % der kWp begrenzt (ohne iMSys).</div>
+        <div class="f-info">„Automatisch" begrenzt nur bei fester Einspeisevergütung ohne iMSys — bei Direktvermarktung greift die
+        Kappung nur mit „Ja". Kappungsgrenze 0,6 × 300 kWp = 180 kW; der Verlust
+        <span class="mono">Σ max(0 ; Einsp<sub>h</sub> − 180 kW)</span> ist nur mit der Stundenreihe messbar: in der Vorschau
+        (Stufe 1) 0 kWh, im Lauf aus der Reihe PV_UEBERSCHUSS gemessen.</div>
+      </div>
 
-          <!-- Vorschau (PVW_G_VORSCHAU) -->
-          <div class="f-gruppe" style="margin-top:12px">
-            <div class="f-titel">Σ Vorschau</div>
-            <div class="f-herleitung">Einspeisung 199,5 MWh/a · Satz Jahr 1: 6,04 ct/kWh · Erlös Jahr 1: 10.396 €/a · Vergütungsausfall 39.900 kWh (614 €) · § 51a-Gutschrift 1.205 € (Jahr 20)</div>
-            <div class="f-herleitung">Stromgestehungskosten: — · Eigenverbrauchsquote 30,0 % · Autarkiegrad —</div>
-            <div class="f-herleitung">Ertrag <b>285,0 MWh/a</b> · Eigenverbrauch 85,5 · Einspeisung <b>199,5 MWh/a</b></div>
-          </div>
-        </div>
+      <!-- Vorschau (PVW_G_VORSCHAU) -->
+      <div class="f-gruppe" style="margin-top:12px">
+        <div class="f-titel">Σ Vorschau</div>
+        <div class="f-herleitung">Einspeisung 199,5 MWh/a · Satz Jahr 1: 4,51 ct/kWh · Erlös Jahr 1: 9.001 €/a · Vergütungsausfall 39.900 kWh (2.410 €) · § 51a-Gutschrift 1.096 € (Jahr 20)</div>
+        <div class="f-herleitung">Eigenverbrauchsquote 30,0 % · Autarkiegrad 6,0 % · Vorteil durch PV: 16.791 €/a</div>
+        <div class="f-herleitung">Stromgestehungskosten: 5,38 ct/kWh (LCOE₀, mit Satz vergleichbar) · 6,54 ct/kWh (diskontiert)</div>
+        <div class="f-info">Die Vorschau rechnet Stufe 1 mit der Einspeisung des letzten Laufs; ohne Lauf steht hier „Noch kein
+        Simulationsergebnis — die Vorschau zeigt erst nach einem Lauf Mengen und Erlöse; die Sätze oben gelten bereits." Die
+        Kennzahlzeile nimmt Erzeugung, Bedarf, Investition und Betriebskosten der Komponente (Kategorie 3), Zins und Zeitraum der
+        Wirtschaftlichkeit und den Arbeitspreis Strom.</div>
       </div>
 
       <div class="f-vorschau">
         <div class="f-vtitel">Vorschau Jahr 1 (2026) — aufgeschlüsselt <span class="zk vor" style="margin-left:6px">Vorschlag U27</span></div>
-        <div class="f-vzeile"><span>Spoterlös <span class="f-tag">199,5 MWh × 4,50 ct</span></span><span class="f-vwert num">8.977,50 €</span></div>
-        <div class="f-vzeile"><span>Marktprämie <span class="f-tag">× (6,04 − 4,50) ct</span></span><span class="f-vwert num">3.072,30 €</span></div>
-        <div class="f-vzeile"><span>Prämienausfall § 51 <span class="f-tag">20 % der Einspeisung</span></span><span class="f-vwert num">− 614,46 €</span></div>
-        <div class="f-vzeile"><span>DV-Entgelt <span class="f-tag">× 0,40 ct</span></span><span class="f-vwert num">− 798,00 €</span></div>
-        <div class="f-vzeile"><span>Kappungsverlust 60 % <span class="f-tag">3.990 kWh</span></span><span class="f-vwert num">− 241,00 €</span></div>
-        <div class="f-vzeile summe"><span>Vergütung PV</span><span class="num">10.396,34 €</span></div>
-        <div class="f-vzeile" style="margin-top:9px;opacity:.78"><span>Vermiedener Netzbezug <span class="f-tag">85,5 MWh × 28,80 ct — Ausweis</span></span><span class="num">24.624,00 €</span></div>
+        <div class="f-vzeile"><span>Spoterlös <span class="f-tag">159,6 MWh × 4,50 ct · Jahresmarktwert 2026</span></span><span class="f-vwert num">7.182,00 €</span></div>
+        <div class="f-vzeile"><span>Marktprämie <span class="f-tag">159,6 MWh × (6,04 − 4,50) ct</span></span><span class="f-vwert num">2.457,84 €</span></div>
+        <div class="f-vzeile"><span>DV-Entgelt <span class="f-tag">159,6 MWh × 0,40 ct</span></span><span class="f-vwert num">− 638,40 €</span></div>
+        <div class="f-vzeile"><span>Kappungsverlust 60 % <span class="f-tag">Stufe 1: nicht messbar — im Lauf mit Stundenreihe</span></span><span class="f-vwert num">0 kWh</span></div>
+        <div class="f-vzeile summe"><span>Vergütung PV</span><span class="num">9.001,44 €</span></div>
+        <div class="f-vzeile" style="margin-top:9px;opacity:.78"><span>Vergütungsausfall § 51 <span class="f-tag">39,9 MWh abgeregelt × 6,04 ct — Ausweis, nicht in der Summe</span></span><span class="num">2.409,96 €</span></div>
+        <div class="f-vzeile" style="opacity:.78"><span>Vermiedener Netzbezug <span class="f-tag">85,5 MWh × 28,80 ct — Ausweis</span></span><span class="num">24.624,00 €</span></div>
       </div>
-      <div class="f-info">Der Dialog zeigt die Vorschau als eine Zeile mit Einspeisung, Satz, Erlös, Ausfall und Gutschrift und
-      darunter die Kennzahlzeile; Stromgestehungskosten und Autarkiegrad stehen ohne Lauf als Gedankenstrich. Die
-      aufgeschlüsselten Zeilen sind ein Vorschlag.</div>
+      <div class="f-info">Der Dialog zeigt die Vorschau als eine Zeile und darunter die Kennzahlzeile; die aufgeschlüsselten Zeilen
+      sind ein Vorschlag. Die Ausfallarbeit steht nicht in der Summe, weil sie die vergütete Arbeit schon gemindert hat.</div>
       <div class="f-knopfzeile"><span class="f-knopf">Marktwerte importieren…</span><span class="f-knopf">Einspeise-Tarif…</span></div>
-      <div class="f-herleitung">Sprunghinweis: Der Sprung in den Tarifdialog schließt dieses Fenster und öffnet es danach wieder — zuerst übernehmen.</div>
+      <div class="f-herleitung">Der Sprung in den Tarifdialog schließt dieses Fenster und öffnet es danach wieder — bitte vorher übernehmen.</div>
     </div>
     <div class="f-fuss">
-      <span class="f-status">Reihe über 20 volle Jahre ab dem Kalenderjahr der Inbetriebnahme</span>
+      <span class="f-status">Übernehmen schreibt den Vergütungssatz des Stammprojekts; Abbrechen und Esc schreiben nichts</span>
       <span class="f-knopf">Abbrechen</span><span class="f-knopf primaer">Übernehmen</span>
     </div>
   </div>
@@ -2807,35 +2818,45 @@ Stromsteuer
   <div class="normzeile">
     <span class="norm gesetz">§ 21 EEG — Direktvermarktung</span>
     <span class="norm gesetz">§ 21c EEG</span>
+    <span class="norm gesetz">§ 25 EEG — Vergütungsdauer</span>
     <span class="norm gesetz">§ 51 EEG — negative Preise</span>
     <span class="norm gesetz">§ 51a EEG</span>
-    <span class="norm gesetz">§ 100 EEG — Degression</span>
+    <span class="norm gesetz">§ 49 EEG — Degression</span>
+    <span class="norm code">EegSatzRechner</span>
     <span class="norm code">PvErloesRechner</span>
+    <span class="norm code">PvKennzahlenRechner</span>
   </div>
-  <div class="formel"><pre>Anzulegender Wert
-  Degression   Faktor 0,99^n     <span class="kom">Halbjahresstichtage 1.2. / 1.8. ab 01.02.2024</span>
+  <div class="formel"><pre>Anzulegender Wert (EegSatzRechner)
+  Degression   Faktor 0,99^n     <span class="kom">n = Halbjahresstichtage 1.2. / 1.8. ab 01.02.2024 bis zur Inbetriebnahme</span>
+  AW_Klasse  = round( Basis_Klasse × 0,99^n , 2 )     <span class="kom">marginale Klassen 10 / 40 / 100 / 400 / 1000 kWp</span>
   AW_mix     = round( Σ Anteil_k × AW_Klasse_k / Σ Anteil_k , 2 )
-               <span class="kom">marginale Klassen 10 / 40 / 100 / 400 / 1000 kWp</span>
   EV_fest    = max(0, AW_mix − 0,40)              <span class="kom">nur ≤ 100 kW</span>
+  Ausfallvergütung = AW × (1 − 20 %)              <span class="kom">nur &gt; 100 kW</span>
+
+Vergütungsdauer   20 Jahre + Restmonate des Inbetriebnahmejahres     <span class="kom">IBN August: 245 Monate ⇒ letztes Vergütungsjahr min(T, 21) = 20</span>
+
+§ 51 — negative Preise (Stufe 1: Pauschale; Stufe 2: aus der Spotreihe gemessen)
+  Ausfallarbeit  = Einspeisung × a          a = 20 %  ODER  Σ Einsp(Spot &lt; 0) / Σ Einsp
+  Arbeit         = Einspeisung − Ausfallarbeit
+  <span class="hin">Die Ausfallarbeit wird abgeregelt: kein Spoterlös, keine Prämie, kein DV-Entgelt.
+  Ausweis: Vergütungsausfall = Ausfallarbeit × AW / 100.</span>
 
 Marktprämie (Direktvermarktung)
-  Erlös = Spot€
-        + Arbeit × max(0, AW − Jahresmarktwert) / 100
-        − Arbeit × DV-Entgelt / 100
+  Erlös = Arbeit × JW / 100 + Arbeit × max(0, AW − JW) / 100 − Arbeit × DV / 100
+  JW    = amtlicher Jahresmarktwert des Kalenderjahres, sonst letzter bekannter × (1 + Marktwertentwicklung)^n
+  <span class="kom">Stufe 2: Spoterlös aus Einspeisung_h × Spot_h ohne Negativstunden</span>
 
-§ 51 — negative Preise
-  Ausfallanteil a = 20 % pauschal   ODER   Σ Einsp(Spot &lt; 0) / Σ Einsp
-  Prämienausfall  = Arbeit × a × (AW − Jahresmarktwert) / 100
-  <span class="hin">Der Spoterlös bleibt — es entfällt nur die Prämie.</span>
+Degradation (Stufe E2.4)   Faktor_t = (1 − d/100)^(t−1)     <span class="kom">Jahr 1 = 1; d = 0 ⇒ exakt 1</span>
+  Arbeit_t   = Arbeit × Faktor_t
+  Mehrbezug_t = Eigenverbrauch_kWh × (1 − Faktor_t) × Strompreis     <span class="kom">als Abzug in derselben Reihe</span>
 
 § 51a — Kompensation im letzten Vergütungsjahr
-  Gutschrift = Ausfallarbeit(Jahr 1) × 0,5 × AW / 100
+  Gutschrift = Ausfallarbeit(Jahr 1) × 0,5 × AW / 100 × Faktor_T
 
-60-%-Kappung
-  Verlust [kWh] = Σ_h max(0, Einsp_h − 0,6 × kWp)
+60-%-Kappung   Verlust [kWh] = Σ_h max(0, Einsp_h − 0,6 × kWp)     <span class="kom">nur mit Stundenreihe; AUTO nur bei fester EV ohne iMSys</span>
 
-Ausfallvergütung   AW × (1 − 20 %)                <span class="kom">nur &gt; 100 kW</span>
-Jahr 1 = Kalenderjahr der Inbetriebnahme          <span class="kom">Reihe über 20 volle Jahre</span></pre></div>
+Feste EV       Erlös = Arbeit × EV_fest / 100                       <span class="kom">nur ≤ 100 kW</span>
+Jahr 1 = Kalenderjahr der Inbetriebnahme                            <span class="kom">Reihe über T Jahre</span></pre></div>
 
   <div class="zone">Ertrag und seine Aufteilung</div>
   <div class="tafel-huelle">
@@ -2843,14 +2864,14 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme          <span class="kom">Reihe über 
       <thead><tr><th>Größe</th><th class="r">Jahr 1</th><th class="r">Jahr 20</th><th>Herkunft</th></tr></thead>
       <tbody>
         <tr><td>Ertrag</td><td class="r num">285,0 MWh</td><td class="r num">259,1 MWh</td>
-            <td>Simulationslauf · Alterung 0,50 %/a</td></tr>
+            <td>Simulationslauf · Alterung 0,50 %/a in der Erlösreihe</td></tr>
         <tr><td>davon Eigenverbrauch</td><td class="r num">85,5 MWh</td><td class="r num">77,7 MWh</td>
-            <td><b>aus der Stundensimulation abgeleitet</b>, nicht als Annahme gesetzt</td></tr>
+            <td><b>aus der Stundensimulation abgeleitet</b>, nicht als Annahme gesetzt; der Schwund geht als Mehrbezug in die Reihe</td></tr>
         <tr><td>davon Einspeisung</td><td class="r num">199,5 MWh</td><td class="r num">181,4 MWh</td>
-            <td>dieselbe Quelle</td></tr>
+            <td>dieselbe Quelle; vergütet werden 80 % davon (§ 51)</td></tr>
         <tr class="ergebnis"><td>Anzulegender Wert <span class="zk beleg">Beleg</span></td><td class="r num">6,04 ct/kWh</td>
             <td class="r num">6,04 ct/kWh</td>
-            <td>100 kWp × 7,94 + 200 kWp × 5,09 = 1.812 ÷ 300 — gesetzlich fest, steigt nicht mit den Preisen</td></tr>
+            <td>10 kWp × 8,10 + 30 × 7,06 + 60 × 5,84 + 200 × 5,84 = 1.811,2 ÷ 300 — gesetzlich fest, steigt nicht mit den Preisen</td></tr>
       </tbody>
     </table>
   </div>
@@ -2864,74 +2885,75 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme          <span class="kom">Reihe über 
       <thead><tr><th>Schritt</th><th>Rechnung</th><th class="r">Ergebnis</th><th>Anmerkung</th></tr></thead>
       <tbody>
         <tr><td><span class="schritt">1</span> Degression</td>
-            <td class="formelzelle">0,99 je Halbjahresstichtag ab 01.02.2024</td><td class="r">Katalog</td>
-            <td>Stichtage 1.2. und 1.8. bis zur Inbetriebnahme; belegt: 8,60 → 8,10 ct/kWh trifft 16 von 16 Netzagentur-Werten</td></tr>
+            <td class="formelzelle">IBN 01.08.2026 → 6 Stichtage → 0,99<sup>6</sup></td><td class="r num">0,9415</td>
+            <td>Klassenwerte 8,60 → 8,10 · 7,50 → 7,06 · 6,20 → 5,84 ct/kWh; belegt: 8,10 trifft 16 von 16 Netzagentur-Werten</td></tr>
         <tr><td><span class="schritt">2</span> Klassenanteile</td>
-            <td class="formelzelle">100 kWp × 7,94 + 200 kWp × 5,09</td><td class="r num">1.812 ct·kWp</td>
-            <td>marginale Klassen, Katalogwerte zum Stichtag</td></tr>
-        <tr class="zwischen"><td>AW gemischt</td><td class="formelzelle">1.812 ÷ 300</td>
+            <td class="formelzelle">10 × 8,10 + 30 × 7,06 + 60 × 5,84 + 200 × 5,84</td><td class="r num">1.811,2 ct·kWp</td>
+            <td>marginale Klassen, gerundete Tabellenwerte zum Stichtag</td></tr>
+        <tr class="zwischen"><td>AW gemischt</td><td class="formelzelle">1.811,2 ÷ 300 = 6,037</td>
             <td class="r num">6,04 ct/kWh</td><td>Belegwert für 300 kWp</td></tr>
-        <tr><td><span class="schritt">3</span> Spoterlös</td>
-            <td class="formelzelle">199.500 kWh × 4,50 ÷ 100</td><td class="r num">8.977,50 €</td>
-            <td>Jahresmarktwert Solar</td></tr>
-        <tr><td><span class="schritt">4</span> Marktprämie</td>
-            <td class="formelzelle">199.500 × (6,04 − 4,50) ÷ 100</td><td class="r num">3.072,30 €</td>
+        <tr><td><span class="schritt">3</span> Ausfallarbeit § 51</td>
+            <td class="formelzelle">199.500 × 20 %</td><td class="r num">39.900 kWh</td>
+            <td>abgeregelt; vergütete Arbeit 159.600 kWh; Ausweis 39.900 × 6,04 ÷ 100 = 2.409,96 €</td></tr>
+        <tr><td><span class="schritt">4</span> Spoterlös</td>
+            <td class="formelzelle">159.600 × 4,50 ÷ 100</td><td class="r num">7.182,00 €</td>
+            <td>Jahresmarktwert Solar 2026 (Beispielzahl, importiert)</td></tr>
+        <tr><td><span class="schritt">5</span> Marktprämie</td>
+            <td class="formelzelle">159.600 × (6,04 − 4,50) ÷ 100</td><td class="r num">2.457,84 €</td>
             <td>Differenz AW zu Marktwert</td></tr>
-        <tr><td><span class="schritt">5</span> Ausfall § 51</td>
-            <td class="formelzelle">199.500 × 20 % × 1,54 ÷ 100</td><td class="r num minus">− 614,46 €</td>
-            <td>nur die Prämie entfällt, nicht der Spoterlös</td></tr>
         <tr><td><span class="schritt">6</span> DV-Entgelt</td>
-            <td class="formelzelle">199.500 × 0,40 ÷ 100</td><td class="r num minus">− 798,00 €</td>
+            <td class="formelzelle">159.600 × 0,40 ÷ 100</td><td class="r num minus">− 638,40 €</td>
             <td>Kosten des Direktvermarkters</td></tr>
         <tr><td><span class="schritt">7</span> Kappung 60 %</td>
-            <td class="formelzelle">3.990 kWh × 6,04 ÷ 100</td><td class="r num minus">− 241,00 €</td>
-            <td>Mengenverlust, mit AW bewertet</td></tr>
+            <td class="formelzelle">Stufe 1: keine Stundenreihe</td><td class="r num">0 kWh</td>
+            <td>im Lauf aus der Reihe PV_UEBERSCHUSS gemessen, dann mit AW bewertet</td></tr>
         <tr class="ergebnis"><td>PV-Vergütung Jahr 1 (2026)</td>
-            <td class="formelzelle">8.977,50 + 3.072,30 − 614,46 − 798,00 − 241,00</td>
-            <td class="r num">10.396,34 €</td><td>eigene Reihe über 20 volle Jahre</td></tr>
-        <tr><td><span class="schritt">8</span> Kompensation § 51a</td>
-            <td class="formelzelle">39.900 kWh × 0,5 × 6,04 ÷ 100</td><td class="r num plus">+ 1.204,98 €</td>
-            <td>Einmalzahlung im letzten Vergütungsjahr, auf ihr Jahr abgezinst</td></tr>
+            <td class="formelzelle">7.182,00 + 2.457,84 − 638,40</td>
+            <td class="r num">9.001,44 €</td><td>Satz Jahr 1: 9.001,44 ÷ 199.500 kWh = 4,51 ct/kWh</td></tr>
+        <tr><td><span class="schritt">8</span> Jahr t</td>
+            <td class="formelzelle">9.001,44 × 0,995<sup>t−1</sup> − 85.500 kWh × (1 − 0,995<sup>t−1</sup>) × 0,288 €/kWh</td>
+            <td class="r num">Jahr 19: 6.100,40 €</td><td>Jahr 20 vor der Gutschrift 5.946,77 €; Mehrbezug über 20 Jahre 22.705,69 €</td></tr>
+        <tr><td><span class="schritt">9</span> Kompensation § 51a</td>
+            <td class="formelzelle">39.900 × 0,5 × 6,04 ÷ 100 × 0,9092</td><td class="r num plus">+ 1.095,52 €</td>
+            <td>Einmalzahlung im letzten Vergütungsjahr (20), mit dem Faktor des Jahres 20 gealtert</td></tr>
+        <tr class="zwischen"><td>Reihe über 20 Jahre</td><td class="formelzelle">Σ nominal · Σ abgezinst mit 3,0 %</td>
+            <td class="r num">150.118 € · 113.800 €</td><td>nominal · Barwert; Jahr 20 = 5.946,77 + 1.095,52 = 7.042,29 €</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="eng" style="margin-top:12px">Die beiden Abzüge stehen als eigene Zeilen und nicht im
-  Nettobetrag: Wer 10.396 € sieht, muss erkennen können, dass 1.653 € abgezogen wurden und woran das
-  liegt.</p>
+  <p class="eng" style="margin-top:12px">Die Abzüge stehen als eigene Zeilen und nicht im Nettobetrag: Wer
+  9.001 € sieht, muss erkennen können, dass 2.410 € Vergütung durch Abregelung und 638 € Entgelt weggefallen
+  sind und woran das liegt.</p>
 
   <div class="chart-karte">
     <div class="chart-titel">Von der Einspeisung zur Vergütung</div>
-    <div class="chart-unter">Jahr 1 · die beiden Abzüge und das Entgelt als benannte Stufen</div>
-    <svg viewBox="0 0 660 216" width="660" height="216" role="img" aria-label="Brückendiagramm der PV-Vergütung im ersten Jahr: Spoterlös 8.977,50 Euro, Marktprämie 3.072,30 Euro, Abzug Paragraf 51 minus 614,46 Euro, Direktvermarktungsentgelt minus 798,00 Euro, 60-Prozent-Kappung minus 241,00 Euro, Summe 10.396,34 Euro.">
+    <div class="chart-unter">Jahr 1 · Abregelung und Entgelt als benannte Stufen, die Kappung ohne Stundenreihe leer</div>
+    <svg viewBox="0 0 660 216" width="660" height="216" role="img" aria-label="Brückendiagramm der PV-Vergütung im ersten Jahr: anzulegender Wert auf die Einspeisung 12.049,80 Euro, Abregelung nach Paragraf 51 minus 2.409,96 Euro, Direktvermarktungsentgelt minus 638,40 Euro, 60-Prozent-Kappung null in Stufe 1, Vergütung 9.001,44 Euro.">
   <line x1="36" y1="168.0" x2="652" y2="168.0" stroke="var(--linie-stark)" stroke-width="1"/>
   <line x1="36" y1="111.2" x2="652" y2="111.2" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
   <text x="32" y="114.2" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">5k</text>
   <line x1="36" y1="54.4" x2="652" y2="54.4" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
   <text x="32" y="57.4" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">10k</text>
-  <rect x="44.0" y="66.0" width="82.0" height="102.0" fill="var(--erloes)" opacity="0.88"/>
-  <text x="85.0" y="60.0" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">+8.977,50</text>
-  <text x="85.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Spoterlös</text>
-  <line x1="44.0" y1="66.0" x2="148.0" y2="66.0" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
-  <rect x="148.0" y="31.1" width="82.0" height="34.9" fill="var(--erloes)" opacity="0.88"/>
-  <text x="189.0" y="25.1" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">+3.072,30</text>
-  <text x="189.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">Marktprämie</text>
-  <line x1="148.0" y1="31.1" x2="252.0" y2="31.1" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
-  <rect x="252.0" y="31.1" width="82.0" height="7.0" fill="var(--kosten)" opacity="0.88"/>
-  <text x="293.0" y="25.1" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−614,46</text>
-  <text x="293.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">§ 51 Ausfall</text>
-  <line x1="252.0" y1="38.1" x2="356.0" y2="38.1" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
-  <rect x="356.0" y="38.1" width="82.0" height="9.1" fill="var(--kosten)" opacity="0.88"/>
-  <text x="397.0" y="32.1" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−798,00</text>
-  <text x="397.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">DV-Entgelt</text>
-  <line x1="356.0" y1="47.2" x2="460.0" y2="47.2" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
-  <rect x="460.0" y="47.2" width="82.0" height="2.7" fill="var(--kosten)" opacity="0.88"/>
-  <text x="501.0" y="41.2" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−241,00</text>
-  <text x="501.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">60-%-Kappung</text>
-  <line x1="460.0" y1="49.9" x2="564.0" y2="49.9" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
-  <rect x="564.0" y="49.9" width="82.0" height="118.1" fill="var(--marine-hell)"/>
-  <text x="605.0" y="42.9" text-anchor="middle" font-size="11" fill="var(--marine-hell)" class="svgmono" font-weight="700">10.396,34</text>
-  <text x="605.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte)" font-weight="600">Vergütung</text>
-  <text x="44" y="206" font-size="10.5" fill="var(--tinte-blass)">Jahr 1, netto — 199,5 MWh Einspeisung, anzulegender Wert 6,04 ct/kWh</text>
+  <rect x="44.0" y="31.1" width="100.0" height="136.9" fill="var(--erloes)" opacity="0.88"/>
+  <text x="94.0" y="25.1" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">+12.049,80</text>
+  <text x="94.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">AW auf 199,5 MWh</text>
+  <line x1="44.0" y1="31.1" x2="168.0" y2="31.1" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="168.0" y="31.1" width="100.0" height="27.4" fill="var(--kosten)" opacity="0.88"/>
+  <text x="218.0" y="25.1" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−2.409,96</text>
+  <text x="218.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">§ 51 Abregelung</text>
+  <line x1="168.0" y1="58.5" x2="292.0" y2="58.5" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="292.0" y="58.5" width="100.0" height="7.3" fill="var(--kosten)" opacity="0.88"/>
+  <text x="342.0" y="52.5" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">−638,40</text>
+  <text x="342.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">DV-Entgelt</text>
+  <line x1="292.0" y1="65.7" x2="416.0" y2="65.7" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <line x1="416.0" y1="65.7" x2="516.0" y2="65.7" stroke="var(--kosten)" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="466.0" y="59.7" text-anchor="middle" font-size="9.5" fill="var(--tinte-weich)" class="svgmono">0 (Stufe 1)</text>
+  <text x="466.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte-weich)">60-%-Kappung</text>
+  <line x1="416.0" y1="65.7" x2="540.0" y2="65.7" stroke="var(--linie-stark)" stroke-width="1" stroke-dasharray="2 2"/>
+  <rect x="540.0" y="65.7" width="100.0" height="102.3" fill="var(--marine-hell)"/>
+  <text x="590.0" y="58.7" text-anchor="middle" font-size="11" fill="var(--marine-hell)" class="svgmono" font-weight="700">9.001,44</text>
+  <text x="590.0" y="184.0" text-anchor="middle" font-size="10" fill="var(--tinte)" font-weight="600">Vergütung</text>
+  <text x="44" y="206" font-size="10.5" fill="var(--tinte-blass)">Jahr 1, netto — 199,5 MWh Einspeisung, davon 159,6 MWh vergütet · 9.639,84 = Spoterlös 7.182,00 + Marktprämie 2.457,84</text>
 </svg>
     <div class="legende">
       <span><i style="background:var(--erloes)"></i>Einzahlung</span>
@@ -2942,42 +2964,42 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme          <span class="kom">Reihe über 
 
   <div class="chart-karte">
     <div class="chart-titel">Vergütung über 20 Jahre</div>
-    <div class="chart-unter">Die Alterung senkt die Menge, der anzulegende Wert bleibt —
-      nominal 199.545 €, Barwert 148.931 €</div>
-    <svg viewBox="0 0 720 190" width="720" height="190" role="img" aria-label="Jahresbalken der PV-Vergütung über 20 Jahre: 10.396 Euro im ersten Jahr, durch die Degradation von 0,5 Prozent je Jahr auf 9.499 Euro im Jahr 19 fallend; im Jahr 20 kommt die Kompensation nach Paragraf 51a mit 1.205 Euro hinzu.">
+    <div class="chart-unter">Die Alterung senkt die vergütete Arbeit und trägt den Mehrbezug als Abzug, der anzulegende Wert bleibt —
+      nominal 150.118 €, Barwert 113.800 €</div>
+    <svg viewBox="0 0 720 190" width="720" height="190" role="img" aria-label="Jahresbalken der PV-Vergütung über 20 Jahre: 9.001 Euro im ersten Jahr, durch die Degradation von 0,5 Prozent je Jahr und den daraus folgenden Mehrbezug auf 6.100 Euro im Jahr 19 fallend; im Jahr 20 kommt die Kompensation nach Paragraf 51a mit 1.096 Euro hinzu.">
   <line x1="44" y1="150.0" x2="712" y2="150.0" stroke="var(--linie-stark)" stroke-width="1"/>
   <line x1="44" y1="97.2" x2="712" y2="97.2" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
   <text x="40" y="100.2" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">5k</text>
   <line x1="44" y1="44.4" x2="712" y2="44.4" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
   <text x="40" y="47.4" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">10k</text>
-  <rect x="52.0" y="40.3" width="26.0" height="109.7" fill="#C8A227"/>
-  <rect x="84.0" y="40.8" width="26.0" height="109.2" fill="#C8A227"/>
-  <rect x="116.0" y="41.3" width="26.0" height="108.7" fill="#C8A227"/>
-  <rect x="148.0" y="41.9" width="26.0" height="108.1" fill="#C8A227"/>
-  <rect x="180.0" y="42.4" width="26.0" height="107.6" fill="#C8A227"/>
-  <rect x="212.0" y="43.0" width="26.0" height="107.0" fill="#C8A227"/>
-  <rect x="244.0" y="43.5" width="26.0" height="106.5" fill="#C8A227"/>
-  <rect x="276.0" y="44.0" width="26.0" height="106.0" fill="#C8A227"/>
-  <rect x="308.0" y="44.6" width="26.0" height="105.4" fill="#C8A227"/>
-  <rect x="340.0" y="45.1" width="26.0" height="104.9" fill="#C8A227"/>
-  <rect x="372.0" y="45.6" width="26.0" height="104.4" fill="#C8A227"/>
-  <rect x="404.0" y="46.1" width="26.0" height="103.9" fill="#C8A227"/>
-  <rect x="436.0" y="46.7" width="26.0" height="103.3" fill="#C8A227"/>
-  <rect x="468.0" y="47.2" width="26.0" height="102.8" fill="#C8A227"/>
-  <rect x="500.0" y="47.7" width="26.0" height="102.3" fill="#C8A227"/>
-  <rect x="532.0" y="48.2" width="26.0" height="101.8" fill="#C8A227"/>
-  <rect x="564.0" y="48.7" width="26.0" height="101.3" fill="#C8A227"/>
-  <rect x="596.0" y="49.2" width="26.0" height="100.8" fill="#C8A227"/>
-  <rect x="628.0" y="49.7" width="26.0" height="100.3" fill="#C8A227"/>
-  <rect x="660.0" y="50.2" width="26.0" height="99.8" fill="#C8A227"/>
-  <rect x="660.0" y="37.5" width="26.0" height="12.7" fill="#8A6100"/>
-  <text x="686.0" y="31.5" text-anchor="end" font-size="9.5" fill="var(--warn)" class="svgmono">§ 51a</text>
+  <rect x="52.0" y="54.9" width="26.0" height="95.1" fill="#C8A227"/>
+  <rect x="84.0" y="56.7" width="26.0" height="93.3" fill="#C8A227"/>
+  <rect x="116.0" y="58.5" width="26.0" height="91.5" fill="#C8A227"/>
+  <rect x="148.0" y="60.2" width="26.0" height="89.8" fill="#C8A227"/>
+  <rect x="180.0" y="62.0" width="26.0" height="88.0" fill="#C8A227"/>
+  <rect x="212.0" y="63.7" width="26.0" height="86.3" fill="#C8A227"/>
+  <rect x="244.0" y="65.5" width="26.0" height="84.5" fill="#C8A227"/>
+  <rect x="276.0" y="67.2" width="26.0" height="82.8" fill="#C8A227"/>
+  <rect x="308.0" y="68.9" width="26.0" height="81.1" fill="#C8A227"/>
+  <rect x="340.0" y="70.6" width="26.0" height="79.4" fill="#C8A227"/>
+  <rect x="372.0" y="72.3" width="26.0" height="77.7" fill="#C8A227"/>
+  <rect x="404.0" y="74.0" width="26.0" height="76.0" fill="#C8A227"/>
+  <rect x="436.0" y="75.7" width="26.0" height="74.3" fill="#C8A227"/>
+  <rect x="468.0" y="77.3" width="26.0" height="72.7" fill="#C8A227"/>
+  <rect x="500.0" y="79.0" width="26.0" height="71.0" fill="#C8A227"/>
+  <rect x="532.0" y="80.7" width="26.0" height="69.3" fill="#C8A227"/>
+  <rect x="564.0" y="82.3" width="26.0" height="67.7" fill="#C8A227"/>
+  <rect x="596.0" y="83.9" width="26.0" height="66.1" fill="#C8A227"/>
+  <rect x="628.0" y="85.6" width="26.0" height="64.4" fill="#C8A227"/>
+  <rect x="660.0" y="87.2" width="26.0" height="62.8" fill="#C8A227"/>
+  <rect x="660.0" y="75.6" width="26.0" height="11.6" fill="#8A6100"/>
+  <text x="686.0" y="69.6" text-anchor="end" font-size="9.5" fill="var(--warn)" class="svgmono">§ 51a</text>
   <text x="65.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">1</text>
   <text x="193.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">5</text>
   <text x="353.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">10</text>
   <text x="513.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">15</text>
   <text x="673.0" y="166" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">20</text>
-  <text x="52" y="182" font-size="10.5" fill="var(--tinte-blass)">Jahr — Degradation 0,5 %/a wirkt auf die Menge, der anzulegende Wert bleibt</text>
+  <text x="52" y="182" font-size="10.5" fill="var(--tinte-blass)">Jahr — Degradation 0,5 %/a mindert die vergütete Arbeit und trägt den Mehrbezug als Abzug; der anzulegende Wert bleibt</text>
 </svg>
     <div class="legende">
       <span><i style="background:#C8A227"></i>Vergütung je Jahr</span>
@@ -2991,7 +3013,9 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme          <span class="kom">Reihe über 
     Energiepreissteigerung. Nominal konstant zu rechnen ist deshalb richtig und entspricht der
     Nominalrechnung nach DIN EN 17463, 6.3.2. Was sehr wohl schwankt, ist der <em>Jahresmarktwert</em>:
     Steigt er über den anzulegenden Wert, entfällt die Prämie ganz, der Spoterlös steigt aber. Diese
-    Größe gehört deshalb in die Szenarienpflege, nicht in eine Preissteigerungsrate.</p>
+    Größe gehört deshalb in die Szenarienpflege, nicht in eine Preissteigerungsrate. Die Alterung dagegen
+    wirkt zweimal in derselben Reihe: auf die vergütete Arbeit und — als Mehrbezug — auf den vermiedenen
+    Strombezug, damit der Reststrom des Kapitalwerts konstant bleiben darf.</p>
   </div>
 
   <div class="zone">Beschriftungen und Ressourcenschlüssel</div>
@@ -3000,31 +3024,33 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme          <span class="kom">Reihe über 
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
       <tbody>
         <tr><td>Titel · Schalter „Vergütung anwenden" · Gruppenköpfe in Dialogreihenfolge</td><td class="rs">PVW_TITEL · PVW_AKTIV · PVW_G_ANLAGE · PVW_G_AW · PVW_G_VERMARKTUNG · PVW_G_51 · PVW_G_BEZUG · PVW_G_KAPPUNG · PVW_G_VORSCHAU</td><td>PhotovoltaikVerguetungDialog</td></tr>
-        <tr><td>Anlage: Leistungszeile, Override, Inbetriebnahme, Degradation (mit Tooltip), Einspeiseart, Warnzeilen</td><td class="rs">PVW_KWP · PVW_KWP_WERT · PVW_KWP_OVERRIDE · PVW_KWP_OVR · PVW_IBN · PVM_DEGRADATION · PVM_DEGRADATION_TIP · PVV_G_EINSPEISEART · PVW_UEBERSCHUSS · PVW_VOLL · PVW_WARN_AUSSCHREIBUNG · PVW_WARN_STROMSTEUER</td><td>Anlage</td></tr>
-        <tr><td>Anzulegender Wert: Feld „AW-Override [ct/kWh] (0 = Katalog)" · Zeile „AW_mix: {0:0.00} ct/kWh" · Zusatz „(Override)" · „Feste EV (AW − {0:0.00}): {1:0.00} ct/kWh"</td><td class="rs">PVW_AW_OVR · PVW_AW_ZEILE · PVW_AW_OVERRIDE · PVW_EV_SATZ</td><td>Anzulegender Wert</td></tr>
+        <tr><td>Anlage: Leistungszeile, Override, Inbetriebnahme, Degradation (mit Werkzeugtipp), Einspeiseart, Warnzeilen</td><td class="rs">PVW_KWP · PVW_KWP_WERT · PVW_KWP_OVERRIDE · PVW_KWP_OVR · PVW_IBN · PVM_DEGRADATION · PVM_DEGRADATION_TIP · PVV_G_EINSPEISEART · PVW_UEBERSCHUSS · PVW_VOLL · PVW_WARN_AUSSCHREIBUNG · PVW_WARN_STROMSTEUER</td><td>Anlage</td></tr>
+        <tr><td>Anzulegender Wert: Feld „AW-Override [ct/kWh] (0 = Katalog)" · Zeile „AW_mix: {0:0.00} ct/kWh" · Zusatz „(Override)" · Katalogherleitung des Satzrechners · „Feste EV (AW − {0:0.00}): {1:0.00} ct/kWh"</td><td class="rs">PVW_AW_OVR · PVW_AW_ZEILE · PVW_AW_OVERRIDE · EegSatzErgebnis.Herleitung · PVW_EV_SATZ</td><td>Anzulegender Wert</td></tr>
         <tr><td>Vermarktung: vier Optionen, DV-Entgelt, PPA-Festpreis, PPA-Aufschlag, Hinweise</td><td class="rs">PVW_EV · PVW_MP · PVW_PPA · PVW_KEINE · PVW_DV · PVW_PPA_PREIS · PVW_PPA_AUFSCHLAG · PVW_HINWEIS_21C · PVW_EV_GESPERRT</td><td>Vermarktung</td></tr>
         <tr><td>§ 51 / § 51a: Anwenden (Automatisch · Ja · Nein), iMSys, Ausfallanteil, Kompensation, Statuszeilen</td><td class="rs">PVW_ANWENDEN · PVW_AUTO · PVW_JA · PVW_NEIN · PVW_IMSYS · PVW_AUSFALL · PVW_51A · PVW_51_ALTANLAGE · PVW_51_GREIFT · PVW_51_IMSYS · PVW_51_VERSCHONT</td><td>Vergütungsausfall</td></tr>
         <tr><td>Bezugsbewertung: Schalter und Stromsteuerhinweis</td><td class="rs">PVW_BEZUG_REIHE · PVW_STROMSTEUER</td><td>Strompreis / Bezugsbewertung</td></tr>
         <tr><td>Kappung: Anwenden und drei Statuszeilen</td><td class="rs">PVW_ANWENDEN · PVW_KAP_AUS · PVW_KAP_AN · PVW_KAP_INAKTIV</td><td>60-%-Wirkleistungsbegrenzung</td></tr>
-        <tr><td>Vorschau: eine Zeile, ohne Ergebnis, Kennzahlzeile</td><td class="rs">PVW_VORSCHAU · PVW_VORSCHAU_OHNE_ERGEBNIS · PVW_KZ_LCOE · PVW_KZ_QUOTEN</td><td>Vorschau</td></tr>
+        <tr><td>Vorschau: eine Zeile, ohne Ergebnis, Kennzahlzeilen (Quoten, Vorteil, Stromgestehungskosten, fehlende Grundlagen)</td><td class="rs">PVW_VORSCHAU · PVW_VORSCHAU_OHNE_ERGEBNIS · PVW_KZ_QUOTEN · PVW_KZ_MIT_SPEICHER · PVW_KZ_VORTEIL · PVW_KZ_LCOE · PVW_KZ_OHNE_KOSTEN · PVW_KZ_OHNE_PREIS</td><td>Vorschau</td></tr>
         <tr><td>Knöpfe und Fußleiste: Marktwerte, Tarif, Sprunghinweis, Übernehmen, Abbrechen, Meldungen</td><td class="rs">PVW_BTN_MARKTWERTE · PVW_BTN_TARIF · PVV_SPRUNG_HINWEIS · PVW_UEBERNEHMEN · PVW_ABBRECHEN · PVW_IBN_PFLICHT · PVW_IMPORT_OK · PVW_IMPORT_FEHLER · PVV_MSG_SPEICHERFEHLER</td><td>Fußleiste</td></tr>
-        <tr><td>Aufgeschlüsselte Vorschau: Spoterlös · Marktprämie · § 51 · DV-Entgelt · Kappung · Jahresmarktwertzeile <b>neu</b></td><td class="rs">PVV_V_SPOT · PVV_V_PRAEMIE · PVV_V_AUSFALL · PVV_V_DVENTGELT · PVV_V_KAPPUNG · PVV_HERL_MARKTWERT</td><td>Vorschau · Vermarktung</td></tr>
+        <tr><td>Aufgeschlüsselte Vorschau: Spoterlös · Marktprämie · DV-Entgelt · Kappung · Summe · Vergütungsausfall · vermiedener Netzbezug · Jahresmarktwertzeile <b>neu</b></td><td class="rs">PVV_V_SPOT · PVV_V_PRAEMIE · PVV_V_DVENTGELT · PVV_V_KAPPUNG · PVV_V_SUMME · PVV_V_AUSFALL · PVV_V_BEZUG · PVV_HERL_MARKTWERT</td><td>Vorschau · Vermarktung (U27)</td></tr>
         <tr><td>Ergebniszeile „Vergütung Photovoltaik" · „Kompensation im letzten Vergütungsjahr"</td><td class="rs">WIRT_PV_VERGUETUNG · WIRT_PV_KOMPENSATION_51A</td><td>Erlösrubrik, Bericht</td></tr>
       </tbody>
     </table>
   </div>
 
-  <div class="abnahme"><b>Abnahme:</b> AW bei 300 kWp = <span class="mono">6,04 ct/kWh</span>,
-  Vergütung Jahr 1 = <span class="mono">10.396,34 €</span> aus 8.977,50 + 3.072,30 − 614,46 − 798,00 −
-  241,00; die Reihe beginnt im Kalenderjahr der Inbetriebnahme und läuft 20 volle Jahre; § 51a bringt
-  im letzten Vergütungsjahr <span class="mono">1.204,98 €</span>. Die Reihe steigt nicht mit
-  p<sub>E</sub>. Das Formular führt die sieben Gruppen des Dialogs in seiner Reihenfolge und seine neun
-  editierbaren Felder: Override [kWp], Inbetriebnahme, Degradation [%/a] (Anlage) · AW-Override [ct/kWh]
-  (Anzulegender Wert) · DV-Entgelt, PPA-Festpreis, PPA-Aufschlag (Vermarktung; die PPA-Felder gesperrt, solange
-  keine sonstige Direktvermarktung gewählt ist) · iMSys-Einbaujahr, Ausfallanteil (Vergütungsausfall) — dazu zwei
-  Optionsgruppen, zwei Klapplisten „Anwenden" und drei Schalter. Der Satz der Einspeisung wird allein im
-  AW-Override eingegeben; 0 = Katalog, und die Zeilen darunter nennen AW_mix und feste EV. Bei 300 kWp ist die
-  feste Einspeisevergütung gesperrt, die Kappung greift bei Direktvermarktung nur mit „Ja".</div>
+  <div class="abnahme"><b>Abnahme:</b> AW bei 300 kWp = <span class="mono">6,04 ct/kWh</span> aus der
+  Katalogherleitung des Satzrechners; Vergütung Jahr 1 = <span class="mono">9.001,44 €</span> aus 7.182,00 + 2.457,84 −
+  638,40 auf 159,6 MWh vergüteter Arbeit; die Vorschauzeile lautet wortgleich „Einspeisung 199,5 MWh/a · Satz Jahr 1:
+  4,51 ct/kWh · Erlös Jahr 1: 9.001 €/a · Vergütungsausfall 39.900 kWh (2.410 €) · § 51a-Gutschrift 1.096 € (Jahr 20)".
+  Die Reihe beginnt im Kalenderjahr der Inbetriebnahme, läuft 20 Jahre, fällt mit der Alterung auf
+  <span class="mono">6.100,40 €</span> im Jahr 19 und bringt im Jahr 20 <span class="mono">1.095,52 €</span> Kompensation;
+  nominal <span class="mono">150.118 €</span>, Barwert <span class="mono">113.800 €</span>. Die Reihe steigt nicht mit
+  p<sub>E</sub>. Das Formular führt die sieben Gruppen des Dialogs in seiner Reihenfolge und seine neun editierbaren
+  Felder: Override [kWp], Inbetriebnahme, Degradation [%/a] (Anlage) · AW-Override [ct/kWh] (Anzulegender Wert) ·
+  DV-Entgelt, PPA-Festpreis, PPA-Aufschlag (Vermarktung; die PPA-Felder gesperrt, solange keine sonstige
+  Direktvermarktung gewählt ist) · iMSys-Einbaujahr, Ausfallanteil (Vergütungsausfall) — dazu zwei Optionsgruppen, zwei
+  Klapplisten „Anwenden" und drei Schalter. Bei 300 kWp ist die feste Einspeisevergütung gesperrt, die Kappung greift bei
+  Direktvermarktung nur mit „Ja" und ist ohne Stundenreihe 0 kWh.</div>
 </section>
 
 <!-- ======================= 7 ERLÖSE ======================= -->
@@ -3064,10 +3090,10 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme          <span class="kom">Reihe über 
               <td class="r">77.975,6</td><td class="r">—</td><td class="r">77.975,6</td><td></td></tr>
           <tr class="teil"><td colspan="6">Photovoltaik</td></tr>
           <tr><td class="ein">Vergütung Photovoltaik</td><td class="r">—</td>
-              <td class="r">—</td><td class="r">10.396,3</td><td class="r">10.396,3</td>
-              <td>§ 21 · § 51 EEG · 199,5 MWh · anzulegender Wert 6,04 ct · eigene Reihe</td></tr>
+              <td class="r">—</td><td class="r">9.001,4</td><td class="r">9.001,4</td>
+              <td>§ 21 · § 51 EEG · 159,6 von 199,5 MWh vergütet · anzulegender Wert 6,04 ct · Jahresmarktwert 4,50 ct · eigene Reihe</td></tr>
           <tr class="teil"><td>Summe Photovoltaik</td><td class="r">—</td>
-              <td class="r">—</td><td class="r">10.396,3</td><td class="r">10.396,3</td><td></td></tr>
+              <td class="r">—</td><td class="r">9.001,4</td><td class="r">9.001,4</td><td></td></tr>
           <tr class="teil"><td colspan="6">Gas-Brennwertkessel</td></tr>
           <tr><td class="ein">Energiesteuer-Entlastung Heizstoff</td><td class="r">2.885,7</td>
               <td class="r">— <span class="klein">kein Kesselbrennstoff</span></td><td class="r">2.885,7</td>
@@ -3082,7 +3108,7 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme          <span class="kom">Reihe über 
           <tr class="teil"><td>Summe projektweit</td><td class="r">28.344,0</td>
               <td class="r">6.460,0</td><td class="r">26.634,0</td><td class="r">4.750,0</td><td></td></tr>
           <tr class="summe"><td>Erlöse zahlungswirksam gesamt</td><td class="r">31.229,7</td>
-              <td class="r">84.435,6</td><td class="r">39.916,0</td><td class="r">93.121,9</td>
+              <td class="r">84.435,6</td><td class="r">38.521,1</td><td class="r">91.727,0</td>
               <td>geht in den Kapitalwert</td></tr>
           <tr class="block"><td colspan="6">B — Ausweis, nie in der Summe</td></tr>
           <tr class="teil"><td colspan="6">Blockheizkraftwerk</td></tr>
@@ -3197,7 +3223,7 @@ Zuordnung der Zeilen
   </div>
 
   <div class="abnahme"><b>Abnahme:</b> Block A der Variante 3 summiert auf
-  <span class="mono">93.121,9 €/a</span>; Block B trägt keine Summe. Jede Zeile nennt Menge, Satz und
+  <span class="mono">91.727,0 €/a</span>; Block B trägt keine Summe. Jede Zeile nennt Menge, Satz und
   Herkunft in einer Spalte; ein eigener Wert steht dort mit dem Vorschlag daneben. Die § 9b-Kette ergibt
   <span class="mono">339.753,6 − 23.594,0 = 316.159,6 €/a</span> und teilt sich auf
   <span class="mono">293.245,6</span> (Blockheizkraftwerk) und <span class="mono">22.914,0</span>
@@ -4385,6 +4411,13 @@ Einstufung
             <td><span class="mono">TechnikPlanwertCtrl.BaugroesseHerleitung</span> ·
               <span class="mono">PhotovoltaikCtrl.KwpSumme</span> · <span class="mono">KDLG_HERL_KWP</span></td>
             <td>Zahlenprobe: „750 Module × 400 Wp = 300,00 kWp"; ein Satz von 320,00 €/kWp ergibt 96.000,00 €, nie 240.000,00 €</td></tr>
+        <tr><td class="mono">U36</td><td class="num">6</td>
+            <td>Die Warnzeile „über 2 MW: Stromsteuer auf Eigenverbrauch prüfen." der Gruppe Anlage kann nie erscheinen:
+              Die Prüfung auf 1 MW greift zuerst und deckt jede größere Anlage mit ab. Beide Warnungen sollen
+              nebeneinander stehen können, sobald ihre Grenze überschritten ist</td>
+            <td><span class="mono">PhotovoltaikVerguetungDialog.Anlagenwarnung</span> ·
+              <span class="mono">PVW_WARN_AUSSCHREIBUNG</span> · <span class="mono">PVW_WARN_STROMSTEUER</span></td>
+            <td>bunit: 1.500 kWp zeigt die Ausschreibungswarnung, 2.500 kWp beide Warnungen</td></tr>
       </tbody>
     </table>
   </div>
@@ -4419,7 +4452,10 @@ Einstufung
             <td><span class="zk beleg">Beleg</span></td><td>Staffel des § 7, marginal gemischt</td></tr>
         <tr><td>Anzulegender Wert bei 300 kWp</td><td class="r num">6,04 ct/kWh</td>
             <td><span class="zk beleg">Beleg</span></td>
-            <td>Katalogklassen zum Stichtag; Degression 8,60 → 8,10 trifft 16 von 16 Netzagentur-Werten</td></tr>
+            <td>Katalogklassen zum Stichtag 01.08.2026 (10 × 8,10 + 30 × 7,06 + 260 × 5,84) ÷ 300; Degression 8,60 → 8,10 trifft 16 von 16 Netzagentur-Werten</td></tr>
+        <tr><td>PV-Vergütung Jahr 1 (Spoterlös, Marktprämie, DV-Entgelt, § 51a, Reihe)</td><td class="r num">9.001,44 €</td>
+            <td><span class="zk bsp">Beispielzahl</span></td>
+            <td>PvErloesRechner, Stufe 1 ohne Stundenreihe, mit 199,5 MWh, Ausfallanteil 20 %, Degradation 0,5 %/a und dem Jahresmarktwert 4,50 ct/kWh als Annahme</td></tr>
         <tr><td>Aufschlagsmessung Projekt 1030</td><td class="r num">+360.603 €/a · −29,8 %</td>
             <td><span class="zk beleg">Beleg</span></td>
             <td>Datenbestand — zeigt, was ungepflegte Anteile anrichten würden</td></tr>

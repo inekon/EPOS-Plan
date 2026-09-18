@@ -57,7 +57,7 @@ welcher Menge rechnet, steht in `Rechenweg/05`, Mengentafel.
 | BHKW Eigenverbrauch **KWKG** (1.155,0 − 86,8 Hilfsstrom) | 1.068,2 | KWKG § 7 Abs. 2 |
 | BHKW Einspeisung **KWKG** (495,0, der Hilfsstrom ist vom Eigenverbrauch gedeckt) | 495,0 | KWKG § 7 Abs. 1 |
 | PV Eigenverbrauch (30 % × 285,0) | 85,5 | vermiedener Bezug (Ausweis) |
-| PV Einspeisung (70 %) | 199,5 | EEG-Vergütung |
+| PV Einspeisung (70 %) | 199,5 | EEG-Vergütung — davon 20 % abgeregelt (§ 51), vergütet 159,6 |
 | Reststrombezug Netz (Lauf „Beide Anlagen") | 250,0 | Energiekosten, § 9b |
 | Strombedarf ohne Anlagen (Bedarfsreihe der Strommatrix) | 1.429,7 | Differenzmethode „Bezug ohne Anlage" |
 | physisch vermiedener Bezug (1.429,7 − 250,0) | 1.179,7 | vermiedene Stromkosten |
@@ -126,12 +126,15 @@ tragen keine und laufen still bis zum Ende des Betrachtungszeitraums.
 |---|---|---|---|---|
 | Stammprojekt — Weiterbetrieb | — | 2.400 | 560.016 | 31.230 |
 | Variante 1 — Blockheizkraftwerk | 234.772 | 59.564 | 409.435 | 84.436 |
-| Variante 2 — Photovoltaik | 192.150 | 8.131 | 535.392 | 39.916 |
-| Variante 3 — beide Anlagen | 426.922 | 65.295 | 384.811 | 93.122 |
+| Variante 2 — Photovoltaik | 192.150 | 8.131 | 535.392 | 38.521 |
+| Variante 3 — beide Anlagen | 426.922 | 65.295 | 384.811 | 91.727 |
 
 Energiekosten: Brennstoff × Arbeitspreis + Grundpreis 180 €/a + Netzbezug × 28,80 ct/kWh.
 Kesselseite des Stammprojekts: 2.056,7 MWh × 0,0720 €/kWh = 148.082 €/a; Energiesteuer-Entlastung
 § 54: 2.272,3 MWh (H_s) × 1,38 €/MWh − 250 € = 2.885,7 €/a.
+PV-Vergütung Jahr 1: 9.001,44 € aus `PvErloesRechner` (Stufe 1, ohne Stundenreihe) — 159,6 von 199,5 MWh vergütet
+(§ 51, 20 % abgeregelt), Spoterlös 7.182,00 + Marktprämie 2.457,84 − DV-Entgelt 638,40; § 51a im Jahr 20 1.095,52 €;
+Reihe nominal 150.118 €, Barwert 113.800 € (`Rechenweg/06`).
 
 ## 5 Gesetzliche Sätze (Katalog `Tab_Gesetzesparameter`, Stand 2026)
 
@@ -155,7 +158,7 @@ Kesselseite des Stammprojekts: 2.056,7 MWh × 0,0720 €/kWh = 148.082 €/a; En
 |---|---|---|
 | Kaskadenprobe Projekt 1042 (Baugröße 26,00 kW) | A 16.993,60 · B 849,68 · C 3.084,33 → Delta +20.927,61 € | `Rechenweg/01` — belegt die Kaskadenformel; die **Sätze** des Beispiels sind ihr nachgebildet, die Menge ist 300 kW |
 | Mischsatz 300 kW | 5,5667 ct/kWh | `Rechenweg/05` |
-| AW 300 kWp | 6,04 ct/kWh; Degression 8,60 → 8,10 trifft 16/16 BNetzA-Werte | `Rechenweg/06` |
+| AW 300 kWp | 6,04 ct/kWh (10 × 8,10 + 30 × 7,06 + 260 × 5,84) ÷ 300; Degression 8,60 → 8,10 trifft 16/16 BNetzA-Werte | `Rechenweg/06` |
 | Aufschlagsmessung Projekt 1030 | +360.603 €/a (+32 %), Kapitalwert −29,8 % | `Rechenweg/04` |
 | § 9 Nr. 3 Doppelzählung, Projekt 1024 | 1.510,84 €/a auf beiden Pfaden | `Rechenweg/05`, `07` |
 | Mischsatz Eigenstrom 300 kW | 2,4167 ct/kWh (Tatbestand Nr. 2) | `Rechenweg/05` |
