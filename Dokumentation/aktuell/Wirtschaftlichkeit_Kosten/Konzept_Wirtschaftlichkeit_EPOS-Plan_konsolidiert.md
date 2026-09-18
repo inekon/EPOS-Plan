@@ -775,6 +775,34 @@ Modul) sind verschiedene Dinge — im Ordner steht der Befund mit Bindestrich.
 
 ---
 
+## 2.13 Erfassungsgruppen auf der Kostenseite (Anwenderentscheid K-WZ-1)
+
+Die Kostenseite (Berichte & Kosten → Kosten) listet zuerst die Anlagen des Projekts und hängt
+darunter an, was **keiner Anlage** zugeordnet ist. Dort stehen zwei verschiedene Dinge, und sie
+sehen jetzt auch verschieden aus:
+
+| Zeile | Was sie ist | Wie sie erscheint |
+|---|---|---|
+| Anlagenfähige Gruppe ohne gültige Zuordnung | Ihre Anlage ist gelöscht oder der Verweis leer — sie **hatte** eine | gelb, „{0} — ohne Anlagenzuordnung", Papierkorb |
+| **Erfassungsgruppe** (Wärmezentrale, Bauliche Anlagen, Stromeinspeisung) | Sie **ist** keine Anlage und kann keiner zugeordnet werden — sie sammelt Kosten, die zu keinem Gerät gehören | „{0} — Erfassungsgruppe (ohne Anlage)", Papierkorb |
+
+**Die Unterscheidung gehört in den Kern:** `KostenVorlagenCtrl.IstErfassungsgruppe` — das
+Gegenstück zu `IstWaehlbar` (Ä7). Stünde sie in der Oberfläche, hätte jede Schale ihre eigene.
+Beide Zeilenarten rechnen in der Wirtschaftlichkeit mit, beide lassen sich über denselben
+Papierkorb nach Rückfrage löschen und in der Kostenverwaltung bearbeiten.
+
+**Nicht in der Statuszeile.** Die Meldung „Kostenpositionen ohne verbaute Anlage: …" gilt weiter
+nur den gelben Zeilen — eine Erfassungsgruppe hat nie eine Anlage gehabt, und die Meldung wäre
+eine Fehlanzeige.
+
+**Die Altzeilen.** Die frühere Kostenmaske hinterließ je Erfassungsgruppe eine
+**Hauptkomponentenzeile** in `Tab_ProjektWerte` (`Tab_Kostenfaktor.IsMainComponent = 1`, Gruppe
+„Allgemein", Wert 0,00). Kein heutiger Rechenweg legt sie an. **Schemaschritt 90** entfernt sie —
+aber nur, wenn die Gruppe **nirgends** eine Position mit Wert führt; sonst bleibt sie vollständig
+stehen, denn dort ist die Hauptkomponentenzeile die Überschrift ihrer Positionen.
+
+---
+
 # 3 Die Rechenwege
 
 Alle Formeln in der Fassung der Formelkarte vom 30.08.2026 gegen `b2ad3e3`.
@@ -1118,6 +1146,37 @@ Deckelstaffel 5.000 (2021) … 3.300 (2026) … 2.500 (ab 2030). Vorgeschaltete 
 ≤ 31.12.2026 · Realisierungsfrist 4 Jahre · Ausschreibung > 500 kW · Heizöl-Neuanlage ab 2025.
 
 **Pauschale § 9** (≤ 2 kW): `0,04 × 60.000 × P_el`, einmalig in Index 0.
+
+#### Der Ersatzweg: eine leistungsgewichtete virtuelle Gesamtanlage (BK1a)
+
+Lassen sich Anlagen- und Ergebnismodulzeilen nicht paaren (kein Modulsatz, oder Namen und Anzahl
+passen nicht zusammen), fehlt die Zuordnung **Menge → Anlage** — die **Anlage** fehlt nicht. Der
+Ersatzweg bildet deshalb aus den BHKW-Anlagen **eine** virtuelle Gesamtanlage. Gewicht ist die
+elektrische Nennleistung, `g_i = P_el,i`, `G = Σ g_i`:
+
+```
+SatzEigen   = Σ g_i × SatzEigen(a_i)                              / G     (Tatbestand je Anlage)
+SatzEinsp   = Σ g_i × SatzEinsp(a_i)                              / G
+Kontingent  = Σ g_i × (Kontingent(a_i) > 0 ? Kontingent(a_i)
+                       : ableiten(Anlagenart(a_i), Kostenanteil(a_i))) / G
+Deckel(t)   = Σ g_i × (Deckel(a_i) > 0 ? Deckel(a_i)
+                       : Staffel(Beginn(a_i) + t − 1))               / G     JE JAHR neu
+```
+
+**Der Jahresdeckel wird je Jahr gemischt**, nicht einmal gebildet: Anlagen mit verschiedenem
+Förderbeginn (`Inbetriebnahme(a_i).Jahr`, sonst der Projekt-Förderbeginn) stehen im selben
+Kalenderjahr auf verschiedenen Stufen der Staffel des § 8 Abs. 4; ein einmal gebildeter Mittelwert
+hätte den Verlauf eingeebnet.
+
+**Alles Übrige bleibt die Rechnung von vorher:** `Bonus_voll`, der Negativpreis-Abschlag, der
+Fallback ohne Stundenreihen, die projektweiten Vollbenutzungsstunden und die Jahresschleife. Nur
+die vier Eingangsgrößen wechseln die Herkunft — vom Projekt zu den Anlagen. Bei einer Anlage, und
+bei mehreren mit gleichen Werten, ist das Ergebnis deshalb dieselbe Zahl wie vorher.
+
+**`G ≤ 0`** — keine Anlage führt eine elektrische Nennleistung: Dann wäre jede gewichtete Größe
+still 0 und der Zuschlag ohne Grund 0. Stattdessen wird **arithmetisch gemittelt** und der Ersatz
+benannt. Die Hinweise des Weges entstehen je Anlage und werden **lokal** ordinal entdoppelt — N
+gleichartige Anlagen ergäben sonst N wortgleiche Zeilen.
 
 ### Hilfsstrom und die Bemessungsgrundlage des Zuschlags
 
@@ -1538,19 +1597,29 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 
 **Nach BK1 — was die Etappe offen lässt**
 
-9e. **BK1-1: Sechs Projektspalten bleiben ungelesen stehen.** `KWKG_Bonus`,
-    `KWKG_Bonus_Einspeisung`, `KWKG_Tatbestand` und `KWKG_Anlagenart` liest nach Schritt 89 kein
-    Rechenweg mehr; `KWKG_Vbh_Kontingent` und `KWKG_Vbh_Jahresdeckel` nur noch der projektweite
-    Ersatzweg. Ein Drop ist ein eigener Schemaschritt und braucht einen Anwenderentscheid — er
-    nähme die Möglichkeit, den Datenschritt nachzuvollziehen.
-9f. **BK1-2: Der projektweite Ersatzweg rechnet weiter mit den Projektsätzen.** Er greift nur,
-    wenn sich Anlagen- und Ergebniszeilen nicht zuordnen lassen; dort gibt es keine Anlagenwerte,
-    an denen er sich bedienen könnte. Der Aktivierungsschalter fragt aber schon die Anlagen — ein
-    Projekt mit Anlagensätzen und ohne Projektsätze bekäme auf diesem Weg 0. Der Fall ist
-    konstruiert (er setzt eine misslungene Zuordnung voraus), bleibt aber benannt.
+9e. ~~**BK1-1: Sechs Projektspalten bleiben ungelesen stehen.**~~ **Erledigt mit BK1a**
+    (Anwenderentscheid `BK1-1` „Empfehlung" vom 18.09.2026): **Schemaschritt 90** entfernt
+    `KWKG_Bonus`, `KWKG_Bonus_Einspeisung`, `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`,
+    `KWKG_Tatbestand` und `KWKG_Anlagenart` aus `Tab_ProjektWirtschaftlichkeit`. Der Datenschritt
+    bleibt nachvollziehbar — er steht als Quelle in `KwkAnlagenwahrheit`, und Schritt 89 läuft vor
+    Schritt 90.
+9f. ~~**BK1-2: Der projektweite Ersatzweg rechnet weiter mit den Projektsätzen.**~~ **Erledigt mit
+    BK1a:** Der Ersatzweg bildet aus den Anlagen eine **leistungsgewichtete virtuelle
+    Gesamtanlage** (§ 3.6) und liest damit dieselbe Quelle wie der Regelweg. Der benannte
+    Widerspruch zum Aktivierungsschalter ist damit fort: Ein Projekt mit Anlagensätzen bekommt
+    auch auf diesem Weg seinen Zuschlag.
 9g. **BK1-3: Ein Jahr-0-Ausweis der KWKG-Pauschale in der Erlösrubrik** ist als Vorschlag
     aufgenommen und **nicht gebaut** — der Entscheid steht beim Anwender aus. Er löst zugleich
     `B7-3`.
+9h. **BK1-4: `KWKG_Kostenanteil` (Projekt) hat keinen Rechenleser mehr, das Feld bleibt.**
+    Anwenderentscheid `BK1-Q1` (c) vom 18.09.2026: Die Spalte und ihr Dialogfeld in Gruppe 2
+    bleiben unverändert, obwohl § 8 KWKG das Kontingent seit BK1 aus dem Kostenanteil **der
+    Anlage** ableitet. Sie ist damit eine gepflegte Angabe ohne Wirkung — benannt, damit der
+    nächste Leser es nicht für einen Fehler hält.
+9i. **BK1-Q2 (a) — abgenommen, hier als Ausnahme festgehalten:** Ein Projekt, dessen
+    Vbh-Kontingent an Projekt UND Anlagen leer ist, rechnete auf dem Ersatzweg still mit dem
+    Feldvorgabewert 30 000 h. Seit BK1a leitet `KontingentDerAnlage` daraus 0 h mit Begründung ab
+    — dieselbe Antwort, die der Regelweg seit BK1 gibt. Wissentlich abgenommen.
 
 **Fachlich und technisch**
 
@@ -1594,12 +1663,16 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 > (`Tab_ProjektWirtschaftlichkeit.KWKG_*`, Schritt 28) —, und dazwischen lag eine Rückfallkette.
 > Der Anwender pflegte damit Felder, deren Wirkung davon abhing, ob ein zweites Feld anderswo leer
 > war; eine Kaskade aus zwei verschieden alten Modulen war gar nicht abbildbar. Die Wahrheit ist
-> jetzt die Anlage. Die sechs Projektspalten `KWKG_Bonus`, `KWKG_Bonus_Einspeisung`,
-> `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`, `KWKG_Tatbestand` und `KWKG_Anlagenart` bleiben
-> ungelesen in der Datenbank stehen — **Aufräumkandidaten für einen eigenen Schritt**, kein Drop in
-> BK1: `KWKG_Vbh_Kontingent` und `KWKG_Vbh_Jahresdeckel` speisen weiterhin den projektweiten
-> Ersatzweg, und ein Drop ohne Not nähme dem Anwender die Möglichkeit, den Datenschritt
-> nachzuvollziehen.
+> jetzt die Anlage.
+>
+> **Vollständig aufgelöst mit BK1a (Schemaschritt 90).** Die sechs Projektspalten `KWKG_Bonus`,
+> `KWKG_Bonus_Einspeisung`, `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`, `KWKG_Tatbestand` und
+> `KWKG_Anlagenart` sind entfernt; der letzte Leser — der projektweite Ersatzweg — rechnet seither
+> mit einer leistungsgewichteten virtuellen Gesamtanlage aus den Anlagen (§ 3.6). **Ein Vorbehalt
+> bleibt und ist abgenommen** (`BK1-Q2` a): Wo weder Projekt noch Anlage ein Vbh-Kontingent
+> führen, galten bisher still 30 000 h; jetzt gilt 0 h mit Begründung. **Ein Feld bleibt ohne
+> Leser stehen** (`BK1-Q1` c, offener Punkt `BK1-4`): `KWKG_Kostenanteil` des Projekts samt seinem
+> Dialogfeld.
 
 *Aus KONTEXT § 9 — jede benannt und begründet. Neue Spalten und Novellen müssen beide Orte treffen.*
 
