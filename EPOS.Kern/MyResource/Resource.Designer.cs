@@ -53232,6 +53232,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Anlagen- und Ergebniszeilen ließen sich nicht zuordnen — gerechnet wird mit einer leistungsgewichteten Gesamtanlage aus {0} Anlagen ({1} kW_el). ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ERSATZ_GEWICHTET {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ERSATZ_GEWICHTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Keine der Anlagen führt eine elektrische Nennleistung — die Gesamtanlage wird deshalb arithmetisch gemittelt statt nach Leistung gewichtet. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_ERSATZ_OHNE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_ERSATZ_OHNE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die reicht über T ähnelt.
         /// </summary>
         public static string WIRT_KWKG_ERSCHOEPFT_NIE {
@@ -53354,15 +53372,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_KEINE_FOERDERFAEHIG {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_KEINE_FOERDERFAEHIG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Vbh-Kontingent aus der Anlagenart abgeleitet — {0} Vbh. {1} ähnelt.
-        /// </summary>
-        public static string WIRT_KWKG_KONTINGENT_ABGELEITET {
-            get {
-                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_ABGELEITET", resourceCulture);
             }
         }
         
@@ -53606,24 +53615,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Tatbestand des § 6 Abs. 3 ausdrücklich auf „keiner“ gesetzt — auf selbst genutzten Strom gibt es nach § 7 Abs. 2 keinen Zuschlag; nur die Einspeisung wird vergütet. ähnelt.
-        /// </summary>
-        public static string WIRT_KWKG_TATBESTAND_KEINER {
-            get {
-                return ResourceManager.GetString("WIRT_KWKG_TATBESTAND_KEINER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: kein Eigenstrom-Tatbestand des § 6 Abs. 3 erfasst — der Zuschlag auf selbst genutzten Strom ist ungeprüft und wird wie bisher mit dem eingetragenen Satz gerechnet. ähnelt.
-        /// </summary>
-        public static string WIRT_KWKG_TATBESTAND_OFFEN {
-            get {
-                return ResourceManager.GetString("WIRT_KWKG_TATBESTAND_OFFEN", resourceCulture);
             }
         }
         
