@@ -30,6 +30,13 @@ namespace EPOS.Kern.Tests
     /// <c>PvVorlageBatteriespeicher</c>, Nachweis in
     /// <c>PvBatteriespeicherBemessungTests</c>). Keine Projektzeile ist betroffen.</para>
     ///
+    /// <para><b>Die Leistungsarten stehen in BEIDEN Rastern.</b> „je kW Leistung",
+    /// „je kW Heizleistung" und „je kW elektrisch" werden auch im Betriebsraster
+    /// angeboten — Wartung und Instandhaltung werden branchenüblich je installierter
+    /// Leistung bemessen. Gewachsen ist die Auswahl allein an den SIEBEN Gewerken mit
+    /// einer Leistungsgröße; Wärmezentrale, Bauliche Anlagen und Stromeinspeisung
+    /// behalten ihre Kostenwelt, weil kein Gerät hinter ihnen steht.</para>
+    ///
     /// <para>Der Schutz für den Bestand bleibt davon unberührt: Eine Art, die eine
     /// VORHANDENE Zeile trägt, steht weiter in der Liste — sonst verlöre ein gepflegter
     /// Wert seine Auswahl und ließe sich nicht mehr ändern.</para>
@@ -55,8 +62,9 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>Wärmepumpe: die EINE Nennleistung — „je kW Leistung" und „je kW
-        /// Heizleistung" meinen sie beide. Strom- und Flächengrößen kennt sie nicht; im
-        /// Betrieb rechnet sie alles aus dem Lauf.</summary>
+        /// Heizleistung" meinen sie beide, und zwar in BEIDEN Rastern (Wartung je kW).
+        /// Strom- und Flächengrößen kennt sie nicht; ihre Mengen kommen aus dem
+        /// Lauf.</summary>
         [Fact]
         public void Waermepumpe_bietet_die_Heizleistung_und_die_Laufgroessen()
         {
@@ -77,6 +85,8 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
                 });
         }
 
@@ -102,6 +112,8 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN,
                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
                 });
         }
 
@@ -129,6 +141,7 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_JAHRESBETRAG,
                     DbWerte.BEMESSUNG_PROZENT_INVESTITION,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,
                     DbWerte.BEMESSUNG_EUR_PRO_KWP,
                 });
         }
@@ -187,6 +200,8 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_JAHRESBETRAG,
                     DbWerte.BEMESSUNG_PROZENT_INVESTITION,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
                 });
         }
 
@@ -210,6 +225,8 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_JAHRESBETRAG,
                     DbWerte.BEMESSUNG_PROZENT_INVESTITION,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,
                 });
         }
 
@@ -230,6 +247,7 @@ namespace EPOS.Kern.Tests
                 {
                     DbWerte.BEMESSUNG_JAHRESBETRAG,
                     DbWerte.BEMESSUNG_PROZENT_INVESTITION,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
                 });
         }
 
@@ -257,6 +275,9 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,
                 });
         }
 

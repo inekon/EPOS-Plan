@@ -60,7 +60,9 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Was am Pufferspeicher bleibt: die Volumenbemessung und die Arten, die
-        /// gar keine Baugröße brauchen. Die Liste ist damit vollständig benannt.</summary>
+        /// gar keine Baugröße brauchen. Die Liste ist damit vollständig benannt — in
+        /// BEIDEN Rastern, denn ein Volumen trägt eine Wartung genauso wie einen
+        /// Kaufpreis.</summary>
         [Fact]
         public void Am_Pufferspeicher_bleibt_die_Volumenbemessung_und_das_Absolute()
         {
@@ -77,6 +79,7 @@ namespace EPOS.Kern.Tests
                 {
                     DbWerte.BEMESSUNG_JAHRESBETRAG,
                     DbWerte.BEMESSUNG_PROZENT_INVESTITION,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
                 },
                 Persistenzwerte(K_PUFFER, false));
         }

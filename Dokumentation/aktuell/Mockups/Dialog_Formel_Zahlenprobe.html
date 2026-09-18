@@ -1096,7 +1096,8 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         dieser Komponente und kann nicht gelöscht werden. Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen."
         Der Empfehlungsbereich steht als leise Zeile unter dem Satzfeld und zusätzlich in dessen Werkzeugtipp.
         Bemessungen der Klappliste beim Blockheizkraftwerk: fester Jahresbetrag · % der Investition · % der
-        Endenergiekosten · % des Endenergiebedarfs · je kWh thermisch · je kWh elektrisch; die Altwerte „je kWh" und
+        Endenergiekosten · % des Endenergiebedarfs · je kWh thermisch · je kWh elektrisch · je kW elektr. Leistung ·
+        je kW Heizleistung · je kW elektrisch; die Altwerte „je kWh" und
         „je Stunde" stehen nur, wo eine Bestandszeile sie trägt. <b>Ohne Simulationslauf</b> tragen die mengenbasierten
         Zeilen ein ⚠ im Betrag, und unter dem Raster steht „‚Wartung BHKW': kein Simulationslauf ·
         ‚Hilfsenergiekosten': kein Simulationslauf"; die investitionsbasierte Zeile rechnet sofort.</div>
@@ -1251,7 +1252,7 @@ Keine stillen Teilsummen
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
       <tbody>
         <tr><td>Unterzeile „Betriebskosten nach VDI 2067" · Betragsspalte „Betrag netto [€/a]"</td><td class="rs">KDLG_UNTERTITEL_BETRIEB · KDLG_SP_BETRAG_JAHR</td><td>KostenKomponenteDialog, Kategorie Betriebskosten</td></tr>
-        <tr><td>Bemessungen der Klappliste im Betriebsraster</td><td class="rs">BM_JAHRESBETRAG · BM_P_INVESTITION · BM_P_ENDENERGIEKOSTEN · BM_P_ENDENERGIEBEDARF · BM_KWH_THERMISCH · BM_KWH_ELEKTRISCH · BM_KWH · BM_STUNDE</td><td>Zelle Bemessung</td></tr>
+        <tr><td>Bemessungen der Klappliste im Betriebsraster</td><td class="rs">BM_JAHRESBETRAG · BM_P_INVESTITION · BM_P_ENDENERGIEKOSTEN · BM_P_ENDENERGIEBEDARF · BM_KWH_THERMISCH · BM_KWH_ELEKTRISCH · BM_KW_LEISTUNG_BHKW · BM_KW_HEIZLEISTUNG · BM_KW_ELEKTRISCH · BM_KWH · BM_STUNDE</td><td>Zelle Bemessung</td></tr>
         <tr><td>Pflichtpositionen „Wartung BHKW" · „Instandhaltung BHKW" · „Hilfsenergiekosten" (Datenwerte) · Meldung beim Löschversuch</td><td class="rs">DbWerte.VDI_POS_* · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Rasterzeilen · Meldungszeile</td></tr>
         <tr><td>Summenfuß „Summe Betriebskosten netto: {0} €/a" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_BETRIEB · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Grund „kein Simulationslauf" unter dem Raster</td><td class="rs">KDLG_BASIS_GRUND_LAUF · KDLG_OHNE_BASIS_ZEILE</td><td>Hinweiszeile unter dem Raster</td></tr>
