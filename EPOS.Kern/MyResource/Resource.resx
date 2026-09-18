@@ -5718,6 +5718,12 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_KOSTEN_SP_SUMME" xml:space="preserve">
     <value>Investition [€]</value>
   </data>
+  <data name="BK_KOSTEN_ERFASSUNGSGRUPPE" xml:space="preserve">
+    <value>{0} — Erfassungsgruppe (ohne Anlage)</value>
+  </data>
+  <data name="BK_KOSTEN_ERFASSUNGSGRUPPE_HINT" xml:space="preserve">
+    <value>Diese Gruppe ist keiner Anlage zugeordnet — sie sammelt Kosten, die zu keinem Gerät gehören. Sie rechnet in der Wirtschaftlichkeit mit; der Papierkorb löscht sie nach Rückfrage, bearbeiten lässt sie sich in der Kostenverwaltung.</value>
+  </data>
   <data name="BK_KOSTEN_SUMME" xml:space="preserve">
     <value>Gesamt</value>
   </data>

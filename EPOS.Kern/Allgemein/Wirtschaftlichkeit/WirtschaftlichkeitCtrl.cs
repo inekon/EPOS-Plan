@@ -279,14 +279,11 @@ namespace WindowsFormsApplication1
                                   "\"Preissteigerung_Betrieb\" REAL, " +
                                   "\"Einspeiseverguetung\" REAL, " +
                                   "\"CO2_Preis\" REAL, " +
-                                  "\"KWKG_Bonus\" REAL, " +
-                                  "\"KWKG_Vbh_Jahresdeckel\" REAL, " +
-                                  "\"KWKG_Vbh_Kontingent\" REAL, " +
-                                  // ETAPPE K6 (HF6/M-D): die vier KWKG-Projektangaben auch im
+                                  // ETAPPE K6 (HF6/M-D): die KWKG-Projektangaben auch im
                                   // CREATE — sonst hätte eine frisch angelegte Tabelle sie erst
-                                  // nach dem SpalteSicher-Nachzug weiter unten.
-                                  "\"KWKG_Tatbestand\" TEXT CHECK (length(\"KWKG_Tatbestand\") <= 30), " +
-                                  "\"KWKG_Anlagenart\" TEXT CHECK (length(\"KWKG_Anlagenart\") <= 20), " +
+                                  // nach dem SpalteSicher-Nachzug weiter unten. ETAPPE BK1a:
+                                  // Fünf der Fragmente sind mit Schemaschritt 90 entfallen
+                                  // (KwkgProjektaltspalten) — sie stehen nur noch dort.
                                   "\"KWKG_Kostenanteil\" REAL, " +
                                   "\"KWKG_Pauschalmodus\" INTEGER NOT NULL DEFAULT 0 CHECK (\"KWKG_Pauschalmodus\" IN (0,1)), " +
                                   // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): die vier
@@ -397,9 +394,6 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_ERGEBNIS, "CO2Abgabe", "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, "KWKGErloes", "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, "CO2_Preis", "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Bonus", "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Vbh_Jahresdeckel", "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Vbh_Kontingent", "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, "StromkostenTarif", "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, "HinweisText", "LONGTEXT");
                     // ETAPPE E2 (L6): die Bemessungsgrundlage der KWKG-Deckelung wird
@@ -409,22 +403,12 @@ namespace WindowsFormsApplication1
                     // Wahrheit gegenüber SchemaMigration, W4-Umsetzungsstand Abschnitt 6);
                     // ein Migrationsschritt dafür wäre der dritte Mechanismus.
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_KWKG_VBH_EL, "DOUBLE");
-                    SpalteSicher(TAB_PARAMETER, "KWKG_Bonus_Einspeisung", "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, "ID_Kraftwerkspark", "LONG");
                     SpalteSicher(TAB_PARAMETER, "RefKessel_Wirkungsgrad", "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, "RefKessel_ID_Brennstoff", "LONG");
-                    bool phase9Neu = SpalteSicher(TAB_PARAMETER, "KWKG_Stichtag", "DATETIME");
+                    SpalteSicher(TAB_PARAMETER, "KWKG_Stichtag", "DATETIME");
                     SpalteSicher(TAB_PARAMETER, "KWKG_Inbetriebnahme", "DATETIME");
                     SpalteSicher(TAB_PARAMETER, "KWKG_Abschlag_Negativ", "DOUBLE");
-
-                    // Einmalige Migration (Phase 9): der bisherige Vorgabewert 3500 des
-                    // Deckels bedeutete „KWKG-2020-Standard" — in der neuen Override-
-                    // Semantik (0 = degressive Staffel) würde er die Staffel dauerhaft
-                    // aushebeln. Beim ersten Phase-9-Start auf 0 umstellen.
-                    if (phase9Neu)
-                        try { Ddl("UPDATE " + TAB_PARAMETER +
-                                        " SET KWKG_Vbh_Jahresdeckel = 0 WHERE KWKG_Vbh_Jahresdeckel = 3500"); }
-                        catch { }
 
                     // ETAPPE E4 — die drei Steuergutschriften und die Herkunft ihrer
                     // Sätze im ERGEBNIS. Additiv über denselben Weg wie die Spalten
@@ -453,13 +437,11 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS, "TEXT(20)");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
 
-                    // ETAPPE K6 (HF6/M-D) — die vier KWKG-Projektangaben. Regulär legt sie
+                    // ETAPPE K6 (HF6/M-D) — die verbliebenen KWKG-Projektangaben. Regulär legt sie
                     // Migrationsschritt 28 an; das hier ist die tolerante VORSORGE
                     // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls,
                     // Konzept § 9 Punkt 2). WERTE werden auch hier nicht vorbelegt: leer
                     // heißt „nicht angegeben", und genau das hält den Bestand unverändert.
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND, "TEXT(30)");
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART, "TEXT(20)");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO");
 
@@ -644,10 +626,6 @@ namespace WindowsFormsApplication1
                     p.PreissteigerungBetrieb = D(r, "Preissteigerung_Betrieb") ?? 0;
                     p.Einspeiseverguetung = D(r, "Einspeiseverguetung") ?? 0;
                     p.CO2Preis = D(r, "CO2_Preis") ?? 0;
-                    p.KwkgBonus = D(r, "KWKG_Bonus") ?? 0;
-                    p.KwkgVbhJahresdeckel = D(r, "KWKG_Vbh_Jahresdeckel") ?? p.KwkgVbhJahresdeckel;
-                    p.KwkgVbhKontingent = D(r, "KWKG_Vbh_Kontingent") ?? p.KwkgVbhKontingent;
-                    p.KwkgBonusEinspeisung = D(r, "KWKG_Bonus_Einspeisung") ?? 0;
                     p.IdKraftwerkspark = (int)(D(r, "ID_Kraftwerkspark") ?? 0);
                     p.RefKesselWirkungsgrad = D(r, "RefKessel_Wirkungsgrad") ?? p.RefKesselWirkungsgrad;
                     p.RefKesselIdBrennstoff = (int)(D(r, "RefKessel_ID_Brennstoff") ?? p.RefKesselIdBrennstoff);
@@ -657,13 +635,9 @@ namespace WindowsFormsApplication1
                         p.KwkgInbetriebnahme = Convert.ToDateTime(r["KWKG_Inbetriebnahme"]);
                     p.KwkgAbschlagNegativ = D(r, "KWKG_Abschlag_Negativ") ?? 0;
 
-                    // ETAPPE K6 — KWKG-Tatbestand, Anlagenart, Kostenanteil, Pauschale.
-                    // Ein LEERER Steuerwert heißt hier „nicht angegeben" und ist NICHT
-                    // gleichbedeutend mit KEINER bzw. NEUANLAGE: Ohne Erfassung rechnet
-                    // die Anwendung wie bisher und weist das aus (Begründung an
-                    // WirtschaftlichkeitParameter.KwkgTatbestand).
-                    p.KwkgTatbestand = Text(r, SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND);
-                    p.KwkgAnlagenart = Text(r, SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART);
+                    // ETAPPE K6 — Kostenanteil und Pauschale des Projekts. Tatbestand
+                    // und Anlagenart sind mit Schemaschritt 90 entfallen; beide stehen
+                    // seit Schritt 89 an der Anlage und werden dort geprüft.
                     p.KwkgKostenanteil = D(r, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL) ?? 0;
                     p.KwkgPauschalmodus = B(r, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS);
 
@@ -949,9 +923,7 @@ namespace WindowsFormsApplication1
                 int rows = DataRepository.ExecuteNonQuery(
                     "UPDATE " + TAB_PARAMETER + " SET Zinssatz = ?, Betrachtungszeitraum = ?, " +
                     "Preissteigerung_Energie = ?, Preissteigerung_Betrieb = ?, " +
-                    "Einspeiseverguetung = ?, CO2_Preis = ?, KWKG_Bonus = ?, " +
-                    "KWKG_Vbh_Jahresdeckel = ?, KWKG_Vbh_Kontingent = ?, " +
-                    "KWKG_Bonus_Einspeisung = ?, ID_Kraftwerkspark = ?, " +
+                    "Einspeiseverguetung = ?, CO2_Preis = ?, ID_Kraftwerkspark = ?, " +
                     "RefKessel_Wirkungsgrad = ?, RefKessel_ID_Brennstoff = ?, " +
                     "KWKG_Stichtag = ?, KWKG_Inbetriebnahme = ?, KWKG_Abschlag_Negativ = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_UNTERNEHMENSART + "] = ?, " +
@@ -967,8 +939,6 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "] = ?, " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND + "] = ?, " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "] = ?, " +
                     // ETAPPE W5-B-9 - die zwölf Szenariospalten. Reihenfolge wie in
@@ -998,10 +968,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@pb", p.PreissteigerungBetrieb),
                     new DbParam("@ev", p.Einspeiseverguetung),
                     new DbParam("@co2", p.CO2Preis),
-                    new DbParam("@kwkg", p.KwkgBonus),
-                    new DbParam("@vbhj", p.KwkgVbhJahresdeckel),
-                    new DbParam("@vbhk", p.KwkgVbhKontingent),
-                    new DbParam("@kwkgE", p.KwkgBonusEinspeisung),
                     new DbParam("@park", p.IdKraftwerkspark),
                     new DbParam("@refEta", p.RefKesselWirkungsgrad),
                     new DbParam("@refBs", p.RefKesselIdBrennstoff),
@@ -1036,13 +1002,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@bnw", DbParamTyp.VarWChar, 30)
                     { Wert = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
-                    // ETAPPE K6 — die leere Angabe muss LEER in die Datenbank: Sie ist die
-                    // Aussage „nicht angegeben" und damit etwas anderes als KEINER bzw.
-                    // NEUANLAGE. Deshalb hier bewusst KEIN Steuerwert(...)-Rückfall.
-                    new DbParam("@ktb", DbParamTyp.VarWChar, 30)
-                    { Wert = LeerAlsNull(p.KwkgTatbestand) },
-                    new DbParam("@kart", DbParamTyp.VarWChar, 20)
-                    { Wert = LeerAlsNull(p.KwkgAnlagenart) },
                     new DbParam("@kant", DbParamTyp.Double)
                     { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
                     new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
@@ -1079,8 +1038,7 @@ namespace WindowsFormsApplication1
                 return DataRepository.ExecuteSQL(
                     "INSERT INTO " + TAB_PARAMETER + " (ID, ID_Projekt, Zinssatz, Betrachtungszeitraum, " +
                     "Preissteigerung_Energie, Preissteigerung_Betrieb, Einspeiseverguetung, " +
-                    "CO2_Preis, KWKG_Bonus, KWKG_Vbh_Jahresdeckel, KWKG_Vbh_Kontingent, " +
-                    "KWKG_Bonus_Einspeisung, ID_Kraftwerkspark, RefKessel_Wirkungsgrad, " +
+                    "CO2_Preis, ID_Kraftwerkspark, RefKessel_Wirkungsgrad, " +
                     "RefKessel_ID_Brennstoff, KWKG_Stichtag, KWKG_Inbetriebnahme, " +
                     "KWKG_Abschlag_Negativ, " +
                     "[" + SchemaKatalog.SPALTE_PW_UNTERNEHMENSART + "], " +
@@ -1096,8 +1054,6 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "], " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_TATBESTAND + "], " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_ANLAGENART + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "], " +
                     // ETAPPE W5-B-9 - die zwölf Szenariospalten, Reihenfolge wie im UPDATE.
@@ -1121,7 +1077,7 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1130,10 +1086,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@pb", p.PreissteigerungBetrieb),
                     new DbParam("@ev", p.Einspeiseverguetung),
                     new DbParam("@co2", p.CO2Preis),
-                    new DbParam("@kwkg", p.KwkgBonus),
-                    new DbParam("@vbhj", p.KwkgVbhJahresdeckel),
-                    new DbParam("@vbhk", p.KwkgVbhKontingent),
-                    new DbParam("@kwkgE", p.KwkgBonusEinspeisung),
                     new DbParam("@park", p.IdKraftwerkspark),
                     new DbParam("@refEta", p.RefKesselWirkungsgrad),
                     new DbParam("@refBs", p.RefKesselIdBrennstoff),
@@ -1168,10 +1120,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@bnw", DbParamTyp.VarWChar, 30)
                     { Wert = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
-                    new DbParam("@ktb", DbParamTyp.VarWChar, 30)
-                    { Wert = LeerAlsNull(p.KwkgTatbestand) },
-                    new DbParam("@kart", DbParamTyp.VarWChar, 20)
-                    { Wert = LeerAlsNull(p.KwkgAnlagenart) },
                     new DbParam("@kant", DbParamTyp.Double)
                     { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
                     new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
@@ -2983,8 +2931,8 @@ namespace WindowsFormsApplication1
         /// (<see cref="KwkgKontingentRechner"/>).
         ///
         /// <para><b>Warum je Anlage.</b> § 8 stellt auf die einzelne KWK-Anlage ab. Bis
-        /// BK1 gab es die Ableitung nur projektweit (aus <c>KWKG_Anlagenart</c> und
-        /// <c>KWKG_Kostenanteil</c> des Projekts); eine Kaskade aus einem neuen und einem
+        /// BK1 gab es die Ableitung nur projektweit (aus Anlagenart und Kostenanteil
+        /// des Projekts); eine Kaskade aus einem neuen und einem
         /// modernisierten Modul bekam damit für beide dieselbe Stufe, obwohl ihnen
         /// verschiedene zustehen. Seit BK1a ist auch der Ersatzweg hier — die
         /// projektweite Ableitung ist ersatzlos entfallen.</para>
@@ -4061,12 +4009,12 @@ namespace WindowsFormsApplication1
             /// <c>DbWerte.KWKG_EIGENFALL_*</c>; leer = keiner. Ohne Rechenwirkung.</summary>
             public string Eigenfall = "";
 
-            /// <summary>Überschreibwert des Einspeisesatzes [ct/kWh]; <c>null</c> =
-            /// Projektsatz <c>KwkgBonusEinspeisung</c>.</summary>
+            /// <summary>Einspeisesatz dieser Anlage [ct/kWh]; <c>null</c> oder 0 = kein
+            /// Satz (Etappe BK1a: die Projektvorgabe ist entfallen).</summary>
             public double? SatzEinspCt;
 
-            /// <summary>Überschreibwert des Eigenstromsatzes [ct/kWh]; <c>null</c> =
-            /// Projektsatz <c>KwkgBonus</c>.</summary>
+            /// <summary>Eigenstromsatz dieser Anlage [ct/kWh]; <c>null</c> oder 0 = kein
+            /// Satz (Etappe BK1a: die Projektvorgabe ist entfallen).</summary>
             public double? SatzEigenCt;
 
             /// <summary>Vbh-Kontingent dieser Anlage [h]; <c>null</c> = Projektwert.</summary>

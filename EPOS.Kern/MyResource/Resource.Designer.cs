@@ -5061,6 +5061,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — Erfassungsgruppe (ohne Anlage) ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_ERFASSUNGSGRUPPE {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_ERFASSUNGSGRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Gruppe ist keiner Anlage zugeordnet — sie sammelt Kosten, die zu keinem Gerät gehören. Sie rechnet in der Wirtschaftlichkeit mit; der Papierkorb löscht sie nach Rückfrage, bearbeiten lässt sie sich in der Kostenverwaltung. ähnelt.
+        /// </summary>
+        public static string BK_KOSTEN_ERFASSUNGSGRUPPE_HINT {
+            get {
+                return ResourceManager.GetString("BK_KOSTEN_ERFASSUNGSGRUPPE_HINT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Investition ähnelt.
         /// </summary>
         public static string BK_KOSTEN_INVEST {

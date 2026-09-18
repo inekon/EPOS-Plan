@@ -250,23 +250,13 @@ namespace WindowsFormsApplication1
 
         // ---- Stufe W2 (Phase 7) ----
         public double CO2Preis = 0.0;                 // BEHG [€/t] auf Brennstoff-CO₂ (0 = aus)
-        public double KwkgBonus = 0.0;                // [ct/kWh] KWK-Eigenstrom (0 = aus)
 
-        /// <summary>Vbh-Deckel-OVERRIDE [h/a]; 0 = degressive Staffel des KWKG 2025
-        /// aus dem Gesetzeskatalog, Schlüssel <c>KWKG_VBH_JAHRESDECKEL</c> (Phase 9,
-        /// Konzept Kap. 8.3/8.5.1). <b>Nachgezogen in K6:</b> Bis hierher stand hier
-        /// „aus dem Katalog Tab_KWKG_Staffel" — die Quelle ist seit Etappe E1
-        /// <c>Tab_Gesetzesparameter</c>, und die Alttabelle ist mit Migrationsschritt 29
-        /// entfallen.</summary>
-        public double KwkgVbhJahresdeckel = 0;
-
-        /// <summary>Kumuliertes Vbh-Kontingent [h]. <b>Seit K6 ein OVERRIDE:</b> 0 heißt
-        /// „automatisch aus <see cref="KwkgAnlagenart"/> nach § 8 KWKG"
-        /// (<c>KwkgKontingentRechner</c>); ein Wert größer 0 gewinnt unverändert.</summary>
-        public double KwkgVbhKontingent = 30000;
+        // ETAPPE BK1a — die vier KWKG-Rechengrößen des Projekts (Satz Eigen, Satz
+        // Einspeisung, Vbh-Kontingent, Jahresdeckel) sind mit Schemaschritt 90
+        // entfallen. Sie stehen seit Schritt 89 an der Anlage
+        // (Tab_Energieanlagen.KWKG_*), und beide Rechenwege lesen sie dort.
 
         // ---- Stufe W3 (Phase 8) ----
-        public double KwkgBonusEinspeisung = 0.0;     // [ct/kWh] KWK-Einspeisung (0 = wie Eigenstrom aus)
         public int IdKraftwerkspark = 0;              // Tab_Kraftwerkspark.ID (0 = keine Emissionsbilanz)
         public double RefKesselWirkungsgrad = 90.0;   // Referenzkessel der getrennten Erzeugung [%]
         public int RefKesselIdBrennstoff = 3;         // Tab_Brennstoff_Stamm.ID (Vorgabe 3 = Erdgas E)
@@ -415,30 +405,10 @@ namespace WindowsFormsApplication1
 
         // ---- ETAPPE K6 — KWKG-Tatbestand, Anlagenart, Pauschale (Schritt 28) ----
         //
-        // Vier Angaben aus Konzept § 8.1 (HF6). Drei davon bleiben ohne ausdrückliche
-        // Erfassung LEER bzw. 0 — genau das hält jede Bestandsrechnung unverändert.
-
-        /// <summary>
-        /// Tatbestand des § 6 Abs. 3 KWKG, unter dem SELBST GENUTZTER Strom
-        /// zuschlagsfähig ist; Steuerwerte <c>DbWerte.KWKG_EIGENFALL_*</c>.
-        ///
-        /// <para><b>Leer = „nicht angegeben", und daran hängt die
-        /// Ergebnisneutralität.</b> Nach § 7 Abs. 2 gibt es den Eigenstrom-Zuschlag
-        /// nicht generell, sondern nur in den drei Fällen des § 6 Abs. 3. Ein
-        /// Bestandsprojekt hat diese Angabe nie gemacht — würde die leere Angabe wie
-        /// <c>KEINER</c> wirken, verlöre jedes Altprojekt mit gepflegtem
-        /// Eigenstrom-Satz seinen Zuschlag. Leer rechnet deshalb wie bisher und meldet
-        /// den ungeprüften Tatbestand; erst die ausdrückliche Wahl <c>KEINER</c> setzt
-        /// den Eigenstrom-Satz auf 0.</para>
-        /// </summary>
-        public string KwkgTatbestand = "";
-
-        /// <summary>
-        /// Anlagenart nach § 8 KWKG; Steuerwerte <c>DbWerte.KWKG_ANLAGENART_*</c>.
-        /// Leer = nicht angegeben; dann bleibt es beim Kontingent-Override
-        /// <see cref="KwkgVbhKontingent"/>.
-        /// </summary>
-        public string KwkgAnlagenart = "";
+        // Zwei Angaben aus Konzept § 8.1 (HF6). Tatbestand und Anlagenart des
+        // PROJEKTS sind mit Schemaschritt 90 entfallen — beide werden je Anlage
+        // gepflegt und geprüft (Tab_Energieanlagen.KWKG_Eigenstromfall,
+        // KWKG_Anlagenart).
 
         /// <summary>Anteil an den Neuherstellungskosten [%] (§ 8 Abs. 2/3 KWKG);
         /// 0 = nicht gepflegt. Er wählt die Kontingentstufe bei modernisierten und

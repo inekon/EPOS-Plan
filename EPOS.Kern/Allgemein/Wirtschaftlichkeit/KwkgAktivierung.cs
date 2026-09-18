@@ -10,7 +10,8 @@ namespace WindowsFormsApplication1
     /// Windows-Hüllen (Etappe BK1, Entscheid BK-E-1 a).
     ///
     /// <para><b>Der Befund.</b> Bis BK1 stand derselbe Ausdruck
-    /// <c>p.KwkgBonus &gt; 0 || p.KwkgBonusEinspeisung &gt; 0</c> an sechs Stellen —
+    /// <c>p.KwkgBonus &gt; 0 || p.KwkgBonusEinspeisung &gt; 0</c> an sechs Stellen (die
+    /// beiden Projektspalten sind mit Schemaschritt 90 entfallen) —
     /// im Rechenkern, in <c>BausteineWirtschaftlichkeit</c>, im
     /// <c>ExcelBerichtGenerator</c>, in <c>WirtschaftlichkeitDaten.Nachweis</c>, in der
     /// <c>KapitalwertVerlaufHuelle</c> und in <c>WirtschaftlichkeitSeiteGaben</c>. Sechs

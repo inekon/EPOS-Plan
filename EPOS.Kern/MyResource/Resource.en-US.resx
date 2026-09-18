@@ -5702,6 +5702,12 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="BK_KOSTEN_SP_SUMME" xml:space="preserve">
     <value>Investment [€]</value>
   </data>
+  <data name="BK_KOSTEN_ERFASSUNGSGRUPPE" xml:space="preserve">
+    <value>{0} — collection group (no plant)</value>
+  </data>
+  <data name="BK_KOSTEN_ERFASSUNGSGRUPPE_HINT" xml:space="preserve">
+    <value>This group is not assigned to any plant — it collects costs that belong to no device. It is included in the economic calculation; the bin deletes it after a prompt, and it can be edited in cost management.</value>
+  </data>
   <data name="BK_KOSTEN_SUMME" xml:space="preserve">
     <value>Total</value>
   </data>

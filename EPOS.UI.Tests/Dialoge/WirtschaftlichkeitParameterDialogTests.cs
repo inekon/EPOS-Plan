@@ -76,10 +76,10 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         BilanzJahr = 0,
         EmissionsMethode = DbWerte.EMISSIONSMETHODE_KATALOG,
         BiomasseKonvention = DbWerte.BIOMASSE_KONVENTION_NULL,
-        NachhaltigkeitsnachweisBiomasse = true,
-        // BHKW-Angaben: der Dialog zeigt sie nicht mehr (Auszug B5/BW9).
-        KwkgBonus = 4.0,
-        KwkgVbhKontingent = 30000
+        NachhaltigkeitsnachweisBiomasse = true
+        // BHKW-Angaben: der Dialog zeigt sie nicht mehr (Auszug B5/BW9) - und seit
+        // Schemaschritt 90 führt der Parametersatz Satz und Kontingent gar nicht
+        // mehr; beide gehören der Anlage.
     };
 
     private IRenderedComponent<WirtschaftlichkeitParameterDialog> Aufbauen(
@@ -474,14 +474,16 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     [Fact]
     public void Die_ausgezogenen_BHKW_Werte_bleiben_unberuehrt()
     {
-        // Sie stehen nicht mehr im Dialog und gehen wertgleich in die Zeile.
+        // Sie stehen nicht mehr im Dialog und gehen wertgleich in die Zeile. Seit
+        // Schemaschritt 90 führt der Parametersatz die KWKG-Rechengrößen gar nicht
+        // mehr; geprüft wird deshalb an einer Angabe, die weiterhin projektweit gilt.
         WirtschaftlichkeitParameter satz = Satz();
+        satz.KwkgKostenanteil = 25.0;
         var cut = Aufbauen(satz, bhkw: true);
 
         cut.Find(".epos-knopf--primaer").Click();
 
-        Assert.Equal(4.0, satz.KwkgBonus);
-        Assert.Equal(30000, satz.KwkgVbhKontingent);
+        Assert.Equal(25.0, satz.KwkgKostenanteil);
     }
 
     /// <summary>
