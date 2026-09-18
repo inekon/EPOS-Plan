@@ -19400,6 +19400,18 @@ Do you want to allow this?</value>
   <data name="WIRT_ERL_A2_EIGEN" xml:space="preserve">
     <value>of which self-consumed (sec. 7 (2) KWKG) [€/a]</value>
   </data>
+  <data name="WIRT_ERL_A1_SATZ" xml:space="preserve">
+    <value>Feed-in rate · origin</value>
+  </data>
+  <data name="WIRT_ERL_A2_SATZ" xml:space="preserve">
+    <value>Self-consumption rate · origin</value>
+  </data>
+  <data name="WIRT_ERL_HERKUNFT_VORSCHLAG" xml:space="preserve">
+    <value>proposal</value>
+  </data>
+  <data name="WIRT_ERL_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>own value {0} — proposal {1}</value>
+  </data>
   <data name="WIRT_ERL_A_ENERGIESTEUER" xml:space="preserve">
     <value>Energy tax relief (sec. 53/53a resp. 54 EnergieStG) [€/a]</value>
   </data>

@@ -1027,8 +1027,10 @@ namespace WindowsFormsApplication1
                     ws.Cell(r, 1).Value = m.Bezeichner;
                     Zahl(ws, r, 2, m.PelKW, "#,##0");
                     Zahl(ws, r, 3, m.VbhElektrisch, "#,##0");
-                    Zahl(ws, r, 4, m.SatzEigenCt, "#,##0.00");
-                    Zahl(ws, r, 5, m.SatzEinspeisungCt, "#,##0.00");
+                    // AUFTRAG #351 (U26): vier Nachkommastellen wie im Satzfeld und
+                    // im Word-Bericht — das Zellformat kommt aus dem Kern.
+                    Zahl(ws, r, 4, m.SatzEigenCt, KwkgSatzHerkunft.EXCELFORMAT);
+                    Zahl(ws, r, 5, m.SatzEinspeisungCt, KwkgSatzHerkunft.EXCELFORMAT);
                     ws.Cell(r, 6).Value = m.SatzAusAnlage
                         ? MyResource.Resource.WIRT_KWKG_SATZ_QUELLE_ANLAGE
                         : MyResource.Resource.WIRT_KWKG_SATZ_QUELLE_PROJEKT;

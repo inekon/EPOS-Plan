@@ -2837,6 +2837,11 @@ namespace WindowsFormsApplication1
                             (s, j) => _gesetze.WertMitHerkunft(s, j), BerichtTexte.Kultur);
                         n.HerleitungEigen = vs.HerleitungEigen ?? "";
                         n.HerleitungEinspeisung = vs.HerleitungEinspeisung ?? "";
+                        // AUFTRAG #351 (U23): der Vorschlag auch als ZAHL — erst damit
+                        // kann die Erlösrubrik ohne Katalog sagen, ob der angesetzte
+                        // Satz ein eigener Wert ist.
+                        n.VorschlagEigenCt = vs.SatzEigenCt;
+                        n.VorschlagEinspeisungCt = vs.SatzEinspeisungCt;
                     }
                     catch { }
                     nachweise.Add(n);
@@ -2847,7 +2852,8 @@ namespace WindowsFormsApplication1
                 // wie bei KwkgAnlagenauswahl.Klartext).
                 beschreibung.Add(a.Bezeichner + " (" + a.PelKW.ToString("N0") + " kW, " +
                                  vbhAnlage.ToString("N0") + " h/a, " +
-                                 satzEigen.ToString("N2") + "/" + satzEinsp.ToString("N2") + " ct/kWh, " +
+                                 satzEigen.ToString(KwkgSatzHerkunft.ZAHLFORMAT) + "/" +
+                                 satzEinsp.ToString(KwkgSatzHerkunft.ZAHLFORMAT) + " ct/kWh, " +
                                  kontingent.ToString("N0") + " h)");
             }
 

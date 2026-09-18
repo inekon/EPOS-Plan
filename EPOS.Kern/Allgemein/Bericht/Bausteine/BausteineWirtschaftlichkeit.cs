@@ -474,8 +474,10 @@ namespace WindowsFormsApplication1
                         m.Bezeichner,
                         k.F(m.PelKW, 0),
                         k.F(m.VbhElektrisch, 0),
-                        k.F(m.SatzEigenCt, 2),
-                        k.F(m.SatzEinspeisungCt, 2),
+                        // AUFTRAG #351 (U26): dieselbe Stellenzahl wie das Satzfeld
+                        // des Dialogs — ein Format, das im Kern steht.
+                        k.F(m.SatzEigenCt, KwkgSatzHerkunft.NACHKOMMASTELLEN),
+                        k.F(m.SatzEinspeisungCt, KwkgSatzHerkunft.NACHKOMMASTELLEN),
                         m.SatzAusAnlage ? MyResource.Resource.WIRT_KWKG_SATZ_QUELLE_ANLAGE
                                         : MyResource.Resource.WIRT_KWKG_SATZ_QUELLE_PROJEKT,
                         m.JahresdeckelH > 0 ? k.F(m.JahresdeckelH, 0)
