@@ -193,7 +193,15 @@ KWK-Zuschlag von 1030 im Jahr 1 beträgt vor und nach dem Schritt 7.315,956634 �
 Kapitalwert −21.895.377,275113 € (Szenario Erwartet, flache Stundenreihen aus dem
 gebuchten Lauf); die Gegenprobe ohne den Datenschritt liefert 0,00 € Zuschlag und
 −21.954.815,753214 € Kapitalwert. Die Basis führt ohnehin keine Geldgröße — der Lauf ist
-auch nach Schritt 89 für alle fünf CI-Projekte byte-gleich). Gegen
+auch nach Schritt 89 für alle fünf CI-Projekte byte-gleich).
+**Ohne eigenen Schritt** trägt die Testdatenbank seit B7P zusätzlich die Spalte
+`Nachweis_Json` an `Tab_ErgebnisWirtschaftlichkeit` — eine **Konservenspalte**: Diese
+Ergebnistabelle ist keine Schematabelle, sie entsteht und wächst erst beim ersten
+Programmlauf über `WirtschaftlichkeitCtrl.SpalteSicher`. Der SQL-Dialektprüfer löst das
+INSERT des Ergebnisses aber gegen genau diese Datei auf und meldete ohne die Spalte eine
+Fundstelle, die in der Anwendung keine ist; angelegt wird sie deshalb von
+`Werkzeuge/Testdatenbankschema` (leer, kein Wert, `Zielversion` bleibt 89), und der Lauf
+ist auch danach für alle fünf CI-Projekte byte-gleich. Gegen
 diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung
 zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.

@@ -7797,6 +7797,12 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="WIRT_KWKG_PAUSCHALE_SATZ_FEHLT" xml:space="preserve">
     <value>KWKG: Pauschale nach § 9 gewählt, aber die Katalogwerte fehlen ({0}) — keine Vorauszahlung ausgewiesen.</value>
   </data>
+  <data name="WIRT_NACHWEIS_ZU_GROSS" xml:space="preserve">
+    <value>Die Nachweiszeilen dieses Laufs konnten nicht gespeichert werden — Modultafel, Energiekosten je Anlage und Betriebskostenpositionen zeigt nur der frisch gerechnete Lauf.</value>
+  </data>
+  <data name="WIRT_NACHWEIS_UNLESBAR" xml:space="preserve">
+    <value>Die Nachweise dieses gespeicherten Laufs sind nicht lesbar — bitte neu rechnen.</value>
+  </data>
   <data name="WIRT_CO2_PFAD" xml:space="preserve">
     <value>CO₂-Preis: jahresgenauer Pfad aus dem Gesetzeskatalog — {1}: {0} €/t, {2}: {3} €/t. Ab {4} ist der Wert Prognose und frei editierbar.</value>
   </data>

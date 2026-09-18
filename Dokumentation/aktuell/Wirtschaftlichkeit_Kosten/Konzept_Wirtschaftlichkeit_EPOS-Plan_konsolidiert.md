@@ -358,7 +358,8 @@ herzuleiten.
 >
 > - **A1 und A2 stehen in einer Zeile** „KWK-Zuschlag (§ 7 KWKG)" mit zwei Unterzeilen
 >   „davon Einspeisung" und „davon Eigenstrom". Die Aufteilung kommt aus dem Modulnachweis
->   `KwkgModulNachweis`, der nicht persistiert wird; sie erscheint deshalb im frischen Lauf.
+>   `KwkgModulNachweis`; seit B7P reist er im Nachweisumschlag des Ergebnisses mit, die beiden
+>   Unterzeilen erscheinen deshalb auch beim gebuchten Stand.
 > - **A3 (Pauschale § 9 KWKG) hat keine Zeile.** Sie ist eine einmalige Zahlung im Jahr 0 und
 >   stünde in einer €/a-Spalte falsch; greift sie, sagt es der Hinweis des Laufs.
 > - **A4 und A5 stehen in einer Zeile** „Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54
@@ -1513,11 +1514,16 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 9a. **B7-1: A4 und A5 stehen in einer Zeile.** `SteuerErgebnis.EnergiesteuerEur` führt § 53/§ 53a
     und § 54 als Summe; die Rubrik kann sie deshalb nur gemeinsam ausweisen. Für die Trennung
     braucht der Rechner zwei Rückgabegrößen — ein Eingriff, den B7 ausdrücklich ausschließt.
-9b. **B7-2: `KwkgModulNachweis` und die Energiekosten je Anlage werden nicht persistiert.** Beide
-    entstehen im Rechenlauf und fehlen nach dem Neuladen einer gespeicherten Rechnung; die
-    zugehörigen Unterzeilen entfallen dann. Ein Schemaschritt (Nachweistabelle je Ergebnis) wäre
-    der Weg — B7 hat ihn nicht genommen, weil die Etappe ohne ihn auskommt und ein Schemaschritt
-    für einen Ausweis teuer ist. Dieselbe Lage gilt seit E3 für `KostenPositionNachweis`.
+9b. ~~**B7-2: `KwkgModulNachweis` und die Energiekosten je Anlage werden nicht persistiert.**~~ —
+    erledigt mit B7P (Anwenderentscheid B7-E-1): Modulnachweis, Energiekosten je Anlage,
+    Betriebskostenpositionen (E3) und Kohärenzzeilen reisen als JSON-Umschlag in der Spalte
+    `Nachweis_Json` von `Tab_ErgebnisWirtschaftlichkeit` mit, zusammen mit den vier Skalaren
+    `VermiedenMengeMWh`, `VermiedenEntlastung9bJahr`, `ProduzierendesGewerbe` und
+    `BezugsspitzeKW`. Ohne Schemaschritt: Die Ergebnistabelle wächst wie ihre zwanzig
+    Vorgängerspalten über `SpalteSicher`, die Zielversion bleibt 89. Eine Nachweistabelle je
+    Ergebnis wäre vier Schemata, vier Schreib- und vier Lesewege für Daten, aus denen nichts
+    gerechnet wird. Ein fehlender oder unlesbarer Umschlag kostet nur die Unterzeilen und setzt
+    genau einen Kohärenzhinweis — nie eine Ergebniszeile.
 9c. **B7-3: Die KWKG-Pauschale (§ 9 KWKG, A3) hat keine Rubrikzeile.** Sie ist eine einmalige
     Zahlung im Jahr 0 und hat keine persistierte Skalargröße; `KwkgErloesJahr1` steht bei einem
     Pauschalprojekt auf 0. Sie gehört in die Investitions- oder Jahr-0-Darstellung, nicht in eine
