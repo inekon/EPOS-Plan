@@ -1175,6 +1175,154 @@ Kategorie 8 in `../Mockups/Dialog_Formel_Zahlenprobe.html#sicht2`, Umsetzungssta
 
 ---
 
+## 2.16 Vergütung je Variante — eigene Werte oder vom Stammprojekt übernommen (Anforderung 18.09.2026)
+
+**Anforderung des Anwenders, im Wortlaut:** „Die Vergütung kann in der Variante unterschiedlich vom
+Stamm sein. Die Option der Übernahme soll es geben, aber eigene Vergütung in den Varianten muss
+möglich sein." Gemeint ist die PV-Vergütung, die der Reiter „Ertrag/Bonus" des Kostendialogs
+(`Rechenweg/03_Kosten_Photovoltaik.md`) und der Knopf „Photovoltaik…" der Wirtschaftlichkeitsseite
+im Vergütungsdialog (§ 2.3, `Rechenweg/06_Verguetungen_PV.md`) öffnen.
+
+**Warum ein eigener Abschnitt:** Wie § 2.9 (Referenz) und § 2.15 (Vergleichssicht) greift die
+Anforderung in die Frage ein, was je Gruppe und was je Stand gilt (Befund R‑1: Rahmenparameter je
+Stammprojekt). § 2.9 wählt die Referenz je Gruppe, § 2.15 die Sicht je Sitzung; dieser Abschnitt löst
+eine Größe, die als gruppenweit galt, auf die Stände auf. § 2.13 bekommt keinen neuen Punkt: Die
+Vergütung ist keine Darstellungsfrage der Ergebnisansicht.
+
+**Ist (18.09.2026) — zwei Ablageorte, ein Leseweg je Stand:**
+
+- *Der flache Einspeisesatz* `Einspeiseverguetung` [€/kWh] (und `Einspeiseverguetung_KWK`) steht in
+  der Rahmenzeile `Tab_ProjektWirtschaftlichkeit` — eine Zeile je Stammprojekt (`ID_Projekt` =
+  Stamm; `WirtschaftlichkeitParameter.IdStamm`, `WirtschaftlichkeitCtrl.LadeParameter(idStamm)`;
+  Schemaschritt 84 hat ihn aus der Trägerkarte hierher gezogen, `Allgemein/Update/VerguetungUmzug.cs`).
+  `Berechne(daten, p)` rechnet jede Variante mit demselben `p`: `Erlös = PV-Überschuss × 1000 ×
+  p.Einspeiseverguetung` (Flat-Pfad). Er gilt je Gruppe — wie Zins und Zeitraum (R‑1).
+- *Die Dialogangaben* — Vermarktungsform, anzulegender Wert (Override), Einspeiseart,
+  Inbetriebnahme, Degradation, DV-Entgelt, PPA, § 51/§ 51a, 60-%-Begrenzung, Marktwerte — stehen in
+  `Tab_ProjektPhotovoltaik` (Schemaschritt 41; eindeutiger Index auf `ID_Projekt`, keine
+  Löschweitergabe), im Katalog als „eine Zeile je Stammprojekt" beschrieben. Geschrieben wird sie über
+  `ProjektPhotovoltaikCtrl.Speichern` mit der Id, die die Hülle hereingibt:
+  `PhotovoltaikVerguetungHuelle.Gaben(idStamm)` von der Wirtschaftlichkeitsseite
+  (`WirtschaftlichkeitSeiteGaben`, Stamm der Gruppe) und vom Reiter Ertrag/Bonus mit dem Eintrag der
+  Klappliste „Stammprojekt:" — die alle Projekte aus `Tab_Projekt` führt, Varianten eingeschlossen
+  (`KostenVorlagenUebernahmeCtrl.Projekte`), ohne Vorwahl des geöffneten Projekts
+  (`ErtragBonusGaben.Bauen(komponente)` kennt keine Projekt-Id).
+- *Der Rechenweg liest je Stand:* `WirtschaftlichkeitCtrl.RechnePvVerguetung(v, p, e)` holt
+  `ProjektPhotovoltaikCtrl.Lies(v.IdProjekt)` — die Zeile des **jeweiligen** Projekts, Stamm wie
+  Variante —, gibt sie an `PvErloesRechner.Rechne` und ersetzt den PV-Anteil des flachen Erlöses durch
+  die Reihe `PV_VERGUETUNG`; fehlt die Zeile oder ist sie inaktiv, bleibt der Flat-Pfad.
+  `SkaliereErtraege` skaliert danach je Stand (Best/Worst).
+- *Folge:* Die „eine Vergütungswahrheit" ist eine Wahrheit **je Projekt**, nicht je Gruppe. Eine
+  Variante bekommt die Dialogangaben nur, wenn sie eine eigene Zeile hat — und die hat sie genau
+  dann, wenn sie **nach** der Pflege des Stamms angelegt wurde: `VariantenCtrl.AnlegenAusStamm`
+  kopiert über `ProjektDuplizierenCtrl` jede Tabelle mit `ID_Projekt` (ausgenommen allein
+  `Berichtskonfiguration`), also auch `Tab_ProjektPhotovoltaik` und `Tab_ProjektWirtschaftlichkeit`.
+  Diese Kopie ist ein eingefrorener Stand des Anlegetags; spätere Änderungen am Stamm erreichen sie
+  nicht. Eine Variante, die vor der Pflege angelegt wurde, hat keine Zeile und rechnet mit dem
+  flachen Satz. Beides ist von außen nicht zu erkennen: Reiter, Dialog und Bericht sagen
+  „stammprojektbezogen". Die Testdatenbank führt keine Zeile in `Tab_ProjektPhotovoltaik`; in
+  `Tab_ProjektWirtschaftlichkeit` tragen die Varianten 1023 und 1024 (Stamm 1019) Kopien, die kein
+  Rechenweg liest.
+- *BHKW-Vergütung, zum Vergleich:* Die KWKG-Größen (Satz Eigen/Einspeisung, Vbh-Kontingent,
+  Jahresdeckel, Anlagenart, Eigenstromfall, Stichtag, Inbetriebnahme, Kostenanteil) stehen an der
+  Anlage (`Tab_Energieanlagen.KWKG_*`); Anlagen gehören dem Projekt (`BhkwAnlagen(v.IdProjekt)`), die
+  Variante hat ihre eigenen — beim Anlegen kopiert, seither eigenständig. Der BHKW-Dialog zeigt die
+  Anlagen der ganzen Gruppe (`KwkgAnlagenCtrl.LadeGruppe(idStamm)`). Nur der flache KWK-Einspeisesatz
+  und die projektweiten KWKG-Angaben (Stichtag, Abschlag bei negativen Preisen, Pauschale) liegen in
+  der Rahmenzeile je Gruppe. Das BHKW erfüllt die Anforderung für den Zuschlag also von selbst, weil
+  er anlagenscharf ist; die Regel „Vergütung je Stand, Rahmensatz je Gruppe" ist dort schon Praxis.
+
+**Soll:**
+
+| Aspekt | Festlegung |
+|---|---|
+| Auswahl | je **Variante** eine Wahl: **„vom Stammprojekt übernehmen"** (Vorgabe) oder **„eigene Vergütung"**; der Stamm führt immer eigene Werte |
+| Vorgabe | **übernehmen** — ergebnisneutral für jede neue Variante; für den Bestand leitet ein Schemaschritt die Wahl aus den Daten ab (Randfälle) |
+| Persistenz | eine Spalte `Tab_ProjektPhotovoltaik.Uebernahme_Stamm` (INTEGER, `CHECK (Uebernahme_Stamm IN (0,1))`, nullbar): 1 = übernommen, 0 = eigene Werte; **keine Zeile** = übernommen (Vorgabe jeder neuen Variante). Die Zeile der Variante bleibt bei „übernehmen" stehen — sie ist der Rückweg zu den eigenen Werten. Kein DDL-DEFAULT (Hausregel der Tabelle); die Spalte steht an beiden DDL-Orten (SchemaMigration **und** `StelleTabellenSicher`) |
+| Warum nicht „NULL je Spalte = übernommen" | die Spalten der Tabelle bedeuten mit NULL schon „nicht gepflegt / Rückfall" (DV-Entgelt, Ausfallanteil, Marktwert); ein zweiter NULL-Sinn wäre eine Zweideutigkeit je Feld. Und eine Vergütung ist ein Block: Vermarktungsform, anzulegender Wert, Inbetriebnahme und § 51 gehören zusammen — Felder aus zwei Projekten zu mischen ergäbe eine Vergütung, die niemand eingegeben hat (VV‑Q2) |
+| Auflösung | eine Methode `ProjektPhotovoltaikCtrl.LiesAufgeloest(idProjekt)` → (Modell, Herkunft): Stamm → eigene Zeile; Variante mit `Uebernahme_Stamm = 0` → eigene Zeile; sonst → Zeile des Stamms (`VariantenCtrl.StammRefDerVariante`), Herkunft „übernommen von ‹Stamm›". Fehlt auch dem Stamm die Zeile, gilt der Flat-Pfad wie heute |
+| Rechenwirkung | `RechnePvVerguetung` liest die aufgelöste Zeile statt `Lies(v.IdProjekt)`; `PvErloesRechner`, `SkaliereErtraege` und der Flat-Pfad bleiben unverändert; der Stamm rechnet wie heute. Der flache Satz `Einspeiseverguetung` bleibt in der Rahmenzeile je Gruppe (VV‑Q5) |
+| Anzeige — Reiter Ertrag/Bonus | Optionsgruppe „Vergütung: ○ vom Stammprojekt übernehmen ● eigene Vergütung" mit Erklärzeile („übernommen von ‹Stamm› · anzulegender Wert ‹AW› ct/kWh, ‹Vermarktungsform›" bzw. „eigene Werte dieser Variante"); beim Stamm statt der Optionsgruppe die Zeile „Stammprojekt — ‹n› Varianten übernehmen diese Vergütung"; die Klappliste „Stammprojekt:" bleibt für den Admin-Kontext (Kostendialog ohne Projekt, VV‑Q7); die Knöpfe „PV-Vergütungsdialog öffnen…" und „Gesetzesparameter…" bleiben |
+| Anzeige — Vergütungsdialog | öffnet für die Variante; bei „übernommen" mit Hinweiszeile „übernommen von ‹Stamm› — Felder gesperrt" und Knopf **„eigene Werte"**, der die Stammwerte in die Zeile der Variante kopiert und `Uebernahme_Stamm = 0` setzt (VV‑Q6); „Übernehmen" schreibt die Zeile des geöffneten Projekts |
+| Bericht | Block A9 (`WirtschaftlichkeitZeilen`, Zeilen PV_FORM/PV_AW) bekommt eine Nachweiszeile „PV-Vergütung: Herkunft" je Spalte — „eigene Werte" / „übernommen von ‹Stamm›"; die Herkunft reist im Nachweisumschlag der Ergebniszeile (`ErgebnisNachweisUmschlag`), keine neue Ergebnisspalte; Word und Excel lesen dieselbe Zeilendefinition |
+| ValERI | die Vergütung ist Bestandteil der Maßnahme; ob eigene oder übernommene Werte, ändert an der Bewertung nichts — keine Änderung |
+| Kohärenz (§ 3.9) | Warnzeile ohne Rechenwirkung: „Variante ‹x› führt eine eigene, inaktive PV-Vergütung; der Stamm eine aktive" — die Spur der Bestandsableitung (VV‑Q4) |
+
+**Randfälle, ausdrücklich geregelt:**
+
+- Stamm ändert seine Vergütung → alle übernehmenden Varianten folgen im nächsten Lauf (sie lesen
+  die Stammzeile), eigene bleiben unberührt.
+- Variante wird Referenz (§ 2.9) → die Herkunft ihrer Vergütung ändert sich nicht; die
+  Referenzrechnung nimmt die aufgelöste Zeile wie jede andere.
+- Variante aus dem Stamm angelegt (`VariantenCtrl.AnlegenAusStamm`) → sie erbt „übernehmen": Der
+  Kopierlauf lässt `Tab_ProjektPhotovoltaik` aus (feste Ausnahme wie `Berichtskonfiguration`) —
+  keine eingefrorene Kopie mehr. Variante aus einer anderen Variante angelegt (Quelle ≠ Stamm) →
+  dieselbe Regel, Vorgabe übernehmen.
+- Bestand (Schemaschritt): Variante mit eigener Zeile → `Uebernahme_Stamm = 0` (ihre Kopie rechnet
+  weiter wie heute); Variante ohne Zeile, Stamm ohne aktive Zeile → nichts zu tun (übernehmen,
+  Flat-Pfad beiderseits); Variante ohne Zeile, Stamm mit aktiver Zeile → eigene Zeile `Aktiv = 0,
+  Uebernahme_Stamm = 0` — ergebnisneutral, mit Kohärenzhinweis (VV‑Q4).
+- Projekttransfer (`ProjektExportImportCtrl`, generischer Plan) → die Spalte reist mit der Zeile;
+  ein Variantenbaum bringt Stamm und Wahl mit. Eine einzeln transferierte Variante mit „übernehmen"
+  findet im Ziel keinen Stamm → der Import legt die Stammwerte aus dem Paket als eigene Zeile an;
+  fehlt der Stamm auch im Paket, gilt der Flat-Pfad mit Warnzeile.
+- Löschen des Stamms (`ProjektCtrl.Delete` löst die Verknüpfungen in `Tab_Variante`) → jede
+  übernehmende Variante erhält vorher die Stammwerte als eigene Zeile (`Uebernahme_Stamm = 0`); nie
+  stiller Verlust der Vergütung. Löschen einer Variante → ihre Zeile fällt mit (heute bleibt sie
+  verwaist, weil die Tabelle keine Löschweitergabe hat — im selben Schritt nachrüsten).
+- Zwei Varianten, beide „übernehmen", der Stamm inaktiv → beide rechnen Flat wie heute; der
+  Kohärenzhinweis nennt es.
+
+**Abnahmekriterium:** Alle Bestandsvarianten auf „übernehmen" (Testdatenbank: keine Zeile in
+`Tab_ProjektPhotovoltaik`, weder beim Stamm noch bei einer Variante) → Referenzlauf **byte-gleich**;
+die Wahl „eigene Vergütung" mit einer Zeile, die der Stammzeile wertgleich ist → dieselben Zahlen wie
+„übernehmen" (Tests auf `WirtschaftlichkeitErgebnis.PvAnzulegenderWert` und `EinspeiseerloesPvJahr`);
+Stammänderung → die übernehmende Variante folgt, die eigene nicht (Test).
+
+**Was die Umsetzung braucht:**
+
+1. Schemaschritt (Nummer bei der Umsetzung; 92 ist von der Abwärmeabfuhr beansprucht): Spalte
+   `Uebernahme_Stamm` an beiden DDL-Orten, Ableitung der Wahl aus dem Bestand (Randfälle),
+   Löschweitergabe `Tab_Projekt → Tab_ProjektPhotovoltaik`;
+2. `ProjektPhotovoltaikCtrl.LiesAufgeloest` und `Speichern` mit der Spalte;
+   `ProjektDuplizierenCtrl`: `Tab_ProjektPhotovoltaik` in die feste Ausnahmeliste; `ProjektCtrl.Delete`
+   und `VariantenCtrl.LoescheVariante`: Übernahme in eigene Zeilen vor dem Lösen;
+3. `WirtschaftlichkeitCtrl.RechnePvVerguetung` auf die Auflösung; Herkunft im Nachweisumschlag;
+   Zeile in `WirtschaftlichkeitZeilen` (Word, Excel); `KohaerenzPruefung`;
+4. Dialoge: Optionsgruppe und Erklärzeile in `ErtragBonus.razor`, Projekt-Id in
+   `ErtragBonusGaben.Bauen` (die Vorwahl ist das geöffnete Projekt, nicht das erste der Liste),
+   Hinweiszeile und Knopf „eigene Werte" in `PhotovoltaikVerguetungDialog.razor`; die Hülle
+   (`PhotovoltaikVerguetungHuelle`, Windows-Schale) öffnet für das gewählte Projekt; eine plattformfreie
+   Hülle in `EPOS.UI.Daten` gibt es nicht — auf iOS ist der Dialog nicht erreichbar;
+5. Ressourcen (beide Sprachen): Optionsgruppe, Erklärzeilen, Hinweiszeile, Knopf, Nachweiszeile,
+   Kohärenztext;
+6. Tests: Auflösung (Stamm; Variante eigene; Variante übernommen; Stamm ohne Zeile), Kopierlauf ohne
+   PV-Zeile, Löschweg, Ableitung aus dem Bestand, bunit für beide Zustände der Optionsgruppe,
+   Referenzlauf;
+7. Wiki: `Programm Dokumentation - Wirtschaftlichkeit.wiki` (Vergütungsdialog, Herkunftszeile) und
+   `Programm Dokumentation - Varianten.wiki` (was eine Variante vom Stamm übernimmt); Logbuch-Eintrag
+   mit der Veröffentlichung.
+
+**Fragen mit Empfehlung:**
+
+| Frage | Empfehlung |
+|---|---|
+| **VV‑Q1** Gilt dieselbe Regel für die BHKW-Vergütung? | **Ja, sinngemäß — und dort ist sie schon erfüllt:** der KWKG-Zuschlag ist anlagenscharf, also je Stand; der flache KWK-Einspeisesatz bleibt wie der flache PV-Satz in der Rahmenzeile je Gruppe. Keine Änderung am BHKW in dieser Etappe. Einheitliche Regel: *Vergütung folgt der Anlage bzw. dem Stand, Rahmensätze folgen der Gruppe* |
+| **VV‑Q2** Einzelwerte übernehmbar oder nur der ganze Block? | **nur der Block** — die Felder bedingen einander (die Vermarktungsform bestimmt, welche Felder gelten; § 51 hängt an Inbetriebnahme und Leistung); ein Mischsatz ist keine gepflegte Vergütung |
+| **VV‑Q3** Anzeige der Wahl im Kostendialog (Reiter Ertrag/Bonus) oder nur im Vergütungsdialog? | **an beiden Orten, gewählt an einem:** die Optionsgruppe sitzt im Reiter (dort ist die Variante im Blick, dort fragt der Anwender); der Vergütungsdialog zeigt die Herkunft als Hinweiszeile und bietet nur den Weg „eigene Werte". Der Reiter bleibt Anzeige plus Wahl, kein zweiter Rechenweg |
+| **VV‑Q4** Bestandsvarianten ohne eigene Zeile bei aktiver Stammzeile: ergebnisneutral (eigene, inaktive Zeile) oder übernehmen (Rechenwirkung)? | **ergebnisneutral**, mit Kohärenzhinweis; der Anwender schaltet je Variante mit einem Klick auf „übernehmen". Ein Schemaschritt, der Zahlen ändert, ohne dass jemand gewählt hat, verletzte die Regel „Vorgabe ergebnisneutral" |
+| **VV‑Q5** Auch der flache Satz `Einspeiseverguetung` der Rahmenzeile je Variante? | **nein** — er ist ein Rahmenparameter wie Zins und Zeitraum (R‑1) und der Rückfall, wenn kein Dialog aktiv ist; wer je Variante vergüten will, tut es im Dialog |
+| **VV‑Q6** Was lädt „eigene Werte" vor: die Stammwerte oder die Vorbelegung des Controllers? | **die Stammwerte** — der Anwender will eine Abweichung von einer bekannten Basis, keinen leeren Satz; die Zeile trägt `GeaendertAm` |
+| **VV‑Q7** Klappliste „Stammprojekt:" im Reiter: umbenennen? | **„Projekt:"** — sie führt alle Projekte; im Projektmodus des Kostendialogs ist das geöffnete Projekt vorgewählt, und die Liste entfällt |
+
+**Einordnung:** Eigene kleine Etappe, unabhängig von § 2.9 und § 2.15 — sie ändert weder Referenz
+noch Sicht, nur den Leseweg einer Größe je Stand; ergebnisneutral in der Vorgabe. Sie lässt sich mit
+§ 2.9 in einem Zug umsetzen, weil beide in `WirtschaftlichkeitCtrl.Berechne` je Stand lesen. Mockup:
+Kategorie 3 (Reiter Ertrag/Bonus) und Kategorie 6 (Kopfzeile) in
+`../Mockups/Dialog_Formel_Zahlenprobe.html#pvkosten`; Umsetzungsstand U38.
+
+---
+
 # 3 Die Rechenwege
 
 Alle Formeln in der Fassung der Formelkarte vom 30.08.2026 gegen `b2ad3e3`.
