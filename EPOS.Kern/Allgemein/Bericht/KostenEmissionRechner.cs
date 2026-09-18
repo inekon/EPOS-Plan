@@ -267,22 +267,32 @@ namespace WindowsFormsApplication1
             if (m.BHKW != null && m.BHKW.Module != null)
                 foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module) add(mo.CarrierId, mo.Verbrauch);
 
-            // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): NUR MELDEN, NICHT ABLEITEN.
+            // BEFUND B-1 (Anwenderentscheid 18.09.2026: „Verbrauch aus dem Lauf
+            // nachziehen"): DIE WARNUNG BLEIBT, SIE SCHWEIGT JETZT NUR.
             //
             // Ein Kessel, der Wärme erzeugt hat (Waerme_Gas + Waerme_Oel > 0), aber
             // keinen Brennstoffverbrauch ausweist, fällt unten in `add` durch die
             // Klemme „mwh <= 0" — und zwar BEVOR die Trägerprüfung greift. Sein
-            // Brennstoff fehlt danach still in Energiekosten, CO₂-Bilanz und
-            // BEHG-Menge, ohne dass irgendeine Fahne stünde: Der Rechenkern setzt
-            // `Verbrauch` an der Kessel-Modulzeile nie (Befund B-1), im gesamten
-            // Bestand steht dort 0.
+            // Brennstoff fehlte dann still in Energiekosten, CO₂-Bilanz und
+            // BEHG-Menge (Folgebefund N1: `kostenVollstaendig` blieb dabei true).
+            // Seit B-1 füllt der SimulationRunner die Spalte, der Fall tritt also im
+            // frischen Lauf nicht mehr ein; die Fahne bleibt als Wächter stehen für
+            // den Fall, dass die Kette doch einmal reißt, und für gespeicherte Läufe
+            // von vor B-1, die ihre 0 behalten.
             //
-            // Festgehalten wird deshalb genau diese Lage — mehr nicht. Es wird
-            // WEDER eine Ersatzmenge abgeleitet (die Steuerseite tut das seit B3a
-            // über den Jahresnutzungsgrad; das ist eine Rechtsvorschrift und keine
-            // Vorlage für die Kostenkette) NOCH `kostenVollstaendig` gekippt — das
-            // nähme jedem Kesselprojekt den Kapitalwert. Die Zahlen bleiben Zahl für
-            // Zahl, was sie waren; neu ist allein der Hinweis.
+            // Weiterhin gilt: NUR MELDEN, NICHT ABLEITEN. Es wird WEDER eine
+            // Ersatzmenge gebildet (die Steuerseite tut das über den
+            // Jahresnutzungsgrad; das ist eine Rechtsvorschrift und keine Vorlage für
+            // die Kostenkette) NOCH `kostenVollstaendig` gekippt — das nähme jedem
+            // betroffenen Kesselprojekt den Kapitalwert.
+            //
+            // DER ELEKTROKESSEL IST AUSGENOMMEN. Er bucht seinen Einsatz auf den
+            // Stromzähler (SimulationSPK, Bilanz_und_Nutzungsgrad) und steht über den
+            // Reststrombedarf im Netzbezug, den diese Rechnung eigens bepreist; seine
+            // Modulzeile führt deshalb BEWUSST keinen Brennstoffverbrauch. Ohne diese
+            // Ausnahme stünde bei jedem Projekt mit Elektrokessel dauerhaft eine
+            // Warnung über einen Brennstoff, den es dort nicht gibt.
+            var stromkessel = StromKesselNamen(v.IdProjekt);
             var kesselOhneVerbrauch = new List<string>();
             if (m.Heizkessel != null && m.Heizkessel.Module != null)
                 foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
@@ -297,6 +307,7 @@ namespace WindowsFormsApplication1
                     if (mo.Verbrauch <= 0 && (mo.Waerme_Gas + mo.Waerme_Oel) > 0)
                     {
                         string name = string.IsNullOrEmpty(mo.Modul) ? "?" : mo.Modul;
+                        if (stromkessel.Contains(name.Trim())) continue;
                         if (!kesselOhneVerbrauch.Contains(name)) kesselOhneVerbrauch.Add(name);
                     }
                 }
@@ -836,6 +847,48 @@ namespace WindowsFormsApplication1
         private static string TraegerName(int carrierId)
         {
             return Emissionsquelle.TraegerName(carrierId);
+        }
+
+        /// <summary>
+        /// Die Bezeichner der ELEKTROKESSEL eines Projekts (<c>Tab_Heizkessel.Brennstoff</c>
+        /// = <see cref="SimulationSPK.BRENNSTOFF_STROM"/>); leer, wenn es keinen gibt.
+        ///
+        /// <para><b>Wofür.</b> Die Warnung <c>WIRT_KESSELBRENNSTOFF_FEHLT</c> meint einen
+        /// Kessel, dessen BRENNSTOFF im Ergebnis fehlt. Ein Elektrokessel hat keinen: Sein
+        /// Einsatz steht über den Reststrombedarf im Netzbezug, und seine Modulzeile führt
+        /// deshalb bewusst keinen Verbrauch (Befund B-1). Ohne diese Liste stünde die
+        /// Warnung bei jedem solchen Projekt dauerhaft.</para>
+        ///
+        /// <para><b>Warum die ANLAGENzeile und nicht die Ergebniszeile gefragt wird.</b>
+        /// Der Brennstoff des Kessels ist die einzige Angabe, die den Fall sicher
+        /// beantwortet — auch für eine gespeicherte Modulzeile ohne zugeordneten
+        /// Energieträger, und auch für Läufe von vor B-1. Der <c>carrier_id</c> der
+        /// Modulzeile trägt die Auskunft nur, wenn dem Kessel überhaupt ein Träger
+        /// zugeordnet ist; im Bestand ist er oft leer.</para>
+        ///
+        /// <para>Verbunden wird über den Bezeichner — dieselbe Spalte, aus der
+        /// <c>SimulationControl.SPK_Liste_Laden</c> die Modulnamen zieht.</para>
+        /// </summary>
+        private static HashSet<string> StromKesselNamen(int idProjekt)
+        {
+            var namen = new HashSet<string>(StringComparer.Ordinal);
+            if (idProjekt <= 0) return namen;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT Bezeichner FROM Tab_Heizkessel WHERE ID_Projekt = ? AND Brennstoff = ?",
+                    new DbParam("@p", idProjekt),
+                    new DbParam("@b", SimulationSPK.BRENNSTOFF_STROM));
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        string s = r["Bezeichner"] == DBNull.Value
+                                 ? "" : Convert.ToString(r["Bezeichner"]);
+                        if (!string.IsNullOrEmpty(s)) namen.Add(s.Trim());
+                    }
+            }
+            catch { }
+            return namen;
         }
 
         /// <summary>
