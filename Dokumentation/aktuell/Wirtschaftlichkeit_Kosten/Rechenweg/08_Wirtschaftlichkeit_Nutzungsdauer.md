@@ -136,7 +136,7 @@ als Prüfreferenz ungeeignet.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
-| V-1 | Fünf Blöcke als Aufklappabschnitte oder zweite Ansicht mit Umschalter? | Umschalter — die Seite ist voll (K8) |
-| V-2 | XLSX-Formelexport nur das ValERI-Blatt oder der ganze Bericht? | nur das ValERI-Blatt |
+| V-1 | Fünf Blöcke als Aufklappabschnitte oder zweite Ansicht mit Umschalter? | Umschalter — die Seite ist voll (K8); **entschieden 18.09.2026 nach Empfehlung** |
+| V-2 | XLSX-Formelexport nur das ValERI-Blatt oder der ganze Bericht? | Empfehlung war: nur das ValERI-Blatt; **gekippt 18.09.2026 (V-G10): der ganze Bericht, soweit ableitbar** — Stufenplan und Grenze Konzept § 2.11.6 |
 | V-3 | IZF/Amortisation von den Kacheln nehmen oder mit Label behalten? | behalten mit „nachrichtlich" |
-| V-4 | Szenario-Parametersätze vor oder nach V-A–V-D? | danach — einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis |
+| V-4 | Szenario-Parametersätze vor oder nach V-A–V-D? | danach — einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis; **entschieden 18.09.2026 nach Empfehlung, mit Hinweistext** bis dahin (Konzept § 2.11.7) |

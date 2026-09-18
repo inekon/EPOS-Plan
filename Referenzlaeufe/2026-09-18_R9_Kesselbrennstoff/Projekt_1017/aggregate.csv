@@ -97,11 +97,11 @@ Heizkessel.Deckung_Prozess;0
 HeizkesselModul[0].Modul;eloBLOCK VE 28
 HeizkesselModul[0].Waerme_Gas;8.91
 HeizkesselModul[0].Waerme_Oel;0
-HeizkesselModul[0].Brennstoff;
+HeizkesselModul[0].Brennstoff;Strom
 HeizkesselModul[0].Verbrauch;0
 HeizkesselModul[0].Jahresnutzungsgrad;47.64
 HeizkesselModul[0].carrier_id;
-HeizkesselModul[0].Waermeproduktion;0
+HeizkesselModul[0].Waermeproduktion;8.91
 HeizkesselModul[0].Hilfsenergie;0
 Vektor.waermebedarf.Summe;62964.7091
 Vektor.waermebedarf_gebaeude.Summe;62964709.1

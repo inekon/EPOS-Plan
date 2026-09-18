@@ -182,7 +182,7 @@ Im Ordner `aktuell/Wirtschaftlichkeit_Kosten/` liegt neben diesen Papieren der M
 | [`ueberholt/Konzept_Umstellung_64Bit_EPOS-Plan.md`](ueberholt/Konzept_Umstellung_64Bit_EPOS-Plan.md) | Umstellung auf x64 (P0–P5) | 2026-08-29 | abgeschlossen am 22.08.2026; bleibt als Rückweg-Beleg (Tag `letzter-x86-stand`) |
 | [`ueberholt/Konzept_iOS-Portierung_EPOS-Plan.md`](ueberholt/Konzept_iOS-Portierung_EPOS-Plan.md) | iOS-Portierung, Rev. 1 (Machbarkeit) | 2026-09-04 | ersetzt durch `aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md` |
 | [`ueberholt/Projekt-ExportImport.md`](ueberholt/Projekt-ExportImport.md) | Handover-Notiz zum `.wpx`-Export/Import | 2026-08-29 | beschreibt den Access/x86-Stand; Nachfolger `aktuell/Konzept_Projekttransfer_EPOS-Plan.md` |
-| [`ueberholt/Referenzbasen/LIESMICH.md`](ueberholt/Referenzbasen/LIESMICH.md) | Wegweiser des Ordners: die Protokolle der 24 entfernten Referenzbasen, Tabelle Basis → Datum → Zweck → Protokoll | 2026-09-12 | vor dem Umschreiben der Git-Geschichte gesichert (AUF‑Q1, #244); die Messdaten der Basen sind endgültig weg |
+| [`ueberholt/Referenzbasen/LIESMICH.md`](ueberholt/Referenzbasen/LIESMICH.md) | Wegweiser des Ordners: die Protokolle der 26 entfernten Referenzbasen, Tabelle Basis → Datum → Zweck → Protokoll | 2026-09-12 | vor dem Umschreiben der Git-Geschichte gesichert (AUF‑Q1, #244); die Messdaten der Basen sind endgültig weg |
 | [`ueberholt/Referenzbasen/LIESMICH_Basenhistorie_bis_2026-09-12.md`](ueberholt/Referenzbasen/LIESMICH_Basenhistorie_bis_2026-09-12.md) | Die Basenhistorie der Referenzlauf-Suite: welche Referenzbasis wann von welcher abgelöst wurde und warum — wortgetreu aus `Referenzlaeufe/LIESMICH.md` ausgelagert | 2026-09-12 | die beschriebenen Basen liegen weder im Arbeitsbaum noch in der Git-Geschichte; gültig ist allein die aktuelle Basis R7 in [`Referenzlaeufe/LIESMICH.md`](../Referenzlaeufe/LIESMICH.md) |
 | [`ueberholt/STAND.md`](ueberholt/STAND.md) | datierte Stände des Anwendungsprojekts (03.09.2026) | 2026-09-06 | Momentaufnahme; die laufenden Zahlen stehen in den `CLAUDE.md` und im Umsetzungskonzept |
 | [`ueberholt/Umsetzung_iU0_iU1_Nachweise.md`](ueberholt/Umsetzung_iU0_iU1_Nachweise.md) | Nachweisliste iU0/iU1/iU4–iU7 | 2026-09-04 | Abnahme abgeschlossen |
@@ -200,7 +200,7 @@ Querverweise der Protokolle untereinander kurz bleiben.
 
 | Ordner | Anzahl | Inhalt |
 |---|---|---|
-| [`ueberholt/Protokolle/Reporting/`](ueberholt/Protokolle/Reporting/) | 88 | Bericht, Kosten und Wirtschaftlichkeit: Etappen B*, H*, K*, KD*, FX*, PV*, W4_*, `VF1_Variante_Speicherflotte_Protokoll.md` sowie die **Blazor-Port-Protokolle iU9‑W1…W16c**; dazu die Konzepte des Ordners (`Konzept_Berichtserstellung_EPOS-Plan.md`, `Konzept_Wirtschaftlichkeit.md`, `Konzept_BHKW_Kosten_Erloese.md`), `UMSETZUNGSSTAND.md` und die Prüfberichte |
+| [`ueberholt/Protokolle/Reporting/`](ueberholt/Protokolle/Reporting/) | 89 | Bericht, Kosten und Wirtschaftlichkeit: Etappen B*, H*, K*, KD*, FX*, PV*, W4_*, `VF1_Variante_Speicherflotte_Protokoll.md`, `B-1_Kesselbrennstoff_Modulzeile_Protokoll.md`, `B7P_Nachweispersistenz_Protokoll.md` sowie die **Blazor-Port-Protokolle iU9‑W1…W16c**; dazu die Konzepte des Ordners (`Konzept_Berichtserstellung_EPOS-Plan.md`, `Konzept_Wirtschaftlichkeit.md`, `Konzept_BHKW_Kosten_Erloese.md`), `UMSETZUNGSSTAND.md` und die Prüfberichte |
 | [`ueberholt/Protokolle/Simulation/`](ueberholt/Protokolle/Simulation/) | 64 | Simulationskern: Pakete 1–9, A/B, Quellen/Senken, Dreikanal, Kaskade, Booster, Schichtspeicher, die Speicherklammer der Wärmesenke samt ihrer Nachlese, die Lastspitzenkappung des Einzelspeichers, die Merge-Protokolle und die Bestandsbefunde; dazu `Konzept_Simulation_QuellenSenken.md` und `Konzept_Brauchwasser_Heizung_Pufferspeicher.md` (beide umgesetzt) |
 | [`ueberholt/Protokolle/sql/`](ueberholt/Protokolle/sql/) | 10 | Access→SQLite: Protokolle S0, S2, S5, S7, S8, `S1_Feinmessung`, `S3_Migrationsbericht`, `MIGRATION_Pruefrezepte` und die zwei Messungen des PV-Modulkatalogs |
 | [`ueberholt/Protokolle/Hilfe/`](ueberholt/Protokolle/Hilfe/) | 6 | Hilfesystem: H1/H2, H7 Infobuttons, H11 Sammelpaket, H12 Feldhilfe, H13 Berechnungshilfe |
@@ -212,12 +212,13 @@ Querverweise der Protokolle untereinander kurz bleiben.
 | [`ueberholt/Protokolle/Bericht/`](ueberholt/Protokolle/Bericht/) | 1 | `LIESMICH_Phase1.md` — Phasen-Historie des Berichtsmoduls |
 | [`ueberholt/Protokolle/EPOS.Kern_Import/`](ueberholt/Protokolle/EPOS.Kern_Import/) | 1 | `PvKatalog_Koeffizienten_Protokoll.md` — Befund und Reparatur der PV-Modulkoeffizienten (Schemaschritt 69) |
 
-### ueberholt/Referenzbasen — die Protokolle der 24 entfernten Referenzbasen
+### ueberholt/Referenzbasen — die Protokolle der 26 entfernten Referenzbasen
 
 Mit dem Anwenderentscheid **AUF‑Q1** vom 12.09.2026 („ausführen", Auftrag #244) ist die
 Git-Geschichte umgeschrieben worden; die 24 historischen Referenzbasen unter `Referenzlaeufe/`
 sind seither weder im Arbeitsbaum noch in der Geschichte. **Vorher gesichert** wurde je Basis ihr
-Protokoll — byte-gleich, **25 Dateien, 603 913 Byte**. Der Wegweiser des Ordners ist
+Protokoll — byte-gleich; die Protokolle von **R7** (16.09.2026) und **R8** (18.09.2026) kamen mit
+ihrer Ablösung dazu. **27 Dateien, 631 233 Byte**. Der Wegweiser des Ordners ist
 [`ueberholt/Referenzbasen/LIESMICH.md`](ueberholt/Referenzbasen/LIESMICH.md) mit der Tabelle
 Basis → Datum → Zweck; hier stehen die Dateien selbst. Sie sind **byte-gleiche Kopien** — auch
 in ihren Verweisen, von denen fünf ins Leere zeigen (die Wache führt sie als vorbestehende
@@ -249,6 +250,8 @@ Lücken).
 | `2026-09-07_R4_Double` | [`ueberholt/Referenzbasen/2026-09-07_R4_Double/protokoll.txt`](ueberholt/Referenzbasen/2026-09-07_R4_Double/protokoll.txt) |
 | `2026-09-07_R5_Zahlenrand` | [`ueberholt/Referenzbasen/2026-09-07_R5_Zahlenrand/protokoll.txt`](ueberholt/Referenzbasen/2026-09-07_R5_Zahlenrand/protokoll.txt) |
 | `2026-09-07_R6_PvKoeffizienten` | [`ueberholt/Referenzbasen/2026-09-07_R6_PvKoeffizienten/protokoll.txt`](ueberholt/Referenzbasen/2026-09-07_R6_PvKoeffizienten/protokoll.txt) |
+| `2026-09-11_R7_Speicherflotte` | [`ueberholt/Referenzbasen/2026-09-11_R7_Speicherflotte/protokoll.txt`](ueberholt/Referenzbasen/2026-09-11_R7_Speicherflotte/protokoll.txt) |
+| `2026-09-16_R8_Heizkessel_Kaskade` | [`ueberholt/Referenzbasen/2026-09-16_R8_Heizkessel_Kaskade/protokoll.txt`](ueberholt/Referenzbasen/2026-09-16_R8_Heizkessel_Kaskade/protokoll.txt) |
 
 ### ueberholt/Geschichte — die Commit-Karte des Umschreibens
 

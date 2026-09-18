@@ -127,73 +127,31 @@ Herleitung der Größen, der drei Gegenproben und der Wahl des Peak-Ziels stehen
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-09-16_R8_Heizkessel_Kaskade`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-09-18_R9_Kesselbrennstoff`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Skripte` und `LIESMICH.md` stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
 Dateien, 1 016,7 MB) sind am 11.09.2026 aus dem Arbeitsbaum gefallen (**SYNC‑Q1**: „entfernt
 lassen") und seit dem Umschreiben der Git-Geschichte (**AUF‑Q1**, 12.09.2026) auch dort nicht
 mehr enthalten; **`2026-09-11_R7_Speicherflotte` ist am 16.09.2026 nach demselben Muster
-gefallen** (25 Basen, ihr Protokoll gesichert). Kein Test, kein Gate, keine CI liest eine
-entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine alte
-Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 25 Basen samt der Tabelle Basis → Datum → Zweck →
+gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026** (26 Basen, beide Protokolle
+gesichert). Kein Test, kein Gate, keine CI liest eine entfernte Basis. **Die Messdaten sind
+endgültig weg** (rund 8 000 CSV-Dateien) — eine alte Zahl steht nur noch im Protokoll.
+Erhalten sind die **Protokolle** aller 26 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
-**welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort in der ausgelagerten
-[Basenhistorie](../Dokumentation/ueberholt/Referenzbasen/LIESMICH_Basenhistorie_bis_2026-09-12.md).
+**welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
+in der ausgelagerten
+[Basenhistorie](../Dokumentation/ueberholt/Referenzbasen/LIESMICH_Basenhistorie_bis_2026-09-12.md),
+danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-09-16_R8_Heizkessel_Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
+**`2026-09-18_R9_Kesselbrennstoff/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 90**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
-unverändert weiter — Schritt 83 faltet den Strom-Aufschlag in den Arbeitspreis, Schritt 84
-zieht die Einspeisevergütung von der Trägerkarte in die Wirtschaftlichkeitsparameter um,
-Schritt 85 entfernt die fünf Spalten, die beide ohne Leser zurückgelassen haben
-(`Aufschlag_Modus`, `Aufschlag_Override`, `Verguetung_PV`, `Verguetung_BHKW`,
-`Tab_ProjektWirtschaftlichkeit.Aufschlaege_Anwenden`); alle drei sind ergebnisneutral,
-der Lauf ist vor und nach jedem Schritt byte-gleich. Bei Schritt 84 ist das doppelt
-belegt: Die fünf Projekte des CI-Laufs hängen an `v_pv`/`v_bhkw` überhaupt nicht — eine
-Gegenprobe mit beiden Sätzen auf 0 liefert dieselben Bytes. Schritt 85 schreibt gar
-keinen Wert: Er entfernt nur, und keine der fünf Spalten trägt eine Rechengröße.
-Schritt 86 legt an `Tab_StromspeicherVariante` die zwei Steuergrößen der
-Lastspitzenkappung an (`PeakZiel_kW` REAL nullbar, `PeakZiel_Adaptiv` 0/1) und schreibt
-keinen Wert; gelesen werden sie nur bei der Berechnungsart „Lastspitzenkappung", und die
-führt im ganzen Bestand keine Variante — der Lauf ist auch nach diesem Schritt für alle
-fünf CI-Projekte byte-gleich, Projekt 1046 mitsamt seiner Flotte.
-Schritt 87 entdoppelt `Tab_Gesetzesparameter` und legt darüber den eindeutigen Index
-`idx_Gesetzesparameter_Eindeutig` (`Schluessel`, `Klasse`, `JahrVon`); in der
-Testdatenbank steht nichts zu entdoppeln — sie hat nie ein Programm gestartet, also auch
-nie abgebrochen gesät —, der Index allein ändert keinen Wert. Derselbe Schritt schaltet
-je Projekt jede aktive Speichervariante außer der mit der kleinsten `ID` ab; getroffen
-hat das genau eine Zeile: Projekt **1026**, Anlage 11280, Variante **13** (Variante 10
-bleibt aktiv). 1026 ist kein CI- und kein Basisprojekt, und `ReadAktiveVariante` nimmt
-ohnehin die kleinste `ID` — der Lauf ist auch nach Schritt 87 für alle fünf CI-Projekte
-byte-gleich.
-Schritt 88 legt an `Tab_ProjektWirtschaftlichkeit` die Spalte `Stromst_Befreiung_Modus`
-an (TEXT, `AUSWEIS`/`ERLOES`) und schreibt **keinen Wert**; NULL heißt AUSWEIS. Die
-Rechenwirkung liegt nicht im Schema, sondern in der Vorgabe: § 9 Abs. 1 Nr. 3 StromStG
-wird ab hier ausgewiesen statt als Erlös gebucht. Im ganzen Bestand bucht kein Lauf diese
-Reihe — die Befreiung setzt Stundenreihen voraus, und die führt die Testdatenbank zu
-keinem Projekt —, der Lauf ist auch nach Schritt 88 für alle fünf CI-Projekte
-byte-gleich.
-Schritt 89 legt an `Tab_Energieanlagen` die Spalte `KWKG_Kostenanteil` an (DOUBLE,
-nullbar) und trägt danach — als erster KWKG-Schritt mit DML — die KWKG-Vorgaben des
-Projekts in jede BHKW-Anlagenzeile nach, die an der betreffenden Stelle leer ist (Sätze,
-Kontingent, Jahresdeckel, Anlagenart, Tatbestand, Kostenanteil, Stichtag,
-Inbetriebnahme). Erst danach gibt der Rechenweg den Rückfall Anlage → Projekt auf;
-§ 7 und § 8 KWKG bemessen Satz und Kontingent an der EINZELNEN Anlage. Getroffen hat der
-Schritt genau ein Projekt: **1030** mit seinen zwei Modulen (Satz Eigen 4,00 ct/kWh,
-Satz Einspeisung 8,00 ct/kWh, Kontingent 30.000 Vbh, Stichtag 01.09.2026, Inbetriebnahme
-01.03.2027) — kein anderes Projekt der Testdatenbank führt KWKG-Vorgaben, und keine
-einzige Anlagenzeile trug vorher eine eigene Angabe. **Ergebnisneutral, gemessen:** Der
-KWK-Zuschlag von 1030 im Jahr 1 beträgt vor und nach dem Schritt 7.315,956634 €, der
-Kapitalwert −21.895.377,275113 € (Szenario Erwartet, flache Stundenreihen aus dem
-gebuchten Lauf); die Gegenprobe ohne den Datenschritt liefert 0,00 € Zuschlag und
-−21.954.815,753214 € Kapitalwert. Die Basis führt ohnehin keine Geldgröße — der Lauf ist
-auch nach Schritt 89 für alle fünf CI-Projekte byte-gleich).
+(**Schemastand 90** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
+Stand 90, und Schritt 90 ist ergebnisneutral, gemessen).
 Schritt 90 räumt hinter Schritt 89 auf und hat **zwei Teile**. Der **DDL-Teil** entfernt aus
 `Tab_ProjektWirtschaftlichkeit` die sechs KWKG-Spalten `KWKG_Bonus`,
 `KWKG_Bonus_Einspeisung`, `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`,
@@ -215,7 +173,7 @@ Anlagen, Stromeinspeisung): Hauptkomponentenzeilen der früheren Kostenmaske, Gr
 bleibt vollständig stehen. Keines der vier Projekte ist CI- oder Basisprojekt, und die
 Basis führt keine Kostengröße — der Lauf ist auch nach Schritt 90 für alle fünf
 CI-Projekte byte-gleich.
-**Ohne eigenen Schritt** trägt die Testdatenbank seit B7P zusätzlich die Spalte
+**Ohne eigenen Schritt** trägt die Testdatenbank zusätzlich die Spalte
 `Nachweis_Json` an `Tab_ErgebnisWirtschaftlichkeit` — eine **Konservenspalte**: Diese
 Ergebnistabelle ist keine Schematabelle, sie entsteht und wächst erst beim ersten
 Programmlauf über `WirtschaftlichkeitCtrl.SpalteSicher`. Der SQL-Dialektprüfer löst das
@@ -227,72 +185,64 @@ diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung
 zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Die Netzladung der Preissteuerung zählt im Netzbezug — die Basis bleibt unverändert,
-> belegt.** Der Projektlauf schlägt die Netzladung der Berechnungsart „Arbitrage" jetzt auf
-> `Rest_Strombedarf` auf (Netzwirkung `Entladung − Netzladung`, wie die Lastspitzenkappung
-> ihre eigene liefert). **Kein Basisprojekt ist betroffen:** Alle neun Speichervarianten der
-> Testdatenbank — Projekte 1007 (vier), 1017 (eine), 1046 (vier) — tragen
-> `Berechnungsart = 'Dauernutzung'`, `Betriebsart = 'Grünstrom'`, `Netzentladung = 0` und
-> `A_Netzlade = 0`; die übrigen zehn Basisprojekte führen überhaupt keine Speichervariante.
-> Die Dauernutzung lädt nur aus Überschuss und bekommt deshalb keine Netzwirkungsreihe — der
-> Lauf über alle dreizehn Projekte meldet `GESAMT: PASS` (3 882 737 Werte) und ist im
-> Byte-Vergleich ohne einen einzigen Unterschied in den 357 CSV. Die Einfrierregel greift
-> nicht.
-
-> **Anlass: der Anwenderentscheid HK‑E‑1 vom 15.09.2026, „Umsetzen".** Ein Wärmeerzeuger
-> rechnet nur, wenn seine Technologie in einem der vier Plätze `Tab_Einstellungen.Tool_1..4`
-> steht. Einen Heizkessel anzulegen legte aber keinen Platz an — die Anlage stand im Projekt
-> und wurde still übergangen. Seit diesem Entscheid zieht das Lesen der Konfiguration den
-> Platz nach (`KonfigurationCtrl.HeizkesselNachziehen`), **nachrangig** am hinteren Ende der
-> Kaskade und in die Projektdaten geschrieben; die vorhandene Umordnung der
-> Simulationskonfiguration überschreibt diese Vorgabe dauerhaft. **Nur der Heizkessel** —
-> Wärmepumpe, Solarthermie, BHKW, Photovoltaik und Stromspeicher ohne Platz werden weiterhin
-> nur gemeldet.
+> **Anlass: der Anwenderentscheid vom 18.09.2026, „Ja, neue Basis einfrieren".** Auftrag #331
+> hat zum Befund **`B-1`** der Wirtschaftlichkeit den Brennstoffverbrauch des Heizkessels aus
+> dem Simulationslauf in die **Modulzeile** nachgezogen: Die drei Spalten
+> `HeizkesselModul[0].Verbrauch`, `.Waermeproduktion` und `.Brennstoff` trägt jetzt der Lauf,
+> statt sie leer zu lassen. Herleitung, Rückfälle, Warnung und die benannte Ausnahme des
+> Elektrokessels stehen im Protokoll
+> [`B-1_Kesselbrennstoff_Modulzeile_Protokoll.md`](../Dokumentation/ueberholt/Protokolle/Reporting/B-1_Kesselbrennstoff_Modulzeile_Protokoll.md).
 >
-> **Drei Projekte verschieben sich, zehn sind byte-gleich zur Vorgängerbasis.** Betroffen
-> ist genau, wer eine Heizkesselanlage führt und keinen Kesselplatz hatte: **1007**, **1008**
-> und **1046**. Die übrigen zehn Projekte sind `diff -rq` ohne einen einzigen Unterschied.
+> **37 Abweichungen von 3 882 737 Werten — alle in denselben drei Spalten, keine unerklärte.**
+> Elf Projekte tragen drei davon, die beiden Elektrokesselprojekte **1017** und **1024** nur die
+> letzten beiden: Ihr Verbrauch bleibt 0, weil der Elektrokessel die benannte Ausnahme des
+> Rechenwegs ist. 11 × 3 + 2 × 2 = 37.
 >
-> | Größe | 1007 | 1008 | 1046 |
-> |---|---:|---:|---:|
-> | `Sim.Restwaerme` [MWh] | 6,1313 → **0** | 2,7781 → **0** | 6,1313 → **0** |
-> | `Heizkessel.Waermeproduktion` [MWh] | — → **6,13** | — → **2,78** | — → **6,13** |
-> | `Heizkessel.Gasverbrauch` [MWh] | — → **15,47** | — → **12,02** | — → **15,47** |
-> | `Heizkessel.Waermebedarfsdeckung` [%] | — → **10,73** | — → **5,07** | — → **10,73** |
-> | `Em.Kessel.Co2T` [t/a] | — → **3,7136** | — → **2,8851** | — → **3,7136** |
-> | `Sim.bSimulationKessel` | False → **True** | False → **True** | False → **True** |
-> | CSV / Skalare | 29/99 → **33/139** | 21/101 → **25/141** | 33/145 → **37/185** |
+> | Projekt | `…Brennstoff` | `…Verbrauch` [MWh/a] | `…Waermeproduktion` [MWh/a] |
+> |---|---|---:|---:|
+> | 1007, 1046 | → Gas | 0 → **15,47** | 0 → **6,13** |
+> | 1008 | → Gas | 0 → **12,02** | 0 → **2,78** |
+> | 1017 | → Strom | 0 (Ausnahme) | 0 → **8,91** |
+> | 1018 | → Gas | 0 → **16,76** | 0 → **16,76** |
+> | 1023 | → Gas | 0 → **78,64** | 0 → **66,61** |
+> | 1024 | → Strom | 0 (Ausnahme) | 0 → **47,44** |
+> | 1030 | → Gas | 0 → **5 403,10** | 0 → **5 403,10** |
+> | 1039 | → Gas | 0 → **225,04** | 0 → **220,54** |
+> | 1040, 1045 | → Gas | 0 → **16,19** | 0 → **16,19** |
+> | 1041 | → Gas | 0 → **133,33** | 0 → **133,33** |
+> | 1042 | → Gas | 0 → **13,81** | 0 → **13,53** |
 >
-> **Die Richtung stimmt fachlich:** Der Kessel steht am hinteren Ende der Kaskade und nimmt
-> nur, was die vorderen Stufen übrig lassen. Deshalb sinkt die ungedeckte Restwärme auf null,
-> und Kesselwärme, Brennstoff und Emissionen kommen hinzu — **kein anderer Erzeuger verliert
-> Deckung**: Wärmepumpe, Solarthermie und Photovoltaik rechnen in allen drei Projekten Wert
-> für Wert wie zuvor. Der niedrige Jahresnutzungsgrad (39,6 % bzw. 23,1 %) ist die Rechnung
-> eines Kessels, der nur wenige Spitzenstunden fährt und den Rest des Jahres
-> Betriebsbereitschaft vorhält.
+> **Was byte-gleich geblieben ist:** die **344 Ganglinien-CSV** — keine Zeitreihe hat sich
+> bewegt — und in den Skalaren jede andere Größe: Anlagensummen, Emissionen, Puffer,
+> Speicherflotte, Wirtschaftlichkeit. Je `aggregate.csv` sind genau drei bzw. zwei Zeilen
+> anders; keine kommt hinzu, keine fällt weg, die Skalarzahl bleibt Projekt für Projekt
+> dieselbe.
 >
-> **Zwei weitere Änderungen dieser Welle verschieben die Basis NICHT** und sind deshalb
-> getrennt gemessen: Die Bereinigung der zwei Probierpuffer „test" (2 Ltr, 4 000 €) in 1007
-> und 1046 ist **13/13 byte-gleich** — sie hängen an keiner Zeile von `Z_ProjektPufferSp` und
-> rechnen im hydraulischen Weg nicht mit. Und im Größenlauf der Speicherflotte wurde **nichts
-> geändert**; die dort offene Frage nach den Produktparametern ist durch den Entscheid vom
-> 15.09.2026 zur Gerätesuche bereits beantwortet.
+> **Die Gegenprobe hält in allen dreizehn Projekten:**
+> `HeizkesselModul[0].Verbrauch` = `Heizkessel.Gasverbrauch` und
+> `HeizkesselModul[0].Waermeproduktion` = `Heizkessel.Waermeproduktion`. Der Modulwert ist
+> nicht neu gerechnet, sondern der Anlagenwert des Laufs an der Stelle, an der die
+> Wirtschaftlichkeit ihn liest.
+>
+> **Weder die Testdatenbank noch das Schema sind dafür angefasst worden**, und keine der drei
+> Einfrierregeln ist berührt.
 >
 > **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich**,
-> Toleranzvergleich **13/13 PASS** (3 882 737 Werte), Laufzeit 00:00:06.
+> Laufzeit 00:00:06.
 >
 > ```bash
 > dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
->   --ziel Referenzlaeufe/2026-09-16_R8_Heizkessel_Kaskade
+>   --ziel Referenzlaeufe/2026-09-18_R9_Kesselbrennstoff
 > ```
 >
-> Ablauf, Warnungen und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+> Ablauf, Warnungen und Ausstattung je Projekt sowie der vollständige Vergleich R8 → R9 stehen
+> im `protokoll.txt` der Basis.
 
-> **Die Vorgängerbasis `2026-09-11_R7_Speicherflotte`** ist mit dieser Einfrierung aus dem
-> Arbeitsbaum gefallen; ihr Protokoll samt Herleitung des Prüfprojekts 1046 und den sechs
-> Nachträgen zu den Schemaständen 74 bis 81 steht in
+> **Die Vorgängerbasis `2026-09-16_R8_Heizkessel_Kaskade`** ist mit dieser Einfrierung aus dem
+> Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu `HK‑E‑1`, den Nachträgen zu den
+> Schemaständen 83 bis 89 und dem Beleg zur Netzladung der Preissteuerung steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
@@ -463,7 +413,7 @@ wird oder die Kopie außerhalb des Repos liegen soll.
 2. **Änderung umsetzen** und die Anwendung neu bauen (`WP-Plan.sln` **und**
    `Referenzlauf.csproj`).
 3. **Neu rechnen und vergleichen.** Die einzige Basis im Arbeitsbaum,
-   `2026-09-16_R8_Heizkessel_Kaskade`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
+   `2026-09-18_R9_Kesselbrennstoff`, ist plattformfrei gegen `Kenndaten_Test.sqlite` gerechnet:
    Wer auf Windows gegen die produktive Datenbank misst, friert **vor** der Änderung selbst
    einen Stand ein und vergleicht gegen diesen. **`--projekte` ist Pflicht**:
    ```powershell

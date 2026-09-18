@@ -435,8 +435,16 @@ namespace WindowsFormsApplication1
                             // ETAPPE B3 Paket b: Hilfsenergie des Kessels - dieselbe Formel
                             // wie beim BHKW. Die Endenergie kommt aus
                             // HilfsstromRechner.KesselBrennstoffMWh: Verbrauch, sofern
-                            // gesetzt, sonst die Rueckrechnung Waerme / Nutzungsgrad (Paket a
-                            // hat begruendet, warum der Rechenkern Verbrauch nie fuellt).
+                            // gesetzt, sonst die Rueckrechnung Waerme / Nutzungsgrad.
+                            //
+                            // SEIT BEFUND B-1 ist der erste Zweig der Regelfall - der
+                            // SimulationRunner fuellt mo.Verbrauch aus dem Lauf. Die
+                            // Ableitung BLEIBT trotzdem stehen und wird hier weiter
+                            // gerufen: Sie traegt den Elektrokessel (Modulzeile ohne
+                            // Brennstoffverbrauch) und jede aus der Datenbank gelesene
+                            // Zeile aus einem Lauf vor B-1. Ein zweiter Rechenweg
+                            // entsteht dadurch nicht - es ist dieselbe Methode, und ihr
+                            // erster Zweig nimmt jetzt den gelesenen Wert.
                             //
                             // KEINE Strommengenwirkung: Ein Kessel erzeugt keinen Strom, sein
                             // Hilfsstrom mindert also weder eine KWKG-Nettoerzeugung noch eine

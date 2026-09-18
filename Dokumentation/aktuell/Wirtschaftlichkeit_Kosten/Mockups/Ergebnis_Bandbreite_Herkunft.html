@@ -129,6 +129,14 @@ section.kap + section.kap{border-top:1px solid var(--linie);margin-top:20px}
 .s-knopf{border:1px solid #8C97A8;background:linear-gradient(#FDFDFE,#EEF1F5);border-radius:4px;
   padding:4px 14px;font-size:12.5px;color:var(--p-tinte)}
 .s-knopf.primaer{background:var(--marine-hell);border-color:var(--marine);color:#fff;font-weight:600}
+.s-umschalter{display:inline-flex;border:1px solid #8C97A8;border-radius:4px;overflow:hidden;
+  font-size:11.5px;font-weight:500;margin-left:14px}
+.s-umschalter span{padding:3px 10px;background:#FDFDFE;color:var(--p-tinte)}
+.s-umschalter span.an{background:var(--marine-hell);color:#fff}
+.s-raster tr.block td{background:#EDF1F7;font-weight:600;color:#1A3261;border-top:1.5px solid #9AA6B8}
+.s-raster tr.teil td{background:#F7F9FC;font-weight:600;font-style:italic}
+.s-raster td.ein{padding-left:26px}
+.legende svg{vertical-align:-2px;margin-right:6px}
 .s-herleitung{font-family:var(--mono);font-size:11px;color:var(--p-weich);line-height:1.55;
   padding:3px 0}
 .s-herleitung b{color:#1A3261;font-weight:600}
@@ -321,6 +329,38 @@ a{color:var(--marine-hell)}
             <td>Je eine Zeile mit dem Jahresbetrag</td>
             <td>Je eine eigene Ansicht f&uuml;r Blockheizkraftwerk und Photovoltaik mit Mengen,
                 S&auml;tzen, Abz&uuml;gen und dem Jahresverlauf</td></tr>
+        <tr><td><b>Wo stehen die laufenden Energiekosten?</b></td>
+            <td>Zeile &bdquo;Energiekosten [&euro;/a]&ldquo; nach den Betriebskosten, darunter
+                einger&uuml;ckt &bdquo;davon &lsaquo;Anlage&rsaquo;&ldquo; und &bdquo;davon Netzbezug
+                Strom&ldquo; &mdash; nur im frischen Lauf, nach dem Neuladen einer gespeicherten
+                Rechnung fehlen die davon-Zeilen</td>
+            <td>Dieselbe Zeile unter demselben Namen an derselben Stelle, in der Tafel der laufenden
+                Kosten und in der Ansicht der Anlage; die davon-Zeilen bleiben auch nach dem
+                Neuladen stehen</td></tr>
+        <tr><td><b>Was wird ersetzt, was bleibt am Ende &uuml;brig?</b></td>
+            <td>Zwei Summenzeilen (Ersatzbeschaffungen, Restwert) und ein Satz zur k&uuml;rzesten
+                und l&auml;ngsten Nutzungsdauer</td>
+            <td>Je Komponente: welche Position wann ersetzt wird, was am Ende &uuml;brig bleibt
+                &mdash; und ein Hinweis, wenn der Betrachtungszeitraum l&auml;nger ist als die
+                Nutzungsdauer, aber kein Ersatz gepflegt</td></tr>
+        <tr><td><b>Erl&ouml;se und Vorteile &mdash; wo steht was?</b></td>
+            <td>Rubrik in zwei Bl&ouml;cken (zahlungswirksam mit Summe, Ausweis ohne Summe), die
+                Positionen in Gesetzesreihenfolge gemischt &uuml;ber alle Anlagen</td>
+            <td>Dieselben zwei Bl&ouml;cke, innen nach Komponente gegliedert &mdash;
+                Blockheizkraftwerk, Photovoltaik, Kessel, projektweit &mdash; je mit
+                Zwischensumme</td></tr>
+        <tr><td><b>Wie verl&auml;uft der Kapitalwert &uuml;ber die Zeit?</b></td>
+            <td>Knopf &bdquo;Verlauf&hellip;&ldquo; &ouml;ffnet ein Fenster mit einem Szenario je
+                Lauf, das immer bei &bdquo;Erwartet&ldquo; beginnt; der Tabellenbericht kennt nur
+                Erwartet</td>
+            <td>Eigener Abschnitt bei &bdquo;Wie sicher ist das?&ldquo;: alle drei Szenarien in
+                einem Bild, der Nulldurchgang je Szenario; der Knopf entf&auml;llt; der
+                Tabellenbericht bekommt je Szenario eine Spaltengruppe</td></tr>
+        <tr><td><b>Wie kommt man zu dieser Bewertung?</b></td>
+            <td>Fu&szlig;leiste mit sieben Kn&ouml;pfen &mdash; f&uuml;r einen achten ist kein
+                Platz</td>
+            <td>Umschalter &bdquo;Kennzahlen / ValERI-Bewertung&ldquo; im Kopf der Seite: links
+                die heutige Kennzahltafel, rechts die Abschnitte dieser Seite</td></tr>
       </tbody>
     </table>
   </div>
@@ -368,7 +408,8 @@ a{color:var(--marine-hell)}
 
   <div class="seite">
     <div class="s-band">Wirtschaftlichkeit &mdash; Musterprojekt Gewerbepark
-      <span class="s-sub">Lauf vom 17.09.2026 09:14 &middot; drei Szenarien gerechnet</span></div>
+      <span class="s-umschalter"><span>Kennzahlen</span><span class="an">ValERI-Bewertung</span></span>
+      <span class="s-sub">Lauf abgeschlossen &middot; drei Szenarien gerechnet</span></div>
     <div class="s-leib">
       <div class="empf">
         <div class="empf-karte ja">
@@ -442,7 +483,7 @@ a{color:var(--marine-hell)}
 
 <!-- =============================================================== SICHER -->
 <section class="kap" id="sicher">
-  <div class="kap-kopf"><h2>2 &nbsp;Wie sicher ist das?</h2><span class="kap-marke">Bandbreite</span></div>
+  <div class="kap-kopf"><h2>2 &nbsp;Wie sicher ist das?</h2><span class="kap-marke">Bandbreite und Verlauf</span></div>
   <p class="kap-lead">Drei Szenarien nebeneinander statt hintereinander. Jedes rechnet den
   vollst&auml;ndigen Lauf mit einem eigenen Satz aus Zins, Preissteigerungen, Investitions- und
   Ertrags&auml;nderung und Nutzungsdauer &mdash; nicht einen Zuschlag auf das Ergebnis.</p>
@@ -541,6 +582,110 @@ a{color:var(--marine-hell)}
     w&auml;hrend beim Blockheizkraftwerk der gr&ouml;&szlig;te Posten eine <em>ersparte</em>
     Stromrechnung ist.</p>
   </div>
+
+  <div class="zone">Der Verlauf &uuml;ber die Zeit &mdash; alle drei Szenarien</div>
+  <p class="eng">Die Bandbreite zeigt die Spanne am Ende des Betrachtungszeitraums. Der Verlauf zeigt,
+  wie sie entsteht: Der kumulierte Barwert der Differenz zum Stammprojekt beginnt bei der Investition,
+  steigt mit jedem Jahr und kreuzt die Nulllinie &mdash; das ist die dynamische Amortisation, in jedem
+  Szenario in einem anderen Jahr. Bisher stand dieses Bild hinter dem Knopf &bdquo;Verlauf&hellip;&ldquo;,
+  ein Szenario je Lauf und immer bei &bdquo;Erwartet&ldquo; beginnend; hier steht es an Ort und Stelle,
+  mit allen dreien. Der Knopf entf&auml;llt.</p>
+
+  <div class="chart-karte">
+    <div class="chart-titel">Kumulierter Barwert der Differenz zum Stammprojekt &mdash; drei Szenarien <span class="marke neu">neu</span></div>
+    <div class="chart-unter">Variante 3 &middot; Farbe = Variante, Strichart = Szenario &middot; der
+      Nulldurchgang ist die dynamische Amortisation &middot; der Knick im Jahr 15 ist der Ersatz des
+      Moduls des Blockheizkraftwerks</div>
+<svg viewBox="0 0 720 236" width="720" height="236" role="img" aria-label="Kumulierter Barwert der Differenz zum Stammprojekt für Variante 3 in drei Szenarien über 20 Jahre: Start bei minus 470.215, minus 426.922 und minus 383.630 Euro; Nulldurchgang nach etwa 3,2 Jahren (ungünstig), 2,64 Jahren (erwartet) und etwa 2,2 Jahren (günstig); Endwerte vor Restwert 1.565.897, 1.756.676 und 1.952.493 Euro. Die beiden äußeren Kurven sind zwischen Start- und Endwert entlang des Erwartet-Verlaufs interpoliert.">
+  <line x1="44" y1="156.0" x2="712" y2="156.0" stroke="var(--linie-stark)" stroke-width="1"/>
+  <text x="40" y="159.0" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">0</text>
+  <line x1="44" y1="131.0" x2="712" y2="131.0" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="134.0" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">0,5 Mio</text>
+  <line x1="44" y1="106.0" x2="712" y2="106.0" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="109.0" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">1,0 Mio</text>
+  <line x1="44" y1="81.0" x2="712" y2="81.0" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="84.0" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">1,5 Mio</text>
+  <line x1="44" y1="56.0" x2="712" y2="56.0" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
+  <text x="40" y="59.0" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">2,0 Mio</text>
+  <polyline points="52.0,179.5 84.0,171.8 116.0,164.3 148.0,157.1 180.0,150.2 212.0,143.5 244.0,137.1 276.0,130.9 308.0,124.8 340.0,118.9 372.0,113.2 404.0,107.6 436.0,103.7 468.0,99.3 500.0,94.9 532.0,96.9 564.0,92.8 596.0,88.9 628.0,85.0 660.0,81.3 692.0,77.7" fill="none" stroke="var(--marine-hell)" stroke-width="1.8" stroke-dasharray="7 4" stroke-linejoin="round" stroke-linecap="round"/>
+  <polyline points="52.0,177.3 84.0,169.0 116.0,161.0 148.0,153.3 180.0,145.9 212.0,138.7 244.0,131.8 276.0,125.2 308.0,118.6 340.0,112.4 372.0,106.2 404.0,100.3 436.0,96.0 468.0,91.3 500.0,86.6 532.0,88.7 564.0,84.4 596.0,80.2 628.0,76.0 660.0,72.0 692.0,68.2" fill="none" stroke="var(--marine-hell)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <polyline points="52.0,175.2 84.0,166.3 116.0,157.7 148.0,149.4 180.0,141.5 212.0,133.9 244.0,126.5 276.0,119.4 308.0,112.4 340.0,105.7 372.0,99.1 404.0,92.7 436.0,88.2 468.0,83.1 500.0,78.1 532.0,80.4 564.0,75.7 596.0,71.2 628.0,66.8 660.0,62.5 692.0,58.4" fill="none" stroke="var(--marine-hell)" stroke-width="1.8" stroke-dasharray="2 3" stroke-linejoin="round" stroke-linecap="round"/>
+  <line x1="122.5" y1="108.0" x2="122.5" y2="156.0" stroke="var(--warn-kante)" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <circle cx="122.5" cy="156.0" r="3.6" fill="var(--warn-kante)"/>
+  <text x="127.5" y="104.0" font-size="9.5" fill="var(--warn)" class="svgmono">Günstig ≈ 2,2 a</text>
+  <line x1="136.6" y1="88.0" x2="136.6" y2="156.0" stroke="var(--warn-kante)" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <circle cx="136.6" cy="156.0" r="3.6" fill="var(--warn-kante)"/>
+  <text x="141.6" y="84.0" font-size="9.5" fill="var(--warn)" class="svgmono">Erwartet 2,64 a</text>
+  <line x1="152.9" y1="68.0" x2="152.9" y2="156.0" stroke="var(--warn-kante)" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <circle cx="152.9" cy="156.0" r="3.6" fill="var(--warn-kante)"/>
+  <text x="157.9" y="64.0" font-size="9.5" fill="var(--warn)" class="svgmono">Ungünstig ≈ 3,2 a</text>
+  <text x="696.0" y="52.4" font-size="9.5" fill="var(--marine-hell)" class="svgmono">Günstig</text>
+  <text x="696.0" y="72.2" font-size="9.5" fill="var(--marine-hell)" class="svgmono">Erwartet</text>
+  <text x="696.0" y="90.7" font-size="9.5" fill="var(--marine-hell)" class="svgmono">Ungünstig</text>
+  <text x="52.0" y="202" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">0</text>
+  <text x="212.0" y="202" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">5</text>
+  <text x="372.0" y="202" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">10</text>
+  <text x="532.0" y="202" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">15</text>
+  <text x="692.0" y="202" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">20</text>
+  <text x="52" y="228" font-size="10.5" fill="var(--tinte-blass)">Jahr — kumulierter Barwert der Differenz Variante 3 − Stammprojekt, ohne Restwert; Farbe = Variante, Strichart = Szenario</text>
+</svg>
+    <div class="legende">
+      <span><svg width="28" height="8" viewBox="0 0 28 8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4" stroke="var(--marine-hell)" stroke-width="2.4"/></svg>Erwartet</span>
+      <span><svg width="28" height="8" viewBox="0 0 28 8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4" stroke="var(--marine-hell)" stroke-width="1.8" stroke-dasharray="7 4"/></svg>Ung&uuml;nstig</span>
+      <span><svg width="28" height="8" viewBox="0 0 28 8" aria-hidden="true"><line x1="1" y1="4" x2="27" y2="4" stroke="var(--marine-hell)" stroke-width="1.8" stroke-dasharray="2 3"/></svg>G&uuml;nstig</span>
+      <span><i style="background:var(--warn-kante);border-radius:50%"></i>Nulldurchgang &mdash; dynamische Amortisation</span>
+    </div>
+    <div class="chart-unter" style="margin-top:10px">Erwartet ist gerechnet: Endwert 1.756.676 &euro; vor
+      Restwert, Amortisation 2,64 a. Die beiden &auml;u&szlig;eren Kurven sind zwischen ihrem Startwert
+      (Investition 470.215 bzw. 383.630 &euro;) und ihrem Endwert (Kapitalwertdifferenz abz&uuml;glich
+      Restwert-Barwert: 1.565.897 bzw. 1.952.493 &euro;) entlang des Erwartet-Verlaufs interpoliert
+      &mdash; ihre Nulldurchg&auml;nge sind deshalb mit &bdquo;&asymp;&ldquo; gekennzeichnet. Die Seite
+      rechnet alle drei.</div>
+  </div>
+
+  <div class="seite">
+    <div class="s-band">Verlauf &mdash; Bedienung
+      <span class="s-sub">an Stelle des Knopfes &bdquo;Verlauf&hellip;&ldquo;</span></div>
+    <div class="s-leib">
+      <div class="s-zeile">
+        <span class="s-lab">Zeitraum:</span><span class="s-combo" style="min-width:64px">20 a</span>
+        <span class="s-lab">Varianten:</span>
+        <span class="s-knopf">&#9745; Variante 1</span><span class="s-knopf">&#9745; Variante 2</span>
+        <span class="s-knopf">&#9745; Variante 3</span>
+        <span class="s-lab">Szenarien:</span>
+        <span class="s-knopf">&#9745; Ung&uuml;nstig</span><span class="s-knopf">&#9745; Erwartet</span>
+        <span class="s-knopf">&#9745; G&uuml;nstig</span>
+      </div>
+      <div class="s-info">Jede angehakte Variante bekommt eine Farbe, jedes angehakte Szenario eine
+      Strichart; die Legende nennt Farben und Stricharten getrennt &mdash; so viele Eintr&auml;ge
+      wie Varianten, dazu drei, nicht Varianten mal drei. Ein von den Parametern abweichender
+      Zeitraum wird in der Statuszeile genannt, wie heute im Verlaufsfenster. Im Bild oben ist nur
+      Variante 3 gezeichnet.</div>
+      <div class="s-herleitung" style="margin-top:8px">Restwert-Barwerte am Horizontende, nicht in den
+      Kurven: Ung&uuml;nstig 71.642 &middot; Erwartet 98.032 &middot; G&uuml;nstig 119.464 &euro;
+      &mdash; mit ihnen ergeben sich die Kapitalwertdifferenzen 1.637.539 / 1.854.708 / 2.071.957 &euro;
+      der Bandbreite oben.</div>
+    </div>
+  </div>
+
+  <div class="befund">
+    <h4>Warum Strichart und nicht Band &mdash; und wo das zweite Bild bleibt</h4>
+    <p>Ein Band zwischen ung&uuml;nstigem und g&uuml;nstigem Verlauf ist bei <em>einer</em> Variante
+    gut lesbar; bei drei angehakten Varianten legen sich drei B&auml;nder &uuml;bereinander, und die
+    Nulldurchg&auml;nge verschwinden darin. Drei Stricharten in der Farbe der Variante bleiben auch bei
+    mehreren Varianten unterscheidbar. Dazu kommt, was der Zeichner der Berichtsbilder kann: beliebig
+    viele Reihen auf einer Jahresachse, aber kein Fl&auml;chenband; die Strichart je Reihe kennt er als
+    Merkmal, liest sie in diesem Bild bisher nur nicht &mdash; ein kleiner, &ouml;rtlicher Zusatz.</p>
+    <p>Das Verlaufsfenster zeigt heute ein zweites Bild: den kumulierten Barwert jeder Version
+    <em>absolut</em>, Stammprojekt eingeschlossen. Es bleibt nicht in diesem Abschnitt. Alle Versionen
+    liegen darin tief im Negativen und nahezu parallel (Stammprojekt &minus;7,9 Mio, beide Anlagen
+    &minus;6,0 Mio &euro;) &mdash; entschieden wird &uuml;ber den Abstand, und den zeigt das Bild oben.
+    Der absolute Vergleich der Versionen geh&ouml;rt dorthin, wo Versionen verglichen werden: auf der
+    Seite in die Kennzahltafel (Zeile &bdquo;Nettobarwert absolut&ldquo;), im Bericht in die
+    Mehrjahres&uuml;bersicht; als Bild bleibt er dem Wortbericht vorbehalten, wo er heute schon steht.
+    Wer ihn auf der Seite braucht, sagt es &mdash; das ist eine Frage an den Anwender, keine
+    Festlegung.</p>
+  </div>
 </section>
 
 <!-- =============================================================== WORAUS -->
@@ -608,6 +753,231 @@ a{color:var(--marine-hell)}
       2.606.605 &euro; Barwert an Energiekosten ein und gibt daf&uuml;r 426.922 &euro; Investition,
       935.724 &euro; Mehrbetriebskosten und 148.982 &euro; Ersatzbeschaffungen aus.</div>
     </div>
+  </div>
+
+  <div class="zone">Ersatz und Restwert &mdash; je Komponente</div>
+  <p class="eng">Ersatz und Restwert h&auml;ngen nicht an der Komponente, sondern an der einzelnen
+  Investitionsposition, und das f&uuml;r jede Technik gleich: Tr&auml;gt die Position eine
+  Nutzungsdauer, wird sie nach deren Ablauf ersetzt und am Ende linear bewertet; tr&auml;gt sie keine,
+  l&auml;uft sie still bis zum Ende des Betrachtungszeitraums &mdash; kein Ersatz, kein Restwert. Die
+  Tafel fasst die Positionen je Komponente zusammen, damit sichtbar wird, was wann ersetzt wird, was
+  am Ende &uuml;brig bleibt und wo eine Dauer fehlt.</p>
+
+  <div class="seite">
+    <div class="s-band">Ersatz und Restwert je Komponente &mdash; Variante 3
+      <span class="s-sub">Szenario Erwartet &middot; T = 20 a &middot; Barwerte mit i = 3,0 %</span></div>
+    <div class="s-leib">
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Komponente / Position</th><th class="r">Betrag</th><th class="r">Nutzungsdauer</th>
+          <th>Ersatz</th><th class="r">Restwert im Jahr 20</th><th>Herkunft der Dauer</th></tr></thead>
+        <tbody>
+          <tr class="block"><td>Blockheizkraftwerk</td><td class="r">240.772</td>
+              <td class="r">2 von 3 Positionen</td><td>Jahr 15: 205.884 &euro; <span class="klein">Barwert 132.149</span></td>
+              <td class="r">137.256<span class="klein">Barwert 75.995</span></td><td>Vorgabe der Technik 15 a</td></tr>
+          <tr><td class="ein">Modul und Montage</td><td class="r">205.884</td><td class="r">15 a</td>
+              <td>Jahr 15</td><td class="r">137.256</td><td>Vorgabe der Technik, beim Anlegen &uuml;bernommen</td></tr>
+          <tr><td class="ein">Hydraulik</td><td class="r">13.000</td><td class="r">20 a</td>
+              <td>&mdash; deckungsgleich mit T</td><td class="r">0</td><td>gepflegt</td></tr>
+          <tr><td class="ein">Planung und Genehmigung</td><td class="r">21.888</td><td class="r">&mdash;</td>
+              <td>&mdash; l&auml;uft wie T</td><td class="r">&mdash;</td><td>keine Dauer gepflegt</td></tr>
+          <tr class="block"><td>Photovoltaik</td><td class="r">192.150</td>
+              <td class="r">4 von 5 Positionen</td><td>Jahr 12: 24.000 &euro; <span class="klein">Barwert 16.833</span></td>
+              <td class="r">39.800<span class="klein">Barwert 22.036</span></td><td>Vorgabe der Technik 25 a</td></tr>
+          <tr><td class="ein">Module</td><td class="r">96.000</td><td class="r">25 a</td>
+              <td>&mdash;</td><td class="r">19.200</td><td>Vorgabe der Technik</td></tr>
+          <tr><td class="ein">Wechselrichter</td><td class="r">24.000</td><td class="r">12 a</td>
+              <td>Jahr 12</td><td class="r">8.000</td><td>gepflegt</td></tr>
+          <tr><td class="ein">Unterkonstruktion und Montage</td><td class="r">45.000</td><td class="r">25 a</td>
+              <td>&mdash;</td><td class="r">9.000</td><td>Vorgabe der Technik</td></tr>
+          <tr><td class="ein">Elektroinstallation, Netzanschluss</td><td class="r">18.000</td><td class="r">25 a</td>
+              <td>&mdash;</td><td class="r">3.600</td><td>Vorgabe der Technik</td></tr>
+          <tr><td class="ein">Planung und Genehmigung</td><td class="r">9.150</td><td class="r">&mdash;</td>
+              <td>&mdash; l&auml;uft wie T</td><td class="r">&mdash;</td><td>keine Dauer gepflegt</td></tr>
+          <tr class="summe"><td>Variante 3</td><td class="r">432.922</td><td class="r">6 von 8</td>
+              <td>229.884 &euro; nominal <span class="klein">Barwert 148.982</span></td>
+              <td class="r">177.056<span class="klein">Barwert 98.032</span></td><td></td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-warn"><b>Hinweis &mdash; Blockheizkraftwerk:</b> Der Betrachtungszeitraum (20 a)
+      liegt &uuml;ber der Nutzungsdauer-Vorgabe der Technik (15 a), und 1 von 3 Investitionspositionen
+      f&uuml;hrt keine Nutzungsdauer: Planung und Genehmigung, 21.888 &euro;. F&uuml;r sie wird kein
+      Ersatz und kein Restwert gerechnet. Ist ein Ersatz f&auml;llig, ist der Kapitalwert zu
+      g&uuml;nstig ausgewiesen.</div>
+      <div class="s-info">Der Hinweis steht auf der Seite und im Bericht. Er ist ein Pr&uuml;fauftrag,
+      keine Fehlermeldung: Eine Planungsleistung wird zu Recht nicht ersetzt &mdash; eine Hydraulik
+      ohne gepflegte Dauer w&uuml;rde es zu Unrecht nicht. Die Photovoltaik bekommt keinen Hinweis: Ihre
+      Vorgabe (25 a) liegt &uuml;ber dem Betrachtungszeitraum. Die Beispieldaten sind gepflegt; im
+      Bestand tragen die meisten Investitionspositionen keine Dauer &mdash; dort w&auml;re der Hinweis
+      die Regel, nicht die Ausnahme.</div>
+    </div>
+  </div>
+
+  <div class="befund">
+    <h4>Was der Tafel heute noch fehlt</h4>
+    <p>Die Rechnung f&uuml;r die Tafel gibt es: Ersatzjahr, Ersatzbetrag und linearer Restwert je
+    Position entstehen im Kapitalwertrechner, und die Vorgabe je Technik steht in einer eigenen
+    Tabelle. Vorbelegt wird die Dauer aber nur beim Anlegen einer Position; f&uuml;r bestehende
+    Positionen gibt es keinen Handgriff, und ein einziger Schalter steuert Ersatz <em>und</em> Restwert
+    zugleich &mdash; die Dauer selbst. Wer den Restwert ohne die Ersatzkette will oder umgekehrt, kann
+    das heute nicht ausdr&uuml;cken. Was die Umsetzung dazu braucht, steht im Konzept.</p>
+  </div>
+
+  <div class="zone">Die laufenden Kosten des ersten Jahres &mdash; und woraus sie bestehen</div>
+  <p class="eng">Die gr&ouml;&szlig;te Position tr&auml;gt den Namen, den sie in der Kennzahltafel
+  schon hat: <b>Energiekosten</b> &mdash; Brennstoff samt Grund- und Leistungspreis und der
+  Strombezug aus dem Netz, streng getrennt von den Betriebskosten, weil beide mit verschiedenen
+  Preissteigerungen fortgeschrieben werden. Darunter steht je Anlage, aus welcher Menge und welchem
+  Preis der Betrag entstanden ist; die Summe bleibt die Zeile dar&uuml;ber.</p>
+
+  <div class="seite">
+    <div class="s-band">Laufende Kosten &mdash; Jahr 1
+      <span class="s-sub">Szenario Erwartet &middot; netto &middot; &euro;/a</span></div>
+    <div class="s-leib">
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Position</th><th class="r">Stammprojekt</th><th class="r">Blockheiz&shy;kraftwerk</th>
+          <th class="r">Photovoltaik</th><th class="r">Beide Anlagen</th><th>Herkunft</th></tr></thead>
+        <tbody>
+          <tr><td>Betriebskosten [&euro;/a]</td><td class="r">2.400</td><td class="r">59.564</td>
+              <td class="r">8.131</td><td class="r">65.295</td>
+              <td>Kostenpositionen der Anlagen; steigen mit der Preissteigerung Betrieb</td></tr>
+          <tr><td><b>Energiekosten [&euro;/a]</b></td><td class="r"><b>560.016</b></td>
+              <td class="r"><b>409.435</b></td><td class="r"><b>535.392</b></td><td class="r"><b>384.811</b></td>
+              <td>Brennstoff mit Arbeits- und Grundpreis, Strom aus dem Netz; steigen mit der
+                  Preissteigerung Energie</td></tr>
+          <tr><td class="ein">davon Blockheizkraftwerk 300 kW [&euro;/a]</td><td class="r">&mdash;</td>
+              <td class="r">312.631</td><td class="r">&mdash;</td><td class="r">312.631</td>
+              <td class="mono">4.342,1 MWh &times; 0,0720 &euro;/kWh</td></tr>
+          <tr><td class="ein">davon Gas-Brennwertkessel [&euro;/a]</td><td class="r">148.082</td>
+              <td class="r">&mdash;</td><td class="r">148.082</td><td class="r">&mdash;</td>
+              <td class="mono">2.056,7 MWh &times; 0,0720 &euro;/kWh</td></tr>
+          <tr><td class="ein">davon Netzbezug Strom [&euro;/a]</td><td class="r">411.754</td>
+              <td class="r">96.624</td><td class="r">387.130</td><td class="r">72.000</td>
+              <td class="mono">1.429,7 / 335,5 / 1.344,2 / 250,0 MWh &times; 28,80 ct</td></tr>
+          <tr><td>Stromkosten Reststrom (nach Tarif) [&euro;/a]</td><td class="r">411.754</td>
+              <td class="r">96.624</td><td class="r">387.130</td><td class="r">72.000</td>
+              <td>der Netzbezug mit Anlage &mdash; die Gr&ouml;&szlig;e, die in den Kapitalwert geht</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-herleitung">Der Grundpreis des Erdgases (180 &euro;/a) steckt in der Hauptzeile,
+      nicht in einer davon-Zeile &mdash; er f&auml;llt je Energietr&auml;ger an, nicht je Anlage. Die
+      Photovoltaik hat keine davon-Zeile: Sie verbraucht keine Endenergie; der Standby des
+      Wechselrichters steht als &bdquo;Hilfsenergiekosten&ldquo; (90 &euro;/a) in den Betriebskosten.</div>
+      <div class="s-info">Die davon-Zeilen gibt es heute schon &mdash; sie entstehen im Rechenlauf und
+      werden nicht gespeichert; nach dem Neuladen einer gespeicherten Rechnung fehlen sie. Der Entwurf
+      setzt voraus, dass sie bleiben.</div>
+    </div>
+  </div>
+
+  <div class="zone">Erl&ouml;se und Vorteile &mdash; nach Komponente</div>
+  <p class="eng">Die Rubrik hat zwei Bl&ouml;cke, und die Teilung ist keine Kosmetik: Block A geht in
+  den Kapitalwert, Block B wird nur ausgewiesen und nie addiert. Diese &auml;u&szlig;ere Ordnung
+  bleibt &mdash; sie entscheidet, was in die Summe geht. <b>Innen</b> gliedert die Komponente: erst
+  das Blockheizkraftwerk, dann die Photovoltaik, dann der Kessel, zuletzt, was keiner Anlage
+  geh&ouml;rt (&bdquo;projektweit&ldquo;). Jeder Komponentenblock tr&auml;gt seine Zwischensumme,
+  Block A darunter die Gesamtsumme.</p>
+
+  <div class="seite">
+    <div class="s-band">Erl&ouml;se und Vorteile &mdash; Jahr 1
+      <span class="s-sub">Szenario Erwartet &middot; netto &middot; &euro;/a</span></div>
+    <div class="s-leib">
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Position</th><th class="r">Stammprojekt</th><th class="r">Blockheiz&shy;kraftwerk</th>
+          <th class="r">Photovoltaik</th><th class="r">Beide Anlagen</th><th>Grundlage</th></tr></thead>
+        <tbody>
+          <tr class="block"><td colspan="6">A &mdash; zahlungswirksam, geht in den Kapitalwert</td></tr>
+          <tr class="teil"><td colspan="6">Blockheizkraftwerk</td></tr>
+          <tr><td class="ein">Zuschlag Kraft-W&auml;rme-Kopplung</td><td class="r">&mdash;</td>
+              <td class="r">31.530,8</td><td class="r">&mdash;</td><td class="r">31.530,8</td>
+              <td>52.551,3 &euro; &times; Deckelanteil 0,600; endet nach zw&ouml;lf Jahren</td></tr>
+          <tr><td class="ein">Energiesteuer-Gutschrift Brennstoff</td><td class="r">&mdash;</td>
+              <td class="r">21.203,4</td><td class="r">&mdash;</td><td class="r">21.203,4</td>
+              <td>4.797,2 MWh &times; 4,42 &euro;/MWh</td></tr>
+          <tr><td class="ein">Einspeiseerl&ouml;s Strom</td><td class="r">&mdash;</td>
+              <td class="r">23.450,0</td><td class="r">&mdash;</td><td class="r">23.450,0</td>
+              <td>469,0 MWh &times; 5,00 ct</td></tr>
+          <tr class="teil"><td>Summe Blockheizkraftwerk</td><td class="r">&mdash;</td>
+              <td class="r">76.184,2</td><td class="r">&mdash;</td><td class="r">76.184,2</td><td></td></tr>
+          <tr class="teil"><td colspan="6">Photovoltaik</td></tr>
+          <tr><td class="ein">Verg&uuml;tung Photovoltaik</td><td class="r">&mdash;</td>
+              <td class="r">&mdash;</td><td class="r">10.396,3</td><td class="r">10.396,3</td>
+              <td>Spoterl&ouml;s + Marktpr&auml;mie &minus; Ausfall &minus; Entgelt &minus; Kappung</td></tr>
+          <tr class="teil"><td>Summe Photovoltaik</td><td class="r">&mdash;</td>
+              <td class="r">&mdash;</td><td class="r">10.396,3</td><td class="r">10.396,3</td><td></td></tr>
+          <tr class="teil"><td colspan="6">Gas-Brennwertkessel</td></tr>
+          <tr><td class="ein">Energiesteuer-Entlastung Heizstoff</td><td class="r">2.885,7</td>
+              <td class="r">&mdash;</td><td class="r">2.885,7</td><td class="r">&mdash;</td>
+              <td>2.272,3 MWh (Brennwert) &times; 1,38 &euro;/MWh &minus; 250 &euro;; nur produzierendes
+                  Gewerbe</td></tr>
+          <tr class="teil"><td>Summe Gas-Brennwertkessel</td><td class="r">2.885,7</td>
+              <td class="r">&mdash;</td><td class="r">2.885,7</td><td class="r">&mdash;</td><td></td></tr>
+          <tr class="teil"><td colspan="6">projektweit &mdash; h&auml;ngt an keiner Anlage</td></tr>
+          <tr><td class="ein">Stromsteuer-Entlastung Netzbezug</td><td class="r">28.344,0</td>
+              <td class="r">6.460,0</td><td class="r">26.634,0</td><td class="r">4.750,0</td>
+              <td>Netzbezug &times; 20,00 &euro;/MWh &minus; 250 &euro;; nur produzierendes Gewerbe &mdash;
+                  sinkt, je mehr die Anlagen decken</td></tr>
+          <tr class="teil"><td>Summe projektweit</td><td class="r">28.344,0</td>
+              <td class="r">6.460,0</td><td class="r">26.634,0</td><td class="r">4.750,0</td><td></td></tr>
+          <tr class="summe"><td>Erl&ouml;se zahlungswirksam gesamt</td><td class="r">31.229,7</td>
+              <td class="r">82.644,2</td><td class="r">39.916,0</td><td class="r">91.330,5</td>
+              <td>geht in den Kapitalwert</td></tr>
+          <tr class="block"><td colspan="6">B &mdash; Ausweis, nie in der Summe</td></tr>
+          <tr class="teil"><td colspan="6">Blockheizkraftwerk</td></tr>
+          <tr><td class="ein">Stromsteuer-Befreiung Eigenverbrauch</td><td class="r">&mdash;</td>
+              <td class="r">23.677,5</td><td class="r">&mdash;</td><td class="r">23.677,5</td>
+              <td>1.155,0 MWh &times; 20,50 &euro;/MWh; auf eigenen Strom entsteht gar keine Steuer</td></tr>
+          <tr><td class="ein">Vermiedene Stromkosten brutto</td><td class="r">&mdash;</td>
+              <td class="r">315.129,6</td><td class="r">&mdash;</td><td class="r">315.129,6</td>
+              <td>1.094,2 MWh &times; 28,80 ct; steckt schon im kleineren Reststrombetrag</td></tr>
+          <tr><td class="ein">abz&uuml;glich entgangener Entlastung Netzbezug</td><td class="r">&mdash;</td>
+              <td class="r">&minus;21.884,0</td><td class="r">&mdash;</td><td class="r">&minus;21.884,0</td>
+              <td>1.094,2 MWh &times; 20,00 &euro;/MWh</td></tr>
+          <tr class="teil"><td>vermiedene Kosten wirksam &mdash; Blockheizkraftwerk</td><td class="r">&mdash;</td>
+              <td class="r">293.245,6</td><td class="r">&mdash;</td><td class="r">293.245,6</td><td></td></tr>
+          <tr class="teil"><td colspan="6">Photovoltaik</td></tr>
+          <tr><td class="ein">Vermiedene Stromkosten brutto</td><td class="r">&mdash;</td>
+              <td class="r">&mdash;</td><td class="r">24.624,0</td><td class="r">24.624,0</td>
+              <td>85,5 MWh &times; 28,80 ct</td></tr>
+          <tr><td class="ein">abz&uuml;glich entgangener Entlastung Netzbezug</td><td class="r">&mdash;</td>
+              <td class="r">&mdash;</td><td class="r">&minus;1.710,0</td><td class="r">&minus;1.710,0</td>
+              <td>85,5 MWh &times; 20,00 &euro;/MWh</td></tr>
+          <tr class="teil"><td>vermiedene Kosten wirksam &mdash; Photovoltaik</td><td class="r">&mdash;</td>
+              <td class="r">&mdash;</td><td class="r">22.914,0</td><td class="r">22.914,0</td><td></td></tr>
+          <tr class="teil"><td colspan="6">projektweit</td></tr>
+          <tr><td class="ein">Vermiedene Stromkosten &mdash; Leistungsanteil</td><td class="r">&mdash;</td>
+              <td class="r">nicht ausgewiesen</td><td class="r">nicht ausgewiesen</td><td class="r">&minus;4.180,0</td>
+              <td>aus der Bezugsspitze, keiner Anlage zuzuordnen; regelm&auml;&szlig;ig negativ &mdash;
+                  Kernaussage, kein Fehler</td></tr>
+          <tr class="summe"><td>Block B wird nicht summiert</td><td colspan="4"></td>
+              <td>die Betr&auml;ge &uuml;berschneiden sich: Die Befreiung steckt im Arbeitspreis der
+                  vermiedenen Kosten</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-info">Die vermiedenen Stromkosten werden heute projektweit aus der vermiedenen
+      Menge gebildet (Variante 3: 1.179,7 MWh, 339.753,6 &euro; brutto); die Aufteilung auf die
+      Anlagen braucht die Eigenverbrauchsmengen je Anlage aus der Stundensimulation, die dort
+      getrennt vorliegen. Der Leistungsanteil des Beispiels ist nur f&uuml;r die Variante mit beiden
+      Anlagen belegt.</div>
+    </div>
+  </div>
+
+  <div class="befund">
+    <h4>Warum die Komponente innen gliedert und nicht au&szlig;en</h4>
+    <p>Die &auml;u&szlig;ere Ordnung entscheidet, was in die Summe geht &mdash; und genau das darf keine
+    Gliederung verwischen. St&uuml;nde die Komponente au&szlig;en, st&uuml;nden beim Blockheizkraftwerk
+    der Zuschlag (zahlungswirksam) und die vermiedenen Stromkosten (Ausweis) untereinander, und die
+    Versuchung, beides zu addieren, w&auml;re gr&ouml;&szlig;er als jede Kennzeichnung. Innen gliedert
+    die Komponente, weil der Planer so fragt: &bdquo;Was bringt das Blockheizkraftwerk?&ldquo; &mdash;
+    die Antwort steht in einem Block mit Zwischensumme. Positionen, die keiner Anlage geh&ouml;ren,
+    verschwinden nicht, sondern bekommen ihren eigenen, benannten Block &bdquo;projektweit&ldquo;:
+    Die Entlastung auf den Netzbezug h&auml;ngt am Restbezug, nicht an einer Anlage &mdash; sie
+    sinkt, je mehr die Anlagen decken. Die Kessel-Entlastung dagegen geh&ouml;rt dem Kessel und
+    steht bei ihm.</p>
   </div>
 
   <div class="chart-karte">
@@ -831,33 +1201,8 @@ a{color:var(--marine-hell)}
     </div>
   </div>
 
-  <div class="chart-karte">
-    <div class="chart-titel">Kumulierter Barwert der Differenz zum Stammprojekt <span class="marke neu">neu</span></div>
-    <div class="chart-unter">Der Nulldurchgang ist die dynamische Amortisation &middot; der Knick im
-      Jahr 15 ist der Ersatz des Motors</div>
-    <svg viewBox="0 0 720 210" width="720" height="210" role="img" aria-label="Kumulierter Barwert der Differenz zum Stammprojekt über 20 Jahre: Start bei minus 426.922 Euro, Nulldurchgang nach 2,64 Jahren, Endwert 1.756.676 Euro vor Restwert.">
-  <line x1="44" y1="138.4" x2="712" y2="138.4" stroke="var(--linie-stark)" stroke-width="1"/>
-  <text x="40" y="141.4" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">0</text>
-  <line x1="44" y1="108.3" x2="712" y2="108.3" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
-  <text x="40" y="111.3" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">0,5 Mio</text>
-  <line x1="44" y1="78.2" x2="712" y2="78.2" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
-  <text x="40" y="81.2" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">1,0 Mio</text>
-  <line x1="44" y1="48.0" x2="712" y2="48.0" stroke="var(--linie)" stroke-width="1" stroke-dasharray="3 3"/>
-  <text x="40" y="51.0" text-anchor="end" font-size="9" fill="var(--tinte-blass)" class="svgmono">1,5 Mio</text>
-  <polyline points="52.0,164.1 84.0,154.1 116.0,144.4 148.0,135.1 180.0,126.2 212.0,117.6 244.0,109.3 276.0,101.3 308.0,93.4 340.0,85.9 372.0,78.5 404.0,71.3 436.0,66.2 468.0,60.5 500.0,54.9 532.0,57.4 564.0,52.2 596.0,47.1 628.0,42.1 660.0,37.3 692.0,32.6" fill="none" stroke="var(--marine-hell)" stroke-width="2.4" stroke-linejoin="round"/>
-  <polygon points="52.0,138.4 52.0,164.1 84.0,154.1 116.0,144.4 148.0,135.1 180.0,126.2 212.0,117.6 244.0,109.3 276.0,101.3 308.0,93.4 340.0,85.9 372.0,78.5 404.0,71.3 436.0,66.2 468.0,60.5 500.0,54.9 532.0,57.4 564.0,52.2 596.0,47.1 628.0,42.1 660.0,37.3 692.0,32.6 692.0,138.4" fill="var(--marine-hell)" opacity="0.10"/>
-  <line x1="136.5" y1="26.0" x2="136.5" y2="138.4" stroke="var(--warn-kante)" stroke-width="1.5" stroke-dasharray="4 3"/>
-  <circle cx="136.5" cy="138.4" r="4" fill="var(--warn-kante)"/>
-  <text x="144.5" y="34.0" font-size="10" fill="var(--warn)" class="svgmono">dynamische Amortisation 2,64 a</text>
-  <text x="52.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">0</text>
-  <text x="212.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">5</text>
-  <text x="372.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">10</text>
-  <text x="532.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">15</text>
-  <text x="692.0" y="184" text-anchor="middle" font-size="9" fill="var(--tinte-blass)" class="svgmono">20</text>
-  <text x="696.0" y="24.6" text-anchor="end" font-size="10" fill="var(--marine-hell)" class="svgmono" font-weight="600">1.756.676 €</text>
-  <text x="52" y="202" font-size="10.5" fill="var(--tinte-blass)">Jahr — ohne Restwert; mit Restwert-Barwert 98.032 € ergibt sich ΔKW = 1.854.708 €</text>
-</svg>
-  </div>
+  <p class="eng" style="margin-top:10px">Wie sich die Differenz &uuml;ber die Jahre aufbaut und wann sie
+  die Nulllinie kreuzt, zeigt der Verlauf in Abschnitt 2 &mdash; dort f&uuml;r alle drei Szenarien.</p>
 </section>
 
 <!-- =============================================================== ANNAHMEN -->
@@ -894,9 +1239,22 @@ a{color:var(--marine-hell)}
               Erl&ouml;sreihen</td></tr>
           <tr><td>Nutzungsdauer</td><td class="r">&minus;2 a</td><td class="r">0 a</td>
               <td class="r">+2 a</td><td>Vorgabe &mdash; addiert, nicht skaliert; Untergrenze 1 a</td></tr>
+          <tr><td>Betrachtungszeitraum</td><td class="r">20 a</td><td class="r">20 a</td>
+              <td class="r">20 a</td><td>Projektwert &mdash; in allen drei Szenarien gleich</td></tr>
         </tbody>
       </table>
       </div>
+      <div class="s-warn"><b>Was ein Szenario heute variiert &mdash; und was nicht.</b> Ung&uuml;nstig und
+      G&uuml;nstig ver&auml;ndern gegen&uuml;ber Erwartet den Kalkulationszins, die drei
+      Preissteigerungsraten (Energie, Betrieb, Investition und Ersatz), die Investition der Positionen
+      ohne eigenen Szenariowert (&plusmn;10 %), die Ertr&auml;ge aus Einspeisung und
+      Photovoltaik-Verg&uuml;tung (&plusmn;10 %) und die Nutzungsdauer der Positionen ohne eigenen
+      Szenariowert (&plusmn;2 a). In allen drei Szenarien gleich bleiben der Betrachtungszeitraum, die
+      Energiepreise je Tr&auml;ger, die Erl&ouml;ss&auml;tze (Einspeiseverg&uuml;tung,
+      Direktvermarktung), die Mengen aus der Simulation und alle gesetzlichen S&auml;tze. Die
+      vollst&auml;ndigen Parameters&auml;tze je Szenario &mdash; auch Zeitraum, Tr&auml;gerpreise,
+      Erl&ouml;ss&auml;tze und ein Mengenfaktor &mdash; kommen nach dieser Darstellung; bis dahin steht
+      dieser Hinweis unter der Tafel.</div>
 
       <div class="zone" style="margin:18px 0 10px;color:#5A5A5A">Was daraus im Lauf wird</div>
       <div class="s-scroll">
@@ -926,6 +1284,10 @@ a{color:var(--marine-hell)}
           <div class="s-herleitung"><b>Betrachtungszeitraum</b> 20 Jahre &middot; k&uuml;rzeste
           gepflegte Nutzungsdauer 12 a, l&auml;ngste 25 a &rarr; Ersatzbeschaffung im Jahr 12 und 15,
           Restwert am Ende angesetzt.</div>
+          <div class="s-herleitung"><b>Ohne Nutzungsdauer:</b> Blockheizkraftwerk &mdash; 1 von 3
+          Positionen (Planung und Genehmigung, 21.888 &euro;) bei Vorgabe der Technik 15 a und
+          Betrachtungszeitraum 20 a: kein Ersatz, kein Restwert gerechnet. Photovoltaik &mdash; Vorgabe
+          25 a &uuml;ber dem Zeitraum, kein Hinweis.</div>
           <div class="s-herleitung"><b>Eigenverbrauch und Einspeisung</b> sind aus der
           Stundensimulation abgeleitet, nicht als Annahme gesetzt.</div>
           <div class="s-herleitung"><b>Vereinfachungen:</b> kein Endjahr je Kostenposition &mdash;
@@ -944,9 +1306,9 @@ a{color:var(--marine-hell)}
       </details>
     </div>
     <div class="s-fuss">
-      <span class="s-status">Drei Szenarien gerechnet &middot; Annahmen aus Vorgaben, nichts gepflegt</span>
+      <span class="s-status">Drei Szenarien gerechnet &middot; Annahmen aus Vorgaben, nichts gepflegt
+        &middot; der Verlauf steht in Abschnitt 2, ein eigener Knopf entf&auml;llt</span>
       <span class="s-knopf">Parameter&hellip;</span>
-      <span class="s-knopf">Verlauf&hellip;</span>
       <span class="s-knopf primaer">Bericht erzeugen</span>
     </div>
   </div>
@@ -1171,10 +1533,11 @@ a{color:var(--marine-hell)}
             <td class="formelzelle">469,0 MWh &times; 5,00 ct</td>
             <td class="r num">23.450,0</td><td class="r num">348.877</td>
             <td>nominal konstant</td></tr>
-        <tr class="zwischen"><td>Brennstoffkosten</td>
+        <tr class="zwischen"><td>Energiekosten &mdash; davon Blockheizkraftwerk</td>
             <td class="formelzelle">4.342.100 kWh &times; 0,0720 &euro;/kWh</td>
             <td class="r num">&minus;312.631,2</td><td class="r num">&mdash;</td>
-            <td>Heizwertbezug; Grundpreis 180 &euro;/a zus&auml;tzlich</td></tr>
+            <td>die davon-Zeile der Energiekosten (Abschnitt 3); Heizwertbezug; der Grundpreis
+            180 &euro;/a f&auml;llt je Tr&auml;ger an und steht in der Hauptzeile</td></tr>
         <tr><td>Wartung</td><td class="formelzelle">1.650.000 kWh &times; 0,0280 &euro;/kWh</td>
             <td class="r num">&minus;46.200,00</td><td class="r num">&mdash;</td>
             <td>Pflichtposition</td></tr>
@@ -1204,14 +1567,45 @@ a{color:var(--marine-hell)}
             <td>Auf selbst erzeugten und selbst verbrauchten Strom entsteht gar keine Stromsteuer
             &mdash; der Vorteil steckt bereits in der kleineren Bezugsrechnung</td></tr>
         <tr><td>Vermiedene Stromkosten <span class="marke aus">Ausweis</span></td>
-            <td class="r num">339.753,6 &euro;</td>
-            <td>steckt im Reststrombetrag, der in den Kapitalwert eingeht; zus&auml;tzlich gebucht
-            w&auml;re es eine Doppelz&auml;hlung</td></tr>
+            <td class="r num">315.129,6 &euro;</td>
+            <td>1.094,2 MWh &times; 28,80 ct &mdash; nur die Menge des Blockheizkraftwerks; steckt im
+            Reststrombetrag, der in den Kapitalwert eingeht; zus&auml;tzlich gebucht w&auml;re es eine
+            Doppelz&auml;hlung</td></tr>
         <tr><td>abz&uuml;glich entgangener Stromsteuer-Entlastung</td>
-            <td class="r num">&minus;23.594,0 &euro;</td>
+            <td class="r num">&minus;21.884,0 &euro;</td>
             <td>Wer weniger Strom bezieht, bekommt auch weniger Entlastung zur&uuml;ck</td></tr>
         <tr class="zwischen"><td>vermiedene Kosten wirksam</td>
-            <td class="r num">316.159,6 &euro;</td><td>Ausweis &mdash; nie in der Summe</td></tr>
+            <td class="r num">293.245,6 &euro;</td><td>Ausweis &mdash; nie in der Summe; zusammen mit der
+            Photovoltaik 316.159,6 &euro; (Abschnitt 3)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="zone">Ersatz und Restwert</div>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Position</th><th class="formelzelle">Rechnung</th><th class="r">Betrag</th>
+        <th class="r">Nutzungsdauer</th><th>Wirkung</th></tr></thead>
+      <tbody>
+        <tr><td>Modul und Montage</td><td class="formelzelle">300 kW &times; 653,60 &euro;/kW + 5 %</td>
+            <td class="r num">205.884,00</td><td class="r num">15 a</td>
+            <td><b>Ersatz im Jahr 15</b>, Restwert 137.256 &euro; im Jahr 20</td></tr>
+        <tr><td>Hydraulik</td><td class="formelzelle">Betrag</td>
+            <td class="r num">13.000,00</td><td class="r num">20 a</td>
+            <td>deckungsgleich mit dem Zeitraum &mdash; kein Ersatz, Restwert 0</td></tr>
+        <tr><td>Planung und Genehmigung</td><td class="formelzelle">218.884,00 &euro; &times; 10,00 %</td>
+            <td class="r num">21.888,40</td><td class="r">wie Zeitraum</td>
+            <td>keine Dauer gepflegt &mdash; kein Ersatz, kein Restwert; siehe Hinweis in Abschnitt 3</td></tr>
+        <tr class="zwischen"><td>Investition</td>
+            <td class="formelzelle">205.884,00 + 13.000,00 + 21.888,40 &minus; 6.000,00 Zuschuss</td>
+            <td class="r num">234.772,40</td><td class="r">&mdash;</td><td>I&#8320; nach Zuschussabzug</td></tr>
+        <tr><td>Ersatz Modul und Montage</td><td class="formelzelle">205.884 &divide; 1,03<sup>15</sup> = 205.884 &divide; 1,5580</td>
+            <td class="r num minus">&minus;132.149</td><td class="r">Barwert</td>
+            <td>Jahr 15, nicht preisindiziert bei 0 %/a</td></tr>
+        <tr class="ergebnis"><td>Restwert am Ende</td>
+            <td class="formelzelle">137.256 &divide; 1,03<sup>20</sup> = 137.256 &divide; 1,8061</td>
+            <td class="r num">+75.995</td><td class="r">Barwert</td>
+            <td>zehn von f&uuml;nfzehn Jahren der zweiten Beschaffung sind im Jahr 20 noch nicht verbraucht</td></tr>
       </tbody>
     </table>
   </div>
@@ -1424,7 +1818,12 @@ a{color:var(--marine-hell)}
     Saldo &mdash; sonst verschw&auml;nde die gr&ouml;&szlig;te Modellannahme dieser Anlage in einer
     Differenz.</p>
     <p>Ausgewiesen, aber nicht gezahlt: der vermiedene Netzbezug von 24.624 &euro;/a
-    (85,5 MWh &times; 28,80 ct). Er steckt bereits in der kleineren Stromrechnung.</p>
+    (85,5 MWh &times; 28,80 ct). Er steckt bereits in der kleineren Stromrechnung; abz&uuml;glich der
+    entgangenen Entlastung auf den Netzbezug (85,5 MWh &times; 20,00 &euro;/MWh = 1.710 &euro;)
+    bleiben 22.914 &euro; wirksam.</p>
+    <p>Eine Energiekosten-Zeile hat die Photovoltaik nicht: Sie verbraucht keine Endenergie. Der Standby
+    des Wechselrichters steht als &bdquo;Hilfsenergiekosten&ldquo; mit 90 &euro;/a in den
+    Betriebskosten.</p>
   </div>
 </section>
 
@@ -1450,9 +1849,30 @@ a{color:var(--marine-hell)}
         <tr><td>Zahlungsstrom je Jahr</td>
             <td>vollst&auml;ndig vorhanden, samt der einzelnen Erl&ouml;sreihen</td>
             <td>nur im Wort- und Tabellenbericht; auf der Seite nirgends</td></tr>
-        <tr><td>Kumulierter Barwert mit Amortisation</td>
-            <td>vorhanden</td>
-            <td>im Verlaufsfenster als Bild; nicht auf der Seite</td></tr>
+        <tr><td>Kumulierter Barwert mit Amortisation, drei Szenarien in einem Bild</td>
+            <td>je Szenario vorhanden &mdash; aber ein Szenario je Lauf; die Reihen tragen nur den
+            Projektnamen und bekommen ihre Farbe nach laufender Nummer</td>
+            <td>im Verlaufsfenster als Bild, immer bei &bdquo;Erwartet&ldquo; beginnend; nicht auf der
+            Seite; im Tabellenbericht nur Erwartet. N&ouml;tig: drei L&auml;ufe oder ein
+            Sammelmodell, Reihenname und Farbe je Variante, Strichart je Szenario, Platz f&uuml;r die
+            zweigeteilte Legende &mdash; und eine Rechen- und Zeichenlogik, die es auf beiden
+            Plattformen gibt (heute nur in der Windows-Anwendung)</td></tr>
+        <tr><td>Energiekosten je Anlage (davon-Zeilen)</td>
+            <td>gerechnet und in der Kennzahltafel, im Wort- und im Tabellenbericht gezeichnet</td>
+            <td>nur im frischen Lauf &mdash; die Nachweise je Anlage werden nicht gespeichert und
+            fehlen nach dem Neuladen</td></tr>
+        <tr><td>Ersatz und Restwert je Komponente, mit Hinweis</td>
+            <td>je Investitionsposition gerechnet; die Vorgabe je Technik steht in einer Tabelle; die
+            Nutzungsdauer-Zeile nennt k&uuml;rzeste und l&auml;ngste Dauer</td>
+            <td>als zwei Summenzeilen und ein Satz; die Zusammenfassung je Komponente und die Zahl der
+            Positionen ohne Dauer fehlen; die Zeile f&uuml;llt nur die Windows-Anwendung</td></tr>
+        <tr><td>Erl&ouml;se und Vorteile nach Komponente</td>
+            <td>Rubrik in zwei Bl&ouml;cken vorhanden; die vermiedene Menge ist projektweit gebildet</td>
+            <td>innere Gliederung nach Komponente fehlt; f&uuml;r die vermiedenen Kosten je Anlage
+            braucht es die Eigenverbrauchsmengen je Anlage</td></tr>
+        <tr><td>Umschalter &bdquo;Kennzahlen / ValERI-Bewertung&ldquo;</td>
+            <td>reine Oberfl&auml;che</td>
+            <td>nicht vorhanden; die Fu&szlig;leiste tr&auml;gt sieben Kn&ouml;pfe</td></tr>
         <tr><td>Verg&uuml;tungsreihe der Photovoltaik je Jahr</td>
             <td>wird gerechnet und geht in den Kapitalwert ein</td>
             <td>als Jahreswert; die Jahresreihe hat in der Mehrjahrestabelle noch keine
@@ -1482,7 +1902,11 @@ a{color:var(--marine-hell)}
   <p class="eng"><b>Entwurf zur Abnahme.</b> Alle Zahlen stammen aus dem Beispielprojekt dieses
   Ordners; die Investitionssumme des Blockheizkraftwerks ist auf 300 kW hochgerechnet, weil die
   Kostentafel des Rechenwegs eine kleinere Baugr&ouml;&szlig;e tr&auml;gt. Welche Zahl woher kommt
-  und was daran abgeleitet ist, steht im Begleitpapier neben dieser Datei.</p>
+  und was daran abgeleitet ist, steht im Begleitpapier neben dieser Datei. Abgeleitet und im Text als
+  solche genannt sind: der Kesselbrennstoff des Stammprojekts (2.056,7 MWh), die Aufteilung der
+  Investition des Blockheizkraftwerks auf 300 kW (Modul und Montage 205.884, Hydraulik 13.000,
+  Planung 21.888 &euro;), die Restwert-Barwerte der beiden &auml;u&szlig;eren Szenarien und die
+  interpolierten Zwischenwerte ihrer Verlaufskurven.</p>
 </footer>
 
 </main>

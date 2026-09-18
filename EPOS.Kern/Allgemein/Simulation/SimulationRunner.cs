@@ -763,6 +763,35 @@ namespace WindowsFormsApplication1
                     mo.Waerme_Oel = spk.s_waerme_Oel_Spk[i];
                     mo.Jahresnutzungsgrad = spk.Kessel_Jahresnutzungsgrad_Spk[i];
 
+                    // BEFUND B-1 (Anwenderentscheid 18.09.2026: „Verbrauch aus dem Lauf
+                    // nachziehen"): DIE DREI SPALTEN, DIE HIER GEFEHLT HABEN.
+                    //
+                    // Der Rechenkern ermittelt den Brennstoffeinsatz jedes Kessels
+                    // stündlich (SimulationSPK.Kessel_Verbrauch_MWh_Spk) und bucht ihn
+                    // auf die Anlagensummen je Brennstoffart. Die MODULzeile blieb
+                    // leer — und genau sie liest die Kostenkette (EndenergieAufloeser,
+                    // KostenEmissionRechner, EmissionsBilanzRechner). Der Kesselbrennstoff
+                    // fehlte damit in Energiekosten, CO₂-Bilanz und BEHG-Abgabe, ohne
+                    // dass eine Zahl es angezeigt hätte.
+                    //
+                    // Waermeproduktion ist die NUTZWÄRME dieses Kessels — dieselbe
+                    // Summe, auf die sich sein Jahresnutzungsgrad bezieht; Bericht und
+                    // Variantenvergleich haben sie bis hierher selbst aus Waerme_Gas
+                    // und Waerme_Oel gebildet.
+                    mo.Waermeproduktion = mo.Waerme_Gas + mo.Waerme_Oel;
+                    mo.Brennstoff = spk.BrennstoffWort(i);
+
+                    // DER ELEKTROKESSEL IST DIE AUSNAHME (SimulationSPK.IstStromkessel):
+                    // Er bucht seinen Einsatz auf den Stromzähler und steht über den
+                    // Reststrombedarf schon im Netzbezug, den die Kostenrechnung eigens
+                    // bepreist. Ein Verbrauch in seiner Modulzeile stünde derselben
+                    // Energie ein zweites Mal gegenüber — als „Brennstoff" seines
+                    // Trägers. Seine Zeile bleibt deshalb bei 0, mit Wärme, Nutzungsgrad,
+                    // Träger und dem Brennstoffwort „Strom"; die Zeile selbst entfällt
+                    // nicht, weil der Ergebnisexport die Module indexgleich zu spk_list
+                    // führt.
+                    mo.Verbrauch = spk.IstStromkessel(i) ? 0.0 : spk.Kessel_Verbrauch_MWh_Spk[i];
+
                     int cid = 0;
                     if (spk.spk_carrier != null && mo.Modul != null)
                         spk.spk_carrier.TryGetValue(mo.Modul.Trim(), out cid);
