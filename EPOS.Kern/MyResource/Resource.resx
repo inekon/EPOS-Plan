@@ -19554,6 +19554,9 @@ Möchten Sie das zulassen?</value>
   <data name="KDLG_HERL_KWP_SUMME" xml:space="preserve">
     <value>Σ Module × Leistung = {0} kWp</value>
   </data>
+  <data name="KDLG_KENN_EUR_KWP" xml:space="preserve">
+    <value>spezifisch {0} €/kWp</value>
+  </data>
   <data name="KDLG_HERK_ANLAGE" xml:space="preserve">
     <value>{0} der Anlage</value>
   </data>

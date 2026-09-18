@@ -5,7 +5,8 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>U33/U35 — die kWp der Photovoltaik als Bemessung und als Herleitung.</b>
+    /// <b>U33/U34/U35 — die kWp der Photovoltaik als Bemessung, Kennzahl und
+    /// Herleitung.</b>
     ///
     /// <para><b>U33.</b> „je kWp Leistung" steht auch im BETRIEBSRASTER: Die Wartung
     /// einer PV-Anlage wird branchenüblich in €/kWp·a bemessen, und bis dahin ließ sich
@@ -20,6 +21,10 @@ namespace EPOS.Kern.Tests
     /// <c>Tab_Energieanlagen.PV_Leistung</c> ist die MODULANZAHL,
     /// <c>Tab_PV.Leistung</c> die Modulleistung in Watt — wer 750 für die Leistung hält,
     /// liest einen Satz von 320,00 €/kWp als 240.000,00 € statt als 96.000,00 €.</para>
+    ///
+    /// <para><b>U34.</b> Dieselbe kWp-Summe trägt die Kennzahl des Summenfußes —
+    /// „spezifisch 640,50 €/kWp", die Zahl, mit der eine PV-Investition verglichen
+    /// wird. Reine Anzeige; der Kapitalwert sieht sie nicht.</para>
     ///
     /// <para>Die Zahlenproben sind die des Mockups
     /// <c>Dialog_Formel_Zahlenprobe.html</c>, Abschnitt 3. Die Fälle mit Datenbank
@@ -231,6 +236,49 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal("", TechnikPlanwertCtrl.BaugroesseHerleitung(
                 PROJEKT_OSTWEST, 7, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, 0));
+        }
+
+        // =====================================================================
+        //  U34 — die Kennzahl des Summenfußes
+        // =====================================================================
+
+        /// <summary>
+        /// Die Zahlenprobe des Mockups: 192.150,00 € ÷ 300,00 kWp = 640,50 €/kWp.
+        /// </summary>
+        [Fact]
+        public void Die_Kennzahl_teilt_die_Nettosumme_durch_die_kWp()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var kultur = new Kulturvorrichtung();
+
+            AnlageStellen(ANLAGE_OSTWEST, module: 750, wattJeModul: 400);
+
+            Assert.Equal("spezifisch 640,50 €/kWp",
+                KostenSummenCtrl.KennzahlText(PROJEKT_OSTWEST, K_PHOTOVOLTAIK,
+                                              ANLAGE_OSTWEST, 192150.00));
+        }
+
+        /// <summary>
+        /// Ohne kWp entfällt sie — eine Division durch nichts ist keine Kennzahl.
+        /// Ebenso außerhalb der Photovoltaik und im Katalogkontext ohne Projekt: Dort
+        /// gibt es keine Anlage, auf die sich etwas beziehen ließe.
+        /// </summary>
+        [Fact]
+        public void Ohne_kWp_ohne_Photovoltaik_und_ohne_Projekt_entfaellt_die_Kennzahl()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var kultur = new Kulturvorrichtung();
+
+            Assert.Equal("", KostenSummenCtrl.KennzahlText(
+                PROJEKT_OSTWEST, 7, ANLAGE_OSTWEST, 192150.00));
+            Assert.Equal("", KostenSummenCtrl.KennzahlText(
+                0, K_PHOTOVOLTAIK, 0, 192150.00));
+
+            AnlageStellen(ANLAGE_OSTWEST, module: 0, wattJeModul: 400);
+            Assert.Equal("", KostenSummenCtrl.KennzahlText(
+                PROJEKT_OSTWEST, K_PHOTOVOLTAIK, ANLAGE_OSTWEST, 192150.00));
         }
 
         // =====================================================================

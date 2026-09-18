@@ -21315,6 +21315,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die spezifisch {0} €/kWp ähnelt.
+        /// </summary>
+        public static string KDLG_KENN_EUR_KWP {
+            get {
+                return ResourceManager.GetString("KDLG_KENN_EUR_KWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten… ähnelt.
         /// </summary>
         public static string KDLG_KNOPF_BETRIEB {

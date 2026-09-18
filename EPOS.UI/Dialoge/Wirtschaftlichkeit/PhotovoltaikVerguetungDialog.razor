@@ -87,9 +87,9 @@
                 </KindInhalt>
             </Formularraster>
 
-            @if (!string.IsNullOrEmpty(Anlagenwarnung))
+            @foreach (string warnung in Anlagenwarnungen)
             {
-                <Warnbanner Stufe="WarnStufe.Warnung" Text="@Anlagenwarnung" />
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@warnung" />
             }
         </KindInhalt>
     </Gruppenkopf>
@@ -378,11 +378,38 @@
         }
     }
 
-    /// <summary>Die Warnungen der Gruppe Anlage (§ 7 Punkt 1).</summary>
-    public string Anlagenwarnung =>
-        Kwp > 1000 ? _t.WarnAusschreibung
-        : Kwp > 2000 ? _t.WarnStromsteuer
-        : "";
+    /// <summary>
+    /// U36 (18.09.2026): Die Warnungen der Gruppe Anlage (§ 7 Punkt 1) —
+    /// NEBENEINANDER, nicht als Kette.
+    ///
+    /// <para><b>Der Fehler.</b> Die beiden Grenzen standen als <c>?:</c>-Kette: über
+    /// 1 MW die Ausschreibungswarnung, SONST über 2 MW die Stromsteuerwarnung. Der
+    /// zweite Zweig konnte nie greifen — jede Anlage über 2 MW ist auch über 1 MW.
+    /// Eine 2,5-MW-Anlage las damit nichts über die Stromsteuer auf ihren
+    /// Eigenverbrauch. Es sind zwei UNABHÄNGIGE Schwellen aus zwei Gesetzen; jede
+    /// wird für sich geprüft.</para>
+    ///
+    /// <para><b>Die Grenzen kommen aus dem Gesetzeskatalog</b> — § 22 EEG
+    /// (Ausschreibung, 1 000 kW) und § 9 Abs. 1 Nr. 3 StromStG (Befreiung, 2 000 kW).
+    /// Sie standen hier als nackte Zahlen, also ein zweites Mal; ändert der Gesetzgeber
+    /// eine Grenze, ändert sich der Katalog und der Dialog folgt.</para>
+    /// </summary>
+    public IReadOnlyList<string> Anlagenwarnungen
+    {
+        get
+        {
+            var liste = new List<string>();
+            if (Kwp > (KatalogWert(DbWerte.GESETZ_EEG_AUSSCHREIBUNG_GRENZE_KW, 1000) ?? 1000))
+                liste.Add(_t.WarnAusschreibung);
+            if (Kwp > (KatalogWert(DbWerte.GESETZ_STROMST_GRENZE_BEFREIUNG, 2000) ?? 2000))
+                liste.Add(_t.WarnStromsteuer);
+            return liste;
+        }
+    }
+
+    /// <summary>Dieselben Warnungen in EINER Zeile — Prüfhilfe für Tests und
+    /// Auskunft für Aufrufer, die nur einen Text aufnehmen können.</summary>
+    public string Anlagenwarnung => string.Join(" ", Anlagenwarnungen);
 
     // =====================================================================
     // Anzulegender Wert
