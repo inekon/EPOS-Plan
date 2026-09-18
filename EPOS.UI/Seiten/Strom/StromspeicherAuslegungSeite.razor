@@ -82,6 +82,27 @@
                            Aktiv="@AssistentSteht" />
             }
             <button type="button" class="epos-knopf" disabled="@_laeuft" @onclick="Verlassen">@ZurueckText</button>
+
+            @* DAS KREUZ STEHT BEIM TITEL - auch im Kopf einer freien ANSICHT
+               (Hausregel EPOS.UI, Muster #324 aus der Simulationsansicht).
+
+               DIESELBE AKTION, DIESELBE SPERRE: Das Kreuz haengt an Verlassen,
+               also an derselben Rueckfrage (Speichern/Verwerfen/Bleiben) und erst
+               danach an Geschlossen - und es ist genau dann gesperrt, wenn der
+               Rueckweg daneben es ist. Es gibt keinen Weg nach draussen, der
+               waehrend eines Laufs hinausfuehrt oder die Frage umgeht.
+
+               BEIDE WEGE STEHEN DA ("ergaenze", nicht "ersetze"): "<- zurueck" ist
+               der benannte Rueckweg der Werkzeugleiste und sagt, WOHIN es geht; das
+               Kreuz ist der gewohnte Griff rechts aussen, den jeder Dialog des
+               Hauses traegt. Ein zweites Kreuz gibt es nicht: Die Ansicht liegt in
+               keiner Ueberlagerung, und ihre drei Ueberlagerungen zeichnen ihr
+               eigenes.
+
+               GESPERRT STATT WEG (Anwenderentscheid 18.09.2026): Waehrend eines
+               Laufs wird das Kreuz grau, es verschwindet nicht - sonst spraenge die
+               Werkzeugleiste, ohne zu sagen, warum. *@
+            <Schliesskreuz Geschlossen="Verlassen" Gesperrt="@_laeuft" />
         </span>
     </div>
 

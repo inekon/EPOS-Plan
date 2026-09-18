@@ -59,7 +59,7 @@ Sie beantwortet zwei Fragen. '''Welche Größe trägt sich?''' – dafür rechne
 === Erreichbarkeit ===
 {{Anker|auslegung-start}}
 
-Der Weg hinein führt über die '''Simulationskonfiguration''': Schritt '''① Konfiguration''' → Spalte ''Speicher im Projekt'' → '''„Stromspeicher auslegen…“''', gleich unter ''Pufferspeicher anlegen / verwalten…''. Der Knopf steht, sobald das Projekt einen Stromspeicher oder einen Flottenstand führt; darunter steht eine Zeile zum Stand des Mehrspeicherbetriebs. Die Ansicht '''wechselt''' dann an die Stelle der Konfiguration; der Knopf ''← zurück'' oben rechts führt nach '''① Konfiguration''' zurück.
+Der Weg hinein führt über die '''Simulationskonfiguration''': Schritt '''① Konfiguration''' → Spalte ''Speicher im Projekt'' → '''„Stromspeicher auslegen…“''', gleich unter ''Pufferspeicher anlegen / verwalten…''. Der Knopf steht, sobald das Projekt einen Stromspeicher oder einen Flottenstand führt; darunter steht eine Zeile zum Stand des Mehrspeicherbetriebs. Die Ansicht '''wechselt''' dann an die Stelle der Konfiguration; der Knopf ''← zurück'' oben rechts führt nach '''① Konfiguration''' zurück, und rechts außen daneben steht das Schließkreuz '''✕''', das dasselbe tut.
 
 '''Einen Menüpunkt gibt es dafür nicht''', und das ist Absicht: Die Zeitreihen für Last, Erzeugung und Preise stammen aus '''genau einem''' abgeschlossenen Simulationslauf, und den bringt die Simulation mit. Öffnen Sie die Ansicht ohne gerechneten Lauf, sagt sie es in einem Hinweis und bietet '''„Simulation rechnen"''' an, statt heimlich zu rechnen.
 
@@ -467,6 +467,8 @@ Ein Knopf erscheint nur, wenn seine Abhilfe an dieser Stelle überhaupt möglich
 {{Anker|auslegung-verlassen}}
 
 Haben Sie Eingaben geändert und nicht gespeichert, fragt die Ansicht beim Verlassen: '''Speichern / Verwerfen / Bleiben'''. ''Esc'' bedeutet ''Bleiben''. Danach kehrt das Programm dorthin zurück, woher Sie kamen.
+
+'''← zurück''' und das Schließkreuz '''✕''' führen beide dorthin – sie tun dasselbe und stellen dieselbe Frage. '''Während einer Rechnung sind beide gesperrt''': Sie bleiben sichtbar, aber grau, bis der Lauf endet oder Sie ihn mit ''Abbrechen'' anhalten.
 
 === Auf dem iPad ===
 {{Anker|auslegung-ios}}
