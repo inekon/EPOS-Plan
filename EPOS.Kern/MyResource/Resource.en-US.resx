@@ -19541,6 +19541,12 @@ Do you want to allow this?</value>
   <data name="KDLG_HERL_ABSOLUT" xml:space="preserve">
     <value>rate = amount</value>
   </data>
+  <data name="KDLG_HERL_KWP" xml:space="preserve">
+    <value>{0} modules × {1} Wp = {2} kWp</value>
+  </data>
+  <data name="KDLG_HERL_KWP_SUMME" xml:space="preserve">
+    <value>Σ modules × power = {0} kWp</value>
+  </data>
   <data name="KDLG_HERK_ANLAGE" xml:space="preserve">
     <value>{0} of the unit</value>
   </data>

@@ -912,10 +912,12 @@ namespace WindowsFormsApplication1
             if (!n.Menge.HasValue || !n.Einheitpreis.HasValue) return "";
             // ANWENDERENTSCHEID 15.09.2026: Die Satzeinheit folgt der Bezugsgröße des
             // GEWERKS — am Pufferspeicher ist sie „€/Ltr.", nicht „€/kW".
+            // U33 (18.09.2026): Diese Liste sind die BETRIEBSKOSTENzeilen; ein
+            // Leistungssatz heißt hier „€/kWp·a" und nicht „€/kWp".
             return n.Menge.Value.ToString("N2", kultur) + " " +
                    BetriebskostenCtrl.MengenEinheit(n.Bemessung) + " × " +
                    n.Einheitpreis.Value.ToString("N3", kultur) + " " +
-                   BetriebskostenCtrl.SatzEinheit(n.Bemessung, n.Komponente);
+                   BetriebskostenCtrl.SatzEinheit(n.Bemessung, n.Komponente, true);
         }
     }
 

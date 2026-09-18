@@ -104,8 +104,12 @@ namespace WindowsFormsApplication1
         /// Herkunft; <c>null</c> im Stammkontext.</param>
         /// <param name="projektModus">Gibt es ein Projekt? Nur dort gibt es
         /// Bezugsgrößen — im Katalog steht im Betragsfeld ein Strich.</param>
+        /// <param name="betrieb">U33: true = Betriebsraster. Nur das Einheitenzeichen des
+        /// SATZES hängt daran („€/kWp·a" statt „€/kWp"); die Bezugsgröße trägt ihre eigene
+        /// physikalische Einheit und bleibt davon unberührt.</param>
         internal static Angabe Bilde(KostenVorlagenPosition p, int komponentenId,
-                                     KostenProjektPositionenCtrl.Zeile pz, bool projektModus)
+                                     KostenProjektPositionenCtrl.Zeile pz, bool projektModus,
+                                     bool betrieb = false)
         {
             var a = new Angabe();
             BemessungKatalog.Info info = p != null ? BemessungKatalog.Finde(p.Bemessung) : null;
@@ -121,14 +125,14 @@ namespace WindowsFormsApplication1
             a.OhneBasis = pz != null && !pz.Basis.HasValue && GrundText(pz.BasisGrund).Length > 0;
 
             a.BasisText = BasisText(a.Basis, p, komponentenId);
-            a.Kurztext = Kurztext(a, p, komponentenId, pz, projektModus);
-            a.Zeile = Zeilentext(a, projektModus);
+            a.Kurztext = Kurztext(a, p, komponentenId, pz, projektModus, betrieb);
+            a.Zeile = Zeilentext(a, projektModus, pz);
 
             // U31: Der Empfehlungsbereich stand bis hierher als deutscher Satzbaukasten
             // in der Windows-Hülle — Fachtext in einer Schale, einsprachig. Er entsteht
             // jetzt hier, in zwei Fassungen aus EINER Quelle: dem Werkzeugtipp am
             // Satzfeld (wortgleich zum Bestand) und der sichtbaren Zeile darunter.
-            Empfehlung(a, p, komponentenId);
+            Empfehlung(a, p, komponentenId, betrieb);
             return a;
         }
 
@@ -145,6 +149,9 @@ namespace WindowsFormsApplication1
         private static string BasisText(double? basis, KostenVorlagenPosition p, int komponentenId)
         {
             if (!basis.HasValue || p == null) return "";
+            // U33: Hier gilt IMMER die Einheit der Investitionsseite — sie ist die
+            // physikalische Einheit der Bezugsgröße. Ein Betriebssatz „€/kWp·a" bemisst
+            // sich an kWp, nicht an „kWp·a"; das Jahr steckt im SATZ, nicht in der Größe.
             string einheit = BemessungKatalog.Einheit(p.Bemessung, komponentenId);
             bool prozent = string.Equals(einheit, "%", StringComparison.Ordinal);
             string basisEinheit = prozent
@@ -167,11 +174,12 @@ namespace WindowsFormsApplication1
         /// Gewerk (Anwenderentscheid 15.09.2026) — dieselbe Quelle wie am Satzfeld,
         /// damit Empfehlung und Eingabe nicht in verschiedenen Einheiten stehen.</para>
         /// </summary>
-        private static void Empfehlung(Angabe a, KostenVorlagenPosition p, int komponentenId)
+        private static void Empfehlung(Angabe a, KostenVorlagenPosition p, int komponentenId,
+                                       bool betrieb)
         {
             if (p == null || (!p.EmpfehlungVon.HasValue && !p.EmpfehlungBis.HasValue)) return;
 
-            string einheit = BemessungKatalog.Einheit(p.Bemessung, komponentenId);
+            string einheit = BemessungKatalog.Einheit(p.Bemessung, komponentenId, betrieb);
             string von = Zahl(p.EmpfehlungVon);
             string bis = Zahl(p.EmpfehlungBis);
 
@@ -241,7 +249,8 @@ namespace WindowsFormsApplication1
         /// (absolut, Projekt, Katalog).
         /// </summary>
         private static string Kurztext(Angabe a, KostenVorlagenPosition p, int komponentenId,
-                                       KostenProjektPositionenCtrl.Zeile pz, bool projektModus)
+                                       KostenProjektPositionenCtrl.Zeile pz, bool projektModus,
+                                       bool betrieb)
         {
             if (a.Absolut) return MyResource.Resource.KDLG_TT_KETTE;
             if (!projektModus) return MyResource.Resource.KDLG_TT_BETRAG_ADMIN;
@@ -261,7 +270,7 @@ namespace WindowsFormsApplication1
                 BemessungKatalog.Finde(p.Bemessung) == null)
                 return MyResource.Resource.KDLG_TT_BETRAG_PROJEKT;
 
-            string einheit = BemessungKatalog.Einheit(p.Bemessung, komponentenId);
+            string einheit = BemessungKatalog.Einheit(p.Bemessung, komponentenId, betrieb);
             bool prozent = string.Equals(einheit, "%", StringComparison.Ordinal);
             string satz = p.Satz.Value.ToString("#,##0.00", CultureInfo.CurrentCulture) +
                           " " + einheit;
@@ -277,20 +286,30 @@ namespace WindowsFormsApplication1
         /// Ohne Bezugsgröße bleibt es beim ⚠ der Zeile und beim Grund unter dem
         /// Raster; eine zweite Zeile sagte dasselbe noch einmal.
         /// </summary>
-        private static string Zeilentext(Angabe a, bool projektModus)
+        private static string Zeilentext(Angabe a, bool projektModus,
+                                         KostenProjektPositionenCtrl.Zeile pz)
         {
             if (!projektModus) return "";
             if (a.Absolut) return MyResource.Resource.KDLG_HERL_ABSOLUT;
             if (!a.Basis.HasValue || a.BasisText.Length == 0) return "";
             if (a.HerkunftText.Length == 0) return "";
 
-            return a.Runde > 0
+            string zeile = a.Runde > 0
                 ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KDLG_HERL_BASIS,
                                 a.BasisText, a.HerkunftText,
                                 a.Runde.ToString(CultureInfo.CurrentCulture))
                 : string.Format(CultureInfo.CurrentCulture,
                                 MyResource.Resource.KDLG_HERL_BASIS_OHNE_RUNDE,
                                 a.BasisText, a.HerkunftText);
+
+            // U35: Eine GERECHNETE Bezugsgröße nennt auch ihre Faktoren — „750 Module ×
+            // 400 Wp = 300,00 kWp". Ohne sie steht im Raster eine Zahl, die in keiner
+            // Gerätemaske zu finden ist; im Werkzeugtipp stand sie schon
+            // (TechnikPlanwertCtrl.BaugroesseHerleitung), sichtbar bisher nicht. Wo die
+            // Größe unmittelbar am Gerät steht, ist der Text leer und die Zeile bleibt,
+            // wie sie war.
+            string rechnung = pz != null ? (pz.BasisHerleitung ?? "") : "";
+            return rechnung.Length == 0 ? zeile : zeile + " · " + rechnung;
         }
     }
 }

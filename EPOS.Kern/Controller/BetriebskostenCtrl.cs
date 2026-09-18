@@ -165,12 +165,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static string SatzEinheit(string bemessung, int komponente)
         {
+            return SatzEinheit(bemessung, komponente, false);
+        }
+
+        /// <summary>
+        /// U33 (18.09.2026): dieselbe Einheit, aber IM RASTER — <paramref name="betrieb"/>
+        /// = true fragt das Betriebsraster. Ein Leistungssatz trägt dort sein Jahr selbst
+        /// („€/kWp·a"), weil die Bezugsgröße kWp keines kennt; bei jeder anderen Art
+        /// fällt die Antwort gleich aus.
+        /// <inheritdoc cref="SatzEinheit(string)" path="/summary/text()[last()]"/>
+        /// </summary>
+        internal static string SatzEinheit(string bemessung, int komponente, bool betrieb)
+        {
             // Die KD-Bemessungen (Etappe KD1+) tragen ihre Einheit im BemessungKatalog —
             // EINE Wahrheit für Alt-Dialog und Komponenten-Kostendialog.
             BemessungKatalog.Info kd = BemessungKatalog.Finde(bemessung);
             if (kd != null &&
                 !string.Equals(bemessung, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
-                return BemessungKatalog.Einheit(bemessung, komponente);
+                return BemessungKatalog.Einheit(bemessung, komponente, betrieb);
 
             if (string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
                 string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal))

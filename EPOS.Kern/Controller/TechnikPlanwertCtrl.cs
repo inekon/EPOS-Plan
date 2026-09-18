@@ -1009,6 +1009,15 @@ namespace WindowsFormsApplication1
         {
             if (IstSolarLeistungsart(komponentenID, bemessung))
                 return KollektorfeldHerleitung(projektID, idAnlage);
+
+            // U35 (18.09.2026): Die kWp der Photovoltaik sind genauso GERECHNET wie die
+            // Leistung des Kollektorfelds — Modulanzahl × Modulleistung ÷ 1000 —, und
+            // ihre beiden Faktoren stehen in keiner Maske nebeneinander. Der Satz kommt
+            // aus derselben Klasse wie die Zahl (PhotovoltaikCtrl), damit es bei EINER
+            // kWp-Wahrheit bleibt.
+            if (IstPvLeistungsart(komponentenID, bemessung))
+                return PhotovoltaikCtrl.KwpHerleitung(projektID, idAnlage);
+
             return "";
         }
 

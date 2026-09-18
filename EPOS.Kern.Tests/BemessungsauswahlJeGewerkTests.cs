@@ -107,7 +107,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Photovoltaik: die installierte Leistung, unter beiden Namen („je kWp"
         /// und „je kW elektrisch" sind DIESELBE Zahl). Eine kWh-Kapazität führt sie
-        /// nicht — genau daran hing die Vorlagenposition „Batteriespeicher".</summary>
+        /// nicht — genau daran hing die Vorlagenposition „Batteriespeicher".
+        /// <para>U33: „je kWp Leistung" steht auch im BETRIEBSRASTER — die
+        /// branchenübliche Wartungskennzahl €/kWp·a. Nur hier: Kein anderes Gewerk
+        /// führt eine kWp-Größe, und die Auswahl fragt die Landkarte, nicht eine
+        /// zweite Liste.</para></summary>
         [Fact]
         public void Photovoltaik_bietet_die_installierte_Leistung_und_keine_Kapazitaet()
         {
@@ -125,7 +129,42 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_JAHRESBETRAG,
                     DbWerte.BEMESSUNG_PROZENT_INVESTITION,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
+                    DbWerte.BEMESSUNG_EUR_PRO_KWP,
                 });
+        }
+
+        /// <summary>
+        /// U33: Die Einheit des Satzes folgt dem RASTER. Auf der Investitionsseite ist
+        /// „je kWp Leistung" ein €/kWp-Satz, auf der Betriebsseite ein JAHRESsatz —
+        /// 12,00 €/kWp·a × 300,00 kWp = 3.600,00 €/a. Ohne das Jahr im Zeichen stünde
+        /// hinter dem Satz dieselbe Einheit wie bei einer einmaligen Investition.
+        /// </summary>
+        [Fact]
+        public void Je_kWp_traegt_im_Betriebsraster_die_Jahreseinheit()
+        {
+            Assert.Equal("€/kWp",
+                BemessungKatalog.Einheit(DbWerte.BEMESSUNG_EUR_PRO_KWP, K_PHOTOVOLTAIK, false));
+            Assert.Equal("€/kWp·a",
+                BemessungKatalog.Einheit(DbWerte.BEMESSUNG_EUR_PRO_KWP, K_PHOTOVOLTAIK, true));
+
+            // Gegenprobe: Die Mengenarten tragen ihr Jahr in der BEZUGSGRÖSSE [kWh/a]
+            // und heißen deshalb in beiden Rastern gleich.
+            Assert.Equal("€/kWh",
+                BemessungKatalog.Einheit(DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, K_PHOTOVOLTAIK, true));
+        }
+
+        /// <summary>
+        /// U33, die Zahlenprobe des Mockups (Abschnitt 3): Der Rechenweg der
+        /// Betriebskosten kennt die Art längst — Menge × Satz. Eine neue Formel gibt es
+        /// nicht, und deshalb ändert sich auch keine bestehende Zeile.
+        /// </summary>
+        [Fact]
+        public void Ein_kWp_Satz_im_Betriebsraster_rechnet_Satz_mal_kWp()
+        {
+            double betrag = BetriebskostenCtrl.Betrag(
+                DbWerte.BEMESSUNG_EUR_PRO_KWP, 0.0, 300.0, 12.0, false);
+
+            Assert.Equal(3600.00, betrag, 2);
         }
 
         /// <summary>Solarthermie: die Kollektorfläche und die daraus GERECHNETE thermische

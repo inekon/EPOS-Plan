@@ -217,12 +217,23 @@ namespace WindowsFormsApplication1
                     z.Basis = n.Menge;
                     anlageDerZeile = n.Anlage;
                     // U28: Die Betriebsseite hat keine Kaskade (Runde bleibt 0). Ihre
-                    // Bezugsgröße ist die Investitionssumme (H4a) oder eine Menge des
-                    // Simulationslaufs — mehr sagt die Bemessungsart nicht her.
+                    // Bezugsgröße ist die Investitionssumme (H4a), eine BAUGRÖSSE der
+                    // Anlage oder eine Menge des Simulationslaufs.
+                    //
+                    // U33 (18.09.2026): Die dritte Quelle war bis hierher nicht benannt —
+                    // jede nicht-prozentuale Betriebszeile galt als „Lauf". Mit „je kWp
+                    // Leistung" im Betriebsraster stünde an einer Wartungszeile „· Lauf",
+                    // obwohl die kWp aus der Gerätewelt kommen und kein Lauf sie liefert.
+                    // Gefragt wird dieselbe Landkarte, aus der die Menge selbst kommt
+                    // (WirtschaftlichkeitCtrl.RueckfallMenge → TechnikPlanwertCtrl):
+                    // Kennt das Gewerk zu dieser Art eine Baugröße, ist die Herkunft die
+                    // ANLAGE, sonst der Lauf.
                     z.BasisHerkunft = !z.Basis.HasValue ? ""
                         : WirtschaftlichkeitCtrl.IstProzentInvest(z.Raster.Bemessung)
                             ? KostenHerleitung.HERKUNFT_INVEST
-                            : KostenHerleitung.HERKUNFT_LAUF;
+                            : TechnikPlanwertCtrl.KenntBaugroesse(komponentenId, z.Raster.Bemessung)
+                                ? KostenHerleitung.HERKUNFT_ANLAGE
+                                : KostenHerleitung.HERKUNFT_LAUF;
                 }
 
                 // ANWENDERBEFUND 14.09.2026: Eine GERECHNETE Bezugsgröße nennt ihre
