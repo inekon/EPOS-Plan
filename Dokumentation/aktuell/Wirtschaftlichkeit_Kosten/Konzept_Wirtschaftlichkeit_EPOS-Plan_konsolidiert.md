@@ -836,7 +836,7 @@ Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegza
 | 1 | Investitionskosten BHKW | `01` | Kaskadenfaktor auf die Hauptposition 1,155; I₀ = 240.772,40 − 6.000 = **234.772,40 €** (300 kW) |
 | 2 | Betriebskosten BHKW | `02` | Hilfsenergie 2 % × 312.631 € Endenergiekosten = 6.252,62 €/a (21.710 kWh Strom); Instandhaltung 1,50 % × 240.772,40 = 3.611,59 €/a; Summe 57.164,21 €/a; die Kesselmenge kommt aus der Modulzeile |
 | 3 | Kosten der Photovoltaik | `03` | 192.150 € = 640,50 €/kWp; Wechselrichter-Ersatz Jahr 12 (24.000 €, Barwert 16.833), Restwert 39.800 € (Barwert 22.036); Degradation 0,5 %/a → Jahr 20: 259,1 MWh |
-| 4 | Energiekosten | `04` | Preisbestandteile 0,0638 + 0,1371 + 0,1180 + 0,4371 = 0,7560 €/m³; BEHG 872,3 t × 65 € = 56.700 €/a; N3 +32 % |
+| 4 | Energiekosten | `04` | **umgesetzt** (ET-D): Preisbestandteile 0,0638 + 0,1371 + 0,1180 + 0,4371 = 0,7560 €/m³ — im Dialog in der Abrechnungseinheit; BEHG 872,3 t × 65 € = 56.700 €/a; N3 +32 % |
 | 5 | **Vergütungen BHKW** | `05` | **Mengentafel** brutto 1.650 → netto 1.563,2 (§ 9 Nr. 3 bleibt brutto); Mischsatz 5,5667 / 2,4167 ct; 2026 vergütet 60 % = 31.531 €; **Reihe endet nach zwölf Jahren** (286.644 €); § 53a 21.203 €/a |
 | 6 | **Vergütungen PV** | `06` | AW 6,04 ct; Spot 8.977,50 + Prämie 3.072,30 − § 51 614,46 − DV 798,00 − Kappung 241,00 = 10.396,34 €/a; § 51a 1.204,98 € |
 | 7 | Erlösrubrik | `07` | Block A 91.330,5 €/a; vermieden brutto 339.753,6 − entgangene § 9b 23.594,0 = effektiv 316.159,6 €/a |
@@ -1264,8 +1264,10 @@ Leistungsanteil.
 
 **Kein Aufschlag — die Anteile zerlegen den Arbeitspreis.** Die Preisanteile der
 Trägerkarte („Strompreis Details": Beschaffung, Vertrieb, Netzentgelt, Stromsteuer,
-Konzessionsabgabe, Umlagen) sagen, WORAUS der Arbeitspreis besteht; sie kommen nicht auf
-ihn. Es gibt genau eine Preiswahrheit, und das ist der Arbeitspreis des Trägers:
+Konzessionsabgabe, Umlagen; „Preisbestandteile" beim Brennstoff: Energiesteuer,
+CO₂-Bestandteil, Netz- und Messentgelt, Beschaffung und Vertrieb) sagen, WORAUS der
+Arbeitspreis besteht; sie kommen nicht auf ihn. Es gibt genau eine Preiswahrheit, und das
+ist der Arbeitspreis des Trägers:
 
 ```
 Σ aktive Anteile   =  Arbeitspreis        (Kohärenzzeile, nie Summand)
@@ -1274,6 +1276,30 @@ ihn. Es gibt genau eine Preiswahrheit, und das ist der Arbeitspreis des Trägers
 
 Ein Anteil, der nicht gepflegt ist, ist 0 und inaktiv; die Vorschlagswerte stehen im Feld
 und werden erst auf Knopfdruck übernommen.
+
+**Die Anzeigekante der Anteile.** Gerechnet, gespeichert und geprüft werden die Anteile in
+**ct/kWh** — eine Größe, die für jeden Träger dieselbe Bedeutung hat. **Angezeigt und
+eingegeben** werden sie in der **Abrechnungseinheit** des Trägers (€/m³, €/l, €/t): Wer
+einen Gaspreis pflegt, pflegt ihn je Kubikmeter. Die Einheit wechselt **genau einmal**, an
+der Anzeigekante, über den Heizwert:
+
+```
+€ je Abrechnungseinheit = ct/kWh ÷ 100 × H_i        (EnergietraegerPreiskarte.AnteilJeEinheit)
+ct/kWh                  = € je Einheit × 100 ÷ H_i  (…AnteilCtKwh)
+```
+
+Ohne Heizwert gibt es keinen Weg dorthin — dann bleibt ct/kWh stehen, und eine leise Zeile
+nennt den Grund. Die **Kohärenzzeile prüft**: Σ der aktiven Anteile gegen den Arbeitspreis,
+Toleranz **0,0001 €/kWh**; darüber steht sie auf „≠" und nennt den Abstand. Je Zeile steht
+die Herleitung darunter — die Energiesteuer mit ihrem **brennwertbezogenen** Katalogsatz
+(„5,50 €/MWh (H_s)"), der CO₂-Bestandteil als Preis × CO₂-Masse je Abrechnungseinheit
+(„65 €/t × 2,109 kg/m³", aus 200,9 g/kWh × 10,5 kWh/m³ ÷ 1000).
+
+**Die Preisbasis ist von den Umrechnungsregeln entkoppelt** (Befund `UR-1`). Sie bietet
+genau zwei Einträge: die **Abrechnungseinheit** (Faktor 1) und die **Kilowattstunde**, und
+deren Faktor ist der **Heizwert** — nicht der `factor` einer `energy_conversion`-Zeile. Die
+Regeln prüfen weiterhin die Einheitenkette (`EnergieEinheitenPruefung`) und stellen die
+`ID_Umrechnung` der Projektzeile; gerechnet wird mit H_i und H_s.
 
 **CO₂ / BEHG** als eigene Reihe:
 
@@ -1719,6 +1745,17 @@ Dazu die Entscheidungen zur Darstellung (30.08.2026):
 | **E-1** | Modus `CO2E`, wenn außer CO₂ nichts gepflegt ist bzw. der Wert schon ein Äquivalent ist | **Wert zeigen, Umstand im Tooltip benennen** — drei Herleitungsfälle, kein stiller Rückfall auf „CO₂" (§ 2.5) |
 | **D-2** | Erlösdarstellung | eigene Rubrik in zwei Blöcken, getrennte Summen; Block B (Ausweis) wird nicht addiert (§ 2.6) |
 | **D-3** | Referenz der Differenzrechnung | **wählbares Vergleichsprojekt** je Gruppe (Stamm oder Variante), Vorgabe Stamm = ergebnisneutral; `ID_Referenzprojekt` an der Rahmenzeile; die Referenz ist die Unterlassensalternative der DIN EN 17463 (§ 2.9, Anforderung 31.08.2026) |
+
+Zum Energieträger-Dialog kommen die Entscheide vom 18.09.2026 („Der Dialog im Mockup ist sehr
+übersichtlich und besser als der vorhandene Dialog Energieträgerverwaltung … und verbessert
+werden wie im Mockup"):
+
+| # | Frage | Entscheidung |
+|---|---|---|
+| **ET-D-1** | In welcher Einheit stehen die Preisbestandteile? | **(a) in der Abrechnungseinheit** (€/m³, €/l, €/t) an der Anzeigekante; gerechnet, gespeichert und geprüft wird weiter in ct/kWh. Ohne Heizwert bleibt ct/kWh mit Hinweis (§ 3.5) |
+| **ET-D-2** | Was zeigt der Emissionsblock der Trägerkarte? | **(a) die Arten DIESES Trägers** samt Bilanzierungsmethode als Klappliste, Summenzeile und Fußnote — **kein Primärenergiefaktor, keine Trägerübersicht**. Der Modus ist Projektsache und im Katalogkontext nur lesbar (Entscheide D-1/E-1 bleiben) |
+| **ET-D-3** | Was bietet die Preisbasis an? | **(a) genau zwei Einträge** — Abrechnungseinheit und kWh, Faktor = Heizwert. Die Umrechnungsregeln werden zum zugeklappten **Prüfblock** „Einheiten und Umrechnung" |
+| **UR-1** | Die Preisbasis rechnete mit dem `factor` einer Umrechnungsregel statt mit dem Heizwert (Anwenderfoto: 0,07 €/kWh eingegeben, 0,04 €/Nm³ gespeichert, Formelzeile 0,0033 €/kWh) | **behoben mit ET-D**: `EnergietraegerPreisCtrl.Preisbasen` liefert den Heizwert als Faktor; `Umrechnungen` liest nur noch aktive Regeln. **Bestandsprojekte werden nicht stillschweigend umgerechnet** — erkennbar an der Formelzeile der Trägerkarte, die den Preis je kWh nennt; wer einen falsch gespeicherten Arbeitspreis hat, gibt ihn neu ein |
 
 Aus dem Energieträger-Umfeld kommt eine weitere Entscheidung desselben Tages hinzu. Sie betrifft
 die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernraum:

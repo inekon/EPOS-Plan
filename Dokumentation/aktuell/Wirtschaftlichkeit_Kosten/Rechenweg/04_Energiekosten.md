@@ -7,46 +7,64 @@ EU-ETS 2, GEG Anlage 4 und 9 · **Code:** `StromMatrix`, `KostenEmissionRechner`
 
 ## Was der Dialog zeigt
 
-**Gruppe Preis und Heizwert:** Arbeitspreis 0,7560 €/m³ · Grundpreis 180 €/a · Leistungspreis
-0,00 · H_i 10,50 · H_s 11,60 kWh/m³ · Herleitung „→ 0,0720 €/kWh · Umrechnungsfaktor H_s/H_i =
-1,1048".
+Die Trägerkarte steht in **vier Blöcken** ohne Reiter: A und B nebeneinander, darunter C und D
+über die volle Breite, dann die Preishistorie. Der Kopf nennt den Träger, die Zeile darunter
+Projekt und Preisstellung („… · Preise netto").
 
-**Gruppe Preisbestandteile des Brennstoffs** — Transparenz ohne Preiswirkung, die Grundlage der
-Kohärenzprüfung gegen die Steuerentlastungen (siehe `05`). Jeder Bestandteil trägt einen Wert und
-einen Aktiv-Schalter; nur eingeschaltete zählen, ein leeres Feld heißt „kein Anteil". Einen Modus
-gibt es nicht — ausgewiesen werden die Summe der aktiven Bestandteile und ihr Abstand zum
-Arbeitspreis („nicht aufgeschlüsselter Rest", negativ in Warnfarbe). Dieselbe Regel gilt für den
-Strompreis-Block:
+**Block A · Preis und Heizwert:** Arbeitspreis 0,7560 €/m³ · Grundpreis 180 €/a · Leistungspreis
+0,00 €/(kW·a) samt Modus · H_i 10,50 · H_s 11,60 kWh/m³ · Effektivzeile „1 Nm³ = 10,50 kWh (H_i) /
+11,60 kWh (H_s)" · Herleitung „→ 0,0720 €/kWh · Umrechnungsfaktor H_s/H_i = 1,1048". Darunter die
+saisonalen Sätze, die Katalogübernahme und die Hinweise zu fehlenden oder geliehenen Werten.
+
+**Block B · Preisbestandteile — Transparenz, ohne Preiswirkung** (beim Stromträger an derselben
+Stelle „Strompreis Details"). Er ist die Grundlage der Kohärenzprüfung gegen die
+Steuerentlastungen (siehe `05`). Jeder Bestandteil trägt einen Wert und einen Aktiv-Schalter; nur
+eingeschaltete zählen, ein leeres Feld heißt „kein Anteil". Einen Modus gibt es nicht.
+
+**Die Werte stehen in der Abrechnungseinheit** (€/m³, €/l, €/t) — gerechnet, gespeichert und
+geprüft wird in ct/kWh, umgerechnet genau einmal an der Anzeigekante über H_i. Ohne Heizwert
+bleibt ct/kWh, und eine leise Zeile nennt den Grund.
 
 | Bestandteil | €/m³ | Herleitung |
 |---|---|---|
-| Energiesteuer | 0,0638 | 5,50 €/MWh (H_s) × 11,6 kWh/m³ |
-| CO₂-Bestandteil (BEHG) | 0,1371 | 65 €/t × 2,109 kg CO₂/m³ (200,9 g/kWh × 10,5 kWh/m³) |
-| Netz- und Messentgelt | 0,1180 | Netzbetreiber |
-| Beschaffung und Vertrieb | 0,4371 | Rest |
+| Energiesteuer | 0,0638 | 5,50 €/MWh (H_s) |
+| CO₂-Bestandteil (BEHG) | 0,1371 | 65 €/t × 2,109 kg/m³ (200,9 g/kWh × 10,5 kWh/m³ ÷ 1000) |
+| Netz- und Messentgelt | 0,1180 | — |
+| Beschaffung und Vertrieb | 0,4371 | Rest, als Vorschlag am Feld |
 | **Summe** | **0,7560** | deckungsgleich mit dem Arbeitspreis ✓ |
 
-Knöpfe „Schnellwahl aus Katalog…" und „In Arbeitspreis übernehmen" — der zweite MELDET nur, dass
-die Summe in das Arbeitspreisfeld soll; eingetragen wird sie dort, gespeichert mit „Speichern".
+Die Summenzeile **prüft**: Weicht die Summe der aktiven Anteile um mehr als 0,0001 €/kWh vom
+Arbeitspreis ab, steht sie auf „≠" und nennt den Abstand. Darunter der nicht aufgeschlüsselte
+Rest, negativ in Warnfarbe.
 
-**Gruppe Emissionen** — Anzeige folgt der Bilanzierungsvorgabe des Projekts (Entscheidungen D-1,
-E-1): **eine** Spalte, CO₂ *oder* CO₂-Äquivalent; SO₂ und NO_x werden geführt, aber hier nicht
-gezeigt. Der Tooltip benennt an jedem Wert, ob eine Vorkette enthalten ist.
+Zwei Knöpfe: **„Schnellwahl aus Katalog…"** öffnet eine Überlagerung mit den Katalogsätzen — § 2,
+§ 53a und § 54 EnergieStG sowie BEHG, je mit Herkunft, Jahr, Katalogwert (€/MWh bzw. €/t) und dem
+Satz in der Abrechnungseinheit; die Auswahl trägt in das zugehörige Feld ein. **„In Arbeitspreis
+übernehmen"** MELDET nur, dass die Summe in das Arbeitspreisfeld soll; eingetragen wird sie dort,
+gespeichert mit „Speichern".
 
-| Träger | CO₂ direkt, heizwertbezogen | Primärenergiefaktor | Quelle |
+**Block C · Emissionen — Anzeige folgt der Bilanzierungsvorgabe des Projekts** (Entscheidungen
+D-1, E-1, ET-D-2): oben die Klappliste **Bilanzierungsmethode** („CO₂ direkt — reale Bilanz,
+heizwertbezogen" bzw. „CO₂-Äquivalent (GWP₁₀₀)"), im Katalogkontext nur lesend. Darunter die
+Arten **dieses** Trägers mit Art · Wert · Einheit · Quelle · „Katalog…", die Summenzeile und der
+Knopf „Emissionsarten & Katalog verwalten…". **Kein Primärenergiefaktor, keine Trägerübersicht.**
+
+| Art | Wert | Einheit | Quelle |
 |---|---|---|---|
-| Erdgas | 200,9 g/kWh | 1,10 | EBeV 2030 Anlage 2 (H_i) · GEG Anlage 4 |
-| Heizöl EL | 266,4 g/kWh | 1,10 | EBeV 2030 Anlage 2 |
-| Strommix Netzbezug | 435,0 g/kWh | 1,80 | BAFA EEW 3.4 — Rückfall, reale Bilanz |
+| Kohlendioxid | 200,9 | g/kWh | EBeV 2030 Anlage 2 (H_i) |
 
-Der **Nachweissatz** nach GEG Anlage 9 (Strom 560, ab 2027: 100 g/kWh) ist ein anderer Satz für
-einen anderen Zweck und belegt im Code nie dieselbe Variable (Konzept § 3.11).
+Die Fußnote: Angezeigt wird nur die im Projekt gewählte Größe — CO₂ *oder* CO₂-Äquivalent; SO₂
+und NO_x werden weiterhin geführt, aber nicht in dieser Tabelle gezeigt. Der **Nachweissatz** nach
+GEG Anlage 9 (Strom 560, ab 2027: 100 g/kWh) ist ein anderer Satz für einen anderen Zweck und
+belegt im Code nie dieselbe Variable (Konzept § 3.11).
 
-**Gruppe Aufschläge Netzbezug Strom:** Schalter „Aufschläge anwenden" (Vorgabe aus) · Herleitung
-„Netzentgelt 6,440 + Umlagen 2,946 + Stromsteuer 2,050 + Konzession 0,110 + Vertrieb 0,200 =
-11,746 ct/kWh" · **Warnband N3:** „Leere Spalten lesen sich als Vorschlagswerte, nicht als Null. Ein
-ungepflegter Stromträger liefert deshalb die vollen 11,746 ct/kWh. Gemessen an Projekt 1030:
-+360.603 €/a (+32 %), Kapitalwert −29,8 %."
+**Block D · Einheiten und Umrechnung** — aufklappbar, Vorgabe zu. Er führt die Klappliste
+**Preisbasis** mit genau zwei Einträgen (Abrechnungseinheit und kWh, Faktor = Heizwert), die
+Basiseinheit und den Regelblock samt „Regel hinzufügen" und Verstoßbanner. Die Zeile darunter sagt,
+wozu er da ist: *Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert und Brennwert.*
+
+Einen Block „Aufschläge Netzbezug Strom" gibt es nicht — er ist durch die **Zerlegung** ersetzt:
+Die Anteile stecken im Arbeitspreis, sie kommen nicht auf ihn (Konzept § 3.5).
 
 ## Berechnungsgrundlage
 
