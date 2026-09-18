@@ -7703,6 +7703,32 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     font-size: 0.9em;
 }
 
+/* DER AUSWEIS NEBEN DEM TITEL (AUFTRAG #328, Anwenderentscheid 18.09.2026):
+   Was im zugeklappten Block steht, sagt der Kopf in einem Nebentext an - so
+   steht derselbe Satz nicht zugleich oben im Nachweisblock und unten im Feld.
+
+   DIE FORM IST DIE VON .epos-herleitung-formel: eigener Abstand und
+   --epos-text-sehr-leise, also eine Stufe leiser als die Zeile, an der der
+   Text haengt (der Knopf selbst steht schon in --epos-text-leise). Keine
+   neue Stilidee, nur dieselbe Paarung an einer zweiten Stelle. Die 6 px
+   kommen zum gap des Knopfes hinzu - der Ausweis soll deutlicher abstehen
+   als der Pfeil vom Titel.
+
+   GEKUERZT WIRD HIER, NICHT IM QUELLTEXT. Im Markup steht der gepflegte Text
+   ganz. Nachgeben soll allein er, nie der Titel: flex-basis 0 laesst ihm nur
+   den Platz, der nach Pfeil und Titel uebrig ist, und min-width: 0 ist die
+   Bedingung dafuer, dass text-overflow in einem Flex-Kind ueberhaupt greift
+   (dieselbe Trias wie .epos-zeilenwahl-text). */
+.epos-modulparameter-ausweis {
+    flex: 1 1 0%;
+    min-width: 0;
+    margin-left: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--epos-text-sehr-leise);
+}
+
 /* ==================================================================== */
 /* PARAMETERUEBERSICHT - alle Parameter einer Anlage und ihre Verwendung */
 /* (Anwenderwunsch W14a-E-8, 06.09.2026)                                 */

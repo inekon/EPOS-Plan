@@ -233,13 +233,13 @@ namespace WindowsFormsApplication1
             stand.Zeitraumzeile = Zeitraumzeile();
             stand.Vereinfachungszeile = Vereinfachungszeile(stand.MitPhotovoltaik);
 
-            // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026, VALERI-Luecke G6): der
-            // Freitext "Nicht monetaere Wirkungen". Er haengt wie die zwei Zeilen
-            // darueber am PROJEKT und nicht an der Szenario- oder Vergleichswahl.
-            stand.Wirkungszeile = Wirkungszeile();
-
-            // AUFTRAG #325: derselbe Wert, roh — der Bewertungsblock der Seite
-            // bearbeitet ihn, die Zeile darüber weist ihn aus.
+            // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026, VALERI-Luecke G6), Form
+            // aus AUFTRAG #328: der Freitext "Nicht monetaere Wirkungen" geht ROH
+            // hinueber und nur einmal. Die Seite weist ihn im Kopf ihres
+            // Bewertungsblocks aus und pflegt ihn dort; eine zweite, hier fertig
+            // formulierte Zeile fuer den Nachweisblock gibt es nicht mehr. Er haengt
+            // wie die zwei Zeilen darueber am PROJEKT und nicht an der Szenario-
+            // oder Vergleichswahl.
             stand.NichtMonetaer = NichtMonetaer();
 
             return stand;
@@ -294,29 +294,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// ETAPPE W5‑B‑12 (VALERI-Lücke G6): die nicht monetären Wirkungen als fertige
-        /// Zeile. Leer bleibt sie, solange niemand etwas erfasst hat — eine Überschrift
-        /// ohne Inhalt wäre die Behauptung, es gäbe keine. Ein Lesefehler lässt sie
-        /// still entfallen; sie ist Ausweis, kein Ergebnis.
-        /// </summary>
-        private string Wirkungszeile()
-        {
-            try
-            {
-                WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
-                string text = p != null ? p.NichtMonetaer : null;
-                if (string.IsNullOrWhiteSpace(text)) return "";
-                return string.Format(BerichtTexte.Kultur,
-                                     MyResource.Resource.WIRT_NM_ZEILE, text.Trim());
-            }
-            catch { return ""; }
-        }
-
-        /// <summary>
         /// AUFTRAG #325 (Anwenderentscheid 17.09.2026): der GEPFLEGTE Freitext, roh —
-        /// das, was der Bewertungsblock der Seite zum Bearbeiten bekommt. Ein
-        /// Lesefehler liefert den leeren Text; der Block bleibt dann leer und
-        /// überschreibt nichts, solange der Anwender nicht selbst speichert.
+        /// das, was der Bewertungsblock der Seite zum Bearbeiten bekommt und seit
+        /// AUFTRAG #328 in seinem Kopf auch ausweist. Ein Lesefehler liefert den
+        /// leeren Text; der Block bleibt dann leer und überschreibt nichts, solange
+        /// der Anwender nicht selbst speichert.
+        ///
+        /// <para>Der Bericht liest diesen Weg NICHT: Word (<c>BausteineWirtschaftlichkeit</c>)
+        /// und Excel (<c>ExcelBerichtGenerator</c>) holen sich
+        /// <c>WirtschaftlichkeitParameter.NichtMonetaer</c> selbst und formulieren mit
+        /// <c>WIRT_NM_ZEILE</c> bzw. <c>WIRT_NM_TITEL</c> ihre eigene Ausgabe.</para>
         /// </summary>
         private string NichtMonetaer()
         {

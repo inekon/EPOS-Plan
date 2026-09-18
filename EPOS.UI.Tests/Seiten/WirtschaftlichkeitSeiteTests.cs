@@ -582,6 +582,80 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.Equal("Komfort", cut.Instance.NichtMonetaer);
     }
 
+    /// <summary>
+    /// <b>AUFTRAG #328: Der Text steht je Zustand an genau EINER Stelle.</b>
+    /// Zugeklappt weist der Kopf des Blocks ihn aus — mit dem vollen Text im
+    /// <c>title</c>, damit er auch dann ganz lesbar ist, wenn der Browser
+    /// abgeschnitten hat. Aufgeklappt trägt der Kopf nur seinen Titel, weil der
+    /// Text dann zwei Zeilen tiefer im Feld steht.
+    /// </summary>
+    [Fact]
+    public void Der_Ausweis_steht_im_Kopf_und_weicht_dem_offenen_Feld()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.NichtMonetaer = "Netzstabilität, Imagegewinn";
+
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => true), stand: stand);
+
+        // ZUGEKLAPPT MIT TEXT: Titel und Ausweis nebeneinander, voller Text im Tooltip.
+        IElement knopf = cut.Find("button.epos-modulparameter-knopf");
+        Assert.Contains("Bewertung nach DIN EN 17463", knopf.TextContent);
+        Assert.Equal("Netzstabilität, Imagegewinn",
+                     cut.Find(".epos-modulparameter-ausweis").TextContent);
+        Assert.Equal("Netzstabilität, Imagegewinn", knopf.GetAttribute("title"));
+
+        // OFFEN: nur der Titel im Kopf, der volle Text im Feld.
+        knopf.Click();
+
+        Assert.Empty(cut.FindAll(".epos-modulparameter-ausweis"));
+        Assert.Null(cut.Find("button.epos-modulparameter-knopf").GetAttribute("title"));
+        Assert.Equal("Netzstabilität, Imagegewinn", cut.Find("textarea").TextContent);
+    }
+
+    /// <summary>
+    /// <b>AUFTRAG #328: Leer bleibt leer.</b> Ohne gepflegten Text trägt der Kopf nur
+    /// seinen Titel — kein „—", kein leeres <c>span</c> und kein leerer Tooltip. Eine
+    /// leere Angabe wäre die Behauptung, es gäbe keine nicht monetären Wirkungen.
+    /// </summary>
+    [Fact]
+    public void Ohne_gepflegten_Text_traegt_der_Kopf_nur_seinen_Titel()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.NichtMonetaer = "   ";           // auch Leerraum ist nichts Erfasstes
+
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => true), stand: stand);
+
+        IElement knopf = cut.Find("button.epos-modulparameter-knopf");
+        Assert.Empty(cut.FindAll(".epos-modulparameter-ausweis"));
+        Assert.Null(knopf.GetAttribute("title"));
+
+        // Im Kopf stehen genau zwei Kinder: der Pfeil und der Titel.
+        Assert.Equal(2, knopf.Children.Length);
+        Assert.Contains("Bewertung nach DIN EN 17463", knopf.TextContent);
+    }
+
+    /// <summary>
+    /// <b>AUFTRAG #328: Im Nachweisblock steht der Text nicht mehr.</b> Er hatte dort
+    /// seine fertig formulierte Zeile („Nicht monetäre Wirkungen: …"); die ist
+    /// entfallen, damit derselbe Satz nicht zweimal auf einem Bildschirm steht. Die
+    /// übrigen Nachweiszeilen bleiben unberührt.
+    /// </summary>
+    [Fact]
+    public void Der_Nachweisblock_zeigt_die_Wirkungszeile_nicht_mehr()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.NichtMonetaer = "Netzstabilität, Imagegewinn";
+        stand.Vereinfachungszeile = "Vereinfachungen: pauschal.";
+
+        var cut = Zeige(p => p.Add(x => x.WirkungSpeichern, (string _) => true), stand: stand);
+
+        string[] herleitungen = cut.FindAll("p.epos-herleitung")
+                                   .Select(e => e.TextContent).ToArray();
+
+        Assert.Contains(herleitungen, t => t.Contains("Vereinfachungen"));
+        Assert.DoesNotContain(herleitungen, t => t.Contains("Netzstabilität"));
+    }
+
     /// <summary>Der Speichernknopf des Bewertungsblocks — er steht ohne Leiste da,
     /// damit die Seite genau EINE Fussleiste behält.</summary>
     private static IElement Speichernknopf(IRenderedComponent<WirtschaftlichkeitSeite> cut)

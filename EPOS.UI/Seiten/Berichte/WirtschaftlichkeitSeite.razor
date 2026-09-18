@@ -164,14 +164,11 @@
         <Herleitungszeile Text="@_stand.Vereinfachungszeile" />
     }
 
-    @* W5-B-12 (VALERI G6): die nicht monetaeren Wirkungen - was sich nicht in
-       Euro fassen laesst, steht neben der Zahl (DIN EN 17463). Gepflegt wird der
-       Text im Parameterdialog; ohne ihn entfaellt die Zeile wie jede andere im
-       Nachweisblock. *@
-    @if (!string.IsNullOrEmpty(_stand.Wirkungszeile))
-    {
-        <Herleitungszeile Text="@_stand.Wirkungszeile" />
-    }
+    @* W5-B-12 (VALERI G6): die nicht monetaeren Wirkungen stehen NICHT MEHR HIER.
+       Sie haben ihre eine Stelle auf dieser Seite weiter unten - im Kopf des
+       Bewertungsblocks, der sie auch pflegt (AUFTRAG #328). Im Bericht bleiben
+       sie, wo sie waren: Word und Excel lesen unveraendert
+       WirtschaftlichkeitParameter.NichtMonetaer, nicht diese Seite. *@
 
     @* --------------------------------------------- Vergleichstabelle *@
     @if (_stand.Ansicht.Matrix.Zeilen.Count > 0)
@@ -221,21 +218,48 @@
        jeden Auffrischlauf; aria-expanded sagt ihn an. Keine neue Stilregel.
 
        DIESELBE WAHRHEIT, andere Eingabestelle: Es ist unveraendert
-       WirtschaftlichkeitParameter.NichtMonetaer. Die Zeile im Nachweisblock oben
-       (Wirkungszeile) bleibt der AUSWEIS - sie zeigt denselben Wert fertig
-       formuliert und entfaellt, solange nichts erfasst ist.
+       WirtschaftlichkeitParameter.NichtMonetaer.
+
+       AUFTRAG #328 (Anwenderentscheid 18.09.2026): "Ausweis ausblenden solange
+       offen · Ausweis als Blockueberschrift". DER AUSWEIS STEHT JETZT IM KOPF
+       DIESES BLOCKS - dort, wo man ihn aufklappen wuerde - und im Nachweisblock
+       oben gar nicht mehr. So steht der Text je Zustand an GENAU EINER Stelle:
+       zugeklappt neben dem Titel, aufgeklappt im Feld darunter. Aufgeklappt
+       traegt der Kopf deshalb nur seinen Titel; der volle Text steht zwei Zeilen
+       tiefer, und derselbe Satz zweimal auf einem Bildschirm waere einer zu viel.
+
+       NICHT GEKUERZT IM QUELLTEXT: Im Markup steht der gepflegte Text GANZ, und
+       zu schmal wird er erst im Browser (.epos-modulparameter-ausweis mit
+       text-overflow: ellipsis - die Hausform, die auch .epos-zeilenwahl-text
+       nimmt). Eine zweite Kuerzungsregel waere eine zweite Wahrheit. Der title
+       des Knopfes traegt denselben Text noch einmal, damit er auch dann ganz
+       lesbar ist, wenn der Browser abgeschnitten hat.
+
+       LEER BLEIBT LEER: Ohne gepflegten Text traegt der Kopf nur seinen Titel -
+       kein "—", kein leeres span. Eine leere Angabe waere die Behauptung, es
+       gaebe keine nicht monetaeren Wirkungen.
 
        EINE SEITE HAT KEIN OK. Geschrieben wird deshalb auf Zuruf ueber den Knopf
        daneben - nicht bei jedem Tastendruck (das Textfeld meldet jede Eingabe) und
        nicht still beim Verlassen der Seite. Danach frischt die Seite auf, damit der
-       Ausweis oben dem folgt, was gerade geschrieben wurde. *@
+       Ausweis im Kopf dem folgt, was gerade geschrieben wurde. *@
     @if (WirkungSpeichern is not null)
     {
+        @* null statt "" - so laesst Blazor das title-Attribut ganz weg, und der
+           leere Zustand traegt auch keinen leeren Tooltip. *@
+        bool ausweisZeigen = !_bewertungOffen && !string.IsNullOrWhiteSpace(_stand.NichtMonetaer);
+        string? ausweis = ausweisZeigen ? _stand.NichtMonetaer.Trim() : null;
+
         <button type="button" class="epos-modulparameter-knopf"
                 aria-expanded="@(_bewertungOffen ? "true" : "false")"
+                title="@ausweis"
                 @onclick="BewertungUmschalten">
             <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_bewertungOffen ? "▾" : "▸")</span>
             <span>@BewertungTitel</span>
+            @if (ausweisZeigen)
+            {
+                <span class="epos-modulparameter-ausweis">@ausweis</span>
+            }
         </button>
 
         @if (_bewertungOffen)
@@ -683,8 +707,9 @@
 
     /// <summary>
     /// Schreibt den Freitext fort — derselbe Weg, den bis zu diesem Auftrag der
-    /// Parameterdialog nahm. Danach frischt die Seite auf, damit der Ausweis im
-    /// Nachweisblock dem folgt, was gerade geschrieben wurde.
+    /// Parameterdialog nahm. Danach frischt die Seite auf, damit der Ausweis im Kopf
+    /// des Blocks dem folgt, was gerade geschrieben wurde — sichtbar wird er
+    /// allerdings erst beim Zuklappen, denn offen trägt der Kopf nur seinen Titel.
     ///
     /// <para>Scheitert das Schreiben, SAGT die Seite es und behält die Eingabe —
     /// ein stiller Fehlschlag wäre die Behauptung, der Text stünde in der
