@@ -6347,6 +6347,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static string BasisGrund(string bem, int komponente)
         {
+            return BasisGrund(bem, komponente, false);
+        }
+
+        /// <summary>
+        /// Dieselbe Landkarte, erweitert um die GERÄTEKENNTNIS der Anlage:
+        /// <paramref name="elektrokessel"/> = die Zeile hängt an einem Heizkessel, der
+        /// auf Strom läuft (E1, Anwenderentscheid 18.09.2026). Er hat eine elektrische
+        /// Größe — seinen Stromeinsatz —, und die kommt aus dem LAUF. Ohne diese
+        /// Kenntnis hörte der Anwender an einem Elektrokessel „das Gewerk kennt die
+        /// Größe nicht“, obwohl allein der Lauf fehlt.
+        ///
+        /// <para>Die Kenntnis wird HEREINGEREICHT, nicht hier ermittelt: Die Methode
+        /// bleibt frei von Datenbankzugriffen. Wer sie hat, nimmt
+        /// <see cref="BasisGrundFuerZeile"/>.</para>
+        /// </summary>
+        internal static string BasisGrund(string bem, int komponente, bool elektrokessel)
+        {
             if (string.IsNullOrEmpty(bem) ||
                 string.Equals(bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal) ||
                 string.Equals(bem, DbWerte.BEMESSUNG_JAHRESBETRAG, StringComparison.Ordinal))
@@ -6380,11 +6397,15 @@ namespace WindowsFormsApplication1
                        komponente == EndenergieAufloeser.KOMPONENTE_SOLARTHERMIE
                     ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
 
+            // E1: Am Heizkessel hängt die Antwort am GERÄT — nur der Elektrokessel
+            // führt eine elektrische Größe (seinen Stromeinsatz, EndenergieAufloeser
+            // .StromgroesseKwh). Am Brennstoffkessel bleibt es beim Gewerk.
             if (string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal))
                 return komponente == EndenergieAufloeser.KOMPONENTE_WAERMEPUMPE ||
                        komponente == EndenergieAufloeser.KOMPONENTE_PHOTOVOLTAIK ||
                        komponente == EndenergieAufloeser.KOMPONENTE_STROMSPEICHER ||
-                       komponente == BetriebskostenCtrl.KOMPONENTE_BHKW
+                       komponente == BetriebskostenCtrl.KOMPONENTE_BHKW ||
+                       (elektrokessel && komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL)
                     ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
 
             // Die Arten aus der GERÄTEWELT. Hier unterscheidet die Landkarte selbst,
@@ -6396,6 +6417,47 @@ namespace WindowsFormsApplication1
             // „je kWh", „% der Brennstoff-/Stromkosten", „% der Erzeugerkosten":
             // ihre Menge ist gepflegte Eingabe, keine Ermittlung (FX2, Befund B-4).
             return BASISGRUND_KONSERVE;
+        }
+
+        /// <summary>
+        /// E1 (Anwenderentscheid 18.09.2026): <see cref="BasisGrund(string, int)"/> für
+        /// eine Zeile, die ihre ANLAGE kennt. Einzig hier kann die Gerätefrage den Grund
+        /// drehen — „je kWh elektrisch" am Heizkessel —, und nur dort wird sie auch
+        /// gestellt: Sie kostet eine Abfrage, und der Grundtext steht im Zeichenlauf des
+        /// Dialogs. <paramref name="idAnlage"/> 0 = Anlage unbekannt; dann gilt die
+        /// Landkarte allein.
+        /// </summary>
+        internal static string BasisGrundFuerZeile(string bem, int komponente, int idAnlage)
+        {
+            bool elektrokessel =
+                idAnlage > 0 &&
+                komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL &&
+                string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal) &&
+                IstElektrokesselAnlage(idAnlage);
+            return BasisGrund(bem, komponente, elektrokessel);
+        }
+
+        /// <summary>
+        /// Läuft der Heizkessel DIESER Anlagenzeile auf Strom
+        /// (<see cref="SimulationSPK.BRENNSTOFF_STROM"/>)? Dieselbe eine Regel wie im
+        /// <see cref="EndenergieAufloeser"/> und in der Trägerzulassung — der
+        /// Brennstoff des Geräts, nicht ein Name. <c>false</c> bei jedem Zweifel:
+        /// keine Anlage, kein Kessel, Abfrage gescheitert.
+        /// </summary>
+        internal static bool IstElektrokesselAnlage(int idAnlage)
+        {
+            if (idAnlage <= 0) return false;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_Heizkessel AS k ON a.ID_Kessel = k.ID " +
+                    "WHERE a.ID = ? AND k.Brennstoff = ?",
+                    new DbParam("@a", idAnlage),
+                    new DbParam("@b", SimulationSPK.BRENNSTOFF_STROM));
+                return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
+            }
+            catch { return false; }
         }
 
         /// <summary>
@@ -6446,7 +6508,7 @@ namespace WindowsFormsApplication1
 
                 int komponente, idAnlage;
                 KomponenteUndAnlage(r, out komponente, out idAnlage);
-                grund = BasisGrund(bem, komponente);
+                grund = BasisGrundFuerZeile(bem, komponente, idAnlage);
                 return null;
             }
             catch { grund = ""; return null; }

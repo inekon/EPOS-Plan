@@ -61,6 +61,12 @@ namespace EPOS.Kern.Tests
         private const int ANLAGE_GASKESSEL = 11334;
         private const int GERAET_GASKESSEL = 1018330;
 
+        private const string ANLAGE_SPEICHER_1017 = "BYD HVS+ 12.8";
+
+        /// <summary>Der zweite ELECTRICITY-Träger, den Projekt 1017 führt
+        /// („Elektrische Energie 2") — nicht seine Vorgabe, also als Wahl erkennbar.</summary>
+        private const int TRAEGER_STROM_ZWEI = 58;
+
         /// <summary>52,99 MWh × 1000 — Nutzwärme und Stromeinsatz des Laufs 199.</summary>
         private const double STROMEINSATZ_1024_KWH = 52990.0;
 
@@ -226,6 +232,82 @@ namespace EPOS.Kern.Tests
             Assert.True(ProjektEnergietraegerCtrl.StandardStromTraeger(PROJEKT_1017) > 0);
         }
 
+        /// <summary>
+        /// <b>Die Rangfolge der Anlagenwahl kennt den Elektrokessel.</b> Ist er die
+        /// einzige Anlage, die einen Stromträger gewählt hat, gilt SEINE Wahl für das
+        /// ganze Projekt — Preis, Anteile und Emissionen lesen dieselbe Zahl. Einen
+        /// eigenen Tarif je Verbraucher gibt es nicht: Der Netzbezug wird einmal
+        /// bepreist (Anwenderentscheid 18.09.2026).
+        ///
+        /// <para>Ohne gesetzte <c>ID_Carrier</c> — der Stand der Testdatenbank — bleibt
+        /// es bei der Vorgabe, der kleinsten Id der Zuordnungen.</para>
+        /// </summary>
+        [Fact]
+        public void Der_am_Elektrokessel_gewaehlte_Stromtraeger_gilt_fuer_das_Projekt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Ausgangslage: keine Anlage hat gewählt, also gilt die Vorgabe.
+            Assert.Equal(0, ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_1017));
+            int vorgabe = StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_1017);
+            Assert.True(vorgabe > 0 && vorgabe != TRAEGER_STROM_ZWEI);
+
+            Waehle(AnlagenId(PROJEKT_1017, ANLAGE_ELEKTROKESSEL_1017), TRAEGER_STROM_ZWEI);
+
+            Assert.Equal(TRAEGER_STROM_ZWEI,
+                         ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_1017));
+            Assert.Equal(TRAEGER_STROM_ZWEI, StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_1017));
+            Assert.Equal(TRAEGER_STROM_ZWEI, Emissionsquelle.StromTraeger(PROJEKT_1017));
+        }
+
+        /// <summary>
+        /// Die Ordnung der Rangfolge: Die Wärmepumpe steht VOR dem Elektrokessel, der
+        /// Elektrokessel vor dem Stromspeicher. Beide Gegenproben laufen am selben
+        /// Projekt, dessen drei elektrische Anlagen sich widersprechen dürfen.
+        /// </summary>
+        [Fact]
+        public void Die_Rangfolge_stellt_den_Elektrokessel_hinter_die_Waermepumpe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int kessel = AnlagenId(PROJEKT_1017, ANLAGE_ELEKTROKESSEL_1017);
+            int vorgabe = StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_1017);
+            Assert.True(vorgabe > 0 && vorgabe != TRAEGER_STROM_ZWEI);
+
+            // Kessel gegen Speicher — der Kessel gewinnt.
+            Waehle(kessel, TRAEGER_STROM_ZWEI);
+            Waehle(AnlagenId(PROJEKT_1017, ANLAGE_SPEICHER_1017), vorgabe);
+            Assert.Equal(TRAEGER_STROM_ZWEI,
+                         ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_1017));
+
+            // Kessel gegen Wärmepumpe — die Pumpe gewinnt.
+            Waehle(AnlagenId(PROJEKT_1017, ANLAGE_WAERMEPUMPE_1017), vorgabe);
+            Assert.Equal(vorgabe, ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_1017));
+        }
+
+        /// <summary>
+        /// Die Gegenprobe zum Gerät: Ein BRENNSTOFFkessel wählt keinen Stromträger,
+        /// auch wenn an seiner Anlagenzeile einer steht. Sonst hätte die Zuordnung eines
+        /// Gaskessels den Strompreis des Projekts umgestellt.
+        /// </summary>
+        [Fact]
+        public void Ein_Brennstoffkessel_waehlt_keinen_Stromtraeger()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.Equal(0, ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_GAS));
+            int vorgabe = StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_GAS);
+            Assert.True(vorgabe > 0);
+
+            Waehle(ANLAGE_GASKESSEL, vorgabe);
+
+            Assert.Equal(0, ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(PROJEKT_GAS));
+            Assert.Equal(vorgabe, StrompreisZerlegungCtrl.StromCarrierId(PROJEKT_GAS));
+        }
+
         // =====================================================================
         // Teil B — eine Wahrheit über die Menge
         // =====================================================================
@@ -357,8 +439,100 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        // Teil C — der Grund, wenn keine Bezugsgröße dasteht
+        // =====================================================================
+
+        /// <summary>
+        /// Eine Zeile „je kWh elektrisch" am ELEKTROKESSEL bleibt ohne Lauf ohne
+        /// Bezugsgröße — und nennt dafür den fehlenden LAUF, nicht das Gewerk. Am
+        /// Brennstoffkessel bleibt es beim Gewerk: Ihm fehlt die Größe selbst, und kein
+        /// Lauf der Welt brächte sie ihm.
+        ///
+        /// <para>Die LANDKARTE ohne Anlagenkenntnis bleibt unangetastet — sie füllt
+        /// auch die Auswahlliste der Bemessungsarten
+        /// (<c>KostenVorlagenCtrl.PasstZuGewerk</c>).</para>
+        /// </summary>
+        [Fact]
+        public void Am_Elektrokessel_nennt_der_Grund_den_fehlenden_Lauf()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int kessel = AnlagenId(PROJEKT_1017, ANLAGE_ELEKTROKESSEL_1017);
+            Assert.True(WirtschaftlichkeitCtrl.IstElektrokesselAnlage(kessel));
+            Assert.False(WirtschaftlichkeitCtrl.IstElektrokesselAnlage(ANLAGE_GASKESSEL));
+
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_LAUF,
+                         WirtschaftlichkeitCtrl.BasisGrundFuerZeile(
+                             DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
+                             BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL, kessel));
+
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GEWERK,
+                         WirtschaftlichkeitCtrl.BasisGrundFuerZeile(
+                             DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
+                             BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL, ANLAGE_GASKESSEL));
+
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GEWERK,
+                         WirtschaftlichkeitCtrl.BasisGrund(
+                             DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
+                             BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL));
+        }
+
+        /// <summary>
+        /// Derselbe Grund auf dem Weg, den der Dialog geht: über die gespeicherte
+        /// Position und <see cref="WirtschaftlichkeitCtrl.FrischeBasis"/>. Damit ist
+        /// nicht nur die Landkarte geprüft, sondern auch, dass die Anlage der Zeile
+        /// überhaupt bis dorthin durchgereicht wird.
+        /// </summary>
+        [Fact]
+        public void Der_Grund_der_Zeile_kommt_bis_in_den_Dialog()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string grund;
+            int elektro = Wartungszeile(POSITION_ELEKTRO, PROJEKT_1017,
+                                        AnlagenId(PROJEKT_1017, ANLAGE_ELEKTROKESSEL_1017));
+            Assert.Null(WirtschaftlichkeitCtrl.FrischeBasis(
+                            elektro, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, out grund));
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_LAUF, grund);
+
+            int gas = Wartungszeile(POSITION_GAS, PROJEKT_GAS, ANLAGE_GASKESSEL);
+            Assert.Null(WirtschaftlichkeitCtrl.FrischeBasis(
+                            gas, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, out grund));
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GEWERK, grund);
+        }
+
+        // =====================================================================
         // Helfer
         // =====================================================================
+
+        /// <summary>Kennungen zweier Betriebskostenzeilen, die es in der
+        /// Testdatenbank nicht gibt — sie entstehen in der Arbeitskopie.</summary>
+        private const int POSITION_ELEKTRO = 990000001;
+        private const int POSITION_GAS = 990000002;
+
+        /// <summary>Legt eine satzbasierte BETRIEBSzeile „je kWh elektrisch" an der
+        /// Anlage an und gibt ihre Kennung zurück.</summary>
+        private static int Wartungszeile(int id, int projekt, int anlage)
+        {
+            Assert.True(anlage > 0, "Anlagenzeile nicht gefunden.");
+            object stamm = DataRepository.ExecuteScalar("SELECT MIN(StammID) FROM Tab_Kostenfaktor");
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO Tab_ProjektWerte (ID, ProjektID, StammID, KomponentenID, KategorieID, " +
+                "EingegebenerWert, Nutzungsdauer, Kostenart, Bemessung, Einheitpreis, ID_Anlage) " +
+                "VALUES (?, ?, ?, ?, ?, 0.0, 20, ?, ?, 0.05, ?)",
+                new DbParam("@id", id),
+                new DbParam("@p", projekt),
+                new DbParam("@s", Convert.ToInt32(stamm)),
+                new DbParam("@k", BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL),
+                new DbParam("@kat", DbWerte.KOSTEN_KATEGORIE_BETRIEB),
+                new DbParam("@art", DbWerte.KOSTENART_BETRIEBSGEBUNDEN),
+                new DbParam("@bem", DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH),
+                new DbParam("@a", anlage));
+            return id;
+        }
+
 
         private static ProjektEnergietraegerCtrl.AnlagenEintrag Eintrag(
             List<ProjektEnergietraegerCtrl.AnlagenEintrag> liste, string bezeichner)
@@ -366,6 +540,15 @@ namespace EPOS.Kern.Tests
             foreach (ProjektEnergietraegerCtrl.AnlagenEintrag a in liste)
                 if (string.Equals(a.Bezeichner, bezeichner, StringComparison.Ordinal)) return a;
             return null;
+        }
+
+        /// <summary>Setzt den Trägerverweis EINER Anlagenzeile der Arbeitskopie.</summary>
+        private static void Waehle(int anlage, int traeger)
+        {
+            Assert.True(anlage > 0, "Anlagenzeile nicht gefunden.");
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Energieanlagen SET ID_Carrier = ? WHERE ID = ?",
+                new DbParam("@c", traeger), new DbParam("@a", anlage));
         }
 
         /// <summary><c>Tab_Energieanlagen.ID</c> zu einem Bezeichner des Projekts.</summary>
