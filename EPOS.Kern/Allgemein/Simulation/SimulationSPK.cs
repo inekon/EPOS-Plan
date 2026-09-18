@@ -297,7 +297,49 @@ namespace WindowsFormsApplication1
         public bool IstStromkessel(int index)
         {
             if (index < 0 || index >= Brennstoff_Art.Length) return false;
-            return Brennstoff_Art[index] == BRENNSTOFF_STROM;
+            return IstStromkesselBrennstoff(Brennstoff_Art[index]);
+        }
+
+        /// <summary>
+        /// <b>DIE eine Regel „das ist ein Elektrokessel"</b> — allein die
+        /// Brennstoffangabe des Geräts (<c>Tab_Heizkessel.Brennstoff</c> =
+        /// <see cref="BRENNSTOFF_STROM"/>) entscheidet es.
+        ///
+        /// <para>Statisch, weil außerhalb der Simulation dieselbe Frage gestellt wird
+        /// und sie überall dieselbe Antwort bekommen muss: die Trägerzulassung
+        /// (<c>EnergietraegerZulaessigkeit</c>, <c>ProjektEnergietraegerCtrl</c> — der
+        /// Elektrokessel gehört zur elektrischen Welt wie Wärmepumpe und Heizstab) und
+        /// der Bezugsgrößen-Auflöser (<c>EndenergieAufloeser</c>, der seinen
+        /// Stromeinsatz ausweist). Das Brennstoffwort der Modulzeile taugt dafür nicht:
+        /// Gespeicherte Läufe von vor Befund B-1 führen es leer.</para>
+        /// </summary>
+        /// <param name="brennstoffArt"><c>Tab_Heizkessel.Brennstoff</c>; 0 = unbekannt.</param>
+        public static bool IstStromkesselBrennstoff(int brennstoffArt)
+        {
+            return brennstoffArt == BRENNSTOFF_STROM;
+        }
+
+        /// <summary>
+        /// <b>DIE eine Regel „wie viel Strom setzt ein Elektrokessel ein"</b> [MWh/a]:
+        /// seine NUTZWÄRME. Der Rechenkern führt den Elektrokessel mit Nutzungsgrad 1 —
+        /// <see cref="Bilanz_und_Nutzungsgrad"/> bucht genau diese Summe auf
+        /// <see cref="StromverbrauchSpkMwh"/>, und die Stundenreihe trägt dieselbe
+        /// Kesselleistung.
+        ///
+        /// <para><b>Warum es eine benannte Funktion ist.</b> Die Simulation bucht die
+        /// Menge, der <c>EndenergieAufloeser</c> weist sie aus. Zwei Formeln an zwei
+        /// Orten wären zwei Wahrheiten über denselben Strom; die Simulation rechnet
+        /// unverändert weiter, ihre Formel hat nur einen Namen bekommen.</para>
+        ///
+        /// <para>Die beiden Summanden sind die Wärmekanäle der Kesselbilanz
+        /// (<c>s_waerme_Gas_Spk</c>, <c>s_waerme_Oel_Spk</c>) bzw. in der Modulzeile
+        /// <c>Waerme_Gas</c> und <c>Waerme_Oel</c> — beim Elektrokessel steht die
+        /// Wärme auf dem Gaskanal, weil die Verzweigung der Stundenschleife nur
+        /// „Öl oder nicht Öl" kennt.</para>
+        /// </summary>
+        public static double StromeinsatzElektrokesselMwh(double waermeGasMwh, double waermeOelMwh)
+        {
+            return waermeGasMwh + waermeOelMwh;
         }
 
         /// <summary>
@@ -374,7 +416,11 @@ namespace WindowsFormsApplication1
                     // seinen Einsatz auf den STROMzähler bucht statt auf einen
                     // Brennstoffzähler — der Grund, weshalb seine Modulzeile keinen
                     // Brennstoffverbrauch führt (IstStromkessel).
-                    StromverbrauchSpkMwh += Kessel_Nutzkraft_Jahr;
+                    // Dieselbe Summe wie Kessel_Nutzkraft_Jahr, nur benannt: Die Regel
+                    // „Stromeinsatz des Elektrokessels" steht EINMAL im Haus, und der
+                    // EndenergieAufloeser ruft sie für die Anzeige (StromeinsatzElektrokesselMwh).
+                    StromverbrauchSpkMwh += StromeinsatzElektrokesselMwh(s_waerme_Gas_Spk[i],
+                                                                         s_waerme_Oel_Spk[i]);
                     // B0-2: auch hier kein Aliasing — sonst bleibt der Strom-Vektor ab dem
                     // zweiten Lauf dauerhaft an die Kessel-Ganglinie gebunden.
                     Stromverbrauch_stuendlich = (double[])Kesselleistung_stuendlich.Clone();
