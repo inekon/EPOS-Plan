@@ -189,6 +189,21 @@ namespace WindowsFormsApplication1
             return "€/" + einheit;
         }
 
+        /// <summary>Gramm je Kilogramm — die Brücke der CO₂-Masse.</summary>
+        private const double G_JE_KG = 1000.0;
+
+        /// <summary>
+        /// Die CO₂-MASSE je Abrechnungseinheit [kg]: Emissionsfaktor [g/kWh] ×
+        /// Heizwert [kWh je Einheit] ÷ 1000. Sie ist die Zahl, mit der die
+        /// BEHG-Herleitung rechnet („65 €/t × 2,109 kg/m³") — eine Masse, keine
+        /// Energiemenge. <c>null</c>, solange einer der beiden Werte fehlt.
+        /// </summary>
+        public static double? Co2MasseJeEinheit(double emissionsfaktorGKwh, double heizwert)
+        {
+            if (emissionsfaktorGKwh <= 0.0 || heizwert <= 0.0) return null;
+            return emissionsfaktorGKwh * heizwert / G_JE_KG;
+        }
+
         /// <summary>
         /// Der Umrechnungsfaktor Hs/Hi eines Trägers — die Brücke zwischen einem
         /// BRENNWERTbezogenen Katalogsatz (€/MWh) und dem HEIZWERTbezogenen

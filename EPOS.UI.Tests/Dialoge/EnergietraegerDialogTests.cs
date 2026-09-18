@@ -103,7 +103,13 @@ public class EnergietraegerDialogTests : EposBunitContext
         Action<Bunit.ComponentParameterCollectionBuilder<EnergietraegerDialog>>? mehr = null,
         EnergietraegerAnsicht? ansicht = null, bool katalog = true)
     {
-        _ansicht = ansicht ?? new EnergietraegerAnsicht { Stand = Stand() };
+        _ansicht = ansicht ?? new EnergietraegerAnsicht
+        {
+            Stand = Stand(),
+            // ET-D: Der Dialogkopf nennt den Traeger; die Huelle setzt den Namen
+            // aus energy_carrier.name.
+            StammName = "Erdgas H"
+        };
         return Render<EnergietraegerDialog>(p =>
         {
             p.Add(x => x.Liste, LISTE);
@@ -123,10 +129,10 @@ public class EnergietraegerDialogTests : EposBunitContext
     {
         var cut = Zeige(p => p
             .Add(x => x.TitelText, "Energieträgerverwaltung")
-            .Add(x => x.KontextText, "Kontext: Katalog (Stammdaten)"));
+            .Add(x => x.KontextText, "Katalog · Preise netto"));
 
-        Assert.Equal("Energieträgerverwaltung", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.StartsWith("Kontext: Katalog", cut.Find(".epos-kontextzeile").TextContent);
+        Assert.Equal("Energieträger — Erdgas H", cut.Find(".epos-dialog-titel").TextContent);
+        Assert.StartsWith("Katalog · Preise netto", cut.Find(".epos-kontextzeile").TextContent);
         Assert.Single(cut.FindAll(".epos-traeger-liste"));
         Assert.Single(cut.FindAll(".epos-traegerkarte"));
     }
@@ -355,30 +361,69 @@ public class EnergietraegerDialogTests : EposBunitContext
     // Trägerkarte
     // =====================================================================
 
+    /// <summary>
+    /// <b>ET-D (Anwenderwunsch 18.09.2026).</b> Die Karte führt KEINE Reiter mehr,
+    /// sondern vier Blöcke: A „Preis und Heizwert" und B (Preisbestandteile bzw.
+    /// Strompreis Details) nebeneinander, darunter C „Emissionen" und D
+    /// „Einheiten und Umrechnung" über die volle Breite; die Historie schließt ab.
+    /// Block D steht zugeklappt.
+    /// </summary>
     [Fact]
-    public void Die_Traegerkarte_zeigt_ihre_zwei_Reiter_und_die_Historie()
+    public void Die_Traegerkarte_zeigt_vier_Bloecke_und_die_Historie()
     {
         var cut = Zeige();
 
-        // iU9-W5.0 (Nachzug A-2): zwei Reiter wie im Vorlaeufer,
-        // „Preise & Umrechnung" und „Emissionen"; die Historie samt
-        // Speichern-Knopf steht UNTER der Leiste und gilt fuer beide.
-        var reiter = cut.FindAll(".epos-traegerkarte .epos-reiter-knopf");
-        Assert.Equal(2, reiter.Count);
-        Assert.Equal("Preise & Umrechnung", reiter[0].TextContent.Trim());
-        Assert.Equal("Emissionen", reiter[1].TextContent.Trim());
+        Assert.Empty(cut.FindAll(".epos-traegerkarte .epos-reiter-knopf"));
+        Assert.DoesNotContain("Preise &amp; Umrechnung", cut.Markup);
 
-        // Der aktive Reiter zeigt Preise und Umrechnung, darunter die Historie.
-        Assert.Equal(2, cut.FindAll(".epos-reiter-blatt > .epos-gruppenkopf").Count);
-        Assert.Single(cut.FindAll(".epos-traegerkarte > .epos-gruppenkopf"));
+        // Zwei Blockspalten, A links, B rechts.
+        Assert.Single(cut.FindAll(".epos-traegerkarte > .epos-blockspalten"));
+        Assert.Equal(2, cut.FindAll(".epos-blockspalten > .epos-blockspalte").Count);
+
+        Assert.Contains("Preis und Heizwert", cut.Markup);
+        Assert.Contains("Emissionen", cut.Markup);
+        Assert.Contains("Einheiten und Umrechnung", cut.Markup);
+        Assert.Contains("Preishistorie", cut.Markup);
+
+        // C, D und die Historie stehen unmittelbar unter der Karte.
+        Assert.Equal(3, cut.FindAll(".epos-traegerkarte > .epos-gruppenkopf").Count);
 
         Assert.Equal("Erdgas H  (VDI 3805 3)", cut.Find(".epos-traeger-name").TextContent);
         Assert.Equal("Gruppe: Gas", cut.Find(".epos-traeger-gruppe").TextContent);
     }
 
-    /// <summary>Stellt die Trägerkarte auf den Reiter „Emissionen".</summary>
+    /// <summary>
+    /// Block D ist zugeklappt und geht mit dem Hausknopf auf — die Preisbasis, die
+    /// Regeln und der Verstoßhinweis stehen darin.
+    /// </summary>
+    [Fact]
+    public void Block_Einheiten_steht_zu_und_geht_mit_dem_Hausknopf_auf()
+    {
+        var cut = Zeige();
+
+        var knopf = cut.Find(".epos-traegerkarte .epos-modulparameter-knopf");
+        Assert.Equal("false", knopf.GetAttribute("aria-expanded"));
+        Assert.DoesNotContain("Preisbasis", cut.Markup);
+
+        knopf.Click();
+
+        Assert.Equal("true", cut.Find(".epos-traegerkarte .epos-modulparameter-knopf")
+                                .GetAttribute("aria-expanded"));
+        Assert.Contains("Preisbasis", cut.Markup);
+        Assert.Contains("prüfen die Einheitenkette", cut.Markup);
+    }
+
+    /// <summary>Klappt Block D „Einheiten und Umrechnung" auf.</summary>
+    private static void ZeigeEinheiten(IRenderedComponent<EnergietraegerDialog> cut)
+        => cut.Find(".epos-traegerkarte .epos-modulparameter-knopf").Click();
+
+    /// <summary>
+    /// Der Emissionsblock steht seit ET-D IMMER da — nichts zu klappen. Die
+    /// Methode bleibt als Lesehilfe der Fälle, die ihn brauchen.
+    /// </summary>
     private static void ZeigeEmissionen(IRenderedComponent<EnergietraegerDialog> cut)
-        => cut.FindAll(".epos-traegerkarte .epos-reiter-knopf")[1].Click();
+    {
+    }
 
     [Fact]
     public void Ohne_Heizwert_fehlen_Heizwertfeld_und_Formel()
@@ -412,7 +457,27 @@ public class EnergietraegerDialogTests : EposBunitContext
         stand.VerstossText = "Der Träger erreicht kWh nicht.";
         var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = stand });
 
+        // Er gehört zu den Regeln und steht deshalb in Block D.
+        ZeigeEinheiten(cut);
+
         Assert.Contains("Der Träger erreicht kWh nicht.", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// ET-D: Die Effektivzeile fällt aus Hi und Hs und steht deshalb bei ihnen —
+    /// in Block A, nicht mehr bei den Regeln.
+    /// </summary>
+    [Fact]
+    public void Die_Effektivzeile_steht_in_Block_A()
+    {
+        EnergietraegerStand stand = Stand();
+        stand.EffektivText = "effektiv: 1 Nm³ = 10,50 kWh (Hi) / 11,60 kWh (Hs)";
+        stand.HerleitungPreis = "→ 0,0720 €/kWh · Umrechnungsfaktor Hs/Hi = 1,1048";
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht { Stand = stand });
+
+        string blockA = cut.FindAll(".epos-blockspalte")[0].InnerHtml;
+        Assert.Contains("effektiv: 1 Nm³ = 10,50 kWh (Hi)", blockA);
+        Assert.Contains("Umrechnungsfaktor Hs/Hi = 1,1048", blockA);
     }
 
     [Fact]
@@ -588,7 +653,7 @@ public class EnergietraegerDialogTests : EposBunitContext
     {
         int gespeichert = 0;
         var cut = Zeige(p => p
-            .Add(x => x.KontextText, "Kontext: Katalog (Stammdaten)")
+            .Add(x => x.KontextText, "Katalog · Preise netto")
             .Add(x => x.Speichern, () => { gespeichert++; return true; })
             .Add(x => x.VorlageGespeichert, " — gespeichert {0} Uhr"));
 
@@ -687,6 +752,7 @@ public class EnergietraegerDialogTests : EposBunitContext
     {
         int? gemeldet = null;
         var cut = Zeige(p => p.Add(x => x.PreisbasisGewechselt, (int id) => gemeldet = id));
+        ZeigeEinheiten(cut);
 
         var feld = cut.FindAll("select")
                       .First(s => s.QuerySelectorAll("option")
@@ -702,6 +768,27 @@ public class EnergietraegerDialogTests : EposBunitContext
 
         feld.Change("1");
         Assert.Equal(1, gemeldet);
+    }
+
+    /// <summary>
+    /// ET-D: Der Dialogkopf nennt den Träger, an dem gerade gearbeitet wird; ohne
+    /// Träger bleibt es beim Maskentitel.
+    /// </summary>
+    [Fact]
+    public void Der_Kopf_nennt_den_gewaehlten_Traeger()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.TitelText, "Energieträgerverwaltung")
+            .Add(x => x.VorlageTitelTraeger, "Energieträger — {0}"));
+
+        Assert.Equal("Energieträger — Erdgas H", cut.Find(".epos-dialog-titel").TextContent);
+
+        var leer = Zeige(p => p
+            .Add(x => x.TitelText, "Energieträgerverwaltung")
+            .Add(x => x.VorlageTitelTraeger, "Energieträger — {0}"),
+            ansicht: new EnergietraegerAnsicht());
+
+        Assert.Equal("Energieträgerverwaltung", leer.Find(".epos-dialog-titel").TextContent);
     }
 
     [Fact]

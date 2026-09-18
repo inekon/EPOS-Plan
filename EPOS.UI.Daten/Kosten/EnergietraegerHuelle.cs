@@ -2502,11 +2502,15 @@ namespace WindowsFormsApplication1
             catch { }
             if (!ef.HasValue || ef.Value <= 0.0) return "";
 
-            double kgJeEinheit = ef.Value * _baseHi / 1000.0;
+            // Die Masse rechnet der Kern (EnergietraegerPreiskarte) — hier steht
+            // kein Faktor 1000 (Einheitenregel W8-O-5c).
+            double? kgJeEinheit = EnergietraegerPreiskarte.Co2MasseJeEinheit(ef.Value, _baseHi);
+            if (!kgJeEinheit.HasValue) return "";
+
             return string.Format(CultureInfo.CurrentCulture,
                 T("BB_HERLEITUNG_CO2", "{0} €/t × {1} kg/{2}"),
                 preis.ToString("0.##", CultureInfo.CurrentCulture),
-                kgJeEinheit.ToString("N3", CultureInfo.CurrentCulture), einheit);
+                kgJeEinheit.Value.ToString("N3", CultureInfo.CurrentCulture), einheit);
         }
 
         /// <summary>
