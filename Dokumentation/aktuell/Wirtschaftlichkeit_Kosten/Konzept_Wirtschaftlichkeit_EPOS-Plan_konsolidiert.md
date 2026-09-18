@@ -845,9 +845,9 @@ Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegza
 | 3 | Kosten der Photovoltaik | `03` | 192.150 € = 640,50 €/kWp; Wechselrichter-Ersatz Jahr 12 (24.000 €, Barwert 16.833), Restwert 39.800 € (Barwert 22.036); Degradation 0,5 %/a → Jahr 20: 259,1 MWh |
 | 4 | Energiekosten | `04` | **umgesetzt** (ET-D): Preisbestandteile 0,0638 + 0,1371 + 0,1180 + 0,4371 = 0,7560 €/m³ — im Dialog in der Abrechnungseinheit; BEHG 872,3 t × 65 € = 56.700 €/a; N3 +32 % |
 | 5 | **Vergütungen BHKW** | `05` | **Mengentafel** brutto 1.650 → netto 1.563,2 (§ 9 Nr. 3 bleibt brutto); Mischsatz 5,5667 / 2,4167 ct; 2026 vergütet 60 % = 32.022 €; **Reihe endet nach zwölf Jahren** (291.111 €); § 53a 21.203 €/a |
-| 6 | **Vergütungen PV** | `06` | AW 6,04 ct; Spot 8.977,50 + Prämie 3.072,30 − § 51 614,46 − DV 798,00 − Kappung 241,00 = 10.396,34 €/a; § 51a 1.204,98 € |
-| 7 | Erlösrubrik | `07` | Block A 93.121,9 €/a; vermieden brutto 339.753,6 − entgangene § 9b 23.594,0 = effektiv 316.159,6 €/a |
-| 8 | Wirtschaftlichkeit über Nutzungsdauer | `08` | Höfingen: Näherung 65.073 €, jahresscharf 65.259 €; IZF/Amortisation nachrichtlich |
+| 6 | **Vergütungen PV** | `06` | AW 6,04 ct; 159,6 von 199,5 MWh vergütet (§ 51: 20 % abgeregelt); Spot 7.182,00 + Prämie 2.457,84 − DV 638,40 = 9.001,44 €/a; § 51a 1.095,52 € im Jahr 20; Reihe nominal 150.118 €, Barwert 113.800 € |
+| 7 | Erlösrubrik | `07` | Block A 91.727,0 €/a; vermieden brutto 339.753,6 − entgangene § 9b 23.594,0 = effektiv 316.159,6 €/a |
+| 8 | Wirtschaftlichkeit über Nutzungsdauer | `08` | Musterprojekt: Kapitalwertdifferenz V1 +1.660.205 · V2 +182.491 · V3 +1.842.695 € (Bandbreite V3 1.636.035 … 2.048.635 €); Höfingen: Näherung 65.073 €, jahresscharf 65.259 €; IZF/Amortisation nachrichtlich |
 
 **Drei Darstellungen, die über den bisherigen Stand hinausgehen und in die Umsetzung gehören:**
 
