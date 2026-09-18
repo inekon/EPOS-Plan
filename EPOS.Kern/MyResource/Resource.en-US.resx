@@ -19652,4 +19652,52 @@ Do you want to allow this?</value>
   <data name="AUFLOESER_BASIS_NETZBEZUG" xml:space="preserve">
     <value>{0} — electricity · grid supply (priced within the project's residual electricity demand)</value>
   </data>
+  <data name="WIRT_SICHT_ALLE" xml:space="preserve">
+    <value>All variants against the reference</value>
+  </data>
+  <data name="WIRT_SICHT_PAAR" xml:space="preserve">
+    <value>Two versions</value>
+  </data>
+  <data name="WIRT_SICHT_A" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="WIRT_SICHT_B" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="WIRT_SICHT_TAUSCH" xml:space="preserve">
+    <value>Swap A and B</value>
+  </data>
+  <data name="WIRT_SICHT_REFERENZ" xml:space="preserve">
+    <value>Reference of this view: {0} · Reference of the group: {1}</value>
+  </data>
+  <data name="WIRT_SICHT_GESPERRT" xml:space="preserve">
+    <value>at least two versions</value>
+  </data>
+  <data name="WIRT_SICHT_GRUPPE" xml:space="preserve">
+    <value>Reference: {0}</value>
+  </data>
+  <data name="WIRT_SICHT_REF_SPALTE" xml:space="preserve">
+    <value>Reference</value>
+  </data>
+  <data name="WIRT_SICHT_DIFF_ALLE" xml:space="preserve">
+    <value>Difference = variant − reference</value>
+  </data>
+  <data name="WIRT_SICHT_DIFF_PAAR" xml:space="preserve">
+    <value>Difference = B − A</value>
+  </data>
+  <data name="WIRT_SICHT_SPALTE_DIFF" xml:space="preserve">
+    <value>Difference B − A</value>
+  </data>
+  <data name="WIRT_SICHT_RUECKFALL" xml:space="preserve">
+    <value>The selected reference is no longer part of the comparison group — the calculation uses the master project “{0}”.</value>
+  </data>
+  <data name="WIRT_SICHT_REF_FEHLT" xml:space="preserve">
+    <value>The reference “{0}” could not be calculated ({1}) — without it there are no difference indicators.</value>
+  </data>
+  <data name="WIRT_SICHT_DEKLARATION" xml:space="preserve">
+    <value>Reference of this assessment: {0} · Do-nothing alternative of the group: {1}</value>
+  </data>
+  <data name="WIRT_SICHT_VALERI" xml:space="preserve">
+    <value>Comparison of two measures · Do-nothing alternative of the group: {0}</value>
+  </data>
 </root>

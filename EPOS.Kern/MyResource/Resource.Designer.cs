@@ -54501,6 +54501,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die A ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_A {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Varianten gegen die Referenz ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_ALLE {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die B ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_B {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Referenz dieser Bewertung: {0} · Unterlassensalternative der Gruppe: {1} ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_DEKLARATION {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_DEKLARATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Differenz = Variante − Referenz ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_DIFF_ALLE {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_DIFF_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Differenz = B − A ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_DIFF_PAAR {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_DIFF_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mindestens zwei Stände ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_GESPERRT {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Referenz: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_GRUPPE {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwei Stände ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_PAAR {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_PAAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Referenz dieser Sicht: {0} · Referenz der Gruppe: {1} ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_REFERENZ {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_REFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Referenz „{0}“ konnte nicht gerechnet werden ({1}) — ohne sie gibt es keine Differenzkennzahlen. ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_REF_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_REF_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Referenz ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_REF_SPALTE {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_REF_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Referenz steht nicht mehr in der Vergleichsgruppe — gerechnet wird gegen das Stammprojekt „{0}“. ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_RUECKFALL {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Differenz B − A ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_SPALTE_DIFF {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_SPALTE_DIFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die A und B tauschen ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_TAUSCH {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_TAUSCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich zweier Maßnahmen · Unterlassensalternative der Gruppe: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_VALERI {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_VALERI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl ähnelt.
         /// </summary>
         public static string WIRT_SP_KENNZAHL {

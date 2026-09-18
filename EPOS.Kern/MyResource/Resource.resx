@@ -19659,4 +19659,52 @@ Möchten Sie das zulassen?</value>
   <data name="AUFLOESER_BASIS_NETZBEZUG" xml:space="preserve">
     <value>{0} — Strom · Netzbezug (im Reststrombedarf des Projekts bepreist)</value>
   </data>
+  <data name="WIRT_SICHT_ALLE" xml:space="preserve">
+    <value>Alle Varianten gegen die Referenz</value>
+  </data>
+  <data name="WIRT_SICHT_PAAR" xml:space="preserve">
+    <value>Zwei Stände</value>
+  </data>
+  <data name="WIRT_SICHT_A" xml:space="preserve">
+    <value>A</value>
+  </data>
+  <data name="WIRT_SICHT_B" xml:space="preserve">
+    <value>B</value>
+  </data>
+  <data name="WIRT_SICHT_TAUSCH" xml:space="preserve">
+    <value>A und B tauschen</value>
+  </data>
+  <data name="WIRT_SICHT_REFERENZ" xml:space="preserve">
+    <value>Referenz dieser Sicht: {0} · Referenz der Gruppe: {1}</value>
+  </data>
+  <data name="WIRT_SICHT_GESPERRT" xml:space="preserve">
+    <value>mindestens zwei Stände</value>
+  </data>
+  <data name="WIRT_SICHT_GRUPPE" xml:space="preserve">
+    <value>Referenz: {0}</value>
+  </data>
+  <data name="WIRT_SICHT_REF_SPALTE" xml:space="preserve">
+    <value>Referenz</value>
+  </data>
+  <data name="WIRT_SICHT_DIFF_ALLE" xml:space="preserve">
+    <value>Differenz = Variante − Referenz</value>
+  </data>
+  <data name="WIRT_SICHT_DIFF_PAAR" xml:space="preserve">
+    <value>Differenz = B − A</value>
+  </data>
+  <data name="WIRT_SICHT_SPALTE_DIFF" xml:space="preserve">
+    <value>Differenz B − A</value>
+  </data>
+  <data name="WIRT_SICHT_RUECKFALL" xml:space="preserve">
+    <value>Die gewählte Referenz steht nicht mehr in der Vergleichsgruppe — gerechnet wird gegen das Stammprojekt „{0}“.</value>
+  </data>
+  <data name="WIRT_SICHT_REF_FEHLT" xml:space="preserve">
+    <value>Die Referenz „{0}“ konnte nicht gerechnet werden ({1}) — ohne sie gibt es keine Differenzkennzahlen.</value>
+  </data>
+  <data name="WIRT_SICHT_DEKLARATION" xml:space="preserve">
+    <value>Referenz dieser Bewertung: {0} · Unterlassensalternative der Gruppe: {1}</value>
+  </data>
+  <data name="WIRT_SICHT_VALERI" xml:space="preserve">
+    <value>Vergleich zweier Maßnahmen · Unterlassensalternative der Gruppe: {0}</value>
+  </data>
 </root>

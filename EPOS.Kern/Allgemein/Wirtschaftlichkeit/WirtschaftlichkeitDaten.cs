@@ -242,6 +242,26 @@ namespace WindowsFormsApplication1
     public class WirtschaftlichkeitParameter
     {
         public int IdStamm;
+
+        /// <summary>
+        /// KONZEPT § 2.9 — das <b>wählbare Vergleichsprojekt</b> der Gruppe:
+        /// <c>Tab_Projekt.ID</c> des Standes, gegen den alle Differenzkennzahlen
+        /// rechnen (Kapitalwertdifferenz, Annuität, dynamische Amortisation, interner
+        /// Zinsfuß, Sensitivität der Differenz). <b>0 = Stammprojekt</b> — die Vorgabe
+        /// und damit das Bestandsverhalten.
+        ///
+        /// <para>Sie steht an der RAHMENZEILE und nicht an der Variante, weil die
+        /// Referenz wie Zins und Betrachtungszeitraum je Gruppe gilt. Persistenz:
+        /// <see cref="SchemaKatalog.SPALTE_PW_REFERENZPROJEKT"/> (Schemaschritt 92,
+        /// nullbar; NULL = Stamm).</para>
+        ///
+        /// <para>Sie ist der VORGABEWERT der Differenzrechnung, nicht ihr einziger:
+        /// <c>WirtschaftlichkeitCtrl.Berechne</c> nimmt die Referenz als Parameter, und
+        /// die Vergleichssicht „Zwei Stände" (§ 2.15) übergibt dort A, ohne diesen Wert
+        /// anzufassen.</para>
+        /// </summary>
+        public int IdReferenzprojekt;
+
         public double Zinssatz = 3.0;                 // Kalkulationszins [%]
         public int Betrachtungszeitraum = 20;         // T [a]
         public double PreissteigerungEnergie = 0.0;   // [%/a]
