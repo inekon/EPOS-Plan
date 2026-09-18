@@ -20,9 +20,14 @@
 /// <param name="IstErloes">Erlös/Zuschuss, also negativer Ausweis.</param>
 /// <param name="EmpfehlungVon">Untere Empfehlung; <c>null</c> = nicht gepflegt.</param>
 /// <param name="EmpfehlungBis">Obere Empfehlung; <c>null</c> = nicht gepflegt.</param>
+/// <param name="PositionsartId">U8 (Stufe S2): Die gewaehlte Positionsart —
+/// <c>Tab_Nutzungsdauer.ID</c>, wie der Aufrufer sie in <c>Positionsarten</c>
+/// hereingegeben hat. <c>null</c> = keine; dann gilt die Standardzeile der Technik.
+/// Der Aufrufer traegt sie ein und setzt die Nutzungsdauer neu.</param>
 public sealed record VorlagenPositionErgebnis(
     string Bezeichnung,
     int KostenartId,
     bool IstErloes,
     double? EmpfehlungVon,
-    double? EmpfehlungBis);
+    double? EmpfehlungBis,
+    int? PositionsartId = null);

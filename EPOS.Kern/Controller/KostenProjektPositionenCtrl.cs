@@ -124,10 +124,18 @@ namespace WindowsFormsApplication1
                          projektId + ")) ";
             }
 
+            // STUFE S2: Die POSITIONSART wandert mit — sie steuert die Vorbelegung
+            // und die Herleitungszeile des Rasters. Auf einer nie migrierten Datenbank
+            // bleibt die Spalte weg; die Zeile fällt dann auf den Technik-Standard
+            // zurück, und das ist derselbe Ausgang (Muster PflichtSpalteVorhanden).
+            bool mitArt = NutzungsdauerCtrl.VerweisSpalteVorhanden(
+                SchemaKatalog.TAB_PROJEKTWERTE);
+
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT w.ID, w.StammID, w.EingegebenerWert, w.Nutzungsdauer, " +
                 "w.BestCase, w.WorstCase, w.BestCase_Nutzungsdauer, w.WorstCase_Nutzungsdauer, " +
-                "k.Bezeichnung " +
+                "k.Bezeichnung" +
+                (mitArt ? ", w.[" + NutzungsdauerSchema.SPALTE_VERWEIS + "]" : "") + " " +
                 "FROM Tab_ProjektWerte AS w INNER JOIN Tab_Kostenfaktor AS k " +
                 "ON w.StammID = k.StammID " +
                 "WHERE w.ProjektID = ? AND w.KomponentenID = ? AND w.KategorieID = ? " +
@@ -173,6 +181,12 @@ namespace WindowsFormsApplication1
                 z.Worst = W(r, "WorstCase") ?? 0;
                 z.BestNutzung = W(r, "BestCase_Nutzungsdauer") ?? 0;
                 z.WorstNutzung = W(r, "WorstCase_Nutzungsdauer") ?? 0;
+                if (mitArt)
+                {
+                    object art = r[NutzungsdauerSchema.SPALTE_VERWEIS];
+                    z.Raster.NutzungsdauerId = art == DBNull.Value
+                        ? (int?)null : Convert.ToInt32(art);
+                }
 
                 KostenPositionCtrl.Zusatz zu;
                 if (!zusaetze.TryGetValue(z.Raster.Id, out zu)) zu = new KostenPositionCtrl.Zusatz();

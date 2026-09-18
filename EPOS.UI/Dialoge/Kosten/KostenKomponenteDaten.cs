@@ -97,9 +97,51 @@ public sealed class KostenPositionZeile
     /// </summary>
     public string EmpfehlungZeile { get; set; } = "";
 
+    /// <summary>
+    /// U8 (Stufe S2): Die HERLEITUNGSZEILE unter der Nutzungsdauer — „15 a · Vorgabe
+    /// der Technik", „… · AfA-Tabelle: ‹Positionsart›" oder „… · eigener Wert". Sie
+    /// kommt fertig aus dem Kern (<c>NutzungsdauerCtrl.Herleitungszeile</c>); leer
+    /// heißt keine Zeile — auf der Betriebsseite und überall dort, wo keine Dauer
+    /// gepflegt ist (die nennt die Tafel „Ersatz und Restwert").
+    /// </summary>
+    public string NutzungsdauerHerleitung { get; set; } = "";
+
     /// <summary>Darf die Zeile bearbeitet werden? (Auslieferungsvorlagen nicht.)</summary>
     public bool Schreibbar { get; set; } = true;
 }
+
+/// <summary>
+/// U30 — EINE Zeile der Tafel „Ersatz und Restwert" unter dem Raster der
+/// Investitionsseite.
+///
+/// <para>Alles fertig gesetzt: Ersatzjahre, Ersatzbeträge und der lineare Restwert
+/// kommen aus derselben Funktion, die die Kapitalwertrechnung durchläuft
+/// (<c>KapitalwertRechner.Ersatz</c>); gerechnet und formatiert wird im Kern
+/// (<c>ErsatzRestwertTafel</c>). Die Oberfläche zeigt nur an — auch den
+/// Gedankenstrich, der dort steht, wo keine Nutzungsdauer gepflegt ist.</para>
+/// </summary>
+/// <param name="Position">Bezeichnung; in der Summenzeile der Komponentenname.</param>
+/// <param name="IstSumme">Die Summenzeile der Komponente — sie wird hervorgehoben.</param>
+/// <param name="Betrag">Betrag netto, gesetzt („196.080,00").</param>
+/// <param name="Dauer">„15 a", „—" oder — in der Summenzeile — „3 von 4".</param>
+/// <param name="Ersatz">„Jahr 15", „— deckungsgleich mit T" oder „— läuft wie T".</param>
+/// <param name="ErsatzBarwert">„Barwert 132.149"; leer = keine Ersatzbeschaffung.</param>
+/// <param name="Restwert">Restwert im Jahr T, nominal.</param>
+/// <param name="RestwertBarwert">„Barwert 75.995"; leer = kein Restwert.</param>
+/// <param name="Herkunft">Woher die Nutzungsdauer stammt.</param>
+public sealed record ErsatzRestwertZeile(string Position, bool IstSumme, string Betrag,
+                                         string Dauer, string Ersatz, string ErsatzBarwert,
+                                         string Restwert, string RestwertBarwert,
+                                         string Herkunft);
+
+/// <summary>
+/// U8 (Stufe S2): Was der Knopf „Nutzungsdauern vorbelegen…" bewirkt hat.
+/// </summary>
+/// <param name="Gefuellt">Zahl der Positionen, die eine Dauer bekommen haben.</param>
+/// <param name="Belegt">Zahl der Positionen, die BEREITS eine Dauer tragen und deren
+/// Vorgabe davon abweicht — sie bleiben, bis der Anwender das Überschreiben
+/// bestätigt (Anwenderentscheid ND‑Q4 (b): nichts geschieht still).</param>
+public sealed record NutzungsdauerVorbelegung(int Gefuellt, int Belegt);
 
 /// <summary>
 /// U31 — EINE Zeile der Gruppe „Endenergie je Komponente" unter dem Raster der
@@ -196,6 +238,30 @@ public sealed class KostenKomponenteStand
     /// </summary>
     public IReadOnlyList<EndenergieZeile> Endenergie { get; set; }
         = Array.Empty<EndenergieZeile>();
+
+    /// <summary>
+    /// U30: Die Tafel „Ersatz und Restwert" unter dem Raster der Investitionsseite —
+    /// je Position eine Zeile, zuletzt die Summenzeile der Komponente. Leere Liste =
+    /// keine Tafel (Betriebsseite, Katalogkontext, kein Betrag).
+    /// </summary>
+    public IReadOnlyList<ErsatzRestwertZeile> ErsatzRestwert { get; set; }
+        = Array.Empty<ErsatzRestwertZeile>();
+
+    /// <summary>
+    /// U30: Der Satz ÜBER der Tafel (Konzept Wirtschaftlichkeit § 2.13 (3)) —
+    /// Betrachtungszeitraum über der Vorgabe der Technik, k von n Positionen ohne
+    /// Dauer. Leer = nichts zu prüfen, dann kein Hinweis.
+    /// </summary>
+    public string ErsatzRestwertHinweis { get; set; } = "";
+
+    /// <summary>U30: Überschrift der Restwertspalte samt T („Restwert Jahr 20").</summary>
+    public string SpalteRestwert { get; set; } = "";
+
+    /// <summary>
+    /// U8 (Stufe S2): Ist der Knopf „Nutzungsdauern vorbelegen…" bedienbar? Nur auf
+    /// der Investitionsseite einer schreibbaren Vorlage bzw. eines Projekts.
+    /// </summary>
+    public bool NutzungsdauerVorbelegbar { get; set; }
 
     /// <summary>Zeigt den Abschnitt „Ertrag/Bonus" (FK5: nur BHKW und Photovoltaik).</summary>
     public bool ErtragSichtbar { get; set; }

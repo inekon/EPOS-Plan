@@ -19091,6 +19091,99 @@ Do you want to allow this?</value>
   <data name="ND_MELD_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The row could not be saved.</value>
   </data>
+  <data name="ND_HERK_TECHNIK" xml:space="preserve">
+    <value>default of the technology</value>
+  </data>
+  <data name="ND_HERK_ART" xml:space="preserve">
+    <value>Depreciation table: {0}</value>
+  </data>
+  <data name="ND_HERK_KEINE" xml:space="preserve">
+    <value>no service life maintained</value>
+  </data>
+  <data name="ND_ZEILE_HERLEITUNG" xml:space="preserve">
+    <value>{0} y · {1}</value>
+  </data>
+  <data name="ND_VORBELEGEN_BTN" xml:space="preserve">
+    <value>Preset service lives…</value>
+  </data>
+  <data name="ND_VORBELEGEN_STATUS" xml:space="preserve">
+    <value>{0} service life/lives preset from the depreciation table.</value>
+  </data>
+  <data name="ND_VORBELEGEN_KEINE" xml:space="preserve">
+    <value>There is nothing to preset: every item carries a service life, or the technology has no default.</value>
+  </data>
+  <data name="ND_VORBELEGEN_FRAGE" xml:space="preserve">
+    <value>{0} item(s) already carry a service life. Should these be overwritten from the depreciation table as well?</value>
+  </data>
+  <data name="ND_TAFEL_TITEL" xml:space="preserve">
+    <value>Replacement and residual value</value>
+  </data>
+  <data name="ND_TAFEL_SP_POSITION" xml:space="preserve">
+    <value>Component / item</value>
+  </data>
+  <data name="ND_TAFEL_SP_BETRAG" xml:space="preserve">
+    <value>Amount [€]</value>
+  </data>
+  <data name="ND_TAFEL_SP_DAUER" xml:space="preserve">
+    <value>Service life n</value>
+  </data>
+  <data name="ND_TAFEL_SP_ERSATZ" xml:space="preserve">
+    <value>Replacement</value>
+  </data>
+  <data name="ND_TAFEL_SP_RESTWERT" xml:space="preserve">
+    <value>Residual value year {0}</value>
+  </data>
+  <data name="ND_TAFEL_SP_HERKUNFT" xml:space="preserve">
+    <value>Origin of the service life</value>
+  </data>
+  <data name="ND_TAFEL_STRICH" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="ND_TAFEL_DAUER" xml:space="preserve">
+    <value>{0} y</value>
+  </data>
+  <data name="ND_TAFEL_JAHR" xml:space="preserve">
+    <value>Year {0}</value>
+  </data>
+  <data name="ND_TAFEL_VON" xml:space="preserve">
+    <value>{0} of {1}</value>
+  </data>
+  <data name="ND_TAFEL_WIE_T" xml:space="preserve">
+    <value>— runs like T</value>
+  </data>
+  <data name="ND_TAFEL_GLEICH_T" xml:space="preserve">
+    <value>— identical with T</value>
+  </data>
+  <data name="ND_TAFEL_VORGABE" xml:space="preserve">
+    <value>default of the technology {0} y</value>
+  </data>
+  <data name="ND_TAFEL_BARWERT" xml:space="preserve">
+    <value>present value {0}</value>
+  </data>
+  <data name="ND_TAFEL_OHNE_EINTRAG" xml:space="preserve">
+    <value>{0}, {1} €</value>
+  </data>
+  <data name="ND_TAFEL_HINWEIS_T" xml:space="preserve">
+    <value>Period of analysis {0} y above the default {1} y of the technology {2}</value>
+  </data>
+  <data name="ND_TAFEL_HINWEIS_OHNE" xml:space="preserve">
+    <value>{0} of {1} investment items without a service life ({2}): no replacement, no residual value calculated</value>
+  </data>
+  <data name="ND_TAFEL_HINWEIS_SCHLUSS" xml:space="preserve">
+    <value>If a replacement falls due, the net present value is reported too favourably.</value>
+  </data>
+  <data name="ND_TAFEL_LEER" xml:space="preserve">
+    <value>No investment item with an amount — there is nothing to replace.</value>
+  </data>
+  <data name="VPOS_LBL_POSITIONSART" xml:space="preserve">
+    <value>Item type:</value>
+  </data>
+  <data name="VPOS_POSITIONSART_KEINE" xml:space="preserve">
+    <value>(none — default row of the technology)</value>
+  </data>
+  <data name="VPOS_INFO_POSITIONSART" xml:space="preserve">
+    <value>The item type determines the service life from “Service lives (depreciation)”; a change resets it.</value>
+  </data>
   <data name="FLOTTE_ERG_OPTIMIERUNG" xml:space="preserve">
     <value>Optimisation results</value>
   </data>

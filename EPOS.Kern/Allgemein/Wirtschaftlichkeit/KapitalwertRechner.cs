@@ -351,6 +351,166 @@ namespace WindowsFormsApplication1
             return i * q / (q - 1.0);
         }
 
+        // =====================================================================
+        //  U30 — Ersatz und Restwert EINER Position, herausgelöst
+        // =====================================================================
+
+        /// <summary>
+        /// Das Ersatz- und Restwertbild EINER Investitionsposition (U30).
+        /// </summary>
+        public sealed class Ersatzbild
+        {
+            /// <summary>Die WIRKSAME Nutzungsdauer [a] — <c>n &lt; 1</c> ist hier bereits
+            /// zu T aufgelöst (der Rechenkern behandelt sie „still wie T").</summary>
+            public double Nutzungsdauer;
+
+            /// <summary>Die Position trug keine (sinnvolle) Dauer: kein Ersatz, kein
+            /// Restwert — und im Ausweis ein Gedankenstrich statt einer Zahl.</summary>
+            public bool OhneDauer;
+
+            /// <summary>Startjahr ≥ 2 (KD6); 0 = Erstbeschaffung in t₀.</summary>
+            public int StartJahr;
+
+            /// <summary>Die Position zahlt außerhalb des Betrachtungszeitraums
+            /// (<c>StartJahr &gt; T</c>): nur Ausweis, keine Reihe.</summary>
+            public bool Ausserhalb;
+
+            /// <summary>Die ERSATZjahre innerhalb T, aufsteigend (ohne die
+            /// verschobene Erstbeschaffung in <see cref="StartJahr"/>).</summary>
+            public List<int> Ersatzjahre = new List<int>();
+
+            /// <summary>Der Betrag je Ersatzjahr [€], nominal im Zahlungsjahr
+            /// (mit p_I indiziert) — gleiche Reihenfolge wie
+            /// <see cref="Ersatzjahre"/>.</summary>
+            public List<double> Ersatzbetraege = new List<double>();
+
+            /// <summary>Das Jahr der LETZTEN Beschaffung — 0, solange es bei der
+            /// Erstbeschaffung bleibt.</summary>
+            public int LetzteBeschaffung;
+
+            /// <summary>Linearer Restwert zum Zeitpunkt T [€], nominal auf der
+            /// Preisbasis der letzten Beschaffung; 0 = keiner.</summary>
+            public double Restwert;
+        }
+
+        /// <summary>
+        /// <b>U30 — der EINE Rechenweg für Ersatzbeschaffung und Restwert einer
+        /// Position</b>, herausgelöst aus <see cref="Rechne"/> und von dort
+        /// aufgerufen.
+        ///
+        /// <para><b>Warum herausgelöst.</b> Die Tafel „Ersatz und Restwert" unter dem
+        /// Investitionsraster der Kostenverwaltung zeigt je Position Ersatzjahr,
+        /// Ersatzbetrag und Restwert. Eine zweite Formel dafür wäre eine zweite
+        /// Wahrheit — dieselbe Falle wie bei der Investitionskaskade vor
+        /// <see cref="InvestKaskade"/> (Anwenderbefund W5‑B‑7). Der Rumpf ist
+        /// deshalb Zeichen für Zeichen der von vorher, nur an einem Ort; die
+        /// Kapitalwertrechnung reicht die Ergebnisse in ihre Reihen.</para>
+        ///
+        /// <para><b>Was er NICHT tut.</b> Abzinsen: Das bleibt Sache des Aufrufers —
+        /// die Kapitalwertrechnung zinst über ihre Jahresreihe ab, die Tafel über
+        /// <see cref="Barwert"/>. Und er bewertet nichts: Ob eine Position ohne Dauer
+        /// ein Versehen ist, sagt der Hinweis über der Tafel, nicht diese
+        /// Rechnung.</para>
+        /// </summary>
+        /// <param name="pos">Die Position; <c>null</c> ergibt ein leeres Bild.</param>
+        /// <param name="jahre">Betrachtungszeitraum T [a].</param>
+        /// <param name="preisstInvestProzent">p_I [%/a]; 0 = ohne Indexierung —
+        /// dann wird der Indexfaktor nicht einmal gebildet (IEEE‑754‑Vorsicht wie
+        /// in <see cref="Rechne"/>).</param>
+        public static Ersatzbild Ersatz(InvestPosition pos, int jahre,
+                                        double preisstInvestProzent = 0)
+        {
+            var b = new Ersatzbild();
+            int T = Math.Max(1, jahre);
+            if (pos == null) return b;
+
+            double pI = preisstInvestProzent / 100.0;
+            bool investIndiziert = preisstInvestProzent != 0.0;
+
+            // Nutzungsdauern < 1 a sind fachlich nicht sinnvoll → wie T behandeln
+            // (verhindert zugleich exzessive Ersatz-Schleifen bei Fehleingaben).
+            double n = pos.Nutzungsdauer >= 1.0 ? pos.Nutzungsdauer : T;
+            b.Nutzungsdauer = n;
+            b.OhneDauer = !(pos.Nutzungsdauer >= 1.0);
+
+            // ETAPPE KD6 (§ 11, FK10): Positionen mit Startjahr X ≥ 2 zahlen
+            // erst im Jahr X — über die Jahresreihe (dort wird abgezinst),
+            // NICHT über I₀. Ersatzkette und Restwert zählen ab X. Für
+            // StartJahr ≤ 1 bleibt der Rechenweg Zeichen für Zeichen der
+            // von vorher.
+            int start = pos.StartJahr > 1 ? pos.StartJahr : 0;
+            b.StartJahr = start;
+            if (start > T)
+            {
+                // Investition außerhalb des Betrachtungszeitraums: keine
+                // Zahlung, kein Ersatz, kein Restwert — nur Ausweis.
+                b.Ausserhalb = true;
+                return b;
+            }
+
+            // ETAPPE W5‑B‑12: Preisbasis der LETZTEN Beschaffung dieser Position.
+            // 1,0 für die Erst- und die verschobene Erstbeschaffung (KD6: der
+            // eingegebene Betrag ist der Betrag zum Zahlungszeitpunkt), sonst der
+            // Indexfaktor des Ersatzjahres. Der Restwert unten liest ihn.
+            int letzteBeschaffung = start;
+            double letzterFaktor = 1.0;
+
+            // Ersatz auf ganze Jahre gerundet: tj = round(start + k·n),
+            // 1 ≤ tj < T (im letzten Betrachtungsjahr wird nicht mehr ersetzt).
+            //
+            // ETAPPE W5‑B‑12: Der Betrag der Position ist ein Preisstand von HEUTE
+            // (t = 0); die Ersatzbeschaffung fällt aber im Jahr tj an und kostet dort
+            // nach VDI 2067 Blatt 1 A(tj) = A₀ · (1 + p_I)^tj. Der Exponent ist das
+            // ABSOLUTE Jahr, nicht der Abstand zum Startjahr — auch eine Position mit
+            // Startjahr 5 wird 2041 zu den Preisen von 2041 ersetzt, nicht zu denen
+            // von 2036. Ohne Satz läuft der Zweig von vorher, Zeichen für Zeichen.
+            for (double t = start + n; ; t += n)
+            {
+                int tj = (int)Math.Round(t);
+                if (tj >= T) break;
+                if (tj < 1) continue;
+                b.Ersatzjahre.Add(tj);
+                if (investIndiziert)
+                {
+                    letzterFaktor = Math.Pow(1.0 + pI, tj);
+                    b.Ersatzbetraege.Add(pos.Betrag * letzterFaktor);
+                }
+                else b.Ersatzbetraege.Add(pos.Betrag);
+                letzteBeschaffung = tj;
+            }
+            b.LetzteBeschaffung = letzteBeschaffung;
+
+            // Linearer Restwert der letzten Beschaffung zum Zeitpunkt T
+            // (konsistent zum gerundeten Buchungsjahr).
+            //
+            // ETAPPE W5‑B‑12: Er steht auf der PREISBASIS DER LETZTEN BESCHAFFUNG.
+            // Alles andere wäre in sich widersprüchlich: Wenn die Anlage im Jahr 16
+            // für A₀ · (1 + p_I)^16 gekauft wurde, ist die Hälfte ihrer Nutzungsdauer
+            // am Ende von T auch die Hälfte DIESES Betrags wert und nicht die Hälfte
+            // des heutigen. Blieb es bei der Erstbeschaffung, ist letzterFaktor 1,0
+            // und der Ausdruck der von vorher — auch das der bitgleiche Regellauf.
+            double alter = T - letzteBeschaffung;
+            double rest = n - alter;
+            if (rest > 1e-9)
+                b.Restwert = letzterFaktor != 1.0
+                    ? pos.Betrag * letzterFaktor * (rest / n)
+                    : pos.Betrag * (rest / n);
+            return b;
+        }
+
+        /// <summary>
+        /// U30: Der Barwert eines Betrags im Jahr <paramref name="jahr"/> —
+        /// derselbe Abzinsungsausdruck, mit dem <see cref="Rechne"/> ihre
+        /// Jahresreihe abzinst.
+        /// </summary>
+        /// <param name="betrag">Nominalbetrag [€] im Jahr <paramref name="jahr"/>.</param>
+        /// <param name="zinsProzent">Kalkulationszins i [%].</param>
+        public static double Barwert(double betrag, int jahr, double zinsProzent)
+        {
+            if (jahr <= 0) return betrag;
+            return betrag / Math.Pow(1.0 + zinsProzent / 100.0, jahr);
+        }
+
         /// <summary>
         /// Absolutes Zahlungsbild eines Projekts. Kostenreihen in €/a (Jahr-1-Werte),
         /// Zins/Preissteigerungen in Prozent. energieJahr = null → Energiekosten
@@ -431,12 +591,11 @@ namespace WindowsFormsApplication1
             int T = Math.Max(1, jahre);
 
             // ETAPPE W5‑B‑12 (Anwenderentscheid 09.09.2026): der dritte Preisänderungssatz.
-            // Die WEICHE steht hier und nicht in der Positionsschleife, damit der Regellauf
-            // (p_I = 0) den Indexfaktor kein einziges Mal bildet — gleiche IEEE-754-Vorsicht
-            // wie bei FX4‑c/FX5‑a: Eine Multiplikation mit 1,0 ist wertgleich, aber der
-            // Regellauf soll denselben Ausdruck durchlaufen wie vor dieser Etappe.
-            double pI = preisstInvestProzent / 100.0;
-            bool investIndiziert = preisstInvestProzent != 0.0;
+            // Die WEICHE steht seit U30 in Ersatz(), zusammen mit der Positionsschleife,
+            // die sie braucht; der Regellauf (p_I = 0) bildet den Indexfaktor dort kein
+            // einziges Mal — gleiche IEEE-754-Vorsicht wie bei FX4‑c/FX5‑a: Eine
+            // Multiplikation mit 1,0 ist wertgleich, aber der Regellauf soll denselben
+            // Ausdruck durchlaufen wie vor dieser Etappe.
 
             var z = new Zahlungsbild
             {
@@ -461,80 +620,31 @@ namespace WindowsFormsApplication1
                 foreach (InvestPosition pos in investitionen)
                 {
                     if (pos == null || pos.Betrag == 0) continue;
-                    // Nutzungsdauern < 1 a sind fachlich nicht sinnvoll → wie T behandeln
-                    // (verhindert zugleich exzessive Ersatz-Schleifen bei Fehleingaben).
-                    double n = pos.Nutzungsdauer >= 1.0 ? pos.Nutzungsdauer : T;
 
-                    // ETAPPE KD6 (§ 11, FK10): Positionen mit Startjahr X ≥ 2 zahlen
-                    // erst im Jahr X — über die Jahresreihe (dort wird abgezinst),
-                    // NICHT über I₀. Ersatzkette und Restwert zählen ab X. Für
-                    // StartJahr ≤ 1 bleibt der Rechenweg Zeichen für Zeichen der
-                    // von vorher.
-                    int start = pos.StartJahr > 1 ? pos.StartJahr : 0;
-                    if (start > T)
+                    // U30: Ersatzkette und Restwert stehen seither in Ersatz() — EIN
+                    // Rechenweg, den auch die Tafel „Ersatz und Restwert" der
+                    // Kostenverwaltung fragt. Der Rumpf dort ist Zeichen für Zeichen
+                    // der, der hier stand; hier bleibt, was die Kapitalwertrechnung
+                    // eigen ist: I₀, die verschobene Erstbeschaffung und das
+                    // Einsortieren in die Jahresreihe.
+                    Ersatzbild b = Ersatz(pos, T, preisstInvestProzent);
+                    if (b.Ausserhalb)
                     {
-                        // Investition außerhalb des Betrachtungszeitraums: keine
-                        // Zahlung, kein Ersatz, kein Restwert — nur Ausweis.
                         z.InvestitionVerschoben += pos.Betrag;
                         continue;
                     }
 
-                    // ETAPPE W5‑B‑12: Preisbasis der LETZTEN Beschaffung dieser Position.
-                    // 1,0 für die Erst- und die verschobene Erstbeschaffung (KD6: der
-                    // eingegebene Betrag ist der Betrag zum Zahlungszeitpunkt), sonst der
-                    // Indexfaktor des Ersatzjahres. Der Restwert unten liest ihn.
-                    int letzteBeschaffung;
-                    double letzterFaktor = 1.0;
-                    if (start == 0)
-                    {
-                        z.Investition += pos.Betrag;
-                        letzteBeschaffung = 0;
-                    }
+                    if (b.StartJahr == 0) z.Investition += pos.Betrag;
                     else
                     {
                         z.InvestitionVerschoben += pos.Betrag;
-                        ersatzJeJahr[start] += pos.Betrag;
-                        letzteBeschaffung = start;
+                        ersatzJeJahr[b.StartJahr] += pos.Betrag;
                     }
 
-                    // Ersatz auf ganze Jahre gerundet: tj = round(start + k·n),
-                    // 1 ≤ tj < T (im letzten Betrachtungsjahr wird nicht mehr ersetzt).
-                    //
-                    // ETAPPE W5‑B‑12: Der Betrag der Position ist ein Preisstand von HEUTE
-                    // (t = 0); die Ersatzbeschaffung fällt aber im Jahr tj an und kostet dort
-                    // nach VDI 2067 Blatt 1 A(tj) = A₀ · (1 + p_I)^tj. Der Exponent ist das
-                    // ABSOLUTE Jahr, nicht der Abstand zum Startjahr — auch eine Position mit
-                    // Startjahr 5 wird 2041 zu den Preisen von 2041 ersetzt, nicht zu denen
-                    // von 2036. Ohne Satz läuft der Zweig von vorher, Zeichen für Zeichen.
-                    for (double t = start + n; ; t += n)
-                    {
-                        int tj = (int)Math.Round(t);
-                        if (tj >= T) break;
-                        if (tj < 1) continue;
-                        if (investIndiziert)
-                        {
-                            letzterFaktor = Math.Pow(1.0 + pI, tj);
-                            ersatzJeJahr[tj] += pos.Betrag * letzterFaktor;
-                        }
-                        else ersatzJeJahr[tj] += pos.Betrag;
-                        letzteBeschaffung = tj;
-                    }
+                    for (int k = 0; k < b.Ersatzjahre.Count; k++)
+                        ersatzJeJahr[b.Ersatzjahre[k]] += b.Ersatzbetraege[k];
 
-                    // Linearer Restwert der letzten Beschaffung zum Zeitpunkt T
-                    // (konsistent zum gerundeten Buchungsjahr).
-                    //
-                    // ETAPPE W5‑B‑12: Er steht auf der PREISBASIS DER LETZTEN BESCHAFFUNG.
-                    // Alles andere wäre in sich widersprüchlich: Wenn die Anlage im Jahr 16
-                    // für A₀ · (1 + p_I)^16 gekauft wurde, ist die Hälfte ihrer Nutzungsdauer
-                    // am Ende von T auch die Hälfte DIESES Betrags wert und nicht die Hälfte
-                    // des heutigen. Blieb es bei der Erstbeschaffung, ist letzterFaktor 1,0
-                    // und der Ausdruck der von vorher — auch das der bitgleiche Regellauf.
-                    double alter = T - letzteBeschaffung;
-                    double rest = n - alter;
-                    if (rest > 1e-9)
-                        restwertT += letzterFaktor != 1.0
-                            ? pos.Betrag * letzterFaktor * (rest / n)
-                            : pos.Betrag * (rest / n);
+                    restwertT += b.Restwert;
                 }
             }
 

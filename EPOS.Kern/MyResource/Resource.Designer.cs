@@ -33218,6 +33218,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AfA-Tabelle: {0} ähnelt.
+        /// </summary>
+        public static string ND_HERK_ART {
+            get {
+                return ResourceManager.GetString("ND_HERK_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Dauer gepflegt ähnelt.
+        /// </summary>
+        public static string ND_HERK_KEINE {
+            get {
+                return ResourceManager.GetString("ND_HERK_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe der Technik ähnelt.
+        /// </summary>
+        public static string ND_HERK_TECHNIK {
+            get {
+                return ResourceManager.GetString("ND_HERK_TECHNIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer aus Nutzungsdauern (AfA): {0} · {1} {2} a ähnelt.
         /// </summary>
         public static string ND_HERLEITUNG {
@@ -33434,6 +33461,186 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Barwert {0} ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_BARWERT {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_BARWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} a ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_DAUER {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — deckungsgleich mit T ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_GLEICH_T {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_GLEICH_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Investitionspositionen ohne Nutzungsdauer ({2}): kein Ersatz, kein Restwert gerechnet ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_HINWEIS_OHNE {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_HINWEIS_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ist ein Ersatz fällig, ist der Kapitalwert zu günstig ausgewiesen. ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_HINWEIS_SCHLUSS {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_HINWEIS_SCHLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum {0} a über der Vorgabe {1} a der Technik {2} ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_HINWEIS_T {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_HINWEIS_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahr {0} ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_JAHR {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Investitionsposition mit Betrag — es gibt nichts zu ersetzen. ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_LEER {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, {1} € ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_OHNE_EINTRAG {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_OHNE_EINTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrag [€] ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_SP_BETRAG {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_SP_BETRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer n ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_SP_DAUER {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_SP_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffung ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_SP_ERSATZ {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_SP_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Dauer ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_SP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_SP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente / Position ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_SP_POSITION {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_SP_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert Jahr {0} ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_SP_RESTWERT {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_SP_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_STRICH {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_STRICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatz und Restwert ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_TITEL {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_VON {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe der Technik {0} a ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_VORGABE {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — läuft wie T ähnelt.
+        /// </summary>
+        public static string ND_TAFEL_WIE_T {
+            get {
+                return ResourceManager.GetString("ND_TAFEL_WIE_T", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die technikübergreifend ähnelt.
         /// </summary>
         public static string ND_TECHNIKUEBERGREIFEND {
@@ -33470,11 +33677,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauern vorbelegen… ähnelt.
+        /// </summary>
+        public static string ND_VORBELEGEN_BTN {
+            get {
+                return ResourceManager.GetString("ND_VORBELEGEN_BTN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Position(en) tragen bereits eine Nutzungsdauer. Sollen auch diese aus der AfA-Tabelle überschrieben werden? ähnelt.
+        /// </summary>
+        public static string ND_VORBELEGEN_FRAGE {
+            get {
+                return ResourceManager.GetString("ND_VORBELEGEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt nichts vorzubelegen: Jede Position trägt eine Nutzungsdauer, oder die Technik hat keine Vorgabe. ähnelt.
+        /// </summary>
+        public static string ND_VORBELEGEN_KEINE {
+            get {
+                return ResourceManager.GetString("ND_VORBELEGEN_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Nutzungsdauer(n) aus der AfA-Tabelle vorbelegt. ähnelt.
+        /// </summary>
+        public static string ND_VORBELEGEN_STATUS {
+            get {
+                return ResourceManager.GetString("ND_VORBELEGEN_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungswerte wiederherstellen ähnelt.
         /// </summary>
         public static string ND_WIEDERHERSTELLEN {
             get {
                 return ResourceManager.GetString("ND_WIEDERHERSTELLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} a · {1} ähnelt.
+        /// </summary>
+        public static string ND_ZEILE_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("ND_ZEILE_HERLEITUNG", resourceCulture);
             }
         }
         
@@ -52494,6 +52746,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Positionsart bestimmt die Nutzungsdauer aus „Nutzungsdauern (AfA)“; eine Änderung setzt sie neu. ähnelt.
+        /// </summary>
+        public static string VPOS_INFO_POSITIONSART {
+            get {
+                return ResourceManager.GetString("VPOS_INFO_POSITIONSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung: ähnelt.
         /// </summary>
         public static string VPOS_LBL_BEZEICHNUNG {
@@ -52530,11 +52791,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionsart: ähnelt.
+        /// </summary>
+        public static string VPOS_LBL_POSITIONSART {
+            get {
+                return ResourceManager.GetString("VPOS_LBL_POSITIONSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine Bezeichnung eingeben. ähnelt.
         /// </summary>
         public static string VPOS_MSG_NAME_FEHLT {
             get {
                 return ResourceManager.GetString("VPOS_MSG_NAME_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (keine — Standardzeile der Technik) ähnelt.
+        /// </summary>
+        public static string VPOS_POSITIONSART_KEINE {
+            get {
+                return ResourceManager.GetString("VPOS_POSITIONSART_KEINE", resourceCulture);
             }
         }
         

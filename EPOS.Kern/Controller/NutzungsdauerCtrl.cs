@@ -260,6 +260,71 @@ namespace WindowsFormsApplication1
                 technik, wirksam.Positionsart, wert);
         }
 
+        /// <summary>
+        /// <b>STUFE S2 — WOHER die Nutzungsdauer einer Position stammt</b>, als
+        /// fertiger Satz: „Vorgabe der Technik", „AfA-Tabelle: ‹Positionsart›",
+        /// „eigener Wert" oder „keine Dauer gepflegt".
+        ///
+        /// <para>Gemessen wird am Wert, nicht an einer Merkspalte: Der gepflegte Wert
+        /// gilt als übernommen, solange er der Vorgabe entspricht — sobald der Anwender
+        /// ihn ändert, ist er ein eigener. Eine zusätzliche Spalte „woher" wäre eine
+        /// zweite Wahrheit, die beim ersten Tippen falsch würde.</para>
+        /// </summary>
+        /// <param name="komponentenId">Die Technik der Position.</param>
+        /// <param name="nutzungsdauerId">Die Positionsart; <c>null</c> = keine.</param>
+        /// <param name="wert">Die gepflegte Nutzungsdauer [a]; <c>null</c> bzw.
+        /// <c>&lt; 1</c> heißt „keine" (dieselbe Schwelle wie im Rechenkern).</param>
+        public static string Herkunft(int komponentenId, int? nutzungsdauerId, double? wert)
+        {
+            if (!wert.HasValue || wert.Value < 1.0)
+                return Text("ND_HERK_KEINE", "keine Dauer gepflegt");
+
+            NutzungsdauerVorgabe v = Vorgabe(komponentenId, nutzungsdauerId);
+            if (!v.Wert.HasValue || Math.Abs(v.Wert.Value - wert.Value) > 1e-9)
+                return Text("ND_QUELLE_EIGEN", "eigener Wert");
+
+            NutzungsdauerZeile gewaehlt = nutzungsdauerId.HasValue && nutzungsdauerId.Value > 0
+                ? Zeile(nutzungsdauerId.Value) : null;
+
+            if (gewaehlt != null && gewaehlt.Nutzungsdauer.HasValue)
+                return string.Format(CultureInfo.CurrentCulture,
+                    Text("ND_HERK_ART", "AfA-Tabelle: {0}"), gewaehlt.Positionsart);
+
+            return Text("ND_HERK_TECHNIK", "Vorgabe der Technik");
+        }
+
+        /// <summary>
+        /// STUFE S2: Die HERLEITUNGSZEILE unter dem Nutzungsdauerfeld des Rasters —
+        /// „15 a · Vorgabe der Technik". Leer, wo keine Dauer gepflegt ist: Dort steht
+        /// ein leeres Feld, und der Grund gehört unter die Tafel „Ersatz und Restwert",
+        /// nicht in jede einzelne Zeile.
+        /// </summary>
+        public static string Herleitungszeile(int komponentenId, int? nutzungsdauerId,
+                                              double? wert)
+        {
+            if (!wert.HasValue || wert.Value < 1.0) return "";
+            return string.Format(CultureInfo.CurrentCulture,
+                Text("ND_ZEILE_HERLEITUNG", "{0} a · {1}"),
+                wert.Value.ToString("0.###", CultureInfo.CurrentCulture),
+                Herkunft(komponentenId, nutzungsdauerId, wert));
+        }
+
+        /// <summary>
+        /// STUFE S2: Die wählbaren POSITIONSARTEN einer Technik für den Zeileneditor —
+        /// die Zeilen dieser Technik, danach die technikübergreifenden (Konzept 2.4.3).
+        /// Leere Liste, solange es die Tabelle nicht gibt.
+        /// </summary>
+        public static IList<NutzungsdauerZeile> Arten(int komponentenId)
+        {
+            var liste = new List<NutzungsdauerZeile>();
+            foreach (NutzungsdauerZeile z in Alle())
+                if (z.KomponentenId.HasValue && z.KomponentenId.Value == komponentenId)
+                    liste.Add(z);
+            foreach (NutzungsdauerZeile z in Alle())
+                if (!z.KomponentenId.HasValue) liste.Add(z);
+            return liste;
+        }
+
         // -------------------------------------------------------------- Schreiben ---
 
         /// <summary>

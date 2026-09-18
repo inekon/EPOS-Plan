@@ -51,6 +51,22 @@
 
             <Schalter Bezeichnung="@LabelErloes" Wert="@_istErloes" WertChanged="BeiErloes" />
 
+            @* U8 (Stufe S2, Konzept Nutzungsdauer 2.4.3): DER PFLEGEORT DER
+               POSITIONSART. Bis dahin setzte sie ausschliesslich die
+               Vorlagenuebernahme - kein Dialog liess sie waehlen, und eine
+               Abgasanlage bekam damit nie eine andere Dauer als ihr Kessel. Die
+               Liste ist leer, wo es die Nutzungsdauertabelle nicht gibt; dann
+               steht das Feld gar nicht erst da. *@
+            @if (Positionsarten.Count > 0)
+            {
+                <Auswahlfeld Bezeichnung="@LabelPositionsart"
+                             Eintraege="@Positionsarten"
+                             Platzhalter="@PositionsartKeine"
+                             Auswahl="@_positionsart"
+                             AuswahlChanged="BeiPositionsart" />
+                <Herleitungszeile Text="@InfoPositionsart" />
+            }
+
             <Zahlenfeld Bezeichnung="@LabelEmpfehlungVon" Wert="@_empfVon" WertChanged="BeiEmpfVon" />
 
             <Zahlenfeld Bezeichnung="@LabelEmpfehlungBis" Wert="@_empfBis" WertChanged="BeiEmpfBis" />
@@ -98,6 +114,18 @@
     /// <summary>Obere Empfehlung beim Oeffnen; <c>null</c> = nicht gepflegt.</summary>
     [Parameter] public double? EmpfehlungBis { get; set; }
 
+    /// <summary>
+    /// U8 (Stufe S2): Die waehlbaren POSITIONSARTEN dieser Technik (Zeilen der
+    /// Technik, danach die technikuebergreifenden) - Id ist
+    /// <c>Tab_Nutzungsdauer.ID</c>. Leere Liste = kein Feld; so bleibt der Dialog
+    /// auf einer Datenbank ohne die Nutzungsdauertabelle der von vorher.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Positionsarten { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Die Positionsart beim Oeffnen; <c>null</c> = keine.</summary>
+    [Parameter] public int? PositionsartId { get; set; }
+
     /// <summary>Das Ergebnis bei OK, <c>null</c> bei Abbrechen. Geschlossen wird von der Huelle.</summary>
     [Parameter] public EventCallback<VorlagenPositionErgebnis?> Geschlossen { get; set; }
 
@@ -118,6 +146,17 @@
 
     /// <summary>Beschriftung des zweiten Zahlenfeldes (Designer: lblBis).</summary>
     [Parameter] public string LabelEmpfehlungBis { get; set; } = "bis";
+
+    /// <summary>U8: Beschriftung der Positionsart-Klappliste.</summary>
+    [Parameter] public string LabelPositionsart { get; set; } = "Positionsart:";
+
+    /// <summary>U8: Die leere Zeile der Klappliste — keine Positionsart gepflegt.</summary>
+    [Parameter] public string PositionsartKeine { get; set; } = "(keine — Standardzeile der Technik)";
+
+    /// <summary>U8: Die leise Zeile unter der Klappliste.</summary>
+    [Parameter] public string InfoPositionsart { get; set; }
+        = "Die Positionsart bestimmt die Nutzungsdauer aus „Nutzungsdauern (AfA)\"; "
+        + "eine Änderung setzt sie neu.";
 
     /// <summary>
     /// Meldung bei leerer Bezeichnung (A-1: der Vorlaeufer liess den alten Namen
@@ -142,10 +181,14 @@
     private bool _istErloes;
     private double? _empfVon;
     private double? _empfBis;
+    private int? _positionsart;
     private string _meldung = "";
 
     /// <summary>Die gewaehlte Kostenart (Pruefhilfe fuer Tests).</summary>
     public int? Kostenart => _kostenart;
+
+    /// <summary>Die gewaehlte Positionsart (Pruefhilfe fuer Tests).</summary>
+    public int? Positionsart => _positionsart;
 
     protected override void OnInitialized()
     {
@@ -153,6 +196,10 @@
         _istErloes = IstErloes;
         _empfVon = EmpfehlungVon;
         _empfBis = EmpfehlungBis;
+        // U8: Eine Positionsart, die es in dieser Technik nicht (mehr) gibt, faellt
+        // auf "keine" zurueck - dieselbe Vorsicht wie bei der Kostenart.
+        _positionsart = PositionsartId.HasValue && ArtBekannt(PositionsartId.Value)
+            ? PositionsartId : null;
         // Wie SetControls: eine unbekannte Kostenart faellt auf "sonstige" zurueck.
         _kostenart = KostenartId.HasValue && Bekannt(KostenartId.Value)
             ? KostenartId : RueckfallKostenartId;
@@ -180,7 +227,18 @@
         if (!string.IsNullOrWhiteSpace(wert)) _meldung = "";
     }
 
+    private bool ArtBekannt(int id)
+    {
+        foreach (var eintrag in Positionsarten)
+        {
+            if (eintrag.Id == id) return true;
+        }
+        return false;
+    }
+
     private void BeiKostenart(int? id) => _kostenart = id;
+
+    private void BeiPositionsart(int? id) => _positionsart = id;
 
     private void BeiErloes(bool wert) => _istErloes = wert;
 
@@ -210,7 +268,8 @@
             _kostenart ?? RueckfallKostenartId,
             _istErloes,
             _empfVon,
-            _empfBis));
+            _empfBis,
+            _positionsart));
     }
 
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch

@@ -183,6 +183,8 @@ namespace WindowsFormsApplication1
                 ["PositionNeu"] = new Func<string, int>(PositionNeu),
                 ["PositionLoeschen"] = new Func<KostenPositionZeile, bool>(PositionLoeschen),
                 ["IstPflicht"] = new Func<KostenPositionZeile, bool>(IstPflicht),
+                ["NutzungsdauerVorbelegen"] =
+                    new Func<bool, NutzungsdauerVorbelegung>(NutzungsdauerVorbelegen),
 
                 ["CaseGaben"] = new Func<KostenPositionZeile, IReadOnlyDictionary<string, object>>(CaseGaben),
                 ["CaseFertig"] = new Action<KostenPositionZeile, CaseEingabeErgebnis>(CaseFertig),
@@ -243,6 +245,21 @@ namespace WindowsFormsApplication1
                 ["SpalteEndenergieKwh"] = T("KDLG_SP_ENDENERGIE_KWH", "Endenergiebedarf [kWh/a]"),
                 ["SpalteEndenergieEuro"] = T("KDLG_SP_ENDENERGIE_EUR", "Endenergiekosten [€/a]"),
                 ["SpalteEndenergieBasis"] = T("KDLG_SP_ENDENERGIE_BASIS", "Herkunft"),
+                ["GruppeErsatzTitel"] = T("ND_TAFEL_TITEL", "Ersatz und Restwert"),
+                ["SpalteErsatzPosition"] = T("ND_TAFEL_SP_POSITION", "Komponente / Position"),
+                ["SpalteErsatzBetrag"] = T("ND_TAFEL_SP_BETRAG", "Betrag [€]"),
+                ["SpalteErsatzDauer"] = T("ND_TAFEL_SP_DAUER", "Nutzungsdauer n"),
+                ["SpalteErsatzErsatz"] = T("ND_TAFEL_SP_ERSATZ", "Ersatzbeschaffung"),
+                ["SpalteErsatzHerkunft"] = T("ND_TAFEL_SP_HERKUNFT", "Herkunft der Dauer"),
+                ["VorbelegenText"] = T("ND_VORBELEGEN_BTN", "Nutzungsdauern vorbelegen…"),
+                ["VorbelegenStatus"] = T("ND_VORBELEGEN_STATUS",
+                    "{0} Nutzungsdauer(n) aus der AfA-Tabelle vorbelegt."),
+                ["VorbelegenKeine"] = T("ND_VORBELEGEN_KEINE",
+                    "Es gibt nichts vorzubelegen: Jede Position trägt eine Nutzungsdauer, "
+                    + "oder die Technik hat keine Vorgabe."),
+                ["VorbelegenFrage"] = T("ND_VORBELEGEN_FRAGE",
+                    "{0} Position(en) tragen bereits eine Nutzungsdauer. Sollen auch diese "
+                    + "aus der AfA-Tabelle überschrieben werden?"),
                 ["HinweisEndenergie"] = T("KDLG_HINWEIS_ENDENERGIE",
                     "Diese Mengen sind die Bezugsgrößen der Bemessungen "
                     + "„% des Endenergiebedarfs\" und „% der Endenergiekosten\"."),
@@ -446,8 +463,129 @@ namespace WindowsFormsApplication1
             stand.Bemessungen = BemessungenBauen();
             stand.Summen = Summen();
             BetriebsstandSetzen(stand);
+            ErsatzRestwertSetzen(stand);
             ErtragSetzen(stand);
             return stand;
+        }
+
+        // =====================================================================
+        // U30 / U8 (Stufe S2) — Ersatz und Restwert, Vorbelegung
+        // =====================================================================
+
+        /// <summary>
+        /// U30: Die Tafel „Ersatz und Restwert" unter dem Raster der
+        /// INVESTITIONSSEITE samt ihrem Hinweis.
+        ///
+        /// <para><b>Nur im Projekt.</b> Im Katalogkontext gibt es keine Beträge
+        /// (das Betragsfeld trägt dort einen Strich) und keine
+        /// Wirtschaftlichkeitsparameter — eine Tafel ohne i, T und p_I wäre eine
+        /// erfundene Zahl. Gerechnet und gesetzt wird alles im Kern
+        /// (<see cref="ErsatzRestwertTafel"/>, die dafür dieselbe Funktion ruft wie
+        /// die Kapitalwertrechnung); die Hülle reicht durch.</para>
+        /// </summary>
+        private void ErsatzRestwertSetzen(KostenKomponenteStand stand)
+        {
+            stand.ErsatzRestwert = Array.Empty<ErsatzRestwertZeile>();
+            stand.ErsatzRestwertHinweis = "";
+            stand.SpalteRestwert = "";
+            stand.NutzungsdauerVorbelegbar = _invest && stand.PositionNeuMoeglich;
+            if (!_invest || !ProjektModus) return;
+
+            WirtschaftlichkeitParameter p = Parameter();
+            if (p == null) return;
+
+            List<ErsatzRestwertTafel.Eingabe> eingaben = TafelEingaben();
+            if (eingaben.Count == 0) return;
+
+            stand.SpalteRestwert = string.Format(CultureInfo.CurrentCulture,
+                T("ND_TAFEL_SP_RESTWERT", "Restwert Jahr {0}"), p.Betrachtungszeitraum);
+
+            var zeilen = new List<ErsatzRestwertZeile>();
+            foreach (ErsatzRestwertTafel.Zeile z in ErsatzRestwertTafel.Zeilen(
+                         eingaben, KomponentenId, AktuelleKomponente, p.Zinssatz,
+                         p.Betrachtungszeitraum, p.PreisInvestWirksam))
+                zeilen.Add(new ErsatzRestwertZeile(z.Position, z.IstSumme, z.Betrag, z.Dauer,
+                                                   z.Ersatz, z.ErsatzBarwert, z.Restwert,
+                                                   z.RestwertBarwert, z.Herkunft));
+            stand.ErsatzRestwert = zeilen;
+            stand.ErsatzRestwertHinweis = ErsatzRestwertTafel.Hinweis(
+                eingaben, KomponentenId, AktuelleKomponente, p.Betrachtungszeitraum);
+        }
+
+        /// <summary>
+        /// Die Eingaben der Tafel aus dem ARBEITSSTAND des Rasters — nicht aus der
+        /// Datenbank: Bis „Speichern" lebt jede Eingabe nur im Objekt (Ä12/Ä19),
+        /// und die Tafel soll zeigen, was der Anwender gerade sieht.
+        /// </summary>
+        private List<ErsatzRestwertTafel.Eingabe> TafelEingaben()
+        {
+            var liste = new List<ErsatzRestwertTafel.Eingabe>();
+            foreach (KostenPositionZeile z in _zeilen)
+            {
+                Bindung b;
+                if (!_bindungen.TryGetValue(z, out b)) continue;
+                KostenVorlagenPosition pos = b.Position;
+                liste.Add(new ErsatzRestwertTafel.Eingabe
+                {
+                    Bezeichnung = pos.Bezeichnung ?? "",
+                    Betrag = pos.BetragNetto ?? 0,
+                    Nutzungsdauer = pos.Nutzungsdauer,
+                    StartJahr = b.Projektzeile != null ? b.Projektzeile.StartJahr : 0,
+                    IstErloes = pos.IstErloes,
+                    NutzungsdauerId = pos.NutzungsdauerId
+                });
+            }
+            return liste;
+        }
+
+        /// <summary>Der Parametersatz der Gruppe; <c>null</c> ohne Projekt.</summary>
+        private WirtschaftlichkeitParameter Parameter()
+        {
+            if (!ProjektModus) return null;
+            try
+            {
+                var ctrl = new WirtschaftlichkeitCtrl();
+                int idStamm = new VariantenCtrl().StammRefDerVariante(_idProjekt);
+                return ctrl.LadeParameter(idStamm > 0 ? idStamm : _idProjekt);
+            }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// U8 (Stufe S2, Anwenderentscheid ND‑Q4 (b)): „Nutzungsdauern vorbelegen".
+        ///
+        /// <para>Sie füllt die LEEREN Felder aus der AfA-Tabelle
+        /// (<see cref="NutzungsdauerCtrl.Vorgabe"/>, dieselbe Auflösung wie beim
+        /// Anlegen und Übernehmen) und meldet daneben, wie viele Positionen bereits
+        /// einen ABWEICHENDEN Wert tragen — die bleiben stehen, bis der Anwender
+        /// das Überschreiben bestätigt. <b>Geschrieben wird nichts</b>: Die
+        /// Vorbelegung lebt wie jede andere Eingabe bis „Speichern" im Objekt
+        /// (Ä12/Ä19).</para>
+        /// </summary>
+        private NutzungsdauerVorbelegung NutzungsdauerVorbelegen(bool ueberschreiben)
+        {
+            if (!_invest) return new NutzungsdauerVorbelegung(0, 0);
+
+            int gefuellt = 0, belegt = 0;
+            foreach (KostenPositionZeile z in _zeilen)
+            {
+                Bindung b;
+                if (!z.Schreibbar || !_bindungen.TryGetValue(z, out b)) continue;
+
+                NutzungsdauerVorgabe v = NutzungsdauerCtrl.Vorgabe(
+                    KomponentenId, b.Position.NutzungsdauerId);
+                if (!v.Wert.HasValue) continue;
+
+                bool leer = !z.Nutzungsdauer.HasValue || z.Nutzungsdauer.Value < 1.0;
+                if (!leer && Math.Abs(z.Nutzungsdauer.Value - v.Wert.Value) < 1e-9) continue;
+
+                if (!leer && !ueberschreiben) { belegt++; continue; }
+
+                z.Nutzungsdauer = v.Wert;
+                Nachziehen(z);
+                gefuellt++;
+            }
+            return new NutzungsdauerVorbelegung(gefuellt, belegt);
         }
 
         /// <summary>
@@ -589,6 +727,14 @@ namespace WindowsFormsApplication1
             // (TechnikPlanwertCtrl.BaugroesseHerleitung); die Hülle reicht sie nur
             // durch — die Formel steht an EINER Stelle.
             z.BasisHerleitung = pz != null ? (pz.BasisHerleitung ?? "") : "";
+
+            // U8 (Stufe S2): WOHER die Nutzungsdauer kommt - "15 a . Vorgabe der
+            // Technik". Denselben Satz baut der Kern (NutzungsdauerCtrl); die
+            // Betriebsseite kennt keine Nutzungsdauer und bekommt keine Zeile.
+            z.NutzungsdauerHerleitung = _invest && p != null
+                ? NutzungsdauerCtrl.Herleitungszeile(KomponentenId, p.NutzungsdauerId,
+                                                     p.Nutzungsdauer)
+                : "";
         }
 
         // =====================================================================
@@ -960,9 +1106,25 @@ namespace WindowsFormsApplication1
 
             int vorwahl = Array.IndexOf(KOSTENARTEN, b.Position.Kostenart ?? "");
 
+            // U8 (Stufe S2): DER PFLEGEORT DER POSITIONSART. Die Liste zeigt die
+            // Zeilen dieser Technik und danach die technikuebergreifenden (Konzept
+            // 2.4.3); ohne Nutzungsdauertabelle bleibt sie leer, und das Feld steht
+            // gar nicht erst da.
+            var arten = new List<ValueTuple<int, string>>();
+            foreach (NutzungsdauerZeile n in NutzungsdauerCtrl.Arten(KomponentenId))
+                arten.Add(new ValueTuple<int, string>(n.Id, n.Positionsart));
+
             return new Dictionary<string, object>
             {
                 ["Kostenarten"] = (IReadOnlyList<ValueTuple<int, string>>)eintraege,
+                ["Positionsarten"] = (IReadOnlyList<ValueTuple<int, string>>)arten,
+                ["PositionsartId"] = b.Position.NutzungsdauerId,
+                ["LabelPositionsart"] = T("VPOS_LBL_POSITIONSART", "Positionsart:"),
+                ["PositionsartKeine"] = T("VPOS_POSITIONSART_KEINE",
+                    "(keine — Standardzeile der Technik)"),
+                ["InfoPositionsart"] = T("VPOS_INFO_POSITIONSART",
+                    "Die Positionsart bestimmt die Nutzungsdauer aus „Nutzungsdauern (AfA)“; "
+                    + "eine Änderung setzt sie neu."),
                 ["Bezeichnung"] = b.Position.Bezeichnung ?? "",
                 ["KostenartId"] = vorwahl >= 0 ? (int?)vorwahl : null,
                 ["IstErloes"] = b.Position.IstErloes,
@@ -997,7 +1159,32 @@ namespace WindowsFormsApplication1
             p.IstErloes = e.IstErloes;
             p.EmpfehlungVon = e.EmpfehlungVon;
             p.EmpfehlungBis = e.EmpfehlungBis;
+
+            // U8 (Stufe S2, Konzept 2.4.3): Eine geaenderte POSITIONSART setzt die
+            // Nutzungsdauer neu - als einmalige Kopie, wie bei der Kataloguebernahme
+            // der Energietraeger. Nur bei einer AENDERUNG: Sonst ueberschriebe ein
+            // Klick auf OK jeden von Hand gepflegten Wert.
+            bool artNeu = p.NutzungsdauerId != e.PositionsartId;
+            p.NutzungsdauerId = e.PositionsartId;
+            if (artNeu && _invest)
+            {
+                NutzungsdauerVorgabe v = NutzungsdauerCtrl.Vorgabe(
+                    KomponentenId, e.PositionsartId);
+                if (v.Wert.HasValue)
+                {
+                    p.Nutzungsdauer = v.Wert;
+                    z.Nutzungsdauer = v.Wert;
+                }
+            }
+
             Sichern(b);
+            // Die Projektzeile schreibt ihre Positionsart ueber den eigenen Weg -
+            // Tab_ProjektWerte kennt sie seit Stufe S1, KostenProjektPositionenCtrl
+            // .Speichern fasst die Spalte nicht an (sie ist kein Fachfeld des
+            // Rasters).
+            if (b.Projektzeile != null)
+                KostenProjektPositionenCtrl.NutzungsdauerArtZuordnen(
+                    b.Projektzeile.Raster.Id, e.PositionsartId);
         }
 
         // =====================================================================

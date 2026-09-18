@@ -658,8 +658,8 @@ a{color:var(--marine-hell)}
   dem Betrag mit Bezugsgröße, Herkunft und Kaskadenrunde steht im Raster und zusätzlich im Werkzeugtipp des
   Betragsfeldes <span class="zk umg">umgesetzt U28</span>; der dreiteilige Summenfuß
   <span class="zk umg">umgesetzt U29</span>; die Tafel „Ersatz und Restwert" unter dem Raster
-  <span class="zk vor">Vorschlag U30</span>; der Knopf „Nutzungsdauern vorbelegen…"
-  <span class="zk vor">Vorschlag U8</span>.</p>
+  <span class="zk umg">umgesetzt U30</span>; der Knopf „Nutzungsdauern vorbelegen…"
+  <span class="zk umg">umgesetzt U8</span>.</p>
   <div class="fenster">
     <div class="f-band">Kostenverwaltung BHKW 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
@@ -763,7 +763,7 @@ a{color:var(--marine-hell)}
         weiter mit dem Bruttobetrag.</div>
 
       <div class="f-knopfzeile"><span class="f-knopf">+ Position hinzufügen</span><span class="f-knopf">Aus Vorlage übernehmen…</span>
-        <span class="f-knopf">Positionskatalog…</span><span class="f-knopf">Nutzungsdauern vorbelegen…</span> <span class="zk vor">Vorschlag U8</span></div>
+        <span class="f-knopf">Positionskatalog…</span><span class="f-knopf">Nutzungsdauern vorbelegen…</span> <span class="zk umg">umgesetzt U8</span></div>
       </div>
     </div>
     <div class="f-fuss">
@@ -811,7 +811,7 @@ a{color:var(--marine-hell)}
   gebildet. Worst/Best (±) pflegt je Projektposition Best- und Worst-Betrag, Best- und Worst-Nutzungsdauer und
   das Startjahr in der Überlagerung „Eingabe Worst/Best Case".</p>
 
-  <div class="zone">Ersatz und Restwert <span class="zk vor" style="margin-left:6px">Vorschlag U30</span></div>
+  <div class="zone">Ersatz und Restwert <span class="zk umg" style="margin-left:6px">umgesetzt U30</span></div>
   <p class="eng">Die Tafel steht in der Anwendung nirgends: Der Dialog kennt die Nutzungsdauer je Zeile, rechnet
   aber weder Ersatzjahr noch Restwert vor. Sie gehört als Gruppe unter das Raster der Investitionskosten — aus der
   Nutzungsdauer je Position, i = 3,0 %, T = 20 a, p<sub>I</sub> = 0 %/a.</p>
@@ -850,7 +850,7 @@ a{color:var(--marine-hell)}
       </tbody>
     </table>
   </div>
-  <p class="eng" style="margin-top:12px"><b>Hinweiszeile — Blockheizkraftwerk</b> <span class="zk vor">Vorschlag U8</span>:
+  <p class="eng" style="margin-top:12px"><b>Hinweiszeile — Blockheizkraftwerk</b> <span class="zk umg">umgesetzt U8</span>:
   „Betrachtungszeitraum 20 a über der Vorgabe 15 a der Technik Blockheizkraftwerk; 1 von 4 Investitionspositionen
   ohne Nutzungsdauer (Planung und Genehmigung, 21.888,40 €): kein Ersatz, kein Restwert gerechnet. Ist ein Ersatz
   fällig, ist der Kapitalwert zu günstig ausgewiesen." Der Hinweis ist ein Textmuster mit Platzhaltern
@@ -963,8 +963,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
   </div>
 
   <div class="zone">Beschriftungen und Ressourcenschlüssel</div>
-  <p class="eng">Vorhandene Schlüssel tragen die Beschriftungen des Dialogs wörtlich; die als <b>neu</b> gekennzeichneten
-  gehören zu den Vorschlägen U8, U28, U29 und U30.</p>
+  <p class="eng">Die Schlüssel tragen die Beschriftungen des Dialogs wörtlich.</p>
   <div class="tafel-huelle">
     <table class="tafel">
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
@@ -982,8 +981,11 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Worst/Best · Übernahme · Löschrückfragen · Pflichtposition</td><td class="rs">KCASE_TITEL · KCASE_BEST_EUR · KCASE_WORST_EUR · KOSTEN_CASE_STARTJAHR · KUEB_TITEL · KUEB_LBL_ZIEL · KUEB_LBL_QUELLVORLAGE · KDLG_MSG_POS_LOESCHEN · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Überlagerungen und Rückfragen</td></tr>
         <tr><td>Bezugsgrößenzeile „× {0} · {1} · Runde {2}" unter dem Betrag, absolute Zeile „Satz = Betrag"</td><td class="rs">KDLG_HERL_BASIS · KDLG_HERL_ABSOLUT · KDLG_HERK_* · KDLG_GR_*</td><td>Zelle Betrag (U28)</td></tr>
         <tr><td>Summenzeile „Investition brutto {0} · Zuschuss {1} · I₀ {2}"</td><td class="rs">KDLG_SUMME_DREITEILIG</td><td>Summenfuß (U29)</td></tr>
-        <tr><td>Gruppenkopf „Ersatz und Restwert" · Spalten „Ersatzbeschaffung" · „Restwert im Jahr {0}" · „Herkunft der Dauer" <b>neu</b></td><td class="rs">KDLG_G_ERSATZ_RESTWERT · KDLG_SP_ERSATZ · KDLG_SP_RESTWERT · KDLG_SP_DAUERHERKUNFT</td><td>Gruppe unter dem Raster (U30)</td></tr>
-        <tr><td>Knopf „Nutzungsdauern vorbelegen…" · Hinweiszeile Nutzungsdauer (Textmuster) <b>neu</b></td><td class="rs">KDLG_BTN_ND_VORBELEGEN · WIRT_ND_HINWEIS</td><td>Leiste · Dialog, Ergebnisseite, Bericht (U8)</td></tr>
+        <tr><td>Gruppenkopf „Ersatz und Restwert" · Spalten „Betrag" · „Nutzungsdauer n" · „Ersatzbeschaffung" · „Restwert Jahr {0}" · „Herkunft der Dauer"; Zellentexte „Jahr {0}", „{0} von {1}", „Barwert {0}", „— läuft wie T", „— deckungsgleich mit T"</td><td class="rs">ND_TAFEL_TITEL · ND_TAFEL_SP_POSITION · ND_TAFEL_SP_BETRAG · ND_TAFEL_SP_DAUER · ND_TAFEL_SP_ERSATZ · ND_TAFEL_SP_RESTWERT · ND_TAFEL_SP_HERKUNFT · ND_TAFEL_JAHR · ND_TAFEL_VON · ND_TAFEL_BARWERT · ND_TAFEL_WIE_T · ND_TAFEL_GLEICH_T · ND_TAFEL_VORGABE</td><td>Gruppe unter dem Raster (U30)</td></tr>
+        <tr><td>Hinweis über der Tafel (Textmuster mit T, Vorgabe, Technik, k, n und Liste)</td><td class="rs">ND_TAFEL_HINWEIS_T · ND_TAFEL_HINWEIS_OHNE · ND_TAFEL_HINWEIS_SCHLUSS · ND_TAFEL_OHNE_EINTRAG</td><td>Über der Gruppe (U30)</td></tr>
+        <tr><td>Knopf „Nutzungsdauern vorbelegen…" mit Statuszeile, Rückfrage und Absage</td><td class="rs">ND_VORBELEGEN_BTN · ND_VORBELEGEN_STATUS · ND_VORBELEGEN_FRAGE · ND_VORBELEGEN_KEINE</td><td>Leiste unter dem Raster (U8)</td></tr>
+        <tr><td>Herleitung unter der Nutzungsdauer „{0} a · {1}" mit den drei Herkünften</td><td class="rs">ND_ZEILE_HERLEITUNG · ND_HERK_TECHNIK · ND_HERK_ART · ND_QUELLE_EIGEN · ND_HERK_KEINE</td><td>Zelle Nutzungsdauer (U8)</td></tr>
+        <tr><td>Zeileneditor „Positionsart:" mit leerer Zeile und Erklärzeile</td><td class="rs">VPOS_LBL_POSITIONSART · VPOS_POSITIONSART_KEINE · VPOS_INFO_POSITIONSART</td><td>Überlagerung des Stifts (U8)</td></tr>
         <tr><td>Parameter „Preissteigerung Investition [%/a]"</td><td class="rs">WIRT_PAR_P_I</td><td>WirtschaftlichkeitParameterDialog</td></tr>
       </tbody>
     </table>
@@ -1295,7 +1297,7 @@ Keine stillen Teilsummen
   weil die Komponente keine Zuschusszeile führt <span class="zk umg">umgesetzt U29</span>. Die Herleitung der
   kWp aus Modulanzahl und Modulleistung <span class="zk umg">umgesetzt U35</span>; die Kennzahl „spezifisch
   €/kWp" im Summenfuß <span class="zk umg">umgesetzt U34</span>; die Tafel „Ersatz und Restwert" steht in
-  Kategorie 1 <span class="zk vor">Vorschlag U30</span>.</p>
+  Kategorie 1 <span class="zk umg">umgesetzt U30</span>.</p>
   <div class="fenster">
     <div class="f-band">Kostenverwaltung PV-Anlage 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
@@ -1395,7 +1397,7 @@ Keine stillen Teilsummen
         schließt die EEG-Vergütung in der Regel aus (Kumulierung); erfasst würde sie wie in Kategorie 1 als
         Zeile mit Kostenart Zuschuss. Ersatzbeschaffung und Restwert der Positionen — Wechselrichter n = 12 a
         → Ersatz im Jahr 12 mit 24.000,00 €, Restwert am Ende 39.800,00 € — rechnet der Dialog nicht vor; die
-        Tafel dazu steht bei den Investitionskosten der Kategorie 1 <span class="zk vor">Vorschlag U30</span>.
+        Tafel dazu steht bei den Investitionskosten der Kategorie 1 <span class="zk umg">umgesetzt U30</span>.
         Unter den Summen steht die Kennzahl „spezifisch 640,50 €/kWp" — die Nettosumme je kWp installierter
         Leistung <span class="zk umg">umgesetzt U34</span>; ohne gepflegte kWp entfällt sie.</div>
 
@@ -1584,7 +1586,7 @@ Betrieb — keine Kaskade, keine Endenergie
   <span class="hin">Endenergie-Arten stehen nicht in der Klappliste: der EndenergieAufloeser liefert
   für die Photovoltaik null — Hilfsenergie nur als Jahresbetrag.</span>
 
-Ersatz und Restwert   <span class="kom">technikneutral aus der Nutzungsdauer; Formel und Tafel in Kategorie 1 (Vorschlag U30)</span>
+Ersatz und Restwert   <span class="kom">technikneutral aus der Nutzungsdauer; Formel und Tafel in Kategorie 1 (umgesetzt U30)</span>
 Degradation           <span class="kom">kein Kostenattribut — Feld des Vergütungsdialogs, Kategorie 6</span></pre></div>
 
   <div class="zone">Berechnungserläuterung</div>
@@ -4391,17 +4393,22 @@ Einstufung
               lassen sich deshalb nicht getrennt bei BHKW und Kessel ausweisen</td>
             <td><span class="mono">SteuerGutschriftRechner</span></td>
             <td>Zahlenprobe: 21.203,4 € beim Blockheizkraftwerk, 2.885,7 € beim Kessel</td></tr>
-        <tr><td class="mono">U8</td><td>1 · 8</td>
-            <td>Entkopplung von Ersatz und Restwert (ein Kennzeichen je Position oder Technik), Knopf
-              „Nutzungsdauern vorbelegen" für bestehende Positionen, ein Pflegeort für die
-              Positionsart, die ungelesenen geräteeigenen Dauerspalten und der Anschluss der
-              Speicherflotte; die Hinweiszeile füllt nur die Windows-Hülle und muss
-              plattformfrei werden. In der Testdatenbank tragen 103 von 109 Investitionspositionen
-              keine Dauer</td>
-            <td><span class="mono">WirtschaftlichkeitSeiteGaben</span> ·
+        <tr class="gestrichen"><td class="mono">U8</td><td>1 · 8</td>
+            <td>Knopf „Nutzungsdauern vorbelegen…" für bestehende Positionen, ein Pflegeort für die
+              Positionsart und die Herleitung der Dauer im Raster; der Hinweis mit k, n und Liste am
+              Kostendialog</td>
+            <td><span class="mono">KostenKomponenteDialog</span> ·
+              <span class="mono">VorlagenPositionDialog</span> ·
               <span class="mono">NutzungsdauerCtrl</span> · Konzept § 2.13 (3), § 6.3</td>
-            <td>Prüffall je Technik: Dauer gepflegt ⇒ Ersatz und Restwert; Dauer leer ⇒ Hinweiszeile
-              mit k, m und Liste</td></tr>
+            <td class="grund"><b>erledigt:</b> Der Knopf füllt die LEEREN Dauern und fragt mit Anzahl nach, bevor er
+              gepflegte überschreibt — nichts ändert eine gerechnete Wirtschaftlichkeit still (ND‑Q4 (b));
+              geschrieben wird erst mit „Speichern"/„OK". Die Positionsart steht als Klappliste im Zeileneditor
+              (Zeilen der Technik, dann die technikübergreifenden) und setzt bei einer Änderung die Dauer neu;
+              ein Schemaschritt war dafür nicht nötig, die Spalte <span class="mono">NutzungsdauerID</span> steht
+              in beiden Tabellen seit Stufe S1. Die Herleitung unter der Zahl nennt Wert und Herkunft und misst am
+              WERT statt an einer Merkspalte. <b>Offen bleibt U39</b> — Entkopplung von Ersatz und Restwert,
+              geräteeigene Dauerspalten, Speicherflotte und die plattformfreie Hinweiszeile der
+              Ergebnisseite</td></tr>
         <tr><td class="mono">U9</td><td>3 · 6</td>
             <td>Degradation mit Quellenangabe — vorhanden ist sie je Stammprojekt als Feld „Degradation [%/a]"
               des Vergütungsdialogs (wirkt in der Erlösreihe) und beim Stromspeicher; eine Quellenangabe dazu
@@ -4575,14 +4582,19 @@ Einstufung
             <td class="grund"><b>erledigt:</b> Die Trennung rechnet der Kern; der Nachweis hält I₀ gegen
               <span class="mono">WirtschaftlichkeitCtrl.LiesInvestitionen</span> abzüglich Zuschuss — dieselbe Zahl.
               Ohne Erlös-/Zuschusszeile entfällt die Zeile, weil netto dann I₀ ist</td></tr>
-        <tr><td class="mono">U30</td><td class="num">1</td>
+        <tr class="gestrichen"><td class="mono">U30</td><td class="num">1</td>
             <td>Gruppe „Ersatz und Restwert" unter dem Raster der Investitionskosten: je Position Nutzungsdauer,
               Ersatzjahr, Restwert im Jahr T und Herkunft der Dauer, je Komponente die Summe — mit U8 (Knopf
               „Nutzungsdauern vorbelegen…" und Hinweiszeile)</td>
-            <td><span class="mono">KostenKomponenteDialog</span> · <span class="mono">NutzungsdauerCtrl</span> ·
-              <span class="mono">KapitalwertRechner</span></td>
-            <td>Zahlenprobe: Blockheizkraftwerk Ersatz Jahr 15 205.884,00 €, Restwert 137.256,00 €; Photovoltaik
-              Jahr 12 24.000,00 €, Restwert 39.800,00 €</td></tr>
+            <td><span class="mono">KostenKomponenteDialog</span> · <span class="mono">ErsatzRestwertTafel</span> ·
+              <span class="mono">KapitalwertRechner.Ersatz</span></td>
+            <td class="grund"><b>erledigt:</b> Ersatzkette und linearer Restwert sind aus
+              <span class="mono">KapitalwertRechner.Rechne</span> in <span class="mono">Ersatz</span> herausgelöst;
+              Tafel und Kapitalwert durchlaufen damit DIESELBE Funktion statt zweier Formeln, und ein Kern-Fall hält
+              beide Wege Zahl für Zahl gegeneinander. Die Zahlenprobe trifft: Ersatz Jahr 15 205.884,00 €
+              (Barwert 132.149 €), Restwert 137.256,00 € (Barwert 75.995 €). Erlös- und Zuschusszeilen bleiben
+              aussen vor (K5); ohne gepflegte Dauer steht ein Gedankenstrich, nie eine 0. Die Tafel ist Anzeige —
+              der Referenzlauf bleibt byte-gleich</td></tr>
         <tr class="gestrichen"><td class="mono">U31</td><td class="num">2</td>
             <td>Betriebsseite: Pflichtzeilen hinterlegt mit Schloss statt Papierkorb, Empfehlungsbereich als Zeile unter
               der Position statt als Werkzeugtipp, Laufstand über dem Raster, Gruppe „Endenergie je Komponente" und die
@@ -4685,6 +4697,18 @@ Einstufung
             <td>Alle Bestandsvarianten „übernehmen" → Referenzlauf byte-gleich; eigene Zeile wertgleich zur Stammzeile →
               dieselben Zahlen wie „übernehmen"; eine Stammänderung erreicht die übernehmende Variante, nicht die
               eigene; bunit: beide Zustände der Optionsgruppe, Erklärzeile je Herkunft</td></tr>
+        <tr><td class="mono">U39</td><td>1 · 8</td>
+            <td>Der Rest von U8: Entkopplung von Ersatz und Restwert (ein Kennzeichen je Position oder Technik — oft
+              ist das eine ohne das andere gewollt), die ungelesenen geräteeigenen Dauerspalten
+              (<span class="mono">Tab_BHKW</span>, <span class="mono">Tab_Heizkessel</span>,
+              <span class="mono">Tab_StromspeicherVariante</span>), der Anschluss der Speicherflotte mit ihrem
+              handgepflegten <span class="mono">ErsatzintervallJahre</span> und <span class="mono">RestwertEuro</span>,
+              und die Hinweiszeile der Ergebnisseite, die heute nur die Windows-Hülle füllt und plattformfrei nach
+              <span class="mono">EPOS.UI.Daten</span> gehört</td>
+            <td><span class="mono">WirtschaftlichkeitSeiteGaben</span> · <span class="mono">NutzungsdauerCtrl</span> ·
+              Konzept § 2.13 (3) · Konzept Nutzungsdauer Stufe S3</td>
+            <td>Prüffall je Technik: Kennzeichen „Ersatz führen" aus, Restwert bleibt; die Hinweiszeile erscheint auf
+              beiden Plattformen</td></tr>
       </tbody>
     </table>
   </div>
