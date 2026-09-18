@@ -156,6 +156,16 @@ namespace ChartProben
                    () => ChartRenderer.KapitalwertVerlauf("Kumulierte Barwerte je Projekt",
                             ChartRenderer.VerlaufsReihen(serien, true), null));
 
+            // 9b - AUFTRAG U18: dasselbe Absolutbild mit GESTRICHELTER Stammlinie.
+            // Der Wortbericht ist der einzige Ort, an dem die Versionen nebeneinander
+            // stehen; die Legende nennt deshalb Name, Farbe UND Strichart. Geprueft
+            // werden Masse, Palette und Determinismus - dass die Strichart ueberhaupt
+            // ankommt, sagt die Gegenprobe weiter unten.
+            Pruefe(ziel, "kapitalwert_absolut_legende", 1240, 620,
+                   new[] { ChartRenderer.C_STAMM, ChartRenderer.C_SERIEN[0], ChartRenderer.C_SERIEN[1] },
+                   () => ChartRenderer.KapitalwertVerlauf("Kumulierte Barwerte je Version",
+                            VerlaufMitGestricheltemStamm(serien), null));
+
             // 10 - Kostenprofil (iU9-W3.4): 8 760 Stundenpreise ueber der Monatsachse.
             // Die Reihe laeuft ins Negative, damit die gestrichelte Nulllinie mitgeprueft
             // wird - ein Wochenwert ist eine Abweichung und darf den Monatswert
@@ -1046,6 +1056,28 @@ namespace ChartProben
                         "Stückzahl [Stück]", "Kapitalwert [€]",
                         stueckzahlen, stueckwerte, STUECK_BESTE, stuecksperre));
 
+            // AUFTRAG U18 - die zwei Gegenproben zur Legende des Kapitalwert-Verlaufs.
+            //
+            // Erstens die STRICHART: Masse, Farben und Determinismus stimmen auch dann,
+            // wenn der Renderer das Merkmal Gestrichelt einer Reihe stillschweigend
+            // uebergeht - beide Bilder waeren dann byte-gleich. Genau so war es bis zu
+            // diesem Auftrag: Das Feld stand an Reihe, dieses Bild las es nicht.
+            Unterschiedlich("kapitalwert_verlauf_gestrichelt_wirkt",
+                () => ChartRenderer.KapitalwertVerlauf("Kumulierte Barwerte je Version",
+                        ChartRenderer.VerlaufsReihen(serien, true), null),
+                () => ChartRenderer.KapitalwertVerlauf("Kumulierte Barwerte je Version",
+                        VerlaufMitGestricheltemStamm(serien), null));
+
+            // Zweitens die NAMEN: Ohne Legende stuende in beiden Bildern dasselbe. Der
+            // Wortlaut der Namen ist der einzige Unterschied, die Reihen selbst sind
+            // dieselben - dasselbe Muster wie bei den neun Legendeneintraegen des
+            // Erzeugerstapels.
+            Unterschiedlich("kapitalwert_verlauf_legende_nennt_die_version",
+                () => ChartRenderer.KapitalwertVerlauf("Kumulierte Barwerte je Version",
+                        VerlaufMitNamen(serien, "Stamm", "Variante A", "Variante B"), null),
+                () => ChartRenderer.KapitalwertVerlauf("Kumulierte Barwerte je Version",
+                        VerlaufMitNamen(serien, "Bestand", "Version 1", "Version 2"), null));
+
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
             if (_verstoesse == 0) Console.WriteLine("ERGEBNIS: alle gruen.");
@@ -1779,6 +1811,31 @@ namespace ChartProben
         }
 
         /// <summary>Drei Kapitalwertlinien ueber 21 Stuetzstellen; sie laufen durch die Null.</summary>
+        /// <summary>
+        /// AUFTRAG U18 - die Reihen des Absolutbildes mit GESTRICHELTER Stammlinie.
+        /// Die Stammlinie ist die Bezugsgroesse und keine Version; im
+        /// Schwarz-Weiss-Ausdruck ist sie nur ueber die Strichart von ihr zu trennen.
+        /// </summary>
+        private static List<ChartRenderer.Reihe> VerlaufMitGestricheltemStamm(
+            List<VerlaufSerie> serien)
+        {
+            return ChartRenderer.VerlaufsReihen(serien, true, true);
+        }
+
+        /// <summary>
+        /// AUFTRAG U18 - dieselben Reihen unter anderen Namen. Der Wortlaut ist der
+        /// einzige Unterschied zwischen Probe und Gegenprobe; die Werte, Farben und
+        /// Masse bleiben gleich, damit allein die Legende das Bild veraendert.
+        /// </summary>
+        private static List<ChartRenderer.Reihe> VerlaufMitNamen(
+            List<VerlaufSerie> serien, params string[] namen)
+        {
+            List<ChartRenderer.Reihe> reihen = ChartRenderer.VerlaufsReihen(serien, true);
+            for (int i = 0; i < reihen.Count && i < namen.Length; i++)
+                reihen[i].Name = namen[i];
+            return reihen;
+        }
+
         private static List<VerlaufSerie> Beispielserien()
         {
             return new List<VerlaufSerie>

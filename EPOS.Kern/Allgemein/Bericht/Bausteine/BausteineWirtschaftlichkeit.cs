@@ -261,9 +261,14 @@ namespace WindowsFormsApplication1
             else
                 k.Hinweis("Differenzdiagramm entfällt — für das Stammprojekt konnte keine " +
                           "Zahlungsreihe gerechnet werden (siehe Hinweise am Kapitelende).");
+            // AUFTRAG U18 (Anwenderentscheid 18.09.2026): Das zweite Verlaufsbild steht
+            // an GENAU EINEM Ort — hier im Wortbericht. Seine Legende nennt jede Version
+            // mit Namen und Farbe; die Stammlinie ist die Bezugsgröße und keine Version
+            // und wird deshalb gestrichelt gezeichnet, damit sie auch im
+            // Schwarz-Weiß-Ausdruck von den Versionen zu trennen ist.
             k.Bild(ChartRenderer.KapitalwertVerlauf(
-                "Kumulierte Barwerte je Projekt",
-                ChartRenderer.VerlaufsReihen(verlauf.Absolut, true), null),
+                "Kumulierte Barwerte je Version",
+                ChartRenderer.VerlaufsReihen(verlauf.Absolut, true, true), null),
                 620, 310);
         }
 
