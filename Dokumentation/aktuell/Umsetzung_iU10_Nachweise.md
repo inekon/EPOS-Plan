@@ -859,6 +859,20 @@ Projekt `SpeicherPlanung`**, das **Google OR-Tools 9.15.6755 (SCIP)** hinter der
 > Nachweis ist der grüne Kern-Lauf auf ubuntu. Die Seed-Datenbank ist unverändert; die
 > Testdatenbank hat nur zwei Probierreste („test", 2 Ltr) weniger und bleibt auf
 > Schemastand 81.
+>
+> **Und `#333` ebenfalls nicht** (18.09.2026, Anwenderentscheid „Ja, neue Basis einfrieren"):
+> Nach dem Befund `B-1` trägt die Modulzeile des Heizkessels ihren Brennstoffverbrauch aus dem
+> Lauf, und die Referenzbasis ist deshalb neu eingefroren — **`2026-09-18_R9_Kesselbrennstoff`**
+> (13 Projekte, 357 CSV, 2 057 Skalare). `ios.yml` ist dabei **nur** im Basis-Pfad nachgezogen;
+> der iZ6-Vergleich für Projekt 1030 zeigt jetzt auf R9 statt R8. **Anders als beim Wechsel
+> R7 → R8 ist `Projekt_1030` diesmal NICHT byte-gleich:** Drei Skalare der `aggregate.csv`
+> (`HeizkesselModul[0].Verbrauch`, `.Waermeproduktion`, `.Brennstoff`) tragen jetzt Werte. Genau
+> deshalb musste der Basis-Pfad mitwandern — gegen R8 gemessen fiele der nächste iOS-Lauf mit
+> drei Abweichungen rot aus, obwohl die Hülle richtig rechnet. Der Nachweis des letzten
+> iOS-Laufs bleibt für **seinen** Stand gültig; er ist gegen R8 und den damaligen Kern gemessen.
+> Weder `EPOS.iOS/`, noch ein Adapter, noch der Prüfmodus, noch die Seed-Kopie sind berührt —
+> der Nachweis ist der grüne Kern-Lauf auf ubuntu. Testdatenbank und Schema sind unverändert
+> (Schemastand 89).
 
 ---
 

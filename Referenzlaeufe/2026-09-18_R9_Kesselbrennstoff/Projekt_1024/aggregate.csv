@@ -116,11 +116,11 @@ Heizkessel.Deckung_Prozess;0
 HeizkesselModul[0].Modul;eloBLOCK VE 10
 HeizkesselModul[0].Waerme_Gas;47.44
 HeizkesselModul[0].Waerme_Oel;0
-HeizkesselModul[0].Brennstoff;
+HeizkesselModul[0].Brennstoff;Strom
 HeizkesselModul[0].Verbrauch;0
 HeizkesselModul[0].Jahresnutzungsgrad;94
 HeizkesselModul[0].carrier_id;
-HeizkesselModul[0].Waermeproduktion;0
+HeizkesselModul[0].Waermeproduktion;47.44
 HeizkesselModul[0].Hilfsenergie;0
 Pufferspeicher[0].ID_Pufferspeicher;1054164
 Pufferspeicher[0].Bezeichner;Vitocell 140-E 600 Ltr (2)

@@ -113,11 +113,11 @@ Heizkessel.Deckung_Prozess;0
 HeizkesselModul[0].Modul;Vitocrossal 200 CM2 raumluftabh�ngig
 HeizkesselModul[0].Waerme_Gas;5403.1
 HeizkesselModul[0].Waerme_Oel;0
-HeizkesselModul[0].Brennstoff;
-HeizkesselModul[0].Verbrauch;0
+HeizkesselModul[0].Brennstoff;Gas
+HeizkesselModul[0].Verbrauch;5403.1
 HeizkesselModul[0].Jahresnutzungsgrad;100
 HeizkesselModul[0].carrier_id;63
-HeizkesselModul[0].Waermeproduktion;0
+HeizkesselModul[0].Waermeproduktion;5403.1
 HeizkesselModul[0].Hilfsenergie;0
 Pufferspeicher[0].ID_Pufferspeicher;1054170
 Pufferspeicher[0].Bezeichner;Pufferspeicher 20 m3 BHKW-Kaskade
