@@ -8,16 +8,22 @@
 § 3.6, § 3.7, § 3.8, § 3.9
 
 Die dichteste Kategorie: vier Rechtsgrundlagen, drei verschiedene Strommengen und eine Staffel, die
-marginal rechnet statt klassenweise. Der Dialog bringt zusammen, was heute auf drei Formulare
-verteilt ist, und zeigt zu jedem Satz, woher er kommt.
+marginal rechnet statt klassenweise. Das Formular zeigt je Satz eine Zeile mit seiner Herkunft; Wahl
+und Herleitung stehen in einer Überlagerung, die mit einem Knopf übernimmt. Drei Tiefen, drei Fragen:
+Vorschau (wie viel?), Satzzeile (woher?), Überlagerung (wie entstanden?).
 
 ## Was der Dialog zeigt
 
 **Gruppe Anlagen** — Tabelle je BHKW-Modul (Anlage · P_el · Brennstoff · Stichtag · Inbetriebnahme
-· Anlagenart) mit Aufklappzeile: Eigenstrom nach § 6 Abs. 3 (Combo) · Satz Einspeisung · Satz
-Eigenstrom (0 = Vorschlag) · Vbh-Kontingent · Vbh-Jahresdeckel (0 = Staffel) · **neu B5:**
-Energiesteuerentlastung (Anlage) · Brennstoff auf Strom/Wärme (Anlage) · Hilfsenergieanteil [%]
-(Vorschlag BHKW 2–4 %, wirkt nur auf die KWKG-Nettostrommenge).
+· Anlagenart · Eigenstrom § 6 Abs. 3) mit Aufklappzeile: je Größe **eine Satzzeile** „gilt · Herkunft"
+(Satz Einspeisung 5,5667 ct/kWh — Vorschlag, Katalog KWKG 2025, § 7 Abs. 1, Stichtagsjahr 2026 · Satz
+Eigenstrom 2,4167 — § 7 Abs. 2 mit § 6 Abs. 3 Nr. 2 · Vbh-Kontingent 30.000 h — § 8 Abs. 1 · Jahresdeckel
+3.300 h/a (2026) — Staffel § 8 Abs. 4 · KWK-Strom Fall 1 · Energiesteuer § 53a Abs. 5 — Projektvorgabe),
+das Feld Hilfsenergieanteil [%] (Vorschlag BHKW 2–4 %, wirkt nur auf die KWKG-Nettostrommenge), das
+Warnband zum Jahresdeckel und der Knopf **„Sätze und Herkunft…"**, der die Überlagerung öffnet. Ein von
+Hand gesetzter Satz steht in seiner Satzzeile als „eigener Wert 6,00 ct/kWh — Vorschlag 5,5667" und
+bleibt stehen, bis er in der Überlagerung neu gesetzt wird. Klapplisten und Knöpfe „Vorschlag übernehmen"
+am Feld gibt es im Formular nicht.
 
 **Mengentafel** — welche Vorschrift rechnet mit welcher Menge. Das ist die wichtigste neue
 Darstellung dieser Kategorie:
@@ -35,34 +41,64 @@ Das Netting wirkt **ausschließlich** auf die KWKG-Zuschlagsmengen. Stromsteuer,
 Vollbenutzungsstunden bleiben brutto — keine Inkonsistenz, sondern Folge davon, dass nur § 7 KWKG
 auf „KWK-Strom" im Sinne des § 2 Nr. 16 zahlt.
 
-**Gruppe KWK-Zuschlag (§ 7)** — Herleitungslabel je Satz:
+**Überlagerung „Sätze und Herkunft — BHKW 1"** — die Knöpfe „Sätze und Herkunft…" (Gruppe Anlagen) und
+„Wahl und Herkunft…" (Gruppe Steuern) öffnen sie über dem Formular; nach dem Hausmuster trägt sie Titel
+und Kreuz, der Inhalt hat keinen zweiten Kopf. Drei Gruppen, **ein** Knopf „Übernehmen":
 
-```
-Einspeisung 5,5667 ct/kWh — 50 kW × 8,00 + 50 kW × 6,00 + 150 kW × 5,00 + 50 kW × 4,40 = 1.670 ÷ 300 kW
-Eigenstrom  2,4167 ct/kWh — Tatbestand Nr. 2: 50 × 4,00 + 50 × 3,00 + 150 × 2,00 + 50 × 1,50 = 725 ÷ 300 kW
-```
+1. **KWK-Zuschlag — diese Anlage.** Anlagenart (§ 8) mit der Kontingentstufe je Option (neu → 30.000 ·
+   modernisiert → 15.000 ab 25 % / 30.000 ab 50 % · nachgerüstet → 10.000 / 15.000 / 30.000) und dem
+   Feld Anteil Neuherstellungskosten; Eigenstrom nach § 6 Abs. 3 mit dem Satz je Option (keiner → 0 ·
+   Nr. 1 → nicht möglich bei 300 kW · Nr. 2 → 2,4167 · Nr. 3 → 3,9683 ct/kWh); KWK-Strom Fall 1
+   (Nettostromerzeugung) oder Fall 2 (Vorrichtung zur Abwärmeabfuhr, Stromkennzahl σ, leer = 0,845 aus
+   P_el ÷ P_th). Darunter die Tafel **Größe · Vorschlag · Herkunft · eigener Wert · gilt**:
 
-Knopf „Vorschlag in die Satzfelder übernehmen" (schreibt nur auf Knopfdruck) · Vbh-Kontingent
-30.000 h (neu, § 8 Abs. 1) · Jahresdeckel 3.300 h/a im Jahr 1 (2026), je Kalenderjahr fallend (2027 3.100 · 2028 2.900 · 2029 2.700 · ab 2030 2.500; Staffel § 8 Abs. 4) · Abschlag
-Negativstunden [%]. **Warnband:** „Die Anlage läuft 5.500 h/a, vergütet werden 2026 aber nur
-3.300 h — 60 % der Erzeugung. Weil der Deckel jährlich fällt, reicht das Kontingent über 12 Kalenderjahre — bei festem Deckel wären es 10."
+   ```
+   Satz Einspeisung  5,5667 ct/kWh  KWKG_ZUSCHLAG_EINSPEISUNG_* · ab 2020 · § 7 Abs. 1:
+                                    50 kW × 8,00 + 50 × 6,00 + 150 × 5,00 + 50 × 4,40 = 1.670 ÷ 300
+   Satz Eigenstrom   2,4167 ct/kWh  KWKG_ZUSCHLAG_EIGEN_N2_* · ab 2020 · § 7 Abs. 2:
+                                    50 × 4,00 + 50 × 3,00 + 150 × 2,00 + 50 × 1,50 = 725 ÷ 300
+   Vbh-Kontingent    30.000 h       KWKG_VBH_NEUANLAGE · ab 2020 · § 8 Abs. 1
+   Jahresdeckel      Staffel        KWKG_VBH_JAHRESDECKEL · je Kalenderjahr · § 8 Abs. 4
+   ```
 
-**Gruppe Energiesteuer:** Entlastung Projekt (keine · § 53 Formular 1131 · § 53a Abs. 5 Formular
-1135 · § 54 Formular 1450) · Brennstoffaufteilung · Jahresnutzungsgrad 83,0 % (Schwelle 70 %) ·
-Herleitung „§ 53a Abs. 5 · Erdgas 4,42 €/MWh · 4.342,1 MWh (H_i) × 1,1048 = 4.797,2 MWh (H_s) ×
-4,42 = 21.203,4 €/a" · Info „Alternative § 53: voller Satz 5,50 €/MWh → 26.384,3 €/a. Nicht
-kumulierbar — je Anlage genau eine Wahl." · Info „Die Unternehmensart spielt hier **keine** Rolle:
-§§ 53 und 53a Abs. 5 differenzieren nicht danach. Sie wirkt nur auf § 54 (Kessel) und § 9b
-(Netzbezug)." · Kohärenzzeile in Firebrick, wenn der erfasste Brennstoffpreis die Energiesteuer nicht
-ausweist.
+   Wirkung Jahr 1 (2026): 469,0 MWh × 5,5667 ct × 0,600 + 1.094,2 MWh × 2,4167 ct × 0,600 =
+   **31.530,8 €**. Leer heißt: Der Vorschlag gilt und wird beim Übernehmen in die Anlage geschrieben;
+   ein eigener Wert gilt dauerhaft — auch wenn der Katalog später einen anderen Vorschlag liefert —,
+   und die Satzzeile im Formular zeigt dann beide Werte.
+2. **Energiesteuer.** Projektvorgabe für alle Anlagen oder nur diese Anlage; Entlastung keine → 0 ·
+   § 53 (Formular 1131) → 5,50 €/MWh, 26.384,3 €/a · § 53a Abs. 5 (Formular 1135) → 4,42 €/MWh,
+   21.203,4 €/a · § 54 (Formular 1450) → 1,38 €/MWh − 250 €, 6.370,1 €/a, nur produzierendes Gewerbe;
+   Brennstoffaufteilung nur bei § 53 (voller Brennstoff, § 53 Abs. 2 — oder energetisch × 0,458 →
+   12.082 €/a, bewusste Untergrenze). Herkunftszeile `ENERGIEST_53A5_ERDGAS = 4,42 €/MWh, gültig ab 2024
+   (GESICHERT) — EnergieStG § 53a Abs. 5`; Menge 4.342,1 MWh (H_i) × 11,6 ÷ 10,5 = 4.797,2 MWh (H_s),
+   nur der Brennstoff dieser Anlage. Kein Satz von Hand: Der Katalog liefert ihn jahresscharf.
+3. **Stromsteuer — Projekt.** Unternehmensart mit Wirkung je Option (kein produzierendes Gewerbe →
+   § 9b und § 54 entfallen · produzierendes Gewerbe → § 9b 20,00 €/MWh · Land- und Forstwirtschaft →
+   ebenso), Hocheffizienz, räumlicher Zusammenhang ≤ 4,5 km, Modus § 9 Abs. 1 Nr. 3 Ausweis/Erlös.
+   Herkunft `STROMST_ENTLASTUNG_9B = 20,00 €/MWh, ab 2026`, `STROMST_SOCKELBETRAG_9B 250 €/a`,
+   `STROMST_REGELSATZ = 20,50 €/MWh, ab 2026`; Wirkung 4.750,0 € (Netzbezug 250,0 MWh, Lauf „Beide
+   Anlagen") und 23.677,5 € (Ausweis).
 
-**Gruppe Stromsteuer:** Unternehmensart (führend) · Hocheffizienz nachgewiesen · räumlicher
-Zusammenhang ≤ 4,5 km · Modus § 9 Abs. 1 Nr. 3 (Erlös/Ausweis, Vorgabe Ausweis — Spalte
-`Stromst_Befreiung_Modus`, Schemaschritt 88) ·
-Herleitung „P_el 300 kW ≤ 2 MW ✓ · CO₂ 242,1 < 270 g/kWh ✓ · 1.155,0 MWh × 20,50 €/MWh = 23.677,5 €/a"
-und „§ 9b: 250,0 MWh × 20,00 − 250 = 4.750,0 €/a" · **Warnband:** „Auf selbst erzeugten und selbst
-verbrauchten Strom entsteht gar keine Stromsteuer — der Vorteil steckt bereits in der kleineren
-Bezugsrechnung. Deshalb Ausweis statt Erlös (Befund B-1)."
+Projektweit bleiben in Gruppe 2: Einspeisevergütung KWK-Strom 0,0500 €/kWh · Abschlag Negativstunden
+[%] · Pauschale § 9 · Stichtag § 6 · Förderbeginn (Jahr 1 aller Reihen = 2026). **Warnband** in der
+Aufklappzeile: „Die Anlage läuft 5.500 h/a, vergütet werden 2026 aber nur 3.300 h — 60 % der Erzeugung.
+Weil der Deckel jährlich fällt, reicht das Kontingent über 12 Kalenderjahre."
+
+**Gruppe Steuern des Projekts** — eine Tafel Vorschrift · Satz · Menge · Jahr 1 · Herkunft und
+Bedingungen mit drei Zeilen und der Knopf „Wahl und Herkunft…" (dieselbe Überlagerung):
+
+| Vorschrift | Satz | Menge | Jahr 1 (2026) | Herkunft · Bedingungen |
+|---|---|---|---|---|
+| Energiesteuer § 53a Abs. 5 | 4,42 €/MWh | 4.797,2 MWh (H_s) | 21.203,4 € | Katalog Erdgas ab 2024, Formular 1135 · Nutzungsgrad 83 % ≥ 70 % ✓ · Brennwertmenge 4.342,1 × 11,6 ÷ 10,5 · nur Brennstoff des BHKW |
+| Stromsteuer-Entlastung § 9b | 20,00 €/MWh | 250,0 MWh Netzbezug | 4.750,0 € | Katalog ab 2026, Sockel 250 €/a · produzierendes Gewerbe ✓ · hängt am Restbezug, nicht an der Anlage |
+| Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 | 20,50 €/MWh | 1.155,0 MWh brutto | 23.677,5 € · Ausweis | Regelsatz ab 2026 · hocheffizient ✓ · ≤ 4,5 km ✓ · P_el ≤ 2 MW ✓ · CO₂ 242,1 < 270 g/kWh ✓ · Modus Ausweis |
+
+Dazu das Feld Jahresnutzungsgrad 83,0 % (Projektgröße, Schwelle 70 % — K5). Die Steuersätze kommen
+jahresscharf aus dem Katalog; einen Satz von Hand gibt es nicht. Die Wahl der Entlastung, die
+Unternehmensart und der Modus § 9 Abs. 1 Nr. 3 (Erlös/Ausweis, Vorgabe Ausweis — Spalte
+`Stromst_Befreiung_Modus`, Schemaschritt 88) stehen in der Überlagerung. Kohärenzzeile in Firebrick, wenn
+der erfasste Brennstoffpreis die Energiesteuer nicht ausweist; die Unternehmensart spielt bei §§ 53 und
+53a Abs. 5 keine Rolle, sie wirkt nur auf § 54 (Kessel) und § 9b (Netzbezug).
 
 **Gruppe Kohärenzprüfung** — ohne Rechenwirkung:
 
@@ -73,17 +109,23 @@ Bezugsrechnung. Deshalb Ausweis statt Erlös (Befund B-1)."
 | § 9b bei produzierendem Gewerbe | gewählt ✓ |
 | Doppelpflege Hilfsenergie | Anlagenanteil 2,0 % *und* Kostenposition aktiv — Warnung |
 
-**Vorschau Jahr 1 (2026)**, live aus dem einen Rechenweg:
+**Vorschau Jahr 1 (2026)** — die Erlösrubrik des zuletzt gebuchten Laufs, gezeigt wird der Block
+Blockheizkraftwerk samt der projektweiten Zeile; die vollständige Rubrik mit Photovoltaik und Block B
+steht in `07`:
 
 | Position | Menge × Satz | €/a |
 |---|---|---|
-| KWK-Zuschlag Einspeisung (§ 7 Abs. 1) | 469,0 MWh | 15.664,7 |
-| KWK-Zuschlag Eigenstrom (§ 7 Abs. 2) | 1.094,2 MWh | 15.866,1 |
-| Energiesteuer-Gutschrift (§ 53a Abs. 5) | | 21.203,4 |
-| Stromsteuer-Entlastung Netzbezug (§ 9b) | | 4.750,0 |
-| Einspeiseerlös Strom | 469,0 MWh × 5,0 ct | 23.450,0 |
-| **Summe zahlungswirksam** | | **80.934,2** |
-| Stromsteuer-Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3) — Ausweis | 1.155,0 MWh | 23.677,5 |
+| Zuschlag Kraft-Wärme-Kopplung (§ 7) | 52.551,3 € × 0,600 | 31.530,8 |
+| davon Einspeisung | 469,0 MWh × 5,5667 ct | 15.664,7 |
+| davon Eigenstrom | 1.094,2 MWh × 2,4167 ct | 15.866,1 |
+| Energiesteuer-Gutschrift Brennstoff (§ 53a Abs. 5) | 4.797,2 MWh × 4,42 € | 21.203,4 |
+| Einspeiseerlös Strom | 469,0 MWh × 5,00 ct | 23.450,0 |
+| **Summe Blockheizkraftwerk** | | **76.184,2** |
+| projektweit: Stromsteuer-Entlastung Netzbezug (§ 9b) | 250,0 MWh, Lauf „Beide Anlagen" | 4.750,0 |
+| Stromsteuer-Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3) — Ausweis, in keiner Summe | 1.155,0 MWh | 23.677,5 |
+
+Die § 9b-Zeile hängt am Restbezug des Laufs: allein mit dem Blockheizkraftwerk (335,5 MWh) sind es
+6.460,0 €/a, mit beiden Anlagen (250,0 MWh) 4.750,0 €/a.
 
 ## Berechnungsgrundlage
 
@@ -222,3 +264,5 @@ Mockup zeigt die Reihe als Balkendiagramm.
 | K7 | Schreibweg der drei B5-Spalten fehlt (`KwkgAnlagenCtrl.Speichere` = 8 Spalten) | auf 11 Spalten erweitern — B5-Kernaufgabe |
 | R-U1 | § 53 neben § 53a — Entweder-oder | als Auswahl modelliert, mit dem Hauptzollamt zu klären |
 | R-U3 | Ausschluss fossiler flüssiger Brennstoffe (nur Sekundärquelle) | als Prüfkette „Heizöl-Neuanlage ab 2025" umgesetzt |
+| ⚠ **S-1** | **Hilfsstrom-Netting des Beispiels widerspricht dem Rechenkern:** Die Mengentafel teilt die Nettostromerzeugung 1.563,2 MWh im Verhältnis 70/30 (1.094,2 / 469,0 MWh, `Beispielprojekt.md` § 3); `HilfsstromRechner.NettoSplit` und die Formelkarte ziehen den Hilfsstrom **zuerst vom Eigenverbrauch** ab (Eigen' = 1.155,0 − 86,8 = 1.068,2 · Einsp' = 495,0 MWh — „Physik, keine Konvention"). Wirkung: Zuschlag Jahr 1 32.022,2 statt 31.530,8 €, Einspeiseerlös 24.750,0 statt 23.450,0 € (der Rechenkern bewertet die Einspeisung der Strommatrix, `KwkEinspeisungGesamtMWh`) | **Entscheid ausstehend** (Mockup, Anhang Umsetzungsstand U24): Folgt das Beispiel der Kernregel, sind die Zahlenproben der Abschnitte 5, 7 und 8 und `Beispielprojekt.md` neu zu rechnen; Katalog und Grundlagenpapier sagen zur Reihenfolge nichts, deshalb hier nicht geändert |
+| U22 | Überlagerung „Sätze und Herkunft" statt Klapplisten und Knöpfen „Vorschlag übernehmen" am Feld (Anwenderwunsch 18.09.2026) | Mockup Abschnitt 5; Konzept § 2.2 („Der Vorschlag steht am Feld, nicht als Sammelknopf") ist damit überholt und nachzuziehen |
