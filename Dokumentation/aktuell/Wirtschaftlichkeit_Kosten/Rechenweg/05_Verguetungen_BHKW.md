@@ -70,8 +70,8 @@ Rechenwirkung: im Beispiel „✓ Energiesteuer: Wahl und Preisanteil stimmen ü
 Preis, Steuer im Preis ohne Entlastung, Satz gegen Katalog, § 53 neben § 54, Doppelzählung § 9 Nr. 3 im Modus Erlös).
 
 **Gruppe Hilfsstrom** (`BHW_G5`) — Basiszeile, Mengenkette aus dem Lauf („Stromerzeugung brutto 1.650,000 MWh/a −
-Hilfsstrom 86,842 MWh/a = Nettostromerzeugung 1.563,158 MWh/a · davon Eigenverbrauch 1.094,211 MWh/a, Einspeisung
-468,947 MWh/a") und die Doppelpflege-Warnung („Hilfsenergie doppelt gepflegt … BHKW 1 führt einen Hilfsenergieanteil
+Hilfsstrom 86,842 MWh/a = Nettostromerzeugung 1.563,158 MWh/a · davon Eigenverbrauch 1.068,158 MWh/a, Einspeisung
+495,000 MWh/a") und die Doppelpflege-Warnung („Hilfsenergie doppelt gepflegt … BHKW 1 führt einen Hilfsenergieanteil
 von 2,00 % und zugleich eine aktive Hilfsenergie-Kostenposition …").
 
 **Gruppe Vorschau — zuletzt gebuchter Lauf** (`BHW_G6`) — die Erlösrubrik, siehe unten. Fußleiste: Abbrechen ·
@@ -85,13 +85,16 @@ Darstellung dieser Kategorie:
 | Stromerzeugung brutto | 1.650,0 | § 9 Abs. 1 Nr. 3 · CO₂-Grenzwert · Vollbenutzungsstunden | an den Generatorklemmen gemessen |
 | − Hilfsstrom (2,0 % × 4.342,1) | − 86,8 | — | Neben- und Hilfsanlagen, § 2 Nr. 20 KWKG |
 | **= Nettostromerzeugung** | **1.563,2** | KWKG-Zuschlag § 7 | = KWK-Strom, § 2 Nr. 16 Fall 1 |
-| davon Eigenverbrauch (70 %) | 1.094,2 | Zuschlag Abs. 2 | |
-| davon Einspeisung (30 %) | 469,0 | Zuschlag Abs. 1 · Einspeiseerlös | |
+| davon Eigenverbrauch (brutto 1.155,0 − Hilfsstrom 86,8) | 1.068,2 | Zuschlag Abs. 2 | Eigen zuerst — der Hilfsstrom verlässt die Kundenanlage nie |
+| davon Einspeisung (brutto 495,0, unverändert) | 495,0 | Zuschlag Abs. 1 · Einspeiseerlös | gemindert erst, wenn der Eigenverbrauch aufgezehrt ist |
 | Eigenverbrauch brutto (70 %) | 1.155,0 | § 9 Abs. 1 Nr. 3 StromStG | kein Netting — andere Vorschrift |
 
 Das Netting wirkt **ausschließlich** auf die KWKG-Zuschlagsmengen. Stromsteuer, CO₂-Grenzwert und
 Vollbenutzungsstunden bleiben brutto — keine Inkonsistenz, sondern Folge davon, dass nur § 7 KWKG
-auf „KWK-Strom" im Sinne des § 2 Nr. 16 zahlt.
+auf „KWK-Strom" im Sinne des § 2 Nr. 16 zahlt. Innerhalb der KWKG-Mengen mindert der Hilfsstrom **zuerst den
+Eigenverbrauch** (1.155,0 − 86,8 = 1.068,2 MWh) und die Einspeisung erst, wenn der Eigenverbrauch aufgezehrt
+ist — Hilfsstrom fließt nie ins Netz (`HilfsstromRechner.NettoSplit`); die Einspeisung bleibt deshalb bei
+495,0 MWh.
 
 **Überlagerung „Sätze und Herkunft — BHKW 1"** (U22) — die Knöpfe „Sätze und Herkunft…" (Angaben der gewählten
 Anlage) und „Wahl und Herkunft…" (Energiesteuer) öffnen sie über dem Formular; nach dem Hausmuster trägt sie Titel
@@ -116,8 +119,8 @@ Formulars schreibt — gespeichert wird erst mit „Speichern":
    Jahresdeckel      Staffel        KWKG_VBH_JAHRESDECKEL · je Kalenderjahr · § 8 Abs. 4
    ```
 
-   Wirkung Jahr 1 (2026): 469,0 MWh × 5,5667 ct × 0,600 + 1.094,2 MWh × 2,4167 ct × 0,600 =
-   **31.530,8 €**. Leer heißt: Der Vorschlag gilt und wird beim Übernehmen in das Feld des Formulars
+   Wirkung Jahr 1 (2026): 495,0 MWh × 5,5667 ct × 0,600 + 1.068,2 MWh × 2,4167 ct × 0,600 =
+   **32.022,2 €**. Leer heißt: Der Vorschlag gilt und wird beim Übernehmen in das Feld des Formulars
    geschrieben; ein eigener Wert gilt dauerhaft — auch wenn der Katalog später einen anderen Vorschlag liefert —,
    das Feld trägt ihn, und die Herkunftszeile darunter nennt beide Werte („eigener Wert 6,00 — Vorschlag 5,5667").
 2. **Energiesteuer.** Projektvorgabe für alle Anlagen oder nur diese Anlage; Entlastung keine → 0 ·
@@ -152,12 +155,12 @@ steht in `07`:
 
 | Position | Menge × Satz | €/a |
 |---|---|---|
-| Zuschlag Kraft-Wärme-Kopplung (§ 7) | 52.551,3 € × 0,600 | 31.530,8 |
-| davon Einspeisung | 469,0 MWh × 5,5667 ct | 15.664,7 |
-| davon Eigenstrom | 1.094,2 MWh × 2,4167 ct | 15.866,1 |
+| Zuschlag Kraft-Wärme-Kopplung (§ 7) | 53.370,4 € × 0,600 | 32.022,2 |
+| davon Einspeisung | 495,0 MWh × 5,5667 ct | 16.533,1 |
+| davon Eigenstrom | 1.068,2 MWh × 2,4167 ct | 15.489,1 |
 | Energiesteuer-Gutschrift Brennstoff (§ 53a Abs. 5) | 4.797,2 MWh × 4,42 € | 21.203,4 |
-| Einspeiseerlös Strom | 469,0 MWh × 5,00 ct | 23.450,0 |
-| **Summe Blockheizkraftwerk** | | **76.184,2** |
+| Einspeiseerlös Strom | 495,0 MWh × 5,00 ct | 24.750,0 |
+| **Summe Blockheizkraftwerk** | | **77.975,6** |
 | projektweit: Stromsteuer-Entlastung Netzbezug (§ 9b) | 250,0 MWh, Lauf „Beide Anlagen" | 4.750,0 |
 | Stromsteuer-Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3) — Ausweis, in keiner Summe | 1.155,0 MWh | 23.677,5 |
 
@@ -251,22 +254,22 @@ Eigenstrom (Tatbestand Nr. 2 Kundenanlage): 50 × 4,00 + 50 × 3,00 + 150 × 2,0
 
 | Schritt | Rechnung | Ergebnis | Anmerkung |
 |---|---|---|---|
-| 1 Bonus Einspeisung | 469,0 × 10 × 5,5667 | 26.107,8 € | volle Menge, ungedeckelt |
-| 2 Bonus Eigenstrom | 1.094,2 × 10 × 2,4167 | 26.443,5 € | nur wegen Tatbestand Nr. 2 |
-| **Bonus_voll** | 26.107,8 + 26.443,5 | **52.551,3 €** | Bezugsgröße der Jahresreihe |
+| 1 Bonus Einspeisung | 495,0 × 10 × 5,5667 | 27.555,2 € | volle Menge, ungedeckelt |
+| 2 Bonus Eigenstrom | 1.068,2 × 10 × 2,4167 | 25.815,2 € | nur wegen Tatbestand Nr. 2 |
+| **Bonus_voll** | 27.555,2 + 25.815,2 | **53.370,4 €** | Bezugsgröße der Jahresreihe |
 | 3 Deckelanteil 2026 | min(5.500 ; 3.300 ; 30.000) ÷ 5.500 | 0,600 | Deckel greift, nicht das Kontingent |
-| **Zuschlag Jahr 1** | 52.551,3 × 0,600 | **31.530,8 €** | 15.664,7 Einspeisung + 15.866,1 Eigenstrom |
+| **Zuschlag Jahr 1** | 53.370,4 × 0,600 | **32.022,2 €** | 16.533,1 Einspeisung + 15.489,1 Eigenstrom |
 
 | t | Jahr | Deckel | Vergütet | Rest danach | Zuschlag |
 |---|---|---|---|---|---|
-| 1 | 2026 | 3.300 | 3.300 | 26.700 | 31.530,8 |
-| 2 | 2027 | 3.100 | 3.100 | 23.600 | 29.620,0 |
-| 3 | 2028 | 2.900 | 2.900 | 20.700 | 27.708,9 |
-| 4 | 2029 | 2.700 | 2.700 | 18.000 | 25.797,9 |
-| 5–11 | 2030–2036 | 2.500 | 2.500 | 15.500 → 500 | 23.887,0 je Jahr |
-| 12 | 2037 | 2.500 | **500** (Rest) | 0 | 4.777,4 |
+| 1 | 2026 | 3.300 | 3.300 | 26.700 | 32.022,2 |
+| 2 | 2027 | 3.100 | 3.100 | 23.600 | 30.081,5 |
+| 3 | 2028 | 2.900 | 2.900 | 20.700 | 28.140,8 |
+| 4 | 2029 | 2.700 | 2.700 | 18.000 | 26.200,0 |
+| 5–11 | 2030–2036 | 2.500 | 2.500 | 15.500 → 500 | 24.259,3 je Jahr |
+| 12 | 2037 | 2.500 | **500** (Rest) | 0 | 4.851,9 |
 | 13–20 | 2038–2045 | — | 0 | 0 | 0 |
-| **Summe** | | | 30.000 | | **286.644 €** = Bonus_voll × 30.000 / 5.500 |
+| **Summe** | | | 30.000 | | **291.111 €** = Bonus_voll × 30.000 / 5.500 |
 
 Der volle Jahresbonus wird nie ausgezahlt: Der Jahresdeckel sinkt bis 2030 auf 2.500 h, und das
 Gesamtkontingent ist danach erschöpft. Aus einer scheinbaren Dauerförderung wird eine Reihe über
@@ -301,7 +304,7 @@ Mockup zeigt die Reihe als Balkendiagramm.
 | K7 | Schreibweg der drei B5-Spalten fehlt (`KwkgAnlagenCtrl.Speichere` = 8 Spalten) | auf 11 Spalten erweitern — B5-Kernaufgabe |
 | R-U1 | § 53 neben § 53a — Entweder-oder | als Auswahl modelliert, mit dem Hauptzollamt zu klären |
 | R-U3 | Ausschluss fossiler flüssiger Brennstoffe (nur Sekundärquelle) | als Prüfkette „Heizöl-Neuanlage ab 2025" umgesetzt |
-| ⚠ **S-1** | **Hilfsstrom-Netting des Beispiels widerspricht dem Rechenkern:** Die Mengentafel teilt die Nettostromerzeugung 1.563,2 MWh im Verhältnis 70/30 (1.094,2 / 469,0 MWh, `Beispielprojekt.md` § 3); `HilfsstromRechner.NettoSplit` und die Formelkarte ziehen den Hilfsstrom **zuerst vom Eigenverbrauch** ab (Eigen' = 1.155,0 − 86,8 = 1.068,2 · Einsp' = 495,0 MWh — „Physik, keine Konvention"). Wirkung: Zuschlag Jahr 1 32.022,2 statt 31.530,8 €, Einspeiseerlös 24.750,0 statt 23.450,0 € (der Rechenkern bewertet die Einspeisung der Strommatrix, `KwkEinspeisungGesamtMWh`) | **Entscheid ausstehend** (Mockup, Anhang Umsetzungsstand U24): Folgt das Beispiel der Kernregel, sind die Zahlenproben der Abschnitte 5, 7 und 8 und `Beispielprojekt.md` neu zu rechnen; Katalog und Grundlagenpapier sagen zur Reihenfolge nichts, deshalb hier nicht geändert |
+| ✔ S-1 | Hilfsstrom-Netting des Beispiels: Die Mengentafel teilte die Nettostromerzeugung 1.563,2 MWh anteilig 70/30; `HilfsstromRechner.NettoSplit` und die Formelkarte ziehen den Hilfsstrom **zuerst vom Eigenverbrauch** ab (Eigen' = 1.155,0 − 86,8 = 1.068,2 · Einsp' = 495,0 MWh — „Physik, keine Konvention"); der Rechenkern bewertet die Einspeisung der Strommatrix (`KwkEinspeisungGesamtMWh`) | erledigt (U24): Das Beispiel folgt der Kernregel — Zuschlag Jahr 1 32.022,2 €, Einspeiseerlös 24.750,0 €, Block Blockheizkraftwerk 77.975,6 €; Mengentafel, Vorschau, Jahresreihe, `07`, `Beispielprojekt.md` § 3 und die Abschnitte 5, 7 und 8 des Mockups sind daraus neu gerechnet |
 | U22 | Überlagerung „Sätze und Herkunft" mit Eingabefeld „eigener Wert" je Größe; die Zahlen-, Datums- und Schalterfelder bleiben im Formular, die sechs Klapplisten werden Anzeigezeilen, die Knöpfe „Vorschlag übernehmen" wandern in die Überlagerung (Anwenderwünsche 18.09.2026) | Mockup Abschnitt 5; Konzept § 2.2 („Der Vorschlag steht am Feld, nicht als Sammelknopf") ist damit überholt und nachzuziehen |
 | U25 | Staffelzeile unter dem Jahresdeckel und Warnband zum Deckelanteil — Anzeigen, die der Dialog nicht führt | Mockup Abschnitt 5, Anhang Umsetzungsstand |
 | U26 | Die Satzfelder zeigen zwei Nachkommastellen (`Nachkommastellen="2"`): 5,5667 erscheint als 5,57, wer das Feld anfasst, verliert zwei Stellen | Mockup Abschnitt 5, Anhang Umsetzungsstand: vier Nachkommastellen |
