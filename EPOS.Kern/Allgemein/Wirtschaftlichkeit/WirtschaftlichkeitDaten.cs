@@ -1278,6 +1278,29 @@ namespace WindowsFormsApplication1
 
         /// <summary>Herleitung des Einspeisesatzes nach § 7 KWKG.</summary>
         public string HerleitungEinspeisung = "";
+
+        // ------------- AUFTRAG #351 (U23) — der Vorschlag als ZAHL -------------
+        //
+        // Bis hierher trug der Nachweis den ANGESETZTEN Satz und die HERLEITUNG des
+        // Vorschlags, verglich beide aber nicht — der Leser einer Erlösrubrik sah
+        // 6,0000 ct/kWh neben einer Tranchenrechnung, die 5,5667 ergibt, und musste
+        // selbst nachrechnen, ob das ein eigener Wert war. Die beiden Felder tragen
+        // den Vorschlag als Zahl mit; der Vergleich läuft dann ohne Katalog und ohne
+        // Datenbank, also überall dort, wo die Zeile angezeigt wird
+        // (<see cref="KwkgSatzHerkunft.Vermerk"/>).
+        //
+        // NULLBAR MIT ABSICHT: Ein gebuchter Stand aus der Zeit vor diesem Auftrag
+        // führt die Felder nicht. 0 hieße dort „Vorschlag 0,0000 ct/kWh" und
+        // erzeugte an jeder Zeile einen Vermerk „eigener Wert" — null heißt
+        // „kein Vorschlag bekannt", und der Vermerk bleibt weg.
+
+        /// <summary>Vorgeschlagener Eigenstromsatz nach § 7 KWKG [ct/kWh];
+        /// <c>null</c> = kein Vorschlag bekannt.</summary>
+        public double? VorschlagEigenCt;
+
+        /// <summary>Vorgeschlagener Einspeisesatz nach § 7 KWKG [ct/kWh];
+        /// <c>null</c> = kein Vorschlag bekannt.</summary>
+        public double? VorschlagEinspeisungCt;
     }
 
     /// <summary>

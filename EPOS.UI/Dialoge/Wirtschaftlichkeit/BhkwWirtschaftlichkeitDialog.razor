@@ -780,27 +780,46 @@
     // geschrieben wird wie jede andere Eingabe erst beim OK.
     // =====================================================================
 
-    /// <summary>Grundlage des Einspeisesatzes: Tranchen, Norm, Jahr.</summary>
+    /// <summary>
+    /// Grundlage des Einspeisesatzes: Tranchen, Norm, Jahr — und AUFTRAG #351 (U23)
+    /// der Vermerk zur Herkunft des Feldes: „Vorschlag", wenn das Feld dem Vorschlag
+    /// entspricht, sonst „eigener Wert {0} — Vorschlag {1}". Der Vergleich laeuft auf
+    /// den vier Stellen des Feldes (<c>KwkgSatzHerkunft</c>), nicht auf der Anzeige.
+    /// </summary>
     private string GrundlageEinsp()
     {
         KwkgAnlagenAngabe? a = Aktuelle;
         if (a is null) return "";
         KwkgSatzVorschlag v = Vorschlag(a);
-        return string.Format(_t.HerleitungEinsp,
-                             v.SatzEinspeisungCt.ToString("N2", BhwTexte.Kultur),
-                             v.HerleitungEinspeisung);
+        return MitHerkunft(string.Format(_t.HerleitungEinsp,
+                                         KwkgSatzHerkunft.Satz(v.SatzEinspeisungCt, BhwTexte.Kultur),
+                                         v.HerleitungEinspeisung),
+                           AktuellerStand?.SatzEinspCt ?? 0, v.SatzEinspeisungCt);
     }
 
     /// <summary>Grundlage des Eigenstromsatzes: Tranchen, Norm des gewaehlten
-    /// Tatbestands, Jahr.</summary>
+    /// Tatbestands, Jahr — mit demselben Herkunftsvermerk wie die Einspeisung.</summary>
     private string GrundlageEigen()
     {
         KwkgAnlagenAngabe? a = Aktuelle;
         if (a is null) return "";
         KwkgSatzVorschlag v = Vorschlag(a);
-        return string.Format(_t.HerleitungEigen,
-                             v.SatzEigenCt.ToString("N2", BhwTexte.Kultur),
-                             v.HerleitungEigen);
+        return MitHerkunft(string.Format(_t.HerleitungEigen,
+                                         KwkgSatzHerkunft.Satz(v.SatzEigenCt, BhwTexte.Kultur),
+                                         v.HerleitungEigen),
+                           AktuellerStand?.SatzEigenCt ?? 0, v.SatzEigenCt);
+    }
+
+    /// <summary>
+    /// AUFTRAG #351 (U23) — haengt den Herkunftsvermerk an eine Grundlagenzeile. Der
+    /// Text entsteht im Kern, damit Dialog, Erloesrubrik, Bericht und Vorschau
+    /// denselben Satz fuehren; der Dialog vergleicht den ARBEITSSTAND (was beim
+    /// Speichern gerechnet wuerde), nicht den gebuchten Lauf.
+    /// </summary>
+    private static string MitHerkunft(string grundlage, double angesetztCt, double vorschlagCt)
+    {
+        string vermerk = KwkgSatzHerkunft.Vermerk(angesetztCt, vorschlagCt, BhwTexte.Kultur);
+        return vermerk.Length == 0 ? grundlage : grundlage + " · " + vermerk;
     }
 
     /// <summary>Grundlage des Kontingents: Stufe des § 8 aus Anlagenart und

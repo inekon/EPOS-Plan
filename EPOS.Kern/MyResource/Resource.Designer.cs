@@ -53349,11 +53349,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz Einspeisung · Herkunft ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A1_SATZ {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A1_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon Eigenstrom (§ 7 Abs. 2 KWKG) [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ERL_A2_EIGEN {
             get {
                 return ResourceManager.GetString("WIRT_ERL_A2_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz Eigenstrom · Herkunft ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A2_SATZ {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A2_SATZ", resourceCulture);
             }
         }
         
@@ -53444,6 +53462,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERL_B1_EFFEKTIV {
             get {
                 return ResourceManager.GetString("WIRT_ERL_B1_EFFEKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Wert {0} — Vorschlag {1} ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_HERKUNFT_EIGEN {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_HERKUNFT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_HERKUNFT_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_HERKUNFT_VORSCHLAG", resourceCulture);
             }
         }
         

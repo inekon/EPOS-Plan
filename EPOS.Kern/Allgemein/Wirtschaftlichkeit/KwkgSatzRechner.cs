@@ -253,11 +253,17 @@ namespace WindowsFormsApplication1
                 if (oben >= pelKW) break;
             }
 
+            // AUFTRAG #351 (U26): Der MISCHSATZ steht hier mit derselben Stellenzahl wie
+            // im Satzfeld des Dialogs (KwkgSatzHerkunft) — die Staffel erzeugt ihn
+            // ungerundet (300 kW: 5,5667), und eine Herleitung, die 5,57 nennt, während
+            // das Feld daneben 5,5667 führt, sieht aus wie zwei verschiedene Größen.
+            // Die TRANCHENSÄTZE bleiben bei zwei Stellen: Sie sind Katalogwerte
+            // (8,00 · 6,00 · 5,00 · 4,40), keine gerechneten Mischwerte.
             double satz = summe / pelKW;
             herleitung = string.Format(MyResource.Resource.WIRT_KWKG_HERLEITUNG_TRANCHEN,
                                        pelKW.ToString("N1", kultur),
                                        string.Join(" + ", teile.ToArray()),
-                                       satz.ToString("N2", kultur),
+                                       KwkgSatzHerkunft.Satz(satz, kultur),
                                        norm,
                                        jahr.ToString(CultureInfo.InvariantCulture));
             return satz;
@@ -278,7 +284,7 @@ namespace WindowsFormsApplication1
             v.HerleitungEinspeisung = einsp != null && einsp.Wert.HasValue
                 ? string.Format(MyResource.Resource.WIRT_KWKG_HERLEITUNG_PAUSCHAL,
                                 pelKW.ToString("N1", kultur), grenzeKW.ToString("N0", kultur),
-                                v.SatzEinspeisungCt.ToString("N2", kultur), norm,
+                                KwkgSatzHerkunft.Satz(v.SatzEinspeisungCt, kultur), norm,
                                 jahr.ToString(CultureInfo.InvariantCulture))
                 : string.Format(MyResource.Resource.WIRT_KWKG_HERLEITUNG_SATZ_FEHLT,
                                 DbWerte.GESETZ_KWKG_ZUSCHLAG_NEU_BIS50KW_EINSP);
@@ -286,7 +292,7 @@ namespace WindowsFormsApplication1
             v.HerleitungEigen = eigen != null && eigen.Wert.HasValue
                 ? string.Format(MyResource.Resource.WIRT_KWKG_HERLEITUNG_PAUSCHAL,
                                 pelKW.ToString("N1", kultur), grenzeKW.ToString("N0", kultur),
-                                v.SatzEigenCt.ToString("N2", kultur), norm,
+                                KwkgSatzHerkunft.Satz(v.SatzEigenCt, kultur), norm,
                                 jahr.ToString(CultureInfo.InvariantCulture))
                 : string.Format(MyResource.Resource.WIRT_KWKG_HERLEITUNG_SATZ_FEHLT,
                                 DbWerte.GESETZ_KWKG_ZUSCHLAG_NEU_BIS50KW_EIGEN);

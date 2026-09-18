@@ -19407,6 +19407,18 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_ERL_A2_EIGEN" xml:space="preserve">
     <value>davon Eigenstrom (§ 7 Abs. 2 KWKG) [€/a]</value>
   </data>
+  <data name="WIRT_ERL_A1_SATZ" xml:space="preserve">
+    <value>Satz Einspeisung · Herkunft</value>
+  </data>
+  <data name="WIRT_ERL_A2_SATZ" xml:space="preserve">
+    <value>Satz Eigenstrom · Herkunft</value>
+  </data>
+  <data name="WIRT_ERL_HERKUNFT_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag</value>
+  </data>
+  <data name="WIRT_ERL_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>eigener Wert {0} — Vorschlag {1}</value>
+  </data>
   <data name="WIRT_ERL_A_ENERGIESTEUER" xml:space="preserve">
     <value>Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54 EnergieStG) [€/a]</value>
   </data>

@@ -760,6 +760,86 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Equal("4,1234", Satzfeld(wieder, 1).GetAttribute("value"));
     }
 
+    // =====================================================================
+    // AUFTRAG #351 (U23) — DER HERKUNFTSVERMERK AN DER SATZZEILE
+    //
+    // Der Dialog zeigte unter jedem Satzfeld die Grundlage des Vorschlags, sagte
+    // aber nicht, ob das Feld daneben ihm folgt. Wer 6,00 eingetippt hatte, las
+    // eine Tranchenrechnung, die 5,5667 ergibt, und musste selbst nachrechnen.
+    // Der Vermerk steht jetzt am Ende derselben Zeile; der Text kommt aus dem
+    // Kern (KwkgSatzHerkunft), damit Dialog, Erloesrubrik, Bericht und Vorschau
+    // denselben Satz fuehren.
+    //
+    // ZUGLEICH U26: Die Zeile nennt den Vorschlag mit vier Stellen — derselben
+    // Stellenzahl wie das Feld darueber. Mit zwei Stellen stuende in der Zeile
+    // 5,57 und im Feld 5,5667.
+    // =====================================================================
+
+    /// <summary>
+    /// EIN LEERES FELD IST EIN EIGENER WERT: Nach BK1 rechnet der Kern ohne Rueckfall
+    /// mit dem, was im Feld steht — leer heisst 0 ct/kWh und damit „kein Zuschlag".
+    /// Die Zeile sagt das, statt „Vorschlag" zu behaupten; und sie nennt den Vorschlag
+    /// mit vier Stellen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Satz_im_Feld_nennt_die_Zeile_beide_Werte()
+    {
+        var cut = Aufbauen(Dreihundert(), katalog: Satzstaffel());
+
+        string zeile = Koerper(cut, 1).QuerySelectorAll("p.epos-vorschlagszeile")[0].TextContent;
+        Assert.Contains("Einspeisung 5,5667 ct/kWh", zeile);
+        Assert.Contains("eigener Wert 0,0000 ct/kWh — Vorschlag 5,5667 ct/kWh", zeile);
+
+        // GEGENPROBE: Mit zwei Stellen stuende hier 5,57 — die Zahl, die weder das
+        // Feld noch die Rechnung fuehrt.
+        Assert.DoesNotContain("5,57 ct/kWh", zeile);
+    }
+
+    /// <summary>
+    /// NACH DEM UEBERNEHMEN heisst es „Vorschlag" — ohne zweite Zahl, weil es nichts
+    /// zu unterscheiden gibt. Beide Satzzeilen, Einspeisung und Eigenstrom.
+    /// </summary>
+    [Fact]
+    public void Der_uebernommene_Vorschlag_macht_aus_dem_Vermerk_ein_Vorschlag()
+    {
+        var cut = Aufbauen(Dreihundert(), katalog: Satzstaffel());
+
+        Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[0].Click();
+        Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[1].Click();
+
+        var zeilen = Koerper(cut, 1).QuerySelectorAll("p.epos-vorschlagszeile");
+        Assert.Contains("· Vorschlag", zeilen[0].TextContent);
+        Assert.Contains("· Vorschlag", zeilen[1].TextContent);
+        Assert.DoesNotContain("eigener Wert", zeilen[0].TextContent);
+        Assert.DoesNotContain("eigener Wert", zeilen[1].TextContent);
+    }
+
+    /// <summary>
+    /// EIN GETIPPTER WERT steht mit dem Vorschlag daneben — der Prueffall des
+    /// Auftrags: Satz ungleich Vorschlag zeigt beide Werte.
+    /// </summary>
+    [Fact]
+    public void Ein_eigener_Wert_steht_neben_dem_Vorschlag()
+    {
+        var cut = Aufbauen(Dreihundert(), katalog: Satzstaffel());
+
+        Satzfeld(cut, 0).Input("6,0000");
+
+        string zeile = Koerper(cut, 1).QuerySelectorAll("p.epos-vorschlagszeile")[0].TextContent;
+        Assert.Contains("eigener Wert 6,0000 ct/kWh — Vorschlag 5,5667 ct/kWh", zeile);
+    }
+
+    /// <summary>Die 300-kW-Anlage der Abnahme: nicht § 7 Abs. 3a (sonst gilt die
+    /// Pauschale), Eigenstrom nach § 6 Abs. 3 Nr. 2.</summary>
+    private static List<KwkgAnlagenAngabe> Dreihundert()
+    {
+        var anlagen = new List<KwkgAnlagenAngabe> { Anlage(2, "BHKW gross", 300) };
+        anlagen[0].Inbetriebnahme = new DateTime(2027, 1, 1);
+        anlagen[0].Anlagenart = DbWerte.KWKG_ANLAGENART_MODERNISIERT;
+        anlagen[0].Eigenfall = DbWerte.KWKG_EIGENFALL_NR2;
+        return anlagen;
+    }
+
     /// <summary>Das Satzfeld Nr. <paramref name="nr"/> der Gruppe 1 — frisch gesucht,
     /// weil jede Bedienung neu zeichnet (0 = Einspeisung, 1 = Eigenstrom).</summary>
     private static IElement Satzfeld(IRenderedComponent<BhkwWirtschaftlichkeitDialog> cut, int nr)

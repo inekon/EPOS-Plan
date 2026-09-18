@@ -316,8 +316,19 @@ namespace WindowsFormsApplication1
             {
                 z.Add(Unter("ERL_A1_EINSPEISUNG", MyResource.Resource.WIRT_ERL_A1_EINSPEISUNG,
                             e => KwkgAnteil(e, true), WirtZeile.BLOCK_A));
+                // AUFTRAG #351 (U23/U26) — UNTER JEDER der beiden Geldzeilen der Satz,
+                // mit dem sie gerechnet wurde, und die Herkunft dazu. Der Nachweis trug
+                // den angesetzten Satz und die Herleitung des Vorschlags schon, verglich
+                // beide aber nicht; der Leser sah 6,0000 neben einer Tranchenrechnung,
+                // die 5,5667 ergibt, und musste selbst nachrechnen, ob das ein eigener
+                // Wert ist. Die Stellenzahl ist die des Satzfeldes (KwkgSatzHerkunft) —
+                // dieselbe Größe sieht in Feld, Rubrik, Bericht und Vorschau gleich aus.
+                z.Add(UnterText("ERL_A1_SATZ", MyResource.Resource.WIRT_ERL_A1_SATZ,
+                                e => KwkgSatzzeile(e, true), WirtZeile.BLOCK_A));
                 z.Add(Unter("ERL_A2_EIGEN", MyResource.Resource.WIRT_ERL_A2_EIGEN,
                             e => KwkgAnteil(e, false), WirtZeile.BLOCK_A));
+                z.Add(UnterText("ERL_A2_SATZ", MyResource.Resource.WIRT_ERL_A2_SATZ,
+                                e => KwkgSatzzeile(e, false), WirtZeile.BLOCK_A));
             }
             if (Irgendein(menge, e => e.KwkgVbhElektrisch > 0))
                 z.Add(Unter("VBH_ELEKTRISCH", MyResource.Resource.WIRT_ZEILE_VBH_ELEKTRISCH,
@@ -652,6 +663,22 @@ namespace WindowsFormsApplication1
             };
         }
 
+        /// <summary>Unterzeile mit TEXT statt Zahl (Einzug 1, nie in der Summe) — der
+        /// Weg, auf dem eine Herleitung neben ihrer Geldzeile steht, ohne dass Excel
+        /// eine Textzelle in eine Wertspalte bekommt (<c>ExcelWert</c> bleibt leer).</summary>
+        private static WirtZeile UnterText(string schluessel, string titel,
+                                           Func<WirtschaftlichkeitErgebnis, string> text, string block)
+        {
+            return new WirtZeile
+            {
+                Schluessel = schluessel,
+                Titel = titel,
+                Text = text,
+                Block = block,
+                Einzug = 1
+            };
+        }
+
         /// <summary>
         /// Der Anteil des KWK-Zuschlags, der auf die EINSPEISUNG (§ 7 Abs. 1 KWKG) bzw.
         /// auf den EIGENSTROM (§ 7 Abs. 2 KWKG) entfällt [€/a], über alle Module des
@@ -675,6 +702,36 @@ namespace WindowsFormsApplication1
                     : n.EigenMWh * 1000.0 * n.SatzEigenCt / 100.0;
             }
             return (double?)summe;
+        }
+
+        /// <summary>
+        /// AUFTRAG #351 (U23) — der ANGESETZTE Satz der Einspeisung (§ 7 Abs. 1) bzw.
+        /// des Eigenstroms (§ 7 Abs. 2) samt Herkunft, als Klartext einer Unterzeile.
+        ///
+        /// <para>Leer = kein Modulnachweis; dann entfällt die Zeile wie jede andere ohne
+        /// Wert. Führt der Lauf MEHRERE Module, steht je Modul ein Abschnitt
+        /// „Bezeichner: Satz · Herkunft" — der Bezeichner ist ein Datenwert, Doppelpunkt
+        /// und Trennzeichen sind Satzzeichen (Drei-Schichten-Regel).</para>
+        ///
+        /// <para>Die Stellenzahl und der Vergleich mit dem Vorschlag stehen in
+        /// <see cref="KwkgSatzHerkunft"/> — einmal, nicht je Ausgabeweg.</para>
+        /// </summary>
+        private static string KwkgSatzzeile(WirtschaftlichkeitErgebnis e, bool einspeisung)
+        {
+            if (e == null || e.KwkgModule == null || e.KwkgModule.Count == 0) return "";
+            System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
+            bool mehrere = e.KwkgModule.Count > 1;
+            var teile = new List<string>();
+            foreach (KwkgModulNachweis n in e.KwkgModule)
+            {
+                if (n == null) continue;
+                string s = einspeisung
+                    ? KwkgSatzHerkunft.SatzUndHerkunft(n.SatzEinspeisungCt, n.VorschlagEinspeisungCt, kultur)
+                    : KwkgSatzHerkunft.SatzUndHerkunft(n.SatzEigenCt, n.VorschlagEigenCt, kultur);
+                teile.Add(mehrere && !string.IsNullOrEmpty(n.Bezeichner)
+                          ? n.Bezeichner + ": " + s : s);
+            }
+            return teile.Count == 0 ? "" : string.Join(" · ", teile.ToArray());
         }
 
         /// <summary>
