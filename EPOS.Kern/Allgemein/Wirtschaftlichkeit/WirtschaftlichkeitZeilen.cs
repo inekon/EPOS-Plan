@@ -63,6 +63,57 @@ namespace WindowsFormsApplication1
         /// <summary>true, wenn die Zeile Text statt einer Zahl führt.</summary>
         public bool IstText { get { return Text != null; } }
 
+        // =====================================================================
+        // ETAPPE B7 — die Rubrik „Erlöse und Vorteile" (Konzept § 2.6)
+        // =====================================================================
+
+        /// <summary>
+        /// Zugehörigkeit zur Erlösrubrik: <see cref="BLOCK_A"/> zahlungswirksam,
+        /// <see cref="BLOCK_B"/> Ausweis, leer = gewöhnliche Kennzahl.
+        ///
+        /// <para><b>Warum das am Zeilenobjekt steht und nicht in der Ausgabe.</b> Die
+        /// Teilung in zwei Blöcke ist keine Kosmetik, sondern eine Rechenaussage:
+        /// Block B darf nicht addiert werden. Stünde sie in Word, Excel und Reiter je
+        /// einmal, wäre sie dreimal geschrieben — und der erste Ausgabeweg, der sie
+        /// vergisst, summiert eine Doppelzählung.</para>
+        /// </summary>
+        public string Block = "";
+
+        /// <summary>Blocküberschrift ohne eigene Werte; sie entfällt mit ihrem Block.</summary>
+        public bool IstUeberschrift;
+
+        /// <summary>Summenzeile des Blocks A — sie summiert nur, was in
+        /// <see cref="Block"/> <c>A</c> steht.</summary>
+        public bool IstSumme;
+
+        /// <summary>Einzugstiefe: 0 = Hauptzeile, 1 = Unter-/Herleitungszeile.</summary>
+        public int Einzug;
+
+        /// <summary>
+        /// ETAPPE B7 — die Zeile erscheint, sobald das Projekt eine Anlage führt, für
+        /// die die Position gilt, <b>auch wenn der Betrag 0 ist</b>.
+        ///
+        /// <para><b>Der Anwenderbefund vom 17.09.2026, der das erzwang:</b> „Vergütungen
+        /// und Reduktionen sind in den Ergebnissen nicht dargestellt." Sie waren
+        /// gerechnet — nur blendete die Konvention „nie 0-Zeilen" jede Position aus,
+        /// deren Satz ungepflegt war. Der Anwender sah damit nicht, dass es die Position
+        /// gibt, und erst recht nicht, warum sie 0 ist. Seit B7 steht sie da, und
+        /// <see cref="Grundtext"/> sagt, woran es liegt.</para>
+        /// </summary>
+        public bool ImmerZeigen;
+
+        /// <summary>
+        /// Klartext der fehlenden Grundlage, wenn der Betrag 0 ist („— kein
+        /// KWK-Zuschlagssatz gepflegt"). <c>null</c> oder leer = ohne Zusatz.
+        /// </summary>
+        public Func<WirtschaftlichkeitErgebnis, string> Grundtext;
+
+        /// <summary>Kennung des zahlungswirksamen Blocks A (Konzept § 2.6).</summary>
+        public const string BLOCK_A = "A";
+
+        /// <summary>Kennung des Ausweisblocks B — <b>nicht addieren</b>.</summary>
+        public const string BLOCK_B = "B";
+
         /// <summary>
         /// Der formatierte Zellinhalt für Word und Reiter; <c>„—"</c>, wenn es keinen
         /// Wert gibt.
@@ -73,7 +124,20 @@ namespace WindowsFormsApplication1
             if (IstText) { string t = Text(e); return string.IsNullOrEmpty(t) ? "—" : t; }
             if (e.IstStamm && StammAnzeige != null) return StammAnzeige;
             double? v = Wert == null ? null : Wert(e);
-            return v.HasValue ? v.Value.ToString(Format, kultur) : "—";
+            if (!v.HasValue) return "—";
+            string zahl = v.Value.ToString(Format, kultur);
+
+            // ETAPPE B7: Eine 0 ohne Begründung ist eine Behauptung. Steht hinter der
+            // Position eine ungepflegte Grundlage, sagt die Zelle es im Klartext — in
+            // ALLEN drei Ausgaben, weil es hier steht und nicht dreimal im Rendercode.
+            // Excel bekommt die Zahl weiter numerisch (ExcelWert), sonst wären Filter
+            // und Diagramme des Blattes hinüber.
+            if (Grundtext != null && v.Value == 0)
+            {
+                string g = Grundtext(e);
+                if (!string.IsNullOrEmpty(g)) return zahl + " — " + g;
+            }
+            return zahl;
         }
 
         /// <summary>Der Zahlenwert für Excel; <c>null</c> = Zelle bleibt leer.</summary>
@@ -157,6 +221,25 @@ namespace WindowsFormsApplication1
             z.Add(Zahl("ENERGIEKOSTEN", MyResource.Resource.WIRT_ZEILE_ENERGIEKOSTEN,
                        e => e.EnergiekostenJahr));
 
+            // ETAPPE B7 (Konzept § 3.5) — die ANLAGENSCHARFE AUFSCHLÜSSELUNG.
+            //
+            // Die Energiekostenzeile ist in fast jedem Projekt die größte laufende
+            // Position und sagte bis B7 nichts über sich. Darunter steht seither je
+            // Anlage eine Herleitungszeile „Menge × Preis"; die SUMME bleibt die Zeile
+            // darüber — hier wird nichts zweites gerechnet.
+            //
+            // Die Anlagen der GANZEN Gruppe bilden die Zeilenliste, nicht die eines
+            // Projekts: Stamm und Varianten führen verschiedene Anlagen, und eine
+            // Zeile, die nur in einer Spalte einen Wert hat, gehört trotzdem in die
+            // Tabelle — in den übrigen steht dann „—".
+            foreach (string anlage in Anlagennamen(menge))
+            {
+                string name = anlage;      // Fangkopie für den Abschluss
+                z.Add(Unter("ENERGIEKOSTEN_ANLAGE_" + Schluesselform(name),
+                            string.Format(MyResource.Resource.WIRT_ENK_ZEILE, name),
+                            e => AnlageKosten(e, name), ""));
+            }
+
             // ETAPPE E7 — die Zeile hieß bis hierher in BEIDEN Tarifmodellen
             // „Stromkosten Tarif". Im Rollenmodell trägt sie aber den RESTSTROM-Betrag,
             // also die Kosten MIT Anlage — und steht damit direkt neben den vermiedenen
@@ -183,95 +266,231 @@ namespace WindowsFormsApplication1
                 z.Add(Zahl("CO2_BEHG", MyResource.Resource.WIRT_ZEILE_CO2_BEHG,
                            e => (double?)e.CO2AbgabeJahr));
 
-            z.Add(Zahl("EINSPEISEERLOES", MyResource.Resource.WIRT_ZEILE_EINSPEISEERLOES,
-                       e => (double?)e.EinspeiseerloesJahr));
-            // ETAPPE E7 — Aufschlüsselung. Sie erscheint nur, wenn beide Anteile
-            // vorkommen; bei einem reinen PV- oder reinen KWK-Projekt wäre sie die
-            // Gesamtzeile ein zweites Mal.
+            // =================================================================
+            // ETAPPE B7 — DIE RUBRIK „Erlöse und Vorteile" (Konzept § 2.6)
+            //
+            // Bis hierher standen die Erlöspositionen verstreut zwischen den Kosten:
+            // Einspeiseerlös, dann der PV-Block, dann KWKG, dann die drei Steuerzeilen,
+            // dann die vermiedenen Kosten. Jede für sich richtig — zusammen aber keine
+            // Aussage, und vor allem keine, die Zahlung von Ausweis trennt.
+            //
+            // Seit B7 sind es ZWEI Blöcke, und die Teilung ist die Aussage:
+            //   BLOCK A geht in den Kapitalwert und wird summiert.
+            //   BLOCK B wird AUSGEWIESEN und NIE summiert — der Vorteil steckt bereits
+            //   in einer anderen Position (kleinere Bezugsrechnung), ein zweites Buchen
+            //   wäre Doppelzählung (E5).
+            // Die Reihenfolge folgt dem Entwurf „Ergebnis, Bandbreite, Herkunft", damit
+            // die Rubrik später ohne Umbau in die neue Ergebnisansicht wandert.
+            // =================================================================
+
+            // Führt das Projekt überhaupt eine Anlage, für die die Position gilt? Daran
+            // — nicht am Betrag — hängt, ob eine A-Zeile erscheint (ImmerZeigen).
+            bool hatBhkw = Irgendein(menge, e => e.KwkgVbhElektrisch > 0 ||
+                                                 e.KwkgErloesJahr1 > 0 ||
+                                                 e.EnergiesteuerJahr1 > 0 ||
+                                                 e.StromsteuerBefreiungJahr1 > 0 ||
+                                                 e.EinspeiseerloesKwkJahr != 0 ||
+                                                 (e.KwkgModule != null && e.KwkgModule.Count > 0));
+
+            var blockA = new List<WirtZeile>();   // Grundlage der Summenzeile
+
+            z.Add(Kopf("ERL_KOPF_A", MyResource.Resource.WIRT_ERL_KOPF_A, WirtZeile.BLOCK_A));
+
+            // ---- A1/A2: KWK-Zuschlag nach § 7 KWKG --------------------------------
+            // A3 (Pauschale § 9 KWKG) hat KEINE Jahr-1-Zeile: Sie ist eine EINMALIGE
+            // Zahlung im Jahr 0 und stünde in einer €/a-Spalte falsch. Greift sie, sagt
+            // es der Hinweis des Laufs (WIRT_KWKG_PAUSCHALE) — offener Punkt B7-3.
+            // OHNE BHKW entsteht die Zeile gar nicht erst. „Immer zeigen" heißt: auch
+            // bei Betrag 0 — nicht: in jedem Projekt. Ein reines PV- oder Kesselprojekt
+            // bekäme sonst zwei Nullzeilen über Vorschriften, die es nicht betreffen.
+            if (hatBhkw)
+            {
+                WirtZeile aKwkg = Erloes(blockA, "ERL_A_KWKG", MyResource.Resource.WIRT_ERL_A_KWKG,
+                                         e => (double?)e.KwkgErloesJahr1, true);
+                aKwkg.Grundtext = e => MyResource.Resource.WIRT_GRUND_KWKG;
+                z.Add(aKwkg);
+            }
+
+            // Die anlagenscharfe Aufteilung in Einspeisung (§ 7 Abs. 1) und Eigenstrom
+            // (§ 7 Abs. 2) trägt der Modulnachweis des Laufs. Er wird nicht persistiert
+            // (offener Punkt B7-2), also erscheinen die beiden Unterzeilen im frischen
+            // Lauf — dieselbe Regel wie bei den Betriebskostenpositionen.
+            if (Irgendein(menge, e => e.KwkgModule != null && e.KwkgModule.Count > 0))
+            {
+                z.Add(Unter("ERL_A1_EINSPEISUNG", MyResource.Resource.WIRT_ERL_A1_EINSPEISUNG,
+                            e => KwkgAnteil(e, true), WirtZeile.BLOCK_A));
+                z.Add(Unter("ERL_A2_EIGEN", MyResource.Resource.WIRT_ERL_A2_EIGEN,
+                            e => KwkgAnteil(e, false), WirtZeile.BLOCK_A));
+            }
+            if (Irgendein(menge, e => e.KwkgVbhElektrisch > 0))
+                z.Add(Unter("VBH_ELEKTRISCH", MyResource.Resource.WIRT_ZEILE_VBH_ELEKTRISCH,
+                            e => e.KwkgVbhElektrisch > 0 ? (double?)e.KwkgVbhElektrisch : null,
+                            WirtZeile.BLOCK_A));
+
+            // ---- A4/A5: Energiesteuer-Entlastung ---------------------------------
+            // § 53/§ 53a (BHKW-Brennstoff) und § 54 (Heizstoff) stehen in EINER Zahl:
+            // Der Rechner gibt eine Summe zurück (SteuerErgebnis.EnergiesteuerEur), die
+            // Aufteilung wäre eine neue Größe im Rechner. Der Zeilentitel nennt deshalb
+            // beide Vorschriften; welche gegriffen hat, sagt die Herkunft der Sätze.
+            if (hatBhkw)
+            {
+                WirtZeile aEnst = Erloes(blockA, "ERL_A_ENERGIESTEUER",
+                                         MyResource.Resource.WIRT_ERL_A_ENERGIESTEUER,
+                                         e => (double?)e.EnergiesteuerJahr1, true);
+                aEnst.Grundtext = e => MyResource.Resource.WIRT_GRUND_ENERGIESTEUER;
+                z.Add(aEnst);
+            }
+
+            // ---- A6: Stromsteuer-Entlastung Netzbezug (§ 9b) ---------------------
+            // Sie hängt am RESTBEZUG, nicht an einer Anlage — deshalb gilt sie für
+            // jedes Projekt und steht immer da (Konzept § 2.6, Klarstellung 2).
+            WirtZeile aEntl = Erloes(blockA, "ERL_A_STROMST_ENTLASTUNG",
+                                     MyResource.Resource.WIRT_ERL_A_STROMST_ENTLASTUNG,
+                                     e => (double?)e.StromsteuerEntlastungJahr1, true);
+            aEntl.Grundtext = e => MyResource.Resource.WIRT_GRUND_NUR_PROD_GEWERBE;
+            z.Add(aEntl);
+
+            // ---- A7: Stromsteuer-Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3) -----
+            // Sie folgt dem Modus aus B6: ERLOES bucht sie (Block A), AUSWEIS zeigt sie
+            // nur (Block B, weiter unten). Ein Projekt kann nur eines von beidem sein.
+            bool befreiungAlsErloes = Irgendein(menge, e => e.StromsteuerBefreiungAlsErloes);
+            if (Irgendein(menge, e => e.StromsteuerBefreiungJahr1 > 0) && befreiungAlsErloes)
+                z.Add(Erloes(blockA, "ERL_A_STROMST_BEFREIUNG",
+                             MyResource.Resource.WIRT_ERL_A_STROMST_BEFREIUNG,
+                             e => (double?)e.StromsteuerBefreiungJahr1, false));
+
+            // ---- A8: Einspeiseerlös Strom ----------------------------------------
+            WirtZeile aEinsp = Erloes(blockA, "EINSPEISEERLOES",
+                                      MyResource.Resource.WIRT_ERL_A_EINSPEISUNG,
+                                      e => (double?)e.EinspeiseerloesJahr, true);
+            aEinsp.Grundtext = e => MyResource.Resource.WIRT_GRUND_EINSPEISUNG;
+            z.Add(aEinsp);
+            // Aufschlüsselung nur, wenn beide Anteile vorkommen; bei einem reinen PV-
+            // oder reinen KWK-Projekt wäre sie die Gesamtzeile ein zweites Mal.
             if (Irgendein(menge, e => e.EinspeiseerloesPvJahr != 0) &&
                 Irgendein(menge, e => e.EinspeiseerloesKwkJahr != 0))
             {
-                z.Add(Zahl("EINSPEISEERLOES_PV", MyResource.Resource.WIRT_ZEILE_EINSPEISEERLOES_PV,
-                           e => (double?)e.EinspeiseerloesPvJahr));
-                z.Add(Zahl("EINSPEISEERLOES_KWK", MyResource.Resource.WIRT_ZEILE_EINSPEISEERLOES_KWK,
-                           e => (double?)e.EinspeiseerloesKwkJahr));
+                z.Add(Unter("EINSPEISEERLOES_PV", MyResource.Resource.WIRT_ZEILE_EINSPEISEERLOES_PV,
+                            e => (double?)e.EinspeiseerloesPvJahr, WirtZeile.BLOCK_A));
+                z.Add(Unter("EINSPEISEERLOES_KWK", MyResource.Resource.WIRT_ZEILE_EINSPEISEERLOES_KWK,
+                            e => (double?)e.EinspeiseerloesKwkJahr, WirtZeile.BLOCK_A));
             }
 
-            // ETAPPE P6 (PV-Konzept § 6.4): Ausweis des PV-Vergütungsdialogs —
-            // direkt hinter den Einspeisezeilen, deren PV-Anteil er erklärt. Der
-            // Block erscheint nur, wenn irgendein Lauf der Gruppe den Dialog aktiv
-            // hatte; die Unterzeilen folgen dem üblichen Nullzeilen-Muster.
+            // ---- A9: PV-Vergütung (PV-Konzept § 6.4, Etappe P6) ------------------
+            // Der Block erscheint nur, wenn irgendein Lauf der Gruppe den
+            // Vergütungsdialog aktiv hatte; die MENGENzeilen des Ausweises (Kappung,
+            // Vergütungsausfall, vermiedener Bezug) stehen seit B7 in Block B.
             if (Irgendein(menge, e => !string.IsNullOrEmpty(e.PvVerguetungsform)))
             {
                 z.Add(new WirtZeile
                 {
                     Schluessel = "PV_FORM",
                     Titel = MyResource.Resource.WIRT_ZEILE_PV_FORM,
+                    Block = WirtZeile.BLOCK_A,
+                    Einzug = 1,
                     Text = e => PvFormText(e.PvVerguetungsform)
                 });
-                WirtZeile aw = Zahl("PV_AW", MyResource.Resource.WIRT_ZEILE_PV_AW,
-                                    e => e.PvAnzulegenderWert);
+                WirtZeile aw = Unter("PV_AW", MyResource.Resource.WIRT_ZEILE_PV_AW,
+                                     e => e.PvAnzulegenderWert, WirtZeile.BLOCK_A);
                 aw.Format = "N2"; aw.ExcelFormat = "#,##0.00";
                 z.Add(aw);
                 if (Irgendein(menge, e => e.PvMarktpraemie > 0))
-                    z.Add(Zahl("PV_MARKTPRAEMIE", MyResource.Resource.WIRT_ZEILE_PV_MARKTPRAEMIE,
-                               e => (double?)e.PvMarktpraemie));
+                    z.Add(Erloes(blockA, "PV_MARKTPRAEMIE", MyResource.Resource.WIRT_ZEILE_PV_MARKTPRAEMIE,
+                                 e => (double?)e.PvMarktpraemie, false));
+                if (Irgendein(menge, e => e.PvKompensation51a > 0))
+                    z.Add(Erloes(blockA, "PV_51A", MyResource.Resource.WIRT_ZEILE_PV_51A,
+                                 e => (double?)e.PvKompensation51a, false));
+            }
+
+            // ---- Summenzeile: NUR Block A ----------------------------------------
+            // Sie summiert die €/a-Zeilen des Jahres 1. Der Restwert (A10) steht
+            // bewusst NICHT darin: Er ist ein BARWERT über T und stünde in einer
+            // €/a-Summe als Einheitenfehler. Seine Zeile bleibt unten beim Kapitalwert,
+            // wo sie mit dem Nettobarwert zusammen gelesen wird.
+            var summanden = new List<WirtZeile>(blockA);
+            z.Add(new WirtZeile
+            {
+                Schluessel = "ERL_A_SUMME",
+                Titel = MyResource.Resource.WIRT_ERL_A_SUMME,
+                Block = WirtZeile.BLOCK_A,
+                IstSumme = true,
+                Wert = e =>
+                {
+                    if (e == null) return null;
+                    double summe = 0;
+                    foreach (WirtZeile s in summanden)
+                    {
+                        double? w = s.Wert == null ? null : s.Wert(e);
+                        if (w.HasValue) summe += w.Value;
+                    }
+                    return (double?)summe;
+                }
+            });
+
+            // =================================================================
+            // BLOCK B — Ausweis, NICHT addieren
+            // =================================================================
+            bool hatVermieden = Irgendein(menge, e => e.VermiedenGesamtJahr != 0 ||
+                                                      e.VermiedenArbeitJahr != 0);
+            bool hatBefreiungAusweis = Irgendein(menge, e => e.StromsteuerBefreiungJahr1 > 0) &&
+                                       !befreiungAlsErloes;
+            bool hatPvAusweis = Irgendein(menge, e => e.PvVermiedenerBezug.HasValue ||
+                                                      e.PvKappungsverlustKwh > 0 ||
+                                                      e.PvVerguetungsausfallKwh > 0);
+            if (hatVermieden || hatBefreiungAusweis || hatPvAusweis)
+            {
+                z.Add(Kopf("ERL_KOPF_B", MyResource.Resource.WIRT_ERL_KOPF_B, WirtZeile.BLOCK_B));
+
+                // A7 im Modus AUSWEIS (B6): Auf selbst erzeugten und selbst verbrauchten
+                // Strom entsteht gar keine Stromsteuer — der Vorteil steckt bereits in
+                // der kleineren Bezugsrechnung.
+                if (hatBefreiungAusweis)
+                    z.Add(Ausweis("ERL_B_STROMST_BEFREIUNG",
+                                  MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG_AUSWEIS,
+                                  e => (double?)e.StromsteuerBefreiungJahr1));
+
+                // B1 — vermiedene Stromkosten, BRUTTO, darunter die Korrektur und der
+                // effektive Betrag (Konzept § 2.6, Klarstellung 1).
+                if (hatVermieden)
+                {
+                    z.Add(Ausweis("VERMIEDEN_GESAMT", MyResource.Resource.WIRT_ERL_B1_BRUTTO,
+                                  e => (double?)e.VermiedenGesamtJahr));
+                    z.Add(Unter("VERMIEDEN_ARBEIT", MyResource.Resource.WIRT_ZEILE_VERMIEDEN_ARBEIT,
+                                e => (double?)e.VermiedenArbeitJahr, WirtZeile.BLOCK_B));
+                    z.Add(Unter("VERMIEDEN_LEISTUNG", MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG,
+                                e => (double?)e.VermiedenLeistungJahr, WirtZeile.BLOCK_B));
+
+                    // Die Korrektur erscheint NUR, wo sie gilt — beim produzierenden
+                    // Gewerbe mit bestimmbarer vermiedener Menge. Sonst IST brutto
+                    // effektiv, und zwei gleiche Zahlen untereinander erklärten nichts.
+                    if (Irgendein(menge, e => e.VermiedenEntlastung9bJahr != 0))
+                    {
+                        z.Add(Unter("ERL_B1_ABZUG_9B", MyResource.Resource.WIRT_ERL_B1_ABZUG_9B,
+                                    e => (double?)(-e.VermiedenEntlastung9bJahr), WirtZeile.BLOCK_B));
+                        WirtZeile eff = Ausweis("ERL_B1_EFFEKTIV",
+                                                MyResource.Resource.WIRT_ERL_B1_EFFEKTIV,
+                                                e => (double?)e.VermiedenEffektivJahr);
+                        eff.IstSumme = true;      // Zwischenergebnis des Ausweises
+                        z.Add(eff);
+                    }
+                }
+
+                // B2 — PV-Ausweis: vermiedener Bezug sowie Kappungs- und Ausfallmengen.
+                if (Irgendein(menge, e => e.PvVermiedenerBezug.HasValue))
+                    z.Add(Ausweis("PV_VERMIEDEN", MyResource.Resource.WIRT_ZEILE_PV_VERMIEDEN,
+                                  e => e.PvVermiedenerBezug));
                 if (Irgendein(menge, e => e.PvVerguetungsausfallKwh > 0))
                 {
-                    z.Add(Zahl("PV_AUSFALL_KWH", MyResource.Resource.WIRT_ZEILE_PV_AUSFALL_KWH,
-                               e => (double?)e.PvVerguetungsausfallKwh));
-                    z.Add(Zahl("PV_AUSFALL_EUR", MyResource.Resource.WIRT_ZEILE_PV_AUSFALL_EUR,
-                               e => (double?)e.PvVerguetungsausfall));
+                    z.Add(Ausweis("PV_AUSFALL_KWH", MyResource.Resource.WIRT_ZEILE_PV_AUSFALL_KWH,
+                                  e => (double?)e.PvVerguetungsausfallKwh));
+                    z.Add(Unter("PV_AUSFALL_EUR", MyResource.Resource.WIRT_ZEILE_PV_AUSFALL_EUR,
+                                e => (double?)e.PvVerguetungsausfall, WirtZeile.BLOCK_B));
                 }
-                if (Irgendein(menge, e => e.PvKompensation51a > 0))
-                    z.Add(Zahl("PV_51A", MyResource.Resource.WIRT_ZEILE_PV_51A,
-                               e => (double?)e.PvKompensation51a));
                 if (Irgendein(menge, e => e.PvKappungsverlustKwh > 0))
-                    z.Add(Zahl("PV_KAPPUNG", MyResource.Resource.WIRT_ZEILE_PV_KAPPUNG,
-                               e => (double?)e.PvKappungsverlustKwh));
-                if (Irgendein(menge, e => e.PvVermiedenerBezug.HasValue))
-                    z.Add(Zahl("PV_VERMIEDEN", MyResource.Resource.WIRT_ZEILE_PV_VERMIEDEN,
-                               e => e.PvVermiedenerBezug));
+                    z.Add(Ausweis("PV_KAPPUNG", MyResource.Resource.WIRT_ZEILE_PV_KAPPUNG,
+                                  e => (double?)e.PvKappungsverlustKwh));
             }
 
-            if (Irgendein(menge, e => e.KwkgErloesJahr1 > 0))
-                z.Add(Zahl("KWKG", MyResource.Resource.WIRT_ZEILE_KWKG,
-                           e => (double?)e.KwkgErloesJahr1));
-            if (Irgendein(menge, e => e.KwkgVbhElektrisch > 0))
-                z.Add(Zahl("VBH_ELEKTRISCH", MyResource.Resource.WIRT_ZEILE_VBH_ELEKTRISCH,
-                           e => e.KwkgVbhElektrisch > 0 ? (double?)e.KwkgVbhElektrisch : null));
-
-            if (Irgendein(menge, e => e.EnergiesteuerJahr1 > 0))
-                z.Add(Zahl("ENERGIESTEUER", MyResource.Resource.WIRT_ZEILE_ENERGIESTEUER,
-                           e => (double?)e.EnergiesteuerJahr1));
-            // ETAPPE B6 — die Beschriftung sagt, WIE der Betrag in die Rechnung eingeht.
-            // Im Modus AUSWEIS (Vorgabe) ist er keine Zahlung: Er wird gezeigt und steht
-            // in keiner Zahlungsreihe; dieselbe Sprache wie bei den vermiedenen Kosten
-            // („(Ausweis)"). Bucht auch nur ein Lauf der Gruppe die Erlösreihe, gilt die
-            // schlichte Beschriftung — sonst behauptete die Spaltenüberschrift für diesen
-            // Lauf etwas Falsches.
-            if (Irgendein(menge, e => e.StromsteuerBefreiungJahr1 > 0))
-                z.Add(Zahl("STROMST_BEFREIUNG",
-                           Irgendein(menge, e => e.StromsteuerBefreiungAlsErloes)
-                               ? MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG
-                               : MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG_AUSWEIS,
-                           e => (double?)e.StromsteuerBefreiungJahr1));
-            if (Irgendein(menge, e => e.StromsteuerEntlastungJahr1 > 0))
-                z.Add(Zahl("STROMST_ENTLASTUNG", MyResource.Resource.WIRT_ZEILE_STROMST_ENTLASTUNG,
-                           e => (double?)e.StromsteuerEntlastungJahr1));
-
-            // ETAPPE E5/E7: vermiedene Kosten. Der Leistungsanteil ist regelmäßig
-            // NEGATIV — die Bedingung prüft deshalb auf „ungleich 0". Die Titel tragen
-            // seit E7 den Zusatz „(Ausweis)": Es sind keine Zahlungen.
-            if (Irgendein(menge, e => e.VermiedenGesamtJahr != 0 || e.VermiedenArbeitJahr != 0))
-            {
-                z.Add(Zahl("VERMIEDEN_ARBEIT", MyResource.Resource.WIRT_ZEILE_VERMIEDEN_ARBEIT,
-                           e => (double?)e.VermiedenArbeitJahr));
-                z.Add(Zahl("VERMIEDEN_LEISTUNG", MyResource.Resource.WIRT_ZEILE_VERMIEDEN_LEISTUNG,
-                           e => (double?)e.VermiedenLeistungJahr));
-                z.Add(Zahl("VERMIEDEN_GESAMT", MyResource.Resource.WIRT_ZEILE_VERMIEDEN_GESAMT,
-                           e => (double?)e.VermiedenGesamtJahr));
-            }
             // SP-E-2: Die Zeile „Aufschläge auf den Strombezug" ist entfallen. Die
             // Preisanteile zerlegen den Arbeitspreis und stecken damit vollständig in
             // den Energiekosten; eine eigene Zeile wäre eine zweite Ansage derselben
@@ -337,6 +556,245 @@ namespace WindowsFormsApplication1
                                       Func<WirtschaftlichkeitErgebnis, double?> wert)
         {
             return new WirtZeile { Schluessel = schluessel, Titel = titel, Wert = wert };
+        }
+
+        // =====================================================================
+        // ETAPPE B7 — Bausteine der Rubrik (Konzept § 2.6)
+        // =====================================================================
+
+        /// <summary>Blocküberschrift ohne Werte.</summary>
+        private static WirtZeile Kopf(string schluessel, string titel, string block)
+        {
+            return new WirtZeile
+            {
+                Schluessel = schluessel,
+                Titel = titel,
+                Block = block,
+                IstUeberschrift = true,
+                Text = e => ""          // Überschriften tragen in jeder Spalte nichts
+            };
+        }
+
+        /// <summary>
+        /// Eine Zeile des zahlungswirksamen Blocks A. Sie wird in
+        /// <paramref name="summanden"/> vermerkt — daraus entsteht die Summenzeile, und
+        /// zwar aus genau denselben Zeilen, die darüber stehen. Eine von Hand
+        /// nachgeführte Summe wäre die zweite Stelle, an der jemand eine neue Position
+        /// vergessen kann.
+        /// </summary>
+        private static WirtZeile Erloes(List<WirtZeile> summanden, string schluessel, string titel,
+                                        Func<WirtschaftlichkeitErgebnis, double?> wert,
+                                        bool immerZeigen)
+        {
+            var z = new WirtZeile
+            {
+                Schluessel = schluessel,
+                Titel = titel,
+                Wert = wert,
+                Block = WirtZeile.BLOCK_A,
+                ImmerZeigen = immerZeigen
+            };
+            summanden.Add(z);
+            return z;
+        }
+
+        /// <summary>
+        /// Eine Zeile des Ausweisblocks B. Sie steht NIE in der Summe — sie wird
+        /// deshalb auch keiner Summandenliste beigelegt; die Trennung ist kein Flag,
+        /// das jemand setzen oder vergessen könnte, sondern zwei verschiedene Wege in
+        /// die Liste.
+        /// </summary>
+        private static WirtZeile Ausweis(string schluessel, string titel,
+                                         Func<WirtschaftlichkeitErgebnis, double?> wert)
+        {
+            return new WirtZeile
+            {
+                Schluessel = schluessel,
+                Titel = titel,
+                Wert = wert,
+                Block = WirtZeile.BLOCK_B
+            };
+        }
+
+        /// <summary>Unter-/Herleitungszeile eines Blocks (Einzug 1, nie in der Summe).</summary>
+        private static WirtZeile Unter(string schluessel, string titel,
+                                       Func<WirtschaftlichkeitErgebnis, double?> wert, string block)
+        {
+            return new WirtZeile
+            {
+                Schluessel = schluessel,
+                Titel = titel,
+                Wert = wert,
+                Block = block,
+                Einzug = 1
+            };
+        }
+
+        /// <summary>
+        /// Der Anteil des KWK-Zuschlags, der auf die EINSPEISUNG (§ 7 Abs. 1 KWKG) bzw.
+        /// auf den EIGENSTROM (§ 7 Abs. 2 KWKG) entfällt [€/a], über alle Module des
+        /// Laufs. <c>null</c> = kein Modulnachweis (geladener statt frisch gerechneter
+        /// Stand) — dann entfällt die Zeile wie jede andere ohne Wert.
+        ///
+        /// <para>Gerechnet wird aus Menge × Satz je Modul, also aus denselben Größen,
+        /// mit denen der KWKG-Rechner den Jahresbetrag gebildet hat. Der Eigenanteil
+        /// eines Moduls ohne Tatbestand nach § 6 Abs. 3 ist dort 0 und bleibt es
+        /// hier — der Satz steht dann auf 0.</para>
+        /// </summary>
+        private static double? KwkgAnteil(WirtschaftlichkeitErgebnis e, bool einspeisung)
+        {
+            if (e == null || e.KwkgModule == null || e.KwkgModule.Count == 0) return null;
+            double summe = 0;
+            foreach (KwkgModulNachweis n in e.KwkgModule)
+            {
+                if (n == null) continue;
+                summe += einspeisung
+                    ? n.EinspeisungMWh * 1000.0 * n.SatzEinspeisungCt / 100.0
+                    : n.EigenMWh * 1000.0 * n.SatzEigenCt / 100.0;
+            }
+            return (double?)summe;
+        }
+
+        /// <summary>
+        /// ETAPPE B7 — die Anlagen der Gruppe in Ausgabereihenfolge (je Name einmal).
+        /// Ohne Modulnachweis (geladener Stand) leer — dann entfällt die
+        /// Aufschlüsselung, und die Energiekostenzeile steht allein wie zuvor.
+        /// </summary>
+        private static List<string> Anlagennamen(IList<WirtschaftlichkeitErgebnis> menge)
+        {
+            var namen = new List<string>();
+            foreach (WirtschaftlichkeitErgebnis e in menge)
+            {
+                if (e == null || e.EnergiekostenJeAnlage == null) continue;
+                foreach (EnergieAnlageNachweis n in e.EnergiekostenJeAnlage)
+                    if (n != null && !namen.Contains(n.Anlage)) namen.Add(n.Anlage);
+            }
+            return namen;
+        }
+
+        /// <summary>Die Energiekosten EINER Anlage [€/a]; <c>null</c> = dieses Projekt
+        /// führt die Anlage nicht (Anzeige „—").</summary>
+        private static double? AnlageKosten(WirtschaftlichkeitErgebnis e, string anlage)
+        {
+            if (e == null || e.EnergiekostenJeAnlage == null) return null;
+            double summe = 0;
+            bool gefunden = false;
+            foreach (EnergieAnlageNachweis n in e.EnergiekostenJeAnlage)
+                if (n != null && n.Anlage == anlage) { summe += n.KostenEur; gefunden = true; }
+            return gefunden ? (double?)summe : null;
+        }
+
+        /// <summary>
+        /// Sprachneutrale ASCII-Form eines Anlagennamens für den Zeilenschlüssel — der
+        /// Schlüssel ist eingefroren und darf keinen Anzeigetext tragen (Drei-Schichten-
+        /// Regel). Alles außerhalb von A–Z, a–z und 0–9 wird zum Unterstrich.
+        /// </summary>
+        private static string Schluesselform(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return "X";
+            var b = new System.Text.StringBuilder(name.Length);
+            foreach (char c in name)
+                b.Append((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+                         (c >= '0' && c <= '9') ? char.ToUpperInvariant(c) : '_');
+            return b.ToString();
+        }
+
+        /// <summary>
+        /// ETAPPE B7 — die Herleitung EINER Anlagenzeile als Klartext
+        /// („4.200,00 L × 0,9500 €/L = 3.990,00 €/a"). Sie steht im Bericht als
+        /// Untertabelle und im Reiter als Kurztext; leer, wenn die Anlage in diesem
+        /// Ergebnis nicht vorkommt.
+        /// </summary>
+        public static string AnlageHerleitung(WirtschaftlichkeitErgebnis e, string anlage,
+                                              System.Globalization.CultureInfo kultur)
+        {
+            if (e == null || e.EnergiekostenJeAnlage == null) return "";
+            if (kultur == null) kultur = System.Globalization.CultureInfo.CurrentCulture;
+            foreach (EnergieAnlageNachweis n in e.EnergiekostenJeAnlage)
+            {
+                if (n == null || n.Anlage != anlage) continue;
+                return n.MengeAbrechnung.ToString("N2", kultur) + " " + n.Einheit + " × " +
+                       n.PreisJeEinheit.ToString("N4", kultur) + " €/" + n.Einheit + " = " +
+                       n.KostenEur.ToString("N2", kultur) + " €/a (" + n.Traeger + ")";
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// ETAPPE B7 — DIE EINE Sichtbarkeitsregel für Reiter, Word und Excel.
+        ///
+        /// <para><b>Der Befund, der sie erzwang.</b> Bis B7 filterte der Ergebnisreiter
+        /// die Zeilenliste ein zweites Mal (über die gerade gewählten Spalten), Excel
+        /// ein drittes Mal (über den Szenarioblock), Word gar nicht. Seite und Bericht
+        /// konnten damit verschiedene Tabellen zeigen — genau das, was
+        /// <see cref="Kennzahlen"/> seit E7 verhindern soll. Die Regel steht seither
+        /// hier, und die drei Ausgaben rufen sie, statt je eine eigene zu führen.</para>
+        ///
+        /// <para>Über die Sichtbarkeit entscheidet die MENGE der Gruppe, nie ein
+        /// einzelnes Ergebnis: Eine Zeile, die nur in der Variante einen Wert trägt,
+        /// gehört auch in die Stammspalte — dort steht dann „—", und das ist die
+        /// Auskunft.</para>
+        /// </summary>
+        public static List<WirtZeile> Sichtbare(IList<WirtZeile> zeilen,
+                                                IList<WirtschaftlichkeitErgebnis> menge)
+        {
+            var sichtbar = new List<WirtZeile>();
+            if (zeilen == null) return sichtbar;
+
+            foreach (WirtZeile z in zeilen)
+            {
+                if (z == null) continue;
+                if (z.IstUeberschrift || z.IstSumme || z.ImmerZeigen) { sichtbar.Add(z); continue; }
+                if (menge == null) continue;
+                bool hat = false;
+                foreach (WirtschaftlichkeitErgebnis e in menge)
+                {
+                    if (e == null) continue;
+                    if (z.IstText) { if (!string.IsNullOrEmpty(z.Text(e))) { hat = true; break; } }
+                    else if (e.IstStamm && z.StammAnzeige != null) { hat = true; break; }
+                    else if (z.Wert != null && z.Wert(e).HasValue) { hat = true; break; }
+                }
+                if (hat) sichtbar.Add(z);
+            }
+
+            // Eine Blocküberschrift ohne Zeilen und eine Summe ohne Summanden sind
+            // Behauptungen — beide fallen weg. Geprüft wird nach dem Filtern, weil erst
+            // dann feststeht, was im Block übrig blieb.
+            var ergebnis = new List<WirtZeile>();
+            for (int i = 0; i < sichtbar.Count; i++)
+            {
+                WirtZeile z = sichtbar[i];
+                if (z.IstUeberschrift && !FolgtZeile(sichtbar, i, z.Block)) continue;
+                if (z.IstSumme && z.Block == WirtZeile.BLOCK_A &&
+                    !StehtZeile(ergebnis, WirtZeile.BLOCK_A)) continue;
+                ergebnis.Add(z);
+            }
+            return ergebnis;
+        }
+
+        /// <summary>true, wenn HINTER der Überschrift an <paramref name="ab"/> noch
+        /// eine gewöhnliche Zeile desselben Blocks folgt (vor der nächsten
+        /// Überschrift).</summary>
+        private static bool FolgtZeile(IList<WirtZeile> zeilen, int ab, string block)
+        {
+            for (int i = ab + 1; i < zeilen.Count; i++)
+            {
+                WirtZeile z = zeilen[i];
+                if (z == null) continue;
+                if (z.IstUeberschrift) return false;      // der nächste Kopf, nichts dazwischen
+                if (z.Block == block && !z.IstSumme) return true;
+            }
+            return false;
+        }
+
+        /// <summary>true, wenn in der bereits gefüllten Liste eine gewöhnliche Zeile
+        /// des Blocks steht — die Bedingung der Summenzeile.</summary>
+        private static bool StehtZeile(IList<WirtZeile> zeilen, string block)
+        {
+            foreach (WirtZeile z in zeilen)
+                if (z != null && z.Block == block && !z.IstUeberschrift && !z.IstSumme)
+                    return true;
+            return false;
         }
 
         /// <summary>

@@ -131,5 +131,89 @@ namespace WindowsFormsApplication1
         {
             return string.Equals(modus, MODUS_GEMISCHT, StringComparison.Ordinal);
         }
+
+        // =====================================================================
+        // ETAPPE B7 — die EINE Emissionsspalte der Kostenseite (Konzept § 2.5)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Spaltenkopf der Energieträgertabelle: <c>CO₂ [g/kWh]</c> im Modus
+        /// <c>CO2</c>, <c>CO₂-Äquivalent [g/kWh]</c> im Modus <c>CO2E</c>.
+        ///
+        /// <para>Der Kopf folgt dem Modus, in dem DIESES Projekt rechnet
+        /// (<c>Tab_Projekt.Emission_Berechnungsmodus</c>) — nicht der globalen Vorgabe.
+        /// Ein Projekt trägt seine Rechenmethode dauerhaft in sich.</para>
+        /// </summary>
+        public static string SpaltenkopfEmission(string modus)
+        {
+            return IstAequivalent(modus)
+                ? MyResource.Resource.BK_KOSTEN_SP_CO2E
+                : MyResource.Resource.BK_KOSTEN_SP_CO2;
+        }
+
+        /// <summary>
+        /// Die HERLEITUNG des angezeigten Emissionswertes als Klartext für den
+        /// Kurztext der Zelle — die drei Fälle der Entscheidung E-1 (Konzept § 2.5).
+        ///
+        /// <para><b>Ein stiller Rückfall findet nicht statt.</b> Im Modus CO2E ohne
+        /// Artenkatalog steht in der Spalte der reine CO₂-Faktor; dann sagt die
+        /// Herleitung genau das, statt den Äquivalentkopf unwidersprochen stehen zu
+        /// lassen. Wer diesen Satz entfernt, macht aus einer benannten Einschränkung
+        /// eine falsche Beschriftung.</para>
+        /// </summary>
+        public static string HerleitungEmission(EmissionsFaktorSatz satz, string modus,
+                                                System.Globalization.CultureInfo kultur)
+        {
+            if (satz == null) return "";
+            if (kultur == null) kultur = System.Globalization.CultureInfo.CurrentCulture;
+            string ebene = string.IsNullOrEmpty(satz.Co2Ebene) ? "-" : satz.Co2Ebene;
+
+            // Modus CO2 — dort gibt es nichts herzuleiten, nur die Quelle zu nennen.
+            if (!IstAequivalent(modus))
+                return string.Format(kultur, MyResource.Resource.BK_KOSTEN_EMISSION_CO2, ebene);
+
+            // Fall 3 (F3): der hinterlegte Wert IST bereits ein Äquivalent.
+            if (satz.Co2IstAequivalent)
+                return string.Format(kultur, MyResource.Resource.BK_KOSTEN_EMISSION_IST_CO2E, ebene);
+
+            // Kein Artenkatalog: ausgewiesen wird der reine CO₂-Faktor — benannt.
+            if (satz.ArtenkatalogFehlt)
+                return string.Format(kultur, MyResource.Resource.BK_KOSTEN_EMISSION_OHNE_KATALOG, ebene);
+
+            // Fall 1 (Regelfall): die gewichtete Summe, Summand für Summand.
+            string formel = SummenFormel(satz, kultur);
+            if (formel.Length > 0)
+                return string.Format(kultur, MyResource.Resource.BK_KOSTEN_EMISSION_REGEL, formel, ebene);
+
+            // Fall 2: außer CO₂ ist keine weitere Art hinterlegt.
+            return string.Format(kultur, MyResource.Resource.BK_KOSTEN_EMISSION_NUR_CO2, ebene);
+        }
+
+        /// <summary>
+        /// „CO₂ 240,0 + CH₄ 0,50 × 28 + N₂O 0,010 × 265 = 256,7 g/kWh" — leer, wenn
+        /// außer CO₂ keine Art beiträgt (dann ist die Summe der CO₂-Faktor und die
+        /// Formel sagte nichts, was die Zahl nicht schon sagt).
+        /// </summary>
+        private static string SummenFormel(EmissionsFaktorSatz satz,
+                                           System.Globalization.CultureInfo kultur)
+        {
+            if (satz.Zeilen == null || satz.Zeilen.Count == 0) return "";
+
+            var teile = new List<string>();
+            int beitragende = 0;
+            foreach (EmissionsZeile z in satz.Zeilen)
+            {
+                if (z == null || z.Art == null || !z.Wert.HasValue || z.BeitragGKwh == 0) continue;
+                beitragende++;
+                string t = z.Art.Kuerzel + " " + z.Wert.Value.ToString("N3", kultur);
+                if (z.Art.Co2Aequivalent != 1.0)
+                    t += " × " + z.Art.Co2Aequivalent.ToString("N0", kultur);
+                teile.Add(t);
+            }
+            if (beitragende < 2) return "";      // eine einzige Art ist keine Summe
+
+            return string.Join(" + ", teile.ToArray()) + " = " +
+                   (satz.Co2eGKwh ?? 0).ToString("N1", kultur) + " g/kWh";
+        }
     }
 }

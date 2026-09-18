@@ -601,6 +601,23 @@ namespace WindowsFormsApplication1
         // Energieträger (Vorbild LadeTraeger)
         // =====================================================================
 
+        /// <summary>
+        /// Die Spalten der Energieträgertabelle.
+        ///
+        /// <para><b>ETAPPE B7 (Konzept § 2.5): EINE Emissionsspalte statt dreier.</b>
+        /// Bis dahin standen hier CO₂, SO₂ und NOx nebeneinander — unabhängig davon,
+        /// was das Projekt überhaupt rechnet. In einer Tabelle, die über KOSTEN
+        /// informiert, verdecken zwei Schadstoffspalten mehr, als sie zeigen; sie
+        /// bleiben vollständig erhalten, nur nicht hier (Katalog
+        /// <c>emissionsart</c>/<c>emissionswert</c>, Energieträgerdialog,
+        /// Emissionsbilanz).</para>
+        ///
+        /// <para>Kopf UND Inhalt der verbliebenen Spalte folgen
+        /// <c>Tab_Projekt.Emission_Berechnungsmodus</c> — im Modus <c>CO2E</c> heißt sie
+        /// „CO₂-Äquivalent" und trägt die gewichtete Summe. Einen stillen Rückfall auf
+        /// „CO₂" gibt es nicht; wo der Äquivalentwert nicht zustande kommt, sagt es der
+        /// Kurztext der Zelle.</para>
+        /// </summary>
         private List<string> Traegerspalten()
         {
             return new List<string>
@@ -612,10 +629,16 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.BK_KOSTEN_SP_ARBEITSPREIS_KWH,
                 MyResource.Resource.BK_KOSTEN_SP_GRUNDPREIS,
                 T("BK_KOSTEN_SP_LEISTUNGSPREIS", "Leistungspreis [€/(kW·a)]"),
-                T("BK_KOSTEN_SP_CO2", "CO₂ [g/kWh]"),
-                T("BK_KOSTEN_SP_SO2", "SO₂ [mg/kWh]"),
-                T("BK_KOSTEN_SP_NOX", "NOx [mg/kWh]")
+                EmissionsAusweis.SpaltenkopfEmission(Emissionsmodus())
             };
+        }
+
+        /// <summary>Der Berechnungsmodus DIESES Projekts (F7) — einmal gelesen,
+        /// nicht je Zeile; ohne Projektbezug die Vorbelegung <c>CO2</c>.</summary>
+        private string Emissionsmodus()
+        {
+            try { return EmissionenCtrl.ModusFuerRechenlauf(_idProjekt); }
+            catch { return DbWerte.EMISSION_MODUS_CO2; }
         }
 
         private List<TraegerZeile> Traeger(CultureInfo kultur)
@@ -642,10 +665,9 @@ namespace WindowsFormsApplication1
             }
             catch { verwendet.Clear(); }
 
-            // Der Berechnungsmodus des Projekts (F7) gilt fuer die CO₂-Spalte.
-            string emissionsModus;
-            try { emissionsModus = EmissionenCtrl.ModusFuerRechenlauf(_idProjekt); }
-            catch { emissionsModus = DbWerte.EMISSION_MODUS_CO2; }
+            // Der Berechnungsmodus des Projekts (F7) bestimmt seit B7 KOPF UND INHALT
+            // der einen Emissionsspalte - dieselbe Lesung wie in Traegerspalten().
+            string emissionsModus = Emissionsmodus();
 
             var angezeigt = new HashSet<int>();
             try
@@ -691,21 +713,21 @@ namespace WindowsFormsApplication1
                                 : (preis.Value / hi.Value).ToString("N4", kultur),
                             grund.HasValue ? grund.Value.ToString("N2", kultur) : "—",
                             LeistungspreisText(carrier, kultur),
-                            Faktor(faktoren.Wirksam(emissionsModus), kultur),
-                            Faktor(faktoren.So2, kultur),
-                            Faktor(faktoren.Nox, kultur)
+                            Faktor(faktoren.Wirksam(emissionsModus), kultur)
                         },
                         Kurztext = string.Format(MyResource.Resource.BK_KOSTEN_TRAEGER_HINT,
                                                  v.BeitraegerText),
                         // Die Herkunftsebene gehoert an die Zahl: 240 g/kWh aus
                         // der Projektuebersteuerung ist eine andere Aussage als
                         // 240 g/kWh aus dem Katalog.
-                        EmissionKurztext = string.Format(
-                            T("BK_KOSTEN_EMISSION_HINT",
-                              "Emissionsfaktoren — CO₂ aus Ebene „{0}“, Berechnungsmodus {1}. " +
-                              "Lesekette: Projektwert → aktiver Emissionswert → " +
-                              "Brennstoff-Stamm → Trägerkatalog."),
-                            faktoren.Co2Ebene, emissionsModus)
+                        // ETAPPE B7 (Konzept § 2.5, Entscheidung E-1): Die Spalte zeigt
+                        // IMMER den Wert, der Kurztext sagt, wie er entstanden ist —
+                        // gewichtete Summe, CO₂-Faktor mangels zweiter Art oder ein
+                        // bereits hinterlegtes Äquivalent. Der dritte Fall ist der
+                        // heikelste: Ohne Hinweis liest sich die fehlende Aufsummierung
+                        // wie ein Fehler.
+                        EmissionKurztext = EmissionsAusweis.HerleitungEmission(
+                            faktoren, emissionsModus, kultur)
                     });
                 }
             }
@@ -742,7 +764,7 @@ namespace WindowsFormsApplication1
                 {
                     string.Format(T("BK_KOSTEN_TRAEGER_FEHLZEILE", "{0} — nicht zugeordnet"), name)
                 };
-                for (int i = 1; i < 10; i++) zellen.Add("—");
+                for (int i = 1; i < 8; i++) zellen.Add("—");   // B7: acht Spalten
 
                 ziel.Add(new TraegerZeile
                 {
@@ -778,7 +800,7 @@ namespace WindowsFormsApplication1
                 : MyResource.Resource.BK_KOSTEN_TRAEGER_KEINE;
 
             var zellen = new List<string> { text };
-            for (int i = 1; i < 10; i++) zellen.Add("");
+            for (int i = 1; i < 8; i++) zellen.Add("");   // B7: acht Spalten
             return new TraegerZeile { Art = ZeilenArt.Hinweis, Zellen = zellen, Kurztext = text };
         }
 

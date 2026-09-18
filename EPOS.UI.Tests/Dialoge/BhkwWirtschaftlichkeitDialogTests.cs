@@ -892,8 +892,19 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Contains("Noch kein gebuchtes Ergebnis", Koerper(cut, 7).TextContent);
     }
 
+    /// <summary>
+    /// ETAPPE B7 — Gruppe 6 zeigt die ERLOESRUBRIK, aus derselben Quelle wie Reiter,
+    /// Word und Excel (<c>WirtschaftlichkeitZeilen</c>).
+    ///
+    /// <para><b>Was sich gegenueber der Handliste geaendert hat</b>, die hier bis B7
+    /// gemessen wurde: Die Stromsteuer steht nicht mehr als EINE Summe aus Befreiung
+    /// und Entlastung da. Die beiden sind verschiedene Groessen — die Entlastung nach
+    /// § 9b ist eine Rueckzahlung und geht in den Kapitalwert (Block A), die Befreiung
+    /// nach § 9 Abs. 1 Nr. 3 ist im Modus AUSWEIS (Vorgabe seit B6) gar keine Zahlung
+    /// und steht in Block B. Ihre Summe war eine Zahl ohne Bedeutung.</para>
+    /// </summary>
     [Fact]
-    public void Die_Vorschau_zeigt_die_fuenf_Jahr1_Zeilen_des_gebuchten_Laufs()
+    public void Die_Vorschau_zeigt_die_Erloesrubrik_des_gebuchten_Laufs()
     {
         var lauf = new[]
         {
@@ -905,6 +916,9 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
                 EnergiesteuerJahr1 = 5119,
                 StromsteuerBefreiungJahr1 = 86000,
                 StromsteuerEntlastungJahr1 = 906,
+                // Der GESAMTerloes traegt den KWK-Anteil; ein Lauf setzt beide, und
+                // die Rubrik weist A8 als Gesamterloes aus (Konzept § 2.6).
+                EinspeiseerloesJahr = 1234,
                 EinspeiseerloesKwkJahr = 1234,
                 VermiedenGesamtJahr = 4321,
                 Zeitstempel = new DateTime(2026, 9, 3, 12, 3, 0)
@@ -916,15 +930,33 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         foreach (IElement e in Koerper(cut, 7).QuerySelectorAll("p.epos-herleitung"))
             zeilen.Add(e.TextContent.Trim());
 
-        Assert.Equal(6, zeilen.Count);
-        Assert.Contains("KWK-Zuschlag p. a.", zeilen[0]);
-        Assert.Contains("7.316 €", zeilen[0]);
-        Assert.Contains("5.119 €", zeilen[1]);
-        // Befreiung + Entlastung stehen in EINER Zeile (Bestandsverhalten).
-        Assert.Contains("86.906 €", zeilen[2]);
-        Assert.Contains("1.234 €", zeilen[3]);
-        Assert.Contains("4.321 €", zeilen[4]);
-        Assert.Contains("nach dem Speichern neu berechnen", zeilen[5]);
+        string ganz = string.Join(" | ", zeilen);
+
+        // Block A: die beiden Ueberschriften trennen Zahlung von Ausweis.
+        Assert.Contains("Erlöse und Vorteile", ganz);
+        Assert.Contains("Ausweis", ganz);
+
+        // Die vier zahlungswirksamen Positionen — jede mit ihrer Rechtsgrundlage.
+        Assert.Contains("§ 7 KWKG", ganz);
+        Assert.Contains("7.316", ganz);
+        Assert.Contains("EnergieStG", ganz);
+        Assert.Contains("5.119", ganz);
+        Assert.Contains("§ 9b StromStG", ganz);
+        Assert.Contains("906", ganz);
+        Assert.Contains("1.234", ganz);
+
+        // Die Befreiung nach § 9 Abs. 1 Nr. 3 steht im AUSWEIS, nicht in der Summe —
+        // und vor allem nicht mehr mit der Entlastung zu 86.906 € verrechnet.
+        Assert.Contains("86.000", ganz);
+        Assert.DoesNotContain("86.906", ganz);
+
+        // Die Summe des Blocks A: 7.316 + 5.119 + 906 + 1.234 = 14.575 €/a.
+        // Die 86.000 € der Befreiung stecken NICHT darin — das ist die Aussage der
+        // Teilung, und sie wird hier gemessen, nicht behauptet.
+        Assert.Contains("14.575", ganz);
+
+        Assert.Contains("4.321", ganz);
+        Assert.Contains("nach dem Speichern neu berechnen", zeilen[zeilen.Count - 1]);
     }
 
     // =====================================================================

@@ -126,6 +126,17 @@ namespace WindowsFormsApplication1
         /// <summary>Bewertete Einspeisemenge [MWh/a] (PV-Überschuss + KWK-Einspeisung).</summary>
         public double EinspeisungMWh;
 
+        /// <summary>
+        /// ETAPPE B7 — die VERMIEDENE Strommenge [MWh/a]: Bedarf ohne Anlage minus
+        /// Restbezug mit Anlage. Sie ist die Bemessungsgröße der Klarstellung (1) des
+        /// Konzepts § 2.6: Im Arbeitspreis beider Seiten steckt die Stromsteuer mit dem
+        /// vollen Satz, ein Unternehmen des produzierenden Gewerbes bekommt davon nach
+        /// § 9b StromStG den Entlastungssatz zurück — vermieden wird also nur die
+        /// Differenz. Die Menge wird hier nur GEFÜHRT; was mit ihr geschieht,
+        /// entscheidet der Aufrufer.
+        /// </summary>
+        public double VermiedenMengeMWh;
+
         /// <summary>Herleitungszeilen im Klartext (Nachweis statt stiller Zahl).</summary>
         public List<string> Herleitung = new List<string>();
     }
@@ -266,6 +277,7 @@ namespace WindowsFormsApplication1
             r.VermiedenLeistungEur = r.Bezug.LeistungEur - r.Reststrom.LeistungEur;
             r.VermiedenGesamtEur = r.Bezug.SummeEur - r.Reststrom.SummeEur;
 
+            r.VermiedenMengeMWh = eingabe.BedarfMWh - eingabe.RestbezugMWh;   // B7
             r.EinspeisungMWh = eingabe.EinspeisungMWh;
             r.EinspeiseerloesEur = einspeisung == null ? 0
                 : eingabe.EinspeisungMWh * 1000.0 * einspeisung.ArbeitspreisEurKWh

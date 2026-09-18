@@ -477,13 +477,18 @@ namespace WindowsFormsApplication1
                 try { _tarifCache = _ctrl.LadeTarif(_idStamm); }
                 catch { _tarifCache = new TarifParameter(); }
             }
-            foreach (WirtZeile z in WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache))
+            // ETAPPE B7: Hier stand eine ZWEITE Sichtbarkeitspruefung ueber die gerade
+            // gewaehlten Spalten - der Reiter konnte damit eine andere Tabelle zeigen
+            // als Word und Excel, entgegen dem Versprechen von E7. Es gibt seither EINE
+            // Regel, und sie steht in WirtschaftlichkeitZeilen.Sichtbare.
+            foreach (WirtZeile z in WirtschaftlichkeitZeilen.Sichtbare(
+                         WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache),
+                         _ergebnisse))
             {
-                bool hatWert = zeilen.Any(x => z.IstText
-                    ? !string.IsNullOrEmpty(z.Text(x))
-                    : (x.IstStamm && z.StammAnzeige != null) || (z.Wert != null && z.Wert(x).HasValue));
-                if (!hatWert) continue;
-                matrixzeilen.Add(Zeile(z.Titel, spaltenErg, x => z.Anzeige(x, kultur)));
+                string titel = (z.Einzug > 0 ? "    " : "") + z.Titel;
+                matrixzeilen.Add(z.IstUeberschrift
+                    ? Zeile(titel, spaltenErg, x => "")
+                    : Zeile(titel, spaltenErg, x => z.Anzeige(x, kultur)));
             }
 
             // W3: CO₂-Vermeidung gegenueber getrennter Erzeugung (aus dem Cache;

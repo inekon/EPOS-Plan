@@ -176,6 +176,11 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string VVermieden { get; } = T("BHW_V_VERMIEDEN", "Vermiedene Stromkosten p. a. (Ausweis)");
     public string VStand { get; } = T("BHW_V_STAND", "Stand: {0} — nach dem Speichern neu berechnen.");
 
+    /// <summary>ETAPPE B7: Der Lauf liegt, trägt aber keine Erlösposition — dann
+    /// steht das da, statt einer leeren Gruppe.</summary>
+    public string VOhneRubrik { get; } = T("BHW_G6_OHNE_RUBRIK",
+        "Noch kein Lauf — die Rubrik füllt sich mit „Berechnen“ im Reiter Wirtschaftlichkeit.");
+
     // ----------------------------------------------------------- Speichern
     public string MsgFehler { get; } = T("BHW_MSG_FEHLER", "{0} Angabe(n) konnten nicht gespeichert werden.");
 }
