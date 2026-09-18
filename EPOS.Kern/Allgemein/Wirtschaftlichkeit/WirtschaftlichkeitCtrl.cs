@@ -436,6 +436,14 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS, "TEXT(20)");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
 
+                    // KONZEPT § 2.9 - das waehlbare Vergleichsprojekt. Regulaer entsteht
+                    // es in Schemaschritt 92; das hier ist DER ZWEITE DDL-ORT, den diese
+                    // Tabelle seit jeher verlangt (doppelte Schema-Wahrheit dieses
+                    // Moduls, Konzept § 9 Punkt 2). KEINE Werte-Vorbelegung: NULL heisst
+                    // Stamm, und genau das haelt den Bestand unveraendert.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt92_Referenzprojekt)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
                     // ETAPPE K6 (HF6/M-D) — die verbliebene KWKG-Projektangabe. Regulär legt sie
                     // Migrationsschritt 28 an; das hier ist die tolerante VORSORGE
                     // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls,

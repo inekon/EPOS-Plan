@@ -231,11 +231,17 @@ namespace WindowsFormsApplication1
         /// seither gepflegte Anlagenzelle zu überschreiben. Der Schritt ist
         /// ergebnisneutral — Projekt 1030 rechnet Zuschlag und Kapitalwert
         /// zahlengleich, der Referenzlauf bleibt byte-gleich.
+        /// Mit dem WÄHLBAREN VERGLEICHSPROJEKT (Schritt 92, Konzept § 2.9) steht das
+        /// Ziel auf <b>92</b>: <c>Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt</c>
+        /// (<see cref="SchemaKatalog.SPALTE_PW_REFERENZPROJEKT"/>) nimmt je Gruppe auf,
+        /// gegen welchen Stand die Differenzkennzahlen rechnen. <b>Kein DML:</b> Die
+        /// Spalte bleibt NULL, und NULL heißt Stamm — genau die Referenz des Bestands;
+        /// der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 91;
+        public const int Zielversion = 92;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

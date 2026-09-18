@@ -3322,6 +3322,37 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_91_KWKG_KOSTENANTEIL = 91;
 
+        /// <summary>
+        /// Schritt 92 — das <b>wählbare Vergleichsprojekt</b> (Konzept § 2.9,
+        /// Anforderung des Anwenders vom 31.08.2026).
+        ///
+        /// <para><c>Tab_ProjektWirtschaftlichkeit</c> bekommt die Spalte
+        /// <c>ID_Referenzprojekt</c> (LONG, nullbar). Die Spaltenliste steht bei
+        /// <see cref="SchemaKatalog.Schritt92_Referenzprojekt"/> — EINE Quelle für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Wozu.</b> Die Differenzrechnung lief fest gegen das Stammprojekt:
+        /// <c>Kapitalwertdifferenz = KW(Variante) − KW(Stamm)</c>, und Annuität,
+        /// dynamische Amortisation und interner Zinsfuß hingen daran. DIN EN 17463
+        /// verlangt den Vergleich gegen die <b>Unterlassensalternative</b> — und welche
+        /// das ist, ist eine fachliche Entscheidung je Bewertung, keine Strukturvorgabe
+        /// der Software. Wer zwei Ausbauvarianten gegeneinander stellt, braucht die
+        /// freie Wahl.</para>
+        ///
+        /// <para><b>An der Rahmenzeile und nicht an der Variante:</b> Die Referenz gilt
+        /// wie Zins und Betrachtungszeitraum JE GRUPPE. Eine Gruppe hat genau eine
+        /// Unterlassensalternative.</para>
+        ///
+        /// <para><b>KEIN DML, und darin liegt die Ergebnisneutralität.</b> Die Spalte
+        /// bleibt im ganzen Bestand NULL, und NULL heißt Stamm — genau die Referenz,
+        /// gegen die jede Bestandsrechnung schon gerechnet hat. Die dreizehn
+        /// Referenzprojekte rechnen unverändert, der Referenzlauf bleibt byte-gleich.
+        /// Erste Rechenwirkung hat der Schritt erst, wenn der Anwender ausdrücklich
+        /// eine andere Referenz wählt.</para>
+        /// </summary>
+        public const int SCHRITT_92_REFERENZPROJEKT = 92;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4512,6 +4543,21 @@ namespace WindowsFormsApplication1
                         "rechnete, und dieselbe Groesse stand im selben Dialog ein " +
                         "zweites Mal.",
                         Schritt_91_KwkgKostenanteil),
+
+            // KONZEPT § 2.9 - die Referenz der Differenzrechnung wird waehlbar. EINE
+            // nullbare Verweisspalte, kein DML; die Quelle ist
+            // SchemaKatalog.Schritt92_Referenzprojekt. Keine Reihenfolgebedingung
+            // gegenueber 89 bis 91 - die Spalte ist neu und steht fuer sich.
+            new Schritt(SCHRITT_92_REFERENZPROJEKT,
+                        "Tab_ProjektWirtschaftlichkeit bekommt das waehlbare " +
+                        "Vergleichsprojekt (ID_Referenzprojekt)",
+                        "DIN EN 17463 vergleicht gegen die Unterlassensalternative - " +
+                        "welche das ist, entscheidet die Bewertung und nicht die " +
+                        "Software. Die Differenzrechnung lief fest gegen das " +
+                        "Stammprojekt; wer zwei Ausbauvarianten gegeneinander stellen " +
+                        "will, braucht die freie Wahl. NULL heisst Stamm - damit ist " +
+                        "der Schritt fuer jede Bestandsrechnung ergebnisneutral.",
+                        Schritt_92_Referenzprojekt),
         };
 
         /// <summary>
@@ -6591,6 +6637,35 @@ namespace WindowsFormsApplication1
                     "die an dieser Stelle leer war; § 8 Abs. 2/3 KWKG leitet das " +
                     "Kontingent aus dem Kostenanteil DER ANLAGE ab " +
                     "(Anwenderentscheid BK1-4 a).");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 92 - das waehlbare Vergleichsprojekt (Konzept § 2.9)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 92 — Anlass, Anweisung und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_92_REFERENZPROJEKT"/> und bei
+        /// <see cref="SchemaKatalog.Schritt92_Referenzprojekt"/>.
+        ///
+        /// <para><b>Wortgleich zu <see cref="Schritt_88_StromsteuerModus"/></b>:
+        /// Spaltenliste aus dem Kern, Typdefinition aus
+        /// <c>StilleDb.SqliteSpaltenTyp</c>, kein DML. Hier steht keine abgeschriebene
+        /// DDL.</para>
+        /// </summary>
+        private static bool Schritt_92_Referenzprojekt(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt92_Referenzprojekt)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("92: " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + "." +
+                    SchemaKatalog.SPALTE_PW_REFERENZPROJEKT + " (LONG, nullbar) steht. " +
+                    "KEIN DML: NULL heisst Stamm - genau die Referenz, gegen die jede " +
+                    "Bestandsrechnung schon gerechnet hat. Erste Rechenwirkung erst " +
+                    "mit der ausdruecklichen Wahl einer anderen Referenz; der " +
+                    "Referenzlauf bleibt byte-gleich.");
             return true;
         }
 
