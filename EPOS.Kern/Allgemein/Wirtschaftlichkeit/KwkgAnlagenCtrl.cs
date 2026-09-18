@@ -51,6 +51,11 @@ namespace WindowsFormsApplication1
         /// <summary>Jahresdeckel-Override dieser Anlage [h/a].</summary>
         public double? VbhDeckel;
 
+        /// <summary>ETAPPE BK1 — Anteil an den Neuherstellungskosten dieser Anlage [%]
+        /// (§ 8 Abs. 2/3, Spalte <c>KWKG_Kostenanteil</c>, Schemaschritt 89);
+        /// <c>null</c> = nicht gepflegt.</summary>
+        public double? Kostenanteil;
+
         // ------------- ETAPPE B5 — die drei B3a-Spalten (Schema-Schritt 61) -------------
         //
         // Sie sind seit B3a in der Datenbank und werden vom Rechenweg gelesen
@@ -147,9 +152,13 @@ namespace WindowsFormsApplication1
                 // demselben Grund: DataRepository liefert bei einem SQL-Fehler eine
                 // LEERE Tabelle statt zu werfen — erkannt wird der Zustand deshalb an
                 // der Spaltenliste, nicht an einer Ausnahme.
-                DataTable dt = Anlagentabelle(idProjekt, true);
+                // ETAPPE BK1: eine Stufe mehr — der Kostenanteil je Anlage entsteht
+                // erst mit Migrationsschritt 89.
+                DataTable dt = Anlagentabelle(idProjekt, true, true);
+                bool mitBk1 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL);
+                if (!mitBk1) dt = Anlagentabelle(idProjekt, true, false);
                 bool mitB3a = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL);
-                if (!mitB3a) dt = Anlagentabelle(idProjekt, false);
+                if (!mitB3a) dt = Anlagentabelle(idProjekt, false, false);
                 if (dt == null || !dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG)) return;
 
                 foreach (DataRow r in dt.Rows)
@@ -171,6 +180,7 @@ namespace WindowsFormsApplication1
                         VbhDeckel = D(r, SchemaKatalog.SPALTE_EA_KWKG_DECKEL),
                         IdCarrier = Ganzzahl(r, "ID_Carrier")
                     };
+                    if (mitBk1) g.Kostenanteil = D(r, SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL);
                     if (mitB3a)
                     {
                         g.EnergiesteuerWahl = Text(r, SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL);
@@ -192,19 +202,20 @@ namespace WindowsFormsApplication1
         /// <summary>Die Anlagenabfrage — mit oder ohne die drei B3a-Spalten.
         /// <c>null</c> = die Abfrage ist gescheitert (bei gesetztem Flag in aller Regel,
         /// weil die Spalten fehlen).</summary>
-        private static DataTable Anlagentabelle(int idProjekt, bool mitB3a)
+        private static DataTable Anlagentabelle(int idProjekt, bool mitB3a, bool mitBk1)
         {
             string b3a = mitB3a
                 ? ", a.[" + SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL + "]" +
                   ", a.[" + SchemaKatalog.SPALTE_EA_AUFTEILUNG_METHODE + "]" +
                   ", a.[" + SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "]"
                 : "";
+            string bk1 = mitBk1 ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL + "]" : "";
             try
             {
                 using (DataRepository.EngineModus())
                     return DataRepository.GetDataTable(
                         "SELECT a.ID, a.Bezeichner, a.ID_Carrier, b.Pel, b.Brennstoff" +
-                        Spaltenliste("a") + b3a + " " +
+                        Spaltenliste("a") + b3a + bk1 + " " +
                         "FROM Tab_Energieanlagen AS a " +
                         "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
                         // KEIN ORDER BY — wortgleiche Begründung wie in
@@ -271,12 +282,16 @@ namespace WindowsFormsApplication1
 
                 if (mitSteuerangaben)
                 {
-                    satz += ", [" + SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL + "] = ?" +
+                    // ETAPPE BK1: der Kostenanteil je Anlage geht denselben Weg wie die
+                    // drei B3a-Spalten — nur der Dialog, der ihn kennt, schreibt ihn.
+                    satz += ", [" + SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL + "] = ?" +
+                            ", [" + SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL + "] = ?" +
                             ", [" + SchemaKatalog.SPALTE_EA_AUFTEILUNG_METHODE + "] = ?" +
                             ", [" + SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "] = ?";
                     // Breiten wie in SchemaKatalog.Schritt61_SteuerJeAnlage — ein zu
                     // langer Steuerwert ließe das UPDATE sonst STILL scheitern
                     // (Lehre aus Etappe E3, Probe C2).
+                    werte.Add(Zahlwert(g.Kostenanteil));
                     werte.Add(Textwert(g.EnergiesteuerWahl, 20));
                     werte.Add(Textwert(g.AufteilungMethode, 30));
                     // 0 ist hier ein gültiger Wert („keine Hilfsenergie"), NULL heißt

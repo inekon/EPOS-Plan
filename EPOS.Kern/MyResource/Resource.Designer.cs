@@ -3169,11 +3169,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh-Kontingent [h] (0 = Projektwert): ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh-Kontingent [h] (0 = nach § 8 abgeleitet): ähnelt.
         /// </summary>
         public static string BHW_A_KONTINGENT {
             get {
                 return ResourceManager.GetString("BHW_A_KONTINGENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil Neuherstellungskosten [%] (§ 8 Abs. 2/3): ähnelt.
+        /// </summary>
+        public static string BHW_A_KOSTENANTEIL {
+            get {
+                return ResourceManager.GetString("BHW_A_KOSTENANTEIL", resourceCulture);
             }
         }
         
@@ -3187,7 +3196,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Satz Eigenstrom [ct/kWh] (0 = Projektsatz): ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz Eigenstrom [ct/kWh] (0 = kein Zuschlag): ähnelt.
         /// </summary>
         public static string BHW_A_SATZ_EIGEN {
             get {
@@ -3196,7 +3205,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Satz Einspeisung [ct/kWh] (0 = Projektsatz): ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz Einspeisung [ct/kWh] (0 = kein Zuschlag): ähnelt.
         /// </summary>
         public static string BHW_A_SATZ_EINSP {
             get {
@@ -3241,11 +3250,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag in die Satzfelder übernehmen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag übernehmen ähnelt.
         /// </summary>
-        public static string BHW_BTN_VORSCHLAG {
+        public static string BHW_BTN_VORSCHLAG_FELD {
             get {
-                return ResourceManager.GetString("BHW_BTN_VORSCHLAG", resourceCulture);
+                return ResourceManager.GetString("BHW_BTN_VORSCHLAG_FELD", resourceCulture);
             }
         }
         
@@ -3295,7 +3304,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Angaben der gewählten Anlage — leer bzw. 0 = Projektvorgabe ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angaben der gewählten Anlage ähnelt.
         /// </summary>
         public static string BHW_G1B {
             get {
@@ -3304,7 +3313,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Zuschlag (Projektvorgabe) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektweite KWK-Angaben ähnelt.
         /// </summary>
         public static string BHW_G2 {
             get {
@@ -3381,6 +3390,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHW_HERLEITUNG_EINSP {
             get {
                 return ResourceManager.GetString("BHW_HERLEITUNG_EINSP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kontingent {0} Vbh — {1} ähnelt.
+        /// </summary>
+        public static string BHW_HERLEITUNG_KONTINGENT {
+            get {
+                return ResourceManager.GetString("BHW_HERLEITUNG_KONTINGENT", resourceCulture);
             }
         }
         
@@ -3502,42 +3520,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenart (§ 8): ähnelt.
-        /// </summary>
-        public static string BHW_P_ANLAGENART {
-            get {
-                return ResourceManager.GetString("BHW_P_ANLAGENART", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bonus Eigenstrom [ct/kWh] (0 = aus): ähnelt.
-        /// </summary>
-        public static string BHW_P_BONUS_EIGEN {
-            get {
-                return ResourceManager.GetString("BHW_P_BONUS_EIGEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bonus Einspeisung [ct/kWh]: ähnelt.
-        /// </summary>
-        public static string BHW_P_BONUS_EINSP {
-            get {
-                return ResourceManager.GetString("BHW_P_BONUS_EINSP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh-Deckel-Override [h/a]: ähnelt.
-        /// </summary>
-        public static string BHW_P_DECKEL {
-            get {
-                return ResourceManager.GetString("BHW_P_DECKEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz gilt fuer die ganze Anwendung: Er bewertet den eingespeisten BHKW-Strom in der Wirtschaftlichkeit UND stellt den Verkaufspreis, mit dem Stromspeicher und Speicherflotte den BHKW-Ueberschuss rechnen (v_bhkw). 0 heisst &quot;nicht gepflegt&quot;; dann gilt fuer BHKW-Strom der PV-Satz aus den Wirtschaftlichkeits-Parametern, und ohne den rechnet die Speicherwelt mit 0 und weist das im Protokoll aus. Der KWK-Zuschlag kommt obendrauf - er ersetzt die Verguetung nicht. ähnelt.
         /// </summary>
         public static string BHW_P_EINSP_KWK_HINWEIS {
@@ -3547,7 +3529,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Inbetriebnahme, Vorgabe je Anlage: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Förderbeginn (Startjahr der Reihen): ähnelt.
         /// </summary>
         public static string BHW_P_IBN {
             get {
@@ -3556,20 +3538,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh-Kontingent gesamt [h] (0 = automatisch): ähnelt.
-        /// </summary>
-        public static string BHW_P_KONTINGENT {
-            get {
-                return ResourceManager.GetString("BHW_P_KONTINGENT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil Neuherstellungskosten [%]: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil Neuherstellungskosten [%] (Vorgabe für Anlagen ohne eigenen Wert): ähnelt.
         /// </summary>
         public static string BHW_P_KOSTENANTEIL {
             get {
                 return ResourceManager.GetString("BHW_P_KOSTENANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz, Kontingent, Jahresdeckel, Anlagenart und Eigenstrom-Tatbestand stehen an der Anlage (§ 7 und § 8 KWKG bemessen sie je Anlage) — oben unter „Angaben der gewählten Anlage“, mit einem Knopf für den Katalogvorschlag am Feld. ähnelt.
+        /// </summary>
+        public static string BHW_P_NUR_PROJEKTWEIT {
+            get {
+                return ResourceManager.GetString("BHW_P_NUR_PROJEKTWEIT", resourceCulture);
             }
         }
         
@@ -3583,7 +3565,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stichtag, Vorgabe je Anlage: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stichtag (Bestellung/Genehmigung, § 6): ähnelt.
         /// </summary>
         public static string BHW_P_STICHTAG {
             get {
@@ -3592,11 +3574,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eigenstrom-Tatbestand (§ 6 Abs. 3): ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag: Ohne Anlagenart wählt § 8 KWKG keine Kontingentstufe — Feld „Anlagenart“ füllen; modernisiert und nachgerüstet brauchen zusätzlich den Anteil an den Neuherstellungskosten. ähnelt.
         /// </summary>
-        public static string BHW_P_TATBESTAND {
+        public static string BHW_SPERR_OHNE_ANLAGENART {
             get {
-                return ResourceManager.GetString("BHW_P_TATBESTAND", resourceCulture);
+                return ResourceManager.GetString("BHW_SPERR_OHNE_ANLAGENART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag: Ohne Tatbestand nach § 6 Abs. 3 gibt es keinen Zuschlag auf selbst genutzten Strom (§ 7 Abs. 2) — Feld „Eigenstrom nach § 6 Abs. 3“ füllen. ähnelt.
+        /// </summary>
+        public static string BHW_SPERR_OHNE_EIGENFALL {
+            get {
+                return ResourceManager.GetString("BHW_SPERR_OHNE_EIGENFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag: Für diese Anlage ist keine elektrische Nennleistung erfasst. ähnelt.
+        /// </summary>
+        public static string BHW_SPERR_OHNE_PEL {
+            get {
+                return ResourceManager.GetString("BHW_SPERR_OHNE_PEL", resourceCulture);
             }
         }
         
@@ -4015,7 +4015,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzierung: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsbilanz: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4} ähnelt.
         /// </summary>
         public static string BILANZ_AUSWEIS {
             get {
@@ -53367,6 +53367,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Für „{0}“ ist kein eigenes Vbh-Kontingent gepflegt — abgeleitet {1} Vbh ({2}). ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KONTINGENT_ANLAGE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: ohne Anteil an den Neuherstellungskosten lässt sich die Stufe nicht wählen (Mindestschwelle {1} %); kein abgeleitetes Kontingent. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT {
@@ -53592,7 +53601,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: „{0}“ trägt einen eigenen Satz auf selbst genutzten Strom, aber keinen Tatbestand nach § 6 Abs. 3 — ohne ihn gibt es den Eigenverbrauchszuschlag nicht (§ 7 Abs. 2); Satz dieser Anlage = 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Für „{0}“ ist kein Tatbestand nach § 6 Abs. 3 erfasst — die Voraussetzung des Zuschlags auf selbst genutzten Strom (§ 7 Abs. 2) ist ungeprüft; gerechnet wird mit dem eingetragenen Satz. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN {
             get {
