@@ -40,12 +40,27 @@
    Immer als LETZTES Kind des Kopfes, unter derselben Bedingung wie der <h1>;
    Geschlossen bekommt die Esc-Aktion des Dialogs. Rechts aussen steht es ohne
    weitere Regel: .epos-dialog-kopf ist ein Flexkasten, und der Titel traegt
-   flex: 1 1 auto. *@
+   flex: 1 1 auto.
+
+   GESPERRT, WO ES KEINEN WEG NACH DRAUSSEN GIBT (Anwenderentscheid 18.09.2026
+   "Gesperrt-Parameter umsetzen"). Kennt der Wirt einen Zustand, in dem nicht
+   geschlossen werden darf - eine freie Ansicht etwa, waehrend sie rechnet -,
+   setzt er Gesperrt und das Kreuz wird grau statt zu verschwinden:
+
+       <Schliesskreuz Geschlossen="Verlassen" Gesperrt="@_laeuft" />
+
+   Ein Kreuz, das beim Start der Rechnung VERSCHWINDET, laesst die Werkzeugleiste
+   springen und sagt nicht, warum es weg ist; ein graues sagt "geht gerade nicht".
+   Die Vorgabe ist false - kein Dialog, der den Parameter nicht setzt, aendert
+   sich dadurch. Gesperrt heisst dabei wirklich gesperrt: disabled am Knopf UND
+   Schweigen auf der Taste - der Klick laeuft dafuer ueber BeiKlick, damit die
+   Zusage am Baustein haengt und nicht an der Browserregel. *@
 
 @namespace EPOS.UI.Bausteine
 
 <button type="button" class="epos-knopf epos-dialog-zu" title="@Kurztext" aria-label="@Kurztext"
-        @onclick="Geschlossen" @onkeydown="BeiTaste" @onkeydown:stopPropagation="true">✕</button>
+        disabled="@Gesperrt"
+        @onclick="BeiKlick" @onkeydown="BeiTaste" @onkeydown:stopPropagation="true">✕</button>
 
 @code {
     /// <summary>
@@ -61,11 +76,47 @@
     [Parameter] public string Kurztext { get; set; } = Text("SCHLIESSKREUZ_TOOLTIP", "Schließen");
 
     /// <summary>
+    /// Das Kreuz ist gesperrt — es steht, bleibt aber wirkungslos. <b>Vorgabe ist
+    /// <c>false</c></b>: Wer den Parameter nicht setzt, bekommt genau das Kreuz von
+    /// vorher. Gesetzt wird er dort, wo der Wirt einen Zustand kennt, in dem es keinen
+    /// Weg nach draußen gibt — dann trägt das Kreuz dieselbe Sperre wie der benannte
+    /// Rückweg daneben.
+    /// </summary>
+    /// <remarks>
+    /// <b>Gesperrt heißt wirklich gesperrt, nicht nur grau.</b> Der Knopf trägt
+    /// <c>disabled</c>, und <see cref="BeiTaste"/> meldet im gesperrten Zustand nichts
+    /// — ein <c>disabled</c>-Knopf bekommt zwar in keinem Browser noch Tastenereignisse,
+    /// aber die Zusage des Bausteins hängt nicht an dieser Browserregel.
+    ///
+    /// <para>Einen GRUND nennt das Kreuz nicht: Der Kurztext bleibt der Name der
+    /// Aktion. Nennt der Rückweg daneben keinen Grund, nennt das Kreuz auch keinen —
+    /// eine Wahrheit, kein zweiter Weg.</para>
+    /// </remarks>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>
+    /// Der Klick auf das Kreuz meldet <see cref="Geschlossen"/> — es sei denn, es ist
+    /// <see cref="Gesperrt"/>.
+    /// </summary>
+    /// <remarks>
+    /// <b>Warum hier ein Weg steht und nicht der Rückruf selbst.</b> Der Klick hing
+    /// unmittelbar an <c>Geschlossen</c>; das genügte, solange es nur EINEN Zustand gab.
+    /// Ein <c>disabled</c>-Knopf bekommt im Browser keinen Klick mehr — aber die Zusage
+    /// „gesperrt meldet nicht" ist eine Zusage DIESES Bausteins und darf nicht davon
+    /// abhängen, welcher Wirt ihn zeichnet und ob der das <c>disabled</c> durchreicht.
+    /// Gemessen wird sie deshalb am Baustein, nicht am Browser (SchliesskreuzTests).
+    /// </remarks>
+    private Task BeiKlick()
+        => Gesperrt ? Task.CompletedTask : Geschlossen.InvokeAsync();
+
+    /// <summary>
     /// Escape auf dem Kreuz wirkt wie ein Klick darauf. Alles andere bleibt liegen:
     /// Enter und Leertaste erzeugen auf einem <c>&lt;button&gt;</c> den nativen Klick,
-    /// eine zweite Behandlung hier feuerte doppelt.
+    /// eine zweite Behandlung hier feuerte doppelt. Ist das Kreuz
+    /// <see cref="Gesperrt"/>, bleibt auch Escape liegen — der Tastaturweg darf nicht
+    /// hinausführen, wo der Zeiger es nicht darf.
     /// </summary>
-    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    private Task BeiTaste(KeyboardEventArgs e) => Gesperrt ? Task.CompletedTask : e.Key switch
     {
         "Escape" => Geschlossen.InvokeAsync(),
         _ => Task.CompletedTask

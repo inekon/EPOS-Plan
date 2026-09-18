@@ -726,4 +726,135 @@ public sealed class StromspeicherAuslegungBannerTests : EposBunitContext
         Assert.Equal(1, laeufe);
         cut.WaitForAssertion(() => Assert.DoesNotContain(Resource.FLOTTE_SEITE_KEIN_LAUF, cut.Markup));
     }
+
+    // =====================================================================
+    //  Das Schliesskreuz im Kopf der Ansicht (Anwenderentscheid 18.09.2026)
+    // =====================================================================
+
+    /// <summary>Das Kreuz der Kopfleiste.</summary>
+    private static AngleSharp.Dom.IElement Kreuz(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+        => cut.Find(".epos-spauslegung-kopfaktionen .epos-dialog-zu");
+
+    /// <summary>Der benannte Rückweg „← zurück" daneben.</summary>
+    private static AngleSharp.Dom.IElement Rueckweg(IRenderedComponent<StromspeicherAuslegungSeite> cut)
+        => cut.Find(".epos-spauslegung-kopfaktionen button.epos-knopf:not(.epos-dialog-zu)");
+
+    /// <summary>
+    /// <b>Das Kreuz steht beim Titel</b> — auch im Kopf einer freien Ansicht. Es steht
+    /// als LETZTES Kind der Kopfleiste, hinter dem Rückweg, und es gibt genau EINES:
+    /// Die Ansicht liegt in keiner Überlagerung, und keines ihrer fünf Blätter zeichnet
+    /// ein eigenes.
+    /// </summary>
+    [Fact]
+    public void Das_Kreuz_steht_rechts_aussen_in_der_Kopfleiste()
+    {
+        var cut = Ansicht(new StromspeicherAuslegungDienste { Vorgaben = () => Vorgaben(Flotte()) });
+
+        var aktionen = cut.Find(".epos-spauslegung-kopfaktionen");
+        Assert.Contains("epos-dialog-zu", aktionen.LastElementChild!.ClassName);
+        Assert.Single(cut.FindAll(".epos-dialog-zu"));
+
+        // Der benannte Rueckweg BLEIBT daneben stehen („ergaenze", nicht „ersetze").
+        Assert.Equal(Resource.FLOTTE_SEITE_ZURUECK, Rueckweg(cut).TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>Dieselbe Aktion, nicht eine zweite Wahrheit:</b> Ohne ungespeicherte Eingaben
+    /// geht auch das Kreuz unmittelbar hinaus — wie „← zurück".
+    /// </summary>
+    [Fact]
+    public async Task Ohne_Aenderung_fuehrt_das_Kreuz_unmittelbar_hinaus()
+    {
+        int zu = 0;
+        var cut = Render<StromspeicherAuslegungSeite>(p => p
+            .Add(x => x.Dienste, new StromspeicherAuslegungDienste { Vorgaben = () => Vorgaben(Flotte()) })
+            .Add(x => x.PlanerVerfuegbar, true)
+            .Add(x => x.EntprellungMs, 0)
+            .Add(x => x.Geschlossen, Microsoft.AspNetCore.Components.EventCallback.Factory.Create(
+                 this, () => zu++)));
+
+        await Kreuz(cut).ClickAsync(new());
+
+        Assert.Equal(1, zu);
+    }
+
+    /// <summary>
+    /// Mit ungespeicherten Eingaben stellt das Kreuz <b>dieselbe</b> Rückfrage wie der
+    /// Rückweg — es gibt keinen Weg nach draußen, der sie umgeht und die Eingaben still
+    /// verwirft.
+    /// </summary>
+    [Fact]
+    public async Task Das_Kreuz_stellt_dieselbe_Rueckfrage_wie_der_Rueckweg()
+    {
+        int zu = 0;
+        var cut = Render<StromspeicherAuslegungSeite>(p => p
+            .Add(x => x.Dienste, new StromspeicherAuslegungDienste { Vorgaben = () => Vorgaben(Flotte()) })
+            .Add(x => x.PlanerVerfuegbar, true)
+            .Add(x => x.EntprellungMs, 0)
+            .Add(x => x.Geschlossen, Microsoft.AspNetCore.Components.EventCallback.Factory.Create(
+                 this, () => zu++)));
+
+        Auslegungshilfe.Schritt(cut, AuslegungSchritt.Betrieb);
+        cut.FindAll("label").Single(x => x.TextContent.Contains(Resource.FLOTTE_BETRIEB_LBL_ZIEL))
+           .QuerySelector("select")!.Change("0");
+        Assert.True(cut.Instance.Ungespeichert);
+
+        Task klick = Kreuz(cut).ClickAsync(new());
+        cut.WaitForAssertion(() => Assert.Contains(Resource.FLOTTE_SEITE_VERLASSEN_FRAGE, cut.Markup));
+
+        await cut.FindAll("button")
+                 .Single(x => x.TextContent.Trim() == Resource.FLOTTE_SEITE_BTN_BLEIBEN)
+                 .ClickAsync(new());
+        await klick;
+
+        // „Bleiben" heisst bleiben — auch auf dem Weg ueber das Kreuz.
+        Assert.Equal(0, zu);
+    }
+
+    /// <summary>
+    /// <b>Dieselbe Sperre wie der Rückweg:</b> Solange ein Auslegungslauf rechnet, ist
+    /// das Kreuz gesperrt — und zwar hart (<c>disabled</c>), genau wie der Knopf daneben.
+    /// Es VERSCHWINDET dabei nicht: Ein springender Kopf sagte nicht, warum der Weg weg
+    /// ist; ein graues Kreuz sagt „geht gerade nicht".
+    /// </summary>
+    [Fact]
+    public async Task Waehrend_des_Laufs_ist_das_Kreuz_gesperrt_wie_der_Rueckweg()
+    {
+        int zu = 0;
+        var quelle = new TaskCompletionSource<SpeicherFlottenErgebnis>();
+        var cut = Render<StromspeicherAuslegungSeite>(p => p
+            .Add(x => x.Dienste, new StromspeicherAuslegungDienste
+            {
+                Vorgaben = () => Vorgaben(Flotte()),
+                FlotteRechnen = (_, _) => quelle.Task
+            })
+            .Add(x => x.PlanerVerfuegbar, true)
+            .Add(x => x.EntprellungMs, 0)
+            .Add(x => x.Geschlossen, Microsoft.AspNetCore.Components.EventCallback.Factory.Create(
+                 this, () => zu++)));
+
+        Assert.False(Kreuz(cut).HasAttribute("disabled"));
+        Assert.False(Rueckweg(cut).HasAttribute("disabled"));
+
+        Task lauf = Auslegungshilfe.Rechenknopf(cut).ClickAsync(new());
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.Laeuft));
+
+        // Das Kreuz STEHT noch, und es traegt dieselbe harte Sperre wie der Rueckweg.
+        Assert.Single(cut.FindAll(".epos-spauslegung-kopfaktionen .epos-dialog-zu"));
+        Assert.True(Kreuz(cut).HasAttribute("disabled"));
+        Assert.True(Rueckweg(cut).HasAttribute("disabled"));
+
+        // KEIN WEG NACH DRAUSSEN, weder mit dem Zeiger noch mit der Tastatur.
+        await Kreuz(cut).ClickAsync(new());
+        Kreuz(cut).KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+        Assert.Equal(0, zu);
+        Assert.DoesNotContain(Resource.FLOTTE_SEITE_VERLASSEN_FRAGE, cut.Markup);
+
+        quelle.SetResult(new SpeicherFlottenErgebnis());
+        await lauf;
+
+        // Nach dem Lauf faellt die Sperre an BEIDEN Wegen wieder.
+        cut.WaitForAssertion(() => Assert.False(Kreuz(cut).HasAttribute("disabled")));
+        Assert.False(Rueckweg(cut).HasAttribute("disabled"));
+    }
 }

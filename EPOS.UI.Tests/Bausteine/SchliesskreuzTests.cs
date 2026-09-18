@@ -212,4 +212,98 @@ public class SchliesskreuzTests : EposBunitContext
 
         Assert.Equal(1, wirtTreffer);
     }
+
+    // =====================================================================
+    //  4 — Die Sperre am Baustein (Gesperrt, Anwenderentscheid 18.09.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Vorgabe ist <c>false</c></b> — und das ist der Kern des Entscheids: Die
+    /// rund achtzig bestehenden Verwendungen setzen den Parameter nicht und dürfen sich
+    /// deshalb um kein Zeichen ändern. Gemessen wird beides: kein <c>disabled</c> im
+    /// Markup UND der Klick, der weiterhin meldet.
+    /// </summary>
+    [Fact]
+    public void Ohne_gesetzten_Parameter_bleibt_das_Kreuz_offen_und_klickbar()
+    {
+        int geschlossen = 0;
+        var cut = Render<Schliesskreuz>(p => p.Add(x => x.Geschlossen, () => geschlossen++));
+
+        var knopf = cut.Find("button.epos-dialog-zu");
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.False(cut.Instance.Gesperrt);
+
+        knopf.Click();
+        cut.Find(".epos-dialog-zu").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.Equal(2, geschlossen);
+    }
+
+    /// <summary>
+    /// Gesperrt heißt <b>hart</b> gesperrt: Der Knopf trägt <c>disabled</c>, nicht
+    /// <c>aria-disabled</c>. Die weiche Bauart (Hausregel W16b‑E‑6) gehört dorthin, wo
+    /// ein Tooltip den GRUND nennt — das Kreuz nennt keinen, weil der Rückweg daneben
+    /// auch keinen nennt.
+    /// </summary>
+    [Fact]
+    public void Gesperrt_sperrt_den_Knopf_hart()
+    {
+        var cut = Render<Schliesskreuz>(p => p.Add(x => x.Gesperrt, true));
+
+        var knopf = cut.Find("button.epos-dialog-zu");
+        Assert.True(knopf.HasAttribute("disabled"));
+        Assert.False(knopf.HasAttribute("aria-disabled"));
+
+        // Es bleibt DASSELBE Kreuz: gleiche Klassen, gleiches Zeichen, gleicher Name.
+        Assert.Contains("epos-knopf", knopf.ClassName);
+        Assert.Contains("epos-dialog-zu", knopf.ClassName);
+        Assert.Equal("✕", knopf.TextContent.Trim());
+        Assert.Equal("Schließen", knopf.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// <b>Weder Zeiger noch Tastatur führen hinaus.</b> Ein <c>disabled</c>-Knopf
+    /// bekommt im Browser keine Ereignisse mehr — darauf verlässt sich der Baustein
+    /// nicht: Auch der Tastenweg schweigt, und gemessen wird es mit Klick UND
+    /// Tastendruck in EINEM Fall.
+    /// </summary>
+    [Fact]
+    public void Im_gesperrten_Zustand_meldet_weder_Klick_noch_Taste()
+    {
+        int geschlossen = 0;
+        var cut = Render<Schliesskreuz>(p => p
+            .Add(x => x.Geschlossen, () => geschlossen++)
+            .Add(x => x.Gesperrt, true));
+
+        cut.Find("button.epos-dialog-zu").Click();
+        cut.Find(".epos-dialog-zu").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        cut.Find(".epos-dialog-zu").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.Equal(0, geschlossen);
+    }
+
+    /// <summary>
+    /// Die Sperre ist ein ZUSTAND, kein Abschied: Fällt sie, meldet dasselbe Kreuz
+    /// wieder. Ohne diesen Fall wäre „gesperrt meldet nicht" auch dann grün, wenn der
+    /// Baustein überhaupt nicht mehr meldete.
+    /// </summary>
+    [Fact]
+    public void Faellt_die_Sperre_meldet_dasselbe_Kreuz_wieder()
+    {
+        int geschlossen = 0;
+        var cut = Render<Schliesskreuz>(p => p
+            .Add(x => x.Geschlossen, () => geschlossen++)
+            .Add(x => x.Gesperrt, true));
+
+        cut.Find("button.epos-dialog-zu").Click();
+        Assert.Equal(0, geschlossen);
+
+        cut.Render(p => p.Add(x => x.Gesperrt, false));
+
+        Assert.False(cut.Find("button.epos-dialog-zu").HasAttribute("disabled"));
+        cut.Find("button.epos-dialog-zu").Click();
+        cut.Find(".epos-dialog-zu").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.Equal(2, geschlossen);
+    }
 }
