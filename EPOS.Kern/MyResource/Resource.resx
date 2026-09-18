@@ -300,9 +300,6 @@
   <data name="ETV_LBL_PREISBASIS" xml:space="preserve">
     <value>Preisbasis</value>
   </data>
-  <data name="ETV_LBL_PREIS_JE_KWH" xml:space="preserve">
-    <value>Preis pro kWh:</value>
-  </data>
   <data name="ETV_LBL_SO2" xml:space="preserve">
     <value>SO2  [g/kWh]</value>
   </data>
@@ -754,10 +751,10 @@
     <value>Der Emissionsarten-Katalog ist auf dieser Datenbank nicht verfügbar (Migrationsschritt 57 fehlt). Es gelten die drei Bestandsfelder.</value>
   </data>
   <data name="KDLG_EM_MODUS" xml:space="preserve">
-    <value>CO₂-Berechnung:</value>
+    <value>Bilanzierungsmethode</value>
   </data>
   <data name="KDLG_EM_MODUS_CO2" xml:space="preserve">
-    <value>CO₂</value>
+    <value>CO₂ direkt — reale Bilanz, heizwertbezogen</value>
   </data>
   <data name="KDLG_EM_MODUS_CO2E" xml:space="preserve">
     <value>CO₂-Äquivalent (GWP₁₀₀)</value>
@@ -775,7 +772,7 @@
     <value>Einheit</value>
   </data>
   <data name="KDLG_EM_SP_HERKUNFT" xml:space="preserve">
-    <value>Herkunft</value>
+    <value>Quelle</value>
   </data>
   <data name="KDLG_EM_SP_WERT" xml:space="preserve">
     <value>Wert</value>
@@ -791,12 +788,6 @@
   </data>
   <data name="KDLG_ET_GRUPPE_SONSTIGE" xml:space="preserve">
     <value>Sonstige</value>
-  </data>
-  <data name="KDLG_ET_TAB_EMISSIONEN" xml:space="preserve">
-    <value>Emissionen</value>
-  </data>
-  <data name="KDLG_ET_TAB_PREISE" xml:space="preserve">
-    <value>Preise &amp; Umrechnung</value>
   </data>
   <data name="KFLT_SP_APERTUR" xml:space="preserve">
     <value>A_ap</value>
@@ -7665,9 +7656,6 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
   <data name="KI_REG_NAME_KEINE" xml:space="preserve">
     <value>Es gibt derzeit nichts zur Auswahl für {0}.</value>
   </data>
-  <data name="KOSTEN_UMRECHNUNG_TITEL" xml:space="preserve">
-    <value>Umrechnungsregeln</value>
-  </data>
   <data name="KOSTEN_UMRECHNUNG_SPALTE_NAME" xml:space="preserve">
     <value>Name</value>
   </data>
@@ -8645,12 +8633,6 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_ET_KATALOG_NUR_LESEN" xml:space="preserve">
     <value>Katalogpreise sind hier noch nicht pflegbar (folgt mit den Trägervarianten).</value>
   </data>
-  <data name="KDLG_ET_KONTEXT_KATALOG" xml:space="preserve">
-    <value>Kontext: Katalog (Stammdaten)</value>
-  </data>
-  <data name="KDLG_ET_KONTEXT_PROJEKT" xml:space="preserve">
-    <value>Kontext: Projekt {0}</value>
-  </data>
   <data name="KDLG_ET_KONTEXT_KOMPONENTE" xml:space="preserve">
     <value>für {0}: nur Gruppe {1}</value>
   </data>
@@ -9624,22 +9606,19 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
     <value>Speichern</value>
   </data>
   <data name="BB_GRUPPE_BESTANDTEILE" xml:space="preserve">
-    <value>Preisbestandteile des Brennstoffs</value>
+    <value>Preisbestandteile — Transparenz, ohne Preiswirkung</value>
   </data>
   <data name="BB_KOMP_ENERGIESTEUER" xml:space="preserve">
     <value>Energiesteuer</value>
   </data>
   <data name="BB_KOMP_CO2" xml:space="preserve">
-    <value>CO₂-Anteil (BEHG)</value>
+    <value>CO₂-Bestandteil (BEHG)</value>
   </data>
   <data name="BB_KOMP_NETZENTGELT" xml:space="preserve">
-    <value>Netz-/Messentgelt</value>
+    <value>Netz- und Messentgelt</value>
   </data>
   <data name="BB_KOMP_VERTRIEB" xml:space="preserve">
-    <value>Vertrieb</value>
-  </data>
-  <data name="BB_SCHNELLWAHL" xml:space="preserve">
-    <value>Schnellwahl (Katalog):</value>
+    <value>Beschaffung und Vertrieb</value>
   </data>
   <data name="BB_LABEL_ARBEITSPREIS" xml:space="preserve">
     <value>Arbeitspreis (Trägerdialog)</value>
@@ -19490,5 +19469,68 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_ENK_NETZBEZUG" xml:space="preserve">
     <value>Netzbezug Strom</value>
+  </data>
+  <data name="ETV_BLOCK_PREIS" xml:space="preserve">
+    <value>Preis und Heizwert</value>
+  </data>
+  <data name="ETV_BLOCK_EMISSIONEN" xml:space="preserve">
+    <value>Emissionen — Anzeige folgt der Bilanzierungsvorgabe des Projekts</value>
+  </data>
+  <data name="ETV_BLOCK_EINHEITEN" xml:space="preserve">
+    <value>Einheiten und Umrechnung</value>
+  </data>
+  <data name="ETV_REGELN_HINWEIS" xml:space="preserve">
+    <value>Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert und Brennwert.</value>
+  </data>
+  <data name="ETV_HERLEITUNG_PREIS" xml:space="preserve">
+    <value>→ {0}/kWh</value>
+  </data>
+  <data name="ETV_HERLEITUNG_HSHI" xml:space="preserve">
+    <value> · Umrechnungsfaktor Hs/Hi = {0}</value>
+  </data>
+  <data name="ETV_KONTEXT_NETTO" xml:space="preserve">
+    <value>{0} · Preise netto</value>
+  </data>
+  <data name="ETV_KONTEXT_KATALOG_NETTO" xml:space="preserve">
+    <value>Katalog · Preise netto</value>
+  </data>
+  <data name="ETV_KONTEXT_PROJEKTNUMMER" xml:space="preserve">
+    <value>Projekt {0}</value>
+  </data>
+  <data name="ETV_TITEL_TRAEGER" xml:space="preserve">
+    <value>Energieträger — {0}</value>
+  </data>
+  <data name="KDLG_EM_FUSSNOTE" xml:space="preserve">
+    <value>Angezeigt wird nur die im Projekt gewählte Größe — CO₂ oder CO₂-Äquivalent. SO₂ und NOx werden weiterhin geführt, aber nicht in dieser Tabelle gezeigt.</value>
+  </data>
+  <data name="KDLG_EM_MODUS_KATALOG" xml:space="preserve">
+    <value>Die Bilanzierungsmethode ist eine Projektvorgabe und hier nur lesbar.</value>
+  </data>
+  <data name="BB_BTN_SCHNELLWAHL" xml:space="preserve">
+    <value>Schnellwahl aus Katalog…</value>
+  </data>
+  <data name="BB_SCHNELLWAHL_TITEL" xml:space="preserve">
+    <value>Schnellwahl aus Katalog</value>
+  </data>
+  <data name="BB_BTN_REST" xml:space="preserve">
+    <value>Rest übernehmen</value>
+  </data>
+  <data name="BB_REST_VORSCHLAG" xml:space="preserve">
+    <value>Rest: {0} {1}</value>
+  </data>
+  <data name="BB_KOHAERENZ_OK" xml:space="preserve">
+    <value>Summe der Bestandteile {0} {1} — deckungsgleich mit dem Arbeitspreis</value>
+  </data>
+  <data name="BB_KOHAERENZ_AB" xml:space="preserve">
+    <value>Summe der Bestandteile {0} {1} — weicht um {2} {1} ab</value>
+  </data>
+  <data name="BB_HINWEIS_OHNE_HI" xml:space="preserve">
+    <value>Ohne Heizwert stehen die Bestandteile in ct/kWh.</value>
+  </data>
+  <data name="BB_HERLEITUNG_STEUER" xml:space="preserve">
+    <value>{0} {1} (Hs)</value>
+  </data>
+  <data name="BB_HERLEITUNG_CO2" xml:space="preserve">
+    <value>{0} €/t × {1} kg/{2}</value>
   </data>
 </root>

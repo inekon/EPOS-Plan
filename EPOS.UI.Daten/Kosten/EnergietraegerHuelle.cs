@@ -272,6 +272,9 @@ namespace WindowsFormsApplication1
                 ["BestandteilTexte"] = BestandteilTexte(),
 
                 ["TitelText"] = T("KDLG_ET_TITEL", "Energieträgerverwaltung"),
+                // ET-D: Der Dialogtitel nennt den Träger, an dem gerade gearbeitet
+                // wird - „Energieträgerverwaltung" sagt nur, wo man ist.
+                ["VorlageTitelTraeger"] = T("ETV_TITEL_TRAEGER", "Energieträger — {0}"),
                 ["KontextText"] = KontextText(),
                 ["PasstNichtText"] = T("KDLG_ET_PASST_NICHT", "passt nicht zur Komponente"),
                 ["ListenTitel"] = T("KDLG_ET_LISTE", "Energieträger"),
@@ -393,10 +396,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         private string KontextText()
         {
-            string kontext = Katalogkontext
-                ? T("KDLG_ET_KONTEXT_KATALOG", "Kontext: Katalog (Stammdaten)")
-                : string.Format(CultureInfo.CurrentCulture,
-                    T("KDLG_ET_KONTEXT_PROJEKT", "Kontext: Projekt {0}"), _projektId);
+            // ET-D: Die Kopfzeile nennt, WO man ist und WELCHE Preise gelten -
+            // netto, ausnahmslos. Der Projektname steht da, wo bis ET-D die
+            // Projektnummer stand: Eine Nummer sagt niemandem, in welchem Projekt
+            // er gerade Preise pflegt.
+            string kontext;
+            if (Katalogkontext)
+            {
+                kontext = T("ETV_KONTEXT_KATALOG_NETTO", "Katalog · Preise netto");
+            }
+            else
+            {
+                string name = "";
+                try { name = StartseiteCtrl.Projektname(_projektId) ?? ""; }
+                catch { name = ""; }
+                if (name.Trim().Length == 0)
+                    name = string.Format(CultureInfo.CurrentCulture,
+                        T("ETV_KONTEXT_PROJEKTNUMMER", "Projekt {0}"), _projektId);
+
+                kontext = string.Format(CultureInfo.CurrentCulture,
+                    T("ETV_KONTEXT_NETTO", "{0} · Preise netto"), name);
+            }
 
             // ET-E-3: Ohne Komponentenkontext sagt die Kopfzeile, worauf die Uebernahme
             // eingeengt ist - die Anlagen des Projekts.
@@ -648,11 +668,33 @@ namespace WindowsFormsApplication1
                 // Kein Modus mehr (Anwenderentscheid 17.09.2026): Summe der aktiven
                 // Bestandteile, Rest gegen den Arbeitspreis — dieselbe Rechnung wie
                 // oben beim Strom, nur mit den Texten dieses Trägers.
-                a.BestandteilAnzeige = Preisblock(
-                    BrennstoffBestandteilCtrl.AlsPreiszerlegung(_bestandteilModell),
-                    a.ArbeitspreisCtKwh,
+                SpeicherEngine.Preiszerlegung bsatz =
+                    BrennstoffBestandteilCtrl.AlsPreiszerlegung(_bestandteilModell);
+
+                a.BestandteilAnzeige = MitKohaerenz(Preisblock(
+                    bsatz, a.ArbeitspreisCtKwh,
                     T("BB_SUMME_AKTIV", "Summe der aktiven Bestandteile: {0} ct/kWh"),
-                    T("BB_REST", "Nicht aufgeschlüsselter Rest: {0} ct/kWh"));
+                    T("BB_REST", "Nicht aufgeschlüsselter Rest: {0} ct/kWh")),
+                    bsatz, a.ArbeitspreisCtKwh);
+
+                // ET-D-1: Die Anzeigekante — Einheit, Heizwert, Herleitungen und der
+                // Rest-Vorschlag. Gerechnet wird weiter in ct/kWh.
+                a.BestandteilHeizwert = _gewaehlt.HasHi ? _baseHi : 0.0;
+                a.BestandteilEinheit = EnergietraegerPreiskarte.AnteilEinheit(
+                    _abrechnungseinheit, a.BestandteilHeizwert);
+                a.BestandteilHinweis = a.BestandteilHeizwert > 0.0 ? "" : T("BB_HINWEIS_OHNE_HI",
+                    "Ohne Heizwert stehen die Bestandteile in ct/kWh.");
+                a.HerleitungEnergiesteuer = HerleitungEnergiesteuer();
+                a.HerleitungCo2 = HerleitungCo2();
+
+                double ohneVertrieb =
+                    bsatz.SummeAktivOhneCtKwh(BrennstoffBestandteilCtrl.KOMP_VERTRIEB);
+                double restVorschlag = a.ArbeitspreisCtKwh - ohneVertrieb;
+                a.VertriebVorschlag =
+                    (!_bestandteilModell.Vertrieb.HasValue || !_bestandteilModell.Vertrieb_Aktiv)
+                    && a.ArbeitspreisCtKwh > 0.0 && restVorschlag > 0.0
+                        ? (double?)restVorschlag
+                        : null;
 
                 a.SatzRegel = EnergiesteuerSatz(
                     WirtschaftlichkeitCtrl.EnergiesteuerSchluessel(_idBrennstoff, false),
@@ -712,6 +754,48 @@ namespace WindowsFormsApplication1
                                          rest < 0.0);
         }
 
+        /// <summary>
+        /// Die Toleranz der Kohärenzprüfung: 0,0001 €/kWh — in ct/kWh sind das
+        /// 0,01. Darunter ist ein Unterschied Rundung, darüber eine Aussage.
+        /// </summary>
+        private const double KOHAERENZ_TOLERANZ_CT_KWH = 0.01;
+
+        /// <summary>
+        /// Die EINE Summenzeile des Bestandteilblocks (ET-D-1): Summe der aktiven
+        /// Anteile in der ANZEIGEEINHEIT und die Aussage, ob sie zum Arbeitspreis
+        /// passt. Bis ET-D stand die Kohärenzzeile ausnahmslos auf „✓" — sie
+        /// zeigte den Arbeitspreis, sie prüfte ihn nicht.
+        /// </summary>
+        private PreisblockAnzeige MitKohaerenz(PreisblockAnzeige anzeige,
+                                               SpeicherEngine.Preiszerlegung satz,
+                                               double arbeitspreisCtKwh)
+        {
+            CultureInfo k = CultureInfo.CurrentCulture;
+            double summe = Preisanteile.SummeCtKwh(satz);
+            double abstand = summe - arbeitspreisCtKwh;
+            bool abweichend = Math.Abs(abstand) > KOHAERENZ_TOLERANZ_CT_KWH;
+
+            string einheit = EnergietraegerPreiskarte.AnteilEinheit(_abrechnungseinheit, _baseHi);
+            string summeText = AnteilText(summe);
+
+            string text = abweichend
+                ? string.Format(k, T("BB_KOHAERENZ_AB",
+                        "Summe der Bestandteile {0} {1} — weicht um {2} {1} ab"),
+                    summeText, einheit, AnteilText(Math.Abs(abstand)))
+                : string.Format(k, T("BB_KOHAERENZ_OK",
+                        "Summe der Bestandteile {0} {1} — deckungsgleich mit dem Arbeitspreis"),
+                    summeText, einheit);
+
+            return anzeige with { KohaerenzText = text, Abweichend = abweichend };
+        }
+
+        /// <summary>Ein Anteil [ct/kWh] als Text in der Anzeigeeinheit.</summary>
+        private string AnteilText(double ctKwh)
+        {
+            return EnergietraegerPreiskarte.AnteilJeEinheit(ctKwh, _baseHi)
+                .ToString("0.####", CultureInfo.CurrentCulture);
+        }
+
         private static string Anzeige(double wert)
         {
             return wert.ToString("0.###", CultureInfo.CurrentCulture);
@@ -744,16 +828,11 @@ namespace WindowsFormsApplication1
                 MitKatalogUebernahme = _projektId > 0
             };
 
-            _preisbasen = EnergietraegerPreisCtrl.Preisbasen(
-                _gewaehlt.BillingUnit, _umrechnungen);
-
-            var basen = new List<ValueTuple<int, string>>();
-            for (int i = 0; i < _preisbasen.Count; i++)
-                basen.Add(new ValueTuple<int, string>(i, _preisbasen[i].Einheit));
-            stand.Preisbasen = basen;
-
             EnergietraegerPreisCtrl.Projektpreis projekt =
                 EnergietraegerPreisCtrl.ProjektpreisLesen(_projektId, _gewaehlt.ID);
+
+            // Die Einheit, die die Projektzeile als Preisbasis gemerkt hat.
+            string gemerkteBasis;
 
             if (projekt != null)
             {
@@ -769,8 +848,8 @@ namespace WindowsFormsApplication1
                 stand.AltNOx = projekt.NOx ?? _gewaehlt.NOx;
 
                 int idUmrechnung = projekt.IdUmrechnung ?? -1;
-                string ziel = idUmrechnung > 0 ? EnergietraegerPreisCtrl.Zieleinheit(idUmrechnung) : null;
-                stand.PreisbasisId = IndexZuEinheit(ziel);
+                gemerkteBasis = idUmrechnung > 0
+                    ? EnergietraegerPreisCtrl.Zieleinheit(idUmrechnung) : null;
             }
             else
             {
@@ -783,8 +862,20 @@ namespace WindowsFormsApplication1
                 stand.AltSO2 = _gewaehlt.SO2;
                 stand.AltNOx = _gewaehlt.NOx;
 
-                stand.PreisbasisId = IndexZuEinheit(_gewaehlt.BillingUnit);
+                gemerkteBasis = _gewaehlt.BillingUnit;
             }
+
+            // UR-1: Die Preisbasis „kWh" traegt den HEIZWERT als Faktor, nicht den
+            // Faktor einer Umrechnungsregel. Die Liste kann deshalb erst stehen,
+            // wenn der Heizwert gelesen ist.
+            _preisbasen = EnergietraegerPreisCtrl.Preisbasen(
+                _gewaehlt.BillingUnit, _umrechnungen, stand.Heizwert);
+
+            var basen = new List<ValueTuple<int, string>>();
+            for (int i = 0; i < _preisbasen.Count; i++)
+                basen.Add(new ValueTuple<int, string>(i, _preisbasen[i].Einheit));
+            stand.Preisbasen = basen;
+            stand.PreisbasisId = IndexZuEinheit(gemerkteBasis);
 
             // DIE BASISWERTE SIND, WAS IN DER DATENBANK STEHT - je
             // ABRECHNUNGSEINHEIT. Heiz- und Brennwert bleiben es auch in der
@@ -838,14 +929,28 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Faktor der gewählten Preisbasis — Abrechnungseinheit → Preisbasis.
-        /// Ein Träger ohne Heizwert rechnet unmittelbar in kWh ab und kennt
-        /// keinen Faktor.
+        ///
+        /// <para><b>UR-1.</b> Es gibt genau zwei Basen: die Abrechnungseinheit
+        /// (Faktor 1) und die Kilowattstunde. Deren Faktor ist der HEIZWERT, und
+        /// zwar der, der gerade im Feld steht — wer Hi ändert, ändert damit die
+        /// Umrechnung des Arbeitspreises. Bis ET-D stand hier der
+        /// <c>factor</c> einer Umrechnungsregel; in der Testdatenbank ist das
+        /// 0,5 gegen Hi 10,5.</para>
         /// </summary>
         private double Faktor()
         {
             if (_gewaehlt == null || !_gewaehlt.HasHi) return 1.0;
             EnergietraegerPreisCtrl.Preisbasis b = AktuelleBasis();
-            return b != null && b.Faktor != 0.0 ? b.Faktor : 1.0;
+            if (b == null) return 1.0;
+
+            if (EnergietraegerPreiskarte.IstKwh(b.Einheit)
+                && !EnergietraegerPreiskarte.IstKwh(_abrechnungseinheit))
+            {
+                double hi = _stand != null ? _stand.Heizwert : _baseHi;
+                return hi > 0.0 ? hi : 1.0;
+            }
+
+            return 1.0;
         }
 
         private int? IndexZuEinheit(string einheit)
@@ -1016,6 +1121,18 @@ namespace WindowsFormsApplication1
                 ? T("KDLG_EM_MODUS_ORT_PROJEKT", "[Projekt]")
                 : T("KDLG_EM_MODUS_ORT_VORGABE", "[globale Vorgabe]");
 
+            // ET-D-2: Die Bilanzierungsmethode ist eine PROJEKTvorgabe. Im
+            // Katalogkontext gibt es kein Projekt, also auch nichts zu wählen —
+            // die Klappliste steht dort gesperrt, und der Grund steht darunter.
+            _stand.ModusNurLesend = Katalogkontext;
+            _stand.ModusHinweis = Katalogkontext
+                ? T("KDLG_EM_MODUS_KATALOG",
+                    "Die Bilanzierungsmethode ist eine Projektvorgabe und hier nur lesbar.")
+                : "";
+            _stand.EmissionsFussnote = T("KDLG_EM_FUSSNOTE",
+                "Angezeigt wird nur die im Projekt gewählte Größe — CO₂ oder CO₂-Äquivalent. "
+                + "SO₂ und NOx werden weiterhin geführt, aber nicht in dieser Tabelle gezeigt.");
+
             if (!_emissionen.Verfuegbar)
             {
                 _stand.Emissionszeilen = Array.Empty<EmissionsFeldZeile>();
@@ -1101,9 +1218,11 @@ namespace WindowsFormsApplication1
             // Basiswerte aus den Anzeigewerten (der Vorläufer hielt sie in den
             // Value-Changed-Handlern nach) - nur der Arbeitspreis wird dabei
             // zurückgerechnet.
-            _baseWork = EnergietraegerPreiskarte.BasisArbeitspreis(_stand.Arbeitspreis, Faktor());
+            // Die Reihenfolge zählt (UR-1): Der Faktor der kWh-Basis IST der
+            // Heizwert, also muss er stehen, bevor der Basispreis daraus fällt.
             _baseHi = _stand.Heizwert;
             _baseHs = _stand.Brennwert;
+            _baseWork = EnergietraegerPreiskarte.BasisArbeitspreis(_stand.Arbeitspreis, Faktor());
             _basePower = _stand.Leistungspreis;
             _baseGround = _stand.Grundpreis;
 
@@ -1127,6 +1246,19 @@ namespace WindowsFormsApplication1
 
             _stand.PreisJeKwh = z.PreisJeKwh;
             _stand.FormelText = z.Text;
+
+            // ET-D: Die kurze Herleitung des Blocks „Preis und Heizwert" —
+            // der Preis je kWh und, wenn beide Stoffwerte dastehen, der
+            // Umrechnungsfaktor Hs/Hi.
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string zeile = string.Format(k, T("ETV_HERLEITUNG_PREIS", "→ {0}/kWh"), z.PreisJeKwh);
+
+            double? hshi = EnergietraegerPreiskarte.FaktorHsHi(_baseHi, _baseHs);
+            if (hshi.HasValue)
+                zeile += string.Format(k, T("ETV_HERLEITUNG_HSHI",
+                    " · Umrechnungsfaktor Hs/Hi = {0}"), hshi.Value.ToString("N4", k));
+
+            _stand.HerleitungPreis = zeile;
         }
 
         /// <summary>
@@ -2248,7 +2380,7 @@ namespace WindowsFormsApplication1
                 string.Format(T("BB_QUELLE", "{0} {1} (ab {2}, {3})"),
                     p.Wert.Value.ToString("0.####", CultureInfo.CurrentCulture),
                     p.Einheit, p.JahrVon, Herkunftstext(p)),
-                ct);
+                ct, false, SatzInAnzeigeeinheit(ct.Value));
         }
 
         /// <summary>Gramm/Kilowattstunde × Euro/Tonne → Cent/Kilowattstunde.</summary>
@@ -2306,7 +2438,75 @@ namespace WindowsFormsApplication1
                 string.Format(muster, ct.ToString("0.####", CultureInfo.CurrentCulture)),
                 string.Format(T("BB_QUELLE_CO2", "{0} × {1} g/kWh"),
                     herkunftPreis, ef.Value.ToString("0.##", CultureInfo.CurrentCulture)),
-                ct);
+                ct, false, SatzInAnzeigeeinheit(ct));
+        }
+
+        /// <summary>
+        /// Derselbe Satz in der ABRECHNUNGSEINHEIT („0,0638 €/m³") — was in der
+        /// Schnellwahl-Überlagerung neben der Herkunft steht. Ohne Heizwert gibt
+        /// es keine zweite Einheit; dann bleibt die Zeile leer, denn der Satz
+        /// steht ohnehin schon in ct/kWh auf dem Knopf.
+        /// </summary>
+        private string SatzInAnzeigeeinheit(double ctKwh)
+        {
+            if (_gewaehlt == null || !_gewaehlt.HasHi || _baseHi <= 0.0) return "";
+            return AnteilText(ctKwh) + " "
+                   + EnergietraegerPreiskarte.AnteilEinheit(_abrechnungseinheit, _baseHi);
+        }
+
+        /// <summary>
+        /// Die leise Zeile unter der Energiesteuer: der KATALOGSATZ in seiner
+        /// eigenen Einheit, mit dem Hinweis, dass er brennwertbezogen gilt
+        /// („5,50 €/MWh (Hs)"). Leer, solange der Katalog nichts hergibt — eine
+        /// Herleitung ohne Grundlage wäre eine Behauptung (L3).
+        /// </summary>
+        private string HerleitungEnergiesteuer()
+        {
+            if (_gewaehlt == null) return "";
+            string schluessel = WirtschaftlichkeitCtrl.EnergiesteuerSchluessel(_idBrennstoff, false);
+            if (string.IsNullOrEmpty(schluessel)) return "";
+
+            GesetzParameter g = null;
+            try { g = new GesetzKatalog().WertMitHerkunft(schluessel, _katalogJahr); }
+            catch { }
+            if (g == null || !g.Wert.HasValue) return "";
+
+            return string.Format(CultureInfo.CurrentCulture,
+                T("BB_HERLEITUNG_STEUER", "{0} {1} (Hs)"),
+                g.Wert.Value.ToString("0.##", CultureInfo.CurrentCulture), g.Einheit);
+        }
+
+        /// <summary>
+        /// Die leise Zeile unter dem BEHG-Anteil: CO₂-Preis × CO₂-Menge JE
+        /// ABRECHNUNGSEINHEIT („65 €/t × 2,109 kg/m³"). Die Menge fällt aus dem
+        /// Emissionsfaktor und dem Heizwert: g/kWh × kWh/Einheit ÷ 1000 = kg/Einheit.
+        /// </summary>
+        private string HerleitungCo2()
+        {
+            if (_gewaehlt == null || _baseHi <= 0.0) return "";
+            string einheit = (_abrechnungseinheit ?? "").Trim();
+            if (einheit.Length == 0) return "";
+
+            double preis = _co2PreisProjekt;
+            if (preis <= 0.0)
+            {
+                GesetzParameter g = null;
+                try { g = new GesetzKatalog().WertMitHerkunft(DbWerte.GESETZ_CO2_PREIS_NEHS, _katalogJahr); }
+                catch { }
+                if (g == null || !g.Wert.HasValue) return "";
+                preis = g.Wert.Value;
+            }
+
+            double? ef = null;
+            try { ef = EmissionsFaktorLader.Lade(_projektId, _gewaehlt.ID).Co2GKwh; }
+            catch { }
+            if (!ef.HasValue || ef.Value <= 0.0) return "";
+
+            double kgJeEinheit = ef.Value * _baseHi / 1000.0;
+            return string.Format(CultureInfo.CurrentCulture,
+                T("BB_HERLEITUNG_CO2", "{0} €/t × {1} kg/{2}"),
+                preis.ToString("0.##", CultureInfo.CurrentCulture),
+                kgJeEinheit.ToString("N3", CultureInfo.CurrentCulture), einheit);
         }
 
         /// <summary>
@@ -2449,9 +2649,13 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
-                ["TitelPreise"] = T("KDLG_ET_TAB_PREISE", "Preise & Umrechnung"),
-                ["TitelUmrechnung"] = MyResource.Resource.KOSTEN_UMRECHNUNG_TITEL,
-                ["TitelEmissionen"] = T("KDLG_ET_TAB_EMISSIONEN", "Emissionen"),
+                ["TitelBlockPreis"] = T("ETV_BLOCK_PREIS", "Preis und Heizwert"),
+                ["TitelBlockEmissionen"] = T("ETV_BLOCK_EMISSIONEN",
+                    "Emissionen — Anzeige folgt der Bilanzierungsvorgabe des Projekts"),
+                ["TitelBlockEinheiten"] = T("ETV_BLOCK_EINHEITEN", "Einheiten und Umrechnung"),
+                ["HinweisRegeln"] = T("ETV_REGELN_HINWEIS",
+                    "Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert "
+                    + "und Brennwert."),
                 ["TitelHistorie"] = T("ETV_TITEL_HISTORIE", "Preishistorie"),
                 ["LabelPreisbasis"] = T("ETV_LBL_PREISBASIS", "Preisbasis"),
                 ["LabelBasiseinheit"] = T("ETV_LBL_BASISEINHEIT", "Basiseinheit:"),
@@ -2460,7 +2664,6 @@ namespace WindowsFormsApplication1
                 ["LabelGrundpreis"] = T("ETV_LBL_GRUNDPREIS", "Grundpreis"),
                 ["LabelHeizwert"] = T("ETV_LBL_HEIZWERT", "Heizwert"),
                 ["LabelBrennwert"] = T("ETV_LBL_BRENNWERT", "Brennwert"),
-                ["LabelPreisJeKwh"] = T("ETV_LBL_PREIS_JE_KWH", "Preis pro kWh:"),
                 ["LabelFormel"] = T("ETV_LBL_FORMEL", "Formel:"),
                 ["ModusJahrText"] = T("KDLG_LP_MODUS_JAHR", "Jahresleistungspreis"),
                 ["ModusMonatText"] = T("KDLG_LP_MODUS_MONAT", "Monatsleistungspreis"),
@@ -2471,13 +2674,14 @@ namespace WindowsFormsApplication1
                 ["SpalteFaktor"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_FAKTOR,
                 ["SpalteAktiv"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_AKTIV,
                 ["RegelNeuText"] = MyResource.Resource.KOSTEN_UMRECHNUNG_NEU,
-                ["LabelModus"] = T("KDLG_EM_MODUS", "CO₂-Berechnung:"),
-                ["ModusCo2Text"] = T("KDLG_EM_MODUS_CO2", "CO₂"),
+                ["LabelModus"] = T("KDLG_EM_MODUS", "Bilanzierungsmethode"),
+                ["ModusCo2Text"] = T("KDLG_EM_MODUS_CO2",
+                    "CO₂ direkt — reale Bilanz, heizwertbezogen"),
                 ["ModusCo2eText"] = T("KDLG_EM_MODUS_CO2E", "CO₂-Äquivalent (GWP₁₀₀)"),
                 ["SpalteArt"] = T("KDLG_EM_SP_ART", "Art"),
                 ["SpalteWert"] = T("KDLG_EM_SP_WERT", "Wert"),
                 ["SpalteEinheit"] = T("KDLG_EM_SP_EINHEIT", "Einheit"),
-                ["SpalteHerkunft"] = T("KDLG_EM_SP_HERKUNFT", "Herkunft"),
+                ["SpalteHerkunft"] = T("KDLG_EM_SP_HERKUNFT", "Quelle"),
                 ["KatalogZeileText"] = T("KDLG_EM_KATALOG", "Katalog…"),
                 ["KatalogVerwaltenText"] = T("KDLG_EM_VERWALTEN",
                     "Emissionsarten & Katalog verwalten…"),
@@ -2536,14 +2740,18 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
-                ["TitelBestandteile"] = T("BB_GRUPPE_BESTANDTEILE", "Preisbestandteile des Brennstoffs"),
-                ["LabelSchnellwahl"] = T("BB_SCHNELLWAHL", "Schnellwahl (Katalog):"),
+                ["TitelBestandteile"] = T("BB_GRUPPE_BESTANDTEILE",
+                    "Preisbestandteile — Transparenz, ohne Preiswirkung"),
                 ["LabelEnergiesteuer"] = T("BB_KOMP_ENERGIESTEUER", "Energiesteuer"),
-                ["LabelCo2"] = T("BB_KOMP_CO2", "CO₂-Anteil (BEHG)"),
-                ["LabelNetzentgelt"] = T("BB_KOMP_NETZENTGELT", "Netz-/Messentgelt"),
-                ["LabelVertrieb"] = T("BB_KOMP_VERTRIEB", "Vertrieb"),
+                ["LabelCo2"] = T("BB_KOMP_CO2", "CO₂-Bestandteil (BEHG)"),
+                ["LabelNetzentgelt"] = T("BB_KOMP_NETZENTGELT", "Netz- und Messentgelt"),
+                ["LabelVertrieb"] = T("BB_KOMP_VERTRIEB", "Beschaffung und Vertrieb"),
                 ["LabelArbeitspreis"] = T("BB_LABEL_ARBEITSPREIS", "Arbeitspreis (Trägerdialog)"),
                 ["InArbeitspreisText"] = T("BB_BTN_IN_ARBEITSPREIS", "In Arbeitspreis übernehmen"),
+                ["SchnellwahlText"] = T("BB_BTN_SCHNELLWAHL", "Schnellwahl aus Katalog…"),
+                ["SchnellwahlTitel"] = T("BB_SCHNELLWAHL_TITEL", "Schnellwahl aus Katalog"),
+                ["RestKnopfText"] = T("BB_BTN_REST", "Rest übernehmen"),
+                ["VorlageRest"] = T("BB_REST_VORSCHLAG", "Rest: {0} {1}"),
                 ["Einheit"] = DbWerte.PREISREIHE_EINHEIT_CT_KWH
             };
         }

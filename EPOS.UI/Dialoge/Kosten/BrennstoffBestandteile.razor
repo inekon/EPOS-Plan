@@ -27,42 +27,83 @@
    geratene Zahl waere genau der Fehlertyp, den Leitentscheidung L3 verhindert.
 
    Die Komponentenfelder sind immer schreibbar: Es gibt hier kein Override-Feld,
-   das sie ersetzen koennte. *@
+   das sie ersetzen koennte.
+
+   ANGEZEIGT WIRD IN DER ABRECHNUNGSEINHEIT (ET-D-1 (a)). Wer einen Gaspreis
+   pflegt, pflegt ihn in €/m³ - nicht in ct/kWh. GERECHNET wird weiter in
+   ct/kWh: Kern, Speicherweg und Kohaerenzpruefung bleiben, wie sie sind. Die
+   Einheit wechselt GENAU EINMAL, hier an der Anzeigekante, ueber
+   EnergietraegerPreiskarte.AnteilJeEinheit / AnteilCtKwh und den Heizwert des
+   Traegers. Ohne Heizwert gibt es keinen Weg dorthin - dann bleibt ct/kWh
+   stehen und eine leise Zeile nennt den Grund.
+
+   EIN KNOPF STATT VIER. Die vier Direktknoepfe der Schnellwahl trugen ihre
+   Herkunft nur im title; wer sie lesen wollte, musste mit dem Zeiger danach
+   suchen. Jetzt oeffnet EIN Knopf eine Ueberlagerung im selben Fenster, und
+   dort steht je Satz Herkunft, Jahr, Katalogwert UND der Satz in der
+   Abrechnungseinheit - vor der Uebernahme, nicht danach. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
 
 <Gruppenkopf Titel="@TitelBestandteile">
     <KindInhalt>
-        <p class="epos-untergruppe">@LabelSchnellwahl</p>
-        <div class="epos-schnellwahl">
-            @Schnellwahlknopf(SatzRegel, w => Stand.Energiesteuer = w, true)
-            @Schnellwahlknopf(Satz53a, w => Stand.Energiesteuer = w, true)
-            @Schnellwahlknopf(Satz54, w => Stand.Energiesteuer = w, true)
-            @Schnellwahlknopf(SatzCo2, w => Stand.CO2 = w, false)
+        @if (!string.IsNullOrEmpty(HinweisOhneHeizwert))
+        {
+            <Herleitungszeile Text="@HinweisOhneHeizwert" />
+        }
+
+        <div class="epos-preisblock">
+            @Komponente(LabelEnergiesteuer, Stand.Energiesteuer, w => Stand.Energiesteuer = w,
+                        Stand.EnergiesteuerAktiv, w => Stand.EnergiesteuerAktiv = w,
+                        HerleitungEnergiesteuer)
+            @Komponente(LabelCo2, Stand.CO2, w => Stand.CO2 = w,
+                        Stand.CO2Aktiv, w => Stand.CO2Aktiv = w, HerleitungCo2)
+            @Komponente(LabelNetzentgelt, Stand.Netzentgelt, w => Stand.Netzentgelt = w,
+                        Stand.NetzentgeltAktiv, w => Stand.NetzentgeltAktiv = w, "")
+            @Komponente(LabelVertrieb, Stand.Vertrieb, w => Stand.Vertrieb = w,
+                        Stand.VertriebAktiv, w => Stand.VertriebAktiv = w, "")
+        </div>
+
+        @* Der Rest als VORSCHLAG am Feld, nicht als still gesetzter Wert -
+           derselbe Weg wie beim Strom (StrompreisDetails.Restknopf). *@
+        @if (VertriebVorschlag.HasValue)
+        {
+            <Vorschlagszeile Text="@RestZeile" Knopftext="@RestKnopfText"
+                             Uebernommen="RestUebernehmen" />
+        }
+
+        @* EINE Summenzeile: Summe der Bestandteile, und ob sie zum Arbeitspreis
+           passt. Vorher standen hier drei Zeilen, von denen eine ausnahmslos
+           auf "✓" stand. *@
+        <Kohaerenzzeile Text="@KohaerenzText"
+                        Zustand="@(Anzeige.Abweichend ? KohaerenzZustand.Abweichend
+                                                      : KohaerenzZustand.Ok)" />
+        <p class="@(Anzeige.RestNegativ ? "epos-preisblock-rest epos-preisblock-rest--negativ"
+                                        : "epos-preisblock-rest")">@Anzeige.RestText</p>
+
+        <div class="epos-leiste">
+            <button type="button" class="epos-knopf"
+                    @onclick="() => _schnellwahlOffen = true">@SchnellwahlText</button>
+            <button type="button" class="epos-knopf"
+                    @onclick="() => InArbeitspreis.InvokeAsync()">@InArbeitspreisText</button>
         </div>
         @if (!string.IsNullOrEmpty(_quelle))
         {
             <Herleitungszeile Text="@_quelle" />
         }
 
-        <div class="epos-preisblock">
-            @Komponente(LabelEnergiesteuer, Stand.Energiesteuer, w => Stand.Energiesteuer = w,
-                        Stand.EnergiesteuerAktiv, w => Stand.EnergiesteuerAktiv = w)
-            @Komponente(LabelCo2, Stand.CO2, w => Stand.CO2 = w,
-                        Stand.CO2Aktiv, w => Stand.CO2Aktiv = w)
-            @Komponente(LabelNetzentgelt, Stand.Netzentgelt, w => Stand.Netzentgelt = w,
-                        Stand.NetzentgeltAktiv, w => Stand.NetzentgeltAktiv = w)
-            @Komponente(LabelVertrieb, Stand.Vertrieb, w => Stand.Vertrieb = w,
-                        Stand.VertriebAktiv, w => Stand.VertriebAktiv = w)
-        </div>
-
-        <p class="epos-preisblock-summe">@Anzeige.SummeText</p>
-        <Kohaerenzzeile Text="@ArbeitspreisZeile" />
-        <p class="@(Anzeige.RestNegativ ? "epos-preisblock-rest epos-preisblock-rest--negativ"
-                                        : "epos-preisblock-rest")">@Anzeige.RestText</p>
-
-        <button type="button" class="epos-knopf"
-                @onclick="() => InArbeitspreis.InvokeAsync()">@InArbeitspreisText</button>
+        <Ueberlagerung Offen="@_schnellwahlOffen" Titel="@SchnellwahlTitel"
+                       Geschlossen="() => _schnellwahlOffen = false">
+            <KindInhalt>
+                <p class="epos-untergruppe">@LabelEnergiesteuer</p>
+                @Schnellwahlzeile(SatzRegel, w => Stand.Energiesteuer = w, true)
+                @Schnellwahlzeile(Satz53a, w => Stand.Energiesteuer = w, true)
+                @Schnellwahlzeile(Satz54, w => Stand.Energiesteuer = w, true)
+                <p class="epos-untergruppe">@LabelCo2</p>
+                @Schnellwahlzeile(SatzCo2, w => Stand.CO2 = w, false)
+            </KindInhalt>
+        </Ueberlagerung>
     </KindInhalt>
 </Gruppenkopf>
 
@@ -97,25 +138,83 @@
     /// <summary>CO₂-Anteil nach BEHG: Preis [€/t] × Emissionsfaktor [g/kWh].</summary>
     [Parameter] public Schnellwahlsatz? SatzCo2 { get; set; }
 
-    [Parameter] public string TitelBestandteile { get; set; } = "Preisbestandteile des Brennstoffs";
-    [Parameter] public string LabelSchnellwahl { get; set; } = "Schnellwahl (Katalog):";
+    /// <summary>
+    /// Der Heizwert je Abrechnungseinheit [kWh] — der Faktor der Anzeigekante.
+    /// 0 = keiner; dann stehen die Felder weiter in ct/kWh.
+    /// </summary>
+    [Parameter] public double Heizwert { get; set; }
+
+    /// <summary>Warum die Felder in ct/kWh stehen; leer = sie tun es nicht.</summary>
+    [Parameter] public string HinweisOhneHeizwert { get; set; } = "";
+
+    /// <summary>„5,50 €/MWh (Hs)" — die leise Zeile unter der Energiesteuer.</summary>
+    [Parameter] public string HerleitungEnergiesteuer { get; set; } = "";
+
+    /// <summary>„65 €/t × 2,109 kg/m³" — die leise Zeile unter dem BEHG-Anteil.</summary>
+    [Parameter] public string HerleitungCo2 { get; set; } = "";
+
+    /// <summary>
+    /// Der Rest-Vorschlag für „Beschaffung und Vertrieb" [ct/kWh]: Arbeitspreis
+    /// minus Summe der übrigen aktiven Anteile. <c>null</c> = kein Vorschlag.
+    /// </summary>
+    [Parameter] public double? VertriebVorschlag { get; set; }
+
+    [Parameter] public string TitelBestandteile { get; set; }
+        = "Preisbestandteile — Transparenz, ohne Preiswirkung";
     [Parameter] public string LabelEnergiesteuer { get; set; } = "Energiesteuer";
-    [Parameter] public string LabelCo2 { get; set; } = "CO₂-Anteil (BEHG)";
-    [Parameter] public string LabelNetzentgelt { get; set; } = "Netz-/Messentgelt";
-    [Parameter] public string LabelVertrieb { get; set; } = "Vertrieb";
+    [Parameter] public string LabelCo2 { get; set; } = "CO₂-Bestandteil (BEHG)";
+    [Parameter] public string LabelNetzentgelt { get; set; } = "Netz- und Messentgelt";
+    [Parameter] public string LabelVertrieb { get; set; } = "Beschaffung und Vertrieb";
     [Parameter] public string LabelArbeitspreis { get; set; } = "Arbeitspreis (Trägerdialog)";
     [Parameter] public string InArbeitspreisText { get; set; } = "In Arbeitspreis übernehmen";
+    [Parameter] public string SchnellwahlText { get; set; } = "Schnellwahl aus Katalog…";
+    [Parameter] public string SchnellwahlTitel { get; set; } = "Schnellwahl aus Katalog";
+    [Parameter] public string RestKnopfText { get; set; } = "Rest übernehmen";
+    [Parameter] public string VorlageRest { get; set; } = "Rest: {0} {1}";
     [Parameter] public string Einheit { get; set; } = "ct/kWh";
 
     private string _quelle = "";
 
+    private bool _schnellwahlOffen;
+
+    /// <summary>Steht die Schnellwahl-Überlagerung offen? (Prüfhilfe für Tests.)</summary>
+    public bool SchnellwahlOffen => _schnellwahlOffen;
+
     /// <summary>Die Herkunft des zuletzt übernommenen Satzes (Prüfhilfe für Tests).</summary>
     public string Quelle => _quelle;
 
+    /// <summary>
+    /// Die EINE Summenzeile: Summe der Bestandteile in der Anzeigeeinheit und ob
+    /// sie zum Arbeitspreis passt. Der Text kommt fertig aus der Hülle; leer
+    /// heißt „keine Prüfung", dann bleibt die alte Arbeitspreiszeile stehen.
+    /// </summary>
+    private string KohaerenzText
+        => string.IsNullOrEmpty(Anzeige.KohaerenzText) ? ArbeitspreisZeile : Anzeige.KohaerenzText;
+
     private string ArbeitspreisZeile
         => LabelArbeitspreis + ": " +
-           ArbeitspreisCtKwh.ToString("0.###", System.Globalization.CultureInfo.CurrentCulture) +
+           Zahl(EnergietraegerPreiskarte.AnteilJeEinheit(ArbeitspreisCtKwh, Heizwert)) +
            " " + Einheit;
+
+    private string RestZeile
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageRest,
+                         Zahl(EnergietraegerPreiskarte.AnteilJeEinheit(
+                             VertriebVorschlag ?? 0.0, Heizwert)), Einheit);
+
+    private static string Zahl(double wert)
+        => wert.ToString("0.####", System.Globalization.CultureInfo.CurrentCulture);
+
+    /// <summary>ct/kWh → Anzeigeeinheit; ohne Heizwert bleibt der Wert stehen.</summary>
+    private double? Anzeigewert(double? ctKwh)
+        => ctKwh.HasValue
+            ? EnergietraegerPreiskarte.AnteilJeEinheit(ctKwh.Value, Heizwert)
+            : (double?)null;
+
+    /// <summary>Die Gegenrichtung — der Weg, den eine EINGABE nimmt.</summary>
+    private double? Kernwert(double? anzeige)
+        => anzeige.HasValue
+            ? EnergietraegerPreiskarte.AnteilCtKwh(anzeige.Value, Heizwert)
+            : (double?)null;
 
     private void Setzen(Action aendern)
     {
@@ -123,34 +222,59 @@
         Geaendert.InvokeAsync();
     }
 
-    /// <summary>Eine Komponentenzeile: Schalter, Wertfeld, Einheit. Ein leeres
-    /// Feld heißt „kein Anteil" und bleibt leer.</summary>
+    private void RestUebernehmen()
+    {
+        if (!VertriebVorschlag.HasValue) return;
+        Setzen(() => { Stand.Vertrieb = VertriebVorschlag.Value; Stand.VertriebAktiv = true; });
+    }
+
+    /// <summary>Eine Komponentenzeile: Schalter, Wertfeld, Einheit, darunter die
+    /// Herleitung. Ein leeres Feld heißt „kein Anteil" und bleibt leer.</summary>
     private RenderFragment Komponente(string beschriftung, double? wert, Action<double?> setzen,
-                                      bool aktiv, Action<bool> setzenAktiv)
-        => @<div class="epos-preiszeile">
+                                      bool aktiv, Action<bool> setzenAktiv, string herleitung)
+        => @<text><div class="epos-preiszeile">
         <Schalter Bezeichnung="@beschriftung" Wert="@aktiv"
                   WertChanged="@(w => Setzen(() => setzenAktiv(w)))" />
-        <Zahlenfeld Wert="@wert" Einheit="@Einheit"
-                    WertChanged="@(w => Setzen(() => setzen(w)))" />
-    </div>;
+        <Zahlenfeld Wert="@Anzeigewert(wert)" Einheit="@Einheit" Nachkommastellen="4"
+                    WertChanged="@(w => Setzen(() => setzen(Kernwert(w))))" />
+    </div>
+    @if (!string.IsNullOrEmpty(herleitung))
+    {
+        <p class="epos-preiszeile-herleitung">@herleitung</p>
+    }
+    </text>;
 
-    private RenderFragment Schnellwahlknopf(Schnellwahlsatz? satz, Action<double> setzen,
+    /// <summary>
+    /// Eine Zeile der Schnellwahl-Überlagerung: Knopf, Herkunft (Wert, Jahr,
+    /// Quelle) und derselbe Satz in der Abrechnungseinheit.
+    /// </summary>
+    private RenderFragment Schnellwahlzeile(Schnellwahlsatz? satz, Action<double> setzen,
                                             bool energiesteuer)
     {
         if (satz is null) return @<text></text>;
-        return @<button type="button" class="epos-knopf epos-schnellwahl-knopf"
-                        title="@satz.Herkunft" disabled="@(!satz.CtKwh.HasValue)"
-                        @onclick="@(() => Uebernehmen(satz, setzen, energiesteuer))">@satz.Beschriftung</button>;
+        return @<div class="epos-schnellwahl-zeile">
+            <button type="button"
+                    class="@(satz.Empfohlen ? "epos-knopf epos-schnellwahl-knopf epos-schnellwahl-knopf--empfohlen"
+                                            : "epos-knopf epos-schnellwahl-knopf")"
+                    title="@satz.Herkunft" disabled="@(!satz.CtKwh.HasValue)"
+                    @onclick="@(() => Uebernehmen(satz, setzen, energiesteuer))">@satz.Beschriftung</button>
+            <span class="epos-schnellwahl-herkunft">@satz.Herkunft</span>
+            @if (!string.IsNullOrEmpty(satz.Anzeigewert))
+            {
+                <span class="epos-schnellwahl-ziel">@satz.Anzeigewert</span>
+            }
+        </div>;
     }
 
-    /// <summary>Wie <c>SatzUebernehmen</c>: Wert eintragen, Zeile aktiv schalten,
-    /// Herkunft in die Fußzeile.</summary>
+    /// <summary>Wert eintragen, Zeile aktiv schalten, Herkunft in die Fußzeile —
+    /// und die Überlagerung schließen: Sie hat ihren Zweck erfüllt.</summary>
     private void Uebernehmen(Schnellwahlsatz satz, Action<double> setzen, bool energiesteuer)
     {
         if (!satz.CtKwh.HasValue) return;
         setzen(satz.CtKwh.Value);
         if (energiesteuer) Stand.EnergiesteuerAktiv = true; else Stand.CO2Aktiv = true;
         _quelle = satz.Herkunft;
+        _schnellwahlOffen = false;
         Geaendert.InvokeAsync();
     }
 }

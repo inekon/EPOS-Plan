@@ -300,9 +300,6 @@
   <data name="ETV_LBL_PREISBASIS" xml:space="preserve">
     <value>Price basis</value>
   </data>
-  <data name="ETV_LBL_PREIS_JE_KWH" xml:space="preserve">
-    <value>Price per kWh:</value>
-  </data>
   <data name="ETV_LBL_SO2" xml:space="preserve">
     <value>SO2  [g/kWh]</value>
   </data>
@@ -754,10 +751,10 @@
     <value>The emission species catalogue is not available in this database (migration step 57 missing). The three legacy fields apply.</value>
   </data>
   <data name="KDLG_EM_MODUS" xml:space="preserve">
-    <value>CO₂ calculation:</value>
+    <value>Accounting method</value>
   </data>
   <data name="KDLG_EM_MODUS_CO2" xml:space="preserve">
-    <value>CO₂</value>
+    <value>CO₂ direct — real balance, based on net calorific value</value>
   </data>
   <data name="KDLG_EM_MODUS_CO2E" xml:space="preserve">
     <value>CO₂ equivalent (GWP₁₀₀)</value>
@@ -791,12 +788,6 @@
   </data>
   <data name="KDLG_ET_GRUPPE_SONSTIGE" xml:space="preserve">
     <value>Other</value>
-  </data>
-  <data name="KDLG_ET_TAB_EMISSIONEN" xml:space="preserve">
-    <value>Emissions</value>
-  </data>
-  <data name="KDLG_ET_TAB_PREISE" xml:space="preserve">
-    <value>Prices &amp; conversion</value>
   </data>
   <data name="KFLT_SP_APERTUR" xml:space="preserve">
     <value>A_ap</value>
@@ -7658,9 +7649,6 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="KI_REG_NAME_KEINE" xml:space="preserve">
     <value>There is currently nothing to choose from for {0}.</value>
   </data>
-  <data name="KOSTEN_UMRECHNUNG_TITEL" xml:space="preserve">
-    <value>Conversion rules</value>
-  </data>
   <data name="KOSTEN_UMRECHNUNG_SPALTE_NAME" xml:space="preserve">
     <value>Name</value>
   </data>
@@ -8638,12 +8626,6 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_ET_KATALOG_NUR_LESEN" xml:space="preserve">
     <value>Catalogue prices cannot be edited here yet (coming with carrier variants).</value>
   </data>
-  <data name="KDLG_ET_KONTEXT_KATALOG" xml:space="preserve">
-    <value>Context: catalogue (master data)</value>
-  </data>
-  <data name="KDLG_ET_KONTEXT_PROJEKT" xml:space="preserve">
-    <value>Context: project {0}</value>
-  </data>
   <data name="KDLG_ET_KONTEXT_KOMPONENTE" xml:space="preserve">
     <value>for {0}: group {1} only</value>
   </data>
@@ -9617,7 +9599,7 @@ The switch is only shown if the project contains such a generator.</value>
     <value>Save</value>
   </data>
   <data name="BB_GRUPPE_BESTANDTEILE" xml:space="preserve">
-    <value>Fuel price components</value>
+    <value>Price components — transparency, no price effect</value>
   </data>
   <data name="BB_KOMP_ENERGIESTEUER" xml:space="preserve">
     <value>Energy tax</value>
@@ -9629,10 +9611,7 @@ The switch is only shown if the project contains such a generator.</value>
     <value>Grid and metering charge</value>
   </data>
   <data name="BB_KOMP_VERTRIEB" xml:space="preserve">
-    <value>Sales margin</value>
-  </data>
-  <data name="BB_SCHNELLWAHL" xml:space="preserve">
-    <value>Quick pick (catalogue):</value>
+    <value>Procurement and sales</value>
   </data>
   <data name="BB_LABEL_ARBEITSPREIS" xml:space="preserve">
     <value>Work price (carrier dialog)</value>
@@ -19483,5 +19462,68 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_ENK_NETZBEZUG" xml:space="preserve">
     <value>Grid supply, electricity</value>
+  </data>
+  <data name="ETV_BLOCK_PREIS" xml:space="preserve">
+    <value>Price and calorific value</value>
+  </data>
+  <data name="ETV_BLOCK_EMISSIONEN" xml:space="preserve">
+    <value>Emissions — display follows the project's accounting method</value>
+  </data>
+  <data name="ETV_BLOCK_EINHEITEN" xml:space="preserve">
+    <value>Units and conversion</value>
+  </data>
+  <data name="ETV_REGELN_HINWEIS" xml:space="preserve">
+    <value>These rules check the unit chain; the calculation uses the net and gross calorific value.</value>
+  </data>
+  <data name="ETV_HERLEITUNG_PREIS" xml:space="preserve">
+    <value>→ {0}/kWh</value>
+  </data>
+  <data name="ETV_HERLEITUNG_HSHI" xml:space="preserve">
+    <value> · conversion factor Hs/Hi = {0}</value>
+  </data>
+  <data name="ETV_KONTEXT_NETTO" xml:space="preserve">
+    <value>{0} · prices net</value>
+  </data>
+  <data name="ETV_KONTEXT_KATALOG_NETTO" xml:space="preserve">
+    <value>Catalogue · prices net</value>
+  </data>
+  <data name="ETV_KONTEXT_PROJEKTNUMMER" xml:space="preserve">
+    <value>Project {0}</value>
+  </data>
+  <data name="ETV_TITEL_TRAEGER" xml:space="preserve">
+    <value>Energy carrier — {0}</value>
+  </data>
+  <data name="KDLG_EM_FUSSNOTE" xml:space="preserve">
+    <value>Only the quantity chosen in the project is shown — CO₂ or CO₂ equivalent. SO₂ and NOx are still kept, but not shown in this table.</value>
+  </data>
+  <data name="KDLG_EM_MODUS_KATALOG" xml:space="preserve">
+    <value>The accounting method is a project setting and read-only here.</value>
+  </data>
+  <data name="BB_BTN_SCHNELLWAHL" xml:space="preserve">
+    <value>Quick pick from catalogue…</value>
+  </data>
+  <data name="BB_SCHNELLWAHL_TITEL" xml:space="preserve">
+    <value>Quick pick from catalogue</value>
+  </data>
+  <data name="BB_BTN_REST" xml:space="preserve">
+    <value>Apply remainder</value>
+  </data>
+  <data name="BB_REST_VORSCHLAG" xml:space="preserve">
+    <value>Remainder: {0} {1}</value>
+  </data>
+  <data name="BB_KOHAERENZ_OK" xml:space="preserve">
+    <value>Sum of components {0} {1} — matches the energy price</value>
+  </data>
+  <data name="BB_KOHAERENZ_AB" xml:space="preserve">
+    <value>Sum of components {0} {1} — differs by {2} {1}</value>
+  </data>
+  <data name="BB_HINWEIS_OHNE_HI" xml:space="preserve">
+    <value>Without a calorific value the components stay in ct/kWh.</value>
+  </data>
+  <data name="BB_HERLEITUNG_STEUER" xml:space="preserve">
+    <value>{0} {1} (Hs)</value>
+  </data>
+  <data name="BB_HERLEITUNG_CO2" xml:space="preserve">
+    <value>{0} €/t × {1} kg/{2}</value>
   </data>
 </root>

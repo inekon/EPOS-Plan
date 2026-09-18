@@ -1835,6 +1835,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest übernehmen ähnelt.
+        /// </summary>
+        public static string BB_BTN_REST {
+            get {
+                return ResourceManager.GetString("BB_BTN_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die § 53a: {0} ähnelt.
         /// </summary>
         public static string BB_BTN_SATZ_53A {
@@ -1858,6 +1867,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BB_BTN_SATZ_REGEL {
             get {
                 return ResourceManager.GetString("BB_BTN_SATZ_REGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellwahl aus Katalog… ähnelt.
+        /// </summary>
+        public static string BB_BTN_SCHNELLWAHL {
+            get {
+                return ResourceManager.GetString("BB_BTN_SCHNELLWAHL", resourceCulture);
             }
         }
         
@@ -1925,7 +1943,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Preisbestandteile des Brennstoffs ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisbestandteile — Transparenz, ohne Preiswirkung ähnelt.
         /// </summary>
         public static string BB_GRUPPE_BESTANDTEILE {
             get {
@@ -1934,7 +1952,52 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Anteil (BEHG) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/t × {1} kg/{2} ähnelt.
+        /// </summary>
+        public static string BB_HERLEITUNG_CO2 {
+            get {
+                return ResourceManager.GetString("BB_HERLEITUNG_CO2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} (Hs) ähnelt.
+        /// </summary>
+        public static string BB_HERLEITUNG_STEUER {
+            get {
+                return ResourceManager.GetString("BB_HERLEITUNG_STEUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Heizwert stehen die Bestandteile in ct/kWh. ähnelt.
+        /// </summary>
+        public static string BB_HINWEIS_OHNE_HI {
+            get {
+                return ResourceManager.GetString("BB_HINWEIS_OHNE_HI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Bestandteile {0} {1} — weicht um {2} {1} ab ähnelt.
+        /// </summary>
+        public static string BB_KOHAERENZ_AB {
+            get {
+                return ResourceManager.GetString("BB_KOHAERENZ_AB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Bestandteile {0} {1} — deckungsgleich mit dem Arbeitspreis ähnelt.
+        /// </summary>
+        public static string BB_KOHAERENZ_OK {
+            get {
+                return ResourceManager.GetString("BB_KOHAERENZ_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Bestandteil (BEHG) ähnelt.
         /// </summary>
         public static string BB_KOMP_CO2 {
             get {
@@ -1952,7 +2015,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Netz-/Messentgelt ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netz- und Messentgelt ähnelt.
         /// </summary>
         public static string BB_KOMP_NETZENTGELT {
             get {
@@ -1961,7 +2024,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vertrieb ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschaffung und Vertrieb ähnelt.
         /// </summary>
         public static string BB_KOMP_VERTRIEB {
             get {
@@ -2024,11 +2087,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellwahl (Katalog): ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rest: {0} {1} ähnelt.
         /// </summary>
-        public static string BB_SCHNELLWAHL {
+        public static string BB_REST_VORSCHLAG {
             get {
-                return ResourceManager.GetString("BB_SCHNELLWAHL", resourceCulture);
+                return ResourceManager.GetString("BB_REST_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellwahl aus Katalog ähnelt.
+        /// </summary>
+        public static string BB_SCHNELLWAHL_TITEL {
+            get {
+                return ResourceManager.GetString("BB_SCHNELLWAHL_TITEL", resourceCulture);
             }
         }
         
@@ -8600,6 +8672,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheiten und Umrechnung ähnelt.
+        /// </summary>
+        public static string ETV_BLOCK_EINHEITEN {
+            get {
+                return ResourceManager.GetString("ETV_BLOCK_EINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen — Anzeige folgt der Bilanzierungsvorgabe des Projekts ähnelt.
+        /// </summary>
+        public static string ETV_BLOCK_EMISSIONEN {
+            get {
+                return ResourceManager.GetString("ETV_BLOCK_EMISSIONEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preis und Heizwert ähnelt.
+        /// </summary>
+        public static string ETV_BLOCK_PREIS {
+            get {
+                return ResourceManager.GetString("ETV_BLOCK_PREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Katalogwerte übernehmen ähnelt.
         /// </summary>
         public static string ETV_BTN_KATALOGWERTE {
@@ -8668,6 +8767,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_GROESSE_LEISTUNGSPREIS {
             get {
                 return ResourceManager.GetString("ETV_GROESSE_LEISTUNGSPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die  · Umrechnungsfaktor Hs/Hi = {0} ähnelt.
+        /// </summary>
+        public static string ETV_HERLEITUNG_HSHI {
+            get {
+                return ResourceManager.GetString("ETV_HERLEITUNG_HSHI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → {0}/kWh ähnelt.
+        /// </summary>
+        public static string ETV_HERLEITUNG_PREIS {
+            get {
+                return ResourceManager.GetString("ETV_HERLEITUNG_PREIS", resourceCulture);
             }
         }
         
@@ -8780,6 +8897,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog · Preise netto ähnelt.
+        /// </summary>
+        public static string ETV_KONTEXT_KATALOG_NETTO {
+            get {
+                return ResourceManager.GetString("ETV_KONTEXT_KATALOG_NETTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Preise netto ähnelt.
+        /// </summary>
+        public static string ETV_KONTEXT_NETTO {
+            get {
+                return ResourceManager.GetString("ETV_KONTEXT_NETTO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt {0} ähnelt.
+        /// </summary>
+        public static string ETV_KONTEXT_PROJEKTNUMMER {
+            get {
+                return ResourceManager.GetString("ETV_KONTEXT_PROJEKTNUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis ähnelt.
         /// </summary>
         public static string ETV_LBL_ARBEITSPREIS {
@@ -8875,15 +9019,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_LBL_PREISBASIS {
             get {
                 return ResourceManager.GetString("ETV_LBL_PREISBASIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Preis pro kWh: ähnelt.
-        /// </summary>
-        public static string ETV_LBL_PREIS_JE_KWH {
-            get {
-                return ResourceManager.GetString("ETV_LBL_PREIS_JE_KWH", resourceCulture);
             }
         }
         
@@ -8987,6 +9122,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert und Brennwert. ähnelt.
+        /// </summary>
+        public static string ETV_REGELN_HINWEIS {
+            get {
+                return ResourceManager.GetString("ETV_REGELN_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitspreis ähnelt.
         /// </summary>
         public static string ETV_SP_ARBEITSPREIS {
@@ -9064,6 +9208,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_TITEL_HISTORIE {
             get {
                 return ResourceManager.GetString("ETV_TITEL_HISTORIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger — {0} ähnelt.
+        /// </summary>
+        public static string ETV_TITEL_TRAEGER {
+            get {
+                return ResourceManager.GetString("ETV_TITEL_TRAEGER", resourceCulture);
             }
         }
         
@@ -20172,6 +20325,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Angezeigt wird nur die im Projekt gewählte Größe — CO₂ oder CO₂-Äquivalent. SO₂ und NOx werden weiterhin geführt, aber nicht in dieser Tabelle gezeigt. ähnelt.
+        /// </summary>
+        public static string KDLG_EM_FUSSNOTE {
+            get {
+                return ResourceManager.GetString("KDLG_EM_FUSSNOTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Katalog… ähnelt.
         /// </summary>
         public static string KDLG_EM_KATALOG {
@@ -20190,7 +20352,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Berechnung: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzierungsmethode ähnelt.
         /// </summary>
         public static string KDLG_EM_MODUS {
             get {
@@ -20199,7 +20361,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ direkt — reale Bilanz, heizwertbezogen ähnelt.
         /// </summary>
         public static string KDLG_EM_MODUS_CO2 {
             get {
@@ -20213,6 +20375,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_EM_MODUS_CO2E {
             get {
                 return ResourceManager.GetString("KDLG_EM_MODUS_CO2E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bilanzierungsmethode ist eine Projektvorgabe und hier nur lesbar. ähnelt.
+        /// </summary>
+        public static string KDLG_EM_MODUS_KATALOG {
+            get {
+                return ResourceManager.GetString("KDLG_EM_MODUS_KATALOG", resourceCulture);
             }
         }
         
@@ -20253,7 +20424,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
         /// </summary>
         public static string KDLG_EM_SP_HERKUNFT {
             get {
@@ -20622,15 +20793,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kontext: Katalog (Stammdaten) ähnelt.
-        /// </summary>
-        public static string KDLG_ET_KONTEXT_KATALOG {
-            get {
-                return ResourceManager.GetString("KDLG_ET_KONTEXT_KATALOG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die für {0}: nur Gruppe {1} ähnelt.
         /// </summary>
         public static string KDLG_ET_KONTEXT_KOMPONENTE {
@@ -20645,15 +20807,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_ET_KONTEXT_OHNE_TRAEGER {
             get {
                 return ResourceManager.GetString("KDLG_ET_KONTEXT_OHNE_TRAEGER", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kontext: Projekt {0} ähnelt.
-        /// </summary>
-        public static string KDLG_ET_KONTEXT_PROJEKT {
-            get {
-                return ResourceManager.GetString("KDLG_ET_KONTEXT_PROJEKT", resourceCulture);
             }
         }
         
@@ -20807,24 +20960,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_ET_STROM_ZUGEORDNET {
             get {
                 return ResourceManager.GetString("KDLG_ET_STROM_ZUGEORDNET", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen ähnelt.
-        /// </summary>
-        public static string KDLG_ET_TAB_EMISSIONEN {
-            get {
-                return ResourceManager.GetString("KDLG_ET_TAB_EMISSIONEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Preise &amp; Umrechnung ähnelt.
-        /// </summary>
-        public static string KDLG_ET_TAB_PREISE {
-            get {
-                return ResourceManager.GetString("KDLG_ET_TAB_PREISE", resourceCulture);
             }
         }
         
@@ -30680,15 +30815,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT {
             get {
                 return ResourceManager.GetString("KOSTEN_UMRECHNUNG_SPEICHERN_ABGELEHNT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Umrechnungsregeln ähnelt.
-        /// </summary>
-        public static string KOSTEN_UMRECHNUNG_TITEL {
-            get {
-                return ResourceManager.GetString("KOSTEN_UMRECHNUNG_TITEL", resourceCulture);
             }
         }
         

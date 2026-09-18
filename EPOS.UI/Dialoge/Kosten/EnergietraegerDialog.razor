@@ -48,7 +48,7 @@
     <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
         @if (TitelAnzeigen)
         {
-            <h1 class="epos-dialog-titel">@TitelText</h1>
+            <h1 class="epos-dialog-titel">@Kopftitel</h1>
         }
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         @if (TitelAnzeigen)
@@ -175,6 +175,12 @@
                                              BeschaffungVorschlag="@_ansicht.BeschaffungVorschlag"
                                              BestandteilAnzeige="@_ansicht.BestandteilAnzeige"
                                              ArbeitspreisCtKwh="@_ansicht.ArbeitspreisCtKwh"
+                                             BestandteilHeizwert="@_ansicht.BestandteilHeizwert"
+                                             BestandteilEinheit="@_ansicht.BestandteilEinheit"
+                                             BestandteilHinweis="@_ansicht.BestandteilHinweis"
+                                             HerleitungEnergiesteuer="@_ansicht.HerleitungEnergiesteuer"
+                                             HerleitungCo2="@_ansicht.HerleitungCo2"
+                                             VertriebVorschlag="@_ansicht.VertriebVorschlag"
                                              SatzRegelfall="@_ansicht.SatzRegelfall"
                                              SatzReduziert="@_ansicht.SatzReduziert"
                                              SatzRegel="@_ansicht.SatzRegel" Satz53a="@_ansicht.Satz53a"
@@ -488,6 +494,27 @@
     // =====================================================================
 
     [Parameter] public string TitelText { get; set; } = "Energieträgerverwaltung";
+
+    /// <summary>
+    /// Die Titelvorlage MIT Trägername („Energieträger — {0}", ET-D). Der Kopf
+    /// nennt damit den Träger, an dem gerade gearbeitet wird; ohne gewählten
+    /// Träger bleibt es bei <see cref="TitelText"/>. Die Rückfragen tragen
+    /// weiterhin <see cref="TitelText"/> — ein Titel, der mit der Auswahl
+    /// wechselt, taugt nicht als Überschrift einer Ja/Nein-Frage.
+    /// </summary>
+    [Parameter] public string VorlageTitelTraeger { get; set; } = "Energieträger — {0}";
+
+    /// <summary>Was im Dialogkopf steht.</summary>
+    private string Kopftitel
+    {
+        get
+        {
+            string name = _ansicht.StammName ?? "";
+            return _ansicht.Stand is null || name.Trim().Length == 0
+                ? TitelText
+                : string.Format(VorlageTitelTraeger, name);
+        }
+    }
 
     /// <summary>
     /// Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz? Hausregel
