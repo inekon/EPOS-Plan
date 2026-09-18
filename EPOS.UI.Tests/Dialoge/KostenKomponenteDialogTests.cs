@@ -1556,4 +1556,202 @@ public class KostenKomponenteDialogTests : BunitContext
 
         NurEinKreuz(cut);
     }
+
+    // =====================================================================
+    // U8 (Stufe S2) — „Nutzungsdauern vorbelegen…"
+    // =====================================================================
+
+    /// <summary>Kein Delegat, kein Knopf (Hausregel).</summary>
+    [Fact]
+    public void Ohne_Delegat_fehlt_der_Knopf_Nutzungsdauern_vorbelegen()
+    {
+        var cut = Zeige();
+
+        Assert.Equal(3, cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button").Length);
+    }
+
+    /// <summary>
+    /// U8: Der vierte Knopf der Raster-Leiste füllt die leeren Nutzungsdauern und
+    /// nennt die Zahl in der Statuszeile. Ohne überschreibbare Zeilen folgt keine
+    /// Rückfrage.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_belegt_die_leeren_Nutzungsdauern_vor()
+    {
+        bool? gefragt = null;
+        KostenKomponenteStand mit = Standard();
+        mit.NutzungsdauerVorbelegbar = true;
+
+        var cut = Zeige(p => p
+            .Add(x => x.NutzungsdauerVorbelegen, (bool u) =>
+            {
+                gefragt = u;
+                return new NutzungsdauerVorbelegung(2, 0);
+            })
+            .Add(x => x.VorbelegenStatus, "{0} vorbelegt"), stand: mit);
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[3].Click();
+
+        Assert.False(gefragt);
+        Assert.Equal("2 vorbelegt", cut.Instance.Status);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    /// <summary>
+    /// Anwenderentscheid ND‑Q4 (b): Gepflegte Werte bleiben stehen, bis der Anwender
+    /// das Überschreiben bestätigt — die Rückfrage nennt ihre Anzahl, und erst ein
+    /// „Ja" ruft den Delegaten ein zweites Mal.
+    /// </summary>
+    [Fact]
+    public void Gefuellte_Nutzungsdauern_werden_erst_nach_der_Rueckfrage_ueberschrieben()
+    {
+        var rufe = new List<bool>();
+        KostenKomponenteStand mit = Standard();
+        mit.NutzungsdauerVorbelegbar = true;
+
+        var cut = Zeige(p => p
+            .Add(x => x.NutzungsdauerVorbelegen, (bool u) =>
+            {
+                rufe.Add(u);
+                return u ? new NutzungsdauerVorbelegung(3, 0)
+                         : new NutzungsdauerVorbelegung(1, 3);
+            })
+            .Add(x => x.VorbelegenStatus, "{0} vorbelegt")
+            .Add(x => x.VorbelegenFrage, "{0} bereits gepflegt — überschreiben?"),
+            stand: mit);
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[3].Click();
+
+        Assert.Equal(new[] { false }, rufe);
+        Assert.Contains("3 bereits gepflegt", cut.Find(".epos-rueckfrage").TextContent);
+
+        cut.FindAll(".epos-rueckfrage .epos-knopf")[0].Click();          // Ja
+
+        Assert.Equal(new[] { false, true }, rufe);
+        Assert.Equal("4 vorbelegt", cut.Instance.Status);
+    }
+
+    /// <summary>Gibt es nichts vorzubelegen, sagt es der Dialog — statt still nichts zu tun.</summary>
+    [Fact]
+    public void Ohne_Vorgabe_meldet_der_Knopf_dass_es_nichts_vorzubelegen_gibt()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.NutzungsdauerVorbelegbar = true;
+
+        var cut = Zeige(p => p
+            .Add(x => x.NutzungsdauerVorbelegen,
+                 (bool _) => new NutzungsdauerVorbelegung(0, 0))
+            .Add(x => x.VorbelegenKeine, "nichts vorzubelegen"), stand: mit);
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[3].Click();
+
+        Assert.Equal("nichts vorzubelegen", cut.Instance.Meldung);
+    }
+
+    /// <summary>Auf einer Auslieferungsvorlage ist der Knopf gesperrt.</summary>
+    [Fact]
+    public void Auf_einer_Auslieferungsvorlage_ist_der_Knopf_gesperrt()
+    {
+        KostenKomponenteStand nurLesen = Standard(nurLesen: true);
+        nurLesen.NutzungsdauerVorbelegbar = false;
+
+        var cut = Zeige(p => p.Add(x => x.NutzungsdauerVorbelegen,
+                                   (bool _) => new NutzungsdauerVorbelegung(0, 0)),
+                        stand: nurLesen);
+
+        Assert.True(cut.FindAll(".epos-leiste")[0]
+                       .QuerySelectorAll("button")[3].HasAttribute("disabled"));
+    }
+
+    // =====================================================================
+    // U30 — die Tafel „Ersatz und Restwert"
+    // =====================================================================
+
+    private KostenKomponenteStand MitTafel()
+    {
+        KostenKomponenteStand stand = Standard(projekt: true);
+        stand.SpalteRestwert = "Restwert Jahr 20";
+        stand.ErsatzRestwertHinweis =
+            "Betrachtungszeitraum 20 a über der Vorgabe 15 a der Technik Blockheizkraftwerk.";
+        stand.ErsatzRestwert = new[]
+        {
+            new ErsatzRestwertZeile("BHKW-Modul", false, "196.080,00", "15 a", "Jahr 15",
+                                    "Barwert 125.856", "130.720,00", "Barwert 72.376",
+                                    "Vorgabe der Technik"),
+            new ErsatzRestwertZeile("Planung", false, "21.888,40", "—", "— läuft wie T",
+                                    "", "—", "", "keine Dauer gepflegt"),
+            new ErsatzRestwertZeile("Blockheizkraftwerk", true, "217.968,40", "1 von 2",
+                                    "Jahr 15 · 196.080,00", "Barwert 125.856", "130.720,00",
+                                    "Barwert 72.376", "Vorgabe der Technik 15 a")
+        };
+        return stand;
+    }
+
+    /// <summary>U30: Die Tafel steht unter dem Raster, je Zeile eine Tabellenzeile.</summary>
+    [Fact]
+    public void Die_Tafel_Ersatz_und_Restwert_zeigt_ihre_Zeilen()
+    {
+        var cut = Zeige(stand: MitTafel());
+
+        var zeilen = cut.FindAll(".epos-kdlg-ersatz tbody tr");
+        Assert.Equal(3, zeilen.Count);
+        Assert.Contains("196.080,00", zeilen[0].TextContent);
+        Assert.Contains("Barwert 125.856", zeilen[0].TextContent);
+        Assert.Contains("keine Dauer gepflegt", zeilen[1].TextContent);
+    }
+
+    /// <summary>Die Summenzeile der Komponente ist als solche gekennzeichnet.</summary>
+    [Fact]
+    public void Die_Summenzeile_der_Tafel_traegt_ihre_Klasse()
+    {
+        var cut = Zeige(stand: MitTafel());
+
+        Assert.Single(cut.FindAll(".epos-kdlg-ersatz--summe"));
+        Assert.Contains("1 von 2", cut.Find(".epos-kdlg-ersatz--summe").TextContent);
+    }
+
+    /// <summary>Die Spalteüberschrift des Restwerts nennt T — sie kommt aus dem Stand.</summary>
+    [Fact]
+    public void Der_Spaltenkopf_des_Restwerts_nennt_den_Betrachtungszeitraum()
+    {
+        var cut = Zeige(stand: MitTafel());
+
+        Assert.Contains(cut.FindAll(".epos-kdlg-ersatz thead th"),
+                        e => e.TextContent == "Restwert Jahr 20");
+    }
+
+    /// <summary>
+    /// Der Hinweis steht ÜBER der Tafel und ist ein Prüfauftrag, kein Fehler —
+    /// deshalb die Stufe „Hinweis".
+    /// </summary>
+    [Fact]
+    public void Der_Hinweis_steht_ueber_der_Tafel()
+    {
+        var cut = Zeige(stand: MitTafel());
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner"),
+                        e => e.TextContent.Contains("Vorgabe 15 a"));
+    }
+
+    /// <summary>Ohne Zeilen keine Tafel — Betriebsseite und Katalogkontext.</summary>
+    [Fact]
+    public void Ohne_Zeilen_bleibt_die_Tafel_weg()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-kdlg-ersatz"));
+    }
+
+    /// <summary>U8: Die Herleitung der Nutzungsdauer reicht der Wirt an die Zeile durch.</summary>
+    [Fact]
+    public void Die_Nutzungsdauer_Herleitung_erreicht_die_Zeile()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.Zeilen[0].NutzungsdauerHerleitung = "15 a · Vorgabe der Technik";
+
+        var cut = Zeige(stand: mit);
+
+        Assert.Contains(cut.FindAll(".epos-zr-herleitung"),
+                        e => e.TextContent == "15 a · Vorgabe der Technik");
+    }
 }

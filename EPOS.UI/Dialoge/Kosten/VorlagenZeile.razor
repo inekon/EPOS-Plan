@@ -119,6 +119,16 @@
         {
             <Zahlenfeld Wert="@Nutzungsdauer" WertChanged="@NutzungsdauerChanged"
                         Aktiv="@(Schreibbar && !Neuzeile)" />
+            @* U8 (Stufe S2): WOHER die Nutzungsdauer kommt, steht sichtbar unter
+               ihr - "15 a . Vorgabe der Technik". Bis dahin stand im Feld eine
+               Zahl ohne Herkunft, und niemand konnte sehen, ob sie aus der
+               AfA-Tabelle stammt oder von Hand gesetzt ist. Der Text kommt fertig
+               aus dem Kern (NutzungsdauerCtrl.Herleitungszeile); leer heisst
+               keine Zeile. *@
+            @if (!string.IsNullOrEmpty(NutzungsdauerHerleitung))
+            {
+                <span class="epos-herleitung epos-zr-herleitung">@NutzungsdauerHerleitung</span>
+            }
         }
     </div>
 
@@ -179,6 +189,14 @@
 
     /// <summary>Zeigt die Spalte Nutzungsdauer (<c>txtNutzung.Visible = istInvest</c>).</summary>
     [Parameter] public bool MitNutzungsdauer { get; set; }
+
+    /// <summary>
+    /// U8 (Stufe S2): Die HERLEITUNGSZEILE unter der Nutzungsdauer - "15 a .
+    /// Vorgabe der Technik", ". AfA-Tabelle: <Positionsart>" oder ". eigener
+    /// Wert". Sie kommt fertig aus dem Kern
+    /// (<c>NutzungsdauerCtrl.Herleitungszeile</c>); leer heisst keine Zeile.
+    /// </summary>
+    [Parameter] public string NutzungsdauerHerleitung { get; set; } = "";
 
     // ---- Zustand --------------------------------------------------------
 

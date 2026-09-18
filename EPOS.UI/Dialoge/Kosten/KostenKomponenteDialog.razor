@@ -158,6 +158,7 @@
                                PflichtKurztext="@PflichtKurztext"
                                Nutzungsdauer="@zeile.Nutzungsdauer"
                                NutzungsdauerChanged="@(w => Feld(zeile, () => zeile.Nutzungsdauer = w))"
+                               NutzungsdauerHerleitung="@zeile.NutzungsdauerHerleitung"
                                MitNutzungsdauer="@_stand.MitNutzungsdauer"
                                MitWorstBest="@_stand.MitWorstBest"
                                Schreibbar="@zeile.Schreibbar"
@@ -235,11 +236,79 @@
         </Gruppenkopf>
     }
 
+    @* U30: DIE TAFEL „ERSATZ UND RESTWERT". Der Dialog kannte die Nutzungsdauer je
+       Zeile, rechnete aber weder Ersatzjahr noch Restwert vor — beides stand
+       nirgends in der Anwendung. Gerechnet wird mit DENSELBEN Funktionen wie die
+       Kapitalwertrechnung (KapitalwertRechner.Ersatz), gesetzt wird im Kern
+       (ErsatzRestwertTafel); die Oberfläche zeigt fertige Zeilen. Leere Liste =
+       keine Tafel (Betriebsseite, Katalogkontext). *@
+    @if (_stand.ErsatzRestwert.Count > 0)
+    {
+        <Gruppenkopf Titel="@GruppeErsatzTitel">
+            <KindInhalt>
+                @* Der Hinweis steht ÜBER der Tafel: Er ist ein Prüfauftrag, keine
+                   Fehlermeldung — eine Planungsleistung wird zu Recht nicht ersetzt,
+                   eine Hydraulik ohne gepflegte Dauer würde es zu Unrecht nicht. *@
+                @if (!string.IsNullOrEmpty(_stand.ErsatzRestwertHinweis))
+                {
+                    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_stand.ErsatzRestwertHinweis" />
+                }
+                <table class="epos-kdlg-ersatz">
+                    <thead>
+                        <tr>
+                            <th scope="col">@SpalteErsatzPosition</th>
+                            <th scope="col" class="epos-kdlg-ersatz--zahl">@SpalteErsatzBetrag</th>
+                            <th scope="col" class="epos-kdlg-ersatz--zahl">@SpalteErsatzDauer</th>
+                            <th scope="col">@SpalteErsatzErsatz</th>
+                            <th scope="col" class="epos-kdlg-ersatz--zahl">@_stand.SpalteRestwert</th>
+                            <th scope="col">@SpalteErsatzHerkunft</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (ErsatzRestwertZeile e in _stand.ErsatzRestwert)
+                        {
+                            <tr class="@(e.IstSumme ? "epos-kdlg-ersatz--summe" : "")">
+                                <td>@e.Position</td>
+                                <td class="epos-kdlg-ersatz--zahl">@e.Betrag</td>
+                                <td class="epos-kdlg-ersatz--zahl">@e.Dauer</td>
+                                <td>
+                                    @e.Ersatz
+                                    @if (!string.IsNullOrEmpty(e.ErsatzBarwert))
+                                    {
+                                        <span class="epos-herleitung">@e.ErsatzBarwert</span>
+                                    }
+                                </td>
+                                <td class="epos-kdlg-ersatz--zahl">
+                                    @e.Restwert
+                                    @if (!string.IsNullOrEmpty(e.RestwertBarwert))
+                                    {
+                                        <span class="epos-herleitung">@e.RestwertBarwert</span>
+                                    }
+                                </td>
+                                <td>@e.Herkunft</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" disabled="@(!_stand.PositionNeuMoeglich)"
                 @onclick="PositionAnlegenMitVorgabe">@PositionNeuText</button>
         <button type="button" class="epos-knopf" @onclick="UebernahmeOeffnen">@UebernahmeText</button>
         <button type="button" class="epos-knopf" @onclick="KatalogOeffnen">@KatalogText</button>
+        @* U8 (Stufe S2, Anwenderentscheid ND‑Q4 (b)): NUR AUF KNOPFDRUCK. Nichts
+           ändert eine gerechnete Wirtschaftlichkeit ohne Zutun — der Knopf füllt
+           LEERE Nutzungsdauern und fragt nach, bevor er gefüllte überschreibt.
+           Ohne Delegat kein Knopf (Hausregel). *@
+        @if (NutzungsdauerVorbelegen is not null)
+        {
+            <button type="button" class="epos-knopf"
+                    disabled="@(!_stand.NutzungsdauerVorbelegbar)"
+                    @onclick="VorbelegenAngefordert">@VorbelegenText</button>
+        }
     </div>
 
         </KindInhalt>
@@ -398,6 +467,15 @@
     /// </summary>
     [Parameter] public Func<KostenPositionZeile, bool>? IstPflicht { get; set; }
 
+    /// <summary>
+    /// U8 (Stufe S2): Belegt die Nutzungsdauern aus der AfA-Tabelle vor.
+    /// <c>true</c> überschreibt AUCH gepflegte Werte — das geschieht nur nach der
+    /// Rückfrage (Anwenderentscheid ND‑Q4 (b)). Geschrieben wird nichts: Die
+    /// Vorbelegung lebt wie jede andere Eingabe bis „Speichern" im Objekt
+    /// (Ä12/Ä19). Ohne Delegat bleibt der Knopf weg.
+    /// </summary>
+    [Parameter] public Func<bool, NutzungsdauerVorbelegung>? NutzungsdauerVorbelegen { get; set; }
+
     // ---- Unterdialoge: Gaben und Antworten -------------------------------
 
     /// <summary>Parameter des Worst/Best-Dialogs zu einer Zeile (W1.3).</summary>
@@ -491,6 +569,32 @@
     [Parameter] public string SpalteEndenergieKwh { get; set; } = "Endenergiebedarf [kWh/a]";
     [Parameter] public string SpalteEndenergieEuro { get; set; } = "Endenergiekosten [€/a]";
     [Parameter] public string SpalteEndenergieBasis { get; set; } = "Herkunft";
+
+    /// <summary>U30: Kopf der Gruppe „Ersatz und Restwert" unter dem Raster.</summary>
+    [Parameter] public string GruppeErsatzTitel { get; set; } = "Ersatz und Restwert";
+
+    [Parameter] public string SpalteErsatzPosition { get; set; } = "Komponente / Position";
+    [Parameter] public string SpalteErsatzBetrag { get; set; } = "Betrag [€]";
+    [Parameter] public string SpalteErsatzDauer { get; set; } = "Nutzungsdauer n";
+    [Parameter] public string SpalteErsatzErsatz { get; set; } = "Ersatzbeschaffung";
+    [Parameter] public string SpalteErsatzHerkunft { get; set; } = "Herkunft der Dauer";
+
+    /// <summary>U8: Beschriftung des Knopfes neben „+ Position hinzufügen".</summary>
+    [Parameter] public string VorbelegenText { get; set; } = "Nutzungsdauern vorbelegen…";
+
+    /// <summary>U8: Bericht in der Statuszeile nach dem Vorbelegen ({0} = Anzahl).</summary>
+    [Parameter] public string VorbelegenStatus { get; set; }
+        = "{0} Nutzungsdauer(n) aus der AfA-Tabelle vorbelegt.";
+
+    /// <summary>U8: Meldung, wenn es nichts vorzubelegen gibt.</summary>
+    [Parameter] public string VorbelegenKeine { get; set; }
+        = "Es gibt nichts vorzubelegen: Jede Position trägt eine Nutzungsdauer, "
+        + "oder die Technik hat keine Vorgabe.";
+
+    /// <summary>U8: Die Rückfrage vor dem Überschreiben ({0} = Anzahl).</summary>
+    [Parameter] public string VorbelegenFrage { get; set; }
+        = "{0} Position(en) tragen bereits eine Nutzungsdauer. Sollen auch diese aus "
+        + "der AfA-Tabelle überschrieben werden?";
 
     /// <summary>U31: Wozu die Gruppe da ist — die Bemessungen, die an ihr hängen.</summary>
     [Parameter] public string HinweisEndenergie { get; set; }
@@ -852,6 +956,49 @@
         // Die neue Position muss aus der Hülle kommen (Einheit, Betragstext, Kette,
         // Kurztexte) — deshalb neu laden, aber MIT den Eingaben der übrigen Zeilen.
         KontextLaden(_stand.VarianteId, eingabenUebernehmen: true);
+    }
+
+    /// <summary>
+    /// U8 (Stufe S2, Anwenderentscheid ND‑Q4 (b)): „Nutzungsdauern vorbelegen…".
+    ///
+    /// <para>Zwei Schritte in einem Klick, und beide sagen, was sie tun: Erst
+    /// werden die LEEREN Felder gefüllt und die Zahl in der Statuszeile genannt;
+    /// tragen danach noch Positionen einen Wert, der von der Vorgabe abweicht,
+    /// folgt die Rückfrage mit ihrer Anzahl. Ohne Bestätigung bleibt jeder
+    /// gepflegte Wert stehen — nichts ändert eine gerechnete Wirtschaftlichkeit
+    /// still.</para>
+    /// </summary>
+    private void VorbelegenAngefordert()
+    {
+        if (NutzungsdauerVorbelegen is null) return;
+
+        NutzungsdauerVorbelegung ergebnis = NutzungsdauerVorbelegen(false);
+        SummenNachziehen();
+
+        if (ergebnis.Gefuellt == 0 && ergebnis.Belegt == 0)
+        {
+            Melden(VorbelegenKeine, WarnStufe.Hinweis);
+            return;
+        }
+
+        Melden("");
+        _status = ergebnis.Gefuellt > 0
+            ? string.Format(VorbelegenStatus, ergebnis.Gefuellt) : _status;
+
+        if (ergebnis.Belegt == 0) return;
+
+        _frage = string.Format(VorbelegenFrage, ergebnis.Belegt);
+        _frageJa = () =>
+        {
+            if (NutzungsdauerVorbelegen is not null)
+            {
+                NutzungsdauerVorbelegung zweiter = NutzungsdauerVorbelegen(true);
+                SummenNachziehen();
+                _status = string.Format(VorbelegenStatus,
+                                        ergebnis.Gefuellt + zweiter.Gefuellt);
+            }
+            return Task.CompletedTask;
+        };
     }
 
     /// <summary>

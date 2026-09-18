@@ -256,4 +256,85 @@ public class VorlagenPositionDialogTests : BunitContext
         Assert.True(cut.FindAll(".epos-formularraster .epos-feld").Count >= 4);
         Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count >= 2);
     }
+
+    // =====================================================================
+    // U8 (Stufe S2) — die Positionsart
+    // =====================================================================
+
+    private static readonly (int Id, string Text)[] Positionsarten =
+    {
+        (6, "Modul"), (7, "Abgasanlage"), (9, "MSR"), (27, "Montage")
+    };
+
+    /// <summary>
+    /// U8: Ohne Nutzungsdauertabelle gibt die Hülle eine leere Liste — dann steht
+    /// das Feld gar nicht erst da, und der Dialog ist der von vorher.
+    /// </summary>
+    [Fact]
+    public void Ohne_Positionsarten_bleibt_das_Feld_weg()
+    {
+        var cut = Aufbauen(_ => { });
+
+        Assert.Single(cut.FindAll("select"));
+        Assert.Null(cut.Instance.Positionsart);
+    }
+
+    /// <summary>Mit Liste steht eine zweite Klappliste da, samt leerer Zeile.</summary>
+    [Fact]
+    public void Mit_Positionsarten_steht_eine_zweite_Klappliste_da()
+    {
+        var cut = Render<VorlagenPositionDialog>(p => p
+            .Add(x => x.Kostenarten, Kostenarten)
+            .Add(x => x.Positionsarten, Positionsarten)
+            .Add(x => x.PositionsartId, 9)
+            .Add(x => x.Geschlossen, (VorlagenPositionErgebnis? _) => { }));
+
+        Assert.Equal(2, cut.FindAll("select").Count);
+        Assert.Equal(9, cut.Instance.Positionsart);
+        // Die leere Zeile plus die vier Arten.
+        Assert.Equal(5, cut.FindAll("select")[1].QuerySelectorAll("option").Length);
+    }
+
+    /// <summary>
+    /// U8: Eine Positionsart, die es in dieser Technik nicht (mehr) gibt, fällt auf
+    /// „keine" zurück — dieselbe Vorsicht wie bei der Kostenart.
+    /// </summary>
+    [Fact]
+    public void Eine_unbekannte_Positionsart_faellt_auf_keine_zurueck()
+    {
+        var cut = Render<VorlagenPositionDialog>(p => p
+            .Add(x => x.Kostenarten, Kostenarten)
+            .Add(x => x.Positionsarten, Positionsarten)
+            .Add(x => x.PositionsartId, 999)
+            .Add(x => x.Geschlossen, (VorlagenPositionErgebnis? _) => { }));
+
+        Assert.Null(cut.Instance.Positionsart);
+    }
+
+    /// <summary>OK meldet die gewählte Positionsart; die leere Zeile meldet <c>null</c>.</summary>
+    [Fact]
+    public void OK_meldet_die_gewaehlte_Positionsart()
+    {
+        VorlagenPositionErgebnis? ergebnis = null;
+        var cut = Render<VorlagenPositionDialog>(p => p
+            .Add(x => x.Kostenarten, Kostenarten)
+            .Add(x => x.Bezeichnung, "Abgasanlage")
+            .Add(x => x.KostenartId, 0)
+            .Add(x => x.Positionsarten, Positionsarten)
+            .Add(x => x.PositionsartId, null)
+            .Add(x => x.Geschlossen, (VorlagenPositionErgebnis? e) => ergebnis = e));
+
+        cut.FindAll("select")[1].Change("7");
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.NotNull(ergebnis);
+        Assert.Equal(7, ergebnis!.PositionsartId);
+
+        ergebnis = null;
+        cut.FindAll("select")[1].Change("");
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.NotNull(ergebnis);
+        Assert.Null(ergebnis!.PositionsartId);
+    }
 }

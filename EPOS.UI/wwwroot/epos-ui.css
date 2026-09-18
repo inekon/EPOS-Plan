@@ -2045,6 +2045,44 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     font-variant-numeric: tabular-nums;
 }
 
+/* U30: Die Tafel „Ersatz und Restwert" unter dem Raster der Investitionsseite.
+   Dieselbe Bauart wie die Endenergietafel - schlichte Tabelle, sechs Spalten,
+   eine Handvoll Zeilen. Die Summenzeile der Komponente traegt eine eigene Klasse
+   statt fetter Schrift allein: Sie muss auch bei erzwungenen Farben
+   (forced-colors) von den Positionszeilen zu trennen sein, und eine Linie
+   traegt das, wo eine Hintergrundfarbe verschwindet. */
+.epos-kdlg-ersatz {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.epos-kdlg-ersatz th,
+.epos-kdlg-ersatz td {
+    padding: 4px 8px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-kdlg-ersatz--zahl {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.epos-kdlg-ersatz--summe th,
+.epos-kdlg-ersatz--summe td {
+    font-weight: 600;
+    border-top: 2px solid var(--epos-rahmen);
+}
+
+/* Der Barwert steht als leise Zeile UNTER der Zahl, nicht daneben: Die Spalte
+   ist schmal, und zwei Zahlen nebeneinander liest niemand als Betrag und
+   Barwert. */
+.epos-kdlg-ersatz .epos-herleitung {
+    display: block;
+    margin: 0;
+}
+
 .epos-ertragbonus {
     display: flex;
     flex-direction: column;

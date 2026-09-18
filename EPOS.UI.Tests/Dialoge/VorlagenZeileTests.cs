@@ -377,4 +377,36 @@ public class VorlagenZeileTests : BunitContext
                      cut.Find(".epos-zr-text").GetAttribute("title"));
         Assert.Single(cut.FindAll(".epos-zr-herleitung"));
     }
+
+    // =====================================================================
+    // U8 (Stufe S2) — die Herleitung UNTER der Nutzungsdauer
+    // =====================================================================
+
+    /// <summary>
+    /// U8: Woher die Nutzungsdauer kommt, steht sichtbar unter ihr — fertig aus
+    /// dem Kern, die Zeile formatiert nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Nutzungsdauer_traegt_ihre_Herleitung_unter_sich()
+    {
+        var cut = Zeige(p => p.Add(x => x.NutzungsdauerHerleitung,
+                                   "15 a · Vorgabe der Technik"));
+
+        Assert.Contains(cut.FindAll(".epos-zr-herleitung"),
+                        e => e.TextContent == "15 a · Vorgabe der Technik");
+    }
+
+    /// <summary>Ohne Text keine Zeile — und auf der Betriebsseite auch kein Feld.</summary>
+    [Fact]
+    public void Ohne_Nutzungsdauerspalte_bleibt_die_Herleitung_weg()
+    {
+        var cut = Render<VorlagenZeile>(p => p
+            .Add(x => x.Bemessungen, BEMESSUNGEN)
+            .Add(x => x.Bezeichnung, "Wartung")
+            .Add(x => x.BemessungId, 0)
+            .Add(x => x.MitNutzungsdauer, false)
+            .Add(x => x.NutzungsdauerHerleitung, "15 a · Vorgabe der Technik"));
+
+        Assert.Empty(cut.FindAll(".epos-zr-herleitung"));
+    }
 }
