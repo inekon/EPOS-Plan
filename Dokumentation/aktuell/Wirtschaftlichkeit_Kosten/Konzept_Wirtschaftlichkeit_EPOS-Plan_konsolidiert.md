@@ -69,7 +69,7 @@ verändert oder nur erklärt.
 | Einspeiseerlös (nominal konstant) | B2-Preisbestandteile der Energieträger |
 | KWKG-Zuschlag · KWKG-Pauschale § 9 | Strommix-Rückfallhinweis |
 | Energiesteuer-Gutschrift | |
-| Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 *(heute Erlös — siehe B-1)* | |
+| Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 *(Ausweis; Erlös nur auf ausdrückliche Wahl)* | |
 | Stromsteuer-Entlastung § 9b | |
 | PV-Vergütungsreihe · Restwert | |
 
@@ -1154,21 +1154,37 @@ Sätze: Erdgas 5,50 / 4,42 / 1,38 €/MWh · Heizöl EL 61,35 / 40,35 / 15,34 �
 Die Mengen beider Vorschriften sind **disjunkt** (Eigenverbrauch gegen Netzbezug) — untereinander
 keine Doppelzählung.
 
-⚠ **Befund B-1 — die offene Frage dieses Felds.** § 9 Abs. 1 Nr. 3 wird heute als **Erlösreihe**
-gebucht. Die Vorschrift ist aber keine Rückerstattung: Auf selbst erzeugten und selbst verbrauchten
-Strom entsteht gar keine Stromsteuer. Der Vorteil steckt bereits in der kleineren Bezugsrechnung.
-Gemessen an Projekt 1024: **1.510,84 €/a auf beiden Pfaden**; synthetisch 779 → 1.558 = das
-Doppelte. **Im Bestand bucht kein gespeicherter Lauf die Reihe** — heute also nirgends wirksam.
-Die Umstellung auf „Ausweis" (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) ist mit B6 entschieden.
+✅ **Befund B-1 — erledigt mit B6.** § 9 Abs. 1 Nr. 3 wurde als **Erlösreihe** gebucht und
+derselbe Betrag zusätzlich ausgewiesen. Die Vorschrift ist aber keine Rückerstattung: Auf selbst
+erzeugten und selbst verbrauchten Strom entsteht gar keine Stromsteuer, der Vorteil steckt bereits
+in der kleineren Bezugsrechnung.
+
+**Der Modus** steht in `Tab_ProjektWirtschaftlichkeit.Stromst_Befreiung_Modus` (Schemaschritt 88,
+TEXT, `AUSWEIS`/`ERLOES`, NULL = AUSWEIS) und wird im Dialog „BHKW-Wirtschaftlichkeit" gepflegt:
+
+* **AUSWEIS (Vorgabe)** — der Betrag wird gerechnet und in der Vergleichstabelle gezeigt
+  („Stromsteuer-Befreiung [€/a] (Ausweis, nicht im Kapitalwert)"), geht aber in keine Zahlungsreihe.
+* **ERLOES** — jahresscharfe Erlösreihe wie zuvor, dazu die Kohärenzwarnung zur Doppelzählung.
+  Richtig ist das nur, wenn der angesetzte Bezugspreis die Stromsteuer auf den Eigenverbrauch
+  enthält.
+
+Der Modus wandert mit ins Ergebnis, damit ein gespeicherter Lauf auch nach einer späteren
+Umstellung sagen kann, wie *er* gerechnet hat. **Gemessen** an Projekt 1030 (432,30 MWh
+KWK-Eigenverbrauch, 3 %, 20 a): Ausweisbetrag 8.862,15 €/a in beiden Modi, Kapitalwert als Erlös
+−21.763.530,86 €, als Ausweis −21.895.377,28 € — die Differenz von 131.846,41 € ist genau der
+Rentenbarwert der flachen Reihe. **Im Bestand bucht kein gespeicherter Lauf die Reihe** (die
+Befreiung setzt Stundenreihen voraus), der Referenzlauf bleibt unverändert.
 
 ## 3.9 Kohärenzprüfung — Warnzeilen ohne Rechenwirkung
 
 | Fall | Bedingung | Schwere |
 |---|---|---|
-| 1 konsistent | Wahl und Preisanteil aktiv | keine Zeile |
+| 1 konsistent | Wahl gesetzt, Anteil bei **jedem** beteiligten Träger ausgewiesen | **Bestätigung** (grün, ohne Betrag) |
 | 2 **Entlastung ohne Belastung** | Gutschrift gebucht, Preis weist die Steuer nicht aus | Warnung **mit Betrag** |
 | 3 Belastung ohne Entlastung | Anteil ausgewiesen, keine Wahl bzw. kein § 9b bei produzierendem Gewerbe | Hinweis |
 | 4 Satz ≠ Katalogsatz | Toleranz 0,005 ct/kWh | Hinweis (beide Sätze) |
+| 4a **Einheit nicht vergleichbar** | Katalogsatz je 1.000 kg bzw. je 1.000 l, Projekt rechnet in der anderen Einheit — ohne Dichte keine Brücke | Hinweis (ohne Betrag) |
+| **Doppelzählung § 9 Abs. 1 Nr. 3** | Modus `ERLOES` bucht einen Betrag | Warnung **mit Betrag** |
 | Doppelpflege Hilfsenergie | Anlagenanteil > 0 **und** aktive Kostenposition derselben Anlage | Warnung |
 | Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | Hinweis (435 g/kWh) |
 
@@ -1300,15 +1316,15 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 |---|---|---|
 | K1 | Feld „Deckung je Modul" | **entschieden: kein Feld** — die Befreiung ist bilanziell |
 | K2 | Hilfsenergie-Basis je Anlage rechnet fest Weg B (% des Bedarfs); Wege A und C nur in der Kostenposition | Dialog benennt die Basis klar; vierte Spalte nur bei Bedarf |
-| **K3** | Modusfeld § 9 Nr. 3 — Spalte kommt erst mit B6 | **offen**: im Mockup ausgrauen **oder** Schritt 62 vorziehen |
+| **K3** | Modusfeld § 9 Nr. 3 — Spalte kommt erst mit B6 | **erledigt mit B6**: Schemaschritt 88, Feld offen, Vorgabe AUSWEIS |
 | K4 | Tabellenspalte „Brennstoff" ohne Leseweg | kleiner Leser `CarrierId` → Name in B5 |
 | K5 | Jahresnutzungsgrad bleibt Projektgröße | als Projektfeld zeigen |
 | K6 | WP-Hilfsenergie: Spalte gilt formal für alle, Leser nur BHKW und Kessel | B5 zeigt das Feld nur bei BHKW |
 | K7 | Schreibweg der drei B3-Spalten fehlt (`KwkgAnlagenCtrl.Speichere` = 8 Spalten) | **B5-Kernaufgabe**: auf 11 Spalten erweitern |
 | **K8** | Fußleiste voll — ein achter Knopf läge bei x = −50 | **offen**: Zweitreihe · Aufklappmenü · Knopf ersetzen |
 | K9 | § 6.1 zählt „9 Felder", real 11 | Konzeptkorrektur |
-| K10 | Hilfsenergie-Bemessung doppelt: Seed gegen Altkatalog | in B5/B6 nachziehen |
-| K11 | `Views\Wirtschaftlichkeit` unlokalisiert (63 Literale) | neue Texte `BHW_*` de + en; Altlast nach B6 |
+| K10 | Hilfsenergie-Bemessung doppelt: Seed gegen Altkatalog | **erledigt**: Altarten nur noch zur Anzeige, abgelöst von `PROZENT_ENDENERGIEKOSTEN` |
+| K11 | `Views\Wirtschaftlichkeit` unlokalisiert (63 Literale) | **erledigt mit B6**: 0 nackte Anzeigetexte, eigene Wache |
 
 Dazu die Entscheidungen zur Darstellung (30.08.2026):
 
@@ -1390,14 +1406,14 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 2. Live-Frisch-Anzeige der Bezugsgröße mit Herleitungszeile im Kostendialog — **spezifiziert in § 2.8 (Entwurf B, übernommen 31.08.2026)**
 3. Erste Kostenposition mit Anlagenbezug entsteht erst hier
 
-**Nach B6**
+**Nach B6 — alle sechs erledigt**
 
-4. § 9 Nr. 3 als Ausweis (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) — K3
-5. Doppelmeldung § 9b in `RechneAufschlaege` streichen
-6. Hinweiszeile für Träger mit 1.000-kg-Satz bei Literabrechnung (`density` leer)
-7. Positive Nennung im Kohärenzfall 1
-8. Lokalisierung `Views\Wirtschaftlichkeit` (63 Literale) und der Auflöser-Texte — K11
-9. Altkatalog-Bemessung `PROZENT_BRENNSTOFFKOSTEN` nachziehen — K10
+4. ~~§ 9 Nr. 3 als Ausweis (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) — K3~~ — Schemaschritt 88, § 3.8
+5. ~~Doppelmeldung § 9b in `RechneAufschlaege` streichen~~ — `RechneAufschlaege` ist mit dem Umbau der Aufschläge entfallen; die § 9b-Hinweise der Kohärenzprüfung schließen einander aus (Fall 2 kehrt zurück, bevor Fall 3 geprüft wird)
+6. ~~Hinweiszeile für Träger mit 1.000-kg-Satz bei Literabrechnung (`density` leer)~~ — Fall 4a in § 3.9
+7. ~~Positive Nennung im Kohärenzfall 1~~ — Bestätigungszeile in § 3.9
+8. ~~Lokalisierung `Views\Wirtschaftlichkeit` (63 Literale) und der Auflöser-Texte — K11~~ — nach dem Razor-Port blieben 7; alle überführt, bewacht von `LokalisierungWirtschaftlichkeitWacheTests`
+9. ~~Altkatalog-Bemessung `PROZENT_BRENNSTOFFKOSTEN` nachziehen — K10~~ — war schon erledigt: Der Seed führt sie nur noch zur Anzeige von Bestandsdaten (`FuerBetrieb = false`), abgelöst von `PROZENT_ENDENERGIEKOSTEN`; die Eskalation zieht gleich
 
 **Fachlich und technisch**
 
@@ -1456,7 +1472,7 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
 | **B5** | `Form_BhkwWirtschaftlichkeit` mit sechs Gruppen; Auszug aus dem Parameterdialog; Schreibweg der drei Anlagenspalten (K7); Brennstoff-Leser (K4); Live-Herleitung | keine — solange niemand die neuen Felder pflegt |
-| **B6** | § 9 Nr. 3 als Ausweis (M-3, Schritt 62); Kohärenz-Nachträge; Lokalisierung | **ja** — der Moduswechsel ändert den Kapitalwert |
+| **B6** | § 9 Nr. 3 als Ausweis (M-3, **Schemaschritt 88**); Kohärenz-Nachträge; Lokalisierung | **umgesetzt** — Vorgabe AUSWEIS; ein Projekt, das die Reihe buchte, verliert deren Barwert aus dem Kapitalwert |
 | **B7** | Anlagenscharfe Aufschlüsselung der Energiekosten; **Erlösrubrik** (§ 2.6) in Reiter, Word und Excel; **Emissionsspalte nach Modus** (§ 2.5) | Ausweis — bis auf die Korrektur der vermiedenen Kosten um die § 9b-Entlastung |
 | **B8** | Befunde abarbeiten: I-1 (kWp), I-3 (ORDER BY), B-1/N1 (Kessel-Verbrauch), N3 (Aufschlags-NULL), V-3 (Berichtsspalten), S-2 | **ja** — jeder einzeln mit A/B-Nachweis |
 | **B9** | Zahlenprobe gegen die Altanwendung (A8), sobald die Excel vorliegt | Nachweis |
