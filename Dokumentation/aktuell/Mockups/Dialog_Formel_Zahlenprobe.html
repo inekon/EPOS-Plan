@@ -1515,99 +1515,142 @@ Degradation je Position   Menge_t = Menge_1 × (1 − d)^(t−1)     <span class
     <div class="f-band">Energieträger — Erdgas<span class="f-sub">Musterprojekt Gewerbepark · Preise netto</span></div>
     <div class="f-leib">
       <div class="f-spalten">
+
+        <!-- Block A -->
         <div class="f-gruppe">
           <div class="f-titel">Preis und Heizwert</div>
-          <div class="f-zeile"><label>Arbeitspreis</label><span class="f-eingabe num">0,7560</span><span class="f-einheit">€ / m³</span></div>
+          <div class="f-zeile"><label>Arbeitspreis</label><span class="f-eingabe num">0,7560</span><span class="f-einheit">€ / m³ — die Einheit folgt der Preisbasis</span></div>
           <div class="f-zeile"><label>Grundpreis</label><span class="f-eingabe num">180,00</span><span class="f-einheit">€ / a</span></div>
-          <div class="f-zeile"><label>Leistungspreis</label><span class="f-eingabe num">0,00</span><span class="f-einheit">€ / kW · a</span></div>
+          <div class="f-zeile"><label>Leistungspreis</label><span class="f-eingabe num">0,00</span><span class="f-einheit">€ / kW · a</span><span class="f-combo">Jahresleistungspreis</span></div>
           <div class="f-zeile"><label>Heizwert H<sub>i</sub></label><span class="f-eingabe num">10,50</span><span class="f-einheit">kWh / m³</span></div>
           <div class="f-zeile"><label>Brennwert H<sub>s</sub></label><span class="f-eingabe num">11,60</span><span class="f-einheit">kWh / m³</span></div>
+          <div class="f-herleitung">1 m³ = <b>10,50 kWh</b> (H<sub>i</sub>) / <b>11,60 kWh</b> (H<sub>s</sub>)</div>
           <div class="f-herleitung">→ <b>0,0720 €/kWh</b> · Umrechnungsfaktor H<sub>s</sub>/H<sub>i</sub> = <b>1,1048</b></div>
+          <div class="f-knopfzeile"><span class="f-knopf">Saisonale Sätze…</span><span class="f-knopf">Katalogwerte übernehmen</span></div>
+          <div class="f-info">Die Klappliste des Leistungspreises steht nur bei Trägern, die einen führen; die
+          Saisonsätze sind zwölf Monatswerte und gehen dem konstanten Satz vor. Fehlt ein Preis, steht der
+          Hinweis am Ort der Pflege, daneben der Knopf, der den Wert der Kategorie holt, und darunter die
+          Zeile, die die geliehene Herkunft nennt — gesetzt wird nichts von selbst.</div>
         </div>
+
+        <!-- Block B -->
         <div class="f-gruppe">
           <div class="f-titel">Preisbestandteile <span style="font-weight:400;color:#5A5A5A;font-size:11.5px">— Transparenz, ohne Preiswirkung</span></div>
-          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Energiesteuer</span><span class="f-eingabe num">0,0638</span><span class="f-einheit">€ / m³ — 5,50 €/MWh (H<sub>s</sub>)</span></div>
-          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">CO₂-Bestandteil (BEHG)</span><span class="f-eingabe num">0,1371</span><span class="f-einheit">€ / m³ — 65 €/t × 2,109 kg/m³</span></div>
+          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Energiesteuer</span><span class="f-eingabe num">0,0638</span><span class="f-einheit">€ / m³</span></div>
+          <div class="f-herleitung">5,50 €/MWh (H<sub>s</sub>)</div>
+          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">CO₂-Bestandteil (BEHG)</span><span class="f-eingabe num">0,1371</span><span class="f-einheit">€ / m³</span></div>
+          <div class="f-herleitung">65 €/t × 2,109 kg/m³</div>
           <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Netz- und Messentgelt</span><span class="f-eingabe num">0,1180</span><span class="f-einheit">€ / m³</span></div>
-          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Beschaffung und Vertrieb</span><span class="f-eingabe num">0,4371</span><span class="f-einheit">€ / m³ — Rest</span></div>
+          <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab">Beschaffung und Vertrieb</span><span class="f-eingabe num">0,4371</span><span class="f-einheit">€ / m³</span></div>
+          <div class="f-herleitung">Rest: <b>0,4371 €/m³</b> — Arbeitspreis abzüglich der übrigen aktiven Anteile
+            <span class="f-knopf">Rest übernehmen</span></div>
           <div class="f-herleitung">Summe der Bestandteile <b>0,7560 €/m³</b> — deckungsgleich mit dem Arbeitspreis ✓</div>
-          <div class="f-zeile" style="margin-top:6px"><span class="f-knopf">Schnellwahl aus Katalog…</span><span class="f-knopf">In Arbeitspreis übernehmen</span></div>
+          <div class="f-knopfzeile"><span class="f-knopf">Schnellwahl aus Katalog…</span><span class="f-knopf">In Arbeitspreis übernehmen</span></div>
+          <div class="f-info">Weicht die Summe der aktiven Anteile um mehr als <b>0,0001 €/kWh</b> vom Arbeitspreis ab,
+          steht dieselbe Zeile auf „≠" und nennt den Abstand; was der Preis darüber hinaus enthält, sagt die
+          Restzeile, negativ in Warnfarbe. „In Arbeitspreis übernehmen" schreibt nur in das Feld — gespeichert
+          wird mit „Speichern". Beim Stromträger steht an dieser Stelle „Strompreis Details", ausgeklappt: dieselbe
+          Zerlegung in den Gruppen Beschaffung und Vertrieb, Netzentgelte sowie Steuern, Abgaben und Umlagen.</div>
         </div>
       </div>
 
+      <!-- Block C -->
       <div class="f-gruppe" style="margin-top:14px">
         <div class="f-titel">Emissionen <span style="font-weight:400;color:#5A5A5A;font-size:11.5px">— Anzeige folgt der Bilanzierungsvorgabe des Projekts</span></div>
-        <div class="f-zeile"><label>Bilanzierungsmethode</label><span class="f-combo">CO₂ direkt — reale Bilanz, heizwertbezogen</span></div>
+        <div class="f-zeile"><label>Bilanzierungsmethode</label><span class="f-combo">CO₂ direkt — reale Bilanz, heizwertbezogen</span><span class="f-einheit">[Projekt]</span></div>
         <div class="f-scroll" style="margin-top:8px">
           <table class="f-raster">
-            <thead><tr><th>Träger</th><th class="r">CO₂-Äquivalent</th><th class="r">Primärenergiefaktor</th><th>Quelle</th></tr></thead>
+            <thead><tr><th>Art</th><th class="r">Wert</th><th>Einheit</th><th>Quelle</th><th></th></tr></thead>
             <tbody>
-              <tr><td>Erdgas</td><td class="r num">200,9 g/kWh</td><td class="r num">1,10</td><td>EBeV 2030 Anl. 2 (H<sub>i</sub>) · GEG Anlage 4</td></tr>
-              <tr><td>Heizöl EL</td><td class="r num">266,4 g/kWh</td><td class="r num">1,10</td><td>EBeV 2030 Anl. 2</td></tr>
-              <tr><td>Strommix Netzbezug</td><td class="r num">435,0 g/kWh</td><td class="r num">1,80</td><td>BAFA EEW 3.4 — Rückfall, reale Bilanz</td></tr>
+              <tr><td>Kohlendioxid</td><td class="r num">200,9</td><td>g/kWh</td>
+                  <td>EBeV 2030 Anlage 2 (H<sub>i</sub>)</td>
+                  <td><span class="f-knopf">Katalog…</span></td></tr>
+              <tr class="summe"><td>CO₂-Äquivalent gesamt (ausgewählte Arten)</td><td class="r num">200,90</td>
+                  <td>g/kWh</td><td colspan="2"></td></tr>
             </tbody>
           </table>
         </div>
-        <div class="f-info">Angezeigt wird nur die im Projekt gewählte Größe — CO₂ <em>oder</em> CO₂-Äquivalent.
-        SO₂ und NO<sub>x</sub> werden weiterhin geführt, aber nicht in dieser Tabelle gezeigt. Der gewählte
-        Faktorensatz weist <b>keine Vorkette</b> aus; der Tooltip benennt das an jedem Wert. Der
-        <b>Nachweissatz</b> nach GEG Anlage 9 (Strom 560, ab 2027: 100 g/kWh) ist ein anderer Satz für
-        einen anderen Zweck und belegt im Code nie dieselbe Variable.</div>
+        <div class="f-knopfzeile"><span class="f-knopf">Emissionsarten &amp; Katalog verwalten…</span></div>
+        <div class="f-info">Die Tabelle führt die Arten <em>dieses</em> Trägers — im Modus CO₂-Äquivalent kommen die
+        Arten hinzu, die der Katalog mit einem Äquivalentfaktor führt (Methan, Lachgas). Angezeigt wird nur die im
+        Projekt gewählte Größe — CO₂ <em>oder</em> CO₂-Äquivalent. SO₂ und NO<sub>x</sub> werden weiterhin geführt,
+        aber nicht in dieser Tabelle gezeigt. Der gewählte Faktorensatz weist <b>keine Vorkette</b> aus; der Tooltip
+        benennt das an jedem Wert, einen stillen Rückfall gibt es nicht. Der <b>Nachweissatz</b> nach GEG Anlage 9
+        (Strom 560, ab 2027: 100 g/kWh) ist ein anderer Satz für einen anderen Zweck und belegt im Code nie dieselbe
+        Variable. Im Katalogkontext ist die Klappliste gesperrt, und der Grund steht darunter: Die
+        Bilanzierungsmethode ist eine Projektvorgabe. <b>Keine Trägerübersicht, kein Primärenergiefaktor.</b></div>
       </div>
 
+      <!-- Block D -->
       <div class="f-gruppe" style="margin-top:14px">
-        <div class="f-titel">Aufschläge Netzbezug Strom
-          <span style="font-weight:400;color:#5A5A5A;font-size:11.5px">— neun Anteile, je mit eigenem Haken</span>
-          <span class="f-knopf" style="float:right">Vorschlagswerte übernehmen</span></div>
-        <div class="f-scroll" style="margin-top:6px">
-        <table class="f-raster">
-          <thead><tr><th>Anteil</th><th class="r">Vorschlag am Feld</th><th class="r">gepflegt</th>
-            <th>aktiv</th><th class="r">wirksam</th><th>Grundlage</th></tr></thead>
-          <tbody>
-            <tr><td>Netzentgelt</td><td class="r num">6,440</td><td class="r num">6,440</td>
-                <td><span class="f-check an"><i></i></span></td><td class="r num">6,440</td>
-                <td class="klein" style="display:table-cell">Netzbetreiber-Preisblatt</td></tr>
-            <tr><td>Umlagen</td><td class="r num">2,946</td><td class="r num">2,946</td>
-                <td><span class="f-check an"><i></i></span></td><td class="r num">2,946</td>
-                <td class="klein" style="display:table-cell">§ 19 StromNEV, KWKG, Offshore zusammengefasst</td></tr>
-            <tr><td>Stromsteuer</td><td class="r num">2,050</td><td class="r num">2,050</td>
-                <td><span class="f-check an"><i></i></span></td><td class="r num">2,050</td>
-                <td class="klein" style="display:table-cell">StromStG Regelsatz 20,50 €/MWh · Knopf am Feld</td></tr>
-            <tr><td>Konzessionsabgabe</td><td class="r num">0,110</td><td class="r num">0,110</td>
-                <td><span class="f-check an"><i></i></span></td><td class="r num">0,110</td>
-                <td class="klein" style="display:table-cell">KAV-Höchstsatz der Gemeindegrößenklasse</td></tr>
-            <tr><td>Vertrieb</td><td class="r num">0,200</td><td class="r num">0,200</td>
-                <td><span class="f-check an"><i></i></span></td><td class="r num">0,200</td>
-                <td class="klein" style="display:table-cell">Lieferantenmarge</td></tr>
-            <tr><td>Beschaffung</td><td class="r">Rest</td><td class="r">—</td>
-                <td><span class="f-check"><i></i></span></td><td class="r num">0,000</td>
-                <td class="klein" style="display:table-cell">Arbeitspreis abzüglich der übrigen Anteile · Knopf am Feld</td></tr>
-            <tr><td>KWKG-Umlage</td><td class="r">—</td><td class="r">—</td>
-                <td><span class="f-check"><i></i></span></td><td class="r num">0,000</td>
-                <td class="klein" style="display:table-cell">gesondert erfassbar, sonst in „Umlagen" enthalten</td></tr>
-            <tr><td>Offshore-Netzumlage</td><td class="r">—</td><td class="r">—</td>
-                <td><span class="f-check"><i></i></span></td><td class="r num">0,000</td>
-                <td class="klein" style="display:table-cell">dito</td></tr>
-            <tr><td>§ 19 StromNEV</td><td class="r">—</td><td class="r">—</td>
-                <td><span class="f-check"><i></i></span></td><td class="r num">0,000</td>
-                <td class="klein" style="display:table-cell">dito</td></tr>
-            <tr class="summe"><td colspan="4">Wirksamer Aufschlag</td><td class="r num">11,746</td>
-                <td class="klein" style="display:table-cell">ct/kWh auf den Netzbezug</td></tr>
-          </tbody>
-        </table>
-        </div>
-        <div class="f-info">Ein <b>ungepflegter</b> Anteil ist <b>inaktiv</b> und trägt <b>0</b> bei —
-        eine leere Spalte ist keine stille Übernahme des Vorschlags. Der Vorschlag steht am Feld und
-        wirkt erst mit dem Haken; der Sammelknopf am Blockkopf setzt <em>alle</em> Anteile mit
-        hinterlegtem Vorschlag auf diesen Wert <b>und</b> deren Haken — er nennt vor der Übernahme,
-        welche Anteile er anfasst.</div>
-        <div class="f-warn"><b>Warum das wiegt.</b> Läsen ungepflegte Spalten sich als Vorschlagswerte,
-        trüge ein Stromträger die vollen 11,746 ct/kWh. An Projekt 1030 gemessen macht das
-        <b>+360.603 €/a (+32 %)</b> Energiekosten und <b>−29,8 %</b> Kapitalwert
-        <span class="zk beleg">Beleg</span>.</div>
+        <div class="f-titel">Einheiten und Umrechnung</div>
+        <div class="f-zeile"><span class="f-zknopf">▸</span><span class="f-lab" style="min-width:0"><b>Einheiten und Umrechnung</b></span><span class="f-einheit">Vorgabe: zu</span></div>
+        <div class="f-info">Aufgeklappt trägt er die Klappliste <b>Preisbasis</b> mit genau zwei Einträgen — der
+        Abrechnungseinheit und kWh, deren Faktor der <b>Heizwert</b> ist —, die Zeile „Basiseinheit: m³" und den
+        Regelblock (Name · von · nach · Faktor · aktiv) samt „Regel hinzufügen" und Verstoßbanner. Die Zeile darunter
+        sagt, wozu er da ist: <em>Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert und
+        Brennwert.</em></div>
+      </div>
+
+      <!-- Preishistorie -->
+      <div class="f-gruppe" style="margin-top:14px">
+        <div class="f-titel">Preishistorie</div>
+        <div class="f-info">Je Preisstand eine Zeile — Gültig ab · Basis Einheit · Arbeitspreis · Grundpreis ·
+        Leistungspreis · Heizwert [kWh/m³] —, je Zeile der Knopf „Löschen" mit Rückfrage. Ein neuer Stand entsteht
+        beim Speichern, nicht beim Tippen.</div>
       </div>
     </div>
-    <div class="f-fuss"><span class="f-knopf">Abbrechen</span><span class="f-knopf primaer">Übernehmen</span></div>
+    <div class="f-fuss"><span class="f-knopf">Abbrechen</span><span class="f-knopf">Speichern</span><span class="f-knopf primaer">OK</span></div>
+  </div>
+
+  <div class="zone">Überlagerung „Schnellwahl aus Katalog"</div>
+  <p class="eng">Ein Knopf statt vier: „Schnellwahl aus Katalog…" öffnet sie im selben Fenster. Je Satz stehen dort
+  Herkunft, Jahr, Katalogwert <b>und</b> derselbe Satz in der Abrechnungseinheit — vor der Übernahme, nicht danach.
+  Der Knopf einer Zeile trägt den Satz in ct/kWh und schreibt ihn in das Feld des zugehörigen Bestandteils; ein
+  Satz, den der Katalog für dieses Jahr nicht führt, steht gesperrt da und nennt den Grund.</p>
+  <div class="ueb-schleier">
+    <div class="ueb">
+      <div class="ueb-kopf"><span class="ueb-titel">Schnellwahl aus Katalog</span><span class="ueb-zu">×</span></div>
+      <div class="ueb-leib">
+        <div class="f-gruppe">
+          <div class="f-titel">Energiesteuer</div>
+          <div class="f-scroll">
+          <table class="f-raster">
+            <thead><tr><th>Satz</th><th class="r">Katalogwert</th><th>Jahr</th><th>Herkunft</th><th class="r">in der Abrechnungseinheit</th></tr></thead>
+            <tbody>
+              <tr><td><span class="f-knopf">§ 2: 0,6076</span></td><td class="r num">5,50 €/MWh</td><td class="num">ab 2003</td>
+                  <td class="klein" style="display:table-cell">EnergieStG § 2 Abs. 3 Satz 1 Nr. 4 — Erdgas · gesichert</td>
+                  <td class="r num">0,0638 €/m³</td></tr>
+              <tr><td><span class="f-knopf">§ 53a: 0,4883</span></td><td class="r num">4,42 €/MWh</td><td class="num">ab 2024</td>
+                  <td class="klein" style="display:table-cell">EnergieStG § 53a Abs. 5 — Gasturbinen und Verbrennungsmotoren · gesichert</td>
+                  <td class="r num">0,0513 €/m³</td></tr>
+              <tr><td><span class="f-knopf">§ 54: 0,1525</span></td><td class="r num">1,38 €/MWh</td><td class="num">ab 2024</td>
+                  <td class="klein" style="display:table-cell">EnergieStG § 54 — Heizstoffe im produzierenden Gewerbe · gesichert</td>
+                  <td class="r num">0,0160 €/m³</td></tr>
+            </tbody>
+          </table>
+          </div>
+          <div class="f-titel" style="margin-top:12px">CO₂-Bestandteil (BEHG)</div>
+          <div class="f-scroll">
+          <table class="f-raster">
+            <thead><tr><th>Satz</th><th class="r">Katalogwert</th><th>Jahr</th><th>Herkunft</th><th class="r">in der Abrechnungseinheit</th></tr></thead>
+            <tbody>
+              <tr><td><span class="f-knopf">BEHG: 1,3059</span></td><td class="r num">65 €/t</td><td class="num">ab 2026</td>
+                  <td class="klein" style="display:table-cell">BEHG § 10 Abs. 2 — Festpreisphase · × 200,9 g/kWh</td>
+                  <td class="r num">0,1371 €/m³</td></tr>
+            </tbody>
+          </table>
+          </div>
+          <div class="f-info">Die Sätze in ct/kWh auf den Knöpfen sind die Rechengröße, die Spalte rechts ist
+          dieselbe Zahl in der Abrechnungseinheit <span class="zk abl">abgeleitet</span> — umgerechnet über den
+          Heizwert des Trägers, die einzige Stelle, an der die Einheit wechselt.</div>
+        </div>
+      </div>
+      <div class="ueb-fuss">
+        <span class="f-status">Ein Satz schreibt in das Feld seines Bestandteils — gespeichert wird erst mit „Speichern"</span>
+        <span class="f-knopf">Schließen</span>
+      </div>
+    </div>
   </div>
 
   <div class="zone">Berechnungsgrundlage</div>
@@ -1629,11 +1672,18 @@ Leistungspreis — die einzige η-Division der Kette
   Modus JAHR: Satz × kw          Modus MONAT: Satz × kw × 12
 
 Netzbezug Strom
-  Kosten = Restbedarf × 1000 × Preis + Grundpreis + Aufschlagbetrag
-  Aufschlagbetrag = NetzbezugMWh × 1000 × WirksamCtKwh / 100
-  WirksamCtKwh    = Σ über die neun Anteile, je nur wenn aktiv
-  <span class="hin">ungepflegt ⇒ inaktiv ⇒ Beitrag 0; der Vorschlag steht am Feld und wirkt
-  erst mit dem Haken oder dem Sammelknopf.</span>
+  Kosten = Restbedarf × 1000 × Preis + Grundpreis + Leistungsanteil
+  Leistungsanteil: Basis ist die gemessene BEZUGSSPITZE der Viertelstundenreihe
+  Modus JAHR: Satz × Jahresspitze    Modus MONAT: Σ₁₂ (Monatssatz × Monatsspitze)
+  <span class="hin">Kein Aufschlag: Die Preisanteile ZERLEGEN den Arbeitspreis, sie kommen
+  nicht auf ihn — es gibt genau eine Preiswahrheit, den Arbeitspreis der Trägerkarte.</span>
+
+Anzeigekante der Preisanteile
+  € je Abrechnungseinheit = ct/kWh ÷ 100 × eff_hi
+  ct/kWh                  = € je Abrechnungseinheit × 100 ÷ eff_hi
+  Preisbasis kWh: Arbeitspreis [€/kWh] × eff_hi = Basispreis je Abrechnungseinheit
+  <span class="hin">Gerechnet, gespeichert und geprüft wird in ct/kWh; die Einheit wechselt
+  genau einmal, in der Anzeige. Ohne Heizwert bleibt ct/kWh stehen, mit Grund.</span>
 
 CO₂ / BEHG als eigene Reihe
   behgBasis [t/a] = CO2Brennstoff + BiogenBehgMenge × BehgOhneNachweis / 1000
@@ -1662,7 +1712,7 @@ Keine stillen Teilsummen
             <td>nur, wenn ein Arbeitspreis existiert; keine davon-Zeile</td></tr>
         <tr><td><span class="schritt">4</span> Netzbezug Strom</td>
             <td class="formelzelle">250,0 MWh × 1000 × 0,2880</td><td class="r num">72.000,00 €/a</td>
-            <td>Aufschläge inaktiv — aktiv zusätzlich 29.365 €/a</td></tr>
+            <td>der Arbeitspreis trägt seine Anteile bereits; nichts kommt obendrauf</td></tr>
         <tr class="zwischen"><td>Energiekosten Jahr 1 — Variante 3</td>
             <td class="formelzelle">312.631,2 + 180,00 + 72.000,00</td><td class="r num">384.811,20 €/a</td>
             <td>steigt mit p<sub>E</sub> ab Jahr 2</td></tr>
@@ -1752,9 +1802,12 @@ Keine stillen Teilsummen
         <tr><td>davon-Zeile „davon {0} [€/a]"</td><td class="rs">WIRT_ENK_DAVON</td><td>Zeilenkatalog</td></tr>
         <tr><td>davon-Zeile „davon Netzbezug Strom [€/a]"</td><td class="rs">WIRT_ENK_DAVON_NETZ</td><td>Zeilenkatalog</td></tr>
         <tr><td>Herleitung „{0} MWh × {1} €/kWh = {2} €"</td><td class="rs">WIRT_ENK_HERLEITUNG</td><td>Nachweisumschlag der Zeile (vorhanden)</td></tr>
-        <tr><td>Blockkopf „Aufschläge Netzbezug Strom"</td><td class="rs">PREIS_G_AUFSCHLAEGE</td><td>Trägerkarte, Strom</td></tr>
-        <tr><td>Knopf „Vorschlagswerte übernehmen"</td><td class="rs">PREIS_BTN_VORSCHLAG_ALLE</td><td>Blockkopf der Aufschläge</td></tr>
-        <tr><td>Hinweis „ungepflegt heißt inaktiv und 0"</td><td class="rs">PREIS_HINW_UNGEPFLEGT</td><td>unter dem Aufschlagsblock</td></tr>
+        <tr><td>Blockköpfe A, C und D der Trägerkarte</td><td class="rs">ETV_BLOCK_PREIS · ETV_BLOCK_EMISSIONEN · ETV_BLOCK_EINHEITEN</td><td>Trägerkarte, alle Träger</td></tr>
+        <tr><td>Blockkopf „Preisbestandteile — Transparenz, ohne Preiswirkung" bzw. „Strompreis Details"</td><td class="rs">BB_GRUPPE_BESTANDTEILE · PREIS_GRUPPE_DETAILS</td><td>Block B, Brennstoff bzw. Strom</td></tr>
+        <tr><td>Knöpfe „Schnellwahl aus Katalog…" und „In Arbeitspreis übernehmen"</td><td class="rs">BB_BTN_SCHNELLWAHL · BB_BTN_IN_ARBEITSPREIS</td><td>Fuß des Blocks B</td></tr>
+        <tr><td>Summenzeile „Summe der Bestandteile {0} {1} — deckungsgleich / weicht um {2} ab"</td><td class="rs">BB_KOHAERENZ_OK · BB_KOHAERENZ_AB</td><td>Block B, über den Knöpfen</td></tr>
+        <tr><td>Fußnote und Summe des Emissionsblocks</td><td class="rs">KDLG_EM_FUSSNOTE · KDLG_EM_SUMME</td><td>Block C</td></tr>
+        <tr><td>Hinweis „Diese Regeln prüfen die Einheitenkette…"</td><td class="rs">ETV_REGELN_HINWEIS</td><td>Block D, unter dem Regelblock</td></tr>
       </tbody>
     </table>
   </div>
@@ -4022,8 +4075,8 @@ Einstufung
             <td>Konzept § 2.11.7 · <span class="mono">WIRT_SZEN_HINWEIS</span></td>
             <td>Ressourcenwache: Schlüssel in beiden Sprachen vorhanden</td></tr>
         <tr><td class="mono">U11</td><td class="num">4</td>
-            <td>Sammelknopf „Vorschlagswerte übernehmen" am Kopf des Aufschlagsblocks. <b>Nebenbemerkung:</b>
-              Das Speichern der Trägerkarte schreibt alle neun Anteile als Zahl zurück; „nie gepflegt"
+            <td>Sammelknopf „Vorschlagswerte übernehmen" am Kopf des Blocks „Strompreis Details". <b>Nebenbemerkung:</b>
+              Das Speichern der Trägerkarte schreibt alle Anteile als Zahl zurück; „nie gepflegt"
               ist danach nicht mehr von „auf den Vorschlag gesetzt und abgeschaltet" zu unterscheiden —
               rechnerisch folgenlos, weil der Haken entscheidet</td>
             <td><span class="mono">StrompreisDetails.razor</span> ·
@@ -4051,13 +4104,13 @@ Einstufung
               Szenario; bis dahin gilt der Hinweistext unter der Annahmentafel</td>
             <td>Konzept § 2.11.5</td>
             <td>A/B-Nachweis: je Szenario ein vollständiger Parametersatz, Kapitalwerte gegenübergestellt</td></tr>
-        <tr><td class="mono">U16</td><td class="num">4</td>
+        <tr class="gestrichen"><td class="mono">U16</td><td class="num">4</td>
             <td>Vorschlagswerte für die Anteile KWKG-Umlage, Offshore-Netzumlage und § 19 StromNEV
-              sind im Katalog nicht hinterlegt; ihre Beträge lassen sich ohne Lauf gegen einen
-              gepflegten Träger nicht beziffern und stehen im Aufschlagsblock deshalb ohne Zahl</td>
+              sind im Katalog nicht hinterlegt</td>
             <td>Katalog der Preisbestandteile</td>
-            <td>Lauf gegen einen Träger mit allen neun gepflegten Anteilen; die Summe der wirksamen
-              Anteile trifft den Arbeitspreis</td></tr>
+            <td class="grund"><b>erledigt:</b> Der Gesetzeskatalog führt den Bereich <span class="mono">UMLAGEN</span>
+              mit den drei Zeilen — 0,446 · 0,941 · 1,559 ct/kWh, Stichjahr 2026 —, und die Testdatenbank trägt sie;
+              die Schnellwahl nennt den Katalog als Quelle statt der Rückfallebene</td></tr>
         <tr><td class="mono">U17</td><td class="num">7</td>
             <td>KWKG-Pauschale nach § 9 als Zeile im Jahr 0 — <b>Entscheid ausstehend</b>. Der
               Nachweisumschlag führt für sie keine Skalargröße</td>
@@ -4168,6 +4221,16 @@ Einstufung
               <span class="mono">KostenProjektPositionenCtrl.IstPflicht</span> · <span class="mono">EndenergieAufloeser</span></td>
             <td>bunit: drei Pflichtzeilen mit Schloss, Löschversuch weiterhin abgewiesen; Endenergiegruppe nennt
               4.342.100 kWh und 312.631,20 €/a; Warnung nur bei Anlagenanteil &gt; 0 und aktiver Kostenposition</td></tr>
+        <tr><td class="mono">U32</td><td class="num">4</td>
+            <td>Die Preisbasis-Kennung des Projekts (<span class="mono">ID_Umrechnung</span>) ist eine
+              <b>Regelkennung</b>. Führt kein Brennstoff eine Regel nach kWh, wird beim Speichern −1 abgelegt, und die
+              gewählte Preisbasis fällt beim nächsten Öffnen auf die Abrechnungseinheit zurück. Ein Wert geht dabei
+              nicht verloren — gespeichert ist ohnehin der Basispreis je Abrechnungseinheit —, wohl aber die
+              Eingabegewohnheit. Saubere Lösung: eine eigene kleine Spalte für den Kartenzustand, also ein
+              <b>Schemaschritt</b> (92 und aufwärts, nach Vergabe). Kennung im Text: UR-1 Schritt 2</td>
+            <td><span class="mono">EnergietraegerPreisCtrl.Preisbasen</span> ·
+              <span class="mono">energy_project_settings</span></td>
+            <td>Öffnen–Speichern–Öffnen hält die Preisbasis kWh, auch wenn der Brennstoff keine kWh-Regel führt</td></tr>
       </tbody>
     </table>
   </div>
