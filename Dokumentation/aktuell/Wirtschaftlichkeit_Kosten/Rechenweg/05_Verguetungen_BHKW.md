@@ -1,7 +1,7 @@
 # 05 · Vergütungen BHKW
 
 **Dialog:** `BhkwWirtschaftlichkeitDialog` (`EPOS.UI/Dialoge/Wirtschaftlichkeit/`) — BW9 (Konzept § 2.2) · **Mockup:**
-`../Mockups/Dialog_Formel_Zahlenprobe.html#bhkw` · **Recht:** § 2 Nr. 16 und Nr. 20, § 6 Abs. 3,
+`../../Mockups/Dialog_Formel_Zahlenprobe.html#bhkw` · **Recht:** § 2 Nr. 16 und Nr. 20, § 6 Abs. 3,
 § 7, § 8 KWKG 2025 · §§ 53, 53a, 54 EnergieStG · § 9 Abs. 1 Nr. 3, § 9b StromStG · **Code:**
 `KwkgAnlagenCtrl`, `WirtschaftlichkeitCtrl` (Erlösreihen `KWKG_ZUSCHLAG`, `KWKG_PAUSCHALE`,
 `ENERGIESTEUER_GUTSCHRIFT`, `STROMSTEUER_BEFREIUNG`, `STROMSTEUER_ENTLASTUNG`) · **Konzept:** § 2.2,

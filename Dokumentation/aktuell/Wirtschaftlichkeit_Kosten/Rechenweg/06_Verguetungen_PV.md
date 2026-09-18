@@ -1,7 +1,7 @@
 # 06 · Vergütungen Photovoltaik
 
 **Dialog:** `PhotovoltaikVerguetungDialog` (`EPOS.UI/Dialoge/Wirtschaftlichkeit/`) — Bestand, zugleich Stilmuster (Konzept § 2.3) ·
-**Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#pv` · **Recht:** § 21, § 21c, § 51, § 51a,
+**Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#pv` · **Recht:** § 21, § 21c, § 51, § 51a,
 § 100 EEG · **Code:** `PvErloesRechner`, Erlösreihe `PV_VERGUETUNG` · **Konzept:** § 2.3, § 3.6
 (Photovoltaik / EEG)
 

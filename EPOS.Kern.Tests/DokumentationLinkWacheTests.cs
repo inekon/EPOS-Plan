@@ -229,6 +229,60 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Fall 4 — die Mockups liegen an einem Ort
+        // =====================================================================
+
+        /// <summary>Der eine Ort aller HTML-Mockups.</summary>
+        private const string Mockupordner = "Dokumentation/aktuell/Mockups";
+
+        /// <summary>
+        /// Eine Code-Spanne, die einen Mockup-Pfad trägt: <c>`…Mockups/&lt;name&gt;.html…`</c>.
+        /// Der Bestand nennt die Mockups NICHT als Markdown-Link, sondern in Backticks —
+        /// Fall 1 sieht sie deshalb nicht.
+        /// </summary>
+        private static readonly Regex Mockupspanne =
+            new Regex(@"`([^`]*Mockups/[^`]*\.html[^`]*)`", RegexOptions.Compiled);
+
+        /// <summary>
+        /// <b>Die Regel.</b> Alle HTML-Mockups liegen unter <c>Dokumentation/aktuell/Mockups/</c>;
+        /// die Repowurzel führt keinen eigenen Ordner <c>Mockups/</c> mehr. Jede
+        /// Code-Spanne mit einem Mockup-Pfad in <c>Dokumentation/aktuell/**/*.md</c>, im
+        /// Index und in der Wurzel-<c>CLAUDE.md</c> trifft eine Datei DORT — gelesen vom
+        /// Ort ihrer Datei aus oder von der Repowurzel aus, der Anker bleibt außen vor.
+        /// </summary>
+        [Fact]
+        public void Die_Mockups_liegen_an_einem_Ort_und_jeder_Verweis_trifft()
+        {
+            string wurzel = Arbeitsbaum();
+
+            Assert.False(Directory.Exists(Path.Combine(wurzel, "Mockups")),
+                "In der Repowurzel liegt wieder ein Ordner Mockups/. Die Entwuerfe " +
+                "gehoeren nach " + Mockupordner + " - Papiere liegen unter Dokumentation/.");
+
+            var funde = new List<string>();
+            int geprueft = 0;
+
+            foreach (string datei in MockupLeser())
+            {
+                string voll = Path.Combine(wurzel, datei.Replace('/', Path.DirectorySeparatorChar));
+                foreach (Match m in Mockupspanne.Matches(File.ReadAllText(voll)))
+                {
+                    geprueft++;
+                    if (!TrifftMockup(wurzel, datei, m.Groups[1].Value))
+                        funde.Add(datei + ": `" + m.Groups[1].Value + "`");
+                }
+            }
+
+            Assert.True(funde.Count == 0,
+                "Diese Mockup-Verweise treffen keine Datei unter " + Mockupordner + ". " +
+                "Wer ein Mockup bewegt, zieht seine Verweise im selben Schritt nach:\n" +
+                string.Join("\n", funde));
+
+            Assert.True(geprueft >= 15,
+                "Nur " + geprueft + " Mockup-Spannen gefunden - der Waechter liefe ins Leere.");
+        }
+
+        // =====================================================================
         //  Gegenproben
         // =====================================================================
 
@@ -327,6 +381,38 @@ namespace EPOS.Kern.Tests
             Assert.Contains("CLAUDE.md", index, StringComparison.Ordinal);
         }
 
+        /// <summary>
+        /// <b>Gegenprobe zu Fall 4:</b> Die drei Schreibweisen des Bestands treffen, ein
+        /// verdrehter Verweis — alter Ort, falsche Tiefe, erfundene Datei — fällt auf.
+        /// </summary>
+        [Fact]
+        public void Ein_verdrehter_Mockup_Verweis_faellt_auf()
+        {
+            string wurzel = Arbeitsbaum();
+
+            const string rechenweg = "Dokumentation/aktuell/Wirtschaftlichkeit_Kosten/Rechenweg/01_Investitionskosten_BHKW.md";
+            const string wegweiser = "Dokumentation/aktuell/Wirtschaftlichkeit_Kosten/LIESMICH.md";
+
+            Assert.True(TrifftMockup(wurzel, rechenweg, "../../Mockups/Dialog_Formel_Zahlenprobe.html#invest"));
+            Assert.True(TrifftMockup(wurzel, wegweiser, "../Mockups/Dialog_Formel_Zahlenprobe.html"));
+            Assert.True(TrifftMockup(wurzel, "CLAUDE.md", Mockupordner + "/Katalogfilter_Vorschlag.html"));
+
+            Assert.False(TrifftMockup(wurzel, rechenweg, "../Mockups/Dialog_Formel_Zahlenprobe.html"));
+            Assert.False(TrifftMockup(wurzel, wegweiser, "Mockups/Dialog_Formel_Zahlenprobe.html"));
+            Assert.False(TrifftMockup(wurzel, "CLAUDE.md", "Mockups/Katalogfilter_Vorschlag.html"));
+            Assert.False(TrifftMockup(wurzel, "CLAUDE.md", Mockupordner + "/Gibt_Es_Nicht.html"));
+
+            // Der Leser erkennt die Spanne - und nur sie.
+            Assert.Single(Mockupspanne.Matches("Mockup: `" + Mockupordner + "/X.html` — dazu"));
+            Assert.Empty(Mockupspanne.Matches("der Ordner `" + Mockupordner + "/` allein"));
+            Assert.Empty(Mockupspanne.Matches("die Mockups `Beispielprojekt.md` daneben"));
+
+            // Und der Leser liest wirklich Dateien.
+            Assert.Contains(wegweiser, MockupLeser());
+            Assert.Contains("CLAUDE.md", MockupLeser());
+            Assert.Contains(Index, MockupLeser());
+        }
+
         // =====================================================================
         //  Werkzeug
         // =====================================================================
@@ -369,6 +455,40 @@ namespace EPOS.Kern.Tests
             string voll = Path.GetFullPath(Path.Combine(ordner, ziel.Replace('/', Path.DirectorySeparatorChar)));
             return File.Exists(voll) || Directory.Exists(voll);
         }
+
+        /// <summary>
+        /// Die Dateien, deren Mockup-Spannen Fall 4 prüft: alles Markdown unter
+        /// <c>Dokumentation/aktuell/</c>, der Index und die Wurzel-<c>CLAUDE.md</c>.
+        /// </summary>
+        private static string[] MockupLeser()
+            => Dokumentationspapiere()
+                .Where(p => p.StartsWith("Dokumentation/aktuell/", StringComparison.Ordinal))
+                .Concat(new[] { Index, "CLAUDE.md" })
+                .OrderBy(p => p, StringComparer.Ordinal)
+                .ToArray();
+
+        /// <summary>
+        /// Trifft die Code-Spanne, von <paramref name="datei"/> aus oder von der Wurzel aus
+        /// gelesen, eine Datei UNMITTELBAR unter <see cref="Mockupordner"/>?
+        /// </summary>
+        private static bool TrifftMockup(string wurzel, string datei, string spanne)
+        {
+            string ziel = spanne.Trim();
+            int anker = ziel.IndexOf('#');
+            if (anker >= 0) ziel = ziel.Substring(0, anker).Trim();
+            if (ziel.Length == 0) return false;
+
+            string pfad = ziel.Replace('/', Path.DirectorySeparatorChar);
+            string ordner = Path.GetDirectoryName(Path.Combine(wurzel, datei.Replace('/', Path.DirectorySeparatorChar)));
+            string erlaubt = Path.GetFullPath(Path.Combine(wurzel, Mockupordner.Replace('/', Path.DirectorySeparatorChar)));
+
+            return ImMockupordner(Path.GetFullPath(Path.Combine(ordner, pfad)), erlaubt)
+                || ImMockupordner(Path.GetFullPath(Path.Combine(wurzel, pfad)), erlaubt);
+        }
+
+        private static bool ImMockupordner(string voll, string erlaubt)
+            => File.Exists(voll)
+               && string.Equals(Path.GetDirectoryName(voll), erlaubt, StringComparison.Ordinal);
 
         /// <summary>Alle Markdown-Papiere unter <c>Dokumentation/</c>, repo-relativ.</summary>
         private static string[] Dokumentationspapiere()
