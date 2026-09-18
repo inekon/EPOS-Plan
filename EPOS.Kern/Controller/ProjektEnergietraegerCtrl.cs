@@ -30,16 +30,21 @@ namespace WindowsFormsApplication1
     /// <para><b>Welches Gewerk welchen Träger beiträgt</b> (an den Daten der
     /// Kenndaten.accdb vom 22.08.2026 geprüft):</para>
     /// <list type="bullet">
-    ///   <item><description><b>BHKW</b> und <b>Heizkessel</b> — ihr eigener Brennstoff
-    ///     bzw. Energieträger. Nur diese beiden Gewerke tragen überhaupt je einen
-    ///     <c>ID_Carrier</c>: Von den zehn Anlagenzeilen der Datenbank mit
-    ///     <c>ID_Carrier &gt; 0</c> sind alle vom Typ <c>BHKW_TYP</c> oder
-    ///     <c>KESSEL_TYP</c>.</description></item>
-    ///   <item><description><b>Wärmepumpe</b>, <b>Photovoltaik</b>, <b>Stromspeicher</b>
-    ///     und ein gesetzter <b>Heizstab</b> — der Stromträger des Projekts
-    ///     (<see cref="StrompreisZerlegungCtrl.StromCarrierId"/>). Sie führen keinen eigenen
-    ///     Trägerverweis; ihre Energie ist elektrische Energie, und genau die rechnet
-    ///     der <c>KostenEmissionRechner</c> über den Netzbezugspfad ab.</description></item>
+    ///   <item><description><b>BHKW</b> und <b>Heizkessel mit Brennstoff</b> — ihr
+    ///     eigener Brennstoff bzw. Energieträger. Nur diese beiden Gewerke tragen
+    ///     überhaupt je einen <c>ID_Carrier</c>: Von den zehn Anlagenzeilen der
+    ///     Datenbank mit <c>ID_Carrier &gt; 0</c> sind alle vom Typ <c>BHKW_TYP</c>
+    ///     oder <c>KESSEL_TYP</c>.</description></item>
+    ///   <item><description><b>Wärmepumpe</b>, <b>Photovoltaik</b>, <b>Stromspeicher</b>,
+    ///     ein gesetzter <b>Heizstab</b> und der <b>Elektrokessel</b> (Gerät mit
+    ///     <c>Brennstoff</c> = 13, <see cref="SimulationSPK.IstStromkesselBrennstoff"/>) —
+    ///     der Stromträger des Projekts
+    ///     (<see cref="StrompreisZerlegungCtrl.StromCarrierId"/>). Ihre Energie ist
+    ///     elektrische Energie, und genau die rechnet der <c>KostenEmissionRechner</c>
+    ///     über den Netzbezugspfad ab. Der Elektrokessel darf deshalb NICHT über den
+    ///     Brennstoffweg laufen: Der Katalog führt drei Träger auf Brennstoff 13, und
+    ///     die Auswahl unter ihnen könnte einen anderen treffen als den, mit dem die
+    ///     Wärmepumpe desselben Projekts rechnet.</description></item>
     ///   <item><description><b>Solarthermie</b> und <b>Pufferspeicher</b> — KEIN
     ///     Energieträger. Solarstrahlung wird nicht beschafft, ein Speicher wandelt
     ///     nicht um.</description></item>
@@ -188,15 +193,27 @@ namespace WindowsFormsApplication1
                           DbWerte.ERZEUGER_BHKW, bezeichner);
 
                 geraet = Ganz(r, "ID_Kessel");
-                if (geraet > 0)
+
+                // DER ELEKTROKESSEL geht NICHT den Brennerweg: Sein Gerät führt
+                // Brennstoff 13, er bezieht Strom und gehört damit zur elektrischen
+                // Welt wie Wärmepumpe und Heizstab (E1, Anwenderentscheid 18.09.2026).
+                // Über den Brennstoffweg bekäme er irgendeinen der drei Stromträger des
+                // Katalogs — und damit womöglich einen anderen als die Wärmepumpe
+                // desselben Projekts.
+                bool elektrokessel = IstElektrokessel(kesselBrennstoff, geraet);
+
+                if (geraet > 0 && !elektrokessel)
                     Trage(gefunden, katalog, zugeordnet,
                           BrennerTraeger(katalog, zugeordnet, idCarrier, kesselBrennstoff, geraet),
                           DbWerte.ERZEUGER_HEIZKESSEL, bezeichner);
 
                 // --- Elektrische Gewerke: der Stromträger des Projekts ---
-                bool elektrisch = Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0 || Ganz(r, "ID_SP") > 0;
+                bool elektrisch = Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0
+                               || Ganz(r, "ID_SP") > 0 || elektrokessel;
                 string gewerk = Ganz(r, "ID_WP") > 0 ? DbWerte.ERZEUGER_WAERMEPUMPE
                               : Ganz(r, "ID_PV") > 0 ? DbWerte.ERZEUGER_PHOTOVOLTAIK
+                              : Ganz(r, "ID_SP") > 0 ? DbWerte.ERZEUGER_STROMSPEICHER
+                              : elektrokessel ? DbWerte.ERZEUGER_HEIZKESSEL
                               : DbWerte.ERZEUGER_STROMSPEICHER;
 
                 // Der Heizstab ist ein Merkmal der Anlagenzeile, kein eigenes Gerät —
@@ -284,6 +301,7 @@ namespace WindowsFormsApplication1
                     Bezeichner = Text(r, "Bezeichner")
                 };
                 int idCarrier = Ganz(r, SchemaKatalog.SPALTE_ID_CARRIER);
+                bool elektrokessel = false;
 
                 int geraet = Ganz(r, "ID_BHKW");
                 if (geraet > 0)
@@ -296,7 +314,13 @@ namespace WindowsFormsApplication1
                 {
                     e.Komponente = DbWerte.ERZEUGER_HEIZKESSEL;
                     e.GeraeteId = geraet;
-                    e.CarrierId = BrennerTraeger(katalog, zugeordnet, idCarrier, kesselBrennstoff, geraet);
+                    // Elektrokessel: kein Brennstoffweg, sondern der Trägerverweis der
+                    // Anlage und sonst der projektweite Stromträger unten — dieselben
+                    // zwei Stufen wie bei der Wärmepumpe (E1).
+                    elektrokessel = IstElektrokessel(kesselBrennstoff, geraet);
+                    e.CarrierId = elektrokessel
+                        ? (idCarrier > 0 && Zeile(katalog, idCarrier) != null ? idCarrier : 0)
+                        : BrennerTraeger(katalog, zugeordnet, idCarrier, kesselBrennstoff, geraet);
                 }
                 else if (Ganz(r, "ID_WP") > 0) e.Komponente = DbWerte.ERZEUGER_WAERMEPUMPE;
                 else if (Ganz(r, "ID_PV") > 0) e.Komponente = DbWerte.ERZEUGER_PHOTOVOLTAIK;
@@ -305,7 +329,8 @@ namespace WindowsFormsApplication1
                 else if (Ganz(r, "ID_PUFFER") > 0) e.Komponente = DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER;
                 else continue;   // leere Anlagenzeile — nichts anzuzeigen
 
-                bool elektrisch = Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0 || Ganz(r, "ID_SP") > 0;
+                bool elektrisch = Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0
+                               || Ganz(r, "ID_SP") > 0 || elektrokessel;
                 // ET-5 (08.09.2026): der an der Anlage gewaehlte Traeger der elektrischen Welt.
                 if (e.CarrierId <= 0 && elektrisch && idCarrier > 0 && Zeile(katalog, idCarrier) != null)
                     e.CarrierId = idCarrier;
@@ -321,6 +346,22 @@ namespace WindowsFormsApplication1
         }
 
         // ------------------------------------------------------------- Trägerauflösung
+
+        /// <summary>
+        /// Trägt diese Anlagenzeile einen ELEKTROKESSEL? Die Antwort hängt allein am
+        /// Brennstoff der Gerätezeile — <see cref="SimulationSPK.IstStromkesselBrennstoff"/>
+        /// ist die eine Regel, die auch die Simulation und der Bezugsgrößen-Auflöser
+        /// stellen. <c>false</c>, wenn die Anlage kein Kesselgerät führt oder der
+        /// Brennstoff unbekannt ist.
+        /// </summary>
+        private static bool IstElektrokessel(Dictionary<int, int> kesselBrennstoff, int geraet)
+        {
+            int brennstoff;
+            return geraet > 0
+                && kesselBrennstoff != null
+                && kesselBrennstoff.TryGetValue(geraet, out brennstoff)
+                && SimulationSPK.IstStromkesselBrennstoff(brennstoff);
+        }
 
         /// <summary>
         /// Der Träger eines Brenners: erst der Verweis der ANLAGE, sonst der Brennstoff
@@ -405,16 +446,32 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Führt das Projekt eine Anlage der elektrischen Welt (Wärmepumpe, Photovoltaik,
-        /// Stromspeicher oder gesetzter Heizstab)? Dieselbe Bedingung wie in
-        /// <see cref="Verwendete"/> und <c>WizardCtrl.BrauchtStromTraeger</c>.
+        /// Stromspeicher, gesetzter Heizstab oder ein ELEKTROKESSEL)? Dieselbe Bedingung
+        /// wie in <see cref="Verwendete"/> und <c>WizardCtrl.BrauchtStromTraeger</c> —
+        /// beide Fassungen müssen dieselbe Welt meinen, sonst zeigt die Kostenseite einen
+        /// Träger an, den niemand zuordnet.
+        ///
+        /// <para>Der Kesselweg kostet eine ZWEITE Abfrage und wird deshalb erst gezogen,
+        /// wenn keine der anderen Anlagen schon geantwortet hat.</para>
         /// </summary>
         internal static bool BrauchtStromTraeger(int projektID)
         {
             DataTable anlagen = Anlagen(projektID);
             if (anlagen == null) return false;
+
+            bool mitKessel = false;
             foreach (DataRow r in anlagen.Rows)
+            {
                 if (Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0 || Ganz(r, "ID_SP") > 0 || Ja(r, "Heizstab"))
                     return true;
+                if (Ganz(r, "ID_Kessel") > 0) mitKessel = true;
+            }
+            if (!mitKessel) return false;
+
+            Dictionary<int, int> kesselBrennstoff =
+                GeraeteBrennstoff(projektID, "ID_Kessel", "Tab_Heizkessel");
+            foreach (DataRow r in anlagen.Rows)
+                if (IstElektrokessel(kesselBrennstoff, Ganz(r, "ID_Kessel"))) return true;
             return false;
         }
 

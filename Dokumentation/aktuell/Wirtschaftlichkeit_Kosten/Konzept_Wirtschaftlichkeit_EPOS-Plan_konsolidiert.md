@@ -527,8 +527,9 @@ Betriebskosten BHKW 1        brutto 8.358,08 €/a        7.023,60
 **Einordnung und Grenzen:** Nur Konzept, keine Umsetzung (Arbeitsregel). Der Klick auf einen
 Betrag öffnet die vollständige Herleitung (Entwurf C im Artifact); die Mengenherkunft folgt den
 Rechenwegen aus § 3.4. Die Herleitungszeile zeigt am Kessel die Menge des Laufs (Befund **B-1**);
-beim Elektrokessel steht dort „× 0 kWh", weil seine Energie als Netzbezug und nicht als Brennstoff
-geführt wird.
+beim Elektrokessel steht dort sein **Stromeinsatz** samt Betrag zum Arbeitspreis des Stromträgers
+und der Herkunft „Strom · Netzbezug (im Reststrombedarf des Projekts bepreist)" — die Menge ist
+sichtbar, bezahlt wird sie genau einmal, nämlich im Netzbezug (Regel **E1**).
 
 ## 2.9 Wählbares Vergleichsprojekt — die Referenz der Differenzrechnung (Anforderung 31.08.2026)
 
@@ -1203,9 +1204,16 @@ gespeicherte Wert.
 | Komponente | Endenergie | Formel |
 |---|---|---|
 | BHKW | Brennstoff | Bedarf = Σ Verbrauch × 1000; Kosten = Bedarf × Arbeitspreis(CarrierId) |
-| Heizkessel | Brennstoff | ebenso; `Verbrauch` trägt den Brennstoffeinsatz des Laufs (**B-1**). Beim Elektrokessel 0 — seine Energie steht im Netzbezug |
+| Heizkessel (Brennstoff) | Brennstoff | ebenso; `Verbrauch` trägt den Brennstoffeinsatz des Laufs (**B-1**) |
+| Heizkessel (**Elektrokessel**, Gerät mit `Brennstoff` = 13) | Strom | Bedarf = Σ (Waerme_Gas + Waerme_Oel) × 1000 — seine Nutzwärme, denn der Rechenkern führt ihn mit Nutzungsgrad 1; Kosten = Bedarf × Strompreis. Seine Modulzeile bleibt bei `Verbrauch` = 0, weil die Energie im Netzbezug steht (Regel **E1**) |
 | Wärmepumpe | Strom | Bedarf = Σ (Stromverbrauch + Heizstab) × 1000; Kosten = Bedarf × Strompreis |
 | PV · Solarthermie · Speicher | keine | null — nur Jahresbetrag zulässig |
+
+**Zwei Welten am selben Gewerk, nie eine Summe:** Trägt ein Projekt Brennstoff- **und**
+Elektrokessel, weist der Auflöser sie getrennt aus — anlagenscharf gilt die Welt dieses Kessels,
+als Komponentensumme die Brennstoffwelt und nur bei reinen Elektrokesselprojekten die Stromwelt.
+Brennstoff und Netzbezugsstrom sind zwei Energieformen mit zwei Preisen; eine gemeinsame Zahl wäre
+für beide Bemessungen keine Basis, sondern eine Vermengung.
 
 Preis = `PreisArbeit / EffHi`, **ohne** Grund- und Leistungspreis.
 
@@ -1703,7 +1711,7 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 
 | Nr. | Befund |
 |---|---|
-| ✔ **B-1** | **Die Kessel-Modulspalte `Verbrauch` blieb leer** — der Rechenkern führte den je Kessel gerechneten Brennstoffeinsatz nur auf der Anlagenzeile je Brennstoffart, und genau die Modulspalte liest die Kostenkette. Endenergie-Positionen am Kessel fielen damit auf `null` (nicht auf 0 €). Die Steuerseite umging es über den Jahresnutzungsgrad, Kosten- und Betriebsseite nicht. **Erledigt:** Die Modulzeile trägt Verbrauch, Wärmeproduktion und Brennstoff des Laufs; Modulverbrauch und Anlagensumme sind dieselbe Größe. Ausgenommen der Elektrokessel — er bucht auf den Stromzähler und steht im Netzbezug, seine Modulzeile führt bewusst 0. |
+| ✔ **B-1** | **Die Kessel-Modulspalte `Verbrauch` blieb leer** — der Rechenkern führte den je Kessel gerechneten Brennstoffeinsatz nur auf der Anlagenzeile je Brennstoffart, und genau die Modulspalte liest die Kostenkette. Endenergie-Positionen am Kessel fielen damit auf `null` (nicht auf 0 €). Die Steuerseite umging es über den Jahresnutzungsgrad, Kosten- und Betriebsseite nicht. **Erledigt:** Die Modulzeile trägt Verbrauch, Wärmeproduktion und Brennstoff des Laufs; Modulverbrauch und Anlagensumme sind dieselbe Größe. Ausgenommen der Elektrokessel — er bucht auf den Stromzähler und steht im Netzbezug, seine Modulzeile führt bewusst 0. Seine Endenergie ist damit nicht verloren: Der Auflöser weist sie als **Stromeinsatz** aus (Regel **E1**), ohne sie ein zweites Mal zu bepreisen. |
 | B-2 | Asymmetrie der Rückfälle: Endenergie-Arten unbedingt frisch, Rückfall-Arten bedingt. |
 | B-3 | „Jüngster Lauf" ist die höchste ID, nicht der Zeitstempel. |
 | B-4 | Vier Arten nie frisch: `EUR_PRO_H`, `EUR_PRO_KWH`, `PROZENT_BRENNSTOFFKOSTEN`, `PROZENT_STROMKOSTEN`. |
@@ -1767,6 +1775,25 @@ werden wie im Mockup"):
 | **ET-D-2** | Was zeigt der Emissionsblock der Trägerkarte? | **(a) die Arten DIESES Trägers** samt Bilanzierungsmethode als Klappliste, Summenzeile und Fußnote — **kein Primärenergiefaktor, keine Trägerübersicht**. Der Modus ist Projektsache und im Katalogkontext nur lesbar (Entscheide D-1/E-1 bleiben) |
 | **ET-D-3** | Was bietet die Preisbasis an? | **(a) genau zwei Einträge** — Abrechnungseinheit und kWh, Faktor = Heizwert. Die Umrechnungsregeln werden zum zugeklappten **Prüfblock** „Einheiten und Umrechnung" |
 | **UR-1** | Die Preisbasis rechnete mit dem `factor` einer Umrechnungsregel statt mit dem Heizwert (Anwenderfoto: 0,07 €/kWh eingegeben, 0,04 €/Nm³ gespeichert, Formelzeile 0,0033 €/kWh) | **behoben mit ET-D**: `EnergietraegerPreisCtrl.Preisbasen` liefert den Heizwert als Faktor; `Umrechnungen` liest nur noch aktive Regeln. **Bestandsprojekte werden nicht stillschweigend umgerechnet** — erkennbar an der Formelzeile der Trägerkarte, die den Preis je kWh nennt; wer einen falsch gespeicherten Arbeitspreis hat, gibt ihn neu ein |
+| **E1** | Welchen Energieträger bekommt ein **Elektroheizkessel** („Für Elektroheizkessel muss Strom als Energieträger auswählbar und zuzuordnen sein")? | **Er gehört zur elektrischen Welt wie Wärmepumpe und Heizstab.** Ein Heizkessel, dessen Gerät `Tab_Heizkessel.Brennstoff` = 13 führt, lässt nur die Stromfamilie zu, erscheint in der Komponentenliste der Energieträgerverwaltung mit dem **projektweiten Stromträger** als Vorgabe und ist dort wie eine Wärmepumpe zuzuordnen. Nicht über den Brennstoffweg: Der Katalog führt mehrere Träger auf Brennstoff 13, und die Auswahl unter ihnen könnte einen anderen treffen als die Wärmepumpe desselben Projekts. **Ein eigener Heizstromtarif je Anlage ist damit nicht entschieden** — es gilt weiterhin ein Preis je Trägertyp im Projekt |
+
+**Elektrokessel und Energieträgerzuordnung — die drei Aussagen zusammen.** (1) *Zulassung:* Die
+Zulässigkeit hängt am **Gerät**, nicht am Wort „Heizkessel"; Brennstoff 13 bedeutet Kategorie
+`ELECTRICITY`, also Gruppe „Strom". (2) *Vorgabe:* Ohne eigenen Trägerverweis an der Anlagenzeile
+gilt der Stromträger des Projekts — dieselbe Auflösung, die Wärmepumpe, Photovoltaik,
+Stromspeicher und Heizstab nutzen; ein Projekt, dessen einzige elektrische Anlage ein
+Elektrokessel ist, braucht und bekommt deshalb ebenfalls einen Stromträger. (3) *Bilanz:* Die
+Zuordnung ist eine **Anzeige- und Zuordnungsfrage**, keine Buchung — der Strom des Elektrokessels
+bleibt im Reststrombedarf und wird dort einmal bepreist; seine Modulzeile führt weiterhin
+`Verbrauch` = 0.
+
+**Keine Doppelbepreisung auf der Betriebsseite** (geprüft am Bestand): Keine Bemessungsart des
+Betriebskosten-Rasters multipliziert eine Laufmenge mit einem **Trägerpreis**. Die `EUR_PRO_*`-Arten
+rechnen `Menge × Einheitpreis`, und der Einheitpreis ist ein gepflegter Satz; die vier
+preisgestützten `PROZENT_*`-Arten (`ENDENERGIEKOSTEN`, `ENDENERGIEBEDARF`, `BRENNSTOFFKOSTEN`,
+`STROMKOSTEN`) bilden einen **Anteil** einer Energiekostensumme, keine zweite Vollbepreisung. Eine
+Kohärenzprüfung „Strom eines elektrischen Verbrauchers doppelt bepreist" hat deshalb keinen
+Gegenstand und ist nicht gebaut.
 
 Aus dem Energieträger-Umfeld kommt eine weitere Entscheidung desselben Tages hinzu. Sie betrifft
 die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernraum:

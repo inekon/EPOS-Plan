@@ -1439,11 +1439,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — Strom · Netzbezug (im Reststrombedarf des Projekts bepreist) ähnelt.
+        /// </summary>
+        public static string AUFLOESER_BASIS_NETZBEZUG {
+            get {
+                return ResourceManager.GetString("AUFLOESER_BASIS_NETZBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string AUFLOESER_KOMP_BHKW {
             get {
                 return ResourceManager.GetString("AUFLOESER_KOMP_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrokessel ähnelt.
+        /// </summary>
+        public static string AUFLOESER_KOMP_ELEKTROKESSEL {
+            get {
+                return ResourceManager.GetString("AUFLOESER_KOMP_ELEKTROKESSEL", resourceCulture);
             }
         }
         

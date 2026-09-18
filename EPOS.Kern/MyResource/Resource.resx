@@ -19632,4 +19632,10 @@ Möchten Sie das zulassen?</value>
   <data name="KDLG_HINWEIS_ENDENERGIE" xml:space="preserve">
     <value>Diese Mengen sind die Bezugsgrößen der Bemessungen „% des Endenergiebedarfs" und „% der Endenergiekosten".</value>
   </data>
+  <data name="AUFLOESER_KOMP_ELEKTROKESSEL" xml:space="preserve">
+    <value>Elektrokessel</value>
+  </data>
+  <data name="AUFLOESER_BASIS_NETZBEZUG" xml:space="preserve">
+    <value>{0} — Strom · Netzbezug (im Reststrombedarf des Projekts bepreist)</value>
+  </data>
 </root>

@@ -338,10 +338,12 @@ namespace WindowsFormsApplication1
         /// führt keinen Stromträger.
         ///
         /// <para><b>Nur für Projekte mit elektrischer Welt.</b> Ein reines
-        /// Kesselprojekt ohne Wärmepumpe, PV, Stromspeicher oder Heizstab bekommt
-        /// keinen Rückfall: Sein Netzbezug ist Haushaltsstrom der Bedarfsseite und
-        /// keine Anlagengröße, und ein Träger, den niemand zugeordnet hat, wäre dort
-        /// eine Erfindung.</para>
+        /// BRENNSTOFF-Kesselprojekt ohne Wärmepumpe, PV, Stromspeicher, Heizstab oder
+        /// Elektrokessel bekommt keinen Rückfall: Sein Netzbezug ist Haushaltsstrom der
+        /// Bedarfsseite und keine Anlagengröße, und ein Träger, den niemand zugeordnet
+        /// hat, wäre dort eine Erfindung. Ein Elektrokessel dagegen bezieht seinen Strom
+        /// als Anlage und zählt zur elektrischen Welt
+        /// (<see cref="ProjektEnergietraegerCtrl.BrauchtStromTraeger"/>).</para>
         ///
         /// <para><b>EINE Fassung für Kosten und Emissionen.</b>
         /// <see cref="KostenEmissionRechner"/> bepreist den Netzbezug seit Auftrag #267

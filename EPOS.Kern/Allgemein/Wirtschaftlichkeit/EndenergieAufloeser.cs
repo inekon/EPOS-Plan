@@ -26,6 +26,19 @@ namespace WindowsFormsApplication1
     /// Stromspeicher und Photovoltaik haben KEINE Endenergie — dort ist nur der
     /// feste Jahresbetrag zulässig, der Auflöser liefert null.</para>
     ///
+    /// <para><b>DER ELEKTROKESSEL</b> (Gerät mit <c>Tab_Heizkessel.Brennstoff</c> = 13,
+    /// <see cref="SimulationSPK.IstStromkesselBrennstoff"/>) ist ein Heizkessel mit der
+    /// Endenergie der Wärmepumpe: STROM. Seine Modulzeile führt bewusst
+    /// <c>Verbrauch</c> = 0, weil die Simulation seinen Einsatz auf den Stromzähler
+    /// bucht und er über den Reststrombedarf schon im Netzbezug steht, den die
+    /// Kostenrechnung eigens bepreist. Der Auflöser weist die Menge trotzdem aus —
+    /// <see cref="SimulationSPK.StromeinsatzElektrokesselMwh"/>, dieselbe Regel, mit der
+    /// die Simulation sie bucht — und bewertet sie mit dem Arbeitspreis des
+    /// Stromträgers. Das ist eine ANZEIGE, keine zweite Buchung: In Energiekosten,
+    /// CO₂-Bilanz und BEHG-Abgabe steht dieser Strom weiterhin genau einmal, nämlich
+    /// im Netzbezug. Brennstoff- und Elektrokessel werden deshalb nie zu EINER Summe
+    /// vermengt: zwei Energieformen mit zwei Preisen.</para>
+    ///
     /// <para><b>Anlagenscharf mit Komponentensumme als Rückfall.</b> Trägt die
     /// Position eine <c>ID_Anlage</c> (Schritt 45), zählen nur die Modulzeilen
     /// dieser Anlage — die Zuordnung läuft über den Bezeichner, denn die
@@ -78,6 +91,22 @@ namespace WindowsFormsApplication1
         private readonly int _idProjekt;
         private readonly ErgebnisModel _ergebnis;
         private readonly Dictionary<int, string> _anlagenName = new Dictionary<int, string>();
+
+        /// <summary>
+        /// Die Bezeichner der Anlagen, deren Kesselgerät auf STROM läuft. Der Schlüssel
+        /// ist der Bezeichner, weil die Ergebnis-Modulzeile ihre Anlage als Namen führt
+        /// (<c>ErgebnisHeizkesselModulModel.Modul</c>) — dasselbe Verfahren wie bei
+        /// <see cref="_anlagenName"/>.
+        ///
+        /// <para><b>Warum das Gerät und nicht das Brennstoffwort der Zeile.</b> Das Wort
+        /// „Strom" schreibt der Lauf erst seit Befund B-1; gespeicherte Läufe von davor
+        /// führen die Spalte leer (Projekt 1024 der Testdatenbank). Der Brennstoff des
+        /// Geräts gilt dagegen für jede Zeile, alte wie neue — und es ist genau die
+        /// Angabe, aus der die Simulation ihr <c>IstStromkessel</c> bildet.</para>
+        /// </summary>
+        private readonly HashSet<string> _elektrokessel =
+            new HashSet<string>(StringComparer.Ordinal);
+
         private readonly Dictionary<int, double?> _preisJeTraeger = new Dictionary<int, double?>();
         private double? _strompreis;
         private bool _strompreisErmittelt;
@@ -103,6 +132,7 @@ namespace WindowsFormsApplication1
 
                 var a = new EndenergieAufloeser(idProjekt, erg);
                 a.AnlagenNamenLaden();
+                a.ElektrokesselLaden();
                 return a;
             }
             catch { return null; }
@@ -147,8 +177,7 @@ namespace WindowsFormsApplication1
                     return Brennstoffsumme(BhkwModule(), anlagenName,
                                            MyResource.Resource.AUFLOESER_KOMP_BHKW);
                 case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
-                    return Brennstoffsumme(KesselModule(), anlagenName,
-                                           MyResource.Resource.AUFLOESER_KOMP_HEIZKESSEL);
+                    return Kesselsumme(anlagenName);
                 case KOMPONENTE_WAERMEPUMPE:
                     return Waermepumpensumme(anlagenName);
                 default:
@@ -176,6 +205,40 @@ namespace WindowsFormsApplication1
             catch { }
         }
 
+        /// <summary>
+        /// Die Anlagenbezeichner der ELEKTROKESSEL des Projekts — der Verbund
+        /// <c>Tab_Energieanlagen</c> → <c>Tab_Heizkessel</c> über den Kesselverweis der
+        /// Anlagenzeile, gefiltert auf <see cref="SimulationSPK.BRENNSTOFF_STROM"/>.
+        /// Leere Menge = kein Elektrokessel, Abfrage gescheitert oder altes Schema; dann
+        /// bleibt alles wie zuvor.
+        /// </summary>
+        private void ElektrokesselLaden()
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT a.Bezeichner FROM Tab_Energieanlagen AS a " +
+                    "INNER JOIN Tab_Heizkessel AS k ON a.ID_Kessel = k.ID " +
+                    "WHERE a.ID_Projekt = ? AND k.Brennstoff = ?",
+                    new DbParam("@p", _idProjekt),
+                    new DbParam("@b", SimulationSPK.BRENNSTOFF_STROM));
+                if (dt == null) return;
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r[0] == DBNull.Value) continue;
+                    string name = Convert.ToString(r[0]);
+                    if (!string.IsNullOrEmpty(name)) _elektrokessel.Add(name);
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>Läuft die Kessel-Modulzeile dieses Namens auf Strom?</summary>
+        private bool IstElektrokessel(string modul)
+        {
+            return _elektrokessel.Count > 0 && _elektrokessel.Contains(modul ?? "");
+        }
+
         private double? Preis(int carrierId)
         {
             double? p;
@@ -201,12 +264,32 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        private List<Brennstoffzeile> KesselModule()
+        /// <summary>
+        /// Die Kessel-Modulzeilen, nach Welt getrennt. <paramref name="elektro"/>
+        /// <c>true</c> = die ELEKTROkessel mit ihrem Stromeinsatz
+        /// (<see cref="SimulationSPK.StromeinsatzElektrokesselMwh"/>), <c>false</c> =
+        /// die Brennstoffkessel mit ihrem <c>Verbrauch</c>. Die beiden Listen sind
+        /// disjunkt; zusammengelegt würden zwei Energieformen mit zwei Preisen zu einer
+        /// Zahl verrührt.
+        /// </summary>
+        private List<Brennstoffzeile> KesselModule(bool elektro)
         {
             var liste = new List<Brennstoffzeile>();
-            if (_ergebnis != null && _ergebnis.Heizkessel != null && _ergebnis.Heizkessel.Module != null)
-                foreach (ErgebnisHeizkesselModulModel m in _ergebnis.Heizkessel.Module)
-                    liste.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Verbrauch, CarrierId = m.CarrierId });
+            if (_ergebnis == null || _ergebnis.Heizkessel == null || _ergebnis.Heizkessel.Module == null)
+                return liste;
+
+            foreach (ErgebnisHeizkesselModulModel m in _ergebnis.Heizkessel.Module)
+            {
+                if (IstElektrokessel(m.Modul) != elektro) continue;
+                liste.Add(new Brennstoffzeile
+                {
+                    Modul = m.Modul,
+                    VerbrauchMWh = elektro
+                        ? SimulationSPK.StromeinsatzElektrokesselMwh(m.Waerme_Gas, m.Waerme_Oel)
+                        : m.Verbrauch,
+                    CarrierId = m.CarrierId
+                });
+            }
             return liste;
         }
 
@@ -247,6 +330,77 @@ namespace WindowsFormsApplication1
                                     komponentenWort, anlagenName)
                     : string.Format(CultureInfo.CurrentCulture,
                                     MyResource.Resource.AUFLOESER_BASIS_ALLE, komponentenWort)
+            };
+        }
+
+        /// <summary>
+        /// Endenergie der Komponente HEIZKESSEL — getrennt nach den zwei Welten
+        /// (E1, Anwenderentscheid 18.09.2026).
+        ///
+        /// <para><b>Anlagenscharf</b> (die Position trägt eine <c>ID_Anlage</c>): Der
+        /// Kessel ist entweder ein Elektro- oder ein Brennstoffkessel — die Frage ist
+        /// eindeutig, und die Antwort kommt aus der Welt DIESES Kessels.</para>
+        ///
+        /// <para><b>Als Komponentensumme</b> (ohne <c>ID_Anlage</c>): Es gilt die
+        /// BRENNSTOFFsumme, solange es eine gibt; führt das Projekt ausschließlich
+        /// Elektrokessel, gilt ihre Stromsumme. Gemischt wird nie: Der Brennstoff der
+        /// einen Kessel und der Netzbezugsstrom der anderen sind zwei Energieformen mit
+        /// zwei Preisen, und eine gemeinsame Zahl wäre für beide Bemessungen
+        /// („% des Endenergiebedarfs", „% der Endenergiekosten") keine Basis, sondern
+        /// eine Vermengung. Die Anzeige der Kostenseite stellt sie deshalb ohnehin als
+        /// zwei Zeilen dar — sie fragt je Anlage.</para>
+        /// </summary>
+        private Groesse Kesselsumme(string anlagenName)
+        {
+            bool elektro = anlagenName != null && IstElektrokessel(anlagenName);
+
+            if (elektro) return Elektrokesselsumme(anlagenName);
+
+            Groesse brennstoff = Brennstoffsumme(KesselModule(false), anlagenName,
+                                                 MyResource.Resource.AUFLOESER_KOMP_HEIZKESSEL);
+            if (brennstoff != null || anlagenName != null) return brennstoff;
+
+            // Reines Elektrokesselprojekt: Die Brennstoffwelt ist leer, die Stromwelt
+            // nicht. Ohne diesen Zweig bliebe die Komponente ohne jede Bezugsgröße.
+            return Elektrokesselsumme(null);
+        }
+
+        /// <summary>
+        /// Strom-Endenergie der ELEKTROKESSEL: Stromeinsatz × Strombezugspreis, nach
+        /// demselben Muster wie <see cref="Waermepumpensumme"/>. Die Herkunft nennt den
+        /// Netzbezug — dort und nur dort wird diese Energie bepreist.
+        /// </summary>
+        private Groesse Elektrokesselsumme(string anlagenName)
+        {
+            double bedarfKwh = 0;
+            int getroffen = 0;
+            foreach (Brennstoffzeile m in KesselModule(true))
+            {
+                if (anlagenName != null &&
+                    !string.Equals(m.Modul ?? "", anlagenName, StringComparison.Ordinal))
+                    continue;
+                getroffen++;
+                if (m.VerbrauchMWh > 0) bedarfKwh += m.VerbrauchMWh * 1000.0;
+            }
+
+            if (anlagenName != null && getroffen == 0) return null;   // Anlage nicht im Lauf
+            if (bedarfKwh <= 0) return null;
+
+            double? preis = StrompreisJeKwh;
+            string kern = anlagenName != null
+                ? string.Format(CultureInfo.CurrentCulture,
+                                MyResource.Resource.AUFLOESER_BASIS_ANLAGE,
+                                MyResource.Resource.AUFLOESER_KOMP_ELEKTROKESSEL, anlagenName)
+                : string.Format(CultureInfo.CurrentCulture,
+                                MyResource.Resource.AUFLOESER_BASIS_ALLE,
+                                MyResource.Resource.AUFLOESER_KOMP_ELEKTROKESSEL);
+
+            return new Groesse
+            {
+                BedarfKwh = bedarfKwh,
+                KostenEuro = preis.HasValue ? bedarfKwh * preis.Value : (double?)null,
+                Basis = string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.AUFLOESER_BASIS_NETZBEZUG, kern)
             };
         }
 
@@ -333,8 +487,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Strommenge [kWh/a] der Komponente bzw. Anlage — erzeugt bei
-        /// BHKW/Photovoltaik, bezogen bei der Wärmepumpe (Stromverbrauch + Heizstab),
-        /// ENTLADEN beim Stromspeicher (H4c); null = keine Basis.</summary>
+        /// BHKW/Photovoltaik, bezogen bei der Wärmepumpe (Stromverbrauch + Heizstab)
+        /// und beim ELEKTROKESSEL (sein Stromeinsatz, E1), ENTLADEN beim Stromspeicher
+        /// (H4c); null = keine Basis.</summary>
         internal double? StromgroesseKwh(int komponentenID, int idAnlage)
         {
             string anlagenName = null;
@@ -362,6 +517,13 @@ namespace WindowsFormsApplication1
                     if (_ergebnis != null && _ergebnis.Waermepumpe != null && _ergebnis.Waermepumpe.Module != null)
                         foreach (ErgebnisWaermepumpeModulModel m in _ergebnis.Waermepumpe.Module)
                             zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Stromverbrauch + m.Heizstab });
+                    break;
+                case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
+                    // E1: Nur der ELEKTROKESSEL hat am Heizkessel eine elektrische
+                    // Größe — sein Stromeinsatz. Ein Brennstoffkessel hat keine, und
+                    // eine Position „je kWh elektrisch" an ihm bekommt weiterhin keine
+                    // Basis statt einer erfundenen Zahl.
+                    zeilen.AddRange(KesselModule(true));
                     break;
                 default:
                     return null;

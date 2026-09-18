@@ -13,15 +13,17 @@ namespace WindowsFormsApplication1
     /// <para><b>Die Regel, je Erzeugerart</b> (Persistenzwerte aus
     /// <see cref="DbWerte"/>):</para>
     /// <list type="bullet">
-    ///   <item><description><b>Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab</b> —
+    ///   <item><description><b>Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab</b> und
+    ///     der <b>Elektrokessel</b> (Gerät mit <c>Brennstoff</c> = 13,
+    ///     <see cref="SimulationSPK.IstStromkesselBrennstoff"/>) —
     ///     die elektrische Welt bezieht Strom, sonst nichts.
     ///     <see cref="ProjektEnergietraegerCtrl.StandardStromTraeger"/> beantwortet
     ///     dieselbe Frage für die VORBELEGUNG; hier steht, was überhaupt wählbar
     ///     ist.</description></item>
     ///   <item><description><b>Heizkessel</b> — die Brennstoffkategorie des Geräts:
-    ///     ein Gaskessel bekommt Gasträger, ein Elektrokessel Strom, ein Holzkessel
-    ///     feste Brennstoffe. Ohne Gerät gibt es keine Einengung, denn ein Kessel kann
-    ///     alles verbrennen und den Strom dazu.</description></item>
+    ///     ein Gaskessel bekommt Gasträger, ein Holzkessel feste Brennstoffe. Ohne
+    ///     Gerät gibt es keine Einengung, denn ein Kessel kann alles verbrennen und den
+    ///     Strom dazu.</description></item>
     ///   <item><description><b>BHKW</b> — gasförmige und flüssige Brennstoffe (darin
     ///     Erdgas, Biogas und Heizöl) sowie tierische Fette (Anwenderentscheid
     ///     17.09.2026: „Tierische Fette" ist ein BHKW-Brennstoff und gehört ohne Gerät
@@ -129,10 +131,19 @@ namespace WindowsFormsApplication1
             bool bhkw = Gleich(erzeugerart, DbWerte.ERZEUGER_BHKW);
             if (!kessel && !bhkw) return null;   // fremde Komponente - keine Aussage
 
-            // Der Brenner bestimmt sich über sein GERÄT: derselbe Weg, den der
+            int brennstoff = BrennstoffDesGeraets(erzeugerart, geraeteId);
+
+            // DER ELEKTROKESSEL gehört zur elektrischen Welt wie Wärmepumpe und
+            // Heizstab: Sein Gerät führt Brennstoff 13 („Elektrische Energie",
+            // SimulationSPK.IstStromkesselBrennstoff), er bezieht Strom und sonst
+            // nichts. Die Aussage steht hier FEST und nicht erst am Ende einer
+            // Kategorieabfrage — dieselbe Zeile wie oben für die Wärmepumpe.
+            if (kessel && SimulationSPK.IstStromkesselBrennstoff(brennstoff)) return NUR_STROM;
+
+            // Der Brenner bestimmt sich sonst über sein GERÄT: derselbe Weg, den der
             // Varianten-Anlegedialog geht (EnergietraegerVarianteCtrl.KategorieZu —
             // „Gas-Kessel → nur Gasträger", Anwenderbefund 03.09.2026).
-            string code = KategoriecodeDesGeraets(erzeugerart, geraeteId);
+            string code = KategoriecodeDesGeraets(brennstoff);
             if (code.Length > 0) return new string[] { code };
 
             // Ohne Gerät: Der Kessel bleibt offen, das BHKW bekommt gasförmig, flüssig
@@ -304,14 +315,11 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Kategoriecode des Geräts einer Brennerkomponente; leer, wenn die
-        /// Komponente kein Gerät führt oder der Brennstoff unbekannt ist.
+        /// Der Kategoriecode zu einem Gerätebrennstoff; leer, wenn die Komponente kein
+        /// Gerät führt oder der Brennstoff unbekannt ist.
         /// </summary>
-        private static string KategoriecodeDesGeraets(string erzeugerart, int geraeteId)
+        private static string KategoriecodeDesGeraets(int brennstoff)
         {
-            if (geraeteId <= 0) return "";
-
-            int brennstoff = BrennstoffDesGeraets(erzeugerart, geraeteId);
             if (brennstoff <= 0) return "";
 
             // EINE Wahrheit für „welche Kategorie hat dieser Brennstoff": dieselbe
@@ -332,6 +340,7 @@ namespace WindowsFormsApplication1
         /// <summary><c>Brennstoff</c> der Gerätezeile; 0 = keine Brennerkomponente oder unbekannt.</summary>
         private static int BrennstoffDesGeraets(string erzeugerart, int geraeteId)
         {
+            if (geraeteId <= 0) return 0;
             try
             {
                 object o = null;

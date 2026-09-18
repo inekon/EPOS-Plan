@@ -19625,4 +19625,10 @@ Do you want to allow this?</value>
   <data name="KDLG_HINWEIS_ENDENERGIE" xml:space="preserve">
     <value>These quantities are the reference values of the measures "% of final energy demand" and "% of final energy cost".</value>
   </data>
+  <data name="AUFLOESER_KOMP_ELEKTROKESSEL" xml:space="preserve">
+    <value>Electric boiler</value>
+  </data>
+  <data name="AUFLOESER_BASIS_NETZBEZUG" xml:space="preserve">
+    <value>{0} — electricity · grid supply (priced within the project's residual electricity demand)</value>
+  </data>
 </root>
