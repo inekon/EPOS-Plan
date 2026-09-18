@@ -53880,6 +53880,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachweise dieses gespeicherten Laufs sind nicht lesbar — bitte neu rechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_NACHWEIS_UNLESBAR {
+            get {
+                return ResourceManager.GetString("WIRT_NACHWEIS_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nachweiszeilen dieses Laufs konnten nicht gespeichert werden — Modultafel, Energiekosten je Anlage und Betriebskostenpositionen zeigt nur der frisch gerechnete Lauf. ähnelt.
+        /// </summary>
+        public static string WIRT_NACHWEIS_ZU_GROSS {
+            get {
+                return ResourceManager.GetString("WIRT_NACHWEIS_ZU_GROSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetäre Wirkungen gespeichert. ähnelt.
         /// </summary>
         public static string WIRT_NM_GESPEICHERT {

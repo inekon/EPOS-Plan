@@ -7790,6 +7790,12 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
   <data name="WIRT_KWKG_PAUSCHALE_SATZ_FEHLT" xml:space="preserve">
     <value>CHP Act: lump sum under section 9 selected, but the catalogue values are missing ({0}) — no advance payment shown.</value>
   </data>
+  <data name="WIRT_NACHWEIS_ZU_GROSS" xml:space="preserve">
+    <value>The supporting detail of this run could not be stored — the unit table, the energy cost per unit and the operating cost items are shown only for a freshly calculated run.</value>
+  </data>
+  <data name="WIRT_NACHWEIS_UNLESBAR" xml:space="preserve">
+    <value>The supporting detail of this stored run cannot be read — please recalculate.</value>
+  </data>
   <data name="WIRT_CO2_PFAD" xml:space="preserve">
     <value>CO₂ price: year-by-year path from the statutory catalogue — {1}: {0} EUR/t, {2}: {3} EUR/t. From {4} the value is a forecast and freely editable.</value>
   </data>

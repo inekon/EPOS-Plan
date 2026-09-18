@@ -326,6 +326,17 @@ namespace Testdatenbankschema
                                             WirtschaftlichkeitCtrl.SPALTE_STROMST_MODUS,
                                             "TEXT", 88, trocken);
 
+            // ---- Etappe B7P: die KONSERVENSPALTE des Nachweisumschlags. KEIN eigener
+            //      Schritt - Tab_ErgebnisWirtschaftlichkeit ist keine Schematabelle, und
+            //      die Zielversion bleibt 89. Wortgleiche Begruendung wie oben: Der
+            //      SqlDialektpruefer loest das INSERT des Ergebnisses gegen diese Datei
+            //      auf und meldete ohne die Spalte eine Fundstelle, die in der
+            //      Anwendung keine ist. Die Quelle ist dieselbe Konstante, die auch der
+            //      Ctrl nimmt.
+            angelegt += SpalteSicherstellen(WirtschaftlichkeitCtrl.TAB_ERGEBNIS,
+                                            WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON,
+                                            "TEXT", 89, trocken);
+
             // ---- Schritt 89: die Anlagenwahrheit des KWK-Zuschlags (Etappe BK1,
             //      Entscheid BK-E-1 a). EINE Spalte an Tab_Energieanlagen UND neun
             //      Datenanweisungen. Beide Quellen sind dieselben, aus denen sich

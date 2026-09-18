@@ -312,9 +312,9 @@ namespace WindowsFormsApplication1
             }
 
             // Die anlagenscharfe Aufteilung in Einspeisung (§ 7 Abs. 1) und Eigenstrom
-            // (§ 7 Abs. 2) trägt der Modulnachweis des Laufs. Er wird nicht persistiert
-            // (offener Punkt B7-2), also erscheinen die beiden Unterzeilen im frischen
-            // Lauf — dieselbe Regel wie bei den Betriebskostenpositionen.
+            // (§ 7 Abs. 2) trägt der Modulnachweis des Laufs. Er reist seit B7P im
+            // Nachweisumschlag des Ergebnisses mit — die beiden Unterzeilen erscheinen
+            // deshalb auch beim gebuchten Stand, nicht nur im frisch gerechneten Lauf.
             if (Irgendein(menge, e => e.KwkgModule != null && e.KwkgModule.Count > 0))
             {
                 z.Add(Unter("ERL_A1_EINSPEISUNG", MyResource.Resource.WIRT_ERL_A1_EINSPEISUNG,
