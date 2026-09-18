@@ -980,7 +980,7 @@ steht seit B7.
 
 ---
 
-## 2.13 Erfassungsgruppen auf der Kostenseite (Anwenderentscheid K-WZ-1)
+## 2.14 Erfassungsgruppen auf der Kostenseite (Anwenderentscheid K-WZ-1)
 
 Die Kostenseite (Berichte & Kosten → Kosten) listet zuerst die Anlagen des Projekts und hängt
 darunter an, was **keiner Anlage** zugeordnet ist. Dort stehen zwei verschiedene Dinge, und sie
@@ -1836,12 +1836,12 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 9g. **BK1-3: Ein Jahr-0-Ausweis der KWKG-Pauschale in der Erlösrubrik** ist als Vorschlag
     aufgenommen und **nicht gebaut** — der Entscheid steht beim Anwender aus. Er löst zugleich
     `B7-3`.
-9h. **BK1-4: `KWKG_Kostenanteil` (Projekt) hat keinen Rechenleser mehr, das Feld bleibt.**
+9l. **BK1-4: `KWKG_Kostenanteil` (Projekt) hat keinen Rechenleser mehr, das Feld bleibt.**
     Anwenderentscheid `BK1-Q1` (c) vom 18.09.2026: Die Spalte und ihr Dialogfeld in Gruppe 2
     bleiben unverändert, obwohl § 8 KWKG das Kontingent seit BK1 aus dem Kostenanteil **der
     Anlage** ableitet. Sie ist damit eine gepflegte Angabe ohne Wirkung — benannt, damit der
     nächste Leser es nicht für einen Fehler hält.
-9i. **BK1-Q2 (a) — abgenommen, hier als Ausnahme festgehalten:** Ein Projekt, dessen
+9m. **BK1-Q2 (a) — abgenommen, hier als Ausnahme festgehalten:** Ein Projekt, dessen
     Vbh-Kontingent an Projekt UND Anlagen leer ist, rechnete auf dem Ersatzweg still mit dem
     Feldvorgabewert 30 000 h. Seit BK1a leitet `KontingentDerAnlage` daraus 0 h mit Begründung ab
     — dieselbe Antwort, die der Regelweg seit BK1 gibt. Wissentlich abgenommen.
