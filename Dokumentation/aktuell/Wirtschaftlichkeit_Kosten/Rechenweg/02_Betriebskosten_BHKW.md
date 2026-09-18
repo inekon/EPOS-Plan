@@ -1,6 +1,6 @@
 # 02 · Betriebskosten BHKW
 
-**Dialog:** `Form_KostenKomponente`, Reiter Betrieb — Entwurf B (Konzept § 2.8) · **Mockup:**
+**Dialog:** `KostenKomponenteDialog`, Optionsgruppe „Betriebskosten" — Entwurf B (Konzept § 2.8) · **Mockup:**
 `../Mockups/Dialog_Formel_Zahlenprobe.html#betrieb` · **Norm:** VDI 2067 · **Code:**
 `BetriebskostenCtrl.Betrag`, `EndenergieAufloeser`, `DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN` /
 `_ENDENERGIEBEDARF` · **Konzept:** § 2.8, § 3.4 · **umgesetzt:** Etappe H1 (Pflichtpositionen,
@@ -8,28 +8,34 @@ Schemaschritt 59)
 
 ## Was der Dialog zeigt
 
-Banner: „Alle Beträge und Bezugsgrößen sind **netto**. Mengen stammen aus dem Simulationslauf vom
-‹Datum, Uhrzeit›." Die drei Pflichtzeilen nach VDI 2067 (Wartung, Instandhaltung, Hilfsenergie)
-stehen oben, hinterlegt, mit **Schloss statt Papierkorb** — der Löschversuch bietet „Satz auf 0
-setzen" an. Unter der Position steht der Empfehlungsbereich, unter dem Satz die Herleitung
-(Menge und Quelle, anlagenscharf), unter dem Betrag „berechnet". Absolute Positionen zeigen ein
-gesperrtes Satzfeld.
+Dasselbe Fenster wie bei den Investitionskosten (`01`), die Optionsgruppe steht auf „Betriebskosten":
+Betragsspalte „Betrag netto [€/a]", Spalte Nutzungsdauer leer, Bemessungen des Betriebsrasters (fester
+Jahresbetrag · % der Investition · % der Endenergiekosten · % des Endenergiebedarfs · je kWh thermisch · je kWh
+elektrisch; „je kWh" und „je Stunde" nur, wo eine Bestandszeile sie trägt). Die drei Pflichtzeilen nach VDI 2067
+(Wartung BHKW, Instandhaltung BHKW, Hilfsenergiekosten — Schemaschritt 59) tragen denselben Papierkorb wie jede
+Zeile; der Löschversuch antwortet „… ist eine Pflichtposition dieser Komponente und kann nicht gelöscht werden.
+Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen." Der Empfehlungsbereich ist der Werkzeugtipp des Satzfeldes
+(„Empfehlung: 1,00 – 2,00 %"), die Bezugsgröße der des Betragsfeldes („1,50 % von 240.772,40 €"). Absolute
+Positionen spiegeln den Satz im Betrag (🔗). Was das Mockup darüber hinaus zeigt, steht im Anhang
+Umsetzungsstand: Herleitungszeile (U28); Schloss statt Papierkorb, Empfehlungszeile, Laufstand über dem Raster,
+Gruppe „Endenergie je Komponente" und die Doppelpflege-Warnung im Kostendialog (U31).
 
-| Position | Bemessung | Satz | Herleitung | Betrag |
+| Position | Bemessung | Satz | Bezugsgröße (Werkzeugtipp) | Betrag |
 |---|---|---|---|---|
-| Wartung BHKW — Pflicht · üblich 2,0–4,0 ct/kWh | € / kWh elektrisch | 0,0280 | × 1.650.000 kWh el · BHKW 1 | 46.200,00 🔒 |
-| Instandhaltung — Pflicht · üblich 1,0–2,0 % | % der Investition | 1,50 | × 240.772,40 € · Investition BHKW 1 | 3.611,59 🔒 |
-| Hilfsenergie — Pflicht · üblich 2,0–4,0 % (BHKW) | % der Endenergiekosten | 2,00 | × 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom | 6.252,62 🔒 |
-| Versicherung | Jahresbetrag | — | | 1.100,00 🗑 |
-| **Betriebskosten BHKW 1** | | | brutto 68.025,41 €/a | **57.164,21** |
+| Wartung BHKW — Pflicht · Empfehlung 0,02–0,04 €/kWh | je kWh elektrisch | 0,0280 €/kWh | 1.650.000,00 kWh · BHKW 1 | 46.200,00 |
+| Instandhaltung BHKW — Pflicht · Empfehlung 1,00–2,00 % | % der Investition | 1,50 % | 240.772,40 € · Investition BHKW 1 | 3.611,59 |
+| Hilfsenergiekosten — Pflicht · Empfehlung 2,00–4,00 % | % der Endenergiekosten | 2,00 % | 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom | 6.252,62 |
+| Versicherung | fester Jahresbetrag | 1.100,00 €/a | — (Satz = Betrag) | 1.100,00 |
+| **Summe Betriebskosten netto** | | | brutto 68.025,41 €/a | **57.164,21** |
 
-**Warnband:** „Die Hilfsenergie ist zugleich als Anlagenanteil im BHKW-Dialog gepflegt (2,0 %).
-Doppelpflege — es zählt die Kostenposition, der Anlagenanteil wirkt nur auf die
-KWKG-Nettostrommenge."
+**Doppelpflege-Warnung** (U31, Text `KOH_HILFSENERGIE_DOPPELT` aus der Kohärenzprüfung des BHKW-Dialogs):
+„Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition Hilfsenergiekosten): BHKW 1 führt einen
+Hilfsenergieanteil von 2,00 % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert den
+KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts."
 
-**Ohne Simulationslauf** zeigen mengenbasierte Zeilen einen Strich statt einer 0 samt Warnzeile
-(„Stromproduktion unbekannt — Simulation noch nicht gelaufen"); investitionsbasierte Sätze rechnen
-sofort. Fußhinweis: „n von m Pflichtpositionen rechnen noch nicht — Simulation ausführen."
+**Ohne Simulationslauf** tragen die mengenbasierten Zeilen ein ⚠ im Betrag, und unter dem Raster steht
+„‚Wartung BHKW': kein Simulationslauf · ‚Hilfsenergiekosten': kein Simulationslauf"; investitionsbasierte Sätze
+rechnen sofort.
 
 ## Berechnungsgrundlage
 

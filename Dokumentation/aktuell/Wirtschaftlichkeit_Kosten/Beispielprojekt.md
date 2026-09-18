@@ -43,20 +43,24 @@ Wurzel hier.
 ## 3 Strombilanz
 
 Die Aufteilung Eigenverbrauch / Einspeisung liefert im echten Lauf die Stundensimulation; hier ist
-sie als Annahme gesetzt (BHKW 70 / 30 %, PV 30 / 70 %), **auf brutto und netto getrennt angewandt**,
-weil verschiedene Vorschriften verschiedene Mengen verlangen (siehe `Rechenweg/05`, Mengentafel).
+sie als Annahme gesetzt (BHKW 70 / 30 %, PV 30 / 70 %) und gilt für die **Bruttoerzeugung** — die
+Strommatrix des Rechenkerns ist die Brutto-Welt (`StromMatrix.KwkEigenGesamtMWh`,
+`KwkEinspeisungGesamtMWh`). Der Hilfsstrom mindert allein die KWKG-Zuschlagsmengen, und zwar
+**zuerst den Eigenverbrauch**; die Einspeisung erst, wenn der Eigenverbrauch aufgezehrt ist
+(`HilfsstromRechner.NettoSplit`: Hilfsstrom verlässt die Kundenanlage nie). Welche Vorschrift mit
+welcher Menge rechnet, steht in `Rechenweg/05`, Mengentafel.
 
 | Menge | MWh/a | verwendet von |
 |---|---|---|
 | BHKW Eigenverbrauch **brutto** (70 % × 1.650,0) | 1.155,0 | § 9 Abs. 1 Nr. 3 StromStG, CO₂-Grenzwert |
-| BHKW Einspeisung brutto (30 %) | 495,0 | — |
-| BHKW Eigenverbrauch **netto** (70 % × 1.563,2) | 1.094,2 | KWKG § 7 Abs. 2, Differenzmethode |
-| BHKW Einspeisung netto (30 %) | 469,0 | KWKG § 7 Abs. 1, Einspeiseerlös |
+| BHKW Einspeisung brutto (30 %) | 495,0 | Einspeiseerlös (`KwkEinspeisungGesamtMWh`) |
+| BHKW Eigenverbrauch **KWKG** (1.155,0 − 86,8 Hilfsstrom) | 1.068,2 | KWKG § 7 Abs. 2 |
+| BHKW Einspeisung **KWKG** (495,0, der Hilfsstrom ist vom Eigenverbrauch gedeckt) | 495,0 | KWKG § 7 Abs. 1 |
 | PV Eigenverbrauch (30 % × 285,0) | 85,5 | vermiedener Bezug (Ausweis) |
 | PV Einspeisung (70 %) | 199,5 | EEG-Vergütung |
-| Reststrombezug Netz | 250,0 | Energiekosten, § 9b |
-| Strombedarf ohne Anlagen (250,0 + 1.094,2 + 85,5) | 1.429,7 | Differenzmethode „Bezug ohne Anlage" |
-| physisch vermiedener Bezug (1.094,2 + 85,5) | 1.179,7 | vermiedene Stromkosten |
+| Reststrombezug Netz (Lauf „Beide Anlagen") | 250,0 | Energiekosten, § 9b |
+| Strombedarf ohne Anlagen (Bedarfsreihe der Strommatrix) | 1.429,7 | Differenzmethode „Bezug ohne Anlage" |
+| physisch vermiedener Bezug (1.429,7 − 250,0) | 1.179,7 | vermiedene Stromkosten |
 
 ## 4 Preise und Sätze
 
@@ -121,9 +125,9 @@ tragen keine und laufen still bis zum Ende des Betrachtungszeitraums.
 | Version | I₀ | Betriebskosten | Energiekosten | Erlöse (Block A) |
 |---|---|---|---|---|
 | Stammprojekt — Weiterbetrieb | — | 2.400 | 560.016 | 31.230 |
-| Variante 1 — Blockheizkraftwerk | 234.772 | 59.564 | 409.435 | 82.644 |
+| Variante 1 — Blockheizkraftwerk | 234.772 | 59.564 | 409.435 | 84.436 |
 | Variante 2 — Photovoltaik | 192.150 | 8.131 | 535.392 | 39.916 |
-| Variante 3 — beide Anlagen | 426.922 | 65.295 | 384.811 | 91.331 |
+| Variante 3 — beide Anlagen | 426.922 | 65.295 | 384.811 | 93.122 |
 
 Energiekosten: Brennstoff × Arbeitspreis + Grundpreis 180 €/a + Netzbezug × 28,80 ct/kWh.
 Kesselseite des Stammprojekts: 2.056,7 MWh × 0,0720 €/kWh = 148.082 €/a; Energiesteuer-Entlastung

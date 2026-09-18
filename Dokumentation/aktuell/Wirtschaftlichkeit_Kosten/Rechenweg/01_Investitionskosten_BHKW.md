@@ -1,30 +1,42 @@
 # 01 · Investitionskosten BHKW
 
-**Dialog:** `Form_KostenKomponente`, Reiter Investition · **Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#invest`
-· **Norm:** DIN EN 17463, 6.1 · **Code:** `BetriebskostenCtrl.Betrag`, `InvestSummeFuer`, Lesepunkt
-`Tab_ProjektWerte` mit `KategorieID = 1` · **Konzept:** § 3.2, § 3.3
+**Dialog:** `KostenKomponenteDialog` (`EPOS.UI/Dialoge/Kosten/`), Optionsgruppe „Investitionskosten" ·
+**Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#invest` · **Norm:** DIN EN 17463, 6.1 · **Code:**
+`BetriebskostenCtrl.Betrag`, `InvestKaskade`, `InvestSummeFuer`, Lesepunkt `Tab_ProjektWerte` mit
+`KategorieID = 1` · **Konzept:** § 3.2, § 3.3
 
 ## Was der Dialog zeigt
 
-Raster mit einer Zeile je Position. Die Spalte **Menge** trägt unter dem Wert eine Herleitungszeile
-(Monospace): woher die Menge kommt — „Baugrößensumme", „Basis: Hauptpositionen", „Stufe: Anlage
-BHKW 1". Die Spalte **Runde** nennt die Kaskadenrunde, in der die Zeile rechnet. Die Summenzeile
-nennt drei Beträge: Investition brutto, Zuschuss, I₀.
+Ein Fenster für beide Kategorien: Klappliste „Komponente:" (im Projektmodus die Anlage), Optionsgruppe
+„Betriebskosten / Investitionskosten", Reiter „Kosten Invest/Betrieb" und — bei Blockheizkraftwerk und
+Photovoltaik — „Ertrag/Bonus"; im Stammkontext des Katalogs dazu die Variantenzeile. Das Zeilenraster trägt
+je Position eine Zeile mit sieben Spalten: Aktionen (✏️ Zeileneditor, 🗑️ Löschen) · Position (Textfeld) ·
+Bemessung (Klappliste, je Gewerk gefiltert — beim Blockheizkraftwerk fester Betrag, % der Investition, % der
+Erzeugerkosten, je kW elektr. Leistung, je kW Heizleistung, je kW elektrisch) · Satz (Zahlenfeld, die Einheit
+folgt der Bemessung) · Betrag netto [€] (gerechnet, nie eingebbar; 🔗 bei absoluter Bemessung: Satz = Betrag) ·
+Nutzungsdauer [a] (Zahlenfeld) · Worst/Best (±, nur im Projektmodus). Der Werkzeugtipp des Betrags nennt Satz
+und Bezugsgröße („653,60 €/kW × 300,00 kW"); fehlt die Bezugsgröße, trägt der Betrag ⚠ und unter dem Raster
+steht der Grund („kein Gerät mit dieser Baugröße im Projekt", „keine Investitionskosten für diese Anlage
+erfasst"). Summenfuß: „Summe Investitionskosten netto: 234.772,40 €" (Erlös- und Zuschusszeilen negativ) und
+„Summe brutto: 279.379,16 € (Umsatzsteuer 19 % aus dem Katalog)". Knöpfe „+ Position hinzufügen",
+„Aus Vorlage übernehmen…", „Positionskatalog…"; Fußleiste Abbrechen · Speichern · OK. Kostenart,
+Erlös-/Zuschusskennzeichen und Empfehlungsbereich pflegt der Zeileneditor „Position bearbeiten". Was das Mockup
+darüber hinaus zeigt, steht im Anhang Umsetzungsstand: Herleitungszeile mit Kaskadenrunde (U28), dreiteiliger
+Summenfuß (U29), Gruppe „Ersatz und Restwert" (U30), Knopf „Nutzungsdauern vorbelegen…" (U8).
 
-| Position | Kostenart | Bemessung | Satz | Menge | Betrag | Runde |
-|---|---|---|---|---|---|---|
-| BHKW-Modul (Hauptposition) | ANSCHAFFUNG | € / kW elektrisch | 653,60 | 300,00 kW — Baugrößensumme | 196.080,00 | 1 |
-| Montage und Inbetriebnahme | ANSCHAFFUNG | % der Erzeugerkosten | 5,00 | 196.080,00 € — Basis: Hauptpositionen | 9.804,00 | 2 |
-| Hydraulik und Einbindung | ANSCHAFFUNG | Betrag | — | — | 13.000,00 | 1 |
-| Planung und Genehmigung | ANSCHAFFUNG | % der Investition | 10,00 | 218.884,00 € — Stufe: Anlage BHKW 1 | 21.888,40 | 3 |
-| Zuschuss | ZUSCHUSS | Betrag | — | — | 6.000,00 | — |
-| **Summe** | | Investition brutto 240.772,40 € · abzüglich Zuschuss 6.000,00 € | | | **234.772,40** | I₀ |
+| Position | Kostenart | Bemessung | Satz | Bezugsgröße (Werkzeugtipp) | Betrag | Nutzungsdauer | Runde |
+|---|---|---|---|---|---|---|---|
+| BHKW-Modul (Hauptposition) | kapitalgebunden | je kW elektr. Leistung | 653,60 €/kW | 300,00 kW — `Tab_BHKW.Pel` | 196.080,00 | 15 | 1 |
+| Montage und Inbetriebnahme | kapitalgebunden | % der Erzeugerkosten | 5,00 % | 196.080,00 € — Hauptpositionen | 9.804,00 | 15 | 2 |
+| Hydraulik und Einbindung | kapitalgebunden | fester Betrag | 13.000,00 € | — (Satz = Betrag) | 13.000,00 | 20 | 1 |
+| Planung und Genehmigung | kapitalgebunden | % der Investition | 10,00 % | 218.884,00 € — Stufe: Anlage BHKW 1 | 21.888,40 | — | 3 |
+| Zuschuss | Zuschuss, Erlös/Zuschuss an | fester Betrag | 6.000,00 € | — | 6.000,00 | — | — |
+| **Summe** | | Investition brutto 240.772,40 € · abzüglich Zuschuss 6.000,00 € | | | **234.772,40** | | I₀ |
 
-**Warnband:** „Der Zuschuss mindert I₀, nicht die Basis der Prozentpositionen. Ersatzbeschaffung und
-Restwert rechnen weiter mit dem Bruttobetrag."
-**Infozeile:** Reihenfolge der Mengenermittlung — gepflegter Szenariowert → Baugröße aus der
-Gerätewelt → gespeicherte Menge. Passt die Kostenart nicht zum Gewerk, bleibt die Zeile leer; es wird
-nie eine Ersatzzahl gebildet.
+**Zuschuss:** Der Zuschuss mindert I₀, nicht die Basis der Prozentpositionen; Ersatzbeschaffung und Restwert
+rechnen weiter mit dem Bruttobetrag. **Mengenermittlung** in Runde 1: gepflegter Szenariowert → Baugröße aus der
+Gerätewelt → gespeicherte Menge. Passt die Bemessung nicht zum Gewerk, steht sie nicht in der Klappliste; fehlt
+die Größe, bleibt der Betrag mit ⚠ und Grund stehen — es wird nie eine Ersatzzahl gebildet.
 
 *Die Sätze dieses Beispiels sind der belegten Kaskadenprobe des Projekts 1042 nachgebildet
 (653,60 €/kW; 5 %; 13.000 €; 10 %); dort ergab dieselbe Kette an einer Baugröße von 26,00 kW ein
