@@ -72,6 +72,15 @@ namespace EPOS.Kern.Tests
         /// </summary>
         private const double ANKER_JAHR1_EUR = 7315.948722;
 
+        /// <summary>
+        /// <b>Der zweite Anker.</b> Kapitalwert des Projekts 1030 im Szenario Erwartet
+        /// [€], gemessen auf demselben Stand. Er hält die Ergebnisgleichheit der Etappe
+        /// BK1b fest: Mit Schemaschritt 91 fällt die Projektspalte
+        /// <c>KWKG_Kostenanteil</c> samt ihrem Dialogfeld; sie hatte seit BK1a keinen
+        /// Rechenleser mehr, und die Zahl bleibt deshalb dieselbe.
+        /// </summary>
+        private const double ANKER_KAPITALWERT_EUR = -21895377.339395;
+
         /// <summary>Der Eigenstromsatz, den Schritt 89 an beide Anlagen geschrieben hat
         /// [ct/kWh].</summary>
         private const double SATZ_BESTAND = 4.0;
@@ -97,6 +106,12 @@ namespace EPOS.Kern.Tests
             Assert.True(Math.Abs(e.KwkgErloesJahr1 - ANKER_JAHR1_EUR) <= 0.01,
                         "Erwartet " + ANKER_JAHR1_EUR.ToString("F6") + " €, gemessen " +
                         e.KwkgErloesJahr1.ToString("F6") + " €.");
+
+            // ETAPPE BK1b: Derselbe Lauf trägt denselben Kapitalwert - die mit
+            // Schemaschritt 91 entfallene Projektspalte KWKG_Kostenanteil hatte keinen
+            // Rechenleser mehr.
+            Assert.NotNull(e.Kapitalwert);
+            Gleich(ANKER_KAPITALWERT_EUR, e.Kapitalwert!.Value, "Kapitalwert");
 
             // Und der Weg sagt von sich, dass er der Ersatzweg ist.
             Assert.Contains(Resource.WIRT_KWKG_ERSATZ_GEWICHTET.Substring(0, 30),

@@ -438,25 +438,25 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// ETAPPE BK1 (Entscheid BK-E-1 a) — die Gruppe heisst „Projektweite KWK-Angaben"
-    /// und fuehrt nur noch, was WIRKLICH projektweit ist: den Abschlag fuer
-    /// Negativstunden, die Vorgabe des Kostenanteils, die Pauschale des § 9, den
-    /// Stichtag des § 6 und den Foerderbeginn — dazu die Einspeiseverguetung aus
-    /// Auftrag #325, die keine Zuschlagsgroesse ist.
+    /// ETAPPE BK1 (Entscheid BK-E-1 a) und BK1b (Entscheid BK1-4 a) — die Gruppe
+    /// heisst „Projektweite KWK-Angaben" und fuehrt nur noch, was WIRKLICH projektweit
+    /// ist: den Abschlag fuer Negativstunden, die Pauschale des § 9, den Stichtag des
+    /// § 6 und den Foerderbeginn — dazu die Einspeiseverguetung aus Auftrag #325, die
+    /// keine Zuschlagsgroesse ist.
     ///
-    /// <para><b>Sechs Felder, und keine KEINE Klappliste mehr.</b> Satz Eigenstrom,
-    /// Satz Einspeisung, Vbh-Deckel-Override, Vbh-Kontingent gesamt,
-    /// Eigenstrom-Tatbestand und Anlagenart § 8 sind hier weg — sie stehen an der
-    /// Anlage, wo § 7 und § 8 KWKG sie bemessen. Genau das war die doppelte Wahrheit
-    /// samt Rueckfallkette, die BK1 aufloest.</para>
+    /// <para><b>Fuenf Felder, und KEINE Klappliste mehr.</b> Satz Eigenstrom, Satz
+    /// Einspeisung, Vbh-Deckel-Override, Vbh-Kontingent gesamt, Eigenstrom-Tatbestand,
+    /// Anlagenart § 8 und der Anteil an den Neuherstellungskosten sind hier weg — sie
+    /// stehen an der Anlage, wo § 7 und § 8 KWKG sie bemessen. Genau das war die
+    /// doppelte Wahrheit samt Rueckfallkette, die BK1 aufloest.</para>
     /// </summary>
     [Fact]
-    public void Gruppe2_fuehrt_genau_die_sechs_projektweiten_Angaben()
+    public void Gruppe2_fuehrt_genau_die_fuenf_projektweiten_Angaben()
     {
         var cut = Aufbauen();
         IElement g = Koerper(cut, 2);
 
-        Assert.Equal(3, Zahlenfelder(g));      // #325, Abschlag, Kostenanteil
+        Assert.Equal(2, Zahlenfelder(g));      // #325, Abschlag
         Assert.Equal(0, Auswahlfelder(g));     // BK1: Tatbestand und Anlagenart sind weg
         Assert.Equal(1, Schalter(g));          // Pauschale § 9
         Assert.Equal(2, Datumsfelder(g));      // Stichtag § 6, Foerderbeginn
@@ -465,11 +465,34 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         {
             "Einspeisevergütung KWK-Strom [€/kWh]:",
             "Abschlag Negativstunden [%]:",
-            "Anteil Neuherstellungskosten [%] (Vorgabe für Anlagen ohne eigenen Wert):",
             "Pauschale § 9 KWKG (nur bis 2 kWel, einmalig)",
             "Stichtag (Bestellung/Genehmigung, § 6):",
             "Förderbeginn (Startjahr der Reihen):"
         }, Beschriftungen(g));
+    }
+
+    /// <summary>
+    /// ETAPPE BK1b (Anwenderentscheid BK1-4 a): Der Anteil an den Neuherstellungskosten
+    /// steht NUR NOCH an der Anlage (Gruppe 1b) — § 8 Abs. 2/3 KWKG leitet das
+    /// Kontingent aus IHREM Kostenanteil ab. Die Projektvorgabe hatte keinen
+    /// Rechenleser mehr und stand dennoch als Feld da; ihre Spalte faellt mit
+    /// Schemaschritt 91.
+    /// </summary>
+    [Fact]
+    public void Der_Kostenanteil_steht_nur_noch_an_der_Anlage()
+    {
+        var cut = Aufbauen(new List<KwkgAnlagenAngabe> { Anlage(1, "BHKW 50", 50) });
+
+        // Gruppe 2 fuehrt die Beschriftung nicht mehr ...
+        Assert.DoesNotContain(Beschriftungen(Koerper(cut, 2)),
+                              b => b.Contains("Neuherstellungskosten", StringComparison.Ordinal));
+
+        // ... aber die leise Zeile NENNT ihn: sie sagt, wo er jetzt steht.
+        Assert.Contains("Neuherstellungskosten", Koerper(cut, 2).TextContent);
+
+        // ... und das Anlagenfeld in Gruppe 1b steht unveraendert.
+        Assert.Contains(Beschriftungen(Koerper(cut, 1)),
+                        b => b.Contains("Neuherstellungskosten", StringComparison.Ordinal));
     }
 
     // =====================================================================
@@ -1299,7 +1322,6 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Null(anlagen[1].SatzEinspCt);
         Assert.Null(anlagen[1].Stichtag);
         Assert.Equal("", anlagen[1].Anlagenart);
-        Assert.Equal(0.0, p.KwkgKostenanteil);
         Assert.False(p.KwkgPauschalmodus);
         Assert.False(p.HocheffizienzNachweis);
         Assert.Equal(DbWerte.ENERGIESTEUER_WAHL_KEINE, p.EnergiesteuerWahl);
@@ -1342,7 +1364,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
 
         Assert.Equal(0, z.Zugriffe);
         Assert.Null(anlagen[0].SatzEinspCt);
-        Assert.Equal(0.0, p.KwkgKostenanteil);
+        Assert.Equal(0.0, p.KwkgAbschlagNegativ);
     }
 
     /// <summary>
