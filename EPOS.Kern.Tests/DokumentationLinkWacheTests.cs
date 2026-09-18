@@ -403,9 +403,9 @@ namespace EPOS.Kern.Tests
             Assert.False(TrifftMockup(wurzel, "CLAUDE.md", Mockupordner + "/Gibt_Es_Nicht.html"));
 
             // Der Leser erkennt die Spanne - und nur sie.
-            Assert.Equal(1, Mockupspanne.Matches("Mockup: `" + Mockupordner + "/X.html` — dazu").Count);
-            Assert.Equal(0, Mockupspanne.Matches("der Ordner `" + Mockupordner + "/` allein").Count);
-            Assert.Equal(0, Mockupspanne.Matches("die Mockups `Beispielprojekt.md` daneben").Count);
+            Assert.Single(Mockupspanne.Matches("Mockup: `" + Mockupordner + "/X.html` — dazu"));
+            Assert.Empty(Mockupspanne.Matches("der Ordner `" + Mockupordner + "/` allein"));
+            Assert.Empty(Mockupspanne.Matches("die Mockups `Beispielprojekt.md` daneben"));
 
             // Und der Leser liest wirklich Dateien.
             Assert.Contains(wegweiser, MockupLeser());
