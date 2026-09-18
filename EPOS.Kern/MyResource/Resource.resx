@@ -19533,4 +19533,64 @@ Möchten Sie das zulassen?</value>
   <data name="BB_HERLEITUNG_CO2" xml:space="preserve">
     <value>{0} €/t × {1} kg/{2}</value>
   </data>
+  <data name="KDLG_HERL_BASIS" xml:space="preserve">
+    <value>× {0} · {1} · Runde {2}</value>
+  </data>
+  <data name="KDLG_HERL_BASIS_OHNE_RUNDE" xml:space="preserve">
+    <value>× {0} · {1}</value>
+  </data>
+  <data name="KDLG_HERL_ABSOLUT" xml:space="preserve">
+    <value>Satz = Betrag</value>
+  </data>
+  <data name="KDLG_HERK_ANLAGE" xml:space="preserve">
+    <value>{0} der Anlage</value>
+  </data>
+  <data name="KDLG_HERK_HAUPT" xml:space="preserve">
+    <value>Hauptpositionen</value>
+  </data>
+  <data name="KDLG_HERK_STUFE_ANLAGE" xml:space="preserve">
+    <value>Stufe Anlage</value>
+  </data>
+  <data name="KDLG_HERK_STUFE_KOMPONENTE" xml:space="preserve">
+    <value>Stufe Komponente</value>
+  </data>
+  <data name="KDLG_HERK_STUFE_PROJEKT" xml:space="preserve">
+    <value>Stufe Projekt</value>
+  </data>
+  <data name="KDLG_HERK_LAUF" xml:space="preserve">
+    <value>Lauf</value>
+  </data>
+  <data name="KDLG_HERK_INVEST" xml:space="preserve">
+    <value>Investitionssumme</value>
+  </data>
+  <data name="KDLG_GR_PEL" xml:space="preserve">
+    <value>P_el</value>
+  </data>
+  <data name="KDLG_GR_PTHERM" xml:space="preserve">
+    <value>P_therm</value>
+  </data>
+  <data name="KDLG_GR_NENNLEISTUNG" xml:space="preserve">
+    <value>Nennleistung</value>
+  </data>
+  <data name="KDLG_GR_LEISTUNG" xml:space="preserve">
+    <value>Leistung</value>
+  </data>
+  <data name="KDLG_GR_KAPAZITAET" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
+  <data name="KDLG_GR_VOLUMEN" xml:space="preserve">
+    <value>Gesamtvolumen</value>
+  </data>
+  <data name="KDLG_GR_APERTUR" xml:space="preserve">
+    <value>Aperturfläche</value>
+  </data>
+  <data name="KDLG_GR_KWP" xml:space="preserve">
+    <value>kWp</value>
+  </data>
+  <data name="KDLG_GR_KOLLEKTORFELD" xml:space="preserve">
+    <value>Kollektorfeld</value>
+  </data>
+  <data name="KDLG_SUMME_DREITEILIG" xml:space="preserve">
+    <value>Investition brutto {0} · Zuschuss {1} · I₀ {2}</value>
+  </data>
 </root>

@@ -58,6 +58,18 @@ namespace WindowsFormsApplication1
             /// er die Formel kennt; die Oberfläche zeigt ihn nur.</summary>
             public string BasisHerleitung = "";
 
+            /// <summary>U28: Die RUNDE der Investitionskaskade, in der der Betrag
+            /// entstanden ist (1…3); 0 auf der Betriebsseite, die keine Kaskade
+            /// kennt. Sie kommt aus <see cref="InvestKaskade.Zeile.Runde"/>.</summary>
+            public int Runde;
+
+            /// <summary>U28: WOHER die <see cref="Basis"/> stammt — Steuerwert
+            /// <c>KostenHerleitung.HERKUNFT_*</c>. Auf der Investitionsseite schreibt
+            /// die Kaskade ihn mit, auf der Betriebsseite folgt er der Bemessungsart
+            /// („% der Investition" bemisst sich an der Investitionssumme, alles
+            /// andere an einer Menge des Laufs).</summary>
+            public string BasisHerkunft = "";
+
             /// <summary>Projekt und Kategorie der Zeile — damit
             /// <see cref="Speichern"/> den wirksamen Betrag über denselben Rechenweg
             /// nachziehen kann wie <see cref="Lies(int,int,int,int)"/>.</summary>
@@ -194,12 +206,23 @@ namespace WindowsFormsApplication1
                     z.Raster.BetragNetto = k.Betrag;
                     z.Basis = k.Basis;
                     anlageDerZeile = k.Anlage;
+                    // U28: Runde und Herkunft schreibt die Kaskade beim Ableiten mit —
+                    // der Dialog nennt sie unter dem Betrag, statt sie nachzubilden.
+                    z.Runde = k.Runde;
+                    z.BasisHerkunft = k.Herkunft ?? "";
                 }
                 else if (betrieb != null && betrieb.TryGetValue(z.Raster.Id, out n))
                 {
                     z.Raster.BetragNetto = n.BetragJahr;
                     z.Basis = n.Menge;
                     anlageDerZeile = n.Anlage;
+                    // U28: Die Betriebsseite hat keine Kaskade (Runde bleibt 0). Ihre
+                    // Bezugsgröße ist die Investitionssumme (H4a) oder eine Menge des
+                    // Simulationslaufs — mehr sagt die Bemessungsart nicht her.
+                    z.BasisHerkunft = !z.Basis.HasValue ? ""
+                        : WirtschaftlichkeitCtrl.IstProzentInvest(z.Raster.Bemessung)
+                            ? KostenHerleitung.HERKUNFT_INVEST
+                            : KostenHerleitung.HERKUNFT_LAUF;
                 }
 
                 // ANWENDERBEFUND 14.09.2026: Eine GERECHNETE Bezugsgröße nennt ihre

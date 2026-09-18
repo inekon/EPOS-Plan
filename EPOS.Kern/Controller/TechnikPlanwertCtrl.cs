@@ -834,6 +834,41 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// U28: Der NAME der Baugröße, aus der die Bezugsgröße dieser Art an diesem
+        /// Gewerk entsteht — „P_el", „Gesamtvolumen", „kWp". Leer, wenn das Gewerk die
+        /// Art nicht führt (dann gibt es auch keine Bezugsgröße zu benennen).
+        ///
+        /// <para><b>Warum hier und nicht in der Oberfläche.</b> Welche Gerätespalte eine
+        /// Art an einem Gewerk meint, weiß <see cref="Geraetespalte"/> — die Landkarte
+        /// des Anwenderentscheids vom 15.09.2026. Die Herleitungszeile des Dialogs nennt
+        /// die Größe beim Namen; eine zweite Zuordnung in der Schale liefe der ersten
+        /// davon. Übersetzt wird der Name wie jeder andere Text (MyResource); die
+        /// Symbole P_el und P_therm bleiben in beiden Sprachen gleich.</para>
+        /// </summary>
+        internal static string BaugroessenName(int komponentenID, string bemessung)
+        {
+            // Die zwei gerechneten Zweige aus BaugroesseSumme — sie stehen nicht in der
+            // Spaltenlandkarte, weil sie keine Spalte lesen.
+            if (IstPvLeistungsart(komponentenID, bemessung))
+                return MyResource.Resource.KDLG_GR_KWP;
+            if (IstSolarLeistungsart(komponentenID, bemessung))
+                return MyResource.Resource.KDLG_GR_KOLLEKTORFELD;
+
+            bool egal;
+            switch (Geraetespalte(komponentenID, bemessung, out egal))
+            {
+                case "Pel": return MyResource.Resource.KDLG_GR_PEL;
+                case "Ptherm": return MyResource.Resource.KDLG_GR_PTHERM;
+                case "Nennleistung": return MyResource.Resource.KDLG_GR_NENNLEISTUNG;
+                case "Leistung": return MyResource.Resource.KDLG_GR_LEISTUNG;
+                case "Energie": return MyResource.Resource.KDLG_GR_KAPAZITAET;
+                case "Gesamtvolumen": return MyResource.Resource.KDLG_GR_VOLUMEN;
+                case "Aperturflaeche": return MyResource.Resource.KDLG_GR_APERTUR;
+                default: return "";
+            }
+        }
+
+        /// <summary>
         /// H4c: Führt dieses Gewerk überhaupt eine Baugröße zu dieser Bemessungsart?
         /// Das unterscheidet „die Art passt nicht zum Gewerk" von „das Gerät fehlt oder
         /// ist mit 0 gepflegt" — beides ergibt in <see cref="BaugroesseSumme"/> null,

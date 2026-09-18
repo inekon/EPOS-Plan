@@ -111,6 +111,23 @@ namespace WindowsFormsApplication1
             /// zurückgeschrieben.</summary>
             public double? Basis;
 
+            /// <summary>
+            /// U28: Die RUNDE der Kaskade, in der dieser Betrag entstanden ist —
+            /// 1 (direkte Zeile), 2 („% der Erzeugerkosten") oder 3
+            /// („% der Investition"). Reine Auskunft für die Herleitungszeile des
+            /// Dialogs; die Rechnung selbst ist davon unberührt.
+            /// </summary>
+            public int Runde;
+
+            /// <summary>
+            /// U28: WOHER die <see cref="Basis"/> stammt — einer der Steuerwerte
+            /// <c>KostenHerleitung.HERKUNFT_*</c>. Leer, wo es keine Bezugsgröße
+            /// gibt (absolute Arten, fehlende Größe). Den Klartext dazu baut
+            /// <see cref="KostenHerleitung"/>, die Zuordnung kennt nur die
+            /// Kaskade — deshalb steht sie hier.
+            /// </summary>
+            public string Herkunft = "";
+
             internal bool Abgeleitet;
         }
 
@@ -190,7 +207,8 @@ namespace WindowsFormsApplication1
                 {
                     if (IstProzentErzeuger(z.Bem) ||
                         WirtschaftlichkeitCtrl.IstProzentInvest(z.Bem)) continue;
-                    z.Betrag = InvestBetrag(z, idProjekt, null, out z.Basis);
+                    z.Betrag = InvestBetrag(z, idProjekt, null, out z.Basis, out z.Herkunft);
+                    z.Runde = 1;
                     z.Abgeleitet = true;
                 }
 
@@ -204,7 +222,11 @@ namespace WindowsFormsApplication1
                         if (h.Abgeleitet && h.Haupt && !h.Zuschuss && h.Komponente == z.Komponente)
                         { basis += h.Betrag; da = true; }
                     z.Betrag = InvestBetrag(z, idProjekt, da && basis != 0 ? basis : (double?)null,
-                                            out z.Basis);
+                                            out z.Basis, out z.Herkunft);
+                    z.Runde = 2;
+                    // U28: Die Basis der zweiten Runde sind die HAUPTPOSITIONEN der
+                    // Komponente — das ist die Runde selbst, nicht der Rückfall.
+                    if (da && basis != 0) z.Herkunft = KostenHerleitung.HERKUNFT_HAUPT;
                     z.Abgeleitet = true;
                 }
 
@@ -244,7 +266,14 @@ namespace WindowsFormsApplication1
                     double basis = (aDa && sAnlage != 0) ? sAnlage
                                  : (kDa && sKomponente != 0) ? sKomponente : sProjekt;
                     z.Betrag = InvestBetrag(z, idProjekt, basis != 0 ? basis : (double?)null,
-                                            out z.Basis);
+                                            out z.Basis, out z.Herkunft);
+                    z.Runde = 3;
+                    // U28: WELCHE Stufe die Basis gestellt hat, weiß nur diese Stelle —
+                    // Anlage, Komponente oder Projekt. Die Herleitungszeile nennt sie.
+                    if (basis != 0)
+                        z.Herkunft = (aDa && sAnlage != 0) ? KostenHerleitung.HERKUNFT_STUFE_ANLAGE
+                                   : (kDa && sKomponente != 0) ? KostenHerleitung.HERKUNFT_STUFE_KOMPONENTE
+                                   : KostenHerleitung.HERKUNFT_STUFE_PROJEKT;
                     z.Abgeleitet = true;
                 }
             }
@@ -356,11 +385,16 @@ namespace WindowsFormsApplication1
         /// <para><b>W5‑B‑7:</b> <paramref name="verwendet"/> gibt die tatsächlich
         /// angesetzte Bezugsgröße heraus — dieselbe Zahl, mit der gerechnet wurde,
         /// für den Werkzeugtipp des Dialogs. Die Rechnung selbst ist unverändert.</para>
+        /// <para><b>U28:</b> <paramref name="herkunft"/> sagt zusätzlich, WOHER diese
+        /// Zahl kam — die Gerätewelt (<c>HERKUNFT_ANLAGE</c>) oder die ausgewiesene
+        /// Menge des Laufs (<c>HERKUNFT_LAUF</c>). Die Reihenfolge ist dieselbe wie
+        /// bei der Rechnung; es wird nur mitgeschrieben, welcher Zweig getragen hat.</para>
         /// </summary>
         private static double InvestBetrag(Zeile z, int idProjekt, double? kaskadenBasis,
-                                           out double? verwendet)
+                                           out double? verwendet, out string herkunft)
         {
             verwendet = null;
+            herkunft = "";
 
             if (string.IsNullOrEmpty(z.Bem) ||
                 string.Equals(z.Bem, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal))
@@ -371,8 +405,15 @@ namespace WindowsFormsApplication1
 
             double? menge = kaskadenBasis;
             if (!menge.HasValue)
+            {
                 menge = TechnikPlanwertCtrl.BaugroesseSumme(idProjekt, z.Komponente, z.Bem, z.Anlage);
-            if (!menge.HasValue) menge = z.Menge;
+                if (menge.HasValue) herkunft = KostenHerleitung.HERKUNFT_ANLAGE;
+            }
+            if (!menge.HasValue)
+            {
+                menge = z.Menge;
+                if (menge.HasValue) herkunft = KostenHerleitung.HERKUNFT_LAUF;
+            }
 
             verwendet = menge;
             return BetriebskostenCtrl.Betrag(z.Bem, z.Erwartet, menge, z.Satz, false);
