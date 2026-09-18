@@ -3350,6 +3350,35 @@ Zuordnung der Zeilen
     </div>
   </div>
 
+  <div class="zone" id="vergleichssicht">Vergleichssicht — welche Stände gegeneinander</div>
+  <p class="eng">Über den Vergleichstafeln wählt eine Optionsgruppe die Sicht: <b>alle Varianten gegen
+  die Referenz</b> — eine Spalte je angehaktem Stand, Differenz gegen die Referenz der Gruppe — oder
+  <b>zwei Stände</b> A und B aus den angehakten Ständen, mit A als Referenz dieser Sicht. Die Tafeln
+  dieser Kategorie zeigen die erste Sicht; die zweite steht als Beispiel hinter der Brücke
+  (<a href="#sicht2">Sicht 2 — Beispiel</a>). Die Wahl gilt für die Sitzung; die gespeicherte
+  Referenz der Gruppe aus dem Parameterdialog bleibt unberührt.</p>
+
+  <div class="seite">
+    <div class="s-band">Vergleichssicht
+      <span class="s-sub">Sicht 1 — alle Varianten gegen die Referenz</span></div>
+    <div class="s-leib">
+      <div class="s-zeile">
+        <span class="f-radio an"><i></i></span><span class="s-lab">Alle Varianten gegen die Referenz</span>
+        <span class="f-radio" style="margin-left:18px"><i></i></span><span class="s-lab">Zwei Stände:</span>
+        <span class="s-lab" style="opacity:.5">A</span><span class="s-combo" style="opacity:.5;min-width:210px">Stammprojekt — Weiterbetrieb</span>
+        <span class="s-knopf" style="opacity:.5" title="A und B tauschen">⇄</span>
+        <span class="s-lab" style="opacity:.5">B</span><span class="s-combo" style="opacity:.5;min-width:210px">Variante 1 — Blockheizkraftwerk</span>
+      </div>
+      <div class="s-herleitung">Referenz: <b>Stammprojekt — Weiterbetrieb</b> — Referenz der Gruppe aus dem
+      Parameterdialog · Differenz = Variante − Referenz</div>
+      <div class="s-info">Die Klapplisten führen die angehakten Stände der Vergleichsgruppen-Liste, den Stamm
+      eingeschlossen; in Sicht 1 sind sie gesperrt. Beim Wechsel in Sicht 2 ist A mit der Referenz der Gruppe
+      vorbelegt, B mit der ersten anderen Variante; die Liste B führt A nicht und die Liste A nicht B — A ≠ B
+      ohne Meldung. Der Knopf ⇄ tauscht A und B und dreht damit das Vorzeichen. Eine Gruppe mit nur dem Stamm
+      sperrt die zweite Sicht. Die Szenariowahl gilt in beiden Sichten.</div>
+    </div>
+  </div>
+
   <div class="zone">Lohnt es sich?</div>
   <div class="seite">
     <div class="s-band">Empfehlung je Version
@@ -3724,6 +3753,101 @@ Zuordnung der Zeilen
       <span><i style="background:var(--erloes)"></i>mehrt die Differenz</span>
       <span><i style="background:var(--marine-hell)"></i>Ergebnis</span>
     </div>
+  </div>
+
+  <div class="zone" id="sicht2">Sicht 2 — Beispiel: Photovoltaik gegen Beide Anlagen</div>
+  <p class="eng">Dieselben Tafeln mit zwei Ständen: A ist die Referenz dieser Sicht, die Differenz läuft
+  B − A. Das Beispiel fragt, was das Blockheizkraftwerk <em>zusätzlich</em> zur Photovoltaik bringt. Die
+  Zahlen sind Zelle für Zelle aus der Gliederungstafel der Sicht 1 gerechnet
+  <span class="zk abl">abgeleitet</span>; nur Amortisation und Zinsfuß des Paars kommen allein aus dem
+  Rechenlauf.</p>
+
+  <div class="seite">
+    <div class="s-band">Vergleichssicht
+      <span class="s-sub">Sicht 2 — zwei Stände</span></div>
+    <div class="s-leib">
+      <div class="s-zeile">
+        <span class="f-radio"><i></i></span><span class="s-lab">Alle Varianten gegen die Referenz</span>
+        <span class="f-radio an" style="margin-left:18px"><i></i></span><span class="s-lab">Zwei Stände:</span>
+        <span class="s-lab">A</span><span class="s-combo" style="min-width:210px">Variante 2 — Photovoltaik</span>
+        <span class="s-knopf" title="A und B tauschen">⇄</span>
+        <span class="s-lab">B</span><span class="s-combo" style="min-width:210px">Variante 3 — beide Anlagen</span>
+      </div>
+      <div class="s-herleitung">Referenz dieser Sicht: <b>Variante 2 — Photovoltaik</b> · Referenz der Gruppe:
+      Stammprojekt — Weiterbetrieb (unverändert) · Differenz = B − A</div>
+    </div>
+  </div>
+
+  <div class="seite">
+    <div class="s-band">Gliederung des Kapitalwerts — Szenario Erwartet
+      <span class="s-sub">A | B | Differenz B − A · Barwert groß, Nominalsumme klein · i = 3,0 % · T = 20 a</span></div>
+    <div class="s-leib">
+      <div class="s-scroll">
+      <table class="s-raster">
+        <thead><tr><th>Bestandteil</th><th class="r">A — Photovoltaik</th>
+          <th class="r">B — Beide Anlagen</th><th class="r">Differenz B − A</th></tr></thead>
+        <tbody>
+          <tr><td>Investition I₀ <span class="klein">nach Zuschussabzug — Kategorie 1</span></td>
+              <td class="r">−192.150</td><td class="r">−426.922</td><td class="r">−234.772</td></tr>
+          <tr><td>Betriebskosten <span class="klein">Kategorie 2 und 3</span></td>
+              <td class="r">−120.971<span class="klein">nominal 162.622</span></td>
+              <td class="r">−971.430<span class="klein">nominal 1.305.907</span></td>
+              <td class="r">−850.459</td></tr>
+          <tr><td>Energiekosten <span class="klein">Kategorie 4</span></td>
+              <td class="r">−7.965.281<span class="klein">nominal 10.707.840</span></td>
+              <td class="r">−5.725.019<span class="klein">nominal 7.696.224</span></td>
+              <td class="r">+2.240.262</td></tr>
+          <tr><td>Erlöse <span class="klein">Kategorien 5 bis 7, Block A</span></td>
+              <td class="r">+552.977<span class="klein">nominal 740.510</span></td>
+              <td class="r">+1.114.304<span class="klein">nominal 1.455.297</span></td>
+              <td class="r">+561.327</td></tr>
+          <tr><td>Ersatzbeschaffungen <span class="klein">Kategorie 1</span></td>
+              <td class="r">−16.833<span class="klein">nominal 24.000</span></td>
+              <td class="r">−148.982<span class="klein">nominal 229.884</span></td>
+              <td class="r">−132.149</td></tr>
+          <tr><td>Restwert am Ende <span class="klein">Kategorie 1</span></td>
+              <td class="r">+22.036<span class="klein">nominal 39.800</span></td>
+              <td class="r">+98.032<span class="klein">nominal 177.056</span></td>
+              <td class="r">+75.996</td></tr>
+          <tr class="summe"><td>Nettobarwert</td>
+              <td class="r">−7.720.222</td><td class="r">−6.060.017</td><td class="r">+1.660.205</td></tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="s-herleitung" style="margin-top:9px">Brücke A → B (Barwerte, Szenario Erwartet):
+      −7.720.222 − 234.772 Investition − 850.459 Betriebskosten + 2.240.262 Energiekosten + 561.327 Erlöse
+      − 132.149 Ersatzbeschaffungen + 75.996 Restwert = −6.060.017 · ΔKW = +1.660.205</div>
+      <div class="s-herleitung">Bandbreite B − A: Ungünstig 1.506.739 · Erwartet 1.660.205 · Günstig 1.811.714 €
+      — Zeile A „Referenz", Zeile B aus den Bandbreitenzellen der Sicht 1 (Rundung ±1 €) · Einstufung:
+      empfohlen</div>
+    </div>
+  </div>
+
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Kennzahlzeile — Beide Anlagen gegen Photovoltaik</th><th class="r">Kapitalwertdifferenz B − A</th>
+        <th class="r">Annuität der Differenz</th><th class="r">Dynamische Amortisation</th>
+        <th class="r">Interner Zinsfuß</th><th>Einstufung</th></tr></thead>
+      <tbody>
+        <tr><td>Szenario Erwartet</td>
+            <td class="r num plus">+1.660.205 €</td><td class="r num">111.592 €/a</td>
+            <td class="r num">—, aus dem Kern</td><td class="r num">—, aus dem Kern</td>
+            <td><span class="stufe ja">empfohlen</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="eng" style="margin-top:12px">Die Annuität folgt aus der Differenz: 1.660.205 € × a(3,0 %; 20 a) =
+  1.660.205 × 0,067216 = 111.592 €/a. Amortisation und Zinsfuß hängen an der Jahresreihe der Differenz B − A
+  und kommen nur aus dem Rechenlauf mit A als Gegenstück; sie sind keine Differenz der Werte aus Sicht 1.
+  Nettobarwert absolut: A −7.720.222 €, B −6.060.017 €; Wärmegestehungskosten A 26,56, B 20,85 ct/kWh.</p>
+
+  <div class="merk">
+    <h4>Warum die Differenzspalte der Spalte Blockheizkraftwerk gleicht</h4>
+    <p>Die Beispielzahlen der Versionen sind additiv gebildet: Beide Anlagen = Stamm + Blockheizkraftwerk
+    + Photovoltaik je Bestandteil. Deshalb ist „Beide Anlagen gegen Photovoltaik" hier bis auf Rundung
+    dieselbe Spalte wie „Blockheizkraftwerk gegen Stamm" (−234.772 · −850.459 · +2.240.262 · +561.328 ·
+    −132.149 · +75.995). Im Rechenlauf weichen die beiden ab, sobald die Anlagen um denselben
+    Eigenverbrauch konkurrieren — genau diesen Abstand macht die zweite Sicht sichtbar.</p>
   </div>
 
   <div class="zone">Der Zahlungsstrom über die Jahre</div>
@@ -4164,6 +4288,8 @@ Einstufung
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
       <tbody>
         <tr><td>Umschalter „Kennzahlen" · „ValERI-Bewertung"</td><td class="rs">WIRT_UMSCH_KENNZAHLEN · WIRT_UMSCH_VALERI</td><td>Kopf der Ergebnisseite</td></tr>
+        <tr><td>Optionsgruppe „Alle Varianten gegen die Referenz" · „Zwei Stände", Listen A und B, Knopf ⇄</td><td class="rs">WIRT_SICHT_ALLE · WIRT_SICHT_PAAR · WIRT_SICHT_A · WIRT_SICHT_B · WIRT_SICHT_TAUSCH</td><td>über den Vergleichstafeln</td></tr>
+        <tr><td>Erklärzeile „Referenz dieser Sicht: {0} · Referenz der Gruppe: {1}", Sperrhinweis „mindestens zwei Stände"</td><td class="rs">WIRT_SICHT_REFERENZ · WIRT_SICHT_GESPERRT</td><td>unter der Optionsgruppe, Bericht</td></tr>
         <tr><td>Abschnittsköpfe der vier Fragen</td><td class="rs">WIRT_ABS_LOHNT · WIRT_ABS_SICHER · WIRT_ABS_WORAUS · WIRT_ABS_ANNAHMEN</td><td>Ergebnisseite</td></tr>
         <tr><td>Einstufungen</td><td class="rs">WIRT_STUFE_JA · WIRT_STUFE_BEDINGT · WIRT_STUFE_NEIN</td><td>Empfehlungskarten, Bandbreite, Bericht</td></tr>
         <tr><td>„Vorschlag zur Wahl: {0}"</td><td class="rs">WIRT_EMPF_VORSCHLAG</td><td>Empfehlungsband</td></tr>
@@ -4177,7 +4303,9 @@ Einstufung
 
   <div class="abnahme"><b>Abnahme:</b> Die Kapitalwertdifferenz der Variante 3 ist
   <span class="mono">+1.842.695 €</span> und geht in der Gliederung auf
-  (<span class="mono">−426.922 − 935.724 + 2.606.605 + 649.686 − 148.982 + 98.032</span>); die
+  (<span class="mono">−426.922 − 935.724 + 2.606.605 + 649.686 − 148.982 + 98.032</span>); in
+  Sicht 2 ist die Differenz Beide Anlagen − Photovoltaik <span class="mono">+1.660.205 €</span> und geht
+  ebenso auf (<span class="mono">−234.772 − 850.459 + 2.240.262 + 561.327 − 132.149 + 75.996</span>); die
   PV-Vergütung geht als Reihe der Kategorie 6 ein (nominal <span class="mono">150.118 €</span>, Barwert
   <span class="mono">113.800 €</span>). Die Bandbreite und der Verlauf tragen drei gerechnete Läufe; die
   Restwert-Barwerte der drei Szenarien schließen die Verlaufsendwerte zu den Bandbreitenwerten. Die Höfingen-Mappe wird mit
@@ -4512,6 +4640,20 @@ Einstufung
               (<span class="mono">EEG_AUSSCHREIBUNG_GRENZE_KW</span>, § 22 EEG ·
               <span class="mono">STROMST_GRENZE_BEFREIUNG_9_1_3_KW</span>, § 9 Abs. 1 Nr. 3 StromStG); der
               Dialog liest sie jetzt dort. bunit: 1.500 kWp eine Warnung, 2.500 kWp beide, 900 kWp keine</td></tr>
+        <tr><td class="mono">U37</td><td class="num">8</td>
+            <td>Vergleichssicht: Optionsgruppe „Alle Varianten gegen die Referenz | Zwei Stände" mit den
+              Klapplisten A und B, Erklärzeile und Tauschknopf; Sicht 2 rechnet mit A als Referenz dieser Sicht —
+              die Differenzrechnung braucht die Referenz als Parameter (Voraussetzung: Referenzwahl je Gruppe,
+              Konzept § 2.9); Sicht, A und B als Sitzungswahl neben den Häkchen der Vergleichsgruppen-Liste;
+              der Bericht folgt der Sicht mit Deklarationszeile; Fragen VG‑Q1 bis VG‑Q7 im Konzept § 2.15 offen</td>
+            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> ·
+              <span class="mono">WirtschaftlichkeitCtrl.Berechne</span> ·
+              <span class="mono">Vergleichsauswahl</span> ·
+              <span class="mono">WirtschaftlichkeitZeilen.Kennzahlen</span></td>
+            <td>Sicht 1 byte-gleich (Referenzlauf, Word, Excel); Sicht 2 mit A = Referenz der Gruppe gleich
+              Spalte B der Sicht 1; Kapitalwertdifferenz B − A gleich Differenz der Sicht-1-Werte auf 0,01 €;
+              Tausch A/B dreht das Vorzeichen; bunit: beide Zustände, Listen ohne den anderen Stand, Sperre bei
+              nur einem Stand</td></tr>
       </tbody>
     </table>
   </div>
@@ -4571,6 +4713,14 @@ Einstufung
             <td><span class="zk bsp">Beispielzahl</span></td>
             <td>156.977 ÷ 1,04<sup>20</sup> · 177.056 ÷ 1,03<sup>20</sup> · 177.517 ÷ 1,02<sup>20</sup> — schließen die
               Verlaufsendwerte zu den Bandbreitenwerten</td></tr>
+        <tr><td>Sicht 2 — Beide Anlagen gegen Photovoltaik (Gliederung, Brücke als Textzeile, Bandbreite, Kennzahlzeile)</td>
+            <td class="r num">B − A +1.660.205 €</td><td><span class="zk abl">abgeleitet</span></td>
+            <td>Zelle für Zelle aus der Gliederungstafel der Sicht 1: −426.922 − (−192.150) = −234.772 ·
+              −971.430 − (−120.971) = −850.459 · −5.725.019 − (−7.965.281) = +2.240.262 · 1.114.304 − 552.977 =
+              +561.327 · −148.982 − (−16.833) = −132.149 · 98.032 − 22.036 = +75.996 · −6.060.017 − (−7.720.222) =
+              +1.660.205; Annuität 1.660.205 × 0,067216 = 111.592 €/a mit a(i,n) der Formel, i = 3,0 %, n = 20;
+              Bandbreite aus den Bandbreitenzellen 1.636.035 − 129.296 · 1.842.695 − 182.491 · 2.048.635 − 236.921
+              (Rundung ±1 €); Amortisation und Zinsfuß des Paars nur aus dem Rechenlauf, deshalb „—"</td></tr>
         <tr><td>Wirkung von p<sub>I</sub> = 2 %/a auf den Wechselrichtertausch</td>
             <td class="r num">30.437,80 € · Barwert 21.348 €</td>
             <td><span class="zk abl">abgeleitet</span></td>
