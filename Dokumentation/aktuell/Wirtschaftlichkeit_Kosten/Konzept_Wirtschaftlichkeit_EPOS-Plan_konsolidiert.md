@@ -361,8 +361,14 @@ herzuleiten.
 >   „davon Einspeisung" und „davon Eigenstrom". Die Aufteilung kommt aus dem Modulnachweis
 >   `KwkgModulNachweis`; er reist im Nachweisumschlag des Ergebnisses mit, die beiden
 >   Unterzeilen erscheinen deshalb auch beim gebuchten Stand.
-> - **A3 (Pauschale § 9 KWKG) hat keine Zeile.** Sie ist eine einmalige Zahlung im Jahr 0 und
->   stünde in einer €/a-Spalte falsch; greift sie, sagt es der Hinweis des Laufs.
+> - **A3 (Pauschale § 9 KWKG) hat eine eigene Zeile** „KWKG-Pauschale (§ 9 KWKG)" hinter dem
+>   KWK-Zuschlag — aber **nicht in der Summe** des Blocks A. Ihr Betrag steht in **€**, nicht in
+>   €/a: eine einmalige Zahlung im Jahr 0, die in einer €/a-Summe ein Einheitenfehler wäre, wie
+>   der Restwert darunter. Der Titel nennt beides („[€, einmalig im Jahr 0]"). Die Zeile
+>   erscheint nur, wenn die Pauschale greift (Σ P_el ≤ 2 kW und Schalter gesetzt); über der
+>   Grenze bleibt der Schalter ohne Wirkung, und der Hinweis des Laufs sagt das. Der Betrag reist
+>   im Nachweisumschlag mit (`KwkgPauschaleEur`, Fassung 2), steht also auch beim gebuchten
+>   Stand. Nachweis `EPOS.Kern.Tests/KwkgPauschaleZeileTests`.
 > - **A4 und A5 stehen in einer Zeile** „Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54
 >   EnergieStG)": `SteuerErgebnis.EnergiesteuerEur` ist eine Summe, ihre Trennung wäre eine neue
 >   Größe im Rechner und damit ein Umbau, den die Etappe ausschließt.
@@ -385,7 +391,7 @@ nicht addiert werden.
 |---|---|---|---|---|
 | A1 | **KWK-Bonus Einspeisung** | § 7 Abs. 1 KWKG | eingespeister KWK-Strom × Mischsatz (marginale Staffel) | Vbh-Kontingent § 8 · Jahresdeckel · Stichtag 31.12.2026 |
 | A2 | **KWK-Bonus Eigenstrom** | § 7 Abs. 2 KWKG | eigengenutzter KWK-Strom × Mischsatz | zusätzlich: **Tatbestand § 6 Abs. 3 zwingend** |
-| A3 | KWKG-Pauschale (≤ 2 kWel) | § 9 KWKG | 0,04 €/kWh × 60.000 Vbh × P_el | einmalig, schließt A1/A2 aus |
+| A3 | KWKG-Pauschale (≤ 2 kWel) | § 9 KWKG | 0,04 €/kWh × 60.000 Vbh × P_el | einmalig im Jahr 0, schließt A1/A2 aus; eigene Zeile in €, **nicht in der Summe** |
 | A4 | **Energiesteuer BHKW-Brennstoff** | § 53 **oder** § 53a Abs. 5 EnergieStG | Brennstoffmenge × Satz in gesetzlicher Einheit | dauerhaft, jährlicher Antrag |
 | A5 | Energiesteuer Kesselbrennstoff | § 54 EnergieStG | Heizstoffmenge × Teilsatz − 250 €/a | **nur produzierendes Gewerbe** |
 | A6 | Stromsteuer-Entlastung Netzbezug | § 9b StromStG | Netzbezug × 20,00 €/MWh − 250 €/a | **nur produzierendes Gewerbe** |
@@ -953,18 +959,23 @@ Leistungsanteil bleibt projektweit.
 `KapitalwertVerlaufDialog`, der **ein** Szenario je Lauf rechnet, immer bei Erwartet beginnt (die
 Seite reicht ihre Szenariowahl nicht durch) und zwei Bilder zeigt (Differenz zur Referenz; kumulierte
 Barwerte je Projekt absolut). Der Renderer (`ChartRenderer.KapitalwertVerlauf`) kennt keine
-Szenarien, zeichnet aber beliebig viele Reihen auf eine Jahresachse; er kann **nicht**: Strichart je
-Reihe (das Feld `Gestrichelt` an `Reihe` existiert, wird in diesem Bild nicht gelesen — kleine
-lokale Ergänzung), ein Flächenband, mehr als etwa zwei Legendenzeilen im festen Maß 1240 × 620,
-mehr als acht unterscheidbare Farben. **Entscheid des Entwurfs:** eigener Abschnitt bei „Wie sicher
+Szenarien, zeichnet aber beliebig viele Reihen auf eine Jahresachse und führt eine Legende mit
+Name, Farbe und **Strichart je Reihe** (`Reihe.Gestrichelt` wird gelesen, `Segment.Gestrichelt`
+zeichnet das Legendenfeld gestrichelt statt gefüllt); er kann **nicht**: ein Flächenband, mehr als
+etwa zwei Legendenzeilen im festen Maß 1240 × 620, mehr als acht unterscheidbare Farben. **Entscheid des Entwurfs:** eigener Abschnitt bei „Wie sicher
 ist das?" — die Bandbreite zeigt die Spanne am Ende, der Verlauf über die Zeit; der Knopf entfällt;
 **Farbe = Variante, Strichart = Szenario** (ein Band ist bei mehreren Varianten unlesbar und vom
 Renderer nicht zeichenbar); die Legende zweigeteilt (Varianten + 3 Einträge statt Varianten × 3);
 der Nulldurchgang je Szenario markiert. **Das zweite Bild** (Versionen absolut) bleibt nicht auf der
 Seite: Alle Versionen liegen tief im Negativen und nahezu parallel, entschieden wird über den
 Abstand; der absolute Vergleich steht in der Kennzahltafel (Nettobarwert absolut) und in der
-Mehrjahresübersicht des Berichts, als Bild bleibt er dem Wortbericht vorbehalten — **Anwenderfrage**,
-ob er auf der Seite gebraucht wird. **Was die Umsetzung braucht:**
+Mehrjahresübersicht des Berichts. **Als Bild steht er an genau einem Ort: im Wortbericht**, unter
+dem Titel „Kumulierte Barwerte je Version", mit **Legende je Version** (Name und Farbe) und
+gestrichelter Stammlinie — sie ist die Bezugsgröße und keine Version und muss auch im
+Schwarz-Weiß-Ausdruck davon zu trennen sein. Auf der Seite bleibt allein das Differenzbild.
+Nachweis: `Proben/ChartProben` (Bild `kapitalwert_absolut_legende`, Gegenproben
+`kapitalwert_verlauf_gestrichelt_wirkt` und `kapitalwert_verlauf_legende_nennt_die_version`).
+**Was die Umsetzung braucht:**
 
 - einen Rechenaufruf für die Dreierreihe — `BerechneVerlauf` nimmt einen Szenario-String und
   `WirtschaftlichkeitVerlauf` trägt genau einen: entweder drei Läufe der bestehenden Methode (die
@@ -973,8 +984,8 @@ ob er auf der Seite gebraucht wird. **Was die Umsetzung braucht:**
 - eine Reihenbildung, die Variante und Szenario zugleich unterscheidet — heute vergibt
   `VerlaufsReihen` Farben nach laufendem Index, und die Reihennamen tragen nur den Projektnamen
   (dasselbe Projekt in drei Szenarien bekäme drei beliebige Farben und dreimal denselben Namen);
-- das Lesen von `Gestrichelt` in `KapitalwertVerlauf`, Platz für die zweigeteilte Legende und ein
-  passendes Bildmaß;
+- Platz für die zweigeteilte Legende und ein passendes Bildmaß (das Lesen von `Gestrichelt` in
+  `KapitalwertVerlauf` steht);
 - im Tabellenbericht je Szenario eine Spaltengruppe (die heutige Tabelle „Jahr, je Projekt eine
   Spalte, dann die Δ-Spalten" ist dafür nicht vorbereitet), im Wortbericht ein zusätzliches Bild;
 - **plattformfrei**: Rechen- und Zeichenlogik der Ansicht gehören nach `EPOS.UI.Daten`, sonst
@@ -1715,7 +1726,7 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 | ⚠ **S-2** | Kein projektweites Doppelentlastungsverbot — Anlage A nach § 53 und Anlage B nach § 54 gleichzeitig möglich. |
 | S-1 · S-3 · S-4 · S-5 · S-6 | Überholte Zeilennummern älterer Protokolle · § 9-Meldung nennt Kessel „(0 kW)" · €/GJ ohne Ho-Umrechnung (für Kohle konsistent) · Radius 4,5 km nur Meldungstext, Erlaubnisschwelle 1.000 kW nirgends gelesen · `STROMST_REDUZIERT_SATZ` ungesät. |
 | ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 KWKG fehlt** (§ 3.6): Bei Anlagen mit Vorrichtung zur Abwärmeabfuhr ist KWK-Strom `Nutzwärme × Stromkennzahl`, nicht die Nettostromerzeugung. Weder Kennzeichen noch Stromkennzahl sind im Datenmodell vorhanden; der Zuschlag fällt für solche Anlagen zu hoch aus. |
-| ⚠ **V-3** | PV-Reihe und KWKG-Pauschale haben in der Mehrjahrestabelle **keine eigene Spalte** — sie wirken nur in „Netto". |
+| ⚠ **V-3** | Die **PV-Reihe** hat in der Mehrjahrestabelle **keine eigene Spalte** — sie wirkt nur in „Netto". Die **KWKG-Pauschale** hat seither eine (Spalte „KWKG-Pauschale (Jahr 0)"); damit stimmt die Selbstprüfung „Summe der Positionsspalten = Netto nominal" auch in der Zeile 0. |
 | V-1 · V-2 · V-4 | EV-Rundung (EvMix unrundet, Erlös gerundet) · § 51a bewertet mit AW statt EV · Eigen/Einspeise-Split je Anlage ist benannte Näherung. |
 | R-1 · R-2 · R-3 | Rahmenparameter je Stammprojekt, nicht je Variante · Hilfsenergie steigt mit p_B statt p_E (bei gleichen Sätzen null) · ohne bestimmbare Energiekosten kein Kapitalwert (Absicht). |
 
@@ -1907,8 +1918,8 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 9i. **Erlösrubrik nach Komponente innen:** Anlagenbezug je Katalogzeile, Block „projektweit",
     Eigenverbrauchsmengen je Anlage für die vermiedenen Kosten.
 9j. **Verlauf mit drei Szenarien:** Dreierreihe statt eines Szenarios je Lauf, Reihenbildung
-    Variante × Szenario, `Gestrichelt` im Verlaufsbild lesen, Spaltengruppen je Szenario im
-    Tabellenbericht, plattformfreie Rechen- und Zeichenlogik.
+    Variante × Szenario, Spaltengruppen je Szenario im Tabellenbericht, plattformfreie Rechen-
+    und Zeichenlogik. `Gestrichelt` liest das Verlaufsbild.
 9k. ~~**Persistenz der Nachweise je Anlage** (Energiekosten-Unterzeilen nach dem Neuladen) — Teil
     von B7-2.~~ — erledigt mit B7P zusammen mit 9b: Der Nachweisumschlag der Ergebniszeile
     trägt die Unterzeilen mit.
