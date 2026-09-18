@@ -403,17 +403,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool NachhaltigkeitsnachweisBiomasse = true;
 
-        // ---- ETAPPE K6 — KWKG-Tatbestand, Anlagenart, Pauschale (Schritt 28) ----
+        // ---- ETAPPE K6 — die KWKG-Pauschale des Projekts (Schritt 28) ----
         //
-        // Zwei Angaben aus Konzept § 8.1 (HF6). Tatbestand und Anlagenart des
-        // PROJEKTS sind mit Schemaschritt 90 entfallen — beide werden je Anlage
-        // gepflegt und geprüft (Tab_Energieanlagen.KWKG_Eigenstromfall,
-        // KWKG_Anlagenart).
-
-        /// <summary>Anteil an den Neuherstellungskosten [%] (§ 8 Abs. 2/3 KWKG);
-        /// 0 = nicht gepflegt. Er wählt die Kontingentstufe bei modernisierten und
-        /// nachgerüsteten Anlagen.</summary>
-        public double KwkgKostenanteil = 0.0;
+        // Von den Angaben aus Konzept § 8.1 (HF6) steht hier nur noch die Pauschale.
+        // Tatbestand und Anlagenart des PROJEKTS sind mit Schemaschritt 90 entfallen,
+        // der Kostenanteil mit Schemaschritt 91 — alle drei werden je Anlage gepflegt
+        // und gelesen (Tab_Energieanlagen.KWKG_Eigenstromfall, KWKG_Anlagenart,
+        // KWKG_Kostenanteil).
 
         /// <summary>
         /// Pauschale nach § 9 KWKG (Anlagen bis 2 kW<sub>el</sub>): einmalige

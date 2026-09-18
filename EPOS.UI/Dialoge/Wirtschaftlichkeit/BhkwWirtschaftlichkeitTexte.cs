@@ -104,18 +104,17 @@ public sealed class BhkwWirtschaftlichkeitTexte
         "ersetzt die Vergütung nicht.");
 
     public string PAbschlag { get; } = T("BHW_P_ABSCHLAG", "Abschlag Negativstunden [%]:");
-    public string PKostenanteil { get; } = T("BHW_P_KOSTENANTEIL",
-        "Anteil Neuherstellungskosten [%] (Vorgabe für Anlagen ohne eigenen Wert):");
     public string PPauschal { get; } = T("BHW_P_PAUSCHAL", "Pauschale § 9 KWKG (nur bis 2 kWel, einmalig)");
     public string PStichtag { get; } = T("BHW_P_STICHTAG", "Stichtag (Bestellung/Genehmigung, § 6):");
     public string PIbn { get; } = T("BHW_P_IBN", "Förderbeginn (Startjahr der Reihen):");
 
-    /// <summary>Die leise Zeile unter der Gruppe: WARUM hier nur noch vier Angaben
+    /// <summary>Die leise Zeile unter der Gruppe: WARUM hier nur noch fünf Angaben
     /// stehen. Ohne sie sucht ein Anwender, der den Dialog kennt, die Sätze.</summary>
     public string PNurProjektweit { get; } = T("BHW_P_NUR_PROJEKTWEIT",
-        "Satz, Kontingent, Jahresdeckel, Anlagenart und Eigenstrom-Tatbestand stehen " +
-        "an der Anlage (§ 7 und § 8 KWKG bemessen sie je Anlage) — oben unter " +
-        "„Angaben der gewählten Anlage“, mit einem Knopf für den Katalogvorschlag am Feld.");
+        "Satz, Kontingent, Jahresdeckel, Anlagenart, Eigenstrom-Tatbestand und der " +
+        "Anteil an den Neuherstellungskosten stehen an der Anlage (§ 7 und § 8 KWKG " +
+        "bemessen sie je Anlage) — oben unter „Angaben der gewählten Anlage“; die beiden " +
+        "Sätze und das Kontingent mit einem Knopf für den Katalogvorschlag am Feld.");
 
     // --------------------------------------------- Gruppe 3: Energiesteuer
     public string EWahl { get; } = T("BHW_E_WAHL", "Energiesteuerentlastung:");

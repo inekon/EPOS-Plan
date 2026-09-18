@@ -3538,16 +3538,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil Neuherstellungskosten [%] (Vorgabe für Anlagen ohne eigenen Wert): ähnelt.
-        /// </summary>
-        public static string BHW_P_KOSTENANTEIL {
-            get {
-                return ResourceManager.GetString("BHW_P_KOSTENANTEIL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Satz, Kontingent, Jahresdeckel, Anlagenart und Eigenstrom-Tatbestand stehen an der Anlage (§ 7 und § 8 KWKG bemessen sie je Anlage) — oben unter „Angaben der gewählten Anlage“, mit einem Knopf für den Katalogvorschlag am Feld. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz, Kontingent, Jahresdeckel, Anlagenart, Eigenstrom-Tatbestand und der Anteil an den Neuherstellungskosten stehen an der Anlage (§ 7 und § 8 KWKG bemessen sie je Anlage) — oben unter „Angaben der gewählten Anlage“; die beiden Sätze und das Kontingent mit einem Knopf für den Katalogvorschlag am Feld. ähnelt.
         /// </summary>
         public static string BHW_P_NUR_PROJEKTWEIT {
             get {

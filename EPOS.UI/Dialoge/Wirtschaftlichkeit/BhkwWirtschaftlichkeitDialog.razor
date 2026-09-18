@@ -244,19 +244,16 @@
                             Wert="@(_vorgaben.EinspeiseverguetungKwk ?? 0)"
                             WertChanged="EinspeisungKwkP" />
 
-                @* ETAPPE BK1 (Entscheid BK-E-1 a): HIER STEHT NUR NOCH, WAS WIRKLICH
-                   PROJEKTWEIT IST. Satz, Kontingent, Jahresdeckel, Anlagenart und
-                   Tatbestand sind seit Schemaschritt 89 Angaben DER ANLAGE - § 7
-                   bemisst den Satz an ihrer Leistung, § 8 das Kontingent an ihrer
-                   Anlagenart. Sie hier ein zweites Mal zu fuehren, war die doppelte
+                @* ETAPPE BK1 (Entscheid BK-E-1 a) und BK1b (Entscheid BK1-4 a): HIER
+                   STEHT NUR NOCH, WAS WIRKLICH PROJEKTWEIT IST. Satz, Kontingent,
+                   Jahresdeckel, Anlagenart, Tatbestand und Kostenanteil sind seit
+                   Schemaschritt 89 Angaben DER ANLAGE - § 7 bemisst den Satz an ihrer
+                   Leistung, § 8 das Kontingent an ihrer Anlagenart UND ihrem
+                   Kostenanteil. Sie hier ein zweites Mal zu fuehren, war die doppelte
                    Wahrheit samt Rueckfallkette, die BK1 aufloest. *@
                 <Zahlenfeld Bezeichnung="@_t.PAbschlag" Einheit="%"
                             Min="0" Max="50" Nachkommastellen="1"
                             Wert="@_vorgaben.KwkgAbschlagNegativ" WertChanged="AbschlagP" />
-
-                <Zahlenfeld Bezeichnung="@_t.PKostenanteil" Einheit="%"
-                            Min="0" Max="100" Nachkommastellen="1"
-                            Wert="@_vorgaben.KwkgKostenanteil" WertChanged="KostenanteilP" />
 
                 <Schalter Bezeichnung="@_t.PPauschal"
                           Wert="@_vorgaben.KwkgPauschalmodus" WertChanged="PauschalP" />
@@ -720,7 +717,6 @@
     // der Datenbank stehen (Aufraeumkandidaten) und werden mit dem Arbeitsstand
     // WERTGLEICH zurueckgeschrieben; der Dialog aendert sie nicht mehr.
     private void AbschlagP(double? w) => Setze(() => _vorgaben.KwkgAbschlagNegativ = w ?? 0);
-    private void KostenanteilP(double? w) => Setze(() => _vorgaben.KwkgKostenanteil = w ?? 0);
     private void PauschalP(bool b) => Setze(() => _vorgaben.KwkgPauschalmodus = b);
     private void StichtagP(DateOnly? d) => Setze(() => _vorgaben.KwkgStichtag = Zeit(d));
     private void IbnP(DateOnly? d) => Setze(() => _vorgaben.KwkgInbetriebnahme = Zeit(d));

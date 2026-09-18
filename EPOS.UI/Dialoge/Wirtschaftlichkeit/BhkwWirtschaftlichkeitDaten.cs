@@ -372,15 +372,12 @@ public sealed class BhkwVorgabenstand
     public double? EinspeiseverguetungKwk;
 
     // ETAPPE BK1a: Die vier KWKG-Rechengrößen des Projekts und die zwei
-    // Einordnungen (Tatbestand, Anlagenart) sind mit Schemaschritt 90 entfallen —
-    // sie gehören der Anlage. Der Rundtrip führt sie deshalb nicht mehr; ein Feld
-    // der Maske ändert sich dadurch nicht, sie standen hier nur zum Vergleich.
+    // Einordnungen (Tatbestand, Anlagenart) sind mit Schemaschritt 90 entfallen,
+    // der Kostenanteil mit Schemaschritt 91 — alle drei gehören der Anlage. Der
+    // Rundtrip führt sie deshalb nicht mehr.
 
     /// <summary>Abschlag Negativstunden [%] (2.5).</summary>
     public double KwkgAbschlagNegativ;
-
-    /// <summary>Anteil Neuherstellungskosten [%] (2.8).</summary>
-    public double KwkgKostenanteil;
 
     /// <summary>Pauschale § 9 KWKG (2.9).</summary>
     public bool KwkgPauschalmodus;
@@ -418,7 +415,6 @@ public sealed class BhkwVorgabenstand
     {
         EinspeiseverguetungKwk = p.EinspeiseverguetungKWK,
         KwkgAbschlagNegativ = p.KwkgAbschlagNegativ,
-        KwkgKostenanteil = p.KwkgKostenanteil,
         KwkgPauschalmodus = p.KwkgPauschalmodus,
         KwkgStichtag = p.KwkgStichtag,
         KwkgInbetriebnahme = p.KwkgInbetriebnahme,
@@ -442,7 +438,6 @@ public sealed class BhkwVorgabenstand
     public bool Gleicht(WirtschaftlichkeitParameter p)
         => EinspeiseverguetungKwk == p.EinspeiseverguetungKWK
         && KwkgAbschlagNegativ == p.KwkgAbschlagNegativ
-        && KwkgKostenanteil == p.KwkgKostenanteil
         && KwkgPauschalmodus == p.KwkgPauschalmodus
         && KwkgStichtag == p.KwkgStichtag
         && KwkgInbetriebnahme == p.KwkgInbetriebnahme
@@ -459,7 +454,6 @@ public sealed class BhkwVorgabenstand
     {
         p.EinspeiseverguetungKWK = EinspeiseverguetungKwk;
         p.KwkgAbschlagNegativ = KwkgAbschlagNegativ;
-        p.KwkgKostenanteil = KwkgKostenanteil;
         p.KwkgPauschalmodus = KwkgPauschalmodus;
         p.KwkgStichtag = KwkgStichtag;
         p.KwkgInbetriebnahme = KwkgInbetriebnahme;
