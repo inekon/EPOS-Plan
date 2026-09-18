@@ -872,13 +872,13 @@ namespace WindowsFormsApplication1
         /// „nicht gepflegt", und die YESNO-Spalte belegt Access selbst mit
         /// <c>False</c> — dem Wert ohne Pauschale.
         ///
-        /// <b>Fortgeschrieben mit Etappe BK1a:</b> Zwei der vier Spalten —
-        /// <c>KWKG_Tatbestand</c> und <c>KWKG_Anlagenart</c> — entfernt Schritt 90
-        /// wieder (<see cref="KwkgProjektaltspalten"/>); beide werden seit Schritt 89 an
-        /// der Anlage gepflegt und geprüft. Dieser Schritt bleibt unverändert — ein
-        /// Migrationsschritt wird nie rückwirkend geändert —, er legt sie weiterhin an
-        /// und holt ihre Namen jetzt von dort. <c>KWKG_Kostenanteil</c> und
-        /// <c>KWKG_Pauschalmodus</c> bleiben stehen.
+        /// <b>Fortgeschrieben mit den Etappen BK1a und BK1b:</b> Drei der vier Spalten
+        /// entfallen wieder (<see cref="KwkgProjektaltspalten"/>) — <c>KWKG_Tatbestand</c>
+        /// und <c>KWKG_Anlagenart</c> mit Schritt 90, <c>KWKG_Kostenanteil</c> mit
+        /// Schritt 91; alle drei werden seit Schritt 89 an der Anlage gepflegt und
+        /// gelesen. Dieser Schritt bleibt unverändert — ein Migrationsschritt wird nie
+        /// rückwirkend geändert —, er legt sie weiterhin an und holt ihre Namen jetzt
+        /// von dort. Allein <c>KWKG_Pauschalmodus</c> bleibt stehen.
         ///
         /// <b>Warum die Katalogberichtigung hierher gehört.</b> Der Gesetzeskatalog sät
         /// sich generationsweise selbst nach (<c>GesetzKatalog.StelleKatalogSicher</c>),
@@ -3285,6 +3285,43 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_90_KWKG_PROJEKTALTSPALTEN = 90;
 
+        /// <summary>
+        /// ETAPPE BK1b — die SIEBTE und letzte KWKG-Projektspalte fällt:
+        /// <c>Tab_ProjektWirtschaftlichkeit.KWKG_Kostenanteil</c>
+        /// (<see cref="KwkgProjektaltspalten.KOSTENANTEIL"/>).
+        ///
+        /// <para><b>Warum sie Schritt 90 überstanden hat:</b> Der ließ sie samt
+        /// Dialogfeld stehen (Anwenderentscheid BK1-Q1 c) und vermerkte sie als
+        /// offenen Punkt BK1-4 im Wirtschaftlichkeitskonzept. Mit dem
+        /// Anwenderentscheid vom 18.09.2026 („BK1-4: (a) Entfernen") fällt sie
+        /// nach.</para>
+        ///
+        /// <para><b>Sie hat keinen Rechenleser mehr.</b> § 8 Abs. 2/3 KWKG leitet das
+        /// Vbh-Kontingent aus dem Kostenanteil DER ANLAGE ab
+        /// (<c>Tab_Energieanlagen.KWKG_Kostenanteil</c>, Schritt 89); der Regelweg je
+        /// Anlage und der Ersatzweg (Etappe BK1a) lesen beide die Anlage. Der
+        /// Projektwert wurde nur noch von seinem eigenen Dialogfeld gepflegt —
+        /// dieselbe Größe stand im selben Dialog ein zweites Mal, dort mit
+        /// Rechenwirkung.</para>
+        ///
+        /// <para><b>Kein DML:</b> Schritt 89 hat den Projektwert einmalig in jede
+        /// BHKW-Anlagenzeile geschrieben, die an dieser Stelle leer war. Ein zweites
+        /// Mal übertragen hieße, eine seither gepflegte Anlagenzelle zu
+        /// überschreiben.</para>
+        ///
+        /// <para><b>Ergebnisneutral, und zwar gemessen:</b> Projekt 1030 rechnet
+        /// Zuschlag Jahr 1 und Kapitalwert zahlengleich. Die Referenzbasis führt keine
+        /// KWKG-Projektgröße — der Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Idempotent:</b> Der Schritt fragt vorher, ob es etwas zu tun gibt
+        /// (<c>Offen91()</c>); der zweite Lauf fasst nichts an.</para>
+        ///
+        /// <para><b>Ein eigener Schritt und kein Nachtrag in 90:</b> Ein
+        /// Migrationsschritt wird nie rückwirkend geändert — Schritt 90 ist auf jeder
+        /// bereits gewandelten Datei gelaufen und trägt dort seine Nummer.</para>
+        /// </summary>
+        public const int SCHRITT_91_KWKG_KOSTENANTEIL = 91;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4462,6 +4499,19 @@ namespace WindowsFormsApplication1
                         "Kostenseite standen sie ohne Kennzeichnung und ohne " +
                         "Papierkorb.",
                         Schritt_90_KwkgProjektaltspalten),
+
+            // ETAPPE BK1b - ZWINGEND HINTER 90 und hinter 89: 89 liest die Spalte als
+            // Quelle der Uebertragung in die Anlagen, 90 laesst sie stehen. Die Quelle
+            // ist dieselbe wie bei 90 - KwkgProjektaltspalten, zweite Liste.
+            new Schritt(SCHRITT_91_KWKG_KOSTENANTEIL,
+                        "die siebte KWKG-Projektspalte faellt weg (KWKG_Kostenanteil)",
+                        "§ 8 Abs. 2/3 KWKG leitet das Vbh-Kontingent aus dem " +
+                        "Kostenanteil DER ANLAGE ab. Seit Schritt 89 steht er dort, " +
+                        "seit Etappe BK1a liest ihn auch der Ersatzweg von dort - am " +
+                        "Projekt pflegte der Anwender eine Zahl, die nichts mehr " +
+                        "rechnete, und dieselbe Groesse stand im selben Dialog ein " +
+                        "zweites Mal.",
+                        Schritt_91_KwkgKostenanteil),
         };
 
         /// <summary>
@@ -6499,6 +6549,48 @@ namespace WindowsFormsApplication1
                     "mit ihnen - beide Rechenwege lesen die Anlage. " +
                     KwkgProjektaltspalten.TABELLE + ".KWKG_Kostenanteil bleibt samt " +
                     "Dialogfeld stehen (Anwenderentscheid BK1-Q1 c).");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 91 - die siebte KWKG-Projektspalte (Etappe BK1b)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 91 — Anlass, Anweisung und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_91_KWKG_KOSTENANTEIL"/> und bei
+        /// <see cref="KwkgProjektaltspalten"/> (zweite Liste,
+        /// <c>Spalten91</c>/<c>Anweisungen91</c>/<c>Offen91</c>).
+        ///
+        /// <para>Reines DDL, wortgleich gebaut wie der DDL-Teil des Schrittes 90:
+        /// zählen, die Anweisungen der Quelle fahren, nachzählen. Die Liste lässt
+        /// bereits Erledigtes aus — deshalb braucht es hier keine eigene
+        /// Idempotenzabfrage.</para>
+        /// </summary>
+        private static bool Schritt_91_KwkgKostenanteil(Lauf l)
+        {
+            int offen = KwkgProjektaltspalten.Offen91();
+            foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                     in KwkgProjektaltspalten.Anweisungen91)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            int rest = KwkgProjektaltspalten.Offen91();
+            if (rest != 0)
+            {
+                l.LetzterFehler = KwkgProjektaltspalten.TABELLE + "." +
+                                  KwkgProjektaltspalten.KOSTENANTEIL +
+                                  " steht nach dem Schritt noch.";
+                l.Notiz("91: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("91: " + offen.ToString(CultureInfo.InvariantCulture) +
+                    " KWKG-Projektspalte(n) entfernt (" +
+                    KwkgProjektaltspalten.KOSTENANTEIL + "). KEIN DML: Schritt 89 hat " +
+                    "den Projektwert laengst in jede BHKW-Anlagenzeile uebertragen, " +
+                    "die an dieser Stelle leer war; § 8 Abs. 2/3 KWKG leitet das " +
+                    "Kontingent aus dem Kostenanteil DER ANLAGE ab " +
+                    "(Anwenderentscheid BK1-4 a).");
             return true;
         }
 

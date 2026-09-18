@@ -217,11 +217,25 @@ namespace WindowsFormsApplication1
         ///     „Anlagenkomponenten" ohne Kennzeichnung.</description></item>
         /// </list>
         /// Der Referenzlauf bleibt byte-gleich — keine der Größen steht in der Basis.
+        /// Mit dem WEGFALL DER PROJEKTSPALTE <c>KWKG_Kostenanteil</c> (Schritt 91,
+        /// Etappe BK1b) steht das Ziel auf <b>91</b>. Es ist die siebte und letzte der
+        /// KWKG-Projektspalten (<see cref="KwkgProjektaltspalten.KOSTENANTEIL"/>).
+        /// Schritt 90 hatte sie samt Dialogfeld stehen lassen (Anwenderentscheid
+        /// BK1-Q1 c) und als offenen Punkt BK1-4 vermerkt; mit
+        /// „BK1-4: (a) Entfernen" fällt sie nach. § 8 Abs. 2/3 KWKG leitet das
+        /// Vbh-Kontingent aus dem Kostenanteil DER ANLAGE ab
+        /// (<c>Tab_Energieanlagen.KWKG_Kostenanteil</c>, Schritt 89); der Projektwert
+        /// war seit Etappe BK1a ohne Rechenleser und wurde nur noch von seinem eigenen
+        /// Dialogfeld gepflegt. <b>Kein DML:</b> Schritt 89 hat den Wert einmalig in
+        /// jede BHKW-Anlagenzeile übertragen; ein zweites Mal übertragen hieße, eine
+        /// seither gepflegte Anlagenzelle zu überschreiben. Der Schritt ist
+        /// ergebnisneutral — Projekt 1030 rechnet Zuschlag und Kapitalwert
+        /// zahlengleich, der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 90;
+        public const int Zielversion = 91;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

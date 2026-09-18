@@ -3642,7 +3642,7 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Warum die Spalte jetzt an die Anlage gehört.</b> Anlagenart und
         /// Kostenanteil standen bis hierher nur am Projekt
-        /// (<c>KWKG_Anlagenart</c>, <see cref="SPALTE_PW_KWKG_KOSTENANTEIL"/>),
+        /// (<c>KWKG_Anlagenart</c>, <c>KWKG_Kostenanteil</c>),
         /// obwohl § 8 auf die EINZELNE
         /// Anlage abstellt: Ein modernisiertes 50-kW-Modul neben einem neuen 9-kW-Modul
         /// hat ein anderes Kontingent, und der Projektwert konnte nur eines von beiden
@@ -3887,16 +3887,6 @@ namespace WindowsFormsApplication1
         public const string SPALTE_PW_KWKG_INBETRIEBNAHME = "KWKG_Inbetriebnahme";
 
         /// <summary>
-        /// K6 — Anteil an den Neuherstellungskosten [%] (§ 8 Abs. 2/3 KWKG). Er wählt
-        /// bei modernisierten und nachgerüsteten Anlagen die Kontingentstufe:
-        /// modernisiert ≥ 25 % → 15.000 h, ≥ 50 % → 30.000 h; nachgerüstet ≥ 10 % →
-        /// 10.000 h, ≥ 25 % → 15.000 h, ≥ 50 % → 30.000 h. Bleibt NULL bzw. 0 =
-        /// nicht gepflegt; dann gibt es kein abgeleitetes Kontingent, sondern eine
-        /// Begründung.
-        /// </summary>
-        public const string SPALTE_PW_KWKG_KOSTENANTEIL = "KWKG_Kostenanteil";
-
-        /// <summary>
         /// K6 — Pauschalmodus des § 9 KWKG für Anlagen bis 2 kW<sub>el</sub>: auf
         /// Antrag eine einmalige Vorauszahlung von 4 ct/kWh für 60.000 Vbh statt der
         /// laufenden Abrechnung.
@@ -3932,15 +3922,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly SchemaSpalte[] Schritt28_KwkgTatbestand =
         {
-            // ETAPPE BK1a: Tatbestand und Anlagenart holen ihren Namen jetzt von
-            // KwkgProjektaltspalten — Schemaschritt 90 entfernt beide Spalten. Der
-            // Schritt 28 selbst bleibt unverändert: Ein Migrationsschritt wird nie
-            // rückwirkend geändert, er legt sie weiterhin an.
+            // ETAPPE BK1a/BK1b: Tatbestand, Anlagenart und Kostenanteil holen ihren
+            // Namen jetzt von KwkgProjektaltspalten — Schemaschritt 90 entfernt die
+            // ersten beiden, Schritt 91 den dritten. Der Schritt 28 selbst bleibt
+            // unverändert: Ein Migrationsschritt wird nie rückwirkend geändert, er
+            // legt alle drei weiterhin an.
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT,
                              KwkgProjektaltspalten.SPALTE_TATBESTAND,  "TEXT(30)"),
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT,
                              KwkgProjektaltspalten.SPALTE_ANLAGENART,  "TEXT(20)"),
-            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT,
+                             KwkgProjektaltspalten.KOSTENANTEIL,      "DOUBLE"),
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO"),
         };
 
