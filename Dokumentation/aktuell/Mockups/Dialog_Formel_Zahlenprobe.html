@@ -1014,7 +1014,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
   grau. Die Herleitungszeile unter dem Betrag <span class="zk umg">umgesetzt U28</span> — sie nennt hier keine
   Runde, weil die Betriebsseite keine Kaskade kennt; hinterlegte Pflichtzeilen
   mit Schloss, der Empfehlungsbereich als Zeile, der Laufstand über dem Raster, die Gruppe „Endenergie je
-  Komponente" und die Doppelpflege-Warnung <span class="zk vor">Vorschlag U31</span>.</p>
+  Komponente" und die Doppelpflege-Warnung <span class="zk umg">umgesetzt U31</span>.</p>
   <div class="fenster">
     <div class="f-band">Kostenverwaltung BHKW 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
@@ -1029,7 +1029,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
       <div class="f-tab" style="margin:12px -14px 0"><span class="an">Kosten Invest/Betrieb</span><span>Ertrag/Bonus</span></div>
       <div style="padding-top:12px">
       <div class="f-info" style="margin:0 0 10px">Mengen stammen aus dem Simulationslauf vom <b>18.09.2026, 14:05</b>
-        <span class="zk vor">Vorschlag U31</span></div>
+        <span class="zk umg">umgesetzt U31</span></div>
       <div class="f-scroll">
       <table class="f-raster" aria-label="Positionen">
         <thead><tr>
@@ -1090,10 +1090,11 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
       <div class="f-warn">Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition Hilfsenergiekosten): BHKW 1
         führt einen Hilfsenergieanteil von 2,00 % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe
         mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts.
-        <span class="zk vor">Vorschlag U31</span></div>
-      <div class="f-info">Die drei Pflichtzeilen tragen in der Anwendung denselben Papierkorb wie jede andere Zeile; der
-        Löschversuch antwortet „‹Position› ist eine Pflichtposition dieser Komponente und kann nicht gelöscht werden. Zum
-        Deaktivieren den Satz bzw. Betrag auf 0 setzen." Der Empfehlungsbereich ist der Werkzeugtipp des Satzfeldes.
+        <span class="zk umg">umgesetzt U31</span></div>
+      <div class="f-info">Die drei Pflichtzeilen tragen an Stelle des Papierkorbs ein Schloss mit dem Werkzeugtipp
+        „Pflichtposition, kann nicht gelöscht werden"; jeder Löschversuch antwortet „‹Position› ist eine Pflichtposition
+        dieser Komponente und kann nicht gelöscht werden. Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen."
+        Der Empfehlungsbereich steht als leise Zeile unter dem Satzfeld und zusätzlich in dessen Werkzeugtipp.
         Bemessungen der Klappliste beim Blockheizkraftwerk: fester Jahresbetrag · % der Investition · % der
         Endenergiekosten · % des Endenergiebedarfs · je kWh thermisch · je kWh elektrisch; die Altwerte „je kWh" und
         „je Stunde" stehen nur, wo eine Bestandszeile sie trägt. <b>Ohne Simulationslauf</b> tragen die mengenbasierten
@@ -1111,9 +1112,10 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
     </div>
   </div>
 
-  <div class="zone">Endenergie je Komponente <span class="zk vor" style="margin-left:6px">Vorschlag U31</span></div>
+  <div class="zone">Endenergie je Komponente <span class="zk umg" style="margin-left:6px">umgesetzt U31</span></div>
   <p class="eng">Die Bezugsgröße der Prozentzeilen, frisch aus dem jüngsten Lauf — als Gruppe unter dem Raster der
-  Betriebskosten. Die Anwendung nennt die Größe allein im Werkzeugtipp des Betragsfeldes.</p>
+  Betriebskosten. Sie nennt je Anlage mit Endenergie den Jahresbedarf, die Arbeitskosten und die Herkunft der Menge;
+  fehlt der Arbeitspreis eines Trägers, steht dort ein Gedankenstrich, nie eine 0.</p>
   <div class="tafel-huelle">
     <table class="tafel">
       <thead><tr><th>Komponente</th><th>Energieträger</th><th class="r">Endenergie</th>
@@ -1238,8 +1240,8 @@ Keine stillen Teilsummen
   59.564,21 € und nicht 57.164,21 €.</p>
 
   <div class="zone">Beschriftungen und Ressourcenschlüssel</div>
-  <p class="eng">Vorhandene Schlüssel tragen die Beschriftungen des Dialogs wörtlich; die als <b>neu</b> gekennzeichneten
-  gehören zu den Vorschlägen U28 und U31. Kopf, Kontextleiste, Reiter, Spalten, Abschlusszeile, Knöpfe und
+  <p class="eng">Die Schlüssel tragen die Beschriftungen des Dialogs wörtlich; der als <b>neu</b> gekennzeichnete
+  ist noch keiner. Kopf, Kontextleiste, Reiter, Spalten, Abschlusszeile, Knöpfe und
   Fußleiste sind dieselben Schlüssel wie in Kategorie 1.</p>
   <div class="tafel-huelle">
     <table class="tafel">
@@ -1251,9 +1253,10 @@ Keine stillen Teilsummen
         <tr><td>Summenfuß „Summe Betriebskosten netto: {0} €/a" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_BETRIEB · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Grund „kein Simulationslauf" unter dem Raster</td><td class="rs">KDLG_BASIS_GRUND_LAUF · KDLG_OHNE_BASIS_ZEILE</td><td>Hinweiszeile unter dem Raster</td></tr>
         <tr><td>Herleitungszeile „× {0} kWh · {1}" unter dem Betrag — ohne Runde</td><td class="rs">KDLG_HERL_BASIS_OHNE_RUNDE · KDLG_HERK_LAUF</td><td>Prozent- und Produktzeilen des Rasters (U28)</td></tr>
-        <tr><td>Laufstand „Mengen stammen aus dem Simulationslauf vom {0}" <b>neu</b></td><td class="rs">KDLG_LAUFSTAND</td><td>über dem Raster (U31)</td></tr>
-        <tr><td>Gruppenkopf „Endenergie je Komponente" · Hinweis „Einsatz steckt im Reststrombedarf" <b>neu</b></td><td class="rs">KDLG_G_ENDENERGIE · KDLG_HINW_ELEKTROKESSEL</td><td>Gruppe unter dem Raster (U31)</td></tr>
-        <tr><td>Doppelpflege Hilfsenergie — derselbe Text wie in der Kohärenzprüfung des BHKW-Dialogs</td><td class="rs">KOH_HILFSENERGIE_DOPPELT</td><td>BhkwWirtschaftlichkeitDialog; im Kostendialog neu (U31)</td></tr>
+        <tr><td>Schloss an einer Pflichtzeile · Empfehlungsbereich als Zeile unter dem Satzfeld und als Werkzeugtipp</td><td class="rs">KDLG_TT_PFLICHT · KDLG_EMPF_ZEILE · KDLG_TT_EMPFEHLUNG</td><td>Aktions- und Satzspalte des Rasters (U31)</td></tr>
+        <tr><td>Laufstand „Mengen stammen aus dem Simulationslauf vom {0}"</td><td class="rs">KDLG_LAUFSTAND · KDLG_LAUFSTAND_OHNE_DATUM</td><td>über dem Raster (U31)</td></tr>
+        <tr><td>Gruppe „Endenergie je Komponente": Kopf, vier Spalten und der Hinweis auf die Bemessungen</td><td class="rs">KDLG_G_ENDENERGIE · KDLG_SP_ENDENERGIE_KOMP · KDLG_SP_ENDENERGIE_KWH · KDLG_SP_ENDENERGIE_EUR · KDLG_SP_ENDENERGIE_BASIS · KDLG_HINWEIS_ENDENERGIE</td><td>Gruppe unter dem Raster (U31)</td></tr>
+        <tr><td>Doppelpflege Hilfsenergie — derselbe Text wie in der Kohärenzprüfung des BHKW-Dialogs</td><td class="rs">KOH_HILFSENERGIE_DOPPELT</td><td>BhkwWirtschaftlichkeitDialog und Kostendialog (U31)</td></tr>
         <tr><td>Gedankenstrich-Grund „gehört zu keinem Energieträger" <b>neu</b> · Warnung fehlender Kesselbrennstoff</td><td class="rs">WIRT_OHNE_TRAEGER · WIRT_KESSELBRENNSTOFF_FEHLT</td><td>Ergebniszeile, Bericht, Dialog · Kohärenzprüfung</td></tr>
       </tbody>
     </table>
@@ -4218,14 +4221,19 @@ Einstufung
               <span class="mono">KapitalwertRechner</span></td>
             <td>Zahlenprobe: Blockheizkraftwerk Ersatz Jahr 15 205.884,00 €, Restwert 137.256,00 €; Photovoltaik
               Jahr 12 24.000,00 €, Restwert 39.800,00 €</td></tr>
-        <tr><td class="mono">U31</td><td class="num">2</td>
+        <tr class="gestrichen"><td class="mono">U31</td><td class="num">2</td>
             <td>Betriebsseite: Pflichtzeilen hinterlegt mit Schloss statt Papierkorb, Empfehlungsbereich als Zeile unter
               der Position statt als Werkzeugtipp, Laufstand über dem Raster, Gruppe „Endenergie je Komponente" und die
               Doppelpflege-Warnung <span class="mono">KOH_HILFSENERGIE_DOPPELT</span> auch im Kostendialog</td>
             <td><span class="mono">KostenKomponenteDialog</span> · <span class="mono">VorlagenZeile.razor</span> ·
-              <span class="mono">KostenProjektPositionenCtrl.IstPflicht</span> · <span class="mono">EndenergieAufloeser</span></td>
-            <td>bunit: drei Pflichtzeilen mit Schloss, Löschversuch weiterhin abgewiesen; Endenergiegruppe nennt
-              4.342.100 kWh und 312.631,20 €/a; Warnung nur bei Anlagenanteil &gt; 0 und aktiver Kostenposition</td></tr>
+              <span class="mono">KostenBetriebsstand</span> · <span class="mono">EndenergieAufloeser</span></td>
+            <td class="grund"><b>erledigt:</b> Das Schloss steht an der Stelle des Papierkorbs und bleibt ein Knopf — der
+              Löschversuch wird weiterhin abgewiesen und nennt den Ausweg. Laufstand, Endenergiegruppe und
+              Empfehlungstexte entstehen im Kern (<span class="mono">KostenBetriebsstand</span>,
+              <span class="mono">KostenHerleitung</span>), die Warnung liefert unverändert die Kohärenzprüfung, nach der
+              einen Anlage gefragt. Der Zeitpunkt des Laufs liegt in <span class="mono">Tab_Ergebnis.Zeitstempel</span>
+              vor; ein Schemaschritt war dafür nicht nötig. Ohne Arbeitspreis steht in der Kostenspalte ein
+              Gedankenstrich, nie eine 0</td></tr>
         <tr><td class="mono">U32</td><td class="num">4</td>
             <td>Die Preisbasis-Kennung des Projekts (<span class="mono">ID_Umrechnung</span>) ist eine
               <b>Regelkennung</b>. Führt kein Brennstoff eine Regel nach kWh, wird beim Speichern −1 abgelegt, und die
