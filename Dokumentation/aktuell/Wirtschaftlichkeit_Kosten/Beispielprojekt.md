@@ -15,9 +15,11 @@ Wurzel hier.
 | Energieträger BHKW | Erdgas, H_i 10,5 · H_s 11,6 kWh/m³ | A | `energy_carrier` |
 | KWKG-Anlagenart · Stichtag · Inbetriebnahme | neu (§ 8 Abs. 1) · 14.03.2026 · 01.10.2026 | A | `Tab_Energieanlagen.KWKG_*` |
 | Eigenstrom-Tatbestand § 6 Abs. 3 | Nr. 2 Kundenanlage | A | `KWKG_Eigenstromfall` |
-| Hilfsenergieanteil BHKW | 2,0 % des Brennstoffs | A | `Hilfsenergie_Anteil` (neu B5) |
+| Hilfsenergieanteil BHKW | 2,0 % des Brennstoffs | A | `Hilfsenergie_Anteil` |
+| Vorrichtung zur Abwärmeabfuhr · Stromkennzahl σ | nicht gesetzt · 0,845 (= 300 / 355) | A · → | Anlagenangaben KWKG — im Beispiel greift § 2 Nr. 16 Fall 1 |
+| Gas-Brennwertkessel (Stammprojekt und Spitzenlast) | Nutzungsgrad 95 % | A | `Tab_Heizkessel` |
 | Energiesteuerwahl · Aufteilung | § 53a Abs. 5 · voller Brennstoff | A | `Energiesteuer_Wahl` · `Aufteilung_Methode` |
-| Photovoltaik | 300 kWp = 750 Module × 400 Wp | A | `Tab_Energieanlagen.PV_Leistung` ⚠ I-1 |
+| Photovoltaik | 300 kWp = 750 Module × 400 Wp | A | `Tab_Energieanlagen.PV_Leistung` — die Spalte trägt andernorts die Modulanzahl, die Herleitung zeigt deshalb beide Größen |
 | PV-Inbetriebnahme · Einspeiseart | 01.08.2026 · Überschusseinspeisung | A | PV-Dialog |
 | PV-Vermarktung | Direktvermarktung mit Marktprämie, DV-Entgelt 0,40 ct/kWh | A | PV-Dialog |
 | Unternehmensart | produzierendes Gewerbe | A | Projektangabe — wirkt auf § 54 und § 9b |
@@ -31,6 +33,8 @@ Wurzel hier.
 | Gasmenge in Abrechnungseinheit | 4.342,1 × 1000 ÷ 10,5 | 413.533 m³/a |
 | Stromerzeugung brutto | 300 kW × 5.500 h | **1.650,0 MWh/a** |
 | Nutzwärme | 4.342,1 × 0,45 | 1.953,9 MWh/a |
+| Brennstoff Kessel (Stammprojekt, dieselbe Nutzwärme) | 1.953,9 ÷ 0,95 | **2.056,7 MWh/a** (H_i) |
+| Brennstoff Kessel brennwertbezogen | 2.056,7 × 1,1048 | 2.272,3 MWh/a (H_s) |
 | Hilfsstrom BHKW | 2,0 % × 4.342,1 | 86,8 MWh/a |
 | Nettostromerzeugung | 1.650,0 − 86,8 | **1.563,2 MWh/a** |
 | PV-Ertrag Jahr 1 | 300 kWp × 950 kWh/kWp | **285,0 MWh/a** |
@@ -73,6 +77,57 @@ weil verschiedene Vorschriften verschiedene Mengen verlangen (siehe `Rechenweg/0
 | Umsatzsteuer (nur Bruttoanzeige) | 19 % | Katalog |
 | Kalkulationszins · Betrachtungszeitraum | 3,0 % · 20 a | Vorgabe `Tab_ProjektWirtschaftlichkeit` |
 | Preissteigerung Energie · Betrieb | 0,0 · 0,0 %/a | Vorgabe |
+| Preissteigerung Investition p_I (Ersatz und Restwert) | **0,0 %/a** | Vorgabe — bei 0 bleiben Ersatz- und Restwertbeträge nicht indiziert |
+| Jahr 1 | **Kalenderjahr der Inbetriebnahme**, ersatzweise des Förderbeginns — hier **2026** | Konvention; volle Rechenjahre, keine Teiljahre |
+
+## 4a Investition, Betriebskosten, Ersatz und Restwert
+
+Alle Beträge netto, Kalkulationszins 3,0 %, Betrachtungszeitraum 20 a, p_I = 0 %/a.
+
+| Komponente / Position | Rechnung | Betrag | Nutzungsdauer |
+|---|---|---|---|
+| BHKW-Modul | 300,00 kW × 653,60 €/kW | 196.080,00 € | 15 a |
+| Montage und Inbetriebnahme | 5 % der Erzeugerkosten (196.080,00) | 9.804,00 € | 15 a |
+| Hydraulik und Einbindung | Betrag | 13.000,00 € | 20 a |
+| Planung und Genehmigung | 10 % von 218.884,00 | 21.888,40 € | — |
+| **Investition BHKW brutto** | | **240.772,40 €** | |
+| Zuschuss | Betrag | − 6.000,00 € | |
+| **I₀ BHKW** | | **234.772,40 €** | |
+| PV-Module | 300,00 kWp × 320,00 €/kWp | 96.000,00 € | 25 a |
+| Wechselrichter | 300,00 kWp × 80,00 €/kWp | 24.000,00 € | 12 a |
+| Unterkonstruktion und Montage | 300,00 kWp × 150,00 €/kWp | 45.000,00 € | 25 a |
+| Elektroinstallation, Netzanschluss | Betrag | 18.000,00 € | 25 a |
+| Planung und Genehmigung | 5 % von 183.000,00 | 9.150,00 € | — |
+| **I₀ Photovoltaik** | kein Zuschuss · 640,50 €/kWp | **192.150,00 €** | |
+
+| Betriebskosten Jahr 1 | Zusammensetzung | Betrag |
+|---|---|---|
+| Blockheizkraftwerk | 46.200,00 Wartung + 3.611,59 Instandhaltung (1,50 % von 240.772,40) + 6.252,62 Hilfsenergie + 1.100,00 Versicherung | **57.164,21 €/a** |
+| Photovoltaik | 3.600,00 + 960,75 + 480,38 + 600,00 + 90,00 | **5.731,13 €/a** |
+| Gas-Brennwertkessel | Wartung als Jahresbetrag | **2.400,00 €/a** |
+
+| Ersatz und Restwert | Rechnung | Wert |
+|---|---|---|
+| Ersatz BHKW-Modul und Montage, Jahr 15 | 205.884,00 € ÷ 1,03^15 | Barwert 132.149 € |
+| Restwert BHKW im Jahr 20 | 205.884,00 × 10 / 15 = 137.256,00 ; ÷ 1,03^20 | Barwert 75.995 € |
+| Ersatz Wechselrichter, Jahr 12 | 24.000,00 € ÷ 1,03^12 | Barwert 16.833 € |
+| Restwert Photovoltaik im Jahr 20 | 19.200 + 8.000 + 9.000 + 3.600 = 39.800,00 ; ÷ 1,03^20 | Barwert 22.036 € |
+
+Von neun Investitionspositionen tragen sieben eine Nutzungsdauer; die beiden Planungspositionen
+tragen keine und laufen still bis zum Ende des Betrachtungszeitraums.
+
+## 4b Energiekosten und Erlöse der vier Versionen
+
+| Version | I₀ | Betriebskosten | Energiekosten | Erlöse (Block A) |
+|---|---|---|---|---|
+| Stammprojekt — Weiterbetrieb | — | 2.400 | 560.016 | 31.230 |
+| Variante 1 — Blockheizkraftwerk | 234.772 | 59.564 | 409.435 | 82.644 |
+| Variante 2 — Photovoltaik | 192.150 | 8.131 | 535.392 | 39.916 |
+| Variante 3 — beide Anlagen | 426.922 | 65.295 | 384.811 | 91.331 |
+
+Energiekosten: Brennstoff × Arbeitspreis + Grundpreis 180 €/a + Netzbezug × 28,80 ct/kWh.
+Kesselseite des Stammprojekts: 2.056,7 MWh × 0,0720 €/kWh = 148.082 €/a; Energiesteuer-Entlastung
+§ 54: 2.272,3 MWh (H_s) × 1,38 €/MWh − 250 € = 2.885,7 €/a.
 
 ## 5 Gesetzliche Sätze (Katalog `Tab_Gesetzesparameter`, Stand 2026)
 
@@ -94,9 +149,10 @@ weil verschiedene Vorschriften verschiedene Mengen verlangen (siehe `Rechenweg/0
 
 | Beleg | Wert | Verwendung |
 |---|---|---|
-| Kaskadenprobe Projekt 1042 | A 16.993,60 · B 849,68 · C 3.084,33 → Delta +20.927,61 € | `Rechenweg/01` — die Investitionszahlen des BHKW sind diesem Beleg nachgebildet |
+| Kaskadenprobe Projekt 1042 (Baugröße 26,00 kW) | A 16.993,60 · B 849,68 · C 3.084,33 → Delta +20.927,61 € | `Rechenweg/01` — belegt die Kaskadenformel; die **Sätze** des Beispiels sind ihr nachgebildet, die Menge ist 300 kW |
 | Mischsatz 300 kW | 5,5667 ct/kWh | `Rechenweg/05` |
 | AW 300 kWp | 6,04 ct/kWh; Degression 8,60 → 8,10 trifft 16/16 BNetzA-Werte | `Rechenweg/06` |
-| Aufschlagsbefund N3, Projekt 1030 | +360.603 €/a (+32 %), Kapitalwert −29,8 % | `Rechenweg/04` |
+| Aufschlagsmessung Projekt 1030 | +360.603 €/a (+32 %), Kapitalwert −29,8 % | `Rechenweg/04` |
 | § 9 Nr. 3 Doppelzählung, Projekt 1024 | 1.510,84 €/a auf beiden Pfaden | `Rechenweg/05`, `07` |
+| Mischsatz Eigenstrom 300 kW | 2,4167 ct/kWh (Tatbestand Nr. 2) | `Rechenweg/05` |
 | Höfingen `Tab_kurz_KWKG2020` | Mehrinvestition 55.745 · NPV 65.259 € · IZF 20,4 % · 4,33 a | `Rechenweg/08` |

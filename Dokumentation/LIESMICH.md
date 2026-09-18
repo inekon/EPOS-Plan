@@ -137,8 +137,10 @@ und `README.md`.
 | [`aktuell/Wirtschaftlichkeit_Kosten/Rechenweg/07_Erloesrubrik.md`](aktuell/Wirtschaftlichkeit_Kosten/Rechenweg/07_Erloesrubrik.md) | Rechenweg: Erlösrubrik und Differenzmethode | 2026-09-02 |
 | [`aktuell/Wirtschaftlichkeit_Kosten/Rechenweg/08_Wirtschaftlichkeit_Nutzungsdauer.md`](aktuell/Wirtschaftlichkeit_Kosten/Rechenweg/08_Wirtschaftlichkeit_Nutzungsdauer.md) | Rechenweg: Kapitalwert über die Nutzungsdauer (DIN EN 17463) | 2026-09-02 |
 
-Im Ordner `aktuell/Wirtschaftlichkeit_Kosten/` liegt neben diesen Papieren der Mockup
-`Mockups/Dialog_Formel_Zahlenprobe.html`, auf den die Rechenwege verweisen.
+Im Ordner `aktuell/Wirtschaftlichkeit_Kosten/` liegt neben diesen Papieren das Mockup
+`Mockups/Dialog_Formel_Zahlenprobe.html` — alle acht Kostenkategorien mit Dialog,
+Berechnungsgrundlage, Berechnungserläuterung und Ergebnisseite, dazu die Anhänge Umsetzungsstand und
+Herkunft der Zahlen; die Rechenwege verweisen darauf.
 
 ---
 

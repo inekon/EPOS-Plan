@@ -809,10 +809,12 @@ Etappe, die ihn überflüssig macht.
 ## 2.12 Kategorien-Mockups mit Rechenweg (Auftrag 02.09.2026)
 
 *Ausgelagert in den Ordner [`Wirtschaftlichkeit_Kosten/`](LIESMICH.md):
-`Beispielprojekt.md` (die eine Zahlenquelle), `Mockups/Dialog_Formel_Zahlenprobe.html` (alle acht
-Kategorien als Seite, zugleich Artifact
-[Dialog, Formel, Zahlenprobe](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f))
-und `Rechenweg/01…08` — je Kategorie Dialog → Berechnungsgrundlage → Berechnungserläuterung →
+`Beispielprojekt.md` (die eine Zahlenquelle), `Mockups/Dialog_Formel_Zahlenprobe.html` — **das eine
+Mockup des Ordners**: alle acht Kategorien mit Dialog, Berechnungsgrundlage,
+Berechnungserläuterung, Beschriftungen und Abnahmezeile, die Ergebnisseite in Kategorie 8 und zwei
+Anhänge (Umsetzungsstand, Herkunft der Zahlen); zugleich Artifact
+[Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f).
+Dazu `Rechenweg/01…08` — je Kategorie Dialog → Berechnungsgrundlage → Berechnungserläuterung →
 Befunde. Der Auftrag: je Kostenkategorie ein Mockup mit Berechnungsgrundlage und
 Berechnungserläuterung, Schwerpunkt Vergütungen BHKW und PV. Dieser Abschnitt ist die Kurzfassung;
 bei Abweichung gilt der Ordner für die Zahlen und dieses Dokument für die Regeln.*
@@ -831,8 +833,8 @@ Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegza
 
 | # | Kategorie | Rechenweg | Kernaussage der Zahlenprobe |
 |---|---|---|---|
-| 1 | Investitionskosten BHKW | `01` | Kaskadenfaktor 1,155; I₀ = 33.927,61 − 6.000 = 27.927,61 € |
-| 2 | Betriebskosten BHKW | `02` | Hilfsenergie 2 % × 312.631 € Endenergiekosten = 6.252,62 €/a (21.710 kWh Strom); die Kesselmenge kommt aus der Modulzeile (B-1) |
+| 1 | Investitionskosten BHKW | `01` | Kaskadenfaktor auf die Hauptposition 1,155; I₀ = 240.772,40 − 6.000 = **234.772,40 €** (300 kW) |
+| 2 | Betriebskosten BHKW | `02` | Hilfsenergie 2 % × 312.631 € Endenergiekosten = 6.252,62 €/a (21.710 kWh Strom); Instandhaltung 1,50 % × 240.772,40 = 3.611,59 €/a; Summe 57.164,21 €/a; die Kesselmenge kommt aus der Modulzeile |
 | 3 | Kosten der Photovoltaik | `03` | 192.150 € = 640,50 €/kWp; Wechselrichter-Ersatz Jahr 12 (24.000 €, Barwert 16.833), Restwert 39.800 € (Barwert 22.036); Degradation 0,5 %/a → Jahr 20: 259,1 MWh |
 | 4 | Energiekosten | `04` | Preisbestandteile 0,0638 + 0,1371 + 0,1180 + 0,4371 = 0,7560 €/m³; BEHG 872,3 t × 65 € = 56.700 €/a; N3 +32 % |
 | 5 | **Vergütungen BHKW** | `05` | **Mengentafel** brutto 1.650 → netto 1.563,2 (§ 9 Nr. 3 bleibt brutto); Mischsatz 5,5667 / 2,4167 ct; 2026 vergütet 60 % = 31.531 €; **Reihe endet nach zwölf Jahren** (286.644 €); § 53a 21.203 €/a |
@@ -847,9 +849,11 @@ Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegza
    Netting (§ 3.6) erklärbar, statt es zu verstecken.
 2. **Jahresreihe des Zuschlags als Diagramm** — Deckelstaffel und Kontingent auf einen Blick; die
    Vorschau „Zuschlag p. a." allein suggeriert eine Dauerförderung.
-3. **Ersatz- und Restwerttafel bei PV** — Wechselrichtertausch und Modulrestwert sind der
-   Regelfall; die Nutzungsdauer-Spalte gehört bei PV ins Investitionsraster, die Abweichung V-G4
-   wird dort deklariert.
+3. **Ersatz- und Restwerttafel je Komponente** — Wechselrichtertausch und Modulrestwert sind der
+   Regelfall, das BHKW-Modul wird im Jahr 15 ersetzt. Die Nutzungsdauer-Spalte und die Gruppe
+   „Ersatz und Restwert" gehören **technikneutral** ins Investitionsraster jeder Komponente, weil
+   beide an der einzelnen Position hängen; die Abweichung V-G4 wird dort deklariert, und eine
+   Hinweiszeile mit Platzhaltern nennt die Positionen ohne Nutzungsdauer.
 
 **Fachliche Klarstellungen, die beim Durchrechnen entstanden sind:**
 
@@ -867,12 +871,15 @@ Modul) sind verschiedene Dinge — im Ordner steht der Befund mit Bindestrich. D
 „B-1": In § 3.8 und im Rechenweg `05`/`07` bezeichnet es die Stromsteuer-Erlösreihe (erledigt mit
 B6), in der Befundtabelle § 4 und in den Mockups die Kessel-Endenergie (Auftrag #331).
 
-## 2.13 Ergebnisansicht — Mockup `Ergebnis_Bandbreite_Herkunft` (Anwenderdurchsicht 18.09.2026)
+## 2.13 Ergebnisansicht (Anwenderdurchsicht 18.09.2026)
 
-*Datei: `Wirtschaftlichkeit_Kosten/Mockups/Ergebnis_Bandbreite_Herkunft.html` — sechs Abschnitte
-(Lohnt es sich · Wie sicher · Woraus · Angenommen · Blockheizkraftwerk · Photovoltaik) mit
-Kopfabschnitt „Was sich ändert" und Datentafel. Der Anwender hat das Mockup am 18.09.2026
-durchgesehen; die fünf Punkte und ihre Messung am Bestand:*
+*Die Ergebnisansicht steht in Kategorie 8 des einen Mockups
+`Wirtschaftlichkeit_Kosten/Mockups/Dialog_Formel_Zahlenprobe.html`: Kopf mit Umschalter, dann die
+vier Fragen „Lohnt es sich · Wie sicher ist das · Woraus entsteht die Zahl · Was ist angenommen",
+die Kapitalwertformel, die Gegenprobe und die Bericht-Ausgaben. Woraus die einzelnen Beträge
+entstehen, sagen die Kategorien 1 bis 7; was noch nicht gebaut ist, steht im Anhang
+„Umsetzungsstand". Der Anwender hat die Ansicht am 18.09.2026 durchgesehen; die fünf Punkte und ihre
+Messung am Bestand:*
 
 **(1) Die laufenden Energiekosten — „Verbrauchskosten (BHKW)".** Der Begriff kommt im Bestand nicht
 vor. Die Größe heißt **Energiekosten** (`EnergiekostenJahr`): eigene Kennzahlenzeile nach den
@@ -1421,7 +1428,8 @@ Begriff „Nettostromerzeugung" ist der des Gesetzes, keine Erfindung des Konzep
 > **Entschieden 18.09.2026, nach Empfehlung: Kennzeichen und Stromkennzahl je Anlage aufnehmen,
 > Fall 2 rechnen.** Neuer Boden seit BK1: Der Zuschlag gehört der Anlage (Schemaschritt 89,
 > § 6.5) — die zwei Felder sind zwei weitere Anlagenspalten neben den neun `KWKG_*`-Spalten von
-> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **90**. Das Kennzeichen
+> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **92** (90 ist BK1a,
+> 91 ist BK1b). Das Kennzeichen
 > `KWKG_Abwaermeabfuhr` (0/1, `CHECK`), die Stromkennzahl als nullbare Zahl mit **Vorschlag am
 > Feld** aus P_el / P_th der Gerätezeile (`Tab_BHKW`, wo σ heute nur für die Katalogliste gerechnet
 > wird) — dasselbe Muster wie die Vorschlagszeilen aus BK1. **Wo die Fallunterscheidung sitzt:**
@@ -1764,6 +1772,9 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **HB1** | Anzeigesortierung, Hydraulikbild liest `Z_AnlageSenke` | keine — 90 Dateien SHA256-gleich |
 | **B7** | Erlösrubrik in Reiter, Word, Excel und BHKW-Vorschau; Energiekosten je Anlage; eine Emissionsspalte nach Modus; eine Sichtbarkeitsregel für alle drei Ausgaben | keine auf den Kapitalwert — Referenzlauf der fünf CI-Projekte PASS |
 | **BK1** (Entscheid `BK-E-1` (a)) | KWK-Zuschlag gehört der Anlage: Schemaschritt 89 (`KWKG_Kostenanteil` + Datenschritt), Rückfall Anlage → Projekt entfällt, Kontingent je Anlage nach § 8, Vorschlagsknöpfe am Feld, Gruppe 2 auf die vier projektweiten Angaben eingedampft, **ein** Aktivierungsschalter statt sechs Kopien | keine — Datenschritt ergebnisneutral, gemessen an Projekt 1030 (Zuschlag Jahr 1 7.315,96 €, Kapitalwert −21.895.377,28 € vorher wie nachher); Referenzlauf der fünf CI-Projekte PASS |
+| **BK1a** | Aufräumen nach der Anlagenwahrheit: Schemaschritt 90 entfernt die sechs KWKG-Projektspalten; Ersatzweg über eine leistungsgewichtete virtuelle Gesamtanlage (Gewicht `g_i = P_el,i`), Gruppe 2 auf die projektweiten Angaben eingedampft | keine — Datenschritt ergebnisneutral |
+| **BK1b** | Die Projektspalte `KWKG_Kostenanteil` fällt (Schemaschritt 91); der Anteil der Neuherstellungskosten steht nur noch an der Anlage | keine — einziger Pflegeort wandert, kein Rechenleser betroffen |
+| **B7P** | Nachweise eines Wirtschaftlichkeitslaufs werden persistiert: `ErgebnisNachweisUmschlag` legt vier Listen und vier Skalare als JSON mit Präfix `nw1:` in `Tab_ErgebnisWirtschaftlichkeit.Nachweis_Json` (über `SpalteSicher`, ohne Schemaschritt), Längenwächter 4 MiB, toleranter Leseweg | keine — die davon-Zeilen stehen auch nach dem Neuladen |
 
 ## 6.2 Regressionsanker
 
@@ -1773,7 +1784,7 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | Kapitalwert 1024 | **−2.220.322,32 €** |
 | `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 |
 | Kaskadenregression 1042 | +20.927,61 |
-| Referenzbasis | `Referenzlaeufe\2026-08-30_B3-Kaskade` |
+| Referenzbasis | `Referenzlaeufe\2026-09-18_R9_Kesselbrennstoff` |
 
 Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu gesetzt werden.
 
