@@ -46,9 +46,15 @@ namespace WindowsFormsApplication1
         /// und wird nicht gelesen (dieselbe Wache wie <c>gz1:</c>).</summary>
         public const string PRAEFIX = "nw1:";
 
-        /// <summary>Fassung des Umschlags. Ein fremder Wert wird NICHT gelesen — ein
-        /// halb verstandener Nachweis wäre schlimmer als keiner.</summary>
-        public const int FASSUNG = 1;
+        /// <summary>Fassung des Umschlags. Eine HÖHERE Fassung wird NICHT gelesen —
+        /// ein halb verstandener Nachweis wäre schlimmer als keiner. Eine ÄLTERE
+        /// dagegen schon: Ihre Felder sind eine echte Teilmenge, die fehlenden bleiben
+        /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).</summary>
+        public const int FASSUNG = 2;
+
+        /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
+        /// Umschlag.</summary>
+        public const int FASSUNG_MINDESTENS = 1;
 
         /// <summary>
         /// Längenwächter [Byte]. Der Umschlag ist Ausweis, kein Rechenwert: Lieber
@@ -58,7 +64,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int GRENZE_BYTE = 4 * 1024 * 1024;
 
-        /// <summary>Fassung DIESES Umschlags; <see cref="Lesen"/> verwirft jede andere.</summary>
+        /// <summary>Fassung DIESES Umschlags; <see cref="Lesen"/> nimmt sie von
+        /// <see cref="FASSUNG_MINDESTENS"/> bis <see cref="FASSUNG"/> an.</summary>
         public int Version = FASSUNG;
 
         /// <inheritdoc cref="WirtschaftlichkeitErgebnis.KwkgModule"/>
@@ -84,6 +91,14 @@ namespace WindowsFormsApplication1
 
         /// <inheritdoc cref="WirtschaftlichkeitErgebnis.BezugsspitzeKW"/>
         public double? BezugsspitzeKW;
+
+        /// <summary>
+        /// AUFTRAG U17 (Fassung 2) — die pauschale Vorauszahlung nach § 9 KWKG [€],
+        /// einmalig im Jahr 0. 0 = sie greift nicht; ein Umschlag der Fassung 1 kennt
+        /// das Feld nicht und liest sich deshalb mit 0 — genau die Aussage, die der
+        /// gebuchte Stand von damals trägt.
+        /// </summary>
+        public double KwkgPauschaleEur;
 
         /// <summary>
         /// <c>IncludeFields</c> ist Pflicht: Alle vier Nachweistypen führen ausschließlich
@@ -121,7 +136,8 @@ namespace WindowsFormsApplication1
                     VermiedenMengeMWh = e.VermiedenMengeMWh,
                     VermiedenEntlastung9bJahr = e.VermiedenEntlastung9bJahr,
                     ProduzierendesGewerbe = e.ProduzierendesGewerbe,
-                    BezugsspitzeKW = e.BezugsspitzeKW
+                    BezugsspitzeKW = e.BezugsspitzeKW,
+                    KwkgPauschaleEur = e.KwkgPauschaleEur
                 };
 
                 byte[] roh = JsonSerializer.SerializeToUtf8Bytes(u, JsonOptionen);
@@ -157,7 +173,16 @@ namespace WindowsFormsApplication1
 
                 ErgebnisNachweisUmschlag u = JsonSerializer.Deserialize<ErgebnisNachweisUmschlag>(
                     daten.Substring(PRAEFIX.Length), JsonOptionen);
-                if (u == null || u.Version != FASSUNG) return null;
+                // AUFTRAG U17: Eine ÄLTERE Fassung wird weiter gelesen. Der Umschlag
+                // reist mit dem GEBUCHTEN Stand; würde die Fassungserhöhung ihn
+                // verwerfen, verlöre jeder vor U17 gerechnete Lauf seine Unterzeilen,
+                // seine Modultabelle und seine Kohärenzhinweise — für ein Feld, das er
+                // gar nicht führen kann. Die Felder der Fassung 1 sind eine echte
+                // Teilmenge derer der Fassung 2; was fehlt, bleibt auf seiner Vorgabe.
+                // Eine HÖHERE Fassung bleibt verworfen: Was sie bedeutet, weiß dieser
+                // Stand nicht.
+                if (u == null || u.Version < FASSUNG_MINDESTENS || u.Version > FASSUNG)
+                    return null;
 
                 // Ein Umschlag, dem eine Liste fehlt, ist lesbar — leer ist die richtige
                 // Antwort, null wäre eine Falle für jeden Leser.
@@ -184,6 +209,7 @@ namespace WindowsFormsApplication1
             e.VermiedenEntlastung9bJahr = VermiedenEntlastung9bJahr;
             e.ProduzierendesGewerbe = ProduzierendesGewerbe;
             e.BezugsspitzeKW = BezugsspitzeKW;
+            e.KwkgPauschaleEur = KwkgPauschaleEur;
         }
     }
 }

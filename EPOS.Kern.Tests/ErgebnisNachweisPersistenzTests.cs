@@ -88,6 +88,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(frisch.VermiedenEntlastung9bJahr, geladen.VermiedenEntlastung9bJahr, 6);
             Assert.Equal(frisch.ProduzierendesGewerbe, geladen.ProduzierendesGewerbe);
             Assert.Equal(frisch.BezugsspitzeKW, geladen.BezugsspitzeKW);
+            Assert.Equal(frisch.KwkgPauschaleEur, geladen.KwkgPauschaleEur, 6);   // U17
         }
 
         /// <summary>Die Rubrik zeigt beim GELADENEN Stand dieselben Unterzeilen wie beim
@@ -304,7 +305,8 @@ namespace EPOS.Kern.Tests
                 BezugsspitzeKW = 412.5,
                 ProduzierendesGewerbe = true,
                 VermiedenMengeMWh = 20,
-                VermiedenEntlastung9bJahr = 400
+                VermiedenEntlastung9bJahr = 400,
+                KwkgPauschaleEur = 4320            // U17
             };
             e.KwkgModule.Add(new KwkgModulNachweis { Bezeichner = "Modul 1", PelKW = 50, Jahr1Eur = 1234 });
 
@@ -323,12 +325,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(20.0, zurueck.VermiedenMengeMWh, 6);
             Assert.Equal(400.0, zurueck.VermiedenEntlastung9bJahr, 6);
             Assert.True(zurueck.ProduzierendesGewerbe);
+            Assert.Equal(4320.0, zurueck.KwkgPauschaleEur, 6);
 
             Assert.Null(ErgebnisNachweisUmschlag.Lesen(null));
             Assert.Null(ErgebnisNachweisUmschlag.Lesen(""));
             Assert.Null(ErgebnisNachweisUmschlag.Lesen("gz1:irgendwas"));
             Assert.Null(ErgebnisNachweisUmschlag.Lesen("nw1:{kaputt"));
-            Assert.Null(ErgebnisNachweisUmschlag.Lesen("nw1:{\"Version\":2}"));
+            Assert.Null(ErgebnisNachweisUmschlag.Lesen(
+                "nw1:{\"Version\":" + (ErgebnisNachweisUmschlag.FASSUNG + 1) + "}"));
         }
 
         // =================================================================

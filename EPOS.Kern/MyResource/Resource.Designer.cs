@@ -53241,6 +53241,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG-Pauschale (§ 9 KWKG) [€, einmalig im Jahr 0] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_A_KWKG_PAUSCHALE {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_A_KWKG_PAUSCHALE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3 StromStG) [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ERL_A_STROMST_BEFREIUNG {
@@ -54281,6 +54290,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_REIHE_KWKG {
             get {
                 return ResourceManager.GetString("WIRT_REIHE_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG-Pauschale (Jahr 0) ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_KWKG_PAUSCHALE {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_KWKG_PAUSCHALE", resourceCulture);
             }
         }
         
