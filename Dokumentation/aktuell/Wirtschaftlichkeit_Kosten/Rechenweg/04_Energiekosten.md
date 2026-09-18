@@ -124,7 +124,7 @@ sein — die Kohärenzprüfung (`05`) soll das anzeigen.
 
 | Nr. | Befund | Behandlung |
 |---|---|---|
-| ✔ N3 | Ungepflegte Anteilsspalten lasen sich als Vorschlagswerte, nicht als 0 (+32 % Energiekosten) | erledigt: Die Anteile zerlegen den Arbeitspreis; ein ungepflegter Anteil ist inaktiv und trägt 0 bei, der Vorschlag steht nur im Feld und wird erst auf Knopfdruck übernommen |
+| ✔ N3 | Ungepflegte Anteilsspalten lasen sich als Vorschlagswerte, nicht als 0 (+32 % Energiekosten) | erledigt: Die Anteile zerlegen den Arbeitspreis; ein ungepflegter Anteil ist inaktiv und trägt 0 bei, der Vorschlag steht nur im Feld und wirkt erst mit dem Haken bzw. dem Knopf am Feld (Beschaffung als Rest, Stromsteuer § 3 / § 9b). Entscheid 18.09.2026 zu N-3 nach Empfehlung; offen bleibt allein ein Sammelknopf „Vorschlagswerte übernehmen" — Bequemlichkeit, kein Fehler |
 | — | CO₂ doppelt: Preisbestandteil und BEHG-Reihe | Kohärenzzeile „CO₂ im Arbeitspreis und BEHG-Reihe gleichzeitig aktiv" |
 | D-1 / E-1 | Emissionsspalte: eine Größe, Tooltip benennt Äquivalent/Vorkette | entschieden 30.08.2026 |
 | § 3.11 | Nachweis- und Bilanzsatz strikt trennen; Stichtag 01.01.2027 (GModG) mit Methodenwechsel für KWK | Katalog mit Gültig-ab-Datum, beide Sätze parallel |

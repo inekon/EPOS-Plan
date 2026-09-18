@@ -31,7 +31,7 @@ aus) · Energiesteuer Kesselbrennstoff § 54 (nur produzierendes Gewerbe, Sockel
 
 | Position | Rechtsgrundlage | Menge | Satz | €/a | Warum kein Zahlungsstrom |
 |---|---|---|---|---|---|
-| Stromsteuer-Befreiung Eigenverbrauch (wandert mit B6 aus Block A hierher) | § 9 Abs. 1 Nr. 3 StromStG | 1.155,0 MWh | 20,50 €/MWh | 23.677,5 | es entsteht gar keine Stromsteuer — der Vorteil steckt in der kleineren Bezugsrechnung |
+| Stromsteuer-Befreiung Eigenverbrauch (Block B, sofern nicht ausdrücklich ERLOES gewählt) | § 9 Abs. 1 Nr. 3 StromStG | 1.155,0 MWh | 20,50 €/MWh | 23.677,5 | es entsteht gar keine Stromsteuer — der Vorteil steckt in der kleineren Bezugsrechnung |
 | Vermiedene Stromkosten — Arbeit | Differenzmethode | 1.179,7 MWh | 28,80 ct | 339.753,6 | steckt im Reststrombetrag, der in den Kapitalwert geht (E5, fünffach belegt) |
 | abzüglich entgangener § 9b-Entlastung | § 9b StromStG | 1.179,7 MWh | 20,00 €/MWh | − 23.594,0 | bei produzierendem Gewerbe |
 | **vermiedene Kosten effektiv** | | | | **316.159,6** | |
@@ -90,7 +90,8 @@ darunter „abzüglich entgangener § 9b-Entlastung", mit dem effektiven Betrag 
 
 | Nr. | Punkt | Behandlung |
 |---|---|---|
-| B-1 | § 9 Abs. 1 Nr. 3 heute Erlösreihe; im Bestand bucht kein Lauf die Reihe — nirgends wirksam | Umstellung auf Ausweis mit B6 (Block B) |
+| ✔ B-1 | § 9 Abs. 1 Nr. 3 als Erlösreihe gebucht; im Bestand buchte kein Lauf die Reihe — nirgends wirksam | umgesetzt mit B6: Ausweis (Block B), Erlösreihe nur bei ausdrücklicher Wahl ERLOES |
+| — | Gliederung der Rubrik nach Komponente (Anwenderdurchsicht 18.09.2026) | A/B bleibt die äußere Ordnung, die Komponente gliedert innen, Positionen ohne Anlagenbezug im Block „projektweit" — Konzept § 2.13, Mockup `Ergebnis_Bandbreite_Herkunft.html` |
 | E5 | Doppelzählung vermiedener Kosten | Block B nie addieren; Summenzeile nur Block A |
 | D-2 | eigene Rubrik in zwei Blöcken | entschieden 30.08.2026 |
 | — | Leistungsanteil der vermiedenen Kosten negativ | als Kernaussage ausweisen, nicht unterdrücken |

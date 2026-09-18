@@ -203,7 +203,9 @@ Die Szenariowahl bleibt, wie sie ist. Ergänzt wird die **Statuszeile** unter de
 Wahl: Sie nennt für das gewählte Szenario den wirksamen Satz und seine Herkunft —
 „Vorgaben" oder „gepflegt" —, für Erwartet den unveränderten Projektparametersatz.
 Die Kennzahltabelle zeigt je gewählter Version die Zahlen des gewählten Szenarios;
-Restwert und Ersatzbeschaffungen stehen seit W5‑B‑10 als eigene Zeilen darin.
+Restwert und Ersatzbeschaffungen stehen seit W5‑B‑10 als eigene Zeilen darin. Was die
+Ergebnisansicht daran ändert (Umschalter, Verlauf mit drei Szenarien, Hinweistext zu den
+Szenarien), steht in § 11 — entschieden, nicht gebaut.
 
 ---
 
@@ -540,3 +542,31 @@ p_I = p_B; ihre Kapitalwerte sinken leicht. Das ist gewollt — der bisherige Au
 der zu günstige. **Projekte ohne Ersatzbeschaffung und alle Projekte mit p_B = 0 bleiben
 bitgleich**; wer den alten Ausweis behalten will, trägt p_I ausdrücklich mit 0 ein. Der
 Referenzlauf ist nicht berührt: Er rechnet Simulationen, keine Wirtschaftlichkeit.
+
+---
+
+## 11 Entscheide vom 18.09.2026 mit Wirkung auf dieses Papier
+
+Drei Entscheide zur Ergebnisansicht (konsolidiertes Konzept § 2.11.4, § 2.11.6, § 2.11.7,
+§ 2.13) berühren die Etappen dieses Papiers; sie sind **nicht umgesetzt**, das Papier
+beschreibt weiterhin den gebauten Stand W5‑B‑9 bis W5‑B‑12.
+
+* **V-4 — vollständige Szenarioabdeckung erst nach der Darstellungsetappe, mit
+  Hinweistext.** Der Parametersatz aus § 2 bleibt, wie er ist: Best und Worst ersetzen
+  Zins, p_E, p_B und p_I (`FuerSzenario`) und wirken in der Eingabe auf Investition,
+  Erträge und Nutzungsdauer ungepflegter Positionen; Betrachtungszeitraum, Trägerpreise,
+  Erlössätze, Mengen und gesetzliche Sätze bleiben in allen drei Szenarien gleich. Bis die
+  vollständigen Sätze kommen (Rahmen, Trägerpreise, Erlössätze, Mengenfaktor), sagt ein
+  Hinweis unter der Annahmentafel der Seite genau das; Wortlaut im konsolidierten Konzept
+  § 2.11.7. Die Statuszeile aus § 5 bleibt daneben bestehen.
+* **K-8 / V-1 — Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite** statt
+  eines achten Knopfes. Die Ergebnisansicht bringt den kumulierten Barwert der Differenz
+  mit allen drei Szenarien in einem Bild (Farbe = Variante, Strichart = Szenario) auf die
+  Seite; der Knopf „Verlauf…" entfällt damit. Bis dahin gilt § 7.1 unverändert: Der
+  Verlaufsdialog rechnet ein Szenario je Lauf mit frei wählbarem Horizont.
+* **V-G10 — der ganze Bericht formelbasiert, soweit ableitbar** (abweichend von der
+  Empfehlung „nur das ValERI-Blatt"; kippt V-2). Der Excel-Bericht dieses Papiers (G8,
+  § 9.2: Annahmenzeile je Blocküberschrift, Bandbreite als drei Blöcke) bleibt bis zur
+  Umsetzung eine Wertfassung. Was formelfähig ist und was dauerhaft Wert bleibt, steht als
+  Stufenplan im konsolidierten Konzept § 2.11.6; Stufe 0 ist ein Parameterblock aus
+  echten Zellen — genau die Größen aus § 2 und § 4 dieses Papiers, je Szenario ein Satz.
