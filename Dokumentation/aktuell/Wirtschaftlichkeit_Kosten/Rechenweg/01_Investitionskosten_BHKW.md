@@ -17,12 +17,16 @@ folgt der Bemessung) · Betrag netto [€] (gerechnet, nie eingebbar; 🔗 bei a
 Nutzungsdauer [a] (Zahlenfeld) · Worst/Best (±, nur im Projektmodus). Der Werkzeugtipp des Betrags nennt Satz
 und Bezugsgröße („653,60 €/kW × 300,00 kW"); fehlt die Bezugsgröße, trägt der Betrag ⚠ und unter dem Raster
 steht der Grund („kein Gerät mit dieser Baugröße im Projekt", „keine Investitionskosten für diese Anlage
-erfasst"). Summenfuß: „Summe Investitionskosten netto: 234.772,40 €" (Erlös- und Zuschusszeilen negativ) und
-„Summe brutto: 279.379,16 € (Umsatzsteuer 19 % aus dem Katalog)". Knöpfe „+ Position hinzufügen",
+erfasst"). Unter dem Betrag jeder gerechneten Zeile steht dieselbe Auskunft sichtbar als leise Zeile —
+Bezugsgröße, Herkunft und Kaskadenrunde („× 300,00 kW · P_el der Anlage · Runde 1"), bei absoluter Bemessung
+„Satz = Betrag". Summenfuß: „Summe Investitionskosten netto: 234.772,40 €" (Erlös- und Zuschusszeilen negativ),
+„Summe brutto: 279.379,16 € (Umsatzsteuer 19 % aus dem Katalog)" und — sobald die Komponente eine
+Erlös-/Zuschusszeile führt — „Investition brutto 240.772,40 € · Zuschuss 6.000,00 € · I₀ 234.772,40 €".
+Knöpfe „+ Position hinzufügen",
 „Aus Vorlage übernehmen…", „Positionskatalog…"; Fußleiste Abbrechen · Speichern · OK. Kostenart,
 Erlös-/Zuschusskennzeichen und Empfehlungsbereich pflegt der Zeileneditor „Position bearbeiten". Was das Mockup
-darüber hinaus zeigt, steht im Anhang Umsetzungsstand: Herleitungszeile mit Kaskadenrunde (U28), dreiteiliger
-Summenfuß (U29), Gruppe „Ersatz und Restwert" (U30), Knopf „Nutzungsdauern vorbelegen…" (U8).
+darüber hinaus zeigt, steht im Anhang Umsetzungsstand: Gruppe „Ersatz und Restwert" (U30), Knopf
+„Nutzungsdauern vorbelegen…" (U8).
 
 | Position | Kostenart | Bemessung | Satz | Bezugsgröße (Werkzeugtipp) | Betrag | Nutzungsdauer | Runde |
 |---|---|---|---|---|---|---|---|
