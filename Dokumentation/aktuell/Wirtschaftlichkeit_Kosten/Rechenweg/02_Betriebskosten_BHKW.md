@@ -1,7 +1,7 @@
 # 02 · Betriebskosten BHKW
 
 **Dialog:** `KostenKomponenteDialog`, Optionsgruppe „Betriebskosten" — Entwurf B (Konzept § 2.8) · **Mockup:**
-`../Mockups/Dialog_Formel_Zahlenprobe.html#betrieb` · **Norm:** VDI 2067 · **Code:**
+`../../Mockups/Dialog_Formel_Zahlenprobe.html#betrieb` · **Norm:** VDI 2067 · **Code:**
 `BetriebskostenCtrl.Betrag`, `EndenergieAufloeser`, `DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN` /
 `_ENDENERGIEBEDARF` · **Konzept:** § 2.8, § 3.4 · **umgesetzt:** Etappe H1 (Pflichtpositionen,
 Schemaschritt 59)

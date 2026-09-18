@@ -1,7 +1,7 @@
 # 08 · Wirtschaftlichkeit über die Nutzungsdauer
 
 **Dialog:** `UcWirtschaftlichkeit`, Umschalter „Kennzahlen / ValERI-Bewertung" (Konzept § 2.10,
-Empfehlung V-1) · **Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#valeri` · **Norm:** DIN EN
+Empfehlung V-1) · **Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#valeri` · **Norm:** DIN EN
 17463:2021-12 (ValERI) — Abschnitte 6, 7, 8, Anhänge A, C, E · **Code:** `KapitalwertRechner`,
 `Tab_ProjektWirtschaftlichkeit` · **Konzept:** § 2.9 (Vergleichsprojekt), § 2.11 (ValERI), § 3.1
 

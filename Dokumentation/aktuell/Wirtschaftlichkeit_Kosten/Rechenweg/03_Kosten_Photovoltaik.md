@@ -1,7 +1,7 @@
 # 03 · Kosten der Photovoltaik
 
 **Dialog:** `Form_KostenKomponente` in derselben Form wie beim BHKW, mit PV-eigener Anordnung
-(Anwenderauftrag 02.09.2026) · **Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#pvkosten` ·
+(Anwenderauftrag 02.09.2026) · **Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#pvkosten` ·
 **Norm:** DIN EN 17463, 6.3.3 (Degradation) und 6.4 (Endzahlungen statt Restwert) · VDI 2067 ·
 **Code:** `EUR_PRO_KWP`, `BaugroesseSumme`, Ersatz-/Restwertlogik im `KapitalwertRechner` ·
 **Konzept:** § 2.1, § 3.1, § 3.2, § 2.11.2 (V-G2, V-G4)

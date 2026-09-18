@@ -26,7 +26,7 @@ zurückstellen"). Der Anwenderwunsch W6‑E‑2 holt beides nach vorn. **Rev. 1 
 Mockup-Papier; seit dem Entscheid vom 06.09.2026 ist Stufe S1 umgesetzt (Kapitel 8), S2 und S3
 sind es nicht.**
 
-Mockup: `Mockups/Wechselrichter_Mockup_2026-09-06.html` (vier Ansichten M1–M4;
+Mockup: `Dokumentation/aktuell/Mockups/Wechselrichter_Mockup_2026-09-06.html` (vier Ansichten M1–M4;
 in Stufe S1 unverändert, mit **S2** um die zwei Optionen aus W6‑E‑3 und den
 S3-Hinweis in M1 ergänzt; in **S3 unverändert** — die Stufe fasst den Rechenweg
 an, nicht die Maske; mit dem **Nachtrag W6‑O‑4/O‑6** trägt M1 die Filterzeile

@@ -809,8 +809,8 @@ Etappe, die ihn überflüssig macht.
 ## 2.12 Kategorien-Mockups mit Rechenweg (Auftrag 02.09.2026)
 
 *Ausgelagert in den Ordner [`Wirtschaftlichkeit_Kosten/`](LIESMICH.md):
-`Beispielprojekt.md` (die eine Zahlenquelle), `Mockups/Dialog_Formel_Zahlenprobe.html` — **das eine
-Mockup des Ordners**: alle acht Kategorien mit Dialog, Berechnungsgrundlage,
+`Beispielprojekt.md` (die eine Zahlenquelle), `../Mockups/Dialog_Formel_Zahlenprobe.html` — **das
+eine konsolidierte Mockup**: alle acht Kategorien mit Dialog, Berechnungsgrundlage,
 Berechnungserläuterung, Beschriftungen und Abnahmezeile, die Ergebnisseite in Kategorie 8 und zwei
 Anhänge (Umsetzungsstand, Herkunft der Zahlen); zugleich Artifact
 [Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f).
@@ -874,7 +874,7 @@ B6), in der Befundtabelle § 4 und in den Mockups die Kessel-Endenergie (Auftrag
 ## 2.13 Ergebnisansicht (Anwenderdurchsicht 18.09.2026)
 
 *Die Ergebnisansicht steht in Kategorie 8 des einen Mockups
-`Wirtschaftlichkeit_Kosten/Mockups/Dialog_Formel_Zahlenprobe.html`: Kopf mit Umschalter, dann die
+`../Mockups/Dialog_Formel_Zahlenprobe.html`: Kopf mit Umschalter, dann die
 vier Fragen „Lohnt es sich · Wie sicher ist das · Woraus entsteht die Zahl · Was ist angenommen",
 die Kapitalwertformel, die Gegenprobe und die Bericht-Ausgaben. Woraus die einzelnen Beträge
 entstehen, sagen die Kategorien 1 bis 7; was noch nicht gebaut ist, steht im Anhang

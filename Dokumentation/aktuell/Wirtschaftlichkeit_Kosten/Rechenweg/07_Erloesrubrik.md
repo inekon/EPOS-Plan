@@ -1,7 +1,7 @@
 # 07 · Erlösrubrik
 
 **Ort:** Ergebnisreiter, Bericht, Vorschau des BHKW-Dialogs (Konzept § 2.6, Entscheidung D-2) ·
-**Mockup:** `../Mockups/Dialog_Formel_Zahlenprobe.html#erloese` · **Code:** `StromMatrix`
+**Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#erloese` · **Code:** `StromMatrix`
 (Differenzmethode), `WirtschaftlichkeitZeilen` · **Konzept:** § 2.6, § 3.6 (Vermiedene
 Stromkosten), § 3.8
 
@@ -123,7 +123,7 @@ darunter „abzüglich entgangener § 9b-Entlastung", mit dem effektiven Betrag 
 | Nr. | Punkt | Behandlung |
 |---|---|---|
 | ✔ B-1 | § 9 Abs. 1 Nr. 3 als Erlösreihe gebucht; im Bestand buchte kein Lauf die Reihe — nirgends wirksam | umgesetzt mit B6: Ausweis (Block B), Erlösreihe nur bei ausdrücklicher Wahl ERLOES |
-| — | Gliederung der Rubrik nach Komponente (Anwenderdurchsicht 18.09.2026) | A/B bleibt die äußere Ordnung, die Komponente gliedert innen, Positionen ohne Anlagenbezug im Block „projektweit" — Konzept § 2.13, Mockup `../Mockups/Dialog_Formel_Zahlenprobe.html#erloese` |
+| — | Gliederung der Rubrik nach Komponente (Anwenderdurchsicht 18.09.2026) | A/B bleibt die äußere Ordnung, die Komponente gliedert innen, Positionen ohne Anlagenbezug im Block „projektweit" — Konzept § 2.13, Mockup `../../Mockups/Dialog_Formel_Zahlenprobe.html#erloese` |
 | E5 | Doppelzählung vermiedener Kosten | Block B nie addieren; Summenzeile nur Block A |
 | D-2 | eigene Rubrik in zwei Blöcken | entschieden 30.08.2026 |
 | — | Leistungsanteil der vermiedenen Kosten negativ | als Kernaussage ausweisen, nicht unterdrücken |

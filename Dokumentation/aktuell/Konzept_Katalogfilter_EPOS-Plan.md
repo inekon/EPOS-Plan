@@ -47,10 +47,10 @@ Was bleibt, steht in **Kapitel 5.6**; was fällt, steht als Geschichte in 5.2 bi
 bis 4 gelten **unverändert weiter**: Der Befund ist derselbe, und die Parameter aus Kapitel 4
 werden jetzt **Spalten** statt Feldern einer Leiste.
 
-Mockup: **`Mockups/Katalogfilter_Vorschlag.html`** — drei Reiter (M1 Heizkessel-Verwaltung,
-M2 Wärmepumpen-Projektauswahl, M3 PV-Module mit 20 749 Zeilen), selbständig im Browser, ohne
-Server und ohne Netz. Die Namen und Zahlen darin sind **gemessen**: aus
-`Referenzlaeufe/Kenndaten_Test.sqlite` und aus `VDI-3805-Daten/PV/CEC Modules.csv`.
+Mockup: **`Dokumentation/aktuell/Mockups/Katalogfilter_Vorschlag.html`** — drei Reiter
+(M1 Heizkessel-Verwaltung, M2 Wärmepumpen-Projektauswahl, M3 PV-Module mit 20 749 Zeilen),
+selbständig im Browser, ohne Server und ohne Netz. Die Namen und Zahlen darin sind
+**gemessen**: aus `Referenzlaeufe/Kenndaten_Test.sqlite` und aus `VDI-3805-Daten/PV/CEC Modules.csv`.
 
 Dieses Papier ist die Fortsetzung von zwei Linien, die schon da sind und bisher
 nebeneinanderher liefen: der **Filterleiste der Importmasken** (`ImportZahlenfilter`,
@@ -985,8 +985,8 @@ Zwei Dinge muss das Haus selbst beisteuern:
 
 ## 6. Das Mockup
 
-`Mockups/Katalogfilter_Vorschlag.html` — eine Datei, kein CDN, kein Rahmenwerk, keine
-Schriftdatei von außen. Farben, Maße und Klassennamen sind aus `EPOS.UI/wwwroot/epos-ui.css`
+`Dokumentation/aktuell/Mockups/Katalogfilter_Vorschlag.html` — eine Datei, kein CDN, kein
+Rahmenwerk, keine Schriftdatei von außen. Farben, Maße und Klassennamen sind aus `EPOS.UI/wwwroot/epos-ui.css`
 übernommen (Kopfband `#0F1F3D`, Reiterband AliceBlue `#f0f8ff`, cremefarbene Knöpfe `#f5f4ef`,
 Beschriftungsspalte 12 rem, kurzes Zahlenfeld 8 em, Berührungsziel 44 px, Ecke 6 px). Es
 braucht **keine neue Farbe**.

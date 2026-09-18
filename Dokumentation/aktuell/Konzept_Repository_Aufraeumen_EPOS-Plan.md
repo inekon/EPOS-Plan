@@ -28,14 +28,14 @@ Sicherung — wird **in demselben Auftrag** entfernt, der es überflüssig macht
 | `VDI-3805-Daten/` | Auslieferung der Herstellerdaten (Setup-Komponente, W6‑O‑9), CEC-Listen, bslib | 186 MB | Setup, Importe, 40 Verweise | bleibt |
 | `Werkzeuge/`, `Proben/`, `Setup/`, `sql/` (Schema- und Reparaturskripte), `EposSqliteMigrator/` | Hauswerkzeuge | 5 MB | CLAUDE.md-Werkzeugtabelle, Setup, Gate | bleibt |
 | `Projekte/` | Konzepte (→ Dokumentation seit #241), Wiki-Quellen, Referenzpaket `Speichersimulation/`, fünf docx, Mockup, `.wpx` | 9 MB | Konzepte, Wiki-Upload; docx nach SP‑O‑9 | bleibt |
-| `Quellen/` (seit #243 mit `BHKWPlan/`, `PV-Now/`, `VALERI/`, `Emissionsfaktoren/`), `Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt; zusammengezogen mit #243 (AUF‑Q3) |
+| `Quellen/` (seit #243 mit `BHKWPlan/`, `PV-Now/`, `VALERI/`, `Emissionsfaktoren/`), `Dokumentation/aktuell/Mockups/` | Fremdquellen und Entwürfe, die Konzepte und Tests zitieren | 10 MB | Konzepte, zwei Testklassen | bleibt; zusammengezogen mit #243 (AUF‑Q3) |
 | `Lizenzserver/` | WordPress-Plugin 1.4.1 + Einbauanleitung | 268 KB | Lizenzkonzept | bleibt; die vier `*.original-2026-08-19` gehen (Stufe 1) |
 | `EPOS-Plan_Beispiele_Geruest/` | Gerüst der Projektbeispiele | 52 KB | Anwenderentscheid 12.09.2026 „ist wichtig" | bleibt |
 | `.work/` | Arbeitsordner der Windows-Seite: Einmal-Prüfprogramm, Bericht, **70-MB-Kopie der Produktivdatenbank** | 71 MB | nichts (Bericht liegt seit #241 in `Dokumentation/ueberholt`) | **geht (Stufe 1)** — Anwenderentscheid 12.09.2026 „Lösche .work", Rücknahme von SP‑O‑9 |
 | `DB-Backup/` | 16 Git-LFS-Zeiger auf Access-Sicherungen | 2 KB im Baum | nichts; seit 02.09. per `.gitignore` ausgeschlossen | **geht (Stufe 1)** |
 | `sqlite-probe/` | Spike vor der SQLite-Umstellung (31.08.) | 104 KB | nichts | **geht (Stufe 1)** |
 | `WindowsFormsApplication1/**/*.bak` (4), `Allgemein/Reporting/Reporting_Geruest.zip` | Sicherungskopien, Gerüst-Archiv | 60 KB | nichts | **geht (Stufe 1)** |
-| `WindowsFormsApplication1/Allgemein/Simulation/Entwurf_Hydraulikuebersicht_Konfiguration.html`, `Allgemein/vdi_3805_importer/*` | Entwurf, Überreste eines nicht mehr versionierten Scrapers | klein | Protokolle | **verschieben (Stufe 1)** nach `Mockups/` bzw. `Dokumentation/ueberholt/` |
+| `WindowsFormsApplication1/Allgemein/Simulation/Entwurf_Hydraulikuebersicht_Konfiguration.html`, `Allgemein/vdi_3805_importer/*` | Entwurf, Überreste eines nicht mehr versionierten Scrapers | klein | Protokolle | **verschieben (Stufe 1)** nach `Mockups/`, heute `Dokumentation/aktuell/Mockups/`, bzw. `Dokumentation/ueberholt/` |
 | 303 Markdown-Dokumente | Konzepte, Doku, Protokolle | 12 MB | Claude, Anwender | seit #241 unter `Dokumentation/aktuell` und `Dokumentation/ueberholt` |
 
 Außerhalb des Arbeitsbaums: elf alte Fernzweige (Anwender 12.09.2026: „vorerst nicht" löschen); alte GitHub-Actions-Läufe (mit den
@@ -47,7 +47,7 @@ das Sitzungs-Scratchpad der Orchestrierung (12.09. von 3,4 GB auf 220 MB bereini
 **Stufe 0 — erledigt.** Historische Referenzbasen aus dem Arbeitsbaum (SYNC‑Q1, 11.09.2026, 1 GB); Scratchpad bereinigt (12.09.2026).
 
 **Stufe 1 — umgesetzt #242 (Commit `f6464b88`, Merge `d2e15bb1`).** `.work/` (71 MB), `DB-Backup/`, vier `.bak`, `sqlite-probe/`, vier Lizenzserver-Originale,
-`Reporting_Geruest.zip` entfernen; Entwurf nach `Mockups/`, Scraper-Reste nach `Dokumentation/ueberholt/`; `.work/` in die `.gitignore`;
+`Reporting_Geruest.zip` entfernen; Entwurf nach `Mockups/`, heute `Dokumentation/aktuell/Mockups/`, Scraper-Reste nach `Dokumentation/ueberholt/`; `.work/` in die `.gitignore`;
 Verweise kennzeichnen; **Wache `RepositoryOrdnungWacheTests`** (kein `*.bak`, `*.orig`, `*.original-*`, `*.accdb`, `*.laccdb`, kein
 `.work/`, kein `DB-Backup/`, `*.sqlite` nur auf der Weißliste `Referenzlaeufe/Kenndaten_Test.sqlite`); Aufräumregel als Abschnitt in der
 Wurzel-`CLAUDE.md`. Ergebnis: Arbeitsbaum um ~71 MB kleiner, keine Kundendaten mehr im Baum.
@@ -68,7 +68,7 @@ Wurzel-`CLAUDE.md`. Ergebnis: Arbeitsbaum um ~71 MB kleiner, keine Kundendaten m
   `Quellen/VALERI/` neben den Emissionsfaktoren — elf Dateien, reine Verschiebung mit `git mv`, kein Inhalt geändert. Nachgezogen sind
   die Pfadangaben in vier Konzepten (Kosten/Energieträger, Wirtschaftlichkeit konsolidiert, Photovoltaik-Wirtschaftlichkeit und dieses);
   die übrigen Fundstellen nennen nur Dateinamen („`VALERI_Vorlage_V7.xlsx`") oder einen fremden Ablageort (`Z:\…\BHKWPlan\…`) und
-  bleiben, wie sie sind. `Mockups/` ist unberührt die eine Adresse für Entwürfe.
+  bleiben, wie sie sind. `Dokumentation/aktuell/Mockups/` ist die eine Adresse für Entwürfe.
 
 Dazu kam als Nachzug aus dem Gate zu #242: Die Wache `RepositoryOrdnungWacheTests` prüft seither nur noch **versionierte** Dateien
 (`git ls-files -z`) — über das Dateisystem traf sie die Arbeitskopie des Referenzlaufs und die Agenten-Arbeitsbäume unter
@@ -136,8 +136,8 @@ Zeile im Dokumentationsindex, wohl aber diese Erwähnung).
   jeder Abruf ohne Cache 68 MB Bandbreite; bei Bedarf ein Datenpaket (50 GB / 5 US-$ je Monat). Jeder Rechner braucht einmal
   `git lfs install`, sonst kommen Zeigerdateien an (Git für Windows bringt LFS mit).
 - **Fremdquellen sammeln — entschieden 12.09.2026 (AUF‑Q3 „Empfehlung umsetzen"), umgesetzt #243 (Stufe 3).** `BHKWPlan/`,
-  `PV-Konzept_PV-Now/` und `VALERI/` sind unter `Quellen/` gezogen (dort lagen die Emissionsfaktoren schon), `Mockups/` bleibt die eine
-  Adresse für Entwürfe. Reine Verschiebung, Verweise nachgezogen.
+  `PV-Konzept_PV-Now/` und `VALERI/` sind unter `Quellen/` gezogen (dort lagen die Emissionsfaktoren schon), `Dokumentation/aktuell/Mockups/` ist
+  die eine Adresse für Entwürfe. Reine Verschiebung, Verweise nachgezogen.
 - **Access im Code.** Der einzige Ort ist das Hauswerkzeug `EposSqliteMigrator/` mit eigener Projektmappe und eigener
   `System.Data.OleDb`-Referenz. Entscheid: behalten, solange ein Altbestand denkbar ist (BETRIEB_SQLITE 1.1/7: Übernahme eines
   Altbestands). Die Windows-Schale führt weder einen Access-Zweig noch das OleDb-Paket; die Hebung einer `.accdb` auf Schemastand 61
