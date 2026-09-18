@@ -53,6 +53,30 @@ namespace WindowsFormsApplication1
         public string Co2Ebene = "-";
 
         /// <summary>
+        /// ETAPPE B7 (Konzept § 2.5, Entscheidung E-1) — die Zeilen, aus denen die
+        /// CO₂e-Summe entstanden ist, in Katalogreihenfolge.
+        ///
+        /// <para><b>Wozu.</b> Im Modus CO2E kann derselbe Zahlenwert auf drei Weisen
+        /// zustande kommen: als gewichtete Summe mehrerer Arten, als CO₂-Faktor allein
+        /// (weil keine zweite Art gepflegt ist) oder als bereits hinterlegtes Äquivalent
+        /// (F3). Ohne die Zeilen ließe sich das an der Zahl nicht mehr unterscheiden —
+        /// und der dritte Fall läse sich wie ein Fehler. Die Anzeige zeigt IMMER den
+        /// Wert; die Herleitung sagt, wie er entstanden ist.</para>
+        ///
+        /// <para>Leer, solange niemand danach fragt — die Rechner lesen sie nicht.</para>
+        /// </summary>
+        public List<EmissionsZeile> Zeilen = new List<EmissionsZeile>();
+
+        /// <summary>
+        /// ETAPPE B7 — true, wenn der ARTENKATALOG fehlt und mit den drei Ersatzarten
+        /// gerechnet wurde. Dann gibt es keine Äquivalenzfaktoren, und was
+        /// <see cref="Wirksam"/> im Modus CO2E liefert, ist der reine CO₂-Faktor.
+        /// <b>Das wird benannt, nicht verschwiegen</b> (Konzept § 2.5: kein stiller
+        /// Rückfall) — sonst wichen Spaltenkopf und Bedeutung voneinander ab.
+        /// </summary>
+        public bool ArtenkatalogFehlt;
+
+        /// <summary>
         /// Der im gegebenen Modus WIRKSAME CO₂-Faktor [g/kWh] (F7). Im Modus
         /// <c>CO2E</c> die Summe nach F6; fehlt sie (kein Artenkatalog), bleibt es beim
         /// reinen CO₂ — eine Anwendung ohne Migrationsschritt 57 rechnet damit weiter
@@ -138,7 +162,7 @@ namespace WindowsFormsApplication1
             // ERSATZARTEN an - damit bleibt es bei EINER Kette, und eine nicht migrierte
             // Datenbank rechnet weiter wie bisher (F9).
             List<EmissionsartModel> arten = EmissionskatalogCtrl.Arten(true);
-            if (arten.Count == 0) arten = ErsatzKernarten();
+            if (arten.Count == 0) { arten = ErsatzKernarten(); satz.ArtenkatalogFehlt = true; }
 
             Dictionary<int, EmissionswertModel> aktive = EmissionskatalogCtrl.AktiveWerte(carrierId);
             Dictionary<string, double?> stamm = AltwerteStamm(carrierId);
@@ -210,6 +234,7 @@ namespace WindowsFormsApplication1
 
             // CO2e-Summe nach F6, Sonderfall F3 - dieselbe Fassung wie im Reiter.
             if (irgendeinWert) satz.Co2eGKwh = EmissionenCtrl.SummeCo2eGKwh(zeilen);
+            satz.Zeilen = zeilen;      // B7: Grundlage der Herleitung (Konzept § 2.5)
 
             // STAUB, wenn die Art ABGEWAEHLT ist (Auslieferungsstand): Rueckfall auf
             // Tab_Brennstoff_Stamm.Staub - dieselbe Ebene STAMM wie bei den Kernarten.

@@ -199,6 +199,16 @@ namespace WindowsFormsApplication1
         public List<string> KesselOhneVerbrauch = new List<string>();
 
         /// <summary>
+        /// ETAPPE B7 (Konzept § 3.5) — die Energiekosten JE ANLAGE dieses Laufs:
+        /// Menge × Preis, aus denselben Modulmengen und Trägerpreisen, aus denen
+        /// <see cref="Energiekosten"/> entstanden ist. <b>Reiner Ausweis</b>; die
+        /// Summe bleibt die vorhandene Zahl, hier wird nichts zweites gerechnet.
+        /// Leer, wenn keine Modulzeile einen bepreisten Träger führt.
+        /// </summary>
+        public List<EnergieAnlageNachweis> EnergiekostenJeAnlage =
+            new List<EnergieAnlageNachweis>();
+
+        /// <summary>
         /// <b>WARUM <see cref="Energiekosten"/> nicht bestimmbar ist</b> — im Klartext
         /// und mit dem Ausweg; <c>null</c>, solange die Zahl steht. Gesetzt von
         /// <see cref="KostenEmissionRechner"/> an genau der Stelle, an der er die

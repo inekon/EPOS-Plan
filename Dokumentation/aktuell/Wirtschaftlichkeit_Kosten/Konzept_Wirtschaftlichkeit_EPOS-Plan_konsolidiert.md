@@ -69,7 +69,7 @@ verändert oder nur erklärt.
 | Einspeiseerlös (nominal konstant) | B2-Preisbestandteile der Energieträger |
 | KWKG-Zuschlag · KWKG-Pauschale § 9 | Strommix-Rückfallhinweis |
 | Energiesteuer-Gutschrift | |
-| Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 *(heute Erlös — siehe B-1)* | |
+| Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 *(Ausweis; Erlös nur auf ausdrückliche Wahl)* | |
 | Stromsteuer-Entlastung § 9b | |
 | PV-Vergütungsreihe · Restwert | |
 
@@ -133,8 +133,11 @@ Tabellenkopf je BHKW-Modul, alles nur lesend:
 | **Brennstoff** | **kein Leseweg vorhanden — Lücke K4**, kleiner Leser `CarrierId` → Name in B5 |
 | Stichtag · Inbetriebnahme · Anlagenart | `KWKG_Stichtag` · `KWKG_Inbetriebnahme` · `KWKG_Anlagenart` |
 
-**Aufklappzeile** — 8 Bestandsfelder (heute in `Form_KwkgModule`) plus 3 neue.
-Durchgängig gilt: **leer oder 0 heißt „kein eigener Wert → Projektvorgabe".**
+**Aufklappzeile** — 8 Bestandsfelder (heute in `Form_KwkgModule`) plus 3 aus B5 plus den
+Kostenanteil aus BK1. Durchgängig gilt: **leer oder 0 heißt „kein eigener Wert".** Für die fünf
+KWKG-Größen heißt das seit Schemaschritt 89 **nicht mehr „Projektvorgabe", sondern 0** — § 7 und
+§ 8 KWKG bemessen sie an der einzelnen Anlage, und der Schritt hat jeder Bestandsanlage den Wert
+eingetragen, den ihr der Rückfall zugewiesen hat (Entscheid `BK-E-1` (a)).
 
 | Feld | Typ | Bereich / Optionen | Spalte | Stand |
 |---|---|---|---|---|
@@ -142,10 +145,11 @@ Durchgängig gilt: **leer oder 0 heißt „kein eigener Wert → Projektvorgabe"
 | Inbetriebnahme | DateTimePicker mit Haken | dito | `KWKG_Inbetriebnahme` | Bestand |
 | Anlagenart | ComboBox | (nicht erfasst = Neuanlage) · neu § 8 Abs. 1 · modernisiert Abs. 2 · nachgerüstet Abs. 3 | `KWKG_Anlagenart` | Bestand |
 | Eigenstrom nach § 6 Abs. 3 | ComboBox | kein Tatbestand · Nr. 1 bis 100 kW · Nr. 2 Kundenanlage · Nr. 3 stromkostenintensiv | `KWKG_Eigenstromfall` | Bestand |
-| Satz Einspeisung [ct/kWh] | Numerisch 0–30 | 0 = Projektsatz | `KWKG_Satz_Einspeisung` | Bestand |
-| Satz Eigenstrom [ct/kWh] | Numerisch 0–30 | 0 = Projektsatz | `KWKG_Satz_Eigen` | Bestand |
-| Vbh-Kontingent [h] | Numerisch 0–200.000 | 0 = Projektwert | `KWKG_Vbh_Kontingent` | Bestand |
+| Satz Einspeisung [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf „Vorschlag übernehmen" am Feld** | `KWKG_Satz_Einspeisung` | Bestand, Knopf BK1 |
+| Satz Eigenstrom [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf am Feld** | `KWKG_Satz_Eigen` | Bestand, Knopf BK1 |
+| Vbh-Kontingent [h] | Numerisch 0–200.000 | 0 = nach § 8 aus dieser Anlage abgeleitet; **Knopf am Feld** | `KWKG_Vbh_Kontingent` | Bestand, Knopf BK1 |
 | Vbh-Jahresdeckel [h/a] | Numerisch 0–8.760 | 0 = Staffel | `KWKG_Vbh_Jahresdeckel` | Bestand |
+| **Anteil Neuherstellungskosten [%]** | Numerisch 0–100 | 0 = nicht gepflegt; wählt mit der Anlagenart die Kontingentstufe § 8 Abs. 2/3 | `KWKG_Kostenanteil` | **neu BK1** |
 | **Energiesteuerentlastung (Anlage)** | ComboBox | (Projektwert) · keine · § 53 · § 53a · § 54 | `Energiesteuer_Wahl` | **neu B5** |
 | **Brennstoff auf Strom/Wärme (Anlage)** | ComboBox | (Projektwert) · voller Brennstoff · energetisch | `Aufteilung_Methode` | **neu B5** |
 | **Hilfsenergieanteil [%]** | Numerisch 0–100 | 0 = keine; Vorschlag BHKW 2–4 % | `Hilfsenergie_Anteil` | **neu B5** |
@@ -153,21 +157,37 @@ Durchgängig gilt: **leer oder 0 heißt „kein eigener Wert → Projektvorgabe"
 Warnzeilen der Gruppe: Ausschreibung § 8a bei P_el > 500 kW · Stromsteuerbefreiung entfällt über
 2 MW · Heizöl-Ausschluss ab Inbetriebnahme 2025.
 
-### Gruppe 2 — KWK-Zuschlag, Projektebene
+### Gruppe 2 — Projektweite KWK-Angaben
 
-Zieht vollständig aus `Form_WirtschaftlichkeitParameter` um: Bonus Eigenstrom · Bonus Einspeisung ·
-Vbh-Deckel-Override · Vbh-Kontingent gesamt · Abschlag Negativstunden [%] · Eigenstrom-Tatbestand ·
-Anlagenart · Anteil Neuherstellungskosten [%] · Pauschale § 9 (bis 2 kWel, einmalig) · Stichtag- und
-Inbetriebnahme-Vorgabe je Anlage.
+Die Gruppe führt **nur, was wirklich projektweit ist** (Entscheid `BK-E-1` (a)):
 
-Dazu ein **Herleitungslabel je Anlage**:
+| Feld | Bedeutung |
+|---|---|
+| Einspeisevergütung KWK-Strom [€/kWh] | die Vergütung des eingespeisten Stroms; der Zuschlag kommt obendrauf (Auftrag #325) |
+| Abschlag Negativstunden [%] | gilt für alle Anlagen gleich |
+| Anteil Neuherstellungskosten [%] | Vorgabe für Anlagen ohne eigenen Wert |
+| Pauschale § 9 KWKG | Σ P_el ≤ 2 kW, einmalig im Jahr 0 |
+| Stichtag (Bestellung/Genehmigung, § 6) | Prüfkette der Förderfähigkeit |
+| **Förderbeginn (Startjahr der Reihen)** | `KWKG_Inbetriebnahme`; er startet **alle** jahresscharfen Reihen (KWKG, CO₂, Steuern), auch ohne BHKW — deshalb heißt er hier nicht mehr „Inbetriebnahme, Vorgabe je Anlage" |
+
+**Herausgenommen und an die Anlage gewandert:** Bonus Eigenstrom · Bonus Einspeisung ·
+Vbh-Deckel-Override · Vbh-Kontingent gesamt · Eigenstrom-Tatbestand · Anlagenart § 8. Eine leise
+Zeile unter der Gruppe sagt, wo sie jetzt stehen.
+
+**Der Vorschlag steht am Feld, nicht als Sammelknopf** (Anwenderwunsch 17.09.2026): Unter jedem der
+drei Felder Satz Einspeisung, Satz Eigenstrom und Vbh-Kontingent steht die Grundlage im Klartext
+und daneben der Knopf „Vorschlag übernehmen". Er schreibt **nur sein eigenes Feld**, nur auf
+Knopfdruck und nur in den Arbeitsstand:
 
 ```
-Einspeisung 5,57 ct/kWh — 50 kW × 8,00 + 50 kW × 6,00 + 150 kW × 5,00 + 50 kW × 4,40
-Eigenstrom  0,00 ct/kWh — kein Tatbestand nach § 6 Abs. 3
+Einspeisung 5,57 ct/kWh — 50 kW × 8,00 + 50 kW × 6,00 + 150 kW × 5,00 + 50 kW × 4,40   [Vorschlag übernehmen]
+Eigenstrom  0,00 ct/kWh — kein Tatbestand nach § 6 Abs. 3                               [gesperrt: Grund am Knopf]
+Kontingent  15.000 Vbh  — 30,0 % ≥ 25 % (§ 8 Abs. 2 KWKG 2025, 2027)                    [Vorschlag übernehmen]
 ```
 
-Knopf „Vorschlag in die Satzfelder übernehmen" — schreibt **nur auf Knopfdruck**, nie automatisch.
+Fehlt eine Grundlage, ist der Knopf **weich** gesperrt (`aria-disabled`, Grund im `title` — ein
+`disabled`-Knopf zeigt seinen Tooltip nie): keine elektrische Nennleistung, kein Tatbestand nach
+§ 6 Abs. 3, keine Anlagenart.
 
 ### Gruppe 3 — Energiesteuer
 
@@ -276,9 +296,16 @@ geschrieben wird erst mit „Speichern" bzw. „OK", und dabei entsteht die Hist
 Projekt folgt dem Katalog danach **nicht** — eine spätere Änderung im Katalog lässt die
 Projektwerte, wo sie sind.
 
-### Emissionsanzeige der Energieträgertabelle (Auftrag 30.08.2026)
+### Emissionsanzeige der Energieträgertabelle (Auftrag 30.08.2026) — umgesetzt
 
-**Ist-Zustand.** Die Tabelle „Energieträger des Projekts" auf der Kostenseite führt **drei feste
+> **Stand: umgesetzt.** Die Tabelle trägt eine Emissionsspalte; Kopf und Inhalt folgen
+> `Tab_Projekt.Emission_Berechnungsmodus` (`EmissionsAusweis.SpaltenkopfEmission`), der Kurztext
+> trägt die Herleitung nach den drei Fällen unten (`EmissionsAusweis.HerleitungEmission`). Ein
+> stiller Rückfall CO2E → CO2 findet nicht statt: Fehlt der Artenkatalog, steht in der Spalte der
+> reine CO₂-Faktor und der Kurztext sagt es. Nachweis `EPOS.Kern.Tests/EmissionsspalteTests`
+> (sieben Fälle, beide Sprachen) und `EPOS.UI.Tests/Seiten/KostenSeiteTests`.
+
+**Ist-Zustand vor der Umsetzung.** Die Tabelle „Energieträger des Projekts" auf der Kostenseite führt **drei feste
 Emissionsspalten** — CO₂ [g/kWh], SO₂ [mg/kWh], NOx [mg/kWh] (`UcBkKosten.cs:771-772`, aus BK1).
 Sie stehen unabhängig davon da, was das Projekt rechnet.
 
@@ -318,7 +345,33 @@ Der dritte Fall ist der heikelste: Ohne Hinweis liest sich die fehlende Aufsummi
 Fehler. Im Modus `CO2` entfällt der Tooltip bis auf die Quellenangabe — dort gibt es nichts
 herzuleiten.
 
-## 2.6 Eigene Rubrik „Erlöse und Vorteile" (Auftrag 30.08.2026)
+## 2.6 Eigene Rubrik „Erlöse und Vorteile" (Auftrag 30.08.2026) — umgesetzt
+
+> **Stand: umgesetzt.** Die Rubrik lebt als Block in `WirtschaftlichkeitZeilen.Kennzahlen` —
+> **einer** Definition für Ergebnisreiter, Word, Excel und die Vorschau des BHKW-Dialogs
+> (Gruppe 6). Block A trägt die Kennung `WirtZeile.BLOCK_A` und geht in die Summenzeile
+> `ERL_A_SUMME`, die genau die Zeilen über ihr summiert; Block B trägt `BLOCK_B` und kommt in
+> keine Summe — die Trennung ist kein Flag, sondern zwei verschiedene Wege in die Liste
+> (`Erloes()` gegen `Ausweis()`). Nachweis `EPOS.Kern.Tests/ErloesrubrikTests`.
+>
+> **Drei Abweichungen von der Tabelle unten, jede aus einer Messung:**
+>
+> - **A1 und A2 stehen in einer Zeile** „KWK-Zuschlag (§ 7 KWKG)" mit zwei Unterzeilen
+>   „davon Einspeisung" und „davon Eigenstrom". Die Aufteilung kommt aus dem Modulnachweis
+>   `KwkgModulNachweis`, der nicht persistiert wird; sie erscheint deshalb im frischen Lauf.
+> - **A3 (Pauschale § 9 KWKG) hat keine Zeile.** Sie ist eine einmalige Zahlung im Jahr 0 und
+>   stünde in einer €/a-Spalte falsch; greift sie, sagt es der Hinweis des Laufs.
+> - **A4 und A5 stehen in einer Zeile** „Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54
+>   EnergieStG)": `SteuerErgebnis.EnergiesteuerEur` ist eine Summe, ihre Trennung wäre eine neue
+>   Größe im Rechner und damit ein Umbau, den die Etappe ausschließt.
+> - **A10 (Restwert) steht nicht in der Summe des Blocks A.** Er ist ein Barwert über T; in einer
+>   €/a-Summe des Jahres 1 wäre er ein Einheitenfehler. Seine Zeile bleibt beim Nettobarwert.
+>
+> **Die Nullzeile mit Grund** (Anwenderbefund 17.09.2026 „Vergütungen und Reduktionen sind in den
+> Ergebnissen nicht dargestellt"): Eine A-Zeile erscheint, sobald das Projekt eine Anlage führt,
+> für die die Position gilt — auch bei Betrag 0, dann mit dem Klartext der fehlenden Grundlage
+> („0 — kein KWK-Zuschlagssatz gepflegt oder Kontingent erschöpft"). Excel bekommt weiterhin die
+> blanke Zahl, damit Filter und Diagramme des Blattes numerisch bleiben.
 
 Die Erlösseite bekommt eine **eigene Rubrik** — im Ergebnisreiter, im BHKW-Dialog als Vorschau und
 im Bericht. Sie ist in **zwei Blöcke** geteilt, und diese Teilung ist keine Kosmetik: Block B darf
@@ -369,6 +422,16 @@ Vermieden_effektiv = Vermieden_brutto − Entlastungssatz(§ 9b) × vermiedene M
 Vorschlag: Die Rubrik zeigt beide Zeilen — „vermiedene Kosten brutto" und darunter „abzüglich
 entgangener § 9b-Entlastung", mit dem effektiven Betrag als Ergebnis. So bleibt nachvollziehbar,
 warum der Vorteil kleiner ist als der Bezugspreis vermuten lässt.
+
+**Umgesetzt.** Die vermiedene MENGE ist die Bemessungsgröße, nicht der Netzbezug: nur sie
+unterscheidet die beiden Seiten der Differenz (`StromErloesErgebnis.VermiedenMengeMWh` =
+Bedarf ohne Anlage − Restbezug). Der Entlastungssatz kommt jahresgenau aus dem Gesetzeskatalog
+(`GESETZ_STROMST_ENTLASTUNG_9B`), die Prüfung der Unternehmensart aus derselben Funktion, mit der
+die Steuerrechnung rechnet (`SteuerGutschriftRechner.ProduzierendesGewerbe`). Die drei Größen
+(`VermiedenMengeMWh`, `VermiedenEntlastung9bJahr`, `ProduzierendesGewerbe`) sind **nicht
+persistiert** — sie tragen ausschließlich den Ausweis, und dafür genügt der frische Lauf; die
+Korrekturzeilen entfallen ohne sie wie jede andere Zeile ohne Wert. **Der Kapitalwert ist
+unberührt:** Es wird keine Reihe angehängt und keine verändert.
 
 **(2) Die Energiesteuer des BHKW-Brennstoffs hängt _nicht_ an der Unternehmensart.** Geprüft am
 Gesetzestext und am Code:
@@ -1003,12 +1066,40 @@ Klassenlogik hätte 4,40 geliefert — **21 % zu wenig**.
 Staffel Abs. 1: 8,00 / 6,00 / 5,00 / 4,40 / 3,40 (nachgerüstet 3,10).
 Abs. 2 (Eigenstrom) nur in den drei Tatbeständen des § 6 Abs. 3; `KEINER` ⇒ Satz 0.
 
-Sätze je Anlage: `Satz_Einspeisung(A) = Anlagensatz ?? Projektsatz`. Beim Eigenstromsatz ist die
-Anlagenebene **strenger**: Ist der Anlagensatz gepflegt, wird ein Tatbestand verlangt — fehlt er,
-Satz 0 mit Meldung.
+**Die Rückfallkette Anlage → Projekt ist mit Schemaschritt 89 entfallen** (Entscheid `BK-E-1` (a)).
+Gerechnet wird ausschließlich, was an der Anlage steht; `NULL` heißt dort jetzt 0 und nicht mehr
+„Projektwert":
 
-**Vbh-Kontingent § 8:** Override > 0 gewinnt; sonst neu 30.000 h · modernisiert ab 50 %/25 % →
-30.000/15.000 · nachgerüstet ab 50/25/10 % → 30.000/15.000/10.000; darunter 0 mit Fehlgrund.
+```
+Satz_Einspeisung(A) = A.KWKG_Satz_Einspeisung ?? 0
+Satz_Eigen(A)       = A.KWKG_Satz_Eigen ?? 0,  geprüft gegen A.KWKG_Eigenstromfall
+Kontingent(A)       = A.KWKG_Vbh_Kontingent > 0 ? dieser : § 8 aus A.KWKG_Anlagenart und A.KWKG_Kostenanteil
+Deckel(A)           = A.KWKG_Vbh_Jahresdeckel > 0 ? dieser : Staffel § 8 Abs. 4
+```
+
+Möglich wird das durch den **Datenschritt 89**: Er trägt in jede BHKW-Anlagenzeile, die an der
+betreffenden Stelle leer ist, den Projektwert nach — genau den, den der Rückfall ihr zugewiesen
+hat (Sätze, Kontingent, Jahresdeckel, Anlagenart, **Tatbestand**, Kostenanteil, Stichtag,
+Inbetriebnahme). Der Schritt ist damit ergebnisneutral und idempotent.
+
+**Die Strenge des Eigenstromsatzes wandert mit.** Bis BK1 galt an der Anlage: gepflegter Satz ohne
+Tatbestand ⇒ 0. Diese Strenge stand auf der Annahme, ein Anlagensatz sei eine ausdrückliche
+Eingabe, die es im Bestand nirgends gibt — mit Schritt 89 ist sie hinfällig, weil jede
+Bestandsanlage einen Satz bekommt, den niemand an ihr eingegeben hat. Es gilt deshalb je Anlage
+genau die Regel, die K6 am Projekt eingeführt hat: **leerer Tatbestand ⇒ Satz bleibt, Meldung
+„ungeprüft"; nur die ausdrückliche Wahl `KEINER` nimmt ihn weg.** Hätte die alte Strenge Bestand,
+nähme Schritt 89 jedem Bestandsprojekt ohne gepflegten Tatbestand den Eigenverbrauchszuschlag —
+eine Rechenwirkung, die nirgends entschieden wurde.
+
+**Vbh-Kontingent § 8, je Anlage:** Override > 0 gewinnt; sonst aus **ihrer** Anlagenart und
+**ihrem** Kostenanteil — neu 30.000 h · modernisiert ab 50 %/25 % → 30.000/15.000 · nachgerüstet ab
+50/25/10 % → 30.000/15.000/10.000; darunter 0 mit Fehlgrund. Die projektweite Ableitung bleibt für
+den Ersatzweg stehen, der greift, wenn sich Anlagen- und Ergebniszeilen nicht zuordnen lassen.
+
+**Der Aktivierungsschalter fragt die Anlagen.** „Ist der KWK-Zuschlag dieser Gruppe aktiv?" heißt
+seit BK1: führt **irgendeine** BHKW-Anlage der Gruppe einen Satz > 0? Die Regel steht **einmal** in
+`KwkgAktivierung` und wird von allen sechs Stellen dort geholt (Rechenkern, Word-Baustein,
+Excel-Erzeuger, Nachweiszeile, Kapitalwert-Verlaufshülle, Wirtschaftlichkeitsseite).
 
 **Jahresreihe:**
 
@@ -1154,21 +1245,37 @@ Sätze: Erdgas 5,50 / 4,42 / 1,38 €/MWh · Heizöl EL 61,35 / 40,35 / 15,34 �
 Die Mengen beider Vorschriften sind **disjunkt** (Eigenverbrauch gegen Netzbezug) — untereinander
 keine Doppelzählung.
 
-⚠ **Befund B-1 — die offene Frage dieses Felds.** § 9 Abs. 1 Nr. 3 wird heute als **Erlösreihe**
-gebucht. Die Vorschrift ist aber keine Rückerstattung: Auf selbst erzeugten und selbst verbrauchten
-Strom entsteht gar keine Stromsteuer. Der Vorteil steckt bereits in der kleineren Bezugsrechnung.
-Gemessen an Projekt 1024: **1.510,84 €/a auf beiden Pfaden**; synthetisch 779 → 1.558 = das
-Doppelte. **Im Bestand bucht kein gespeicherter Lauf die Reihe** — heute also nirgends wirksam.
-Die Umstellung auf „Ausweis" (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) ist mit B6 entschieden.
+✅ **Befund B-1 — erledigt mit B6.** § 9 Abs. 1 Nr. 3 wurde als **Erlösreihe** gebucht und
+derselbe Betrag zusätzlich ausgewiesen. Die Vorschrift ist aber keine Rückerstattung: Auf selbst
+erzeugten und selbst verbrauchten Strom entsteht gar keine Stromsteuer, der Vorteil steckt bereits
+in der kleineren Bezugsrechnung.
+
+**Der Modus** steht in `Tab_ProjektWirtschaftlichkeit.Stromst_Befreiung_Modus` (Schemaschritt 88,
+TEXT, `AUSWEIS`/`ERLOES`, NULL = AUSWEIS) und wird im Dialog „BHKW-Wirtschaftlichkeit" gepflegt:
+
+* **AUSWEIS (Vorgabe)** — der Betrag wird gerechnet und in der Vergleichstabelle gezeigt
+  („Stromsteuer-Befreiung [€/a] (Ausweis, nicht im Kapitalwert)"), geht aber in keine Zahlungsreihe.
+* **ERLOES** — jahresscharfe Erlösreihe wie zuvor, dazu die Kohärenzwarnung zur Doppelzählung.
+  Richtig ist das nur, wenn der angesetzte Bezugspreis die Stromsteuer auf den Eigenverbrauch
+  enthält.
+
+Der Modus wandert mit ins Ergebnis, damit ein gespeicherter Lauf auch nach einer späteren
+Umstellung sagen kann, wie *er* gerechnet hat. **Gemessen** an Projekt 1030 (432,30 MWh
+KWK-Eigenverbrauch, 3 %, 20 a): Ausweisbetrag 8.862,15 €/a in beiden Modi, Kapitalwert als Erlös
+−21.763.530,86 €, als Ausweis −21.895.377,28 € — die Differenz von 131.846,41 € ist genau der
+Rentenbarwert der flachen Reihe. **Im Bestand bucht kein gespeicherter Lauf die Reihe** (die
+Befreiung setzt Stundenreihen voraus), der Referenzlauf bleibt unverändert.
 
 ## 3.9 Kohärenzprüfung — Warnzeilen ohne Rechenwirkung
 
 | Fall | Bedingung | Schwere |
 |---|---|---|
-| 1 konsistent | Wahl und Preisanteil aktiv | keine Zeile |
+| 1 konsistent | Wahl gesetzt, Anteil bei **jedem** beteiligten Träger ausgewiesen | **Bestätigung** (grün, ohne Betrag) |
 | 2 **Entlastung ohne Belastung** | Gutschrift gebucht, Preis weist die Steuer nicht aus | Warnung **mit Betrag** |
 | 3 Belastung ohne Entlastung | Anteil ausgewiesen, keine Wahl bzw. kein § 9b bei produzierendem Gewerbe | Hinweis |
 | 4 Satz ≠ Katalogsatz | Toleranz 0,005 ct/kWh | Hinweis (beide Sätze) |
+| 4a **Einheit nicht vergleichbar** | Katalogsatz je 1.000 kg bzw. je 1.000 l, Projekt rechnet in der anderen Einheit — ohne Dichte keine Brücke | Hinweis (ohne Betrag) |
+| **Doppelzählung § 9 Abs. 1 Nr. 3** | Modus `ERLOES` bucht einen Betrag | Warnung **mit Betrag** |
 | Doppelpflege Hilfsenergie | Anlagenanteil > 0 **und** aktive Kostenposition derselben Anlage | Warnung |
 | Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | Hinweis (435 g/kWh) |
 
@@ -1300,15 +1407,15 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 |---|---|---|
 | K1 | Feld „Deckung je Modul" | **entschieden: kein Feld** — die Befreiung ist bilanziell |
 | K2 | Hilfsenergie-Basis je Anlage rechnet fest Weg B (% des Bedarfs); Wege A und C nur in der Kostenposition | Dialog benennt die Basis klar; vierte Spalte nur bei Bedarf |
-| **K3** | Modusfeld § 9 Nr. 3 — Spalte kommt erst mit B6 | **offen**: im Mockup ausgrauen **oder** Schritt 62 vorziehen |
+| **K3** | Modusfeld § 9 Nr. 3 — Spalte kommt erst mit B6 | **erledigt mit B6**: Schemaschritt 88, Feld offen, Vorgabe AUSWEIS |
 | K4 | Tabellenspalte „Brennstoff" ohne Leseweg | kleiner Leser `CarrierId` → Name in B5 |
 | K5 | Jahresnutzungsgrad bleibt Projektgröße | als Projektfeld zeigen |
 | K6 | WP-Hilfsenergie: Spalte gilt formal für alle, Leser nur BHKW und Kessel | B5 zeigt das Feld nur bei BHKW |
 | K7 | Schreibweg der drei B3-Spalten fehlt (`KwkgAnlagenCtrl.Speichere` = 8 Spalten) | **B5-Kernaufgabe**: auf 11 Spalten erweitern |
 | **K8** | Fußleiste voll — ein achter Knopf läge bei x = −50 | **offen**: Zweitreihe · Aufklappmenü · Knopf ersetzen |
 | K9 | § 6.1 zählt „9 Felder", real 11 | Konzeptkorrektur |
-| K10 | Hilfsenergie-Bemessung doppelt: Seed gegen Altkatalog | in B5/B6 nachziehen |
-| K11 | `Views\Wirtschaftlichkeit` unlokalisiert (63 Literale) | neue Texte `BHW_*` de + en; Altlast nach B6 |
+| K10 | Hilfsenergie-Bemessung doppelt: Seed gegen Altkatalog | **erledigt**: Altarten nur noch zur Anzeige, abgelöst von `PROZENT_ENDENERGIEKOSTEN` |
+| K11 | `Views\Wirtschaftlichkeit` unlokalisiert (63 Literale) | **erledigt mit B6**: 0 nackte Anzeigetexte, eigene Wache |
 
 Dazu die Entscheidungen zur Darstellung (30.08.2026):
 
@@ -1369,6 +1476,8 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **B4** | Stromsteuer-Schnellwahl katalogbasiert, Unternehmensart hebt hervor | keine — wertgleich |
 | **BK1/BK2** | Trägerzuordnung über `code`, Wizard-Automatik, Emissionsspalten | **ja, gewollt** — CO₂-Bilanz ändert sich |
 | **HB1** | Anzeigesortierung, Hydraulikbild liest `Z_AnlageSenke` | keine — 90 Dateien SHA256-gleich |
+| **B7** | Erlösrubrik in Reiter, Word, Excel und BHKW-Vorschau; Energiekosten je Anlage; eine Emissionsspalte nach Modus; eine Sichtbarkeitsregel für alle drei Ausgaben | keine auf den Kapitalwert — Referenzlauf der fünf CI-Projekte PASS |
+| **BK1** (Entscheid `BK-E-1` (a)) | KWK-Zuschlag gehört der Anlage: Schemaschritt 89 (`KWKG_Kostenanteil` + Datenschritt), Rückfall Anlage → Projekt entfällt, Kontingent je Anlage nach § 8, Vorschlagsknöpfe am Feld, Gruppe 2 auf die vier projektweiten Angaben eingedampft, **ein** Aktivierungsschalter statt sechs Kopien | keine — Datenschritt ergebnisneutral, gemessen an Projekt 1030 (Zuschlag Jahr 1 7.315,96 €, Kapitalwert −21.895.377,28 € vorher wie nachher); Referenzlauf der fünf CI-Projekte PASS |
 
 ## 6.2 Regressionsanker
 
@@ -1390,14 +1499,52 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 2. Live-Frisch-Anzeige der Bezugsgröße mit Herleitungszeile im Kostendialog — **spezifiziert in § 2.8 (Entwurf B, übernommen 31.08.2026)**
 3. Erste Kostenposition mit Anlagenbezug entsteht erst hier
 
-**Nach B6**
+**Nach B6 — alle sechs erledigt**
 
-4. § 9 Nr. 3 als Ausweis (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) — K3
-5. Doppelmeldung § 9b in `RechneAufschlaege` streichen
-6. Hinweiszeile für Träger mit 1.000-kg-Satz bei Literabrechnung (`density` leer)
-7. Positive Nennung im Kohärenzfall 1
-8. Lokalisierung `Views\Wirtschaftlichkeit` (63 Literale) und der Auflöser-Texte — K11
-9. Altkatalog-Bemessung `PROZENT_BRENNSTOFFKOSTEN` nachziehen — K10
+4. ~~§ 9 Nr. 3 als Ausweis (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) — K3~~ — Schemaschritt 88, § 3.8
+5. ~~Doppelmeldung § 9b in `RechneAufschlaege` streichen~~ — `RechneAufschlaege` ist mit dem Umbau der Aufschläge entfallen; die § 9b-Hinweise der Kohärenzprüfung schließen einander aus (Fall 2 kehrt zurück, bevor Fall 3 geprüft wird)
+6. ~~Hinweiszeile für Träger mit 1.000-kg-Satz bei Literabrechnung (`density` leer)~~ — Fall 4a in § 3.9
+7. ~~Positive Nennung im Kohärenzfall 1~~ — Bestätigungszeile in § 3.9
+8. ~~Lokalisierung `Views\Wirtschaftlichkeit` (63 Literale) und der Auflöser-Texte — K11~~ — nach dem Razor-Port blieben 7; alle überführt, bewacht von `LokalisierungWirtschaftlichkeitWacheTests`
+9. ~~Altkatalog-Bemessung `PROZENT_BRENNSTOFFKOSTEN` nachziehen — K10~~ — war schon erledigt: Der Seed führt sie nur noch zur Anzeige von Bestandsdaten (`FuerBetrieb = false`), abgelöst von `PROZENT_ENDENERGIEKOSTEN`; die Eskalation zieht gleich
+
+**Nach B7 — was die Etappe offen lässt**
+
+9a. **B7-1: A4 und A5 stehen in einer Zeile.** `SteuerErgebnis.EnergiesteuerEur` führt § 53/§ 53a
+    und § 54 als Summe; die Rubrik kann sie deshalb nur gemeinsam ausweisen. Für die Trennung
+    braucht der Rechner zwei Rückgabegrößen — ein Eingriff, den B7 ausdrücklich ausschließt.
+9b. **B7-2: `KwkgModulNachweis` und die Energiekosten je Anlage werden nicht persistiert.** Beide
+    entstehen im Rechenlauf und fehlen nach dem Neuladen einer gespeicherten Rechnung; die
+    zugehörigen Unterzeilen entfallen dann. Ein Schemaschritt (Nachweistabelle je Ergebnis) wäre
+    der Weg — B7 hat ihn nicht genommen, weil die Etappe ohne ihn auskommt und ein Schemaschritt
+    für einen Ausweis teuer ist. Dieselbe Lage gilt seit E3 für `KostenPositionNachweis`.
+9c. **B7-3: Die KWKG-Pauschale (§ 9 KWKG, A3) hat keine Rubrikzeile.** Sie ist eine einmalige
+    Zahlung im Jahr 0 und hat keine persistierte Skalargröße; `KwkgErloesJahr1` steht bei einem
+    Pauschalprojekt auf 0. Sie gehört in die Investitions- oder Jahr-0-Darstellung, nicht in eine
+    €/a-Spalte.
+9d. **B7-4: Der Grund einer Nullzeile ist aus den Ergebnisdaten abgeleitet, nicht vom Rechner
+    durchgereicht.** Die `STEUER_*`-Begründungen und der KWKG-Ausstieg stehen im Hinweisfeld des
+    Laufs, aber als ein mit „ | " verbundener Text über alle Positionen; ihn einer einzelnen
+    Position zuzuordnen hieße, einen Parser zu erfinden. Die Rubrik nennt deshalb die
+    **Bedingung** der Position („nur produzierendes Gewerbe; abzüglich Sockelbetrag 250 €/a"),
+    nicht die Diagnose des Laufs — die steht unverändert in der Hinweiszeile darunter. Eine
+    saubere Lösung führte die Begründungen je Position im `SteuerErgebnis`.
+
+**Nach BK1 — was die Etappe offen lässt**
+
+9e. **BK1-1: Sechs Projektspalten bleiben ungelesen stehen.** `KWKG_Bonus`,
+    `KWKG_Bonus_Einspeisung`, `KWKG_Tatbestand` und `KWKG_Anlagenart` liest nach Schritt 89 kein
+    Rechenweg mehr; `KWKG_Vbh_Kontingent` und `KWKG_Vbh_Jahresdeckel` nur noch der projektweite
+    Ersatzweg. Ein Drop ist ein eigener Schemaschritt und braucht einen Anwenderentscheid — er
+    nähme die Möglichkeit, den Datenschritt nachzuvollziehen.
+9f. **BK1-2: Der projektweite Ersatzweg rechnet weiter mit den Projektsätzen.** Er greift nur,
+    wenn sich Anlagen- und Ergebniszeilen nicht zuordnen lassen; dort gibt es keine Anlagenwerte,
+    an denen er sich bedienen könnte. Der Aktivierungsschalter fragt aber schon die Anlagen — ein
+    Projekt mit Anlagensätzen und ohne Projektsätze bekäme auf diesem Weg 0. Der Fall ist
+    konstruiert (er setzt eine misslungene Zuordnung voraus), bleibt aber benannt.
+9g. **BK1-3: Ein Jahr-0-Ausweis der KWKG-Pauschale in der Erlösrubrik** ist als Vorschlag
+    aufgenommen und **nicht gebaut** — der Entscheid steht beim Anwender aus. Er löst zugleich
+    `B7-3`.
 
 **Fachlich und technisch**
 
@@ -1436,6 +1583,18 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 
 ## 6.5 Doppelte Wahrheiten
 
+> **Aufgelöst mit BK1 (Entscheid `BK-E-1` (a), Schemaschritt 89): der KWK-Zuschlag.** Er stand
+> zweimal da — je Anlage (`Tab_Energieanlagen.KWKG_*`, Schritt 22) und je Projekt
+> (`Tab_ProjektWirtschaftlichkeit.KWKG_*`, Schritt 28) —, und dazwischen lag eine Rückfallkette.
+> Der Anwender pflegte damit Felder, deren Wirkung davon abhing, ob ein zweites Feld anderswo leer
+> war; eine Kaskade aus zwei verschieden alten Modulen war gar nicht abbildbar. Die Wahrheit ist
+> jetzt die Anlage. Die sechs Projektspalten `KWKG_Bonus`, `KWKG_Bonus_Einspeisung`,
+> `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`, `KWKG_Tatbestand` und `KWKG_Anlagenart` bleiben
+> ungelesen in der Datenbank stehen — **Aufräumkandidaten für einen eigenen Schritt**, kein Drop in
+> BK1: `KWKG_Vbh_Kontingent` und `KWKG_Vbh_Jahresdeckel` speisen weiterhin den projektweiten
+> Ersatzweg, und ein Drop ohne Not nähme dem Anwender die Möglichkeit, den Datenschritt
+> nachzuvollziehen.
+
 *Aus KONTEXT § 9 — jede benannt und begründet. Neue Spalten und Novellen müssen beide Orte treffen.*
 
 | Doppelung | Stand |
@@ -1456,8 +1615,8 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
 | **B5** | `Form_BhkwWirtschaftlichkeit` mit sechs Gruppen; Auszug aus dem Parameterdialog; Schreibweg der drei Anlagenspalten (K7); Brennstoff-Leser (K4); Live-Herleitung | keine — solange niemand die neuen Felder pflegt |
-| **B6** | § 9 Nr. 3 als Ausweis (M-3, Schritt 62); Kohärenz-Nachträge; Lokalisierung | **ja** — der Moduswechsel ändert den Kapitalwert |
-| **B7** | Anlagenscharfe Aufschlüsselung der Energiekosten; **Erlösrubrik** (§ 2.6) in Reiter, Word und Excel; **Emissionsspalte nach Modus** (§ 2.5) | Ausweis — bis auf die Korrektur der vermiedenen Kosten um die § 9b-Entlastung |
+| **B6** | § 9 Nr. 3 als Ausweis (M-3, **Schemaschritt 88**); Kohärenz-Nachträge; Lokalisierung | **umgesetzt** — Vorgabe AUSWEIS; ein Projekt, das die Reihe buchte, verliert deren Barwert aus dem Kapitalwert |
+| **B7** | Anlagenscharfe Aufschlüsselung der Energiekosten; **Erlösrubrik** (§ 2.6) in Reiter, Word, Excel und BHKW-Vorschau; **Emissionsspalte nach Modus** (§ 2.5) | **umgesetzt** — reiner Ausweis; der Kapitalwert ist unverändert, die vermiedenen Kosten werden zusätzlich um die entgangene § 9b-Entlastung korrigiert ausgewiesen |
 | **B8** | Befunde abarbeiten: I-1 (kWp), I-3 (ORDER BY), B-1/N1 (Kessel-Verbrauch), N3 (Aufschlags-NULL), V-3 (Berichtsspalten), S-2 | **ja** — jeder einzeln mit A/B-Nachweis |
 | **B9** | Zahlenprobe gegen die Altanwendung (A8), sobald die Excel vorliegt | Nachweis |
 

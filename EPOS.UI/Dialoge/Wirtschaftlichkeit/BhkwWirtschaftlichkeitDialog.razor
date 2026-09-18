@@ -146,21 +146,45 @@
                                  Auswahl="@BhkwWahlen.NummerZu(_fallA, AktuellerStand.Eigenfall)"
                                  AuswahlChanged="FallA" />
 
+                    @* ETAPPE BK1 (Anwenderwunsch 17.09.2026, Entscheid BK-E-1 a):
+                       DER KNOPF STEHT AM FELD, und die Grundlage daneben. Ein
+                       Sammelknopf am Ende der Gruppe schrieb mehrere Felder auf
+                       einmal; wer ihn drueckte, sah erst danach, was er getroffen
+                       hatte. Die Vorschlagszeile spannt im Formularraster ueber die
+                       volle Breite und steht damit unter IHREM Feld. *@
                     <Zahlenfeld Bezeichnung="@_t.ASatzEinsp" Einheit="ct/kWh"
                                 Min="0" Max="30" Nachkommastellen="2"
                                 Wert="@AktuellerStand.SatzEinspCt" WertChanged="SatzEinspA" />
+                    <Vorschlagszeile Text="@GrundlageEinsp()" Knopftext="@_t.BtnVorschlagFeld"
+                                     Erlaubt="@VorschlagEinspErlaubt"
+                                     Sperrgrund="@_t.SperrOhnePel"
+                                     Uebernommen="VorschlagEinspUebernehmen" />
 
                     <Zahlenfeld Bezeichnung="@_t.ASatzEigen" Einheit="ct/kWh"
                                 Min="0" Max="30" Nachkommastellen="2"
                                 Wert="@AktuellerStand.SatzEigenCt" WertChanged="SatzEigenA" />
+                    <Vorschlagszeile Text="@GrundlageEigen()" Knopftext="@_t.BtnVorschlagFeld"
+                                     Erlaubt="@VorschlagEigenErlaubt"
+                                     Sperrgrund="@SperrgrundEigen"
+                                     Uebernommen="VorschlagEigenUebernehmen" />
 
                     <Zahlenfeld Bezeichnung="@_t.AKontingent" Einheit="h"
                                 Min="0" Max="200000" Nachkommastellen="0"
                                 Wert="@AktuellerStand.VbhKontingent" WertChanged="KontingentA" />
+                    <Vorschlagszeile Text="@GrundlageKontingent()" Knopftext="@_t.BtnVorschlagFeld"
+                                     Erlaubt="@VorschlagKontingentErlaubt"
+                                     Sperrgrund="@_t.SperrOhneAnlagenart"
+                                     Uebernommen="VorschlagKontingentUebernehmen" />
 
                     <Zahlenfeld Bezeichnung="@_t.ADeckel" Einheit="h/a"
                                 Min="0" Max="8760" Nachkommastellen="0"
                                 Wert="@AktuellerStand.VbhDeckel" WertChanged="DeckelA" />
+
+                    @* BK1: Der Kostenanteil gehoert zur Anlage, weil § 8 Abs. 2/3 die
+                       Kontingentstufe aus IHREM Anteil waehlt (Schemaschritt 89). *@
+                    <Zahlenfeld Bezeichnung="@_t.AKostenanteil" Einheit="%"
+                                Min="0" Max="100" Nachkommastellen="1"
+                                Wert="@AktuellerStand.Kostenanteil" WertChanged="KostenanteilA" />
 
                     <Auswahlfeld Bezeichnung="@_t.AEnergiesteuer"
                                  Eintraege="@BhkwWahlen.Eintraege(_esA)"
@@ -220,35 +244,15 @@
                             Wert="@(_vorgaben.EinspeiseverguetungKwk ?? 0)"
                             WertChanged="EinspeisungKwkP" />
 
-                <Zahlenfeld Bezeichnung="@_t.PBonusEigen" Einheit="ct/kWh"
-                            Min="0" Max="30" Nachkommastellen="2"
-                            Wert="@_vorgaben.KwkgBonus" WertChanged="BonusEigenP" />
-
-                <Zahlenfeld Bezeichnung="@_t.PBonusEinsp" Einheit="ct/kWh"
-                            Min="0" Max="30" Nachkommastellen="2"
-                            Wert="@_vorgaben.KwkgBonusEinspeisung" WertChanged="BonusEinspP" />
-
-                <Zahlenfeld Bezeichnung="@_t.PDeckel" Einheit="h/a"
-                            Min="0" Max="8760" Nachkommastellen="0"
-                            Wert="@_vorgaben.KwkgVbhJahresdeckel" WertChanged="DeckelP" />
-
-                <Zahlenfeld Bezeichnung="@_t.PKontingent" Einheit="h"
-                            Min="0" Max="200000" Nachkommastellen="0"
-                            Wert="@_vorgaben.KwkgVbhKontingent" WertChanged="KontingentP" />
-
+                @* ETAPPE BK1 (Entscheid BK-E-1 a): HIER STEHT NUR NOCH, WAS WIRKLICH
+                   PROJEKTWEIT IST. Satz, Kontingent, Jahresdeckel, Anlagenart und
+                   Tatbestand sind seit Schemaschritt 89 Angaben DER ANLAGE - § 7
+                   bemisst den Satz an ihrer Leistung, § 8 das Kontingent an ihrer
+                   Anlagenart. Sie hier ein zweites Mal zu fuehren, war die doppelte
+                   Wahrheit samt Rueckfallkette, die BK1 aufloest. *@
                 <Zahlenfeld Bezeichnung="@_t.PAbschlag" Einheit="%"
                             Min="0" Max="50" Nachkommastellen="1"
                             Wert="@_vorgaben.KwkgAbschlagNegativ" WertChanged="AbschlagP" />
-
-                <Auswahlfeld Bezeichnung="@_t.PTatbestand"
-                             Eintraege="@BhkwWahlen.Eintraege(_fallP)"
-                             Auswahl="@BhkwWahlen.NummerZu(_fallP, _vorgaben.KwkgTatbestand)"
-                             AuswahlChanged="TatbestandP" />
-
-                <Auswahlfeld Bezeichnung="@_t.PAnlagenart"
-                             Eintraege="@BhkwWahlen.Eintraege(_artP)"
-                             Auswahl="@BhkwWahlen.NummerZu(_artP, _vorgaben.KwkgAnlagenart)"
-                             AuswahlChanged="AnlagenartP" />
 
                 <Zahlenfeld Bezeichnung="@_t.PKostenanteil" Einheit="%"
                             Min="0" Max="100" Nachkommastellen="1"
@@ -260,6 +264,9 @@
                 <Datumsfeld Bezeichnung="@_t.PStichtag"
                             Wert="@Tag(_vorgaben.KwkgStichtag)" WertChanged="StichtagP" />
 
+                @* BK1: Dasselbe Feld, neu beschriftet. Es ist keine "Vorgabe je
+                   Anlage" mehr, sondern der FOERDERBEGINN - das Startjahr ALLER
+                   jahresscharfen Reihen (KWKG, CO2, Steuern), auch ohne BHKW. *@
                 <Datumsfeld Bezeichnung="@_t.PIbn"
                             Wert="@Tag(_vorgaben.KwkgInbetriebnahme)" WertChanged="IbnP" />
                 </KindInhalt>
@@ -270,14 +277,9 @@
                dort stehen, wo er ihn aendert. *@
             <Herleitungszeile Text="@_t.PEinspKwkHinweis" />
 
-            @* Herleitungszeilen je Anlage - Bestand KwkgSatzRechner.Vorschlag. *@
-            @foreach (string zeile in Herleitung())
-            {
-                <Herleitungszeile Text="@zeile" />
-            }
-
-            <button type="button" class="epos-knopf epos-vorschlag" @onclick="VorschlagUebernehmen"
-                    disabled="@(Aktuelle is null)">@_t.BtnVorschlag</button>
+            @* BK1: Wo die uebrigen KWK-Angaben hin sind - sonst sucht ein Anwender,
+               der den Dialog kennt, die Saetze. *@
+            <Herleitungszeile Text="@_t.PNurProjektweit" />
         </KindInhalt>
     </Gruppenkopf>
 
@@ -325,17 +327,18 @@
                 <Schalter Bezeichnung="@_t.SHocheffizienz"
                           Wert="@_vorgaben.HocheffizienzNachweis" WertChanged="HocheffizienzP" />
 
-                @* K3 = a (Anwenderentscheid 03.09.2026): Das Modusfeld des § 9 Abs. 1 Nr. 3
-                   (BW3) wird GEZEIGT, aber deaktiviert - die Persistenzspalte
-                   Stromst_Befreiung_Modus kommt erst mit M-3 (Etappe B6). B5/B5b legt dafuer
-                   ausdruecklich KEINEN Schemaschritt an, und der Wert wird nirgends
-                   gespeichert; die Vorgabe "Ausweis" (BF1) ist der heutige Rechenstand. *@
+                @* Das Modusfeld des § 9 Abs. 1 Nr. 3 (BW3) schreibt seit dem
+                   Schemaschritt 88 nach Tab_ProjektWirtschaftlichkeit.Stromst_Befreiung_Modus.
+                   Vorgabe ist AUSWEIS - NummerZu faellt auf den ersten Eintrag zurueck,
+                   solange nichts gepflegt ist. *@
                 <Auswahlfeld Bezeichnung="@_t.SModus"
-                             Eintraege="@BhkwWahlen.Eintraege(_modus)" Auswahl="0" Aktiv="false" />
+                             Eintraege="@BhkwWahlen.Eintraege(_modus)"
+                             Auswahl="@BhkwWahlen.NummerZu(_modus, _vorgaben.StromsteuerBefreiungModus)"
+                             AuswahlChanged="BefreiungsmodusP" />
                 </KindInhalt>
             </Formularraster>
 
-            <Herleitungszeile Text="@_t.SModusB6" />
+            <Herleitungszeile Text="@_t.SModusHerleitung" />
 
             <button type="button" class="epos-knopf epos-sprung"
                     @onclick="SprungStrombezug">@_t.BtnStrombezug</button>
@@ -560,8 +563,6 @@
     private IReadOnlyList<Steuerwahl> _fallA = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _esA = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _aufA = Array.Empty<Steuerwahl>();
-    private IReadOnlyList<Steuerwahl> _artP = Array.Empty<Steuerwahl>();
-    private IReadOnlyList<Steuerwahl> _fallP = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _esP = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _aufP = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _uaP = Array.Empty<Steuerwahl>();
@@ -634,8 +635,6 @@
         _fallA = BhkwWahlen.Eigenfall(false);
         _esA = BhkwWahlen.Energiesteuer(true);
         _aufA = BhkwWahlen.Aufteilung(true);
-        _artP = BhkwWahlen.Anlagenart(true);
-        _fallP = BhkwWahlen.Eigenfall(true);
         _esP = BhkwWahlen.Energiesteuer(false);
         _aufP = BhkwWahlen.Aufteilung(false);
         _uaP = BhkwWahlen.Unternehmensart();
@@ -701,6 +700,10 @@
     private void SatzEigenA(double? w) => Setze(() => AktuellerStand!.SatzEigenCt = Positiv(w));
     private void KontingentA(double? w) => Setze(() => AktuellerStand!.VbhKontingent = Positiv(w));
     private void DeckelA(double? w) => Setze(() => AktuellerStand!.VbhDeckel = Positiv(w));
+
+    // BK1: 0 heisst auch hier "nicht gepflegt" - dann waehlt § 8 keine Stufe und der
+    // Kontingentvorschlag nennt den Grund statt einer Zahl.
+    private void KostenanteilA(double? w) => Setze(() => AktuellerStand!.Kostenanteil = Positiv(w));
     private void EnergiesteuerA(int? n) => Setze(() => AktuellerStand!.EnergiesteuerWahl = BhkwWahlen.WertZu(_esA, n));
     private void AufteilungA(int? n) => Setze(() => AktuellerStand!.AufteilungMethode = BhkwWahlen.WertZu(_aufA, n));
 
@@ -712,20 +715,15 @@
     // im Parameterdialog hatte, und dieselbe, mit der StromPreisCtrl ihn liest.
     private void EinspeisungKwkP(double? w) => Setze(() => _vorgaben.EinspeiseverguetungKwk = Positiv(w));
 
-    private void BonusEigenP(double? w) => Setze(() => _vorgaben.KwkgBonus = w ?? 0);
-    private void BonusEinspP(double? w) => Setze(() => _vorgaben.KwkgBonusEinspeisung = w ?? 0);
-    private void DeckelP(double? w) => Setze(() => _vorgaben.KwkgVbhJahresdeckel = w ?? 0);
-    private void KontingentP(double? w) => Setze(() => _vorgaben.KwkgVbhKontingent = w ?? 0);
+    // ETAPPE BK1: Satz, Deckel, Kontingent, Tatbestand und Anlagenart des PROJEKTS
+    // haben keinen Schreibweg mehr - sie stehen an der Anlage. Die Spalten bleiben in
+    // der Datenbank stehen (Aufraeumkandidaten) und werden mit dem Arbeitsstand
+    // WERTGLEICH zurueckgeschrieben; der Dialog aendert sie nicht mehr.
     private void AbschlagP(double? w) => Setze(() => _vorgaben.KwkgAbschlagNegativ = w ?? 0);
     private void KostenanteilP(double? w) => Setze(() => _vorgaben.KwkgKostenanteil = w ?? 0);
     private void PauschalP(bool b) => Setze(() => _vorgaben.KwkgPauschalmodus = b);
     private void StichtagP(DateOnly? d) => Setze(() => _vorgaben.KwkgStichtag = Zeit(d));
     private void IbnP(DateOnly? d) => Setze(() => _vorgaben.KwkgInbetriebnahme = Zeit(d));
-
-    // Leer ist hier eine gueltige Aussage ("nicht angegeben") und darf nicht durch
-    // einen Ersatzwert ueberschrieben werden (K6-Muster des Bestands).
-    private void TatbestandP(int? n) => Setze(() => _vorgaben.KwkgTatbestand = BhkwWahlen.WertZu(_fallP, n));
-    private void AnlagenartP(int? n) => Setze(() => _vorgaben.KwkgAnlagenart = BhkwWahlen.WertZu(_artP, n));
 
     private void EnergiesteuerP(int? n) => Setze(() => _vorgaben.EnergiesteuerWahl =
         WertMitVorgabe(_esP, n, DbWerte.ENERGIESTEUER_WAHL_KEINE));
@@ -736,6 +734,12 @@
 
     private void RaeumlichP(bool b) => Setze(() => _vorgaben.RaeumlicherZusammenhang = b);
     private void HocheffizienzP(bool b) => Setze(() => _vorgaben.HocheffizienzNachweis = b);
+
+    // ETAPPE B6: Der Modus des § 9 Abs. 1 Nr. 3 StromStG. Die Vorgabe AUSWEIS steht
+    // auch dann, wenn die Liste nichts hergibt - sie ist der Rechenstand, nicht eine
+    // Leerstelle.
+    private void BefreiungsmodusP(int? n) => Setze(() => _vorgaben.StromsteuerBefreiungModus =
+        WertMitVorgabe(_modus, n, DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS));
 
     // 0 % Jahresnutzungsgrad heisst "nicht erfasst": Ein Nutzungsgrad von null ist
     // fachlich kein Wert, und die Begruendung soll "nicht erfasst" von "erfasst und
@@ -761,19 +765,105 @@
     // Herleitung und Warnzeilen (reine Anzeige, Quellen des Bestands)
     // =====================================================================
 
-    /// <summary>Herleitung des Katalogvorschlags fuer die gewaehlte Anlage
-    /// (<c>KwkgSatzRechner</c> - dieselbe Quelle wie im Modulformular).</summary>
-    private IReadOnlyList<string> Herleitung()
+    // =====================================================================
+    // ETAPPE BK1 — die drei Vorschlaege AM FELD
+    //
+    // Je Feld eine Grundlage, ein Erlaubt und ein Uebernehmen. Gerechnet wird
+    // NICHTS: Saetze und Herleitung kommen aus KwkgSatzRechner, das Kontingent aus
+    // KwkgKontingentRechner - dieselben reinen Funktionen, die auch der Rechenkern
+    // ruft (BW8, Leitentscheidung L9). Uebernommen wird in den ARBEITSSTAND;
+    // geschrieben wird wie jede andere Eingabe erst beim OK.
+    // =====================================================================
+
+    /// <summary>Grundlage des Einspeisesatzes: Tranchen, Norm, Jahr.</summary>
+    private string GrundlageEinsp()
     {
         KwkgAnlagenAngabe? a = Aktuelle;
-        if (a is null) return Array.Empty<string>();
+        if (a is null) return "";
         KwkgSatzVorschlag v = Vorschlag(a);
-        var k = BhwTexte.Kultur;
-        return new[]
-        {
-            string.Format(_t.HerleitungEinsp, v.SatzEinspeisungCt.ToString("N2", k), v.HerleitungEinspeisung),
-            string.Format(_t.HerleitungEigen, v.SatzEigenCt.ToString("N2", k), v.HerleitungEigen)
-        };
+        return string.Format(_t.HerleitungEinsp,
+                             v.SatzEinspeisungCt.ToString("N2", BhwTexte.Kultur),
+                             v.HerleitungEinspeisung);
+    }
+
+    /// <summary>Grundlage des Eigenstromsatzes: Tranchen, Norm des gewaehlten
+    /// Tatbestands, Jahr.</summary>
+    private string GrundlageEigen()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (a is null) return "";
+        KwkgSatzVorschlag v = Vorschlag(a);
+        return string.Format(_t.HerleitungEigen,
+                             v.SatzEigenCt.ToString("N2", BhwTexte.Kultur),
+                             v.HerleitungEigen);
+    }
+
+    /// <summary>Grundlage des Kontingents: Stufe des § 8 aus Anlagenart und
+    /// Kostenanteil DIESER Anlage.</summary>
+    private string GrundlageKontingent()
+    {
+        if (AktuellerStand is null) return "";
+        KwkgKontingentVorschlag v = Kontingentvorschlag();
+        return string.Format(_t.HerleitungKontingent,
+                             v.KontingentH.ToString("N0", BhwTexte.Kultur), v.Herleitung);
+    }
+
+    /// <summary>Ohne elektrische Nennleistung gibt es keine Leistungsstaffel — und
+    /// damit keinen Satz (§ 7 Abs. 1/2).</summary>
+    private bool VorschlagEinspErlaubt => Aktuelle is not null && Aktuelle.PelKW > 0;
+
+    /// <summary>Zusaetzlich zur Leistung braucht der Eigenstromsatz den Tatbestand des
+    /// § 6 Abs. 3; ohne ihn gibt es den Zuschlag nach § 7 Abs. 2 nicht.</summary>
+    private bool VorschlagEigenErlaubt =>
+        VorschlagEinspErlaubt && AktuellerStand is not null &&
+        !string.IsNullOrEmpty(AktuellerStand.Eigenfall) &&
+        !string.Equals(AktuellerStand.Eigenfall, DbWerte.KWKG_EIGENFALL_KEINER, StringComparison.Ordinal);
+
+    /// <summary>Der Sperrgrund des Eigenstromsatzes nennt den ERSTEN fehlenden
+    /// Baustein — die Leistung vor dem Tatbestand, weil ohne sie auch der Tatbestand
+    /// nichts nuetzt.</summary>
+    private string SperrgrundEigen => VorschlagEinspErlaubt ? _t.SperrOhneEigenfall : _t.SperrOhnePel;
+
+    /// <summary>Ohne Anlagenart waehlt § 8 keine Kontingentstufe.</summary>
+    private bool VorschlagKontingentErlaubt =>
+        AktuellerStand is not null && !string.IsNullOrEmpty(AktuellerStand.Anlagenart) &&
+        !Kontingentvorschlag().Unvollstaendig;
+
+    private void VorschlagEinspUebernehmen()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        BhkwAnlagenstand? st = AktuellerStand;
+        if (a is null || st is null || !VorschlagEinspErlaubt) return;
+        KwkgSatzVorschlag v = Vorschlag(a);
+        Setze(() => st.SatzEinspCt = Positiv(v.SatzEinspeisungCt));
+    }
+
+    private void VorschlagEigenUebernehmen()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        BhkwAnlagenstand? st = AktuellerStand;
+        if (a is null || st is null || !VorschlagEigenErlaubt) return;
+        KwkgSatzVorschlag v = Vorschlag(a);
+        Setze(() => st.SatzEigenCt = Positiv(v.SatzEigenCt));
+    }
+
+    private void VorschlagKontingentUebernehmen()
+    {
+        BhkwAnlagenstand? st = AktuellerStand;
+        if (st is null || !VorschlagKontingentErlaubt) return;
+        KwkgKontingentVorschlag v = Kontingentvorschlag();
+        Setze(() => st.VbhKontingent = Positiv(v.KontingentH));
+    }
+
+    /// <summary>Der Kontingentvorschlag der gewaehlten Anlage — aus IHRER Anlagenart
+    /// und IHREM Kostenanteil, mit dem Jahr, das auch der Satzvorschlag nimmt.</summary>
+    private KwkgKontingentVorschlag Kontingentvorschlag()
+    {
+        BhkwAnlagenstand? st = AktuellerStand;
+        if (st is null)
+            return new KwkgKontingentVorschlag { Unvollstaendig = true };
+        return KwkgKontingentRechner.Ableiten(st.Anlagenart, st.Kostenanteil ?? 0,
+                                              Vorschlagsjahr(), Katalog, BhwTexte.Kultur);
     }
 
     /// <summary>Der Vorschlag fuer eine Anlage - mit dem Inbetriebnahmejahr DIESER
@@ -782,28 +872,20 @@
     private KwkgSatzVorschlag Vorschlag(KwkgAnlagenAngabe a)
     {
         BhkwAnlagenstand s = Stand(a);
-        int jahr = s.Inbetriebnahme.HasValue
-            ? s.Inbetriebnahme.Value.Year
-            : (_vorgaben.KwkgInbetriebnahme.HasValue
-               ? _vorgaben.KwkgInbetriebnahme.Value.Year
-               : DateTime.Now.Year + 1);
-        return KwkgSatzRechner.Vorschlag(a.PelKW, jahr, s.Anlagenart, s.Eigenfall,
+        return KwkgSatzRechner.Vorschlag(a.PelKW, Vorschlagsjahr(), s.Anlagenart, s.Eigenfall,
                                          Katalog, BhwTexte.Kultur);
     }
 
-    /// <summary>Der Knopf der Gruppe 2. Er legt den Vorschlag in den ARBEITSSTAND -
-    /// geschrieben wird er wie jede andere Eingabe erst beim OK.</summary>
-    private void VorschlagUebernehmen()
+    /// <summary>Das Stichtagsjahr aller Katalogvorschlaege der gewaehlten Anlage: ihr
+    /// Inbetriebnahmejahr, ersatzweise der Foerderbeginn des Projekts, sonst das
+    /// naechste Jahr (Planungsfall) — Muster der abgeloesten Modulmaske aus E6.</summary>
+    private int Vorschlagsjahr()
     {
-        KwkgAnlagenAngabe? a = Aktuelle;
-        BhkwAnlagenstand? s = AktuellerStand;
-        if (a is null || s is null) return;
-        KwkgSatzVorschlag v = Vorschlag(a);
-        Setze(() =>
-        {
-            s.SatzEinspCt = Positiv(v.SatzEinspeisungCt);
-            s.SatzEigenCt = Positiv(v.SatzEigenCt);
-        });
+        DateTime? ibn = AktuellerStand?.Inbetriebnahme;
+        if (ibn.HasValue) return ibn.Value.Year;
+        return _vorgaben.KwkgInbetriebnahme.HasValue
+             ? _vorgaben.KwkgInbetriebnahme.Value.Year
+             : DateTime.Now.Year + 1;
     }
 
     /// <summary>
@@ -996,9 +1078,17 @@
         return l;
     }
 
-    private static WarnStufe Stufe(string schwere) =>
-        string.Equals(schwere, KohaerenzSchwere.WARNUNG, StringComparison.Ordinal)
-            ? WarnStufe.Warnung : WarnStufe.Hinweis;
+    /// <summary>Die Schwere einer Kohaerenzzeile als Farbklang. ETAPPE B6: Die
+    /// positive Nennung (Fall 1) ist gruen mit Haken - dieselbe Stufe, mit der die
+    /// Anwendung sonst einen gelungenen Vorgang meldet.</summary>
+    private static WarnStufe Stufe(string schwere)
+    {
+        if (string.Equals(schwere, KohaerenzSchwere.WARNUNG, StringComparison.Ordinal))
+            return WarnStufe.Warnung;
+        if (string.Equals(schwere, KohaerenzSchwere.BESTAETIGUNG, StringComparison.Ordinal))
+            return WarnStufe.Erfolg;
+        return WarnStufe.Hinweis;
+    }
 
     /// <summary>Die im Lauf ausgewiesene Herkunft der Steuersaetze (Fundstelle, Wert,
     /// Einheit, Jahr, Status) - die Herleitungszeile der Gruppe 3.</summary>
@@ -1011,31 +1101,46 @@
     }
 
     /// <summary>
-    /// Vorschau (Gruppe 6) - die gebuchten Jahr-1-Werte des EINEN Rechenwegs. Der
-    /// Dialog rechnet nichts nach: Ohne Lauf steht hier ein Hinweis statt einer Zahl.
+    /// Vorschau (Gruppe 6) — die Erloesrubrik des gebuchten Laufs, Zeile fuer Zeile
+    /// aus DERSELBEN Quelle wie Ergebnisreiter, Word und Excel
+    /// (<see cref="WirtschaftlichkeitZeilen.Kennzahlen"/>, gefiltert mit
+    /// <see cref="WirtschaftlichkeitZeilen.Sichtbare"/>).
+    ///
+    /// <para><b>ETAPPE B7.</b> Hier stand bis dahin eine EIGENE Liste aus fuenf von
+    /// Hand zusammengestellten Zahlen — unter anderem „Stromsteuer p. a." als Summe
+    /// aus Befreiung und Entlastung, also aus einer Position, die im Kapitalwert steht,
+    /// und einer, die nur ausgewiesen wird. Genau diese Vermischung trennt die Rubrik:
+    /// Block A ist Zahlung, Block B ist Ausweis. Eine zweite Liste an dieser Stelle
+    /// hiesse, die Trennung ein zweites Mal zu treffen — und beim naechsten Zusatz
+    /// eine der beiden zu vergessen.</para>
+    ///
+    /// <para>Der Dialog rechnet weiterhin nichts nach: Ohne gebuchten Lauf steht hier
+    /// ein Hinweis statt einer Zahl.</para>
     /// </summary>
     private IReadOnlyList<(string Titel, string Wert)> Vorschau()
     {
+        List<WirtschaftlichkeitErgebnis> alle = Ergebnisse();
         WirtschaftlichkeitErgebnis? e = null;
-        foreach (WirtschaftlichkeitErgebnis x in Ergebnisse())
+        foreach (WirtschaftlichkeitErgebnis x in alle)
             if (x.IdProjekt == IdStamm) { e = x; break; }
 
         if (e is null) return new[] { (_t.VOhneLauf, "") };
 
         var k = BhwTexte.Kultur;
-        return new[]
+        var zeilen = new List<(string, string)>();
+        foreach (WirtZeile z in WirtschaftlichkeitZeilen.Sichtbare(
+                     WirtschaftlichkeitZeilen.Kennzahlen(alle, null), alle))
         {
-            (_t.VZuschlag, Euro(e.KwkgErloesJahr1, k)),
-            (_t.VEnergiesteuer, Euro(e.EnergiesteuerJahr1, k)),
-            (_t.VStromsteuer, Euro(e.StromsteuerBefreiungJahr1 + e.StromsteuerEntlastungJahr1, k)),
-            (_t.VEinspeisung, Euro(e.EinspeiseerloesKwkJahr, k)),
-            (_t.VVermieden, Euro(e.VermiedenGesamtJahr, k)),
-            (string.Format(_t.VStand, e.Zeitstempel.ToString("g", k)), "")
-        };
+            // Nur die Rubrik — die uebrigen Kennzahlen stehen im Ergebnisreiter, und
+            // eine vollstaendige Tabelle waere in einem Anlagendialog kein Ueberblick.
+            if (z.Block != WirtZeile.BLOCK_A && z.Block != WirtZeile.BLOCK_B) continue;
+            zeilen.Add(((z.Einzug > 0 ? "    " : "") + z.Titel,
+                        z.IstUeberschrift ? "" : z.Anzeige(e, k)));
+        }
+        if (zeilen.Count == 0) zeilen.Add((_t.VOhneRubrik, ""));
+        zeilen.Add((string.Format(_t.VStand, e.Zeitstempel.ToString("g", k)), ""));
+        return zeilen;
     }
-
-    private static string Euro(double wert, System.Globalization.CultureInfo k) =>
-        wert.ToString("N0", k) + " €";
 
     // =====================================================================
     // Speichern und Schliessen

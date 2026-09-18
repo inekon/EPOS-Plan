@@ -327,6 +327,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string AufteilungMethode = DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF;
 
+        /// <summary>
+        /// Modus, in dem § 9 Abs. 1 Nr. 3 StromStG in die Wirtschaftlichkeit eingeht,
+        /// Steuerwert aus <c>DbWerte.STROMST_BEFREIUNG_MODUS_*</c> (Schemaschritt 88).
+        /// Vorgabe <c>AUSWEIS</c>: Die Befreiung wird gerechnet und gezeigt, geht aber
+        /// nicht in die Erlöse und damit nicht in den Kapitalwert.
+        ///
+        /// <para><b>Warum das die Vorgabe ist.</b> Auf selbst erzeugten und selbst
+        /// verbrauchten Strom entsteht gar keine Stromsteuer; der Vorteil steckt bereits
+        /// in der kleineren Bezugsrechnung. Als Erlös gebucht stünde er ein zweites Mal
+        /// in der Rechnung. <c>ERLOES</c> ist deshalb nur richtig, wenn der angesetzte
+        /// Bezugspreis die Stromsteuer auf den Eigenverbrauch enthält — die
+        /// Kohärenzprüfung sagt das mit einer eigenen Zeile.</para>
+        /// </summary>
+        public string StromsteuerBefreiungModus = DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS;
+
+        /// <summary>true, wenn <see cref="StromsteuerBefreiungModus"/> ausdrücklich
+        /// <c>ERLOES</c> führt. Leer, NULL und jeder unbekannte Wert bedeuten
+        /// AUSWEIS — dieselbe tolerante Leseregel wie beim
+        /// Nachhaltigkeitsnachweis der Biomasse.</summary>
+        public bool StromsteuerBefreiungAlsErloes
+        {
+            get
+            {
+                return string.Equals(StromsteuerBefreiungModus,
+                                     DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES,
+                                     StringComparison.Ordinal);
+            }
+        }
+
         // ---- ETAPPE E5 — eine Projektangabe (Migrationsschritt 21) ----
         //
         // Der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen" stand hier
@@ -531,21 +560,22 @@ namespace WindowsFormsApplication1
                    ") · Einspeisevergütung " + Einspeiseverguetung.ToString("N3", kultur) + " €/kWh";
             if (CO2Preis > 0)
                 t += " · CO₂ (BEHG) " + CO2Preis.ToString("N0", kultur) + " €/t";
-            if (KwkgBonus > 0 || KwkgBonusEinspeisung > 0)
+            // ETAPPE BK1 — die Zeile nennt nur noch die PROJEKTWEITEN KWK-Angaben, und
+            // ob sie überhaupt erscheint, entscheidet KwkgAktivierung (die EINE Regel,
+            // die auch der Rechenkern zieht). Satz, Deckel und Kontingent stehen seit
+            // Schemaschritt 89 je Anlage; sie hier als EINE Projektzahl zu nennen wäre
+            // die doppelte Wahrheit, die BK1 auflöst — die Sätze je Modul führt die
+            // Nachweistafel (KwkgModulNachweis).
+            if (KwkgAktivierung.IstAktiv(IdStamm))
             {
-                t += " · KWKG " + KwkgBonus.ToString("N2", kultur) + "/" +
-                     KwkgBonusEinspeisung.ToString("N2", kultur) + " ct/kWh (";
-                t += KwkgVbhJahresdeckel > 0
-                    ? "Deckel fest " + KwkgVbhJahresdeckel.ToString("N0", kultur) + " Vbh/a"
-                    : "Vbh-Staffel KWKG 2025";
-                t += ", Kontingent " + KwkgVbhKontingent.ToString("N0", kultur) + " Vbh";
+                t += " · KWKG (Sätze je Anlage";
                 if (KwkgAbschlagNegativ > 0)
                     t += ", Negativpreis-Abschlag " + KwkgAbschlagNegativ.ToString("N1", kultur) + " %";
                 t += KwkgStichtag.HasValue
                     ? ", Stichtag " + KwkgStichtag.Value.ToString("dd.MM.yyyy", kultur)
                     : ", Stichtag ungeprüft";
                 if (KwkgInbetriebnahme.HasValue)
-                    t += ", IBN " + KwkgInbetriebnahme.Value.ToString("dd.MM.yyyy", kultur);
+                    t += ", Förderbeginn " + KwkgInbetriebnahme.Value.ToString("dd.MM.yyyy", kultur);
                 t += ")";
             }
             // ETAPPE E4: die Steuerangaben gehören in die Nachweiszeile, sobald sie
@@ -903,6 +933,18 @@ namespace WindowsFormsApplication1
         /// [€/a] — Regelsatz auf den KWK-Eigenverbrauch.</summary>
         public double StromsteuerBefreiungJahr1;
 
+        /// <summary>
+        /// ETAPPE B6: true = die Befreiung ist in diesem Lauf als Erlösreihe gebucht und
+        /// steckt im Kapitalwert (Modus <c>ERLOES</c>); false = sie ist nur AUSGEWIESEN
+        /// (Vorgabe <c>AUSWEIS</c>) — dann steht der Betrag in
+        /// <see cref="StromsteuerBefreiungJahr1"/>, aber in keiner Zahlungsreihe.
+        ///
+        /// <para>Der Merker wandert mit ins Ergebnis, damit die Vergleichstabelle ihre
+        /// Zeile beschriften kann, ohne den Parametersatz zu kennen — auch nach dem
+        /// Laden eines gespeicherten Laufs.</para>
+        /// </summary>
+        public bool StromsteuerBefreiungAlsErloes;
+
         /// <summary>Stromsteuer-Entlastung nach § 9b StromStG im Jahr 1 [€/a] —
         /// Entlastungssatz auf den Netzbezug abzüglich Sockelbetrag.</summary>
         public double StromsteuerEntlastungJahr1;
@@ -934,6 +976,47 @@ namespace WindowsFormsApplication1
 
         /// <summary>Vermiedene Kosten gesamt [€/a] (Arbeit + Leistung + Grundpreis).</summary>
         public double VermiedenGesamtJahr;
+
+        /// <summary>
+        /// ETAPPE B7 (Konzept § 2.6, Klarstellung 1) — die vermiedene Strommenge
+        /// [MWh/a]; 0 = nicht bestimmbar (keine Stundenreihen, kein Rollenmodell).
+        ///
+        /// <para><b>Nur im frischen Lauf belegt</b> — wie <see cref="KwkgModule"/> und
+        /// <see cref="Betriebskosten"/>. Sie steht in keiner Ergebnisspalte, weil sie
+        /// ausschliesslich den AUSWEIS traegt: Der Kapitalwert rechnet unveraendert mit
+        /// den tatsaechlichen Reststromkosten, in denen die Einsparung bereits steckt.
+        /// Ohne sie entfaellt die Korrekturzeile der Rubrik, wie jede andere Zeile ohne
+        /// Wert.</para>
+        /// </summary>
+        public double VermiedenMengeMWh;
+
+        /// <summary>
+        /// ETAPPE B7 — die ENTGANGENE Entlastung nach § 9b StromStG [€/a]:
+        /// Entlastungssatz × <see cref="VermiedenMengeMWh"/>, und nur bei einem
+        /// Unternehmen des produzierenden Gewerbes (bzw. der Land- und Forstwirtschaft).
+        ///
+        /// <para><b>Warum es sie gibt.</b> Die Differenzmethode rechnet beide Seiten mit
+        /// demselben Arbeitspreis, und der traegt die Stromsteuer mit dem vollen Satz.
+        /// Wer nach § 9b entlastet wird, vermeidet mit dem Bezug auch die Entlastung —
+        /// der ausgewiesene Vorteil ist um genau diesen Betrag zu hoch. Im KAPITALWERT
+        /// ist das seit jeher richtig erfasst (die § 9b-Reihe rechnet auf den kleineren
+        /// Netzbezug); allein der Ausweis wies brutto aus.</para>
+        /// </summary>
+        public double VermiedenEntlastung9bJahr;
+
+        /// <summary>
+        /// ETAPPE B7 — true, wenn der Lauf ein Unternehmen des produzierenden Gewerbes
+        /// (oder der Land- und Forstwirtschaft) gerechnet hat. Die Rubrik kennzeichnet
+        /// damit A5, A6 und B1; nur im frischen Lauf belegt.
+        /// </summary>
+        public bool ProduzierendesGewerbe;
+
+        /// <summary>Vermiedene Kosten EFFEKTIV [€/a] — brutto abzueglich der entgangenen
+        /// § 9b-Entlastung (B7). Ohne Korrektur ist sie gleich dem Bruttobetrag.</summary>
+        public double VermiedenEffektivJahr
+        {
+            get { return VermiedenGesamtJahr - VermiedenEntlastung9bJahr; }
+        }
 
         /// <summary>
         /// Betrag, um den die Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession,
@@ -1016,6 +1099,14 @@ namespace WindowsFormsApplication1
         public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
 
         /// <summary>
+        /// ETAPPE B7 — die Energiekosten je Anlage (Konzept § 3.5). Nur im frischen
+        /// Lauf belegt, wie <see cref="KwkgModule"/>: Die Zeilen entstehen im
+        /// Rechenlauf aus den Modulmengen, und persistiert ist allein die Summe.
+        /// </summary>
+        public List<EnergieAnlageNachweis> EnergiekostenJeAnlage =
+            new List<EnergieAnlageNachweis>();
+
+        /// <summary>
         /// ETAPPE B2 (Konzept BHKW-Wirtschaftlichkeit § 4.1, BW2/BF2) — die Zeilen der
         /// Kohärenzprüfung: Widersprüche zwischen einer gebuchten Steuergutschrift und
         /// dem Steueranteil, den der erfasste Energiepreis ausweist. Leere Liste =
@@ -1079,6 +1170,47 @@ namespace WindowsFormsApplication1
     /// § 7 KWKG zu diesem Modul — erst damit ist der angesetzte Satz nachvollziehbar
     /// und eine Abweichung vom Katalog sichtbar.</para>
     /// </summary>
+    /// <summary>
+    /// ETAPPE B7 (Konzept § 3.5) — die ENERGIEKOSTEN EINER ANLAGE: Menge × Preis, so
+    /// wie sie in die Jahressumme eingegangen sind.
+    ///
+    /// <para><b>Warum die Aufschlüsselung.</b> Die Zeile „Energiekosten [€/a]" ist in
+    /// jedem Projekt die größte laufende Position und zugleich die einzige, die bis B7
+    /// gar nichts über sich sagte. Ob sie hoch ist, weil ein Kessel viel verbraucht oder
+    /// weil ein Preis falsch gepflegt ist, war an ihr nicht abzulesen — und wer sie
+    /// nachrechnen wollte, musste den Rechenweg lesen.</para>
+    ///
+    /// <para><b>Nur Ausweis.</b> Die Summe der Zeilen ist die vorhandene Zahl; hier wird
+    /// nichts gerechnet, was dort nicht schon gerechnet wurde. Der GRUNDPREIS je Träger
+    /// steckt bewusst nicht in den Anlagenzeilen — er fällt einmal je Träger an, nicht
+    /// je Anlage, und stünde an jeder Anlage anteilig als erfundene Zahl.</para>
+    /// </summary>
+    public class EnergieAnlageNachweis
+    {
+        /// <summary>Bezeichner der Anlage — ein Datenwert des Anwenders, kein
+        /// Anzeigetext; leer = unbenannte Modulzeile.</summary>
+        public string Anlage = "";
+
+        /// <summary>Name des Energieträgers, mit dem gerechnet wurde.</summary>
+        public string Traeger = "";
+
+        /// <summary>Einsatz der Anlage [MWh/a], heizwertbezogen (Strom: Netzbezug).</summary>
+        public double MengeMWh;
+
+        /// <summary>Menge in der ABRECHNUNGSEINHEIT des Trägers (Liter, kg, m³, kWh) —
+        /// die Größe, mit der der Arbeitspreis multipliziert wurde.</summary>
+        public double MengeAbrechnung;
+
+        /// <summary>Abrechnungseinheit des Trägers; leer = je kWh abgerechnet.</summary>
+        public string Einheit = "";
+
+        /// <summary>Arbeitspreis je Abrechnungseinheit [€].</summary>
+        public double PreisJeEinheit;
+
+        /// <summary>Kosten dieser Anlage [€/a] — ohne Grund- und Leistungspreis.</summary>
+        public double KostenEur;
+    }
+
     public class KwkgModulNachweis
     {
         /// <summary>Bezeichner der Anlage (Datenwert aus <c>Tab_Energieanlagen</c>).</summary>

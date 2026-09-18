@@ -34,7 +34,7 @@ public sealed class BhkwWirtschaftlichkeitTexte
     // ------------------------------------------------------- Gruppentitel
     public string G1 { get; } = T("BHW_G1", "Anlagen");
     public string G1b { get; } = T("BHW_G1B", "Angaben der gewählten Anlage — leer bzw. 0 = Projektvorgabe");
-    public string G2 { get; } = T("BHW_G2", "KWK-Zuschlag (Projektvorgabe)");
+    public string G2 { get; } = T("BHW_G2", "Projektweite KWK-Angaben");
     public string G3 { get; } = T("BHW_G3", "Energiesteuer (Projektvorgabe)");
     public string G4 { get; } = T("BHW_G4", "Stromsteuer (Projektvorgabe)");
     public string G5 { get; } = T("BHW_G5", "Hilfsstrom");
@@ -59,10 +59,12 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string AIbn { get; } = T("BHW_A_IBN", "Inbetriebnahme:");
     public string AAnlagenart { get; } = T("BHW_A_ANLAGENART", "Anlagenart:");
     public string AEigenfall { get; } = T("BHW_A_EIGENFALL", "Eigenstrom nach § 6 Abs. 3:");
-    public string ASatzEinsp { get; } = T("BHW_A_SATZ_EINSP", "Satz Einspeisung [ct/kWh] (0 = Projektsatz):");
-    public string ASatzEigen { get; } = T("BHW_A_SATZ_EIGEN", "Satz Eigenstrom [ct/kWh] (0 = Projektsatz):");
-    public string AKontingent { get; } = T("BHW_A_KONTINGENT", "Vbh-Kontingent [h] (0 = Projektwert):");
+    public string ASatzEinsp { get; } = T("BHW_A_SATZ_EINSP", "Satz Einspeisung [ct/kWh] (0 = kein Zuschlag):");
+    public string ASatzEigen { get; } = T("BHW_A_SATZ_EIGEN", "Satz Eigenstrom [ct/kWh] (0 = kein Zuschlag):");
+    public string AKontingent { get; } = T("BHW_A_KONTINGENT", "Vbh-Kontingent [h] (0 = nach § 8 abgeleitet):");
     public string ADeckel { get; } = T("BHW_A_DECKEL", "Vbh-Jahresdeckel [h/a] (0 = Staffel):");
+    public string AKostenanteil { get; } = T("BHW_A_KOSTENANTEIL",
+        "Anteil Neuherstellungskosten [%] (§ 8 Abs. 2/3):");
     public string AEnergiesteuer { get; } = T("BHW_A_ENERGIESTEUER", "Energiesteuerentlastung (Anlage):");
     public string AAufteilung { get; } = T("BHW_A_AUFTEILUNG", "Brennstoff auf Strom/Wärme (Anlage):");
     public string AHilfsanteil { get; } = T("BHW_A_HILFSANTEIL", "Hilfsenergieanteil [% des Endenergiebedarfs] (0 = keine):");
@@ -101,18 +103,19 @@ public sealed class BhkwWirtschaftlichkeitTexte
         "und weist das im Protokoll aus. Der KWK-Zuschlag kommt obendrauf — er " +
         "ersetzt die Vergütung nicht.");
 
-    public string PBonusEigen { get; } = T("BHW_P_BONUS_EIGEN", "Bonus Eigenstrom [ct/kWh] (0 = aus):");
-    public string PBonusEinsp { get; } = T("BHW_P_BONUS_EINSP", "Bonus Einspeisung [ct/kWh]:");
-    public string PDeckel { get; } = T("BHW_P_DECKEL", "Vbh-Deckel-Override [h/a]:");
-    public string PKontingent { get; } = T("BHW_P_KONTINGENT", "Vbh-Kontingent gesamt [h] (0 = automatisch):");
     public string PAbschlag { get; } = T("BHW_P_ABSCHLAG", "Abschlag Negativstunden [%]:");
-    public string PTatbestand { get; } = T("BHW_P_TATBESTAND", "Eigenstrom-Tatbestand (§ 6 Abs. 3):");
-    public string PAnlagenart { get; } = T("BHW_P_ANLAGENART", "Anlagenart (§ 8):");
-    public string PKostenanteil { get; } = T("BHW_P_KOSTENANTEIL", "Anteil Neuherstellungskosten [%]:");
+    public string PKostenanteil { get; } = T("BHW_P_KOSTENANTEIL",
+        "Anteil Neuherstellungskosten [%] (Vorgabe für Anlagen ohne eigenen Wert):");
     public string PPauschal { get; } = T("BHW_P_PAUSCHAL", "Pauschale § 9 KWKG (nur bis 2 kWel, einmalig)");
-    public string PStichtag { get; } = T("BHW_P_STICHTAG", "Stichtag, Vorgabe je Anlage:");
-    public string PIbn { get; } = T("BHW_P_IBN", "Inbetriebnahme, Vorgabe je Anlage:");
-    public string BtnVorschlag { get; } = T("BHW_BTN_VORSCHLAG", "Vorschlag in die Satzfelder übernehmen");
+    public string PStichtag { get; } = T("BHW_P_STICHTAG", "Stichtag (Bestellung/Genehmigung, § 6):");
+    public string PIbn { get; } = T("BHW_P_IBN", "Förderbeginn (Startjahr der Reihen):");
+
+    /// <summary>Die leise Zeile unter der Gruppe: WARUM hier nur noch vier Angaben
+    /// stehen. Ohne sie sucht ein Anwender, der den Dialog kennt, die Sätze.</summary>
+    public string PNurProjektweit { get; } = T("BHW_P_NUR_PROJEKTWEIT",
+        "Satz, Kontingent, Jahresdeckel, Anlagenart und Eigenstrom-Tatbestand stehen " +
+        "an der Anlage (§ 7 und § 8 KWKG bemessen sie je Anlage) — oben unter " +
+        "„Angaben der gewählten Anlage“, mit einem Knopf für den Katalogvorschlag am Feld.");
 
     // --------------------------------------------- Gruppe 3: Energiesteuer
     public string EWahl { get; } = T("BHW_E_WAHL", "Energiesteuerentlastung:");
@@ -126,8 +129,10 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string SRaeumlich { get; } = T("BHW_S_RAEUMLICH", "Räumlicher Zusammenhang (4,5 km) gegeben");
     public string SHocheffizienz { get; } = T("BHW_S_HOCHEFFIZIENZ", "Hocheffizienz nachgewiesen");
     public string SModus { get; } = T("BHW_S_MODUS", "Modus § 9 Abs. 1 Nr. 3:");
-    public string SModusB6 { get; } = T("BHW_S_MODUS_B6",
-        "ab B6 — bis dahin gilt fest „Ausweis“ (nicht im Kapitalwert).");
+    public string SModusHerleitung { get; } = T("BHW_S_MODUS_HERLEITUNG",
+        "Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet. " +
+        "Erlös: Sie wird als Erlös gebucht — nur, wenn der Bezugspreis die " +
+        "Stromsteuer enthält.");
     public string BtnStrombezug { get; } = T("BHW_BTN_STROMBEZUG", "Strombezug…");
     public string BtnBhkwTarif { get; } = T("BHW_BTN_BHKW_TARIF", "BHKW-Tarif…");
 
@@ -152,9 +157,35 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string HKette2 { get; } = T("BHW_H_KETTE2",
         "davon Eigenverbrauch {0} MWh/a, Einspeisung {1} MWh/a");
 
-    // ------------------------------------------------------ Herleitung Gruppe 2
+    // -------------------------------- Vorschlagsknöpfe am Feld (Gruppe 1b)
+    /// <summary>Beschriftung der drei Knöpfe — dieselbe an jedem, weil die Zeile
+    /// darüber sagt, welches Feld gemeint ist.</summary>
+    public string BtnVorschlagFeld { get; } = T("BHW_BTN_VORSCHLAG_FELD", "Vorschlag übernehmen");
+
     public string HerleitungEinsp { get; } = T("BHW_HERLEITUNG_EINSP", "Einspeisung {0} ct/kWh — {1}");
     public string HerleitungEigen { get; } = T("BHW_HERLEITUNG_EIGEN", "Eigenstrom {0} ct/kWh — {1}");
+
+    /// <summary>Grundlage des Kontingentvorschlags: abgeleiteter Wert und Herleitung
+    /// aus <c>KwkgKontingentRechner</c>.</summary>
+    public string HerleitungKontingent { get; } = T("BHW_HERLEITUNG_KONTINGENT",
+        "Kontingent {0} Vbh — {1}");
+
+    /// <summary>Sperrgrund: ohne elektrische Nennleistung gibt es keine
+    /// Leistungsstaffel und damit keinen Satz.</summary>
+    public string SperrOhnePel { get; } = T("BHW_SPERR_OHNE_PEL",
+        "Kein Vorschlag: Für diese Anlage ist keine elektrische Nennleistung erfasst.");
+
+    /// <summary>Sperrgrund: ohne Tatbestand des § 6 Abs. 3 gibt es keinen Zuschlag
+    /// auf selbst genutzten Strom.</summary>
+    public string SperrOhneEigenfall { get; } = T("BHW_SPERR_OHNE_EIGENFALL",
+        "Kein Vorschlag: Ohne Tatbestand nach § 6 Abs. 3 gibt es keinen Zuschlag auf " +
+        "selbst genutzten Strom (§ 7 Abs. 2) — Feld „Eigenstrom nach § 6 Abs. 3“ füllen.");
+
+    /// <summary>Sperrgrund: ohne Anlagenart wählt § 8 keine Kontingentstufe.</summary>
+    public string SperrOhneAnlagenart { get; } = T("BHW_SPERR_OHNE_ANLAGENART",
+        "Kein Vorschlag: Ohne Anlagenart wählt § 8 KWKG keine Kontingentstufe — " +
+        "Feld „Anlagenart“ füllen; modernisiert und nachgerüstet brauchen zusätzlich " +
+        "den Anteil an den Neuherstellungskosten.");
 
     // -------------------------------------------------------- Warnzeilen Gruppe 1
     public string WAusschreibung { get; } = T("BHW_W_AUSSCHREIBUNG",
@@ -173,6 +204,11 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string VEinspeisung { get; } = T("BHW_V_EINSPEISUNG", "Einspeiseerlös KWK p. a.");
     public string VVermieden { get; } = T("BHW_V_VERMIEDEN", "Vermiedene Stromkosten p. a. (Ausweis)");
     public string VStand { get; } = T("BHW_V_STAND", "Stand: {0} — nach dem Speichern neu berechnen.");
+
+    /// <summary>ETAPPE B7: Der Lauf liegt, trägt aber keine Erlösposition — dann
+    /// steht das da, statt einer leeren Gruppe.</summary>
+    public string VOhneRubrik { get; } = T("BHW_G6_OHNE_RUBRIK",
+        "Noch kein Lauf — die Rubrik füllt sich mit „Berechnen“ im Reiter Wirtschaftlichkeit.");
 
     // ----------------------------------------------------------- Speichern
     public string MsgFehler { get; } = T("BHW_MSG_FEHLER", "{0} Angabe(n) konnten nicht gespeichert werden.");

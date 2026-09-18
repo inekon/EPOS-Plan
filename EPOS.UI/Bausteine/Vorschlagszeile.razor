@@ -1,0 +1,55 @@
+﻿@* Die VORSCHLAGSZEILE - ein Knopf AM FELD und die Grundlage daneben
+   (Anwenderwunsch 17.09.2026, Entscheid BK-E-1 (a) vom 18.09.2026).
+
+   DER BEFUND. Ein Sammelknopf am Ende einer Gruppe schreibt mehrere Felder
+   auf einmal, und wer ihn drueckt, sieht erst danach, was er getroffen hat.
+   Der Anwender wollte es umgekehrt: "Werte ... sollen direkt mittels Button
+   an der Stelle des Wertes uebernommen werden koennen (mit Hinweis auf die
+   Grundlage)". Ein Knopf gehoert deshalb ZU SEINEM FELD, und die Grundlage
+   steht daneben - nicht in einem Absatz weiter unten, der zu einem von
+   mehreren Feldern gehoeren koennte.
+
+   WAS SIE IST. Eine Herleitungszeile mit einem Knopf am Ende: derselbe
+   .epos-herleitung-Rahmen, der im Formularraster ueber die volle Breite unter
+   seinem Feld steht (Paket P3), plus ein kleiner Knopf. Sie rechnet nichts -
+   Text und Sperrgrund kommen fertig herein; sie entscheidet auch nicht, ob
+   der Knopf erlaubt ist, sondern zeigt nur, was ihr gesagt wird.
+
+   GESPERRT HEISST BEGRUENDET, UND ZWAR WEICH. Ein Knopf, der nichts tut und
+   nicht sagt warum, ist eine Sackgasse. Fehlt eine Grundlage (kein
+   Eigenstromfall gewaehlt, keine Anlagenart, keine elektrische Leistung),
+   traegt die Zeile den Grund im Klartext - und der Knopf bekommt
+   aria-disabled statt disabled (Hausregel EPOS.UI): Ein disabled-Knopf zeigt
+   seinen title NIE, der Grund am Zeiger waere verloren. Er bleibt anklickbar
+   und tut nichts; die Stilregel .epos-knopf[aria-disabled="true"] macht den
+   Unterschied sichtbar. *@
+
+@namespace EPOS.UI.Bausteine
+
+<p class="epos-herleitung epos-vorschlagszeile">
+    <span class="epos-herleitung-text">@Text</span>
+    <button type="button" class="epos-knopf epos-vorschlag"
+            title="@(Erlaubt ? null : Sperrgrund)"
+            aria-disabled="@(Erlaubt ? "false" : "true")"
+            @onclick="Uebernehmen">@Knopftext</button>
+</p>
+
+@code {
+    /// <summary>Die Grundlage des Vorschlags im Klartext - Norm, Leistungsklasse,
+    /// Jahr, Anlagenart. Bei gesperrtem Knopf steht hier der Sperrgrund.</summary>
+    [Parameter] public string Text { get; set; } = "";
+
+    /// <summary>Beschriftung des Knopfes.</summary>
+    [Parameter] public string Knopftext { get; set; } = "";
+
+    /// <summary>false = gesperrt; dann steht <see cref="Sperrgrund"/> am Knopf.</summary>
+    [Parameter] public bool Erlaubt { get; set; } = true;
+
+    /// <summary>Warum der Knopf gesperrt ist - er steht als title am Knopf selbst.</summary>
+    [Parameter] public string Sperrgrund { get; set; } = "";
+
+    /// <summary>Der Anwender hat den Vorschlag angenommen.</summary>
+    [Parameter] public EventCallback Uebernommen { get; set; }
+
+    private Task Uebernehmen() => Erlaubt ? Uebernommen.InvokeAsync() : Task.CompletedTask;
+}

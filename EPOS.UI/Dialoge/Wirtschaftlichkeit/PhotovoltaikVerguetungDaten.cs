@@ -49,6 +49,12 @@ public sealed class PhotovoltaikVerguetungTexte
     public string GAw { get; } = T("PVW_G_AW", "Anzulegender Wert");
     public string AwOverride { get; } = T("PVW_AW_OVR", "AW-Override [ct/kWh] (0 = Katalog):");
     public string AwOverrideZusatz { get; } = T("PVW_AW_OVERRIDE", "(Override)");
+
+    /// <summary>ETAPPE B6 (K11): Die Zeile des anzulegenden Wertes — bis hierher der
+    /// einzige nackte Anzeigetext des Dialogs. Der Platzhalter trägt die Zahl, das
+    /// Kürzel „AW_mix" bleibt in beiden Sprachen stehen (es ist die Bezeichnung der
+    /// Größe, keine Prosa).</summary>
+    public string AwZeile { get; } = T("PVW_AW_ZEILE", "AW_mix: {0:0.00} ct/kWh");
     public string EvSatz { get; } = T("PVW_EV_SATZ", "Feste EV (AW − {0:0.00}): {1:0.00} ct/kWh");
 
     // ------------------------------------------------------- Vermarktung

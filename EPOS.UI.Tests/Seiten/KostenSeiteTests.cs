@@ -28,11 +28,24 @@ public class KostenSeiteTests : EposBunitContext
 
     // ---- Probendaten -----------------------------------------------------
 
+    /// <summary>
+    /// ETAPPE B7 (Konzept § 2.5): EINE Emissionsspalte statt dreier. SO₂ und NOx sind
+    /// aus dieser Tabelle verschwunden — sie bleiben im Katalog, im
+    /// Energieträgerdialog und in der Emissionsbilanz vollständig erhalten.
+    /// </summary>
     private static readonly string[] SPALTEN =
     {
         "Energieträger", "Abrechnungseinheit", "Heizwert", "Arbeitspreis [€/Einheit]",
         "Arbeitspreis [€/kWh]", "Grundpreis", "Leistungspreis [€/(kW·a)]",
-        "CO₂ [g/kWh]", "SO₂ [mg/kWh]", "NOx [mg/kWh]"
+        "CO₂ [g/kWh]"
+    };
+
+    /// <summary>Dieselbe Tabelle, wie sie ein Projekt im Modus CO2E sieht.</summary>
+    private static readonly string[] SPALTEN_CO2E =
+    {
+        "Energieträger", "Abrechnungseinheit", "Heizwert", "Arbeitspreis [€/Einheit]",
+        "Arbeitspreis [€/kWh]", "Grundpreis", "Leistungspreis [€/(kW·a)]",
+        "CO₂-Äquivalent [g/kWh]"
     };
 
     private static TraegerZeile Traeger(int id, string name, ZeilenArt art = ZeilenArt.Normal)
@@ -41,9 +54,10 @@ public class KostenSeiteTests : EposBunitContext
             TraegerId = id,
             Art = art,
             Kurztext = "verwendet von: BHKW 1",
-            EmissionKurztext = "CO₂ aus Ebene „Projekt“, Modus CO2",
+            EmissionKurztext = "CO₂-Faktor der Ebene „PROJEKT“. Lesekette: Projektwert → " +
+                               "aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog.",
             Zellen = new[] { name, "kWh", "1,00", "0,3500", "0,3500", "120,00",
-                             "—", "240,00", "—", "—" }
+                             "—", "240,00" }
         };
 
     private static KostenStand Standard(bool bedienbar = true) => new KostenStand
@@ -136,19 +150,20 @@ public class KostenSeiteTests : EposBunitContext
         Assert.Equal("Projekt: Musterhaus", cut.Find(".epos-seite-titel").TextContent);
         Assert.Equal(3, cut.FindAll(".epos-kennzahlkachel").Count);
         Assert.Equal(4, cut.FindAll(".epos-kostentabelle thead th").Count);   // Aktionen + 3
-        Assert.Equal(10, cut.FindAll(".epos-traegertabelle thead th").Count);
+        Assert.Equal(8, cut.FindAll(".epos-traegertabelle thead th").Count);   // B7: eine Emissionsspalte
         Assert.Contains("Gewerke ohne Kostenposition", cut.Find(".epos-status").TextContent);
     }
 
     [Fact]
-    public void Die_zehn_Spaltenkoepfe_der_Traegertabelle_stehen_wie_in_der_Karte()
+    public void Die_acht_Spaltenkoepfe_der_Traegertabelle_stehen_wie_in_der_Karte()
     {
         var cut = Zeige();
 
         var koepfe = cut.FindAll(".epos-traegertabelle thead th");
         Assert.Equal("Energieträger", koepfe[0].TextContent);
         Assert.Equal("Arbeitspreis [€/kWh]", koepfe[4].TextContent);
-        Assert.Equal("NOx [mg/kWh]", koepfe[9].TextContent);
+        // Die letzte Spalte ist seit B7 die EINE Emissionsspalte (Konzept § 2.5).
+        Assert.Equal("CO₂ [g/kWh]", koepfe[7].TextContent);
     }
 
     [Fact]
@@ -175,15 +190,54 @@ public class KostenSeiteTests : EposBunitContext
         Assert.Contains("verwendet von: BHKW 1", Traegerzeilen(cut)[0].GetAttribute("title"));
     }
 
+    /// <summary>
+    /// ETAPPE B7 (Konzept § 2.5): Die Tabelle trägt GENAU EINE Emissionsspalte, und sie
+    /// ist die letzte. Der Kurztext gehört zu ihr, der Verwendungstext zur Trägerzelle —
+    /// zwei verschiedene Auskünfte an zwei verschiedenen Stellen.
+    /// </summary>
     [Fact]
-    public void Die_drei_Emissionsspalten_tragen_ihre_Herkunft_als_Kurztext()
+    public void Die_eine_Emissionsspalte_traegt_ihre_Herleitung_als_Kurztext()
     {
         var cut = Zeige();
 
         var zellen = Traegerzeilen(cut)[0].QuerySelectorAll("td");
+        Assert.Equal(8, zellen.Length);
         Assert.Contains("Ebene", zellen[7].GetAttribute("title"));
-        Assert.Contains("Ebene", zellen[9].GetAttribute("title"));
         Assert.Contains("verwendet von", zellen[0].GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// Der Spaltenkopf folgt dem Berechnungsmodus DIESES Projekts: „CO₂" im Modus CO2,
+    /// „CO₂-Äquivalent" im Modus CO2E. Stünde dort immer „CO₂", wären zwei Berichte
+    /// desselben Projekts stillschweigend nicht vergleichbar.
+    /// </summary>
+    [Fact]
+    public void Der_Kopf_der_Emissionsspalte_folgt_dem_Berechnungsmodus()
+    {
+        var co2 = Zeige();
+        Assert.Contains("CO₂ [g/kWh]",
+            co2.Find(".epos-traegertabelle thead").TextContent);
+        Assert.DoesNotContain("CO₂-Äquivalent",
+            co2.Find(".epos-traegertabelle thead").TextContent);
+
+        KostenStand stand = Standard();
+        stand.TraegerSpalten = SPALTEN_CO2E;
+        var co2e = Zeige(stand: stand);
+        Assert.Contains("CO₂-Äquivalent [g/kWh]",
+            co2e.Find(".epos-traegertabelle thead").TextContent);
+    }
+
+    /// <summary>
+    /// SO₂ und NOx sind aus der KOSTENtabelle verschwunden. Die Gegenprobe zur
+    /// Entscheidung: Wer sie zurückholt, macht diesen Fall rot.
+    /// </summary>
+    [Fact]
+    public void SO2_und_NOx_stehen_nicht_mehr_in_der_Energietraegertabelle()
+    {
+        string kopf = Zeige().Find(".epos-traegertabelle thead").TextContent;
+
+        Assert.DoesNotContain("SO₂", kopf);
+        Assert.DoesNotContain("NOx", kopf);
     }
 
     [Fact]

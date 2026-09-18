@@ -392,7 +392,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         private bool MitZeitreihen(WirtschaftlichkeitParameter p, TarifParameter tarif)
         {
-            return tarif.Aktiv || p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0 ||
+            // BK1: dieselbe EINE Regel wie im Kern und in der Verlaufshülle.
+            return tarif.Aktiv || KwkgAktivierung.IstAktiv(_idStamm, _gruppe) ||
                    KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm, _gruppe);
         }
 
@@ -464,13 +465,18 @@ namespace WindowsFormsApplication1
                 try { _tarifCache = _ctrl.LadeTarif(_idStamm); }
                 catch { _tarifCache = new TarifParameter(); }
             }
-            foreach (WirtZeile z in WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache))
+            // ETAPPE B7: Hier stand eine ZWEITE Sichtbarkeitspruefung ueber die gerade
+            // gewaehlten Spalten - der Reiter konnte damit eine andere Tabelle zeigen
+            // als Word und Excel, entgegen dem Versprechen von E7. Es gibt seither EINE
+            // Regel, und sie steht in WirtschaftlichkeitZeilen.Sichtbare.
+            foreach (WirtZeile z in WirtschaftlichkeitZeilen.Sichtbare(
+                         WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache),
+                         _ergebnisse))
             {
-                bool hatWert = zeilen.Any(x => z.IstText
-                    ? !string.IsNullOrEmpty(z.Text(x))
-                    : (x.IstStamm && z.StammAnzeige != null) || (z.Wert != null && z.Wert(x).HasValue));
-                if (!hatWert) continue;
-                matrixzeilen.Add(Zeile(z.Titel, spaltenErg, x => z.Anzeige(x, kultur)));
+                string titel = (z.Einzug > 0 ? "    " : "") + z.Titel;
+                matrixzeilen.Add(z.IstUeberschrift
+                    ? Zeile(titel, spaltenErg, x => "")
+                    : Zeile(titel, spaltenErg, x => z.Anzeige(x, kultur)));
             }
 
             // W3: CO₂-Vermeidung gegenueber getrennter Erzeugung (aus dem Cache;
@@ -592,8 +598,13 @@ namespace WindowsFormsApplication1
                     List<KohaerenzHinweis> l = x.KohaerenzHinweise;
                     if (l == null || index >= l.Count) return "";
                     KohaerenzHinweis h = l[index];
+                    // ETAPPE B6: drei Schweren, drei Marken - die positive Nennung
+                    // (Fall 1) bekommt den Haken, den die Anwendung sonst fuer
+                    // "hat geklappt" nimmt.
                     string marke = string.Equals(h.Schwere, KohaerenzSchwere.WARNUNG,
-                                                 StringComparison.Ordinal) ? "⚠ " : "· ";
+                                                 StringComparison.Ordinal) ? "⚠ "
+                                 : string.Equals(h.Schwere, KohaerenzSchwere.BESTAETIGUNG,
+                                                 StringComparison.Ordinal) ? "✓ " : "· ";
                     return marke + h.Text;
                 }));
             }

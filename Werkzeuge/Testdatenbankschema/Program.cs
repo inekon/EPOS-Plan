@@ -304,6 +304,53 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 86, trocken);
 
+            // ---- Schritt 88: der Modus der Stromsteuerbefreiung § 9 Abs. 1 Nr. 3
+            //      (Etappe B6, Befund B-1). EINE Spalte an Tab_ProjektWirtschaftlichkeit,
+            //      kein DML. Die Quelle ist dieselbe, aus der sich
+            //      SchemaMigration.Schritt_88_StromsteuerModus bedient. NULL heisst
+            //      AUSWEIS; im Bestand bucht kein gespeicherter Lauf die Erloesreihe -
+            //      die dreizehn Referenzprojekte rechnen unveraendert.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt88_StromsteuerModus)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 88, trocken);
+
+            // ---- Schritt 88, zweiter Teil: die KONSERVENSPALTE des Ergebnisses.
+            //      Tab_ErgebnisWirtschaftlichkeit ist keine Schematabelle - sie entsteht
+            //      und waechst ueber WirtschaftlichkeitCtrl.SpalteSicher, also erst beim
+            //      ersten Lauf der Anwendung. Fuer die REPO-Testdatenbank reicht das
+            //      nicht: Sie ist die Messlatte des SqlDialektpruefers, und der loest
+            //      das INSERT des Ergebnisses gegen genau diese Datei auf. Ohne die
+            //      Spalte meldete er eine Fundstelle, die in der Anwendung keine ist.
+            //      Die Quelle ist dieselbe Konstante, die auch der Ctrl nimmt.
+            angelegt += SpalteSicherstellen(WirtschaftlichkeitCtrl.TAB_ERGEBNIS,
+                                            WirtschaftlichkeitCtrl.SPALTE_STROMST_MODUS,
+                                            "TEXT", 88, trocken);
+
+            // ---- Schritt 89: die Anlagenwahrheit des KWK-Zuschlags (Etappe BK1,
+            //      Entscheid BK-E-1 a). EINE Spalte an Tab_Energieanlagen UND neun
+            //      Datenanweisungen. Beide Quellen sind dieselben, aus denen sich
+            //      SchemaMigration.Schritt_89_KwkAnlagenwahrheit bedient:
+            //      SchemaKatalog.Schritt89_KwkAnlagenwahrheit (DDL) und
+            //      KwkAnlagenwahrheit (DML).
+            //      Ergebnisneutral: Jede BHKW-Anlage bekommt genau den Projektwert
+            //      eingetragen, den der Rueckfall Anlage -> Projekt ihr bisher
+            //      zugewiesen hat; eine gepflegte Anlagenzelle bleibt unangetastet. Die
+            //      Basis fuehrt ohnehin keine Geldgroesse - die dreizehn
+            //      Referenzprojekte bleiben byte-gleich.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt89_KwkAnlagenwahrheit)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 89, trocken);
+
+            foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
+            {
+                object offen = DataRepository.ExecuteScalar(KwkAnlagenwahrheit.Zaehlung(paar));
+                long z = offen == null || offen == DBNull.Value ? 0 : Convert.ToInt64(offen);
+                Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +
+                                  ": " + z + " Anlagenzeile(n) nachzutragen.");
+                if (!trocken && z > 0)
+                    DataRepository.ExecuteNonQuery(KwkAnlagenwahrheit.Uebertragung(paar));
+            }
+
             tabellen += TabelleSicherstellen("Tab_SpeicherAuslegung", SpeicherAuslegungCtrl.SQL_TABELLE, 73, trocken);
             if (!trocken) DataRepository.ExecuteNonQuery(SpeicherAuslegungCtrl.SQL_INDEX);
 

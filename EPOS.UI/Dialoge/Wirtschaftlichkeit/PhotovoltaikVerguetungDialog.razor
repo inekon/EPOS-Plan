@@ -404,7 +404,7 @@
     {
         get
         {
-            string s = string.Format(Kultur, "AW_mix: {0:0.00} ct/kWh", Aw);
+            string s = string.Format(Kultur, _t.AwZeile, Aw);
             if (Modell.AwOverride.HasValue) s += " " + _t.AwOverrideZusatz;
             return s;
         }

@@ -409,7 +409,9 @@ namespace WindowsFormsApplication1
 
             // ETAPPE E7: EINE Zeilendefinition für Word, Excel und Ergebnisreiter
             // (WirtschaftlichkeitZeilen). Die Liste stand bis dahin dreimal im Code.
-            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Kennzahlen(alle, tarifP);
+            // ETAPPE B7: eine Sichtbarkeitsregel für alle drei Ausgaben (Sichtbare).
+            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Sichtbare(
+                WirtschaftlichkeitZeilen.Kennzahlen(alle, tarifP), alle);
 
             // Der Zeitbezug der €/a-Werte steht einmal über der Tabelle statt in vier
             // Zeilentiteln (E7).
@@ -463,20 +465,25 @@ namespace WindowsFormsApplication1
 
                 foreach (WirtZeile z in zeilen)
                 {
-                    // Zeile komplett ausblenden, wenn kein Projekt einen Wert liefert
-                    // (z. B. BEHG/KWKG deaktiviert) — Konvention „nie 0-Zeilen".
-                    bool hatWert = false;
-                    foreach (VariantenDaten v in daten.Varianten)
-                    {
-                        WirtschaftlichkeitErgebnis pe = block.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
-                        if (pe == null) continue;
-                        if (z.IstText ? !string.IsNullOrEmpty(z.Text(pe)) : z.ExcelWert(pe).HasValue)
-                        { hatWert = true; break; }
-                    }
-                    if (!hatWert) continue;
+                    // ETAPPE B7: Hier stand bis dahin eine ZWEITE Sichtbarkeitsprüfung
+                    // (über den Szenarioblock). Sie ist entfallen — die Zeilenliste ist
+                    // bereits gefiltert, und zwar nach derselben Regel wie in Word und
+                    // im Reiter. Eine Zeile, die nur ein Szenario füllt, fehlte hier
+                    // sonst in den beiden anderen Blöcken.
 
                     // Der Titel kommt aus MyResource — kein BerichtTexte.T() darüber.
-                    ws.Cell(r, 1).Value = z.Titel;
+                    ws.Cell(r, 1).Value = (z.Einzug > 0 ? "    " : "") + z.Titel;
+                    if (z.IstUeberschrift || z.IstSumme)
+                        ws.Cell(r, 1).Style.Font.Bold = true;
+                    if (z.IstUeberschrift)
+                    {
+                        // Eine Überschrift trägt in den Wertspalten nichts — sie bleiben
+                        // leer, damit Filter und Diagramme des Blattes numerisch bleiben.
+                        ws.Range(r, 1, r, Math.Max(1, daten.Varianten.Count + 1))
+                          .Style.Fill.BackgroundColor = KOPF;
+                        r++;
+                        continue;
+                    }
                     c = 2;
                     foreach (VariantenDaten v in daten.Varianten)
                     {
@@ -604,8 +611,10 @@ namespace WindowsFormsApplication1
             // dieselben Werte wie die Diagramme in Word und im Verlaufs-Dialog.
             // Konsistenz-Gate wie im Word-Baustein (Review 11): sind Tarif/KWKG aktiv,
             // aber keine Stundenreihen im Berichtslauf, entfällt der Block mit Hinweis.
+            // ETAPPE BK1: dieselbe EINE Regel wie im Word-Baustein und im Rechenkern.
             bool zeitreihenNoetig = (tarifP != null && tarifP.Aktiv) ||
-                                    p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
+                                    KwkgAktivierung.IstAktiv(daten.IdStamm,
+                                        daten.Varianten.Select(x => x.IdProjekt));
             int rStart = r;
             WirtschaftlichkeitVerlauf verlaufFuerMehrjahres = null;
             try

@@ -3182,6 +3182,65 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_87_GESETZESPARAMETER_EINDEUTIG = 87;
 
+        /// <summary>
+        /// Schritt 88 — der <b>Modus der Stromsteuerbefreiung</b> nach § 9 Abs. 1 Nr. 3
+        /// StromStG (Etappe B6 des Wirtschaftlichkeitskonzepts, Befund B-1).
+        ///
+        /// <para><c>Tab_ProjektWirtschaftlichkeit</c> bekommt die Spalte
+        /// <c>Stromst_Befreiung_Modus</c> (TEXT, <c>AUSWEIS</c>/<c>ERLOES</c>). Die
+        /// Spaltenliste steht bei
+        /// <see cref="SchemaKatalog.Schritt88_StromsteuerModus"/> — EINE Quelle für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>KEIN DML, und darin liegt die Vorgabe.</b> Die Spalte bleibt im
+        /// ganzen Bestand NULL, und NULL heißt AUSWEIS. Die Befreiung wird ab hier
+        /// gerechnet und gezeigt, aber nicht mehr als Erlösreihe in den Kapitalwert
+        /// gebucht — die Vorschrift ist keine Rückerstattung, sondern eine kleinere
+        /// Bezugsrechnung. Wer sie weiter als Erlös führen will, wählt das im Dialog
+        /// „BHKW-Wirtschaftlichkeit" ausdrücklich.</para>
+        ///
+        /// <para><b>Ergebnisneutral für den Referenzlauf</b>: Im Bestand bucht kein
+        /// gespeicherter Lauf die Reihe (Befund B-1), und die Basis führt keine
+        /// Geldgröße — die dreizehn Referenzprojekte bleiben byte-gleich. Für ein
+        /// Projekt, das die Reihe buchte, ändert sich der Kapitalwert um ihren Barwert;
+        /// das ist die im Konzept angekündigte Wirkung.</para>
+        /// </summary>
+        public const int SCHRITT_88_STROMSTEUER_MODUS = 88;
+
+        /// <summary>
+        /// Schritt 89 — die <b>Anlagenwahrheit des KWK-Zuschlags</b> (Etappe BK1,
+        /// Entscheid BK-E-1 (a) vom 18.09.2026).
+        ///
+        /// <para><c>Tab_Energieanlagen</c> bekommt die Spalte <c>KWKG_Kostenanteil</c>
+        /// (DOUBLE); die Spaltenliste steht bei
+        /// <see cref="SchemaKatalog.Schritt89_KwkAnlagenwahrheit"/>.</para>
+        ///
+        /// <para><b>Und dann das DML</b>, anders als bei Schritt 22 und 88: Neun
+        /// Anweisungen tragen die KWKG-Vorgaben des Projekts in jede BHKW-Anlagenzeile
+        /// nach, die an der betreffenden Stelle leer ist — Satz Eigen, Satz Einspeisung,
+        /// Kontingent, Jahresdeckel, Kostenanteil, Anlagenart, Tatbestand, Stichtag,
+        /// Inbetriebnahme. Anweisungen, Bedingungen und Begründung stehen bei
+        /// <see cref="KwkAnlagenwahrheit"/>.</para>
+        ///
+        /// <para><b>Wozu.</b> Der Zuschlag hatte zwei Wahrheiten und eine Rückfallkette
+        /// dazwischen. § 7 und § 8 KWKG stellen auf die EINZELNE Anlage ab; eine Kaskade
+        /// aus zwei verschieden alten Modulen war so nicht abbildbar. Nach diesem Schritt
+        /// trägt jede Anlage ihre eigenen Werte, und der Rechenweg gibt den Rückfall auf
+        /// (<c>WirtschaftlichkeitCtrl.ReiheJeAnlage</c>).</para>
+        ///
+        /// <para><b>Ergebnisneutral, und darin liegt der Beweis:</b> Jede Anlage rechnet
+        /// danach mit derselben Zahl wie davor — eine gepflegte Anlagenzelle bleibt
+        /// unangetastet, eine leere bekommt genau den Wert, den der Rückfall ihr
+        /// zugewiesen hat. Die Referenzbasis führt ohnehin keine Geldgröße; der
+        /// Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Idempotent:</b> Jede Anweisung trägt ihre Bedingung selbst
+        /// (<c>Zielzelle leer UND Quelle gepflegt</c>); der zweite Lauf trifft keine
+        /// Zeile mehr.</para>
+        /// </summary>
+        public const int SCHRITT_89_KWK_ANLAGENWAHRHEIT = 89;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4315,6 +4374,33 @@ namespace WindowsFormsApplication1
                         "dann gilt, entscheidet die Speicherreihenfolge, und der " +
                         "Anwender pflegt womoeglich die Zeile, die niemand liest.",
                         Schritt_87_GesetzesparameterEindeutig),
+
+            // ETAPPE B6 des Wirtschaftlichkeitskonzepts (Befund B-1, Entscheidung K3).
+            // EINE Spalte aus SchemaKatalog - DIESELBE Quelle wie Testdatenbankschema
+            // und Nachweis. Kein DML: NULL heisst AUSWEIS, und AUSWEIS ist die Vorgabe.
+            new Schritt(SCHRITT_88_STROMSTEUER_MODUS,
+                        "Tab_ProjektWirtschaftlichkeit bekommt den Modus " +
+                        "Stromst_Befreiung_Modus (TEXT, AUSWEIS/ERLOES, NULL = AUSWEIS)",
+                        "Ohne die Spalte gaebe es keinen Ort, an dem die Wahl zwischen " +
+                        "Ausweis und Erloes stuende - das Feld im Dialog bliebe ohne " +
+                        "Wirkung, und § 9 Abs. 1 Nr. 3 StromStG bliebe als Erloes " +
+                        "gebucht, obwohl der Vorteil schon in der kleineren " +
+                        "Bezugsrechnung steckt.",
+                        Schritt_88_StromsteuerModus),
+
+            // ETAPPE BK1 (Entscheid BK-E-1 a). EINE Spalte aus SchemaKatalog und NEUN
+            // Datenanweisungen aus KwkAnlagenwahrheit - DIESELBE Quelle wie
+            // Testdatenbankschema und Nachweis.
+            new Schritt(SCHRITT_89_KWK_ANLAGENWAHRHEIT,
+                        "Tab_Energieanlagen bekommt KWKG_Kostenanteil, und die " +
+                        "KWKG-Vorgaben des Projekts wandern in die BHKW-Anlagenzeilen",
+                        "§ 7 und § 8 KWKG stellen auf die EINZELNE Anlage ab. Solange " +
+                        "die Saetze, das Kontingent und die Anlagenart nur am Projekt " +
+                        "stehen und der Rechenweg auf sie zurueckfaellt, kann eine " +
+                        "Kaskade aus zwei verschieden alten Modulen nicht richtig " +
+                        "gerechnet werden - und der Anwender pflegt Felder, deren " +
+                        "Wirkung davon abhaengt, ob ein zweites Feld anderswo leer ist.",
+                        Schritt_89_KwkAnlagenwahrheit),
         };
 
         /// <summary>
@@ -6203,6 +6289,90 @@ namespace WindowsFormsApplication1
                     "genau die, die ReadAktiveVariante schon bisher geliefert hat. KEIN " +
                     "Rechenergebnis aendert sich.");
             return true;
+        }
+
+        // =================================================================================
+        // Schritt 88 - der Modus der Stromsteuerbefreiung § 9 Abs. 1 Nr. 3 (Etappe B6)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 88 — Anlass, Anweisung und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_88_STROMSTEUER_MODUS"/> und bei
+        /// <see cref="SchemaKatalog.Schritt88_StromsteuerModus"/>.
+        ///
+        /// <para><b>Wortgleich zu <see cref="Schritt_86_Lastspitzenkappung"/></b>:
+        /// Spaltenliste aus dem Kern, Typdefinition aus
+        /// <c>StilleDb.SqliteSpaltenTyp</c>, kein DML. Hier steht keine abgeschriebene
+        /// DDL.</para>
+        /// </summary>
+        private static bool Schritt_88_StromsteuerModus(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt88_StromsteuerModus)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("88: " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + "." +
+                    SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS + " (TEXT, nullbar) " +
+                    "steht. KEIN DML: NULL heisst AUSWEIS - § 9 Abs. 1 Nr. 3 StromStG " +
+                    "wird ab hier gerechnet und gezeigt, aber nicht mehr als Erloes in " +
+                    "den Kapitalwert gebucht. Im Bestand bucht kein gespeicherter Lauf " +
+                    "diese Reihe; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 89 - die Anlagenwahrheit des KWK-Zuschlags (Etappe BK1)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 89 — Anlass, Anweisungen und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_89_KWK_ANLAGENWAHRHEIT"/>, bei
+        /// <see cref="SchemaKatalog.Schritt89_KwkAnlagenwahrheit"/> (DDL) und bei
+        /// <see cref="KwkAnlagenwahrheit"/> (DML).
+        ///
+        /// <para><b>Erst die Spalte, dann die Werte</b> — der Kostenanteil ist selbst
+        /// eines der neun übertragenen Paare und muss vorher stehen. Gezählt wird VOR
+        /// jeder Anweisung, damit die Notiz sagt, was der Schritt getan hat; eine
+        /// Anweisung ohne Treffer bekommt keine Zeile im Bericht.</para>
+        /// </summary>
+        private static bool Schritt_89_KwkAnlagenwahrheit(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt89_KwkAnlagenwahrheit)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            int gesamt = 0;
+            foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
+            {
+                int offen = Anzahl(KwkAnlagenwahrheit.Zaehlung(paar));
+                if (offen <= 0) continue;
+                if (!SqliteDml(l, KwkAnlagenwahrheit.Uebertragung(paar),
+                               "89: " + paar.Anlage + " aus " + paar.Projekt)) return false;
+                l.Notiz("89: " + paar.Anlage + " <- " + KwkAnlagenwahrheit.QUELLE + "." +
+                        paar.Projekt + ": " + offen + " Anlagenzeile(n) nachgetragen.");
+                gesamt += offen;
+            }
+
+            l.Notiz("89: " + SchemaKatalog.TAB_ENERGIEANLAGEN + "." +
+                    SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL + " (DOUBLE, nullbar) steht; " +
+                    gesamt + " Zellen aus den Projektvorgaben nachgetragen. " +
+                    "ERGEBNISNEUTRAL: Jede Anlage rechnet mit genau dem Wert, den ihr der " +
+                    "Rueckfall Anlage -> Projekt bisher zugewiesen hat; eine gepflegte " +
+                    "Anlagenzelle bleibt unangetastet. Ab hier gibt der Rechenweg den " +
+                    "Rueckfall auf - § 7 und § 8 KWKG stellen auf die einzelne Anlage ab.");
+            return true;
+        }
+
+        /// <summary>Eine Zählabfrage; 0, wenn sie nicht läuft (dann fasst der Schritt
+        /// auch nichts an — dieselbe tolerante Haltung wie bei den übrigen DML-Schritten).</summary>
+        private static int Anzahl(string sql)
+        {
+            try
+            {
+                object o = DataRepository.ExecuteScalar(sql);
+                return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o);
+            }
+            catch { return 0; }
         }
 
         // =================================================================================

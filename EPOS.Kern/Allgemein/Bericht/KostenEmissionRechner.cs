@@ -559,6 +559,30 @@ namespace WindowsFormsApplication1
 
             double netzCO2t = netzbezugMWh * stromCO2 / 1000.0;
 
+            // ---------------- ETAPPE B7: Energiekosten JE ANLAGE (Konzept § 3.5) ----
+            //
+            // Dieselben Mengen und dieselben Preise wie oben, nur nicht je TRÄGER
+            // zusammengefasst, sondern je ANLAGE aufgeschlüsselt. Die Zeilen sind
+            // reiner Ausweis: Ihre Summe IST der Brennstoffanteil oben (ohne
+            // Grundpreis, der einmal je Träger anfällt und keiner einzelnen Anlage
+            // gehört). Fehlt einem Träger der Preis, entsteht auch keine Zeile — eine
+            // Zeile ohne Preis wäre eine Herleitung ohne Rechnung.
+            var jeAnlage = new List<EnergieAnlageNachweis>();
+            if (m.BHKW != null && m.BHKW.Module != null)
+                foreach (ErgebnisBHKWModulModel mo in m.BHKW.Module)
+                    AnlageZeile(jeAnlage, v.IdProjekt, mo.Modul, mo.CarrierId, mo.Verbrauch);
+            if (m.Heizkessel != null && m.Heizkessel.Module != null)
+                foreach (ErgebnisHeizkesselModulModel mo in m.Heizkessel.Module)
+                    AnlageZeile(jeAnlage, v.IdProjekt, mo.Modul, mo.CarrierId, mo.Verbrauch);
+            // Die Stromseite als EINE Zeile: Netzbezug × Arbeitspreis. Sie steht für
+            // alles, was Strom bezieht (Wärmepumpe, Hilfsenergie, Gebäude) — der
+            // Rechenkern führt den Restbezug als eine Menge, und eine Aufteilung nach
+            // Verbrauchern gäbe es nur als Schätzung.
+            if (netzbezugMWh > 0 && stromCarrierKosten > 0)
+                AnlageZeile(jeAnlage, v.IdProjekt, MyResource.Resource.WIRT_ENK_NETZBEZUG,
+                            stromCarrierKosten, netzbezugMWh);
+            v.EnergiekostenJeAnlage = jeAnlage;
+
             // ---------------- Kennzahlen setzen ----------------
             v.BiogenMengeMWh = biogenMWh;             // L13 — reine Mengen, keine Wertung
             v.BiogenBehgMengeMWh = biogenBehgMWh;
@@ -623,6 +647,34 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Träger-Daten
 
+        /// <summary>
+        /// ETAPPE B7 — eine Anlagenzeile der Energiekosten-Aufschlüsselung, mit genau
+        /// derselben Rechnung wie die Trägersumme: mengenbasiert über den Heizwert,
+        /// sonst direkt je kWh. Ohne Träger, ohne Menge oder ohne Arbeitspreis entsteht
+        /// KEINE Zeile — die Aufschlüsselung soll erklären, nicht behaupten.
+        /// </summary>
+        private static void AnlageZeile(List<EnergieAnlageNachweis> ziel, int idProjekt,
+                                        string anlage, int carrierId, double mengeMWh)
+        {
+            if (ziel == null || carrierId <= 0 || mengeMWh <= 0) return;
+            TraegerInfo info = LadeTraeger(idProjekt, carrierId);
+            if (info == null || !info.PreisArbeit.HasValue) return;
+
+            bool ueberHeizwert = info.EffHi.HasValue && info.EffHi.Value > 0;
+            double menge = ueberHeizwert ? mengeMWh * 1000.0 / info.EffHi.Value
+                                         : mengeMWh * 1000.0;
+            ziel.Add(new EnergieAnlageNachweis
+            {
+                Anlage = string.IsNullOrEmpty(anlage) ? "?" : anlage,
+                Traeger = TraegerName(carrierId),
+                MengeMWh = mengeMWh,
+                MengeAbrechnung = menge,
+                Einheit = ueberHeizwert ? info.Abrechnungseinheit : "kWh",
+                PreisJeEinheit = info.PreisArbeit.Value,
+                KostenEur = menge * info.PreisArbeit.Value
+            });
+        }
+
         private class TraegerInfo
         {
             public double? PreisArbeit;   // € je Abrechnungseinheit bzw. €/kWh (Direktabrechnung)
@@ -638,6 +690,10 @@ namespace WindowsFormsApplication1
             public double? CO2 { get { return Faktoren.Co2GKwh; } }
 
             public double? EffHi;         // kWh je Abrechnungseinheit (null/0 = Direktabrechnung)
+
+            /// <summary>ETAPPE B7 — die Abrechnungseinheit des Traegers (L, kg, m3,
+            /// kWh) fuer die Herleitungszeile „Menge x Preis"; leer = nicht gepflegt.</summary>
+            public string Abrechnungseinheit = "";
             public bool BehgPflichtig = true;   // fossiler Brennstoff (Phase 7/W2)
 
             /// <summary>L13 — biogener Träger (Holz, Pellets, Rapsöl, Tierische Fette, Biogas).</summary>
@@ -861,10 +917,16 @@ namespace WindowsFormsApplication1
             try
             {
                 DataTable eff = DataRepository.GetDataTable(
-                    "SELECT eff_hi FROM Abfrage_Energietraeger_Effektiv WHERE ID_Projekt = ? AND carrier_id = ?",
+                    "SELECT eff_hi, billing_unit FROM Abfrage_Energietraeger_Effektiv " +
+                    "WHERE ID_Projekt = ? AND carrier_id = ?",
                     new DbParam("@p", idProjekt), new DbParam("@c", carrierId));
-                if (eff != null && eff.Rows.Count > 0 && eff.Rows[0][0] != DBNull.Value)
-                    info.EffHi = Convert.ToDouble(eff.Rows[0][0]);
+                if (eff != null && eff.Rows.Count > 0)
+                {
+                    if (eff.Rows[0]["eff_hi"] != DBNull.Value)
+                        info.EffHi = Convert.ToDouble(eff.Rows[0]["eff_hi"]);
+                    if (eff.Rows[0]["billing_unit"] != DBNull.Value)
+                        info.Abrechnungseinheit = eff.Rows[0]["billing_unit"].ToString();
+                }
             }
             catch { }
 

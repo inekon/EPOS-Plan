@@ -479,12 +479,14 @@
 
     // ---- Texte ----------------------------------------------------------
 
-    /// <summary>Überschrift der Seite.</summary>
-    [Parameter] public string TitelText { get; set; }
-        = "Wirtschaftlichkeit (Kapitalwertmethode DIN EN 17463)";
+    /// <summary>Überschrift der Seite. ETAPPE B6 (K11): Der Rückfall ist der
+    /// Ressourcenwert, nicht ein deutscher Text — dieselbe Bauart wie bei
+    /// <see cref="NeuBerechnenText"/>. Die Hülle darf ihn weiter überschreiben; wo
+    /// sie es nicht tut, steht der Text trotzdem in der Oberflächensprache.</summary>
+    [Parameter] public string TitelText { get; set; } = Resource.WIRT_TITEL;
 
-    [Parameter] public string LabelVarianten { get; set; }
-        = "Vergleichsgruppe (Referenz: Stamm, fest gewählt):";
+    /// <inheritdoc cref="TitelText" path="/summary/text()[last()]"/>
+    [Parameter] public string LabelVarianten { get; set; } = Resource.WIRT_LBL_GRUPPE;
     [Parameter] public string LabelSzenario { get; set; } = "Szenario:";
     [Parameter] public string LabelFortschritt { get; set; } = "Fortschritt";
 
@@ -552,12 +554,14 @@
     [Parameter] public string BewertungFehlerText { get; set; }
         = BhwTexte.T("WPAR_MSG_SPEICHERFEHLER", "Der Parametersatz konnte nicht gespeichert werden.");
 
-    /// <summary>Meldung beim Versuch, die Stammzeile abzuwählen.</summary>
+    /// <summary>Meldung beim Versuch, die Stammzeile abzuwählen.
+    /// <inheritdoc cref="TitelText" path="/summary/text()[last()]"/></summary>
     [Parameter] public string MeldungStammReferenz { get; set; }
-        = "Das Stammprojekt ist die Referenz und immer enthalten.";
+        = Resource.BK_BER_MSG_STAMM_REFERENZ;
 
-    /// <summary>Meldung „abgebrochen".</summary>
-    [Parameter] public string StatusAbgebrochen { get; set; } = "Vorgang abgebrochen.";
+    /// <summary>Meldung „abgebrochen".
+    /// <inheritdoc cref="TitelText" path="/summary/text()[last()]"/></summary>
+    [Parameter] public string StatusAbgebrochen { get; set; } = Resource.BK_BER_STATUS_ABGEBROCHEN;
 
     // =====================================================================
     // Zustand

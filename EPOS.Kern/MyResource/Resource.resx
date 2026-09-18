@@ -7558,7 +7558,7 @@ Erfasst sind zurzeit {5:N2} €; ich würde {6:N2} € eintragen (Differenz {7:N
     <value>Die Vorschau ist verfallen — es wurde nichts geändert. Bitte neu fragen.</value>
   </data>
   <data name="BILANZ_AUSWEIS" xml:space="preserve">
-    <value>Bilanzierung: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4}</value>
+    <value>Emissionsbilanz: Bilanzjahr {0} · KWK-Strom {1} ({2}) · Biomasse {3} · {4}</value>
   </data>
   <data name="BILANZ_METHODE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>mit Stromgutschrift über den Kraftwerkspark</value>
@@ -9707,9 +9707,6 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KOH_FALL2_STROMST_9B" xml:space="preserve">
     <value>Die Stromsteuer-Entlastung nach § 9b StromStG von {0} €/a setzt voraus, dass der erfasste Strompreis die Stromsteuer enthält. Im Preis ist sie nicht ausgewiesen ({1}).</value>
   </data>
-  <data name="KOH_FALL2_STROMST_9_1_3" xml:space="preserve">
-    <value>Die Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG von {0} €/a wird als Erlös gebucht, obwohl der erfasste Strompreis die Stromsteuer nicht ausweist ({1}).</value>
-  </data>
   <data name="KOH_FALL3_STROMSTEUER" xml:space="preserve">
     <value>Der erfasste Strompreis weist eine Stromsteuer von {0} ct/kWh aus, eine Entlastung nach § 9b StromStG wird nicht gebucht.</value>
   </data>
@@ -9798,7 +9795,10 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
     <value>KWKG: Für „{0}“ ist als Tatbestand nach § 6 Abs. 3 „keiner“ gewählt — der eigene Satz auf selbst genutzten Strom entfällt (§ 7 Abs. 2).</value>
   </data>
   <data name="WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN" xml:space="preserve">
-    <value>KWKG: „{0}“ trägt einen eigenen Satz auf selbst genutzten Strom, aber keinen Tatbestand nach § 6 Abs. 3 — ohne ihn gibt es den Eigenverbrauchszuschlag nicht (§ 7 Abs. 2); Satz dieser Anlage = 0.</value>
+    <value>KWKG: Für „{0}“ ist kein Tatbestand nach § 6 Abs. 3 erfasst — die Voraussetzung des Zuschlags auf selbst genutzten Strom (§ 7 Abs. 2) ist ungeprüft; gerechnet wird mit dem eingetragenen Satz.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANLAGE" xml:space="preserve">
+    <value>KWKG: Für „{0}“ ist kein eigenes Vbh-Kontingent gepflegt — abgeleitet {1} Vbh ({2}).</value>
   </data>
   <data name="PREIS_ST_ART_KEIN_PROD_GEWERBE" xml:space="preserve">
     <value>kein produzierendes Gewerbe</value>
@@ -9982,10 +9982,10 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Anlagen</value>
   </data>
   <data name="BHW_G1B" xml:space="preserve">
-    <value>Angaben der gewählten Anlage — leer bzw. 0 = Projektvorgabe</value>
+    <value>Angaben der gewählten Anlage</value>
   </data>
   <data name="BHW_G2" xml:space="preserve">
-    <value>KWK-Zuschlag (Projektvorgabe)</value>
+    <value>Projektweite KWK-Angaben</value>
   </data>
   <data name="BHW_G3" xml:space="preserve">
     <value>Energiesteuer (Projektvorgabe)</value>
@@ -10036,13 +10036,16 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Eigenstrom nach § 6 Abs. 3:</value>
   </data>
   <data name="BHW_A_SATZ_EINSP" xml:space="preserve">
-    <value>Satz Einspeisung [ct/kWh] (0 = Projektsatz):</value>
+    <value>Satz Einspeisung [ct/kWh] (0 = kein Zuschlag):</value>
   </data>
   <data name="BHW_A_SATZ_EIGEN" xml:space="preserve">
-    <value>Satz Eigenstrom [ct/kWh] (0 = Projektsatz):</value>
+    <value>Satz Eigenstrom [ct/kWh] (0 = kein Zuschlag):</value>
   </data>
   <data name="BHW_A_KONTINGENT" xml:space="preserve">
-    <value>Vbh-Kontingent [h] (0 = Projektwert):</value>
+    <value>Vbh-Kontingent [h] (0 = nach § 8 abgeleitet):</value>
+  </data>
+  <data name="BHW_A_KOSTENANTEIL" xml:space="preserve">
+    <value>Anteil Neuherstellungskosten [%] (§ 8 Abs. 2/3):</value>
   </data>
   <data name="BHW_A_DECKEL" xml:space="preserve">
     <value>Vbh-Jahresdeckel [h/a] (0 = Staffel):</value>
@@ -10059,41 +10062,26 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="BHW_A_HILFS_BASIS" xml:space="preserve">
     <value>Vorschlag BHKW 2–4 %. Bemessen wird am Endenergiebedarf (Brennstoff) dieser Anlage — nicht an den Kosten.</value>
   </data>
-  <data name="BHW_P_BONUS_EIGEN" xml:space="preserve">
-    <value>Bonus Eigenstrom [ct/kWh] (0 = aus):</value>
-  </data>
   <data name="BHW_P_EINSP_KWK_HINWEIS" xml:space="preserve">
     <value>Der Satz gilt fuer die ganze Anwendung: Er bewertet den eingespeisten BHKW-Strom in der Wirtschaftlichkeit UND stellt den Verkaufspreis, mit dem Stromspeicher und Speicherflotte den BHKW-Ueberschuss rechnen (v_bhkw). 0 heisst "nicht gepflegt"; dann gilt fuer BHKW-Strom der PV-Satz aus den Wirtschaftlichkeits-Parametern, und ohne den rechnet die Speicherwelt mit 0 und weist das im Protokoll aus. Der KWK-Zuschlag kommt obendrauf - er ersetzt die Verguetung nicht.</value>
-  </data>
-  <data name="BHW_P_BONUS_EINSP" xml:space="preserve">
-    <value>Bonus Einspeisung [ct/kWh]:</value>
-  </data>
-  <data name="BHW_P_DECKEL" xml:space="preserve">
-    <value>Vbh-Deckel-Override [h/a]:</value>
-  </data>
-  <data name="BHW_P_KONTINGENT" xml:space="preserve">
-    <value>Vbh-Kontingent gesamt [h] (0 = automatisch):</value>
   </data>
   <data name="BHW_P_ABSCHLAG" xml:space="preserve">
     <value>Abschlag Negativstunden [%]:</value>
   </data>
-  <data name="BHW_P_TATBESTAND" xml:space="preserve">
-    <value>Eigenstrom-Tatbestand (§ 6 Abs. 3):</value>
-  </data>
-  <data name="BHW_P_ANLAGENART" xml:space="preserve">
-    <value>Anlagenart (§ 8):</value>
-  </data>
   <data name="BHW_P_KOSTENANTEIL" xml:space="preserve">
-    <value>Anteil Neuherstellungskosten [%]:</value>
+    <value>Anteil Neuherstellungskosten [%] (Vorgabe für Anlagen ohne eigenen Wert):</value>
+  </data>
+  <data name="BHW_P_NUR_PROJEKTWEIT" xml:space="preserve">
+    <value>Satz, Kontingent, Jahresdeckel, Anlagenart und Eigenstrom-Tatbestand stehen an der Anlage (§ 7 und § 8 KWKG bemessen sie je Anlage) — oben unter „Angaben der gewählten Anlage“, mit einem Knopf für den Katalogvorschlag am Feld.</value>
   </data>
   <data name="BHW_P_PAUSCHAL" xml:space="preserve">
     <value>Pauschale § 9 KWKG (nur bis 2 kWel, einmalig)</value>
   </data>
   <data name="BHW_P_STICHTAG" xml:space="preserve">
-    <value>Stichtag, Vorgabe je Anlage:</value>
+    <value>Stichtag (Bestellung/Genehmigung, § 6):</value>
   </data>
   <data name="BHW_P_IBN" xml:space="preserve">
-    <value>Inbetriebnahme, Vorgabe je Anlage:</value>
+    <value>Förderbeginn (Startjahr der Reihen):</value>
   </data>
   <data name="BHW_E_WAHL" xml:space="preserve">
     <value>Energiesteuerentlastung:</value>
@@ -10118,9 +10106,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="BHW_S_MODUS" xml:space="preserve">
     <value>Modus § 9 Abs. 1 Nr. 3:</value>
-  </data>
-  <data name="BHW_S_MODUS_B6" xml:space="preserve">
-    <value>ab B6 — bis dahin gilt fest „Ausweis“ (nicht im Kapitalwert).</value>
   </data>
   <data name="BHW_H_BASIS" xml:space="preserve">
     <value>Der Anteil wird je Anlage oben gepflegt und am ENDENERGIEBEDARF (Brennstoff) der Anlage bemessen — nicht an den Kosten. Die Menge mindert die zuschlagsfähige Nettostromerzeugung.</value>
@@ -10166,6 +10151,21 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="BHW_HERLEITUNG_EIGEN" xml:space="preserve">
     <value>Eigenstrom {0} ct/kWh — {1}</value>
+  </data>
+  <data name="BHW_HERLEITUNG_KONTINGENT" xml:space="preserve">
+    <value>Kontingent {0} Vbh — {1}</value>
+  </data>
+  <data name="BHW_BTN_VORSCHLAG_FELD" xml:space="preserve">
+    <value>Vorschlag übernehmen</value>
+  </data>
+  <data name="BHW_SPERR_OHNE_PEL" xml:space="preserve">
+    <value>Kein Vorschlag: Für diese Anlage ist keine elektrische Nennleistung erfasst.</value>
+  </data>
+  <data name="BHW_SPERR_OHNE_EIGENFALL" xml:space="preserve">
+    <value>Kein Vorschlag: Ohne Tatbestand nach § 6 Abs. 3 gibt es keinen Zuschlag auf selbst genutzten Strom (§ 7 Abs. 2) — Feld „Eigenstrom nach § 6 Abs. 3“ füllen.</value>
+  </data>
+  <data name="BHW_SPERR_OHNE_ANLAGENART" xml:space="preserve">
+    <value>Kein Vorschlag: Ohne Anlagenart wählt § 8 KWKG keine Kontingentstufe — Feld „Anlagenart“ füllen; modernisiert und nachgerüstet brauchen zusätzlich den Anteil an den Neuherstellungskosten.</value>
   </data>
   <data name="BHW_W_AUSSCHREIBUNG" xml:space="preserve">
     <value>Ausschreibung nach § 8a KWKG: {0} über {1} kW.</value>
@@ -10238,9 +10238,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="BHW_W_MODUS_ERLOES" xml:space="preserve">
     <value>Erlös (im Kapitalwert)</value>
-  </data>
-  <data name="BHW_BTN_VORSCHLAG" xml:space="preserve">
-    <value>Vorschlag in die Satzfelder übernehmen</value>
   </data>
   <data name="BHW_BTN_STROMBEZUG" xml:space="preserve">
     <value>Strombezug…</value>
@@ -19343,5 +19340,149 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SP_KONTEXT_PEAK_ADAPTIV" xml:space="preserve">
     <value> (adaptiv)</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMST_BEFREIUNG_AUSWEIS" xml:space="preserve">
+    <value>Stromsteuer-Befreiung [€/a] (Ausweis, nicht im Kapitalwert)</value>
+  </data>
+  <data name="KOH_FALL1_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer: Wahl und Preisanteil stimmen überein ({0}).</value>
+  </data>
+  <data name="KOH_DOPPEL_STROMST_9_1_3" xml:space="preserve">
+    <value>Doppelzählung möglich: Die Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG von {0} €/a ist als Erlös gebucht. Der Vorteil steckt bereits in der kleineren Bezugsrechnung — als Erlös ist er nur richtig, wenn der angesetzte Bezugspreis die Stromsteuer auf den Eigenverbrauch enthält.</value>
+  </data>
+  <data name="AUFLOESER_KOMP_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="AUFLOESER_KOMP_HEIZKESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="AUFLOESER_KOMP_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ANLAGE" xml:space="preserve">
+    <value>{0} „{1}“</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE" xml:space="preserve">
+    <value>alle {0}-Module</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE_WP" xml:space="preserve">
+    <value>alle Wärmepumpen-Module</value>
+  </data>
+  <data name="WVERL_UNTER_DIFF" xml:space="preserve">
+    <value>Kumulierte diskontierte Differenz-Zahlungsströme Variante − Stamm; Schnitt mit der Nulllinie = dynamische Amortisation. Ohne Restwert.</value>
+  </data>
+  <data name="WVERL_UNTER_ABS" xml:space="preserve">
+    <value>Kumulierte diskontierte Zahlungsströme (Kosten negativ). Ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert.</value>
+  </data>
+  <data name="WVERL_RESTWERTE" xml:space="preserve">
+    <value>Restwert-Barwerte am Horizontende (nicht in den Linien enthalten): {0}</value>
+  </data>
+  <data name="WVERL_OHNE_REIHE" xml:space="preserve">
+    <value>⚠ Ohne Reihe: {0}</value>
+  </data>
+  <data name="WVERL_STATUS_KOPF" xml:space="preserve">
+    <value>Verlauf über {0} Jahre, Szenario „{1}“</value>
+  </data>
+  <data name="WVERL_STATUS_ABWEICHEND" xml:space="preserve">
+    <value> (abweichend von T = {0} a — nur Anzeige, gespeicherte Ergebnisse unverändert{1}).</value>
+  </data>
+  <data name="WVERL_STATUS_JENSEITS" xml:space="preserve">
+    <value>; Nulldurchgänge jenseits von T erscheinen nicht in der gespeicherten Amortisationskennzahl</value>
+  </data>
+  <data name="WVERL_TITEL_STAMM" xml:space="preserve">
+    <value>{0} — Stamm: {1}</value>
+  </data>
+  <data name="BHW_S_MODUS_HERLEITUNG" xml:space="preserve">
+    <value>Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet. Erlös: Sie wird als Erlös gebucht — nur, wenn der Bezugspreis die Stromsteuer enthält.</value>
+  </data>
+  <data name="PVW_AW_ZEILE" xml:space="preserve">
+    <value>AW_mix: {0:0.00} ct/kWh</value>
+  </data>
+  <data name="KOH_FALL4_EINHEIT_UNVERGLEICHBAR" xml:space="preserve">
+    <value>{0}: Der Katalogsatz des Jahres {1} steht in {2}, das Projekt rechnet je {3}. Ohne Dichte des Energieträgers lässt sich beides nicht ineinander umrechnen — der Energiesteueranteil im Preis bleibt hier ungeprüft.</value>
+  </data>
+  <data name="WIRT_ERL_KOPF_A" xml:space="preserve">
+    <value>Erlöse und Vorteile — zahlungswirksam (Jahr 1)</value>
+  </data>
+  <data name="WIRT_ERL_KOPF_B" xml:space="preserve">
+    <value>Ausweis — nicht in der Summe</value>
+  </data>
+  <data name="WIRT_ERL_A_KWKG" xml:space="preserve">
+    <value>KWK-Zuschlag (§ 7 KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A1_EINSPEISUNG" xml:space="preserve">
+    <value>davon Einspeisung (§ 7 Abs. 1 KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A2_EIGEN" xml:space="preserve">
+    <value>davon Eigenstrom (§ 7 Abs. 2 KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_STROMST_ENTLASTUNG" xml:space="preserve">
+    <value>Stromsteuer-Entlastung Netzbezug (§ 9b StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_STROMST_BEFREIUNG" xml:space="preserve">
+    <value>Stromsteuer-Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3 StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_EINSPEISUNG" xml:space="preserve">
+    <value>Einspeiseerlös Strom [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_SUMME" xml:space="preserve">
+    <value>Summe Erlöse und Vorteile, zahlungswirksam [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_B1_BRUTTO" xml:space="preserve">
+    <value>Vermiedene Stromkosten, brutto [€/a] (Ausweis)</value>
+  </data>
+  <data name="WIRT_ERL_B1_ABZUG_9B" xml:space="preserve">
+    <value>abzüglich entgangener Entlastung (§ 9b StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_B1_EFFEKTIV" xml:space="preserve">
+    <value>Vermiedene Stromkosten, effektiv [€/a] (Ausweis)</value>
+  </data>
+  <data name="WIRT_GRUND_KWKG" xml:space="preserve">
+    <value>kein KWK-Zuschlagssatz gepflegt oder Kontingent erschöpft</value>
+  </data>
+  <data name="WIRT_GRUND_ENERGIESTEUER" xml:space="preserve">
+    <value>keine Entlastungsnorm gewählt oder kein Steuersatz zugeordnet</value>
+  </data>
+  <data name="WIRT_GRUND_NUR_PROD_GEWERBE" xml:space="preserve">
+    <value>nur produzierendes Gewerbe; abzüglich Sockelbetrag 250 €/a</value>
+  </data>
+  <data name="WIRT_GRUND_EINSPEISUNG" xml:space="preserve">
+    <value>keine Einspeisevergütung gepflegt</value>
+  </data>
+  <data name="BK_KOSTEN_SP_CO2E" xml:space="preserve">
+    <value>CO₂-Äquivalent [g/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_REGEL" xml:space="preserve">
+    <value>{0} (GWP100). Herkunft des CO₂-Wertes: Ebene „{1}“. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_NUR_CO2" xml:space="preserve">
+    <value>Für diesen Energieträger ist außer CO₂ keine weitere Emissionsart hinterlegt — der Äquivalentwert entspricht deshalb dem CO₂-Faktor. Herkunft: Ebene „{0}“.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_IST_CO2E" xml:space="preserve">
+    <value>Der hinterlegte Wert ist bereits ein CO₂-Äquivalent (Ebene „{0}“) und wird nicht aufsummiert.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_OHNE_KATALOG" xml:space="preserve">
+    <value>Der Artenkatalog führt für diesen Energieträger keine Äquivalenzfaktoren — ausgewiesen wird der reine CO₂-Faktor der Ebene „{0}“, nicht ein Äquivalent.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_CO2" xml:space="preserve">
+    <value>CO₂-Faktor der Ebene „{0}“. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog.</value>
+  </data>
+  <data name="WIRT_ENK_KOPF" xml:space="preserve">
+    <value>Energiekosten je Anlage [€/a]</value>
+  </data>
+  <data name="WIRT_ENK_ANLAGE" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="BHW_G6_OHNE_RUBRIK" xml:space="preserve">
+    <value>Noch kein Lauf — die Rubrik füllt sich mit „Berechnen“ im Reiter Wirtschaftlichkeit.</value>
+  </data>
+  <data name="WIRT_ENK_ZEILE" xml:space="preserve">
+    <value>davon {0} [€/a]</value>
+  </data>
+  <data name="WIRT_ENK_NETZBEZUG" xml:space="preserve">
+    <value>Netzbezug Strom</value>
   </data>
 </root>

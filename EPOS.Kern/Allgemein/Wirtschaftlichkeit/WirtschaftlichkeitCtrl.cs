@@ -95,6 +95,16 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="SPALTE_ENERGIESTEUER"/>
         public const string SPALTE_STROMST_BEFREIUNG = "StromsteuerBefreiung";
 
+        /// <summary>
+        /// ETAPPE B6 — der Modus, in dem § 9 Abs. 1 Nr. 3 StromStG in DIESEN Lauf
+        /// eingegangen ist (<c>AUSWEIS</c>/<c>ERLOES</c>, Werte aus
+        /// <see cref="DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS"/>). Er steht im ERGEBNIS,
+        /// nicht nur im Parametersatz: Ein gespeicherter Lauf muss auch nach einer
+        /// späteren Umstellung des Projekts sagen können, wie ER gerechnet hat.
+        /// <inheritdoc cref="SPALTE_ENERGIESTEUER" path="/summary/para"/>
+        /// </summary>
+        public const string SPALTE_STROMST_MODUS = "StromsteuerBefreiungModus";
+
         /// <inheritdoc cref="SPALTE_ENERGIESTEUER"/>
         public const string SPALTE_STROMST_ENTLASTUNG = "StromsteuerEntlastung";
 
@@ -402,6 +412,7 @@ namespace WindowsFormsApplication1
                     // darüber (Begründung bei SPALTE_ENERGIESTEUER).
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_ENERGIESTEUER, "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_BEFREIUNG, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_MODUS, "TEXT(20)");   // B6
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_ENTLASTUNG, "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_STEUER_HERKUNFT, "LONGTEXT");
 
@@ -418,6 +429,9 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_HOCHEFFIZIENZ, "YESNO");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD, "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL, "TEXT(20)");
+                    // ETAPPE B6 - dieselbe tolerante Vorsorge fuer den Modus des
+                    // § 9 Abs. 1 Nr. 3 StromStG; regulaer entsteht er in Schritt 88.
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS, "TEXT(20)");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
 
                     // ETAPPE K6 (HF6/M-D) — die vier KWKG-Projektangaben. Regulär legt sie
@@ -513,6 +527,15 @@ namespace WindowsFormsApplication1
                     // noch in Schritt 61: NULL heißt „kein eigener Wert", und dann gilt
                     // der Projektwert bzw. „keine Hilfsenergie".
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt61_SteuerJeAnlage)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
+                    // ETAPPE BK1 — der Kostenanteil JE ANLAGE an Tab_Energieanlagen. Er
+                    // entsteht regulär über Migrationsschritt 89; das hier ist die
+                    // tolerante VORSORGE unmittelbar vor dem Zugriff. Die WERTE-Seite
+                    // (das DML, das die Projektvorgaben in die Anlagenzeilen schreibt)
+                    // bleibt allein bei Schritt 89 — sie ist eine einmalige Überführung
+                    // und keine Vorsorge.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt89_KwkAnlagenwahrheit)
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // LEITENTSCHEIDUNGEN L12/L13 — die vier Bilanzierungsangaben. Sie
@@ -631,6 +654,17 @@ namespace WindowsFormsApplication1
                     if (wahl.Length > 0) p.EnergiesteuerWahl = wahl;
                     string auf = Text(r, SchemaKatalog.SPALTE_PW_AUFTEILUNG);
                     if (auf.Length > 0) p.AufteilungMethode = auf;
+
+                    // ETAPPE B6 - der Modus des § 9 Abs. 1 Nr. 3 StromStG (Schritt 88).
+                    // NUR der ausdrueckliche Wert ERLOES bucht die Befreiung als Erloes;
+                    // leer, NULL und jeder unbekannte Bestandswert bedeuten AUSWEIS.
+                    // Eine nicht migrierte Datenbank verhaelt sich dadurch wie eine
+                    // migrierte - und wie die Vorgabe.
+                    p.StromsteuerBefreiungModus =
+                        string.Equals(Text(r, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS),
+                                      DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES, StringComparison.Ordinal)
+                            ? DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES
+                            : DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS;
 
                     // ETAPPE E5 — die KWK-Einspeisevergütung; ohne ausdrückliche Angabe
                     // wirkungslos (DOUBLE bleibt NULL).
@@ -901,6 +935,8 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "] = ?, " +
+                    // ETAPPE B6 - der Modus des § 9 Abs. 1 Nr. 3 StromStG (Schritt 88).
+                    "[" + SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BILANZJAHR + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "] = ?, " +
@@ -957,6 +993,12 @@ namespace WindowsFormsApplication1
                     { Wert = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
                     new DbParam("@auf", DbParamTyp.VarWChar, 30)
                     { Wert = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
+                    // ETAPPE B6: Geschrieben wird IMMER einer der beiden Steuerwerte -
+                    // NULL waere zwar gleichbedeutend mit AUSWEIS, aber eine gepflegte
+                    // Wahl soll auch als gepflegt dastehen.
+                    new DbParam("@stmo", DbParamTyp.VarWChar, 20)
+                    { Wert = Steuerwert(p.StromsteuerBefreiungModus,
+                                        DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS) },
                     new DbParam("@vkwk", DbParamTyp.Double)
                     { Wert = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
@@ -1022,6 +1064,8 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "], " +
+                    // ETAPPE B6 - der Modus des § 9 Abs. 1 Nr. 3 StromStG (Schritt 88).
+                    "[" + SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BILANZJAHR + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "], " +
@@ -1052,7 +1096,7 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1081,6 +1125,12 @@ namespace WindowsFormsApplication1
                     { Wert = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
                     new DbParam("@auf", DbParamTyp.VarWChar, 30)
                     { Wert = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
+                    // ETAPPE B6: Geschrieben wird IMMER einer der beiden Steuerwerte -
+                    // NULL waere zwar gleichbedeutend mit AUSWEIS, aber eine gepflegte
+                    // Wahl soll auch als gepflegt dastehen.
+                    new DbParam("@stmo", DbParamTyp.VarWChar, 20)
+                    { Wert = Steuerwert(p.StromsteuerBefreiungModus,
+                                        DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS) },
                     new DbParam("@vkwk", DbParamTyp.Double)
                     { Wert = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
@@ -1658,6 +1708,11 @@ namespace WindowsFormsApplication1
             public double StromsteuerBefreiungJahr1;
             public double StromsteuerEntlastungJahr1;
             public string SteuerHerkunft;
+
+            /// <summary>ETAPPE B6: true = § 9 Abs. 1 Nr. 3 StromStG ist als Erlösreihe
+            /// angehängt (Modus <c>ERLOES</c>); false = ausgewiesen, aber nicht im
+            /// Kapitalwert (Vorgabe <c>AUSWEIS</c>).</summary>
+            public bool StromsteuerBefreiungAlsErloes;
             /// <summary>ETAPPE E2 (L6): erreichte ELEKTRISCHE Vbh [h/a] — die Größe, an
             /// der die KWKG-Deckelung hängt (0 = kein BHKW / nicht bestimmbar).</summary>
             public double VbhElektrisch;
@@ -1674,6 +1729,15 @@ namespace WindowsFormsApplication1
             public double VermiedenArbeit;
             public double VermiedenLeistung;
             public double VermiedenGesamt;
+
+            /// <summary>
+            /// ETAPPE B7 — die vermiedene Strommenge [MWh/a] (Bedarf ohne Anlage minus
+            /// Restbezug). Sie ist die Bemessungsgroesse der § 9b-Korrektur des
+            /// Ausweises (Konzept § 2.6, Klarstellung 1) und sonst nirgends im Spiel:
+            /// Der Kapitalwert rechnet unveraendert mit den tatsaechlichen
+            /// Reststromkosten.
+            /// </summary>
+            public double VermiedenMengeMWh;
 
             // ETAPPE E7 — Aufschlüsselungen und Nachweise (reine Ausgabe).
             /// <summary>Anteil des PV-Überschusses am Einspeiseerlös [€/a].</summary>
@@ -2063,6 +2127,7 @@ namespace WindowsFormsApplication1
                 e.VermiedenArbeit = r.VermiedenArbeitEur;
                 e.VermiedenLeistung = r.VermiedenLeistungEur;
                 e.VermiedenGesamt = r.VermiedenGesamtEur;
+                e.VermiedenMengeMWh = r.VermiedenMengeMWh;   // B7
                 foreach (string h in r.Herleitung) Melde(e, h);
             }
         }
@@ -2245,7 +2310,14 @@ namespace WindowsFormsApplication1
                     hinweise.Add(MyResource.Resource.WIRT_KWKG_TATBESTAND_OFFEN);
             }
 
-            bool aktiv = satzEigenProjekt > 0 || p.KwkgBonusEinspeisung > 0;
+            // ETAPPE BK1 — DER AKTIVIERUNGSSCHALTER FRAGT DIE ANLAGEN, nicht mehr das
+            // Projekt. Gerechnet wird, was an der Anlage steht (Rückfall aufgegeben);
+            // ein Schalter, der weiter die Projektvorgabe liest, spräche von etwas
+            // anderem als die Rechnung darunter. Die Regel steht EINMAL in
+            // KwkgAktivierung und wird an allen sechs Stellen von dort geholt.
+            bool aktiv = false;
+            foreach (BhkwAnlage ak in BhkwAnlagen(v.IdProjekt))
+                if (KwkgAktivierung.SatzGefuehrt(ak.SatzEigenCt, ak.SatzEinspCt)) { aktiv = true; break; }
             if (!aktiv || v.Ergebnis == null || v.Ergebnis.BHKW == null)
             {
                 if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
@@ -2446,8 +2518,7 @@ namespace WindowsFormsApplication1
 
             double[] reihe = ReiheJeAnlage(v, p, mitMatrix, eigenNettoMWh, einspNettoMWh,
                                            hilfsstrom, auswahl, foerderbeginn, hinweise,
-                                           nachweise, satzEigenProjekt, tatbestand,
-                                           kontingentProjekt, out jahr1);
+                                           nachweise, out jahr1);
             if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
             return reihe;
         }
@@ -2571,14 +2642,6 @@ namespace WindowsFormsApplication1
         /// Hilfsstrom wirkt deshalb ausschließlich über <c>bonusVoll</c>, also als
         /// proportionale Minderung des Zuschlags — genau das, was § 4.3 verlangt.</para>
         /// </summary>
-        /// <param name="satzEigenProjekt">ETAPPE K6: der Eigenstrom-Satz des PROJEKTS nach
-        /// der Prüfung des § 6 Abs. 3 — er greift für jede Anlage ohne eigenen Satz.</param>
-        /// <param name="tatbestandProjekt">ETAPPE B3 Paket b: der Tatbestand des § 6
-        /// Abs. 3 aus dem Projekt (<c>DbWerte.KWKG_EIGENFALL_*</c>, leer = keiner) —
-        /// Rückfall der Prüfung je Anlage.</param>
-        /// <param name="kontingentProjekt">ETAPPE K6: das Vbh-Kontingent des PROJEKTS —
-        /// Override, sonst nach § 8 abgeleitet; Rückfall für jede Anlage ohne eigenen
-        /// Wert.</param>
         /// <param name="mitMatrix">true = die Stundenreihen liefern einen Eigen-/
         /// Einspeise-Split; false = Fallback „alles ist Eigenverbrauch" (W2).</param>
         /// <param name="eigenNettoMWh">KWK-Eigenverbrauch des Projekts nach Abzug des
@@ -2590,9 +2653,7 @@ namespace WindowsFormsApplication1
                                        bool mitMatrix, double eigenNettoMWh, double einspNettoMWh,
                                        HilfsstromSatz hilfsstrom, KwkgAnlagenauswahl auswahl,
                                        int foerderbeginn, List<string> hinweise,
-                                       List<KwkgModulNachweis> nachweise,
-                                       double satzEigenProjekt, string tatbestandProjekt,
-                                       double kontingentProjekt, out double jahr1)
+                                       List<KwkgModulNachweis> nachweise, out double jahr1)
         {
             jahr1 = 0;
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
@@ -2634,9 +2695,12 @@ namespace WindowsFormsApplication1
                 double eigenMWh = mitMatrix ? eigenNettoMWh * anteil : stromAnlageMWh;
                 double einspMWh = mitMatrix ? einspNettoMWh * anteil : 0;
 
-                double satzEigen = SatzEigenDerAnlage(a, satzEigenProjekt, tatbestandProjekt,
-                                                      hinweise);
-                double satzEinsp = a.SatzEinspCt ?? p.KwkgBonusEinspeisung;
+                // ETAPPE BK1 — KEIN RÜCKFALL MEHR AUF DAS PROJEKT. Was hier gerechnet
+                // wird, steht an der Anlage; NULL heißt jetzt 0 und nicht „Projektwert".
+                // Möglich wird das durch Schemaschritt 89, der die Projektvorgaben
+                // einmalig in jede leere Anlagenzelle geschrieben hat.
+                double satzEigen = SatzEigenDerAnlage(a, hinweise);
+                double satzEinsp = a.SatzEinspCt ?? 0;
                 double bonusVoll = eigenMWh * 1000.0 * (satzEigen / 100.0)
                                  + einspMWh * 1000.0 * (satzEinsp / 100.0);
                 if (bonusVoll <= 0) continue;
@@ -2645,10 +2709,16 @@ namespace WindowsFormsApplication1
                 if (vbhAnlage <= 0) continue;
 
                 int beginn = a.Inbetriebnahme.HasValue ? a.Inbetriebnahme.Value.Year : foerderbeginn;
+
+                // BK1: Der Override der Anlage gewinnt; ohne ihn wird das Kontingent
+                // NACH § 8 AUS DIESER ANLAGE abgeleitet (Anlagenart und Kostenanteil der
+                // Anlage) — bis BK1 fiel es auf die projektweite Größe zurück, die für
+                // eine Kaskade nur eines ihrer Module treffen konnte.
                 double kontingent = a.VbhKontingent.HasValue && a.VbhKontingent.Value > 0
-                                  ? a.VbhKontingent.Value : kontingentProjekt;   // K6
+                                  ? a.VbhKontingent.Value
+                                  : KontingentDerAnlage(a, beginn, hinweise);
                 double deckelFest = a.VbhDeckel.HasValue && a.VbhDeckel.Value > 0
-                                  ? a.VbhDeckel.Value : p.KwkgVbhJahresdeckel;
+                                  ? a.VbhDeckel.Value : 0;
 
                 double rest = kontingent;
                 double jahr1Modul = 0;              // E7: Nachweis, kein Rechenweg
@@ -2742,39 +2812,35 @@ namespace WindowsFormsApplication1
         /// dem Tatbestand DIESER Anlage (<c>Tab_Energieanlagen.KWKG_Eigenstromfall</c>)
         /// und dem Projektwert als Rückfall.</para>
         ///
-        /// <para><b>Warum der Anlagenweg strenger ist als der Projektweg.</b> Am Projekt
-        /// lässt ein LEERER Tatbestand den Satz stehen und meldet nur „ungeprüft" — das
-        /// war die Bedingung, unter der K6 für Bestandsprojekte ergebnisneutral bleiben
-        /// konnte (jede Bestandsdatenbank hat die Angabe nie gemacht). An der Anlage gilt
-        /// diese Rücksicht nicht: Ein <c>KWKG_Satz_Eigen</c> ist eine ausdrückliche
-        /// Eingabe, die es im Bestand nirgends gibt (geprüft: alle Anlagenzeilen NULL).
-        /// Wer ihn pflegt, muss auch den Tatbestand nennen, der ihn trägt — <b>ohne
-        /// Tatbestand gibt es den Zuschlag nach § 7 Abs. 2 nicht</b> (Etappendefinition:
-        /// Ergebniswirkung nur bei gepflegten Anlagenangaben, und dort gewollt).</para>
-        ///
-        /// <para><b>Anlagen ohne eigenen Satz bleiben unberührt</b> — für sie hat die
-        /// Prüfung am Projekt bereits entschieden, und <c>KWKG_Eigenstromfall</c> behält
-        /// dort seine E6-Rolle als reiner Steuerwert des Katalogvorschlags.</para>
+        /// <para><b>ETAPPE BK1 — kein Rückfall mehr, und eine Strenge weniger.</b> Der
+        /// Satz kommt ausschließlich aus <c>Tab_Energieanlagen.KWKG_Satz_Eigen</c>; ein
+        /// leeres Feld heißt 0 und nicht mehr „Projektsatz". Zugleich fällt die
+        /// B3b-Strenge gegen den LEEREN Tatbestand weg — sie stand auf der Annahme, ein
+        /// Satz an der Anlage sei eine ausdrückliche Eingabe, die es im Bestand nirgends
+        /// gibt. Diese Annahme ist mit Schemaschritt 89 hinfällig: Dort bekommt JEDE
+        /// Bestandsanlage den Projektsatz eingetragen, den niemand an ihr eingegeben hat.
+        /// Hätte die Strenge Bestand, nähme der Schritt jedem Bestandsprojekt ohne
+        /// gepflegten Tatbestand den Eigenverbrauchszuschlag weg — eine Rechenwirkung, die
+        /// nirgends entschieden wurde. Es gilt deshalb ab hier JE ANLAGE genau die Regel,
+        /// die K6 am Projekt eingeführt hat: Ein leerer Tatbestand lässt den Satz stehen
+        /// und meldet „ungeprüft", <b>nur die ausdrückliche Wahl „keiner" nimmt ihn
+        /// weg</b> (§ 7 Abs. 2).</para>
         /// </summary>
-        private static double SatzEigenDerAnlage(BhkwAnlage a, double satzEigenProjekt,
-                                                 string tatbestandProjekt, List<string> hinweise)
+        private static double SatzEigenDerAnlage(BhkwAnlage a, List<string> hinweise)
         {
-            if (!a.SatzEigenCt.HasValue) return satzEigenProjekt;   // K6: geprüfter Projektsatz
-
-            double satz = a.SatzEigenCt.Value;
+            double satz = a.SatzEigenCt ?? 0;                       // BK1: kein Rückfall
             if (satz <= 0) return satz;                             // nichts zu prüfen
 
             string fall = (a.Eigenfall ?? "").Trim();
-            if (fall.Length == 0) fall = (tatbestandProjekt ?? "").Trim();
 
             if (fall.Length == 0)
             {
                 hinweise.Add(string.Format(T("WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN",
-                    "KWKG: „{0}“ trägt einen eigenen Satz auf selbst genutzten Strom, aber " +
-                    "keinen Tatbestand nach § 6 Abs. 3 — ohne ihn gibt es den " +
-                    "Eigenverbrauchszuschlag nicht (§ 7 Abs. 2); Satz dieser Anlage = 0."),
+                    "KWKG: Für „{0}“ ist kein Tatbestand nach § 6 Abs. 3 erfasst — die " +
+                    "Voraussetzung des Zuschlags auf selbst genutzten Strom (§ 7 Abs. 2) " +
+                    "ist ungeprüft; gerechnet wird mit dem eingetragenen Satz."),
                     a.Bezeichner));
-                return 0;
+                return satz;
             }
 
             if (string.Equals(fall, DbWerte.KWKG_EIGENFALL_KEINER, StringComparison.Ordinal))
@@ -2786,6 +2852,37 @@ namespace WindowsFormsApplication1
                 return 0;
             }
             return satz;
+        }
+
+        /// <summary>
+        /// ETAPPE BK1 — das Vbh-Kontingent EINER Anlage [h] nach § 8 KWKG, abgeleitet aus
+        /// <b>ihrer</b> Anlagenart und <b>ihrem</b> Kostenanteil
+        /// (<see cref="KwkgKontingentRechner"/>).
+        ///
+        /// <para><b>Warum je Anlage.</b> § 8 stellt auf die einzelne KWK-Anlage ab. Bis
+        /// BK1 gab es die Ableitung nur projektweit (<see cref="KontingentDesProjekts"/>);
+        /// eine Kaskade aus einem neuen und einem modernisierten Modul bekam damit für
+        /// beide dieselbe Stufe, obwohl ihnen verschiedene zustehen.</para>
+        ///
+        /// <para>Ohne erfasste Anlagenart liefert der Rechner 0 mit Begründung — das ist
+        /// dieselbe Antwort wie am Projekt und kein stiller Ausfall: Eine Anlage ohne
+        /// Kontingent bekommt keinen Zuschlag, und die Herleitung sagt warum.</para>
+        /// </summary>
+        private double KontingentDerAnlage(BhkwAnlage a, int jahr, List<string> hinweise)
+        {
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
+            System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
+            KwkgKontingentVorschlag v = KwkgKontingentRechner.Ableiten(
+                a.Anlagenart, a.Kostenanteil ?? 0, jahr,
+                (sch, j) => _gesetze.WertMitHerkunft(sch, j), kultur);
+
+            if (hinweise != null)
+                hinweise.Add(string.Format(kultur,
+                    T("WIRT_KWKG_KONTINGENT_ANLAGE",
+                      "KWKG: Für „{0}“ ist kein eigenes Vbh-Kontingent gepflegt — " +
+                      "abgeleitet {1} Vbh ({2})."),
+                    a.Bezeichner, v.KontingentH.ToString("N0", kultur), v.Herleitung));
+            return v.KontingentH;
         }
 
         /// <summary>
@@ -3113,10 +3210,25 @@ namespace WindowsFormsApplication1
             e.StromsteuerEntlastungJahr1 = entlastung[1];
             if (herkunft.Count > 0) e.SteuerHerkunft = string.Join(" | ", herkunft.ToArray());
 
+            // ETAPPE B6 — der Modus des § 9 Abs. 1 Nr. 3 StromStG wandert mit ins
+            // Ergebnis: Die Vergleichstabelle beschriftet ihre Zeile danach, und der
+            // Kohärenzfall zur Doppelzählung hängt an derselben Wahl.
+            e.StromsteuerBefreiungAlsErloes = p != null && p.StromsteuerBefreiungAlsErloes;
+
             // Eine Reihe ohne jeden Betrag wird gar nicht erst angehängt — sie hätte im
             // Kapitalwert keine Wirkung und im Bericht (E7) keinen Aussagewert.
             Reihe(e, KapitalwertRechner.ErloesReihe.ENERGIESTEUER, energie);
-            Reihe(e, KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG, befreiung);
+
+            // ETAPPE B6 (Befund B-1) — § 9 Abs. 1 Nr. 3 StromStG ist KEINE
+            // Rückerstattung: Auf selbst erzeugten und selbst verbrauchten Strom
+            // entsteht gar keine Stromsteuer, der Vorteil steckt bereits in der
+            // kleineren Bezugsrechnung. Im Modus AUSWEIS (Vorgabe) wird der Betrag
+            // deshalb GERECHNET und in StromsteuerBefreiungJahr1 gezeigt, aber nicht
+            // angehängt — er geht nicht in die Erlöse und nicht in den Kapitalwert.
+            // Nur der ausdrückliche Modus ERLOES bucht die Reihe wie bis B5.
+            if (e.StromsteuerBefreiungAlsErloes)
+                Reihe(e, KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG, befreiung);
+
             Reihe(e, KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG, entlastung);
 
             if (begruendungen.Count > 0) hinweis = string.Join(" | ", begruendungen.ToArray());
@@ -3855,8 +3967,14 @@ namespace WindowsFormsApplication1
             public double? VbhKontingent;
 
             /// <summary>Jahresdeckel-Override dieser Anlage [h/a]; <c>null</c> oder 0 =
-            /// Projekt-Override, sonst die Staffel des § 8 Abs. 4.</summary>
+            /// die Staffel des § 8 Abs. 4 (Etappe BK1: kein Rückfall auf den
+            /// Projekt-Override mehr).</summary>
             public double? VbhDeckel;
+
+            /// <summary>ETAPPE BK1 — Anteil an den Neuherstellungskosten DIESER Anlage
+            /// [%] (§ 8 Abs. 2/3); <c>null</c> oder 0 = nicht gepflegt. Er wählt zusammen
+            /// mit <see cref="Anlagenart"/> die Kontingentstufe der Anlage.</summary>
+            public double? Kostenanteil;
 
             /// <summary>true, wenn diese Anlage überhaupt eine eigene E6-Angabe trägt —
             /// die Bedingung, unter der die Rechnung von der Projektvorgabe abweicht.</summary>
@@ -4340,15 +4458,20 @@ namespace WindowsFormsApplication1
             // zwei Steuerspalten, dann nur mit E6, dann ohne beides. Die Zwischenstufe ist
             // kein Papierfall: Eine Datenbank auf Schema 22..60 hat die E6-Spalten und die
             // B3a-Spalten nicht.
-            DataTable dt = AnlagenTabelle(idProjekt, idType, true, true);
+            // ETAPPE BK1: eine vierte Stufe ganz oben — der Kostenanteil je Anlage
+            // entsteht erst mit Migrationsschritt 89, eine Datenbank auf 61..88 hat E6
+            // und B3a, aber ihn nicht.
+            DataTable dt = AnlagenTabelle(idProjekt, idType, true, true, true);
+            bool mitBk1 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL);
+            if (!mitBk1) dt = AnlagenTabelle(idProjekt, idType, true, true, false);
             bool mitB3a = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL);
             bool mitE6 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG);
             if (!mitB3a)
             {
-                dt = AnlagenTabelle(idProjekt, idType, true, false);
+                dt = AnlagenTabelle(idProjekt, idType, true, false, false);
                 mitE6 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG);
             }
-            if (!mitE6) dt = AnlagenTabelle(idProjekt, idType, false, false);
+            if (!mitE6) dt = AnlagenTabelle(idProjekt, idType, false, false, false);
 
             var liste = new List<BhkwAnlage>();
             if (dt == null) return liste;
@@ -4378,6 +4501,10 @@ namespace WindowsFormsApplication1
                         anl.VbhKontingent = D(r, SchemaKatalog.SPALTE_EA_KWKG_KONTINGENT);
                         anl.VbhDeckel = D(r, SchemaKatalog.SPALTE_EA_KWKG_DECKEL);
                     }
+
+                    // ETAPPE BK1: null heißt „nicht gepflegt" — dann gibt es kein
+                    // abgeleitetes Kontingent, sondern eine Begründung.
+                    if (mitBk1) anl.Kostenanteil = D(r, SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL);
 
                     if (mitB3a)
                     {
@@ -4413,7 +4540,8 @@ namespace WindowsFormsApplication1
         /// JOIN</c> des Bestands — dort hängt die 2-MW-Prüfung an <c>Pel</c>, und eine
         /// Zeile ohne Gerät hätte keine.</para>
         /// </summary>
-        private static DataTable AnlagenTabelle(int idProjekt, int idType, bool mitE6, bool mitB3a)
+        private static DataTable AnlagenTabelle(int idProjekt, int idType, bool mitE6,
+                                               bool mitB3a, bool mitBk1)
         {
             string e6 = mitE6
                 ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_STICHTAG + "]" +
@@ -4433,6 +4561,10 @@ namespace WindowsFormsApplication1
                   ", a.[" + SchemaKatalog.SPALTE_EA_AUFTEILUNG_METHODE + "]" +
                   ", a.[" + SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "]"
                 : "";
+            // ETAPPE BK1: eigene Stufe, weil der Kostenanteil erst mit Schritt 89 kommt.
+            string bk1 = mitBk1
+                ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL + "]"
+                : "";
 
             bool bhkw = idType == WizardItemClass.BHKW_TYP;
             string geraet = bhkw ? "b.Pel, b.Brennstoff" : "0 AS Pel, b.Brennstoff";
@@ -4444,7 +4576,7 @@ namespace WindowsFormsApplication1
                 using (DataRepository.EngineModus())
                     return DataRepository.GetDataTable(
                         "SELECT a.ID, a.ID_Projekt, a.Bezeichner, a.ID_Carrier, " +
-                        geraet + e6 + b3a + " " +
+                        geraet + e6 + b3a + bk1 + " " +
                         "FROM Tab_Energieanlagen AS a " + join +
                         // KEIN ORDER BY — bewusst. Die Zuordnung Anlage ↔ Ergebnismodul
                         // fällt bei nicht passenden Bezeichnern auf die REIHENFOLGE
@@ -4975,6 +5107,7 @@ namespace WindowsFormsApplication1
             erg.KwkgVbhElektrisch = eingabe.VbhElektrisch;    // E2: Bezugsgröße der Deckelung
             erg.EnergiesteuerJahr1 = eingabe.EnergiesteuerJahr1;              // E4
             erg.StromsteuerBefreiungJahr1 = eingabe.StromsteuerBefreiungJahr1;
+            erg.StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes;   // B6
             erg.StromsteuerEntlastungJahr1 = eingabe.StromsteuerEntlastungJahr1;
             erg.SteuerHerkunft = eingabe.SteuerHerkunft;
             erg.StromkostenTarif = eingabe.StromkostenTarif;  // W3: Tarifmatrix
@@ -5008,6 +5141,38 @@ namespace WindowsFormsApplication1
             }
             erg.KwkgModule = eingabe.KwkgModule;
             erg.Betriebskosten = eingabe.Betriebskosten;
+            // ETAPPE B7 (Konzept § 3.5): die Energiekosten je Anlage — gebildet vom
+            // KostenEmissionRechner aus denselben Mengen und Preisen, aus denen
+            // erg.EnergiekostenJahr entstanden ist. Nur Ausweis, nur frischer Lauf.
+            if (v.EnergiekostenJeAnlage != null)
+                erg.EnergiekostenJeAnlage = v.EnergiekostenJeAnlage;
+
+            // ETAPPE B7 (Konzept § 2.6, Klarstellung 1) — die § 9b-KORREKTUR des
+            // AUSWEISES. Sie ruehrt den Kapitalwert nicht an: Angehaengt wird keine
+            // Reihe, veraendert wird keine; berechnet wird allein, um wie viel der
+            // ausgewiesene Vorteil zu hoch stuende, wenn die entgangene Entlastung
+            // fehlte. Die Bemessungsgroesse ist die vermiedene MENGE, nicht der
+            // Netzbezug — nur sie ist die Menge, die beide Seiten der Differenz
+            // unterscheidet.
+            //
+            // Die Unternehmensart kommt aus derselben Eingabe, mit der die
+            // Steuerrechnung gerechnet hat (B2), und die Pruefung ist dieselbe Funktion
+            // (SteuerGutschriftRechner.ProduzierendesGewerbe) — eine zweite Fassung
+            // waere eine zweite Antwort auf dieselbe Frage.
+            erg.VermiedenMengeMWh = eingabe.VermiedenMengeMWh;
+            if (eingabe.SteuerEingabe != null &&
+                SteuerGutschriftRechner.ProduzierendesGewerbe(eingabe.SteuerEingabe))
+            {
+                erg.ProduzierendesGewerbe = true;
+                if (eingabe.VermiedenMengeMWh > 0)
+                {
+                    if (_gesetze == null) _gesetze = new GesetzKatalog();
+                    double? satz = _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B,
+                                                 Foerderbeginn(p));
+                    if (satz.HasValue && satz.Value > 0)
+                        erg.VermiedenEntlastung9bJahr = satz.Value * eingabe.VermiedenMengeMWh;
+                }
+            }
             erg.Hinweis = eingabe.Hinweis;
 
             // Trägerzuordnungs-Etappe: Fiel die Emissionsrechnung mangels zugeordnetem
@@ -5071,6 +5236,7 @@ namespace WindowsFormsApplication1
                     Steuer = eingabe.SteuerEingabe,
                     EnergiesteuerEur = eingabe.EnergiesteuerJahr1,
                     StromsteuerBefreiungEur = eingabe.StromsteuerBefreiungJahr1,
+                    StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes,   // B6
                     StromsteuerEntlastungEur = eingabe.StromsteuerEntlastungJahr1
                 });
             }
@@ -6378,6 +6544,9 @@ namespace WindowsFormsApplication1
                                 pl.Add(new DbParam("@vbhel", R(e.KwkgVbhElektrisch)));   // E2 (L6)
                                 pl.Add(new DbParam("@enst", R(e.EnergiesteuerJahr1)));   // E4
                                 pl.Add(new DbParam("@stbe", R(e.StromsteuerBefreiungJahr1)));
+                                pl.Add(new DbParam("@stmo", e.StromsteuerBefreiungAlsErloes   // B6
+                                    ? DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES
+                                    : DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS));
                                 pl.Add(new DbParam("@sten", R(e.StromsteuerEntlastungJahr1)));
                                 pl.Add(new DbParam("@sthk", (object)e.SteuerHerkunft ?? DBNull.Value));
                                 pl.Add(new DbParam("@vmar", R(e.VermiedenArbeitJahr)));   // E5
@@ -6407,6 +6576,7 @@ namespace WindowsFormsApplication1
                                 "AnnuitaetKW, AmortisationJahre, Gestehungskosten, " +
                                 "IRR, CO2Abgabe, KWKGErloes, " + SPALTE_KWKG_VBH_EL + ", " +
                                 SPALTE_ENERGIESTEUER + ", " + SPALTE_STROMST_BEFREIUNG + ", " +
+                                SPALTE_STROMST_MODUS + ", " +
                                 SPALTE_STROMST_ENTLASTUNG + ", " + SPALTE_STEUER_HERKUNFT + ", " +
                                 SPALTE_VERMIEDEN_ARBEIT + ", " + SPALTE_VERMIEDEN_LEISTUNG + ", " +
                                 SPALTE_VERMIEDEN_GESAMT + ", " + SPALTE_AUFSCHLAG_BETRAG + ", " +
@@ -6418,7 +6588,7 @@ namespace WindowsFormsApplication1
                                 SPALTE_PV_KAPPUNG_KWH + ", " + SPALTE_PV_VERMIEDEN + ", " +
                                 "StromkostenTarif, HinweisText, Fehlgrund, " +
                                 SPALTE_ERSATZ_BARWERT + ") " +
-                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
+                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
                             }
                             naechsteId++;
                         }
@@ -6539,6 +6709,13 @@ namespace WindowsFormsApplication1
                             KwkgVbhElektrisch = D(r, SPALTE_KWKG_VBH_EL) ?? 0,   // E2 (L6)
                             EnergiesteuerJahr1 = D(r, SPALTE_ENERGIESTEUER) ?? 0,          // E4
                             StromsteuerBefreiungJahr1 = D(r, SPALTE_STROMST_BEFREIUNG) ?? 0,
+                            // B6: Nur der ausdrueckliche Wert ERLOES; leer und NULL
+                            // bedeuten AUSWEIS - so liest sich ein vor B6 gespeicherter
+                            // Lauf wie die heutige Vorgabe.
+                            StromsteuerBefreiungAlsErloes =
+                                string.Equals(Text(r, SPALTE_STROMST_MODUS),
+                                              DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES,
+                                              StringComparison.Ordinal),
                             StromsteuerEntlastungJahr1 = D(r, SPALTE_STROMST_ENTLASTUNG) ?? 0,
                             SteuerHerkunft = Text(r, SPALTE_STEUER_HERKUNFT).Length > 0
                                              ? Text(r, SPALTE_STEUER_HERKUNFT) : null,

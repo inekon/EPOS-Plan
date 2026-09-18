@@ -7551,7 +7551,7 @@ The recorded amount is currently {5:N2} €; I would enter {6:N2} € (differenc
     <value>The preview has expired — nothing was changed. Please ask again.</value>
   </data>
   <data name="BILANZ_AUSWEIS" xml:space="preserve">
-    <value>Balancing: balance year {0} · CHP electricity {1} ({2}) · biomass {3} · {4}</value>
+    <value>Emission balance: balance year {0} · CHP electricity {1} ({2}) · biomass {3} · {4}</value>
   </data>
   <data name="BILANZ_METHODE_STROMGUTSCHRIFT" xml:space="preserve">
     <value>with an electricity credit from the reference power plant</value>
@@ -9700,9 +9700,6 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KOH_FALL2_STROMST_9B" xml:space="preserve">
     <value>The electricity tax relief under § 9b StromStG of {0} €/a presupposes that the electricity price on record includes the electricity tax. The price does not show it ({1}).</value>
   </data>
-  <data name="KOH_FALL2_STROMST_9_1_3" xml:space="preserve">
-    <value>The electricity tax exemption under § 9 (1) no. 3 StromStG of {0} €/a is booked as revenue although the electricity price on record does not show the electricity tax ({1}).</value>
-  </data>
   <data name="KOH_FALL3_STROMSTEUER" xml:space="preserve">
     <value>The electricity price on record shows an electricity tax of {0} ct/kWh, but no relief under § 9b StromStG is booked.</value>
   </data>
@@ -9791,7 +9788,10 @@ The switch is only shown if the project contains such a generator.</value>
     <value>CHP Act: For "{0}" the qualifying case under Section 6 (3) is set to "none" — its own rate for self-consumed electricity does not apply (Section 7 (2)).</value>
   </data>
   <data name="WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN" xml:space="preserve">
-    <value>CHP Act: "{0}" carries its own rate for self-consumed electricity but no qualifying case under Section 6 (3) — without it there is no self-consumption bonus (Section 7 (2)); rate of this unit = 0.</value>
+    <value>CHP Act: no case under sec. 6 (3) is recorded for "{0}" — the precondition for the surcharge on self-consumed electricity (sec. 7 (2)) is unverified; the rate on record is used.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANLAGE" xml:space="preserve">
+    <value>CHP Act: no own full-load hour quota is maintained for "{0}" — derived {1} full-load hours ({2}).</value>
   </data>
   <data name="PREIS_ST_ART_KEIN_PROD_GEWERBE" xml:space="preserve">
     <value>not manufacturing industry</value>
@@ -9975,10 +9975,10 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Units</value>
   </data>
   <data name="BHW_G1B" xml:space="preserve">
-    <value>Settings of the selected unit — empty or 0 = project default</value>
+    <value>Settings of the selected unit</value>
   </data>
   <data name="BHW_G2" xml:space="preserve">
-    <value>CHP surcharge (project default)</value>
+    <value>Project-wide CHP settings</value>
   </data>
   <data name="BHW_G3" xml:space="preserve">
     <value>Energy tax (project default)</value>
@@ -10029,13 +10029,16 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Self-consumption under sec. 6 (3):</value>
   </data>
   <data name="BHW_A_SATZ_EINSP" xml:space="preserve">
-    <value>Feed-in rate [ct/kWh] (0 = project rate):</value>
+    <value>Feed-in rate [ct/kWh] (0 = no surcharge):</value>
   </data>
   <data name="BHW_A_SATZ_EIGEN" xml:space="preserve">
-    <value>Self-consumption rate [ct/kWh] (0 = project rate):</value>
+    <value>Self-consumption rate [ct/kWh] (0 = no surcharge):</value>
   </data>
   <data name="BHW_A_KONTINGENT" xml:space="preserve">
-    <value>Full-load hour quota [h] (0 = project value):</value>
+    <value>Full-load hour quota [h] (0 = derived per sec. 8):</value>
+  </data>
+  <data name="BHW_A_KOSTENANTEIL" xml:space="preserve">
+    <value>Share of new-build cost [%] (sec. 8 (2)/(3)):</value>
   </data>
   <data name="BHW_A_DECKEL" xml:space="preserve">
     <value>Annual full-load hour cap [h/a] (0 = schedule):</value>
@@ -10052,41 +10055,26 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BHW_A_HILFS_BASIS" xml:space="preserve">
     <value>Suggested 2–4 % for CHP. Measured against this unit's final energy demand (fuel) — not against cost.</value>
   </data>
-  <data name="BHW_P_BONUS_EIGEN" xml:space="preserve">
-    <value>Self-consumption bonus [ct/kWh] (0 = off):</value>
-  </data>
   <data name="BHW_P_EINSP_KWK_HINWEIS" xml:space="preserve">
     <value>This rate applies to the whole application: it values exported CHP electricity in the economic assessment AND provides the selling price used by the electricity storage and the storage fleet for the CHP surplus (v_bhkw). 0 means "not maintained"; the PV rate from the economic parameters then applies to CHP electricity, and without it the storage calculation uses 0 and says so in the log. The CHP bonus comes on top - it does not replace the tariff.</value>
-  </data>
-  <data name="BHW_P_BONUS_EINSP" xml:space="preserve">
-    <value>Feed-in bonus [ct/kWh]:</value>
-  </data>
-  <data name="BHW_P_DECKEL" xml:space="preserve">
-    <value>Full-load hour cap override [h/a]:</value>
-  </data>
-  <data name="BHW_P_KONTINGENT" xml:space="preserve">
-    <value>Total full-load hour quota [h] (0 = automatic):</value>
   </data>
   <data name="BHW_P_ABSCHLAG" xml:space="preserve">
     <value>Negative-price hour deduction [%]:</value>
   </data>
-  <data name="BHW_P_TATBESTAND" xml:space="preserve">
-    <value>Self-consumption case (sec. 6 (3)):</value>
-  </data>
-  <data name="BHW_P_ANLAGENART" xml:space="preserve">
-    <value>Unit category (sec. 8):</value>
-  </data>
   <data name="BHW_P_KOSTENANTEIL" xml:space="preserve">
-    <value>Share of new-build cost [%]:</value>
+    <value>Share of new-build cost [%] (default for units without their own value):</value>
+  </data>
+  <data name="BHW_P_NUR_PROJEKTWEIT" xml:space="preserve">
+    <value>Rate, quota, annual cap, unit type and self-consumption case belong to the unit (sec. 7 and sec. 8 CHP Act measure them per unit) — above under "Settings of the selected unit", each with a button for the catalogue proposal next to the field.</value>
   </data>
   <data name="BHW_P_PAUSCHAL" xml:space="preserve">
     <value>Lump sum under sec. 9 KWKG (up to 2 kWel, one-off)</value>
   </data>
   <data name="BHW_P_STICHTAG" xml:space="preserve">
-    <value>Cut-off date, default per unit:</value>
+    <value>Reference date (order/approval, sec. 6):</value>
   </data>
   <data name="BHW_P_IBN" xml:space="preserve">
-    <value>Commissioning, default per unit:</value>
+    <value>Start of funding (first year of the annual series):</value>
   </data>
   <data name="BHW_E_WAHL" xml:space="preserve">
     <value>Energy tax relief:</value>
@@ -10111,9 +10099,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="BHW_S_MODUS" xml:space="preserve">
     <value>Mode under sec. 9 (1) no. 3:</value>
-  </data>
-  <data name="BHW_S_MODUS_B6" xml:space="preserve">
-    <value>from stage B6 — until then fixed to "disclosure" (not in the net present value).</value>
   </data>
   <data name="BHW_H_BASIS" xml:space="preserve">
     <value>The share is maintained per unit above and measured against the unit's FINAL ENERGY DEMAND (fuel) — not against cost. The quantity reduces the eligible net power generation.</value>
@@ -10159,6 +10144,21 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="BHW_HERLEITUNG_EIGEN" xml:space="preserve">
     <value>Self-consumption {0} ct/kWh — {1}</value>
+  </data>
+  <data name="BHW_HERLEITUNG_KONTINGENT" xml:space="preserve">
+    <value>Quota {0} full-load hours — {1}</value>
+  </data>
+  <data name="BHW_BTN_VORSCHLAG_FELD" xml:space="preserve">
+    <value>Apply proposal</value>
+  </data>
+  <data name="BHW_SPERR_OHNE_PEL" xml:space="preserve">
+    <value>No proposal: this unit has no electrical rated output on record.</value>
+  </data>
+  <data name="BHW_SPERR_OHNE_EIGENFALL" xml:space="preserve">
+    <value>No proposal: without a case under sec. 6 (3) there is no surcharge on self-consumed electricity (sec. 7 (2)) — fill the field "Self-consumption under sec. 6 (3)".</value>
+  </data>
+  <data name="BHW_SPERR_OHNE_ANLAGENART" xml:space="preserve">
+    <value>No proposal: without a unit type, sec. 8 CHP Act selects no quota level — fill the field "Unit type"; modernised and retrofitted units also need the share of new-build cost.</value>
   </data>
   <data name="BHW_W_AUSSCHREIBUNG" xml:space="preserve">
     <value>Tendering under sec. 8a KWKG: {0} above {1} kW.</value>
@@ -10231,9 +10231,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="BHW_W_MODUS_ERLOES" xml:space="preserve">
     <value>revenue (in the net present value)</value>
-  </data>
-  <data name="BHW_BTN_VORSCHLAG" xml:space="preserve">
-    <value>Apply suggestion to the rate fields</value>
   </data>
   <data name="BHW_BTN_STROMBEZUG" xml:space="preserve">
     <value>Electricity purchase…</value>
@@ -19336,5 +19333,149 @@ Do you want to allow this?</value>
   </data>
   <data name="SP_KONTEXT_PEAK_ADAPTIV" xml:space="preserve">
     <value> (adaptive)</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMST_BEFREIUNG_AUSWEIS" xml:space="preserve">
+    <value>Electricity tax exemption [€/a] (disclosure, not in the net present value)</value>
+  </data>
+  <data name="KOH_FALL1_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax: the chosen relief and the price component match ({0}).</value>
+  </data>
+  <data name="KOH_DOPPEL_STROMST_9_1_3" xml:space="preserve">
+    <value>Possible double count: the electricity tax exemption under sec. 9 (1) no. 3 StromStG of {0} €/a is booked as revenue. The benefit is already contained in the smaller purchase bill — booking it as revenue is only correct if the purchase price applied includes the electricity tax on self-consumption.</value>
+  </data>
+  <data name="AUFLOESER_KOMP_BHKW" xml:space="preserve">
+    <value>CHP unit</value>
+  </data>
+  <data name="AUFLOESER_KOMP_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="AUFLOESER_KOMP_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ANLAGE" xml:space="preserve">
+    <value>{0} “{1}”</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE" xml:space="preserve">
+    <value>all {0} modules</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE_WP" xml:space="preserve">
+    <value>all heat pump modules</value>
+  </data>
+  <data name="WVERL_UNTER_DIFF" xml:space="preserve">
+    <value>Cumulative discounted differential cash flows variant − base; intersection with the zero line = dynamic payback. Without residual value.</value>
+  </data>
+  <data name="WVERL_UNTER_ABS" xml:space="preserve">
+    <value>Cumulative discounted cash flows (costs negative). Without residual value — net present value = final value + present value of the residual value.</value>
+  </data>
+  <data name="WVERL_RESTWERTE" xml:space="preserve">
+    <value>Present values of residual value at the end of the horizon (not contained in the lines): {0}</value>
+  </data>
+  <data name="WVERL_OHNE_REIHE" xml:space="preserve">
+    <value>⚠ Without series: {0}</value>
+  </data>
+  <data name="WVERL_STATUS_KOPF" xml:space="preserve">
+    <value>Profile over {0} years, scenario “{1}”</value>
+  </data>
+  <data name="WVERL_STATUS_ABWEICHEND" xml:space="preserve">
+    <value> (differs from T = {0} a — display only, stored results unchanged{1}).</value>
+  </data>
+  <data name="WVERL_STATUS_JENSEITS" xml:space="preserve">
+    <value>; zero crossings beyond T do not appear in the stored payback figure</value>
+  </data>
+  <data name="WVERL_TITEL_STAMM" xml:space="preserve">
+    <value>{0} — base project: {1}</value>
+  </data>
+  <data name="BHW_S_MODUS_HERLEITUNG" xml:space="preserve">
+    <value>Disclosure: the exemption is shown and not included in the net present value. Revenue: it is booked as revenue — only if the purchase price includes the electricity tax.</value>
+  </data>
+  <data name="PVW_AW_ZEILE" xml:space="preserve">
+    <value>AW_mix: {0:0.00} ct/kWh</value>
+  </data>
+  <data name="KOH_FALL4_EINHEIT_UNVERGLEICHBAR" xml:space="preserve">
+    <value>{0}: the catalogue rate for {1} is given in {2}, while the project bills per {3}. Without the density of the energy carrier the two cannot be converted — the energy tax component in the price is not checked here.</value>
+  </data>
+  <data name="WIRT_ERL_KOPF_A" xml:space="preserve">
+    <value>Revenues and benefits — cash-effective (year 1)</value>
+  </data>
+  <data name="WIRT_ERL_KOPF_B" xml:space="preserve">
+    <value>Disclosure — never part of the total</value>
+  </data>
+  <data name="WIRT_ERL_A_KWKG" xml:space="preserve">
+    <value>CHP bonus (sec. 7 KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A1_EINSPEISUNG" xml:space="preserve">
+    <value>of which fed into the grid (sec. 7 (1) KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A2_EIGEN" xml:space="preserve">
+    <value>of which self-consumed (sec. 7 (2) KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax relief (sec. 53/53a resp. 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_STROMST_ENTLASTUNG" xml:space="preserve">
+    <value>Electricity tax relief on grid supply (sec. 9b StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_STROMST_BEFREIUNG" xml:space="preserve">
+    <value>Electricity tax exemption, self-consumption (sec. 9 (1) no. 3 StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_EINSPEISUNG" xml:space="preserve">
+    <value>Feed-in revenue, electricity [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_SUMME" xml:space="preserve">
+    <value>Total revenues and benefits, cash-effective [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_B1_BRUTTO" xml:space="preserve">
+    <value>Avoided electricity cost, gross [€/a] (disclosure)</value>
+  </data>
+  <data name="WIRT_ERL_B1_ABZUG_9B" xml:space="preserve">
+    <value>less forgone relief (sec. 9b StromStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_B1_EFFEKTIV" xml:space="preserve">
+    <value>Avoided electricity cost, effective [€/a] (disclosure)</value>
+  </data>
+  <data name="WIRT_GRUND_KWKG" xml:space="preserve">
+    <value>no CHP bonus rate maintained, or quota exhausted</value>
+  </data>
+  <data name="WIRT_GRUND_ENERGIESTEUER" xml:space="preserve">
+    <value>no relief provision selected, or no tax rate assigned</value>
+  </data>
+  <data name="WIRT_GRUND_NUR_PROD_GEWERBE" xml:space="preserve">
+    <value>manufacturing sector only; less the base amount of €250/a</value>
+  </data>
+  <data name="WIRT_GRUND_EINSPEISUNG" xml:space="preserve">
+    <value>no feed-in tariff maintained</value>
+  </data>
+  <data name="BK_KOSTEN_SP_CO2E" xml:space="preserve">
+    <value>CO₂ equivalent [g/kWh]</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_REGEL" xml:space="preserve">
+    <value>{0} (GWP100). Origin of the CO₂ value: level „{1}“. Lookup chain: project value → active emission value → fuel master → carrier catalogue.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_NUR_CO2" xml:space="preserve">
+    <value>No emission type other than CO₂ is stored for this energy carrier — the equivalent value therefore equals the CO₂ factor. Origin: level „{0}“.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_IST_CO2E" xml:space="preserve">
+    <value>The stored value already is a CO₂ equivalent (level „{0}“) and is not summed up.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_OHNE_KATALOG" xml:space="preserve">
+    <value>The emission type catalogue holds no equivalence factors for this energy carrier — what is shown is the pure CO₂ factor of level „{0}“, not an equivalent.</value>
+  </data>
+  <data name="BK_KOSTEN_EMISSION_CO2" xml:space="preserve">
+    <value>CO₂ factor of level „{0}“. Lookup chain: project value → active emission value → fuel master → carrier catalogue.</value>
+  </data>
+  <data name="WIRT_ENK_KOPF" xml:space="preserve">
+    <value>Energy cost by plant [€/a]</value>
+  </data>
+  <data name="WIRT_ENK_ANLAGE" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="BHW_G6_OHNE_RUBRIK" xml:space="preserve">
+    <value>No run yet — the section fills once you press „Calculate“ on the economics tab.</value>
+  </data>
+  <data name="WIRT_ENK_ZEILE" xml:space="preserve">
+    <value>of which {0} [€/a]</value>
+  </data>
+  <data name="WIRT_ENK_NETZBEZUG" xml:space="preserve">
+    <value>Grid supply, electricity</value>
   </data>
 </root>

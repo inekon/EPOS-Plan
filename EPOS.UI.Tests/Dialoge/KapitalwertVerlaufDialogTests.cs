@@ -11,9 +11,17 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Kapitalwert-Verlauf (iU9-W1.6). Soll ist die Feldkarte von
 /// <c>Form_WirtschaftlichkeitVerlauf</c>: Zeitraum (2..60), Szenario,
 /// "Aktualisieren", zwei Bilder, Restwertzeile, Statuszeile, "Schliessen".
+///
+/// <para><b>Die Kultur ist gepinnt (Etappe B6, K11).</b> Die Beschriftungen des
+/// Dialogs sind bis B5b deutsche Zeichenketten im Quelltext gewesen; seit B6 kommen
+/// sie aus <c>MyResource</c> und folgen damit der Oberflaechensprache. Die
+/// Erwartungen hier sind deutsch, der CI-Laeufer steht auf en-US - ohne die
+/// Vorrichtung waeren diese Faelle auf dem Laeufer rot und auf dem Entwicklungsrechner
+/// gruen.</para>
 /// </summary>
-public class KapitalwertVerlaufDialogTests : BunitContext
+public class KapitalwertVerlaufDialogTests : EposBunitContext
 {
+
     private static readonly (int Id, string Text)[] Szenarien =
     {
         (0, "Erwartet"),

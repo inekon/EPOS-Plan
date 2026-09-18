@@ -485,7 +485,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Produzierendes Gewerbe oder Land- und Forstwirtschaft — die
         /// gemeinsame Voraussetzung von § 9b StromStG und § 54 EnergieStG (K6).</summary>
-        private static bool ProduzierendesGewerbe(SteuerEingabe e)
+        /// <summary>
+        /// Unternehmensart mit Entlastungsanspruch — produzierendes Gewerbe oder Land-
+        /// und Forstwirtschaft. <b>Seit B7 oeffentlich:</b> Die Erloesrubrik (Konzept
+        /// § 2.6) kennzeichnet damit die Zeilen A5, A6 und B1 als „nur produzierendes
+        /// Gewerbe" und rechnet die § 9b-Korrektur des Ausweises nur dort. Eine zweite
+        /// Fassung derselben Pruefung waere eine zweite Antwort auf dieselbe Frage.
+        /// </summary>
+        public static bool ProduzierendesGewerbe(SteuerEingabe e)
         {
             return string.Equals(e.Unternehmensart, DbWerte.UNTERNEHMENSART_PROD_GEWERBE,
                                  StringComparison.Ordinal) ||
