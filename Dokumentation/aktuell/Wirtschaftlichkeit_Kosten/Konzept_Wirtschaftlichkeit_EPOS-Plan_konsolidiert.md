@@ -358,7 +358,7 @@ herzuleiten.
 >
 > - **A1 und A2 stehen in einer Zeile** „KWK-Zuschlag (§ 7 KWKG)" mit zwei Unterzeilen
 >   „davon Einspeisung" und „davon Eigenstrom". Die Aufteilung kommt aus dem Modulnachweis
->   `KwkgModulNachweis`; seit B7P reist er im Nachweisumschlag des Ergebnisses mit, die beiden
+>   `KwkgModulNachweis`; er reist im Nachweisumschlag des Ergebnisses mit, die beiden
 >   Unterzeilen erscheinen deshalb auch beim gebuchten Stand.
 > - **A3 (Pauschale § 9 KWKG) hat keine Zeile.** Sie ist eine einmalige Zahlung im Jahr 0 und
 >   stünde in einer €/a-Spalte falsch; greift sie, sagt es der Hinweis des Laufs.
@@ -429,10 +429,10 @@ unterscheidet die beiden Seiten der Differenz (`StromErloesErgebnis.VermiedenMen
 Bedarf ohne Anlage − Restbezug). Der Entlastungssatz kommt jahresgenau aus dem Gesetzeskatalog
 (`GESETZ_STROMST_ENTLASTUNG_9B`), die Prüfung der Unternehmensart aus derselben Funktion, mit der
 die Steuerrechnung rechnet (`SteuerGutschriftRechner.ProduzierendesGewerbe`). Die drei Größen
-(`VermiedenMengeMWh`, `VermiedenEntlastung9bJahr`, `ProduzierendesGewerbe`) sind **nicht
-persistiert** — sie tragen ausschließlich den Ausweis, und dafür genügt der frische Lauf; die
-Korrekturzeilen entfallen ohne sie wie jede andere Zeile ohne Wert. **Der Kapitalwert ist
-unberührt:** Es wird keine Reihe angehängt und keine verändert.
+(`VermiedenMengeMWh`, `VermiedenEntlastung9bJahr`, `ProduzierendesGewerbe`) reisen zusammen mit
+`BezugsspitzeKW` im **Nachweisumschlag** der Ergebniszeile (`ErgebnisNachweisUmschlag`, Spalte
+`Nachweis_Json`); die Korrekturzeilen stehen deshalb auch beim gebuchten Stand. **Der Kapitalwert
+ist unberührt:** Es wird keine Reihe angehängt und keine verändert.
 
 **(2) Die Energiesteuer des BHKW-Brennstoffs hängt _nicht_ an der Unternehmensart.** Geprüft am
 Gesetzestext und am Code:
@@ -883,9 +883,11 @@ Windows-Gabe der Seite, Word und Excel über `Sichtbare` gemeinsam ziehen. Zwei 
 **verwaist, kein Fehler**: der Überschriftsschlüssel `WIRT_ENK_KOPF` („Energiekosten je Anlage
 [€/a]") wird außer in der Designer-Datei nirgends gelesen, und `AnlageHerleitung` („Menge × Preis =
 Betrag") hat als einzigen Aufrufer einen Test — beides kann die Ergebnisansicht ohne neue Schlüssel
-verwenden. **Die Lücke** ist eine andere: Die Nachweise je Anlage werden nicht persistiert (B7-2),
-nach dem Neuladen einer gespeicherten Rechnung fehlen die davon-Zeilen. Das Mockup führt die Zeile
-unter ihrem Namen an ihrer Stelle, in der Tafel der laufenden Kosten und in der BHKW-Ansicht
+verwenden. **Die Nachweise je Anlage bleiben erhalten:** Sie reisen im Nachweisumschlag der
+Ergebniszeile mit (`ErgebnisNachweisUmschlag`, Spalte `Nachweis_Json`), die davon-Zeilen stehen
+deshalb auch nach dem Neuladen einer gespeicherten Rechnung; nur eine ohne Umschlag gebuchte
+Zeile lädt wie zuvor, also ohne sie. Das Mockup führt die Zeile unter ihrem Namen an ihrer
+Stelle, in der Tafel der laufenden Kosten und in der BHKW-Ansicht
 („Energiekosten — davon Blockheizkraftwerk" statt „Brennstoffkosten"); Photovoltaik hat keine
 Zeile (keine Endenergie, Hilfsenergie als Jahresbetrag in den Betriebskosten).
 
@@ -1856,8 +1858,9 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 9j. **Verlauf mit drei Szenarien:** Dreierreihe statt eines Szenarios je Lauf, Reihenbildung
     Variante × Szenario, `Gestrichelt` im Verlaufsbild lesen, Spaltengruppen je Szenario im
     Tabellenbericht, plattformfreie Rechen- und Zeichenlogik.
-9k. **Persistenz der Nachweise je Anlage** (Energiekosten-Unterzeilen nach dem Neuladen) — Teil
-    von B7-2.
+9k. ~~**Persistenz der Nachweise je Anlage** (Energiekosten-Unterzeilen nach dem Neuladen) — Teil
+    von B7-2.~~ — erledigt mit B7P zusammen mit 9b: Der Nachweisumschlag der Ergebniszeile
+    trägt die Unterzeilen mit.
 
 **Fachlich und technisch**
 
@@ -1868,7 +1871,8 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 14. Reduzierter Stromsteuersatz bleibt Konstante bis zur Katalog-Nachpflege
 15. Bilanzjahr und Unternehmensart wirken erst beim nächsten Dialog-Öffnen
 16. Rückweg „Parameterdialog zeigt den erfassten Preisanteil" fehlt
-17. Kohärenzzeilen nicht persistiert · Fall 4 ohne Katalogsatz bleibt still
+17. ~~Kohärenzzeilen nicht persistiert~~ — erledigt mit B7P, sie reisen im Nachweisumschlag mit ·
+    Fall 4 ohne Katalogsatz bleibt still
 18. Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1) — nur mit vollem Referenzlauf
 19. Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel"
 
