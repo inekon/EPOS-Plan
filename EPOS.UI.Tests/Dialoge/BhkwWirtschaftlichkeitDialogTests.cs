@@ -217,8 +217,8 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Equal(new[]
         {
             "Anlagen",
-            "Angaben der gewählten Anlage — leer bzw. 0 = Projektvorgabe",
-            "KWK-Zuschlag (Projektvorgabe)",
+            "Angaben der gewählten Anlage",
+            "Projektweite KWK-Angaben",
             "Energiesteuer (Projektvorgabe)",
             "Stromsteuer (Projektvorgabe)",
             "Kohärenzprüfung (Energie- und Stromsteuer)",
@@ -327,15 +327,21 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     // Gruppe 1b — die elf Angaben der Anlage (Feldkarte 1.7 bis 1.17)
     // =====================================================================
 
+    /// <summary>
+    /// ETAPPE BK1 (Entscheid BK-E-1 a): ZWOELF Felder — der Anteil an den
+    /// Neuherstellungskosten ist dazugekommen, weil § 8 Abs. 2/3 die Kontingentstufe
+    /// aus IHM und der Anlagenart waehlt (Schemaschritt 89). Und drei Beschriftungen
+    /// sagen nicht mehr „Projektsatz"/„Projektwert": Es gibt keinen Rueckfall mehr.
+    /// </summary>
     [Fact]
-    public void Gruppe1b_fuehrt_genau_die_elf_Felder_der_Feldkarte()
+    public void Gruppe1b_fuehrt_genau_die_zwoelf_Felder_der_Feldkarte()
     {
         var cut = Aufbauen();
         IElement g = Koerper(cut, 1);
 
         Assert.Equal(2, Datumsfelder(g));     // 1.7  1.8
         Assert.Equal(4, Auswahlfelder(g));    // 1.9  1.10  1.15  1.16
-        Assert.Equal(5, Zahlenfelder(g));     // 1.11 1.12  1.13  1.14  1.17
+        Assert.Equal(6, Zahlenfelder(g));     // 1.11 1.12  1.13  1.14  BK1  1.17
         Assert.Equal(0, Schalter(g));
 
         Assert.Equal(new[]
@@ -344,10 +350,11 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
             "Inbetriebnahme:",
             "Anlagenart:",
             "Eigenstrom nach § 6 Abs. 3:",
-            "Satz Einspeisung [ct/kWh] (0 = Projektsatz):",
-            "Satz Eigenstrom [ct/kWh] (0 = Projektsatz):",
-            "Vbh-Kontingent [h] (0 = Projektwert):",
+            "Satz Einspeisung [ct/kWh] (0 = kein Zuschlag):",
+            "Satz Eigenstrom [ct/kWh] (0 = kein Zuschlag):",
+            "Vbh-Kontingent [h] (0 = nach § 8 abgeleitet):",
             "Vbh-Jahresdeckel [h/a] (0 = Staffel):",
+            "Anteil Neuherstellungskosten [%] (§ 8 Abs. 2/3):",
             "Energiesteuerentlastung (Anlage):",
             "Brennstoff auf Strom/Wärme (Anlage):",
             "Hilfsenergieanteil [% des Endenergiebedarfs] (0 = keine):"
@@ -375,7 +382,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Eine_Eingabe_landet_im_Arbeitsstand_und_0_heisst_Projektwert()
+    public void Eine_Eingabe_landet_im_Arbeitsstand_und_0_heisst_kein_eigener_Wert()
     {
         var anlagen = ZweiAnlagen();
         var cut = Aufbauen(anlagen);
@@ -387,10 +394,11 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         zahlen[0].Input("0");                          // 0 = kein eigener Wert
         Assert.Null(cut.Instance.AktuellerStand!.SatzEinspCt);
 
-        // Beim Hilfsenergieanteil ist 0 ein GUELTIGER Wert (BF4).
-        zahlen[4].Input("3,5");
+        // Beim Hilfsenergieanteil ist 0 ein GUELTIGER Wert (BF4). BK1: Er steht als
+        // SECHSTES Dezimalfeld der Gruppe - davor liegt der neue Kostenanteil.
+        zahlen[5].Input("3,5");
         Assert.Equal(3.5, cut.Instance.AktuellerStand!.HilfsenergieAnteil);
-        zahlen[4].Input("0");
+        zahlen[5].Input("0");
         Assert.Equal(0.0, cut.Instance.AktuellerStand!.HilfsenergieAnteil);
 
         // Die geladene Zeile bleibt dabei unberuehrt — geschrieben wird im OK-Weg.
@@ -428,35 +436,37 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// AUFTRAG #325 (Anwenderwunsch 17.09.2026): Die Gruppe fuehrt seither ZWOELF
-    /// Projektfelder — der Einspeisesatz des KWK-Stroms steht als ERSTES darin, vor
-    /// den Zuschlaegen: Er ist die Verguetung, der Zuschlag kommt obendrauf.
+    /// ETAPPE BK1 (Entscheid BK-E-1 a) — die Gruppe heisst „Projektweite KWK-Angaben"
+    /// und fuehrt nur noch, was WIRKLICH projektweit ist: den Abschlag fuer
+    /// Negativstunden, die Vorgabe des Kostenanteils, die Pauschale des § 9, den
+    /// Stichtag des § 6 und den Foerderbeginn — dazu die Einspeiseverguetung aus
+    /// Auftrag #325, die keine Zuschlagsgroesse ist.
+    ///
+    /// <para><b>Sechs Felder, und keine KEINE Klappliste mehr.</b> Satz Eigenstrom,
+    /// Satz Einspeisung, Vbh-Deckel-Override, Vbh-Kontingent gesamt,
+    /// Eigenstrom-Tatbestand und Anlagenart § 8 sind hier weg — sie stehen an der
+    /// Anlage, wo § 7 und § 8 KWKG sie bemessen. Genau das war die doppelte Wahrheit
+    /// samt Rueckfallkette, die BK1 aufloest.</para>
     /// </summary>
     [Fact]
-    public void Gruppe2_fuehrt_genau_die_elf_Projektfelder_der_Feldkarte()
+    public void Gruppe2_fuehrt_genau_die_sechs_projektweiten_Angaben()
     {
         var cut = Aufbauen();
         IElement g = Koerper(cut, 2);
 
-        Assert.Equal(7, Zahlenfelder(g));      // #325 + 2.1 2.2 2.3 2.4 2.5 2.8
-        Assert.Equal(2, Auswahlfelder(g));     // 2.6 2.7
-        Assert.Equal(1, Schalter(g));          // 2.9
-        Assert.Equal(2, Datumsfelder(g));      // 2.10 2.11
+        Assert.Equal(3, Zahlenfelder(g));      // #325, Abschlag, Kostenanteil
+        Assert.Equal(0, Auswahlfelder(g));     // BK1: Tatbestand und Anlagenart sind weg
+        Assert.Equal(1, Schalter(g));          // Pauschale § 9
+        Assert.Equal(2, Datumsfelder(g));      // Stichtag § 6, Foerderbeginn
 
         Assert.Equal(new[]
         {
             "Einspeisevergütung KWK-Strom [€/kWh]:",
-            "Bonus Eigenstrom [ct/kWh] (0 = aus):",
-            "Bonus Einspeisung [ct/kWh]:",
-            "Vbh-Deckel-Override [h/a]:",
-            "Vbh-Kontingent gesamt [h] (0 = automatisch):",
             "Abschlag Negativstunden [%]:",
-            "Eigenstrom-Tatbestand (§ 6 Abs. 3):",
-            "Anlagenart (§ 8):",
-            "Anteil Neuherstellungskosten [%]:",
+            "Anteil Neuherstellungskosten [%] (Vorgabe für Anlagen ohne eigenen Wert):",
             "Pauschale § 9 KWKG (nur bis 2 kWel, einmalig)",
-            "Stichtag, Vorgabe je Anlage:",
-            "Inbetriebnahme, Vorgabe je Anlage:"
+            "Stichtag (Bestellung/Genehmigung, § 6):",
+            "Förderbeginn (Startjahr der Reihen):"
         }, Beschriftungen(g));
     }
 
@@ -530,65 +540,263 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Projektlisten_tragen_den_Leereintrag_nicht_angegeben()
+    public void Die_projektweiten_KWK_Angaben_fuehren_keine_Satzfelder_mehr()
     {
         var cut = Aufbauen();
-        var listen = Koerper(cut, 2).QuerySelectorAll("select");
+        IElement g = Koerper(cut, 2);
 
-        Assert.Equal("(nicht angegeben)", listen[0].QuerySelectorAll("option")[0].TextContent);
-        Assert.Equal("(nicht angegeben)", listen[1].QuerySelectorAll("option")[0].TextContent);
+        Assert.Empty(g.QuerySelectorAll("select"));
+
+        // Geprueft werden die BESCHRIFTUNGEN, nicht der ganze Text: Die leise Zeile
+        // darunter NENNT die ausgezogenen Angaben ja - sie sagt, wo sie jetzt stehen.
+        string[] weg = { "Bonus Eigenstrom", "Bonus Einspeisung", "Vbh-Deckel-Override",
+                         "Vbh-Kontingent gesamt", "Eigenstrom-Tatbestand", "Anlagenart (§ 8)" };
+        foreach (string s in weg)
+            Assert.DoesNotContain(Beschriftungen(g), b => b.Contains(s, StringComparison.Ordinal));
+
+        Assert.Contains("stehen an der Anlage", g.TextContent);
     }
 
+    // =====================================================================
+    // ETAPPE BK1 — die drei Vorschlagsknoepfe AM FELD (Entscheid BK-E-1 a)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Katalog, der jeden Schluessel beantwortet — der Vorschlag kommt dann ohne
+    /// Luecke zustande.
+    /// </summary>
+    private static Func<string, int, GesetzParameter> VollerKatalog(double wert = 16.0)
+        => (schluessel, jahr) =>
+            new GesetzParameter(1, schluessel, "KWKG", 2020, wert, "ct/kWh", "", "");
+
+    /// <summary>
+    /// DER ANWENDERWUNSCH vom 17.09.2026: „Werte … sollen direkt mittels Button an
+    /// der Stelle des Wertes uebernommen werden koennen (mit Hinweis auf die
+    /// Grundlage)". Drei Knoepfe stehen in Gruppe 1b — am Satz Einspeisung, am Satz
+    /// Eigenstrom und am Vbh-Kontingent —, jeder mit seiner Grundlage daneben.
+    /// </summary>
     [Fact]
-    public void Gruppe2_zeigt_die_Herleitung_des_Katalogvorschlags_und_uebernimmt_ihn_auf_Knopfdruck()
+    public void Gruppe1b_traegt_drei_Vorschlagsknoepfe_mit_ihrer_Grundlage()
     {
         var anlagen = new List<KwkgAnlagenAngabe> { Anlage(1, "BHKW 50", 50) };
         anlagen[0].Inbetriebnahme = new DateTime(2027, 5, 4);
         anlagen[0].Anlagenart = DbWerte.KWKG_ANLAGENART_NEU;
 
-        // Ein Katalog, der jeden Schluessel beantwortet - der Vorschlag kommt dann
-        // ohne Luecke zustande.
-        Func<string, int, GesetzParameter> katalog = (schluessel, jahr) =>
-            new GesetzParameter(1, schluessel, "KWKG", 2020, 16.0, "ct/kWh", "", "");
+        var cut = Aufbauen(anlagen, katalog: VollerKatalog());
+        IElement g = Koerper(cut, 1);
 
+        Assert.Equal(3, g.QuerySelectorAll("button.epos-vorschlag").Length);
+
+        var zeilen = g.QuerySelectorAll("p.epos-vorschlagszeile");
+        Assert.Equal(3, zeilen.Length);
+        Assert.Contains("Einspeisung", zeilen[0].TextContent);
+        Assert.Contains("Eigenstrom", zeilen[1].TextContent);
+        Assert.Contains("Kontingent", zeilen[2].TextContent);
+
+        // Und der alte Sammelknopf der Gruppe 2 ist weg.
+        Assert.Empty(Koerper(cut, 2).QuerySelectorAll("button.epos-vorschlag"));
+    }
+
+    /// <summary>
+    /// Der Knopf am EINSPEISESATZ schreibt genau das, was <c>KwkgSatzRechner</c> mit
+    /// denselben Angaben liefert — die Zahl gehoert dem Bestandsrechner, nicht dem
+    /// Dialog —, und er schreibt nur SEIN Feld: Der Eigenstromsatz daneben bleibt
+    /// unberuehrt. Genau das konnte der Sammelknopf nicht.
+    /// </summary>
+    [Fact]
+    public void Der_Knopf_am_Einspeisesatz_trifft_nur_sein_Feld()
+    {
+        var anlagen = new List<KwkgAnlagenAngabe> { Anlage(1, "BHKW 50", 50) };
+        anlagen[0].Inbetriebnahme = new DateTime(2027, 5, 4);
+        anlagen[0].Anlagenart = DbWerte.KWKG_ANLAGENART_NEU;
+
+        Func<string, int, GesetzParameter> katalog = VollerKatalog();
         var cut = Aufbauen(anlagen, katalog: katalog);
 
-        string text = Koerper(cut, 2).TextContent;
-        Assert.Contains("Einspeisung", text);
-        Assert.Contains("Eigenstrom", text);
-
         Assert.Null(cut.Instance.AktuellerStand!.SatzEinspCt);
-        cut.Find("button.epos-vorschlag").Click();
+        Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[0].Click();
 
-        // Die Zahl gehoert dem Bestandsrechner, nicht dem Dialog: Erwartet wird genau
-        // das, was KwkgSatzRechner mit denselben Angaben liefert.
         KwkgSatzVorschlag soll = KwkgSatzRechner.Vorschlag(
             50, 2027, DbWerte.KWKG_ANLAGENART_NEU, "", katalog,
             CultureInfo.GetCultureInfo("de-DE"));
         Assert.Equal(soll.SatzEinspeisungCt, cut.Instance.AktuellerStand!.SatzEinspCt);
-        // Ohne Tatbestand nach § 6 Abs. 3 ist der Eigenstromsatz 0 - und 0 heisst
-        // an der Anlage "kein eigener Wert".
-        Assert.Equal(0.0, soll.SatzEigenCt);
-        Assert.Null(cut.Instance.AktuellerStand!.SatzEigenCt);
+        Assert.Null(cut.Instance.AktuellerStand!.SatzEigenCt);   // nicht mitgeschrieben
         Assert.True(cut.Instance.Geaendert);
 
-        // Der Knopf uebernimmt in den Arbeitsstand, er schreibt nicht.
+        // Uebernommen wird in den ARBEITSSTAND; geschrieben wird erst beim OK.
         Assert.Null(anlagen[0].SatzEinspCt);
     }
 
+    /// <summary>
+    /// ZWEI ANLAGEN VERSCHIEDENER LEISTUNGSKLASSE bekommen verschiedene Saetze und
+    /// verschiedene Grundlagen — der Beweis, dass der Vorschlag an DER ANLAGE haengt
+    /// und nicht am Projekt. Der Katalog staffelt dafuer nach Schluessel.
+    /// </summary>
     [Fact]
-    public void Ohne_gewaehlte_Anlage_ist_der_Vorschlagsknopf_gesperrt()
+    public void Zwei_Anlagen_verschiedener_Klasse_bekommen_verschiedene_Saetze()
+    {
+        var anlagen = new List<KwkgAnlagenAngabe>
+        {
+            Anlage(1, "BHKW klein", 40),
+            Anlage(2, "BHKW gross", 300)
+        };
+        foreach (KwkgAnlagenAngabe a in anlagen)
+        {
+            a.Inbetriebnahme = new DateTime(2027, 1, 1);
+            a.Anlagenart = DbWerte.KWKG_ANLAGENART_MODERNISIERT;   // nicht § 7 Abs. 3a
+        }
+
+        // Eine echte Staffel: 8 / 6 / 5 / 4,4 ct/kWh, Grenzen 50/100/250/2000 kW.
+        Func<string, int, GesetzParameter> katalog = (schluessel, jahr) =>
+        {
+            double w = 0;
+            if (schluessel == DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_1) w = 50;
+            else if (schluessel == DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_2) w = 100;
+            else if (schluessel == DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_3) w = 250;
+            else if (schluessel == DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_4) w = 2000;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS50KW) w = 8.0;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS100KW) w = 6.0;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS250KW) w = 5.0;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS2MW) w = 4.4;
+            return w > 0 ? new GesetzParameter(1, schluessel, "KWKG", 2020, w, "ct/kWh", "", "") : null!;
+        };
+
+        var cut = Aufbauen(anlagen, katalog: katalog);
+
+        // Anlage 1 (40 kW): eine Tranche zu 8,00 ct/kWh.
+        string grundlage1 = Koerper(cut, 1).QuerySelectorAll("p.epos-vorschlagszeile")[0].TextContent;
+        Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[0].Click();
+        Assert.Equal(8.0, cut.Instance.AktuellerStand!.SatzEinspCt);
+
+        // Anlage 2 (300 kW): 50x8 + 50x6 + 150x5 + 50x4,4 = 1670 / 300 = 5,5667.
+        Koerper(cut, 0).QuerySelectorAll("button.epos-anlagenwahl")[1].Click();
+        string grundlage2 = Koerper(cut, 1).QuerySelectorAll("p.epos-vorschlagszeile")[0].TextContent;
+        Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[0].Click();
+        Assert.Equal(1670.0 / 300.0, cut.Instance.AktuellerStand!.SatzEinspCt!.Value, 6);
+
+        Assert.NotEqual(grundlage1, grundlage2);
+    }
+
+    /// <summary>
+    /// DAS KONTINGENT KOMMT AUS DER ANLAGE: Anlagenart und Kostenanteil DIESER Anlage
+    /// waehlen die Stufe des § 8 — nicht mehr die projektweite Angabe. Ohne
+    /// Anlagenart ist der Knopf gesperrt und sagt warum.
+    /// </summary>
+    [Fact]
+    public void Das_Kontingent_kommt_aus_Anlagenart_und_Kostenanteil_der_Anlage()
+    {
+        var anlagen = new List<KwkgAnlagenAngabe> { Anlage(1, "BHKW 50", 50) };
+        anlagen[0].Inbetriebnahme = new DateTime(2027, 1, 1);
+
+        Func<string, int, GesetzParameter> katalog = (schluessel, jahr) =>
+        {
+            double w = 0;
+            if (schluessel == DbWerte.GESETZ_KWKG_KOSTENSCHWELLE_50) w = 50;
+            else if (schluessel == DbWerte.GESETZ_KWKG_KOSTENSCHWELLE_25) w = 25;
+            else if (schluessel == DbWerte.GESETZ_KWKG_KOSTENSCHWELLE_10) w = 10;
+            else if (schluessel == DbWerte.GESETZ_KWKG_VBH_MODERNISIERT_25) w = 15000;
+            else if (schluessel == DbWerte.GESETZ_KWKG_VBH_MODERNISIERT_50) w = 30000;
+            else if (schluessel == DbWerte.GESETZ_KWKG_VBH_NEUANLAGE) w = 30000;
+            return w > 0 ? new GesetzParameter(1, schluessel, "KWKG", 2020, w, "h", "", "") : null!;
+        };
+
+        var cut = Aufbauen(anlagen, katalog: katalog);
+
+        // Ohne Anlagenart: gesperrt, und der Grund steht am Knopf (WEICHE Sperre —
+        // ein disabled-Knopf zeigt seinen title nie, Hausregel EPOS.UI).
+        IElement knopf = Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[2];
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Contains("Ohne Anlagenart", knopf.GetAttribute("title"));
+        knopf.Click();
+        Assert.Null(cut.Instance.AktuellerStand!.VbhKontingent);
+
+        // Modernisiert mit 30 % Kostenanteil: Stufe 25 % -> 15.000 Vbh.
+        Koerper(cut, 1).QuerySelectorAll("select")[0].Change("2");
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[4].Input("30");
+        Assert.Equal(DbWerte.KWKG_ANLAGENART_MODERNISIERT, cut.Instance.AktuellerStand!.Anlagenart);
+        Assert.Equal(30.0, cut.Instance.AktuellerStand!.Kostenanteil);
+
+        Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[2].Click();
+        Assert.Equal(15000.0, cut.Instance.AktuellerStand!.VbhKontingent);
+
+        // Mit 60 % springt dieselbe Anlage auf die 50-%-Stufe.
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[4].Input("60");
+        Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[2].Click();
+        Assert.Equal(30000.0, cut.Instance.AktuellerStand!.VbhKontingent);
+    }
+
+    /// <summary>
+    /// GESPERRT HEISST BEGRUENDET. Ohne elektrische Nennleistung gibt es keine
+    /// Leistungsstaffel; ohne Tatbestand des § 6 Abs. 3 keinen Zuschlag auf selbst
+    /// genutzten Strom. Beides steht am Knopf, und beides sperrt WEICH.
+    /// </summary>
+    [Fact]
+    public void Ein_gesperrter_Vorschlagsknopf_nennt_seinen_Grund()
+    {
+        var anlagen = new List<KwkgAnlagenAngabe> { Anlage(1, "BHKW ohne Pel", 0) };
+        var cut = Aufbauen(anlagen, katalog: VollerKatalog());
+
+        var knoepfe = Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag");
+        Assert.Equal("true", knoepfe[0].GetAttribute("aria-disabled"));
+        Assert.Contains("keine elektrische Nennleistung", knoepfe[0].GetAttribute("title"));
+        Assert.Equal("true", knoepfe[1].GetAttribute("aria-disabled"));
+        Assert.Contains("keine elektrische Nennleistung", knoepfe[1].GetAttribute("title"));
+
+        knoepfe[0].Click();
+        Assert.Null(cut.Instance.AktuellerStand!.SatzEinspCt);
+        Assert.False(cut.Instance.Geaendert);
+
+        // Mit Leistung, aber ohne Tatbestand: nur der EIGENSTROM-Knopf bleibt
+        // gesperrt, und sein Grund wechselt.
+        var mitPel = new List<KwkgAnlagenAngabe> { Anlage(2, "BHKW 50", 50) };
+        var cut2 = Aufbauen(mitPel, katalog: VollerKatalog());
+        var k2 = Koerper(cut2, 1).QuerySelectorAll("button.epos-vorschlag");
+        Assert.Equal("false", k2[0].GetAttribute("aria-disabled"));
+        Assert.Equal("true", k2[1].GetAttribute("aria-disabled"));
+        Assert.Contains("§ 6 Abs. 3", k2[1].GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// BEIDE SPRACHEN: Gruppentitel, Knopfbeschriftung und Sperrgrund kommen aus den
+    /// Ressourcen, nicht aus einem deutschen Literal im Markup. Ohne diesen Fall
+    /// bliebe unbemerkt, dass ein neuer Text nur deutsch nachgetragen wurde.
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE", "Projektweite KWK-Angaben", "Vorschlag übernehmen",
+                "keine elektrische Nennleistung")]
+    [InlineData("en-US", "Project-wide CHP settings", "Apply proposal",
+                "no electrical rated output")]
+    public void Die_BK1_Texte_stehen_in_beiden_Sprachen(
+        string kultur, string gruppe, string knopf, string sperrgrund)
+    {
+        using var _ = new Kulturvorrichtung(kultur);
+
+        var anlagen = new List<KwkgAnlagenAngabe> { Anlage(1, "BHKW ohne Pel", 0) };
+        var cut = Aufbauen(anlagen, katalog: VollerKatalog());
+
+        var titel = new List<string>();
+        foreach (IElement e in cut.FindAll("h2.epos-gruppenkopf-titel")) titel.Add(e.TextContent);
+        Assert.Contains(gruppe, titel);
+
+        IElement k = Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[0];
+        Assert.Equal(knopf, k.TextContent.Trim());
+        Assert.Contains(sperrgrund, k.GetAttribute("title"));
+    }
+
+    [Fact]
+    public void Ohne_gewaehlte_Anlage_steht_keine_Vorschlagszeile()
     {
         var cut = Aufbauen(new List<KwkgAnlagenAngabe>());
 
-        Assert.True(cut.Find("button.epos-vorschlag").HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll("button.epos-vorschlag"));
 
-        // AUFTRAG #325: Die Gruppe fuehrt seither EINE stehende Herleitungszeile - den
-        // Hinweis zum Einspeisesatz (SP-E-5). Die Zeilen des KATALOGVORSCHLAGS haengen
-        // weiter an einer gewaehlten Anlage; ohne sie steht keine davon da.
+        // AUFTRAG #325 / BK1: Die Gruppe 2 fuehrt ZWEI stehende Herleitungszeilen —
+        // den Hinweis zum Einspeisesatz (SP-E-5) und den Verweis darauf, wo die
+        // uebrigen KWK-Angaben jetzt stehen.
         var zeilen = Koerper(cut, 2).QuerySelectorAll("p.epos-herleitung");
-        Assert.Single(zeilen);
+        Assert.Equal(2, zeilen.Length);
         Assert.Contains("v_bhkw", zeilen[0].TextContent);
+        Assert.Contains("stehen an der Anlage", zeilen[1].TextContent);
     }
 
     // =====================================================================

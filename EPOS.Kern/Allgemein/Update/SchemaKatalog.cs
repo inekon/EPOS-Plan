@@ -3632,6 +3632,47 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_DECKEL,         "DOUBLE"),
         };
 
+        /// <summary>
+        /// ETAPPE BK1 — Anteil an den Neuherstellungskosten [%] <b>dieser</b> Anlage
+        /// (§ 8 Abs. 2/3 KWKG). Er wählt zusammen mit
+        /// <see cref="SPALTE_EA_KWKG_ANLAGENART"/> die Kontingentstufe der Anlage;
+        /// <c>NULL</c> bzw. 0 = nicht gepflegt, dann gibt es kein abgeleitetes
+        /// Kontingent, sondern eine Begründung
+        /// (<c>KwkgKontingentRechner.Ableiten</c>).
+        ///
+        /// <para><b>Warum die Spalte jetzt an die Anlage gehört.</b> Anlagenart und
+        /// Kostenanteil standen bis hierher nur am Projekt
+        /// (<see cref="SPALTE_PW_KWKG_ANLAGENART"/>,
+        /// <see cref="SPALTE_PW_KWKG_KOSTENANTEIL"/>), obwohl § 8 auf die EINZELNE
+        /// Anlage abstellt: Ein modernisiertes 50-kW-Modul neben einem neuen 9-kW-Modul
+        /// hat ein anderes Kontingent, und der Projektwert konnte nur eines von beiden
+        /// treffen. Die Anlagenart hing schon seit Schritt 22 an der Anlage — ohne
+        /// Kostenanteil blieb sie dort aber ohne Rechenwirkung, weil die Stufe erst aus
+        /// dem Paar entsteht.</para>
+        ///
+        /// <para><b>Ordinalposition und _STAMM:</b> wortgleiche Begründung wie bei
+        /// <see cref="Schritt22_KwkgJeAnlage"/>.</para>
+        /// </summary>
+        public const string SPALTE_EA_KWKG_KOSTENANTEIL = "KWKG_Kostenanteil";
+
+        /// <summary>
+        /// Schritt 89 der Migration (Etappe BK1) — die EINE additive Spalte
+        /// <see cref="SPALTE_EA_KWKG_KOSTENANTEIL"/> an <c>Tab_Energieanlagen</c>.
+        ///
+        /// <para><b>Dieser Schritt trägt ein DML</b>, und das unterscheidet ihn von
+        /// Schritt 22: Er schreibt die KWKG-Projektvorgaben in jede BHKW-Anlagenzeile,
+        /// die an der betreffenden Stelle leer ist (Sätze, Kontingent, Jahresdeckel,
+        /// Anlagenart, Tatbestand, Kostenanteil, Stichtag, Inbetriebnahme). Erst danach
+        /// darf der Rechenweg den Rückfall Anlage → Projekt aufgeben, ohne einem
+        /// Bestandsprojekt den Zuschlag wegzunehmen. Die Anweisung steht bei
+        /// <c>SchemaMigration.SCHRITT_89_KWK_ANLAGENWAHRHEIT</c>; sie ist idempotent,
+        /// weil sie nur leere Zellen füllt.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt89_KwkAnlagenwahrheit =
+        {
+            new SchemaSpalte(TAB_ENERGIEANLAGEN, SPALTE_EA_KWKG_KOSTENANTEIL,   "DOUBLE"),
+        };
+
         // ---------------------------------------------------------------------------
         // LEITENTSCHEIDUNGEN L12 und L13 — Bilanzierungsregeln je Projekt
         // ---------------------------------------------------------------------------
@@ -3819,6 +3860,47 @@ namespace WindowsFormsApplication1
         /// (16 Zeichen) → TEXT(30) laut Konzept § 8.1; großzügig wie
         /// <see cref="SPALTE_PW_AUFTEILUNG"/>.
         /// </summary>
+        // ----------------------------------------------------------------------------
+        // ETAPPE BK1 — die FÜNF KWKG-Bestandsspalten von Tab_ProjektWirtschaftlichkeit
+        // bekommen hier ihren Namen.
+        //
+        // Sie entstehen NICHT in diesem Katalog: Sie stammen aus den frühen
+        // Migrationsschritten (19/20), deren SQL ihre Namen noch ausgeschrieben trug.
+        // Mit Schemaschritt 89 werden sie zur QUELLE einer Datenübertragung
+        // (KwkAnlagenwahrheit) — und eine Übertragung, die ihre Spaltennamen selbst
+        // buchstabiert, wäre die zweite Wahrheit, die dieser Katalog verhindert. Die
+        // Konstanten stehen deshalb hier und in keiner Schritt-Liste; angelegt wird
+        // keine von ihnen.
+        // ----------------------------------------------------------------------------
+
+        /// <summary>Zuschlagssatz auf selbst genutzten KWK-Strom [ct/kWh] des Projekts
+        /// (0 = aus). <b>Seit Schemaschritt 89 ungelesen</b> — die Rechnung nimmt den
+        /// Satz der Anlage (<see cref="SPALTE_EA_KWKG_SATZ_EIGEN"/>).</summary>
+        public const string SPALTE_PW_KWKG_BONUS = "KWKG_Bonus";
+
+        /// <summary>Zuschlagssatz auf eingespeisten KWK-Strom [ct/kWh] des Projekts.
+        /// <b>Seit Schemaschritt 89 ungelesen</b> — siehe
+        /// <see cref="SPALTE_EA_KWKG_SATZ_EINSP"/>.</summary>
+        public const string SPALTE_PW_KWKG_BONUS_EINSPEISUNG = "KWKG_Bonus_Einspeisung";
+
+        /// <summary>Vbh-Kontingent des Projekts [h]. <b>Seit Schemaschritt 89 nur noch
+        /// vom projektweiten Ersatzweg gelesen</b> — die Rechnung je Anlage nimmt
+        /// <see cref="SPALTE_EA_KWKG_KONTINGENT"/>.</summary>
+        public const string SPALTE_PW_KWKG_KONTINGENT = "KWKG_Vbh_Kontingent";
+
+        /// <summary>Jahresdeckel-Override des Projekts [h/a]. <b>Seit Schemaschritt 89
+        /// nur noch vom projektweiten Ersatzweg gelesen</b> — siehe
+        /// <see cref="SPALTE_EA_KWKG_DECKEL"/>.</summary>
+        public const string SPALTE_PW_KWKG_JAHRESDECKEL = "KWKG_Vbh_Jahresdeckel";
+
+        /// <summary>Bestell-/Genehmigungsdatum des Projekts (§ 6 KWKG 2025) — Vorgabe
+        /// für Anlagen ohne eigenes Datum.</summary>
+        public const string SPALTE_PW_KWKG_STICHTAG = "KWKG_Stichtag";
+
+        /// <summary>Inbetriebnahmedatum des Projekts. Es bleibt der <b>Förderbeginn</b>
+        /// und damit das Startjahr aller jahresscharfen Reihen.</summary>
+        public const string SPALTE_PW_KWKG_INBETRIEBNAHME = "KWKG_Inbetriebnahme";
+
         public const string SPALTE_PW_KWKG_TATBESTAND = "KWKG_Tatbestand";
 
         /// <summary>

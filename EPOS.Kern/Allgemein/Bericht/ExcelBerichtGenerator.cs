@@ -611,8 +611,10 @@ namespace WindowsFormsApplication1
             // dieselben Werte wie die Diagramme in Word und im Verlaufs-Dialog.
             // Konsistenz-Gate wie im Word-Baustein (Review 11): sind Tarif/KWKG aktiv,
             // aber keine Stundenreihen im Berichtslauf, entfällt der Block mit Hinweis.
+            // ETAPPE BK1: dieselbe EINE Regel wie im Word-Baustein und im Rechenkern.
             bool zeitreihenNoetig = (tarifP != null && tarifP.Aktiv) ||
-                                    p.KwkgBonus > 0 || p.KwkgBonusEinspeisung > 0;
+                                    KwkgAktivierung.IstAktiv(daten.IdStamm,
+                                        daten.Varianten.Select(x => x.IdProjekt));
             int rStart = r;
             WirtschaftlichkeitVerlauf verlaufFuerMehrjahres = null;
             try

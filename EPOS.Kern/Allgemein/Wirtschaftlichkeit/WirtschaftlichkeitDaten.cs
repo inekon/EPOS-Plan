@@ -560,21 +560,22 @@ namespace WindowsFormsApplication1
                    ") · Einspeisevergütung " + Einspeiseverguetung.ToString("N3", kultur) + " €/kWh";
             if (CO2Preis > 0)
                 t += " · CO₂ (BEHG) " + CO2Preis.ToString("N0", kultur) + " €/t";
-            if (KwkgBonus > 0 || KwkgBonusEinspeisung > 0)
+            // ETAPPE BK1 — die Zeile nennt nur noch die PROJEKTWEITEN KWK-Angaben, und
+            // ob sie überhaupt erscheint, entscheidet KwkgAktivierung (die EINE Regel,
+            // die auch der Rechenkern zieht). Satz, Deckel und Kontingent stehen seit
+            // Schemaschritt 89 je Anlage; sie hier als EINE Projektzahl zu nennen wäre
+            // die doppelte Wahrheit, die BK1 auflöst — die Sätze je Modul führt die
+            // Nachweistafel (KwkgModulNachweis).
+            if (KwkgAktivierung.IstAktiv(IdStamm))
             {
-                t += " · KWKG " + KwkgBonus.ToString("N2", kultur) + "/" +
-                     KwkgBonusEinspeisung.ToString("N2", kultur) + " ct/kWh (";
-                t += KwkgVbhJahresdeckel > 0
-                    ? "Deckel fest " + KwkgVbhJahresdeckel.ToString("N0", kultur) + " Vbh/a"
-                    : "Vbh-Staffel KWKG 2025";
-                t += ", Kontingent " + KwkgVbhKontingent.ToString("N0", kultur) + " Vbh";
+                t += " · KWKG (Sätze je Anlage";
                 if (KwkgAbschlagNegativ > 0)
                     t += ", Negativpreis-Abschlag " + KwkgAbschlagNegativ.ToString("N1", kultur) + " %";
                 t += KwkgStichtag.HasValue
                     ? ", Stichtag " + KwkgStichtag.Value.ToString("dd.MM.yyyy", kultur)
                     : ", Stichtag ungeprüft";
                 if (KwkgInbetriebnahme.HasValue)
-                    t += ", IBN " + KwkgInbetriebnahme.Value.ToString("dd.MM.yyyy", kultur);
+                    t += ", Förderbeginn " + KwkgInbetriebnahme.Value.ToString("dd.MM.yyyy", kultur);
                 t += ")";
             }
             // ETAPPE E4: die Steuerangaben gehören in die Nachweiszeile, sobald sie

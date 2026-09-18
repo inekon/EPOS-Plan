@@ -9788,7 +9788,10 @@ The switch is only shown if the project contains such a generator.</value>
     <value>CHP Act: For "{0}" the qualifying case under Section 6 (3) is set to "none" — its own rate for self-consumed electricity does not apply (Section 7 (2)).</value>
   </data>
   <data name="WIRT_KWKG_TATBESTAND_ANLAGE_OFFEN" xml:space="preserve">
-    <value>CHP Act: "{0}" carries its own rate for self-consumed electricity but no qualifying case under Section 6 (3) — without it there is no self-consumption bonus (Section 7 (2)); rate of this unit = 0.</value>
+    <value>CHP Act: no case under sec. 6 (3) is recorded for "{0}" — the precondition for the surcharge on self-consumed electricity (sec. 7 (2)) is unverified; the rate on record is used.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANLAGE" xml:space="preserve">
+    <value>CHP Act: no own full-load hour quota is maintained for "{0}" — derived {1} full-load hours ({2}).</value>
   </data>
   <data name="PREIS_ST_ART_KEIN_PROD_GEWERBE" xml:space="preserve">
     <value>not manufacturing industry</value>
@@ -9972,10 +9975,10 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Units</value>
   </data>
   <data name="BHW_G1B" xml:space="preserve">
-    <value>Settings of the selected unit — empty or 0 = project default</value>
+    <value>Settings of the selected unit</value>
   </data>
   <data name="BHW_G2" xml:space="preserve">
-    <value>CHP surcharge (project default)</value>
+    <value>Project-wide CHP settings</value>
   </data>
   <data name="BHW_G3" xml:space="preserve">
     <value>Energy tax (project default)</value>
@@ -10026,13 +10029,16 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Self-consumption under sec. 6 (3):</value>
   </data>
   <data name="BHW_A_SATZ_EINSP" xml:space="preserve">
-    <value>Feed-in rate [ct/kWh] (0 = project rate):</value>
+    <value>Feed-in rate [ct/kWh] (0 = no surcharge):</value>
   </data>
   <data name="BHW_A_SATZ_EIGEN" xml:space="preserve">
-    <value>Self-consumption rate [ct/kWh] (0 = project rate):</value>
+    <value>Self-consumption rate [ct/kWh] (0 = no surcharge):</value>
   </data>
   <data name="BHW_A_KONTINGENT" xml:space="preserve">
-    <value>Full-load hour quota [h] (0 = project value):</value>
+    <value>Full-load hour quota [h] (0 = derived per sec. 8):</value>
+  </data>
+  <data name="BHW_A_KOSTENANTEIL" xml:space="preserve">
+    <value>Share of new-build cost [%] (sec. 8 (2)/(3)):</value>
   </data>
   <data name="BHW_A_DECKEL" xml:space="preserve">
     <value>Annual full-load hour cap [h/a] (0 = schedule):</value>
@@ -10049,41 +10055,26 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BHW_A_HILFS_BASIS" xml:space="preserve">
     <value>Suggested 2–4 % for CHP. Measured against this unit's final energy demand (fuel) — not against cost.</value>
   </data>
-  <data name="BHW_P_BONUS_EIGEN" xml:space="preserve">
-    <value>Self-consumption bonus [ct/kWh] (0 = off):</value>
-  </data>
   <data name="BHW_P_EINSP_KWK_HINWEIS" xml:space="preserve">
     <value>This rate applies to the whole application: it values exported CHP electricity in the economic assessment AND provides the selling price used by the electricity storage and the storage fleet for the CHP surplus (v_bhkw). 0 means "not maintained"; the PV rate from the economic parameters then applies to CHP electricity, and without it the storage calculation uses 0 and says so in the log. The CHP bonus comes on top - it does not replace the tariff.</value>
-  </data>
-  <data name="BHW_P_BONUS_EINSP" xml:space="preserve">
-    <value>Feed-in bonus [ct/kWh]:</value>
-  </data>
-  <data name="BHW_P_DECKEL" xml:space="preserve">
-    <value>Full-load hour cap override [h/a]:</value>
-  </data>
-  <data name="BHW_P_KONTINGENT" xml:space="preserve">
-    <value>Total full-load hour quota [h] (0 = automatic):</value>
   </data>
   <data name="BHW_P_ABSCHLAG" xml:space="preserve">
     <value>Negative-price hour deduction [%]:</value>
   </data>
-  <data name="BHW_P_TATBESTAND" xml:space="preserve">
-    <value>Self-consumption case (sec. 6 (3)):</value>
-  </data>
-  <data name="BHW_P_ANLAGENART" xml:space="preserve">
-    <value>Unit category (sec. 8):</value>
-  </data>
   <data name="BHW_P_KOSTENANTEIL" xml:space="preserve">
-    <value>Share of new-build cost [%]:</value>
+    <value>Share of new-build cost [%] (default for units without their own value):</value>
+  </data>
+  <data name="BHW_P_NUR_PROJEKTWEIT" xml:space="preserve">
+    <value>Rate, quota, annual cap, unit type and self-consumption case belong to the unit (sec. 7 and sec. 8 CHP Act measure them per unit) — above under "Settings of the selected unit", each with a button for the catalogue proposal next to the field.</value>
   </data>
   <data name="BHW_P_PAUSCHAL" xml:space="preserve">
     <value>Lump sum under sec. 9 KWKG (up to 2 kWel, one-off)</value>
   </data>
   <data name="BHW_P_STICHTAG" xml:space="preserve">
-    <value>Cut-off date, default per unit:</value>
+    <value>Reference date (order/approval, sec. 6):</value>
   </data>
   <data name="BHW_P_IBN" xml:space="preserve">
-    <value>Commissioning, default per unit:</value>
+    <value>Start of funding (first year of the annual series):</value>
   </data>
   <data name="BHW_E_WAHL" xml:space="preserve">
     <value>Energy tax relief:</value>
@@ -10153,6 +10144,21 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="BHW_HERLEITUNG_EIGEN" xml:space="preserve">
     <value>Self-consumption {0} ct/kWh — {1}</value>
+  </data>
+  <data name="BHW_HERLEITUNG_KONTINGENT" xml:space="preserve">
+    <value>Quota {0} full-load hours — {1}</value>
+  </data>
+  <data name="BHW_BTN_VORSCHLAG_FELD" xml:space="preserve">
+    <value>Apply proposal</value>
+  </data>
+  <data name="BHW_SPERR_OHNE_PEL" xml:space="preserve">
+    <value>No proposal: this unit has no electrical rated output on record.</value>
+  </data>
+  <data name="BHW_SPERR_OHNE_EIGENFALL" xml:space="preserve">
+    <value>No proposal: without a case under sec. 6 (3) there is no surcharge on self-consumed electricity (sec. 7 (2)) — fill the field "Self-consumption under sec. 6 (3)".</value>
+  </data>
+  <data name="BHW_SPERR_OHNE_ANLAGENART" xml:space="preserve">
+    <value>No proposal: without a unit type, sec. 8 CHP Act selects no quota level — fill the field "Unit type"; modernised and retrofitted units also need the share of new-build cost.</value>
   </data>
   <data name="BHW_W_AUSSCHREIBUNG" xml:space="preserve">
     <value>Tendering under sec. 8a KWKG: {0} above {1} kW.</value>
@@ -10225,9 +10231,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="BHW_W_MODUS_ERLOES" xml:space="preserve">
     <value>revenue (in the net present value)</value>
-  </data>
-  <data name="BHW_BTN_VORSCHLAG" xml:space="preserve">
-    <value>Apply suggestion to the rate fields</value>
   </data>
   <data name="BHW_BTN_STROMBEZUG" xml:space="preserve">
     <value>Electricity purchase…</value>

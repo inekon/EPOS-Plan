@@ -274,6 +274,11 @@ public sealed class BhkwAnlagenstand
     /// <summary>Jahresdeckel-Override [h/a] (1.14); <c>null</c> = Staffel.</summary>
     public double? VbhDeckel;
 
+    /// <summary>ETAPPE BK1 — Anteil an den Neuherstellungskosten dieser Anlage [%]
+    /// (§ 8 Abs. 2/3); <c>null</c> oder 0 = nicht gepflegt. Er waehlt zusammen mit
+    /// <see cref="Anlagenart"/> die Kontingentstufe der Anlage.</summary>
+    public double? Kostenanteil;
+
     /// <summary>Entlastungsnorm dieser Anlage (1.15); leer = Projektwert.</summary>
     public string EnergiesteuerWahl = "";
 
@@ -294,6 +299,7 @@ public sealed class BhkwAnlagenstand
         SatzEigenCt = a.SatzEigenCt,
         VbhKontingent = a.VbhKontingent,
         VbhDeckel = a.VbhDeckel,
+        Kostenanteil = a.Kostenanteil,
         EnergiesteuerWahl = a.EnergiesteuerWahl ?? "",
         AufteilungMethode = a.AufteilungMethode ?? "",
         HilfsenergieAnteil = a.HilfsenergieAnteil
@@ -317,6 +323,7 @@ public sealed class BhkwAnlagenstand
         && SatzEigenCt == a.SatzEigenCt
         && VbhKontingent == a.VbhKontingent
         && VbhDeckel == a.VbhDeckel
+        && Kostenanteil == a.Kostenanteil
         && EnergiesteuerWahl == (a.EnergiesteuerWahl ?? "")
         && AufteilungMethode == (a.AufteilungMethode ?? "")
         && HilfsenergieAnteil == a.HilfsenergieAnteil;
@@ -332,6 +339,7 @@ public sealed class BhkwAnlagenstand
         a.SatzEigenCt = SatzEigenCt;
         a.VbhKontingent = VbhKontingent;
         a.VbhDeckel = VbhDeckel;
+        a.Kostenanteil = Kostenanteil;
         a.EnergiesteuerWahl = EnergiesteuerWahl;
         a.AufteilungMethode = AufteilungMethode;
         a.HilfsenergieAnteil = HilfsenergieAnteil;

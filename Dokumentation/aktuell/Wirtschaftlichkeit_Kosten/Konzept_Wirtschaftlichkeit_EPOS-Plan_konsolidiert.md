@@ -133,8 +133,11 @@ Tabellenkopf je BHKW-Modul, alles nur lesend:
 | **Brennstoff** | **kein Leseweg vorhanden — Lücke K4**, kleiner Leser `CarrierId` → Name in B5 |
 | Stichtag · Inbetriebnahme · Anlagenart | `KWKG_Stichtag` · `KWKG_Inbetriebnahme` · `KWKG_Anlagenart` |
 
-**Aufklappzeile** — 8 Bestandsfelder (heute in `Form_KwkgModule`) plus 3 neue.
-Durchgängig gilt: **leer oder 0 heißt „kein eigener Wert → Projektvorgabe".**
+**Aufklappzeile** — 8 Bestandsfelder (heute in `Form_KwkgModule`) plus 3 aus B5 plus den
+Kostenanteil aus BK1. Durchgängig gilt: **leer oder 0 heißt „kein eigener Wert".** Für die fünf
+KWKG-Größen heißt das seit Schemaschritt 89 **nicht mehr „Projektvorgabe", sondern 0** — § 7 und
+§ 8 KWKG bemessen sie an der einzelnen Anlage, und der Schritt hat jeder Bestandsanlage den Wert
+eingetragen, den ihr der Rückfall zugewiesen hat (Entscheid `BK-E-1` (a)).
 
 | Feld | Typ | Bereich / Optionen | Spalte | Stand |
 |---|---|---|---|---|
@@ -142,10 +145,11 @@ Durchgängig gilt: **leer oder 0 heißt „kein eigener Wert → Projektvorgabe"
 | Inbetriebnahme | DateTimePicker mit Haken | dito | `KWKG_Inbetriebnahme` | Bestand |
 | Anlagenart | ComboBox | (nicht erfasst = Neuanlage) · neu § 8 Abs. 1 · modernisiert Abs. 2 · nachgerüstet Abs. 3 | `KWKG_Anlagenart` | Bestand |
 | Eigenstrom nach § 6 Abs. 3 | ComboBox | kein Tatbestand · Nr. 1 bis 100 kW · Nr. 2 Kundenanlage · Nr. 3 stromkostenintensiv | `KWKG_Eigenstromfall` | Bestand |
-| Satz Einspeisung [ct/kWh] | Numerisch 0–30 | 0 = Projektsatz | `KWKG_Satz_Einspeisung` | Bestand |
-| Satz Eigenstrom [ct/kWh] | Numerisch 0–30 | 0 = Projektsatz | `KWKG_Satz_Eigen` | Bestand |
-| Vbh-Kontingent [h] | Numerisch 0–200.000 | 0 = Projektwert | `KWKG_Vbh_Kontingent` | Bestand |
+| Satz Einspeisung [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf „Vorschlag übernehmen" am Feld** | `KWKG_Satz_Einspeisung` | Bestand, Knopf BK1 |
+| Satz Eigenstrom [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf am Feld** | `KWKG_Satz_Eigen` | Bestand, Knopf BK1 |
+| Vbh-Kontingent [h] | Numerisch 0–200.000 | 0 = nach § 8 aus dieser Anlage abgeleitet; **Knopf am Feld** | `KWKG_Vbh_Kontingent` | Bestand, Knopf BK1 |
 | Vbh-Jahresdeckel [h/a] | Numerisch 0–8.760 | 0 = Staffel | `KWKG_Vbh_Jahresdeckel` | Bestand |
+| **Anteil Neuherstellungskosten [%]** | Numerisch 0–100 | 0 = nicht gepflegt; wählt mit der Anlagenart die Kontingentstufe § 8 Abs. 2/3 | `KWKG_Kostenanteil` | **neu BK1** |
 | **Energiesteuerentlastung (Anlage)** | ComboBox | (Projektwert) · keine · § 53 · § 53a · § 54 | `Energiesteuer_Wahl` | **neu B5** |
 | **Brennstoff auf Strom/Wärme (Anlage)** | ComboBox | (Projektwert) · voller Brennstoff · energetisch | `Aufteilung_Methode` | **neu B5** |
 | **Hilfsenergieanteil [%]** | Numerisch 0–100 | 0 = keine; Vorschlag BHKW 2–4 % | `Hilfsenergie_Anteil` | **neu B5** |
@@ -153,21 +157,37 @@ Durchgängig gilt: **leer oder 0 heißt „kein eigener Wert → Projektvorgabe"
 Warnzeilen der Gruppe: Ausschreibung § 8a bei P_el > 500 kW · Stromsteuerbefreiung entfällt über
 2 MW · Heizöl-Ausschluss ab Inbetriebnahme 2025.
 
-### Gruppe 2 — KWK-Zuschlag, Projektebene
+### Gruppe 2 — Projektweite KWK-Angaben
 
-Zieht vollständig aus `Form_WirtschaftlichkeitParameter` um: Bonus Eigenstrom · Bonus Einspeisung ·
-Vbh-Deckel-Override · Vbh-Kontingent gesamt · Abschlag Negativstunden [%] · Eigenstrom-Tatbestand ·
-Anlagenart · Anteil Neuherstellungskosten [%] · Pauschale § 9 (bis 2 kWel, einmalig) · Stichtag- und
-Inbetriebnahme-Vorgabe je Anlage.
+Die Gruppe führt **nur, was wirklich projektweit ist** (Entscheid `BK-E-1` (a)):
 
-Dazu ein **Herleitungslabel je Anlage**:
+| Feld | Bedeutung |
+|---|---|
+| Einspeisevergütung KWK-Strom [€/kWh] | die Vergütung des eingespeisten Stroms; der Zuschlag kommt obendrauf (Auftrag #325) |
+| Abschlag Negativstunden [%] | gilt für alle Anlagen gleich |
+| Anteil Neuherstellungskosten [%] | Vorgabe für Anlagen ohne eigenen Wert |
+| Pauschale § 9 KWKG | Σ P_el ≤ 2 kW, einmalig im Jahr 0 |
+| Stichtag (Bestellung/Genehmigung, § 6) | Prüfkette der Förderfähigkeit |
+| **Förderbeginn (Startjahr der Reihen)** | `KWKG_Inbetriebnahme`; er startet **alle** jahresscharfen Reihen (KWKG, CO₂, Steuern), auch ohne BHKW — deshalb heißt er hier nicht mehr „Inbetriebnahme, Vorgabe je Anlage" |
+
+**Herausgenommen und an die Anlage gewandert:** Bonus Eigenstrom · Bonus Einspeisung ·
+Vbh-Deckel-Override · Vbh-Kontingent gesamt · Eigenstrom-Tatbestand · Anlagenart § 8. Eine leise
+Zeile unter der Gruppe sagt, wo sie jetzt stehen.
+
+**Der Vorschlag steht am Feld, nicht als Sammelknopf** (Anwenderwunsch 17.09.2026): Unter jedem der
+drei Felder Satz Einspeisung, Satz Eigenstrom und Vbh-Kontingent steht die Grundlage im Klartext
+und daneben der Knopf „Vorschlag übernehmen". Er schreibt **nur sein eigenes Feld**, nur auf
+Knopfdruck und nur in den Arbeitsstand:
 
 ```
-Einspeisung 5,57 ct/kWh — 50 kW × 8,00 + 50 kW × 6,00 + 150 kW × 5,00 + 50 kW × 4,40
-Eigenstrom  0,00 ct/kWh — kein Tatbestand nach § 6 Abs. 3
+Einspeisung 5,57 ct/kWh — 50 kW × 8,00 + 50 kW × 6,00 + 150 kW × 5,00 + 50 kW × 4,40   [Vorschlag übernehmen]
+Eigenstrom  0,00 ct/kWh — kein Tatbestand nach § 6 Abs. 3                               [gesperrt: Grund am Knopf]
+Kontingent  15.000 Vbh  — 30,0 % ≥ 25 % (§ 8 Abs. 2 KWKG 2025, 2027)                    [Vorschlag übernehmen]
 ```
 
-Knopf „Vorschlag in die Satzfelder übernehmen" — schreibt **nur auf Knopfdruck**, nie automatisch.
+Fehlt eine Grundlage, ist der Knopf **weich** gesperrt (`aria-disabled`, Grund im `title` — ein
+`disabled`-Knopf zeigt seinen Tooltip nie): keine elektrische Nennleistung, kein Tatbestand nach
+§ 6 Abs. 3, keine Anlagenart.
 
 ### Gruppe 3 — Energiesteuer
 
@@ -1046,12 +1066,40 @@ Klassenlogik hätte 4,40 geliefert — **21 % zu wenig**.
 Staffel Abs. 1: 8,00 / 6,00 / 5,00 / 4,40 / 3,40 (nachgerüstet 3,10).
 Abs. 2 (Eigenstrom) nur in den drei Tatbeständen des § 6 Abs. 3; `KEINER` ⇒ Satz 0.
 
-Sätze je Anlage: `Satz_Einspeisung(A) = Anlagensatz ?? Projektsatz`. Beim Eigenstromsatz ist die
-Anlagenebene **strenger**: Ist der Anlagensatz gepflegt, wird ein Tatbestand verlangt — fehlt er,
-Satz 0 mit Meldung.
+**Die Rückfallkette Anlage → Projekt ist mit Schemaschritt 89 entfallen** (Entscheid `BK-E-1` (a)).
+Gerechnet wird ausschließlich, was an der Anlage steht; `NULL` heißt dort jetzt 0 und nicht mehr
+„Projektwert":
 
-**Vbh-Kontingent § 8:** Override > 0 gewinnt; sonst neu 30.000 h · modernisiert ab 50 %/25 % →
-30.000/15.000 · nachgerüstet ab 50/25/10 % → 30.000/15.000/10.000; darunter 0 mit Fehlgrund.
+```
+Satz_Einspeisung(A) = A.KWKG_Satz_Einspeisung ?? 0
+Satz_Eigen(A)       = A.KWKG_Satz_Eigen ?? 0,  geprüft gegen A.KWKG_Eigenstromfall
+Kontingent(A)       = A.KWKG_Vbh_Kontingent > 0 ? dieser : § 8 aus A.KWKG_Anlagenart und A.KWKG_Kostenanteil
+Deckel(A)           = A.KWKG_Vbh_Jahresdeckel > 0 ? dieser : Staffel § 8 Abs. 4
+```
+
+Möglich wird das durch den **Datenschritt 89**: Er trägt in jede BHKW-Anlagenzeile, die an der
+betreffenden Stelle leer ist, den Projektwert nach — genau den, den der Rückfall ihr zugewiesen
+hat (Sätze, Kontingent, Jahresdeckel, Anlagenart, **Tatbestand**, Kostenanteil, Stichtag,
+Inbetriebnahme). Der Schritt ist damit ergebnisneutral und idempotent.
+
+**Die Strenge des Eigenstromsatzes wandert mit.** Bis BK1 galt an der Anlage: gepflegter Satz ohne
+Tatbestand ⇒ 0. Diese Strenge stand auf der Annahme, ein Anlagensatz sei eine ausdrückliche
+Eingabe, die es im Bestand nirgends gibt — mit Schritt 89 ist sie hinfällig, weil jede
+Bestandsanlage einen Satz bekommt, den niemand an ihr eingegeben hat. Es gilt deshalb je Anlage
+genau die Regel, die K6 am Projekt eingeführt hat: **leerer Tatbestand ⇒ Satz bleibt, Meldung
+„ungeprüft"; nur die ausdrückliche Wahl `KEINER` nimmt ihn weg.** Hätte die alte Strenge Bestand,
+nähme Schritt 89 jedem Bestandsprojekt ohne gepflegten Tatbestand den Eigenverbrauchszuschlag —
+eine Rechenwirkung, die nirgends entschieden wurde.
+
+**Vbh-Kontingent § 8, je Anlage:** Override > 0 gewinnt; sonst aus **ihrer** Anlagenart und
+**ihrem** Kostenanteil — neu 30.000 h · modernisiert ab 50 %/25 % → 30.000/15.000 · nachgerüstet ab
+50/25/10 % → 30.000/15.000/10.000; darunter 0 mit Fehlgrund. Die projektweite Ableitung bleibt für
+den Ersatzweg stehen, der greift, wenn sich Anlagen- und Ergebniszeilen nicht zuordnen lassen.
+
+**Der Aktivierungsschalter fragt die Anlagen.** „Ist der KWK-Zuschlag dieser Gruppe aktiv?" heißt
+seit BK1: führt **irgendeine** BHKW-Anlage der Gruppe einen Satz > 0? Die Regel steht **einmal** in
+`KwkgAktivierung` und wird von allen sechs Stellen dort geholt (Rechenkern, Word-Baustein,
+Excel-Erzeuger, Nachweiszeile, Kapitalwert-Verlaufshülle, Wirtschaftlichkeitsseite).
 
 **Jahresreihe:**
 
@@ -1429,6 +1477,7 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **BK1/BK2** | Trägerzuordnung über `code`, Wizard-Automatik, Emissionsspalten | **ja, gewollt** — CO₂-Bilanz ändert sich |
 | **HB1** | Anzeigesortierung, Hydraulikbild liest `Z_AnlageSenke` | keine — 90 Dateien SHA256-gleich |
 | **B7** | Erlösrubrik in Reiter, Word, Excel und BHKW-Vorschau; Energiekosten je Anlage; eine Emissionsspalte nach Modus; eine Sichtbarkeitsregel für alle drei Ausgaben | keine auf den Kapitalwert — Referenzlauf der fünf CI-Projekte PASS |
+| **BK1** (Entscheid `BK-E-1` (a)) | KWK-Zuschlag gehört der Anlage: Schemaschritt 89 (`KWKG_Kostenanteil` + Datenschritt), Rückfall Anlage → Projekt entfällt, Kontingent je Anlage nach § 8, Vorschlagsknöpfe am Feld, Gruppe 2 auf die vier projektweiten Angaben eingedampft, **ein** Aktivierungsschalter statt sechs Kopien | keine — Datenschritt ergebnisneutral, gemessen an Projekt 1030 (Zuschlag Jahr 1 7.315,96 €, Kapitalwert −21.895.377,28 € vorher wie nachher); Referenzlauf der fünf CI-Projekte PASS |
 
 ## 6.2 Regressionsanker
 
@@ -1481,6 +1530,22 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
     nicht die Diagnose des Laufs — die steht unverändert in der Hinweiszeile darunter. Eine
     saubere Lösung führte die Begründungen je Position im `SteuerErgebnis`.
 
+**Nach BK1 — was die Etappe offen lässt**
+
+9e. **BK1-1: Sechs Projektspalten bleiben ungelesen stehen.** `KWKG_Bonus`,
+    `KWKG_Bonus_Einspeisung`, `KWKG_Tatbestand` und `KWKG_Anlagenart` liest nach Schritt 89 kein
+    Rechenweg mehr; `KWKG_Vbh_Kontingent` und `KWKG_Vbh_Jahresdeckel` nur noch der projektweite
+    Ersatzweg. Ein Drop ist ein eigener Schemaschritt und braucht einen Anwenderentscheid — er
+    nähme die Möglichkeit, den Datenschritt nachzuvollziehen.
+9f. **BK1-2: Der projektweite Ersatzweg rechnet weiter mit den Projektsätzen.** Er greift nur,
+    wenn sich Anlagen- und Ergebniszeilen nicht zuordnen lassen; dort gibt es keine Anlagenwerte,
+    an denen er sich bedienen könnte. Der Aktivierungsschalter fragt aber schon die Anlagen — ein
+    Projekt mit Anlagensätzen und ohne Projektsätze bekäme auf diesem Weg 0. Der Fall ist
+    konstruiert (er setzt eine misslungene Zuordnung voraus), bleibt aber benannt.
+9g. **BK1-3: Ein Jahr-0-Ausweis der KWKG-Pauschale in der Erlösrubrik** ist als Vorschlag
+    aufgenommen und **nicht gebaut** — der Entscheid steht beim Anwender aus. Er löst zugleich
+    `B7-3`.
+
 **Fachlich und technisch**
 
 10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b)
@@ -1517,6 +1582,18 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 - Build nur über das MSBuild von Visual Studio, x64 — `dotnet build` scheitert an COM.
 
 ## 6.5 Doppelte Wahrheiten
+
+> **Aufgelöst mit BK1 (Entscheid `BK-E-1` (a), Schemaschritt 89): der KWK-Zuschlag.** Er stand
+> zweimal da — je Anlage (`Tab_Energieanlagen.KWKG_*`, Schritt 22) und je Projekt
+> (`Tab_ProjektWirtschaftlichkeit.KWKG_*`, Schritt 28) —, und dazwischen lag eine Rückfallkette.
+> Der Anwender pflegte damit Felder, deren Wirkung davon abhing, ob ein zweites Feld anderswo leer
+> war; eine Kaskade aus zwei verschieden alten Modulen war gar nicht abbildbar. Die Wahrheit ist
+> jetzt die Anlage. Die sechs Projektspalten `KWKG_Bonus`, `KWKG_Bonus_Einspeisung`,
+> `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`, `KWKG_Tatbestand` und `KWKG_Anlagenart` bleiben
+> ungelesen in der Datenbank stehen — **Aufräumkandidaten für einen eigenen Schritt**, kein Drop in
+> BK1: `KWKG_Vbh_Kontingent` und `KWKG_Vbh_Jahresdeckel` speisen weiterhin den projektweiten
+> Ersatzweg, und ein Drop ohne Not nähme dem Anwender die Möglichkeit, den Datenschritt
+> nachzuvollziehen.
 
 *Aus KONTEXT § 9 — jede benannt und begründet. Neue Spalten und Novellen müssen beide Orte treffen.*
 

@@ -148,7 +148,7 @@ Protokoll unter
 **`2026-09-16_R8_Heizkessel_Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 88**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
+(**Schemastand 89**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
 unverändert weiter — Schritt 83 faltet den Strom-Aufschlag in den Arbeitspreis, Schritt 84
 zieht die Einspeisevergütung von der Trägerkarte in die Wirtschaftlichkeitsparameter um,
 Schritt 85 entfernt die fünf Spalten, die beide ohne Leser zurückgelassen haben
@@ -178,7 +178,22 @@ Rechenwirkung liegt nicht im Schema, sondern in der Vorgabe: § 9 Abs. 1 Nr. 3 S
 wird ab hier ausgewiesen statt als Erlös gebucht. Im ganzen Bestand bucht kein Lauf diese
 Reihe — die Befreiung setzt Stundenreihen voraus, und die führt die Testdatenbank zu
 keinem Projekt —, der Lauf ist auch nach Schritt 88 für alle fünf CI-Projekte
-byte-gleich). Gegen
+byte-gleich.
+Schritt 89 legt an `Tab_Energieanlagen` die Spalte `KWKG_Kostenanteil` an (DOUBLE,
+nullbar) und trägt danach — als erster KWKG-Schritt mit DML — die KWKG-Vorgaben des
+Projekts in jede BHKW-Anlagenzeile nach, die an der betreffenden Stelle leer ist (Sätze,
+Kontingent, Jahresdeckel, Anlagenart, Tatbestand, Kostenanteil, Stichtag,
+Inbetriebnahme). Erst danach gibt der Rechenweg den Rückfall Anlage → Projekt auf;
+§ 7 und § 8 KWKG bemessen Satz und Kontingent an der EINZELNEN Anlage. Getroffen hat der
+Schritt genau ein Projekt: **1030** mit seinen zwei Modulen (Satz Eigen 4,00 ct/kWh,
+Satz Einspeisung 8,00 ct/kWh, Kontingent 30.000 Vbh, Stichtag 01.09.2026, Inbetriebnahme
+01.03.2027) — kein anderes Projekt der Testdatenbank führt KWKG-Vorgaben, und keine
+einzige Anlagenzeile trug vorher eine eigene Angabe. **Ergebnisneutral, gemessen:** Der
+KWK-Zuschlag von 1030 im Jahr 1 beträgt vor und nach dem Schritt 7.315,956634 €, der
+Kapitalwert −21.895.377,275113 € (Szenario Erwartet, flache Stundenreihen aus dem
+gebuchten Lauf); die Gegenprobe ohne den Datenschritt liefert 0,00 € Zuschlag und
+−21.954.815,753214 € Kapitalwert. Die Basis führt ohnehin keine Geldgröße — der Lauf ist
+auch nach Schritt 89 für alle fünf CI-Projekte byte-gleich). Gegen
 diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung
 zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
