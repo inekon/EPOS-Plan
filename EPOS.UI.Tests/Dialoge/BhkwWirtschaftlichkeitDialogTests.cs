@@ -702,6 +702,90 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.NotEqual(grundlage1, grundlage2);
     }
 
+    // =====================================================================
+    // AUFTRAG #341 (U26) — VIER NACHKOMMASTELLEN IN DEN BEIDEN SATZFELDERN
+    //
+    // Der Vorschlagsknopf schreibt den gerechneten Satz UNGERUNDET in den
+    // Arbeitsstand, und der Kern rechnet ohne Rückfall mit genau diesem Feld
+    // (WirtschaftlichkeitCtrl: a.SatzEinspCt ?? 0, SatzEigenDerAnlage). Zeigte
+    // das Feld zwei Stellen, machte die nächste Berührung aus 5,5667 ein
+    // 5,57 — die Anzeige wurde zum Wert. Beide Fälle stehen deshalb hier:
+    // die Anzeige nach dem Vorschlag und der Rundweg eines Handwertes.
+    // =====================================================================
+
+    /// <summary>
+    /// ANZEIGE NACH DEM VORSCHLAG: 50x8 + 50x6 + 150x5 + 50x4,4 = 1670 / 300 ergibt
+    /// 5,56666… ct/kWh, der Eigenstromsatz entsprechend 835 / 300 = 2,78333…. Die
+    /// Felder müssen 5,5667 und 2,7833 zeigen — mit zwei Stellen stünde dort 5,57
+    /// und 2,78, und der Anwender sähe eine Zahl, die der Arbeitsstand nicht führt.
+    /// </summary>
+    [Fact]
+    public void Der_uebernommene_Vorschlag_steht_mit_vier_Stellen_im_Satzfeld()
+    {
+        var anlagen = new List<KwkgAnlagenAngabe> { Anlage(2, "BHKW gross", 300) };
+        anlagen[0].Inbetriebnahme = new DateTime(2027, 1, 1);
+        anlagen[0].Anlagenart = DbWerte.KWKG_ANLAGENART_MODERNISIERT;   // nicht § 7 Abs. 3a
+        anlagen[0].Eigenfall = DbWerte.KWKG_EIGENFALL_NR2;
+
+        var cut = Aufbauen(anlagen, katalog: Satzstaffel());
+
+        Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[0].Click();
+        Koerper(cut, 1).QuerySelectorAll("button.epos-vorschlag")[1].Click();
+
+        Assert.Equal("5,5667", Satzfeld(cut, 0).GetAttribute("value"));   // Einspeisung
+        Assert.Equal("2,7833", Satzfeld(cut, 1).GetAttribute("value"));   // Eigenstrom
+    }
+
+    /// <summary>
+    /// DER RUNDWEG EINES HANDWERTES: getippt, mit OK geschrieben, neu geladen — vier
+    /// Stellen müssen unverändert wieder im Feld stehen. Die Spalten
+    /// KWKG_Satz_Einspeisung/_Eigen sind REAL, es schneidet unterwegs nichts ab.
+    /// </summary>
+    [Fact]
+    public void Ein_Handwert_mit_vier_Stellen_ueberlebt_Schreiben_und_Laden()
+    {
+        var anlagen = ZweiAnlagen();
+        var cut = Aufbauen(anlagen);
+
+        Satzfeld(cut, 0).Input("5,5667");
+        Satzfeld(cut, 1).Input("4,1234");
+        OkKnopf(cut).Click();
+
+        Assert.Equal(5.5667, anlagen[0].SatzEinspCt);
+        Assert.Equal(4.1234, anlagen[0].SatzEigenCt);
+
+        // Neu geladen: derselbe Dialog über denselben Anlagenstand.
+        var wieder = Aufbauen(anlagen);
+        Assert.Equal("5,5667", Satzfeld(wieder, 0).GetAttribute("value"));
+        Assert.Equal("4,1234", Satzfeld(wieder, 1).GetAttribute("value"));
+    }
+
+    /// <summary>Das Satzfeld Nr. <paramref name="nr"/> der Gruppe 1 — frisch gesucht,
+    /// weil jede Bedienung neu zeichnet (0 = Einspeisung, 1 = Eigenstrom).</summary>
+    private static IElement Satzfeld(IRenderedComponent<BhkwWirtschaftlichkeitDialog> cut, int nr)
+        => Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[nr];
+
+    /// <summary>Die Staffel dieser Abnahme: 8 / 6 / 5 / 4,4 ct/kWh Einspeisung, halb so
+    /// viel Eigenstrom nach § 6 Abs. 3 Nr. 2, Grenzen 50/100/250/2000 kW.</summary>
+    private static Func<string, int, GesetzParameter> Satzstaffel()
+        => (schluessel, jahr) =>
+        {
+            double w = 0;
+            if (schluessel == DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_1) w = 50;
+            else if (schluessel == DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_2) w = 100;
+            else if (schluessel == DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_3) w = 250;
+            else if (schluessel == DbWerte.GESETZ_KWKG_LEISTUNGSSTUFE_4) w = 2000;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS50KW) w = 8.0;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS100KW) w = 6.0;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS250KW) w = 5.0;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EINSP_BIS2MW) w = 4.4;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS50KW) w = 4.0;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS100KW) w = 3.0;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS250KW) w = 2.5;
+            else if (schluessel == DbWerte.GESETZ_KWKG_ZUSCHLAG_EIGEN_N2_BIS2MW) w = 2.2;
+            return w > 0 ? new GesetzParameter(1, schluessel, "KWKG", 2020, w, "ct/kWh", "", "") : null!;
+        };
+
     /// <summary>
     /// DAS KONTINGENT KOMMT AUS DER ANLAGE: Anlagenart und Kostenanteil DIESER Anlage
     /// waehlen die Stufe des § 8 — nicht mehr die projektweite Angabe. Ohne
