@@ -1527,18 +1527,27 @@ Keine stillen Teilsummen
 
   <div class="zone">Dialog — Reiter Ertrag/Bonus</div>
   <p class="eng">Den zweiten Reiter gibt es nur bei Blockheizkraftwerk und Photovoltaik. Bei der Photovoltaik
-  trägt er eine Gruppe, keinen zweiten Rechenweg: den Erklärungssatz, die Klappliste des Stammprojekts und den
-  Knopf in den Vergütungsdialog der Kategorie 6; daneben der Knopf in den Gesetzeskatalog, der als
-  Überlagerung im selben Fenster erscheint.</p>
+  trägt er eine Gruppe, keinen zweiten Rechenweg: den Erklärungssatz, die Wahl der Vergütung je Variante —
+  „vom Stammprojekt übernehmen" oder „eigene Vergütung" — mit ihrer Erklärzeile, die Klappliste des
+  Stammprojekts für den Admin-Kontext (Kostendialog ohne geöffnetes Projekt) und den Knopf in den
+  Vergütungsdialog der Kategorie 6; daneben der Knopf in den Gesetzeskatalog, der als Überlagerung im
+  selben Fenster erscheint. Die Erklärzeile nennt die Herkunft: „übernommen von Musterprojekt Gewerbepark ·
+  anzulegender Wert 6,04 ct/kWh, Direktvermarktung" oder — wie im Beispiel, Variante „Photovoltaik" —
+  „eigene Werte dieser Variante"; das Stammprojekt führt immer eigene Werte
+  <span class="zk vor">Vorschlag U38</span>.</p>
   <div class="fenster">
     <div class="f-band">Kostenverwaltung PV-Anlage 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe</span></div>
     <div class="f-tab"><span>Kosten Invest/Betrieb</span><span class="an">Ertrag/Bonus</span></div>
     <div class="f-leib">
       <div class="f-gruppe">
-        <div class="f-titel">PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)</div>
-        <div class="f-herleitung">Die PV-Vergütung wird STAMMPROJEKTBEZOGEN im Vergütungsdialog gepflegt — demselben Formular, das auch der
-        Knopf „Photovoltaik…" im Wirtschaftlichkeits-Reiter öffnet (eine Vergütungswahrheit). Anzulegender Wert,
+        <div class="f-titel">PV-Vergütung (EEG) — eine Vergütungswahrheit je Projekt</div>
+        <div class="f-herleitung">Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt — demselben Formular, das auch der
+        Knopf „Photovoltaik…" im Wirtschaftlichkeits-Reiter öffnet (eine Vergütungswahrheit je Projekt). Eine Variante
+        übernimmt die Vergütung ihres Stammprojekts oder führt eigene Werte. Anzulegender Wert,
         Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.</div>
+        <div class="f-zeile eng"><label>Vergütung:</label><span class="f-radio"><i></i></span><span class="f-lab">vom Stammprojekt übernehmen</span>
+          <span class="f-radio an"><i></i></span><span class="f-lab" style="min-width:0">eigene Vergütung</span></div>
+        <div class="f-herleitung">eigene Werte dieser Variante — <b>Variante Photovoltaik</b></div>
         <div class="f-zeile eng"><label>Stammprojekt:</label><span class="f-combo" style="min-width:260px">Musterprojekt Gewerbepark</span></div>
         <div class="f-knopfzeile"><span class="f-knopf">PV-Vergütungsdialog öffnen…</span><span class="f-knopf">Gesetzesparameter…</span></div>
       </div>
@@ -1629,6 +1638,7 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
         <tr><td>Pflichtpositionen „Wartung / Inspektion PV-Anlage" · „Instandhaltung PV-Module / Gestell" (Datenwerte der Vorlage) · Meldung beim Löschversuch</td><td class="rs">SchemaKatalog, Vorlagensaat Photovoltaik · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Rasterzeilen · Meldungszeile</td></tr>
         <tr><td>Summenfuß „Summe Investitionskosten netto: {0} €" · „Summe Betriebskosten netto: {0} €/a" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_INVEST · KDLG_SUMME_NETTO_BETRIEB · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Reiter „Ertrag/Bonus": Gruppenkopf, Erklärungssatz, Klappliste „Stammprojekt:", Knöpfe „PV-Vergütungsdialog öffnen…" · „Gesetzesparameter…"</td><td class="rs">KDLG_TAB_ERTRAG · KDLG_ERTRAG_G_PV · KDLG_ERTRAG_PV · KDLG_ERTRAG_PV_PROJEKT · KDLG_ERTRAG_PV_OEFFNEN · KDLG_ERTRAG_BTN_GESETZE</td><td>Reiterblatt Ertrag/Bonus</td></tr>
+        <tr><td>Optionsgruppe „Vergütung: vom Stammprojekt übernehmen | eigene Vergütung" · Erklärzeilen „übernommen von {0} · anzulegender Wert {1} ct/kWh, {2}" · „eigene Werte dieser Variante" <b>neu</b></td><td class="rs">KDLG_ERTRAG_PV_WAHL · KDLG_ERTRAG_PV_UEBERNEHMEN · KDLG_ERTRAG_PV_EIGENE · KDLG_ERTRAG_PV_HERK_STAMM · KDLG_ERTRAG_PV_HERK_EIGEN</td><td>Reiter Ertrag/Bonus (U38)</td></tr>
         <tr><td>Herleitung „{0} Module × {1} Wp = {2} kWp" · bei mehreren Strängen „Σ Module × Leistung = {0} kWp" <b>neu</b></td><td class="rs">KDLG_HERL_KWP · KDLG_HERL_KWP_SUMME</td><td>Werkzeugtipp und Herleitungszeile der kWp-Zeilen (U35)</td></tr>
         <tr><td>Kennzahl „spezifisch {0} €/kWp" <b>neu</b></td><td class="rs">KDLG_KENN_EUR_KWP</td><td>Summenfuß der Photovoltaik (U34)</td></tr>
         <tr><td>Bemessung „je kWp Leistung" mit Einheit „€/kWp·a" im Betriebsraster <b>neu</b></td><td class="rs">BM_KWP (FuerBetrieb, EinheitBetrieb)</td><td>Zelle Bemessung, Betriebskosten (U33)</td></tr>
@@ -1921,14 +1931,17 @@ Keine stillen Teilsummen
               <td>der Netzbezug mit Anlage — die Größe, die in den Kapitalwert geht</td></tr>
           <tr><td>CO₂-Kosten BEHG [€/a]</td><td class="r">26.857</td><td class="r">56.700</td>
               <td class="r">26.857</td><td class="r">56.700</td>
-              <td>eigene Reihe je Kalenderjahr; Brennstoffmenge × Emissionsfaktor × CO₂-Preis</td></tr>
+              <td>eigene Reihe je Kalenderjahr, allein aus dem Brennstoff des Kessels bzw. des BHKW:
+                  <span class="mono">2.056,7 bzw. 4.342,1 MWh × 200,9 g/kWh × 65 €/t</span></td></tr>
         </tbody>
       </table>
       </div>
       <div class="s-herleitung">Der Grundpreis des Erdgases (180 €/a) steckt in der Hauptzeile,
       nicht in einer davon-Zeile — er fällt je Energieträger an, nicht je Anlage. Die Photovoltaik hat
       keine davon-Zeile: Sie verbraucht keine Endenergie; der Standby des Wechselrichters steht als
-      Hilfsenergie (90 €/a) in den Betriebskosten.</div>
+      Hilfsenergie (90 €/a) in den Betriebskosten. Die Spalten sind Varianten: Die Variante „Photovoltaik"
+      behält den Gas-Brennwertkessel und trägt dessen CO₂-Kosten weiter (26.857 €/a wie das Stammprojekt);
+      die Photovoltaik selbst trägt keine CO₂-Kosten.</div>
       <div class="s-info">Die davon-Zeilen entstehen im Rechenlauf und reisen im Nachweisumschlag der
       Ergebniszeile mit; nach dem Neuladen einer gespeicherten Rechnung stehen sie wieder da. Eine ohne
       Umschlag gebuchte Ergebniszeile lädt ohne sie — dann zeigt die Seite die Hauptzeile allein.</div>
@@ -2727,11 +2740,16 @@ Stromsteuer
   DV-Entgelt außerhalb der Marktprämie, die PPA-Felder, solange keine sonstige Direktvermarktung gewählt ist,
   die Option „Feste Einspeisevergütung" über 100 kW und „Keine Vergütung" ab 200 kW. Alles Übrige sind
   Herleitungszeilen — installierte Leistung, anzulegender Wert samt Katalogherleitung, feste EV, die Statuszeilen,
-  Vorschau und Kennzahlen. Die aufgeschlüsselte Vorschau am Ende <span class="zk vor">Vorschlag U27</span>.</p>
+  Vorschau und Kennzahlen. Die aufgeschlüsselte Vorschau am Ende <span class="zk vor">Vorschlag U27</span>.
+  Unter dem Schalter die Herkunftszeile der Vergütung: „Vergütung dieser Variante: eigene Werte" oder
+  „übernommen vom Stammprojekt — Felder gesperrt" mit dem Knopf „eigene Werte", der die Stammwerte in die
+  Variante kopiert; das Stammprojekt zeigt „Stammprojekt — n Varianten übernehmen diese Vergütung"
+  <span class="zk vor">Vorschlag U38</span>.</p>
   <div class="fenster">
     <div class="f-band">PV-Vergütung (EEG)<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
       <div class="f-zeile"><span class="f-check an"><i></i></span><span class="f-lab" style="min-width:0">Vergütung anwenden</span></div>
+      <div class="f-herleitung">Vergütung dieser Variante: <b>eigene Werte</b> — Variante Photovoltaik</div>
 
       <!-- Anlage (PVW_G_ANLAGE) -->
       <div class="f-gruppe" style="margin-top:8px">
@@ -4654,6 +4672,20 @@ Einstufung
               Spalte B der Sicht 1; Kapitalwertdifferenz B − A gleich Differenz der Sicht-1-Werte auf 0,01 €;
               Tausch A/B dreht das Vorzeichen; bunit: beide Zustände, Listen ohne den anderen Stand, Sperre bei
               nur einem Stand</td></tr>
+        <tr><td class="mono">U38</td><td class="num">3</td>
+            <td>Vergütung je Variante: Optionsgruppe „vom Stammprojekt übernehmen | eigene Vergütung" mit Erklärzeile im
+              Reiter Ertrag/Bonus; Herkunftszeile und Knopf „eigene Werte" im Vergütungsdialog (Kategorie 6); Spalte
+              <span class="mono">Uebernahme_Stamm</span> in <span class="mono">Tab_ProjektPhotovoltaik</span> (Schemaschritt,
+              Ableitung der Wahl aus dem Bestand); der Rechenweg liest die aufgelöste Zeile der Variante, der Kopierlauf
+              lässt die PV-Zeile aus; Nachweiszeile der Herkunft im Bericht; Fragen VV‑Q1 bis VV‑Q7 im Konzept § 2.16
+              offen</td>
+            <td><span class="mono">ErtragBonus.razor</span> · <span class="mono">PhotovoltaikVerguetungDialog.razor</span> ·
+              <span class="mono">ProjektPhotovoltaikCtrl.LiesAufgeloest</span> ·
+              <span class="mono">WirtschaftlichkeitCtrl.RechnePvVerguetung</span> ·
+              <span class="mono">ProjektDuplizierenCtrl</span> · <span class="mono">WirtschaftlichkeitZeilen</span></td>
+            <td>Alle Bestandsvarianten „übernehmen" → Referenzlauf byte-gleich; eigene Zeile wertgleich zur Stammzeile →
+              dieselben Zahlen wie „übernehmen"; eine Stammänderung erreicht die übernehmende Variante, nicht die
+              eigene; bunit: beide Zustände der Optionsgruppe, Erklärzeile je Herkunft</td></tr>
       </tbody>
     </table>
   </div>

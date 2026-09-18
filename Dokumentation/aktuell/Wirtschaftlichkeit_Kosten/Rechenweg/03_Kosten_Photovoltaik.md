@@ -74,7 +74,10 @@ kein Attribut dieses Dialogs; eine Quellenangabe zu ihr gibt es nirgends (U9).
 
 Bei der Photovoltaik eine Gruppe „PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)": Erklärungssatz
 (`KDLG_ERTRAG_PV`), Klappliste „Stammprojekt:" und Knopf „PV-Vergütungsdialog öffnen…" — der Dialog aus `06` —,
-daneben „Gesetzesparameter…" (Gesetzeskatalog als Überlagerung). Kein zweiter Rechenweg.
+daneben „Gesetzesparameter…" (Gesetzeskatalog als Überlagerung). Kein zweiter Rechenweg. Die eine Wahrheit gilt **je Projekt**: Der Rechenweg liest die
+Zeile des jeweiligen Stands (`ProjektPhotovoltaikCtrl.Lies(v.IdProjekt)`); Varianten übernehmen sie vom Stammprojekt
+oder führen eigene Werte — Wahl, Herkunft und Regeln in Konzept § 2.16
+(`../Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`).
 
 ## Berechnungsgrundlage
 
