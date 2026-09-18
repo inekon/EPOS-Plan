@@ -167,6 +167,25 @@ namespace WindowsFormsApplication1
         /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>. Gefüllt nur bei
         /// aktivem Dialog (Form leer = Bestandsweg ohne Dialog).
         /// </summary>
+        /// <summary>
+        /// ETAPPE B7P — der NACHWEISUMSCHLAG des Ergebnisses in
+        /// <see cref="TAB_ERGEBNIS"/>: ein JSON-Text mit Praefix <c>nw1:</c>
+        /// (<see cref="ErgebnisNachweisUmschlag"/>), der die Zeilenlisten eines Laufs
+        /// traegt — Modulnachweis, Energiekosten je Anlage, Betriebskostenpositionen,
+        /// Kohaerenzzeilen — und die vier Skalare, die es bis B7P ebenfalls nur im
+        /// frischen Lauf gab. Ueber <c>SpalteSicher</c> — dieselbe Begruendung wie bei
+        /// <see cref="SPALTE_ENERGIESTEUER"/>.
+        ///
+        /// <para><b>Warum ein Umschlag und nicht dreissig Spalten.</b> Es sind LISTEN
+        /// mit je einem Dutzend Feldern, deren Laenge an der Zahl der Anlagen und
+        /// Kostenpositionen haengt. In Spalten waeren das vier weitere Tabellen mit
+        /// eigenem Schema, eigenem Schreib- und Leseweg und eigener Migration — fuer
+        /// Daten, die reiner AUSWEIS sind und aus denen nichts gerechnet wird. NULL
+        /// heisst „kein Umschlag": Der Lauf laedt dann wie vor B7P, nur ohne
+        /// Unterzeilen.</para>
+        /// </summary>
+        public const string SPALTE_NACHWEIS_JSON = "Nachweis_Json";
+
         public const string SPALTE_PV_FORM = "PvVerguetungsform";
         /// <inheritdoc cref="SPALTE_PV_FORM"/>
         public const string SPALTE_PV_AW = "PvAnzulegenderWert";
@@ -499,6 +518,12 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_51A, "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_KAPPUNG_KWH, "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_PV_VERMIEDEN, "DOUBLE");
+
+                    // ETAPPE B7P — der Nachweisumschlag. Additiv über denselben Weg
+                    // wie SPALTE_STEUER_HERKUNFT: Ergebnisspalten führt dieses Modul
+                    // selbst, Eingabespalten der Migrationskatalog. Eine Datei ohne die
+                    // Spalte lädt unverändert — die Leseseite prüft sie tolerant.
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_NACHWEIS_JSON, "LONGTEXT");
 
                     // ETAPPE E5 — die Spalten des Tarif-Rollenmodells und die zwei
                     // Projektangaben. Sie entstehen regulär über Migrationsschritt 21;
@@ -5143,7 +5168,8 @@ namespace WindowsFormsApplication1
             erg.Betriebskosten = eingabe.Betriebskosten;
             // ETAPPE B7 (Konzept § 3.5): die Energiekosten je Anlage — gebildet vom
             // KostenEmissionRechner aus denselben Mengen und Preisen, aus denen
-            // erg.EnergiekostenJahr entstanden ist. Nur Ausweis, nur frischer Lauf.
+            // erg.EnergiekostenJahr entstanden ist. Nur Ausweis; seit B7P mit dem Lauf
+            // gebucht (ErgebnisNachweisUmschlag).
             if (v.EnergiekostenJeAnlage != null)
                 erg.EnergiekostenJeAnlage = v.EnergiekostenJeAnlage;
 
@@ -6506,6 +6532,17 @@ namespace WindowsFormsApplication1
                         foreach (WirtschaftlichkeitErgebnis e in ergebnisse)
                         {
                             {
+                                // ETAPPE B7P — der Nachweisumschlag dieser Zeile. Er
+                                // entsteht VOR der Parameterkette, weil sein Fehlschlag
+                                // den Hinweistext derselben Zeile ergaenzt: Der Anwender
+                                // erfaehrt am Lauf, dass die Unterzeilen diesmal nicht
+                                // gespeichert sind - nicht erst, wenn er sie vermisst.
+                                // Schreiben wirft nicht; die Transaktion bleibt heil.
+                                string nwGrund;
+                                string nwJson = ErgebnisNachweisUmschlag.Schreiben(e, out nwGrund);
+                                string hinweisText = nwGrund == null
+                                                     ? e.Hinweis : Anhaengen(e.Hinweis, nwGrund);
+
                                 List<DbParam> pl = new List<DbParam>();
                                 pl.Add(new DbParam("@id", naechsteId));
                                 pl.Add(new DbParam("@proj", e.IdProjekt));
@@ -6565,9 +6602,10 @@ namespace WindowsFormsApplication1
                                 pl.Add(new DbParam("@pvkw", R(e.PvKappungsverlustKwh)));
                                 pl.Add(DbWert(e.PvVermiedenerBezug));
                                 pl.Add(DbWert(e.StromkostenTarif));
-                                pl.Add(new DbParam("@hw", (object)e.Hinweis ?? DBNull.Value));
+                                pl.Add(new DbParam("@hw", (object)hinweisText ?? DBNull.Value));
                                 pl.Add(new DbParam("@fg", (object)e.Fehlgrund ?? DBNull.Value));
                                 pl.Add(new DbParam("@erb", R(e.ErsatzBarwert)));   // W5-B-10
+                                pl.Add(new DbParam("@nw", (object)nwJson ?? DBNull.Value));   // B7P
                                 v.Ausfuehren("INSERT INTO " + TAB_ERGEBNIS + " (ID, ID_Projekt, ID_Ergebnis, Szenario, " +
                                 "IstStamm, Anzeige, Zeitstempel, " +
                                 "Zinssatz, Betrachtungszeitraum, Preissteigerung_Energie, Preissteigerung_Betrieb, " +
@@ -6587,8 +6625,8 @@ namespace WindowsFormsApplication1
                                 SPALTE_PV_AUSFALL_EUR + ", " + SPALTE_PV_51A + ", " +
                                 SPALTE_PV_KAPPUNG_KWH + ", " + SPALTE_PV_VERMIEDEN + ", " +
                                 "StromkostenTarif, HinweisText, Fehlgrund, " +
-                                SPALTE_ERSATZ_BARWERT + ") " +
-                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
+                                SPALTE_ERSATZ_BARWERT + ", " + SPALTE_NACHWEIS_JSON + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
                             }
                             naechsteId++;
                         }
@@ -6740,6 +6778,43 @@ namespace WindowsFormsApplication1
                             Fehlgrund = r["Fehlgrund"] != DBNull.Value ? r["Fehlgrund"].ToString() : null
                         };
                         if (r["Zeitstempel"] != DBNull.Value) e.Zeitstempel = Convert.ToDateTime(r["Zeitstempel"]);
+
+                        // ETAPPE B7P — der Nachweisumschlag. ENGER eigener Fang: Der
+                        // Fang um die Projektschleife herum verschlucht alles, was aus
+                        // ihm herausfliegt — mit ihm wären es ALLE Ergebniszeilen ALLER
+                        // Projekte, wegen einer Zeichenkette in EINER Zeile.
+                        //
+                        // Die Spalte wird tolerant geprüft: Eine nie migrierte Datei hat
+                        // sie nicht und lädt unverändert (dann fehlen die Unterzeilen wie
+                        // vor B7P, und das ist keine Störung, sondern der alte Stand).
+                        // Ein VORHANDENER, aber unlesbarer Umschlag dagegen ist eine
+                        // Auskunft: genau EIN Kohärenzhinweis, kein Dialog und keine
+                        // Meldung — er läuft über den Weg, den Reiter, Word und Excel
+                        // ohnehin zeigen.
+                        if (r.Table.Columns.Contains(SPALTE_NACHWEIS_JSON) &&
+                            r[SPALTE_NACHWEIS_JSON] != DBNull.Value)
+                        {
+                            try
+                            {
+                                string roh = Convert.ToString(r[SPALTE_NACHWEIS_JSON]);
+                                ErgebnisNachweisUmschlag u = ErgebnisNachweisUmschlag.Lesen(roh);
+                                if (u != null) u.Uebernimm(e);
+                                else if (!string.IsNullOrWhiteSpace(roh))
+                                    e.KohaerenzHinweise.Add(new KohaerenzHinweis
+                                    {
+                                        Schwere = KohaerenzSchwere.HINWEIS,
+                                        Text = MyResource.Resource.WIRT_NACHWEIS_UNLESBAR
+                                    });
+                            }
+                            catch
+                            {
+                                e.KohaerenzHinweise.Add(new KohaerenzHinweis
+                                {
+                                    Schwere = KohaerenzSchwere.HINWEIS,
+                                    Text = MyResource.Resource.WIRT_NACHWEIS_UNLESBAR
+                                });
+                            }
+                        }
                         liste.Add(e);
                     }
                 }

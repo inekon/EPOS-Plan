@@ -981,12 +981,12 @@ namespace WindowsFormsApplication1
         /// ETAPPE B7 (Konzept § 2.6, Klarstellung 1) — die vermiedene Strommenge
         /// [MWh/a]; 0 = nicht bestimmbar (keine Stundenreihen, kein Rollenmodell).
         ///
-        /// <para><b>Nur im frischen Lauf belegt</b> — wie <see cref="KwkgModule"/> und
-        /// <see cref="Betriebskosten"/>. Sie steht in keiner Ergebnisspalte, weil sie
-        /// ausschliesslich den AUSWEIS traegt: Der Kapitalwert rechnet unveraendert mit
-        /// den tatsaechlichen Reststromkosten, in denen die Einsparung bereits steckt.
-        /// Ohne sie entfaellt die Korrekturzeile der Rubrik, wie jede andere Zeile ohne
-        /// Wert.</para>
+        /// <para>Sie steht in keiner eigenen Ergebnisspalte, weil sie ausschliesslich den
+        /// AUSWEIS traegt: Der Kapitalwert rechnet unveraendert mit den tatsaechlichen
+        /// Reststromkosten, in denen die Einsparung bereits steckt. Seit B7P reist sie im
+        /// Nachweisumschlag mit (<see cref="ErgebnisNachweisUmschlag"/>) — ein
+        /// gespeicherter Lauf traegt die Korrekturzeile der Rubrik also ebenso wie der
+        /// frisch gerechnete.</para>
         /// </summary>
         public double VermiedenMengeMWh;
 
@@ -1007,7 +1007,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// ETAPPE B7 — true, wenn der Lauf ein Unternehmen des produzierenden Gewerbes
         /// (oder der Land- und Forstwirtschaft) gerechnet hat. Die Rubrik kennzeichnet
-        /// damit A5, A6 und B1; nur im frischen Lauf belegt.
+        /// damit A5, A6 und B1. Im Nachweisumschlag mitgespeichert
+        /// (<see cref="ErgebnisNachweisUmschlag"/>).
         /// </summary>
         public bool ProduzierendesGewerbe;
 
@@ -1084,9 +1085,11 @@ namespace WindowsFormsApplication1
         /// E6). Leer = kein modulscharfer Lauf (Ersatzweg, kein BHKW oder kein
         /// gepflegter Satz).
         ///
-        /// <para><b>Nicht persistiert</b>, wie schon in E6 festgehalten: Die Reihe je
-        /// Anlage entsteht bei jedem Lauf neu. Der Bericht rechnet ohnehin frisch; nur
-        /// der Rückfallpfad auf den gespeicherten Stand zeigt diesen Block nicht.</para>
+        /// <para><b>Im Nachweisumschlag persistiert</b>
+        /// (<see cref="ErgebnisNachweisUmschlag"/>, Etappe B7P): Die Zeilen entstehen bei
+        /// jedem Lauf neu, aber der zuletzt gebuchte Stand trägt sie mit. Der
+        /// Rückfallpfad auf gespeicherte Ergebnisse — Reiter, Word, Excel und Gruppe 5
+        /// des BHKW-Dialogs — zeigt den Block deshalb auch ohne frischen Lauf.</para>
         /// </summary>
         public List<KwkgModulNachweis> KwkgModule = new List<KwkgModulNachweis>();
 
@@ -1094,14 +1097,16 @@ namespace WindowsFormsApplication1
         /// Die Betriebskostenpositionen dieses Szenarios mit Kostenart, Bemessungsart und
         /// Herleitung (Etappe E7, Zweck der E3-Spalte <c>Kostenart</c>). Leer = keine
         /// Positionen oder Datenbank ohne die Spalten aus Migrationsschritt 19.
-        /// <b>Nicht persistiert</b> — dieselbe Begründung wie oben.
+        /// <b>Im Nachweisumschlag persistiert</b> — dieselbe Begründung wie oben
+        /// (<see cref="ErgebnisNachweisUmschlag"/>).
         /// </summary>
         public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
 
         /// <summary>
-        /// ETAPPE B7 — die Energiekosten je Anlage (Konzept § 3.5). Nur im frischen
-        /// Lauf belegt, wie <see cref="KwkgModule"/>: Die Zeilen entstehen im
-        /// Rechenlauf aus den Modulmengen, und persistiert ist allein die Summe.
+        /// ETAPPE B7 — die Energiekosten je Anlage (Konzept § 3.5). Die Zeilen entstehen
+        /// im Rechenlauf aus den Modulmengen; als Ergebnisspalte steht allein die Summe,
+        /// die Zeilen selbst reisen seit B7P im Nachweisumschlag mit
+        /// (<see cref="ErgebnisNachweisUmschlag"/>) — wie <see cref="KwkgModule"/>.
         /// </summary>
         public List<EnergieAnlageNachweis> EnergiekostenJeAnlage =
             new List<EnergieAnlageNachweis>();
@@ -1116,9 +1121,12 @@ namespace WindowsFormsApplication1
         /// „nur warnen". Keine Gutschrift, keine Reihe und kein Kapitalwert ändern sich
         /// dadurch.</para>
         ///
-        /// <para><b>Nicht persistiert</b>, wie <see cref="KwkgModule"/> und
-        /// <see cref="Betriebskosten"/>: Die Zeilen entstehen bei jedem Lauf neu. Der
-        /// Rückfallpfad auf gespeicherte Ergebnisse zeigt sie deshalb nicht.</para>
+        /// <para><b>Im Nachweisumschlag persistiert</b>, wie <see cref="KwkgModule"/> und
+        /// <see cref="Betriebskosten"/> (<see cref="ErgebnisNachweisUmschlag"/>, B7P): Die
+        /// Zeilen entstehen bei jedem Lauf neu und werden mit ihm gebucht; der
+        /// Rückfallpfad auf gespeicherte Ergebnisse zeigt sie deshalb ebenfalls. Ist ein
+        /// gespeicherter Umschlag unlesbar, steht hier genau EINE Zeile, die das
+        /// sagt.</para>
         /// </summary>
         public List<KohaerenzHinweis> KohaerenzHinweise = new List<KohaerenzHinweis>();
 
@@ -1138,9 +1146,10 @@ namespace WindowsFormsApplication1
         /// Lastspitzenkappung zeigt: Stamm gegen Speichervariante, bei nahezu gleicher
         /// Arbeit.</para>
         ///
-        /// <para><b>Nicht persistiert</b>, wie <see cref="KwkgModule"/> und
-        /// <see cref="Betriebskosten"/>: Sie entsteht mit dem Lauf, aus dem sie stammt,
-        /// und eine gespeicherte Spitze beschriebe einen anderen.</para>
+        /// <para><b>Im Nachweisumschlag persistiert</b>, wie <see cref="KwkgModule"/> und
+        /// <see cref="Betriebskosten"/> (<see cref="ErgebnisNachweisUmschlag"/>, B7P):
+        /// Gespeichert wird die Spitze DIESES Laufs, zusammen mit seinen übrigen
+        /// Ergebniszahlen — sie beschreibt damit denselben Lauf wie sie.</para>
         /// </summary>
         public double? BezugsspitzeKW;
 

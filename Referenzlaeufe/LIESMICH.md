@@ -151,7 +151,16 @@ danach im Wegweiser desselben Ordners.
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
 (**Schemastand 89** — die Testdatenbank steht auf demselben Stand, die Basis ist darauf
-eingefroren). Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
+eingefroren).
+**Ohne eigenen Schritt** trägt die Testdatenbank zusätzlich die Spalte
+`Nachweis_Json` an `Tab_ErgebnisWirtschaftlichkeit` — eine **Konservenspalte**: Diese
+Ergebnistabelle ist keine Schematabelle, sie entsteht und wächst erst beim ersten
+Programmlauf über `WirtschaftlichkeitCtrl.SpalteSicher`. Der SQL-Dialektprüfer löst das
+INSERT des Ergebnisses aber gegen genau diese Datei auf und meldete ohne die Spalte eine
+Fundstelle, die in der Anwendung keine ist; angelegt wird sie deshalb von
+`Werkzeuge/Testdatenbankschema` (leer, kein Wert, `Zielversion` bleibt 89), und der Lauf
+ist auch danach byte-gleich.
+Gegen diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017, 1045,
 **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung zieht
 getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
 
