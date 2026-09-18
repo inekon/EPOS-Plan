@@ -137,7 +137,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-16_R8_Heizkessel_Kaskade`, dreizehn Projekte; Aufbau, Herleitung und Schemastand in
+`2026-09-18_R9_Kesselbrennstoff`, dreizehn Projekte; Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
 1030, 1007, 1017, 1045 und 1046; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.

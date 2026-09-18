@@ -85,11 +85,11 @@ Heizkessel.Deckung_Prozess;0
 HeizkesselModul[0].Modul;ecoTEC plus VC 806/5-5
 HeizkesselModul[0].Waerme_Gas;220.54
 HeizkesselModul[0].Waerme_Oel;0
-HeizkesselModul[0].Brennstoff;
-HeizkesselModul[0].Verbrauch;0
+HeizkesselModul[0].Brennstoff;Gas
+HeizkesselModul[0].Verbrauch;225.04
 HeizkesselModul[0].Jahresnutzungsgrad;98
 HeizkesselModul[0].carrier_id;63
-HeizkesselModul[0].Waermeproduktion;0
+HeizkesselModul[0].Waermeproduktion;220.54
 HeizkesselModul[0].Hilfsenergie;0
 Pufferspeicher[0].ID_Pufferspeicher;1054182
 Pufferspeicher[0].Bezeichner;Puffer 3000Ltr

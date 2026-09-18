@@ -1,0 +1,254 @@
+﻿# Referenzlauf (Kern) vom 18.09.2026 07:01
+
+Quelle:        /home/user/EPOS-Plan/.claude/worktrees/agent-a2f414db51a8756f3/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie:  /home/user/EPOS-Plan/.claude/worktrees/agent-a2f414db51a8756f3/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+Kultur:        de-DE
+Zielordner:    Referenzlaeufe/2026-09-18_R9_Kesselbrennstoff
+Projekte:      1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046
+Dauer:         00:00:06
+
+## Ablauf
+
+```
+Referenzlauf (Kern) gestartet.
+Projektwurzel: /home/user/EPOS-Plan/.claude/worktrees/agent-a2f414db51a8756f3
+Zielordner:    Referenzlaeufe/2026-09-18_R9_Kesselbrennstoff
+
+Quelle vorgegeben (--quelle): /home/user/EPOS-Plan/.claude/worktrees/agent-a2f414db51a8756f3/Referenzlaeufe/Kenndaten_Test.sqlite
+Arbeitskopie angelegt: /home/user/EPOS-Plan/.claude/worktrees/agent-a2f414db51a8756f3/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite (67 MB)
+DB-Pfad der App verifiziert: /home/user/EPOS-Plan/.claude/worktrees/agent-a2f414db51a8756f3/Referenzlaeufe/Arbeitskopie/Kenndaten.sqlite
+
+Projektlandschaft wird gelesen ...
+25 Projekte in Tab_Projekt.
+
+Gewaehlte Referenzprojekte (13):
+  - Projekt 1007 "Laurentiuskirche"
+      Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1008 "Heinestr 15"
+      Ausstattung: Tools: Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1017 "WP_PV-Speicher"
+      Ausstattung: Tools: BHKW, Heizkessel, Stromspeicher | Anlagen: WP,Batterie,Kessel,BHKW
+      Grund:       per --projekte vorgegeben
+  - Projekt 1018 "BHKW Test München"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1023 "Wöhler - Test1"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1024 "Wöhler - Test2"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, BHKW | Anlagen: WP,Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)"
+      Ausstattung: Tools: BHKW, Heizkessel | Anlagen: Kessel,BHKW,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1039 "Mehrgebäude"
+      Ausstattung: Tools: Heizkessel, Wärmepumpe | Anlagen: WP,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1040 "zwei Puffer je Kanal"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1041 "Prozesswärme mit eigenem Puffer"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer
+      Grund:       per --projekte vorgegeben
+  - Projekt 1042 "Booster-Kette mit Kombi-Speicher"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Solarthermie, Photovoltaik, Stromspeicher | Anlagen: WP,Kessel,Puffer | Quellspeicher(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1045 "Prüfprojekt Ost/West Stränge"
+      Ausstattung: Tools: Wärmepumpe, Heizkessel, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Kessel,Puffer | Puffer(WP)
+      Grund:       per --projekte vorgegeben
+  - Projekt 1046 "Prüfprojekt Speicherflotte"
+      Ausstattung: Tools: Solarthermie, Wärmepumpe, Photovoltaik, Stromspeicher | Anlagen: WP,PV,Batterie,Kessel,Puffer | Puffer(anderer Erzeuger)
+      Grund:       per --projekte vorgegeben
+
+Projekt 1007 "Laurentiuskirche" wird gerechnet ...
+Simulation startet fuer Projekt 1007 ...
+Simulation beendet, Ergebnis-Kopf-ID 213.
+Projekt 1007: 33 CSV-Dateien, 139 Skalare.
+  OK - 33 Dateien in 00:01
+Projekt 1008 "Heinestr 15" wird gerechnet ...
+Simulation startet fuer Projekt 1008 ...
+Simulation beendet, Ergebnis-Kopf-ID 214.
+Projekt 1008: 25 CSV-Dateien, 141 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1017 "WP_PV-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1017 ...
+Simulation beendet, Ergebnis-Kopf-ID 215.
+Projekt 1017: 21 CSV-Dateien, 124 Skalare.
+  OK - 21 Dateien in 00:00
+Projekt 1018 "BHKW Test München" wird gerechnet ...
+Simulation startet fuer Projekt 1018 ...
+Simulation beendet, Ergebnis-Kopf-ID 216.
+Projekt 1018: 22 CSV-Dateien, 151 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1023 "Wöhler - Test1" wird gerechnet ...
+Simulation startet fuer Projekt 1023 ...
+Simulation beendet, Ergebnis-Kopf-ID 217.
+Projekt 1023: 25 CSV-Dateien, 141 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1024 "Wöhler - Test2" wird gerechnet ...
+Simulation startet fuer Projekt 1024 ...
+Simulation beendet, Ergebnis-Kopf-ID 218.
+Projekt 1024: 26 CSV-Dateien, 167 Skalare.
+  OK - 26 Dateien in 00:00
+Projekt 1030 "Referenz BHKW-Kaskade (Regressionstest)" wird gerechnet ...
+Simulation startet fuer Projekt 1030 ...
+Simulation beendet, Ergebnis-Kopf-ID 219.
+Projekt 1030: 22 CSV-Dateien, 160 Skalare.
+  OK - 22 Dateien in 00:00
+Projekt 1039 "Mehrgebäude" wird gerechnet ...
+Simulation startet fuer Projekt 1039 ...
+Simulation beendet, Ergebnis-Kopf-ID 220.
+Projekt 1039: 25 CSV-Dateien, 154 Skalare.
+  OK - 25 Dateien in 00:00
+Projekt 1040 "zwei Puffer je Kanal" wird gerechnet ...
+Simulation startet fuer Projekt 1040 ...
+Simulation beendet, Ergebnis-Kopf-ID 221.
+Projekt 1040: 30 CSV-Dateien, 169 Skalare.
+  OK - 30 Dateien in 00:00
+Projekt 1041 "Prozesswärme mit eigenem Puffer" wird gerechnet ...
+Simulation startet fuer Projekt 1041 ...
+Simulation beendet, Ergebnis-Kopf-ID 222.
+Projekt 1041: 27 CSV-Dateien, 155 Skalare.
+  OK - 27 Dateien in 00:00
+Projekt 1042 "Booster-Kette mit Kombi-Speicher" wird gerechnet ...
+Simulation startet fuer Projekt 1042 ...
+Simulation beendet, Ergebnis-Kopf-ID 223.
+Projekt 1042: 34 CSV-Dateien, 202 Skalare.
+  OK - 34 Dateien in 00:00
+Projekt 1045 "Prüfprojekt Ost/West Stränge" wird gerechnet ...
+Simulation startet fuer Projekt 1045 ...
+Simulation beendet, Ergebnis-Kopf-ID 224.
+Projekt 1045: 30 CSV-Dateien, 169 Skalare.
+  OK - 30 Dateien in 00:00
+Projekt 1046 "Prüfprojekt Speicherflotte" wird gerechnet ...
+Simulation startet fuer Projekt 1046 ...
+Simulation beendet, Ergebnis-Kopf-ID 225.
+Projekt 1046: 37 CSV-Dateien, 185 Skalare.
+  OK - 37 Dateien in 00:01
+
+Fertig. Gesamtdauer 00:00:06
+Erfolgreich: 13 von 13
+```
+
+
+## Warum diese Basis: Befund B-1, der Kesselbrennstoff je Modul
+
+Anwenderentscheid vom 18.09.2026 ("Ja, neue Basis einfrieren") auf den Befund B-1
+der Wirtschaftlichkeit. Auftrag #331 zieht den Brennstoffverbrauch des Heizkessels
+aus dem Simulationslauf in die Modulzeile nach: Die drei Spalten
+HeizkesselModul[0].Verbrauch, .Waermeproduktion und .Brennstoff traegt jetzt der
+Lauf, statt sie leer zu lassen. Herleitung, Rueckfaelle, die Warnung
+WIRT_KESSELBRENNSTOFF_FEHLT und die benannte Ausnahme des Elektrokessels stehen im
+Protokoll
+Dokumentation/ueberholt/Protokolle/Reporting/B-1_Kesselbrennstoff_Modulzeile_Protokoll.md.
+
+Diese Basis loest 2026-09-16_R8_Heizkessel_Kaskade ab. Sie fuehrt DIESELBEN
+dreizehn Projekte (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039, 1040, 1041,
+1042, 1045, 1046):
+
+    357 CSV (wie R8), 2 057 Skalare (wie R8), Schemastand 89, gerechnet mit dem
+    plattformfreien EPOS.Referenzlauf auf Linux gegen
+    Referenzlaeufe/Kenndaten_Test.sqlite.
+
+Weder die Testdatenbank noch das Schema sind dafuer angefasst worden - der Wechsel
+ist allein die Wirkung des Rechenwegs aus #331. Keine der drei Einfrierregeln
+(Emissionsfaktoren, PV-Modulkoeffizienten, Flottenstand @Projektflotte des
+Projekts 1046) ist beruehrt.
+
+
+## Der Vergleich R8 -> R9: 37 Abweichungen von 3 882 737 Werten
+
+    dotnet run --project EPOS.Referenzlauf -c Release -- vergleich \
+      Referenzlaeufe/2026-09-16_R8_Heizkessel_Kaskade \
+      Referenzlaeufe/2026-09-18_R9_Kesselbrennstoff
+
+    -> GESAMT: FAIL, 37 Abweichungen in 3 882 737 Werten.
+
+Alle 37 liegen in aggregate.csv und ausschliesslich in den drei Spalten der
+Modulzeile des Heizkessels. Elf Projekte tragen drei davon (.Brennstoff,
+.Verbrauch, .Waermeproduktion), die beiden Elektrokesselprojekte 1017 und 1024 nur
+die letzten beiden: Ihr Verbrauch bleibt 0, weil der Elektrokessel die benannte
+Ausnahme des Rechenwegs ist (B-1, Abschnitt 2.1). 11 x 3 + 2 x 2 = 37.
+
+    Projekt | Werte   | Abw. | Brennstoff | Verbrauch [MWh/a] | Waermeprod. [MWh/a]
+    --------+---------+------+------------+-------------------+--------------------
+    1007    | 359 299 |   3  | -> Gas     | 0 ->     15,47    | 0 ->     6,13
+    1008    | 262 941 |   3  | -> Gas     | 0 ->     12,02    | 0 ->     2,78
+    1017    | 254 164 |   2  | -> Strom   |  0 (Ausnahme)     | 0 ->     8,91
+    1018    | 236 671 |   3  | -> Gas     | 0 ->     16,76    | 0 ->    16,76
+    1023    | 262 941 |   3  | -> Gas     | 0 ->     78,64    | 0 ->    66,61
+    1024    | 271 727 |   2  | -> Strom   |  0 (Ausnahme)     | 0 ->    47,44
+    1030    | 236 680 |   3  | -> Gas     | 0 ->  5 403,10    | 0 ->  5 403,10
+    1039    | 262 954 |   3  | -> Gas     | 0 ->    225,04    | 0 ->   220,54
+    1040    | 306 769 |   3  | -> Gas     | 0 ->     16,19    | 0 ->    16,19
+    1041    | 280 475 |   3  | -> Gas     | 0 ->    133,33    | 0 ->   133,33
+    1042    | 341 842 |   3  | -> Gas     | 0 ->     13,81    | 0 ->    13,53
+    1045    | 306 769 |   3  | -> Gas     | 0 ->     16,19    | 0 ->    16,19
+    1046    | 499 505 |   3  | -> Gas     | 0 ->     15,47    | 0 ->     6,13
+
+KEINE UNERKLAERTE ABWEICHUNG. Nachgemessen in drei Schritten:
+
+ (1) Der Byte-Vergleich nennt genau dieselben Dateien.
+
+        diff -rq Referenzlaeufe/2026-09-16_R8_Heizkessel_Kaskade \
+                 Referenzlaeufe/2026-09-18_R9_Kesselbrennstoff
+
+     -> dreizehnmal aggregate.csv, dazu protokoll.txt (Zeitstempel und Pfad des
+        Laufs). Die 344 Ganglinien-CSV sind BYTE-GLEICH - keine Zeitreihe hat sich
+        bewegt, und in den Skalaren kein Emissions-, Puffer-, Wirtschaftlichkeits-
+        oder Flottenwert.
+
+ (2) Der Zeilenvergleich je aggregate.csv trifft nur die genannten Schluessel.
+
+        diff <R8>/Projekt_<ID>/aggregate.csv <R9>/Projekt_<ID>/aggregate.csv
+
+     -> je Projekt genau drei bzw. zwei geaenderte Zeilen, alle mit dem Praefix
+        HeizkesselModul[0]. Keine Zeile kommt hinzu, keine faellt weg; die
+        Skalarzahl bleibt Projekt fuer Projekt dieselbe (2 057 gesamt).
+
+ (3) Die Gegenprobe des Rechenwegs haelt in jedem der dreizehn Projekte:
+
+        HeizkesselModul[0].Verbrauch        == Heizkessel.Gasverbrauch
+        HeizkesselModul[0].Waermeproduktion == Heizkessel.Waermeproduktion
+
+     Der Modulwert ist also nicht neu gerechnet, sondern der Anlagenwert des Laufs,
+     geschrieben an die Stelle, an der die Wirtschaftlichkeit ihn liest. Bei 1017
+     und 1024 ist Heizkessel.Gasverbrauch = 0 (Elektrokessel), und genau das steht
+     auch in der Modulzeile.
+
+
+## Gegenprobe: Determinismus
+
+Zweiter Lauf desselben Standes in einen anderen Zielordner:
+
+    13 von 13 BYTE-GLEICH (diff -rq ohne einen einzigen Unterschied in 357 CSV)
+
+Ausserhalb des Vergleichs bleibt allein protokoll.txt - es fuehrt Zeitstempel und
+Zielpfad des Laufs.
+
+
+## Laufzeit
+
+Gesamtdauer 00:00:06 fuer dreizehn Projekte - wie der R8-Stand auf demselben
+Laeufer.
+
+
+## Aufruf
+
+    dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+      --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+      --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
+      --ziel Referenzlaeufe/2026-09-18_R9_Kesselbrennstoff
+
+
+## Die Vorgaengerbasis R8
+
+2026-09-16_R8_Heizkessel_Kaskade ist mit dieser Einfrierung aus dem Arbeitsbaum
+gefallen - nach dem Muster der 25 Basen davor. Ihr protokoll.txt ist byte-gleich
+gesichert unter
+Dokumentation/ueberholt/Referenzbasen/2026-09-16_R8_Heizkessel_Kaskade/protokoll.txt,
+ihre Beschreibung samt der Tabelle zu HK-E-1 und den Nachtraegen zu den
+Schemastaenden 83 bis 89 im Wegweiser desselben Ordners. Gerechnet wird
+ausschliesslich gegen die aktuelle Basis.

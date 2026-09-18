@@ -91,11 +91,11 @@ Heizkessel.Deckung_Prozess;0
 HeizkesselModul[0].Modul;ecoTEC plus VCI 20/26CS/1-5
 HeizkesselModul[0].Waerme_Gas;2.78
 HeizkesselModul[0].Waerme_Oel;0
-HeizkesselModul[0].Brennstoff;
-HeizkesselModul[0].Verbrauch;0
+HeizkesselModul[0].Brennstoff;Gas
+HeizkesselModul[0].Verbrauch;12.02
 HeizkesselModul[0].Jahresnutzungsgrad;23.11
 HeizkesselModul[0].carrier_id;
-HeizkesselModul[0].Waermeproduktion;0
+HeizkesselModul[0].Waermeproduktion;2.78
 HeizkesselModul[0].Hilfsenergie;0
 Pufferspeicher[0].ID_Pufferspeicher;1008007
 Pufferspeicher[0].Bezeichner;Vitocell 140-E 600 Liter

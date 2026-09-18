@@ -91,11 +91,11 @@ Heizkessel.Deckung_Prozess;0
 HeizkesselModul[0].Modul;ecoVIT VKK 186/5
 HeizkesselModul[0].Waerme_Gas;66.61
 HeizkesselModul[0].Waerme_Oel;0
-HeizkesselModul[0].Brennstoff;
-HeizkesselModul[0].Verbrauch;0
+HeizkesselModul[0].Brennstoff;Gas
+HeizkesselModul[0].Verbrauch;78.64
 HeizkesselModul[0].Jahresnutzungsgrad;84.7
 HeizkesselModul[0].carrier_id;
-HeizkesselModul[0].Waermeproduktion;0
+HeizkesselModul[0].Waermeproduktion;66.61
 HeizkesselModul[0].Hilfsenergie;0
 Pufferspeicher[0].ID_Pufferspeicher;1018023
 Pufferspeicher[0].Bezeichner;Vitocell 140-E 600 Ltr
