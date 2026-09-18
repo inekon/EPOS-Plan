@@ -110,6 +110,44 @@ namespace EPOS.Kern.Tests
             Assert.Contains(zeilen, z => z.Schluessel == "ERL_A2_EIGEN");
         }
 
+        /// <summary>
+        /// DER BERICHTSRÜCKFALL von Word und Excel. Beide bauen ihre Zahlen aus
+        /// <c>daten.Wirtschaftlichkeit</c>, und wenn die Rechnung dieses Berichtslaufs
+        /// scheiterte, aus <c>provider.LadeErgebnisse(ids)</c>
+        /// (<c>BausteineWirtschaftlichkeit.SchreibeWord</c> und
+        /// <c>ExcelBerichtGenerator.BlattWirtschaftlichkeit</c>). Ihre Modultafel hängt
+        /// an EINER Bedingung, die beide wortgleich führen: ein Ergebnis des Szenarios
+        /// ERWARTET mit mindestens einer Modulzeile. Bis B7P war sie auf dem
+        /// Rückfallweg nie erfüllt — der gespeicherte Stand trug keine Modulzeilen.
+        ///
+        /// <para>Gemessen wird die BEDINGUNG, nicht das gerenderte Dokument: Ein
+        /// vollständiger Word- oder Excel-Lauf braucht Grafiken, Vorlagen und alle
+        /// Blätter und sagte über diese eine Naht nichts Zusätzliches.</para>
+        /// </summary>
+        [Fact]
+        public void Der_Berichtsrueckfall_traegt_die_Modultabelle()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitErgebnis frisch = Rechne();
+            if (frisch.KwkgModule.Count == 0) return;   // ohne Modulzeilen nichts zu messen
+
+            // Genau der Ausdruck, mit dem Word und Excel zurückfallen — ohne
+            // daten.Wirtschaftlichkeit gibt es nur diesen einen Weg.
+            List<WirtschaftlichkeitErgebnis> rueckfall =
+                new WirtschaftlichkeitCtrl().LadeErgebnisse(new List<int> { PROJEKT });
+
+            List<WirtschaftlichkeitErgebnis> mitModulen = rueckfall.Where(
+                x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
+                     x.KwkgModule != null && x.KwkgModule.Count > 0).ToList();
+
+            Assert.NotEmpty(mitModulen);
+            Assert.Equal(frisch.KwkgModule.Count, mitModulen[0].KwkgModule.Count);
+            Assert.All(mitModulen[0].KwkgModule,
+                       m => Assert.False(string.IsNullOrEmpty(m.Bezeichner)));
+        }
+
         // =================================================================
         //  2 — Ein kaputter Umschlag kostet nur die Nachweise
         // =================================================================

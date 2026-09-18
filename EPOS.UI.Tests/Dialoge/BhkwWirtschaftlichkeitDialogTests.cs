@@ -85,6 +85,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         bool hatHeizkessel = false,
         IReadOnlyList<KohaerenzHinweis>? doppelpflege = null,
         IReadOnlyList<WirtschaftlichkeitErgebnis>? ausLauf = null,
+        Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>? ergebnisseLaden = null,
         Func<string, int, GesetzParameter>? katalog = null,
         bool titelAnzeigen = true)
     {
@@ -96,6 +97,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
             .Add(x => x.HatHeizkessel, hatHeizkessel)
             .Add(x => x.Doppelpflege, doppelpflege ?? Array.Empty<KohaerenzHinweis>())
             .Add(x => x.ErgebnisseAusLauf, ausLauf ?? Array.Empty<WirtschaftlichkeitErgebnis>())
+            .Add(x => x.ErgebnisseLaden, ergebnisseLaden)
             .Add(x => x.Katalog, katalog)
             .Add(x => x.SpeichereAnlage, speichereAnlage)
             .Add(x => x.SpeichereVorgaben, speichereVorgaben)
@@ -1086,6 +1088,45 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Contains("Stromerzeugung brutto 373,780 MWh/a − Hilfsstrom 0,000 MWh/a = " +
                         "Nettostromerzeugung 373,780 MWh/a", text);
         Assert.Contains("davon Eigenverbrauch 373,780 MWh/a, Einspeisung 0,000 MWh/a", text);
+    }
+
+    /// <summary>
+    /// ETAPPE B7P — DIE MENGENKETTE AUS DEM GEBUCHTEN STAND. Ohne frischen Lauf faellt
+    /// der Dialog auf <c>ErgebnisseLaden</c> zurueck. Bis B7P trug ein geladenes
+    /// Ergebnis keinen Modulnachweis, und die Gruppe sagte "noch kein gebuchtes
+    /// Ergebnis" — obwohl eines gebucht war. Seit der Nachweisumschlag persistiert
+    /// wird, findet <c>ModulNachweis</c> seine Zeile auch dort: zwei Zeilen statt des
+    /// Hinweises.
+    /// </summary>
+    [Fact]
+    public void Gruppe5_zeigt_die_Mengenkette_aus_dem_gebuchten_Stand()
+    {
+        var gebucht = new List<WirtschaftlichkeitErgebnis>
+        {
+            new WirtschaftlichkeitErgebnis
+            {
+                IdProjekt = STAMM,
+                Szenario = WirtschaftlichkeitSzenario.ERWARTET,
+                KwkgModule = new List<KwkgModulNachweis>
+                {
+                    new KwkgModulNachweis
+                    {
+                        Bezeichner = "BHKW EW M 50 S [K] Erdgas",
+                        StromBruttoMWh = 373.78, HilfsstromMWh = 1.5, StromNettoMWh = 372.28,
+                        EigenMWh = 300.0, EinspeisungMWh = 72.28
+                    }
+                }
+            }
+        };
+
+        // KEIN Lauf in dieser Sitzung — nur der gebuchte Stand.
+        var cut = Aufbauen(ZweiAnlagen(), ergebnisseLaden: _ => gebucht);
+
+        string text = Koerper(cut, 6).TextContent;
+        Assert.DoesNotContain("Mengenkette: noch kein gebuchtes Ergebnis", text);
+        Assert.Contains("Stromerzeugung brutto 373,780 MWh/a − Hilfsstrom 1,500 MWh/a = " +
+                        "Nettostromerzeugung 372,280 MWh/a", text);
+        Assert.Contains("davon Eigenverbrauch 300,000 MWh/a, Einspeisung 72,280 MWh/a", text);
     }
 
     // =====================================================================
