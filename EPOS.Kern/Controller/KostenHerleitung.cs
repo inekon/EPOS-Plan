@@ -84,6 +84,14 @@ namespace WindowsFormsApplication1
 
             /// <summary>Die Zeile rechnet OHNE Bezugsgröße und nennt dafür einen Grund.</summary>
             public bool OhneBasis;
+
+            /// <summary>U31: Der Empfehlungsbereich als Werkzeugtipp des Satzfeldes
+            /// („Empfehlung: 0,02 – 0,04 €/kWh"); leer = keiner gepflegt.</summary>
+            public string EmpfehlungKurztext = "";
+
+            /// <summary>U31: Derselbe Bereich als SICHTBARE Zeile unter dem Satzfeld
+            /// („Empfehlung 0,02 bis 0,04 €/kWh"); leer = keine Zeile.</summary>
+            public string EmpfehlungZeile = "";
         }
 
         /// <summary>
@@ -115,6 +123,12 @@ namespace WindowsFormsApplication1
             a.BasisText = BasisText(a.Basis, p, komponentenId);
             a.Kurztext = Kurztext(a, p, komponentenId, pz, projektModus);
             a.Zeile = Zeilentext(a, projektModus);
+
+            // U31: Der Empfehlungsbereich stand bis hierher als deutscher Satzbaukasten
+            // in der Windows-Hülle — Fachtext in einer Schale, einsprachig. Er entsteht
+            // jetzt hier, in zwei Fassungen aus EINER Quelle: dem Werkzeugtipp am
+            // Satzfeld (wortgleich zum Bestand) und der sichtbaren Zeile darunter.
+            Empfehlung(a, p, komponentenId);
             return a;
         }
 
@@ -139,6 +153,38 @@ namespace WindowsFormsApplication1
                     ? einheit.Substring(2) : "");
             return (basis.Value.ToString("#,##0.00", CultureInfo.CurrentCulture) +
                     " " + basisEinheit).Trim();
+        }
+
+        // =====================================================================
+        // Der Empfehlungsbereich (U31)
+        // =====================================================================
+
+        /// <summary>
+        /// U31 — der Empfehlungsbereich der Position in beiden Fassungen.
+        ///
+        /// <para>Ohne gepflegten Bereich bleiben beide leer: Es gibt dann weder einen
+        /// Werkzeugtipp noch eine Zeile. Die Einheit ist die des SATZES und hängt am
+        /// Gewerk (Anwenderentscheid 15.09.2026) — dieselbe Quelle wie am Satzfeld,
+        /// damit Empfehlung und Eingabe nicht in verschiedenen Einheiten stehen.</para>
+        /// </summary>
+        private static void Empfehlung(Angabe a, KostenVorlagenPosition p, int komponentenId)
+        {
+            if (p == null || (!p.EmpfehlungVon.HasValue && !p.EmpfehlungBis.HasValue)) return;
+
+            string einheit = BemessungKatalog.Einheit(p.Bemessung, komponentenId);
+            string von = Zahl(p.EmpfehlungVon);
+            string bis = Zahl(p.EmpfehlungBis);
+
+            a.EmpfehlungKurztext = string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.KDLG_TT_EMPFEHLUNG, von, bis, einheit);
+            a.EmpfehlungZeile = string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.KDLG_EMPF_ZEILE, von, bis, einheit);
+        }
+
+        /// <summary>Eine Satzzahl, wie sie im Satzfeld steht (bis zwei Nachkommastellen).</summary>
+        private static string Zahl(double? wert)
+        {
+            return wert.HasValue ? wert.Value.ToString("0.##", CultureInfo.CurrentCulture) : "";
         }
 
         /// <summary>Der Klartext zur Herkunft; leer, wo keine benannt ist.</summary>

@@ -175,6 +175,31 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
+        /// U31 — DERSELBE Hinweis für EINE Anlage, für den Kostendialog.
+        ///
+        /// <para><b>Eine Wahrheit.</b> Der Kostendialog stellt dieselbe Frage wie die
+        /// Kohärenzgruppe des BHKW-Dialogs (Anteil an der Anlage &gt; 0 <b>und</b>
+        /// aktive Hilfsenergie-Kostenposition) — er darf sie deshalb nicht selbst
+        /// beantworten. Die Bedingung, die Spielarten des Positionsnamens und der
+        /// Wortlaut stehen in <see cref="HilfsenergieDoppelpflege"/>; hier wird nur
+        /// nach einer Anlage gefragt.</para>
+        ///
+        /// <para>Leerer Text = keine Doppelpflege; dann zeigt der Dialog nichts.</para>
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt der Anlage.</param>
+        /// <param name="idAnlage"><c>Tab_Energieanlagen.ID</c> der gezeigten Anlage.</param>
+        internal static string HilfsenergieDoppelpflege(int idProjekt, int idAnlage)
+        {
+            if (idProjekt <= 0 || idAnlage <= 0) return "";
+
+            var liste = new List<KohaerenzHinweis>();
+            try { HilfsenergieDoppelpflege(idProjekt, BerichtTexte.Kultur, liste, idAnlage); }
+            catch { return ""; }
+
+            return liste.Count > 0 ? liste[0].Text : "";
+        }
+
+        /// <summary>
         /// ETAPPE B3 Paket b — <b>Hilfsenergie an zwei Orten gepflegt</b>.
         ///
         /// <para>Seit Paket b gibt es zwei Wege, denselben Hilfsbedarf zu erfassen: den
@@ -196,8 +221,11 @@ namespace WindowsFormsApplication1
         /// vorbereitete, keine gepflegte Position; im Bestand steht sie an fast jedem
         /// Projekt und dürfte niemals warnen.</para>
         /// </summary>
+        /// <param name="nurAnlage">U31: <c>Tab_Energieanlagen.ID</c> der EINEN Anlage,
+        /// nach der gefragt ist; 0 = alle Anlagen des Projekts.</param>
         private static void HilfsenergieDoppelpflege(int idProjekt, CultureInfo kultur,
-                                                     List<KohaerenzHinweis> liste)
+                                                     List<KohaerenzHinweis> liste,
+                                                     int nurAnlage = 0)
         {
             // Die billigste Frage zuerst: Gibt es überhaupt einen gepflegten Anteil? Im
             // gesamten Bestand ist die Antwort nein (alle Spalten NULL) — dann kostet die
@@ -217,6 +245,7 @@ namespace WindowsFormsApplication1
 
             foreach (HilfsstromRechner.AnlagenAnteil a in mitAnteil)
             {
+                if (nurAnlage > 0 && a.IdAnlage != nurAnlage) continue;
                 if (!mitPosition.Contains(a.IdAnlage)) continue;
                 liste.Add(new KohaerenzHinweis
                 {

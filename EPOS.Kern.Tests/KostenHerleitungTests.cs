@@ -282,5 +282,53 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(100000.0, KostenSummenCtrl.Fuss(zeilen).Brutto, 6);
         }
+
+        // =====================================================================
+        // U31 — der Empfehlungsbereich: Werkzeugtipp UND sichtbare Zeile
+        // =====================================================================
+
+        /// <summary>
+        /// Beide Fassungen entstehen aus EINER Quelle: derselbe Bereich, dieselbe
+        /// Einheit — der Werkzeugtipp wortgleich zum Bestand, die Zeile in Worten.
+        /// Die Zahlenprobe ist die des Mockups (Wartung Blockheizkraftwerk).
+        /// </summary>
+        [Fact]
+        public void Ein_gepflegter_Bereich_ergibt_Werkzeugtipp_und_Zeile()
+        {
+            KostenVorlagenPosition p = Position(DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, 0.028);
+            p.EmpfehlungVon = 0.02;
+            p.EmpfehlungBis = 0.04;
+
+            KostenHerleitung.Angabe a = KostenHerleitung.Bilde(p, BHKW, null, true);
+
+            Assert.Equal("Empfehlung: 0,02 – 0,04 €/kWh", a.EmpfehlungKurztext);
+            Assert.Equal("Empfehlung 0,02 bis 0,04 €/kWh", a.EmpfehlungZeile);
+        }
+
+        /// <summary>Ohne gepflegten Bereich gibt es weder Zeile noch Werkzeugtipp —
+        /// kein „Empfehlung – " ohne Inhalt.</summary>
+        [Fact]
+        public void Ohne_Bereich_bleiben_Zeile_und_Werkzeugtipp_leer()
+        {
+            KostenHerleitung.Angabe a = KostenHerleitung.Bilde(
+                Position(DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, 0.028), BHKW, null, true);
+
+            Assert.Equal("", a.EmpfehlungKurztext);
+            Assert.Equal("", a.EmpfehlungZeile);
+        }
+
+        /// <summary>Der Bereich gilt auch im Stammkontext: Er hängt an der Position,
+        /// nicht an einem Projekt.</summary>
+        [Fact]
+        public void Der_Bereich_steht_auch_ohne_Projekt()
+        {
+            KostenVorlagenPosition p = Position(DbWerte.BEMESSUNG_PROZENT_INVESTITION, 1.5);
+            p.EmpfehlungVon = 1.0;
+            p.EmpfehlungBis = 2.0;
+
+            KostenHerleitung.Angabe a = KostenHerleitung.Bilde(p, BHKW, null, false);
+
+            Assert.Equal("Empfehlung 1 bis 2 %", a.EmpfehlungZeile);
+        }
     }
 }
