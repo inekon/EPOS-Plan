@@ -149,7 +149,7 @@ eingetragen, den ihr der Rückfall zugewiesen hat (Entscheid `BK-E-1` (a)).
 | Satz Eigenstrom [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf am Feld** | `KWKG_Satz_Eigen` | Bestand, Knopf BK1 |
 | Vbh-Kontingent [h] | Numerisch 0–200.000 | 0 = nach § 8 aus dieser Anlage abgeleitet; **Knopf am Feld** | `KWKG_Vbh_Kontingent` | Bestand, Knopf BK1 |
 | Vbh-Jahresdeckel [h/a] | Numerisch 0–8.760 | 0 = Staffel | `KWKG_Vbh_Jahresdeckel` | Bestand |
-| **Anteil Neuherstellungskosten [%]** | Numerisch 0–100 | 0 = nicht gepflegt; wählt mit der Anlagenart die Kontingentstufe § 8 Abs. 2/3 | `KWKG_Kostenanteil` | **neu BK1** |
+| **Anteil Neuherstellungskosten [%]** | Numerisch 0–100 | 0 = nicht gepflegt; wählt mit der Anlagenart die Kontingentstufe § 8 Abs. 2/3 | `KWKG_Kostenanteil` | **neu BK1**, einziger Pflegeort seit BK1b |
 | **Energiesteuerentlastung (Anlage)** | ComboBox | (Projektwert) · keine · § 53 · § 53a · § 54 | `Energiesteuer_Wahl` | **neu B5** |
 | **Brennstoff auf Strom/Wärme (Anlage)** | ComboBox | (Projektwert) · voller Brennstoff · energetisch | `Aufteilung_Methode` | **neu B5** |
 | **Hilfsenergieanteil [%]** | Numerisch 0–100 | 0 = keine; Vorschlag BHKW 2–4 % | `Hilfsenergie_Anteil` | **neu B5** |
@@ -165,14 +165,15 @@ Die Gruppe führt **nur, was wirklich projektweit ist** (Entscheid `BK-E-1` (a))
 |---|---|
 | Einspeisevergütung KWK-Strom [€/kWh] | die Vergütung des eingespeisten Stroms; der Zuschlag kommt obendrauf (Auftrag #325) |
 | Abschlag Negativstunden [%] | gilt für alle Anlagen gleich |
-| Anteil Neuherstellungskosten [%] | Vorgabe für Anlagen ohne eigenen Wert |
 | Pauschale § 9 KWKG | Σ P_el ≤ 2 kW, einmalig im Jahr 0 |
 | Stichtag (Bestellung/Genehmigung, § 6) | Prüfkette der Förderfähigkeit |
 | **Förderbeginn (Startjahr der Reihen)** | `KWKG_Inbetriebnahme`; er startet **alle** jahresscharfen Reihen (KWKG, CO₂, Steuern), auch ohne BHKW — deshalb heißt er hier nicht mehr „Inbetriebnahme, Vorgabe je Anlage" |
 
+Fünf Felder — mehr steht hier nicht.
+
 **Herausgenommen und an die Anlage gewandert:** Bonus Eigenstrom · Bonus Einspeisung ·
-Vbh-Deckel-Override · Vbh-Kontingent gesamt · Eigenstrom-Tatbestand · Anlagenart § 8. Eine leise
-Zeile unter der Gruppe sagt, wo sie jetzt stehen.
+Vbh-Deckel-Override · Vbh-Kontingent gesamt · Eigenstrom-Tatbestand · Anlagenart § 8 · Anteil
+Neuherstellungskosten. Eine leise Zeile unter der Gruppe sagt, wo sie jetzt stehen.
 
 **Der Vorschlag steht am Feld, nicht als Sammelknopf** (Anwenderwunsch 17.09.2026): Unter jedem der
 drei Felder Satz Einspeisung, Satz Eigenstrom und Vbh-Kontingent steht die Grundlage im Klartext
@@ -1836,11 +1837,13 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 9g. **BK1-3: Ein Jahr-0-Ausweis der KWKG-Pauschale in der Erlösrubrik** ist als Vorschlag
     aufgenommen und **nicht gebaut** — der Entscheid steht beim Anwender aus. Er löst zugleich
     `B7-3`.
-9l. **BK1-4: `KWKG_Kostenanteil` (Projekt) hat keinen Rechenleser mehr, das Feld bleibt.**
-    Anwenderentscheid `BK1-Q1` (c) vom 18.09.2026: Die Spalte und ihr Dialogfeld in Gruppe 2
-    bleiben unverändert, obwohl § 8 KWKG das Kontingent seit BK1 aus dem Kostenanteil **der
-    Anlage** ableitet. Sie ist damit eine gepflegte Angabe ohne Wirkung — benannt, damit der
-    nächste Leser es nicht für einen Fehler hält.
+9l. ~~**BK1-4: `KWKG_Kostenanteil` (Projekt) hat keinen Rechenleser mehr, das Feld bleibt.**~~
+    **Erledigt mit BK1b (Schemaschritt 91):** Anwenderentscheid 18.09.2026 „BK1-4: (a)
+    Entfernen“. Eine gepflegte Angabe ohne Wirkung neben derselben Größe mit Wirkung war der
+    Rest der doppelten Wahrheit; § 8 Abs. 2/3 KWKG leitet das Kontingent aus dem Kostenanteil
+    **der Anlage** ab. Die Projektspalte `Tab_ProjektWirtschaftlichkeit.KWKG_Kostenanteil` und
+    ihr Dialogfeld in Gruppe 2 sind entfallen; das Anlagenfeld in Gruppe 1b samt
+    Vorschlagsknopf bleibt.
 9m. **BK1-Q2 (a) — abgenommen, hier als Ausnahme festgehalten:** Ein Projekt, dessen
     Vbh-Kontingent an Projekt UND Anlagen leer ist, rechnete auf dem Ersatzweg still mit dem
     Feldvorgabewert 30 000 h. Seit BK1a leitet `KontingentDerAnlage` daraus 0 h mit Begründung ab
@@ -1915,6 +1918,12 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 > führen, galten bisher still 30 000 h; jetzt gilt 0 h mit Begründung. **Ein Feld bleibt ohne
 > Leser stehen** (`BK1-Q1` c, offener Punkt `BK1-4`): `KWKG_Kostenanteil` des Projekts samt seinem
 > Dialogfeld.
+>
+> **Damit zu Ende gebracht mit BK1b (Schemaschritt 91).** Auch dieses letzte Feld ist fort:
+> Projektspalte und Dialogfeld in Gruppe 2 entfallen, der Kostenanteil steht nur noch an der
+> Anlage (Gruppe 1b, mit Vorschlagsknopf am Feld). `Tab_ProjektWirtschaftlichkeit` führt von den
+> ursprünglich elf KWKG-Projektspalten noch vier: `KWKG_Abschlag_Negativ`, `KWKG_Pauschalmodus`,
+> `KWKG_Stichtag` und `KWKG_Inbetriebnahme` — alle vier gelten wirklich projektweit.
 
 *Aus KONTEXT § 9 — jede benannt und begründet. Neue Spalten und Novellen müssen beide Orte treffen.*
 

@@ -120,7 +120,7 @@ namespace WindowsFormsApplication1
                     new Paar(SchemaKatalog.SPALTE_EA_KWKG_DECKEL,
                              KwkgProjektaltspalten.SPALTE_JAHRESDECKEL,      false, true),
                     new Paar(SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL,
-                             SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL,      false, true),
+                             KwkgProjektaltspalten.KOSTENANTEIL,            false, true),
                     new Paar(SchemaKatalog.SPALTE_EA_KWKG_ANLAGENART,
                              KwkgProjektaltspalten.SPALTE_ANLAGENART,        true,  true),
                     new Paar(SchemaKatalog.SPALTE_EA_KWKG_EIGENFALL,

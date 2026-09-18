@@ -8,8 +8,9 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Die sechs KWKG-Projektspalten fallen weg</b> — Schemaschritt 90 (DDL-Teil), der
-    /// Nachweis zu <see cref="KwkgProjektaltspalten"/>.
+    /// <b>Die sieben KWKG-Projektspalten fallen weg</b> — Schemaschritt 90 (DDL-Teil,
+    /// sechs Spalten) und Schemaschritt 91 (Etappe BK1b, die siebte), der Nachweis zu
+    /// <see cref="KwkgProjektaltspalten"/>.
     ///
     /// <para><b>Warum es diese Klasse gibt.</b> Schritt 89 und Etappe BK1a haben sechs
     /// Spalten ohne Leser zurueckgelassen: Der Regelweg je Anlage und der Ersatzweg
@@ -63,7 +64,6 @@ namespace EPOS.Kern.Tests
 
             foreach (string nachbar in new[]
                      {
-                         SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL,
                          SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS,
                          "KWKG_Abschlag_Negativ",
                          SchemaKatalog.SPALTE_PW_KWKG_STICHTAG,
@@ -227,6 +227,190 @@ namespace EPOS.Kern.Tests
             Assert.True(ort90 > 0, "Schritt 90 steht nicht in der Schrittliste.");
             Assert.True(ort90 > ort89,
                         "Schritt 90 steht VOR Schritt 89 - Schritt 89 liest die sechs Spalten.");
+        }
+
+        // =================================================================
+        //  Schemaschritt 91 (Etappe BK1b) - die siebte Spalte
+        // =================================================================
+
+        /// <summary>
+        /// <b>Schritt 91 entfernt GENAU EINE Spalte.</b> Der Fall stellt den
+        /// Ausgangszustand selbst her (die siebte Spalte zurueck) und faehrt dann
+        /// dieselbe Anweisung, die Migration und Werkzeug fahren. Danach ist sie weg,
+        /// keine Zeile ist verloren, die vier Nachbarn stehen, und ein zweiter Lauf
+        /// fasst nichts an.
+        /// </summary>
+        [Fact]
+        public void Schritt_91_entfernt_genau_die_Kostenanteilspalte()
+        {
+            if (!_db.Vorhanden) return;
+
+            TestDatenbank.AltspaltenKwkgProjektWiederherstellen();
+
+            Assert.Equal(1, KwkgProjektaltspalten.Offen91());
+            Assert.True(KwkgProjektaltspalten.Vorhanden91());
+
+            long zeilen = Zahl("SELECT COUNT(*) FROM \"" + KwkgProjektaltspalten.TABELLE + "\"");
+
+            foreach (KeyValuePair<string, string> a in KwkgProjektaltspalten.Anweisungen91)
+                DataRepository.ExecuteNonQuery(a.Value);
+
+            // --- Die siebte ist weg ...
+            Assert.Equal(0, KwkgProjektaltspalten.Offen91());
+            Assert.False(KwkgProjektaltspalten.Vorhanden91());
+
+            // --- ... und sonst nichts: keine Zeile verloren, die Nachbarn stehen.
+            Assert.Equal(zeilen, Zahl("SELECT COUNT(*) FROM \"" +
+                                      KwkgProjektaltspalten.TABELLE + "\""));
+
+            foreach (string nachbar in new[]
+                     {
+                         SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS,
+                         "KWKG_Abschlag_Negativ",
+                         SchemaKatalog.SPALTE_PW_KWKG_STICHTAG,
+                         SchemaKatalog.SPALTE_PW_KWKG_INBETRIEBNAHME
+                     })
+                Assert.True(DataRepository.SpalteVorhanden(KwkgProjektaltspalten.TABELLE, nachbar),
+                            nachbar + " ist mitgefallen.");
+
+            // --- Das Feld DER ANLAGE bleibt - es ist das einzige, das § 8 liest.
+            Assert.True(DataRepository.SpalteVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN,
+                                                       SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL));
+
+            // --- Wiederholbar: Ein zweiter Lauf gibt keine Anweisung mehr heraus.
+            Assert.Empty(KwkgProjektaltspalten.Anweisungen91);
+        }
+
+        /// <summary>
+        /// Die Anweisung des Schrittes 91 ist EIN <c>DROP COLUMN</c> auf genau diese
+        /// Tabelle und Spalte - kein Tabellenneubau, kein DML. Schritt 90 fasst sie
+        /// nicht an: Seine Liste fuehrt sie nicht.
+        /// </summary>
+        [Fact]
+        public void Die_Anweisung_91_ist_ein_DROP_COLUMN_und_steht_nicht_in_Schritt_90()
+        {
+            var spalten91 = new List<KeyValuePair<string, string>>(KwkgProjektaltspalten.Spalten91);
+
+            Assert.Single(spalten91);
+            Assert.Equal(SchemaKatalog.TAB_PROJEKTWIRTSCHAFT, spalten91[0].Key);
+            Assert.Equal(KwkgProjektaltspalten.KOSTENANTEIL, spalten91[0].Value);
+
+            // Schritt 90 bleibt unveraendert - ein Migrationsschritt wird nie
+            // rueckwirkend geaendert.
+            var spalten90 = new List<KeyValuePair<string, string>>(KwkgProjektaltspalten.Spalten);
+            Assert.Equal(6, spalten90.Count);
+            Assert.DoesNotContain(spalten90, s => s.Value == KwkgProjektaltspalten.KOSTENANTEIL);
+
+            if (!_db.Vorhanden) return;
+
+            TestDatenbank.AltspaltenKwkgProjektWiederherstellen();
+            foreach (KeyValuePair<string, string> a in KwkgProjektaltspalten.Anweisungen91)
+            {
+                Assert.StartsWith("ALTER TABLE \"", a.Value);
+                Assert.Contains("\" DROP COLUMN \"", a.Value);
+                Assert.DoesNotContain("UPDATE ", a.Value);
+                Assert.DoesNotContain("CREATE TABLE", a.Value);
+            }
+            foreach (KeyValuePair<string, string> a in KwkgProjektaltspalten.Anweisungen91)
+                DataRepository.ExecuteNonQuery(a.Value);
+        }
+
+        /// <summary>
+        /// <b>Der Migrationslauf auf einer Altdatei - 89 uebertraegt, 91 entfernt.</b>
+        ///
+        /// <para>Derselbe Aufbau wie bei Schritt 90, nur fuer die siebte Spalte: Der Fall
+        /// stellt den Stand VOR Schritt 89 her (Kostenanteil am Projekt gepflegt, die
+        /// Anlagenzelle leer), faehrt dann <see cref="KwkAnlagenwahrheit"/>, Schritt 90
+        /// und Schritt 91. Danach traegt die Anlage den Wert, die Projektspalte ist weg,
+        /// und ein zweiter Lauf fasst nichts an.</para>
+        ///
+        /// <para><b>Warum das die Reihenfolge beweist:</b> Schritt 89 liest die
+        /// Projektspalte. Stuende 91 davor, faende 89 sie nicht mehr, und keine Anlage
+        /// bekaeme ihren Kostenanteil.</para>
+        /// </summary>
+        [Fact]
+        public void Auf_einer_Altdatei_uebertraegt_89_den_Kostenanteil_und_91_entfernt_ihn()
+        {
+            if (!_db.Vorhanden) return;
+
+            const int projekt = 1030;
+
+            // ---- Der Stand VOR Schritt 89 ----
+            TestDatenbank.AltspaltenKwkgProjektWiederherstellen();
+            DataRepository.ExecuteNonQuery(
+                "UPDATE " + KwkgProjektaltspalten.TABELLE + " SET " +
+                KwkgProjektaltspalten.KOSTENANTEIL + " = 55.0 WHERE ID_Projekt = ?",
+                new DbParam("@p", projekt));
+            DataRepository.ExecuteNonQuery(
+                "UPDATE " + SchemaKatalog.TAB_ENERGIEANLAGEN + " SET " +
+                SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL + " = NULL WHERE ID_Projekt = ?",
+                new DbParam("@p", projekt));
+
+            Assert.Equal(1, KwkgProjektaltspalten.Offen91());
+
+            // ---- Schritt 89: die Uebertragung ----
+            foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
+            {
+                object o = DataRepository.ExecuteScalar(KwkAnlagenwahrheit.Zaehlung(paar));
+                long offen = o == null || o == DBNull.Value ? 0 : Convert.ToInt64(o);
+                if (offen <= 0) continue;
+                DataRepository.ExecuteNonQuery(KwkAnlagenwahrheit.Uebertragung(paar));
+            }
+            Assert.Equal(55.0, Wert(projekt, SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL), 9);
+
+            // ---- Schritt 90, dann Schritt 91 ----
+            foreach (KeyValuePair<string, string> a in KwkgProjektaltspalten.Anweisungen)
+                DataRepository.ExecuteNonQuery(a.Value);
+            Assert.Equal(0, KwkgProjektaltspalten.Offen());
+
+            // Schritt 90 laesst die siebte Spalte stehen - sonst waere er nicht
+            // rueckwirkend unveraendert.
+            Assert.Equal(1, KwkgProjektaltspalten.Offen91());
+
+            foreach (KeyValuePair<string, string> a in KwkgProjektaltspalten.Anweisungen91)
+                DataRepository.ExecuteNonQuery(a.Value);
+            Assert.Equal(0, KwkgProjektaltspalten.Offen91());
+
+            // ---- Der zweite Lauf fasst nichts an ----
+            Assert.Empty(KwkgProjektaltspalten.Anweisungen91);
+
+            // ---- Der Wert steht weiterhin an der Anlage ----
+            Assert.Equal(55.0, Wert(projekt, SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL), 9);
+        }
+
+        /// <summary>
+        /// Der Zielstand des Schemas ist 91 - die Nummer des Schrittes.
+        /// </summary>
+        [Fact]
+        public void Der_Zielstand_traegt_den_Schritt_91()
+        {
+            Assert.True(SchemaStand.Zielversion >= 91,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 91.");
+        }
+
+        /// <summary>
+        /// <b>Schritt 91 steht HINTER Schritt 90.</b> Die Folgeprobe der Schrittliste -
+        /// derselbe Weg wie bei <see cref="Schritt_90_steht_hinter_Schritt_89"/>, weil die
+        /// Liste in der Windows-Schale liegt und privat ist. Die Folge der Schemaschritte
+        /// ist aufsteigend, und Schritt 89 liest die Spalte als Quelle seiner
+        /// Uebertragung.
+        /// </summary>
+        [Fact]
+        public void Schritt_91_steht_hinter_Schritt_90()
+        {
+            string datei = Migrationsquelle();
+            if (datei == null) return;            // Quelle nicht im Baum: nichts zu pruefen
+
+            string text = File.ReadAllText(datei);
+
+            int ort90 = text.IndexOf("new Schritt(SCHRITT_90_KWKG_PROJEKTALTSPALTEN", StringComparison.Ordinal);
+            int ort91 = text.IndexOf("new Schritt(SCHRITT_91_KWKG_KOSTENANTEIL", StringComparison.Ordinal);
+
+            Assert.True(ort90 > 0, "Schritt 90 steht nicht in der Schrittliste.");
+            Assert.True(ort91 > 0, "Schritt 91 steht nicht in der Schrittliste.");
+            Assert.True(ort91 > ort90,
+                        "Schritt 91 steht VOR Schritt 90 - die Folge der Schemaschritte " +
+                        "ist aufsteigend, und 89 liest die Spalte als Quelle.");
         }
 
         // =================================================================

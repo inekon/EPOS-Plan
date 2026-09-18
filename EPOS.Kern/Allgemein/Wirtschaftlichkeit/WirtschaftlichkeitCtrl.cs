@@ -281,10 +281,9 @@ namespace WindowsFormsApplication1
                                   "\"CO2_Preis\" REAL, " +
                                   // ETAPPE K6 (HF6/M-D): die KWKG-Projektangaben auch im
                                   // CREATE — sonst hätte eine frisch angelegte Tabelle sie erst
-                                  // nach dem SpalteSicher-Nachzug weiter unten. ETAPPE BK1a:
-                                  // Fünf der Fragmente sind mit Schemaschritt 90 entfallen
-                                  // (KwkgProjektaltspalten) — sie stehen nur noch dort.
-                                  "\"KWKG_Kostenanteil\" REAL, " +
+                                  // nach dem SpalteSicher-Nachzug weiter unten. ETAPPE BK1a/BK1b:
+                                  // Sechs der Fragmente sind mit den Schemaschritten 90 und 91
+                                  // entfallen (KwkgProjektaltspalten) — sie stehen nur noch dort.
                                   "\"KWKG_Pauschalmodus\" INTEGER NOT NULL DEFAULT 0 CHECK (\"KWKG_Pauschalmodus\" IN (0,1)), " +
                                   // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026): die vier
                                   // Spalten des Schritts 72 auch im CREATE - dieselbe
@@ -437,12 +436,13 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS, "TEXT(20)");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
 
-                    // ETAPPE K6 (HF6/M-D) — die verbliebenen KWKG-Projektangaben. Regulär legt sie
+                    // ETAPPE K6 (HF6/M-D) — die verbliebene KWKG-Projektangabe. Regulär legt sie
                     // Migrationsschritt 28 an; das hier ist die tolerante VORSORGE
                     // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls,
                     // Konzept § 9 Punkt 2). WERTE werden auch hier nicht vorbelegt: leer
                     // heißt „nicht angegeben", und genau das hält den Bestand unverändert.
-                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL, "DOUBLE");
+                    // ETAPPE BK1b: Der Kostenanteil ist mit Schemaschritt 91 entfallen —
+                    // stünde er hier noch, legte ihn der nächste Programmstart wieder an.
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS, "YESNO");
 
                     // ETAPPE E5 — der Bedarf OHNE Anlage je Zone: die Bezugsgröße der
@@ -635,10 +635,10 @@ namespace WindowsFormsApplication1
                         p.KwkgInbetriebnahme = Convert.ToDateTime(r["KWKG_Inbetriebnahme"]);
                     p.KwkgAbschlagNegativ = D(r, "KWKG_Abschlag_Negativ") ?? 0;
 
-                    // ETAPPE K6 — Kostenanteil und Pauschale des Projekts. Tatbestand
-                    // und Anlagenart sind mit Schemaschritt 90 entfallen; beide stehen
-                    // seit Schritt 89 an der Anlage und werden dort geprüft.
-                    p.KwkgKostenanteil = D(r, SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL) ?? 0;
+                    // ETAPPE K6 — die Pauschale des Projekts. Tatbestand und Anlagenart
+                    // sind mit Schemaschritt 90 entfallen, der Kostenanteil mit
+                    // Schemaschritt 91; alle drei stehen seit Schritt 89 an der Anlage
+                    // und werden dort gelesen.
                     p.KwkgPauschalmodus = B(r, SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS);
 
                     // ETAPPE E4 — Steuerangaben. Ein LEERER Steuerwert bedeutet genau
@@ -939,7 +939,6 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "] = ?, " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "] = ?, " +
                     // ETAPPE W5-B-9 - die zwölf Szenariospalten. Reihenfolge wie in
                     // SchemaKatalog.Schritt71_Szenarioparameter.
@@ -1002,8 +1001,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@bnw", DbParamTyp.VarWChar, 30)
                     { Wert = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
-                    new DbParam("@kant", DbParamTyp.Double)
-                    { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
                     new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
                     // ETAPPE W5-B-9: ein nicht gepflegtes Feld muss LEER in die
                     // Datenbank - es ist die Aussage „Vorgabe“ und etwas anderes als 0.
@@ -1054,7 +1051,6 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_KONVENTION + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BIOMASSE_NACHWEIS + "], " +
-                    "[" + SchemaKatalog.SPALTE_PW_KWKG_KOSTENANTEIL + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_KWKG_PAUSCHALMODUS + "], " +
                     // ETAPPE W5-B-9 - die zwölf Szenariospalten, Reihenfolge wie im UPDATE.
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZINS + "], " +
@@ -1077,7 +1073,7 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1120,8 +1116,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@bnw", DbParamTyp.VarWChar, 30)
                     { Wert = p.NachhaltigkeitsnachweisBiomasse
                               ? DbWerte.BIOMASSE_NACHWEIS_JA : DbWerte.BIOMASSE_NACHWEIS_NEIN },
-                    new DbParam("@kant", DbParamTyp.Double)
-                    { Wert = p.KwkgKostenanteil > 0 ? (object)p.KwkgKostenanteil : DBNull.Value },
                     new DbParam("@kpau", DbParamTyp.Boolean) { Wert = p.KwkgPauschalmodus },
                     // ETAPPE W5-B-9 - Reihenfolge wie im UPDATE darüber; nicht gepflegt
                     // heißt LEER, nicht 0.

@@ -10070,11 +10070,8 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BHW_P_ABSCHLAG" xml:space="preserve">
     <value>Negative-price hour deduction [%]:</value>
   </data>
-  <data name="BHW_P_KOSTENANTEIL" xml:space="preserve">
-    <value>Share of new-build cost [%] (default for units without their own value):</value>
-  </data>
   <data name="BHW_P_NUR_PROJEKTWEIT" xml:space="preserve">
-    <value>Rate, quota, annual cap, unit type and self-consumption case belong to the unit (sec. 7 and sec. 8 CHP Act measure them per unit) — above under "Settings of the selected unit", each with a button for the catalogue proposal next to the field.</value>
+    <value>Rate, quota, annual cap, unit type, self-consumption case and the share of new-build cost belong to the unit (sec. 7 and sec. 8 CHP Act measure them per unit) — above under "Settings of the selected unit"; both rates and the quota with a button for the catalogue proposal next to the field.</value>
   </data>
   <data name="BHW_P_PAUSCHAL" xml:space="preserve">
     <value>Lump sum under sec. 9 KWKG (up to 2 kWel, one-off)</value>

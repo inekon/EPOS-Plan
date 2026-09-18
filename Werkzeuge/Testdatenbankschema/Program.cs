@@ -805,6 +805,33 @@ namespace Testdatenbankschema
             }
             Console.WriteLine();
 
+            // ---- Schritt 91: die siebte KWKG-Projektspalte (Etappe BK1b,
+            //      Anwenderentscheid BK1-4 (a) vom 18.09.2026). Dieselbe Quelle,
+            //      aus der sich SchemaMigration.Schritt_91_KwkgKostenanteil bedient:
+            //      KwkgProjektaltspalten, zweite Liste (Spalten91/Anweisungen91).
+            //      Der Schritt steht NACH 89 (der liest die Spalte als Quelle der
+            //      Uebertragung in die Anlagen) und nach 90 (der laesst sie stehen).
+            //      Ergebnisneutral: § 8 Abs. 2/3 KWKG leitet das Kontingent aus dem
+            //      Kostenanteil DER ANLAGE ab; der Projektwert hat seit Etappe BK1a
+            //      keinen Rechenleser mehr, der Referenzlauf bleibt byte-gleich.
+            //      KEIN DML: Schritt 89 hat den Wert laengst uebertragen.
+            //      Wiederholbar: Ein zweiter Lauf findet die Spalte nicht mehr.
+            if (!trocken)
+            {
+                int kostenanteil = KwkgProjektaltspalten.Offen91();
+                Console.WriteLine("Schritt 91 - KWKG-Projektspalte Kostenanteil: " +
+                                  kostenanteil + ".");
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                         in KwkgProjektaltspalten.Anweisungen91)
+                {
+                    DataRepository.ExecuteNonQuery(a.Value);
+                    Console.WriteLine("Schritt 91 - " + a.Key + ".");
+                }
+                Console.WriteLine("Schritt 91 - Spalten offen jetzt " +
+                                  KwkgProjektaltspalten.Offen91() + " (erwartet 0).");
+            }
+            Console.WriteLine();
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

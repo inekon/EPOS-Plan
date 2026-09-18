@@ -31,9 +31,7 @@ namespace WindowsFormsApplication1
     //   KWKG_Anlagenart         Anlagenart nach Paragraf 8. Gelesen wird
     //                           KWKG_Anlagenart der Anlage.
     //
-    // WAS STEHEN BLEIBT, und warum. KWKG_Kostenanteil (Projekt) behaelt sein Dialogfeld,
-    // obwohl auch sie keinen Rechenleser mehr hat - Anwenderentscheid BK1-Q1 (c); sie ist
-    // als offener Punkt BK1-4 im Wirtschaftlichkeitskonzept vermerkt. KWKG_Stichtag und
+    // WAS STEHEN BLEIBT, und warum. KWKG_Stichtag und
     // KWKG_Inbetriebnahme sind weiterhin die Vorgabe fuer Anlagen ohne eigenes Datum und
     // der Foerderbeginn aller jahresscharfen Reihen. KWKG_Pauschalmodus steuert die
     // Pauschale nach Paragraf 9, die am Projekt haengt. KWKG_Abschlag_Negativ gilt
@@ -58,14 +56,50 @@ namespace WindowsFormsApplication1
     // KWKG_Anlagenart sind SPALTEN-Bedingungen und fallen mit ihrer Spalte.
     // Tab_ProjektWirtschaftlichkeit ist STRICT; das aendert daran nichts.
     //
+    // ====================================================================================
+    // DIE SIEBTE SPALTE FAELLT NACH - Migrationsschritt 91 (Etappe BK1b)
+    // ====================================================================================
+    //
+    //   KWKG_Kostenanteil       Anteil an den Neuherstellungskosten [%] des Projekts
+    //                           (Paragraf 8 Abs. 2/3 KWKG). Gelesen wird
+    //                           Tab_Energieanlagen.KWKG_Kostenanteil - Paragraf 8 leitet
+    //                           das Vbh-Kontingent aus dem Kostenanteil DER ANLAGE ab
+    //                           (KontingentDerAnlage; Pflegeort ist das Feld in
+    //                           Gruppe 1b des BHKW-Wirtschaftlichkeitsdialogs).
+    //
+    // WARUM SIE SCHRITT 90 NOCH UEBERSTANDEN HAT. Schritt 90 liess sie samt Dialogfeld
+    // stehen (Anwenderentscheid BK1-Q1 c) und vermerkte sie als offenen Punkt BK1-4 im
+    // Wirtschaftlichkeitskonzept. Schritt 89 hatte den Projektwert da bereits einmalig in
+    // jede BHKW-Anlagenzeile kopiert, und mit Etappe BK1a ist auch der projektweite
+    // Ersatzweg (KontingentDesProjekts) weggefallen. Damit las die Spalte nur noch ihr
+    // eigenes Dialogfeld: Der Anwender pflegte eine Zahl, die nichts mehr rechnete, und
+    // dieselbe Groesse stand sechs Zeilen weiter oben im selben Dialog ein zweites Mal -
+    // dort mit Rechenwirkung. Anwenderentscheid 18.09.2026 "BK1-4: (a) Entfernen".
+    //
+    // ERGEBNISNEUTRAL, UND ZWAR GEMESSEN. Projekt 1030 rechnet Zuschlag und Kapitalwert
+    // zahlengleich (7 315,948722 EUR/a im Jahr 1, Kapitalwert -21 895 377,339395 EUR).
+    // Auch dieser Schritt schreibt KEIN DML: Schritt 89 hat den Wert laengst uebertragen,
+    // ein zweites Mal uebertragen hiesse, eine seither gepflegte Anlagenzelle zu
+    // ueberschreiben.
+    //
+    // KEIN TABELLENNEUBAU NOETIG - wortgleiche Begruendung wie oben: kein Index, kein
+    // Fremdschluessel, keine generierte Spalte, kein Trigger, keine Sicht, keine
+    // Tabellen-CHECK-Bedingung.
+    //
+    // WARUM SIE EINEN EIGENEN SCHRITT BEKOMMT UND NICHT IN SCHRITT 90 NACHGETRAGEN WIRD.
+    // Ein Migrationsschritt wird nie rueckwirkend geaendert - Schritt 90 ist auf jeder
+    // bereits gewandelten Datei gelaufen und traegt dort seine Nummer. Deshalb fuehrt
+    // diese Quelle zwei getrennte Listen: Spalten/Anweisungen/Offen fuer Schritt 90 und
+    // Spalten91/Anweisungen91/Offen91 fuer Schritt 91.
+    //
     // DIE NAMEN STEHEN HIER UND NICHT MEHR IM SchemaKatalog. Dasselbe Muster wie bei
     // StrompreisAltspalten (85) und HeizstabJeWaermepumpe (79): Wer eine Spalte entfernt,
     // haelt ihren Namen - sonst bleibt im Katalog der lebenden Spalten eine Konstante
     // stehen, die nichts mehr beschreibt. Die Migrationskette liest die Namen weiter von
-    // hier: Schritt 28 legt Tatbestand und Anlagenart an, Schritt 89 liest alle sechs als
-    // Quelle der Uebertragung, Schritt 90 nimmt sie weg. Ein Migrationsschritt wird nie
-    // rueckwirkend geaendert - Schritt 28 bleibt, wie er ist, er holt seine zwei Namen nur
-    // von hier statt aus dem Katalog.
+    // hier: Schritt 28 legt Tatbestand, Anlagenart und Kostenanteil an, Schritt 89 liest
+    // alle sieben als Quelle der Uebertragung, Schritt 90 nimmt sechs weg, Schritt 91 die
+    // siebte. Ein Migrationsschritt wird nie rueckwirkend geaendert - Schritt 28 bleibt,
+    // wie er ist, er holt seine drei Namen nur von hier statt aus dem Katalog.
     //
     // WARUM DIE ANWEISUNGEN AUS EINEM BAUKASTEN KOMMEN. Wortgleiche Begruendung wie bei
     // StrompreisAltspalten: Dieser Schritt nennt Namen, die es NACH ihm nicht mehr gibt.
@@ -81,13 +115,14 @@ namespace WindowsFormsApplication1
     // ====================================================================================
 
     /// <summary>
-    /// Die sechs KWKG-Projektspalten (Schemaschritt 90, DDL-Teil) - EINE Quelle fuer
-    /// Migration, Werkzeug und Nachweis.
+    /// Die entfallenden KWKG-Projektspalten - EINE Quelle fuer Migration, Werkzeug und
+    /// Nachweis. Zwei Listen, zwei Schritte: die sechs des Schemaschritts 90 (DDL-Teil)
+    /// und die siebte des Schemaschritts 91 (Etappe BK1b).
     /// </summary>
     public static class KwkgProjektaltspalten
     {
         /// <summary>Die Wirtschaftlichkeitsparameter des Projekts - dort stehen alle
-        /// sechs Spalten.</summary>
+        /// sieben Spalten.</summary>
         public const string TABELLE = SchemaKatalog.TAB_PROJEKTWIRTSCHAFT;
 
         /// <summary>Zuschlagssatz auf selbst genutzten KWK-Strom [ct/kWh] des Projekts.
@@ -115,6 +150,19 @@ namespace WindowsFormsApplication1
         /// <c>DbWerte.KWKG_ANLAGENART_*</c>. Angelegt von Schritt 28, ungelesen seit
         /// Etappe BK1a.</summary>
         public const string SPALTE_ANLAGENART = "KWKG_Anlagenart";
+
+        /// <summary>
+        /// Anteil an den Neuherstellungskosten [%] am Projekt (Paragraf 8 Abs. 2/3 KWKG).
+        /// Angelegt von Schritt 28, entfaellt mit Schemaschritt 91 (Etappe BK1b,
+        /// Anwenderentscheid BK1-4 a). Gelesen wird
+        /// <c>SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL</c> - der Kostenanteil DER
+        /// ANLAGE.
+        ///
+        /// <para>Sie steht NICHT in <see cref="Spalten"/>: Schritt 90 hat sie stehen
+        /// lassen, und ein Migrationsschritt wird nie rueckwirkend geaendert. Ihre
+        /// Liste ist <see cref="Spalten91"/>.</para>
+        /// </summary>
+        public const string KOSTENANTEIL = "KWKG_Kostenanteil";
 
         // =================================================================
         //  Die Anweisungen
@@ -160,6 +208,57 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
+        //  Schemaschritt 91 (Etappe BK1b) - die siebte Spalte
+        // =================================================================
+
+        /// <summary>
+        /// Die EINE Spalte des Schemaschritts 91 in derselben Form wie
+        /// <see cref="Spalten"/>: Tabelle und Name. Eine Liste und keine Einzelspalte,
+        /// damit Migration, Werkzeug und Nachweis denselben Weg gehen wie bei
+        /// Schritt 90.
+        /// </summary>
+        public static IEnumerable<KeyValuePair<string, string>> Spalten91
+        {
+            get { yield return Paar(TABELLE, KOSTENANTEIL); }
+        }
+
+        /// <summary>
+        /// Die Anweisung des Schemaschritts 91 - Beschreibung und SQL.
+        ///
+        /// <para><b>Wiederholbar:</b> Ein zweiter Lauf findet die Spalte nicht mehr
+        /// (<see cref="Offen91"/> = 0) und gibt nichts heraus.</para>
+        /// </summary>
+        public static IEnumerable<KeyValuePair<string, string>> Anweisungen91
+        {
+            get
+            {
+                foreach (KeyValuePair<string, string> s in Spalten91)
+                    if (Vorhanden(s.Key, s.Value))
+                        yield return new KeyValuePair<string, string>(
+                            s.Key + "." + s.Value + " entfernen",
+                            SqlSpalteEntfernen(s.Key, s.Value));
+            }
+        }
+
+        /// <summary>Steht die Kostenanteilspalte des Projekts noch?</summary>
+        public static bool Vorhanden91()
+        {
+            return Vorhanden(TABELLE, KOSTENANTEIL);
+        }
+
+        /// <summary>
+        /// Wie viele Spalten entfernt Schritt 91 noch? 1 oder 0 - 0 heisst, er ist
+        /// gelaufen.
+        /// </summary>
+        public static int Offen91()
+        {
+            int n = 0;
+            foreach (KeyValuePair<string, string> s in Spalten91)
+                if (Vorhanden(s.Key, s.Value)) n++;
+            return n;
+        }
+
+        // =================================================================
         //  Die Auskunft
         // =================================================================
 
@@ -193,7 +292,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <c>ALTER TABLE … DROP COLUMN</c>. SQLite kann das seit 3.35 ohne
-        /// Tabellenneubau; keine der sechs Spalten steht unter einem Index oder in einer
+        /// Tabellenneubau; keine der sieben Spalten steht unter einem Index oder in einer
         /// Tabellen-CHECK-Bedingung.
         /// </summary>
         private static string SqlSpalteEntfernen(string tabelle, string spalte)

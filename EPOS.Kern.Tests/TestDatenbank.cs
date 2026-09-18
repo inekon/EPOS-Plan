@@ -389,8 +389,9 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Stellt die sechs KWKG-Projektspalten wieder her, die Schemaschritt 90 entfernt
-        /// hat - AUSSCHLIESSLICH fuer den Nachweis dieses Schrittes.
+        /// Stellt die sieben KWKG-Projektspalten wieder her, die die Schemaschritte 90
+        /// (sechs) und 91 (die siebte, KWKG_Kostenanteil) entfernt haben -
+        /// AUSSCHLIESSLICH fuer den Nachweis dieser Schritte.
         ///
         /// <para><b>Wozu.</b> Die Arbeitskopie steht bereits auf dem Zielstand; ohne die
         /// Spalten haette der Nachweis nichts zu entfernen. Der Fall stellt den
@@ -411,6 +412,9 @@ namespace EPOS.Kern.Tests
             SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.SPALTE_JAHRESDECKEL, "DOUBLE"));
             SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.SPALTE_TATBESTAND, "TEXT(30)"));
             SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.SPALTE_ANLAGENART, "TEXT(20)"));
+            // ETAPPE BK1b: die siebte Spalte, die Schemaschritt 91 entfernt. Typ wie in
+            // Schritt 28 (DOUBLE).
+            SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.KOSTENANTEIL, "DOUBLE"));
         }
 
         /// <summary>

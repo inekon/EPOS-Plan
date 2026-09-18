@@ -474,16 +474,17 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
     [Fact]
     public void Die_ausgezogenen_BHKW_Werte_bleiben_unberuehrt()
     {
-        // Sie stehen nicht mehr im Dialog und gehen wertgleich in die Zeile. Seit
-        // Schemaschritt 90 führt der Parametersatz die KWKG-Rechengrößen gar nicht
-        // mehr; geprüft wird deshalb an einer Angabe, die weiterhin projektweit gilt.
+        // Sie stehen nicht mehr im Dialog und gehen wertgleich in die Zeile. Seit den
+        // Schemaschritten 90 und 91 führt der Parametersatz die KWKG-Rechengrößen gar
+        // nicht mehr; geprüft wird deshalb an einer Angabe, die weiterhin projektweit
+        // gilt.
         WirtschaftlichkeitParameter satz = Satz();
-        satz.KwkgKostenanteil = 25.0;
+        satz.KwkgAbschlagNegativ = 25.0;
         var cut = Aufbauen(satz, bhkw: true);
 
         cut.Find(".epos-knopf--primaer").Click();
 
-        Assert.Equal(25.0, satz.KwkgKostenanteil);
+        Assert.Equal(25.0, satz.KwkgAbschlagNegativ);
     }
 
     /// <summary>

@@ -150,8 +150,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-18_R9_Kesselbrennstoff/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 90** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
-Stand 90, und Schritt 90 ist ergebnisneutral, gemessen).
+(**Schemastand 91** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
+Stand 91, und die Schritte 90 und 91 sind ergebnisneutral, gemessen).
 Schritt 90 räumt hinter Schritt 89 auf und hat **zwei Teile**. Der **DDL-Teil** entfernt aus
 `Tab_ProjektWirtschaftlichkeit` die sechs KWKG-Spalten `KWKG_Bonus`,
 `KWKG_Bonus_Einspeisung`, `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`,
@@ -173,6 +173,18 @@ Anlagen, Stromeinspeisung): Hauptkomponentenzeilen der früheren Kostenmaske, Gr
 bleibt vollständig stehen. Keines der vier Projekte ist CI- oder Basisprojekt, und die
 Basis führt keine Kostengröße — der Lauf ist auch nach Schritt 90 für alle fünf
 CI-Projekte byte-gleich.
+**Schritt 91** nimmt die siebte und letzte KWKG-Projektspalte: `KWKG_Kostenanteil` aus
+`Tab_ProjektWirtschaftlichkeit`, samt ihrem Dialogfeld in Gruppe 2 des
+BHKW-Wirtschaftlichkeitsdialogs. § 8 Abs. 2/3 KWKG leitet das Vbh-Kontingent aus dem
+Kostenanteil **der Anlage** ab (`Tab_Energieanlagen.KWKG_Kostenanteil`, Schritt 89); der
+Projektwert hatte seit dem Umbau des Ersatzwegs keinen Rechenleser mehr. **Kein DML** —
+Schritt 89 hat den Wert einmalig in jede BHKW-Anlagenzeile übertragen, die dort leer war.
+`Tab_ProjektWirtschaftlichkeit` führt danach noch vier KWKG-Spalten: `KWKG_Stichtag`,
+`KWKG_Inbetriebnahme`, `KWKG_Abschlag_Negativ` und `KWKG_Pauschalmodus`.
+**Ergebnisneutral, gemessen:** Projekt 1030 rechnet den KWK-Zuschlag im Jahr 1 unverändert
+mit **7.315,948722 €** und den Kapitalwert mit **−21.895.377,339395 €**; die Basis führt
+keine KWKG-Projektgröße — der Lauf ist auch nach Schritt 91 für alle fünf CI-Projekte
+byte-gleich.
 **Ohne eigenen Schritt** trägt die Testdatenbank zusätzlich die Spalte
 `Nachweis_Json` an `Tab_ErgebnisWirtschaftlichkeit` — eine **Konservenspalte**: Diese
 Ergebnistabelle ist keine Schematabelle, sie entsteht und wächst erst beim ersten
