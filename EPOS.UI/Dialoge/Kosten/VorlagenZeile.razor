@@ -75,6 +75,15 @@
                   aria-label="@BetragKurztext" title="@BetragTitel">⚠</span>
         }
         <span class="epos-zr-betrag">@BetragText</span>
+        @* U28: WOHER der Betrag kommt, steht jetzt SICHTBAR unter ihm - bis dahin
+           nur im Werkzeugtipp, den niemand sieht, der nicht mit der Maus stehen
+           bleibt. Der Text kommt fertig aus dem Kern (KostenHerleitung); die Zeile
+           formatiert nichts. Der Werkzeugtipp bleibt zusaetzlich - er nennt
+           dieselbe Rechnung vollstaendig, auch wo die Zelle abschneidet. *@
+        @if (!string.IsNullOrEmpty(Herleitung))
+        {
+            <span class="epos-herleitung epos-zr-herleitung">@Herleitung</span>
+        }
     </div>
 
     <div class="epos-zr-zelle">
@@ -200,6 +209,15 @@
     /// Leer, wo die Groesse unmittelbar am Geraet steht.
     /// </summary>
     [Parameter] public string BasisHerleitung { get; set; } = "";
+
+    /// <summary>
+    /// U28: Die HERLEITUNGSZEILE unter dem Betrag - Bezugsgroesse, Herkunft und
+    /// Kaskadenrunde („x 300,00 kW · P_el der Anlage · Runde 1"), bei einer
+    /// absoluten Zeile „Satz = Betrag". Sie kommt fertig aus dem Kern
+    /// (<c>KostenHerleitung</c>); leer heisst keine Zeile - im Stammkontext und
+    /// ueberall dort, wo eine Bezugsgroesse fehlt (dort steht das ⚠).
+    /// </summary>
+    [Parameter] public string Herleitung { get; set; } = "";
 
     /// <summary>Der Werkzeugtipp des Betragsfeldes: Kurztext, und darunter die
     /// Herleitung, wenn es eine gibt. Zwei Zeilen statt zweier Tipps - der

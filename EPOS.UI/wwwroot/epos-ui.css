@@ -1980,6 +1980,20 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-warn-text);
 }
 
+/* U28: Die HERLEITUNGSZEILE unter dem Betrag. Farbe und Abstand kommen aus
+   .epos-herleitung (dieselbe Klasse wie jede andere Herleitungszeile des
+   Hauses); hier steht nur, was die RASTERZELLE braucht. Sie ist ein eigener
+   Block in einer Zelle mit white-space: nowrap und overflow: hidden - ohne
+   eigenes overflow schnitte die Zelle hart ab statt mit Auslassungszeichen.
+   Kleiner als der Betrag, damit die Zahl die Zeile fuehrt; vollstaendig steht
+   derselbe Inhalt im Werkzeugtipp des Betragsfeldes. */
+.epos-zr-herleitung {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.85em;
+}
+
 /* Die LEISE Zeile unter dem Raster (Hausregel: ein dauerhaftes Banner nur fuer
    einen Zustand, den der Anwender sonst nicht sieht - das Zeichen in der Zeile
    sieht er). Sie sammelt die Gruende der Zeilen ohne Bezugsgroesse. */

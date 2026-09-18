@@ -78,6 +78,15 @@ public sealed class KostenPositionZeile
     /// </summary>
     public string BasisHerleitung { get; set; } = "";
 
+    /// <summary>
+    /// U28: Die HERLEITUNGSZEILE unter dem Betrag — Bezugsgröße, Herkunft und
+    /// Kaskadenrunde („× 300,00 kW · P_el der Anlage · Runde 1"), bei einer
+    /// absoluten Zeile „Satz = Betrag". Sie kommt fertig aus dem Kern
+    /// (<c>KostenHerleitung</c>); leer heißt keine Zeile — im Stammkontext und dort,
+    /// wo die Bezugsgröße fehlt (da steht das ⚠ und der Grund unter dem Raster).
+    /// </summary>
+    public string Herleitung { get; set; } = "";
+
     /// <summary>Empfehlungsbereich als Kurztext des Satzfeldes; leer = keiner.</summary>
     public string EmpfehlungKurztext { get; set; } = "";
 
