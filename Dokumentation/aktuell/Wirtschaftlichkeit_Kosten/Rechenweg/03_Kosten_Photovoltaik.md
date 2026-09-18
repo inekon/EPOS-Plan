@@ -1,134 +1,129 @@
 # 03 · Kosten der Photovoltaik
 
-**Dialog:** `Form_KostenKomponente` in derselben Form wie beim BHKW, mit PV-eigener Anordnung
-(Anwenderauftrag 02.09.2026) · **Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#pvkosten` ·
-**Norm:** DIN EN 17463, 6.3.3 (Degradation) und 6.4 (Endzahlungen statt Restwert) · VDI 2067 ·
-**Code:** `EUR_PRO_KWP`, `BaugroesseSumme`, Ersatz-/Restwertlogik im `KapitalwertRechner` ·
-**Konzept:** § 2.1, § 3.1, § 3.2, § 2.11.2 (V-G2, V-G4)
+**Dialog:** `KostenKomponenteDialog` (`EPOS.UI/Dialoge/Kosten/`), Klappliste auf der PV-Anlage — dasselbe
+Fenster wie in `01` und `02` · **Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#pvkosten` ·
+**Norm:** VDI 2067 · DIN EN 17463, 6.4 (Endzahlungen statt Restwert, siehe `01`) ·
+**Code:** `BemessungKatalog.Auswahl` (Gewerk 3), `PhotovoltaikCtrl.KwpSumme`, `TechnikPlanwertCtrl.BaugroesseSumme`,
+`InvestKaskade`, `EndenergieAufloeser`, `KostenHerleitung.Bilde`, `KostenSummenCtrl.Fuss` ·
+**Konzept:** § 2.1, § 3.1, § 3.2
 
-## Was PV anders macht — und was der Dialog deshalb anders anordnet
+## Was die Photovoltaik anders macht — und was der Dialog deshalb anders zeigt
 
-| PV-Eigenheit | Darstellung |
+| PV-Eigenheit | Im Dialog |
 |---|---|
-| Die Menge ist die Spitzenleistung in kWp und muss aus Modulanzahl × Modulleistung hergeleitet werden (Befund I-1) | Herleitungszeile „750 Module × 400 Wp" unter der Menge — beide Größen sichtbar |
-| Der Wechselrichter lebt 12 Jahre, die Module 25 — Ersatz im Jahr 12 ist der Regelfall | Spalte **Nutzungsdauer** im Investitionsraster; Gruppe **Ersatz und Restwert** mit Barwerten |
-| Die Module haben am Ende von T = 20 a noch Restdauer | Restwert je Position, Abweichung V-G4 deklariert |
-| PV hat keine Endenergie — Hilfsenergie kann nicht prozentual bemessen werden | Hilfsenergie nur als **Jahresbetrag**, keine Pflichtzeile, kein Schloss |
-| Der Ertrag altert | Gruppe **Ertrag und Degradation** mit Quellenfeld (neu, V-G2) |
-| Die branchenübliche Kennzahl ist €/kWp | Summenzeile nennt „spezifisch 640,50 €/kWp" |
-| Zuschuss und EEG-Vergütung schließen sich in der Regel aus | Infozeile statt Zuschusszeile |
+| Die Baugröße ist die installierte Leistung in kWp und wird gerechnet (Modulleistung × Modulanzahl ÷ 1000), nicht aus einer Gerätespalte gelesen | Bemessung „je kWp Leistung" (und gleichbedeutend „je kW elektrisch"); Herleitungszeile „× 300,00 kWp · kWp der Anlage · Runde 1"; die Faktoren Modulanzahl und Modulleistung zeigt der Dialog nicht (U35) |
+| Die Anlagenspalte `Tab_Energieanlagen.PV_Leistung` ist die Modulanzahl | Ein €/kWp-Satz trifft nie sie, sondern nur die gerechneten kWp (`PhotovoltaikCtrl.KwpSumme`, dieselbe Rechnung wie Simulation und Vergütungsdialog); fehlt ein Modul mit Leistung: ⚠ und Grund „kein Gerät mit dieser Baugröße im Projekt" |
+| PV hat keine Endenergie | Die Endenergie-Arten stehen nicht in der Klappliste des Betriebsrasters; Hilfsenergie nur als fester Jahresbetrag, keine Pflicht |
+| Der Wechselrichter lebt 12 Jahre, die Module 25 | Spalte Nutzungsdauer [a] wie bei jeder Technik; Ersatz und Restwert rechnet der Dialog nicht vor (U30, Tafel in `01`) |
+| Der Ertrag altert | Kein Kostenattribut: Feld „Degradation [%/a]" im Vergütungsdialog (`06`), je Stammprojekt, wirkt in der Erlösreihe |
+| Zuschuss und EEG-Vergütung schließen sich in der Regel aus | Keine Zuschusszeile im Beispiel — der Summenfuß bleibt zweizeilig (die dritte Zeile steht nur mit Erlös-/Zuschusszeile) |
+| Die branchenübliche Kennzahl ist €/kWp | Der Summenfuß nennt sie nicht (U34); ein Wartungssatz je kWp·a ist im Betriebsraster nicht bemessbar (U33) |
 
-## Was der Dialog zeigt — Reiter Investition
+## Was der Dialog zeigt — Investitionskosten
 
-| Position | Kostenart | Bemessung | Satz | Menge | Betrag | Nutzungsdauer | Runde |
-|---|---|---|---|---|---|---|---|
-| PV-Module (Hauptposition) | ANSCHAFFUNG | € / kWp | 320,00 | 300,00 kWp — 750 Module × 400 Wp | 96.000,00 | 25 a | 1 |
-| Wechselrichter | ANSCHAFFUNG | € / kWp | 80,00 | 300,00 kWp | 24.000,00 | 12 a — Ersatz im Jahr 12 | 1 |
-| Unterkonstruktion und Montage | ANSCHAFFUNG | € / kWp | 150,00 | 300,00 kWp | 45.000,00 | 25 a | 1 |
-| Elektroinstallation, Netzanschluss, Messkonzept | ANSCHAFFUNG | Betrag | — | — | 18.000,00 | 25 a | 1 |
-| Planung und Genehmigung | ANSCHAFFUNG | % der Investition | 5,00 | 183.000,00 € — Stufe: Anlage PV-Feld | 9.150,00 | — (= Zeitraum) | 3 |
-| **Summe** | | Investition 192.150,00 € · kein Zuschuss · spezifisch 640,50 €/kWp | | | **192.150,00** | | I₀ |
+Klappliste „Komponente:" auf „PV-Anlage 1", Optionsgruppe auf „Investitionskosten", Reiter „Kosten Invest/Betrieb"
+und — wie beim Blockheizkraftwerk — „Ertrag/Bonus". Das Zeilenraster trägt die sieben Spalten aus `01`: Aktionen ·
+Position (Textfeld) · Bemessung (Klappliste, an der Photovoltaik: fester Betrag · % der Investition · % der
+Erzeugerkosten · je kW elektrisch · je kWp Leistung) · Satz (Zahlenfeld, Einheit €/kWp, % oder €) · Betrag netto [€]
+(gerechnet, nie eingebbar; 🔗 bei fester Bemessung) · Nutzungsdauer [a] · Worst/Best. Unter dem Betrag jeder
+gerechneten Zeile die Herleitungszeile mit Bezugsgröße, Herkunft und Runde; der Werkzeugtipp nennt die Rechnung
+(„320,00 €/kWp × 300,00 kWp"). Summenfuß: „Summe Investitionskosten netto: 192.150,00 €", „Summe brutto:
+228.658,50 € (Umsatzsteuer 19 % aus dem Katalog)"; keine dritte Zeile, weil keine Zuschusszeile. Knöpfe „+ Position
+hinzufügen", „Aus Vorlage übernehmen…", „Positionskatalog…"; Fußleiste Abbrechen · Speichern · OK.
 
-**Warnband (Befund I-1):** „`Tab_Energieanlagen.PV_Leistung` heißt andernorts ausdrücklich
-Modulanzahl. Der Dialog zeigt deshalb beide Größen — 750 × 400 Wp = 300,00 kWp — damit ein
-€/kWp-Satz nie mit der Modulzahl multipliziert wird. Ohne diese Herleitung stünde hier 240.000 €
-statt 96.000 € (Faktor 2,5)."
+| Position | Bemessung | Satz | Bezugsgröße (Werkzeugtipp) | Herleitungszeile | Betrag | Nutzungsdauer |
+|---|---|---|---|---|---|---|
+| PV-Module (Hauptposition der Vorlage) | je kWp Leistung | 320,00 €/kWp | 300,00 kWp — `PhotovoltaikCtrl.KwpSumme` (750 × 400 Wp ÷ 1000) | × 300,00 kWp · kWp der Anlage · Runde 1 | 96.000,00 | 25 |
+| Wechselrichter | je kWp Leistung | 80,00 €/kWp | 300,00 kWp | × 300,00 kWp · kWp der Anlage · Runde 1 | 24.000,00 | 12 |
+| Unterkonstruktion und Montage | je kWp Leistung | 150,00 €/kWp | 300,00 kWp | × 300,00 kWp · kWp der Anlage · Runde 1 | 45.000,00 | 25 |
+| Elektroinstallation, Netzanschluss | fester Betrag | 18.000,00 € | — | Satz = Betrag (🔗) | 18.000,00 | 25 |
+| Planung und Genehmigung | % der Investition | 5,00 % | 183.000,00 € — Stufe Anlage | × 183.000,00 € · Stufe Anlage · Runde 3 | 9.150,00 | — |
+| **Summe** | | | netto = I₀, brutto 228.658,50 € | | **192.150,00** | |
 
-**Gruppe Ersatz und Restwert** (i = 3,0 %, T = 20 a):
+**Was das Mockup darüber hinaus zeigt**, steht im Anhang Umsetzungsstand: die Herleitung der kWp mit beiden Größen
+(U35), die Kennzahl „spezifisch 640,50 €/kWp" (U34), die Gruppe „Ersatz und Restwert" (U30) — Wechselrichter
+n = 12 a → Ersatz im Jahr 12 mit 24.000,00 €, Restwert am Ende 39.800,00 €, Barwerte 16.833 und 22.036 €
+(Rechnung in `01`).
 
-| Position | n | Ersatzbeschaffung | Restwert Jahr 20 | Herleitung |
+## Was der Dialog zeigt — Betriebskosten
+
+Optionsgruppe auf „Betriebskosten": Betragsspalte „Betrag netto [€/a]", Spalte Nutzungsdauer leer, Bemessungen des
+Betriebsrasters an der Photovoltaik: fester Jahresbetrag · % der Investition · je kWh elektrisch (erzeugter Strom
+aus dem Lauf; Herleitungszeile „× 285.000,00 kWh · Lauf"; ohne Lauf ⚠ und „kein Simulationslauf"). Die
+Endenergie-Arten fehlen, weil der `EndenergieAufloeser` für die Photovoltaik keine Menge liefert. Pflichtzeilen
+der Vorlage (Schemaschritt 59): „Wartung / Inspektion PV-Anlage" (fester Jahresbetrag) und „Instandhaltung
+PV-Module / Gestell" (% der Investition); Hilfsenergiekosten sind keine Pflicht und nur als Jahresbetrag erfassbar.
+
+| Position | Bemessung | Satz | Herleitungszeile | Betrag |
 |---|---|---|---|---|
-| PV-Module | 25 a | — | 19.200,00 | 96.000 × 5 / 25 · Restdauer 5 a |
-| Wechselrichter | 12 a | Jahr 12 · 24.000,00 € brutto, nicht indexiert | 8.000,00 | 24.000 × 4 / 12 · Alter 8 a nach Ersatz |
-| Unterkonstruktion und Montage | 25 a | — | 9.000,00 | 45.000 × 5 / 25 |
-| Elektroinstallation | 25 a | — | 3.600,00 | 18.000 × 5 / 25 |
-| Planung und Genehmigung | = T | — | — | ohne Nutzungsdauer: kein Ersatz, kein Restwert |
-| **Summe** | | **24.000,00 € · Barwert 16.833** | **39.800,00 € · Barwert 22.036** | |
+| Wartung / Inspektion PV-Anlage — Pflicht | fester Jahresbetrag | 3.600,00 €/a | Satz = Betrag (🔗) | 3.600,00 |
+| Instandhaltung PV-Module / Gestell — Pflicht | % der Investition | 0,50 % | × 192.150,00 € · Investitionssumme | 960,75 |
+| Versicherung, Steuern, Verwaltung — Empfehlung 0,8–2 % | % der Investition | 0,25 % | × 192.150,00 € · Investitionssumme | 480,38 |
+| Telekommunikation / Monitoring | fester Jahresbetrag | 600,00 €/a | Satz = Betrag (🔗) | 600,00 |
+| Hilfsenergiekosten — keine Pflicht | fester Jahresbetrag | 90,00 €/a | Satz = Betrag (🔗) | 90,00 |
+| **Summe Betriebskosten netto** | | | brutto 6.820,04 €/a | **5.731,13** |
 
-**Infozeile:** Der Restwert ist eine dokumentierte Abweichung von DIN EN 17463, 6.4 (V-G4). Bei PV
-wiegt sie: Der Barwert des Restwerts (22.036 €) übersteigt den des Wechselrichtertauschs (16.833 €).
-Der Bericht deklariert das als Modellannahme.
+Der Wartungsansatz 12 €/kWp·a × 300 kWp steht als Jahresbetrag, weil das Betriebsraster keine Bemessung je kWp
+führt (U33). Die Degradation ist kein Attribut dieses Dialogs; eine Quellenangabe zu ihr gibt es nirgends (U9).
 
-## Was der Dialog zeigt — Reiter Betrieb
+## Was der Dialog zeigt — Reiter Ertrag/Bonus
 
-| Position | Bemessung | Satz | Herleitung | Betrag |
-|---|---|---|---|---|
-| Wartung und Reinigung — Pflicht · üblich 10–15 €/kWp·a | € / kWp · a | 12,00 | × 300,00 kWp · PV-Feld | 3.600,00 🔒 |
-| Instandhaltung — Pflicht · üblich 0,5–1,0 % | % der Investition | 0,50 | × 192.150,00 € · Investition PV-Feld | 960,75 🔒 |
-| Versicherung (Allgefahren) | % der Investition | 0,25 | × 192.150,00 € | 480,38 🗑 |
-| Monitoring und Direktvermarkter-Grundgebühr | Jahresbetrag | — | | 600,00 🗑 |
-| Hilfsenergie — Standby Wechselrichter, Monitoring · keine Pflicht bei PV | Jahresbetrag | — | | 90,00 🗑 |
-| **Betriebskosten PV-Feld** | | | brutto 6.820,04 €/a | **5.731,13** |
-
-**Gruppe Ertrag und Degradation (neu, V-G2):** Ertrag Jahr 1 285,0 MWh/a (Simulationslauf) ·
-Degradation 0,50 %/a (0 = keine, Vorgabe) · Quelle „Herstellerdatenblatt, lineare
-Leistungsgarantie" · Herleitung: Jahr 20 = 285,0 × 0,995^19 = **259,1 MWh**, Ertragsverlust über
-20 Jahre 4,7 % — wirkt auf Einspeisung, Eigenverbrauch und damit auf die Vergütungsreihe.
-
-**Vorschaustreifen:** Betriebskosten p. a. 5.731,13 € · Ersatz Wechselrichter Jahr 12 24.000 € ·
-Restwert Jahr 20 39.800 € · spezifische Investition 640,50 €/kWp.
-
-Der dritte Reiter „Ertrag / Bonus" öffnet den Vergütungsdialog aus `06` — kein zweiter Rechenweg.
+Bei der Photovoltaik eine Gruppe „PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)": Erklärungssatz
+(`KDLG_ERTRAG_PV`), Klappliste „Stammprojekt:" und Knopf „PV-Vergütungsdialog öffnen…" — der Dialog aus `06` —,
+daneben „Gesetzesparameter…" (Gesetzeskatalog als Überlagerung). Kein zweiter Rechenweg.
 
 ## Berechnungsgrundlage
 
 ```
-Investition — Mengenkette € / kWp
-  Menge [kWp] = Modulanzahl × Modulleistung [Wp] / 1000
-  Betrag      = Menge × Satz
-  Befund I-1: die heutige Quelle Tab_Energieanlagen.PV_Leistung ist andernorts die
-  Modulanzahl — die Herleitung muss beide Größen zeigen, nie nur eine.
-Runde 3 wie beim BHKW: Basis = alle Zeilen der Anlage ohne Zuschuss (siehe 01)
+Bezugsgröße — kWp, gerechnet statt gelesen (TechnikPlanwertCtrl.BaugroesseSumme → PhotovoltaikCtrl.KwpSumme)
+  kWp = Σ Tab_PV.Leistung [W je Modul] × Tab_Energieanlagen.PV_Leistung [Modulanzahl] ÷ 1000
+        auf die Anlagenzeile eingegrenzt; Summe ≤ 0 ⇒ null (⚠ „kein Gerät mit dieser Baugröße im Projekt")
+  „je kWp Leistung" und „je kW elektrisch" meinen dieselbe Größe (IstPvLeistungsart) — EINE Rechnung
+  Herleitungszeile: × {kWp} · kWp der Anlage · Runde 1   (KDLG_HERL_BASIS, KDLG_HERK_ANLAGE, KDLG_GR_KWP)
 
-Ersatz und Restwert (Konzept § 3.1, aus der Nutzungsdauer n je Position)
-  n = Nutzungsdauer, falls ≥ 1 ; sonst n = T  (dann kein Ersatz, kein Restwert)
-  Ersatz:   t_j = round(start + k·n)  für k = 1, 2, …  solange 1 ≤ t_j < T
-            → Wechselrichter n = 12, T = 20: t = 12 ; Module n = 25: kein Ersatz
-  Restwert: Alter = T − letzte Beschaffung ;  Restdauer = n − Alter
-            RW_T = Betrag × Restdauer / n     (nur bei Restdauer > 0, linear)
-  Barwert:  Ersatz_t / (1 + i)^t ;  RW_T / (1 + i)^T   — Ersatz NICHT indexiert
-  Ersatz und Restwert rechnen mit dem BRUTTObetrag (vor Zuschuss)
+Runde 1 — direkte Arten     Betrag = kWp × Satz ;  fester Betrag: Satz = Betrag
+Runde 2 — % der Erzeugerkosten   Basis = Hauptposition „PV-Module"  (im Beispiel nicht belegt)
+Runde 3 — % der Investition      Basis = Σ Runden 1 und 2 der Anlage (Stufe Anlage; siehe 01)
+Summenfuß                        netto = I₀ ; keine Zuschusszeile ⇒ keine dritte Zeile (KostenSummenCtrl.Fuss)
 
-Betrieb — nur Gruppen A und C, keine Endenergie-Arten
-  Wartung        Betrag = kWp × Satz [€/kWp·a]
-  Prozent        Betrag = Investition(Anlage) × Satz / 100
-  Hilfsenergie   JAHRESBETRAG — der EndenergieAufloeser liefert für PV null
+Betrieb — keine Kaskade, keine Endenergie
+  A  fester Jahresbetrag      Betrag = Satz
+  B  % der Investition        Betrag = Investitionssumme × Satz / 100     „× 192.150,00 € · Investitionssumme"
+  C  je kWh elektrisch        Betrag = erzeugter Strom [kWh] × Satz       „× 285.000,00 kWh · Lauf"
+  Endenergie-Arten: nicht in der Auswahl (BasisGrund = GEWERK) — Hilfsenergie nur als Jahresbetrag
 
-Degradation (neu, V-G2)   Menge_t = Menge_1 × (1 − d)^(t−1)     Vorgabe d = 0 — ergebnisneutral
+Ersatz und Restwert   technikneutral aus der Nutzungsdauer; Formel, Tafel und Barwerte in 01 (U30)
+Degradation           kein Kostenattribut — Feld des Vergütungsdialogs (06), wirkt in der Erlösreihe
 ```
 
 ## Berechnungserläuterung am Beispielprojekt
 
 | Schritt | Rechnung | Ergebnis | Anmerkung |
 |---|---|---|---|
-| R1 Menge | 750 × 400 / 1000 | 300,00 kWp | beide Größen sichtbar (I-1) |
-| R1 Module | 300,00 × 320,00 | 96.000,00 € | Hauptposition |
+| R1 Bezugsgröße | 750 × 400 / 1000 | 300,00 kWp | KwpSumme der Anlagenzeile; der Dialog zeigt das Ergebnis (U35) |
+| R1 PV-Module | 300,00 × 320,00 | 96.000,00 € | Hauptposition der Vorlage |
 | R1 Wechselrichter | 300,00 × 80,00 | 24.000,00 € | n = 12 a |
 | R1 Unterkonstruktion | 300,00 × 150,00 | 45.000,00 € | |
-| R1 Elektro | Betrag, fest | 18.000,00 € | |
-| **Basis für Runde 3** | 96.000 + 24.000 + 45.000 + 18.000 | **183.000,00 €** | alle Zeilen der Anlage |
-| R3 Planung 5 % | 183.000,00 × 5 / 100 | 9.150,00 € | Stufe „Anlage" |
-| **I₀** | 183.000,00 + 9.150,00 | **192.150,00 €** | 640,50 €/kWp; kein Zuschuss |
-| Ersatz Wechselrichter | t = round(0 + 1 × 12) = 12 | 24.000,00 € im Jahr 12 | brutto, nicht indexiert |
-| — Barwert | 24.000 ÷ 1,03^12 = 24.000 ÷ 1,4258 | − 16.833 € | Kapitalwertwirkung |
-| Restwert Module | Alter 20, Restdauer 5: 96.000 × 5 / 25 | 19.200,00 € | |
-| Restwert Wechselrichter | Alter 20 − 12 = 8, Restdauer 4: 24.000 × 4 / 12 | 8.000,00 € | |
-| Restwert Unterkonstruktion + Elektro | (45.000 + 18.000) × 5 / 25 | 12.600,00 € | |
-| **Restwert gesamt** | 19.200 + 8.000 + 12.600 | **39.800,00 €** | Jahr 20 |
-| — Barwert | 39.800 ÷ 1,03^20 = 39.800 ÷ 1,8061 | + 22.036 € | deklarierte Modellannahme (V-G4) |
-| Betrieb Wartung | 300 × 12,00 | 3.600,00 €/a | Gruppe C |
-| Betrieb Instandhaltung | 192.150 × 0,50 / 100 | 960,75 €/a | Gruppe B |
-| Betrieb Versicherung | 192.150 × 0,25 / 100 | 480,38 €/a | Gruppe B |
-| Betrieb Monitoring + Hilfsenergie | 600 + 90 | 690,00 €/a | Gruppe A |
-| **Betriebskosten Jahr 1** | 3.600 + 960,75 + 480,38 + 690 | **5.731,13 €/a** | brutto × 1,19 = 6.820,04 |
-| Degradation Jahr 20 | 285,0 × (1 − 0,005)^19 = 285,0 × 0,9092 | 259,1 MWh | −4,7 % |
+| R1 Elektroinstallation | Satz = Betrag | 18.000,00 € | 🔗 |
+| **Basis für Runde 3** | 96.000 + 24.000 + 45.000 + 18.000 | **183.000,00 €** | Stufe Anlage |
+| R3 Planung 5 % | 183.000,00 × 5 / 100 | 9.150,00 € | „× 183.000,00 € · Stufe Anlage · Runde 3" |
+| **I₀** | 183.000,00 + 9.150,00 | **192.150,00 €** | Nettosumme; brutto 228.658,50 €; 640,50 €/kWp |
+| Ersatz Wechselrichter (U30) | t = 12 | 24.000,00 € im Jahr 12 | Barwert 16.833 € (Rechnung in 01) |
+| Restwert Photovoltaik Jahr 20 (U30) | 19.200 + 8.000 + 9.000 + 3.600 | 39.800,00 € | Barwert 22.036 € (Rechnung in 01) |
+| B Wartung | 12 €/kWp·a × 300 kWp, als Jahresbetrag | 3.600,00 €/a | Pflicht (U33) |
+| B Instandhaltung 0,50 % | 192.150 × 0,50 / 100 | 960,75 €/a | Pflicht |
+| B Versicherung 0,25 % | 192.150 × 0,25 / 100 | 480,38 €/a | |
+| B Monitoring + Hilfsenergie | 600 + 90 | 690,00 €/a | Jahresbeträge |
+| **Betriebskosten Jahr 1** | 3.600 + 960,75 + 480,38 + 690 | **5.731,13 €/a** | brutto 6.820,04 €/a |
 
 ## Befunde und offene Punkte
 
-| Nr. | Befund | Behandlung im Entwurf |
+| Nr. | Punkt | Behandlung |
 |---|---|---|
-| ⚠ I-1 | `EUR_PRO_KWP` summiert `PV_Leistung` — andernorts die Modulanzahl; ein €/kWp-Satz würde mit der Modulzahl multipliziert (Faktor ≈ 2,5 bei 400-Wp-Modulen) | Herleitungszeile mit beiden Größen; in der Umsetzung Mengenquelle auf kWp festlegen |
-| I-4 | `BaugroesseSumme` entdoppelt nicht — bei PV gewollt (Modulanzahl × Leistung) | — |
-| V-G2 | Degradation je Position mit Quellenangabe fehlt | neues optionales Attribut, Vorgabe 0 %/a |
-| V-G4 | Restwert statt Endzahlung — Abweichung von 6.4 | Restwert bleibt, wird deklariert; Rückbau/Entsorgung als Position mit StartJahr = T abbildbar |
-| — | Kumulierung Zuschuss / EEG | Infozeile; ZUSCHUSS-Zeile bleibt erfassbar |
+| I-1 | `PV_Leistung` ist die Modulanzahl; ein €/kWp-Satz darf sie nie treffen | gebaut: `BaugroesseSumme` rechnet die kWp über `PhotovoltaikCtrl.KwpSumme`; die Auswahl bietet nur Arten mit Bezugsgröße |
+| U35 | Die Herleitung der kWp (Modulanzahl × Modulleistung) steht weder im Werkzeugtipp noch in der Herleitungszeile — `BaugroesseHerleitung` liefert für die Photovoltaik leer (die Solarthermie hat sie) | Mockup Abschnitt 3, Anhang Umsetzungsstand |
+| U33 | Kein Wartungssatz je kWp·a im Betriebsraster (`BM_KWP` nur im Investitionsraster) | Jahresbetrag im Beispiel; Vorschlag im Anhang |
+| U34 | Kennzahl „spezifisch €/kWp" im Summenfuß | Vorschlag im Anhang |
+| U30 | Gruppe „Ersatz und Restwert" unter dem Raster | Tafel und Barwerte in `01`; Zahlenprobe Photovoltaik: Jahr 12 24.000,00 €, Restwert 39.800,00 € |
+| U9 | Degradation je Stammprojekt im Vergütungsdialog, ohne Quellenangabe | `06`; Vorschlag im Anhang |
+| — | Kumulierung Zuschuss / EEG | keine Zuschusszeile im Beispiel; erfassbar wie in `01` |
