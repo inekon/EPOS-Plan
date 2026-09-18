@@ -151,9 +151,18 @@
                        Sammelknopf am Ende der Gruppe schrieb mehrere Felder auf
                        einmal; wer ihn drueckte, sah erst danach, was er getroffen
                        hatte. Die Vorschlagszeile spannt im Formularraster ueber die
-                       volle Breite und steht damit unter IHREM Feld. *@
+                       volle Breite und steht damit unter IHREM Feld.
+
+                       VIER NACHKOMMASTELLEN, wie WPAR_EINSP_KWK sie fuehrt: Der
+                       Vorschlagsknopf schreibt den gerechneten Satz UNGERUNDET in
+                       den Arbeitsstand (300 kW: 5,5667 ct/kWh). Zeigte das Feld nur
+                       zwei Stellen, sah der Anwender 5,57 - und die naechste
+                       Beruehrung des Feldes meldete genau diese 5,57 zurueck:
+                       0,0033 ct/kWh weniger, still. Der Kern kennt keinen
+                       Rueckfall, das Feld IST der Satz
+                       (WirtschaftlichkeitCtrl.SatzEigenDerAnlage). *@
                     <Zahlenfeld Bezeichnung="@_t.ASatzEinsp" Einheit="ct/kWh"
-                                Min="0" Max="30" Nachkommastellen="2"
+                                Min="0" Max="30" Nachkommastellen="4"
                                 Wert="@AktuellerStand.SatzEinspCt" WertChanged="SatzEinspA" />
                     <Vorschlagszeile Text="@GrundlageEinsp()" Knopftext="@_t.BtnVorschlagFeld"
                                      Erlaubt="@VorschlagEinspErlaubt"
@@ -161,7 +170,7 @@
                                      Uebernommen="VorschlagEinspUebernehmen" />
 
                     <Zahlenfeld Bezeichnung="@_t.ASatzEigen" Einheit="ct/kWh"
-                                Min="0" Max="30" Nachkommastellen="2"
+                                Min="0" Max="30" Nachkommastellen="4"
                                 Wert="@AktuellerStand.SatzEigenCt" WertChanged="SatzEigenA" />
                     <Vorschlagszeile Text="@GrundlageEigen()" Knopftext="@_t.BtnVorschlagFeld"
                                      Erlaubt="@VorschlagEigenErlaubt"
