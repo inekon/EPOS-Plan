@@ -318,6 +318,63 @@ namespace EPOS.Kern.Tests
             Assert.Contains(daten.Warnungen, w => w.Contains("Stammprojekt", StringComparison.Ordinal));
         }
 
+        /// <summary>
+        /// KONZEPT § 2.15 (VG‑Q1/VG‑Q5): Trägt der Lauf die Sicht 2, ist A die Referenz
+        /// des Rechenlaufs, und der Verlauf zeichnet <b>eine</b> Differenzkurve — B − A.
+        /// Mit A als Referenz wäre die A-Kurve die Nulllinie.
+        /// </summary>
+        [Fact]
+        public void In_Sicht_2_zeichnet_der_Verlauf_nur_die_Kurve_B_gegen_A()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BerichtsDaten daten = Gruppendaten();
+            daten.Sicht = new Vergleichssicht
+            {
+                Sicht = Vergleichssicht.PAAR, IdA = VARIANTE_A, IdB = VARIANTE_B
+            };
+
+            WirtschaftlichkeitVerlauf v = new WirtschaftlichkeitCtrl().BerechneVerlauf(
+                daten, Parametersatz(0), 20, WirtschaftlichkeitSzenario.ERWARTET);
+
+            Assert.Equal(3, v.Absolut.Count);
+            VerlaufSerie einzige = Assert.Single(v.Differenz);
+            Assert.Equal(VARIANTE_B, einzige.IdProjekt);
+
+            // Die Kurve ist B − A, Jahr für Jahr.
+            double[] a = v.Absolut.First(s => s.IdProjekt == VARIANTE_A).Kumuliert;
+            double[] b = v.Absolut.First(s => s.IdProjekt == VARIANTE_B).Kumuliert;
+            for (int t = 0; t < einzige.Kumuliert.Length; t++)
+                Assert.Equal(b[t] - a[t], einzige.Kumuliert[t], 6);
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.15: Trägt der Lauf die Sicht 2, nimmt auch <c>Berechne</c> A als
+        /// Referenz — ohne dass der Aufrufer sie ein zweites Mal übergibt. So können
+        /// Seite, Verlauf und Bericht nicht drei verschiedene Referenzen nehmen.
+        /// </summary>
+        [Fact]
+        public void Die_Sicht_des_Laufs_setzt_die_Referenz_der_Rechnung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BerichtsDaten daten = Gruppendaten();
+            daten.Sicht = new Vergleichssicht
+            {
+                Sicht = Vergleichssicht.PAAR, IdA = VARIANTE_A, IdB = VARIANTE_B
+            };
+
+            List<WirtschaftlichkeitErgebnis> lauf =
+                new WirtschaftlichkeitCtrl().Berechne(daten, Parametersatz(0));
+
+            Assert.False(Erwartet(lauf, VARIANTE_A).KapitalwertDiff.HasValue);
+            WirtschaftlichkeitErgebnis b = Erwartet(lauf, VARIANTE_B);
+            Assert.Equal(b.Kapitalwert.Value - Erwartet(lauf, VARIANTE_A).Kapitalwert.Value,
+                         b.KapitalwertDiff.Value, 6);
+        }
+
         // =================================================================
         // 5 — Die Zeilendefinition
         // =================================================================

@@ -1484,6 +1484,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// KONZEPT § 2.9 und § 2.15 — <b>welche Referenz gilt</b>, in dieser Reihenfolge:
+        /// der ausdrückliche Lauf-Parameter, dann die Vergleichssicht des Laufs
+        /// (Sicht 2 setzt A), zuletzt die Gruppenreferenz des Parametersatzes. Und 0
+        /// heißt am Ende der Kette: Stamm.
+        ///
+        /// <para>Die Kette steht EINMAL hier, damit Kennzahlen, Verlauf und Bericht
+        /// nicht drei verschiedene Referenzen nehmen können.</para>
+        /// </summary>
+        private static int Referenz(BerichtsDaten daten, WirtschaftlichkeitParameter p,
+                                    int idReferenz)
+        {
+            if (idReferenz > 0) return idReferenz;
+            if (daten != null && daten.Sicht != null && daten.Sicht.IstPaar)
+                return daten.Sicht.Referenz;
+            return p != null ? p.IdReferenzprojekt : 0;
+        }
+
+        /// <summary>
         /// KONZEPT § 2.9 — dieselbe Rechnung mit AUSDRÜCKLICH gewählter Referenz.
         /// </summary>
         /// <param name="idReferenz">
@@ -1516,8 +1534,7 @@ namespace WindowsFormsApplication1
             // Gruppenreferenz, die Gruppenreferenz schlaegt den Stamm. Steht die
             // gewaehlte Referenz nicht (mehr) in der Gruppe, faellt die Wahl auf den
             // Stamm zurueck - aber BENANNT, nie still (Randfall 2).
-            Referenzwahl wahl = Referenzwahl.Bestimme(
-                daten, idReferenz > 0 ? idReferenz : p.IdReferenzprojekt);
+            Referenzwahl wahl = Referenzwahl.Bestimme(daten, Referenz(daten, p, idReferenz));
             if (wahl.Warnung != null && daten.Warnungen != null &&
                 !daten.Warnungen.Contains(wahl.Warnung)) daten.Warnungen.Add(wahl.Warnung);
 
@@ -1661,8 +1678,12 @@ namespace WindowsFormsApplication1
             // KONZEPT § 2.9: WOGEGEN die Differenzlinien laufen. Dieselbe Auflösung wie
             // in Berechne — sonst zeigte der Verlauf eine andere Referenz als die
             // Kennzahltafel.
-            Referenzwahl wahl = Referenzwahl.Bestimme(
-                daten, idReferenz > 0 ? idReferenz : p.IdReferenzprojekt);
+            Referenzwahl wahl = Referenzwahl.Bestimme(daten, Referenz(daten, p, idReferenz));
+
+            // KONZEPT § 2.15 (VG‑Q5): In Sicht 2 wird EINE Differenzkurve gezeichnet,
+            // B − A; ihr Nulldurchgang ist die dynamische Amortisation des Paars. Mit
+            // A = Gruppenreferenz wäre die A-Kurve die Nulllinie.
+            int nurDieser = daten.Sicht != null && daten.Sicht.IstPaar ? daten.Sicht.IdB : 0;
 
             VerlaufSerie referenz = null;
             foreach (VariantenDaten v in daten.Varianten)
@@ -1713,6 +1734,7 @@ namespace WindowsFormsApplication1
                 foreach (VerlaufSerie s in verlauf.Absolut)
                 {
                     if (s.IdProjekt == referenz.IdProjekt || s.Kumuliert == null) continue;
+                    if (nurDieser > 0 && s.IdProjekt != nurDieser) continue;
                     var d = new double[verlauf.Jahre + 1];
                     for (int t = 0; t <= verlauf.Jahre; t++)
                         d[t] = s.Kumuliert[t] - referenz.Kumuliert[t];

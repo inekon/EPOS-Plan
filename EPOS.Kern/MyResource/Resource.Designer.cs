@@ -54582,6 +54582,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Stand der Paarwahl steht nicht mehr im Vergleich — gezeigt werden wieder alle Varianten gegen die Referenz. ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_PAAR_RUECKFALL {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_PAAR_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Referenz dieser Sicht: {0} · Referenz der Gruppe: {1} ähnelt.
         /// </summary>
         public static string WIRT_SICHT_REFERENZ {

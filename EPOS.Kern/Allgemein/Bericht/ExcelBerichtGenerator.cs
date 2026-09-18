@@ -410,8 +410,37 @@ namespace WindowsFormsApplication1
             // ETAPPE E7: EINE Zeilendefinition für Word, Excel und Ergebnisreiter
             // (WirtschaftlichkeitZeilen). Die Liste stand bis dahin dreimal im Code.
             // ETAPPE B7: eine Sichtbarkeitsregel für alle drei Ausgaben (Sichtbare).
+            // KONZEPT § 2.9 und § 2.15 (VG-Q4): Das BLATT FOLGT DER SICHT - so wie es
+            // den Haekchen folgt. In Sicht 2 stehen A und B mit A als Referenz, in
+            // Sicht 1 alle Staende gegen die Referenz der Gruppe. Dieselbe
+            // Zeilendefinition wie in Word und auf der Seite.
+            int idReferenz = daten.Sicht != null && daten.Sicht.IstPaar
+                           ? daten.Sicht.IdA : daten.IdGruppenreferenz;
+            var spalten = new List<VariantenDaten>();
+            if (daten.Sicht != null && daten.Sicht.IstPaar)
+                foreach (int id in daten.Sicht.Spalten(null))
+                {
+                    VariantenDaten sv = daten.Varianten.FirstOrDefault(x => x.IdProjekt == id);
+                    if (sv != null) spalten.Add(sv);
+                }
+            if (spalten.Count == 0) spalten.AddRange(daten.Varianten);
+
             List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Sichtbare(
-                WirtschaftlichkeitZeilen.Kennzahlen(alle, tarifP), alle);
+                WirtschaftlichkeitZeilen.Kennzahlen(alle, tarifP, idReferenz), alle);
+
+            // KONZEPT § 2.15 (VG-Q4): In Sicht 2 sagt die DEKLARATIONSZEILE, wogegen
+            // gerechnet wurde - die Norm laesst den Vergleich zweier Massnahmen zu
+            // (8.1.2), verlangt aber die Benennung.
+            if (daten.Sicht != null && daten.Sicht.IstPaar && spalten.Count > 0)
+            {
+                VariantenDaten gruppe = daten.Varianten.FirstOrDefault(
+                    v => daten.IdGruppenreferenz > 0
+                       ? v.IdProjekt == daten.IdGruppenreferenz : v.IstStamm);
+                ws.Cell(r, 1).Value = Referenzwahl.Deklarationszeile(
+                    Referenzwahl.Name(spalten[0]), Referenzwahl.Name(gruppe));
+                ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                r++;
+            }
 
             // Der Zeitbezug der €/a-Werte steht einmal über der Tabelle statt in vier
             // Zeilentiteln (E7).
@@ -428,7 +457,7 @@ namespace WindowsFormsApplication1
 
                 ws.Cell(r, 1).Value = BerichtTexte.T("Szenario") + ": " + szenario;
                 ws.Cell(r, 1).Style.Font.Bold = true;
-                ws.Range(r, 1, r, 1 + daten.Varianten.Count).Style.Fill.BackgroundColor = GRUPPE;
+                ws.Range(r, 1, r, 1 + spalten.Count).Style.Fill.BackgroundColor = GRUPPE;
                 r++;
 
                 // ETAPPE W5‑B‑11 (Anwenderentscheid 09.09.2026, G8): die ANNAHMEN des
@@ -453,10 +482,11 @@ namespace WindowsFormsApplication1
                 int stammSpalte = -1;
                 ws.Cell(r, 1).Value = BerichtTexte.T("Kennzahl");
                 int c = 2;
-                foreach (VariantenDaten v in daten.Varianten)
+                foreach (VariantenDaten v in spalten)
                 {
                     ws.Cell(r, c).Value = v.IstStamm ? "Stamm" : v.Anzeige;
-                    if (v.IstStamm) stammSpalte = c;
+                    // Hinterlegt wird die REFERENZ - ohne gewaehlte wie bisher der Stamm.
+                    if (idReferenz > 0 ? v.IdProjekt == idReferenz : v.IstStamm) stammSpalte = c;
                     c++;
                 }
                 ws.Range(kopfZeile, 1, kopfZeile, c - 1).Style.Font.Bold = true;
@@ -479,13 +509,13 @@ namespace WindowsFormsApplication1
                     {
                         // Eine Überschrift trägt in den Wertspalten nichts — sie bleiben
                         // leer, damit Filter und Diagramme des Blattes numerisch bleiben.
-                        ws.Range(r, 1, r, Math.Max(1, daten.Varianten.Count + 1))
+                        ws.Range(r, 1, r, Math.Max(1, spalten.Count + 1))
                           .Style.Fill.BackgroundColor = KOPF;
                         r++;
                         continue;
                     }
                     c = 2;
-                    foreach (VariantenDaten v in daten.Varianten)
+                    foreach (VariantenDaten v in spalten)
                     {
                         WirtschaftlichkeitErgebnis e = block.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
                         if (e != null && z.IstText)

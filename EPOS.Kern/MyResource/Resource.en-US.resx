@@ -19700,4 +19700,7 @@ Do you want to allow this?</value>
   <data name="WIRT_SICHT_VALERI" xml:space="preserve">
     <value>Comparison of two measures · Do-nothing alternative of the group: {0}</value>
   </data>
+  <data name="WIRT_SICHT_PAAR_RUECKFALL" xml:space="preserve">
+    <value>One version of the pair is no longer part of the comparison — all variants are shown against the reference again.</value>
+  </data>
 </root>
