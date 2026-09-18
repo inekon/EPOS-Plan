@@ -9700,9 +9700,6 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KOH_FALL2_STROMST_9B" xml:space="preserve">
     <value>The electricity tax relief under § 9b StromStG of {0} €/a presupposes that the electricity price on record includes the electricity tax. The price does not show it ({1}).</value>
   </data>
-  <data name="KOH_FALL2_STROMST_9_1_3" xml:space="preserve">
-    <value>The electricity tax exemption under § 9 (1) no. 3 StromStG of {0} €/a is booked as revenue although the electricity price on record does not show the electricity tax ({1}).</value>
-  </data>
   <data name="KOH_FALL3_STROMSTEUER" xml:space="preserve">
     <value>The electricity price on record shows an electricity tax of {0} ct/kWh, but no relief under § 9b StromStG is booked.</value>
   </data>
@@ -10111,9 +10108,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="BHW_S_MODUS" xml:space="preserve">
     <value>Mode under sec. 9 (1) no. 3:</value>
-  </data>
-  <data name="BHW_S_MODUS_B6" xml:space="preserve">
-    <value>from stage B6 — until then fixed to "disclosure" (not in the net present value).</value>
   </data>
   <data name="BHW_H_BASIS" xml:space="preserve">
     <value>The share is maintained per unit above and measured against the unit's FINAL ENERGY DEMAND (fuel) — not against cost. The quantity reduces the eligible net power generation.</value>
@@ -19336,5 +19330,65 @@ Do you want to allow this?</value>
   </data>
   <data name="SP_KONTEXT_PEAK_ADAPTIV" xml:space="preserve">
     <value> (adaptive)</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMST_BEFREIUNG_AUSWEIS" xml:space="preserve">
+    <value>Electricity tax exemption [€/a] (disclosure, not in the net present value)</value>
+  </data>
+  <data name="KOH_FALL1_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax: the chosen relief and the price component match ({0}).</value>
+  </data>
+  <data name="KOH_DOPPEL_STROMST_9_1_3" xml:space="preserve">
+    <value>Possible double count: the electricity tax exemption under sec. 9 (1) no. 3 StromStG of {0} €/a is booked as revenue. The benefit is already contained in the smaller purchase bill — booking it as revenue is only correct if the purchase price applied includes the electricity tax on self-consumption.</value>
+  </data>
+  <data name="AUFLOESER_KOMP_BHKW" xml:space="preserve">
+    <value>CHP unit</value>
+  </data>
+  <data name="AUFLOESER_KOMP_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="AUFLOESER_KOMP_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ANLAGE" xml:space="preserve">
+    <value>{0} “{1}”</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE" xml:space="preserve">
+    <value>all {0} modules</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE_WP" xml:space="preserve">
+    <value>all heat pump modules</value>
+  </data>
+  <data name="WVERL_UNTER_DIFF" xml:space="preserve">
+    <value>Cumulative discounted differential cash flows variant − base; intersection with the zero line = dynamic payback. Without residual value.</value>
+  </data>
+  <data name="WVERL_UNTER_ABS" xml:space="preserve">
+    <value>Cumulative discounted cash flows (costs negative). Without residual value — net present value = final value + present value of the residual value.</value>
+  </data>
+  <data name="WVERL_RESTWERTE" xml:space="preserve">
+    <value>Present values of residual value at the end of the horizon (not contained in the lines): {0}</value>
+  </data>
+  <data name="WVERL_OHNE_REIHE" xml:space="preserve">
+    <value>⚠ Without series: {0}</value>
+  </data>
+  <data name="WVERL_STATUS_KOPF" xml:space="preserve">
+    <value>Profile over {0} years, scenario “{1}”</value>
+  </data>
+  <data name="WVERL_STATUS_ABWEICHEND" xml:space="preserve">
+    <value> (differs from T = {0} a — display only, stored results unchanged{1}).</value>
+  </data>
+  <data name="WVERL_STATUS_JENSEITS" xml:space="preserve">
+    <value>; zero crossings beyond T do not appear in the stored payback figure</value>
+  </data>
+  <data name="WVERL_TITEL_STAMM" xml:space="preserve">
+    <value>{0} — base project: {1}</value>
+  </data>
+  <data name="BHW_S_MODUS_HERLEITUNG" xml:space="preserve">
+    <value>Disclosure: the exemption is shown and not included in the net present value. Revenue: it is booked as revenue — only if the purchase price includes the electricity tax.</value>
+  </data>
+  <data name="PVW_AW_ZEILE" xml:space="preserve">
+    <value>AW_mix: {0:0.00} ct/kWh</value>
+  </data>
+  <data name="KOH_FALL4_EINHEIT_UNVERGLEICHBAR" xml:space="preserve">
+    <value>{0}: the catalogue rate for {1} is given in {2}, while the project bills per {3}. Without the density of the energy carrier the two cannot be converted — the energy tax component in the price is not checked here.</value>
   </data>
 </root>

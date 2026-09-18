@@ -9707,9 +9707,6 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KOH_FALL2_STROMST_9B" xml:space="preserve">
     <value>Die Stromsteuer-Entlastung nach § 9b StromStG von {0} €/a setzt voraus, dass der erfasste Strompreis die Stromsteuer enthält. Im Preis ist sie nicht ausgewiesen ({1}).</value>
   </data>
-  <data name="KOH_FALL2_STROMST_9_1_3" xml:space="preserve">
-    <value>Die Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG von {0} €/a wird als Erlös gebucht, obwohl der erfasste Strompreis die Stromsteuer nicht ausweist ({1}).</value>
-  </data>
   <data name="KOH_FALL3_STROMSTEUER" xml:space="preserve">
     <value>Der erfasste Strompreis weist eine Stromsteuer von {0} ct/kWh aus, eine Entlastung nach § 9b StromStG wird nicht gebucht.</value>
   </data>
@@ -10118,9 +10115,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="BHW_S_MODUS" xml:space="preserve">
     <value>Modus § 9 Abs. 1 Nr. 3:</value>
-  </data>
-  <data name="BHW_S_MODUS_B6" xml:space="preserve">
-    <value>ab B6 — bis dahin gilt fest „Ausweis“ (nicht im Kapitalwert).</value>
   </data>
   <data name="BHW_H_BASIS" xml:space="preserve">
     <value>Der Anteil wird je Anlage oben gepflegt und am ENDENERGIEBEDARF (Brennstoff) der Anlage bemessen — nicht an den Kosten. Die Menge mindert die zuschlagsfähige Nettostromerzeugung.</value>
@@ -19343,5 +19337,65 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SP_KONTEXT_PEAK_ADAPTIV" xml:space="preserve">
     <value> (adaptiv)</value>
+  </data>
+  <data name="WIRT_ZEILE_STROMST_BEFREIUNG_AUSWEIS" xml:space="preserve">
+    <value>Stromsteuer-Befreiung [€/a] (Ausweis, nicht im Kapitalwert)</value>
+  </data>
+  <data name="KOH_FALL1_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer: Wahl und Preisanteil stimmen überein ({0}).</value>
+  </data>
+  <data name="KOH_DOPPEL_STROMST_9_1_3" xml:space="preserve">
+    <value>Doppelzählung möglich: Die Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG von {0} €/a ist als Erlös gebucht. Der Vorteil steckt bereits in der kleineren Bezugsrechnung — als Erlös ist er nur richtig, wenn der angesetzte Bezugspreis die Stromsteuer auf den Eigenverbrauch enthält.</value>
+  </data>
+  <data name="AUFLOESER_KOMP_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="AUFLOESER_KOMP_HEIZKESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="AUFLOESER_KOMP_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ANLAGE" xml:space="preserve">
+    <value>{0} „{1}“</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE" xml:space="preserve">
+    <value>alle {0}-Module</value>
+  </data>
+  <data name="AUFLOESER_BASIS_ALLE_WP" xml:space="preserve">
+    <value>alle Wärmepumpen-Module</value>
+  </data>
+  <data name="WVERL_UNTER_DIFF" xml:space="preserve">
+    <value>Kumulierte diskontierte Differenz-Zahlungsströme Variante − Stamm; Schnitt mit der Nulllinie = dynamische Amortisation. Ohne Restwert.</value>
+  </data>
+  <data name="WVERL_UNTER_ABS" xml:space="preserve">
+    <value>Kumulierte diskontierte Zahlungsströme (Kosten negativ). Ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert.</value>
+  </data>
+  <data name="WVERL_RESTWERTE" xml:space="preserve">
+    <value>Restwert-Barwerte am Horizontende (nicht in den Linien enthalten): {0}</value>
+  </data>
+  <data name="WVERL_OHNE_REIHE" xml:space="preserve">
+    <value>⚠ Ohne Reihe: {0}</value>
+  </data>
+  <data name="WVERL_STATUS_KOPF" xml:space="preserve">
+    <value>Verlauf über {0} Jahre, Szenario „{1}“</value>
+  </data>
+  <data name="WVERL_STATUS_ABWEICHEND" xml:space="preserve">
+    <value> (abweichend von T = {0} a — nur Anzeige, gespeicherte Ergebnisse unverändert{1}).</value>
+  </data>
+  <data name="WVERL_STATUS_JENSEITS" xml:space="preserve">
+    <value>; Nulldurchgänge jenseits von T erscheinen nicht in der gespeicherten Amortisationskennzahl</value>
+  </data>
+  <data name="WVERL_TITEL_STAMM" xml:space="preserve">
+    <value>{0} — Stamm: {1}</value>
+  </data>
+  <data name="BHW_S_MODUS_HERLEITUNG" xml:space="preserve">
+    <value>Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet. Erlös: Sie wird als Erlös gebucht — nur, wenn der Bezugspreis die Stromsteuer enthält.</value>
+  </data>
+  <data name="PVW_AW_ZEILE" xml:space="preserve">
+    <value>AW_mix: {0:0.00} ct/kWh</value>
+  </data>
+  <data name="KOH_FALL4_EINHEIT_UNVERGLEICHBAR" xml:space="preserve">
+    <value>{0}: Der Katalogsatz des Jahres {1} steht in {2}, das Projekt rechnet je {3}. Ohne Dichte des Energieträgers lässt sich beides nicht ineinander umrechnen — der Energiesteueranteil im Preis bleibt hier ungeprüft.</value>
   </data>
 </root>

@@ -818,6 +818,48 @@ namespace WindowsFormsApplication1
         public const string AUFTEILUNG_ENERGETISCH = "ENERGETISCH";
 
         // =====================================================================
+        // MODUS DER STROMSTEUERBEFREIUNG NACH § 9 ABS. 1 NR. 3 StromStG
+        //   Tab_ProjektWirtschaftlichkeit.Stromst_Befreiung_Modus (Schemaschritt 88)
+        //
+        //   Die Vorschrift ist KEINE Rueckerstattung: Auf selbst erzeugten und selbst
+        //   verbrauchten Strom entsteht gar keine Stromsteuer. Der Vorteil steckt damit
+        //   bereits in der kleineren Bezugsrechnung; ihn zusaetzlich als Erloes zu
+        //   buchen zaehlte ihn ein zweites Mal.
+        //
+        //   Beide Werte stehen als Zeichenkette IN der Datenbank und werden in SQL damit
+        //   verglichen; ASCII und Grossbuchstaben, nach der Auslieferung EINGEFROREN.
+        //   Anzeigetexte in MyResource.Resource.BHW_W_MODUS_*.
+        //
+        //   NULL und leer bedeuten AUSWEIS - der Schemaschritt legt die Spalte an und
+        //   schreibt keinen Wert.
+        //
+        //   LAENGENPROBE (Lehre aus Etappe E3): Der laengere Wert ist AUSWEIS mit sieben
+        //   Zeichen; die Spalte ist TEXT(20).
+        // =====================================================================
+
+        /// <summary>
+        /// § 9 Abs. 1 Nr. 3 StromStG wird <b>ausgewiesen</b>: Die Befreiung wird
+        /// gerechnet und als Jahresbetrag gezeigt, geht aber NICHT in die Erloese und
+        /// damit nicht in den Kapitalwert — <b>Vorgabe</b>, und der Wert, den NULL und
+        /// eine leere Zelle bedeuten.
+        /// Persistenzwert, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string STROMST_BEFREIUNG_MODUS_AUSWEIS = "AUSWEIS";
+
+        /// <summary>
+        /// § 9 Abs. 1 Nr. 3 StromStG wird als <b>Erloes</b> gebucht: Die Befreiung geht
+        /// als jahresscharfe Reihe in den Kapitalwert
+        /// (<c>KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG</c>).
+        ///
+        /// <para><b>Nur richtig, wenn der angesetzte Bezugspreis die Stromsteuer
+        /// enthaelt</b> und der Eigenverbrauch in ihm mitgerechnet ist — sonst steckt
+        /// der Vorteil schon in der Bezugsrechnung. Die Kohaerenzpruefung sagt das mit
+        /// einer eigenen Zeile.</para>
+        /// <inheritdoc cref="STROMST_BEFREIUNG_MODUS_AUSWEIS" path="/summary/text()[last()]"/>
+        /// </summary>
+        public const string STROMST_BEFREIUNG_MODUS_ERLOES = "ERLOES";
+
+        // =====================================================================
         // ETAPPE E5 — Tarifmodell Strom
         //   Tab_ProjektTarif (Migrationsschritt 21)
         //

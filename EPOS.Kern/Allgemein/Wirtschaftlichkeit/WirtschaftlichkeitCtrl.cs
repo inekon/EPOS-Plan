@@ -95,6 +95,16 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="SPALTE_ENERGIESTEUER"/>
         public const string SPALTE_STROMST_BEFREIUNG = "StromsteuerBefreiung";
 
+        /// <summary>
+        /// ETAPPE B6 — der Modus, in dem § 9 Abs. 1 Nr. 3 StromStG in DIESEN Lauf
+        /// eingegangen ist (<c>AUSWEIS</c>/<c>ERLOES</c>, Werte aus
+        /// <see cref="DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS"/>). Er steht im ERGEBNIS,
+        /// nicht nur im Parametersatz: Ein gespeicherter Lauf muss auch nach einer
+        /// späteren Umstellung des Projekts sagen können, wie ER gerechnet hat.
+        /// <inheritdoc cref="SPALTE_ENERGIESTEUER" path="/summary/para"/>
+        /// </summary>
+        public const string SPALTE_STROMST_MODUS = "StromsteuerBefreiungModus";
+
         /// <inheritdoc cref="SPALTE_ENERGIESTEUER"/>
         public const string SPALTE_STROMST_ENTLASTUNG = "StromsteuerEntlastung";
 
@@ -402,6 +412,7 @@ namespace WindowsFormsApplication1
                     // darüber (Begründung bei SPALTE_ENERGIESTEUER).
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_ENERGIESTEUER, "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_BEFREIUNG, "DOUBLE");
+                    SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_MODUS, "TEXT(20)");   // B6
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_ENTLASTUNG, "DOUBLE");
                     SpalteSicher(TAB_ERGEBNIS, SPALTE_STEUER_HERKUNFT, "LONGTEXT");
 
@@ -418,6 +429,9 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_HOCHEFFIZIENZ, "YESNO");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD, "DOUBLE");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL, "TEXT(20)");
+                    // ETAPPE B6 - dieselbe tolerante Vorsorge fuer den Modus des
+                    // § 9 Abs. 1 Nr. 3 StromStG; regulaer entsteht er in Schritt 88.
+                    SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS, "TEXT(20)");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
 
                     // ETAPPE K6 (HF6/M-D) — die vier KWKG-Projektangaben. Regulär legt sie
@@ -631,6 +645,17 @@ namespace WindowsFormsApplication1
                     if (wahl.Length > 0) p.EnergiesteuerWahl = wahl;
                     string auf = Text(r, SchemaKatalog.SPALTE_PW_AUFTEILUNG);
                     if (auf.Length > 0) p.AufteilungMethode = auf;
+
+                    // ETAPPE B6 - der Modus des § 9 Abs. 1 Nr. 3 StromStG (Schritt 88).
+                    // NUR der ausdrueckliche Wert ERLOES bucht die Befreiung als Erloes;
+                    // leer, NULL und jeder unbekannte Bestandswert bedeuten AUSWEIS.
+                    // Eine nicht migrierte Datenbank verhaelt sich dadurch wie eine
+                    // migrierte - und wie die Vorgabe.
+                    p.StromsteuerBefreiungModus =
+                        string.Equals(Text(r, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS),
+                                      DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES, StringComparison.Ordinal)
+                            ? DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES
+                            : DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS;
 
                     // ETAPPE E5 — die KWK-Einspeisevergütung; ohne ausdrückliche Angabe
                     // wirkungslos (DOUBLE bleibt NULL).
@@ -901,6 +926,8 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "] = ?, " +
+                    // ETAPPE B6 - der Modus des § 9 Abs. 1 Nr. 3 StromStG (Schritt 88).
+                    "[" + SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_BILANZJAHR + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "] = ?, " +
@@ -957,6 +984,12 @@ namespace WindowsFormsApplication1
                     { Wert = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
                     new DbParam("@auf", DbParamTyp.VarWChar, 30)
                     { Wert = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
+                    // ETAPPE B6: Geschrieben wird IMMER einer der beiden Steuerwerte -
+                    // NULL waere zwar gleichbedeutend mit AUSWEIS, aber eine gepflegte
+                    // Wahl soll auch als gepflegt dastehen.
+                    new DbParam("@stmo", DbParamTyp.VarWChar, 20)
+                    { Wert = Steuerwert(p.StromsteuerBefreiungModus,
+                                        DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS) },
                     new DbParam("@vkwk", DbParamTyp.Double)
                     { Wert = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
@@ -1022,6 +1055,8 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NUTZUNGSGRAD + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_ENERGIESTEUER_WAHL + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_AUFTEILUNG + "], " +
+                    // ETAPPE B6 - der Modus des § 9 Abs. 1 Nr. 3 StromStG (Schritt 88).
+                    "[" + SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_BILANZJAHR + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_EMISSIONSMETHODE + "], " +
@@ -1052,7 +1087,7 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1081,6 +1116,12 @@ namespace WindowsFormsApplication1
                     { Wert = Steuerwert(p.EnergiesteuerWahl, DbWerte.ENERGIESTEUER_WAHL_KEINE) },
                     new DbParam("@auf", DbParamTyp.VarWChar, 30)
                     { Wert = Steuerwert(p.AufteilungMethode, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF) },
+                    // ETAPPE B6: Geschrieben wird IMMER einer der beiden Steuerwerte -
+                    // NULL waere zwar gleichbedeutend mit AUSWEIS, aber eine gepflegte
+                    // Wahl soll auch als gepflegt dastehen.
+                    new DbParam("@stmo", DbParamTyp.VarWChar, 20)
+                    { Wert = Steuerwert(p.StromsteuerBefreiungModus,
+                                        DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS) },
                     new DbParam("@vkwk", DbParamTyp.Double)
                     { Wert = p.EinspeiseverguetungKWK.HasValue
                               ? (object)p.EinspeiseverguetungKWK.Value : DBNull.Value },
@@ -1658,6 +1699,11 @@ namespace WindowsFormsApplication1
             public double StromsteuerBefreiungJahr1;
             public double StromsteuerEntlastungJahr1;
             public string SteuerHerkunft;
+
+            /// <summary>ETAPPE B6: true = § 9 Abs. 1 Nr. 3 StromStG ist als Erlösreihe
+            /// angehängt (Modus <c>ERLOES</c>); false = ausgewiesen, aber nicht im
+            /// Kapitalwert (Vorgabe <c>AUSWEIS</c>).</summary>
+            public bool StromsteuerBefreiungAlsErloes;
             /// <summary>ETAPPE E2 (L6): erreichte ELEKTRISCHE Vbh [h/a] — die Größe, an
             /// der die KWKG-Deckelung hängt (0 = kein BHKW / nicht bestimmbar).</summary>
             public double VbhElektrisch;
@@ -3113,10 +3159,25 @@ namespace WindowsFormsApplication1
             e.StromsteuerEntlastungJahr1 = entlastung[1];
             if (herkunft.Count > 0) e.SteuerHerkunft = string.Join(" | ", herkunft.ToArray());
 
+            // ETAPPE B6 — der Modus des § 9 Abs. 1 Nr. 3 StromStG wandert mit ins
+            // Ergebnis: Die Vergleichstabelle beschriftet ihre Zeile danach, und der
+            // Kohärenzfall zur Doppelzählung hängt an derselben Wahl.
+            e.StromsteuerBefreiungAlsErloes = p != null && p.StromsteuerBefreiungAlsErloes;
+
             // Eine Reihe ohne jeden Betrag wird gar nicht erst angehängt — sie hätte im
             // Kapitalwert keine Wirkung und im Bericht (E7) keinen Aussagewert.
             Reihe(e, KapitalwertRechner.ErloesReihe.ENERGIESTEUER, energie);
-            Reihe(e, KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG, befreiung);
+
+            // ETAPPE B6 (Befund B-1) — § 9 Abs. 1 Nr. 3 StromStG ist KEINE
+            // Rückerstattung: Auf selbst erzeugten und selbst verbrauchten Strom
+            // entsteht gar keine Stromsteuer, der Vorteil steckt bereits in der
+            // kleineren Bezugsrechnung. Im Modus AUSWEIS (Vorgabe) wird der Betrag
+            // deshalb GERECHNET und in StromsteuerBefreiungJahr1 gezeigt, aber nicht
+            // angehängt — er geht nicht in die Erlöse und nicht in den Kapitalwert.
+            // Nur der ausdrückliche Modus ERLOES bucht die Reihe wie bis B5.
+            if (e.StromsteuerBefreiungAlsErloes)
+                Reihe(e, KapitalwertRechner.ErloesReihe.STROMSTEUER_BEFREIUNG, befreiung);
+
             Reihe(e, KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG, entlastung);
 
             if (begruendungen.Count > 0) hinweis = string.Join(" | ", begruendungen.ToArray());
@@ -4975,6 +5036,7 @@ namespace WindowsFormsApplication1
             erg.KwkgVbhElektrisch = eingabe.VbhElektrisch;    // E2: Bezugsgröße der Deckelung
             erg.EnergiesteuerJahr1 = eingabe.EnergiesteuerJahr1;              // E4
             erg.StromsteuerBefreiungJahr1 = eingabe.StromsteuerBefreiungJahr1;
+            erg.StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes;   // B6
             erg.StromsteuerEntlastungJahr1 = eingabe.StromsteuerEntlastungJahr1;
             erg.SteuerHerkunft = eingabe.SteuerHerkunft;
             erg.StromkostenTarif = eingabe.StromkostenTarif;  // W3: Tarifmatrix
@@ -5071,6 +5133,7 @@ namespace WindowsFormsApplication1
                     Steuer = eingabe.SteuerEingabe,
                     EnergiesteuerEur = eingabe.EnergiesteuerJahr1,
                     StromsteuerBefreiungEur = eingabe.StromsteuerBefreiungJahr1,
+                    StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes,   // B6
                     StromsteuerEntlastungEur = eingabe.StromsteuerEntlastungJahr1
                 });
             }
@@ -6378,6 +6441,9 @@ namespace WindowsFormsApplication1
                                 pl.Add(new DbParam("@vbhel", R(e.KwkgVbhElektrisch)));   // E2 (L6)
                                 pl.Add(new DbParam("@enst", R(e.EnergiesteuerJahr1)));   // E4
                                 pl.Add(new DbParam("@stbe", R(e.StromsteuerBefreiungJahr1)));
+                                pl.Add(new DbParam("@stmo", e.StromsteuerBefreiungAlsErloes   // B6
+                                    ? DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES
+                                    : DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS));
                                 pl.Add(new DbParam("@sten", R(e.StromsteuerEntlastungJahr1)));
                                 pl.Add(new DbParam("@sthk", (object)e.SteuerHerkunft ?? DBNull.Value));
                                 pl.Add(new DbParam("@vmar", R(e.VermiedenArbeitJahr)));   // E5
@@ -6407,6 +6473,7 @@ namespace WindowsFormsApplication1
                                 "AnnuitaetKW, AmortisationJahre, Gestehungskosten, " +
                                 "IRR, CO2Abgabe, KWKGErloes, " + SPALTE_KWKG_VBH_EL + ", " +
                                 SPALTE_ENERGIESTEUER + ", " + SPALTE_STROMST_BEFREIUNG + ", " +
+                                SPALTE_STROMST_MODUS + ", " +
                                 SPALTE_STROMST_ENTLASTUNG + ", " + SPALTE_STEUER_HERKUNFT + ", " +
                                 SPALTE_VERMIEDEN_ARBEIT + ", " + SPALTE_VERMIEDEN_LEISTUNG + ", " +
                                 SPALTE_VERMIEDEN_GESAMT + ", " + SPALTE_AUFSCHLAG_BETRAG + ", " +
@@ -6418,7 +6485,7 @@ namespace WindowsFormsApplication1
                                 SPALTE_PV_KAPPUNG_KWH + ", " + SPALTE_PV_VERMIEDEN + ", " +
                                 "StromkostenTarif, HinweisText, Fehlgrund, " +
                                 SPALTE_ERSATZ_BARWERT + ") " +
-                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
+                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
                             }
                             naechsteId++;
                         }
@@ -6539,6 +6606,13 @@ namespace WindowsFormsApplication1
                             KwkgVbhElektrisch = D(r, SPALTE_KWKG_VBH_EL) ?? 0,   // E2 (L6)
                             EnergiesteuerJahr1 = D(r, SPALTE_ENERGIESTEUER) ?? 0,          // E4
                             StromsteuerBefreiungJahr1 = D(r, SPALTE_STROMST_BEFREIUNG) ?? 0,
+                            // B6: Nur der ausdrueckliche Wert ERLOES; leer und NULL
+                            // bedeuten AUSWEIS - so liest sich ein vor B6 gespeicherter
+                            // Lauf wie die heutige Vorgabe.
+                            StromsteuerBefreiungAlsErloes =
+                                string.Equals(Text(r, SPALTE_STROMST_MODUS),
+                                              DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES,
+                                              StringComparison.Ordinal),
                             StromsteuerEntlastungJahr1 = D(r, SPALTE_STROMST_ENTLASTUNG) ?? 0,
                             SteuerHerkunft = Text(r, SPALTE_STEUER_HERKUNFT).Length > 0
                                              ? Text(r, SPALTE_STEUER_HERKUNFT) : null,

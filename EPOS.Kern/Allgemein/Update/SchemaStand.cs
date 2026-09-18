@@ -177,11 +177,23 @@ namespace WindowsFormsApplication1
         /// Speichervarianten in EINEM Projekt (<see cref="SpeicherVarianteAktivEindeutig"/>).
         /// Der Schritt ist ergebnisneutral — behalten wird beide Male die kleinste ID,
         /// genau die Zeile, die jede Lesekette schon bisher genommen hat.
+        /// Mit dem MODUS DER STROMSTEUERBEFREIUNG (Schritt 88, Etappe B6 des
+        /// Wirtschaftlichkeitskonzepts) steht das Ziel auf <b>88</b>:
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> bekommt die Spalte
+        /// <c>Stromst_Befreiung_Modus</c> (TEXT, <c>AUSWEIS</c>/<c>ERLOES</c>, NULL =
+        /// AUSWEIS) — die Spaltenliste steht bei
+        /// <see cref="SchemaKatalog.Schritt88_StromsteuerModus"/>. Der Schritt selbst
+        /// schreibt keinen Wert; die Rechenwirkung liegt in der VORGABE: § 9 Abs. 1
+        /// Nr. 3 StromStG ist keine Rückerstattung, sondern eine kleinere
+        /// Bezugsrechnung, und wird ab hier ausgewiesen statt als Erlös gebucht. Im
+        /// Bestand bucht kein gespeicherter Lauf diese Reihe (Befund B-1) — die
+        /// dreizehn Referenzprojekte rechnen unverändert, der Referenzlauf bleibt
+        /// byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 87;
+        public const int Zielversion = 88;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -18,6 +18,15 @@ namespace WindowsFormsApplication1
         /// <summary>Belastung ohne Entlastung bzw. abweichender Satz (Fälle 3 und 4);
         /// seit FX5-b auch die Mischlage § 53/§ 53a neben § 54 (Fall 5).</summary>
         public const string HINWEIS = "HINWEIS";
+
+        /// <summary>
+        /// ETAPPE B6 — <b>es stimmt</b>: Fall 1 des Konzepts § 3.9, die POSITIVE
+        /// Nennung. Bis B5 blieb der stimmige Fall stumm, und der Anwender konnte
+        /// „keine Zeile" nicht von „nicht geprüft" unterscheiden. Die Zeile ändert
+        /// nichts und warnt nicht; sie sagt, dass die Prüfung gelaufen ist und
+        /// zusammenpasst.
+        /// </summary>
+        public const string BESTAETIGUNG = "BESTAETIGUNG";
     }
 
     /// <summary>
@@ -62,6 +71,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>Gebuchte Stromsteuer-Befreiung § 9 Abs. 1 Nr. 3 im Jahr 1 [€/a].</summary>
         public double StromsteuerBefreiungEur;
+
+        /// <summary>ETAPPE B6: true = die Befreiung ist als ERLÖS gebucht und steckt im
+        /// Kapitalwert; false = sie ist nur ausgewiesen (Vorgabe AUSWEIS). Die
+        /// Stromseite prüft danach zwei ganz verschiedene Dinge.</summary>
+        public bool StromsteuerBefreiungAlsErloes;
 
         /// <summary>Gebuchte Stromsteuer-Entlastung § 9b im Jahr 1 [€/a].</summary>
         public double StromsteuerEntlastungEur;
@@ -148,6 +162,10 @@ namespace WindowsFormsApplication1
             // dürfte deshalb nicht an deren Vorabfiltern hängenbleiben.
             try { MischlageEnergiesteuer(lauf, kultur, liste); } catch { }
             try { Stromseite(idProjekt, lauf, kultur, liste); } catch { }
+            // ETAPPE B6: Der Einwand gegen den Modus ERLOES hängt weder an einem
+            // Energieträger noch an der Preiszerlegung - er gilt aus der Sache heraus
+            // und steht deshalb, wie Fall 5, als eigener Schritt.
+            try { DoppelzaehlungBefreiung(lauf, kultur, liste); } catch { }
 
             return liste;
         }
@@ -395,6 +413,21 @@ namespace WindowsFormsApplication1
                             "keine Entlastung gewählt (§ 53 / § 53a Abs. 5 / § 54): {0}."),
                         string.Join(", ", mitAnteil.ToArray()))
                 });
+
+            // ---- Fall 1: es stimmt (ETAPPE B6) ----
+            //
+            // Die Bedingung ist die GENAUE Umkehrung der beiden Fälle darüber: eine
+            // gewählte Entlastung, ein ausgewiesener Anteil bei JEDEM beteiligten
+            // Träger — und kein Träger, der ohne Anteil dasteht. Die Zeile trägt
+            // KEINEN Betrag: Sie bestätigt die Herkunft, sie bilanziert nicht.
+            if (mitAnteil.Count > 0 && ohneAnteil.Count == 0 && EntlastungGewaehlt(lauf.Steuer))
+                liste.Add(new KohaerenzHinweis
+                {
+                    Schwere = KohaerenzSchwere.BESTAETIGUNG,
+                    Text = string.Format(kultur, T("KOH_FALL1_ENERGIESTEUER",
+                            "Energiesteuer: Wahl und Preisanteil stimmen überein ({0})."),
+                        string.Join(", ", mitAnteil.ToArray()))
+                });
         }
 
         /// <summary>
@@ -447,7 +480,19 @@ namespace WindowsFormsApplication1
             if (p == null || !p.Wert.HasValue) return;
 
             double? katalogCt = InCtKwh(p.Wert.Value, p.Einheit, a);
-            if (!katalogCt.HasValue) return;
+            if (!katalogCt.HasValue)
+            {
+                // ETAPPE B6 - offener Punkt 6 der Liste "Nach B6". Bis hierher schwieg
+                // Fall 4 in JEDER Lage, in der die Umrechnung nicht traegt. Eine davon
+                // ist erklaerbar und haeufig genug, um benannt zu werden: Der
+                // Katalogsatz steht je 1.000 kg, das Projekt rechnet je Liter (oder
+                // umgekehrt). Die Bruecke braeuchte die Dichte, und
+                // energy_carrier.density ist im ganzen Bestand leer - der Pruefer KANN
+                // hier nicht vergleichen. Das ist etwas anderes als "kein Befund", und
+                // der Anwender soll es wissen.
+                EinheitNichtVergleichbar(p, a, name, jahr, kultur, liste);
+                return;
+            }
             if (Math.Abs(anteilCtKwh - katalogCt.Value) <= TOLERANZ_CT_KWH) return;
 
             liste.Add(new KohaerenzHinweis
@@ -461,6 +506,53 @@ namespace WindowsFormsApplication1
                     p.Wert.Value.ToString("N2", kultur), p.Einheit,
                     jahr.ToString(CultureInfo.InvariantCulture),
                     katalogCt.Value.ToString("N4", kultur))
+            });
+        }
+
+        /// <summary>
+        /// ETAPPE B6 — <b>Der Satz steht in einer Einheit, die sich nicht umrechnen
+        /// laesst.</b> Die gesetzlichen Saetze der Heizstoffe stehen teils je 1.000 kg,
+        /// teils je 1.000 Liter; ein Projekt rechnet in genau einer dieser Einheiten.
+        /// Passen sie nicht zusammen, braeuchte die Bruecke die Dichte des Traegers —
+        /// und <c>energy_carrier.density</c> ist im gesamten Bestand leer.
+        ///
+        /// <para><b>Die Zeile sagt genau das und nichts weiter</b> (BF2): Sie nennt den
+        /// Traeger, die Einheit des Katalogsatzes und die Abrechnungseinheit des
+        /// Projekts. Sie rechnet nichts, sie warnt nicht — sie unterscheidet
+        /// „geprueft, keine Abweichung" von „nicht pruefbar".</para>
+        ///
+        /// <para>Nur fuer die beiden Tausender-Einheiten; jede andere Luecke
+        /// (Satz fehlt, kein Heizwert, kein Katalogschluessel) bleibt stumm, weil sie
+        /// keine erklaerbare Ursache hat, die dem Anwender hilft.</para>
+        /// </summary>
+        private static void EinheitNichtVergleichbar(GesetzParameter p, SteuerAnlage a, string name,
+                                                     int jahr, CultureInfo kultur,
+                                                     List<KohaerenzHinweis> liste)
+        {
+            if (a == null || a.EffHi <= 0) return;
+
+            string e = (p.Einheit ?? "").Trim();
+            string erwartet =
+                string.Equals(e, DbWerte.GESETZ_EINHEIT_EUR_1000KG, StringComparison.OrdinalIgnoreCase) ? "kg"
+              : string.Equals(e, DbWerte.GESETZ_EINHEIT_EUR_1000L, StringComparison.OrdinalIgnoreCase) ? "l"
+              : null;
+            if (erwartet == null) return;
+
+            string ist = (a.Abrechnungseinheit ?? "").Trim();
+            if (ist.Length == 0) return;                                   // gar keine Angabe: andere Luecke
+            if (string.Equals(ist, erwartet, StringComparison.OrdinalIgnoreCase)) return;   // passt doch
+
+            liste.Add(new KohaerenzHinweis
+            {
+                Schwere = KohaerenzSchwere.HINWEIS,
+                Text = string.Format(kultur, T("KOH_FALL4_EINHEIT_UNVERGLEICHBAR",
+                        "{0}: Der Katalogsatz des Jahres {1} steht in {2}, das Projekt rechnet " +
+                        "je {3}. Ohne Dichte des Energieträgers lässt sich beides nicht " +
+                        "ineinander umrechnen — der Energiesteueranteil im Preis bleibt hier " +
+                        "ungeprüft."),
+                    name,
+                    jahr.ToString(CultureInfo.InvariantCulture),
+                    p.Einheit, ist)
             });
         }
 
@@ -656,17 +748,48 @@ namespace WindowsFormsApplication1
                         lauf.StromsteuerEntlastungEur.ToString("N2", kultur), grund)
                 });
 
-            if (lauf.StromsteuerBefreiungEur > 0)
-                liste.Add(new KohaerenzHinweis
-                {
-                    Schwere = KohaerenzSchwere.WARNUNG,
-                    Betrag = lauf.StromsteuerBefreiungEur,
-                    Text = string.Format(kultur, T("KOH_FALL2_STROMST_9_1_3",
-                            "Die Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG von {0} €/a wird " +
-                            "als Erlös gebucht, obwohl der erfasste Strompreis die Stromsteuer nicht " +
-                            "ausweist ({1})."),
-                        lauf.StromsteuerBefreiungEur.ToString("N2", kultur), grund)
-                });
+            // ETAPPE B6 — hier stand bis B5 eine zweite Zeile zu § 9 Abs. 1 Nr. 3: Die
+            // Befreiung werde als Erlös gebucht, obwohl der Preis die Stromsteuer nicht
+            // ausweise. Sie ist entfallen, und zwar ersatzlos, weil
+            // DoppelzaehlungBefreiung dasselbe sagt und mehr: Der Einwand gilt dem
+            // Buchen als Erlös überhaupt, nicht erst dem Preisanteil, und die Bedingung
+            // „nur richtig, wenn der Bezugspreis die Stromsteuer enthält" steht in ihrem
+            // Text. Zwei Warnungen zu EINER Sache sind keine doppelte Sorgfalt, sondern
+            // eine Zumutung — und im Modus AUSWEIS (Vorgabe) wäre die alte Zeile
+            // ohnehin falsch gewesen: Dass der Preis die Stromsteuer nicht enthält, ist
+            // dann kein Widerspruch, sondern genau die Lage, die den Ausweis richtig
+            // macht.
+        }
+
+        /// <summary>
+        /// ETAPPE B6 — <b>Doppelzählung § 9 Abs. 1 Nr. 3 StromStG</b>: Der Modus ERLOES
+        /// bucht die Befreiung als Erlösreihe in den Kapitalwert. Auf selbst erzeugten
+        /// und selbst verbrauchten Strom entsteht aber gar keine Stromsteuer — der
+        /// Vorteil steckt bereits in der kleineren Bezugsrechnung. Die Zeile steht
+        /// deshalb IMMER, wenn der Modus ERLOES einen Betrag bucht; sie hängt nicht am
+        /// Preisanteil, denn der Einwand gilt unabhängig davon.
+        ///
+        /// <para><b>Nur warnen</b> (BF2): Der Anwender kann die Lage kennen — etwa wenn
+        /// sein Bezugspreis die Stromsteuer auf den Eigenverbrauch mitträgt. Die
+        /// Rechnung bleibt, wie er sie gewählt hat.</para>
+        /// </summary>
+        private static void DoppelzaehlungBefreiung(KohaerenzLauf lauf, CultureInfo kultur,
+                                                    List<KohaerenzHinweis> liste)
+        {
+            if (lauf == null || !lauf.StromsteuerBefreiungAlsErloes) return;
+            if (lauf.StromsteuerBefreiungEur <= 0) return;
+
+            liste.Add(new KohaerenzHinweis
+            {
+                Schwere = KohaerenzSchwere.WARNUNG,
+                Betrag = lauf.StromsteuerBefreiungEur,
+                Text = string.Format(kultur, T("KOH_DOPPEL_STROMST_9_1_3",
+                        "Doppelzählung möglich: Die Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 " +
+                        "StromStG von {0} €/a ist als Erlös gebucht. Der Vorteil steckt bereits in " +
+                        "der kleineren Bezugsrechnung — als Erlös ist er nur richtig, wenn der " +
+                        "angesetzte Bezugspreis die Stromsteuer auf den Eigenverbrauch enthält."),
+                    lauf.StromsteuerBefreiungEur.ToString("N2", kultur))
+            });
         }
 
         /// <summary>Fall 4 der Stromseite: gepflegter Anteil gegen <c>STROMST_REGELSATZ</c>.</summary>

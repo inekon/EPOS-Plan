@@ -126,8 +126,10 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string SRaeumlich { get; } = T("BHW_S_RAEUMLICH", "Räumlicher Zusammenhang (4,5 km) gegeben");
     public string SHocheffizienz { get; } = T("BHW_S_HOCHEFFIZIENZ", "Hocheffizienz nachgewiesen");
     public string SModus { get; } = T("BHW_S_MODUS", "Modus § 9 Abs. 1 Nr. 3:");
-    public string SModusB6 { get; } = T("BHW_S_MODUS_B6",
-        "ab B6 — bis dahin gilt fest „Ausweis“ (nicht im Kapitalwert).");
+    public string SModusHerleitung { get; } = T("BHW_S_MODUS_HERLEITUNG",
+        "Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet. " +
+        "Erlös: Sie wird als Erlös gebucht — nur, wenn der Bezugspreis die " +
+        "Stromsteuer enthält.");
     public string BtnStrombezug { get; } = T("BHW_BTN_STROMBEZUG", "Strombezug…");
     public string BtnBhkwTarif { get; } = T("BHW_BTN_BHKW_TARIF", "BHKW-Tarif…");
 

@@ -3326,6 +3326,43 @@ namespace WindowsFormsApplication1
             new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_AUFTEILUNG,          "TEXT(30)"),
         };
 
+        /// <summary>
+        /// Modus, in dem § 9 Abs. 1 Nr. 3 StromStG in die Wirtschaftlichkeit eingeht
+        /// (<c>AUSWEIS</c> = gezeigt, nicht im Kapitalwert; <c>ERLOES</c> = als
+        /// Erlösreihe gebucht). Werte und Begründung:
+        /// <see cref="DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS"/>.
+        ///
+        /// <b>NULL und leer bedeuten AUSWEIS.</b> Die Spalte bekommt deshalb KEINE
+        /// DML-Vorbelegung: Eine nicht migrierte Datenbank verhält sich wie eine
+        /// migrierte, und die Leseseite kennt nur einen ausdrücklichen
+        /// <c>ERLOES</c> als zweiten Fall.
+        ///
+        /// <b>Spaltenbreite.</b> Längster Wert <c>AUSWEIS</c> (7 Zeichen) → TEXT(20) —
+        /// dieselbe Breite wie <see cref="SPALTE_PW_ENERGIESTEUER_WAHL"/>.
+        /// </summary>
+        public const string SPALTE_PW_STROMST_BEFREIUNG_MODUS = "Stromst_Befreiung_Modus";
+
+        /// <summary>
+        /// Schritt 88 der Migration: die EINE Spalte des Moduswechsels an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>. Begründung und Leseweg stehen bei
+        /// <see cref="SPALTE_PW_STROMST_BEFREIUNG_MODUS"/>.
+        ///
+        /// <para><b>KEIN DML.</b> Die Spalte bleibt im ganzen Bestand NULL, und NULL
+        /// heißt AUSWEIS. Die RECHENWIRKUNG des Schritts liegt nicht im Schema, sondern
+        /// in der Vorgabe selbst: Ein Projekt, das die Befreiung bisher als Erlösreihe
+        /// buchte, weist sie ab hier nur noch aus. Im Bestand bucht kein gespeicherter
+        /// Lauf die Reihe (Befund B-1), die dreizehn Referenzprojekte rechnen deshalb
+        /// unverändert und der Referenzlauf bleibt byte-gleich.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei <see cref="Schritt20_Steuerangaben"/>, deren sechs
+        /// Spalten derselben Tabelle ebenfalls nicht dort stehen.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt88_StromsteuerModus =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_STROMST_BEFREIUNG_MODUS, "TEXT(20)"),
+        };
+
         // ---------------------------------------------------------------------------
         // ETAPPE E5 — Tarifmodell Strom (Tab_ProjektTarif) und zwei Projektangaben
         // ---------------------------------------------------------------------------

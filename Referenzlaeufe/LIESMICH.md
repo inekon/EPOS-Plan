@@ -148,7 +148,7 @@ Protokoll unter
 **`2026-09-16_R8_Heizkessel_Kaskade/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 87**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
+(**Schemastand 88**; die Basis selbst ist unter Stand 82 eingefroren worden und gilt
 unverändert weiter — Schritt 83 faltet den Strom-Aufschlag in den Arbeitspreis, Schritt 84
 zieht die Einspeisevergütung von der Trägerkarte in die Wirtschaftlichkeitsparameter um,
 Schritt 85 entfernt die fünf Spalten, die beide ohne Leser zurückgelassen haben
@@ -171,6 +171,13 @@ je Projekt jede aktive Speichervariante außer der mit der kleinsten `ID` ab; ge
 hat das genau eine Zeile: Projekt **1026**, Anlage 11280, Variante **13** (Variante 10
 bleibt aktiv). 1026 ist kein CI- und kein Basisprojekt, und `ReadAktiveVariante` nimmt
 ohnehin die kleinste `ID` — der Lauf ist auch nach Schritt 87 für alle fünf CI-Projekte
+byte-gleich.
+Schritt 88 legt an `Tab_ProjektWirtschaftlichkeit` die Spalte `Stromst_Befreiung_Modus`
+an (TEXT, `AUSWEIS`/`ERLOES`) und schreibt **keinen Wert**; NULL heißt AUSWEIS. Die
+Rechenwirkung liegt nicht im Schema, sondern in der Vorgabe: § 9 Abs. 1 Nr. 3 StromStG
+wird ab hier ausgewiesen statt als Erlös gebucht. Im ganzen Bestand bucht kein Lauf diese
+Reihe — die Befreiung setzt Stundenreihen voraus, und die führt die Testdatenbank zu
+keinem Projekt —, der Lauf ist auch nach Schritt 88 für alle fünf CI-Projekte
 byte-gleich). Gegen
 diese Basis hält `.github/workflows/kern.yml` (1030, 1007, 1017,
 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der Orchestrierung

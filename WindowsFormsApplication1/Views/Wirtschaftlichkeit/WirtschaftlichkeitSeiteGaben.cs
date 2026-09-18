@@ -605,8 +605,13 @@ namespace WindowsFormsApplication1
                     List<KohaerenzHinweis> l = x.KohaerenzHinweise;
                     if (l == null || index >= l.Count) return "";
                     KohaerenzHinweis h = l[index];
+                    // ETAPPE B6: drei Schweren, drei Marken - die positive Nennung
+                    // (Fall 1) bekommt den Haken, den die Anwendung sonst fuer
+                    // "hat geklappt" nimmt.
                     string marke = string.Equals(h.Schwere, KohaerenzSchwere.WARNUNG,
-                                                 StringComparison.Ordinal) ? "⚠ " : "· ";
+                                                 StringComparison.Ordinal) ? "⚠ "
+                                 : string.Equals(h.Schwere, KohaerenzSchwere.BESTAETIGUNG,
+                                                 StringComparison.Ordinal) ? "✓ " : "· ";
                     return marke + h.Text;
                 }));
             }

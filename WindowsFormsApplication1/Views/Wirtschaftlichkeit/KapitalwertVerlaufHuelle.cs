@@ -171,6 +171,10 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------------ Bilder
 
+        /// <summary>Deutscher Rueckfall der beiden Bildtitel; die Anzeige holt sie
+        /// ueber <see cref="Text_"/> aus <c>WVERL_BILD_DIFF</c> bzw.
+        /// <c>WVERL_BILD_ABS</c> — DIESELBEN Schluessel wie die Alternativtexte der
+        /// Komponente, denn es ist derselbe Titel.</summary>
         private const string TITEL_DIFF = "Kapitalwert-Verlauf: Differenz zur Stamm-Referenz";
         private const string TITEL_ABS = "Kapitalwert-Verlauf: kumulierte Barwerte je Projekt";
 
@@ -185,16 +189,18 @@ namespace WindowsFormsApplication1
             var kultur = BerichtTexte.Kultur;
 
             byte[] diff = ChartRenderer.KapitalwertVerlauf(
-                TITEL_DIFF,
+                Text_("WVERL_BILD_DIFF", TITEL_DIFF),
                 ChartRenderer.VerlaufsReihen(verlauf.Differenz, false),
-                "Kumulierte diskontierte Differenz-Zahlungsströme Variante − Stamm; " +
-                "Schnitt mit der Nulllinie = dynamische Amortisation. Ohne Restwert.");
+                Text_("WVERL_UNTER_DIFF",
+                    "Kumulierte diskontierte Differenz-Zahlungsströme Variante − Stamm; " +
+                    "Schnitt mit der Nulllinie = dynamische Amortisation. Ohne Restwert."));
 
             byte[] abs = ChartRenderer.KapitalwertVerlauf(
-                TITEL_ABS,
+                Text_("WVERL_BILD_ABS", TITEL_ABS),
                 ChartRenderer.VerlaufsReihen(verlauf.Absolut, true),
-                "Kumulierte diskontierte Zahlungsströme (Kosten negativ). " +
-                "Ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert.");
+                Text_("WVERL_UNTER_ABS",
+                    "Kumulierte diskontierte Zahlungsströme (Kosten negativ). " +
+                    "Ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert."));
 
             // Restwerte am gewählten Horizont ausweisen (Reihen sind ohne Restwert).
             var teile = new List<string>();
@@ -202,26 +208,38 @@ namespace WindowsFormsApplication1
                 if (s.Kumuliert != null && Math.Abs(s.RestwertBarwert) > 0.5)
                     teile.Add(s.Anzeige + " " + s.RestwertBarwert.ToString("N0", kultur) + " €");
             string restwert = teile.Count > 0
-                ? "Restwert-Barwerte am Horizontende (nicht in den Linien enthalten): " +
-                  string.Join(" · ", teile)
+                ? string.Format(kultur,
+                      Text_("WVERL_RESTWERTE",
+                            "Restwert-Barwerte am Horizontende (nicht in den Linien enthalten): {0}"),
+                      string.Join(" · ", teile))
                 : "";
 
             // Nicht berechenbare Projekte offen ausweisen.
             var fehler = verlauf.Absolut.Where(s => s.Fehlgrund != null).ToList();
             if (fehler.Count > 0)
-                restwert = ("⚠ Ohne Reihe: " + string.Join("; ",
-                    fehler.Select(s => s.Anzeige + " (" + s.Fehlgrund + ")")) + "   " +
-                    restwert).Trim();
+                restwert = (string.Format(kultur, Text_("WVERL_OHNE_REIHE", "⚠ Ohne Reihe: {0}"),
+                        string.Join("; ", fehler.Select(s => s.Anzeige + " (" + s.Fehlgrund + ")"))) +
+                    "   " + restwert).Trim();
 
-            string status = "Verlauf über " + jahre + " Jahre, Szenario „" + szenario + "“" +
-                            (jahre != p.Betrachtungszeitraum
-                             ? " (abweichend von T = " + p.Betrachtungszeitraum + " a — nur Anzeige, " +
-                               "gespeicherte Ergebnisse unverändert" +
-                               (jahre > p.Betrachtungszeitraum
-                                ? "; Nulldurchgänge jenseits von T erscheinen nicht in der " +
-                                  "gespeicherten Amortisationskennzahl"
-                                : "") + ")."
-                             : ".");
+            // Die Statuszeile setzt sich aus drei Bausteinen zusammen, damit jeder
+            // Zusatz fuer sich uebersetzbar bleibt: der Kopf, der Hinweis auf einen
+            // vom Betrachtungszeitraum abweichenden Horizont und - nur bei einem
+            // LAENGEREN Horizont - der Satz zur Amortisationskennzahl.
+            string jenseits = jahre > p.Betrachtungszeitraum
+                ? Text_("WVERL_STATUS_JENSEITS",
+                        "; Nulldurchgänge jenseits von T erscheinen nicht in der " +
+                        "gespeicherten Amortisationskennzahl")
+                : "";
+            string status = string.Format(kultur,
+                Text_("WVERL_STATUS_KOPF", "Verlauf über {0} Jahre, Szenario „{1}“"),
+                jahre, szenario) +
+                (jahre != p.Betrachtungszeitraum
+                 ? string.Format(kultur,
+                       Text_("WVERL_STATUS_ABWEICHEND",
+                             " (abweichend von T = {0} a — nur Anzeige, gespeicherte " +
+                             "Ergebnisse unverändert{1})."),
+                       p.Betrachtungszeitraum, jenseits)
+                 : ".");
 
             return new KapitalwertVerlaufBilder(diff, abs, restwert, status);
         }
@@ -229,8 +247,10 @@ namespace WindowsFormsApplication1
         /// <summary>Fenstertitel — wortgleich aus <c>TexteSetzen</c>.</summary>
         private static string Titel(string stammName)
         {
-            return Text_("WVERL_TITEL", "Kapitalwert-Verlauf über den Nutzungszeitraum") +
-                   " — Stamm: " + stammName;
+            return string.Format(
+                Text_("WVERL_TITEL_STAMM", "{0} — Stamm: {1}"),
+                Text_("WVERL_TITEL", "Kapitalwert-Verlauf über den Nutzungszeitraum"),
+                stammName);
         }
 
         private static string Text_(string schluessel, string rueckfall)

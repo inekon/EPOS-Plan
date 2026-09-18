@@ -325,17 +325,18 @@
                 <Schalter Bezeichnung="@_t.SHocheffizienz"
                           Wert="@_vorgaben.HocheffizienzNachweis" WertChanged="HocheffizienzP" />
 
-                @* K3 = a (Anwenderentscheid 03.09.2026): Das Modusfeld des § 9 Abs. 1 Nr. 3
-                   (BW3) wird GEZEIGT, aber deaktiviert - die Persistenzspalte
-                   Stromst_Befreiung_Modus kommt erst mit M-3 (Etappe B6). B5/B5b legt dafuer
-                   ausdruecklich KEINEN Schemaschritt an, und der Wert wird nirgends
-                   gespeichert; die Vorgabe "Ausweis" (BF1) ist der heutige Rechenstand. *@
+                @* Das Modusfeld des § 9 Abs. 1 Nr. 3 (BW3) schreibt seit dem
+                   Schemaschritt 88 nach Tab_ProjektWirtschaftlichkeit.Stromst_Befreiung_Modus.
+                   Vorgabe ist AUSWEIS - NummerZu faellt auf den ersten Eintrag zurueck,
+                   solange nichts gepflegt ist. *@
                 <Auswahlfeld Bezeichnung="@_t.SModus"
-                             Eintraege="@BhkwWahlen.Eintraege(_modus)" Auswahl="0" Aktiv="false" />
+                             Eintraege="@BhkwWahlen.Eintraege(_modus)"
+                             Auswahl="@BhkwWahlen.NummerZu(_modus, _vorgaben.StromsteuerBefreiungModus)"
+                             AuswahlChanged="BefreiungsmodusP" />
                 </KindInhalt>
             </Formularraster>
 
-            <Herleitungszeile Text="@_t.SModusB6" />
+            <Herleitungszeile Text="@_t.SModusHerleitung" />
 
             <button type="button" class="epos-knopf epos-sprung"
                     @onclick="SprungStrombezug">@_t.BtnStrombezug</button>
@@ -737,6 +738,12 @@
     private void RaeumlichP(bool b) => Setze(() => _vorgaben.RaeumlicherZusammenhang = b);
     private void HocheffizienzP(bool b) => Setze(() => _vorgaben.HocheffizienzNachweis = b);
 
+    // ETAPPE B6: Der Modus des § 9 Abs. 1 Nr. 3 StromStG. Die Vorgabe AUSWEIS steht
+    // auch dann, wenn die Liste nichts hergibt - sie ist der Rechenstand, nicht eine
+    // Leerstelle.
+    private void BefreiungsmodusP(int? n) => Setze(() => _vorgaben.StromsteuerBefreiungModus =
+        WertMitVorgabe(_modus, n, DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS));
+
     // 0 % Jahresnutzungsgrad heisst "nicht erfasst": Ein Nutzungsgrad von null ist
     // fachlich kein Wert, und die Begruendung soll "nicht erfasst" von "erfasst und
     // zu niedrig" unterscheiden koennen (E4-Muster).
@@ -996,9 +1003,17 @@
         return l;
     }
 
-    private static WarnStufe Stufe(string schwere) =>
-        string.Equals(schwere, KohaerenzSchwere.WARNUNG, StringComparison.Ordinal)
-            ? WarnStufe.Warnung : WarnStufe.Hinweis;
+    /// <summary>Die Schwere einer Kohaerenzzeile als Farbklang. ETAPPE B6: Die
+    /// positive Nennung (Fall 1) ist gruen mit Haken - dieselbe Stufe, mit der die
+    /// Anwendung sonst einen gelungenen Vorgang meldet.</summary>
+    private static WarnStufe Stufe(string schwere)
+    {
+        if (string.Equals(schwere, KohaerenzSchwere.WARNUNG, StringComparison.Ordinal))
+            return WarnStufe.Warnung;
+        if (string.Equals(schwere, KohaerenzSchwere.BESTAETIGUNG, StringComparison.Ordinal))
+            return WarnStufe.Erfolg;
+        return WarnStufe.Hinweis;
+    }
 
     /// <summary>Die im Lauf ausgewiesene Herkunft der Steuersaetze (Fundstelle, Wert,
     /// Einheit, Jahr, Status) - die Herleitungszeile der Gruppe 3.</summary>

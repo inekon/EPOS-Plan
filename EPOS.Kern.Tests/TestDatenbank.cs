@@ -306,6 +306,13 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt86_Lastspitzenkappung)
                     SpalteSicherstellen(s);
 
+                // Schritt 88 (Etappe B6, Befund B-1): der Modus der
+                // Stromsteuerbefreiung § 9 Abs. 1 Nr. 3 an
+                // Tab_ProjektWirtschaftlichkeit. Wie in der Migration ueber ADD COLUMN,
+                // aus DERSELBEN Quelle; kein DML - NULL heisst AUSWEIS.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt88_StromsteuerModus)
+                    SpalteSicherstellen(s);
+
                 // Schritt 87 (Entscheid US-E-1 (a), 17.09.2026): der entdoppelte
                 // Gesetzeskatalog samt eindeutigem Index, dazu der Beifang aus #321 -
                 // je Projekt genau EINE aktive Speichervariante. Beides in FESTER
