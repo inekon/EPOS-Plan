@@ -236,6 +236,16 @@ namespace WindowsFormsApplication1
                 ["KatalogText"] = T("KDLG_BTN_KATALOG", "Positionskatalog…"),
                 ["EditorKurztext"] = T("KKOMP_TT_EDITOR", "Position bearbeiten"),
                 ["ZeileLoeschenKurztext"] = T("KKOMP_TT_ZEILE_LOESCHEN", "Position löschen"),
+                ["PflichtKurztext"] = T("KDLG_TT_PFLICHT",
+                    "Pflichtposition, kann nicht gelöscht werden"),
+                ["GruppeEndenergieTitel"] = T("KDLG_G_ENDENERGIE", "Endenergie je Komponente"),
+                ["SpalteEndenergieKomponente"] = T("KDLG_SP_ENDENERGIE_KOMP", "Komponente"),
+                ["SpalteEndenergieKwh"] = T("KDLG_SP_ENDENERGIE_KWH", "Endenergiebedarf [kWh/a]"),
+                ["SpalteEndenergieEuro"] = T("KDLG_SP_ENDENERGIE_EUR", "Endenergiekosten [€/a]"),
+                ["SpalteEndenergieBasis"] = T("KDLG_SP_ENDENERGIE_BASIS", "Herkunft"),
+                ["HinweisEndenergie"] = T("KDLG_HINWEIS_ENDENERGIE",
+                    "Diese Mengen sind die Bezugsgrößen der Bemessungen "
+                    + "„% des Endenergiebedarfs\" und „% der Endenergiekosten\"."),
                 ["WorstBestKurztext"] = T("KDLG_TT_WORSTBEST",
                     "Worst/Best wird je Projektposition gepflegt, nicht in der Stammvorlage."),
                 ["KetteKurztext"] = T("KDLG_TT_KETTE",
@@ -435,8 +445,38 @@ namespace WindowsFormsApplication1
 
             stand.Bemessungen = BemessungenBauen();
             stand.Summen = Summen();
+            BetriebsstandSetzen(stand);
             ErtragSetzen(stand);
             return stand;
+        }
+
+        /// <summary>
+        /// U31 — was ÜBER und UNTER dem Raster der BETRIEBSSEITE steht: der
+        /// Laufstand, die Doppelpflege-Warnung und die Gruppe „Endenergie je
+        /// Komponente".
+        ///
+        /// <para>Nur dort: Die Investitionsseite bemisst sich an Baugrößen und an
+        /// der Kaskade, nicht an Mengen eines Laufs; im Stammkontext gibt es kein
+        /// Projekt. Gerechnet und gesetzt wird alles im Kern
+        /// (<see cref="KostenBetriebsstand"/>, <see cref="KohaerenzPruefung"/>) —
+        /// die Hülle reicht durch.</para>
+        /// </summary>
+        private void BetriebsstandSetzen(KostenKomponenteStand stand)
+        {
+            stand.Laufstand = "";
+            stand.DoppelpflegeWarnung = "";
+            stand.Endenergie = Array.Empty<EndenergieZeile>();
+            if (_invest || !ProjektModus) return;
+
+            stand.Laufstand = KostenBetriebsstand.Laufstand(_idProjekt);
+            stand.DoppelpflegeWarnung =
+                KohaerenzPruefung.HilfsenergieDoppelpflege(_idProjekt, AnlagenId);
+
+            var zeilen = new List<EndenergieZeile>();
+            foreach (KostenBetriebsstand.Endenergiezeile e in
+                     KostenBetriebsstand.Endenergie(_idProjekt))
+                zeilen.Add(new EndenergieZeile(e.Komponente, e.BedarfText, e.KostenText, e.Basis));
+            stand.Endenergie = zeilen;
         }
 
         /// <summary>Stammkontext: Varianten laden und das Raster daraus bauen.</summary>
@@ -512,7 +552,6 @@ namespace WindowsFormsApplication1
             z.BemessungId = info != null ? (int?)BemessungIndex(info) : null;
             z.Einheit = EinheitVon(info);
             KopplungAnwenden(z, p, info, pz);
-            z.EmpfehlungKurztext = EmpfehlungText(p, z.Einheit);
             return z;
         }
 
@@ -539,17 +578,17 @@ namespace WindowsFormsApplication1
             z.OhneBasis = a.OhneBasis;
             z.Herleitung = a.Zeile;
 
+            // U31: Der Empfehlungsbereich kommt jetzt AUCH aus dem Kern — der
+            // Werkzeugtipp wortgleich zum Bestand, dazu die sichtbare Zeile unter
+            // dem Satzfeld. Der deutsche Satzbaukasten, der hier stand, ist damit
+            // fort; beide Fassungen können nicht mehr auseinanderlaufen.
+            z.EmpfehlungKurztext = a.EmpfehlungKurztext;
+            z.EmpfehlungZeile = a.EmpfehlungZeile;
+
             // Die Herleitung einer GERECHNETEN Bezugsgröße kommt fertig aus dem Kern
             // (TechnikPlanwertCtrl.BaugroesseHerleitung); die Hülle reicht sie nur
             // durch — die Formel steht an EINER Stelle.
             z.BasisHerleitung = pz != null ? (pz.BasisHerleitung ?? "") : "";
-        }
-
-        private static string EmpfehlungText(KostenVorlagenPosition p, string einheit)
-        {
-            if (p == null || (!p.EmpfehlungVon.HasValue && !p.EmpfehlungBis.HasValue)) return "";
-            return "Empfehlung: " + ZahlText(p.EmpfehlungVon) + " – " +
-                   ZahlText(p.EmpfehlungBis) + " " + einheit;
         }
 
         // =====================================================================
@@ -686,7 +725,6 @@ namespace WindowsFormsApplication1
             else p.BetragNetto = null;
 
             KopplungAnwenden(z, p, info, b.Projektzeile);
-            z.EmpfehlungKurztext = EmpfehlungText(p, z.Einheit);
         }
 
         /// <summary>

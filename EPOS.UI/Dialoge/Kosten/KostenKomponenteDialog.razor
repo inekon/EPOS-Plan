@@ -112,6 +112,24 @@
     <Reiterblatt Schluessel="KOSTEN" Titel="@TitelReiterKosten">
         <KindInhalt>
 
+    @* U31: DIESELBE Doppelpflege-Warnung wie in der Kohärenzgruppe des
+       BHKW-Dialogs — Hilfsenergie ist an der Anlage UND als Kostenposition
+       gepflegt. Der Satz kommt wortgleich aus der Kohärenzprüfung; hier steht
+       er über dem Raster, weil hier die Kostenposition gepflegt wird. *@
+    @if (!string.IsNullOrEmpty(_stand.DoppelpflegeWarnung))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_stand.DoppelpflegeWarnung" />
+    }
+
+    @* U31: WOHER DIE MENGEN KOMMEN. Auf der Betriebsseite bemessen sich Zeilen
+       an Größen des Simulationslaufs; wie alt der ist, stand bis dahin nirgends.
+       Ohne Lauf steht hier der Grund, den auch die Zeilen ohne Bezugsgröße
+       nennen. *@
+    @if (!string.IsNullOrEmpty(_stand.Laufstand))
+    {
+        <p class="epos-herleitung epos-kdlg-laufstand">@_stand.Laufstand</p>
+    }
+
     @* ------------------------------------------------------------- Raster *@
     <Zeilenraster Bezeichnung="@LabelRaster" Spaltenmass="@SPALTENMASS"
                   Spalten="@Spaltenkopf()" Summen="@_stand.Summen">
@@ -135,6 +153,9 @@
                                BasisHerleitung="@zeile.BasisHerleitung"
                                Herleitung="@zeile.Herleitung"
                                EmpfehlungKurztext="@zeile.EmpfehlungKurztext"
+                               EmpfehlungZeile="@zeile.EmpfehlungZeile"
+                               IstPflicht="@(IstPflicht is not null && IstPflicht(zeile))"
+                               PflichtKurztext="@PflichtKurztext"
                                Nutzungsdauer="@zeile.Nutzungsdauer"
                                NutzungsdauerChanged="@(w => Feld(zeile, () => zeile.Nutzungsdauer = w))"
                                MitNutzungsdauer="@_stand.MitNutzungsdauer"
@@ -177,6 +198,41 @@
             <span class="epos-zr-ohnebasis" role="img" aria-hidden="true">⚠</span>
             @OhneBasisText
         </p>
+    }
+
+    @* U31: DIE BEZUGSGRÖSSE DER PROZENTZEILEN, sichtbar. „% der Endenergiekosten"
+       und „% des Endenergiebedarfs" bemessen sich an einer Größe, die nirgends im
+       Dialog stand — der Anwender sah den Prozentsatz und den Betrag, aber nicht,
+       woran der Satz hängt. Die Gruppe nennt sie je Anlage; gerechnet und gesetzt
+       wird im Kern (KostenBetriebsstand). Ohne Endenergie keine Gruppe. *@
+    @if (_stand.Endenergie.Count > 0)
+    {
+        <Gruppenkopf Titel="@GruppeEndenergieTitel">
+            <KindInhalt>
+                <table class="epos-kdlg-endenergie">
+                    <thead>
+                        <tr>
+                            <th scope="col">@SpalteEndenergieKomponente</th>
+                            <th scope="col" class="epos-kdlg-endenergie--zahl">@SpalteEndenergieKwh</th>
+                            <th scope="col" class="epos-kdlg-endenergie--zahl">@SpalteEndenergieEuro</th>
+                            <th scope="col">@SpalteEndenergieBasis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (EndenergieZeile e in _stand.Endenergie)
+                        {
+                            <tr>
+                                <td>@e.Komponente</td>
+                                <td class="epos-kdlg-endenergie--zahl">@e.Bedarf</td>
+                                <td class="epos-kdlg-endenergie--zahl">@e.Kosten</td>
+                                <td>@e.Basis</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <p class="epos-herleitung">@HinweisEndenergie</p>
+            </KindInhalt>
+        </Gruppenkopf>
     }
 
     <div class="epos-leiste">
@@ -423,6 +479,23 @@
     [Parameter] public string KatalogText { get; set; } = "Positionskatalog…";
     [Parameter] public string EditorKurztext { get; set; } = "Position bearbeiten";
     [Parameter] public string ZeileLoeschenKurztext { get; set; } = "Position löschen";
+
+    /// <summary>U31: Kurztext des Schlosses an einer Pflichtzeile.</summary>
+    [Parameter] public string PflichtKurztext { get; set; }
+        = "Pflichtposition, kann nicht gelöscht werden";
+
+    /// <summary>U31: Kopf der Gruppe „Endenergie je Komponente" unter dem Raster.</summary>
+    [Parameter] public string GruppeEndenergieTitel { get; set; } = "Endenergie je Komponente";
+
+    [Parameter] public string SpalteEndenergieKomponente { get; set; } = "Komponente";
+    [Parameter] public string SpalteEndenergieKwh { get; set; } = "Endenergiebedarf [kWh/a]";
+    [Parameter] public string SpalteEndenergieEuro { get; set; } = "Endenergiekosten [€/a]";
+    [Parameter] public string SpalteEndenergieBasis { get; set; } = "Herkunft";
+
+    /// <summary>U31: Wozu die Gruppe da ist — die Bemessungen, die an ihr hängen.</summary>
+    [Parameter] public string HinweisEndenergie { get; set; }
+        = "Diese Mengen sind die Bezugsgrößen der Bemessungen "
+        + "„% des Endenergiebedarfs\" und „% der Endenergiekosten\".";
     [Parameter] public string WorstBestKurztext { get; set; }
         = "Worst/Best wird je Projektposition gepflegt, nicht in der Stammvorlage.";
     [Parameter] public string KetteKurztext { get; set; }

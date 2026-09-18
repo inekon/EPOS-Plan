@@ -277,6 +277,185 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.Equal("× 300,00 kW · P_el der Anlage · Runde 1", herleitungen[0].TextContent);
     }
 
+    // =====================================================================
+    // U31 — Betriebsseite: Schloss, Empfehlungszeile, Laufstand,
+    //       Endenergiegruppe und die Doppelpflege-Warnung
+    // =====================================================================
+
+    /// <summary>
+    /// Eine Pflichtzeile trägt in der Aktionsspalte ein SCHLOSS statt des
+    /// Papierkorbs — der Papierkorb versprach etwas, was die Zeile nie einlöst.
+    /// Gegenprobe in derselben Maske: die freie Zeile behält ihren Papierkorb.
+    /// </summary>
+    [Fact]
+    public void Eine_Pflichtzeile_traegt_ein_Schloss_statt_des_Papierkorbs()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.IstPflicht, (KostenPositionZeile z) => z.Id == 11)
+            .Add(x => x.PflichtKurztext, "Pflichtposition, kann nicht gelöscht werden"));
+
+        var ersteKnoepfe = Datenzeilen(cut)[0].QuerySelectorAll("button");
+        var zweiteKnoepfe = Datenzeilen(cut)[1].QuerySelectorAll("button");
+
+        Assert.Equal("🔒", ersteKnoepfe[1].TextContent);
+        Assert.Contains("epos-zr-schloss", ersteKnoepfe[1].ClassName);
+        Assert.Equal("Pflichtposition, kann nicht gelöscht werden",
+                     ersteKnoepfe[1].GetAttribute("title"));
+
+        Assert.Equal("🗑️", zweiteKnoepfe[1].TextContent);
+        Assert.DoesNotContain("epos-zr-schloss", zweiteKnoepfe[1].ClassName);
+    }
+
+    /// <summary>
+    /// Das Schloss ist kein stummes Zeichen: Der Löschversuch bleibt abgewiesen
+    /// wie bisher — mit derselben Meldung und dem Ausweg, ohne Rückfrage und
+    /// ohne Löschung.
+    /// </summary>
+    [Fact]
+    public void Der_Loeschversuch_an_der_Pflichtzeile_bleibt_abgewiesen()
+    {
+        int geloescht = 0;
+        var cut = Zeige(p => p
+            .Add(x => x.IstPflicht, (KostenPositionZeile z) => true)
+            .Add(x => x.PositionLoeschen, (KostenPositionZeile z) => { geloescht++; return true; })
+            .Add(x => x.VorlagePflichtLoeschen, "„{0}\" ist eine Pflichtposition."));
+
+        Datenzeilen(cut)[0].QuerySelectorAll("button")[1].Click();
+
+        Assert.Equal(0, geloescht);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        Assert.Contains("„Montage\" ist eine Pflichtposition.", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Der Empfehlungsbereich steht SICHTBAR unter dem Satzfeld — bis dahin nur
+    /// im Werkzeugtipp. Der Werkzeugtipp bleibt zusätzlich stehen.
+    /// </summary>
+    [Fact]
+    public void Der_Empfehlungsbereich_steht_als_Zeile_unter_dem_Satzfeld()
+    {
+        KostenKomponenteStand s = Standard();
+        s.Zeilen[0].EmpfehlungKurztext = "Empfehlung: 0,02 – 0,04 €/kWh";
+        s.Zeilen[0].EmpfehlungZeile = "Empfehlung 0,02 bis 0,04 €/kWh";
+
+        var cut = Zeige(stand: s);
+
+        var zeilen = cut.FindAll(".epos-zr-empfehlung");
+        Assert.Single(zeilen);
+        Assert.Equal("Empfehlung 0,02 bis 0,04 €/kWh", zeilen[0].TextContent);
+        Assert.Contains("Empfehlung: 0,02 – 0,04 €/kWh", cut.Markup);
+    }
+
+    /// <summary>Ohne gepflegten Bereich gibt es keine Zeile.</summary>
+    [Fact]
+    public void Ohne_Empfehlungsbereich_bleibt_die_Zeile_weg()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-zr-empfehlung"));
+    }
+
+    /// <summary>
+    /// Der LAUFSTAND steht über dem Raster: aus welchem Simulationslauf die
+    /// Mengen der Betriebsseite stammen. Der Text kommt fertig aus dem Kern.
+    /// </summary>
+    [Fact]
+    public void Der_Laufstand_steht_ueber_dem_Raster()
+    {
+        KostenKomponenteStand s = Standard();
+        s.Laufstand = "Mengen stammen aus dem Simulationslauf vom 18.09.2026 14:05";
+
+        var cut = Zeige(stand: s);
+
+        Assert.Equal("Mengen stammen aus dem Simulationslauf vom 18.09.2026 14:05",
+                     cut.Find(".epos-kdlg-laufstand").TextContent);
+    }
+
+    /// <summary>Auf der Investitionsseite und im Stammkontext gibt der Kern keinen
+    /// Laufstand heraus — dann steht dort auch nichts.</summary>
+    [Fact]
+    public void Ohne_Laufstand_bleibt_die_Zeile_weg()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-kdlg-laufstand"));
+    }
+
+    /// <summary>
+    /// Die Gruppe „Endenergie je Komponente" unter dem Raster nennt je Anlage
+    /// Bedarf, Kosten und Herkunft — die Zahlenprobe des Mockups am 300-kW-
+    /// Blockheizkraftwerk.
+    /// </summary>
+    [Fact]
+    public void Die_Endenergiegruppe_nennt_Bedarf_Kosten_und_Herkunft()
+    {
+        KostenKomponenteStand s = Standard();
+        s.Endenergie = new[]
+        {
+            new EndenergieZeile("BHKW — BHKW 1", "4.342.100 kWh", "312.631,20 €/a",
+                                "BHKW „BHKW 1\""),
+            new EndenergieZeile("Heizkessel — Kessel 1", "2.056.700 kWh", "148.082,40 €/a",
+                                "Heizkessel „Kessel 1\""),
+        };
+
+        var cut = Zeige(p => p
+            .Add(x => x.GruppeEndenergieTitel, "Endenergie je Komponente")
+            .Add(x => x.HinweisEndenergie, "Diese Mengen sind die Bezugsgrößen."),
+            stand: s);
+
+        Assert.Equal("Endenergie je Komponente",
+                     cut.Find(".epos-gruppenkopf-titel").TextContent);
+
+        var zeilen = cut.FindAll(".epos-kdlg-endenergie tbody tr");
+        Assert.Equal(2, zeilen.Count);
+
+        var erste = zeilen[0].QuerySelectorAll("td");
+        Assert.Equal("BHKW — BHKW 1", erste[0].TextContent);
+        Assert.Equal("4.342.100 kWh", erste[1].TextContent);
+        Assert.Equal("312.631,20 €/a", erste[2].TextContent);
+        Assert.Equal("BHKW „BHKW 1\"", erste[3].TextContent);
+
+        Assert.Contains("Diese Mengen sind die Bezugsgrößen.", cut.Markup);
+    }
+
+    /// <summary>Ohne Endenergie keine Gruppe — Photovoltaik, Solarthermie und die
+    /// Speicher führen keine.</summary>
+    [Fact]
+    public void Ohne_Endenergie_bleibt_die_Gruppe_weg()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-kdlg-endenergie"));
+    }
+
+    /// <summary>
+    /// Die Doppelpflege-Warnung der Kohärenzprüfung steht auch hier — wortgleich,
+    /// als Warnbanner über dem Raster.
+    /// </summary>
+    [Fact]
+    public void Die_Doppelpflege_Warnung_steht_ueber_dem_Raster()
+    {
+        KostenKomponenteStand s = Standard();
+        s.DoppelpflegeWarnung =
+            "Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition "
+            + "Hilfsenergiekosten): BHKW 1 führt einen Hilfsenergieanteil von 2,00 %.";
+
+        var cut = Zeige(stand: s);
+
+        var banner = cut.FindAll(".epos-warnbanner-text");
+        Assert.Contains(banner, b => b.TextContent.StartsWith("Hilfsenergie doppelt gepflegt"));
+    }
+
+    /// <summary>Gegenprobe: Ohne Doppelpflege liefert die Kohärenzprüfung keinen
+    /// Text — dann steht kein Banner da.</summary>
+    [Fact]
+    public void Ohne_Doppelpflege_bleibt_das_Warnbanner_weg()
+    {
+        var cut = Zeige();
+
+        Assert.DoesNotContain("Hilfsenergie doppelt gepflegt", cut.Markup);
+    }
+
     [Fact]
     public void Jede_Position_erscheint_als_eigene_Zeile()
     {

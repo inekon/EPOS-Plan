@@ -1994,12 +1994,55 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     font-size: 0.85em;
 }
 
+/* U31: Der Empfehlungsbereich unter dem Satzfeld. Er sieht aus wie die
+   Herleitungszeile unter dem Betrag - dieselbe leise Schrift, dieselbe Groesse -
+   und traegt nur eine eigene Klasse, damit die Pruefstaende beide auseinander
+   halten koennen. */
+.epos-zr-empfehlung {
+    white-space: nowrap;
+}
+
+/* U31: Das Schloss einer Pflichtzeile. Es steht an der Stelle des Papierkorbs
+   und ist ein Knopf wie er - aber leise, weil es keine Handlung anbietet,
+   sondern eine Auskunft gibt. */
+.epos-zr-schloss {
+    color: var(--epos-text-leise);
+}
+
 /* Die LEISE Zeile unter dem Raster (Hausregel: ein dauerhaftes Banner nur fuer
    einen Zustand, den der Anwender sonst nicht sieht - das Zeichen in der Zeile
    sieht er). Sie sammelt die Gruende der Zeilen ohne Bezugsgroesse. */
 .epos-zr-ohnebasis-zeile {
     margin: 0 0 var(--epos-rand) 0;
     color: var(--epos-text-leise);
+}
+
+/* U31: Der Laufstand UEBER dem Raster der Betriebsseite - woher die Mengen
+   kommen. Leise wie jede Herkunftsangabe des Hauses; der Abstand trennt ihn vom
+   Spaltenkopf, damit er nicht wie eine erste Zeile des Rasters wirkt. */
+.epos-kdlg-laufstand {
+    margin: 0 0 var(--epos-rand) 0;
+}
+
+/* U31: Die Tafel „Endenergie je Komponente" unter dem Raster. Kein QuickGrid:
+   Sie hat vier Spalten, hoechstens eine Handvoll Zeilen und wird als GANZES
+   gelesen - eine schlichte Tabelle traegt das, ohne Rollbehaelter und ohne
+   Virtualisierung. */
+.epos-kdlg-endenergie {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.epos-kdlg-endenergie th,
+.epos-kdlg-endenergie td {
+    padding: 4px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+
+.epos-kdlg-endenergie--zahl {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
 }
 
 .epos-ertragbonus {
