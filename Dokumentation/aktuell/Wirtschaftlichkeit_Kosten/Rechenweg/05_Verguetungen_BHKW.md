@@ -29,8 +29,8 @@ editierbar sind Zahlen- und Datumsfelder, die vier Wahlfelder stehen als Anzeige
 | Inbetriebnahme: | Datumsfeld | 01.10.2026 | — |
 | Anlagenart: | Anzeige (Klappliste im Dialog) | neue Anlage (§ 8 Abs. 1) | — |
 | Eigenstrom nach § 6 Abs. 3: | Anzeige (Klappliste im Dialog) | Nr. 2 — Kundenanlage / geschl. Netz | — |
-| **Satz Einspeisung [ct/kWh] (0 = kein Zuschlag):** | Zahlenfeld, ct/kWh | **5,5667** | Einspeisung 5,5667 ct/kWh — § 7 Abs. 1 KWKG 2025, Stichtagsjahr 2026: 50 × 8,00 + 50 × 6,00 + 150 × 5,00 + 50 × 4,40 = 1.670 ÷ 300 · Vorschlag gilt |
-| **Satz Eigenstrom [ct/kWh] (0 = kein Zuschlag):** | Zahlenfeld, ct/kWh | **2,4167** | Eigenstrom 2,4167 ct/kWh — § 7 Abs. 2 mit § 6 Abs. 3 Nr. 2: 50 × 4,00 + 50 × 3,00 + 150 × 2,00 + 50 × 1,50 = 725 ÷ 300 · Vorschlag gilt |
+| **Satz Einspeisung [ct/kWh] (0 = kein Zuschlag):** | Zahlenfeld, ct/kWh | **5,5667** | Einspeisung 5,5667 ct/kWh — § 7 Abs. 1 KWKG 2025, Stichtagsjahr 2026: 50 × 8,00 + 50 × 6,00 + 150 × 5,00 + 50 × 4,40 = 1.670 ÷ 300 · Vorschlag |
+| **Satz Eigenstrom [ct/kWh] (0 = kein Zuschlag):** | Zahlenfeld, ct/kWh | **2,4167** | Eigenstrom 2,4167 ct/kWh — § 7 Abs. 2 mit § 6 Abs. 3 Nr. 2: 50 × 4,00 + 50 × 3,00 + 150 × 2,00 + 50 × 1,50 = 725 ÷ 300 · Vorschlag |
 | Vbh-Kontingent [h] (0 = nach § 8 abgeleitet): | Zahlenfeld, h | 30.000 | Kontingent 30.000 Vbh — § 8 Abs. 1, neue Anlage · Vorschlag gilt |
 | Vbh-Jahresdeckel [h/a] (0 = Staffel): | Zahlenfeld, h/a | 0 | Staffel § 8 Abs. 4 · 3.300 (2026) · 3.100 · 2.900 · 2.700 · ab 2030 2.500 (U25) |
 | Anteil Neuherstellungskosten [%] (§ 8 Abs. 2/3): | Zahlenfeld, % | 0,0 | nur modernisiert oder nachgerüstet; 0 = nicht gepflegt |
@@ -40,12 +40,14 @@ editierbar sind Zahlen- und Datumsfelder, die vier Wahlfelder stehen als Anzeige
 
 **Das Feld ist der Satz.** Der Rechenkern liest `SatzEinspCt` und `SatzEigenCt` der Anlage ohne Rückfall
 (`a.SatzEinspCt ?? 0`); leer oder 0 heißt „kein Zuschlag", die Vorschau zeigt dann 0 €. Wer den Satz ändert, tippt
-ihn ins Feld oder wählt ihn in der Überlagerung; weicht das Feld vom Katalog ab, heißt die Zeile darunter
-„eigener Wert 6,00 — Vorschlag 5,5667 ct/kWh — § 7 Abs. 1 …" (U23), der Weg zurück ist der Knopf „Vorschlag
-übernehmen" in der Überlagerung. Der Knopf „Sätze und Herkunft…" steht am Kopf der Gruppe. Das Warnband zum
-Deckelanteil („Die Anlage läuft 5.500 h/a, vergütet werden im ersten Jahr aber nur 3.300 h — 60 % der
-Erzeugung; weil der Deckel jährlich fällt, reicht das Kontingent über 12 Kalenderjahre") ist ein Vorschlag (U25),
-ebenso die vierstellige Anzeige der Sätze — der Dialog zeigt zwei Nachkommastellen, 5,5667 erscheint als 5,57 (U26).
+ihn ins Feld oder wählt ihn in der Überlagerung. Die Zeile unter dem Feld nennt die Herkunft des angesetzten
+Satzes: „… · Vorschlag", solange Feld und Katalogvorschlag übereinstimmen, sonst „… · eigener Wert 6,0000 ct/kWh
+— Vorschlag 5,5667 ct/kWh"; verglichen wird auf den vier Stellen des Feldes, nicht auf der Anzeige. Der Weg
+zurück ist der Knopf „Vorschlag übernehmen". Der Knopf „Sätze und Herkunft…" steht am Kopf der Gruppe. Das
+Warnband zum Deckelanteil („Die Anlage läuft 5.500 h/a, vergütet werden im ersten Jahr aber nur 3.300 h — 60 %
+der Erzeugung; weil der Deckel jährlich fällt, reicht das Kontingent über 12 Kalenderjahre") ist ein Vorschlag
+(U25). Die Sätze tragen vier Nachkommastellen — im Feld, in der Grundlagenzeile, in der Erlösrubrik und in der
+Modultafel des Berichts; das Format steht einmal im Kern (`KwkgSatzHerkunft`).
 
 **Gruppe Projektweite KWK-Angaben** (`BHW_G2`) — Einspeisevergütung KWK-Strom [€/kWh] 0,0500 · Abschlag
 Negativstunden [%] 0,0 · Schalter Pauschale § 9 KWKG (nur bis 2 kWel, einmalig) · Stichtag (Bestellung/Genehmigung,
@@ -122,7 +124,8 @@ Formulars schreibt — gespeichert wird erst mit „Speichern":
    Wirkung Jahr 1 (2026): 495,0 MWh × 5,5667 ct × 0,600 + 1.068,2 MWh × 2,4167 ct × 0,600 =
    **32.022,2 €**. Leer heißt: Der Vorschlag gilt und wird beim Übernehmen in das Feld des Formulars
    geschrieben; ein eigener Wert gilt dauerhaft — auch wenn der Katalog später einen anderen Vorschlag liefert —,
-   das Feld trägt ihn, und die Herkunftszeile darunter nennt beide Werte („eigener Wert 6,00 — Vorschlag 5,5667").
+   das Feld trägt ihn, und die Herkunftszeile darunter nennt beide Werte
+   („eigener Wert 6,0000 ct/kWh — Vorschlag 5,5667 ct/kWh").
 2. **Energiesteuer.** Projektvorgabe für alle Anlagen oder nur diese Anlage; Entlastung keine → 0 ·
    § 53 (Formular 1131) → 5,50 €/MWh, 26.384,3 €/a · § 53a Abs. 5 (Formular 1135) → 4,42 €/MWh,
    21.203,4 €/a · § 54 (Formular 1450) → 1,38 €/MWh − 250 €, 6.370,1 €/a, nur produzierendes Gewerbe;

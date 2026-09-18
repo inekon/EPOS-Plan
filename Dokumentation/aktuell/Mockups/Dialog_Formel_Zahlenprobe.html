@@ -2048,10 +2048,11 @@ Keine stillen Teilsummen
         <div class="f-info"><b>Das Feld ist der Satz.</b> Gerechnet wird mit dem, was im Feld steht — ohne Rückfall
         auf einen Projektwert; leer oder 0 heißt „kein Zuschlag", und die Vorschau zeigt dann 0 €. Wer den Satz
         ändert, tippt ihn hier oder wählt ihn in der Überlagerung. Weicht das Feld vom Katalog ab, heißt die Zeile
-        darunter „<b>eigener Wert</b> 6,00 — Vorschlag 5,5667 ct/kWh — § 7 Abs. 1 …"; der Weg zurück ist der Knopf
+        darunter „… · <b>eigener Wert</b> 6,0000 ct/kWh — Vorschlag 5,5667 ct/kWh"
+        <span class="zk umg">umgesetzt U23</span>; der Weg zurück ist der Knopf
         „Vorschlag übernehmen" in der Überlagerung. Graue Zeilen sind in der Anwendung Klapplisten
         <span class="zk vor">Vorschlag U22</span>; Staffelzeile und Warnband <span class="zk vor">Vorschlag U25</span>;
-        Herleitungszeile und Bericht mit vier Nachkommastellen <span class="zk vor">Vorschlag U26</span>.</div>
+        Herleitungszeile und Bericht mit vier Nachkommastellen <span class="zk umg">umgesetzt U26</span>.</div>
       </div>
 
       <!-- Gruppe 2: Projektweite KWK-Angaben (BHW_G2) -->
@@ -4355,11 +4356,18 @@ Einstufung
               schreibt die KWKG-Spalten der Anlage, Tatbestand, Anlagenart, Energiesteuerwahl, Aufteilung, Unternehmensart
               und Modus in den Arbeitsstand; leeres Feld „eigener Wert" schreibt den Vorschlag; „Abbrechen" schreibt
               nichts</td></tr>
-        <tr><td class="mono">U23</td><td>5 · 7</td>
+        <tr class="gestrichen"><td class="mono">U23</td><td>5 · 7</td>
             <td>Vermerk „eigener Wert {0} — Vorschlag {1}" an Satzzeile und Erlösrubrik: Der Nachweis je Modul
               trägt den angesetzten Satz und die Herleitung des Vorschlags, vergleicht beide aber nicht</td>
             <td><span class="mono">KwkgModulNachweis</span> · <span class="mono">WirtschaftlichkeitZeilen</span></td>
-            <td>Prüffall: Anlage mit Satz ≠ Vorschlag zeigt beide Werte; gleich ⇒ „Vorschlag"</td></tr>
+            <td class="grund"><b>erledigt:</b> Der Nachweis führt den Vorschlag nun auch als ZAHL (nullbar — ein
+              gebuchter Stand ohne Vorschlag bekommt keinen Vermerk statt eines Vorschlags von 0,0000). Vergleich
+              und Text stehen einmal im Kern (<span class="mono">KwkgSatzHerkunft</span>), gemessen auf den vier
+              Stellen des Feldes und nicht auf der Anzeige. Die Grundlagenzeile des Dialogs endet auf
+              „· Vorschlag" bzw. „· eigener Wert 6,0000 ct/kWh — Vorschlag 5,5667 ct/kWh"; die Erlösrubrik trägt
+              unter jeder der beiden Geldzeilen eine Textzeile „Satz · Herkunft", die nie in die Summe geht und
+              die Wertspalten von Excel numerisch lässt. Ein leeres Feld ist nach BK1 ein eigener Wert von
+              0,0000 ct/kWh und wird auch so benannt</td></tr>
         <tr class="gestrichen"><td class="mono">U24</td><td>5 · 7 · 8</td>
             <td>Hilfsstrom-Netting des Beispiels: Mengentafel und Rechenkern nach einer Regel</td>
             <td><span class="mono">HilfsstromRechner.NettoSplit</span> ·
@@ -4375,14 +4383,19 @@ Einstufung
             <td><span class="mono">BhkwWirtschaftlichkeitDialog</span> · <span class="mono">KwkgKontingentRechner</span></td>
             <td>bunit: Staffelzeile nennt fünf Stufen aus dem Katalog; Warnband nur, wenn Vbh der Anlage über dem
               Deckel des ersten Jahres liegt</td></tr>
-        <tr><td class="mono">U26</td><td class="num">5</td>
+        <tr class="gestrichen"><td class="mono">U26</td><td class="num">5</td>
             <td>Die Zahlenfelder Satz Einspeisung und Satz Eigenstrom tragen vier Nachkommastellen, wie sie die
               Staffel des § 7 erzeugt; der übernommene Vorschlag steht als „5,5667" im Feld und bleibt beim Anfassen
               wertgleich. Offen ist allein die Anzeige daneben: Bericht und Herleitungszeile runden den Satz auf zwei
               Stellen, so dass dieselbe Größe an zwei Orten verschieden aussieht</td>
             <td><span class="mono">BhkwWirtschaftlichkeitDialog</span>, Gruppe 1b ·
               <span class="mono">WirtschaftlichkeitZeilen</span></td>
-            <td>Berichtsprobe: Bericht und Herleitungszeile nennen den Satz mit denselben vier Stellen wie das Feld</td></tr>
+            <td class="grund"><b>erledigt:</b> Stellenzahl, Zahl- und Excel-Zellformat stehen einmal im Kern
+              (<span class="mono">KwkgSatzHerkunft</span>); Grundlagenzeile, Erlösrubrik, BHKW-Vorschau sowie die
+              Modultafeln von Word und Excel lesen sie von dort. Die Tranchensätze der Herleitung bleiben
+              zweistellig — sie sind Katalogwerte (8,00 · 6,00 · 5,00 · 4,40), keine gerechneten Mischwerte. Eine
+              Wache hält beide Berichtswege davon ab, die Stellenzahl wieder selbst zu schreiben; der
+              Referenzexport führt keinen Herleitungstext und bleibt byte-gleich</td></tr>
         <tr><td class="mono">U27</td><td class="num">6</td>
             <td>Aufgeschlüsselte Vorschau des PV-Dialogs (Spoterlös, Marktprämie, § 51-Ausfall, DV-Entgelt, Kappung,
               Summe, vermiedener Netzbezug) statt der einen Zeile; dazu eine Herleitungszeile mit dem Jahresmarktwert
