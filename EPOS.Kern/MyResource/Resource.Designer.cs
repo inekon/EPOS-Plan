@@ -20325,6 +20325,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung {0} bis {1} {2} ähnelt.
+        /// </summary>
+        public static string KDLG_EMPF_ZEILE {
+            get {
+                return ResourceManager.GetString("KDLG_EMPF_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Angezeigt wird nur die im Projekt gewählte Größe — CO₂ oder CO₂-Äquivalent. SO₂ und NOx werden weiterhin geführt, aber nicht in dieser Tabelle gezeigt. ähnelt.
         /// </summary>
         public static string KDLG_EM_FUSSNOTE {
@@ -21126,6 +21135,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergie je Komponente ähnelt.
+        /// </summary>
+        public static string KDLG_G_ENDENERGIE {
+            get {
+                return ResourceManager.GetString("KDLG_G_ENDENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} der Anlage ähnelt.
         /// </summary>
         public static string KDLG_HERK_ANLAGE {
@@ -21234,6 +21252,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Mengen sind die Bezugsgrößen der Bemessungen „% des Endenergiebedarfs&quot; und „% der Endenergiekosten&quot;. ähnelt.
+        /// </summary>
+        public static string KDLG_HINWEIS_ENDENERGIE {
+            get {
+                return ResourceManager.GetString("KDLG_HINWEIS_ENDENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
         /// </summary>
         public static string KDLG_KAT_BETRIEB {
@@ -21284,6 +21311,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_KOSTEN_ET_KNOPF {
             get {
                 return ResourceManager.GetString("KDLG_KOSTEN_ET_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mengen stammen aus dem Simulationslauf vom {0} ähnelt.
+        /// </summary>
+        public static string KDLG_LAUFSTAND {
+            get {
+                return ResourceManager.GetString("KDLG_LAUFSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mengen stammen aus dem gespeicherten Simulationsergebnis ähnelt.
+        /// </summary>
+        public static string KDLG_LAUFSTAND_OHNE_DATUM {
+            get {
+                return ResourceManager.GetString("KDLG_LAUFSTAND_OHNE_DATUM", resourceCulture);
             }
         }
         
@@ -21613,6 +21658,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string KDLG_SP_ENDENERGIE_BASIS {
+            get {
+                return ResourceManager.GetString("KDLG_SP_ENDENERGIE_BASIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergiekosten [€/a] ähnelt.
+        /// </summary>
+        public static string KDLG_SP_ENDENERGIE_EUR {
+            get {
+                return ResourceManager.GetString("KDLG_SP_ENDENERGIE_EUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponente ähnelt.
+        /// </summary>
+        public static string KDLG_SP_ENDENERGIE_KOMP {
+            get {
+                return ResourceManager.GetString("KDLG_SP_ENDENERGIE_KOMP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Endenergiebedarf [kWh/a] ähnelt.
+        /// </summary>
+        public static string KDLG_SP_ENDENERGIE_KWH {
+            get {
+                return ResourceManager.GetString("KDLG_SP_ENDENERGIE_KWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer [a] ähnelt.
         /// </summary>
         public static string KDLG_SP_NUTZUNG {
@@ -21766,6 +21847,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung: {0} – {1} {2} ähnelt.
+        /// </summary>
+        public static string KDLG_TT_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("KDLG_TT_EMPFEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet. ähnelt.
         /// </summary>
         public static string KDLG_TT_KETTE {
@@ -21780,6 +21870,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_TT_OHNE_BASIS {
             get {
                 return ResourceManager.GetString("KDLG_TT_OHNE_BASIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pflichtposition, kann nicht gelöscht werden ähnelt.
+        /// </summary>
+        public static string KDLG_TT_PFLICHT {
+            get {
+                return ResourceManager.GetString("KDLG_TT_PFLICHT", resourceCulture);
             }
         }
         

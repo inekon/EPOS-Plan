@@ -19592,4 +19592,37 @@ Do you want to allow this?</value>
   <data name="KDLG_SUMME_DREITEILIG" xml:space="preserve">
     <value>gross investment {0} · grant {1} · I₀ {2}</value>
   </data>
+  <data name="KDLG_TT_PFLICHT" xml:space="preserve">
+    <value>Mandatory item, cannot be deleted</value>
+  </data>
+  <data name="KDLG_TT_EMPFEHLUNG" xml:space="preserve">
+    <value>Recommendation: {0} – {1} {2}</value>
+  </data>
+  <data name="KDLG_EMPF_ZEILE" xml:space="preserve">
+    <value>Recommended {0} to {1} {2}</value>
+  </data>
+  <data name="KDLG_LAUFSTAND" xml:space="preserve">
+    <value>Quantities come from the simulation run of {0}</value>
+  </data>
+  <data name="KDLG_LAUFSTAND_OHNE_DATUM" xml:space="preserve">
+    <value>Quantities come from the stored simulation result</value>
+  </data>
+  <data name="KDLG_G_ENDENERGIE" xml:space="preserve">
+    <value>Final energy by component</value>
+  </data>
+  <data name="KDLG_SP_ENDENERGIE_KOMP" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="KDLG_SP_ENDENERGIE_KWH" xml:space="preserve">
+    <value>Final energy demand [kWh/a]</value>
+  </data>
+  <data name="KDLG_SP_ENDENERGIE_EUR" xml:space="preserve">
+    <value>Final energy cost [€/a]</value>
+  </data>
+  <data name="KDLG_SP_ENDENERGIE_BASIS" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KDLG_HINWEIS_ENDENERGIE" xml:space="preserve">
+    <value>These quantities are the reference values of the measures "% of final energy demand" and "% of final energy cost".</value>
+  </data>
 </root>

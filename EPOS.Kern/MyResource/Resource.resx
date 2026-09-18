@@ -19599,4 +19599,37 @@ Möchten Sie das zulassen?</value>
   <data name="KDLG_SUMME_DREITEILIG" xml:space="preserve">
     <value>Investition brutto {0} · Zuschuss {1} · I₀ {2}</value>
   </data>
+  <data name="KDLG_TT_PFLICHT" xml:space="preserve">
+    <value>Pflichtposition, kann nicht gelöscht werden</value>
+  </data>
+  <data name="KDLG_TT_EMPFEHLUNG" xml:space="preserve">
+    <value>Empfehlung: {0} – {1} {2}</value>
+  </data>
+  <data name="KDLG_EMPF_ZEILE" xml:space="preserve">
+    <value>Empfehlung {0} bis {1} {2}</value>
+  </data>
+  <data name="KDLG_LAUFSTAND" xml:space="preserve">
+    <value>Mengen stammen aus dem Simulationslauf vom {0}</value>
+  </data>
+  <data name="KDLG_LAUFSTAND_OHNE_DATUM" xml:space="preserve">
+    <value>Mengen stammen aus dem gespeicherten Simulationsergebnis</value>
+  </data>
+  <data name="KDLG_G_ENDENERGIE" xml:space="preserve">
+    <value>Endenergie je Komponente</value>
+  </data>
+  <data name="KDLG_SP_ENDENERGIE_KOMP" xml:space="preserve">
+    <value>Komponente</value>
+  </data>
+  <data name="KDLG_SP_ENDENERGIE_KWH" xml:space="preserve">
+    <value>Endenergiebedarf [kWh/a]</value>
+  </data>
+  <data name="KDLG_SP_ENDENERGIE_EUR" xml:space="preserve">
+    <value>Endenergiekosten [€/a]</value>
+  </data>
+  <data name="KDLG_SP_ENDENERGIE_BASIS" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="KDLG_HINWEIS_ENDENERGIE" xml:space="preserve">
+    <value>Diese Mengen sind die Bezugsgrößen der Bemessungen „% des Endenergiebedarfs" und „% der Endenergiekosten".</value>
+  </data>
 </root>

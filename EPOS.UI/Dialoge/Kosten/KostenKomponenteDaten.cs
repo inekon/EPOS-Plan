@@ -90,9 +90,31 @@ public sealed class KostenPositionZeile
     /// <summary>Empfehlungsbereich als Kurztext des Satzfeldes; leer = keiner.</summary>
     public string EmpfehlungKurztext { get; set; } = "";
 
+    /// <summary>
+    /// U31: Derselbe Bereich als SICHTBARE Zeile unter dem Satzfeld
+    /// („Empfehlung 0,02 bis 0,04 €/kWh"). Er kommt fertig aus dem Kern
+    /// (<c>KostenHerleitung</c>); leer heißt keine Zeile.
+    /// </summary>
+    public string EmpfehlungZeile { get; set; } = "";
+
     /// <summary>Darf die Zeile bearbeitet werden? (Auslieferungsvorlagen nicht.)</summary>
     public bool Schreibbar { get; set; } = true;
 }
+
+/// <summary>
+/// U31 — EINE Zeile der Gruppe „Endenergie je Komponente" unter dem Raster der
+/// Betriebsseite.
+///
+/// <para>Alles fertig gesetzt: Die Mengen kommen aus dem jüngsten Simulationslauf
+/// (<c>EndenergieAufloeser</c>), gerechnet und formatiert wird im Kern
+/// (<c>KostenBetriebsstand.Endenergie</c>). Die Oberfläche zeigt nur an — auch den
+/// Gedankenstrich, der dort steht, wo ein Arbeitspreis fehlt.</para>
+/// </summary>
+/// <param name="Komponente">Komponente und Anlagenbezeichner („BHKW — Modul 1").</param>
+/// <param name="Bedarf">Jahresbedarf, gesetzt („4.342.100 kWh").</param>
+/// <param name="Kosten">Arbeitskosten („312.631,20 €/a") oder Gedankenstrich.</param>
+/// <param name="Basis">Woher die Menge stammt.</param>
+public sealed record EndenergieZeile(string Komponente, string Bedarf, string Kosten, string Basis);
 
 /// <summary>
 /// Was die Hülle zu einem <see cref="KostenKomponenteKontext"/> antwortet
@@ -151,6 +173,29 @@ public sealed class KostenKomponenteStand
 
     /// <summary>Löschen der Variante möglich? (<c>btnVarianteLoeschen.Enabled</c>)</summary>
     public bool VarianteLoeschbar { get; set; }
+
+    /// <summary>
+    /// U31: Die Zeile ÜBER dem Raster der Betriebsseite — aus welchem Lauf die
+    /// Mengen stammen („Mengen stammen aus dem Simulationslauf vom …") bzw. der
+    /// Grund „kein Simulationslauf". Leer = keine Zeile (Stammkontext und
+    /// Investitionsseite, wo keine Menge aus dem Lauf kommt).
+    /// </summary>
+    public string Laufstand { get; set; } = "";
+
+    /// <summary>
+    /// U31: Die Doppelpflege-Warnung der Kohärenzprüfung, wortgleich
+    /// (<c>KOH_HILFSENERGIE_DOPPELT</c>) — Hilfsenergie ist an der Anlage UND als
+    /// Kostenposition gepflegt. Leer = keine Doppelpflege, dann kein Banner.
+    /// </summary>
+    public string DoppelpflegeWarnung { get; set; } = "";
+
+    /// <summary>
+    /// U31: Die Gruppe „Endenergie je Komponente" unter dem Raster der
+    /// Betriebsseite — je Anlage mit Endenergie eine Zeile. Leere Liste = keine
+    /// Gruppe.
+    /// </summary>
+    public IReadOnlyList<EndenergieZeile> Endenergie { get; set; }
+        = Array.Empty<EndenergieZeile>();
 
     /// <summary>Zeigt den Abschnitt „Ertrag/Bonus" (FK5: nur BHKW und Photovoltaik).</summary>
     public bool ErtragSichtbar { get; set; }

@@ -39,9 +39,28 @@
             <button type="button" class="epos-knopf epos-zr-knopf" title="@EditorKurztext"
                     disabled="@(!Schreibbar)"
                     @onclick="() => EditorAngefordert.InvokeAsync()">✏️</button>
-            <button type="button" class="epos-knopf epos-zr-knopf" title="@LoeschenKurztext"
-                    disabled="@(!Schreibbar)"
-                    @onclick="() => LoeschenAngefordert.InvokeAsync()">🗑️</button>
+            @* U31: EIN SCHLOSS STATT DES PAPIERKORBS an einer Pflichtzeile
+               (Schritt 59). Der Papierkorb versprach etwas, was die Zeile nie
+               einloest - der Anwender klickte und bekam eine Absage. Das Schloss
+               sagt es vorher; der Werkzeugtipp nennt den Grund.
+
+               WARUM ES TROTZDEM EIN KNOPF IST. Der Loeschweg bleibt genau wie
+               heute abgewiesen: Wer es dennoch versucht - mit der Maus, mit der
+               Tastatur oder ueber den Zeileneditor -, bekommt vom Wirt die
+               Meldung mit dem Ausweg („Satz bzw. Betrag auf 0 setzen"). Ein
+               stummes Zeichen haette diese Antwort verschluckt. *@
+            @if (IstPflicht)
+            {
+                <button type="button" class="epos-knopf epos-zr-knopf epos-zr-schloss"
+                        title="@PflichtKurztext" disabled="@(!Schreibbar)"
+                        @onclick="() => LoeschenAngefordert.InvokeAsync()">🔒</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-zr-knopf" title="@LoeschenKurztext"
+                        disabled="@(!Schreibbar)"
+                        @onclick="() => LoeschenAngefordert.InvokeAsync()">🗑️</button>
+            }
         }
     </div>
 
@@ -58,6 +77,15 @@
     <div class="epos-zr-zelle" title="@EmpfehlungKurztext">
         <Zahlenfeld Wert="@Satz" WertChanged="@SatzChanged" Einheit="@Einheit"
                     Aktiv="@(Schreibbar && !Neuzeile)" />
+        @* U31: Der EMPFEHLUNGSBEREICH steht sichtbar unter dem Satzfeld - bis
+           dahin nur im Werkzeugtipp, den niemand sieht, der nicht mit der Maus
+           stehen bleibt. Dieselbe leise Zeile wie die Herleitung unter dem
+           Betrag; der Werkzeugtipp bleibt zusaetzlich. Der Text kommt fertig
+           aus dem Kern (KostenHerleitung), leer heisst keine Zeile. *@
+        @if (!string.IsNullOrEmpty(EmpfehlungZeile))
+        {
+            <span class="epos-herleitung epos-zr-herleitung epos-zr-empfehlung">@EmpfehlungZeile</span>
+        }
     </div>
 
     <div class="epos-zr-zelle epos-zr-text" title="@BetragTitel">
@@ -163,6 +191,14 @@
     /// <summary>Zeigt den ±-Knopf (<c>btnWorstBest</c>, nur im Projektmodus).</summary>
     [Parameter] public bool MitWorstBest { get; set; }
 
+    /// <summary>
+    /// U31: Eine PFLICHTZEILE (Schritt 59, <c>KostenProjektPositionenCtrl.IstPflicht</c>)
+    /// — sie trägt in der Aktionsspalte ein Schloss statt des Papierkorbs. Der
+    /// Wirt weist den Löschversuch weiterhin ab; die Zeile entscheidet nichts,
+    /// sie zeigt nur an, dass hier nichts zu löschen ist.
+    /// </summary>
+    [Parameter] public bool IstPflicht { get; set; }
+
     // ---- Meldungen ------------------------------------------------------
 
     /// <summary>Der Stift (<c>btnEditor</c>) — der Wirt oeffnet den Zeileneditor.</summary>
@@ -185,6 +221,10 @@
     [Parameter] public string EditorKurztext { get; set; } = "Position bearbeiten";
     [Parameter] public string LoeschenKurztext { get; set; } = "Position löschen";
     [Parameter] public string AnlegenKurztext { get; set; } = "Position anlegen";
+
+    /// <summary>U31: Kurztext des Schlosses an einer Pflichtzeile.</summary>
+    [Parameter] public string PflichtKurztext { get; set; }
+        = "Pflichtposition, kann nicht gelöscht werden";
 
     /// <summary>Kurztext des ±-Knopfes (im Bestand ein Tooltip).</summary>
     [Parameter] public string WorstBestKurztext { get; set; }
@@ -231,4 +271,11 @@
 
     /// <summary>Kurztext des Satzfeldes: der Empfehlungsbereich, wenn es einen gibt.</summary>
     [Parameter] public string EmpfehlungKurztext { get; set; } = "";
+
+    /// <summary>
+    /// U31: Derselbe Empfehlungsbereich als SICHTBARE Zeile unter dem Satzfeld
+    /// („Empfehlung 0,02 bis 0,04 €/kWh"). Sie kommt fertig aus dem Kern
+    /// (<c>KostenHerleitung</c>); leer heißt keine Zeile.
+    /// </summary>
+    [Parameter] public string EmpfehlungZeile { get; set; } = "";
 }

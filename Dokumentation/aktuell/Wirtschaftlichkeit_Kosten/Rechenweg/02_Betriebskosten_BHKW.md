@@ -12,15 +12,23 @@ Dasselbe Fenster wie bei den Investitionskosten (`01`), die Optionsgruppe steht 
 Betragsspalte „Betrag netto [€/a]", Spalte Nutzungsdauer leer, Bemessungen des Betriebsrasters (fester
 Jahresbetrag · % der Investition · % der Endenergiekosten · % des Endenergiebedarfs · je kWh thermisch · je kWh
 elektrisch; „je kWh" und „je Stunde" nur, wo eine Bestandszeile sie trägt). Die drei Pflichtzeilen nach VDI 2067
-(Wartung BHKW, Instandhaltung BHKW, Hilfsenergiekosten — Schemaschritt 59) tragen denselben Papierkorb wie jede
-Zeile; der Löschversuch antwortet „… ist eine Pflichtposition dieser Komponente und kann nicht gelöscht werden.
-Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen." Der Empfehlungsbereich ist der Werkzeugtipp des Satzfeldes
-(„Empfehlung: 1,00 – 2,00 %"), die Bezugsgröße der des Betragsfeldes („1,50 % von 240.772,40 €"). Unter dem
+(Wartung BHKW, Instandhaltung BHKW, Hilfsenergiekosten — Schemaschritt 59) tragen an Stelle des Papierkorbs ein
+Schloss mit dem Werkzeugtipp „Pflichtposition, kann nicht gelöscht werden"; jeder Löschversuch — über das
+Schloss, die Tastatur oder den Zeileneditor — antwortet „… ist eine Pflichtposition dieser Komponente und kann
+nicht gelöscht werden. Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen." Der Empfehlungsbereich steht als
+leise Zeile unter dem Satzfeld („Empfehlung 1 bis 2 %") und zusätzlich in dessen Werkzeugtipp
+(„Empfehlung: 1 – 2 %"), die Bezugsgröße im Werkzeugtipp des Betragsfeldes („1,50 % von 240.772,40 €"). Unter dem
 Betrag jeder gerechneten Zeile steht Bezugsgröße und Herkunft als leise Zeile („× 1.650.000,00 kWh · Lauf");
 eine Runde nennt sie hier nicht, weil die Betriebsseite keine Kaskade kennt. Absolute
-Positionen spiegeln den Satz im Betrag (🔗). Was das Mockup darüber hinaus zeigt, steht im Anhang
-Umsetzungsstand: Schloss statt Papierkorb, Empfehlungszeile, Laufstand über dem Raster,
-Gruppe „Endenergie je Komponente" und die Doppelpflege-Warnung im Kostendialog (U31).
+Positionen spiegeln den Satz im Betrag (🔗).
+
+Über dem Raster steht, aus welchem Simulationslauf die Mengen stammen („Mengen stammen aus dem Simulationslauf
+vom 30.08.2026 06:11") — ohne gespeichertes Ergebnis der Grund „kein Simulationslauf". Unter dem Raster nennt
+die Gruppe **Endenergie je Komponente** je Anlage mit Endenergie den Jahresbedarf [kWh/a], die Arbeitskosten
+[€/a] und die Herkunft der Menge; sie ist die Bezugsgröße der Bemessungen „% des Endenergiebedarfs" und „% der
+Endenergiekosten". Fehlt der Arbeitspreis eines beteiligten Trägers, steht in der Kostenspalte ein
+Gedankenstrich, nie eine 0. Anlagen ohne Endenergie (Photovoltaik, Solarthermie, Speicher) bekommen keine Zeile
+— dort ist nur der feste Jahresbetrag zulässig.
 
 | Position | Bemessung | Satz | Bezugsgröße (Werkzeugtipp) | Betrag |
 |---|---|---|---|---|
@@ -30,7 +38,8 @@ Gruppe „Endenergie je Komponente" und die Doppelpflege-Warnung im Kostendialog
 | Versicherung | fester Jahresbetrag | 1.100,00 €/a | — (Satz = Betrag) | 1.100,00 |
 | **Summe Betriebskosten netto** | | | brutto 68.025,41 €/a | **57.164,21** |
 
-**Doppelpflege-Warnung** (U31, Text `KOH_HILFSENERGIE_DOPPELT` aus der Kohärenzprüfung des BHKW-Dialogs):
+**Doppelpflege-Warnung** über dem Raster (Text `KOH_HILFSENERGIE_DOPPELT`, wortgleich aus der Kohärenzprüfung —
+sie erscheint nur, wenn die Anlage einen Hilfsenergieanteil > 0 **und** eine aktive Hilfsenergie-Kostenposition führt):
 „Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition Hilfsenergiekosten): BHKW 1 führt einen
 Hilfsenergieanteil von 2,00 % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert den
 KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts."
