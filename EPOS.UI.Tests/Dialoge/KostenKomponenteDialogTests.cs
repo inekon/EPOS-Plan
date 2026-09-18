@@ -418,6 +418,34 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.Contains("Diese Mengen sind die Bezugsgrößen.", cut.Markup);
     }
 
+    /// <summary>
+    /// E1 — DER ELEKTROKESSEL steht in derselben Gruppe: mit seinem Stromeinsatz in
+    /// kWh, dem Betrag zum Arbeitspreis des Stromträgers und der Herkunft
+    /// „Strom · Netzbezug". Seine Energie ist damit sichtbar, ohne ein zweites Mal
+    /// bepreist zu werden — bezahlt wird sie im Reststrombedarf des Projekts.
+    /// </summary>
+    [Fact]
+    public void Die_Endenergiegruppe_zeigt_den_Elektrokessel_mit_Netzbezug()
+    {
+        KostenKomponenteStand s = Standard();
+        s.Endenergie = new[]
+        {
+            new EndenergieZeile("Heizkessel — Elektrokessel 1", "52.990 kWh", "24.771,30 €/a",
+                                "Elektrokessel „Elektrokessel 1\" — Strom · Netzbezug "
+                                + "(im Reststrombedarf des Projekts bepreist)"),
+        };
+
+        var cut = Zeige(p => p
+            .Add(x => x.GruppeEndenergieTitel, "Endenergie je Komponente"),
+            stand: s);
+
+        var felder = cut.FindAll(".epos-kdlg-endenergie tbody tr td");
+        Assert.Equal("Heizkessel — Elektrokessel 1", felder[0].TextContent);
+        Assert.Equal("52.990 kWh", felder[1].TextContent);
+        Assert.Equal("24.771,30 €/a", felder[2].TextContent);
+        Assert.Contains("Strom · Netzbezug", felder[3].TextContent);
+    }
+
     /// <summary>Ohne Endenergie keine Gruppe — Photovoltaik, Solarthermie und die
     /// Speicher führen keine.</summary>
     [Fact]
