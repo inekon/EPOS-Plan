@@ -639,9 +639,30 @@ namespace WindowsFormsApplication1
             N(DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN,     "BM_P_STROM",           "% der Stromkosten",      "%",     false, false, false),
             N(DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH,   "BM_KWH_THERMISCH",     "je kWh thermisch",       "€/kWh", false, true,  false),
             N(DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,  "BM_KWH_ELEKTRISCH",    "je kWh elektrisch",      "€/kWh", false, true,  false),
-            N(DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,     "BM_KW_LEISTUNG",       "je kW Leistung",         "€/kW",  true,  false, false),
-            N(DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, "BM_KW_HEIZLEISTUNG",   "je kW Heizleistung",     "€/kW",  true,  false, false),
-            N(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,   "BM_KW_ELEKTRISCH",     "je kW elektrisch",       "€/kW",  true,  false, false),
+            // Die drei Leistungsarten stehen wie „je kWp Leistung" auch im
+            // BETRIEBSRASTER: Wartung und Instandhaltung werden branchenüblich je
+            // installierter Leistung bemessen (€/kW·a), und bis hierher gab es dafür
+            // nur den festen Jahresbetrag, „% der Investition" und die Mengenarten aus
+            // dem Lauf. Gerechnet wird ohne eine einzige neue Formel: Menge × Satz kennt
+            // BetriebskostenCtrl.Betrag längst, die Bezugsgröße kommt aus derselben
+            // Landkarte wie auf der Investitionsseite (TechnikPlanwertCtrl.Geraetespalte
+            // über WirtschaftlichkeitCtrl.RueckfallMenge), und die Herkunft der Zeile
+            // ist damit die ANLAGE, nicht der Lauf (KostenProjektPositionenCtrl).
+            //
+            // Auf welche Gewerke die Auswahl damit wächst, sagt nicht diese Zeile,
+            // sondern die Landkarte selbst (PasstZuGewerk): Wärmepumpe, Heizkessel,
+            // Photovoltaik, Solarthermie, Strom- und Pufferspeicher und BHKW — je
+            // nachdem, welche Baugröße das Gewerk zur Art führt. Die drei Gewerke ohne
+            // Gerät (Wärmezentrale, Bauliche Anlagen, Stromeinspeisung) bekommen nichts
+            // dazu.
+            //
+            // Das Jahr steht im SATZ, nicht in der Bezugsgröße: Eine Leistung kennt
+            // kein Jahr, deshalb die eigene Betriebseinheit „€/kW·a" (siehe
+            // Info.EinheitBetrieb). Wo ein Gewerk eine eigene Beschriftung führt, trägt
+            // sie ihre eigene Betriebseinheit (Sonderfaelle).
+            N(DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,     "BM_KW_LEISTUNG",       "je kW Leistung",         "€/kW",  true,  true,  false, "€/kW·a"),
+            N(DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, "BM_KW_HEIZLEISTUNG",   "je kW Heizleistung",     "€/kW",  true,  true,  false, "€/kW·a"),
+            N(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,   "BM_KW_ELEKTRISCH",     "je kW elektrisch",       "€/kW",  true,  true,  false, "€/kW·a"),
             // U33 (18.09.2026): „je kWp Leistung" steht auch im BETRIEBSRASTER — die
             // Wartung einer Photovoltaikanlage wird branchenüblich in €/kWp·a bemessen,
             // und bis hierher gab es dafür keine Bemessung (fester Jahresbetrag,
@@ -842,6 +863,12 @@ namespace WindowsFormsApplication1
             public string ResourceKey;
             public string AnzeigeDe;
             public string Einheit;
+
+            /// <summary>Einheit im Betriebsraster — dieselbe Regel wie
+            /// <see cref="Info.EinheitBetrieb"/>: Eine Leistung und ein Volumen kennen
+            /// kein Jahr, der JAHRESSATZ trägt es deshalb selbst. Leer = wie
+            /// <see cref="Einheit"/>.</summary>
+            public string EinheitBetrieb;
         }
 
         private static readonly Sonderbeschriftung[] Sonderfaelle =
@@ -853,6 +880,7 @@ namespace WindowsFormsApplication1
                 ResourceKey = "BM_KW_LEISTUNG_BHKW",
                 AnzeigeDe = "je kW elektr. Leistung",
                 Einheit = "€/kW",
+                EinheitBetrieb = "€/kW·a",
             },
             new Sonderbeschriftung
             {
@@ -861,6 +889,7 @@ namespace WindowsFormsApplication1
                 ResourceKey = "BM_LITER",
                 AnzeigeDe = "je Liter",
                 Einheit = "€/Ltr.",
+                EinheitBetrieb = "€/Ltr.·a",
             },
         };
 
@@ -905,7 +934,9 @@ namespace WindowsFormsApplication1
         public static string Einheit(string persistenz, int komponentenId, bool betrieb)
         {
             Sonderbeschriftung s = Sonderfall(persistenz, komponentenId);
-            if (s != null) return s.Einheit;
+            if (s != null)
+                return betrieb && !string.IsNullOrEmpty(s.EinheitBetrieb)
+                    ? s.EinheitBetrieb : s.Einheit;
 
             Info i = Finde(persistenz);
             if (i == null) return "";
