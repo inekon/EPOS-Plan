@@ -139,15 +139,18 @@ public static class BhkwWahlen
                 BhwTexte.T("BHW_W_UA_LAND", "Land- und Forstwirtschaft"))
         });
 
-    /// <summary>K3 = a: die beiden Modi des § 9 Abs. 1 Nr. 3 — reine ANZEIGE ohne
-    /// Persistenz. Die Steuerwerte stehen bewusst nicht in <c>DbWerte</c>: Es gibt
-    /// bis B6 keine Spalte, in die sie geschrieben wuerden, und <c>DbWerte</c> sammelt
-    /// ausschliesslich Werte, die wirklich in der Datenbank stehen.</summary>
+    /// <summary>ETAPPE B6: die beiden Modi des § 9 Abs. 1 Nr. 3 StromStG. Die
+    /// Steuerwerte stehen seit Schemaschritt 88 in <c>DbWerte</c> — sie gehen in
+    /// <c>Tab_ProjektWirtschaftlichkeit.Stromst_Befreiung_Modus</c>. AUSWEIS steht
+    /// zuerst: Es ist die Vorgabe, und <c>NummerZu</c> faellt auf den ersten Eintrag
+    /// zurueck, wenn nichts gepflegt ist.</summary>
     public static IReadOnlyList<Steuerwahl> Befreiungsmodus() => Nummeriere(
         new (string, string)[]
         {
-            ("AUSWEIS", BhwTexte.T("BHW_W_MODUS_AUSWEIS", "Ausweis (nicht im Kapitalwert)")),
-            ("ERLOES", BhwTexte.T("BHW_W_MODUS_ERLOES", "Erlös (im Kapitalwert)"))
+            (DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS,
+                BhwTexte.T("BHW_W_MODUS_AUSWEIS", "Ausweis (nicht im Kapitalwert)")),
+            (DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES,
+                BhwTexte.T("BHW_W_MODUS_ERLOES", "Erlös (im Kapitalwert)"))
         });
 
     /// <summary>Die Nummer eines Steuerwertes in einer Liste; 0, wenn er fehlt —
@@ -399,6 +402,10 @@ public sealed class BhkwVorgabenstand
     /// <summary>Hocheffizienz nachgewiesen (4.3).</summary>
     public bool HocheffizienzNachweis;
 
+    /// <summary>Modus § 9 Abs. 1 Nr. 3 StromStG (4.4) — Steuerwert aus
+    /// <c>DbWerte.STROMST_BEFREIUNG_MODUS_*</c>; leer heisst wie NULL: AUSWEIS.</summary>
+    public string StromsteuerBefreiungModus = "";
+
     /// <summary>Der Stand, wie der Parametersatz geladen wurde.</summary>
     public static BhkwVorgabenstand Aus(WirtschaftlichkeitParameter p) => new BhkwVorgabenstand
     {
@@ -418,7 +425,8 @@ public sealed class BhkwVorgabenstand
         Jahresnutzungsgrad = p.Jahresnutzungsgrad,
         Unternehmensart = p.Unternehmensart ?? "",
         RaeumlicherZusammenhang = p.RaeumlicherZusammenhang,
-        HocheffizienzNachweis = p.HocheffizienzNachweis
+        HocheffizienzNachweis = p.HocheffizienzNachweis,
+        StromsteuerBefreiungModus = p.StromsteuerBefreiungModus ?? ""
     };
 
     /// <summary>
@@ -446,7 +454,8 @@ public sealed class BhkwVorgabenstand
         && Jahresnutzungsgrad == p.Jahresnutzungsgrad
         && Unternehmensart == (p.Unternehmensart ?? "")
         && RaeumlicherZusammenhang == p.RaeumlicherZusammenhang
-        && HocheffizienzNachweis == p.HocheffizienzNachweis;
+        && HocheffizienzNachweis == p.HocheffizienzNachweis
+        && StromsteuerBefreiungModus == (p.StromsteuerBefreiungModus ?? "");
 
     /// <summary>Den Stand auf den geladenen Parametersatz legen — NUR im OK-Weg.</summary>
     public void Anwenden(WirtschaftlichkeitParameter p)
@@ -468,5 +477,11 @@ public sealed class BhkwVorgabenstand
         p.Unternehmensart = Unternehmensart;
         p.RaeumlicherZusammenhang = RaeumlicherZusammenhang;
         p.HocheffizienzNachweis = HocheffizienzNachweis;
+        // ETAPPE B6: Leer heisst AUSWEIS - dieselbe Regel wie in der Datenbank, damit
+        // ein Stand ohne Wahl nicht still auf etwas anderes faellt.
+        p.StromsteuerBefreiungModus =
+            string.IsNullOrEmpty(StromsteuerBefreiungModus)
+                ? DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS
+                : StromsteuerBefreiungModus;
     }
 }

@@ -105,7 +105,7 @@
 
     /// <summary>Fenstertitel (der Aufrufer haengt den Stammnamen an).</summary>
     [Parameter] public string TitelText { get; set; }
-        = "Kapitalwert-Verlauf über den Nutzungszeitraum";
+        = BhwTexte.T("WVERL_TITEL", "Kapitalwert-Verlauf über den Nutzungszeitraum");
 
     /// <summary>
     /// Zeigt der Dialog seinen eigenen Kopf (<c>epos-dialog-titel</c>)? Vorgabe
@@ -118,39 +118,48 @@
     [Parameter] public bool TitelAnzeigen { get; set; } = true;
 
     /// <summary>Beschriftung des Zeitraumfeldes (Designer: lblZeitraum).</summary>
-    [Parameter] public string LabelJahre { get; set; } = "Zeitraum [Jahre]:";
+    [Parameter] public string LabelJahre { get; set; }
+        = BhwTexte.T("WVERL_LBL_ZEITRAUM", "Zeitraum [Jahre]:");
 
     /// <summary>Beschriftung der Szenarioliste (Designer: lblSzenario).</summary>
-    [Parameter] public string LabelSzenario { get; set; } = "Szenario:";
+    [Parameter] public string LabelSzenario { get; set; }
+        = BhwTexte.T("WVERL_LBL_SZENARIO", "Szenario:");
 
     /// <summary>Beschriftung des Rechenknopfes (Designer: btnZeichnen).</summary>
-    [Parameter] public string ZeichnenText { get; set; } = "Aktualisieren";
+    [Parameter] public string ZeichnenText { get; set; }
+        = BhwTexte.T("WVERL_BTN_ZEICHNEN", "Aktualisieren");
 
     /// <summary>Beschriftung des schliessenden Knopfes (Designer: btnSchliessen).</summary>
-    [Parameter] public string SchliessenText { get; set; } = "Schließen";
+    [Parameter] public string SchliessenText { get; set; }
+        = BhwTexte.T("WVERL_BTN_SCHLIESSEN", "Schließen");
 
     /// <summary>Beschriftung desselben Knopfes waehrend der Rechnung (SetBusy).</summary>
-    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+    [Parameter] public string AbbrechenText { get; set; }
+        = BhwTexte.T("ALLG_BTN_ABBRECHEN", "Abbrechen");
 
     /// <summary>Statuszeile waehrend der Rechnung.</summary>
-    [Parameter] public string LaeuftText { get; set; } = "Berechnung läuft …";
+    [Parameter] public string LaeuftText { get; set; }
+        = BhwTexte.T("WVERL_STATUS_LAEUFT", "Berechnung läuft …");
 
     /// <summary>Statuszeile nach einem Abbruch (wortgleich aus dem Vorlaeufer).</summary>
-    [Parameter] public string AbgebrochenText { get; set; } = "Vorgang abgebrochen.";
+    [Parameter] public string AbgebrochenText { get; set; }
+        = BhwTexte.T("WVERL_STATUS_ABBRUCH", "Vorgang abgebrochen.");
 
     /// <summary>Vorlage der Fehlermeldung, ein Platzhalter (frueher eine MessageBox).</summary>
-    [Parameter] public string VorlageFehler { get; set; } = "Fehler beim Berechnen des Verlaufs: {0}";
+    [Parameter] public string VorlageFehler { get; set; }
+        = BhwTexte.T("WVERL_MSG_FEHLER", "Fehler beim Berechnen des Verlaufs: {0}");
 
     /// <summary>Alternativtext des oberen Bildes.</summary>
     [Parameter] public string AltDifferenz { get; set; }
-        = "Kapitalwert-Verlauf: Differenz zur Stamm-Referenz";
+        = BhwTexte.T("WVERL_BILD_DIFF", "Kapitalwert-Verlauf: Differenz zur Stamm-Referenz");
 
     /// <summary>Alternativtext des unteren Bildes.</summary>
     [Parameter] public string AltAbsolut { get; set; }
-        = "Kapitalwert-Verlauf: kumulierte Barwerte je Projekt";
+        = BhwTexte.T("WVERL_BILD_ABS", "Kapitalwert-Verlauf: kumulierte Barwerte je Projekt");
 
     /// <summary>Text an der Stelle eines noch nicht gezeichneten Bildes.</summary>
-    [Parameter] public string PlatzhalterText { get; set; } = "Noch kein Diagramm";
+    [Parameter] public string PlatzhalterText { get; set; }
+        = BhwTexte.T("WVERL_KEIN_BILD", "Noch kein Diagramm");
 
     /// <summary>Schluessel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_WirtschaftlichkeitVerlauf.btn_Help";

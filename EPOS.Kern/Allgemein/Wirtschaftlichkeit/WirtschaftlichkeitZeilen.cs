@@ -244,8 +244,17 @@ namespace WindowsFormsApplication1
             if (Irgendein(menge, e => e.EnergiesteuerJahr1 > 0))
                 z.Add(Zahl("ENERGIESTEUER", MyResource.Resource.WIRT_ZEILE_ENERGIESTEUER,
                            e => (double?)e.EnergiesteuerJahr1));
+            // ETAPPE B6 — die Beschriftung sagt, WIE der Betrag in die Rechnung eingeht.
+            // Im Modus AUSWEIS (Vorgabe) ist er keine Zahlung: Er wird gezeigt und steht
+            // in keiner Zahlungsreihe; dieselbe Sprache wie bei den vermiedenen Kosten
+            // („(Ausweis)"). Bucht auch nur ein Lauf der Gruppe die Erlösreihe, gilt die
+            // schlichte Beschriftung — sonst behauptete die Spaltenüberschrift für diesen
+            // Lauf etwas Falsches.
             if (Irgendein(menge, e => e.StromsteuerBefreiungJahr1 > 0))
-                z.Add(Zahl("STROMST_BEFREIUNG", MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG,
+                z.Add(Zahl("STROMST_BEFREIUNG",
+                           Irgendein(menge, e => e.StromsteuerBefreiungAlsErloes)
+                               ? MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG
+                               : MyResource.Resource.WIRT_ZEILE_STROMST_BEFREIUNG_AUSWEIS,
                            e => (double?)e.StromsteuerBefreiungJahr1));
             if (Irgendein(menge, e => e.StromsteuerEntlastungJahr1 > 0))
                 z.Add(Zahl("STROMST_ENTLASTUNG", MyResource.Resource.WIRT_ZEILE_STROMST_ENTLASTUNG,

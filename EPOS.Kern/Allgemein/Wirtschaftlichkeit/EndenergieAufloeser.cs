@@ -70,7 +70,8 @@ namespace WindowsFormsApplication1
             public double? KostenEuro;
 
             /// <summary>Klartext der Basis für Herleitungen, z. B.
-            /// „BHKW ‚Modul 1'" oder „alle Heizkessel-Module".</summary>
+            /// „BHKW ‚Modul 1'" oder „alle Heizkessel-Module" — seit Etappe B6
+            /// zweisprachig aus <c>MyResource.Resource.AUFLOESER_*</c>.</summary>
             public string Basis = "";
         }
 
@@ -140,12 +141,14 @@ namespace WindowsFormsApplication1
             switch (komponentenID)
             {
                 case BetriebskostenCtrl.KOMPONENTE_BHKW:
-                    // Die Basis-Texte sind Herleitungsprosa; ihre Lokalisierung kommt
-                    // mit der Herleitungstafel der Etappe B6 (bis dahin liest sie kein
-                    // Anzeigepfad).
-                    return Brennstoffsumme(BhkwModule(), anlagenName, "BHKW");
+                    // ETAPPE B6: Die Basis-Texte sind Herleitungsprosa - seit hier
+                    // zweisprachig wie jeder andere Anzeigetext. Das Komponentenwort
+                    // steht getrennt vom Satzbau, weil beide Sprachen es anders beugen.
+                    return Brennstoffsumme(BhkwModule(), anlagenName,
+                                           MyResource.Resource.AUFLOESER_KOMP_BHKW);
                 case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
-                    return Brennstoffsumme(KesselModule(), anlagenName, "Heizkessel");
+                    return Brennstoffsumme(KesselModule(), anlagenName,
+                                           MyResource.Resource.AUFLOESER_KOMP_HEIZKESSEL);
                 case KOMPONENTE_WAERMEPUMPE:
                     return Waermepumpensumme(anlagenName);
                 default:
@@ -239,8 +242,11 @@ namespace WindowsFormsApplication1
                 BedarfKwh = bedarfKwh,
                 KostenEuro = kostenVollstaendig ? kosten : (double?)null,
                 Basis = anlagenName != null
-                    ? komponentenWort + " „" + anlagenName + "“"
-                    : string.Format(CultureInfo.CurrentCulture, "alle {0}-Module", komponentenWort)
+                    ? string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.AUFLOESER_BASIS_ANLAGE,
+                                    komponentenWort, anlagenName)
+                    : string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.AUFLOESER_BASIS_ALLE, komponentenWort)
             };
         }
 
@@ -270,8 +276,13 @@ namespace WindowsFormsApplication1
                 BedarfKwh = bedarfKwh,
                 KostenEuro = preis.HasValue ? bedarfKwh * preis.Value : (double?)null,
                 Basis = anlagenName != null
-                    ? "Wärmepumpe „" + anlagenName + "“"
-                    : "alle Wärmepumpen-Module"
+                    ? string.Format(CultureInfo.CurrentCulture,
+                                    MyResource.Resource.AUFLOESER_BASIS_ANLAGE,
+                                    MyResource.Resource.AUFLOESER_KOMP_WAERMEPUMPE, anlagenName)
+                    // Eigener Schlüssel statt „alle {0}-Module": Die Mehrzahl der
+                    // Wärmepumpe heißt nicht wie ihre Einzahl, und ein Satzbaukasten,
+                    // der das übergeht, erzeugt in jeder Sprache einen Fehler.
+                    : MyResource.Resource.AUFLOESER_BASIS_ALLE_WP
             };
         }
 

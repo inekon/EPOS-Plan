@@ -589,19 +589,70 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Equal("BHKW-Tarif…", sprung[1].TextContent.Trim());
     }
 
+    /// <summary>
+    /// ETAPPE B6 — <b>das Modusfeld des § 9 Abs. 1 Nr. 3 ist offen.</b> Bis B5b stand es
+    /// gesperrt da, weil es keine Spalte gab, in die es geschrieben worden waere; mit dem
+    /// Schemaschritt 88 gibt es sie. Die Vorgabe ist AUSWEIS — der erste Eintrag, und der
+    /// Wert, den eine leere Zelle bedeutet.
+    /// </summary>
     [Fact]
-    public void K3_das_Modusfeld_ist_sichtbar_aber_gesperrt_und_traegt_den_B6_Vermerk()
+    public void Das_Modusfeld_ist_offen_und_steht_auf_der_Vorgabe_Ausweis()
     {
         var cut = Aufbauen();
         IElement g = Koerper(cut, 4);
         IElement modus = g.QuerySelectorAll("select")[1];
 
-        Assert.True(modus.HasAttribute("disabled"));
+        Assert.False(modus.HasAttribute("disabled"));
         var eintraege = modus.QuerySelectorAll("option");
         Assert.Equal(2, eintraege.Length);
         Assert.Equal("Ausweis (nicht im Kapitalwert)", eintraege[0].TextContent);
         Assert.Equal("Erlös (im Kapitalwert)", eintraege[1].TextContent);
-        Assert.Contains("ab B6 — bis dahin gilt fest „Ausweis“ (nicht im Kapitalwert).", g.TextContent);
+        Assert.Equal(DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS,
+                     cut.Instance.Vorgabenstand.StromsteuerBefreiungModus);
+    }
+
+    /// <summary>
+    /// Die Wahl geht in den Arbeitsstand — und NUR dorthin. Der hereingereichte
+    /// Parametersatz bleibt bis zum OK unberührt; das ist die Hausregel des Dialogs und
+    /// gilt für den Modus wie für jedes andere Feld der Gruppe.
+    /// </summary>
+    [Fact]
+    public void Das_Modusfeld_schreibt_die_Wahl_in_den_Arbeitsstand()
+    {
+        var p = new WirtschaftlichkeitParameter();
+        var cut = Aufbauen(parameter: p);
+        IElement g = Koerper(cut, 4);
+
+        g.QuerySelectorAll("select")[1].Change("1");
+        Assert.Equal(DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES,
+                     cut.Instance.Vorgabenstand.StromsteuerBefreiungModus);
+
+        g.QuerySelectorAll("select")[1].Change("0");
+        Assert.Equal(DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS,
+                     cut.Instance.Vorgabenstand.StromsteuerBefreiungModus);
+
+        Assert.Equal(DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS, p.StromsteuerBefreiungModus);
+    }
+
+    /// <summary>
+    /// Die Herleitungszeile unter dem Feld sagt, was die beiden Modi bedeuten — <b>in
+    /// beiden Sprachen und ohne Etappenkürzel</b>. Der frühere Text nannte „B6"; ein
+    /// Anwender kennt keine Etappen, und die Zeile stünde sonst für immer als Versprechen
+    /// da, das längst eingelöst ist.
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE", "Ausweis: Die Befreiung wird gezeigt und nicht im Kapitalwert gerechnet.")]
+    [InlineData("en-US", "Disclosure: the exemption is shown and not included in the net present value.")]
+    public void Die_Herleitungszeile_erklaert_die_beiden_Modi_ohne_Etappenkuerzel(
+        string kultur, string erwartet)
+    {
+        using var _ = new Kulturvorrichtung(kultur);
+
+        var cut = Aufbauen();
+        string text = Koerper(cut, 4).TextContent;
+
+        Assert.Contains(erwartet, text);
+        Assert.DoesNotContain("B6", text);
     }
 
     [Fact]

@@ -3182,6 +3182,32 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_87_GESETZESPARAMETER_EINDEUTIG = 87;
 
+        /// <summary>
+        /// Schritt 88 — der <b>Modus der Stromsteuerbefreiung</b> nach § 9 Abs. 1 Nr. 3
+        /// StromStG (Etappe B6 des Wirtschaftlichkeitskonzepts, Befund B-1).
+        ///
+        /// <para><c>Tab_ProjektWirtschaftlichkeit</c> bekommt die Spalte
+        /// <c>Stromst_Befreiung_Modus</c> (TEXT, <c>AUSWEIS</c>/<c>ERLOES</c>). Die
+        /// Spaltenliste steht bei
+        /// <see cref="SchemaKatalog.Schritt88_StromsteuerModus"/> — EINE Quelle für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>KEIN DML, und darin liegt die Vorgabe.</b> Die Spalte bleibt im
+        /// ganzen Bestand NULL, und NULL heißt AUSWEIS. Die Befreiung wird ab hier
+        /// gerechnet und gezeigt, aber nicht mehr als Erlösreihe in den Kapitalwert
+        /// gebucht — die Vorschrift ist keine Rückerstattung, sondern eine kleinere
+        /// Bezugsrechnung. Wer sie weiter als Erlös führen will, wählt das im Dialog
+        /// „BHKW-Wirtschaftlichkeit" ausdrücklich.</para>
+        ///
+        /// <para><b>Ergebnisneutral für den Referenzlauf</b>: Im Bestand bucht kein
+        /// gespeicherter Lauf die Reihe (Befund B-1), und die Basis führt keine
+        /// Geldgröße — die dreizehn Referenzprojekte bleiben byte-gleich. Für ein
+        /// Projekt, das die Reihe buchte, ändert sich der Kapitalwert um ihren Barwert;
+        /// das ist die im Konzept angekündigte Wirkung.</para>
+        /// </summary>
+        public const int SCHRITT_88_STROMSTEUER_MODUS = 88;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4315,6 +4341,19 @@ namespace WindowsFormsApplication1
                         "dann gilt, entscheidet die Speicherreihenfolge, und der " +
                         "Anwender pflegt womoeglich die Zeile, die niemand liest.",
                         Schritt_87_GesetzesparameterEindeutig),
+
+            // ETAPPE B6 des Wirtschaftlichkeitskonzepts (Befund B-1, Entscheidung K3).
+            // EINE Spalte aus SchemaKatalog - DIESELBE Quelle wie Testdatenbankschema
+            // und Nachweis. Kein DML: NULL heisst AUSWEIS, und AUSWEIS ist die Vorgabe.
+            new Schritt(SCHRITT_88_STROMSTEUER_MODUS,
+                        "Tab_ProjektWirtschaftlichkeit bekommt den Modus " +
+                        "Stromst_Befreiung_Modus (TEXT, AUSWEIS/ERLOES, NULL = AUSWEIS)",
+                        "Ohne die Spalte gaebe es keinen Ort, an dem die Wahl zwischen " +
+                        "Ausweis und Erloes stuende - das Feld im Dialog bliebe ohne " +
+                        "Wirkung, und § 9 Abs. 1 Nr. 3 StromStG bliebe als Erloes " +
+                        "gebucht, obwohl der Vorteil schon in der kleineren " +
+                        "Bezugsrechnung steckt.",
+                        Schritt_88_StromsteuerModus),
         };
 
         /// <summary>
@@ -6202,6 +6241,35 @@ namespace WindowsFormsApplication1
                     ". Behalten wurde je Projekt die aktive Zeile mit der kleinsten ID - " +
                     "genau die, die ReadAktiveVariante schon bisher geliefert hat. KEIN " +
                     "Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 88 - der Modus der Stromsteuerbefreiung § 9 Abs. 1 Nr. 3 (Etappe B6)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 88 — Anlass, Anweisung und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_88_STROMSTEUER_MODUS"/> und bei
+        /// <see cref="SchemaKatalog.Schritt88_StromsteuerModus"/>.
+        ///
+        /// <para><b>Wortgleich zu <see cref="Schritt_86_Lastspitzenkappung"/></b>:
+        /// Spaltenliste aus dem Kern, Typdefinition aus
+        /// <c>StilleDb.SqliteSpaltenTyp</c>, kein DML. Hier steht keine abgeschriebene
+        /// DDL.</para>
+        /// </summary>
+        private static bool Schritt_88_StromsteuerModus(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt88_StromsteuerModus)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            l.Notiz("88: " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + "." +
+                    SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS + " (TEXT, nullbar) " +
+                    "steht. KEIN DML: NULL heisst AUSWEIS - § 9 Abs. 1 Nr. 3 StromStG " +
+                    "wird ab hier gerechnet und gezeigt, aber nicht mehr als Erloes in " +
+                    "den Kapitalwert gebucht. Im Bestand bucht kein gespeicherter Lauf " +
+                    "diese Reihe; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

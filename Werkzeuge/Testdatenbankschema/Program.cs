@@ -304,6 +304,28 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 86, trocken);
 
+            // ---- Schritt 88: der Modus der Stromsteuerbefreiung § 9 Abs. 1 Nr. 3
+            //      (Etappe B6, Befund B-1). EINE Spalte an Tab_ProjektWirtschaftlichkeit,
+            //      kein DML. Die Quelle ist dieselbe, aus der sich
+            //      SchemaMigration.Schritt_88_StromsteuerModus bedient. NULL heisst
+            //      AUSWEIS; im Bestand bucht kein gespeicherter Lauf die Erloesreihe -
+            //      die dreizehn Referenzprojekte rechnen unveraendert.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt88_StromsteuerModus)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 88, trocken);
+
+            // ---- Schritt 88, zweiter Teil: die KONSERVENSPALTE des Ergebnisses.
+            //      Tab_ErgebnisWirtschaftlichkeit ist keine Schematabelle - sie entsteht
+            //      und waechst ueber WirtschaftlichkeitCtrl.SpalteSicher, also erst beim
+            //      ersten Lauf der Anwendung. Fuer die REPO-Testdatenbank reicht das
+            //      nicht: Sie ist die Messlatte des SqlDialektpruefers, und der loest
+            //      das INSERT des Ergebnisses gegen genau diese Datei auf. Ohne die
+            //      Spalte meldete er eine Fundstelle, die in der Anwendung keine ist.
+            //      Die Quelle ist dieselbe Konstante, die auch der Ctrl nimmt.
+            angelegt += SpalteSicherstellen(WirtschaftlichkeitCtrl.TAB_ERGEBNIS,
+                                            WirtschaftlichkeitCtrl.SPALTE_STROMST_MODUS,
+                                            "TEXT", 88, trocken);
+
             tabellen += TabelleSicherstellen("Tab_SpeicherAuslegung", SpeicherAuslegungCtrl.SQL_TABELLE, 73, trocken);
             if (!trocken) DataRepository.ExecuteNonQuery(SpeicherAuslegungCtrl.SQL_INDEX);
 

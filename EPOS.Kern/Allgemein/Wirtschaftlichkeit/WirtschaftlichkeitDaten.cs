@@ -327,6 +327,35 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string AufteilungMethode = DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF;
 
+        /// <summary>
+        /// Modus, in dem § 9 Abs. 1 Nr. 3 StromStG in die Wirtschaftlichkeit eingeht,
+        /// Steuerwert aus <c>DbWerte.STROMST_BEFREIUNG_MODUS_*</c> (Schemaschritt 88).
+        /// Vorgabe <c>AUSWEIS</c>: Die Befreiung wird gerechnet und gezeigt, geht aber
+        /// nicht in die Erlöse und damit nicht in den Kapitalwert.
+        ///
+        /// <para><b>Warum das die Vorgabe ist.</b> Auf selbst erzeugten und selbst
+        /// verbrauchten Strom entsteht gar keine Stromsteuer; der Vorteil steckt bereits
+        /// in der kleineren Bezugsrechnung. Als Erlös gebucht stünde er ein zweites Mal
+        /// in der Rechnung. <c>ERLOES</c> ist deshalb nur richtig, wenn der angesetzte
+        /// Bezugspreis die Stromsteuer auf den Eigenverbrauch enthält — die
+        /// Kohärenzprüfung sagt das mit einer eigenen Zeile.</para>
+        /// </summary>
+        public string StromsteuerBefreiungModus = DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS;
+
+        /// <summary>true, wenn <see cref="StromsteuerBefreiungModus"/> ausdrücklich
+        /// <c>ERLOES</c> führt. Leer, NULL und jeder unbekannte Wert bedeuten
+        /// AUSWEIS — dieselbe tolerante Leseregel wie beim
+        /// Nachhaltigkeitsnachweis der Biomasse.</summary>
+        public bool StromsteuerBefreiungAlsErloes
+        {
+            get
+            {
+                return string.Equals(StromsteuerBefreiungModus,
+                                     DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES,
+                                     StringComparison.Ordinal);
+            }
+        }
+
         // ---- ETAPPE E5 — eine Projektangabe (Migrationsschritt 21) ----
         //
         // Der Schalter „Aufschläge in der Wirtschaftlichkeit berücksichtigen" stand hier
@@ -902,6 +931,18 @@ namespace WindowsFormsApplication1
         /// <summary>Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG im Jahr 1
         /// [€/a] — Regelsatz auf den KWK-Eigenverbrauch.</summary>
         public double StromsteuerBefreiungJahr1;
+
+        /// <summary>
+        /// ETAPPE B6: true = die Befreiung ist in diesem Lauf als Erlösreihe gebucht und
+        /// steckt im Kapitalwert (Modus <c>ERLOES</c>); false = sie ist nur AUSGEWIESEN
+        /// (Vorgabe <c>AUSWEIS</c>) — dann steht der Betrag in
+        /// <see cref="StromsteuerBefreiungJahr1"/>, aber in keiner Zahlungsreihe.
+        ///
+        /// <para>Der Merker wandert mit ins Ergebnis, damit die Vergleichstabelle ihre
+        /// Zeile beschriften kann, ohne den Parametersatz zu kennen — auch nach dem
+        /// Laden eines gespeicherten Laufs.</para>
+        /// </summary>
+        public bool StromsteuerBefreiungAlsErloes;
 
         /// <summary>Stromsteuer-Entlastung nach § 9b StromStG im Jahr 1 [€/a] —
         /// Entlastungssatz auf den Netzbezug abzüglich Sockelbetrag.</summary>
