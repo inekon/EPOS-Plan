@@ -567,7 +567,7 @@ namespace WindowsFormsApplication1
                                       KostenProjektPositionenCtrl.Zeile pz = null)
         {
             KostenHerleitung.Angabe a =
-                KostenHerleitung.Bilde(p, KomponentenId, pz, ProjektModus);
+                KostenHerleitung.Bilde(p, KomponentenId, pz, ProjektModus, !_invest);
 
             if (a.Absolut) z.BetragText = ZahlText(z.Satz);
             else if (ProjektModus) z.BetragText = p != null ? ZahlText(p.BetragNetto) : "";
@@ -647,7 +647,10 @@ namespace WindowsFormsApplication1
         /// unangetastet; er ist für alle Komponenten derselbe.</summary>
         private string EinheitVon(BemessungKatalog.Info info)
         {
-            return info == null ? "" : BemessungKatalog.Einheit(info.Persistenz, KomponentenId);
+            // U33: … und dem RASTER — „je kWp Leistung" trägt auf der Betriebsseite
+            // „€/kWp·a", weil eine Leistung kein Jahr kennt.
+            return info == null
+                ? "" : BemessungKatalog.Einheit(info.Persistenz, KomponentenId, !_invest);
         }
 
         private static BemessungKatalog.Info BemessungInfo(string persistenz)
@@ -775,6 +778,14 @@ namespace WindowsFormsApplication1
                 string dreiteilig = KostenSummenCtrl.FussText(KostenSummenCtrl.Fuss(positionen));
                 if (dreiteilig.Length > 0)
                     liste.Add(new ValueTuple<string, bool>(dreiteilig, true));
+
+                // U34: die Kennzahl „spezifisch 640,50 €/kWp" — reine Anzeige, und nur
+                // an der Photovoltaik mit gepflegter Leistung. Den Satz baut der Kern
+                // (KostenSummenCtrl.KennzahlText); die Hülle reicht ihn durch.
+                string kennzahl = KostenSummenCtrl.KennzahlText(
+                    _idProjekt, KomponentenId, AnlagenId, netto);
+                if (kennzahl.Length > 0)
+                    liste.Add(new ValueTuple<string, bool>(kennzahl, false));
             }
             return liste;
         }

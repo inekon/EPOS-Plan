@@ -242,6 +242,85 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
+        // U35 - die HERLEITUNG der kWp
+        // =================================================================================
+
+        /// <summary>
+        /// U35 (18.09.2026): Der HERLEITUNGSTEXT zur installierten Leistung — „750 Module
+        /// × 400 Wp = 300,00 kWp". Leer, wenn es nichts herzuleiten gibt (keine Anlage,
+        /// kein Modul mit Leistung).
+        ///
+        /// <para><b>Warum dieser Satz gebraucht wird.</b> Der Dialog zeigt die
+        /// Bezugsgröße als Ergebnis („300,00 kWp"), die beiden Faktoren dahinter aber
+        /// nirgends. <c>Tab_Energieanlagen.PV_Leistung</c> ist die MODULANZAHL und
+        /// <c>Tab_PV.Leistung</c> die Modulleistung in WATT — zwei Zahlen, die sich
+        /// leicht miteinander verwechseln lassen. Wer 750 für die Leistung hält, hält
+        /// einen Satz von 320,00 €/kWp für 240.000,00 € statt für 96.000,00 €. Der Satz
+        /// benennt deshalb beide Größen und die Wandlung dazwischen.</para>
+        ///
+        /// <para><b>Er rechnet nicht ein zweites Mal.</b> Die kWp kommen aus
+        /// <see cref="KwpSumme"/>; hier werden nur die Faktoren derselben Zeilen
+        /// gelesen, mit demselben Filter (<c>ID_Type = PV_TYP</c>) und derselben
+        /// Eingrenzung auf die Anlagenzeile. Eine zweite Summe entsteht nicht.</para>
+        ///
+        /// <para><b>Mehrere Stränge</b> (Projektsicht, <paramref name="idAnlage"/> = 0):
+        /// Trägt genau EINE Anlagenzeile Module, steht die Rechnung Modul für Modul;
+        /// sonst nennt der Satz nur die Summe („Σ Module × Leistung = … kWp"). Das ist
+        /// Wort für Wort das Muster der Solarthermie
+        /// (<c>TechnikPlanwertCtrl.KollektorfeldHerleitung</c>): Die Glieder stünden
+        /// sonst zu zehnt in einer Rasterzeile. Die Ost/West-Anlage der Testdatenbank
+        /// (Projekt 1045) ist EINE Anlagenzeile mit EINEM Modultyp an einem
+        /// Wechselrichter — die lange Form entsteht dort also gar nicht.</para>
+        /// </summary>
+        /// <param name="idAnlage">&gt; 0 = nur diese Anlagenzeile; 0 = das ganze Projekt.</param>
+        internal static string KwpHerleitung(int idProjekt, int idAnlage)
+        {
+            double kwp = KwpSumme(idProjekt, idAnlage);
+            if (kwp <= 0) return "";
+
+            double anzahl = 0, wattJeModul = 0;
+            int straenge = 0;
+            try
+            {
+                string sql = "SELECT p.Leistung, a.PV_Leistung " +
+                             "FROM Tab_Energieanlagen AS a INNER JOIN Tab_PV AS p ON a.ID_PV = p.ID " +
+                             "WHERE a.ID_Projekt = ? AND a.ID_Type = ?";
+                var ps = new List<DbParam>
+                {
+                    new DbParam("@p", idProjekt),
+                    new DbParam("@t", WizardItemClass.PV_TYP)
+                };
+                if (idAnlage > 0)
+                {
+                    sql += " AND a.ID = ?";
+                    ps.Add(new DbParam("@a", idAnlage));
+                }
+
+                DataTable dt = DataRepository.GetDataTable(sql, ps.ToArray());
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        double w = r[0] == DBNull.Value ? 0 : Convert.ToDouble(r[0]);
+                        double n = r[1] == DBNull.Value ? 0 : Convert.ToDouble(r[1]);
+                        if (w <= 0 || n <= 0) continue;
+                        straenge++; wattJeModul = w; anzahl = n;
+                    }
+            }
+            catch { straenge = 0; }
+
+            CultureInfo k = CultureInfo.CurrentCulture;
+            string leistung = kwp.ToString("#,##0.00", k);
+
+            if (straenge == 1)
+                return string.Format(k, MyResource.Resource.KDLG_HERL_KWP,
+                                     anzahl.ToString("#,##0.###", k),
+                                     wattJeModul.ToString("#,##0.##", k),
+                                     leistung);
+
+            return string.Format(k, MyResource.Resource.KDLG_HERL_KWP_SUMME, leistung);
+        }
+
+        // =================================================================================
         // W6-O-5 - die Gesamtleistung des PV-Dialogs als Anzeigetext
         // =================================================================================
 

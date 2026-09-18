@@ -156,6 +156,39 @@ public class PhotovoltaikVerguetungDialogTests : EposBunitContext
         Assert.Equal("über 1 MW: Ausschreibung — AW-Override nötig.", cut.Instance.Anlagenwarnung);
         Assert.Contains(cut.FindAll(".epos-warnbanner-text"),
                         e => e.TextContent.StartsWith("über 1 MW"));
+
+        // U36: Die zweite Grenze ist noch nicht erreicht — eine Warnung, nicht zwei.
+        Assert.Single(cut.Instance.Anlagenwarnungen);
+        Assert.DoesNotContain(cut.FindAll(".epos-warnbanner-text"),
+                              e => e.TextContent.StartsWith("über 2 MW"));
+    }
+
+    /// <summary>
+    /// U36: Über 2 MW stehen BEIDE Warnungen. Sie hingen als <c>?:</c>-Kette
+    /// aneinander — über 1 MW die Ausschreibung, SONST über 2 MW die Stromsteuer —,
+    /// und der zweite Zweig konnte nie greifen: Jede Anlage über 2 MW ist auch über
+    /// 1 MW. Es sind zwei unabhängige Schwellen aus zwei Gesetzen.
+    /// </summary>
+    [Fact]
+    public void Ueber_2_MW_stehen_beide_Warnungen_nebeneinander()
+    {
+        var cut = Aufbauen(Satz(), kwpRechnerisch: 2500);
+
+        Assert.Equal(2, cut.Instance.Anlagenwarnungen.Count);
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"),
+                        e => e.TextContent.StartsWith("über 1 MW"));
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"),
+                        e => e.TextContent.StartsWith("über 2 MW"));
+    }
+
+    /// <summary>Gegenprobe: Unter 1 MW warnt der Dialog gar nicht.</summary>
+    [Fact]
+    public void Unter_1_MW_steht_keine_Anlagenwarnung()
+    {
+        var cut = Aufbauen(Satz(), kwpRechnerisch: 900);
+
+        Assert.Empty(cut.Instance.Anlagenwarnungen);
+        Assert.Equal("", cut.Instance.Anlagenwarnung);
     }
 
     [Fact]

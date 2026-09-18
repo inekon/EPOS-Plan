@@ -593,6 +593,21 @@ namespace WindowsFormsApplication1
             /// <summary>Einheiten-Suffix hinter dem Satzfeld („€/kW", „%", …).</summary>
             public string Einheit;
 
+            /// <summary>
+            /// U33: Das Einheitenzeichen im BETRIEBSRASTER, wo es ein anderes ist als
+            /// <see cref="Einheit"/>; leer heißt „dieselbe Einheit wie im
+            /// Investitionsraster".
+            ///
+            /// <para><b>Warum es einen zweiten Wert braucht.</b> Eine Betriebszeile
+            /// trägt einen JAHRESSATZ. Bei den Mengenarten steckt das Jahr schon in der
+            /// Bezugsgröße — „je kWh elektrisch" bemisst sich an einer Jahresmenge
+            /// [kWh/a] und heißt deshalb auf beiden Seiten „€/kWh". Eine LEISTUNG kennt
+            /// dagegen kein Jahr: „je kWp Leistung" muss die Zeitangabe im Satz tragen,
+            /// sonst stünde hinter 12,00 „€/kWp" und daneben ein Betrag von
+            /// 3.600,00 €/a. Deshalb „€/kWp·a".</para>
+            /// </summary>
+            public string EinheitBetrieb;
+
             /// <summary>In der Auswahl des Investitionsrasters?</summary>
             public bool FuerInvest;
 
@@ -627,7 +642,17 @@ namespace WindowsFormsApplication1
             N(DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,     "BM_KW_LEISTUNG",       "je kW Leistung",         "€/kW",  true,  false, false),
             N(DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, "BM_KW_HEIZLEISTUNG",   "je kW Heizleistung",     "€/kW",  true,  false, false),
             N(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,   "BM_KW_ELEKTRISCH",     "je kW elektrisch",       "€/kW",  true,  false, false),
-            N(DbWerte.BEMESSUNG_EUR_PRO_KWP,             "BM_KWP",               "je kWp Leistung",        "€/kWp", true,  false, false),
+            // U33 (18.09.2026): „je kWp Leistung" steht auch im BETRIEBSRASTER — die
+            // Wartung einer Photovoltaikanlage wird branchenüblich in €/kWp·a bemessen,
+            // und bis hierher gab es dafür keine Bemessung (fester Jahresbetrag,
+            // % der Investition, je kWh elektrisch). Gerechnet wird ohne eine einzige
+            // neue Formel: BetriebskostenCtrl.Betrag kennt die Art längst (Menge × Satz),
+            // die Bezugsgröße kommt aus derselben kWp-Wahrheit wie auf der
+            // Investitionsseite (TechnikPlanwertCtrl.BaugroesseSumme →
+            // PhotovoltaikCtrl.KwpSumme). Auf die Photovoltaik eingegrenzt wird die
+            // Auswahl nicht von Hand, sondern von der Landkarte der Bezugsgrößen
+            // (PasstZuGewerk): Kein anderes Gewerk führt eine kWp-Größe.
+            N(DbWerte.BEMESSUNG_EUR_PRO_KWP,             "BM_KWP",               "je kWp Leistung",        "€/kWp", true,  true,  false, "€/kWp·a"),
             N(DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET,  "BM_KWH_KAPAZITAET",    "je kWh Kapazität",       "€/kWh", true,  false, false),
             N(DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR,    "BM_M2_KOLLEKTOR",      "je m² Kollektorfläche",  "€/m²",  true,  false, false),
             // Altwerte — Anzeige von Bestandsdaten, keine Neuauswahl:
@@ -868,11 +893,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static string Einheit(string persistenz, int komponentenId)
         {
+            return Einheit(persistenz, komponentenId, false);
+        }
+
+        /// <summary>
+        /// U33: dasselbe Einheitenzeichen, aber IM RASTER — <paramref name="betrieb"/>
+        /// = true fragt das Betriebsraster. Nur wo der Katalog eine eigene
+        /// Betriebseinheit führt (<see cref="Info.EinheitBetrieb"/>), fällt die Antwort
+        /// anders aus; sonst ist sie Zeichen für Zeichen dieselbe.
+        /// </summary>
+        public static string Einheit(string persistenz, int komponentenId, bool betrieb)
+        {
             Sonderbeschriftung s = Sonderfall(persistenz, komponentenId);
             if (s != null) return s.Einheit;
 
             Info i = Finde(persistenz);
-            return i != null ? i.Einheit : "";
+            if (i == null) return "";
+            return betrieb && !string.IsNullOrEmpty(i.EinheitBetrieb)
+                ? i.EinheitBetrieb : i.Einheit;
         }
 
         private static string Text(string schluessel, string rueckfallDe)
@@ -884,12 +922,14 @@ namespace WindowsFormsApplication1
         }
 
         private static Info N(string persistenz, string key, string de, string einheit,
-                              bool invest, bool betrieb, bool absolut)
+                              bool invest, bool betrieb, bool absolut,
+                              string einheitBetrieb = null)
         {
             return new Info
             {
                 Persistenz = persistenz, ResourceKey = key, AnzeigeDe = de, Einheit = einheit,
                 FuerInvest = invest, FuerBetrieb = betrieb, Absolut = absolut,
+                EinheitBetrieb = einheitBetrieb,
             };
         }
     }

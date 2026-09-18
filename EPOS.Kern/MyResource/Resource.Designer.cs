@@ -21270,6 +21270,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Module × {1} Wp = {2} kWp ähnelt.
+        /// </summary>
+        public static string KDLG_HERL_KWP {
+            get {
+                return ResourceManager.GetString("KDLG_HERL_KWP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Σ Module × Leistung = {0} kWp ähnelt.
+        /// </summary>
+        public static string KDLG_HERL_KWP_SUMME {
+            get {
+                return ResourceManager.GetString("KDLG_HERL_KWP_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Mengen sind die Bezugsgrößen der Bemessungen „% des Endenergiebedarfs&quot; und „% der Endenergiekosten&quot;. ähnelt.
         /// </summary>
         public static string KDLG_HINWEIS_ENDENERGIE {
@@ -21293,6 +21311,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_KAT_INVEST {
             get {
                 return ResourceManager.GetString("KDLG_KAT_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die spezifisch {0} €/kWp ähnelt.
+        /// </summary>
+        public static string KDLG_KENN_EUR_KWP {
+            get {
+                return ResourceManager.GetString("KDLG_KENN_EUR_KWP", resourceCulture);
             }
         }
         

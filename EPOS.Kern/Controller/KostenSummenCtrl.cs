@@ -422,5 +422,49 @@ namespace WindowsFormsApplication1
         {
             return wert.ToString("#,##0.00", k) + " " + DbWerte.KOSTEN_EINHEIT_EURO;
         }
+
+        // =====================================================================
+        // U34 — die Kennzahl „spezifisch … €/kWp"
+        // =====================================================================
+
+        /// <summary><c>Tab_KostenKomponente.ID</c> der Photovoltaik — dieselbe feste
+        /// Nummer wie in <c>TechnikPlanwertCtrl.KomponentenName</c>.</summary>
+        private const int KOMPONENTE_PHOTOVOLTAIK = 3;
+
+        /// <summary>
+        /// U34 (18.09.2026): Die Kennzahlzeile des Summenfußes — „spezifisch
+        /// 640,50 €/kWp", die Nettosumme der Komponente je kWp installierter Leistung.
+        /// Leer, wo sie nichts aussagt: außerhalb der Photovoltaik, im Katalogkontext
+        /// (kein Projekt) und an einer Anlage ohne gepflegte kWp.
+        ///
+        /// <para><b>Reine Anzeige.</b> Gerechnet wird nichts Neues: Der Zähler ist die
+        /// Nettosumme, die unter dem Raster ohnehin steht, der Nenner dieselbe
+        /// kWp-Summe wie jede Bemessung „je kWp"
+        /// (<see cref="PhotovoltaikCtrl.KwpSumme"/>). Der Kapitalwert sieht die Zeile
+        /// nicht.</para>
+        ///
+        /// <para><b>Warum sie gebraucht wird.</b> €/kWp ist die Kennzahl, mit der eine
+        /// PV-Investition verglichen wird — mit Marktzahlen, mit Angeboten, mit dem
+        /// eigenen Bestand. Sie stand nirgends, obwohl beide Größen im Dialog liegen;
+        /// wer sie brauchte, rechnete sie von Hand nach.</para>
+        /// </summary>
+        /// <param name="projektID">0 = Katalogkontext: dann gibt es keine Anlage.</param>
+        /// <param name="komponentenID"><c>Tab_KostenKomponente.ID</c> des Gewerks.</param>
+        /// <param name="idAnlage">&gt; 0 = nur diese Anlagenzeile; 0 = das ganze Projekt.</param>
+        /// <param name="netto">Die Nettosumme der Komponente [€] (Erlöszeilen abgezogen).</param>
+        internal static string KennzahlText(int projektID, int komponentenID, int idAnlage,
+                                            double netto)
+        {
+            if (projektID <= 0 || komponentenID != KOMPONENTE_PHOTOVOLTAIK) return "";
+
+            double kwp;
+            try { kwp = PhotovoltaikCtrl.KwpSumme(projektID, idAnlage); }
+            catch { return ""; }
+            if (kwp <= 0) return "";
+
+            CultureInfo k = CultureInfo.CurrentCulture;
+            return string.Format(k, MyResource.Resource.KDLG_KENN_EUR_KWP,
+                                 (netto / kwp).ToString("#,##0.00", k));
+        }
     }
 }
