@@ -32,15 +32,20 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Umrechnungen eines Brennstoffs — wortgleich aus
-        /// <c>ucFuelSettings.GetConversions</c>.
+        /// Die AKTIVEN Umrechnungen eines Brennstoffs — aus
+        /// <c>ucFuelSettings.GetConversions</c>, seit ET-D mit dem Filter
+        /// <c>aktiv = 1</c>: Eine abgeschaltete Regel ist keine Regel, und wer
+        /// sie las, bekam eine Einheitenkette angeboten, die der Prüfer
+        /// <c>EnergieEinheitenPruefung</c> längst verworfen hat. Der Regelblock
+        /// der Karte liest weiter ALLE Regeln (er zeigt ja den Schalter) —
+        /// <c>EnergieEinheitenPruefung.RegelnDesBrennstoffs</c>.
         /// </summary>
         public static List<EnergyConversion> Umrechnungen(int idBrennstoff)
         {
             var liste = new List<EnergyConversion>();
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT id_brennstoff, from_unit, to_unit, factor FROM ENERGY_CONVERSION " +
-                "WHERE id_brennstoff = ?",
+                "WHERE id_brennstoff = ? AND aktiv = 1",
                 new DbParam("@id", idBrennstoff));
 
             foreach (DataRow row in dt.Rows)
@@ -147,44 +152,46 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Klappliste „Preisbasis" eines Traegers — JE EINHEIT GENAU EIN
-        /// EINTRAG, die Abrechnungseinheit zuerst, danach die Zieleinheiten der
-        /// Regeln in Regelreihenfolge.
+        /// Die Klappliste „Preisbasis" eines Traegers — GENAU ZWEI EINTRAEGE:
+        /// die Abrechnungseinheit (Faktor 1) und die Kilowattstunde
+        /// (Faktor = HEIZWERT des Traegers). Rechnet der Traeger ohnehin nach kWh
+        /// ab oder fuehrt er keinen Heizwert, bleibt der eine Eintrag.
         ///
-        /// <para><b>Befund W4-B-1 (Windows-Abnahme 04.09.2026).</b> Der Vorlaeufer
-        /// fuellte die Liste mit der <c>to_unit</c> JEDER Regel des Brennstoffs
-        /// (<c>ucFuelSettings.cs:1935–1954</c> — „kein Filter auf <c>from_unit</c>,
-        /// <c>aktiv</c> oder Traeger, kein <c>ORDER BY</c>", festgehalten in
-        /// <c>Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md</c> § 2.2), und
-        /// die Blazor-Huelle uebernahm das wortgleich. Weil die Gas-Brennstoffe
-        /// neben der Identitaetsregel <c>Nm³ → Nm³</c> auch den z-Faktor
-        /// <c>m³ → Nm³</c> fuehren, stand „Nm³" ZWEIMAL in der Liste; bei Erdgas E
-        /// kam ueber Regel 67 (<c>Nm³ → kWh</c>) das gemeldete „Nm³, kWh, Nm³"
-        /// zustande. Umgekehrt blieb die Liste — und damit das Feld — LEER,
-        /// sobald der Brennstoff gar keine Regel fuehrt.</para>
+        /// <para><b>Befund UR-1 (Anwenderfoto 18.09.2026).</b> Bis ET-D fuellte
+        /// die Liste sich aus den <c>to_unit</c> der Umrechnungsregeln, und
+        /// <b>deren <c>factor</c> rechnete den Arbeitspreis um</b>. Der Faktor
+        /// einer Regel ist aber kein Heizwert: In der Testdatenbank traegt die
+        /// Regel <c>Nm³ → kWh</c> des Erdgases E den Faktor <c>0,5</c>, waehrend
+        /// Hi bei <c>10,5 kWh/Nm³</c> steht. Wer 0,07 €/kWh eingab, bekam
+        /// 0,035 €/Nm³ gespeichert und las in der Formelzeile 0,0033 €/kWh —
+        /// drei Zahlen, drei Wahrheiten. <b>Eine Energiemenge wird ueber ihren
+        /// Heizwert in kWh getragen, nie ueber eine Einheitenregel.</b></para>
         ///
-        /// <para><b>Die Abrechnungseinheit steht immer an erster Stelle.</b> Sie
-        /// ist die Einheit, in der die Werte in der Datenbank liegen; eine Liste,
-        /// die sie nicht anbietet, kann den gespeicherten Zustand nicht zeigen.
-        /// Traegt der Brennstoff eine Regel auf diese Einheit, haengt der Eintrag
-        /// an ihr — bevorzugt an der Identitaetsregel (<c>from = to</c>), sonst an
-        /// der ersten Regel mit passender <c>to_unit</c>. Das ist genau die Regel,
-        /// die der Vorlaeufer ueber seinen Textvergleich fand, weshalb sich fuer
-        /// jeden Traeger des Katalogs weder Faktor noch gespeicherte
-        /// <c>ID_Umrechnung</c> aendern.</para>
+        /// <para><b>Die Regeln bleiben — als PRUEFUNG der Einheitenkette</b>
+        /// (<c>EnergieEinheitenPruefung</c>, Karte: Block „Einheiten und
+        /// Umrechnung"). Sie stellen hier nur noch die <c>ID_Umrechnung</c>, die
+        /// die Projektzeile <c>energy_project_settings</c> seit jeher merkt:
+        /// Eintrag 1 haengt an der Regel auf die Abrechnungseinheit (bevorzugt
+        /// der Identitaetsregel <c>from = to</c>), Eintrag 2 an der Regel nach
+        /// kWh, sofern der Brennstoff eine fuehrt. Fuehrt er keine, ist „kWh"
+        /// reiner Kartenzustand — gespeichert wird ohnehin der Basiswert je
+        /// Abrechnungseinheit, es geht also kein Wert verloren.</para>
         ///
         /// <para><b>Verglichen wird normalisiert</b> (<see cref="EinheitSchluessel"/>):
         /// ohne Rand-Leerzeichen, ohne Gross-/Kleinschreibung und mit „³"/„²" auf
-        /// „3"/„2" — „Nm3" und „Nm³" sind dieselbe Einheit. Angezeigt wird die
-        /// zuerst gefundene Schreibweise.</para>
+        /// „3"/„2" — „Nm3" und „Nm³" sind dieselbe Einheit.</para>
         /// </summary>
         /// <param name="abrechnungseinheit"><c>energy_carrier.billing_unit</c>; leer erlaubt.</param>
-        /// <param name="umrechnungen">Die Regeln des Brennstoffs in Lesereihenfolge; <c>null</c> erlaubt.</param>
+        /// <param name="umrechnungen">Die aktiven Regeln des Brennstoffs in
+        /// Lesereihenfolge; <c>null</c> erlaubt. Sie tragen nur noch die
+        /// <c>ID_Umrechnung</c> der Projektzeile, nicht mehr den Faktor.</param>
+        /// <param name="heizwert">Heizwert je Abrechnungseinheit [kWh] — der Faktor
+        /// der kWh-Basis. ≤ 0 = keine kWh-Basis.</param>
         public static List<Preisbasis> Preisbasen(string abrechnungseinheit,
-                                                  IReadOnlyList<EnergyConversion> umrechnungen)
+                                                  IReadOnlyList<EnergyConversion> umrechnungen,
+                                                  double heizwert)
         {
             var liste = new List<Preisbasis>();
-            var gesehen = new HashSet<string>(StringComparer.Ordinal);
 
             string basis = (abrechnungseinheit ?? "").Trim();
             if (basis.Length > 0)
@@ -195,25 +202,56 @@ namespace WindowsFormsApplication1
                     Umrechnung = BasisRegel(basis, umrechnungen),
                     Faktor = 1.0
                 });
-                // Der Faktor der Basis ist der Faktor ihrer Regel - ohne Regel 1.
-                if (liste[0].Umrechnung != null) liste[0].Faktor = liste[0].Umrechnung.Factor;
-                gesehen.Add(EinheitSchluessel(basis));
             }
 
-            if (umrechnungen != null)
+            // Die Abrechnungseinheit IST die Kilowattstunde (Strom, Fernwärme):
+            // Dann gibt es nur diesen einen Eintrag - ein zweiter „kWh" wäre
+            // derselbe Eintrag zweimal.
+            if (basis.Length > 0 && IstKwhEinheit(basis)) return liste;
+            if (heizwert <= 0.0) return liste;
+
+            liste.Add(new Preisbasis
             {
-                foreach (EnergyConversion c in umrechnungen)
-                {
-                    if (c == null) continue;
-                    string ziel = (c.ToUnitCode ?? "").Trim();
-                    if (ziel.Length == 0) continue;
-                    if (!gesehen.Add(EinheitSchluessel(ziel))) continue;
-
-                    liste.Add(new Preisbasis { Einheit = ziel, Umrechnung = c, Faktor = c.Factor });
-                }
-            }
+                Einheit = DbWerte.EINHEIT_KWH,
+                Umrechnung = KwhRegel(basis, umrechnungen),
+                Faktor = heizwert
+            });
 
             return liste;
+        }
+
+        /// <summary>Ist diese Einheit die Kilowattstunde? (Schreibweise egal.)</summary>
+        private static bool IstKwhEinheit(string einheit)
+        {
+            return string.Equals(EinheitSchluessel(einheit),
+                                 EinheitSchluessel(DbWerte.EINHEIT_KWH),
+                                 StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Die Regel, die den Träger von der Abrechnungseinheit nach kWh trägt —
+        /// sie liefert seit ET-D nicht mehr den FAKTOR (das tut der Heizwert),
+        /// wohl aber die <c>ID_Umrechnung</c>, die die Projektzeile seit jeher
+        /// merkt. <c>null</c> = der Brennstoff führt keine solche Regel; dann ist
+        /// die Preisbasis „kWh" reiner Kartenzustand.
+        /// </summary>
+        private static EnergyConversion KwhRegel(string basis,
+                                                 IReadOnlyList<EnergyConversion> umrechnungen)
+        {
+            if (umrechnungen == null) return null;
+            string von = EinheitSchluessel(basis);
+            string kwh = EinheitSchluessel(DbWerte.EINHEIT_KWH);
+
+            foreach (EnergyConversion c in umrechnungen)
+                if (c != null && EinheitSchluessel(c.ToUnitCode) == kwh
+                              && EinheitSchluessel(c.FromUnit) == von)
+                    return c;
+
+            foreach (EnergyConversion c in umrechnungen)
+                if (c != null && EinheitSchluessel(c.ToUnitCode) == kwh)
+                    return c;
+
+            return null;
         }
 
         /// <summary>
