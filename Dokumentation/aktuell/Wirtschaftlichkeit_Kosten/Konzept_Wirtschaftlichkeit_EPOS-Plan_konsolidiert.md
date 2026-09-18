@@ -992,6 +992,11 @@ Nachweis: `Proben/ChartProben` (Bild `kapitalwert_absolut_legende`, Gegenproben
 - **plattformfrei**: Rechen- und Zeichenlogik der Ansicht gehören nach `EPOS.UI.Daten`, sonst
   entsteht sie wie der heutige Verlauf nur für die Windows-Schale (`KapitalwertVerlaufHuelle`).
 
+**(6) Vergleichssicht — alle Varianten gegen die Referenz oder zwei Stände.** Die Anforderung vom
+18.09.2026 zur Tafel „Gliederung des Kapitalwerts" steht als eigener Abschnitt in § 2.15, weil sie
+in die Differenzrechnung greift und die Gliederung von § 2.9 braucht (Ist, Soll-Tafel, Randfälle,
+Abnahme, Etappe); das Mockup zeigt beide Sichten in Kategorie 8.
+
 **Weitere Festlegungen des Mockups:** Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite
 (K-8/V-1); Hinweistext zu den Szenarien unter der Annahmentafel (§ 2.11.7); der Kopfabschnitt „Was
 sich ändert" führt alle fünf Punkte. Die drei Entscheide, die den Zuschnitt änderten: K-3 ist mit
@@ -1025,6 +1030,148 @@ eine Fehlanzeige.
 „Allgemein", Wert 0,00). Kein heutiger Rechenweg legt sie an. **Schemaschritt 90** entfernt sie —
 aber nur, wenn die Gruppe **nirgends** eine Position mit Wert führt; sonst bleibt sie vollständig
 stehen, denn dort ist die Hauptkomponentenzeile die Überschrift ihrer Positionen.
+
+## 2.15 Vergleichssicht der Ergebnisansicht — alle Varianten gegen die Referenz oder zwei Stände (Anforderung 18.09.2026)
+
+**Anforderung des Anwenders, im Wortlaut:** „Es soll die Optionen geben, entweder Stamm mit allen
+Varianten (wie bisher) oder zwischen zwei Varianten (oder Stamm mit einer Variante)." Gemeint ist die
+Ergebnisansicht der Wirtschaftlichkeit (Berichte & Kosten → Wirtschaftlichkeit) mit ihren
+Vergleichstafeln — Kennzahltafel, Empfehlung, Bandbreite, Verlauf, Gliederung des Kapitalwerts und
+Brücke.
+
+**Warum ein eigener Abschnitt und kein sechster Punkt in § 2.13:** Die fünf Punkte der
+Anwenderdurchsicht sind Darstellungsbefunde je Größe. Die Vergleichssicht greift dagegen in die
+Differenzrechnung ein und ist das Schwesterstück von § 2.9 — sie braucht dieselbe Gliederung
+(Ist, Soll-Tafel, Randfälle, Abnahme, Einordnung als Etappe). § 2.13 verweist unter (6) hierher.
+
+**Ist (18.09.2026):** Die Ergebnisansicht stellt alle angehakten Stände der Vergleichsgruppe
+nebeneinander — eine Spalte je Stand — und rechnet die Differenzkennzahlen jeder Variante
+(Kapitalwertdifferenz, Annuität, dynamische Amortisation, interner Zinsfuß) gegen den Stamm.
+`WirtschaftlichkeitCtrl.Berechne` bildet sie aus dem Zahlungsbild der Variante und dem des Stamms;
+`KapitalwertRechner.AmortisationDifferenz` und `InternerZinsfuss` nehmen zwei Zahlungsbilder;
+`WirtschaftlichkeitZeilen.Kennzahlen` zeichnet die Stammspalte mit dem Platzhalter „Referenz".
+Welche Stände in der Ansicht stehen, entscheiden die Häkchen der Vergleichsgruppen-Liste
+(`Vergleichsauswahl` — eine Sitzungswahl für Übersicht, Kosten und Wirtschaftlichkeit). Eine Wahl
+zweier Stände gegeneinander gibt es nicht. Das Mockup zeigt diesen Zustand in Kategorie 8 als
+Sicht 1.
+
+**Soll — zwei Sichten:**
+
+| Tafel | Sicht 1 — alle Varianten gegen die Referenz | Sicht 2 — zwei Stände |
+|---|---|---|
+| Spalten | eine je angehaktem Stand, Referenzspalte zuerst | A \| B \| Differenz B − A |
+| Referenz der Differenzkennzahlen | die Referenz der Gruppe (§ 2.9; Vorgabe Stamm) | A — für diese Sicht |
+| Vorzeichen | Variante − Referenz | B − A; ein Tausch von A und B dreht das Vorzeichen |
+| Kennzahltafel und Empfehlung | je Variante eine Spalte und eine Karte, dazu der Vorschlag zur Wahl | eine Spalte „B gegen A" und eine Karte; kein Vorschlag zur Wahl — die Einstufung gilt für B gegenüber A |
+| Bandbreite | je Variante die drei Szenarien | Zeile A „Referenz", Zeile B mit den drei Szenariowerten B − A |
+| Verlauf | Differenzkurve je Variante (Farbe) und Szenario (Strichart) | die Differenzkurve B − A in drei Stricharten; ihr Nulldurchgang ist die dynamische Amortisation von B gegenüber A |
+| Gliederung und Brücke | je Stand eine Spalte, Differenzspalte gegen die Referenz | A \| B \| B − A; die Brücke läuft von A nach B |
+| ValERI-Umschalter | die fünf Blöcke gegen die Referenz der Gruppe | die fünf Blöcke gegen A, mit Deklarationszeile |
+| Kennzahlenzeile (Nachweis) | „Referenz: ‹Referenz der Gruppe›" | „Referenz dieser Sicht: ‹A› · Referenz der Gruppe: ‹Referenz›" |
+
+**Wie § 2.9 und die Paarwahl zusammenspielen — Festlegung:** Sicht 2 setzt **A als Referenz dieser
+Sicht**, ohne die gespeicherte Gruppenreferenz `ID_Referenzprojekt` anzufassen. Die
+Differenzrechnung nach § 2.9 bekommt ihre Referenz als Parameter des Aufrufs; die Gruppenreferenz
+liefert den Vorgabewert, Sicht 2 übergibt A. Die Alternative — die Paarwahl als reine Anzeige über
+der Referenzrechnung, B − A = (B − Referenz) − (A − Referenz) — trägt nur für die linearen Größen:
+Kapitalwertdifferenz, Annuität, Bandbreite, Gliederung, Brücke und Verlaufskurve sind Differenzen
+und lassen sich exakt aus den Werten der Sicht 1 bilden. Dynamische Amortisation und interner
+Zinsfuß sind es nicht: Sie hängen an der Jahresreihe der Differenz B − A und brauchen den
+Rechenlauf mit A als Gegenstück (`AmortisationDifferenz(bildB, bildA)`,
+`InternerZinsfuss(bildB, bildA)`). Ein zweiter Rechenweg für die Paarwahl wäre eine zweite
+Wahrheit; deshalb rechnet Sicht 2 mit derselben Methode wie § 2.9. Die Gruppenreferenz bleibt die
+Unterlassensalternative der Norm (§ 2.11); die Paarwahl ist ein Erkundungswerkzeug und schreibt
+sie nicht um.
+
+**Bedienung:** Über den Vergleichstafeln steht eine Optionsgruppe „Alle Varianten gegen die
+Referenz | Zwei Stände" mit zwei Klapplisten A und B. Die Listen führen die angehakten Stände der
+Vergleichsgruppe (Stamm eingeschlossen) und sind in Sicht 1 gesperrt. A ≠ B ist ohne Meldung
+gesichert: Die Liste B führt A nicht, die Liste A führt B nicht. Vorbelegung beim Wechsel in
+Sicht 2: A = Referenz der Gruppe, B = die erste andere Variante in der Reihenfolge der
+Vergleichsgruppen-Liste. Unter der Optionsgruppe nennt eine Erklärzeile die geltende Referenz — in
+Sicht 1 die der Gruppe, in Sicht 2 A und, wenn sie davon abweicht, dazu die Gruppenreferenz. Die
+Szenariowahl gilt für beide Sichten gleich. Die Beschriftung der Sicht 1 lautet „gegen die
+Referenz" und nicht „gegen den Stamm", weil die Referenz mit § 2.9 auch eine Variante sein kann;
+solange die Vorgabe gilt, nennt die Erklärzeile den Stamm.
+
+**Persistenz — Sitzung, nicht Datenbank:** Sicht, A und B liegen in der Sitzung, an derselben
+Stelle wie die Häkchen der Vergleichsgruppen-Liste (`Vergleichsauswahl`), und werden von der
+Wirtschaftlichkeitsseite und vom Bericht gelesen; Übersicht und Kosten kennen sie nicht. Beim
+Wechsel der Vergleichsgruppe und beim Neustart gilt Sicht 1. Begründung: Eine gespeicherte Paarwahl
+wäre eine zweite Referenzangabe neben `ID_Referenzprojekt` — zwei Spalten, die dasselbe meinen
+können und sich widersprechen dürfen. Wer einen Paarvergleich dauerhaft will, wählt A als
+Gruppenreferenz (§ 2.9); dann zeigt Sicht 1 alle Stände gegen A, und der Bericht ist aus der
+Datenbank reproduzierbar.
+
+**Bericht (Word und Excel):** Der Bericht folgt der Sicht — so wie er den Häkchen folgt
+(`BerichtSeiteGaben` liest `GewaehlteVarianten`). In Sicht 2 druckt er A | B | Differenz mit A als
+Referenz und die Deklarationszeile „Referenz dieser Bewertung: ‹A› · Unterlassensalternative der
+Gruppe: ‹Referenz›". Beides entsteht aus der einen Zeilendefinition:
+`WirtschaftlichkeitZeilen.Kennzahlen` bekommt die Menge [A, B] und A als Referenz, so wie es heute
+die Menge aller Stände und den Stamm bekommt — keine dritte Wahrheit, kein zweiter Zeilenkatalog.
+Der ValERI-Bewertungsbericht (Anhang E) trägt in Sicht 2 die Deklaration, dass der Vergleich zwei
+Maßnahmen gegeneinander stellt; die Norm lässt das zu (8.1.2: Wahl unter Alternativen über den
+höheren Kapitalwert), verlangt aber die Benennung. Die Ausgabe „Verlauf nach Excel…" schreibt die
+gezeichneten Reihen, in Sicht 2 also die Reihe B − A.
+
+**Randfälle, ausdrücklich geregelt:**
+
+- **Gruppe mit nur dem Stamm:** Sicht 2 ist gesperrt (Option ausgegraut, Werkzeugtipp „mindestens
+  zwei Stände"); Sicht 1 zeigt den Stamm allein.
+- **Nur eine Variante:** Sicht 2 ist möglich; die Listen führen je einen Eintrag (Stamm und
+  Variante), die Tafeln zeigen dasselbe wie Sicht 1 in der Spaltenordnung A | B | Differenz — und
+  mit A = Variante das umgekehrte Vorzeichen.
+- **Stand ohne Simulationsergebnis:** wie in § 2.9 — der Sammler rechnet ihn nach; scheitert das,
+  bleibt die Tafel leer und die Statuszeile nennt den Fehlgrund; nie ein stiller Rückfall auf Sicht 1.
+- **Gelöschte oder abgehakte Variante als A oder B:** Rückfall auf Sicht 1 mit Warnzeile, die den
+  Rückfall benennt; da die Wahl in der Sitzung liegt, bleibt nichts zu bereinigen.
+- **Gruppenreferenz wird in Sicht 2 gewechselt (§ 2.9):** A und B bleiben, wie gewählt; die
+  Erklärzeile zeigt die neue Gruppenreferenz; erst der nächste Wechsel in Sicht 2 belegt A neu vor.
+- **A = Gruppenreferenz:** Die Kennzahlen von B sind dieselben wie in Sicht 1 — ein Prüffall, kein
+  Sonderweg.
+
+**Abnahme:**
+
+- Sicht 1 ist byte-gleich zum Bestand: Referenzlauf der fünf Projekte, Word- und Excel-Bericht
+  unverändert.
+- Sicht 2 mit A = Gruppenreferenz: alle Kennzahlen von B stimmen mit der Spalte B der Sicht 1
+  überein (Test).
+- Sicht 2 mit A ≠ Gruppenreferenz: Kapitalwertdifferenz(B − A) = Kapitalwertdifferenz₁(B) −
+  Kapitalwertdifferenz₁(A) auf 0,01 €; die Gliederung geht je Bestandteil auf; ein Tausch von A
+  und B dreht das Vorzeichen von Kapitalwertdifferenz und Annuität (Tests).
+- bunit: beide Zustände der Optionsgruppe, Listen ohne den jeweils anderen Stand, Sperre bei nur
+  einem Stand, Erklärzeile mit beiden Referenzen.
+
+**Was die Umsetzung braucht:**
+
+1. die Referenz als Parameter der Differenzrechnung in `WirtschaftlichkeitCtrl.Berechne` — dort
+   ist der Stamm fest verdrahtet (`if (v.IstStamm) { … stammBild = bild; … }`); das ist zugleich
+   der Kern der Etappe § 2.9;
+2. Sicht, A und B in `Vergleichsauswahl` neben den Häkchen — plattformfrei, mit Vorbelegung und
+   Rückfallregel;
+3. `WirtschaftlichkeitZeilen.Kennzahlen` mit Menge und Referenz statt `IstStamm` als
+   Referenzkennzeichen; der Platzhalter `StammAnzeige` wird zum Referenzplatzhalter;
+4. die Optionsgruppe mit zwei Klapplisten und Erklärzeile in `WirtschaftlichkeitSeite.razor`,
+   Texte in `MyResource.Resource.*` (beide Sprachen);
+5. Bericht: Menge und Referenz aus der Sitzungswahl, dazu die Deklarationszeile;
+6. Verlauf und Brücke lesen die Referenz aus derselben Wahl — `BerechneVerlauf` rechnet die
+   Differenz zum Stamm und braucht denselben Parameter.
+
+**Fragen mit Empfehlung:**
+
+| Frage | Empfehlung |
+|---|---|
+| **VG‑Q1** Setzt Sicht 2 A als Referenz des Rechenlaufs, oder ist die Paarwahl eine Anzeige über der Referenzrechnung? | **A als Referenz dieser Sicht**, ohne die Gruppenreferenz zu schreiben — Amortisation und Zinsfuß sind nicht linear, und es gibt nur einen Rechenweg für Differenzkennzahlen |
+| **VG‑Q2** Beschriftung der Sicht 1: „gegen den Stamm" oder „gegen die Referenz"? | **„gegen die Referenz"**; die Erklärzeile nennt den Namen. „Stamm" wäre falsch, sobald § 2.9 eine Variante wählt |
+| **VG‑Q3** Persistenz der Paarwahl? | **Sitzung**, in `Vergleichsauswahl` neben den Häkchen; keine Spalte |
+| **VG‑Q4** Folgt der Bericht der Sicht, oder druckt er immer alle Stände? | **Er folgt der Sicht**, mit Deklarationszeile — so wie er den Häkchen folgt; wer alle Stände will, wählt Sicht 1 vor dem Druck |
+| **VG‑Q5** Verlauf in Sicht 2: eine Differenzkurve B − A oder die zwei Kurven A und B gegen die Gruppenreferenz? | **eine Differenzkurve B − A** — ihr Nulldurchgang ist die Amortisation des Paars; mit A = Gruppenreferenz wäre die A-Kurve die Nulllinie |
+| **VG‑Q6** ValERI-Bewertung in Sicht 2 erlaubt? | **ja**, mit der Deklaration „Vergleich zweier Maßnahmen · Unterlassensalternative der Gruppe: ‹Referenz›"; der Kapitalwert von B gegenüber A ist die Differenz zweier Kapitalwerte gegen dieselbe Unterlassensalternative |
+| **VG‑Q7** Tauschknopf ⇄ zwischen den Listen? | **ja, klein** — er spart zwei Listenwahlen und macht die Vorzeichenregel sichtbar; kein Muss |
+
+**Einordnung:** Eigene kleine Etappe **nach § 2.9**, weil sie deren Referenzparameter voraussetzt;
+ergebnisneutral in der Vorgabe (Sicht 1), erste Wirkung erst mit der Wahl der Sicht 2. Mockup:
+Kategorie 8 in `../Mockups/Dialog_Formel_Zahlenprobe.html#sicht2`, Umsetzungsstand U37.
 
 ---
 
