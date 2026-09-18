@@ -148,7 +148,7 @@ Hinweises).
 | Prüfung | Ergebnis |
 |---|---|
 | `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler, **5 Warnungen** (Bestand, Schranke 7) |
-| `dotnet test WP-Plan.Kern.slnf`, Kultur de-DE | 8 814 grün, 1 übersprungen, 0 rot (Kern 3 292, UI 4 618, KiKern 499, SpeicherEngine 378, SpeicherPlanung 27) |
+| `dotnet test WP-Plan.Kern.slnf`, Kultur de-DE | 8 817 grün, 1 übersprungen, 0 rot (Kern 3 292, UI 4 621, KiKern 499, SpeicherEngine 378, SpeicherPlanung 27) |
 | dieselben Tests unter `LC_ALL=en_US.UTF-8` | dieselben Zahlen, 0 rot |
 | `Werkzeuge/SqlDialektPruefer` | 1 490 SQL-Texte, **0 Fundstellen** |
 | `Proben/ChartProben` | 64 Bilder, 0 Verstöße |
