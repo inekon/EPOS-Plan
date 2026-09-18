@@ -111,6 +111,45 @@ Näherung über eine konstante Reihe, damit der Weg mit dem Taschenrechner nachv
 
 Kennzahlen der Mappe: IZF 20,4 % · dynamische Amortisation 4,33 a — beide nachrichtlich.
 
+## Berechnungserläuterung am Beispielprojekt
+
+Musterprojekt Gewerbepark (`Beispielprojekt.md`, Abschnitt 4c): i = 3,0 %, T = 20 a, p_E = p_B = p_I = 0,
+Referenz das Stammprojekt „Weiterbetrieb". Die Reihen der Kategorien 1 bis 7 gehen so ein, wie die
+Rechenwege `01` bis `07` sie herleiten — der KWK-Zuschlag als Reihe über zwölf Jahre (291.111 €, `05`),
+die PV-Vergütung als jahresscharfe Reihe `PV_VERGUETUNG` (nominal 150.118 €, Barwert 113.800 €, `06`),
+alle übrigen Erlöse nominal konstant. Modus AUSWEIS: kein Erlösbarwert enthält die Stromsteuer-Befreiung
+des Eigenverbrauchs.
+
+| Kennzahl (Szenario Erwartet) | Blockheizkraftwerk | Photovoltaik | Beide Anlagen | Stammprojekt |
+|---|---|---|---|---|
+| Kapitalwertdifferenz zum Stamm | +1.660.205 € | +182.491 € | +1.842.695 € | Referenz |
+| Annuität der Differenz, a(3 %, 20 a) = 0,06722 | 111.592 €/a | 12.266 €/a | 123.858 €/a | — |
+| Dynamische Amortisation, ohne Restwert | 1,68 a | 8,64 a | 2,64 a | — |
+| Interner Zinsfuß, mit Restwert | 61,2 % | 11,5 % | 39,2 % | — |
+| Wärmegestehungskosten (1.953,9 MWh/a) | 21,47 ct/kWh | 26,56 ct/kWh | 20,85 ct/kWh | 27,19 ct/kWh |
+| Nettobarwert absolut | −6.242.507 € | −7.720.222 € | −6.060.017 € | −7.902.712 € |
+| Erlöse, Barwert (nominal) | 1.025.946 (1.339.380) | 552.977 (740.510) | 1.114.304 (1.455.297) | 464.618 (624.592) |
+
+Gliederung der Differenz „beide Anlagen − Stamm" (Barwerte): Investition −426.922 · Betriebskosten
+−935.724 · Energiekosten +2.606.605 · Erlöse +649.686 · Ersatzbeschaffungen −148.982 · Restwert +98.032
+= **+1.842.695 €**.
+
+**Szenarien** — Vorgaben, nichts gepflegt: Zins 4,0 / 3,0 / 2,0 % · p_E, p_B, p_I +1 / 0 / −1 %/a ·
+Investition +10 / 0 / −10 % (nie der Zuschuss) · Erträge (Einspeiseerlös, PV-Reihe) −10 / 0 / +10 % ·
+Nutzungsdauer −2 / 0 / +2 a (Positionen ohne Dauer bleiben unberührt). Jedes Szenario ist ein
+vollständiger Lauf aller vier Versionen.
+
+| Kapitalwertdifferenz zum Stamm [€] | Ungünstig | Erwartet | Günstig | Spanne |
+|---|---|---|---|---|
+| Blockheizkraftwerk | 1.506.740 | 1.660.205 | 1.811.714 | 304.974 |
+| Photovoltaik | 129.296 | 182.491 | 236.921 | 107.625 |
+| Beide Anlagen | 1.636.035 | 1.842.695 | 2.048.635 | 412.600 |
+
+Beide Anlagen je Szenario: I₀ 470.215 / 426.922 / 383.630 € · Ersatz in den Jahren 10, 13, 18 / 12, 15 /
+14, 17 · Restwert 156.977 / 177.056 / 177.517 €, Barwert 71.642 / 98.032 / 119.464 € · kumulierter
+Barwert der Differenz vor Restwert am Horizontende 1.564.393 / 1.744.663 / 1.929.171 € · Nulldurchgang
+(dynamische Amortisation) 3,02 / 2,64 / 2,28 a.
+
 ## Was die Norm zusätzlich verlangt (Gap-Tabelle V-G, Kurzfassung)
 
 | # | Anforderung | Stand | Behandlung |

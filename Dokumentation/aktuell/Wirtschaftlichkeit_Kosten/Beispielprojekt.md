@@ -136,6 +136,33 @@ PV-Vergütung Jahr 1: 9.001,44 € aus `PvErloesRechner` (Stufe 1, ohne Stundenr
 (§ 51, 20 % abgeregelt), Spoterlös 7.182,00 + Marktprämie 2.457,84 − DV-Entgelt 638,40; § 51a im Jahr 20 1.095,52 €;
 Reihe nominal 150.118 €, Barwert 113.800 € (`Rechenweg/06`).
 
+## 4c Wirtschaftlichkeit über 20 Jahre
+
+Kapitalwertrechnung nach `KapitalwertRechner` mit den Reihen aus 4a und 4b (Rechenweg/08): i = 3,0 %,
+T = 20 a, p_E = p_B = p_I = 0, Referenz das Stammprojekt. Kapitalwertdifferenz = Nettobarwert der Version
+− Nettobarwert des Stammprojekts; Annuität mit a(3 %, 20 a) = 0,06722; Amortisation ohne, interner
+Zinsfuß mit Restwert.
+
+| Kennzahl (Szenario Erwartet) | Stammprojekt | Variante 1 — BHKW | Variante 2 — PV | Variante 3 — beide |
+|---|---|---|---|---|
+| Nettobarwert absolut | −7.902.712 € | −6.242.507 € | −7.720.222 € | −6.060.017 € |
+| Kapitalwertdifferenz zum Stamm | — | +1.660.205 € | +182.491 € | +1.842.695 € |
+| Annuität der Differenz | — | 111.592 €/a | 12.266 €/a | 123.858 €/a |
+| Dynamische Amortisation | — | 1,68 a | 8,64 a | 2,64 a |
+| Interner Zinsfuß | — | 61,2 % | 11,5 % | 39,2 % |
+| Wärmegestehungskosten | 27,19 ct/kWh | 21,47 ct/kWh | 26,56 ct/kWh | 20,85 ct/kWh |
+| Erlöse, Barwert (nominal) | 464.618 (624.592) | 1.025.946 (1.339.380) | 552.977 (740.510) | 1.114.304 (1.455.297) |
+
+Szenarien (Vorgaben `Tab_ProjektWirtschaftlichkeit`, nichts gepflegt): Ungünstig i 4,0 %, p_E/p_B/p_I
++1 %/a, Investition +10 %, Erträge −10 %, Nutzungsdauer −2 a · Günstig spiegelbildlich (i 2,0 %,
+−1 %/a, −10 %, +10 %, +2 a).
+
+| Kapitalwertdifferenz zum Stamm [€] | Ungünstig | Erwartet | Günstig |
+|---|---|---|---|
+| Variante 1 — BHKW | 1.506.740 | 1.660.205 | 1.811.714 |
+| Variante 2 — PV | 129.296 | 182.491 | 236.921 |
+| Variante 3 — beide | 1.636.035 | 1.842.695 | 2.048.635 |
+
 ## 5 Gesetzliche Sätze (Katalog `Tab_Gesetzesparameter`, Stand 2026)
 
 | Vorschrift | Satz |
