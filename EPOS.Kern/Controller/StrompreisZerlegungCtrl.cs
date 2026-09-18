@@ -120,8 +120,9 @@ namespace WindowsFormsApplication1
             if (idProjekt <= 0) return 0;
 
             // ET-5 (Anwenderentscheid 08.09.2026): Der an der ANLAGE gewaehlte Stromtraeger
-            // (Waermepumpe vor Heizstab vor Speicher vor Photovoltaik) gewinnt, wenn er dem
-            // Projekt zugeordnet ist - Preis, Anteile und Emissionen lesen dieselbe Wahl.
+            // (Waermepumpe vor Heizstab vor Elektrokessel vor Speicher vor Photovoltaik)
+            // gewinnt, wenn er dem Projekt zugeordnet ist - Preis, Anteile und Emissionen
+            // lesen dieselbe Wahl.
             try
             {
                 int gewaehlt = ProjektEnergietraegerCtrl.StromTraegerDerAnlagen(idProjekt);

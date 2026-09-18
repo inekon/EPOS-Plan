@@ -477,11 +477,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ET‑5 (Anwenderentscheid 08.09.2026): der an einer ANLAGE gewählte Stromträger —
-        /// Verbraucher zuerst (Wärmepumpe, Heizstab, Stromspeicher), dann Photovoltaik — wenn er
-        /// ein dem Projekt zugeordneter ELECTRICITY-Träger ist. 0 = keine Anlage hat gewählt;
-        /// dann gilt die bisherige Regel (kleinste Id der Zuordnungen). Ohne gesetzte
-        /// <c>ID_Carrier</c> an elektrischen Anlagen (aller Bestand vor ET‑5) ändert sich
-        /// nichts — die Referenzläufe bleiben unberührt.
+        /// Verbraucher zuerst (Wärmepumpe, Heizstab, ELEKTROKESSEL, Stromspeicher), dann
+        /// Photovoltaik — wenn er ein dem Projekt zugeordneter ELECTRICITY-Träger ist.
+        /// 0 = keine Anlage hat gewählt; dann gilt die bisherige Regel (kleinste Id der
+        /// Zuordnungen). Ohne gesetzte <c>ID_Carrier</c> an elektrischen Anlagen (aller
+        /// Bestand vor ET‑5) ändert sich nichts — die Referenzläufe bleiben unberührt.
+        ///
+        /// <para><b>Die Rangfolge</b> (der kleinste Rang gewinnt): Wärmepumpe 0,
+        /// Heizstab 1, Elektrokessel 2, Stromspeicher 3, Photovoltaik 4. Der
+        /// ELEKTROKESSEL (E1, Anwenderentscheid 18.09.2026) steht unmittelbar hinter dem
+        /// Heizstab — beide machen aus Netzstrom Wärme. Einen eigenen Stromtarif je
+        /// Verbraucher gibt es dabei NICHT: Die Wahl an der Anlage benennt den EINEN
+        /// Stromträger des Projekts, bepreist wird der Netzbezug einmal.</para>
+        ///
+        /// <para>Der Kesselweg kostet eine ZWEITE Abfrage — den Kesselkatalog des
+        /// Projekts, einmal je Aufruf. Er wird deshalb nur gezogen, solange kein
+        /// besserer Rang schon steht.</para>
         /// </summary>
         internal static int StromTraegerDerAnlagen(int projektID)
         {
@@ -491,14 +502,30 @@ namespace WindowsFormsApplication1
             int bester = 0, besterRang = int.MaxValue;
             List<Traeger> katalog = null;
             HashSet<int> zugeordnet = null;
+            Dictionary<int, int> kesselBrennstoff = null;
+            bool kesselGelesen = false;
             foreach (DataRow r in anlagen.Rows)
             {
                 int idCarrier = Ganz(r, SchemaKatalog.SPALTE_ID_CARRIER);
                 if (idCarrier <= 0) continue;
                 int rang = Ganz(r, "ID_WP") > 0 ? 0
                          : Ja(r, "Heizstab") ? 1
-                         : Ganz(r, "ID_SP") > 0 ? 2
-                         : Ganz(r, "ID_PV") > 0 ? 3 : -1;
+                         : Ganz(r, "ID_SP") > 0 ? 3
+                         : Ganz(r, "ID_PV") > 0 ? 4 : -1;
+
+                // Rang 2 — der Elektrokessel. Gefragt wird nur, wo die Antwort den Rang
+                // dieser Zeile verbessern UND den erreichten Stand schlagen kann.
+                int idKessel = Ganz(r, "ID_Kessel");
+                if (idKessel > 0 && (rang < 0 || rang > 2) && besterRang > 2)
+                {
+                    if (!kesselGelesen)
+                    {
+                        kesselBrennstoff = GeraeteBrennstoff(projektID, "ID_Kessel", "Tab_Heizkessel");
+                        kesselGelesen = true;
+                    }
+                    if (IstElektrokessel(kesselBrennstoff, idKessel)) rang = 2;
+                }
+
                 if (rang < 0 || rang >= besterRang) continue;
 
                 if (katalog == null) { katalog = Katalog(); zugeordnet = Zugeordnete(projektID); }

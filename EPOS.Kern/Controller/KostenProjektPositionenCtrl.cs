@@ -248,7 +248,8 @@ namespace WindowsFormsApplication1
                 // GRUND mitgegeben. Ohne ihn zeigt das Raster nur die 0 des
                 // Anwenderentscheids I-2 — und der Anwender sucht den Fehler bei sich.
                 z.BasisGrund = z.Basis.HasValue
-                    ? "" : WirtschaftlichkeitCtrl.BasisGrund(z.Raster.Bemessung, komponentenId);
+                    ? "" : WirtschaftlichkeitCtrl.BasisGrundFuerZeile(
+                               z.Raster.Bemessung, komponentenId, anlageDerZeile);
 
                 liste.Add(z);
             }
@@ -354,7 +355,8 @@ namespace WindowsFormsApplication1
 
             // H4c: derselbe Grundausweis wie beim Laden.
             z.BasisGrund = z.Basis.HasValue
-                ? "" : WirtschaftlichkeitCtrl.BasisGrund(z.Raster.Bemessung, komponente);
+                ? "" : WirtschaftlichkeitCtrl.BasisGrundFuerZeile(
+                           z.Raster.Bemessung, komponente, anlage);
 
             // 14.09.2026: und dieselbe Herleitung.
             z.BasisHerleitung = z.Basis.HasValue
