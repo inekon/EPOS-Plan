@@ -96,7 +96,28 @@ namespace WindowsFormsApplication1
 
         // Speicher für die korrekte Nutzungsgrad-Bilanz
         public double[] Kessel_Jahresnutzungsgrad_Spk = new double[MAX_SPK];
-        private double[] Kessel_Verbrauch_MWh_Spk = new double[MAX_SPK];
+
+        /// <summary>
+        /// Brennstoffeinsatz JE KESSEL [MWh/a] — Nutzwärme über den Wirkungsgrad plus
+        /// die Bereitschaftsverluste der Stillstandsstunden, indexgleich zu
+        /// <see cref="spk_list"/>.
+        ///
+        /// <para><b>Öffentlich wie seine drei Nachbarn</b> (<c>s_waerme_Gas_Spk</c>,
+        /// <c>s_waerme_Oel_Spk</c>, <c>Kessel_Jahresnutzungsgrad_Spk</c>): Der
+        /// <c>SimulationRunner</c> übernimmt den Wert in die Modulzeile
+        /// (<c>Tab_ErgebnisHeizkesselModul.Verbrauch</c>), aus der die Kostenkette
+        /// Energiekosten, CO₂-Bilanz und BEHG-Abgabe bildet. Solange das Feld
+        /// <c>private</c> war, konnte der Runner es nicht lesen; die Spalte blieb im
+        /// gesamten Bestand 0, und der Kesselbrennstoff fehlte in allen drei Größen.</para>
+        ///
+        /// <para><b>Anlagenebene und Modulebene führen dieselbe Größe:</b>
+        /// <see cref="Bilanz_und_Nutzungsgrad"/> bucht genau diesen Wert je Brennstoffart
+        /// auf die Anlagensummen (<c>GasverbrauchSpkMwh</c> und Geschwister). Die
+        /// Modulzeile ist damit keine zweite Wahrheit, sondern dieselbe Zahl je Kessel
+        /// statt je Träger — mit der Ausnahme des Elektrokessels, siehe
+        /// <see cref="IstStromkessel"/>.</para>
+        /// </summary>
+        public double[] Kessel_Verbrauch_MWh_Spk = new double[MAX_SPK];
 
         // Interne Kesselkonfigurationen
         double[] Betriebsbereitschaft_Verluste = new double[MAX_SPK];
@@ -249,6 +270,71 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <c>Tab_Brennstoff_Stamm.ID</c> des ELEKTROKESSELS. Die Verzweigung in
+        /// <see cref="Bilanz_und_Nutzungsgrad"/> führt dieselbe Zahl.
+        /// </summary>
+        public const int BRENNSTOFF_STROM = 13;
+
+        /// <summary>
+        /// Läuft DIESER Kessel auf Strom (<c>Tab_Heizkessel.Brennstoff</c> =
+        /// <see cref="BRENNSTOFF_STROM"/>)?
+        ///
+        /// <para><b>Warum die Frage zählt.</b> Ein Elektrokessel bucht seinen Einsatz
+        /// in <see cref="Bilanz_und_Nutzungsgrad"/> auf den STROMzähler
+        /// (<c>StromverbrauchSpkMwh</c>) und über <c>Stromverbrauch_stuendlich</c> in
+        /// die Stundenreihe; von dort steht er im Reststrombedarf und damit im
+        /// Netzbezug, den die Kostenrechnung eigens bepreist. Seine Modulzeile führt
+        /// deshalb bewusst KEINEN Brennstoffverbrauch: Derselbe Strom stünde sonst
+        /// zweimal in Energiekosten, CO₂-Bilanz und BEHG-Abgabe — einmal als Netzbezug
+        /// und einmal als „Brennstoff" seines Trägers.</para>
+        ///
+        /// <para>Die Zeile selbst bleibt (Wärme, Nutzungsgrad, Träger): Sie ist die
+        /// Anzeigezeile des Kessels, und die Referenzlauf-Suite exportiert die Module
+        /// indexgleich zu <see cref="spk_list"/> — eine fehlende Zeile verschöbe jede
+        /// folgende.</para>
+        /// </summary>
+        /// <param name="index">Kesselindex, wie in <see cref="spk_list"/></param>
+        public bool IstStromkessel(int index)
+        {
+            if (index < 0 || index >= Brennstoff_Art.Length) return false;
+            return Brennstoff_Art[index] == BRENNSTOFF_STROM;
+        }
+
+        /// <summary>
+        /// Das BRENNSTOFFWORT dieses Kessels für <c>Tab_ErgebnisHeizkesselModul.Brennstoff</c>
+        /// — dieselben neun Wörter, die <c>ErgebnisCtrl.BHKWBrennstoff</c> für die
+        /// BHKW-Modulzeile schreibt, plus „Strom" für den Elektrokessel.
+        ///
+        /// <para><b>Die Verzweigung ist Bereich für Bereich die aus
+        /// <see cref="Bilanz_und_Nutzungsgrad"/></b> (<c>Tab_Brennstoff_Stamm.ID_Kategorie</c>):
+        /// Wer dort einen Bereich verschiebt, verschiebt ihn hier mit, sonst nennt die
+        /// Modulzeile einen anderen Brennstoff als den, auf dessen Anlagenzähler der
+        /// Verbrauch gebucht wurde.</para>
+        ///
+        /// <para><b>Persistenzwert, immer deutsch</b> (Drei-Schichten-Regel, wie
+        /// <c>mo.Modul</c>): Das Wort wird nach <c>Tab_ErgebnisHeizkesselModul</c>
+        /// GESCHRIEBEN und von der Referenzlauf-Suite als Skalar exportiert. Ein
+        /// übersetzter Ersatzname ließe DE- und EN-Läufe auseinanderlaufen.</para>
+        /// </summary>
+        /// <param name="index">Kesselindex, wie in <see cref="spk_list"/></param>
+        public string BrennstoffWort(int index)
+        {
+            if (index < 0 || index >= Brennstoff_Art.Length) return "";
+            int art = Brennstoff_Art[index];
+
+            if ((art >= 1 && art <= 5) || art == 14) return "Gas";
+            if ((art >= 6 && art <= 9) || (art >= 18 && art <= 22)) return "Öl";
+            if (art == 10) return "Koks";
+            if (art == 11) return "Kohle";
+            if (art == 12) return "Holz";
+            if (art == BRENNSTOFF_STROM) return "Strom";
+            if (art == 15) return "Pellets";
+            if (art == 16) return "Rapsöl";
+            if (art == 17) return "Tierische Fette";
+            return "Sonstige";
+        }
+
+        /// <summary>
         /// Schritte 4 und 5 der Kesselbilanz: globale Brennstoffzähler, Emissionen und
         /// Jahresnutzungsgrad je Kessel. Beide Rechenwege (einkanalig und zweikanalig)
         /// benutzen sie unverändert.
@@ -273,16 +359,21 @@ namespace WindowsFormsApplication1
                 // und zählt zum Gas. Was keinen eigenen Zähler hat (23 Fernwärme,
                 // 24 Sonstige, 25 Wasserstoff, künftige IDs), fängt das else als
                 // Sammelposten — dieselbe Verzweigung erwartet die Anzeige
-                // (Form_Simulation_Detail, _kesselBrennstoffIds).
+                // (Form_Simulation_Detail, _kesselBrennstoffIds) UND das Brennstoffwort
+                // der Modulzeile (BrennstoffWort): Wer hier einen Bereich verschiebt,
+                // verschiebt ihn dort mit.
                 if ((Brennstoff_Art[i] >= 1 && Brennstoff_Art[i] <= 5) || Brennstoff_Art[i] == 14) GasverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
                 else if ((Brennstoff_Art[i] >= 6 && Brennstoff_Art[i] <= 9) || (Brennstoff_Art[i] >= 18 && Brennstoff_Art[i] <= 22)) OelverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 10) KoksSpkMwh += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 11) KohleSpkMwh += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 12) HolzverbrauchSpkMwh += Kessel_Gesamtverbrauch_MWh;
                 else if (Brennstoff_Art[i] == 17) TierischeFetteSpkMwh += Kessel_Gesamtverbrauch_MWh;
-                else if (Brennstoff_Art[i] == 13)
+                else if (Brennstoff_Art[i] == BRENNSTOFF_STROM)
                 {
-                    // Elektrowärme / Wärmepumpe
+                    // Elektrowärme / Wärmepumpe. DIE STELLE, an der der Elektrokessel
+                    // seinen Einsatz auf den STROMzähler bucht statt auf einen
+                    // Brennstoffzähler — der Grund, weshalb seine Modulzeile keinen
+                    // Brennstoffverbrauch führt (IstStromkessel).
                     StromverbrauchSpkMwh += Kessel_Nutzkraft_Jahr;
                     // B0-2: auch hier kein Aliasing — sonst bleibt der Strom-Vektor ab dem
                     // zweiten Lauf dauerhaft an die Kessel-Ganglinie gebunden.

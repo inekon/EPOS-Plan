@@ -276,7 +276,27 @@ namespace WindowsFormsApplication1
         public double Waerme_Gas;          // MWh/a (Gas/Biogas/Rapsoel/Holz...)
         public double Waerme_Oel;          // MWh/a
         public double Waermeproduktion;   // MWh/a
+
+        /// <summary>
+        /// Das BRENNSTOFFWORT dieses Kessels (Gas, Öl, Koks, Kohle, Holz, Strom,
+        /// Pellets, Rapsöl, Tierische Fette, Sonstige) — gebildet in
+        /// <c>SimulationSPK.BrennstoffWort</c> aus derselben Bereichsverzweigung, die
+        /// den Verbrauch auf die Anlagenzähler bucht. Persistenzwert, immer deutsch;
+        /// leer = Zeile vor Befund B-1 oder aus der Rücklesung ohne Wort.
+        /// </summary>
         public string Brennstoff = "";
+
+        /// <summary>
+        /// Brennstoffeinsatz DIESES Kessels [MWh/a] — die Endenergie, aus der
+        /// Energiekosten, CO₂-Bilanz und BEHG-Abgabe entstehen
+        /// (<c>SimulationSPK.Kessel_Verbrauch_MWh_Spk</c>, übernommen im
+        /// <c>SimulationRunner</c>).
+        ///
+        /// <para><b>0 heißt zweierlei</b> und die Leser müssen beides vertragen:
+        /// ein ELEKTROKESSEL (er bucht auf den Stromzähler und steht im Netzbezug —
+        /// <c>SimulationSPK.IstStromkessel</c>), oder eine GESPEICHERTE Zeile aus einem
+        /// Lauf vor Befund B-1, in der die Spalte nie gefüllt wurde.</para>
+        /// </summary>
         public double Verbrauch = 0.0;          // MWh/a
         public int CarrierId;              // energy_carrier.id (0 = keine Zuordnung)
 
@@ -287,9 +307,10 @@ namespace WindowsFormsApplication1
         /// 0 = der Kessel stand still oder der Wert wurde nicht erhoben.
         ///
         /// <para><b>Die Einheit ist tragend</b> (Etappe B3 Paket a): Aus ihr leitet
-        /// <c>WirtschaftlichkeitCtrl</c> die Bemessungsmenge des Paragrafen 54 zurueck
-        /// (<c>(Waerme_Gas + Waerme_Oel) / (Jahresnutzungsgrad / 100)</c>), weil
-        /// <see cref="Verbrauch"/> vom Rechenkern nie gesetzt wird.</para>
+        /// <c>HilfsstromRechner.KesselBrennstoffMWh</c> die Bemessungsmenge des
+        /// Paragrafen 54 zurueck (<c>(Waerme_Gas + Waerme_Oel) / (Jahresnutzungsgrad /
+        /// 100)</c>), wo <see cref="Verbrauch"/> nicht steht — seit Befund B-1 sind das
+        /// gespeicherte Altzeilen und der Elektrokessel.</para>
         /// </summary>
         public double Jahresnutzungsgrad;  // %
 

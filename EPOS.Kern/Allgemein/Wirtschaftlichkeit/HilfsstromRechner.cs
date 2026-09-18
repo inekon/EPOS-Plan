@@ -262,13 +262,23 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Bemessungsmenge des § 54 für einen Kessel [MWh/a, heizwertbezogen].
         ///
-        /// <para><b>Warum sie abgeleitet und nicht gelesen wird.</b>
-        /// <c>Tab_ErgebnisHeizkesselModul.Verbrauch</c> existiert seit jeher, wird vom
-        /// Rechenkern aber NIE gesetzt (<c>SimulationRunner</c> füllt an der Modulzeile
-        /// nur Modul, Waerme_Gas, Waerme_Oel, Jahresnutzungsgrad und carrier_id) — im
-        /// ganzen Bestand steht dort 0. Gelesen wird die Spalte trotzdem zuerst: Sobald
-        /// sie einmal gefüllt wird, ist sie die bessere Quelle, und diese Reihenfolge
-        /// muss dann nicht noch einmal angefasst werden.</para>
+        /// <para><b>Gelesen wird die Spalte, abgeleitet nur der Rest.</b>
+        /// <c>Tab_ErgebnisHeizkesselModul.Verbrauch</c> trägt den Brennstoffeinsatz des
+        /// Laufs (Befund B-1, Anwenderentscheid 18.09.2026) — sie ist die erste und
+        /// bessere Quelle.</para>
+        ///
+        /// <para><b>DER RÜCKFALL BLEIBT</b>, und er bleibt für genau zwei Fälle, die
+        /// beide ohne ihn eine 0 in die Steuerbemessung trügen:
+        /// <list type="number">
+        ///   <item><description>GESPEICHERTE LÄUFE aus der Zeit vor B-1. Sie behalten
+        ///     ihre 0 in der Spalte; niemand rechnet sie nach, und der Bericht zu einem
+        ///     alten Lauf soll dieselbe Menge nennen wie vorher.</description></item>
+        ///   <item><description>Der ELEKTROKESSEL. Seine Modulzeile führt bewusst
+        ///     keinen Brennstoffverbrauch (<c>SimulationSPK.IstStromkessel</c>), weil
+        ///     sein Einsatz im Netzbezug steht. Für die Steuerseite bleibt es damit bei
+        ///     der Rückrechnung über den Nutzungsgrad — dieselbe Menge wie vor
+        ///     B-1.</description></item>
+        /// </list></para>
         ///
         /// <para><b>Die Ableitung ist die exakte Umkehrung der Vorwärtsrechnung.</b>
         /// <c>SimulationSPK.Bilanz_und_Nutzungsgrad</c> bildet den Nutzungsgrad als
@@ -285,10 +295,10 @@ namespace WindowsFormsApplication1
         /// „Menge unklar" mit dem Anlagennamen. Eine geratene Menge wäre hier dasselbe wie
         /// eine geratene Dichte (Leitentscheidung L3).</para>
         ///
-        /// <para><b>Der Simulationspfad bleibt unberührt.</b> Die Ableitung steht
-        /// bewusst in der Zuführung und nicht im <c>SimulationRunner</c>: Eine neu
-        /// gefüllte Ergebnisspalte änderte gespeicherte Läufe und damit die
-        /// Referenzlaufvergleiche, ohne dass die Wirtschaftlichkeit davon mehr hätte.</para>
+        /// <para><b>Die Ableitung bleibt hier und wandert nicht in den
+        /// <c>SimulationRunner</c>:</b> Dort steht seit B-1 der GERECHNETE Einsatz;
+        /// eine zweite, zurückgerechnete Menge daneben wäre die zweite Wahrheit über
+        /// dieselbe Größe.</para>
         ///
         /// <para><b>ETAPPE B3 Paket b.</b> Der Speicherweg (<see cref="ErgebnisCtrl"/>)
         /// braucht dieselbe Menge als Bemessungsgrundlage des Hilfsstroms. Eine zweite

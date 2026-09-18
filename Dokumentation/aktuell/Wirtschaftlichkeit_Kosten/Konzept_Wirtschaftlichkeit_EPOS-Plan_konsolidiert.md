@@ -515,9 +515,9 @@ Betriebskosten BHKW 1        brutto 8.358,08 €/a        7.023,60
 
 **Einordnung und Grenzen:** Nur Konzept, keine Umsetzung (Arbeitsregel). Der Klick auf einen
 Betrag öffnet die vollständige Herleitung (Entwurf C im Artifact); die Mengenherkunft folgt den
-Rechenwegen aus § 3.4 — insbesondere gilt Befund **B-1** (Kessel-Endenergie strukturell 0) bis zu
-seiner Behebung auch hier: Die Herleitungszeile würde am Kessel „× 0 kWh" zeigen und macht den
-Befund damit erstmals sichtbar statt ihn zu verstecken.
+Rechenwegen aus § 3.4. Die Herleitungszeile zeigt am Kessel die Menge des Laufs (Befund **B-1**);
+beim Elektrokessel steht dort „× 0 kWh", weil seine Energie als Netzbezug und nicht als Brennstoff
+geführt wird.
 
 ## 2.9 Wählbares Vergleichsprojekt — die Referenz der Differenzrechnung (Anforderung 31.08.2026)
 
@@ -739,7 +739,7 @@ Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegza
 | # | Kategorie | Rechenweg | Kernaussage der Zahlenprobe |
 |---|---|---|---|
 | 1 | Investitionskosten BHKW | `01` | Kaskadenfaktor 1,155; I₀ = 33.927,61 − 6.000 = 27.927,61 € |
-| 2 | Betriebskosten BHKW | `02` | Hilfsenergie 2 % × 312.631 € Endenergiekosten = 6.252,62 €/a (21.710 kWh Strom); B-1 am Kessel sichtbar als „× 0 kWh" |
+| 2 | Betriebskosten BHKW | `02` | Hilfsenergie 2 % × 312.631 € Endenergiekosten = 6.252,62 €/a (21.710 kWh Strom); die Kesselmenge kommt aus der Modulzeile (B-1) |
 | 3 | Kosten der Photovoltaik | `03` | 192.150 € = 640,50 €/kWp; Wechselrichter-Ersatz Jahr 12 (24.000 €, Barwert 16.833), Restwert 39.800 € (Barwert 22.036); Degradation 0,5 %/a → Jahr 20: 259,1 MWh |
 | 4 | Energiekosten | `04` | Preisbestandteile 0,0638 + 0,1371 + 0,1180 + 0,4371 = 0,7560 €/m³; BEHG 872,3 t × 65 € = 56.700 €/a; N3 +32 % |
 | 5 | **Vergütungen BHKW** | `05` | **Mengentafel** brutto 1.650 → netto 1.563,2 (§ 9 Nr. 3 bleibt brutto); Mischsatz 5,5667 / 2,4167 ct; 2026 vergütet 60 % = 31.531 €; **Reihe endet nach zwölf Jahren** (286.644 €); § 53a 21.203 €/a |
@@ -950,7 +950,7 @@ gespeicherte Wert.
 | Komponente | Endenergie | Formel |
 |---|---|---|
 | BHKW | Brennstoff | Bedarf = Σ Verbrauch × 1000; Kosten = Bedarf × Arbeitspreis(CarrierId) |
-| Heizkessel | Brennstoff | ebenso ⚠ **B-1**: `Verbrauch` ist im Bestand 0 |
+| Heizkessel | Brennstoff | ebenso; `Verbrauch` trägt den Brennstoffeinsatz des Laufs (**B-1**). Beim Elektrokessel 0 — seine Energie steht im Netzbezug |
 | Wärmepumpe | Strom | Bedarf = Σ (Stromverbrauch + Heizstab) × 1000; Kosten = Bedarf × Strompreis |
 | PV · Solarthermie · Speicher | keine | null — nur Jahresbetrag zulässig |
 
@@ -1372,7 +1372,7 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 
 | Nr. | Befund |
 |---|---|
-| ⚠ **B-1** | **Kessel-Endenergie ist strukturell 0** — der Rechenkern setzt `Verbrauch` nie. Endenergie-Positionen am Kessel liefern 0 € und überschreiben die Konserve. Die Steuerseite umgeht das seit B3a, Kosten- und Betriebsseite nicht. |
+| ✔ **B-1** | **Die Kessel-Modulspalte `Verbrauch` blieb leer** — der Rechenkern führte den je Kessel gerechneten Brennstoffeinsatz nur auf der Anlagenzeile je Brennstoffart, und genau die Modulspalte liest die Kostenkette. Endenergie-Positionen am Kessel fielen damit auf `null` (nicht auf 0 €). Die Steuerseite umging es über den Jahresnutzungsgrad, Kosten- und Betriebsseite nicht. **Erledigt:** Die Modulzeile trägt Verbrauch, Wärmeproduktion und Brennstoff des Laufs; Modulverbrauch und Anlagensumme sind dieselbe Größe. Ausgenommen der Elektrokessel — er bucht auf den Stromzähler und steht im Netzbezug, seine Modulzeile führt bewusst 0. |
 | B-2 | Asymmetrie der Rückfälle: Endenergie-Arten unbedingt frisch, Rückfall-Arten bedingt. |
 | B-3 | „Jüngster Lauf" ist die höchste ID, nicht der Zeitstempel. |
 | B-4 | Vier Arten nie frisch: `EUR_PRO_H`, `EUR_PRO_KWH`, `PROZENT_BRENNSTOFFKOSTEN`, `PROZENT_STROMKOSTEN`. |
@@ -1384,7 +1384,7 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 
 | Nr. | Befund |
 |---|---|
-| ⚠ **N1** | Kesselbrennstoff fehlt in Kosten, CO₂ und BEHG **ohne Meldung** — Folge von B-1; `kostenVollstaendig` bleibt true. |
+| ✔ **N1** | Kesselbrennstoff fehlte in Kosten, CO₂ und BEHG **ohne Meldung** — Folge von B-1; `kostenVollstaendig` blieb true. **Erledigt mit B-1:** Der Brennstoff steht jetzt in allen drei Größen. Trägt der Kessel keinen Energieträger, greift die allgemeine Regel „keine stillen Teilsummen": Energiekosten und CO₂ bleiben `null` mit dem benannten Grund „gehört zu keinem Energieträger" samt Ausweg — statt wie bisher vollständig auszusehen und den Kessel zu übergehen. |
 | N2 | 0 beim Grundpreis gültig, 0 beim Arbeitspreis „ungepflegt" — verschiedene Regeln, beide gewollt. |
 | ✔ **N3** | Ungepflegte Anteilsspalten wirkten als 11,746 ct/kWh, nicht als 0 — erledigt: Ein ungepflegter Anteil ist inaktiv und trägt 0 bei. |
 
