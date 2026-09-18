@@ -43,9 +43,9 @@ Eigenstrom  2,4167 ct/kWh — Tatbestand Nr. 2: 50 × 4,00 + 50 × 3,00 + 150 ×
 ```
 
 Knopf „Vorschlag in die Satzfelder übernehmen" (schreibt nur auf Knopfdruck) · Vbh-Kontingent
-30.000 h (neu, § 8 Abs. 1) · Jahresdeckel 2026 3.300 h/a (Staffel § 8 Abs. 4) · Abschlag
+30.000 h (neu, § 8 Abs. 1) · Jahresdeckel 3.300 h/a im Jahr 1 (2026), je Kalenderjahr fallend (2027 3.100 · 2028 2.900 · 2029 2.700 · ab 2030 2.500; Staffel § 8 Abs. 4) · Abschlag
 Negativstunden [%]. **Warnband:** „Die Anlage läuft 5.500 h/a, vergütet werden 2026 aber nur
-3.300 h — 60 % der Erzeugung. Das Kontingent reicht dadurch über 12 Kalenderjahre."
+3.300 h — 60 % der Erzeugung. Weil der Deckel jährlich fällt, reicht das Kontingent über 12 Kalenderjahre — bei festem Deckel wären es 10."
 
 **Gruppe Energiesteuer:** Entlastung Projekt (keine · § 53 Formular 1131 · § 53a Abs. 5 Formular
 1135 · § 54 Formular 1450) · Brennstoffaufteilung · Jahresnutzungsgrad 83,0 % (Schwelle 70 %) ·
