@@ -19098,6 +19098,99 @@ Möchten Sie das zulassen?</value>
   <data name="ND_MELD_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Die Zeile ließ sich nicht speichern.</value>
   </data>
+  <data name="ND_HERK_TECHNIK" xml:space="preserve">
+    <value>Vorgabe der Technik</value>
+  </data>
+  <data name="ND_HERK_ART" xml:space="preserve">
+    <value>AfA-Tabelle: {0}</value>
+  </data>
+  <data name="ND_HERK_KEINE" xml:space="preserve">
+    <value>keine Dauer gepflegt</value>
+  </data>
+  <data name="ND_ZEILE_HERLEITUNG" xml:space="preserve">
+    <value>{0} a · {1}</value>
+  </data>
+  <data name="ND_VORBELEGEN_BTN" xml:space="preserve">
+    <value>Nutzungsdauern vorbelegen…</value>
+  </data>
+  <data name="ND_VORBELEGEN_STATUS" xml:space="preserve">
+    <value>{0} Nutzungsdauer(n) aus der AfA-Tabelle vorbelegt.</value>
+  </data>
+  <data name="ND_VORBELEGEN_KEINE" xml:space="preserve">
+    <value>Es gibt nichts vorzubelegen: Jede Position trägt eine Nutzungsdauer, oder die Technik hat keine Vorgabe.</value>
+  </data>
+  <data name="ND_VORBELEGEN_FRAGE" xml:space="preserve">
+    <value>{0} Position(en) tragen bereits eine Nutzungsdauer. Sollen auch diese aus der AfA-Tabelle überschrieben werden?</value>
+  </data>
+  <data name="ND_TAFEL_TITEL" xml:space="preserve">
+    <value>Ersatz und Restwert</value>
+  </data>
+  <data name="ND_TAFEL_SP_POSITION" xml:space="preserve">
+    <value>Komponente / Position</value>
+  </data>
+  <data name="ND_TAFEL_SP_BETRAG" xml:space="preserve">
+    <value>Betrag [€]</value>
+  </data>
+  <data name="ND_TAFEL_SP_DAUER" xml:space="preserve">
+    <value>Nutzungsdauer n</value>
+  </data>
+  <data name="ND_TAFEL_SP_ERSATZ" xml:space="preserve">
+    <value>Ersatzbeschaffung</value>
+  </data>
+  <data name="ND_TAFEL_SP_RESTWERT" xml:space="preserve">
+    <value>Restwert Jahr {0}</value>
+  </data>
+  <data name="ND_TAFEL_SP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft der Dauer</value>
+  </data>
+  <data name="ND_TAFEL_STRICH" xml:space="preserve">
+    <value>—</value>
+  </data>
+  <data name="ND_TAFEL_DAUER" xml:space="preserve">
+    <value>{0} a</value>
+  </data>
+  <data name="ND_TAFEL_JAHR" xml:space="preserve">
+    <value>Jahr {0}</value>
+  </data>
+  <data name="ND_TAFEL_VON" xml:space="preserve">
+    <value>{0} von {1}</value>
+  </data>
+  <data name="ND_TAFEL_WIE_T" xml:space="preserve">
+    <value>— läuft wie T</value>
+  </data>
+  <data name="ND_TAFEL_GLEICH_T" xml:space="preserve">
+    <value>— deckungsgleich mit T</value>
+  </data>
+  <data name="ND_TAFEL_VORGABE" xml:space="preserve">
+    <value>Vorgabe der Technik {0} a</value>
+  </data>
+  <data name="ND_TAFEL_BARWERT" xml:space="preserve">
+    <value>Barwert {0}</value>
+  </data>
+  <data name="ND_TAFEL_OHNE_EINTRAG" xml:space="preserve">
+    <value>{0}, {1} €</value>
+  </data>
+  <data name="ND_TAFEL_HINWEIS_T" xml:space="preserve">
+    <value>Betrachtungszeitraum {0} a über der Vorgabe {1} a der Technik {2}</value>
+  </data>
+  <data name="ND_TAFEL_HINWEIS_OHNE" xml:space="preserve">
+    <value>{0} von {1} Investitionspositionen ohne Nutzungsdauer ({2}): kein Ersatz, kein Restwert gerechnet</value>
+  </data>
+  <data name="ND_TAFEL_HINWEIS_SCHLUSS" xml:space="preserve">
+    <value>Ist ein Ersatz fällig, ist der Kapitalwert zu günstig ausgewiesen.</value>
+  </data>
+  <data name="ND_TAFEL_LEER" xml:space="preserve">
+    <value>Keine Investitionsposition mit Betrag — es gibt nichts zu ersetzen.</value>
+  </data>
+  <data name="VPOS_LBL_POSITIONSART" xml:space="preserve">
+    <value>Positionsart:</value>
+  </data>
+  <data name="VPOS_POSITIONSART_KEINE" xml:space="preserve">
+    <value>(keine — Standardzeile der Technik)</value>
+  </data>
+  <data name="VPOS_INFO_POSITIONSART" xml:space="preserve">
+    <value>Die Positionsart bestimmt die Nutzungsdauer aus „Nutzungsdauern (AfA)“; eine Änderung setzt sie neu.</value>
+  </data>
   <data name="FLOTTE_ERG_OPTIMIERUNG" xml:space="preserve">
     <value>Ergebnisse der Optimierung</value>
   </data>
