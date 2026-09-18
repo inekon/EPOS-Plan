@@ -885,6 +885,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double KwkgVbhElektrisch;       // h/a
 
+        /// <summary>
+        /// AUFTRAG U17 — die pauschale Vorauszahlung nach § 9 KWKG [€], EINMALIG im
+        /// Jahr 0 und nicht abgezinst. 0 = die Pauschale greift in diesem Lauf nicht
+        /// (nicht gewählt, über der Leistungsgrenze von 2 kW<sub>el</sub>, ohne
+        /// gepflegte Nennleistung oder ohne Katalogwerte).
+        ///
+        /// <para><b>Die Einheit ist € und nicht €/a.</b> Deshalb steht der Betrag in
+        /// einer eigenen Zeile des Blocks A und NICHT in dessen €/a-Summe — derselbe
+        /// Grund, aus dem der Restwert dort nicht steht. Im Kapitalwert ist er seit
+        /// jeher enthalten: Die Erlösreihe <c>KWKG_PAUSCHALE</c> trägt ihn im Index 0,
+        /// den <c>KapitalwertRechner</c> unabgezinst auf den Startwert bucht. Diese
+        /// Zahl ist reiner AUSWEIS und wird nirgends aufsummiert.</para>
+        ///
+        /// <para>Sie reist im Nachweisumschlag mit
+        /// (<see cref="ErgebnisNachweisUmschlag"/>), nicht in einer eigenen
+        /// Ergebnisspalte: Der Referenzexport liest <c>Tab_Ergebnis</c> per
+        /// <c>SELECT *</c>, und eine neue Spalte änderte jeden Vergleich.</para>
+        /// </summary>
+        public double KwkgPauschaleEur;        // €, einmalig im Jahr 0
+
         // ---- ETAPPE E4 — Steuergutschriften, Jahr 1 der jahresscharfen Reihen ----
         //
         // 0 = keine Gutschrift. Der GRUND steht immer in Hinweis (nie eine stille Null):

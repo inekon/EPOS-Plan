@@ -5009,6 +5009,27 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// AUFTRAG U17 — der Betrag der Pauschale nach § 9 KWKG [€] dieses Laufs; 0 =
+        /// sie greift nicht.
+        ///
+        /// <para><b>Gelesen, nicht nachgerechnet.</b> Die Zahl steht bereits im INDEX 0
+        /// der Erlösreihe <c>KWKG_PAUSCHALE</c>, die <see cref="PauschaleReihe"/>
+        /// gebildet und der <c>KapitalwertRechner</c> unabgezinst auf den Startwert
+        /// gebucht hat. Sie hier ein zweites Mal aus Satz, Vbh und Nennleistung zu
+        /// bilden, wäre eine zweite Rechenstelle, die auseinanderlaufen kann — der
+        /// AUSWEIS muss zeigen, was der KAPITALWERT verwendet hat.</para>
+        /// </summary>
+        private static double PauschaleBetrag(ProjektEingabe e)
+        {
+            if (e == null || e.ErloesReihen == null) return 0;
+            foreach (KapitalwertRechner.ErloesReihe r in e.ErloesReihen)
+                if (r != null && string.Equals(r.Name,
+                        KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE, StringComparison.Ordinal))
+                    return r.Wert(0);
+            return 0;
+        }
+
+        /// <summary>
         /// Flache Kopie einer Eingabe ohne KWKG-Erlösreihe (Novellen-Szenario).
         /// <para><b>ETAPPE E4:</b> Es fällt genau die KWKG-Reihe weg; die
         /// Steuergutschriften bleiben, denn das Szenario fragt nach dem Wegfall der
@@ -5153,6 +5174,7 @@ namespace WindowsFormsApplication1
             erg.CO2AbgabeJahr = eingabe.Behg;                 // W2: BEHG
             erg.KwkgErloesJahr1 = eingabe.KwkgJahr1;          // W2/W3: KWKG
             erg.KwkgVbhElektrisch = eingabe.VbhElektrisch;    // E2: Bezugsgröße der Deckelung
+            erg.KwkgPauschaleEur = PauschaleBetrag(eingabe);  // U17: Einmalzahlung Jahr 0
             erg.EnergiesteuerJahr1 = eingabe.EnergiesteuerJahr1;              // E4
             erg.StromsteuerBefreiungJahr1 = eingabe.StromsteuerBefreiungJahr1;
             erg.StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes;   // B6

@@ -3947,7 +3947,8 @@ Einstufung
         <tr><td>Wortbericht</td>
             <td>dieselben Zeilen wie die Seite, aus <em>einer</em> Zeilendefinition; dazu die Bilder
             Bandbreite, Verlauf, Brücke und Zahlungsstrom</td>
-            <td>zusätzlich der kumulierte Barwert der Versionen <em>absolut</em></td></tr>
+            <td>zusätzlich der kumulierte Barwert der Versionen <em>absolut</em> — mit Legende je
+            Version und gestrichelter Stammlinie; auf der Seite steht dieses Bild nicht</td></tr>
         <tr><td>Tabellenbericht</td>
             <td>Mehrjahrestabelle, je Jahr eine Zeile</td>
             <td>je Szenario eine eigene Spaltengruppe</td></tr>
@@ -4114,18 +4115,34 @@ Einstufung
             <td class="grund"><b>erledigt:</b> Der Gesetzeskatalog führt den Bereich <span class="mono">UMLAGEN</span>
               mit den drei Zeilen — 0,446 · 0,941 · 1,559 ct/kWh, Stichjahr 2026 —, und die Testdatenbank trägt sie;
               die Schnellwahl nennt den Katalog als Quelle statt der Rückfallebene</td></tr>
-        <tr><td class="mono">U17</td><td class="num">7</td>
-            <td>KWKG-Pauschale nach § 9 als Zeile im Jahr 0 — <b>Entscheid ausstehend</b>. Der
-              Nachweisumschlag führt für sie keine Skalargröße</td>
+        <tr class="gestrichen"><td class="mono">U17</td><td class="num">7</td>
+            <td>KWKG-Pauschale nach § 9 als Zeile im Jahr 0. Der Nachweisumschlag führt für sie
+              keine Skalargröße</td>
             <td>Konzept § 6.3</td>
-            <td>nach dem Entscheid: Zeile in Block A, Index 0, nicht abgezinst</td></tr>
-        <tr><td class="mono">U18</td><td>8 · Bericht</td>
+            <td class="grund"><b>erledigt:</b> Block A trägt hinter dem KWK-Zuschlag die Zeile
+              „KWKG-Pauschale (§ 9 KWKG) [€, einmalig im Jahr 0]", nur wenn die Pauschale greift.
+              Sie steht <em>nicht</em> in der Summe des Blocks — ein Einmalbetrag in € in einer
+              €/a-Summe wäre derselbe Einheitenfehler wie der Restwert. Der Kapitalwert bleibt
+              unverändert: Index 0 der Erlösreihe <span class="mono">KWKG_PAUSCHALE</span> war seit
+              jeher unabgezinst im Startwert. Die Mehrjahrestabelle bekommt die Spalte im Jahr 0,
+              womit dort auch die Selbstprüfung „Summe der Positionsspalten = Netto nominal" in der
+              Zeile 0 stimmt. Der Umschlag führt <span class="mono">KwkgPauschaleEur</span>
+              (Fassung 2; ein Umschlag der Fassung 1 lädt weiter)</td></tr>
+        <tr class="gestrichen"><td class="mono">U18</td><td>8 · Bericht</td>
             <td>Zweites Verlaufsbild (kumulierter Barwert der Versionen <em>absolut</em>): auf der
-              Seite oder nur im Wortbericht — <b>Entscheid ausstehend</b>. Alle Versionen liegen tief
-              im Negativen und nahezu parallel; der absolute Vergleich steht in der Kennzahltafel und
-              in der Mehrjahresübersicht</td>
+              Seite oder nur im Wortbericht. Alle Versionen liegen tief im Negativen und nahezu
+              parallel; der absolute Vergleich steht in der Kennzahltafel und in der
+              Mehrjahresübersicht</td>
             <td>Konzept § 2.13 (5)</td>
-            <td>nach dem Entscheid: Bild an genau einem Ort, mit Legende je Version</td></tr>
+            <td class="grund"><b>erledigt:</b> Das Bild steht an genau einem Ort — im Wortbericht,
+              unter dem Titel „Kumulierte Barwerte je Version", mit Legende je Version (Name und
+              Farbe) und gestrichelter Stammlinie; sie ist die Bezugsgröße und keine Version.
+              <span class="mono">ChartRenderer.KapitalwertVerlauf</span> liest dafür das Feld
+              <span class="mono">Gestrichelt</span> der Reihe und zeichnet das Legendenfeld
+              gestrichelt statt gefüllt. Auf der Seite bleibt allein das Differenzbild; der Dialog
+              <span class="mono">KapitalwertVerlaufDialog</span> zeigt bis zur Ergebnisansicht
+              (§ 2.13, K8) unverändert beide Bilder. Nachweis <span class="mono">Proben/ChartProben</span>:
+              67 Bilder, 0 Verstöße</td></tr>
         <tr class="gestrichen"><td class="mono">U19</td><td class="num">2</td>
             <td>Endenergie des Heizkessels aus dem Lauf nachziehen</td>
             <td><span class="mono">EndenergieAufloeser</span></td>

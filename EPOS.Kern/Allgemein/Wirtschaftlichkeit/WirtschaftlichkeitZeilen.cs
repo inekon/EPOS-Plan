@@ -297,9 +297,6 @@ namespace WindowsFormsApplication1
             z.Add(Kopf("ERL_KOPF_A", MyResource.Resource.WIRT_ERL_KOPF_A, WirtZeile.BLOCK_A));
 
             // ---- A1/A2: KWK-Zuschlag nach § 7 KWKG --------------------------------
-            // A3 (Pauschale § 9 KWKG) hat KEINE Jahr-1-Zeile: Sie ist eine EINMALIGE
-            // Zahlung im Jahr 0 und stünde in einer €/a-Spalte falsch. Greift sie, sagt
-            // es der Hinweis des Laufs (WIRT_KWKG_PAUSCHALE) — offener Punkt B7-3.
             // OHNE BHKW entsteht die Zeile gar nicht erst. „Immer zeigen" heißt: auch
             // bei Betrag 0 — nicht: in jedem Projekt. Ein reines PV- oder Kesselprojekt
             // bekäme sonst zwei Nullzeilen über Vorschriften, die es nicht betreffen.
@@ -326,6 +323,30 @@ namespace WindowsFormsApplication1
                 z.Add(Unter("VBH_ELEKTRISCH", MyResource.Resource.WIRT_ZEILE_VBH_ELEKTRISCH,
                             e => e.KwkgVbhElektrisch > 0 ? (double?)e.KwkgVbhElektrisch : null,
                             WirtZeile.BLOCK_A));
+
+            // ---- A3: Pauschale nach § 9 KWKG (AUFTRAG U17) ------------------------
+            // Sie erscheint NUR, wenn sie greift — also wenn der Schalter gesetzt ist
+            // UND die Anlage unter der Leistungsgrenze von 2 kW(el) bleibt. Über der
+            // Grenze bleibt der Schalter ohne Wirkung, der laufende Zuschlag rechnet
+            // weiter, und eine Nullzeile über eine Vorschrift, die nicht greift, wäre
+            // eine Behauptung. Deshalb KEIN „ImmerZeigen": Der Betrag ist die
+            // Bedingung, nicht die Anlagenart.
+            //
+            // KEIN SUMMAND. Die Summe darunter ist eine €/a-Summe des Jahres 1; die
+            // Pauschale ist ein EINMALBETRAG in € zum Zeitpunkt 0. Beides zu addieren
+            // wäre derselbe Einheitenfehler, aus dem auch der Restwert-Barwert nicht in
+            // dieser Summe steht. Im KAPITALWERT ist sie seit jeher enthalten (Index 0
+            // der Erlösreihe KWKG_PAUSCHALE, unabgezinst) — diese Zeile macht sie
+            // sichtbar, sie bucht nichts.
+            if (Irgendein(menge, e => e.KwkgPauschaleEur > 0))
+                z.Add(new WirtZeile
+                {
+                    Schluessel = "ERL_A_KWKG_PAUSCHALE",
+                    Titel = MyResource.Resource.WIRT_ERL_A_KWKG_PAUSCHALE,
+                    Block = WirtZeile.BLOCK_A,
+                    Wert = e => e != null && e.KwkgPauschaleEur > 0
+                                ? (double?)e.KwkgPauschaleEur : null
+                });
 
             // ---- A4/A5: Energiesteuer-Entlastung ---------------------------------
             // § 53/§ 53a (BHKW-Brennstoff) und § 54 (Heizstoff) stehen in EINER Zahl:
@@ -406,7 +427,8 @@ namespace WindowsFormsApplication1
             // Sie summiert die €/a-Zeilen des Jahres 1. Der Restwert (A10) steht
             // bewusst NICHT darin: Er ist ein BARWERT über T und stünde in einer
             // €/a-Summe als Einheitenfehler. Seine Zeile bleibt unten beim Kapitalwert,
-            // wo sie mit dem Nettobarwert zusammen gelesen wird.
+            // wo sie mit dem Nettobarwert zusammen gelesen wird. Aus demselben Grund
+            // fehlt die KWKG-Pauschale (A3): ein Einmalbetrag in € zum Zeitpunkt 0.
             var summanden = new List<WirtZeile>(blockA);
             z.Add(new WirtZeile
             {
@@ -1024,6 +1046,14 @@ namespace WindowsFormsApplication1
             m.Reihe(b, KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG,
                     MyResource.Resource.WIRT_REIHE_STROMSTEUER_ENTLASTUNG, T);
 
+            // AUFTRAG U17 — die Pauschale des § 9 KWKG. Sie braucht einen EIGENEN
+            // Aufruf, weil ihr Betrag im INDEX 0 steht und Reihe() erst bei t = 1
+            // beginnt; ohne die Spalte stimmte die Selbstprüfung der Tabelle im Jahr 0
+            // nicht: „Netto nominal" trägt dort −I₀ + Pauschale, die Summe der
+            // Positionsspalten aber nur −I₀.
+            m.ReiheAbJahr0(b, KapitalwertRechner.ErloesReihe.KWKG_PAUSCHALE,
+                           MyResource.Resource.WIRT_REIHE_KWKG_PAUSCHALE, T);
+
             m.Summe("NETTO", MyResource.Resource.WIRT_MJ_NETTO, Kopie(b.NominalReihe, T));
             m.Summe("BARWERT", MyResource.Resource.WIRT_MJ_BARWERT, Kopie(b.BarwertReihe, T));
             m.Summe("KUMULIERT", MyResource.Resource.WIRT_MJ_KUMULIERT, Kopie(serie.Kumuliert, T));
@@ -1047,6 +1077,23 @@ namespace WindowsFormsApplication1
             if (!b.HatReihe(name)) return;
             var werte = new double[T + 1];
             for (int t = 1; t <= T; t++) werte[t] = b.ReihenWert(name, t);
+            Nimm(name, titel, werte);
+        }
+
+        /// <summary>
+        /// AUFTRAG U17 — wie <see cref="Reihe"/>, nur ab dem JAHR 0. Genau eine Reihe
+        /// führt dort einen Betrag: die Pauschale nach § 9 KWKG, die einmalig zum
+        /// Zeitpunkt der Investition fließt.
+        ///
+        /// <para><b>Ohne <c>HatReihe</c>.</b> Auch jene Wache beginnt bei t = 1 — für
+        /// eine Reihe, die ihren einzigen Betrag im Index 0 trägt, meldet sie „leer".
+        /// Gefiltert wird deshalb erst in <see cref="Nimm"/>, das die fertige Spalte auf
+        /// einen Betrag ungleich 0 prüft — über ALLE Jahre.</para>
+        /// </summary>
+        private void ReiheAbJahr0(KapitalwertRechner.Zahlungsbild b, string name, string titel, int T)
+        {
+            var werte = new double[T + 1];
+            for (int t = 0; t <= T; t++) werte[t] = b.ReihenWert(name, t);
             Nimm(name, titel, werte);
         }
 

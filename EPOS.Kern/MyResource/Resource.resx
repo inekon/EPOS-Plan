@@ -6699,6 +6699,9 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>KWK-Zuschlag</value>
   </data>
+  <data name="WIRT_REIHE_KWKG_PAUSCHALE" xml:space="preserve">
+    <value>KWKG-Pauschale (Jahr 0)</value>
+  </data>
   <data name="WIRT_REIHE_ENERGIESTEUER" xml:space="preserve">
     <value>Energiesteuer-Gutschrift</value>
   </data>
@@ -19394,6 +19397,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_ERL_A_KWKG" xml:space="preserve">
     <value>KWK-Zuschlag (§ 7 KWKG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_A_KWKG_PAUSCHALE" xml:space="preserve">
+    <value>KWKG-Pauschale (§ 9 KWKG) [€, einmalig im Jahr 0]</value>
   </data>
   <data name="WIRT_ERL_A1_EINSPEISUNG" xml:space="preserve">
     <value>davon Einspeisung (§ 7 Abs. 1 KWKG) [€/a]</value>

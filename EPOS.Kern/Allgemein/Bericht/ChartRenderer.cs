@@ -64,7 +64,20 @@ namespace WindowsFormsApplication1
         public class Segment
         {
             public string Label; public double Wert; public SKColor Farbe;
+
+            /// <summary>
+            /// AUFTRAG U18 — der Eintrag gehört zu einer GESTRICHELTEN Linie; sein
+            /// Farbfeld wird dann nicht gefüllt, sondern gestrichelt umrandet.
+            ///
+            /// <para><b>Vorgabe false</b>, damit jedes Bild, das das Merkmal nicht
+            /// setzt, byte-gleich bleibt — die ChartProben vergleichen Bilder.</para>
+            /// </summary>
+            public bool Gestrichelt;
+
             public Segment(string l, double w, SKColor f) { Label = l; Wert = w; Farbe = f; }
+
+            public Segment(string l, double w, SKColor f, bool gestrichelt)
+            { Label = l; Wert = w; Farbe = f; Gestrichelt = gestrichelt; }
         }
 
         public class Balken
@@ -551,7 +564,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Verlaufsserien → Diagramm-Reihen (Stamm dunkel/dick, Varianten
         /// aus der Serien-Palette; Reihen ohne Werte werden übersprungen).</summary>
-        public static List<Reihe> VerlaufsReihen(List<VerlaufSerie> serien, bool mitStamm)
+        /// <param name="stammGestrichelt">
+        /// AUFTRAG U18 — die Stammlinie gestrichelt zeichnen. Sie ist die BEZUGSGRÖSSE
+        /// und keine Version; im Schwarz-Weiß-Ausdruck des Wortberichts ist sie nur an
+        /// der Strichart von den Versionen zu trennen.
+        /// <para><b>Vorgabe false</b>, damit jedes Bild, das den Schalter nicht setzt,
+        /// byte-gleich bleibt — die ChartProben vergleichen Bilder.</para>
+        /// </param>
+        public static List<Reihe> VerlaufsReihen(List<VerlaufSerie> serien, bool mitStamm,
+                                                 bool stammGestrichelt = false)
         {
             var reihen = new List<Reihe>();
             int i = 0;
@@ -560,7 +581,9 @@ namespace WindowsFormsApplication1
                 if (s.Kumuliert == null) continue;
                 if (s.IstStamm)
                 {
-                    if (mitStamm) reihen.Add(new Reihe(s.Anzeige, s.Kumuliert, C_STAMM));
+                    if (mitStamm)
+                        reihen.Add(new Reihe(s.Anzeige, s.Kumuliert, C_STAMM)
+                        { Gestrichelt = stammGestrichelt });
                     continue;
                 }
                 reihen.Add(new Reihe(s.Anzeige, s.Kumuliert, C_SERIEN[i++ % C_SERIEN.Length]));
@@ -658,14 +681,26 @@ namespace WindowsFormsApplication1
                         float y = (float)(rc.Bottom - (r.Werte[t] - min) / (max - min) * rc.Height);
                         punkte[t] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
                     }
-                    using (var stift = Strich(r.Farbe, r.Farbe == C_STAMM ? 3.5f : 2.5f))
+                    // AUFTRAG U18: Das Merkmal Gestrichelt der Reihe wird hier gelesen
+                    // — dieselbe Strichfolge wie in den übrigen Linienbildern (8/5).
+                    // Ohne gesetztes Merkmal entsteht kein Pfadeffekt und das Bild bleibt
+                    // byte-gleich dem von vorher.
+                    using (var strichel = r.Gestrichelt
+                               ? SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f) : null)
+                    using (var stift = Strich(r.Farbe,
+                               r.Breite > 0 ? r.Breite : r.Farbe == C_STAMM ? 3.5f : 2.5f))
                     {
                         stift.StrokeJoin = SKStrokeJoin.Round;
+                        if (strichel != null) stift.PathEffect = strichel;
                         Linienzug(g, punkte, stift);
                     }
                 }
 
-                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                // AUFTRAG U18 — die Legende nennt JEDE Reihe mit Namen, Farbe und
+                // Strichart. Im Wortbericht ist dieses Bild der einzige Ort, an dem die
+                // Versionen nebeneinander stehen; ohne Legende wären die Linien
+                // ununterscheidbar.
+                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Gestrichelt)).ToList(),
                         110f, H - 104f, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
                 if (!string.IsNullOrEmpty(fussnote))
                     using (var f = Schrift(14f, kursiv: true))
@@ -3911,7 +3946,19 @@ namespace WindowsFormsApplication1
                     float breite = 40f + f.MeasureText(s.Label ?? "") + 24f;
                     if (umbruchBei > 0 && x > startX && x + breite > umbruchBei)
                     { x = startX; y += LEGENDE_ZEILE; zeilen++; }   // Umbruch bei vielen Serien (Review 11)
-                    using (var b = Fuellung(s.Farbe)) g.DrawRect(x, y, 22f, 22f, b);
+                    // AUFTRAG U18: Ein Eintrag zu einer gestrichelten Linie bekommt ein
+                    // gestricheltes Feld in der Reihenfarbe statt einer vollen Füllung —
+                    // sonst sagt die Legende über die Strichart nichts, und im
+                    // Schwarz-Weiß-Ausdruck sind zwei Linien nicht auseinanderzuhalten.
+                    if (s.Gestrichelt)
+                        using (var strichel = SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f))
+                        using (var kante = Strich(s.Farbe, 3f))
+                        {
+                            kante.PathEffect = strichel;
+                            g.DrawRect(x, y, 22f, 22f, kante);
+                        }
+                    else
+                        using (var b = Fuellung(s.Farbe)) g.DrawRect(x, y, 22f, 22f, b);
                     g.DrawRect(x, y, 22f, 22f, rahmen);
                     Text(g, s.Label, f, SKColors.Black, x + 28f, y + 1f);
                     x += breite;
