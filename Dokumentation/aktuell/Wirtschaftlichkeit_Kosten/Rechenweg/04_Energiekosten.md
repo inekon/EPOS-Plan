@@ -112,6 +112,13 @@ Netzbezug Strom
   Kein Aufschlag: Die Preisanteile („Strompreis Details") ZERLEGEN den Arbeitspreis,
                   sie kommen nicht auf ihn — es gibt genau eine Preiswahrheit, und das
                   ist der Arbeitspreis der Trägerkarte
+  Wer im Reststrombedarf steckt: Wärmepumpe, Heizstab, Stromspeicher — und der
+                  ELEKTROKESSEL. Seine Nutzwärme bucht die Simulation auf den Stromzähler
+                  (Nutzungsgrad 1) ; seine Kessel-Modulzeile führt deshalb Verbrauch = 0
+                  und trägt NICHTS zu verbrauchJeTraeger bei. Sein Strom wird genau hier
+                  bepreist — einmal, im Netzbezug. Die Kostenseite ZEIGT die Menge
+                  zusätzlich als Endenergie des Kessels (Rechenweg 02), ohne sie ein
+                  zweites Mal zu buchen.
 
 CO₂ / BEHG als eigene Reihe
   behgBasisT [t/a] = CO2Brennstoff + (ohne Nachhaltigkeitsnachweis) BiogenBehgMenge × BehgOhneNachweis / 1000

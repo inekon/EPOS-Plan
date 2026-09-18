@@ -30,6 +30,14 @@ Endenergiekosten". Fehlt der Arbeitspreis eines beteiligten Trägers, steht in d
 Gedankenstrich, nie eine 0. Anlagen ohne Endenergie (Photovoltaik, Solarthermie, Speicher) bekommen keine Zeile
 — dort ist nur der feste Jahresbetrag zulässig.
 
+**Der Elektrokessel in dieser Gruppe.** Ein Heizkessel, dessen Gerät den Brennstoff „Elektrische Energie“
+führt, bezieht Strom, nicht Brennstoff. Seine Zeile nennt deshalb seinen **Stromeinsatz** — die Nutzwärme des
+Laufs, denn der Rechenkern führt ihn mit Nutzungsgrad 1 —, bewertet ihn mit dem Arbeitspreis des Stromträgers
+und nennt als Herkunft „Strom · Netzbezug (im Reststrombedarf des Projekts bepreist)“. Die Menge ist damit
+sichtbar, **bezahlt wird sie genau einmal**: im Netzbezug des Projekts; seine Brennstoffspalte bleibt bei 0.
+Führt ein Projekt Brennstoff- und Elektrokessel, stehen sie als zwei Zeilen — zwei Energieformen mit zwei
+Preisen ergeben keine gemeinsame Bezugsgröße.
+
 | Position | Bemessung | Satz | Bezugsgröße (Werkzeugtipp) | Betrag |
 |---|---|---|---|---|
 | Wartung BHKW — Pflicht · Empfehlung 0,02–0,04 €/kWh | je kWh elektrisch | 0,0280 €/kWh | 1.650.000,00 kWh · BHKW 1 | 46.200,00 |
@@ -67,6 +75,7 @@ Vorrang der Bezugsmenge (frisch vor Konserve, H2-1)
 
 Endenergie je Komponente (EndenergieAufloeser)
   BHKW, Kessel   Bedarf = Σ Verbrauch × 1000          Kosten = Bedarf × Arbeitspreis(CarrierId)
+  Elektrokessel  Bedarf = Σ (Waerme_Gas + Waerme_Oel) × 1000    Kosten = Bedarf × Strompreis
   Wärmepumpe     Bedarf = Σ (Stromverbrauch + Heizstab) × 1000   Kosten = Bedarf × Strompreis
   PV · Solarthermie · Speicher    null — nur Jahresbetrag zulässig
   Arbeitspreis = PreisArbeit / EffHi   (ohne Grund- und Leistungspreis)

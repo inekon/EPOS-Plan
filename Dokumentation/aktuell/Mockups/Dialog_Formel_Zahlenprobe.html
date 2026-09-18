@@ -1130,20 +1130,22 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Wärmepumpe</td><td>Strom</td><td class="r num">—</td>
             <td class="r num">0,2880 €/kWh</td><td class="r num">—</td>
             <td>Σ (Strom + Heizstab) × 1000</td></tr>
-        <tr><td>Elektrokessel</td><td>Strom</td><td class="r num">0 kWh</td>
-            <td class="r num">0,2880 €/kWh</td><td class="r num">0,00 €/a</td>
-            <td>Ausnahme: der Einsatz steht im Reststrombedarf</td></tr>
+        <tr><td>Elektrokessel</td><td>Strom</td><td class="r num">52.990 kWh</td>
+            <td class="r num">0,2880 €/kWh</td><td class="r num">15.261,12 €/a</td>
+            <td>Strom · Netzbezug — Σ Nutzwärme × 1000</td></tr>
         <tr><td>PV · Solarthermie · Speicher</td><td>—</td><td class="r">—</td>
             <td class="r">—</td><td class="r">—</td>
             <td>keine Endenergie — nur Jahresbetrag zulässig</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="eng" style="margin-top:12px"><b>Ausnahme Elektrokessel.</b> Seine Modulzeile führt 0 kWh mit dem
-  Brennstoffwort „Strom", und das ist richtig: Sein Einsatz steckt im Reststrombedarf des Netzbezugs und würde
-  als eigene Endenergie doppelt gezählt. Eine Prozentzeile „% der Endenergiekosten" rechnet dort dauerhaft
-  0 €/a — die Herleitungszeile zeigt <span class="mono">× 0 kWh</span> und macht das sichtbar, statt es zu
-  verstecken. Für diese Komponente gehört die Hilfsenergie als Jahresbetrag erfasst.</p>
+  <p class="eng" style="margin-top:12px"><b>Der Elektrokessel.</b> Seine Endenergie ist <i>Strom</i>, nicht
+  Brennstoff: Der Rechenkern führt ihn mit Nutzungsgrad 1 und bucht seine Nutzwärme auf den Stromzähler. Die
+  Zeile zeigt deshalb diese Menge und bewertet sie mit dem Arbeitspreis des Stromträgers; die Herkunft nennt
+  <span class="mono">Strom · Netzbezug</span>. <b>Bezahlt wird sie genau einmal</b> — im Reststrombedarf des
+  Projekts. Seine Brennstoff-Modulzeile bleibt deshalb bei 0, und eine zweite Buchung entsteht nicht. Führt ein
+  Projekt Brennstoff- und Elektrokessel, stehen sie als zwei Zeilen: zwei Energieformen mit zwei Preisen ergeben
+  keine gemeinsame Bezugsgröße.</p>
   <p class="eng"><b>Keine stillen Teilsummen.</b> Steht ein Erzeuger ohne Energieträger da, zeigen Energiekosten
   und CO₂ einen Gedankenstrich mit dem Grund „gehört zu keinem Energieträger" und dem Ausweg („Träger an der
   Komponente zuordnen") — nie eine 0, die sich wie ein gerechneter Wert liest. Die Warnung
@@ -1165,7 +1167,8 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
 Hilfsenergie — Endenergie je Komponente (immer frisch aus dem jüngsten Lauf):
   BHKW, Kessel   Bedarf = Σ Verbrauch je Modulzeile × 1000   Kosten = Bedarf × Arbeitspreis
   Wärmepumpe     Bedarf = Σ (Strom + Heizstab) × 1000        Kosten = Bedarf × Strompreis
-  Elektrokessel  Bedarf = 0                                  <span class="hin">Einsatz steckt im Reststrombedarf</span>
+  Elektrokessel  Bedarf = Σ Nutzwärme je Modulzeile × 1000   Kosten = Bedarf × Strompreis
+                 <span class="hin">Herkunft „Strom · Netzbezug" — dort und nur dort bepreist</span>
   PV · Solar · Speicher                                      <span class="hin">nur Jahresbetrag zulässig</span>
 
   Arbeitspreis = PreisArbeit / EffHi     <span class="kom">ohne Grund- und Leistungspreis</span>
