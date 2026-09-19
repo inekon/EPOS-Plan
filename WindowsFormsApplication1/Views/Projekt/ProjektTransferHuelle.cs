@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Projekt;
 using EPOS.UI.Dienste;
@@ -28,12 +27,28 @@ namespace WindowsFormsApplication1
     /// Paketdatei; auf iOS liefert <c>IosProjektQuelle</c> andere Wege.</para>
     ///
     /// <para><b>Die Paketvorschau liest das Manifest OHNE die Datenbank anzufassen</b> —
-    /// wörtlich der Weg von <c>ZeigePaketInfo</c>.</para>
+    /// seit PI-1 über <c>ProjektExportImportCtrl.PaketKopf</c> statt über einen
+    /// eigenen JSON-Zerleger dieser Hülle.</para>
+    ///
+    /// <para><b>PI-1 bringt sechs weitere Wege</b>: Mehrfach-Dateiwahl, Ordnerwahl,
+    /// Sammelexport, Sammelimport, Paketkopf und die Frage, ob ein Name am Ziel schon
+    /// vergeben ist. <b>Die Sicherungskopie bleibt EINE je Lauf</b> — der Dialog ruft
+    /// <c>SicherungAnlegen</c> vor dem Lauf, nicht je Paket; sie sichert den Stand VOR
+    /// dem Lauf, und den gibt es nur einmal. Der Sammelbericht landet neben dem ERSTEN
+    /// Paket.</para>
     /// </summary>
     internal static class ProjektTransferHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 480 × 440).</summary>
-        private static readonly Size MASS = new Size(720, 640);
+        /// <summary>
+        /// Gewünschtes Innenmaß (Vorläufer: 480 × 440; bis PI-1 720 × 640).
+        ///
+        /// <para><b>PI-1 macht die Maske breiter, weil sie jetzt LISTEN trägt.</b>
+        /// Das Exportblatt zeigt eine Katalogliste mit sechs Spalten samt Suchzeile,
+        /// darunter die Häkchenblöcke je Stammgruppe; das Importblatt eine
+        /// Paketvorschau mit fünf Spalten. Bei 720 px rollte beides waagerecht —
+        /// dieselbe Messung wie bei den übrigen Katalogdialogen des Hauses.</para>
+        /// </summary>
+        private static readonly Size MASS = new Size(1240, 800);
 
         /// <summary>
         /// Öffnet den Dialog. Rückgabe <c>true</c>, wenn ein Import gelungen ist.
@@ -119,7 +134,12 @@ namespace WindowsFormsApplication1
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
                 ["NeinText"] = MyResource.Resource.ALLG_BTN_NEIN,
 
-                ["HilfeSchluessel"] = "Form_ProjektExportImport.btn_Help"
+                ["HilfeSchluessel"] = "Form_ProjektExportImport.btn_Help",
+
+                // PI-1: Die neuen Texte als BUENDEL (Hausregel „ab zehn ein
+                // Buendel"); die vierzig darueber bleiben einzeln.
+                ["Texte"] = new ProjektTransferTexte(),
+                ["Spaltentext"] = new Func<string, string>(s => Text_(s, s))
             };
         }
 
@@ -156,7 +176,53 @@ namespace WindowsFormsApplication1
                                               io.LetzterBericht ?? new List<string>(), fehler ?? "");
                 },
                 SicherungAnlegen: SicherungAnlegen,
-                BerichtSchreiben: BerichtSchreiben);
+                BerichtSchreiben: BerichtSchreiben,
+
+                // ---- PI-1: der Sammellauf ------------------------------------
+                ExportierenMehrere: (gruppen, ordner, melder) =>
+                    new ProjektExportImportCtrl().ExportGruppen(gruppen, ordner, melder),
+                ZielordnerWaehlen: ZielordnerWaehlen,
+                PaketeLesen: () => PaketeLesen(filter),
+                ImportierenMehrere: (pfade, modus, melder) =>
+                {
+                    var io2 = new ProjektExportImportCtrl();
+                    return io2.ImportierenMehrere(pfade, modus, melder);
+                },
+                Paketkopf: ProjektExportImportCtrl.PaketKopf,
+                NameVergeben: NameVergeben);
+        }
+
+        /// <summary>
+        /// PI-1: Der Ordnerwähler für den Sammelexport.
+        ///
+        /// <para>Er ist ein modales SYSTEMFENSTER und darf nicht synchron im
+        /// WebView-Rückruf aufgehen (Hausregel (d), Befund W13-B-1); die
+        /// <c>…Async</c>-Form führt ihn eine gepostete Nachricht später hoch.</para>
+        /// </summary>
+        private static async Task<string> ZielordnerWaehlen()
+        {
+            string start = EinstellungenCtrl.ExportPfadOderVorgabe(
+                EinstellungenCtrl.VdiPfadOderVorgabe()) ?? "";
+            return await Dienste.Datei.OrdnerWaehlenAsync(
+                Text_("PTR_BTN_ORDNER", "Ordner wählen…"), start).ConfigureAwait(true);
+        }
+
+        /// <summary>PI-1: Mehrere Paketdateien auf einmal — derselbe Weg wie im Modulimport.</summary>
+        private static async Task<IReadOnlyList<string>> PaketeLesen(string filter)
+        {
+            string start = EinstellungenCtrl.ImportPfadOderVorgabe(
+                EinstellungenCtrl.VdiPfadOderVorgabe()) ?? "";
+            string[] pfade = await Dienste.Datei.DateienOeffnenAsync(
+                Text_("PTR_BTN_DATEIEN", "Dateien wählen…"), filter, start).ConfigureAwait(true);
+            return pfade ?? new string[0];
+        }
+
+        /// <summary>PI-1: Gibt es am Ziel schon ein Projekt dieses Namens?</summary>
+        private static bool NameVergeben(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return false;
+            try { return ProjektCtrl.IdVonName(name) > 0; }
+            catch { return false; }
         }
 
         /// <summary>
@@ -190,54 +256,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Liest <c>manifest.json</c> aus dem ZIP, OHNE die Datenbank anzufassen —
-        /// wörtlich <c>ZeigePaketInfo</c>.
+        /// Die Paketvorschau — seit PI-1 über <c>ProjektExportImportCtrl.PaketKopf</c>.
+        ///
+        /// <para><b>Der handgeschriebene JSON-Zerleger dieser Hülle ist entfallen.</b>
+        /// Er las dasselbe <c>manifest.json</c> ein zweites Mal, und zwar in der
+        /// Schale, die iOS nicht hat: Eine zweite Lesart wäre eine zweite Wahrheit
+        /// darüber, was „Schemastand" und „Varianten" eines Pakets sind. Das
+        /// Paketformat gehört dem Kern.</para>
         /// </summary>
         private static PaketVorschau Vorschau(string pfad)
         {
-            try
-            {
-                using (var zip = ZipFile.OpenRead(pfad))
-                {
-                    ZipArchiveEntry e = zip.GetEntry("manifest.json");
-                    if (e == null)
-                        return new PaketVorschau("", "", 0, Array.Empty<string>(),
-                            Text_("PTR_MSG_KEIN_PAKET", "Kein gültiges Paket (manifest.json fehlt)."));
-
-                    string json;
-                    using (var r = new StreamReader(e.Open())) json = r.ReadToEnd();
-
-                    using (JsonDocument doc = JsonDocument.Parse(json))
-                    {
-                        JsonElement root = doc.RootElement;
-                        string quelle = Eigenschaft(root, "sourceProject");
-                        string datum = Eigenschaft(root, "exportedUtc");
-                        int schema = root.TryGetProperty("schemaVersion", out JsonElement sv) ? sv.GetInt32() : 0;
-
-                        // A-9: Das Datum folgt der PROGRAMMSPRACHE - "g" der aktuellen
-                        // Kultur, nicht mehr fest de-DE (Befund W15a-B32a).
-                        if (DateTime.TryParse(datum, out DateTime dt)) datum = dt.ToLocalTime().ToString("g");
-
-                        var varianten = new List<string>();
-                        if (root.TryGetProperty("variants", out JsonElement vs)
-                            && vs.ValueKind == JsonValueKind.Array)
-                            foreach (JsonElement v in vs.EnumerateArray())
-                                varianten.Add(Eigenschaft(v, "name"));
-
-                        return new PaketVorschau(quelle, datum, schema, varianten, "");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                return new PaketVorschau("", "", 0, Array.Empty<string>(),
-                    string.Format(Text_("PTR_MSG_PAKET_FEHLER", "Paket konnte nicht gelesen werden: {0}"),
-                                  ex.Message));
-            }
+            Paketkopf k = ProjektExportImportCtrl.PaketKopf(pfad);
+            return new PaketVorschau(k.Quellprojekt, k.Exportdatum, k.Schemastand,
+                                     k.Varianten, k.Fehler, k.StammQuelle);
         }
-
-        private static string Eigenschaft(JsonElement e, string name)
-            => e.TryGetProperty(name, out JsonElement v) ? (v.GetString() ?? "") : "";
 
         /// <summary>
         /// A-10: Die Sicherungskopie der Datenbank. Windows-Vorgabe bleibt der

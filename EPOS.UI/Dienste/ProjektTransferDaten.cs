@@ -1,4 +1,5 @@
-﻿using WindowsFormsApplication1;
+﻿using System.Threading.Tasks;
+using WindowsFormsApplication1;
 
 namespace EPOS.UI.Dienste;
 
@@ -16,12 +17,25 @@ namespace EPOS.UI.Dienste;
 /// <param name="Schemastand">Der Migrationsstand des Pakets (0 = V1-Altpaket).</param>
 /// <param name="Varianten">Die mitgereisten Variantenprojekte.</param>
 /// <param name="Fehler">Leer, wenn das Paket lesbar ist; sonst der Grund.</param>
+/// <param name="StammQuelle">
+/// PI-1: Ist das Hauptprojekt des Pakets selbst eine VARIANTE, steht hier der Name
+/// seines Stammprojekts; sonst leer. Die Vorschauliste eines Sammellaufs nennt ihn
+/// („Variante von …") — ohne ihn saehe der Anwender fuenf gleichartige Zeilen und
+/// wuesste nicht, warum die Reihenfolge eine Rolle spielt.
+/// </param>
+/// <param name="Konflikt">
+/// PI-1: Ein FRUEHERES Paket desselben Laufs bringt dasselbe Stammprojekt mit — es
+/// wird uebersprungen. Der Dialog zeichnet die Zeile deshalb als Hinweis, bevor
+/// gerechnet wird; still uebergangen waere es eine Ueberraschung.
+/// </param>
 public sealed record PaketVorschau(
     string Quellprojekt,
     string Exportdatum,
     int Schemastand,
     IReadOnlyList<string> Varianten,
-    string Fehler);
+    string Fehler,
+    string StammQuelle = "",
+    bool Konflikt = false);
 
 /// <summary>
 /// Ergebnis eines Importlaufs (iU9-W15a).
@@ -65,6 +79,16 @@ public sealed record ImportErgebnis(
 /// <param name="Importieren">Fuehrt den Import aus.</param>
 /// <param name="SicherungAnlegen">Legt eine Sicherungskopie der Datenbank an und liefert ihren Pfad; wirft bei Misserfolg. <c>null</c> = kein Schalter.</param>
 /// <param name="BerichtSchreiben">Legt den Importbericht ab und liefert den Zielpfad; <c>null</c> = kein Ablegen, dann steht der Bericht nur im Dialog.</param>
+/// <param name="ExportierenMehrere">
+/// PI-1: Schreibt EIN Paket je Stammgruppe in den Zielordner
+/// (<c>ProjektExportImportCtrl.ExportGruppen</c>). <c>null</c> = die Plattform kann
+/// keinen Sammelexport; dann bleibt der Dialog beim Speichern-Dialog fuer eine Gruppe.
+/// </param>
+/// <param name="ZielordnerWaehlen">Zeigt einen Ordnerwaehler; <c>null</c> = kein Ordnerknopf (iOS, Entscheid E-5).</param>
+/// <param name="PaketeLesen">Mehrfach-Dateiwahl; <c>null</c> = nur die Einzelwahl ueber <c>PaketLesen</c>.</param>
+/// <param name="ImportierenMehrere">Spielt mehrere Pakete in EINEM Lauf ein (<c>ProjektExportImportCtrl.ImportierenMehrere</c>).</param>
+/// <param name="Paketkopf">Liest den Kopf EINES Pakets ohne die Datenbank (<c>ProjektExportImportCtrl.PaketKopf</c>).</param>
+/// <param name="NameVergeben">Gibt es am Ziel schon ein Projekt dieses Namens? Fuer den Hinweis vor dem Lauf.</param>
 public sealed record ProjektTransferDaten(
     IReadOnlyList<ProjektKopfZeile> Projekte,
     Func<string, IReadOnlyList<string>> Varianten,
@@ -74,4 +98,10 @@ public sealed record ProjektTransferDaten(
     Func<string, PaketVorschau> Vorschau,
     Func<string, string, ProjektExportImportCtrl.BeiVorhandenem, IProgress<string>?, ImportErgebnis> Importieren,
     Func<string>? SicherungAnlegen,
-    Func<string, string, string?>? BerichtSchreiben);
+    Func<string, string, string?>? BerichtSchreiben,
+    Func<IReadOnlyList<Transfergruppe>, string, IProgress<ImportFortschritt>?, ExportBilanz>? ExportierenMehrere = null,
+    Func<Task<string?>>? ZielordnerWaehlen = null,
+    Func<Task<IReadOnlyList<string>>>? PaketeLesen = null,
+    Func<IReadOnlyList<string>, ProjektExportImportCtrl.BeiVorhandenem, IProgress<ImportFortschritt>?, SammelImportBilanz>? ImportierenMehrere = null,
+    Func<string, Paketkopf>? Paketkopf = null,
+    Func<string, bool>? NameVergeben = null);
