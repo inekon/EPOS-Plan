@@ -9325,6 +9325,61 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* ==================================================================== */
+/* PROJEKTTRANSFER - die Mehrfachwahl (Auftrag PI-1)                    */
+/* -------------------------------------------------------------------- */
+/* Vier Flaechen, vier Regeln: die Projektliste des Exportblatts, die   */
+/* Haekchenbloecke je Stammgruppe darunter, die Paketvorschau des       */
+/* Importblatts und die Zielordnerzeile. Alle vier deckeln nur ihre     */
+/* Hoehe und rollen; das Aussehen kommt von den Bausteinen.             */
+/* ==================================================================== */
+.epos-transfer-liste {
+    max-height: var(--epos-transfer-listenhoehe);
+    overflow: auto;
+}
+
+/* Die Haekchenbloecke: je Stammgruppe einer, nebeneinander, solange
+   Platz ist. Ohne Deckel wuechse das Blatt bei acht Gruppen ins
+   Unermessliche und der Exportknopf rutschte aus dem Bild. */
+.epos-transfer-gruppen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-height: calc(var(--epos-transfer-listenhoehe) * 0.75);
+    overflow: auto;
+    margin-block: 6px;
+}
+
+.epos-transfer-gruppen > * {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+/* Die Paketvorschau des Importblatts - ein Raster, das bei fuenf
+   Paketen nicht laenger wird als die Projektliste daneben. */
+.epos-transfer-pakete {
+    max-height: calc(var(--epos-transfer-listenhoehe) * 0.75);
+    overflow: auto;
+    margin-block: 6px;
+}
+
+/* Die Zielordnerzeile: Beschriftung, Pfad und Knopf in EINER Zeile;
+   der Pfad nimmt den Rest und kuerzt sich mit Auslassungspunkten. */
+.epos-transfer-ordner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-block: 6px;
+}
+
+.epos-transfer-ordner-pfad {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
@@ -9536,59 +9591,4 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     .epos-speicheropt-suchraum .epos-formularraster {
         grid-template-columns: minmax(0, 1fr);
     }
-}
-
-/* ==================================================================== */
-/* PROJEKTTRANSFER - die Mehrfachwahl (Auftrag PI-1)                    */
-/* -------------------------------------------------------------------- */
-/* Vier Flaechen, vier Regeln: die Projektliste des Exportblatts, die   */
-/* Haekchenbloecke je Stammgruppe darunter, die Paketvorschau des       */
-/* Importblatts und die Zielordnerzeile. Alle vier deckeln nur ihre     */
-/* Hoehe und rollen; das Aussehen kommt von den Bausteinen.             */
-/* ==================================================================== */
-.epos-transfer-liste {
-    max-height: var(--epos-transfer-listenhoehe);
-    overflow: auto;
-}
-
-/* Die Haekchenbloecke: je Stammgruppe einer, nebeneinander, solange
-   Platz ist. Ohne Deckel wuechse das Blatt bei acht Gruppen ins
-   Unermessliche und der Exportknopf rutschte aus dem Bild. */
-.epos-transfer-gruppen {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    max-height: calc(var(--epos-transfer-listenhoehe) * 0.75);
-    overflow: auto;
-    margin-block: 6px;
-}
-
-.epos-transfer-gruppen > * {
-    flex: 1 1 260px;
-    min-width: 0;
-}
-
-/* Die Paketvorschau des Importblatts - ein Raster, das bei fuenf
-   Paketen nicht laenger wird als die Projektliste daneben. */
-.epos-transfer-pakete {
-    max-height: calc(var(--epos-transfer-listenhoehe) * 0.75);
-    overflow: auto;
-    margin-block: 6px;
-}
-
-/* Die Zielordnerzeile: Beschriftung, Pfad und Knopf in EINER Zeile;
-   der Pfad nimmt den Rest und kuerzt sich mit Auslassungspunkten. */
-.epos-transfer-ordner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-block: 6px;
-}
-
-.epos-transfer-ordner-pfad {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
