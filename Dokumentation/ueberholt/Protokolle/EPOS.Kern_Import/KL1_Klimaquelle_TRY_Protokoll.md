@@ -502,3 +502,107 @@ dessen Kopf und verlangt dort `.epos-formularraster` in jeder Selektorzeile.
   Zeile.
 - **A-KL4-9** — Sprachumschaltung auf Englisch: Spaltenköpfe, Platzhalter, „Kein Treffer."
   und die Herkunftszeile sind übersetzt.
+
+## 12. Nachtrag KL-6 — Schemaschritt 97: Szenario und Bezugsjahr sichtbar
+
+**Anwenderentscheid 19.09.2026:** „Wird die Quelle und Auswahl (z. B. TRY 2045 sommerwarm …)
+der Klimadaten angezeigt? Diese sollte auch bei der Klimaregion sichtbar sein." — Entscheid:
+Schemaschritt 97, angezeigt in der Regionsliste **und** bei der Klimaregion auf der Übersicht.
+
+### 12.1 Befund
+
+Szenario und Bezugsjahr standen ausschließlich im Freitext `Tab_Klimaregion_STAMM.Details`
+(„… · Szenario mittleres Jahr · Bezugsjahr 2015 · …"), geschrieben beim Import der
+Regionaldaten. Das ist ein Satz für den Leser: nicht sortierbar, nicht filterbar, in der
+Sprache geschrieben, die beim Import eingestellt war — und bei einer TRY-Datei gar nicht
+vorhanden. Wer wissen wollte, ob eine Region das mittlere Jahr 2015 oder das sommerwarme
+2045 trägt, musste das Detailfeld lesen.
+
+### 12.2 Schemaschritt 97
+
+`Tab_Klimaregion` und `Tab_Klimaregion_STAMM` bekommen `Szenario` (`TEXT(12)`, Schlüssel
+`MITTEL` | `SOMMERWARM` | `WINTERKALT`, nie ein Anzeigetext) und `Bezugsjahr` (`INTEGER`,
+2015 oder 2045). Katalog und Projektkopie im selben Schritt — eine Spalte nur auf einer
+Seite wäre in `CopyRegionToProjekt` sofort ein Datenverlust. **Kein DML:** Beide bleiben im
+Bestand NULL, und NULL heißt „sagt nichts dazu".
+
+Eine Quelle (`SchemaKatalog.Schritt97_KlimaSzenario`), drei Leser: `SchemaMigration`,
+`Werkzeuge/Testdatenbankschema`, `EPOS.Kern.Tests/TestDatenbank`; `SchemaStand.Zielversion`
+zuletzt auf 97. In der Migration steht der Schritt **nach** 96 (ein späterer `ADD COLUMN`
+hängt sich an die neu gebaute Tabelle), im Werkzeug und in der Testkopie **vor** 96, damit
+der Tabellenneubau die Spalten gleich mitnimmt und ein Lauf in einem Durchgang fertig ist.
+
+### 12.3 Schreiben
+
+| Quelle | Szenario | Bezugsjahr |
+|---|---|---|
+| PVGIS-TMY | NULL — PVGIS kennt keine TRY-Szenarien | NULL |
+| TRY-Datei | aus der Kopfzeile „Art des TRY" (`TryKopf.Art`), tolerant gegen Schreibweise, Bindestrich und Zwischenraum; unlesbar oder fehlend → NULL | **NULL**, benannt: Der Kopf nennt einen Bezugs*zeitraum* („1995-2012"), nicht das Bezugsjahr dieses Hauses |
+| TRY-Regionaldaten | aus dem Auftrag | aus dem Auftrag |
+
+`KlimaregionStammCtrl.Add` hat dafür eine Überladung um beide Angaben; die bisherige
+Sieben-Parameter-Fassung bleibt als Weiche stehen und schreibt NULL.
+
+### 12.4 Anzeige
+
+Der neue `KlimaAnzeige` (Kern) reiht Quelle, Bezugsjahr und Szenario zu **einem** Satz —
+lang für die Regionsliste und die Herkunftszeile („TRY-Regionaldaten (Deutschland) · 2045 ·
+sommerwarm"), kurz für einen Eintrag des Auswahlfeldes („hagelloch (TRY 2045 sommerwarm)",
+„München (PVGIS)"). Was fehlt, wird weggelassen, nie durch eine Vorgabe ersetzt; fehlt
+alles, bleibt die leere Zeichenfolge, und die Katalogliste macht daraus ihren
+Halbgeviertstrich.
+
+**Die beiden bisherigen Übersetzungen in den Hüllen sind entfallen.** Bis KL-6 setzte
+`KlimadatenHuelle` bzw. `StartseiteHuelle` den Anzeigetext des Quellenschlüssels ein — aus
+drei Angaben EINEN Satz zu bauen ist aber kein Übersetzen mehr, sondern Satzbau, und zwei
+Stellen wären zwei Wortlaute. Der Kern baut ihn; die Datenbank führt unverändert nur
+Schlüssel.
+
+**Keine achte und neunte Spalte.** Gesucht wird in der Liste über alle Spalten, „2045" engt
+damit auf das Bezugsjahr ein. Der Preis ist, dass nach dem Jahr allein nicht sortiert werden
+kann; er ist kleiner als zwei weitere Spalten in einem ohnehin schmalen Dialog.
+
+### 12.5 Nachweise
+
+`KlimaSzenarioTests` (neu): die vier Spalten und ihre Wiederholbarkeit, der NULL gebliebene
+Bestand, die Schlüssel je Szenario, das Szenario aus dem Dateikopf samt Gegenproben, der
+Import mit und ohne „Art des TRY", die Projektkopie, die Altbestandskopie, der
+zusammengesetzte Satz der Liste, der Halbgeviertstrich, eine Datenbank auf Stand 95, die
+Herkunft des Projekts und der Eintragstext — dazu der Satzbau in beiden Kulturen.
+`KlimaregionKatalogTests` hält den Schlüssel jetzt gegen die Datenbank und den Anzeigetext
+gegen die Spalte. bunit: Herkunftszeile, Klimafeld samt Suche über das Jahr, Spalte „Quelle"
+im Klimadaten-Dialog.
+
+Gate: Kern 3 746, UI 4 789, KiKern 499, SpeicherEngine 378, SpeicherPlanung 27 (1
+übersprungen) — 0 Fehler, beide Kulturen. Windows-Schale 0 Fehler, SQL-Dialekt-Prüfer 0
+Fundstellen, ResourceDesigner wiederholbar, Schemawerkzeug-Trockenlauf „Stand 97, nichts
+offen", Referenzlauf 1030/1007/1017/1045/1046 PASS und **byte-gleich** gegen
+`2026-09-18_R9_Kesselbrennstoff`.
+
+### 12.6 Windows-Abnahmepunkte
+
+- **A-KL6-1** — Klimadaten öffnen: Die Spalte „Quelle" nennt bei einer neu eingelesenen
+  Region aus den Regionaldaten „TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm"; eine
+  Suche nach „2045" engt auf sie ein. Bei PVGIS steht die Quelle allein.
+- **A-KL6-2** — Übersicht: Unter dem Klimafeld steht „Klimadaten: TRY-Regionaldaten
+  (Deutschland) · 2045 · sommerwarm · ‹Region› · ‹Standort› · Import ‹Datum›", und die
+  Einträge des Klimafeldes tragen die Kurzform in Klammern („‹Region› (TRY 2045
+  sommerwarm)", „München (PVGIS)"). Auf Englisch sind Quelle und Szenario übersetzt, die
+  Jahreszahl steht ohne Tausenderpunkt.
+- **A-KL6-3** — Bestandsdatenbank: Der Programmstart migriert auf Stand 97;
+  `Tab_Klimaregion` und `Tab_Klimaregion_STAMM` führen `Szenario` und `Bezugsjahr`, in jeder
+  Bestandszeile leer, und die Liste zeigt dort den Halbgeviertstrich.
+
+### 12.7 Offene Punkte
+
+- **Eine TRY-Datei bekommt kein Bezugsjahr.** Ihr Kopf nennt einen Bezugszeitraum; die
+  Zuordnung „1995-2012 → 2015" und „2031-2060 → 2045" wäre die DWD-Konvention und nicht die
+  Aussage der Datei. Anwenderentscheid nötig, ob die Zuordnung gewollt ist — oder ob der
+  Dialog bei dieser Quelle nach dem Bezugsjahr fragen soll.
+- **Die Szenario-Anzeigetexte sind die bestehenden `KLIMA_TRY_SZ_*`**, nicht neue
+  `KLIMA_SZENARIO_*`: Sie sagen wörtlich dasselbe („mittleres Jahr", „sommerwarm",
+  „winterkalt"), und ein zweiter Schlüssel gleichen Inhalts wäre die Wahrheit doppelt.
+- **Der Altbestand wird nicht nachdatiert.** Eine Region, die vor Schritt 97 angelegt wurde,
+  sagt nichts über ihr Wetterjahr — auch dann nicht, wenn ihr `Details`-Text es nennt: Aus
+  einem Freitext einen Schlüssel zu lesen wäre eine Behauptung über einen Satz, der in einer
+  von zwei Sprachen geschrieben sein kann.

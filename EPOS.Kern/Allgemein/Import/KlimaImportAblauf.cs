@@ -318,6 +318,12 @@ namespace WindowsFormsApplication1
             List<TmyHourlyData> stunden;
             string herkunft = "";          // der Herkunftsvermerk der TRY-Quellen
 
+            // Schemaschritt 97 (Auftrag KL-6): WELCHES Wetterjahr die Reihe
+            // beschreibt. Leer bzw. null heisst "sagt nichts dazu" - so bleibt es
+            // bei PVGIS, das keine TRY-Szenarien kennt.
+            string szenario = "";
+            int? bezugsjahr = null;
+
             if (auftrag.Quelle == KlimaQuelle.PvgisTmy)
             {
                 // ---- PVGIS: EIN Abruf (A-10), unveraendert ------------------
@@ -409,6 +415,13 @@ namespace WindowsFormsApplication1
                                   MyResource.Resource.KLIMA_TRY_VERWORFEN, kopf.VerworfenText))
                     + " · " + standort;
 
+                // Schemaschritt 97: Das SZENARIO steht im Dateikopf ("Art des TRY"),
+                // das Bezugsjahr NICHT - der Kopf nennt einen Bezugszeitraum
+                // ("1995-2012"), und daraus ein Bezugsjahr dieses Hauses zu machen
+                // waere eine Behauptung. Also Szenario, wenn der Kopf es hergibt,
+                // und sonst nichts.
+                szenario = SzenarioschluesselAusKopf(kopf.Art);
+
                 DwdTryLeser.DirektNormal(stunden, lon, lat);
             }
             else
@@ -484,6 +497,12 @@ namespace WindowsFormsApplication1
                                   MyResource.Resource.KLIMA_TRY_VERWORFEN,
                                   paketErg.Kopf.VerworfenText));
 
+                // Schemaschritt 97: Bei den Regionaldaten steht beides im AUFTRAG -
+                // der Anwender hat Jahr und Szenario gewaehlt, und genau danach ist
+                // das Paket gelesen worden.
+                szenario = Szenarioschluessel(auftrag.Szenario);
+                bezugsjahr = auftrag.TryJahr;
+
                 DwdTryLeser.DirektNormal(stunden, lon, lat);
             }
 
@@ -514,7 +533,8 @@ namespace WindowsFormsApplication1
                 {
                     Melden(melder, 4, "KLIMA_SCHRITT_REGION");
                     if (!ctrl.Add(bezeichner, lon, lat, details,
-                                  Quellenschluessel(auftrag.Quelle), Heute(), v))
+                                  Quellenschluessel(auftrag.Quelle), Heute(),
+                                  szenario, bezugsjahr, v))
                     {
                         v.Rollback();
                         return Fehler(erg, KlimaImportAusgang.Schreibfehler, "");
@@ -751,6 +771,55 @@ namespace WindowsFormsApplication1
                 case KlimaQuelle.TryRegional: return DbWerte.KLIMA_QUELLE_TRY_REGIONAL;
                 default: return DbWerte.KLIMA_QUELLE_PVGIS;
             }
+        }
+
+        /// <summary>
+        /// Der sprachneutrale Schlüssel des Szenarios für
+        /// <c>Tab_Klimaregion(_STAMM).Szenario</c> (Schemaschritt 97, Auftrag KL-6) —
+        /// die eins-zu-eins-Abbildung von <see cref="TrySzenario"/>.
+        ///
+        /// <para><b>Nie ein Anzeigetext</b> (Drei-Schichten-Regel); den liefert
+        /// <see cref="SzenarioText"/>.</para>
+        /// </summary>
+        public static string Szenarioschluessel(TrySzenario szenario)
+        {
+            switch (szenario)
+            {
+                case TrySzenario.Sommerwarm: return DbWerte.KLIMA_SZENARIO_SOMMERWARM;
+                case TrySzenario.Winterkalt: return DbWerte.KLIMA_SZENARIO_WINTERKALT;
+                default: return DbWerte.KLIMA_SZENARIO_MITTEL;
+            }
+        }
+
+        /// <summary>
+        /// Das Szenario aus der Kopfzeile „Art des TRY" einer DWD-Datei —
+        /// <c>""</c>, wenn der Kopf nichts nennt oder etwas Unbekanntes nennt
+        /// (Schemaschritt 97, Auftrag KL-6).
+        ///
+        /// <para><b>Warum hier geraten werden DARF.</b> „Art des TRY" IST das
+        /// Szenario; der Kopf sagt es mit eigenen Worten („mittleres Jahr", „Sommer
+        /// warm", „Winter kalt"). Gemessen wird deshalb gegen die tragenden Wortteile
+        /// und ohne Rücksicht auf Groß-/Kleinschreibung, Bindestriche und
+        /// Zwischenräume — und was danach nicht zuzuordnen ist, bleibt LEER statt
+        /// „mittleres Jahr" zu heißen: Eine Vorgabe wäre hier eine Behauptung über
+        /// die Datei.</para>
+        ///
+        /// <para><b>Das Bezugsjahr steht NICHT im Kopf.</b> Er nennt einen
+        /// Bezugszeitraum („1995-2012", „2031-2060"); das Bezugsjahr dieses Hauses
+        /// (2015 bzw. 2045) ist etwas anderes und bleibt bei dieser Quelle NULL.</para>
+        /// </summary>
+        public static string SzenarioschluesselAusKopf(string art)
+        {
+            string a = (art ?? "").Trim();
+            if (a.Length == 0) return "";
+
+            a = a.Replace("-", "").Replace("\u2011", "").Replace(" ", "").ToUpperInvariant();
+
+            if (a.Contains("SOMMER") && a.Contains("WARM")) return DbWerte.KLIMA_SZENARIO_SOMMERWARM;
+            if (a.Contains("WINTER") && a.Contains("KALT")) return DbWerte.KLIMA_SZENARIO_WINTERKALT;
+            if (a.Contains("MITTL") || a.Contains("NORMAL")) return DbWerte.KLIMA_SZENARIO_MITTEL;
+
+            return "";
         }
 
         /// <summary>

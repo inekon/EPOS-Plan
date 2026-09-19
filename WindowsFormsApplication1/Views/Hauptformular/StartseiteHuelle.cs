@@ -467,24 +467,14 @@ namespace WindowsFormsApplication1
             WindowsFormsApplication1.KlimaHerkunft h = StartseiteCtrl.KlimaHerkunft(_kontext.Id);
             if (h == null) return null;
 
-            return new KlimaHerkunftGaben(Quellentext(h.Quelle), h.Bezeichner,
-                                          h.Standort, Datumstext(h.Importdatum));
-        }
-
-        /// <summary>Der Anzeigetext eines Quellenschluessels; ein unbekannter bleibt leer.</summary>
-        private static string Quellentext(string schluessel)
-        {
-            switch ((schluessel ?? "").Trim())
-            {
-                case DbWerte.KLIMA_QUELLE_PVGIS:
-                    return MyResource.Resource.KLIMA_QUELLE_PVGIS;
-                case DbWerte.KLIMA_QUELLE_TRY_DATEI:
-                    return MyResource.Resource.KLIMA_QUELLE_TRY_DATEI;
-                case DbWerte.KLIMA_QUELLE_TRY_REGIONAL:
-                    return MyResource.Resource.KLIMA_QUELLE_TRY_REGIONAL;
-                default:
-                    return "";
-            }
+            // Auftrag KL-6: Das erste Glied der Zeile nennt nicht nur die Quelle,
+            // sondern das ganze Wetterjahr - "TRY-Regionaldaten (Deutschland) · 2045 ·
+            // sommerwarm". Den Satz baut der Kern (KlimaAnzeige.Quellenzeile), derselbe,
+            // der auch die Spalte "Quelle" der Regionsliste fuellt; eine zweite
+            // Uebersetzung hier waere ein zweiter Wortlaut.
+            return new KlimaHerkunftGaben(
+                KlimaAnzeige.Quellenzeile(h.Quelle, h.Szenario, h.Bezugsjahr),
+                h.Bezeichner, h.Standort, Datumstext(h.Importdatum));
         }
 
         /// <summary>

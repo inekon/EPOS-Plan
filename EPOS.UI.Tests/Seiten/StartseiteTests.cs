@@ -1277,6 +1277,70 @@ public class StartseiteTests : EposBunitContext
         Assert.DoesNotContain("Import", zeile, StringComparison.Ordinal);
     }
 
+    // =====================================================================
+    //  Auftrag KL-6 - Szenario und Bezugsjahr in der Zeile und im Feld
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Herkunftszeile nennt das ganze Wetterjahr</b> (A-KL6-2,
+    /// Anwenderentscheid 19.09.2026): Quelle, Bezugsjahr und Szenario stehen als EIN
+    /// Glied vorn, dann Bezeichner, Standort und Importdatum.
+    ///
+    /// <para>Den Satz baut der Kern (<c>KlimaAnzeige.Quellenzeile</c>) und die Hülle
+    /// reicht ihn herein; die Seite formatiert ihn nur in ihre Vorlage. Sie kennt
+    /// weder Ressourcen noch Datenbank — deshalb steht hier der fertige Text.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Herkunftszeile_nennt_Bezugsjahr_und_Szenario()
+    {
+        var cut = Zeige(klimaHerkunft: () => new KlimaHerkunftGaben(
+            "TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm",
+            "hagelloch", "Tübingen, Deutschland", "19.09.2026"));
+
+        string zeile = cut.Find(".epos-startseite-klimaherkunft").TextContent;
+
+        Assert.Contains("TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm", zeile,
+                        StringComparison.Ordinal);
+        Assert.Contains("hagelloch", zeile, StringComparison.Ordinal);
+        Assert.Contains("19.09.2026", zeile, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Die Einträge des Klimafeldes nennen das Wetterjahr</b> (A-KL6-2):
+    /// „hagelloch (TRY 2045 sommerwarm)", „München (PVGIS)" — und eine Region ohne
+    /// Herkunft ihren blanken Namen. Gesucht wird über den ganzen Eintrag, also auch
+    /// über das Jahr; gemeldet wird unverändert die Stamm-Id.
+    /// </summary>
+    [Fact]
+    public void Das_Klimafeld_zeigt_das_Wetterjahr_und_meldet_die_Id()
+    {
+        int gewaehlt = 0;
+
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Kacheln, () => Kacheln(0))
+            .Add(x => x.ProjektId, () => 1030)
+            .Add(x => x.Varianten, () => new[] { (1030, "Referenzprojekt") })
+            .Add(x => x.Klimaregionen, () => (IReadOnlyList<(int Id, string Text)>)new[]
+            {
+                (47, "München (PVGIS)"),
+                (46, "hagelloch (TRY 2045 sommerwarm)"),
+                (17, "Berlin")
+            })
+            .Add(x => x.KlimaregionId, () => 47)
+            .Add(x => x.Bericht, Bereitschaft)
+            .Add(x => x.KlimaSpeichern, r => { gewaehlt = r; return (false, "gespeichert"); }));
+
+        Klimafeld(cut).Input("2045");
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("li[role='option']")));
+        Assert.Equal("hagelloch (TRY 2045 sommerwarm)",
+                     cut.Find("li[role='option']").TextContent.Trim());
+
+        cut.Find("li[role='option']").Click();
+        cut.FindAll(".epos-startseite-klima .epos-knopf")[0].Click();
+
+        Assert.Equal(46, gewaehlt);
+    }
+
     /// <summary>
     /// <b>Ohne Gaben steht keine Zeile</b> — so ist es ohne offenes Projekt und auf
     /// iOS, wo <c>IProjektQuelle.StartseiteGaben</c> keine Gaben liefert. Eine leere

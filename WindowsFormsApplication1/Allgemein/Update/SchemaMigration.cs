@@ -3477,6 +3477,33 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_96_PROJEKT_FREMDSCHLUESSEL = 96;
 
+        /// <summary>
+        /// Schritt 97 — <b>Szenario und Bezugsjahr der Klimaregion</b>
+        /// (Anwenderentscheid vom 19.09.2026: „Wird die Quelle und Auswahl (z. B.
+        /// TRY 2045 sommerwarm …) der Klimadaten angezeigt? Diese sollte auch bei der
+        /// Klimaregion sichtbar sein.").
+        ///
+        /// <para><b>Zwei Angaben des Kopfsatzes</b> an <c>Tab_Klimaregion</c> UND
+        /// <c>Tab_Klimaregion_STAMM</c>: <c>Szenario</c> (sprachneutraler Schlüssel
+        /// <see cref="DbWerte.KLIMA_SZENARIO_MITTEL"/> und die zwei anderen) und
+        /// <c>Bezugsjahr</c> (2015 oder 2045). Die Quelle der vier Spalten ist
+        /// <see cref="SchemaKatalog.Schritt97_KlimaSzenario"/> — EINE Liste für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>KEIN DML.</b> Beide Spalten bleiben im Bestand NULL. NULL heißt
+        /// „sagt nichts dazu" — Altbestand, PVGIS (kennt keine TRY-Szenarien) und jede
+        /// TRY-Datei, deren Kopf die Art des Datensatzes nicht nennt. Nachdatiert wird
+        /// nichts, kein Rechenweg liest die Spalten, der Referenzlauf bleibt
+        /// byte-gleich.</para>
+        ///
+        /// <para><b>Nach Schritt 96, und das ist unbedenklich:</b> 96 baut Tabellen neu
+        /// und verlangt deshalb, dass jede Spalte eines FRÜHEREN Schritts vorher
+        /// dasteht. Ein SPÄTERER <c>ADD COLUMN</c> hängt sich an die neu gebaute
+        /// Tabelle und stört den Fremdschlüssel nicht.</para>
+        /// </summary>
+        public const int SCHRITT_97_KLIMA_SZENARIO = 97;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4757,6 +4784,24 @@ namespace WindowsFormsApplication1
                         "verlieren. Ergebnisneutral: Werte, Ids und Zaehlerstaende " +
                         "bleiben, entfernt wird nur, was zu keinem Projekt gehoert.",
                         Schritt_96_ProjektFremdschluessel),
+
+            // ANWENDERENTSCHEID 19.09.2026 (Auftrag KL-6) - die Klimaregion sagt,
+            // WELCHES Wetterjahr sie traegt. REIN DDL, kein DML; die Quelle ist
+            // SchemaKatalog.Schritt97_KlimaSzenario. Er steht NACH 96, weil 96
+            // Tabellen neu baut: Ein spaeterer ADD COLUMN haengt sich an die neu
+            // gebaute Tabelle, ein frueherer muesste vor dem Neubau dastehen.
+            new Schritt(SCHRITT_97_KLIMA_SZENARIO,
+                        "Tab_Klimaregion(_STAMM) bekommt Szenario und Bezugsjahr",
+                        "Ob eine Reihe das mittlere Jahr 2015 oder das sommerwarme " +
+                        "2045 beschreibt, aendert die ganze Rechnung - gespeichert " +
+                        "war es bisher nur im Freitext Details, also weder sortierbar " +
+                        "noch filterbar und in zwei Sprachen geschrieben. Ab hier " +
+                        "steht es als Schluessel und als Zahl daneben, und die " +
+                        "Regionsliste wie die Startseite zeigen es an. NULL heisst " +
+                        "'sagt nichts dazu' (Altbestand, PVGIS, TRY-Datei ohne Art im " +
+                        "Kopf) - der Schritt ist damit fuer jede Bestandsrechnung " +
+                        "ergebnisneutral.",
+                        Schritt_97_KlimaSzenario),
         };
 
         /// <summary>
@@ -7006,6 +7051,43 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.TAB_KLIMAREGION_STAMM + ". KEIN DML: Alle bleiben NULL, " +
                     "und NULL heisst 'nicht verfuegbar' bzw. 'Altbestand'. KEIN " +
                     "Rechenergebnis aendert sich; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 97 - Szenario und Bezugsjahr der Klimaregion (Anwenderentscheid 19.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 97 — Anlass, Inhalt und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_97_KLIMA_SZENARIO"/> und bei
+        /// <see cref="SchemaKatalog.Schritt97_KlimaSzenario"/>.
+        ///
+        /// <para><b>Reines DDL</b>, dieselbe Schleife wie bei Schritt 95: vier nullbare
+        /// Spalten an zwei Tabellen, kein DML. <b>Wiederholbar</b> über
+        /// <see cref="SqliteSpalteAnlegen"/> — es fragt <c>PRAGMA table_info</c>, bevor
+        /// es anlegt.</para>
+        /// </summary>
+        private static bool Schritt_97_KlimaSzenario(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt97_KlimaSzenario)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("97: " + angelegt.ToString(CultureInfo.InvariantCulture) +
+                    " von " + SchemaKatalog.Schritt97_KlimaSzenario.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + SchemaKatalog.SPALTE_KR_SZENARIO + " und " +
+                    SchemaKatalog.SPALTE_KR_BEZUGSJAHR + " an " + SchemaKatalog.TAB_KLIMAREGION +
+                    " und " + SchemaKatalog.TAB_KLIMAREGION_STAMM + ". KEIN DML: Beide " +
+                    "bleiben NULL, und NULL heisst 'sagt nichts dazu' (Altbestand, " +
+                    "PVGIS, TRY-Datei ohne Art im Kopf). KEIN Rechenergebnis aendert " +
+                    "sich; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

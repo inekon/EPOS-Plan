@@ -1081,6 +1081,40 @@ public class KlimadatenDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Die Spalte „Quelle" sagt das ganze Wetterjahr</b> (A-KL6-1,
+    /// Anwenderentscheid 19.09.2026): „TRY-Regionaldaten (Deutschland) · 2045 ·
+    /// sommerwarm". Den Satz baut der Kern
+    /// (<c>KlimaregionStammCtrl.Katalogfilterzeilen</c> über <c>KlimaAnzeige</c>); der
+    /// Dialog zeigt ihn und lässt darüber suchen — „2045" wird damit zum Filter auf
+    /// das Bezugsjahr, ohne eine achte Spalte.
+    ///
+    /// <para>Ein Altbestand ohne Herkunft bekommt den Halbgeviertstrich der
+    /// Katalogliste, nie eine erfundene Quelle.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Spalte_Quelle_zeigt_Bezugsjahr_und_Szenario()
+    {
+        var cut = Zeige(new List<Katalogfilterzeile>
+        {
+            Zeile(17, "Berlin", "PVGIS-Testreferenzjahr (weltweit)", "Berlin, Deutschland",
+                  13.3951, 52.5174, "2026-09-18", false),
+            Zeile(46, "hagelloch", "TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm",
+                  "9,0500° / 48,5200°", 9.05, 48.52, "2026-09-19", false),
+            Zeile(3, "Auslieferung Nord", "", "Hamburg, Deutschland", 10.0, 53.5, "", true)
+        });
+
+        Assert.Contains("TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm", cut.Markup);
+        Assert.Contains("–", cut.Markup);
+
+        // Ueber das Bezugsjahr laesst sich suchen - ohne eine eigene Spalte.
+        cut.Find("label.epos-katalog-suchfeld input").Input("2045");
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-anlagenwahl")),
+                             TimeSpan.FromSeconds(10));
+        Assert.Contains("hagelloch", cut.Markup);
+        Assert.DoesNotContain("Berlin, Deutschland", cut.Markup);
+    }
+
+    /// <summary>
     /// <b>Die Wahl überlebt einen Filterwechsel</b>: Sie hängt am Bezeichner, nicht
     /// an der Zeilennummer — dieselbe Regel wie in den vierzehn anderen Katalogen.
     /// </summary>

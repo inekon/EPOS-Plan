@@ -34,8 +34,13 @@ namespace WindowsFormsApplication1
     /// <param name="Standort">Ortsname oder Koordinatenpaar
     /// (<c>KlimaregionStammCtrl.Standorttext</c>).</param>
     /// <param name="Importdatum">ISO-Text <c>yyyy-MM-dd</c>; leer = unbekannt.</param>
+    /// <param name="Szenario">Sprachneutraler Schlüssel (<c>MITTEL</c>,
+    /// <c>SOMMERWARM</c>, <c>WINTERKALT</c>, Schemaschritt 97); leer = sagt nichts
+    /// dazu — Altbestand, PVGIS oder eine TRY-Datei ohne Art im Kopf.</param>
+    /// <param name="Bezugsjahr">2015 oder 2045; <c>0</c> = sagt nichts dazu.</param>
     public sealed record KlimaHerkunft(string Quelle, string Bezeichner,
-                                       string Standort, string Importdatum);
+                                       string Standort, string Importdatum,
+                                       string Szenario = "", int Bezugsjahr = 0);
 
     /// <summary>Ein Eintrag des Variantenfeldes im Kopfband der Startseite.</summary>
     /// <param name="Id"><c>Tab_Projekt.ID</c>.</param>
@@ -131,6 +136,13 @@ namespace WindowsFormsApplication1
         /// Nachschlag Name → Id im Speicherweg weg, und zwei Regionen gleichen Namens
         /// bleiben unterscheidbar. <see cref="Klimaregionen"/> bleibt daneben stehen:
         /// Wer nur die Namen braucht, braucht nicht die Ids.</para>
+        ///
+        /// <para><b>Der Name ist seit Auftrag KL-6 der ANZEIGETEXT</b> — „hagelloch
+        /// (TRY 2045 sommerwarm)", „München (PVGIS)". Er wird im Kern gebaut
+        /// (<c>KlimaregionStammCtrl.Auswahlzeilen</c> über <see cref="KlimaAnzeige"/>),
+        /// damit im Auswahlfeld derselbe Satz steht wie in der Regionsliste. Eine
+        /// Region ohne Herkunft behält ihren blanken Namen — die Klammer wird nicht
+        /// erfunden. <b>Die Wahl bleibt die Id</b>, der Text ist nur Text.</para>
         /// </summary>
         public static IReadOnlyList<(int Id, string Name)> KlimaregionenMitId()
         {
@@ -138,11 +150,9 @@ namespace WindowsFormsApplication1
 
             try
             {
-                KlimaregionStammCtrl ctrl = new KlimaregionStammCtrl();
-                ctrl.ReadAll();
-
-                for (int i = 0; i < ctrl.rows; i++)
-                    liste.Add((ctrl.items[i].m_ID_Klimaregion, ctrl.items[i].m_szName ?? ""));
+                foreach ((int Id, string Name, string Anzeige) e
+                         in KlimaregionStammCtrl.Auswahlzeilen())
+                    liste.Add((e.Id, e.Anzeige));
             }
             catch (Exception ex)
             {
@@ -275,10 +285,21 @@ namespace WindowsFormsApplication1
                     DataRepository.SpalteVorhanden(KlimaregionStammCtrl.TAB_REGION_PROJEKT,
                                                    SchemaKatalog.SPALTE_KR_IMPORTDATUM);
 
+                // Schemaschritt 97 wird eigens gefragt - eine Datenbank kann auf 95
+                // stehen und dann Quelle und Importdatum fuehren, aber kein Szenario.
+                bool mitSzenario =
+                    DataRepository.SpalteVorhanden(KlimaregionStammCtrl.TAB_REGION_PROJEKT,
+                                                   SchemaKatalog.SPALTE_KR_SZENARIO) &&
+                    DataRepository.SpalteVorhanden(KlimaregionStammCtrl.TAB_REGION_PROJEKT,
+                                                   SchemaKatalog.SPALTE_KR_BEZUGSJAHR);
+
                 string felder = "Bezeichner, Longitude, Latitude, Details";
                 if (mitHerkunft)
                     felder += ", " + SchemaKatalog.SPALTE_KR_QUELLE +
                               ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM;
+                if (mitSzenario)
+                    felder += ", " + SchemaKatalog.SPALTE_KR_SZENARIO +
+                              ", " + SchemaKatalog.SPALTE_KR_BEZUGSJAHR;
 
                 DataTable dt = DataRepository.GetDataTable(
                     "SELECT " + felder + " FROM " + KlimaregionStammCtrl.TAB_REGION_PROJEKT +
@@ -294,7 +315,9 @@ namespace WindowsFormsApplication1
                     KlimaregionStammCtrl.Standorttext(Katalogfeld.Text(r, "Details"),
                                                       Katalogfeld.Zahl(r, "Longitude") ?? 0,
                                                       Katalogfeld.Zahl(r, "Latitude") ?? 0),
-                    mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_IMPORTDATUM) : "");
+                    mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_IMPORTDATUM) : "",
+                    mitSzenario ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_SZENARIO) : "",
+                    mitSzenario ? Katalogfeld.Ganzzahl(r, SchemaKatalog.SPALTE_KR_BEZUGSJAHR) : 0);
             }
             catch (Exception ex)
             {

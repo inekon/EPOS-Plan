@@ -8,7 +8,9 @@ Der Dialog '''Klimadaten''' legt die Klimaregionen an, mit denen EPOS-Plan rechn
 
 Links steht die Liste der vorhandenen Klimaregionen – mit Suchfeld über alle Spalten, einem Trichter je Spalte und dem Sortierpfeil im Spaltenkopf, wie Sie es aus den Gerätekatalogen kennen. Über der Liste steht, wie viele Sätze die Einengung übrig lässt.
 
-Die Spalten sind: ''Klimaregion'', ''Quelle'' (PVGIS oder eines der beiden Testreferenzjahre), ''Standort'' (der Ortsname, sonst das Koordinatenpaar), ''Longitude'', ''Latitude'', ''Importdatum'' und ''Schreibschutz''. Das Importdatum steht als Jahr-Monat-Tag; „2026-09" im Trichter zeigt deshalb alles, was in diesem Monat eingelesen wurde. Führt eine Region keine Angabe zu Quelle und Importdatum, bleiben die beiden Spalten leer.
+Die Spalten sind: ''Klimaregion'', ''Quelle'', ''Standort'' (der Ortsname, sonst das Koordinatenpaar), ''Longitude'', ''Latitude'', ''Importdatum'' und ''Schreibschutz''. Das Importdatum steht als Jahr-Monat-Tag; „2026-09" im Trichter zeigt deshalb alles, was in diesem Monat eingelesen wurde. Führt eine Region keine Angabe zu Quelle und Importdatum, bleiben die beiden Spalten leer.
+
+Die Spalte ''Quelle'' nennt neben der Herkunft auch das '''Bezugsjahr''' und das '''Szenario''' der Daten, etwa „TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm“. Weil das Suchfeld über alle Spalten sucht, engt „2045“ die Liste auf die Regionen dieses Bezugsjahres ein. Ein PVGIS-Abruf kennt kein Szenario; dort steht die Quelle allein.
 
 ''Löschen'' entfernt die gewählte Region samt ihren Stunden- und Tageswerten, nach einer Rückfrage. Regionen der Auslieferung sind schreibgeschützt und bleiben stehen.
 
@@ -66,7 +68,7 @@ Zu jeder Stunde speichert EPOS-Plan außerdem die '''atmosphärische Gegenstrahl
 
 In den ''Details'' der Region stehen außerdem die Herkunft – Dateiname oder Region, Koordinate, Entfernung, Szenario, Jahr und Quelle – das Datum des Einlesens und der Lizenzvermerk der Daten.
 
-Auf der Übersicht wählen Sie die Klimaregion des Projekts aus einem '''durchsuchbaren''' Feld: Tippen engt die Liste ein, die Pfeiltasten wandern darin, Enter übernimmt. Darunter steht eine Zeile, die Quelle, Bezeichnung, Standort und Importdatum der Region nennt, mit der das offene Projekt rechnet.
+Auf der Übersicht wählen Sie die Klimaregion des Projekts aus einem '''durchsuchbaren''' Feld: Tippen engt die Liste ein, die Pfeiltasten wandern darin, Enter übernimmt. Jeder Eintrag nennt in Klammern, welche Daten die Region trägt – etwa „Musterort (TRY 2045 sommerwarm)“ oder „Musterstadt (PVGIS)“; gesucht wird über den ganzen Eintrag, also auch über das Bezugsjahr. Darunter steht eine Zeile, die Quelle samt Bezugsjahr und Szenario, Bezeichnung, Standort und Importdatum der Region nennt, mit der das offene Projekt rechnet.
 
 == Hinweise zu den Quellen ==
 {{Anker|quellen}}

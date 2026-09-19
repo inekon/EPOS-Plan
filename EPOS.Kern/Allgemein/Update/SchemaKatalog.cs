@@ -3588,6 +3588,82 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
+        // SCHRITT 97 — Szenario und Bezugsjahr der Klimaregion (Anwenderentscheid
+        //              19.09.2026, Auftrag KL-6)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Das TRY-SZENARIO einer Klimaregion</b> — sprachneutraler Schlüssel
+        /// <see cref="DbWerte.KLIMA_SZENARIO_MITTEL"/>,
+        /// <see cref="DbWerte.KLIMA_SZENARIO_SOMMERWARM"/> oder
+        /// <see cref="DbWerte.KLIMA_SZENARIO_WINTERKALT"/>, <b>nie</b> ein Anzeigetext.
+        ///
+        /// <para><b>Wofür.</b> „TRY 2045 sommerwarm" und „TRY 2015 mittleres Jahr" sind
+        /// zwei verschiedene Wetterjahre, und der Unterschied trägt durch die ganze
+        /// Rechnung. Bis hierher stand er nur im Freitext <c>Details</c> — lesbar, aber
+        /// nicht auswertbar: weder sortierbar noch filterbar, und in zwei Sprachen
+        /// geschrieben.</para>
+        ///
+        /// <para><b>NULL heißt „sagt nichts dazu"</b> — der Altbestand vor diesem
+        /// Schritt, jede PVGIS-Region (PVGIS kennt keine TRY-Szenarien) und jede
+        /// TRY-Datei, deren Kopf die Art des Datensatzes nicht nennt. Nachdatiert wird
+        /// nichts.</para>
+        ///
+        /// <para><b>Spaltenbreite.</b> Längster Schlüssel <c>SOMMERWARM</c>
+        /// (10 Zeichen) → TEXT(12), wie <c>Tarif_Modus</c>.</para>
+        /// </summary>
+        public const string SPALTE_KR_SZENARIO = "Szenario";
+
+        /// <summary>
+        /// <b>Das BEZUGSJAHR der TRY-Reihe</b> — 2015 (Testreferenzjahr) oder 2045
+        /// (Projektion), die zwei Jahre, die
+        /// <c>KlimaImportAuftrag.TRY_JAHR_VORGABE</c> und
+        /// <c>KlimaImportAuftrag.TRY_JAHR_PROJEKTION</c> führen.
+        ///
+        /// <para><b>INTEGER und nicht TEXT</b>, anders als das <see cref="SPALTE_KR_IMPORTDATUM"/>
+        /// daneben: Ein Jahr ist eine Zahl, es wird verglichen („ab 2045") und nicht
+        /// nach Zeichen sortiert. Die Liste zeigt es als Zahl ohne Tausenderpunkt.</para>
+        ///
+        /// <para><b>NULL heißt „sagt nichts dazu"</b> — Altbestand, PVGIS und jede
+        /// TRY-Datei aus dem DWD-Portal: Deren Kopf nennt einen BEZUGSZEITRAUM
+        /// („1995-2012"), nicht das Bezugsjahr dieses Hauses, und aus einem Zeitraum ein
+        /// Jahr zu machen wäre eine Behauptung.</para>
+        /// </summary>
+        public const string SPALTE_KR_BEZUGSJAHR = "Bezugsjahr";
+
+        /// <summary>
+        /// Schritt 97 der Migration: SZENARIO und BEZUGSJAHR an <c>Tab_Klimaregion</c>
+        /// und <c>Tab_Klimaregion_STAMM</c> (Anwenderentscheid 19.09.2026: „Wird die
+        /// Quelle und Auswahl (z. B. TRY 2045 sommerwarm …) der Klimadaten angezeigt?
+        /// Diese sollte auch bei der Klimaregion sichtbar sein.").
+        ///
+        /// <para><b>Die Fortsetzung von Schritt 95.</b> Der legte <c>Quelle</c> und
+        /// <c>Importdatum</c> an und beantwortete damit „woher" und „wann"; diese zwei
+        /// Spalten beantworten „welches Wetterjahr" — die Frage, die den Rechenlauf
+        /// wirklich ändert.</para>
+        ///
+        /// <para><b>KEIN DML.</b> Beide Spalten bleiben im Bestand NULL, und NULL heißt
+        /// „sagt nichts dazu"; kein Rechenweg liest eine von ihnen, der Referenzlauf
+        /// bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Katalog und Projektkopie im selben Schritt</b> — dieselbe Hausregel
+        /// wie bei <see cref="Schritt95_Klimaspalten"/>: Eine Spalte nur auf der
+        /// Katalogseite wäre in <c>KlimaregionStammCtrl.CopyRegionToProjekt</c> sofort
+        /// ein Datenverlust.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — derselbe
+        /// Grund wie bei Schritt 95: Die Rückfallebene läuft bei jedem Simulationsstart,
+        /// und die Simulation liest diese zwei Spalten nicht.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt97_KlimaSzenario =
+        {
+            new SchemaSpalte(TAB_KLIMAREGION_STAMM, SPALTE_KR_SZENARIO,   "TEXT(12)"),
+            new SchemaSpalte(TAB_KLIMAREGION_STAMM, SPALTE_KR_BEZUGSJAHR, "LONG"),
+            new SchemaSpalte(TAB_KLIMAREGION,       SPALTE_KR_SZENARIO,   "TEXT(12)"),
+            new SchemaSpalte(TAB_KLIMAREGION,       SPALTE_KR_BEZUGSJAHR, "LONG"),
+        };
+
+        // ---------------------------------------------------------------------------
         // ETAPPE E5 — Tarifmodell Strom (Tab_ProjektTarif) und zwei Projektangaben
         // ---------------------------------------------------------------------------
 

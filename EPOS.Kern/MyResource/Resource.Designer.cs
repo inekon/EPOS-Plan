@@ -30292,6 +30292,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PVGIS ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE_KURZ_PVGIS {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE_KURZ_PVGIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE_KURZ_TRY {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE_KURZ_TRY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die PVGIS-Testreferenzjahr (weltweit) ähnelt.
         /// </summary>
         public static string KLIMA_QUELLE_PVGIS {
@@ -51590,6 +51608,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string START_GATTUNG {
             get {
                 return ResourceManager.GetString("START_GATTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ({1}) ähnelt.
+        /// </summary>
+        public static string START_KLIMA_EINTRAG {
+            get {
+                return ResourceManager.GetString("START_KLIMA_EINTRAG", resourceCulture);
             }
         }
         

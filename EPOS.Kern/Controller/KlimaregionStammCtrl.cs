@@ -209,9 +209,32 @@ namespace WindowsFormsApplication1
         public bool Add(string szName, double Longitude, double Latitude, string Details,
                         string quelle, string importdatum, DbVorgang v)
         {
+            return Add(szName, Longitude, Latitude, Details, quelle, importdatum, null, null, v);
+        }
+
+        /// <summary>
+        /// Legt eine neue Klimaregion im STAMM an und vermerkt neben der HERKUNFT auch,
+        /// WELCHES WETTERJAHR ihre Reihe beschreibt (Schemaschritt 97, Auftrag KL-6).
+        /// </summary>
+        /// <param name="quelle">Sprachneutraler Schlüssel der Quelle; siehe die
+        /// Überladung ohne Szenario.</param>
+        /// <param name="importdatum">Der Tag des Imports als ISO-Text
+        /// <c>yyyy-MM-dd</c>; leer oder <c>null</c> schreibt NULL.</param>
+        /// <param name="szenario">Sprachneutraler Schlüssel:
+        /// <see cref="DbWerte.KLIMA_SZENARIO_MITTEL"/>,
+        /// <see cref="DbWerte.KLIMA_SZENARIO_SOMMERWARM"/> oder
+        /// <see cref="DbWerte.KLIMA_SZENARIO_WINTERKALT"/>. Leer oder <c>null</c>
+        /// schreibt NULL — <b>nie</b> einen Anzeigetext und <b>nie</b> eine
+        /// Vorgabe.</param>
+        /// <param name="bezugsjahr">2015 oder 2045; <c>null</c> schreibt NULL.</param>
+        public bool Add(string szName, double Longitude, double Latitude, string Details,
+                        string quelle, string importdatum,
+                        string szenario, int? bezugsjahr, DbVorgang v)
+        {
             string sql = "INSERT INTO " + TAB_REGION_STAMM + " (Name, Longitude, Latitude, Details, ReadOnly, " +
-                         SchemaKatalog.SPALTE_KR_QUELLE + ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM +
-                         ") VALUES (?, ?, ?, ?, ?, ?, ?)";
+                         SchemaKatalog.SPALTE_KR_QUELLE + ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM + ", " +
+                         SchemaKatalog.SPALTE_KR_SZENARIO + ", " + SchemaKatalog.SPALTE_KR_BEZUGSJAHR +
+                         ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             DbParam[] ps = {
                 new DbParam("?", string.IsNullOrEmpty(szName) ? (object)DBNull.Value : szName),
                 new DbParam("?", Longitude),
@@ -219,7 +242,9 @@ namespace WindowsFormsApplication1
                 new DbParam("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
                 new DbParam("?", false),
                 Text(quelle),
-                Text(importdatum)
+                Text(importdatum),
+                Text(szenario),
+                new DbParam("?", bezugsjahr.HasValue ? (object)bezugsjahr.Value : DBNull.Value)
             };
             // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
             // Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
@@ -314,17 +339,29 @@ namespace WindowsFormsApplication1
         /// ueber alle Spalten, Trichter und Sortierpfeil im Spaltenkopf, Trefferzahl.
         /// Bis hierher waren es zwei Spalten ohne jeden Filter.</para>
         ///
-        /// <para><b>Die QUELLE bleibt hier ihr SCHLUESSEL</b>
-        /// (<c>PVGIS</c>, <c>TRY_DATEI</c>, <c>TRY_REGIONAL</c>, siehe
-        /// <see cref="DbWerte.KLIMA_QUELLE_PVGIS"/>); den Anzeigetext setzt die Huelle
-        /// ein. Der Kern kennt keine Anzeigetexte — Drei-Schichten-Regel. Ein
-        /// Altbestand ohne Quelle bleibt LEER (der Halbgeviertstrich aus W6-E-1) und
-        /// wird nicht nachdatiert.</para>
+        /// <para><b>Die Spalte QUELLE sagt seit Auftrag KL-6 das ganze Wetterjahr:</b>
+        /// „TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm" — Quelle, Bezugsjahr
+        /// und Szenario aus den Spalten der Schemaschritte 95 und 97, gereiht von
+        /// <see cref="KlimaAnzeige.Quellenzeile"/>. Ohne Szenario und Jahr bleibt es
+        /// bei der Quelle allein.</para>
+        ///
+        /// <para><b>Warum der TEXT und nicht mehr der Schlüssel.</b> Bis KL-6 stand
+        /// hier der blanke Schlüssel, und die Hülle übersetzte ihn. Aus drei Angaben
+        /// EINEN Satz zu machen, ist aber kein Übersetzen mehr, sondern Satzbau — und
+        /// der gehört an EINE Stelle, sonst steht er auf der Startseite anders als in
+        /// der Liste. Die Datenbank führt unverändert nur Schlüssel; der Kern führt
+        /// die Ressourcen längst (<c>MyResource</c>) und baut auch den Standort dieser
+        /// Liste schon kulturgerecht (<see cref="Standorttext"/>).</para>
+        ///
+        /// <para>Ein Altbestand ohne Quelle bleibt LEER (der Halbgeviertstrich aus
+        /// W6-E-1) und wird nicht nachdatiert.</para>
         ///
         /// <para><b>Tolerant gegen eine nie migrierte Datenbank</b> (Muster
-        /// <c>KostenVorlagenCtrl.PflichtSpalteVorhanden</c>): Fehlen die zwei Spalten
-        /// aus Schemaschritt 95, bleiben Quelle und Importdatum leer — die Liste steht
-        /// trotzdem da, statt mit „no such column" abzubrechen.</para>
+        /// <c>KostenVorlagenCtrl.PflichtSpalteVorhanden</c>): Fehlen die Spalten aus
+        /// Schemaschritt 95 oder 97, bleibt weg, was sie sagen würden — die Liste steht
+        /// trotzdem da, statt mit „no such column" abzubrechen. Beide Schritte werden
+        /// EINZELN gefragt: Eine Datenbank auf Stand 95 zeigt die Quelle, nur eben ohne
+        /// Jahr und Szenario.</para>
         /// </summary>
         public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
         {
@@ -334,10 +371,20 @@ namespace WindowsFormsApplication1
                 DataRepository.SpalteVorhanden(TAB_REGION_STAMM, SchemaKatalog.SPALTE_KR_QUELLE) &&
                 DataRepository.SpalteVorhanden(TAB_REGION_STAMM, SchemaKatalog.SPALTE_KR_IMPORTDATUM);
 
+            // Schemaschritt 97 wird EIGENS gefragt: Eine Datenbank kann auf 95 stehen
+            // (Quelle und Importdatum da, Szenario und Bezugsjahr nicht), und dann soll
+            // die Liste die Quelle trotzdem zeigen.
+            bool mitSzenario =
+                DataRepository.SpalteVorhanden(TAB_REGION_STAMM, SchemaKatalog.SPALTE_KR_SZENARIO) &&
+                DataRepository.SpalteVorhanden(TAB_REGION_STAMM, SchemaKatalog.SPALTE_KR_BEZUGSJAHR);
+
             string felder = "ID_Klimaregion, Name, Longitude, Latitude, Details, ReadOnly";
             if (mitHerkunft)
                 felder += ", " + SchemaKatalog.SPALTE_KR_QUELLE +
                           ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM;
+            if (mitSzenario)
+                felder += ", " + SchemaKatalog.SPALTE_KR_SZENARIO +
+                          ", " + SchemaKatalog.SPALTE_KR_BEZUGSJAHR;
 
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT " + felder + " FROM " + TAB_REGION_STAMM + " ORDER BY Name");
@@ -358,7 +405,10 @@ namespace WindowsFormsApplication1
                 liste.Add(zeile
                     .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
                     .MitText(Katalogfilterprofil.SpQuelle,
-                             mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_QUELLE) : "")
+                             KlimaAnzeige.Quellenzeile(
+                                 mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_QUELLE) : "",
+                                 mitSzenario ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_SZENARIO) : "",
+                                 mitSzenario ? Katalogfeld.Ganzzahl(r, SchemaKatalog.SPALTE_KR_BEZUGSJAHR) : 0))
                     .MitText(Katalogfilterprofil.SpStandort,
                              Standorttext(Katalogfeld.Text(r, "Details"), lon ?? 0, lat ?? 0))
                     .MitZahl(Katalogfilterprofil.SpLongitude, lon, 4)
@@ -366,6 +416,57 @@ namespace WindowsFormsApplication1
                     .MitText(Katalogfilterprofil.SpImportdatum,
                              mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_IMPORTDATUM) : "")
                     .MitKennzeichen(Katalogfilterprofil.SpSchreibschutz, zeile.Geschuetzt));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// <b>Die Einträge des Klimaregion-Auswahlfeldes</b> (Auftrag KL-6) — Id,
+        /// blanker Name und der Anzeigetext „hagelloch (TRY 2045 sommerwarm)".
+        ///
+        /// <para><b>Warum hier und nicht in der Seite.</b> Der Anzeigetext ist derselbe
+        /// Satz wie in der Regionsliste, nur kürzer; er wird deshalb an derselben
+        /// Stelle gebaut (<see cref="KlimaAnzeige"/>). Die Razor-Seite bekommt fertige
+        /// Zeichenfolgen — sie kennt weder Ressourcen noch Datenbank
+        /// (Hausregel EPOS.UI).</para>
+        ///
+        /// <para><b>Der blanke NAME steht daneben</b>, weil er der Schlüssel des
+        /// Bestands ist: <c>KlimaregionSpeichern</c> und <c>IdVonName</c> arbeiten mit
+        /// ihm, und ein Klammerzusatz im Namen wäre dort ein Fehlschlag.</para>
+        ///
+        /// <para><b>Tolerant wie <see cref="Katalogfilterzeilen"/></b>: Fehlen die
+        /// Spalten der Schemaschritte 95/97, steht der blanke Name da.</para>
+        /// </summary>
+        public static IReadOnlyList<(int Id, string Name, string Anzeige)> Auswahlzeilen()
+        {
+            var liste = new List<(int Id, string Name, string Anzeige)>();
+
+            bool mitQuelle =
+                DataRepository.SpalteVorhanden(TAB_REGION_STAMM, SchemaKatalog.SPALTE_KR_QUELLE);
+            bool mitSzenario =
+                DataRepository.SpalteVorhanden(TAB_REGION_STAMM, SchemaKatalog.SPALTE_KR_SZENARIO) &&
+                DataRepository.SpalteVorhanden(TAB_REGION_STAMM, SchemaKatalog.SPALTE_KR_BEZUGSJAHR);
+
+            string felder = "ID_Klimaregion, Name";
+            if (mitQuelle) felder += ", " + SchemaKatalog.SPALTE_KR_QUELLE;
+            if (mitSzenario)
+                felder += ", " + SchemaKatalog.SPALTE_KR_SZENARIO +
+                          ", " + SchemaKatalog.SPALTE_KR_BEZUGSJAHR;
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT " + felder + " FROM " + TAB_REGION_STAMM + " ORDER BY Name");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string name = Katalogfeld.Text(r, "Name");
+                liste.Add((Katalogfeld.Ganzzahl(r, "ID_Klimaregion"),
+                           name,
+                           KlimaAnzeige.Eintrag(
+                               name,
+                               mitQuelle ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_QUELLE) : "",
+                               mitSzenario ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_SZENARIO) : "",
+                               mitSzenario ? Katalogfeld.Ganzzahl(r, SchemaKatalog.SPALTE_KR_BEZUGSJAHR) : 0)));
             }
             return liste;
         }
@@ -537,9 +638,11 @@ namespace WindowsFormsApplication1
             // 3. Region in Projekt-Tabelle anlegen (ID ist AutoWert), neue Region-ID holen.
             //    ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
             //    Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
-            //    Quelle und Importdatum wandern MIT (Schemaschritt 95, Auftrag KL-3):
+            //    Quelle und Importdatum wandern MIT (Schemaschritt 95, Auftrag KL-3),
+            //    Szenario und Bezugsjahr ebenso (Schemaschritt 97, Auftrag KL-6):
             //    Eine Spalte nur auf der Katalogseite waere hier ein Datenverlust - das
-            //    Projekt wuesste dann nicht mehr, woher seine Reihe stammt.
+            //    Projekt wuesste dann nicht mehr, woher seine Reihe stammt und welches
+            //    Wetterjahr sie beschreibt.
             DbParam[] psRegion = {
                 new DbParam("@idProj", idProjekt),
                 new DbParam("@bez", szName),
@@ -547,12 +650,15 @@ namespace WindowsFormsApplication1
                 Val("@lat", reg["Latitude"]),
                 Val("@det", reg["Details"]),
                 Val("@quelle", ColOrNull(reg, SchemaKatalog.SPALTE_KR_QUELLE)),
-                Val("@import", ColOrNull(reg, SchemaKatalog.SPALTE_KR_IMPORTDATUM))
+                Val("@import", ColOrNull(reg, SchemaKatalog.SPALTE_KR_IMPORTDATUM)),
+                Val("@szenario", ColOrNull(reg, SchemaKatalog.SPALTE_KR_SZENARIO)),
+                Val("@jahr", ColOrNull(reg, SchemaKatalog.SPALTE_KR_BEZUGSJAHR))
             };
             int neueRegionId = v.EinfuegenUndId(
                 "INSERT INTO " + TAB_REGION_PROJEKT + " (ID_Projekt, Bezeichner, Longitude, Latitude, Details, " +
-                SchemaKatalog.SPALTE_KR_QUELLE + ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?)",
+                SchemaKatalog.SPALTE_KR_QUELLE + ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM + ", " +
+                SchemaKatalog.SPALTE_KR_SZENARIO + ", " + SchemaKatalog.SPALTE_KR_BEZUGSJAHR +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 psRegion);
 
             // 4. Klimadaten kopieren (FK ID_Klimaregion in STAMM -> neue Projekt-Region-ID).

@@ -902,6 +902,23 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 95, trocken);
 
+            // ---- Schritt 97: Szenario und Bezugsjahr der Klimaregion
+            //      (Anwenderentscheid 19.09.2026, Auftrag KL-6). REIN DDL: zwei
+            //      Angaben des Kopfsatzes an Tab_Klimaregion und
+            //      Tab_Klimaregion_STAMM. DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_97_KlimaSzenario bedient. Kein DML: Beide
+            //      Spalten bleiben NULL, die dreizehn Referenzprojekte rechnen
+            //      unveraendert.
+            //
+            //      ER STEHT VOR 96 - anders als in der Migration, und das mit Absicht:
+            //      Schritt 96 baut achtundzwanzig Tabellen neu und kopiert dabei jede
+            //      Spalte mit. Wer hier zuerst 96 laufen liesse und danach die zwei
+            //      Spalten anhaengte, bekaeme dieselbe Datenbank - nur eben in zwei
+            //      Anlaeufen. Ein Werkzeuglauf soll in EINEM Durchgang fertig sein.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt97_KlimaSzenario)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 97, trocken);
+
             // ---- Schritt 96: der Fremdschluessel der Projekttabellen auf Tab_Projekt
             //      (Anwenderentscheid 19.09.2026). DER DRITTE TABELLENNEUBAU DIESES
             //      WERKZEUGS, und er steht ZULETZT UNTER ALLEN SCHRITTEN: Er kopiert

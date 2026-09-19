@@ -80,7 +80,9 @@ public sealed record Zusammenfassung(
 /// zeigt dann die KURZFORM aus Bezeichner und Standort — nie eine erfundene
 /// Quelle.</para>
 /// </summary>
-/// <param name="Quelle">Anzeigetext der Quelle; leer = Altbestand.</param>
+/// <param name="Quelle">Anzeigetext der Herkunft — seit Auftrag KL-6 das ganze
+/// Wetterjahr, „TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm"; ohne Szenario
+/// und Jahr die Quelle allein, leer = Altbestand.</param>
 /// <param name="Bezeichner">Name der Klimaregion des Projekts.</param>
 /// <param name="Standort">Ortsname oder Koordinatenpaar.</param>
 /// <param name="Importdatum">Tag des Imports, kulturgerecht; leer = unbekannt.</param>
