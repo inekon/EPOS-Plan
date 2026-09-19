@@ -19989,6 +19989,9 @@ Möchten Sie das zulassen?</value>
   <data name="KLIMA_TRY_DETAILS_DATEI" xml:space="preserve">
     <value>DWD-Testreferenzjahr · Datei „{0}“ · Import {1} · {2} · {3}</value>
   </data>
+  <data name="KLIMA_TRY_STANDORT_KOPF" xml:space="preserve">
+    <value>Standort aus dem Dateikopf (Lambert → WGS 84)</value>
+  </data>
   <data name="KLIMA_TRY_DETAILS_REGIONAL" xml:space="preserve">
     <value>TRY-Regionaldaten · Region {0} · Station {1} · Entfernung {2} km · Szenario {3} · Bezugsjahr {4} · Quelle {5} · Import {6} · {7} · {8}</value>
   </data>

@@ -353,6 +353,17 @@ namespace WindowsFormsApplication1
                                       MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
                 }
 
+                // Der STANDORT aus dem Dateikopf (Lambert -> WGS 84) ist ein
+                // RUECKFALL: Er greift nur, wenn der Auftrag selbst keinen traegt.
+                // Steht er im Auftrag, bleibt der Ablauf Zeile fuer Zeile derselbe.
+                bool ausKopf = StandortFehlt(auftrag) &&
+                               kopf.Longitude.HasValue && kopf.Latitude.HasValue;
+                if (ausKopf)
+                {
+                    lon = kopf.Longitude.Value;
+                    lat = kopf.Latitude.Value;
+                }
+
                 herkunft = string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.KLIMA_TRY_DETAILS_DATEI,
                     Path.GetFileName(pfad),
@@ -360,6 +371,9 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.KLIMA_TRY_LIZENZ,
                     string.Format(CultureInfo.CurrentCulture,
                                   MyResource.Resource.KLIMA_TRY_VERWORFEN, kopf.VerworfenText));
+
+                if (ausKopf)
+                    herkunft += " · " + MyResource.Resource.KLIMA_TRY_STANDORT_KOPF;
 
                 DwdTryLeser.DirektNormal(stunden, lon, lat);
             }
@@ -517,6 +531,19 @@ namespace WindowsFormsApplication1
 
             return erg;
         }
+
+        /// <summary>
+        /// Trägt der Auftrag KEINEN Standort?
+        ///
+        /// <para>Der Ortsnamen-Zweig bestimmt ihn über die Geokodierung — dort steht er
+        /// immer, sonst wäre der Auftrag schon in Schritt 1 als Eingabefehler
+        /// ausgegangen. Im Koordinatenzweig sind <c>Longitude</c> und <c>Latitude</c>
+        /// die Angabe selbst; beide auf 0 heißt, dass der Anwender nichts eingetragen
+        /// hat. <b>Nur dann</b> darf der Kopf einer TRY-Datei einspringen.</para>
+        /// </summary>
+        private static bool StandortFehlt(KlimaImportAuftrag auftrag)
+            => auftrag.Art == KlimaImportArt.AusKoordinaten &&
+               auftrag.Longitude == 0.0 && auftrag.Latitude == 0.0;
 
         /// <summary>
         /// Die Adresse des TRY-Regionalpakets: der Einstellwert, sonst die Vorgabe.

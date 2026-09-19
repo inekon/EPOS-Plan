@@ -30598,6 +30598,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort aus dem Dateikopf (Lambert → WGS 84) ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_KOPF {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Szenario ähnelt.
         /// </summary>
         public static string KLIMA_TRY_SZENARIO {

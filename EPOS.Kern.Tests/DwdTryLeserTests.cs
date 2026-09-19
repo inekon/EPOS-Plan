@@ -42,6 +42,23 @@ namespace EPOS.Kern.Tests
             throw new FileNotFoundException("Die synthetische TRY-Probe wurde nicht gefunden.");
         }
 
+        /// <summary>
+        /// Die zweite eingefrorene Probe: ein Kopf mit Lambert-Koordinaten INNERHALB
+        /// Deutschlands und nur sechs Datenzeilen — sie misst den Standortvorschlag,
+        /// nicht die Reihe.
+        /// </summary>
+        private static string ProbeKopfLambert()
+        {
+            DirectoryInfo d = new DirectoryInfo(AppContext.BaseDirectory);
+            for (int i = 0; i < 8 && d != null; i++, d = d.Parent)
+            {
+                string kandidat = Path.Combine(d.FullName, "Referenzlaeufe", "Importproben",
+                                               "dwd_try_kopf_lambert.dat");
+                if (File.Exists(kandidat)) return kandidat;
+            }
+            throw new FileNotFoundException("Die Lambert-Kopfprobe wurde nicht gefunden.");
+        }
+
         /// <summary>Kopfzeilen samt Trennzeile — <paramref name="anzahl"/> Zeilen davor.</summary>
         private static List<string> Kopf(int anzahl)
         {
@@ -167,6 +184,91 @@ namespace EPOS.Kern.Tests
                          kopf.Verworfen.ToArray());
             Assert.Contains("WR", kopf.VerworfenText);
             Assert.Contains("IL", kopf.VerworfenText);
+        }
+
+        // =====================================================================
+        //  1a — Der STANDORT aus dem Kopf (Lambert -> WGS 84)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Plausible Lambert-Werte werden zu Longitude und Latitude.</b> Der Kopf der
+        /// Probe trägt 3 936 500 / 2 695 500; das ist ein Punkt im TRY-Raster, und er
+        /// kommt als 9,6124° O / 50,0563° N zurück. Die TEXTFELDER
+        /// <c>Rechtswert</c>/<c>Hochwert</c> bleiben dabei unverändert stehen.
+        /// </summary>
+        [Fact]
+        public void Ein_plausibler_Kopf_liefert_Longitude_und_Latitude()
+        {
+            TryKopf kopf = DwdTryLeser.LesenKopf(ProbeKopfLambert());
+
+            Assert.Contains("3936500", kopf.Rechtswert);
+            Assert.Contains("2695500", kopf.Hochwert);
+
+            Assert.NotNull(kopf.Longitude);
+            Assert.NotNull(kopf.Latitude);
+            Assert.Equal(9.6124, kopf.Longitude.Value, 4);
+            Assert.Equal(50.0563, kopf.Latitude.Value, 4);
+            Assert.True(LambertDwd.InDeutschland(kopf.Longitude.Value, kopf.Latitude.Value));
+        }
+
+        /// <summary>
+        /// <b>Ohne Zahl und außerhalb des Rasters gibt es KEINEN Vorschlag.</b> Die
+        /// synthetische 72-Stunden-Probe trägt 4 321 000 / 5 678 000 — nach der
+        /// DWD-Definition weit außerhalb Deutschlands; ein Kopf ganz ohne die beiden
+        /// Zeilen ebenso. Beide Male bleiben Longitude und Latitude <c>null</c>, und
+        /// zwar STILL: Der Kopf ist freier Text, kein Pflichtteil.
+        /// </summary>
+        [Fact]
+        public void Ein_unplausibler_oder_fehlender_Kopfwert_liefert_keinen_Standort()
+        {
+            // (1) unplausibel - die Zahlen sind lesbar, der Punkt liegt aber draussen.
+            TryKopf weit = DwdTryLeser.LesenKopf(ProbeDatei());
+            Assert.Contains("4321000", weit.Rechtswert);
+            Assert.Null(weit.Longitude);
+            Assert.Null(weit.Latitude);
+
+            // (2) gar keine Angabe - Kopfzeilen ohne Rechts- und Hochwert.
+            DwdTryLeser.Lesen(Jahr(), out TryKopf ohne);
+            Assert.Equal("", ohne.Rechtswert);
+            Assert.Null(ohne.Longitude);
+            Assert.Null(ohne.Latitude);
+
+            // (3) keine ZAHL, sondern Text - dieselbe stille Ablehnung.
+            List<string> text = new List<string>
+            {
+                "Rechtswert: unbekannt",
+                "Hochwert: unbekannt",
+                "*** "
+            };
+            DwdTryLeser.Lesen(text, out TryKopf wort, vollesJahr: false);
+            Assert.Null(wort.Longitude);
+            Assert.Null(wort.Latitude);
+        }
+
+        /// <summary>
+        /// <b><see cref="DwdTryLeser.LesenKopf"/> liest NUR den Kopf.</b> Die
+        /// Lambert-Probe hat sechs Datenzeilen statt 8 760 — <c>LesenDatei</c> lehnt sie
+        /// deshalb ab, <c>LesenKopf</c> liefert trotzdem Kopfzeilenzahl, Art,
+        /// Bezugszeitraum, Höhe und den Standort. Einen Pfad ohne Datei meldet sie wie
+        /// <c>LesenDatei</c>.
+        /// </summary>
+        [Fact]
+        public void LesenKopf_braucht_die_8760_Zeilen_nicht()
+        {
+            string pfad = ProbeKopfLambert();
+
+            Assert.Throws<FormatException>(() => DwdTryLeser.LesenDatei(pfad, out _));
+
+            TryKopf kopf = DwdTryLeser.LesenKopf(pfad);
+            Assert.Equal(34, kopf.Kopfzeilen);
+            Assert.Contains("mittleres Jahr", kopf.Art);
+            Assert.Contains("1995-2012", kopf.Bezugszeitraum);
+            Assert.Contains("250", kopf.Hoehe);
+            Assert.NotNull(kopf.Longitude);
+
+            Assert.Throws<FileNotFoundException>(
+                () => DwdTryLeser.LesenKopf(Path.Combine(Path.GetTempPath(),
+                                                         "epos_gibt_es_nicht_368.dat")));
         }
 
         // =====================================================================

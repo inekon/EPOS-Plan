@@ -1359,15 +1359,24 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Schreibt eine vollstaendige, SYNTHETISCHE TRY-Datei (34 Kopfzeilen,
         /// 8 760 Datenzeilen) in den Temp-Ordner. Keine DWD-Originaldaten.
+        ///
+        /// <para><paramref name="mitLambert"/> legt in den Kopf die zwei Zeilen
+        /// <c>Rechtswert</c>/<c>Hochwert</c> eines Punktes IM TRY-Raster
+        /// (3 936 500 / 2 695 500 -&gt; 9,6124 Grad Ost, 50,0563 Grad Nord). Ohne sie
+        /// traegt der Kopf keinen Standort - so, wie ihn die uebrigen Faelle brauchen.</para>
         /// </summary>
-        private static string TryDateiSchreiben()
+        private static string TryDateiSchreiben(bool mitLambert = false)
         {
             string pfad = Path.Combine(Path.GetTempPath(),
                 "epos_try_" + Guid.NewGuid().ToString("N") + ".dat");
 
             var sb = new System.Text.StringBuilder(700 * 1024);
             for (int i = 1; i <= 34; i++)
-                sb.Append("Kopfzeile ").Append(i.ToString(CultureInfo.InvariantCulture)).Append("\r\n");
+            {
+                if (mitLambert && i == 5) sb.Append("Rechtswert: 3936500 Meter\r\n");
+                else if (mitLambert && i == 6) sb.Append("Hochwert: 2695500 Meter\r\n");
+                else sb.Append("Kopfzeile ").Append(i.ToString(CultureInfo.InvariantCulture)).Append("\r\n");
+            }
             sb.Append("*** \r\n");
 
             int[] tageMonat = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -1431,6 +1440,107 @@ namespace EPOS.Kern.Tests
                     Assert.Contains("IL", details);                 // die verworfenen Groessen
                     Assert.Contains(Path.GetFileName(pfad), details);
                     Assert.Contains("CC BY 4.0", erg.Meldung);
+                }
+                finally
+                {
+                    try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+                }
+            }
+        }
+
+        /// <summary>
+        /// <b>Ohne Standort im Auftrag springt der DATEIKOPF ein</b>: Aus
+        /// <c>Rechtswert</c>/<c>Hochwert</c> des Kopfes wird ueber
+        /// <c>LambertDwd.NachWgs84</c> ein Punkt, die Region traegt ihn als
+        /// Longitude/Latitude, und der Herkunftsvermerk sagt, woher er kommt.
+        /// </summary>
+        [Fact]
+        public async Task DerKlimaimportNimmtDenStandortAusDemDateikopf()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                string pfad = TryDateiSchreiben(mitLambert: true);
+                try
+                {
+                    KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                        new KlimaImportAuftrag
+                        {
+                            Art = KlimaImportArt.AusKoordinaten,
+                            Bezeichnung = "368 Kopf-Standort",
+                            // Longitude und Latitude bleiben LEER - genau das ist der Fall.
+                            Quelle = KlimaQuelle.TryDatei,
+                            TryPfad = pfad
+                        },
+                        null);
+
+                    Assert.True(erg.Erfolgreich, erg.Meldung);
+
+                    object lonRoh = DataRepository.ExecuteScalar(
+                        "SELECT Longitude FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id));
+                    object latRoh = DataRepository.ExecuteScalar(
+                        "SELECT Latitude FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id));
+
+                    Assert.Equal(9.6124, Convert.ToDouble(lonRoh, CultureInfo.InvariantCulture), 4);
+                    Assert.Equal(50.0563, Convert.ToDouble(latRoh, CultureInfo.InvariantCulture), 4);
+
+                    string details = Convert.ToString(DataRepository.ExecuteScalar(
+                        "SELECT Details FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id))) ?? "";
+
+                    Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_STANDORT_KOPF, details);
+                }
+                finally
+                {
+                    try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+                }
+            }
+        }
+
+        /// <summary>
+        /// <b>Steht der Standort im Auftrag, bleibt der Kopf unbenutzt.</b> Derselbe
+        /// Kopf, dieselbe Datei - aber der Anwender hat Longitude und Latitude
+        /// eingetragen, und die gelten. Der Herkunftsvermerk nennt den Kopf-Standort
+        /// dann NICHT: Er waere eine falsche Auskunft.
+        /// </summary>
+        [Fact]
+        public async Task EinStandortImAuftragSchlaegtDenDateikopf()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                string pfad = TryDateiSchreiben(mitLambert: true);
+                try
+                {
+                    KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                        new KlimaImportAuftrag
+                        {
+                            Art = KlimaImportArt.AusKoordinaten,
+                            Bezeichnung = "368 Handeingabe schlaegt Kopf",
+                            Longitude = 9.1829,
+                            Latitude = 48.7758,
+                            Quelle = KlimaQuelle.TryDatei,
+                            TryPfad = pfad
+                        },
+                        null);
+
+                    Assert.True(erg.Erfolgreich, erg.Meldung);
+
+                    object lonRoh = DataRepository.ExecuteScalar(
+                        "SELECT Longitude FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id));
+
+                    Assert.Equal(9.1829, Convert.ToDouble(lonRoh, CultureInfo.InvariantCulture), 4);
+
+                    string details = Convert.ToString(DataRepository.ExecuteScalar(
+                        "SELECT Details FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id))) ?? "";
+
+                    Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_STANDORT_KOPF, details);
                 }
                 finally
                 {

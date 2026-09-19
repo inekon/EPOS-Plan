@@ -19982,6 +19982,9 @@ Do you want to allow this?</value>
   <data name="KLIMA_TRY_DETAILS_DATEI" xml:space="preserve">
     <value>DWD test reference year · file “{0}” · imported {1} · {2} · {3}</value>
   </data>
+  <data name="KLIMA_TRY_STANDORT_KOPF" xml:space="preserve">
+    <value>location from the file header (Lambert → WGS 84)</value>
+  </data>
   <data name="KLIMA_TRY_DETAILS_REGIONAL" xml:space="preserve">
     <value>TRY regional data · region {0} · station {1} · distance {2} km · scenario {3} · reference year {4} · source {5} · imported {6} · {7} · {8}</value>
   </data>
