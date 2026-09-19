@@ -715,7 +715,8 @@ a{color:var(--marine-hell)}
             <td class="r num">2.400 €/a</td><td>Wartung; läuft in jeder Version mit, in der ein Kessel steht</td></tr>
         <tr class="ergebnis"><td>Energiesteuer-Entlastung § 54</td>
             <td class="formelzelle">2.272,3 MWh (H<sub>s</sub>) × 1,38 €/MWh − 250 €</td>
-            <td class="r num">2.885,7 €/a</td><td>nur produzierendes Gewerbe; Brennwertmenge 2.056,7 × 1,1048</td></tr>
+            <td class="r num">2.885,7 €/a</td><td>nur produzierendes Gewerbe; Brennwertmenge 2.056,7 × 1,1048;
+              Energiesteuerwahl Kessel § 54 EnergieStG — <b>anlagenscharf</b>, nicht die Projektvorgabe § 53a</td></tr>
       </tbody>
     </table>
   </div>
@@ -2139,8 +2140,9 @@ Keine stillen Teilsummen
   <div class="zone" id="bhkw-dialog">Dialog</div>
   <p class="eng">Beschriftungen sind die Ressourcentexte der Anwendung, Feldarten die ihrer Bausteine:
   <b>editierbar</b> ist, was weiß mit dunklem Rand steht (Zahlenfeld mit Einheit dahinter, Datumsfeld,
-  Schalter); <b>Anzeige</b> ist grau. Die sechs Wahlfelder — Anlagenart, Tatbestand, Energiesteuer,
-  Aufteilung, Unternehmensart, Modus — sind in der Anwendung Klapplisten; das Mockup zeigt sie als
+  Schalter); <b>Anzeige</b> ist grau. Die acht Wahlfelder — Anlagenart, Tatbestand, Energiesteuer,
+  Aufteilung (anlagenbezogen), Unternehmensart, Modus, Aufteilung (projektweit) — sind in der Anwendung
+  Klapplisten; das Mockup zeigt sie als
   Anzeigezeile, die Wahl trifft die Überlagerung <span class="zk vor">Vorschlag U22</span>.
   Drei Tiefen, drei Fragen: Die <b>Vorschau</b> sagt, wie viel zusammenkommt; das <b>Feld</b> trägt den
   Satz und die Zeile darunter seine Herkunft; die <b>Überlagerung „Sätze und Herkunft"</b> trifft die
@@ -2177,11 +2179,11 @@ Keine stillen Teilsummen
             <div class="f-zeile breit"><label></label><span class="f-eingabe" title="Anlagenart">neue Anlage (§ 8 Abs. 1)</span></div>
             <div class="f-zeile breit"><label></label><span class="f-eingabe" title="Eigenstrom nach § 6 Abs. 3">Nr. 2 — Kundenanlage / geschl. Netz</span></div>
             <div class="f-zeile breit"><label></label><span class="f-eingabe" title="Satz Einspeisung [ct/kWh] (0 = kein Zuschlag)">5,5667</span><span class="f-einheit">ct/kWh</span></div>
-            <div class="f-herleitung">Einspeisung <b>5,5667 ct/kWh</b> — § 7 Abs. 1 KWKG 2025, Stichtagsjahr 2026: 50 × 8,00 + 50 × 6,00 + 150 × 5,00 + 50 × 4,40 = 1.670 ÷ 300 · <b>Vorschlag</b></div>
+            <div class="f-herleitung">Einspeisung <b>5,5667 ct/kWh</b> — 300,0 kW nach Leistungsanteilen: 50,0 kW × 8,00 + 50,0 kW × 6,00 + 150,0 kW × 5,00 + 50,0 kW × 4,40 → Mischsatz 5,5667 ct/kWh (§ 7 Abs. 1 KWKG 2025, Stand 2026) · <b>Vorschlag</b></div>
             <div class="f-zeile breit"><label></label><span class="f-eingabe" title="Satz Eigenstrom [ct/kWh] (0 = kein Zuschlag)">2,4167</span><span class="f-einheit">ct/kWh</span></div>
-            <div class="f-herleitung">Eigenstrom <b>2,4167 ct/kWh</b> — § 7 Abs. 2 mit § 6 Abs. 3 Nr. 2, Stichtagsjahr 2026: 50 × 4,00 + 50 × 3,00 + 150 × 2,00 + 50 × 1,50 = 725 ÷ 300 · <b>Vorschlag</b></div>
+            <div class="f-herleitung">Eigenstrom <b>2,4167 ct/kWh</b> — 300,0 kW nach Leistungsanteilen: 50,0 kW × 4,00 + 50,0 kW × 3,00 + 150,0 kW × 2,00 + 50,0 kW × 1,50 → Mischsatz 2,4167 ct/kWh (§ 7 Abs. 2 i.V.m. § 6 Abs. 3 Nr. 2 KWKG 2025, Stand 2026) · <b>Vorschlag</b></div>
             <div class="f-zeile breit"><label></label><span class="f-eingabe" title="Vbh-Kontingent [h] (0 = nach § 8 abgeleitet)">30.000</span><span class="f-einheit">h</span></div>
-            <div class="f-herleitung">Kontingent <b>30.000 Vbh</b> — § 8 Abs. 1, neue Anlage</div>
+            <div class="f-herleitung">Kontingent <b>30.000 Vbh</b> — neue Anlage → 30.000 Vbh (§ 8 Abs. 1, Stand 2026); eine Kostenschwelle gibt es hier nicht.</div>
             <div class="f-zeile breit"><label></label><span class="f-eingabe" title="Vbh-Jahresdeckel [h/a] (0 = Staffel)">0</span><span class="f-einheit">h/a</span></div>
             <div class="f-herleitung">Staffel § 8 Abs. 4 · <b>3.300 (2026)</b> · 3.100 (2027) · 2.900 · 2.700 · ab 2030 2.500 h/a</div>
           </div>
@@ -2267,9 +2269,12 @@ Keine stillen Teilsummen
         <div class="f-titel">Kohärenzprüfung (Energie- und Stromsteuer)</div>
         <div class="f-herleitung f-ok">✓ Energiesteuer: Wahl und Preisanteil stimmen überein (BHKW 1).</div>
         <div class="f-info">Zeilen des zuletzt gebuchten Laufs, ohne Rechenwirkung; ohne Auffälligkeit steht „Keine Auffälligkeit
-        im zuletzt gebuchten Lauf." Weitere Zeilen erscheinen nur bei Abweichung: Entlastung gewählt, aber keine Steuer im
-        Preis · Steuer im Preis, aber keine Entlastung gewählt · Satz weicht vom Katalog ab · § 53 und § 54 nebeneinander ·
-        Doppelzählung § 9 Abs. 1 Nr. 3 im Modus Erlös.</div>
+        im zuletzt gebuchten Lauf." Neun Kohärenzfälle: Energiesteuer und Preisanteil stimmen überein (Regelfall, hier
+        gezeigt) · Entlastung gewählt, aber keine Energiesteuer im Preis · Energiesteuer im Preis, aber keine Entlastung
+        gewählt · Energiesteuersatz weicht vom Katalog ab · Stromsteuer-Entlastung § 9b gewählt, aber keine Stromsteuer im
+        Preis · Stromsteuer im Preis, aber keine Entlastung nach § 9b gebucht · Stromsteuersatz weicht vom Katalog ab ·
+        Katalog- und Projekteinheit ohne Dichte des Energieträgers nicht vergleichbar · § 53 und § 54 nebeneinander
+        (Doppelentlastung); dazu die Doppelzählung § 9 Abs. 1 Nr. 3 im Modus Erlös.</div>
       </div>
 
       <!-- Gruppe 5: Hilfsstrom (BHW_G5) -->
@@ -2282,11 +2287,14 @@ Keine stillen Teilsummen
         <div class="f-warn">Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition Hilfsenergiekosten): BHKW 1 führt
         einen Hilfsenergieanteil von 2,00 % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert
         den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts.</div>
+        <div class="f-info">Führt das Projekt einen Heizkessel, tritt eine weitere Zeile hinzu: „Heizkessel der Gruppe: Der
+        Hilfsenergieanteil wird für Kessel mitgerechnet, aber nicht hier gepflegt." Im gezeichneten, kesselfreien Beispiel
+        bleibt sie aus.</div>
       </div>
 
       <!-- Gruppe 6: Vorschau (BHW_G6) -->
       <div class="f-vorschau">
-        <div class="f-vtitel">Σ Vorschau — zuletzt gebuchter Lauf · Jahr 1 (2026)</div>
+        <div class="f-vtitel">Σ Vorschau — zuletzt gebuchter Lauf</div>
         <div class="f-vzeile"><span>Zuschlag Kraft-Wärme-Kopplung <span class="f-tag">§ 7 · 53.370,4 € × 0,600</span></span><span class="f-vwert num">32.022,2 €</span></div>
         <div class="f-vzeile" style="padding-left:18px;opacity:.85"><span>davon Einspeisung <span class="f-tag">495,0 MWh × 5,5667 ct</span></span><span class="num">16.533,1 €</span></div>
         <div class="f-vzeile" style="padding-left:18px;opacity:.85"><span>davon Eigenstrom <span class="f-tag">1.068,2 MWh × 2,4167 ct</span></span><span class="num">15.489,1 €</span></div>
@@ -2295,7 +2303,7 @@ Keine stillen Teilsummen
         <div class="f-vzeile summe"><span>Summe Blockheizkraftwerk</span><span class="num">77.975,6 €</span></div>
         <div class="f-vzeile" style="margin-top:9px"><span>projektweit: Stromsteuer-Entlastung Netzbezug <span class="f-tag">§ 9b · 250,0 MWh</span></span><span class="f-vwert num">4.750,0 €</span></div>
         <div class="f-vzeile" style="opacity:.78"><span>Stromsteuer-Befreiung Eigenverbrauch <span class="f-tag">§ 9 Abs. 1 Nr. 3 — Ausweis, in keiner Summe</span></span><span class="num">23.677,5 €</span></div>
-        <div class="f-vzeile" style="opacity:.78"><span>Stand des Laufs vom 18.09.2026 — nach dem Speichern neu berechnen.</span><span></span></div>
+        <div class="f-vzeile" style="opacity:.78"><span>Stand: 18.09.2026 — nach dem Speichern neu berechnen.</span><span></span></div>
       </div>
       <div class="f-info">Gezeigt werden der Block des Blockheizkraftwerks und die projektweite Zeile aus dem
       Lauf „Beide Anlagen"; die vollständige Rubrik mit Photovoltaik und Block B steht auf der
@@ -2399,7 +2407,7 @@ Keine stillen Teilsummen
             <div>
               <div class="f-lab" style="font-weight:600;margin-bottom:4px">Brennstoff auf Strom/Wärme (nur § 53)</div>
               <div class="f-zeile eng"><span class="f-radio an"><i></i></span><span class="f-lab">voller BHKW-Brennstoff (§ 53 Abs. 2)</span><span class="f-einheit">Vorgabe</span></div>
-              <div class="f-zeile eng"><span class="f-radio"><i></i></span><span class="f-lab">energetisch (konservativ)</span><span class="f-einheit">× 0,458 → 12.082 €/a bei § 53 — bewusste Untergrenze</span></div>
+              <div class="f-zeile eng"><span class="f-radio"><i></i></span><span class="f-lab">energetisch (konservativ)</span><span class="f-einheit">× 0,458 → 12.079 €/a bei § 53 — bewusste Untergrenze</span></div>
             </div>
           </div>
           <div class="f-herleitung" style="margin-top:8px">Herkunft: ENERGIEST_53A5_ERDGAS = 4,42 €/MWh, gültig ab 2024 (GESICHERT) —
@@ -2460,7 +2468,7 @@ Keine stillen Teilsummen
         <tr class="zwischen"><td>= Nettostromerzeugung</td><td class="r num">1.563,2</td>
             <td>KWKG-Zuschlag § 7 — <b>Fall 1</b></td>
             <td>= KWK-Strom ohne Vorrichtung zur Abwärmeabfuhr</td></tr>
-        <tr><td>Nutzwärme × Stromkennzahl (1.953,9 × 0,845)</td><td class="r num">1.651,3</td>
+        <tr><td>Nutzwärme × Stromkennzahl (1.953,9 × 0,845)</td><td class="r num">1.651,2</td>
             <td>KWKG-Zuschlag § 7 — <b>Fall 2</b></td>
             <td>bei gesetztem Kennzeichen, gedeckelt auf die Nettostromerzeugung</td></tr>
         <tr><td>&nbsp;&nbsp;davon Eigenverbrauch (brutto 1.155,0 − Hilfsstrom 86,8)</td><td class="r num">1.068,2</td><td>Zuschlag Abs. 2</td>
@@ -2477,7 +2485,7 @@ Keine stillen Teilsummen
   Innerhalb der KWKG-Mengen mindert der Hilfsstrom <b>zuerst den Eigenverbrauch</b> (1.155,0 − 86,8 = 1.068,2 MWh)
   und die Einspeisung erst, wenn der Eigenverbrauch aufgezehrt ist — Hilfsstrom fließt nie ins Netz
   (<span class="mono">HilfsstromRechner.NettoSplit</span>); die Einspeisung bleibt deshalb bei 495,0 MWh.
-  Fall 2 greift nur bei gesetztem Kennzeichen; im Beispiel läge er mit 1.651,3 MWh
+  Fall 2 greift nur bei gesetztem Kennzeichen; im Beispiel läge er mit 1.651,2 MWh
   <span class="zk abl">abgeleitet</span> ohnehin über der Nettostromerzeugung.</p>
 
   <div class="zone">Steuern des Projekts — Satz, Menge, Bedingungen</div>
@@ -2844,7 +2852,7 @@ Stromsteuer
   <span class="mono">291.111 €</span> über zwölf Jahre, § 53a = <span class="mono">21.203,4 €/a</span>,
   § 9 Nr. 3 = <span class="mono">23.677,5 €/a</span>, § 9b = <span class="mono">4.750,0 €/a</span>;
   die Vorschau schließt den Block Blockheizkraftwerk mit <span class="mono">77.975,6 €</span>.
-  Das Formular führt die acht Gruppen des Dialogs in seiner Reihenfolge und seine elf editierbaren Felder:
+  Das Formular führt die acht Gruppen des Dialogs in seiner Reihenfolge und seine neun Zahlenfelder:
   Satz Einspeisung, Satz Eigenstrom, Vbh-Kontingent, Vbh-Jahresdeckel, Anteil Neuherstellungskosten und
   Hilfsenergieanteil bei der Anlage, Einspeisevergütung KWK-Strom und Abschlag Negativstunden projektweit,
   Jahresnutzungsgrad bei der Energiesteuer — dazu die vier Datumsfelder und drei Schalter. Die Sätze stehen
@@ -4576,7 +4584,7 @@ Einstufung
             <td>Überlagerung „Sätze und Herkunft" (Anlagenart, Tatbestand, KWK-Strom-Fall mit σ, Energiesteuerwahl mit
               Projekt- oder Anlagenbezug, Unternehmensart, Modus § 9 Nr. 3; je Größe Vorschlag · Herkunft · Eingabefeld
               „eigener Wert" · gilt; Wirkung je Wahl als Satz und unten als Jahresbetrag; ein Knopf „Übernehmen", der in die
-              Felder des Formulars schreibt). Im Formular bleiben alle Zahlen-, Datums- und Schalterfelder; die sechs
+              Felder des Formulars schreibt). Im Formular bleiben alle Zahlen-, Datums- und Schalterfelder; die acht
               Klapplisten werden Anzeigezeilen, die Knöpfe „Vorschlag übernehmen" am Feld wandern in die Überlagerung
               (je Größe, als Weg zurück zum Vorschlag); der Schlusssatz von <span class="mono">BHW_P_NUR_PROJEKTWEIT</span>
               nennt dann die Überlagerung statt des Knopfes am Feld. Die Vorschau zeigt den Block Blockheizkraftwerk und
@@ -4584,7 +4592,7 @@ Einstufung
             <td><span class="mono">BhkwWirtschaftlichkeitDialog</span> ·
               <span class="mono">KwkgSatzRechner</span> · <span class="mono">KwkgKontingentRechner</span> ·
               <span class="mono">SteuerGutschriftRechner</span></td>
-            <td>bunit: keine Klappliste im Formular, die elf Zahlen- und Datumsfelder unverändert vorhanden; „Übernehmen"
+            <td>bunit: keine Klappliste im Formular, die dreizehn Zahlen- und Datumsfelder unverändert vorhanden; „Übernehmen"
               schreibt die KWKG-Spalten der Anlage, Tatbestand, Anlagenart, Energiesteuerwahl, Aufteilung, Unternehmensart
               und Modus in den Arbeitsstand; leeres Feld „eigener Wert" schreibt den Vorschlag; „Abbrechen" schreibt
               nichts</td></tr>
@@ -4954,7 +4962,7 @@ Einstufung
         <tr><td>Stromkennzahl σ des Beispiels</td><td class="r num">0,845</td>
             <td><span class="zk abl">abgeleitet</span></td>
             <td>300 ÷ 355 aus der Gerätezeile — zeigt, dass Fall 2 hier nicht greift</td></tr>
-        <tr><td>Fall-2-Menge des Beispiels</td><td class="r num">1.651,3 MWh/a</td>
+        <tr><td>Fall-2-Menge des Beispiels</td><td class="r num">1.651,2 MWh/a</td>
             <td><span class="zk abl">abgeleitet</span></td>
             <td>1.953,9 × 0,845; liegt über der Nettostromerzeugung, also ohne Wirkung</td></tr>
         <tr><td>Kapitalwertdifferenzen der Versionen und Szenarien (Kennzahltafel, Bandbreite, Verlauf, Gliederung)</td>
