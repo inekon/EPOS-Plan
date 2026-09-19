@@ -314,10 +314,17 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Ohne Stromträger und ohne Arbeitspreis bleibt Weg B ohne Bezugsgröße. Der
-        /// Steuerwert heißt wie bei Weg A <c>PREIS</c> — die ABHILFE aber nicht: Weg B
-        /// vermisst den STROMBEZUGSPREIS des Projekts, Weg A den Arbeitspreis des
-        /// Brennstoffträgers. Wer am falschen Träger pflegt, ändert nichts.
+        /// Ohne Stromträger und ohne Arbeitspreis bleibt Weg B ohne Bezugsgröße. An
+        /// einem BRENNSTOFFkessel vermisst Weg B den Arbeitspreis des
+        /// PROJEKT-Stromträgers, Weg A den des Brennstoffträgers — zwei Einträge der
+        /// Energieträgerverwaltung, zwei Steuerwerte, zwei Abhilfen. Wer am falschen
+        /// Träger pflegt, ändert nichts.
+        ///
+        /// <para>ANWENDERENTSCHEID 19.09.2026: Der Steuerwert des Weg-B-Falles heißt
+        /// <c>STROMPREIS</c> statt <c>PREIS</c>. Er muss die Lage allein tragen: Seit
+        /// die Preisauflösung anlagenscharf ist, sagt die Bemessungsart nicht mehr,
+        /// welcher Träger gemeint ist — dieselbe Art trägt an einer Stromanlage den
+        /// eigenen, an einer Brennstoffanlage den Projektträger.</para>
         /// </summary>
         [Fact]
         public void Ohne_Strompreis_nennt_die_Abhilfe_den_Strompreis()
@@ -325,27 +332,21 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_PREIS,
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_STROMPREIS,
                          Grund(Z_SECHS_KESSEL, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF));
             Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_PREIS,
                          Grund(Z_SECHS_KESSEL, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN));
 
-            string wegB = KostenHerleitung.GrundText(WirtschaftlichkeitCtrl.BASISGRUND_PREIS,
-                                                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF);
-            string wegA = KostenHerleitung.GrundText(WirtschaftlichkeitCtrl.BASISGRUND_PREIS,
-                                                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN);
+            string wegB = KostenHerleitung.GrundText(WirtschaftlichkeitCtrl.BASISGRUND_STROMPREIS);
+            string wegA = KostenHerleitung.GrundText(WirtschaftlichkeitCtrl.BASISGRUND_PREIS);
 
             Assert.Contains("Stromträger", wegB, StringComparison.Ordinal);
             Assert.NotEqual(wegA, wegB);
             Assert.DoesNotContain("Stromträger", wegA, StringComparison.Ordinal);
 
-            // Ohne Kenntnis der Bemessungsart bleibt es beim allgemeinen Satz.
-            Assert.Equal(wegA, KostenHerleitung.GrundText(WirtschaftlichkeitCtrl.BASISGRUND_PREIS));
-
-            // Jede andere Lage bleibt, wie sie war — der Sonderweg gilt nur beim PREIS.
-            Assert.Equal(KostenHerleitung.GrundText(WirtschaftlichkeitCtrl.BASISGRUND_MENGE),
-                         KostenHerleitung.GrundText(WirtschaftlichkeitCtrl.BASISGRUND_MENGE,
-                                                    DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF));
+            // Jede andere Lage bleibt, wie sie war.
+            Assert.NotEqual("", KostenHerleitung.GrundText(WirtschaftlichkeitCtrl.BASISGRUND_MENGE));
+            Assert.Equal("", KostenHerleitung.GrundText(""));
         }
 
         // =====================================================================

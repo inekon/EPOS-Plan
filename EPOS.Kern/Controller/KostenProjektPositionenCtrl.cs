@@ -70,11 +70,71 @@ namespace WindowsFormsApplication1
             /// andere an einer Menge des Laufs).</summary>
             public string BasisHerkunft = "";
 
+            /// <summary>
+            /// ANWENDERENTSCHEID 19.09.2026: Die BEMESSUNG, die die STANDARDVORLAGE
+            /// dieser Komponente und Kategorie für dieselbe Position führt
+            /// (Persistenzwert); leer = die Vorlage kennt die Position nicht.
+            ///
+            /// <para><b>Sie ist Auskunft, kein Urteil.</b> Ob daraus ein Hinweis wird,
+            /// entscheidet <see cref="KostenHerleitung"/> am Vergleich mit der
+            /// Bemessung, die die Zeile GERADE trägt — so verschwindet der Hinweis
+            /// schon beim Umstellen im Dialog und nicht erst nach dem Speichern.</para>
+            ///
+            /// <para><b>Warum Bestandsprojekte das brauchen.</b> Eine Vorlagenposition,
+            /// deren Bemessung sich ändert, zieht die längst angelegten Projektzeilen
+            /// NICHT nach — ein Projekt ist gepflegt, und nichts an einer gerechneten
+            /// Wirtschaftlichkeit ändert sich still. Der Anwender sieht deshalb, was
+            /// die Vorlage sagt, und übernimmt es mit einem Klick.</para>
+            /// </summary>
+            public string VorlagenBemessung = "";
+
+            /// <summary>Der Name der Standardvorlage („Standard"); leer, wo
+            /// <see cref="VorlagenBemessung"/> leer ist.</summary>
+            public string VorlagenName = "";
+
             /// <summary>Projekt und Kategorie der Zeile — damit
             /// <see cref="Speichern"/> den wirksamen Betrag über denselben Rechenweg
             /// nachziehen kann wie <see cref="Lies(int,int,int,int)"/>.</summary>
             public int ProjektId;
             public int KategorieId;
+        }
+
+        /// <summary>
+        /// ANWENDERENTSCHEID 19.09.2026: Bezeichnung → Bemessung der Positionen der
+        /// STANDARDVORLAGE dieser Komponente und Kategorie. Leere Karte = keine
+        /// Standardvorlage, keine Positionen oder ein Lesefehler; dann gibt es zu
+        /// keiner Zeile einen Vorlagenhinweis.
+        ///
+        /// <para><b>Der Schlüssel ist die BEZEICHNUNG</b> — genau der, über den die
+        /// Übernahme die Projektzeile anlegt: <c>KostenVorlagenUebernahmeCtrl</c>
+        /// besorgt zu <c>KostenVorlagenPosition.Bezeichnung</c> die <c>StammID</c>
+        /// (<c>StammIdSicher</c>) und schreibt sie in <c>Tab_ProjektWerte</c>; die
+        /// Leseabfrage oben holt über denselben Verbund die Bezeichnung zurück. Ein
+        /// zweiter Schlüssel wäre eine zweite Wahrheit — und ein Umbenennen im Dialog
+        /// wechselt die StammID ohnehin mit (<see cref="Speichern"/>).</para>
+        /// </summary>
+        /// <param name="name">Der Name der gefundenen Standardvorlage; leer = keine.</param>
+        private static Dictionary<string, string> VorlagenBemessungen(
+            int komponentenId, int kategorieId, out string name)
+        {
+            name = "";
+            var karte = new Dictionary<string, string>(StringComparer.Ordinal);
+            if (komponentenId <= 0) return karte;
+            try
+            {
+                KostenVorlageKopf v =
+                    KostenVorlagenUebernahmeCtrl.StandardVorlage(komponentenId, kategorieId);
+                if (v == null) return karte;
+                name = v.Name ?? "";
+                foreach (KostenVorlagenPosition p in KostenVorlagenCtrl.Positionen(v.Id))
+                {
+                    string b = (p.Bezeichnung ?? "").Trim();
+                    if (b.Length > 0 && !karte.ContainsKey(b))
+                        karte[b] = p.Bemessung ?? "";
+                }
+            }
+            catch { karte.Clear(); name = ""; }
+            return karte;
         }
 
         // ------------------------------------------------------------- Lesen ---
@@ -171,6 +231,12 @@ namespace WindowsFormsApplication1
             // wird er erst, wenn die erste Zeile ihn braucht.
             EndenergieAufloeser laufAufloeser = null;
             bool laufVersucht = false;
+
+            // ANWENDERENTSCHEID 19.09.2026: Die Bemessungen der STANDARDVORLAGE —
+            // einmal je Leseschleife, nicht je Zeile.
+            string vorlagenName;
+            Dictionary<string, string> vorlage =
+                VorlagenBemessungen(komponentenId, kategorieId, out vorlagenName);
 
             foreach (DataRow r in dt.Rows)
             {
@@ -273,6 +339,18 @@ namespace WindowsFormsApplication1
                     ? "" : WirtschaftlichkeitCtrl.BasisGrundFuerZeile(
                                z.Raster.Bemessung, komponentenId, anlageDerZeile,
                                projektId, ref laufAufloeser, ref laufVersucht);
+
+                // ANWENDERENTSCHEID 19.09.2026: Was die Standardvorlage zu DIESER
+                // Position sagt. Ob daraus ein Hinweis wird, entscheidet die
+                // Herleitung am Vergleich mit der Bemessung der Zeile.
+                string vorlagenBemessung;
+                if (vorlage.TryGetValue((z.Raster.Bezeichnung ?? "").Trim(),
+                                        out vorlagenBemessung) &&
+                    !string.IsNullOrEmpty(vorlagenBemessung))
+                {
+                    z.VorlagenBemessung = vorlagenBemessung;
+                    z.VorlagenName = vorlagenName;
+                }
 
                 liste.Add(z);
             }

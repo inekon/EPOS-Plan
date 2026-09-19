@@ -267,6 +267,13 @@ namespace WindowsFormsApplication1
                     "Worst/Best wird je Projektposition gepflegt, nicht in der Stammvorlage."),
                 ["KetteKurztext"] = T("KDLG_TT_KETTE",
                     "Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet."),
+                // ANWENDERENTSCHEID 19.09.2026: der Textschalter an der
+                // Vorlagen-Hinweiszeile. Der Hinweistext selbst kommt fertig aus dem
+                // Kern (KostenHerleitung) — hier stehen nur Beschriftung und Kurztext.
+                ["VorlageUebernehmenText"] = T("KDLG_VORLAGE_UEBERNEHMEN", "übernehmen"),
+                ["VorlageUebernehmenKurztext"] = T("KDLG_VORLAGE_UEBERNEHMEN_TT",
+                    "Die Bemessung der Vorlage für diese Position übernehmen; "
+                    + "Satz und Betrag bleiben stehen."),
                 ["SpeichernText"] = T("KDLG_BTN_SPEICHERN", "Speichern"),
                 ["AbbrechenText"] = T("KDLG_BTN_ABBRECHEN", "Abbrechen"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
@@ -723,6 +730,15 @@ namespace WindowsFormsApplication1
             z.EmpfehlungKurztext = a.EmpfehlungKurztext;
             z.EmpfehlungZeile = a.EmpfehlungZeile;
 
+            // ANWENDERENTSCHEID 19.09.2026: Der Vorlagenhinweis kommt fertig aus dem
+            // Kern. Beim ERSTEN Aufbau steht die Auswahlliste noch nicht, der Eintrag
+            // bleibt dann null und BemessungenBauen trägt ihn nach; bei jedem späteren
+            // Nachziehen (Bemessung gewechselt) gilt die Liste und die Antwort steht
+            // sofort.
+            z.VorlagenHinweis = a.VorlagenZeile;
+            z.VorlagenBemessungId = ListenEintrag(a.VorlagenZeile.Length == 0
+                                                  ? null : a.VorlagenBemessung);
+
             // Die Herleitung einer GERECHNETEN Bezugsgröße kommt fertig aus dem Kern
             // (TechnikPlanwertCtrl.BaugroesseHerleitung); die Hülle reicht sie nur
             // durch — die Formel steht an EINER Stelle.
@@ -783,6 +799,13 @@ namespace WindowsFormsApplication1
                 if (!_bindungen.TryGetValue(z, out b)) continue;
                 BemessungKatalog.Info info = BemessungInfo(b.Position.Bemessung);
                 z.BemessungId = info != null ? (int?)BemessungIndex(info) : null;
+
+                // ANWENDERENTSCHEID 19.09.2026: dasselbe für den Vorlagenwert, den
+                // „übernehmen" setzt. Steht er in diesem Gewerk nicht zur Auswahl,
+                // bleibt die Zeile beim Hinweistext OHNE Schalter — ein Klick, der
+                // ins Leere ginge, wäre schlimmer als keiner.
+                z.VorlagenBemessungId = z.VorlagenHinweis.Length == 0 || b.Projektzeile == null
+                    ? null : ListenEintrag(b.Projektzeile.VorlagenBemessung);
             }
             return liste;
         }
@@ -805,6 +828,21 @@ namespace WindowsFormsApplication1
             foreach (BemessungKatalog.Info i in BemessungKatalog.Alle)
                 if (string.Equals(i.Persistenz, persistenz, StringComparison.Ordinal)) return i;
             return null;
+        }
+
+        /// <summary>
+        /// ANWENDERENTSCHEID 19.09.2026: Der Eintrag der AUSWAHLLISTE zu einem
+        /// Persistenzwert; <c>null</c> = die Art steht in diesem Kontext nicht zur
+        /// Auswahl (oder die Liste ist noch nicht gebaut). Die Zeile zeigt dann den
+        /// Vorlagenhinweis ohne Schalter.
+        /// </summary>
+        private int? ListenEintrag(string persistenz)
+        {
+            if (string.IsNullOrEmpty(persistenz)) return null;
+            BemessungKatalog.Info info = BemessungInfo(persistenz);
+            if (info == null) return null;
+            int n = BemessungIndex(info);
+            return n >= 0 ? (int?)n : null;
         }
 
         private int BemessungIndex(BemessungKatalog.Info info)

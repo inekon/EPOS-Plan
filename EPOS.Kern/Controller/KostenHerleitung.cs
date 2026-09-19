@@ -92,6 +92,19 @@ namespace WindowsFormsApplication1
             /// <summary>U31: Derselbe Bereich als SICHTBARE Zeile unter dem Satzfeld
             /// („Empfehlung 0,02 bis 0,04 €/kWh"); leer = keine Zeile.</summary>
             public string EmpfehlungZeile = "";
+
+            /// <summary>
+            /// ANWENDERENTSCHEID 19.09.2026: Die Hinweiszeile unter der Herleitung —
+            /// „Vorlage ‚Standard': % des Endenergiebedarfs". Sie steht NUR, wenn die
+            /// Standardvorlage dieselbe Position führt und dort eine ANDERE Bemessung
+            /// gilt als in dieser Projektzeile; leer heißt keine Zeile.
+            /// </summary>
+            public string VorlagenZeile = "";
+
+            /// <summary>Die Bemessung der Vorlagenposition als PERSISTENZWERT — den
+            /// braucht die Oberfläche, um „übernehmen" auf denselben Eintrag der
+            /// Auswahlliste zu setzen. Leer, wo <see cref="VorlagenZeile"/> leer ist.</summary>
+            public string VorlagenBemessung = "";
         }
 
         /// <summary>
@@ -123,7 +136,7 @@ namespace WindowsFormsApplication1
             // ANWENDERBEFUND 14.09.2026: KEIN STILLES 0. Eine absolute Bemessung
             // braucht keine Bezugsgröße und trägt deshalb auch kein Zeichen.
             a.OhneBasis = pz != null && !pz.Basis.HasValue &&
-                          GrundText(pz.BasisGrund, p != null ? p.Bemessung : null).Length > 0;
+                          GrundText(pz.BasisGrund).Length > 0;
 
             a.BasisText = BasisText(a.Basis, p, komponentenId);
             a.Kurztext = Kurztext(a, p, komponentenId, pz, projektModus, betrieb);
@@ -134,7 +147,40 @@ namespace WindowsFormsApplication1
             // jetzt hier, in zwei Fassungen aus EINER Quelle: dem Werkzeugtipp am
             // Satzfeld (wortgleich zum Bestand) und der sichtbaren Zeile darunter.
             Empfehlung(a, p, komponentenId, betrieb);
+
+            // ANWENDERENTSCHEID 19.09.2026: Der Vorlagenhinweis der Projektzeile.
+            Vorlagenhinweis(a, p, komponentenId, pz);
             return a;
+        }
+
+        /// <summary>
+        /// ANWENDERENTSCHEID 19.09.2026 — DER HINWEIS AUF DIE VORLAGE.
+        ///
+        /// <para>Ändert sich die Bemessung einer Position der Standardvorlage, werden
+        /// die längst angelegten Projektzeilen NICHT nachgeführt: Ein gepflegtes
+        /// Projekt ändert seine gerechnete Wirtschaftlichkeit nicht still. Damit die
+        /// Abweichung trotzdem sichtbar ist, nennt die Zeile, was die Vorlage sagt —
+        /// und der Dialog bietet die Übernahme an.</para>
+        ///
+        /// <para><b>Verglichen wird mit der Bemessung, die die Zeile GERADE trägt</b>
+        /// (<paramref name="p"/>), nicht mit der zuletzt gespeicherten: Wer im Dialog
+        /// auf den Vorlagenwert umstellt, sieht den Hinweis sofort verschwinden.
+        /// Ohne Vorlagenposition und im Stammkontext gibt es keine Zeile.</para>
+        /// </summary>
+        private static void Vorlagenhinweis(Angabe a, KostenVorlagenPosition p,
+                                            int komponentenId,
+                                            KostenProjektPositionenCtrl.Zeile pz)
+        {
+            if (pz == null || p == null) return;
+            string vorlage = pz.VorlagenBemessung ?? "";
+            if (vorlage.Length == 0) return;
+            if (string.Equals(vorlage, p.Bemessung ?? "", StringComparison.Ordinal)) return;
+
+            a.VorlagenBemessung = vorlage;
+            a.VorlagenZeile = string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.KDLG_VORLAGE_ZEILE,
+                pz.VorlagenName ?? "",
+                BemessungKatalog.Anzeige(vorlage, komponentenId));
         }
 
         // =====================================================================
@@ -223,20 +269,8 @@ namespace WindowsFormsApplication1
         /// Leerer Steuerwert = die Bemessungsart braucht überhaupt keine Bezugsgröße.
         /// </summary>
         /// <param name="grund">Einer der <c>BASISGRUND_*</c>-Steuerwerte.</param>
-        /// <param name="bem">Die Bemessungsart der Zeile; sie entscheidet beim fehlenden
-        /// PREIS, welcher Preis gemeint ist. „% des Endenergiebedarfs" (Weg B) bewertet
-        /// die Menge mit dem STROMBEZUGSPREIS des Projekts — wer dort den Arbeitspreis
-        /// des Brennstoffträgers pflegt, ändert nichts. <c>null</c> = unbekannt, dann
-        /// bleibt es beim allgemeinen Satz.</param>
-        internal static string GrundText(string grund, string bem = null)
+        internal static string GrundText(string grund)
         {
-            // Der fehlende Preis hat zwei Gesichter: Weg A vermisst den Arbeitspreis des
-            // Brennstoffträgers der Anlage, Weg B den Strombezugspreis des Projekts
-            // (§ 4.5). Der Steuerwert ist derselbe, die ABHILFE ist es nicht.
-            if (string.Equals(grund, WirtschaftlichkeitCtrl.BASISGRUND_PREIS, StringComparison.Ordinal) &&
-                string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF, StringComparison.Ordinal))
-                return MyResource.Resource.KDLG_BASIS_GRUND_STROMPREIS;
-
             switch (grund)
             {
                 case WirtschaftlichkeitCtrl.BASISGRUND_GEWERK:
@@ -254,6 +288,13 @@ namespace WindowsFormsApplication1
                     return MyResource.Resource.KDLG_BASIS_GRUND_MENGE;
                 case WirtschaftlichkeitCtrl.BASISGRUND_PREIS:
                     return MyResource.Resource.KDLG_BASIS_GRUND_PREIS;
+                // ANWENDERENTSCHEID 19.09.2026: der fehlende Arbeitspreis des
+                // PROJEKT-Stromträgers. Er trägt einen eigenen Steuerwert, weil beide
+                // Lagen „kein Arbeitspreis" heißen, aber auf verschiedene Einträge der
+                // Energieträgerverwaltung zeigen — den eigenen Träger der Anlage
+                // (BASISGRUND_PREIS) und den Stromträger des Projekts.
+                case WirtschaftlichkeitCtrl.BASISGRUND_STROMPREIS:
+                    return MyResource.Resource.KDLG_BASIS_GRUND_STROMPREIS;
                 case WirtschaftlichkeitCtrl.BASISGRUND_INVEST:
                     return MyResource.Resource.KDLG_BASIS_GRUND_INVEST;
                 case WirtschaftlichkeitCtrl.BASISGRUND_KONSERVE:
@@ -283,7 +324,7 @@ namespace WindowsFormsApplication1
             // Zeile, im Feld aber die 0 des Anwenderentscheids I-2.
             if (pz != null && !pz.Basis.HasValue)
             {
-                string grund = GrundText(pz.BasisGrund, p != null ? p.Bemessung : null);
+                string grund = GrundText(pz.BasisGrund);
                 if (grund.Length > 0)
                     return string.Format(CultureInfo.CurrentCulture,
                                          MyResource.Resource.KDLG_TT_OHNE_BASIS, grund);

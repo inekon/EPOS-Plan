@@ -6,8 +6,10 @@ Stand: 19.09.2026 · Zweig `ios_migration_september` · Bezug:
 
 ## 1. Auftrag
 
-Anwender, 19.09.2026: Die **DWD-Testreferenzjahre** sollen neben PVGIS als Klimaquelle
-einlesbar sein. Daraus die fünf Fragen KL-Q1 bis KL-Q5 an den Anwender und, nach deren
+Anwender, 19.09.2026, im Wortlaut: „Import von Klimadaten analog zu tmy-Daten mit try Daten.
+Finde die Dokumentation dazu.“ und „Erstelle dazu eine Konfiguration im Administrations-Menü,
+erstelle eine neue Rubrik Klimadaten 1. bestehende API für TMY 2. neue für try“ (mit Bildschirmbild
+des Dialogs „Administration – Globale Anwendungseinstellungen“). Daraus die fünf Fragen KL-Q1 bis KL-Q5 an den Anwender und, nach deren
 Beantwortung, drei Pakete: **KL1-A** (Rubrik „Klimadaten" in der Administration),
 **KL1-B** (TRY-Import), **KL1-C** (Papiere, Wiki, Status).
 
@@ -85,7 +87,7 @@ Dieses Paket: neues Konzept
 [`Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md`](../../../aktuell/Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)
 mit Indexzeile, Fortschreibung von **E5** an fünf Stellen (Konzept Gebäudesimulation N1.10,
 Systementwurf, Statusdatei Gebäudesimulation, Kühlkonzept B-K1, Befund B Abschnitt 3),
-Querverweis im PV-Konzept beim Befund B1, dieses Protokoll, Statuszeile **#366**, die
+Querverweis im PV-Konzept beim Befund B1, dieses Protokoll, Statuszeile **#367**, die
 Wiki-Quelle `Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki` und der
 Logbuch-Entwurf (Abschnitt 8).
 

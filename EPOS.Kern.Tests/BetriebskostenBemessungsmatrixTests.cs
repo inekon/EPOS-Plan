@@ -181,7 +181,11 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_PREIS,
                          Grund(Z_SECHS_KESSEL, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN));
-            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_PREIS,
+            // ANWENDERENTSCHEID 19.09.2026: Weg B am BRENNSTOFFkessel vermisst den
+            // Arbeitspreis des PROJEKT-Stromträgers und sagt das mit einem eigenen
+            // Steuerwert — es ist ein anderer Eintrag der Energieträgerverwaltung als
+            // der, den Weg A daneben meint.
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_STROMPREIS,
                          Grund(Z_SECHS_KESSEL, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF));
             Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_PREIS,
                          Grund(Z_SECHS_WP, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN));
@@ -354,7 +358,11 @@ namespace EPOS.Kern.Tests
                 "1026 WP PROZENT_INVESTITION ja",
                 "1026 WP PROZENT_ERZEUGERKOSTEN nein INVEST",
                 "1026 WP PROZENT_ENDENERGIEKOSTEN nein PREIS",
-                "1026 WP PROZENT_ENDENERGIEBEDARF nein PREIS",
+                // ANWENDERENTSCHEID 19.09.2026: Weg B bewertet mit Strom. Die
+                // Wärmepumpe von 1026 trägt KEINEN eigenen Stromträger, es gilt also
+                // der des Projekts — und den hat 1026 nicht. Der Grund nennt deshalb
+                // genau diesen Eintrag, nicht den Träger der Anlage.
+                "1026 WP PROZENT_ENDENERGIEBEDARF nein STROMPREIS",
                 "1026 WP EUR_PRO_KWH_THERMISCH ja",
                 "1026 WP EUR_PRO_KWH_ELEKTRISCH ja",
                 "1026 WP EUR_PRO_KW_LEISTUNG ja",
@@ -368,7 +376,9 @@ namespace EPOS.Kern.Tests
                 "1026 Kessel PROZENT_INVESTITION ja",
                 "1026 Kessel PROZENT_ERZEUGERKOSTEN nein INVEST",
                 "1026 Kessel PROZENT_ENDENERGIEKOSTEN nein PREIS",
-                "1026 Kessel PROZENT_ENDENERGIEBEDARF nein PREIS",
+                // Derselbe Entscheid am BRENNSTOFFkessel: Sein Hilfsstrom hängt
+                // ohnehin am Stromträger des Projekts, sein eigener Träger ist Gas.
+                "1026 Kessel PROZENT_ENDENERGIEBEDARF nein STROMPREIS",
                 "1026 Kessel EUR_PRO_KWH_THERMISCH ja",
                 "1026 Kessel EUR_PRO_KWH_ELEKTRISCH nein GEWERK",
                 "1026 Kessel EUR_PRO_KW_LEISTUNG ja",

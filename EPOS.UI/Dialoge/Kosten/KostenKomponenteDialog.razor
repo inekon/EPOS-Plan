@@ -154,6 +154,10 @@
                                Herleitung="@zeile.Herleitung"
                                EmpfehlungKurztext="@zeile.EmpfehlungKurztext"
                                EmpfehlungZeile="@zeile.EmpfehlungZeile"
+                               VorlagenHinweis="@zeile.VorlagenHinweis"
+                               VorlagenUebernehmenText="@VorlageUebernehmenText"
+                               VorlagenUebernehmenKurztext="@VorlageUebernehmenKurztext"
+                               VorlagenUebernahme="@(() => VorlageUebernehmen(zeile))"
                                IstPflicht="@(IstPflicht is not null && IstPflicht(zeile))"
                                PflichtKurztext="@PflichtKurztext"
                                Nutzungsdauer="@zeile.Nutzungsdauer"
@@ -564,6 +568,12 @@
     [Parameter] public string PflichtKurztext { get; set; }
         = "Pflichtposition, kann nicht gelöscht werden";
 
+    /// <summary>ANWENDERENTSCHEID 19.09.2026: Beschriftung und Kurztext des
+    /// Textschalters „übernehmen" an der Vorlagen-Hinweiszeile.</summary>
+    [Parameter] public string VorlageUebernehmenText { get; set; } = "übernehmen";
+
+    [Parameter] public string VorlageUebernehmenKurztext { get; set; } = "";
+
     /// <summary>U31: Kopf der Gruppe „Endenergie je Komponente" unter dem Raster.</summary>
     [Parameter] public string GruppeEndenergieTitel { get; set; } = "Endenergie je Komponente";
 
@@ -926,6 +936,26 @@
         aendern();
         Nachziehen?.Invoke(zeile);
         SummenNachziehen();
+    }
+
+    /// <summary>
+    /// ANWENDERENTSCHEID 19.09.2026: „übernehmen" an der Vorlagen-Hinweiszeile.
+    ///
+    /// <para>Zwei Schritte, beide auf dem Bestandsweg: Die Bemessung wechselt wie
+    /// jede andere Feldänderung (<see cref="Feld"/> zieht Bezugsgröße, Betrag und
+    /// Herleitung nach), und danach schreibt derselbe Weg, den „Speichern" ruft.
+    /// SATZ UND BETRAG bleiben, wie sie sind — übernommen wird die Bemessung, nicht
+    /// die Vorlage. Nach dem Neuladen stimmen Zeile und Vorlage überein, und der
+    /// Hinweis ist fort.</para>
+    ///
+    /// <para>Ohne wählbaren Vorlagenwert geschieht nichts: Die Zeile zeigt dann den
+    /// Hinweis, aber keinen Schalter.</para>
+    /// </summary>
+    private void VorlageUebernehmen(KostenPositionZeile zeile)
+    {
+        if (zeile.VorlagenBemessungId is not int id) return;
+        Feld(zeile, () => zeile.BemessungId = id);
+        BeiSpeichern();
     }
 
     /// <summary>

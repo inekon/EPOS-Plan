@@ -1577,8 +1577,18 @@ für beide Bemessungen keine Basis, sondern eine Vermengung.
 
 Preis = `PreisArbeit / EffHi`, **ohne** Grund- und Leistungspreis.
 
+**Der Strompreis einer Anlage ist der ihres eigenen Trägers** (Anwenderentscheid
+19.09.2026). Trägt eine Anlage, die selbst Strom bezieht — Wärmepumpe, Heizstab,
+Elektrokessel —, einen eigenen `ELECTRICITY`-Träger (`Tab_Energieanlagen.ID_Carrier`, dem
+Projekt zugeordnet), bewerten **beide** Wege ihre Endenergie mit dessen Arbeitspreis; sonst
+gilt der Stromträger des Projekts (Rangfolge `StromTraegerDerAnlagen`). Eine Anlage mit
+Brennstoffträger bewertet ihren Hilfsstrom weiter mit dem Projekt-Stromträger — ihr eigener
+Träger ist Brennstoff und wäre für eine Strommenge der falsche Preis. Regel **E1** bleibt
+davon unberührt: Der Strom des Elektrokessels ist weiterhin nur SICHTBAR und wird genau
+einmal bezahlt, im Netzbezug.
+
 **Weg B braucht keine zweite Formel:** Der Auflöser übergibt den **bewerteten** Bedarf
-(kWh × Strompreis), weil `Menge × Satz/100 × Preis` dasselbe ist wie `(Menge × Preis) × Satz/100`.
+(kWh × Strompreis der Anlage), weil `Menge × Satz/100 × Preis` dasselbe ist wie `(Menge × Preis) × Satz/100`.
 Die Sätze von A und B sind **nicht austauschbar** — Faktor ≈ 3,4, das Preisverhältnis Strom zu
 Brennstoff.
 
