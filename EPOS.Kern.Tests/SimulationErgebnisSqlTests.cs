@@ -127,6 +127,35 @@ namespace EPOS.Kern.Tests
             Assert.Empty(HeizkesselStammCtrl.BrennstoffartenJeProjekt(0));
         }
 
+        // ---------------------------------------------------------------- BHKW
+
+        /// <summary>
+        /// <see cref="BHKWStammCtrl.BrennstoffartenJeProjekt"/> — die Schwester der
+        /// Kesselabfrage (Auftrag BH-1). Projekt 1030 fuehrt zwei BHKW mit gepflegtem
+        /// Brennstoff; daran haengt, dass der BHKW-Reiter bei 0 h/a „nicht gelaufen"
+        /// meldet und nicht „kein Brennstoff definiert".
+        /// </summary>
+        [Fact]
+        public void BhkwBrennstoffartenJeProjekt_meldet_die_gepflegten_Arten()
+        {
+            if (!_db.Vorhanden) return;
+
+            HashSet<int> arten = BHKWStammCtrl.BrennstoffartenJeProjekt(PROJEKT);
+            Assert.NotNull(arten);
+            Assert.NotEmpty(arten);
+            foreach (int a in arten) Assert.True(a >= 0);
+
+            // Erdgas H (1) und Erdgas E (3) - die beiden Module des Projekts.
+            Assert.Contains(1, arten);
+            Assert.Contains(3, arten);
+        }
+
+        [Fact]
+        public void BhkwBrennstoffartenJeProjekt_ohne_Projekt_bleibt_leer()
+        {
+            Assert.Empty(BHKWStammCtrl.BrennstoffartenJeProjekt(0));
+        }
+
         // ---------------------------------------------------------------- Anlagen
 
         /// <summary>

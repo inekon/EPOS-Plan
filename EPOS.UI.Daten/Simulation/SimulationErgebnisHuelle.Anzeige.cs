@@ -456,6 +456,13 @@ namespace WindowsFormsApplication1
 
             HashSet<int> arten = HeizkesselStammCtrl.BrennstoffartenJeProjekt(m_ID_Projekt);
 
+            // BH-1: Fuehrt ueberhaupt ein Kessel des Projekts einen Brennstoff? Daran
+            // haengt der Text des Leerhinweises - „nicht gelaufen" statt „kein
+            // Brennstoff definiert". Die 0 ist dabei KEIN Brennstoff: Sie ist der
+            // ungepflegte Zustand der Spalte.
+            _kesselBrennstoffDefiniert = false;
+            foreach (int a in arten) if (a > 0) { _kesselBrennstoffDefiniert = true; break; }
+
             // „Sonstige" fängt jede Kennung auf, die keine der übrigen Zeilen führt -
             // dieselbe else-Verzweigung wie in der Engine.
             HashSet<int> bekannt = new HashSet<int>();
@@ -522,6 +529,30 @@ namespace WindowsFormsApplication1
             Zeile(MyResource.Resource.SIM_LABEL_SONSTIGE, b.SonstigemengeBhkwMwh);
 
             return zeilen;
+        }
+
+        /// <summary>
+        /// Fuehrt mindestens ein Heizkessel des Projekts einen gepflegten Brennstoff?
+        /// Gesetzt von <see cref="Kesselbrennstoffe"/> (Auftrag BH-1).
+        /// </summary>
+        private bool _kesselBrennstoffDefiniert;
+
+        /// <summary>
+        /// Fuehrt mindestens ein BHKW des Projekts einen gepflegten Brennstoff
+        /// (<c>Tab_BHKW.Brennstoff</c> &gt; 0)? — <b>Auftrag BH-1</b>.
+        ///
+        /// <para><b>Warum die Frage zaehlt.</b> <see cref="Bhkwbrennstoffe"/> baut nur
+        /// Zeilen mit Verbrauch &gt; 0. Ein BHKW, das hinter Waermepumpe und Heizkessel in
+        /// der Kaskade steht und deshalb 0 h/a laeuft, hat keine einzige — der Reiter
+        /// meldete dafuer „Kein Brennstoff für dieses BHKW definiert" und behauptete damit
+        /// einen Pflegefehler, den es nicht gibt. Mit dieser Auskunft trennt der Reiter
+        /// die beiden Zustaende.</para>
+        /// </summary>
+        private bool BhkwBrennstoffDefiniert()
+        {
+            foreach (int a in BHKWStammCtrl.BrennstoffartenJeProjekt(m_ID_Projekt))
+                if (a > 0) return true;
+            return false;
         }
 
         // =================================================================

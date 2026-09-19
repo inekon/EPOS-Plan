@@ -980,5 +980,50 @@ namespace WindowsFormsApplication1
                                                        schluessel, wert.Value)
                     : null;
         }
+        // =================================================================================
+        // Der Brennstoffbefund der Ergebnisseite (Auftrag BH-1)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Brennstoffarten (<c>Tab_BHKW.Brennstoff</c>) der BHKW EINES Projekts —
+        /// die Schwester von <see cref="HeizkesselStammCtrl.BrennstoffartenJeProjekt"/>
+        /// fuer den BHKW-Reiter.
+        ///
+        /// <para><b>Wozu.</b> Der Brennstoffblock des BHKW-Reiters fuehrt nur Zeilen mit
+        /// Verbrauch &gt; 0. Ein BHKW, das im Lauf nicht gelaufen ist, hat keine — und der
+        /// Reiter meldete dann „Kein Brennstoff für dieses BHKW definiert". Das ist eine
+        /// falsche Auskunft, wenn der Brennstoff sehr wohl gepflegt ist. Mit dieser Menge
+        /// unterscheidet die Huelle die zwei Zustaende: gepflegter Brennstoff ohne Lauf
+        /// (Hinweis) und wirklich kein Brennstoff (Warnung).</para>
+        ///
+        /// <para><b>Der Verbund laeuft ueber den Bezeichner</b>, nicht ueber
+        /// <c>ID_BHKW</c> — wie beim Heizkessel die Textverknuepfung des Altschemas, und
+        /// aus demselben Grund wortgleich uebernommen.</para>
+        ///
+        /// <para>Dialogfrei ueber <see cref="StilleDb"/>: Schlaegt die Abfrage fehl,
+        /// bleibt die Menge leer, und der Aufrufer faellt auf den Bestandstext zurueck.</para>
+        /// </summary>
+        public static HashSet<int> BrennstoffartenJeProjekt(int idProjekt)
+        {
+            HashSet<int> arten = new HashSet<int>();
+            if (idProjekt <= 0) return arten;
+
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT DISTINCT b.Brennstoff FROM Tab_BHKW AS b " +
+                "INNER JOIN Tab_Energieanlagen AS a ON b.Bezeichner = a.Bezeichner " +
+                "WHERE b.ID_Projekt = ? AND a.ID_Projekt = ? AND a.ID_Type = ?",
+                StilleDb.Par("@proj1", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@proj2", DbParamTyp.Integer, idProjekt),
+                StilleDb.Par("@typ", DbParamTyp.Integer, WizardItemClass.BHKW_TYP));
+
+            if (dt == null) return arten;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                int a = StilleDb.Zahl(StilleDb.Feld(r, "Brennstoff"), -1);
+                if (a >= 0) arten.Add(a);
+            }
+            return arten;
+        }
     }
 }
