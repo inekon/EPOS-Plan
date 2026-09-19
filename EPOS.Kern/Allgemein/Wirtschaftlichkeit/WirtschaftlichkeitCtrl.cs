@@ -6378,7 +6378,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// ETAPPE H2: frische Bezugsmenge einer Endenergie-Position aus dem jüngsten
         /// Lauf. Weg A liefert die Arbeitskosten [€/a]; Weg B den BEWERTETEN Bedarf
-        /// (kWh × Strombezugspreis) — <c>Menge × Satz / 100</c> ergibt so ohne zweite
+        /// (kWh × Strompreis der Anlage, <c>Groesse.BewertungspreisJeKwh</c>) —
+        /// <c>Menge × Satz / 100</c> ergibt so ohne zweite
         /// Formel den Betrag (Begründung bei <see cref="BetriebskostenCtrl.Betrag"/>).
         /// null = keine Bezugsgröße (kein Lauf, Anlage nicht im Lauf, Preis fehlt) —
         /// dann gilt die dokumentierte 0.
@@ -6402,7 +6403,11 @@ namespace WindowsFormsApplication1
             if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN, StringComparison.Ordinal))
                 return g.KostenEuro;
 
-            double? strompreis = aufloeser.StrompreisJeKwh;
+            // ANWENDERENTSCHEID 19.09.2026: Der Preis kommt vom Auflöser, nicht aus
+            // dem Projektträger — er weiß als einziger, ob DIESE Anlage einen eigenen
+            // Stromträger trägt (Wärmepumpe, Heizstab, Elektrokessel). Für eine
+            // Stromanlage bewerten Weg A und Weg B damit mit demselben Preis.
+            double? strompreis = g.BewertungspreisJeKwh;
             return strompreis.HasValue ? g.BedarfKwh * strompreis.Value : (double?)null;
         }
 
@@ -6560,8 +6565,27 @@ namespace WindowsFormsApplication1
         internal const string BASISGRUND_MENGE = "MENGE";
 
         /// <summary>#363: Die Menge steht, der Arbeitspreis des Energieträgers
-        /// fehlt — die Bewertung ergäbe 0 (Weg A und Weg B, § 4.5).</summary>
+        /// fehlt — die Bewertung ergäbe 0 (Weg A und Weg B, § 4.5). Auf Weg B ist
+        /// damit der EIGENE Stromträger der Anlage gemeint (Anwenderentscheid
+        /// 19.09.2026); für den Stromträger des Projekts gilt
+        /// <see cref="BASISGRUND_STROMPREIS"/>.</summary>
         internal const string BASISGRUND_PREIS = "PREIS";
+
+        /// <summary>
+        /// ANWENDERENTSCHEID 19.09.2026: Die Menge steht, und Weg B fehlt der
+        /// Arbeitspreis des PROJEKT-Stromträgers — die Lage einer Anlage mit
+        /// Brennstoffträger (BHKW, Heizkessel auf Gas oder Öl), deren Hilfsstrom aus
+        /// dem Netzbezug des Projekts bewertet wird.
+        ///
+        /// <para><b>Warum ein eigener Steuerwert.</b> Der Klartext ist die ABHILFE,
+        /// und die zeigt hier auf einen anderen Eintrag der Energieträgerverwaltung
+        /// als bei <see cref="BASISGRUND_PREIS"/>. Aus Steuerwert und Bemessungsart
+        /// allein ist die Lage seit der anlagenscharfen Preisauflösung nicht mehr
+        /// bestimmbar: Dieselbe Bemessungsart trägt an einer Stromanlage den eigenen,
+        /// an einer Brennstoffanlage den Projektträger. Die Auskunft reist damit auf
+        /// dem Weg, den die Zeile ohnehin führt, statt als zweite Angabe neben ihm.</para>
+        /// </summary>
+        internal const string BASISGRUND_STROMPREIS = "STROMPREIS";
 
         /// <summary>
         /// ANWENDERBEFUND 10.09.2026 (H4c): Warum trägt diese Zeile keine Bezugsgröße?

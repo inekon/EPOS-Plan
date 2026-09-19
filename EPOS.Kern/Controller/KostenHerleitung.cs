@@ -123,7 +123,7 @@ namespace WindowsFormsApplication1
             // ANWENDERBEFUND 14.09.2026: KEIN STILLES 0. Eine absolute Bemessung
             // braucht keine Bezugsgröße und trägt deshalb auch kein Zeichen.
             a.OhneBasis = pz != null && !pz.Basis.HasValue &&
-                          GrundText(pz.BasisGrund, p != null ? p.Bemessung : null).Length > 0;
+                          GrundText(pz.BasisGrund).Length > 0;
 
             a.BasisText = BasisText(a.Basis, p, komponentenId);
             a.Kurztext = Kurztext(a, p, komponentenId, pz, projektModus, betrieb);
@@ -223,20 +223,8 @@ namespace WindowsFormsApplication1
         /// Leerer Steuerwert = die Bemessungsart braucht überhaupt keine Bezugsgröße.
         /// </summary>
         /// <param name="grund">Einer der <c>BASISGRUND_*</c>-Steuerwerte.</param>
-        /// <param name="bem">Die Bemessungsart der Zeile; sie entscheidet beim fehlenden
-        /// PREIS, welcher Preis gemeint ist. „% des Endenergiebedarfs" (Weg B) bewertet
-        /// die Menge mit dem STROMBEZUGSPREIS des Projekts — wer dort den Arbeitspreis
-        /// des Brennstoffträgers pflegt, ändert nichts. <c>null</c> = unbekannt, dann
-        /// bleibt es beim allgemeinen Satz.</param>
-        internal static string GrundText(string grund, string bem = null)
+        internal static string GrundText(string grund)
         {
-            // Der fehlende Preis hat zwei Gesichter: Weg A vermisst den Arbeitspreis des
-            // Brennstoffträgers der Anlage, Weg B den Strombezugspreis des Projekts
-            // (§ 4.5). Der Steuerwert ist derselbe, die ABHILFE ist es nicht.
-            if (string.Equals(grund, WirtschaftlichkeitCtrl.BASISGRUND_PREIS, StringComparison.Ordinal) &&
-                string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF, StringComparison.Ordinal))
-                return MyResource.Resource.KDLG_BASIS_GRUND_STROMPREIS;
-
             switch (grund)
             {
                 case WirtschaftlichkeitCtrl.BASISGRUND_GEWERK:
@@ -254,6 +242,13 @@ namespace WindowsFormsApplication1
                     return MyResource.Resource.KDLG_BASIS_GRUND_MENGE;
                 case WirtschaftlichkeitCtrl.BASISGRUND_PREIS:
                     return MyResource.Resource.KDLG_BASIS_GRUND_PREIS;
+                // ANWENDERENTSCHEID 19.09.2026: der fehlende Arbeitspreis des
+                // PROJEKT-Stromträgers. Er trägt einen eigenen Steuerwert, weil beide
+                // Lagen „kein Arbeitspreis" heißen, aber auf verschiedene Einträge der
+                // Energieträgerverwaltung zeigen — den eigenen Träger der Anlage
+                // (BASISGRUND_PREIS) und den Stromträger des Projekts.
+                case WirtschaftlichkeitCtrl.BASISGRUND_STROMPREIS:
+                    return MyResource.Resource.KDLG_BASIS_GRUND_STROMPREIS;
                 case WirtschaftlichkeitCtrl.BASISGRUND_INVEST:
                     return MyResource.Resource.KDLG_BASIS_GRUND_INVEST;
                 case WirtschaftlichkeitCtrl.BASISGRUND_KONSERVE:
@@ -283,7 +278,7 @@ namespace WindowsFormsApplication1
             // Zeile, im Feld aber die 0 des Anwenderentscheids I-2.
             if (pz != null && !pz.Basis.HasValue)
             {
-                string grund = GrundText(pz.BasisGrund, p != null ? p.Bemessung : null);
+                string grund = GrundText(pz.BasisGrund);
                 if (grund.Length > 0)
                     return string.Format(CultureInfo.CurrentCulture,
                                          MyResource.Resource.KDLG_TT_OHNE_BASIS, grund);

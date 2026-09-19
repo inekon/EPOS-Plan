@@ -541,6 +541,52 @@ namespace WindowsFormsApplication1
             return bester;
         }
 
+        /// <summary>
+        /// Der Stromträger, den jede Anlagenzeile SELBST trägt:
+        /// <c>Tab_Energieanlagen.ID_Anlage</c> → <c>energy_carrier.id</c>, aber nur,
+        /// wo der Verweis der Anlage im Katalog ankommt, dem Projekt zugeordnet ist
+        /// und ein ELECTRICITY-Träger ist. Anlagen ohne eigenen Stromträger stehen
+        /// nicht in der Karte; für sie gilt der EINE Stromträger des Projekts
+        /// (<see cref="StromTraegerDerAnlagen"/>).
+        ///
+        /// <para><b>Dieselbe Erkennung, eine Wahrheit.</b> Katalog, Zuordnungsmenge
+        /// und der Vergleich auf <see cref="StrompreisZerlegungCtrl.PRICING_MODEL_STROM"/>
+        /// sind Zeile für Zeile die der Rangfolge in <see cref="StromTraegerDerAnlagen"/>
+        /// — hier wird nur nicht ausgewählt, sondern JEDE Anlage beantwortet. Ein
+        /// Brennstoffträger (Gas, Öl) fällt durch den Preismodellvergleich heraus,
+        /// ohne dass nach dem Gewerk gefragt werden müsste.</para>
+        ///
+        /// <para>Leere Karte = keine Anlage trägt einen eigenen Stromträger, die
+        /// Abfrage ist gescheitert oder das Schema kennt die Spalte nicht. Dann
+        /// bleibt alles, wie es ohne diese Auskunft wäre.</para>
+        /// </summary>
+        internal static Dictionary<int, int> EigeneStromTraeger(int projektID)
+        {
+            var karte = new Dictionary<int, int>();
+            if (projektID <= 0) return karte;
+
+            DataTable anlagen = Anlagen(projektID);
+            if (anlagen == null) return karte;
+
+            List<Traeger> katalog = null;
+            HashSet<int> zugeordnet = null;
+            foreach (DataRow r in anlagen.Rows)
+            {
+                int idAnlage = Ganz(r, "ID");
+                int idCarrier = Ganz(r, SchemaKatalog.SPALTE_ID_CARRIER);
+                if (idAnlage <= 0 || idCarrier <= 0) continue;
+
+                if (katalog == null) { katalog = Katalog(); zugeordnet = Zugeordnete(projektID); }
+                Traeger t = Zeile(katalog, idCarrier);
+                if (t == null || !zugeordnet.Contains(idCarrier)) continue;
+                if (!string.Equals(t.Preismodell, StrompreisZerlegungCtrl.PRICING_MODEL_STROM,
+                                   StringComparison.OrdinalIgnoreCase)) continue;
+
+                karte[idAnlage] = idCarrier;
+            }
+            return karte;
+        }
+
         /// <summary>Innenfassung von <see cref="StandardStromTraeger"/> für die
         /// Aufrufer, die Katalog und Zuordnungsmenge ohnehin schon gelesen haben.</summary>
         private static int StromTraeger(List<Traeger> katalog, HashSet<int> zugeordnet, int projektID)
