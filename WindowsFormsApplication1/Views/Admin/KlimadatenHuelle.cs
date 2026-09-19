@@ -140,46 +140,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Zeilen der Regionsliste (Auftrag KL-4) — sieben Spalten aus
-        /// <see cref="KlimaregionStammCtrl.Katalogfilterzeilen"/>.
+        /// <see cref="KlimaregionStammCtrl.Katalogfilterzeilen"/>, unverändert
+        /// durchgereicht.
         ///
-        /// <para><b>Hier wird der Quellenschlüssel zum Anzeigetext.</b> Der Kern
-        /// liefert <c>PVGIS</c>, <c>TRY_DATEI</c>, <c>TRY_REGIONAL</c> — die Werte, wie
-        /// sie in <c>Tab_Klimaregion_STAMM.Quelle</c> stehen (Drei-Schichten-Regel:
-        /// Schlüssel in der Datenbank, Text in <c>MyResource</c>). Die Spalte zeigt
-        /// dieselben drei Namen, die auch die Optionsgruppe „Klimaquelle" im Dialog
-        /// trägt — ein zweiter Wortlaut für dieselbe Sache wäre eine zweite
-        /// Wahrheit.</para>
+        /// <para><b>Den Satzbau der Spalte „Quelle" macht der KERN</b> (Auftrag KL-6,
+        /// <c>KlimaAnzeige.Quellenzeile</c>): Sie reiht Quelle, Bezugsjahr und Szenario
+        /// zu „TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm". Bis KL-6 stand
+        /// hier eine eigene Übersetzung des Quellenschlüssels; aus drei Angaben EINEN
+        /// Satz zu bauen ist aber kein Übersetzen mehr, und derselbe Satz steht auf der
+        /// Startseite — er gehört deshalb an eine Stelle und nicht an zwei.</para>
         ///
         /// <para>Ein Altbestand ohne Quelle (NULL, vor Schemaschritt 95) bleibt LEER;
         /// sein Halbgeviertstrich kommt aus <c>Katalogwert.AusText</c>.</para>
         /// </summary>
         private static Task<IReadOnlyList<Katalogfilterzeile>> RegionenLesen()
         {
-            IReadOnlyList<Katalogfilterzeile> zeilen = KlimaregionStammCtrl.Katalogfilterzeilen();
-
-            foreach (Katalogfilterzeile zeile in zeilen)
-            {
-                string text = Quellentext(zeile.Text(Katalogfilterprofil.SpQuelle));
-                zeile.MitText(Katalogfilterprofil.SpQuelle, text);
-            }
-
-            return Task.FromResult(zeilen);
-        }
-
-        /// <summary>Der Anzeigetext eines Quellenschlüssels; ein unbekannter bleibt leer.</summary>
-        private static string Quellentext(string schluessel)
-        {
-            switch ((schluessel ?? "").Trim())
-            {
-                case DbWerte.KLIMA_QUELLE_PVGIS:
-                    return MyResource.Resource.KLIMA_QUELLE_PVGIS;
-                case DbWerte.KLIMA_QUELLE_TRY_DATEI:
-                    return MyResource.Resource.KLIMA_QUELLE_TRY_DATEI;
-                case DbWerte.KLIMA_QUELLE_TRY_REGIONAL:
-                    return MyResource.Resource.KLIMA_QUELLE_TRY_REGIONAL;
-                default:
-                    return "";
-            }
+            return Task.FromResult(KlimaregionStammCtrl.Katalogfilterzeilen());
         }
 
         /// <summary>
