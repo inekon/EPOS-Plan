@@ -64,6 +64,7 @@ public class LizenzDialogTests : EposBunitContext
     {
         KopfTitel = "Lizenz und rechtliche Hinweise",
         KopfUntertitel = "EPOS-Plan - Energieplanungs-Software - INEKON",
+        ReiterStatus = "Status & Aktivierung",
         ReiterVertrag = "Lizenzvereinbarung",
         ReiterHinweise = "Rechtliche Hinweise",
         ReiterKomponenten = "Komponenten",
@@ -89,11 +90,13 @@ public class LizenzDialogTests : EposBunitContext
         IReadOnlyDictionary<string, object>? verwaltung = null,
         EventCallback<bool>? geschlossen = null,
         EventCallback? zugestimmt = null,
-        string sprachHinweis = "")
+        string sprachHinweis = "",
+        string startReiter = "")
     {
         return Render<LizenzDialog>(p =>
         {
             p.Add(x => x.Zustimmungsmodus, zustimmungsmodus)
+             .Add(x => x.StartReiter, startReiter)
              .Add(x => x.Text, text ?? new LizenzTextGaben("Der Vertragstext.", "https://epos-plan.de/agb/", "13.08.2026"))
              .Add(x => x.Lizenzstatus, "Firmenlizenz · gültig bis 31.12.2026")
              .Add(x => x.Hinweise, HINWEISE)
@@ -108,6 +111,23 @@ public class LizenzDialogTests : EposBunitContext
         });
     }
 
+    /// <summary>
+    /// Der Parametersatz der Verwaltung, wie ihn die Hülle splattet (MN-1: er
+    /// entscheidet über das Reiterblatt „Status &amp; Aktivierung").
+    /// </summary>
+    private static Dictionary<string, object> Verwaltungsgaben() => new()
+    {
+        ["Lage"] = new LizenzGaben("GUELTIG", "Firmenlizenz", "Lizenz EPOS-2026-00001", true, ""),
+        ["Texte"] = new LizenzTexte
+        {
+            Verwaltung =
+            {
+                GruppeStatus = "Lizenzstatus auf diesem Arbeitsplatz",
+                KnopfAktivieren = "Jetzt aktivieren",
+            }
+        },
+    };
+
     private static IElement Knopf(IRenderedComponent<LizenzDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
@@ -119,8 +139,8 @@ public class LizenzDialogTests : EposBunitContext
     // ==================================================================
 
     /// <summary>
-    /// Drei Registerkarten in ihrer Reihenfolge — der Wellenplan sprach von vier,
-    /// gemessen sind es drei (Befund W15c-B3).
+    /// OHNE Parametersatz der Verwaltung sind es die drei LESEkarten — der
+    /// Wellenplan sprach von vier, gemessen waren es drei (Befund W15c-B3).
     /// </summary>
     [Fact]
     public void Es_sind_genau_drei_Registerkarten()
@@ -134,6 +154,24 @@ public class LizenzDialogTests : EposBunitContext
         Assert.Equal("Komponenten", reiter[2].TextContent.Trim());
     }
 
+    /// <summary>
+    /// ANWENDERENTSCHEID MN-1 (19.09.2026): Mit dem Parametersatz der Verwaltung
+    /// sind es VIER Karten, und „Status &amp; Aktivierung" steht als ERSTE da —
+    /// sie hat den Knopf „Lizenz aktivieren…" samt seiner Überlagerung abgelöst.
+    /// </summary>
+    [Fact]
+    public void Mit_der_Verwaltung_sind_es_vier_Registerkarten()
+    {
+        var cut = Zeigen(verwaltung: Verwaltungsgaben());
+        var reiter = cut.FindAll("[role=tab]");
+
+        Assert.Equal(4, reiter.Count);
+        Assert.Equal("Status & Aktivierung", reiter[0].TextContent.Trim());
+        Assert.Equal("Lizenzvereinbarung", reiter[1].TextContent.Trim());
+        Assert.Equal("Rechtliche Hinweise", reiter[2].TextContent.Trim());
+        Assert.Equal("Komponenten", reiter[3].TextContent.Trim());
+    }
+
     /// <summary>Beim Öffnen steht die verbindliche erste Karte vorn.</summary>
     [Fact]
     public void Die_verbindliche_Karte_steht_vorn()
@@ -142,6 +180,46 @@ public class LizenzDialogTests : EposBunitContext
 
         Assert.Contains("Der Vertragstext.", cut.Markup, StringComparison.Ordinal);
         Assert.DoesNotContain("Anbieter", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// MN-1: Auch MIT der Verwaltung bleibt die Lizenzvereinbarung vorn, solange
+    /// die Hülle nichts anderes sagt — die verbindliche Karte ist die Vorgabe, und
+    /// der Erststart (Zustimmungsmodus) hängt daran.
+    /// </summary>
+    [Fact]
+    public void Ohne_Vorwahl_steht_die_Vereinbarung_auch_mit_der_Verwaltung_vorn()
+    {
+        var cut = Zeigen(verwaltung: Verwaltungsgaben());
+
+        Assert.Contains("Der Vertragstext.", cut.Markup, StringComparison.Ordinal);
+        Assert.Empty(cut.FindComponents<LizenzVerwaltungDialog>());
+        Assert.Equal("true", cut.FindAll("[role=tab]")[1].GetAttribute("aria-selected"));
+    }
+
+    /// <summary>
+    /// MN-1: Die Hülle wählt das Blatt vor — „STATUS", wenn die Lizenz nicht
+    /// aktiviert ist. Ein unbekannter Schlüssel und ein „STATUS" OHNE
+    /// Parametersatz ändern nichts: Dann stünde sonst je nach Gaben ein anderes
+    /// Blatt vorn.
+    /// </summary>
+    [Fact]
+    public void Die_Huelle_waehlt_das_Startblatt_vor()
+    {
+        var cut = Zeigen(verwaltung: Verwaltungsgaben(), startReiter: "STATUS");
+        Assert.Single(cut.FindComponents<LizenzVerwaltungDialog>());
+        Assert.Equal("true", cut.FindAll("[role=tab]")[0].GetAttribute("aria-selected"));
+
+        var hinweise = Zeigen(verwaltung: Verwaltungsgaben(), startReiter: "HINWEISE");
+        Assert.Contains("Anbieter", hinweise.Markup, StringComparison.Ordinal);
+
+        // STATUS ohne Parametersatz: das Blatt gibt es gar nicht.
+        var ohne = Zeigen(startReiter: "STATUS");
+        Assert.Contains("Der Vertragstext.", ohne.Markup, StringComparison.Ordinal);
+
+        // Unbekannter Schluessel: die Vereinbarung.
+        var unbekannt = Zeigen(verwaltung: Verwaltungsgaben(), startReiter: "GIBTSNICHT");
+        Assert.Contains("Der Vertragstext.", unbekannt.Markup, StringComparison.Ordinal);
     }
 
     /// <summary>Ein Reiterwechsel zeigt die erzeugten Abschnitte.</summary>
@@ -371,27 +449,29 @@ public class LizenzDialogTests : EposBunitContext
 
     /// <summary>
     /// Die Knopfreihenfolge ist bitgleich (Entscheid E-14): von RECHTS gelesen
-    /// [Schließen] [Drucken] [Speichern] [Aktivieren].
+    /// [Schließen] [Drucken] [Speichern]. <b>MN-1 (19.09.2026):</b> „Lizenz
+    /// aktivieren…" ist aus der Leiste gefallen — er öffnete die Verwaltung als
+    /// Überlagerung, und die ist jetzt das erste Reiterblatt.
     /// </summary>
     [Fact]
     public void Die_Knopfreihenfolge_ist_bitgleich()
     {
         var cut = Zeigen(speichern: (r, i) => Task.FromResult<string?>(null),
-                         verwaltung: new Dictionary<string, object>());
+                         verwaltung: Verwaltungsgaben());
 
         var texte = cut.FindAll("div.epos-lizenz-knoepfe button")
                        .Select(b => b.TextContent.Trim())
                        .ToList();
 
-        // GENAU vier: der Infoknopf stand bis zur Abnahme als fuenftes Element
+        // GENAU drei: der Infoknopf stand bis zur Abnahme als letztes Element
         // hinter "Schliessen" und musste aus der Liste gefiltert werden.
-        Assert.Equal(new[] { "Lizenz aktivieren...", "Speichern unter...", "Drucken...", "Schließen" },
-                     texte);
+        Assert.Equal(new[] { "Speichern unter...", "Drucken...", "Schließen" }, texte);
     }
 
     /// <summary>
     /// Ohne Delegat kein Knopf — die Hausregel gilt auch hier: „Speichern unter…"
-    /// und „Lizenz aktivieren…" verschwinden, wenn die Hülle sie nicht bedient.
+    /// verschwindet, wenn die Hülle sie nicht bedient. „Lizenz aktivieren…" gibt es
+    /// seit MN-1 gar nicht mehr.
     /// </summary>
     [Fact]
     public void Ohne_Delegat_kein_Knopf()
@@ -401,6 +481,10 @@ public class LizenzDialogTests : EposBunitContext
         Assert.False(GibtKnopf(cut, "Speichern unter..."));
         Assert.False(GibtKnopf(cut, "Lizenz aktivieren..."));
         Assert.True(GibtKnopf(cut, "Drucken..."));
+
+        // Und auch MIT Parametersatz der Verwaltung kommt er nicht wieder.
+        var mit = Zeigen(verwaltung: Verwaltungsgaben());
+        Assert.False(GibtKnopf(mit, "Lizenz aktivieren..."));
     }
 
     // ==================================================================
@@ -456,66 +540,75 @@ public class LizenzDialogTests : EposBunitContext
     }
 
     // ==================================================================
-    //  Die Lizenzverwaltung als Überlagerung (E-11)
+    //  MN-1 (19.09.2026) — die Lizenzverwaltung als erstes Reiterblatt
     // ==================================================================
 
     /// <summary>
-    /// „Lizenz aktivieren…" öffnet die Verwaltung IM selben Fenster — kein zweites
-    /// modales Fenster (Risiko R2).
+    /// Der Reiter „Status &amp; Aktivierung" trägt die Verwaltung — IM selben
+    /// Fenster, ohne zweites modales Fenster (Risiko R2) und seit MN-1 auch ohne
+    /// Überlagerung (bis dahin Entscheid E-11): Ein Klick auf den Reiter, nicht
+    /// zwei auf Knopf und Kreuz.
     /// </summary>
     [Fact]
-    public void Die_Verwaltung_erscheint_als_Ueberlagerung()
+    public void Die_Verwaltung_steht_im_ersten_Reiterblatt()
     {
-        var gaben = new Dictionary<string, object>
-        {
-            ["Lage"] = new LizenzGaben("GUELTIG", "Firmenlizenz", "Lizenz EPOS-2026-00001", true, ""),
-            ["Texte"] = new LizenzTexte
-            {
-                Verwaltung =
-                {
-                    GruppeStatus = "Lizenzstatus auf diesem Arbeitsplatz",
-                    KnopfSchliessen = "Schließen",
-                }
-            },
-        };
-        var cut = Zeigen(verwaltung: gaben);
+        var cut = Zeigen(verwaltung: Verwaltungsgaben());
 
+        // Solange die Lesekarte vorn steht, ist die Maske gar nicht gezeichnet.
         Assert.Empty(cut.FindComponents<LizenzVerwaltungDialog>());
 
-        Knopf(cut, "Lizenz aktivieren...").Click();
+        cut.FindAll("[role=tab]")[0].Click();
 
         Assert.Single(cut.FindComponents<LizenzVerwaltungDialog>());
         Assert.Contains("Lizenzstatus auf diesem Arbeitsplatz", cut.Markup, StringComparison.Ordinal);
+
+        // Es gibt KEINE Überlagerung mehr und keinen Knopf, der eine öffnete.
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
+        Assert.False(GibtKnopf(cut, "Lizenz aktivieren..."));
     }
 
     /// <summary>
-    /// Anwenderbefund 15.09.2026 („Doppeltes Kreuz dürfen nicht sein!"): Die betitelte
-    /// Überlagerung „Lizenz aktivieren…" trägt GENAU EIN ✕ — ihr eigenes. Die
-    /// eingebettete Verwaltung zeigt seither keins mehr (ihr Fußzeilen-Kreuz ist
-    /// entfallen); ihr Weg hinaus bleibt der Hauptknopf „Schließen".
+    /// Anwenderbefund 15.09.2026 („Doppeltes Kreuz dürfen nicht sein!"): Auch mit
+    /// der Verwaltung im Reiter trägt das Fenster GENAU EIN ✕ — das des
+    /// Dialogkopfs. Das Blatt bringt keins mit, und es gibt nur EINE Fußzeile mit
+    /// dem Lizenzstand und nur EINEN Knopf „Schließen".
     /// </summary>
     [Fact]
-    public void Die_Ueberlagerung_Lizenzverwaltung_zeigt_nur_ein_Kreuz()
+    public void Der_Lizenzdialog_zeigt_ein_Kreuz_und_eine_Fusszeile()
     {
-        var gaben = new Dictionary<string, object>
-        {
-            ["Lage"] = new LizenzGaben("GUELTIG", "Firmenlizenz", "Lizenz EPOS-2026-00001", true, ""),
-            ["Texte"] = new LizenzTexte
-            {
-                Verwaltung =
-                {
-                    GruppeStatus = "Lizenzstatus auf diesem Arbeitsplatz",
-                    KnopfSchliessen = "Schließen",
-                }
-            },
-        };
-        var cut = Zeigen(verwaltung: gaben);
+        var cut = Zeigen(verwaltung: Verwaltungsgaben());
+        cut.FindAll("[role=tab]")[0].Click();
 
-        Knopf(cut, "Lizenz aktivieren...").Click();
+        Assert.Single(cut.FindComponents<EPOS.UI.Bausteine.Schliesskreuz>());
+        Assert.Empty(cut.FindAll(".epos-lizverw-fuss .epos-dialog-zu"));
 
-        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
-        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
-        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+        Assert.Single(cut.FindAll("footer.epos-lizenz-fuss"));
+        Assert.Contains("Lizenz: Firmenlizenz · gültig bis 31.12.2026", cut.Markup, StringComparison.Ordinal);
+        Assert.Single(cut.FindAll("button"), b => b.TextContent.Trim() == "Schließen");
+    }
+
+    /// <summary>
+    /// MN-1: Die zwei Sprünge unter dem Übertragungshinweis schalten den Reiter des
+    /// WIRTS um — aus der Aktivierungsmaske heraus auf die Lizenzvereinbarung und
+    /// auf die rechtlichen Hinweise, ohne das Fenster zu verlassen.
+    /// </summary>
+    [Fact]
+    public void Die_Spruenge_aus_der_Verwaltung_wechseln_den_Reiter()
+    {
+        var cut = Zeigen(verwaltung: Verwaltungsgaben());
+        cut.FindAll("[role=tab]")[0].Click();
+
+        cut.FindAll(".epos-lizverw-spruenge button")[0].Click();
+
+        Assert.Equal("true", cut.FindAll("[role=tab]")[1].GetAttribute("aria-selected"));
+        Assert.Contains("Der Vertragstext.", cut.Markup, StringComparison.Ordinal);
+
+        // Zurueck auf die Maske und diesmal auf die rechtlichen Hinweise.
+        cut.FindAll("[role=tab]")[0].Click();
+        cut.FindAll(".epos-lizverw-spruenge button")[1].Click();
+
+        Assert.Equal("true", cut.FindAll("[role=tab]")[2].GetAttribute("aria-selected"));
+        Assert.Contains("Anbieter", cut.Markup, StringComparison.Ordinal);
     }
 
     // ==================================================================
@@ -698,10 +791,17 @@ public class LizenzDialogTests : EposBunitContext
         // Keine feste Breite - sie waere genau der Ueberlauf, den der Befund meldet.
         Assert.DoesNotContain("width: 9", block, StringComparison.Ordinal);
 
-        // Die Ueberlagerung bringt ihren Rand mit; er darf sich nicht addieren.
+        // MN-1 (19.09.2026): Das REITERBLATT bringt seinen Rand mit; er darf sich
+        // nicht addieren (bis dahin stand hier die Ueberlagerung, E-11).
         Assert.Contains("padding: 0",
-                        Stilblock(".epos-ueberlagerung-inhalt > .epos-lizverw {"),
+                        Stilblock(".epos-lizenz-verwaltungsblatt > .epos-lizverw {"),
                         StringComparison.Ordinal);
+
+        // Und das Blatt rollt wie die drei Lesebereiche daneben - senkrecht ja,
+        // waagerecht nie; sonst spraenge das Bild beim Reiterwechsel.
+        string blatt = Stilblock(".epos-lizenz-verwaltungsblatt {");
+        Assert.Contains("overflow-y: auto", blatt, StringComparison.Ordinal);
+        Assert.Contains("overflow-x: hidden", blatt, StringComparison.Ordinal);
     }
 
     /// <summary>

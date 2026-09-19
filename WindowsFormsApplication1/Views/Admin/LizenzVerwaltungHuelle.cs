@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Lizenz;
-using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
@@ -28,40 +25,17 @@ namespace WindowsFormsApplication1
     /// Server nimmt ihn als reine Zusatzangabe, die Anmeldung läuft über die
     /// E-Mail.</para>
     ///
-    /// <para><b>Zwei Rollen, ein Parametersatz.</b> <see cref="Oeffnen"/> zeigt die
-    /// Verwaltung als eigenes Fenster (Menü Administration → Lizenz…);
-    /// <see cref="Gaben"/> liefert denselben Satz ohne <c>Geschlossen</c>, damit der
-    /// Lizenzdialog sie als ÜBERLAGERUNG zeigen kann statt als zweites Fenster
-    /// (Risiko R2, Entscheid E-11).</para>
+    /// <para><b>EINE Rolle, ein Parametersatz</b> (Anwenderentscheid MN-1,
+    /// 19.09.2026). <see cref="Gaben"/> liefert den Satz für das Reiterblatt
+    /// „Status &amp; Aktivierung" des <c>LizenzDialog</c> — der EINZIGE Weg zur
+    /// Verwaltung. Das eigene Fenster (<c>Oeffnen</c>, Menü „Administration →
+    /// Lizenz…") ist mit dem Menüpunkt entfallen, die Überlagerung
+    /// „Lizenz aktivieren…" (Risiko R2, Entscheid E-11) mit dem Reiter: „Es gibt
+    /// einen Lizenz-Dialog für Lizenz aktivieren. Diese ist … unter Hilfe→Lizenz
+    /// bereits vorhanden."</para>
     /// </summary>
     internal static class LizenzVerwaltungHuelle
     {
-        /// <summary>
-        /// Gewünschtes Innenmaß. Der Vorläufer war ein FixedDialog mit 560 × 486; die
-        /// Razor-Fassung braucht mehr Höhe für dieselben drei Gruppen, weil ihre
-        /// Berührungsziele 44 px hoch sind (Entscheid E-13).
-        /// </summary>
-        private static readonly Size MASS = new Size(700, 620);
-
-        /// <summary>Öffnet die Lizenzverwaltung als eigenes Fenster.</summary>
-        internal static void Oeffnen(IWin32Window besitzer)
-        {
-            BlazorDialogForm<LizenzVerwaltungDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben())
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create(
-                    new object(), () => { if (dlg != null) dlg.Schliessen(true); })
-            };
-
-            dlg = new BlazorDialogForm<LizenzVerwaltungDialog>(Titel(), MASS, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-        }
-
         /// <summary>
         /// Der Fenstertitel — <c>LIZ_TITEL</c> plus Produktname. Der Produktname ist
         /// eine Anwendungskonstante und kein Übersetzungsgut; zusammengesetzt wird er

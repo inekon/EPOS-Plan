@@ -8077,8 +8077,16 @@ User: {2} · Device: {3}</value>
     <value>Activate now</value>
   </data>
   <data name="LIZ_HINWEIS_AKTIVIERUNG" xml:space="preserve">
-    <value>Activation requires an internet connection once. Transmitted are only the license
-key, the e-mail address and an anonymous device hash — no project or customer data.</value>
+    <value>Activation requires an internet connection once.</value>
+  </data>
+  <data name="LIZ_HINWEIS_UEBERTRAGUNG" xml:space="preserve">
+    <value>Activation transmits the license key, the e-mail address and an anonymous device identifier to the license server. The license agreement and the notes on data processing apply.</value>
+  </data>
+  <data name="LIZ_LINK_VEREINBARUNG" xml:space="preserve">
+    <value>License agreement</value>
+  </data>
+  <data name="LIZ_LINK_DATENVERARBEITUNG" xml:space="preserve">
+    <value>Notes on data processing</value>
   </data>
   <data name="LIZ_GRP_AKTIONEN" xml:space="preserve">
     <value>Further actions</value>
@@ -14153,7 +14161,7 @@ Import anyway?</value>
     <value>The system clock has been set back — please correct the time or re-check online.</value>
   </data>
   <data name="LIZ_ST_NICHTAKTIVIERT" xml:space="preserve">
-    <value>Not activated — trial version or license key under Administration → License.</value>
+    <value>Not activated — trial version or license key under Help → License.</value>
   </data>
   <data name="LIZ_LESEMODUS_SPERRE" xml:space="preserve">
     <value>Read-only mode: the licence currently does not allow changes. Nothing was saved. Viewing, reports and export remain available.</value>
@@ -14239,7 +14247,9 @@ Please reinstall EPOS-Plan; setup places the template next to the application.</
     <value>Datenverarbeitung</value>
   </data>
   <data name="LIZR_RH_A6" xml:space="preserve">
-    <value>Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation. Wird der optionale Hilfe-Assistent mit eigenem Zugangsschlüssel verwendet, werden ausschließlich die gestellte Frage, der Name des Programmbereichs und die integrierten Hilfetexte an den Dienst des jeweiligen Anbieters übertragen - keine Projekt- oder Kundendaten. Ohne hinterlegten Schlüssel arbeitet die Hilfe rein lokal. Einzelheiten: https://epos-plan.de/datenschutz/</value>
+    <value>Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation.
+Lizenzierung: Beim Aktivieren einer Lizenz, beim Anfordern einer Testversion und beim Lösen eines Gerätes von der Lizenz werden Lizenzschlüssel, E-Mail-Adresse, eine anonyme Gerätekennung (Geräte-Hash), die Programmversion und der Zeitpunkt des Vorgangs an den Lizenzserver von epos-plan.de übertragen. Zweck ist die Erteilung, Prüfung und Verwaltung der Lizenz; Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Erfüllung des Lizenzvertrages). Projekt-, Kunden- und Simulationsdaten werden dabei nicht übertragen.
+Wird der optionale Hilfe-Assistent mit eigenem Zugangsschlüssel verwendet, werden ausschließlich die gestellte Frage, der Name des Programmbereichs und die integrierten Hilfetexte an den Dienst des jeweiligen Anbieters übertragen - keine Projekt- oder Kundendaten. Ohne hinterlegten Schlüssel arbeitet die Hilfe rein lokal. Einzelheiten: https://epos-plan.de/datenschutz/</value>
   </data>
   <data name="LIZR_RH_U7" xml:space="preserve">
     <value>Marken und Urheberrecht</value>
@@ -14262,9 +14272,19 @@ Stand: {0} - Programmversion {1}.</value>
   </data>
   <data name="LIZR_KO_A2" xml:space="preserve">
     <value>Microsoft .NET 10 mit Windows Forms (MIT-Lizenz, Microsoft Corporation) - Laufzeitumgebung und Bedienoberfläche.
-SQLite über Microsoft.Data.Sqlite (MIT-Lizenz, Microsoft Corporation; SQLite selbst ist gemeinfrei) - Ablage der Kenndaten-Datenbank.
+ASP.NET Core Blazor mit Microsoft.AspNetCore.Components.WebView und Microsoft.AspNetCore.Components.QuickGrid (MIT-Lizenz, Microsoft Corporation) - Dialoge, Seiten und Tabellenraster.
+SQLite über Microsoft.Data.Sqlite (MIT-Lizenz, Microsoft Corporation; SQLite selbst ist gemeinfrei) und SQLitePCLRaw (Apache-2.0-Lizenz, Eric Sink) - Ablage der Kenndaten-Datenbank.
 Microsoft Edge WebView2 Runtime (Microsoft Corporation) - Anzeige der Dialoge; Installation und Nutzung nach den Bedingungen von Microsoft.
-Microsoft Access Database Engine sowie OLE-DB- und ODBC-Treiber (Microsoft Corporation) - nur noch für die einmalige Umstellung eines Access-Altbestands; Installation und Nutzung nach den Bedingungen von Microsoft.</value>
+Microsoft Access Database Engine sowie OLE-DB- und ODBC-Treiber (Microsoft Corporation) - nur noch für die einmalige Umstellung eines Access-Altbestands; Installation und Nutzung nach den Bedingungen von Microsoft.
+SkiaSharp samt SkiaSharp.HarfBuzz und HarfBuzzSharp (MIT-Lizenz, Microsoft Corporation) - Zeichnen der Diagrammbilder und Textsatz darin.
+SixLabors.Fonts 1.0 (Apache-2.0-Lizenz, Six Labors and contributors) - Schriftmaße des Diagramm-Renderers.
+Google OR-Tools (Apache-2.0-Lizenz, Google LLC) - gemischt-ganzzahlige Optimierung der Speicherfahrpläne.
+MathNet.Numerics (MIT-Lizenz, Christoph Rüegg, Marcus Cuda, Jurgen Van Gael) - numerische Verfahren der Simulation und der Wirtschaftlichkeit.
+ClosedXML (MIT-Lizenz, Jan Havlíček, Francois Botha und Mitwirkende) und DocumentFormat.OpenXml (MIT-Lizenz, Microsoft Corporation) - Erzeugung der Tabellen- und Textberichte.
+WinForms.DataVisualization (MIT-Lizenz, Microsoft Corporation, Kirsan und Mitwirkende) - Diagramme der Windows-Oberfläche.
+BouncyCastle.Cryptography (MIT-Lizenz, Legion of the Bouncy Castle Inc.) - Prüfung der Lizenzsignatur.
+Humanizer (MIT-Lizenz, Mehdi Khalili, Claire Novotny) - lesbare Zeit- und Mengenangaben.
+JsonSchema.Net (MIT-Lizenz, Greg Dennis) - Prüfung der Aufgabenbeschreibungen des Hilfe-Assistenten.</value>
   </data>
   <data name="LIZR_KO_U3" xml:space="preserve">
     <value>Klima- und Geodaten</value>
@@ -14283,7 +14303,8 @@ OpenStreetMap / Nominatim: Ermittlung von Geokoordinaten zu Ortsnamen. Daten der
     <value>Optionaler Hilfe-Assistent</value>
   </data>
   <data name="LIZR_KO_A5" xml:space="preserve">
-    <value>Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich lokal und ohne Datenübertragung.</value>
+    <value>Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich lokal und ohne Datenübertragung.
+Mscc.GenerativeAI (Apache-2.0-Lizenz, Jochen Kirstätter) - Anbindung des Dienstes.</value>
   </data>
   <data name="LIZR_KO_U6" xml:space="preserve">
     <value>Semantische Suche in der Dokumentation</value>
@@ -14303,6 +14324,9 @@ Einbettungsmodell {0} ({1}, Ubiquitous Knowledge Processing Lab / sentence-trans
   </data>
   <data name="LIZR_KOPF_UNTERTITEL" xml:space="preserve">
     <value>EPOS-Plan - energy planning software - INEKON, Intelligente Energiekonzepte</value>
+  </data>
+  <data name="LIZR_REITER_STATUS" xml:space="preserve">
+    <value>Status &amp; activation</value>
   </data>
   <data name="LIZR_REITER_VERTRAG" xml:space="preserve">
     <value>License agreement</value>
