@@ -87,7 +87,8 @@ verändert oder nur erklärt.
 ```
 ① Positionswelt      Tab_ProjektWerte ← Tab_Kostenfaktor
    Kategorie 1 = Investition, 2 = Betrieb; je Projekt, Komponente und ANLAGE
-   Kostenart · Bemessung · Satz · Menge · Betrag · IstErloes · Nutzungsdauer · StartJahr · IstPflicht
+   Kostenart · Bemessung · Satz (Einheitpreis) · Menge · Betrag (EingegebenerWert) · IstErloes ·
+   Nutzungsdauer · StartJahr · IstPflicht · ID_AnlageGeraet · StammID · VorlageID · NutzungsdauerID
 
 ② Vorlagenwelt       Tab_KostenVorlage / Tab_KostenVorlagePosition
    Auslieferung „Standard": Struktur und Bemessung, Sätze bewusst LEER
@@ -101,13 +102,19 @@ verändert oder nur erklärt.
 ```
 
 Dazu die **Projektrahmen-Zeile** `Tab_ProjektWirtschaftlichkeit` — **eine Zeile je Stammprojekt**,
-gültig für die ganze Vergleichsgruppe (Befund R-1), und seit Schema 61 die
-**Wirtschaftlichkeitsspalten an `Tab_Energieanlagen`** (KWKG_*, `Energiesteuer_Wahl`,
-`Aufteilung_Methode`, `Hilfsenergie_Anteil`).
+gültig für die ganze Vergleichsgruppe (Befund R-1), und seit Schema 61 die **neun
+`KWKG_*`-Spalten** an `Tab_Energieanlagen` samt `Energiesteuer_Wahl`, `Aufteilung_Methode`,
+`Hilfsenergie_Anteil` und `ID_Carrier`.
 
 ---
 
 # 2 Der Dialograum
+
+**Zu den Namen.** `Form_*` und `Uc*` sind die **eingefrorenen Hilfe- und KI-Kennungen** (Hilfe-
+Zuordnung, Wissensbasis) und **keine Klassennamen mehr**: Seit der Schalentrennung liegen die
+Dialoge als Razor-Komponenten unter `EPOS.UI/Dialoge/…` mit den Bündeln `…Daten`/`…Texte`, die
+Plattformseite als `…Huelle` in der jeweiligen Schale. Dieses Kapitel nennt den gebauten Namen und
+die Hilfekennung als Paar.
 
 ## 2.1 Welche Anlage hat welche Wirtschaftlichkeitsfelder
 
@@ -1489,14 +1496,20 @@ KW [€] = − I₀
 ```
 
 ```
-A_t [€] = Betrieb_t   × (1 + p_B)^(t−1)
-        + Energie_1   × (1 + p_E)^(t−1)
+A_t [€] = Betrieb_t     × (1 + p_B)^(t−1)
+        + Energie_1     × (1 + p_E)^(t−1)
+        + Endenergie_1  × (1 + p_E)^(t−1)     ← eigener Topf (Energiekosten je Anlage, B7)
         + CO2_t
-        + Ersatz_t
+        + Ersatz_t      = A₀ × (1 + p_I)^t    ← Preisindizierung der Ersatzbeschaffung (W5‑B‑12)
 
 E_t [€] = Einspeiseerlös_1                    ← nominal KONSTANT, keine Steigerung
         + Σ über alle benannten Erlösreihen: Reihe.Wert(t)
 ```
+
+Die Preissteigerung der Ersatzbeschaffung **p_I** und die Nullsemantik stehen in
+[`../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md`](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md)
+§ 10; der Endenergie-Topf wird nur angesetzt, wenn er von 0 verschieden ist, und trägt dieselbe Rate
+p_E wie der Energietopf.
 
 Rahmengrößen aus `Tab_ProjektWirtschaftlichkeit`, **eine Zeile je Stammprojekt**:
 
@@ -1506,11 +1519,12 @@ Rahmengrößen aus `Tab_ProjektWirtschaftlichkeit`, **eine Zeile je Stammprojekt
 | Betrachtungszeitraum T | `Betrachtungszeitraum` [a] | 20 |
 | Preissteigerung Energie p_E | `Preissteigerung_Energie` [%/a] | 0,0 |
 | Preissteigerung Betrieb p_B | `Preissteigerung_Betrieb` [%/a] | 0,0 |
+| Preissteigerung Investition/Ersatz p_I | `Preissteigerung_Investition` [%/a] (Schritt 72) | NULL = 0,0 |
 | Einspeisevergütung PV | `Einspeiseverguetung` [€/kWh] | 0,0 |
 | Einspeisevergütung KWK | `Einspeiseverguetung_KWK` [€/kWh] | NULL = aus |
 | CO₂-Preis-Override | `CO2_Preis` [€/t] | 0 = Katalogpfad |
 
-**Genau zwei Preissteigerungsreihen** — keine je Träger, keine je Position.
+**Drei Preissteigerungsreihen** (p_B, p_E, p_I) — keine je Träger, keine je Position.
 
 **Sechs benannte Erlösreihen**, jahresscharf: `KWKG_ZUSCHLAG` · `KWKG_PAUSCHALE` (Index 0 =
 Einmalzahlung) · `ENERGIESTEUER_GUTSCHRIFT` · `STROMSTEUER_BEFREIUNG` · `STROMSTEUER_ENTLASTUNG` ·
@@ -1561,7 +1575,7 @@ Investition der Variante ± 10 % (Zuschuss wird **nicht** mitskaliert) · Energi
 
 ## 3.2 Investitionskosten — Drei-Runden-Kaskade
 
-Lesepunkt: `Tab_ProjektWerte` mit `KategorieID = 1`, **ohne ORDER BY** (Befund I-3).
+Lesepunkt: `Tab_ProjektWerte` mit `KategorieID = 1`, **ohne `ORDER BY`**; die Runde 3 friert ihre Basiszeilen vorher ein und ist deshalb reihenfolgeunabhängig (Befund I-3 erledigt).
 
 **Runde 1 — direkte Arten.** Vorrangordnung:
 
@@ -1577,7 +1591,7 @@ Lesepunkt: `Tab_ProjektWerte` mit `KategorieID = 1`, **ohne ORDER BY** (Befund I
 | `EUR_PRO_KW_HEIZLEISTUNG` | Σ Nennleistung × Satz | `Tab_WP.Nennleistung` |
 | `EUR_PRO_KW_LEISTUNG` | Σ P_therm × Satz | `Tab_Heizkessel.Ptherm` |
 | `EUR_PRO_KW_ELEKTRISCH` | Σ P_el × Satz | `Tab_BHKW.Pel` |
-| `EUR_PRO_KWP` | Σ PV_Leistung × Satz | `Tab_Energieanlagen.PV_Leistung` ⚠ **I-1** |
+| `EUR_PRO_KWP` | Σ (Modulanzahl × Modulleistung)/1000 × Satz | `PhotovoltaikCtrl.KwpSumme` |
 | `EUR_PRO_KWH_KAPAZITAET` | Σ Energie × Satz | `Tab_Stromspeicher.Energie` |
 | `EUR_PRO_M2_KOLLEKTOR` | Σ (Aperturfläche × Modulanzahl) × Satz | Solarthermie |
 | `EUR_PRO_KW_LEISTUNG` am Pufferspeicher | Σ Gesamtvolumen × Satz [€/Ltr.] | `Tab_Pufferspeicher.Gesamtvolumen` |
@@ -1626,8 +1640,9 @@ keine Ersatzbeschaffung, keinen Restwert und stehen in keiner Kaskadenbasis.
 
 ## 3.4 Betriebskosten
 
-**Der eine Rechenweg** — Sperre zuerst: fehlt Menge **oder** Satz ⇒ **Betrag = 0**, nicht der
-gespeicherte Wert.
+**Der eine Rechenweg** — fehlt Menge **oder** Satz, ist die Ableitung nicht rechenbar; dann gilt
+der **erfasste Betrag** (Anwenderentscheid I-2, 30.08.2026). Eine ermittelte Menge 0 rechnet weiter
+zu 0.
 
 | Gruppe | Bemessungen | Formel |
 |---|---|---|
@@ -1640,10 +1655,11 @@ gespeicherte Wert.
 1. Szenariowert gepflegt → keine Ableitung
 2. `BETRAG`/leer → gespeicherter Wert
 3. **Endenergie-Arten** (`PROZENT_ENDENERGIEKOSTEN`/`_BEDARF`): Menge **immer frisch** aus dem
-   jüngsten Lauf; Auflöser null ⇒ Betrag 0 — die Konserve greift nie
-4. **Rückfall-ermittelbare Arten** (9 Stück): frisch versuchen, Konserve nur bei null
-5. **Übrige Arten** (`EUR_PRO_H`, `EUR_PRO_KWH`, `PROZENT_BRENNSTOFF-`/`STROMKOSTEN`): nur
-   Konserve (Befund B-4)
+   jüngsten Lauf; Auflöser null ⇒ **erfasster Betrag** (I-2) — die Konserve greift nie
+4. **Rückfall-ermittelbare Arten** (10 Stück): frisch versuchen, Konserve nur bei null;
+   `EUR_PRO_H` und die beiden `EUR_PRO_KWH_*` sind seit FX2 frisch
+5. **Nur Konserve** bleiben `PROZENT_BRENNSTOFFKOSTEN` und `PROZENT_STROMKOSTEN` (Rest von
+   Befund B-4)
 
 **Endenergie je Komponente** (`EndenergieAufloeser`, „jüngster Lauf" = höchste `Tab_Ergebnis.ID`):
 
@@ -1686,9 +1702,9 @@ Altanwendung, die beim Speichern die Absolutfelder leerte (stiller Datenverlust,
 „oder"-Doppelfelder der Wartung (€/kWh_el neben €/h, dort tatsächlich **addiert**, Altbefund 7)
 gibt es nicht mehr: **eine** Position mit sichtbarer Bemessungswahl.
 
-**Basis „% der Investition" auf der Betriebsseite** (`InvestSummeFuer`): `SUM(EingegebenerWert)`
-Kategorie 1 ohne Zuschuss, stufig Anlage → Komponente → Projekt, **vor** Zuschussabzug — abgeleitete
-Beträge fehlen dort (Befund B-5).
+**Basis „% der Investition" auf der Betriebsseite** (`InvestSummeFuer`): Summe der
+**Investitionskaskade** (`InvestKaskade.Summen`), stufig Anlage → Komponente → Projekt, **vor**
+Zuschussabzug — die abgeleiteten Beträge sind seit W5‑B‑8 enthalten (Befund B-5 erledigt).
 
 ## 3.5 Energiekosten und CO₂
 
@@ -1841,8 +1857,9 @@ eine Rechenwirkung, die nirgends entschieden wurde.
 
 **Vbh-Kontingent § 8, je Anlage:** Override > 0 gewinnt; sonst aus **ihrer** Anlagenart und
 **ihrem** Kostenanteil — neu 30.000 h · modernisiert ab 50 %/25 % → 30.000/15.000 · nachgerüstet ab
-50/25/10 % → 30.000/15.000/10.000; darunter 0 mit Fehlgrund. Die projektweite Ableitung bleibt für
-den Ersatzweg stehen, der greift, wenn sich Anlagen- und Ergebniszeilen nicht zuordnen lassen.
+50/25/10 % → 30.000/15.000/10.000; darunter 0 mit Fehlgrund. Der Ersatzweg leitet das Kontingent
+**ebenfalls je Anlage** ab und mischt es leistungsgewichtet (BK1a); er greift, wenn sich Anlagen-
+und Ergebniszeilen nicht zuordnen lassen.
 
 **Der Aktivierungsschalter fragt die Anlagen.** „Ist der KWK-Zuschlag dieser Gruppe aktiv?" heißt
 seit BK1: führt **irgendeine** BHKW-Anlage der Gruppe einen Satz > 0? Die Regel steht **einmal** in
@@ -1934,8 +1951,8 @@ Begriff „Nettostromerzeugung" ist der des Gesetzes, keine Erfindung des Konzep
 > **Entschieden 18.09.2026, nach Empfehlung: Kennzeichen und Stromkennzahl je Anlage aufnehmen,
 > Fall 2 rechnen.** Neuer Boden seit BK1: Der Zuschlag gehört der Anlage (Schemaschritt 89,
 > § 6.5) — die zwei Felder sind zwei weitere Anlagenspalten neben den neun `KWKG_*`-Spalten von
-> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **92** (90 ist BK1a,
-> 91 ist BK1b). Das Kennzeichen
+> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **97** (90 BK1a,
+> 91 BK1b, 92 Vergleichsprojekt, 93 Vergütung je Variante, 94 Hilfsstrom-Bemessung, 95 KL-3 Klimaspalten, 96 FK-2 Projekt-Fremdschlüssel). Das Kennzeichen
 > `KWKG_Abwaermeabfuhr` (0/1, `CHECK`), die Stromkennzahl als nullbare Zahl mit **Vorschlag am
 > Feld** aus P_el / P_th der Gerätezeile (`Tab_BHKW`, wo σ heute nur für die Katalogliste gerechnet
 > wird) — dasselbe Muster wie die Vorschlagszeilen aus BK1. **Wo die Fallunterscheidung sitzt:**
@@ -2077,7 +2094,8 @@ Befreiung setzt Stundenreihen voraus), der Referenzlauf bleibt unverändert.
 | 4a **Einheit nicht vergleichbar** | Katalogsatz je 1.000 kg bzw. je 1.000 l, Projekt rechnet in der anderen Einheit — ohne Dichte keine Brücke | Hinweis (ohne Betrag) |
 | **Doppelzählung § 9 Abs. 1 Nr. 3** | Modus `ERLOES` bucht einen Betrag | Warnung **mit Betrag** |
 | Doppelpflege Hilfsenergie | Anlagenanteil > 0 **und** aktive Kostenposition derselben Anlage | Warnung |
-| Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | Hinweis (435 g/kWh) |
+| **CO₂-Bestandteil im Arbeitspreis und BEHG-Reihe gleichzeitig aktiv** | der Träger weist einen CO₂-Anteil im Arbeitspreis aus **und** die BEHG-Reihe rechnet denselben Brennstoff | Warnung **mit Betrag** — **Soll, nicht gebaut** (Etappe E2) |
+| Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | **Laufhinweis** ohne Wertangabe, kein `KohaerenzHinweis` (`WirtschaftlichkeitCtrl.cs:5465`) |
 
 ## 3.10 Rechenreihenfolge
 
@@ -2155,15 +2173,15 @@ ab. Die EEX-Auktionsdatei `nEHS_Auction_Reporting.csv` eignet sich zum automatis
 
 # 4 Befunde
 
-Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
+Aus der Abnahmeliste der Formelkarte (die Datei ist nicht erhalten, s. Quelltabelle — die Belege stehen heute an der Codestelle). ⚠ = wirkt oder kann wirken.
 
 ## Investitionsseite
 
 | Nr. | Befund |
 |---|---|
-| ⚠ **I-1** | `EUR_PRO_KWP` summiert `PV_Leistung` — dieselbe Spalte heißt andernorts ausdrücklich Modulanzahl. Ein €/kWp-Satz würde faktisch mit der Modulzahl multipliziert (~Faktor 2,5 bei 400-Wp-Modulen). |
-| ⚠ **I-2** | Abgeleitete Bemessung ohne Satz ⇒ 0 €, nicht der erfasste Betrag. |
-| ⚠ **I-3** | Runde 3 ist reihenfolgeabhängig: Zwei `PROZENT_INVESTITION`-Zeilen — die zweite rechnet die erste ein; ohne ORDER BY entscheidet ACE. |
+| ✔ **I-1** | `EUR_PRO_KWP` summierte `PV_Leistung` — dieselbe Spalte heißt andernorts ausdrücklich Modulanzahl. **Erledigt mit FX1/FX2:** `PhotovoltaikCtrl.KwpSumme` rechnet Modulanzahl × Modulleistung ÷ 1000. |
+| ✔ **I-2** | Abgeleitete Bemessung ohne Satz ⇒ 0 €, nicht der erfasste Betrag. **Entschieden 30.08.2026 (Anwender):** Ist die Ableitung nicht rechenbar, gilt der erfasste Betrag; eine ermittelte Menge 0 rechnet zu 0. |
+| ✔ **I-3** | Runde 3 war reihenfolgeabhängig: Zwei `PROZENT_INVESTITION`-Zeilen — die zweite rechnete die erste ein; ohne `ORDER BY` entschied früher die Datenbank. **Erledigt mit FX2:** Die Runde 3 friert ihre Basiszeilen vorher ein und ist reihenfolgeunabhängig. |
 | I-4 | `BaugroesseSumme` entdoppelt nicht (bei PV/Solar gewollt). |
 | I-5 | Vergleichsstrenge uneinheitlich: ZUSCHUSS ohne, `PROZENT_*` mit Groß-/Kleinschreibung. |
 | I-6 | Nicht migrierte Datenbank: keine Kaskade, keine Zuschusserkennung. |
@@ -2175,8 +2193,8 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 | ✔ **B-1** | **Die Kessel-Modulspalte `Verbrauch` blieb leer** — der Rechenkern führte den je Kessel gerechneten Brennstoffeinsatz nur auf der Anlagenzeile je Brennstoffart, und genau die Modulspalte liest die Kostenkette. Endenergie-Positionen am Kessel fielen damit auf `null` (nicht auf 0 €). Die Steuerseite umging es über den Jahresnutzungsgrad, Kosten- und Betriebsseite nicht. **Erledigt:** Die Modulzeile trägt Verbrauch, Wärmeproduktion und Brennstoff des Laufs; Modulverbrauch und Anlagensumme sind dieselbe Größe. Ausgenommen der Elektrokessel — er bucht auf den Stromzähler und steht im Netzbezug, seine Modulzeile führt bewusst 0. Seine Endenergie ist damit nicht verloren: Der Auflöser weist sie als **Stromeinsatz** aus (Regel **E1**), ohne sie ein zweites Mal zu bepreisen. |
 | B-2 | Asymmetrie der Rückfälle: Endenergie-Arten unbedingt frisch, Rückfall-Arten bedingt. |
 | B-3 | „Jüngster Lauf" ist die höchste ID, nicht der Zeitstempel. |
-| B-4 | Vier Arten nie frisch: `EUR_PRO_H`, `EUR_PRO_KWH`, `PROZENT_BRENNSTOFFKOSTEN`, `PROZENT_STROMKOSTEN`. |
-| B-5 | `InvestSummeFuer` summiert `EingegebenerWert` — abgeleitete Beträge fehlen. |
+| B-4 | Zwei Arten nie frisch: `PROZENT_BRENNSTOFFKOSTEN`, `PROZENT_STROMKOSTEN` — `EUR_PRO_H` und die beiden `EUR_PRO_KWH_*` sind seit FX2 frisch. |
+| ✔ **B-5** | `InvestSummeFuer` summierte `EingegebenerWert`, abgeleitete Beträge fehlten. **Erledigt mit W5‑B‑8:** Basis ist die Investitionskaskade (`InvestKaskade.Summen`). |
 | B-6 | Fehler werden geschluckt (`catch {}` ⇒ still 0). |
 | B-7 | `MengenEinheit` beschriftet die neuen Arten mit „€". |
 
@@ -2193,9 +2211,10 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 | Nr. | Befund |
 |---|---|
 | ⚠ **S-2** | Kein projektweites Doppelentlastungsverbot — Anlage A nach § 53 und Anlage B nach § 54 gleichzeitig möglich. |
-| S-1 · S-3 · S-4 · S-5 · S-6 | Überholte Zeilennummern älterer Protokolle · § 9-Meldung nennt Kessel „(0 kW)" · €/GJ ohne Ho-Umrechnung (für Kohle konsistent) · Radius 4,5 km nur Meldungstext, Erlaubnisschwelle 1.000 kW nirgends gelesen · `STROMST_REDUZIERT_SATZ` ungesät. |
+| S-1 · S-3 · S-4 · S-5 | Überholte Zeilennummern älterer Protokolle · § 9-Meldung nennt Kessel „(0 kW)" · €/GJ ohne Ho-Umrechnung (für Kohle konsistent) · Radius 4,5 km nur Meldungstext, Erlaubnisschwelle 1.000 kW nirgends gelesen — **dieser Rest bleibt offen**. |
+| ✔ **S-6** | `STROMST_REDUZIERT_SATZ` ungesät. **Erledigt:** Der Satz ist gesät (`GesetzKatalog.cs:1156`, Generation 7) und wird gelesen (`EnergietraegerHuelle.cs:659`); die Konstante in `StrompreisZerlegungModel` ist nur noch wertgleiche Rückfallebene. |
 | ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 KWKG fehlt** (§ 3.6): Bei Anlagen mit Vorrichtung zur Abwärmeabfuhr ist KWK-Strom `Nutzwärme × Stromkennzahl`, nicht die Nettostromerzeugung. Weder Kennzeichen noch Stromkennzahl sind im Datenmodell vorhanden; der Zuschlag fällt für solche Anlagen zu hoch aus. |
-| ⚠ **V-3** | Die **PV-Reihe** hat in der Mehrjahrestabelle **keine eigene Spalte** — sie wirkt nur in „Netto". Die **KWKG-Pauschale** hat seither eine (Spalte „KWKG-Pauschale (Jahr 0)"); damit stimmt die Selbstprüfung „Summe der Positionsspalten = Netto nominal" auch in der Zeile 0. |
+| ⚠ **V-3** | Die **PV-Reihe** hat in der Mehrjahrestabelle **keine eigene Spalte** — sie wirkt nur in „Netto". Die Reihe selbst gibt es bereits (`ErloesReihe.PV_VERGUETUNG`); es fehlen **ein Aufruf** in `Mehrjahresbild.Baue` **und ein Ressourcenschlüssel** — damit ist V-3 keine offene Frage mehr, sondern eine S-Aufgabe. Die **KWKG-Pauschale** hat seither eine Spalte („KWKG-Pauschale (Jahr 0)"); damit stimmt die Selbstprüfung „Summe der Positionsspalten = Netto nominal" auch in der Zeile 0. |
 | V-1 · V-2 · V-4 | EV-Rundung (EvMix unrundet, Erlös gerundet) · § 51a bewertet mit AW statt EV · Eigen/Einspeise-Split je Anlage ist benannte Näherung. |
 | R-1 · R-2 · R-3 | Rahmenparameter je Stammprojekt, nicht je Variante · Hilfsenergie steigt mit p_B statt p_E (bei gleichen Sätzen null) · ohne bestimmbare Energiekosten kein Kapitalwert (Absicht). |
 
