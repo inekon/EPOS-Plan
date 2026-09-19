@@ -119,8 +119,22 @@
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_BRENNSTOFF" />
                 @if (SichtbareBrennstoffe == 0)
                 {
-                    @* „Falls GAR kein Brennstoff aktiv war" - woertlich :7614. *@
-                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.SIM_MSG_KEIN_BRENNSTOFF" />
+                    @* BH-1: ZWEI Zustaende, nicht einer. Der Block fuehrt nur Zeilen mit
+                       Verbrauch > 0; ein BHKW, das hinter Waermepumpe und Heizkessel in
+                       der Kaskade steht und deshalb 0 h/a laeuft, hat keine. Bis BH-1
+                       stand dafuer „Kein Brennstoff für dieses BHKW definiert" - eine
+                       falsche Auskunft, denn gepflegt ist der Brennstoff sehr wohl.
+                       Der Bestandstext („Falls GAR kein Brennstoff aktiv war" - woertlich
+                       :7614) gilt jetzt nur noch fuer den Fall, den er beschreibt:
+                       Tab_BHKW.Brennstoff ist an jedem Modul 0. *@
+                    @if (BrennstoffDefiniert)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Resource.SIM_MSG_BHKW_NICHT_GELAUFEN" />
+                    }
+                    else
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.SIM_MSG_KEIN_BRENNSTOFF" />
+                    }
                 }
                 else
                 {
@@ -211,6 +225,13 @@
     /// <summary>Die Brennstoffzeilen - nur die mit Verbrauch &gt; 0 (woertlich :7566-7612).</summary>
     [Parameter] public IReadOnlyList<Brennstoffzeile> Brennstoffe { get; set; }
         = Array.Empty<Brennstoffzeile>();
+
+    /// <summary>
+    /// Fuehrt mindestens ein BHKW des Projekts einen gepflegten Brennstoff
+    /// (<c>Tab_BHKW.Brennstoff</c> &gt; 0)? Entscheidet den Text des leeren
+    /// Brennstoffblocks (Auftrag BH-1).
+    /// </summary>
+    [Parameter] public bool BrennstoffDefiniert { get; set; }
 
     /// <summary>
     /// Gehoert das BHKW zum Ergebnis (<c>ErgebnisPraesenz.BHKW</c>)? Nur dann stehen
