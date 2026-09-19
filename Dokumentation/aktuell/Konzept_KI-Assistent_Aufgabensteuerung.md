@@ -749,6 +749,19 @@ drei Sorten Wissen:
 3. **Begriffswissen** — Synonyme und Kürzel der Anwender („SPK" = Spitzenkessel, „Lastgang" = Stromganglinie,
    „Kapitalwert" = Wirtschaftlichkeit). Das hilft doppelt: dem Retrieval und dem Rückfallweg B (3.3).
 
+**Die Pflegeregel (umgesetzt, Auftrag KI‑1): Eine neue oder geänderte Bedienfunktion bekommt im
+selben Schritt ihren Abschnitt im EINGEBAUTEN Wissen.** Das Wiki ist kein Ersatz dafür: Seine
+Seiten gehen gebündelt online (Konzept Hilfesystem 13.3), und ohne Netz erreicht der Assistent sie
+nie — eine Funktion, die der Anwender schon in Händen hält, wäre dem Assistenten bis zum nächsten
+Upload unbekannt. Gehalten wird die Regel von `EPOS.Kern.Tests/KiWissensdeckungTests`: Jeder
+Bereich aus `KiChatKontext` hat mindestens einen Abschnitt im eingebauten Wissen (`Basiswissen`,
+`Berechnungswissen`, `Aktionswissen`) — oder steht **mit Grund** in einer benannten Ausnahmeliste,
+die rot wird, sobald der Bereich Inhalt bekommt. Eine erklärbare Meldung bekommt zusätzlich ihre
+Kennung (`KiMeldungskennung`), ihren Abschnitt mit BEDEUTUNG, URSACHE, ABHILFE, WIKI und die
+vorbelegte Frage `KI_FRAGE_<Kennung>` in beiden Sprachen. Die Titel tragen die Suchworte in ihrer
+LANGEN Form: Die Stichwortsuche verwirft Wörter unter vier Zeichen, ein Kürzel wie „TRY" oder
+„DWD" allein trägt also nichts bei.
+
 Zwei kleine Nacharbeiten am Retrieval, unabhängig von der KI: Die Mindestwortlänge von vier Zeichen
 (`Allgemein\HilfeWissen.cs:113`) verwirft „PV", „WP", „SPK"; und der Kontextbonus vergleicht den Bereichsnamen als
 Teilzeichenkette (`:120`), was bei den neuen Aktionsabschnitten nicht mehr trägt. Vorschlag: Kürzel ab zwei Zeichen

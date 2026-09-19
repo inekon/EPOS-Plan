@@ -17916,6 +17916,18 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="KI_FRAGE_PV_STRANG_P8" xml:space="preserve">
     <value>Die Modulsumme der Stränge weicht von der Anzahl Module der Anlage ab (Regel P8). Was bedeutet das, und welche Zahl gilt für die Erzeugung?</value>
   </data>
+  <data name="KI_FRAGE_KLIMA_TRY_KEIN_BEREICH" xml:space="preserve">
+    <value>Die Adresse der TRY-Regionaldaten erlaubt keine Teilabrufe. Was bedeutet das, und wie lese ich die Daten trotzdem ein?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_AUSSERHALB" xml:space="preserve">
+    <value>Der Standort liegt zu weit von der nächsten TRY-Region entfernt. Warum bricht das Einlesen ab, und welche Klimaquelle passt dann?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_FORMATFEHLER" xml:space="preserve">
+    <value>Die TRY-Daten sind nicht lesbar. Woran liegt das, und wie komme ich an eine brauchbare Datei?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
+    <value>Der Kopf der TRY-Datei nennt keinen lesbaren Standort. Was heißt das, und wie trage ich den Standort ein?</value>
+  </data>
   <data name="KI_DIALOGDATEN_SCHALTER" xml:space="preserve">
     <value>Feldwerte mitsenden</value>
   </data>
