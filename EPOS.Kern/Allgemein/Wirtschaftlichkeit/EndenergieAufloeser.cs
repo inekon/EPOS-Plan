@@ -86,6 +86,29 @@ namespace WindowsFormsApplication1
             /// „BHKW ‚Modul 1'" oder „alle Heizkessel-Module" — seit Etappe B6
             /// zweisprachig aus <c>MyResource.Resource.AUFLOESER_*</c>.</summary>
             public string Basis = "";
+
+            /// <summary>
+            /// Der Arbeitspreis [€/kWh], mit dem WEG B
+            /// (<c>BEMESSUNG_PROZENT_ENDENERGIEBEDARF</c>) den
+            /// <see cref="BedarfKwh"/> bewertet; <c>null</c> = nicht gepflegt, dann
+            /// hat Weg B keine Bezugsgröße.
+            ///
+            /// <para><b>Anlagenscharf</b> (Anwenderentscheid 19.09.2026): Bezieht die
+            /// Anlage selbst Strom und trägt sie einen eigenen Stromträger
+            /// (Wärmepumpe, Heizstab, Elektrokessel), gilt DESSEN Arbeitspreis —
+            /// derselbe, mit dem <see cref="KostenEuro"/> ihre Endenergie bewertet.
+            /// Eine Anlage mit Brennstoffträger (BHKW, Heizkessel auf Gas oder Öl)
+            /// bewertet ihren Hilfsstrom mit dem Stromträger des PROJEKTS
+            /// (<see cref="StrompreisJeKwh"/>) — ihr eigener Träger ist Brennstoff und
+            /// wäre für eine Strommenge der falsche Preis.</para>
+            /// </summary>
+            public double? BewertungspreisJeKwh;
+
+            /// <summary><c>true</c> = <see cref="BewertungspreisJeKwh"/> ist der Preis
+            /// des EIGENEN Stromträgers der Anlage, <c>false</c> = der des
+            /// Projekt-Stromträgers. Er entscheidet, welche ABHILFE genannt wird, wenn
+            /// der Preis fehlt (<c>KostenHerleitung.GrundText</c>).</summary>
+            public bool EigenerStromtraeger;
         }
 
         private readonly int _idProjekt;
@@ -111,6 +134,16 @@ namespace WindowsFormsApplication1
         private double? _strompreis;
         private bool _strompreisErmittelt;
 
+        /// <summary>
+        /// ANWENDERENTSCHEID 19.09.2026: <c>Tab_Energieanlagen.ID</c> → der EIGENE
+        /// Stromträger dieser Anlage. Gefüllt aus
+        /// <see cref="ProjektEnergietraegerCtrl.EigeneStromTraeger"/> — derselben
+        /// Erkennung, aus der auch die Rangfolge des Projekt-Stromträgers entsteht;
+        /// eine zweite Wahrheit über „welcher Träger ist Strom" gibt es nicht.
+        /// Anlagen ohne eigenen Stromträger stehen nicht in der Karte.
+        /// </summary>
+        private Dictionary<int, int> _eigenerStromtraeger;
+
         private EndenergieAufloeser(int idProjekt, ErgebnisModel ergebnis)
         {
             _idProjekt = idProjekt;
@@ -133,6 +166,9 @@ namespace WindowsFormsApplication1
                 var a = new EndenergieAufloeser(idProjekt, erg);
                 a.AnlagenNamenLaden();
                 a.ElektrokesselLaden();
+                try { a._eigenerStromtraeger = ProjektEnergietraegerCtrl.EigeneStromTraeger(idProjekt); }
+                catch { }
+                if (a._eigenerStromtraeger == null) a._eigenerStromtraeger = new Dictionary<int, int>();
                 return a;
             }
             catch { return null; }
@@ -177,12 +213,41 @@ namespace WindowsFormsApplication1
                     return Brennstoffsumme(BhkwModule(), anlagenName,
                                            MyResource.Resource.AUFLOESER_KOMP_BHKW);
                 case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
-                    return Kesselsumme(anlagenName);
+                    return Kesselsumme(anlagenName, idAnlage);
                 case KOMPONENTE_WAERMEPUMPE:
-                    return Waermepumpensumme(anlagenName);
+                    return Waermepumpensumme(anlagenName, idAnlage);
                 default:
                     return null;   // § 4.5: keine Endenergie — nur fester Jahresbetrag
             }
+        }
+
+        /// <summary>
+        /// ANWENDERENTSCHEID 19.09.2026 — DER PREIS EINER STROMANLAGE.
+        ///
+        /// <para>Eine Anlage, die selbst Strom bezieht (Wärmepumpe, Heizstab,
+        /// Elektrokessel), wird mit dem Arbeitspreis IHRES Stromträgers bewertet,
+        /// sobald sie einen eigenen trägt; sonst gilt der Stromträger des Projekts
+        /// (<see cref="StrompreisJeKwh"/>). Damit liegt hinter Weg A
+        /// (<c>KostenEuro</c>) und Weg B (<c>BewertungspreisJeKwh</c>) EIN Preis —
+        /// zwei verschiedene wären an derselben Anlage nicht erklärbar.</para>
+        ///
+        /// <para>Ohne Anlagenbezug (<paramref name="idAnlage"/> 0 = Komponentensumme)
+        /// gibt es keine EINE Anlage und damit keinen eigenen Träger: Dann bleibt es
+        /// beim Projekt-Stromträger.</para>
+        /// </summary>
+        /// <param name="eigener"><c>true</c> = der gelieferte Preis ist der des
+        /// eigenen Trägers der Anlage.</param>
+        private double? Strompreis(int idAnlage, out bool eigener)
+        {
+            eigener = false;
+            int carrier;
+            if (idAnlage > 0 && _eigenerStromtraeger != null &&
+                _eigenerStromtraeger.TryGetValue(idAnlage, out carrier) && carrier > 0)
+            {
+                eigener = true;
+                return Preis(carrier);
+            }
+            return StrompreisJeKwh;
         }
 
         // ------------------------------------------------------------------ intern
@@ -239,6 +304,24 @@ namespace WindowsFormsApplication1
             return _elektrokessel.Count > 0 && _elektrokessel.Contains(modul ?? "");
         }
 
+        /// <summary>
+        /// Die NUTZWÄRME einer Kessel-Modulzeile [MWh/a] — die Bezugsgröße von
+        /// „je kWh thermisch“ am Heizkessel.
+        ///
+        /// <para><b>Gelesen wird die Spalte, abgeleitet nur der Rest</b> — dieselbe
+        /// Ordnung wie bei <see cref="HilfsstromRechner.KesselBrennstoffMWh"/>.
+        /// <c>Waermeproduktion</c> schreibt der Lauf erst seit Befund B-1; ein
+        /// GESPEICHERTER Lauf von davor trägt dort 0, führt die Wärme aber auf ihren
+        /// beiden Kanälen. Die Ableitung ist keine Näherung, sondern die Definition
+        /// selbst (<c>SimulationRunner</c>: <c>Waermeproduktion = Waerme_Gas +
+        /// Waerme_Oel</c>); Bericht und Variantenvergleich lesen die Zeile seit jeher
+        /// nach genau dieser Regel.</para>
+        /// </summary>
+        private static double KesselNutzwaermeMWh(ErgebnisHeizkesselModulModel m)
+        {
+            return m.Waermeproduktion > 0 ? m.Waermeproduktion : m.Waerme_Gas + m.Waerme_Oel;
+        }
+
         private double? Preis(int carrierId)
         {
             double? p;
@@ -286,7 +369,15 @@ namespace WindowsFormsApplication1
                     Modul = m.Modul,
                     VerbrauchMWh = elektro
                         ? SimulationSPK.StromeinsatzElektrokesselMwh(m.Waerme_Gas, m.Waerme_Oel)
-                        : m.Verbrauch,
+                        // ANWENDERBEFUND 19.09.2026 (#363): NICHT die rohe Spalte.
+                        // Tab_ErgebnisHeizkesselModul.Verbrauch führt der Lauf erst seit
+                        // Befund B-1; ein GESPEICHERTER Lauf von davor trägt dort 0 —
+                        // und dann stand „% der Endenergiekosten" ohne Bezugsgröße da,
+                        // obwohl derselbe Lauf Wärme und Nutzungsgrad führt. Der
+                        // Rückfall ist die EINE, schon vorhandene Ableitung der
+                        // Steuerseite (Etappe B3 Paket a), keine zweite Wahrheit; bei
+                        // gefüllter Spalte gibt sie unverändert deren Wert zurück.
+                        : HilfsstromRechner.KesselBrennstoffMWh(m),
                     CarrierId = m.CarrierId
                 });
             }
@@ -324,6 +415,11 @@ namespace WindowsFormsApplication1
             {
                 BedarfKwh = bedarfKwh,
                 KostenEuro = kostenVollstaendig ? kosten : (double?)null,
+                // Weg B bewertet die BRENNSTOFFmenge dieser Anlage mit Strom: Der
+                // Hilfsstrom eines BHKW oder eines Gas-/Ölkessels kommt aus dem
+                // Netzbezug des Projekts, nicht aus seinem Brennstoffträger.
+                BewertungspreisJeKwh = StrompreisJeKwh,
+                EigenerStromtraeger = false,
                 Basis = anlagenName != null
                     ? string.Format(CultureInfo.CurrentCulture,
                                     MyResource.Resource.AUFLOESER_BASIS_ANLAGE,
@@ -350,11 +446,11 @@ namespace WindowsFormsApplication1
         /// eine Vermengung. Die Anzeige der Kostenseite stellt sie deshalb ohnehin als
         /// zwei Zeilen dar — sie fragt je Anlage.</para>
         /// </summary>
-        private Groesse Kesselsumme(string anlagenName)
+        private Groesse Kesselsumme(string anlagenName, int idAnlage)
         {
             bool elektro = anlagenName != null && IstElektrokessel(anlagenName);
 
-            if (elektro) return Elektrokesselsumme(anlagenName);
+            if (elektro) return Elektrokesselsumme(anlagenName, idAnlage);
 
             Groesse brennstoff = Brennstoffsumme(KesselModule(false), anlagenName,
                                                  MyResource.Resource.AUFLOESER_KOMP_HEIZKESSEL);
@@ -362,7 +458,7 @@ namespace WindowsFormsApplication1
 
             // Reines Elektrokesselprojekt: Die Brennstoffwelt ist leer, die Stromwelt
             // nicht. Ohne diesen Zweig bliebe die Komponente ohne jede Bezugsgröße.
-            return Elektrokesselsumme(null);
+            return Elektrokesselsumme(null, 0);
         }
 
         /// <summary>
@@ -370,7 +466,7 @@ namespace WindowsFormsApplication1
         /// demselben Muster wie <see cref="Waermepumpensumme"/>. Die Herkunft nennt den
         /// Netzbezug — dort und nur dort wird diese Energie bepreist.
         /// </summary>
-        private Groesse Elektrokesselsumme(string anlagenName)
+        private Groesse Elektrokesselsumme(string anlagenName, int idAnlage)
         {
             double bedarfKwh = 0;
             int getroffen = 0;
@@ -386,7 +482,8 @@ namespace WindowsFormsApplication1
             if (anlagenName != null && getroffen == 0) return null;   // Anlage nicht im Lauf
             if (bedarfKwh <= 0) return null;
 
-            double? preis = StrompreisJeKwh;
+            bool eigener;
+            double? preis = Strompreis(idAnlage, out eigener);
             string kern = anlagenName != null
                 ? string.Format(CultureInfo.CurrentCulture,
                                 MyResource.Resource.AUFLOESER_BASIS_ANLAGE,
@@ -399,6 +496,8 @@ namespace WindowsFormsApplication1
             {
                 BedarfKwh = bedarfKwh,
                 KostenEuro = preis.HasValue ? bedarfKwh * preis.Value : (double?)null,
+                BewertungspreisJeKwh = preis,
+                EigenerStromtraeger = eigener,
                 Basis = string.Format(CultureInfo.CurrentCulture,
                                       MyResource.Resource.AUFLOESER_BASIS_NETZBEZUG, kern)
             };
@@ -406,7 +505,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Strom-Endenergie der Wärmepumpe: (Stromverbrauch + Heizstab) ×
         /// Strombezugspreis.</summary>
-        private Groesse Waermepumpensumme(string anlagenName)
+        private Groesse Waermepumpensumme(string anlagenName, int idAnlage)
         {
             if (_ergebnis == null || _ergebnis.Waermepumpe == null || _ergebnis.Waermepumpe.Module == null) return null;
 
@@ -424,11 +523,14 @@ namespace WindowsFormsApplication1
             if (anlagenName != null && getroffen == 0) return null;
             if (bedarfKwh <= 0) return null;
 
-            double? preis = StrompreisJeKwh;
+            bool eigener;
+            double? preis = Strompreis(idAnlage, out eigener);
             return new Groesse
             {
                 BedarfKwh = bedarfKwh,
                 KostenEuro = preis.HasValue ? bedarfKwh * preis.Value : (double?)null,
+                BewertungspreisJeKwh = preis,
+                EigenerStromtraeger = eigener,
                 Basis = anlagenName != null
                     ? string.Format(CultureInfo.CurrentCulture,
                                     MyResource.Resource.AUFLOESER_BASIS_ANLAGE,
@@ -467,7 +569,7 @@ namespace WindowsFormsApplication1
                 case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
                     if (_ergebnis != null && _ergebnis.Heizkessel != null && _ergebnis.Heizkessel.Module != null)
                         foreach (ErgebnisHeizkesselModulModel m in _ergebnis.Heizkessel.Module)
-                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Waermeproduktion });
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = KesselNutzwaermeMWh(m) });
                     break;
                 case KOMPONENTE_WAERMEPUMPE:
                     if (_ergebnis != null && _ergebnis.Waermepumpe != null && _ergebnis.Waermepumpe.Module != null)
@@ -670,6 +772,154 @@ namespace WindowsFormsApplication1
             }
             if (anlagenName != null && getroffen == 0) return null;
             return h > 0 ? h : (double?)null;
+        }
+
+        // =====================================================================
+        // ANWENDERBEFUND 19.09.2026 — WARUM DIE LAUFGRÖSSE FEHLT
+        //
+        //   „Die Hilfsenergiekosten werden nicht berechnet auch nach Simulation.
+        //    Korrigiere und prüfe andere Felder mit Abhängigkeiten."
+        //
+        // Die Landkarte in WirtschaftlichkeitCtrl.BasisGrund beantwortet nur EINE
+        // Frage: Kennt das Gewerk diese Größe überhaupt? Wo es sie kennt, sagte sie
+        // ausnahmslos BASISGRUND_LAUF — „kein Simulationslauf". Der Anwender las das
+        // an einer Zeile, deren Lauf samt Menge dastand und der allein der
+        // ARBEITSPREIS des Energieträgers fehlte, und suchte den Fehler an der
+        // falschen Stelle. Vier Lagen sehen im Raster gleich aus und verlangen vier
+        // verschiedene Handgriffe:
+        //
+        //   kein Lauf              → Simulation starten          (BASISGRUND_LAUF)
+        //   Anlage nicht im Lauf   → Kaskadenplatz vergeben      (BASISGRUND_ANLAGE)
+        //   Menge des Laufs ist 0  → nichts zu tun, benennen     (BASISGRUND_MENGE)
+        //   Arbeitspreis fehlt     → Energieträgerverwaltung     (BASISGRUND_PREIS)
+        //
+        // ANWENDERENTSCHEID 19.09.2026: Der letzte Fall zerfällt auf Weg B in zwei —
+        // der eigene Stromträger der Anlage (BASISGRUND_PREIS) und der Stromträger des
+        // Projekts (BASISGRUND_STROMPREIS). Es sind zwei Einträge in der
+        // Energieträgerverwaltung; wer am falschen pflegt, ändert nichts.
+        //
+        // Der Auflöser hält alles in der Hand, was die Unterscheidung braucht — den
+        // Lauf, die Anlagen des Laufs und die Preise. Er rechnet dafür nichts Neues,
+        // sondern fragt dieselben Wege noch einmal; gefragt wird nur, wenn die Zeile
+        // KEINE Bezugsgröße hat (der Ausnahmefall, nicht der Regelfall).
+        // =====================================================================
+
+        /// <summary>Gibt es überhaupt einen gespeicherten Lauf? <c>false</c> = der
+        /// Grund heißt <see cref="WirtschaftlichkeitCtrl.BASISGRUND_LAUF"/>.</summary>
+        internal bool LaufVorhanden
+        {
+            get { return _ergebnis != null; }
+        }
+
+        /// <summary>
+        /// Warum trägt diese Position keine Laufgröße? Rückgabe ist einer der
+        /// <c>WirtschaftlichkeitCtrl.BASISGRUND_*</c>-Steuerwerte.
+        ///
+        /// <para><b>Nur für Arten, deren Größe aus dem Lauf kommt.</b> Der Aufrufer
+        /// fragt erst, wenn die Landkarte
+        /// (<see cref="WirtschaftlichkeitCtrl.BasisGrund(string, int)"/>) den Lauf
+        /// benannt hat — hier wird die Antwort nur GENAUER, nie eine andere.</para>
+        /// </summary>
+        internal string GrundOhneBasis(int komponentenID, int idAnlage, string bem)
+        {
+            if (_ergebnis == null) return WirtschaftlichkeitCtrl.BASISGRUND_LAUF;
+            if (!AnlageImLauf(komponentenID, idAnlage))
+                return WirtschaftlichkeitCtrl.BASISGRUND_ANLAGE;
+
+            // Die zwei Endenergie-Arten brauchen zur Menge auch einen PREIS: Weg A den
+            // Arbeitspreis jedes beteiligten Trägers, Weg B den Strombezugspreis
+            // (§ 4.5). Steht die Menge und fehlt die Zahl trotzdem, fehlt der Preis —
+            // und das ist die Lage des Befundes („Arbeitspreis 0,00 bei: Erdgas E").
+            if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN, StringComparison.Ordinal) ||
+                string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF, StringComparison.Ordinal))
+            {
+                Groesse g = FuerPosition(komponentenID, idAnlage);
+                if (g == null) return WirtschaftlichkeitCtrl.BASISGRUND_MENGE;
+
+                // ANWENDERENTSCHEID 19.09.2026: WELCHER Preis fehlt. Weg B bewertet die
+                // Menge mit Strom — einer Stromanlage mit eigenem Träger zu DESSEN
+                // Arbeitspreis, einer Brennstoffanlage zu dem des Projekt-Stromträgers.
+                // Beides heißt „kein Arbeitspreis", verlangt aber einen Handgriff an
+                // einem ANDEREN Träger; ein Steuerwert für beide Lagen schickte den
+                // Anwender in der Hälfte der Fälle an den falschen Eintrag.
+                return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
+                                     StringComparison.Ordinal) && !g.EigenerStromtraeger
+                    ? WirtschaftlichkeitCtrl.BASISGRUND_STROMPREIS
+                    : WirtschaftlichkeitCtrl.BASISGRUND_PREIS;
+            }
+
+            // Die reinen Mengenarten (kWh thermisch/elektrisch, Stunden) kennen keinen
+            // Preis: Lauf da, Anlage da, also ist die Menge selbst 0.
+            return WirtschaftlichkeitCtrl.BASISGRUND_MENGE;
+        }
+
+        /// <summary>
+        /// Steht diese Anlage im Lauf? <paramref name="idAnlage"/> 0 = Komponenten-
+        /// summe; dann zählt, ob die Komponente überhaupt Zeilen im Lauf führt.
+        ///
+        /// <para>Der Vergleich läuft über den BEZEICHNER, wie in jedem Mengenweg
+        /// dieser Klasse — der Stromspeicher ist auch hier die Ausnahme, er führt
+        /// seine Anlage als Schlüssel (<see cref="SpeicherEntladungKwh"/>).</para>
+        /// </summary>
+        private bool AnlageImLauf(int komponentenID, int idAnlage)
+        {
+            if (_ergebnis == null) return false;
+
+            if (komponentenID == KOMPONENTE_STROMSPEICHER)
+            {
+                if (_ergebnis.Stromspeicher == null) return false;
+                foreach (ErgebnisStromspeicherModel s in _ergebnis.Stromspeicher)
+                    if (idAnlage <= 0 || s.ID_Energieanlage == idAnlage) return true;
+                return false;
+            }
+
+            List<string> namen = Modulnamen(komponentenID);
+            if (namen.Count == 0) return false;
+            if (idAnlage <= 0) return true;
+
+            string anlagenName;
+            if (!_anlagenName.TryGetValue(idAnlage, out anlagenName)) return false;
+            foreach (string n in namen)
+                if (string.Equals(n ?? "", anlagenName, StringComparison.Ordinal)) return true;
+            return false;
+        }
+
+        /// <summary>Die Modulbezeichner, die der Lauf für dieses Gewerk führt; leer =
+        /// keine Modulliste (Gewerk ohne Laufgröße oder Lauf ohne diese Stufe).</summary>
+        private List<string> Modulnamen(int komponentenID)
+        {
+            var namen = new List<string>();
+            if (_ergebnis == null) return namen;
+
+            switch (komponentenID)
+            {
+                case KOMPONENTE_WAERMEPUMPE:
+                    if (_ergebnis.Waermepumpe != null && _ergebnis.Waermepumpe.Module != null)
+                        foreach (ErgebnisWaermepumpeModulModel m in _ergebnis.Waermepumpe.Module)
+                            namen.Add(m.Modul);
+                    break;
+                case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
+                    if (_ergebnis.Heizkessel != null && _ergebnis.Heizkessel.Module != null)
+                        foreach (ErgebnisHeizkesselModulModel m in _ergebnis.Heizkessel.Module)
+                            namen.Add(m.Modul);
+                    break;
+                case KOMPONENTE_PHOTOVOLTAIK:
+                    if (_ergebnis.Photovoltaik != null && _ergebnis.Photovoltaik.Module != null)
+                        foreach (ErgebnisPhotovoltaikModulModel m in _ergebnis.Photovoltaik.Module)
+                            namen.Add(m.Modul);
+                    break;
+                case KOMPONENTE_SOLARTHERMIE:
+                    if (_ergebnis.Solarthermie != null && _ergebnis.Solarthermie.Module != null)
+                        foreach (ErgebnisSolarthermieModulModel m in _ergebnis.Solarthermie.Module)
+                            namen.Add(m.Modul);
+                    break;
+                case BetriebskostenCtrl.KOMPONENTE_BHKW:
+                    if (_ergebnis.BHKW != null && _ergebnis.BHKW.Module != null)
+                        foreach (ErgebnisBHKWModulModel m in _ergebnis.BHKW.Module)
+                            namen.Add(m.Modul);
+                    break;
+            }
+            return namen;
         }
     }
 }

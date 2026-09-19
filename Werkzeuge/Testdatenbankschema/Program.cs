@@ -131,7 +131,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 87), saet den Gesetzeskatalog nach");
+                                  " nach (Schritte 62 bis 94), saet den Gesetzeskatalog nach");
                 Console.WriteLine("  und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
@@ -865,6 +865,29 @@ namespace Testdatenbankschema
                     DataRepository.ExecuteNonQuery(a.Value);
                     Console.WriteLine("Schritt 93 - " + a.Key + ".");
                 }
+            }
+
+            // ---- Schritt 94: die Hilfsstrom-Bemessung der Saat (Anwenderentscheid
+            //      19.09.2026). REIN DML, kein DDL: Die drei Hilfsstrom-Positionen der
+            //      Katalogvorlage "Standard" (BHKW, Heizkessel, Waermepumpe) rechnen ab
+            //      hier als Anteil des Endenergiebedarfs, bewertet mit dem
+            //      Strombezugspreis. DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_94_HilfsstromBemessung bedient.
+            //      Tab_ProjektWerte bleibt unberuehrt - die dreizehn Referenzprojekte
+            //      rechnen unveraendert.
+            if (!trocken && HilfsstromBemessungVorlage.Vorhanden())
+            {
+                Console.WriteLine("Schritt 94 - Vorlagenpositionen mit " +
+                                  HilfsstromBemessungVorlage.VON + ": " +
+                                  HilfsstromBemessungVorlage.Offen() + ".");
+                foreach (System.Collections.Generic.KeyValuePair<string, HilfsstromBemessungVorlage.Anweisung> a
+                         in HilfsstromBemessungVorlage.Anweisungen)
+                {
+                    DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
+                    Console.WriteLine("Schritt 94 - " + a.Key + ".");
+                }
+                Console.WriteLine("Schritt 94 - mit " + HilfsstromBemessungVorlage.NACH +
+                                  " jetzt " + HilfsstromBemessungVorlage.Umgestellt() + ".");
             }
 
             Console.WriteLine();

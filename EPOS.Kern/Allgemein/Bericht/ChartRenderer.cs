@@ -2742,6 +2742,10 @@ namespace WindowsFormsApplication1
         /// Schraffur (der Stand vor #193, damit bestehende Aufrufer byte-gleich bleiben).</param>
         /// <param name="fusszeile">Der Hinweis unter dem Bild; leer oder <c>null</c> = keine
         /// Zeile und ein Bild wie zuvor.</param>
+        /// <param name="fusszeileZusatz">Ein ZWEITER Hinweis, der auf einer EIGENEN Zeile
+        /// unter <paramref name="fusszeile"/> steht; leer oder <c>null</c> = kein Zusatz und
+        /// ein Bild wie zuvor. Mit Zusatz wächst das Bild so weit, dass beide Texte
+        /// vollständig darin stehen (siehe <see cref="Fussblock"/>).</param>
         public static byte[] Optimierungsraster(string titel, string xTitel, string yTitel,
                                                 string skalaTitel,
                                                 IReadOnlyList<double> cRaten,
@@ -2749,9 +2753,33 @@ namespace WindowsFormsApplication1
                                                 double[][] werte,
                                                 int besteZeile, int besteSpalte,
                                                 bool[][] unzulaessig = null,
-                                                string fusszeile = null)
+                                                string fusszeile = null,
+                                                string fusszeileZusatz = null)
         {
             int W = 860, H = 560;
+            var rc = SKRect.Create(120f, 96f, W - 300f, 380f);
+            float fussBreite = W - rc.Left - 14f;
+            float fussOben = rc.Bottom + 56f;
+
+            // DIE FUSSZEILE BESTIMMT DIE BILDHOEHE, nicht umgekehrt: Unter der
+            // Achsenbeschriftung stehen bis zur Bildkante 560 nur rund 28 Bildpunkte,
+            // und eine Zeile der 13-Punkt-Schrift ist je nach Schriftart 17 bis 22
+            // Bildpunkte hoch. Ein zweiter Hinweis waere damit ganz oder fast ganz
+            // UNTER dem Bildrand gezeichnet worden - sichtbar nur als Anschnitt und auf
+            // manchen Schriftarten gar nicht. Deshalb wird der Block zuerst umgebrochen
+            // und vermessen; das Bild bekommt danach die Hoehe, die er braucht.
+            List<string> fussBlock = null;
+            float fussZeilenhoehe = 0f;
+            if (!string.IsNullOrWhiteSpace(fusszeile) && !string.IsNullOrWhiteSpace(fusszeileZusatz))
+                using (var f = Schrift(13f))
+                {
+                    fussBlock = Fussblock(fusszeile, fusszeileZusatz, f, fussBreite);
+                    fussZeilenhoehe = TextHoehe(f) + FUSS_ZEILENABSTAND;
+                    float unterkante = fussOben + (fussBlock.Count - 1) * fussZeilenhoehe
+                                     + TextHoehe(f) + FUSS_UNTERRAND;
+                    if (unterkante > H) H = (int)Math.Ceiling(unterkante);
+                }
+
             using (var flaeche = Start(W, H))
             {
                 SKCanvas g = flaeche.Canvas;
@@ -2759,7 +2787,6 @@ namespace WindowsFormsApplication1
 
                 int zeilen = kapazitaetenKwh?.Count ?? 0;
                 int spalten = cRaten?.Count ?? 0;
-                var rc = SKRect.Create(120f, 96f, W - 300f, 380f);
 
                 if (zeilen < 1 || spalten < 1 || werte == null || werte.Length < zeilen)
                 {
@@ -2856,11 +2883,19 @@ namespace WindowsFormsApplication1
                           min, max, skalaTitel);
 
                 // DIE FUSSZEILE (SP-O-4): Sie steht unter der Achsenbeschriftung und
-                // bricht bei Bedarf auf zwei Zeilen um; ohne Text aendert sie nichts.
-                if (!string.IsNullOrWhiteSpace(fusszeile))
+                // bricht bei Bedarf um; ohne Text aendert sie nichts. MIT ZUSATZ ist der
+                // Block oben schon vermessen - er wird Zeile fuer Zeile gesetzt und passt
+                // in die dafuer gewachsene Bildhoehe. OHNE Zusatz bleibt es beim Bestand:
+                // zwei Zeilen im Bild von 860 x 560.
+                if (fussBlock != null)
                     using (var f = Schrift(13f))
-                        Umbruchtext(g, fusszeile, f, SKColors.DimGray, rc.Left, rc.Bottom + 56f,
-                                    W - rc.Left - 14f);
+                        for (int i = 0; i < fussBlock.Count; i++)
+                            Text(g, fussBlock[i], f, SKColors.DimGray,
+                                 rc.Left, fussOben + i * fussZeilenhoehe);
+                else if (!string.IsNullOrWhiteSpace(fusszeile))
+                    using (var f = Schrift(13f))
+                        Umbruchtext(g, fusszeile, f, SKColors.DimGray, rc.Left, fussOben,
+                                    fussBreite);
 
                 return Png(flaeche);
             }
@@ -2896,24 +2931,59 @@ namespace WindowsFormsApplication1
             g.Restore();
         }
 
+        /// <summary>Abstand zwischen zwei Zeilen einer Fußzeile in Bildpunkten.</summary>
+        private const float FUSS_ZEILENABSTAND = 3f;
+
+        /// <summary>Luft zwischen der letzten Fußzeile und der unteren Bildkante.</summary>
+        private const float FUSS_UNTERRAND = 10f;
+
         /// <summary>
-        /// Ein Hinweis, der an der Breite <paramref name="breite"/> umbricht — höchstens
-        /// zwei Zeilen, damit die Fußzeile nicht ins Bild wächst.
+        /// Höchstens so viele Zeilen je Fußzeilenteil — die Schranke gegen ein Bild, das
+        /// ein übergebener Roman beliebig hoch zöge. Die Texte des Bestandes brauchen je
+        /// nach Schriftart zwei bis drei.
         /// </summary>
-        private static void Umbruchtext(SKCanvas g, string text, SKFont f, SKColor farbe,
-                                        float x, float y, float breite)
+        private const int FUSS_ZEILEN_JE_TEIL = 4;
+
+        /// <summary>
+        /// Zeilen der Fußzeile OHNE Zusatz — der Bestand: zwei Zeilen im Bild von 860 × 560.
+        /// </summary>
+        private const int FUSS_ZEILEN_BESTAND = 2;
+
+        /// <summary>
+        /// Die Zeilen eines zweiteiligen Fußtextes: erst der Grundtext, dann — auf einer
+        /// EIGENEN Zeile — der Zusatz, beide an <paramref name="breite"/> umgebrochen.
+        /// </summary>
+        /// <remarks>
+        /// Der Zusatz darf nicht einfach an den Grundtext angehängt werden: Dann hinge er
+        /// hinter dessen letztem Wort, fiele mit der letzten Zeile unter den Bildrand und
+        /// wäre — je nach Schriftart — gar nicht oder nur angeschnitten zu sehen. Auf einer
+        /// eigenen Zeile ist er auf jeder Schriftart der Ersatzliste ganz im Bild.
+        /// </remarks>
+        private static List<string> Fussblock(string grundtext, string zusatz, SKFont f,
+                                              float breite)
         {
+            var block = Umbruchzeilen(grundtext, f, breite, FUSS_ZEILEN_JE_TEIL);
+            block.AddRange(Umbruchzeilen(zusatz, f, breite, FUSS_ZEILEN_JE_TEIL));
+            return block;
+        }
+
+        /// <summary>
+        /// Der Text, an <paramref name="breite"/> in Zeilen gebrochen — höchstens
+        /// <paramref name="hoechstens"/> davon; alles darüber hinaus fällt weg.
+        /// </summary>
+        private static List<string> Umbruchzeilen(string text, SKFont f, float breite,
+                                                  int hoechstens)
+        {
+            var zeilen = new List<string>();
             string[] woerter = (text ?? "").Split(' ');
             var zeile = new StringBuilder();
-            int gezeichnet = 0;
             for (int i = 0; i < woerter.Length; i++)
             {
                 string versuch = zeile.Length == 0 ? woerter[i] : zeile + " " + woerter[i];
                 if (zeile.Length > 0 && f.MeasureText(versuch) > breite)
                 {
-                    Text(g, zeile.ToString(), f, farbe, x, y + gezeichnet * (TextHoehe(f) + 3f));
-                    gezeichnet++;
-                    if (gezeichnet >= 2) return;
+                    zeilen.Add(zeile.ToString());
+                    if (zeilen.Count >= hoechstens) return zeilen;
                     zeile.Clear();
                     zeile.Append(woerter[i]);
                 }
@@ -2923,8 +2993,20 @@ namespace WindowsFormsApplication1
                     zeile.Append(versuch);
                 }
             }
-            if (zeile.Length > 0 && gezeichnet < 2)
-                Text(g, zeile.ToString(), f, farbe, x, y + gezeichnet * (TextHoehe(f) + 3f));
+            if (zeile.Length > 0 && zeilen.Count < hoechstens) zeilen.Add(zeile.ToString());
+            return zeilen;
+        }
+
+        /// <summary>
+        /// Ein Hinweis, der an der Breite <paramref name="breite"/> umbricht — höchstens
+        /// zwei Zeilen, damit die Fußzeile nicht ins Bild wächst.
+        /// </summary>
+        private static void Umbruchtext(SKCanvas g, string text, SKFont f, SKColor farbe,
+                                        float x, float y, float breite)
+        {
+            List<string> zeilen = Umbruchzeilen(text, f, breite, FUSS_ZEILEN_BESTAND);
+            for (int i = 0; i < zeilen.Count; i++)
+                Text(g, zeilen[i], f, farbe, x, y + i * (TextHoehe(f) + FUSS_ZEILENABSTAND));
         }
 
         /// <summary>

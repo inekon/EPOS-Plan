@@ -154,6 +154,10 @@
                                Herleitung="@zeile.Herleitung"
                                EmpfehlungKurztext="@zeile.EmpfehlungKurztext"
                                EmpfehlungZeile="@zeile.EmpfehlungZeile"
+                               VorlagenHinweis="@zeile.VorlagenHinweis"
+                               VorlagenUebernehmenText="@VorlageUebernehmenText"
+                               VorlagenUebernehmenKurztext="@VorlageUebernehmenKurztext"
+                               VorlagenUebernahme="@(() => VorlageUebernehmen(zeile))"
                                IstPflicht="@(IstPflicht is not null && IstPflicht(zeile))"
                                PflichtKurztext="@PflichtKurztext"
                                Nutzungsdauer="@zeile.Nutzungsdauer"
@@ -376,7 +380,8 @@
     </Ueberlagerung>
 
     <Ueberlagerung Offen="@(_uebernahmeGaben is not null)"
-                   Titel="@UebernahmeTitel" Geschlossen="() => UebernahmeFertigMachen(false)">
+                   Titel="@UebernahmeTitel"
+                   Geschlossen="() => UebernahmeFertigMachen(new VorlagenUebernahmeSchluss(false, _invest))">
         <KindInhalt>
             @if (_uebernahmeGaben is not null)
             {
@@ -562,6 +567,12 @@
     /// <summary>U31: Kurztext des Schlosses an einer Pflichtzeile.</summary>
     [Parameter] public string PflichtKurztext { get; set; }
         = "Pflichtposition, kann nicht gelöscht werden";
+
+    /// <summary>ANWENDERENTSCHEID 19.09.2026: Beschriftung und Kurztext des
+    /// Textschalters „übernehmen" an der Vorlagen-Hinweiszeile.</summary>
+    [Parameter] public string VorlageUebernehmenText { get; set; } = "übernehmen";
+
+    [Parameter] public string VorlageUebernehmenKurztext { get; set; } = "";
 
     /// <summary>U31: Kopf der Gruppe „Endenergie je Komponente" unter dem Raster.</summary>
     [Parameter] public string GruppeEndenergieTitel { get; set; } = "Endenergie je Komponente";
@@ -928,6 +939,26 @@
     }
 
     /// <summary>
+    /// ANWENDERENTSCHEID 19.09.2026: „übernehmen" an der Vorlagen-Hinweiszeile.
+    ///
+    /// <para>Zwei Schritte, beide auf dem Bestandsweg: Die Bemessung wechselt wie
+    /// jede andere Feldänderung (<see cref="Feld"/> zieht Bezugsgröße, Betrag und
+    /// Herleitung nach), und danach schreibt derselbe Weg, den „Speichern" ruft.
+    /// SATZ UND BETRAG bleiben, wie sie sind — übernommen wird die Bemessung, nicht
+    /// die Vorlage. Nach dem Neuladen stimmen Zeile und Vorlage überein, und der
+    /// Hinweis ist fort.</para>
+    ///
+    /// <para>Ohne wählbaren Vorlagenwert geschieht nichts: Die Zeile zeigt dann den
+    /// Hinweis, aber keinen Schalter.</para>
+    /// </summary>
+    private void VorlageUebernehmen(KostenPositionZeile zeile)
+    {
+        if (zeile.VorlagenBemessungId is not int id) return;
+        Feld(zeile, () => zeile.BemessungId = id);
+        BeiSpeichern();
+    }
+
+    /// <summary>
     /// Die Summen fallen aus denselben Zeilen — der Vorläufer zog sie über
     /// <c>PositionGeaendert</c> nach (<c>SummenAnzeigen</c>). Gerechnet wird in
     /// der Hülle, und zwar aus dem STAND, nicht aus der Datenbank: Bis
@@ -1134,15 +1165,27 @@
 
     /// <summary>
     /// ANWENDERENTSCHEID 10.09.2026 (Ä25): Seit OK übernimmt UND schließt, sagt
-    /// <paramref name="geschrieben"/> etwas — es ist die Antwort des Laufs, nicht mehr
+    /// <c>Geschrieben</c> etwas — es ist die Antwort des Laufs, nicht mehr
     /// nur „irgendwann einmal übernommen". Der Erfolg wird deshalb HIER bestätigt: In
     /// der Maske selbst könnte ihn niemand mehr lesen, und eine Liste, die sich
     /// wortlos verlängert, ist keine Rückmeldung.
+    ///
+    /// <para><b>ANWENDERENTSCHEID 19.09.2026:</b> Übernommen wird in die im
+    /// Katalogblock gewählte KATEGORIE. Weicht sie von der gezeigten ab, schaltet der
+    /// Dialog auf sie um — sonst stünde die Bestätigung über einer Liste, in der von
+    /// der Übernahme nichts zu sehen ist. Der Kategoriewechsel ist ein echter
+    /// Kontextwechsel und lädt deshalb ohne Übertrag (wie <c>BeiKategorie</c>).</para>
     /// </summary>
-    private void UebernahmeFertigMachen(bool geschrieben)
+    private void UebernahmeFertigMachen(VorlagenUebernahmeSchluss schluss)
     {
         _uebernahmeGaben = null;
-        if (geschrieben) Melden(MeldungUebernommen, WarnStufe.Hinweis);
+        if (schluss.Geschrieben)
+        {
+            bool wechsel = _invest != schluss.Invest;
+            _invest = schluss.Invest;
+            Melden(MeldungUebernommen, WarnStufe.Hinweis);
+            if (wechsel) { KontextLaden(null); return; }
+        }
         // Wie btnUebernahme_Click: übernommene Positionen sofort zeigen — und die
         // ungespeicherten Eingaben der bestehenden Zeilen behalten.
         KontextLaden(_stand.VarianteId, eingabenUebernehmen: true);

@@ -5,10 +5,15 @@ using System.IO;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die neun globalen Anwendungseinstellungen als Wertesatz (iU9-W14c.0i).
+    /// Die elf globalen Anwendungseinstellungen als Wertesatz (iU9-W14c.0i).
     ///
     /// <para>Die Namen sind die Schlüssel aus <c>Properties.Settings</c> — sie sind
     /// eingefroren und stehen so auch in der <c>user.config</c> des Anwenders.</para>
+    ///
+    /// <para><b>Die Rubrik „Klimadaten"</b> führt drei Adressen: die PVGIS-Schnittstelle
+    /// (<c>PVGISUrl</c>, aus der Rubrik „Web-Schnittstellen" hierher gewandert), das
+    /// Portal der DWD-Testreferenzjahre (<c>TRYPortalUrl</c>) und die Ablage der
+    /// TRY-Regionaldaten (<c>TRYRegionalUrl</c>).</para>
     /// </summary>
     public sealed class Einstellungensatz
     {
@@ -20,6 +25,8 @@ namespace WindowsFormsApplication1
         public string WikiUrl = "";
         public string PvgisUrl = "";
         public string GeokodierungUrl = "";
+        public string TryPortalUrl = "";
+        public string TryRegionalUrl = "";
         public string AllgemeinPfad = "";
     }
 
@@ -39,7 +46,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Liest und <b>schreibt</b> die neun globalen Anwendungseinstellungen
+    /// Liest und <b>schreibt</b> die elf globalen Anwendungseinstellungen
     /// (iU9-W14c.0i).
     ///
     /// <para><b>Warum es das gibt</b> (Befund W14c-B57): Bis hierher gab es
@@ -84,7 +91,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Der gespeicherte Stand, ergänzt um die Vorgaben. <b>Die Reihenfolge zählt:</b>
         /// erst der VDI-Pfad, dann Export und Import AUF IHM AUFBAUEND, dann DB-Pfad,
-        /// DB-Name, Allgemein-Pfad und zuletzt die drei URLs — wörtlich wie <c>Load</c>.
+        /// DB-Name, Allgemein-Pfad und zuletzt die URLs — wörtlich wie <c>Load</c>.
+        ///
+        /// <para>Die zwei TRY-Adressen kommen zuletzt; sie haben keinen Vorgabeweg über
+        /// <c>Dienste.Pfade</c>, sondern nur die Werksvorgabe der Einstellung.</para>
         /// </summary>
         public static Einstellungensatz Lesen()
         {
@@ -98,6 +108,8 @@ namespace WindowsFormsApplication1
             s.WikiUrl = Properties.Settings.Default.WordPressUrl ?? "";
             s.PvgisUrl = Properties.Settings.Default.PVGISUrl ?? "";
             s.GeokodierungUrl = Properties.Settings.Default.GeoKodierung ?? "";
+            s.TryPortalUrl = Properties.Settings.Default.TRYPortalUrl ?? "";
+            s.TryRegionalUrl = Properties.Settings.Default.TRYRegionalUrl ?? "";
             return s;
         }
 
@@ -119,7 +131,7 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Schreibt die neun Werte und legt die fünf Ordner an, falls sie fehlen.
+        /// Schreibt die elf Werte und legt die fünf Ordner an, falls sie fehlen.
         ///
         /// <para><b>Die Reihenfolge ist die des Vorläufers:</b> erst die Werte in die
         /// Settings, dann die Ordner — und nur wenn die Ordner stehen, wird
@@ -138,6 +150,8 @@ namespace WindowsFormsApplication1
             Properties.Settings.Default.WordPressUrl = s.WikiUrl ?? "";
             Properties.Settings.Default.PVGISUrl = s.PvgisUrl ?? "";
             Properties.Settings.Default.GeoKodierung = s.GeokodierungUrl ?? "";
+            Properties.Settings.Default.TRYPortalUrl = s.TryPortalUrl ?? "";
+            Properties.Settings.Default.TRYRegionalUrl = s.TryRegionalUrl ?? "";
             Properties.Settings.Default.AllgemeinPath = s.AllgemeinPfad ?? "";
 
             try

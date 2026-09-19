@@ -355,6 +355,91 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-zr-empfehlung"));
     }
 
+    // =====================================================================
+    // ANWENDERENTSCHEID 19.09.2026 — der Hinweis auf die Standardvorlage
+    // =====================================================================
+
+    /// <summary>
+    /// Weicht die Bemessung einer Projektposition von der der Standardvorlage ab,
+    /// steht der Vorlagenwert als leise Zeile unter der Herleitung — mit dem
+    /// Handgriff „übernehmen" daneben (Muster U23: Textzeile, kein Warnbanner).
+    /// </summary>
+    [Fact]
+    public void Der_Vorlagenhinweis_steht_unter_der_Herleitung_mit_Handgriff()
+    {
+        KostenKomponenteStand s = Standard();
+        s.Zeilen[0].Herleitung = "× 300,00 kW · P_el der Anlage";
+        s.Zeilen[0].VorlagenHinweis = "Vorlage „Standard“: % des Endenergiebedarfs";
+        s.Zeilen[0].VorlagenBemessungId = 2;
+
+        var cut = Zeige(p => p.Add(x => x.VorlageUebernehmenText, "übernehmen"), s);
+
+        var hinweise = cut.FindAll(".epos-zr-vorlage");
+        Assert.Single(hinweise);
+        Assert.Contains("Vorlage „Standard“: % des Endenergiebedarfs",
+                        hinweise[0].TextContent);
+        Assert.Equal("übernehmen", hinweise[0].QuerySelector("button")!.TextContent);
+    }
+
+    /// <summary>„übernehmen" setzt die Bemessung auf den Vorlagenwert, lässt Satz
+    /// und Betrag stehen und schreibt über den Weg, den auch „Speichern" ruft —
+    /// danach lädt der Dialog neu, und der Hinweis ist fort.</summary>
+    [Fact]
+    public void Uebernehmen_setzt_die_Bemessung_speichert_und_der_Hinweis_verschwindet()
+    {
+        KostenKomponenteStand mitHinweis = Standard();
+        mitHinweis.Zeilen[0].VorlagenHinweis = "Vorlage „Standard“: je kW Leistung";
+        mitHinweis.Zeilen[0].VorlagenBemessungId = 2;
+
+        KostenKomponenteStand ohneHinweis = Standard();
+        ohneHinweis.Zeilen[0].BemessungId = 2;
+
+        int gespeichert = 0;
+        KostenPositionZeile? nachgezogen = null;
+        var cut = Zeige(p => p
+            .Add(x => x.Nachziehen, (KostenPositionZeile z) => nachgezogen = z)
+            .Add(x => x.Speichern, () => { gespeichert++; _stand = ohneHinweis; return true; }),
+            mitHinweis);
+
+        double satzVorher = mitHinweis.Zeilen[0].Satz ?? 0;
+        cut.Find(".epos-zr-vorlage button").Click();
+
+        Assert.Equal(2, mitHinweis.Zeilen[0].BemessungId);
+        Assert.Equal(satzVorher, mitHinweis.Zeilen[0].Satz);
+        Assert.Same(mitHinweis.Zeilen[0], nachgezogen);
+        Assert.Equal(1, gespeichert);
+        Assert.Empty(cut.FindAll(".epos-zr-vorlage"));
+    }
+
+    /// <summary>
+    /// An einer NICHT schreibbaren Zeile (Auslieferungsvorlage, Lesemodus) bleibt
+    /// die Auskunft stehen, der Handgriff nicht: Anbieten, was nicht geht, wäre
+    /// schlimmer als schweigen.
+    /// </summary>
+    [Fact]
+    public void Im_Lesemodus_steht_der_Hinweis_ohne_Knopf()
+    {
+        KostenKomponenteStand s = Standard(nurLesen: true);
+        s.Zeilen[0].Schreibbar = false;
+        s.Zeilen[0].VorlagenHinweis = "Vorlage „Standard“: je kW Leistung";
+        s.Zeilen[0].VorlagenBemessungId = 2;
+
+        var cut = Zeige(stand: s);
+
+        var hinweise = cut.FindAll(".epos-zr-vorlage");
+        Assert.Single(hinweise);
+        Assert.Null(hinweise[0].QuerySelector("button"));
+    }
+
+    /// <summary>Ohne Abweichung gibt es keine Zeile.</summary>
+    [Fact]
+    public void Ohne_Vorlagenhinweis_bleibt_die_Zeile_weg()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-zr-vorlage"));
+    }
+
     /// <summary>
     /// Der LAUFSTAND steht über dem Raster: aus welchem Simulationslauf die
     /// Mengen der Betriebsseite stammen. Der Text kommt fertig aus dem Kern.
@@ -867,6 +952,42 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.Equal("1500", Satzfeld(cut, 0).GetAttribute("value"));
         Assert.Equal(1500.0, cut.Instance.Stand.Zeilen[0].Satz);
         Assert.Equal("Summe 9500", cut.Find(".epos-zr-summenzelle").TextContent);
+    }
+
+    /// <summary>
+    /// <b>ANWENDERENTSCHEID 19.09.2026:</b> Übernommen wird in die im Katalogblock
+    /// gewählte KATEGORIE — der Dialog schaltet danach auf sie um, sonst stünde die
+    /// Bestätigung über einer Liste, in der von der Übernahme nichts zu sehen ist.
+    /// </summary>
+    [Fact]
+    public void Nach_der_Uebernahme_zeigt_der_Dialog_die_Kategorie_der_Uebernahme()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.UebernahmeGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zielprojekte"] = (IReadOnlyList<(int, string)>)new[] { (1, "Projekt") },
+                    ["InvestVorwahl"] = true,
+                    ["VorlagenZu"] = new Func<bool, IReadOnlyList<(int, string)>>(
+                        invest => invest ? new[] { (5, "Standard") } : new[] { (7, "Standard Betrieb") }),
+                    ["Vorschau"] = new Func<VorlagenUebernahmeWahl, VorlagenUebernahmeVorschau>(
+                        _ => new VorlagenUebernahmeVorschau("1 Position", true)),
+                    ["Uebernehmen"] = new Func<VorlagenUebernahmeWahl, VorlagenUebernahmeAntwort>(
+                        _ => new VorlagenUebernahmeAntwort(false, "angelegt"))
+                }));
+
+        Assert.True(_gefragt!.Invest);
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[1].Click();   // Übernahme
+
+        // Die Kategorien der Überlagerung stehen als drittes und viertes Optionsfeld.
+        var optionen = cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[type=radio]");
+        optionen[2].Change(true);                                               // Betriebskosten
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();           // OK
+
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.UeberlagerungOffen));
+        Assert.False(_gefragt!.Invest);
+        Assert.Null(_gefragt.VarianteId);
     }
 
     /// <summary>
@@ -1432,6 +1553,102 @@ public class KostenKomponenteDialogTests : BunitContext
         var cut = Zeige(stand: StandOhneBasis());
 
         Assert.Single(cut.FindAll(".epos-zr-zeile .epos-zr-ohnebasis"));
+    }
+
+    // =====================================================================
+    // ANWENDERBEFUND 19.09.2026 (#363): dasselbe auf der BETRIEBSSEITE
+    //
+    // Im Bildschirmfoto des Befundes trugen drei Betriebszeilen das ⚠, und unter
+    // dem Raster war nichts zu sehen. Die Hinweiszeile hängt an keiner Kategorie —
+    // aber das war bis hierher durch keinen Fall gedeckt, und der Grund selbst muss
+    // die ABHILFE nennen, sonst sucht der Anwender an der falschen Stelle.
+    // =====================================================================
+
+    /// <summary>Der Betriebsstand: Laufstandzeile über dem Raster, eine Zeile mit
+    /// Bezugsgröße und zwei ohne — Preis und Anlage, die beiden Gründe des
+    /// Befundes.</summary>
+    private static KostenKomponenteStand StandBetriebOhneBasis()
+        => new KostenKomponenteStand
+        {
+            Titel = "Kostenverwaltung Heizkessel — Musterprojekt",
+            Untertitel = "Betriebskosten nach VDI 2067",
+            Laufstand = "Mengen stammen aus dem Simulationslauf vom 07.09.2026 23:42",
+            Zeilen = new[]
+            {
+                Zeile(31, "Instandhaltung Heizkessel", 1.5),
+                new KostenPositionZeile
+                {
+                    Id = 32,
+                    Bezeichnung = "Vollwartung / Wartung Kessel",
+                    BemessungId = 2,
+                    Satz = 0.01,
+                    Einheit = "€/kWh",
+                    BetragText = "0,00",
+                    OhneBasis = true,
+                    BetragKurztext = "Keine Bezugsgröße: diese Anlage steht nicht im "
+                                     + "Simulationslauf — sie braucht einen Platz in der "
+                                     + "Simulationskonfiguration. Es gilt der erfasste Betrag.",
+                    Schreibbar = true
+                },
+                new KostenPositionZeile
+                {
+                    Id = 33,
+                    Bezeichnung = "Hilfsenergiekosten (Strom)",
+                    BemessungId = 1,
+                    Satz = 6,
+                    Einheit = "%",
+                    BetragText = "0,00",
+                    OhneBasis = true,
+                    BetragKurztext = "Keine Bezugsgröße: für den Energieträger ist kein "
+                                     + "Arbeitspreis gepflegt — er ist in der "
+                                     + "Energieträgerverwaltung zu erfassen. Es gilt der "
+                                     + "erfasste Betrag.",
+                    Schreibbar = true
+                }
+            },
+            Bemessungen = BEMESSUNGEN,
+            SpalteBetrag = "Betrag netto [€/a]",
+            MitNutzungsdauer = false,
+            MitWorstBest = true,
+            PositionNeuMoeglich = true
+        };
+
+    /// <summary>
+    /// DER BEFUND: Drei Betriebszeilen, zwei davon ohne Bezugsgröße — die
+    /// Hinweiszeile unter dem Raster muss BEIDE nennen, mit Bezeichnung und Grund.
+    /// </summary>
+    [Fact]
+    public void Betriebszeilen_ohne_Bezugsgroesse_stehen_ebenfalls_unter_dem_Raster()
+    {
+        var cut = Zeige(stand: StandBetriebOhneBasis());
+
+        string zeile = cut.Find(".epos-zr-ohnebasis-zeile").TextContent;
+
+        Assert.Contains("Vollwartung / Wartung Kessel", zeile);
+        Assert.Contains("Hilfsenergiekosten (Strom)", zeile);
+        Assert.DoesNotContain("Instandhaltung Heizkessel", zeile);
+        Assert.Equal(2, cut.FindAll(".epos-zr-zeile .epos-zr-ohnebasis").Count);
+    }
+
+    /// <summary>
+    /// Und der Grund nennt die ABHILFE, nicht nur die Lage: die
+    /// Energieträgerverwaltung beim fehlenden Preis, die Simulationskonfiguration
+    /// bei der Anlage außerhalb des Laufs. Er steht im ⚠ als Werkzeugtipp
+    /// (<c>title</c>) und als Vorlesetext (<c>aria-label</c>).
+    /// </summary>
+    [Fact]
+    public void Der_Grund_nennt_die_Abhilfe_und_haengt_am_Zeichen()
+    {
+        var cut = Zeige(stand: StandBetriebOhneBasis());
+
+        var zeichen = cut.FindAll(".epos-zr-zeile .epos-zr-ohnebasis");
+        string titel = string.Join(" ", zeichen.Select(z => z.GetAttribute("title") ?? ""));
+        string vorlesen = string.Join(" ", zeichen.Select(z => z.GetAttribute("aria-label") ?? ""));
+
+        Assert.Contains("Energieträgerverwaltung", titel);
+        Assert.Contains("Simulationskonfiguration", titel);
+        Assert.Contains("Energieträgerverwaltung", vorlesen);
+        Assert.Contains("Simulationskonfiguration", vorlesen);
     }
 
     // =====================================================================

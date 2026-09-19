@@ -55,11 +55,15 @@ namespace WindowsFormsApplication1
         {
             string name = komponentenName ?? "";
 
-            // Ä11: Vorlagenliste des Admin-Katalogs als wählbare Quelle.
-            IList<KostenVorlageKopf> vorlagen = KostenVorlagenCtrl.Vorlagen(komponentenId, kategorieId);
-            var vorlagenEintraege = new List<ValueTuple<int, string>>();
-            foreach (KostenVorlageKopf v in vorlagen)
-                vorlagenEintraege.Add(new ValueTuple<int, string>(v.Id, v.Name));
+            // ANWENDERENTSCHEID 19.09.2026: Der Katalogblock zeigt BEIDE Kategorien —
+            // der Anwender wählt darin wie in der Administration. Deshalb werden auch
+            // beide Variantenlisten geladen; sie tragen zugleich die Vorwahlregel
+            // („nur die andere Kategorie führt eine") und den Kopf für den Schreibweg.
+            IList<KostenVorlageKopf> vorlagenInvest =
+                KostenVorlagenCtrl.Vorlagen(komponentenId, KostenSummenCtrl.KATEGORIE_INVESTITION);
+            IList<KostenVorlageKopf> vorlagenBetrieb =
+                KostenVorlagenCtrl.Vorlagen(komponentenId, KostenSummenCtrl.KATEGORIE_BETRIEB);
+            bool investStart = kategorieId != KostenSummenCtrl.KATEGORIE_BETRIEB;
 
             IList<KeyValuePair<int, string>> projekte = KostenVorlagenUebernahmeCtrl.Projekte();
             var projektEintraege = new List<ValueTuple<int, string>>();
@@ -83,8 +87,15 @@ namespace WindowsFormsApplication1
                 ["ZielProjektVorwahl"] = zielVorwahl,
                 ["ZielWaehlbar"] = zielProjektId <= 0,
 
-                ["Quellvorlagen"] = (IReadOnlyList<ValueTuple<int, string>>)vorlagenEintraege,
+                ["InvestVorwahl"] = investStart,
                 ["QuellVorlageVorwahl"] = quellVorlageVorwahl,
+
+                ["VorlagenZu"] = new Func<bool, IReadOnlyList<ValueTuple<int, string>>>(
+                    invest => Variantenliste(invest ? vorlagenInvest : vorlagenBetrieb)),
+
+                ["PositionenZu"] = new Func<VorlagenUebernahmeWahl, IReadOnlyList<VorlagenPositionZeile>>(
+                    wahl => Positionsvorschau(wahl, vorlagenInvest, vorlagenBetrieb,
+                                              komponentenId, zielAnlageId)),
 
                 ["Quellprojekte"] = (IReadOnlyList<ValueTuple<int, string>>)projektEintraege,
                 ["QuellProjektVorwahl"] = quellProjektVorwahl,
@@ -96,7 +107,8 @@ namespace WindowsFormsApplication1
                     wahl => Vorschau(wahl, komponentenId, kategorieId, zielAnlageId)),
 
                 ["Uebernehmen"] = new Func<VorlagenUebernahmeWahl, VorlagenUebernahmeAntwort>(
-                    wahl => Uebernehmen(wahl, vorlagen, komponentenId, kategorieId, zielAnlageId)),
+                    wahl => Uebernehmen(wahl, vorlagenInvest, vorlagenBetrieb,
+                                        komponentenId, kategorieId, zielAnlageId)),
 
                 // ANWENDERENTSCHEID 10.09.2026 (Ä25): KEIN eigener Titel. Die Maske
                 // erscheint ausschließlich als Bereich einer Überlagerung, und deren
@@ -106,14 +118,125 @@ namespace WindowsFormsApplication1
                 ["LabelZielProjekt"] = Text_("KUEB_LBL_ZIEL", "Zielprojekt:"),
                 ["LabelQuelleVorlage"] = Text_("KDLG_UEB_QUELLE_VORLAGE", "Aus Vorlage/Variante:"),
                 ["LabelQuelleProjekt"] = Text_("KDLG_UEB_QUELLE_PROJEKT", "Aus Projekt/Anlage:"),
-                ["LabelQuellVorlage"] = Text_("KUEB_LBL_QUELLVORLAGE", "Vorlage/Variante:"),
                 ["LabelQuellProjekt"] = Text_("KUEB_LBL_QUELLPROJEKT", "Quellprojekt:"),
                 ["LabelQuellAnlage"] = Text_("KUEB_LBL_QUELLANLAGE", "Quellanlage:"),
+
+                // ANWENDERENTSCHEID 19.09.2026: derselbe Block wie im Katalogmodus —
+                // deshalb dieselben Schlüssel, nicht neue mit gleichem Wortlaut.
+                ["LabelKomponente"] = Text_("KDLG_LBL_KOMPONENTE", "Komponente:"),
+                ["KomponenteText"] = name,
+                ["KategorieInvestText"] = Text_("KDLG_KAT_INVEST", "Investitionskosten"),
+                ["KategorieBetriebText"] = Text_("KDLG_KAT_BETRIEB", "Betriebskosten"),
+                ["LabelVariante"] = Text_("KDLG_LBL_VARIANTE", "Variante:"),
+                ["LabelPositionen"] = Text_("KKOMP_RASTER", "Positionen"),
+                ["SpaltePosition"] = Text_("KDLG_SP_POSITION", "Position"),
+                ["SpalteBemessung"] = Text_("KDLG_SP_BEMESSUNG", "Bemessung"),
+                ["SpalteSatz"] = Text_("KDLG_SP_SATZ", "Satz"),
+                ["SpalteNutzung"] = Text_("KDLG_SP_NUTZUNG", "Nutzungsdauer [a]"),
+                ["SpalteZiel"] = Text_("KUEB_SP_ZIEL", "Ziel"),
+                ["VorlageLeerText"] = Text_("KUEB_VORLAGE_LEER",
+                    "Diese Vorlage führt keine Positionen."),
+                ["KatalogLeerText"] = Text_("KUEB_KATALOG_LEER",
+                    "Der Katalog führt für diese Komponente keine Vorlage — "
+                    + "Administration › Kosten › Kostenverwaltung."),
+
                 // Ä25: OK/Abbrechen statt „Übernehmen"/„Abbrechen" — die beiden
                 // allgemeinen Beschriftungen, keine eigenen Schlüssel.
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN
             };
+        }
+
+        /// <summary>Die Varianten einer Kategorie als Eintragsliste (Standard zuerst).</summary>
+        private static IReadOnlyList<ValueTuple<int, string>> Variantenliste(
+            IList<KostenVorlageKopf> vorlagen)
+        {
+            var liste = new List<ValueTuple<int, string>>();
+            foreach (KostenVorlageKopf v in vorlagen)
+                liste.Add(new ValueTuple<int, string>(v.Id, v.Name));
+            return liste;
+        }
+
+        /// <summary>Der Kopf zur gewählten Variantennummer — aus beiden Kategorien.</summary>
+        private static KostenVorlageKopf Kopf(int vorlageId,
+                                              IList<KostenVorlageKopf> invest,
+                                              IList<KostenVorlageKopf> betrieb)
+        {
+            foreach (KostenVorlageKopf v in invest)
+                if (v.Id == vorlageId) return v;
+            foreach (KostenVorlageKopf v in betrieb)
+                if (v.Id == vorlageId) return v;
+            return null;
+        }
+
+        /// <summary>
+        /// ANWENDERENTSCHEID 19.09.2026 — DIE POSITIONSVORSCHAU. Sie zeigt, was in der
+        /// gewählten Variante steht, mit denselben Anzeigetexten wie das Positionsraster
+        /// der Kostenverwaltung: Bemessungsart und Einheitenzeichen kommen aus
+        /// <see cref="BemessungKatalog"/> und hängen am GEWERK und am Raster.
+        ///
+        /// <para><b>ANWENDERBEFUND 19.09.2026 — was fehlen würde.</b> Je Zeile steht
+        /// „vorhanden" oder „wird angelegt". Gefragt wird mit derselben Regel, nach der
+        /// <c>KostenVorlagenUebernahmeCtrl.AusVorlage</c> überspringt oder anlegt: Ein
+        /// Zielbestand derselben Position zählt, mit Anlagenbezug nur AN DERSELBEN
+        /// Anlage (Ä20). Gelesen wird über <c>KostenProjektPositionenCtrl.Lies</c> —
+        /// derselbe Weg, den die Kostenverwaltung selbst geht; kein neues SQL, kein
+        /// Schreibweg (die Übernahme legt Lexikoneinträge an, die Vorschau nicht).</para>
+        /// </summary>
+        private static IReadOnlyList<VorlagenPositionZeile> Positionsvorschau(
+            VorlagenUebernahmeWahl wahl,
+            IList<KostenVorlageKopf> vorlagenInvest, IList<KostenVorlageKopf> vorlagenBetrieb,
+            int komponentenId, int zielAnlageId)
+        {
+            var liste = new List<VorlagenPositionZeile>();
+            if (wahl.QuellVorlageId <= 0) return liste;
+
+            int kategorieId = wahl.Invest
+                ? KostenSummenCtrl.KATEGORIE_INVESTITION
+                : KostenSummenCtrl.KATEGORIE_BETRIEB;
+
+            // Der Zielbestand als Namensmenge — dieselbe Zählgrundlage wie die
+            // Vorschauzeile (zielAnlageId 0 heißt „alle Anlagen", also -1).
+            var imZiel = new HashSet<string>(StringComparer.Ordinal);
+            bool zielBekannt = wahl.ZielProjektId > 0;
+            if (zielBekannt)
+            {
+                foreach (KostenProjektPositionenCtrl.Zeile z in
+                         KostenProjektPositionenCtrl.Lies(wahl.ZielProjektId, komponentenId,
+                             kategorieId, zielAnlageId > 0 ? zielAnlageId : -1))
+                {
+                    string b = z.Raster != null ? z.Raster.Bezeichnung : null;
+                    if (!string.IsNullOrEmpty(b)) imZiel.Add(b);
+                }
+            }
+
+            string textVorhanden = Text_("KUEB_POS_VORHANDEN", "vorhanden");
+            string textNeu = Text_("KUEB_POS_NEU", "wird angelegt");
+
+            foreach (KostenVorlagenPosition p in KostenVorlagenCtrl.Positionen(wahl.QuellVorlageId))
+            {
+                string bezeichnung = p.Bezeichnung ?? "";
+                bool vorhanden = zielBekannt && imZiel.Contains(bezeichnung);
+                string einheit = BemessungKatalog.Einheit(p.Bemessung, komponentenId, !wahl.Invest);
+                string satz = ZahlText(p.Satz);
+                if (satz.Length > 0 && einheit.Length > 0) satz = satz + " " + einheit;
+
+                liste.Add(new VorlagenPositionZeile(
+                    bezeichnung,
+                    BemessungKatalog.Anzeige(p.Bemessung, komponentenId),
+                    satz,
+                    wahl.Invest ? ZahlText(p.Nutzungsdauer) : "",
+                    !zielBekannt ? "" : (vorhanden ? textVorhanden : textNeu),
+                    vorhanden));
+            }
+            return liste;
+        }
+
+        private static string ZahlText(double? wert)
+        {
+            return wert.HasValue
+                ? wert.Value.ToString("0.##", System.Globalization.CultureInfo.CurrentCulture)
+                : "";
         }
 
         /// <summary>
@@ -156,6 +279,10 @@ namespace WindowsFormsApplication1
         /// <c>VorschauAktualisieren</c>, samt der Ä21-Regel, dass Ziel und Quelle
         /// ANLAGENBEZOGEN gezählt werden, und samt der Bedingung des
         /// Übernehmen-Knopfes.
+        ///
+        /// <para><b>19.09.2026:</b> Die Zählung am Ziel folgt der im Katalogblock
+        /// GEWÄHLTEN Kategorie; „Aus Projekt/Anlage" bleibt bei der Kategorie, aus der
+        /// der Dialog geöffnet wurde.</para>
         /// </summary>
         private static VorlagenUebernahmeVorschau Vorschau(VorlagenUebernahmeWahl wahl,
                                                            int komponentenId, int kategorieId,
@@ -163,13 +290,15 @@ namespace WindowsFormsApplication1
         {
             if (wahl.ZielProjektId <= 0) return new VorlagenUebernahmeVorschau("", false);
 
+            int kategorie = Kategorie(wahl, kategorieId);
+
             int vorhanden = KostenVorlagenUebernahmeCtrl.VorhandeneImProjekt(
-                wahl.ZielProjektId, komponentenId, kategorieId, zielAnlageId > 0 ? zielAnlageId : -1);
+                wahl.ZielProjektId, komponentenId, kategorie, zielAnlageId > 0 ? zielAnlageId : -1);
 
             int quelle = wahl.AusVorlage
                 ? (wahl.QuellVorlageId > 0 ? KostenVorlagenCtrl.Positionen(wahl.QuellVorlageId).Count : 0)
                 : KostenVorlagenUebernahmeCtrl.VorhandeneImProjekt(
-                      wahl.QuellProjektId, komponentenId, kategorieId, wahl.QuellAnlageId);
+                      wahl.QuellProjektId, komponentenId, kategorie, wahl.QuellAnlageId);
 
             string text = string.Format(
                 Text_("KDLG_UEB_VORSCHAU",
@@ -186,18 +315,31 @@ namespace WindowsFormsApplication1
             return new VorlagenUebernahmeVorschau(text, moeglich);
         }
 
-        /// <summary>Der Schreibweg — wortgleich aus <c>btnUebernehmen_Click</c>.</summary>
+        /// <summary>
+        /// Die Kategorie, in der gerechnet und geschrieben wird: im Katalogblock die
+        /// GEWÄHLTE, sonst die, aus der der Dialog geöffnet wurde.
+        /// </summary>
+        private static int Kategorie(VorlagenUebernahmeWahl wahl, int kategorieId)
+        {
+            if (!wahl.AusVorlage) return kategorieId;
+            return wahl.Invest
+                ? KostenSummenCtrl.KATEGORIE_INVESTITION
+                : KostenSummenCtrl.KATEGORIE_BETRIEB;
+        }
+
+        /// <summary>Der Schreibweg — wortgleich aus <c>btnUebernehmen_Click</c>.
+        /// Der Vorlagenkopf trägt seine eigene <c>KategorieId</c>; <c>AusVorlage</c>
+        /// schreibt damit in die im Block gewählte Kategorie.</summary>
         private static VorlagenUebernahmeAntwort Uebernehmen(VorlagenUebernahmeWahl wahl,
-                                                             IList<KostenVorlageKopf> vorlagen,
+                                                             IList<KostenVorlageKopf> vorlagenInvest,
+                                                             IList<KostenVorlageKopf> vorlagenBetrieb,
                                                              int komponentenId, int kategorieId,
                                                              int zielAnlageId)
         {
             UebernahmeErgebnis ergebnis;
             if (wahl.AusVorlage)
             {
-                KostenVorlageKopf quelle = null;
-                foreach (KostenVorlageKopf v in vorlagen)
-                    if (v.Id == wahl.QuellVorlageId) { quelle = v; break; }
+                KostenVorlageKopf quelle = Kopf(wahl.QuellVorlageId, vorlagenInvest, vorlagenBetrieb);
                 ergebnis = KostenVorlagenUebernahmeCtrl.AusVorlage(
                     wahl.ZielProjektId, quelle, zielAnlageId);
             }

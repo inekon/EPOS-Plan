@@ -273,8 +273,8 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Zwei Lagen ohne Rechenwirkung, in denen eine Variante NICHT das rechnet, was
-        /// ihr Stammprojekt rechnet (Konzept § 2.16, § 3.9):
+        /// Drei Lagen ohne Rechenwirkung, in denen ein Stand NICHT das rechnet, was sein
+        /// Stammprojekt rechnet (Konzept § 2.16, § 3.9):
         ///
         /// <list type="number">
         ///   <item><description><b>Die Spur der Bestandsableitung</b> (VV‑Q4): Die
@@ -286,28 +286,49 @@ namespace WindowsFormsApplication1
         ///     Vergütung des Stamms ist nicht angewendet. Beide rechnen Flat — das ist
         ///     richtig, sieht im Reiter aber nach einer gepflegten Übernahme
         ///     aus.</description></item>
+        ///   <item><description><b>Der FEHLENDE Stamm</b>: Die Wahl „übernehmen" steht,
+        ///     ein Stammprojekt gibt es aber nicht — entweder zeigt die
+        ///     Variantenverknüpfung auf ein Projekt, das es nicht (mehr) gibt, oder eine
+        ///     einzeln transferierte Variante trägt die Wahl ohne jede Verknüpfung. Es
+        ///     gilt dann KEINE Vergütungszeile, und der Flat-Pfad liefe unbemerkt.</description></item>
         /// </list>
         ///
-        /// <para><b>Nur für VARIANTEN.</b> Ein Stammprojekt führt immer eigene Werte; es
-        /// gibt bei ihm nichts zu vergleichen. Die billigste Frage steht deshalb zuerst,
-        /// und im Bestand ohne gepflegte Vergütung endet die Prüfung nach zwei
-        /// Abfragen.</para>
+        /// <para><b>Nur für Stände, die übernehmen.</b> Ein Stammprojekt führt immer
+        /// eigene Werte; es gibt bei ihm nichts zu vergleichen. Die billigste Frage —
+        /// die Variantenverknüpfung — steht deshalb zuerst; nur die dritte Lage braucht
+        /// darüber hinaus einen Blick in die eigene Zeile eines Projekts OHNE
+        /// Verknüpfung.</para>
         /// </summary>
         private static void PvVerguetungHerkunft(int idProjekt, CultureInfo kultur,
                                                  List<KohaerenzHinweis> liste)
         {
             int idStamm = new VariantenCtrl().StammRefDerVariante(idProjekt);
-            if (idStamm <= 0 || idStamm == idProjekt) return;
-
             var ctrl = new ProjektPhotovoltaikCtrl();
-            ProjektPhotovoltaikModel stamm = ctrl.Lies(idStamm);
-            if (stamm == null) return;
+            string nameVariante = StartseiteCtrl.Projektname(idProjekt) ?? "";
 
+            // Lage 3a: Die Verknüpfung zeigt ins Leere — das Stammprojekt gibt es nicht.
+            // Lage 3b: Gar keine Verknüpfung, aber die Wahl „übernehmen" an einer eigenen,
+            //          nicht angewendeten Zeile (die Spur eines Einzeltransfers).
+            if (idStamm <= 0 || idStamm == idProjekt)
+            {
+                ProjektPhotovoltaikModel lose = ctrl.Lies(idProjekt);
+                if (lose != null && lose.UebernahmeStamm && !lose.Aktiv)
+                    liste.Add(StammFehltZeile(kultur, nameVariante));
+                return;
+            }
+
+            string nameStamm = StartseiteCtrl.Projektname(idStamm) ?? "";
             ProjektPhotovoltaikModel eigen = ctrl.Lies(idProjekt);
             bool uebernimmt = eigen == null || eigen.UebernahmeStamm;
 
-            string nameVariante = StartseiteCtrl.Projektname(idProjekt) ?? "";
-            string nameStamm = StartseiteCtrl.Projektname(idStamm) ?? "";
+            if (string.IsNullOrEmpty(nameStamm))
+            {
+                if (uebernimmt) liste.Add(StammFehltZeile(kultur, nameVariante));
+                return;
+            }
+
+            ProjektPhotovoltaikModel stamm = ctrl.Lies(idStamm);
+            if (stamm == null) return;
 
             if (!uebernimmt && !eigen.Aktiv && stamm.Aktiv)
             {
@@ -334,6 +355,24 @@ namespace WindowsFormsApplication1
                             "gerechnet wird der flache Einspeisesatz."),
                         nameVariante, nameStamm)
                 });
+        }
+
+        /// <summary>
+        /// Die Zeile zur dritten Lage: „übernehmen" ohne Stammprojekt (Konzept § 2.16).
+        /// Ohne Stamm gibt es nichts zu übernehmen — es gilt keine Vergütungszeile, und
+        /// gerechnet wird der flache Einspeisesatz.
+        /// </summary>
+        private static KohaerenzHinweis StammFehltZeile(CultureInfo kultur, string nameVariante)
+        {
+            return new KohaerenzHinweis
+            {
+                Schwere = KohaerenzSchwere.HINWEIS,
+                Text = string.Format(kultur, T("KOH_PV_STAMM_FEHLT",
+                        "Variante „{0}\" führt „vom Stammprojekt übernehmen\", hat aber " +
+                        "kein Stammprojekt — es gilt keine Vergütungszeile, gerechnet " +
+                        "wird der flache Einspeisesatz."),
+                    nameVariante)
+            };
         }
 
         /// <summary>Anlagenzeilen des Projekts mit einem Hilfsenergieanteil &gt; 0 —

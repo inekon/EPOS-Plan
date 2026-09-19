@@ -1958,21 +1958,30 @@ Was sich daraus ändert:
 - **Namensfalle:** „Testbeispiel 11" ist in VDI 6020 seit 2022 unbelegt, „Testfall 11" im
   Konzept meint den Kühldeckenfall aus Blatt 1. In allen Papieren die Richtlinie mitnennen.
 
-### N1.10 Entscheid E5 — Datenträger und TRY: die vorliegenden TMY-Daten
+### N1.10 Entscheid E5 — Datenträger abgelehnt, TRY als zweite Importquelle
 
-Anwender, 15.09.2026: „Datenträger, TRY-Daten: verwende vorliegende TMY-Daten." **Entscheid
-E5:** es werden weder die Datenträger der Richtlinien noch DWD-Testreferenzjahre beschafft.
-Klimabasis des Gebäudemodells sind die vorhandenen PVGIS-TMY-Reihen in `Tab_Solar` (2.3):
-Temperatur, Global-, Direkt- und Diffusstrahlung, Sonnenwinkel je Stunde.
+Anwender, 15.09.2026: „Datenträger, TRY-Daten: verwende vorliegende TMY-Daten."
+**Entscheid E5, fortgeschrieben am 19.09.2026:** Die **Datenträger der Richtlinien bleiben
+abgelehnt**; **DWD-Testreferenzjahre sind die zweite Importquelle** neben PVGIS-TMY. Sie
+kommen nicht als Beilage einer Richtlinie ins Haus, sondern über den Klimadaten-Import — als
+eigene TRY-Datei oder aus den offenen TRY-Regionaldaten; der Weg, das Spaltenbild, die
+Zeitbasis und die Lizenz stehen in
+[`Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md`](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md).
+Klimabasis des Gebäudemodells ist damit je Klimaregion das, was bei ihrem Import geholt
+wurde — PVGIS-TMY oder TRY —, in `Tab_Solar` (2.3) in derselben Form: Temperatur, Global-,
+Direkt- und Diffusstrahlung, Sonnenwinkel je Stunde.
 
 Folgen:
 
 - **G0 bleibt vollständig:** die zwölf Testfälle der VDI 6007 Blatt 1 brauchen kein
   Klima — ihre Eingaben und Referenzwerte stehen gedruckt im Text (N1.2); Testfall 5 und
   8–10 führen die Einstrahlung bereits als Tabellenwerte.
-- **Die Testbeispiele 8–16 der VDI 6020 und 8–16 der VDI 2078 sind nicht nachrechenbar:**
-  sie setzen TRY05 Würzburg voraus, und ihre Referenzergebnisse liegen nur auf den
-  Datenträgern. Der Nachweis des Strahlungswegs nach VDI 2078, 9.1, Fall B (Typ 2,
+- **Die Testbeispiele 8–16 der VDI 6020 und 8–16 der VDI 2078 sind nicht nachrechenbar —
+  das gilt unverändert weiter:** sie setzen TRY05 Würzburg voraus, und ihre
+  Referenzergebnisse liegen nur auf den Datenträgern. Ein Testreferenzjahr aus dem
+  Klimadaten-Import ersetzt weder das eine noch das andere: TRY05 Würzburg ist ein anderer
+  Datensatz als die heutigen Testreferenzjahre, und die Referenzergebnisse fehlen so oder
+  so. Der Nachweis des Strahlungswegs nach VDI 2078, 9.1, Fall B (Typ 2,
   ± 0,2 °C / ± 5 W) ist damit **nicht** führbar. EPOS-Plan weist aus: „Rechenkern nach
   VDI 6007 Blatt 1, validiert an den zwölf Testbeispielen" — nicht „validiert nach
   VDI 6020/2078". Das steht so in Wiki und Bericht.
@@ -1989,19 +1998,24 @@ Folgen:
 - **Bedeckungsgrad und Sonnenwahrscheinlichkeit** (Blatt 3, Gl. (47)–(49); VDI 6020 5.1.11)
   liefert PVGIS nicht. Ersatz: die Sonnenwahrscheinlichkeit wird je Stunde aus dem
   Diffusanteil geschätzt (SSW ≈ 1 − Diffus/Global bei Sonne über dem Horizont, geklemmt
-  auf 0…1); als Abweichung von Blatt 3 dokumentiert.
+  auf 0…1); als Abweichung von Blatt 3 dokumentiert. **Eine TRY-Reihe führt den
+  Bedeckungsgrad `N`** — gespeichert wird er nicht, weil `Tab_Solar` keine Spalte dafür hat;
+  er ist damit Kandidat desselben Schemaschritts (siehe unten und Klimadatenkonzept,
+  Abschnitt 6). Bis dahin gilt die Schätzung für jede Region, gleich welcher Herkunft.
 - **Langwelliger Austausch außen** (Blatt 1, Gl. (33)–(37)): der PVGIS-TMY-Abruf führt neben
   Temperatur, Strahlung, Wind und Feuchte auch die atmosphärische Gegenstrahlung; in G1 ist
   zu prüfen, ob `KlimaImportAblauf` sie erhält, und sie dann als neue Spalte in `Tab_Solar`
   zu persistieren (Schemaschritt mit G1; Bestandsregionen bekommen den Wert beim nächsten
   Klimaimport, bis dahin Rückfall auf die Schätzung nach Blatt 3, Gl. (84)–(88) mit der
   Sonnenwahrscheinlichkeit von oben). Wind und Feuchte werden bei der Gelegenheit ebenfalls
-  persistiert (2.3).
+  persistiert (2.3). **Eine TRY-Reihe führt `A` (atmosphärische Gegenstrahlung) und `E`
+  (langwellige Ausstrahlung)** ebenso — auch sie werden mangels Spalte nicht gespeichert und
+  gehören in denselben Schemaschritt.
 - **Zeitbasis:** PVGIS-TMY steht in UTC (2.3); das Gebäudemodell rechnet in Ortszeit über
   `ReadOrtszeit` (4.4). Der Sonnenstand nach Blatt 3 wird zur Stundenmitte gerechnet
   (Seite 11) — das ist mit `Sonnengeometrie` abzugleichen (G1).
 - **Beschaffungspunkte, neuer Stand:** offen bleibt allein die Lizenzfrage zur VDI 6020:2022
-  (N1.9); Datenträger und TRY entfallen.
+  (N1.9); die Datenträger entfallen.
 
 ### N1.11 Entscheid E6 — VDI 6020:2022 nur zu Forschungszwecken
 

@@ -2884,9 +2884,18 @@ namespace WindowsFormsApplication1
         // kommen in den Seeds unten aber nicht mehr vor.
         private const string BM_PENDKOST = DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN;
         private const bool   PFLICHT     = true;
-        // BEMESSUNG_PROZENT_ENDENERGIEBEDARF steht im Auswahlkatalog als Alternative
-        // (Anteil in kWh, Kosten daraus ueber den Strompreis), wird aber von KEINER
-        // Auslieferungsvorlage gesaet: Vorgabe ist die Kostenbasis.
+        // ANWENDERENTSCHEID 19.09.2026 ("Auf Endenergiebedarf umstellen"): Die drei
+        // Hilfsstrom-Positionen der Betriebsvorlagen (BHKW, Heizkessel, Waermepumpe) saet
+        // die Auslieferung als Anteil des ENDENERGIEBEDARFS - dieselbe Menge, bewertet mit
+        // dem Strombezugspreis statt mit dem Arbeitspreis des Brennstofftraegers.
+        // Hilfsenergie ist Strom, und Strom kostet nicht, was Gas kostet.
+        //
+        // SAAT UND NACHZUG GEHOEREN ZUSAMMEN: HilfsstromBemessungVorlage (Schemaschritt
+        // 94) stellt dieselben drei Positionen in einer BESTEHENDEN Datenbank um; der
+        // Nachweis haelt beide Quellen gegeneinander. BM_PENDKOST bleibt als Konstante
+        // stehen - die Art ist weiterhin in jeder Position waehlbar, nur nicht mehr
+        // gesaet. BM_PBRENN und BM_PSTROM kommen in den Seeds ebenfalls nicht mehr vor.
+        private const string BM_PENDBED = DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF;
 
         /// <summary>
         /// Die 20 Auslieferungsvorlagen (10 Komponenten × Investition/Betrieb) des
@@ -3021,7 +3030,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Instandhaltung Stromeinspeisung", ART_BETR, BM_PINV, 1.8, 2.2),
                 new VorlagenPositionSeed("Personalkosten", ART_BETR, BM_PINV, 1.0, 4.0),
                 new VorlagenPositionSeed("Steuern, Versicherung, Verwaltung", ART_SONST, BM_PINV, 0.8, 2.0),
-                new VorlagenPositionSeed("Hilfsenergiekosten", ART_BEDARF, BM_PENDKOST,
+                new VorlagenPositionSeed("Hilfsenergiekosten", ART_BEDARF, BM_PENDBED,
                                          2.0, 4.0, PFLICHT),
                 new VorlagenPositionSeed("Reserveleistungskosten", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Sonstige Kosten", ART_SONST, BM_JAHR),
@@ -3033,7 +3042,7 @@ namespace WindowsFormsApplication1
                 new VorlagenPositionSeed("Instandhaltung Heizkessel", ART_BETR, BM_PINV, 1.5, 2.5, PFLICHT),
                 new VorlagenPositionSeed("Instandhaltung Wärmezentrale", ART_BETR, BM_PINV, 1.8, 2.2),
                 new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
-                new VorlagenPositionSeed("Hilfsenergiekosten (Strom)", ART_BEDARF, BM_PENDKOST,
+                new VorlagenPositionSeed("Hilfsenergiekosten (Strom)", ART_BEDARF, BM_PENDBED,
                                          4.0, 8.0, PFLICHT),
                 new VorlagenPositionSeed("Schornsteinfeger / Messung", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),
@@ -3047,7 +3056,7 @@ namespace WindowsFormsApplication1
                                          null, null, PFLICHT),
                 new VorlagenPositionSeed("Instandhaltung Umweltwärmequelle", ART_BETR, BM_PINV),
                 new VorlagenPositionSeed("Instandhaltung bauliche Anlagen", ART_BETR, BM_PINV, 1.0, 1.5),
-                new VorlagenPositionSeed("Hilfsenergiekosten (Pumpen)", ART_BEDARF, BM_PENDKOST,
+                new VorlagenPositionSeed("Hilfsenergiekosten (Pumpen)", ART_BEDARF, BM_PENDBED,
                                          null, null, PFLICHT),
                 new VorlagenPositionSeed("Dichtheitsprüfung (Kältemittel)", ART_BETR, BM_JAHR),
                 new VorlagenPositionSeed("Personalkosten / Bedienung", ART_BETR, BM_PINV, 1.0, 4.0),

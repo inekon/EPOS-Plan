@@ -102,6 +102,7 @@ und `README.md`.
 | [`aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md`](aktuell/Konzept_KI-Assistent_Aufgabensteuerung.md) | KI-Assistent mit Aufgabensteuerung: Schutzstufen, Aktionen, Grenzen | 2026-09-11 |
 | [`aktuell/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`](aktuell/Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md) | Der Hilfe-Assistent im Dialog: Aufruf, Kontext, Feldzustand, Steuerung | 2026-09-11 |
 | [`aktuell/Konzept_Katalogfilter_EPOS-Plan.md`](aktuell/Konzept_Katalogfilter_EPOS-Plan.md) | Katalogfilter: Spaltenfilter, Suche, Sortierung — Stufen S1–S3 | 2026-09-13 |
+| [`aktuell/Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md`](aktuell/Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md) | Klimadatenquellen: PVGIS-TMY, DWD-TRY-Datei und offene TRY-Regionaldaten — Bedienweg, TRY-Spaltenbild und Zuordnung, Zeitbasis, Direkt-Normal, benanntes Verwerfen, Regionswahl und Bereichsabruf, Lizenz, Einstellungen (E5, KL-Q2…Q5) | 2026-09-19 |
 | [`aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md`](aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) | Nutzungsdauer je Technik und Positionsart aus einer editierbaren AfA-Tabelle — Zielbild, Saat, Stufen S1–S3, Fragen ND-Q1…Q8 | 2026-09-14 |
 | [`aktuell/Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`](aktuell/Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md) | PV-Ertragsmodell aus den Modulstammdaten (T_NOCT, Temperaturkoeffizienten) | 2026-09-07 |
 | [`aktuell/Konzept_Projektbeispiele_Dokumentation.md`](aktuell/Konzept_Projektbeispiele_Dokumentation.md) | Projektbeispiele als mitwachsende Online-Dokumentation — Grundlage des Beispiele-Gerüsts | 2026-08-29 |
@@ -214,7 +215,7 @@ Querverweise der Protokolle untereinander kurz bleiben.
 | [`ueberholt/Protokolle/CLAUDE-Historie/`](ueberholt/Protokolle/CLAUDE-Historie/) | 4 | Die ausführlichen Fassungen der vier `CLAUDE.md` (Wurzel, `EPOS.Kern`, `EPOS.UI`, `WindowsFormsApplication1`) vor der Kürzung auf den gültigen Stand; die relativen Verweise sind auf den Ablageort umgeschrieben |
 | [`ueberholt/Protokolle/Statusbloecke/`](ueberholt/Protokolle/Statusbloecke/) | 2 | Der ausführliche Block zur Statuszeile #309 (Kaskade sichtbar und umkehrbar, Pufferdubletten) und die Statusblöcke, die bis zum 12.09.2026 im Umsetzungskonzept iOS standen: die Paketblöcke iU1–iU10, die 25 Wellenblöcke iU9‑W0…W16c und die Gesamtübersicht § 4.0 — wortgetreu, mit alten Commit-Kennungen; fortgeschrieben wird `aktuell/Status_iOS_Migration.md` |
 | [`ueberholt/Protokolle/Bericht/`](ueberholt/Protokolle/Bericht/) | 1 | `LIESMICH_Phase1.md` — Phasen-Historie des Berichtsmoduls |
-| [`ueberholt/Protokolle/EPOS.Kern_Import/`](ueberholt/Protokolle/EPOS.Kern_Import/) | 1 | `PvKatalog_Koeffizienten_Protokoll.md` — Befund und Reparatur der PV-Modulkoeffizienten (Schemaschritt 69) |
+| [`ueberholt/Protokolle/EPOS.Kern_Import/`](ueberholt/Protokolle/EPOS.Kern_Import/) | 2 | `PvKatalog_Koeffizienten_Protokoll.md` — Befund und Reparatur der PV-Modulkoeffizienten (Schemaschritt 69); `KL1_Klimaquelle_TRY_Protokoll.md` — DWD-Testreferenzjahre als zweite Klimaquelle (KL1-A bis KL1-C) |
 
 ### ueberholt/Referenzbasen — die Protokolle der 26 entfernten Referenzbasen
 

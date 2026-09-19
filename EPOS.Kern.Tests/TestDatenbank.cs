@@ -337,6 +337,15 @@ namespace EPOS.Kern.Tests
                          in PvVerguetungJeVariante.Anweisungen)
                     DataRepository.ExecuteNonQuery(a.Value);
 
+                // Schritt 94 (Anwenderentscheid 19.09.2026): die Hilfsstrom-Positionen
+                // der Katalogvorlage "Standard" rechnen als Anteil des
+                // Endenergiebedarfs. REIN DML, aus DERSELBEN Quelle wie in der
+                // Migration und im Werkzeug; wiederholbar - auf einer bereits
+                // umgestellten Kopie findet die Anweisung keine Zeile mehr.
+                foreach (System.Collections.Generic.KeyValuePair<string, HilfsstromBemessungVorlage.Anweisung> a
+                         in HilfsstromBemessungVorlage.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

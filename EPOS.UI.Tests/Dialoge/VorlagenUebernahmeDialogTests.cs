@@ -10,12 +10,16 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <summary>
 /// Uebernahme Stamm -> Projekt (iU9-W1.4). Soll ist die Feldkarte von
 /// <c>Form_VorlagenUebernahme</c>: Kontextzeile, Zielprojekt, Quellgruppe
-/// (2 Optionen), drei Quelllisten, Vorschau, OK/Abbrechen.
+/// (2 Optionen), Quelllisten, Vorschau, OK/Abbrechen.
 ///
 /// <para><b>ANWENDERENTSCHEID 10.09.2026 (Ae25):</b> „OK = aus der Maske heraus und
 /// uebernehmen, Abbrechen = aus der Maske raus, nicht speichern." Die Faelle der
 /// Schlussleiste pruefen seither genau das — und die eine benannte Ausnahme, dass ein
 /// FEHLSCHLAG die Maske offen haelt.</para>
+///
+/// <para><b>ANWENDERENTSCHEID 19.09.2026:</b> Unter „Aus Vorlage/Variante" steht der
+/// KATALOGBLOCK der Administration — Komponente, Kategorie, Variante, Positionen der
+/// Variante als Vorschau. Die schlichte Klappliste „Vorlage/Variante" ist fort.</para>
 /// </summary>
 public class VorlagenUebernahmeDialogTests : BunitContext
 {
@@ -25,11 +29,43 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         (1007, "Zweitprojekt  [1007]")
     };
 
-    private static readonly (int Id, string Text)[] Vorlagen =
+    /// <summary>Die Varianten der Investitionsseite; Standard zuerst (wie der Katalog).</summary>
+    private static readonly (int Id, string Text)[] VorlagenInvest =
     {
         (5, "Standard"),
         (9, "Variante Nord")
     };
+
+    /// <summary>Die Varianten der Betriebsseite.</summary>
+    private static readonly (int Id, string Text)[] VorlagenBetrieb =
+    {
+        (7, "Standard Betrieb")
+    };
+
+    private static readonly (int Id, string Text)[] Keine = Array.Empty<(int, string)>();
+
+    private static IReadOnlyList<VorlagenPositionZeile> Positionen(VorlagenUebernahmeWahl wahl)
+        => wahl.QuellVorlageId switch
+        {
+            5 => new[]
+            {
+                new VorlagenPositionZeile("Gerätekosten", "je kW Leistung", "850 €/kW",
+                                          "20", "wird angelegt", false),
+                new VorlagenPositionZeile("Montage", "fester Betrag", "1.200 €",
+                                          "20", "vorhanden", true)
+            },
+            9 => new[]
+            {
+                new VorlagenPositionZeile("Gerätekosten Nord", "je kW Leistung", "910 €/kW",
+                                          "20", "wird angelegt", false)
+            },
+            7 => new[]
+            {
+                new VorlagenPositionZeile("Wartung", "fester Jahresbetrag", "600 €/a",
+                                          "", "wird angelegt", false)
+            },
+            _ => Array.Empty<VorlagenPositionZeile>()
+        };
 
     public VorlagenUebernahmeDialogTests()
     {
@@ -37,18 +73,23 @@ public class VorlagenUebernahmeDialogTests : BunitContext
     }
 
     private IRenderedComponent<VorlagenUebernahmeDialog> Aufbauen(
-        Action<bool>? beimSchliessen = null,
-        (int Id, string Text)[]? vorlagen = null,
+        Action<VorlagenUebernahmeSchluss>? beimSchliessen = null,
+        Func<bool, IReadOnlyList<(int Id, string Text)>>? vorlagenZu = null,
+        Func<VorlagenUebernahmeWahl, IReadOnlyList<VorlagenPositionZeile>>? positionenZu = null,
+        bool investVorwahl = true,
         bool zielWaehlbar = true,
         Func<int, IReadOnlyList<(int Id, string Text)>>? anlagenZu = null,
         Func<VorlagenUebernahmeWahl, VorlagenUebernahmeVorschau>? vorschau = null,
         Func<VorlagenUebernahmeWahl, VorlagenUebernahmeAntwort>? uebernehmen = null)
     {
         return Render<VorlagenUebernahmeDialog>(p => p
-            .Add(x => x.KontextText, "BHKW · Betriebskosten")
+            .Add(x => x.KontextText, "BHKW · Investitionskosten")
+            .Add(x => x.KomponenteText, "BHKW")
             .Add(x => x.Zielprojekte, Projekte)
             .Add(x => x.ZielWaehlbar, zielWaehlbar)
-            .Add(x => x.Quellvorlagen, vorlagen ?? Vorlagen)
+            .Add(x => x.InvestVorwahl, investVorwahl)
+            .Add(x => x.VorlagenZu, vorlagenZu ?? (invest => invest ? VorlagenInvest : VorlagenBetrieb))
+            .Add(x => x.PositionenZu, positionenZu ?? Positionen)
             .Add(x => x.Quellprojekte, Projekte)
             .Add(x => x.AnlagenZu, anlagenZu ?? (_ => new[] { (0, "(ohne Anlagenzuordnung)") }))
             .Add(x => x.Vorschau, vorschau ?? (_ => new VorlagenUebernahmeVorschau("Die Quelle enthält 7 Positionen.", true)))
@@ -61,10 +102,12 @@ public class VorlagenUebernahmeDialogTests : BunitContext
     {
         var cut = Aufbauen();
 
-        Assert.Equal(4, cut.FindAll("select").Count);          // Ziel + 3 Quelllisten
-        Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
+        // Ziel + Variante + Quellprojekt + Quellanlage.
+        Assert.Equal(4, cut.FindAll("select").Count);
+        // Zwei Quellen und zwei Kategorien.
+        Assert.Equal(4, cut.FindAll("input[type=radio]").Count);
         Assert.Equal(2, cut.FindAll(".epos-leiste button.epos-knopf").Count);
-        Assert.Equal("BHKW · Betriebskosten", cut.Find(".epos-kontextzeile").TextContent);
+        Assert.Equal("BHKW · Investitionskosten", cut.Find(".epos-kontextzeile").TextContent);
     }
 
     [Fact]
@@ -77,6 +120,10 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Equal("Zielprojekt:", texte[0].TextContent);
         Assert.Equal("Aus Vorlage/Variante:", texte[1].TextContent);
         Assert.Equal("Aus Projekt/Anlage:", texte[2].TextContent);
+        Assert.Equal("Komponente:", texte[3].TextContent);
+        Assert.Equal("Betriebskosten", texte[4].TextContent);
+        Assert.Equal("Investitionskosten", texte[5].TextContent);
+        Assert.Equal("Variante:", texte[6].TextContent);
         Assert.Equal("OK", cut.Find(".epos-knopf--primaer").TextContent);
         Assert.Equal("Abbrechen", cut.FindAll(".epos-leiste button.epos-knopf")[1].TextContent);
     }
@@ -92,7 +139,7 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         var cut = Render<VorlagenUebernahmeDialog>(p => p
             .Add(x => x.TitelText, "")
             .Add(x => x.Zielprojekte, Projekte)
-            .Add(x => x.Quellvorlagen, Vorlagen)
+            .Add(x => x.VorlagenZu, invest => invest ? VorlagenInvest : VorlagenBetrieb)
             .Add(x => x.Quellprojekte, Projekte));
 
         Assert.Empty(cut.FindAll(".epos-dialog-titel"));
@@ -102,13 +149,12 @@ public class VorlagenUebernahmeDialogTests : BunitContext
     [Fact]
     public void Die_Quelle_startet_bei_der_Vorlage_und_sperrt_die_Projektlisten()
     {
-        // Auswahl_Geaendert: cmbQuellProjekt/.Anlage folgen rbQuelleProjekt,
-        // cmbQuellVorlage folgt rbQuelleVorlage.
+        // Auswahl_Geaendert: cmbQuellProjekt/.Anlage folgen rbQuelleProjekt.
         var cut = Aufbauen();
 
         Assert.True(cut.Instance.AusVorlage);
         var listen = cut.FindAll("select");
-        Assert.False(listen[1].HasAttribute("disabled"));   // Quellvorlage
+        Assert.False(listen[1].HasAttribute("disabled"));   // Variante im Katalogblock
         Assert.True(listen[2].HasAttribute("disabled"));    // Quellprojekt
         Assert.True(listen[3].HasAttribute("disabled"));    // Quellanlage
     }
@@ -122,22 +168,71 @@ public class VorlagenUebernahmeDialogTests : BunitContext
 
         Assert.False(cut.Instance.AusVorlage);
         var listen = cut.FindAll("select");
-        Assert.True(listen[1].HasAttribute("disabled"));
-        Assert.False(listen[2].HasAttribute("disabled"));
-        Assert.False(listen[3].HasAttribute("disabled"));
+        Assert.Equal(3, listen.Count);                      // der Katalogblock ist fort
+        Assert.False(listen[1].HasAttribute("disabled"));   // Quellprojekt
+        Assert.False(listen[2].HasAttribute("disabled"));   // Quellanlage
     }
 
+    /// <summary>
+    /// <b>ANWENDERBEFUND 19.09.2026:</b> Der Anwender fand die Option „Aus
+    /// Vorlage/Variante" ABGEWAEHLT vor und die Variantenliste grau. Dieser Fall haelt
+    /// den Klickweg fest: Fuehrt der Katalog eine Variante, ist die Option vorbelegt,
+    /// NICHT gesperrt, und ein Wechsel hin und zurueck bringt den Katalogblock wieder.
+    /// Ein Fehler im Klickweg der <c>Optionsgruppe</c> liesse sich hier sehen.
+    /// </summary>
     [Fact]
-    public void Ohne_Vorlage_ist_die_Quelle_Projekt_und_die_Vorlagenoption_gesperrt()
+    public void Die_Vorlagenoption_ist_vorbelegt_und_laesst_sich_zurueckwaehlen()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(cut.Instance.AusVorlage);
+        Assert.False(cut.FindAll("input[type=radio]")[0].HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll(".epos-option-beschreibung"));
+
+        cut.FindAll("input[type=radio]")[1].Change(true);
+        Assert.False(cut.Instance.AusVorlage);
+        Assert.Empty(cut.FindAll(".epos-zeilenraster"));
+
+        cut.FindAll("input[type=radio]")[0].Change(true);
+        Assert.True(cut.Instance.AusVorlage);
+        Assert.Single(cut.FindAll(".epos-zeilenraster"));
+        Assert.Equal(5, cut.Instance.QuellVorlage);
+    }
+
+    /// <summary>
+    /// <b>19.09.2026:</b> Ohne Variante in BEIDEN Kategorien bleibt die Option
+    /// gesperrt — aber sie erklaert sich jetzt, statt still zu sein. Ein Anwender darf
+    /// eine gesperrte Option nicht fuer eine bloss nicht gewaehlte halten.
+    /// </summary>
+    [Fact]
+    public void Ohne_Vorlage_ist_die_Quelle_Projekt_und_die_Vorlagenoption_erklaert_gesperrt()
     {
         // rbQuelleVorlage.Enabled = _vorlagen.Count > 0;
         // if (_vorlagen.Count == 0) rbQuelleProjekt.Checked = true;
-        var cut = Aufbauen(vorlagen: Array.Empty<(int, string)>());
+        var cut = Aufbauen(vorlagenZu: _ => Keine);
 
         Assert.False(cut.Instance.AusVorlage);
         Assert.True(cut.FindAll("input[type=radio]")[0].HasAttribute("disabled"));
+        Assert.Contains("Administration", cut.Find(".epos-option-beschreibung").TextContent);
         // A-12: Anders als in WinForms sind die Projektlisten dabei bedienbar.
-        Assert.False(cut.FindAll("select")[2].HasAttribute("disabled"));
+        Assert.False(cut.FindAll("select")[1].HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>19.09.2026:</b> Fuehrt der Katalog nur in der ANDEREN Kategorie eine
+    /// Variante, ist die Option waehlbar und die Kategorie-Vorwahl springt dorthin.
+    /// </summary>
+    [Fact]
+    public void Fuehrt_nur_die_andere_Kategorie_eine_Variante_springt_die_Vorwahl()
+    {
+        var cut = Aufbauen(vorlagenZu: invest => invest ? Keine : VorlagenBetrieb);
+
+        Assert.True(cut.Instance.AusVorlage);
+        Assert.False(cut.Instance.Invest);
+        Assert.Equal(7, cut.Instance.QuellVorlage);
+        Assert.Empty(cut.FindAll(".epos-option-beschreibung"));
+        // Die Betriebsseite kennt keine Nutzungsdauer — die Spalte fehlt.
+        Assert.Equal(4, cut.FindAll(".epos-zr-kopfzelle").Count);
     }
 
     [Fact]
@@ -154,7 +249,8 @@ public class VorlagenUebernahmeDialogTests : BunitContext
     {
         var cut = Aufbauen();
 
-        Assert.Equal("Die Quelle enthält 7 Positionen.", cut.Find(".epos-herleitung-text").TextContent);
+        Assert.Equal("Die Quelle enthält 7 Positionen.",
+                     cut.FindAll(".epos-herleitung-text")[^1].TextContent);
     }
 
     [Fact]
@@ -183,12 +279,99 @@ public class VorlagenUebernahmeDialogTests : BunitContext
             : new[] { (0, "(ohne Anlagenzuordnung)") });
 
         cut.FindAll("input[type=radio]")[1].Change(true);
-        cut.FindAll("select")[2].Change("1007");
+        cut.FindAll("select")[1].Change("1007");
 
-        var anlagen = cut.FindAll("select")[3].QuerySelectorAll("option");
+        var anlagen = cut.FindAll("select")[2].QuerySelectorAll("option");
         Assert.Equal(2, anlagen.Length);
         Assert.Equal("BHKW — Nord", anlagen[0].TextContent);
         Assert.Equal(77, cut.Instance.QuellAnlage);   // der erste Eintrag ist gewaehlt
+    }
+
+    // =====================================================================
+    //  Der Katalogblock — Anwenderentscheid 19.09.2026
+    // =====================================================================
+
+    /// <summary>Der Block steht NUR unter der gewaehlten Option.</summary>
+    [Fact]
+    public void Der_Katalogblock_steht_nur_unter_der_gewaehlten_Option()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindAll(".epos-zeilenraster"));
+        Assert.Equal("BHKW", cut.Find(".epos-lesewert").TextContent);
+
+        cut.FindAll("input[type=radio]")[1].Change(true);
+
+        Assert.Empty(cut.FindAll(".epos-zeilenraster"));
+        Assert.Empty(cut.FindAll(".epos-lesewert"));
+        Assert.Equal(2, cut.FindAll("input[type=radio]").Count);
+    }
+
+    /// <summary>
+    /// Ein Kategoriewechsel laedt die Variantenliste dieser Kategorie und setzt die
+    /// Vorwahl auf die erste Zeile — das ist die Standardvariante.
+    /// </summary>
+    [Fact]
+    public void Der_Kategoriewechsel_laedt_die_Varianten_und_waehlt_die_erste()
+    {
+        var cut = Aufbauen();
+        cut.FindAll("select")[1].Change("9");
+        Assert.Equal(9, cut.Instance.QuellVorlage);
+
+        // Die Kategorien stehen als drittes und viertes Optionsfeld: Betrieb, Invest.
+        cut.FindAll("input[type=radio]")[2].Change(true);
+
+        Assert.False(cut.Instance.Invest);
+        Assert.Equal(7, cut.Instance.QuellVorlage);
+        var varianten = cut.FindAll("select")[1].QuerySelectorAll("option");
+        Assert.Single(varianten);
+        Assert.Equal("Standard Betrieb", varianten[0].TextContent);
+    }
+
+    [Fact]
+    public void Die_Vorschau_zeigt_die_Positionen_der_gewaehlten_Variante()
+    {
+        var cut = Aufbauen();
+
+        Assert.Equal(2, cut.FindAll(".epos-zr-zeile").Count);
+        var zellen = cut.FindAll(".epos-zr-zeile")[0].QuerySelectorAll(".epos-zr-zelle");
+        Assert.Equal(5, zellen.Length);
+        Assert.Equal("Gerätekosten", zellen[0].TextContent);
+        Assert.Equal("je kW Leistung", zellen[1].TextContent);
+        Assert.Equal("850 €/kW", zellen[2].TextContent);
+        Assert.Equal("20", zellen[3].TextContent);
+
+        cut.FindAll("select")[1].Change("9");
+
+        Assert.Single(cut.FindAll(".epos-zr-zeile"));
+        Assert.Equal("Gerätekosten Nord",
+                     cut.Find(".epos-zr-zeile .epos-zr-zelle").TextContent);
+    }
+
+    /// <summary>
+    /// <b>ANWENDERBEFUND 19.09.2026:</b> „Die Quelle enthaelt 7 Positionen, das Ziel
+    /// fuehrt bereits 7" sagt nicht, WELCHE fehlen. Die Zeile sagt es.
+    /// </summary>
+    [Fact]
+    public void Die_Vorschauzeilen_kennzeichnen_vorhandene_und_neue_Positionen()
+    {
+        var cut = Aufbauen();
+
+        var zeilen = cut.FindAll(".epos-zr-zeile");
+        Assert.Equal("wird angelegt",
+                     zeilen[0].QuerySelectorAll(".epos-zr-zelle")[4].TextContent);
+        Assert.Equal("vorhanden",
+                     zeilen[1].QuerySelectorAll(".epos-zr-zelle")[4].TextContent);
+    }
+
+    [Fact]
+    public void Eine_leere_Vorlage_zeigt_eine_Erklaerzeile_statt_leerer_Tabelle()
+    {
+        var cut = Aufbauen(positionenZu: _ => Array.Empty<VorlagenPositionZeile>());
+
+        Assert.Empty(cut.FindAll(".epos-zeilenraster"));
+        Assert.Equal("Diese Vorlage führt keine Positionen.",
+                     cut.FindAll(".epos-herleitung-text")[0].TextContent);
     }
 
     [Fact]
@@ -244,21 +427,50 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.True(erhalten!.AusVorlage);
         Assert.Equal(1007, erhalten.ZielProjektId);
         Assert.Equal(9, erhalten.QuellVorlageId);
+        Assert.True(erhalten.Invest);
+    }
+
+    /// <summary>
+    /// <b>19.09.2026:</b> OK reicht Vorlage UND Kategorie durch — nach einem
+    /// Kategoriewechsel also die Variante der anderen Seite und deren Kategorie.
+    /// Der Schluss meldet dieselbe Kategorie, damit der Wirt auf sie umschaltet.
+    /// </summary>
+    [Fact]
+    public void OK_reicht_Vorlage_und_Kategorie_durch()
+    {
+        VorlagenUebernahmeWahl? erhalten = null;
+        VorlagenUebernahmeSchluss? schluss = null;
+        var cut = Aufbauen(beimSchliessen: s => schluss = s,
+                           uebernehmen: wahl =>
+                           {
+                               erhalten = wahl;
+                               return new VorlagenUebernahmeAntwort(false, "fertig");
+                           });
+
+        cut.FindAll("input[type=radio]")[2].Change(true);   // Betriebskosten
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.NotNull(erhalten);
+        Assert.Equal(7, erhalten!.QuellVorlageId);
+        Assert.False(erhalten.Invest);
+        Assert.NotNull(schluss);
+        Assert.True(schluss!.Geschrieben);
+        Assert.False(schluss.Invest);
     }
 
     /// <summary>
     /// <b>Ae25 (10.09.2026):</b> OK uebernimmt UND verlaesst die Maske; gemeldet wird
-    /// <c>true</c>. Die Erfolgsmeldung des Controllers steht nicht mehr im Dialog —
-    /// sie erschiene dort in dem Augenblick, in dem er verschwindet; bestaetigt wird in
-    /// der Kostenverwaltung (<c>KostenKomponenteDialog.UebernahmeFertigMachen</c>).
-    /// Bis zum 10.09.2026 blieb die Maske stehen (A-7 aus B5b).
+    /// <c>Geschrieben</c>. Die Erfolgsmeldung des Controllers steht nicht mehr im
+    /// Dialog — sie erschiene dort in dem Augenblick, in dem er verschwindet;
+    /// bestaetigt wird in der Kostenverwaltung
+    /// (<c>KostenKomponenteDialog.UebernahmeFertigMachen</c>).
     /// </summary>
     [Fact]
     public void OK_uebernimmt_und_schliesst_mit_true()
     {
         int laeufe = 0;
-        bool? erfolg = null;
-        var cut = Aufbauen(beimSchliessen: e => erfolg = e,
+        VorlagenUebernahmeSchluss? schluss = null;
+        var cut = Aufbauen(beimSchliessen: e => schluss = e,
                            uebernehmen: _ =>
                            {
                                laeufe++;
@@ -268,7 +480,7 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         cut.Find(".epos-knopf--primaer").Click();
 
         Assert.Equal(1, laeufe);
-        Assert.True(erfolg);
+        Assert.True(schluss?.Geschrieben);
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
     }
 
@@ -291,14 +503,14 @@ public class VorlagenUebernahmeDialogTests : BunitContext
     public void Abbrechen_schliesst_mit_false_und_schreibt_nicht()
     {
         int laeufe = 0;
-        bool? erfolg = null;
-        var cut = Aufbauen(beimSchliessen: e => erfolg = e,
+        VorlagenUebernahmeSchluss? schluss = null;
+        var cut = Aufbauen(beimSchliessen: e => schluss = e,
                            uebernehmen: _ => { laeufe++; return new VorlagenUebernahmeAntwort(false, "x"); });
 
         cut.FindAll(".epos-leiste button.epos-knopf")[1].Click();
 
         Assert.Equal(0, laeufe);
-        Assert.False(erfolg);
+        Assert.False(schluss?.Geschrieben);
     }
 
     [Fact]
@@ -334,7 +546,7 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         var cut = Render<VorlagenUebernahmeDialog>(p => p
             .Add(x => x.TitelText, "")
             .Add(x => x.Zielprojekte, Projekte)
-            .Add(x => x.Quellvorlagen, Vorlagen)
+            .Add(x => x.VorlagenZu, invest => invest ? VorlagenInvest : VorlagenBetrieb)
             .Add(x => x.Quellprojekte, Projekte));
 
         Assert.Empty(cut.FindAll(".epos-dialog-zu"));

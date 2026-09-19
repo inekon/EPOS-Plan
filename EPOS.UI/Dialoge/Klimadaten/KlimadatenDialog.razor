@@ -51,6 +51,7 @@
    belegt: "Daten einlesen" schreibt sofort. *@
 
 @namespace EPOS.UI.Dialoge.Klimadaten
+@using System.Globalization
 @using WindowsFormsApplication1
 
 <div class="epos-dialog epos-katalog-dialog epos-klimaregion" tabindex="-1"
@@ -122,6 +123,41 @@
 
             <Textfeld Bezeichnung="@LabelDetails" Wert="@_details"
                       Mehrzeilig="true" Zeilen="3" NurLesen="true" />
+
+            @* ---- die KLIMAQUELLE (Auftrag KL1-B) -------------------------
+                   Drei Quellen stehen zur Wahl; die Optionsgruppe zeigt sie
+                   alle, statt sie in einer Klappliste zu verstecken. Je nach
+                   Wahl stehen darunter die Felder, die nur diese Quelle
+                   braucht - ein Feld ohne Wirkung waere eine Behauptung, die
+                   nicht stimmt. *@
+            <Gruppenkopf Titel="@GruppeQuelleText" />
+
+            <div class="epos-klimaregion-eingabe">
+                <Optionsgruppe Bezeichnung="@GruppeQuelleText" Eintraege="@Quelleneintraege"
+                               Auswahl="@((int)_quelle)" AuswahlChanged="BeiQuelle"
+                               Aktiv="@(!_laeuft)" />
+
+                @if (_quelle == KlimaQuelle.TryDatei)
+                {
+                    <Dateiwahl Bezeichnung="@LabelTryDateiText" Filter="@TryDateiFilter"
+                               KnopfText="@WaehlenText" Pfad="@_tryPfad"
+                               Waehlen="@DateiWaehlen" PfadChanged="BeiTryPfad"
+                               Aktiv="@(!_laeuft)" />
+                }
+                else if (_quelle == KlimaQuelle.TryRegional)
+                {
+                    <Auswahlfeld Bezeichnung="@LabelTryJahrText" Eintraege="@Jahreseintraege"
+                                 Auswahl="@_tryJahr" AuswahlChanged="BeiTryJahr"
+                                 Aktiv="@(!_laeuft)" />
+                    <Auswahlfeld Bezeichnung="@LabelTrySzenarioText" Eintraege="@Szenarioeintraege"
+                                 Auswahl="@((int)_szenario)" AuswahlChanged="BeiSzenario"
+                                 Aktiv="@(!_laeuft)" />
+                    <Dateiwahl Bezeichnung="@LabelTryPaketText" Filter="@TryPaketFilter"
+                               KnopfText="@WaehlenText" Pfad="@_tryPaketPfad"
+                               Waehlen="@DateiWaehlen" PfadChanged="BeiTryPaket"
+                               Aktiv="@(!_laeuft)" />
+                }
+            </div>
 
             @* ---- der Import ---------------------------------------------- *@
             <Gruppenkopf Titel="@GruppeStandortText" />
@@ -210,6 +246,14 @@
     [Parameter] public Action? Abbrechen { get; set; }
 
     /// <summary>
+    /// Der Dateiwähler der Plattform (Filter hinein, Pfad heraus; <c>null</c> =
+    /// abgebrochen) — für die TRY-Datei und das Regionalpaket. <b>Ohne ihn bleibt der
+    /// Knopf weg</b> (Regel des Bausteins <c>Dateiwahl</c>); die Felder sind dann von
+    /// Hand zu füllen.
+    /// </summary>
+    [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
+
+    /// <summary>
     /// Löscht eine Region samt ihren Datenblöcken (A-7/A-8);
     /// <c>false</c> = sie blieb stehen (Auslieferungssatz).
     /// </summary>
@@ -260,6 +304,22 @@
     [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Klimadaten.btn_Help";
 
+    // ---- Klimaquelle (Auftrag KL1-B) -----------------------------------
+    [Parameter] public string GruppeQuelleText { get; set; } = Resource.KLIMA_QUELLE;
+    [Parameter] public string QuellePvgisText { get; set; } = Resource.KLIMA_QUELLE_PVGIS;
+    [Parameter] public string QuelleTryDateiText { get; set; } = Resource.KLIMA_QUELLE_TRY_DATEI;
+    [Parameter] public string QuelleTryRegionalText { get; set; } = Resource.KLIMA_QUELLE_TRY_REGIONAL;
+    [Parameter] public string LabelTryDateiText { get; set; } = Resource.KLIMA_TRY_DATEI;
+    [Parameter] public string LabelTryPaketText { get; set; } = Resource.KLIMA_TRY_PAKET;
+    [Parameter] public string LabelTryJahrText { get; set; } = Resource.KLIMA_TRY_JAHR;
+    [Parameter] public string LabelTrySzenarioText { get; set; } = Resource.KLIMA_TRY_SZENARIO;
+    [Parameter] public string SzMittelText { get; set; } = Resource.KLIMA_TRY_SZ_MITTEL;
+    [Parameter] public string SzSommerwarmText { get; set; } = Resource.KLIMA_TRY_SZ_SOMMERWARM;
+    [Parameter] public string SzWinterkaltText { get; set; } = Resource.KLIMA_TRY_SZ_WINTERKALT;
+    [Parameter] public string WaehlenText { get; set; } = Resource.KLIMA_TRY_BTN_WAEHLEN;
+    [Parameter] public string TryDateiFilter { get; set; } = Resource.KLIMA_TRY_DATEI_FILTER;
+    [Parameter] public string TryPaketFilter { get; set; } = Resource.KLIMA_TRY_PAKET_FILTER;
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -292,6 +352,38 @@
 
     private readonly HashSet<string> _fehlerFelder = new();
 
+    // ---- Klimaquelle (Auftrag KL1-B) -----------------------------------
+    private KlimaQuelle _quelle = KlimaQuelle.PvgisTmy;
+    private string _tryPfad = "";
+    private string _tryPaketPfad = "";
+    private int? _tryJahr = KlimaImportAuftrag.TRY_JAHR_VORGABE;
+    private TrySzenario _szenario = TrySzenario.MittleresJahr;
+
+    /// <summary>Die gewählte Klimaquelle (Prüfhilfe für Tests).</summary>
+    public KlimaQuelle Quelle => _quelle;
+
+    private IReadOnlyList<(int Id, string Text)> Quelleneintraege => new[]
+    {
+        ((int)KlimaQuelle.PvgisTmy, QuellePvgisText),
+        ((int)KlimaQuelle.TryDatei, QuelleTryDateiText),
+        ((int)KlimaQuelle.TryRegional, QuelleTryRegionalText)
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Jahreseintraege => new[]
+    {
+        (KlimaImportAuftrag.TRY_JAHR_VORGABE,
+         KlimaImportAuftrag.TRY_JAHR_VORGABE.ToString(CultureInfo.InvariantCulture)),
+        (KlimaImportAuftrag.TRY_JAHR_PROJEKTION,
+         KlimaImportAuftrag.TRY_JAHR_PROJEKTION.ToString(CultureInfo.InvariantCulture))
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Szenarioeintraege => new[]
+    {
+        ((int)TrySzenario.MittleresJahr, SzMittelText),
+        ((int)TrySzenario.Sommerwarm, SzSommerwarmText),
+        ((int)TrySzenario.Winterkalt, SzWinterkaltText)
+    };
+
     private IQueryable<Regionszeile> Regionszeilen => _regionen.AsQueryable();
 
     /// <summary>Die gewählte Region (Prüfhilfe für Tests).</summary>
@@ -306,13 +398,30 @@
     private bool LoeschenErlaubt => !_laeuft && _gewaehlt.Length > 0 && Loeschen is not null;
 
     /// <summary>
-    /// „Daten einlesen" braucht einen Ortsnamen ODER die drei Handangaben — und kein
-    /// fehlerhaftes Zahlenfeld.
+    /// Der STANDORT: ein Ortsname ODER die drei Handangaben. Er wird bei JEDER Quelle
+    /// gebraucht — auch eine TRY-Datei sagt nichts über Longitude und Latitude
+    /// (ihr Kopf führt Lambert-Koordinaten), und ohne sie ließe sich weder die
+    /// Sonnengeometrie noch die nächste TRY-Region bestimmen.
+    /// </summary>
+    private bool StandortSteht =>
+        _ortsname.Trim().Length > 0 ||
+        (_longitude.HasValue && _latitude.HasValue && _bezeichnung.Trim().Length > 0);
+
+    /// <summary>
+    /// „Daten einlesen" braucht einen Standort und — je nach Quelle — eine Datei:
+    /// <list type="bullet">
+    ///   <item><description><b>PVGIS</b>: Standort, wie bisher.</description></item>
+    ///   <item><description><b>TRY-Datei</b>: zusätzlich der Pfad der
+    ///     <c>.dat</c>-Datei.</description></item>
+    ///   <item><description><b>TRY-Regionaldaten</b>: Standort wie bisher; das
+    ///     Regionalpaket darf leer bleiben, dann wird die eingestellte Adresse
+    ///     abgerufen.</description></item>
+    /// </list>
+    /// Ein fehlerhaftes Zahlenfeld sperrt in jedem Fall.
     /// </summary>
     private bool ImportErlaubt => !_laeuft && Importieren is not null &&
-        _fehlerFelder.Count == 0 &&
-        (_ortsname.Trim().Length > 0 ||
-         (_longitude.HasValue && _latitude.HasValue && _bezeichnung.Trim().Length > 0));
+        _fehlerFelder.Count == 0 && StandortSteht &&
+        (_quelle != KlimaQuelle.TryDatei || _tryPfad.Trim().Length > 0);
 
     // =====================================================================
     // Aufbau
@@ -379,6 +488,50 @@
     }
 
     // =====================================================================
+    // Klimaquelle (Auftrag KL1-B)
+    // =====================================================================
+
+    private void BeiQuelle(int? id)
+    {
+        _quelle = id switch
+        {
+            (int)KlimaQuelle.TryDatei => KlimaQuelle.TryDatei,
+            (int)KlimaQuelle.TryRegional => KlimaQuelle.TryRegional,
+            _ => KlimaQuelle.PvgisTmy
+        };
+        _meldung = "";
+    }
+
+    private void BeiTryPfad(string pfad)
+    {
+        _tryPfad = pfad ?? "";
+        _meldung = "";
+    }
+
+    private void BeiTryPaket(string pfad)
+    {
+        _tryPaketPfad = pfad ?? "";
+        _meldung = "";
+    }
+
+    private void BeiTryJahr(int? jahr)
+    {
+        _tryJahr = jahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE;
+        _meldung = "";
+    }
+
+    private void BeiSzenario(int? id)
+    {
+        _szenario = id switch
+        {
+            (int)TrySzenario.Sommerwarm => TrySzenario.Sommerwarm,
+            (int)TrySzenario.Winterkalt => TrySzenario.Winterkalt,
+            _ => TrySzenario.MittleresJahr
+        };
+        _meldung = "";
+    }
+
+    // =====================================================================
     // Import (btn_Import_Click)
     // =====================================================================
 
@@ -399,6 +552,20 @@
                   Longitude = _longitude ?? 0,
                   Latitude = _latitude ?? 0
               };
+
+        // Die Quelle und ihre Angaben (Auftrag KL1-B). Bei PVGIS bleiben die
+        // Vorgaben stehen - der Auftrag sieht dann aus wie vor KL1-B.
+        auftrag.Quelle = _quelle;
+        if (_quelle == KlimaQuelle.TryDatei)
+        {
+            auftrag.TryPfad = _tryPfad.Trim();
+        }
+        else if (_quelle == KlimaQuelle.TryRegional)
+        {
+            auftrag.TryPaketPfad = _tryPaketPfad.Trim();
+            auftrag.TryJahr = _tryJahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE;
+            auftrag.Szenario = _szenario;
+        }
 
         _laeuft = true;
         _anteil = null;

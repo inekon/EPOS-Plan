@@ -42,7 +42,7 @@ Preisen ergeben keine gemeinsame Bezugsgröße.
 |---|---|---|---|---|
 | Wartung BHKW — Pflicht · Empfehlung 0,02–0,04 €/kWh | je kWh elektrisch | 0,0280 €/kWh | 1.650.000,00 kWh · BHKW 1 | 46.200,00 |
 | Instandhaltung BHKW — Pflicht · Empfehlung 1,00–2,00 % | % der Investition | 1,50 % | 240.772,40 € · Investition BHKW 1 | 3.611,59 |
-| Hilfsenergiekosten — Pflicht · Empfehlung 2,00–4,00 % | % der Endenergiekosten | 2,00 % | 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom | 6.252,62 |
+| Hilfsenergiekosten — Pflicht · Empfehlung 2,00–4,00 % | % der Endenergiekosten (in dieser Position gewählt) | 2,00 % | 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom | 6.252,62 |
 | Versicherung | fester Jahresbetrag | 1.100,00 €/a | — (Satz = Betrag) | 1.100,00 |
 | **Summe Betriebskosten netto** | | | brutto 68.025,41 €/a | **57.164,21** |
 
@@ -55,6 +55,29 @@ KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird
 **Ohne Simulationslauf** tragen die mengenbasierten Zeilen ein ⚠ im Betrag, und unter dem Raster steht
 „‚Wartung BHKW': kein Simulationslauf · ‚Hilfsenergiekosten': kein Simulationslauf"; investitionsbasierte Sätze
 rechnen sofort.
+
+**Der Grund am ⚠ nennt die Abhilfe.** Eine Zeile, deren Bezugsgröße aus dem Lauf kommt, kann aus vier Gründen
+ohne sie dastehen, und jeder verlangt einen anderen Handgriff:
+
+| Grund | Was fehlt | Abhilfe |
+|---|---|---|
+| kein Simulationslauf | das Projekt führt kein gespeichertes Ergebnis | Simulation starten |
+| Anlage nicht im Lauf | der Lauf steht, diese Anlage ist nicht darin | Kaskaden- bzw. Stromplatz in der Simulationskonfiguration vergeben |
+| keine Menge | Lauf und Anlage stehen, die Menge des Laufs ist 0 | nichts — die 0 ist die richtige Zahl |
+| Arbeitspreis fehlt (Weg A) | die Menge steht, der Energieträger der Anlage führt keinen Arbeitspreis | Arbeitspreis in der Energieträgerverwaltung erfassen |
+| Strompreis fehlt (Weg B) | die Menge steht, und der Stromträger, mit dem Weg B bewertet, führt keinen Arbeitspreis — an einer Stromanlage ihr eigener, sonst der des Projekts | Arbeitspreis des genannten Trägers in der Energieträgerverwaltung erfassen |
+
+Die Unterscheidung trifft der Bezugsgrößen-Auflöser, weil er Lauf, Anlagen und Preise ohnehin in der Hand hält;
+die Landkarte Art ↔ Gewerk beantwortet weiterhin, ob das Gewerk die Größe überhaupt kennt („die Bemessungsart
+passt nicht zu diesem Gewerk"). Gefragt wird nur für Zeilen ohne Bezugsgröße, und der Auflöser entsteht
+höchstens einmal je Leseschleife.
+
+**Ein gespeicherter Lauf trägt seine Mengen auch ohne die Modulspalten.** Die Kessel-Modulzeile führt
+Brennstoffeinsatz und Nutzwärme als eigene Spalten; wo ein gespeichertes Ergebnis sie nicht führt, leitet der
+Auflöser beide aus derselben Zeile ab — die Nutzwärme als Summe ihrer beiden Wärmekanäle, den Brennstoff als
+Nutzwärme ÷ Jahresnutzungsgrad. Das ist die exakte Umkehrung der Vorwärtsrechnung und dieselbe Ableitung, die
+die Steuerseite für die Bemessungsmenge des § 54 benutzt; ein gespeicherter Lauf muss dafür nicht neu gerechnet
+werden.
 
 ## Berechnungsgrundlage
 
@@ -77,6 +100,8 @@ Endenergie je Komponente (EndenergieAufloeser)
   BHKW, Kessel   Bedarf = Σ Verbrauch × 1000          Kosten = Bedarf × Arbeitspreis(CarrierId)
   Elektrokessel  Bedarf = Σ (Waerme_Gas + Waerme_Oel) × 1000    Kosten = Bedarf × Strompreis
   Wärmepumpe     Bedarf = Σ (Stromverbrauch + Heizstab) × 1000   Kosten = Bedarf × Strompreis
+  Strompreis     = Arbeitspreis des EIGENEN Stromträgers der Anlage, sonst des Projektträgers
+                   (derselbe Preis bewertet Weg B: Betrag = Bedarf × Strompreis × Satz / 100)
   PV · Solarthermie · Speicher    null — nur Jahresbetrag zulässig
   Arbeitspreis = PreisArbeit / EffHi   (ohne Grund- und Leistungspreis)
 
@@ -87,10 +112,29 @@ Erlöse: IstErloes && wert > 0 → wert = −wert  (an drei Stellen identisch ge
 
 **Hilfsenergie-Definition (29.08.2026):** immer Strom, bemessen an der **Endenergie der Anlage** —
 Weg A: % der Endenergiekosten (BHKW, Kessel: Brennstoff × Trägerpreis; Wärmepumpe: Strom ×
-Bezugspreis) · Weg B: % des Endenergiebedarfs (kWh) · Weg C: fester Jahresbetrag. Solarthermie,
-Puffer-, Stromspeicher und PV: **nur absolut**. Weg B braucht keine zweite Formel — der Auflöser
-übergibt den bewerteten Bedarf; die Sätze von A und B sind nicht austauschbar (Faktor ≈ 3,4, das
-Preisverhältnis Strom zu Brennstoff).
+Bezugspreis) · Weg B: % des Endenergiebedarfs (kWh × Strompreis **der Anlage**) · Weg C: fester
+Jahresbetrag. Solarthermie, Puffer-, Stromspeicher und PV: **nur absolut**. Weg B braucht keine
+zweite Formel — der Auflöser übergibt den bewerteten Bedarf; die Sätze von A und B sind nicht
+austauschbar (Faktor ≈ 3,4, das Preisverhältnis Strom zu Brennstoff).
+
+**Welcher Strompreis Weg B bewertet, hängt an der ANLAGE.**
+Bezieht die Anlage selbst Strom und trägt sie einen eigenen Stromträger — Wärmepumpe,
+Heizstab, Elektrokessel mit gesetzter `Tab_Energieanlagen.ID_Carrier` auf einen dem Projekt
+zugeordneten `ELECTRICITY`-Träger —, gilt dessen Arbeitspreis; sonst der des
+Projekt-Stromträgers (Rangfolge `ProjektEnergietraegerCtrl.StromTraegerDerAnlagen`). Für eine
+Stromanlage bewerten damit **Weg A und Weg B dieselbe Menge mit demselben Preis**; eine Anlage
+mit Brennstoffträger (BHKW, Heizkessel auf Gas oder Öl) bewertet ihre Hilfsenergie weiter mit
+dem Projekt-Stromträger, denn ihr eigener Träger ist Brennstoff. Die Erkennung „Träger vom Typ
+Strom" ist dieselbe wie in der Rangfolge (`ProjektEnergietraegerCtrl.EigeneStromTraeger`:
+Katalogzeile, Projektzuordnung, `pricing_model = 'ELECTRICITY'`) — ein Brennstoffträger fällt
+durch den Preismodellvergleich heraus, ohne dass nach dem Gewerk gefragt werden müsste.
+
+**Die Katalogvorlage „Standard" sät Weg B.** Hilfsenergie ist Strom, und die drei Gewerke mit einer
+Hilfsstrom-Position — BHKW, Heizkessel, Wärmepumpe — rechnen sie deshalb als Anteil des
+Endenergiebedarfs, bewertet mit dem **Strompreis** des Projekts; die vier übrigen (Solarthermie,
+Pufferspeicher, PV, Stromspeicher) tragen einen festen Jahresbetrag. Weg A bleibt in jeder Position
+wählbar. Eine Projektposition behält die Bemessung, mit der sie erfasst wurde — die Vorlage wirkt
+erst bei der nächsten Übernahme.
 
 **Basis „% der Investition" auf der Betriebsseite** (`InvestSummeFuer`): `SUM(EingegebenerWert)`
 Kategorie 1 ohne Zuschuss, stufig Anlage → Komponente → Projekt, **vor** Zuschussabzug —
