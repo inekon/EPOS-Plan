@@ -19887,4 +19887,13 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_SICHT_LAUF_NOETIG" xml:space="preserve">
     <value>Die Sicht „Zwei Stände“ rechnet gegen A — bitte „Berechnen“.</value>
   </data>
+  <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
+    <value>Klimadaten</value>
+  </data>
+  <data name="ADM_SET_LBL_TRY_PORTAL" xml:space="preserve">
+    <value>Portal der DWD-Testreferenzjahre:</value>
+  </data>
+  <data name="ADM_SET_LBL_TRY_REGIONAL" xml:space="preserve">
+    <value>Adresse der TRY-Regionaldaten:</value>
+  </data>
 </root>

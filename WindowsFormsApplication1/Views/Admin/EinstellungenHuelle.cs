@@ -110,7 +110,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schreibt die neun Werte und — gesondert — den KI-Abschalter. Bei
+        /// Schreibt die elf Werte und — gesondert — den KI-Abschalter. Bei
         /// maschinenweiter Sperre bleibt der Schalter unangetastet
         /// (<c>KiAbschalterSpeichern</c> des Vorläufers).
         /// </summary>
@@ -125,7 +125,7 @@ namespace WindowsFormsApplication1
             }
             catch
             {
-                // Der Registry-Schalter ist nicht der Grund, die neun Settings zu
+                // Der Registry-Schalter ist nicht der Grund, die elf Settings zu
                 // verwerfen - sie stehen bereits.
             }
 
