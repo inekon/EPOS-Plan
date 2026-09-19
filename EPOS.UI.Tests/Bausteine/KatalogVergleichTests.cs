@@ -86,7 +86,8 @@ public class KatalogVergleichTests : EposBunitContext
     }
 
     private IRenderedComponent<Katalogliste> Aufbauen(
-        Func<string, IReadOnlyList<Parameterwert>>? uebersicht = null)
+        Func<string, IReadOnlyList<Parameterwert>>? uebersicht = null,
+        bool? vergleichbar = null)
     {
         return Render<Katalogliste>(p =>
         {
@@ -94,7 +95,29 @@ public class KatalogVergleichTests : EposBunitContext
             p.Add(x => x.Zeilen, Zeilen());
             p.Add(x => x.Filterstand, new Katalogfilterstand());
             if (uebersicht is not null) p.Add(x => x.Vergleichsparameter, uebersicht);
+            if (vergleichbar is not null) p.Add(x => x.Vergleichbar, vergleichbar.Value);
         });
+    }
+
+    /// <summary>
+    /// <b>Wo es nichts zu vergleichen gibt, steht der Knopf nicht da</b>
+    /// (<c>Vergleichbar="false"</c>, MN-1 vom 19.09.2026). Der EINZIGE Wirt, der
+    /// das setzt, ist der Gesetzeskatalog: Seine Zeilen sind Jahreszeilen EINES
+    /// Satzes, keine Geräte zur Auswahl. Vorgabe bleibt <c>true</c> — die fünfzehn
+    /// Gerätekataloge vergleichen Datenblätter.
+    /// </summary>
+    [Fact]
+    public void Ohne_Vergleichbar_steht_der_Knopf_nicht_in_der_Suchzeile()
+    {
+        Assert.Single(Aufbauen().FindAll(".epos-katalog-vergleichknopf"));
+
+        var ohne = Aufbauen(vergleichbar: false);
+
+        Assert.Empty(ohne.FindAll(".epos-katalog-vergleichknopf"));
+
+        // Die Liste selbst bleibt, was sie ist: Suche, Trefferzahl, Spaltenköpfe.
+        Assert.Single(ohne.FindAll(".epos-katalog-suchzeile input"));
+        Assert.Single(ohne.FindAll(".epos-katalog-treffer"));
     }
 
     /// <summary>Markiert die Zeile <paramref name="index"/> mit Strg-Klick.</summary>

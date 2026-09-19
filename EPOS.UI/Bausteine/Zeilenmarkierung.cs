@@ -122,6 +122,18 @@ namespace EPOS.UI.Bausteine
         }
 
         /// <summary>
+        /// <b>Nur den Anker aufheben</b>, die Markierung bleibt.
+        ///
+        /// <para>Ein Wirt, der die Markierung nach einem Filterwechsel aus seiner
+        /// eigenen Wahl NEU AUFBAUT (<see cref="Hinzufuegen"/> je Treffer), bekommt
+        /// als Anker den letzten Treffer — und der ist nicht die Zeile, die der
+        /// Anwender zuletzt angeklickt hat. Ein Umschalt-Klick zoege dann aus dem
+        /// Nichts. Hier faellt der Anker ausdruecklich, statt still falsch zu
+        /// stehen (dieselbe Zusage wie in <see cref="AufAnzahlBegrenzen"/>).</para>
+        /// </summary>
+        public void AnkerLoesen() => _anker = null;
+
+        /// <summary>
         /// Nach einem Filterwechsel: alles ab <paramref name="anzahl"/> faellt aus
         /// der Markierung, ein ungueltig gewordener Anker faellt weg.
         /// </summary>

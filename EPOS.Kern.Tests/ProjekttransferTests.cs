@@ -509,8 +509,17 @@ namespace EPOS.Kern.Tests
             string erwartetStamm = string.Format(Ressource("KOH_PV_STAMM_FEHLT"), STAMM);
 
             // (a) Die Verknuepfung zeigt auf ein Projekt, das es nicht gibt.
+            //
+            //     SEIT SCHEMASCHRITT 96 laesst die Datenbank diese Lage nicht mehr
+            //     entstehen: Tab_Variante.ID_ProjektRef traegt einen Fremdschluessel auf
+            //     Tab_Projekt, und ein Verweis ins Leere wird abgewiesen. Eine
+            //     BESTANDSDATENBANK kann ihn trotzdem fuehren - bis der Schritt gelaufen
+            //     ist -, und die Kohaerenzpruefung soll ihn dort weiterhin melden. Der
+            //     Fall stellt die alte Lage deshalb ausdruecklich her, indem er die
+            //     Beziehung fuer die Dauer der Probe zuruecknimmt.
             Assert.DoesNotContain(KohaerenzPruefung.Pruefe(idVariante, null),
                                   h => h.Text == erwartetVariante);
+            TestDatenbank.ProjektFremdschluesselZuruecknehmen("Tab_Variante");
             DataRepository.ExecuteNonQuery(
                 "UPDATE Tab_Variante SET ID_ProjektRef = 999999 WHERE ID_Projekt = " + idVariante);
             try

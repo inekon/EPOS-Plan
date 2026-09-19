@@ -258,11 +258,31 @@ namespace WindowsFormsApplication1
         /// die nächste Übernahme aus der Vorlage trägt die neue Bemessung hinein. Der
         /// Referenzlauf bleibt byte-gleich; keine Referenzrechnung liest eine
         /// Vorlagenposition.
+        /// Mit den KLIMASPALTEN (Schritt 95, Anwenderentscheid 19.09.2026) steht das
+        /// Ziel auf <b>95</b>: <c>Tab_Solar</c> und <c>Tab_Solar_STAMM</c> bekommen
+        /// <c>Gegenstrahlung</c> [W/m²], <c>Luftfeuchte</c> [%] und
+        /// <c>Bedeckungsgrad</c> [Achtel] — die Größen, die die Gebäudesimulation nach
+        /// VDI 6007 braucht und die beide Klimaquellen längst liefern;
+        /// <c>Tab_Klimaregion</c> und <c>Tab_Klimaregion_STAMM</c> bekommen
+        /// <c>Quelle</c> und <c>Importdatum</c>. Die zehn Spalten stehen bei
+        /// <see cref="SchemaKatalog.Schritt95_Klimaspalten"/>. <b>Kein DML:</b> Alle
+        /// bleiben NULL, und NULL heißt „nicht verfügbar" bzw. „Altbestand"; kein
+        /// Rechenweg liest eine von ihnen, der Referenzlauf bleibt byte-gleich.
+        /// Mit dem PROJEKT-FREMDSCHLÜSSEL (Schritt 96, Anwenderentscheid 19.09.2026)
+        /// steht das Ziel auf <b>96</b>: Die achtundzwanzig Projekttabellen, die ihre
+        /// Beziehung zu <c>Tab_Projekt</c> bisher nur dem Namen nach führten, bekommen
+        /// sie als Fremdschlüssel mit <c>ON DELETE CASCADE ON UPDATE CASCADE</c>. Der
+        /// Katalog steht bei <see cref="ProjektFremdschluessel.Katalog"/>. <b>Der
+        /// Schritt entfernt Zeilen</b> — aber nur solche, die zu keinem Projekt gehören
+        /// und deshalb kein Rechenweg je gelesen hat; wo eine ungepflegte Projektspalte
+        /// an einem gültigen Elternsatz hängt, wird sie nachgezogen statt die Zeile zu
+        /// verlieren. Werte, Ids und Zählerstände bleiben, der Referenzlauf bleibt
+        /// byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 94;
+        public const int Zielversion = 96;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

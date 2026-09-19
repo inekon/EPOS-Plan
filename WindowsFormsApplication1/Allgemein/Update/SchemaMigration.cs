@@ -3411,6 +3411,72 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_94_HILFSSTROM_BEMESSUNG = 94;
 
+        /// <summary>
+        /// Schritt 95 — die <b>Klimaspalten</b> (Anwenderentscheid vom 19.09.2026:
+        /// „alles Relevante für die Gebäudesimulation aufnehmen"; Schritt M4 des
+        /// Umsetzungskonzepts Gebäudesimulation VDI 6007).
+        ///
+        /// <para><b>Drei Größen der Stundenreihe</b> an <c>Tab_Solar</c> UND
+        /// <c>Tab_Solar_STAMM</c>: <c>Gegenstrahlung</c> [W/m²] (PVGIS <c>IR(h)</c>,
+        /// TRY <c>A</c>), <c>Luftfeuchte</c> [%] (PVGIS <c>RH</c>, TRY <c>RF</c>) und
+        /// <c>Bedeckungsgrad</c> in Achteln (TRY <c>N</c>; PVGIS liefert ihn nicht und
+        /// trägt NULL). <b>Zwei Angaben des Kopfsatzes</b> an <c>Tab_Klimaregion</c> UND
+        /// <c>Tab_Klimaregion_STAMM</c>: <c>Quelle</c> (sprachneutraler Schlüssel,
+        /// <see cref="DbWerte.KLIMA_QUELLE_PVGIS"/> und die zwei TRY-Wege) und
+        /// <c>Importdatum</c> (ISO <c>yyyy-MM-dd</c>). Die Quelle der zehn Spalten ist
+        /// <see cref="SchemaKatalog.Schritt95_Klimaspalten"/> — EINE Liste für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>KEIN DML.</b> Alle zehn Spalten bleiben im Bestand NULL. NULL heißt
+        /// bei den drei Klimagrößen „nicht verfügbar" (nie 0 — eine 0 wäre eine
+        /// Messaussage) und bei Quelle/Importdatum „Altbestand"; nachdatiert wird
+        /// nichts. Kein Rechenweg liest eine der Spalten, der Referenzlauf bleibt
+        /// byte-gleich.</para>
+        ///
+        /// <para><b>Katalog und Projektkopie im selben Schritt.</b> Eine Spalte nur auf
+        /// einer Seite wäre beim Kopieren einer Region ins Projekt
+        /// (<c>KlimaregionStammCtrl.CopyRegionToProjekt</c>) sofort ein
+        /// Datenverlust.</para>
+        ///
+        /// <para><b>Keine Windgeschwindigkeit</b> (Umsetzungskonzept Gebäudesimulation
+        /// F-S3: keine Spalte ohne Leser). Beide Quellen führen sie, kein Rechenweg des
+        /// Hauses braucht sie — sie bleibt benannt verworfen.</para>
+        /// </summary>
+        public const int SCHRITT_95_KLIMASPALTEN = 95;
+
+        /// <summary>
+        /// Schritt 96 — die <b>Projekttabellen bekommen ihren Fremdschlüssel auf
+        /// <c>Tab_Projekt</c></b> (Anwenderentscheid vom 19.09.2026: „Umfang
+        /// vollständig", für alle Installationen).
+        ///
+        /// <para><b>Achtundzwanzig Tabellen</b> tragen eine Projektspalte
+        /// (<c>ID_Projekt</c> bzw. <c>ProjektID</c>) ohne Fremdschlüssel — dieselbe
+        /// Beziehung wie bei den zwanzig, die ihn seit der Access-Übernahme haben, nur
+        /// ohne Zusage. Sie bekommen
+        /// <c>REFERENCES Tab_Projekt(ID) ON DELETE CASCADE ON UPDATE CASCADE</c>;
+        /// <c>Tab_Variante</c> für beide Spalten (<c>ID_Projekt</c> und
+        /// <c>ID_ProjektRef</c>). <b>Benannt ausgenommen</b> bleiben
+        /// <c>Tab_Applikation</c> (die Spalte merkt sich das zuletzt geöffnete Projekt,
+        /// 0 = keines) und <c>Tab_Kenndaten_Kuehlung_STAMM</c> (Katalogtabelle).</para>
+        ///
+        /// <para><b>Waisen werden gezählt, geheilt oder gelöscht — nie still
+        /// übergangen.</b> Ohne Bereinigung scheiterte der neue Fremdschlüssel am
+        /// <c>foreign_key_check</c>. Wo die Zeile an einem gültigen Elternsatz hängt
+        /// (<c>Tab_Kenndaten</c> an <c>Tab_WP</c> und die drei Typtabellen an ihrer
+        /// jeweiligen Elterntabelle), wird die Projektspalte NACHGEZOGEN statt die Zeile
+        /// zu verlieren; nur was danach zu keinem Projekt und keinem gültigen Elternsatz
+        /// gehört, fällt. Jede Zahl steht im Bericht.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Der Schritt kopiert Zeilen, er rechnet nicht:
+        /// Werte, IDs, <c>sqlite_sequence</c>-Stände, Spaltenreihenfolge, Indizes und
+        /// Sichten bleiben. Entfernt wird ausschließlich, was zu keinem Projekt gehört —
+        /// was also kein Rechenweg je gelesen hat; der Referenzlauf bleibt byte-gleich.
+        /// Anlass, Rezept und die Begründung jeder Abweichung stehen ausführlich bei
+        /// <see cref="ProjektFremdschluessel"/>.</para>
+        /// </summary>
+        public const int SCHRITT_96_PROJEKT_FREMDSCHLUESSEL = 96;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4650,6 +4716,47 @@ namespace WindowsFormsApplication1
                         "Geaendert wird NUR die Saat; was in einem Projekt erfasst " +
                         "ist, bleibt erfasst.",
                         Schritt_94_HilfsstromBemessung),
+
+            // ANWENDERENTSCHEID 19.09.2026 - die Klimareihe traegt die Groessen der
+            // Gebaeudesimulation, der Regionskopf seine Herkunft. REIN DDL, kein DML;
+            // die Quelle ist SchemaKatalog.Schritt95_Klimaspalten. Keine
+            // Reihenfolgebedingung gegenueber 89 bis 94 - die zehn Spalten sind neu und
+            // stehen fuer sich.
+            new Schritt(SCHRITT_95_KLIMASPALTEN,
+                        "Tab_Solar(_STAMM) bekommt Gegenstrahlung, Luftfeuchte und " +
+                        "Bedeckungsgrad, Tab_Klimaregion(_STAMM) Quelle und Importdatum",
+                        "Die Gebaeudesimulation nach VDI 6007 braucht die langwellige " +
+                        "Strahlungsbilanz und die Luftfeuchte; beide Klimaquellen " +
+                        "liefern sie laengst, gespeichert wurden sie bisher nicht. Den " +
+                        "Bedeckungsgrad fuehrt TRY als echten Messwert - die Schaetzung " +
+                        "aus dem Diffusanteil bleibt Rueckfall bei NULL. Quelle und " +
+                        "Importdatum sagen dem Programm, woher eine Region stammt; der " +
+                        "Freitext Details bleibt daneben stehen. NULL heisst 'nicht " +
+                        "verfuegbar' bzw. 'Altbestand' - der Schritt ist damit fuer " +
+                        "jede Bestandsrechnung ergebnisneutral.",
+                        Schritt_95_Klimaspalten),
+
+            // Schritt 96 (Anwenderentscheid 19.09.2026) - die Quelle ist
+            // ProjektFremdschluessel. Er steht ZULETZT und muss es: Er kopiert
+            // achtundzwanzig Tabellen vollstaendig, also muss jede Spalte, die ein
+            // frueherer Schritt anlegt, vorher dastehen (Schritt 95 haengt drei Spalten
+            // an Tab_Solar).
+            new Schritt(SCHRITT_96_PROJEKT_FREMDSCHLUESSEL,
+                        "28 Projekttabellen bekommen ihren Fremdschluessel auf " +
+                        "Tab_Projekt (ON DELETE/UPDATE CASCADE), Waisen werden geheilt " +
+                        "oder entfernt",
+                        "Ein Projekt ist der Anker von rund fuenfzig Tabellen; zwanzig " +
+                        "tragen ihre Beziehung seit der Access-Uebernahme, 28 nicht. " +
+                        "Ohne sie blieben beim Loeschen eines Projekts Zeilen liegen, " +
+                        "die niemand mehr erreicht - in der Testdatenbank 1.668 Stueck. " +
+                        "Ab hier nimmt ein geloeschtes Projekt seine Zeilen mit, und " +
+                        "eine neue Waise kann gar nicht mehr entstehen. Wo eine " +
+                        "ungepflegte Projektspalte an einem gueltigen Elternsatz haengt " +
+                        "(Kennlinien an ihrer Waermepumpe, Typzeilen an ihrem " +
+                        "Verbraucher), wird sie NACHGEZOGEN statt die Zeile zu " +
+                        "verlieren. Ergebnisneutral: Werte, Ids und Zaehlerstaende " +
+                        "bleiben, entfernt wird nur, was zu keinem Projekt gehoert.",
+                        Schritt_96_ProjektFremdschluessel),
         };
 
         /// <summary>
@@ -6854,6 +6961,141 @@ namespace WindowsFormsApplication1
                     "unberuehrt - erst die naechste Uebernahme aus der Vorlage traegt " +
                     "die neue Bemessung in ein Projekt. Der Referenzlauf bleibt " +
                     "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 95 - die Klimaspalten (Anwenderentscheid 19.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 95 — Anlass, Inhalt und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_95_KLIMASPALTEN"/> und bei
+        /// <see cref="SchemaKatalog.Schritt95_Klimaspalten"/>.
+        ///
+        /// <para><b>Reines DDL.</b> Zehn nullbare Spalten an vier Tabellen, kein DML —
+        /// deshalb dieselbe Schleife wie bei den Schritten 92 und 93. Der Typ kommt aus
+        /// dem Katalog und wird beim Verbrauch übersetzt
+        /// (<c>DOUBLE</c> → <c>REAL</c>, <c>TEXT(n)</c> → <c>TEXT</c> mit
+        /// Längenprüfung); alle vier Tabellen sind <c>STRICT</c>.</para>
+        ///
+        /// <para><b>Wiederholbar</b> über <see cref="SqliteSpalteAnlegen"/>: Es fragt
+        /// <c>PRAGMA table_info</c>, bevor es anlegt — SQLite kennt kein
+        /// <c>ADD COLUMN IF NOT EXISTS</c>.</para>
+        /// </summary>
+        private static bool Schritt_95_Klimaspalten(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt95_Klimaspalten)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("95: " + angelegt.ToString(CultureInfo.InvariantCulture) +
+                    " von " + SchemaKatalog.Schritt95_Klimaspalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Klimaspalte(n) angelegt - " + SchemaKatalog.SPALTE_SOLAR_GEGENSTRAHLUNG + ", " +
+                    SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE + ", " +
+                    SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD + " an " +
+                    SchemaKatalog.TAB_SOLAR + " und " + SchemaKatalog.TAB_SOLAR_STAMM + ", " +
+                    SchemaKatalog.SPALTE_KR_QUELLE + " und " + SchemaKatalog.SPALTE_KR_IMPORTDATUM +
+                    " an " + SchemaKatalog.TAB_KLIMAREGION + " und " +
+                    SchemaKatalog.TAB_KLIMAREGION_STAMM + ". KEIN DML: Alle bleiben NULL, " +
+                    "und NULL heisst 'nicht verfuegbar' bzw. 'Altbestand'. KEIN " +
+                    "Rechenergebnis aendert sich; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 96 - der Fremdschluessel der Projekttabellen (Anwenderentscheid 19.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 96 — Anlass, Rezept und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_96_PROJEKT_FREMDSCHLUESSEL"/> und ausführlich bei
+        /// <see cref="ProjektFremdschluessel"/>.
+        ///
+        /// <para><b>Wie die Schritte 74 und 81</b>: Zählung, Umbau über den Kern,
+        /// Nachprobe. Der Umbau selbst steht nicht hier — er braucht die
+        /// Transaktionsklammer MIT ABGESCHALTETEN FREMDSCHLÜSSELN, die nur
+        /// <c>DataRepository.VorgangOhneFremdschluessel</c> spannt.</para>
+        ///
+        /// <para><b>JE TABELLE EINE BERICHTSZEILE</b>, und darin die Waisenzahl. Dieser
+        /// Schritt ist der erste, der Zeilen ENTFERNT, die ein Anwender nie zu Gesicht
+        /// bekommen hat — was er entfernt, muss er benennen. Eine Tabelle, die an ihrem
+        /// Umbau scheitert, hält den Schritt an; die vorher fertigen bleiben stehen, und
+        /// der nächste Lauf setzt dort fort (jede fertige Tabelle wird übersprungen).</para>
+        /// </summary>
+        private static bool Schritt_96_ProjektFremdschluessel(Lauf l)
+        {
+            int offen = ProjektFremdschluessel.Offen();
+            l.Notiz("96: Projekttabellen ohne Fremdschluessel auf " +
+                    ProjektFremdschluessel.ZIEL + ": " +
+                    offen.ToString(CultureInfo.InvariantCulture) + " von " +
+                    ProjektFremdschluessel.Katalog.Length.ToString(CultureInfo.InvariantCulture) + ".");
+
+            if (offen == 0)
+            {
+                l.Notiz("96: nichts zu tun - jede Beziehung steht bereits.");
+                return true;
+            }
+
+            var bericht = new List<string>();
+            int umgebaut = 0;
+
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    foreach (ProjektFremdschluessel.Eintrag e in ProjektFremdschluessel.Katalog)
+                        if (ProjektFremdschluessel.Umbauen(e.Tabelle, bericht)) umgebaut++;
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz("96: " + zeile);
+
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz("96: FEHLER - " + text + " (" +
+                            umgebaut.ToString(CultureInfo.InvariantCulture) +
+                            " Tabelle(n) sind fertig und bleiben stehen; der Schritt ist " +
+                            "wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz("96: " + zeile);
+
+            // Die Nachprobe. Sie fragt dasselbe wie die Zaehlung vorher - steht jetzt
+            // noch eine Beziehung offen, hat eine Tabelle ihren Umbau nicht bekommen.
+            int rest = ProjektFremdschluessel.Offen();
+            if (rest > 0)
+            {
+                l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
+                                  " Projekttabelle(n) stehen nach dem Umbau weiter ohne " +
+                                  "Fremdschluessel auf " + ProjektFremdschluessel.ZIEL + ".";
+                l.Notiz("96: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("96: " + umgebaut.ToString(CultureInfo.InvariantCulture) +
+                    " Tabelle(n) neu aufgebaut; alle " +
+                    ProjektFremdschluessel.Katalog.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Projektbeziehungen tragen jetzt ON DELETE " +
+                    ProjektFremdschluessel.LOESCHREGEL + " ON UPDATE " +
+                    ProjektFremdschluessel.AENDERUNGSREGEL + ". Ein geloeschtes Projekt " +
+                    "nimmt ab hier seine Zeilen mit. Werte, Ids und Zaehlerstaende " +
+                    "bleiben; entfernt wurde nur, was zu keinem Projekt gehoert - der " +
+                    "Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

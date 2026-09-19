@@ -38,6 +38,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private readonly string _sicherungspunkt;
 
+        /// <summary>
+        /// true, wenn dieser Vorgang die Fremdschluessel dieser Verbindung ausgeschaltet
+        /// hat und sie beim Abraeumen wieder einschalten muss.
+        /// </summary>
+        private readonly bool _ohneFremdschluessel;
+
         /// <summary>Fortlaufende Nummer der Sicherungspunkte (Namen muessen eindeutig sein).</summary>
         private static int _punktzaehler;
 
@@ -46,10 +52,55 @@ namespace WindowsFormsApplication1
         /// dort bereits geoeffnet und mit den PRAGMAs versehen.
         /// </summary>
         internal DbVorgang(SqliteConnection verbindung)
+            : this(verbindung, false)
+        {
+        }
+
+        /// <summary>
+        /// DER VORGANG MIT ABGESCHALTETEN FREMDSCHLUESSELN (Schemaschritt 96).
+        ///
+        /// <para>Das Tabellenneubau-Rezept des SQLite-Handbuchs ("Making Other Kinds Of
+        /// Table Schema Changes") beginnt mit <c>PRAGMA foreign_keys = OFF</c> — VOR der
+        /// Transaktion, denn innerhalb einer laufenden Transaktion ist das PRAGMA ein
+        /// No-op. Bis Schritt 95 brauchte das kein Schritt: Die Schritte 74 und 81 bauen
+        /// KINDtabellen um, und deren <c>DROP TABLE</c> kann keine fremde Zeile
+        /// mitreissen. Schritt 96 baut ELTERNtabellen um — <c>Tab_WP</c> etwa traegt drei
+        /// Kindtabellen mit <c>ON DELETE CASCADE</c>. Ein <c>DROP TABLE</c> fuehrt bei
+        /// eingeschalteten Fremdschluesseln ein implizites <c>DELETE FROM</c> aus, und das
+        /// LOEST DIE KASKADE AUS: Die Kindzeilen waeren weg. <c>defer_foreign_keys</c>
+        /// hilft dagegen NICHT — es verschiebt die Pruefung, nicht die Aktion (gemessen).
+        /// </para>
+        ///
+        /// <para>Deshalb dieser zweite Weg. Er ist der einzige Ort im Haus, an dem die
+        /// Fremdschluessel ausgeschaltet werden, und die Klammer schliesst sich selbst:
+        /// <see cref="Dispose"/> schaltet sie wieder ein, bevor die Verbindung in den Pool
+        /// zurueckgeht. Ohne das Zurueckschalten traegt die naechste Ausleihe derselben
+        /// Verbindung keine Fremdschluessel mehr — derselbe Grund, aus dem Schritt 81
+        /// seinen <c>legacy_alter_table</c>-Modus im <c>finally</c> aufhebt.</para>
+        /// </summary>
+        internal DbVorgang(SqliteConnection verbindung, bool ohneFremdschluessel)
         {
             _verbindung = verbindung ?? throw new ArgumentNullException(nameof(verbindung));
+            _ohneFremdschluessel = ohneFremdschluessel;
+
+            // VOR BeginTransaction - danach waere das PRAGMA wirkungslos.
+            if (ohneFremdschluessel) SetzeFremdschluessel(false);
+
             _transaktion = _verbindung.BeginTransaction();
             _sicherungspunkt = null;
+        }
+
+        /// <summary>
+        /// Schaltet <c>PRAGMA foreign_keys</c> auf dieser Verbindung. Nur ausserhalb einer
+        /// laufenden Transaktion wirksam.
+        /// </summary>
+        private void SetzeFremdschluessel(bool an)
+        {
+            using (SqliteCommand cmd = _verbindung.CreateCommand())
+            {
+                cmd.CommandText = an ? "PRAGMA foreign_keys = ON" : "PRAGMA foreign_keys = OFF";
+                cmd.ExecuteNonQuery();
+            }
         }
 
         /// <summary>
@@ -237,6 +288,17 @@ namespace WindowsFormsApplication1
             finally
             {
                 try { _transaktion?.Dispose(); } catch (Exception) { }
+
+                // DIE KLAMMER SCHLIESST SICH. Erst jetzt - nach Commit oder Rollback und
+                // nach dem Abraeumen der Transaktion - wirkt das PRAGMA wieder. Die
+                // Verbindung geht anschliessend in den Pool zurueck und muss ihre
+                // Fremdschluessel wiederhaben (SqliteDatenzugriff.OeffneVerbindung).
+                if (_ohneFremdschluessel)
+                {
+                    try { SetzeFremdschluessel(true); }
+                    catch (Exception) { /* die Verbindung ist dann ohnehin am Ende */ }
+                }
+
                 try { _verbindung.Dispose(); } catch (Exception) { }
                 _transaktion = null;
                 _verbindung = null;

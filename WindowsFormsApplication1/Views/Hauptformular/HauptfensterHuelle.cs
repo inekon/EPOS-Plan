@@ -276,8 +276,11 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.KatalogDubletten:
                     return () => KatalogDublettenHuelle.Oeffnen(_besitzer?.Invoke());
 
-                case Seitenschluessel.LizenzVerwaltung:
-                    return () => LizenzVerwaltungHuelle.Oeffnen(_besitzer?.Invoke());
+                // ANWENDERENTSCHEID MN-1 (19.09.2026): Der Fall
+                // Seitenschluessel.LizenzVerwaltung ist WEG. Der Menuepunkt
+                // „Administration → Lizenz…" entfaellt; der eine Einstieg ist
+                // „Hilfe → Lizenz", und der Lizenzdialog fuehrt die Verwaltung
+                // dort als Reiter „Status & Aktivierung".
 
                 // ---- Menü „Hilfe" -------------------------------------------
                 case Seitenschluessel.Lizenztext:

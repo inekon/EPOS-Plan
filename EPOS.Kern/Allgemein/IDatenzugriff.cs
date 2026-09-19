@@ -69,6 +69,18 @@ namespace WindowsFormsApplication1
         /// <c>using</c>-Block. Der EINZIGE Weg in eine Transaktion.</summary>
         DbVorgang Vorgang();
 
+        /// <summary>
+        /// Oeffnet einen Vorgang, dessen Verbindung die Fremdschluessel AUSGESCHALTET hat
+        /// — der erste Schritt des Tabellenneubau-Rezepts des SQLite-Handbuchs. Nur fuer
+        /// Schemaschritte, die eine ELTERNtabelle umbauen (Schritt 96); die Begruendung
+        /// steht beim zweiten Konstruktor von <see cref="DbVorgang"/>.
+        ///
+        /// <para>Immer ein eigener Vorgang auf einer eigenen Verbindung: Ein
+        /// Sicherungspunkt in einem laufenden Vorgang koennte die Fremdschluessel nicht
+        /// abschalten. Laeuft schon ein Vorgang, wird das benannt abgelehnt.</para>
+        /// </summary>
+        DbVorgang VorgangOhneFremdschluessel();
+
         // -------------------------------------------------------------- Schemaauskunft
 
         /// <summary>Gibt es eine Tabelle (oder Sicht) dieses Namens?</summary>

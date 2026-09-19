@@ -24,9 +24,18 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class ProjektTransferDialogTests : EposBunitContext
 {
-    private static readonly ProjektKopfZeile[] ZWEI =
+    /// <summary>
+    /// Der Bestand der Proben — seit PI-1 MIT Variantenzeilen: Die Wahlregel des
+    /// Exports (eine Variante zieht ihren Stamm) liest <c>StammId</c> aus dieser
+    /// Liste, nicht mehr den Delegaten <c>Varianten</c>.
+    /// </summary>
+    private static readonly ProjektKopfZeile[] BESTAND =
     {
         new ProjektKopfZeile(1019, "Wöhler"),
+        new ProjektKopfZeile(1023, "Wöhler - Test1", StammId: 1019,
+                             Bezeichner: "Test1", StammName: "Wöhler"),
+        new ProjektKopfZeile(1024, "Wöhler - Test2", StammId: 1019,
+                             Bezeichner: "Test2", StammName: "Wöhler"),
         new ProjektKopfZeile(1030, "Referenz BHKW")
     };
 
@@ -90,7 +99,7 @@ public class ProjektTransferDialogTests : EposBunitContext
                                               PaketVorschau? vorschau = null,
                                               string? paket = "C:\\pakete\\projekt.wpx")
         => new ProjektTransferDaten(
-            Projekte: ZWEI,
+            Projekte: BESTAND,
             Varianten: p => p == "Wöhler" ? new[] { "Wöhler - Test1", "Wöhler - Test2" } : Array.Empty<string>(),
             Exportieren: kern.Exportieren,
             PaketLesen: () => paket,
@@ -111,6 +120,14 @@ public class ProjektTransferDialogTests : EposBunitContext
 
     private static void ZumImport(IRenderedComponent<ProjektTransferDialog> cut)
         => cut.FindAll(".epos-reiter-knopf")[1].Click();
+
+    /// <summary>
+    /// Hakt die Zeile <paramref name="zeile"/> der Mehrfachliste an (PI-1). Die
+    /// Reihenfolge ist die des Bestands, solange nicht gefiltert oder sortiert
+    /// wird: 0 = Wöhler, 1 = Test1, 2 = Test2, 3 = Referenz BHKW.
+    /// </summary>
+    private static void Anhaken(IRenderedComponent<ProjektTransferDialog> cut, int zeile)
+        => cut.FindAll(".epos-transfer-liste .epos-anlagenwahl")[zeile].Click();
 
     /// <summary>
     /// Wartet auf den GEZEICHNETEN Abschluss eines gelungenen Imports — das
@@ -151,8 +168,12 @@ public class ProjektTransferDialogTests : EposBunitContext
     [Fact]
     public void Die_Varianten_des_gewaehlten_Projekts_sind_alle_vorbelegt()
     {
-        // TF2: clbVarianten.Items.Add(name, true) des Vorlaeufers.
+        // TF1/TF2: clbVarianten.Items.Add(name, true) des Vorlaeufers - seit PI-1
+        // je Stammgruppe ein Block, und er erscheint erst mit der Wahl.
         var cut = Aufbauen(new Kern());
+
+        Assert.Empty(cut.Instance.GewaehlteVarianten);        // ohne Wahl kein Block
+        Anhaken(cut, 0);                                      // Wöhler
 
         Assert.Equal(new[] { "Wöhler - Test1", "Wöhler - Test2" }, cut.Instance.GewaehlteVarianten);
         Assert.Equal(2, cut.FindAll(".epos-mehrfachauswahl input[type=checkbox]:checked").Count);
@@ -163,10 +184,16 @@ public class ProjektTransferDialogTests : EposBunitContext
     {
         var cut = Aufbauen(new Kern());
 
-        cut.Find(".epos-projekttransfer select").Change("1");   // Referenz BHKW
+        Anhaken(cut, 0);                                      // Wöhler
+        Assert.Equal("Wöhler", cut.Instance.Projekt);
+        Assert.Equal(2, cut.Instance.GewaehlteVarianten.Count);
 
-        Assert.Empty(cut.Instance.GewaehlteVarianten);
+        Anhaken(cut, 0);                                      // derselbe Klick nimmt sie weg
+        Anhaken(cut, 3);                                      // Referenz BHKW
+
         Assert.Equal("Referenz BHKW", cut.Instance.Projekt);
+        Assert.Empty(cut.Instance.GewaehlteVarianten);
+        Assert.Empty(cut.FindAll(".epos-mehrfachauswahl"));
     }
 
     [Fact]
@@ -175,6 +202,7 @@ public class ProjektTransferDialogTests : EposBunitContext
         var kern = new Kern();
         var cut = Aufbauen(kern);
 
+        Anhaken(cut, 0);                                      // Wöhler samt Varianten
         cut.Find(".epos-transfer-export").Click();
 
         // Der Lauf liegt in Task.Run - auf sein Ende wird gewartet, nicht geraten.
@@ -191,6 +219,7 @@ public class ProjektTransferDialogTests : EposBunitContext
         var kern = new Kern { ExportErgebnis = false };
         var cut = Aufbauen(kern);
 
+        Anhaken(cut, 0);
         cut.Find(".epos-transfer-export").Click();
 
         cut.WaitForAssertion(() =>
@@ -413,11 +442,15 @@ public class ProjektTransferDialogTests : EposBunitContext
     {
         var cut = Aufbauen(new Kern());
 
-        Assert.NotEmpty(cut.FindAll(".epos-formularraster--einspaltig"));
-        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+        // PI-1: Das EXPORTBLATT traegt keinen Formularraster mehr - an die Stelle
+        // von Klappliste und Haekchenliste ist die Mehrfachliste getreten. Die
+        // Haekchenbloecke je Stammgruppe stehen in ihrem eigenen Rahmen.
+        Assert.Empty(cut.FindAll(".epos-formularraster--einspaltig"));
+        Assert.Single(cut.FindAll(".epos-transfer-liste"));
 
         ZumImport(cut);
 
         Assert.Equal(2, cut.FindAll(".epos-formularraster--einspaltig").Count);
+        Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
     }
 }

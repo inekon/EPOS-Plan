@@ -1,11 +1,30 @@
-﻿@* Lizenzverwaltung (Administration -> Lizenz): Status, Aktivierung per
-   Schluessel oder .lic-Datei, Testversion und Geraetefreigabe.
+﻿@* Lizenzverwaltung: Status, Aktivierung per Schluessel oder .lic-Datei,
+   Testversion und Geraetefreigabe.
    iU9-W15c.5, Ersatz fuer Views/Admin/Form_LizenzVerwaltung.{cs,Designer.cs,resx}
    (302 + 246 + 119 Z.). Die Anzeigetexte stehen seit W15c-O-2 (04.09.2026)
    gebuendelt in LizenzTexte.Verwaltung statt als 29 Einzelparameter.
 
-   DREI GRUPPEN WIE IM VORLAEUFER: Status | Aktivieren | Weitere Aktionen, dazu
-   eine Fusszeile mit Hinweisplatz und "Schliessen".
+   ANWENDERENTSCHEID MN-1 (19.09.2026) - SIE IST EIN REITERBLATT GEWORDEN.
+   Bis dahin war sie ZWEIMAL erreichbar: als eigenes Fenster ueber
+   "Administration -> Lizenz…" und als Ueberlagerung hinter dem Knopf
+   "Lizenz aktivieren…" im LizenzDialog. Der Anwender hat das zurueckgegeben
+   ("Es gibt einen Lizenz-Dialog fuer Lizenz aktivieren. Diese ist so
+   1. vermutlich nicht rechtskonform und 2. unter Hilfe->Lizenz bereits
+   vorhanden."). Jetzt gibt es EINEN Weg: Hilfe -> Lizenz, Reiter
+   "Status & Aktivierung". Drei Folgen fuer diese Komponente:
+     1. Ihre FUSSZEILE traegt keinen Knopf "Schliessen" mehr und sie hat kein
+        Geschlossen mehr - der Wirt (LizenzDialog) hat genau eine Fusszeile und
+        genau einen Weg hinaus. Der Hilfeknopf bleibt: Er haengt am eigenen
+        Hilfeschluessel dieses Blattes.
+     2. UEBER dem Knopf "Jetzt aktivieren" steht der feste Uebertragungshinweis
+        (LIZ_HINWEIS_UEBERTRAGUNG) samt zwei Spruengen auf die Reiter
+        "Lizenzvereinbarung" und "Rechtliche Hinweise" - der Anwender soll vor
+        dem Klick lesen koennen, was uebertragen wird und wonach.
+     3. Die drei Gruppen stehen im Hausbaustein Gruppenkopf, die zwei
+        Eingabefelder im Formularraster (Hausregel "ein Parameterblock steht im
+        Formularraster") statt in rohen <section>/<h2>.
+
+   DREI GRUPPEN WIE IM VORLAEUFER: Status | Aktivieren | Weitere Aktionen.
 
    KEIN OK/ABBRECHEN-PAAR (Entscheid E-3, bitgleich): "die Aktivierung laeuft in
    Aktivieren_Click sofort gegen den Lizenzserver und ist beim Schliessen
@@ -33,76 +52,95 @@
 <div class="epos-lizverw">
 
     @* ---- Gruppe 1: Lizenzstatus auf diesem Arbeitsplatz ---------------- *@
-    <section class="epos-lizverw-gruppe" aria-labelledby="lizverw-status-kopf">
-        <h2 class="epos-lizverw-kopf" id="lizverw-status-kopf">@Wortlaut.GruppeStatus</h2>
+    <Gruppenkopf Titel="@Wortlaut.GruppeStatus">
+        <KindInhalt>
+            <p class="epos-lizverw-status epos-lizverw-status--@Stufe" role="status">@Lage.Statustext</p>
+            <p class="epos-lizverw-detail">@Lage.Detailtext</p>
 
-        <p class="epos-lizverw-status epos-lizverw-status--@Stufe" role="status">@Lage.Statustext</p>
-        <p class="epos-lizverw-detail">@Lage.Detailtext</p>
-
-        @if (!string.IsNullOrEmpty(Lage.PortalUrl))
-        {
-            @* Ein Verweis, kein Process.Start: Die WebView oeffnet ihn im
-               Systembrowser, auf iOS das Teilen-Blatt der Plattform. *@
-            <p class="epos-lizverw-portal">
-                <a href="@Lage.PortalUrl" target="_blank" rel="noopener noreferrer">@Wortlaut.LinkPortal</a>
-            </p>
-        }
-    </section>
+            @if (!string.IsNullOrEmpty(Lage.PortalUrl))
+            {
+                @* Ein Verweis, kein Process.Start: Die WebView oeffnet ihn im
+                   Systembrowser, auf iOS das Teilen-Blatt der Plattform. *@
+                <p class="epos-lizverw-portal">
+                    <a href="@Lage.PortalUrl" target="_blank" rel="noopener noreferrer">@Wortlaut.LinkPortal</a>
+                </p>
+            }
+        </KindInhalt>
+    </Gruppenkopf>
 
     @* ---- Gruppe 2: Aktivieren ----------------------------------------- *@
-    <section class="epos-lizverw-gruppe" aria-labelledby="lizverw-aktiv-kopf">
-        <h2 class="epos-lizverw-kopf" id="lizverw-aktiv-kopf">@Wortlaut.GruppeAktivieren</h2>
+    <Gruppenkopf Titel="@Wortlaut.GruppeAktivieren">
+        <KindInhalt>
+            @* Die zwei Eingaben stehen im Hausraster: Beschriftung NEBEN dem
+               Feld, eine Spalte (sie gehoeren in dieser Reihenfolge zusammen -
+               erst der Schluessel, dann die Adresse, an die er gebunden wird). *@
+            <Formularraster Einspaltig="true">
+                <KindInhalt>
+                    <label class="epos-feld epos-lizverw-schluessel">
+                        <span class="epos-feld-text">@Wortlaut.LabelSchluessel</span>
+                        <span class="epos-feld-zeile">
+                            @* text-transform macht die Anzeige gross, ToUpperInvariant den
+                               WERT - beides zusammen ist CharacterCasing = Upper. *@
+                            <input class="epos-eingabe epos-lizverw-grossschrift" type="text"
+                                   value="@_schluessel" disabled="@_laeuft"
+                                   autocomplete="off" spellcheck="false"
+                                   @oninput="SchluesselGeaendert" />
+                        </span>
+                    </label>
 
-        <div class="epos-lizverw-zeile">
-            <label class="epos-feld epos-lizverw-schluessel">
-                <span class="epos-feld-text">@Wortlaut.LabelSchluessel</span>
-                <span class="epos-feld-zeile">
-                    @* text-transform macht die Anzeige gross, ToUpperInvariant den
-                       WERT - beides zusammen ist CharacterCasing = Upper. *@
-                    <input class="epos-eingabe epos-lizverw-grossschrift" type="text"
-                           value="@_schluessel" disabled="@_laeuft"
-                           autocomplete="off" spellcheck="false"
-                           @oninput="SchluesselGeaendert" />
-                </span>
-            </label>
+                    <label class="epos-feld epos-lizverw-email">
+                        <span class="epos-feld-text">@Wortlaut.LabelEmail</span>
+                        <span class="epos-feld-zeile">
+                            <input class="epos-eingabe" type="email" value="@_email"
+                                   disabled="@_laeuft" autocomplete="off" spellcheck="false"
+                                   @oninput="EmailGeaendert" />
+                        </span>
+                    </label>
+                </KindInhalt>
+            </Formularraster>
 
-            <button type="button" class="epos-knopf epos-lizverw-lic"
-                    disabled="@_laeuft" @onclick="LicLaden">@Wortlaut.KnopfLic</button>
-        </div>
+            <div class="epos-lizverw-zeile">
+                <button type="button" class="epos-knopf epos-lizverw-lic"
+                        disabled="@_laeuft" @onclick="LicLaden">@Wortlaut.KnopfLic</button>
+            </div>
 
-        <div class="epos-lizverw-zeile">
-            <label class="epos-feld epos-lizverw-email">
-                <span class="epos-feld-text">@Wortlaut.LabelEmail</span>
-                <span class="epos-feld-zeile">
-                    <input class="epos-eingabe" type="email" value="@_email"
-                           disabled="@_laeuft" autocomplete="off" spellcheck="false"
-                           @oninput="EmailGeaendert" />
-                </span>
-            </label>
-        </div>
+            @* ---- MN-1 (19.09.2026): der feste Hinweis, UNMITTELBAR ueber dem
+               Knopf, der ueberträgt. Er nennt die drei Angaben und das Ziel und
+               fuehrt auf die zwei Reiter, die das Kleingedruckte tragen - kein
+               Verweis nach draussen, sondern ein Sprung IM selben Fenster. *@
+            <p class="epos-lizverw-uebertragung" id="lizverw-uebertragung">@Wortlaut.HinweisUebertragung</p>
 
-        <div class="epos-lizverw-zeile">
-            <button type="button" class="epos-knopf epos-knopf--primaer"
-                    disabled="@_laeuft" @onclick="Aktivieren">@Wortlaut.KnopfAktivieren</button>
-        </div>
+            <div class="epos-lizverw-spruenge">
+                <button type="button" class="epos-lizverw-sprung"
+                        @onclick="ZurVereinbarung">@Wortlaut.LinkVereinbarung</button>
+                <button type="button" class="epos-lizverw-sprung"
+                        @onclick="ZurDatenverarbeitung">@Wortlaut.LinkDatenverarbeitung</button>
+            </div>
 
-        <p class="epos-lizverw-hinweis">@Wortlaut.HinweisAktivierung</p>
-    </section>
+            <div class="epos-lizverw-zeile">
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        disabled="@_laeuft" aria-describedby="lizverw-uebertragung"
+                        @onclick="Aktivieren">@Wortlaut.KnopfAktivieren</button>
+            </div>
+
+            <p class="epos-lizverw-hinweis">@Wortlaut.HinweisAktivierung</p>
+        </KindInhalt>
+    </Gruppenkopf>
 
     @* ---- Gruppe 3: Weitere Aktionen ------------------------------------ *@
-    <section class="epos-lizverw-gruppe" aria-labelledby="lizverw-aktionen-kopf">
-        <h2 class="epos-lizverw-kopf" id="lizverw-aktionen-kopf">@Wortlaut.GruppeAktionen</h2>
+    <Gruppenkopf Titel="@Wortlaut.GruppeAktionen">
+        <KindInhalt>
+            <div class="epos-lizverw-zeile">
+                @* Bitgleich zu StatusAnzeigen(): "Testversion" nur OHNE Token,
+                   "Geraet loesen" nur MIT. Waehrend einer Aktion beide gesperrt. *@
+                <button type="button" class="epos-knopf"
+                        disabled="@(_laeuft || Lage.HatToken)" @onclick="Trial">@Wortlaut.KnopfTrial</button>
 
-        <div class="epos-lizverw-zeile">
-            @* Bitgleich zu StatusAnzeigen(): "Testversion" nur OHNE Token,
-               "Geraet loesen" nur MIT. Waehrend einer Aktion beide gesperrt. *@
-            <button type="button" class="epos-knopf"
-                    disabled="@(_laeuft || Lage.HatToken)" @onclick="Trial">@Wortlaut.KnopfTrial</button>
-
-            <button type="button" class="epos-knopf"
-                    disabled="@(_laeuft || !Lage.HatToken)" @onclick="FreigebenFragen">@Wortlaut.KnopfFreigeben</button>
-        </div>
-    </section>
+                <button type="button" class="epos-knopf"
+                        disabled="@(_laeuft || !Lage.HatToken)" @onclick="FreigebenFragen">@Wortlaut.KnopfFreigeben</button>
+            </div>
+        </KindInhalt>
+    </Gruppenkopf>
 
     @* ---- Fusszeile ------------------------------------------------------ *@
     @if (!string.IsNullOrEmpty(_meldung))
@@ -116,15 +154,14 @@
            (Aufgabensteuerungskonzept 1.2). *@
         <InfoKnopf Schluessel="Form_LizenzVerwaltung.btn_Help" MitAssistent="false" />
         @* HIER STAND EIN SCHLIESSKREUZ, und es war eines zu viel (Anwenderbefund
-           15.09.2026: "Doppeltes Kreuz duerfen nicht sein!"). Dieser Dialog hat gar
-           keine Kopfzeile - das Kreuz sass in der Fusszeile -, und JEDER Weg zu ihm
-           bringt sein Kreuz schon mit: als Ueberlagerung "Lizenz aktivieren…" im
-           LizenzDialog traegt die Ueberlagerung Titel und ✕, und als eigenes Fenster
-           (LizenzVerwaltungHuelle, FormBorderStyle.Sizable mit ControlBox) traegt die
-           Fenstertitelleiste ihr ✕. Der Weg hinaus steht daneben unveraendert als
-           Hauptknopf "Schliessen"; der Hilfeknopf bleibt, er haengt nicht am Titel. *@
-        <button type="button" class="epos-knopf epos-knopf--primaer"
-                @onclick="Schliessen">@Wortlaut.KnopfSchliessen</button>
+           15.09.2026: "Doppeltes Kreuz duerfen nicht sein!"). Dieses Blatt hat gar
+           keine Kopfzeile - das Kreuz sass in der Fusszeile -, und sein Wirt bringt
+           sein Kreuz schon mit.
+           HIER STAND AUCH EIN KNOPF "SCHLIESSEN", und seit MN-1 (19.09.2026) ist er
+           einer zu viel: Das Blatt haengt im Reiter des LizenzDialogs, und dessen
+           Fusszeile traegt den einen Weg hinaus samt der einen Statuszeile. Ein
+           zweiter Schliessknopf mitten im Fenster schloesse entweder nichts oder das
+           falsche. *@
     </div>
 </div>
 
@@ -181,8 +218,14 @@
     /// </summary>
     [Parameter] public Func<string, bool>? EmailPruefen { get; set; }
 
-    /// <summary>Der Dialog ist zu.</summary>
-    [Parameter] public EventCallback Geschlossen { get; set; }
+    /// <summary>
+    /// Der Wunsch, einen ANDEREN Reiter des Wirts zu zeigen — übergeben wird
+    /// dessen Schlüssel (<c>VERTRAG</c>, <c>HINWEISE</c>). MN-1 (19.09.2026):
+    /// Die zwei Sprünge unter dem Übertragungshinweis gehen diesen Weg; das
+    /// Blatt kennt seinen Wirt nicht und schaltet den Reiter nicht selbst.
+    /// Ohne Delegat bleiben die zwei Knöpfe wirkungslos.
+    /// </summary>
+    [Parameter] public EventCallback<string> ReiterGewuenscht { get; set; }
 
     // ==================================================================
     //  Zustand — zwei Zeichenketten und die Sperre, mehr nicht
@@ -351,7 +394,12 @@
         StateHasChanged();
     }
 
-    private Task Schliessen() => Geschlossen.InvokeAsync();
+    /// <summary>Sprung auf den Reiter „Lizenzvereinbarung" des Wirts (MN-1).</summary>
+    private Task ZurVereinbarung() => ReiterGewuenscht.InvokeAsync("VERTRAG");
+
+    /// <summary>Sprung auf den Reiter „Rechtliche Hinweise" des Wirts (MN-1) —
+    /// dort steht der Abschnitt „Datenverarbeitung".</summary>
+    private Task ZurDatenverarbeitung() => ReiterGewuenscht.InvokeAsync("HINWEISE");
 
     /// <summary>Die E-Mail-Regel des KERNS, durch den Delegaten (Regel 6 der Zerlegung).</summary>
     private bool EmailTaugt(string email) => EmailPruefen is null || EmailPruefen(email);

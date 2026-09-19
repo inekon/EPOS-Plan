@@ -171,6 +171,13 @@
        nicht mehr (er hat nur noch EINE Anordnung), das Formularraster, der
        Dublettenbaum und die Kennzahlzeile benutzen es weiter. */
     --epos-projektlistenhoehe: 12rem;
+
+    /* Die PROJEKTLISTE DES TRANSFERDIALOGS (Auftrag PI-1). Sie ist hoeher als
+       die Projektliste der Startseite: Dort waehlt man EINES, hier hakt man
+       mehrere an und vergleicht dabei Art, Varianten und Kunde. 24 rem sind
+       bei 53 px Zeilenhoehe rund acht Zeilen plus Kopf - genug, um eine
+       Stammgruppe samt ihren Varianten auf einen Blick zu sehen. */
+    --epos-transfer-listenhoehe: 24rem;
     --epos-zweispalten-umbruch: 900px;
 
     /* Das FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026:
@@ -1100,6 +1107,14 @@ body {
 .epos-option-kasten {
     width: 20px;
     height: 20px;
+}
+
+/* Ein gesperrtes Haekchen bleibt sichtbar und traegt seinen Grund (PI-1).
+   HART und WEICH in EINER Regel (Hausregel, W16b-E-6): Ein Anwender
+   unterscheidet "geht nicht" nicht nach der Bauart. */
+.epos-schalter-kasten:disabled + .epos-feld-text,
+.epos-schalter-kasten[aria-disabled="true"] + .epos-feld-text {
+    color: var(--epos-text-sehr-leise);
 }
 
 /* Eine gesperrte Option bleibt sichtbar - sie sagt, dass es die Moeglichkeit
@@ -5409,21 +5424,11 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     min-width: 0;
 }
 
-.epos-lizverw-gruppe {
-    border: 1px solid var(--epos-rahmen-leise);
-    border-radius: var(--epos-ecke);
-    padding: 10px 12px 12px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
-}
-
-.epos-lizverw-kopf {
-    margin: 0;
-    font-size: var(--epos-schriftgroesse);
-    font-weight: 600;
-    color: var(--epos-text);
+/* MN-1 (19.09.2026): Die drei Gruppen sind der Hausbaustein Gruppenkopf
+   geworden; .epos-lizverw-gruppe und .epos-lizverw-kopf sind damit entfallen.
+   Was die Gruppen brauchen, steht jetzt im Koerper des Bausteins. */
+.epos-gruppenkopf-koerper > .epos-lizverw-zeile + .epos-lizverw-zeile {
+    margin-top: 8px;
 }
 
 /* Die drei Statusfarben sind BITGLEICH aus Form_LizenzVerwaltung.cs:134-137
@@ -5474,6 +5479,45 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     white-space: pre-line;
 }
 
+/* MN-1 (19.09.2026): Der feste Uebertragungshinweis UNMITTELBAR ueber dem Knopf
+   "Jetzt aktivieren". Er ist nicht leise - er sagt, was der naechste Klick
+   uebertraegt - und steht in einem eigenen Kasten, damit er nicht mit den
+   Feldern darueber verschmilzt. */
+.epos-lizverw-uebertragung {
+    margin: 12px 0 0 0;
+    padding: 8px 10px;
+    border-left: 3px solid var(--epos-marke);
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+}
+
+/* Die zwei Spruenge auf die Reiter "Lizenzvereinbarung" und "Rechtliche
+   Hinweise". Sie SEHEN aus wie Verweise und SIND Knoepfe: Ziel ist ein Reiter
+   im selben Fenster, keine Adresse. Das Beruehrungsziel haelt --epos-touchziel. */
+.epos-lizverw-spruenge {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 16px;
+    margin: 0 0 4px 0;
+}
+
+.epos-lizverw-sprung {
+    min-height: var(--epos-touchziel);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--epos-marke);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.epos-lizverw-sprung:hover,
+.epos-lizverw-sprung:focus-visible {
+    color: var(--epos-quelle-text);
+}
+
 .epos-lizverw-fuss {
     display: flex;
     justify-content: flex-end;
@@ -5487,7 +5531,8 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     .epos-lizverw-status--gut,
     .epos-lizverw-status--warn,
     .epos-lizverw-status--schlecht { color: CanvasText; }
-    .epos-lizverw-gruppe { border: 1px solid CanvasText; }
+    .epos-lizverw-uebertragung { border-left: 3px solid CanvasText; }
+    .epos-lizverw-sprung { color: LinkText; }
 }
 
 /* --------------------------------------------------------------------------
@@ -5570,10 +5615,11 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     overflow-x: clip;
 }
 
-/* Die Verwaltung erscheint AUCH als Ueberlagerung im Lizenzdialog (E-11), und
-   die bringt ihren Rand schon mit - dieselbe Angleichung, die
-   .epos-ueberlagerung-inhalt > .epos-dialog bekommt. */
-.epos-ueberlagerung-inhalt > .epos-lizverw {
+/* Die Verwaltung steht seit MN-1 (19.09.2026) IM Reiterblatt des Lizenzdialogs
+   (bis dahin als Ueberlagerung, E-11), und das Blatt bringt seinen Rand schon
+   mit - dieselbe Angleichung, die .epos-ueberlagerung-inhalt > .epos-dialog
+   bekommt. */
+.epos-lizenz-verwaltungsblatt > .epos-lizverw {
     padding: 0;
 }
 
@@ -5658,6 +5704,22 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 .epos-lizenz .epos-reiter-blatt {
     display: flex;
     flex-direction: column;
+}
+
+/* MN-1 (19.09.2026): das Blatt "Status & Aktivierung". Es traegt keinen
+   Lesetext, sondern eine MASKE - und die rollt in DEMSELBEN Rahmen wie die
+   drei Lesebereiche daneben, damit der Reiterwechsel das Bild nicht springen
+   laesst. Waagerecht rollt auch sie nicht. */
+.epos-lizenz-verwaltungsblatt {
+    flex: 1 1 auto;
+    min-height: 12rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 14px 14px;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
 }
 
 /* Der Sprachhinweis (E-7): auf Deutsch leer, auf Englisch "Binding version in
@@ -5859,7 +5921,7 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
    26-px-Gattungszeile (grosse Schrift, 3:1), zu wenig fuer eine Beschriftung
    in 16 px (4,5:1). Die Marke bleibt deshalb dem Titelband vorbehalten. */
 .epos-startseite-projekt > label,
-.epos-startseite-klima > label {
+.epos-startseite-klima > .epos-startseite-feldtitel {
     font-size: var(--epos-schriftgroesse-kartentitel);
     font-weight: 600;
     color: var(--epos-text);
@@ -5867,6 +5929,15 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 
 .epos-startseite-projekt .epos-eingabe,
 .epos-startseite-klima .epos-eingabe {
+    flex: 0 1 260px;
+    min-width: 160px;
+}
+
+/* Die Suchauswahl der Klimaregion ist ein .epos-feld und damit eine Spalte aus
+   Beschriftung und Feldzeile. Hier traegt sie keine eigene Beschriftung - die
+   steht als .epos-startseite-feldtitel daneben -, und sie soll sich wie das
+   frueherere <select> in die Kastenzeile stellen: so breit wie ihr Feld. */
+.epos-startseite-klima > .epos-suchauswahl {
     flex: 0 1 260px;
     min-width: 160px;
 }
@@ -5884,6 +5955,20 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     flex: 1 1 140px;
     font-size: 11px;
     color: var(--epos-text-leise);
+}
+
+/* DIE HERKUNFTSZEILE (Auftrag KL-4). Sie steht als ZWEITE Zeile im Kasten -
+   flex-basis 100 % erzwingt den Umbruch - und leise: Sie sagt, womit gerechnet
+   wird, und verlangt nichts. Ein langer Regionsname kuerzt sich, statt den
+   Kasten zu verbreitern. */
+.epos-startseite-klimaherkunft {
+    flex: 1 1 100%;
+    margin: 0;
+    font-size: 11px;
+    color: var(--epos-text-leise);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* label_ProjektStatus: gruener Haken bei offenem Projekt, rotes Warnzeichen
@@ -9307,6 +9392,175 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 .epos-raster-leer td {
     color: var(--epos-text-leise);
     font-style: italic;
+}
+
+/* ==========================================================================
+   DIE DURCHSUCHBARE AUSWAHLLISTE (Standards/Suchauswahl.razor, Auftrag KL-4,
+   Anwenderwunsch 19.09.2026: "Das Dropdown soll auch durchsuchbar sein").
+
+   DIE DREI Z-EBENEN - dieselbe Mechanik wie beim Menueband (Befund W16c-B13):
+   Solange die Liste offen ist, liegt ein durchsichtiger Deckel ueber der
+   ganzen Ansicht und faengt den Klick NEBEN die Liste - auf Maus wie auf dem
+   Finger, ohne Fokus und ohne JavaScript. Das FELD bekommt dafuer einen
+   eigenen Stapelkontext (41) und liegt ueber dem Deckel (39); die Liste (40)
+   steht IM Feld und also ebenfalls darueber. Nur so bleibt ein Eintrag
+   anklickbar, waehrend der Deckel alles andere abfaengt.
+
+   Die Liste steht ABSOLUT unter dem Feld: Sie darf den Kasten, in dem das
+   Feld sitzt, nicht hoeher machen - sonst spraenge beim Tippen die halbe
+   Seite.
+   ========================================================================== */
+.epos-suchauswahl {
+    position: relative;
+    z-index: 41;
+}
+
+.epos-suchauswahl-liste {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    margin: 2px 0 0 0;
+    padding: 4px 0;
+    max-height: 320px;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 6px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+/* Im Formularraster steht das Feld rechts neben seiner Beschriftung; die
+   Liste gehoert unter das FELD, nicht unter das ganze Label. */
+.epos-formularraster .epos-suchauswahl-liste {
+    left: var(--epos-beschriftung-breite);
+}
+
+/* Beruehrungsziel: 44 px, wie jedes andere Bedienelement des Hauses. Die
+   Zeile umbricht nicht - ein langer Regionsname wird gekuerzt und steht
+   vollstaendig im title. */
+.epos-suchauswahl-eintrag {
+    display: flex;
+    align-items: center;
+    min-height: var(--epos-touchziel);
+    padding: 0 10px;
+    cursor: pointer;
+    color: var(--epos-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.epos-suchauswahl-eintrag:hover {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+/* Die mit den Pfeiltasten angesteuerte Stelle. Sie ist etwas anderes als der
+   GEWAEHLTE Eintrag (aria-selected, fett) - und zwei Zustaende muessen sichtbar
+   verschieden sein: der eine traegt Flaeche und Kante, der andere Fettschrift. */
+.epos-suchauswahl-eintrag--hervor {
+    background: var(--epos-karte-flaeche-hover);
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: -2px;
+}
+
+/* Der GEWAEHLTE Eintrag traegt aria-selected und steht damit fett - nicht
+   nur farbig: In Graustufen und unter forced-colors bleibt fett fett. */
+.epos-suchauswahl-eintrag[aria-selected="true"] {
+    font-weight: 700;
+}
+
+/* "Kein Treffer." ist keine Wahlmoeglichkeit, sondern eine Auskunft: leise,
+   ohne Beruehrungsziel und ohne Zeigerwechsel. */
+.epos-suchauswahl-leer {
+    padding: 8px 10px;
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+.epos-suchauswahl-schliessflaeche {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: transparent;
+    cursor: default;
+}
+
+/* Im Kontrastmodus setzt das System Flaeche und Schrift selbst; was bleiben
+   muss, ist die KANTE der Liste und die Hervorhebung des gewaehlten
+   Eintrags - sonst steht die Liste ohne Umriss auf der Seite. */
+@media (forced-colors: active) {
+    .epos-suchauswahl-liste {
+        border: 1px solid CanvasText;
+        box-shadow: none;
+    }
+
+    .epos-suchauswahl-eintrag[aria-selected="true"] {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+
+    .epos-suchauswahl-eintrag--hervor {
+        outline: 2px solid CanvasText;
+    }
+}
+
+/* ==================================================================== */
+/* PROJEKTTRANSFER - die Mehrfachwahl (Auftrag PI-1)                    */
+/* -------------------------------------------------------------------- */
+/* Vier Flaechen, vier Regeln: die Projektliste des Exportblatts, die   */
+/* Haekchenbloecke je Stammgruppe darunter, die Paketvorschau des       */
+/* Importblatts und die Zielordnerzeile. Alle vier deckeln nur ihre     */
+/* Hoehe und rollen; das Aussehen kommt von den Bausteinen.             */
+/* ==================================================================== */
+.epos-transfer-liste {
+    max-height: var(--epos-transfer-listenhoehe);
+    overflow: auto;
+}
+
+/* Die Haekchenbloecke: je Stammgruppe einer, nebeneinander, solange
+   Platz ist. Ohne Deckel wuechse das Blatt bei acht Gruppen ins
+   Unermessliche und der Exportknopf rutschte aus dem Bild. */
+.epos-transfer-gruppen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-height: calc(var(--epos-transfer-listenhoehe) * 0.75);
+    overflow: auto;
+    margin-block: 6px;
+}
+
+.epos-transfer-gruppen > * {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+/* Die Paketvorschau des Importblatts - ein Raster, das bei fuenf
+   Paketen nicht laenger wird als die Projektliste daneben. */
+.epos-transfer-pakete {
+    max-height: calc(var(--epos-transfer-listenhoehe) * 0.75);
+    overflow: auto;
+    margin-block: 6px;
+}
+
+/* Die Zielordnerzeile: Beschriftung, Pfad und Knopf in EINER Zeile;
+   der Pfad nimmt den Rest und kuerzt sich mit Auslassungspunkten. */
+.epos-transfer-ordner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-block: 6px;
+}
+
+.epos-transfer-ordner-pfad {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* ==================================================================== */

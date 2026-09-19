@@ -89,8 +89,17 @@
         @* VERGLEICHEN (Frage Q3, Stufe S3.3): frei, sobald ZWEI oder DREI Zeilen
            markiert sind. Der Knopf steht IMMER da - waere er nur bei Markierung
            sichtbar, faende niemand den Weg dorthin; der Kurztext sagt, wie man
-           markiert (Strg-Klick ist unsichtbar). *@
-        @if (!Mehrfach)
+           markiert (Strg-Klick ist unsichtbar).
+
+           UND ER STEHT NUR DA, WO ES ETWAS ZU VERGLEICHEN GIBT (Vergleichbar,
+           Auftraege KL-4 und MN-1): Die Klimaregionen sind keine Geraete mit
+           Kennwerten - ihr "Vergleich" waere der von Bezeichner, Standort und
+           Datum nebeneinander, also die Liste selbst noch einmal; die
+           gesetzlichen Parameter fuehren Jahreszeilen EINES Satzes, und die
+           liest man untereinander. Ein Knopf, der nichts Neues zeigt, ist ein
+           Bedienelement ohne Gewinn (dieselbe Begruendung, aus der eine
+           JaNein-Spalte keinen Trichter traegt). *@
+        @if (!Mehrfach && Vergleichbar)
         {
             <button type="button" class="epos-katalog-vergleichknopf"
                     disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
@@ -302,6 +311,24 @@
     /// Bestand zeigte.</para>
     /// </summary>
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+    /// <summary>
+    /// <b>Trägt die Suchzeile den Vergleichsknopf?</b> Vorgabe <c>true</c> — so haben
+    /// ihn die fünfzehn Katalogwirte aus S1…S3, und so bleibt es.
+    ///
+    /// <para><c>false</c> setzt, wessen Zeilen KEINE Kennwerte tragen. <b>Zwei Wirte
+    /// tun das:</b> Die Klimaregionsliste (Auftrag KL-4) zeigt Bezeichner, Quelle,
+    /// Standort, Koordinaten und Importdatum — ein Vergleich davon stellte die Liste
+    /// noch einmal daneben. Und die gesetzlichen Parameter (MN-1, 19.09.2026) führen
+    /// Jahreszeilen EINES Satzes: „KWKG-Zuschlag 2023 gegen KWKG-Zuschlag 2026" ist
+    /// keine Auswahlentscheidung, sondern die Geschichte desselben Wertes, und die
+    /// liest man untereinander. <b>Kein Nutzen, kein Knopf</b>; dieselbe Regel, aus
+    /// der eine Ja/Nein-Spalte keinen Trichter bekommt.</para>
+    ///
+    /// <para>In der Mehrfachwahl entfällt der Knopf ohnehin (Strg und Umschalt
+    /// bedeuten dort die Wahl); dieser Schalter wirkt daneben, nicht dagegen.</para>
+    /// </summary>
+    [Parameter] public bool Vergleichbar { get; set; } = true;
 
     /// <summary>Eine Zeile wurde gewählt.</summary>
     [Parameter] public EventCallback<string> GewaehltChanged { get; set; }
@@ -798,7 +825,11 @@
     /// </summary>
     private void BeiTastenwahl(Katalogfilterzeile zeile, Zeilenwahl.Zeilenklick klick)
     {
-        _tastenklick = klick.Strg || klick.Umschalt;
+        // Ohne Vergleichsknopf gibt es nichts zu markieren (Vergleichbar, KL-4): Eine
+        // Markierung, die zu keiner Ansicht fuehrt, waere ein unsichtbarer Zustand.
+        // Strg und Umschalt bleiben dann ein GEWOEHNLICHER Klick - die Zeile wird
+        // gewaehlt, statt dass gar nichts geschieht.
+        _tastenklick = Vergleichbar && (klick.Strg || klick.Umschalt);
         if (!_tastenklick) return;
 
         _markierhinweis = "";

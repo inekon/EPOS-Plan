@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -137,25 +138,40 @@ public class LizenzVerwaltungDialogTests : EposBunitContext
 
     /// <summary>
     /// Die drei Gruppen des Vorläufers stehen als drei Abschnitte da, samt den zwei
-    /// Eingabefeldern, den fünf Knöpfen und dem Portalverweis.
+    /// Eingabefeldern, den vier Knöpfen und dem Portalverweis.
+    ///
+    /// <para><b>MN-1 (19.09.2026):</b> Die Gruppen sind der Hausbaustein
+    /// <c>Gruppenkopf</c> geworden (statt roher <c>&lt;section&gt;/&lt;h2&gt;</c>),
+    /// die zwei Eingabefelder stehen im <c>Formularraster</c>, und „Schließen" ist
+    /// weg — das Blatt hängt im Reiter des Lizenzdialogs, und dessen Fußzeile trägt
+    /// den einen Weg hinaus.</para>
     /// </summary>
     [Fact]
     public void Der_Feldbestand_ist_vollstaendig()
     {
         var cut = Zeigen();
 
-        Assert.Equal(3, cut.FindAll("section.epos-lizverw-gruppe").Count);
+        Assert.Equal(3, cut.FindComponents<EPOS.UI.Bausteine.Gruppenkopf>().Count);
+        Assert.Empty(cut.FindAll("section.epos-lizverw-gruppe"));
         Assert.Contains("Lizenzstatus auf diesem Arbeitsplatz", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Aktivieren", cut.Markup, StringComparison.Ordinal);
         Assert.Contains("Weitere Aktionen", cut.Markup, StringComparison.Ordinal);
+
+        // Hausregel „ein Parameterblock steht im Formularraster": Die zwei
+        // Eingaben stehen darin, nicht daneben.
+        Assert.Single(cut.FindComponents<EPOS.UI.Bausteine.Formularraster>());
+        Assert.NotNull(cut.Find(".epos-formularraster input.epos-lizverw-grossschrift"));
+        Assert.NotNull(cut.Find(".epos-formularraster input[type=email]"));
 
         Assert.NotNull(Schluesselfeld(cut));
         Assert.NotNull(Emailfeld(cut));
 
         foreach (string text in new[] { "Lizenzdatei (.lic)…", "Jetzt aktivieren",
-                                        "Testversion anfordern…", "Gerät von der Lizenz lösen",
-                                        "Schließen" })
+                                        "Testversion anfordern…", "Gerät von der Lizenz lösen" })
             Assert.NotNull(Knopf(cut, text));
+
+        // MN-1: KEIN zweiter Weg hinaus.
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Schließen");
 
         var portal = cut.Find("a[target=_blank]");
         Assert.Equal(PORTAL, portal.GetAttribute("href"));
@@ -453,56 +469,106 @@ public class LizenzVerwaltungDialogTests : EposBunitContext
     }
 
     // ==================================================================
-    //  Schließen und Vorbelegung
+    //  MN-1 (19.09.2026) — der Übertragungshinweis und die zwei Sprünge
     // ==================================================================
 
-    /// <summary>„Schließen" meldet sich — genau einmal.</summary>
+    /// <summary>
+    /// Der feste Hinweis steht UNMITTELBAR über dem Knopf, der überträgt — nicht
+    /// darunter, nicht in einer Fußzeile, nicht auf einem anderen Reiter. Er nennt
+    /// die drei Angaben, das Ziel und die zwei Papiere, die gelten.
+    /// </summary>
     [Fact]
-    public void Schliessen_meldet_sich()
+    public void Der_Uebertragungshinweis_steht_unmittelbar_ueber_dem_Aktivierenknopf()
     {
-        int rufe = 0;
-        var cut = Render<LizenzVerwaltungDialog>(p =>
-        {
-            p.Add(x => x.Lage, Lage())
-             .Add(x => x.Texte, Texte())
-             .Add(x => x.Geschlossen, EventCallback.Factory.Create(new object(), () => rufe++));
-        });
+        var cut = Zeigen();
 
-        cut.FindAll("button").First(b => b.TextContent.Trim() == "Schließen").Click();
+        var hinweis = cut.Find("p.epos-lizverw-uebertragung");
+        Assert.Contains("Lizenzschlüssel", hinweis.TextContent, StringComparison.Ordinal);
+        Assert.Contains("E-Mail-Adresse", hinweis.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Gerätekennung", hinweis.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Lizenzserver", hinweis.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Lizenzvereinbarung", hinweis.TextContent, StringComparison.Ordinal);
+        Assert.Contains("Datenverarbeitung", hinweis.TextContent, StringComparison.Ordinal);
 
-        Assert.Equal(1, rufe);
+        // Die REIHENFOLGE im Markup: Hinweis, Sprünge, dann der Knopf.
+        string markup = cut.Markup;
+        int stelleHinweis = markup.IndexOf("epos-lizverw-uebertragung", StringComparison.Ordinal);
+        int stelleSpruenge = markup.IndexOf("epos-lizverw-spruenge", StringComparison.Ordinal);
+        int stelleKnopf = markup.IndexOf("Jetzt aktivieren", StringComparison.Ordinal);
+
+        Assert.True(stelleHinweis >= 0 && stelleSpruenge > stelleHinweis && stelleKnopf > stelleSpruenge,
+                    "Hinweis, Sprünge und Knopf stehen nicht in dieser Reihenfolge.");
+
+        // Und die Sprachausgabe liest ihn als Beschreibung DES Knopfes.
+        Assert.Equal("lizverw-uebertragung",
+                     Knopf(cut, "Jetzt aktivieren").GetAttribute("aria-describedby"));
     }
 
     /// <summary>
-    /// Anwenderbefund 15.09.2026 („Doppeltes Kreuz dürfen nicht sein!"): Die Fußzeile
-    /// trägt KEIN Schließkreuz mehr. Der Dialog hat gar keinen eigenen Kopf (die
-    /// h2-Überschriften gehören den drei Gruppen), und jeder Weg zu ihm bringt sein
-    /// Kreuz schon mit — als Überlagerung „Lizenz aktivieren…" im <c>LizenzDialog</c>
-    /// trägt die Überlagerung Titel und ✕, als eigenes Fenster
-    /// (<c>LizenzVerwaltungHuelle</c>, <c>FormBorderStyle.Sizable</c> mit
-    /// <c>ControlBox</c>) die Fenstertitelleiste. Der Weg hinaus bleibt der Hauptknopf
-    /// „Schließen"; der Hilfeknopf bleibt ebenfalls, er hängt nicht am Titel.
+    /// Die zwei Sprünge melden die Reiterschlüssel des Wirts — sie schalten nicht
+    /// selbst um (das Blatt kennt seinen Wirt nicht) und führen nirgends hinaus.
     /// </summary>
     [Fact]
-    public void Die_Fusszeile_traegt_kein_Kreuz_mehr()
+    public void Die_zwei_Spruenge_melden_die_Reiter_des_Wirts()
     {
-        int rufe = 0;
+        var gemeldet = new List<string>();
         var cut = Render<LizenzVerwaltungDialog>(p =>
         {
             p.Add(x => x.Lage, Lage())
              .Add(x => x.Texte, Texte())
-             .Add(x => x.Geschlossen, EventCallback.Factory.Create(new object(), () => rufe++));
+             .Add(x => x.ReiterGewuenscht,
+                  EventCallback.Factory.Create<string>(new object(), s => gemeldet.Add(s)));
         });
+
+        var spruenge = cut.FindAll(".epos-lizverw-spruenge button");
+        Assert.Equal(2, spruenge.Count);
+        Assert.Equal("Lizenzvereinbarung", spruenge[0].TextContent.Trim());
+        Assert.Equal("Hinweise zur Datenverarbeitung", spruenge[1].TextContent.Trim());
+
+        spruenge[0].Click();
+        cut.FindAll(".epos-lizverw-spruenge button")[1].Click();
+
+        Assert.Equal(new[] { "VERTRAG", "HINWEISE" }, gemeldet);
+    }
+
+    /// <summary>Ohne Delegat bleiben die Sprünge wirkungslos — und werfen nicht.</summary>
+    [Fact]
+    public void Ohne_Reiterdelegat_tun_die_Spruenge_nichts()
+    {
+        var cut = Zeigen();
+
+        foreach (var knopf in cut.FindAll(".epos-lizverw-spruenge button"))
+            knopf.Click();
+
+        Assert.Empty(cut.FindAll("div.epos-warnbanner"));
+    }
+
+    // ==================================================================
+    //  Vorbelegung
+    // ==================================================================
+
+    /// <summary>
+    /// Anwenderbefund 15.09.2026 („Doppeltes Kreuz dürfen nicht sein!"): Die Fußzeile
+    /// trägt KEIN Schließkreuz. Das Blatt hat gar keinen eigenen Kopf (die
+    /// Überschriften gehören den drei <c>Gruppenkopf</c>-Abschnitten), und sein Wirt
+    /// bringt sein Kreuz schon mit.
+    ///
+    /// <para><b>MN-1 (19.09.2026):</b> Auch der Hauptknopf „Schließen" ist gefallen —
+    /// das Blatt hängt im Reiter des <c>LizenzDialog</c>, und dessen Fußzeile trägt
+    /// den einen Weg hinaus und die eine Statuszeile. Der Hilfeknopf bleibt: Er hängt
+    /// nicht am Titel, sondern am eigenen Hilfeschlüssel dieses Blattes.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Fusszeile_traegt_weder_Kreuz_noch_Schliessknopf()
+    {
+        var cut = Zeigen();
 
         Assert.Empty(cut.FindAll(".epos-lizverw-fuss .epos-dialog-zu"));
         Assert.Empty(cut.FindAll(".epos-dialog-zu"));
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Schließen");
+
         // Der Hilfeknopf bleibt - er haengt nicht am Titel.
         Assert.NotEmpty(cut.FindAll(".epos-lizverw-fuss .epos-infoknopf"));
-
-        // Der Weg hinaus steht weiter offen - der Hauptknopf meldet genau einmal.
-        cut.FindAll("button").First(b => b.TextContent.Trim() == "Schließen").Click();
-
-        Assert.Equal(1, rufe);
     }
 
     /// <summary>

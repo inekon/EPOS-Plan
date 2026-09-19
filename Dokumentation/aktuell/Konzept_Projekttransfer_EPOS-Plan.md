@@ -1,6 +1,6 @@
 # Konzept: Projekttransfer — Export und Import zwischen Rechnern (EPOS-Plan)
 
-**Rev. 2 (zur Abnahme)** · 28.08.2026 · Branch-Stand nach Synchronisation
+**Rev. 3** · 19.09.2026 · Branch-Stand nach Synchronisation
 
 Auftrag: „Ich möchte ein Projekt mit der Option, auch die Varianten davon zu
 exportieren, so dass sie auf einem anderen Computer importiert werden können."
@@ -8,6 +8,12 @@ exportieren, so dass sie auf einem anderen Computer importiert werden können."
 genutzt und erweitert werden; der gegenwärtige Import bricht mit einer
 Fehlermeldung ab (Befund B1). Rev. 2 ersetzt Rev. 1 vollständig: Das Konzept
 baut jetzt auf dem Bestand auf statt neu.
+
+**Auftrag zur Rev. 3 (19.09.2026):** „Beim Menü Projekt-Import soll eine
+Mehrfachauswahl möglich sein. Dabei soll berücksichtigt werden, wenn
+Variantenprojekt importiert werden (diese sollen zusammen mit Stamm importiert
+werden, nicht mehrfach)." Rev. 3 ergänzt Rev. 2 um die Etappe T7
+(Mehrfachtransfer, § 4b) und lässt alles Übrige unverändert.
 
 ---
 
@@ -140,7 +146,12 @@ am Ziel eine Verknüpfungswaise. T3 baut die Varianten-Option (§ 4).
 - **Export-Reiter**: Nach Wahl des Projekts listet der Dialog dessen Varianten
   (`Tab_Variante.ID_ProjektRef = Stamm`) als Häkchenliste (Vorbelegung TF2).
   Exportiert wird immer **vom Stamm aus**; eine einzelne Variante ohne ihren
-  Stamm ist kein Exportfall.
+  Stamm ist kein Exportfall. **Seit T7 erzwingt der Code diese Regel** statt sie
+  nur zu beschreiben: `ExportEines` lehnt ein Paket ab, dessen Hauptprojekt
+  selbst eine Variante ist und das weitere Varianten mitführt
+  (`TRANSFER_EXPORT_VARIANTE_ALS_STAMM`). Eine Variante **allein** bleibt
+  erlaubt — das ist der Weg der Vergütungsbeilage aus § 2.16, und er hat seine
+  eigenen Proben.
 - **Paketformat V2** (formatVersion 2): mehrere Projekte je Paket —
   `projects/<n>/data/<Tabelle>.json` je Projektbaum plus die zugehörigen
   `Tab_Variante`-Zeilen; `catalogs/` und `fill/` bleiben paketweit (einmal
@@ -154,6 +165,81 @@ am Ziel eine Verknüpfungswaise. T3 baut die Varianten-Option (§ 4).
   Abbrechen/Überschreiben/Neuer Name — beim Variantenpaket gilt der Modus für
   alle enthaltenen Projekte). Abschließend Klapplisten aktualisieren
   (`VariantenAnzeigeAktualisieren`, Ä19).
+
+## 4b. Erweiterung: Mehrfachtransfer (T7, Auftrag PI-1)
+
+**Entscheid PI-Q1 (19.09.2026):** beides — Import **mehrerer Paketdateien in
+einem Lauf** und Export mit **Mehrfachauswahl der Projekte**. Eine gewählte
+Variante reist mit ihrem Stamm im selben Paket; je Stammgruppe entsteht genau
+ein Paket, nie zwei. Nicht gewählt wurde eine Häkchenliste der Varianten im
+Import — was im Paket steckt, reist mit.
+
+### 4b.1 Export
+
+- **Die Projektwahl ist eine Liste, keine Klappliste.** Der Exportreiter zeigt
+  die `Katalogliste` in Mehrfachbetrieb mit sechs Spalten (Projekt, Art,
+  Varianten, Kunde, Geändert, mitgenommen), Suchfeld, Sortierpfeil und
+  Spaltentrichtern. Die Ausprägung steht als Daten im Kern
+  (`Projekttransferprofil`), die Wahl hängt an **Projekt-Ids** und überlebt
+  jeden Filterwechsel.
+- **Die Wahlregel steht einmal** (`Projektgruppierung.Gruppieren`) und wird von
+  der Oberfläche wie vom Kern gefragt: Jede gewählte Zeile wird auf ihre
+  Stammgruppe abgebildet, jede Gruppe kommt genau einmal vor, und zu jeder
+  reisen alle Varianten ihres Stamms mit (Vorbelegung TF1). Eine **ausdrücklich
+  gewählte** Variante lässt sich im Gruppenblock nicht abwählen — sie ist der
+  Grund, warum es dieses Paket gibt; die Sperre ist weich und nennt ihn.
+- **Der Stammzug ist sichtbar.** Ein Stamm, den der Anwender nicht angehakt hat
+  und der trotzdem mitreist, trägt in der Spalte „mitgenommen" ein Ja, und ein
+  Hinweisbanner nennt die Zahlen. Eine stille Mitnahme wäre eine Überraschung:
+  Das Paket trüge ein Projekt, das nie gewählt wurde.
+- **Ein Paket je Gruppe** (`ExportGruppen`): Dateiname `<Stammname>.wpx` im
+  gewählten Zielordner, verbotene Zeichen werden zum Unterstrich, 120 Zeichen
+  Grenze, eine Kollision zählt hoch (` (2)`, ` (3)` …) — **überschrieben wird
+  nie**. Bei genau einer Gruppe bleibt es beim Speichern-Dialog mit
+  Namensvorschlag. Der Lauf hält an keinem Fehler an; die Bilanz nennt je Gruppe
+  Datei oder Grund.
+
+### 4b.2 Import
+
+- **Mehrere Paketdateien in einem Lauf** (`ImportierenMehrere`), mit einer
+  Vorschauzeile je Paket: Datei, Hauptprojekt, Varianten, Schemastand und
+  Hinweis. Der Paketkopf wird **ohne die Datenbank** gelesen (`PaketKopf`) und
+  wirft nie — eine falsch erwischte Datei darf die Vorschau der übrigen vier
+  nicht zu Fall bringen.
+- **Stamm vor Variante** (`Reihenfolge`): Stammpakete behalten die Reihenfolge
+  der Wahl, jedes Variantenpaket rückt hinter das Paket seines Stamms,
+  unauflösbare Reste ans Ende. Der Dateiwähler sortiert nach dem Namen, und das
+  hat mit der Verwandtschaft der Projekte nichts zu tun.
+- **Die Namensabbildung gilt über den ganzen Lauf** (`Sammelstand.NameZuId`).
+  **Vorrangregel:** Beim Auflösen einer Verknüpfung geht ein Projekt, das
+  **dieser Lauf** angelegt hat, einem gleichnamigen Projekt des Zielbestands
+  **vor**. Ohne sie hinge die Variante aus Paket 2 am fremden Altprojekt statt
+  am Stamm aus Paket 1. Eingetragen wird unter dem **Quellnamen**, auch wenn das
+  Projekt am Ziel umbenannt wurde — die Verknüpfung des nächsten Pakets nennt
+  den Quellnamen.
+- **Dublettenschutz:** Steht das Hauptprojekt eines Pakets schon aus einem
+  früheren Paket desselben Laufs, wird es nicht ein zweites Mal angelegt; seine
+  Varianten laufen normal und hängen an derselben Id. Der Bericht nennt den
+  Grund (`TRANSFER_STAMM_BEREITS`).
+- **Transaktion je Paket, Teilerfolg erlaubt.** Ein Lauf über fünf Pakete, bei
+  dem das dritte scheitert, behält die ersten beiden; ein Rückbau nähme auch das
+  Gelungene weg. Der Abbruch des Anwenders greift **zwischen** zwei Paketen —
+  ein Paket wird nie halb eingespielt. Der Fortschritt ist zweistufig
+  (`(i + a/b) / n`) und läuft über den ganzen Lauf monoton von 0 nach 1.
+- **Sicherung einmal je Lauf**, vor dem ersten Paket — sie sichert den Stand vor
+  dem Lauf, und den gibt es nur einmal. **Ein Sammelbericht** neben dem ersten
+  Paket, nicht je Paket.
+- **Die PV-Beilage (§ 2.16) greift weiter nur, wo keine Verknüpfung herstellbar
+  ist.** Liegt der Stamm in einem anderen Paket desselben Laufs, findet die
+  Variante ihn über die Namensabbildung, und es gibt nichts beizulegen: Sie
+  übernimmt wie am Quellrechner.
+
+### 4b.3 Was der Sammellauf bewusst NICHT tut
+
+Der Zielname gilt einem einzelnen Import; bei mehreren Paketen behält jedes
+Projekt seinen Namen (eine leise Zeile sagt es, statt ein gesperrtes Feld
+stehen zu lassen). Der Konfliktmodus gilt für den ganzen Lauf, wie seit TF2.
+Und zusammengeführt wird nichts — siehe § 8.
 
 ## 5. Erweiterung: Vorschau und Bericht (T4)
 
@@ -189,6 +275,7 @@ am Ziel eine Verknüpfungswaise. T3 baut die Varianten-Option (§ 4).
 | T3 ✔ | **Varianten-Option UMGESETZT**: Häkchenliste im Export (vorbelegt alle an, TF1), Paketformat V2 (`projects/<i>/data/`, `variants`+`variantLinks` im Manifest; `Tab_Variante` reist NICHT als Tabellenzeile — `ID_ProjektRef` wäre nicht versetzbar, die Verknüpfung wird beim Import neu geschrieben), Import orchestriert Stamm + Varianten in EINER Transaktion (`BaumEinfuegen` je Projektbaum), V1-Pakete bleiben lesbar | ERFÜLLT: T5a/T5b (Wärmepumpe WG + 2 Varianten: Export, Import, 2 wiederhergestellte Verknüpfungen), T3a (V1-Nutzerpaket importiert weiter) |
 | T4 ✔ | **Vorschau/Bericht/Sicherung UMGESETZT**: Paketvorschau zeigt Varianten; Abschlussbericht (Projekte, Varianten, Verknüpfungen, Hinweise) in der Erfolgsmeldung und als `<paket>.importbericht.txt` (TF5); Sicherungs-Haken vorbelegt an (`<DB>_vor_Import_<Zeitstempel>.accdb` neben der DB) | ERFÜLLT: Dialog erweitert; Sweep 114/0/5 |
 | T6 ✔ | **Artefakt-Runde (Nutzerbefunde 28.08.2026)**: Export lässt lose Kostenpositionen anlagenfähiger Komponenten zurück (B5); „Anlage"-Vergleich nur gewerkgleich und ohne Referenzanlagen (B6) | ERFÜLLT: transfer 19/19 (T6 Lose-Filter am echten Booster-Projekt, T7 Anlage-Diff-Guard WP↔BHKW) |
+| T7 ✔ | **Mehrfachtransfer UMGESETZT (Auftrag PI-1, Entscheid PI-Q1)**: Export mit Mehrfachauswahl über die `Katalogliste`, eine gewählte Variante zieht ihren Stamm, ein Paket je Stammgruppe (`Projektgruppierung`, `ExportGruppen`); Import mehrerer Pakete in EINEM Lauf mit Namensabbildung über den ganzen Lauf, Reihenfolge Stamm vor Variante, Dublettenschutz und Bilanz (`ImportierenMehrere`, `Sammelstand`, `PaketKopf`, `Reihenfolge`); Transaktion je Paket, Sicherung und Sammelbericht einmal je Lauf | ERFÜLLT: `ProjekttransferSammelTests` PI1–PI13 (P1–P13 unverändert), `ProjektTransferMehrfachTests` (12) und `ProjektTransferDialogTests` (17) in beiden Kulturen |
 | T5 ✔ | Prüfstand-Modus `transfer` dauerhaft (`kd1runner <ordnerA> transfer <ordnerB>`; Soll 17/17: B1-Kern mit frischem Controller, Nutzerpaket-Realfall, Roundtrip-Zählungen, Anker, Versions-Ablehnung, Variantenpaket) | ERFÜLLT: 17/17 PASS, kd6 92/92, Sweep 114/0/5; offen bleibt die Sichtabnahme durch den Nutzer |
 
 ## 8. Abgrenzung (bewusst NICHT in diesem Konzept)
@@ -197,7 +284,11 @@ am Ziel eine Verknüpfungswaise. T3 baut die Varianten-Option (§ 4).
 - Kein Katalog-Abgleich zwischen Rechnern (der Beipack legt nur an, was dem
   Ziel fehlt; Zielkatalog gewinnt bei Namensgleichheit — Bestandsverhalten).
 - Kein Zusammenführen zweier Stände desselben Projekts (Import = neues Projekt
-  bzw. bewusstes Überschreiben im Bestandsmodus).
+  bzw. bewusstes Überschreiben im Bestandsmodus). **Das gilt seit T7 auch über
+  Paketgrenzen hinweg:** Zwei Pakete desselben Laufs, die dasselbe Projekt mit
+  verschiedenen Ständen mitbringen, werden nicht abgeglichen — das erste legt
+  es an, das zweite überspringt es und sagt das im Bericht. Wer den zweiten
+  Stand haben will, importiert ihn einzeln unter neuem Namen.
 - Kein Netzwerk-/Cloud-Transfer (die `.wpx`-Datei ist der Weg).
 
 **Verzahnung mit dem Konzept DB-Migration (Access→SQL):** Das ZIP/JSON-Format
@@ -218,3 +309,4 @@ Vorschläge unten sind damit umgesetzt; Änderungen jederzeit auf Zuruf.
 | TF4 | Ältere Pakete in neuere DB (projektbezogenes Nachmigrieren)? | nicht jetzt; strikt gleiche Schemaversion (B2) |
 | TF5 | Bericht auch als Datei neben die `.wpx` schreiben (`<name>-importbericht.txt`)? | ja, zusätzlich zur Anzeige |
 | TF6 | Klimadaten (Wetterdaten der Klimaregion) ins Paket? | nein; Referenz über Namen, beide Rechner haben dieselbe Auslieferung — Konfliktfall meldet der Bericht |
+| PI‑Q1 | Mehrfachauswahl: Import mehrerer Pakete, Export mehrerer Projekte oder beides? | **beides** (Anwenderentscheid 19.09.2026); eine gewählte Variante reist mit ihrem Stamm im selben Paket, ein Paket je Stammgruppe. Nicht gewählt: Häkchenliste der Varianten im Import |

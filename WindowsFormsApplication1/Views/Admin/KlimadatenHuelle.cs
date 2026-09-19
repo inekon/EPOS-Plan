@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -34,10 +36,16 @@ namespace WindowsFormsApplication1
     /// und schreibt 9 125 Zeilen in einer Transaktion. In einer WebView ist der
     /// Renderfaden derselbe Faden.</para>
     ///
-    /// <para><b>Der einzige Netzzugriff des Programms</b> (Risiko R-W14c-5) hängt an
-    /// den zwei Delegaten <c>ITmyQuelle</c> und <c>IOrtsQuelle</c>; hier sind es
-    /// <c>PVGIS_EPW_Downloader.GetTMY</c> und <c>GetCoordinatesAsync</c>, in der
-    /// Probe eine eingefrorene Datei.</para>
+    /// <para><b>Der Netzzugriff des Programms</b> (Risiko R-W14c-5) hängt an den
+    /// Delegaten <c>ITmyQuelle</c>, <c>IOrtsQuelle</c> und — seit KL1-B —
+    /// <c>INetzbereich</c>; hier sind es <c>PVGIS_EPW_Downloader.GetTMY</c>,
+    /// <c>GetCoordinatesAsync</c> und <see cref="Bereich"/>, in der Probe eingefrorene
+    /// Dateien. Der Kern kennt weder <c>HttpClient</c> noch eine Adresse.</para>
+    ///
+    /// <para><b>Drei Klimaquellen</b> (Auftrag KL1-B): PVGIS-TMY wie bisher, eine
+    /// DWD-TRY-Datei vom Rechner des Anwenders (ganz ohne Netz) und die offenen
+    /// TRY-Regionaldaten — über Bereichsabrufe auf <c>data.zip</c> oder aus einer
+    /// lokalen Kopie dieses Pakets.</para>
     ///
     /// <para><b>Die Ortsliste ist eine VORSCHLAGSLISTE, kein Startbedingung</b>
     /// (Befund W14c-B15, Entscheid E-7): <c>Form_Klimadaten_Load</c> las
@@ -95,30 +103,83 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
-                ["Regionen"] = new Func<Task<List<KlimadatenDialog.Regionszeile>>>(RegionenLesen),
+                ["Regionen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(RegionenLesen),
                 ["Ansicht"] = new Func<string, Task<KlimadatenDialog.Regionsansicht>>(Ansicht),
                 ["Importieren"] = new Func<KlimaImportAuftrag, IProgress<ImportFortschritt>,
                                            Task<KlimaImportErgebnis>>(Importieren),
                 ["Abbrechen"] = new Action(() => { try { _abbruch?.Cancel(); } catch { } }),
+                ["RegionErmitteln"] = new Func<KlimaImportAuftrag,
+                                               Task<KlimaVorschauErgebnis>>(RegionErmitteln),
                 ["Loeschen"] = new Func<string, Task<bool>>(Loeschen),
-                ["Ortsvorschlaege"] = Ortsvorschlaege()
+                ["Ortsvorschlaege"] = Ortsvorschlaege(),
+                ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen)
             };
+        }
+
+        // =====================================================================
+        // Dateiwahl der TRY-Quellen (Auftrag KL1-B)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Dateiwähler für die TRY-Datei und das Regionalpaket. <b>Die ASYNCHRONE
+        /// Fassung</b> (Befund W13-B-1): <c>OpenFileDialog.ShowDialog()</c> öffnete
+        /// seine verschachtelte Nachrichtenschleife INNERHALB des
+        /// WebView2-Rückrufs; <c>DateiOeffnenAsync</c> fährt das Fenster hinter dem
+        /// Blazor-Ereignis hoch.
+        /// </summary>
+        private static async Task<string> DateiWaehlen(string filter)
+        {
+            string pfad = await Dienste.Datei.DateiOeffnenAsync(
+                MyResource.Resource.KLIMA_TITEL, filter ?? "", "").ConfigureAwait(true);
+            return pfad ?? "";
         }
 
         // =====================================================================
         // Liste und Ansicht
         // =====================================================================
 
-        private static Task<List<KlimadatenDialog.Regionszeile>> RegionenLesen()
+        /// <summary>
+        /// Die Zeilen der Regionsliste (Auftrag KL-4) — sieben Spalten aus
+        /// <see cref="KlimaregionStammCtrl.Katalogfilterzeilen"/>.
+        ///
+        /// <para><b>Hier wird der Quellenschlüssel zum Anzeigetext.</b> Der Kern
+        /// liefert <c>PVGIS</c>, <c>TRY_DATEI</c>, <c>TRY_REGIONAL</c> — die Werte, wie
+        /// sie in <c>Tab_Klimaregion_STAMM.Quelle</c> stehen (Drei-Schichten-Regel:
+        /// Schlüssel in der Datenbank, Text in <c>MyResource</c>). Die Spalte zeigt
+        /// dieselben drei Namen, die auch die Optionsgruppe „Klimaquelle" im Dialog
+        /// trägt — ein zweiter Wortlaut für dieselbe Sache wäre eine zweite
+        /// Wahrheit.</para>
+        ///
+        /// <para>Ein Altbestand ohne Quelle (NULL, vor Schemaschritt 95) bleibt LEER;
+        /// sein Halbgeviertstrich kommt aus <c>Katalogwert.AusText</c>.</para>
+        /// </summary>
+        private static Task<IReadOnlyList<Katalogfilterzeile>> RegionenLesen()
         {
-            var ctrl = new KlimaregionStammCtrl();
-            ctrl.ReadAll();
+            IReadOnlyList<Katalogfilterzeile> zeilen = KlimaregionStammCtrl.Katalogfilterzeilen();
 
-            var liste = new List<KlimadatenDialog.Regionszeile>(ctrl.rows);
-            for (int i = 0; i < ctrl.rows; i++)
-                liste.Add(new KlimadatenDialog.Regionszeile(ctrl.items[i].m_szName,
-                                                             ctrl.items[i].m_bReadOnly));
-            return Task.FromResult(liste);
+            foreach (Katalogfilterzeile zeile in zeilen)
+            {
+                string text = Quellentext(zeile.Text(Katalogfilterprofil.SpQuelle));
+                zeile.MitText(Katalogfilterprofil.SpQuelle, text);
+            }
+
+            return Task.FromResult(zeilen);
+        }
+
+        /// <summary>Der Anzeigetext eines Quellenschlüssels; ein unbekannter bleibt leer.</summary>
+        private static string Quellentext(string schluessel)
+        {
+            switch ((schluessel ?? "").Trim())
+            {
+                case DbWerte.KLIMA_QUELLE_PVGIS:
+                    return MyResource.Resource.KLIMA_QUELLE_PVGIS;
+                case DbWerte.KLIMA_QUELLE_TRY_DATEI:
+                    return MyResource.Resource.KLIMA_QUELLE_TRY_DATEI;
+                case DbWerte.KLIMA_QUELLE_TRY_REGIONAL:
+                    return MyResource.Resource.KLIMA_QUELLE_TRY_REGIONAL;
+                default:
+                    return "";
+            }
         }
 
         /// <summary>
@@ -192,7 +253,81 @@ namespace WindowsFormsApplication1
                 (lon, lat, azimut) => PVGIS_EPW_Downloader.GetTMY(lon, lat, azimut),
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 melder,
-                marke));
+                marke,
+                Bereich));
+        }
+
+        // =====================================================================
+        // Die REGIONSVORSCHAU (Auftrag KL-3)
+        // =====================================================================
+
+        /// <summary>
+        /// Sagt vor dem Einlesen, welche TRY-Region der Standort trifft — über
+        /// DIESELBEN Nahtstellen wie der Import (Ortsauflösung und Bereichsabruf).
+        ///
+        /// <para><b>Auch sie läuft in <c>Task.Run</c></b>: Sie holt das
+        /// Zentralverzeichnis des Pakets über das Netz, und in einer WebView ist der
+        /// Renderfaden derselbe Faden. Eine eigene Abbruchmarke braucht sie nicht —
+        /// die Vorschau dauert einen Bruchteil des Imports.</para>
+        /// </summary>
+        private static async Task<KlimaVorschauErgebnis> RegionErmitteln(KlimaImportAuftrag auftrag)
+        {
+            return await Task.Run(() => KlimaImportAblauf.RegionErmittelnAsync(
+                auftrag,
+                ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
+                CancellationToken.None,
+                Bereich));
+        }
+
+        // =====================================================================
+        // Der BEREICHSABRUF der TRY-Regionaldaten (Auftrag KL1-B)
+        // =====================================================================
+
+        /// <summary>Ein eigener Client: Bereichsabrufe brauchen keine Zeitgrenze von 100 s.</summary>
+        private static readonly HttpClient _bereichsClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(5)
+        };
+
+        /// <summary>
+        /// Holt einen BEREICH einer Adresse (<c>HTTP Range</c>) — die zweite Naht des
+        /// Netzzugriffs neben <c>ITmyQuelle</c>.
+        ///
+        /// <para><b>Absolute Grenzen.</b> <c>RangeHeaderValue(von, bis)</c> bekommt
+        /// <c>bis = von + laenge − 1</c>; eine Länge kleiner 0 heißt „bis zum Ende" und
+        /// lässt die Obergrenze weg. Gelesen wird mit
+        /// <c>HttpCompletionOption.ResponseHeadersRead</c> — der Rumpf darf nie als
+        /// Ganzes in den Speicher laufen.</para>
+        ///
+        /// <para><b>Die Gesamtlänge kommt aus <c>Content-Range</c></b>
+        /// (<c>bytes von-bis/gesamt</c>). Fehlt sie, meldet der Kern „Die Adresse
+        /// erlaubt keine Teilabrufe" und bricht ab — statt 892 MB zu ziehen.</para>
+        /// </summary>
+        private static async Task<(byte[] Daten, long Gesamtlaenge)> Bereich(
+            string adresse, long von, long laenge, CancellationToken abbruch)
+        {
+            using (var anfrage = new HttpRequestMessage(HttpMethod.Get, adresse))
+            {
+                anfrage.Headers.Range = laenge < 0
+                    ? new RangeHeaderValue(von, null)
+                    : new RangeHeaderValue(von, von + laenge - 1);
+
+                using (HttpResponseMessage antwort = await _bereichsClient.SendAsync(
+                           anfrage, HttpCompletionOption.ResponseHeadersRead, abbruch)
+                       .ConfigureAwait(false))
+                {
+                    antwort.EnsureSuccessStatusCode();
+
+                    byte[] daten = await antwort.Content.ReadAsByteArrayAsync(abbruch)
+                                                        .ConfigureAwait(false);
+
+                    long gesamt = 0;
+                    ContentRangeHeaderValue bereich = antwort.Content.Headers.ContentRange;
+                    if (bereich != null && bereich.Length.HasValue) gesamt = bereich.Length.Value;
+
+                    return (daten, gesamt);
+                }
+            }
         }
 
         // =====================================================================

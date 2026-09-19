@@ -64,7 +64,11 @@ namespace EPOS.Kern.Tests
                              LizenzManager.StatusText(LizenzStatus.Lesemodus, gueltig));
                 Assert.Equal("Die Systemuhr wurde zurückgestellt — bitte Uhrzeit korrigieren oder online nachprüfen.",
                              LizenzManager.StatusText(LizenzStatus.UhrManipuliert, null));
-                Assert.Equal("Nicht aktiviert — Testversion oder Lizenzschlüssel unter Administration → Lizenz.",
+                // ANWENDERENTSCHEID MN-1 (19.09.2026): Der Weg heisst „Hilfe →
+                // Lizenz". Der Menuepunkt „Administration → Lizenz…" ist
+                // entfallen; der Lizenzdialog unter Hilfe fuehrt die Verwaltung
+                // als Reiter „Status & Aktivierung".
+                Assert.Equal("Nicht aktiviert — Testversion oder Lizenzschlüssel unter Hilfe → Lizenz.",
                              LizenzManager.StatusText(LizenzStatus.NichtAktiviert, null));
             });
         }
@@ -128,6 +132,124 @@ namespace EPOS.Kern.Tests
 
             MitSprache("de-DE", () => Assert.Equal("Demoversion", token.TypText()));
             MitSprache("en-US", () => Assert.Equal("Trial version", token.TypText()));
+        }
+
+        // ==============================================================
+        //  ANWENDERENTSCHEID MN-1 (19.09.2026) — die Rechtstexte
+        // ==============================================================
+
+        /// <summary>
+        /// <b>Der Abschnitt „Datenverarbeitung" nennt die Übertragung an den
+        /// LIZENZSERVER</b> — Zweck, Daten, Empfänger und Rechtsgrundlage. Bis MN-1
+        /// beschrieb er nur Klimadaten, Ortssuche und den Hilfe-Assistenten; die
+        /// Aktivierung überträgt aber Schlüssel, Adresse und Gerätekennung, und das
+        /// Konzept Lizenzierung § 7 verlangt, dass genau das dort steht.
+        ///
+        /// <para>Der Rechtstext ist in BEIDEN Katalogen deutsch — verbindlich ist
+        /// die deutsche Fassung (Entscheid W15c-E-7).</para>
+        /// </summary>
+        [Theory]
+        [InlineData("de-DE")]
+        [InlineData("en-US")]
+        public void Die_Datenverarbeitung_nennt_den_Lizenzserver(string sprache)
+        {
+            MitSprache(sprache, () =>
+            {
+                string text = Resource.ResourceManager.GetString("LIZR_RH_A6");
+
+                Assert.False(string.IsNullOrWhiteSpace(text));
+                foreach (string stueck in new[]
+                         {
+                             "Lizenzserver", "epos-plan.de", "Lizenzschlüssel",
+                             "E-Mail-Adresse", "Geräte-Hash", "Programmversion",
+                             "Art. 6 Abs. 1 lit. b DSGVO",
+                         })
+                    Assert.Contains(stueck, text, StringComparison.Ordinal);
+
+                // Und die Zusage, die daneben stehen bleibt.
+                Assert.Contains("werden dabei nicht übertragen", text, StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// <b>Die Komponentenliste ist vollständig.</b> Sie nannte bis MN-1 vier
+        /// Microsoft-Bestandteile; ausgeliefert werden auch der Diagramm-Renderer,
+        /// der Fahrplaner, die Berichtserzeugung und die Signaturprüfung. Jede
+        /// Lizenzart stammt aus der <c>.nuspec</c> des Pakets, nicht aus dem
+        /// Gedächtnis.
+        /// </summary>
+        [Fact]
+        public void Die_Komponentenliste_nennt_jedes_ausgelieferte_Paket()
+        {
+            MitSprache("de-DE", () =>
+            {
+                string text = Resource.ResourceManager.GetString("LIZR_KO_A2");
+
+                foreach (string paket in new[]
+                         {
+                             "SkiaSharp", "HarfBuzzSharp", "SixLabors.Fonts",
+                             "Google OR-Tools", "QuickGrid", "BouncyCastle",
+                             "ClosedXML", "DocumentFormat.OpenXml", "MathNet.Numerics",
+                             "Humanizer", "WinForms.DataVisualization", "SQLitePCLRaw",
+                             "JsonSchema.Net",
+                         })
+                    Assert.Contains(paket, text, StringComparison.Ordinal);
+
+                // Die Lizenzarten stehen dabei - und zwar die, die in den .nuspec
+                // steht: Apache-2.0 fuer OR-Tools, SixLabors.Fonts 1.0 und
+                // SQLitePCLRaw, MIT fuer den Rest.
+                Assert.Contains("Google OR-Tools (Apache-2.0-Lizenz", text, StringComparison.Ordinal);
+                Assert.Contains("SixLabors.Fonts 1.0 (Apache-2.0-Lizenz", text, StringComparison.Ordinal);
+                Assert.Contains("SkiaSharp samt SkiaSharp.HarfBuzz und HarfBuzzSharp (MIT-Lizenz",
+                                text, StringComparison.Ordinal);
+
+                // Der Assistentenabschnitt nennt seine Anbindung.
+                Assert.Contains("Mscc.GenerativeAI (Apache-2.0-Lizenz",
+                                Resource.ResourceManager.GetString("LIZR_KO_A5"),
+                                StringComparison.Ordinal);
+            });
+        }
+
+        /// <summary>
+        /// Die vier NEUEN Schlüssel von MN-1 stehen in beiden Sprachen: der Reiter
+        /// „Status &amp; Aktivierung", der feste Übertragungshinweis über dem
+        /// Aktivieren-Knopf und die zwei Sprünge darunter.
+        /// </summary>
+        [Theory]
+        [InlineData("LIZR_REITER_STATUS")]
+        [InlineData("LIZ_HINWEIS_UEBERTRAGUNG")]
+        [InlineData("LIZ_LINK_VEREINBARUNG")]
+        [InlineData("LIZ_LINK_DATENVERARBEITUNG")]
+        public void Die_neuen_Schluessel_stehen_in_beiden_Sprachen(string schluessel)
+        {
+            string deutsch = null, englisch = null;
+            MitSprache("de-DE", () => deutsch = Resource.ResourceManager.GetString(schluessel));
+            MitSprache("en-US", () => englisch = Resource.ResourceManager.GetString(schluessel));
+
+            Assert.False(string.IsNullOrWhiteSpace(deutsch), schluessel + " fehlt auf Deutsch.");
+            Assert.False(string.IsNullOrWhiteSpace(englisch), schluessel + " fehlt auf Englisch.");
+            Assert.NotEqual(deutsch, englisch);
+        }
+
+        /// <summary>
+        /// Der feste Hinweis sagt AUSDRÜCKLICH, was übertragen wird und wohin — und
+        /// verweist auf die zwei Papiere, die dafür gelten. Er ist der Kern der
+        /// Rechtskonformität, die der Anwender angemahnt hat.
+        /// </summary>
+        [Fact]
+        public void Der_Uebertragungshinweis_nennt_Daten_Ziel_und_Papiere()
+        {
+            MitSprache("de-DE", () =>
+            {
+                string text = Resource.ResourceManager.GetString("LIZ_HINWEIS_UEBERTRAGUNG");
+
+                foreach (string stueck in new[]
+                         {
+                             "Lizenzschlüssel", "E-Mail-Adresse", "Gerätekennung",
+                             "Lizenzserver", "Lizenzvereinbarung", "Datenverarbeitung",
+                         })
+                    Assert.Contains(stueck, text, StringComparison.Ordinal);
+            });
         }
     }
 }

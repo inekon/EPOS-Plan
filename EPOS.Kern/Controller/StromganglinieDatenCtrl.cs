@@ -89,8 +89,37 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool InsertKompletteGanglinie(StromganglinieCtrl kopfCtrl, List<string> roheWerte)
+        /// <summary>
+        /// Schreibt Kopf UND Werte einer Stromganglinie ins PROJEKT — alles in EINER
+        /// Transaktion (GL-1).
+        ///
+        /// <para><b>Das Projekt ist Pflicht</b>, aus denselben Gruenden wie bei
+        /// <see cref="StromganglinieCtrl.Insert"/>: <c>Tab_Stromganglinie.ID_Projekt</c>
+        /// traegt seit Schemaschritt 96 einen Fremdschluessel auf <c>Tab_Projekt</c>,
+        /// und ein Kopfsatz ohne Projekt ist weder filterbar noch vom Loeschweg des
+        /// Projekts erfasst. Die Werte haengen ueber <c>ID_Ganglinie</c> am Kopf und
+        /// folgen ihm kaskadiert.</para>
+        ///
+        /// <para><b>Katalogware nimmt den anderen Weg:</b>
+        /// <c>StromganglinieStammCtrl.ImportGanglinie</c> nach
+        /// <c>Tab_Stromganglinie_STAMM</c>/<c>Tab_StromganglinieDaten_STAMM</c> — das
+        /// Ziel der Importkette seit iU9-W12.</para>
+        /// </summary>
+        /// <param name="kopfCtrl">Traegt Bezeichner und Zeitinterval; bekommt die neue Id zurueck.</param>
+        /// <param name="roheWerte">Die Werte in Einfuegereihenfolge, Punkt als Dezimaltrenner.</param>
+        /// <param name="idProjekt">Das Projekt, dem die Ganglinie gehoert; &gt; 0.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="idProjekt"/> ist 0 oder kleiner.
+        /// </exception>
+        public bool InsertKompletteGanglinie(StromganglinieCtrl kopfCtrl, List<string> roheWerte, int idProjekt)
         {
+            if (idProjekt <= 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(idProjekt),
+                    "Eine Stromganglinie wird nur MIT Projekt in Tab_Stromganglinie " +
+                    "geschrieben. Katalogware gehoert nach Tab_Stromganglinie_STAMM " +
+                    "(StromganglinieStammCtrl.ImportGanglinie).");
+
             if (roheWerte == null || roheWerte.Count == 0) return true;
 
             try
@@ -114,9 +143,12 @@ namespace WindowsFormsApplication1
                     kopfCtrl.m_ID_Ganglinie = neueGanglinieID;
 
                     // Kopfdatensatz über die geteilte Verbindung einfügen
-                    string sqlKopf = "INSERT INTO Tab_Stromganglinie (ID, Bezeichner, Zeitinterval) VALUES (?, ?, ?)";
+                    // ID_Projekt kommt als PARAMETER herein - dieselbe Lage und dieselbe
+                    // Begruendung wie in StromganglinieCtrl.Insert (GL-1).
+                    string sqlKopf = "INSERT INTO Tab_Stromganglinie (ID, ID_Projekt, Bezeichner, Zeitinterval) VALUES (?, ?, ?, ?)";
                     v.Ausfuehren(sqlKopf,
                         new DbParam("@id", DbParamTyp.Integer) { Wert = neueGanglinieID },
+                        new DbParam("@proj", DbParamTyp.Integer) { Wert = idProjekt },
                         new DbParam("@bez", DbParamTyp.VarWChar) { Wert = kopfCtrl.m_szBezeichner ?? (object)DBNull.Value },
                         new DbParam("@interval", DbParamTyp.Integer) { Wert = kopfCtrl.m_Zeitinterval });
 

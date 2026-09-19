@@ -13,9 +13,10 @@ namespace EPOS.UI.Dialoge.Lizenz;
 /// zwischen Knopfbeschriftungen. Dasselbe hatte die Welle W15b beim
 /// Chatfenster geloest (<c>KiChatTexte</c>); hier steht die gleiche Bauart.</para>
 ///
-/// <para><b>Ein Buendel, zwei Masken.</b> Die Verwaltung erscheint als
-/// UEBERLAGERUNG im Lizenzdialog (Entscheid W15c-E-11) — beide Masken laufen
-/// im selben Fenster und ziehen aus demselben Katalogzweig. Ihre Texte stehen
+/// <para><b>Ein Buendel, zwei Masken.</b> Die Verwaltung ist seit MN-1
+/// (19.09.2026) das erste REITERBLATT des Lizenzdialogs („Status &amp;
+/// Aktivierung"; bis dahin eine Ueberlagerung, Entscheid W15c-E-11) — beide
+/// Masken laufen im selben Fenster und ziehen aus demselben Katalogzweig. Ihre Texte stehen
 /// deshalb in EINEM Gegenstand: die des Lizenzdialogs (<c>LIZR_*</c>)
 /// unmittelbar hier, die der Verwaltung (<c>LIZ_*</c>) unter
 /// <see cref="Verwaltung"/>. So gibt es keinen Namensstreit zwischen
@@ -63,6 +64,13 @@ public sealed class LizenzTexte
 
     /// <summary>Zweite Kopfzeile (<c>LIZR_KOPF_UNTERTITEL</c>).</summary>
     public string KopfUntertitel { get; set; } = Katalog("LIZR_KOPF_UNTERTITEL");
+
+    /// <summary>
+    /// Reiter „Status &amp; Aktivierung" (<c>LIZR_REITER_STATUS</c>) — seit
+    /// MN-1 (19.09.2026) das ERSTE Blatt: die Lizenzverwaltung, die bis dahin
+    /// hinter dem Knopf „Lizenz aktivieren…" als Ueberlagerung aufging.
+    /// </summary>
+    public string ReiterStatus { get; set; } = Katalog("LIZR_REITER_STATUS", "Status & Aktivierung");
 
     /// <summary>Reiter „Lizenzvereinbarung" (<c>LIZR_REITER_VERTRAG</c>).</summary>
     public string ReiterVertrag { get; set; } = Katalog("LIZR_REITER_VERTRAG", "Lizenzvereinbarung");
@@ -180,11 +188,36 @@ public sealed class LizenzVerwaltungTexte
     /// <summary>Knopf „Gerät von der Lizenz lösen" (<c>LIZ_BTN_FREIGEBEN</c>).</summary>
     public string KnopfFreigeben { get; set; } = LizenzTexte.Katalog("LIZ_BTN_FREIGEBEN", "Gerät von der Lizenz lösen");
 
-    /// <summary>Knopf „Schließen" (<c>LIZ_BTN_SCHLIESSEN</c>).</summary>
+    /// <summary>
+    /// Knopf „Schließen" (<c>LIZ_BTN_SCHLIESSEN</c>) — seit MN-1 (19.09.2026)
+    /// OHNE Leser: Das Blatt haengt im Reiter des Lizenzdialogs, und dessen
+    /// Fusszeile traegt den einen Weg hinaus. Der Eintrag bleibt im
+    /// Sprachkatalog stehen, wie <c>LIZR_BTN_DATEI</c>.
+    /// </summary>
     public string KnopfSchliessen { get; set; } = LizenzTexte.Katalog("LIZ_BTN_SCHLIESSEN", "Schließen");
 
-    /// <summary>Der zweizeilige Datenschutzhinweis (<c>LIZ_HINWEIS_AKTIVIERUNG</c>).</summary>
+    /// <summary>Die technische Voraussetzung unter dem Knopf (<c>LIZ_HINWEIS_AKTIVIERUNG</c>).</summary>
     public string HinweisAktivierung { get; set; } = LizenzTexte.Katalog("LIZ_HINWEIS_AKTIVIERUNG");
+
+    /// <summary>
+    /// Der feste Uebertragungshinweis UNMITTELBAR ueber dem Knopf „Jetzt
+    /// aktivieren" (<c>LIZ_HINWEIS_UEBERTRAGUNG</c>, MN-1 vom 19.09.2026). Er
+    /// nennt die drei uebertragenen Angaben und das Ziel und verweist auf die
+    /// Lizenzvereinbarung und die Hinweise zur Datenverarbeitung; die zwei
+    /// Spruenge darunter fuehren auf deren Reiter.
+    /// </summary>
+    public string HinweisUebertragung { get; set; } = LizenzTexte.Katalog(
+        "LIZ_HINWEIS_UEBERTRAGUNG",
+        "Mit der Aktivierung werden Lizenzschlüssel, E-Mail-Adresse und eine anonyme "
+        + "Gerätekennung an den Lizenzserver übertragen. Es gelten die Lizenzvereinbarung "
+        + "und die Hinweise zur Datenverarbeitung.");
+
+    /// <summary>Sprung auf den Reiter „Lizenzvereinbarung" (<c>LIZ_LINK_VEREINBARUNG</c>).</summary>
+    public string LinkVereinbarung { get; set; } = LizenzTexte.Katalog("LIZ_LINK_VEREINBARUNG", "Lizenzvereinbarung");
+
+    /// <summary>Sprung auf den Reiter „Rechtliche Hinweise" (<c>LIZ_LINK_DATENVERARBEITUNG</c>).</summary>
+    public string LinkDatenverarbeitung { get; set; } = LizenzTexte.Katalog(
+        "LIZ_LINK_DATENVERARBEITUNG", "Hinweise zur Datenverarbeitung");
 
     /// <summary>Beschriftung des Portalverweises (<c>LIZ_LINK_PORTAL</c>).</summary>
     public string LinkPortal { get; set; } = LizenzTexte.Katalog("LIZ_LINK_PORTAL", "Lizenzportal öffnen");

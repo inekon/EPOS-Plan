@@ -38,9 +38,28 @@
         @for (int i = 0; i < Eintraege.Count; i++)
         {
             int eintragId = Eintraege[i].Id;
-            <Schalter Bezeichnung="@Eintraege[i].Text" Wert="@Gewaehlt.Contains(eintragId)"
-                      Aktiv="@Aktiv"
-                      WertChanged="@(w => Umschalten(eintragId, w))" />
+            string sperrgrund = Sperre(eintragId);
+
+            @if (sperrgrund.Length > 0)
+            {
+                @* WEICHE Sperre (Hausregel EPOS.UI): Ein gesperrtes Kaestchen, das
+                   seinen Grund nennen soll, darf nicht `disabled` sein - sein
+                   Tooltip erschiene nie. aria-disabled plus title, und der Klick
+                   laeuft ins Leere statt umzuschalten. *@
+                <label class="epos-schalter" title="@sperrgrund">
+                    <input class="epos-schalter-kasten" type="checkbox"
+                           checked="@Gewaehlt.Contains(eintragId)"
+                           aria-disabled="true" @onclick:preventDefault
+                           @onclick="Nichts" />
+                    <span class="epos-feld-text">@Eintraege[i].Text</span>
+                </label>
+            }
+            else
+            {
+                <Schalter Bezeichnung="@Eintraege[i].Text" Wert="@Gewaehlt.Contains(eintragId)"
+                          Aktiv="@Aktiv"
+                          WertChanged="@(w => Umschalten(eintragId, w))" />
+            }
 
             @if (AbsatzNach > 0 && i == AbsatzNach - 1 && i < Eintraege.Count - 1)
             {
@@ -89,6 +108,30 @@
     /// <summary>Satz, wenn es nichts zu waehlen gibt.</summary>
     [Parameter] public string LeerText { get; set; } = "Keine Einträge zur Auswahl.";
 
+    /// <summary>
+    /// <b>Der Grund, warum EIN Eintrag nicht umschaltbar ist</b> (Auftrag PI-1) —
+    /// leer oder <c>null</c> heisst „frei". Ohne den Delegaten ist jeder Eintrag
+    /// frei, und die Liste verhaelt sich wie bisher.
+    ///
+    /// <para><b>Warum ein Grund und kein <c>bool</c>.</b> Eine Sperre ohne Grund
+    /// ist eine Sackgasse: Der Anwender sieht ein Haekchen, das sich nicht bewegt,
+    /// und erfaehrt nicht, warum. Der Satz steht als <c>title</c> am Eintrag, und
+    /// die Sperre ist WEICH (<c>aria-disabled</c> statt <c>disabled</c>) — ein
+    /// hart gesperrtes Element zeigt seinen Tooltip nicht.</para>
+    /// </summary>
+    [Parameter] public Func<int, string>? Sperrgrund { get; set; }
+
+    /// <summary>Der Sperrgrund eines Eintrags; leer = frei.</summary>
+    private string Sperre(int id)
+    {
+        if (Sperrgrund is null) return "";
+        try { return Sperrgrund(id) ?? ""; }
+        catch { return ""; }
+    }
+
+    /// <summary>Der Klick auf ein weich gesperrtes Kaestchen laeuft ins Leere.</summary>
+    private void Nichts() { }
+
     private Task Umschalten(int id, bool an)
     {
         var neu = new List<int>(Gewaehlt);
@@ -104,5 +147,15 @@
         return GewaehltChanged.InvokeAsync(neu);
     }
 
-    private Task KeineWaehlen() => GewaehltChanged.InvokeAsync(Array.Empty<int>());
+    /// <summary>
+    /// „Keine" laesst die GESPERRTEN Eintraege stehen — sonst naehme der
+    /// Sammelknopf weg, was der Einzelklick nicht wegnehmen darf.
+    /// </summary>
+    private Task KeineWaehlen()
+    {
+        var bleibt = new List<int>();
+        foreach ((int id, _) in Eintraege)
+            if (Sperre(id).Length > 0 && Gewaehlt.Contains(id)) bleibt.Add(id);
+        return GewaehltChanged.InvokeAsync(bleibt);
+    }
 }

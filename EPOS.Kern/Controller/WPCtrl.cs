@@ -24,6 +24,24 @@ namespace WindowsFormsApplication1
     /// </summary>
     class WPCtrl : WPModel
     {
+        /// <summary>
+        /// Eine Kennlinienzeile in die PROJEKTtabelle schreiben — EINE Anweisung für
+        /// beide Wege (Katalogkopie und Nachholknopf).
+        ///
+        /// <para><b><c>ID_Projekt</c> kommt aus der Wärmepumpe, nicht vom Aufrufer.</b>
+        /// Bis Schemaschritt 96 blieb die Spalte beim Schreiben ausgelassen und fiel auf
+        /// ihren <c>DEFAULT 0</c> zurück — daher die 1.446 Zeilen der Testdatenbank, die
+        /// an einer echten Wärmepumpe hingen und trotzdem auf kein Projekt zeigten. Seit
+        /// die Spalte einen Fremdschlüssel auf <c>Tab_Projekt</c> trägt, wiese die
+        /// Datenbank diese 0 ab; die Unterabfrage holt die Projektnummer dort, wo sie
+        /// ohnehin steht, statt sie durch den Aufrufer zu reichen und irgendwo zu
+        /// vergessen. <c>Tab_Kenndaten</c> ist die Projekttabelle — der Katalog liegt in
+        /// <c>Tab_Kenndaten_STAMM</c>.</para>
+        /// </summary>
+        internal const string SQL_KENNLINIE_EINFUEGEN =
+            "INSERT INTO Tab_Kenndaten (ID, ID_Projekt, ID_WP, Vorlauf, Temperatur, COP, Ptherm) " +
+            "VALUES (?, (SELECT w.ID_Projekt FROM Tab_WP w WHERE w.ID = ?), ?, ?, ?, ?, ?)";
+
         private List<WPModel> _internalList = new List<WPModel>();
         public int rows => _internalList.Count;
         public new List<WPModel> items => _internalList;
@@ -576,12 +594,13 @@ namespace WindowsFormsApplication1
                                 {
                                     List<DbParam> p = new List<DbParam>();
                                     p.Add(new DbParam("@id", cid++));
+                                    p.Add(new DbParam("@pj", neueId));
                                     p.Add(new DbParam("@wp", neueId));
                                     p.Add(P(r, "Vorlauf"));
                                     p.Add(P(r, "Temperatur"));
                                     p.Add(P(r, "COP"));
                                     p.Add(P(r, "Ptherm"));
-                                    v.Ausfuehren("INSERT INTO Tab_Kenndaten (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)", p.ToArray());
+                                    v.Ausfuehren(SQL_KENNLINIE_EINFUEGEN, p.ToArray());
                                 }
                             }
                         }
@@ -705,12 +724,13 @@ namespace WindowsFormsApplication1
                             {
                                 List<DbParam> p = new List<DbParam>();
                                 p.Add(new DbParam("@id", cid++));
+                                p.Add(new DbParam("@pj", projektWpId));
                                 p.Add(new DbParam("@wp", projektWpId));
                                 p.Add(P(r, "Vorlauf"));
                                 p.Add(P(r, "Temperatur"));
                                 p.Add(P(r, "COP"));
                                 p.Add(P(r, "Ptherm"));
-                                v.Ausfuehren("INSERT INTO Tab_Kenndaten (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)", p.ToArray());
+                                v.Ausfuehren(SQL_KENNLINIE_EINFUEGEN, p.ToArray());
                                 geschrieben++;
                             }
                         }

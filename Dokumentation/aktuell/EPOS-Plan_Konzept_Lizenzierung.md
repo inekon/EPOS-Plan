@@ -240,6 +240,44 @@ Der Lesemodus ist zugleich das Auffangnetz aller Fehlerfälle (Serverausfall üb
 - Aktivierungs- und Prüfprotokolle auf dem Server dienen Support und Missbrauchserkennung; Aufbewahrung befristen (z. B. 12 Monate über Lizenzende hinaus). AV-rechtlich sauber in der Lizenzvereinbarung/AGB verankern (Rechtsgrundlage: Vertragserfüllung, Art. 6 Abs. 1 lit. b DSGVO).
 - Serverstandort Deutschland (ALL-INKL erfüllt das bereits).
 
+### 7.1 Umsetzungsvermerk (Auftrag MN-1, 19.09.2026)
+
+Die Auskunftspflicht ist **in der Anwendung eingelöst**:
+
+- Der Abschnitt „Datenverarbeitung" der Registerkarte *Rechtliche Hinweise* (`LIZR_RH_A6`)
+  nennt die Übertragung an den Lizenzserver von epos-plan.de mit Anlass (Aktivierung,
+  Testversion, Gerätefreigabe), Daten (Lizenzschlüssel, E-Mail-Adresse, Geräte-Hash,
+  Programmversion, Zeitpunkt), Zweck und der Rechtsgrundlage Art. 6 Abs. 1 lit. b DSGVO —
+  samt der Feststellung, dass dabei keine Projekt-, Kunden- oder Simulationsdaten übertragen
+  werden.
+- **Unmittelbar über** dem Knopf „Jetzt aktivieren" steht derselbe Sachverhalt in einem Satz
+  (`LIZ_HINWEIS_UEBERTRAGUNG`), mit zwei Sprüngen auf die Registerkarten
+  *Lizenzvereinbarung* und *Rechtliche Hinweise*. Wer aktiviert, hat die Auskunft vor sich,
+  nicht hinter einem zweiten Klick.
+- Die Registerkarte *Komponenten* (`LIZR_KO_A2`, `LIZR_KO_A5`) führt jede ausgelieferte
+  Fremdkomponente mit ihrer Lizenzart; die Angaben stammen aus den `.nuspec`-Dateien der
+  Pakete.
+
+**Der Rechtstext selbst ist vom Anwender zu prüfen** — er ist entworfen, nicht anwaltlich
+geprüft.
+
+### 7.2 Der Bedienweg (Auftrag MN-1, 19.09.2026)
+
+**Ein Einstieg: Hilfe → Lizenz.** Der Menüpunkt „Administration → Lizenz…"
+(`MenuItem_LizenzVerwaltung`) ist entfallen; derselbe Dialog stand dort ein zweites Mal.
+Der Lizenzdialog führt vier Registerkarten:
+
+| Karte | Inhalt |
+|---|---|
+| **Status & Aktivierung** | Lizenzstand, Aktivierung per Schlüssel oder `.lic`-Datei, Testversion anfordern, Gerät von der Lizenz lösen |
+| **Lizenzvereinbarung** | der verbindliche Vertragstext (Datei, Zwischenspeicher oder Online-Fassung) |
+| **Rechtliche Hinweise** | Anbieter, Haftung, Gewährleistung, **Datenverarbeitung**, Marken |
+| **Komponenten** | Fremdkomponenten und Datenquellen mit ihren Lizenzarten |
+
+Welche Karte vorn steht, entscheidet die Hülle: bei **nicht aktivierter** Lizenz
+„Status & Aktivierung", sonst die Lizenzvereinbarung; die Erststart-Zustimmung zeigt immer
+die Vereinbarung. Ein Fenster, ein Schließkreuz, eine Fußzeile mit dem Lizenzstand.
+
 ---
 
 ## 8. Umsetzung in Schritten

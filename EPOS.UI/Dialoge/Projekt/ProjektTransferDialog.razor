@@ -37,7 +37,20 @@
    prozessweiten Vorgabewert, und ein Sprachwechsel mitten im Lauf brachte
    Etikett und Zahlenbild auseinander (Befund #231). Der Waechter
    EPOS.Kern.Tests/ParallelitaetWacheTests liest seit #240 auch dieses Projekt
-   - samt .razor. *@
+   - samt .razor.
+
+   PI-1 (Anwenderentscheid PI-Q1, 19.09.2026): BEIDE BLAETTER NEHMEN MEHRERE.
+   Export: statt EINER Klappliste die Katalogliste in Mehrfachbetrieb - mit
+   Suche, Sortierung und Trichtern. Eine gewaehlte VARIANTE zieht ihren Stamm
+   sichtbar nach (Spalte "mitgenommen" und Hinweisbanner), und je Stammgruppe
+   entsteht GENAU EIN Paket - der Anwenderauftrag sagt "nicht mehrfach".
+   Import: mehrere Paketdateien in einem Lauf, mit Vorschau je Paket,
+   Reihenfolge Stamm vor Variante und einer Bilanz danach.
+
+   DIE WAHLREGEL STEHT NICHT HIER, sondern im Kern (Projektgruppierung): Der
+   Dialog fragt sie, um zu zeigen, was die Wahl nach sich zieht, und der Kern
+   fragt dieselbe, um daraus Pakete zu machen. Zwei Fassungen waeren zwei
+   Wahrheiten darueber, was mitreist. *@
 
 @namespace EPOS.UI.Dialoge.Projekt
 
@@ -69,21 +82,64 @@
             <Reiterblatt Schluessel="EXPORT" Titel="@ReiterExport">
                 <KindInhalt>
 
-                    @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Erst das Projekt,
-                       dann seine Varianten - eine Reihenfolge, und die Variantenliste
-                       braucht die ganze Breite. *@
-                    <Formularraster Einspaltig="true">
-                        <KindInhalt>
-                    <Auswahlfeld Bezeichnung="@LabelProjekt" Eintraege="@Projektnamen"
-                                 Auswahl="@_projektIndex" AuswahlChanged="ProjektGewaehlt"
-                                 Aktiv="@(!_laeuft)" />
+                    @* PI-1: DIE PROJEKTLISTE, nicht die Klappliste. Sie traegt
+                       Kontrollkaestchen (Katalogliste.Mehrfach, Stufe S3.4) und
+                       damit auch Suche, Sortierpfeil und Spaltentrichter - bei
+                       vierundzwanzig und mehr Projekten der Unterschied zwischen
+                       Waehlen und Suchen. *@
+                    <p class="epos-untergruppe">@Texte.LabelProjekte</p>
 
-                    <Mehrfachauswahl Bezeichnung="@LabelVarianten"
-                                     Eintraege="@_variantenEintraege" Gewaehlt="@_variantenGewaehlt"
-                                     GewaehltChanged="@(w => _variantenGewaehlt = w)"
-                                     Aktiv="@(!_laeuft)" LeerText="@LeerVarianten" />
-                        </KindInhalt>
-                    </Formularraster>
+                    <div class="epos-transfer-liste">
+                        <Katalogliste Profil="@Listenprofil" Zeilen="@_zeilen"
+                                      Filterstand="@_filterstand"
+                                      Mehrfach="true" IstGewaehlt="@IstGewaehlt"
+                                      Mehrfachwahl="BeiMehrfachwahl" Allewahl="BeiMehrfachalle"
+                                      Gefiltert="BeiGefiltert" VirtualisierenAb="120" />
+                    </div>
+
+                    @* Die stille Mitnahme sichtbar machen: Wer eine Variante waehlt,
+                       nimmt ihren Stamm mit - sonst entstuende am Ziel eine Variante
+                       ohne Stamm. Die Spalte "mitgenommen" zeigt WELCHE, das Banner
+                       WIE VIELE. *@
+                    @if (_nachgezogen.Count > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@StammzugText" />
+                    }
+
+                    @* Je Stammgruppe ein Haekchenblock (TF1: alle an). Das Haekchen
+                       einer in der LISTE gewaehlten Variante ist weich gesperrt - sie
+                       ist der Grund, warum es dieses Paket gibt. *@
+                    @if (_gruppen.Count > 0)
+                    {
+                        <div class="epos-transfer-gruppen">
+                            @foreach (Transfergruppe gruppe in _gruppen)
+                            {
+                                IReadOnlyList<(int Id, string Text)> eintraege = VariantenEintraege(gruppe);
+                                @if (eintraege.Count > 0)
+                                {
+                                    <Mehrfachauswahl Bezeichnung="@string.Format(Texte.GruppeVarianten, gruppe.Stamm)"
+                                                     Eintraege="@eintraege"
+                                                     Gewaehlt="@gruppe.VariantenIds"
+                                                     GewaehltChanged="@(w => GruppeGeaendert(eintraege, w))"
+                                                     Sperrgrund="@Sperrgrund"
+                                                     Aktiv="@(!_laeuft)" LeerText="@LeerVarianten" />
+                                }
+                            }
+                        </div>
+                    }
+
+                    @* Der Zielordner - er gilt nur, wo MEHRERE Pakete entstehen; bei
+                       einer Gruppe bleibt es beim Speichern-Dialog mit Namensvorschlag
+                       (der Anwender soll den Namen weiter selbst bestimmen duerfen). *@
+                    @if (Daten?.ZielordnerWaehlen is not null && _gruppen.Count > 1)
+                    {
+                        <div class="epos-transfer-ordner">
+                            <span class="epos-feld-text">@Texte.LabelZielordner</span>
+                            <span class="epos-transfer-ordner-pfad" title="@_zielordner">@_zielordner</span>
+                            <button type="button" class="epos-knopf epos-transfer-ordner-knopf"
+                                    disabled="@_laeuft" @onclick="ZielordnerWaehlen">@Texte.BtnOrdner</button>
+                        </div>
+                    }
 
                     <div class="epos-leiste">
                         <button type="button" class="epos-knopf epos-knopf--primaer epos-transfer-export"
@@ -96,17 +152,55 @@
             <Reiterblatt Schluessel="IMPORT" Titel="@ReiterImport">
                 <KindInhalt>
 
+                    @* PI-1: Die MEHRFACHWAHL zuerst - ein Lauf ueber mehrere Pakete
+                       ist der Regelfall, sobald jemand Stamm und Varianten einzeln
+                       bekommen hat. Ohne den Delegaten bleibt es bei der Einzelwahl
+                       (kein Delegat, kein Knopf). *@
+                    @if (Daten?.PaketeLesen is not null)
+                    {
+                        <div class="epos-leiste">
+                            <button type="button" class="epos-knopf epos-transfer-dateien"
+                                    disabled="@_laeuft" @onclick="PaketeWaehlen">@Texte.BtnDateien</button>
+                        </div>
+                    }
+
                     @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: ein Pfadfeld -
                        es braucht die Breite. *@
-                    <Formularraster Einspaltig="true">
-                        <KindInhalt>
-                    <Dateiwahl Bezeichnung="@LabelDatei" Pfad="@_paketpfad" PfadChanged="PaketGewaehlt"
-                               Filter="@Dateifilter" KnopfText="@BtnDatei" Aktiv="@(!_laeuft)"
-                               Waehlen="@PaketWaehlen" />
-                        </KindInhalt>
-                    </Formularraster>
+                    @if (Daten?.PaketeLesen is null)
+                    {
+                        <Formularraster Einspaltig="true">
+                            <KindInhalt>
+                                <Dateiwahl Bezeichnung="@LabelDatei" Pfad="@_paketpfad" PfadChanged="PaketGewaehlt"
+                                           Filter="@Dateifilter" KnopfText="@BtnDatei" Aktiv="@(!_laeuft)"
+                                           Waehlen="@PaketWaehlen" />
+                            </KindInhalt>
+                        </Formularraster>
+                    }
 
-                    @if (_vorschau is not null)
+                    @* EIN Paket: der gewohnte Satz. MEHRERE: die Vorschauliste, in
+                       der Reihenfolge, in der der Lauf sie einspielen wird - Stamm
+                       vor Variante. Wer sie nicht sieht, versteht spaeter den
+                       Bericht nicht. *@
+                    @if (_pakete.Count > 1)
+                    {
+                        <div class="epos-transfer-pakete">
+                            <Raster TZeile="Paketzeile" Zeilen="@_pakete.AsQueryable()">
+                                <KindInhalt>
+                                    <PropertyColumn TGridItem="Paketzeile" TProp="string"
+                                                    Property="@(z => z.Datei)" Title="@Texte.SpPaketDatei" />
+                                    <PropertyColumn TGridItem="Paketzeile" TProp="string"
+                                                    Property="@(z => z.Hauptprojekt)" Title="@Texte.SpPaketProjekt" />
+                                    <PropertyColumn TGridItem="Paketzeile" TProp="string"
+                                                    Property="@(z => z.Varianten)" Title="@Texte.SpPaketVarianten" />
+                                    <PropertyColumn TGridItem="Paketzeile" TProp="string"
+                                                    Property="@(z => z.Schema)" Title="@Texte.SpPaketSchema" />
+                                    <PropertyColumn TGridItem="Paketzeile" TProp="string"
+                                                    Property="@(z => z.Hinweis)" Title="@Texte.SpPaketHinweis" />
+                                </KindInhalt>
+                            </Raster>
+                        </div>
+                    }
+                    else if (_vorschau is not null)
                     {
                         <Warnbanner Stufe="@(string.IsNullOrEmpty(_vorschau.Fehler) ? WarnStufe.Hinweis : WarnStufe.Warnung)"
                                     Text="@Vorschautext" />
@@ -115,10 +209,22 @@
                     @* Formularraster (iU8-E-2, Paket P3), EINSPALTIG: Zielname, Umgang
                        mit dem Konflikt, Sicherung - der Weg des Imports von oben nach
                        unten. *@
+                    @* Der Zielname gilt EINEM Projekt. Bei mehreren Paketen waere er
+                       eine Behauptung: Welches der fuenf sollte er treffen? Statt ihn
+                       zu sperren (ein gesperrtes Feld erklaert sich nicht), steht dort
+                       die leise Zeile mit dem Grund. *@
+                    @if (_pakete.Count > 1)
+                    {
+                        <Herleitungszeile Text="@Texte.MeldungZielnameMehrere" />
+                    }
+
                     <Formularraster Einspaltig="true">
                         <KindInhalt>
-                    <Textfeld Bezeichnung="@LabelZielname" Wert="@_zielname"
-                              WertChanged="@(w => _zielname = w)" NurLesen="@_laeuft" />
+                    @if (_pakete.Count <= 1)
+                    {
+                        <Textfeld Bezeichnung="@LabelZielname" Wert="@_zielname"
+                                  WertChanged="@(w => _zielname = w)" NurLesen="@_laeuft" />
+                    }
 
                     <Optionsgruppe Bezeichnung="@LabelKonflikt" Eintraege="@Konfliktmodi"
                                    Auswahl="@((int)_modus)" AuswahlChanged="ModusGewaehlt"
@@ -134,7 +240,7 @@
 
                     <div class="epos-leiste">
                         <button type="button" class="epos-knopf epos-knopf--primaer epos-transfer-import"
-                                disabled="@(_laeuft || string.IsNullOrEmpty(_paketpfad))"
+                                disabled="@(_laeuft || (string.IsNullOrEmpty(_paketpfad) && _pakete.Count == 0))"
                                 @onclick="Importieren">@BtnImport</button>
                     </div>
                 </KindInhalt>
@@ -220,14 +326,42 @@
     /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "";
 
+    /// <summary>
+    /// Die Texte des MEHRFACHTRANSFERS als Bündel (PI-1). Die vierzig
+    /// Bestandsparameter darüber bleiben einzeln — sie umzubauen wäre eine
+    /// Änderung an achtzig Stellen ohne Bezug zum Auftrag.
+    /// </summary>
+    [Parameter] public ProjektTransferTexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Der Übersetzer der Listenspalten; <c>null</c> nimmt den Ressourcentext mit
+    /// deutschem Rückfall. Er liegt beim Wirt, weil der Kern keine Anzeigetexte
+    /// kennt (dasselbe Muster wie <c>Katalogfilterprofil.Finde</c>).
+    /// </summary>
+    [Parameter] public Func<string, string>? Spaltentext { get; set; }
+
     private string _reiter = "EXPORT";
-    private string _projekt = "";
-    private int? _projektIndex;
-    private IReadOnlyList<(int Id, string Text)> _variantenEintraege = Array.Empty<(int, string)>();
-    private IReadOnlyList<string> _variantennamen = Array.Empty<string>();
-    private IReadOnlyList<int> _variantenGewaehlt = Array.Empty<int>();
+
+    // ---- Exportblatt: die Wahl -------------------------------------------
+    //
+    // Die WAHRHEIT ist die Menge der Projekt-Ids: Sie ueberlebt jeden
+    // Filterwechsel, denn sie haengt nicht an Zeilennummern. Die
+    // Zeilenmarkierung daneben traegt nur die KLICKREGEL (Klick schaltet um,
+    // Umschalt nimmt den Bereich dazu - W6-E-5) und rechnet auf ANZEIGEindizes;
+    // nach jedem Klick werden beide zusammengefuehrt.
+    private readonly HashSet<int> _wahl = new();
+    private readonly HashSet<int> _abgewaehlt = new();
+    private readonly Zeilenmarkierung _markierung = new();
+    private readonly Katalogfilterstand _filterstand = new();
+
+    private IReadOnlyList<Katalogfilterzeile> _zeilen = Array.Empty<Katalogfilterzeile>();
+    private IReadOnlyList<Transfergruppe> _gruppen = Array.Empty<Transfergruppe>();
+    private IReadOnlyList<int> _nachgezogen = Array.Empty<int>();
+    private Katalogfilterprofil? _listenprofil;
+    private string _zielordner = "";
 
     private string _paketpfad = "";
+    private readonly List<Paketzeile> _pakete = new();
     private string _zielname = "";
     private PaketVorschau? _vorschau;
     private ProjektExportImportCtrl.BeiVorhandenem _modus = ProjektExportImportCtrl.BeiVorhandenem.NeuerName;
@@ -243,17 +377,28 @@
     private string _fragegrund = "";
     private bool _importErfolgreich;
 
-    /// <summary>Das gewählte Quellprojekt (Prüfhilfe für Tests).</summary>
-    public string Projekt => _projekt;
+    /// <summary>Das Hauptprojekt der ERSTEN Gruppe (Prüfhilfe für Tests).</summary>
+    public string Projekt => _gruppen.Count > 0 ? _gruppen[0].Stamm : "";
 
-    /// <summary>Die gewählten Variantennamen (Prüfhilfe für Tests).</summary>
+    /// <summary>Die Variantennamen der ERSTEN Gruppe (Prüfhilfe für Tests).</summary>
     public IReadOnlyList<string> GewaehlteVarianten
-        => _variantenGewaehlt.Select(i => _variantennamen[i]).ToList();
+        => _gruppen.Count > 0 ? _gruppen[0].Varianten : Array.Empty<string>();
 
-    private IReadOnlyList<(int Id, string Text)> Projektnamen
-        => Daten is null
-            ? Array.Empty<(int, string)>()
-            : Daten.Projekte.Select((z, i) => (i, z.Name)).ToList();
+    /// <summary>Die Stammgruppen der laufenden Wahl (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Transfergruppe> Gruppen => _gruppen;
+
+    /// <summary>Die Projekt-Ids, die der Anwender angehakt hat (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<int> Gewaehlt => _wahl.OrderBy(i => i).ToList();
+
+    /// <summary>Der gewählte Zielordner (Prüfhilfe für Tests).</summary>
+    public string Zielordner => _zielordner;
+
+    /// <summary>Die Vorschauzeilen des Importblatts (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Paketzeile> Pakete => _pakete;
+
+    /// <summary>Das Spaltenprofil der Transferliste — einmal gebaut, nicht je Zeichenlauf.</summary>
+    private Katalogfilterprofil Listenprofil
+        => _listenprofil ??= Projekttransferprofil.Profil(Spaltentext);
 
     private IReadOnlyList<(int Id, string Text)> Konfliktmodi => new (int, string)[]
     {
@@ -287,38 +432,161 @@
         }
     }
 
+    private IReadOnlyList<ProjektKopfZeile> Bestand
+        => Daten?.Projekte ?? (IReadOnlyList<ProjektKopfZeile>)Array.Empty<ProjektKopfZeile>();
+
+    /// <summary>Der Bestand, aus dem die Listenzeilen zuletzt entstanden sind.</summary>
+    private object? _zeilenAbzug;
+
     protected override void OnParametersSet()
     {
-        // Vorbelegung: das erste Projekt (cbProjekt.SelectedIndex = 0 des Vorlaeufers).
-        if (Daten is null || _projektIndex.HasValue || Daten.Projekte.Count == 0) return;
-        ProjektGewaehlt(0);
-    }
-
-    private void ProjektGewaehlt(int? index)
-    {
-        _projektIndex = index;
-        _projekt = (Daten is not null && index.HasValue && index.Value >= 0
-                    && index.Value < Daten.Projekte.Count)
-                   ? Daten.Projekte[index.Value].Name
-                   : "";
-        VariantenLaden();
+        // PI-1: KEINE Vorbelegung. Eine Mehrfachliste mit einer vorgehakten Zeile
+        // behauptet eine Wahl, die der Anwender nicht getroffen hat - und der
+        // Export schriebe sie. Der Vorlaeufer belegte vor, weil er GENAU EINES
+        // nehmen konnte und ohne Wahl gar nichts ging.
+        if (!ReferenceEquals(Daten?.Projekte, _zeilenAbzug))
+        {
+            _zeilenAbzug = Daten?.Projekte;
+            _zeilen = Projekttransferprofil.Zeilen(Bestand, _nachgezogen);
+        }
+        WahlGeaendert();
     }
 
     private void ModusGewaehlt(int? wert)
         => _modus = (ProjektExportImportCtrl.BeiVorhandenem)(wert ?? 0);
 
-    /// <summary>
-    /// Die Varianten des gewaehlten Projekts, VORBELEGT ALLE AN (TF2) — genau wie
-    /// <c>clbVarianten.Items.Add(name, true)</c> des Vorlaeufers.
-    /// </summary>
-    private void VariantenLaden()
-    {
-        _variantennamen = Daten is null || string.IsNullOrEmpty(_projekt)
-            ? Array.Empty<string>()
-            : Daten.Varianten(_projekt);
+    // =============================================================================
+    //  Exportblatt: Liste, Wahl, Gruppen
+    // =============================================================================
 
-        _variantenEintraege = _variantennamen.Select((n, i) => (i, n)).ToList();
-        _variantenGewaehlt = Enumerable.Range(0, _variantennamen.Count).ToList();
+    /// <summary>
+    /// Nach jeder Änderung an der Wahl: Gruppen und nachgezogene Stämme neu
+    /// bestimmen (BEIDES aus <c>Projektgruppierung</c>, nicht aus einer zweiten
+    /// Regel hier) und die Spalte „mitgenommen" nachziehen.
+    ///
+    /// <para><b>Die ZEILENOBJEKTE bleiben dieselben</b>, und das ist kein
+    /// Sparzwang, sondern Bedingung: Die <c>Katalogliste</c> bestimmt den
+    /// Anzeigeindex eines Klicks über <c>ReferenceEquals</c> gegen ihre gefilterte
+    /// Liste. Wer die Zeilen bei jedem Klick neu baut, gibt ihr ein Objekt, das sie
+    /// nicht kennt — sie meldet Index −1, und der zweite Klick auf dieselbe Zeile
+    /// bleibt wirkungslos. Der Wert der einen Spalte wird deshalb IN der Zeile
+    /// gesetzt; neu gebaut wird nur, wenn ein anderer Bestand hereinkommt.</para>
+    /// </summary>
+    private void WahlGeaendert()
+    {
+        _nachgezogen = Projektgruppierung.Nachgezogen(Bestand, _wahl);
+        _gruppen = Projektgruppierung.Gruppieren(Bestand, _wahl, _abgewaehlt);
+
+        var nach = new HashSet<int>(_nachgezogen);
+        foreach (Katalogfilterzeile z in _zeilen)
+            z.MitKennzeichen(Projekttransferprofil.SpMitgenommen, nach.Contains(z.Id));
+    }
+
+    /// <summary>Die Anzeigeliste in derselben Ordnung, die die Katalogliste zeichnet.</summary>
+    private IReadOnlyList<Katalogfilterzeile> Anzeige()
+        => Katalogfilter.Anwenden(Listenprofil, _zeilen, _filterstand);
+
+    /// <summary>Ist diese Zeile gewählt? Wird je GEZEICHNETER Zeile gefragt — O(1).</summary>
+    private bool IstGewaehlt(Katalogfilterzeile zeile) => _wahl.Contains(zeile.Id);
+
+    /// <summary>
+    /// Ein Klick in der Mehrfachwahl. Die REGEL (Klick schaltet um, Umschalt nimmt
+    /// den Bereich dazu) liegt in <c>Zeilenmarkierung</c> und gilt damit für alle
+    /// Mehrfachlisten des Hauses gleich.
+    /// </summary>
+    private void BeiMehrfachwahl(Katalogliste.Mehrfachklick klick)
+    {
+        _markierung.Anklicken(klick.Index, klick.Strg, klick.Umschalt);
+        WahlAusMarkierung(Anzeige());
+    }
+
+    /// <summary>„Alle"/„Keine" gilt den SICHTBAREN Zeilen (W13-B-5).</summary>
+    private void BeiMehrfachalle(Katalogliste.Mehrfachalle alle)
+    {
+        IReadOnlyList<Katalogfilterzeile> anzeige = alle.Zeilen ?? Anzeige();
+
+        if (alle.Waehlen) _markierung.AlleWaehlen(anzeige.Count); else _markierung.Leeren();
+        WahlAusMarkierung(anzeige);
+    }
+
+    /// <summary>
+    /// <b>Der Filter oder die Sortierung haben sich geändert</b> — die Markierung
+    /// zählt ANZEIGEindizes, und die zeigen jetzt auf andere Zeilen. Sie wird
+    /// deshalb aus der WAHL neu aufgebaut; der Anker der Bereichswahl fällt dabei
+    /// weg (dieselbe Zusage wie <c>Zeilenmarkierung.AufAnzahlBegrenzen</c>: eine
+    /// veraltete Markierung bleibt ohne Wirkung, statt die falsche Zeile zu
+    /// treffen).
+    ///
+    /// <para><b>Nur hier</b>, nicht bei jedem Klick: Die Markierung IST der
+    /// laufende Zustand der Klickregel. Wer sie vor jedem Klick aus der Wahl neu
+    /// aufbaut, verliert den Anker — und ein <c>Hinzufügen</c>, das ihn setzen
+    /// soll, wählt die Zeile gleich mit.</para>
+    /// </summary>
+    private void BeiGefiltert()
+    {
+        IReadOnlyList<Katalogfilterzeile> anzeige = Anzeige();
+        _markierung.Leeren();
+        for (int i = 0; i < anzeige.Count; i++)
+            if (_wahl.Contains(anzeige[i].Id)) _markierung.Hinzufuegen(i);
+        _markierung.AnkerLoesen();
+    }
+
+    /// <summary>
+    /// Die Wahl aus der Markierung zurückschreiben — und dabei alles STEHEN LASSEN,
+    /// was gerade nicht sichtbar ist. Ein Trichter darf keine Wahl wegnehmen.
+    /// </summary>
+    private void WahlAusMarkierung(IReadOnlyList<Katalogfilterzeile> anzeige)
+    {
+        foreach (Katalogfilterzeile z in anzeige) _wahl.Remove(z.Id);
+        foreach (int i in _markierung.Gewaehlt)
+            if (i >= 0 && i < anzeige.Count) _wahl.Add(anzeige[i].Id);
+
+        WahlGeaendert();
+    }
+
+    /// <summary>„Zu {0} gewählten Varianten kommen {1} Stammprojekte hinzu."</summary>
+    private string StammzugText
+        => string.Format(Texte.HinweisStammzug,
+                         _wahl.Count(id => Bestand.Any(z => z.Id == id && z.StammId > 0)),
+                         _nachgezogen.Count);
+
+    /// <summary>
+    /// ALLE Varianten dieser Stammgruppe als Häkchenliste — auch die abgewählten:
+    /// Sonst verschwände ein Eintrag beim Abwählen und wäre nicht zurückzuholen.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> VariantenEintraege(Transfergruppe gruppe)
+        => Bestand.Where(z => z.StammId == gruppe.StammId && z.Id != gruppe.StammId)
+                  .OrderBy(z => z.Name, StringComparer.CurrentCultureIgnoreCase)
+                  .ThenBy(z => z.Id)
+                  .Select(z => (z.Id, z.Name))
+                  .ToList();
+
+    /// <summary>
+    /// Das Häkchen einer in der LISTE gewählten Variante ist gesperrt — sie ist der
+    /// Grund, warum es dieses Paket überhaupt gibt. Die Sperre ist WEICH und nennt
+    /// ihren Grund; ein Häkchen, das sich wortlos nicht bewegt, ist eine Sackgasse.
+    /// </summary>
+    private string Sperrgrund(int id) => _wahl.Contains(id) ? Texte.GesperrtGewaehlt : "";
+
+    private void GruppeGeaendert(IReadOnlyList<(int Id, string Text)> eintraege,
+                                 IReadOnlyList<int> gewaehlt)
+    {
+        foreach ((int id, _) in eintraege)
+        {
+            if (gewaehlt.Contains(id)) _abgewaehlt.Remove(id);
+            else if (!_wahl.Contains(id)) _abgewaehlt.Add(id);
+        }
+        WahlGeaendert();
+    }
+
+    private async Task ZielordnerWaehlen()
+    {
+        if (Daten?.ZielordnerWaehlen is null) return;
+
+        // Ein Delegat, der Oberflaeche der Plattform oeffnet, wird AWAITET
+        // (Hausregel EPOS.UI) - synchron stuerzt die WebView2 ab.
+        string? ordner = await Daten.ZielordnerWaehlen();
+        if (!string.IsNullOrEmpty(ordner)) _zielordner = ordner!;
     }
 
     private Func<string, Task<string?>>? PaketWaehlen
@@ -348,13 +616,29 @@
     {
         if (Daten is null) return;
 
-        if (string.IsNullOrEmpty(_projekt)) { Melden(MeldungProjektWaehlen, WarnStufe.Warnung); return; }
+        if (_gruppen.Count == 0) { Melden(Texte.MeldungKeineWahl, WarnStufe.Warnung); return; }
+
+        // MEHRERE Gruppen: ein Paket je Gruppe in den Zielordner.
+        if (_gruppen.Count > 1)
+        {
+            if (Daten.ExportierenMehrere is null)
+            { Melden(Texte.MeldungKeineWahl, WarnStufe.Warnung); return; }
+            if (string.IsNullOrEmpty(_zielordner))
+            { Melden(Texte.MeldungKeinOrdner, WarnStufe.Warnung); return; }
+
+            await SammelExport();
+            return;
+        }
+
+        // EINE Gruppe: der gewohnte Speichern-Dialog mit Namensvorschlag.
+        Transfergruppe einzeln = _gruppen[0];
         if (Daten.PaketSchreiben is null) return;
 
-        string? ziel = Daten.PaketSchreiben(_projekt + ".wpx");
+        string? ziel = Daten.PaketSchreiben(einzeln.Stamm + ".wpx");
         if (string.IsNullOrEmpty(ziel)) return;      // abgebrochen
 
-        IReadOnlyList<string> varianten = GewaehlteVarianten;
+        string _projekt = einzeln.Stamm;
+        IReadOnlyList<string> varianten = einzeln.Varianten;
 
         _laeuft = true;
         _anteil = null;
@@ -379,14 +663,149 @@
         Melden(StatusExportOk + " " + string.Format(MeldungExportOk, zusatz, ziel), WarnStufe.Hinweis);
     }
 
+    /// <summary>
+    /// <b>Ein Paket je Stammgruppe</b> — der Lauf haelt an keinem Fehler an, die
+    /// Bilanz nennt sie am Ende. Fuenf Gruppen und eine kaputte ergaeben sonst nichts.
+    /// </summary>
+    private async Task SammelExport()
+    {
+        if (Daten?.ExportierenMehrere is null) return;
+
+        IReadOnlyList<Transfergruppe> gruppen = _gruppen;
+        string ordner = _zielordner;
+
+        _laeuft = true;
+        _anteil = null;
+        _status = "";
+        _bericht.Clear();
+        StateHasChanged();
+
+        var melder = new Progress<ImportFortschritt>(BeiLauf);
+        ExportBilanz bilanz = await Kulturweitergabe.Starten(
+            () => Daten.ExportierenMehrere(gruppen, ordner, melder));
+
+        _laeuft = false;
+        _anteil = null;
+
+        _bericht = bilanz.Zeilen
+            .Select(z => z.Erfolg
+                ? z.Gruppe + " \u2192 " + z.Datei
+                : z.Gruppe + ": " + z.Grund)
+            .ToList();
+
+        Melden(string.Format(Texte.BilanzExport, bilanz.Geschrieben, bilanz.Pakete, bilanz.Fehler),
+               bilanz.Fehler > 0 ? WarnStufe.Warnung : WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// Der Fortschritt eines Sammellaufs. Der Kern meldet einen SPRACHNEUTRALEN
+    /// Schluessel samt Werten; den Satz bildet die Oberflaeche — sie hat die
+    /// Sprache, der Kern hat sie nicht.
+    /// </summary>
+    private void BeiLauf(ImportFortschritt f)
+    {
+        if (!_laeuft) return;                        // nach dem Lauf verwerfen (Befund #231)
+        _anteil = f.Anteil;
+        _status = f.Werte.Length >= 3
+            ? string.Format(Texte.LaufPaket, f.Werte[0], f.Werte[1], f.Werte[2])
+            : _status;
+        _statusStufe = WarnStufe.Hinweis;
+        StateHasChanged();
+    }
+
     // =============================================================================
     //  Import
     // =============================================================================
+
+    /// <summary>Eine Zeile der Paketvorschau (PI-1).</summary>
+    /// <param name="Pfad">Der volle Pfad — der Lauf braucht ihn.</param>
+    /// <param name="Datei">Der Dateiname, wie ihn der Anwender kennt.</param>
+    /// <param name="Hauptprojekt">Das Hauptprojekt des Pakets.</param>
+    /// <param name="Varianten">Die mitgereisten Varianten, durch Komma getrennt.</param>
+    /// <param name="Schema">Der Schemastand samt Hinweis, wenn er abweicht.</param>
+    /// <param name="Hinweis">Variantenherkunft und Dublettenbefund.</param>
+    public sealed record Paketzeile(string Pfad, string Datei, string Hauptprojekt,
+                                    string Varianten, string Schema, string Hinweis);
+
+    /// <summary>
+    /// <b>Mehrere Pakete waehlen und in der LAUFREIHENFOLGE zeigen</b> — Stamm vor
+    /// Variante. Der Dateiwaehler sortiert nach dem Namen; das hat mit der
+    /// Verwandtschaft der Projekte nichts zu tun, und wer die Liste nicht in der
+    /// Reihenfolge des Laufs sieht, versteht spaeter den Bericht nicht.
+    /// </summary>
+    private async Task PaketeWaehlen()
+    {
+        if (Daten?.PaketeLesen is null) return;
+
+        IReadOnlyList<string> pfade = await Daten.PaketeLesen();
+        if (pfade is null || pfade.Count == 0) return;
+
+        _bericht.Clear();
+        _status = "";
+        _pakete.Clear();
+        _vorschau = null;
+        _paketpfad = "";
+
+        // Die Koepfe lesen - OHNE die Datenbank. Ohne den Delegaten bleibt nur die
+        // Vorschau des Einzelweges; dann steht die Reihenfolge der Wahl.
+        var koepfe = new List<Paketkopf>();
+        foreach (string pfad in pfade)
+            koepfe.Add(Daten.Paketkopf is not null
+                ? Daten.Paketkopf(pfad)
+                : AusVorschau(pfad, Daten.Vorschau(pfad)));
+
+        IReadOnlyList<Paketkopf> folge = ProjektExportImportCtrl.Reihenfolge(koepfe);
+
+        var gesehen = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        for (int i = 0; i < folge.Count; i++)
+        {
+            Paketkopf k = folge[i];
+            var hinweise = new List<string>();
+
+            if (!string.IsNullOrEmpty(k.Fehler)) hinweise.Add(k.Fehler);
+            if (!string.IsNullOrEmpty(k.StammQuelle))
+                hinweise.Add(string.Format(Texte.PaketStammAus, k.StammQuelle));
+
+            // Derselbe Stamm wie ein FRUEHERES Paket des Laufs: Er entsteht einmal.
+            if (!string.IsNullOrEmpty(k.Quellprojekt)
+                && gesehen.TryGetValue(k.Quellprojekt, out int vorher))
+                hinweise.Add(string.Format(Texte.PaketDublette, vorher + 1));
+            else if (!string.IsNullOrEmpty(k.Quellprojekt))
+                gesehen[k.Quellprojekt] = i;
+
+            bool schemaPasst = k.Schemastand == 0 || k.Schemastand == SchemaStand.Zielversion;
+
+            _pakete.Add(new Paketzeile(
+                k.Datei,
+                Dateiname(k.Datei),
+                k.Quellprojekt,
+                string.Join(", ", k.Varianten),
+                string.Format(schemaPasst ? Texte.PaketSchemaOk : Texte.PaketSchemaAlt, k.Schemastand),
+                string.Join(" \u00b7 ", hinweise)));
+        }
+
+        // EIN Paket: der Einzelweg samt Zielnamensvorschlag bleibt, wie er war.
+        if (_pakete.Count == 1) PaketGewaehlt(_pakete[0].Pfad);
+    }
+
+    /// <summary>Aus einer Vorschau einen Kopf machen — der Rückfall ohne Kopfdelegat.</summary>
+    private static Paketkopf AusVorschau(string pfad, PaketVorschau v)
+        => new Paketkopf(pfad, v.Quellprojekt, v.Exportdatum, v.Schemastand, 0,
+                         v.Varianten, v.StammQuelle, v.Fehler);
+
+    private static string Dateiname(string pfad)
+    {
+        if (string.IsNullOrEmpty(pfad)) return "";
+        int i = pfad.LastIndexOfAny(new[] { '/', '\\' });
+        return i >= 0 && i < pfad.Length - 1 ? pfad.Substring(i + 1) : pfad;
+    }
+
     private Task Importieren()
     {
         if (Daten is null) return Task.CompletedTask;
 
-        if (string.IsNullOrEmpty(_paketpfad)) { Melden(MeldungDateiWaehlen, WarnStufe.Warnung); return Task.CompletedTask; }
+        if (string.IsNullOrEmpty(_paketpfad) && _pakete.Count == 0)
+        { Melden(MeldungDateiWaehlen, WarnStufe.Warnung); return Task.CompletedTask; }
 
         // Die Ueberschreiben-Rueckfrage kommt VOR der Sicherung - dieselbe
         // Reihenfolge wie im Vorlaeufer.
@@ -406,7 +825,7 @@
         if (antwort != true) return;                       // "Nein" bricht ab
 
         if (war == Frageart.Ueberschreiben) await SicherungUndImport();
-        else if (war == Frageart.Sicherung) await ImportLauf();
+        else if (war == Frageart.Sicherung) await Lauf();
     }
 
     private async Task SicherungUndImport()
@@ -425,7 +844,63 @@
                 return;
             }
         }
-        await ImportLauf();
+        await Lauf();
+    }
+
+    /// <summary>
+    /// Ein Paket oder mehrere? MEHRERE laufen in EINEM Zug mit einer
+    /// Namensabbildung ueber den ganzen Lauf — das ist der Grund des Auftrags.
+    /// </summary>
+    private Task Lauf()
+        => _pakete.Count > 1 && Daten?.ImportierenMehrere is not null
+           ? SammelImport()
+           : ImportLauf();
+
+    /// <summary>
+    /// <b>Mehrere Pakete in EINEM Lauf.</b> Die Sicherungskopie ist vorher genau
+    /// einmal gefallen (<see cref="SicherungUndImport"/>), nicht je Paket — sie
+    /// sichert den Stand VOR dem Lauf, und den gibt es nur einmal.
+    /// </summary>
+    private async Task SammelImport()
+    {
+        if (Daten?.ImportierenMehrere is null) return;
+
+        IReadOnlyList<string> pfade = _pakete.Select(z => z.Pfad).ToList();
+        ProjektExportImportCtrl.BeiVorhandenem modus = _modus;
+
+        _laeuft = true;
+        _anteil = null;
+        _bericht.Clear();
+        StateHasChanged();
+
+        var melder = new Progress<ImportFortschritt>(BeiLauf);
+        SammelImportBilanz bilanz = await Kulturweitergabe.Starten(
+            () => Daten.ImportierenMehrere(pfade, modus, melder));
+
+        _laeuft = false;
+        _anteil = null;
+
+        var zeilen = new List<string>();
+        foreach (SammelImportZeile z in bilanz.Zeilen)
+        {
+            zeilen.Add(Dateiname(z.Datei) + (string.IsNullOrEmpty(z.Grund) ? "" : ": " + z.Grund));
+            foreach (string b in z.Bericht) zeilen.Add("    " + b);
+        }
+        _bericht = zeilen;
+        _importErfolgreich = bilanz.EtwasGeschrieben;
+
+        Melden(string.Format(Texte.BilanzImport, bilanz.Importiert, bilanz.Pakete,
+                             bilanz.Uebersprungen, bilanz.Umbenannt, bilanz.Fehler),
+               bilanz.Fehler > 0 ? WarnStufe.Warnung : WarnStufe.Hinweis);
+
+        // T4/TF5: EIN Sammelbericht, neben dem ERSTEN Paket - nicht je Paket.
+        if (Daten.BerichtSchreiben is not null && _bericht.Count > 0 && _pakete.Count > 0)
+        {
+            string? abgelegt = Daten.BerichtSchreiben(_pakete[0].Pfad,
+                                                      string.Join(Environment.NewLine, _bericht));
+            if (!string.IsNullOrEmpty(abgelegt))
+                _status += "  " + string.Format(StatusBericht, abgelegt);
+        }
     }
 
     private async Task ImportLauf()

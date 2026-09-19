@@ -1,0 +1,78 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+
+class TryDataService
+{
+    // Koordinaten der 15 TRY-Repräsentanzstationen
+    private static readonly Dictionary<string, (string Name, double Lat, double Lon)> TryStations = new()
+    {
+        { "01", ("Bremerhaven", 53.53, 8.58) }, { "02", ("Rostock", 54.18, 12.08) },
+        { "03", ("Hamburg", 53.63, 9.98) },     { "04", ("Potsdam", 52.38, 13.06) },
+        { "05", ("Essen", 51.40, 6.96) },       { "06", ("Bad Marienberg", 50.65, 7.95) },
+        { "07", ("Kassel", 51.30, 9.45) },      { "08", ("Braunlage", 51.72, 10.60) },
+        { "09", ("Chemnitz", 50.79, 12.87) },    { "10", ("Hof", 50.31, 11.88) },
+        { "11", ("Fichtelberg", 50.42, 12.95) }, { "12", ("Mannheim", 49.47, 8.55) },
+        { "13", ("Mühldorf", 48.24, 12.50) },    { "14", ("Stötten", 48.66, 9.86) },
+        { "15", ("Garmisch", 47.48, 11.06) }
+    };
+
+    private static readonly HttpClient client = new HttpClient();
+
+    public static async Task Main(string[] args)
+    {
+        string stadt = "Stuttgart";
+        Console.WriteLine($"Suche Region für {stadt}...");
+
+        var (lat, lon) = await GetCoordinatesAsync(stadt);
+        string regionId = FindNearestRegion(lat, lon);
+
+        Console.WriteLine($"Gefundene Region: {regionId} (Repräsentant: {TryStations[regionId].Name})");
+
+        await DownloadAndDecompressTryData(regionId, "air_temperature_2m");
+    }
+
+    // 1. Stadt in Koordinaten umwandeln (OpenStreetMap Nominatim API)
+    private static async Task<(double lat, double lon)> GetCoordinatesAsync(string city)
+    {
+        client.DefaultRequestHeaders.Add("User-Agent", "CSharp-TRY-Downloader");
+        string url = $"https://nominatim.openstreetmap.org/search?q={city},Germany&format=json&limit=1";
+        
+        var response = await client.GetStringAsync(url);
+        var json = JArray.Parse(response);
+        
+        double lat = (double)json[0]["lat"];
+        double lon = (double)json[0]["lon"];
+        return (lat, lon);
+    }
+
+    // 2. Nächstgelegene TRY-Region finden
+    private static string FindNearestRegion(double lat, double lon)
+    {
+        return TryStations.OrderBy(s => Math.Pow(lat - s.Value.Lat, 2) + Math.Pow(lon - s.Value.Lon, 2))
+                          .First().Key;
+    }
+
+    // 3. Download und Entpacken der GZ-Datei
+    private static async Task DownloadAndDecompressTryData(string regionId, string parameter)
+    {
+        string fileName = $"TRY_{regionId}_{parameter}_2015.dat";
+        string url = $"https://opendata.dwd.de/climate_environment/CDC/grids_germany/hourly/Project_TRY/{parameter}/{fileName}.gz";
+        
+        Console.WriteLine($"Downloade: {url}");
+        var response = await client.GetAsync(url);
+        
+        using (var stream = await response.Content.ReadAsStreamAsync())
+        using (var gzStream = new GZipStream(stream, CompressionMode.Decompress))
+        using (var fileStream = File.Create(fileName))
+        {
+            await gzStream.CopyToAsync(fileStream);
+        }
+        Console.WriteLine($"Datei gespeichert: {fileName}");
+    }
+}

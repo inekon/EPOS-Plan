@@ -90,6 +90,17 @@ public class StartseiteTests : EposBunitContext
     private static Zusammenfassung? Bereitschaft()
         => new Zusammenfassung("Referenzprojekt", "0,00 MWh/a", "0,00 MWh/a", "");
 
+    /// <summary>
+    /// Die wählbaren Klimaregionen als (Id, Name) — seit Auftrag KL-4 meldet das
+    /// Feld die STAMM-Id, nicht den Namen.
+    /// </summary>
+    private static IReadOnlyList<(int Id, string Text)> Klimaregionen { get; } =
+        new[] { (47, "München"), (17, "Berlin"), (46, "Tübingen") };
+
+    /// <summary>Das Eingabefeld der durchsuchbaren Klimawahl.</summary>
+    private static IElement Klimafeld(IRenderedComponent<Startseite> cut)
+        => cut.Find(".epos-startseite-klima input[role='combobox']");
+
     /// <summary>Die Seite mit einem offenen Projekt (Id 1030) und leerem Bestand.</summary>
     private IRenderedComponent<Startseite> Zeige(
         int idProjekt = 1030,
@@ -98,15 +109,17 @@ public class StartseiteTests : EposBunitContext
         Action<string>? geklickt = null,
         Action<int>? varianteGewaehlt = null,
         Func<Zusammenfassung?>? bericht = null,
-        Func<string, (bool Fehler, string Text)>? klimaSpeichern = null)
+        Func<int, (bool Fehler, string Text)>? klimaSpeichern = null,
+        Func<KlimaHerkunftGaben?>? klimaHerkunft = null)
     {
         return Render<Startseite>(p => p
             .Add(x => x.Zustand, zustand)
             .Add(x => x.Kacheln, () => Kacheln(bitmaske))
             .Add(x => x.ProjektId, () => idProjekt)
             .Add(x => x.Varianten, () => new[] { (1030, "Referenzprojekt"), (1007, "Laurentiuskirche") })
-            .Add(x => x.Klimaregionen, () => new[] { "München", "Berlin" })
-            .Add(x => x.Klimaregion, () => "München")
+            .Add(x => x.Klimaregionen, () => Klimaregionen)
+            .Add(x => x.KlimaregionId, () => 47)
+            .Add(x => x.KlimaHerkunft, klimaHerkunft ?? (() => null))
             .Add(x => x.Geklickt, geklickt)
             .Add(x => x.VarianteGewaehlt, varianteGewaehlt)
             .Add(x => x.Bericht, bericht ?? Bereitschaft)
@@ -532,13 +545,17 @@ public class StartseiteTests : EposBunitContext
     [Fact]
     public void Der_Klimaspeicherweg_meldet_ueber_ein_Banner()
     {
-        string gewaehlt = "";
+        int gewaehlt = 0;
         var cut = Zeige(klimaSpeichern: r => { gewaehlt = r; return (false, "Klimaregion gespeichert."); });
 
-        cut.Find("#epos-start-klima").Change("Berlin");
+        // Die Suchauswahl meldet die ID der Stammregion, nicht ihren Namen (KL-4).
+        Klimafeld(cut).Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("li[role='option']")));
+        cut.FindAll("li[role='option']").First(e => e.TextContent.Trim() == "Berlin").Click();
+
         cut.FindAll(".epos-startseite-klima .epos-knopf")[0].Click();
 
-        Assert.Equal("Berlin", gewaehlt);
+        Assert.Equal(17, gewaehlt);
         Assert.Contains("Klimaregion gespeichert.",
                         cut.Find(".epos-warnbanner").TextContent, StringComparison.Ordinal);
     }
@@ -619,8 +636,8 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.Kacheln, () => Kacheln(0))
             .Add(x => x.ProjektId, () => 0)
             .Add(x => x.Varianten, () => Array.Empty<(int, string)>())
-            .Add(x => x.Klimaregionen, () => new[] { "München" })
-            .Add(x => x.Klimaregion, () => "")
+            .Add(x => x.Klimaregionen, () => Klimaregionen)
+            .Add(x => x.KlimaregionId, () => 0)
             .Add(x => x.Bericht, Bereitschaft)
             .Add(x => x.Uhr, uhr));
     }
@@ -866,6 +883,7 @@ public class StartseiteTests : EposBunitContext
         Assert.Contains("epos-startseite-status", kinder[0].ClassName!);
         Assert.Equal("LABEL", kinder[1].TagName);
         Assert.Equal("SELECT", kinder[2].TagName);
+        Assert.Equal("epos-start-variante", kinder[1].GetAttribute("for"));
     }
 
     /// <summary>
@@ -908,8 +926,8 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.Varianten, () => idProjekt > 0
                 ? new[] { (1030, "Referenzprojekt") }
                 : Array.Empty<(int, string)>())
-            .Add(x => x.Klimaregionen, () => new[] { "München" })
-            .Add(x => x.Klimaregion, () => "")
+            .Add(x => x.Klimaregionen, () => Klimaregionen)
+            .Add(x => x.KlimaregionId, () => 0)
             .Add(x => x.Bericht, Bereitschaft));
 
 
@@ -977,8 +995,8 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.Varianten, () => id > 0
                 ? new[] { (1030, "Referenzprojekt") }
                 : Array.Empty<(int, string)>())
-            .Add(x => x.Klimaregionen, () => new[] { "München" })
-            .Add(x => x.Klimaregion, () => "")
+            .Add(x => x.Klimaregionen, () => Klimaregionen)
+            .Add(x => x.KlimaregionId, () => 0)
             .Add(x => x.Bericht, Bereitschaft));
 
         Assert.Equal("true", cut.FindAll("[role='tab']")[1].GetAttribute("aria-disabled"));
@@ -1140,8 +1158,8 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.Kacheln, () => Kacheln(0))
             .Add(x => x.ProjektId, () => 1030)
             .Add(x => x.Varianten, () => new[] { (1030, "Referenzprojekt") })
-            .Add(x => x.Klimaregionen, () => new[] { "München" })
-            .Add(x => x.Klimaregion, () => "München")
+            .Add(x => x.Klimaregionen, () => Klimaregionen)
+            .Add(x => x.KlimaregionId, () => 47)
             .Add(x => x.Bericht, Bereitschaft)
             .Add(x => x.VarianteAnlegen, () => gerufen++)
             .Add(x => x.VarianteUmbenennen, () => { })
@@ -1165,8 +1183,8 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.Kacheln, () => Kacheln(0))
             .Add(x => x.ProjektId, () => 1031)
             .Add(x => x.Varianten, () => new[] { (1030, "Referenzprojekt"), (1031, "Referenzprojekt - V2") })
-            .Add(x => x.Klimaregionen, () => new[] { "München" })
-            .Add(x => x.Klimaregion, () => "München")
+            .Add(x => x.Klimaregionen, () => Klimaregionen)
+            .Add(x => x.KlimaregionId, () => 47)
             .Add(x => x.Bericht, Bereitschaft)
             .Add(x => x.VarianteUmbenennen, () => gerufen++)
             .Add(x => x.IstVariante, id => id == 1031));
@@ -1187,13 +1205,90 @@ public class StartseiteTests : EposBunitContext
             .Add(x => x.Kacheln, () => Kacheln(0))
             .Add(x => x.ProjektId, () => 0)
             .Add(x => x.Varianten, () => Array.Empty<(int, string)>())
-            .Add(x => x.Klimaregionen, () => new[] { "München" })
-            .Add(x => x.Klimaregion, () => "München")
+            .Add(x => x.Klimaregionen, () => Klimaregionen)
+            .Add(x => x.KlimaregionId, () => 47)
             .Add(x => x.Bericht, Bereitschaft)
             .Add(x => x.VarianteAnlegen, () => { })
             .Add(x => x.VarianteUmbenennen, () => { }));
 
         Assert.Empty(cut.FindAll("#epos-start-variante option[value='-1']"));
         Assert.Empty(cut.FindAll("#epos-start-variante option[value='-2']"));
+    }
+    // =====================================================================
+    //  Auftrag KL-4 - durchsuchbare Klimawahl und die Herkunftszeile
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Das Klimafeld ist durchsuchbar</b> (Anwenderwunsch 19.09.2026: „Das
+    /// Dropdown soll auch durchsuchbar sein") — „tüb" führt auf Tübingen, und
+    /// gemeldet wird die ID der Stammregion.
+    /// </summary>
+    [Fact]
+    public void Die_Klimawahl_ist_durchsuchbar_und_meldet_die_Id()
+    {
+        int gewaehlt = 0;
+        var cut = Zeige(klimaSpeichern: r => { gewaehlt = r; return (false, "gespeichert"); });
+
+        Assert.Empty(cut.FindAll(".epos-startseite-klima select"));
+
+        Klimafeld(cut).Input("tüb");
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("li[role='option']")));
+        Assert.Equal("Tübingen", cut.Find("li[role='option']").TextContent.Trim());
+
+        cut.Find("li[role='option']").Click();
+        cut.FindAll(".epos-startseite-klima .epos-knopf")[0].Click();
+
+        Assert.Equal(46, gewaehlt);
+    }
+
+    /// <summary>
+    /// <b>Die Herkunftszeile</b> (Anwenderwunsch 19.09.2026: „Die verwendeten
+    /// Klimadaten sollen sich auch auf der Übersicht befinden.") — Quelle,
+    /// Bezeichner, Standort und Importdatum, leise als zweite Zeile im Kasten.
+    /// </summary>
+    [Fact]
+    public void Die_Herkunftszeile_nennt_Quelle_Standort_und_Datum()
+    {
+        var cut = Zeige(klimaHerkunft: () => new KlimaHerkunftGaben(
+            "TRY-Regionaldaten (Deutschland)", "Tübingen", "Tübingen, Deutschland", "18.09.2026"));
+
+        string zeile = cut.Find(".epos-startseite-klimaherkunft").TextContent;
+
+        Assert.Contains("TRY-Regionaldaten (Deutschland)", zeile, StringComparison.Ordinal);
+        Assert.Contains("Tübingen, Deutschland", zeile, StringComparison.Ordinal);
+        Assert.Contains("18.09.2026", zeile, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Die KURZFORM beim Altbestand</b>: Eine Region ohne Quelle und ohne
+    /// Importdatum (angelegt vor Schemaschritt 95) nennt Bezeichner und Standort —
+    /// und behauptet nicht, woher ihre Reihe stammt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Quelle_steht_die_Kurzform()
+    {
+        var cut = Zeige(klimaHerkunft: () => new KlimaHerkunftGaben(
+            "", "Berlin", "13,3951° / 52,5174°", ""));
+
+        string zeile = cut.Find(".epos-startseite-klimaherkunft").TextContent;
+
+        Assert.Contains("Berlin", zeile, StringComparison.Ordinal);
+        Assert.Contains("13,3951°", zeile, StringComparison.Ordinal);
+        Assert.DoesNotContain("Import", zeile, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Ohne Gaben steht keine Zeile</b> — so ist es ohne offenes Projekt und auf
+    /// iOS, wo <c>IProjektQuelle.StartseiteGaben</c> keine Gaben liefert. Eine leere
+    /// Zeile wäre eine Behauptung ohne Inhalt.
+    /// </summary>
+    [Fact]
+    public void Ohne_Gaben_steht_keine_Herkunftszeile()
+    {
+        var cut = Zeige();
+        Assert.Empty(cut.FindAll(".epos-startseite-klimaherkunft"));
+
+        var ohne = Render<Startseite>();
+        Assert.Empty(ohne.FindAll(".epos-startseite-klimaherkunft"));
     }
 }

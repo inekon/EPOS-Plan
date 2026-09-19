@@ -178,7 +178,7 @@ welches Papier zuerst hineingeht.
 | **E2** | Bestandsgewichte gestrichen; **U·A je Bauteil** im Dialog, ohne verdeckte Faktoren |
 | **E3** | **xBIM unverändert** als NuGet-Paket unter CDDL-1.0, allein `Xbim.IO.MemoryModel`; kein `IfcStore`, kein Esent, kein `Xbim.Geometry`; Lizenztext und Quellenverweis im Installationspaket |
 | **E4** | **Einfrierschritt GB vor G1** (Instanzzustand, Ferienwarnungen, Korrektur der Bauweise eines Gebäudes), dazu die vierte Einfrierregel |
-| **E5** | Klimabasis sind die vorhandenen **PVGIS-TMY**-Daten; keine Datenträger, keine DWD-TRY |
+| **E5** | Klimabasis ist je Klimaregion das, was importiert wurde — **PVGIS-TMY oder DWD-TRY**; keine Datenträger (Fortschreibung 19.09.2026, Klimadatenkonzept) |
 | **E6** | VDI 6020:2022 **nur zu Forschungszwecken** — nichts daraus in Quelltext, Tests, Wiki, Bericht oder Auslieferung |
 | **E7** | **Einzonen zuerst** (G0–G2); Mehrzonen als Stufe G6 über den Import |
 | **E8** | Die **Skalierung bleibt** — Hochrechnung und Verbrauchs-Rückrechnung; sie entfällt erst für Gebäude mit echter Hülle |

@@ -158,17 +158,19 @@ public class KatalogdialogTests : EposBunitContext
 
     private IRenderedComponent<KlimadatenDialog> Klimaregionen() =>
         Render<KlimadatenDialog>(p => p
-            .Add(x => x.Regionen, () => Task.FromResult(new List<KlimadatenDialog.Regionszeile>
+            .Add(x => x.Regionen, () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)new[]
             {
-                new("Region A", false)
-            })));
+                new Katalogfilterzeile(1, "Region A")
+                    .MitText(Katalogfilterprofil.SpBezeichner, "Region A")
+            }))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
     private IRenderedComponent<GesetzeskatalogDialog> Gesetzeskatalog() =>
         Render<GesetzeskatalogDialog>(p => p
             .Add(x => x.Klassen, () => Task.FromResult(
                 (IReadOnlyList<(string, string)>)new[] { ("CO2", "CO₂") }.ToList()))
             .Add(x => x.Zeilen, _ => Task.FromResult(
-                (IReadOnlyList<GesetzeskatalogDialog.Zeile>)new List<GesetzeskatalogDialog.Zeile>())));
+                (IReadOnlyList<Katalogfilterzeile>)new List<Katalogfilterzeile>())));
 
     // =====================================================================
     //  (a) Die Wurzel nutzt die Höhe
