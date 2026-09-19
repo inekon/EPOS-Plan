@@ -9,7 +9,7 @@
 `Pruefung_Mockups_2026-09-19/02_Konsistenz_Papiere.md` anwenden — **ohne** den Schnitt in drei
 Papiere und **ohne** einen der offenen Entscheide vorwegzunehmen.
 
-**Commits (sieben, in der Reihenfolge):**
+**Commits (neun, in der Reihenfolge):**
 
 | SHA | Betreff | `git diff --stat` |
 |---|---|---|
@@ -20,12 +20,14 @@ Papiere und **ohne** einen der offenen Entscheide vorwegzunehmen.
 | `ba2ea185` | E0a: Rechenwege 04, 05 und 08 nachgezogen | 3 Dateien, +11 / −6 |
 | `25d9d7b4` | E0a: LIESMICH des Ordners Wirtschaftlichkeit_Kosten nachgezogen | 1 Datei, +18 / −9 |
 | `3cdce7d7` | E0a: Mockup-Code-Spannen relativ schreiben (Wache grün) | 1 Datei, +3 / −3 |
+| `4b8664a2` | E0a: Protokoll der Papierpflege | 1 Datei, neu |
+| *(Nachtrag)* | E0a: § 2.16 — zwei Bedingungen der iOS-Erreichbarkeit | 2 Dateien, +8 / −5 |
 
 **Zeilenzahlen der Papiere vorher → nachher:**
 
 | Datei | vorher | nachher |
 |---|---|---|
-| `aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` | 2 427 | 2 629 |
+| `aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` | 2 427 | 2 632 |
 | `aktuell/Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md` | 572 | 597 |
 | `aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md` | 264 | 264 |
 | `aktuell/Wirtschaftlichkeit_Kosten/LIESMICH.md` | 95 | 104 |
@@ -157,7 +159,7 @@ Entscheid.
 | § 8.2 | Z. 508–512 | „Die Fußleiste … ist voll — **sieben** Knöpfe" | „führt **fünf Knöpfe** … nach dem Wegfall von ‚Verlauf…' vier. Lücke K8 ist damit **gegenstandslos**" |
 | § 8.2 | Z. 1063–1065 | „Die Hinweiszeile füllt heute nur die Windows-Hülle" | Zusatz: **einziger** Schreiber (`:404`), Textbildung liegt im Kern (`NutzungsdauerAbgleich.Hinweis`) |
 | § 8.2 | Z. 1057–1061 und Z. 1086–1088 | „gehören nach `EPOS.UI.Daten`" | Zusatz: dort gibt es **keinen Ordner `Wirtschaftlichkeit`**, er ist mit anzulegen (heutige Ordnerliste genannt) |
-| § 8.2 | — | Z. 1339 „zwei Bedingungen statt einer" (iOS-Erreichbarkeit des PV-Dialogs) | **übersprungen** — der Satz steht in § 2.16, dessen iOS-Absatz die Analyse nicht als Berichtigung, sondern als Ergänzung führt; er berührt keine der beauftragten Stellen und hätte ohne Codemessung eine neue Aussage erzeugt |
+| § 8.2 | Z. 1440–1444 (§ 2.16 Punkt 4) | „eine plattformfreie Hülle in `EPOS.UI.Daten` gibt es nicht — auf iOS ist der Dialog nicht erreichbar" | „**aus zwei Gründen** nicht erreichbar, und beide müssen fallen": die fehlende Hülle **und** der leere Wirt (`IProjektQuelle.BerichteKostenGaben` liefert `null`, kein Seitenschlüssel in der Whitelist von `AppWurzel.razor`) |
 | § 8.2 | Z. 2243 (K9) | „§ 6.1 zählt ‚9 Felder', real 11 · Konzeptkorrektur" | Zeile **gestrichen** (07/§ 2.11); K7 als erfüllt gekennzeichnet |
 | § 8.2 | Z. 2264 (ET-D-3) | „genau zwei Einträge — Abrechnungseinheit und kWh" | Zusatz „**umgesetzt**; offener Rest **U32**: Der Kartenzustand fällt weiter auf `ID_Umrechnung = -1` zurück" |
 | § 8.2 | Z. 3 (Kopfstand) | „Stand 02.09.2026" | 19.09.2026 (s. Quelle 07 § 2.2) |

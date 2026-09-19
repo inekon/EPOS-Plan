@@ -1437,8 +1437,11 @@ Stammänderung → die übernehmende Variante folgt, die eigene nicht (Test).
 4. Dialoge: Optionsgruppe und Erklärzeile in `ErtragBonus.razor`, Projekt-Id in
    `ErtragBonusGaben.Bauen` (die Vorwahl ist das geöffnete Projekt, nicht das erste der Liste),
    Hinweiszeile und Knopf „eigene Werte" in `PhotovoltaikVerguetungDialog.razor`; die Hülle
-   (`PhotovoltaikVerguetungHuelle`, Windows-Schale) öffnet für das gewählte Projekt; eine plattformfreie
-   Hülle in `EPOS.UI.Daten` gibt es nicht — auf iOS ist der Dialog nicht erreichbar;
+   (`PhotovoltaikVerguetungHuelle`, Windows-Schale) öffnet für das gewählte Projekt; auf iOS ist der
+   Dialog **aus zwei Gründen** nicht erreichbar, und beide müssen fallen: es gibt keine
+   plattformfreie Hülle in `EPOS.UI.Daten`, **und** sein Wirt bleibt leer, solange
+   `IProjektQuelle.BerichteKostenGaben` `null` liefert und kein Seitenschlüssel in der Whitelist
+   von `AppWurzel.razor` steht;
 5. Ressourcen (beide Sprachen): Optionsgruppe, Erklärzeilen, Hinweiszeile, Knopf, Nachweiszeile,
    Kohärenztext;
 6. Tests: Auflösung (Stamm; Variante eigene; Variante übernommen; Stamm ohne Zeile), Kopierlauf ohne
