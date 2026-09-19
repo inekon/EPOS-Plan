@@ -188,6 +188,21 @@ section.kat + section.kat{border-top:1px solid var(--linie);margin-top:20px}
 .f-band .f-sub{margin-left:auto;font-weight:400;font-size:11.5px;color:#A9BDDF}
 .f-leib{padding:14px}
 .f-spalten{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+/* Trägerliste links neben der Trägerkarte (Kategorie 4, S12) */
+.f-mit-liste{display:flex;gap:14px;align-items:flex-start}
+.f-mit-liste > .f-leib{flex:1 1 auto;min-width:0}
+.f-traeger-liste{flex:0 0 158px;border-right:1px solid var(--f-linie);padding:14px 12px 14px 14px}
+.f-traeger-liste .f-titel{font-size:11.5px;margin-bottom:8px}
+.f-tl-filter{width:100%;box-sizing:border-box;margin-bottom:8px}
+.f-tl-gruppe{
+  font-family:"IBM Plex Sans Condensed",sans-serif;font-size:10px;font-weight:600;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--f-weich);margin:8px 0 3px;
+}
+.f-tl-eintrag{display:block;padding:3px 6px;border-radius:3px;font-size:12px;margin:0 -6px}
+.f-tl-eintrag.an{background:var(--marine);color:#fff}
+.f-traeger-liste .f-knopfzeile{margin-top:10px;flex-direction:column;gap:6px;display:flex}
+.f-traeger-liste .f-knopf{font-size:11px;text-align:center}
+@media (max-width:820px){.f-mit-liste{flex-direction:column}.f-traeger-liste{flex:1 1 auto;border-right:none;border-bottom:1px solid var(--f-linie)}}
 @media (max-width:820px){.f-spalten{grid-template-columns:1fr}}
 .f-gruppe{border:1px solid var(--f-linie);border-radius:6px;background:var(--f-feld);padding:11px 12px 12px}
 .f-gruppe > .f-titel{font-weight:600;font-size:12.5px;margin:-2px 0 9px;color:var(--f-tinte)}
@@ -1807,6 +1822,19 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
   Summenzeile der Emissionen. Die Klappliste der Bilanzierungsmethode ist im Katalogkontext gesperrt.</p>
   <div class="fenster">
     <div class="f-band">Energieträger — Erdgas<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc · Musterprojekt Gewerbepark · Preise netto</span></div>
+    <div class="f-mit-liste">
+      <div class="f-traeger-liste">
+        <div class="f-titel">Träger</div>
+        <span class="f-eingabe links f-tl-filter">Filter…</span>
+        <div class="f-tl-gruppe">Gas</div>
+        <span class="f-tl-eintrag an">Erdgas</span>
+        <div class="f-tl-gruppe">Strom</div>
+        <span class="f-tl-eintrag">Strom (Netzbezug)</span>
+        <div class="f-knopfzeile">
+          <span class="f-knopf">Aus Katalog übernehmen…</span>
+          <span class="f-knopf">Entfernen</span>
+        </div>
+      </div>
     <div class="f-leib">
       <div class="f-spalten">
 
@@ -1820,7 +1848,7 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
           <div class="f-zeile"><label>Brennwert H<sub>s</sub></label><span class="f-eingabe num">11,60</span><span class="f-einheit">kWh / m³</span></div>
           <div class="f-herleitung">effektiv: 1 m³ = <b>10,50 kWh</b> (H<sub>i</sub>) / <b>11,60 kWh</b> (H<sub>s</sub>)</div>
           <div class="f-herleitung">→ <b>0,0720 €/kWh</b> · Umrechnungsfaktor H<sub>s</sub>/H<sub>i</sub> = <b>1,1048</b></div>
-          <div class="f-herleitung">Formel: 0,76 €/m³ ÷ 10,50 kWh/m³ = <b>0,0720 €/kWh</b></div>
+          <div class="f-herleitung">Formel: 0,7560 €/m³ ÷ 10,50 kWh/m³ = <b>0,0720 €/kWh</b></div>
           <div class="f-knopfzeile"><span class="f-knopf">Saisonale Sätze…</span><span class="f-knopf">Katalogwerte übernehmen</span></div>
           <div class="f-info">Die Klappliste des Leistungspreises steht nur bei Trägern, die einen führen; die
           Saisonsätze sind zwölf Monatswerte und gehen dem konstanten Satz vor. Fehlt ein Preis, steht der
@@ -1861,11 +1889,10 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
               <tr><td>Kohlendioxid</td><td class="feld r"><span class="f-eingabe num">200,9</span></td><td>g/kWh</td>
                   <td>EBeV 2030 Anlage 2 (H<sub>i</sub>)</td>
                   <td><span class="f-knopf">Katalog…</span></td></tr>
-              <tr class="summe"><td>CO₂-Äquivalent gesamt (ausgewählte Arten)</td><td class="r num">200,90</td>
-                  <td>g/kWh</td><td colspan="2"></td></tr>
             </tbody>
           </table>
         </div>
+        <div class="f-herleitung">CO₂-Äquivalent gesamt (ausgewählte Arten): <b>200,90 g/kWh</b></div>
         <div class="f-knopfzeile"><span class="f-knopf">Emissionsarten &amp; Katalog verwalten…</span></div>
         <div class="f-info">Die Tabelle führt die Arten <em>dieses</em> Trägers — im Modus CO₂-Äquivalent kommen die
         Arten hinzu, die der Katalog mit einem Äquivalentfaktor führt (Methan, Lachgas). Angezeigt wird nur die im
@@ -1898,12 +1925,13 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
         Gruppe schreibt die ganze Karte, wie „Speichern" in der Fußleiste.</div>
       </div>
     </div>
-    <div class="f-fuss"><span class="f-knopf">Abbrechen</span><span class="f-knopf">Speichern</span><span class="f-knopf primaer">OK</span></div>
+    </div>
+    <div class="f-fuss"><span class="f-status">gespeichert 14:05 Uhr</span><span class="f-knopf">Abbrechen</span><span class="f-knopf">Speichern</span><span class="f-knopf primaer">OK</span></div>
   </div>
 
   <div class="zone">Überlagerung „Schnellwahl aus Katalog"</div>
   <p class="eng">Ein Knopf statt vier: „Schnellwahl aus Katalog…" öffnet sie im selben Fenster. Je Satz stehen dort
-  Herkunft, Jahr, Katalogwert <b>und</b> derselbe Satz in der Abrechnungseinheit — vor der Übernahme, nicht danach.
+  die Herkunft (mit Katalogwert und Jahr darin) <b>und</b> derselbe Satz in der Abrechnungseinheit — vor der Übernahme, nicht danach.
   Der Knopf einer Zeile trägt den Satz in ct/kWh und schreibt ihn in das Feld des zugehörigen Bestandteils; ein
   Satz, den der Katalog für dieses Jahr nicht führt, steht gesperrt da und nennt den Grund.</p>
   <div class="ueb-schleier">
@@ -1914,16 +1942,16 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
           <div class="f-titel">Energiesteuer</div>
           <div class="f-scroll">
           <table class="f-raster">
-            <thead><tr><th>Satz</th><th class="r">Katalogwert</th><th>Jahr</th><th>Herkunft</th><th class="r">in der Abrechnungseinheit</th></tr></thead>
+            <thead><tr><th>Satz</th><th>Herkunft</th><th class="r">in der Abrechnungseinheit</th></tr></thead>
             <tbody>
-              <tr><td><span class="f-knopf">§ 2: 0,6076</span></td><td class="r num">5,50 €/MWh</td><td class="num">ab 2003</td>
-                  <td class="klein" style="display:table-cell">EnergieStG § 2 Abs. 3 Satz 1 Nr. 4 — Erdgas · gesichert</td>
+              <tr><td><span class="f-knopf">§ 2: 0,6076</span></td>
+                  <td class="klein" style="display:table-cell">EnergieStG § 2 Abs. 3 Satz 1 Nr. 4 — Erdgas, 5,50 €/MWh (ab 2003, gesichert)</td>
                   <td class="r num">0,0638 €/m³</td></tr>
-              <tr><td><span class="f-knopf">§ 53a: 0,4883</span></td><td class="r num">4,42 €/MWh</td><td class="num">ab 2024</td>
-                  <td class="klein" style="display:table-cell">EnergieStG § 53a Abs. 5 — Gasturbinen und Verbrennungsmotoren · gesichert</td>
+              <tr><td><span class="f-knopf">§ 53a: 0,4883</span></td>
+                  <td class="klein" style="display:table-cell">EnergieStG § 53a Abs. 5 — Gasturbinen und Verbrennungsmotoren, 4,42 €/MWh (ab 2024, gesichert)</td>
                   <td class="r num">0,0513 €/m³</td></tr>
-              <tr><td><span class="f-knopf">§ 54: 0,1525</span></td><td class="r num">1,38 €/MWh</td><td class="num">ab 2024</td>
-                  <td class="klein" style="display:table-cell">EnergieStG § 54 — Heizstoffe im produzierenden Gewerbe · gesichert</td>
+              <tr><td><span class="f-knopf">§ 54: 0,1525</span></td>
+                  <td class="klein" style="display:table-cell">EnergieStG § 54 — Heizstoffe im produzierenden Gewerbe, 1,38 €/MWh (ab 2024, gesichert)</td>
                   <td class="r num">0,0160 €/m³</td></tr>
             </tbody>
           </table>
@@ -1931,10 +1959,10 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
           <div class="f-titel" style="margin-top:12px">CO₂-Bestandteil (BEHG)</div>
           <div class="f-scroll">
           <table class="f-raster">
-            <thead><tr><th>Satz</th><th class="r">Katalogwert</th><th>Jahr</th><th>Herkunft</th><th class="r">in der Abrechnungseinheit</th></tr></thead>
+            <thead><tr><th>Satz</th><th>Herkunft</th><th class="r">in der Abrechnungseinheit</th></tr></thead>
             <tbody>
-              <tr><td><span class="f-knopf">BEHG: 1,3059</span></td><td class="r num">65 €/t</td><td class="num">ab 2026</td>
-                  <td class="klein" style="display:table-cell">BEHG § 10 Abs. 2 — Festpreisphase · × 200,9 g/kWh</td>
+              <tr><td><span class="f-knopf">BEHG: 1,3059</span></td>
+                  <td class="klein" style="display:table-cell">BEHG § 10 Abs. 2 — Festpreisphase, 65 €/t × 200,9 g/kWh (ab 2026)</td>
                   <td class="r num">0,1371 €/m³</td></tr>
             </tbody>
           </table>
@@ -2081,9 +2109,10 @@ Keine stillen Teilsummen
   <div class="merk">
     <h3>Der Nachweisumschlag und seine Grenzen</h3>
     <p>Was eine Ergebniszeile an Unterzeilen trägt, reist mit ihr: vier Nachweislisten
-    (KWKG je Modul, Energiekosten je Anlage, Betriebskostenpositionen, Kohärenzhinweise) und vier
-    Skalare (vermiedene Menge, entgangene Entlastung nach § 9b, Unternehmensart, Bezugsspitze) liegen
-    als JSON mit dem Präfix <span class="mono">nw1:</span> an der Ergebniszeile. Die Fassung ist 1, die
+    (KWKG je Modul, Energiekosten je Anlage, Betriebskostenpositionen, Kohärenzhinweise) und sieben
+    Skalare (vermiedene Menge, entgangene Entlastung nach § 9b, Unternehmensart, Bezugsspitze,
+    KWKG-Pauschale, übernommene PV-Vergütung, PV-Vergütungsquelle) liegen
+    als JSON mit dem Präfix <span class="mono">nw1:</span> an der Ergebniszeile. Die Fassung ist 3, die
     Längengrenze 4 MiB, es wird nicht komprimiert.</p>
     <p>Die Grenzen gehören dazu, damit sie nicht als Fehler gelesen werden: Eine ohne Umschlag gebuchte
     Zeile lädt ohne Unterzeilen. Ein unlesbarer Umschlag kostet nur die Unterzeilen, nie eine
