@@ -416,6 +416,7 @@ table.tafel .qz{display:block;font-size:11.5px;color:var(--tinte-blass);margin-t
 table.tafel .rs{font-family:var(--mono);font-size:11px;color:var(--marine-hell)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) table.tafel .rs{color:#9FBAE6}}
 :root[data-theme="dark"] table.tafel .rs{color:#9FBAE6}
+table.tafel .rs-geplant{color:var(--tinte-blass);font-style:italic}
 .plusminus{font-weight:600}
 .plus{color:var(--erloes);font-weight:600}
 .minus{color:var(--kosten);font-weight:600}
@@ -977,7 +978,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Abschlusszeile „+ Neue Position…" · Knöpfe „+ Position hinzufügen" · „Aus Vorlage übernehmen…" · „Positionskatalog…"</td><td class="rs">KDLG_POS_NEU_VORGABE · KDLG_BTN_POSITION · KDLG_BTN_UEBERNAHME_PROJEKT · KDLG_BTN_KATALOG</td><td>Abschlusszeile · Leiste unter dem Raster</td></tr>
         <tr><td>Summenfuß „Summe Investitionskosten netto: {0} €" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_INVEST · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Fußleiste „Abbrechen" · „Speichern" · „OK" · Statuszeile „gespeichert {0} Uhr"</td><td class="rs">KDLG_BTN_ABBRECHEN · KDLG_BTN_SPEICHERN · ALLG_BTN_OK · KDLG_GESPEICHERT</td><td>Fußleiste</td></tr>
-        <tr><td>Zeileneditor „Position bearbeiten": Bezeichnung, Kostenart, Erlös/Zuschuss, Empfehlung; Kostenarten</td><td class="rs">VPOS_TITEL · VPOS_LBL_BEZEICHNUNG · VPOS_LBL_KOSTENART · VPOS_CHK_ERLOES · VPOS_LBL_EMPFEHLUNG · VPOS_LBL_BIS · KOSTENART_KAPITALGEBUNDEN … KOSTENART_ZUSCHUSS</td><td>Überlagerung des Stifts</td></tr>
+        <tr><td>Zeileneditor „Position bearbeiten": Bezeichnung, Kostenart, Erlös/Zuschuss, Empfehlung; Kostenarten</td><td class="rs">VPOS_TITEL · VPOS_LBL_BEZEICHNUNG · VPOS_LBL_KOSTENART · VPOS_CHK_ERLOES · VPOS_LBL_EMPFEHLUNG · VPOS_LBL_BIS · KOSTENART_KAPITALGEBUNDEN · KOSTENART_BETRIEBSGEBUNDEN · KOSTENART_BEDARFSGEBUNDEN · KOSTENART_SONSTIGE · — (ohne Ressource: WirtschaftlichkeitZeilen.KostenartText)</td><td>Überlagerung des Stifts</td></tr>
         <tr><td>Worst/Best · Übernahme · Löschrückfragen · Pflichtposition</td><td class="rs">KCASE_TITEL · KCASE_BEST_EUR · KCASE_WORST_EUR · KOSTEN_CASE_STARTJAHR · KUEB_TITEL · KUEB_LBL_ZIEL · KUEB_LBL_QUELLVORLAGE · KDLG_MSG_POS_LOESCHEN · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Überlagerungen und Rückfragen</td></tr>
         <tr><td>Bezugsgrößenzeile „× {0} · {1} · Runde {2}" unter dem Betrag, absolute Zeile „Satz = Betrag"</td><td class="rs">KDLG_HERL_BASIS · KDLG_HERL_ABSOLUT · KDLG_HERK_* · KDLG_GR_*</td><td>Zelle Betrag (U28)</td></tr>
         <tr><td>Summenzeile „Investition brutto {0} · Zuschuss {1} · I₀ {2}"</td><td class="rs">KDLG_SUMME_DREITEILIG</td><td>Summenfuß (U29)</td></tr>
@@ -986,7 +987,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Knopf „Nutzungsdauern vorbelegen…" mit Statuszeile, Rückfrage und Absage</td><td class="rs">ND_VORBELEGEN_BTN · ND_VORBELEGEN_STATUS · ND_VORBELEGEN_FRAGE · ND_VORBELEGEN_KEINE</td><td>Leiste unter dem Raster (U8)</td></tr>
         <tr><td>Herleitung unter der Nutzungsdauer „{0} a · {1}" mit den drei Herkünften</td><td class="rs">ND_ZEILE_HERLEITUNG · ND_HERK_TECHNIK · ND_HERK_ART · ND_QUELLE_EIGEN · ND_HERK_KEINE</td><td>Zelle Nutzungsdauer (U8)</td></tr>
         <tr><td>Zeileneditor „Positionsart:" mit leerer Zeile und Erklärzeile</td><td class="rs">VPOS_LBL_POSITIONSART · VPOS_POSITIONSART_KEINE · VPOS_INFO_POSITIONSART</td><td>Überlagerung des Stifts (U8)</td></tr>
-        <tr><td>Parameter „Preissteigerung Investition [%/a]"</td><td class="rs">WIRT_PAR_P_I</td><td>WirtschaftlichkeitParameterDialog</td></tr>
+        <tr><td>Parameter „Preissteigerung Investition [%/a]"</td><td class="rs">WPAR_PREIS_I</td><td>WirtschaftlichkeitParameterDialog</td></tr>
       </tbody>
     </table>
   </div>
@@ -1263,7 +1264,7 @@ Keine stillen Teilsummen
         <tr><td>Laufstand „Mengen stammen aus dem Simulationslauf vom {0}"</td><td class="rs">KDLG_LAUFSTAND · KDLG_LAUFSTAND_OHNE_DATUM</td><td>über dem Raster (U31)</td></tr>
         <tr><td>Gruppe „Endenergie je Komponente": Kopf, vier Spalten und der Hinweis auf die Bemessungen</td><td class="rs">KDLG_G_ENDENERGIE · KDLG_SP_ENDENERGIE_KOMP · KDLG_SP_ENDENERGIE_KWH · KDLG_SP_ENDENERGIE_EUR · KDLG_SP_ENDENERGIE_BASIS · KDLG_HINWEIS_ENDENERGIE</td><td>Gruppe unter dem Raster (U31)</td></tr>
         <tr><td>Doppelpflege Hilfsenergie — derselbe Text wie in der Kohärenzprüfung des BHKW-Dialogs</td><td class="rs">KOH_HILFSENERGIE_DOPPELT</td><td>BhkwWirtschaftlichkeitDialog und Kostendialog (U31)</td></tr>
-        <tr><td>Gedankenstrich-Grund „gehört zu keinem Energieträger" <b>neu</b> · Warnung fehlender Kesselbrennstoff</td><td class="rs">WIRT_OHNE_TRAEGER · WIRT_KESSELBRENNSTOFF_FEHLT</td><td>Ergebniszeile, Bericht, Dialog · Kohärenzprüfung</td></tr>
+        <tr><td>Gedankenstrich-Grund „gehört zu keinem Energieträger" <b>neu</b> · Warnung fehlender Kesselbrennstoff</td><td class="rs">WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER · WIRT_KESSELBRENNSTOFF_FEHLT</td><td>Ergebniszeile, Bericht, Dialog · Kohärenzprüfung</td></tr>
       </tbody>
     </table>
   </div>
@@ -1972,11 +1973,11 @@ Keine stillen Teilsummen
     <table class="tafel">
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
       <tbody>
-        <tr><td>Zeile „Energiekosten [€/a]"</td><td class="rs">WIRT_ENERGIEKOSTEN</td><td>Kennzahltafel, Wort- und Tabellenbericht</td></tr>
+        <tr><td>Zeile „Energiekosten [€/a]"</td><td class="rs">WIRT_ZEILE_ENERGIEKOSTEN</td><td>Kennzahltafel, Wort- und Tabellenbericht</td></tr>
         <tr><td>Überschrift „Energiekosten je Anlage [€/a]"</td><td class="rs">WIRT_ENK_KOPF</td><td>Zeilenkatalog (vorhanden)</td></tr>
-        <tr><td>davon-Zeile „davon {0} [€/a]"</td><td class="rs">WIRT_ENK_DAVON</td><td>Zeilenkatalog</td></tr>
-        <tr><td>davon-Zeile „davon Netzbezug Strom [€/a]"</td><td class="rs">WIRT_ENK_DAVON_NETZ</td><td>Zeilenkatalog</td></tr>
-        <tr><td>Herleitung „{0} MWh × {1} €/kWh = {2} €"</td><td class="rs">WIRT_ENK_HERLEITUNG</td><td>Nachweisumschlag der Zeile (vorhanden)</td></tr>
+        <tr><td>davon-Zeile „davon {0} [€/a]"</td><td class="rs">WIRT_ENK_ZEILE</td><td>Zeilenkatalog</td></tr>
+        <tr><td>davon-Zeile „davon Netzbezug Strom [€/a]"</td><td class="rs">WIRT_ENK_NETZBEZUG</td><td>Zeilenkatalog</td></tr>
+        <tr><td>Herleitung „{0} MWh × {1} €/kWh = {2} €"</td><td class="rs">— (ohne Ressource: WirtschaftlichkeitZeilen.AnlageHerleitung)</td><td>Nachweisumschlag der Zeile (vorhanden)</td></tr>
         <tr><td>Titel „Energieträger — {0}" · Kontextzeile „{0} · Preise netto" · Statuszusatz „ — gespeichert {0} Uhr"</td><td class="rs">ETV_TITEL_TRAEGER · ETV_KONTEXT_NETTO · ETV_KONTEXT_KATALOG_NETTO</td><td>Kopf des Dialogs</td></tr>
         <tr><td>Blockköpfe A, C und D der Trägerkarte</td><td class="rs">ETV_BLOCK_PREIS · ETV_BLOCK_EMISSIONEN · ETV_BLOCK_EINHEITEN</td><td>Trägerkarte, alle Träger</td></tr>
         <tr><td>Felder des Blocks A: Arbeitspreis, Grundpreis, Leistungspreis mit Modus, Heizwert, Brennwert · Effektivzeile · Preiszeile · Formelzeile · Knöpfe „Saisonale Sätze…", „Katalogwerte übernehmen"</td><td class="rs">ETV_LBL_ARBEITSPREIS · ETV_LBL_GRUNDPREIS · ETV_LBL_LEISTUNGSPREIS · KDLG_LP_MODUS_JAHR · KDLG_LP_MODUS_MONAT · ETV_LBL_HEIZWERT · ETV_LBL_BRENNWERT · KOSTEN_UMRECHNUNG_EFFEKTIV · ETV_HERLEITUNG_PREIS · ETV_HERLEITUNG_HSHI · ETV_LBL_FORMEL · ETV_FORMEL_JE_EINHEIT · KDLG_LP_SAISON · ETV_BTN_KATALOGWERTE</td><td>Block A</td></tr>
@@ -2692,17 +2693,17 @@ Stromsteuer
         <tr><td>Stromsteuer: Unternehmensart, zwei Schalter, Modus, Modushinweis, zwei Sprungknöpfe, Sprunghinweis</td><td class="rs">BHW_S_UNTERNEHMENSART · BHW_S_RAEUMLICH · BHW_S_HOCHEFFIZIENZ · BHW_S_MODUS · BHW_S_MODUS_HERLEITUNG · BHW_BTN_STROMBEZUG · BHW_BTN_BHKW_TARIF · BHW_S_SPRUNG_HINWEIS</td><td>Stromsteuer (Projektvorgabe)</td></tr>
         <tr><td>Kohärenz: Leerzeile und Fallzeilen des Laufs · Doppelpflege Hilfsenergie</td><td class="rs">BHW_K_LEER · KOH_FALL1_ENERGIESTEUER … KOH_FALL5_MISCHLAGE · KOH_DOPPEL_STROMST_9_1_3 · KOH_HILFSENERGIE_DOPPELT</td><td>Kohärenzprüfung · Hilfsstrom</td></tr>
         <tr><td>Hilfsstrom: Basiszeile, Mengenkette, Kesselhinweis, ohne Lauf</td><td class="rs">BHW_H_BASIS · BHW_H_KETTE1 · BHW_H_KETTE2 · BHW_H_KESSEL · BHW_H_OHNE_LAUF</td><td>Hilfsstrom</td></tr>
-        <tr><td>Vorschau: Rubrikzeilen „Summe {0}" · „projektweit: {0}" · ohne Lauf · Standzeile</td><td class="rs">WIRT_ERL_TEILSUMME · WIRT_ERL_PROJEKTWEIT · BHW_V_OHNE_LAUF · BHW_G6_OHNE_RUBRIK · BHW_V_STAND</td><td>Vorschau</td></tr>
+        <tr><td>Vorschau: Rubrikzeilen „Summe {0}" · „projektweit: {0}" · ohne Lauf · Standzeile</td><td class="rs"><span class="rs-geplant">WIRT_ERL_TEILSUMME · geplant · U6</span> · <span class="rs-geplant">WIRT_ERL_PROJEKTWEIT · geplant · U6</span> · BHW_V_OHNE_LAUF · BHW_G6_OHNE_RUBRIK · BHW_V_STAND</td><td>Vorschau</td></tr>
         <tr><td>Fußleiste „Speichern" · „Abbrechen" · Fehlermeldung</td><td class="rs">BHW_BTN_SPEICHERN · ALLG_BTN_ABBRECHEN · BHW_MSG_FEHLER</td><td>Fußleiste</td></tr>
-        <tr><td>Knöpfe „Sätze und Herkunft…" · „Wahl und Herkunft…" <b>neu</b></td><td class="rs">BHW_UEB_KNOPF_ANLAGE · BHW_UEB_KNOPF_STEUERN</td><td>Angaben der gewählten Anlage · Energiesteuer</td></tr>
-        <tr><td>Überlagerung: Titel „Sätze und Herkunft — {0}" · drei Gruppenköpfe · Wirkung je Wahl „→ {0}" · „Wirkung Jahr 1 ({0})" · Knopf „Übernehmen" <b>neu</b></td><td class="rs">BHW_UEB_TITEL · BHW_UEB_G_KWKG · BHW_UEB_G_ENERGIEST · BHW_UEB_G_STROMST · BHW_UEB_WIRKUNG · BHW_UEB_WIRKUNG_JAHR1 · BHW_UEB_UEBERNEHMEN</td><td>Überlagerung</td></tr>
-        <tr><td>Spalten „Vorschlag" · „Herkunft" · „eigener Wert" · „gilt" · Platzhalter „leer = Vorschlag" <b>neu</b></td><td class="rs">BHW_UEB_SP_VORSCHLAG · BHW_UEB_SP_HERKUNFT · BHW_UEB_SP_EIGEN · BHW_UEB_SP_GILT · BHW_UEB_LEER_VORSCHLAG</td><td>Überlagerung, KWK-Zuschlag</td></tr>
-        <tr><td>Wahl „Fall 1 / Fall 2" · Feld „Stromkennzahl σ" · Vorschlagszeile <b>neu</b></td><td class="rs">BHW_FLD_ABWAERMEABFUHR · BHW_FLD_STROMKENNZAHL · BHW_HERL_STROMKENNZAHL</td><td>Überlagerung, KWK-Strom</td></tr>
-        <tr><td>Mengenzeile „Nutzwärme × Stromkennzahl" <b>neu</b></td><td class="rs">WIRT_KWKG_MENGE_FALL2</td><td>Nachweisumschlag</td></tr>
-        <tr><td>Wahl „Projektvorgabe für alle Anlagen / nur diese Anlage" <b>neu</b></td><td class="rs">BHW_UEB_SCOPE_PROJEKT · BHW_UEB_SCOPE_ANLAGE</td><td>Überlagerung, Energiesteuer</td></tr>
-        <tr><td>Staffelzeile unter dem Jahresdeckel · Warnband zum Deckelanteil <b>neu</b></td><td class="rs">BHW_A_DECKEL_STAFFEL · BHW_W_DECKELANTEIL</td><td>Angaben der gewählten Anlage</td></tr>
-        <tr><td>Kohärenzwarnung bei Modus ERLOES</td><td class="rs">WIRT_STROMST_MODUS_ERLOES</td><td>Kohärenzprüfung</td></tr>
-        <tr><td>Begründung „virtuelle Gesamtanlage" · „Kontingent leer"</td><td class="rs">WIRT_KWKG_ERSATZWEG · WIRT_KWKG_KONTINGENT_LEER</td><td>Nachweisumschlag der Zuschlagszeile</td></tr>
+        <tr><td>Knöpfe „Sätze und Herkunft…" · „Wahl und Herkunft…" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_KNOPF_ANLAGE · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_KNOPF_STEUERN · geplant · U22</span></td><td>Angaben der gewählten Anlage · Energiesteuer</td></tr>
+        <tr><td>Überlagerung: Titel „Sätze und Herkunft — {0}" · drei Gruppenköpfe · Wirkung je Wahl „→ {0}" · „Wirkung Jahr 1 ({0})" · Knopf „Übernehmen" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_TITEL · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_KWKG · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_ENERGIEST · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_STROMST · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_WIRKUNG · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_WIRKUNG_JAHR1 · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_UEBERNEHMEN · geplant · U22</span></td><td>Überlagerung</td></tr>
+        <tr><td>Spalten „Vorschlag" · „Herkunft" · „eigener Wert" · „gilt" · Platzhalter „leer = Vorschlag" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_SP_VORSCHLAG · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_SP_HERKUNFT · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_SP_EIGEN · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_SP_GILT · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_LEER_VORSCHLAG · geplant · U22</span></td><td>Überlagerung, KWK-Zuschlag</td></tr>
+        <tr><td>Wahl „Fall 1 / Fall 2" · Feld „Stromkennzahl σ" · Vorschlagszeile <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_FLD_ABWAERMEABFUHR · geplant · U1</span> · <span class="rs-geplant">BHW_FLD_STROMKENNZAHL · geplant · U1</span> · <span class="rs-geplant">BHW_HERL_STROMKENNZAHL · geplant · U1</span></td><td>Überlagerung, KWK-Strom</td></tr>
+        <tr><td>Mengenzeile „Nutzwärme × Stromkennzahl" <b>neu</b></td><td class="rs"><span class="rs-geplant">WIRT_KWKG_MENGE_FALL2 · geplant · U1</span></td><td>Nachweisumschlag</td></tr>
+        <tr><td>Wahl „Projektvorgabe für alle Anlagen / nur diese Anlage" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_SCOPE_PROJEKT · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_SCOPE_ANLAGE · geplant · U22</span></td><td>Überlagerung, Energiesteuer</td></tr>
+        <tr><td>Staffelzeile unter dem Jahresdeckel · Warnband zum Deckelanteil <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_A_DECKEL_STAFFEL · geplant · U25</span> · <span class="rs-geplant">BHW_W_DECKELANTEIL · geplant · U25</span></td><td>Angaben der gewählten Anlage</td></tr>
+        <tr><td>Kohärenzwarnung bei Modus ERLOES</td><td class="rs">KOH_DOPPEL_STROMST_9_1_3</td><td>Kohärenzprüfung</td></tr>
+        <tr><td>Begründung „virtuelle Gesamtanlage" · „Kontingent leer"</td><td class="rs">WIRT_KWKG_ERSATZ_GEWICHTET · <span class="rs-geplant">WIRT_KWKG_KONTINGENT_LEER · geplant</span></td><td>Nachweisumschlag der Zuschlagszeile</td></tr>
       </tbody>
     </table>
   </div>
@@ -3089,8 +3090,8 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme                            <span class=
         <tr><td>Kappung: Anwenden und drei Statuszeilen</td><td class="rs">PVW_ANWENDEN · PVW_KAP_AUS · PVW_KAP_AN · PVW_KAP_INAKTIV</td><td>60-%-Wirkleistungsbegrenzung</td></tr>
         <tr><td>Vorschau: eine Zeile, ohne Ergebnis, Kennzahlzeilen (Quoten, Vorteil, Stromgestehungskosten, fehlende Grundlagen)</td><td class="rs">PVW_VORSCHAU · PVW_VORSCHAU_OHNE_ERGEBNIS · PVW_KZ_QUOTEN · PVW_KZ_MIT_SPEICHER · PVW_KZ_VORTEIL · PVW_KZ_LCOE · PVW_KZ_OHNE_KOSTEN · PVW_KZ_OHNE_PREIS</td><td>Vorschau</td></tr>
         <tr><td>Knöpfe und Fußleiste: Marktwerte, Tarif, Sprunghinweis, Übernehmen, Abbrechen, Meldungen</td><td class="rs">PVW_BTN_MARKTWERTE · PVW_BTN_TARIF · PVV_SPRUNG_HINWEIS · PVW_UEBERNEHMEN · PVW_ABBRECHEN · PVW_IBN_PFLICHT · PVW_IMPORT_OK · PVW_IMPORT_FEHLER · PVV_MSG_SPEICHERFEHLER</td><td>Fußleiste</td></tr>
-        <tr><td>Aufgeschlüsselte Vorschau: Spoterlös · Marktprämie · DV-Entgelt · Kappung · Summe · Vergütungsausfall · vermiedener Netzbezug · Jahresmarktwertzeile <b>neu</b></td><td class="rs">PVV_V_SPOT · PVV_V_PRAEMIE · PVV_V_DVENTGELT · PVV_V_KAPPUNG · PVV_V_SUMME · PVV_V_AUSFALL · PVV_V_BEZUG · PVV_HERL_MARKTWERT</td><td>Vorschau · Vermarktung (U27)</td></tr>
-        <tr><td>Ergebniszeile „Vergütung Photovoltaik" · „Kompensation im letzten Vergütungsjahr"</td><td class="rs">WIRT_PV_VERGUETUNG · WIRT_PV_KOMPENSATION_51A</td><td>Erlösrubrik, Bericht</td></tr>
+        <tr><td>Aufgeschlüsselte Vorschau: Spoterlös · Marktprämie · DV-Entgelt · Kappung · Summe · Vergütungsausfall · vermiedener Netzbezug · Jahresmarktwertzeile <b>neu</b></td><td class="rs"><span class="rs-geplant">PVV_V_SPOT · geplant · U27</span> · <span class="rs-geplant">PVV_V_PRAEMIE · geplant · U27</span> · <span class="rs-geplant">PVV_V_DVENTGELT · geplant · U27</span> · <span class="rs-geplant">PVV_V_KAPPUNG · geplant · U27</span> · <span class="rs-geplant">PVV_V_SUMME · geplant · U27</span> · <span class="rs-geplant">PVV_V_AUSFALL · geplant · U27</span> · <span class="rs-geplant">PVV_V_BEZUG · geplant · U27</span> · <span class="rs-geplant">PVV_HERL_MARKTWERT · geplant · U27</span></td><td>Vorschau · Vermarktung (U27)</td></tr>
+        <tr><td>Ergebniszeile „Vergütung Photovoltaik" · „Kompensation im letzten Vergütungsjahr"</td><td class="rs">WIRT_ZEILE_PV_FORM · WIRT_ZEILE_PV_51A</td><td>Erlösrubrik, Bericht</td></tr>
       </tbody>
     </table>
   </div>
@@ -3261,15 +3262,15 @@ Zuordnung der Zeilen
     <table class="tafel">
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
       <tbody>
-        <tr><td>Blockköpfe „A — zahlungswirksam" · „B — Ausweis"</td><td class="rs">WIRT_ERL_BLOCK_A · WIRT_ERL_BLOCK_B</td><td>Erlösrubrik, Word, Excel, BHKW-Vorschau</td></tr>
-        <tr><td>Komponentenkopf „{0}" · „projektweit"</td><td class="rs">WIRT_ERL_KOMPONENTE · WIRT_ERL_PROJEKTWEIT</td><td>dito</td></tr>
-        <tr><td>Zwischensumme „Summe {0}"</td><td class="rs">WIRT_ERL_TEILSUMME</td><td>dito</td></tr>
-        <tr><td>Zeile „Zuschlag Kraft-Wärme-Kopplung" mit zwei davon-Zeilen</td><td class="rs">WIRT_ERL_KWKG · WIRT_ERL_KWKG_EINSP · WIRT_ERL_KWKG_EIGEN</td><td>dito</td></tr>
-        <tr><td>Zeilen „Energiesteuer-Gutschrift Brennstoff" · „Energiesteuer-Entlastung Heizstoff"</td><td class="rs">WIRT_ERL_ENERGIEST_53A · WIRT_ERL_ENERGIEST_54</td><td>dito</td></tr>
-        <tr><td>Gründe der Nullzeilen</td><td class="rs">WIRT_ERL_GRUND_KEINE_KWK · WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF · WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE</td><td>dito</td></tr>
-        <tr><td>Hinweis „Block B wird nicht summiert"</td><td class="rs">WIRT_ERL_B_OHNE_SUMME</td><td>Fuß der Rubrik</td></tr>
+        <tr><td>Blockköpfe „A — zahlungswirksam" · „B — Ausweis"</td><td class="rs">WIRT_ERL_KOPF_A · WIRT_ERL_KOPF_B</td><td>Erlösrubrik, Word, Excel, BHKW-Vorschau</td></tr>
+        <tr><td>Komponentenkopf „{0}" · „projektweit"</td><td class="rs"><span class="rs-geplant">WIRT_ERL_KOMPONENTE · geplant · U6</span> · <span class="rs-geplant">WIRT_ERL_PROJEKTWEIT · geplant · U6</span></td><td>dito</td></tr>
+        <tr><td>Zwischensumme „Summe {0}"</td><td class="rs"><span class="rs-geplant">WIRT_ERL_TEILSUMME · geplant · U6</span></td><td>dito</td></tr>
+        <tr><td>Zeile „Zuschlag Kraft-Wärme-Kopplung" mit zwei davon-Zeilen</td><td class="rs">WIRT_ERL_A_KWKG · WIRT_ERL_A1_EINSPEISUNG · WIRT_ERL_A2_EIGEN</td><td>dito</td></tr>
+        <tr><td>Zeilen „Energiesteuer-Gutschrift Brennstoff" · „Energiesteuer-Entlastung Heizstoff"</td><td class="rs">WIRT_ERL_A_ENERGIESTEUER · <span class="rs-geplant">WIRT_ERL_ENERGIEST_54 · geplant · U7</span></td><td>dito</td></tr>
+        <tr><td>Gründe der Nullzeilen</td><td class="rs">WIRT_GRUND_KWKG · <span class="rs-geplant">WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF · geplant · U7</span> · <span class="rs-geplant">WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE · geplant · U6</span></td><td>dito</td></tr>
+        <tr><td>Hinweis „Block B wird nicht summiert"</td><td class="rs">WIRT_ERL_KOPF_B</td><td>Fuß der Rubrik</td></tr>
         <tr><td>Textzeilen „Satz Einspeisung · Herkunft" und „Satz Eigenstrom · Herkunft" · Vermerk „eigener Wert {0} — Vorschlag {1}" · „Vorschlag"</td><td class="rs">WIRT_ERL_A1_SATZ · WIRT_ERL_A2_SATZ · WIRT_ERL_HERKUNFT_EIGEN · WIRT_ERL_HERKUNFT_VORSCHLAG</td><td>Erlösrubrik, Bericht, Vorschau</td></tr>
-        <tr><td>Zeilen „Vermiedene Stromkosten wirksam" · „— Leistungsanteil"</td><td class="rs">WIRT_ERL_VERMIEDEN_WIRKSAM · WIRT_ERL_VERMIEDEN_LEISTUNG</td><td>Block B</td></tr>
+        <tr><td>Zeilen „Vermiedene Stromkosten wirksam" · „— Leistungsanteil"</td><td class="rs">WIRT_ERL_B1_EFFEKTIV · WIRT_ZEILE_VERMIEDEN_LEISTUNG</td><td>Block B</td></tr>
       </tbody>
     </table>
   </div>
@@ -4305,16 +4306,16 @@ Einstufung
     <table class="tafel">
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
       <tbody>
-        <tr><td>Umschalter „Kennzahlen" · „ValERI-Bewertung"</td><td class="rs">WIRT_UMSCH_KENNZAHLEN · WIRT_UMSCH_VALERI</td><td>Kopf der Ergebnisseite</td></tr>
+        <tr><td>Umschalter „Kennzahlen" · „ValERI-Bewertung"</td><td class="rs"><span class="rs-geplant">WIRT_UMSCH_KENNZAHLEN · geplant · U2</span> · <span class="rs-geplant">WIRT_UMSCH_VALERI · geplant · U2</span></td><td>Kopf der Ergebnisseite</td></tr>
         <tr><td>Optionsgruppe „Alle Varianten gegen die Referenz" · „Zwei Stände", Listen A und B, Knopf ⇄</td><td class="rs">WIRT_SICHT_ALLE · WIRT_SICHT_PAAR · WIRT_SICHT_A · WIRT_SICHT_B · WIRT_SICHT_TAUSCH</td><td>über den Vergleichstafeln</td></tr>
         <tr><td>Erklärzeile „Referenz dieser Sicht: {0} · Referenz der Gruppe: {1}", Sperrhinweis „mindestens zwei Stände"</td><td class="rs">WIRT_SICHT_REFERENZ · WIRT_SICHT_GESPERRT</td><td>unter der Optionsgruppe, Bericht</td></tr>
-        <tr><td>Abschnittsköpfe der vier Fragen</td><td class="rs">WIRT_ABS_LOHNT · WIRT_ABS_SICHER · WIRT_ABS_WORAUS · WIRT_ABS_ANNAHMEN</td><td>Ergebnisseite</td></tr>
-        <tr><td>Einstufungen</td><td class="rs">WIRT_STUFE_JA · WIRT_STUFE_BEDINGT · WIRT_STUFE_NEIN</td><td>Empfehlungskarten, Bandbreite, Bericht</td></tr>
-        <tr><td>„Vorschlag zur Wahl: {0}"</td><td class="rs">WIRT_EMPF_VORSCHLAG</td><td>Empfehlungsband</td></tr>
-        <tr><td>Szenarionamen</td><td class="rs">WIRT_SZEN_UNGUENSTIG · WIRT_SZEN_ERWARTET · WIRT_SZEN_GUENSTIG</td><td>überall</td></tr>
-        <tr><td>Hinweistext „Was ein Szenario variiert"</td><td class="rs">WIRT_SZEN_HINWEIS</td><td>unter der Annahmentafel, Wort- und Tabellenbericht</td></tr>
-        <tr><td>Knopf „Verlauf nach Excel…"</td><td class="rs">WIRT_BTN_VERLAUF_EXCEL</td><td>Bedienleiste des Verlaufs</td></tr>
-        <tr><td>Deklarationszeilen</td><td class="rs">WIRT_DEKL_NOMINAL · WIRT_DEKL_STEUERN · WIRT_DEKL_RESTWERT · WIRT_DEKL_RISIKO</td><td>Klappblock, Bericht</td></tr>
+        <tr><td>Abschnittsköpfe der vier Fragen</td><td class="rs"><span class="rs-geplant">WIRT_ABS_LOHNT · geplant · U2</span> · <span class="rs-geplant">WIRT_ABS_SICHER · geplant · U2</span> · <span class="rs-geplant">WIRT_ABS_WORAUS · geplant · U2</span> · <span class="rs-geplant">WIRT_ABS_ANNAHMEN · geplant · U2</span></td><td>Ergebnisseite</td></tr>
+        <tr><td>Einstufungen</td><td class="rs">WIRT_EMPF_STUFE_JA · WIRT_EMPF_STUFE_BEDINGT · WIRT_EMPF_STUFE_NEIN</td><td>Empfehlungskarten, Bandbreite, Bericht</td></tr>
+        <tr><td>„Vorschlag zur Wahl: {0}"</td><td class="rs">WIRT_EMPF_SATZ</td><td>Empfehlungsband</td></tr>
+        <tr><td>Szenarionamen</td><td class="rs">WIRT_SZEN_WORST · WIRT_SZEN_ERWARTET · WIRT_SZEN_BEST</td><td>überall</td></tr>
+        <tr><td>Hinweistext „Was ein Szenario variiert"</td><td class="rs"><span class="rs-geplant">WIRT_SZEN_HINWEIS · geplant · U10</span></td><td>unter der Annahmentafel, Wort- und Tabellenbericht</td></tr>
+        <tr><td>Knopf „Verlauf nach Excel…"</td><td class="rs"><span class="rs-geplant">WIRT_BTN_VERLAUF_EXCEL · geplant · U13</span></td><td>Bedienleiste des Verlaufs</td></tr>
+        <tr><td>Deklarationszeilen</td><td class="rs"><span class="rs-geplant">WIRT_DEKL_NOMINAL · geplant · U2</span> · <span class="rs-geplant">WIRT_DEKL_STEUERN · geplant · U2</span> · <span class="rs-geplant">WIRT_DEKL_RESTWERT · geplant · U2</span> · <span class="rs-geplant">WIRT_DEKL_RISIKO · geplant · U2</span></td><td>Klappblock, Bericht</td></tr>
       </tbody>
     </table>
   </div>
@@ -4338,7 +4339,9 @@ Einstufung
   Was davon noch nicht gebaut ist, steht hier — eine Zeile je Stück, mit dem Abschnitt, auf den sie
   sich bezieht, dem Ort im Programm und der Abnahme. Erledigte Zeilen werden durchgestrichen und mit
   Grund stehen gelassen, nicht gelöscht. Offene Anwenderfragen tragen „Entscheid ausstehend". Ist
-  diese Tafel leer, ist das Papier fertig.</p>
+  diese Tafel leer, ist das Papier fertig. In den Ressourcentafeln der Abschnitte markiert
+  <span class="rs-geplant">geplant</span> einen Schlüssel, dessen beschriftete Größe zu einem Punkt
+  dieser Anhangtafel gehört; der Name ist unverbindlich, bis der Punkt gebaut ist.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
@@ -4703,9 +4706,20 @@ Einstufung
               <span class="mono">ProjektPhotovoltaikCtrl.LiesAufgeloest</span> ·
               <span class="mono">WirtschaftlichkeitCtrl.RechnePvVerguetung</span> ·
               <span class="mono">ProjektDuplizierenCtrl</span> · <span class="mono">WirtschaftlichkeitZeilen</span></td>
-            <td>Alle Bestandsvarianten „übernehmen" → Referenzlauf byte-gleich; eigene Zeile wertgleich zur Stammzeile →
-              dieselben Zahlen wie „übernehmen"; eine Stammänderung erreicht die übernehmende Variante, nicht die
-              eigene; bunit: beide Zustände der Optionsgruppe, Erklärzeile je Herkunft</td></tr>
+            <td class="grund"><b>erledigt:</b> Die Spalte <span class="mono">Uebernahme_Stamm</span> in
+              <span class="mono">Tab_ProjektPhotovoltaik</span> (Schemaschritt 93) hält die Wahl je Variante;
+              <span class="mono">ProjektPhotovoltaikCtrl.LiesAufgeloest</span> löst sie zur geltenden Zeile auf —
+              Stammwerte bei „übernehmen", sonst die eigene Zeile. Die Optionsgruppe steht im Reiter Ertrag/Bonus,
+              Herkunftszeile und Knopf „eigene Werte" im Vergütungsdialog; die Berichtszeile
+              <span class="mono">PV_HERKUNFT</span> nennt die geltende Herkunft, die Kohärenzlagen
+              <span class="mono">KOH_PV_EIGENE_INAKTIV</span>, <span class="mono">KOH_PV_STAMM_INAKTIV</span> und
+              <span class="mono">KOH_PV_STAMM_FEHLT</span> fangen die Randfälle. Beim Projekttransfer legt der
+              Kopierlauf für eine übernehmende Variante die Stammzeile als Beilage
+              <span class="mono">pvVerguetungStamm</span> bei und meldet mit
+              <span class="mono">TRANSFER_PV_BEILAGE</span> bzw. <span class="mono">TRANSFER_PV_OHNE_BEILAGE</span>,
+              ob sie mitkam. Alle Bestandsvarianten „übernehmen" → Referenzlauf byte-gleich; eigene Zeile wertgleich
+              zur Stammzeile → dieselben Zahlen wie „übernehmen"; eine Stammänderung erreicht die übernehmende
+              Variante, nicht die eigene; bunit: beide Zustände der Optionsgruppe, Erklärzeile je Herkunft</td></tr>
         <tr><td class="mono">U39</td><td>1 · 8</td>
             <td>Der Rest von U8: Entkopplung von Ersatz und Restwert (ein Kennzeichen je Position oder Technik — oft
               ist das eine ohne das andere gewollt), die ungelesenen geräteeigenen Dauerspalten
