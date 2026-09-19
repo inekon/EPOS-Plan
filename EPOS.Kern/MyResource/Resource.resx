@@ -261,6 +261,15 @@
   <data name="KOH_PV_STAMM_INAKTIV" xml:space="preserve">
     <value>Variante „{0}“ übernimmt die PV-Vergütung des Stammprojekts „{1}“; dort ist sie nicht angewendet — gerechnet wird der flache Einspeisesatz.</value>
   </data>
+  <data name="KOH_PV_STAMM_FEHLT" xml:space="preserve">
+    <value>Variante „{0}“ führt „vom Stammprojekt übernehmen“, hat aber kein Stammprojekt — es gilt keine Vergütungszeile, gerechnet wird der flache Einspeisesatz.</value>
+  </data>
+  <data name="TRANSFER_PV_BEILAGE" xml:space="preserve">
+    <value>Vergütung des Stammprojekts „{0}“ als eigene Werte übernommen.</value>
+  </data>
+  <data name="TRANSFER_PV_OHNE_BEILAGE" xml:space="preserve">
+    <value>Hinweis: Das Projekt übernimmt die PV-Vergütung seines Stammprojekts; das Paket führt sie nicht mit — es gilt keine Vergütungszeile, gerechnet wird der flache Einspeisesatz.</value>
+  </data>
   <data name="PVIMP_PLAUSI_TITEL" xml:space="preserve">
     <value>Hinweis zu den Modulwerten</value>
   </data>

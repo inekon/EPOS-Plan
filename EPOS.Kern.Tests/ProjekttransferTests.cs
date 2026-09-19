@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -363,6 +364,260 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  P8 bis P13 — die Verguetung beim Transfer (Konzept § 2.16)
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Die Beilage</b> (§ 2.16, Randfall Projekttransfer). Eine EINZELN
+        /// transferierte Variante, welche die PV-Verguetung ihres Stamms uebernimmt,
+        /// faende am Ziel weder Stamm noch Zeile: Sie rechnete still den flachen
+        /// Einspeisesatz. Das Paket traegt deshalb die geltende Zeile des Stamms als
+        /// eigenen Abschnitt mit, und der Import macht daraus die EIGENEN Werte der
+        /// importierten Variante (<c>Uebernahme_Stamm = 0</c>).
+        /// </summary>
+        [Fact]
+        public void P8_Eine_uebernehmende_Variante_bringt_die_Stammverguetung_mit()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int idStamm = Id(STAMM);
+            PvLoeschen(idStamm); PvLoeschen(Id(VARIANTE_1));
+            PvSchreiben(idStamm, aktiv: true, aw: 7.5);
+
+            string paket = ordner.Datei("beilage.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(VARIANTE_1, paket));
+
+            JsonElement abschnitt = Manifest(paket).GetProperty("pvVerguetungStamm");
+            Assert.Equal(1, abschnitt.GetArrayLength());
+            Assert.Equal(VARIANTE_1, abschnitt[0].GetProperty("projekt").GetString());
+            Assert.Equal(STAMM, abschnitt[0].GetProperty("stamm").GetString());
+            Assert.Contains("pvstamm/0.json", Eintraege(paket).Keys);
+
+            // Am Ziel ist der Stamm nicht auffindbar — die Verknuepfung scheitert.
+            int neu; string fehler;
+            Umbenennen(idStamm, STAMM + " (nicht im Ziel)");
+            try
+            {
+                neu = io.Importieren(paket, "Beilage P8",
+                                     ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out fehler);
+            }
+            finally { Umbenennen(idStamm, STAMM); }
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+            var ctrl = new ProjektPhotovoltaikCtrl();
+            ProjektPhotovoltaikModel eigen = ctrl.Lies(neu);
+            Assert.NotNull(eigen);
+            Assert.False(eigen.UebernahmeStamm);
+            Assert.True(eigen.Aktiv);
+            Assert.Equal(7.5, eigen.AwOverride);
+            Assert.Equal(neu, eigen.ID_Projekt);
+            Assert.Contains(io.LetzterBericht,
+                            z => z == string.Format(Ressource("TRANSFER_PV_BEILAGE"), STAMM));
+        }
+
+        /// <summary>
+        /// <b>Steht der Stamm am Ziel, bleibt die Beilage liegen</b> (§ 2.16): Die
+        /// Verknuepfung wird hergestellt, die importierte Variante uebernimmt wie zuvor
+        /// — sie bekommt KEINE eigene Zeile, und die Aufloesung liefert die Werte des
+        /// Stamms.
+        /// </summary>
+        [Fact]
+        public void P9_Steht_der_Stamm_am_Ziel_bleibt_die_Beilage_liegen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int idStamm = Id(STAMM);
+            PvLoeschen(idStamm); PvLoeschen(Id(VARIANTE_1));
+            PvSchreiben(idStamm, aktiv: true, aw: 7.5);
+
+            string paket = ordner.Datei("mitstamm.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(VARIANTE_1, paket));
+
+            int neu = io.Importieren(paket, "Mit Stamm P9",
+                                     ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+            var ctrl = new ProjektPhotovoltaikCtrl();
+            Assert.Null(ctrl.Lies(neu));
+            Assert.Equal(idStamm, new VariantenCtrl().StammRefDerVariante(neu));
+
+            PvVerguetungStand stand = ctrl.LiesAufgeloest(neu);
+            Assert.True(stand.Uebernommen);
+            Assert.Equal(7.5, stand.Modell.AwOverride);
+        }
+
+        /// <summary>
+        /// <b>Ohne aktive Stammzeile gibt es keine Beilage</b> (§ 2.16): Es ist nichts
+        /// zu uebernehmen — beide rechnen Flat. Der Import sagt es, statt es still zu
+        /// lassen, und die Variante bleibt ohne Zeile.
+        /// </summary>
+        [Fact]
+        public void P10_Ohne_Stammzeile_gibt_es_keine_Beilage_sondern_eine_Meldung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int idStamm = Id(STAMM);
+            PvLoeschen(idStamm); PvLoeschen(Id(VARIANTE_1));
+
+            string paket = ordner.Datei("ohnebeilage.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(VARIANTE_1, paket));
+
+            Assert.Equal(0, Manifest(paket).GetProperty("pvVerguetungStamm").GetArrayLength());
+            Assert.DoesNotContain("pvstamm/0.json", Eintraege(paket).Keys);
+
+            int neu; string fehler;
+            Umbenennen(idStamm, STAMM + " (nicht im Ziel)");
+            try
+            {
+                neu = io.Importieren(paket, "Ohne Beilage P10",
+                                     ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out fehler);
+            }
+            finally { Umbenennen(idStamm, STAMM); }
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+            Assert.Null(new ProjektPhotovoltaikCtrl().Lies(neu));
+            Assert.Contains(io.LetzterBericht, z => z == Ressource("TRANSFER_PV_OHNE_BEILAGE"));
+        }
+
+        /// <summary>
+        /// <b>Die Kohaerenzzeile zum fehlenden Stamm</b> (§ 2.16, § 3.9, ohne
+        /// Rechenwirkung). Sie gilt allgemein, nicht nur nach einem Import — in beiden
+        /// Lagen, in denen die Wahl „uebernehmen" ins Leere zeigt: die Verknuepfung
+        /// weist auf ein Projekt, das es nicht gibt, oder es gibt gar keine
+        /// Verknuepfung mehr (die Spur eines Einzeltransfers).
+        /// </summary>
+        [Fact]
+        public void P11_Eine_Variante_ohne_Stammprojekt_bekommt_die_Kohaerenzzeile()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            int idStamm = Id(STAMM);
+            int idVariante = Id(VARIANTE_1);
+            PvLoeschen(idStamm); PvLoeschen(idVariante);
+
+            string erwartetVariante = string.Format(Ressource("KOH_PV_STAMM_FEHLT"), VARIANTE_1);
+            string erwartetStamm = string.Format(Ressource("KOH_PV_STAMM_FEHLT"), STAMM);
+
+            // (a) Die Verknuepfung zeigt auf ein Projekt, das es nicht gibt.
+            Assert.DoesNotContain(KohaerenzPruefung.Pruefe(idVariante, null),
+                                  h => h.Text == erwartetVariante);
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Variante SET ID_ProjektRef = 999999 WHERE ID_Projekt = " + idVariante);
+            try
+            {
+                Assert.Contains(KohaerenzPruefung.Pruefe(idVariante, null),
+                                h => h.Text == erwartetVariante);
+            }
+            finally
+            {
+                DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Variante SET ID_ProjektRef = " + idStamm +
+                    " WHERE ID_Projekt = " + idVariante);
+            }
+
+            // (b) Keine Verknuepfung, aber die Wahl „uebernehmen" an einer nicht
+            //     angewendeten Zeile — so kommt eine einzeln transferierte Variante an.
+            Assert.DoesNotContain(KohaerenzPruefung.Pruefe(idStamm, null), h => h.Text == erwartetStamm);
+            PvSchreiben(idStamm, aktiv: false, aw: 7.5, uebernahme: true);
+            Assert.Contains(KohaerenzPruefung.Pruefe(idStamm, null), h => h.Text == erwartetStamm);
+            PvLoeschen(idStamm);
+        }
+
+        /// <summary>
+        /// <b>Der Variantenbaum bleibt, wie er ist</b> (§ 2.16): Stamm und Wahl reisen
+        /// mit, es gibt nichts beizulegen. Am Ziel uebernimmt die eine Variante weiter
+        /// vom importierten Stamm, die andere behaelt ihre eigenen Werte.
+        /// </summary>
+        [Fact]
+        public void P12_Ein_Variantenbaum_traegt_Stamm_und_Wahl_ohne_Beilage()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int idStamm = Id(STAMM);
+            PvLoeschen(idStamm); PvLoeschen(Id(VARIANTE_1)); PvLoeschen(Id(VARIANTE_2));
+            PvSchreiben(idStamm, aktiv: true, aw: 7.5);
+            PvSchreiben(Id(VARIANTE_2), aktiv: true, aw: 9.0);
+
+            string paket = ordner.Datei("baum.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(STAMM, new List<string> { VARIANTE_1, VARIANTE_2 }, paket));
+            Assert.Equal(0, Manifest(paket).GetProperty("pvVerguetungStamm").GetArrayLength());
+
+            int neu = io.Importieren(paket, "Baum P12",
+                                     ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+            var ctrl = new ProjektPhotovoltaikCtrl();
+            Assert.Equal(7.5, ctrl.Lies(neu).AwOverride);
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID_Projekt, Variantenname FROM Tab_Variante " +
+                "WHERE ID_ProjektRef = " + neu + " ORDER BY Variantenname");
+            Assert.NotNull(dt);
+            Assert.Equal(2, dt.Rows.Count);
+            int idTest1 = Convert.ToInt32(dt.Rows[0]["ID_Projekt"]);
+            int idTest2 = Convert.ToInt32(dt.Rows[1]["ID_Projekt"]);
+
+            // Test1 uebernimmt (keine eigene Zeile), Test2 fuehrt eigene Werte.
+            Assert.Null(ctrl.Lies(idTest1));
+            PvVerguetungStand uebernommen = ctrl.LiesAufgeloest(idTest1);
+            Assert.True(uebernommen.Uebernommen);
+            Assert.Equal(7.5, uebernommen.Modell.AwOverride);
+
+            PvVerguetungStand eigen = ctrl.LiesAufgeloest(idTest2);
+            Assert.False(eigen.Uebernommen);
+            Assert.Equal(9.0, eigen.Modell.AwOverride);
+        }
+
+        /// <summary>
+        /// <b>Ein Altpaket ohne den Abschnitt laedt unveraendert</b> (§ 2.16): Der
+        /// Manifestteil ist kein Pflichtteil; fehlt er, laeuft der Import wie zuvor —
+        /// die Variante steht eigenstaendig und ohne Zeile da.
+        /// </summary>
+        [Fact]
+        public void P13_Ein_Paket_ohne_den_Abschnitt_importiert_unveraendert()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int idStamm = Id(STAMM);
+            PvLoeschen(idStamm); PvLoeschen(Id(VARIANTE_1));
+            PvSchreiben(idStamm, aktiv: true, aw: 7.5);
+
+            string paket = ordner.Datei("neu.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(VARIANTE_1, paket));
+
+            string alt = ordner.Datei("alt.wpx");
+            OhnePvAbschnitt(paket, alt);
+            Assert.False(Manifest(alt).TryGetProperty("pvVerguetungStamm", out _));
+
+            int neu; string fehler;
+            Umbenennen(idStamm, STAMM + " (nicht im Ziel)");
+            try
+            {
+                neu = io.Importieren(alt, "Altpaket P13",
+                                     ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out fehler);
+            }
+            finally { Umbenennen(idStamm, STAMM); }
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+            Assert.Null(new ProjektPhotovoltaikCtrl().Lies(neu));
+        }
+
+        // =============================================================================
         //  Handwerkszeug
         // =============================================================================
 
@@ -383,6 +638,58 @@ namespace EPOS.Kern.Tests
             public void Dispose()
             {
                 try { Directory.Delete(_pfad, true); } catch { /* Aufraeumen darf nicht scheitern */ }
+            }
+        }
+
+        private static int Id(string projektname) => new ProjektDuplizierenCtrl().GetProjektId(projektname);
+
+        /// <summary>Eine PV-Verguetungszeile fuer das Projekt — die Werte, auf die
+        /// die Proben pruefen.</summary>
+        private static void PvSchreiben(int idProjekt, bool aktiv, double aw, bool uebernahme = false)
+        {
+            var ctrl = new ProjektPhotovoltaikCtrl();
+            ProjektPhotovoltaikModel m = ctrl.LiesOderVorbelegt(idProjekt);
+            m.ID_Projekt = idProjekt;
+            m.Aktiv = aktiv;
+            m.AwOverride = aw;
+            m.Inbetriebnahme = new DateTime(2026, 1, 1);
+            m.UebernahmeStamm = uebernahme;
+            Assert.True(ctrl.Speichern(m));
+        }
+
+        private static void PvLoeschen(int idProjekt) =>
+            DataRepository.ExecuteNonQuery(
+                "DELETE FROM " + SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK + " WHERE ID_Projekt = " + idProjekt);
+
+        /// <summary>Benennt ein Projekt um — so wird der Stamm am Ziel unauffindbar,
+        /// ohne die Arbeitskopie sonst anzufassen.</summary>
+        private static void Umbenennen(int idProjekt, string name) =>
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_Projekt SET Projektname = ? WHERE ID = ?",
+                new DbParam("@n", name), new DbParam("@id", idProjekt)));
+
+        /// <summary>Der Ressourcentext, genau so gelesen wie im Kern (ohne Kulturwahl).</summary>
+        private static string Ressource(string schluessel) =>
+            WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(schluessel) ?? "";
+
+        /// <summary>Schreibt das Paket ohne den Abschnitt <c>pvVerguetungStamm</c> und
+        /// ohne die Beilagen neu — ein Paket, wie es vor diesem Abschnitt entstand.</summary>
+        private static void OhnePvAbschnitt(string quelle, string ziel)
+        {
+            Dictionary<string, byte[]> eintraege = Eintraege(quelle);
+            JsonObject wurzel = JsonNode.Parse(Text(eintraege["manifest.json"])).AsObject();
+            wurzel.Remove("pvVerguetungStamm");
+            string manifest = wurzel.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+
+            using var stream = new FileStream(ziel, FileMode.Create);
+            using var zip = new ZipArchive(stream, ZipArchiveMode.Create);
+            foreach (var kvp in eintraege)
+            {
+                if (kvp.Key.StartsWith("pvstamm/", StringComparison.Ordinal)) continue;
+                using var s = zip.CreateEntry(kvp.Key, CompressionLevel.Optimal).Open();
+                byte[] roh = kvp.Key == "manifest.json"
+                    ? new UTF8Encoding(false).GetBytes(manifest) : kvp.Value;
+                s.Write(roh, 0, roh.Length);
             }
         }
 
@@ -448,11 +755,14 @@ namespace EPOS.Kern.Tests
             }
         }
 
-        /// <summary>Der Kopierplan, nach Tabellenname greifbar.</summary>
+        /// <summary>Der Plan des TRANSFERS, nach Tabellenname greifbar. Nicht der des
+        /// Duplizierers: Der Transfer nimmt <c>Tab_ProjektPhotovoltaik</c> zusaetzlich
+        /// mit (§ 2.16), und P2/P3 muessen genau die Tabellen kennen, die im Paket
+        /// stehen koennen.</summary>
         private static Dictionary<string, ProjektDuplizierenCtrl.Spec> Plan()
         {
             var map = new Dictionary<string, ProjektDuplizierenCtrl.Spec>(StringComparer.OrdinalIgnoreCase);
-            foreach (var s in new ProjektDuplizierenCtrl().ErmittlePlan()) map[s.Tabelle] = s;
+            foreach (var s in new ProjektExportImportCtrl().Transferplan()) map[s.Tabelle] = s;
             return map;
         }
 
