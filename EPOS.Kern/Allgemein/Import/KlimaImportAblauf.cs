@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,7 +23,13 @@ namespace WindowsFormsApplication1
         /// <summary>Der Datenabruf ist gescheitert.</summary>
         Netzfehler,
         /// <summary>Das Schreiben ist gescheitert; es wurde zurückgerollt.</summary>
-        Schreibfehler
+        Schreibfehler,
+        /// <summary>
+        /// Eine gewählte Datei ist nicht lesbar — TRY-Datei oder Regionalpaket
+        /// (Auftrag KL1-B). <b>Am ENDE der Aufzählung</b>, damit die Zahlenwerte der
+        /// bestehenden Ausgänge sich nicht verschieben.
+        /// </summary>
+        Dateifehler
     }
 
     /// <summary>Das Ergebnis eines Klimaimports.</summary>
@@ -60,6 +67,35 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// WOHER die Stundenwerte kommen (Auftrag KL1-B). Die Vorgabe
+    /// <see cref="PvgisTmy"/> ist der Bestand — jeder Auftrag ohne Angabe verhält sich
+    /// wie bisher.
+    /// </summary>
+    public enum KlimaQuelle
+    {
+        /// <summary>PVGIS-TMY über das Netz (der Bestand, weltweit).</summary>
+        PvgisTmy,
+        /// <summary>Eine DWD-TRY-Datei (<c>.dat</c>) vom Rechner des Anwenders.</summary>
+        TryDatei,
+        /// <summary>Die offenen TRY-Regionaldaten (Deutschland) aus <c>data.zip</c>.</summary>
+        TryRegional
+    }
+
+    /// <summary>
+    /// Die drei TRY-Ausprägungen eines Bezugsjahres. Vorgabe ist das
+    /// <see cref="MittleresJahr"/> — so heißt im Paket die Datei <c>…_Jahr.dat</c>.
+    /// </summary>
+    public enum TrySzenario
+    {
+        /// <summary>Mittleres Jahr (<c>Jahr</c>).</summary>
+        MittleresJahr,
+        /// <summary>Sommerwarm (<c>Somm</c>).</summary>
+        Sommerwarm,
+        /// <summary>Winterkalt (<c>Wint</c>).</summary>
+        Winterkalt
+    }
+
+    /// <summary>
     /// Die Eingaben eines Klimaimports.
     /// </summary>
     public sealed class KlimaImportAuftrag
@@ -74,14 +110,63 @@ namespace WindowsFormsApplication1
 
         public double Longitude;
         public double Latitude;
+
+        /// <summary>
+        /// Woher die Stundenwerte kommen. <b>Vorgabe <see cref="KlimaQuelle.PvgisTmy"/></b> —
+        /// jeder Auftrag, der nichts sagt, läuft wie vor KL1-B.
+        /// </summary>
+        public KlimaQuelle Quelle = KlimaQuelle.PvgisTmy;
+
+        /// <summary>Pfad der DWD-TRY-Datei (<see cref="KlimaQuelle.TryDatei"/>).</summary>
+        public string TryPfad = "";
+
+        /// <summary>
+        /// Pfad einer LOKALEN <c>data.zip</c> (<see cref="KlimaQuelle.TryRegional"/>);
+        /// leer heißt: über die eingestellte Adresse abrufen.
+        /// </summary>
+        public string TryPaketPfad = "";
+
+        /// <summary>Das Szenario der Regionaldaten; Vorgabe mittleres Jahr.</summary>
+        public TrySzenario Szenario = TrySzenario.MittleresJahr;
+
+        /// <summary>Das Bezugsjahr der Regionaldaten (2015 oder 2045); Vorgabe 2015.</summary>
+        public int TryJahr = TRY_JAHR_VORGABE;
+
+        /// <summary>Das vorgegebene Bezugsjahr der Regionaldaten.</summary>
+        public const int TRY_JAHR_VORGABE = 2015;
+
+        /// <summary>Das zweite wählbare Bezugsjahr (Projektion).</summary>
+        public const int TRY_JAHR_PROJEKTION = 2045;
     }
 
     /// <summary>
-    /// Woher die TMY-Stundenwerte kommen. <b>Der einzige Netzzugriff des Programms</b>
-    /// hängt an diesem Delegaten (Risiko R-W14c-5): Unter Windows ist es
+    /// Woher die TMY-Stundenwerte kommen. <b>Der Netzzugriff des Programms</b> hängt an
+    /// diesem Delegaten (Risiko R-W14c-5): Unter Windows ist es
     /// <c>PVGIS_EPW_Downloader.GetTMY</c>, in der Probe eine eingefrorene Datei.
+    ///
+    /// <para><b>Seit KL1-B gibt es einen ZWEITEN Netzweg</b> — <see cref="INetzbereich"/>
+    /// für die TRY-Regionaldaten. Beide sind Delegaten, beide belegt die SCHALE; der
+    /// Kern kennt weder <c>HttpClient</c> noch eine Adresse, und ohne Delegat gibt es
+    /// den Weg schlicht nicht. Die DWD-TRY-DATEI braucht gar kein Netz.</para>
     /// </summary>
     public delegate Task<List<TmyHourlyData>> ITmyQuelle(double lon, double lat, int azimut);
+
+    /// <summary>
+    /// Ein BEREICHSABRUF über das Netz — <c>HTTP Range</c> (Auftrag KL1-B).
+    ///
+    /// <para><b>Wozu.</b> Das TRY-Regionalpaket <c>data.zip</c> ist 892 MB groß;
+    /// gebraucht werden daraus das Zentralverzeichnis am Dateiende und EINE
+    /// <c>.dat</c>-Datei von rund 155 KB. <see cref="BereichStream"/> setzt daraus einen
+    /// suchfähigen Lesestrom zusammen, auf dem <c>ZipArchive</c> arbeitet.</para>
+    ///
+    /// <para><b>Der Vertrag.</b> <paramref name="laenge"/> kleiner 0 heißt „bis zum
+    /// Ende". Zurück kommen die gelesenen Bytes und die GESAMTLÄNGE der Datei — unter
+    /// Windows aus dem Kopf <c>Content-Range</c>. Kann die Adresse keine Teilabrufe
+    /// (Gesamtlänge ≤ 0 oder mehr Bytes als angefordert), wird der Lauf BENANNT
+    /// abgebrochen; ein stiller Volldownload findet nie statt.</para>
+    /// </summary>
+    public delegate Task<(byte[] Daten, long Gesamtlaenge)> INetzbereich(
+        string adresse, long von, long laenge, CancellationToken abbruch);
 
     /// <summary>
     /// Woher die Koordinaten zu einem Ortsnamen kommen (Nominatim bzw. eine Probe).
@@ -146,15 +231,21 @@ namespace WindowsFormsApplication1
         /// <param name="orte">Die Ortsauflösung; nur für <c>AusOrtsname</c> nötig.</param>
         /// <param name="melder">Fortschritt der sieben Schritte.</param>
         /// <param name="abbruch">Abbruchmarke (A-4) — der Vorläufer hatte keine.</param>
+        /// <param name="bereich">Der Bereichsabruf der TRY-Regionaldaten (KL1-B).
+        /// <b>Als LETZTER Parameter mit Vorgabe</b>, damit jeder bestehende Aufruf
+        /// unverändert gültig bleibt; ohne ihn steht nur der Weg über eine lokale
+        /// <c>data.zip</c> offen.</param>
         public static async Task<KlimaImportErgebnis> Laufen(
             KlimaImportAuftrag auftrag,
             ITmyQuelle tmy,
             IOrtsQuelle orte = null,
             IProgress<ImportFortschritt> melder = null,
-            CancellationToken abbruch = default)
+            CancellationToken abbruch = default,
+            INetzbereich bereich = null)
         {
             var erg = new KlimaImportErgebnis();
-            if (auftrag == null || tmy == null) return Abbruch(erg);
+            if (auftrag == null) return Abbruch(erg);
+            if (tmy == null && auftrag.Quelle == KlimaQuelle.PvgisTmy) return Abbruch(erg);
 
             // ---- Schritt 1: Koordinaten -------------------------------------
             Melden(melder, 1, "KLIMA_SCHRITT_KOORDINATEN");
@@ -201,27 +292,152 @@ namespace WindowsFormsApplication1
 
             if (abbruch.IsCancellationRequested) return Abbruch(erg);
 
-            // ---- Schritt 2: EIN PVGIS-Abruf (A-10) --------------------------
-            Melden(melder, 2, "KLIMA_SCHRITT_ABRUF");
-
+            // ---- Schritt 2: die Stundenwerte (eine der DREI Quellen) --------
             List<TmyHourlyData> stunden;
-            try
+            string herkunft = "";          // der Herkunftsvermerk der TRY-Quellen
+
+            if (auftrag.Quelle == KlimaQuelle.PvgisTmy)
             {
-                stunden = await tmy(lon, lat, AZIMUT_SUED).ConfigureAwait(false)
-                          ?? new List<TmyHourlyData>();
+                // ---- PVGIS: EIN Abruf (A-10), unveraendert ------------------
+                Melden(melder, 2, "KLIMA_SCHRITT_ABRUF");
+
+                try
+                {
+                    stunden = await tmy(lon, lat, AZIMUT_SUED).ConfigureAwait(false)
+                              ?? new List<TmyHourlyData>();
+                }
+                catch (ArgumentException ex)
+                {
+                    return Fehler(erg, KlimaImportAusgang.Netzfehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_MSG_PVGIS_EINGABE, ex.Message));
+                }
+                catch (Exception ex)
+                {
+                    return Fehler(erg, KlimaImportAusgang.Netzfehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_MSG_DOWNLOAD_FEHLER, ex.Message));
+                }
             }
-            catch (ArgumentException ex)
+            else if (auftrag.Quelle == KlimaQuelle.TryDatei)
             {
-                return Fehler(erg, KlimaImportAusgang.Netzfehler,
+                // ---- DWD-TRY-Datei: KEIN Netz ------------------------------
+                Melden(melder, 2, "KLIMA_SCHRITT_DATEI");
+
+                string pfad = (auftrag.TryPfad ?? "").Trim();
+                if (pfad.Length == 0)
+                    return Fehler(erg, KlimaImportAusgang.Eingabefehler,
+                        MyResource.Resource.KLIMA_MSG_EINGABEN_PRUEFEN);
+
+                TryKopf kopf;
+                try
+                {
+                    stunden = DwdTryLeser.LesenDatei(pfad, out kopf);
+                }
+                catch (FileNotFoundException)
+                {
+                    return Fehler(erg, KlimaImportAusgang.Eingabefehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_TRY_DATEI_FEHLT, pfad));
+                }
+                catch (FormatException ex)
+                {
+                    return Fehler(erg, KlimaImportAusgang.Dateifehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
+                }
+                catch (Exception ex)
+                {
+                    return Fehler(erg, KlimaImportAusgang.Dateifehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
+                }
+
+                herkunft = string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KLIMA_TRY_DETAILS_DATEI,
+                    Path.GetFileName(pfad),
+                    DateTime.Now.ToString("d", CultureInfo.CurrentCulture),
+                    MyResource.Resource.KLIMA_TRY_LIZENZ,
                     string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KLIMA_MSG_PVGIS_EINGABE, ex.Message));
+                                  MyResource.Resource.KLIMA_TRY_VERWORFEN, kopf.VerworfenText));
+
+                DwdTryLeser.DirektNormal(stunden, lon, lat);
             }
-            catch (Exception ex)
+            else
             {
-                return Fehler(erg, KlimaImportAusgang.Netzfehler,
+                // ---- TRY-Regionaldaten: Bereichsabruf ODER lokale data.zip --
+                Melden(melder, 2, "KLIMA_SCHRITT_PAKET");
+
+                string paket = (auftrag.TryPaketPfad ?? "").Trim();
+                string quelle;
+                TryPaketErgebnis paketErg;
+
+                try
+                {
+                    if (paket.Length > 0)
+                    {
+                        quelle = Path.GetFileName(paket);
+                        paketErg = TryPaketLeser.LesenAusDatei(
+                            paket, lon, lat, auftrag.TryJahr, auftrag.Szenario);
+                    }
+                    else
+                    {
+                        if (bereich == null)
+                            return Fehler(erg, KlimaImportAusgang.Eingabefehler,
+                                MyResource.Resource.KLIMA_TRY_KEIN_BEREICH);
+
+                        quelle = Adresse();
+                        paketErg = await TryPaketLeser.LesenAusNetzAsync(
+                            bereich, quelle, lon, lat, auftrag.TryJahr, auftrag.Szenario,
+                            abbruch).ConfigureAwait(false);
+                    }
+                }
+                catch (OperationCanceledException) { return Abbruch(erg); }
+                catch (FileNotFoundException)
+                {
+                    return Fehler(erg, KlimaImportAusgang.Eingabefehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_TRY_DATEI_FEHLT, paket));
+                }
+                catch (FormatException ex)
+                {
+                    return Fehler(erg, KlimaImportAusgang.Dateifehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
+                }
+                catch (InvalidOperationException ex)
+                {
+                    // Keine Teilabrufe, keine Region, kein Szenario - alles BENANNT.
+                    return Fehler(erg, KlimaImportAusgang.Dateifehler, ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    return Fehler(erg, KlimaImportAusgang.Netzfehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_MSG_DOWNLOAD_FEHLER, ex.Message));
+                }
+
+                stunden = paketErg.Stunden;
+
+                herkunft = string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KLIMA_TRY_DETAILS_REGIONAL,
+                    paketErg.Region.Nummer.ToString(CultureInfo.CurrentCulture),
+                    paketErg.Region.Koordinatentext,
+                    paketErg.Region.EntfernungKm.ToString("F0", CultureInfo.CurrentCulture),
+                    SzenarioText(auftrag.Szenario),
+                    auftrag.TryJahr.ToString(CultureInfo.CurrentCulture),
+                    quelle,
+                    DateTime.Now.ToString("d", CultureInfo.CurrentCulture),
+                    MyResource.Resource.KLIMA_TRY_LIZENZ,
                     string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KLIMA_MSG_DOWNLOAD_FEHLER, ex.Message));
+                                  MyResource.Resource.KLIMA_TRY_VERWORFEN,
+                                  paketErg.Kopf.VerworfenText));
+
+                DwdTryLeser.DirektNormal(stunden, lon, lat);
             }
+
+            if (herkunft.Length > 0)
+                details = details.Length > 0 ? details + " · " + herkunft : herkunft;
 
             if (abbruch.IsCancellationRequested) return Abbruch(erg);
 
@@ -292,7 +508,38 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.KLIMA_MSG_IMPORT_FERTIG, bezeichner,
                 stunden.Count.ToString(CultureInfo.CurrentCulture),
                 tage.Count.ToString(CultureInfo.CurrentCulture));
+
+            // Die HERKUNFT steht in der Meldung UND in Details (Entscheid des Anwenders:
+            // Lizenzvermerk, Region und die verworfenen Groessen bleiben sichtbar).
+            if (herkunft.Length > 0)
+                erg.Meldung += " " + string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KLIMA_TRY_MSG_HERKUNFT, herkunft);
+
             return erg;
+        }
+
+        /// <summary>
+        /// Die Adresse des TRY-Regionalpakets: der Einstellwert, sonst die Vorgabe.
+        /// Der Kern liest ihn über <c>Dienste.Einstellungen</c> — er kennt die Ablage nicht.
+        /// </summary>
+        public static string Adresse()
+        {
+            string wert = "";
+            try { wert = Dienste.Einstellungen.Lies(TryPaketLeser.SCHLUESSEL_ADRESSE) ?? ""; }
+            catch { wert = ""; }
+
+            return string.IsNullOrWhiteSpace(wert) ? TryPaketLeser.ADRESSE_VORGABE : wert.Trim();
+        }
+
+        /// <summary>Der Anzeigetext eines Szenarios.</summary>
+        public static string SzenarioText(TrySzenario szenario)
+        {
+            switch (szenario)
+            {
+                case TrySzenario.Sommerwarm: return MyResource.Resource.KLIMA_TRY_SZ_SOMMERWARM;
+                case TrySzenario.Winterkalt: return MyResource.Resource.KLIMA_TRY_SZ_WINTERKALT;
+                default: return MyResource.Resource.KLIMA_TRY_SZ_MITTEL;
+            }
         }
 
         /// <summary>

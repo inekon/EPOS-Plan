@@ -383,6 +383,28 @@ namespace WindowsFormsApplication1
             return s;
         }
 
+        /// <summary>
+        /// Die SONNENHÖHE alpha [Grad] einer Stunde — rein lesend.
+        ///
+        /// <para><b>Wozu.</b> Der DWD-TRY-Import führt die Direktstrahlung HORIZONTAL
+        /// (Spalte B), <c>Tab_Solar_STAMM</c> und <see cref="CalculateHourly"/> erwarten
+        /// dagegen die Direkt-NORMAL-Strahlung (<c>direct = dni * cosTheta</c>). Die
+        /// Umrechnung <c>DNI = B / sin alpha</c> braucht genau diese eine Zahl.</para>
+        ///
+        /// <para><b>Ohne statische Seitenwirkung.</b> Sie schreibt weder
+        /// <see cref="sonnenwinkel"/> noch <see cref="sonnen_azimut"/> oder
+        /// <see cref="lastCosTheta"/> — aus demselben Grund wie
+        /// <see cref="CalculateHourlyHayDavies"/>: Die drei gehören zum Vertrag von
+        /// <see cref="CalculateHourly"/>, den <c>SimulationSolarthermie</c> nutzt.
+        /// Neigung und Azimut sind deshalb fest 0; nur <c>Alpha</c> wird gelesen.</para>
+        /// </summary>
+        /// <param name="dayOfYear">Tag im Jahr, 1-BASIERT (wie bei <see cref="CalculateHourly"/>).</param>
+        /// <returns>alpha in Grad; negativ, wenn die Sonne unter dem Horizont steht.</returns>
+        public static double Sonnenhoehe(double Lon, double Lat, int dayOfYear, double hour)
+        {
+            return Sonnengeometrie(Lon, Lat, 0, 0, dayOfYear, hour).Alpha * Rad2Deg;
+        }
+
         /// <param name="dni">Gb(n) - Direct Normal Irradiance aus PVGIS</param>
         /// <param name="dhi">Gd(h) - Diffuse Horizontal Irradiance aus PVGIS</param>
         /// <param name="ghi">G(h) - Global Horizontal Irradiance aus PVGIS</param>

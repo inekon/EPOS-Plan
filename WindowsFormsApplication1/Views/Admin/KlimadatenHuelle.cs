@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -34,10 +36,16 @@ namespace WindowsFormsApplication1
     /// und schreibt 9 125 Zeilen in einer Transaktion. In einer WebView ist der
     /// Renderfaden derselbe Faden.</para>
     ///
-    /// <para><b>Der einzige Netzzugriff des Programms</b> (Risiko R-W14c-5) hängt an
-    /// den zwei Delegaten <c>ITmyQuelle</c> und <c>IOrtsQuelle</c>; hier sind es
-    /// <c>PVGIS_EPW_Downloader.GetTMY</c> und <c>GetCoordinatesAsync</c>, in der
-    /// Probe eine eingefrorene Datei.</para>
+    /// <para><b>Der Netzzugriff des Programms</b> (Risiko R-W14c-5) hängt an den
+    /// Delegaten <c>ITmyQuelle</c>, <c>IOrtsQuelle</c> und — seit KL1-B —
+    /// <c>INetzbereich</c>; hier sind es <c>PVGIS_EPW_Downloader.GetTMY</c>,
+    /// <c>GetCoordinatesAsync</c> und <see cref="Bereich"/>, in der Probe eingefrorene
+    /// Dateien. Der Kern kennt weder <c>HttpClient</c> noch eine Adresse.</para>
+    ///
+    /// <para><b>Drei Klimaquellen</b> (Auftrag KL1-B): PVGIS-TMY wie bisher, eine
+    /// DWD-TRY-Datei vom Rechner des Anwenders (ganz ohne Netz) und die offenen
+    /// TRY-Regionaldaten — über Bereichsabrufe auf <c>data.zip</c> oder aus einer
+    /// lokalen Kopie dieses Pakets.</para>
     ///
     /// <para><b>Die Ortsliste ist eine VORSCHLAGSLISTE, kein Startbedingung</b>
     /// (Befund W14c-B15, Entscheid E-7): <c>Form_Klimadaten_Load</c> las
@@ -101,8 +109,27 @@ namespace WindowsFormsApplication1
                                            Task<KlimaImportErgebnis>>(Importieren),
                 ["Abbrechen"] = new Action(() => { try { _abbruch?.Cancel(); } catch { } }),
                 ["Loeschen"] = new Func<string, Task<bool>>(Loeschen),
-                ["Ortsvorschlaege"] = Ortsvorschlaege()
+                ["Ortsvorschlaege"] = Ortsvorschlaege(),
+                ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen)
             };
+        }
+
+        // =====================================================================
+        // Dateiwahl der TRY-Quellen (Auftrag KL1-B)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Dateiwähler für die TRY-Datei und das Regionalpaket. <b>Die ASYNCHRONE
+        /// Fassung</b> (Befund W13-B-1): <c>OpenFileDialog.ShowDialog()</c> öffnete
+        /// seine verschachtelte Nachrichtenschleife INNERHALB des
+        /// WebView2-Rückrufs; <c>DateiOeffnenAsync</c> fährt das Fenster hinter dem
+        /// Blazor-Ereignis hoch.
+        /// </summary>
+        private static async Task<string> DateiWaehlen(string filter)
+        {
+            string pfad = await Dienste.Datei.DateiOeffnenAsync(
+                MyResource.Resource.KLIMA_TITEL, filter ?? "", "").ConfigureAwait(true);
+            return pfad ?? "";
         }
 
         // =====================================================================
@@ -192,7 +219,59 @@ namespace WindowsFormsApplication1
                 (lon, lat, azimut) => PVGIS_EPW_Downloader.GetTMY(lon, lat, azimut),
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 melder,
-                marke));
+                marke,
+                Bereich));
+        }
+
+        // =====================================================================
+        // Der BEREICHSABRUF der TRY-Regionaldaten (Auftrag KL1-B)
+        // =====================================================================
+
+        /// <summary>Ein eigener Client: Bereichsabrufe brauchen keine Zeitgrenze von 100 s.</summary>
+        private static readonly HttpClient _bereichsClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(5)
+        };
+
+        /// <summary>
+        /// Holt einen BEREICH einer Adresse (<c>HTTP Range</c>) — die zweite Naht des
+        /// Netzzugriffs neben <c>ITmyQuelle</c>.
+        ///
+        /// <para><b>Absolute Grenzen.</b> <c>RangeHeaderValue(von, bis)</c> bekommt
+        /// <c>bis = von + laenge − 1</c>; eine Länge kleiner 0 heißt „bis zum Ende" und
+        /// lässt die Obergrenze weg. Gelesen wird mit
+        /// <c>HttpCompletionOption.ResponseHeadersRead</c> — der Rumpf darf nie als
+        /// Ganzes in den Speicher laufen.</para>
+        ///
+        /// <para><b>Die Gesamtlänge kommt aus <c>Content-Range</c></b>
+        /// (<c>bytes von-bis/gesamt</c>). Fehlt sie, meldet der Kern „Die Adresse
+        /// erlaubt keine Teilabrufe" und bricht ab — statt 892 MB zu ziehen.</para>
+        /// </summary>
+        private static async Task<(byte[] Daten, long Gesamtlaenge)> Bereich(
+            string adresse, long von, long laenge, CancellationToken abbruch)
+        {
+            using (var anfrage = new HttpRequestMessage(HttpMethod.Get, adresse))
+            {
+                anfrage.Headers.Range = laenge < 0
+                    ? new RangeHeaderValue(von, null)
+                    : new RangeHeaderValue(von, von + laenge - 1);
+
+                using (HttpResponseMessage antwort = await _bereichsClient.SendAsync(
+                           anfrage, HttpCompletionOption.ResponseHeadersRead, abbruch)
+                       .ConfigureAwait(false))
+                {
+                    antwort.EnsureSuccessStatusCode();
+
+                    byte[] daten = await antwort.Content.ReadAsByteArrayAsync(abbruch)
+                                                        .ConfigureAwait(false);
+
+                    long gesamt = 0;
+                    ContentRangeHeaderValue bereich = antwort.Content.Headers.ContentRange;
+                    if (bereich != null && bereich.Length.HasValue) gesamt = bereich.Length.Value;
+
+                    return (daten, gesamt);
+                }
+            }
         }
 
         // =====================================================================

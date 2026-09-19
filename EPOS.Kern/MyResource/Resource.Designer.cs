@@ -30220,6 +30220,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaquelle ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PVGIS-Testreferenzjahr (weltweit) ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE_PVGIS {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE_PVGIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DWD-Testreferenzjahr aus Datei ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE_TRY_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE_TRY_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Regionaldaten (Deutschland) ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE_TRY_REGIONAL {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE_TRY_REGIONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenwinkel ähnelt.
         /// </summary>
         public static string KLIMA_REIHE_SONNENWINKEL {
@@ -30265,6 +30301,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Datei lesen … ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fertig. ähnelt.
         /// </summary>
         public static string KLIMA_SCHRITT_FERTIG {
@@ -30279,6 +30324,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_SCHRITT_KOORDINATEN {
             get {
                 return ResourceManager.GetString("KLIMA_SCHRITT_KOORDINATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Regionaldaten abrufen … ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_PAKET {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_PAKET", resourceCulture);
             }
         }
         
@@ -30333,6 +30387,249 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_TITEL {
             get {
                 return ResourceManager.GetString("KLIMA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der nächste TRY-Regionsmittelpunkt liegt {0} km entfernt (Grenze {1} km) — die Regionaldaten decken nur Deutschland ab. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchsuchen … ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_BTN_WAEHLEN {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_BTN_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Datei ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DWD-Testreferenzjahr (*.dat)|*.dat|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DATEI_FILTER {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DATEI_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DWD-Testreferenzjahr · Datei „{0}“ · Import {1} · {2} · {3} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DETAILS_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DETAILS_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Regionaldaten · Region {0} · Station {1} · Entfernung {2} km · Szenario {3} · Bezugsjahr {4} · Quelle {5} · Import {6} · {7} · {8} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DETAILS_REGIONAL {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DETAILS_REGIONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: diese Stunde steht schon in der Reihe. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DOPPELTE_STUNDE {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DOPPELTE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: das Feld {1} ist keine Zahl („{2}“). ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_FELDWERT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_FELDWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die TRY-Daten sind nicht lesbar: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_FORMATFEHLER {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_FORMATFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsjahr ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_JAHR {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Regionalpaket führt keine Region für das Bezugsjahr {0}. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_KEINE_REGION {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_KEINE_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse erlaubt keine Teilabrufe; data.zip herunterladen und als Datei wählen. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_KEIN_BEREICH {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_KEIN_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keine Trennzeile „***“ — Kopf und Daten sind nicht zu trennen. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_KEIN_KOPFENDE {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_KEIN_KOPFENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario „{0}“ fehlt in Region {1}. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_KEIN_SZENARIO {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_KEIN_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CC BY 4.0, RE-Lab-Projects/TRY_DE_2015_2045, Rohdaten Deutscher Wetterdienst ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_LIZENZ {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_MSG_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_MSG_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regionalpaket (leer = Abruf über die Adresse) ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_PAKET {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Regionalpaket (*.zip)|*.zip|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_PAKET_FILTER {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_PAKET_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: erwartet werden {1} Spalten, gelesen wurden {2}. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SPALTENZAHL {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SPALTENZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SZENARIO {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mittleres Jahr ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SZ_MITTEL {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SZ_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sommerwarm ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SZ_SOMMERWARM {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SZ_SOMMERWARM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die winterkalt ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SZ_WINTERKALT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SZ_WINTERKALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht übernommen: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_VERWORFEN {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_VERWORFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet werden {0} Datenzeilen, gelesen wurden {1} (Datei endet in Zeile {2}). ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_ZEILENZAHL {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_ZEILENZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: Monat {1}, Tag {2}, Stunde {3} ergeben keinen Zeitpunkt. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_ZEITFELD {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_ZEITFELD", resourceCulture);
             }
         }
         

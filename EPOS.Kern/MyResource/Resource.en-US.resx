@@ -19880,6 +19880,105 @@ Do you want to allow this?</value>
   <data name="WIRT_SICHT_LAUF_NOETIG" xml:space="preserve">
     <value>The view “Two versions” calculates against A — please choose “Calculate”.</value>
   </data>
+  <data name="KLIMA_QUELLE" xml:space="preserve">
+    <value>Climate source</value>
+  </data>
+  <data name="KLIMA_QUELLE_PVGIS" xml:space="preserve">
+    <value>PVGIS typical meteorological year (worldwide)</value>
+  </data>
+  <data name="KLIMA_QUELLE_TRY_DATEI" xml:space="preserve">
+    <value>DWD test reference year from file</value>
+  </data>
+  <data name="KLIMA_QUELLE_TRY_REGIONAL" xml:space="preserve">
+    <value>TRY regional data (Germany)</value>
+  </data>
+  <data name="KLIMA_TRY_JAHR" xml:space="preserve">
+    <value>Reference year</value>
+  </data>
+  <data name="KLIMA_TRY_SZENARIO" xml:space="preserve">
+    <value>Scenario</value>
+  </data>
+  <data name="KLIMA_TRY_SZ_MITTEL" xml:space="preserve">
+    <value>mean year</value>
+  </data>
+  <data name="KLIMA_TRY_SZ_SOMMERWARM" xml:space="preserve">
+    <value>warm summer</value>
+  </data>
+  <data name="KLIMA_TRY_SZ_WINTERKALT" xml:space="preserve">
+    <value>cold winter</value>
+  </data>
+  <data name="KLIMA_TRY_DATEI" xml:space="preserve">
+    <value>TRY file</value>
+  </data>
+  <data name="KLIMA_TRY_DATEI_FILTER" xml:space="preserve">
+    <value>DWD test reference year (*.dat)|*.dat|All files (*.*)|*.*</value>
+  </data>
+  <data name="KLIMA_TRY_PAKET" xml:space="preserve">
+    <value>Regional package (empty = download from the address)</value>
+  </data>
+  <data name="KLIMA_TRY_PAKET_FILTER" xml:space="preserve">
+    <value>TRY regional package (*.zip)|*.zip|All files (*.*)|*.*</value>
+  </data>
+  <data name="KLIMA_TRY_BTN_WAEHLEN" xml:space="preserve">
+    <value>Browse …</value>
+  </data>
+  <data name="KLIMA_SCHRITT_DATEI" xml:space="preserve">
+    <value>Reading TRY file …</value>
+  </data>
+  <data name="KLIMA_SCHRITT_PAKET" xml:space="preserve">
+    <value>Fetching TRY regional data …</value>
+  </data>
+  <data name="KLIMA_TRY_VERWORFEN" xml:space="preserve">
+    <value>not imported: {0}</value>
+  </data>
+  <data name="KLIMA_TRY_LIZENZ" xml:space="preserve">
+    <value>CC BY 4.0, RE-Lab-Projects/TRY_DE_2015_2045, raw data Deutscher Wetterdienst</value>
+  </data>
+  <data name="KLIMA_TRY_KEIN_BEREICH" xml:space="preserve">
+    <value>The address does not support partial requests; download data.zip and select it as a file.</value>
+  </data>
+  <data name="KLIMA_TRY_AUSSERHALB" xml:space="preserve">
+    <value>The nearest TRY region centre is {0} km away (limit {1} km) — the regional data only cover Germany.</value>
+  </data>
+  <data name="KLIMA_TRY_FORMATFEHLER" xml:space="preserve">
+    <value>The TRY data cannot be read: {0}</value>
+  </data>
+  <data name="KLIMA_TRY_DATEI_FEHLT" xml:space="preserve">
+    <value>The file “{0}” does not exist.</value>
+  </data>
+  <data name="KLIMA_TRY_KEINE_REGION" xml:space="preserve">
+    <value>The regional package holds no region for reference year {0}.</value>
+  </data>
+  <data name="KLIMA_TRY_KEIN_SZENARIO" xml:space="preserve">
+    <value>Scenario “{0}” is missing in region {1}.</value>
+  </data>
+  <data name="KLIMA_TRY_SPALTENZAHL" xml:space="preserve">
+    <value>Line {0}: {1} columns expected, {2} read.</value>
+  </data>
+  <data name="KLIMA_TRY_ZEILENZAHL" xml:space="preserve">
+    <value>{0} data lines expected, {1} read (file ends at line {2}).</value>
+  </data>
+  <data name="KLIMA_TRY_ZEITFELD" xml:space="preserve">
+    <value>Line {0}: month {1}, day {2}, hour {3} do not form a point in time.</value>
+  </data>
+  <data name="KLIMA_TRY_FELDWERT" xml:space="preserve">
+    <value>Line {0}: field {1} is not a number (“{2}”).</value>
+  </data>
+  <data name="KLIMA_TRY_KEIN_KOPFENDE" xml:space="preserve">
+    <value>The file has no separator line “***” — header and data cannot be told apart.</value>
+  </data>
+  <data name="KLIMA_TRY_DOPPELTE_STUNDE" xml:space="preserve">
+    <value>Line {0}: this hour is already in the series.</value>
+  </data>
+  <data name="KLIMA_TRY_DETAILS_DATEI" xml:space="preserve">
+    <value>DWD test reference year · file “{0}” · imported {1} · {2} · {3}</value>
+  </data>
+  <data name="KLIMA_TRY_DETAILS_REGIONAL" xml:space="preserve">
+    <value>TRY regional data · region {0} · station {1} · distance {2} km · scenario {3} · reference year {4} · source {5} · imported {6} · {7} · {8}</value>
+  </data>
+  <data name="KLIMA_TRY_MSG_HERKUNFT" xml:space="preserve">
+    <value>Origin: {0}</value>
+  </data>
   <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
     <value>Climate data</value>
   </data>
