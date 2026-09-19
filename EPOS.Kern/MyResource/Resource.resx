@@ -20010,6 +20010,18 @@ Möchten Sie das zulassen?</value>
   <data name="KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
     <value>Der Standort der Datei „{0}“ ist nicht lesbar — Längen- und Breitengrad bitte eintragen.</value>
   </data>
+  <data name="KLIMA_TRY_BTN_REGION" xml:space="preserve">
+    <value>Region ermitteln</value>
+  </data>
+  <data name="KLIMA_TRY_VORSCHAU" xml:space="preserve">
+    <value>Region {0}, Station {1}, Entfernung {2} km</value>
+  </data>
+  <data name="KLIMA_TRY_VORSCHAU_BESTAND" xml:space="preserve">
+    <value>vorhanden: {0}</value>
+  </data>
+  <data name="KLIMA_TRY_VORSCHAU_LAEUFT" xml:space="preserve">
+    <value>Region wird ermittelt …</value>
+  </data>
   <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
     <value>Klimadaten</value>
   </data>

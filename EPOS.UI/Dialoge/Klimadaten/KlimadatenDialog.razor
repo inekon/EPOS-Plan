@@ -156,6 +156,22 @@
                                KnopfText="@WaehlenText" Pfad="@_tryPaketPfad"
                                Waehlen="@DateiWaehlen" PfadChanged="BeiTryPaket"
                                Aktiv="@(!_laeuft)" />
+
+                    @* Die REGIONSVORSCHAU (Auftrag KL-3): Welche Region der Standort
+                       trifft, steht sonst erst NACH dem Einlesen im Herkunftsvermerk -
+                       wer 8 760 Stunden einliest, um zu erfahren, dass es die falsche
+                       Region war, hat sie umsonst eingelesen. Der Knopf liest allein
+                       das Zentralverzeichnis des Pakets; der Import liest es danach ein
+                       zweites Mal. *@
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf" disabled="@(!RegionErlaubt)"
+                                @onclick="BeiRegion">@RegionErmittelnText</button>
+                    </div>
+
+                    @if (_regionszeile.Length > 0)
+                    {
+                        <Herleitungszeile Text="@_regionszeile" />
+                    }
                 }
             </div>
 
@@ -182,11 +198,11 @@
                 @* Schreibt der Anwender selbst in eines der beiden Felder, gilt SEIN
                    Wert - und die Herkunftszeile der Datei stimmt nicht mehr (KL-2). *@
                 <Zahlenfeld Bezeichnung="@LabelLongitudeText" Wert="@_longitude"
-                            WertChanged="@(w => { _longitude = w; _meldung = ""; _tryStandort = ""; })"
+                            WertChanged="@(w => { _longitude = w; _meldung = ""; _tryStandort = ""; _regionszeile = ""; })"
                             Feldname="@FeldLongitudeText" FehlerZustand="BeiFehler"
                             Aktiv="@(!_laeuft)" />
                 <Zahlenfeld Bezeichnung="@LabelLatitudeText" Wert="@_latitude"
-                            WertChanged="@(w => { _latitude = w; _meldung = ""; _tryStandort = ""; })"
+                            WertChanged="@(w => { _latitude = w; _meldung = ""; _tryStandort = ""; _regionszeile = ""; })"
                             Feldname="@FeldLatitudeText" FehlerZustand="BeiFehler"
                             Aktiv="@(!_laeuft)" />
                 <Textfeld Bezeichnung="@LabelBezeichnungText" Wert="@_bezeichnung"
@@ -255,6 +271,15 @@
 
     /// <summary>Bricht einen laufenden Import ab; ohne Delegat bleibt der Knopf weg.</summary>
     [Parameter] public Action? Abbrechen { get; set; }
+
+    /// <summary>
+    /// Die REGIONSVORSCHAU (<c>KlimaImportAblauf.RegionErmittelnAsync</c>) — sie sagt
+    /// vor dem Einlesen, welche TRY-Region der Standort trifft, ohne eine Stundenreihe
+    /// zu entpacken. <b>Ohne Delegat bleibt der Knopf gesperrt</b>; einlesen lässt sich
+    /// trotzdem.
+    /// </summary>
+    [Parameter]
+    public Func<KlimaImportAuftrag, Task<KlimaVorschauErgebnis>>? RegionErmitteln { get; set; }
 
     /// <summary>
     /// Der Dateiwähler der Plattform (Filter hinein, Pfad heraus; <c>null</c> =
@@ -331,6 +356,10 @@
     [Parameter] public string TryDateiFilter { get; set; } = Resource.KLIMA_TRY_DATEI_FILTER;
     [Parameter] public string TryPaketFilter { get; set; } = Resource.KLIMA_TRY_PAKET_FILTER;
 
+    // ---- Regionsvorschau (Auftrag KL-3) --------------------------------
+    [Parameter] public string RegionErmittelnText { get; set; } = Resource.KLIMA_TRY_BTN_REGION;
+    [Parameter] public string RegionLaeuftText { get; set; } = Resource.KLIMA_TRY_VORSCHAU_LAEUFT;
+
     // ---- Standort aus der TRY-Datei (Auftrag KL-2) ----------------------
     [Parameter] public string StandortHinweisText { get; set; } = Resource.KLIMA_TRY_STANDORT_HINWEIS;
     [Parameter] public string StandortUnlesbarText { get; set; } = Resource.KLIMA_TRY_STANDORT_UNLESBAR;
@@ -382,6 +411,15 @@
 
     /// <summary>Die gewählte Klimaquelle (Prüfhilfe für Tests).</summary>
     public KlimaQuelle Quelle => _quelle;
+
+    /// <summary>Die Ergebnis- oder Fehlerzeile der Regionsvorschau; leer = keine.</summary>
+    private string _regionszeile = "";
+
+    /// <summary>Läuft gerade eine Regionsvorschau?</summary>
+    private bool _regionLaeuft;
+
+    /// <summary>Die Zeile der Regionsvorschau (Prüfhilfe für Tests).</summary>
+    public string Regionsvorschau => _regionszeile;
 
     private IReadOnlyList<(int Id, string Text)> Quelleneintraege => new[]
     {
@@ -445,6 +483,20 @@
         _fehlerFelder.Count == 0 && StandortSteht &&
         (_quelle != KlimaQuelle.TryDatei || _tryPfad.Trim().Length > 0);
 
+    /// <summary>
+    /// Der Standort, den die REGIONSVORSCHAU braucht: ein Ortsname ODER ein
+    /// Koordinatenpaar. <b>Ohne die Bezeichnung</b> — anders als
+    /// <see cref="StandortSteht"/>: Die Vorschau legt nichts an, sie sagt nur, welche
+    /// Region der Punkt trifft; ein Name wäre dafür eine Hürde ohne Grund.
+    /// </summary>
+    private bool StandortFuerVorschau =>
+        _ortsname.Trim().Length > 0 || (_longitude.HasValue && _latitude.HasValue);
+
+    /// <summary>„Region ermitteln" braucht die Regionaldaten als Quelle und einen
+    /// Standort; ein fehlerhaftes Zahlenfeld sperrt wie beim Einlesen.</summary>
+    private bool RegionErlaubt => !_laeuft && !_regionLaeuft && RegionErmitteln is not null &&
+        _quelle == KlimaQuelle.TryRegional && _fehlerFelder.Count == 0 && StandortFuerVorschau;
+
     // =====================================================================
     // Aufbau
     // =====================================================================
@@ -502,6 +554,7 @@
     {
         _ortsname = e.Value?.ToString() ?? "";
         _meldung = "";
+        _regionszeile = "";
     }
 
     private void BeiFehler((string Feld, bool Fehlerhaft) f)
@@ -522,6 +575,7 @@
             _ => KlimaQuelle.PvgisTmy
         };
         _meldung = "";
+        _regionszeile = "";
     }
 
     private void BeiTryPfad(string pfad)
@@ -581,12 +635,68 @@
     {
         _tryPaketPfad = pfad ?? "";
         _meldung = "";
+        _regionszeile = "";
     }
 
     private void BeiTryJahr(int? jahr)
     {
         _tryJahr = jahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE;
         _meldung = "";
+        _regionszeile = "";
+    }
+
+    // =====================================================================
+    // Regionsvorschau (Auftrag KL-3)
+    // =====================================================================
+
+    /// <summary>
+    /// Ermittelt die TRY-Region zum eingetragenen Standort und schreibt das Ergebnis
+    /// als Herleitungszeile unter die Auswahl.
+    ///
+    /// <para><b>Ein Fehlschlag ist kein Absturz und keine Sperre</b>: Er steht als
+    /// Zeile da (kein Bereichsabruf, außerhalb 300 km, Ort unbekannt), und einlesen
+    /// darf der Anwender weiterhin — die Vorschau ist eine Auskunft, keine
+    /// Bedingung.</para>
+    /// </summary>
+    private async Task BeiRegion()
+    {
+        if (!RegionErlaubt) return;
+
+        var auftrag = _ortsname.Trim().Length > 0
+            ? new KlimaImportAuftrag
+              {
+                  Art = KlimaImportArt.AusOrtsname,
+                  Ortsname = _ortsname.Trim()
+              }
+            : new KlimaImportAuftrag
+              {
+                  Art = KlimaImportArt.AusKoordinaten,
+                  Bezeichnung = _bezeichnung.Trim(),
+                  Longitude = _longitude ?? 0,
+                  Latitude = _latitude ?? 0
+              };
+
+        auftrag.Quelle = KlimaQuelle.TryRegional;
+        auftrag.TryPaketPfad = _tryPaketPfad.Trim();
+        auftrag.TryJahr = _tryJahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE;
+        auftrag.Szenario = _szenario;
+
+        _regionLaeuft = true;
+        _regionszeile = RegionLaeuftText;
+        _meldung = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            KlimaVorschauErgebnis erg = await RegionErmitteln!(auftrag);
+            _regionszeile = erg.Meldung ?? "";
+            if (!erg.Erfolgreich && _regionszeile.Length == 0)
+                _regionszeile = EingabenPruefenText;
+        }
+        finally
+        {
+            _regionLaeuft = false;
+        }
     }
 
     private void BeiSzenario(int? id)
@@ -665,6 +775,7 @@
                 await AnsichtLaden();
                 _ortsname = "";
                 _bezeichnung = "";
+                _regionszeile = "";
             }
         }
         finally

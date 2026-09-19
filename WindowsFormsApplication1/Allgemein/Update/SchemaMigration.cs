@@ -3411,6 +3411,40 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_94_HILFSSTROM_BEMESSUNG = 94;
 
+        /// <summary>
+        /// Schritt 95 — die <b>Klimaspalten</b> (Anwenderentscheid vom 19.09.2026:
+        /// „alles Relevante für die Gebäudesimulation aufnehmen"; Schritt M4 des
+        /// Umsetzungskonzepts Gebäudesimulation VDI 6007).
+        ///
+        /// <para><b>Drei Größen der Stundenreihe</b> an <c>Tab_Solar</c> UND
+        /// <c>Tab_Solar_STAMM</c>: <c>Gegenstrahlung</c> [W/m²] (PVGIS <c>IR(h)</c>,
+        /// TRY <c>A</c>), <c>Luftfeuchte</c> [%] (PVGIS <c>RH</c>, TRY <c>RF</c>) und
+        /// <c>Bedeckungsgrad</c> in Achteln (TRY <c>N</c>; PVGIS liefert ihn nicht und
+        /// trägt NULL). <b>Zwei Angaben des Kopfsatzes</b> an <c>Tab_Klimaregion</c> UND
+        /// <c>Tab_Klimaregion_STAMM</c>: <c>Quelle</c> (sprachneutraler Schlüssel,
+        /// <see cref="DbWerte.KLIMA_QUELLE_PVGIS"/> und die zwei TRY-Wege) und
+        /// <c>Importdatum</c> (ISO <c>yyyy-MM-dd</c>). Die Quelle der zehn Spalten ist
+        /// <see cref="SchemaKatalog.Schritt95_Klimaspalten"/> — EINE Liste für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>KEIN DML.</b> Alle zehn Spalten bleiben im Bestand NULL. NULL heißt
+        /// bei den drei Klimagrößen „nicht verfügbar" (nie 0 — eine 0 wäre eine
+        /// Messaussage) und bei Quelle/Importdatum „Altbestand"; nachdatiert wird
+        /// nichts. Kein Rechenweg liest eine der Spalten, der Referenzlauf bleibt
+        /// byte-gleich.</para>
+        ///
+        /// <para><b>Katalog und Projektkopie im selben Schritt.</b> Eine Spalte nur auf
+        /// einer Seite wäre beim Kopieren einer Region ins Projekt
+        /// (<c>KlimaregionStammCtrl.CopyRegionToProjekt</c>) sofort ein
+        /// Datenverlust.</para>
+        ///
+        /// <para><b>Keine Windgeschwindigkeit</b> (Umsetzungskonzept Gebäudesimulation
+        /// F-S3: keine Spalte ohne Leser). Beide Quellen führen sie, kein Rechenweg des
+        /// Hauses braucht sie — sie bleibt benannt verworfen.</para>
+        /// </summary>
+        public const int SCHRITT_95_KLIMASPALTEN = 95;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4650,6 +4684,25 @@ namespace WindowsFormsApplication1
                         "Geaendert wird NUR die Saat; was in einem Projekt erfasst " +
                         "ist, bleibt erfasst.",
                         Schritt_94_HilfsstromBemessung),
+
+            // ANWENDERENTSCHEID 19.09.2026 - die Klimareihe traegt die Groessen der
+            // Gebaeudesimulation, der Regionskopf seine Herkunft. REIN DDL, kein DML;
+            // die Quelle ist SchemaKatalog.Schritt95_Klimaspalten. Keine
+            // Reihenfolgebedingung gegenueber 89 bis 94 - die zehn Spalten sind neu und
+            // stehen fuer sich.
+            new Schritt(SCHRITT_95_KLIMASPALTEN,
+                        "Tab_Solar(_STAMM) bekommt Gegenstrahlung, Luftfeuchte und " +
+                        "Bedeckungsgrad, Tab_Klimaregion(_STAMM) Quelle und Importdatum",
+                        "Die Gebaeudesimulation nach VDI 6007 braucht die langwellige " +
+                        "Strahlungsbilanz und die Luftfeuchte; beide Klimaquellen " +
+                        "liefern sie laengst, gespeichert wurden sie bisher nicht. Den " +
+                        "Bedeckungsgrad fuehrt TRY als echten Messwert - die Schaetzung " +
+                        "aus dem Diffusanteil bleibt Rueckfall bei NULL. Quelle und " +
+                        "Importdatum sagen dem Programm, woher eine Region stammt; der " +
+                        "Freitext Details bleibt daneben stehen. NULL heisst 'nicht " +
+                        "verfuegbar' bzw. 'Altbestand' - der Schritt ist damit fuer " +
+                        "jede Bestandsrechnung ergebnisneutral.",
+                        Schritt_95_Klimaspalten),
         };
 
         /// <summary>
@@ -6854,6 +6907,51 @@ namespace WindowsFormsApplication1
                     "unberuehrt - erst die naechste Uebernahme aus der Vorlage traegt " +
                     "die neue Bemessung in ein Projekt. Der Referenzlauf bleibt " +
                     "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 95 - die Klimaspalten (Anwenderentscheid 19.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 95 — Anlass, Inhalt und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_95_KLIMASPALTEN"/> und bei
+        /// <see cref="SchemaKatalog.Schritt95_Klimaspalten"/>.
+        ///
+        /// <para><b>Reines DDL.</b> Zehn nullbare Spalten an vier Tabellen, kein DML —
+        /// deshalb dieselbe Schleife wie bei den Schritten 92 und 93. Der Typ kommt aus
+        /// dem Katalog und wird beim Verbrauch übersetzt
+        /// (<c>DOUBLE</c> → <c>REAL</c>, <c>TEXT(n)</c> → <c>TEXT</c> mit
+        /// Längenprüfung); alle vier Tabellen sind <c>STRICT</c>.</para>
+        ///
+        /// <para><b>Wiederholbar</b> über <see cref="SqliteSpalteAnlegen"/>: Es fragt
+        /// <c>PRAGMA table_info</c>, bevor es anlegt — SQLite kennt kein
+        /// <c>ADD COLUMN IF NOT EXISTS</c>.</para>
+        /// </summary>
+        private static bool Schritt_95_Klimaspalten(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt95_Klimaspalten)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("95: " + angelegt.ToString(CultureInfo.InvariantCulture) +
+                    " von " + SchemaKatalog.Schritt95_Klimaspalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Klimaspalte(n) angelegt - " + SchemaKatalog.SPALTE_SOLAR_GEGENSTRAHLUNG + ", " +
+                    SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE + ", " +
+                    SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD + " an " +
+                    SchemaKatalog.TAB_SOLAR + " und " + SchemaKatalog.TAB_SOLAR_STAMM + ", " +
+                    SchemaKatalog.SPALTE_KR_QUELLE + " und " + SchemaKatalog.SPALTE_KR_IMPORTDATUM +
+                    " an " + SchemaKatalog.TAB_KLIMAREGION + " und " +
+                    SchemaKatalog.TAB_KLIMAREGION_STAMM + ". KEIN DML: Alle bleiben NULL, " +
+                    "und NULL heisst 'nicht verfuegbar' bzw. 'Altbestand'. KEIN " +
+                    "Rechenergebnis aendert sich; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

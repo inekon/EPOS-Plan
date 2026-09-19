@@ -20003,6 +20003,18 @@ Do you want to allow this?</value>
   <data name="KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
     <value>The location of file “{0}” cannot be read — please enter longitude and latitude.</value>
   </data>
+  <data name="KLIMA_TRY_BTN_REGION" xml:space="preserve">
+    <value>Determine region</value>
+  </data>
+  <data name="KLIMA_TRY_VORSCHAU" xml:space="preserve">
+    <value>Region {0}, station {1}, distance {2} km</value>
+  </data>
+  <data name="KLIMA_TRY_VORSCHAU_BESTAND" xml:space="preserve">
+    <value>available: {0}</value>
+  </data>
+  <data name="KLIMA_TRY_VORSCHAU_LAEUFT" xml:space="preserve">
+    <value>Determining region …</value>
+  </data>
   <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
     <value>Climate data</value>
   </data>
