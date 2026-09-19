@@ -3381,6 +3381,36 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_93_PV_UEBERNAHME = 93;
 
+        /// <summary>
+        /// Schritt 94 — die <b>Hilfsstrom-Bemessung der Saat</b> (Anwenderentscheid vom
+        /// 19.09.2026: „Auf Endenergiebedarf umstellen").
+        ///
+        /// <para>Die drei Hilfsstrom-Positionen der Katalogvorlage „Standard" (BHKW,
+        /// Heizkessel, Wärmepumpe) rechneten als <c>PROZENT_ENDENERGIEKOSTEN</c> — ihr
+        /// Betrag war ein Anteil der BRENNSTOFFRECHNUNG der Anlage, am Gaskessel also ein
+        /// Anteil der Gasrechnung, verbucht als Hilfsstrom. Ab hier rechnen sie als
+        /// <c>PROZENT_ENDENERGIEBEDARF</c>: dieselbe Menge, bewertet mit dem
+        /// STROMBEZUGSPREIS des Projekts. Die Anweisung steht bei
+        /// <see cref="HilfsstromBemessungVorlage"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Kein DDL.</b> Der erste Schritt dieses Schemas, der allein ein DML
+        /// trägt und keine Spalte anlegt — die Bemessungsart ist ein Steuerwert in einer
+        /// vorhandenen Spalte, kein Strukturmerkmal.</para>
+        ///
+        /// <para><b>Nur die Saat.</b> <c>Tab_ProjektWerte</c> bleibt unberührt: Was ein
+        /// Anwender in einem Projekt erfasst hat, bleibt erfasst; die Übernahme aus der
+        /// Vorlage ist eine Handlung, keine Nachführung. Damit ist der Schritt für jede
+        /// Bestandsrechnung ergebnisneutral — der Referenzlauf bleibt byte-gleich, denn
+        /// keine Referenzrechnung liest eine Vorlagenposition.</para>
+        ///
+        /// <para><b>Treffsicher, kein Blindtausch.</b> Getroffen wird über Bezeichnung
+        /// UND Komponente UND Standardvorlage. Eine andere Weg-A-Position und jede eigene
+        /// Variante des Anwenders bleiben, wie sie sind.</para>
+        /// </summary>
+        public const int SCHRITT_94_HILFSSTROM_BEMESSUNG = 94;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4604,6 +4634,22 @@ namespace WindowsFormsApplication1
                         "vorhandene Zeile bleibt eine eigene, jede Variante ohne Zeile " +
                         "bleibt auf dem Flat-Pfad.",
                         Schritt_93_PvUebernahme),
+
+            // ANWENDERENTSCHEID 19.09.2026 - die Hilfsenergie der Saat rechnet als
+            // Anteil des Endenergiebedarfs. REIN DML, kein DDL; die Quelle ist
+            // HilfsstromBemessungVorlage. Keine Reihenfolgebedingung gegenueber 89 bis
+            // 93 - der Schritt fasst allein den Kostenkatalog an.
+            new Schritt(SCHRITT_94_HILFSSTROM_BEMESSUNG,
+                        "die Hilfsstrom-Positionen der Vorlage Standard rechnen als " +
+                        "Anteil des Endenergiebedarfs",
+                        "Hilfsenergie ist STROM. Als Anteil der Endenergiekosten war " +
+                        "ihr Betrag ein Anteil der Brennstoffrechnung der Anlage - am " +
+                        "Gaskessel also ein Anteil der Gasrechnung, verbucht als " +
+                        "Hilfsstrom. Als Anteil des Endenergiebedarfs steht dieselbe " +
+                        "Menge, bewertet mit dem Strombezugspreis des Projekts. " +
+                        "Geaendert wird NUR die Saat; was in einem Projekt erfasst " +
+                        "ist, bleibt erfasst.",
+                        Schritt_94_HilfsstromBemessung),
         };
 
         /// <summary>
@@ -6762,6 +6808,52 @@ namespace WindowsFormsApplication1
                     "vorhandene Zeile rechnet weiter mit ihren eigenen Werten, eine " +
                     "Variante ohne Zeile bleibt auf dem Flat-Pfad. Keine Zeile heisst " +
                     "uebernehmen - die Vorgabe jeder neuen Variante.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 94 - die Hilfsstrom-Bemessung der Saat (Anwenderentscheid 19.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 94 — Anlass, Anweisung und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_94_HILFSSTROM_BEMESSUNG"/> und bei
+        /// <see cref="HilfsstromBemessungVorlage"/>.
+        ///
+        /// <para><b>Reines DML.</b> Der Schritt legt keine Spalte an; deshalb steht hier
+        /// keine Schleife über einen <c>SchemaKatalog</c>-Eintrag. Gezählt wird VOR dem
+        /// Schreiben, damit die Protokollzeile sagt, was der Schritt getan hat.</para>
+        ///
+        /// <para><b>Mit Parametern.</b> Anders als bei den Nachbarschritten nennt die
+        /// Bedingung fünf Werte (Bemessung, Namensmuster, drei Gewerke). Sie gehen als
+        /// <c>?</c>-Parameter hinein, nicht in den SQL-Text.</para>
+        /// </summary>
+        private static bool Schritt_94_HilfsstromBemessung(Lauf l)
+        {
+            int offen = HilfsstromBemessungVorlage.Offen();
+
+            foreach (System.Collections.Generic.KeyValuePair<string, HilfsstromBemessungVorlage.Anweisung> a
+                     in HilfsstromBemessungVorlage.Anweisungen)
+            {
+                try { DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter); }
+                catch (Exception ex)
+                {
+                    l.LetzterFehler = a.Key + ": " + ex.Message;
+                    l.Notiz("94: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            }
+
+            l.Notiz("94: " + offen.ToString(CultureInfo.InvariantCulture) +
+                    " Vorlagenposition(en) der Saat von " +
+                    HilfsstromBemessungVorlage.VON + " auf " +
+                    HilfsstromBemessungVorlage.NACH + " gestellt (" +
+                    HilfsstromBemessungVorlage.Umgestellt().ToString(CultureInfo.InvariantCulture) +
+                    " tragen sie jetzt). Hilfsenergie ist Strom und wird ab hier mit dem " +
+                    "Strombezugspreis bewertet. KEIN DDL, und Tab_ProjektWerte bleibt " +
+                    "unberuehrt - erst die naechste Uebernahme aus der Vorlage traegt " +
+                    "die neue Bemessung in ein Projekt. Der Referenzlauf bleibt " +
+                    "byte-gleich.");
             return true;
         }
 

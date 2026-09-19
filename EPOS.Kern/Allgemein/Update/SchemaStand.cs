@@ -246,11 +246,23 @@ namespace WindowsFormsApplication1
         /// wird zur eigenen (0) und rechnet weiter wie bisher; eine Variante ohne Zeile,
         /// deren Stamm eine aktive Zeile führt, bekommt eine eigene, INAKTIVE Zeile und
         /// bleibt damit auf dem Flat-Pfad. Der Referenzlauf bleibt byte-gleich.
+        /// Mit der HILFSSTROM-BEMESSUNG DER SAAT (Schritt 94) steht das Ziel auf
+        /// <b>94</b>: Der Schritt trägt <b>kein DDL</b> — er stellt allein die drei
+        /// Hilfsstrom-Positionen der Katalogvorlage „Standard" (BHKW, Heizkessel,
+        /// Wärmepumpe) von <c>PROZENT_ENDENERGIEKOSTEN</c> auf
+        /// <c>PROZENT_ENDENERGIEBEDARF</c> um; die Anweisung steht bei
+        /// <see cref="HilfsstromBemessungVorlage"/>. Hilfsenergie ist Strom und wird ab
+        /// hier auch mit dem Strombezugspreis bewertet statt mit dem Arbeitspreis des
+        /// Brennstoffträgers. <b>Nur die Saat:</b> <c>Tab_ProjektWerte</c> fasst der
+        /// Schritt nicht an — was in einem Projekt erfasst ist, bleibt erfasst, und erst
+        /// die nächste Übernahme aus der Vorlage trägt die neue Bemessung hinein. Der
+        /// Referenzlauf bleibt byte-gleich; keine Referenzrechnung liest eine
+        /// Vorlagenposition.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 93;
+        public const int Zielversion = 94;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
