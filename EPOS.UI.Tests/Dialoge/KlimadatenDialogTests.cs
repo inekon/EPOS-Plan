@@ -630,6 +630,86 @@ public class KlimadatenDialogTests : EposBunitContext
         Assert.Equal(TrySzenario.MittleresJahr, auftrag.Szenario);
     }
 
+    // =====================================================================
+    //  Der Standortvorschlag aus dem Dateikopf (Lambert -> WGS 84)
+    // =====================================================================
+
+    /// <summary>Die eingefrorene Probe mit Lambert-Koordinaten im TRY-Raster.</summary>
+    private static string LambertProbe()
+    {
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        for (int i = 0; i < 8 && d is not null; i++, d = d.Parent)
+        {
+            string kandidat = Path.Combine(d.FullName, "Referenzlaeufe", "Importproben",
+                                           "dwd_try_kopf_lambert.dat");
+            if (File.Exists(kandidat)) return kandidat;
+        }
+        throw new FileNotFoundException("Die Lambert-Kopfprobe wurde nicht gefunden.");
+    }
+
+    /// <summary>Die Herkunftszeile unter den Koordinatenfeldern, falls sie dasteht.</summary>
+    private static bool HerkunftszeileSteht(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindAll("p.epos-herleitung")
+              .Any(z => z.TextContent.Contains("Dateikopf", StringComparison.Ordinal));
+
+    /// <summary>
+    /// <b>Die Dateiwahl füllt Longitude und Latitude</b> — aus dem Kopf der gewählten
+    /// TRY-Datei (Lambert → WGS 84), und die Herkunftszeile sagt es. Der Standort steht
+    /// damit, ohne dass der Anwender eine Zahl eingetragen hätte.
+    /// </summary>
+    [Fact]
+    public void Die_Dateiwahl_schlaegt_den_Standort_aus_dem_Dateikopf_vor()
+    {
+        string probe = LambertProbe();
+        var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>(probe));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+        Assert.False(HerkunftszeileSteht(cut));       // vor der Wahl steht sie nicht
+
+        cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+           .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+        cut.WaitForAssertion(() => Assert.True(HerkunftszeileSteht(cut)),
+                             TimeSpan.FromSeconds(10));
+
+        // Die zwei Zahlenfelder tragen den umgerechneten Punkt (9,6124 O / 50,0563 N).
+        var zahlen = cut.FindComponents<EPOS.UI.Standards.Zahlenfeld>();
+        string longitude = zahlen[0].Find("input").GetAttribute("value") ?? "";
+        string latitude = zahlen[1].Find("input").GetAttribute("value") ?? "";
+        Assert.StartsWith("9,61", longitude);
+        Assert.StartsWith("50,05", latitude);
+
+        // Und damit steht der Standort: Bezeichnung dazu, dann ist Einlesen erlaubt.
+        cut.FindComponents<EPOS.UI.Standards.Textfeld>().Last().Find("input").Input("Kopfprobe");
+        Assert.False(Einlesen(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Eine eigene Eingabe löscht die Herkunftszeile.</b> Sobald der Anwender ein
+    /// Koordinatenfeld anfasst, stimmt die Auskunft „aus dem Dateikopf" nicht mehr —
+    /// die Zeile verschwindet, der eingegebene Wert bleibt.
+    /// </summary>
+    [Fact]
+    public void Eine_Eingabe_im_Koordinatenfeld_nimmt_die_Herkunftszeile_weg()
+    {
+        string probe = LambertProbe();
+        var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>(probe));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+        cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+           .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+        cut.WaitForAssertion(() => Assert.True(HerkunftszeileSteht(cut)),
+                             TimeSpan.FromSeconds(10));
+
+        cut.FindComponents<EPOS.UI.Standards.Zahlenfeld>()[0].Find("input").Input("7,5");
+
+        Assert.False(HerkunftszeileSteht(cut));
+        Assert.Equal("7,5",
+                     cut.FindComponents<EPOS.UI.Standards.Zahlenfeld>()[0]
+                        .Find("input").GetAttribute("value"));
+    }
+
     /// <summary>
     /// <b>Ohne Wähler der Plattform bleibt der Knopf weg</b> (Regel des Bausteins
     /// <c>Dateiwahl</c>) — das Pfadfeld steht trotzdem da.

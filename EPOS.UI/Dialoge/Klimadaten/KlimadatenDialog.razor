@@ -180,13 +180,19 @@
                 <span class="epos-klimaregion-oder">@OderText</span>
 
                 <Zahlenfeld Bezeichnung="@LabelLongitudeText" Wert="@_longitude"
-                            WertChanged="@(w => { _longitude = w; _meldung = ""; })"
+                            WertChanged="@(w => { _longitude = w; _meldung = ""; _standortAusKopf = false; })"
                             Feldname="@FeldLongitudeText" FehlerZustand="BeiFehler"
                             Aktiv="@(!_laeuft)" />
                 <Zahlenfeld Bezeichnung="@LabelLatitudeText" Wert="@_latitude"
-                            WertChanged="@(w => { _latitude = w; _meldung = ""; })"
+                            WertChanged="@(w => { _latitude = w; _meldung = ""; _standortAusKopf = false; })"
                             Feldname="@FeldLatitudeText" FehlerZustand="BeiFehler"
                             Aktiv="@(!_laeuft)" />
+                @* Woher die beiden Zahlen kommen, wenn sie nicht der Anwender
+                   eingetragen hat - der Vorschlag aus dem Kopf der TRY-Datei. *@
+                @if (_standortAusKopf)
+                {
+                    <Herleitungszeile Text="@StandortAusKopfText" />
+                }
                 <Textfeld Bezeichnung="@LabelBezeichnungText" Wert="@_bezeichnung"
                           WertChanged="@(t => { _bezeichnung = t; _meldung = ""; })" />
             </div>
@@ -283,6 +289,7 @@
     [Parameter] public string FeldLongitudeText { get; set; } = Resource.KLIMA_FELD_LONGITUDE;
     [Parameter] public string FeldLatitudeText { get; set; } = Resource.KLIMA_FELD_LATITUDE;
     [Parameter] public string LabelBezeichnungText { get; set; } = Resource.KLIMA_LBL_BEZEICHNUNG;
+    [Parameter] public string StandortAusKopfText { get; set; } = Resource.KLIMA_STANDORT_AUS_KOPF;
     [Parameter] public string LabelDetails { get; set; } = Resource.KLIMA_LBL_DETAILS;
     [Parameter] public string SpalteRegionText { get; set; } = Resource.KLIMA_SP_REGION;
     [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
@@ -359,6 +366,14 @@
     private int? _tryJahr = KlimaImportAuftrag.TRY_JAHR_VORGABE;
     private TrySzenario _szenario = TrySzenario.MittleresJahr;
 
+    /// <summary>
+    /// Stehen Longitude/Latitude aus dem Kopf der gewählten TRY-Datei? Dann trägt der
+    /// Dialog unter den Koordinatenfeldern eine Herkunftszeile. Jede eigene Eingabe —
+    /// Koordinate, Ortsname, andere Quelle, andere Region — löscht die Marke wieder:
+    /// Der Vorschlag gilt nur so lange, wie er unberührt dasteht.
+    /// </summary>
+    private bool _standortAusKopf;
+
     /// <summary>Die gewählte Klimaquelle (Prüfhilfe für Tests).</summary>
     public KlimaQuelle Quelle => _quelle;
 
@@ -399,9 +414,10 @@
 
     /// <summary>
     /// Der STANDORT: ein Ortsname ODER die drei Handangaben. Er wird bei JEDER Quelle
-    /// gebraucht — auch eine TRY-Datei sagt nichts über Longitude und Latitude
-    /// (ihr Kopf führt Lambert-Koordinaten), und ohne sie ließe sich weder die
-    /// Sonnengeometrie noch die nächste TRY-Region bestimmen.
+    /// gebraucht — ohne Longitude und Latitude ließe sich weder die Sonnengeometrie
+    /// noch die nächste TRY-Region bestimmen. Bei einer TRY-Datei kommen die beiden
+    /// Zahlen als VORSCHLAG aus dem Dateikopf (Lambert → WGS 84); die Bezeichnung
+    /// bleibt Sache des Anwenders.
     /// </summary>
     private bool StandortSteht =>
         _ortsname.Trim().Length > 0 ||
@@ -471,6 +487,7 @@
         _details = a.Details ?? "";
         _longitude = a.Longitude;
         _latitude = a.Latitude;
+        _standortAusKopf = false;          // die Region bringt ihre eigenen Zahlen mit
         _bildTemperatur = a.BildTemperatur;
         _bildSonnenwinkel = a.BildSonnenwinkel;
         if (!string.IsNullOrEmpty(a.Meldung)) Melden(a.Meldung, WarnStufe.Hinweis);
@@ -480,6 +497,7 @@
     {
         _ortsname = e.Value?.ToString() ?? "";
         _meldung = "";
+        _standortAusKopf = false;
     }
 
     private void BeiFehler((string Feld, bool Fehlerhaft) f)
@@ -500,12 +518,43 @@
             _ => KlimaQuelle.PvgisTmy
         };
         _meldung = "";
+        _standortAusKopf = false;
     }
 
+    /// <summary>
+    /// Die gewählte TRY-Datei — und der VORSCHLAG aus ihrem Kopf.
+    ///
+    /// <para>Der Kopf einer DWD-TRY-Datei führt die Lage der Station als
+    /// Lambert-Koordinaten; <c>DwdTryLeser.LesenKopf</c> liest nur bis zur Trennzeile
+    /// und rechnet sie nach WGS 84 um. Kommt dabei ein Punkt heraus, werden
+    /// Longitude und Latitude damit belegt und die Herkunftszeile gezeigt —
+    /// <b>der Anwender kann beides überschreiben</b>.</para>
+    ///
+    /// <para><b>Jede Ausnahme heißt schlicht „kein Vorschlag"</b>: Die Datei ist hier
+    /// noch nicht eingelesen, sondern nur ausgesucht. Wäre sie unlesbar, meldet das
+    /// der Import — eine zweite Meldung beim bloßen Wählen wäre Lärm.</para>
+    /// </summary>
     private void BeiTryPfad(string pfad)
     {
         _tryPfad = pfad ?? "";
         _meldung = "";
+        _standortAusKopf = false;
+
+        if (_tryPfad.Trim().Length == 0) return;
+
+        try
+        {
+            TryKopf kopf = DwdTryLeser.LesenKopf(_tryPfad.Trim());
+            if (!kopf.Longitude.HasValue || !kopf.Latitude.HasValue) return;
+
+            _longitude = kopf.Longitude;
+            _latitude = kopf.Latitude;
+            _standortAusKopf = true;
+        }
+        catch
+        {
+            // kein Vorschlag - mehr ist dazu nicht zu sagen
+        }
     }
 
     private void BeiTryPaket(string pfad)
