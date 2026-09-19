@@ -2665,7 +2665,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die (z. B. 0,85) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Faktor 0–1, z. B. 0,90) ähnelt.
         /// </summary>
         public static string BHKWK_HINT_WIRKUNGSGRAD {
             get {
@@ -2913,6 +2913,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_MSG_SCHUTZ {
             get {
                 return ResourceManager.GetString("BHKWK_MSG_SCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert. ähnelt.
+        /// </summary>
+        public static string BHKWK_MSG_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("BHKWK_MSG_WIRKUNGSGRAD", resourceCulture);
             }
         }
         
@@ -20024,6 +20033,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBROW_MSG_WERT_UNBEKANNT {
             get {
                 return ResourceManager.GetString("KBROW_MSG_WERT_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert. ähnelt.
+        /// </summary>
+        public static string KBROW_MSG_WIRKUNGSGRAD_FAKTOR {
+            get {
+                return ResourceManager.GetString("KBROW_MSG_WIRKUNGSGRAD_FAKTOR", resourceCulture);
             }
         }
         

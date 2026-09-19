@@ -68,7 +68,10 @@ namespace EPOS.Kern.Tests
                                               s.TypDefinition == "LONG");
             }
 
-            Assert.Equal(97, SchemaStand.Zielversion);
+            // Der Schritt ist 97; der Zielstand wandert mit jedem weiteren Schritt
+            // weiter und darf nur nie DAHINTER zurueckfallen.
+            Assert.True(SchemaStand.Zielversion >= 97,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 97.");
         }
 
         /// <summary>

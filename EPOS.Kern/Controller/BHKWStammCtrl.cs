@@ -919,7 +919,11 @@ namespace WindowsFormsApplication1
                 KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldPel, f.Pel),
                 KatalogFeldPruefung.ImBereich(art, KatalogBrowserProfil.FeldGrenzleistung,
                                               f.Grenzleistung, 0, 100),
-                Nichtnegativ(KatalogBrowserProfil.FeldWirkungsgrad, f.Wirkungsgrad),
+                // Der Wirkungsgrad ist ein FAKTOR, kein Prozentwert: "nicht negativ"
+                // liesse 29,5 durch, und der Rechenweg teilt durch diese Zahl
+                // (Schemaschritt 98, BhkwWirkungsgradFaktor).
+                KatalogFeldPruefung.WirkungsgradFaktor(art, KatalogBrowserProfil.FeldWirkungsgrad,
+                                                       f.Wirkungsgrad),
                 Nichtnegativ(KatalogBrowserProfil.FeldRaumbedarf, f.Raumbedarf),
                 Nichtnegativ(KatalogBrowserProfil.FeldKostenModul, f.KostenModul),
                 Nichtnegativ(KatalogBrowserProfil.FeldKostenMontage, f.KostenMontage),

@@ -368,6 +368,15 @@ namespace EPOS.Kern.Tests
                 // Beziehungen schon, tut der Aufruf nichts.
                 ProjektFremdschluessel.Alle(null);
 
+                // Schritt 98 (Anwenderentscheid 19.09.2026, Auftrag BW-1): der
+                // BHKW-Wirkungsgrad ist ein FAKTOR. REIN DML, aus DERSELBEN Quelle wie
+                // in der Migration und im Werkzeug; wiederholbar - auf einer bereits
+                // umgerechneten Kopie findet die Anweisung keine Zeile mehr. Er steht
+                // NACH 96, weil 96 Tab_BHKW neu baut.
+                foreach (System.Collections.Generic.KeyValuePair<string, BhkwWirkungsgradFaktor.Anweisung> a
+                         in BhkwWirkungsgradFaktor.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
