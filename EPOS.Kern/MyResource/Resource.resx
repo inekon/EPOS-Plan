@@ -13581,6 +13581,24 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   <data name="KLIMA_SP_REGION" xml:space="preserve">
     <value>Klimaregion</value>
   </data>
+  <data name="KLIMA_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KLIMA_SP_STANDORT" xml:space="preserve">
+    <value>Standort</value>
+  </data>
+  <data name="KLIMA_SP_LONGITUDE" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="KLIMA_SP_LATITUDE" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
+    <value>Importdatum</value>
+  </data>
+  <data name="KLIMA_SP_SCHREIBSCHUTZ" xml:space="preserve">
+    <value>Schreibschutz</value>
+  </data>
   <data name="KLIMA_BTN_IMPORT" xml:space="preserve">
     <value>Daten einlesen</value>
   </data>

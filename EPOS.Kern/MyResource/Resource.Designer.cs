@@ -30400,11 +30400,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importdatum ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_IMPORTDATUM {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_IMPORTDATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Latitude ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_LATITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_LATITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Longitude ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_LONGITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_LONGITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion ähnelt.
         /// </summary>
         public static string KLIMA_SP_REGION {
             get {
                 return ResourceManager.GetString("KLIMA_SP_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibschutz ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_SCHREIBSCHUTZ {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_SCHREIBSCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_STANDORT {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_STANDORT", resourceCulture);
             }
         }
         
