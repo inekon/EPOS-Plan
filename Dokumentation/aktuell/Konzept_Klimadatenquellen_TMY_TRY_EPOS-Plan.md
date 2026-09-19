@@ -67,7 +67,7 @@ Trefferzahl. Sieben Spalten:
 | Spalte | Inhalt |
 |---|---|
 | Klimaregion | der Bezeichner; er bleibt der Schlüssel jeder Aktion (Ansicht, Löschen) |
-| Quelle | PVGIS, DWD-Testreferenzjahr aus Datei oder TRY-Regionaldaten — dieselben Worte wie in der Gruppe „Klimaquelle" |
+| Quelle | das ganze Wetterjahr in einem Satz: Quelle · Bezugsjahr · Szenario, etwa „TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm". Die Quelle steht mit denselben Worten da wie in der Gruppe „Klimaquelle"; ohne Bezugsjahr und Szenario bleibt es bei ihr allein |
 | Standort | der Ortsname aus `Details`, wo einer steht; sonst das Koordinatenpaar |
 | Longitude, Latitude | Grad mit vier Nachkommastellen (rund 11 m), als **Zahl** sortierbar und filterbar |
 | Importdatum | ISO `yyyy-MM-dd` — als **Text** geführt, weil ISO als Zeichenkette in der Reihenfolge des Datums sortiert und „enthält 2026-09" damit zum Monatsfilter wird |
@@ -79,6 +79,20 @@ nebeneinanderzulegen hieße, die Liste noch einmal danebenzustellen.
 **Quelle und Importdatum sind leer, wo eine Region aus dem Altbestand stammt** (angelegt vor
 Schemaschritt 95): Dort steht der Halbgeviertstrich. Nachdatiert wird nichts.
 
+**Warum Bezugsjahr und Szenario in der Spalte „Quelle" stehen und nicht in zwei eigenen.**
+Gesucht wird in dieser Liste über alle Spalten; „2045" engt damit auf das Bezugsjahr ein,
+ohne dass die Liste auf neun Spalten wächst. Der Dialog ist schmal, und die drei Angaben
+beantworten eine einzige Frage — „welches Wetterjahr trägt diese Region". Eine Sortierung
+nach Jahr allein gibt es dafür nicht; sie wäre der Preis, und er ist kleiner als zwei
+weitere Spalten.
+
+**Die Schlüssel in der Datenbank.** `Tab_Klimaregion(_STAMM).Szenario` führt `MITTEL`,
+`SOMMERWARM` oder `WINTERKALT`, `Bezugsjahr` die Zahl 2015 oder 2045 (Schemaschritt 97).
+Anzeigetexte stehen in `MyResource` und werden von `KlimaAnzeige` eingesetzt — **einer
+Stelle** für Liste, Herkunftszeile und Auswahlfeld. NULL heißt „sagt nichts dazu":
+Altbestand, PVGIS (kennt keine TRY-Szenarien) und jede TRY-Datei, deren Kopf die Art des
+Datensatzes nicht nennt.
+
 **Der Standort ist gerechnet, nicht gespeichert.** `Details` ist Freitext und sagt je Quelle
 etwas anderes: Der PVGIS-Abruf schreibt den geokodierten Ort, die zwei TRY-Quellen einen
 Herkunftsvermerk, der mit dem Namen der Quelle beginnt und Lizenz, Station und Entfernung
@@ -88,7 +102,9 @@ mit „ · " aneinanderreiht. `KlimaregionStammCtrl.Standorttext` nimmt deshalb 
 ### 2.2 Die Herkunft auf der Übersicht
 
 Die Startseite nennt im Klimakasten als zweite, leise Zeile, **womit gerechnet wird**:
-Quelle, Bezeichner, Standort und Importdatum der Region des offenen Projekts. Gelesen wird
+Quelle samt Bezugsjahr und Szenario, Bezeichner, Standort und Importdatum der Region des
+offenen Projekts — „Klimadaten: TRY-Regionaldaten (Deutschland) · 2045 · sommerwarm ·
+hagelloch · Tübingen, Deutschland · Import 19.09.2026". Gelesen wird
 die **Projektkopie** `Tab_Klimaregion` — dieselbe Zeile, mit der der Rechenlauf arbeitet,
 nicht der Katalogsatz daneben. Eine Region ohne Quelle und Importdatum bekommt die Kurzform
 aus Bezeichner und Standort; ohne offenes Projekt steht keine Zeile.
@@ -96,6 +112,14 @@ aus Bezeichner und Standort; ohne offenes Projekt steht keine Zeile.
 Die Klimawahl darüber ist **durchsuchbar** (Baustein `Standards/Suchauswahl`): Tippen
 filtert über alle Einträge, ↑ ↓ wandern, Enter übernimmt, Esc schließt die Liste. Gewählt
 und gespeichert wird die **Id** der Stammregion, nicht ihr Name.
+
+Jeder Eintrag nennt in Klammern das Wetterjahr in Kurzform — „hagelloch (TRY 2045
+sommerwarm)", „München (PVGIS)"; eine Region ohne Herkunft behält ihren blanken Namen. Das
+Kürzel „TRY" steht für beide TRY-Quellen: In einer Klammer hinter dem Regionsnamen zählt,
+welches Wetterjahr gemeint ist, nicht, aus welcher Datei es kam — das sagt die Liste im
+Klimadaten-Dialog. Den Text baut der Kern (`StartseiteCtrl.KlimaregionenMitId` über
+`KlimaregionStammCtrl.Auswahlzeilen`), nicht die Razor-Seite; gesucht wird über den ganzen
+Eintrag, also auch über das Jahr.
 
 ## 3. Das TRY-Format und seine Zuordnung
 
@@ -276,6 +300,21 @@ Angabe **für das Programm**: `Quelle` trägt den sprachneutralen Schlüssel `PV
 oder `TRY_REGIONAL`, `Importdatum` den Tag des Imports als ISO-Text `yyyy-MM-dd`. **NULL heißt
 bei beiden Altbestand**; nachdatiert wird nichts. Beide wandern mit der Projektkopie.
 
+Seit Schemaschritt 97 stehen daneben **`Szenario`** (`MITTEL` | `SOMMERWARM` | `WINTERKALT`)
+und **`Bezugsjahr`** (2015 oder 2045) — die Angabe, welches Wetterjahr die Reihe beschreibt.
+Sie wird je Quelle so gefüllt:
+
+| Quelle | Szenario | Bezugsjahr |
+|---|---|---|
+| PVGIS-TMY | NULL — PVGIS kennt keine TRY-Szenarien | NULL |
+| TRY-Datei | aus der Kopfzeile „Art des TRY"; ist sie unlesbar oder fehlt sie, NULL | **NULL** — der Kopf nennt einen Bezugs*zeitraum* („1995-2012"), nicht das Bezugsjahr dieses Hauses, und aus einem Zeitraum ein Jahr zu machen wäre eine Behauptung |
+| TRY-Regionaldaten | aus dem Auftrag — der Anwender hat es gewählt, und danach ist das Paket gelesen worden | aus dem Auftrag |
+
+Gemessen wird die Kopfzeile gegen die tragenden Wortteile („sommer"+"warm",
+„winter"+"kalt", „mittl") ohne Rücksicht auf Schreibweise, Bindestrich und Zwischenraum;
+was sich nicht zuordnen lässt, bleibt leer. Auch diese zwei Spalten wandern mit der
+Projektkopie.
+
 Der Lizenzvermerk lautet **„CC BY 4.0, RE-Lab-Projects/TRY_DE_2015_2045, Rohdaten Deutscher
 Wetterdienst"**. Die Datei aus dem DWD-Klimaberatungsmodul bezieht der Anwender selbst; sie
 liegt nie im Repository und nie in der Auslieferung.
@@ -307,6 +346,7 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
 | **Anwender 19.09.2026 (b)** | Regionsvorschau vor dem Import; der zweite Netzabruf ist angenommen. |
 | **KL-Q4** | Jahr und Szenario sind wählbar, Vorgabe 2015, mittleres Jahr. |
 | **KL-Q5** | Eigene Wiki-Seite „Programm Dokumentation/Klimadaten". |
+| **Anwender 19.09.2026 (KL-6)** | „Wird die Quelle und Auswahl (z. B. TRY 2045 sommerwarm …) der Klimadaten angezeigt? Diese sollte auch bei der Klimaregion sichtbar sein." — `Szenario` und `Bezugsjahr` an `Tab_Klimaregion(_STAMM)` (Schemaschritt 97), angezeigt in der Regionsliste **und** bei der Klimaregion auf der Übersicht. |
 
 ## 11. Nachweise
 
@@ -343,6 +383,10 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
   **synthetische** Probe im DWD-Format, ausdrücklich keine amtlichen Daten; der Leser hat für
   sie die Prüfoption „volles Jahr aus". Ihr Kopf steht auf einem stimmigen Punkt:
   Rechtswert 3 929 310 / Hochwert 2 478 193 ergeben 9,0000° O / 49,0000° N.
+- `KlimaSzenarioTests` — Schemaschritt 97: die vier Spalten und ihre Wiederholbarkeit, der
+  NULL gebliebene Bestand, das Szenario aus dem Dateikopf samt Gegenproben, die Projektkopie,
+  der zusammengesetzte Satz der Liste, der Halbgeviertstrich des Altbestands, eine Datenbank
+  auf Stand 95 und der Satzbau in beiden Kulturen.
 - Referenzlauf der fünf Projekte byte-gleich gegen die geltende Basis; der PVGIS-Weg bleibt
   unverändert.
 
@@ -353,3 +397,11 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
    LESEN fehlt noch — kein Leser wertet sie bisher aus.
 2. **`E` (langwellige Ausstrahlung) wird nicht gespeichert** (Abschnitt 6) — sie hätte keinen
    Leser. Sie kommt, wenn der Rechenweg sie braucht.
+3. **Eine TRY-Datei bekommt kein Bezugsjahr** (Abschnitt 8). Ihr Kopf nennt einen
+   Bezugszeitraum; die Zuordnung „1995-2012 → 2015" und „2031-2060 → 2045" wäre die
+   DWD-Konvention und nicht die Aussage der Datei. Die Spalte bleibt dort NULL, bis der
+   Anwender entscheidet, dass die Zuordnung gewollt ist — oder bis er das Jahr im Dialog
+   selbst angibt.
+4. **Nach Szenario und Jahr wird über die Spalte „Quelle" gefiltert, nicht sortiert**
+   (Abschnitt 2.1). Zwei eigene Spalten wären der andere Weg; sie kosten Breite in einem
+   ohnehin schmalen Dialog.
