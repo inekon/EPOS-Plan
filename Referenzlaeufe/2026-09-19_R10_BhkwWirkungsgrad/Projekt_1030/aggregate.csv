@@ -22,11 +22,11 @@ Em.Kessel.So2Kg;1.62092964
 Em.Kessel.NoxKg;594.340869
 Em.Kessel.CoKg;0
 Em.Kessel.StaubKg;2.7015494
-Em.Bhkw.Co2T;251.589404
-Em.Bhkw.So2Kg;0.314486755
-Em.Bhkw.NoxKg;115.31181
+Em.Bhkw.Co2T;297.97098
+Em.Bhkw.So2Kg;0.372463725
+Em.Bhkw.NoxKg;136.570032
 Em.Bhkw.CoKg;0
-Em.Bhkw.StaubKg;0.524144592
+Em.Bhkw.StaubKg;0.620772874
 Ergebnis.ID_Projekt;1030
 Ergebnis.Bezeichner;Simulation Referenz BHKW-Kaskade (Regressionstest)
 Ergebnis.ID_Klimaregion;1020040
@@ -57,7 +57,7 @@ BHKW.Betriebsstunden_Gesamt;13977.77
 BHKW.Betriebsstunden_Durchschnitt;6988.89
 BHKW.Waermebedarfsdeckung;11.99
 BHKW.Strombedarfsdeckung;9.02
-BHKW.Gasverbrauch;1048.29
+BHKW.Gasverbrauch;1241.55
 BHKW.Oelverbrauch;0
 BHKW.Koks;0
 BHKW.Rapsoelverbrauch;0
@@ -74,7 +74,7 @@ BHKWModul[0].Modul;BHKW EW M 50 S [K] Erdgas
 BHKWModul[0].Waermeproduktion;605.53
 BHKWModul[0].Stromproduktion;373.79
 BHKWModul[0].Brennstoff;Gas
-BHKWModul[0].Verbrauch;862.2
+BHKWModul[0].Verbrauch;1021.15
 BHKWModul[0].carrier_id;63
 BHKWModul[0].VbhThermisch;7475.74
 BHKWModul[0].VbhElektrisch;7475.74
@@ -83,7 +83,7 @@ BHKWModul[1].Modul;EC-POWER XRGI 9
 BHKWModul[1].Waermeproduktion;130.69
 BHKWModul[1].Stromproduktion;58.52
 BHKWModul[1].Brennstoff;Gas
-BHKWModul[1].Verbrauch;186.09
+BHKWModul[1].Verbrauch;220.39
 BHKWModul[1].carrier_id;63
 BHKWModul[1].VbhThermisch;6502.04
 BHKWModul[1].VbhElektrisch;6502.04

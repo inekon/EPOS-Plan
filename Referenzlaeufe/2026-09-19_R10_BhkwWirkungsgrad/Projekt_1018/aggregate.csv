@@ -22,11 +22,11 @@ Em.Kessel.So2Kg;0.00502679857
 Em.Kessel.NoxKg;1.84315948
 Em.Kessel.CoKg;0
 Em.Kessel.StaubKg;0.00837799762
-Em.Bhkw.Co2T;0.374448255
-Em.Bhkw.So2Kg;0.000468060319
-Em.Bhkw.NoxKg;0.171622117
+Em.Bhkw.Co2T;11.9859196
+Em.Bhkw.So2Kg;0.0149823995
+Em.Bhkw.NoxKg;5.49354649
 Em.Bhkw.CoKg;0
-Em.Bhkw.StaubKg;0.000780100531
+Em.Bhkw.StaubKg;0.0249706659
 Ergebnis.ID_Projekt;1018
 Ergebnis.Bezeichner;Simulation BHKW Test München
 Ergebnis.ID_Klimaregion;1018047
@@ -57,7 +57,7 @@ BHKW.Betriebsstunden_Gesamt;1016.02
 BHKW.Betriebsstunden_Durchschnitt;1016.02
 BHKW.Waermebedarfsdeckung;66.11
 BHKW.Strombedarfsdeckung;0
-BHKW.Gasverbrauch;1.56
+BHKW.Gasverbrauch;49.94
 BHKW.Oelverbrauch;0
 BHKW.Koks;0
 BHKW.Rapsoelverbrauch;0
@@ -74,7 +74,7 @@ BHKWModul[0].Modul;EC-POWER XRGI 15
 BHKWModul[0].Waermeproduktion;31.29
 BHKWModul[0].Stromproduktion;14.73
 BHKWModul[0].Brennstoff;Gas
-BHKWModul[0].Verbrauch;1.56
+BHKWModul[0].Verbrauch;49.94
 BHKWModul[0].carrier_id;63
 BHKWModul[0].VbhThermisch;1016.02
 BHKWModul[0].VbhElektrisch;1016.02
