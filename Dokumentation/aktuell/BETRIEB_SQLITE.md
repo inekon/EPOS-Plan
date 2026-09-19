@@ -125,6 +125,30 @@ Solange EPOS-Plan läuft, ist der **aktuelle Datenstand die Summe aus `.sqlite` 
 
 ---
 
+## 2a. Ein gelöschtes Projekt nimmt seine Zeilen mit
+
+Ab **Schemastand 96** tragen die achtundzwanzig Projekttabellen, die ihre Beziehung zu
+`Tab_Projekt` bis dahin nur dem Namen nach führten, einen echten Fremdschlüssel mit
+`ON DELETE CASCADE ON UPDATE CASCADE` — zu den zwanzig, die ihn seit der
+Access-Übernahme haben. Wer ein Projekt löscht, löscht damit auch seine Gebäude,
+Erzeuger, Ganglinien, Kennlinien, Ergebnisse und Berichtskonfiguration; liegen bleiben
+kann nichts mehr. Die Liste steht bei `ProjektFremdschluessel.Katalog`.
+
+Zwei Tabellen bleiben benannt ausgenommen: `Tab_Applikation` (die Spalte merkt sich das
+zuletzt geöffnete Projekt, 0 = keines) und `Tab_Kenndaten_Kuehlung_STAMM`
+(Katalogtabelle der Auslieferung).
+
+**Für den Betrieb heißt das zweierlei.** Erstens: Eine Sicherung *vor* dem Löschen eines
+Projekts ist ab hier wirksamer als danach — was die Kaskade mitnimmt, ist weg. Zweitens:
+Der Migrationsschritt selbst **entfernt Zeilen**, nämlich die, die schon vorher zu keinem
+Projekt mehr gehörten und deshalb von keiner Maske und keinem Rechenweg erreichbar waren.
+Wo eine ungepflegte Projektspalte an einem gültigen Elternsatz hängt (Kennlinien an ihrer
+Wärmepumpe, Typzeilen an ihrem Verbraucher), wird sie nachgezogen statt die Zeile zu
+verlieren. Der Migrationsbericht nennt für jede Tabelle, wie viele Zeilen geheilt, wie
+viele gelöscht und wie viele abhängige Zeilen mitgenommen wurden.
+
+---
+
 ## 3. Sicherung
 
 Gesichert wird immer die **ganze Datei**: Kataloge und Projektdaten stehen in derselben
