@@ -2002,6 +2002,27 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     white-space: nowrap;
 }
 
+/* ANWENDERENTSCHEID 19.09.2026: Die Zeile „Vorlage ‚Standard': …" unter der
+   Herleitung. Sie sieht aus wie diese - dieselbe leise Schrift, dieselbe
+   Groesse - und traegt nur eine eigene Klasse, damit die Pruefstaende beide
+   auseinander halten koennen. Der Handgriff daneben ist ein TEXTSCHALTER
+   (Muster .epos-simkonfig-gepflegt-knopf), kein Knopf mit Flaeche: Eine eigene
+   Bemessung ist kein Fehler, nur eine Auskunft wert. */
+.epos-zr-vorlage {
+    white-space: nowrap;
+}
+
+.epos-zr-vorlageknopf {
+    border: 0;
+    background: transparent;
+    color: var(--epos-quelle-text);
+    cursor: pointer;
+    padding: 0;
+    margin-left: 6px;
+    font-size: inherit;
+    text-decoration: underline;
+}
+
 /* U31: Das Schloss einer Pflichtzeile. Es steht an der Stelle des Papierkorbs
    und ist ein Knopf wie er - aber leise, weil es keine Handlung anbietet,
    sondern eine Auskunft gibt. */

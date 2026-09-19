@@ -92,6 +92,19 @@ namespace WindowsFormsApplication1
             /// <summary>U31: Derselbe Bereich als SICHTBARE Zeile unter dem Satzfeld
             /// („Empfehlung 0,02 bis 0,04 €/kWh"); leer = keine Zeile.</summary>
             public string EmpfehlungZeile = "";
+
+            /// <summary>
+            /// ANWENDERENTSCHEID 19.09.2026: Die Hinweiszeile unter der Herleitung —
+            /// „Vorlage ‚Standard': % des Endenergiebedarfs". Sie steht NUR, wenn die
+            /// Standardvorlage dieselbe Position führt und dort eine ANDERE Bemessung
+            /// gilt als in dieser Projektzeile; leer heißt keine Zeile.
+            /// </summary>
+            public string VorlagenZeile = "";
+
+            /// <summary>Die Bemessung der Vorlagenposition als PERSISTENZWERT — den
+            /// braucht die Oberfläche, um „übernehmen" auf denselben Eintrag der
+            /// Auswahlliste zu setzen. Leer, wo <see cref="VorlagenZeile"/> leer ist.</summary>
+            public string VorlagenBemessung = "";
         }
 
         /// <summary>
@@ -134,7 +147,40 @@ namespace WindowsFormsApplication1
             // jetzt hier, in zwei Fassungen aus EINER Quelle: dem Werkzeugtipp am
             // Satzfeld (wortgleich zum Bestand) und der sichtbaren Zeile darunter.
             Empfehlung(a, p, komponentenId, betrieb);
+
+            // ANWENDERENTSCHEID 19.09.2026: Der Vorlagenhinweis der Projektzeile.
+            Vorlagenhinweis(a, p, komponentenId, pz);
             return a;
+        }
+
+        /// <summary>
+        /// ANWENDERENTSCHEID 19.09.2026 — DER HINWEIS AUF DIE VORLAGE.
+        ///
+        /// <para>Ändert sich die Bemessung einer Position der Standardvorlage, werden
+        /// die längst angelegten Projektzeilen NICHT nachgeführt: Ein gepflegtes
+        /// Projekt ändert seine gerechnete Wirtschaftlichkeit nicht still. Damit die
+        /// Abweichung trotzdem sichtbar ist, nennt die Zeile, was die Vorlage sagt —
+        /// und der Dialog bietet die Übernahme an.</para>
+        ///
+        /// <para><b>Verglichen wird mit der Bemessung, die die Zeile GERADE trägt</b>
+        /// (<paramref name="p"/>), nicht mit der zuletzt gespeicherten: Wer im Dialog
+        /// auf den Vorlagenwert umstellt, sieht den Hinweis sofort verschwinden.
+        /// Ohne Vorlagenposition und im Stammkontext gibt es keine Zeile.</para>
+        /// </summary>
+        private static void Vorlagenhinweis(Angabe a, KostenVorlagenPosition p,
+                                            int komponentenId,
+                                            KostenProjektPositionenCtrl.Zeile pz)
+        {
+            if (pz == null || p == null) return;
+            string vorlage = pz.VorlagenBemessung ?? "";
+            if (vorlage.Length == 0) return;
+            if (string.Equals(vorlage, p.Bemessung ?? "", StringComparison.Ordinal)) return;
+
+            a.VorlagenBemessung = vorlage;
+            a.VorlagenZeile = string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.KDLG_VORLAGE_ZEILE,
+                pz.VorlagenName ?? "",
+                BemessungKatalog.Anzeige(vorlage, komponentenId));
         }
 
         // =====================================================================

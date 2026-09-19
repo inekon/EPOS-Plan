@@ -22081,6 +22081,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernehmen ähnelt.
+        /// </summary>
+        public static string KDLG_VORLAGE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KDLG_VORLAGE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bemessung der Vorlage für diese Position übernehmen; Satz und Betrag bleiben stehen. ähnelt.
+        /// </summary>
+        public static string KDLG_VORLAGE_UEBERNEHMEN_TT {
+            get {
+                return ResourceManager.GetString("KDLG_VORLAGE_UEBERNEHMEN_TT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage „{0}“: {1} ähnelt.
+        /// </summary>
+        public static string KDLG_VORLAGE_ZEILE {
+            get {
+                return ResourceManager.GetString("KDLG_VORLAGE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
         /// </summary>
         public static string KESSEL_WARTUNG_EINHEIT_LBL {

@@ -355,6 +355,91 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-zr-empfehlung"));
     }
 
+    // =====================================================================
+    // ANWENDERENTSCHEID 19.09.2026 — der Hinweis auf die Standardvorlage
+    // =====================================================================
+
+    /// <summary>
+    /// Weicht die Bemessung einer Projektposition von der der Standardvorlage ab,
+    /// steht der Vorlagenwert als leise Zeile unter der Herleitung — mit dem
+    /// Handgriff „übernehmen" daneben (Muster U23: Textzeile, kein Warnbanner).
+    /// </summary>
+    [Fact]
+    public void Der_Vorlagenhinweis_steht_unter_der_Herleitung_mit_Handgriff()
+    {
+        KostenKomponenteStand s = Standard();
+        s.Zeilen[0].Herleitung = "× 300,00 kW · P_el der Anlage";
+        s.Zeilen[0].VorlagenHinweis = "Vorlage „Standard“: % des Endenergiebedarfs";
+        s.Zeilen[0].VorlagenBemessungId = 2;
+
+        var cut = Zeige(p => p.Add(x => x.VorlageUebernehmenText, "übernehmen"), s);
+
+        var hinweise = cut.FindAll(".epos-zr-vorlage");
+        Assert.Single(hinweise);
+        Assert.Contains("Vorlage „Standard“: % des Endenergiebedarfs",
+                        hinweise[0].TextContent);
+        Assert.Equal("übernehmen", hinweise[0].QuerySelector("button")!.TextContent);
+    }
+
+    /// <summary>„übernehmen" setzt die Bemessung auf den Vorlagenwert, lässt Satz
+    /// und Betrag stehen und schreibt über den Weg, den auch „Speichern" ruft —
+    /// danach lädt der Dialog neu, und der Hinweis ist fort.</summary>
+    [Fact]
+    public void Uebernehmen_setzt_die_Bemessung_speichert_und_der_Hinweis_verschwindet()
+    {
+        KostenKomponenteStand mitHinweis = Standard();
+        mitHinweis.Zeilen[0].VorlagenHinweis = "Vorlage „Standard“: je kW Leistung";
+        mitHinweis.Zeilen[0].VorlagenBemessungId = 2;
+
+        KostenKomponenteStand ohneHinweis = Standard();
+        ohneHinweis.Zeilen[0].BemessungId = 2;
+
+        int gespeichert = 0;
+        KostenPositionZeile? nachgezogen = null;
+        var cut = Zeige(p => p
+            .Add(x => x.Nachziehen, (KostenPositionZeile z) => nachgezogen = z)
+            .Add(x => x.Speichern, () => { gespeichert++; _stand = ohneHinweis; return true; }),
+            mitHinweis);
+
+        double satzVorher = mitHinweis.Zeilen[0].Satz ?? 0;
+        cut.Find(".epos-zr-vorlage button").Click();
+
+        Assert.Equal(2, mitHinweis.Zeilen[0].BemessungId);
+        Assert.Equal(satzVorher, mitHinweis.Zeilen[0].Satz);
+        Assert.Same(mitHinweis.Zeilen[0], nachgezogen);
+        Assert.Equal(1, gespeichert);
+        Assert.Empty(cut.FindAll(".epos-zr-vorlage"));
+    }
+
+    /// <summary>
+    /// An einer NICHT schreibbaren Zeile (Auslieferungsvorlage, Lesemodus) bleibt
+    /// die Auskunft stehen, der Handgriff nicht: Anbieten, was nicht geht, wäre
+    /// schlimmer als schweigen.
+    /// </summary>
+    [Fact]
+    public void Im_Lesemodus_steht_der_Hinweis_ohne_Knopf()
+    {
+        KostenKomponenteStand s = Standard(nurLesen: true);
+        s.Zeilen[0].Schreibbar = false;
+        s.Zeilen[0].VorlagenHinweis = "Vorlage „Standard“: je kW Leistung";
+        s.Zeilen[0].VorlagenBemessungId = 2;
+
+        var cut = Zeige(stand: s);
+
+        var hinweise = cut.FindAll(".epos-zr-vorlage");
+        Assert.Single(hinweise);
+        Assert.Null(hinweise[0].QuerySelector("button"));
+    }
+
+    /// <summary>Ohne Abweichung gibt es keine Zeile.</summary>
+    [Fact]
+    public void Ohne_Vorlagenhinweis_bleibt_die_Zeile_weg()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll(".epos-zr-vorlage"));
+    }
+
     /// <summary>
     /// Der LAUFSTAND steht über dem Raster: aus welchem Simulationslauf die
     /// Mengen der Betriebsseite stammen. Der Text kommt fertig aus dem Kern.
