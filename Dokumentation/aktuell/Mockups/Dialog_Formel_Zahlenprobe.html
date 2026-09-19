@@ -379,6 +379,12 @@ section.kat + section.kat{border-top:1px solid var(--linie);margin-top:20px}
 .stufe.ja{background:#E6F2EF;color:#0B6B5B;border:1px solid #0B6B5B}
 .stufe.bedingt{background:#FFF6E0;color:#8A6100;border:1px solid #C88A00}
 .stufe.nein{background:#FBEAEA;color:#B22222;border:1px solid #B22222}
+/* Stand-Chip der Anhangtafel Umsetzungsstand (S4): offen zuerst, erledigt, Entscheid ausstehend */
+.stand{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:9px;white-space:nowrap}
+.stand.offen{background:var(--ausweis-grund);color:var(--ausweis);border:1px solid var(--ausweis)}
+.stand.erledigt{background:var(--erloes-grund);color:var(--erloes);border:1px solid var(--erloes)}
+.stand.entscheid{background:var(--warn-grund);color:var(--warn);border:1px solid var(--warn-kante)}
+td.stand-zelle{text-align:center;white-space:nowrap}
 .vorschlag{margin-top:12px;background:#EDF3FB;border:1px solid #C3D4EA;border-left:3px solid #1A3261;
   border-radius:0 5px 5px 0;padding:10px 13px;font-size:13px}
 .vorschlag b{color:#0F1F3D}
@@ -4474,12 +4480,12 @@ Einstufung
 
   <div class="tafel-huelle">
     <table class="tafel">
-      <thead><tr><th>Nr.</th><th>Abschnitt</th><th>Was fehlt</th><th>Ort im Programm</th><th>Abnahme</th></tr></thead>
+      <thead><tr><th>Stand</th><th>Nr.</th><th>Abschnitt</th><th>Was fehlt</th><th>Ort im Programm</th><th>Abnahme</th></tr></thead>
       <tbody>
-        <tr><td class="mono">U1</td><td class="num">5</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U1</td><td class="num">5</td>
             <td>Kennzeichen „Vorrichtung zur Abwärmeabfuhr" (0/1 mit CHECK) und Stromkennzahl σ
               (nullbar) je Anlage, Fallunterscheidung in der Mengenbildung je Anlage,
-              <b>Schemaschritt 92</b> (90 und 91 sind vergeben). <b>Vorbedingung:</b> Die modulscharfe
+              <b>Schemaschritt 97</b> (90–96 vergeben). <b>Vorbedingung:</b> Die modulscharfe
               Nutzwärme (Wärmeproduktion abzüglich Wärmeüberschuss) liegt im Ergebnismodell je Modul
               nicht vor — ohne sie ist Fall 2 nicht rechenbar. Zuerst ist zu klären, ob sie je Modul
               geführt oder nach Wärmeproduktion aufgeteilt wird.</td>
@@ -4488,12 +4494,12 @@ Einstufung
             <td>Prüffall: Anlage mit Kennzeichen und σ rechnet
               <span class="mono">min(Netto, Nutzwärme × σ)</span>; ohne Kennzeichen unverändert.
               Kein Referenzprojekt betroffen — keine neue Basis</td></tr>
-        <tr><td class="mono">U2</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U2</td><td class="num">8</td>
             <td>Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite; der Knopf „Verlauf…"
               fällt aus der Fußleiste, die dann vier Knöpfe trägt</td>
             <td><span class="mono">WirtschaftlichkeitSeite.razor</span></td>
             <td>bunit: beide Zustände gezeichnet, Fußleiste ohne Verlaufsknopf</td></tr>
-        <tr><td class="mono">U3</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U3</td><td class="num">8</td>
             <td>Verlauf mit drei Szenarien in einem Bild: Der Rechenaufruf nimmt ein Szenario, das
               Verlaufsmodell trägt eines — nötig sind drei Läufe oder ein Sammelmodell; die
               Reihenbildung muss Variante (Farbe) und Szenario (Strichart) zugleich unterscheiden;
@@ -4505,54 +4511,38 @@ Einstufung
               <span class="mono">KapitalwertVerlaufHuelle</span></td>
             <td>Bildprobe: drei Stricharten je Variante, zweigeteilte Legende, Nulldurchgang je
               Szenario; Bild deterministisch</td></tr>
-        <tr><td class="mono">U4</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U4</td><td class="num">8</td>
             <td>Bandbreite nebeneinander — die Seite hält genau ein Szenario im Stand</td>
             <td><span class="mono">WirtschaftlichkeitSeite.razor</span></td>
             <td>bunit: drei Spalten gefüllt, Klappliste steuert nur die Tafeln darunter</td></tr>
-        <tr><td class="mono">U5</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U5</td><td class="num">8</td>
             <td>Empfehlungskarten je Version — die Einstufung je Version wird im Kern gebildet, die
               Seite zeigt einen Satz</td>
             <td><span class="mono">WirtschaftlichkeitEmpfehlung</span> ·
               <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
             <td>bunit: drei Karten mit Stufe und Differenz; derselbe Text auf Seite und im Bericht</td></tr>
-        <tr><td class="mono">U6</td><td>4 · 7</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U6</td><td>4 · 7</td>
             <td>Anlagenbezug je Katalogzeile (die Zeile trägt kein Anlagenfeld) und die vermiedenen
               Stromkosten je Anlage aus den Eigenverbrauchsmengen der Strommatrix; der Leistungsanteil
               bleibt projektweit</td>
             <td><span class="mono">WirtschaftlichkeitZeilen</span> · <span class="mono">StromMatrix</span></td>
             <td>Zahlenprobe: 293.245,6 + 22.914,0 = 316.159,6 €/a</td></tr>
-        <tr><td class="mono">U7</td><td class="num">7</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U7</td><td class="num">7</td>
             <td>§ 53/53a und § 54 als getrennte Rückgabegrößen — sie kommen als eine Summe zurück und
               lassen sich deshalb nicht getrennt bei BHKW und Kessel ausweisen</td>
             <td><span class="mono">SteuerGutschriftRechner</span></td>
             <td>Zahlenprobe: 21.203,4 € beim Blockheizkraftwerk, 2.885,7 € beim Kessel</td></tr>
-        <tr class="gestrichen"><td class="mono">U8</td><td>1 · 8</td>
-            <td>Knopf „Nutzungsdauern vorbelegen…" für bestehende Positionen, ein Pflegeort für die
-              Positionsart und die Herleitung der Dauer im Raster; der Hinweis mit k, n und Liste am
-              Kostendialog</td>
-            <td><span class="mono">KostenKomponenteDialog</span> ·
-              <span class="mono">VorlagenPositionDialog</span> ·
-              <span class="mono">NutzungsdauerCtrl</span> · Konzept § 2.13 (3), § 6.3</td>
-            <td class="grund"><b>erledigt:</b> Der Knopf füllt die LEEREN Dauern und fragt mit Anzahl nach, bevor er
-              gepflegte überschreibt — nichts ändert eine gerechnete Wirtschaftlichkeit still (ND‑Q4 (b));
-              geschrieben wird erst mit „Speichern"/„OK". Die Positionsart steht als Klappliste im Zeileneditor
-              (Zeilen der Technik, dann die technikübergreifenden) und setzt bei einer Änderung die Dauer neu;
-              ein Schemaschritt war dafür nicht nötig, die Spalte <span class="mono">NutzungsdauerID</span> steht
-              in beiden Tabellen seit Stufe S1. Die Herleitung unter der Zahl nennt Wert und Herkunft und misst am
-              WERT statt an einer Merkspalte. <b>Offen bleibt U39</b> — Entkopplung von Ersatz und Restwert,
-              geräteeigene Dauerspalten, Speicherflotte und die plattformfreie Hinweiszeile der
-              Ergebnisseite</td></tr>
-        <tr><td class="mono">U9</td><td>3 · 6</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U9</td><td>3 · 6</td>
             <td>Degradation mit Quellenangabe — vorhanden ist sie je Stammprojekt als Feld „Degradation [%/a]"
               des Vergütungsdialogs (wirkt in der Erlösreihe) und beim Stromspeicher; eine Quellenangabe dazu
               führt kein Dialog</td>
             <td><span class="mono">PhotovoltaikVerguetungDialog</span> · <span class="mono">StromspeicherSimCtrl</span></td>
             <td>Vorgabe 0 %/a lässt jedes Projekt wertgleich; 0,50 %/a ergibt im Jahr 20 259,1 MWh</td></tr>
-        <tr><td class="mono">U10</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U10</td><td class="num">8</td>
             <td>Der Hinweistext „Was ein Szenario variiert" als Ressource in beiden Sprachen</td>
             <td>Konzept § 2.11.7 · <span class="mono">WIRT_SZEN_HINWEIS</span></td>
             <td>Ressourcenwache: Schlüssel in beiden Sprachen vorhanden</td></tr>
-        <tr><td class="mono">U11</td><td class="num">4</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U11</td><td class="num">4</td>
             <td>Sammelknopf „Vorschlagswerte übernehmen" am Kopf des Blocks „Strompreis Details". <b>Nebenbemerkung:</b>
               Das Speichern der Trägerkarte schreibt alle Anteile als Zahl zurück; „nie gepflegt"
               ist danach nicht mehr von „auf den Vorschlag gesetzt und abgeschaltet" zu unterscheiden —
@@ -4560,80 +4550,29 @@ Einstufung
             <td><span class="mono">StrompreisDetails.razor</span> ·
               <span class="mono">StrompreisZerlegungCtrl.Update</span></td>
             <td>bunit: Knopf setzt Werte und Haken; ein Anteil ohne Vorschlag bleibt unberührt</td></tr>
-        <tr><td class="mono">U12</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U12</td><td class="num">8</td>
             <td>Excel-Formelmappe, Stufen 0 bis 3: Der Generator schreibt keine einzige Formel, und
               keine Zahl des Parametersatzes erreicht eine Zelle. Offen ist zudem, ob die Mappe Formeln
               mit Ergebnis-Zwischenspeicher trägt, damit sie ohne Neuberechnung lesbar ist</td>
             <td><span class="mono">ExcelBerichtGenerator</span></td>
             <td>Blattprobe je Stufe: Parameterblock aus Zellen, Mehrjahrestabelle mit Formeln,
               NBW/RMZ, bemessene Betriebskostenzeilen</td></tr>
-        <tr><td class="mono">U13</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U13</td><td class="num">8</td>
             <td>Spaltengruppe je Szenario im Tabellenbericht, das zweite Bild im Wortbericht und das
               Excel-Blatt des Verlaufs (je Jahr eine Zeile, je Variante und Szenario eine Spalte)</td>
             <td>Konzept § 2.13 (5)</td>
             <td>Berichtsprobe: drei Spaltengruppen, Blatt „Verlauf" vorhanden</td></tr>
-        <tr><td class="mono">U14</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U14</td><td class="num">8</td>
             <td>Die Spalte des Referenzprojekts an beiden Orten der Schemabeschreibung sowie die
               Randfälle: Referenz ohne Ergebnis, gelöschte Referenz</td>
             <td>Konzept § 2.9</td>
             <td>Prüffall: gelöschte Referenz fällt auf die Unterlassensalternative zurück</td></tr>
-        <tr><td class="mono">U15</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U15</td><td class="num">8</td>
             <td>Vollständige Szenarioabdeckung — Trägerpreise, Erlössätze und ein Mengenfaktor je
               Szenario; bis dahin gilt der Hinweistext unter der Annahmentafel</td>
             <td>Konzept § 2.11.5</td>
             <td>A/B-Nachweis: je Szenario ein vollständiger Parametersatz, Kapitalwerte gegenübergestellt</td></tr>
-        <tr class="gestrichen"><td class="mono">U16</td><td class="num">4</td>
-            <td>Vorschlagswerte für die Anteile KWKG-Umlage, Offshore-Netzumlage und § 19 StromNEV
-              sind im Katalog nicht hinterlegt</td>
-            <td>Katalog der Preisbestandteile</td>
-            <td class="grund"><b>erledigt:</b> Der Gesetzeskatalog führt den Bereich <span class="mono">UMLAGEN</span>
-              mit den drei Zeilen — 0,446 · 0,941 · 1,559 ct/kWh, Stichjahr 2026 —, und die Testdatenbank trägt sie;
-              die Schnellwahl nennt den Katalog als Quelle statt der Rückfallebene</td></tr>
-        <tr class="gestrichen"><td class="mono">U17</td><td class="num">7</td>
-            <td>KWKG-Pauschale nach § 9 als Zeile im Jahr 0. Der Nachweisumschlag führt für sie
-              keine Skalargröße</td>
-            <td>Konzept § 6.3</td>
-            <td class="grund"><b>erledigt:</b> Block A trägt hinter dem KWK-Zuschlag die Zeile
-              „KWKG-Pauschale (§ 9 KWKG) [€, einmalig im Jahr 0]", nur wenn die Pauschale greift.
-              Sie steht <em>nicht</em> in der Summe des Blocks — ein Einmalbetrag in € in einer
-              €/a-Summe wäre derselbe Einheitenfehler wie der Restwert. Der Kapitalwert bleibt
-              unverändert: Index 0 der Erlösreihe <span class="mono">KWKG_PAUSCHALE</span> war seit
-              jeher unabgezinst im Startwert. Die Mehrjahrestabelle bekommt die Spalte im Jahr 0,
-              womit dort auch die Selbstprüfung „Summe der Positionsspalten = Netto nominal" in der
-              Zeile 0 stimmt. Der Umschlag führt <span class="mono">KwkgPauschaleEur</span>
-              (Fassung 2; ein Umschlag der Fassung 1 lädt weiter)</td></tr>
-        <tr class="gestrichen"><td class="mono">U18</td><td>8 · Bericht</td>
-            <td>Zweites Verlaufsbild (kumulierter Barwert der Versionen <em>absolut</em>): auf der
-              Seite oder nur im Wortbericht. Alle Versionen liegen tief im Negativen und nahezu
-              parallel; der absolute Vergleich steht in der Kennzahltafel und in der
-              Mehrjahresübersicht</td>
-            <td>Konzept § 2.13 (5)</td>
-            <td class="grund"><b>erledigt:</b> Das Bild steht an genau einem Ort — im Wortbericht,
-              unter dem Titel „Kumulierte Barwerte je Version", mit Legende je Version (Name und
-              Farbe) und gestrichelter Stammlinie; sie ist die Bezugsgröße und keine Version.
-              <span class="mono">ChartRenderer.KapitalwertVerlauf</span> liest dafür das Feld
-              <span class="mono">Gestrichelt</span> der Reihe und zeichnet das Legendenfeld
-              gestrichelt statt gefüllt. Auf der Seite bleibt allein das Differenzbild; der Dialog
-              <span class="mono">KapitalwertVerlaufDialog</span> zeigt bis zur Ergebnisansicht
-              (§ 2.13, K8) unverändert beide Bilder. Nachweis <span class="mono">Proben/ChartProben</span>:
-              67 Bilder, 0 Verstöße</td></tr>
-        <tr class="gestrichen"><td class="mono">U19</td><td class="num">2</td>
-            <td>Endenergie des Heizkessels aus dem Lauf nachziehen</td>
-            <td><span class="mono">EndenergieAufloeser</span></td>
-            <td class="grund"><b>erledigt:</b> Der Kesselbrennstoff kommt je Modulzeile aus dem Lauf;
-              die Bezugsgröße ist nicht mehr strukturell 0. Referenzbasis R9</td></tr>
-        <tr class="gestrichen"><td class="mono">U20</td><td class="num">5</td>
-            <td>Modusfeld für § 9 Abs. 1 Nr. 3 mit der Vorgabe AUSWEIS</td>
-            <td><span class="mono">Stromst_Befreiung_Modus</span></td>
-            <td class="grund"><b>erledigt:</b> Spalte und Vorgabe sind gebaut; der Dialog schreibt das
-              Feld mit, die Erlösreihe entsteht nur bei ausdrücklicher Wahl ERLOES</td></tr>
-        <tr class="gestrichen"><td class="mono">U21</td><td class="num">4</td>
-            <td>Nachweise je Anlage über das Neuladen hinweg erhalten</td>
-            <td><span class="mono">ErgebnisNachweisUmschlag</span></td>
-            <td class="grund"><b>erledigt:</b> Vier Listen und vier Skalare reisen als
-              <span class="mono">nw1:</span>-Umschlag an der Ergebniszeile mit; Grenzen siehe
-              Kategorie 4</td></tr>
-        <tr><td class="mono">U22</td><td class="num">5</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U22</td><td class="num">5</td>
             <td>Überlagerung „Sätze und Herkunft" (Anlagenart, Tatbestand, KWK-Strom-Fall mit σ, Energiesteuerwahl mit
               Projekt- oder Anlagenbezug, Unternehmensart, Modus § 9 Nr. 3; je Größe Vorschlag · Herkunft · Eingabefeld
               „eigener Wert" · gilt; Wirkung je Wahl als Satz und unten als Jahresbetrag; ein Knopf „Übernehmen", der in die
@@ -4649,7 +4588,142 @@ Einstufung
               schreibt die KWKG-Spalten der Anlage, Tatbestand, Anlagenart, Energiesteuerwahl, Aufteilung, Unternehmensart
               und Modus in den Arbeitsstand; leeres Feld „eigener Wert" schreibt den Vorschlag; „Abbrechen" schreibt
               nichts</td></tr>
-        <tr class="gestrichen"><td class="mono">U23</td><td>5 · 7</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U25</td><td class="num">5</td>
+            <td>Zwei Anzeigen bei der gewählten Anlage, die der Dialog nicht führt: die Staffelzeile unter dem
+              Jahresdeckel (3.300 · 3.100 · 2.900 · 2.700 · ab 2030 2.500 h/a aus dem Katalog) und das Warnband zum
+              Deckelanteil des ersten Jahres (vergütet 3.300 von 5.500 h, Kontingent reicht 12 Kalenderjahre)</td>
+            <td><span class="mono">BhkwWirtschaftlichkeitDialog</span> · <span class="mono">KwkgKontingentRechner</span></td>
+            <td>bunit: Staffelzeile nennt fünf Stufen aus dem Katalog; Warnband nur, wenn Vbh der Anlage über dem
+              Deckel des ersten Jahres liegt</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U27</td><td class="num">6</td>
+            <td>Aufgeschlüsselte Vorschau des PV-Dialogs (Spoterlös, Marktprämie, § 51-Ausfall, DV-Entgelt, Kappung,
+              Summe, vermiedener Netzbezug) statt der einen Zeile; dazu eine Herleitungszeile mit dem Jahresmarktwert
+              des Inbetriebnahmejahres aus dem Marktwert-Import in der Gruppe Vermarktung. Marktwert-Override und
+              Marktwertentwicklung des Modells haben im Dialog kein Feld — sie gehören zur Szenarioabdeckung (U15)</td>
+            <td><span class="mono">PhotovoltaikVerguetungDialog</span> · <span class="mono">PvErloesRechner</span></td>
+            <td>bunit: sieben Vorschauzeilen aus <span class="mono">PvErloesErgebnis</span>, Summe = Erlös Jahr 1 der
+              Einzeilenvorschau; Jahresmarktwertzeile nennt Jahr und Quelle</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U32</td><td class="num">4</td>
+            <td>Die Preisbasis-Kennung des Projekts (<span class="mono">ID_Umrechnung</span>) ist eine
+              <b>Regelkennung</b>. Führt kein Brennstoff eine Regel nach kWh, wird beim Speichern −1 abgelegt, und die
+              gewählte Preisbasis fällt beim nächsten Öffnen auf die Abrechnungseinheit zurück. Ein Wert geht dabei
+              nicht verloren — gespeichert ist ohnehin der Basispreis je Abrechnungseinheit —, wohl aber die
+              Eingabegewohnheit. Saubere Lösung: eine eigene kleine Spalte für den Kartenzustand, also ein
+              <b>Schemaschritt 97</b> (90–96 vergeben). Kennung im Text: UR-1 Schritt 2</td>
+            <td><span class="mono">EnergietraegerPreisCtrl.Preisbasen</span> ·
+              <span class="mono">energy_project_settings</span></td>
+            <td>Öffnen–Speichern–Öffnen hält die Preisbasis kWh, auch wenn der Brennstoff keine kWh-Regel führt</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U39</td><td>1 · 8</td>
+            <td>Der Rest von U8: Entkopplung von Ersatz und Restwert (ein Kennzeichen je Position oder Technik — oft
+              ist das eine ohne das andere gewollt), die ungelesenen geräteeigenen Dauerspalten
+              (<span class="mono">Tab_BHKW</span>, <span class="mono">Tab_Heizkessel</span>,
+              <span class="mono">Tab_StromspeicherVariante</span>), der Anschluss der Speicherflotte mit ihrem
+              handgepflegten <span class="mono">ErsatzintervallJahre</span> und <span class="mono">RestwertEuro</span>,
+              und die Hinweiszeile der Ergebnisseite, die heute nur die Windows-Hülle füllt und plattformfrei nach
+              <span class="mono">EPOS.UI.Daten</span> gehört</td>
+            <td><span class="mono">WirtschaftlichkeitSeiteGaben</span> · <span class="mono">NutzungsdauerCtrl</span> ·
+              Konzept § 2.13 (3) · Konzept Nutzungsdauer Stufe S3</td>
+            <td>Prüffall je Technik: Kennzeichen „Ersatz führen" aus, Restwert bleibt; die Hinweiszeile erscheint auf
+              beiden Plattformen</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U41</td><td class="num">8</td>
+            <td>Brückenbild „Von der Investition zur Kapitalwertdifferenz" (Wasserfalldarstellung) auf der
+              Ergebnisseite — im Code nirgends vorhanden</td>
+            <td>keine Fundstelle — vorgesehen: <span class="mono">ChartRenderer.cs</span>,
+              <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
+            <td>Konzeptentscheid nötig, dann Bildprobe wie bei den anderen Diagrammen</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U42</td><td class="num">8</td>
+            <td>Zahlungsstrombild je Jahr auf der Ergebnisseite — im Code nur die Tabelle
+              (<span class="mono">BausteineWirtschaftlichkeit.cs</span>,
+              <span class="mono">ExcelBerichtGenerator.cs</span>), kein Bild</td>
+            <td>keine Fundstelle — vorgesehen: <span class="mono">ChartRenderer.cs</span>,
+              <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
+            <td>Konzeptentscheid nötig, dann Bildprobe wie bei den anderen Diagrammen</td></tr>
+        <tr><td class="stand-zelle"><span class="stand entscheid">Entscheid ausstehend</span></td><td class="mono">U43</td><td class="num">8</td>
+            <td>Knopf „Anhang-E-Checkliste…" im Fuß des Bewertungsblocks — die Checkliste ist eigene
+              Arbeit und im Code nicht vorhanden</td>
+            <td>keine Fundstelle</td>
+            <td><b>Entscheid ausstehend:</b> ob dieser Knopf auf die Ergebnisseite gehört, ist offen —
+              Anhangzeile angelegt, Bau erst nach dem Entscheid</td></tr>
+        <tr><td class="stand-zelle"><span class="stand entscheid">Entscheid ausstehend</span></td><td class="mono">U44</td><td class="num">8</td>
+            <td>Knopf „Bericht erzeugen" im Fuß des Bewertungsblocks — zweiter Einstieg in den Bericht,
+              im Code nicht vorhanden</td>
+            <td>keine Fundstelle — Bericht bisher nur über <span class="mono">BerichtSeite.razor</span></td>
+            <td><b>Entscheid ausstehend:</b> ob dieser Knopf auf die Ergebnisseite gehört, ist offen —
+              Anhangzeile angelegt, Bau erst nach dem Entscheid</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U45</td><td class="num">4</td>
+            <td>Fuß der Überlagerung „Schnellwahl aus Katalog": Statuszeile „Ein Satz schreibt in das Feld
+              seines Bestandteils …" und Knopf „Schließen" fehlen beide — geschlossen wird nur über × im
+              Kopf oder Esc</td>
+            <td><span class="mono">BrennstoffBestandteile.razor</span> · <span class="mono">Ueberlagerung.razor</span></td>
+            <td>zwei neue Ressourcenschlüssel (de/en), dann Fußzeile wie bei den anderen Überlagerungen</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U8</td><td>1 · 8</td>
+            <td>Knopf „Nutzungsdauern vorbelegen…" für bestehende Positionen, ein Pflegeort für die
+              Positionsart und die Herleitung der Dauer im Raster; der Hinweis mit k, n und Liste am
+              Kostendialog</td>
+            <td><span class="mono">KostenKomponenteDialog</span> ·
+              <span class="mono">VorlagenPositionDialog</span> ·
+              <span class="mono">NutzungsdauerCtrl</span> · Konzept § 2.13 (3), § 6.3</td>
+            <td class="grund"><b>erledigt:</b> Der Knopf füllt die LEEREN Dauern und fragt mit Anzahl nach, bevor er
+              gepflegte überschreibt — nichts ändert eine gerechnete Wirtschaftlichkeit still (ND‑Q4 (b));
+              geschrieben wird erst mit „Speichern"/„OK". Die Positionsart steht als Klappliste im Zeileneditor
+              (Zeilen der Technik, dann die technikübergreifenden) und setzt bei einer Änderung die Dauer neu;
+              ein Schemaschritt war dafür nicht nötig, die Spalte <span class="mono">NutzungsdauerID</span> steht
+              in beiden Tabellen seit Stufe S1. Die Herleitung unter der Zahl nennt Wert und Herkunft und misst am
+              WERT statt an einer Merkspalte. <b>Offen bleibt U39</b> — Entkopplung von Ersatz und Restwert,
+              geräteeigene Dauerspalten, Speicherflotte und die plattformfreie Hinweiszeile der
+              Ergebnisseite</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U16</td><td class="num">4</td>
+            <td>Vorschlagswerte für die Anteile KWKG-Umlage, Offshore-Netzumlage und § 19 StromNEV
+              sind im Katalog nicht hinterlegt</td>
+            <td>Katalog der Preisbestandteile</td>
+            <td class="grund"><b>erledigt:</b> Der Gesetzeskatalog führt den Bereich <span class="mono">UMLAGEN</span>
+              mit den drei Zeilen — 0,446 · 0,941 · 1,559 ct/kWh, Stichjahr 2026 —, und die Testdatenbank trägt sie;
+              die Schnellwahl nennt den Katalog als Quelle statt der Rückfallebene</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U17</td><td class="num">7</td>
+            <td>KWKG-Pauschale nach § 9 als Zeile im Jahr 0. Der Nachweisumschlag führt für sie
+              keine Skalargröße</td>
+            <td>Konzept § 6.3</td>
+            <td class="grund"><b>erledigt:</b> Block A trägt hinter dem KWK-Zuschlag die Zeile
+              „KWKG-Pauschale (§ 9 KWKG) [€, einmalig im Jahr 0]", nur wenn die Pauschale greift.
+              Sie steht <em>nicht</em> in der Summe des Blocks — ein Einmalbetrag in € in einer
+              €/a-Summe wäre derselbe Einheitenfehler wie der Restwert. Der Kapitalwert bleibt
+              unverändert: Index 0 der Erlösreihe <span class="mono">KWKG_PAUSCHALE</span> war seit
+              jeher unabgezinst im Startwert. Die Mehrjahrestabelle bekommt die Spalte im Jahr 0,
+              womit dort auch die Selbstprüfung „Summe der Positionsspalten = Netto nominal" in der
+              Zeile 0 stimmt. Der Umschlag führt <span class="mono">KwkgPauschaleEur</span>
+              (Fassung 2; ein Umschlag der Fassung 1 lädt weiter)</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U18</td><td>8 · Bericht</td>
+            <td>Zweites Verlaufsbild (kumulierter Barwert der Versionen <em>absolut</em>): auf der
+              Seite oder nur im Wortbericht. Alle Versionen liegen tief im Negativen und nahezu
+              parallel; der absolute Vergleich steht in der Kennzahltafel und in der
+              Mehrjahresübersicht</td>
+            <td>Konzept § 2.13 (5)</td>
+            <td class="grund"><b>erledigt:</b> Das Bild steht an genau einem Ort — im Wortbericht,
+              unter dem Titel „Kumulierte Barwerte je Version", mit Legende je Version (Name und
+              Farbe) und gestrichelter Stammlinie; sie ist die Bezugsgröße und keine Version.
+              <span class="mono">ChartRenderer.KapitalwertVerlauf</span> liest dafür das Feld
+              <span class="mono">Gestrichelt</span> der Reihe und zeichnet das Legendenfeld
+              gestrichelt statt gefüllt. Auf der Seite bleibt allein das Differenzbild; der Dialog
+              <span class="mono">KapitalwertVerlaufDialog</span> zeigt bis zur Ergebnisansicht
+              (§ 2.13, K8) unverändert beide Bilder. Nachweis <span class="mono">Proben/ChartProben</span>:
+              67 Bilder, 0 Verstöße</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U19</td><td class="num">2</td>
+            <td>Endenergie des Heizkessels aus dem Lauf nachziehen</td>
+            <td><span class="mono">EndenergieAufloeser</span></td>
+            <td class="grund"><b>erledigt:</b> Der Kesselbrennstoff kommt je Modulzeile aus dem Lauf;
+              die Bezugsgröße ist nicht mehr strukturell 0. Referenzbasis R9</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U20</td><td class="num">5</td>
+            <td>Modusfeld für § 9 Abs. 1 Nr. 3 mit der Vorgabe AUSWEIS</td>
+            <td><span class="mono">Stromst_Befreiung_Modus</span></td>
+            <td class="grund"><b>erledigt:</b> Spalte und Vorgabe sind gebaut; der Dialog schreibt das
+              Feld mit, die Erlösreihe entsteht nur bei ausdrücklicher Wahl ERLOES</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U21</td><td class="num">4</td>
+            <td>Nachweise je Anlage über das Neuladen hinweg erhalten</td>
+            <td><span class="mono">ErgebnisNachweisUmschlag</span></td>
+            <td class="grund"><b>erledigt:</b> Vier Listen und vier Skalare reisen als
+              <span class="mono">nw1:</span>-Umschlag an der Ergebniszeile mit; Grenzen siehe
+              Kategorie 4</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U23</td><td>5 · 7</td>
             <td>Vermerk „eigener Wert {0} — Vorschlag {1}" an Satzzeile und Erlösrubrik: Der Nachweis je Modul
               trägt den angesetzten Satz und die Herleitung des Vorschlags, vergleicht beide aber nicht</td>
             <td><span class="mono">KwkgModulNachweis</span> · <span class="mono">WirtschaftlichkeitZeilen</span></td>
@@ -4663,7 +4737,7 @@ Einstufung
               von Excel numerisch lässt. Eine eigene Spalte gibt es dort nicht. Ein leeres Feld ist nach BK1 ein
               eigener Wert von
               0,0000 ct/kWh und wird auch so benannt</td></tr>
-        <tr class="gestrichen"><td class="mono">U24</td><td>5 · 7 · 8</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U24</td><td>5 · 7 · 8</td>
             <td>Hilfsstrom-Netting des Beispiels: Mengentafel und Rechenkern nach einer Regel</td>
             <td><span class="mono">HilfsstromRechner.NettoSplit</span> ·
               <span class="mono">Beispielprojekt.md</span> § 3</td>
@@ -4671,14 +4745,7 @@ Einstufung
               Eigenverbrauch (1.155,0 − 86,8 = 1.068,2 MWh), die Einspeisung bleibt bei 495,0 MWh; Zuschlag Jahr 1
               32.022,2 €, Einspeiseerlös 24.750,0 €, Block Blockheizkraftwerk 77.975,6 €. Die Abschnitte 5, 7 und 8
               und <span class="mono">Beispielprojekt.md</span> § 3 sind daraus neu gerechnet</td></tr>
-        <tr><td class="mono">U25</td><td class="num">5</td>
-            <td>Zwei Anzeigen bei der gewählten Anlage, die der Dialog nicht führt: die Staffelzeile unter dem
-              Jahresdeckel (3.300 · 3.100 · 2.900 · 2.700 · ab 2030 2.500 h/a aus dem Katalog) und das Warnband zum
-              Deckelanteil des ersten Jahres (vergütet 3.300 von 5.500 h, Kontingent reicht 12 Kalenderjahre)</td>
-            <td><span class="mono">BhkwWirtschaftlichkeitDialog</span> · <span class="mono">KwkgKontingentRechner</span></td>
-            <td>bunit: Staffelzeile nennt fünf Stufen aus dem Katalog; Warnband nur, wenn Vbh der Anlage über dem
-              Deckel des ersten Jahres liegt</td></tr>
-        <tr class="gestrichen"><td class="mono">U26</td><td class="num">5</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U26</td><td class="num">5</td>
             <td>Die Zahlenfelder Satz Einspeisung und Satz Eigenstrom tragen vier Nachkommastellen, wie sie die
               Staffel des § 7 erzeugt; der übernommene Vorschlag steht als „5,5667" im Feld und bleibt beim Anfassen
               wertgleich. Offen ist allein die Anzeige daneben: Bericht und Herleitungszeile runden den Satz auf zwei
@@ -4691,15 +4758,7 @@ Einstufung
               zweistellig — sie sind Katalogwerte (8,00 · 6,00 · 5,00 · 4,40), keine gerechneten Mischwerte. Eine
               Wache hält beide Berichtswege davon ab, die Stellenzahl wieder selbst zu schreiben; der
               Referenzexport führt keinen Herleitungstext und bleibt byte-gleich</td></tr>
-        <tr><td class="mono">U27</td><td class="num">6</td>
-            <td>Aufgeschlüsselte Vorschau des PV-Dialogs (Spoterlös, Marktprämie, § 51-Ausfall, DV-Entgelt, Kappung,
-              Summe, vermiedener Netzbezug) statt der einen Zeile; dazu eine Herleitungszeile mit dem Jahresmarktwert
-              des Inbetriebnahmejahres aus dem Marktwert-Import in der Gruppe Vermarktung. Marktwert-Override und
-              Marktwertentwicklung des Modells haben im Dialog kein Feld — sie gehören zur Szenarioabdeckung (U15)</td>
-            <td><span class="mono">PhotovoltaikVerguetungDialog</span> · <span class="mono">PvErloesRechner</span></td>
-            <td>bunit: sieben Vorschauzeilen aus <span class="mono">PvErloesErgebnis</span>, Summe = Erlös Jahr 1 der
-              Einzeilenvorschau; Jahresmarktwertzeile nennt Jahr und Quelle</td></tr>
-        <tr class="gestrichen"><td class="mono">U28</td><td>1 · 2</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U28</td><td>1 · 2</td>
             <td>Herleitungszeile unter dem Betrag jeder gerechneten Rasterzeile: Bezugsgröße, Herkunft (P<sub>el</sub> der
               Anlage · Hauptpositionen · Stufe Anlage · Lauf) und Kaskadenrunde</td>
             <td><span class="mono">VorlagenZeile.razor</span> · <span class="mono">KostenHerleitung</span> ·
@@ -4708,14 +4767,14 @@ Einstufung
               Werkzeugtipp und sichtbare Zeile speisen sich aus derselben Methode, der Werkzeugtipp bleibt wortgleich.
               Die Kaskade schreibt Runde und Herkunft beim Ableiten mit. Auf der Betriebsseite entfällt die Runde.
               Ohne Bezugsgröße bleibt es beim ⚠ und beim Grund unter dem Raster, im Stammkontext bleibt die Zeile weg</td></tr>
-        <tr class="gestrichen"><td class="mono">U29</td><td class="num">1</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U29</td><td class="num">1</td>
             <td>Dreiteiliger Summenfuß „Investition brutto · Zuschuss · I₀" unter der Nettosumme</td>
             <td><span class="mono">KostenSummenCtrl.Fuss</span> · <span class="mono">KostenKomponenteHuelle.Summen</span> ·
               <span class="mono">Zeilenraster</span></td>
             <td class="grund"><b>erledigt:</b> Die Trennung rechnet der Kern; der Nachweis hält I₀ gegen
               <span class="mono">WirtschaftlichkeitCtrl.LiesInvestitionen</span> abzüglich Zuschuss — dieselbe Zahl.
               Ohne Erlös-/Zuschusszeile entfällt die Zeile, weil netto dann I₀ ist</td></tr>
-        <tr class="gestrichen"><td class="mono">U30</td><td class="num">1</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U30</td><td class="num">1</td>
             <td>Gruppe „Ersatz und Restwert" unter dem Raster der Investitionskosten: je Position Nutzungsdauer,
               Ersatzjahr, Restwert im Jahr T und Herkunft der Dauer, je Komponente die Summe — mit U8 (Knopf
               „Nutzungsdauern vorbelegen…" und Hinweiszeile)</td>
@@ -4728,7 +4787,7 @@ Einstufung
               (Barwert 132.149 €), Restwert 137.256,00 € (Barwert 75.995 €). Erlös- und Zuschusszeilen bleiben
               aussen vor (K5); ohne gepflegte Dauer steht ein Gedankenstrich, nie eine 0. Die Tafel ist Anzeige —
               der Referenzlauf bleibt byte-gleich</td></tr>
-        <tr class="gestrichen"><td class="mono">U31</td><td class="num">2</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U31</td><td class="num">2</td>
             <td>Betriebsseite: Pflichtzeilen hinterlegt mit Schloss statt Papierkorb, Empfehlungsbereich als Zeile unter
               der Position statt als Werkzeugtipp, Laufstand über dem Raster, Gruppe „Endenergie je Komponente" und die
               Doppelpflege-Warnung <span class="mono">KOH_HILFSENERGIE_DOPPELT</span> auch im Kostendialog</td>
@@ -4741,17 +4800,7 @@ Einstufung
               einen Anlage gefragt. Der Zeitpunkt des Laufs liegt in <span class="mono">Tab_Ergebnis.Zeitstempel</span>
               vor; ein Schemaschritt war dafür nicht nötig. Ohne Arbeitspreis steht in der Kostenspalte ein
               Gedankenstrich, nie eine 0</td></tr>
-        <tr><td class="mono">U32</td><td class="num">4</td>
-            <td>Die Preisbasis-Kennung des Projekts (<span class="mono">ID_Umrechnung</span>) ist eine
-              <b>Regelkennung</b>. Führt kein Brennstoff eine Regel nach kWh, wird beim Speichern −1 abgelegt, und die
-              gewählte Preisbasis fällt beim nächsten Öffnen auf die Abrechnungseinheit zurück. Ein Wert geht dabei
-              nicht verloren — gespeichert ist ohnehin der Basispreis je Abrechnungseinheit —, wohl aber die
-              Eingabegewohnheit. Saubere Lösung: eine eigene kleine Spalte für den Kartenzustand, also ein
-              <b>Schemaschritt</b> (92 und aufwärts, nach Vergabe). Kennung im Text: UR-1 Schritt 2</td>
-            <td><span class="mono">EnergietraegerPreisCtrl.Preisbasen</span> ·
-              <span class="mono">energy_project_settings</span></td>
-            <td>Öffnen–Speichern–Öffnen hält die Preisbasis kWh, auch wenn der Brennstoff keine kWh-Regel führt</td></tr>
-        <tr class="gestrichen"><td class="mono">U33</td><td class="num">3</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U33</td><td class="num">3</td>
             <td>Bemessung „je kWp Leistung" auch im Betriebsraster der Photovoltaik (Wartungssatz in €/kWp·a — die
               branchenübliche Kennzahl); das Betriebsraster kennt nur fester Jahresbetrag, % der Investition und
               je kWh elektrisch</td>
@@ -4766,7 +4815,7 @@ Einstufung
               kennt; die Bezugsgröße bleibt „300,00 kWp". Die Herkunft der Betriebszeile ist nicht mehr pauschal
               „Lauf" — führt das Gewerk zur Art eine Baugröße, ist es die Anlage. Referenzlauf byte-gleich: Die
               Messlatte trägt keine einzige Zeile mit dieser Bemessung</td></tr>
-        <tr class="gestrichen"><td class="mono">U34</td><td class="num">3</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U34</td><td class="num">3</td>
             <td>Kennzahl „spezifisch {0} €/kWp" im Summenfuß der Photovoltaik (Nettosumme ÷ kWp der Anlage)</td>
             <td><span class="mono">KostenSummenCtrl.FussText</span> · <span class="mono">Zeilenraster</span> ·
               <span class="mono">KDLG_KENN_EUR_KWP</span></td>
@@ -4774,7 +4823,7 @@ Einstufung
               (<span class="mono">KostenSummenCtrl.KennzahlText</span>). Reine Anzeige — der Zähler ist die
               Nettosumme, die ohnehin unter dem Raster steht, der Nenner dieselbe kWp-Summe wie jede Bemessung
               „je kWp". Leer außerhalb der Photovoltaik, ohne Projekt und ohne gepflegte kWp</td></tr>
-        <tr class="gestrichen"><td class="mono">U35</td><td class="num">3</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U35</td><td class="num">3</td>
             <td>Herleitung der kWp mit beiden Größen — „{0} Module × {1} Wp = {2} kWp" — im Werkzeugtipp und in der
               Herleitungszeile der kWp-Zeilen; <span class="mono">BaugroesseHerleitung</span> liefert für die
               Photovoltaik leer, die Solarthermie hat ihre Herleitung</td>
@@ -4788,7 +4837,7 @@ Einstufung
               Ost/West-Anlage der Testdatenbank: Sie ist EINE Anlagenzeile mit EINEM Modultyp an einem
               Wechselrichter, die lange Form entsteht dort gar nicht. Die sichtbare Zeile nennt seither JEDE
               gerechnete Bezugsgröße, also auch die des Kollektorfelds</td></tr>
-        <tr class="gestrichen"><td class="mono">U36</td><td class="num">6</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U36</td><td class="num">6</td>
             <td>Die Warnzeile „über 2 MW: Stromsteuer auf Eigenverbrauch prüfen." der Gruppe Anlage kann nie erscheinen:
               Die Prüfung auf 1 MW greift zuerst und deckt jede größere Anlage mit ab. Beide Warnungen sollen
               nebeneinander stehen können, sobald ihre Grenze überschritten ist</td>
@@ -4802,7 +4851,7 @@ Einstufung
               (<span class="mono">EEG_AUSSCHREIBUNG_GRENZE_KW</span>, § 22 EEG ·
               <span class="mono">STROMST_GRENZE_BEFREIUNG_9_1_3_KW</span>, § 9 Abs. 1 Nr. 3 StromStG); der
               Dialog liest sie jetzt dort. bunit: 1.500 kWp eine Warnung, 2.500 kWp beide, 900 kWp keine</td></tr>
-        <tr class="gestrichen"><td class="mono">U37</td><td class="num">8</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U37</td><td class="num">8</td>
             <td>Vergleichssicht: Optionsgruppe „Alle Varianten gegen die Referenz | Zwei Stände" mit den
               Klapplisten A und B, Erklärzeile und Tauschknopf; Sicht 2 rechnet mit A als Referenz dieser Sicht —
               die Differenzrechnung braucht die Referenz als Parameter (Voraussetzung: Referenzwahl je Gruppe,
@@ -4824,7 +4873,7 @@ Einstufung
               B − A gleich der Differenz der Sicht-1-Werte auf 0,01 €, Tausch A/B dreht das Vorzeichen.
               bunit: beide Zustände, Listen ohne den anderen Stand, Sperre bei nur einem Stand, Erklärzeile,
               Referenzwahl</td></tr>
-        <tr class="gestrichen"><td class="mono">U38</td><td class="num">3</td>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U38</td><td class="num">3</td>
             <td>Vergütung je Variante: Optionsgruppe „vom Stammprojekt übernehmen | eigene Vergütung" mit Erklärzeile im
               Reiter Ertrag/Bonus; Herkunftszeile und Knopf „eigene Werte" im Vergütungsdialog (Kategorie 6); Spalte
               <span class="mono">Uebernahme_Stamm</span> in <span class="mono">Tab_ProjektPhotovoltaik</span>
@@ -4849,18 +4898,14 @@ Einstufung
               ob sie mitkam. Alle Bestandsvarianten „übernehmen" → Referenzlauf byte-gleich; eigene Zeile wertgleich
               zur Stammzeile → dieselben Zahlen wie „übernehmen"; eine Stammänderung erreicht die übernehmende
               Variante, nicht die eigene; bunit: beide Zustände der Optionsgruppe, Erklärzeile je Herkunft</td></tr>
-        <tr><td class="mono">U39</td><td>1 · 8</td>
-            <td>Der Rest von U8: Entkopplung von Ersatz und Restwert (ein Kennzeichen je Position oder Technik — oft
-              ist das eine ohne das andere gewollt), die ungelesenen geräteeigenen Dauerspalten
-              (<span class="mono">Tab_BHKW</span>, <span class="mono">Tab_Heizkessel</span>,
-              <span class="mono">Tab_StromspeicherVariante</span>), der Anschluss der Speicherflotte mit ihrem
-              handgepflegten <span class="mono">ErsatzintervallJahre</span> und <span class="mono">RestwertEuro</span>,
-              und die Hinweiszeile der Ergebnisseite, die heute nur die Windows-Hülle füllt und plattformfrei nach
-              <span class="mono">EPOS.UI.Daten</span> gehört</td>
-            <td><span class="mono">WirtschaftlichkeitSeiteGaben</span> · <span class="mono">NutzungsdauerCtrl</span> ·
-              Konzept § 2.13 (3) · Konzept Nutzungsdauer Stufe S3</td>
-            <td>Prüffall je Technik: Kennzeichen „Ersatz führen" aus, Restwert bleibt; die Hinweiszeile erscheint auf
-              beiden Plattformen</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U40</td><td class="num">2</td>
+            <td>Bemessungsart „% des Endenergiebedarfs" fehlte in der Vorlage „Standard" der
+              Hilfsenergiekosten — ohne sie ließ sich der Vorschlag nicht von der gewählten Bemessung
+              „% der Endenergiekosten" unterscheiden, und der Schalter „übernehmen" hatte keine Basis</td>
+            <td><span class="mono">KostenKomponenteDialog</span> · <span class="mono">VorlagenZeile.razor</span></td>
+            <td class="grund"><b>erledigt:</b> Vorlage „Standard" trägt jetzt die Bemessungsart „% des
+              Endenergiebedarfs"; weicht die Positionsbemessung davon ab, nennt die Herleitungszeile das mit
+              dem Schalter „übernehmen". <b>Schemaschritt 94</b>, #365/#366</td></tr>
       </tbody>
     </table>
   </div>
