@@ -353,6 +353,13 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt95_Klimaspalten)
                     SpalteSicherstellen(s);
 
+                // Schritt 97 (Anwenderentscheid 19.09.2026, Auftrag KL-6): Szenario
+                // und Bezugsjahr an Tab_Klimaregion(_STAMM). Wie in der Migration ueber
+                // ADD COLUMN, aus DERSELBEN Quelle; kein DML - beide Spalten bleiben
+                // NULL. Er steht VOR 96, damit der Tabellenneubau sie gleich mitnimmt.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt97_KlimaSzenario)
+                    SpalteSicherstellen(s);
+
                 // Schritt 96 (Anwenderentscheid 19.09.2026): der Fremdschluessel der
                 // 28 Projekttabellen auf Tab_Projekt. DIESELBE Quelle wie in der
                 // Migration und im Werkzeug, und er steht ZULETZT: Er kopiert jede

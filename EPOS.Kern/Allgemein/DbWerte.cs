@@ -2291,6 +2291,26 @@ namespace WindowsFormsApplication1
         public const string KLIMA_QUELLE_TRY_REGIONAL = "TRY_REGIONAL";
 
         // =====================================================================
+        // Klimaregion - das TRY-Szenario (Schemaschritt 97, Auftrag KL-6)
+        //   Persistenzwerte der Spalte Tab_Klimaregion(_STAMM).Szenario,
+        //   eingefroren (Drei-Schichten-Regel). Die drei Schluessel bilden
+        //   KlimaImportAuftrag.Szenario (Enum TrySzenario) eins zu eins ab;
+        //   das Enum ist die WAHL des Anwenders, diese Schluessel sind, was
+        //   davon in der Datenbank steht.
+        //   NULL = sagt nichts dazu: Altbestand, PVGIS (kennt keine Szenarien)
+        //   und jede TRY-Datei, deren Kopf die Art des Datensatzes nicht nennt.
+        // =====================================================================
+
+        /// <summary>Mittleres Jahr — die Vorgabe der TRY-Reihen.</summary>
+        public const string KLIMA_SZENARIO_MITTEL = "MITTEL";
+
+        /// <summary>Sommerwarmes Jahr (Kuehllastfall).</summary>
+        public const string KLIMA_SZENARIO_SOMMERWARM = "SOMMERWARM";
+
+        /// <summary>Winterkaltes Jahr (Heizlastfall).</summary>
+        public const string KLIMA_SZENARIO_WINTERKALT = "WINTERKALT";
+
+        // =====================================================================
         // Der SICHTBARE Wechselrichterweg, Stufe S2
         //   (Anwenderwunsch W6-E-3 vom 06.09.2026, Konzept Wechselrichter 7.1)
         //   Persistenzwerte der Spalte Tab_Energieanlagen.PV_Wechselrichterweg,

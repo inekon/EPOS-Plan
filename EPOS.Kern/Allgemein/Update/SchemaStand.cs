@@ -278,11 +278,21 @@ namespace WindowsFormsApplication1
         /// an einem gültigen Elternsatz hängt, wird sie nachgezogen statt die Zeile zu
         /// verlieren. Werte, Ids und Zählerstände bleiben, der Referenzlauf bleibt
         /// byte-gleich.
+        /// Mit SZENARIO UND BEZUGSJAHR (Schritt 97, Anwenderentscheid 19.09.2026)
+        /// steht das Ziel auf <b>97</b>: <c>Tab_Klimaregion</c> und
+        /// <c>Tab_Klimaregion_STAMM</c> bekommen <c>Szenario</c> (Schlüssel
+        /// <c>MITTEL</c> | <c>SOMMERWARM</c> | <c>WINTERKALT</c>) und
+        /// <c>Bezugsjahr</c> (2015 oder 2045) — die Angabe, WELCHES Wetterjahr eine
+        /// Region trägt. Sie stand bis hierher nur im Freitext <c>Details</c> und war
+        /// damit weder sortierbar noch filterbar. Die vier Spalten stehen bei
+        /// <see cref="SchemaKatalog.Schritt97_KlimaSzenario"/>. <b>Kein DML:</b> Beide
+        /// bleiben NULL, und NULL heißt „sagt nichts dazu"; kein Rechenweg liest sie,
+        /// der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 96;
+        public const int Zielversion = 97;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
