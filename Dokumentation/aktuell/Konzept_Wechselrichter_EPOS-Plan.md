@@ -23,8 +23,8 @@ der Stelle, die dort zweimal offengelassen wurde: Entscheidungsfrage **Q5** („
 Anlagenparameter oder eigener Wechselrichterkatalog?" — Empfehlung damals: Anlagenparameter,
 Katalog erst mit E3) und Stufe **E3** („Stringauslegung gegen einen Wechselrichterkatalog —
 zurückstellen"). Der Anwenderwunsch W6‑E‑2 holt beides nach vorn. **Rev. 1 war ein Konzept- und
-Mockup-Papier; seit dem Entscheid vom 06.09.2026 ist Stufe S1 umgesetzt (Kapitel 8), S2 und S3
-sind es nicht.**
+Mockup-Papier; seit dem Entscheid vom 06.09.2026 sind die Stufen S1, S2 und S3 umgesetzt
+(Kapitel 8).**
 
 Mockup: `Dokumentation/aktuell/Mockups/Wechselrichter_Mockup_2026-09-06.html` (vier Ansichten M1–M4;
 in Stufe S1 unverändert, mit **S2** um die zwei Optionen aus W6‑E‑3 und den

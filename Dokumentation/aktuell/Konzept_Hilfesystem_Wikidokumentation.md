@@ -892,6 +892,7 @@ Aufträgen #203 und #207):
 | `Programm Dokumentation/Wirtschaftlichkeit` | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` |
 | `Programm Dokumentation/Kosten` | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` |
 | `Programm Dokumentation/Projekttransfer` | `Projekte/Wiki/Programm Dokumentation - Projekttransfer.wiki` |
+| `Programm Dokumentation/Klimadaten` | `Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki` |
 
 Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
 als Umgebungsvariable): `Berechnung/Stromspeicher` Revision 537, `Stromspeicher` 538,

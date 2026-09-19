@@ -631,8 +631,9 @@ Entscheidungsfrage **Q5** (Wechselrichter als Anlagenparameter statt eigenem Kat
 [`Konzept_Wechselrichter_EPOS-Plan.md`](Konzept_Wechselrichter_EPOS-Plan.md) ausgelagert, samt
 Mockup `Dokumentation/aktuell/Mockups/Wechselrichter_Mockup_2026-09-06.html`. Es schlägt einen
 Katalog `Tab_Wechselrichter_STAMM` mit Projektkopie, die Strangzuordnung `Z_AnlageStrang`
-(Migrationsschritte ab 65), eine Kennlinie aus sechs Stützstellen, den CEC-Wechselrichterimport und den Rechenweg
+(Migrationsschritte ab 97), eine Kennlinie aus sechs Stützstellen, den CEC-Wechselrichterimport und den Rechenweg
 Module → Strang → MPPT → Gerät → Clipping vor; **ohne Strangzuordnung bleibt der Rechenweg dieses
 Papiers Zeichen für Zeichen erhalten**, damit die Bitgleichheit gegen
-`Referenzlaeufe/2026-09-05_R2_Zeitbasis` bestehen bleibt. Nichts davon ist umgesetzt — zehn
-Entscheidungsfragen W6‑E‑2‑Q1…Q10 liegen beim Anwender.
+`Referenzlaeufe/2026-09-05_R2_Zeitbasis` bestehen bleibt. Alle zehn Entscheidungsfragen
+W6‑E‑2‑Q1…Q10 sind am 06.09.2026 entschieden, die Stufen S1, S2 und S3 sind umgesetzt
+(siehe [`Konzept_Wechselrichter_EPOS-Plan.md`](Konzept_Wechselrichter_EPOS-Plan.md), Kapitel 8).

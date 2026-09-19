@@ -34,7 +34,7 @@
   jede Einheit variiert, und mehrere heissen neutral „Einheit 1", „Einheit 2".
 
   BEISPIELFLOTTE (aus dem Bildschirmfoto des Anwenders): eine Katalogeinheit
-  „Shenzhen Growatt New Energy Co., Ltd.: WIT-M+APX ESS" mit 129 kWh / 100 kW
+  „Speicher 1, 100 kWh" mit 129 kWh / 100 kW
   und eine freie Auslegungseinheit mit dem Suchraum 40-300 kWh x 40-400 kW,
   Schritt 20.
 
@@ -123,6 +123,17 @@ body {
 }
 .mockup-kopf h1 { margin: 0; font-size: 20px; color: var(--epos-marke); }
 .mockup-kopf p { margin: 6px 0 0 0; color: var(--epos-text-leise); max-width: 104ch; }
+.mockup-abschnitte {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px;
+    padding: 8px 24px; border-bottom: 1px solid var(--epos-karte-rahmen);
+    font-size: 12.5px; background: #ffffff;
+}
+.mockup-abschnitte-titel {
+    font-weight: 700; color: var(--epos-text-leise); text-transform: uppercase;
+    font-size: 11px; letter-spacing: .05em; margin-right: 4px;
+}
+.mockup-abschnitte a { color: var(--epos-marke); text-decoration: none; }
+.mockup-abschnitte a:hover { text-decoration: underline; }
 .mockup-blatt { padding: 16px 24px 0 24px; }
 .mockup-hinweis {
     max-width: 1180px;
@@ -468,11 +479,19 @@ body {
     <h1>Optimierung: Eingabe in Station 4, Ergebnis in Station 5 <span class="mockup-marke">Mockup v2</span></h1>
     <p>Entwurf zur Anwenderrückmeldung <b>SD‑E‑10</b> vom 12.09.2026 (Auftrag #246), Kapitel 8 des
        Konzepts <code>Konzept_Stromspeicher_Dialoge_EPOS-Plan.md</code>. Beispielflotte aus dem
-       Bildschirmfoto des Anwenders: eine Katalogeinheit <b>Growatt WIT‑M+APX ESS</b> (129 kWh,
+       Bildschirmfoto des Anwenders: eine Katalogeinheit <b>Speicher 1, 100 kWh</b> (129 kWh,
        100 kW) und eine <b>freie Auslegungseinheit</b> (40–300 kWh × 40–400 kW, Schritt 20).
        <b>Nichts davon ist umgesetzt</b> — alle Felder sind schreibgeschützt; belegt ist einzig
        die Wahl der drei Suchoptionen links im Kopfblock.</p>
 </div>
+
+<nav class="mockup-abschnitte" aria-label="Abschnitte dieses Mockups">
+    <span class="mockup-abschnitte-titel">Abschnitte</span>
+    <a href="#abschnitt-optimierung">Optimierung</a>
+    <a href="#abschnitt-ergebnisse-optimierung">Ergebnisse der Optimierung</a>
+    <a href="#abschnitt-ergebnisse-simulation">Ergebnisse der Simulation</a>
+    <a href="#abschnitt-was-aendert-sich">Was sich ändert</a>
+</nav>
 
 <main class="mockup-blatt">
 
@@ -527,7 +546,7 @@ body {
 <section class="epos-gruppenkopf">
     <div class="epos-gruppenkopf-balken">
         <span class="epos-gruppenkopf-symbol" aria-hidden="true">⌁</span>
-        <h2 class="epos-gruppenkopf-titel">Stromspeicher-Optimierung — wirtschaftlich beste Größe</h2>
+        <h2 class="epos-gruppenkopf-titel" id="abschnitt-optimierung">Stromspeicher-Optimierung — wirtschaftlich beste Größe</h2>
         <span class="epos-gruppenkopf-summe">Projekt „Stromspeicher Optimierung" · 2 Einheiten</span>
     </div>
 
@@ -628,7 +647,7 @@ body {
                     <!-- Unter „Groesse suchen" nennt die Karte kein Geraet (7.10): keine
                          Produktzeile, keine festen Kenndaten, kein Schalter „variieren". -->
                     <div class="epos-flotte-einheitskarte__kopf" data-nur="stueckzahl">
-                        <span class="epos-flotte-einheitskarte__name">Shenzhen Growatt New Energy Co., Ltd.: WIT‑M+APX ESS</span>
+                        <span class="epos-flotte-einheitskarte__name">Speicher 1, 100 kWh</span>
                         <span class="epos-flotte-einheitskarte__kenndaten">129 kWh · 100 kW</span>
                         <span class="epos-flotte-einheitskarte__fueller"></span>
                         <label class="epos-schalter">
@@ -809,7 +828,7 @@ body {
 <section class="epos-gruppenkopf">
     <div class="epos-gruppenkopf-balken">
         <span class="epos-gruppenkopf-symbol" aria-hidden="true">⌁</span>
-        <h2 class="epos-gruppenkopf-titel">Ergebnisse der Optimierung</h2>
+        <h2 class="epos-gruppenkopf-titel" id="abschnitt-ergebnisse-optimierung">Ergebnisse der Optimierung</h2>
         <span class="epos-gruppenkopf-summe">Station 5, Rubrik 1</span>
     </div>
 
@@ -845,9 +864,9 @@ body {
                     <small data-nur="stueckzahl">Bestückung</small>
                     <small data-nur="bewerten">Eingestellte Flotte</small>
                     <b data-nur="groesse">180 kWh · 0,89 1/h · 160 kW</b>
-                    <b data-nur="stueckzahl">2 × Growatt WIT‑M+APX ESS</b>
-                    <b data-nur="bewerten">1 × Growatt + 1 freie Einheit</b>
-                    <small data-nur="groesse">1 freie Einheit · Growatt fest mit 1 × 129 kWh</small>
+                    <b data-nur="stueckzahl">2 × Speicher 1, 100 kWh</b>
+                    <b data-nur="bewerten">1 × Speicher 1 + 1 freie Einheit</b>
+                    <small data-nur="groesse">1 freie Einheit · Speicher 1 fest mit 1 × 129 kWh</small>
                     <small data-nur="stueckzahl">= 258 kWh · 200 kW</small>
                     <small data-nur="bewerten">2 Einheiten</small>
                 </div>
@@ -1018,7 +1037,7 @@ body {
 <section class="epos-gruppenkopf">
     <div class="epos-gruppenkopf-balken">
         <span class="epos-gruppenkopf-symbol" aria-hidden="true">⌁</span>
-        <h2 class="epos-gruppenkopf-titel">Ergebnisse der Simulation</h2>
+        <h2 class="epos-gruppenkopf-titel" id="abschnitt-ergebnisse-simulation">Ergebnisse der Simulation</h2>
         <span class="epos-gruppenkopf-summe">Station 5, Rubrik 2</span>
     </div>
 
@@ -1092,8 +1111,8 @@ body {
         <div class="epos-flotte-einheitskarte">
             <div class="epos-flotte-einheitskarte__kopf">
                 <input class="epos-flotte-einheit__wahl" type="checkbox" checked disabled
-                       aria-label="Growatt WIT‑M+APX ESS für die Übernahme auswählen">
-                <span class="epos-flotte-einheitskarte__name">Growatt WIT‑M+APX ESS</span>
+                       aria-label="Speicher 1, 100 kWh für die Übernahme auswählen">
+                <span class="epos-flotte-einheitskarte__name">Speicher 1, 100 kWh</span>
                 <span class="epos-flotte-einheitskarte__kenndaten">129 kWh · 100 kW · 2 Stück</span>
             </div>
             <p class="epos-flotte-einheitskarte__fuss">
@@ -1111,7 +1130,7 @@ body {
 </div>
 
 <div class="mockup-fussnoten">
-    <h2>Was dieses Blatt gegenüber dem Stand #224/#226 ändert</h2>
+    <h2 id="abschnitt-was-aendert-sich">Was dieses Blatt gegenüber dem Stand #224/#226 ändert</h2>
     <ul>
         <li><b>Drei Optionen statt zweier</b> (8.3, SD‑Q13): „nur bewerten" · „Größe suchen" ·
             „Stückzahl suchen". Die Methode wird ausdrücklich gewählt, nicht aus der Herkunft

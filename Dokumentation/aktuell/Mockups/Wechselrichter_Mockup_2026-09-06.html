@@ -125,6 +125,10 @@ body {
 
 .mockup-blatt { display: none; padding: 20px 24px 0 24px; }
 .mockup-blatt.aktiv { display: block; }
+@media (max-width: 900px) {
+    .mockup-blatt { padding: 14px 12px 0 12px; }
+    .mockup-kopf { padding: 14px 12px 10px 12px; }
+}
 
 .mockup-hinweis {
     max-width: 1340px;
@@ -384,7 +388,7 @@ body {
 <div class="mockup-kopf">
     <h1>Wechselrichter — Mockup zum Anwenderwunsch W6‑E‑2</h1>
     <p>Vier Ansichten zum Konzeptpapier <code>Konzept_Wechselrichter_EPOS-Plan.md</code>
-       (06.09.2026). Beispieldaten: Modul <b>Ablytek 6MN6A275</b> (275,19 W, 10 Module,
+       (06.09.2026). Beispieldaten: <b>Modul A, 275 Wp</b> (275,19 W, 10 Module,
        Neigung 30°, Azimut 0° — aus dem Bildschirmfoto des Anwenders) an einem
        Wechselrichter <b>Muster 2500TL</b> (2,50 kW, 1 MPPT, MPP-Fenster 80…500 V).
        <b>Nichts davon ist umgesetzt</b> — die Felder sind schreibgeschützt, nur die
@@ -409,17 +413,6 @@ body {
         „Rechenmodell" zeigt, dass der Abschnitt in <b>beiden</b> Modellen bedienbar bleibt
         (Empfehlung zu Entscheidungsfrage W6‑E‑2‑Q5) — was sich unterscheidet, steht in der
         Zeile darunter.
-    </p>
-
-    <p class="mockup-hinweis">
-        <b>Nachgetragen mit Stufe S2 (06.09.2026):</b> die <b>zwei sichtbaren Optionen</b>
-        aus dem Anwenderwunsch <b>W6‑E‑3</b> über der Strangtabelle und der
-        <b>S3‑Hinweis</b> darunter. Die Optionen liegen im Datenmodell als eigene Spalte
-        <code>Tab_Energieanlagen.PV_Wechselrichterweg</code> (Konzept 7.1, Empfehlung a) —
-        „vereinfacht" parkt die Strangzuordnung, statt sie zu löschen. Solange Stufe S3
-        aussteht, <b>rechnet der Kern die Stränge nicht</b>; der Abschnitt sagt das
-        ausdrücklich, damit die Oberfläche nichts verspricht, was der Kern noch nicht tut.
-        Die Zeile wird mit S3 wieder entfernt.
     </p>
 
     <div class="epos-dialog">
@@ -586,13 +579,13 @@ body {
                     <div class="epos-feld">
                         <span class="epos-feld-text">Name:</span>
                         <span class="epos-feld-zeile">
-                            <input class="epos-eingabe epos-eingabe--lesen" value="Ablytek 6MN6A275" readonly>
+                            <input class="epos-eingabe epos-eingabe--lesen" value="Modul A, 275 Wp" readonly>
                         </span>
                     </div>
                     <div class="epos-feld">
                         <span class="epos-feld-text">Hersteller:</span>
                         <span class="epos-feld-zeile">
-                            <input class="epos-eingabe epos-eingabe--lesen" value="Ablytek" readonly>
+                            <input class="epos-eingabe epos-eingabe--lesen" value="Hersteller A" readonly>
                         </span>
                     </div>
                     <div class="epos-feld">
@@ -705,8 +698,8 @@ body {
             </p>
             <div class="epos-leiste">
                 <span class="epos-leiste-fueller"></span>
-                <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
                 <button type="button" class="epos-knopf">Abbrechen</button>
+                <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
             </div>
         </div>
     </div>
@@ -1142,12 +1135,12 @@ body {
 
     <p class="mockup-hinweis">
         <b>M4 — der Rechenweg je Stunde:</b> Module → Strang → MPPT → Wechselrichter →
-        Clipping → AC. Die Zahlen sind die des Beispiels (10 Module Ablytek 6MN6A275 an einem
+        Clipping → AC. Die Zahlen sind die des Beispiels (10 Module „Modul A, 275 Wp" an einem
         Muster 2500TL) in einer Sommermittagsstunde mit 950 W/m² auf der Modulebene.
     </p>
 
     <div class="mockup-svghuelle">
-        <svg viewBox="0 0 1320 400" width="1320" height="400" role="img"
+        <svg viewBox="0 0 1320 400" style="max-width:100%;height:auto" role="img"
              aria-label="Rechenfluss von den Modulen über Strang, MPPT und Wechselrichter bis zur Wechselstromleistung">
             <defs>
                 <marker id="pfeil" viewBox="0 0 10 10" refX="9" refY="5"
