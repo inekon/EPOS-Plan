@@ -6868,6 +6868,81 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     grid-template-rows: auto auto;
 }
 
+/* DER RAHMEN SCHRUMPFT NICHT UNTER SEINEN INHALT (KL-5).
+
+   DER BEFUND. Im Dialog "Klimadaten" (1 180 x 780, nach einem Regionalimport
+   mit 35 Regionen) malten die Reiterleiste und der Diagrammkasten ueber die
+   Listenzeilen, der Eingabeblock ueber die Fussleiste: Von "Loeschen" war nur
+   "…oeschen" zu lesen, "Beenden" halb verdeckt. Dasselbe Bild kam aus der
+   "Stromverbraucher Verwaltung". Es ist KEIN Fehler der einzelnen Maske,
+   sondern einer des Musters Katalograhmen + Liste - vierzehn Menuepunkte in
+   sieben Komponenten haengen daran.
+
+   DIE URSACHE, IM CHROMIUM GEMESSEN (Proben/Rasterprobe/katalogprobe.mjs,
+   Fall K1, 1 180 x 780, 35 Regionen):
+
+     Dialog       780 px hoch (height: 100dvh), Inhalt 1 475 px
+     Rahmen       auf 601,8 px gestaucht, Inhalt 1 377 px
+     Rasterreihen 295,906 px | 295,906 px  <- BEIDE gleich, nicht nach Inhalt
+     Listenblock  Reihe 295,9 px, Huelle 457,6 px -> 296 284 px² ueber die
+                  Felder darunter
+     Eingabeblock Reihe 295,9 px, Inhalt 1 071 px -> malt bis y = 876,8
+     Fussleiste   y = 720 … 764            -> 49 829 px² ueberdeckt, alle drei
+                  Knoepfe von img.epos-chartbild verdeckt
+
+   Die Kette: .epos-katalog-fuellend gibt dem Rahmen flex: 1 1 auto UND
+   min-height: 0, er DARF also unter seinen Inhalt schrumpfen. Ist der
+   Dialog (height: 100dvh) kuerzer als sein Inhalt, tut die Flexbox das auch.
+   Der Rahmen ist aber ein RASTER mit zwei auto-Reihen, und weil seine zwei
+   Kinder ihrerseits min-height: 0 tragen, ist die Mindestgroesse einer Reihe
+   null: Chromium verteilt die gestauchte Hoehe zu GLEICHEN Teilen auf beide
+   Reihen, statt jeder ihren Inhalt zu lassen. Die zweite Reihe ist dann 775 px
+   zu kurz, und ihr Inhalt zeichnet einfach darueber hinaus - quer ueber die
+   Liste und ueber die Fussleiste.
+
+   DIE REGEL, die hier fehlte, steht seit W14a-E-10 in den Kommentaren
+   nebenan: "Beide Bloecke sind so hoch wie ihr Inhalt, die Liste bis zu ihrer
+   Hoechsthoehe" und "was ueber die Fensterhoehe hinausgeht, nimmt der
+   Rollbalken der Maske (.epos-katalog-dialog, overflow: auto)". Geschrieben
+   war sie nie - flex-shrink stand auf 1.
+
+   flex-shrink: 0 SCHREIBT SIE HIN. Keine Positionierung, keine feste
+   Pixelhoehe: Der Rahmen behaelt seine Inhaltshoehe, die Rasterreihen damit
+   ihre eigene, die Liste ihre Hoechsthoehe von sieben Zeilen - und was nicht
+   ins Fenster passt, rollt der Dialog, dessen Rollbalken dafuer schon da ist.
+   Die Fussleiste steht danach IMMER unter dem Rahmen.
+
+   DIE BEHEBUNG STEHT AUF ZWEI BEINEN, und beide sind noetig:
+
+     (1) JEDE RASTERREIHE BEHAELT IHRE INHALTSHOEHE. Die zwei Kinder bekommen
+         ihre selbsttaetige Mindestgroesse zurueck (min-height: auto statt 0).
+         Damit ist die Mindestgroesse einer auto-Reihe wieder die Hoehe ihres
+         Inhalts, und es gibt nichts mehr gleichmaessig zu verteilen. Das gilt
+         NUR im Rasterpaar: Die zwei Masken, die epos-katalog-fuellend auf eine
+         blosse Liste setzen (GesetzeskatalogDialog, WaermepumpenKatalogDialog),
+         haben keine zweite Reihe, sollen ihre Liste weiter mitschrumpfen lassen
+         und bleiben deshalb unberuehrt.
+
+     (2) DER RAHMEN ROLLT IN SICH, statt die Maske laenger zu machen. Ohne das
+         waere die Fussleiste zwar nicht mehr ueberdeckt, stuende aber 850 px
+         unter dem Fensterrand - "Beenden" waere so unerreichbar wie vorher,
+         nur anders. Mit overflow: auto bleiben Kopf, Fortschrittsbalken und
+         Fussleiste stehen, wo sie sind, und der Rahmen dazwischen nimmt, was
+         uebrig ist. Das ist KEIN Rollbereich mitten im Eingabeblock (die
+         Falle, vor der der Kommentar unten warnt): Der Eingabeblock bleibt am
+         Stueck, es rollt der Rahmen um ihn herum.
+
+   Gemessen wird das in Proben/Rasterprobe/katalogprobe.mjs (zwoelf Faelle
+   ueber alle sieben Katalograhmen-Masken, Gegenprobe --vorher). */
+.epos-katalog-paar.epos-katalog-fuellend {
+    overflow: auto;
+}
+
+.epos-katalog-paar > .epos-katalog-liste,
+.epos-katalog-paar > .epos-katalog-eingabe {
+    min-height: auto;
+}
+
 .epos-katalog-liste {
     display: flex;
     flex-direction: column;

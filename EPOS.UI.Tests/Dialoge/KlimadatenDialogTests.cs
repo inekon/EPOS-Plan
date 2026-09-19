@@ -487,6 +487,7 @@ public class KlimadatenDialogTests : EposBunitContext
         // Derselbe Wettlauf wie oben: Geschlossen.InvokeAsync laeuft ueber den Dispatcher.
         cut.WaitForAssertion(() => Assert.False(antwort), TimeSpan.FromSeconds(10));
     }
+
     // =====================================================================
     //  Klimaquelle: PVGIS, TRY-Datei, TRY-Regionaldaten (Auftrag KL1-B)
     // =====================================================================
@@ -1188,5 +1189,67 @@ public class KlimadatenDialogTests : EposBunitContext
         cut.FindAll("button.epos-anlagenwahl")[0].Click();
         cut.WaitForAssertion(() => Assert.Equal("Region 007", cut.Instance.Gewaehlt),
                              TimeSpan.FromSeconds(10));
+    }
+
+    // =====================================================================
+    //  KL-5 — der Bau der Maske (die Überlagerung)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Befund KL‑5.</b> Bei 1 180 × 780 und 35 Regionen malten Reiterleiste
+    /// und Diagrammkasten über die Listenzeilen, der Eingabeblock über die
+    /// Fußleiste: Von „Löschen" war nur „…öschen" zu lesen, „Beenden" halb
+    /// verdeckt. Die Ursache lag nicht hier, sondern im gemeinsamen
+    /// <c>Katalograhmen</c> (gemessen in <c>Proben/Rasterprobe/katalogprobe.mjs</c>);
+    /// behoben ist sie dort.
+    ///
+    /// <para>Dieser Fall hält den BAU der Maske fest, auf dem die Behebung ruht:
+    /// Die Liste steht in ihrer Rasterhülle IM Listenblock, die Reiter stehen im
+    /// Eingabeblock, und die Fußleiste steht AUSSERHALB des Rahmens. Wandert eines
+    /// davon, greift die Regel des Rahmens nicht mehr.</para>
+    ///
+    /// <para>Die MASSE prüft nur der Browser — bunit hat kein Layout und sieht eine
+    /// Überlagerung grundsätzlich nicht.</para>
+    /// </summary>
+    [Fact]
+    public void Liste_Reiter_und_Fussleiste_stehen_an_ihren_Plaetzen()
+    {
+        var cut = Zeige();
+
+        // Die Liste steht in ihrer Huelle IM Listenblock des Rahmens - die Huelle
+        // traegt die Hoechsthoehe (1,3 x --epos-listenhoehe, siehe KatalograhmenTests).
+        Assert.Single(cut.FindAll(".epos-katalog-paar > .epos-katalog-liste .epos-raster-huelle"));
+
+        // Die Reiter mit den zwei Diagrammen stehen im EINGABEblock, nicht daneben.
+        Assert.Single(cut.FindAll(".epos-katalog-paar > .epos-katalog-eingabe .epos-reiter-leiste"));
+        Assert.Equal(2, cut.FindAll(".epos-katalog-paar > .epos-katalog-eingabe .epos-reiter-knopf").Count);
+
+        // Die Fussleiste ist ein direktes Kind der Dialogwurzel und steht damit
+        // UNTER dem Rahmen - nie in ihm.
+        var fuss = cut.FindAll(".epos-katalog-dialog > .epos-leiste").Last();
+        var beschriftungen = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Contains("Daten einlesen", beschriftungen);
+        Assert.Contains("Beenden", beschriftungen);
+        var imRahmen = cut.FindAll(".epos-katalog-paar .epos-leiste button")
+                          .Select(b => b.TextContent.Trim()).ToList();
+        Assert.DoesNotContain("Daten einlesen", imRahmen);
+        Assert.DoesNotContain("Beenden", imRahmen);
+    }
+
+    /// <summary>
+    /// „Daten einlesen" ist ein GEWÖHNLICHER Knopf. Der Anwender sah ihn „vor
+    /// Elementen" stehen — das kam von der gestauchten Rasterreihe des Rahmens und
+    /// nicht von einer eigenen Lage. Ein <c>position</c> oder <c>z-index</c> am
+    /// Knopf wäre die falsche Antwort darauf und bleibt deshalb hier verboten.
+    /// </summary>
+    [Fact]
+    public void Daten_einlesen_traegt_keine_eigene_Lage()
+    {
+        var cut = Zeige();
+
+        var knopf = cut.FindAll("button").First(b => b.TextContent.Trim() == "Daten einlesen");
+
+        Assert.Equal("epos-knopf", knopf.ClassName);
+        Assert.False(knopf.HasAttribute("style"));
     }
 }

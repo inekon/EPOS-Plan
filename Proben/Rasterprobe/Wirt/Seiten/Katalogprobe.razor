@@ -1,0 +1,390 @@
+@page "/katalogprobe"
+@using Microsoft.AspNetCore.WebUtilities
+@using EPOS.UI.Dialoge.Klimadaten
+@using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Waermepumpe
+@inject NavigationManager Navigation
+
+@*  DIE KATALOGPROBE (Auftrag KL-5).
+
+    Sie stellt einen GANZEN Katalogdialog - Rahmen, Liste und Eingabeblock -
+    in den Browser, damit sich messen laesst, was bunit nicht misst: WO die
+    Kaesten liegen. Der Anwenderbefund ist eine UEBERLAGERUNG (Reiterleiste
+    und Diagrammkasten malen ueber die Listenzeilen, der Eingabeblock ueber
+    die Fussleiste); ohne Layout ist sie nicht zu sehen.
+
+    Gaben ueber die Adresse:
+      ?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe
+      ?zeilen=35   Wie viele Katalogzeilen die Liste traegt.
+      ?bilder=1|0  Nur fuer klima: Diagramme befuellt (nach dem Import) oder
+                   Platzhalter (davor). Vor dem Import war das Bild in Ordnung.
+
+    Die Zeilen und die Bilder sind synthetisch, aber in Aufbau und MASSEN wie
+    die echten: Das Diagramm kommt aus demselben ChartRenderer.Jahresgang
+    (1 304 x 440 px), den die Windows-Huelle ruft.
+*@
+
+<div class="epos-probe-wirt">
+    @switch (_maske)
+    {
+        case "klima":
+            <KlimadatenDialog Regionen="@KlimaRegionen" Ansicht="@KlimaAnsicht"
+                              Filterstandvorgabe="@_filterstand"
+                              Importieren="@KlimaImport" Loeschen="@(n => Task.FromResult(true))"
+                              Ortsvorschlaege="@_orte" Geschlossen="@(b => { })" />
+            break;
+
+        case "bedarf":
+            <BedarfAdminDialog Art="BedarfsArt.Stromverbraucher"
+                               Katalogzeilen="@(() => BedarfZeilen())"
+                               Katalogprofil="@Katalogfilterprofil.FuerBedarf(BedarfsArt.Stromverbraucher, s => s)"
+                               Filterstandvorgabe="@_filterstand"
+                               Kopf="@(n => n.Length > 0 ? ("Beschreibung " + n, "Typ " + n) : ((string, string)?)null)"
+                               Jahressumme="@(n => n.Length > 0 ? "123,45" : "")"
+                               Loeschen="@(_ => BedarfLoeschAusgang.Geloescht)"
+                               Exists="@(_ => false)"
+                               TitelText="Stromverbraucher Verwaltung"
+                               LabelKatalog="Datenbank Stromverbraucher"
+                               LabelJahressumme="jährlicher Strombedarf:" EinheitText="MWh"
+                               BtnAendernText="Verbraucher in DB ändern"
+                               BtnNeuText="Verbraucher in DB neu"
+                               BtnTypAendernText="Typ in DB ändern"
+                               BtnLoeschenText="Verbraucher in DB löschen"
+                               MeldungKeineWahl="Bitte wählen Sie zuerst einen Verbraucher aus!"
+                               Geschlossen="@(b => { })" />
+            break;
+
+        case "modul":
+            <ModulKatalogDialog Art="ModulKatalogArt.Photovoltaik"
+                                ProfilVorgabe="@ModulProfil"
+                                Filterstandvorgabe="@_filterstand"
+                                Wege="@ModulWege"
+                                Geschlossen="@(e => { })" />
+            break;
+
+        case "waermebedarf":
+            <WaermebedarfAdminDialog Katalogzeilen="@(() => Task.FromResult(ZeitreihenZeilen()))"
+                                     Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Waermebedarf, s => s)"
+                                     Filterstandvorgabe="@_filterstand"
+                                     HatProjektzuordnung="@(_ => Task.FromResult(false))"
+                                     Loeschen="@(_ => Task.FromResult(true))"
+                                     Ordner="C:\Users\probe\AppData\Local\WP-Plan\Waermebedarf"
+                                     Geschlossen="@(b => { })" />
+            break;
+
+        case "solar":
+            <SolarganglinieAdminDialog Katalogzeilen="@(() => Task.FromResult(ZeitreihenZeilen()))"
+                                       Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Solarganglinie, s => s)"
+                                       Filterstandvorgabe="@_filterstand"
+                                       HatProjektzuordnung="@(_ => Task.FromResult(false))"
+                                       Loeschen="@(_ => Task.FromResult(true))"
+                                       Ordner="D:\VDI-3805-Daten\Solarthermie"
+                                       Geschlossen="@(b => { })" />
+            break;
+
+        case "browser":
+            <KatalogBrowserDialog Art="KatalogBrowserArt.Bhkw"
+                                  ProfilVorgabe="@BrowserProfil"
+                                  Filterstandvorgabe="@_filterstand"
+                                  Wege="@BrowserWege"
+                                  Geschlossen="@(e => { })" />
+            break;
+
+        case "waermepumpe":
+            <WaermepumpeStammDialog Filterstandvorgabe="@_filterstand"
+                                    Liste="@(() => WaermepumpenZeilen())"
+                                    Satz="@WaermepumpeSatz"
+                                    Bilder="@((id, kuehl) => new KennlinienBilder(_bild, _bild))"
+                                    HatKuehlung="@(id => true)"
+                                    Kennlinien="@(_ => Kennlinien())"
+                                    KennlinienAbgleichen="@((_, _) => true)"
+                                    Speichern="@((d, _) => new KatalogSpeicherErgebnis(true, "Gespeichert", d.Name))"
+                                    GesperrtDurch="@(_ => null)"
+                                    Loeschen="@(_ => true)"
+                                    Geschlossen="@(b => { })" />
+            break;
+
+        default:
+            <p>unbekannte Maske: @_maske</p>
+            break;
+    }
+</div>
+
+@code {
+    private string _maske = "klima";
+    private int _anzahl = 35;
+    private bool _mitBildern = true;
+
+    private readonly Katalogfilterstand _filterstand = new();
+    private readonly IReadOnlyList<string> _orte = new[] { "Stuttgart", "Berlin", "Hamburg" };
+    private byte[] _bild = Array.Empty<byte>();
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+
+        if (abfrage.TryGetValue("maske", out var m)) _maske = m.ToString();
+        if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
+        if (abfrage.TryGetValue("bilder", out var b)) _mitBildern = b.ToString() != "0";
+
+        _bild = Diagrammbild();
+    }
+
+    // ---------------------------------------------------------------- Bild
+    // DASSELBE Bild wie die Windows-Huelle: ChartRenderer.Jahresgang mit
+    // 8 760 Stundenwerten, 1 304 x 440 px. Die MASSE entscheiden hier - ein
+    // kleineres Ersatzbild verfehlte genau den Befund.
+    private static byte[] Diagrammbild()
+    {
+        var werte = new double[8760];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 10.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0)
+                     + 4.0 * Math.Sin(2 * Math.PI * i / 24.0);
+
+        return ChartRenderer.Jahresgang(
+            "Jahrestemperatur Verlauf",
+            new[] { new ChartRenderer.Reihe("Temperatur", werte, ChartRenderer.C_AUSSENTEMPERATUR) },
+            "Stunde des Jahres", "Temperatur [°C]");
+    }
+
+    // -------------------------------------------------------------- Klima
+    private Task<IReadOnlyList<Katalogfilterzeile>> KlimaRegionen()
+    {
+        var liste = new List<Katalogfilterzeile>(_anzahl);
+        for (int i = 0; i < _anzahl; i++)
+        {
+            string name = Regionsname(i);
+            bool geschuetzt = i % 7 == 0;
+            liste.Add(new Katalogfilterzeile(i + 1, name) { Geschuetzt = geschuetzt }
+                .MitText(Katalogfilterprofil.SpBezeichner, name)
+                .MitText(Katalogfilterprofil.SpQuelle, "DWD-Testreferenzjahr (Regionaldaten)")
+                .MitText(Katalogfilterprofil.SpStandort, Ortsname(i) + ", Deutschland")
+                .MitZahl(Katalogfilterprofil.SpLongitude, 9.18 + i / 100.0, 4)
+                .MitZahl(Katalogfilterprofil.SpLatitude, 48.77 + i / 100.0, 4)
+                .MitText(Katalogfilterprofil.SpImportdatum, "2026-09-18")
+                .MitKennzeichen(Katalogfilterprofil.SpSchreibschutz, geschuetzt));
+        }
+        return Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(liste);
+    }
+
+    private static string Ortsname(int i)
+    {
+        string[] orte = { "Stuttgart", "Berlin", "Hamburg", "München", "Köln", "Dresden",
+                          "Rostock", "Freiburg im Breisgau", "Kassel", "Nürnberg" };
+        return orte[i % orte.Length];
+    }
+
+    private static string Regionsname(int i)
+        // Die laufende Nummer steht MIT im Namen: Der Klimadialog haelt seine
+        // Zeilen am Bezeichner, und zwei gleiche Namen brechen den Zeichenlauf
+        // ab ("More than one sibling ... has the same key value").
+        => Ortsname(i) + " TRY " + (2015 + i % 5)
+         + " Zone " + (i % 15 + 1) + " (" + (i + 1).ToString("D2") + ")";
+
+    private Task<KlimadatenDialog.Regionsansicht> KlimaAnsicht(string name)
+        => Task.FromResult(new KlimadatenDialog.Regionsansicht(
+            "TRY-Datensatz " + name + ", Deutscher Wetterdienst, Bezugsjahr 2015",
+            9.18, 48.77,
+            _mitBildern ? _bild : null, _mitBildern ? _bild : null,
+            _mitBildern ? "" : "Keine Daten vorhanden."));
+
+    private Task<KlimaImportErgebnis> KlimaImport(KlimaImportAuftrag auftrag,
+                                                  IProgress<ImportFortschritt> fortschritt)
+        => Task.FromResult(new KlimaImportErgebnis
+        {
+            Ausgang = KlimaImportAusgang.Erfolg,
+            Bezeichner = "Stuttgart",
+            Stundenwerte = 8760,
+            Tageswerte = 365,
+            Meldung = "Die Klimaregion ist angelegt."
+        });
+
+    // ------------------------------------------------------------- Bedarf
+    private IReadOnlyList<Katalogfilterzeile> BedarfZeilen()
+    {
+        var liste = new List<Katalogfilterzeile>(_anzahl);
+        for (int i = 0; i < _anzahl; i++)
+        {
+            string name = "Verbraucher " + (i + 1).ToString("D2");
+            liste.Add(new Katalogfilterzeile(i + 1, name)
+                .MitText(Katalogfilterprofil.SpBezeichner, name)
+                .MitText(Katalogfilterprofil.SpTyp, "Produktion Schicht " + (i % 3 + 1))
+                .MitZahl(Katalogfilterprofil.SpJahressummeMwh, 12.5 + i, 3)
+                .MitText(Katalogfilterprofil.SpBeschreibung, "Beschreibung zu " + name)
+                .MitKennzeichen(Katalogfilterprofil.SpAuslieferung, i % 7 == 0));
+        }
+        return liste;
+    }
+
+    // -------------------------------------------------------- Zeitreihen
+    private IReadOnlyList<Katalogfilterzeile> ZeitreihenZeilen()
+    {
+        var liste = new List<Katalogfilterzeile>(_anzahl);
+        for (int i = 0; i < _anzahl; i++)
+        {
+            string name = "Ganglinie " + (i + 1).ToString("D2");
+            var zeile = new Katalogfilterzeile(i + 1, name) { Geschuetzt = i % 7 == 0 };
+            zeile.MitText(Katalogfilterprofil.SpBezeichner, name);
+            zeile.MitText(Katalogfilterprofil.SpBeschreibung, "Beschreibung zu " + name);
+            zeile.MitZahl(Katalogfilterprofil.SpZeitintervall, 15, 0);
+            zeile.MitZahl(Katalogfilterprofil.SpJahresarbeitMwh, 120.0 + i, 1);
+            zeile.MitZahl(Katalogfilterprofil.SpSpitzeKw, 45.0 + i, 1);
+            liste.Add(zeile);
+        }
+        return liste;
+    }
+
+    // -------------------------------------------------------------- Modul
+    private ModulKatalogProfil ModulProfil =>
+        ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik,
+                                 s => Resource.ResourceManager.GetString(s) ?? s);
+
+    private ModulKatalogWege ModulWege => new()
+    {
+        Katalogzeilen = ModulZeilen,
+        Detail = ModulFelder,
+        Speichern = (f, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", Modulname(f)),
+        Loeschen = n => new KatalogSpeicherErgebnis(true, "", n)
+    };
+
+    private static string Modulname(IReadOnlyList<ModulFeldwert> felder)
+        => felder.First(x => x.Schluessel == ModulKatalogProfil.FeldBezeichner).Wert;
+
+    private IReadOnlyList<Katalogfilterzeile> ModulZeilen()
+    {
+        string[] firmen = { "Ablytek", "Jinkosolar", "Canadian Solar", "Q-Cells", "Trina" };
+        var liste = new List<Katalogfilterzeile>(_anzahl);
+        for (int i = 0; i < _anzahl; i++)
+        {
+            string name = "Modul " + (i + 1).ToString("D2") + " 400 Wp";
+            liste.Add(new Katalogfilterzeile(i + 1, name)
+                .MitText(Katalogfilterprofil.SpBezeichner, name)
+                .MitText(Katalogfilterprofil.SpHersteller, firmen[i % firmen.Length]));
+        }
+        return liste;
+    }
+
+    private IReadOnlyList<ModulFeldwert> ModulFelder(string name)
+    {
+        var liste = new List<ModulFeldwert>();
+        foreach (var feld in ModulProfil.Felder)
+        {
+            string wert = feld.Schluessel == ModulKatalogProfil.FeldBezeichner ? name
+                        : feld.Art == BrowserFeldArt.Zahl ? "12,50"
+                        : feld.Art == BrowserFeldArt.Ganzzahl ? "6000"
+                        : "Wert";
+            liste.Add(new ModulFeldwert
+            {
+                Schluessel = feld.Schluessel,
+                Bezeichnung = feld.Bezeichnung,
+                Einheit = feld.Einheit,
+                Art = feld.Art,
+                LeerErlaubt = feld.LeerErlaubt,
+                Gesperrt = feld.Gesperrt,
+                Gruppe = feld.Gruppe,
+                Wert = wert
+            });
+        }
+        return liste;
+    }
+
+    // ------------------------------------------------------------ Browser
+    private KatalogBrowserProfil BrowserProfil =>
+        KatalogBrowserProfil.Finde(KatalogBrowserArt.Bhkw,
+                                   s => Resource.ResourceManager.GetString(s) ?? s);
+
+    private KatalogBrowserWege BrowserWege => new()
+    {
+        Katalogzeilen = BrowserZeilen,
+        Detail = BrowserFelder,
+        Existiert = _ => false,
+        Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
+        Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n),
+        IstGeschuetzt = _ => false
+    };
+
+    private IReadOnlyList<Katalogfilterzeile> BrowserZeilen()
+    {
+        string[] firmen = { "Alpha Energie", "Beta Motoren", "Gamma Kraft", "Delta BHKW" };
+        var liste = new List<Katalogfilterzeile>(_anzahl);
+        for (int i = 0; i < _anzahl; i++)
+        {
+            string name = "BHKW " + (i + 1).ToString("D2");
+            liste.Add(new Katalogfilterzeile(i + 1, name)
+                .MitText(Katalogfilterprofil.SpBezeichner, name)
+                .MitText(Katalogfilterprofil.SpHersteller, firmen[i % firmen.Length])
+                .MitZahl(Katalogfilterprofil.SpNennleistung, 50.0 + i, 1));
+        }
+        return liste;
+    }
+
+    private IReadOnlyList<BrowserFeldwert> BrowserFelder(string name)
+    {
+        var liste = new List<BrowserFeldwert>();
+        foreach (var feld in BrowserProfil.Detailfelder)
+        {
+            string wert = feld.Schluessel == KatalogBrowserProfil.FeldBezeichner ? name
+                        : feld.Art == BrowserFeldArt.Schalter ? "1"
+                        : feld.Art == BrowserFeldArt.Zahl ? "12,50"
+                        : feld.Art == BrowserFeldArt.Ganzzahl ? "70"
+                        : "Wert " + feld.Schluessel;
+            liste.Add(new BrowserFeldwert
+            {
+                Schluessel = feld.Schluessel,
+                Bezeichnung = feld.Bezeichnung,
+                Einheit = feld.Einheit,
+                Art = feld.Art,
+                Editierbar = feld.Editierbar,
+                Wert = wert
+            });
+        }
+        return liste;
+    }
+
+    // -------------------------------------------------------- Waermepumpe
+    private IReadOnlyList<Katalogfilterzeile> WaermepumpenZeilen()
+    {
+        string[] firmen = { "Alpha", "Beta", "Gamma", "Delta" };
+        string[] quellen = { "Luft-Wasser", "Sole-Wasser", "Wasser-Wasser" };
+        var liste = new List<Katalogfilterzeile>(_anzahl);
+        for (int i = 0; i < _anzahl; i++)
+        {
+            string name = "WP " + (i + 1).ToString("D2");
+            liste.Add(new Katalogfilterzeile(i + 1, name) { Geschuetzt = i % 7 == 0 }
+                .MitText(Katalogfilterprofil.SpHersteller, firmen[i % firmen.Length])
+                .MitText(Katalogfilterprofil.SpBezeichner, name)
+                .MitText(Katalogfilterprofil.SpQuelle, quellen[i % quellen.Length])
+                .MitZahl(Katalogfilterprofil.SpNennleistung, 12.0 + i)
+                .MitZahl(Katalogfilterprofil.SpVlMax, 55.0, 0)
+                .MitZahl(Katalogfilterprofil.SpKuehlleistung, 6.5 + i, 1));
+        }
+        return liste;
+    }
+
+    private static IReadOnlyList<KennlinienZeile> Kennlinien() => new List<KennlinienZeile>
+    {
+        new() { Id = 1, Vorlauf = 35, Temperatur = -7, Cop = 2.8, Ptherm = 6.1 },
+        new() { Id = 2, Vorlauf = 35, Temperatur = 2, Cop = 3.6, Ptherm = 8.4 },
+        new() { Id = 3, Vorlauf = 55, Temperatur = 7, Cop = 3.1, Ptherm = 9.8 }
+    };
+
+    private static WaermepumpeStammDaten WaermepumpeSatz(int id) => new()
+    {
+        Id = id,
+        Name = "WP " + id.ToString("D2"),
+        Firma = "Alpha",
+        Beschreibung = "Probegerät",
+        Typ = "Luft-Wasser",
+        Baujahr = 2023,
+        Aufstellung = "Innenaufstellung",
+        Nennleistung = 12,
+        Heizstab = 6,
+        Regelung = "stetig",
+        Kuehlleistung = 8.5,
+        Modulkosten = 4000,
+        MaxPtherm = 14,
+        NurLesen = false
+    };
+}

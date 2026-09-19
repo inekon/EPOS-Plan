@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Knopfleisten Administration</title>
+<meta name="description" content="Mockup DL-2: die Fussleisten der zehn abweichenden Administrationsdialoge heute und nach der Hausregel">
+<!--
+  MOCKUP zum Anwenderentscheid vom 19.09.2026:
+
+    "Pruefe alle Dialoge [des Administrationsmenues] auf Ueberlappung und
+     Uebersichtlichkeit/Anordnung Buttons."
+
+  Entscheid: alle abweichenden Dialoge an die Hausregel angleichen, je Dialog
+  ein Mockup zur Abnahme; umgebaut wird erst danach (DL-2). Die Ueberlappung
+  ist getrennt behoben (KL-5).
+
+  Gehoert zu Dokumentation/aktuell/Konzept_Knopfleisten_Administration_EPOS-Plan.md;
+  die Kennungen DL-Q1 bis DL-Q6 verweisen auf dessen Abschnitt 3.
+
+  ES IST EIN SCHEMA, kein Abbild der Masken: Je Komponente stehen nur die
+  Knopfleisten - "heute" und "Vorschlag" -, jede Leiste mit dem Ort, an dem sie
+  in der Maske sitzt (Fuss, Katalogspalte, Detailblock, Blatt, Reiter). Der
+  Inhalt dazwischen ist ein grauer Platzhalter.
+
+  EIGENSTAENDIG: kein CDN, kein Rahmenwerk, keine Schriftdatei von aussen. Die
+  Farben und Masse sind aus EPOS.UI/wwwroot/epos-ui.css uebernommen (.epos-leiste
+  gap 12 px, .epos-knopf 44 px hoch / 88 px breit / Ecke 6 px / cremefarben
+  #f5f4ef / Rahmen #b4b2a9, .epos-knopf--primaer #0F1F3D mit weisser Schrift,
+  .epos-leiste-fueller flex 1). KEINE neue Farbe; die einzige Zugabe ist die
+  gestrichelte Umrandung, die den Fueller SICHTBAR macht - in der Maske ist er
+  leer.
+
+  KEINE HERSTELLER- UND PRODUKTDATEN: Die Platzhalter tragen neutrale Namen.
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-karte-flaeche: #ffffff;
+    --epos-karte-flaeche-hover: #EFF6FF;
+    --epos-karte-titel: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-quelle-text: #185FA5;
+    --epos-senke-text: #993C1D;
+
+    --epos-warn-rahmen: rgb(200, 138, 0);
+    --epos-warn-flaeche: rgb(255, 246, 224);
+    --epos-warn-text: rgb(138, 91, 0);
+    --epos-erfolg-rahmen: rgb(34, 139, 34);
+    --epos-erfolg-flaeche: rgb(240, 250, 240);
+    --epos-erfolg-text: rgb(24, 98, 24);
+
+    --epos-rand: 10px;
+    --epos-ecke: 6px;
+    --epos-touchziel: 44px;
+
+    --epos-marke: #005aa0;
+    --epos-marke-trennlinie: #dee3e8;
+    --epos-menue-flaeche: #f0f8ff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0 0 48px 0;
+    font-family: var(--epos-schrift);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text);
+    background: #ffffff;
+    line-height: 1.45;
+}
+
+/* ================= Kopf der Mockup-Seite (nicht Teil der Maske) ========= */
+.mockup-kopf {
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+    padding: 14px 24px 10px 24px;
+}
+.mockup-kopf h1 { margin: 0; font-size: 20px; color: var(--epos-marke); }
+.mockup-kopf p  { margin: 6px 0 0 0; color: var(--epos-text-leise); max-width: 104ch; }
+
+.mockup-inhalt { padding: 0 16px; max-width: 1240px; }
+@media (min-width: 720px) { .mockup-inhalt { padding: 0 24px; } }
+
+.mockup-hinweis {
+    margin: 16px 0 14px 0; padding: 8px 12px;
+    border-left: 4px solid var(--epos-marke);
+    background: var(--epos-karte-flaeche-hover); color: var(--epos-karte-titel);
+}
+
+/* ================= Uebersicht ============================================ */
+.uebersicht-huelle { width: 100%; overflow-x: auto; margin: 12px 0 8px 0; }
+table.uebersicht {
+    border-collapse: collapse; width: 100%; min-width: 720px;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+}
+table.uebersicht th, table.uebersicht td {
+    text-align: left; vertical-align: top; padding: 7px 10px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+table.uebersicht th {
+    background: var(--epos-karte-titel); color: var(--epos-gruppenkopf-text); font-weight: 600;
+}
+table.uebersicht tr:last-child td { border-bottom: none; }
+table.uebersicht td.nr { width: 2.2em; color: var(--epos-text-leise); }
+table.uebersicht td.aufwand { width: 5em; white-space: nowrap; }
+table.uebersicht a { color: var(--epos-quelle-text); text-decoration: none; }
+table.uebersicht a:hover { text-decoration: underline; }
+
+.marke {
+    display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px;
+    border: 1px solid var(--epos-rahmen-leise); background: var(--epos-flaeche); white-space: nowrap;
+}
+.marke--s { border-color: var(--epos-erfolg-rahmen); background: var(--epos-erfolg-flaeche); color: var(--epos-erfolg-text); }
+.marke--m { border-color: var(--epos-warn-rahmen); background: var(--epos-warn-flaeche); color: var(--epos-warn-text); }
+.marke--frage { border-color: var(--epos-quelle-text); background: var(--epos-karte-flaeche-hover); color: var(--epos-quelle-text); }
+
+/* ================= Legende ============================================== */
+.mockup-legende {
+    display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center;
+    margin: 8px 0 20px 0; padding: 8px 12px;
+    border: 1px dashed var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    color: var(--epos-text-leise);
+}
+.mockup-legende .epos-knopf { min-height: 32px; min-width: 0; padding: 2px 10px; cursor: default; }
+.mockup-legende .epos-leiste-fueller { min-width: 64px; min-height: 32px; }
+
+/* ================= Ein Abschnitt je Komponente ========================= */
+section.komponente {
+    margin: 0 0 30px 0; padding: 0 0 10px 0;
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+}
+section.komponente h2 {
+    margin: 22px 0 2px 0; font-size: 17px; color: var(--epos-karte-titel);
+}
+section.komponente h2 small { font-weight: 400; color: var(--epos-text-leise); font-size: 13px; }
+section.komponente .pfad { margin: 0 0 10px 0; color: var(--epos-text-leise); }
+section.komponente .pfad code { font-size: 12px; }
+
+.gegenueber { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 980px) { .gegenueber { grid-template-columns: 1fr 1fr; } }
+
+.tafel {
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche); padding: 10px 12px 12px 12px; min-width: 0;
+}
+.tafel h3 {
+    margin: 0 0 8px 0; font-size: 13px; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--epos-text-leise);
+}
+.tafel--vorschlag h3 { color: var(--epos-quelle-text); }
+
+/* Die Maske im Schema: Platzhalter fuer den Inhalt, dazwischen die Leisten. */
+.platz {
+    border: 1px dashed var(--epos-rahmen-leise); border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche); color: var(--epos-text-sehr-leise);
+    padding: 10px 12px; margin: 6px 0; font-style: italic;
+}
+.platz--hoch { min-height: 64px; display: flex; align-items: center; }
+.spalten { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 560px) { .spalten { grid-template-columns: 1fr 1fr; } }
+.spalte { border: 1px dashed var(--epos-rahmen-leise); border-radius: var(--epos-ecke); padding: 8px; min-width: 0; }
+.spalte .ort { margin-top: 0; }
+
+.ort {
+    margin: 10px 0 2px 0; font-size: 12px; color: var(--epos-text-leise);
+}
+.ort b { color: var(--epos-text); font-weight: 600; }
+.ort--weg { text-decoration: line-through; color: var(--epos-text-sehr-leise); }
+
+/* Der Baustein, nachgebildet: .epos-leiste / .epos-knopf / --primaer / -fueller */
+.epos-leiste {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+    padding: 6px; border-radius: var(--epos-ecke);
+    border: 1px solid transparent;
+}
+.epos-leiste--fuss { border-color: var(--epos-rahmen-leise); background: #fbfbf9; }
+.epos-leiste--falsch { border-color: var(--epos-warn-rahmen); background: var(--epos-warn-flaeche); }
+.epos-leiste-fueller {
+    flex: 1 1 auto; min-height: 28px; min-width: 40px;
+    border: 1px dashed var(--epos-rahmen); border-radius: var(--epos-ecke);
+    color: var(--epos-text-sehr-leise); font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+}
+.epos-leiste-fueller::after { content: "Füller"; }
+.epos-status { flex: 1 1 auto; text-align: right; color: var(--epos-text-leise); font-size: 12px; }
+.epos-knopf {
+    flex: 0 1 auto; min-height: var(--epos-touchziel); min-width: 88px;
+    padding: 4px 12px; font: inherit; color: var(--epos-text);
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+    white-space: normal; overflow-wrap: break-word; cursor: default;
+}
+.epos-knopf--primaer {
+    color: var(--epos-gruppenkopf-text);
+    background: var(--epos-karte-titel); border-color: var(--epos-karte-titel);
+}
+.epos-knopf:disabled {
+    color: var(--epos-text-sehr-leise); background: var(--epos-flaeche);
+    border-color: var(--epos-rahmen-leise);
+}
+.epos-knopf--blatt { border-style: dotted; }     /* bleibt im Blatt, keine Leistenaktion */
+.epos-knopf--neu { box-shadow: 0 0 0 2px var(--epos-karte-flaeche-hover), 0 0 0 3px var(--epos-quelle-text); }
+.epos-knopf--zr { min-width: 0; padding: 4px 10px; }
+
+/* ================= Text unter der Gegenueberstellung ==================== */
+.begruendung { margin: 12px 0 0 0; display: grid; grid-template-columns: 1fr; gap: 8px 16px; }
+@media (min-width: 980px) { .begruendung { grid-template-columns: 1fr 1fr; } }
+.begruendung p { margin: 0; }
+.begruendung b { color: var(--epos-karte-titel); }
+.begruendung .logbuch {
+    grid-column: 1 / -1; padding: 6px 10px; border-left: 3px solid var(--epos-rahmen);
+    background: var(--epos-flaeche); color: var(--epos-text-leise);
+}
+.begruendung .logbuch b { color: var(--epos-text-leise); }
+.begruendung .frage {
+    grid-column: 1 / -1; padding: 6px 10px; border-left: 3px solid var(--epos-quelle-text);
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.mockup-fuss { margin: 22px 0 0 0; color: var(--epos-text-leise); }
+.mockup-fuss code { font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header class="mockup-kopf">
+  <h1>Knopfleisten der Administrationsdialoge &ndash; Mockup zum Anwenderentscheid vom 19.09.2026 (DL&#8209;2)</h1>
+  <p>Zehn Komponenten hinter siebzehn Men&uuml;punkten weichen von der Hausregel ab. Je Komponente steht
+     unten die Leiste, wie sie heute ist, und der Vorschlag &ndash; als Schema, nur die Kn&ouml;pfe. Abgenommen
+     wird je Abschnitt; erst danach wird umgebaut. Begr&uuml;ndung, Risiken und Reihenfolge stehen im Konzept
+     <code>Konzept_Knopfleisten_Administration_EPOS-Plan.md</code>.</p>
+</header>
+
+<main class="mockup-inhalt">
+
+<div class="mockup-hinweis">
+  <b>Die Hausregel.</b> Eine Fu&szlig;leiste je Dialog: <b>Aktionen &middot; F&uuml;ller &middot; Abbrechen &middot; OK</b> (prim&auml;r) &ndash;
+  geschrieben wird nur im OK-Weg. Ein Katalogdialog, dessen Bearbeitung sofort in den Katalog schreibt, tr&auml;gt statt
+  OK/Abbrechen einen prim&auml;ren <b>Beenden</b>-Knopf am Ende. Leseregel: links vom F&uuml;ller wirkt ein Knopf auf den
+  Eingabeblock oder eine Ansicht, rechts auf die Liste; der Schlussknopf ist der einzige prim&auml;re der Maske.
+</div>
+
+<h2 id="uebersicht" style="font-size:15px;margin:18px 0 0 0;">&Uuml;bersicht</h2>
+<div class="uebersicht-huelle">
+<table class="uebersicht">
+  <thead><tr><th>#</th><th>Komponente (Men&uuml;punkte)</th><th>Vorschlag</th><th>Aufwand</th><th>Entscheid</th></tr></thead>
+  <tbody>
+    <tr><td class="nr">1</td><td><a href="#k1">Geb&auml;ude</a> (Geb&auml;ude &rarr; Bearbeiten)</td><td>Verwaltung: F&uuml;ller &middot; Beenden; Projekt: &Auml;ndern&hellip; &middot; Simulation&hellip; &middot; F&uuml;ller &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--m">M</span></td><td><span class="marke marke--frage">DL-Q1</span></td></tr>
+    <tr><td class="nr">2</td><td><a href="#k2">Geb&auml;udetypen</a></td><td>Typ speichern &middot; F&uuml;ller &middot; Typ hinzuf&uuml;gen &middot; Typ l&ouml;schen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td>&ndash;</td></tr>
+    <tr><td class="nr">3</td><td><a href="#k3">Bedarfskataloge</a> (Brauchwasser, Prozessw&auml;rme, Stromverbraucher)</td><td>Grafik&hellip; &middot; Typ &auml;ndern&hellip; &middot; F&uuml;ller &middot; Neu&hellip; &middot; &Auml;ndern&hellip; &middot; L&ouml;schen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td>&ndash;</td></tr>
+    <tr><td class="nr">4</td><td><a href="#k4">W&auml;rmepumpen</a></td><td>Speichern &middot; Kennliniendaten&hellip; &middot; F&uuml;ller &middot; Neu &middot; L&ouml;schen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td>&ndash;</td></tr>
+    <tr><td class="nr">5</td><td><a href="#k5">Lastspitzenkappung</a></td><td>Berechnen bleibt im Blatt (ohne Prim&auml;rfarbe); CSV-Export &middot; In Variante &uuml;bernehmen &middot; F&uuml;ller &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q2</span></td></tr>
+    <tr><td class="nr">6</td><td><a href="#k6">Kostenverwaltung</a> (Kosten &rarr; Kostenvorlagen)</td><td>Reiterleiste bleibt; Fu&szlig; Status &middot; Speichern &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q3</span></td></tr>
+    <tr><td class="nr">7</td><td><a href="#k7">Energietr&auml;ger</a> (Kosten &rarr; Energietr&auml;ger)</td><td>Listenleiste bleibt; &bdquo;Stammwerte speichern&ldquo; entf&auml;llt; Fu&szlig; Status &middot; Speichern &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--m">M</span></td><td><span class="marke marke--frage">DL-Q3, DL-Q5</span></td></tr>
+    <tr><td class="nr">8</td><td><a href="#k8">PV-Modul- und Wechselrichter-Import</a></td><td>F&uuml;ller &middot; Auswahl &uuml;bernehmen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q4</span></td></tr>
+    <tr><td class="nr">9</td><td><a href="#k9">Katalogimport</a> (Heizkessel, W&auml;rmepumpen, Solarthermie, Pufferspeicher, Stromspeicher)</td><td>F&uuml;ller &middot; Auswahl &uuml;bernehmen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q4</span></td></tr>
+    <tr><td class="nr">10</td><td><a href="#k10">Einstellungen</a></td><td>Standardwerte &middot; F&uuml;ller &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q6</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="mockup-legende">
+  <span><b>Legende:</b></span>
+  <span class="epos-knopf">Knopf</span>
+  <span class="epos-knopf epos-knopf--primaer">prim&auml;r (einer je Maske)</span>
+  <button type="button" class="epos-knopf" disabled>gesperrt</button>
+  <span class="epos-leiste-fueller"></span>
+  <span class="epos-knopf epos-knopf--blatt">bleibt im Blatt</span>
+  <span class="epos-knopf epos-knopf--neu">neu an dieser Stelle</span>
+  <span>gelb umrandet = Leiste, die gegen die Regel steht</span>
+</div>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k1">
+  <h2>1 &middot; Geb&auml;ude <small>&ndash; Geb&auml;ude &rarr; Bearbeiten (Verwaltung); derselbe Dialog im Projekt</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Bedarf/GebaeudeDialog.razor</code> &middot; H&uuml;lle <code>Views/Geb&auml;ude/GebaeudeHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; drei Leisten</h3>
+      <div class="spalten">
+        <div class="spalte">
+          <p class="ort"><b>Projektliste</b> (nur im Projekt)</p>
+          <div class="platz platz--hoch">Geb&auml;ude im Projekt&hellip;</div>
+        </div>
+        <div class="spalte">
+          <p class="ort"><b>Katalogspalte</b> &bdquo;Geb&auml;ude in DB&ldquo;</p>
+          <div class="platz">Filter, Liste&hellip;</div>
+          <div class="epos-leiste epos-leiste--falsch">
+            <span class="epos-knopf">Geb&auml;ude in DB &auml;ndern&hellip;</span>
+            <span class="epos-knopf">Geb&auml;ude in DB neu&hellip;</span>
+            <span class="epos-knopf">Geb&auml;ude in DB l&ouml;schen</span>
+            <span class="epos-knopf">Geb&auml;udetyp in DB &auml;ndern&hellip;</span>
+          </div>
+        </div>
+      </div>
+      <p class="ort"><b>Detailblock</b> &bdquo;Geb&auml;ude: Verbrauch&ldquo; (nur im Projekt)</p>
+      <div class="platz">Name, Art, Beschreibung, Fl&auml;che, Art der Angabe&hellip;</div>
+      <div class="epos-leiste epos-leiste--falsch">
+        <span class="epos-knopf">&Auml;ndern</span>
+        <span class="epos-knopf">Simulation&hellip;</span>
+      </div>
+      <p class="ort"><b>Fu&szlig;</b> (Verwaltung und Projekt)</p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-status">Status</span>
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf epos-knopf--primaer">OK</span>
+      </div>
+    </div>
+
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag &ndash; Katalogspalte beh&auml;lt ihre Listenleiste, eine Fu&szlig;leiste</h3>
+      <div class="spalten">
+        <div class="spalte">
+          <p class="ort"><b>Projektliste</b> (nur im Projekt)</p>
+          <div class="platz platz--hoch">Geb&auml;ude im Projekt&hellip;</div>
+        </div>
+        <div class="spalte">
+          <p class="ort"><b>Katalogspalte</b> &ndash; Listenleiste, kein Schlussknopf</p>
+          <div class="platz">Filter, Liste&hellip;</div>
+          <div class="epos-leiste">
+            <span class="epos-knopf">Neu&hellip;</span>
+            <span class="epos-knopf">&Auml;ndern&hellip;</span>
+            <span class="epos-knopf">L&ouml;schen</span>
+            <span class="epos-knopf epos-knopf--blatt" title="DL-Q1">Geb&auml;udetyp&hellip; <small>(DL-Q1)</small></span>
+          </div>
+        </div>
+      </div>
+      <p class="ort"><b>Detailblock</b> ohne Kn&ouml;pfe</p>
+      <div class="platz">Name, Art, Beschreibung, Fl&auml;che, Art der Angabe&hellip;</div>
+      <p class="ort"><b>Fu&szlig; in der Verwaltung</b> &ndash; Katalogmuster</p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf epos-knopf--primaer epos-knopf--neu">Beenden</span>
+      </div>
+      <p class="ort"><b>Fu&szlig; im Projekt</b> &ndash; Hausregel</p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-knopf epos-knopf--neu">&Auml;ndern&hellip;</span>
+        <span class="epos-knopf epos-knopf--neu">Simulation&hellip;</span>
+        <span class="epos-status">Status</span>
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf epos-knopf--primaer">OK</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> In der Verwaltung schreibt jede Katalogaktion sofort (Editor, L&ouml;schen) &ndash; OK und Abbrechen
+       nahmen nichts zur&uuml;ck und waren eine Behauptung; das Katalogmuster sagt mit &bdquo;Beenden&ldquo; die Wahrheit.
+       Im Projekt f&uuml;hrt der Dialog einen Arbeitsstand (die Projektliste), also bleibt OK/Abbrechen, und die zwei Kn&ouml;pfe
+       des Detailblocks wandern in die eine Fu&szlig;leiste.</p>
+    <p><b>Risiko.</b> Zwei Kn&ouml;pfe stehen an neuer Stelle; die Katalogspalte beh&auml;lt ihre Leiste, weil sie zur
+       Liste geh&ouml;rt (wie die Regionsknöpfe im Klimadatendialog). Kein Arbeitsstand nachzur&uuml;sten &ndash; der Katalog
+       bleibt Katalog. <b>Aufwand M</b> (zwei Betriebsarten, Aktionsschlitz der <code>SpeichernLeiste</code>).</p>
+    <p class="frage"><b>DL-Q1:</b> &bdquo;Geb&auml;udetyp in DB &auml;ndern&hellip;&ldquo; hat in der Verwaltung einen Zwilling im Men&uuml;
+       (Geb&auml;ude &rarr; Geb&auml;udetypen). <b>Empfehlung:</b> nur im Projektdialog behalten, in der Verwaltung streichen.</p>
+    <p class="logbuch"><b>Logbuch:</b> Die Geb&auml;udeverwaltung schlie&szlig;t mit &bdquo;Beenden&ldquo;; im Projektdialog stehen
+       &bdquo;&Auml;ndern&ldquo; und &bdquo;Simulation&ldquo; in der Schlussleiste.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k2">
+  <h2>2 &middot; Geb&auml;udetypen <small>&ndash; Geb&auml;ude &rarr; Geb&auml;udetypen</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Bedarf/GebaeudetypDialog.razor</code> &middot; H&uuml;lle <code>Views/Bedarf/GebaeudetypHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; Prim&auml;r nicht am Ende, kein F&uuml;ller</h3>
+      <div class="platz platz--hoch">Typliste, Beschreibung, Kurvenliste, 24 Stundenfelder, Tagesbild&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss epos-leiste--falsch">
+        <span class="epos-knopf">Typ hinzuf&uuml;gen</span>
+        <span class="epos-knopf">Typ L&ouml;schen</span>
+        <span class="epos-knopf epos-knopf--primaer">Typ Speichern</span>
+        <span class="epos-knopf">OK</span>
+      </div>
+    </div>
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag &ndash; Katalogmuster</h3>
+      <div class="platz platz--hoch">Typliste, Beschreibung, Kurvenliste, 24 Stundenfelder, Tagesbild&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-knopf">Typ speichern</span>
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf">Typ hinzuf&uuml;gen</span>
+        <span class="epos-knopf">Typ l&ouml;schen</span>
+        <span class="epos-knopf epos-knopf--primaer epos-knopf--neu">Beenden</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> Alle drei Aktionen schreiben sofort in den Katalog (Anlegen, Speichern, L&ouml;schen) &ndash; das ist
+       das Katalogmuster von <code>ModulKatalogDialog</code>: Speichern links, Listenaktionen rechts, Beenden prim&auml;r
+       am Ende. &bdquo;OK&ldquo; hie&szlig; hier schon immer nur schlie&szlig;en.</p>
+    <p><b>Risiko.</b> Die Hervorhebung wandert vom Speichern zum Beenden; Speichern bleibt gesperrt, solange kein
+       &auml;nderbarer Typ gew&auml;hlt ist (Auslieferungsbestand). Kein Knopf f&auml;llt weg. <b>Aufwand S.</b></p>
+    <p class="logbuch"><b>Logbuch:</b> Die Geb&auml;udetypen-Verwaltung ordnet ihre Kn&ouml;pfe wie die &uuml;brigen Kataloge:
+       Speichern links, Beenden rechts.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k3">
+  <h2>3 &middot; Bedarfskataloge <small>&ndash; Brauchwasser, Prozessw&auml;rme, Stromverbraucher (eine Komponente, drei Auspr&auml;gungen)</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Bedarf/BedarfAdminDialog.razor</code> &middot; H&uuml;lle <code>Views/Bedarf/BedarfAdminHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; Aktionsleiste ohne Prim&auml;r + OK/Abbrechen</h3>
+      <div class="platz platz--hoch">Katalograhmen: Liste, Eingabeblock (Name, Beschreibung, Typ)&hellip;</div>
+      <p class="ort"><b>Aktionsleiste</b></p>
+      <div class="epos-leiste epos-leiste--falsch">
+        <span class="epos-knopf">&Auml;ndern</span>
+        <span class="epos-knopf">Neu</span>
+        <span class="epos-knopf">Typ &auml;ndern</span>
+        <span class="epos-knopf">L&ouml;schen</span>
+        <span class="epos-knopf">Grafik</span>
+      </div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss epos-leiste--falsch">
+        <span class="epos-status">Status</span>
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf epos-knopf--primaer">OK</span>
+      </div>
+    </div>
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag &ndash; eine Leiste, Katalogmuster</h3>
+      <div class="platz platz--hoch">Katalograhmen: Liste, Eingabeblock (Name, Beschreibung, Typ)&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-knopf">Grafik&hellip;</span>
+        <span class="epos-knopf">Typ &auml;ndern&hellip;</span>
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf">Neu&hellip;</span>
+        <span class="epos-knopf">&Auml;ndern&hellip;</span>
+        <span class="epos-knopf">L&ouml;schen</span>
+        <span class="epos-knopf epos-knopf--primaer epos-knopf--neu">Beenden</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> Stammkopf, Wochenprofil und L&ouml;schen schreiben sofort in den Katalog; OK/Abbrechen nahmen nichts
+       zur&uuml;ck. Nach der Leseregel stehen Grafik (Ansicht der Zeile) und Typ &auml;ndern (Nachbarkatalog der Profile)
+       links, die Zeilenaktionen rechts, Beenden prim&auml;r am Ende &ndash; und die zweite Leiste entf&auml;llt.</p>
+    <p><b>Risiko.</b> Der Weg &bdquo;Abbrechen&ldquo; entf&auml;llt; Esc und &#10005; schlie&szlig;en wie Beenden. Die drei
+       Punkte an &bdquo;&Auml;ndern&hellip;/Neu&hellip;&ldquo; sagen, dass ein Fenster aufgeht (wie im Geb&auml;udedialog).
+       Kein Knopf f&auml;llt weg. <b>Aufwand S.</b></p>
+    <p class="logbuch"><b>Logbuch:</b> Die Verwaltungen Brauchwasser, Prozessw&auml;rme und Stromverbraucher schlie&szlig;en
+       mit &bdquo;Beenden&ldquo;; OK und Abbrechen entfallen.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k4">
+  <h2>4 &middot; W&auml;rmepumpen <small>&ndash; Energiesysteme &rarr; W&auml;rmepumpen</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor</code> &middot; H&uuml;lle <code>Views/W&auml;rmepumpe/WaermepumpeStammHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; richtig besetzt, aber ohne F&uuml;ller</h3>
+      <div class="platz platz--hoch">Liste der Stamms&auml;tze, Felder, zwei Kennlinienbilder in Reitern&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss epos-leiste--falsch">
+        <span class="epos-knopf">Kennliniendaten Ansicht/Bearbeiten&hellip;</span>
+        <span class="epos-knopf">Speichern</span>
+        <span class="epos-knopf">Neu</span>
+        <span class="epos-knopf">L&ouml;schen</span>
+        <span class="epos-knopf epos-knopf--primaer">Beenden</span>
+      </div>
+    </div>
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag &ndash; Katalogmuster</h3>
+      <div class="platz platz--hoch">Liste der Stamms&auml;tze, Felder, zwei Kennlinienbilder in Reitern&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-knopf">Speichern</span>
+        <span class="epos-knopf">Kennliniendaten&hellip;</span>
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf">Neu</span>
+        <span class="epos-knopf">L&ouml;schen</span>
+        <span class="epos-knopf epos-knopf--primaer">Beenden</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> Speichern und der Kennlinieneditor wirken auf den markierten Satz (Eingabeblock), Neu und L&ouml;schen
+       auf die Liste &ndash; die Leseregel trennt sie durch den F&uuml;ller, wie in <code>ModulKatalogDialog</code>.
+       Der lange Knopftext wird kurz; die &Uuml;berlagerung tr&auml;gt den vollen Titel.</p>
+    <p><b>Risiko.</b> Nur die Anordnung &auml;ndert sich, kein Knopf f&auml;llt weg, kein Schreibweg wandert.
+       <b>Aufwand S.</b></p>
+    <p class="logbuch"><b>Logbuch:</b> Die W&auml;rmepumpen-Verwaltung ordnet ihre Kn&ouml;pfe wie die &uuml;brigen Kataloge.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k5">
+  <h2>5 &middot; Lastspitzenkappung <small>&ndash; Bedarf &amp; Lastg&auml;nge &rarr; Lastspitzenkappung</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Strom/PeakShavingDialog.razor</code> &middot; H&uuml;lle <code>Views/Stromspeicher/PeakShavingHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; der Rechenknopf ist der einzige prim&auml;re, der Schlussknopf keiner</h3>
+      <div class="platz">Lastgang w&auml;hlen oder importieren&hellip;</div>
+      <div class="platz">Parameter: Zielschwelle <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">Minimale haltbare Schwelle ermitteln</span>, Speichergr&ouml;&szlig;e, Preise&hellip;</div>
+      <p class="ort"><b>Im Blatt</b> zwischen Parametern und Ergebnis</p>
+      <div class="epos-leiste epos-leiste--falsch">
+        <span class="epos-knopf epos-knopf--primaer">Berechnen</span>
+      </div>
+      <div class="platz platz--hoch">Ergebnis in Reitern: Kennzahlen, Verlauf, Wirtschaftlichkeit&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss epos-leiste--falsch">
+        <span class="epos-knopf">CSV-Export</span>
+        <span class="epos-knopf">In Variante &uuml;bernehmen</span>
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf">Schlie&szlig;en</span>
+      </div>
+    </div>
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag (Variante a) &ndash; Rechenmaske, Berechnen bleibt im Blatt</h3>
+      <div class="platz">Lastgang w&auml;hlen oder importieren&hellip;</div>
+      <div class="platz">Parameter: Zielschwelle <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">Minimale haltbare Schwelle ermitteln</span>, Speichergr&ouml;&szlig;e, Preise&hellip;</div>
+      <p class="ort"><b>Im Blatt</b> &ndash; ohne Prim&auml;rfarbe</p>
+      <div class="epos-leiste">
+        <span class="epos-knopf epos-knopf--blatt">Berechnen</span>
+      </div>
+      <div class="platz platz--hoch">Ergebnis in Reitern: Kennzahlen, Verlauf, Wirtschaftlichkeit&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b> &ndash; Katalogmuster</p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-knopf">CSV-Export</span>
+        <span class="epos-knopf">In Variante &uuml;bernehmen</span>
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf epos-knopf--primaer epos-knopf--neu">Beenden</span>
+      </div>
+      <p class="ort"><b>Variante (b)</b> &ndash; OK-Dialog: Berechnen &middot; CSV-Export &middot; F&uuml;ller &middot; Abbrechen &middot; OK, OK &uuml;bernimmt in die Variante und schlie&szlig;t</p>
+      <div class="epos-leiste epos-leiste--fuss" style="opacity:.75">
+        <span class="epos-knopf">Berechnen</span>
+        <span class="epos-knopf">CSV-Export</span>
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf epos-knopf--primaer">OK</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> Hier bei&szlig;en sich Hausregel und Fachlogik: &bdquo;Berechnen&ldquo; speichert nichts, die Maske legt
+       nichts ab, und &bdquo;In Variante &uuml;bernehmen&ldquo; schreibt sofort (mit R&uuml;ckfrage) in die aktive Speichervariante.
+       Variante (a) l&auml;sst den Lesefluss Parameter &rarr; Berechnen &rarr; Ergebnis stehen und gibt allein dem Schlussknopf
+       die Prim&auml;rfarbe; Variante (b) macht daraus einen OK-Dialog, dessen OK erst ohne Projekt zu &bdquo;Beenden&ldquo; wird
+       &ndash; zwei Gestalten einer Maske.</p>
+    <p><b>Risiko (a).</b> Die Hervorhebung wandert vom Rechenknopf zum Beenden; der Knopf zur minimalen Schwelle bleibt
+       beim Feld. &bdquo;Schlie&szlig;en&ldquo; hei&szlig;t wie &uuml;berall &bdquo;Beenden&ldquo;. Kein Arbeitsstand nachzur&uuml;sten.
+       <b>Aufwand S</b> (Variante b: M).</p>
+    <p class="frage"><b>DL-Q2:</b> Rechenmaske (a) oder OK-Dialog (b)? <b>Empfehlung (a).</b></p>
+    <p class="logbuch"><b>Logbuch:</b> Die Lastspitzenkappung tr&auml;gt einen Beenden-Knopf; &bdquo;Berechnen&ldquo; steht ohne
+       Hervorhebung im Blatt.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k6">
+  <h2>6 &middot; Kostenverwaltung <small>&ndash; Kosten &rarr; Kostenvorlagen (Katalog- und Projektmodus)</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor</code> &middot; H&uuml;lle <code>Views/Kosten/KostenKomponenteHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; Fu&szlig; in falscher Reihenfolge</h3>
+      <div class="platz">Kopf: Komponente, Kategorie, Variante <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">Neu</span> <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">Speichern unter&hellip;</span> <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">&#128465;</span></div>
+      <p class="ort"><b>Reiter Kosten</b> &ndash; Blattleiste unter der Positionstabelle</p>
+      <div class="platz">Positionstabelle: Position, Einheit, Menge, Betrag, Nutzungsdauer&hellip;</div>
+      <div class="epos-leiste">
+        <span class="epos-knopf">Position anlegen</span>
+        <span class="epos-knopf">&Uuml;bernahme&hellip;</span>
+        <span class="epos-knopf">Positionskatalog&hellip;</span>
+        <span class="epos-knopf">Nutzungsdauern vorbelegen&hellip;</span>
+      </div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss epos-leiste--falsch">
+        <span class="epos-status">Gespeichert 10:42</span>
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf">Speichern</span>
+        <span class="epos-knopf epos-knopf--primaer">OK</span>
+      </div>
+    </div>
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag (Variante a) &ndash; Blattleiste bleibt, Fu&szlig; als SpeichernLeiste</h3>
+      <div class="platz">Kopf: Komponente, Kategorie, Variante <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">Neu</span> <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">Speichern unter&hellip;</span> <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">&#128465;</span></div>
+      <p class="ort"><b>Reiter Kosten</b> &ndash; Blattleiste, kein Schlussknopf</p>
+      <div class="platz">Positionstabelle: Position, Einheit, Menge, Betrag, Nutzungsdauer&hellip;</div>
+      <div class="epos-leiste">
+        <span class="epos-knopf">Position anlegen</span>
+        <span class="epos-knopf">&Uuml;bernahme&hellip;</span>
+        <span class="epos-knopf">Positionskatalog&hellip;</span>
+        <span class="epos-knopf">Nutzungsdauern vorbelegen&hellip;</span>
+      </div>
+      <p class="ort"><b>Fu&szlig;</b> &ndash; <code>SpeichernLeiste MitSpeichern</code></p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-status">Gespeichert 10:42</span>
+        <span class="epos-knopf epos-knopf--neu">Speichern</span>
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf epos-knopf--primaer">OK</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> Die Reiterleiste geh&ouml;rt zum Reiter Kosten &ndash; auf dem Reiter Ertrag/Bonus w&auml;re sie
+       sinnlos &ndash; und bleibt als Blattleiste ohne Schlussknopf. Der Fu&szlig; folgt der Reihenfolge der
+       <code>SpeichernLeiste</code>: nicht schlie&szlig;ender Speichern-Knopf, dann Abbrechen, dann OK.</p>
+    <p><b>Risiko.</b> Die Zeilenaktionen (Position anlegen, &Uuml;bernahme, Katalog) schreiben weiter sofort, weil eine neue
+       Zeile ihre Id aus der Datenbank braucht; Abbrechen verwirft nur die ungespeicherten Eingaben der Zeilen &ndash; der
+       Kurztext des Knopfes sagt das. Ein voller Arbeitsstand w&auml;re ein Umbau der 1 336-Zeilen-H&uuml;lle.
+       <b>Aufwand S</b> (Variante b: L).</p>
+    <p class="frage"><b>DL-Q3:</b> Reihenfolge jetzt (a) oder voller Arbeitsstand (b)? <b>Empfehlung (a)</b> f&uuml;r DL-2,
+       (b) als eigenes Konzept vormerken.</p>
+    <p class="logbuch"><b>Logbuch:</b> Die Kostenverwaltung ordnet ihre Schlussleiste: Speichern, Abbrechen, OK.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k7">
+  <h2>7 &middot; Energietr&auml;ger <small>&ndash; Kosten &rarr; Energietr&auml;ger (Katalog- und Projektkontext)</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Kosten/EnergietraegerDialog.razor</code> &middot; H&uuml;lle <code>EPOS.UI.Daten/Kosten/EnergietraegerHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; drei Leisten, zwei davon speichern</h3>
+      <div class="spalten">
+        <div class="spalte">
+          <p class="ort"><b>Listenspalte</b></p>
+          <div class="platz">Suche; Tr&auml;ger unter ihren Gruppen&hellip;</div>
+          <div class="epos-leiste">
+            <span class="epos-knopf">Neu&hellip;</span>
+            <span class="epos-knopf">Variante</span>
+            <span class="epos-knopf">L&ouml;schen</span>
+          </div>
+          <p class="ort" style="margin-top:4px">im Projekt: &Uuml;bernehmen&hellip; &middot; Entfernen</p>
+        </div>
+        <div class="spalte">
+          <p class="ort"><b>Kartenspalte</b> (Katalogkontext)</p>
+          <div class="platz">Bezeichnung, Gruppe</div>
+          <div class="epos-leiste epos-leiste--falsch">
+            <span class="epos-knopf">Stammwerte speichern</span>
+          </div>
+          <div class="platz">Preise, Zerlegung, Bestandteile, Historie&hellip;</div>
+        </div>
+      </div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss epos-leiste--falsch">
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf">Speichern</span>
+        <span class="epos-knopf epos-knopf--primaer">OK</span>
+      </div>
+    </div>
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag &ndash; ein Speichern, Fu&szlig; als SpeichernLeiste</h3>
+      <div class="spalten">
+        <div class="spalte">
+          <p class="ort"><b>Listenspalte</b> &ndash; Listenleiste, kein Schlussknopf</p>
+          <div class="platz">Suche; Tr&auml;ger unter ihren Gruppen&hellip;</div>
+          <div class="epos-leiste">
+            <span class="epos-knopf">Neu&hellip;</span>
+            <span class="epos-knopf">Variante</span>
+            <span class="epos-knopf">L&ouml;schen</span>
+          </div>
+          <p class="ort" style="margin-top:4px">im Projekt: &Uuml;bernehmen&hellip; &middot; Entfernen</p>
+        </div>
+        <div class="spalte">
+          <p class="ort"><b>Kartenspalte</b></p>
+          <div class="platz">Bezeichnung, Gruppe &ndash; Felder der Karte</div>
+          <p class="ort ort--weg">Stammwerte speichern (entf&auml;llt, DL-Q5)</p>
+          <div class="platz">Preise, Zerlegung, Bestandteile, Historie&hellip;</div>
+        </div>
+      </div>
+      <p class="ort"><b>Fu&szlig;</b> &ndash; <code>SpeichernLeiste MitSpeichern</code></p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-status">Status</span>
+        <span class="epos-knopf epos-knopf--neu">Speichern</span>
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf epos-knopf--primaer">OK</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> Bezeichnung und Gruppe sind Felder der Tr&auml;gerkarte; dass sie einen eigenen Speichern-Knopf
+       tragen, ist die einzige echte Doppelung des Inventars &ndash; Speichern und OK schreiben sie mit. Die Listenspalte
+       beh&auml;lt ihre Leiste (sie wirkt auf die Liste), der Fu&szlig; folgt der <code>SpeichernLeiste</code>.</p>
+    <p><b>Risiko.</b> Ein Knopf f&auml;llt weg; die H&uuml;lle schreibt die Stammwerte im Speichern-Weg mit und zieht
+       den Listeneintrag nach (das tut sie heute schon). Neu, Variante, L&ouml;schen und die &Uuml;bernahme schreiben weiter
+       sofort &ndash; Abbrechen verwirft die ungespeicherte Karte (DL-Q3). <b>Aufwand M.</b></p>
+    <p class="frage"><b>DL-Q5:</b> &bdquo;Stammwerte speichern&ldquo; in Speichern/OK aufgehen lassen? <b>Empfehlung ja.</b>
+       &nbsp;<b>DL-Q3</b> wie bei 6.</p>
+    <p class="logbuch"><b>Logbuch:</b> Die Energietr&auml;gerverwaltung speichert Bezeichnung und Gruppe mit
+       &bdquo;Speichern&ldquo;; der eigene Knopf entf&auml;llt.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k8">
+  <h2>8 &middot; PV-Modul- und Wechselrichter-Import <small>&ndash; Daten &amp; Import &rarr; Photovoltaik</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Photovoltaik/ModulImportDialog.razor</code> &middot; H&uuml;lle <code>Views/Photovoltaik/ModulImportHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; Prim&auml;r nicht am Ende, zwei dunkle Kn&ouml;pfe</h3>
+      <p class="ort"><b>Kopf</b> &ndash; Quellenwahl (Umschalter)</p>
+      <div class="epos-leiste">
+        <span class="epos-knopf epos-knopf--primaer epos-knopf--blatt">Quelle A (Netz)</span>
+        <span class="epos-knopf epos-knopf--blatt">Quelle A (Datei)</span>
+        <span class="epos-knopf epos-knopf--blatt">Quelle B (Datei)</span>
+        <span class="epos-status">120 Zeilen, 2 gew&auml;hlt</span>
+      </div>
+      <div class="platz">Fortschritt &middot; <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">&#10006; Zur&uuml;cksetzen</span></div>
+      <div class="platz platz--hoch">Katalogliste mit Spaltenfiltern und Mehrfachwahl; Detailreiter&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss epos-leiste--falsch">
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf epos-knopf--primaer">&#10004; Auswahl &uuml;bernehmen</span>
+        <span class="epos-knopf">OK</span>
+      </div>
+    </div>
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag &ndash; Katalogmuster, ein prim&auml;rer Knopf</h3>
+      <p class="ort"><b>Kopf</b> &ndash; Quellenwahl als Umschalter gezeichnet (Hinweis, kein Entscheid)</p>
+      <div class="epos-leiste">
+        <span class="epos-knopf epos-knopf--blatt" style="border-width:2px;border-color:var(--epos-karte-titel);font-weight:600">Quelle A (Netz)</span>
+        <span class="epos-knopf epos-knopf--blatt">Quelle A (Datei)</span>
+        <span class="epos-knopf epos-knopf--blatt">Quelle B (Datei)</span>
+        <span class="epos-status">120 Zeilen, 2 gew&auml;hlt</span>
+      </div>
+      <div class="platz">Fortschritt &middot; <span class="epos-knopf epos-knopf--blatt epos-knopf--zr" style="min-height:32px">&#10006; Zur&uuml;cksetzen</span></div>
+      <div class="platz platz--hoch">Katalogliste mit Spaltenfiltern und Mehrfachwahl; Detailreiter&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf epos-knopf--neu">&#10004; Auswahl &uuml;bernehmen</span>
+        <span class="epos-knopf epos-knopf--primaer epos-knopf--neu">Beenden</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> Der Import schreibt sofort in den Katalog &ndash; das Katalogmuster: der nicht schlie&szlig;ende
+       &bdquo;Auswahl &uuml;bernehmen&ldquo; steht vor dem einen prim&auml;ren Schlussknopf, der &bdquo;Beenden&ldquo; hei&szlig;t,
+       weil er nichts best&auml;tigt. Quellenwahl und Zur&uuml;cksetzen geh&ouml;ren zum Blatt (Umschalter und Listenaktion).</p>
+    <p><b>Risiko.</b> Die Hervorhebung wandert von &Uuml;bernehmen zu Beenden; &Uuml;bernehmen bleibt gesperrt, bis eine
+       Zeile gew&auml;hlt ist, und der Doppelklick &uuml;bernimmt weiter eine Zeile sofort. Nichts f&auml;llt weg.
+       <b>Aufwand S.</b></p>
+    <p class="frage"><b>DL-Q4:</b> Prim&auml;rfarbe auf Beenden (Hausregel) oder auf &Uuml;bernehmen (heute)?
+       <b>Empfehlung Hausregel.</b></p>
+    <p class="logbuch"><b>Logbuch:</b> PV-Modul- und Wechselrichter-Import schlie&szlig;en mit &bdquo;Beenden&ldquo;.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k9">
+  <h2>9 &middot; Katalogimport <small>&ndash; Daten &amp; Import: Heizkessel, W&auml;rmepumpen, Solarthermie, Pufferspeicher, Stromspeicher</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Import/KatalogImportDialog.razor</code> &middot; H&uuml;lle <code>Views/Import/KatalogImportHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; Prim&auml;r nicht am Ende, anderer Wortlaut als der Zwilling</h3>
+      <div class="platz">Datei oder Quellenwahl &middot; Fortschritt</div>
+      <div class="platz platz--hoch">Auswahlliste mit Wahlspalte, Hinweiszeile&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss epos-leiste--falsch">
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf epos-knopf--primaer">Speichern DB</span>
+        <span class="epos-knopf">OK</span>
+      </div>
+    </div>
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag &ndash; wie 8, ein Wort f&uuml;r beide Zwillinge</h3>
+      <div class="platz">Datei oder Quellenwahl &middot; Fortschritt</div>
+      <div class="platz platz--hoch">Auswahlliste mit Wahlspalte, Hinweiszeile&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-leiste-fueller"></span>
+        <span class="epos-knopf epos-knopf--neu">Auswahl &uuml;bernehmen</span>
+        <span class="epos-knopf epos-knopf--primaer epos-knopf--neu">Beenden</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> Dieselbe Maske wie 8 in f&uuml;nf Auspr&auml;gungen; &bdquo;Speichern DB&ldquo; und &bdquo;Auswahl
+       &uuml;bernehmen&ldquo; meinen dasselbe und hei&szlig;en k&uuml;nftig gleich. Der Schlussknopf best&auml;tigt nichts, also
+       &bdquo;Beenden&ldquo;.</p>
+    <p><b>Risiko.</b> Wie 8, dazu ein neuer Knopftext in beiden Sprachen. <b>Aufwand S</b> &ndash; ein Auftrag mit 8.</p>
+    <p class="frage"><b>DL-Q4</b> wie bei 8.</p>
+    <p class="logbuch"><b>Logbuch:</b> Die f&uuml;nf Katalogimporte &uuml;bernehmen mit &bdquo;Auswahl &uuml;bernehmen&ldquo; und
+       schlie&szlig;en mit &bdquo;Beenden&ldquo;.</p>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<section class="komponente" id="k10">
+  <h2>10 &middot; Einstellungen <small>&ndash; Administration &rarr; Einstellungen</small></h2>
+  <p class="pfad"><code>EPOS.UI/Dialoge/Admin/EinstellungenDialog.razor</code> &middot; H&uuml;lle <code>Views/Admin/EinstellungenHuelle.cs</code></p>
+
+  <div class="gegenueber">
+    <div class="tafel">
+      <h3>Heute &ndash; zwei Leisten untereinander</h3>
+      <div class="platz platz--hoch">Senkrechte Reiterleiste mit f&uuml;nf Rubriken; Felder der gew&auml;hlten Rubrik&hellip;</div>
+      <p class="ort"><b>Leiste 1</b></p>
+      <div class="epos-leiste epos-leiste--falsch">
+        <span class="epos-knopf">Standardwerte</span>
+        <span class="epos-leiste-fueller"></span>
+      </div>
+      <p class="ort"><b>Leiste 2</b> &ndash; SpeichernLeiste</p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-status">Status</span>
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf epos-knopf--primaer">Speichern</span>
+      </div>
+    </div>
+    <div class="tafel tafel--vorschlag">
+      <h3>Vorschlag &ndash; eine SpeichernLeiste mit Aktionsschlitz</h3>
+      <div class="platz platz--hoch">Senkrechte Reiterleiste mit f&uuml;nf Rubriken; Felder der gew&auml;hlten Rubrik&hellip;</div>
+      <p class="ort"><b>Fu&szlig;</b></p>
+      <div class="epos-leiste epos-leiste--fuss">
+        <span class="epos-knopf epos-knopf--neu">Standardwerte</span>
+        <span class="epos-status">Status</span>
+        <span class="epos-knopf">Abbrechen</span>
+        <span class="epos-knopf epos-knopf--primaer epos-knopf--neu">OK <small>(DL-Q6)</small></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="begruendung">
+    <p><b>Warum.</b> &bdquo;Standardwerte&ldquo; wirkt auf alle f&uuml;nf Rubriken zugleich, also auf den ganzen Dialog &ndash;
+       das ist eine Aktion der Fu&szlig;leiste, links vom F&uuml;ller, nicht eines Blattes. Die <code>SpeichernLeiste</code>
+       bekommt daf&uuml;r einen Aktionsschlitz (Baustein, einmal), den auch 1 und 6 nutzen.</p>
+    <p><b>Risiko.</b> Standardwerte setzt weiter nur die Felder zur&uuml;ck und speichert nicht; die Statuszeile sagt es
+       wie heute. Der Dialog f&uuml;hrt bereits einen Arbeitsstand. <b>Aufwand S.</b></p>
+    <p class="frage"><b>DL-Q6:</b> Der OK-Knopf hei&szlig;t &bdquo;Speichern&ldquo; (heute) oder &bdquo;OK&ldquo; (Hausregel)?
+       <b>Empfehlung &bdquo;OK&ldquo;</b> &ndash; ein Wort f&uuml;r einen Weg.</p>
+    <p class="logbuch"><b>Logbuch:</b> Der Standardwerte-Knopf der Einstellungen steht in der Schlussleiste.</p>
+  </div>
+</section>
+
+<p class="mockup-fuss">Reihenfolge der Umsetzung, Abnahme (bunit, Wache <code>KnopfleistenWacheTests</code>, Katalogprobe) und
+   die Entscheide DL-Q1 bis DL-Q6 im Zusammenhang: <code>Dokumentation/aktuell/Konzept_Knopfleisten_Administration_EPOS-Plan.md</code>.
+   Konforme Vorbilder im Bestand: <code>KlimadatenDialog</code>, <code>ModulKatalogDialog</code>, <code>KatalogBrowserDialog</code>,
+   <code>GesetzeskatalogDialog</code>, <code>KatalogDublettenDialog</code>, <code>NutzungsdauerDialog</code>.</p>
+
+</main>
+</body>
+</html>
