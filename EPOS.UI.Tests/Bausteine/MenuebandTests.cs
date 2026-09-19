@@ -166,11 +166,23 @@ public class MenuebandTests : EposBunitContext
         // Rubrik „Kostenverwaltung", neben Kostenvorlagen und Energietraegern
         // (Konzept „Nutzungsdauer je Technik und Positionsart", Stufe S1).
         // Also 60 Punkte und 47 Handlungen.
-        Assert.Equal(60, Punkte.Count);
+        //
+        // ANWENDERENTSCHEID MN-1 (19.09.2026): EIN handelnder Punkt FAELLT -
+        // MenuItem_LizenzVerwaltung ("Lizenz…"). Derselbe Dialog steht unter
+        // Hilfe -> Lizenz, und dort fuehrt er seither den Reiter
+        // „Status & Aktivierung"; zwei Wege zu einer Maske waren einer zuviel.
+        // Es ist der ERSTE Punkt, den ein Entscheid je gestrichen hat (alle
+        // frueheren Aufloesungen liessen das Ziel an einem anderen Punkt
+        // stehen). Also 59 Punkte und 46 Handlungen.
+        Assert.Equal(59, Punkte.Count);
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
-        Assert.Equal(8, Menuetabelle.Alle.Count(p => p.Trenner));
+        // MN-1 bringt FUENF: vier in der obersten Ebene des Kopfes
+        // "Administration" (Ort | Anlagen | Kosten | Daten & Import |
+        // Einstellungen) und einen in "Daten & Import" vor der
+        // Dublettenpruefung. Also 8 + 5 = 13.
+        Assert.Equal(13, Menuetabelle.Alle.Count(p => p.Trenner));
 
         // VIER Koepfe der obersten Ebene: Projekt, Administration, Hilfe,
         // Sprache. Im Bestand waren es fuenf (menuToolbar.Items.AddRange =
@@ -241,18 +253,23 @@ public class MenuebandTests : EposBunitContext
         // 'Waermebedarf & Heizung'. Verschiebe Solarkollektoren von
         // Energiesystem in 'Waermebedarf & Heizung'. ... Erstelle in
         // 'Waermebedarf & Heizung' Unterrubrik 'Profile & Lastgaenge'".
-        // Die Rubrik fuehrt danach genau die Waermeerzeuger und ganz unten die
-        // neue Unterrubrik.
+        // Die Rubrik fuehrt danach genau die Waermeerzeuger und die neue
+        // Unterrubrik.
+        //
+        // MN-1 (19.09.2026): Ihre Reihenfolge ist umgestellt - erst der
+        // BEDARF (Brauchwasser, dann die Unterrubrik "Profile & Lastgaenge"),
+        // dann was ihn DECKT (Kessel, BHKW, Waermepumpen, Solarkollektoren).
+        // Die sechs Punkte, ihre Namen und ihre Ziele sind unveraendert.
         Menuepunkt wbund = Rubrik("MenuItem_WBundHeizung");
 
         Assert.Equal(new[]
         {
             "MenuItem_Brauchwasser",
-            "MenuItem_Kessel",
-            "MenuItem_WP",
-            "MenuItem_BHKW",
-            "MenuItem_Solarkollektoren",
             "MenuItem_ProfileLastgaenge",
+            "MenuItem_Kessel",
+            "MenuItem_BHKW",
+            "MenuItem_WP",
+            "MenuItem_Solarkollektoren",
         }, Kinder(wbund));
 
         // Das Bild der Rubrik ist unveraendert - es haengt am Kopf, nicht am
@@ -343,14 +360,20 @@ public class MenuebandTests : EposBunitContext
 
         Assert.Equal(new[]
         {
+            // MN-1 (19.09.2026): die Importe in der Reihenfolge der KATALOGE
+            // darueber - Kessel, Waermepumpe, Solarthermie, Pufferspeicher,
+            // Photovoltaik, Stromspeicher.
             "MenuItem_Import_Heizkessel",
-            "MenuItem_PufferSp_VDI3805",
             "MeniItem_VDI3805",
+            "MenuItem_ST_Import",
+            "MenuItem_PufferSp_VDI3805",
             "MenuItem_PV_Import_Gruppe",
             // W13-E-2 (07.09.2026): der Stromspeicherimport, hinter dem Knoten
-            // "Photovoltaik" und vor den Solarkollektoren.
+            // "Photovoltaik".
             "MenuItem_SP_Import",
-            "MenuItem_ST_Import",
+            // MN-1: Trennstrich, danach die Dublettenpruefung.
+            "MenuItem_TrennerImportDubletten",
+            "MenuItem_KatalogDubletten",
         }, Kinder(daten));
 
         Menuepunkt knoten = daten.Untereintraege.Single(p => p.Name == "MenuItem_PV_Import_Gruppe");
@@ -463,12 +486,13 @@ public class MenuebandTests : EposBunitContext
         // eine Zeile ohne Sinnbild zwischen lauter bebilderten Rubriken.
         Assert.Equal("Menu4", klimadaten.Bild);
 
-        // Die Stelle im Kopf ist die des Knotens: vierter Eintrag, direkt vor
-        // "Daten & Import".
+        // MN-1 (19.09.2026): Seine Stelle im Kopf ist die ZWEITE - hinter
+        // "Gebaeude" und vor dem ersten Trennstrich. Gebaeude und Klima
+        // beschreiben den ORT, auf dem alles Weitere rechnet.
         string[] rubriken = Kinder(Administration);
-        Assert.Equal("MenuItem_Energiesysteme", rubriken[2]);
-        Assert.Equal("MenuItem_Klimadaten", rubriken[3]);
-        Assert.Equal("MenuItem_DatImport", rubriken[4]);
+        Assert.Equal("MenuItem_Gebaeude", rubriken[0]);
+        Assert.Equal("MenuItem_Klimadaten", rubriken[1]);
+        Assert.Equal("MenuItem_TrennerAdminOrt", rubriken[2]);
     }
 
     [Fact]
@@ -518,10 +542,14 @@ public class MenuebandTests : EposBunitContext
         Assert.Equal("", punkt.Argument);
         Assert.Equal("", punkt.Bild);
 
+        // MN-1 (19.09.2026): Er steht weiterhin hinter dem Knoten
+        // "Photovoltaik" - und mit der Katalogreihenfolge der Importe ist er
+        // jetzt der LETZTE von ihnen; danach kommen nur noch Trennstrich und
+        // Dublettenpruefung.
         string[] kinder = Kinder(daten);
-        Assert.Equal("MenuItem_PV_Import_Gruppe", kinder[3]);
-        Assert.Equal("MenuItem_SP_Import", kinder[4]);
-        Assert.Equal("MenuItem_ST_Import", kinder[5]);
+        Assert.Equal("MenuItem_PV_Import_Gruppe", kinder[4]);
+        Assert.Equal("MenuItem_SP_Import", kinder[5]);
+        Assert.Equal("MenuItem_TrennerImportDubletten", kinder[6]);
 
         // Und es gibt ihn GENAU EINMAL - der Katalog "Stromspeicher" steht
         // schon unter "Strombedarf & Speicher", sein IMPORT nur hier.
@@ -639,7 +667,9 @@ public class MenuebandTests : EposBunitContext
         var band = cut.Find(".epos-menueband");
 
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Administration
-        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // hinein
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // hinein: Gebaeude
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Klimadaten
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Waermebedarf & Heizung
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Strom
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Energiesysteme
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // auf
@@ -743,6 +773,12 @@ public class MenuebandTests : EposBunitContext
         // der Ziele unter "Administration" - der Baum darueber darf sich
         // umsortieren, die Ziele nicht. Seit W6-E-2 sind es 30 statt 28, seit
         // W13-E-2 sind es 31 und seit ND-Q3 sind es 32.
+        //
+        // MN-1 (19.09.2026) ordnet den ganzen Kopf um - und genau DAS prueft
+        // diese Menge: Von den 32 Zielen bleiben 31 unveraendert erreichbar,
+        // nur eines ENTFAELLT hier ausdruecklich, Seitenschluessel.
+        // LizenzVerwaltung. Es ist nicht verloren: Es liegt im Kopf „Hilfe"
+        // hinter MenuItem_Lizenz, als Reiter „Status & Aktivierung".
         var ziele = Flach(Administration.Untereintraege)
                     .Where(p => !p.Trenner && !p.Klappt)
                     .Select(p => p.Ziel)
@@ -764,7 +800,6 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.KatalogDubletten,
             Seitenschluessel.Klimadaten,
             Seitenschluessel.Kostenverwaltung,
-            Seitenschluessel.LizenzVerwaltung,
             // ND-Q3 (14.09.2026, Auftrag #269): das NEUE Ziel dieser Menge -
             // die Nutzungsdauern (AfA) als dritter Punkt der Rubrik
             // "Kostenverwaltung". Kein aelteres Ziel ist entfallen.
@@ -794,6 +829,179 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.WpImport,
         }.OrderBy(z => z, StringComparer.Ordinal).ToArray(),
                      ziele.OrderBy(z => z, StringComparer.Ordinal).ToArray());
+    }
+
+    // =====================================================================
+    //  ANWENDERENTSCHEID MN-1 (19.09.2026) — der Kopf "Administration" ist
+    //  neu geordnet und in fuenf Bloecke geteilt
+    // =====================================================================
+
+    [Fact]
+    public void Der_Kopf_Administration_fuehrt_acht_Punkte_in_fuenf_Bloecken()
+    {
+        // WORTLAUT des Anwenders: "Generell ist die Reihenfolge der
+        // Menue-Kategorien und der Unterkategorien nicht optimal ...
+        // Einstellungen ans Ende, Katalogdoubletten an andere Stelle."
+        // Die Bloecke lesen sich wie der Gang eines Projekts: ORT | ANLAGEN |
+        // KOSTEN | DATEN & IMPORT | EINSTELLUNGEN.
+        Assert.Equal(new[]
+        {
+            "MenuItem_Gebaeude",
+            "MenuItem_Klimadaten",
+            "MenuItem_TrennerAdminOrt",
+            "MenuItem_WBundHeizung",
+            "MenuItem_StromBedarfundSp",
+            "MenuItem_Energiesysteme",
+            "MenuItem_TrennerAdminAnlagen",
+            "MenuItem_KostenVerwaltung",
+            "MenuItem_TrennerAdminKosten",
+            "MenuItem_DatImport",
+            "MenuItem_TrennerAdminImport",
+            "MenuItem_Einstellungen",
+        }, Kinder(Administration));
+
+        // ACHT Punkte und VIER Trennstriche - und jeder Strich steht ZWISCHEN
+        // zwei Punkten, keiner am Anfang, keiner am Ende und nie zwei
+        // nebeneinander (ein Strich ohne Nachbarn waere eine leere Zeile).
+        IReadOnlyList<Menuepunkt> kinder = Administration.Untereintraege;
+        Assert.Equal(8, kinder.Count(p => !p.Trenner));
+        Assert.Equal(4, kinder.Count(p => p.Trenner));
+        Assert.False(kinder[0].Trenner);
+        Assert.False(kinder[^1].Trenner);
+        for (int i = 1; i < kinder.Count; i++)
+            Assert.False(kinder[i].Trenner && kinder[i - 1].Trenner,
+                         "Zwei Trennstriche stehen nebeneinander (Stelle " + i + ").");
+
+        // Die Einstellungen stehen ans ENDE - sie sind kein Katalog, sondern
+        // das Programm selbst.
+        Assert.Equal(Seitenschluessel.Einstellungen, kinder[^1].Ziel);
+        Assert.Equal("einstellungen_32", kinder[^1].Bild);
+    }
+
+    [Fact]
+    public void Die_gesetzlichen_Parameter_stehen_als_viertes_Blatt_unter_Kosten()
+    {
+        // WORTLAUT des Anwenders: "'Gesetzliche Parameter' -> kann evtl. hier
+        // raus? Gibt es einen Bezug in der Anwendung und Berechnung, wird das
+        // genutzt". ENTSCHEID MN-Q2: Ja - KWKG, EEG, Steuern, CO2-Preis,
+        // Umsatzsteuer und Bilanzkonvention werden in der WIRTSCHAFTLICHKEIT
+        // gerechnet, nicht in Simulation oder Referenzlauf. Sie sind
+        // Kostengroessen und stehen deshalb unter "Kosten".
+        Menuepunkt kosten = Rubrik("MenuItem_KostenVerwaltung");
+
+        Assert.Equal(new[]
+        {
+            "MenuItem_Kostenvorlagen",
+            "MenuItem_Energietraeger",
+            "MenuItem_Nutzungsdauer",
+            "MenuItem_Gesetzesparameter",
+        }, Kinder(kosten));
+
+        // Die Rubrik selbst bekommt das NEUE Bild - sie war die einzige des
+        // Kopfes ohne eines ("u.a. fehlt bei Kosten ein Symbol").
+        Assert.Equal("kosten_32", kosten.Bild);
+        Assert.Equal("MENU_KOSTEN_VERWALTUNG", kosten.TextSchluessel);
+
+        // Der Punkt selbst ist unveraendert - bis auf sein Bild: Unter einer
+        // Rubrik traegt kein Blatt ein eigenes.
+        Menuepunkt gesetz = kosten.Untereintraege[^1];
+        Assert.Equal(Seitenschluessel.Gesetzeskatalog, gesetz.Ziel);
+        Assert.Equal("GESETZ_MENUE", gesetz.TextSchluessel);
+        Assert.Equal("", gesetz.Bild);
+        Assert.False(gesetz.Klappt);
+
+        // Und er steht nicht mehr in der obersten Ebene des Kopfes.
+        Assert.DoesNotContain("MenuItem_Gesetzesparameter", Kinder(Administration));
+    }
+
+    [Fact]
+    public void Die_Dublettenpruefung_steht_am_Ende_von_Daten_und_Import()
+    {
+        // WORTLAUT des Anwenders: "Katalogdoubletten an andere Stelle."
+        // ENTSCHEID MN-Q3: ans Ende von "Daten & Import" - Dubletten entstehen
+        // BEIM Einlesen, und die Pruefung gehoert an dieselbe Rubrik wie ihre
+        // Ursache; ein Trennstrich setzt sie von den sechs Importen ab.
+        Menuepunkt daten = Rubrik("MenuItem_DatImport");
+        IReadOnlyList<Menuepunkt> kinder = daten.Untereintraege;
+
+        Assert.Equal("MenuItem_KatalogDubletten", kinder[^1].Name);
+        Assert.True(kinder[^2].Trenner);
+        Assert.Equal(Seitenschluessel.KatalogDubletten, kinder[^1].Ziel);
+        Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^1].TextSchluessel);
+        Assert.Equal("", kinder[^1].Bild);
+
+        // Sechs Importe davor, in der Reihenfolge der Kataloge.
+        Assert.Equal(6, kinder.Take(kinder.Count - 2).Count());
+
+        // Und nicht mehr in der obersten Ebene des Kopfes.
+        Assert.DoesNotContain("MenuItem_KatalogDubletten", Kinder(Administration));
+    }
+
+    [Fact]
+    public void Die_Administration_fuehrt_keinen_Lizenzpunkt_mehr()
+    {
+        // WORTLAUT des Anwenders: "Es gibt einen Lizenz-Dialog fuer Lizenz
+        // aktivieren. Diese ist so 1. vermutlich nicht rechtskonform und
+        // 2. unter Hilfe->Lizenz bereits vorhanden." ENTSCHEID MN-Q1: EIN
+        // Einstieg, und zwar der unter Hilfe.
+        Assert.DoesNotContain(Menuetabelle.Alle, p => p.Name == "MenuItem_LizenzVerwaltung");
+        Assert.DoesNotContain(Menuetabelle.Alle, p => p.Ziel == Seitenschluessel.LizenzVerwaltung);
+
+        // Der Weg ist nicht verloren: Der Kopf "Hilfe" fuehrt ihn weiter -
+        // genau einmal, als "Lizenz" auf Seitenschluessel.Lizenztext.
+        Menuepunkt hilfe = Menuetabelle.Eintraege.Single(p => p.Name == "Help");
+        Menuepunkt lizenz = hilfe.Untereintraege.Single(p => p.Name == "MenuItem_Lizenz");
+
+        Assert.Equal(Seitenschluessel.Lizenztext, lizenz.Ziel);
+        Assert.Equal("MENU_LIZENZ", lizenz.TextSchluessel);
+        Assert.Single(Menuetabelle.Alle, p => p.Ziel == Seitenschluessel.Lizenztext);
+    }
+
+    [Fact]
+    public void Das_Band_zeigt_den_Kopf_Administration_in_der_neuen_Ordnung()
+    {
+        // Dasselbe am GEZEICHNETEN Band: acht Zeilen und vier Striche in
+        // EINER Klappe - und die Lizenz ist nicht darunter.
+        var cut = AusHuelle();
+
+        cut.Find("#menue-Administration").Click();
+
+        Assert.Equal(8, cut.FindAll(".epos-menueband-klappe .epos-menueband-zeile").Count);
+        Assert.Equal(4, cut.FindAll(".epos-menueband-klappe .epos-menueband-strich").Count);
+        Assert.Empty(cut.FindAll("#menue-MenuItem_LizenzVerwaltung"));
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Gesetzesparameter"));
+        Assert.Empty(cut.FindAll("#menue-MenuItem_KatalogDubletten"));
+
+        // Erst UNTER "Kosten" steht der Gesetzeskatalog im DOM.
+        cut.Find("#menue-MenuItem_KostenVerwaltung").Click();
+        Assert.Single(cut.FindAll("#menue-MenuItem_Gesetzesparameter"));
+
+        // Und erst unter "Daten & Import" die Dublettenpruefung.
+        cut.Find("#menue-MenuItem_DatImport").Click();
+        Assert.Single(cut.FindAll("#menue-MenuItem_KatalogDubletten"));
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Gesetzesparameter"));
+    }
+
+    [Fact]
+    public void Die_acht_Administrationspunkte_tragen_eine_Beschriftung_in_beiden_Sprachen()
+    {
+        // Die Umordnung darf keine Zeile ohne Text lassen - und der Kopf
+        // "Kosten" heisst in beiden Sprachen so, wie ihn der Anwender nennt.
+        Menuepunkt kosten = Rubrik("MenuItem_KostenVerwaltung");
+        Menuepunkt gesetz = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_Gesetzesparameter");
+        Menuepunkt dubletten = Menuetabelle.Alle.Single(p => p.Name == "MenuItem_KatalogDubletten");
+
+        Kultur("de-DE");
+        Assert.Equal("Kosten", kosten.Text);
+        Assert.Equal("Gesetzliche Parameter…", gesetz.Text);
+        Assert.Equal("Katalog-Dubletten prüfen…", dubletten.Text);
+
+        Kultur("en-US");
+        Assert.Equal("Costs", kosten.Text);
+        Assert.Equal("Statutory parameters…", gesetz.Text);
+        Assert.Equal("Check catalogue duplicates…", dubletten.Text);
+
+        Kultur("de-DE");
     }
 
     [Fact]
@@ -927,8 +1135,14 @@ public class MenuebandTests : EposBunitContext
         // (AfA)…" in der Rubrik „Kostenverwaltung" (46 -> 47). Die Zahl der
         // aufklappenden bleibt wieder 13 - die Rubrik gibt es laengst, sie
         // bekommt nur ein drittes Kind.
+        //
+        // MN-1 (19.09.2026) nimmt dagegen zum ERSTEN Mal einen handelnden
+        // Punkt weg: MenuItem_LizenzVerwaltung (47 -> 46). Die Zahl der
+        // aufklappenden bleibt 13 - kein Untermenue kommt, keines faellt; die
+        // Rubrik „Kosten" bekommt nur ein viertes Kind (die gesetzlichen
+        // Parameter), „Daten & Import" ein siebtes (die Dublettenpruefung).
         Assert.Equal(13, Punkte.Count(p => p.Klappt));
-        Assert.Equal(47, Punkte.Count(p => !p.Klappt));
+        Assert.Equal(46, Punkte.Count(p => !p.Klappt));
     }
 
     [Fact]
@@ -1257,23 +1471,46 @@ public class MenuebandTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_elf_Bilder_des_Bestands_stehen_am_richtigen_Punkt()
+    public void Die_zehn_Bilder_stehen_am_richtigen_Punkt_und_jedes_liegt_als_PNG()
     {
         // MDIMainForm.Designer.cs setzte NEUN Image-Zuweisungen (sechs
         // Untermenues, Einstellungen und die zwei Sprachfahnen), zwei weitere
-        // kamen aus den Init*-Methoden (Gesetze, Lizenz). Die elf PNG liegen
+        // kamen aus den Init*-Methoden (Gesetze, Lizenz). Die PNG liegen
         // jetzt unter wwwroot/bilder/menue/ und sind dieselben Dateien.
         // W16c-E-2 aendert daran nichts: Die zwei Fahnen sind mit ihren Punkten
         // eine Ebene tiefer gewandert, der neue Kopf "Sprache" traegt KEIN Bild
         // (kein vorhandenes PNG meint das Menue als Ganzes).
+        //
+        // MN-1 (19.09.2026) aendert DREI Bilder: Die Rubrik "Kosten" bekommt
+        // das neue kosten_32 - sie war die einzige Rubrik des Kopfes ohne
+        // eines ("u.a. fehlt bei Kosten ein Symbol") -, und die zwei Bilder
+        // der Blaetter fallen: gesetzliche_parameter_32 mit dem Umzug unter
+        // "Kosten" (unter einer Rubrik traegt kein Blatt ein eigenes Bild)
+        // und lizenzen_32 mit dem Punkt selbst. Also 11 - 2 + 1 = 10.
         var mitBild = Menuetabelle.Alle.Where(p => p.Bild.Length > 0)
                                        .ToDictionary(p => p.Name, p => p.Bild, StringComparer.Ordinal);
 
-        Assert.Equal(11, mitBild.Count);
+        Assert.Equal(10, mitBild.Count);
         Assert.Equal("Menu1", mitBild["MenuItem_WBundHeizung"]);
         Assert.Equal("germany", mitBild["Deutsch"]);
         Assert.Equal("usa", mitBild["Englisch"]);
-        Assert.Equal("lizenzen_32", mitBild["MenuItem_LizenzVerwaltung"]);
+        Assert.Equal("einstellungen_32", mitBild["MenuItem_Einstellungen"]);
+        Assert.Equal("kosten_32", mitBild["MenuItem_KostenVerwaltung"]);
+
+        Assert.DoesNotContain("MenuItem_LizenzVerwaltung", mitBild.Keys);
+        Assert.DoesNotContain("MenuItem_Gesetzesparameter", mitBild.Keys);
+
+        // Jedes genannte Bild liegt auch WIRKLICH - ein Menuepunkt mit einem
+        // Namen ohne Datei zeigte beim Anwender ein leeres Kaestchen.
+        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
+        while (d is not null && !Directory.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "bilder", "menue")))
+            d = d.Parent;
+
+        Assert.NotNull(d);
+        foreach (string bild in mitBild.Values.Distinct(StringComparer.Ordinal))
+            Assert.True(File.Exists(Path.Combine(d!.FullName, "EPOS.UI", "wwwroot",
+                                                 "bilder", "menue", bild + ".png")),
+                        "Das Bild " + bild + ".png fehlt unter wwwroot/bilder/menue/.");
     }
 
     // =====================================================================
@@ -1488,8 +1725,15 @@ public class MenuebandTests : EposBunitContext
 
         // Der Zeiger steht auf dem ersten Punkt der Klappe - nur er ist
         // tabulierbar (roving tabindex, dieselbe Regel wie im Baustein Reiter).
+        // MN-1 (19.09.2026): Das ist seither "Gebaeude".
+        Assert.Equal("0", cut.Find("#menue-MenuItem_Gebaeude").GetAttribute("tabindex"));
+        Assert.Equal("-1", cut.Find("#menue-MenuItem_Klimadaten").GetAttribute("tabindex"));
+
+        // ↓ ueberspringt den TRENNSTRICH zwischen "Klimadaten" und
+        // "Waermebedarf & Heizung" - ein Strich ist kein Halt.
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
         Assert.Equal("0", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("tabindex"));
-        Assert.Equal("-1", cut.Find("#menue-MenuItem_StromBedarfundSp").GetAttribute("tabindex"));
 
         // → klappt SEIN Untermenue auf und stellt den Zeiger auf dessen ersten Punkt.
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
@@ -1497,9 +1741,10 @@ public class MenuebandTests : EposBunitContext
         Assert.Single(cut.FindAll("#menue-MenuItem_Brauchwasser"));
         Assert.Equal("0", cut.Find("#menue-MenuItem_Brauchwasser").GetAttribute("tabindex"));
 
-        // ↓ wandert darin weiter.
+        // ↓ wandert darin weiter - seit MN-1 auf die Unterrubrik
+        // "Profile & Lastgaenge", die jetzt VOR den Erzeugern steht.
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
-        Assert.Equal("0", cut.Find("#menue-MenuItem_Kessel").GetAttribute("tabindex"));
+        Assert.Equal("0", cut.Find("#menue-MenuItem_ProfileLastgaenge").GetAttribute("tabindex"));
         Assert.Equal("-1", cut.Find("#menue-MenuItem_Brauchwasser").GetAttribute("tabindex"));
 
         // ← schliesst NUR diese Ebene; der Zeiger steht danach auf ihrem Kopf.
@@ -1522,13 +1767,15 @@ public class MenuebandTests : EposBunitContext
         var band = cut.Find(".epos-menueband");
 
         // Seit W16c-E-6 fuehrt der dreistufige Weg ueber die Unterrubrik
-        // "Profile & Lastgaenge" - sie ist der sechste und letzte Punkt von
-        // "Waermebedarf & Heizung".
+        // "Profile & Lastgaenge"; seit MN-1 ist sie der ZWEITE Punkt von
+        // "Waermebedarf & Heizung", und die Rubrik selbst der dritte des
+        // Kopfes (hinter Gebaeude, Klimadaten und dem Trennstrich).
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Administration
-        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // hinein: Waermebedarf & Heizung
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // hinein: Gebaeude
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Klimadaten
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // Waermebedarf & Heizung
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // auf
-        for (int i = 0; i < 5; i++)
-            band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });  // bis Profile & Lastgaenge
+        band.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });    // bis Profile & Lastgaenge
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Profile & Lastgaenge auf
 
         Assert.Equal("true", cut.Find("#menue-MenuItem_WBundHeizung").GetAttribute("aria-expanded"));
