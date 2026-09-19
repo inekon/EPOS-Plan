@@ -19,6 +19,24 @@ namespace WindowsFormsApplication1
         NichtUebernommen
     }
 
+    /// <summary>
+    /// <b>Die HERKUNFT der Klimadaten eines Projekts</b> (Auftrag KL-4,
+    /// Anwenderwunsch 19.09.2026: „Die verwendeten Klimadaten sollen sich auch auf
+    /// der Übersicht befinden.").
+    ///
+    /// <para>Gelesen wird die PROJEKTKOPIE (<c>Tab_Klimaregion</c>) — dieselbe Zeile,
+    /// mit der der Rechenlauf arbeitet, nicht der Katalogsatz daneben. Was auf der
+    /// Startseite steht, muss die Rechnung beschreiben, die läuft.</para>
+    /// </summary>
+    /// <param name="Quelle">Sprachneutraler Schlüssel (<c>PVGIS</c>, <c>TRY_DATEI</c>,
+    /// <c>TRY_REGIONAL</c>); leer = Altbestand vor Schemaschritt 95.</param>
+    /// <param name="Bezeichner">Der Name der Region, wie ihn der Anwender gewählt hat.</param>
+    /// <param name="Standort">Ortsname oder Koordinatenpaar
+    /// (<c>KlimaregionStammCtrl.Standorttext</c>).</param>
+    /// <param name="Importdatum">ISO-Text <c>yyyy-MM-dd</c>; leer = unbekannt.</param>
+    public sealed record KlimaHerkunft(string Quelle, string Bezeichner,
+                                       string Standort, string Importdatum);
+
     /// <summary>Ein Eintrag des Variantenfeldes im Kopfband der Startseite.</summary>
     /// <param name="Id"><c>Tab_Projekt.ID</c>.</param>
     /// <param name="Name">Anzeigename — beim Stamm der Projektname, sonst „&lt;Stamm&gt; - &lt;Bezeichner&gt;".</param>
@@ -101,6 +119,36 @@ namespace WindowsFormsApplication1
                 Console.WriteLine("Klimaregionen konnten nicht gelesen werden: " + ex.Message);
                 return Array.Empty<string>();
             }
+        }
+
+        /// <summary>
+        /// <b>Dieselben Regionen MIT ihrer Stamm-Id</b> (Auftrag KL-4) — der Inhalt
+        /// des durchsuchbaren Auswahlfeldes auf der Startseite.
+        ///
+        /// <para><b>Warum die Id.</b> Die Klapplisten des Hauses melden ihre Wahl als
+        /// <c>Tab_Klimaregion_STAMM.ID_Klimaregion</c>, nicht als Text (Hausregel
+        /// „neue Beziehungen über IDs, nicht über Textfelder"). Damit fällt der
+        /// Nachschlag Name → Id im Speicherweg weg, und zwei Regionen gleichen Namens
+        /// bleiben unterscheidbar. <see cref="Klimaregionen"/> bleibt daneben stehen:
+        /// Wer nur die Namen braucht, braucht nicht die Ids.</para>
+        /// </summary>
+        public static IReadOnlyList<(int Id, string Name)> KlimaregionenMitId()
+        {
+            var liste = new List<(int Id, string Name)>();
+
+            try
+            {
+                KlimaregionStammCtrl ctrl = new KlimaregionStammCtrl();
+                ctrl.ReadAll();
+
+                for (int i = 0; i < ctrl.rows; i++)
+                    liste.Add((ctrl.items[i].m_ID_Klimaregion, ctrl.items[i].m_szName ?? ""));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Klimaregionen konnten nicht gelesen werden: " + ex.Message);
+            }
+            return liste;
         }
 
         /// <summary>
@@ -190,6 +238,71 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// <b>Woher die Klimadaten des Projekts stammen</b> (Auftrag KL-4,
+        /// Anwenderwunsch 19.09.2026) — <c>null</c>, wenn das Projekt keine
+        /// Klimaregion führt.
+        ///
+        /// <para><b>Gelesen wird die PROJEKTKOPIE</b> (<c>Tab_Klimaregion</c>) über
+        /// <c>Tab_Projekt.ID_Klimaregion</c> — genau die Zeile, mit der der Rechenlauf
+        /// arbeitet, und derselbe Weg wie <see cref="ProjektKlimazone"/>. Ein Griff in
+        /// den Stammkatalog wäre der falsche Schlüsselraum (Befund W16b-B2) und
+        /// beschriebe außerdem einen Satz, der seit dem Kopieren geändert worden sein
+        /// kann.</para>
+        ///
+        /// <para><b>Tolerant ohne Schemaschritt 95</b> (Muster
+        /// <c>KostenVorlagenCtrl.PflichtSpalteVorhanden</c>): Fehlen <c>Quelle</c> und
+        /// <c>Importdatum</c>, bleiben sie leer — die Zeile nennt dann Bezeichner und
+        /// Standort, und das ist mehr, als vorher dastand.</para>
+        /// </summary>
+        public static KlimaHerkunft KlimaHerkunft(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+
+            try
+            {
+                object v = DataRepository.ExecuteScalar(
+                    "SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
+                    new DbParam("@id", idProjekt));
+
+                if (v == null || v == DBNull.Value) return null;
+                int idRegion = Convert.ToInt32(v);
+                if (idRegion == 0) return null;
+
+                bool mitHerkunft =
+                    DataRepository.SpalteVorhanden(KlimaregionStammCtrl.TAB_REGION_PROJEKT,
+                                                   SchemaKatalog.SPALTE_KR_QUELLE) &&
+                    DataRepository.SpalteVorhanden(KlimaregionStammCtrl.TAB_REGION_PROJEKT,
+                                                   SchemaKatalog.SPALTE_KR_IMPORTDATUM);
+
+                string felder = "Bezeichner, Longitude, Latitude, Details";
+                if (mitHerkunft)
+                    felder += ", " + SchemaKatalog.SPALTE_KR_QUELLE +
+                              ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM;
+
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT " + felder + " FROM " + KlimaregionStammCtrl.TAB_REGION_PROJEKT +
+                    " WHERE ID = ?",
+                    new DbParam("@idRegion", idRegion));
+
+                if (dt == null || dt.Rows.Count == 0) return null;
+                DataRow r = dt.Rows[0];
+
+                return new KlimaHerkunft(
+                    mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_QUELLE) : "",
+                    Katalogfeld.Text(r, "Bezeichner"),
+                    KlimaregionStammCtrl.Standorttext(Katalogfeld.Text(r, "Details"),
+                                                      Katalogfeld.Zahl(r, "Longitude") ?? 0,
+                                                      Katalogfeld.Zahl(r, "Latitude") ?? 0),
+                    mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_IMPORTDATUM) : "");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Herkunft der Klimadaten konnte nicht gelesen werden: " + ex.Message);
+                return null;
+            }
+        }
+
         // =====================================================================
         //  Klimaregion — schreiben
         // =====================================================================
@@ -210,16 +323,41 @@ namespace WindowsFormsApplication1
         /// <param name="regionName">Der gewählte Regionsname aus dem Auswahlfeld.</param>
         public static KlimaStand KlimaregionSpeichern(int idProjekt, string projektname, string regionName)
         {
+            // Der NAMENSWEG ist der Id-Weg plus EIN Nachschlag - kein zweiter Ablauf
+            // (Lehre aus Befund W16a-B5: zwei Methoden desselben Inhalts driften).
+            // Die Reihenfolge der Pruefungen bleibt die des Vorlaeufers: erst das
+            // Projekt, dann die Region.
             if (string.IsNullOrEmpty(projektname)) return KlimaStand.KeinProjekt;
             if (string.IsNullOrEmpty(regionName)) return KlimaStand.KeineRegion;
+
+            int stammRegionId = KlimaregionStammId(regionName);
+            if (stammRegionId <= 0) return KlimaStand.RegionNichtGefunden;
+
+            return KlimaregionSpeichern(idProjekt, projektname, stammRegionId);
+        }
+
+        /// <summary>
+        /// <b>Dieselbe Tat über die ID der Stammregion</b> (Auftrag KL-4) — der Weg des
+        /// durchsuchbaren Auswahlfeldes, das seine Wahl als Id meldet.
+        ///
+        /// <para>Dies ist der EINE Ablauf; die Namensfassung schlägt nur die Id nach und
+        /// ruft hierher. Der Klima-Datensatz (Region + Klimadaten + Solar) wird aus den
+        /// STAMM-Tabellen in das Projekt kopiert (falls noch nicht vorhanden); am
+        /// Projekt wird die Id der PROJEKT-Kopie gespeichert, nicht die STAMM-Id.</para>
+        /// </summary>
+        /// <param name="idProjekt">Rückfall-Id, wenn zum Namen nichts gefunden wird.</param>
+        /// <param name="projektname">Der führende Schlüssel des offenen Projekts.</param>
+        /// <param name="stammRegionId"><c>Tab_Klimaregion_STAMM.ID_Klimaregion</c>;
+        /// <c>0</c> heißt „keine gewählt".</param>
+        public static KlimaStand KlimaregionSpeichern(int idProjekt, string projektname,
+                                                      int stammRegionId)
+        {
+            if (string.IsNullOrEmpty(projektname)) return KlimaStand.KeinProjekt;
+            if (stammRegionId <= 0) return KlimaStand.KeineRegion;
 
             ProjektCtrl ctrl_projekt = new ProjektCtrl();
             ctrl_projekt.ReadSingle(projektname);
             int id = ctrl_projekt.m_ID > 0 ? ctrl_projekt.m_ID : idProjekt;
-
-            // STAMM-Region-ID zur gewaehlten Klimaregion ermitteln.
-            int stammRegionId = KlimaregionStammId(regionName);
-            if (stammRegionId <= 0) return KlimaStand.RegionNichtGefunden;
 
             // Klima-Datensatz ins Projekt kopieren (falls noch nicht vorhanden) und die
             // ID der Projekt-Kopie zurueckerhalten.

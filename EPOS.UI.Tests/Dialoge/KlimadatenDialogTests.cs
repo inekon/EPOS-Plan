@@ -22,12 +22,36 @@ public class KlimadatenDialogTests : EposBunitContext
 {
     private static readonly byte[] BILD = { 1, 2, 3, 4 };
 
-    private static List<KlimadatenDialog.Regionszeile> Regionen() => new()
+    /// <summary>
+    /// Die drei Regionen der Liste — seit Auftrag KL-4 Katalogzeilen mit sieben
+    /// Spalten (Bezeichner, Quelle, Standort, Longitude, Latitude, Importdatum,
+    /// Schreibschutz), wie sie <c>KlimaregionStammCtrl.Katalogfilterzeilen</c> liefert
+    /// und die Hülle sie übersetzt.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Regionen() => new List<Katalogfilterzeile>
     {
-        new("Berlin", false),
-        new("Stuttgart", false),
-        new("Auslieferung Nord", true)
+        Zeile(17, "Berlin", "PVGIS-Testreferenzjahr (weltweit)", "Berlin, Deutschland",
+              13.3951, 52.5174, "2026-09-18", false),
+        Zeile(42, "Stuttgart", "DWD-Testreferenzjahr aus Datei", "9,1800° / 48,7700°",
+              9.18, 48.77, "2026-09-12", false),
+        Zeile(3, "Auslieferung Nord", "", "Hamburg, Deutschland",
+              10.0, 53.5, "", true)
     };
+
+    /// <summary>Eine Katalogzeile der Regionsliste — der Aufbau der Hülle in einer Zeile.</summary>
+    private static Katalogfilterzeile Zeile(int id, string name, string quelle, string standort,
+                                            double lon, double lat, string datum, bool geschuetzt)
+    {
+        var z = new Katalogfilterzeile(id, name) { Geschuetzt = geschuetzt };
+        return z
+            .MitText(Katalogfilterprofil.SpBezeichner, name)
+            .MitText(Katalogfilterprofil.SpQuelle, quelle)
+            .MitText(Katalogfilterprofil.SpStandort, standort)
+            .MitZahl(Katalogfilterprofil.SpLongitude, lon, 4)
+            .MitZahl(Katalogfilterprofil.SpLatitude, lat, 4)
+            .MitText(Katalogfilterprofil.SpImportdatum, datum)
+            .MitKennzeichen(Katalogfilterprofil.SpSchreibschutz, geschuetzt);
+    }
 
     public KlimadatenDialogTests()
     {
@@ -36,7 +60,7 @@ public class KlimadatenDialogTests : EposBunitContext
     }
 
     private IRenderedComponent<KlimadatenDialog> Zeige(
-        List<KlimadatenDialog.Regionszeile>? regionen = null,
+        IReadOnlyList<Katalogfilterzeile>? regionen = null,
         Func<string, Task<KlimadatenDialog.Regionsansicht>>? ansicht = null,
         Func<KlimaImportAuftrag, IProgress<ImportFortschritt>, Task<KlimaImportErgebnis>>? importieren = null,
         Action? abbrechen = null,
@@ -46,9 +70,10 @@ public class KlimadatenDialogTests : EposBunitContext
         Func<string, Task<string?>>? dateiWaehlen = null,
         Func<KlimaImportAuftrag, Task<KlimaVorschauErgebnis>>? regionErmitteln = null)
     {
-        List<KlimadatenDialog.Regionszeile> liste = regionen ?? Regionen();
+        IReadOnlyList<Katalogfilterzeile> liste = regionen ?? Regionen();
         return Render<KlimadatenDialog>(p => p
             .Add(x => x.Regionen, () => Task.FromResult(liste))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Ansicht, ansicht ?? (n => Task.FromResult(
                 new KlimadatenDialog.Regionsansicht("Details " + n, 9.18, 48.77, BILD, BILD, ""))))
             .Add(x => x.Importieren, importieren ?? ((_, _) => Task.FromResult(
@@ -434,12 +459,12 @@ public class KlimadatenDialogTests : EposBunitContext
 
         cut.FindAll("button.epos-anlagenwahl")[0].Click();
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Löschen").Click();
-        cut.Find("div.epos-klimaregion").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        cut.Find("div.epos-katalog-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(antwort);      // BeiTaste liefert bei offener Rueckfrage nichts - kein Wettlauf
 
         cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>()
            .FindAll("button").First(b => b.TextContent.Trim() == "Nein").Click();
-        cut.Find("div.epos-klimaregion").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        cut.Find("div.epos-katalog-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         // W16b-O-2 (Gate 10.09.2026): BeiTaste ruft hier Geschlossen.InvokeAsync(false)
         // ueber den Renderer-Dispatcher - derselbe Wettlauf wie bei Beenden_liefert_OK.
@@ -942,5 +967,192 @@ public class KlimadatenDialogTests : EposBunitContext
 
         cut.Find("input[list=epos-klimaregion-orte]").Input("Hamburg");
         Assert.Equal("", cut.Instance.Regionsvorschau);
+    }
+
+    // =====================================================================
+    //  Auftrag KL-4 - Fussleiste, Importfreigabe und die Katalogliste
+    // =====================================================================
+
+    /// <summary>
+    /// <b>EINE Fußleiste mit vier Knöpfen</b> (Anwenderwunsch 19.09.2026, Punkt 1):
+    /// „Daten einlesen — Füller — Löschen — Beenden", Beenden primär. Die Liste
+    /// trägt KEINEN Aktionsknopf mehr: Die listenlokale Leiste mit „Löschen" lag am
+    /// Ende der Listenspalte und stieß bei schmalem Fenster an die Reiterleiste.
+    /// </summary>
+    [Fact]
+    public void Eine_Fussleiste_traegt_die_vier_Knoepfe_in_der_Reihenfolge()
+    {
+        var cut = Zeige();
+
+        var fuss = cut.FindAll("div.epos-leiste").Last();
+
+        Assert.Equal(new[] { "Daten einlesen", "Löschen", "Beenden" },
+                     fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.Single(fuss.QuerySelectorAll("span.epos-leiste-fueller"));
+        Assert.Contains("epos-knopf--primaer",
+                        fuss.QuerySelectorAll("button").Last().ClassName ?? "");
+
+        // Die Listenspalte ist knopffrei - bis auf die Bedienelemente der
+        // Katalogliste selbst (Wahlknopf, Sortierpfeil, Trichter).
+        var liste = cut.Find("div.epos-katalog-liste");
+        Assert.DoesNotContain("Löschen",
+            liste.QuerySelectorAll("button").Select(b => b.TextContent.Trim()));
+    }
+
+    /// <summary>
+    /// <b>„Daten einlesen" bleibt nach einem Erfolg frei</b> (Anwenderwunsch
+    /// 19.09.2026, Punkt 2: „‚Daten Einlesen' verschwindet nach dem Einlesen").
+    /// Der Knopf war nie weg — er war GESPERRT, weil der Erfolgsfall Ortsname und
+    /// Bezeichnung leerte und <c>ImportErlaubt</c> damit seinen Standort verlor.
+    /// </summary>
+    [Fact]
+    public void Nach_einem_Erfolg_bleiben_die_Felder_und_der_Knopf_frei()
+    {
+        var cut = Zeige(importieren: (_, _) => Task.FromResult(new KlimaImportErgebnis
+        {
+            Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Lyon", Meldung = "fertig"
+        }));
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Lyon");
+        Einlesen(cut).Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("fertig", cut.Instance.Meldung),
+                             TimeSpan.FromSeconds(10));
+
+        Assert.Equal("Lyon", cut.Find("input[list=epos-klimaregion-orte]").GetAttribute("value"));
+        Assert.False(Einlesen(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Der Dublettenschutz ist der Schutz vor Doppelimport</b>, nicht das Leeren
+    /// der Felder: Ein zweiter Klick meldet sich, und die Liste bleibt, wie sie war.
+    /// </summary>
+    [Fact]
+    public void Ein_zweiter_Klick_meldet_die_Dublette_und_die_Liste_bleibt()
+    {
+        int laeufe = 0;
+        var cut = Zeige(importieren: (_, _) =>
+        {
+            laeufe++;
+            return Task.FromResult(laeufe == 1
+                ? new KlimaImportErgebnis
+                  { Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Lyon", Meldung = "fertig" }
+                : new KlimaImportErgebnis
+                  { Ausgang = KlimaImportAusgang.Dublette,
+                    Meldung = "Die Klimaregion gibt es bereits." });
+        });
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Lyon");
+        Einlesen(cut).Click();
+        cut.WaitForAssertion(() => Assert.Contains("fertig", cut.Instance.Meldung),
+                             TimeSpan.FromSeconds(10));
+
+        Einlesen(cut).Click();
+        cut.WaitForAssertion(() => Assert.Contains("gibt es bereits", cut.Instance.Meldung),
+                             TimeSpan.FromSeconds(10));
+
+        Assert.Equal(2, laeufe);
+        Assert.Equal(3, cut.FindAll("button.epos-anlagenwahl").Count);
+    }
+
+    /// <summary>
+    /// <b>Die Regionsliste ist die EINE Katalogliste des Hauses</b> (Anwenderwunsch
+    /// 19.09.2026, Punkt 3): Suchfeld, Trefferzeile, sieben Spalten samt Quelle und
+    /// Standort — und KEIN Vergleichsknopf: Eine Klimaregion ist kein Gerät mit
+    /// Kennwerten.
+    /// </summary>
+    [Fact]
+    public void Die_Liste_zeigt_Suche_sieben_Spalten_und_keinen_Vergleich()
+    {
+        var cut = Zeige();
+
+        Assert.Single(cut.FindAll("label.epos-katalog-suchfeld input"));
+        Assert.Contains("3", cut.Find("span.epos-katalog-treffer").TextContent);
+        Assert.Empty(cut.FindAll("button.epos-katalog-vergleichknopf"));
+
+        var koepfe = cut.FindAll("span.epos-spaltenkopf-text")
+                        .Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Klimaregion", "Quelle", "Standort", "Longitude", "Latitude",
+                             "Importdatum", "Schreibschutz" }, koepfe);
+
+        // Quelle und Standort stehen als Text in den Zeilen.
+        Assert.Contains("DWD-Testreferenzjahr aus Datei", cut.Markup);
+        Assert.Contains("Berlin, Deutschland", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Die Wahl überlebt einen Filterwechsel</b>: Sie hängt am Bezeichner, nicht
+    /// an der Zeilennummer — dieselbe Regel wie in den vierzehn anderen Katalogen.
+    /// </summary>
+    [Fact]
+    public void Die_Wahl_ueberlebt_einen_Filterwechsel()
+    {
+        var cut = Zeige();
+
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();       // Stuttgart
+        cut.WaitForAssertion(() => Assert.Equal("Stuttgart", cut.Instance.Gewaehlt),
+                             TimeSpan.FromSeconds(10));
+
+        cut.Find("label.epos-katalog-suchfeld input").Input("stutt");
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-anlagenwahl")),
+                             TimeSpan.FromSeconds(10));
+        Assert.Equal("Stuttgart", cut.Instance.Gewaehlt);
+
+        cut.Find("label.epos-katalog-suchfeld input").Input("");
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll("button.epos-anlagenwahl").Count),
+                             TimeSpan.FromSeconds(10));
+        Assert.Equal("Stuttgart", cut.Instance.Gewaehlt);
+    }
+
+    /// <summary>
+    /// <b>Die Dateizeile steht in EINER Zeile</b>: Beschriftung, Feld und
+    /// „Durchsuchen" — das leistet das <c>Formularraster</c>
+    /// (<c>.epos-dateiwahl &gt; .epos-knopf</c>). Vorher lag der Knopf unter seinem
+    /// Feld, weil der Block in einer Klasse ohne Stilblatt stand.
+    /// </summary>
+    [Fact]
+    public void Die_Dateizeile_traegt_Beschriftung_Feld_und_Knopf_in_einer_Zeile()
+    {
+        var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>("/tmp/x.dat"));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+
+        Assert.Equal(2, cut.FindAll("div.epos-formularraster--einspaltig").Count);
+
+        var zeile = cut.Find("span.epos-feld-zeile.epos-dateiwahl");
+        var feld = zeile.ParentElement!;
+        Assert.Equal("LABEL", feld.TagName);
+        Assert.Contains("epos-feld", feld.ClassName ?? "");
+        Assert.Single(feld.QuerySelectorAll("span.epos-feld-text"));
+        Assert.Single(zeile.QuerySelectorAll("input"));
+        Assert.Single(zeile.QuerySelectorAll("button.epos-knopf"));
+    }
+
+    /// <summary>
+    /// <b>Die Virtualisierungsschwelle gilt auch hier</b> (Hausregel W6-B-2: ab 120
+    /// gefilterten Zeilen). 150 Regionen sind mehr, als ein Anwender je anlegt —
+    /// aber die Liste ist derselbe Baustein wie die mit 20 749 PV-Modulen, und der
+    /// Fall muss gezeichnet werden, ohne dass die Wahl verlorengeht.
+    /// </summary>
+    [Fact]
+    public void Hundertfuenfzig_Regionen_virtualisieren_und_die_Wahl_bleibt()
+    {
+        var viele = new List<Katalogfilterzeile>();
+        for (int i = 0; i < 150; i++)
+            viele.Add(Zeile(1000 + i, "Region " + i.ToString("D3", CultureInfo.InvariantCulture),
+                            "PVGIS-Testreferenzjahr (weltweit)", "Ort " + i,
+                            7.0 + i / 100.0, 47.0 + i / 100.0, "2026-09-18", false));
+
+        var cut = Zeige(regionen: viele);
+
+        Assert.Contains("150", cut.Find("span.epos-katalog-treffer").TextContent);
+
+        cut.Find("label.epos-katalog-suchfeld input").Input("Region 007");
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-anlagenwahl")),
+                             TimeSpan.FromSeconds(10));
+
+        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        cut.WaitForAssertion(() => Assert.Equal("Region 007", cut.Instance.Gewaehlt),
+                             TimeSpan.FromSeconds(10));
     }
 }

@@ -334,3 +334,171 @@ erzeugt.
 - **A-KL3-5** — Details eines neuen Imports: `Quelle` und `Importdatum` sind gesetzt, bei
   einer Altbestandsregion leer (in der Oberfläche sichtbar erst mit KL-4).
 
+## 11. Nachtrag KL-4 — Bedienung der Klimadaten
+
+### 11.1 Auftrag
+
+Anwenderwunsch vom 19.09.2026, im Wortlaut, zu fünf Bildschirmbildern:
+
+1. „Der Button Beenden, Durchsuchen, Löschen, Daten Einlesen sollen besser platziert
+   werden."
+2. „‚Daten Einlesen' verschwindet nach dem Einlesen."
+3. „Bei der Auswahl der Klimadaten soll das gleiche Schema (Filter, Sortieren …) verwendet
+   werden [wie bei ‚Module in Datenbank']. Die Quelle und Bezeichnung der Klimadaten soll
+   mit angezeigt werden."
+4. „Die verwendeten Klimadaten sollen sich auch auf der Übersicht befinden. Das Dropdown
+   soll auch durchsuchbar sein."
+
+### 11.2 Befund
+
+**Zu 1.** Der Dialog hatte ZWEI Knopfzeilen: eine listenlokale `.epos-leiste` am Ende der
+Listenspalte mit „Löschen" und die Schlussleiste „Daten einlesen · Füller · Beenden"
+außerhalb des Rahmens. Zwischen der listenlokalen Leiste und der Reiterleiste daneben stand
+nur der Rasterabstand — bei schmalem Fenster stießen sie aneinander. „Durchsuchen" gehörte
+nie in eine Fußleiste: Es ist der Knopf des Bausteins `Dateiwahl` und gehört neben sein
+Feld.
+
+**Die Ursache, dass er dort nicht stand:** Die zwei Eingabeblöcke standen in einem nackten
+`div.epos-klimaregion-eingabe` — einer Klasse, die im Stilblatt **nie angekommen** ist
+(derselbe Befund wie bei `epos-klimaregion-mitte/-liste/-bilder`). Ohne Regel stand jedes
+Feld über die volle Breite, die Beschriftung darüber und der Knopf der `Dateiwahl` unter
+seinem Feld. Dasselbe galt für `epos-feld-beschriftung` am Ortsfeld — die Klasse des Hauses
+heißt `epos-feld-text`.
+
+**Zu 2.** Der Knopf war **nie weg**. Er steht unverändert im Markup und trägt
+`disabled="@(!ImportErlaubt)"`. `ImportErlaubt` verlangt `StandortSteht` — einen Ortsnamen
+ODER Longitude, Latitude und Bezeichnung —, und der Erfolgsfall in `BeiImport` leerte
+`_ortsname` und `_bezeichnung`. Damit hatte der Dialog nach jedem erfolgreichen Import
+keinen Standort mehr, und der Knopf war gesperrt. Aus Sicht des Anwenders: verschwunden.
+
+**Zu 3.** Die Regionsliste war ein nacktes `Raster` mit zwei Spalten über einem
+`record Regionszeile(string Name, bool NurLesen)` — kein Suchfeld, kein Trichter, kein
+Sortierpfeil, keine Trefferzahl, und vor allem: nicht die Quelle und nicht der Standort,
+nach denen der Anwender sucht. Die Spalten `Quelle` und `Importdatum` gab es seit
+Schemaschritt 95 (KL-3), aber keinen Leser dafür.
+
+**Zu 4.** Die Startseite trug ein natives `<select>` über KLARNAMEN — aufklappen und rollen,
+und gespeichert wurde ein Text. Einen durchsuchbaren Auswahlbaustein gab es im Haus nicht:
+`Standards/Auswahlfeld` ist Id-basiert, aber ohne Suche.
+
+### 11.3 Umsetzung
+
+**Paket A — der Dialog.**
+
+- **Eine Fußleiste** außerhalb des `Katalograhmen`: `Daten einlesen · Füller · Löschen ·
+  Beenden`, Beenden primär — Hausmuster `ModulKatalogDialog`. Die listenlokale Leiste
+  entfällt; `LoeschenErlaubt` und die Rückfrage bleiben unverändert.
+- Die Blöcke Klimaquelle und Standort stehen im `Formularraster Einspaltig`; das „oder" ist
+  eine `Formulargruppe` (leise Zwischenüberschrift über die volle Breite). Damit trägt die
+  `Dateiwahl` Beschriftung, Feld und „Durchsuchen" in einer Zeile
+  (`.epos-dateiwahl > .epos-knopf`) — **ohne eine einzige neue CSS-Klasse**. Die toten
+  Klassen `epos-klimaregion*` und `epos-feld-beschriftung` sind entfernt.
+- **Import-Freigabe:** Die zwei Zuweisungen, die `_ortsname` und `_bezeichnung` leerten,
+  sind gefallen; der Grund steht als Kommentar an der Stelle. Vor einem Doppelimport
+  schützt der Dublettenschutz des Ablaufs (`GetStammId(…) > 0` →
+  `KlimaImportAusgang.Dublette`, `KLIMA_MSG_SCHON_VORHANDEN`) — und der ist der richtige
+  Ort dafür: Er kennt den Katalog, das Formular kennt nur seine Felder.
+- **Die Regionsliste ist die `Katalogliste`** mit dem Profil
+  `Katalogfilterprofil.AusSpalten("KLIMAREGION", …)` und sieben Spalten: `BEZEICHNER`,
+  `QUELLE`, `STANDORT`, `LONGITUDE` und `LATITUDE` (Zahl, vier Nachkommastellen),
+  `IMPORTDATUM` (Text — ISO sortiert als Zeichenkette in der Reihenfolge des Datums) und
+  `SCHREIBSCHUTZ` (Ja/Nein). `Raster` und `Regionszeile` entfallen; die Wahl hängt
+  unverändert am Bezeichner, der Schreibschutz an `Katalogfilterzeile.Geschuetzt`. Der
+  Filterstand kommt aus `Katalogfilterregister.Stand("KLIMAREGION")`, Rückweg
+  `Filterstandvorgabe`.
+- **Neu im Kern** (`KlimaregionStammCtrl`):
+  `Katalogfilterzeilen()` liest die acht Spalten mit `ORDER BY Name` und ist tolerant, wenn
+  `Quelle` und `Importdatum` fehlen (Muster `KostenVorlagenCtrl.PflichtSpalteVorhanden`);
+  `Standorttext(details, lon, lat)` nimmt das erste Glied von `Details` — aber nur, wenn es
+  ein Ort ist und nicht der Name einer TRY-Quelle. Gemessen wird gegen die **Vorlagen
+  selbst** (`KLIMA_TRY_DETAILS_DATEI` / `_REGIONAL`), in aktueller **und** neutraler Kultur:
+  Der Vermerk ist in der Sprache geschrieben worden, die beim Import eingestellt war.
+- Die **Quelle bleibt im Kern ihr Schlüssel** (`PVGIS`, `TRY_DATEI`, `TRY_REGIONAL`);
+  `KlimadatenHuelle.RegionenLesen` setzt den Anzeigetext ein — dieselben drei Namen, die die
+  Optionsgruppe „Klimaquelle" trägt.
+- **`Katalogliste` bekommt `Vergleichbar`** (Vorgabe `true`): Wo die Zeilen keine Kennwerte
+  tragen, fällt der Vergleichsknopf weg — und mit ihm das Markieren, das sonst ein
+  unsichtbarer Zustand wäre. Strg-Klick wählt dann wie ein gewöhnlicher Klick.
+
+**Paket B — die Startseite.**
+
+- **Neuer Baustein `EPOS.UI/Standards/Suchauswahl.razor`**: eine Textzeile mit eigener
+  Vorschlagsliste. Tippfilter über `Contains` (`ToUpperInvariant`, `Ordinal`), Tastatur ↑ ↓
+  Enter Esc, Wahl als **Id**, `@key` an der Id, Einträge ≥ `--epos-touchziel`, höchstens 50
+  gezeichnete Vorschläge, `forced-colors` beachtet. Geschlossen wird über eine
+  **Schließfläche** (`position: fixed; inset: 0`, drei z-Ebenen wie beim Menüband), **nicht**
+  über `focusout`: Das feuert auch bei einem Fokuswechsel innerhalb der Liste, und auf dem
+  iPad setzt eine Berührung überhaupt keinen Fokus (Befund W16c-B13). Kein JS-Interop.
+- **Warum kein `<datalist>`:** Es trägt keine Id (die Zuordnung Text → Id müsste die Seite
+  raten, und zwei gleichnamige Regionen wären nicht unterscheidbar), es führt keine Tastatur
+  (welche Taste öffnet, ob ↑ ↓ wandert, was Esc tut, entscheidet der Browser), und es sieht
+  je Browser anders aus. Der Kopfkommentar der Datei sagt das.
+- **Die drei Klimadelegaten der Startseite laufen über Ids**: `Klimaregionen` liefert
+  `(Id, Text)`, `KlimaregionId` statt `Klimaregion`, `KlimaSpeichern` nimmt die Stamm-Id.
+  Im Kern ist `KlimaregionSpeichern(idProjekt, projektname, stammRegionId)` **der** Ablauf;
+  die Namensfassung schlägt nur die Id nach und ruft ihn — zwei Methoden desselben Inhalts
+  driften (Lehre aus Befund W16a-B5).
+- **Neu `StartseiteCtrl.KlimaHerkunft(idProjekt)`** → Record
+  `KlimaHerkunft(Quelle, Bezeichner, Standort, Importdatum)`, gelesen aus der
+  **Projektkopie** `Tab_Klimaregion` über `Tab_Projekt.ID_Klimaregion` — dieselbe Zeile, mit
+  der der Rechenlauf arbeitet, und derselbe Weg wie `ProjektKlimazone`. Ein Griff in den
+  Stammkatalog wäre der falsche Schlüsselraum (Befund W16b-B2).
+- **Die Herkunftszeile** steht als zweite, leise Zeile im Klimakasten. Ohne Quelle und
+  Importdatum (Altbestand) steht die **Kurzform** aus Bezeichner und Standort; ohne Gaben —
+  kein Projekt offen, oder die Plattform liefert sie nicht (iOS, `StartseiteGaben` → `null`)
+  — steht keine Zeile. Eine leere Zeile wäre eine Behauptung ohne Inhalt.
+- **Hülle `StartseiteHuelle`**: übersetzt den Quellenschlüssel und schreibt das ISO-Datum
+  kulturgerecht (`DateTime.TryParseExact`, sonst der Rohtext). `IProjektQuelle.StartseiteGaben`
+  bleibt unverändert.
+
+**Ressourcen** (beide Sprachen, Designer neu erzeugt): `KLIMA_SP_QUELLE`,
+`KLIMA_SP_STANDORT`, `KLIMA_SP_LONGITUDE`, `KLIMA_SP_LATITUDE`, `KLIMA_SP_IMPORTDATUM`,
+`KLIMA_SP_SCHREIBSCHUTZ`, `START_KLIMA_HERKUNFT`, `START_KLIMA_HERKUNFT_KURZ`,
+`SUCHAUSWAHL_PLATZHALTER`, `SUCHAUSWAHL_KEIN_TREFFER`, `SUCHAUSWAHL_LISTE`. Die
+`KLIMA_QUELLE_*` aus KL-1 werden wiederverwendet — ein zweiter Wortlaut für dieselbe Sache
+wäre eine zweite Wahrheit.
+
+**Eine Stilblattfalle:** Der CSS-Block der Suchauswahl steht **vor** dem
+Formularraster-Abschnitt. Die Wache
+`FormularrasterTests.Ausserhalb_des_Rasters_bleibt_ein_Feld_unveraendert` liest alles nach
+dessen Kopf und verlangt dort `.epos-formularraster` in jeder Selektorzeile.
+
+### 11.4 Nachweise
+
+| Prüfstand | Ergebnis |
+|---|---|
+| `Proben/Rasterprobe` **vor** der Änderung | ALLE 9 FÄLLE ERFÜLLEN DIE SOLLWERTE (Rückgabe 0) |
+| `Proben/Rasterprobe` **nach** der Änderung | ALLE 9 FÄLLE ERFÜLLEN DIE SOLLWERTE (Rückgabe 0) |
+| `KlimaregionKatalogTests` (neu) | 8 grün — sieben Spalten, Sortierung, Schreibschutz, `Standorttext` gegen drei echte Muster, leerer Altbestand, ISO-Sortierung, Fall ohne die zwei Spalten |
+| `SuchauswahlTests` (neu) | 14 grün — Tippfilter, Leerfall, Wahl als Id, ↑ ↓ Enter Esc, Schließfläche, gesperrt, Berührungsklasse, gedeckelte Vorschlagszahl |
+| `KlimadatenDialogTests` | 41 grün (sieben neue: Fußleiste, freibleibende Felder, Dublette, sieben Spalten ohne Vergleich, Wahl über den Filterwechsel, Dateizeile, 150 Zeilen) |
+| `KataloglisteTests` | 2 neue (Vorgabe `true`, `Vergleichbar="false"` samt Strg-Klick) |
+| `StartseiteTests`, `HauptfensterTests`, `StartseiteCtrlTests` | grün; vier neue Startseitenfälle, vier neue Kernfälle, iOS-Fall ergänzt |
+| Volle Suite | grün, beide Kulturen |
+| SQL-Dialekt-Prüfer | 1 505 Texte, 0 Fundstellen |
+| Referenzlauf | fünf Projekte byte-gleich gegen R9 |
+| Windows-Schale | 0 Fehler (Linux-Bau mit `EnableWindowsTargeting`) |
+
+### 11.5 Windows-Abnahmepunkte
+
+- **A-KL4-1** — Klimadaten öffnen: Unter dem Rahmen steht EINE Leiste „Daten einlesen ·
+  Löschen · Beenden" (Beenden hervorgehoben); die Liste trägt keinen Aktionsknopf, und bei
+  schmalem Fenster überlappt nichts mehr.
+- **A-KL4-2** — Quelle „Testreferenzjahr (Datei)": Beschriftung, Pfadfeld und „Durchsuchen"
+  stehen in EINER Zeile; dasselbe beim Regionalpaket.
+- **A-KL4-3** — PVGIS-Import über einen Ortsnamen: Nach der Erfolgsmeldung stehen Ortsname
+  und Bezeichnung noch da, und „Daten einlesen" ist frei.
+- **A-KL4-4** — Denselben Ort ein zweites Mal einlesen: Die Meldung sagt, dass es die Region
+  schon gibt; die Liste bleibt, wie sie war.
+- **A-KL4-5** — Die Regionsliste zeigt Suchfeld, Trefferzahl („n von m"), Trichter und
+  Sortierpfeil in sieben Spalten — und KEINEN Vergleichsknopf; eine Suche nach „tüb" oder
+  „2026-09" engt ein, die gewählte Zeile bleibt gewählt.
+- **A-KL4-6** — Eine Auslieferungsregion löschen wird abgewiesen („schreibgeschützt"); eine
+  eigene Region fragt zuerst und verschwindet nach „Ja" samt ihren Stunden- und Tageswerten.
+- **A-KL4-7** — Übersicht: „tüb" führt auf Tübingen, ↑ ↓ und Enter wählen, Esc schließt die
+  Liste ohne zu ändern, ein Klick daneben schließt sie ebenfalls; „Speichern" übernimmt.
+- **A-KL4-8** — Unter dem Klimafeld steht „Klimadaten: … · … · … · Import …"; bei einer
+  Region aus dem Altbestand die Kurzform ohne Quelle und Datum, ohne offenes Projekt keine
+  Zeile.
+- **A-KL4-9** — Sprachumschaltung auf Englisch: Spaltenköpfe, Platzhalter, „Kein Treffer."
+  und die Herkunftszeile sind übersetzt.

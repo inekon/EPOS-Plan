@@ -844,4 +844,48 @@ public class KataloglisteTests : EposBunitContext
 
     private static string[] Namen(IRenderedComponent<Katalogliste> cut) =>
         cut.Instance.Angezeigt.Select(z => z.Bezeichner).ToArray();
+
+    // =====================================================================
+    //  Vergleichbar (Auftrag KL-4) - der Knopf, wo es etwas zu vergleichen gibt
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Vorgabe bleibt der Knopf</b>: Die fünfzehn Katalogwirte aus S1…S3
+    /// zeigen ihn unverändert, ohne etwas setzen zu müssen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Angabe_steht_der_Vergleichsknopf_wie_bisher()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindAll("button.epos-katalog-vergleichknopf"));
+    }
+
+    /// <summary>
+    /// <b><c>Vergleichbar="false"</c> nimmt den Knopf weg</b> — für Listen, deren
+    /// Zeilen keine Kennwerte tragen (die Klimaregionen aus Auftrag KL-4). Mit dem
+    /// Knopf fällt auch das MARKIEREN weg: Eine Markierung, die zu keiner Ansicht
+    /// führt, wäre ein unsichtbarer Zustand. Strg-Klick wählt dann wie ein
+    /// gewöhnlicher Klick.
+    /// </summary>
+    [Fact]
+    public void Ohne_Vergleich_bleibt_der_Knopf_weg_und_Strg_waehlt()
+    {
+        string gemeldet = "";
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, Profil())
+            .Add(x => x.Zeilen, Zeilen())
+            .Add(x => x.Filterstand, new Katalogfilterstand())
+            .Add(x => x.Vergleichbar, false)
+            .Add(x => x.GewaehltChanged,
+                 EventCallback.Factory.Create<string>(this, w => gemeldet = w)));
+
+        Assert.Empty(cut.FindAll("button.epos-katalog-vergleichknopf"));
+
+        cut.FindAll("tbody tr")[1].QuerySelector("button")!.Click(
+            new Microsoft.AspNetCore.Components.Web.MouseEventArgs { CtrlKey = true });
+
+        cut.WaitForAssertion(() => Assert.Equal("Beta", gemeldet), TimeSpan.FromSeconds(10));
+        Assert.Empty(cut.Instance.Markiert);
+    }
 }

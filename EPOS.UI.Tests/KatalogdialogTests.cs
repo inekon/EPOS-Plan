@@ -158,10 +158,12 @@ public class KatalogdialogTests : EposBunitContext
 
     private IRenderedComponent<KlimadatenDialog> Klimaregionen() =>
         Render<KlimadatenDialog>(p => p
-            .Add(x => x.Regionen, () => Task.FromResult(new List<KlimadatenDialog.Regionszeile>
+            .Add(x => x.Regionen, () => Task.FromResult((IReadOnlyList<Katalogfilterzeile>)new[]
             {
-                new("Region A", false)
-            })));
+                new Katalogfilterzeile(1, "Region A")
+                    .MitText(Katalogfilterprofil.SpBezeichner, "Region A")
+            }))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
     private IRenderedComponent<GesetzeskatalogDialog> Gesetzeskatalog() =>
         Render<GesetzeskatalogDialog>(p => p
