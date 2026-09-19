@@ -21,7 +21,7 @@ Papiere und **ohne** einen der offenen Entscheide vorwegzunehmen.
 | `25d9d7b4` | E0a: LIESMICH des Ordners Wirtschaftlichkeit_Kosten nachgezogen | 1 Datei, +18 / −9 |
 | `3cdce7d7` | E0a: Mockup-Code-Spannen relativ schreiben (Wache grün) | 1 Datei, +3 / −3 |
 | `4b8664a2` | E0a: Protokoll der Papierpflege | 1 Datei, neu |
-| *(Nachtrag)* | E0a: § 2.16 — zwei Bedingungen der iOS-Erreichbarkeit | 2 Dateien, +8 / −5 |
+| `8abb9b9e` | E0a: § 2.16 — zwei Bedingungen der iOS-Erreichbarkeit | 2 Dateien, +8 / −5 |
 
 **Zeilenzahlen der Papiere vorher → nachher:**
 
