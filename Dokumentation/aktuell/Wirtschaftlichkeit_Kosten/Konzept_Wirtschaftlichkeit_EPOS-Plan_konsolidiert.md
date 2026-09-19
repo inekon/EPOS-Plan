@@ -1279,7 +1279,7 @@ Vergütung ist keine Darstellungsfrage der Ergebnisansicht.
 | Anzeige — Vergütungsdialog | öffnet für die Variante; bei „übernommen" mit Hinweiszeile „übernommen von ‹Stamm› — Felder gesperrt" und Knopf **„eigene Werte"**, der die Stammwerte in die Zeile der Variante kopiert und `Uebernahme_Stamm = 0` setzt (VV‑Q6); „Übernehmen" schreibt die Zeile des geöffneten Projekts |
 | Bericht | Block A9 (`WirtschaftlichkeitZeilen`, Zeilen PV_FORM/PV_AW) bekommt eine Nachweiszeile „PV-Vergütung: Herkunft" je Spalte — „eigene Werte" / „übernommen von ‹Stamm›"; die Herkunft reist im Nachweisumschlag der Ergebniszeile (`ErgebnisNachweisUmschlag`), keine neue Ergebnisspalte; Word und Excel lesen dieselbe Zeilendefinition |
 | ValERI | die Vergütung ist Bestandteil der Maßnahme; ob eigene oder übernommene Werte, ändert an der Bewertung nichts — keine Änderung |
-| Kohärenz (§ 3.9) | Warnzeile ohne Rechenwirkung: „Variante ‹x› führt eine eigene, inaktive PV-Vergütung; der Stamm eine aktive" — die Spur der Bestandsableitung (VV‑Q4) |
+| Kohärenz (§ 3.9) | Warnzeilen ohne Rechenwirkung: „Variante ‹x› führt eine eigene, inaktive PV-Vergütung; der Stamm eine aktive" — die Spur der Bestandsableitung (VV‑Q4); „Variante ‹x› übernimmt, der Stamm ist nicht angewendet"; „Variante ‹x› führt ‚übernehmen', hat aber kein Stammprojekt — keine Vergütungszeile, Flat-Pfad" (Verknüpfung ins Leere oder Wahl ohne Verknüpfung) |
 
 **Randfälle, ausdrücklich geregelt:**
 
@@ -1295,10 +1295,20 @@ Vergütung ist keine Darstellungsfrage der Ergebnisansicht.
   weiter wie heute); Variante ohne Zeile, Stamm ohne aktive Zeile → nichts zu tun (übernehmen,
   Flat-Pfad beiderseits); Variante ohne Zeile, Stamm mit aktiver Zeile → eigene Zeile `Aktiv = 0,
   Uebernahme_Stamm = 0` — ergebnisneutral, mit Kohärenzhinweis (VV‑Q4).
-- Projekttransfer (`ProjektExportImportCtrl`, generischer Plan) → die Spalte reist mit der Zeile;
-  ein Variantenbaum bringt Stamm und Wahl mit. Eine einzeln transferierte Variante mit „übernehmen"
-  findet im Ziel keinen Stamm → der Import legt die Stammwerte aus dem Paket als eigene Zeile an;
-  fehlt der Stamm auch im Paket, gilt der Flat-Pfad mit Warnzeile.
+- Projekttransfer (`ProjektExportImportCtrl`) → **umgesetzt.** Der Transfer nimmt
+  `Tab_ProjektPhotovoltaik` mit (`Transferplan` = Kopierplan des Duplizierers plus diese eine
+  Tabelle; die Ausnahmeliste des Duplizierers bleibt, sie gilt dem Anlegen einer Variante in
+  DERSELBEN Datenbank). Ein Variantenbaum bringt damit Stamm und Wahl mit, und es gibt nichts
+  beizulegen. Eine **einzeln** transferierte Variante mit „übernehmen" findet im Ziel keinen
+  Stamm; ihr Paket trägt deshalb die geltende Zeile des Stamms als eigenen Abschnitt
+  (`pvVerguetungStamm` im Manifest, `pvstamm/<i>.json`) — nicht als Zeile der Tabelle des
+  Stamms, denn der Stamm reist nicht. Scheitert die Verknüpfung am Ziel, macht der Import die
+  Beilage zu den **eigenen** Werten der Variante (`Uebernahme_Stamm = 0`, umgeschlüsselt auf die
+  neue Projekt-Id) und nennt es in der Importmeldung; steht die Verknüpfung (Stamm im Paket oder
+  am Ziel), bleibt die Beilage liegen und die Variante übernimmt wie zuvor. Fehlt dem Stamm eine
+  aktive Zeile, gibt es keine Beilage: Die Variante bleibt ohne Zeile, die Importmeldung nennt den
+  Flat-Pfad, und die Kohärenzprüfung wiederholt ihn bei jedem Lauf. Ein Paket ohne den Abschnitt
+  lädt unverändert — er ist kein Pflichtteil des Manifests.
 - Löschen des Stamms (`ProjektCtrl.Delete` löst die Verknüpfungen in `Tab_Variante`) → jede
   übernehmende Variante erhält zuvor die Stammwerte als eigene Zeile (`Uebernahme_Stamm = 0`); nie
   stiller Verlust der Vergütung. Löschen einer Variante → ihre Zeile fällt mit (heute bleibt sie
@@ -1353,7 +1363,7 @@ noch Sicht, nur den Leseweg einer Größe je Stand; ergebnisneutral in der Vorga
 Kategorie 3 (Reiter Ertrag/Bonus) und Kategorie 6 (Kopfzeile) in
 `../Mockups/Dialog_Formel_Zahlenprobe.html#pvkosten`; Umsetzungsstand U38.
 
-**Zwei Stellen, an denen die Umsetzung von der Soll-Tafel abweicht — benannt, nicht still:**
+**Drei Stellen, an denen die Umsetzung von der Soll-Tafel abweicht — benannt, nicht still:**
 
 - **Die Löschweitergabe `Tab_Projekt → Tab_ProjektPhotovoltaik` ist kein Schemateil.** SQLite
   kann einer bestehenden Tabelle keinen Fremdschlüssel anhängen; ein Tabellenneubau allein
@@ -1367,6 +1377,14 @@ Kategorie 3 (Reiter Ertrag/Bonus) und Kategorie 6 (Kopfzeile) in
   Antwort gibt eine Datenbank, der die Spalte noch fehlt. „Übernommen" bleibt der Zustand
   **ohne** Zeile oder mit ausdrücklichem Kennzeichen 1. Das DML des Schritts schreibt dieses
   NULL einmalig als 0 fest; die Lesart bleibt als tolerante Rückfallebene.
+- **Der Transfer hat einen eigenen Plan.** `Tab_ProjektPhotovoltaik` steht in der
+  Ausnahmeliste des Duplizierers, und dieselbe Liste filtert `ErmittlePlan` — sie allein
+  ließe die Zeile in keinem Transferpaket mitreisen, auch nicht die eines Stammprojekts. Die Liste bleibt, wie
+  sie ist: Sie gilt dem ANLEGEN einer Variante, bei dem Stamm und Variante in derselben
+  Datenbank liegen und die Wahl „übernehmen" genügt. Der Transfer trägt das Projekt in eine
+  andere Datenbank, in der es nichts zu übernehmen gibt, und nimmt die Tabelle deshalb über
+  `ProjektExportImportCtrl.Transferplan` zusätzlich mit — Export, Import und das Löschen beim
+  Überschreiben lesen denselben Plan.
 
 ---
 

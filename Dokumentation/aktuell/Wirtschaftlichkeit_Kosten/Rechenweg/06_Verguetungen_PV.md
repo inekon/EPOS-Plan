@@ -60,6 +60,13 @@ PV-Zeile mehr; wird ein Stammprojekt gelöscht, erhalten die übernehmenden Vari
 als eigene Zeile. Der Bericht nennt die Herkunft je Spalte in der Zeile „PV-Vergütung: Herkunft"
 (`PV_HERKUNFT`, Block A) — „eigene Werte" oder „übernommen von ‹Stamm›".
 
+Beim **Projekttransfer** reist die Vergütungszeile mit dem Projekt. Wird eine übernehmende
+Variante **einzeln** ausgegeben, legt das Paket zusätzlich die geltende Zeile ihres Stamms bei;
+findet der Import am Ziel kein Stammprojekt, werden daraus die eigenen Werte der Variante, und die
+Importmeldung sagt es. Trägt der Stamm keine angewendete Vergütung, gibt es nichts beizulegen: Die
+Variante rechnet mit dem flachen Einspeisesatz, und die Kohärenzprüfung führt die Zeile
+„übernehmen ohne Stammprojekt — keine Vergütungszeile, Flat-Pfad".
+
 **Vorschau Jahr 1 (2026), aufgeschlüsselt** (U27 — der Dialog zeigt die eine Zeile):
 
 | Position | Herleitung | € |
