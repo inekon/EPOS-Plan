@@ -866,7 +866,9 @@ a{color:var(--marine-hell)}
       („‹Position›: kein Simulationslauf" · „kein Gerät mit dieser Baugröße im Projekt" · „keine Investitionskosten
       für diese Anlage erfasst" · „diese Anlage steht nicht im Simulationslauf — sie braucht einen Platz in der
       Simulationskonfiguration" · „der Simulationslauf führt für diese Anlage keine Menge" · „für den Energieträger
-      ist kein Arbeitspreis gepflegt — er ist in der Energieträgerverwaltung zu erfassen") — nie eine stille 0.
+      ist kein Arbeitspreis gepflegt — er ist in der Energieträgerverwaltung zu erfassen" · „für den Stromträger
+      des Projekts ist kein Arbeitspreis gepflegt — er ist in der Energieträgerverwaltung zu erfassen") — nie eine
+      stille 0.
       Eine Änderung lebt bis „Speichern" oder „OK" nur im Objekt; „Abbrechen" und Esc verwerfen sie.</div>
       <div class="f-info">Der Summenfuß addiert die Beträge aller Zeilen, Erlös- und Zuschusszeilen mit
         negativem Vorzeichen — die Nettosumme ist damit I₀. Die dritte Zeile nennt beide Teile eigens
@@ -1073,7 +1075,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Reiter „Kosten Invest/Betrieb" · „Ertrag/Bonus"</td><td class="rs">KDLG_TAB_KOSTEN · KDLG_TAB_ERTRAG</td><td>Reiterleiste</td></tr>
         <tr><td>Rasterspalten „Aktionen" … „Worst/Best", Betragsspalte „Betrag netto [€]"</td><td class="rs">KDLG_SP_AKTIONEN · KDLG_SP_POSITION · KDLG_SP_BEMESSUNG · KDLG_SP_SATZ · KDLG_SP_BETRAG · KDLG_SP_NUTZUNG · KDLG_SP_WORSTBEST · KKOMP_RASTER</td><td>Spaltenkopf des Zeilenrasters</td></tr>
         <tr><td>Bemessungen der Klappliste (Name folgt der Bezugsgröße des Gewerks)</td><td class="rs">BM_BETRAG · BM_P_INVESTITION · BM_P_ERZEUGER · BM_KW_LEISTUNG_BHKW · BM_KW_HEIZLEISTUNG · BM_KW_ELEKTRISCH</td><td>Zelle Bemessung</td></tr>
-        <tr><td>Werkzeugtipps des Betragsfeldes: Kette · gerechnet (Menge, Prozent) · ohne Bezugsgröße mit Grund</td><td class="rs">KDLG_TT_KETTE · KDLG_TT_BETRAG_BASIS_MENGE · KDLG_TT_BETRAG_BASIS_PROZENT · KDLG_TT_OHNE_BASIS · KDLG_BASIS_GRUND_GEWERK · KDLG_BASIS_GRUND_GERAET · KDLG_BASIS_GRUND_LAUF · KDLG_BASIS_GRUND_ANLAGE · KDLG_BASIS_GRUND_MENGE · KDLG_BASIS_GRUND_PREIS · KDLG_BASIS_GRUND_INVEST · KDLG_BASIS_GRUND_KONSERVE · KDLG_OHNE_BASIS_ZEILE</td><td>Zelle Betrag · Hinweiszeile unter dem Raster</td></tr>
+        <tr><td>Werkzeugtipps des Betragsfeldes: Kette · gerechnet (Menge, Prozent) · ohne Bezugsgröße mit Grund</td><td class="rs">KDLG_TT_KETTE · KDLG_TT_BETRAG_BASIS_MENGE · KDLG_TT_BETRAG_BASIS_PROZENT · KDLG_TT_OHNE_BASIS · KDLG_BASIS_GRUND_GEWERK · KDLG_BASIS_GRUND_GERAET · KDLG_BASIS_GRUND_LAUF · KDLG_BASIS_GRUND_ANLAGE · KDLG_BASIS_GRUND_MENGE · KDLG_BASIS_GRUND_PREIS · KDLG_BASIS_GRUND_INVEST · KDLG_BASIS_GRUND_KONSERVE · KDLG_BASIS_GRUND_STROMPREIS · KDLG_OHNE_BASIS_ZEILE</td><td>Zelle Betrag · Hinweiszeile unter dem Raster</td></tr>
         <tr><td>Abschlusszeile „+ Neue Position…" · Knöpfe „+ Position hinzufügen" · „Aus Vorlage übernehmen…" · „Positionskatalog…"</td><td class="rs">KDLG_POS_NEU_VORGABE · KDLG_BTN_POSITION · KDLG_BTN_UEBERNAHME_PROJEKT · KDLG_BTN_KATALOG</td><td>Abschlusszeile · Leiste unter dem Raster</td></tr>
         <tr><td>Summenfuß „Summe Investitionskosten netto: {0} €" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_INVEST · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Fußleiste „Abbrechen" · „Speichern" · „OK" · Statuszeile „gespeichert {0} Uhr"</td><td class="rs">KDLG_BTN_ABBRECHEN · KDLG_BTN_SPEICHERN · ALLG_BTN_OK · KDLG_GESPEICHERT</td><td>Fußleiste</td></tr>
@@ -1131,6 +1133,10 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
 
       <div class="f-tab" style="margin:12px -14px 0"><span class="an">Kosten Invest/Betrieb</span><span>Ertrag/Bonus</span></div>
       <div style="padding-top:12px">
+      <div class="f-warn">Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition Hilfsenergiekosten): BHKW 1
+        führt einen Hilfsenergieanteil von 2,00 % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe
+        mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts.
+        <span class="zk umg">umgesetzt U31</span></div>
       <div class="f-info" style="margin:0 0 10px">Mengen stammen aus dem Simulationslauf vom <b>18.09.2026, 14:05</b>
         <span class="zk umg">umgesetzt U31</span></div>
       <div class="f-scroll">
@@ -1142,28 +1148,28 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tbody>
           <tr class="pflicht">
             <td><span class="f-zknopf" title="Position bearbeiten">✏️</span><span class="f-zknopf" title="Pflichtposition — der Löschversuch nennt den Ausweg">🔒</span></td>
-            <td class="feld"><span class="f-eingabe links">Wartung BHKW</span><span class="klein">Pflicht nach VDI 2067 · Empfehlung: 0,02 – 0,04 €/kWh</span></td>
+            <td class="feld"><span class="f-eingabe links">Wartung BHKW</span></td>
             <td class="feld"><span class="f-combo">je kWh elektrisch</span></td>
-            <td class="feld r"><span class="f-eingabe num" title="Empfehlung: 0,02 – 0,04 €/kWh">0,0280</span> <span class="f-einheit">€/kWh</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 0,0280 €/kWh × 1.650.000,00 kWh.">46.200,00<span class="klein">× 1.650.000 kWh Stromerzeugung · BHKW 1 · aus dem Lauf</span></td>
+            <td class="feld r"><span class="f-eingabe num" title="Empfehlung: 0,02 – 0,04 €/kWh">0,0280</span> <span class="f-einheit">€/kWh</span><span class="klein">Empfehlung 0,02 bis 0,04 €/kWh</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 0,0280 €/kWh × 1.650.000,00 kWh.">46.200,00<span class="klein">× 1.650.000 kWh · Lauf</span></td>
             <td></td>
             <td><span class="f-zknopf" title="Eingabe Worst/Best Case">±</span></td>
           </tr>
           <tr class="pflicht">
             <td><span class="f-zknopf">✏️</span><span class="f-zknopf">🔒</span></td>
-            <td class="feld"><span class="f-eingabe links">Instandhaltung BHKW</span><span class="klein">Pflicht nach VDI 2067 · Empfehlung: 1,00 – 2,00 %</span></td>
+            <td class="feld"><span class="f-eingabe links">Instandhaltung BHKW</span></td>
             <td class="feld"><span class="f-combo">% der Investition</span></td>
-            <td class="feld r"><span class="f-eingabe num" title="Empfehlung: 1,00 – 2,00 %">1,50</span> <span class="f-einheit">%</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 1,50 % von 240.772,40 €.">3.611,59<span class="klein">von 240.772,40 € Investition brutto · BHKW 1</span></td>
+            <td class="feld r"><span class="f-eingabe num" title="Empfehlung: 1,00 – 2,00 %">1,50</span> <span class="f-einheit">%</span><span class="klein">Empfehlung 1,00 bis 2,00 %</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 1,50 % von 240.772,40 €.">3.611,59<span class="klein">× 240.772,40 € · Investitionssumme</span></td>
             <td></td>
             <td><span class="f-zknopf">±</span></td>
           </tr>
           <tr class="pflicht">
             <td><span class="f-zknopf">✏️</span><span class="f-zknopf">🔒</span></td>
-            <td class="feld"><span class="f-eingabe links">Hilfsenergiekosten</span><span class="klein">Pflicht nach VDI 2067 · Empfehlung: 2,00 – 4,00 %</span></td>
+            <td class="feld"><span class="f-eingabe links">Hilfsenergiekosten</span></td>
             <td class="feld"><span class="f-combo">% der Endenergiekosten</span></td>
-            <td class="feld r"><span class="f-eingabe num" title="Empfehlung: 2,00 – 4,00 %">2,00</span> <span class="f-einheit">%</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 2,00 % von 312.631,20 €.">6.252,62<span class="klein">von 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom</span><span class="klein">Vorlage „Standard“: % des Endenergiebedarfs <span style="text-decoration:underline">übernehmen</span> <span class="zk umg">umgesetzt U40</span></span></td>
+            <td class="feld r"><span class="f-eingabe num" title="Empfehlung: 2,00 – 4,00 %">2,00</span> <span class="f-einheit">%</span><span class="klein">Empfehlung 2,00 bis 4,00 %</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 2,00 % von 312.631,20 €.">6.252,62<span class="klein">× 312.631,20 € · Endenergiekosten → 21.710 kWh Strom</span><span class="klein">Vorlage „Standard“: % des Endenergiebedarfs <span style="text-decoration:underline">übernehmen</span> <span class="zk umg">umgesetzt U40</span></span></td>
             <td></td>
             <td><span class="f-zknopf">±</span></td>
           </tr>
@@ -1190,10 +1196,6 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         </tbody>
       </table>
       </div>
-      <div class="f-warn">Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition Hilfsenergiekosten): BHKW 1
-        führt einen Hilfsenergieanteil von 2,00 % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe
-        mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts.
-        <span class="zk umg">umgesetzt U31</span></div>
       <div class="f-info">
       <ul>
         <li>Die drei Pflichtzeilen tragen an Stelle des Papierkorbs ein Schloss mit dem Werkzeugtipp
@@ -1214,6 +1216,36 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
       </ul></div>
       <div class="f-knopfzeile"><span class="f-knopf">+ Position hinzufügen</span><span class="f-knopf">Aus Vorlage übernehmen…</span>
         <span class="f-knopf">Positionskatalog…</span></div>
+
+      <div class="f-gruppe" style="margin-top:14px">
+        <div class="f-titel">Endenergie je Komponente <span class="zk umg" style="margin-left:6px">umgesetzt U31</span></div>
+        <p class="eng" style="max-width:none">Die Bezugsgröße der Prozentzeilen, frisch aus dem jüngsten Lauf. Sie
+        nennt je Anlage mit Endenergie den Jahresbedarf, die Arbeitskosten und die Herkunft der Menge; fehlt der
+        Arbeitspreis eines Trägers, steht dort ein Gedankenstrich, nie eine 0.</p>
+        <div class="tafel-huelle">
+          <table class="tafel">
+            <thead><tr><th>Komponente</th><th>Energieträger</th><th class="r">Endenergie</th>
+              <th class="r">Arbeitspreis</th><th class="r">Endenergiekosten</th><th>Anmerkung</th></tr></thead>
+            <tbody>
+              <tr><td>BHKW 1</td><td>Erdgas</td><td class="r num">4.342.100 kWh</td>
+                  <td class="r num">0,0720 €/kWh</td><td class="r num">312.631,20 €/a</td>
+                  <td>Σ Verbrauch der Modulzeilen × 1000</td></tr>
+              <tr><td>Gas-Brennwertkessel</td><td>Erdgas</td><td class="r num">2.056.700 kWh</td>
+                  <td class="r num">0,0720 €/kWh</td><td class="r num">148.082,40 €/a</td>
+                  <td>Kesselbrennstoff je Modul aus dem Lauf</td></tr>
+              <tr><td>Wärmepumpe</td><td>Strom</td><td class="r num">—</td>
+                  <td class="r num">0,2880 €/kWh</td><td class="r num">—</td>
+                  <td>Σ (Strom + Heizstab) × 1000</td></tr>
+              <tr><td>Elektrokessel</td><td>Strom</td><td class="r num">52.990 kWh</td>
+                  <td class="r num">0,2880 €/kWh</td><td class="r num">15.261,12 €/a</td>
+                  <td>Strom · Netzbezug — Σ Nutzwärme × 1000</td></tr>
+              <tr><td>PV · Solarthermie · Speicher</td><td>—</td><td class="r">—</td>
+                  <td class="r">—</td><td class="r">—</td>
+                  <td>keine Endenergie — nur Jahresbetrag zulässig</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       </div>
     </div>
     <div class="f-fuss">
@@ -1224,34 +1256,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
     </div>
   </div>
 
-  <div class="zone">Endenergie je Komponente <span class="zk umg" style="margin-left:6px">umgesetzt U31</span></div>
-  <p class="eng">Die Bezugsgröße der Prozentzeilen, frisch aus dem jüngsten Lauf — als Gruppe unter dem Raster der
-  Betriebskosten. Sie nennt je Anlage mit Endenergie den Jahresbedarf, die Arbeitskosten und die Herkunft der Menge;
-  fehlt der Arbeitspreis eines Trägers, steht dort ein Gedankenstrich, nie eine 0.</p>
-  <div class="tafel-huelle">
-    <table class="tafel">
-      <thead><tr><th>Komponente</th><th>Energieträger</th><th class="r">Endenergie</th>
-        <th class="r">Arbeitspreis</th><th class="r">Endenergiekosten</th><th>Anmerkung</th></tr></thead>
-      <tbody>
-        <tr><td>BHKW 1</td><td>Erdgas</td><td class="r num">4.342.100 kWh</td>
-            <td class="r num">0,0720 €/kWh</td><td class="r num">312.631,20 €/a</td>
-            <td>Σ Verbrauch der Modulzeilen × 1000</td></tr>
-        <tr><td>Gas-Brennwertkessel</td><td>Erdgas</td><td class="r num">2.056.700 kWh</td>
-            <td class="r num">0,0720 €/kWh</td><td class="r num">148.082,40 €/a</td>
-            <td>Kesselbrennstoff je Modul aus dem Lauf</td></tr>
-        <tr><td>Wärmepumpe</td><td>Strom</td><td class="r num">—</td>
-            <td class="r num">0,2880 €/kWh</td><td class="r num">—</td>
-            <td>Σ (Strom + Heizstab) × 1000</td></tr>
-        <tr><td>Elektrokessel</td><td>Strom</td><td class="r num">52.990 kWh</td>
-            <td class="r num">0,2880 €/kWh</td><td class="r num">15.261,12 €/a</td>
-            <td>Strom · Netzbezug — Σ Nutzwärme × 1000</td></tr>
-        <tr><td>PV · Solarthermie · Speicher</td><td>—</td><td class="r">—</td>
-            <td class="r">—</td><td class="r">—</td>
-            <td>keine Endenergie — nur Jahresbetrag zulässig</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="eng" style="margin-top:12px"><b>Der Elektrokessel.</b> Seine Endenergie ist <i>Strom</i>, nicht
+  <p class="eng"><b>Der Elektrokessel.</b> Seine Endenergie ist <i>Strom</i>, nicht
   Brennstoff: Der Rechenkern führt ihn mit Nutzungsgrad 1 und bucht seine Nutzwärme auf den Stromzähler. Die
   Zeile zeigt deshalb diese Menge und bewertet sie mit dem Arbeitspreis des Stromträgers; die Herkunft nennt
   <span class="mono">Strom · Netzbezug</span>. <b>Bezahlt wird sie genau einmal</b> — im Reststrombedarf des
