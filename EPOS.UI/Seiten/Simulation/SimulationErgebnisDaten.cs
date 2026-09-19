@@ -719,6 +719,19 @@ public sealed class SimulationErgebnisDaten
     /// <summary>Die Brennstoffzeilen des BHKW — nur die mit Verbrauch &gt; 0.</summary>
     public IReadOnlyList<Brennstoffzeile> BhkwBrennstoffe = Array.Empty<Brennstoffzeile>();
 
+    /// <summary>
+    /// Fuehrt mindestens ein Heizkessel des Projekts einen gepflegten Brennstoff
+    /// (Auftrag BH-1)? Entscheidet den Text des leeren Brennstoffblocks.
+    /// </summary>
+    public bool KesselBrennstoffDefiniert;
+
+    /// <summary>
+    /// Fuehrt mindestens ein BHKW des Projekts einen gepflegten Brennstoff
+    /// (Auftrag BH-1)? Entscheidet den Text des leeren Brennstoffblocks: „nicht
+    /// gelaufen" statt „kein Brennstoff definiert".
+    /// </summary>
+    public bool BhkwBrennstoffDefiniert;
+
     /// <summary>Die Erdreich-Kurztexte der VDI-4640-Pruefung; leer = keine.</summary>
     public IReadOnlyList<string> ErdreichHinweise = Array.Empty<string>();
     public bool ErdreichWarnung;
