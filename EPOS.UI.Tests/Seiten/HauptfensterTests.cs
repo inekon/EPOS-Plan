@@ -185,6 +185,13 @@ public class HauptfensterTests : EposBunitContext
         cut.Render();
 
         Assert.Single(cut.FindAll(".epos-startseite"));
+
+        // Auftrag KL-4: Der iOS-Satz traegt keine Klimagaben - dann steht der
+        // Kasten ohne Herkunftszeile da, und die Klimawahl ist leer statt
+        // erfunden. Eine Zeile ohne Inhalt waere eine Behauptung.
+        Assert.Single(cut.FindAll(".epos-startseite-klima"));
+        Assert.Empty(cut.FindAll(".epos-startseite-klimaherkunft"));
+        Assert.Empty(cut.FindAll(".epos-startseite-klima li[role='option']"));
     }
 
     [Fact]

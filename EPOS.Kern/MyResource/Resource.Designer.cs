@@ -51233,6 +51233,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten: {0} · {1} · {2} · Import {3} ähnelt.
+        /// </summary>
+        public static string START_KLIMA_HERKUNFT {
+            get {
+                return ResourceManager.GetString("START_KLIMA_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten: {0} · {1} ähnelt.
+        /// </summary>
+        public static string START_KLIMA_HERKUNFT_KURZ {
+            get {
+                return ResourceManager.GetString("START_KLIMA_HERKUNFT_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für alle Berechnungen im Projekt ähnelt.
         /// </summary>
         public static string START_KLIMA_HINWEIS {
@@ -52308,6 +52326,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string STROMGL_TITEL_KOPIE {
             get {
                 return ResourceManager.GetString("STROMGL_TITEL_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Treffer. ähnelt.
+        /// </summary>
+        public static string SUCHAUSWAHL_KEIN_TREFFER {
+            get {
+                return ResourceManager.GetString("SUCHAUSWAHL_KEIN_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschläge ähnelt.
+        /// </summary>
+        public static string SUCHAUSWAHL_LISTE {
+            get {
+                return ResourceManager.GetString("SUCHAUSWAHL_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tippen zum Suchen … ähnelt.
+        /// </summary>
+        public static string SUCHAUSWAHL_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("SUCHAUSWAHL_PLATZHALTER", resourceCulture);
             }
         }
         
