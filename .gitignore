@@ -417,3 +417,6 @@ api_gemini.txt
 *.xlsb
 # Marker laufender Agentenarbeit im Hauptbaum (12.09.2026): GitHub_Sync.bat bricht ab, solange sie liegt.
 /AGENT_LAEUFT
+
+# Datenbankkopien fuer Handproben am Schema (Datenhaltung in CLAUDE.md: Kopien gehoeren nie ins Repository)
+DB_Test/
