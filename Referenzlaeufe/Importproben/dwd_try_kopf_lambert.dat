@@ -1,0 +1,41 @@
+Musterdatensatz Testreferenzjahr - synthetische Probe, KEINE amtlichen Daten
+
+Art des TRY: Jahr (mittleres Jahr)
+Bezugszeitraum: 1995-2012 (fiktiv)
+Bezugsort: Musterort
+Rechtswert: 3936500 Meter
+Hochwert: 2695500 Meter
+Hoehenlage: 250 Meter ueber NN
+Bezugsflaeche: ebenes, offenes Gelaende
+
+Diese Datei ist eine PRUEFPROBE des Klimadaten-Imports von EPOS-Plan.
+Ihr Kopf traegt Lambert-Koordinaten INNERHALB Deutschlands.
+Alle Zahlenwerte sind erfunden und zu keiner Auswertung zu gebrauchen.
+
+Spalten der Datenzeilen:
+RW Rechtswert der Station [m]
+HW Hochwert der Station [m]
+MM Monat
+DD Tag
+HH Stunde 1..24 (MEZ, Intervallende)
+t  Lufttemperatur [Grad C]
+p  Luftdruck [hPa]
+WR Windrichtung [Grad]
+WG Windgeschwindigkeit [m/s]
+N  Bedeckungsgrad [Achtel]
+x  Wasserdampfgehalt [g/kg]
+RF relative Feuchte [Prozent]
+B  Direktstrahlung horizontal [W/m2]
+D  Diffusstrahlung horizontal [W/m2]
+A  atmosphaerische Gegenstrahlung [W/m2]
+E  langwellige Ausstrahlung [W/m2]
+IL Qualitaetsbit
+
+RW      HW      MM DD HH t     p    WR WG  N  x    RF  B    D    A    E    IL
+*** 
+3936500 2695500  1  1  1  -3.5 1006  30  3.4  3  3.2  81    0    0  251  291  1
+3936500 2695500  1  1  2  -3.0 1006  30  3.4  3  3.2  81    0    0  251  291  1
+3936500 2695500  1  1  3  -2.5 1006  30  3.4  3  3.2  81    0    0  251  291  1
+3936500 2695500  1  1  4  -2.0 1006  30  3.4  3  3.2  81    0    0  251  291  1
+3936500 2695500  1  1  5  -1.5 1006  30  3.4  3  3.2  81    0   10  251  291  1
+3936500 2695500  1  1  6  -1.0 1006  30  3.4  3  3.2  81   40   30  251  291  1

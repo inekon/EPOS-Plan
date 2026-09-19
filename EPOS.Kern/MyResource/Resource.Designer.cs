@@ -30409,6 +30409,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort aus dem Dateikopf (Lambert → WGS 84) – kann geändert werden ähnelt.
+        /// </summary>
+        public static string KLIMA_STANDORT_AUS_KOPF {
+            get {
+                return ResourceManager.GetString("KLIMA_STANDORT_AUS_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
         /// </summary>
         public static string KLIMA_TITEL {
@@ -30594,6 +30603,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_TRY_SPALTENZAHL {
             get {
                 return ResourceManager.GetString("KLIMA_TRY_SPALTENZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort aus dem Dateikopf (Lambert → WGS 84) ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_KOPF {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_KOPF", resourceCulture);
             }
         }
         

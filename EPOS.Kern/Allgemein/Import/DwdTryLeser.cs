@@ -13,6 +13,13 @@ namespace WindowsFormsApplication1
     /// <c>***</c> beginnt. Gelesen werden daraus nur die Angaben, die als
     /// Herkunftsvermerk in <c>Tab_Klimaregion_STAMM.Details</c> taugen; alles
     /// Weitere bleibt Text.</para>
+    ///
+    /// <para><b>Der STANDORT ist der einzige gerechnete Kopfwert.</b>
+    /// <see cref="Rechtswert"/> und <see cref="Hochwert"/> bleiben unverändert als
+    /// Text stehen; daneben führt der Kopf denselben Punkt als
+    /// <see cref="Longitude"/>/<see cref="Latitude"/>, umgerechnet über
+    /// <see cref="LambertDwd"/>. Das Ergebnis ist ein VORSCHLAG — die Datei nennt
+    /// ihr Koordinatensystem, nicht dessen Parameter.</para>
     /// </summary>
     public sealed class TryKopf
     {
@@ -33,6 +40,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Höhe über NN, soweit im Kopf genannt.</summary>
         public string Hoehe = "";
+
+        /// <summary>
+        /// Longitude der Station [Grad, WGS 84] — aus <see cref="Rechtswert"/> und
+        /// <see cref="Hochwert"/> über <see cref="LambertDwd"/> umgerechnet;
+        /// <c>null</c>, wenn die beiden Kopfzeilen keine Zahl tragen oder der Punkt
+        /// die Plausibilität <see cref="LambertDwd.InDeutschland"/> nicht besteht.
+        /// </summary>
+        public double? Longitude;
+
+        /// <summary>
+        /// Latitude der Station [Grad, WGS 84]; dieselbe Regel wie
+        /// <see cref="Longitude"/>. <b>Beide stehen immer zusammen</b> — entweder
+        /// tragen sie einen Punkt oder keinen.
+        /// </summary>
+        public double? Latitude;
 
         /// <summary>
         /// Die Größen, die die Datei führt und EPOS-Plan BENANNT verwirft (Entscheid des
@@ -157,6 +179,42 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Liest NUR den Kopf einer TRY-Datei — bis zur Trennzeile <c>***</c>, ohne
+        /// die Datenzeilen anzusehen.
+        ///
+        /// <para><b>Wozu.</b> Der Klimadaten-Dialog schlägt beim Wählen der Datei den
+        /// Standort aus dem Kopf vor. Dafür die ganze Datei zu lesen — 8 760 Zeilen,
+        /// rund 700 KB — wäre Arbeit für einen Vorschlag, den der Anwender gleich
+        /// wieder ändern darf. Die Zeilenzahl wird hier deshalb NICHT geprüft: Eine
+        /// beschnittene Datei liefert trotzdem ihren Kopf.</para>
+        /// </summary>
+        /// <exception cref="FileNotFoundException">Die Datei gibt es nicht.</exception>
+        public static TryKopf LesenKopf(string pfad)
+        {
+            if (string.IsNullOrWhiteSpace(pfad) || !File.Exists(pfad))
+                throw new FileNotFoundException(pfad ?? "");
+
+            var kopf = new TryKopf();
+            int nummer = 0;
+
+            foreach (string zeile in File.ReadLines(pfad))
+            {
+                nummer++;
+                string z = (zeile ?? "").Trim();
+
+                if (z.StartsWith(TRENNZEICHEN, StringComparison.Ordinal))
+                {
+                    kopf.Kopfzeilen = nummer - 1;
+                    break;
+                }
+                KopfzeileDeuten(kopf, z);
+            }
+
+            StandortDeuten(kopf);
+            return kopf;
+        }
+
+        /// <summary>
         /// Liest eine TRY-Reihe aus ihren Zeilen.
         /// </summary>
         /// <param name="zeilen">Kopf, Trennzeile und Datenzeilen — Zeilenenden
@@ -238,6 +296,8 @@ namespace WindowsFormsApplication1
 
             if (imKopf)
                 throw new FormatException(MyResource.Resource.KLIMA_TRY_KEIN_KOPFENDE);
+
+            StandortDeuten(kopf);
 
             if (!vollesJahr)
             {
@@ -381,6 +441,51 @@ namespace WindowsFormsApplication1
                 kopf.Art = Wert(zeile);
             else if (kopf.Bezugszeitraum.Length == 0 && Traegt(zeile, "Bezugszeitraum"))
                 kopf.Bezugszeitraum = Wert(zeile);
+        }
+
+        /// <summary>
+        /// Rechnet <see cref="TryKopf.Rechtswert"/> und <see cref="TryKopf.Hochwert"/>
+        /// nach WGS 84 um und belegt damit <see cref="TryKopf.Longitude"/> und
+        /// <see cref="TryKopf.Latitude"/>.
+        ///
+        /// <para><b>Zwei Schranken, beide still.</b> Tragen die zwei Kopfzeilen keine
+        /// Zahl, oder liegt der umgerechnete Punkt nach
+        /// <see cref="LambertDwd.InDeutschland"/> außerhalb des TRY-Rasters, bleiben
+        /// beide Felder <c>null</c> — dann gibt es schlicht keinen Vorschlag. Ein
+        /// Fehler ist das nicht: Der Kopf ist freier Text und kein Pflichtteil.</para>
+        /// </summary>
+        private static void StandortDeuten(TryKopf kopf)
+        {
+            double? rw = LambertZahl(kopf.Rechtswert);
+            double? hw = LambertZahl(kopf.Hochwert);
+            if (!rw.HasValue || !hw.HasValue) return;
+
+            (double lon, double lat) = LambertDwd.NachWgs84(rw.Value, hw.Value);
+            if (!LambertDwd.InDeutschland(lon, lat)) return;
+
+            kopf.Longitude = lon;
+            kopf.Latitude = lat;
+        }
+
+        /// <summary>
+        /// Die FÜHRENDE Zahl eines Kopfwerts wie „3936500 Meter" —
+        /// <see cref="CultureInfo.InvariantCulture"/>, weil die Datei ihr Format
+        /// mitbringt und nicht der Rechner des Anwenders. Alles hinter der Zahl
+        /// (Einheit, Kommentar) bleibt liegen; <c>null</c> heißt: keine Zahl.
+        /// </summary>
+        private static double? LambertZahl(string wert)
+        {
+            string w = (wert ?? "").Trim();
+            int ende = 0;
+            while (ende < w.Length &&
+                   (char.IsDigit(w[ende]) || w[ende] == '.' ||
+                    ((w[ende] == '+' || w[ende] == '-') && ende == 0)))
+                ende++;
+
+            if (ende == 0) return null;
+            return double.TryParse(w.Substring(0, ende), NumberStyles.Float,
+                                   CultureInfo.InvariantCulture, out double z)
+                ? z : (double?)null;
         }
 
         private static bool Traegt(string zeile, string wort)

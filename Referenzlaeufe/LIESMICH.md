@@ -276,6 +276,7 @@ zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
 | `<...>/Projekt_<ID>/*.csv` | Die Ganglinien: 8760 Stundenwerte bzw. 35040 Viertelstundenwerte, `Index;Wert` |
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
+| `Importproben/` | Die eingefrorenen Eingangsdateien der Importtests. Zu den DWD-Testreferenzjahren gehoeren zwei: `dwd_try_synthetisch_72h.dat` (Kopf, Spalten und 72 Stunden) und `dwd_try_kopf_lambert.dat` (Kopf mit Lambert-Koordinaten INNERHALB Deutschlands, sechs Datenzeilen — sie misst den Standortvorschlag Lambert → WGS 84). Beide sind synthetisch, keine amtlichen Daten |
 | `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7) und `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.

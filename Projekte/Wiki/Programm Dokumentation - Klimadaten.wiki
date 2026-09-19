@@ -17,7 +17,7 @@ Der Dialog '''Klimadaten''' legt die Klimaregionen an, mit denen EPOS-Plan rechn
 
 Den Standort geben Sie wie gewohnt an: über einen Ortsnamen, den das Programm in Koordinaten auflöst, oder von Hand über Longitude, Latitude und eine Bezeichnung.
 
-Der Standort wird '''auch bei einer Testreferenzjahr-Datei gebraucht'''. Der Kopf einer solchen Datei führt die Lage der Station nur in Lambert-Koordinaten; für die Sonnengeometrie und für die Auswahl der Region sind Längen- und Breitengrad nötig.
+Der Standort wird '''auch bei einer Testreferenzjahr-Datei gebraucht'''. Der Kopf einer solchen Datei führt die Lage der Station in Lambert-Koordinaten; für die Sonnengeometrie und für die Auswahl der Region sind Längen- und Breitengrad nötig. Beim Wählen der Datei rechnet das Programm die Lambert-Koordinaten des Dateikopfs in Longitude und Latitude um und trägt sie als Vorschlag ein; unter den Feldern steht, woher die Werte kommen. Sie lassen sich ändern. Lässt sich der Kopf nicht deuten oder liegt der Punkt außerhalb des Rasters, bleiben die Felder leer, und Sie geben den Standort selbst an.
 
 == Jahr und Szenario ==
 {{Anker|szenario}}
