@@ -353,6 +353,14 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt95_Klimaspalten)
                     SpalteSicherstellen(s);
 
+                // Schritt 96 (Anwenderentscheid 19.09.2026): der Fremdschluessel der
+                // 28 Projekttabellen auf Tab_Projekt. DIESELBE Quelle wie in der
+                // Migration und im Werkzeug, und er steht ZULETZT: Er kopiert jede
+                // Tabelle vollstaendig, also muss jede Spalte eines frueheren Schritts
+                // (Schritt 95: drei Spalten an Tab_Solar) vorher dastehen. Stehen die
+                // Beziehungen schon, tut der Aufruf nichts.
+                ProjektFremdschluessel.Alle(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
@@ -442,6 +450,117 @@ namespace EPOS.Kern.Tests
             // ETAPPE BK1b: die siebte Spalte, die Schemaschritt 91 entfernt. Typ wie in
             // Schritt 28 (DOUBLE).
             SpalteSicherstellen(new SchemaSpalte(t, KwkgProjektaltspalten.KOSTENANTEIL, "DOUBLE"));
+        }
+
+        /// <summary>
+        /// Nimmt den Fremdschlüssel EINER Projekttabelle auf <c>Tab_Projekt</c> wieder
+        /// zurück — AUSSCHLIESSLICH für den Nachweis von Schemaschritt 96.
+        ///
+        /// <para><b>Wozu.</b> Die Arbeitskopie steht bereits auf dem Zielstand; ohne
+        /// diesen Rückbau hätte der Nachweis nichts umzubauen. Der Fall stellt den
+        /// Ausgangszustand — Schemastand 95 für DIESE Tabelle — deshalb selbst her. Er
+        /// geschieht auf der Arbeitskopie eines einzelnen Prüflaufs und verschwindet mit
+        /// ihr; die Quelldatei bleibt unberührt.</para>
+        ///
+        /// <para>Der Rückbau geht denselben Weg wie der Umbau
+        /// (<see cref="ProjektFremdschluessel"/>) und aus demselben Grund mit
+        /// ABGESCHALTETEN Fremdschlüsseln: Ein <c>DROP TABLE</c> auf einer Elterntabelle
+        /// risse sonst ihre Kindzeilen mit. Nur der Zieltext ist ein anderer — die
+        /// Klauseln auf <c>Tab_Projekt</c> fallen heraus statt hinzuzukommen.</para>
+        /// </summary>
+        public static void ProjektFremdschluesselZuruecknehmen(string tabelle)
+        {
+            object bestand = DataRepository.ExecuteScalar(
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
+                new DbParam("p1", tabelle));
+            if (bestand == null || bestand == DBNull.Value) return;
+
+            string ziel = OhneProjektklauseln(Convert.ToString(bestand), tabelle);
+            if (ziel == null) return;                    // trug schon keine
+
+            string alt = tabelle + "_zurueck";
+            string spaltenliste = Spaltenliste(tabelle);
+
+            // Die Indizes wandern beim Umbenennen mit und fallen mit der Hilfstabelle -
+            // sie muessen also wie beim Umbau selbst neu entstehen, sonst maesse der
+            // Nachweis den Verlust der Testhilfe statt das Werk des Schritts.
+            var indizes = new System.Collections.Generic.List<string>();
+            foreach (System.Data.DataRow zeile in DataRepository.GetDataTable(
+                         "SELECT sql FROM sqlite_master WHERE type = 'index' AND tbl_name = ? " +
+                         "AND sql IS NOT NULL", new DbParam("p1", tabelle)).Rows)
+                indizes.Add(ProjektFremdschluessel.MitIfNotExists(Convert.ToString(zeile["sql"])));
+
+            object stand = DataRepository.ExecuteScalar(
+                "SELECT seq FROM sqlite_sequence WHERE name = ?", new DbParam("p1", tabelle));
+
+            using DbVorgang v = DataRepository.VorgangOhneFremdschluessel();
+            try
+            {
+                v.Ausfuehren("DROP TABLE IF EXISTS \"" + alt + "\"");
+                v.Ausfuehren("PRAGMA legacy_alter_table = ON");
+                v.Ausfuehren("ALTER TABLE \"" + tabelle + "\" RENAME TO \"" + alt + "\"");
+                v.Ausfuehren("PRAGMA legacy_alter_table = OFF");
+                v.Ausfuehren(ziel);
+                v.Ausfuehren("INSERT INTO \"" + tabelle + "\" (" + spaltenliste + ") SELECT " +
+                             spaltenliste + " FROM \"" + alt + "\"");
+                v.Ausfuehren("DROP TABLE \"" + alt + "\"");
+                v.Ausfuehren("DELETE FROM sqlite_sequence WHERE name = ?", new DbParam("p1", alt));
+                v.Ausfuehren("DELETE FROM sqlite_sequence WHERE name = ?", new DbParam("p1", tabelle));
+                if (stand != null && stand != DBNull.Value)
+                    v.Ausfuehren("INSERT INTO sqlite_sequence (name, seq) VALUES (?, ?)",
+                                 new DbParam("p1", tabelle),
+                                 new DbParam("p2", Convert.ToInt64(stand)));
+                foreach (string anweisung in indizes) v.Ausfuehren(anweisung);
+                v.Commit();
+            }
+            finally
+            {
+                try { v.Ausfuehren("PRAGMA legacy_alter_table = OFF"); } catch (Exception) { }
+            }
+        }
+
+        /// <summary>
+        /// Der CREATE-Text ohne die Fremdschlüsselklauseln auf <c>Tab_Projekt</c>;
+        /// <c>null</c>, wenn keine darin steht.
+        /// </summary>
+        private static string OhneProjektklauseln(string bestand, string tabelle)
+        {
+            string text = (bestand ?? "").TrimEnd();
+            if (!text.EndsWith(ProjektFremdschluessel.ENDE, StringComparison.Ordinal)) return null;
+
+            string rumpf = text.Substring(0, text.Length - ProjektFremdschluessel.ENDE.Length);
+            const string marke = ", FOREIGN KEY (\"";
+
+            // Erst ALLE Anfaenge sammeln, dann VON HINTEN entfernen - so bleiben die
+            // gemerkten Stellen gueltig, waehrend der Text kuerzer wird.
+            var anfaenge = new System.Collections.Generic.List<int>();
+            for (int i = rumpf.IndexOf(marke, StringComparison.Ordinal); i >= 0;
+                 i = rumpf.IndexOf(marke, i + 1, StringComparison.Ordinal))
+                anfaenge.Add(i);
+            if (anfaenge.Count == 0) return null;
+
+            bool getroffen = false;
+            for (int k = anfaenge.Count - 1; k >= 0; k--)
+            {
+                int von = anfaenge[k];
+                int bis = k + 1 < anfaenge.Count ? anfaenge[k + 1] : rumpf.Length;
+                string klausel = rumpf.Substring(von, bis - von);
+                if (klausel.IndexOf("\"" + ProjektFremdschluessel.ZIEL + "\"",
+                                    StringComparison.Ordinal) < 0) continue;
+                rumpf = rumpf.Remove(von, bis - von);
+                getroffen = true;
+            }
+
+            return getroffen ? rumpf + ProjektFremdschluessel.ENDE : null;
+        }
+
+        /// <summary>Die Spalten einer Tabelle in Schemareihenfolge, in Anführungszeichen.</summary>
+        private static string Spaltenliste(string tabelle)
+        {
+            var teile = new System.Collections.Generic.List<string>();
+            foreach (string s in DataRepository.SpaltenVonTabelle(tabelle))
+                teile.Add("\"" + s + "\"");
+            return string.Join(", ", teile.ToArray());
         }
 
         /// <summary>

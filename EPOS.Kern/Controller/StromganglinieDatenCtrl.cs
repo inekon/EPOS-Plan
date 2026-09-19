@@ -114,7 +114,10 @@ namespace WindowsFormsApplication1
                     kopfCtrl.m_ID_Ganglinie = neueGanglinieID;
 
                     // Kopfdatensatz über die geteilte Verbindung einfügen
-                    string sqlKopf = "INSERT INTO Tab_Stromganglinie (ID, Bezeichner, Zeitinterval) VALUES (?, ?, ?)";
+                    // ID_Projekt ausdruecklich NULL statt stillschweigend DEFAULT 0 -
+                    // dieselbe Lage und dieselbe Begruendung wie in
+                    // StromganglinieCtrl.Insert (Schemaschritt 96).
+                    string sqlKopf = "INSERT INTO Tab_Stromganglinie (ID, ID_Projekt, Bezeichner, Zeitinterval) VALUES (?, NULL, ?, ?)";
                     v.Ausfuehren(sqlKopf,
                         new DbParam("@id", DbParamTyp.Integer) { Wert = neueGanglinieID },
                         new DbParam("@bez", DbParamTyp.VarWChar) { Wert = kopfCtrl.m_szBezeichner ?? (object)DBNull.Value },

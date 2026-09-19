@@ -902,6 +902,44 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 95, trocken);
 
+            // ---- Schritt 96: der Fremdschluessel der Projekttabellen auf Tab_Projekt
+            //      (Anwenderentscheid 19.09.2026). DER DRITTE TABELLENNEUBAU DIESES
+            //      WERKZEUGS, und er steht ZULETZT UNTER ALLEN SCHRITTEN: Er kopiert
+            //      achtundzwanzig Tabellen vollstaendig, also muss jede Spalte, die ein
+            //      frueherer Schritt anlegt, vorher dastehen (Schritt 95 haengt drei
+            //      Spalten an Tab_Solar). Die Anweisungen kommen aus
+            //      ProjektFremdschluessel - DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_96_ProjektFremdschluessel bedient; jede
+            //      Tabelle laeuft dort wie hier in ihrer eigenen Transaktion mit
+            //      abgeschalteten Fremdschluesseln. Ergebnisneutral: Werte, Ids und
+            //      AUTOINCREMENT-Staende bleiben, entfernt wird nur, was zu keinem
+            //      Projekt gehoert.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 96 - Projekttabellen ohne Fremdschluessel auf " +
+                              ProjektFremdschluessel.ZIEL + ": " + ProjektFremdschluessel.Offen() +
+                              " von " + ProjektFremdschluessel.Katalog.Length + ".");
+            if (!trocken)
+            {
+                var bericht96 = new List<string>();
+                int umgebaut96 = ProjektFremdschluessel.Alle(bericht96);
+                foreach (string zeile in bericht96)
+                    Console.WriteLine("Schritt 96 - " + zeile);
+                Console.WriteLine("Schritt 96 - " + umgebaut96 + " Tabelle(n) neu aufgebaut, offen " +
+                                  ProjektFremdschluessel.Offen() + " (erwartet 0).");
+            }
+            else
+            {
+                // --trocken zaehlt nur - auch die Waisen, denn sie sind der Grund, aus
+                // dem der Schritt ueberhaupt Zeilen anfasst.
+                foreach (ProjektFremdschluessel.Eintrag e in ProjektFremdschluessel.Katalog)
+                {
+                    long ohneProjekt = ProjektFremdschluessel.Waisen(e.Tabelle);
+                    if (ohneProjekt > 0)
+                        Console.WriteLine("Schritt 96 - " + e.Tabelle + ": " + ohneProjekt +
+                                          " Zeile(n) ohne Projekt.");
+                }
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

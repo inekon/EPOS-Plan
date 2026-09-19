@@ -302,6 +302,18 @@ namespace WindowsFormsApplication1
         /// der eine Prüfung braucht, ist der falsche Schlüssel. Die Kaskade
         /// <c>Tab_Projekt → Tab_ProjektWerte</c> und alle anderen Löschweitergaben bleiben
         /// unberührt: Sie hängen ohnehin an <c>Tab_Projekt.ID</c>.</para>
+        ///
+        /// <para><b>Die drei Vorarbeiten bleiben — auch seit Schemaschritt 96.</b> Jener
+        /// gibt achtundzwanzig weiteren Projekttabellen ihren Fremdschlüssel auf
+        /// <c>Tab_Projekt</c> mit <c>ON DELETE CASCADE</c>; die Kaskade nimmt also den
+        /// REST von selbst mit, den dieser Löschweg bis dahin gar nicht erreichte. Was
+        /// sie NICHT ersetzt, sind die drei Handgriffe hier, denn sie tun etwas anderes,
+        /// als zu löschen: <see cref="PvVerguetungAufloesen"/> schreibt einen Wert
+        /// zurück und MUSS vor dem Löschen laufen (danach ist die Zeile weg),
+        /// <see cref="VariantenVerknuepfungenEntfernen"/> löst die Verweise FREMDER
+        /// Varianten auf dieses Projekt, und <see cref="PufferReferenzenLoesen"/> räumt
+        /// Verweise, die keine Projektspalte tragen. Der Schritt ändert an diesem
+        /// Löschweg nichts; er fängt nur das auf, was an ihm vorbeiginge.</para>
         /// </summary>
         public bool Delete(int idProjekt)
         {
