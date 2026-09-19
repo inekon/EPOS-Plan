@@ -42,6 +42,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>Fehlertext, falls die Wirtschaftlichkeitsrechnung des Laufs scheiterte.</summary>
         public string WirtschaftlichkeitFehler;
+
+        /// <summary>
+        /// KONZEPT § 2.15 — die VERGLEICHSSICHT dieses Laufs (VG‑Q4): <c>null</c> oder
+        /// Sicht 1 = alle Stände gegen die Referenz (der Bestand), Sicht 2 = die zwei
+        /// Stände A und B mit A als Referenz.
+        ///
+        /// <para><b>Der Bericht folgt der Sicht</b> — so wie er den Häkchen folgt. Die
+        /// Sitzungswahl wandert als Momentaufnahme hierher, damit sie sich während des
+        /// Drucks nicht ändert.</para>
+        ///
+        /// <para>KONZEPT § 2.9 — die REFERENZ der Gruppe (<c>Tab_Projekt.ID</c>,
+        /// 0 = Stamm). Sie steht hier, weil Word und Excel sie in der
+        /// Deklarationszeile beim Namen nennen; gerechnet wird sie in
+        /// <c>WirtschaftlichkeitCtrl</c> aus dem Parametersatz.</para>
+        /// </summary>
+        public Vergleichssicht Sicht;
+
+        /// <summary>Die Referenz der GRUPPE (§ 2.9); 0 = Stamm.</summary>
+        public int IdGruppenreferenz;
     }
 
     /// <summary>Alle Daten eines einzelnen Projekts (Stamm oder Variante).</summary>

@@ -832,6 +832,16 @@ namespace Testdatenbankschema
             }
             Console.WriteLine();
 
+            // ---- Schritt 92: das waehlbare Vergleichsprojekt (Konzept § 2.9). EINE
+            //      nullbare Verweisspalte an Tab_ProjektWirtschaftlichkeit, kein DML.
+            //      Die Quelle ist dieselbe, aus der sich
+            //      SchemaMigration.Schritt_92_Referenzprojekt bedient. NULL heisst
+            //      Stamm - genau die Referenz, gegen die jede Bestandsrechnung schon
+            //      gerechnet hat; die dreizehn Referenzprojekte rechnen unveraendert.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt92_Referenzprojekt)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 92, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

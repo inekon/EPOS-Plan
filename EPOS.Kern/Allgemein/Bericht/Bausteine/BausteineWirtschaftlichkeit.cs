@@ -625,6 +625,24 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Tabellen
 
+        /// <summary>
+        /// KONZEPT § 2.15 — die Spaltenblöcke der Kennzahltafel. In Sicht 2 ist es
+        /// GENAU EIN Block mit A und B; die Blockteilung samt wiederholter Stammspalte
+        /// gilt nur für Sicht 1, wo beliebig viele Stände nebeneinander stehen können.
+        /// </summary>
+        private static List<List<VariantenDaten>> Bloecke(WordKontext k, BerichtsDaten daten)
+        {
+            if (daten.Sicht == null || !daten.Sicht.IstPaar) return k.VariantenBloecke(daten);
+
+            var paar = new List<VariantenDaten>();
+            foreach (int id in daten.Sicht.Spalten(null))
+            {
+                VariantenDaten v = daten.Varianten.FirstOrDefault(x => x.IdProjekt == id);
+                if (v != null) paar.Add(v);
+            }
+            return new List<List<VariantenDaten>> { paar };
+        }
+
         private static void SchreibeVergleich(WordKontext k, BerichtsDaten daten,
                                               List<WirtschaftlichkeitErgebnis> alle, string szenario,
                                               TarifParameter tarif)
@@ -636,16 +654,36 @@ namespace WindowsFormsApplication1
             // Reiter und im Excel-Blatt (WirtschaftlichkeitZeilen.Sichtbare) — bis
             // dahin filterte Word gar nicht, der Reiter über die gewählten Spalten und
             // Excel über den Szenarioblock. Drei Regeln, drei mögliche Tabellen.
+            // KONZEPT § 2.9 und § 2.15 (VG‑Q4): Der BERICHT FOLGT DER SICHT — so wie er
+            // den Häkchen folgt. In Sicht 2 druckt er A | B mit A als Referenz und die
+            // Deklarationszeile darüber; in Sicht 1 alle Stände gegen die Referenz der
+            // Gruppe. Beides entsteht aus DERSELBEN Zeilendefinition; einen zweiten
+            // Zeilenkatalog gibt es nicht.
+            int idReferenz = daten.Sicht != null && daten.Sicht.IstPaar
+                           ? daten.Sicht.IdA : daten.IdGruppenreferenz;
             List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Sichtbare(
-                WirtschaftlichkeitZeilen.Kennzahlen(alle, tarif), alle);
+                WirtschaftlichkeitZeilen.Kennzahlen(alle, tarif, idReferenz), alle);
 
             VariantenDaten stamm = daten.Varianten.FirstOrDefault(v => v.IstStamm);
             if (stamm == null) return;
 
-            foreach (List<VariantenDaten> block in k.VariantenBloecke(daten))
+            // Welche SPALTE die Referenzhinterlegung trägt — die gewählte Referenz,
+            // sonst wie bisher der Stamm.
+            int idRefSpalte = idReferenz > 0 ? idReferenz : stamm.IdProjekt;
+
+            foreach (List<VariantenDaten> block in Bloecke(k, daten))
             {
-                var spalten = new List<VariantenDaten> { stamm };
-                spalten.AddRange(block);
+                var spalten = new List<VariantenDaten>();
+                if (daten.Sicht != null && daten.Sicht.IstPaar) spalten.AddRange(block);
+                else { spalten.Add(stamm); spalten.AddRange(block); }
+                if (spalten.Count == 0) continue;
+
+                if (daten.Sicht != null && daten.Sicht.IstPaar)
+                    k.HinweisRoh(Referenzwahl.Deklarationszeile(
+                        Referenzwahl.Name(spalten[0]),
+                        Referenzwahl.Name(daten.Varianten.FirstOrDefault(
+                            v => daten.IdGruppenreferenz > 0
+                               ? v.IdProjekt == daten.IdGruppenreferenz : v.IstStamm))));
 
                 int wLabel = 3100;
                 int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / spalten.Count;
@@ -682,7 +720,7 @@ namespace WindowsFormsApplication1
                         string txt = z.IstUeberschrift ? "" : z.Anzeige(e, k.Kultur);
                         tr.Append(k.Zelle(txt, w[i + 1], z.IstSumme,
                             z.IstUeberschrift ? WordBerichtGenerator.HEAD_FILL
-                            : spalten[i].IstStamm ? WordBerichtGenerator.STAMM_FILL : null,
+                            : spalten[i].IdProjekt == idRefSpalte ? WordBerichtGenerator.STAMM_FILL : null,
                             z.IstText ? JustificationValues.Left
                                       : (txt == "—" ? JustificationValues.Center : JustificationValues.Right),
                             false, WordBerichtGenerator.SCHRIFT_TABELLE));

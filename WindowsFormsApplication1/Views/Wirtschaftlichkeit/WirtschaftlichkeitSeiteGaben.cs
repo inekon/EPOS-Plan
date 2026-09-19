@@ -56,6 +56,15 @@ namespace WindowsFormsApplication1
         private WirtschaftlichkeitParameter _parameterCache;
         private TarifParameter _tarifCache;
 
+        /// <summary>
+        /// KONZEPT § 2.15 — die zuletzt GESAMMELTE Vergleichsgruppe. Die Sicht „Zwei
+        /// Staende" rechnet gegen A, und dafuer braucht sie dieselben Eingangsdaten wie
+        /// der letzte Lauf; gesammelt wird nicht noch einmal. <c>null</c> = in dieser
+        /// Sitzung wurde nicht gerechnet — dann sagt die Statuszeile, dass die Sicht
+        /// einen Lauf braucht, statt Zahlen gegen die falsche Referenz zu zeigen.
+        /// </summary>
+        private BerichtsDaten _letzteDaten;
+
         private CancellationTokenSource _cts;
 
         /// <summary>
@@ -99,10 +108,17 @@ namespace WindowsFormsApplication1
                 // Parameterdialog. Der Schreibweg ist derselbe, den der Dialog nahm.
                 ["WirkungSpeichern"] = new Func<string, bool>(WirkungSpeichern),
 
+                // KONZEPT § 2.9 und § 2.15: die waehlbare Referenz und die zwei
+                // Sichten. Jeder Rueckruf gibt den NEUEN Stand zurueck - die Seite
+                // uebernimmt ihn, statt ein zweites Mal zu laden.
+                ["ReferenzGewaehlt"] = new Func<int, WirtschaftlichkeitStand>(ReferenzSetzen),
+                ["SichtGewaehlt"] = new Func<int, WirtschaftlichkeitStand>(SichtSetzen),
+                ["PaarGewaehlt"] = new Func<int, int, WirtschaftlichkeitStand>(PaarSetzen),
+                ["PaarTauschen"] = new Func<WirtschaftlichkeitStand>(PaarTauschen),
+
                 ["TitelText"] = T("WIRT_TITEL", "Wirtschaftlichkeit (Kapitalwertmethode DIN EN 17463)")
                                 + " — " + T("WIRT_STAMM", "Stamm:") + " " + _stammName,
-                ["LabelVarianten"] = T("WIRT_LBL_GRUPPE",
-                    "Vergleichsgruppe (Referenz: Stamm, fest gewählt):"),
+                ["LabelVarianten"] = T("WIRT_LBL_GRUPPE", "Vergleichsgruppe:"),
                 ["LabelSzenario"] = T("WIRT_LBL_SZENARIO", "Szenario:"),
                 ["LabelFortschritt"] = T("BKS_LBL_FORTSCHRITT", "Fortschritt"),
                 ["SpalteArt"] = MyResource.Resource.BK_SP_ART,
@@ -172,6 +188,39 @@ namespace WindowsFormsApplication1
             List<int> gewaehlt = Vergleich.Gewaehlte(_gruppe, _idStamm);
             stand.GewaehlteVarianten = gewaehlt;
 
+            // KONZEPT § 2.9 und § 2.15: die waehlbaren Staende, die wirksame Referenz
+            // und die Sicht. Die Referenz kommt aus dem Parametersatz und wird gegen
+            // die Gruppe aufgeloest - eine geloeschte faellt BENANNT auf den Stamm
+            // zurueck. Die Sicht liegt in der Sitzung; steht A oder B nicht mehr im
+            // Vergleich, faellt auch sie benannt auf Sicht 1 zurueck.
+            var staende = new List<ValueTuple<int, string>>();
+            foreach (int id in _gruppe)
+                staende.Add(new ValueTuple<int, string>(
+                    id, _namen.ContainsKey(id) ? _namen[id] : id.ToString(CultureInfo.InvariantCulture)));
+            stand.Staende = staende;
+
+            Referenzwahl wahl = Referenzwahl.Bestimme(
+                _gruppe, _idStamm, Gruppenreferenz(),
+                id => _namen.ContainsKey(id) ? _namen[id] : "");
+            stand.IdReferenz = wahl.IdReferenz;
+
+            // Die Referenz ist immer im Vergleich - sie ist die Unterlassensalternative
+            // und kann nicht aus dem Vergleich fallen, gegen den sie gehalten wird.
+            if (wahl.IdReferenz > 0 && !gewaehlt.Contains(wahl.IdReferenz))
+            {
+                gewaehlt.Add(wahl.IdReferenz);
+                stand.GewaehlteVarianten = gewaehlt;
+            }
+
+            string sichtWarnung = Vergleich.Nachziehen(gewaehlt);
+            stand.PaarMoeglich = Vergleichsauswahl.PaarMoeglich(gewaehlt);
+            stand.Sicht = Vergleich.Sicht.Sicht;
+            stand.SichtA = Vergleich.Sicht.IdA;
+            stand.SichtB = Vergleich.Sicht.IdB;
+            stand.Referenzzeile = Vergleich.Sicht.IstPaar
+                ? Referenzwahl.Nachweiszeile(Name(Vergleich.Sicht.IdA), wahl.Anzeige)
+                : Referenzwahl.Nachweiszeile(wahl.Anzeige);
+
             var szenarien = new List<ValueTuple<int, string>>();
             for (int i = 0; i < SZENARIEN.Length; i++)
                 szenarien.Add(new ValueTuple<int, string>(i, SzenarioAnzeige(i)));
@@ -187,6 +236,12 @@ namespace WindowsFormsApplication1
             // ohne die Datenbank erneut zu lesen.
             try { _ergebnisse = _ctrl.LadeErgebnisse(new List<int>(_gruppe)); }
             catch { _ergebnisse = new List<WirtschaftlichkeitErgebnis>(); }
+
+            // KONZEPT § 2.15: In Sicht 2 rechnen die Differenzkennzahlen gegen A. Es ist
+            // DERSELBE Rechenweg (WirtschaftlichkeitCtrl.Berechne) mit anderer Referenz -
+            // nur ohne zu persistieren: Die Paarwahl ist ein Erkundungswerkzeug, der
+            // gespeicherte Lauf bleibt der gegen die Unterlassensalternative der Gruppe.
+            bool paarLaufFehlt = Vergleich.Sicht.IstPaar && !PaarErgebnisse();
 
             bool veraltet = _ergebnisse.Count > 0 &&
                             _ergebnisse.Any(x => x.Fehlgrund == null && !_ctrl.ErgebnisAktuell(x));
@@ -210,6 +265,12 @@ namespace WindowsFormsApplication1
                 stand.Statuszeile += " " + string.Format(
                     T("WIRT_STATUS_FEHLEND", "Für {0} gewählte Version(en) liegt kein gespeichertes Ergebnis vor — bitte „Berechnen“."),
                     fehlend);
+
+            // KONZEPT § 2.9 und § 2.15: Beide Rueckfaelle werden BENANNT, nie still
+            // vollzogen - und der fehlende Lauf der Paarsicht ebenso.
+            if (wahl.Warnung != null) stand.Statuszeile += " " + wahl.Warnung;
+            if (sichtWarnung != null) stand.Statuszeile += " " + sichtWarnung;
+            if (paarLaufFehlt) stand.Statuszeile += " " + MyResource.Resource.WIRT_SICHT_LAUF_NOETIG;
 
             WirtschaftlichkeitCtrl.ErzeugerFlags flags = null;
             try { flags = _ctrl.ErzeugerDerGruppe(_idStamm); }
@@ -253,6 +314,85 @@ namespace WindowsFormsApplication1
         private void VergleichSetzen(IReadOnlyList<int> gewaehlt)
         {
             Vergleich.Setzen(gewaehlt, _gruppe, _idStamm);
+        }
+
+        // =====================================================================
+        // KONZEPT § 2.9 und § 2.15 — Referenz und Vergleichssicht
+        // =====================================================================
+
+        /// <summary>Die gespeicherte Referenz der Gruppe; 0 = Stamm.</summary>
+        private int Gruppenreferenz()
+        {
+            try { return _ctrl.LadeParameter(_idStamm).IdReferenzprojekt; }
+            catch { return 0; }
+        }
+
+        /// <summary>Der Anzeigename eines Standes der Gruppe.</summary>
+        private string Name(int idProjekt)
+        {
+            return _namen.ContainsKey(idProjekt) ? _namen[idProjekt] : "";
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.15: die Ergebnisse der Sicht 2 — DERSELBE Rechenweg mit A als
+        /// Referenz, auf den Eingangsdaten des letzten Laufs und <b>ohne zu
+        /// persistieren</b>. Ohne Lauf in dieser Sitzung gibt es sie nicht; dann sagt
+        /// die Statuszeile es, statt die Zahlen des Gruppenlaufs als Paarvergleich
+        /// auszugeben.
+        /// </summary>
+        /// <returns>true, wenn die Paarsicht gerechnet werden konnte.</returns>
+        private bool PaarErgebnisse()
+        {
+            if (_letzteDaten == null) return false;
+            try
+            {
+                _letzteDaten.Sicht = Vergleich.Sicht.Kopie();
+                _ergebnisse = _ctrl.Berechne(_letzteDaten, _ctrl.LadeParameter(_idStamm),
+                                             Vergleich.Sicht.Referenz, false);
+                return true;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.9: Die Referenz der Gruppe wechselt — sie wird GESPEICHERT
+        /// (<c>ID_Referenzprojekt</c>), weil sie wie Zins und Zeitraum zur Gruppe
+        /// gehört und der Bericht aus der Datenbank reproduzierbar bleiben soll.
+        /// Danach liest die Seite neu; die Differenzkennzahlen folgen dem nächsten Lauf.
+        /// </summary>
+        private WirtschaftlichkeitStand ReferenzSetzen(int idReferenz)
+        {
+            try
+            {
+                WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
+                p.IdReferenzprojekt = idReferenz == _idStamm ? 0 : idReferenz;
+                _ctrl.SpeichereParameter(p);
+                _parameterCache = null;
+            }
+            catch { }
+            return Laden();
+        }
+
+        /// <summary>KONZEPT § 2.15: die Sicht wechseln (0 = alle, 1 = zwei Stände).</summary>
+        private WirtschaftlichkeitStand SichtSetzen(int sicht)
+        {
+            Vergleich.SichtWaehlen(sicht, Vergleich.Gewaehlte(_gruppe, _idStamm),
+                                   Gruppenreferenz(), _idStamm);
+            return Laden();
+        }
+
+        /// <summary>KONZEPT § 2.15: A und B der Sicht 2 setzen (A ≠ B ist gesichert).</summary>
+        private WirtschaftlichkeitStand PaarSetzen(int idA, int idB)
+        {
+            Vergleich.PaarWaehlen(idA, idB);
+            return Laden();
+        }
+
+        /// <summary>KONZEPT § 2.15 (VG‑Q7): A und B tauschen — das dreht das Vorzeichen.</summary>
+        private WirtschaftlichkeitStand PaarTauschen()
+        {
+            Vergleich.Tauschen();
+            return Laden();
         }
 
         /// <summary>
@@ -411,7 +551,8 @@ namespace WindowsFormsApplication1
             // lag; eine nie gerechnete Variante fehlte stumm ("Andere WP" in der
             // Windows-Abnahme). Jetzt steht sie mit "—" und dem Hinweis "nicht
             // berechnet" in der Tabelle, und eine abgewaehlte Version verschwindet.
-            List<int> gewaehlt = Vergleich.Gewaehlte(_gruppe, _idStamm);
+            // KONZEPT § 2.15: In Sicht 2 sind es genau zwei Spalten, A und B.
+            List<int> gewaehlt = Vergleich.Sicht.Spalten(Vergleich.Gewaehlte(_gruppe, _idStamm));
             var spaltenErg = new List<WirtschaftlichkeitErgebnis>();   // je Spalte; null = kein Ergebnis
             var zeilen = new List<WirtschaftlichkeitErgebnis>();       // die vorhandenen Ergebnisse
             foreach (int id in gewaehlt)
@@ -469,8 +610,13 @@ namespace WindowsFormsApplication1
             // gewaehlten Spalten - der Reiter konnte damit eine andere Tabelle zeigen
             // als Word und Excel, entgegen dem Versprechen von E7. Es gibt seither EINE
             // Regel, und sie steht in WirtschaftlichkeitZeilen.Sichtbare.
+            // KONZEPT § 2.9 und § 2.15: Die Zeilendefinition kennzeichnet die REFERENZ -
+            // in Sicht 2 den Stand A, sonst die Referenz der Gruppe.
+            int idReferenz = Vergleich.Sicht.IstPaar
+                           ? Vergleich.Sicht.IdA
+                           : Referenzwahl.Bestimme(_gruppe, _idStamm, Gruppenreferenz(), null).IdReferenz;
             foreach (WirtZeile z in WirtschaftlichkeitZeilen.Sichtbare(
-                         WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache),
+                         WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache, idReferenz),
                          _ergebnisse))
             {
                 string titel = (z.Einzug > 0 ? "    " : "") + z.Titel;
@@ -709,7 +855,16 @@ namespace WindowsFormsApplication1
                 {
                     BerichtsDaten daten = new BerichtsDatenSammler().Sammle(
                         _idStamm, _stammName, varianten, false, mitZeitreihen, melde, ct);
-                    return _ctrl.Berechne(daten, p);
+                    // KONZEPT § 2.9: Der GESPEICHERTE Lauf rechnet immer gegen die
+                    // Referenz der GRUPPE - er ist der Lauf, aus dem der Bericht
+                    // reproduzierbar sein soll. Die Sicht bleibt hier bewusst leer;
+                    // die Paarsicht setzt sie in PaarErgebnisse und persistiert nicht.
+                    // Die gesammelte Gruppe bleibt stehen, damit die Paarsicht gegen A
+                    // rechnen kann, ohne noch einmal zu sammeln.
+                    daten.IdGruppenreferenz = p.IdReferenzprojekt;
+                    daten.Sicht = null;
+                    _letzteDaten = daten;
+                    return _ctrl.Berechne(daten, p, p.IdReferenzprojekt);
                 }, ct);
 
                 _tarifCache = null;

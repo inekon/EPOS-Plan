@@ -60,6 +60,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string StammAnzeige;
 
+        /// <summary>
+        /// KONZEPT § 2.9 — <b>welcher Stand die Referenz ist</b>: <c>Tab_Projekt.ID</c>
+        /// der gewählten Referenz, <b>0 = der Stamm</b> (Vorgabe und Bestandsverhalten).
+        ///
+        /// <para>Sie steht an der ZEILE und nicht an der Ausgabe, weil sie darüber
+        /// entscheidet, wo <see cref="StammAnzeige"/> greift — und das ist eine Aussage
+        /// der Zeilendefinition, keine der Darstellung. Stünde sie dreimal in Word,
+        /// Excel und Reiter, zeigte der eine „(Referenz)" in einer anderen Spalte als
+        /// der andere.</para>
+        ///
+        /// <para>Die Sicht 2 (§ 2.15) setzt hier A; die Menge ist dann [A, B].</para>
+        /// </summary>
+        public int IdReferenz;
+
+        /// <summary>
+        /// Ist dieses Ergebnis die Referenz der Zeile? Ohne gewählte Referenz
+        /// (<see cref="IdReferenz"/> = 0) ist es der Stamm — wortgleich zum Bestand.
+        /// </summary>
+        public bool IstReferenz(WirtschaftlichkeitErgebnis e)
+        {
+            if (e == null) return false;
+            return IdReferenz > 0 ? e.IdProjekt == IdReferenz : e.IstStamm;
+        }
+
         /// <summary>true, wenn die Zeile Text statt einer Zahl führt.</summary>
         public bool IstText { get { return Text != null; } }
 
@@ -122,7 +146,7 @@ namespace WindowsFormsApplication1
         {
             if (e == null) return "—";
             if (IstText) { string t = Text(e); return string.IsNullOrEmpty(t) ? "—" : t; }
-            if (e.IstStamm && StammAnzeige != null) return StammAnzeige;
+            if (IstReferenz(e) && StammAnzeige != null) return StammAnzeige;
             double? v = Wert == null ? null : Wert(e);
             if (!v.HasValue) return "—";
             string zahl = v.Value.ToString(Format, kultur);
@@ -144,7 +168,7 @@ namespace WindowsFormsApplication1
         public double? ExcelWert(WirtschaftlichkeitErgebnis e)
         {
             if (e == null || IstText || Wert == null) return null;
-            if (e.IstStamm && StammAnzeige != null) return null;
+            if (IstReferenz(e) && StammAnzeige != null) return null;
             return Wert(e);
         }
     }
@@ -169,6 +193,34 @@ namespace WindowsFormsApplication1
         /// </param>
         public static List<WirtZeile> Kennzahlen(IList<WirtschaftlichkeitErgebnis> menge,
                                                  TarifParameter tarif)
+        {
+            return Kennzahlen(menge, tarif, 0);
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.9 und § 2.15 — dieselbe Zeilendefinition mit AUSDRÜCKLICH
+        /// gewählter Referenz. Sie entscheidet, welche Spalte „(Referenz)" trägt und
+        /// welche keine Differenzkennzahlen zeigt.
+        ///
+        /// <para>Die Sicht 2 der Ergebnisansicht gibt hier die MENGE [A, B] und A als
+        /// Referenz — so wie Sicht 1 die Menge aller Stände und den Stamm gibt. Keine
+        /// dritte Wahrheit, kein zweiter Zeilenkatalog.</para>
+        /// </summary>
+        /// <param name="idReferenz">
+        /// <c>Tab_Projekt.ID</c> der Referenz; <b>0 = Stamm</b> (Vorgabe und
+        /// Bestandsverhalten).
+        /// </param>
+        public static List<WirtZeile> Kennzahlen(IList<WirtschaftlichkeitErgebnis> menge,
+                                                 TarifParameter tarif, int idReferenz)
+        {
+            List<WirtZeile> zeilen = Baue(menge, tarif);
+            if (idReferenz > 0)
+                foreach (WirtZeile z in zeilen) z.IdReferenz = idReferenz;
+            return zeilen;
+        }
+
+        private static List<WirtZeile> Baue(IList<WirtschaftlichkeitErgebnis> menge,
+                                            TarifParameter tarif)
         {
             var z = new List<WirtZeile>();
             if (menge == null) return z;
@@ -830,7 +882,7 @@ namespace WindowsFormsApplication1
                 {
                     if (e == null) continue;
                     if (z.IstText) { if (!string.IsNullOrEmpty(z.Text(e))) { hat = true; break; } }
-                    else if (e.IstStamm && z.StammAnzeige != null) { hat = true; break; }
+                    else if (z.IstReferenz(e) && z.StammAnzeige != null) { hat = true; break; }
                     else if (z.Wert != null && z.Wert(e).HasValue) { hat = true; break; }
                 }
                 if (hat) sichtbar.Add(z);

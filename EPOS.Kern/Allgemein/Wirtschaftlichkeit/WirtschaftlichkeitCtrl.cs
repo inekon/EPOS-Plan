@@ -436,6 +436,14 @@ namespace WindowsFormsApplication1
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_STROMST_BEFREIUNG_MODUS, "TEXT(20)");
                     SpalteSicher(TAB_PARAMETER, SchemaKatalog.SPALTE_PW_AUFTEILUNG, "TEXT(30)");
 
+                    // KONZEPT § 2.9 - das waehlbare Vergleichsprojekt. Regulaer entsteht
+                    // es in Schemaschritt 92; das hier ist DER ZWEITE DDL-ORT, den diese
+                    // Tabelle seit jeher verlangt (doppelte Schema-Wahrheit dieses
+                    // Moduls, Konzept § 9 Punkt 2). KEINE Werte-Vorbelegung: NULL heisst
+                    // Stamm, und genau das haelt den Bestand unveraendert.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt92_Referenzprojekt)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
                     // ETAPPE K6 (HF6/M-D) — die verbliebene KWKG-Projektangabe. Regulär legt sie
                     // Migrationsschritt 28 an; das hier ist die tolerante VORSORGE
                     // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls,
@@ -654,6 +662,14 @@ namespace WindowsFormsApplication1
                     string auf = Text(r, SchemaKatalog.SPALTE_PW_AUFTEILUNG);
                     if (auf.Length > 0) p.AufteilungMethode = auf;
 
+                    // KONZEPT § 2.9 - die Referenz der Differenzrechnung (Schritt 92).
+                    // NULL heisst Stamm, und genau dafuer steht die 0: Eine nicht
+                    // migrierte Datenbank verhaelt sich wie eine migrierte und wie der
+                    // Bestand. Geprueft wird die Zugehoerigkeit zur Gruppe erst beim
+                    // Rechnen (Referenzwahl) - eine geloeschte Variante wird hier NICHT
+                    // still bereinigt.
+                    p.IdReferenzprojekt = (int)(D(r, SchemaKatalog.SPALTE_PW_REFERENZPROJEKT) ?? 0);
+
                     // ETAPPE B6 - der Modus des § 9 Abs. 1 Nr. 3 StromStG (Schritt 88).
                     // NUR der ausdrueckliche Wert ERLOES bucht die Befreiung als Erloes;
                     // leer, NULL und jeder unbekannte Bestandswert bedeuten AUSWEIS.
@@ -769,6 +785,18 @@ namespace WindowsFormsApplication1
         {
             return new DbParam("@sz", DbParamTyp.Double)
             { Wert = wert.HasValue ? (object)wert.Value : DBNull.Value };
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.9 — die gewählte Referenz als Parameter. <b>0 geht als
+        /// <c>NULL</c> in die Datenbank</b>: „Stamm" ist die Abwesenheit einer Wahl,
+        /// und eine geschriebene 0 wäre ein Verweis auf ein Projekt, das es nicht gibt
+        /// (dieselbe Regel wie bei jeder FK-Spalte dieses Schemas).
+        /// </summary>
+        private static DbParam RefParam(int idReferenzprojekt)
+        {
+            return new DbParam("@ref", DbParamTyp.Integer)
+            { Wert = idReferenzprojekt > 0 ? (object)idReferenzprojekt : DBNull.Value };
         }
 
         /// <summary>
@@ -960,6 +988,8 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I + "] = ?, " +
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "] = ?, " +
+                    // KONZEPT § 2.9 - die Referenz der Differenzrechnung (Schritt 92).
+                    "[" + SchemaKatalog.SPALTE_PW_REFERENZPROJEKT + "] = ?, " +
                     "GeaendertAm = ? WHERE ID_Projekt = ?",
                     new DbParam("@z", p.Zinssatz),
                     new DbParam("@t", p.Betrachtungszeitraum),
@@ -1027,6 +1057,10 @@ namespace WindowsFormsApplication1
                     // Access-Rueckweg schnitte einen langen Freitext bei VarWChar ab.
                     new DbParam("@nm", DbParamTyp.LongVarWChar)
                     { Wert = LeerAlsNull(p.NichtMonetaer) },
+                    // KONZEPT § 2.9: "Stamm" ist die Abwesenheit einer Wahl und muss
+                    // LEER in die Datenbank - eine geschriebene 0 waere ein Verweis auf
+                    // ein Projekt, das es nicht gibt.
+                    RefParam(p.IdReferenzprojekt),
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now },
                     new DbParam("@p", p.IdStamm));
                 if (rows > 0) return true;
@@ -1071,9 +1105,11 @@ namespace WindowsFormsApplication1
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I + "], " +
                     "[" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "], " +
+                    // KONZEPT § 2.9 - die Referenz der Differenzrechnung (Schritt 92).
+                    "[" + SchemaKatalog.SPALTE_PW_REFERENZPROJEKT + "], " +
                     "GeaendertAm) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?," +
-                    "?,?,?,?,?,?,?,?,?)",
+                    "?,?,?,?,?,?,?,?,?,?)",
                     new DbParam("@id", id),
                     new DbParam("@p", p.IdStamm),
                     new DbParam("@z", p.Zinssatz),
@@ -1138,6 +1174,9 @@ namespace WindowsFormsApplication1
                     SzenParam(Satz(p, WirtschaftlichkeitSzenario.WORST).PreissteigerungInvestition),
                     new DbParam("@nm", DbParamTyp.LongVarWChar)
                     { Wert = LeerAlsNull(p.NichtMonetaer) },
+                    // KONZEPT § 2.9 - Reihenfolge wie im UPDATE darueber; 0 heisst
+                    // Stamm und geht als NULL in die Datenbank.
+                    RefParam(p.IdReferenzprojekt),
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             }
             catch { return false; }
@@ -1433,8 +1472,67 @@ namespace WindowsFormsApplication1
         /// persistiert die Ergebnisse. daten stammt aus BerichtsDatenSammler.Sammle
         /// (dort ist die Vorbedingung „Simulation vorhanden/aktuell" bereits
         /// erledigt, inkl. automatischem Rechnen fehlender Ergebnisse).
+        ///
+        /// <para>Die Referenz der Differenzrechnung ist die GRUPPENREFERENZ
+        /// <see cref="WirtschaftlichkeitParameter.IdReferenzprojekt"/> (0 = Stamm,
+        /// Konzept § 2.9). Wer eine andere braucht — die Vergleichssicht „Zwei Stände"
+        /// übergibt A —, nimmt die Überladung mit <c>idReferenz</c>.</para>
         /// </summary>
         public List<WirtschaftlichkeitErgebnis> Berechne(BerichtsDaten daten, WirtschaftlichkeitParameter p)
+        {
+            return Berechne(daten, p, 0);
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.9 und § 2.15 — <b>welche Referenz gilt</b>, in dieser Reihenfolge:
+        /// der ausdrückliche Lauf-Parameter, dann die Vergleichssicht des Laufs
+        /// (Sicht 2 setzt A), zuletzt die Gruppenreferenz des Parametersatzes. Und 0
+        /// heißt am Ende der Kette: Stamm.
+        ///
+        /// <para>Die Kette steht EINMAL hier, damit Kennzahlen, Verlauf und Bericht
+        /// nicht drei verschiedene Referenzen nehmen können.</para>
+        /// </summary>
+        private static int Referenz(BerichtsDaten daten, WirtschaftlichkeitParameter p,
+                                    int idReferenz)
+        {
+            if (idReferenz > 0) return idReferenz;
+            if (daten != null && daten.Sicht != null && daten.Sicht.IstPaar)
+                return daten.Sicht.Referenz;
+            return p != null ? p.IdReferenzprojekt : 0;
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.9 — dieselbe Rechnung mit AUSDRÜCKLICH gewählter Referenz.
+        /// </summary>
+        /// <param name="idReferenz">
+        /// <c>Tab_Projekt.ID</c> der Referenz dieses Laufs. <b>0 = die Gruppenreferenz</b>
+        /// aus <see cref="WirtschaftlichkeitParameter.IdReferenzprojekt"/>, und die
+        /// wiederum 0 = Stamm.
+        ///
+        /// <para>Die Sicht 2 der Ergebnisansicht (§ 2.15, VG‑Q1) übergibt hier A und
+        /// schreibt die Gruppenreferenz NICHT um: Amortisation und interner Zinsfuß
+        /// hängen an der Jahresreihe der Differenz und sind nicht linear — es gibt
+        /// deshalb nur EINEN Rechenweg für Differenzkennzahlen, und das ist dieser.</para>
+        /// </param>
+        public List<WirtschaftlichkeitErgebnis> Berechne(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int idReferenz)
+        {
+            return Berechne(daten, p, idReferenz, true);
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.15 — dieselbe Rechnung, ohne zu persistieren.
+        /// </summary>
+        /// <param name="persistieren">
+        /// <c>false</c> für die Vergleichssicht „Zwei Stände": Sie ist ein
+        /// <b>Erkundungswerkzeug</b> — ihre Differenzen gelten gegen A und nicht gegen
+        /// die Unterlassensalternative der Gruppe. Geschrieben in
+        /// <c>Tab_ErgebnisWirtschaftlichkeit</c> wären sie eine zweite Wahrheit neben
+        /// dem Lauf, aus dem der Bericht reproduzierbar sein soll. Wer einen
+        /// Paarvergleich dauerhaft will, wählt A als Gruppenreferenz (§ 2.9).
+        /// </param>
+        public List<WirtschaftlichkeitErgebnis> Berechne(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int idReferenz, bool persistieren)
         {
             var alle = new List<WirtschaftlichkeitErgebnis>();
             var sens = new List<SensitivitaetZeile>();
@@ -1449,6 +1547,14 @@ namespace WindowsFormsApplication1
             _brennstoffKategorie = null; _carrierBrennstoff = null;        // Nachtrag 2 zu E2
             _traegerCache.Clear();                                         // Etappe E4
 
+            // KONZEPT § 2.9: WOGEGEN gerechnet wird. Der Lauf-Parameter schlaegt die
+            // Gruppenreferenz, die Gruppenreferenz schlaegt den Stamm. Steht die
+            // gewaehlte Referenz nicht (mehr) in der Gruppe, faellt die Wahl auf den
+            // Stamm zurueck - aber BENANNT, nie still (Randfall 2).
+            Referenzwahl wahl = Referenzwahl.Bestimme(daten, Referenz(daten, p, idReferenz));
+            if (wahl.Warnung != null && daten.Warnungen != null &&
+                !daten.Warnungen.Contains(wahl.Warnung)) daten.Warnungen.Add(wahl.Warnung);
+
             foreach (string szenario in WirtschaftlichkeitSzenario.Alle)
             {
                 // ETAPPE W5-B-9 (Anwenderentscheid 09.09.2026): der Parametersatz, mit
@@ -1459,9 +1565,14 @@ namespace WindowsFormsApplication1
                 // ersetzten Preissteigerungen (Begruendung an FuerSzenario).
                 WirtschaftlichkeitParameter ps = p.FuerSzenario(szenario);
 
-                ProjektEingabe stammEingabe = null;
-                KapitalwertRechner.Zahlungsbild stammBild = null;
-                WirtschaftlichkeitErgebnis stammErg = null;
+                // ERST ALLE STAENDE RECHNEN, DANN DIE DIFFERENZEN (Konzept § 2.9): Die
+                // Referenz darf irgendwo in der Gruppe stehen. Solange sie fest der
+                // Stamm war, genuegte ein Durchlauf - der Stamm steht zuerst. Eine
+                // gewaehlte Variante kann hinter den Staenden stehen, deren Differenz
+                // sie traegt; die Reihenfolge von alle[] und sens[] bleibt unveraendert.
+                var eingaben = new List<ProjektEingabe>();
+                var bilder = new List<KapitalwertRechner.Zahlungsbild>();
+                var ergebnisse = new List<WirtschaftlichkeitErgebnis>();
 
                 foreach (VariantenDaten v in daten.Varianten)
                 {
@@ -1471,33 +1582,62 @@ namespace WindowsFormsApplication1
                     WirtschaftlichkeitErgebnis erg = RechneProjekt(v, ps, eingabe,
                         szenario, out KapitalwertRechner.Zahlungsbild bild);
                     alle.Add(erg);
+                    eingaben.Add(eingabe); bilder.Add(bild); ergebnisse.Add(erg);
+                }
 
-                    if (v.IstStamm) { stammEingabe = eingabe; stammBild = bild; stammErg = erg; continue; }
+                int refIndex = -1;
+                for (int i = 0; i < ergebnisse.Count; i++)
+                    if (ergebnisse[i].IdProjekt == wahl.IdReferenz) { refIndex = i; break; }
 
-                    // Referenz = Stamm (Entscheidung 11.08.2026): Differenzkennzahlen.
-                    if (bild != null && stammBild != null &&
-                        erg.Kapitalwert.HasValue && stammErg != null && stammErg.Kapitalwert.HasValue)
+                ProjektEingabe refEingabe = refIndex >= 0 ? eingaben[refIndex] : null;
+                KapitalwertRechner.Zahlungsbild refBild = refIndex >= 0 ? bilder[refIndex] : null;
+                WirtschaftlichkeitErgebnis refErg = refIndex >= 0 ? ergebnisse[refIndex] : null;
+
+                // RANDFALL (§ 2.9): Die Referenz selbst liess sich nicht rechnen. Der
+                // Sammler hat sie zuvor nachgerechnet wie jede Variante; scheitert auch
+                // das, gibt es keine Differenzkennzahlen - und der Grund steht da,
+                // statt dass still der Stamm einspringt.
+                if (refIndex >= 0 && refBild == null && szenario == WirtschaftlichkeitSzenario.ERWARTET)
+                {
+                    string satz = Referenzwahl.ReferenzFehlt(
+                        string.IsNullOrEmpty(refErg.Anzeige) ? wahl.Anzeige : refErg.Anzeige,
+                        refErg.Fehlgrund ?? refErg.Hinweis);
+                    if (daten.Warnungen != null && !daten.Warnungen.Contains(satz))
+                        daten.Warnungen.Add(satz);
+                }
+
+                for (int i = 0; i < ergebnisse.Count; i++)
+                {
+                    // Die REFERENZ selbst bekommt keine Differenzkennzahlen (§ 2.9).
+                    if (i == refIndex) continue;
+
+                    WirtschaftlichkeitErgebnis erg = ergebnisse[i];
+                    KapitalwertRechner.Zahlungsbild bild = bilder[i];
+                    ProjektEingabe eingabe = eingaben[i];
+
+                    if (bild != null && refBild != null &&
+                        erg.Kapitalwert.HasValue && refErg != null && refErg.Kapitalwert.HasValue)
                     {
-                        erg.KapitalwertDiff = erg.Kapitalwert.Value - stammErg.Kapitalwert.Value;
+                        erg.KapitalwertDiff = erg.Kapitalwert.Value - refErg.Kapitalwert.Value;
                         // W5-B-9: mit dem Zins DIESES Szenarios - sonst annuisierte die
                         // Best-Zeile ihren Kapitalwert mit dem Erwartungszins.
                         erg.AnnuitaetKW = erg.KapitalwertDiff.Value *
                             KapitalwertRechner.Annuitaet(ps.Zinssatz / 100.0, ps.Betrachtungszeitraum);
-                        erg.AmortisationJahre = KapitalwertRechner.AmortisationDifferenz(bild, stammBild);
-                        erg.IRR = KapitalwertRechner.InternerZinsfuss(bild, stammBild);   // W2
+                        erg.AmortisationJahre = KapitalwertRechner.AmortisationDifferenz(bild, refBild);
+                        erg.IRR = KapitalwertRechner.InternerZinsfuss(bild, refBild);   // W2
 
                         // Sensitivitätsanalyse (W2): nur Szenario Erwartet.
                         if (szenario == WirtschaftlichkeitSzenario.ERWARTET &&
-                            stammEingabe != null && eingabe.Energie.HasValue && stammEingabe.Energie.HasValue)
+                            refEingabe != null && eingabe.Energie.HasValue && refEingabe.Energie.HasValue)
                             // Der Sensitivitaetslauf haengt am Szenario ERWARTET - dort ist
                             // ps dieselbe Referenz wie p.
-                            sens.AddRange(BaueSensitivitaet(v.IdProjekt, eingabe, stammEingabe, ps,
+                            sens.AddRange(BaueSensitivitaet(erg.IdProjekt, eingabe, refEingabe, ps,
                                                             erg.KapitalwertDiff.Value));
                     }
                 }
             }
 
-            Persistiere(alle, sens, matrizen, p);
+            if (persistieren) Persistiere(alle, sens, matrizen, p);
             return alle;
         }
 
@@ -1516,6 +1656,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public WirtschaftlichkeitVerlauf BerechneVerlauf(BerichtsDaten daten,
             WirtschaftlichkeitParameter p, int jahre, string szenario)
+        {
+            return BerechneVerlauf(daten, p, jahre, szenario, 0);
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.9 und § 2.15 — derselbe Verlauf mit AUSDRÜCKLICH gewählter
+        /// Referenz. Die Differenzlinien laufen gegen sie statt gegen den Stamm; in
+        /// Sicht 2 ist das A, und die eine gezeichnete Linie ist B − A (VG‑Q5).
+        /// </summary>
+        /// <param name="idReferenz">0 = die Gruppenreferenz aus
+        /// <see cref="WirtschaftlichkeitParameter.IdReferenzprojekt"/>, und die
+        /// wiederum 0 = Stamm.</param>
+        public WirtschaftlichkeitVerlauf BerechneVerlauf(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int jahre, string szenario, int idReferenz)
         {
             var verlauf = new WirtschaftlichkeitVerlauf
             {
@@ -1538,7 +1692,17 @@ namespace WindowsFormsApplication1
             _brennstoffKategorie = null; _carrierBrennstoff = null;
             _traegerCache.Clear();
 
-            VerlaufSerie stamm = null;
+            // KONZEPT § 2.9: WOGEGEN die Differenzlinien laufen. Dieselbe Auflösung wie
+            // in Berechne — sonst zeigte der Verlauf eine andere Referenz als die
+            // Kennzahltafel.
+            Referenzwahl wahl = Referenzwahl.Bestimme(daten, Referenz(daten, p, idReferenz));
+
+            // KONZEPT § 2.15 (VG‑Q5): In Sicht 2 wird EINE Differenzkurve gezeichnet,
+            // B − A; ihr Nulldurchgang ist die dynamische Amortisation des Paars. Mit
+            // A = Gruppenreferenz wäre die A-Kurve die Nulllinie.
+            int nurDieser = daten.Sicht != null && daten.Sicht.IstPaar ? daten.Sicht.IdB : 0;
+
+            VerlaufSerie referenz = null;
             foreach (VariantenDaten v in daten.Varianten)
             {
                 var serie = new VerlaufSerie
@@ -1578,23 +1742,25 @@ namespace WindowsFormsApplication1
                 }
 
                 verlauf.Absolut.Add(serie);
-                if (v.IstStamm) stamm = serie;
+                if (wahl.IstReferenz(v.IdProjekt)) referenz = serie;
             }
 
-            // Differenzlinien Variante − Stamm (nur wenn beide Reihen vorliegen).
-            if (stamm != null && stamm.Kumuliert != null)
+            // Differenzlinien Variante − Referenz (nur wenn beide Reihen vorliegen).
+            // Die Referenz selbst bekommt keine Linie — sie wäre die Nulllinie.
+            if (referenz != null && referenz.Kumuliert != null)
                 foreach (VerlaufSerie s in verlauf.Absolut)
                 {
-                    if (s.IstStamm || s.Kumuliert == null) continue;
+                    if (s.IdProjekt == referenz.IdProjekt || s.Kumuliert == null) continue;
+                    if (nurDieser > 0 && s.IdProjekt != nurDieser) continue;
                     var d = new double[verlauf.Jahre + 1];
                     for (int t = 0; t <= verlauf.Jahre; t++)
-                        d[t] = s.Kumuliert[t] - stamm.Kumuliert[t];
+                        d[t] = s.Kumuliert[t] - referenz.Kumuliert[t];
                     verlauf.Differenz.Add(new VerlaufSerie
                     {
                         IdProjekt = s.IdProjekt,
                         Anzeige = s.Anzeige,
                         Kumuliert = d,
-                        RestwertBarwert = s.RestwertBarwert - stamm.RestwertBarwert
+                        RestwertBarwert = s.RestwertBarwert - referenz.RestwertBarwert
                     });
                 }
             return verlauf;

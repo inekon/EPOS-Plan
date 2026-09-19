@@ -74,6 +74,11 @@ Nutzungsdauer, Ersatz, Restwert, Startjahr
 Kennzahlen
   Annuitätenfaktor a(i,n) = i·(1+i)^n / ((1+i)^n − 1) ; a = 1/n bei i ≈ 0
   Kapitalwertdifferenz = KW(Variante) − KW(Referenz)
+  Referenz  = ID_Referenzprojekt der Gruppe ; NULL = Stammprojekt (Vorgabe) ; die Referenz selbst
+              bekommt KEINE Differenzkennzahl. Steht die gewählte Referenz nicht mehr in der Gruppe,
+              gilt der Stamm — mit Warnzeile, nie still
+  Sicht „zwei Stände": A ist die Referenz DIESES Laufs (Sitzungswahl, ID_Referenzprojekt bleibt
+              unberührt), Differenz = B − A ; der Lauf wird nicht gespeichert
   Annuität = KW-Differenz × a(i,T)
   Dynamische Amortisation = erstes t mit kumuliertem Barwert ≥ 0, linear interpoliert, OHNE Restwert
   Interner Zinsfuß = Nullstelle KW(r), Bisektion −99 %…1000 %, 200 Schritte — bei > 1 Vorzeichen-

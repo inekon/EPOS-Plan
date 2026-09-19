@@ -98,10 +98,31 @@
     <Raster TZeile="VarianteZeile" Zeilen="@_stand.Varianten.AsQueryable()" Bearbeitbar="true">
         <KindInhalt>
             <TemplateColumn TGridItem="VarianteZeile" Title="">
+                @* KONZEPT § 2.9: Nicht mehr der Stamm ist fest gewaehlt, sondern die
+                   REFERENZ - sie ist die Unterlassensalternative und kann nicht aus
+                   dem Vergleich fallen, gegen den sie gehalten wird. *@
                 <Schalter Bezeichnung="" Wert="@Gewaehlt(context.IdProjekt)"
-                          Aktiv="@(!context.IstStamm && !_laeuft)"
+                          Aktiv="@(!IstReferenz(context) && !_laeuft)"
                           WertChanged="@(w => VarianteUmschalten(context, w))" />
             </TemplateColumn>
+            @* KONZEPT § 2.9: DIE REFERENZ IST WAEHLBAR. Bis dahin stand hier "Referenz:
+               Stamm, fest gewaehlt"; DIN EN 17463 vergleicht gegen die
+               Unterlassensalternative, und welche das ist, entscheidet die Bewertung.
+
+               EIN EINTRAG JE ZEILE: Die Optionsgruppe zeichnet je Zeile ihren einen
+               Eintrag und haelt sie ueber den gemeinsamen Gruppennamen zusammen - die
+               Bauform, die der Baustein dafuer vorsieht. Ohne den Rueckruf
+               ReferenzGewaehlt erscheint die Spalte gar nicht: Eine Wahl, die niemand
+               entgegennimmt, waere eine Behauptung. *@
+            @if (ReferenzGewaehlt is not null)
+            {
+                <TemplateColumn TGridItem="VarianteZeile" Title="@SpalteReferenz">
+                    <Optionsgruppe Bezeichnung="@SpalteReferenz" Gruppenname="epos-wirt-referenz"
+                                   Eintraege="@_stand.Staende" NurEintrag="@context.IdProjekt"
+                                   Auswahl="@_stand.IdReferenz" Aktiv="@(!_laeuft)"
+                                   AuswahlChanged="BeiReferenz" />
+                </TemplateColumn>
+            }
             <PropertyColumn TGridItem="VarianteZeile" TProp="string"
                             Property="@(z => z.Art)" Title="@SpalteArt" />
             <PropertyColumn TGridItem="VarianteZeile" TProp="string"
@@ -169,6 +190,48 @@
        Bewertungsblocks, der sie auch pflegt (AUFTRAG #328). Im Bericht bleiben
        sie, wo sie waren: Word und Excel lesen unveraendert
        WirtschaftlichkeitParameter.NichtMonetaer, nicht diese Seite. *@
+
+    @* ------------------------------------------- Vergleichssicht (§ 2.15)
+
+       WELCHE STAENDE GEGENEINANDER. Entweder alle angehakten Varianten gegen die
+       Referenz der Gruppe (Sicht 1, der Bestand) oder zwei Staende A und B, wobei A
+       die Referenz DIESER Sicht ist (VG-Q1) - die gespeicherte Gruppenreferenz bleibt
+       unberuehrt.
+
+       DIE BESCHRIFTUNG SAGT "gegen die Referenz" UND NICHT "gegen den Stamm"
+       (VG-Q2): Die Referenz kann mit § 2.9 auch eine Variante sein. Welche es
+       gerade ist, sagt die Erklaerzeile darunter beim Namen.
+
+       IN SICHT 1 SIND DIE LISTEN GESPERRT - sie tragen dann keine Wahl, sondern nur
+       den Zustand, in den ein Wechsel fuehren wuerde. A != B ist ohne Meldung
+       gesichert: Die Liste B fuehrt A nicht und die Liste A nicht B.
+
+       OHNE RUECKRUF KEINE OPTIONSGRUPPE: Eine Sicht, die niemand entgegennimmt,
+       waere eine Behauptung. *@
+    @if (SichtGewaehlt is not null)
+    {
+        <div class="epos-seite-zeile">
+            <Optionsgruppe Bezeichnung="@LabelSicht" Eintraege="@Sichten"
+                           Auswahl="@_stand.Sicht" Aktiv="@(!_laeuft)"
+                           WeichGesperrt="@SichtGesperrt"
+                           AuswahlChanged="BeiSicht" Verweigert="BeiSichtVerweigert" />
+
+            <Auswahlfeld Bezeichnung="@LabelSichtA" Eintraege="@EintraegeA"
+                         Auswahl="@_stand.SichtA" Aktiv="@(!_laeuft && PaarOffen)"
+                         AuswahlChanged="BeiA" />
+            <button type="button" class="epos-knopf" title="@TauschTipp"
+                    aria-label="@TauschTipp" disabled="@(_laeuft || !PaarOffen)"
+                    @onclick="BeiTausch">⇄</button>
+            <Auswahlfeld Bezeichnung="@LabelSichtB" Eintraege="@EintraegeB"
+                         Auswahl="@_stand.SichtB" Aktiv="@(!_laeuft && PaarOffen)"
+                         AuswahlChanged="BeiB" />
+        </div>
+
+        @if (!string.IsNullOrEmpty(_stand.Referenzzeile))
+        {
+            <Herleitungszeile Text="@_stand.Referenzzeile" />
+        }
+    }
 
     @* --------------------------------------------- Vergleichstabelle *@
     @if (_stand.Ansicht.Matrix.Zeilen.Count > 0)
@@ -450,6 +513,35 @@
     [Parameter] public Action<IReadOnlyList<int>>? VergleichGewaehlt { get; set; }
 
     /// <summary>
+    /// KONZEPT § 2.9: Die REFERENZ DER GRUPPE hat gewechselt (<c>Tab_Projekt.ID</c>).
+    /// Die Hülle schreibt sie fort (<c>ID_Referenzprojekt</c>) und gibt den neuen Stand
+    /// zurück; <c>null</c> heißt „ging nicht" — dann bleibt alles, wie es war.
+    ///
+    /// <para><b>Kein Delegat, keine Spalte:</b> Ohne ihn erscheint die Referenzwahl in
+    /// der Vergleichsgruppen-Liste gar nicht.</para>
+    /// </summary>
+    [Parameter] public Func<int, WirtschaftlichkeitStand?>? ReferenzGewaehlt { get; set; }
+
+    /// <summary>
+    /// KONZEPT § 2.15: Die SICHT hat gewechselt (0 = alle Varianten gegen die Referenz,
+    /// 1 = zwei Stände). Die Hülle merkt sie sich in der Sitzung und gibt den neuen
+    /// Stand zurück.
+    ///
+    /// <para><b>Kein Delegat, keine Optionsgruppe</b> — dieselbe Regel wie beim
+    /// Bewertungsblock.</para>
+    /// </summary>
+    [Parameter] public Func<int, WirtschaftlichkeitStand?>? SichtGewaehlt { get; set; }
+
+    /// <summary>
+    /// KONZEPT § 2.15: A und B der Sicht 2 haben gewechselt. <c>null</c> als Wert heißt
+    /// „unverändert"; der Tausch geht über <see cref="PaarTauschen"/>.
+    /// </summary>
+    [Parameter] public Func<int, int, WirtschaftlichkeitStand?>? PaarGewaehlt { get; set; }
+
+    /// <summary>KONZEPT § 2.15 (VG‑Q7): A und B tauschen — das dreht das Vorzeichen.</summary>
+    [Parameter] public Func<WirtschaftlichkeitStand?>? PaarTauschen { get; set; }
+
+    /// <summary>
     /// Der Parametersatz eines Unterdialogs. <c>null</c> heißt „geht gerade
     /// nicht" — dann bleibt der Bereich zu und die Hülle hat ihren Grund in
     /// die Statuszeile geschrieben.
@@ -497,6 +589,36 @@
     /// <summary>Kopf der Speicherkontextspalte (VF-1).</summary>
     [Parameter] public string SpalteSpeicher { get; set; } = "Stromspeicher";
     [Parameter] public string SpalteSimulation { get; set; } = "Simulation";
+
+    // ---- Referenz und Vergleichssicht (§ 2.9 / § 2.15) -------------------
+    //
+    // Die Schluessel stehen in der Ressourcentafel des Mockups (Abschnitt 8):
+    // WIRT_SICHT_ALLE, WIRT_SICHT_PAAR, WIRT_SICHT_A, WIRT_SICHT_B,
+    // WIRT_SICHT_TAUSCH, WIRT_SICHT_REFERENZ, WIRT_SICHT_GESPERRT.
+
+    /// <summary>Kopf der Referenzspalte in der Vergleichsgruppen-Liste (§ 2.9).</summary>
+    [Parameter] public string SpalteReferenz { get; set; } = Resource.WIRT_SICHT_REF_SPALTE;
+
+    /// <summary>Titel der Sichtwahl (für die Sprachausgabe; die zwei Optionen stehen daneben).</summary>
+    [Parameter] public string LabelSicht { get; set; } = Resource.WIRT_SICHT_ALLE;
+
+    /// <summary>Beschriftung der Sicht 1.</summary>
+    [Parameter] public string SichtAlleText { get; set; } = Resource.WIRT_SICHT_ALLE;
+
+    /// <summary>Beschriftung der Sicht 2.</summary>
+    [Parameter] public string SichtPaarText { get; set; } = Resource.WIRT_SICHT_PAAR;
+
+    /// <summary>Beschriftung der Klappliste A.</summary>
+    [Parameter] public string LabelSichtA { get; set; } = Resource.WIRT_SICHT_A;
+
+    /// <summary>Beschriftung der Klappliste B.</summary>
+    [Parameter] public string LabelSichtB { get; set; } = Resource.WIRT_SICHT_B;
+
+    /// <summary>Werkzeugtipp des Tauschknopfs (VG‑Q7).</summary>
+    [Parameter] public string TauschTipp { get; set; } = Resource.WIRT_SICHT_TAUSCH;
+
+    /// <summary>Der Grund, warum Sicht 2 bei nur einem Stand nicht offensteht.</summary>
+    [Parameter] public string SichtGesperrtText { get; set; } = Resource.WIRT_SICHT_GESPERRT;
 
     [Parameter] public string PhotovoltaikText { get; set; } = "Photovoltaik…";
     [Parameter] public string BhkwText { get; set; } = "BHKW-Wirtschaftlichkeit…";
@@ -634,8 +756,11 @@
 
         _gewaehlt.Clear();
         foreach (int id in _stand.GewaehlteVarianten) _gewaehlt.Add(id);
+        // KONZEPT § 2.9: Die REFERENZ ist immer dabei — ohne gewählte wie bisher der
+        // Stamm. Sie ist die Unterlassensalternative und kann nicht aus dem Vergleich
+        // fallen, gegen den sie gehalten wird.
         foreach (VarianteZeile z in _stand.Varianten)
-            if (z.IstStamm && !_gewaehlt.Contains(z.IdProjekt)) _gewaehlt.Add(z.IdProjekt);
+            if (IstReferenz(z) && !_gewaehlt.Contains(z.IdProjekt)) _gewaehlt.Add(z.IdProjekt);
 
         _status = _stand.Statuszeile ?? "";
 
@@ -666,9 +791,18 @@
 
     private bool Gewaehlt(int id) => _gewaehlt.Contains(id);
 
+    /// <summary>
+    /// KONZEPT § 2.9: Ist das die REFERENZ der Gruppe? Ohne gewählte Referenz ist es
+    /// der Stamm — wortgleich zum Bestand.
+    /// </summary>
+    private bool IstReferenz(VarianteZeile z)
+        => _stand.IdReferenz > 0 ? z.IdProjekt == _stand.IdReferenz : z.IstStamm;
+
     private void VarianteUmschalten(VarianteZeile z, bool an)
     {
-        if (z.IstStamm) { _status = MeldungStammReferenz; return; }
+        // Die REFERENZ kann nicht aus dem Vergleich fallen, gegen den sie gehalten
+        // wird (§ 2.9) - bis zur wählbaren Referenz war das immer der Stamm.
+        if (IstReferenz(z)) { _status = MeldungStammReferenz; return; }
 
         if (an) { if (!_gewaehlt.Contains(z.IdProjekt)) _gewaehlt.Add(z.IdProjekt); }
         else _gewaehlt.Remove(z.IdProjekt);
@@ -687,6 +821,87 @@
         _stand.SzenarioId = id ?? 0;
         if (Anzeigen is not null) _stand.Ansicht = Anzeigen(_stand.SzenarioId);
         WarnbandAuffrischen();          // #267: jedes Szenario hat seine eigenen Gründe
+    }
+
+    // =====================================================================
+    // Referenz und Vergleichssicht (§ 2.9 / § 2.15)
+    // =====================================================================
+
+    /// <summary>Die zwei Sichten als Optionsliste (VG‑Q2: „gegen die Referenz").</summary>
+    private IReadOnlyList<(int Id, string Text)> Sichten
+        => new[] { (0, SichtAlleText), (1, SichtPaarText) };
+
+    /// <summary>
+    /// Sicht 2 ist WEICH gesperrt, solange die Gruppe nur einen Stand führt: Der Grund
+    /// steht am Bedienelement, statt dass die Option stumm nicht reagiert.
+    /// </summary>
+    private IReadOnlyDictionary<int, string>? SichtGesperrt
+        => _stand.PaarMoeglich ? null
+         : new Dictionary<int, string> { [1] = SichtGesperrtText };
+
+    /// <summary>Steht die Paarwahl offen? Nur in Sicht 2 — sonst sind die Listen gesperrt.</summary>
+    private bool PaarOffen => _stand.Sicht == 1 && _stand.PaarMoeglich;
+
+    /// <summary>
+    /// Die Klappliste A führt die angehakten Stände OHNE B — und B ohne A. So ist
+    /// A ≠ B ohne Meldung gesichert.
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> EintraegeA => Staende(_stand.SichtB);
+
+    /// <inheritdoc cref="EintraegeA"/>
+    private IReadOnlyList<(int Id, string Text)> EintraegeB => Staende(_stand.SichtA);
+
+    private IReadOnlyList<(int Id, string Text)> Staende(int ohne)
+    {
+        var l = new List<(int, string)>();
+        foreach ((int id, string text) in _stand.Staende)
+            if (id != ohne && _gewaehlt.Contains(id)) l.Add((id, text));
+        return l;
+    }
+
+    /// <summary>Übernimmt einen neuen Stand aus einem Rückruf; <c>null</c> = nichts ändern.</summary>
+    private void Uebernehmen(WirtschaftlichkeitStand? neu)
+    {
+        if (neu is null) return;
+        _stand = neu;
+        _gewaehlt.Clear();
+        foreach (int id in _stand.GewaehlteVarianten) _gewaehlt.Add(id);
+        _status = _stand.Statuszeile ?? "";
+        WarnbandAuffrischen();
+        StateHasChanged();
+    }
+
+    private void BeiReferenz(int? id)
+    {
+        if (_laeuft || ReferenzGewaehlt is null || id is null) return;
+        Uebernehmen(ReferenzGewaehlt(id.Value));
+    }
+
+    private void BeiSicht(int? id)
+    {
+        if (_laeuft || SichtGewaehlt is null || id is null) return;
+        Uebernehmen(SichtGewaehlt(id.Value));
+    }
+
+    /// <summary>Der Versuch, die gesperrte Sicht 2 zu wählen — die Seite nennt den Grund.</summary>
+    private void BeiSichtVerweigert(int id) => _status = SichtGesperrtText;
+
+    private void BeiA(int? id)
+    {
+        if (_laeuft || PaarGewaehlt is null || id is null) return;
+        Uebernehmen(PaarGewaehlt(id.Value, _stand.SichtB));
+    }
+
+    private void BeiB(int? id)
+    {
+        if (_laeuft || PaarGewaehlt is null || id is null) return;
+        Uebernehmen(PaarGewaehlt(_stand.SichtA, id.Value));
+    }
+
+    private void BeiTausch()
+    {
+        if (_laeuft || PaarTauschen is null || !PaarOffen) return;
+        Uebernehmen(PaarTauschen());
     }
 
     // =====================================================================

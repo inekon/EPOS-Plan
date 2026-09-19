@@ -4669,20 +4669,28 @@ Einstufung
               (<span class="mono">EEG_AUSSCHREIBUNG_GRENZE_KW</span>, § 22 EEG ·
               <span class="mono">STROMST_GRENZE_BEFREIUNG_9_1_3_KW</span>, § 9 Abs. 1 Nr. 3 StromStG); der
               Dialog liest sie jetzt dort. bunit: 1.500 kWp eine Warnung, 2.500 kWp beide, 900 kWp keine</td></tr>
-        <tr><td class="mono">U37</td><td class="num">8</td>
+        <tr class="gestrichen"><td class="mono">U37</td><td class="num">8</td>
             <td>Vergleichssicht: Optionsgruppe „Alle Varianten gegen die Referenz | Zwei Stände" mit den
               Klapplisten A und B, Erklärzeile und Tauschknopf; Sicht 2 rechnet mit A als Referenz dieser Sicht —
               die Differenzrechnung braucht die Referenz als Parameter (Voraussetzung: Referenzwahl je Gruppe,
               Konzept § 2.9); Sicht, A und B als Sitzungswahl neben den Häkchen der Vergleichsgruppen-Liste;
-              der Bericht folgt der Sicht mit Deklarationszeile; Fragen VG‑Q1 bis VG‑Q7 im Konzept § 2.15 offen</td>
+              der Bericht folgt der Sicht mit Deklarationszeile</td>
             <td><span class="mono">WirtschaftlichkeitSeite.razor</span> ·
               <span class="mono">WirtschaftlichkeitCtrl.Berechne</span> ·
               <span class="mono">Vergleichsauswahl</span> ·
               <span class="mono">WirtschaftlichkeitZeilen.Kennzahlen</span></td>
-            <td>Sicht 1 byte-gleich (Referenzlauf, Word, Excel); Sicht 2 mit A = Referenz der Gruppe gleich
-              Spalte B der Sicht 1; Kapitalwertdifferenz B − A gleich Differenz der Sicht-1-Werte auf 0,01 €;
-              Tausch A/B dreht das Vorzeichen; bunit: beide Zustände, Listen ohne den anderen Stand, Sperre bei
-              nur einem Stand</td></tr>
+            <td class="grund"><b>erledigt:</b> Die Differenzrechnung nimmt die Referenz als Parameter
+              (<span class="mono">WirtschaftlichkeitCtrl.Berechne</span>, <span class="mono">BerechneVerlauf</span>);
+              die Gruppenreferenz steht in <span class="mono">Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt</span>
+              (Schemaschritt 92, NULL = Stamm), Sicht, A und B in
+              <span class="mono">Vergleichsauswahl</span>. Sicht 2 übergibt A und rechnet OHNE zu persistieren —
+              der gespeicherte Lauf bleibt der gegen die Unterlassensalternative der Gruppe. Eine
+              Zeilendefinition für Seite, Word und Excel
+              (<span class="mono">WirtschaftlichkeitZeilen.Kennzahlen</span> mit Referenz); der Verlauf zeichnet
+              in Sicht 2 die eine Kurve B − A. Referenz = Stamm rechnet bitgleich zum Bestand; Kapitalwertdifferenz
+              B − A gleich der Differenz der Sicht-1-Werte auf 0,01 €, Tausch A/B dreht das Vorzeichen.
+              bunit: beide Zustände, Listen ohne den anderen Stand, Sperre bei nur einem Stand, Erklärzeile,
+              Referenzwahl</td></tr>
         <tr><td class="mono">U38</td><td class="num">3</td>
             <td>Vergütung je Variante: Optionsgruppe „vom Stammprojekt übernehmen | eigene Vergütung" mit Erklärzeile im
               Reiter Ertrag/Bonus; Herkunftszeile und Knopf „eigene Werte" im Vergütungsdialog (Kategorie 6); Spalte

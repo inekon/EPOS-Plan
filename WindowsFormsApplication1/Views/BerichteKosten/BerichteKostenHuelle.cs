@@ -171,7 +171,13 @@ namespace WindowsFormsApplication1
                     if (_stand.IdStamm <= 0) return null;
                     GruppenseitenPruefen();
                     if (_bericht == null)
-                        _bericht = new BerichtSeiteGaben(_stand.IdStamm, _stand.StammName);
+                        _bericht = new BerichtSeiteGaben(_stand.IdStamm, _stand.StammName)
+                        {
+                            // KONZEPT § 2.15 (VG-Q4): Der Bericht folgt derselben Sicht
+                            // wie die Ergebnisansicht - dieselbe Sitzungswahl, dieselbe
+                            // Instanz.
+                            Vergleich = _vergleich
+                        };
                     return _bericht.Gaben();
             }
             return null;

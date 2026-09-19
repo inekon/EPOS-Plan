@@ -35,6 +35,14 @@ namespace WindowsFormsApplication1
         private readonly string _stammName;
         private readonly BerichtCtrl _bericht = new BerichtCtrl();
 
+        /// <summary>
+        /// KONZEPT § 2.15 (VG‑Q4): Die geteilte Vergleichswahl trägt auch die SICHT der
+        /// Ergebnisansicht — der Bericht folgt ihr, so wie er den Häkchen folgt. Die
+        /// Rahmenhülle setzt dieselbe Instanz, die die Wirtschaftlichkeitsseite führt;
+        /// ohne sie gilt Sicht 1.
+        /// </summary>
+        internal Vergleichsauswahl Vergleich { get; set; } = new Vergleichsauswahl();
+
         private CancellationTokenSource _cts;
 
         internal BerichtSeiteGaben(int idStamm, string stammName)
@@ -187,6 +195,15 @@ namespace WindowsFormsApplication1
                     new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
                                                                  konfig.VariantenIds,
                                                                  mitZeitreihen, melde, ct), ct);
+
+                // KONZEPT § 2.9 und § 2.15 (VG-Q4): DER BERICHT FOLGT DER SICHT - so wie
+                // er den Haekchen folgt. Sicht 2 druckt A | B mit A als Referenz und der
+                // Deklarationszeile; Sicht 1 alle Staende gegen die Referenz der Gruppe.
+                // Beides ist eine SITZUNGSWAHL und wandert als Momentaufnahme mit.
+                try { daten.IdGruppenreferenz = new WirtschaftlichkeitCtrl()
+                                                    .LadeParameter(_idStamm).IdReferenzprojekt; }
+                catch { }
+                daten.Sicht = Vergleich.Sicht.Kopie();
 
                 string wordPfad = null, excelPfad = null;
                 if (konfig.Ausgabe == AUSGABE_WORD || konfig.Ausgabe == AUSGABE_BEIDE)

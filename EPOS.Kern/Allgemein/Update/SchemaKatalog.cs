@@ -3364,6 +3364,49 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
+        // ETAPPE VG — die Referenz der Differenzrechnung (Konzept § 2.9)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// Das <b>Vergleichsprojekt</b> der Gruppe: die Unterlassensalternative, gegen
+        /// die alle Differenzkennzahlen rechnen (Kapitalwertdifferenz, Annuität,
+        /// dynamische Amortisation, interner Zinsfuß, Sensitivität der Differenz).
+        ///
+        /// <para><b>NULL heißt Stamm</b>, und damit ist die Spalte in der Vorgabe
+        /// ergebnisneutral: Eine nicht migrierte Datenbank verhält sich wie eine
+        /// migrierte, und der Rechenweg nimmt den Stamm wie bisher. Erst eine
+        /// ausdrücklich gewählte Variante lenkt die Differenzrechnung um.</para>
+        ///
+        /// <para><b>Sie gehört an die Rahmenzeile</b> (<c>Tab_ProjektWirtschaftlichkeit</c>,
+        /// eine Zeile je Gruppe) und nicht an die Variante: Die Referenz gilt wie Zins
+        /// und Betrachtungszeitraum JE GRUPPE — eine Gruppe hat genau eine
+        /// Unterlassensalternative.</para>
+        ///
+        /// <para><b>Ein Verweis, kein Text</b> (Hausregel „neue Beziehungen über IDs"):
+        /// Der Wert ist eine <c>Tab_Projekt.ID</c>. Kein DEFAULT — eine 0 wäre ein
+        /// Verweis auf nichts; „nicht gesetzt" ist NULL.</para>
+        /// </summary>
+        public const string SPALTE_PW_REFERENZPROJEKT = "ID_Referenzprojekt";
+
+        /// <summary>
+        /// Schritt 92 der Migration: die EINE Spalte des wählbaren Vergleichsprojekts
+        /// an <c>Tab_ProjektWirtschaftlichkeit</c> (Konzept § 2.9). Begründung und
+        /// Leseweg stehen bei <see cref="SPALTE_PW_REFERENZPROJEKT"/>.
+        ///
+        /// <para><b>KEIN DML.</b> Die Spalte bleibt im ganzen Bestand NULL, und NULL
+        /// heißt Stamm — genau die Referenz, gegen die jede Bestandsrechnung schon
+        /// gerechnet hat. Die dreizehn Referenzprojekte bleiben byte-gleich; das ist
+        /// das Abnahmekriterium der Etappe.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei <see cref="Schritt88_StromsteuerModus"/>.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt92_Referenzprojekt =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_REFERENZPROJEKT, "LONG"),
+        };
+
+        // ---------------------------------------------------------------------------
         // ETAPPE E5 — Tarifmodell Strom (Tab_ProjektTarif) und zwei Projektangaben
         // ---------------------------------------------------------------------------
 

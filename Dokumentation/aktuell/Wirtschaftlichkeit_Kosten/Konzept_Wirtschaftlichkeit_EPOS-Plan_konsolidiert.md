@@ -531,16 +531,25 @@ beim Elektrokessel steht dort sein **Stromeinsatz** samt Betrag zum Arbeitspreis
 und der Herkunft „Strom · Netzbezug (im Reststrombedarf des Projekts bepreist)" — die Menge ist
 sichtbar, bezahlt wird sie genau einmal, nämlich im Netzbezug (Regel **E1**).
 
-## 2.9 Wählbares Vergleichsprojekt — die Referenz der Differenzrechnung (Anforderung 31.08.2026)
+## 2.9 Wählbares Vergleichsprojekt — die Referenz der Differenzrechnung (Anforderung 31.08.2026) — umgesetzt
+
+> **Stand: umgesetzt.** Die Referenz ist je Vergleichsgruppe wählbar und steht in
+> `Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt` (Schemaschritt 92, nullbar; NULL = Stamm).
+> `WirtschaftlichkeitCtrl.Berechne` und `BerechneVerlauf` nehmen sie als **Parameter**; alle
+> Differenzkennzahlen rechnen gegen sie, die Referenz selbst bekommt keine. Ihre Auflösung samt
+> Randfällen und Nachweistexten steht einmal in `Referenzwahl`; die Zeilendefinition kennzeichnet
+> die Referenzspalte (`WirtZeile.IdReferenz`), und die Vergleichsgruppen-Liste führt die Wahl.
+> Referenz = Stamm rechnet bitgleich zum Bestand. Nachweis
+> `EPOS.Kern.Tests/ReferenzprojektTests` und `EPOS.UI.Tests/Seiten/WirtschaftlichkeitSichtTests`.
 
 **Anforderung des Anwenders:** Die Differenzrechnung soll nicht fest gegen das Stammprojekt laufen —
 **die Referenz (das Vergleichsprojekt) soll wählbar sein.**
 
-**Ist-Zustand — die Referenz ist hart verdrahtet.** Das Stammprojekt ist überall die
+**Ist-Zustand vor der Umsetzung — die Referenz war hart verdrahtet.** Das Stammprojekt war überall die
 Unterlassensalternative: `Kapitalwertdifferenz = KW(Variante) − KW(Stamm)`; Annuität, dynamische
-Amortisation und IZF rechnen ausschließlich auf dieser Differenz; in `UcWirtschaftlichkeit` ist der
-Stamm als Referenz **nicht abwählbar**, und die Nachweiszeile sagt fest „Referenz: Stammprojekt".
-Eine Auswahl existiert nirgends.
+Amortisation und IZF rechneten ausschließlich auf dieser Differenz; der Stamm war als Referenz
+**nicht abwählbar**, und die Nachweiszeile sagte fest „Referenz: Stammprojekt". Eine Auswahl
+existierte nirgends.
 
 **Warum die Anforderung fachlich richtig ist:** Die Altanwendung (Höfingen-Mappe,
 `Tab_kurz_KWKG2020`) rechnet durchgehend gegen eine ausdrücklich benannte **Vergleichsheizung** —
@@ -572,25 +581,23 @@ braucht die freie Wahl.
 - Referenz = Stamm (Vorgabe) → Verhalten byte-gleich zum Bestand; das ist das Abnahmekriterium der
   Etappe.
 
-**Einordnung:** Nur Konzept (Arbeitsregel). Umsetzung als eigene, kleine Etappe — ergebnisneutral
-in der Vorgabe, erste Rechenwirkung erst bei ausdrücklicher Wahl einer anderen Referenz. Sie gehört
-**vor** die ValERI-Berichtsetappe, weil deren Bewertungsbericht die Unterlassensalternative benennen
-muss.
+**Einordnung:** Umgesetzt als eigene, kleine Etappe — ergebnisneutral in der Vorgabe, erste
+Rechenwirkung erst bei ausdrücklicher Wahl einer anderen Referenz. Sie steht **vor** der
+ValERI-Berichtsetappe, weil deren Bewertungsbericht die Unterlassensalternative benennen muss.
 
 ## 2.10 Integrationsort der ValERI-Darstellung (Anwendervorgabe 31.08.2026)
 
 **Die ValERI-Blöcke werden Bestandteil der Seite „Berichte && Kosten → Wirtschaftlichkeit"
 (`UcWirtschaftlichkeit`) — kein separater Dialog.** Die Seite trägt bereits heute den Titel
 „Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)" und die passende Grundausstattung:
-Vergleichsgruppen-Liste (mit dem Vermerk „Referenz: Stamm, fest gewählt" — der Ist-Zustand aus
-§ 2.9), Szenariowahl, vier Kennzahl-Kacheln, Kennzahlengrid (Zeilen × Projekte), Parameternachweis
-und Fußknöpfe.
+Vergleichsgruppen-Liste (mit der Referenzwahl je Gruppe, § 2.9), Szenariowahl, vier
+Kennzahl-Kacheln, Kennzahlengrid (Zeilen × Projekte), Parameternachweis und Fußknöpfe.
 
 **Andockvorschlag** (Einzelheiten in den ValERI-Mockups):
 
 | Element | Ort auf der Seite |
 |---|---|
-| Referenzwahl (§ 2.9) | in der Vergleichsgruppen-Liste — die Beschriftung „fest gewählt" wird zur Auswahl; die gewählte Referenz ist nicht abwählbar |
+| Referenzwahl (§ 2.9) | in der Vergleichsgruppen-Liste, ein Optionsfeld je Zeile; die gewählte Referenz ist nicht abwählbar |
 | Die fünf ValERI-Blöcke (Investition · Betrieb · Erlöse · Energie · Wirtschaftlichkeit über Nutzungsdauer) | unterhalb des Kennzahlengrids als auf-/zuklappbare Abschnitte **oder** als zweite Ansicht der Seite (Umschalter „Kennzahlen / ValERI-Bewertung") — Entscheidung am Mockup |
 | Kumulierter diskontierter Cashflow | inline in den Block „Wirtschaftlichkeit über Nutzungsdauer"; der vorhandene Verlauf-Dialog bleibt als Vollbild-Absprung |
 | ValERI-Bewertungsbericht (Anhang E der Norm) | als Baustein der **Bericht**-Seite (Word/Excel), gespeist aus derselben Zeilendefinition |
@@ -671,7 +678,7 @@ gegen benannte Vergleichsheizung — Kapitalwert 65.259 €, IZF 20,4 %, Amortis
 | Etappe | Inhalt | Wirkung |
 |---|---|---|
 | **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | keine |
-| **V-B** | Referenzwahl (§ 2.9) | keine in der Vorgabe |
+| **V-B** | Referenzwahl (§ 2.9) — umgesetzt | keine in der Vorgabe |
 | **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in `UcWirtschaftlichkeit` | Ausweis |
 | **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | Ausgabe |
 | **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), Degradation (V-G2), n-jährliche Zeitpunkte (V-G3) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral |
@@ -1034,7 +1041,17 @@ eine Fehlanzeige.
 aber nur, wenn die Gruppe **nirgends** eine Position mit Wert führt; sonst bleibt sie vollständig
 stehen, denn dort ist die Hauptkomponentenzeile die Überschrift ihrer Positionen.
 
-## 2.15 Vergleichssicht der Ergebnisansicht — alle Varianten gegen die Referenz oder zwei Stände (Anforderung 18.09.2026)
+## 2.15 Vergleichssicht der Ergebnisansicht — alle Varianten gegen die Referenz oder zwei Stände (Anforderung 18.09.2026) — umgesetzt
+
+> **Stand: umgesetzt.** Sicht, A und B liegen als Sitzungswahl in `Vergleichsauswahl.Sicht`
+> (`Vergleichssicht`); Sicht 2 übergibt A als Referenz des Rechenlaufs, ohne
+> `ID_Referenzprojekt` zu schreiben, und rechnet **ohne zu persistieren** — der gespeicherte Lauf
+> bleibt der gegen die Unterlassensalternative der Gruppe. Die Ergebnisansicht trägt die
+> Optionsgruppe mit den Klapplisten A und B, dem Tauschknopf und der Erklärzeile; der Verlauf
+> zeichnet in Sicht 2 die eine Kurve B − A; Word und Excel folgen der Sicht und tragen die
+> Deklarationszeile (`Referenzwahl.Deklarationszeile`). Nachweis
+> `EPOS.Kern.Tests/VergleichssichtTests`, `EPOS.Kern.Tests/ReferenzprojektTests` und
+> `EPOS.UI.Tests/Seiten/WirtschaftlichkeitSichtTests`.
 
 **Anforderung des Anwenders, im Wortlaut:** „Es soll die Optionen geben, entweder Stamm mit allen
 Varianten (wie bisher) oder zwischen zwei Varianten (oder Stamm mit einer Variante)." Gemeint ist die
@@ -1047,16 +1064,15 @@ Anwenderdurchsicht sind Darstellungsbefunde je Größe. Die Vergleichssicht grei
 Differenzrechnung ein und ist das Schwesterstück von § 2.9 — sie braucht dieselbe Gliederung
 (Ist, Soll-Tafel, Randfälle, Abnahme, Einordnung als Etappe). § 2.13 verweist unter (6) hierher.
 
-**Ist (18.09.2026):** Die Ergebnisansicht stellt alle angehakten Stände der Vergleichsgruppe
-nebeneinander — eine Spalte je Stand — und rechnet die Differenzkennzahlen jeder Variante
-(Kapitalwertdifferenz, Annuität, dynamische Amortisation, interner Zinsfuß) gegen den Stamm.
-`WirtschaftlichkeitCtrl.Berechne` bildet sie aus dem Zahlungsbild der Variante und dem des Stamms;
-`KapitalwertRechner.AmortisationDifferenz` und `InternerZinsfuss` nehmen zwei Zahlungsbilder;
-`WirtschaftlichkeitZeilen.Kennzahlen` zeichnet die Stammspalte mit dem Platzhalter „Referenz".
-Welche Stände in der Ansicht stehen, entscheiden die Häkchen der Vergleichsgruppen-Liste
-(`Vergleichsauswahl` — eine Sitzungswahl für Übersicht, Kosten und Wirtschaftlichkeit). Eine Wahl
-zweier Stände gegeneinander gibt es nicht. Das Mockup zeigt diesen Zustand in Kategorie 8 als
-Sicht 1.
+**Ist-Zustand vor der Umsetzung:** Die Ergebnisansicht stellte alle angehakten Stände der
+Vergleichsgruppe nebeneinander — eine Spalte je Stand — und rechnete die Differenzkennzahlen jeder
+Variante (Kapitalwertdifferenz, Annuität, dynamische Amortisation, interner Zinsfuß) gegen den
+Stamm. `KapitalwertRechner.AmortisationDifferenz` und `InternerZinsfuss` nehmen zwei
+Zahlungsbilder; `WirtschaftlichkeitZeilen.Kennzahlen` zeichnete die Stammspalte mit dem
+Platzhalter „Referenz". Welche Stände in der Ansicht stehen, entscheiden die Häkchen der
+Vergleichsgruppen-Liste (`Vergleichsauswahl` — eine Sitzungswahl für Übersicht, Kosten und
+Wirtschaftlichkeit). Eine Wahl zweier Stände gegeneinander gab es nicht. Das Mockup zeigt diesen
+Aufbau in Kategorie 8 als Sicht 1.
 
 **Soll — zwei Sichten:**
 
@@ -1160,7 +1176,7 @@ gezeichneten Reihen, in Sicht 2 also die Reihe B − A.
 6. Verlauf und Brücke lesen die Referenz aus derselben Wahl — `BerechneVerlauf` rechnet die
    Differenz zum Stamm und braucht denselben Parameter.
 
-**Fragen mit Empfehlung:**
+**Fragen mit Empfehlung — entschieden (Anwenderentscheid 18.09.2026: „VG‑Q1 bis VG‑Q7: Empfehlung"):**
 
 | Frage | Empfehlung |
 |---|---|
@@ -1172,7 +1188,7 @@ gezeichneten Reihen, in Sicht 2 also die Reihe B − A.
 | **VG‑Q6** ValERI-Bewertung in Sicht 2 erlaubt? | **ja**, mit der Deklaration „Vergleich zweier Maßnahmen · Unterlassensalternative der Gruppe: ‹Referenz›"; der Kapitalwert von B gegenüber A ist die Differenz zweier Kapitalwerte gegen dieselbe Unterlassensalternative |
 | **VG‑Q7** Tauschknopf ⇄ zwischen den Listen? | **ja, klein** — er spart zwei Listenwahlen und macht die Vorzeichenregel sichtbar; kein Muss |
 
-**Einordnung:** Eigene kleine Etappe **nach § 2.9**, weil sie deren Referenzparameter voraussetzt;
+**Einordnung:** Eigene kleine Etappe **nach § 2.9**, deren Referenzparameter sie voraussetzt;
 ergebnisneutral in der Vorgabe (Sicht 1), erste Wirkung erst mit der Wahl der Sicht 2. Mockup:
 Kategorie 8 in `../Mockups/Dialog_Formel_Zahlenprobe.html#sicht2`, Umsetzungsstand U37.
 
@@ -2152,6 +2168,7 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **BK1** (Entscheid `BK-E-1` (a)) | KWK-Zuschlag gehört der Anlage: Schemaschritt 89 (`KWKG_Kostenanteil` + Datenschritt), Rückfall Anlage → Projekt entfällt, Kontingent je Anlage nach § 8, Vorschlagsknöpfe am Feld, Gruppe 2 auf die vier projektweiten Angaben eingedampft, **ein** Aktivierungsschalter statt sechs Kopien | keine — Datenschritt ergebnisneutral, gemessen an Projekt 1030 (Zuschlag Jahr 1 7.315,96 €, Kapitalwert −21.895.377,28 € vorher wie nachher); Referenzlauf der fünf CI-Projekte PASS |
 | **BK1a** | Aufräumen nach der Anlagenwahrheit: Schemaschritt 90 entfernt die sechs KWKG-Projektspalten; Ersatzweg über eine leistungsgewichtete virtuelle Gesamtanlage (Gewicht `g_i = P_el,i`), Gruppe 2 auf die projektweiten Angaben eingedampft | keine — Datenschritt ergebnisneutral |
 | **BK1b** | Die Projektspalte `KWKG_Kostenanteil` fällt (Schemaschritt 91); der Anteil der Neuherstellungskosten steht nur noch an der Anlage | keine — einziger Pflegeort wandert, kein Rechenleser betroffen |
+| **VG** (§ 2.9, § 2.15) | Wählbares Vergleichsprojekt je Gruppe (Schemaschritt 92, `ID_Referenzprojekt`, NULL = Stamm) und die Vergleichssicht der Ergebnisansicht: alle Varianten gegen die Referenz oder zwei Stände A und B mit A als Referenz dieser Sicht. Die Referenz ist Parameter von `Berechne` und `BerechneVerlauf`, ihre Auflösung samt Randfällen steht einmal in `Referenzwahl`; Sicht, A und B liegen in `Vergleichsauswahl`, der Paarlauf persistiert nicht | keine in der Vorgabe — Referenz = Stamm rechnet bitgleich, Referenzlauf der fünf CI-Projekte PASS |
 | **B7P** | Nachweise eines Wirtschaftlichkeitslaufs werden persistiert: `ErgebnisNachweisUmschlag` legt vier Listen und vier Skalare als JSON mit Präfix `nw1:` in `Tab_ErgebnisWirtschaftlichkeit.Nachweis_Json` (über `SpalteSicher`, ohne Schemaschritt), Längenwächter 4 MiB, toleranter Leseweg | keine — die davon-Zeilen stehen auch nach dem Neuladen |
 
 ## 6.2 Regressionsanker
