@@ -110,18 +110,39 @@
                 @* pictureBox4 (globe1, 65 x 37) stand ganz links im Kasten. *@
                 <img class="epos-startseite-globus" alt=""
                      src="_content/EPOS.UI/bilder/start/globe.png" />
-                <label for="epos-start-klima">@KlimaLabelText</label>
-                <select id="epos-start-klima" class="epos-eingabe"
-                        value="@_klimaregion" @onchange="BeiKlima">
-                    <option value="">@(ProjektOffen ? KlimaRegionText : KlimaPlatzhalterText)</option>
-                    @foreach (string region in _klimaregionen)
-                    {
-                        <option value="@region">@region</option>
-                    }
-                </select>
+                @* KEIN <label for=...> mehr: Das Feld ist kein <select> mit fester
+                   Kennung, sondern ein Kombinationsfeld, dessen Kennung je Aufbau
+                   entsteht. Benannt wird es ueber Kurzname (aria-label) - ein label
+                   mit ins Leere zeigendem for waere schlechter als keins. *@
+                <span class="epos-startseite-feldtitel">@KlimaLabelText</span>
+
+                @* DURCHSUCHBAR (Anwenderwunsch 19.09.2026, Auftrag KL-4: "Das
+                   Dropdown soll auch durchsuchbar sein"). Bis hierher stand hier ein
+                   nacktes <select> ueber KLARNAMEN - bei 32 Regionen des Bestands
+                   hiess "Region waehlen": aufklappen und rollen, und der gespeicherte
+                   Wert war ein TEXT. Suchauswahl meldet die Id der Stammregion
+                   (Hausregel "neue Beziehungen ueber IDs"). *@
+                <Suchauswahl Bezeichnung="" Kurzname="@KlimaLabelText"
+                             Eintraege="@_klimaregionen"
+                             Auswahl="@(_klimaregionId > 0 ? _klimaregionId : null)"
+                             AuswahlChanged="BeiKlima"
+                             Platzhalter="@(ProjektOffen ? KlimaRegionText : KlimaPlatzhalterText)"
+                             Aktiv="@ProjektOffen" />
+
                 <button type="button" class="epos-knopf" disabled="@(!ProjektOffen)"
                         @onclick="KlimaSpeichernJetzt">@KlimaSpeichernText</button>
                 <span class="epos-startseite-klimahinweis">@KlimaHinweisText</span>
+
+                @* DIE HERKUNFTSZEILE (Anwenderwunsch 19.09.2026: "Die verwendeten
+                   Klimadaten sollen sich auch auf der Uebersicht befinden"). Sie
+                   steht als ZWEITE Zeile im Kasten und leise: Sie sagt, womit
+                   gerechnet wird, und verlangt nichts. Ohne Gaben - kein Projekt
+                   offen, oder die Plattform liefert sie nicht (iOS) - steht sie
+                   nicht da; eine leere Zeile waere eine Behauptung ohne Inhalt. *@
+                @if (Herkunftszeile.Length > 0)
+                {
+                    <p class="epos-startseite-klimaherkunft">@Herkunftszeile</p>
+                }
             </div>
 
             <div class="epos-startseite-projekt">
@@ -323,18 +344,36 @@
     [Parameter] public string VarianteAnlegenText { get; set; } = "➕ Neue Variante anlegen…";
     [Parameter] public string VarianteUmbenennenText { get; set; } = "✏️ Variante umbenennen…";
 
-    /// <summary>Die wählbaren Klimaregionen des Katalogs.</summary>
-    [Parameter] public Func<IReadOnlyList<string>>? Klimaregionen { get; set; }
-
-    /// <summary>Die Klimaregion des offenen Projekts.</summary>
-    [Parameter] public Func<string>? Klimaregion { get; set; }
+    /// <summary>
+    /// Die wählbaren Klimaregionen des Katalogs — Id und Name (Auftrag KL-4).
+    ///
+    /// <para><b>Über die Id, nicht über den Namen</b> (Hausregel „neue Beziehungen
+    /// über IDs, nicht über Textfelder"): Damit fällt der Nachschlag Name → Id im
+    /// Speicherweg weg, und zwei Regionen gleichen Namens bleiben
+    /// unterscheidbar.</para>
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<(int Id, string Text)>>? Klimaregionen { get; set; }
 
     /// <summary>
-    /// Speichert die gewählte Klimaregion und meldet den Ausgang: Text der
-    /// Meldung und ob sie ein Fehler ist. Die fünf <c>MessageBox</c> des
-    /// Vorläufers (<c>btn_Speichern_Click</c>) werden damit EIN Banner.
+    /// Die Stamm-Id der Klimaregion des offenen Projekts; <c>0</c> = keine gesetzt.
     /// </summary>
-    [Parameter] public Func<string, (bool Fehler, string Text)>? KlimaSpeichern { get; set; }
+    [Parameter] public Func<int>? KlimaregionId { get; set; }
+
+    /// <summary>
+    /// Speichert die gewählte Klimaregion (über ihre Stamm-Id) und meldet den
+    /// Ausgang: Text der Meldung und ob sie ein Fehler ist. Die fünf
+    /// <c>MessageBox</c> des Vorläufers (<c>btn_Speichern_Click</c>) werden damit
+    /// EIN Banner.
+    /// </summary>
+    [Parameter] public Func<int, (bool Fehler, string Text)>? KlimaSpeichern { get; set; }
+
+    /// <summary>
+    /// <b>Woher die Klimadaten des offenen Projekts stammen</b> (Auftrag KL-4).
+    /// <c>null</c> = keine Angabe — dann steht keine Herkunftszeile da. So ist es
+    /// ohne offenes Projekt und auf iOS, wo <c>IProjektQuelle.StartseiteGaben</c>
+    /// keine Gaben liefert.
+    /// </summary>
+    [Parameter] public Func<KlimaHerkunftGaben?>? KlimaHerkunft { get; set; }
 
     /// <summary>
     /// Die vier Zeilen der Projektzusammenfassung des Reiters „Simulation";
@@ -459,6 +498,20 @@
     /// <summary>Beschriftung des Speicherknopfes der Klimaregion.</summary>
     [Parameter] public string KlimaSpeichernText { get; set; } = "Speichern";
 
+    /// <summary>
+    /// Die Herkunftszeile (Auftrag KL-4) — <c>{0}</c> Quelle, <c>{1}</c> Bezeichner,
+    /// <c>{2}</c> Standort, <c>{3}</c> Importdatum.
+    /// </summary>
+    [Parameter] public string KlimaHerkunftText { get; set; }
+        = "Klimadaten: {0} · {1} · {2} · Import {3}";
+
+    /// <summary>
+    /// Dieselbe Zeile ohne Quelle und Datum — für eine Region aus dem Altbestand,
+    /// die beides nicht führt. <c>{0}</c> Bezeichner, <c>{1}</c> Standort.
+    /// </summary>
+    [Parameter] public string KlimaHerkunftKurzText { get; set; }
+        = "Klimadaten: {0} · {1}";
+
     /// <summary>Statuszeichen „Projekt offen" (<c>label_ProjektStatus</c>, grün).</summary>
     [Parameter] public string StatusOffenText { get; set; } = "✔";
 
@@ -547,9 +600,14 @@
     private string _reiter = Reiterschluessel.Projekt;
     private IReadOnlyList<StartKachel> _kacheln = Array.Empty<StartKachel>();
     private IReadOnlyList<(int Id, string Name)> _varianten = Array.Empty<(int, string)>();
-    private IReadOnlyList<string> _klimaregionen = Array.Empty<string>();
+    private IReadOnlyList<(int Id, string Text)> _klimaregionen = Array.Empty<(int, string)>();
     private int _varianteGewaehlt;
-    private string _klimaregion = "";
+
+    /// <summary>Die gewählte Stammregion; <c>0</c> = keine (Auftrag KL-4).</summary>
+    private int _klimaregionId;
+
+    /// <summary>Woher die Klimadaten stammen; <c>null</c> = keine Angabe.</summary>
+    private KlimaHerkunftGaben? _klimaherkunft;
     private Zusammenfassung? _bericht;
     private bool _solarGanglinie;
 
@@ -706,8 +764,9 @@
     {
         _kacheln = Kacheln?.Invoke() ?? Array.Empty<StartKachel>();
         _varianten = Varianten?.Invoke() ?? Array.Empty<(int, string)>();
-        _klimaregionen = Klimaregionen?.Invoke() ?? Array.Empty<string>();
-        _klimaregion = Klimaregion?.Invoke() ?? "";
+        _klimaregionen = Klimaregionen?.Invoke() ?? Array.Empty<(int, string)>();
+        _klimaregionId = KlimaregionId?.Invoke() ?? 0;
+        _klimaherkunft = KlimaHerkunft?.Invoke();
         _varianteGewaehlt = ProjektId?.Invoke() ?? 0;
 
         // Ohne offenes Projekt gibt es keine Zusammenfassung und keinen Reiter
@@ -766,18 +825,48 @@
         Laden();
     }
 
-    private void BeiKlima(ChangeEventArgs e)
+    private void BeiKlima(int? id)
     {
-        _klimaregion = e.Value?.ToString() ?? "";
+        _klimaregionId = id ?? 0;
     }
 
     private void KlimaSpeichernJetzt()
     {
         if (KlimaSpeichern is null) return;
 
-        (bool Fehler, string Text) ergebnis = KlimaSpeichern(_klimaregion);
+        (bool Fehler, string Text) ergebnis = KlimaSpeichern(_klimaregionId);
         Melden(ergebnis.Text, ergebnis.Fehler ? WarnStufe.Fehler : WarnStufe.Erfolg, null);
         Laden();
+    }
+
+    /// <summary>
+    /// <b>Die Herkunftszeile</b> (Auftrag KL-4) — leer, wo es nichts zu sagen gibt.
+    ///
+    /// <para><b>Zwei Fassungen, und die kurze ist kein Notbehelf:</b> Eine Region aus
+    /// dem Altbestand führt weder Quelle noch Importdatum (sie sind erst mit
+    /// Schemaschritt 95 entstanden und werden nicht nachdatiert). Die Zeile nennt
+    /// dann Bezeichner und Standort — und behauptet nicht, woher die Reihe
+    /// stammt.</para>
+    /// </summary>
+    private string Herkunftszeile
+    {
+        get
+        {
+            KlimaHerkunftGaben? h = _klimaherkunft;
+            if (h is null) return "";
+
+            string bezeichner = h.Bezeichner ?? "";
+            string standort = h.Standort ?? "";
+            if (bezeichner.Length == 0 && standort.Length == 0) return "";
+
+            bool vollstaendig = (h.Quelle ?? "").Length > 0 && (h.Importdatum ?? "").Length > 0;
+
+            return vollstaendig
+                ? string.Format(System.Globalization.CultureInfo.CurrentCulture, KlimaHerkunftText,
+                                h.Quelle, bezeichner, standort, h.Importdatum)
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture, KlimaHerkunftKurzText,
+                                bezeichner, standort);
+        }
     }
 
     // =====================================================================

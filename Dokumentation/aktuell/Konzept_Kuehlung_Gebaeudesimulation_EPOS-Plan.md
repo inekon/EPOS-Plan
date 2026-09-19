@@ -281,7 +281,7 @@ später zusammenwachsen können, ohne dass Nummern kollidieren.
 
 | # | Randbedingung | Wirkung |
 |---|---|---|
-| **B-K1** | **E12** ist verbindlich; **E5** (keine Datenträger, keine TRY), **E6** (nichts aus VDI 6020:2022 in Code, Tests, Wiki, Bericht, Auslieferung), **E10** (Produktausweis im Wortlaut) gelten unverändert | keine neuen Normbeschaffungen; keine Normzahlen in diesem Papier |
+| **B-K1** | **E12** ist verbindlich; **E5** (keine Datenträger), **E6** (nichts aus VDI 6020:2022 in Code, Tests, Wiki, Bericht, Auslieferung), **E10** (Produktausweis im Wortlaut) gelten unverändert | keine neuen Normbeschaffungen; keine Normzahlen in diesem Papier |
 | **B-K2** | **E1** — das Stundenmodell ist Vorgabe; nur es liefert Kühllast je Stunde. **E20** und **E23** schärfen: Der Altweg ist der eingefrorene Bestandsweg **ohne** Kühllast; **E26** setzt die Frist: Er ist ein Übergang und wird mit der Stufe GA abgelöst (Zeitpunkt offen, Q24) | KU1 setzt G1 voraus; ein Altweg-Gebäude trägt Kältebedarf 0 mit Hinweis (F-K18), und dieser Sonderfall steht auf der Löschliste der Stufe GA |
 | **B-K3** | **E7** — Einzonen zuerst; Mehrzonen sind Stufe G6 | Kühlung je Zone ist KU3, nicht KU1 |
 | **B-K4** | [**ADR-001**](ADR-001_Schema-Ausrollung.md) — jede Schemaänderung ist ein nummerierter Schritt über `SchemaMigration`; drei Eintragungen je neuer Tabelle (Schritt, Auslieferungsvorlage, Schemapflege der Testdatenbank) | die Kühlschritte sind nummerierte Schritte, keine tolerante Migration |
@@ -1868,8 +1868,8 @@ neben jede Kühlzahl.
 
 **VDI 2078:2015 ist die Kühllast-Richtlinie**, und Befund K ordnet sie ein: Sie nutzt das
 2-K-Modell nach Blatt 1 als Rechenkern, ihre Testbeispiele sind mit Typ-2-Toleranzen zu führen —
-und ihre Nachrechnung bräuchte Datenträger und Testreferenzjahre, die nach **E5** nicht beschafft
-werden. **Folge für dieses Papier:** VDI 2078 wird als Einordnung genannt, nicht als Nachweis.
+und ihre Nachrechnung bräuchte TRY05 Würzburg samt den Referenzergebnissen der Datenträger, die
+nach **E5** nicht beschafft werden. **Folge für dieses Papier:** VDI 2078 wird als Einordnung genannt, nicht als Nachweis.
 Der Strahlungsweg über ihr Testbeispiel 7 ist bereits als **interner** Nachweis in der Abnahme von
 G1 + G2 vorgesehen (aus den gedruckten Klimaparametern, ohne TRY); die Kühlung erbt ihn, sie
 verlangt keinen zweiten.

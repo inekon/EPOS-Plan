@@ -22,12 +22,36 @@ public class KlimadatenDialogTests : EposBunitContext
 {
     private static readonly byte[] BILD = { 1, 2, 3, 4 };
 
-    private static List<KlimadatenDialog.Regionszeile> Regionen() => new()
+    /// <summary>
+    /// Die drei Regionen der Liste — seit Auftrag KL-4 Katalogzeilen mit sieben
+    /// Spalten (Bezeichner, Quelle, Standort, Longitude, Latitude, Importdatum,
+    /// Schreibschutz), wie sie <c>KlimaregionStammCtrl.Katalogfilterzeilen</c> liefert
+    /// und die Hülle sie übersetzt.
+    /// </summary>
+    private static IReadOnlyList<Katalogfilterzeile> Regionen() => new List<Katalogfilterzeile>
     {
-        new("Berlin", false),
-        new("Stuttgart", false),
-        new("Auslieferung Nord", true)
+        Zeile(17, "Berlin", "PVGIS-Testreferenzjahr (weltweit)", "Berlin, Deutschland",
+              13.3951, 52.5174, "2026-09-18", false),
+        Zeile(42, "Stuttgart", "DWD-Testreferenzjahr aus Datei", "9,1800° / 48,7700°",
+              9.18, 48.77, "2026-09-12", false),
+        Zeile(3, "Auslieferung Nord", "", "Hamburg, Deutschland",
+              10.0, 53.5, "", true)
     };
+
+    /// <summary>Eine Katalogzeile der Regionsliste — der Aufbau der Hülle in einer Zeile.</summary>
+    private static Katalogfilterzeile Zeile(int id, string name, string quelle, string standort,
+                                            double lon, double lat, string datum, bool geschuetzt)
+    {
+        var z = new Katalogfilterzeile(id, name) { Geschuetzt = geschuetzt };
+        return z
+            .MitText(Katalogfilterprofil.SpBezeichner, name)
+            .MitText(Katalogfilterprofil.SpQuelle, quelle)
+            .MitText(Katalogfilterprofil.SpStandort, standort)
+            .MitZahl(Katalogfilterprofil.SpLongitude, lon, 4)
+            .MitZahl(Katalogfilterprofil.SpLatitude, lat, 4)
+            .MitText(Katalogfilterprofil.SpImportdatum, datum)
+            .MitKennzeichen(Katalogfilterprofil.SpSchreibschutz, geschuetzt);
+    }
 
     public KlimadatenDialogTests()
     {
@@ -36,17 +60,20 @@ public class KlimadatenDialogTests : EposBunitContext
     }
 
     private IRenderedComponent<KlimadatenDialog> Zeige(
-        List<KlimadatenDialog.Regionszeile>? regionen = null,
+        IReadOnlyList<Katalogfilterzeile>? regionen = null,
         Func<string, Task<KlimadatenDialog.Regionsansicht>>? ansicht = null,
         Func<KlimaImportAuftrag, IProgress<ImportFortschritt>, Task<KlimaImportErgebnis>>? importieren = null,
         Action? abbrechen = null,
         Func<string, Task<bool>>? loeschen = null,
         IReadOnlyList<string>? orte = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Func<string, Task<string?>>? dateiWaehlen = null,
+        Func<KlimaImportAuftrag, Task<KlimaVorschauErgebnis>>? regionErmitteln = null)
     {
-        List<KlimadatenDialog.Regionszeile> liste = regionen ?? Regionen();
+        IReadOnlyList<Katalogfilterzeile> liste = regionen ?? Regionen();
         return Render<KlimadatenDialog>(p => p
             .Add(x => x.Regionen, () => Task.FromResult(liste))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Ansicht, ansicht ?? (n => Task.FromResult(
                 new KlimadatenDialog.Regionsansicht("Details " + n, 9.18, 48.77, BILD, BILD, ""))))
             .Add(x => x.Importieren, importieren ?? ((_, _) => Task.FromResult(
@@ -61,8 +88,22 @@ public class KlimadatenDialogTests : EposBunitContext
             .Add(x => x.Abbrechen, abbrechen)
             .Add(x => x.Loeschen, loeschen ?? (_ => Task.FromResult(true)))
             .Add(x => x.Ortsvorschlaege, orte ?? Array.Empty<string>())
+            .Add(x => x.DateiWaehlen, dateiWaehlen)
+            .Add(x => x.RegionErmitteln, regionErmitteln)
             .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
     }
+
+    /// <summary>Der Importknopf der Leiste.</summary>
+    private static AngleSharp.Dom.IElement Einlesen(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindAll("button").First(b => b.TextContent.Trim() == "Daten einlesen");
+
+    /// <summary>Schaltet die Klimaquelle über ihr Optionsfeld um.</summary>
+    private static void QuelleWaehlen(IRenderedComponent<KlimadatenDialog> cut, KlimaQuelle quelle)
+        => cut.FindAll("input[type=radio]")[(int)quelle].Change(true);
+
+    /// <summary>Der Knopf der Regionsvorschau (Auftrag KL-3); null, wenn er fehlt.</summary>
+    private static AngleSharp.Dom.IElement? Regionsknopf(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindAll("button").FirstOrDefault(b => b.TextContent.Trim() == "Region ermitteln");
 
     // =====================================================================
     //  Feldbestand (Feldkarte Form_Klimadaten)
@@ -418,12 +459,12 @@ public class KlimadatenDialogTests : EposBunitContext
 
         cut.FindAll("button.epos-anlagenwahl")[0].Click();
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Löschen").Click();
-        cut.Find("div.epos-klimaregion").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        cut.Find("div.epos-katalog-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(antwort);      // BeiTaste liefert bei offener Rueckfrage nichts - kein Wettlauf
 
         cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>()
            .FindAll("button").First(b => b.TextContent.Trim() == "Nein").Click();
-        cut.Find("div.epos-klimaregion").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        cut.Find("div.epos-katalog-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         // W16b-O-2 (Gate 10.09.2026): BeiTaste ruft hier Geschlossen.InvokeAsync(false)
         // ueber den Renderer-Dispatcher - derselbe Wettlauf wie bei Beenden_liefert_OK.
@@ -445,6 +486,675 @@ public class KlimadatenDialogTests : EposBunitContext
 
         // Derselbe Wettlauf wie oben: Geschlossen.InvokeAsync laeuft ueber den Dispatcher.
         cut.WaitForAssertion(() => Assert.False(antwort), TimeSpan.FromSeconds(10));
+    }
+
+    // =====================================================================
+    //  Klimaquelle: PVGIS, TRY-Datei, TRY-Regionaldaten (Auftrag KL1-B)
+    // =====================================================================
+
+    /// <summary>
+    /// Die drei Quellen stehen als Optionsgruppe da — PVGIS ist die Vorgabe, und bei
+    /// ihr zeigt der Dialog KEIN TRY-Feld.
+    /// </summary>
+    [Fact]
+    public void Die_drei_Klimaquellen_stehen_zur_Wahl_und_PVGIS_ist_die_Vorgabe()
+    {
+        var cut = Zeige();
+
+        var optionen = cut.FindAll("input[type=radio]");
+        Assert.Equal(3, optionen.Count);
+        Assert.True(optionen[0].HasAttribute("checked"));
+        Assert.Equal(KlimaQuelle.PvgisTmy, cut.Instance.Quelle);
+
+        Assert.Contains("PVGIS", cut.Markup);
+        Assert.Contains("DWD-Testreferenzjahr aus Datei", cut.Markup);
+        Assert.Contains("TRY-Regionaldaten (Deutschland)", cut.Markup);
+
+        // Ohne TRY-Quelle steht weder eine Dateiwahl noch Jahr oder Szenario.
+        Assert.Empty(cut.FindComponents<EPOS.UI.Standards.Dateiwahl>());
+        Assert.Empty(cut.FindAll("select"));
+    }
+
+    /// <summary>
+    /// <b>Die TRY-Datei zeigt IHR Feld</b> — eine Dateiwahl, kein Jahr, kein Szenario.
+    /// </summary>
+    [Fact]
+    public void Die_TRY_Datei_zeigt_die_Dateiwahl()
+    {
+        var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>("/tmp/probe.dat"));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+
+        Assert.Equal(KlimaQuelle.TryDatei, cut.Instance.Quelle);
+        Assert.Single(cut.FindComponents<EPOS.UI.Standards.Dateiwahl>());
+        Assert.Empty(cut.FindAll("select"));
+        Assert.Contains("TRY-Datei", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Die Regionaldaten zeigen Jahr, Szenario und die Wahl des Pakets.</b> Die
+    /// Jahre sind 2015 und 2045, die Szenarien die drei des Pakets.
+    /// </summary>
+    [Fact]
+    public void Die_Regionaldaten_zeigen_Jahr_Szenario_und_Paketwahl()
+    {
+        var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>("/tmp/data.zip"));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+
+        Assert.Equal(KlimaQuelle.TryRegional, cut.Instance.Quelle);
+
+        var listen = cut.FindAll("select");
+        Assert.Equal(2, listen.Count);
+
+        var jahre = listen[0].QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "2015", "2045" }, jahre);
+
+        var szenarien = listen[1].QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "mittleres Jahr", "sommerwarm", "winterkalt" }, szenarien);
+
+        Assert.Single(cut.FindComponents<EPOS.UI.Standards.Dateiwahl>());
+    }
+
+    /// <summary>
+    /// <b><c>ImportErlaubt</c> je Quelle.</b> Bei PVGIS und den Regionaldaten genügt der
+    /// Standort; die TRY-Datei braucht zusätzlich einen Pfad.
+    /// </summary>
+    [Fact]
+    public void Die_TRY_Datei_braucht_Standort_UND_Pfad()
+    {
+        var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>("/tmp/probe.dat"));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+        Assert.True(Einlesen(cut).HasAttribute("disabled"));          // weder noch
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Lyon");
+        Assert.True(Einlesen(cut).HasAttribute("disabled"));          // Standort allein reicht nicht
+
+        // Der Waehler der Plattform liefert den Pfad.
+        cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+           .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+        cut.WaitForAssertion(() => Assert.False(Einlesen(cut).HasAttribute("disabled")),
+                             TimeSpan.FromSeconds(10));
+    }
+
+    /// <summary>Die Regionaldaten kommen ohne Paketdatei aus — dann gilt die Adresse.</summary>
+    [Fact]
+    public void Die_Regionaldaten_brauchen_nur_den_Standort()
+    {
+        var cut = Zeige();
+
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+        Assert.True(Einlesen(cut).HasAttribute("disabled"));
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Bremerhaven");
+        Assert.False(Einlesen(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Der Auftrag trägt die Quelle und ihre Angaben</b> — Pfad bei der Datei,
+    /// Jahr, Szenario und Paketpfad bei den Regionaldaten.
+    /// </summary>
+    [Fact]
+    public void Der_Auftrag_traegt_Quelle_Pfad_Jahr_und_Szenario()
+    {
+        KlimaImportAuftrag? auftrag = null;
+        var cut = Zeige(
+            importieren: (a, _) =>
+            {
+                auftrag = a;
+                return Task.FromResult(new KlimaImportErgebnis
+                {
+                    Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Berlin", Meldung = "fertig"
+                });
+            },
+            dateiWaehlen: _ => Task.FromResult<string?>("/tmp/data.zip"));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Bremerhaven");
+
+        var listen = cut.FindAll("select");
+        listen[0].Change("2045");
+        cut.FindAll("select")[1].Change(((int)TrySzenario.Winterkalt)
+                                        .ToString(CultureInfo.InvariantCulture));
+
+        cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+           .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+        cut.WaitForAssertion(() => Assert.False(Einlesen(cut).HasAttribute("disabled")),
+                             TimeSpan.FromSeconds(10));
+        Einlesen(cut).Click();
+
+        cut.WaitForAssertion(() => Assert.NotNull(auftrag), TimeSpan.FromSeconds(10));
+        Assert.Equal(KlimaQuelle.TryRegional, auftrag!.Quelle);
+        Assert.Equal(2045, auftrag.TryJahr);
+        Assert.Equal(TrySzenario.Winterkalt, auftrag.Szenario);
+        Assert.Equal("/tmp/data.zip", auftrag.TryPaketPfad);
+        Assert.Equal("", auftrag.TryPfad);
+    }
+
+    /// <summary>
+    /// Bei PVGIS sieht der Auftrag aus wie vor KL1-B: Quelle <c>PvgisTmy</c>, kein Pfad,
+    /// Vorgabejahr und mittleres Jahr.
+    /// </summary>
+    [Fact]
+    public void Bei_PVGIS_bleibt_der_Auftrag_wie_bisher()
+    {
+        KlimaImportAuftrag? auftrag = null;
+        var cut = Zeige(importieren: (a, _) =>
+        {
+            auftrag = a;
+            return Task.FromResult(new KlimaImportErgebnis
+            {
+                Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Lyon", Meldung = "fertig"
+            });
+        });
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Lyon");
+        Einlesen(cut).Click();
+
+        cut.WaitForAssertion(() => Assert.NotNull(auftrag), TimeSpan.FromSeconds(10));
+        Assert.Equal(KlimaQuelle.PvgisTmy, auftrag!.Quelle);
+        Assert.Equal("", auftrag.TryPfad);
+        Assert.Equal("", auftrag.TryPaketPfad);
+        Assert.Equal(KlimaImportAuftrag.TRY_JAHR_VORGABE, auftrag.TryJahr);
+        Assert.Equal(TrySzenario.MittleresJahr, auftrag.Szenario);
+    }
+
+    /// <summary>
+    /// <b>Ohne Wähler der Plattform bleibt der Knopf weg</b> (Regel des Bausteins
+    /// <c>Dateiwahl</c>) — das Pfadfeld steht trotzdem da.
+    /// </summary>
+    [Fact]
+    public void Ohne_Dateiwaehler_bleibt_der_Knopf_weg()
+    {
+        var cut = Zeige(dateiWaehlen: null);
+
+        QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+
+        var wahl = cut.FindComponent<EPOS.UI.Standards.Dateiwahl>();
+        Assert.Empty(wahl.FindAll("button"));
+        Assert.Single(wahl.FindAll("input[type=text]"));
+    }
+
+    // =====================================================================
+    //  Standort aus der TRY-Datei (Auftrag KL-2)
+    // =====================================================================
+
+    /// <summary>
+    /// Schreibt eine kurze, SYNTHETISCHE TRY-Datei in den Temp-Ordner — nur der Kopf,
+    /// denn mehr liest der Dialog nicht. Rechtswert 3 929 310 / Hochwert 2 478 193
+    /// ergeben 9,0000° O / 49,0000° N.
+    /// </summary>
+    private static string ProbeSchreiben(string name, bool mitStandort = true)
+    {
+        string pfad = System.IO.Path.Combine(System.IO.Path.GetTempPath(), name + ".dat");
+        var z = new List<string>
+        {
+            "Musterdatensatz Testreferenzjahr - synthetische Probe",
+            "Art des TRY: Jahr (mittleres Jahr)"
+        };
+        if (mitStandort)
+        {
+            z.Add("Rechtswert: 3929310 Meter");
+            z.Add("Hochwert: 2478193 Meter");
+        }
+        z.Add("*** ");
+        System.IO.File.WriteAllText(pfad, string.Join("\r\n", z) + "\r\n");
+        return pfad;
+    }
+
+    /// <summary>
+    /// <b>Die Dateiwahl belegt den Standort vor</b> (A-KL2-1): Longitude, Latitude und
+    /// — weil sie leer war — die Bezeichnung aus dem Dateinamen. Darunter steht, woher
+    /// die Zahlen kommen, und <c>Daten einlesen</c> ist ohne weitere Eingabe frei.
+    /// </summary>
+    [Fact]
+    public void Die_Dateiwahl_belegt_den_Standort_aus_dem_Dateikopf_vor()
+    {
+        string pfad = ProbeSchreiben("epos_kl2_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>(pfad));
+
+            QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+            cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+               .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Standortzeile),
+                                 TimeSpan.FromSeconds(10));
+
+            var zahlen = cut.FindAll("input[inputmode=decimal]");
+            Assert.Equal("9", zahlen[0].GetAttribute("value"));
+            Assert.Equal("49", zahlen[1].GetAttribute("value"));
+
+            // Die Bezeichnung ist der Dateiname OHNE Endung.
+            Assert.Equal(System.IO.Path.GetFileNameWithoutExtension(pfad),
+                         cut.FindAll("input[type=text]").Last().GetAttribute("value"));
+
+            // Die Herkunftszeile nennt Rechts- und Hochwert und sagt, dass es änderbar ist.
+            Assert.Contains("3929310", cut.Instance.Standortzeile);
+            Assert.Contains("2478193", cut.Instance.Standortzeile);
+            Assert.Contains("änderbar", cut.Instance.Standortzeile);
+            Assert.Contains("3929310", cut.Markup);
+
+            Assert.False(Einlesen(cut).HasAttribute("disabled"));
+        }
+        finally
+        {
+            try { System.IO.File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+        }
+    }
+
+    /// <summary>
+    /// <b>Der Anwender überschreibt die Vorbelegung</b> (A-KL2-2): Sein Wert geht in den
+    /// Auftrag, und die Herkunftszeile der Datei verschwindet — sie stimmte nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Der_Anwender_kann_den_vorbelegten_Standort_ueberschreiben()
+    {
+        string pfad = ProbeSchreiben("epos_kl2u_" + Guid.NewGuid().ToString("N"));
+        KlimaImportAuftrag? auftrag = null;
+        try
+        {
+            var cut = Zeige(
+                importieren: (a, _) =>
+                {
+                    auftrag = a;
+                    return Task.FromResult(new KlimaImportErgebnis
+                    {
+                        Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Eigen", Meldung = "fertig"
+                    });
+                },
+                dateiWaehlen: _ => Task.FromResult<string?>(pfad));
+
+            QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+            cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+               .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Standortzeile),
+                                 TimeSpan.FromSeconds(10));
+
+            // Der Anwender trägt einen anderen Punkt ein.
+            cut.FindAll("input[inputmode=decimal]")[0].Input("13,4");
+            cut.FindAll("input[inputmode=decimal]")[1].Input("52,52");
+
+            Assert.Equal("", cut.Instance.Standortzeile);
+
+            Einlesen(cut).Click();
+            cut.WaitForAssertion(() => Assert.NotNull(auftrag), TimeSpan.FromSeconds(10));
+
+            Assert.Equal(KlimaQuelle.TryDatei, auftrag!.Quelle);
+            Assert.Equal(pfad, auftrag.TryPfad);
+            Assert.Equal(13.4, auftrag.Longitude);
+            Assert.Equal(52.52, auftrag.Latitude);
+        }
+        finally
+        {
+            try { System.IO.File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+        }
+    }
+
+    /// <summary>
+    /// <b>Ein Kopf ohne Lambertwerte ist kein Fehler</b>: Es bleibt bei einem Hinweis,
+    /// die Felder bleiben leer, und <c>ImportErlaubt</c> urteilt wie bisher — ohne
+    /// Standort bleibt der Knopf gesperrt.
+    /// </summary>
+    [Fact]
+    public void Eine_Datei_ohne_Standort_im_Kopf_meldet_das_und_laesst_die_Felder_stehen()
+    {
+        string pfad = ProbeSchreiben("epos_kl2o_" + Guid.NewGuid().ToString("N"),
+                                     mitStandort: false);
+        try
+        {
+            var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>(pfad));
+
+            QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+            cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+               .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Meldung),
+                                 TimeSpan.FromSeconds(10));
+
+            Assert.Contains("nicht lesbar", cut.Instance.Meldung);
+            Assert.Equal("", cut.Instance.Standortzeile);
+
+            var zahlen = cut.FindAll("input[inputmode=decimal]");
+            Assert.Equal("", zahlen[0].GetAttribute("value"));
+            Assert.Equal("", zahlen[1].GetAttribute("value"));
+
+            Assert.True(Einlesen(cut).HasAttribute("disabled"));
+        }
+        finally
+        {
+            try { System.IO.File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+        }
+    }
+
+    // =====================================================================
+    //  Die REGIONSVORSCHAU (Auftrag KL-3, Anwenderentscheid 19.09.2026 b)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Knopf steht NUR im Regionaldaten-Zweig.</b> Bei PVGIS und bei einer
+    /// TRY-Datei gäbe es keine Region zu ermitteln — ein Knopf ohne Wirkung wäre eine
+    /// Behauptung, die nicht stimmt.
+    /// </summary>
+    [Fact]
+    public void Der_Regionsknopf_steht_nur_bei_den_Regionaldaten()
+    {
+        var cut = Zeige(regionErmitteln: _ => Task.FromResult(new KlimaVorschauErgebnis()));
+
+        Assert.Null(Regionsknopf(cut));                    // PVGIS
+
+        QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+        Assert.Null(Regionsknopf(cut));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+        Assert.NotNull(Regionsknopf(cut));
+    }
+
+    /// <summary>
+    /// <b>Ohne Standort bleibt der Knopf gesperrt</b>, mit Ortsnamen ist er frei — und
+    /// er braucht, anders als „Daten einlesen", KEINE Bezeichnung: Die Vorschau legt
+    /// nichts an.
+    /// </summary>
+    [Fact]
+    public void Der_Regionsknopf_braucht_nur_einen_Standort()
+    {
+        var cut = Zeige(regionErmitteln: _ => Task.FromResult(new KlimaVorschauErgebnis()));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+        Assert.True(Regionsknopf(cut)!.HasAttribute("disabled"));
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
+        Assert.False(Regionsknopf(cut)!.HasAttribute("disabled"));
+    }
+
+    /// <summary>Ohne Delegat bleibt der Knopf gesperrt — einlesen darf der Anwender
+    /// trotzdem; die Vorschau ist eine Auskunft, keine Bedingung.</summary>
+    [Fact]
+    public void Ohne_Delegat_bleibt_der_Regionsknopf_gesperrt()
+    {
+        var cut = Zeige();
+
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
+
+        Assert.True(Regionsknopf(cut)!.HasAttribute("disabled"));
+        Assert.False(Einlesen(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Die Ergebniszeile nennt Region, Station und Entfernung</b> — mit dem NAMEN
+    /// der Repräsentanzstation, denn „Region 14" allein sagt einem Anwender nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Ergebniszeile_nennt_Region_Station_und_Entfernung()
+    {
+        KlimaImportAuftrag? gefragt = null;
+        var cut = Zeige(regionErmitteln: a =>
+        {
+            gefragt = a;
+            return Task.FromResult(new KlimaVorschauErgebnis
+            {
+                Ausgang = KlimaImportAusgang.Erfolg,
+                Meldung = "Region 14 Stötten, Station 48,6600 / 9,8600, Entfernung 12 km"
+            });
+        });
+
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
+        Regionsknopf(cut)!.Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("Stötten", cut.Instance.Regionsvorschau),
+                             TimeSpan.FromSeconds(10));
+
+        Assert.Contains("Region 14 Stötten", cut.Markup);
+        Assert.Contains("Entfernung 12 km", cut.Markup);
+
+        // Der Auftrag der Vorschau traegt die Quelle und das Bezugsjahr der Auswahl.
+        Assert.NotNull(gefragt);
+        Assert.Equal(KlimaQuelle.TryRegional, gefragt!.Quelle);
+        Assert.Equal("Geislingen", gefragt.Ortsname);
+        Assert.Equal(KlimaImportAuftrag.TRY_JAHR_VORGABE, gefragt.TryJahr);
+    }
+
+    /// <summary>
+    /// <b>Ein Fehlschlag steht als Zeile da und sperrt nichts</b>: außerhalb der
+    /// 300-km-Grenze, kein Bereichsabruf, Ort unbekannt — einlesen darf der Anwender
+    /// weiterhin.
+    /// </summary>
+    [Fact]
+    public void Ein_Fehlschlag_der_Vorschau_steht_als_Zeile_da()
+    {
+        var cut = Zeige(regionErmitteln: _ => Task.FromResult(new KlimaVorschauErgebnis
+        {
+            Ausgang = KlimaImportAusgang.Dateifehler,
+            Meldung = "Der nächste TRY-Regionsmittelpunkt liegt 900 km entfernt (Grenze 300 km)."
+        }));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Madrid");
+        Regionsknopf(cut)!.Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("900 km", cut.Instance.Regionsvorschau),
+                             TimeSpan.FromSeconds(10));
+
+        Assert.Contains("900 km", cut.Markup);
+        Assert.False(Einlesen(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Eine geänderte Eingabe verwirft die Zeile</b> — sie gälte sonst für einen
+    /// Standort, den es im Dialog nicht mehr gibt.
+    /// </summary>
+    [Fact]
+    public void Eine_geaenderte_Eingabe_verwirft_die_Ergebniszeile()
+    {
+        var cut = Zeige(regionErmitteln: _ => Task.FromResult(new KlimaVorschauErgebnis
+        {
+            Ausgang = KlimaImportAusgang.Erfolg,
+            Meldung = "Region 14 Stötten, Station 48,6600 / 9,8600, Entfernung 12 km"
+        }));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
+        Regionsknopf(cut)!.Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("Stötten", cut.Instance.Regionsvorschau),
+                             TimeSpan.FromSeconds(10));
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Hamburg");
+        Assert.Equal("", cut.Instance.Regionsvorschau);
+    }
+
+    // =====================================================================
+    //  Auftrag KL-4 - Fussleiste, Importfreigabe und die Katalogliste
+    // =====================================================================
+
+    /// <summary>
+    /// <b>EINE Fußleiste mit vier Knöpfen</b> (Anwenderwunsch 19.09.2026, Punkt 1):
+    /// „Daten einlesen — Füller — Löschen — Beenden", Beenden primär. Die Liste
+    /// trägt KEINEN Aktionsknopf mehr: Die listenlokale Leiste mit „Löschen" lag am
+    /// Ende der Listenspalte und stieß bei schmalem Fenster an die Reiterleiste.
+    /// </summary>
+    [Fact]
+    public void Eine_Fussleiste_traegt_die_vier_Knoepfe_in_der_Reihenfolge()
+    {
+        var cut = Zeige();
+
+        var fuss = cut.FindAll("div.epos-leiste").Last();
+
+        Assert.Equal(new[] { "Daten einlesen", "Löschen", "Beenden" },
+                     fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.Single(fuss.QuerySelectorAll("span.epos-leiste-fueller"));
+        Assert.Contains("epos-knopf--primaer",
+                        fuss.QuerySelectorAll("button").Last().ClassName ?? "");
+
+        // Die Listenspalte ist knopffrei - bis auf die Bedienelemente der
+        // Katalogliste selbst (Wahlknopf, Sortierpfeil, Trichter).
+        var liste = cut.Find("div.epos-katalog-liste");
+        Assert.DoesNotContain("Löschen",
+            liste.QuerySelectorAll("button").Select(b => b.TextContent.Trim()));
+    }
+
+    /// <summary>
+    /// <b>„Daten einlesen" bleibt nach einem Erfolg frei</b> (Anwenderwunsch
+    /// 19.09.2026, Punkt 2: „‚Daten Einlesen' verschwindet nach dem Einlesen").
+    /// Der Knopf war nie weg — er war GESPERRT, weil der Erfolgsfall Ortsname und
+    /// Bezeichnung leerte und <c>ImportErlaubt</c> damit seinen Standort verlor.
+    /// </summary>
+    [Fact]
+    public void Nach_einem_Erfolg_bleiben_die_Felder_und_der_Knopf_frei()
+    {
+        var cut = Zeige(importieren: (_, _) => Task.FromResult(new KlimaImportErgebnis
+        {
+            Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Lyon", Meldung = "fertig"
+        }));
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Lyon");
+        Einlesen(cut).Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("fertig", cut.Instance.Meldung),
+                             TimeSpan.FromSeconds(10));
+
+        Assert.Equal("Lyon", cut.Find("input[list=epos-klimaregion-orte]").GetAttribute("value"));
+        Assert.False(Einlesen(cut).HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// <b>Der Dublettenschutz ist der Schutz vor Doppelimport</b>, nicht das Leeren
+    /// der Felder: Ein zweiter Klick meldet sich, und die Liste bleibt, wie sie war.
+    /// </summary>
+    [Fact]
+    public void Ein_zweiter_Klick_meldet_die_Dublette_und_die_Liste_bleibt()
+    {
+        int laeufe = 0;
+        var cut = Zeige(importieren: (_, _) =>
+        {
+            laeufe++;
+            return Task.FromResult(laeufe == 1
+                ? new KlimaImportErgebnis
+                  { Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Lyon", Meldung = "fertig" }
+                : new KlimaImportErgebnis
+                  { Ausgang = KlimaImportAusgang.Dublette,
+                    Meldung = "Die Klimaregion gibt es bereits." });
+        });
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Lyon");
+        Einlesen(cut).Click();
+        cut.WaitForAssertion(() => Assert.Contains("fertig", cut.Instance.Meldung),
+                             TimeSpan.FromSeconds(10));
+
+        Einlesen(cut).Click();
+        cut.WaitForAssertion(() => Assert.Contains("gibt es bereits", cut.Instance.Meldung),
+                             TimeSpan.FromSeconds(10));
+
+        Assert.Equal(2, laeufe);
+        Assert.Equal(3, cut.FindAll("button.epos-anlagenwahl").Count);
+    }
+
+    /// <summary>
+    /// <b>Die Regionsliste ist die EINE Katalogliste des Hauses</b> (Anwenderwunsch
+    /// 19.09.2026, Punkt 3): Suchfeld, Trefferzeile, sieben Spalten samt Quelle und
+    /// Standort — und KEIN Vergleichsknopf: Eine Klimaregion ist kein Gerät mit
+    /// Kennwerten.
+    /// </summary>
+    [Fact]
+    public void Die_Liste_zeigt_Suche_sieben_Spalten_und_keinen_Vergleich()
+    {
+        var cut = Zeige();
+
+        Assert.Single(cut.FindAll("label.epos-katalog-suchfeld input"));
+        Assert.Contains("3", cut.Find("span.epos-katalog-treffer").TextContent);
+        Assert.Empty(cut.FindAll("button.epos-katalog-vergleichknopf"));
+
+        var koepfe = cut.FindAll("span.epos-spaltenkopf-text")
+                        .Select(e => e.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Klimaregion", "Quelle", "Standort", "Longitude", "Latitude",
+                             "Importdatum", "Schreibschutz" }, koepfe);
+
+        // Quelle und Standort stehen als Text in den Zeilen.
+        Assert.Contains("DWD-Testreferenzjahr aus Datei", cut.Markup);
+        Assert.Contains("Berlin, Deutschland", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Die Wahl überlebt einen Filterwechsel</b>: Sie hängt am Bezeichner, nicht
+    /// an der Zeilennummer — dieselbe Regel wie in den vierzehn anderen Katalogen.
+    /// </summary>
+    [Fact]
+    public void Die_Wahl_ueberlebt_einen_Filterwechsel()
+    {
+        var cut = Zeige();
+
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();       // Stuttgart
+        cut.WaitForAssertion(() => Assert.Equal("Stuttgart", cut.Instance.Gewaehlt),
+                             TimeSpan.FromSeconds(10));
+
+        cut.Find("label.epos-katalog-suchfeld input").Input("stutt");
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-anlagenwahl")),
+                             TimeSpan.FromSeconds(10));
+        Assert.Equal("Stuttgart", cut.Instance.Gewaehlt);
+
+        cut.Find("label.epos-katalog-suchfeld input").Input("");
+        cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll("button.epos-anlagenwahl").Count),
+                             TimeSpan.FromSeconds(10));
+        Assert.Equal("Stuttgart", cut.Instance.Gewaehlt);
+    }
+
+    /// <summary>
+    /// <b>Die Dateizeile steht in EINER Zeile</b>: Beschriftung, Feld und
+    /// „Durchsuchen" — das leistet das <c>Formularraster</c>
+    /// (<c>.epos-dateiwahl &gt; .epos-knopf</c>). Vorher lag der Knopf unter seinem
+    /// Feld, weil der Block in einer Klasse ohne Stilblatt stand.
+    /// </summary>
+    [Fact]
+    public void Die_Dateizeile_traegt_Beschriftung_Feld_und_Knopf_in_einer_Zeile()
+    {
+        var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>("/tmp/x.dat"));
+
+        QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+
+        Assert.Equal(2, cut.FindAll("div.epos-formularraster--einspaltig").Count);
+
+        var zeile = cut.Find("span.epos-feld-zeile.epos-dateiwahl");
+        var feld = zeile.ParentElement!;
+        Assert.Equal("LABEL", feld.TagName);
+        Assert.Contains("epos-feld", feld.ClassName ?? "");
+        Assert.Single(feld.QuerySelectorAll("span.epos-feld-text"));
+        Assert.Single(zeile.QuerySelectorAll("input"));
+        Assert.Single(zeile.QuerySelectorAll("button.epos-knopf"));
+    }
+
+    /// <summary>
+    /// <b>Die Virtualisierungsschwelle gilt auch hier</b> (Hausregel W6-B-2: ab 120
+    /// gefilterten Zeilen). 150 Regionen sind mehr, als ein Anwender je anlegt —
+    /// aber die Liste ist derselbe Baustein wie die mit 20 749 PV-Modulen, und der
+    /// Fall muss gezeichnet werden, ohne dass die Wahl verlorengeht.
+    /// </summary>
+    [Fact]
+    public void Hundertfuenfzig_Regionen_virtualisieren_und_die_Wahl_bleibt()
+    {
+        var viele = new List<Katalogfilterzeile>();
+        for (int i = 0; i < 150; i++)
+            viele.Add(Zeile(1000 + i, "Region " + i.ToString("D3", CultureInfo.InvariantCulture),
+                            "PVGIS-Testreferenzjahr (weltweit)", "Ort " + i,
+                            7.0 + i / 100.0, 47.0 + i / 100.0, "2026-09-18", false));
+
+        var cut = Zeige(regionen: viele);
+
+        Assert.Contains("150", cut.Find("span.epos-katalog-treffer").TextContent);
+
+        cut.Find("label.epos-katalog-suchfeld input").Input("Region 007");
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-anlagenwahl")),
+                             TimeSpan.FromSeconds(10));
+
+        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        cut.WaitForAssertion(() => Assert.Equal("Region 007", cut.Instance.Gewaehlt),
+                             TimeSpan.FromSeconds(10));
     }
 
     // =====================================================================

@@ -3476,6 +3476,118 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
+        // SCHRITT 95 — die Klimaspalten (Anwenderentscheid 19.09.2026, Aufträge KL-3/KL-4)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>Die Solarreihe einer Klimaregion — 8 760 Stundenwerte je Region
+        /// im Auslieferungskatalog.</summary>
+        public const string TAB_SOLAR_STAMM = "Tab_Solar_STAMM";
+
+        /// <summary>Die Projektkopie der Solarreihe (<c>KlimaregionStammCtrl.CopyRegionToProjekt</c>).</summary>
+        public const string TAB_SOLAR = "Tab_Solar";
+
+        /// <summary>Der Klimaregion-Katalog (Kopfsatz je Region).</summary>
+        public const string TAB_KLIMAREGION_STAMM = "Tab_Klimaregion_STAMM";
+
+        /// <summary>
+        /// <b>Atmosphärische Gegenstrahlung</b> [W/m²] — die langwellige Einstrahlung
+        /// des Himmels auf eine waagerechte Fläche.
+        ///
+        /// <para><b>Wofür.</b> Die Gebäudesimulation nach VDI 6007 braucht sie für die
+        /// langwellige Strahlungsbilanz der Außenbauteile; ohne sie lässt sich die
+        /// nächtliche Abkühlung eines Daches nicht rechnen.</para>
+        ///
+        /// <para><b>Woher.</b> PVGIS führt sie als <c>IR(h)</c>, die DWD-Testreferenzjahre
+        /// als Spalte <c>A</c>. <b>NULL heißt „nicht verfügbar"</b> — nie 0: Eine 0 wäre
+        /// eine Messaussage (ein Himmel ohne Gegenstrahlung), und die gibt es
+        /// nicht.</para>
+        /// </summary>
+        public const string SPALTE_SOLAR_GEGENSTRAHLUNG = "Gegenstrahlung";
+
+        /// <summary>
+        /// <b>Relative Luftfeuchte</b> [%] der Stunde.
+        ///
+        /// <para>PVGIS führt sie als <c>RH</c>, TRY als <c>RF</c>. Gebraucht wird sie für
+        /// den latenten Anteil der Lüftungslast und für Taupunktbetrachtungen.
+        /// <b>NULL heißt „nicht verfügbar"</b>.</para>
+        /// </summary>
+        public const string SPALTE_SOLAR_LUFTFEUCHTE = "Luftfeuchte";
+
+        /// <summary>
+        /// <b>Bedeckungsgrad</b> in Achteln (0 = wolkenlos … 8 = bedeckt).
+        ///
+        /// <para>TRY führt ihn als Spalte <c>N</c> und damit als echten Messwert;
+        /// <b>PVGIS liefert ihn nicht</b> — eine PVGIS-Region trägt hier NULL. Die
+        /// Schätzung aus dem Diffusanteil bleibt damit das, was sie war: der Rückfall
+        /// bei NULL, nicht der Regelweg.</para>
+        ///
+        /// <para><b>REAL und nicht INTEGER</b>, wie alle Fachspalten dieser Tabelle:
+        /// Die Achtel sind im Bestand ganzzahlig, aber eine gemittelte Reihe (etwa aus
+        /// einer Verdichtung) wäre es nicht mehr, und eine <c>(int)</c>-Abschneidung
+        /// hat im Rechenweg nichts verloren.</para>
+        /// </summary>
+        public const string SPALTE_SOLAR_BEDECKUNGSGRAD = "Bedeckungsgrad";
+
+        /// <summary>
+        /// <b>Woher die Reihe einer Klimaregion stammt</b> — sprachneutraler Schlüssel
+        /// <see cref="DbWerte.KLIMA_QUELLE_PVGIS"/>, <see cref="DbWerte.KLIMA_QUELLE_TRY_DATEI"/>
+        /// oder <see cref="DbWerte.KLIMA_QUELLE_TRY_REGIONAL"/>.
+        ///
+        /// <para><b>NULL heißt Altbestand</b>: Eine Region, die vor diesem Schritt
+        /// angelegt wurde, sagt nicht, woher sie kommt — und eine Nachdatierung wäre
+        /// eine Behauptung. Der Freitext <c>Details</c> bleibt unverändert daneben
+        /// stehen; er ist der Herkunftsvermerk für den Leser, diese Spalte die Angabe
+        /// für das Programm.</para>
+        /// </summary>
+        public const string SPALTE_KR_QUELLE = "Quelle";
+
+        /// <summary>
+        /// <b>Tag des Imports</b> im Format <c>yyyy-MM-dd</c> (ISO, sortierbar,
+        /// kulturunabhängig — BETRIEB_SQLITE § 6). <b>NULL heißt Altbestand</b>; nie
+        /// zurückdatiert.
+        /// </summary>
+        public const string SPALTE_KR_IMPORTDATUM = "Importdatum";
+
+        /// <summary>
+        /// Schritt 95 der Migration: die drei KLIMAGRÖSSEN an <c>Tab_Solar</c> und
+        /// <c>Tab_Solar_STAMM</c> sowie HERKUNFT und IMPORTDATUM an
+        /// <c>Tab_Klimaregion</c> und <c>Tab_Klimaregion_STAMM</c>
+        /// (Anwenderentscheid 19.09.2026, „alles Relevante für die Gebäudesimulation
+        /// aufnehmen"; Schritt M4 des Umsetzungskonzepts Gebäudesimulation).
+        ///
+        /// <para><b>KEIN DML.</b> Alle zehn Spalten bleiben im Bestand NULL, und NULL
+        /// heißt bei allen „nicht verfügbar" bzw. „Altbestand". Kein Rechenweg liest
+        /// eine von ihnen; die dreizehn Referenzprojekte bleiben byte-gleich.</para>
+        ///
+        /// <para><b>Katalog und Projektkopie im selben Schritt</b>, Spalte für Spalte
+        /// gleich — eine Spalte nur auf einer Seite wäre beim Kopieren ins Projekt
+        /// sofort ein Datenverlust (Hausregel, vgl. <see cref="WechselrichterSchema"/>).</para>
+        ///
+        /// <para><b>Keine Windgeschwindigkeit.</b> Das Umsetzungskonzept
+        /// Gebäudesimulation hält in F-S3 fest: keine Spalte ohne Leser. Beide Quellen
+        /// führen sie (PVGIS <c>WS10m</c>, TRY <c>WG</c>), aber kein Rechenweg des
+        /// Hauses braucht sie — sie bleibt deshalb benannt verworfen.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei <see cref="Schritt92_Referenzprojekt"/>: Der Grund ist der
+        /// LESER. Die Rückfallebene <see cref="Alle"/> läuft bei jedem
+        /// Simulationsstart; diese zehn Spalten liest die Simulation nicht.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt95_Klimaspalten =
+        {
+            new SchemaSpalte(TAB_SOLAR_STAMM,        SPALTE_SOLAR_GEGENSTRAHLUNG, "DOUBLE"),
+            new SchemaSpalte(TAB_SOLAR_STAMM,        SPALTE_SOLAR_LUFTFEUCHTE,    "DOUBLE"),
+            new SchemaSpalte(TAB_SOLAR_STAMM,        SPALTE_SOLAR_BEDECKUNGSGRAD, "DOUBLE"),
+            new SchemaSpalte(TAB_SOLAR,              SPALTE_SOLAR_GEGENSTRAHLUNG, "DOUBLE"),
+            new SchemaSpalte(TAB_SOLAR,              SPALTE_SOLAR_LUFTFEUCHTE,    "DOUBLE"),
+            new SchemaSpalte(TAB_SOLAR,              SPALTE_SOLAR_BEDECKUNGSGRAD, "DOUBLE"),
+            new SchemaSpalte(TAB_KLIMAREGION_STAMM,  SPALTE_KR_QUELLE,            "TEXT(20)"),
+            new SchemaSpalte(TAB_KLIMAREGION_STAMM,  SPALTE_KR_IMPORTDATUM,       "TEXT(10)"),
+            new SchemaSpalte(TAB_KLIMAREGION,        SPALTE_KR_QUELLE,            "TEXT(20)"),
+            new SchemaSpalte(TAB_KLIMAREGION,        SPALTE_KR_IMPORTDATUM,       "TEXT(10)"),
+        };
+
+        // ---------------------------------------------------------------------------
         // ETAPPE E5 — Tarifmodell Strom (Tab_ProjektTarif) und zwei Projektangaben
         // ---------------------------------------------------------------------------
 

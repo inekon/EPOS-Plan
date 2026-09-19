@@ -695,6 +695,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Portal der DWD-Testreferenzjahre: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_TRY_PORTAL {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_TRY_PORTAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Adresse der TRY-Regionaldaten: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_TRY_REGIONAL {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_TRY_REGIONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ordner der VDI-3805-Datensätze: ähnelt.
         /// </summary>
         public static string ADM_SET_LBL_VDI_PFAD {
@@ -772,6 +790,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_RUBRIK_DATENBANK {
             get {
                 return ResourceManager.GetString("ADM_SET_RUBRIK_DATENBANK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_KLIMA {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_KLIMA", resourceCulture);
             }
         }
         
@@ -26225,6 +26252,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Standort liegt zu weit von der nächsten TRY-Region entfernt. Warum bricht das Einlesen ab, und welche Klimaquelle passt dann? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die TRY-Daten sind nicht lesbar. Woran liegt das, und wie komme ich an eine brauchbare Datei? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_FORMATFEHLER {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_FORMATFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse der TRY-Regionaldaten erlaubt keine Teilabrufe. Was bedeutet das, und wie lese ich die Daten trotzdem ein? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_KEIN_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_KEIN_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kopf der TRY-Datei nennt keinen lesbaren Standort. Was heißt das, und wie trage ich den Standort ein? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wärmeerzeuger des Projekts steht auf keinem Kaskadenplatz und rechnet deshalb nicht mit. Wie nehme ich ihn in die Simulation auf? ähnelt.
         /// </summary>
         public static string KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ {
@@ -30220,6 +30283,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimaquelle ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PVGIS-Testreferenzjahr (weltweit) ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE_PVGIS {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE_PVGIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DWD-Testreferenzjahr aus Datei ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE_TRY_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE_TRY_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Regionaldaten (Deutschland) ähnelt.
+        /// </summary>
+        public static string KLIMA_QUELLE_TRY_REGIONAL {
+            get {
+                return ResourceManager.GetString("KLIMA_QUELLE_TRY_REGIONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenwinkel ähnelt.
         /// </summary>
         public static string KLIMA_REIHE_SONNENWINKEL {
@@ -30265,6 +30364,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Datei lesen … ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fertig. ähnelt.
         /// </summary>
         public static string KLIMA_SCHRITT_FERTIG {
@@ -30279,6 +30387,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_SCHRITT_KOORDINATEN {
             get {
                 return ResourceManager.GetString("KLIMA_SCHRITT_KOORDINATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Regionaldaten abrufen … ähnelt.
+        /// </summary>
+        public static string KLIMA_SCHRITT_PAKET {
+            get {
+                return ResourceManager.GetString("KLIMA_SCHRITT_PAKET", resourceCulture);
             }
         }
         
@@ -30319,6 +30436,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importdatum ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_IMPORTDATUM {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_IMPORTDATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Latitude ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_LATITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_LATITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Longitude ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_LONGITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_LONGITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion ähnelt.
         /// </summary>
         public static string KLIMA_SP_REGION {
@@ -30328,11 +30481,353 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibschutz ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_SCHREIBSCHUTZ {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_SCHREIBSCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_STANDORT {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_STANDORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
         /// </summary>
         public static string KLIMA_TITEL {
             get {
                 return ResourceManager.GetString("KLIMA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der nächste TRY-Regionsmittelpunkt liegt {0} km entfernt (Grenze {1} km) — die Regionaldaten decken nur Deutschland ab. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region ermitteln ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_BTN_REGION {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_BTN_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchsuchen … ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_BTN_WAEHLEN {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_BTN_WAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Datei ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei „{0}“ gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DATEI_FEHLT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DATEI_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DWD-Testreferenzjahr (*.dat)|*.dat|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DATEI_FILTER {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DATEI_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die DWD-Testreferenzjahr · Datei „{0}“ · Import {1} · {2} · {3} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DETAILS_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DETAILS_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Regionaldaten · Region {0} · Station {1} · Entfernung {2} km · Szenario {3} · Bezugsjahr {4} · Quelle {5} · Import {6} · {7} · {8} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DETAILS_REGIONAL {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DETAILS_REGIONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: diese Stunde steht schon in der Reihe. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_DOPPELTE_STUNDE {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_DOPPELTE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: das Feld {1} ist keine Zahl („{2}“). ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_FELDWERT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_FELDWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die TRY-Daten sind nicht lesbar: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_FORMATFEHLER {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_FORMATFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsjahr ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_JAHR {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Regionalpaket führt keine Region für das Bezugsjahr {0}. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_KEINE_REGION {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_KEINE_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse erlaubt keine Teilabrufe; data.zip herunterladen und als Datei wählen. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_KEIN_BEREICH {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_KEIN_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei enthält keine Trennzeile „***“ — Kopf und Daten sind nicht zu trennen. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_KEIN_KOPFENDE {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_KEIN_KOPFENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario „{0}“ fehlt in Region {1}. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_KEIN_SZENARIO {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_KEIN_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CC BY 4.0, RE-Lab-Projects/TRY_DE_2015_2045, Rohdaten Deutscher Wetterdienst ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_LIZENZ {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_MSG_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_MSG_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regionalpaket (leer = Abruf über die Adresse) ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_PAKET {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Regionalpaket (*.zip)|*.zip|Alle Dateien (*.*)|*.* ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_PAKET_FILTER {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_PAKET_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: erwartet werden {1} Spalten, gelesen wurden {2}. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SPALTENZAHL {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SPALTENZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort vom Anwender ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_ANWENDER {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_ANWENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kopf der TRY-Datei nennt keinen lesbaren Standort — Längen- und Breitengrad bitte eintragen. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_FEHLT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort aus der Datei (Rechtswert {0}, Hochwert {1}); änderbar. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_HINWEIS {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort aus dem Dateikopf: Rechtswert {0}, Hochwert {1} → {2}° O / {3}° N ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_KOPF {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Standort der Datei „{0}“ ist nicht lesbar — Längen- und Breitengrad bitte eintragen. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_UNLESBAR {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SZENARIO {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mittleres Jahr ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SZ_MITTEL {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SZ_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die sommerwarm ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SZ_SOMMERWARM {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SZ_SOMMERWARM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die winterkalt ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_SZ_WINTERKALT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_SZ_WINTERKALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht übernommen: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_VERWORFEN {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_VERWORFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region {0}, Station {1}, Entfernung {2} km ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorhanden: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_VORSCHAU_BESTAND {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_VORSCHAU_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region wird ermittelt … ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_VORSCHAU_LAEUFT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_VORSCHAU_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartet werden {0} Datenzeilen, gelesen wurden {1} (Datei endet in Zeile {2}). ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_ZEILENZAHL {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_ZEILENZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: Monat {1}, Tag {2}, Stunde {3} ergeben keinen Zeitpunkt. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_ZEITFELD {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_ZEITFELD", resourceCulture);
             }
         }
         
@@ -31711,9 +32206,9 @@ namespace WindowsFormsApplication1.MyResource {
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Microsoft .NET 10 mit Windows Forms (MIT-Lizenz, Microsoft Corporation) - Laufzeitumgebung und Bedienoberfläche.
-        ///SQLite über Microsoft.Data.Sqlite (MIT-Lizenz, Microsoft Corporation; SQLite selbst ist gemeinfrei) - Ablage der Kenndaten-Datenbank.
-        ///Microsoft Edge WebView2 Runtime (Microsoft Corporation) - Anzeige der Dialoge; Installation und Nutzung nach den Bedingungen von Microsoft.
-        ///Microsoft Access Database Engine sowie OLE-DB- und ODBC-Treiber (Microsoft Corporation) - nur noch für die einmalige Umstellu [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///ASP.NET Core Blazor mit Microsoft.AspNetCore.Components.WebView und Microsoft.AspNetCore.Components.QuickGrid (MIT-Lizenz, Microsoft Corporation) - Dialoge, Seiten und Tabellenraster.
+        ///SQLite über Microsoft.Data.Sqlite (MIT-Lizenz, Microsoft Corporation; SQLite selbst ist gemeinfrei) und SQLitePCLRaw (Apache-2.0-Lizenz, Eric Sink) - Ablage der Kenndaten-Datenbank.
+        ///Microsoft Edge WebView2 Runtime ( [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string LIZR_KO_A2 {
             get {
@@ -31741,7 +32236,8 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich lokal und ohne Datenübertragung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich lokal und ohne Datenübertragung.
+        ///Mscc.GenerativeAI (Apache-2.0-Lizenz, Jochen Kirstätter) - Anbindung des Dienstes. ähnelt.
         /// </summary>
         public static string LIZR_KO_A5 {
             get {
@@ -31872,6 +32368,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Status &amp; Aktivierung ähnelt.
+        /// </summary>
+        public static string LIZR_REITER_STATUS {
+            get {
+                return ResourceManager.GetString("LIZR_REITER_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzvereinbarung ähnelt.
         /// </summary>
         public static string LIZR_REITER_VERTRAG {
@@ -31926,7 +32431,8 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation. Wird der optionale Hilfe-Assistent mit eigenem Zugangsschlüssel verwendet, werden ausschließlich die gestellte Frage, der Name des Programmbereichs und die integrierten Hilfetexte an den Dienst des jeweiligen Anbieters übertragen - keine Projekt- [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation.
+        ///Lizenzierung: Beim Aktivieren einer Lizenz, beim Anfordern einer Testversion und beim Lösen eines Gerätes von der Lizenz werden Lizenzschlüssel, E-Mail-Adresse, eine anonyme Gerätekennung (Geräte-Hash), die Programmversion und der Zeitpunkt des V [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string LIZR_RH_A6 {
             get {
@@ -32234,8 +32740,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktivierung benötigt einmalig eine Internetverbindung. Übertragen werden nur
-        ///Lizenzschlüssel, E-Mail und ein anonymer Geräte-Hash — keine Projekt- oder Kundendaten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktivierung benötigt einmalig eine Internetverbindung. ähnelt.
         /// </summary>
         public static string LIZ_HINWEIS_AKTIVIERUNG {
             get {
@@ -32249,6 +32754,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string LIZ_HINWEIS_LIC_GELADEN {
             get {
                 return ResourceManager.GetString("LIZ_HINWEIS_LIC_GELADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit der Aktivierung werden Lizenzschlüssel, E-Mail-Adresse und eine anonyme Gerätekennung an den Lizenzserver übertragen. Es gelten die Lizenzvereinbarung und die Hinweise zur Datenverarbeitung. ähnelt.
+        /// </summary>
+        public static string LIZ_HINWEIS_UEBERTRAGUNG {
+            get {
+                return ResourceManager.GetString("LIZ_HINWEIS_UEBERTRAGUNG", resourceCulture);
             }
         }
         
@@ -32280,11 +32794,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise zur Datenverarbeitung ähnelt.
+        /// </summary>
+        public static string LIZ_LINK_DATENVERARBEITUNG {
+            get {
+                return ResourceManager.GetString("LIZ_LINK_DATENVERARBEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzportal öffnen (Benutzer und Geräte verwalten, Schlüssel neu erzeugen) ähnelt.
         /// </summary>
         public static string LIZ_LINK_PORTAL {
             get {
                 return ResourceManager.GetString("LIZ_LINK_PORTAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzvereinbarung ähnelt.
+        /// </summary>
+        public static string LIZ_LINK_VEREINBARUNG {
+            get {
+                return ResourceManager.GetString("LIZ_LINK_VEREINBARUNG", resourceCulture);
             }
         }
         
@@ -32444,7 +32976,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aktiviert — Testversion oder Lizenzschlüssel unter Administration → Lizenz. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aktiviert — Testversion oder Lizenzschlüssel unter Hilfe → Lizenz. ähnelt.
         /// </summary>
         public static string LIZ_ST_NICHTAKTIVIERT {
             get {
@@ -38483,11 +39015,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
+        /// </summary>
+        public static string PTR_ART_STAMM {
+            get {
+                return ResourceManager.GetString("PTR_ART_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante von {0} ähnelt.
+        /// </summary>
+        public static string PTR_ART_VARIANTE {
+            get {
+                return ResourceManager.GetString("PTR_ART_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Paketen geschrieben, {2} fehlgeschlagen. ähnelt.
+        /// </summary>
+        public static string PTR_BILANZ_EXPORT {
+            get {
+                return ResourceManager.GetString("PTR_BILANZ_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Paketen importiert, {2} übersprungen, {3} umbenannt, {4} fehlgeschlagen. ähnelt.
+        /// </summary>
+        public static string PTR_BILANZ_IMPORT {
+            get {
+                return ResourceManager.GetString("PTR_BILANZ_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datei wählen… ähnelt.
         /// </summary>
         public static string PTR_BTN_DATEI {
             get {
                 return ResourceManager.GetString("PTR_BTN_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dateien wählen… ähnelt.
+        /// </summary>
+        public static string PTR_BTN_DATEIEN {
+            get {
+                return ResourceManager.GetString("PTR_BTN_DATEIEN", resourceCulture);
             }
         }
         
@@ -38506,6 +39083,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PTR_BTN_IMPORT {
             get {
                 return ResourceManager.GetString("PTR_BTN_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordner wählen… ähnelt.
+        /// </summary>
+        public static string PTR_BTN_ORDNER {
+            get {
+                return ResourceManager.GetString("PTR_BTN_ORDNER", resourceCulture);
             }
         }
         
@@ -38576,6 +39162,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Variante ist in der Liste gewählt und reist mit. ähnelt.
+        /// </summary>
+        public static string PTR_GESPERRT_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("PTR_GESPERRT_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten von „{0}“: ähnelt.
+        /// </summary>
+        public static string PTR_GRUPPE_VARIANTEN {
+            get {
+                return ResourceManager.GetString("PTR_GRUPPE_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu {0} gewählten Varianten kommen {1} Stammprojekte hinzu. ähnelt.
+        /// </summary>
+        public static string PTR_HINWEIS_STAMMZUG {
+            get {
+                return ResourceManager.GetString("PTR_HINWEIS_STAMMZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt: {0} · Exportdatum: {1} · Schema-Version: {2} ähnelt.
         /// </summary>
         public static string PTR_INFO_PAKET {
@@ -38590,6 +39203,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PTR_INFO_VARIANTEN {
             get {
                 return ResourceManager.GetString("PTR_INFO_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paket {0} von {1} — {2} ähnelt.
+        /// </summary>
+        public static string PTR_LAUF_PAKET {
+            get {
+                return ResourceManager.GetString("PTR_LAUF_PAKET", resourceCulture);
             }
         }
         
@@ -38621,6 +39243,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekte zum Export: ähnelt.
+        /// </summary>
+        public static string PTR_LBL_PROJEKTE {
+            get {
+                return ResourceManager.GetString("PTR_LBL_PROJEKTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Varianten mitexportieren: ähnelt.
         /// </summary>
         public static string PTR_LBL_VARIANTEN {
@@ -38635,6 +39266,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PTR_LBL_ZIELNAME {
             get {
                 return ResourceManager.GetString("PTR_LBL_ZIELNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielordner: ähnelt.
+        /// </summary>
+        public static string PTR_LBL_ZIELORDNER {
+            get {
+                return ResourceManager.GetString("PTR_LBL_ZIELORDNER", resourceCulture);
             }
         }
         
@@ -38704,6 +39344,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte mindestens ein Projekt wählen. ähnelt.
+        /// </summary>
+        public static string PTR_MSG_KEINE_WAHL {
+            get {
+                return ResourceManager.GetString("PTR_MSG_KEINE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Zielordner wählen. ähnelt.
+        /// </summary>
+        public static string PTR_MSG_KEIN_ORDNER {
+            get {
+                return ResourceManager.GetString("PTR_MSG_KEIN_ORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein gültiges Paket (manifest.json fehlt). ähnelt.
         /// </summary>
         public static string PTR_MSG_KEIN_PAKET {
@@ -38740,6 +39398,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zielname gilt nur für einen einzelnen Import; bei mehreren Paketen behält jedes Projekt seinen Namen. ähnelt.
+        /// </summary>
+        public static string PTR_MSG_ZIELNAME_MEHRERE {
+            get {
+                return ResourceManager.GetString("PTR_MSG_ZIELNAME_MEHRERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string PTR_OPT_ABBRECHEN {
@@ -38763,6 +39430,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PTR_OPT_UEBERSCHREIBEN {
             get {
                 return ResourceManager.GetString("PTR_OPT_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die derselbe Stamm wie Paket {0} — wird übersprungen ähnelt.
+        /// </summary>
+        public static string PTR_PAKET_DUBLETTE {
+            get {
+                return ResourceManager.GetString("PTR_PAKET_DUBLETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — abweichend ähnelt.
+        /// </summary>
+        public static string PTR_PAKET_SCHEMA_ALT {
+            get {
+                return ResourceManager.GetString("PTR_PAKET_SCHEMA_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ähnelt.
+        /// </summary>
+        public static string PTR_PAKET_SCHEMA_OK {
+            get {
+                return ResourceManager.GetString("PTR_PAKET_SCHEMA_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante von „{0}“ ähnelt.
+        /// </summary>
+        public static string PTR_PAKET_STAMM_AUS {
+            get {
+                return ResourceManager.GetString("PTR_PAKET_STAMM_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string PTR_SP_ART {
+            get {
+                return ResourceManager.GetString("PTR_SP_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geändert ähnelt.
+        /// </summary>
+        public static string PTR_SP_GEAENDERT {
+            get {
+                return ResourceManager.GetString("PTR_SP_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunde ähnelt.
+        /// </summary>
+        public static string PTR_SP_KUNDE {
+            get {
+                return ResourceManager.GetString("PTR_SP_KUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mitgenommen ähnelt.
+        /// </summary>
+        public static string PTR_SP_MITGENOMMEN {
+            get {
+                return ResourceManager.GetString("PTR_SP_MITGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_DATEI {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_HINWEIS {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hauptprojekt ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_PROJEKT {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schemastand ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_SCHEMA {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_VARIANTEN {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string PTR_SP_PROJEKT {
+            get {
+                return ResourceManager.GetString("PTR_SP_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten ähnelt.
+        /// </summary>
+        public static string PTR_SP_VARIANTEN {
+            get {
+                return ResourceManager.GetString("PTR_SP_VARIANTEN", resourceCulture);
             }
         }
         
@@ -47065,6 +47867,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das BHKW ist in diesem Lauf nicht gelaufen (0 h/a) – deshalb kein Brennstoffverbrauch. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_BHKW_NICHT_GELAUFEN {
+            get {
+                return ResourceManager.GetString("SIM_MSG_BHKW_NICHT_GELAUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Einspeisehöhe der {0} muss zwischen 0 und 1 liegen. ähnelt.
         /// </summary>
         public static string SIM_MSG_EINSPEISEHOEHE_BEREICH {
@@ -47205,6 +48016,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS {
             get {
                 return ResourceManager.GetString("SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Heizkessel sind in diesem Lauf nicht gelaufen – deshalb kein Brennstoffverbrauch. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KESSEL_NICHT_GELAUFEN {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KESSEL_NICHT_GELAUFEN", resourceCulture);
             }
         }
         
@@ -50774,6 +51594,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten: {0} · {1} · {2} · Import {3} ähnelt.
+        /// </summary>
+        public static string START_KLIMA_HERKUNFT {
+            get {
+                return ResourceManager.GetString("START_KLIMA_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten: {0} · {1} ähnelt.
+        /// </summary>
+        public static string START_KLIMA_HERKUNFT_KURZ {
+            get {
+                return ResourceManager.GetString("START_KLIMA_HERKUNFT_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für alle Berechnungen im Projekt ähnelt.
         /// </summary>
         public static string START_KLIMA_HINWEIS {
@@ -51556,7 +52394,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
         /// </summary>
         public static string STEUER_ENERGIEST_SATZ_FEHLT {
             get {
@@ -51583,7 +52421,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
         /// </summary>
         public static string STEUER_SATZ_FEHLT {
             get {
@@ -51849,6 +52687,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string STROMGL_TITEL_KOPIE {
             get {
                 return ResourceManager.GetString("STROMGL_TITEL_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Treffer. ähnelt.
+        /// </summary>
+        public static string SUCHAUSWAHL_KEIN_TREFFER {
+            get {
+                return ResourceManager.GetString("SUCHAUSWAHL_KEIN_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschläge ähnelt.
+        /// </summary>
+        public static string SUCHAUSWAHL_LISTE {
+            get {
+                return ResourceManager.GetString("SUCHAUSWAHL_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tippen zum Suchen … ähnelt.
+        /// </summary>
+        public static string SUCHAUSWAHL_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("SUCHAUSWAHL_PLATZHALTER", resourceCulture);
             }
         }
         
@@ -52429,6 +53294,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ ist selbst eine Variante und kann keine weiteren Varianten mitnehmen. Bitte das Stammprojekt wählen. ähnelt.
+        /// </summary>
+        public static string TRANSFER_EXPORT_VARIANTE_ALS_STAMM {
+            get {
+                return ResourceManager.GetString("TRANSFER_EXPORT_VARIANTE_ALS_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket wurde mit Schemastand {0} exportiert, dieser Rechner arbeitet mit Stand {1}. ähnelt.
+        /// </summary>
+        public static string TRANSFER_PAKET_SCHEMA {
+            get {
+                return ResourceManager.GetString("TRANSFER_PAKET_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein gültiges Projektpaket (manifest.json fehlt). ähnelt.
+        /// </summary>
+        public static string TRANSFER_PAKET_UNLESBAR {
+            get {
+                return ResourceManager.GetString("TRANSFER_PAKET_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paket konnte nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string TRANSFER_PAKET_UNLESBAR_GRUND {
+            get {
+                return ResourceManager.GetString("TRANSFER_PAKET_UNLESBAR_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vergütung des Stammprojekts „{0}“ als eigene Werte übernommen. ähnelt.
         /// </summary>
         public static string TRANSFER_PV_BEILAGE {
@@ -52443,6 +53344,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string TRANSFER_PV_OHNE_BEILAGE {
             get {
                 return ResourceManager.GetString("TRANSFER_PV_OHNE_BEILAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt „{0}“ steht bereits aus einem früheren Paket dieses Laufs — es wird nicht noch einmal angelegt. ähnelt.
+        /// </summary>
+        public static string TRANSFER_STAMM_BEREITS {
+            get {
+                return ResourceManager.GetString("TRANSFER_STAMM_BEREITS", resourceCulture);
             }
         }
         

@@ -43,7 +43,26 @@
 
    TASTATUR: Esc schliesst die oberste Ebene - erst die Rueckfragen, dann den
    Zeilendialog, dann den Katalog. Enter ist nicht belegt: Neu, Aendern und
-   Loeschen wirken SOFORT auf die Datenbank. *@
+   Loeschen wirken SOFORT auf die Datenbank.
+
+   ANWENDERENTSCHEID MN-1 (19.09.2026) - DIE LISTE IST DIE KATALOGLISTE DES
+   HAUSES: "Bei der Auswahl der 'Gesetzlichen Parameter' soll das gleiche Schema
+   (Filter, Sortieren ...) verwendet werden." Aus dem nackten Raster wird
+   <Katalogliste> mit Suche ueber alle Spalten, Trichter und Sortierpfeil im
+   Spaltenkopf und der Trefferzahl - dasselbe Bild wie in den fuenfzehn
+   Geraetekatalogen. Drei Dinge sind dabei zu wissen:
+     1. DIE KLASSE BLEIBT EIN AUSWAHLFELD davor. Sie ist kein Spaltenfilter,
+        sondern die MENGE, aus der die Liste schoepft: Der Zeilendialog belegt
+        eine neue Zeile mit ihr vor, und "Aendern" laesst sie unangetastet.
+     2. DER WAHLSCHLUESSEL IST DIE ID ALS TEXT, nicht der Gesetzesschluessel.
+        Der kommt je Gueltigkeitsjahr mehrfach vor - das ist die Kernregel
+        dieser Maske -, und zwei Zeilen mit demselben Schluessel waeren fuer die
+        Katalogliste EINE Wahl.
+     3. KEIN "VERGLEICHEN" (Vergleichbar="false"): Zwei Jahreszeilen desselben
+        Satzes nebeneinanderzustellen sagt nichts, was die Liste nicht schon
+        untereinander zeigt.
+   Der Filterstand kommt aus dem Katalogfilterregister ("GESETZ"), damit Suche,
+   Filter und Sortierung ein zweites Oeffnen ueberleben. *@
 
 @namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
 @using WindowsFormsApplication1
@@ -82,26 +101,21 @@
         <Auswahlfeld Bezeichnung="@LabelKlasse" Eintraege="@KlassenEintraege"
                      Auswahl="@_klasseIndex" AuswahlChanged="BeiKlasse" />
 
-        <Raster TZeile="Zeile" Zeilen="@Zeilenliste">
-            <KindInhalt>
-                <TemplateColumn TGridItem="Zeile" Title="@SpalteWahlText">
-                    <Zeilenwahl Gewaehlt="@(_gewaehlt == context.Id)" Kurztext="@SpalteWahlText"
-                                Gewaehltwerden="() => Waehlen(context)" />
-                </TemplateColumn>
-                <PropertyColumn TGridItem="Zeile" TProp="string"
-                                Property="@(z => z.Schluessel)" Title="@SpalteSchluesselText" />
-                <PropertyColumn TGridItem="Zeile" TProp="int"
-                                Property="@(z => z.JahrVon)" Title="@SpalteJahrText" />
-                <PropertyColumn TGridItem="Zeile" TProp="string"
-                                Property="@(z => z.WertText)" Title="@SpalteWertText" />
-                <PropertyColumn TGridItem="Zeile" TProp="string"
-                                Property="@(z => z.Einheit)" Title="@SpalteEinheitText" />
-                <PropertyColumn TGridItem="Zeile" TProp="string"
-                                Property="@(z => z.Status)" Title="@SpalteStatusText" />
-                <PropertyColumn TGridItem="Zeile" TProp="string"
-                                Property="@(z => z.Quelle)" Title="@SpalteQuelleText" />
-            </KindInhalt>
-        </Raster>
+        @* ANWENDERENTSCHEID MN-1 (19.09.2026): "Bei der Auswahl der 'Gesetzlichen
+           Parameter' soll das gleiche Schema (Filter, Sortieren ...) verwendet
+           werden." Aus dem nackten Raster wird die EINE Katalogliste des Hauses -
+           mit Suche ueber alle Spalten, Trichter und Sortierpfeil im Spaltenkopf
+           und der Trefferzahl. Die KLASSE bleibt als Auswahlfeld davor: Sie ist
+           kein Spaltenfilter, sondern die Menge, aus der die Liste schoepft, und
+           ein neuer Satz braucht sie als Vorbelegung.
+
+           OHNE "Vergleichen": Zwei Jahreszeilen desselben Satzes
+           nebeneinanderzustellen sagt nichts, was die Liste nicht schon
+           untereinander zeigt. *@
+        <Katalogliste Profil="@Filterprofil" Zeilen="@_zeilen"
+                      Filterstand="@_filterstand" Texte="@Filtertexte"
+                      Vergleichbar="false"
+                      Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" />
     </div>
 
     <div class="epos-leiste">
@@ -145,10 +159,6 @@
 </div>
 
 @code {
-    /// <summary>Eine Zeile der Liste — die sechs Spalten und die Id.</summary>
-    public sealed record Zeile(int Id, string Schluessel, string Klasse, int JahrVon,
-                               string WertText, string Einheit, string Status, string Quelle);
-
     // =====================================================================
     // Delegaten — die Datenseite liegt in der Huelle
     // =====================================================================
@@ -159,8 +169,13 @@
     /// </summary>
     [Parameter] public Func<Task<IReadOnlyList<(string Wert, string Anzeige)>>>? Klassen { get; set; }
 
-    /// <summary>Die Zeilen einer Klasse (<c>GesetzKatalog.Zeilen</c>).</summary>
-    [Parameter] public Func<string, Task<IReadOnlyList<Zeile>>>? Zeilen { get; set; }
+    /// <summary>
+    /// Die Zeilen einer Klasse als Zeilen der Hausliste
+    /// (<c>GesetzKatalog.Katalogfilterzeilen</c>, MN-1). Ihr
+    /// <c>Schluessel</c> ist die <b>ID als Text</b> — ein Gesetzesschlüssel kommt
+    /// je Gültigkeitsjahr mehrfach vor und taugt deshalb nicht als Wahlschlüssel.
+    /// </summary>
+    [Parameter] public Func<string, Task<IReadOnlyList<Katalogfilterzeile>>>? Zeilen { get; set; }
 
     /// <summary>
     /// Legt eine Zeile an (<c>GesetzKatalog.Anlegen</c>); <c>false</c> = fehlgeschlagen.
@@ -239,6 +254,17 @@
     [Parameter] public string AbbrechenText { get; set; } = Resource.GESETZ_BTN_ABBRECHEN;
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Gesetzesparameter.btn_Help";
 
+    /// <summary>Die Beschriftungen der Katalogliste — EIN Bündel (MN-1).</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>
+    /// Ein eigener Filterstand statt des Registers (MN-1) — dasselbe Muster wie im
+    /// <c>KatalogBrowserDialog</c>. Ohne ihn holt der Dialog seinen Stand aus dem
+    /// <c>Katalogfilterregister</c>: je Sitzung EINER, damit Suche, Filter und
+    /// Sortierung ein zweites Öffnen überleben.
+    /// </summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -248,8 +274,12 @@
 
     private List<(string Wert, string Anzeige)> _klassen = new();
     private int? _klasseIndex;
-    private List<Zeile> _zeilen = new();
-    private int _gewaehlt;
+    private List<Katalogfilterzeile> _zeilen = new();
+
+    /// <summary>Der Schlüssel der gewählten Zeile — ihre ID als Text; leer = keine.</summary>
+    private string _gewaehlt = "";
+
+    private Katalogfilterstand _filterstand = new();
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
@@ -268,12 +298,30 @@
     private bool _frageNeueZeileOffen;
     private string _frageNeueZeile = "";
     private GesetzeskatalogZeileDialog.Zeilenwerte? _bearbeitet;
-    private Zeile? _alt;
+    private Katalogfilterzeile? _alt;
 
     private bool _loeschfrageOffen;
     private string _loeschfrage = "";
 
-    private IQueryable<Zeile> Zeilenliste => _zeilen.AsQueryable();
+    /// <summary>
+    /// Das Filterprofil der Liste (MN-1) — sechs Spalten aus den Beschriftungen
+    /// DIESER Maske, damit der Prüfstand sie setzen kann. Die Schlüssel kommen aus
+    /// dem Kern: derselbe Satz, unter dem <c>GesetzKatalog.Katalogfilterzeilen</c>
+    /// die Werte ablegt.
+    /// </summary>
+    private Katalogfilterprofil Filterprofil => Katalogfilterprofil.AusSpalten(
+        GesetzKatalog.KATALOG,
+        new[]
+        {
+            new Katalogspalte(GesetzKatalog.SpSchluessel, SpalteSchluesselText),
+            new Katalogspalte(GesetzKatalog.SpJahrVon, SpalteJahrText, "",
+                              Katalogspaltenart.Zahl),
+            new Katalogspalte(GesetzKatalog.SpWert, SpalteWertText, "",
+                              Katalogspaltenart.Zahl),
+            new Katalogspalte(GesetzKatalog.SpEinheit, SpalteEinheitText),
+            new Katalogspalte(GesetzKatalog.SpStatus, SpalteStatusText),
+            new Katalogspalte(GesetzKatalog.SpQuelle, SpalteQuelleText),
+        });
 
     private IReadOnlyList<(int Id, string Text)> KlassenEintraege =>
         _klassen.Select((k, i) => (i, k.Anzeige)).ToList();
@@ -288,13 +336,26 @@
     /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
     public string Meldung => _meldung;
 
-    private bool AuswahlDa => _gewaehlt > 0 && _zeilen.Any(z => z.Id == _gewaehlt);
+    /// <summary>Der Filterstand der Liste (Prüfhilfe für Tests).</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
 
-    private Zeile? Auswahl => _zeilen.FirstOrDefault(z => z.Id == _gewaehlt);
+    private bool AuswahlDa => Auswahl is not null;
+
+    private Katalogfilterzeile? Auswahl => _gewaehlt.Length == 0
+        ? null
+        : _zeilen.FirstOrDefault(z => string.Equals(z.Schluessel, _gewaehlt, StringComparison.Ordinal));
 
     // =====================================================================
     // Aufbau
     // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        // S2.5: EIN Stand je Katalog fuer die Sitzung - sonst faengt jede
+        // Ueberlagerung des Kostendialogs mit leerer Suche an.
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(GesetzKatalog.KATALOG);
+        Filtertexte.SpalteWahl = SpalteWahlText;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -328,12 +389,14 @@
     {
         string klasse = GewaehlteKlasse;
         _zeilen = klasse.Length > 0 && Zeilen is not null
-            ? (await Zeilen(klasse) ?? Array.Empty<Zeile>()).ToList()
-            : new List<Zeile>();
+            ? (await Zeilen(klasse) ?? Array.Empty<Katalogfilterzeile>()).ToList()
+            : new List<Katalogfilterzeile>();
 
         // A-13: Die Auswahl faellt weg, wenn die Zeile nicht mehr da ist - und mit ihr
         // der Knopfzustand. Der Vorlaeufer haengte beide an die Listenlaenge (B10).
-        if (_zeilen.All(z => z.Id != _gewaehlt)) _gewaehlt = 0;
+        // Ein FILTERwechsel laesst sie dagegen stehen: Die Katalogliste haelt die
+        // Markierung am Schluessel fest, auch wenn die Zeile gerade ausgeblendet ist.
+        if (Auswahl is null) _gewaehlt = "";
     }
 
     private async Task BeiKlasse(int? index)
@@ -343,11 +406,15 @@
         await ZeilenLaden();
     }
 
-    private void Waehlen(Zeile zeile)
+    private void BeiZeile(string schluessel)
     {
-        _gewaehlt = zeile.Id;
+        _gewaehlt = schluessel ?? "";
         _meldung = "";
     }
+
+    /// <summary>Der Wert einer Spalte der gewählten Zeile; leer, wo nichts steht.</summary>
+    private static string Spalte(Katalogfilterzeile zeile, string schluessel)
+        => zeile.Text(schluessel);
 
     // =====================================================================
     // Neu (btnNeu_Click)
@@ -375,20 +442,22 @@
 
     private void BeiAendern()
     {
-        Zeile? alt = Auswahl;
+        Katalogfilterzeile? alt = Auswahl;
         if (alt is null) return;
 
         _meldung = "";
         _alt = alt;
         _zeileNeu = false;
         _zeileId = alt.Id;
-        _zeileSchluessel = alt.Schluessel;
-        _zeileKlasse = alt.Klasse;
-        _zeileJahr = alt.JahrVon;
-        _zeileWert = Zahlen.ZahlParsen(alt.WertText, out double w) ? w : (double?)null;
-        _zeileEinheit = alt.Einheit;
-        _zeileStatus = alt.Status;
-        _zeileQuelle = alt.Quelle;
+        _zeileSchluessel = alt.Bezeichner;
+        // Die Klasse ist die GEWAEHLTE: Die Liste zeigt genau deren Zeilen, und
+        // "Aendern" laesst sie ohnehin unangetastet (Identitaet der Reihe).
+        _zeileKlasse = GewaehlteKlasse;
+        _zeileJahr = (int)(alt.Zahl(GesetzKatalog.SpJahrVon) ?? AktuellesJahr);
+        _zeileWert = alt.Zahl(GesetzKatalog.SpWert);
+        _zeileEinheit = Spalte(alt, GesetzKatalog.SpEinheit);
+        _zeileStatus = Spalte(alt, GesetzKatalog.SpStatus);
+        _zeileQuelle = Spalte(alt, GesetzKatalog.SpQuelle);
         _zeileOffen = true;
     }
 
@@ -412,10 +481,10 @@
         // Die Kernregel: Liegt das Gueltig-ab-Jahr der BESTEHENDEN Zeile in der
         // Vergangenheit, ist eine Aenderung im Regelfall eine Gesetzesaenderung - und
         // die gehoert in eine neue Jahreszeile.
-        if (_alt is not null && _alt.JahrVon < AktuellesJahr)
+        if (_alt is not null && AltJahr(_alt) < AktuellesJahr)
         {
             _bearbeitet = werte;
-            _frageNeueZeile = string.Format(VorlageFrageNeueZeile, _alt.Schluessel, _alt.JahrVon);
+            _frageNeueZeile = string.Format(VorlageFrageNeueZeile, _alt.Bezeichner, AltJahr(_alt));
             _frageNeueZeileOffen = true;
             return;
         }
@@ -454,7 +523,8 @@
         Vorwahl = werte.Klasse;
         await KlassenLaden();
         if (ok) _gewaehlt = _zeilen.FirstOrDefault(
-            z => z.Schluessel == werte.Schluessel && z.JahrVon == werte.JahrVon)?.Id ?? 0;
+            z => z.Bezeichner == werte.Schluessel
+                 && (int)(z.Zahl(GesetzKatalog.SpJahrVon) ?? 0) == werte.JahrVon)?.Schluessel ?? "";
         Geaendert?.Invoke();
     }
 
@@ -464,20 +534,24 @@
 
     private void BeiLoeschen()
     {
-        Zeile? p = Auswahl;
+        Katalogfilterzeile? p = Auswahl;
         if (p is null) return;
 
         _meldung = "";
-        _loeschfrage = string.Format(VorlageLoeschfrage, p.Schluessel, p.JahrVon);
+        _loeschfrage = string.Format(VorlageLoeschfrage, p.Bezeichner, AltJahr(p));
         _loeschfrageOffen = true;
     }
+
+    /// <summary>Das Gültig-ab-Jahr einer Zeile; ohne Zahl das laufende Jahr.</summary>
+    private int AltJahr(Katalogfilterzeile zeile)
+        => (int)(zeile.Zahl(GesetzKatalog.SpJahrVon) ?? AktuellesJahr);
 
     private async Task LoeschfrageBeantwortet(bool? antwort)
     {
         _loeschfrageOffen = false;
         if (antwort != true) return;
 
-        Zeile? p = Auswahl;
+        Katalogfilterzeile? p = Auswahl;
         if (p is null || Loeschen is null) return;
 
         if (!await Loeschen(p.Id)) Melden(SpeicherfehlerText, WarnStufe.Warnung);

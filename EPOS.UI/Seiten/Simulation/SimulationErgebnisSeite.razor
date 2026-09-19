@@ -145,6 +145,7 @@
                         <KindInhalt>
                             <HeizkesselReiter Daten="@_daten.Heizkessel" Bild="BildHolen"
                                               Brennstoffe="@_daten.KesselBrennstoffe"
+                                              BrennstoffDefiniert="@_daten.KesselBrennstoffDefiniert"
                                               BedarfVorhanden="@(_daten.Uebersicht?.WaermebedarfVorhanden ?? false)"
                                               Csv="@Rueckruf(Dienste?.CsvHeizkessel)" />
                         </KindInhalt>
@@ -166,6 +167,7 @@
                         <KindInhalt>
                             <BhkwReiter Daten="@_daten.Bhkw" Bild="BildHolen"
                                         Brennstoffe="@_daten.BhkwBrennstoffe"
+                                        BrennstoffDefiniert="@_daten.BhkwBrennstoffDefiniert"
                                         Praesent="@(_daten.Uebersicht?.Bhkw ?? false)"
                                         WaermebedarfVorhanden="@(_daten.Uebersicht?.WaermebedarfVorhanden ?? false)"
                                         StrombedarfVorhanden="@(_daten.Uebersicht?.StrombedarfVorhanden ?? false)" />

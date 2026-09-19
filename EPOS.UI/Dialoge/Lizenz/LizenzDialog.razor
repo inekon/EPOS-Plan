@@ -30,10 +30,34 @@
    Zustimmungsmodus = true die EULA-Abfrage beim ersten Start. Der Unterschied
    sind vier Zeilen Text und zwei Knoepfe.
 
-   DREI REGISTERKARTEN: Lizenzvereinbarung (Datei, Zwischenspeicher oder
+   VIER REGISTERKARTEN (MN-1, 19.09.2026): Status & Aktivierung (die
+   Lizenzverwaltung), Lizenzvereinbarung (Datei, Zwischenspeicher oder
    Online-Fassung), Rechtliche Hinweise (7+8 Abschnitte) und Komponenten (6+6).
-   VERBINDLICH IST AUSSCHLIESSLICH DIE ERSTE - das sagt der Klassenkopf des
-   Vorlaeufers ausdruecklich, und die uebrigen Seiten sagen es selbst.
+   VERBINDLICH IST AUSSCHLIESSLICH DIE LIZENZVEREINBARUNG - das sagt der
+   Klassenkopf des Vorlaeufers ausdruecklich, und die uebrigen Seiten sagen es
+   selbst.
+
+   ANWENDERENTSCHEID MN-1 (19.09.2026) - EIN LIZENZDIALOG, EIN EINSTIEG.
+   Bis dahin gab es zwei Wege zur Lizenzverwaltung: den Menuepunkt
+   "Administration -> Lizenz…" (eigenes Fenster) und den Knopf "Lizenz
+   aktivieren…" in der Fusszeile HIER, der sie als Ueberlagerung zeigte
+   (E-11). Der Anwender hat beides zurueckgegeben ("Es gibt einen
+   Lizenz-Dialog fuer Lizenz aktivieren. Diese ist so 1. vermutlich nicht
+   rechtskonform und 2. unter Hilfe->Lizenz bereits vorhanden. Evtl. kann der
+   Dialog unter Hilfe uebersichtlicher dargestellt werden."). Jetzt:
+     * Der Menuepunkt ist weg (Menuetabelle, MN-1).
+     * Die Ueberlagerung ist weg; der LizenzVerwaltungDialog steht als ERSTES
+       REITERBLATT "Status & Aktivierung" im selben Reiter wie die drei
+       Lesekarten. Ein Fenster, EIN Kreuz, EINE Fusszeile mit dem Lizenzstand.
+     * Der Knopf "Lizenz aktivieren…" der Fusszeile faellt damit ebenfalls;
+       LIZR_BTN_AKTIVIEREN bleibt wie LIZR_BTN_DATEI ungelesen im Katalog.
+     * Das Blatt kann den Reiter WECHSELN lassen: Die zwei Spruenge unter dem
+       Uebertragungshinweis ueber "Jetzt aktivieren" fuehren auf
+       "Lizenzvereinbarung" und "Rechtliche Hinweise" - lesen, bevor man
+       ueberträgt, ohne das Fenster zu verlassen.
+     * Welches Blatt vorn steht, sagt die Huelle (StartReiter): der Menueweg
+       zeigt die Vereinbarung, bei NICHT aktivierter Lizenz den Status; der
+       Erststart (Zustimmungsmodus) immer die Vereinbarung.
 
    WAS NICHT MITWANDERT (Vermessung § 12.5): die Suchleiste und A+/A- (E-12, Zoom
    kann die WebView selbst), die RTF-Anzeige (E-1: .rtf und .docx zeigen DENSELBEN
@@ -73,6 +97,22 @@
 
     <Reiter @bind-Aktiv="_reiter" Bezeichnung="@Texte.KopfTitel">
         <KindInhalt>
+
+            @* ========================================= Status & Aktivierung *@
+            @* MN-1 (19.09.2026): die Lizenzverwaltung als Reiterblatt statt als
+               Ueberlagerung. Ohne Parametersatz gibt es das Blatt NICHT - genau
+               wie es bis dahin ohne ihn keinen Knopf "Lizenz aktivieren…" gab. *@
+            @if (VerwaltungGaben is not null)
+            {
+                <Reiterblatt Schluessel="STATUS" Titel="@Texte.ReiterStatus">
+                    <KindInhalt>
+                        <div class="epos-lizenz-verwaltungsblatt">
+                            <LizenzVerwaltungDialog @attributes="VerwaltungGaben"
+                                                    ReiterGewuenscht="ReiterWaehlen" />
+                        </div>
+                    </KindInhalt>
+                </Reiterblatt>
+            }
 
             @* ============================================ Lizenzvereinbarung *@
             <Reiterblatt Schluessel="VERTRAG" Titel="@Texte.ReiterVertrag">
@@ -124,10 +164,9 @@
         </div>
 
         <div class="epos-leiste epos-lizenz-knoepfe">
-            @if (VerwaltungGaben is not null)
-            {
-                <button type="button" class="epos-knopf" @onclick="VerwaltungOeffnen">@Texte.KnopfAktivieren</button>
-            }
+            @* MN-1 (19.09.2026): HIER STAND "Lizenz aktivieren…" und oeffnete die
+               Verwaltung als Ueberlagerung. Sie steht jetzt als erstes
+               Reiterblatt - ein Klick weniger und kein zweiter Bereich mehr. *@
             @if (Speichern is not null)
             {
                 <button type="button" class="epos-knopf" @onclick="SpeichernKlick">@Texte.KnopfSpeichern</button>
@@ -146,20 +185,6 @@
         </div>
     </footer>
 </div>
-
-@* Die Lizenzverwaltung als UEBERLAGERUNG statt als zweites Fenster (E-11): Der Wirt
-   haelt ihren Parametersatz und splattet ihn, Geschlossen setzt er selbst. Ihre Texte
-   stehen im selben Buendel (LizenzTexte.Verwaltung) und kommen mit dem Satz. *@
-<Ueberlagerung Offen="@_verwaltungOffen" Titel="@Texte.KnopfAktivieren"
-               Geschlossen="VerwaltungGeschlossen">
-    <KindInhalt>
-        @if (_verwaltungOffen && VerwaltungGaben is not null)
-        {
-            <LizenzVerwaltungDialog @attributes="VerwaltungGaben"
-                                    Geschlossen="VerwaltungGeschlossen" />
-        }
-    </KindInhalt>
-</Ueberlagerung>
 
 @code {
     /// <summary><c>true</c> = die EULA-Abfrage beim ersten Start: zwei zusätzliche
@@ -196,9 +221,19 @@
     /// Datei (oder <c>null</c>) heraus. Die Dateiwahl gehört der Plattform.</summary>
     [Parameter] public Func<string, string, Task<string?>>? Speichern { get; set; }
 
-    /// <summary>Der Parametersatz der Lizenzverwaltung — ohne ihn kein Knopf „Lizenz
-    /// aktivieren…". Sie erscheint als <c>Ueberlagerung</c> (E-11).</summary>
+    /// <summary>Der Parametersatz der Lizenzverwaltung — ohne ihn gibt es das
+    /// Reiterblatt „Status &amp; Aktivierung" nicht (MN-1; bis dahin: keinen Knopf
+    /// „Lizenz aktivieren…" und keine <c>Ueberlagerung</c>, E-11).</summary>
     [Parameter] public IReadOnlyDictionary<string, object>? VerwaltungGaben { get; set; }
+
+    /// <summary>
+    /// Das Blatt, das beim Öffnen vorn steht — <c>STATUS</c>, <c>VERTRAG</c>,
+    /// <c>HINWEISE</c> oder <c>KOMPONENTEN</c>; leer oder unbekannt heißt
+    /// „Lizenzvereinbarung" (MN-1, 19.09.2026). Die Hülle entscheidet: der
+    /// Menüweg zeigt die Vereinbarung, bei nicht aktivierter Lizenz den Status,
+    /// der Erststart immer die Vereinbarung.
+    /// </summary>
+    [Parameter] public string StartReiter { get; set; } = "";
 
     /// <summary>Der Dialog ist zu. <c>true</c> = zugestimmt bzw. normal geschlossen,
     /// <c>false</c> = abgelehnt. Im Normalmodus kommt immer <c>true</c>.</summary>
@@ -210,7 +245,7 @@
     // ---- Zustand -----------------------------------------------------------
 
     private string _reiter = "VERTRAG";
-    private bool _verwaltungOffen;
+    private bool _startGesetzt;
     private bool _nachgeladen;
     private string _meldung = "";
     private WarnStufe _meldungsstufe = WarnStufe.Hinweis;
@@ -223,6 +258,28 @@
     /// <summary>Die zweite Fußzeile: Herkunft des Textes, mit Stand, wenn bekannt.</summary>
     private string Zeile2 => string.Format(Texte.FussQuelle, Text.Quelle)
         + (string.IsNullOrEmpty(Text.Stand) ? "" : string.Format(Texte.FussStand, Text.Stand));
+
+    /// <summary>
+    /// Die Vorwahl der Hülle greift EINMAL — danach gehört der Reiter dem
+    /// Anwender (MN-1). Ein unbekannter Schlüssel wird nicht gesetzt: Der
+    /// <c>Reiter</c> zeigte sonst sein erstes Blatt, und das wäre je nach
+    /// Parametersatz ein anderes.
+    /// </summary>
+    protected override void OnParametersSet()
+    {
+        if (_startGesetzt) return;
+        _startGesetzt = true;
+
+        if (StartReiter is "STATUS" && VerwaltungGaben is not null) _reiter = "STATUS";
+        else if (StartReiter is "HINWEISE" or "KOMPONENTEN" or "VERTRAG") _reiter = StartReiter;
+    }
+
+    /// <summary>Der Reiterwechsel, den ein Blatt anstößt (MN-1): die zwei
+    /// Sprünge aus „Status &amp; Aktivierung" auf Vereinbarung und Hinweise.</summary>
+    private void ReiterWaehlen(string schluessel)
+    {
+        if (!string.IsNullOrEmpty(schluessel)) _reiter = schluessel;
+    }
 
     protected override async Task OnAfterRenderAsync(bool erstesMal)
     {
@@ -380,6 +437,11 @@
         _meldungsstufe = WarnStufe.Hinweis;
     }
 
+    /// <remarks>
+    /// „STATUS" faellt in den Vorgabezweig: Das Blatt „Status &amp; Aktivierung"
+    /// ist kein Lesetext, sondern eine Maske — gespeichert wird dann die
+    /// Lizenzvereinbarung, also der Text, um den es beim Speichern geht.
+    /// </remarks>
     private string InhaltDerKarte(string schluessel) => schluessel switch
     {
         "HINWEISE" => AlsText(Hinweise),
@@ -405,10 +467,6 @@
             // dasselbe stille Verhalten wie beim fehlgeschlagenen Process.Start.
         }
     }
-
-    private void VerwaltungOeffnen() => _verwaltungOffen = true;
-
-    private void VerwaltungGeschlossen() => _verwaltungOffen = false;
 
     private async Task Zustimmen()
     {

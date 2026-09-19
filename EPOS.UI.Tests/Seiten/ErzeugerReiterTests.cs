@@ -102,15 +102,43 @@ public class ErzeugerReiterTests : EposBunitContext
 
     private IRenderedComponent<HeizkesselReiter> KesselZeichnen(
         SimulationErgebnisCtrl.HeizkesselErgebnis? erg, bool bedarf = true, Action? csv = null,
-        IReadOnlyList<Brennstoffzeile>? brennstoffe = null)
+        IReadOnlyList<Brennstoffzeile>? brennstoffe = null,
+        bool brennstoffDefiniert = false)
         => Render<HeizkesselReiter>(p =>
         {
             p.Add(x => x.Daten, erg);
             p.Add(x => x.Brennstoffe, brennstoffe ?? Kesselbrennstoffe());
+            p.Add(x => x.BrennstoffDefiniert, brennstoffDefiniert);
             p.Add(x => x.BedarfVorhanden, bedarf);
             p.Add(x => x.Bild, Bild);
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
         });
+
+    /// <summary>
+    /// Auftrag BH-1, Heizkesselseite: derselbe Unterschied wie beim BHKW. Bleibt
+    /// keine Brennstoffzeile uebrig, obwohl ein Kessel des Projekts einen
+    /// Brennstoff fuehrt, dann ist der Block die Folge eines Laufs ohne
+    /// Kesselbetrieb — nicht eines Pflegefehlers.
+    /// </summary>
+    [Fact]
+    public void Kessel_ohne_Verbrauch_mit_gepflegtem_Brennstoff_meldet_nicht_gelaufen()
+    {
+        var seite = KesselZeichnen(Kessel(), brennstoffe: Array.Empty<Brennstoffzeile>(),
+                                   brennstoffDefiniert: true);
+
+        Assert.Contains("nicht gelaufen", seite.Markup);
+        Assert.DoesNotContain("Kein Brennstoff für diese Heizkessel definiert", seite.Markup);
+    }
+
+    [Fact]
+    public void Kessel_ohne_gepflegten_Brennstoff_behaelt_den_Bestandstext()
+    {
+        var seite = KesselZeichnen(Kessel(), brennstoffe: Array.Empty<Brennstoffzeile>(),
+                                   brennstoffDefiniert: false);
+
+        Assert.Contains("Kein Brennstoff für diese Heizkessel definiert", seite.Markup);
+        Assert.DoesNotContain("nicht gelaufen", seite.Markup);
+    }
 
     [Fact]
     public void Kessel_zeigt_die_Felder_und_die_Quellwaermezeile()
@@ -498,7 +526,8 @@ public class ErzeugerReiterTests : EposBunitContext
 
     private IRenderedComponent<BhkwReiter> BhkwZeichnen(
         SimulationErgebnisCtrl.BhkwErgebnis? erg, bool praesent = true,
-        IReadOnlyList<Brennstoffzeile>? brennstoffe = null)
+        IReadOnlyList<Brennstoffzeile>? brennstoffe = null,
+        bool brennstoffDefiniert = false)
         => Render<BhkwReiter>(p => p
             .Add(x => x.Daten, erg)
             .Add(x => x.Praesent, praesent)
@@ -506,7 +535,41 @@ public class ErzeugerReiterTests : EposBunitContext
             {
                 new Brennstoffzeile("Gasverbrauch (Hu):", 62.0, true)
             })
+            .Add(x => x.BrennstoffDefiniert, brennstoffDefiniert)
             .Add(x => x.Bild, Bild));
+
+    /// <summary>
+    /// <b>Auftrag BH-1 (Anwenderbefund 19.09.2026).</b> Ein BHKW, das hinter
+    /// Waermepumpe und Heizkessel in der Kaskade steht, bekommt keinen
+    /// Waermebedarf mehr ab und laeuft 0 h/a. Der Brennstoffblock fuehrt nur
+    /// Zeilen mit Verbrauch &gt; 0 und blieb damit leer — gemeldet wurde
+    /// „Kein Brennstoff für dieses BHKW definiert". Das ist die falsche
+    /// Auskunft: Gepflegt ist der Brennstoff (<c>Tab_BHKW.Brennstoff</c>), nur
+    /// verbraucht wurde keiner.
+    /// </summary>
+    [Fact]
+    public void Bhkw_ohne_Verbrauch_mit_gepflegtem_Brennstoff_meldet_nicht_gelaufen()
+    {
+        var seite = BhkwZeichnen(Bhkw(), brennstoffe: Array.Empty<Brennstoffzeile>(),
+                                 brennstoffDefiniert: true);
+
+        Assert.Contains("nicht gelaufen", seite.Markup);
+        Assert.DoesNotContain("Kein Brennstoff für dieses BHKW definiert", seite.Markup);
+    }
+
+    /// <summary>
+    /// Die Gegenprobe: Ohne gepflegten Brennstoff bleibt der Bestandstext stehen —
+    /// dann ist er wahr (Auftrag BH-1).
+    /// </summary>
+    [Fact]
+    public void Bhkw_ohne_gepflegten_Brennstoff_behaelt_den_Bestandstext()
+    {
+        var seite = BhkwZeichnen(Bhkw(), brennstoffe: Array.Empty<Brennstoffzeile>(),
+                                 brennstoffDefiniert: false);
+
+        Assert.Contains("Kein Brennstoff für dieses BHKW definiert", seite.Markup);
+        Assert.DoesNotContain("nicht gelaufen", seite.Markup);
+    }
 
     /// <summary>
     /// Etappe E2: Die beiden Bestandszeilen heissen „Vbh thermisch, …" — sie

@@ -209,10 +209,17 @@ namespace WindowsFormsApplication1
                 object result = DataRepository.ExecuteScalar("SELECT Max(ID) FROM Tab_Kenndaten");
                 m_ID = (result == DBNull.Value) ? 1 : Convert.ToInt32(result) + 1;
 
-                // Insert mit InvariantCulture für korrekte Dezimalpunkte (COP/Ptherm)
+                // Insert mit InvariantCulture für korrekte Dezimalpunkte (COP/Ptherm).
+                //
+                // ID_Projekt KOMMT AUS DER WAERMEPUMPE. Bis Schemaschritt 96 blieb die
+                // Spalte hier ausgelassen und fiel auf ihren DEFAULT 0 zurueck - daher
+                // die Kennlinienzeilen, die an einer echten Waermepumpe hingen und
+                // trotzdem auf kein Projekt zeigten. Seit die Spalte einen
+                // Fremdschluessel auf Tab_Projekt traegt, wiese die Datenbank diese 0 ab.
+                // Dieselbe Unterabfrage wie in WPCtrl.SQL_KENNLINIE_EINFUEGEN.
                 string sql = FormattableString.Invariant($@"
-                    INSERT INTO Tab_Kenndaten (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) 
-                    VALUES ({m_ID}, {m_ID_WP}, {m_nVorlauf}, {m_nTemperatur}, {m_nCOP}, {m_nPTherm})");
+                    INSERT INTO Tab_Kenndaten (ID, ID_Projekt, ID_WP, Vorlauf, Temperatur, COP, Ptherm)
+                    VALUES ({m_ID}, (SELECT w.ID_Projekt FROM Tab_WP w WHERE w.ID = {m_ID_WP}), {m_ID_WP}, {m_nVorlauf}, {m_nTemperatur}, {m_nCOP}, {m_nPTherm})");
 
                 return DataRepository.ExecuteSQL(sql);
             }
@@ -351,15 +358,36 @@ namespace WindowsFormsApplication1
                         if (s.m_ID <= 0)
                         {
                             // (3) Neue Zeile.
-                            v.Ausfuehren(
-                                "INSERT INTO " + tabelle +
-                                " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)",
-                                new DbParam("@id", DbParamTyp.Integer) { Wert = naechsteId++ },
-                                new DbParam("@wp", DbParamTyp.Integer) { Wert = idWp },
-                                new DbParam("@vl", DbParamTyp.Integer) { Wert = s.m_nVorlauf },
-                                new DbParam("@t", DbParamTyp.Integer) { Wert = s.m_nTemperatur },
-                                new DbParam("@cop", DbParamTyp.Double) { Wert = s.m_nCOP },
-                                new DbParam("@pt", DbParamTyp.Double) { Wert = s.m_nPTherm });
+                            //
+                            //     DIE PROJEKTTABELLE FUEHRT ID_Projekt, die Stammtabelle
+                            //     nicht. Bis Schemaschritt 96 blieb die Spalte hier
+                            //     ausgelassen und fiel auf ihren DEFAULT 0 zurueck -
+                            //     daher die Kennlinienzeilen an einer echten Waermepumpe,
+                            //     die auf kein Projekt zeigten. Seit die Spalte einen
+                            //     Fremdschluessel auf Tab_Projekt traegt, wiese die
+                            //     Datenbank diese 0 ab. Die Projektnummer kommt aus der
+                            //     Waermepumpe - dieselbe Unterabfrage wie in
+                            //     WPCtrl.SQL_KENNLINIE_EINFUEGEN.
+                            if (string.Equals(tabelle, TABLE_PROJEKT, StringComparison.Ordinal))
+                                v.Ausfuehren(
+                                    WPCtrl.SQL_KENNLINIE_EINFUEGEN,
+                                    new DbParam("@id", DbParamTyp.Integer) { Wert = naechsteId++ },
+                                    new DbParam("@pj", DbParamTyp.Integer) { Wert = idWp },
+                                    new DbParam("@wp", DbParamTyp.Integer) { Wert = idWp },
+                                    new DbParam("@vl", DbParamTyp.Integer) { Wert = s.m_nVorlauf },
+                                    new DbParam("@t", DbParamTyp.Integer) { Wert = s.m_nTemperatur },
+                                    new DbParam("@cop", DbParamTyp.Double) { Wert = s.m_nCOP },
+                                    new DbParam("@pt", DbParamTyp.Double) { Wert = s.m_nPTherm });
+                            else
+                                v.Ausfuehren(
+                                    "INSERT INTO " + tabelle +
+                                    " (ID, ID_WP, Vorlauf, Temperatur, COP, Ptherm) VALUES (?, ?, ?, ?, ?, ?)",
+                                    new DbParam("@id", DbParamTyp.Integer) { Wert = naechsteId++ },
+                                    new DbParam("@wp", DbParamTyp.Integer) { Wert = idWp },
+                                    new DbParam("@vl", DbParamTyp.Integer) { Wert = s.m_nVorlauf },
+                                    new DbParam("@t", DbParamTyp.Integer) { Wert = s.m_nTemperatur },
+                                    new DbParam("@cop", DbParamTyp.Double) { Wert = s.m_nCOP },
+                                    new DbParam("@pt", DbParamTyp.Double) { Wert = s.m_nPTherm });
                             continue;
                         }
 

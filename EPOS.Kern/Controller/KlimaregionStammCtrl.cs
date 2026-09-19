@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -185,21 +186,53 @@ namespace WindowsFormsApplication1
 
         // Legt eine neue Klimaregion in der STAMM-Tabelle an (Import im Admin-Dialog).
         // ID_Klimaregion ist AutoWert; ReadOnly wird mit false gesetzt (Feld ist NOT NULL).
+        //
+        // DIESE Ueberladung bleibt fuer jeden Aufrufer gueltig, der die Herkunft nicht
+        // kennt: Sie traegt Quelle und Importdatum als NULL ein - und NULL heisst dort
+        // "Altbestand" (Schemaschritt 95).
         public bool Add(string szName, double Longitude, double Latitude, string Details, DbVorgang v)
         {
-            string sql = "INSERT INTO " + TAB_REGION_STAMM + " (Name, Longitude, Latitude, Details, ReadOnly) VALUES (?, ?, ?, ?, ?)";
+            return Add(szName, Longitude, Latitude, Details, null, null, v);
+        }
+
+        /// <summary>
+        /// Legt eine neue Klimaregion im STAMM an und vermerkt, WOHER ihre Reihe stammt
+        /// (Schemaschritt 95, Auftrag KL-3).
+        /// </summary>
+        /// <param name="quelle">Sprachneutraler Schlüssel:
+        /// <see cref="DbWerte.KLIMA_QUELLE_PVGIS"/>,
+        /// <see cref="DbWerte.KLIMA_QUELLE_TRY_DATEI"/> oder
+        /// <see cref="DbWerte.KLIMA_QUELLE_TRY_REGIONAL"/>. Leer oder <c>null</c>
+        /// schreibt NULL — <b>nie</b> einen Anzeigetext.</param>
+        /// <param name="importdatum">Der Tag des Imports als ISO-Text
+        /// <c>yyyy-MM-dd</c>; leer oder <c>null</c> schreibt NULL.</param>
+        public bool Add(string szName, double Longitude, double Latitude, string Details,
+                        string quelle, string importdatum, DbVorgang v)
+        {
+            string sql = "INSERT INTO " + TAB_REGION_STAMM + " (Name, Longitude, Latitude, Details, ReadOnly, " +
+                         SchemaKatalog.SPALTE_KR_QUELLE + ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM +
+                         ") VALUES (?, ?, ?, ?, ?, ?, ?)";
             DbParam[] ps = {
                 new DbParam("?", string.IsNullOrEmpty(szName) ? (object)DBNull.Value : szName),
                 new DbParam("?", Longitude),
                 new DbParam("?", Latitude),
                 new DbParam("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
-                new DbParam("?", false)
+                new DbParam("?", false),
+                Text(quelle),
+                Text(importdatum)
             };
             // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
             // Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
             int neueId = v.EinfuegenUndId(sql, ps);
             if (neueId > 0) m_ID_Klimaregion = neueId;
             return true;
+        }
+
+        /// <summary>Ein Textparameter, der bei leerem Wert NULL bindet — nie eine leere
+        /// Zeichenfolge: NULL ist hier die Aussage "nicht bekannt".</summary>
+        private static DbParam Text(string wert)
+        {
+            return new DbParam("?", string.IsNullOrWhiteSpace(wert) ? (object)DBNull.Value : wert.Trim());
         }
 
         public bool Update()
@@ -263,6 +296,151 @@ namespace WindowsFormsApplication1
             var namen = new List<string>(rows);
             for (int i = 0; i < rows; i++) namen.Add(items[i].m_szName);
             return namen;
+        }
+
+        #endregion
+
+        #region --- KATALOGLISTE (Auftrag KL-4) ---
+
+        /// <summary>
+        /// <b>Die Zeilen der Klimaregionsliste</b> (Anwenderwunsch 19.09.2026: „Bei der
+        /// Auswahl der Klimadaten soll das gleiche Schema (Filter, Sortieren …)
+        /// verwendet werden. Die Quelle und Bezeichnung der Klimadaten soll mit
+        /// angezeigt werden.") — SIEBEN Spalten: Bezeichner, Quelle, Standort,
+        /// Longitude, Latitude, Importdatum und Schreibschutz.
+        ///
+        /// <para>Damit steht die Regionsliste in derselben
+        /// <c>Katalogliste</c> wie die vierzehn anderen Kataloge des Hauses: Suchfeld
+        /// ueber alle Spalten, Trichter und Sortierpfeil im Spaltenkopf, Trefferzahl.
+        /// Bis hierher waren es zwei Spalten ohne jeden Filter.</para>
+        ///
+        /// <para><b>Die QUELLE bleibt hier ihr SCHLUESSEL</b>
+        /// (<c>PVGIS</c>, <c>TRY_DATEI</c>, <c>TRY_REGIONAL</c>, siehe
+        /// <see cref="DbWerte.KLIMA_QUELLE_PVGIS"/>); den Anzeigetext setzt die Huelle
+        /// ein. Der Kern kennt keine Anzeigetexte — Drei-Schichten-Regel. Ein
+        /// Altbestand ohne Quelle bleibt LEER (der Halbgeviertstrich aus W6-E-1) und
+        /// wird nicht nachdatiert.</para>
+        ///
+        /// <para><b>Tolerant gegen eine nie migrierte Datenbank</b> (Muster
+        /// <c>KostenVorlagenCtrl.PflichtSpalteVorhanden</c>): Fehlen die zwei Spalten
+        /// aus Schemaschritt 95, bleiben Quelle und Importdatum leer — die Liste steht
+        /// trotzdem da, statt mit „no such column" abzubrechen.</para>
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+
+            bool mitHerkunft =
+                DataRepository.SpalteVorhanden(TAB_REGION_STAMM, SchemaKatalog.SPALTE_KR_QUELLE) &&
+                DataRepository.SpalteVorhanden(TAB_REGION_STAMM, SchemaKatalog.SPALTE_KR_IMPORTDATUM);
+
+            string felder = "ID_Klimaregion, Name, Longitude, Latitude, Details, ReadOnly";
+            if (mitHerkunft)
+                felder += ", " + SchemaKatalog.SPALTE_KR_QUELLE +
+                          ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM;
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT " + felder + " FROM " + TAB_REGION_STAMM + " ORDER BY Name");
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                string bezeichner = Katalogfeld.Text(r, "Name");
+                double? lon = Katalogfeld.Zahl(r, "Longitude");
+                double? lat = Katalogfeld.Zahl(r, "Latitude");
+
+                var zeile = new Katalogfilterzeile(Katalogfeld.Ganzzahl(r, "ID_Klimaregion"),
+                                                   bezeichner)
+                {
+                    Geschuetzt = Katalogfeld.Kennzeichen(r, "ReadOnly")
+                };
+
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, bezeichner)
+                    .MitText(Katalogfilterprofil.SpQuelle,
+                             mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_QUELLE) : "")
+                    .MitText(Katalogfilterprofil.SpStandort,
+                             Standorttext(Katalogfeld.Text(r, "Details"), lon ?? 0, lat ?? 0))
+                    .MitZahl(Katalogfilterprofil.SpLongitude, lon, 4)
+                    .MitZahl(Katalogfilterprofil.SpLatitude, lat, 4)
+                    .MitText(Katalogfilterprofil.SpImportdatum,
+                             mitHerkunft ? Katalogfeld.Text(r, SchemaKatalog.SPALTE_KR_IMPORTDATUM) : "")
+                    .MitKennzeichen(Katalogfilterprofil.SpSchreibschutz, zeile.Geschuetzt));
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// <b>Der STANDORT einer Region als ein Satz</b> — der ORTSNAME, wenn
+        /// <c>Details</c> einen nennt, sonst das Koordinatenpaar.
+        ///
+        /// <para><b>Warum ueberhaupt gerechnet.</b> <c>Details</c> ist Freitext, und er
+        /// sagt je Quelle etwas anderes: Der PVGIS-Abruf schreibt den geokodierten Ort
+        /// („ERA5 - PVGIS-SARAH3: Bielefeld, Nordrhein-Westfalen, Deutschland"), die
+        /// zwei TRY-Quellen schreiben einen HERKUNFTSVERMERK, der mit dem Namen der
+        /// Quelle beginnt und Lizenz, Station und Entfernung mit „ · " aneinanderreiht.
+        /// In einer Spalte von 20 Zeichen taugt davon nur das erste Glied — und auch
+        /// das nur, wenn es ein Ort ist und nicht der Quellenname.</para>
+        ///
+        /// <para><b>Die Koordinaten sind der Rueckfall, nicht die Ausnahme:</b> Sie
+        /// stehen immer und sagen dasselbe, nur unbequemer. Vier Nachkommastellen sind
+        /// rund 11 m — die Genauigkeit, mit der der Import sie auch ablegt.</para>
+        /// </summary>
+        /// <param name="details"><c>Tab_Klimaregion_STAMM.Details</c>; leer erlaubt.</param>
+        /// <param name="lon">Laengengrad.</param>
+        /// <param name="lat">Breitengrad.</param>
+        internal static string Standorttext(string details, double lon, double lat)
+        {
+            string kopf = (details ?? "").Split(new[] { TRENNER }, StringSplitOptions.None)[0].Trim();
+
+            if (kopf.Length > 0 && !IstHerkunftsvermerk(kopf))
+                return kopf;
+
+            // Der Rueckfall: Laenge und Breite. Ohne Himmelsrichtungsbuchstaben - die
+            // waeren sprachabhaengig, das Gradzeichen ist es nicht.
+            return lon.ToString("F4", CultureInfo.CurrentCulture) + "° / " +
+                   lat.ToString("F4", CultureInfo.CurrentCulture) + "°";
+        }
+
+        /// <summary>Das Trennzeichen, mit dem <c>Details</c> seine Glieder reiht.</summary>
+        private const string TRENNER = " · ";
+
+        /// <summary>
+        /// Beginnt <c>Details</c> mit dem Namen einer TRY-Quelle statt mit einem Ort?
+        ///
+        /// <para>Gemessen wird gegen die VORLAGEN selbst
+        /// (<c>KLIMA_TRY_DETAILS_DATEI</c> / <c>_REGIONAL</c>), nicht gegen ein
+        /// abgeschriebenes Literal: Was dort vorne steht, ist die eine Wahrheit, und
+        /// eine Aenderung der Vorlage zieht hier mit.</para>
+        ///
+        /// <para><b>In BEIDEN Sprachen.</b> Der Vermerk ist in der Sprache geschrieben
+        /// worden, die beim Import eingestellt war — nicht notwendig in der, die jetzt
+        /// eingestellt ist. Deshalb wird gegen die aktuelle Kultur UND gegen die
+        /// neutrale Fassung gehalten.</para>
+        /// </summary>
+        private static bool IstHerkunftsvermerk(string kopf)
+        {
+            return GleichtVorlage(kopf, "KLIMA_TRY_DETAILS_DATEI") ||
+                   GleichtVorlage(kopf, "KLIMA_TRY_DETAILS_REGIONAL");
+        }
+
+        /// <summary>Stimmt <paramref name="kopf"/> mit dem ersten Glied einer Vorlage ueberein?</summary>
+        private static bool GleichtVorlage(string kopf, string schluessel)
+        {
+            foreach (CultureInfo kultur in new[] { CultureInfo.CurrentUICulture, CultureInfo.InvariantCulture })
+            {
+                string vorlage;
+                try { vorlage = MyResource.Resource.ResourceManager.GetString(schluessel, kultur) ?? ""; }
+                catch { vorlage = ""; }
+
+                if (vorlage.Length == 0) continue;
+
+                string erstes = vorlage.Split(new[] { TRENNER }, StringSplitOptions.None)[0].Trim();
+                if (erstes.Length > 0 &&
+                    string.Equals(erstes, kopf, StringComparison.CurrentCultureIgnoreCase))
+                    return true;
+            }
+            return false;
         }
 
         #endregion
@@ -359,15 +537,22 @@ namespace WindowsFormsApplication1
             // 3. Region in Projekt-Tabelle anlegen (ID ist AutoWert), neue Region-ID holen.
             //    ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
             //    Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
+            //    Quelle und Importdatum wandern MIT (Schemaschritt 95, Auftrag KL-3):
+            //    Eine Spalte nur auf der Katalogseite waere hier ein Datenverlust - das
+            //    Projekt wuesste dann nicht mehr, woher seine Reihe stammt.
             DbParam[] psRegion = {
                 new DbParam("@idProj", idProjekt),
                 new DbParam("@bez", szName),
                 Val("@lon", reg["Longitude"]),
                 Val("@lat", reg["Latitude"]),
-                Val("@det", reg["Details"])
+                Val("@det", reg["Details"]),
+                Val("@quelle", ColOrNull(reg, SchemaKatalog.SPALTE_KR_QUELLE)),
+                Val("@import", ColOrNull(reg, SchemaKatalog.SPALTE_KR_IMPORTDATUM))
             };
             int neueRegionId = v.EinfuegenUndId(
-                "INSERT INTO " + TAB_REGION_PROJEKT + " (ID_Projekt, Bezeichner, Longitude, Latitude, Details) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO " + TAB_REGION_PROJEKT + " (ID_Projekt, Bezeichner, Longitude, Latitude, Details, " +
+                SchemaKatalog.SPALTE_KR_QUELLE + ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?)",
                 psRegion);
 
             // 4. Klimadaten kopieren (FK ID_Klimaregion in STAMM -> neue Projekt-Region-ID).
@@ -412,7 +597,13 @@ namespace WindowsFormsApplication1
                     object m = v.Skalar("SELECT MAX(ID) FROM " + TAB_SOLAR_PROJEKT);
                     nextId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                 }
-                string ins = "INSERT INTO " + TAB_SOLAR_PROJEKT + " (ID, ID_Projekt, ID_Klimaregion, Temperatur, Sol_Nord, Sol_Ost, Sol_Sued, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                // Schemaschritt 95 (Auftrag KL-3): Die drei Groessen der
+                // Gebaeudesimulation wandern mit. ColOrNull haelt den Weg tolerant -
+                // eine noch nicht migrierte Quelle liefert dann NULL statt zu werfen.
+                string ins = "INSERT INTO " + TAB_SOLAR_PROJEKT + " (ID, ID_Projekt, ID_Klimaregion, Temperatur, Sol_Nord, Sol_Ost, Sol_Sued, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel, " +
+                             SchemaKatalog.SPALTE_SOLAR_GEGENSTRAHLUNG + ", " +
+                             SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE + ", " +
+                             SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD + ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 foreach (DataRow r in dtSolar.Rows)
                 {
                     {
@@ -429,6 +620,9 @@ namespace WindowsFormsApplication1
                         p.Add(Val("@dir", ColOrNull(r, "Direktstrahlung")));
                         p.Add(Val("@dif", ColOrNull(r, "Diffusstrahlung")));
                         p.Add(Val("@sw2", ColOrNull(r, "Sonnenwinkel")));
+                        p.Add(Val("@geg", ColOrNull(r, SchemaKatalog.SPALTE_SOLAR_GEGENSTRAHLUNG)));
+                        p.Add(Val("@feu", ColOrNull(r, SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE)));
+                        p.Add(Val("@bed", ColOrNull(r, SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD)));
                         v.Ausfuehren(ins, p.ToArray());
                     }
                 }

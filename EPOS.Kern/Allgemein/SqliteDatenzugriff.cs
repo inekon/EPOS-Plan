@@ -588,6 +588,27 @@ namespace WindowsFormsApplication1
             return new DbVorgang(OeffneVerbindung());
         }
 
+        /// <summary>
+        /// Der Vorgang MIT ABGESCHALTETEN FREMDSCHLUESSELN (Schemaschritt 96) — siehe
+        /// <see cref="IDatenzugriff.VorgangOhneFremdschluessel"/> und den zweiten
+        /// Konstruktor von <see cref="DbVorgang"/>.
+        ///
+        /// <para>KEIN UNTERPUNKT. Ein Sicherungspunkt liefe auf der Verbindung des
+        /// umgebenden Vorgangs, und dort laeuft bereits eine Transaktion - das PRAGMA
+        /// waere ein No-op, und der Umbau risse stillschweigend Kindzeilen mit. Deshalb
+        /// wird ein laufender Vorgang hier BENANNT abgelehnt statt still umgedeutet.</para>
+        /// </summary>
+        public DbVorgang VorgangOhneFremdschluessel()
+        {
+            DbVorgang laufender = Vorgangsklammer.Aktueller;
+            if (laufender != null && laufender.Offen)
+                throw new InvalidOperationException(
+                    "Ein Vorgang mit abgeschalteten Fremdschluesseln braucht eine eigene " +
+                    "Verbindung; auf diesem Faden laeuft bereits ein Datenbankvorgang.");
+
+            return new DbVorgang(OeffneVerbindung(), true);
+        }
+
 
         // =================================================================================
         // Schema-Auskunft - Ersatz fuer GetOleDbSchemaTable (Konzept 2.7, Befund N2)

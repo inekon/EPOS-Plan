@@ -64,3 +64,25 @@ public sealed record Zusammenfassung(
     string Waermebedarf,
     string Strombedarf,
     string Komponenten);
+
+/// <summary>
+/// <b>Woher die Klimadaten des offenen Projekts stammen</b> (Auftrag KL-4,
+/// Anwenderwunsch 19.09.2026: „Die verwendeten Klimadaten sollen sich auch auf der
+/// Übersicht befinden.").
+///
+/// <para>Die Texte sind bereits ÜBERSETZT und formatiert: Die Hülle setzt für den
+/// Quellenschlüssel (<c>PVGIS</c>, <c>TRY_DATEI</c>, <c>TRY_REGIONAL</c>) seinen
+/// Anzeigetext ein und schreibt das ISO-Importdatum in der Landesschreibweise. Die
+/// Komponente kennt weder Ressourcen noch Datenbank (Hausregel EPOS.UI).</para>
+///
+/// <para><b>Leere Felder sind der Regelfall des Bestands:</b> Eine Region, die vor
+/// Schemaschritt 95 angelegt wurde, sagt nicht, woher sie kommt. Die Startseite
+/// zeigt dann die KURZFORM aus Bezeichner und Standort — nie eine erfundene
+/// Quelle.</para>
+/// </summary>
+/// <param name="Quelle">Anzeigetext der Quelle; leer = Altbestand.</param>
+/// <param name="Bezeichner">Name der Klimaregion des Projekts.</param>
+/// <param name="Standort">Ortsname oder Koordinatenpaar.</param>
+/// <param name="Importdatum">Tag des Imports, kulturgerecht; leer = unbekannt.</param>
+public sealed record KlimaHerkunftGaben(string Quelle, string Bezeichner,
+                                        string Standort, string Importdatum);

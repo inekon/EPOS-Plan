@@ -62,8 +62,30 @@ namespace WindowsFormsApplication1
         [JsonPropertyName("T2m")]
         public double Temperature { get; set; } // Lufttemperatur [°C]
 
+        /// <summary>
+        /// Relative Luftfeuchte [%] — PVGIS <c>RH</c>, TRY <c>RF</c>.
+        /// <b>Nullbar seit Schemaschritt 95</b> (Auftrag KL-3): Fehlt die Größe in der
+        /// Antwort, steht NULL in <c>Tab_Solar(_STAMM).Luftfeuchte</c> — nie 0; eine 0
+        /// wäre eine Messaussage (staubtrockene Luft), und die gibt es nicht.
+        /// </summary>
         [JsonPropertyName("RH")]
-        public double Humidity { get; set; } // Relative Feuchte [%]
+        public double? Humidity { get; set; }
+
+        /// <summary>
+        /// Atmosphärische Gegenstrahlung [W/m²] — PVGIS <c>IR(h)</c>, TRY <c>A</c>
+        /// (Schemaschritt 95, Auftrag KL-3). Die langwellige Einstrahlung des Himmels;
+        /// die Gebäudesimulation nach VDI 6007 rechnet damit die nächtliche
+        /// Abstrahlung. <c>null</c> = nicht verfügbar.
+        /// </summary>
+        [JsonPropertyName("IR(h)")]
+        public double? Gegenstrahlung { get; set; }
+
+        /// <summary>
+        /// Bedeckungsgrad in Achteln (0 = wolkenlos … 8 = bedeckt) — TRY <c>N</c>.
+        /// <b>PVGIS führt ihn nicht</b> und trägt deshalb <c>null</c>; kein
+        /// <c>JsonPropertyName</c>, es gibt kein Feld in der Antwort.
+        /// </summary>
+        public double? Bedeckungsgrad;
 
         [JsonPropertyName("G(h)")]
         public double GlobalIrradiance { get; set; } // Globalstrahlung [W/m2]
@@ -383,6 +405,28 @@ namespace WindowsFormsApplication1
             return s;
         }
 
+        /// <summary>
+        /// Die SONNENHÖHE alpha [Grad] einer Stunde — rein lesend.
+        ///
+        /// <para><b>Wozu.</b> Der DWD-TRY-Import führt die Direktstrahlung HORIZONTAL
+        /// (Spalte B), <c>Tab_Solar_STAMM</c> und <see cref="CalculateHourly"/> erwarten
+        /// dagegen die Direkt-NORMAL-Strahlung (<c>direct = dni * cosTheta</c>). Die
+        /// Umrechnung <c>DNI = B / sin alpha</c> braucht genau diese eine Zahl.</para>
+        ///
+        /// <para><b>Ohne statische Seitenwirkung.</b> Sie schreibt weder
+        /// <see cref="sonnenwinkel"/> noch <see cref="sonnen_azimut"/> oder
+        /// <see cref="lastCosTheta"/> — aus demselben Grund wie
+        /// <see cref="CalculateHourlyHayDavies"/>: Die drei gehören zum Vertrag von
+        /// <see cref="CalculateHourly"/>, den <c>SimulationSolarthermie</c> nutzt.
+        /// Neigung und Azimut sind deshalb fest 0; nur <c>Alpha</c> wird gelesen.</para>
+        /// </summary>
+        /// <param name="dayOfYear">Tag im Jahr, 1-BASIERT (wie bei <see cref="CalculateHourly"/>).</param>
+        /// <returns>alpha in Grad; negativ, wenn die Sonne unter dem Horizont steht.</returns>
+        public static double Sonnenhoehe(double Lon, double Lat, int dayOfYear, double hour)
+        {
+            return Sonnengeometrie(Lon, Lat, 0, 0, dayOfYear, hour).Alpha * Rad2Deg;
+        }
+
         /// <param name="dni">Gb(n) - Direct Normal Irradiance aus PVGIS</param>
         /// <param name="dhi">Gd(h) - Diffuse Horizontal Irradiance aus PVGIS</param>
         /// <param name="ghi">G(h) - Global Horizontal Irradiance aus PVGIS</param>
@@ -598,9 +642,17 @@ namespace WindowsFormsApplication1
                 string fkCol = "ID_Klimaregion";
 
                 // 1. SQL-Queries festlegen (ID/AutoWert wird nicht mitgegeben). Tabellenname parametrisiert.
+                // Die STUNDENreihe traegt seit Schemaschritt 95 drei Groessen mehr
+                // (Auftrag KL-3): Gegenstrahlung, Luftfeuchte, Bedeckungsgrad. Die
+                // TAGESwerte (Tab_Klimadaten*) fuehren sie NICHT - dort gibt es keine
+                // Spalte dafuer, und ein Tagesmittel der Gegenstrahlung waere eine
+                // Groesse, die niemand gemessen hat.
                 string query = istKlimadaten
                     ? "INSERT INTO " + tabelle + " (" + fkCol + ", Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, WE, TagTyp_W, TagTyp_NW, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
-                    : "INSERT INTO " + tabelle + " (" + fkCol + ", Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?)";
+                    : "INSERT INTO " + tabelle + " (" + fkCol + ", Temperatur, Sol_Nord, Sol_Sued, Sol_Ost, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel, " +
+                      SchemaKatalog.SPALTE_SOLAR_GEGENSTRAHLUNG + ", " +
+                      SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE + ", " +
+                      SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD + ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
                 // 2. ARBEITSPAKET S4e: Der Vorgang uebersetzt und bindet je Aufruf; die
                 // frueher EINMAL typisierten Parameter werden deshalb je Zeile neu
@@ -632,6 +684,13 @@ namespace WindowsFormsApplication1
                     {
                         ps.Add(new DbParam("?", DbParamTyp.Double)
                         { Wert = data.Sonnenwinkel > 0 ? Math.Round(data.Sonnenwinkel, 1) : 0 });
+
+                        // Schemaschritt 95: Was die Quelle nicht liefert, bleibt NULL.
+                        // Der TYPISIERTE DbParam ist hier Pflicht - aus DBNull allein
+                        // laesst sich kein Spaltentyp ableiten.
+                        ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.Gegenstrahlung });
+                        ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.Humidity });
+                        ps.Add(new DbParam("?", DbParamTyp.Double) { Wert = data.Bedeckungsgrad });
                     }
 
                     v.Ausfuehren(query, ps.ToArray());

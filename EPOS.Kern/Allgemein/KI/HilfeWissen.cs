@@ -372,6 +372,80 @@ namespace WindowsFormsApplication1
                     "Sie wird oben im Hauptfenster ausgewählt und muss vor der Berechnung des Wärmebedarfs gesetzt " +
                     "sein. Ohne Klimaregion bricht die Simulation mit einem Hinweis ab."),
 
+                // ---- Klimadaten (Auftrag KI-1) -----------------------------------
+                // Anwendermeldung 19.09.2026: "Der KI-Assistent kann die try Daten noch
+                // nicht finden bzw. kennt diese nicht." Die Wiki-Seite "Programm
+                // Dokumentation/Klimadaten" beschreibt alles, geht aber erst mit dem
+                // Sammel-Upload online - bis dahin (und ohne Netz) wuesste der Assistent
+                // von den drei Klimaquellen nichts. Deshalb stehen sie HIER.
+                //
+                // TITEL UND INHALT TRAGEN DIE SUCHWORTE. Suchen() verwirft Woerter unter
+                // vier Zeichen: "TRY" und "DWD" allein zaehlen NICHT. Gefunden wird ueber
+                // "Klimadaten", "Testreferenzjahr", "Regionaldaten", "PVGIS",
+                // "importieren", "einlesen" - sie stehen deshalb alle im Titel.
+                new WissensAbschnitt("Klimadaten importieren: PVGIS, Testreferenzjahr (DWD-Datei) und TRY-Regionaldaten",
+                    KiChatKontext.B_KLIMADATEN,
+                    "Der Dialog 'Klimadaten' legt die Klimaregionen an, mit denen EPOS-Plan rechnet; er steht im " +
+                    "Menü unter 'Administration > Klimadaten'. Eine Klimaregion umfasst 8760 Stundenwerte - " +
+                    "Außentemperatur, Global-, Direkt- und Diffusstrahlung, Sonnenwinkel und die vier " +
+                    "Fassadenwerte - sowie 365 Tageswerte. Über dem Standort wählen Sie die Klimaquelle; es gibt " +
+                    "drei. " +
+                    "ERSTENS PVGIS: der weltweite Abruf typischer meteorologischer Jahre (TMY) über die " +
+                    "PVGIS-Schnittstelle, die Vorbelegung. Den Standort geben Sie als Ortsnamen an, den das " +
+                    "Programm in Koordinaten auflöst, oder von Hand über Longitude, Latitude und eine " +
+                    "Bezeichnung. " +
+                    "ZWEITENS Testreferenzjahr (Datei): eine Datei im Format der Testreferenzjahre (TRY) des " +
+                    "Deutschen Wetterdienstes (DWD), die Sie selbst über das Klimaberatungsmodul des DWD " +
+                    "beziehen; einen maschinellen Abruf gibt es nicht. Den Pfad wählen Sie über 'Durchsuchen' " +
+                    "(Endung .dat); aus dem Netz wird dabei nichts geholt. Aus dem Kopf der Datei trägt das " +
+                    "Programm den Standort ein - es rechnet die dort angegebenen Lambert-Koordinaten in Längen- " +
+                    "und Breitengrad um und füllt auch die Bezeichnung, wenn sie noch leer ist; unter den " +
+                    "Feldern steht, woher die Werte stammen, und jedes Feld bleibt änderbar. " +
+                    "DRITTENS Testreferenzjahr (Regionaldaten): die offenen Regionaldaten zu den " +
+                    "Testreferenzjahren, die nur Deutschland abdecken. Dort wählen Sie zusätzlich das Jahr " +
+                    "(Bezugsjahr 2015 oder Projektion 2045) und das Szenario (mittleres, sommerwarmes oder " +
+                    "winterkaltes Jahr); vorbelegt sind 2015 und das mittlere Jahr. 'Region ermitteln' nennt " +
+                    "schon vor dem Einlesen Nummer und Name der Bezugsstation, ihre Koordinate, die Entfernung " +
+                    "zu Ihrem Standort und die Jahre und Szenarien, die das Archiv für diese Region führt. " +
+                    "Eingelesen werden über Teilabrufe nur das Inhaltsverzeichnis des Archivs und der eine " +
+                    "benötigte Datensatz - wenige hundert Kilobyte statt des ganzen Archivs; wahlweise geben " +
+                    "Sie den Pfad eines bereits heruntergeladenen Archivs an, dann läuft alles ohne Netz. " +
+                    "'Daten einlesen' legt die Region an und lässt sich abbrechen; gibt es schon eine Region " +
+                    "dieses Namens, bricht das Programm mit einem Hinweis ab."),
+
+                new WissensAbschnitt("Klimadaten: was beim Import gespeichert und was verworfen wird",
+                    KiChatKontext.B_KLIMADATEN,
+                    "Aus einer Testreferenzjahr-Datei übernimmt EPOS-Plan die Außentemperatur sowie Direkt- und " +
+                    "Diffusstrahlung; daraus entstehen Globalstrahlung, Sonnenwinkel, die vier Fassadenwerte und " +
+                    "die Tagesmittel - dieselben Größen wie bei einem PVGIS-Abruf. Die Direktstrahlung wird " +
+                    "dabei von der waagerechten Fläche auf die Sonnenrichtung umgerechnet; bei sehr flachem " +
+                    "Sonnenstand geht ihr Betrag in den Diffusanteil, damit die Globalstrahlung jeder Stunde " +
+                    "erhalten bleibt. Zu jeder Stunde werden außerdem die atmosphärische Gegenstrahlung, die " +
+                    "relative Luftfeuchte und - soweit die Quelle sie führt - der Bedeckungsgrad gespeichert: " +
+                    "Die Testreferenzjahre liefern alle drei, ein PVGIS-Abruf liefert Gegenstrahlung und " +
+                    "Feuchte, aber keinen Bedeckungsgrad. NICHT gespeichert werden Luftdruck, Windrichtung, " +
+                    "Windgeschwindigkeit, Wasserdampfgehalt, langwellige Ausstrahlung und das Qualitätsbit; " +
+                    "dafür gibt es keine Felder, und die Meldung nach dem Einlesen nennt sie ebenso wie die " +
+                    "'Details' der Region ausdrücklich als nicht übernommen. In den 'Details' stehen zudem die " +
+                    "Herkunft - Dateiname oder Region, Koordinate, Entfernung, Szenario, Jahr und Quelle -, das " +
+                    "Datum des Einlesens und der Lizenzvermerk der Daten. Die Testreferenzjahre beziehen Sie " +
+                    "beim DWD selbst; sie gehören nicht zum Lieferumfang, und die Nutzungsbedingungen des " +
+                    "Anbieters gelten. Die offenen Regionaldaten stehen unter der Lizenz CC BY 4.0 (Rohdaten " +
+                    "des Deutschen Wetterdienstes). Gewählt wird die Region, deren Bezugspunkt Ihrem Standort " +
+                    "am nächsten liegt: Maßgeblich ist die Entfernung, nicht eine amtliche Regionsgrenze - bei " +
+                    "einem Standort nahe einer Grenze kann die Nachbarregion die zutreffendere sein."),
+
+                new WissensAbschnitt("Einstellungen, Rubrik Klimadaten: die Adressen von PVGIS, DWD und TRY-Regionaldaten",
+                    KiChatKontext.B_KLIMADATEN,
+                    "Unter 'Administration > Einstellungen' führt die Rubrik 'Klimadaten' die drei Adressen, mit " +
+                    "denen der Dialog Klimadaten arbeitet: die PVGIS-Schnittstelle (die Adresse des TMY-Abrufs), " +
+                    "die DWD-Testreferenzjahre (die Adresse des Klimaberatungsmoduls, über das Sie eine Datei " +
+                    "beziehen) und die TRY-Regionaldaten (die Adresse des Archivs mit den offenen " +
+                    "Regionaldaten). Alle drei sind Textfelder. 'Standardwerte' setzt sie auf die Vorgaben der " +
+                    "Auslieferung; übernommen wird die Änderung erst mit 'Speichern'. Kennt eine " +
+                    "Bestandsinstallation eine dieser Adressen noch nicht, rechnet das Programm mit der " +
+                    "Werksvorgabe."),
+
                 new WissensAbschnitt("Energiebedarf berechnen", "Energiebedarf",
                     "Der Wärmebedarf setzt sich zusammen aus dem Gebäudebedarf, externen Lastgängen, Prozesswärme, " +
                     "Brauchwasser und den Netzverlusten. Der Strombedarf entsteht aus Stromprofilen und " +
@@ -725,7 +799,74 @@ namespace WindowsFormsApplication1
                     "deshalb kein Rechenfehler, aber ein Planungsfehler. ABHILFE: Entweder die " +
                     "Modulanzahl der Anlage auf die Strangsumme setzen oder die fehlenden Stränge " +
                     "ergänzen. WIKI: Programm Dokumentation/Berechnung/Photovoltaik#wechselrichter.",
-                    WIKI + "Berechnung/Photovoltaik#wechselrichter")
+                    WIKI + "Berechnung/Photovoltaik#wechselrichter"),
+
+                // ---- Klimadaten: die vier TRY-Meldungen (Auftrag KI-1) ------------
+                // Die KENNUNG heisst wie der Ressourcenschluessel der Meldung
+                // (KLIMA_TRY_*) - dieselbe Zeichenkette, an der die Meldung im
+                // Klimaimport gebaut wird. Wer sie aus einer Meldung abschreibt,
+                // findet damit genau diesen Abschnitt.
+                new WissensAbschnitt(KiMeldungskennung.KLIMA_TRY_KEIN_BEREICH,
+                    "Meldung KLIMA_TRY_KEIN_BEREICH: Die Adresse der TRY-Regionaldaten erlaubt keine Teilabrufe",
+                    KiChatKontext.B_KLIMADATEN,
+                    "BEDEUTUNG: Der Server, auf dem das Archiv der Testreferenzjahr-Regionaldaten liegt, " +
+                    "beantwortet keine Bereichsanfragen. EPOS-Plan kann aus dem Archiv deshalb nicht das " +
+                    "Inhaltsverzeichnis und den einen benötigten Datensatz herauslesen. URSACHE: Die in " +
+                    "'Administration > Einstellungen > Klimadaten' hinterlegte Adresse der TRY-Regionaldaten " +
+                    "zeigt auf einen Ablageort ohne Teilabrufe - etwa eine Weiterleitung oder einen " +
+                    "Zwischenspeicher. ABHILFE: Das Archiv (data.zip) selbst herunterladen und im Dialog " +
+                    "Klimadaten als Paketdatei angeben; dann läuft das Einlesen ohne Netz. Oder in den " +
+                    "Einstellungen die Adresse eintragen, die Teilabrufe beantwortet ('Standardwerte' setzt " +
+                    "die Werksvorgabe). Das ganze Archiv lädt das Programm nie stillschweigend herunter. " +
+                    "WIKI: Programm Dokumentation/Klimadaten#einlesen.",
+                    WIKI + "Klimadaten#einlesen"),
+
+                new WissensAbschnitt(KiMeldungskennung.KLIMA_TRY_AUSSERHALB,
+                    "Meldung KLIMA_TRY_AUSSERHALB: Standort weiter als 300 km von der nächsten TRY-Region",
+                    KiChatKontext.B_KLIMADATEN,
+                    "BEDEUTUNG: Der nächste Mittelpunkt einer TRY-Region liegt weiter als 300 km vom " +
+                    "eingetragenen Standort entfernt; die Meldung nennt die gemessene Entfernung und die " +
+                    "Grenze. Es wird nichts eingelesen. URSACHE: Die Regionaldaten der Testreferenzjahre " +
+                    "decken nur Deutschland ab. Ein Standort außerhalb trifft zwangsläufig keine Region - " +
+                    "die nächstgelegene wäre eine Zahl ohne Aussage. ABHILFE: Für einen Standort in " +
+                    "Deutschland Longitude und Latitude prüfen (Verwechslung der beiden Felder ist der " +
+                    "häufigste Grund) oder den Ortsnamen neu auflösen lassen; 'Region ermitteln' zeigt " +
+                    "Region und Entfernung schon vor dem Einlesen. Für einen Standort außerhalb Deutschlands " +
+                    "die Klimaquelle PVGIS wählen - sie rechnet weltweit. " +
+                    "WIKI: Programm Dokumentation/Klimadaten#einlesen.",
+                    WIKI + "Klimadaten#einlesen"),
+
+                new WissensAbschnitt(KiMeldungskennung.KLIMA_TRY_FORMATFEHLER,
+                    "Meldung KLIMA_TRY_FORMATFEHLER: Die TRY-Daten sind nicht lesbar (Zeile, Spaltenzahl, Feldwert)",
+                    KiChatKontext.B_KLIMADATEN,
+                    "BEDEUTUNG: Die gewählte Testreferenzjahr-Datei oder der Datensatz aus dem Regionalarchiv " +
+                    "entspricht nicht dem erwarteten Aufbau. Die Meldung nennt den Grund und die betroffene " +
+                    "Zeile: fehlende Trennzeile '***' zwischen Kopf und Daten, zu wenige oder zu viele " +
+                    "Datenzeilen (erwartet werden 8760), eine abweichende Spaltenzahl, ein Feld, das keine " +
+                    "Zahl ist, ein Zeitfeld ohne gültigen Zeitpunkt oder eine doppelte Stunde. Es entsteht " +
+                    "keine Region; Bestehendes bleibt unberührt. URSACHE: Meist eine unvollständig " +
+                    "heruntergeladene oder abgeschnittene Datei, ein in einem Tabellenprogramm geöffneter und " +
+                    "neu gespeicherter Datensatz (dabei ändern sich Trennzeichen und Spalten) oder eine Datei " +
+                    "aus einer anderen Quelle im ähnlichen, aber nicht gleichen Format. ABHILFE: Die Datei " +
+                    "unverändert neu beziehen und nicht nachbearbeiten; die genannte Zeile in einem " +
+                    "Texteditor ansehen, um den Abbruch zu bestätigen. Bei den Regionaldaten prüfen, ob das " +
+                    "angegebene Archiv vollständig ist. " +
+                    "WIKI: Programm Dokumentation/Klimadaten#einlesen.",
+                    WIKI + "Klimadaten#einlesen"),
+
+                new WissensAbschnitt(KiMeldungskennung.KLIMA_TRY_STANDORT_UNLESBAR,
+                    "Meldung KLIMA_TRY_STANDORT_UNLESBAR: Der Kopf der TRY-Datei nennt keinen lesbaren Standort",
+                    KiChatKontext.B_KLIMADATEN,
+                    "BEDEUTUNG: Aus dem Kopf der gewählten Testreferenzjahr-Datei ließen sich Rechts- und " +
+                    "Hochwert nicht lesen, deshalb bleiben Longitude, Latitude und Bezeichnung leer. Das ist " +
+                    "kein Fehler der Datei: Ihre Stundenwerte werden eingelesen, sobald der Standort steht. " +
+                    "URSACHE: Der Kopf führt keine Lambert-Koordinaten, nennt sie in einer anderen " +
+                    "Schreibweise, oder die umgerechneten Werte liegen außerhalb des Plausibilitätsbereichs " +
+                    "für Deutschland. ABHILFE: Longitude und Latitude von Hand eintragen und eine Bezeichnung " +
+                    "vergeben - oder den Ortsnamen eingeben und auflösen lassen. Eine eigene Eingabe gilt " +
+                    "immer vor dem Dateikopf; die Details der Region vermerken dann 'Standort vom Anwender'. " +
+                    "WIKI: Programm Dokumentation/Klimadaten#standort.",
+                    WIKI + "Klimadaten#standort")
             };
         }
     }

@@ -417,6 +417,14 @@ namespace WindowsFormsApplication1
             d.KesselBrennstoffe = Kesselbrennstoffe();
             d.BhkwBrennstoffe = Bhkwbrennstoffe(d.Bhkw);
 
+            // BH-1: Der Leerhinweis der beiden Brennstoffbloecke braucht den Unterschied
+            // zwischen „nicht gelaufen" und „kein Brennstoff gepflegt". Die Antwort steht
+            // in der Projektdatenbank, nicht im Ergebnis - deshalb hier und nicht im
+            // Reiter. Die Reihenfolge ist Absicht: Kesselbrennstoffe() setzt den
+            // Kesselbefund unterwegs.
+            d.KesselBrennstoffDefiniert = _kesselBrennstoffDefiniert;
+            d.BhkwBrennstoffDefiniert = BhkwBrennstoffDefiniert();
+
             if (d.Waermepumpe != null)
             {
                 d.ErdreichHinweise = d.Waermepumpe.ErdreichHinweise;

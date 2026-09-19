@@ -257,26 +257,26 @@ jeden gerollten Dialog als Verstoß.
 
 | Größe | K1 (Klimadaten, 1 180 × 780) |
 |---|---|
-| Dialoghöhe / Inhalt | 780 px / **1 318 px** |
-| Rahmen | auf **601,8 px** gestaucht, Inhalt 1 220 px |
+| Dialoghöhe / Inhalt | 780 px / **1 475 px** |
+| Rahmen | auf **601,8 px** gestaucht, Inhalt 1 377 px |
 | Rasterreihen | **295,906 px \| 295,906 px** — gleich groß, nicht nach Inhalt |
-| Listenhülle | **178,9 px** statt 457,6 px (rund drei Zeilen statt sieben) |
-| Eingabeblock | Reihe 295,9 px, Inhalt **914 px** → malt bis y = 876,8 |
+| Listenblock | Reihe 295,9 px, Hülle 457,6 px → **296 284 px²** über den Feldern darunter |
+| Eingabeblock | Reihe 295,9 px, Inhalt **1 071 px** → malt bis y = 876,8 |
 | Fußleiste | y = 720 … 764 → **49 829 px²** vom Diagramm überdeckt |
-| „Daten einlesen", „Beenden" | von `img.epos-chartbild` verdeckt |
+| „Daten einlesen", „Löschen", „Beenden" | von `img.epos-chartbild` verdeckt |
 
-Derselbe Mechanismus in den anderen Masken, dort über die **Listenhülle**: Sie bleibt in
-ihrer Höchsthöhe stehen und ragt aus dem gestauchten Listenblock heraus — B1 186 698 px²,
-M1 280 105 px², C1 280 105 px², S1 174 076 px², W1 145 847 px² über die Felder darunter.
-Das ist das zweite Anwenderbild („Stromverbraucher Verwaltung").
+Derselbe Mechanismus in den anderen Masken, dort allein über die **Listenhülle**: Sie
+bleibt in ihrer Höchsthöhe stehen und ragt aus dem gestauchten Listenblock heraus —
+B1 186 698 px², M1 280 105 px², C1 280 105 px², S1 174 076 px², W1 145 847 px² über die
+Felder darunter. Das ist das zweite Anwenderbild („Stromverbraucher Verwaltung").
 
 **Nachher** (`node katalogprobe.mjs`, Rückgabe 0 — 12 von 12 Fällen erfüllt):
 
 | Größe | K1 | K2 |
 |---|---|---|
-| Rasterreihen | **574,594 px \| 914,359 px** (nach Inhalt) | 574,594 \| 945,406 |
+| Rasterreihen | **564,594 px \| 1 070,8 px** (nach Inhalt) | 564,594 \| 1 101,84 |
 | Listenhülle | **457,6 px** = Höchstmaß, sieben Zeilen | 457,6 px |
-| Rahmen | 601,8 px sichtbar, rollt in sich (1 499 px) | 821,8 px von 1 530 px |
+| Rahmen | 601,8 px sichtbar, rollt in sich (1 645 px) | 821,8 px von 1 676 px |
 | Fußleiste | y = 720 … 764, **frei** | y = 940 … 984, **frei** |
 | Dialog-Rollhöhe | **780 px** = Fensterhöhe (die Maske rollt nicht mehr) | 1 000 px |
 
@@ -286,7 +286,7 @@ Das ist das zweite Anwenderbild („Stromverbraucher Verwaltung").
 also unter seinen Inhalt schrumpfen; weil seine zwei Kinder ihrerseits `min-height: 0`
 trugen, war die Mindestgröße einer `auto`-Rasterreihe null, und Chromium verteilte die
 gestauchte Höhe zu **gleichen Teilen** auf beide Reihen statt nach Inhalt. Die zweite
-Reihe war damit 618 px zu kurz, und ihr Inhalt zeichnete einfach darüber hinaus — quer
+Reihe war damit 775 px zu kurz, und ihr Inhalt zeichnete einfach darüber hinaus — quer
 über die Liste und über die Fußleiste.
 
 ### Der Fix

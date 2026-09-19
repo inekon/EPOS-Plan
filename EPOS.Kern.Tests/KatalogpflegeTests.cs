@@ -1353,6 +1353,332 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
+        //  7a — Der Klimaimport aus einer DWD-TRY-DATEI (Auftrag KL1-B)
+        // ==================================================================
+
+        /// <summary>
+        /// Schreibt eine vollstaendige, SYNTHETISCHE TRY-Datei (34 Kopfzeilen,
+        /// 8 760 Datenzeilen) in den Temp-Ordner. Keine DWD-Originaldaten.
+        /// </summary>
+        /// <param name="mitStandort">Schreibt Rechts- und Hochwert in den Kopf
+        /// (Auftrag KL-2): 3 929 310 / 2 478 193 ergeben 9,0000° O / 49,0000° N.</param>
+        private static string TryDateiSchreiben(bool mitStandort = false)
+        {
+            string pfad = Path.Combine(Path.GetTempPath(),
+                "epos_try_" + Guid.NewGuid().ToString("N") + ".dat");
+
+            var sb = new System.Text.StringBuilder(700 * 1024);
+            for (int i = 1; i <= 34; i++)
+            {
+                if (mitStandort && i == 6) sb.Append("Rechtswert: 3929310 Meter\r\n");
+                else if (mitStandort && i == 7) sb.Append("Hochwert: 2478193 Meter\r\n");
+                else sb.Append("Kopfzeile ").Append(i.ToString(CultureInfo.InvariantCulture)).Append("\r\n");
+            }
+            sb.Append("*** \r\n");
+
+            int[] tageMonat = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+            for (int m = 1; m <= 12; m++)
+                for (int tag = 1; tag <= tageMonat[m - 1]; tag++)
+                    for (int h = 1; h <= 24; h++)
+                    {
+                        // Tagstunden tragen Strahlung, Nachtstunden nicht.
+                        int b = h >= 9 && h <= 16 ? 150 : 0;
+                        int d = h >= 9 && h <= 16 ? 60 : 0;
+                        sb.AppendFormat(CultureInfo.InvariantCulture,
+                            "4321000 5678000 {0} {1} {2} {3} 1013 180 2.0 4 3.0 80 {4} {5} 260 300 1\r\n",
+                            m, tag, h, 8.5, b, d);
+                    }
+
+            File.WriteAllText(pfad, sb.ToString());
+            return pfad;
+        }
+
+        /// <summary>
+        /// <b>Der Ablauf laeuft mit <c>Quelle = TryDatei</c> ganz OHNE Netz</b> (Auftrag
+        /// KL1-B): Die Stundenwerte kommen aus einer Datei, <c>Rechnen</c>,
+        /// <c>GetDailyAverages</c> und <c>SaveTmyData</c> bleiben dieselben. Geprueft
+        /// werden 8 760 Stunden, 365 Tage und der HERKUNFTSVERMERK in
+        /// <c>Tab_Klimaregion_STAMM.Details</c> (Lizenz, verworfene Groessen).
+        /// </summary>
+        [Fact]
+        public async Task DerKlimaimportLiestEineDwdTryDatei()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                string pfad = TryDateiSchreiben();
+                try
+                {
+                    KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                        new KlimaImportAuftrag
+                        {
+                            Art = KlimaImportArt.AusKoordinaten,
+                            Bezeichnung = "KL1b TRY Probe",
+                            Longitude = 9.1829,
+                            Latitude = 48.7758,
+                            Quelle = KlimaQuelle.TryDatei,
+                            TryPfad = pfad
+                        },
+                        null);          // KEINE TMY-Quelle noetig - kein Netz
+
+                    Assert.True(erg.Erfolgreich, erg.Meldung);
+                    Assert.Equal(8760, erg.Stundenwerte);
+                    Assert.Equal(365, erg.Tageswerte);
+                    Assert.Equal(8760, Zaehle("Tab_Solar_STAMM", erg.Id));
+                    Assert.Equal(365, Zaehle("Tab_Klimadaten_STAMM", erg.Id));
+
+                    string details = Convert.ToString(DataRepository.ExecuteScalar(
+                        "SELECT Details FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id))) ?? "";
+
+                    Assert.Contains("CC BY 4.0", details);
+                    Assert.Contains("Deutscher Wetterdienst", details);
+                    Assert.Contains("IL", details);                 // die verworfenen Groessen
+                    Assert.Contains(Path.GetFileName(pfad), details);
+                    Assert.Contains("CC BY 4.0", erg.Meldung);
+                }
+                finally
+                {
+                    try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+                }
+            }
+        }
+
+        /// <summary>
+        /// <b>Ohne Koordinaten im Auftrag kommt der Standort aus dem DATEIKOPF</b>
+        /// (Auftrag KL-2): Rechts-/Hochwert werden über <c>LambertKoordinaten</c>
+        /// umgerechnet, und der Herkunftsvermerk sagt das. Die Region trägt danach
+        /// 9,0000° O / 49,0000° N.
+        /// </summary>
+        [Fact]
+        public async Task DerTryImportOhneKoordinatenNimmtDenDateikopf()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                string pfad = TryDateiSchreiben(mitStandort: true);
+                try
+                {
+                    KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                        new KlimaImportAuftrag
+                        {
+                            Art = KlimaImportArt.AusKoordinaten,
+                            Bezeichnung = "KL2 Standort aus dem Kopf",
+                            // KEINE Koordinaten - sie kommen aus dem Kopf.
+                            Quelle = KlimaQuelle.TryDatei,
+                            TryPfad = pfad
+                        },
+                        null);
+
+                    Assert.True(erg.Erfolgreich, erg.Meldung);
+
+                    double lon = Convert.ToDouble(DataRepository.ExecuteScalar(
+                        "SELECT Longitude FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id)), CultureInfo.InvariantCulture);
+                    double lat = Convert.ToDouble(DataRepository.ExecuteScalar(
+                        "SELECT Latitude FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id)), CultureInfo.InvariantCulture);
+
+                    Assert.Equal(9.0, lon, 3);
+                    Assert.Equal(49.0, lat, 3);
+
+                    string details = Convert.ToString(DataRepository.ExecuteScalar(
+                        "SELECT Details FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id))) ?? "";
+
+                    // Kulturunabhaengig: die ZAHLEN des Kopfes stehen im Vermerk, der
+                    // Satz "vom Anwender" nicht.
+                    Assert.Contains("3929310", details);
+                    Assert.Contains("2478193", details);
+                    Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_STANDORT_ANWENDER,
+                                          details);
+                }
+                finally
+                {
+                    try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Trägt der Auftrag Koordinaten, BLEIBEN SIE STEHEN — auch wenn der Dateikopf
+        /// einen anderen Punkt nennt; der Vermerk sagt „vom Anwender“ (Auftrag KL-2).
+        /// </summary>
+        [Fact]
+        public async Task DerTryImportMitKoordinatenBehaeltDieEingabeDesAnwenders()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                string pfad = TryDateiSchreiben(mitStandort: true);
+                try
+                {
+                    KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                        new KlimaImportAuftrag
+                        {
+                            Art = KlimaImportArt.AusKoordinaten,
+                            Bezeichnung = "KL2 Standort vom Anwender",
+                            Longitude = 9.1829,
+                            Latitude = 48.7758,
+                            Quelle = KlimaQuelle.TryDatei,
+                            TryPfad = pfad
+                        },
+                        null);
+
+                    Assert.True(erg.Erfolgreich, erg.Meldung);
+
+                    double lon = Convert.ToDouble(DataRepository.ExecuteScalar(
+                        "SELECT Longitude FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id)), CultureInfo.InvariantCulture);
+
+                    Assert.Equal(9.1829, lon, 4);
+
+                    string details = Convert.ToString(DataRepository.ExecuteScalar(
+                        "SELECT Details FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id))) ?? "";
+
+                    Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_STANDORT_ANWENDER, details);
+                    Assert.DoesNotContain("3929310", details);
+                }
+                finally
+                {
+                    try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Weder Koordinaten im Auftrag noch ein lesbarer Kopf: <b>benannter
+        /// Eingabefehler</b> statt eines Punktes bei 0/0 (Auftrag KL-2).
+        /// </summary>
+        [Fact]
+        public async Task EinTryImportOhneKoordinatenUndOhneKopfstandortWirdAbgelehnt()
+        {
+            string pfad = TryDateiSchreiben();          // Kopf ohne Rechts-/Hochwert
+            try
+            {
+                KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                    new KlimaImportAuftrag
+                    {
+                        Art = KlimaImportArt.AusKoordinaten,
+                        Bezeichnung = "KL2 ohne jeden Standort",
+                        Quelle = KlimaQuelle.TryDatei,
+                        TryPfad = pfad
+                    },
+                    null);
+
+                Assert.Equal(KlimaImportAusgang.Eingabefehler, erg.Ausgang);
+                Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_STANDORT_FEHLT, erg.Meldung);
+            }
+            finally
+            {
+                try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+            }
+        }
+
+        /// <summary>
+        /// Eine TRY-Datei mit falscher Zeilenzahl ergibt den neuen Ausgang
+        /// <c>Dateifehler</c> — mit der Zeilennummer in der Meldung, nicht als Absturz.
+        /// </summary>
+        [Fact]
+        public async Task EineUnlesbareTryDateiMeldetEinenDateifehler()
+        {
+            string pfad = Path.Combine(Path.GetTempPath(),
+                "epos_try_kurz_" + Guid.NewGuid().ToString("N") + ".dat");
+            try
+            {
+                File.WriteAllText(pfad,
+                    "Kopfzeile 1\r\n*** \r\n4321000 5678000 1 1 1 5.0 1013 180 2.0 4 3.0 80 0 0 260 300 1\r\n");
+
+                KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                    new KlimaImportAuftrag
+                    {
+                        Art = KlimaImportArt.AusKoordinaten,
+                        Bezeichnung = "KL1b TRY kaputt",
+                        Longitude = 9.0,
+                        Latitude = 48.0,
+                        Quelle = KlimaQuelle.TryDatei,
+                        TryPfad = pfad
+                    },
+                    null);
+
+                Assert.Equal(KlimaImportAusgang.Dateifehler, erg.Ausgang);
+                Assert.Contains("8760", erg.Meldung);
+            }
+            finally
+            {
+                try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+            }
+        }
+
+        /// <summary>Ohne Dateipfad ist <c>TryDatei</c> ein Eingabefehler.</summary>
+        [Fact]
+        public async Task EinTryImportOhnePfadIstEinEingabefehler()
+        {
+            KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                new KlimaImportAuftrag
+                {
+                    Art = KlimaImportArt.AusKoordinaten,
+                    Bezeichnung = "KL1b ohne Pfad",
+                    Longitude = 9.0,
+                    Latitude = 48.0,
+                    Quelle = KlimaQuelle.TryDatei,
+                    TryPfad = "  "
+                },
+                null);
+
+            Assert.Equal(KlimaImportAusgang.Eingabefehler, erg.Ausgang);
+        }
+
+        /// <summary>
+        /// <c>TryRegional</c> ohne Bereichsabruf und ohne lokale <c>data.zip</c> wird
+        /// BENANNT abgelehnt — es gibt keinen stillen Volldownload.
+        /// </summary>
+        [Fact]
+        public async Task RegionaldatenOhneBereichsabrufWerdenBenanntAbgelehnt()
+        {
+            KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                new KlimaImportAuftrag
+                {
+                    Art = KlimaImportArt.AusKoordinaten,
+                    Bezeichnung = "KL1b ohne Netzweg",
+                    Longitude = 9.0,
+                    Latitude = 48.0,
+                    Quelle = KlimaQuelle.TryRegional
+                },
+                null);
+
+            Assert.Equal(KlimaImportAusgang.Eingabefehler, erg.Ausgang);
+            Assert.Contains("data.zip", erg.Meldung);
+        }
+
+        /// <summary>
+        /// Die Adresse des Regionalpakets: der Einstellwert schlaegt die Vorgabe, eine
+        /// leere Einstellung faellt auf die Vorgabe zurueck.
+        /// </summary>
+        [Fact]
+        public void DieAdresseDesRegionalpaketsKommtAusDenEinstellungen()
+        {
+            Assert.Equal(TryPaketLeser.ADRESSE_VORGABE, KlimaImportAblauf.Adresse());
+
+            Dienste.Einstellungen.Schreib(TryPaketLeser.SCHLUESSEL_ADRESSE,
+                                          "https://beispiel.invalid/eigen.zip");
+            try
+            {
+                Assert.Equal("https://beispiel.invalid/eigen.zip", KlimaImportAblauf.Adresse());
+            }
+            finally
+            {
+                Dienste.Einstellungen.Loesche(TryPaketLeser.SCHLUESSEL_ADRESSE);
+            }
+
+            Assert.Equal(TryPaketLeser.ADRESSE_VORGABE, KlimaImportAblauf.Adresse());
+        }
+
+        // ==================================================================
         //  8 — EinstellungenCtrl (W14c.0i)
         // ==================================================================
 

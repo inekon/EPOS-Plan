@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "18.9.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "18.10.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -128,6 +128,30 @@ namespace WindowsFormsApplication1.Properties {
             }
             set {
                 this["WordPressUrl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://kunden.dwd.de/obt/")]
+        public string TRYPortalUrl {
+            get {
+                return ((string)(this["TRYPortalUrl"]));
+            }
+            set {
+                this["TRYPortalUrl"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://github.com/RE-Lab-Projects/TRY_DE_2015_2045/releases/download/v1.4.0/data.zip")]
+        public string TRYRegionalUrl {
+            get {
+                return ((string)(this["TRYRegionalUrl"]));
+            }
+            set {
+                this["TRYRegionalUrl"] = value;
             }
         }
 

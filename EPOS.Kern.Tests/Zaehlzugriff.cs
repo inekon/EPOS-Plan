@@ -58,6 +58,10 @@ internal sealed class Zaehlzugriff : IDatenzugriff
     { Zaehle(); return Innen.Vorgang(); }
 
     /// <inheritdoc />
+    public DbVorgang VorgangOhneFremdschluessel()
+    { Zaehle(); return Innen.VorgangOhneFremdschluessel(); }
+
+    /// <inheritdoc />
     public bool TabelleVorhanden(string name)
     { Zaehle(); return Innen.TabelleVorhanden(name); }
 

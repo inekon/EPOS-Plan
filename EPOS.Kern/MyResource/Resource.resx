@@ -2709,6 +2709,9 @@ Im Projekt muss ein Pufferspeicher mit der Verwendung „{2}" angelegt sein.</va
   <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Das Ergebnis konnte nicht gespeichert werden.</value>
   </data>
+  <data name="SIM_MSG_BHKW_NICHT_GELAUFEN" xml:space="preserve">
+    <value>Das BHKW ist in diesem Lauf nicht gelaufen (0 h/a) – deshalb kein Brennstoffverbrauch.</value>
+  </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
     <value>Kein Brennstoff für dieses BHKW definiert.</value>
   </data>
@@ -3804,6 +3807,9 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
   </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF_SPK" xml:space="preserve">
     <value>Kein Brennstoff für diese Heizkessel definiert.</value>
+  </data>
+  <data name="SIM_MSG_KESSEL_NICHT_GELAUFEN" xml:space="preserve">
+    <value>Die Heizkessel sind in diesem Lauf nicht gelaufen – deshalb kein Brennstoffverbrauch.</value>
   </data>
   <data name="SIM_MSG_KEINE_DATEN_BHKW" xml:space="preserve">
     <value>Keine Simulationsdaten vorhanden!
@@ -6421,7 +6427,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Energiesteuer: {0} — dem Energieträger ist kein Steuersatz zugeordnet (Träger der Anlage in der Kostenmaske prüfen); Gutschrift = 0.</value>
   </data>
   <data name="STEUER_ENERGIEST_SATZ_FEHLT" xml:space="preserve">
-    <value>Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0.</value>
+    <value>Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0.</value>
   </data>
   <data name="STEUER_ENERGIEST_MENGE_UNKLAR" xml:space="preserve">
     <value>Energiesteuer: {0} — der auf die Stromerzeugung entfallende Brennstoff ist 0 (Strom- oder Wärmemenge des Laufs fehlt); Gutschrift = 0.</value>
@@ -6466,7 +6472,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Stromsteuer § 9b StromStG: {0} € Entlastung erreichen den Sockelbetrag von {1} € je Kalenderjahr nicht; Entlastung = 0.</value>
   </data>
   <data name="STEUER_SATZ_FEHLT" xml:space="preserve">
-    <value>Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0.</value>
+    <value>Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0.</value>
   </data>
   <data name="STEUER_HERKUNFT_FORMAT" xml:space="preserve">
     <value>{0} = {1} {2}, gültig ab {3} ({4}) — {5}</value>
@@ -8084,8 +8090,16 @@ Benutzer: {2} · Gerät: {3}</value>
     <value>Jetzt aktivieren</value>
   </data>
   <data name="LIZ_HINWEIS_AKTIVIERUNG" xml:space="preserve">
-    <value>Die Aktivierung benötigt einmalig eine Internetverbindung. Übertragen werden nur
-Lizenzschlüssel, E-Mail und ein anonymer Geräte-Hash — keine Projekt- oder Kundendaten.</value>
+    <value>Die Aktivierung benötigt einmalig eine Internetverbindung.</value>
+  </data>
+  <data name="LIZ_HINWEIS_UEBERTRAGUNG" xml:space="preserve">
+    <value>Mit der Aktivierung werden Lizenzschlüssel, E-Mail-Adresse und eine anonyme Gerätekennung an den Lizenzserver übertragen. Es gelten die Lizenzvereinbarung und die Hinweise zur Datenverarbeitung.</value>
+  </data>
+  <data name="LIZ_LINK_VEREINBARUNG" xml:space="preserve">
+    <value>Lizenzvereinbarung</value>
+  </data>
+  <data name="LIZ_LINK_DATENVERARBEITUNG" xml:space="preserve">
+    <value>Hinweise zur Datenverarbeitung</value>
   </data>
   <data name="LIZ_GRP_AKTIONEN" xml:space="preserve">
     <value>Weitere Aktionen</value>
@@ -13581,6 +13595,24 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   <data name="KLIMA_SP_REGION" xml:space="preserve">
     <value>Klimaregion</value>
   </data>
+  <data name="KLIMA_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KLIMA_SP_STANDORT" xml:space="preserve">
+    <value>Standort</value>
+  </data>
+  <data name="KLIMA_SP_LONGITUDE" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="KLIMA_SP_LATITUDE" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
+    <value>Importdatum</value>
+  </data>
+  <data name="KLIMA_SP_SCHREIBSCHUTZ" xml:space="preserve">
+    <value>Schreibschutz</value>
+  </data>
   <data name="KLIMA_BTN_IMPORT" xml:space="preserve">
     <value>Daten einlesen</value>
   </data>
@@ -14142,7 +14174,7 @@ Trotzdem importieren?</value>
     <value>Die Systemuhr wurde zurückgestellt — bitte Uhrzeit korrigieren oder online nachprüfen.</value>
   </data>
   <data name="LIZ_ST_NICHTAKTIVIERT" xml:space="preserve">
-    <value>Nicht aktiviert — Testversion oder Lizenzschlüssel unter Administration → Lizenz.</value>
+    <value>Nicht aktiviert — Testversion oder Lizenzschlüssel unter Hilfe → Lizenz.</value>
   </data>
   <data name="LIZ_LESEMODUS_SPERRE" xml:space="preserve">
     <value>Lesemodus: Die Lizenz erlaubt derzeit keine Änderungen. Der Vorgang wurde nicht gespeichert. Ansehen, Berichte und Export bleiben möglich.</value>
@@ -14228,7 +14260,9 @@ Bitte EPOS-Plan neu installieren; das Setup legt die Vorlage neben das Programm.
     <value>Datenverarbeitung</value>
   </data>
   <data name="LIZR_RH_A6" xml:space="preserve">
-    <value>Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation. Wird der optionale Hilfe-Assistent mit eigenem Zugangsschlüssel verwendet, werden ausschließlich die gestellte Frage, der Name des Programmbereichs und die integrierten Hilfetexte an den Dienst des jeweiligen Anbieters übertragen - keine Projekt- oder Kundendaten. Ohne hinterlegten Schlüssel arbeitet die Hilfe rein lokal. Einzelheiten: https://epos-plan.de/datenschutz/</value>
+    <value>Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation.
+Lizenzierung: Beim Aktivieren einer Lizenz, beim Anfordern einer Testversion und beim Lösen eines Gerätes von der Lizenz werden Lizenzschlüssel, E-Mail-Adresse, eine anonyme Gerätekennung (Geräte-Hash), die Programmversion und der Zeitpunkt des Vorgangs an den Lizenzserver von epos-plan.de übertragen. Zweck ist die Erteilung, Prüfung und Verwaltung der Lizenz; Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Erfüllung des Lizenzvertrages). Projekt-, Kunden- und Simulationsdaten werden dabei nicht übertragen.
+Wird der optionale Hilfe-Assistent mit eigenem Zugangsschlüssel verwendet, werden ausschließlich die gestellte Frage, der Name des Programmbereichs und die integrierten Hilfetexte an den Dienst des jeweiligen Anbieters übertragen - keine Projekt- oder Kundendaten. Ohne hinterlegten Schlüssel arbeitet die Hilfe rein lokal. Einzelheiten: https://epos-plan.de/datenschutz/</value>
   </data>
   <data name="LIZR_RH_U7" xml:space="preserve">
     <value>Marken und Urheberrecht</value>
@@ -14251,9 +14285,19 @@ Stand: {0} - Programmversion {1}.</value>
   </data>
   <data name="LIZR_KO_A2" xml:space="preserve">
     <value>Microsoft .NET 10 mit Windows Forms (MIT-Lizenz, Microsoft Corporation) - Laufzeitumgebung und Bedienoberfläche.
-SQLite über Microsoft.Data.Sqlite (MIT-Lizenz, Microsoft Corporation; SQLite selbst ist gemeinfrei) - Ablage der Kenndaten-Datenbank.
+ASP.NET Core Blazor mit Microsoft.AspNetCore.Components.WebView und Microsoft.AspNetCore.Components.QuickGrid (MIT-Lizenz, Microsoft Corporation) - Dialoge, Seiten und Tabellenraster.
+SQLite über Microsoft.Data.Sqlite (MIT-Lizenz, Microsoft Corporation; SQLite selbst ist gemeinfrei) und SQLitePCLRaw (Apache-2.0-Lizenz, Eric Sink) - Ablage der Kenndaten-Datenbank.
 Microsoft Edge WebView2 Runtime (Microsoft Corporation) - Anzeige der Dialoge; Installation und Nutzung nach den Bedingungen von Microsoft.
-Microsoft Access Database Engine sowie OLE-DB- und ODBC-Treiber (Microsoft Corporation) - nur noch für die einmalige Umstellung eines Access-Altbestands; Installation und Nutzung nach den Bedingungen von Microsoft.</value>
+Microsoft Access Database Engine sowie OLE-DB- und ODBC-Treiber (Microsoft Corporation) - nur noch für die einmalige Umstellung eines Access-Altbestands; Installation und Nutzung nach den Bedingungen von Microsoft.
+SkiaSharp samt SkiaSharp.HarfBuzz und HarfBuzzSharp (MIT-Lizenz, Microsoft Corporation) - Zeichnen der Diagrammbilder und Textsatz darin.
+SixLabors.Fonts 1.0 (Apache-2.0-Lizenz, Six Labors and contributors) - Schriftmaße des Diagramm-Renderers.
+Google OR-Tools (Apache-2.0-Lizenz, Google LLC) - gemischt-ganzzahlige Optimierung der Speicherfahrpläne.
+MathNet.Numerics (MIT-Lizenz, Christoph Rüegg, Marcus Cuda, Jurgen Van Gael) - numerische Verfahren der Simulation und der Wirtschaftlichkeit.
+ClosedXML (MIT-Lizenz, Jan Havlíček, Francois Botha und Mitwirkende) und DocumentFormat.OpenXml (MIT-Lizenz, Microsoft Corporation) - Erzeugung der Tabellen- und Textberichte.
+WinForms.DataVisualization (MIT-Lizenz, Microsoft Corporation, Kirsan und Mitwirkende) - Diagramme der Windows-Oberfläche.
+BouncyCastle.Cryptography (MIT-Lizenz, Legion of the Bouncy Castle Inc.) - Prüfung der Lizenzsignatur.
+Humanizer (MIT-Lizenz, Mehdi Khalili, Claire Novotny) - lesbare Zeit- und Mengenangaben.
+JsonSchema.Net (MIT-Lizenz, Greg Dennis) - Prüfung der Aufgabenbeschreibungen des Hilfe-Assistenten.</value>
   </data>
   <data name="LIZR_KO_U3" xml:space="preserve">
     <value>Klima- und Geodaten</value>
@@ -14272,7 +14316,8 @@ OpenStreetMap / Nominatim: Ermittlung von Geokoordinaten zu Ortsnamen. Daten der
     <value>Optionaler Hilfe-Assistent</value>
   </data>
   <data name="LIZR_KO_A5" xml:space="preserve">
-    <value>Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich lokal und ohne Datenübertragung.</value>
+    <value>Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich lokal und ohne Datenübertragung.
+Mscc.GenerativeAI (Apache-2.0-Lizenz, Jochen Kirstätter) - Anbindung des Dienstes.</value>
   </data>
   <data name="LIZR_KO_U6" xml:space="preserve">
     <value>Semantische Suche in der Dokumentation</value>
@@ -14292,6 +14337,9 @@ Einbettungsmodell {0} ({1}, Ubiquitous Knowledge Processing Lab / sentence-trans
   </data>
   <data name="LIZR_KOPF_UNTERTITEL" xml:space="preserve">
     <value>EPOS-Plan - Energieplanungs-Software - INEKON, Intelligente Energiekonzepte</value>
+  </data>
+  <data name="LIZR_REITER_STATUS" xml:space="preserve">
+    <value>Status &amp; Aktivierung</value>
   </data>
   <data name="LIZR_REITER_VERTRAG" xml:space="preserve">
     <value>Lizenzvereinbarung</value>
@@ -14567,6 +14615,21 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="START_KLIMA_HINWEIS" xml:space="preserve">
     <value>Gilt für alle Berechnungen im Projekt</value>
+  </data>
+  <data name="START_KLIMA_HERKUNFT" xml:space="preserve">
+    <value>Klimadaten: {0} · {1} · {2} · Import {3}</value>
+  </data>
+  <data name="START_KLIMA_HERKUNFT_KURZ" xml:space="preserve">
+    <value>Klimadaten: {0} · {1}</value>
+  </data>
+  <data name="SUCHAUSWAHL_PLATZHALTER" xml:space="preserve">
+    <value>Tippen zum Suchen …</value>
+  </data>
+  <data name="SUCHAUSWAHL_KEIN_TREFFER" xml:space="preserve">
+    <value>Kein Treffer.</value>
+  </data>
+  <data name="SUCHAUSWAHL_LISTE" xml:space="preserve">
+    <value>Vorschläge</value>
   </data>
   <data name="START_EINSTIEG" xml:space="preserve">
     <value>Wählen Sie oben ein Projekt aus oder legen Sie unten ein neues an — die übrigen Bereiche öffnen sich danach.</value>
@@ -17883,6 +17946,18 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="KI_FRAGE_PV_STRANG_P8" xml:space="preserve">
     <value>Die Modulsumme der Stränge weicht von der Anzahl Module der Anlage ab (Regel P8). Was bedeutet das, und welche Zahl gilt für die Erzeugung?</value>
   </data>
+  <data name="KI_FRAGE_KLIMA_TRY_KEIN_BEREICH" xml:space="preserve">
+    <value>Die Adresse der TRY-Regionaldaten erlaubt keine Teilabrufe. Was bedeutet das, und wie lese ich die Daten trotzdem ein?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_AUSSERHALB" xml:space="preserve">
+    <value>Der Standort liegt zu weit von der nächsten TRY-Region entfernt. Warum bricht das Einlesen ab, und welche Klimaquelle passt dann?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_FORMATFEHLER" xml:space="preserve">
+    <value>Die TRY-Daten sind nicht lesbar. Woran liegt das, und wie komme ich an eine brauchbare Datei?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
+    <value>Der Kopf der TRY-Datei nennt keinen lesbaren Standort. Was heißt das, und wie trage ich den Standort ein?</value>
+  </data>
   <data name="KI_DIALOGDATEN_SCHALTER" xml:space="preserve">
     <value>Feldwerte mitsenden</value>
   </data>
@@ -19895,5 +19970,245 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_SICHT_LAUF_NOETIG" xml:space="preserve">
     <value>Die Sicht „Zwei Stände“ rechnet gegen A — bitte „Berechnen“.</value>
+  </data>
+  <data name="KLIMA_QUELLE" xml:space="preserve">
+    <value>Klimaquelle</value>
+  </data>
+  <data name="KLIMA_QUELLE_PVGIS" xml:space="preserve">
+    <value>PVGIS-Testreferenzjahr (weltweit)</value>
+  </data>
+  <data name="KLIMA_QUELLE_TRY_DATEI" xml:space="preserve">
+    <value>DWD-Testreferenzjahr aus Datei</value>
+  </data>
+  <data name="KLIMA_QUELLE_TRY_REGIONAL" xml:space="preserve">
+    <value>TRY-Regionaldaten (Deutschland)</value>
+  </data>
+  <data name="KLIMA_TRY_JAHR" xml:space="preserve">
+    <value>Bezugsjahr</value>
+  </data>
+  <data name="KLIMA_TRY_SZENARIO" xml:space="preserve">
+    <value>Szenario</value>
+  </data>
+  <data name="KLIMA_TRY_SZ_MITTEL" xml:space="preserve">
+    <value>mittleres Jahr</value>
+  </data>
+  <data name="KLIMA_TRY_SZ_SOMMERWARM" xml:space="preserve">
+    <value>sommerwarm</value>
+  </data>
+  <data name="KLIMA_TRY_SZ_WINTERKALT" xml:space="preserve">
+    <value>winterkalt</value>
+  </data>
+  <data name="KLIMA_TRY_DATEI" xml:space="preserve">
+    <value>TRY-Datei</value>
+  </data>
+  <data name="KLIMA_TRY_DATEI_FILTER" xml:space="preserve">
+    <value>DWD-Testreferenzjahr (*.dat)|*.dat|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="KLIMA_TRY_PAKET" xml:space="preserve">
+    <value>Regionalpaket (leer = Abruf über die Adresse)</value>
+  </data>
+  <data name="KLIMA_TRY_PAKET_FILTER" xml:space="preserve">
+    <value>TRY-Regionalpaket (*.zip)|*.zip|Alle Dateien (*.*)|*.*</value>
+  </data>
+  <data name="KLIMA_TRY_BTN_WAEHLEN" xml:space="preserve">
+    <value>Durchsuchen …</value>
+  </data>
+  <data name="KLIMA_SCHRITT_DATEI" xml:space="preserve">
+    <value>TRY-Datei lesen …</value>
+  </data>
+  <data name="KLIMA_SCHRITT_PAKET" xml:space="preserve">
+    <value>TRY-Regionaldaten abrufen …</value>
+  </data>
+  <data name="KLIMA_TRY_VERWORFEN" xml:space="preserve">
+    <value>nicht übernommen: {0}</value>
+  </data>
+  <data name="KLIMA_TRY_LIZENZ" xml:space="preserve">
+    <value>CC BY 4.0, RE-Lab-Projects/TRY_DE_2015_2045, Rohdaten Deutscher Wetterdienst</value>
+  </data>
+  <data name="KLIMA_TRY_KEIN_BEREICH" xml:space="preserve">
+    <value>Die Adresse erlaubt keine Teilabrufe; data.zip herunterladen und als Datei wählen.</value>
+  </data>
+  <data name="KLIMA_TRY_AUSSERHALB" xml:space="preserve">
+    <value>Der nächste TRY-Regionsmittelpunkt liegt {0} km entfernt (Grenze {1} km) — die Regionaldaten decken nur Deutschland ab.</value>
+  </data>
+  <data name="KLIMA_TRY_FORMATFEHLER" xml:space="preserve">
+    <value>Die TRY-Daten sind nicht lesbar: {0}</value>
+  </data>
+  <data name="KLIMA_TRY_DATEI_FEHLT" xml:space="preserve">
+    <value>Die Datei „{0}“ gibt es nicht.</value>
+  </data>
+  <data name="KLIMA_TRY_KEINE_REGION" xml:space="preserve">
+    <value>Das Regionalpaket führt keine Region für das Bezugsjahr {0}.</value>
+  </data>
+  <data name="KLIMA_TRY_KEIN_SZENARIO" xml:space="preserve">
+    <value>Das Szenario „{0}“ fehlt in Region {1}.</value>
+  </data>
+  <data name="KLIMA_TRY_SPALTENZAHL" xml:space="preserve">
+    <value>Zeile {0}: erwartet werden {1} Spalten, gelesen wurden {2}.</value>
+  </data>
+  <data name="KLIMA_TRY_ZEILENZAHL" xml:space="preserve">
+    <value>Erwartet werden {0} Datenzeilen, gelesen wurden {1} (Datei endet in Zeile {2}).</value>
+  </data>
+  <data name="KLIMA_TRY_ZEITFELD" xml:space="preserve">
+    <value>Zeile {0}: Monat {1}, Tag {2}, Stunde {3} ergeben keinen Zeitpunkt.</value>
+  </data>
+  <data name="KLIMA_TRY_FELDWERT" xml:space="preserve">
+    <value>Zeile {0}: das Feld {1} ist keine Zahl („{2}“).</value>
+  </data>
+  <data name="KLIMA_TRY_KEIN_KOPFENDE" xml:space="preserve">
+    <value>Die Datei enthält keine Trennzeile „***“ — Kopf und Daten sind nicht zu trennen.</value>
+  </data>
+  <data name="KLIMA_TRY_DOPPELTE_STUNDE" xml:space="preserve">
+    <value>Zeile {0}: diese Stunde steht schon in der Reihe.</value>
+  </data>
+  <data name="KLIMA_TRY_DETAILS_DATEI" xml:space="preserve">
+    <value>DWD-Testreferenzjahr · Datei „{0}“ · Import {1} · {2} · {3}</value>
+  </data>
+  <data name="KLIMA_TRY_DETAILS_REGIONAL" xml:space="preserve">
+    <value>TRY-Regionaldaten · Region {0} · Station {1} · Entfernung {2} km · Szenario {3} · Bezugsjahr {4} · Quelle {5} · Import {6} · {7} · {8}</value>
+  </data>
+  <data name="KLIMA_TRY_MSG_HERKUNFT" xml:space="preserve">
+    <value>Herkunft: {0}</value>
+  </data>
+  <data name="KLIMA_TRY_STANDORT_KOPF" xml:space="preserve">
+    <value>Standort aus dem Dateikopf: Rechtswert {0}, Hochwert {1} → {2}° O / {3}° N</value>
+  </data>
+  <data name="KLIMA_TRY_STANDORT_ANWENDER" xml:space="preserve">
+    <value>Standort vom Anwender</value>
+  </data>
+  <data name="KLIMA_TRY_STANDORT_FEHLT" xml:space="preserve">
+    <value>Der Kopf der TRY-Datei nennt keinen lesbaren Standort — Längen- und Breitengrad bitte eintragen.</value>
+  </data>
+  <data name="KLIMA_TRY_STANDORT_HINWEIS" xml:space="preserve">
+    <value>Standort aus der Datei (Rechtswert {0}, Hochwert {1}); änderbar.</value>
+  </data>
+  <data name="KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
+    <value>Der Standort der Datei „{0}“ ist nicht lesbar — Längen- und Breitengrad bitte eintragen.</value>
+  </data>
+  <data name="KLIMA_TRY_BTN_REGION" xml:space="preserve">
+    <value>Region ermitteln</value>
+  </data>
+  <data name="KLIMA_TRY_VORSCHAU" xml:space="preserve">
+    <value>Region {0}, Station {1}, Entfernung {2} km</value>
+  </data>
+  <data name="KLIMA_TRY_VORSCHAU_BESTAND" xml:space="preserve">
+    <value>vorhanden: {0}</value>
+  </data>
+  <data name="KLIMA_TRY_VORSCHAU_LAEUFT" xml:space="preserve">
+    <value>Region wird ermittelt …</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
+    <value>Klimadaten</value>
+  </data>
+  <data name="ADM_SET_LBL_TRY_PORTAL" xml:space="preserve">
+    <value>Portal der DWD-Testreferenzjahre:</value>
+  </data>
+  <data name="ADM_SET_LBL_TRY_REGIONAL" xml:space="preserve">
+    <value>Adresse der TRY-Regionaldaten:</value>
+  </data>
+  <data name="PTR_SP_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="PTR_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="PTR_SP_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="PTR_SP_KUNDE" xml:space="preserve">
+    <value>Kunde</value>
+  </data>
+  <data name="PTR_SP_GEAENDERT" xml:space="preserve">
+    <value>Geändert</value>
+  </data>
+  <data name="PTR_SP_MITGENOMMEN" xml:space="preserve">
+    <value>mitgenommen</value>
+  </data>
+  <data name="PTR_ART_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="PTR_ART_VARIANTE" xml:space="preserve">
+    <value>Variante von {0}</value>
+  </data>
+  <data name="PTR_LBL_PROJEKTE" xml:space="preserve">
+    <value>Projekte zum Export:</value>
+  </data>
+  <data name="PTR_HINWEIS_STAMMZUG" xml:space="preserve">
+    <value>Zu {0} gewählten Varianten kommen {1} Stammprojekte hinzu.</value>
+  </data>
+  <data name="PTR_LBL_ZIELORDNER" xml:space="preserve">
+    <value>Zielordner:</value>
+  </data>
+  <data name="PTR_BTN_ORDNER" xml:space="preserve">
+    <value>Ordner wählen…</value>
+  </data>
+  <data name="PTR_GRUPPE_VARIANTEN" xml:space="preserve">
+    <value>Varianten von „{0}“:</value>
+  </data>
+  <data name="PTR_GESPERRT_GEWAEHLT" xml:space="preserve">
+    <value>Diese Variante ist in der Liste gewählt und reist mit.</value>
+  </data>
+  <data name="PTR_MSG_KEINE_WAHL" xml:space="preserve">
+    <value>Bitte mindestens ein Projekt wählen.</value>
+  </data>
+  <data name="PTR_MSG_KEIN_ORDNER" xml:space="preserve">
+    <value>Bitte einen Zielordner wählen.</value>
+  </data>
+  <data name="PTR_BILANZ_EXPORT" xml:space="preserve">
+    <value>{0} von {1} Paketen geschrieben, {2} fehlgeschlagen.</value>
+  </data>
+  <data name="PTR_BTN_DATEIEN" xml:space="preserve">
+    <value>Dateien wählen…</value>
+  </data>
+  <data name="PTR_SP_PAKET_DATEI" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="PTR_SP_PAKET_PROJEKT" xml:space="preserve">
+    <value>Hauptprojekt</value>
+  </data>
+  <data name="PTR_SP_PAKET_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="PTR_SP_PAKET_SCHEMA" xml:space="preserve">
+    <value>Schemastand</value>
+  </data>
+  <data name="PTR_SP_PAKET_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="PTR_PAKET_SCHEMA_OK" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="PTR_PAKET_SCHEMA_ALT" xml:space="preserve">
+    <value>{0} — abweichend</value>
+  </data>
+  <data name="PTR_PAKET_STAMM_AUS" xml:space="preserve">
+    <value>Variante von „{0}“</value>
+  </data>
+  <data name="PTR_PAKET_DUBLETTE" xml:space="preserve">
+    <value>derselbe Stamm wie Paket {0} — wird übersprungen</value>
+  </data>
+  <data name="PTR_LAUF_PAKET" xml:space="preserve">
+    <value>Paket {0} von {1} — {2}</value>
+  </data>
+  <data name="PTR_BILANZ_IMPORT" xml:space="preserve">
+    <value>{0} von {1} Paketen importiert, {2} übersprungen, {3} umbenannt, {4} fehlgeschlagen.</value>
+  </data>
+  <data name="PTR_MSG_ZIELNAME_MEHRERE" xml:space="preserve">
+    <value>Der Zielname gilt nur für einen einzelnen Import; bei mehreren Paketen behält jedes Projekt seinen Namen.</value>
+  </data>
+  <data name="TRANSFER_EXPORT_VARIANTE_ALS_STAMM" xml:space="preserve">
+    <value>Das Projekt „{0}“ ist selbst eine Variante und kann keine weiteren Varianten mitnehmen. Bitte das Stammprojekt wählen.</value>
+  </data>
+  <data name="TRANSFER_STAMM_BEREITS" xml:space="preserve">
+    <value>Stammprojekt „{0}“ steht bereits aus einem früheren Paket dieses Laufs — es wird nicht noch einmal angelegt.</value>
+  </data>
+  <data name="TRANSFER_PAKET_SCHEMA" xml:space="preserve">
+    <value>Das Paket wurde mit Schemastand {0} exportiert, dieser Rechner arbeitet mit Stand {1}.</value>
+  </data>
+  <data name="TRANSFER_PAKET_UNLESBAR" xml:space="preserve">
+    <value>Kein gültiges Projektpaket (manifest.json fehlt).</value>
+  </data>
+  <data name="TRANSFER_PAKET_UNLESBAR_GRUND" xml:space="preserve">
+    <value>Paket konnte nicht gelesen werden: {0}</value>
   </data>
 </root>

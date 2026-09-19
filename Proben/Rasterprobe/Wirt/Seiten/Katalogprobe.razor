@@ -31,6 +31,7 @@
     {
         case "klima":
             <KlimadatenDialog Regionen="@KlimaRegionen" Ansicht="@KlimaAnsicht"
+                              Filterstandvorgabe="@_filterstand"
                               Importieren="@KlimaImport" Loeschen="@(n => Task.FromResult(true))"
                               Ortsvorschlaege="@_orte" Geschlossen="@(b => { })" />
             break;
@@ -149,24 +150,38 @@
     }
 
     // -------------------------------------------------------------- Klima
-    private Task<List<KlimadatenDialog.Regionszeile>> KlimaRegionen()
+    private Task<IReadOnlyList<Katalogfilterzeile>> KlimaRegionen()
     {
-        var liste = new List<KlimadatenDialog.Regionszeile>(_anzahl);
+        var liste = new List<Katalogfilterzeile>(_anzahl);
         for (int i = 0; i < _anzahl; i++)
-            liste.Add(new KlimadatenDialog.Regionszeile(Regionsname(i), i % 7 == 0));
-        return Task.FromResult(liste);
+        {
+            string name = Regionsname(i);
+            bool geschuetzt = i % 7 == 0;
+            liste.Add(new Katalogfilterzeile(i + 1, name) { Geschuetzt = geschuetzt }
+                .MitText(Katalogfilterprofil.SpBezeichner, name)
+                .MitText(Katalogfilterprofil.SpQuelle, "DWD-Testreferenzjahr (Regionaldaten)")
+                .MitText(Katalogfilterprofil.SpStandort, Ortsname(i) + ", Deutschland")
+                .MitZahl(Katalogfilterprofil.SpLongitude, 9.18 + i / 100.0, 4)
+                .MitZahl(Katalogfilterprofil.SpLatitude, 48.77 + i / 100.0, 4)
+                .MitText(Katalogfilterprofil.SpImportdatum, "2026-09-18")
+                .MitKennzeichen(Katalogfilterprofil.SpSchreibschutz, geschuetzt));
+        }
+        return Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(liste);
     }
 
-    private static string Regionsname(int i)
+    private static string Ortsname(int i)
     {
         string[] orte = { "Stuttgart", "Berlin", "Hamburg", "München", "Köln", "Dresden",
                           "Rostock", "Freiburg im Breisgau", "Kassel", "Nürnberg" };
-        // Die laufende Nummer steht MIT im Namen: Der Klimadialog haelt seine
-        // Zeilen am Namen (@key), und zwei gleiche Namen brechen den Zeichenlauf
-        // ab ("More than one sibling ... has the same key value").
-        return orte[i % orte.Length] + " TRY " + (2015 + i % 5)
-             + " Zone " + (i % 15 + 1) + " (" + (i + 1).ToString("D2") + ")";
+        return orte[i % orte.Length];
     }
+
+    private static string Regionsname(int i)
+        // Die laufende Nummer steht MIT im Namen: Der Klimadialog haelt seine
+        // Zeilen am Bezeichner, und zwei gleiche Namen brechen den Zeichenlauf
+        // ab ("More than one sibling ... has the same key value").
+        => Ortsname(i) + " TRY " + (2015 + i % 5)
+         + " Zone " + (i % 15 + 1) + " (" + (i + 1).ToString("D2") + ")";
 
     private Task<KlimadatenDialog.Regionsansicht> KlimaAnsicht(string name)
         => Task.FromResult(new KlimadatenDialog.Regionsansicht(

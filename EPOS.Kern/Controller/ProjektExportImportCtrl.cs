@@ -53,7 +53,7 @@ namespace WindowsFormsApplication1
     //    ergänzt um Laufzeit-Ableitung aus Schema-Beziehungen (GetOleDbSchemaTable) und
     //    Unique-Indizes. Bis dahin gelten die Listen unten als Fallback.
     // =====================================================================================
-    public class ProjektExportImportCtrl
+    public partial class ProjektExportImportCtrl
     {
         private const string FORMAT = "wp-projekt";
         // T3: Version 2 = Varianten-Baeume (projects/<i>/data/) + variantLinks.
@@ -121,8 +121,57 @@ namespace WindowsFormsApplication1
         public bool Exportieren(string projektName, List<string> variantenProjekte, string zielPfad,
             IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt = null)
         {
+            bool ok = ExportEines(projektName, variantenProjekte, zielPfad, fortschritt, out string grund);
+            if (!ok && !string.IsNullOrEmpty(grund)) Meldung.Zeigen(grund);
+            return ok;
+        }
+
+        /// <summary>
+        /// <b>Derselbe Export, aber STUMM</b> (Auftrag PI-1) — er zeigt keine Meldung,
+        /// sondern benennt seinen Grund als Rückgabewert.
+        ///
+        /// <para><b>Warum er getrennt ist.</b> Ein Sammellauf über fünf Gruppen, bei dem
+        /// die dritte scheitert, darf nicht fünf Meldungsfenster nacheinander aufziehen
+        /// und schon gar nicht mitten im Lauf auf einen Klick warten — auf iOS gäbe es
+        /// dafür nicht einmal ein Fenster. Die Bilanz trägt den Grund je Gruppe, und der
+        /// Dialog zeigt ihn einmal am Ende.</para>
+        ///
+        /// <para><b>Die Wache gegen das Variantenpaket verkehrtherum</b>
+        /// (<c>TRANSFER_EXPORT_VARIANTE_ALS_STAMM</c>): Ein Paket, dessen Hauptprojekt
+        /// selbst eine Variante ist und das WEITERE Varianten mitführt, ließe sich am
+        /// Ziel nicht mehr richtig verknüpfen — die `variantLinks` hingen dann an einem
+        /// Projekt, das seinerseits an einem nicht mitgereisten Stamm hängt. <b>Eine
+        /// Variante ALLEIN bleibt erlaubt</b>: Das ist der Weg, auf dem eine einzelne
+        /// Variante samt der Vergütungsbeilage ihres Stamms weitergegeben wird
+        /// (Konzept § 2.16), und er hat seine eigenen Proben.</para>
+        /// </summary>
+        /// <param name="grund">
+        /// Leer bei Erfolg; sonst der fertige, übersetzte Satz, den der Bestandsweg
+        /// <see cref="Exportieren(string, List{string}, string, IProgress{ProjektDuplizierenCtrl.Fortschritt})"/>
+        /// wie bisher als Meldung zeigt.
+        /// </param>
+        internal bool ExportEines(string projektName, List<string> variantenProjekte, string zielPfad,
+            IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt, out string grund)
+        {
+            grund = "";
             int srcId = _dup.GetProjektId(projektName);
-            if (srcId <= 0) { Meldung.Zeigen("Projekt '" + projektName + "' nicht gefunden."); return false; }
+            if (srcId <= 0)
+            {
+                grund = "Projekt '" + projektName + "' nicht gefunden.";
+                return false;
+            }
+
+            // PI-1: ein Variantenprojekt als Hauptprojekt eines Pakets MIT weiteren
+            // Varianten — die Verknüpfungen wären am Ziel nicht herstellbar.
+            if (variantenProjekte != null && variantenProjekte.Count > 0 && IstVariante(srcId))
+            {
+                grund = string.Format(
+                    T("TRANSFER_EXPORT_VARIANTE_ALS_STAMM",
+                      "Das Projekt \u201E{0}\u201C ist selbst eine Variante und kann keine weiteren " +
+                      "Varianten mitnehmen. Bitte das Stammprojekt w\u00e4hlen."),
+                    projektName);
+                return false;
+            }
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -309,7 +358,7 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     try { v.Rollback(); } catch { }
-                    Meldung.Zeigen("Fehler beim Export: " + ex.Message); return false;
+                    grund = "Fehler beim Export: " + ex.Message; return false;
                 }
             }
         }
@@ -425,6 +474,37 @@ namespace WindowsFormsApplication1
         // ===================================================================================
         public int Importieren(string quellPfad, string gewuenschterName, BeiVorhandenem modus,
             IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt, out string fehler)
+            => ImportierenIntern(quellPfad, gewuenschterName, modus, fortschritt, null, out fehler);
+
+        /// <summary>
+        /// <b>Derselbe Import, aber mit einem GEDÄCHTNIS über den ganzen Lauf</b>
+        /// (Auftrag PI-1).
+        ///
+        /// <para>Ohne <paramref name="stand"/> ist er Zeile für Zeile der Bestandsweg —
+        /// <see cref="Importieren"/> ruft ihn genau so, und die Proben P1 bis P13 laufen
+        /// unverändert. MIT einem Stand kommen zwei Dinge dazu, und nur diese zwei:</para>
+        ///
+        /// <list type="number">
+        ///   <item><description><b>Die Namensabbildung gilt über Paketgrenzen.</b>
+        ///     <c>nameZuId</c> ist mit dem vorbelegt, was frühere Pakete desselben Laufs
+        ///     angelegt haben. Damit findet die Linkauflösung den Stamm aus Paket 1
+        ///     VOR einem gleichnamigen Fremdprojekt, das am Ziel schon stand — sonst
+        ///     hinge die Variante aus Paket 2 am falschen Projekt.</description></item>
+        ///   <item><description><b>Ein schon eingespieltes Stammprojekt wird
+        ///     übersprungen</b> (<see cref="Sammelstand.StammUeberspringen"/>). Zwei
+        ///     Pakete desselben Stamms sind der Regelfall, sobald der Anwender zwei
+        ///     Varianten einzeln exportiert hat; ohne diesen Zweig stünde der Stamm am
+        ///     Ziel zweimal — einmal echt und einmal als „(2)" — und die zweite
+        ///     Variante hinge an der Kopie.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Die Transaktion bleibt je Paket.</b> Ein Lauf über fünf Pakete, bei
+        /// dem das dritte scheitert, behält die ersten beiden: Ein Teilerfolg ist
+        /// ehrlicher als ein Rückbau, der auch das Gelungene wegnimmt (die Bilanz nennt
+        /// beides).</para>
+        /// </summary>
+        internal int ImportierenIntern(string quellPfad, string gewuenschterName, BeiVorhandenem modus,
+            IProgress<ProjektDuplizierenCtrl.Fortschritt> fortschritt, Sammelstand stand, out string fehler)
         {
             fehler = null;
             Manifest man;
@@ -479,9 +559,15 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // PI-1: Liegt der Stamm dieses Pakets bereits aus einem frueheren Paket
+            // desselben Laufs am Ziel, wird er NICHT ein zweites Mal eingespielt.
+            bool stammUeberspringen = stand != null && stand.StammUeberspringen
+                                      && !string.IsNullOrEmpty(man.sourceProject)
+                                      && stand.NameZuId.ContainsKey(man.sourceProject);
+
             // Zielnamen / Konfliktbehandlung bestimmen.
             string ziel = string.IsNullOrWhiteSpace(gewuenschterName) ? man.sourceProject : gewuenschterName;
-            int existierId = _dup.GetProjektId(ziel);
+            int existierId = stammUeberspringen ? 0 : _dup.GetProjektId(ziel);
             int ueberschreibId = 0;
             if (existierId > 0)
             {
@@ -517,7 +603,8 @@ namespace WindowsFormsApplication1
                     _projektTabellen = new HashSet<string>(man.tables.Select(x => x.name), StringComparer.OrdinalIgnoreCase);
                     _fkKeys = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
                     int schritt = 0;
-                    int gesamt = man.tables.Count + (man.catalogs?.Count > 0 ? 1 : 0) + (ueberschreibId > 0 ? 1 : 0);
+                    int gesamt = (stammUeberspringen ? 0 : man.tables.Count)
+                                 + (man.catalogs?.Count > 0 ? 1 : 0) + (ueberschreibId > 0 ? 1 : 0);
                     for (int vi = 0; vi < (man.variants?.Count ?? 0); vi++)
                         gesamt += man.variants[vi].tables.Count;
 
@@ -553,10 +640,36 @@ namespace WindowsFormsApplication1
                     // BaumEinfuegen — T3: derselbe Weg trägt auch die Varianten).
                     var berichte = new List<string>();
                     var nameZuId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-                    int neueProjektId = BaumEinfuegen(v, man.tables, tableRows, ziel,
+                    // PI-1: NUR die Projekte DIESES Pakets — die Nacharbeit (Anker,
+                    // Reseed) gilt ihnen, nicht dem, was frühere Pakete angelegt haben.
+                    var eigene = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+                    // PI-1: Was frühere Pakete desselben Laufs angelegt haben, gilt hier
+                    // schon — und geht der Namenssuche am Zielbestand VOR (ProjektIdInTrans).
+                    if (stand != null)
+                        foreach (KeyValuePair<string, int> kv in stand.NameZuId) nameZuId[kv.Key] = kv.Value;
+
+                    int neueProjektId;
+                    if (stammUeberspringen)
+                    {
+                        neueProjektId = stand.NameZuId[man.sourceProject];
+                        berichte.Add(string.Format(
+                            T("TRANSFER_STAMM_BEREITS",
+                              "Stammprojekt \u201E{0}\u201C steht bereits aus einem fr\u00fcheren Paket " +
+                              "dieses Laufs - es wird nicht noch einmal angelegt."),
+                            man.sourceProject));
+                    }
+                    else
+                    {
+                        neueProjektId = BaumEinfuegen(v, man.tables, tableRows, ziel,
                                                       katMap, fortschritt, ref schritt, gesamt);
-                    if (neueProjektId > 0) nameZuId[man.sourceProject ?? ziel] = neueProjektId;
-                    berichte.Add("Projekt \u201E" + ziel + "\u201C importiert (" + man.tables.Count + " Tabellen).");
+                        if (neueProjektId > 0)
+                        {
+                            nameZuId[man.sourceProject ?? ziel] = neueProjektId;
+                            eigene[man.sourceProject ?? ziel] = neueProjektId;
+                        }
+                        berichte.Add("Projekt \u201E" + ziel + "\u201C importiert (" + man.tables.Count + " Tabellen).");
+                    }
 
                     // T3: Varianten-Bäume — der gewählte Konfliktmodus gilt für alle (TF2).
                     for (int vi = 0; vi < (man.variants?.Count ?? 0); vi++)
@@ -577,7 +690,7 @@ namespace WindowsFormsApplication1
                         }
                         int vId = BaumEinfuegen(v, man.variants[vi].tables, variantRows[vi], vZiel,
                                                 katMap, fortschritt, ref schritt, gesamt);
-                        if (vId > 0) nameZuId[vQuelle] = vId;
+                        if (vId > 0) { nameZuId[vQuelle] = vId; eigene[vQuelle] = vId; }
                         berichte.Add("Variante \u201E" + vZiel + "\u201C importiert (" + man.variants[vi].tables.Count + " Tabellen).");
                     }
 
@@ -636,10 +749,18 @@ namespace WindowsFormsApplication1
                     // („ohne Anlagenzuordnung", das Ä24-Befundbild). Aus den bereits
                     // umgeschlüsselten, gültigen Anlagenzuordnungen neu ableiten —
                     // derselbe Baustein wie im Duplizierer seit Ä24. T3: je Projektbaum.
-                    foreach (var kvp in nameZuId)
+                    foreach (var kvp in eigene)
                         try { KostenProjektPositionenCtrl.AnkerNachziehen(kvp.Value); } catch { }
 
+                    // PI-1: Was dieses Paket angelegt hat, gilt ab jetzt für den ganzen
+                    // Lauf — auch unter dem UMBENANNTEN Zielnamen, denn die Verknüpfung
+                    // des nächsten Pakets nennt den QUELLnamen.
+                    if (stand != null)
+                        foreach (KeyValuePair<string, int> kv in eigene) stand.NameZuId[kv.Key] = kv.Value;
+
                     LetzterBericht = berichte;
+                    LetzterZielname = stammUeberspringen ? (man.sourceProject ?? "") : ziel;
+                    LetzterStammUebersprungen = stammUeberspringen;
                     return neueProjektId;
                 }
                 catch (Exception ex)

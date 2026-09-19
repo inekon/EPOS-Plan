@@ -37,8 +37,36 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool Insert()
+        /// <summary>
+        /// Legt einen Stromganglinien-KOPF im PROJEKT an (GL-1).
+        ///
+        /// <para><b>Das Projekt ist Pflicht.</b> <c>Tab_Stromganglinie</c> ist eine
+        /// Projekttabelle; ihre Spalte <c>ID_Projekt</c> traegt seit Schemaschritt 96
+        /// einen Fremdschluessel auf <c>Tab_Projekt</c>. Ein Kopfsatz ohne Projekt ist
+        /// ueber <c>ID_Projekt</c> nicht auffindbar und wird vom Loeschweg des Projekts
+        /// nicht mitgenommen — genau die Stolperstelle, die <c>PreisreiheCtrl</c> in
+        /// seinem Kopf nennt und bewusst nicht uebernommen hat.</para>
+        ///
+        /// <para><b>Katalogware gehoert nicht hierher.</b> Eine Ganglinie OHNE Projekt
+        /// ist Katalogware und wird ueber <see cref="StromganglinieStammCtrl"/> nach
+        /// <c>Tab_Stromganglinie_STAMM</c> geschrieben; ins Projekt kommt sie als Kopie
+        /// ueber <c>StromganglinieStammCtrl.ApplyGanglinieToProjekt</c>. Ein Aufruf ohne
+        /// gueltige Projektnummer wird deshalb BENANNT abgewiesen statt still mit NULL
+        /// gespeichert.</para>
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt, dem der Kopfsatz gehoert; &gt; 0.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="idProjekt"/> ist 0 oder kleiner.
+        /// </exception>
+        public bool Insert(int idProjekt)
         {
+            if (idProjekt <= 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(idProjekt),
+                    "Eine Stromganglinie wird nur MIT Projekt in Tab_Stromganglinie " +
+                    "geschrieben. Katalogware gehoert nach Tab_Stromganglinie_STAMM " +
+                    "(StromganglinieStammCtrl).");
+
             try
             {
                 // Ermittlung der nächsten ID direkt über das Repository (Ersatz für sequenzielle Reader)
@@ -58,10 +86,17 @@ namespace WindowsFormsApplication1
                 }
 
                 // Standardkonformes INSERT INTO ... VALUES-Statement mit expliziten Parametertypen
-                string sql = "INSERT INTO Tab_Stromganglinie (ID, Bezeichner, Zeitinterval) VALUES (?, ?, ?)";
+                //
+                // ID_Projekt kommt als PARAMETER herein (GL-1). Ein unbekanntes Projekt
+                // weist die Datenbank ueber den Fremdschluessel aus Schemaschritt 96 ab;
+                // der Fang unten meldet das und gibt false zurueck.
+                string sql = "INSERT INTO Tab_Stromganglinie (ID, ID_Projekt, Bezeichner, Zeitinterval) VALUES (?, ?, ?, ?)";
 
                 DbParam paramId = new DbParam("@id", DbParamTyp.Integer);
                 paramId.Wert = m_ID_Ganglinie;
+
+                DbParam paramProjekt = new DbParam("@proj", DbParamTyp.Integer);
+                paramProjekt.Wert = idProjekt;
 
                 DbParam paramBez = new DbParam("@bez", DbParamTyp.VarWChar);
                 paramBez.Wert = m_szBezeichner ?? (object)DBNull.Value;
@@ -69,7 +104,7 @@ namespace WindowsFormsApplication1
                 DbParam paramInterval = new DbParam("@interval", DbParamTyp.Integer);
                 paramInterval.Wert = m_Zeitinterval;
 
-                DbParam[] ps = { paramId, paramBez, paramInterval };
+                DbParam[] ps = { paramId, paramProjekt, paramBez, paramInterval };
 
                 return DataRepository.ExecuteSQL(sql, ps);
             }

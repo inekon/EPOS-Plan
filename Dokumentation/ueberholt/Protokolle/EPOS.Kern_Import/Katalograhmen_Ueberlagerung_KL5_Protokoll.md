@@ -56,13 +56,13 @@ Fall K1 (Klimadaten, 1 180 × 780, 35 Regionen, Bilder befüllt), Stand **vor** 
 
 | Größe | gemessen |
 |---|---|
-| Dialoghöhe (`height: 100dvh`) / Inhalt | 780 px / **1 318 px** |
-| Rahmen `.epos-katalog-paar` | auf **601,8 px** gestaucht, Inhalt 1 220 px |
+| Dialoghöhe (`height: 100dvh`) / Inhalt | 780 px / **1 475 px** |
+| Rahmen `.epos-katalog-paar` | auf **601,8 px** gestaucht, Inhalt 1 377 px |
 | `grid-template-rows` (gerechnet) | **295,906 px \| 295,906 px** |
-| Listenhülle `.epos-raster-huelle` | **178,9 px** statt der Höchsthöhe 457,6 px |
-| Eingabeblock | Reihe 295,9 px, Inhalt **914 px** → malt bis y = 876,8 |
+| Listenblock | Reihe 295,9 px, Hülle 457,6 px → **296 284 px²** über den Feldern darunter |
+| Eingabeblock | Reihe 295,9 px, Inhalt **1 071 px** → malt bis y = 876,8 |
 | Fußleiste | y = 720 … 764 → **49 829 px²** vom Diagramm überdeckt |
-| „Daten einlesen“, „Beenden“ | `elementFromPoint` liefert `img.epos-chartbild` |
+| „Daten einlesen“, „Löschen“, „Beenden“ | `elementFromPoint` liefert `img.epos-chartbild` |
 
 Die Kette:
 
@@ -73,7 +73,7 @@ Die Kette:
    (`.epos-katalog-liste`, `.epos-katalog-eingabe`) ihrerseits `min-height: 0` trugen, war
    die **Mindestgröße einer Reihe null**: Chromium verteilte die gestauchte Höhe zu
    **gleichen Teilen** auf beide Reihen, statt jeder ihren Inhalt zu lassen.
-3. Die zweite Reihe war damit 618 px zu kurz. Ihr Inhalt zeichnete darüber hinaus — quer
+3. Die zweite Reihe war damit 775 px zu kurz. Ihr Inhalt zeichnete darüber hinaus — quer
    über die Liste und über die Fußleiste. „Daten einlesen“ hat **keine** eigene Lage: Der
    Eindruck, er stünde „vor Elementen“, kam allein aus dieser Stauchung.
 
@@ -110,10 +110,10 @@ selbst wurde nicht angefasst.
 
 | Größe | K1 (1 180 × 780) | K2 (1 600 × 1 000) |
 |---|---|---|
-| `grid-template-rows` | **574,594 px \| 914,359 px** | 574,594 px \| 945,406 px |
+| `grid-template-rows` | **564,594 px \| 1 070,8 px** | 564,594 px \| 1 101,84 px |
 | Listenhülle | **457,6 px** = Höchstmaß, sieben Zeilen | 457,6 px |
-| Rahmen sichtbar / Inhalt | 601,8 px / 1 499 px (rollt in sich) | 821,8 px / 1 530 px |
-| Fußleiste | y = 720 … 764, beide Knöpfe **frei** | y = 940 … 984, **frei** |
+| Rahmen sichtbar / Inhalt | 601,8 px / 1 645 px (rollt in sich) | 821,8 px / 1 676 px |
+| Fußleiste | y = 720 … 764, alle drei Knöpfe **frei** | y = 940 … 984, **frei** |
 | Rollhöhe des Dialogs | **780 px** = Fensterhöhe | 1 000 px |
 
 `katalogprobe.mjs`: **12 von 12 Fällen ohne Überlagerung**, die Gegenprobe `G1` zeigt den
