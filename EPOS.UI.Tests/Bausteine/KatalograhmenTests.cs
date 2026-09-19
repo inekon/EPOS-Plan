@@ -184,6 +184,61 @@ public class KatalograhmenTests : EposBunitContext
     }
 
     // =====================================================================
+    //  KL-5 — der Rahmen staucht seine Reihen nicht mehr
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Befund KL‑5.</b> Im Dialog „Klimadaten" (1 180 × 780, nach einem
+    /// Regionalimport mit 35 Regionen) malten Reiterleiste und Diagrammkasten über
+    /// die Listenzeilen, der Eingabeblock über die Fußleiste; dasselbe Bild kam aus
+    /// der „Stromverbraucher Verwaltung". Gemessen im Chromium
+    /// (<c>Proben/Rasterprobe/katalogprobe.mjs</c>): Der Rahmen wurde von der
+    /// Flexbox auf 601,8 px gestaucht und verteilte diese Höhe zu GLEICHEN Teilen
+    /// auf seine zwei auto‑Reihen (295,906 px | 295,906 px) — weil beide Kinder
+    /// <c>min-height: 0</c> trugen und die Mindestgröße einer Reihe damit null war.
+    /// Die zweite Reihe war 618 px zu kurz, ihr Inhalt zeichnete darüber hinaus.
+    ///
+    /// <para>Die Behebung steht auf zwei Beinen, und beide werden hier geprüft:
+    /// die Kinder bekommen ihre selbsttätige Mindestgröße zurück
+    /// (<c>min-height: auto</c>), und der Rahmen rollt in sich
+    /// (<c>overflow: auto</c>), statt die Maske länger zu machen — sonst stünde
+    /// „Beenden" weit unter dem Fensterrand.</para>
+    ///
+    /// <para>Die MASSE prüft nur der Browser: <c>katalogprobe.mjs</c>, zwölf Fälle
+    /// über alle sieben Katalograhmen‑Masken samt Gegenprobe <c>--vorher</c>. bunit
+    /// hat kein Layout und sieht eine Überlagerung grundsätzlich nicht.</para>
+    /// </summary>
+    [Fact]
+    public void Der_Rahmen_rollt_in_sich_und_laesst_seinen_Reihen_ihre_Hoehe()
+    {
+        Assert.Contains("overflow: auto",
+                        Stilblock(".epos-katalog-paar.epos-katalog-fuellend {"));
+
+        // Der zweite Selektor der Regel genügt als Anker — so hängt der Fall nicht
+        // an der Zeilenendung des Stilblattes.
+        Assert.Contains("min-height: auto",
+                        Stilblock(".epos-katalog-paar > .epos-katalog-eingabe {"));
+    }
+
+    /// <summary>
+    /// Die Regel gilt nur für das RASTERpaar. Zwei Masken setzen
+    /// <c>epos-katalog-fuellend</c> auf eine bloße Liste
+    /// (<c>GesetzeskatalogDialog</c>, <c>WaermepumpenKatalogDialog</c>); sie haben
+    /// keine zweite Reihe und sollen ihre Liste weiter mitschrumpfen lassen.
+    /// Deshalb trägt die gemeinsame Klasse <c>epos-katalog-fuellend</c> die zwei
+    /// neuen Regeln NICHT.
+    /// </summary>
+    [Fact]
+    public void Die_gemeinsame_Fuellklasse_bleibt_unberuehrt()
+    {
+        string block = Stilblock(".epos-katalog-fuellend {");
+
+        Assert.Contains("flex: 1 1 auto", block);
+        Assert.Contains("min-height: 0", block);
+        Assert.DoesNotContain("overflow", block);
+    }
+
+    // =====================================================================
     //  Hilfen
     // =====================================================================
 
