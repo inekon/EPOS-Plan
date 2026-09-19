@@ -757,11 +757,13 @@ a{color:var(--marine-hell)}
   bei Blockheizkraftwerk und Photovoltaik. Jede Zeile des Rasters ist eine kleine Maske: <b>editierbar</b> ist,
   was weiß mit dunklem Rand in der Zelle steht (Textfeld, Klappliste, Zahlenfeld mit Einheit dahinter);
   <b>gerechnet</b> ist grau und nie eingebbar. Gezeichnet ist der Projektmodus (Anlage BHKW 1). Die Zeile unter
-  dem Betrag mit Bezugsgröße, Herkunft und Kaskadenrunde steht im Raster und zusätzlich im Werkzeugtipp des
-  Betragsfeldes <span class="zk umg">umgesetzt U28</span>; der dreiteilige Summenfuß
+  dem Betrag mit Bezugsgröße, Herkunft und Kaskadenrunde steht im Raster; der Werkzeugtipp des Betragsfeldes
+  erklärt denselben Betrag mit eigenem Wortlaut (Satz × Bezugsgröße), nicht wortgleich zur Herleitungszeile
+  <span class="zk umg">umgesetzt U28</span>; der dreiteilige Summenfuß
   <span class="zk umg">umgesetzt U29</span>; die Tafel „Ersatz und Restwert" unter dem Raster
   <span class="zk umg">umgesetzt U30</span>; der Knopf „Nutzungsdauern vorbelegen…"
-  <span class="zk umg">umgesetzt U8</span>.</p>
+  <span class="zk umg">umgesetzt U8</span>. Eine vierte Zeile „spezifisch {0} €/kWp" zeigt der Summenfuß nur bei
+  Photovoltaik (Kategorie 3 <span class="zk umg">umgesetzt U34</span>); am Blockheizkraftwerk bleibt sie aus.</p>
   <div class="fenster">
     <div class="f-band">Kostenverwaltung BHKW 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
@@ -791,8 +793,8 @@ a{color:var(--marine-hell)}
             <td class="feld"><span class="f-eingabe links">BHKW-Modul</span></td>
             <td class="feld"><span class="f-combo">je kW elektr. Leistung</span></td>
             <td class="feld r"><span class="f-eingabe num">653,60</span> <span class="f-einheit">€/kW</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 653,60 €/kW × 300,00 kW.">196.080,00<span class="klein">× 300,00 kW · Pel der Anlage · Hauptposition · Runde 1</span></td>
-            <td class="feld r"><span class="f-eingabe num">15</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 653,60 €/kW × 300,00 kW.">196.080,00<span class="klein">× 300,00 kW · Pel der Anlage · Runde 1</span></td>
+            <td class="feld r"><span class="f-eingabe num">15</span><span class="klein">15 a · Vorgabe der Technik</span></td>
             <td><span class="f-zknopf" title="Eingabe Worst/Best Case">±</span></td>
           </tr>
           <tr>
@@ -800,8 +802,8 @@ a{color:var(--marine-hell)}
             <td class="feld"><span class="f-eingabe links">Montage und Inbetriebnahme</span></td>
             <td class="feld"><span class="f-combo">% der Erzeugerkosten</span></td>
             <td class="feld r"><span class="f-eingabe num">5,00</span> <span class="f-einheit">%</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 5,00 % von 196.080,00 €.">9.804,00<span class="klein">von 196.080,00 € · Hauptpositionen der Komponente · Runde 2</span></td>
-            <td class="feld r"><span class="f-eingabe num">15</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 5,00 % von 196.080,00 €.">9.804,00<span class="klein">× 196.080,00 € · Hauptpositionen · Runde 2</span></td>
+            <td class="feld r"><span class="f-eingabe num">15</span><span class="klein">15 a · Vorgabe der Technik</span></td>
             <td><span class="f-zknopf">±</span></td>
           </tr>
           <tr>
@@ -809,8 +811,8 @@ a{color:var(--marine-hell)}
             <td class="feld"><span class="f-eingabe links">Hydraulik und Einbindung</span></td>
             <td class="feld"><span class="f-combo">fester Betrag</span></td>
             <td class="feld r"><span class="f-eingabe num">13.000,00</span> <span class="f-einheit">€</span></td>
-            <td class="r num gerechnet" title="Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.">🔗 13.000,00<span class="klein">Satz = Betrag · keine Bezugsgröße · Runde 1</span></td>
-            <td class="feld r"><span class="f-eingabe num">20</span></td>
+            <td class="r num gerechnet" title="Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.">🔗 13.000,00<span class="klein">Satz = Betrag</span></td>
+            <td class="feld r"><span class="f-eingabe num">20</span><span class="klein">20 a · gepflegt</span></td>
             <td><span class="f-zknopf">±</span></td>
           </tr>
           <tr>
@@ -818,7 +820,7 @@ a{color:var(--marine-hell)}
             <td class="feld"><span class="f-eingabe links">Planung und Genehmigung</span></td>
             <td class="feld"><span class="f-combo">% der Investition</span></td>
             <td class="feld r"><span class="f-eingabe num">10,00</span> <span class="f-einheit">%</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 10,00 % von 218.884,00 €.">21.888,40<span class="klein">von 218.884,00 € · Stufe: Anlage BHKW 1 · Runde 3</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 10,00 % von 218.884,00 €.">21.888,40<span class="klein">× 218.884,00 € · Stufe Anlage · Runde 3</span></td>
             <td class="feld r"><span class="f-eingabe num leer" style="min-width:52px">leer</span></td>
             <td><span class="f-zknopf">±</span></td>
           </tr>
@@ -827,7 +829,7 @@ a{color:var(--marine-hell)}
             <td class="feld"><span class="f-eingabe links">Zuschuss</span></td>
             <td class="feld"><span class="f-combo">fester Betrag</span></td>
             <td class="feld r"><span class="f-eingabe num">6.000,00</span> <span class="f-einheit">€</span></td>
-            <td class="r num gerechnet" title="Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.">🔗 6.000,00<span class="klein">Kostenart Zuschuss · Erlös/Zuschuss an · nicht in der Kaskade</span></td>
+            <td class="r num gerechnet" title="Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.">🔗 6.000,00<span class="klein">Satz = Betrag</span></td>
             <td class="feld r"><span class="f-eingabe num leer" style="min-width:52px">leer</span></td>
             <td><span class="f-zknopf">±</span></td>
           </tr>
@@ -906,6 +908,9 @@ a{color:var(--marine-hell)}
         <div class="f-herleitung">Klappliste: kapitalgebunden · bedarfsgebunden · betriebsgebunden · sonstige · Zuschuss —
           die Kostenart „Zuschuss" nimmt die Zeile aus der Kaskade und aus Ersatz und Restwert</div>
         <div class="f-zeile eng"><span class="f-check an"><i></i></span><span class="f-lab" style="min-width:0">Erlös/Zuschuss (negativer Ausweis)</span></div>
+        <div class="f-zeile eng"><label>Positionsart:</label><span class="f-combo" style="min-width:260px">— (keine)</span></div>
+        <div class="f-info">Klappliste: zuerst die Arten der Technik, danach die technikübergreifenden; ändert sich
+          die Positionsart, setzt der Zeileneditor die Nutzungsdauer neu.</div>
         <div class="f-zeile eng"><label></label><span class="f-eingabe" title="Empfehlung von/bis">leer</span><span class="f-einheit">bis</span><span class="f-eingabe num leer">leer</span></div>
         <div class="f-info">Der Empfehlungsbereich wird zum Werkzeugtipp des Satzfeldes („Empfehlung: 1,00 – 2,00 %").
           Die Bemessung selbst steht nicht hier, sondern in der Rasterzeile.</div>
@@ -920,12 +925,12 @@ a{color:var(--marine-hell)}
   Baugröße aus der Gerätewelt → gespeicherte Menge. Passt die Bemessung nicht zum Gewerk, steht sie gar nicht
   erst in der Klappliste; fehlt die Größe, bleibt der Betrag mit ⚠ und Grund stehen — es wird nie eine Ersatzzahl
   gebildet. Worst/Best (±) pflegt je Projektposition Best- und Worst-Betrag, Best- und Worst-Nutzungsdauer und
-  das Startjahr in der Überlagerung „Eingabe Worst/Best Case".</p>
+  das Startjahr in der Überlagerung „Eingabe Worst/Best Case" — dazu eine Optionsgruppe „Eingabeart" (absolut /
+  % vom Erwartungswert), eine Umrechnungszeile und einen Zuschuss-Schalter.</p>
 
   <div class="zone">Ersatz und Restwert <span class="zk umg" style="margin-left:6px">umgesetzt U30</span></div>
-  <p class="eng">Die Tafel steht in der Anwendung nirgends: Der Dialog kennt die Nutzungsdauer je Zeile, rechnet
-  aber weder Ersatzjahr noch Restwert vor. Sie gehört als Gruppe unter das Raster der Investitionskosten — aus der
-  Nutzungsdauer je Position, i = 3,0 %, T = 20 a, p<sub>I</sub> = 0 %/a.</p>
+  <p class="eng">Die Tafel steht als Gruppe unter dem Raster der Investitionskosten: Aus der Nutzungsdauer je
+  Position rechnet sie Ersatzjahr und Restwert vor, i = 3,0 %, T = 20 a, p<sub>I</sub> = 0 %/a.</p>
   <div class="tafel-huelle">
     <table class="tafel">
       <thead><tr><th>Komponente / Position</th><th class="r">Betrag</th><th class="r">n</th>
@@ -942,22 +947,6 @@ a{color:var(--marine-hell)}
             <td>— deckungsgleich mit T</td><td class="r num">0,00</td><td>gepflegt</td></tr>
         <tr><td>Planung und Genehmigung</td><td class="r num">21.888,40</td><td class="r">—</td>
             <td>— läuft wie T</td><td class="r">—</td><td>keine Dauer gepflegt</td></tr>
-        <tr class="zwischen"><td><b>Photovoltaik</b></td><td class="r num">192.150,00</td>
-            <td class="r">4 von 5</td><td>Jahr 12 · 24.000,00 €<span class="qz">Barwert 16.833</span></td>
-            <td class="r num">39.800,00<span class="qz">Barwert 22.036</span></td><td>Vorgabe der Technik 25 a</td></tr>
-        <tr><td>PV-Module</td><td class="r num">96.000,00</td><td class="r num">25 a</td>
-            <td>—</td><td class="r num">19.200,00</td><td>Vorgabe der Technik</td></tr>
-        <tr><td>Wechselrichter</td><td class="r num">24.000,00</td><td class="r num">12 a</td>
-            <td>Jahr 12</td><td class="r num">8.000,00</td><td>gepflegt</td></tr>
-        <tr><td>Unterkonstruktion und Montage</td><td class="r num">45.000,00</td><td class="r num">25 a</td>
-            <td>—</td><td class="r num">9.000,00</td><td>Vorgabe der Technik</td></tr>
-        <tr><td>Elektroinstallation, Netzanschluss</td><td class="r num">18.000,00</td><td class="r num">25 a</td>
-            <td>—</td><td class="r num">3.600,00</td><td>Vorgabe der Technik</td></tr>
-        <tr><td>Planung und Genehmigung</td><td class="r num">9.150,00</td><td class="r">—</td>
-            <td>— läuft wie T</td><td class="r">—</td><td>keine Dauer gepflegt</td></tr>
-        <tr class="ergebnis"><td>Variante 3 — beide Anlagen</td><td class="r num">432.922,40</td>
-            <td class="r">7 von 9</td><td>229.884,00 € nominal<span class="qz">Barwert 148.982</span></td>
-            <td class="r num">177.056,00<span class="qz">Barwert 98.032</span></td><td></td></tr>
       </tbody>
     </table>
   </div>
@@ -1088,7 +1077,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Abschlusszeile „+ Neue Position…" · Knöpfe „+ Position hinzufügen" · „Aus Vorlage übernehmen…" · „Positionskatalog…"</td><td class="rs">KDLG_POS_NEU_VORGABE · KDLG_BTN_POSITION · KDLG_BTN_UEBERNAHME_PROJEKT · KDLG_BTN_KATALOG</td><td>Abschlusszeile · Leiste unter dem Raster</td></tr>
         <tr><td>Summenfuß „Summe Investitionskosten netto: {0} €" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_INVEST · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Fußleiste „Abbrechen" · „Speichern" · „OK" · Statuszeile „gespeichert {0} Uhr"</td><td class="rs">KDLG_BTN_ABBRECHEN · KDLG_BTN_SPEICHERN · ALLG_BTN_OK · KDLG_GESPEICHERT</td><td>Fußleiste</td></tr>
-        <tr><td>Zeileneditor „Position bearbeiten": Bezeichnung, Kostenart, Erlös/Zuschuss, Empfehlung; Kostenarten</td><td class="rs">VPOS_TITEL · VPOS_LBL_BEZEICHNUNG · VPOS_LBL_KOSTENART · VPOS_CHK_ERLOES · VPOS_LBL_EMPFEHLUNG · VPOS_LBL_BIS · KOSTENART_KAPITALGEBUNDEN · KOSTENART_BETRIEBSGEBUNDEN · KOSTENART_BEDARFSGEBUNDEN · KOSTENART_SONSTIGE · — (ohne Ressource: WirtschaftlichkeitZeilen.KostenartText)</td><td>Überlagerung des Stifts</td></tr>
+        <tr><td>Zeileneditor „Position bearbeiten": Bezeichnung, Kostenart, Erlös/Zuschuss, Positionsart, Empfehlung; Kostenarten</td><td class="rs">VPOS_TITEL · VPOS_LBL_BEZEICHNUNG · VPOS_LBL_KOSTENART · VPOS_CHK_ERLOES · VPOS_LBL_POSITIONSART · VPOS_POSITIONSART_KEINE · VPOS_LBL_EMPFEHLUNG · VPOS_LBL_BIS · KOSTENART_KAPITALGEBUNDEN · KOSTENART_BETRIEBSGEBUNDEN · KOSTENART_BEDARFSGEBUNDEN · KOSTENART_SONSTIGE · — (ohne Ressource: WirtschaftlichkeitZeilen.KostenartText)</td><td>Überlagerung des Stifts</td></tr>
         <tr><td>Worst/Best · Übernahme · Löschrückfragen · Pflichtposition</td><td class="rs">KCASE_TITEL · KCASE_BEST_EUR · KCASE_WORST_EUR · KOSTEN_CASE_STARTJAHR · KUEB_TITEL · KUEB_LBL_ZIEL · KUEB_LBL_QUELLPROJEKT · KUEB_SP_ZIEL · KUEB_POS_VORHANDEN · KUEB_POS_NEU · KUEB_VORLAGE_LEER · KUEB_KATALOG_LEER · KDLG_MSG_POS_LOESCHEN · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Überlagerungen und Rückfragen</td></tr>
         <tr><td>Bezugsgrößenzeile „× {0} · {1} · Runde {2}" unter dem Betrag, absolute Zeile „Satz = Betrag"</td><td class="rs">KDLG_HERL_BASIS · KDLG_HERL_ABSOLUT · KDLG_HERK_* · KDLG_GR_*</td><td>Zelle Betrag (U28)</td></tr>
         <tr><td>Summenzeile „Investition brutto {0} · Zuschuss {1} · I₀ {2}"</td><td class="rs">KDLG_SUMME_DREITEILIG</td><td>Summenfuß (U29)</td></tr>
