@@ -214,12 +214,27 @@ namespace WindowsFormsApplication1
 
                 // Runde 2 — „% der Erzeugerkosten": Basis ist der abgeleitete Betrag
                 // der Hauptposition(en) derselben Komponente.
+                //
+                // ZWEI PHASEN — dasselbe Muster wie Runde 3 (Anwenderentscheid I‑3).
+                // Die Hauptzeilen werden VOR der Zuweisungsschleife eingefroren. Bis
+                // hierher setzte die Schleife jede fertige Zeile sofort auf
+                // Abgeleitet = true; war eine „% der Erzeugerkosten"-Zeile selbst als
+                // Hauptposition gekennzeichnet, rechnete eine ZWEITE solche Zeile
+                // derselben Komponente die ERSTE in ihre Basis ein — und weil die
+                // Leseabfrage kein ORDER BY trägt, entschied die Datenbank über das
+                // Ergebnis (Reihenfolgeabhängigkeit, Befund 01/§ 1.2). Eingefroren
+                // zählen %-Zeilen einander nie mit; das Ergebnis ist
+                // reihenfolgeunabhängig.
+                var hauptZeilen = new List<Zeile>();
+                foreach (Zeile h in puffer)
+                    if (h.Abgeleitet && h.Haupt && !h.Zuschuss) hauptZeilen.Add(h);
+
                 foreach (Zeile z in puffer)
                 {
                     if (!IstProzentErzeuger(z.Bem)) continue;
                     double basis = 0; bool da = false;
-                    foreach (Zeile h in puffer)
-                        if (h.Abgeleitet && h.Haupt && !h.Zuschuss && h.Komponente == z.Komponente)
+                    foreach (Zeile h in hauptZeilen)
+                        if (h.Komponente == z.Komponente)
                         { basis += h.Betrag; da = true; }
                     z.Betrag = InvestBetrag(z, idProjekt, da && basis != 0 ? basis : (double?)null,
                                             out z.Basis, out z.Herkunft);
