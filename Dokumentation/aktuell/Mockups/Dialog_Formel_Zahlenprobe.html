@@ -888,8 +888,9 @@ a{color:var(--marine-hell)}
   <p class="eng">Drei Wege führen zu einer Zeile, ein Weg zu ihrem Betrag. <b>Anlegen:</b> Der Name in der
   gestrichelten Abschlusszeile und ＋ legen die Position sofort an; „+ Position hinzufügen" legt sie mit der
   Vorgabe „Neue Position" an. <b>Übernehmen:</b> „Aus Vorlage übernehmen…" öffnet die Überlagerung „Übernahme
-  ins Projekt" (Zielprojekt · Vorlage/Variante · Quellprojekt · Quellanlage); sie legt nur die fehlenden
-  Positionen der Quelle an, vorhandene bleiben unberührt, die Herkunft wird je Position vermerkt.
+  ins Projekt" mit dem Katalogblock (Komponente · Kategorie · Variante · Positionsvorschau mit der Spalte
+  „Ziel"); sie legt nur die fehlenden Positionen der Quelle an, vorhandene bleiben unberührt, die Herkunft
+  wird je Position vermerkt.
   <b>Katalog:</b> „Positionskatalog…" öffnet die Administration der Kostenfaktoren. <b>Bewerten:</b> Die
   Bemessung entscheidet, woran der Satz bemisst — fester Betrag (Satz ist der Betrag), Prozent einer
   Investitionsbasis (Kaskade, Runden 2 und 3) oder ein Satz je Baugröße der Gerätewelt (Runde 1: je kW elektr.
@@ -1767,7 +1768,7 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
         <tr><td>Werkzeugtipps des Betragsfeldes · Gründe „kein Gerät mit dieser Baugröße im Projekt", „kein Simulationslauf"</td><td class="rs">KDLG_TT_BETRAG_BASIS_MENGE · KDLG_TT_BETRAG_BASIS_PROZENT · KDLG_TT_KETTE · KDLG_TT_OHNE_BASIS · KDLG_BASIS_GRUND_GERAET · KDLG_BASIS_GRUND_LAUF · KDLG_OHNE_BASIS_ZEILE</td><td>Zelle Betrag · Hinweiszeile unter dem Raster</td></tr>
         <tr><td>Pflichtpositionen „Wartung / Inspektion PV-Anlage" · „Instandhaltung PV-Module / Gestell" (Datenwerte der Vorlage) · Meldung beim Löschversuch</td><td class="rs">SchemaKatalog, Vorlagensaat Photovoltaik · KDLG_MSG_PFLICHT_LOESCHEN</td><td>Rasterzeilen · Meldungszeile</td></tr>
         <tr><td>Summenfuß „Summe Investitionskosten netto: {0} €" · „Summe Betriebskosten netto: {0} €/a" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_INVEST · KDLG_SUMME_NETTO_BETRIEB · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
-        <tr><td>Reiter „Ertrag/Bonus": Gruppenkopf, Erklärungssatz, Klappliste „Stammprojekt:", Knöpfe „PV-Vergütungsdialog öffnen…" · „Gesetzesparameter…"</td><td class="rs">KDLG_TAB_ERTRAG · KDLG_ERTRAG_G_PV · KDLG_ERTRAG_PV · KDLG_ERTRAG_PV_PROJEKT · KDLG_ERTRAG_PV_OEFFNEN · KDLG_ERTRAG_BTN_GESETZE</td><td>Reiterblatt Ertrag/Bonus</td></tr>
+        <tr><td>Reiter „Ertrag/Bonus": Gruppenkopf, Erklärungssatz, Klappliste „Projekt:", Knöpfe „PV-Vergütungsdialog öffnen…" · „Gesetzesparameter…"</td><td class="rs">KDLG_TAB_ERTRAG · KDLG_ERTRAG_G_PV · KDLG_ERTRAG_PV · KDLG_ERTRAG_PV_PROJEKT · KDLG_ERTRAG_PV_OEFFNEN · KDLG_ERTRAG_BTN_GESETZE</td><td>Reiterblatt Ertrag/Bonus</td></tr>
         <tr><td>Optionsgruppe „Vergütung: vom Stammprojekt übernehmen | eigene Vergütung" · Erklärzeilen „übernommen von {0} · anzulegender Wert {1} ct/kWh, {2}" · „eigene Werte dieser Variante" <b>neu</b></td><td class="rs">KDLG_ERTRAG_PV_WAHL · KDLG_ERTRAG_PV_UEBERNEHMEN · KDLG_ERTRAG_PV_EIGENE · KDLG_ERTRAG_PV_HERK_STAMM · KDLG_ERTRAG_PV_HERK_EIGEN</td><td>Reiter Ertrag/Bonus (U38)</td></tr>
         <tr><td>Herleitung „{0} Module × {1} Wp = {2} kWp" · bei mehreren Strängen „Σ Module × Leistung = {0} kWp" <b>neu</b></td><td class="rs">KDLG_HERL_KWP · KDLG_HERL_KWP_SUMME</td><td>Werkzeugtipp und Herleitungszeile der kWp-Zeilen (U35)</td></tr>
         <tr><td>Kennzahl „spezifisch {0} €/kWp" <b>neu</b></td><td class="rs">KDLG_KENN_EUR_KWP</td><td>Summenfuß der Photovoltaik (U34)</td></tr>
@@ -2834,7 +2835,9 @@ Stromsteuer
         <tr><td>Wahl „Projektvorgabe für alle Anlagen / nur diese Anlage" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_SCOPE_PROJEKT · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_SCOPE_ANLAGE · geplant · U22</span></td><td>Überlagerung, Energiesteuer</td></tr>
         <tr><td>Staffelzeile unter dem Jahresdeckel · Warnband zum Deckelanteil <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_A_DECKEL_STAFFEL · geplant · U25</span> · <span class="rs-geplant">BHW_W_DECKELANTEIL · geplant · U25</span></td><td>Angaben der gewählten Anlage</td></tr>
         <tr><td>Kohärenzwarnung bei Modus ERLOES</td><td class="rs">KOH_DOPPEL_STROMST_9_1_3</td><td>Kohärenzprüfung</td></tr>
-        <tr><td>Begründung „virtuelle Gesamtanlage" · „Kontingent leer"</td><td class="rs">WIRT_KWKG_ERSATZ_GEWICHTET · <span class="rs-geplant">WIRT_KWKG_KONTINGENT_LEER · geplant</span></td><td>Nachweisumschlag der Zuschlagszeile</td></tr>
+        <tr><td>Begründung „virtuelle Gesamtanlage" · kein Vbh-Kontingent (Anlagenart fehlt · Anteil an den
+          Neuherstellungskosten fehlt · unter der Mindestschwelle)</td><td class="rs">WIRT_KWKG_ERSATZ_GEWICHTET ·
+          WIRT_KWKG_KONTINGENT_OHNE_ART · WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT · WIRT_KWKG_KONTINGENT_ZU_KLEIN</td><td>Nachweisumschlag der Zuschlagszeile</td></tr>
       </tbody>
     </table>
   </div>
