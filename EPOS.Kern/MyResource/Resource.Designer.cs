@@ -20208,6 +20208,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die diese Anlage steht nicht im Simulationslauf — sie braucht einen Platz in der Simulationskonfiguration ähnelt.
+        /// </summary>
+        public static string KDLG_BASIS_GRUND_ANLAGE {
+            get {
+                return ResourceManager.GetString("KDLG_BASIS_GRUND_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die kein Gerät mit dieser Baugröße im Projekt ähnelt.
         /// </summary>
         public static string KDLG_BASIS_GRUND_GERAET {
@@ -20249,6 +20258,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_BASIS_GRUND_LAUF {
             get {
                 return ResourceManager.GetString("KDLG_BASIS_GRUND_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Simulationslauf führt für diese Anlage keine Menge ähnelt.
+        /// </summary>
+        public static string KDLG_BASIS_GRUND_MENGE {
+            get {
+                return ResourceManager.GetString("KDLG_BASIS_GRUND_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für den Energieträger ist kein Arbeitspreis gepflegt — er ist in der Energieträgerverwaltung zu erfassen ähnelt.
+        /// </summary>
+        public static string KDLG_BASIS_GRUND_PREIS {
+            get {
+                return ResourceManager.GetString("KDLG_BASIS_GRUND_PREIS", resourceCulture);
             }
         }
         

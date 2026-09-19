@@ -754,8 +754,11 @@ a{color:var(--marine-hell)}
         Bemessung) und <b>Nutzungsdauer</b> (Zahlenfeld, nur bei Investitionskosten). Der <b>Betrag</b> ist nie
         eingebbar: Bei einer absoluten Bemessung spiegelt er den Satz (🔗), sonst rechnet ihn die Kaskade aus Satz und
         Bezugsgröße des Projekts; sein Werkzeugtipp nennt die Rechnung. Fehlt einer Zeile die Bezugsgröße, trägt der
-        Betrag ein ⚠ und unter dem Raster steht der Grund („‹Position›: kein Simulationslauf" · „kein Gerät mit
-        dieser Baugröße im Projekt" · „keine Investitionskosten für diese Anlage erfasst") — nie eine stille 0.
+        Betrag ein ⚠ und unter dem Raster steht der Grund samt Abhilfe („‹Position›: kein Simulationslauf" ·
+        „kein Gerät mit dieser Baugröße im Projekt" · „keine Investitionskosten für diese Anlage erfasst" ·
+        „diese Anlage steht nicht im Simulationslauf — sie braucht einen Platz in der Simulationskonfiguration" ·
+        „der Simulationslauf führt für diese Anlage keine Menge" · „für den Energieträger ist kein Arbeitspreis
+        gepflegt — er ist in der Energieträgerverwaltung zu erfassen") — nie eine stille 0.
         Eine Änderung lebt bis „Speichern" oder „OK" nur im Objekt; „Abbrechen" und Esc verwerfen sie.</div>
       <div class="f-info">Der Summenfuß addiert die Beträge aller Zeilen, Erlös- und Zuschusszeilen mit
         negativem Vorzeichen — die Nettosumme ist damit I₀. Die dritte Zeile nennt beide Teile eigens
@@ -974,7 +977,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         <tr><td>Reiter „Kosten Invest/Betrieb" · „Ertrag/Bonus"</td><td class="rs">KDLG_TAB_KOSTEN · KDLG_TAB_ERTRAG</td><td>Reiterleiste</td></tr>
         <tr><td>Rasterspalten „Aktionen" … „Worst/Best", Betragsspalte „Betrag netto [€]"</td><td class="rs">KDLG_SP_AKTIONEN · KDLG_SP_POSITION · KDLG_SP_BEMESSUNG · KDLG_SP_SATZ · KDLG_SP_BETRAG · KDLG_SP_NUTZUNG · KDLG_SP_WORSTBEST · KKOMP_RASTER</td><td>Spaltenkopf des Zeilenrasters</td></tr>
         <tr><td>Bemessungen der Klappliste (Name folgt der Bezugsgröße des Gewerks)</td><td class="rs">BM_BETRAG · BM_P_INVESTITION · BM_P_ERZEUGER · BM_KW_LEISTUNG_BHKW · BM_KW_HEIZLEISTUNG · BM_KW_ELEKTRISCH</td><td>Zelle Bemessung</td></tr>
-        <tr><td>Werkzeugtipps des Betragsfeldes: Kette · gerechnet (Menge, Prozent) · ohne Bezugsgröße mit Grund</td><td class="rs">KDLG_TT_KETTE · KDLG_TT_BETRAG_BASIS_MENGE · KDLG_TT_BETRAG_BASIS_PROZENT · KDLG_TT_OHNE_BASIS · KDLG_BASIS_GRUND_GEWERK · KDLG_BASIS_GRUND_GERAET · KDLG_BASIS_GRUND_LAUF · KDLG_BASIS_GRUND_INVEST · KDLG_BASIS_GRUND_KONSERVE · KDLG_OHNE_BASIS_ZEILE</td><td>Zelle Betrag · Hinweiszeile unter dem Raster</td></tr>
+        <tr><td>Werkzeugtipps des Betragsfeldes: Kette · gerechnet (Menge, Prozent) · ohne Bezugsgröße mit Grund</td><td class="rs">KDLG_TT_KETTE · KDLG_TT_BETRAG_BASIS_MENGE · KDLG_TT_BETRAG_BASIS_PROZENT · KDLG_TT_OHNE_BASIS · KDLG_BASIS_GRUND_GEWERK · KDLG_BASIS_GRUND_GERAET · KDLG_BASIS_GRUND_LAUF · KDLG_BASIS_GRUND_ANLAGE · KDLG_BASIS_GRUND_MENGE · KDLG_BASIS_GRUND_PREIS · KDLG_BASIS_GRUND_INVEST · KDLG_BASIS_GRUND_KONSERVE · KDLG_OHNE_BASIS_ZEILE</td><td>Zelle Betrag · Hinweiszeile unter dem Raster</td></tr>
         <tr><td>Abschlusszeile „+ Neue Position…" · Knöpfe „+ Position hinzufügen" · „Aus Vorlage übernehmen…" · „Positionskatalog…"</td><td class="rs">KDLG_POS_NEU_VORGABE · KDLG_BTN_POSITION · KDLG_BTN_UEBERNAHME_PROJEKT · KDLG_BTN_KATALOG</td><td>Abschlusszeile · Leiste unter dem Raster</td></tr>
         <tr><td>Summenfuß „Summe Investitionskosten netto: {0} €" · „Summe brutto: {0} (Umsatzsteuer {1} % aus dem Katalog)"</td><td class="rs">KDLG_SUMME_NETTO_INVEST · KDLG_SUMME_BRUTTO</td><td>Summenfuß des Zeilenrasters</td></tr>
         <tr><td>Fußleiste „Abbrechen" · „Speichern" · „OK" · Statuszeile „gespeichert {0} Uhr"</td><td class="rs">KDLG_BTN_ABBRECHEN · KDLG_BTN_SPEICHERN · ALLG_BTN_OK · KDLG_GESPEICHERT</td><td>Fußleiste</td></tr>

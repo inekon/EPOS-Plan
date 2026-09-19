@@ -14,9 +14,16 @@ namespace EPOS.Kern.Tests
     /// 1030 („BHKW-Kaskade") führt den einzigen Lauf mit ZWEI Blockheizkraftwerken:
     /// „BHKW EW M 50 S [K] Erdgas" mit 862,18 MWh und „EC-POWER XRGI 9" mit
     /// 186,09 MWh Brennstoff. Beide sind eigene Anlagenzeilen, und die Endenergie ist
-    /// anlagenscharf — deshalb zwei Zeilen und nicht eine Summe. Der Kessel desselben
-    /// Laufs verbraucht 0 und bekommt keine Zeile (keine stille 0), der
-    /// Pufferspeicher hat überhaupt keine Endenergie.</para>
+    /// anlagenscharf — deshalb zwei Zeilen und nicht eine Summe. Dazu der Gaskessel
+    /// desselben Laufs mit 5.403,1 MWh; der Pufferspeicher hat überhaupt keine
+    /// Endenergie und bekommt deshalb keine Zeile (keine stille 0).</para>
+    ///
+    /// <para><b>#363 (19.09.2026):</b> Der Kessel hatte bis dahin ebenfalls keine
+    /// Zeile — nicht, weil er nichts verbraucht, sondern weil der GESPEICHERTE Lauf
+    /// dieser Datenbank von vor Befund B-1 stammt und <c>Verbrauch</c> dort leer ist.
+    /// Der Auflöser leitet den Einsatz seither aus Wärme und Nutzungsgrad ab
+    /// (dieselbe Ableitung wie die Steuerseite), und damit steht der Kessel in der
+    /// Gruppe, wo er hingehört.</para>
     ///
     /// <para><b>Nichts wird geschrieben.</b> Beide Auskünfte lesen nur; die
     /// Arbeitskopie steht trotzdem, weil <c>DataRepository</c> ohne sie auf die
@@ -40,6 +47,15 @@ namespace EPOS.Kern.Tests
         /// <summary>186,09 MWh × 1000 — Brennstoff des kleinen Moduls im Lauf 212.</summary>
         private const double BEDARF_KLEIN = 186090.0;
 
+        /// <summary>#363: der Gaskessel desselben Laufs. Nur der Wortanfang: Sein
+        /// Bezeichner steht in der Testdatenbank nicht in UTF-8, das Umlautzeichen
+        /// käme beim Lesen als Ersatzzeichen an.</summary>
+        private const string ANLAGE_KESSEL = "Vitocrossal 200 CM2";
+
+        /// <summary>5.403,1 MWh × 1000 — sein Brennstoff, aus Wärme und
+        /// Jahresnutzungsgrad (100 %) des Laufs 212 abgeleitet.</summary>
+        private const double BEDARF_KESSEL = 5403100.0;
+
         private readonly CultureInfo _kulturVorher = CultureInfo.CurrentCulture;
         private readonly CultureInfo _uiKulturVorher = CultureInfo.CurrentUICulture;
 
@@ -55,11 +71,15 @@ namespace EPOS.Kern.Tests
             CultureInfo.CurrentUICulture = _uiKulturVorher;
         }
 
+        /// <summary>Die Zeile zu einer Anlage. Gesucht wird ENTHALTEN, nicht am Ende:
+        /// Ein Bezeichner mit Umlaut kommt aus der Testdatenbank mit Ersatzzeichen an
+        /// (sie steht nicht durchgängig in UTF-8), und der Vergleich soll daran nicht
+        /// scheitern.</summary>
         private static KostenBetriebsstand.Endenergiezeile Zeile(
             List<KostenBetriebsstand.Endenergiezeile> liste, string anlage)
         {
             foreach (KostenBetriebsstand.Endenergiezeile z in liste)
-                if (z.Komponente.EndsWith(anlage, StringComparison.Ordinal)) return z;
+                if (z.Komponente.Contains(anlage, StringComparison.Ordinal)) return z;
             return null;
         }
 
@@ -109,8 +129,8 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Je Anlage mit Endenergie eine Zeile — der Kessel mit 0 kWh und der
-        /// Pufferspeicher ohne Endenergie bekommen keine.
+        /// Je Anlage mit Endenergie eine Zeile — die zwei BHKW-Module und der
+        /// Gaskessel; der Pufferspeicher hat keine Endenergie und bekommt keine.
         /// </summary>
         [Fact]
         public void Jede_Anlage_mit_Endenergie_bekommt_eine_Zeile()
@@ -121,9 +141,30 @@ namespace EPOS.Kern.Tests
             List<KostenBetriebsstand.Endenergiezeile> zeilen =
                 KostenBetriebsstand.Endenergie(PROJEKT_MIT_LAUF);
 
-            Assert.Equal(2, zeilen.Count);
+            Assert.Equal(3, zeilen.Count);
             Assert.NotNull(Zeile(zeilen, ANLAGE_GROSS));
             Assert.NotNull(Zeile(zeilen, ANLAGE_KLEIN));
+            Assert.NotNull(Zeile(zeilen, ANLAGE_KESSEL));
+        }
+
+        /// <summary>
+        /// #363: Der Kessel steht mit dem Brennstoff DIESES Laufs in der Gruppe —
+        /// abgeleitet aus Wärme und Nutzungsgrad, weil der gespeicherte Lauf die
+        /// Spalte <c>Verbrauch</c> nicht führt. Ohne die Ableitung stünde hier gar
+        /// nichts, und die Betriebszeilen des Kessels blieben ohne Bezugsgröße.
+        /// </summary>
+        [Fact]
+        public void Der_Kessel_steht_mit_dem_Brennstoff_des_Laufs_in_der_Gruppe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            KostenBetriebsstand.Endenergiezeile z =
+                Zeile(KostenBetriebsstand.Endenergie(PROJEKT_MIT_LAUF), ANLAGE_KESSEL);
+
+            Assert.NotNull(z);
+            Assert.Equal(BEDARF_KESSEL, z.BedarfKwh, 6);
+            Assert.True(z.KostenEuro.HasValue);
         }
 
         /// <summary>

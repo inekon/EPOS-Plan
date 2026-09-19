@@ -231,6 +231,15 @@ namespace WindowsFormsApplication1
                     return MyResource.Resource.KDLG_BASIS_GRUND_GERAET;
                 case WirtschaftlichkeitCtrl.BASISGRUND_LAUF:
                     return MyResource.Resource.KDLG_BASIS_GRUND_LAUF;
+                // #363: die drei Lagen, die bis hierher ebenfalls „kein
+                // Simulationslauf" hießen. Jeder Text nennt die ABHILFE mit, denn
+                // genau daran fehlte es dem Anwender.
+                case WirtschaftlichkeitCtrl.BASISGRUND_ANLAGE:
+                    return MyResource.Resource.KDLG_BASIS_GRUND_ANLAGE;
+                case WirtschaftlichkeitCtrl.BASISGRUND_MENGE:
+                    return MyResource.Resource.KDLG_BASIS_GRUND_MENGE;
+                case WirtschaftlichkeitCtrl.BASISGRUND_PREIS:
+                    return MyResource.Resource.KDLG_BASIS_GRUND_PREIS;
                 case WirtschaftlichkeitCtrl.BASISGRUND_INVEST:
                     return MyResource.Resource.KDLG_BASIS_GRUND_INVEST;
                 case WirtschaftlichkeitCtrl.BASISGRUND_KONSERVE:

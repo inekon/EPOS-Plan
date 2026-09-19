@@ -56,6 +56,28 @@ KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird
 „‚Wartung BHKW': kein Simulationslauf · ‚Hilfsenergiekosten': kein Simulationslauf"; investitionsbasierte Sätze
 rechnen sofort.
 
+**Der Grund am ⚠ nennt die Abhilfe.** Eine Zeile, deren Bezugsgröße aus dem Lauf kommt, kann aus vier Gründen
+ohne sie dastehen, und jeder verlangt einen anderen Handgriff:
+
+| Grund | Was fehlt | Abhilfe |
+|---|---|---|
+| kein Simulationslauf | das Projekt führt kein gespeichertes Ergebnis | Simulation starten |
+| Anlage nicht im Lauf | der Lauf steht, diese Anlage ist nicht darin | Kaskaden- bzw. Stromplatz in der Simulationskonfiguration vergeben |
+| keine Menge | Lauf und Anlage stehen, die Menge des Laufs ist 0 | nichts — die 0 ist die richtige Zahl |
+| Arbeitspreis fehlt | die Menge steht, der Energieträger führt keinen Arbeitspreis | Arbeitspreis in der Energieträgerverwaltung erfassen |
+
+Die Unterscheidung trifft der Bezugsgrößen-Auflöser, weil er Lauf, Anlagen und Preise ohnehin in der Hand hält;
+die Landkarte Art ↔ Gewerk beantwortet weiterhin, ob das Gewerk die Größe überhaupt kennt („die Bemessungsart
+passt nicht zu diesem Gewerk"). Gefragt wird nur für Zeilen ohne Bezugsgröße, und der Auflöser entsteht
+höchstens einmal je Leseschleife.
+
+**Ein gespeicherter Lauf trägt seine Mengen auch ohne die Modulspalten.** Die Kessel-Modulzeile führt
+Brennstoffeinsatz und Nutzwärme als eigene Spalten; wo ein gespeichertes Ergebnis sie nicht führt, leitet der
+Auflöser beide aus derselben Zeile ab — die Nutzwärme als Summe ihrer beiden Wärmekanäle, den Brennstoff als
+Nutzwärme ÷ Jahresnutzungsgrad. Das ist die exakte Umkehrung der Vorwärtsrechnung und dieselbe Ableitung, die
+die Steuerseite für die Bemessungsmenge des § 54 benutzt; ein gespeicherter Lauf muss dafür nicht neu gerechnet
+werden.
+
 ## Berechnungsgrundlage
 
 ```

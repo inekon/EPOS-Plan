@@ -422,9 +422,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Gaskessel des Projekts 1030 bleibt ohne Zeile: Seine Modulzeile führt
-        /// keinen Brennstoff, und aus dem Elektroweg bekommt er nichts. Eine 0 oder gar
-        /// eine Strommenge wäre dort eine Erfindung.
+        /// Der Gaskessel des Projekts 1030 bekommt seine BRENNSTOFF-Endenergie und
+        /// nichts aus dem Elektroweg — die beiden Welten bleiben getrennt. Seine
+        /// Herkunft nennt den Heizkessel, nicht den Netzbezug; eine Strommenge wäre
+        /// dort eine Erfindung, und eine gemeinsame Zahl wäre eine Vermengung.
+        ///
+        /// <para><b>#363 (19.09.2026):</b> Bis dahin stand hier <c>Assert.Null</c> —
+        /// aber nicht, weil der Kessel keine Endenergie hätte, sondern weil der
+        /// GESPEICHERTE Lauf dieser Datenbank von vor Befund B-1 stammt und
+        /// <c>Verbrauch</c> dort leer ist. Der Auflöser leitet den Einsatz seither aus
+        /// Wärme und Nutzungsgrad ab; die Aussage dieses Falls — kein Strom am
+        /// Brennstoffkessel — bleibt dieselbe und wird jetzt am Inhalt geprüft statt
+        /// an einer 0, die ein Nebeneffekt war.</para>
         /// </summary>
         [Fact]
         public void Der_Brennstoffkessel_bekommt_nichts_aus_dem_Elektroweg()
@@ -433,9 +442,16 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
 
             EndenergieAufloeser a = EndenergieAufloeser.FuerProjekt(PROJEKT_GAS);
-            Assert.Null(a.FuerPosition(BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL,
-                                       ANLAGE_GASKESSEL));
-            Assert.Null(a.FuerPosition(BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL, 0));
+
+            EndenergieAufloeser.Groesse g =
+                a.FuerPosition(BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL, ANLAGE_GASKESSEL);
+            Assert.NotNull(g);
+            Assert.True(g.BedarfKwh > 0);
+            Assert.DoesNotContain("Netzbezug", g.Basis);
+
+            // Die elektrische Größe bleibt ihm verwehrt — sie hat nur der Elektrokessel.
+            Assert.Null(a.StromgroesseKwh(BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL,
+                                          ANLAGE_GASKESSEL));
         }
 
         // =====================================================================

@@ -6540,6 +6540,29 @@ namespace WindowsFormsApplication1
         /// <summary>H4c: Die Art wird nicht ermittelt — ihre Menge ist Eingabe.</summary>
         internal const string BASISGRUND_KONSERVE = "KONSERVE";
 
+        // ---------------------------------------------------------------------
+        // ANWENDERBEFUND 19.09.2026 — DREI LAGEN, DIE BIS HIERHER „KEIN
+        // SIMULATIONSLAUF" HIESSEN
+        //
+        // BASISGRUND_LAUF stand für alles, was aus dem Lauf kommt und nicht dasteht.
+        // Der Anwender las es auch dort, wo der Lauf samt Menge längst stand und
+        // allein der Arbeitspreis des Energieträgers fehlte — und suchte den Fehler
+        // an der falschen Stelle. Die drei Werte hier trennen die Lagen; welche
+        // vorliegt, beantwortet der EndenergieAufloeser, der Lauf, Anlagen und Preise
+        // ohnehin in der Hand hält (EndenergieAufloeser.GrundOhneBasis).
+        // ---------------------------------------------------------------------
+
+        /// <summary>#363: Es gibt einen Lauf, aber diese Anlage steht nicht darin —
+        /// sie braucht einen Platz in der Simulationskonfiguration.</summary>
+        internal const string BASISGRUND_ANLAGE = "ANLAGE";
+
+        /// <summary>#363: Lauf und Anlage stehen, die Menge des Laufs ist 0.</summary>
+        internal const string BASISGRUND_MENGE = "MENGE";
+
+        /// <summary>#363: Die Menge steht, der Arbeitspreis des Energieträgers
+        /// fehlt — die Bewertung ergäbe 0 (Weg A und Weg B, § 4.5).</summary>
+        internal const string BASISGRUND_PREIS = "PREIS";
+
         /// <summary>
         /// ANWENDERBEFUND 10.09.2026 (H4c): Warum trägt diese Zeile keine Bezugsgröße?
         /// Rückgabe ist einer der <c>BASISGRUND_*</c>-Steuerwerte, oder <c>""</c>, wenn
@@ -6643,6 +6666,44 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// ANWENDERBEFUND 19.09.2026 (#363): derselbe Grund, aber mit dem LAUF in der
+        /// Hand — die einzige Fassung, die „kein Simulationslauf" von „Anlage nicht im
+        /// Lauf", „Menge 0" und „Arbeitspreis fehlt" unterscheiden kann.
+        ///
+        /// <para><b>Die Landkarte entscheidet zuerst.</b> Genauer wird nur, was sie als
+        /// <see cref="BASISGRUND_LAUF"/> beantwortet hat; jede andere Antwort (Gewerk,
+        /// Gerät, Investition, Konserve) bleibt Wort für Wort, wie sie war. Ein Projekt
+        /// ohne Kennung (<paramref name="idProjekt"/> 0) bekommt ebenfalls die
+        /// Landkarte allein.</para>
+        ///
+        /// <para><b>Der Auflöser wird höchstens EINMAL je Leseschleife gebaut</b> —
+        /// <paramref name="aufloeser"/>/<paramref name="versucht"/> sind derselbe Merker
+        /// wie in <see cref="EndenergieMenge"/>: <c>new ErgebnisCtrl().Load</c> liest
+        /// den ganzen Lauf, und das darf nicht je Zeile geschehen. Gefragt wird ohnehin
+        /// nur für Zeilen OHNE Bezugsgröße.</para>
+        /// </summary>
+        internal static string BasisGrundFuerZeile(string bem, int komponente, int idAnlage,
+                                                   int idProjekt,
+                                                   ref EndenergieAufloeser aufloeser,
+                                                   ref bool versucht)
+        {
+            string grund = BasisGrundFuerZeile(bem, komponente, idAnlage);
+            if (idProjekt <= 0 ||
+                !string.Equals(grund, BASISGRUND_LAUF, StringComparison.Ordinal))
+                return grund;
+
+            if (!versucht)
+            {
+                versucht = true;
+                aufloeser = EndenergieAufloeser.FuerProjekt(idProjekt);
+            }
+            if (aufloeser == null) return grund;
+
+            string genauer = aufloeser.GrundOhneBasis(komponente, idAnlage, bem);
+            return string.IsNullOrEmpty(genauer) ? grund : genauer;
+        }
+
+        /// <summary>
         /// Läuft der Heizkessel DIESER Anlagenzeile auf Strom
         /// (<see cref="SimulationSPK.BRENNSTOFF_STROM"/>)? Dieselbe eine Regel wie im
         /// <see cref="EndenergieAufloeser"/> und in der Trägerzulassung — der
@@ -6713,7 +6774,10 @@ namespace WindowsFormsApplication1
 
                 int komponente, idAnlage;
                 KomponenteUndAnlage(r, out komponente, out idAnlage);
-                grund = BasisGrundFuerZeile(bem, komponente, idAnlage);
+                // #363: Den genauen Grund — der Auflöser steht hier ohnehin schon (er
+                // wurde für die Menge gebaut), also kostet die Auskunft nichts mehr.
+                grund = BasisGrundFuerZeile(bem, komponente, idAnlage, idProjekt,
+                                            ref aufloeser, ref versucht);
                 return null;
             }
             catch { grund = ""; return null; }
