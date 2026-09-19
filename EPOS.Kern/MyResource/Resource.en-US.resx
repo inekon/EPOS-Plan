@@ -14627,6 +14627,9 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="START_KLIMA_HERKUNFT_KURZ" xml:space="preserve">
     <value>Climate data: {0} · {1}</value>
   </data>
+  <data name="START_KLIMA_EINTRAG" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
   <data name="SUCHAUSWAHL_PLATZHALTER" xml:space="preserve">
     <value>Type to search …</value>
   </data>
@@ -19969,6 +19972,12 @@ Do you want to allow this?</value>
   </data>
   <data name="KLIMA_QUELLE_TRY_REGIONAL" xml:space="preserve">
     <value>TRY regional data (Germany)</value>
+  </data>
+  <data name="KLIMA_QUELLE_KURZ_PVGIS" xml:space="preserve">
+    <value>PVGIS</value>
+  </data>
+  <data name="KLIMA_QUELLE_KURZ_TRY" xml:space="preserve">
+    <value>TRY</value>
   </data>
   <data name="KLIMA_TRY_JAHR" xml:space="preserve">
     <value>Reference year</value>
