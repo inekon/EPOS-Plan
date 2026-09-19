@@ -23,6 +23,9 @@ public sealed class PhotovoltaikVerguetungTexte
     public string BtnAbbrechen { get; } = T("PVW_ABBRECHEN", "Abbrechen");
     public string BtnMarktwerte { get; } = T("PVW_BTN_MARKTWERTE", "Marktwerte importieren…");
     public string BtnTarif { get; } = T("PVW_BTN_TARIF", "Einspeise-Tarif…");
+    /// <summary>Konzept § 2.16 (VV‑Q6): der eine Weg aus der Übernahme heraus — er
+    /// kopiert die Stammwerte in die Zeile dieses Stands.</summary>
+    public string BtnEigeneWerte { get; } = T("PVW_BTN_EIGENE_WERTE", "eigene Werte");
 
     // ------------------------------------------------------------ Anlage
     public string GAnlage { get; } = T("PVW_G_ANLAGE", "Anlage");

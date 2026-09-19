@@ -69,9 +69,19 @@ namespace WindowsFormsApplication1
         //   und scheitert dann am eindeutigen Index UQ_BerichtKonfigProj (ProjektID).
         //   ProjektCtrl.Delete raeumt die Konfigzeile seither mit ab; der Ausschluss hier
         //   macht das Duplizieren zusaetzlich gegen Altwaisen im Bestand unempfindlich.
+        // - Tab_ProjektPhotovoltaik gilt seit Konzept § 2.16 JE STAND, mit einer Wahl:
+        //   eine Variante uebernimmt die Verguetung ihres Stamms (Vorgabe) oder fuehrt
+        //   eigene Werte. Eine KOPIE beim Anlegen waere genau das, was der Abschnitt
+        //   abschafft - ein eingefrorener Stand des Anlegetags, den spaetere Aenderungen
+        //   am Stamm nicht mehr erreichen und den von aussen niemand als Kopie erkennt.
+        //   Ohne Zeile erbt die neue Variante "uebernehmen"; will der Anwender eigene
+        //   Werte, legt der Reiter Ertrag/Bonus sie mit den Stammwerten vor (VV-Q6).
+        //   Das gilt auch fuer eine Variante aus einer anderen Variante (Quelle != Stamm):
+        //   Die Verguetung folgt der GRUPPE, nicht der Inhaltsquelle.
         private static readonly HashSet<string> AUSNAHME_TABELLEN = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "Berichtskonfiguration"
+            "Berichtskonfiguration",
+            SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK
         };
 
         // ID-Spalten, die auf Katalog-/Stammdaten zeigen und NICHT versetzt werden duerfen.
@@ -751,6 +761,20 @@ namespace WindowsFormsApplication1
                 if (copySet.Contains(ziel)) deps.Add(ziel);
             }
             return deps;
+        }
+
+        /// <summary>
+        /// Steht diese Tabelle in der FESTEN Ausnahmeliste — wird also trotz
+        /// Projektbezug nicht mitkopiert?
+        ///
+        /// <para>Die Auskunft ist öffentlich, damit der Nachweis (Konzept § 2.16) die
+        /// Liste prüfen kann, statt sie abzuschreiben: „der Kopierlauf lässt die
+        /// PV-Zeile aus" ist eine Zusage, die brechen kann, und ein zweiter Eintrag im
+        /// Test merkte es nicht.</para>
+        /// </summary>
+        public static bool IstAusnahmeTabelle(string name)
+        {
+            return name != null && AUSNAHME_TABELLEN.Contains(name);
         }
 
         private static bool Ausgeschlossen(string name)

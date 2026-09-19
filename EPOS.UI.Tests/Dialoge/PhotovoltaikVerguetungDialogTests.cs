@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Linq;
 using Bunit;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Dienste;
@@ -99,6 +100,58 @@ public class PhotovoltaikVerguetungDialogTests : EposBunitContext
         var cut = Aufbauen(Satz());
 
         Assert.Single(cut.FindAll("h1.epos-dialog-titel"));
+    }
+
+    // =====================================================================
+    //  KONZEPT § 2.16 — die Herkunft der Verguetung (U38)
+    // =====================================================================
+
+    /// <summary>
+    /// Bei einer ÜBERNOMMENEN Vergütung nennt die Hinweiszeile die Herkunft, und der
+    /// eine Weg heraus steht als Knopf „eigene Werte" da (VV‑Q3/VV‑Q6). Die Wahl
+    /// selbst trifft der Reiter Ertrag/Bonus — dieser Dialog bietet sie nicht an.
+    /// </summary>
+    [Fact]
+    public void Bei_Uebernahme_stehen_Hinweiszeile_und_Knopf_eigene_Werte()
+    {
+        int gerufen = 0;
+        var cut = Render<PhotovoltaikVerguetungDialog>(p => p
+            .Add(x => x.Modell, Satz())
+            .Add(x => x.Katalog, Katalog)
+            .Add(x => x.Speichern, () => true)
+            .Add(x => x.Uebernommen, true)
+            .Add(x => x.HerkunftText, "Vergütung dieser Variante: übernommen vom Stammprojekt")
+            .Add(x => x.EigeneWerte, () => gerufen++)
+            .Add(x => x.Geschlossen, _ => { }));
+
+        Assert.Contains("übernommen vom Stammprojekt", cut.Markup);
+
+        var knopf = cut.FindAll("button.epos-knopf")
+                       .First(b => b.TextContent.Contains("eigene Werte"));
+        knopf.Click();
+
+        Assert.Equal(1, gerufen);
+    }
+
+    /// <summary>
+    /// Bei EIGENEN Werten steht die Hinweiszeile ohne den Knopf — es gibt nichts zu
+    /// lösen. Ohne Delegat bleibt er ebenfalls weg (ein Knopf, der nichts tut, ist
+    /// eine Behauptung, die nicht stimmt).
+    /// </summary>
+    [Fact]
+    public void Bei_eigenen_Werten_fehlt_der_Knopf_eigene_Werte()
+    {
+        var cut = Render<PhotovoltaikVerguetungDialog>(p => p
+            .Add(x => x.Modell, Satz())
+            .Add(x => x.Katalog, Katalog)
+            .Add(x => x.Speichern, () => true)
+            .Add(x => x.Uebernommen, false)
+            .Add(x => x.HerkunftText, "Vergütung dieser Variante: eigene Werte")
+            .Add(x => x.Geschlossen, _ => { }));
+
+        Assert.Contains("eigene Werte", cut.Markup);
+        Assert.DoesNotContain(cut.FindAll("button.epos-knopf"),
+                              b => b.TextContent.Trim() == "eigene Werte");
     }
 
     // =====================================================================

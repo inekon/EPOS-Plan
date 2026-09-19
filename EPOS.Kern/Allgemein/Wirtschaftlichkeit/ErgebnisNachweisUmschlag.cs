@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
         /// ein halb verstandener Nachweis wäre schlimmer als keiner. Eine ÄLTERE
         /// dagegen schon: Ihre Felder sind eine echte Teilmenge, die fehlenden bleiben
         /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).</summary>
-        public const int FASSUNG = 2;
+        public const int FASSUNG = 3;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>
@@ -101,6 +101,21 @@ namespace WindowsFormsApplication1
         public double KwkgPauschaleEur;
 
         /// <summary>
+        /// KONZEPT § 2.16 (Fassung 3) — die HERKUNFT der PV-Vergütung: <c>true</c> =
+        /// dieser Stand rechnet mit der Vergütung seines Stammprojekts.
+        ///
+        /// <para>Ein Umschlag der Fassung 1 oder 2 kennt das Feld nicht und liest sich
+        /// mit <c>false</c> — „eigene Werte". Genau das ist die Aussage, die ein vor
+        /// Schemaschritt 93 gebuchter Stand trägt: Damals bekam eine Variante die
+        /// Dialogangaben nur über eine eigene Zeile.</para>
+        /// </summary>
+        public bool PvVerguetungUebernommen;
+
+        /// <summary>Name des Stammprojekts bei Übernahme; leer bei eigenen Werten
+        /// (Fassung 3). <c>WhenWritingNull</c> lässt ihn dann aus dem JSON.</summary>
+        public string PvVerguetungQuelle;
+
+        /// <summary>
         /// <c>IncludeFields</c> ist Pflicht: Alle vier Nachweistypen führen ausschließlich
         /// FELDER. Ohne die Option schriebe der Serialisierer leere Objekte — und läse
         /// sie auch wieder ein, ohne zu klagen.
@@ -137,7 +152,10 @@ namespace WindowsFormsApplication1
                     VermiedenEntlastung9bJahr = e.VermiedenEntlastung9bJahr,
                     ProduzierendesGewerbe = e.ProduzierendesGewerbe,
                     BezugsspitzeKW = e.BezugsspitzeKW,
-                    KwkgPauschaleEur = e.KwkgPauschaleEur
+                    KwkgPauschaleEur = e.KwkgPauschaleEur,
+                    PvVerguetungUebernommen = e.PvVerguetungUebernommen,
+                    PvVerguetungQuelle = string.IsNullOrEmpty(e.PvVerguetungQuelle)
+                                       ? null : e.PvVerguetungQuelle
                 };
 
                 byte[] roh = JsonSerializer.SerializeToUtf8Bytes(u, JsonOptionen);
@@ -180,7 +198,10 @@ namespace WindowsFormsApplication1
                 // gar nicht führen kann. Die Felder der Fassung 1 sind eine echte
                 // Teilmenge derer der Fassung 2; was fehlt, bleibt auf seiner Vorgabe.
                 // Eine HÖHERE Fassung bleibt verworfen: Was sie bedeutet, weiß dieser
-                // Stand nicht.
+                // Stand nicht. Fassung 3 (Konzept § 2.16) trägt die Herkunft der
+                // PV-Vergütung nach; sie fehlt einem älteren Umschlag und liest sich
+                // dort als „eigene Werte" — die Aussage, die ein damals gebuchter Lauf
+                // tatsächlich trägt.
                 if (u == null || u.Version < FASSUNG_MINDESTENS || u.Version > FASSUNG)
                     return null;
 
@@ -210,6 +231,8 @@ namespace WindowsFormsApplication1
             e.ProduzierendesGewerbe = ProduzierendesGewerbe;
             e.BezugsspitzeKW = BezugsspitzeKW;
             e.KwkgPauschaleEur = KwkgPauschaleEur;
+            e.PvVerguetungUebernommen = PvVerguetungUebernommen;
+            e.PvVerguetungQuelle = PvVerguetungQuelle ?? "";
         }
     }
 }

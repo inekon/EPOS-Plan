@@ -4,8 +4,9 @@
 `WindowsFormsApplication1/Views/Wirtschaftlichkeit/PhotovoltaikVerguetungHuelle.cs` · **Mockup:**
 `../../Mockups/Dialog_Formel_Zahlenprobe.html#pv` · **Recht:** § 21, § 21c, § 25, § 49, § 51, § 51a EEG ·
 **Code:** `EegSatzRechner` (anzulegender Wert), `PvErloesRechner` (Erlösreihe `PV_VERGUETUNG`),
-`PvKennzahlenRechner` (Kennzahlzeile), `GesetzKatalog` (Klasse EEG), `ProjektPhotovoltaikCtrl.Jahresmarktwert` ·
-**Konzept:** § 2.3, § 3.6 (Photovoltaik / EEG)
+`PvKennzahlenRechner` (Kennzahlzeile), `GesetzKatalog` (Klasse EEG), `ProjektPhotovoltaikCtrl.Jahresmarktwert`,
+`ProjektPhotovoltaikCtrl.LiesAufgeloest` (Herkunft je Stand) ·
+**Konzept:** § 2.3, § 2.16, § 3.6 (Photovoltaik / EEG)
 
 Die PV-Seite ist der Gegenentwurf zum BHKW: keine Staffel über Leistungsanteile im Zuschlag, dafür
 ein anzulegender Wert, der degressiv altert, eine Marktprämie als Differenzgröße und zwei
@@ -31,8 +32,33 @@ zwei Klapplisten „Anwenden", drei Schalter.
 | **Vorschau** | Zeile „Einspeisung 199,5 MWh/a · Satz Jahr 1: 4,51 ct/kWh · Erlös Jahr 1: 9.001 €/a · Vergütungsausfall 39.900 kWh (2.410 €) · § 51a-Gutschrift 1.096 € (Jahr 20)" · Kennzahlzeilen „Eigenverbrauchsquote 30,0 % · Autarkiegrad 6,0 % · Vorteil durch PV: 16.791 €/a" und „Stromgestehungskosten: 5,38 ct/kWh (LCOE₀, mit Satz vergleichbar) · 6,54 ct/kWh (diskontiert)" · ohne Lauf: „Noch kein Simulationsergebnis — …" |
 
 Knöpfe „Marktwerte importieren…" (nur, wenn die Umgebung eine Datei wählen kann) und „Einspeise-Tarif…" mit
-Sprunghinweis; Fußleiste: Abbrechen · Übernehmen (schreibt den Vergütungssatz des Stammprojekts; die Inbetriebnahme
-ist Pflicht).
+Sprunghinweis; Fußleiste: Abbrechen · Übernehmen (schreibt den Vergütungssatz des geöffneten Stands; die
+Inbetriebnahme ist Pflicht).
+
+### Die Herkunft der Vergütung — eine Wahl je Variante
+
+Die Vergütungsangaben gelten **je Stand**, nicht je Gruppe. Ein Stammprojekt führt immer eigene Werte;
+eine Variante hat die Wahl: Sie **übernimmt** die Vergütung ihres Stammprojekts — das ist die Vorgabe
+jeder neuen Variante — oder sie führt **eigene Werte**. Gewählt wird im Reiter „Ertrag/Bonus" der
+Kostenverwaltung (`03`); dieser Dialog zeigt die Wahl als Hinweiszeile unter dem Schalter und bietet
+den einen Weg heraus: „eigene Werte" kopiert die Stammwerte in die Zeile der Variante.
+
+Der Rechenweg liest die **aufgelöste** Zeile (`ProjektPhotovoltaikCtrl.LiesAufgeloest`, gelesen in
+`WirtschaftlichkeitCtrl.RechnePvVerguetung`):
+
+| Stand | Es gilt |
+|---|---|
+| Stammprojekt | seine eigene Zeile |
+| Variante mit eigenen Werten | ihre eigene Zeile |
+| Variante, die übernimmt (Vorgabe, auch ohne eigene Zeile) | die Zeile des Stammprojekts |
+| keine Zeile in der ganzen Gruppe | der flache Einspeisesatz der Rahmenzeile (`Einspeiseverguetung`) |
+
+Daraus folgt: Eine Änderung am Stamm erreicht jede übernehmende Variante beim nächsten Lauf, die
+eigenen Werte bleiben unberührt. Der flache Satz `Einspeiseverguetung` ist ein Rahmenparameter und
+bleibt wie Zins und Betrachtungszeitraum **je Gruppe**. Eine neue Variante bekommt keine Kopie der
+PV-Zeile mehr; wird ein Stammprojekt gelöscht, erhalten die übernehmenden Varianten vorher seine Werte
+als eigene Zeile. Der Bericht nennt die Herkunft je Spalte in der Zeile „PV-Vergütung: Herkunft"
+(`PV_HERKUNFT`, Block A) — „eigene Werte" oder „übernommen von ‹Stamm›".
 
 **Vorschau Jahr 1 (2026), aufgeschlüsselt** (U27 — der Dialog zeigt die eine Zeile):
 
@@ -126,5 +152,6 @@ Mit Degradation (`03` kennt sie nicht, sie ist Feld dieses Dialogs) sinkt die Ei
 | V-G5 | Jahresmarktwert, PPA-/DV-Preise: Best/Worst-Paar je Feld | Szenarioabdeckung (Konzept § 2.11.5), Etappe V-E |
 | V-G2 | Degradation wirkt auf die vergütete Arbeit und als Mehrbezug auf den vermiedenen Bezug | Feld dieses Dialogs, Vorbelegung 0,5 beim Anlegen, Bestand NULL = 0 |
 | — | Bei Direktvermarktung greift die 60-%-Kappung in Stellung „Automatisch" nicht (AUTO = feste EV ohne iMSys); das Beispiel rechnet sie mit der Stellung „Ja" — ohne Stundenreihe bleibt der Verlust 0 | Mockup Abschnitt 6 zeigt „Ja" mit Statuszeile „aktiv" und 0 kWh in der Vorschau |
+| U38 | Die Vergütung galt faktisch je Stand, aber nur zufällig: Eine Variante hatte eigene Angaben genau dann, wenn sie NACH der Pflege des Stamms angelegt wurde (der Kopierlauf nahm die Zeile mit) — von außen nicht erkennbar | gebaut: `Uebernahme_Stamm` (Schemaschritt 93) macht daraus eine Wahl; `LiesAufgeloest` löst je Stand auf, der Kopierlauf lässt die PV-Zeile aus, Reiter und Dialog nennen die Herkunft |
 | U27 | Aufgeschlüsselte Vorschau (Spoterlös, Marktprämie, DV-Entgelt, Kappung, Summe, Vergütungsausfall, vermiedener Netzbezug) statt der einen Zeile; Jahresmarktwertzeile in der Gruppe Vermarktung — Marktwert-Override und Marktwertentwicklung haben im Dialog kein Feld | Mockup Abschnitt 6, Anhang Umsetzungsstand |
 | — | § 51a-Formel ist eine Näherung (Verlängerung der Vergütungsdauer um die Ausfallstunden) | im Bericht als Näherung deklarieren |

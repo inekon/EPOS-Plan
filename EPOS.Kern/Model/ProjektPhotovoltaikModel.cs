@@ -83,6 +83,27 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double? Degradation;
 
+        /// <summary>
+        /// Uebernimmt diese Zeile die Verguetung ihres STAMMPROJEKTS (Konzept § 2.16,
+        /// Schemaschritt 93)?
+        ///
+        /// <para><b>true = uebernommen</b> - die Zeile bleibt als Rueckweg zu den
+        /// eigenen Werten stehen, gelesen wird sie nicht; der Rechenweg nimmt die Zeile
+        /// des Stamms (<see cref="ProjektPhotovoltaikCtrl.LiesAufgeloest"/>).
+        /// <b>false = eigene Werte</b> - diese Zeile gilt.</para>
+        ///
+        /// <para><b>Die Vorgabe des Modells ist false</b>, und das ist die
+        /// ergebnisneutrale Lesart: Wer eine Zeile hat, hat eigene Werte — genau der
+        /// Bestand vor Schemaschritt 93, und genau das, was eine fehlende Spalte oder
+        /// ein NULL an einer vorhandenen Zeile bedeutet. „Uebernommen" ist dagegen der
+        /// Zustand OHNE Zeile (die Vorgabe jeder neuen Variante) oder mit
+        /// ausdruecklich gesetztem Kennzeichen. Der STAMM fuehrt immer eigene Werte —
+        /// fuer ihn ist das Feld ohne Bedeutung
+        /// (<see cref="ProjektPhotovoltaikCtrl.LiesAufgeloest"/> fragt es dort gar
+        /// nicht).</para>
+        /// </summary>
+        public bool UebernahmeStamm;
+
         public DateTime? GeaendertAm;
     }
 }

@@ -150,8 +150,13 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-18_R9_Kesselbrennstoff/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 91** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
-Stand 91, und die Schritte 90 und 91 sind ergebnisneutral, gemessen).
+(**Schemastand 93** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
+Stand 93, und die Schritte 90 bis 93 sind ergebnisneutral, gemessen). Schritt 92 legt die
+Spalte `Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt` an und schreibt keinen Wert — NULL
+heißt Stamm, also genau die Referenz jeder Bestandsrechnung. Schritt 93 legt
+`Tab_ProjektPhotovoltaik.Uebernahme_Stamm` an und leitet die Vergütungswahl aus dem Bestand
+ab; die Testdatenbank führt in dieser Tabelle **keine Zeile**, beide DML des Schritts fassen
+dort nichts an.
 Schritt 90 räumt hinter Schritt 89 auf und hat **zwei Teile**. Der **DDL-Teil** entfernt aus
 `Tab_ProjektWirtschaftlichkeit` die sechs KWKG-Spalten `KWKG_Bonus`,
 `KWKG_Bonus_Einspeisung`, `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`,

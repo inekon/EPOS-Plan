@@ -309,6 +309,7 @@ namespace WindowsFormsApplication1
 
             PufferReferenzenLoesen(idProjekt);
             BerichtsKonfigurationEntfernen(idProjekt);
+            PvVerguetungAufloesen(idProjekt);
             VariantenVerknuepfungenEntfernen(idProjekt);
 
             string sql = "DELETE FROM Tab_Projekt WHERE ID=?";
@@ -417,6 +418,72 @@ namespace WindowsFormsApplication1
         /// Fehlt die Tabelle (Datenbank ohne Berichtsmodul), läuft das Löschen ohne
         /// Dialog weiter.
         /// </summary>
+        /// <summary>
+        /// Die LÖSCHWEITERGABE der PV-Vergütung — und der Randfall, den ein
+        /// Fremdschlüssel nicht könnte (Konzept § 2.16).
+        ///
+        /// <para><b>Zwei Dinge, in dieser Reihenfolge.</b> Ist das Projekt ein STAMM mit
+        /// gepflegter Vergütung, bekommt vorher jede Variante, die sie ÜBERNIMMT, die
+        /// Werte als eigene Zeile (<c>Uebernahme_Stamm = 0</c>) — sonst verlöre sie mit
+        /// dem Stamm still ihre Vergütung und rechnete beim nächsten Lauf den Flat-Pfad.
+        /// Danach fällt die eigene Zeile des Projekts; <c>Tab_ProjektPhotovoltaik</c>
+        /// hängt an keiner Löschweitergabe, und eine verwaiste Zeile kollidierte später
+        /// am eindeutigen Index <c>idx_ProjektPhotovoltaik</c>, sobald eine neue
+        /// Projekt-Id (MAX+1) auf die verwaiste <c>ID_Projekt</c> fällt — derselbe
+        /// Befund wie bei der Berichtskonfiguration.</para>
+        ///
+        /// <para><b>Warum hier und nicht im Schema.</b> SQLite kann einer bestehenden
+        /// Tabelle keinen Fremdschlüssel anhängen; ein Tabellenneubau allein dafür wäre
+        /// eine zweite Wahrheit neben diesem einen Weg, durch den jedes Löschen läuft
+        /// (auch <c>VariantenCtrl.LoescheVariante</c> endet hier). Und die Übernahme der
+        /// Stammwerte könnte ein <c>ON DELETE CASCADE</c> ohnehin nicht leisten.</para>
+        ///
+        /// <para><b>Varianten mit EIGENEN Werten bleiben unberührt</b> — sie hängen nicht
+        /// am Stamm. Still über <see cref="StilleDb"/>: Fehlt die Tabelle, läuft das
+        /// Löschen ohne Dialog weiter.</para>
+        /// </summary>
+        private static void PvVerguetungAufloesen(int idProjekt)
+        {
+            try
+            {
+                var ctrl = new ProjektPhotovoltaikCtrl();
+                ProjektPhotovoltaikModel stamm = ctrl.Lies(idProjekt);
+
+                if (stamm != null)
+                {
+                    DataTable dt = DataRepository.GetDataTable(
+                        "SELECT ID_Projekt FROM " + SchemaKatalog.TAB_VARIANTE +
+                        " WHERE ID_ProjektRef = ?",
+                        new DbParam("@ref", idProjekt));
+
+                    if (dt != null)
+                        foreach (DataRow r in dt.Rows)
+                        {
+                            if (r[0] == DBNull.Value) continue;
+                            int idVariante = Convert.ToInt32(r[0]);
+                            if (idVariante <= 0 || idVariante == idProjekt) continue;
+
+                            ProjektPhotovoltaikModel eigen = ctrl.Lies(idVariante);
+                            if (eigen != null && !eigen.UebernahmeStamm) continue;
+
+                            ProjektPhotovoltaikModel kopie = ProjektPhotovoltaikCtrl.Kopie(stamm);
+                            kopie.ID = eigen != null ? eigen.ID : 0;
+                            kopie.ID_Projekt = idVariante;
+                            kopie.UebernahmeStamm = false;
+                            ctrl.Speichern(kopie);
+                        }
+                }
+
+                StilleDb.NonQuery(
+                    "DELETE FROM [" + SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK + "] WHERE ID_Projekt = ?",
+                    StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("PV-Vergütung des Projekts konnte nicht aufgelöst werden: " + ex.Message);
+            }
+        }
+
         private static void BerichtsKonfigurationEntfernen(int idProjekt)
         {
             try

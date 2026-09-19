@@ -104,7 +104,14 @@ namespace WindowsFormsApplication1
             var ctrl = new ProjektPhotovoltaikCtrl();
             var katalog = new GesetzKatalog();
 
-            ProjektPhotovoltaikModel modell = ctrl.LiesOderVorbelegt(idStamm);
+            // KONZEPT § 2.16 — der Dialog zeigt die Zeile, die für diesen Stand GILT.
+            // Übernimmt eine Variante, sind das die Werte ihres Stamms; sie bekommt
+            // dann die Hinweiszeile und den Knopf „eigene Werte" (VV‑Q3/VV‑Q6). Die
+            // Wahl selbst trifft der Reiter Ertrag/Bonus.
+            PvVerguetungStand stand = ctrl.LiesAufgeloest(idStamm);
+            ProjektPhotovoltaikModel modell = stand.Uebernommen && stand.Modell != null
+                ? Uebernahmesicht(stand.Modell, idStamm)
+                : ctrl.LiesOderVorbelegt(idStamm);
             double kwpRechnerisch = PhotovoltaikCtrl.KwpDesProjekts(idStamm);
 
             double einspeisungMWh = 0, erzeugungMWh = 0, bedarfMWh = 0;
@@ -175,8 +182,78 @@ namespace WindowsFormsApplication1
                 }),
 
                 ["MarktwerteImportieren"] = new Func<MarktwertImport>(
-                    () => MarktwerteImportieren(dlgHalter: besitzerHalter, ctrl: ctrl))
+                    () => MarktwerteImportieren(dlgHalter: besitzerHalter, ctrl: ctrl)),
+
+                // KONZEPT § 2.16 — Herkunft und der eine Weg heraus.
+                ["Uebernommen"] = stand.Uebernommen,
+                ["HerkunftText"] = HerkunftZeile(stand, idStamm),
+                ["EigeneWerte"] = stand.Uebernommen
+                    ? EventCallback.Factory.Create(new object(),
+                        () => ctrl.Speichern(ctrl.VorlageAusStamm(idStamm)))
+                    : default(EventCallback)
             };
+        }
+
+        /// <summary>
+        /// Die ÜBERNOMMENE Zeile, wie der Dialog sie zeigen soll: die Werte des Stamms,
+        /// aber auf dieses Projekt gemünzt (Konzept § 2.16).
+        ///
+        /// <para><b>Warum die Kopie und nicht die Stammzeile selbst.</b> „Übernehmen"
+        /// des Dialogs schreibt <c>ProjektPhotovoltaikCtrl.Speichern</c> mit der
+        /// <c>ID_Projekt</c> des Modells. Gäbe die Hülle die Stammzeile unverändert
+        /// heraus, schriebe ein Klick die Änderung in den STAMM zurück — und damit in
+        /// jede andere übernehmende Variante. Die Kopie trägt dieses Projekt und das
+        /// Kennzeichen „eigene Werte": Wer hier speichert, hat sich für eigene Werte
+        /// entschieden, und genau das entsteht.</para>
+        /// </summary>
+        private static ProjektPhotovoltaikModel Uebernahmesicht(ProjektPhotovoltaikModel stamm,
+                                                                int idProjekt)
+        {
+            ProjektPhotovoltaikModel kopie = ProjektPhotovoltaikCtrl.Kopie(stamm);
+            kopie.ID = 0;
+            kopie.ID_Projekt = idProjekt;
+            kopie.UebernahmeStamm = false;
+            return kopie;
+        }
+
+        /// <summary>
+        /// Die Hinweiszeile des Dialogs (Konzept § 2.16): „Vergütung dieser Variante:
+        /// eigene Werte", „übernommen vom Stammprojekt ‹Name›" oder — beim Stamm —
+        /// „Stammprojekt — ‹n› Varianten übernehmen diese Vergütung".
+        /// </summary>
+        private static string HerkunftZeile(PvVerguetungStand stand, int idProjekt)
+        {
+            if (stand.Uebernommen)
+                return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                    Text("PVW_HERKUNFT_STAMM",
+                         "Vergütung dieser Variante: übernommen vom Stammprojekt „{0}“ — " +
+                         "die Felder zeigen dessen Werte. „Eigene Werte“ übernimmt sie in " +
+                         "diese Variante."),
+                    StartseiteCtrl.Projektname(stand.IdQuelle) ?? "");
+
+            int idStamm;
+            try { idStamm = new VariantenCtrl().StammRefDerVariante(idProjekt); }
+            catch { idStamm = -1; }
+
+            if (idStamm > 0 && idStamm != idProjekt)
+                return Text("PVW_HERKUNFT_EIGEN", "Vergütung dieser Variante: eigene Werte");
+
+            int n = 0;
+            try
+            {
+                var pvc = new ProjektPhotovoltaikCtrl();
+                foreach (VariantenCtrl.VarianteInfo v in
+                         new VariantenCtrl().LadeGruppe(idProjekt, StartseiteCtrl.Projektname(idProjekt)))
+                {
+                    if (v.IstStamm || v.IdProjekt == idProjekt) continue;
+                    if (pvc.LiesAufgeloest(v.IdProjekt).Uebernommen) n++;
+                }
+            }
+            catch { }
+
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                Text("PVW_HERKUNFT_STAMMPROJEKT",
+                     "Stammprojekt — {0} Variante(n) übernehmen diese Vergütung"), n);
         }
 
         /// <summary>

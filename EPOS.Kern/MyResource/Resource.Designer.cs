@@ -20595,11 +20595,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die PV-Vergütung wird STAMMPROJEKTBEZOGEN im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet (eine Vergütungswahrheit, Befund V4). Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet. Eine Variante übernimmt die Vergütung ihres Stammprojekts oder führt eigene Werte. Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung. ähnelt.
         /// </summary>
         public static string KDLG_ERTRAG_PV {
             get {
                 return ResourceManager.GetString("KDLG_ERTRAG_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigene Vergütung ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_PV_EIGENE {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_PV_EIGENE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigene Werte dieser Variante ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_PV_HERK_EIGEN {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_PV_HERK_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernommen von {0} · anzulegender Wert {1} ct/kWh, {2} ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_PV_HERK_STAMM {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_PV_HERK_STAMM", resourceCulture);
             }
         }
         
@@ -20613,11 +20640,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt: ähnelt.
         /// </summary>
         public static string KDLG_ERTRAG_PV_PROJEKT {
             get {
                 return ResourceManager.GetString("KDLG_ERTRAG_PV_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt — {0} Variante(n) übernehmen diese Vergütung ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_PV_STAMM_N {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_PV_STAMM_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vom Stammprojekt übernehmen ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_PV_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_PV_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergütung: ähnelt.
+        /// </summary>
+        public static string KDLG_ERTRAG_PV_WAHL {
+            get {
+                return ResourceManager.GetString("KDLG_ERTRAG_PV_WAHL", resourceCulture);
             }
         }
         
@@ -30414,6 +30468,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOH_NORM_54 {
             get {
                 return ResourceManager.GetString("KOH_NORM_54", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ führt eine eigene, INAKTIVE PV-Vergütung, während das Stammprojekt „{1}“ eine aktive führt — gerechnet wird der flache Einspeisesatz. „Vom Stammprojekt übernehmen“ im Reiter Ertrag/Bonus löst es auf. ähnelt.
+        /// </summary>
+        public static string KOH_PV_EIGENE_INAKTIV {
+            get {
+                return ResourceManager.GetString("KOH_PV_EIGENE_INAKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ übernimmt die PV-Vergütung des Stammprojekts „{1}“; dort ist sie nicht angewendet — gerechnet wird der flache Einspeisesatz. ähnelt.
+        /// </summary>
+        public static string KOH_PV_STAMM_INAKTIV {
+            get {
+                return ResourceManager.GetString("KOH_PV_STAMM_INAKTIV", resourceCulture);
             }
         }
         
@@ -40621,6 +40693,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigene Werte ähnelt.
+        /// </summary>
+        public static string PVW_BTN_EIGENE_WERTE {
+            get {
+                return ResourceManager.GetString("PVW_BTN_EIGENE_WERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Marktwerte importieren… ähnelt.
         /// </summary>
         public static string PVW_BTN_MARKTWERTE {
@@ -40734,6 +40815,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVW_G_VORSCHAU {
             get {
                 return ResourceManager.GetString("PVW_G_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergütung dieser Variante: eigene Werte ähnelt.
+        /// </summary>
+        public static string PVW_HERKUNFT_EIGEN {
+            get {
+                return ResourceManager.GetString("PVW_HERKUNFT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergütung dieser Variante: übernommen vom Stammprojekt „{0}“ — die Felder zeigen dessen Werte. „Eigene Werte“ übernimmt sie in diese Variante. ähnelt.
+        /// </summary>
+        public static string PVW_HERKUNFT_STAMM {
+            get {
+                return ResourceManager.GetString("PVW_HERKUNFT_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt — {0} Variante(n) übernehmen diese Vergütung ähnelt.
+        /// </summary>
+        public static string PVW_HERKUNFT_STAMMPROJEKT {
+            get {
+                return ResourceManager.GetString("PVW_HERKUNFT_STAMMPROJEKT", resourceCulture);
             }
         }
         
@@ -55433,6 +55541,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZEILE_PV_FORM_MP {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_PV_FORM_MP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung: Herkunft ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_HERKUNFT {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigene Werte ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_HERK_EIGEN {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_HERK_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernommen von {0} ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_HERK_STAMM {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_HERK_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vom Stammprojekt übernommen ähnelt.
+        /// </summary>
+        public static string WIRT_ZEILE_PV_HERK_STAMM_OHNE_NAME {
+            get {
+                return ResourceManager.GetString("WIRT_ZEILE_PV_HERK_STAMM_OHNE_NAME", resourceCulture);
             }
         }
         

@@ -237,6 +237,30 @@
   <data name="CEC_MSG_KOPFZEILE" xml:space="preserve">
     <value>CEC header incomplete, missing column(s): {0}</value>
   </data>
+  <data name="KDLG_ERTRAG_PV_EIGENE" xml:space="preserve">
+    <value>own remuneration</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_HERK_EIGEN" xml:space="preserve">
+    <value>own values of this variant</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_HERK_STAMM" xml:space="preserve">
+    <value>taken from {0} · applicable value {1} ct/kWh, {2}</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_STAMM_N" xml:space="preserve">
+    <value>Master project — {0} variant(s) take this remuneration</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_UEBERNEHMEN" xml:space="preserve">
+    <value>take from master project</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_WAHL" xml:space="preserve">
+    <value>Remuneration:</value>
+  </data>
+  <data name="KOH_PV_EIGENE_INAKTIV" xml:space="preserve">
+    <value>Variant “{0}” holds its own INACTIVE PV remuneration while master project “{1}” holds an active one — the flat feed-in rate is used. “Take from master project” on the Revenue/bonus tab resolves it.</value>
+  </data>
+  <data name="KOH_PV_STAMM_INAKTIV" xml:space="preserve">
+    <value>Variant “{0}” takes the PV remuneration of master project “{1}”; it is not applied there — the flat feed-in rate is used.</value>
+  </data>
   <data name="PVIMP_PLAUSI_TITEL" xml:space="preserve">
     <value>Note on the module values</value>
   </data>
@@ -1306,6 +1330,18 @@ with a small tank the figure becomes large without any additional ageing.</value
   </data>
   <data name="PVM_TECHNOLOGIE_SONSTIGE" xml:space="preserve">
     <value>Other</value>
+  </data>
+  <data name="PVW_BTN_EIGENE_WERTE" xml:space="preserve">
+    <value>own values</value>
+  </data>
+  <data name="PVW_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>Remuneration of this variant: own values</value>
+  </data>
+  <data name="PVW_HERKUNFT_STAMM" xml:space="preserve">
+    <value>Remuneration of this variant: taken from master project “{0}” — the fields show its values. “Own values” copies them into this variant.</value>
+  </data>
+  <data name="PVW_HERKUNFT_STAMMPROJEKT" xml:space="preserve">
+    <value>Master project — {0} variant(s) take this remuneration</value>
   </data>
   <data name="SIM_KARTE_PV_MODELL_DCAC" xml:space="preserve">
     <value>Extended model · DC/AC {0}</value>
@@ -6413,6 +6449,18 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_ZEILE_ENERGIESTEUER" xml:space="preserve">
     <value>Energy tax credit [€/a]</value>
   </data>
+  <data name="WIRT_ZEILE_PV_HERKUNFT" xml:space="preserve">
+    <value>PV remuneration: origin</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_EIGEN" xml:space="preserve">
+    <value>own values</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_STAMM" xml:space="preserve">
+    <value>taken from {0}</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_STAMM_OHNE_NAME" xml:space="preserve">
+    <value>taken from the master project</value>
+  </data>
   <data name="WIRT_ZEILE_STROMST_BEFREIUNG" xml:space="preserve">
     <value>Electricity tax exemption [€/a]</value>
   </data>
@@ -8900,13 +8948,13 @@ To deactivate it, set its rate or amount to 0.</value>
     <value>This component has no recurring revenue — grants/subsidies run as a subsidy position within the investment costs (FK5).</value>
   </data>
   <data name="KDLG_ERTRAG_PV" xml:space="preserve">
-    <value>PV remuneration is maintained PER MASTER PROJECT in the remuneration dialog — the same form the “Photovoltaics…” button of the economics tab opens (one remuneration truth, finding V4). Applicable value, marketing form, sec. 51/51a and the 60 % limitation act on the NPV via the PV revenue series.</value>
+    <value>PV remuneration is maintained per project in the remuneration dialog — the same form the “Photovoltaics…” button of the economics tab opens. A variant either takes the remuneration of its master project or holds its own values. Applicable value, marketing form, sec. 51/51a and the 60 % limitation act on the NPV via the PV revenue series.</value>
   </data>
   <data name="KDLG_ERTRAG_PV_OEFFNEN" xml:space="preserve">
     <value>Open PV remuneration dialog…</value>
   </data>
   <data name="KDLG_ERTRAG_PV_PROJEKT" xml:space="preserve">
-    <value>Master project:</value>
+    <value>Project:</value>
   </data>
   <data name="KDLG_ERTRAG_SONDERREGEL" xml:space="preserve">
     <value>Special rule for new plants ≤ 50 kWel (sec. 7 (3a)): fed-in {0} · not fed-in {1} ct/kWh — takes precedence over paras 1 and 2.</value>

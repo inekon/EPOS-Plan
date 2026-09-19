@@ -35,8 +35,15 @@ namespace WindowsFormsApplication1
                    string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK, StringComparison.Ordinal);
         }
 
-        /// <summary>Die Parameter der Komponente für die gewählte Komponente.</summary>
-        internal static IReadOnlyDictionary<string, object> Bauen(string komponente)
+        /// <summary>
+        /// Die Parameter der Komponente für die gewählte Komponente.
+        /// </summary>
+        /// <param name="idProjekt">
+        /// Das GEÖFFNETE Projekt; <c>0</c> = Admin-Kontext (Kostendialog ohne Projekt).
+        /// Es entscheidet über die Vergütungswahl (Konzept § 2.16): Nur eine Variante
+        /// hat eine Wahl, und nur ohne Projekt erscheint die Klappliste (VV‑Q7).
+        /// </param>
+        internal static IReadOnlyDictionary<string, object> Bauen(string komponente, int idProjekt = 0)
         {
             bool bhkw = string.Equals(komponente, DbWerte.KOSTEN_KOMPONENTE_BHKW,
                                       StringComparison.Ordinal);
@@ -58,7 +65,10 @@ namespace WindowsFormsApplication1
                 ["GesetzeText"] = T("KDLG_ERTRAG_BTN_GESETZE", "Gesetzesparameter…"),
                 ["TitelPv"] = T("KDLG_ERTRAG_G_PV",
                     "PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)"),
-                ["LabelPvProjekt"] = T("KDLG_ERTRAG_PV_PROJEKT", "Stammprojekt:"),
+                ["LabelPvProjekt"] = T("KDLG_ERTRAG_PV_PROJEKT", "Projekt:"),
+                ["LabelPvWahl"] = T("KDLG_ERTRAG_PV_WAHL", "Vergütung:"),
+                ["UebernehmenText"] = T("KDLG_ERTRAG_PV_UEBERNEHMEN", "vom Stammprojekt übernehmen"),
+                ["EigeneText"] = T("KDLG_ERTRAG_PV_EIGENE", "eigene Vergütung"),
                 ["PvOeffnenText"] = T("KDLG_ERTRAG_PV_OEFFNEN", "PV-Vergütungsdialog öffnen…"),
                 ["LeerText"] = T("KDLG_ERTRAG_LEER",
                     "Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse "
@@ -66,7 +76,7 @@ namespace WindowsFormsApplication1
             };
 
             if (bhkw) BhkwFuellen(werte);
-            if (pv) PvFuellen(werte);
+            if (pv) PvFuellen(werte, idProjekt);
             return werte;
         }
 
@@ -170,12 +180,13 @@ namespace WindowsFormsApplication1
         // Photovoltaik (§ 6.2)
         // =====================================================================
 
-        private static void PvFuellen(Dictionary<string, object> werte)
+        private static void PvFuellen(Dictionary<string, object> werte, int idProjekt)
         {
             werte["PvErklaerungText"] = T("KDLG_ERTRAG_PV",
-                "Die PV-Vergütung wird STAMMPROJEKTBEZOGEN im Vergütungsdialog gepflegt — " +
+                "Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt — " +
                 "demselben Formular, das auch der Knopf „Photovoltaik…\" im " +
-                "Wirtschaftlichkeits-Reiter öffnet (eine Vergütungswahrheit, Befund V4). " +
+                "Wirtschaftlichkeits-Reiter öffnet. Eine Variante übernimmt die " +
+                "Vergütung ihres Stammprojekts oder führt eigene Werte. " +
                 "Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung " +
                 "wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.");
 
@@ -183,6 +194,34 @@ namespace WindowsFormsApplication1
             foreach (KeyValuePair<int, string> p in KostenVorlagenUebernahmeCtrl.Projekte())
                 eintraege.Add(new ValueTuple<int, string>(p.Key, p.Value));
             werte["Projekte"] = (IReadOnlyList<ValueTuple<int, string>>)eintraege;
+
+            // KONZEPT § 2.16 — die Wahl je Variante. Im PROJEKTMODUS steht der Stand
+            // fest: Das geöffnete Projekt ist vorgewählt, die Klappliste entfällt
+            // (VV‑Q7), und nur eine Variante bekommt die Optionsgruppe. Im
+            // Admin-Kontext (idProjekt = 0) bleibt alles wie zuvor — dort gibt es
+            // keinen Stand, über dessen Vergütung zu entscheiden wäre.
+            bool projektModus = idProjekt > 0;
+            werte["ProjektlisteZeigen"] = !projektModus;
+            if (projektModus) werte["ProjektVorwahl"] = (int?)idProjekt;
+
+            int idStamm = projektModus ? new VariantenCtrl().StammRefDerVariante(idProjekt) : -1;
+            bool istVariante = idStamm > 0 && idStamm != idProjekt;
+            werte["IstVariante"] = istVariante;
+
+            var pvc = new ProjektPhotovoltaikCtrl();
+            if (istVariante)
+            {
+                PvVerguetungStand stand = pvc.LiesAufgeloest(idProjekt);
+                werte["Uebernommen"] = stand.Uebernommen;
+                werte["HerkunftText"] = HerkunftZeile(stand, idStamm);
+                werte["WahlGeaendert"] = EventCallback.Factory.Create<bool>(new object(),
+                    uebernehmen => WahlSchreiben(idProjekt, uebernehmen));
+            }
+            else if (projektModus)
+            {
+                werte["Uebernommen"] = false;
+                werte["HerkunftText"] = StammZeile(idProjekt);
+            }
 
             // iU9-W2.4: der PV-Vergütungsdialog ist selbst eine Blazor-Hülle. Zwei
             // WebViews übereinander sind Risiko R2 — der Sprung bleibt deshalb
@@ -192,6 +231,79 @@ namespace WindowsFormsApplication1
             // Überlagerung.
             werte["PvOeffnen"] = EventCallback.Factory.Create<int>(new object(),
                 id => PhotovoltaikVerguetungHuelle.Oeffnen(null, id));
+        }
+
+        /// <summary>
+        /// Die Erklärzeile der Variante (Konzept § 2.16): „übernommen von ‹Stamm› ·
+        /// anzulegender Wert ‹AW› ct/kWh, ‹Vermarktungsform›" oder „eigene Werte dieser
+        /// Variante".
+        ///
+        /// <para>Der anzulegende Wert steht nur da, wenn er GEPFLEGT ist: Ohne Override
+        /// leitet ihn der <c>EegSatzRechner</c> aus dem Katalog her, und diese Zeile
+        /// rechnet nicht — sie sagt, woher die Angaben kommen.</para>
+        /// </summary>
+        private static string HerkunftZeile(PvVerguetungStand stand, int idStamm)
+        {
+            if (!stand.Uebernommen)
+                return T("KDLG_ERTRAG_PV_HERK_EIGEN", "eigene Werte dieser Variante");
+
+            string name = StartseiteCtrl.Projektname(idStamm) ?? "";
+            string aw = stand.Modell != null && stand.Modell.AwOverride.HasValue
+                ? stand.Modell.AwOverride.Value.ToString("0.##", CultureInfo.CurrentCulture)
+                : "—";
+            string form = stand.Modell != null
+                ? WirtschaftlichkeitZeilen.PvFormAnzeige(stand.Modell.Vermarktungsform) : "—";
+
+            return string.Format(CultureInfo.CurrentCulture,
+                T("KDLG_ERTRAG_PV_HERK_STAMM",
+                  "übernommen von {0} · anzulegender Wert {1} ct/kWh, {2}"),
+                name, aw, form);
+        }
+
+        /// <summary>
+        /// Die Zeile des STAMMPROJEKTS: „Stammprojekt — ‹n› Varianten übernehmen diese
+        /// Vergütung". Gezählt wird über die Auflösung, nicht über die Spalte allein —
+        /// „keine Zeile" heißt ebenfalls übernehmen.
+        /// </summary>
+        private static string StammZeile(int idStamm)
+        {
+            int n = 0;
+            try
+            {
+                var pvc = new ProjektPhotovoltaikCtrl();
+                foreach (VariantenCtrl.VarianteInfo v in
+                         new VariantenCtrl().LadeGruppe(idStamm, StartseiteCtrl.Projektname(idStamm)))
+                {
+                    if (v.IstStamm || v.IdProjekt == idStamm) continue;
+                    if (pvc.LiesAufgeloest(v.IdProjekt).Uebernommen) n++;
+                }
+            }
+            catch { }
+
+            return string.Format(CultureInfo.CurrentCulture,
+                T("KDLG_ERTRAG_PV_STAMM_N",
+                  "Stammprojekt — {0} Variante(n) übernehmen diese Vergütung"), n);
+        }
+
+        /// <summary>
+        /// Die Wahl schreiben (Konzept § 2.16). „Eigene Vergütung" legt die STAMMWERTE
+        /// vor (VV‑Q6) und öffnet danach den Vergütungsdialog für diese Variante — der
+        /// Anwender will die Abweichung gleich eingeben, nicht erst einen zweiten Knopf
+        /// suchen. „Übernehmen" lässt die Zeile stehen: Sie ist der Rückweg.
+        /// </summary>
+        private static void WahlSchreiben(int idProjekt, bool uebernehmen)
+        {
+            var pvc = new ProjektPhotovoltaikCtrl();
+            if (uebernehmen)
+            {
+                pvc.SetzeUebernahme(idProjekt, true);
+                return;
+            }
+
+            if (pvc.Lies(idProjekt) == null) pvc.Speichern(pvc.VorlageAusStamm(idProjekt));
+            else pvc.SetzeUebernahme(idProjekt, false);
+
+            PhotovoltaikVerguetungHuelle.Oeffnen(null, idProjekt);
         }
 
         private static string T(string schluessel, string rueckfall)

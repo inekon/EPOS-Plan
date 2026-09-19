@@ -237,6 +237,30 @@
   <data name="CEC_MSG_KOPFZEILE" xml:space="preserve">
     <value>CEC-Kopfzeile unvollständig, fehlende Spalte(n): {0}</value>
   </data>
+  <data name="KDLG_ERTRAG_PV_EIGENE" xml:space="preserve">
+    <value>eigene Vergütung</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_HERK_EIGEN" xml:space="preserve">
+    <value>eigene Werte dieser Variante</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_HERK_STAMM" xml:space="preserve">
+    <value>übernommen von {0} · anzulegender Wert {1} ct/kWh, {2}</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_STAMM_N" xml:space="preserve">
+    <value>Stammprojekt — {0} Variante(n) übernehmen diese Vergütung</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_UEBERNEHMEN" xml:space="preserve">
+    <value>vom Stammprojekt übernehmen</value>
+  </data>
+  <data name="KDLG_ERTRAG_PV_WAHL" xml:space="preserve">
+    <value>Vergütung:</value>
+  </data>
+  <data name="KOH_PV_EIGENE_INAKTIV" xml:space="preserve">
+    <value>Variante „{0}“ führt eine eigene, INAKTIVE PV-Vergütung, während das Stammprojekt „{1}“ eine aktive führt — gerechnet wird der flache Einspeisesatz. „Vom Stammprojekt übernehmen“ im Reiter Ertrag/Bonus löst es auf.</value>
+  </data>
+  <data name="KOH_PV_STAMM_INAKTIV" xml:space="preserve">
+    <value>Variante „{0}“ übernimmt die PV-Vergütung des Stammprojekts „{1}“; dort ist sie nicht angewendet — gerechnet wird der flache Einspeisesatz.</value>
+  </data>
   <data name="PVIMP_PLAUSI_TITEL" xml:space="preserve">
     <value>Hinweis zu den Modulwerten</value>
   </data>
@@ -1306,6 +1330,18 @@ bei einem kleinen Speicher wird die Zahl groß, ohne dass er stärker altert.</v
   </data>
   <data name="PVM_TECHNOLOGIE_SONSTIGE" xml:space="preserve">
     <value>Sonstige</value>
+  </data>
+  <data name="PVW_BTN_EIGENE_WERTE" xml:space="preserve">
+    <value>eigene Werte</value>
+  </data>
+  <data name="PVW_HERKUNFT_EIGEN" xml:space="preserve">
+    <value>Vergütung dieser Variante: eigene Werte</value>
+  </data>
+  <data name="PVW_HERKUNFT_STAMM" xml:space="preserve">
+    <value>Vergütung dieser Variante: übernommen vom Stammprojekt „{0}“ — die Felder zeigen dessen Werte. „Eigene Werte“ übernimmt sie in diese Variante.</value>
+  </data>
+  <data name="PVW_HERKUNFT_STAMMPROJEKT" xml:space="preserve">
+    <value>Stammprojekt — {0} Variante(n) übernehmen diese Vergütung</value>
   </data>
   <data name="SIM_KARTE_PV_MODELL_DCAC" xml:space="preserve">
     <value>Modell erweitert · DC/AC {0}</value>
@@ -6429,6 +6465,18 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_ZEILE_ENERGIESTEUER" xml:space="preserve">
     <value>Energiesteuer-Gutschrift [€/a]</value>
   </data>
+  <data name="WIRT_ZEILE_PV_HERKUNFT" xml:space="preserve">
+    <value>PV-Vergütung: Herkunft</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_EIGEN" xml:space="preserve">
+    <value>eigene Werte</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_STAMM" xml:space="preserve">
+    <value>übernommen von {0}</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_STAMM_OHNE_NAME" xml:space="preserve">
+    <value>vom Stammprojekt übernommen</value>
+  </data>
   <data name="WIRT_ZEILE_STROMST_BEFREIUNG" xml:space="preserve">
     <value>Stromsteuer-Befreiung [€/a]</value>
   </data>
@@ -8907,13 +8955,13 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
     <value>Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse laufen als Zuschuss-Position in den Investitionskosten (FK5).</value>
   </data>
   <data name="KDLG_ERTRAG_PV" xml:space="preserve">
-    <value>Die PV-Vergütung wird STAMMPROJEKTBEZOGEN im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet (eine Vergütungswahrheit, Befund V4). Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.</value>
+    <value>Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet. Eine Variante übernimmt die Vergütung ihres Stammprojekts oder führt eigene Werte. Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.</value>
   </data>
   <data name="KDLG_ERTRAG_PV_OEFFNEN" xml:space="preserve">
     <value>PV-Vergütungsdialog öffnen…</value>
   </data>
   <data name="KDLG_ERTRAG_PV_PROJEKT" xml:space="preserve">
-    <value>Stammprojekt:</value>
+    <value>Projekt:</value>
   </data>
   <data name="KDLG_ERTRAG_SONDERREGEL" xml:space="preserve">
     <value>Sonderregel neue Anlagen ≤ 50 kWel (§ 7 Abs. 3a): eingespeist {0} · nicht eingespeist {1} ct/kWh — geht Abs. 1 und 2 vor.</value>

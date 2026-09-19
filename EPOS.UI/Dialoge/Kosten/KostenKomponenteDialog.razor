@@ -322,7 +322,8 @@
                 @* Kein Delegat, kein Knopf: Ohne GesetzeGaben bekommt das
                    Reiterblatt auch keinen Rueckruf. *@
                 <ErtragBonus @attributes="_stand.ErtragGaben"
-                             GesetzeGewuenscht="@GesetzeRueckruf" />
+                             GesetzeGewuenscht="@GesetzeRueckruf"
+                             NeuLaden="@ErtragNeuLaden" />
             </KindInhalt>
         </Reiterblatt>
     }
@@ -1181,6 +1182,15 @@
         _gesetzeGaben = null;
         KontextLaden(_stand.VarianteId);
     }
+
+    /// <summary>
+    /// KONZEPT § 2.16: Nach der Vergütungswahl im Reiterblatt werden dessen Gaben neu
+    /// gebaut — Herkunftszeile, Optionsstand und Erklärzeile kommen aus der Datenbank,
+    /// und die Hülle hat gerade hineingeschrieben. Derselbe Weg wie nach dem
+    /// Gesetzeskatalog, deshalb dieselbe Methode.
+    /// </summary>
+    private EventCallback ErtragNeuLaden
+        => EventCallback.Factory.Create(this, () => KontextLaden(_stand.VarianteId));
 
     // =====================================================================
     // Schlussleiste
