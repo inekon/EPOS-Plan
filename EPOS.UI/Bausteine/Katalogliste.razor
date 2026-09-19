@@ -90,7 +90,7 @@
            markiert sind. Der Knopf steht IMMER da - waere er nur bei Markierung
            sichtbar, faende niemand den Weg dorthin; der Kurztext sagt, wie man
            markiert (Strg-Klick ist unsichtbar). *@
-        @if (!Mehrfach)
+        @if (!Mehrfach && Vergleichbar)
         {
             <button type="button" class="epos-katalog-vergleichknopf"
                     disabled="@(!VergleichFrei)" title="@Vergleichkurztext"
@@ -305,6 +305,21 @@
 
     /// <summary>Eine Zeile wurde gewählt.</summary>
     [Parameter] public EventCallback<string> GewaehltChanged { get; set; }
+
+    /// <summary>
+    /// <b>Trägt diese Liste den Knopf „Vergleichen"?</b> Vorgabe <c>true</c> — die
+    /// fünfzehn GERÄTEkataloge vergleichen Datenblätter, und das ist der Regelfall
+    /// (Stufe S3.3).
+    ///
+    /// <para><b>Wo es nichts zu vergleichen gibt, steht der Knopf nicht da</b>
+    /// (MN-1, 19.09.2026): Die gesetzlichen Parameter sind kein Gerät, sondern
+    /// eine Reihe von Jahreszeilen EINES Satzes — „KWKG-Zuschlag 2023 gegen
+    /// KWKG-Zuschlag 2026" ist keine Auswahlentscheidung, sondern die Geschichte
+    /// desselben Wertes, und die liest man in der Liste. Ein Knopf, der nur
+    /// nebeneinanderstellt, was ohnehin untereinandersteht, wäre ein Bedienelement
+    /// ohne Gewinn (Hausregel „kein Delegat, kein Bedienelement").</para>
+    /// </summary>
+    [Parameter] public bool Vergleichbar { get; set; } = true;
 
     // =====================================================================
     //  Mehrfachwahl (Stufe S3.4 — die zwei Importmasken)

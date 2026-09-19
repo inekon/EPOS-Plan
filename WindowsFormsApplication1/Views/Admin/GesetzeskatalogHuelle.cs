@@ -79,7 +79,7 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Klassen"] = new Func<Task<IReadOnlyList<(string, string)>>>(KlassenLesen),
-                ["Zeilen"] = new Func<string, Task<IReadOnlyList<GesetzeskatalogDialog.Zeile>>>(ZeilenLesen),
+                ["Zeilen"] = new Func<string, Task<IReadOnlyList<Katalogfilterzeile>>>(ZeilenLesen),
                 ["Anlegen"] = new Func<GesetzeskatalogZeileDialog.Zeilenwerte, Task<bool>>(Anlegen),
                 ["Aendern"] = new Func<GesetzeskatalogZeileDialog.Zeilenwerte, Task<bool>>(Aendern),
                 ["Loeschen"] = new Func<int, Task<bool>>(
@@ -113,13 +113,15 @@ namespace WindowsFormsApplication1
                 .ToList();
         }
 
-        private static Task<IReadOnlyList<GesetzeskatalogDialog.Zeile>> ZeilenLesen(string klasse)
+        /// <summary>
+        /// Die Zeilen einer Klasse als Zeilen der HAUS-Katalogliste (MN-1,
+        /// 19.09.2026). Die Umrechnung steht im Kern
+        /// (<c>GesetzKatalog.Katalogfilterzeilen</c>) — hier wird nichts mehr
+        /// zusammengesetzt.
+        /// </summary>
+        private static Task<IReadOnlyList<Katalogfilterzeile>> ZeilenLesen(string klasse)
         {
-            IReadOnlyList<GesetzeskatalogDialog.Zeile> liste = new GesetzKatalog().Zeilen(klasse)
-                .Select(z => new GesetzeskatalogDialog.Zeile(
-                    z.Id, z.Schluessel, z.Klasse, z.JahrVon, z.WertText, z.Einheit, z.Status, z.Quelle))
-                .ToList();
-            return Task.FromResult(liste);
+            return Task.FromResult(new GesetzKatalog().Katalogfilterzeilen(klasse));
         }
 
         private static Task<bool> Anlegen(GesetzeskatalogZeileDialog.Zeilenwerte w)

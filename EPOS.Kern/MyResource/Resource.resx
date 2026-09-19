@@ -6421,7 +6421,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Energiesteuer: {0} — dem Energieträger ist kein Steuersatz zugeordnet (Träger der Anlage in der Kostenmaske prüfen); Gutschrift = 0.</value>
   </data>
   <data name="STEUER_ENERGIEST_SATZ_FEHLT" xml:space="preserve">
-    <value>Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0.</value>
+    <value>Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0.</value>
   </data>
   <data name="STEUER_ENERGIEST_MENGE_UNKLAR" xml:space="preserve">
     <value>Energiesteuer: {0} — der auf die Stromerzeugung entfallende Brennstoff ist 0 (Strom- oder Wärmemenge des Laufs fehlt); Gutschrift = 0.</value>
@@ -6466,7 +6466,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Stromsteuer § 9b StromStG: {0} € Entlastung erreichen den Sockelbetrag von {1} € je Kalenderjahr nicht; Entlastung = 0.</value>
   </data>
   <data name="STEUER_SATZ_FEHLT" xml:space="preserve">
-    <value>Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0.</value>
+    <value>Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0.</value>
   </data>
   <data name="STEUER_HERKUNFT_FORMAT" xml:space="preserve">
     <value>{0} = {1} {2}, gültig ab {3} ({4}) — {5}</value>

@@ -168,7 +168,7 @@ public class KatalogdialogTests : EposBunitContext
             .Add(x => x.Klassen, () => Task.FromResult(
                 (IReadOnlyList<(string, string)>)new[] { ("CO2", "CO₂") }.ToList()))
             .Add(x => x.Zeilen, _ => Task.FromResult(
-                (IReadOnlyList<GesetzeskatalogDialog.Zeile>)new List<GesetzeskatalogDialog.Zeile>())));
+                (IReadOnlyList<Katalogfilterzeile>)new List<Katalogfilterzeile>())));
 
     // =====================================================================
     //  (a) Die Wurzel nutzt die Höhe

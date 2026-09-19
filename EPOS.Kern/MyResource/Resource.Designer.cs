@@ -51998,7 +51998,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
         /// </summary>
         public static string STEUER_ENERGIEST_SATZ_FEHLT {
             get {
@@ -52025,7 +52025,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
         /// </summary>
         public static string STEUER_SATZ_FEHLT {
             get {

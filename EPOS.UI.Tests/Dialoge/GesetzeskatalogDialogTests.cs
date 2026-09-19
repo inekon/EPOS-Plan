@@ -46,12 +46,44 @@ public class GesetzeskatalogDialogTests : EposBunitContext
     private static readonly string[] EINHEITEN = { "EUR/MWh", "ct/kWh", "-" };
     private static readonly string[] STATUS = { "GESICHERT", "VORLAEUFIG", "PROGNOSE" };
 
-    private static List<GesetzeskatalogDialog.Zeile> Zeilen() => new()
+    /// <summary>
+    /// Ein Prüfstandssatz — die Klasse steht daneben, weil die Zeile der Hausliste
+    /// sie nicht mehr führt: Die Liste zeigt seit MN-1 (19.09.2026) genau die
+    /// Zeilen EINER Klasse, und die Klasse steht im Auswahlfeld darüber.
+    /// </summary>
+    private sealed record Satz(int Id, string Schluessel, string Klasse, int JahrVon,
+                               string WertText, double? Wert, string Einheit,
+                               string Status, string Quelle);
+
+    private static List<Satz> Zeilen() => new()
     {
-        new(11, "KWKG_ZUSCHLAG_BIS50KW", "KWKG", 2023, "8", "ct/kWh", "GESICHERT", "KWKG 2023"),
-        new(12, "KWKG_ZUSCHLAG_BIS50KW", "KWKG", 2026, "", "ct/kWh", "PROGNOSE", ""),
-        new(13, "KWKG_VOLLBENUTZUNGSSTUNDEN", "KWKG", 2026, "3500", "h", "GESICHERT", "§ 8 KWKG")
+        new(11, "KWKG_ZUSCHLAG_BIS50KW", "KWKG", 2023, "8", 8, "ct/kWh", "GESICHERT", "KWKG 2023"),
+        new(12, "KWKG_ZUSCHLAG_BIS50KW", "KWKG", 2026, "", null, "ct/kWh", "PROGNOSE", ""),
+        new(13, "KWKG_VOLLBENUTZUNGSSTUNDEN", "KWKG", 2026, "3500", 3500, "h", "GESICHERT", "§ 8 KWKG")
     };
+
+    /// <summary>
+    /// Derselbe Bau wie <c>GesetzKatalog.Katalogfilterzeilen</c> im Kern: Der
+    /// SCHLÜSSEL der Zeile ist ihre ID als Text (ein Gesetzesschlüssel kommt je
+    /// Gültigkeitsjahr mehrfach vor), der Bezeichner der Gesetzesschlüssel, und
+    /// der Wert trägt Text UND Zahl.
+    /// </summary>
+    private static Katalogfilterzeile AlsZeile(Satz s)
+    {
+        var zeile = new Katalogfilterzeile(s.Id, s.Schluessel)
+        {
+            Schluessel = s.Id.ToString(CultureInfo.InvariantCulture)
+        };
+
+        return zeile
+            .MitText(GesetzKatalog.SpSchluessel, s.Schluessel)
+            .Mit(GesetzKatalog.SpJahrVon,
+                 new Katalogwert(s.JahrVon.ToString(CultureInfo.CurrentCulture), s.JahrVon))
+            .Mit(GesetzKatalog.SpWert, new Katalogwert(s.WertText, s.Wert))
+            .MitText(GesetzKatalog.SpEinheit, s.Einheit)
+            .MitText(GesetzKatalog.SpStatus, s.Status)
+            .MitText(GesetzKatalog.SpQuelle, s.Quelle);
+    }
 
     public GesetzeskatalogDialogTests()
     {
@@ -60,21 +92,27 @@ public class GesetzeskatalogDialogTests : EposBunitContext
     }
 
     private IRenderedComponent<GesetzeskatalogDialog> Aufbauen(
-        List<GesetzeskatalogDialog.Zeile>? zeilen = null,
+        List<Satz>? zeilen = null,
         string vorwahl = "",
         Func<GesetzeskatalogZeileDialog.Zeilenwerte, Task<bool>>? anlegen = null,
         Func<GesetzeskatalogZeileDialog.Zeilenwerte, Task<bool>>? aendern = null,
         Func<int, Task<bool>>? loeschen = null,
         Func<GesetzeskatalogZeileDialog.Zeilenwerte, int, Task<string>>? pruefen = null,
         Action<bool>? geschlossen = null,
-        int aktuellesJahr = 2026)
+        int aktuellesJahr = 2026,
+        Katalogfilterstand? filterstand = null)
     {
-        List<GesetzeskatalogDialog.Zeile> liste = zeilen ?? Zeilen();
+        List<Satz> liste = zeilen ?? Zeilen();
         return Render<GesetzeskatalogDialog>(p => p
             .Add(x => x.Klassen, () => Task.FromResult(
                 (IReadOnlyList<(string, string)>)KLASSEN.ToList()))
             .Add(x => x.Zeilen, k => Task.FromResult(
-                (IReadOnlyList<GesetzeskatalogDialog.Zeile>)liste.Where(z => z.Klasse == k).ToList()))
+                (IReadOnlyList<Katalogfilterzeile>)liste.Where(z => z.Klasse == k)
+                                                        .Select(AlsZeile).ToList()))
+            // JEDER Fall bekommt einen EIGENEN Filterstand: Das Register haelt ihn
+            // sonst ueber die ganze Testsammlung hinweg, und ein gesetzter Filter
+            // aus dem vorigen Fall faerbte den naechsten.
+            .Add(x => x.Filterstandvorgabe, filterstand ?? new Katalogfilterstand())
             .Add(x => x.Klassenvorrat, VORRAT.ToList())
             .Add(x => x.Einheiten, EINHEITEN)
             .Add(x => x.Statuswerte, STATUS)
@@ -102,14 +140,13 @@ public class GesetzeskatalogDialogTests : EposBunitContext
         // cbKlasse
         Assert.Single(cut.FindAll("select"));
 
-        // Die SECHS Spalten der ListView plus die Wahlspalte.
+        // Die SECHS Spalten der ListView plus die Wahlspalte. Seit MN-1 traegt
+        // jeder Kopf zusaetzlich den Sortierpfeil - deshalb "enthaelt" statt
+        // "ist gleich".
         var spalten = cut.FindAll("th").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Contains("Schlüssel", spalten);
-        Assert.Contains("Gültig ab", spalten);
-        Assert.Contains("Wert", spalten);
-        Assert.Contains("Einheit", spalten);
-        Assert.Contains("Status", spalten);
-        Assert.Contains("Quelle", spalten);
+        foreach (string kopf in new[] { "Schlüssel", "Gültig ab", "Wert",
+                                        "Einheit", "Status", "Quelle" })
+            Assert.Contains(spalten, s => s.Contains(kopf, StringComparison.Ordinal));
 
         // btnNeu, btnAendern, btnLoeschen, btnSchliessen - in dieser Reihenfolge.
         var knoepfe = cut.FindAll("div.epos-leiste button").Select(e => e.TextContent.Trim()).ToList();
@@ -171,6 +208,201 @@ public class GesetzeskatalogDialogTests : EposBunitContext
         var zellen = cut.FindAll("td").Select(e => e.TextContent.Trim()).ToList();
 
         Assert.DoesNotContain("0", zellen.Where(z => z == "0"));
+    }
+
+    // =====================================================================
+    //  ANWENDERENTSCHEID MN-1 (19.09.2026) — die Liste ist die Katalogliste
+    //  des Hauses: "Bei der Auswahl der 'Gesetzlichen Parameter' soll das
+    //  gleiche Schema (Filter, Sortieren ...) verwendet werden."
+    // =====================================================================
+
+    /// <summary>
+    /// Die Maske zeigt die EINE Katalogliste des Hauses — mit Suchzeile,
+    /// Trefferzahl, Sortierpfeil und Trichter je Spalte. Das Auswahlfeld der
+    /// Klasse steht unverändert DAVOR.
+    /// </summary>
+    [Fact]
+    public void Die_Liste_ist_die_Katalogliste_des_Hauses()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindComponents<EPOS.UI.Bausteine.Katalogliste>());
+        Assert.Single(cut.FindAll(".epos-katalog-suchzeile"));
+        Assert.Single(cut.FindAll(".epos-katalog-suchzeile input"));
+        Assert.Equal("3 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+
+        // Sechs Spaltenköpfe, alle sortierbar, alle mit Trichter.
+        Assert.Equal(6, cut.FindAll(".epos-spaltenkopf").Count);
+        Assert.Equal(6, cut.FindAll(".epos-spaltenkopf-titel").Count);
+        Assert.Equal(6, cut.FindAll(".epos-trichter").Count);
+
+        // Die Klasse bleibt ein Auswahlfeld DAVOR - sie ist kein Spaltenfilter.
+        Assert.Single(cut.FindAll("select"));
+    }
+
+    /// <summary>
+    /// <b>Kein Knopf „Vergleichen"</b>: Zwei Jahreszeilen desselben Satzes
+    /// nebeneinanderzustellen sagt nichts, was die Liste nicht schon
+    /// untereinander zeigt (<c>Vergleichbar="false"</c>).
+    /// </summary>
+    [Fact]
+    public void Die_Liste_bietet_keinen_Vergleich_an()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(".epos-katalog-vergleichknopf"));
+    }
+
+    /// <summary>Die Suche greift über alle Spalten und zählt die Treffer mit.</summary>
+    [Fact]
+    public void Die_Suche_schraenkt_die_Liste_ein()
+    {
+        var cut = Aufbauen();
+
+        cut.Find(".epos-katalog-suchzeile input").Input("VOLLBENUTZUNG");
+
+        cut.WaitForAssertion(() =>
+            Assert.Equal("1 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent));
+        Assert.DoesNotContain("KWKG_ZUSCHLAG_BIS50KW", cut.Find("tbody").TextContent);
+
+        // Die Suche greift auch auf einer anderen Spalte - hier der Quelle.
+        cut.Find(".epos-katalog-suchzeile input").Input("§ 8");
+        cut.WaitForAssertion(() =>
+            Assert.Equal("1 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent));
+    }
+
+    /// <summary>
+    /// Der Spaltentrichter filtert VOR dem Raster — auf der Zahlenspalte
+    /// „Gültig ab" mit einem Zahlenausdruck.
+    /// </summary>
+    [Fact]
+    public void Ein_Spaltenfilter_schraenkt_die_Liste_ein()
+    {
+        var cut = Aufbauen();
+
+        cut.FindAll(".epos-trichter")[1].Click();          // Gültig ab
+        cut.WaitForElement(".epos-spaltenfilter input").Change("<2024");
+
+        cut.WaitForAssertion(() =>
+            Assert.Equal("1 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent));
+        Assert.Single(cut.FindAll(".epos-trichter--gesetzt"));
+        Assert.Single(cut.FindAll(".epos-katalog-ruecksetzer"));
+    }
+
+    /// <summary>Ein Klick auf den Spaltenkopf sortiert — auf- und absteigend.</summary>
+    [Fact]
+    public void Ein_Klick_auf_den_Spaltenkopf_sortiert()
+    {
+        var cut = Aufbauen();
+
+        // Ungefiltert steht die Reihenfolge, in der die Hülle liefert.
+        Assert.Equal("", cut.Instance.Filterstand.Sortierspalte);
+        Assert.Contains("KWKG_ZUSCHLAG_BIS50KW", cut.FindAll("tbody tr")[0].TextContent);
+
+        // Nach "Gültig ab" aufsteigend steht 2023 oben.
+        cut.FindAll(".epos-spaltenkopf-titel")[1].Click();
+        cut.WaitForAssertion(() =>
+            Assert.Contains("2023", cut.FindAll("tbody tr")[0].TextContent));
+        Assert.Equal(GesetzKatalog.SpJahrVon, cut.Instance.Filterstand.Sortierspalte);
+        Assert.True(cut.Instance.Filterstand.Aufsteigend);
+
+        // Derselbe Kopf noch einmal: absteigend.
+        cut.FindAll(".epos-spaltenkopf-titel")[1].Click();
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.Filterstand.Aufsteigend));
+        Assert.Contains("2026", cut.FindAll("tbody tr")[0].TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Wahl überlebt einen Filterwechsel</b> — die Katalogliste hält die
+    /// Markierung am Schlüssel der Zeile fest, und der ist hier die ID. Wird die
+    /// Zeile ausgeblendet, bleiben „Ändern" und „Löschen" trotzdem frei: Die
+    /// Auswahl gibt es noch, sie ist nur gerade nicht zu sehen.
+    /// </summary>
+    [Fact]
+    public void Die_Wahl_ueberlebt_einen_Filterwechsel()
+    {
+        var cut = Aufbauen();
+
+        cut.FindAll("button.epos-anlagenwahl")[0].Click();      // die Zeile ab 2023
+        Assert.False(cut.FindAll("div.epos-leiste button")[1].HasAttribute("disabled"));
+
+        cut.Find(".epos-katalog-suchzeile input").Input("VOLLBENUTZUNG");
+        cut.WaitForAssertion(() =>
+            Assert.Equal("1 von 3 Sätzen", cut.Find(".epos-katalog-treffer").TextContent));
+
+        // Ändern bleibt frei und öffnet GENAU die gewählte Zeile.
+        Assert.False(cut.FindAll("div.epos-leiste button")[1].HasAttribute("disabled"));
+        cut.FindAll("div.epos-leiste button")[1].Click();
+        Assert.Equal(11, cut.FindComponent<GesetzeskatalogZeileDialog>().Instance.Id);
+    }
+
+    /// <summary>
+    /// <b>Zwei Zeilen mit DEMSELBEN Gesetzesschlüssel sind zwei Wahlen</b> — der
+    /// Wahlschlüssel ist die ID, nicht der Bezeichner. Sonst markierte ein Klick
+    /// auf die Zeile von 2023 auch die von 2026.
+    /// </summary>
+    [Fact]
+    public void Zwei_Jahreszeilen_desselben_Schluessels_sind_zwei_Wahlen()
+    {
+        var cut = Aufbauen();
+
+        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        cut.FindAll("div.epos-leiste button")[1].Click();       // Ändern
+        Assert.Equal(11, cut.FindComponent<GesetzeskatalogZeileDialog>().Instance.Id);
+        Assert.Equal(2023, cut.FindComponent<GesetzeskatalogZeileDialog>().Instance.JahrVon);
+
+        // Abbrechen und die ZWEITE Zeile desselben Schlüssels wählen.
+        cut.FindComponent<GesetzeskatalogZeileDialog>()
+           .FindAll("button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+
+        cut.FindAll("button.epos-anlagenwahl")[1].Click();
+        cut.FindAll("div.epos-leiste button")[1].Click();
+        Assert.Equal(12, cut.FindComponent<GesetzeskatalogZeileDialog>().Instance.Id);
+        Assert.Equal(2026, cut.FindComponent<GesetzeskatalogZeileDialog>().Instance.JahrVon);
+    }
+
+    /// <summary>
+    /// Die Vorwahl aus dem Wirtschaftlichkeits- und dem Kostendialog bleibt: Der
+    /// Bereich steht auf CO₂-Preis, und die Liste zeigt dessen Zeilen — das Suchfeld
+    /// der Katalogliste ändert daran nichts.
+    /// </summary>
+    [Fact]
+    public void Die_Vorwahl_CO2_PREIS_steht_auch_mit_der_Katalogliste()
+    {
+        var zeilen = new List<Satz>(Zeilen())
+        {
+            new(21, "CO2_PREIS_BRENNSTOFFEMISSION", "CO2_PREIS", 2026, "55", 55,
+                "EUR/t", "GESICHERT", "BEHG")
+        };
+        var cut = Aufbauen(zeilen, vorwahl: "CO2_PREIS");
+
+        Assert.Equal("CO2_PREIS", cut.Instance.GewaehlteKlasse);
+        Assert.Equal(1, cut.Instance.ZeilenAnzahl);
+        Assert.Equal("1 von 1 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
+        Assert.Contains("CO2_PREIS_BRENNSTOFFEMISSION", cut.Find("tbody").TextContent);
+    }
+
+    /// <summary>
+    /// Ein Klassenwechsel lädt die Liste neu und nimmt eine Auswahl mit, die es in
+    /// der neuen Klasse nicht gibt (A-13, jetzt über den Schlüssel).
+    /// </summary>
+    [Fact]
+    public void Ein_Klassenwechsel_loescht_eine_fremde_Auswahl()
+    {
+        var zeilen = new List<Satz>(Zeilen())
+        {
+            new(21, "CO2_PREIS_BRENNSTOFFEMISSION", "CO2_PREIS", 2026, "55", 55,
+                "EUR/t", "GESICHERT", "BEHG")
+        };
+        var cut = Aufbauen(zeilen);
+
+        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        Assert.False(cut.FindAll("div.epos-leiste button")[1].HasAttribute("disabled"));
+
+        cut.Find("select").Change("1");                          // CO₂-Preis
+        cut.WaitForAssertion(() => Assert.Equal("CO2_PREIS", cut.Instance.GewaehlteKlasse));
+
+        Assert.True(cut.FindAll("div.epos-leiste button")[1].HasAttribute("disabled"));
     }
 
     // =====================================================================
@@ -459,7 +691,9 @@ public class GesetzeskatalogDialogTests : EposBunitContext
         var cut = Render<GesetzeskatalogDialog>(p => p
             .Add(x => x.Klassen, () => Task.FromResult((IReadOnlyList<(string, string)>)KLASSEN.ToList()))
             .Add(x => x.Zeilen, k => Task.FromResult(
-                (IReadOnlyList<GesetzeskatalogDialog.Zeile>)Zeilen().Where(z => z.Klasse == k).ToList()))
+                (IReadOnlyList<Katalogfilterzeile>)Zeilen().Where(z => z.Klasse == k)
+                                                           .Select(AlsZeile).ToList()))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Klassenvorrat, VORRAT.ToList())
             .Add(x => x.Einheiten, EINHEITEN)
             .Add(x => x.Statuswerte, STATUS)

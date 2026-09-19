@@ -6405,7 +6405,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Energy tax: {0} — no tax rate is assigned to the energy carrier (check the plant's carrier in the cost dialogue); credit = 0.</value>
   </data>
   <data name="STEUER_ENERGIEST_SATZ_FEHLT" xml:space="preserve">
-    <value>Energy tax: {0} — catalogue rate {1} is not maintained (Administration → Statutory parameters); credit = 0.</value>
+    <value>Energy tax: {0} — catalogue rate {1} is not maintained (Administration → Costs → Statutory parameters); credit = 0.</value>
   </data>
   <data name="STEUER_ENERGIEST_MENGE_UNKLAR" xml:space="preserve">
     <value>Energy tax: {0} — the fuel attributable to power generation is 0 (the run has no electricity or heat figure); credit = 0.</value>
@@ -6450,7 +6450,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Electricity tax § 9b StromStG: relief of {0} € does not reach the {1} € base amount per calendar year; relief = 0.</value>
   </data>
   <data name="STEUER_SATZ_FEHLT" xml:space="preserve">
-    <value>Tax: catalogue rate {0} is not maintained (Administration → Statutory parameters); credit = 0.</value>
+    <value>Tax: catalogue rate {0} is not maintained (Administration → Costs → Statutory parameters); credit = 0.</value>
   </data>
   <data name="STEUER_HERKUNFT_FORMAT" xml:space="preserve">
     <value>{0} = {1} {2}, valid from {3} ({4}) — {5}</value>
