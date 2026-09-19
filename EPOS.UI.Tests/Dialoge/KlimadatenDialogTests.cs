@@ -1230,9 +1230,10 @@ public class KlimadatenDialogTests : EposBunitContext
         var beschriftungen = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("Daten einlesen", beschriftungen);
         Assert.Contains("Beenden", beschriftungen);
-        Assert.Empty(cut.FindAll(".epos-katalog-paar .epos-leiste button")
-                        .Select(b => b.TextContent.Trim())
-                        .Where(t => t == "Daten einlesen" || t == "Beenden"));
+        var imRahmen = cut.FindAll(".epos-katalog-paar .epos-leiste button")
+                          .Select(b => b.TextContent.Trim()).ToList();
+        Assert.DoesNotContain("Daten einlesen", imRahmen);
+        Assert.DoesNotContain("Beenden", imRahmen);
     }
 
     /// <summary>
