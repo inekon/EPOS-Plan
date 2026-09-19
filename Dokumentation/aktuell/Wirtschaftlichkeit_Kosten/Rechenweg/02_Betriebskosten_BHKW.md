@@ -65,7 +65,7 @@ ohne sie dastehen, und jeder verlangt einen anderen Handgriff:
 | Anlage nicht im Lauf | der Lauf steht, diese Anlage ist nicht darin | Kaskaden- bzw. Stromplatz in der Simulationskonfiguration vergeben |
 | keine Menge | Lauf und Anlage stehen, die Menge des Laufs ist 0 | nichts — die 0 ist die richtige Zahl |
 | Arbeitspreis fehlt (Weg A) | die Menge steht, der Energieträger der Anlage führt keinen Arbeitspreis | Arbeitspreis in der Energieträgerverwaltung erfassen |
-| Strompreis fehlt (Weg B) | die Menge steht, das Projekt führt keinen Stromträger mit Arbeitspreis | Arbeitspreis des Stromträgers in der Energieträgerverwaltung erfassen |
+| Strompreis fehlt (Weg B) | die Menge steht, und der Stromträger, mit dem Weg B bewertet, führt keinen Arbeitspreis — an einer Stromanlage ihr eigener, sonst der des Projekts | Arbeitspreis des genannten Trägers in der Energieträgerverwaltung erfassen |
 
 Die Unterscheidung trifft der Bezugsgrößen-Auflöser, weil er Lauf, Anlagen und Preise ohnehin in der Hand hält;
 die Landkarte Art ↔ Gewerk beantwortet weiterhin, ob das Gewerk die Größe überhaupt kennt („die Bemessungsart
@@ -100,6 +100,8 @@ Endenergie je Komponente (EndenergieAufloeser)
   BHKW, Kessel   Bedarf = Σ Verbrauch × 1000          Kosten = Bedarf × Arbeitspreis(CarrierId)
   Elektrokessel  Bedarf = Σ (Waerme_Gas + Waerme_Oel) × 1000    Kosten = Bedarf × Strompreis
   Wärmepumpe     Bedarf = Σ (Stromverbrauch + Heizstab) × 1000   Kosten = Bedarf × Strompreis
+  Strompreis     = Arbeitspreis des EIGENEN Stromträgers der Anlage, sonst des Projektträgers
+                   (derselbe Preis bewertet Weg B: Betrag = Bedarf × Strompreis × Satz / 100)
   PV · Solarthermie · Speicher    null — nur Jahresbetrag zulässig
   Arbeitspreis = PreisArbeit / EffHi   (ohne Grund- und Leistungspreis)
 
@@ -110,10 +112,22 @@ Erlöse: IstErloes && wert > 0 → wert = −wert  (an drei Stellen identisch ge
 
 **Hilfsenergie-Definition (29.08.2026):** immer Strom, bemessen an der **Endenergie der Anlage** —
 Weg A: % der Endenergiekosten (BHKW, Kessel: Brennstoff × Trägerpreis; Wärmepumpe: Strom ×
-Bezugspreis) · Weg B: % des Endenergiebedarfs (kWh × Strombezugspreis) · Weg C: fester
+Bezugspreis) · Weg B: % des Endenergiebedarfs (kWh × Strompreis **der Anlage**) · Weg C: fester
 Jahresbetrag. Solarthermie, Puffer-, Stromspeicher und PV: **nur absolut**. Weg B braucht keine
 zweite Formel — der Auflöser übergibt den bewerteten Bedarf; die Sätze von A und B sind nicht
 austauschbar (Faktor ≈ 3,4, das Preisverhältnis Strom zu Brennstoff).
+
+**Welcher Strompreis Weg B bewertet, hängt an der ANLAGE** (Anwenderentscheid 19.09.2026).
+Bezieht die Anlage selbst Strom und trägt sie einen eigenen Stromträger — Wärmepumpe,
+Heizstab, Elektrokessel mit gesetzter `Tab_Energieanlagen.ID_Carrier` auf einen dem Projekt
+zugeordneten `ELECTRICITY`-Träger —, gilt dessen Arbeitspreis; sonst der des
+Projekt-Stromträgers (Rangfolge `ProjektEnergietraegerCtrl.StromTraegerDerAnlagen`). Für eine
+Stromanlage bewerten damit **Weg A und Weg B dieselbe Menge mit demselben Preis**; eine Anlage
+mit Brennstoffträger (BHKW, Heizkessel auf Gas oder Öl) bewertet ihre Hilfsenergie weiter mit
+dem Projekt-Stromträger, denn ihr eigener Träger ist Brennstoff. Die Erkennung „Träger vom Typ
+Strom" ist dieselbe wie in der Rangfolge (`ProjektEnergietraegerCtrl.EigeneStromTraeger`:
+Katalogzeile, Projektzuordnung, `pricing_model = 'ELECTRICITY'`) — ein Brennstoffträger fällt
+durch den Preismodellvergleich heraus, ohne dass nach dem Gewerk gefragt werden müsste.
 
 **Die Katalogvorlage „Standard" sät Weg B.** Hilfsenergie ist Strom, und die drei Gewerke mit einer
 Hilfsstrom-Position — BHKW, Heizkessel, Wärmepumpe — rechnen sie deshalb als Anteil des

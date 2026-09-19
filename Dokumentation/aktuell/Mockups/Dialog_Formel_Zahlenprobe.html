@@ -1066,7 +1066,7 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
             <td class="feld"><span class="f-eingabe links">Hilfsenergiekosten</span><span class="klein">Pflicht nach VDI 2067 · Empfehlung: 2,00 – 4,00 %</span></td>
             <td class="feld"><span class="f-combo">% der Endenergiekosten</span></td>
             <td class="feld r"><span class="f-eingabe num" title="Empfehlung: 2,00 – 4,00 %">2,00</span> <span class="f-einheit">%</span></td>
-            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 2,00 % von 312.631,20 €.">6.252,62<span class="klein">von 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom</span></td>
+            <td class="r num gerechnet" title="Aus Satz und Bezugsgröße des Projekts berechnet: 2,00 % von 312.631,20 €.">6.252,62<span class="klein">von 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom</span><span class="klein">Vorlage „Standard“: % des Endenergiebedarfs <span style="text-decoration:underline">übernehmen</span> <span class="zk umg">umgesetzt U40</span></span></td>
             <td></td>
             <td><span class="f-zknopf">±</span></td>
           </tr>
@@ -1101,6 +1101,10 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         „Pflichtposition, kann nicht gelöscht werden"; jeder Löschversuch antwortet „‹Position› ist eine Pflichtposition
         dieser Komponente und kann nicht gelöscht werden. Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen."
         Der Empfehlungsbereich steht als leise Zeile unter dem Satzfeld und zusätzlich in dessen Werkzeugtipp.
+        Weicht die Bemessung einer Position von der der Vorlage „Standard“ ab, steht unter der Herleitung
+        die Zeile „Vorlage ‚Standard‘: ‹Bemessung›“ mit dem Schalter „übernehmen“: Er setzt die Bemessung auf den
+        Wert der Vorlage, lässt Satz und Betrag stehen und rechnet Bezugsgröße und Herleitung neu.
+        Die Positionen eines Projekts folgen einer Vorlage nicht von selbst.
         Bemessungen der Klappliste beim Blockheizkraftwerk: fester Jahresbetrag · % der Investition · % der
         Endenergiekosten · % des Endenergiebedarfs · je kWh thermisch · je kWh elektrisch · je kW elektr. Leistung ·
         je kW Heizleistung · je kW elektrisch; die Altwerte „je kWh" und
