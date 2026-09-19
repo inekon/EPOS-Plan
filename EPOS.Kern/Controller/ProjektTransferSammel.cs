@@ -488,15 +488,32 @@ namespace WindowsFormsApplication1
                 basis + " (" + Guid.NewGuid().ToString("N").Substring(0, 6) + ")" + PAKET_ENDUNG);
         }
 
+        /// <summary>
+        /// Die Zeichen, die in KEINEM Paketnamen stehen dürfen — eine FESTE Liste,
+        /// nicht <c>Path.GetInvalidFileNameChars()</c>.
+        ///
+        /// <para><b>Warum fest.</b> Die Laufzeit antwortet je Plattform verschieden:
+        /// unter Linux und macOS gelten nur der Schrägstrich und das Nullzeichen als
+        /// verboten, unter Windows dazu Doppelpunkt, Anführungszeichen, Stern,
+        /// Fragezeichen, Senkrechtstrich, Kleiner- und Größerzeichen. Ein Paket, das
+        /// auf einem Mac „Haus: Nord.wpx“ hieße, ließe sich unter Windows nicht
+        /// einmal ablegen — und der Transfer ZWISCHEN Rechnern ist genau der Zweck
+        /// dieser Datei.</para>
+        /// </summary>
+        private static readonly char[] VERBOTENE_ZEICHEN =
+            { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
+
         /// <summary>Aus einem Projektnamen einen tragfähigen Dateinamenteil machen.</summary>
         private static string Dateinamenteil(string name)
         {
             string roh = (name ?? "").Trim();
             if (roh.Length == 0) roh = "Projekt";
 
-            var verboten = new HashSet<char>(Path.GetInvalidFileNameChars());
+            var verboten = new HashSet<char>(VERBOTENE_ZEICHEN);
+            foreach (char c in Path.GetInvalidFileNameChars()) verboten.Add(c);
+
             var sb = new System.Text.StringBuilder(roh.Length);
-            foreach (char c in roh) sb.Append(verboten.Contains(c) ? '_' : c);
+            foreach (char c in roh) sb.Append(verboten.Contains(c) || c < ' ' ? '_' : c);
 
             string sauber = sb.ToString().TrimEnd('.', ' ');
             if (sauber.Length == 0) sauber = "Projekt";
