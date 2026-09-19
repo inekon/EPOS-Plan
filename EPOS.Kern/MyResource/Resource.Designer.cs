@@ -31350,6 +31350,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt für diese Komponente keine Vorlage — Administration › Kosten › Kostenverwaltung. ähnelt.
+        /// </summary>
+        public static string KUEB_KATALOG_LEER {
+            get {
+                return ResourceManager.GetString("KUEB_KATALOG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellanlage: ähnelt.
         /// </summary>
         public static string KUEB_LBL_QUELLANLAGE {
@@ -31364,15 +31373,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KUEB_LBL_QUELLPROJEKT {
             get {
                 return ResourceManager.GetString("KUEB_LBL_QUELLPROJEKT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlage/Variante: ähnelt.
-        /// </summary>
-        public static string KUEB_LBL_QUELLVORLAGE {
-            get {
-                return ResourceManager.GetString("KUEB_LBL_QUELLVORLAGE", resourceCulture);
             }
         }
         
@@ -31395,11 +31395,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wird angelegt ähnelt.
+        /// </summary>
+        public static string KUEB_POS_NEU {
+            get {
+                return ResourceManager.GetString("KUEB_POS_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorhanden ähnelt.
+        /// </summary>
+        public static string KUEB_POS_VORHANDEN {
+            get {
+                return ResourceManager.GetString("KUEB_POS_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ziel ähnelt.
+        /// </summary>
+        public static string KUEB_SP_ZIEL {
+            get {
+                return ResourceManager.GetString("KUEB_SP_ZIEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Übernahme ins Projekt ähnelt.
         /// </summary>
         public static string KUEB_TITEL {
             get {
                 return ResourceManager.GetString("KUEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Vorlage führt keine Positionen. ähnelt.
+        /// </summary>
+        public static string KUEB_VORLAGE_LEER {
+            get {
+                return ResourceManager.GetString("KUEB_VORLAGE_LEER", resourceCulture);
             }
         }
         

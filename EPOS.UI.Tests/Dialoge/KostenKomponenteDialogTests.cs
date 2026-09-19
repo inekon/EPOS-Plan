@@ -870,6 +870,42 @@ public class KostenKomponenteDialogTests : BunitContext
     }
 
     /// <summary>
+    /// <b>ANWENDERENTSCHEID 19.09.2026:</b> Übernommen wird in die im Katalogblock
+    /// gewählte KATEGORIE — der Dialog schaltet danach auf sie um, sonst stünde die
+    /// Bestätigung über einer Liste, in der von der Übernahme nichts zu sehen ist.
+    /// </summary>
+    [Fact]
+    public void Nach_der_Uebernahme_zeigt_der_Dialog_die_Kategorie_der_Uebernahme()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.UebernahmeGaben, () =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>
+                {
+                    ["Zielprojekte"] = (IReadOnlyList<(int, string)>)new[] { (1, "Projekt") },
+                    ["InvestVorwahl"] = true,
+                    ["VorlagenZu"] = new Func<bool, IReadOnlyList<(int, string)>>(
+                        invest => invest ? new[] { (5, "Standard") } : new[] { (7, "Standard Betrieb") }),
+                    ["Vorschau"] = new Func<VorlagenUebernahmeWahl, VorlagenUebernahmeVorschau>(
+                        _ => new VorlagenUebernahmeVorschau("1 Position", true)),
+                    ["Uebernehmen"] = new Func<VorlagenUebernahmeWahl, VorlagenUebernahmeAntwort>(
+                        _ => new VorlagenUebernahmeAntwort(false, "angelegt"))
+                }));
+
+        Assert.True(_gefragt!.Invest);
+
+        cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[1].Click();   // Übernahme
+
+        // Die Kategorien der Überlagerung stehen als drittes und viertes Optionsfeld.
+        var optionen = cut.Find(".epos-ueberlagerung").QuerySelectorAll("input[type=radio]");
+        optionen[2].Change(true);                                               // Betriebskosten
+        cut.Find(".epos-ueberlagerung .epos-knopf--primaer").Click();           // OK
+
+        cut.WaitForAssertion(() => Assert.False(cut.Instance.UeberlagerungOffen));
+        Assert.False(_gefragt!.Invest);
+        Assert.Null(_gefragt.VarianteId);
+    }
+
+    /// <summary>
     /// Der GEGENFALL und damit die Grenze der Regel: Ein echter Kontextwechsel
     /// (andere Komponente, andere Kategorie, andere Variante) lädt OHNE Übertrag —
     /// dort ist das Verwerfen gewollt, die Zeilen des neuen Kontexts sind andere.
