@@ -189,3 +189,77 @@ nicht mehr zu prüfen.
   `Tab_ProjektWirtschaftlichkeit.Aufschlaege_Anwenden` aus dem Dump.
 - Er rührt **keinen Rechenweg** an. Entfernt wird ausschließlich, was zu keinem Projekt
   gehört und deshalb kein Rechenweg je gelesen hat.
+
+## 7 Nachtrag GL-1 — die vier Ganglinien-Schreibwege (19.09.2026)
+
+Schritt 96 hinterließ vier Stellen mit einem `OFFEN`-Vermerk: `SolarganglinieCtrl.Insert`,
+`StromganglinieCtrl.Insert`, `WaermebedarfCtrl.Insert` und
+`StromganglinieDatenCtrl.InsertKompletteGanglinie` schrieben `ID_Projekt` bis dahin still als
+Spaltenvorgabe 0 und seither ausdrücklich als `NULL`. Beides ist kein Projekt: Ein Filter nach
+`ID_Projekt` findet den Satz nicht, und die neue Kaskade nimmt ihn beim Löschen des Projekts
+nicht mit. Der Anwender hat das am 19.09.2026 als eigenen Auftrag herausgelöst („Altfehler
+beheben: Vier Ganglinien-Schreibwege").
+
+### 7.1 Befund: die vier Wege haben keinen Aufrufer mehr
+
+Die Suche nach Aufrufern ergab für alle vier Stellen **null Treffer** — auch keine
+Instanziierung der Controller. Was einmal an ihnen hing, ist inzwischen zweimal abgelöst
+worden:
+
+- **Katalogware** schreibt die AP5-Importkette seit iU9-W12 (Strom) und W9-E-3 (Wärmebedarf)
+  über `StromganglinieStammCtrl.ImportGanglinie` bzw. `WaermebedarfStammCtrl.ImportGanglinie`
+  in die `_STAMM`-Tabellen. Die Projekttabelle war dafür von Anfang an das falsche Ziel; die
+  vier Stromganglinien und drei Wärmebedarfe, die Schritt 96 als Waisen entfernt hat, waren
+  genau solche Katalogsätze am falschen Ort.
+- **Ins Projekt** kommt eine Ganglinie als Kopie über
+  `…StammCtrl.ApplyGanglinieToProjekt` → `CopyGanglinieToProjekt`. Dieser Weg setzt
+  `ID_Projekt` seit jeher und ist der, den die Bedienung heute nimmt.
+
+In der Testdatenbank steht nach Schritt 96 kein Satz der drei Projekttabellen ohne Projekt
+(23 Stromganglinien, 8 Wärmebedarfe, 0 Solarganglinien — alle mit gültiger Projektnummer).
+
+### 7.2 Umsetzung
+
+Jeder der vier Wege nimmt die Projektnummer als **Pflichtparameter** und schreibt sie:
+
+| Schreibweg | vorher | jetzt |
+|---|---|---|
+| `SolarganglinieCtrl.Insert` | `…, ID_Projekt, …) VALUES (?, NULL, ?, ?)` | `Insert(int idProjekt)`, `VALUES (?, ?, ?, ?)` |
+| `StromganglinieCtrl.Insert` | dito | `Insert(int idProjekt)` |
+| `WaermebedarfCtrl.Insert` | dito | `Insert(int idProjekt)` |
+| `StromganglinieDatenCtrl.InsertKompletteGanglinie` | dito (Kopfsatz) | dritter Parameter `int idProjekt` |
+
+Zwei Ablehnungen, beide **benannt**:
+
+- `idProjekt <= 0` → `ArgumentOutOfRangeException`, deren Text die `_STAMM`-Tabelle als
+  richtiges Ziel für Katalogware nennt. Die Prüfung steht **vor** dem stillen „keine Werte,
+  also nichts zu tun" von `InsertKompletteGanglinie`.
+- Ein Projekt, das es nicht gibt, weist der Fremdschlüssel aus Schritt 96 ab; der Schreibweg
+  meldet den Datenbankfehler über `DataRepository.FehlerMelden` und gibt `false` zurück. Die
+  Tabelle bleibt unverändert.
+
+Der Kopfkommentar von `PreisreiheCtrl`, der `StromganglinieCtrl.Insert` als Stolperstelle
+nannte, ist nachgezogen.
+
+### 7.3 Nachweis
+
+`EPOS.Kern.Tests/GanglinienProjektSchreibwegTests` — neun Fälle: je Tabelle ein Satz mit
+Projekt, der über `ID_Projekt` gefunden wird; Kopf und Werte in einer Transaktion, beide
+folgen dem Löschweg des Projekts; die vier Wege weisen `0` und `-1` benannt ab (Theorie mit
+zwei Werten); ein unbekanntes Projekt wird vom Fremdschlüssel abgewiesen, drei Meldungen mit
+`FOREIGN KEY`, Zeilenzahlen unverändert; Katalogware landet in `_STAMM` und kommt erst als
+Kopie mit Projektnummer ins Projekt; und eine Wache, dass keine der drei Projekttabellen einen
+Satz ohne Projekt führt.
+
+### 7.4 Was GL-1 nicht tut
+
+- Er **entfernt die vier Controller nicht**, obwohl sie keinen Aufrufer haben. Die Falle ist
+  zu; ob der Altbestand fällt, entscheidet der Anwender (offener Punkt).
+- Er rührt `ReadAll`, `ReadSingle` und `Delete` dieser Controller **nicht** an. Sie arbeiten
+  weiter über alle Projekte hinweg — `Delete(bezeichner)` löscht jeden gleichnamigen Satz,
+  gleich welchem Projekt er gehört. Ohne Aufrufer ist das heute folgenlos; mit dem ersten
+  Aufrufer wäre es ein eigener Auftrag.
+- Er ändert **die Testdatenbank nicht** und **keinen Rechenweg**: Referenzlauf der fünf
+  CI-Projekte gegen R9: GESAMT PASS.
+- `BrauchwasserCtrl.Insert` und `HeizkesselCtrl.Insert` bleiben, wie sie sind — sie scheitern
+  seit jeher und werden von niemandem gerufen; sie gehörten nicht zum Auftrag.

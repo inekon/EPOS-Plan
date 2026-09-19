@@ -40,8 +40,36 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool Insert()
+        /// <summary>
+        /// Legt einen Solarthermieganglinien-KOPF im PROJEKT an (GL-1).
+        ///
+        /// <para><b>Das Projekt ist Pflicht.</b> <c>Tab_Solarganglinie</c> ist eine
+        /// Projekttabelle; ihre Spalte <c>ID_Projekt</c> traegt seit Schemaschritt 96
+        /// einen Fremdschluessel auf <c>Tab_Projekt</c>. Ein Kopfsatz ohne Projekt ist
+        /// ueber <c>ID_Projekt</c> nicht auffindbar, wird vom Loeschweg des Projekts
+        /// nicht mitgenommen und war schon vor dem Fremdschluessel als „0" ein nicht
+        /// gesetzter Wert, kein Projekt.</para>
+        ///
+        /// <para><b>Katalogware gehoert nicht hierher.</b> Eine Ganglinie OHNE Projekt
+        /// ist ein Auslieferungs- oder Anwenderkatalogsatz und wird ueber
+        /// <see cref="SolarganglinieStammCtrl"/> nach <c>Tab_Solarganglinie_STAMM</c>
+        /// geschrieben; in ein Projekt kommt sie erst als Kopie. Deshalb wird ein
+        /// Aufruf ohne gueltige Projektnummer hier BENANNT abgewiesen statt still mit
+        /// NULL gespeichert.</para>
+        /// </summary>
+        /// <param name="idProjekt">Das Projekt, dem der Kopfsatz gehoert; &gt; 0.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="idProjekt"/> ist 0 oder kleiner.
+        /// </exception>
+        public bool Insert(int idProjekt)
         {
+            if (idProjekt <= 0)
+                throw new ArgumentOutOfRangeException(
+                    nameof(idProjekt),
+                    "Eine Solarthermieganglinie wird nur MIT Projekt in Tab_Solarganglinie " +
+                    "geschrieben. Katalogware gehoert nach Tab_Solarganglinie_STAMM " +
+                    "(SolarganglinieStammCtrl).");
+
             try
             {
                 // Ermittlung der nächsten ID über das Repository (Ersatz für sequenzielle Reader)
@@ -62,18 +90,16 @@ namespace WindowsFormsApplication1
 
                 // Umstellung auf das standardkonforme und sichere VALUES-Statement
                 //
-                // ID_Projekt AUSDRUECKLICH NULL statt stillschweigend DEFAULT 0
-                // (Schemaschritt 96). Der Kopfsatz entsteht hier ohne Projekt - die
-                // Zuordnung leistet Z_ProjektSolarganglinie -, und die 0 war nie ein
-                // Projekt, sondern ein nicht gesetzter Wert. Seit die Spalte einen
-                // Fremdschluessel auf Tab_Projekt traegt, wiese die Datenbank die 0 ab;
-                // NULL heisst "keins" und wird von jeder Beziehung durchgelassen.
-                // OFFEN: Wer diesen Weg benutzt, sollte das Projekt mitgeben - ein
-                // Filter nach ID_Projekt findet den Satz sonst nicht (eigener Auftrag).
-                string sql = "INSERT INTO Tab_Solarganglinie (ID, ID_Projekt, Bezeichner, Beschreibung) VALUES (?, NULL, ?, ?)";
+                // ID_Projekt kommt als PARAMETER herein (GL-1). Ein unbekanntes Projekt
+                // weist die Datenbank ueber den Fremdschluessel aus Schemaschritt 96 ab;
+                // der Fang unten meldet das und gibt false zurueck.
+                string sql = "INSERT INTO Tab_Solarganglinie (ID, ID_Projekt, Bezeichner, Beschreibung) VALUES (?, ?, ?, ?)";
 
                 DbParam paramId = new DbParam("@id", DbParamTyp.Integer);
                 paramId.Wert = m_ID_Ganglinie;
+
+                DbParam paramProjekt = new DbParam("@proj", DbParamTyp.Integer);
+                paramProjekt.Wert = idProjekt;
 
                 DbParam paramBez = new DbParam("@bez", DbParamTyp.VarWChar);
                 paramBez.Wert = m_szBezeichner ?? (object)DBNull.Value;
@@ -81,7 +107,7 @@ namespace WindowsFormsApplication1
                 DbParam paramBeschr = new DbParam("@beschr", DbParamTyp.VarWChar);
                 paramBeschr.Wert = m_szBeschreibung ?? (object)DBNull.Value;
 
-                DbParam[] ps = { paramId, paramBez, paramBeschr };
+                DbParam[] ps = { paramId, paramProjekt, paramBez, paramBeschr };
 
                 return DataRepository.ExecuteSQL(sql, ps);
             }
