@@ -1,6 +1,6 @@
 # Wirtschaftlichkeit und Kosten — Rechenwege und Zahlenprobe
 
-Führende Fassung: `../Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`.
+Führende Fassung: `Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` in diesem Ordner.
 
 Dieser Ordner enthält das **Funktionsbild** der Kostendialoge und der Ergebnisseite sowie zu jeder
 Kostenkategorie den **dokumentierten Rechenweg** — Formel, Rechtsgrundlage, Codestelle und eine
