@@ -42,7 +42,7 @@ Preisen ergeben keine gemeinsame Bezugsgröße.
 |---|---|---|---|---|
 | Wartung BHKW — Pflicht · Empfehlung 0,02–0,04 €/kWh | je kWh elektrisch | 0,0280 €/kWh | 1.650.000,00 kWh · BHKW 1 | 46.200,00 |
 | Instandhaltung BHKW — Pflicht · Empfehlung 1,00–2,00 % | % der Investition | 1,50 % | 240.772,40 € · Investition BHKW 1 | 3.611,59 |
-| Hilfsenergiekosten — Pflicht · Empfehlung 2,00–4,00 % | % der Endenergiekosten | 2,00 % | 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom | 6.252,62 |
+| Hilfsenergiekosten — Pflicht · Empfehlung 2,00–4,00 % | % der Endenergiekosten (in dieser Position gewählt) | 2,00 % | 312.631,20 € Endenergiekosten · BHKW 1 → 21.710 kWh Strom | 6.252,62 |
 | Versicherung | fester Jahresbetrag | 1.100,00 €/a | — (Satz = Betrag) | 1.100,00 |
 | **Summe Betriebskosten netto** | | | brutto 68.025,41 €/a | **57.164,21** |
 
@@ -64,7 +64,8 @@ ohne sie dastehen, und jeder verlangt einen anderen Handgriff:
 | kein Simulationslauf | das Projekt führt kein gespeichertes Ergebnis | Simulation starten |
 | Anlage nicht im Lauf | der Lauf steht, diese Anlage ist nicht darin | Kaskaden- bzw. Stromplatz in der Simulationskonfiguration vergeben |
 | keine Menge | Lauf und Anlage stehen, die Menge des Laufs ist 0 | nichts — die 0 ist die richtige Zahl |
-| Arbeitspreis fehlt | die Menge steht, der Energieträger führt keinen Arbeitspreis | Arbeitspreis in der Energieträgerverwaltung erfassen |
+| Arbeitspreis fehlt (Weg A) | die Menge steht, der Energieträger der Anlage führt keinen Arbeitspreis | Arbeitspreis in der Energieträgerverwaltung erfassen |
+| Strompreis fehlt (Weg B) | die Menge steht, das Projekt führt keinen Stromträger mit Arbeitspreis | Arbeitspreis des Stromträgers in der Energieträgerverwaltung erfassen |
 
 Die Unterscheidung trifft der Bezugsgrößen-Auflöser, weil er Lauf, Anlagen und Preise ohnehin in der Hand hält;
 die Landkarte Art ↔ Gewerk beantwortet weiterhin, ob das Gewerk die Größe überhaupt kennt („die Bemessungsart
@@ -109,10 +110,17 @@ Erlöse: IstErloes && wert > 0 → wert = −wert  (an drei Stellen identisch ge
 
 **Hilfsenergie-Definition (29.08.2026):** immer Strom, bemessen an der **Endenergie der Anlage** —
 Weg A: % der Endenergiekosten (BHKW, Kessel: Brennstoff × Trägerpreis; Wärmepumpe: Strom ×
-Bezugspreis) · Weg B: % des Endenergiebedarfs (kWh) · Weg C: fester Jahresbetrag. Solarthermie,
-Puffer-, Stromspeicher und PV: **nur absolut**. Weg B braucht keine zweite Formel — der Auflöser
-übergibt den bewerteten Bedarf; die Sätze von A und B sind nicht austauschbar (Faktor ≈ 3,4, das
-Preisverhältnis Strom zu Brennstoff).
+Bezugspreis) · Weg B: % des Endenergiebedarfs (kWh × Strombezugspreis) · Weg C: fester
+Jahresbetrag. Solarthermie, Puffer-, Stromspeicher und PV: **nur absolut**. Weg B braucht keine
+zweite Formel — der Auflöser übergibt den bewerteten Bedarf; die Sätze von A und B sind nicht
+austauschbar (Faktor ≈ 3,4, das Preisverhältnis Strom zu Brennstoff).
+
+**Die Katalogvorlage „Standard" sät Weg B.** Hilfsenergie ist Strom, und die drei Gewerke mit einer
+Hilfsstrom-Position — BHKW, Heizkessel, Wärmepumpe — rechnen sie deshalb als Anteil des
+Endenergiebedarfs, bewertet mit dem **Strompreis** des Projekts; die vier übrigen (Solarthermie,
+Pufferspeicher, PV, Stromspeicher) tragen einen festen Jahresbetrag. Weg A bleibt in jeder Position
+wählbar. Eine Projektposition behält die Bemessung, mit der sie erfasst wurde — die Vorlage wirkt
+erst bei der nächsten Übernahme.
 
 **Basis „% der Investition" auf der Betriebsseite** (`InvestSummeFuer`): `SUM(EingegebenerWert)`
 Kategorie 1 ohne Zuschuss, stufig Anlage → Komponente → Projekt, **vor** Zuschussabzug —
