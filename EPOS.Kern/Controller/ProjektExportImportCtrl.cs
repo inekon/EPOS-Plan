@@ -128,7 +128,7 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    var plan = _dup.ErmittlePlan();
+                    var plan = Transferplan();
                     List<TabMeta> manifestTabellen;
                     var katalogRefs = new Dictionary<string, HashSet<long>>(StringComparer.OrdinalIgnoreCase);
 
@@ -211,6 +211,13 @@ namespace WindowsFormsApplication1
 
                         manifestTabellen = BaumSchreiben(srcId, "data/");
 
+                        // § 2.16: Welche Projekte reisen in DIESEM Paket? Die Beilage
+                        // unten fragt danach — sie entsteht nur für eine Variante, deren
+                        // Stamm NICHT mitreist. Eine Liste, keine Menge: die Reihenfolge
+                        // bestimmt die Nummern der Beilagen und muss bestimmt sein.
+                        var imPaket = new List<KeyValuePair<string, int>>
+                        { new KeyValuePair<string, int>(projektName, srcId) };
+
                         // T3: Varianten-Bäume + Verknüpfungen fürs Manifest.
                         var varMetas = new List<VarMeta>();
                         var links = new List<LinkMeta>();
@@ -231,6 +238,7 @@ namespace WindowsFormsApplication1
                             if (vid <= 0 || vid == srcId) continue;
                             var vTabellen = BaumSchreiben(vid, "projects/" + lauf + "/data/");
                             varMetas.Add(new VarMeta { name = vName, tables = vTabellen });
+                            imPaket.Add(new KeyValuePair<string, int>(vName, vid));
                             DataTable lnk = DataRepository.GetDataTable(
                                 "SELECT Variantenname FROM Tab_Variante WHERE ID_Projekt = " + vid);
                             links.Add(new LinkMeta
@@ -242,6 +250,8 @@ namespace WindowsFormsApplication1
                             });
                             lauf++;
                         }
+
+                        var pvBeilagen = PvStammBeilagenSchreiben(zip, imPaket);
 
                         var katalogMeta = new List<KatMeta>();
                         foreach (var kv in katalogRefs)
@@ -286,7 +296,8 @@ namespace WindowsFormsApplication1
                             catalogs = katalogMeta,
                             fill = fuellMeta,
                             variants = varMetas,
-                            variantLinks = links
+                            variantLinks = links,
+                            pvVerguetungStamm = pvBeilagen
                         };
                         WriteEntry(zip, "manifest.json",
                             JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true }));
@@ -303,6 +314,112 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Der Plan des TRANSFERS: der Kopierplan des Duplizierers, ergänzt um
+        /// <c>Tab_ProjektPhotovoltaik</c>.
+        ///
+        /// <para><b>Warum genau diese eine Ergänzung.</b> Der Duplizierer lässt die
+        /// Tabelle bewusst aus (Konzept § 2.16): Eine neu angelegte Variante soll die
+        /// Vergütung ihres Stamms ÜBERNEHMEN, nicht als eingefrorene Kopie des
+        /// Anlegetags erben — Stamm und Variante liegen dabei in DERSELBEN Datenbank,
+        /// der Stamm ist also da. Ein Transfer trägt das Projekt in eine ANDERE
+        /// Datenbank; dort gibt es nichts zu übernehmen. Ohne die Tabelle verlöre
+        /// jedes transferierte Projekt seine Vergütung still — auch ein Stammprojekt,
+        /// das gar keine Wahl hat.</para>
+        ///
+        /// <para>Die Ausnahmeliste des Duplizierers bleibt unberührt: Kopierlauf und
+        /// Transfer sind zwei Vorgänge mit zwei Begründungen.</para>
+        /// </summary>
+        internal List<ProjektDuplizierenCtrl.Spec> Transferplan()
+        {
+            var plan = _dup.ErmittlePlan();
+            string tab = SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK;
+
+            foreach (var s in plan)
+                if (string.Equals(s.Tabelle, tab, StringComparison.OrdinalIgnoreCase)) return plan;
+
+            var spalten = new List<string>();
+            try
+            {
+                DataTable leer = DataRepository.GetDataTable("SELECT * FROM [" + tab + "] WHERE 1 = 0");
+                if (leer == null) return plan;                 // Datenbank ohne die Tabelle
+                foreach (DataColumn c in leer.Columns) spalten.Add(c.ColumnName);
+            }
+            catch { return plan; }
+            if (spalten.Count == 0) return plan;
+
+            plan.Add(new ProjektDuplizierenCtrl.Spec
+            {
+                Tabelle = tab,
+                Pk = "ID",
+                Filter = "[ID_Projekt] = {0}",
+                Cols = spalten
+            });
+            return plan;
+        }
+
+        // ---- § 2.16: die Vergütung des Stamms als BEILAGE ----------------------------------
+
+        /// <summary>
+        /// Schreibt für jede übernehmende Variante des Pakets, deren Stammprojekt NICHT
+        /// mitreist, die geltende Vergütungszeile des Stamms als eigenen Paketabschnitt
+        /// (<c>pvstamm/&lt;i&gt;.json</c>) und liefert die Manifestliste dazu.
+        ///
+        /// <para><b>Warum eine Beilage und keine Tabellenzeile.</b> Die Zeile gehört dem
+        /// STAMM (<c>ID_Projekt</c> des Stamms), und der Stamm reist nicht mit — als
+        /// Zeile der Tabelle <c>Tab_ProjektPhotovoltaik</c> käme sie am Ziel entweder auf
+        /// ein fremdes Projekt oder gar nicht an. Als eigener Abschnitt trägt sie ihren
+        /// Bezug im Manifest: „diese Werte gelten für jenes Projekt des Pakets".</para>
+        ///
+        /// <para><b>Wann es keine Beilage gibt</b> — jedes Mal ohne Verlust: das Projekt
+        /// ist kein Variantenstand; sein Stamm reist mit (Variantenbaum, die Wahl löst
+        /// sich am Ziel von selbst auf); die Variante führt EIGENE Werte (sie hängt nicht
+        /// am Stamm); dem Stamm fehlt eine aktive Zeile (beide rechnen Flat — es ist
+        /// nichts zu übernehmen).</para>
+        /// </summary>
+        private static List<PvStammMeta> PvStammBeilagenSchreiben(
+            ZipArchive zip, List<KeyValuePair<string, int>> imPaket)
+        {
+            var beilagen = new List<PvStammMeta>();
+
+            foreach (var kv in imPaket)
+            {
+                int idStamm;
+                try { idStamm = new VariantenCtrl().StammRefDerVariante(kv.Value); }
+                catch { continue; }
+                if (idStamm <= 0 || idStamm == kv.Value) continue;      // kein Variantenstand
+
+                bool stammReistMit = false;
+                foreach (var andere in imPaket)
+                    if (andere.Value == idStamm) { stammReistMit = true; break; }
+                if (stammReistMit) continue;
+
+                PvVerguetungStand stand;
+                try { stand = new ProjektPhotovoltaikCtrl().LiesAufgeloest(kv.Value); }
+                catch { continue; }
+                if (!stand.Uebernommen || !stand.Aktiv) continue;       // eigene Werte bzw. nichts Aktives
+
+                DataTable pv;
+                try
+                {
+                    pv = DataRepository.GetDataTable(
+                        "SELECT * FROM [" + SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK + "] WHERE ID_Projekt = ?",
+                        new DbParam("@p", idStamm));
+                }
+                catch { continue; }
+                if (pv == null || pv.Rows.Count == 0) continue;
+
+                WriteEntry(zip, "pvstamm/" + beilagen.Count + ".json", RowsToJson(pv));
+                beilagen.Add(new PvStammMeta
+                {
+                    projekt = kv.Key,
+                    stamm = StartseiteCtrl.Projektname(idStamm)
+                });
+            }
+
+            return beilagen;
+        }
+
         // ===================================================================================
         //  IMPORT
         // ===================================================================================
@@ -315,6 +432,8 @@ namespace WindowsFormsApplication1
             var variantRows = new List<Dictionary<string, List<Dictionary<string, JsonElement>>>>();
             var catalogRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>();
             var fillRows = new Dictionary<string, List<Dictionary<string, JsonElement>>>();
+            // § 2.16: je Manifesteintrag pvVerguetungStamm die Zeilen aus pvstamm/<i>.json.
+            var pvStammZeilen = new List<List<Dictionary<string, JsonElement>>>();
 
             using (var zip = ZipFile.OpenRead(quellPfad))
             {
@@ -348,6 +467,16 @@ namespace WindowsFormsApplication1
                     catalogRows[k.name] = LiesZeilen(ReadEntry(zip, "catalogs/" + k.name + ".json"));
                 foreach (var k in man.fill ?? new List<KatMeta>())
                     fillRows[k.name] = LiesZeilen(ReadEntry(zip, "fill/" + k.name + ".json"));
+
+                // § 2.16: die Beilagen. Ein ALTPAKET führt den Abschnitt nicht — dann
+                // bleibt die Liste leer, und der Import läuft wie zuvor.
+                for (int pi = 0; pi < (man.pvVerguetungStamm?.Count ?? 0); pi++)
+                {
+                    string roh = ReadEntry(zip, "pvstamm/" + pi + ".json");
+                    pvStammZeilen.Add(string.IsNullOrEmpty(roh)
+                        ? new List<Dictionary<string, JsonElement>>()
+                        : LiesZeilen(roh));
+                }
             }
 
             // Zielnamen / Konfliktbehandlung bestimmen.
@@ -464,6 +593,11 @@ namespace WindowsFormsApplication1
                             {
                                 berichte.Add("Hinweis: Verknüpfung \u201E" + link.projekt + "\u201C -> \u201E" + link.stamm +
                                              "\u201C nicht herstellbar (Stamm nicht im Paket und nicht am Ziel) - das Projekt steht eigenständig.");
+                                // § 2.16: Ohne Stamm übernimmt die Variante ins Leere —
+                                // die Beilage rettet ihre Vergütung, sonst wird der
+                                // Flat-Pfad benannt statt still gerechnet.
+                                PvStammBeilageEinspielen(v, pId, link.projekt,
+                                                         man.pvVerguetungStamm, pvStammZeilen, berichte);
                                 continue;
                             }
                             int neuVid;
@@ -514,6 +648,143 @@ namespace WindowsFormsApplication1
                     fehler = ex.Message; return -1;
                 }
             }
+        }
+
+        // ---- § 2.16: die Beilage am Ziel ---------------------------------------------------
+
+        /// <summary>
+        /// Die importierte Variante hat am Ziel KEINEN Stamm gefunden. Übernimmt sie
+        /// dessen PV-Vergütung, dann gilt für sie ab jetzt gar keine — sie rechnete
+        /// still den flachen Einspeisesatz. Genau das löst diese Stelle auf:
+        ///
+        /// <list type="bullet">
+        ///   <item><description>Das Paket führt die <b>Beilage</b> → ihre Werte werden
+        ///     zur EIGENEN Zeile der Variante (<c>Uebernahme_Stamm = 0</c>, umgeschlüsselt
+        ///     auf die neue Projekt-Id, alle Spalten der Schnittmenge); der Bericht nennt
+        ///     es.</description></item>
+        ///   <item><description>Das Paket führt <b>keine</b> Beilage → die Variante bleibt
+        ///     ohne Zeile, und der Bericht nennt den Flat-Pfad. Die Kohärenzprüfung
+        ///     (§ 3.9) wiederholt ihn bei jedem Lauf.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Eine eigene, geltende Zeile bleibt unberührt.</b> Sie hing nie am
+        /// Stamm; die Beilage wäre für sie eine fremde Vergütung. Und steht die
+        /// Verknüpfung (Stamm im Paket oder am Ziel), kommt diese Stelle gar nicht
+        /// zum Zuge — dann übernimmt die Variante wie zuvor.</para>
+        ///
+        /// <para>Läuft in der Transaktion des Imports: Scheitert das Einfügen, meldet es
+        /// der Bericht, und der Import bleibt heil.</para>
+        /// </summary>
+        private void PvStammBeilageEinspielen(DbVorgang v, int idProjekt, string quellName,
+            List<PvStammMeta> beilagen, List<List<Dictionary<string, JsonElement>>> zeilen,
+            List<string> berichte)
+        {
+            if (idProjekt <= 0) return;
+
+            string tab = SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK;
+            string spalteWahl = SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM;
+            Dictionary<string, Type> zielTypen = ZielTypen(tab);
+            if (zielTypen == null) return;               // Zieldatenbank ohne die Tabelle
+
+            // Übernimmt das importierte Projekt überhaupt? Keine Zeile heißt übernehmen.
+            bool uebernimmt = true;
+            try
+            {
+                DataTable eigen = v.Lese("SELECT * FROM [" + tab + "] WHERE ID_Projekt = ?",
+                                         new DbParam("@p", idProjekt));
+                if (eigen != null && eigen.Rows.Count > 0 && eigen.Columns.Contains(spalteWahl))
+                {
+                    object wahl = eigen.Rows[0][spalteWahl];
+                    uebernimmt = wahl != DBNull.Value && Convert.ToInt32(wahl) == 1;
+                }
+                else if (eigen != null && eigen.Rows.Count > 0)
+                {
+                    uebernimmt = false;                  // Zeile ohne Spalte = eigene Werte
+                }
+            }
+            catch { return; }
+            if (!uebernimmt) return;
+
+            Dictionary<string, JsonElement> zeile = null;
+            string stammName = null;
+            for (int i = 0; beilagen != null && i < beilagen.Count && i < zeilen.Count; i++)
+                if (string.Equals(beilagen[i].projekt ?? "", quellName ?? "", StringComparison.OrdinalIgnoreCase)
+                    && zeilen[i].Count > 0)
+                { zeile = zeilen[i][0]; stammName = beilagen[i].stamm; break; }
+
+            if (zeile == null)
+            {
+                berichte.Add(T("TRANSFER_PV_OHNE_BEILAGE",
+                    "Hinweis: Das Projekt übernimmt die PV-Vergütung seines Stammprojekts; " +
+                    "das Paket führt sie nicht mit - es gilt keine Vergütungszeile, " +
+                    "gerechnet wird der flache Einspeisesatz."));
+                return;
+            }
+
+            try
+            {
+                v.Ausfuehren("DELETE FROM [" + tab + "] WHERE ID_Projekt = ?",
+                             new DbParam("@p", idProjekt));
+
+                object max = v.Skalar("SELECT MAX(ID) FROM [" + tab + "]");
+                int neueId = ((max == null || max == DBNull.Value) ? 0 : Convert.ToInt32(max)) + 1;
+
+                var cols = new List<string>(); var ph = new List<string>();
+                var vals = new List<object>(); var typen = new List<Type>();
+                bool wahlGesetzt = false;
+                int q = 0;
+                foreach (var kv in zeile)
+                {
+                    if (!zielTypen.ContainsKey(kv.Key)) continue;   // Spalte gibt es im Ziel nicht
+                    object wert;
+                    if (kv.Key.Equals("ID", StringComparison.OrdinalIgnoreCase)) wert = neueId;
+                    else if (kv.Key.Equals("ID_Projekt", StringComparison.OrdinalIgnoreCase)) wert = idProjekt;
+                    else if (kv.Key.Equals(spalteWahl, StringComparison.OrdinalIgnoreCase))
+                    { wert = 0; wahlGesetzt = true; }
+                    else wert = JsonToObject(kv.Value);
+
+                    cols.Add("[" + kv.Key + "]"); ph.Add("@p" + (q++));
+                    vals.Add(wert); typen.Add(zielTypen[kv.Key]);
+                }
+
+                // Ein Paket von vor dem Schemaschritt führt die Spalte nicht — die Wahl
+                // wird hier trotzdem ausdrücklich geschrieben: es sind eigene Werte.
+                if (!wahlGesetzt && zielTypen.ContainsKey(spalteWahl))
+                {
+                    cols.Add("[" + spalteWahl + "]"); ph.Add("@p" + (q++));
+                    vals.Add(0); typen.Add(zielTypen[spalteWahl]);
+                }
+                if (cols.Count == 0) return;
+
+                Exception err = FuehreInsertAus(tab, cols, ph, vals, typen, v);
+                if (err != null)
+                {
+                    berichte.Add("Hinweis: Die Vergütung des Stammprojekts konnte nicht " +
+                                 "übernommen werden: " + err.Message);
+                    return;
+                }
+
+                berichte.Add(string.Format(
+                    T("TRANSFER_PV_BEILAGE",
+                      "Vergütung des Stammprojekts \u201E{0}\u201C als eigene Werte übernommen."),
+                    stammName ?? ""));
+            }
+            catch (Exception ex)
+            {
+                berichte.Add("Hinweis: Die Vergütung des Stammprojekts konnte nicht " +
+                             "übernommen werden: " + ex.Message);
+            }
+        }
+
+        /// <summary>Ressourcentext mit deutschem Rückfall — das Hausmuster der Controller.</summary>
+        private static string T(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch { return rueckfall; }
         }
 
         // ---- T3: EIN Projektbaum (Tabellenliste + Zeilen) unter zielName einfügen ----------
@@ -841,7 +1112,10 @@ namespace WindowsFormsApplication1
         // ---- Vorhandenes Projekt löschen (Überschreiben) -----------------------------------
         private void LoescheProjekt(DbVorgang v, int projektId)
         {
-            var plan = _dup.ErmittlePlan();
+            // Derselbe Plan wie der Export — sonst bliebe beim Überschreiben genau die
+            // Zeile stehen, die er zusätzlich mitnimmt (§ 2.16), und der eindeutige
+            // Index idx_ProjektPhotovoltaik ließe den Import scheitern.
+            var plan = Transferplan();
             plan.Reverse();  // Kinder zuerst löschen (Plan ist Eltern-zuerst sortiert)
             foreach (var s in plan)
             {
@@ -1223,6 +1497,7 @@ namespace WindowsFormsApplication1
             public List<KatMeta> fill { get; set; }   // per Original-ID aufzufüllende Katalogzeilen
             public List<VarMeta> variants { get; set; }        // T3: Varianten-Bäume (projects/<i>/data/)
             public List<LinkMeta> variantLinks { get; set; }   // T3: Stamm-Verknüpfungen (statt Tab_Variante-Zeilen)
+            public List<PvStammMeta> pvVerguetungStamm { get; set; }   // § 2.16: Beilagen (pvstamm/<i>.json)
         }
         private class Fk { public string Col; public string RefTab; public string RefCol; }
 
@@ -1279,5 +1554,10 @@ namespace WindowsFormsApplication1
         private class VarMeta { public string name { get; set; } public List<TabMeta> tables { get; set; } }
         private class LinkMeta { public string projekt { get; set; } public string stamm { get; set; } public string variantenname { get; set; } }
         private class KatMeta { public string name { get; set; } public string pk { get; set; } public string[] naturalKey { get; set; } }
+
+        /// <summary>§ 2.16: „Die Zeile in <c>pvstamm/&lt;i&gt;.json</c> ist die Vergütung
+        /// des Stammprojekts <c>stamm</c> und gilt für das Paketprojekt <c>projekt</c>."
+        /// Der Stamm selbst reist nicht mit; sein Name ist nur die Herkunftsangabe.</summary>
+        private class PvStammMeta { public string projekt { get; set; } public string stamm { get; set; } }
     }
 }
