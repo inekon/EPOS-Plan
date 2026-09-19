@@ -206,7 +206,10 @@ zugeschnitten wird im Stilblatt (`epos-kachel-bild--ausschnitt`); ein Bild ist D
 baut ein eigenes `<input>`. `Aktiv` sperrt, ohne auszublenden; `Feldname`/`FehlerZustand` melden,
 an welchem Feld eine Prüfung hängt; `Dateiwahl` bekommt die Wähler als Delegaten. **Die Liste am
 `Auswahlfeld` gehört dem Wirt** und schuldet je Wert einen Eintrag, stabile Ids (gemeldet wird
-die **Id**) und den gespeicherten Wert als Eintrag.
+die **Id**) und den gespeicherten Wert als Eintrag. **Eine lange Liste bekommt `Suchauswahl`**
+— dasselbe Id-Versprechen, dazu Tippfilter, Tastaturführung (↑ ↓ Enter Esc) und das Schließen
+über eine Schließfläche; **kein `<datalist>`** (es trägt keine Id, führt keine Tastatur und
+sieht je Browser anders aus).
 
 **`Dienste/`** — die einzigen Nähte nach außen: `IHilfeDienst` (Hilfe zu einem Schlüssel),
 `IProjektQuelle` (Daten der Seiten) und `INavigationsZiel` (was ein Plattformadapter zum Öffnen

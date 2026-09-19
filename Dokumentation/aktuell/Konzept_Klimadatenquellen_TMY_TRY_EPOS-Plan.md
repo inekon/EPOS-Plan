@@ -48,7 +48,54 @@ Im Dialog **Klimadaten** steht über der Gruppe „Standort" die Gruppe **Klimaq
    die Meldung nennt die Quelle, bei den Regionaldaten zusätzlich Region, Koordinate,
    Entfernung, Szenario und Jahr.
 
-Der Lauf ist abbrechbar. Eine Region desselben Namens wird benannt abgelehnt.
+Der Lauf ist abbrechbar. Eine Region desselben Namens wird benannt abgelehnt — und genau
+das ist der Schutz vor einem Doppelimport: Die Eingabefelder bleiben nach einem Erfolg
+stehen, damit „Daten einlesen" für den nächsten Ort bedienbar bleibt.
+
+**Die Knöpfe stehen in EINER Fußleiste** unter dem Rahmen: `Daten einlesen · Füller ·
+Löschen · Beenden`, Beenden hervorgehoben — dasselbe Muster wie in den Katalogdialogen.
+„Durchsuchen" ist kein Knopf der Fußleiste, sondern steht neben seinem Feld: Die Blöcke
+Klimaquelle und Standort stehen im einspaltigen Formularraster, das Beschriftung, Feld und
+Knopf in eine Zeile setzt.
+
+### 2.1 Die Regionsliste
+
+Links steht die **Katalogliste des Hauses** — derselbe Baustein wie in den vierzehn anderen
+Katalogen, mit Suchfeld über alle Spalten, Trichter und Sortierpfeil im Spaltenkopf und der
+Trefferzahl. Sieben Spalten:
+
+| Spalte | Inhalt |
+|---|---|
+| Klimaregion | der Bezeichner; er bleibt der Schlüssel jeder Aktion (Ansicht, Löschen) |
+| Quelle | PVGIS, DWD-Testreferenzjahr aus Datei oder TRY-Regionaldaten — dieselben Worte wie in der Gruppe „Klimaquelle" |
+| Standort | der Ortsname aus `Details`, wo einer steht; sonst das Koordinatenpaar |
+| Longitude, Latitude | Grad mit vier Nachkommastellen (rund 11 m), als **Zahl** sortierbar und filterbar |
+| Importdatum | ISO `yyyy-MM-dd` — als **Text** geführt, weil ISO als Zeichenkette in der Reihenfolge des Datums sortiert und „enthält 2026-09" damit zum Monatsfilter wird |
+| Schreibschutz | Ja/Nein; ein Satz der Auslieferung lässt sich nicht löschen |
+
+**Kein Vergleichsknopf:** Eine Klimaregion ist kein Gerät mit Kennwerten — sie
+nebeneinanderzulegen hieße, die Liste noch einmal danebenzustellen.
+
+**Quelle und Importdatum sind leer, wo eine Region aus dem Altbestand stammt** (angelegt vor
+Schemaschritt 95): Dort steht der Halbgeviertstrich. Nachdatiert wird nichts.
+
+**Der Standort ist gerechnet, nicht gespeichert.** `Details` ist Freitext und sagt je Quelle
+etwas anderes: Der PVGIS-Abruf schreibt den geokodierten Ort, die zwei TRY-Quellen einen
+Herkunftsvermerk, der mit dem Namen der Quelle beginnt und Lizenz, Station und Entfernung
+mit „ · " aneinanderreiht. `KlimaregionStammCtrl.Standorttext` nimmt deshalb das erste Glied
+— aber nur, wenn es ein Ort ist und nicht der Quellenname; sonst stehen die Koordinaten.
+
+### 2.2 Die Herkunft auf der Übersicht
+
+Die Startseite nennt im Klimakasten als zweite, leise Zeile, **womit gerechnet wird**:
+Quelle, Bezeichner, Standort und Importdatum der Region des offenen Projekts. Gelesen wird
+die **Projektkopie** `Tab_Klimaregion` — dieselbe Zeile, mit der der Rechenlauf arbeitet,
+nicht der Katalogsatz daneben. Eine Region ohne Quelle und Importdatum bekommt die Kurzform
+aus Bezeichner und Standort; ohne offenes Projekt steht keine Zeile.
+
+Die Klimawahl darüber ist **durchsuchbar** (Baustein `Standards/Suchauswahl`): Tippen
+filtert über alle Einträge, ↑ ↓ wandern, Enter übernimmt, Esc schließt die Liste. Gewählt
+und gespeichert wird die **Id** der Stammregion, nicht ihr Name.
 
 ## 3. Das TRY-Format und seine Zuordnung
 
@@ -275,7 +322,22 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
   Bereichsabruf, fehlendes Szenario, Ort außerhalb der 300-km-Grenze.
 - `KatalogpflegeTests` und `KlimadatenDialogTests` — Quellenwahl, Pflichtangaben je Quelle,
   Herkunftsvermerk; dazu der Standort aus dem Kopf, der Vorrang der Anwendereingabe, der
-  Fall ohne jeden Standort und die Vorbelegung im Dialog samt Überschreiben.
+  Fall ohne jeden Standort und die Vorbelegung im Dialog samt Überschreiben. Für die
+  Bedienung (Abschnitt 2): die eine Fußleiste mit ihren Knöpfen in der Reihenfolge, die
+  knopffreie Liste, die Dateizeile in EINER Zeile, die freibleibenden Felder nach einem
+  Erfolg, die gemeldete Dublette, die sieben Spalten ohne Vergleichsknopf, die Wahl über
+  einen Filterwechsel und 150 Zeilen an der Virtualisierungsschwelle.
+- `EPOS.Kern.Tests/KlimaregionKatalogTests` — die sieben Spalten, die Sortierung nach Namen,
+  der Schreibschutz als Kennzeichen und als Spalte, `Standorttext` gegen drei echte
+  `Details`-Muster, der leere Altbestand, die ISO-Sortierung und der Fall ohne die zwei
+  Spalten aus Schemaschritt 95.
+- `EPOS.UI.Tests/Standards/SuchauswahlTests` — Tippfilter, Leerfall, Wahl als Id,
+  Tastaturführung, Schließfläche, gesperrtes Feld, Berührungsziel und die gedeckelte
+  Vorschlagszahl; `StartseiteTests` für die durchsuchbare Klimawahl und die Herkunftszeile
+  samt Kurzform und dem Fall ohne Gaben.
+- `Proben/Rasterprobe` vor **und** nach jeder Änderung an der Katalogliste — alle neun Fälle
+  erfüllen die Sollwerte (Rückgabe 0); `bunit` misst weder Layout noch die
+  Sichtbarkeitsmelder.
 - `EinstellungenDialogTests` — 31 Tests, beide Kulturen.
 - Importprobe `Referenzlaeufe/Importproben/dwd_try_synthetisch_72h.dat` — eine
   **synthetische** Probe im DWD-Format, ausdrücklich keine amtlichen Daten; der Leser hat für
