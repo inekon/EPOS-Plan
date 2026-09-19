@@ -1,0 +1,38 @@
+﻿<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Projekttransfer
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Projekttransfer.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Der Dialog '''Projekt exportieren / importieren''' gibt Projekte an einen anderen Rechner weiter und liest sie dort wieder ein. Eine Transportdatei mit der Endung <code>.wpx</code> enthält ein Stammprojekt samt den Varianten, die mitgegeben wurden: Anlagen, Bedarfe, Zeitreihen, Kosten, Energieträgereinstellungen und die gespeicherten Ergebnisse. Kataloge reisen nicht mit – sie werden am Zielrechner über ihren Namen wiedergefunden, und was dort fehlt, legt das Einlesen an.
+
+Beide Rechner müssen denselben Programmstand haben. Eine Datei, die mit einem anderen Schemastand geschrieben wurde, wird benannt abgelehnt statt still eingelesen.
+
+== Exportieren ==
+
+* '''Projektliste''' – die Liste führt alle Projekte mit Kästchen; ein Klick setzt den Haken, ein weiterer nimmt ihn weg, und '''Umschalt''' nimmt den Bereich ab der zuletzt angeklickten Zeile dazu. Über der Liste steht ein Suchfeld, jede Spalte trägt einen Sortierpfeil, und die Spaltenköpfe ''Projekt'', ''Art'', ''Varianten'', ''Kunde'' und ''Geändert'' tragen einen Trichter. Die Spalte '''Art''' sagt, ob eine Zeile ein Stammprojekt ist oder die Variante eines anderen.
+* {{Anker|stammzug}}'''Variante wählen''' – eine Variante kann nicht ohne ihr Stammprojekt weitergegeben werden: Der Vergleich lebt von der Gruppe. Wer eine Variante anhakt, bekommt deshalb ihr Stammprojekt dazu; es trägt dann in der Spalte '''mitgenommen''' ein ''Ja'', und über der Liste steht, wie viele Stammprojekte hinzukommen.
+* '''Varianten der Gruppe''' – unter der Liste steht je gewähltem Stammprojekt ein Block mit seinen Varianten, alle angehakt. Einzelne lassen sich abwählen. Eine Variante, die in der Liste selbst gewählt wurde, bleibt angehakt – sie ist der Grund, warum es diese Datei gibt; der Hinweis am Kästchen sagt es.
+* {{Anker|paket-je-gruppe}}'''Eine Datei je Stammgruppe''' – gewählte Projekte werden nach ihrem Stammprojekt gebündelt. Aus drei Varianten desselben Stamms wird '''eine''' Datei, nicht drei: Sonst käme das Stammprojekt am Zielrechner dreimal an. Die Datei heißt nach dem Stammprojekt (''Stammname.wpx''); ist dort schon eine gleichnamige Datei, bekommt die neue eine Zählnummer, überschrieben wird nie.
+* '''Zielordner''' – ab zwei Gruppen wird ein Ordner gewählt, in den alle Dateien geschrieben werden. Bei genau einer Gruppe erscheint stattdessen der gewohnte Speichern-Dialog mit Namensvorschlag.
+* '''Exportieren…''' – schreibt die Dateien. Der Lauf hält an einem Fehler nicht an: Was sich schreiben lässt, wird geschrieben, und die Meldung am Ende nennt, wie viele Dateien entstanden sind und welche Gruppe aus welchem Grund fehlt.
+
+== Importieren ==
+
+* '''Dateien wählen…''' – im Dateiwähler lassen sich mehrere Pakete auf einmal markieren. Darunter erscheint je Datei eine Zeile mit Dateiname, Hauptprojekt, Varianten, Schemastand und einem Hinweis.
+* {{Anker|reihenfolge}}'''Reihenfolge''' – die Liste steht in der Reihenfolge, in der eingelesen wird: '''Stammprojekte zuerst, ihre Varianten dahinter'''. Das ist nicht die Reihenfolge des Dateiwählers, und es ist Absicht: Eine Variante findet ihr Stammprojekt nur, wenn dieses schon angelegt ist.
+* '''Hinweise in der Liste''' – ''Variante von ‹Stamm›'' kennzeichnet ein Paket, dessen Hauptprojekt selbst eine Variante ist. ''Derselbe Stamm wie Paket n – wird übersprungen'' kennzeichnet ein Paket, dessen Stammprojekt bereits ein weiter oben stehendes mitbringt: Es entsteht '''einmal''', und die Varianten beider Pakete hängen an ihm. Ein abweichender Schemastand ist als solcher markiert; ein solches Paket wird nicht eingelesen.
+* '''Zielname''' – nur bei einer einzelnen Datei zu vergeben; bei mehreren behält jedes Projekt seinen Namen aus dem Paket.
+* '''Falls dieser Name bereits existiert''' – ''unter neuem Namen importieren'' (Vorgabe) hängt eine Zählnummer an, ''vorhandenes Projekt überschreiben'' ersetzt es nach Rückfrage, ''abbrechen'' bricht ab. Die Wahl gilt für alle Pakete des Laufs. Wird ein Projekt umbenannt, folgen ihm seine Varianten: Sie hängen am neu eingelesenen Projekt, nicht an einem gleichnamigen, das schon da war.
+* '''Sicherungskopie der Datenbank vor dem Import anlegen''' – vorbelegt an und einmal je Lauf, vor der ersten Datei. Besonders beim Überschreiben lohnt sie sich.
+* '''Importieren…''' – liest die Pakete nacheinander ein. Jedes Paket steht für sich: Scheitert das dritte, bleiben die ersten beiden erhalten. Der Fortschritt nennt ''Paket n von m''; am Ende stehen eine Bilanz (eingelesen, übersprungen, umbenannt, fehlgeschlagen) und ein Bericht mit einer Zeile je Projekt, Variante und Verknüpfung. Der Bericht wird außerdem neben der ersten Paketdatei abgelegt (''Dateiname.importbericht.txt'').
+
+== Was nicht übertragen wird ==
+
+* '''Kataloge''' werden nicht abgeglichen. Fehlt am Zielrechner ein Eintrag, den das Projekt braucht, wird er angelegt; gibt es dort einen gleichen Namens, gewinnt der vorhandene.
+* '''Klimadaten''' reisen nicht mit – die Klimaregion wird über ihren Namen wiedergefunden. Weicht sie ab, sagt es der Bericht.
+* '''Zwei Stände desselben Projekts werden nicht zusammengeführt.''' Ein Einlesen legt ein neues Projekt an oder überschreibt ein vorhandenes; das gilt auch innerhalb eines Laufs.
+* '''Kostenpositionen ohne gültige Anlagenzuordnung''' bleiben beim Ausgeben zurück. Sie sind Reste gelöschter Anlagen und hätten am Zielrechner keinen Bezug.
+
+== Siehe auch ==
+
+* [[Programm Dokumentation/Varianten]] – Vergleichsgruppe, Stammprojekt und Varianten
+* [[Programm Dokumentation/Kosten#ertragbonus|Kosten: Ertrag/Bonus]] – die Vergütung, die eine einzeln weitergegebene Variante mitnimmt
+* [[Programm Dokumentation/Klimadaten]] – Klimaregionen anlegen und einlesen
