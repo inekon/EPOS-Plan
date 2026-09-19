@@ -842,6 +842,31 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 92, trocken);
 
+            // ---- Schritt 93: die Verguetung je Variante (Konzept § 2.16). EINE
+            //      nullbare 0/1-Spalte an Tab_ProjektPhotovoltaik und die zwei DML der
+            //      Bestandsableitung. Beide Quellen sind dieselben, aus denen sich
+            //      SchemaMigration.Schritt_93_PvUebernahme bedient. Die Testdatenbank
+            //      fuehrt keine einzige Zeile in Tab_ProjektPhotovoltaik - beide DML
+            //      fassen dort nichts an, die dreizehn Referenzprojekte rechnen
+            //      unveraendert.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt93_VerguetungJeVariante)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 93, trocken);
+
+            if (!trocken && PvVerguetungJeVariante.SpalteVorhanden())
+            {
+                int ohneWahl = PvVerguetungJeVariante.OhneWahl();
+                int ohneZeile = PvVerguetungJeVariante.OhneZeileBeiAktivemStamm();
+                Console.WriteLine("Schritt 93 - Zeilen ohne Wahl: " + ohneWahl +
+                                  ", Varianten ohne Zeile bei aktivem Stamm: " + ohneZeile + ".");
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                         in PvVerguetungJeVariante.Anweisungen)
+                {
+                    DataRepository.ExecuteNonQuery(a.Value);
+                    Console.WriteLine("Schritt 93 - " + a.Key + ".");
+                }
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

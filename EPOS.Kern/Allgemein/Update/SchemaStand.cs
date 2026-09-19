@@ -237,11 +237,20 @@ namespace WindowsFormsApplication1
         /// gegen welchen Stand die Differenzkennzahlen rechnen. <b>Kein DML:</b> Die
         /// Spalte bleibt NULL, und NULL heißt Stamm — genau die Referenz des Bestands;
         /// der Referenzlauf bleibt byte-gleich.
+        /// Mit der VERGÜTUNG JE VARIANTE (Schritt 93, Konzept § 2.16) steht das Ziel auf
+        /// <b>93</b>: <c>Tab_ProjektPhotovoltaik.Uebernahme_Stamm</c>
+        /// (<see cref="SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM"/>) hält je Projektzeile
+        /// fest, ob sie gilt („eigene Werte") oder die Variante die Vergütung ihres
+        /// Stammprojekts übernimmt. Anders als 92 trägt dieser Schritt ein DML, und es
+        /// ist ergebnisneutral (Anwenderentscheid VV‑Q4): Jede vorhandene Variantenzeile
+        /// wird zur eigenen (0) und rechnet weiter wie bisher; eine Variante ohne Zeile,
+        /// deren Stamm eine aktive Zeile führt, bekommt eine eigene, INAKTIVE Zeile und
+        /// bleibt damit auf dem Flat-Pfad. Der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 92;
+        public const int Zielversion = 93;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

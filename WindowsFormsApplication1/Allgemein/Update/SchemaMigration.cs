@@ -3353,6 +3353,34 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_92_REFERENZPROJEKT = 92;
 
+        /// <summary>
+        /// Schritt 93 — die <b>Vergütung je Variante</b> (Konzept § 2.16, Anforderung des
+        /// Anwenders vom 18.09.2026).
+        ///
+        /// <para><c>Tab_ProjektPhotovoltaik</c> bekommt die Spalte
+        /// <c>Uebernahme_Stamm</c> (nullbares 0/1). Die Spaltenliste steht bei
+        /// <see cref="SchemaKatalog.Schritt93_VerguetungJeVariante"/>, die zwei DML der
+        /// Bestandsableitung bei <see cref="PvVerguetungJeVariante"/> — EINE Quelle für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Wozu.</b> Die PV-Vergütungsangaben stehen je Projekt; gelesen wird
+        /// die Zeile des jeweiligen Stands. Eine Variante hatte damit nur dann eigene
+        /// Angaben, wenn sie NACH der Pflege des Stamms angelegt wurde — der Kopierlauf
+        /// nahm die Zeile mit und fror sie ein. Von außen war das nicht zu erkennen:
+        /// Reiter, Dialog und Bericht sagten „stammprojektbezogen". Ab hier ist es eine
+        /// Wahl: übernehmen (Vorgabe) oder eigene Vergütung.</para>
+        ///
+        /// <para><b>Anders als Schritt 92 trägt dieser Schritt ein DML — und es ist
+        /// ergebnisneutral</b> (Anwenderentscheid VV‑Q4): Jede vorhandene Zeile wird zur
+        /// eigenen (0) und rechnet weiter wie bisher; eine Variante ohne Zeile, deren
+        /// Stamm eine aktive Zeile führt, bekommt eine eigene, INAKTIVE Zeile und bleibt
+        /// damit auf dem Flat-Pfad. Die Testdatenbank führt keine einzige Zeile in
+        /// <c>Tab_ProjektPhotovoltaik</c> — die dreizehn Referenzprojekte rechnen
+        /// unverändert, der Referenzlauf bleibt byte-gleich.</para>
+        /// </summary>
+        public const int SCHRITT_93_PV_UEBERNAHME = 93;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4558,6 +4586,24 @@ namespace WindowsFormsApplication1
                         "will, braucht die freie Wahl. NULL heisst Stamm - damit ist " +
                         "der Schritt fuer jede Bestandsrechnung ergebnisneutral.",
                         Schritt_92_Referenzprojekt),
+
+            // KONZEPT § 2.16 - die Verguetung wird je Variante waehlbar. EINE nullbare
+            // 0/1-Spalte und zwei DML der Bestandsableitung; die Quellen sind
+            // SchemaKatalog.Schritt93_VerguetungJeVariante und PvVerguetungJeVariante.
+            // Keine Reihenfolgebedingung gegenueber 89 bis 92 - die Spalte ist neu und
+            // steht fuer sich.
+            new Schritt(SCHRITT_93_PV_UEBERNAHME,
+                        "Tab_ProjektPhotovoltaik bekommt die Verguetungswahl je " +
+                        "Variante (Uebernahme_Stamm)",
+                        "Die PV-Verguetung stand je Projekt, gelesen wurde die Zeile " +
+                        "des jeweiligen Stands - eine Variante hatte eigene Angaben " +
+                        "also genau dann, wenn sie NACH der Pflege des Stamms angelegt " +
+                        "wurde. Von aussen war das nicht zu erkennen. Ab hier ist es " +
+                        "eine Wahl: uebernehmen (Vorgabe) oder eigene Verguetung. Die " +
+                        "Ableitung aus dem Bestand aendert keine Zahl - jede " +
+                        "vorhandene Zeile bleibt eine eigene, jede Variante ohne Zeile " +
+                        "bleibt auf dem Flat-Pfad.",
+                        Schritt_93_PvUebernahme),
         };
 
         /// <summary>
@@ -6666,6 +6712,56 @@ namespace WindowsFormsApplication1
                     "Bestandsrechnung schon gerechnet hat. Erste Rechenwirkung erst " +
                     "mit der ausdruecklichen Wahl einer anderen Referenz; der " +
                     "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 93 - die Verguetung je Variante (Konzept § 2.16)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 93 — Anlass, Anweisungen und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_93_PV_UEBERNAHME"/>, bei
+        /// <see cref="SchemaKatalog.Schritt93_VerguetungJeVariante"/> (DDL) und bei
+        /// <see cref="PvVerguetungJeVariante"/> (DML).
+        ///
+        /// <para><b>Erst DDL, dann DML</b> — die zwei Anweisungen der Ableitung lesen und
+        /// schreiben die Spalte, die die erste Hälfte anlegt. Gezählt wird VOR dem
+        /// Schreiben, damit die Protokollzeile sagt, was der Schritt getan hat, und
+        /// nicht, was danach noch offen ist.</para>
+        /// </summary>
+        private static bool Schritt_93_PvUebernahme(Lauf l)
+        {
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt93_VerguetungJeVariante)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            int ohneWahl = PvVerguetungJeVariante.OhneWahl();
+            int ohneZeile = PvVerguetungJeVariante.OhneZeileBeiAktivemStamm();
+
+            foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                     in PvVerguetungJeVariante.Anweisungen)
+            {
+                try { DataRepository.ExecuteNonQuery(a.Value); }
+                catch (Exception ex)
+                {
+                    l.LetzterFehler = a.Key + ": " + ex.Message;
+                    l.Notiz("93: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            }
+
+            l.Notiz("93: " + SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK + "." +
+                    SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM +
+                    " (nullbares 0/1) steht. " +
+                    ohneWahl.ToString(CultureInfo.InvariantCulture) +
+                    " vorhandene Zeile(n) als eigene Werte gekennzeichnet, " +
+                    ohneZeile.ToString(CultureInfo.InvariantCulture) +
+                    " inaktive Spur(en) fuer Varianten ohne Zeile bei aktivem Stamm " +
+                    "angelegt. ERGEBNISNEUTRAL (Anwenderentscheid VV-Q4): Eine " +
+                    "vorhandene Zeile rechnet weiter mit ihren eigenen Werten, eine " +
+                    "Variante ohne Zeile bleibt auf dem Flat-Pfad. Keine Zeile heisst " +
+                    "uebernehmen - die Vorgabe jeder neuen Variante.");
             return true;
         }
 

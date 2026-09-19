@@ -444,6 +444,17 @@ namespace WindowsFormsApplication1
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt92_Referenzprojekt)
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
+                    // KONZEPT § 2.16 - die Verguetungswahl je Variante an
+                    // Tab_ProjektPhotovoltaik. Regulaer entsteht sie in Schemaschritt 93;
+                    // das hier ist DER ZWEITE DDL-ORT. Die Tabelle gehoert zwar
+                    // ProjektPhotovoltaikCtrl, gelesen wird die Spalte aber von DIESEM
+                    // Rechenweg (RechnePvVerguetung ueber LiesAufgeloest) - und die
+                    // Vorsorge gehoert zum Leser, nicht zur Tabelle. KEINE
+                    // Werte-Vorbelegung: NULL heisst uebernehmen, und ohne Zeile gilt
+                    // dasselbe.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt93_VerguetungJeVariante)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
                     // ETAPPE K6 (HF6/M-D) — die verbliebene KWKG-Projektangabe. Regulär legt sie
                     // Migrationsschritt 28 an; das hier ist die tolerante VORSORGE
                     // unmittelbar vor dem Zugriff (doppelte Schema-Wahrheit dieses Moduls,

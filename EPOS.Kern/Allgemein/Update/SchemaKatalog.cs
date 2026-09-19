@@ -3407,6 +3407,60 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
+        // ETAPPE VV — die Vergütung je Variante (Konzept § 2.16)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// Die WAHL einer Variante: führt sie <b>eigene</b> PV-Vergütungswerte oder
+        /// übernimmt sie die des Stammprojekts? <c>1</c> = übernommen, <c>0</c> = eigene
+        /// Werte, <b>NULL = übernommen</b> — und ebenso heißt <b>keine Zeile</b>
+        /// „übernommen" (die Vorgabe jeder neuen Variante).
+        ///
+        /// <para><b>Warum eine eigene Spalte und nicht „NULL je Feld".</b> Die Spalten
+        /// dieser Tabelle bedeuten mit NULL schon „nicht gepflegt / Rückfall"
+        /// (DV-Entgelt, Ausfallanteil, Marktwert); ein zweiter NULL-Sinn wäre eine
+        /// Zweideutigkeit je Feld. Und eine Vergütung ist ein BLOCK: Vermarktungsform,
+        /// anzulegender Wert, Inbetriebnahme und § 51 bedingen einander — Felder aus zwei
+        /// Projekten zu mischen ergäbe eine Vergütung, die niemand eingegeben hat
+        /// (Anwenderentscheid VV‑Q2).</para>
+        ///
+        /// <para><b>Nullbar und ohne DDL-Vorgabe</b> (Hausregel dieser Tabelle, deren
+        /// Fachspalten alle nullbar sind): Der Typ <c>YESNO_NULL</c> übersetzt nach
+        /// <c>INTEGER CHECK (… IN (0,1))</c> — die 0/1-Prüfung der Hausregel, aber ohne
+        /// <c>NOT NULL DEFAULT 0</c>, das die dritte Aussage NULL überschriebe.</para>
+        ///
+        /// <para><b>Die Zeile der Variante bleibt bei „übernehmen" stehen</b> — sie ist
+        /// der Rückweg zu den eigenen Werten; gelesen wird sie dann nicht
+        /// (<c>ProjektPhotovoltaikCtrl.LiesAufgeloest</c>).</para>
+        /// </summary>
+        public const string SPALTE_PPV_UEBERNAHME_STAMM = "Uebernahme_Stamm";
+
+        /// <summary>
+        /// Schritt 93 der Migration: die EINE Spalte der Vergütungswahl an
+        /// <c>Tab_ProjektPhotovoltaik</c> (Konzept § 2.16). Begründung und Leseweg
+        /// stehen bei <see cref="SPALTE_PPV_UEBERNAHME_STAMM"/>.
+        ///
+        /// <para><b>Das DML des Schritts ist ergebnisneutral</b> (Anwenderentscheid
+        /// VV‑Q4): Jede vorhandene Variantenzeile bekommt <c>0</c> — sie rechnet damit
+        /// weiter mit ihren eigenen Werten, genau wie bisher. Eine Variante OHNE Zeile,
+        /// deren Stamm eine aktive Zeile führt, bekommt eine eigene, <b>inaktive</b>
+        /// Zeile: Sie rechnete bisher den Flat-Pfad und tut es weiter. Die dreizehn
+        /// Referenzprojekte bleiben byte-gleich; das ist das Abnahmekriterium der
+        /// Etappe.</para>
+        ///
+        /// <para>Die Spalte steht BEWUSST NICHT in <see cref="Alle"/> — dieselbe
+        /// Begründung wie bei <see cref="Schritt92_Referenzprojekt"/>: Der Grund ist der
+        /// LESER. Die Rückfallebene <see cref="Alle"/> läuft bei jedem Simulationsstart;
+        /// die Vergütungswahl liest allein die Wirtschaftlichkeit, und deren eigene
+        /// Rückfallebene (<c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>) führt die
+        /// Spalte.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt93_VerguetungJeVariante =
+        {
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_UEBERNAHME_STAMM, "YESNO_NULL"),
+        };
+
+        // ---------------------------------------------------------------------------
         // ETAPPE E5 — Tarifmodell Strom (Tab_ProjektTarif) und zwei Projektangaben
         // ---------------------------------------------------------------------------
 

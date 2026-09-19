@@ -252,6 +252,17 @@ namespace WindowsFormsApplication1
             string t = (accessTyp ?? string.Empty).Trim().ToUpperInvariant();
             string q = "\"" + (spalte ?? string.Empty).Replace("\"", "\"\"") + "\"";
 
+            // NULLBARER Wahrheitswert - dieselbe 0/1-Pruefung, aber OHNE NOT NULL und
+            // OHNE Vorgabe. Gebraucht, wo NULL eine eigene dritte Aussage traegt und
+            // eine DDL-Vorgabe sie ueberschriebe (Tab_ProjektPhotovoltaik.Uebernahme_Stamm,
+            // Konzept Wirtschaftlichkeit § 2.16: NULL = uebernommen). Die Pruefung steht
+            // VOR der auf "YESNO", sonst faenge diese das laengere Wort mit ab.
+            if (t.StartsWith("YESNO_NULL", StringComparison.Ordinal) ||
+                t.StartsWith("BOOLEAN_NULL", StringComparison.Ordinal))
+            {
+                return "INTEGER CHECK (" + q + " IN (0,1))";
+            }
+
             if (t.StartsWith("YESNO", StringComparison.Ordinal) ||
                 t.StartsWith("BIT", StringComparison.Ordinal) ||
                 t.StartsWith("BOOLEAN", StringComparison.Ordinal))
