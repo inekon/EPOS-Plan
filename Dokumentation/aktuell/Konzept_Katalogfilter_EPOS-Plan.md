@@ -5,11 +5,12 @@ an der SPALTE, und nach seiner zweiten Rückmeldung vom selben Tag **im Spaltenk
 Namen**, ohne getrennte Filterzeile, mit der **Liste über die ganze Breite**. Kapitel 5.6 ist
 der gültige Vorschlag, 5.2–5.5 stehen als Geschichte daneben.**
 
-> **Stand 07.09.2026: STUFE S1 IST UMGESETZT** (Zweig `w140-katalogfilter-s1`, Commits
-> `78b0f1e`, `ce43d2a`, `f842465`) — die acht Verwaltungsdialoge tragen das Spaltenmodell,
-> **Q1 = ja** (ein Feld je Zahlenspalte) und **Q2 = ja** (untereinander). Die Stufen **S2**
-> (Projektdialoge und Assistent) und **S3** (Bedarf, Zeitreihen, Vergleich, Import) stehen
-> aus; Kapitel 9 nennt die Commits, Kapitel 10 den Stand der offenen Punkte.
+> **Stand 07.09.2026: ALLE DREI STUFEN SIND UMGESETZT** — S1 (Zweig `w140-katalogfilter-s1`,
+> Commits `78b0f1e`, `ce43d2a`, `f842465`): die acht Verwaltungsdialoge tragen das
+> Spaltenmodell, **Q1 = ja** (ein Feld je Zahlenspalte) und **Q2 = ja** (untereinander).
+> S2 (Zweig `w145-katalogfilter-s2`, Projektdialoge und Assistent) und S3 (Zweig
+> `w148-katalogfilter-s3`, Bedarf, Zeitreihen, Vergleich, Import) sind ebenfalls umgesetzt;
+> Kapitel 9 nennt die Commits, Kapitel 10 den Stand der offenen Punkte.
 
 **Was Rev. 3 gegenüber Rev. 2 ändert** — die zweite Rückmeldung im Wortlaut:
 
