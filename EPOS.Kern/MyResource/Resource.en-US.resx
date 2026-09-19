@@ -19988,6 +19988,21 @@ Do you want to allow this?</value>
   <data name="KLIMA_TRY_MSG_HERKUNFT" xml:space="preserve">
     <value>Origin: {0}</value>
   </data>
+  <data name="KLIMA_TRY_STANDORT_KOPF" xml:space="preserve">
+    <value>Location from the file header: easting {0}, northing {1} → {2}° E / {3}° N</value>
+  </data>
+  <data name="KLIMA_TRY_STANDORT_ANWENDER" xml:space="preserve">
+    <value>Location entered by the user</value>
+  </data>
+  <data name="KLIMA_TRY_STANDORT_FEHLT" xml:space="preserve">
+    <value>The header of the TRY file gives no readable location — please enter longitude and latitude.</value>
+  </data>
+  <data name="KLIMA_TRY_STANDORT_HINWEIS" xml:space="preserve">
+    <value>Location from the file (easting {0}, northing {1}); can be changed.</value>
+  </data>
+  <data name="KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
+    <value>The location of file “{0}” cannot be read — please enter longitude and latitude.</value>
+  </data>
   <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
     <value>Climate data</value>
   </data>

@@ -645,4 +645,158 @@ public class KlimadatenDialogTests : EposBunitContext
         Assert.Empty(wahl.FindAll("button"));
         Assert.Single(wahl.FindAll("input[type=text]"));
     }
+
+    // =====================================================================
+    //  Standort aus der TRY-Datei (Auftrag KL-2)
+    // =====================================================================
+
+    /// <summary>
+    /// Schreibt eine kurze, SYNTHETISCHE TRY-Datei in den Temp-Ordner — nur der Kopf,
+    /// denn mehr liest der Dialog nicht. Rechtswert 3 929 310 / Hochwert 2 478 193
+    /// ergeben 9,0000° O / 49,0000° N.
+    /// </summary>
+    private static string ProbeSchreiben(string name, bool mitStandort = true)
+    {
+        string pfad = System.IO.Path.Combine(System.IO.Path.GetTempPath(), name + ".dat");
+        var z = new List<string>
+        {
+            "Musterdatensatz Testreferenzjahr - synthetische Probe",
+            "Art des TRY: Jahr (mittleres Jahr)"
+        };
+        if (mitStandort)
+        {
+            z.Add("Rechtswert: 3929310 Meter");
+            z.Add("Hochwert: 2478193 Meter");
+        }
+        z.Add("*** ");
+        System.IO.File.WriteAllText(pfad, string.Join("\r\n", z) + "\r\n");
+        return pfad;
+    }
+
+    /// <summary>
+    /// <b>Die Dateiwahl belegt den Standort vor</b> (A-KL2-1): Longitude, Latitude und
+    /// — weil sie leer war — die Bezeichnung aus dem Dateinamen. Darunter steht, woher
+    /// die Zahlen kommen, und <c>Daten einlesen</c> ist ohne weitere Eingabe frei.
+    /// </summary>
+    [Fact]
+    public void Die_Dateiwahl_belegt_den_Standort_aus_dem_Dateikopf_vor()
+    {
+        string pfad = ProbeSchreiben("epos_kl2_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>(pfad));
+
+            QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+            cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+               .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Standortzeile),
+                                 TimeSpan.FromSeconds(10));
+
+            var zahlen = cut.FindAll("input[inputmode=decimal]");
+            Assert.Equal("9", zahlen[0].GetAttribute("value"));
+            Assert.Equal("49", zahlen[1].GetAttribute("value"));
+
+            // Die Bezeichnung ist der Dateiname OHNE Endung.
+            Assert.Equal(System.IO.Path.GetFileNameWithoutExtension(pfad),
+                         cut.FindAll("input[type=text]").Last().GetAttribute("value"));
+
+            // Die Herkunftszeile nennt Rechts- und Hochwert und sagt, dass es änderbar ist.
+            Assert.Contains("3929310", cut.Instance.Standortzeile);
+            Assert.Contains("2478193", cut.Instance.Standortzeile);
+            Assert.Contains("änderbar", cut.Instance.Standortzeile);
+            Assert.Contains("3929310", cut.Markup);
+
+            Assert.False(Einlesen(cut).HasAttribute("disabled"));
+        }
+        finally
+        {
+            try { System.IO.File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+        }
+    }
+
+    /// <summary>
+    /// <b>Der Anwender überschreibt die Vorbelegung</b> (A-KL2-2): Sein Wert geht in den
+    /// Auftrag, und die Herkunftszeile der Datei verschwindet — sie stimmte nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Der_Anwender_kann_den_vorbelegten_Standort_ueberschreiben()
+    {
+        string pfad = ProbeSchreiben("epos_kl2u_" + Guid.NewGuid().ToString("N"));
+        KlimaImportAuftrag? auftrag = null;
+        try
+        {
+            var cut = Zeige(
+                importieren: (a, _) =>
+                {
+                    auftrag = a;
+                    return Task.FromResult(new KlimaImportErgebnis
+                    {
+                        Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Eigen", Meldung = "fertig"
+                    });
+                },
+                dateiWaehlen: _ => Task.FromResult<string?>(pfad));
+
+            QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+            cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+               .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Standortzeile),
+                                 TimeSpan.FromSeconds(10));
+
+            // Der Anwender trägt einen anderen Punkt ein.
+            cut.FindAll("input[inputmode=decimal]")[0].Input("13,4");
+            cut.FindAll("input[inputmode=decimal]")[1].Input("52,52");
+
+            Assert.Equal("", cut.Instance.Standortzeile);
+
+            Einlesen(cut).Click();
+            cut.WaitForAssertion(() => Assert.NotNull(auftrag), TimeSpan.FromSeconds(10));
+
+            Assert.Equal(KlimaQuelle.TryDatei, auftrag!.Quelle);
+            Assert.Equal(pfad, auftrag.TryPfad);
+            Assert.Equal(13.4, auftrag.Longitude);
+            Assert.Equal(52.52, auftrag.Latitude);
+        }
+        finally
+        {
+            try { System.IO.File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+        }
+    }
+
+    /// <summary>
+    /// <b>Ein Kopf ohne Lambertwerte ist kein Fehler</b>: Es bleibt bei einem Hinweis,
+    /// die Felder bleiben leer, und <c>ImportErlaubt</c> urteilt wie bisher — ohne
+    /// Standort bleibt der Knopf gesperrt.
+    /// </summary>
+    [Fact]
+    public void Eine_Datei_ohne_Standort_im_Kopf_meldet_das_und_laesst_die_Felder_stehen()
+    {
+        string pfad = ProbeSchreiben("epos_kl2o_" + Guid.NewGuid().ToString("N"),
+                                     mitStandort: false);
+        try
+        {
+            var cut = Zeige(dateiWaehlen: _ => Task.FromResult<string?>(pfad));
+
+            QuelleWaehlen(cut, KlimaQuelle.TryDatei);
+            cut.FindComponent<EPOS.UI.Standards.Dateiwahl>()
+               .FindAll("button").First(b => b.TextContent.Trim().StartsWith("Durchsuchen")).Click();
+
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.Instance.Meldung),
+                                 TimeSpan.FromSeconds(10));
+
+            Assert.Contains("nicht lesbar", cut.Instance.Meldung);
+            Assert.Equal("", cut.Instance.Standortzeile);
+
+            var zahlen = cut.FindAll("input[inputmode=decimal]");
+            Assert.Equal("", zahlen[0].GetAttribute("value"));
+            Assert.Equal("", zahlen[1].GetAttribute("value"));
+
+            Assert.True(Einlesen(cut).HasAttribute("disabled"));
+        }
+        finally
+        {
+            try { System.IO.File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+        }
+    }
 }

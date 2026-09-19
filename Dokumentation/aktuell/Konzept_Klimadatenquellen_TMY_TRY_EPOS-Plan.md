@@ -18,18 +18,18 @@ Ablage und Sicherung der Datenbank: [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md).
 | Quelle | Deckung | Netz | Was der Anwender angibt |
 |---|---|---|---|
 | **PVGIS-TMY** | weltweit | ein Abruf der PVGIS-Schnittstelle | Ortsname (Geokodierung) oder Longitude/Latitude und Bezeichnung |
-| **DWD-TRY-Datei** (`.dat`) | Deutschland, Datei vom Rechner | keines | Pfad der Datei **und** Standort |
+| **DWD-TRY-Datei** (`.dat`) | Deutschland, Datei vom Rechner | keines | Pfad der Datei; den Standort bringt ihr Kopf mit, änderbar |
 | **TRY-Regionaldaten** (`data.zip`) | Deutschland, 15 Regionen | Bereichsabrufe; bei lokaler Datei keines | Standort, Jahr, Szenario; wahlweise Pfad einer lokalen `data.zip` |
 
 Eine Klimaregion trägt das, was bei ihrem Import geholt wurde; die Quelle steht im
 Herkunftsvermerk (`Tab_Klimaregion_STAMM.Details`). Regionen unterschiedlicher Herkunft
 stehen nebeneinander, ohne einander zu beeinflussen.
 
-**Warum eine TRY-Datei zusätzlich den Standort braucht:** Ihr Kopf führt nur
-Lambert-Koordinaten. Longitude und Latitude sind aber für die Sonnengeometrie und für die
-Umrechnung auf Direkt-Normal nötig — bei den Regionaldaten zusätzlich für die Wahl der
-nächsten Region. Die Umrechnung Lambert → WGS 84 gibt es nicht; den Standort gibt der
-Anwender an.
+**Warum jede Quelle Longitude und Latitude braucht:** Sonnengeometrie und die Umrechnung
+auf Direkt-Normal rechnen damit — bei den Regionaldaten kommt die Wahl der nächsten Region
+dazu. Eine TRY-Datei führt in ihrem Kopf **Lambert-Koordinaten**; der Kern rechnet sie in
+Länge und Breite um, und der Dialog belegt beide Felder damit vor (Abschnitt 3.1). Der
+Anwender kann sie überschreiben.
 
 ## 2. Bedienweg
 
@@ -37,7 +37,10 @@ Im Dialog **Klimadaten** steht über der Gruppe „Standort" die Gruppe **Klimaq
 
 1. **Quelle wählen** — PVGIS (vorgewählt), TRY-Datei oder TRY-Regionaldaten.
 2. **Standort** — Ortsname oder Longitude/Latitude mit Bezeichnung, wie bei PVGIS.
-3. **Bei TRY-Datei** — die Datei über den Dateiwähler (`*.dat`).
+3. **Bei TRY-Datei** — die Datei über den Dateiwähler (`*.dat`). Mit der Wahl
+   belegt der Dialog **Longitude, Latitude und — falls leer — die Bezeichnung** aus dem
+   Dateikopf vor (Abschnitt 3.1); darunter steht, woher die Zahlen kommen. Jedes Feld
+   bleibt änderbar.
 4. **Bei Regionaldaten** — Jahr (2015 oder 2045) und Szenario (mittleres Jahr,
    sommerwarm, winterkalt); Vorgabe **2015, mittleres Jahr**. Ohne Dateipfad läuft der
    Bereichsabruf über die hinterlegte Adresse; mit Pfad wird die lokale `data.zip` gelesen.
@@ -59,7 +62,7 @@ RW HW MM DD HH t p WR WG N x RF B D A E IL
 
 | Feld | Bedeutung | Ziel |
 |---|---|---|
-| `RW`, `HW` | Lambert-Koordinaten der Station | nicht übernommen — die Region trägt Longitude/Latitude |
+| `RW`, `HW` | Lambert-Koordinaten der Station, je Datenzeile wiederholt | aus der Datenzeile nicht übernommen — der **Standort** kommt aus dem KOPF (Abschnitt 3.1) |
 | `MM`, `DD`, `HH` | Monat, Tag, Stunde **1…24 MEZ**; `HH` benennt das Intervall, das zu `HH:00` endet | Reihenfolge der Zeile (Abschnitt 4) |
 | `t` | Lufttemperatur [°C] | `Tab_Solar_STAMM.Temperatur` |
 | `B` | Direktstrahlung **horizontal** [W/m²] | `Direktstrahlung`, nach der Umrechnung aus Abschnitt 5 |
@@ -76,6 +79,40 @@ des Netzabrufs.
 Ein Kopf ohne Trennzeile, eine falsche Feld- oder Zeilenzahl, ein unlesbares Zeit- oder
 Zahlenfeld und eine doppelt belegte Stunde führen jeweils zu einer benannten Meldung mit der
 Zeilennummer — und zu keiner Region.
+
+### 3.1 Der Standort aus dem Dateikopf
+
+Der Kopf führt den Standort als **Rechtswert** und **Hochwert** — nicht als Länge und
+Breite. Beides braucht das Haus aber: für die Sonnengeometrie, für die Fassadenwerte und
+für `Tab_Klimaregion_STAMM`.
+
+**Die Projektion ist ETRS89 / LCC Europa (`EPSG:3034`)**: Lambert konform konisch, zwei
+Standardparallelen 35° N und 65° N, Ursprung 52° N / 10° O, falscher Ostwert
+4 000 000 m, falscher Nordwert 2 800 000 m, Ellipsoid GRS80 (`a = 6 378 137 m`,
+`1/f = 298,257222101`). Die **Formelquelle** ist Snyder, *Map Projections — A Working
+Manual*, USGS Professional Paper 1395 (1987), Abschnitt 15; gerechnet wird ellipsoidisch in
+`double` (`EPOS.Kern/Allgemein/Import/LambertKoordinaten.cs`).
+
+**Nachgemessen, nicht angenommen.** Die offenen Regionaldaten tragen Breite und Länge ihrer
+fünfzehn Regionsmittelpunkte im DATEINAMEN und Rechts-/Hochwert im KOPF — zwei unabhängige
+Angaben desselben Punktes. Über alle fünfzehn Regionen, von 47,49° N / 11,10° O bis
+54,09° N / 12,14° O, weicht die gerechnete Koordinate um höchstens **0,00005°** vom
+Dateinamen ab; der Rest ist die Rundung der Kopfwerte auf das 500-m-Raster. Die fünfzehn
+Paare stehen als feste Fälle in `LambertKoordinatenTests` — der Nachweis braucht kein Netz.
+
+**Grenzen.** Ein Punkt außerhalb **45…56° N** und **5…16° O** ist für eine TRY-Datei kein
+Standort, sondern ein Lesefehler: Beide Rechenwege liefern dann `false` und `NaN`, nie eine
+stille Null. Dasselbe gilt für einen Kopf ohne oder mit unlesbarem Rechts-/Hochwert —
+`TryKopf.Laenge`/`.Breite` bleiben `null`.
+
+**Wer gewinnt.** Der Auftrag hat Vorrang: Was der Anwender eingetragen oder über den
+Ortsnamen geholt hat, bleibt stehen. Erst wenn er keine Koordinaten mitbringt, kommt der
+Standort aus dem Kopf. Beides steht **benannt** in Meldung und Herkunftsvermerk — „Standort
+aus dem Dateikopf: Rechtswert …, Hochwert … → …° O / …° N" oder „Standort vom
+Anwender". Fehlt beides, ist es ein benannter Eingabefehler und keine Region bei 0°/0°.
+
+Für den Dialog liest der Kern den Kopf mit `DwdTryLeser.KopfLesen` — **nur bis zur
+Trennzeile**, ohne die 8 760 Datenzeilen zu deuten, ohne Netz und ohne Datenbank.
 
 ## 4. Zeitbasis
 
@@ -204,18 +241,24 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
 
 ## 11. Nachweise
 
-- `EPOS.Kern.Tests/DwdTryLeserTests` — 18 Tests: Kopferkennung, Feld- und Zeilenzahl,
+- `EPOS.Kern.Tests/LambertKoordinatenTests` — 30 Tests: die fünfzehn Regionsmittelpunkte
+  gegen ihre Dateinamen, der Ursprung auf falschem Ost-/Nordwert, Hin- und Rückrechnung an
+  fünf Punkten unter 1e-9°, der Punkt der Importprobe, die Plausibilitätsgrenzen.
+- `EPOS.Kern.Tests/DwdTryLeserTests` — 32 Tests: Kopferkennung, Feld- und Zeilenzahl,
   Zeitfelder, doppelte Stunde, die Drehung MEZ → UTC, Zeitstempel, Direkt-Normal mit
-  Mindesthöhe und Klemme, Erhalt der Globalstrahlung.
+  Mindesthöhe und Klemme, Erhalt der Globalstrahlung, der Standort aus dem Kopf und
+  `KopfLesen` gegen den vollen Leser.
 - `EPOS.Kern.Tests/TryPaketLeserTests` — 17 Tests, darunter der Bereichsabruf gegen ein
   Paket im Speicher: **528 402 Byte in drei Abrufen bei einem 8,9-MB-Paket**; fehlender
   Bereichsabruf, fehlendes Szenario, Ort außerhalb der 300-km-Grenze.
-- `KatalogpflegeTests` (+5) und `KlimadatenDialogTests` (+8) — Quellenwahl, Pflichtangaben
-  je Quelle, Herkunftsvermerk.
+- `KatalogpflegeTests` und `KlimadatenDialogTests` — Quellenwahl, Pflichtangaben je Quelle,
+  Herkunftsvermerk; dazu der Standort aus dem Kopf, der Vorrang der Anwendereingabe, der
+  Fall ohne jeden Standort und die Vorbelegung im Dialog samt Überschreiben.
 - `EinstellungenDialogTests` — 31 Tests, beide Kulturen.
 - Importprobe `Referenzlaeufe/Importproben/dwd_try_synthetisch_72h.dat` — eine
   **synthetische** Probe im DWD-Format, ausdrücklich keine amtlichen Daten; der Leser hat für
-  sie die Prüfoption „volles Jahr aus".
+  sie die Prüfoption „volles Jahr aus". Ihr Kopf steht auf einem stimmigen Punkt:
+  Rechtswert 3 929 310 / Hochwert 2 478 193 ergeben 9,0000° O / 49,0000° N.
 - Referenzlauf der fünf Projekte byte-gleich gegen die geltende Basis; der PVGIS-Weg bleibt
   unverändert.
 
@@ -223,10 +266,8 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
 
 1. **Keine Regionsanzeige vor dem Import** — welche Region der Standort trifft, sagt erst
    die Meldung danach; eine Vorschau kostete einen zweiten Netzabruf.
-2. **Lambert → WGS 84 ist nicht umgesetzt** — der Standort einer TRY-Datei kommt vom
-   Anwender, nicht aus dem Dateikopf.
-3. **Sommerstunden einer TRY-Reihe liegen beim Lesen eine Stunde früher** (Abschnitt 4).
+2. **Sommerstunden einer TRY-Reihe liegen beim Lesen eine Stunde früher** (Abschnitt 4).
    Ein quellenbewusstes Lesen braucht eine Quellenkennung an der Region und damit einen
    Schemaschritt.
-4. **`N`, `A`, `E` werden nicht gespeichert** (Abschnitt 6) — der Schemaschritt dafür gehört
+3. **`N`, `A`, `E` werden nicht gespeichert** (Abschnitt 6) — der Schemaschritt dafür gehört
    mit dem Bedeckungsgrad der Gebäudesimulation zusammen.

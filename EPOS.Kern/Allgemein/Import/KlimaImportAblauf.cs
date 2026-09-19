@@ -353,13 +353,39 @@ namespace WindowsFormsApplication1
                                       MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
                 }
 
+                // ---- der STANDORT (Auftrag KL-2) ---------------------------
+                // Der Auftrag hat Vorrang: Was der Anwender eingetragen oder ueber
+                // den Ortsnamen geholt hat, bleibt stehen. Erst wenn er KEINE
+                // Koordinaten mitbringt, kommt der Standort aus dem Dateikopf
+                // (Lambert -> Laenge/Breite). Beides wird BENANNT vermerkt.
+                bool ausKopf = false;
+                if (auftrag.Art == KlimaImportArt.AusKoordinaten && lon == 0 && lat == 0)
+                {
+                    if (!kopf.StandortBekannt)
+                        return Fehler(erg, KlimaImportAusgang.Eingabefehler,
+                            MyResource.Resource.KLIMA_TRY_STANDORT_FEHLT);
+
+                    lon = kopf.Laenge!.Value;
+                    lat = kopf.Breite!.Value;
+                    ausKopf = true;
+                }
+
+                string standort = ausKopf
+                    ? string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.KLIMA_TRY_STANDORT_KOPF,
+                        kopf.Rechtswert, kopf.Hochwert,
+                        lon.ToString("F4", CultureInfo.CurrentCulture),
+                        lat.ToString("F4", CultureInfo.CurrentCulture))
+                    : MyResource.Resource.KLIMA_TRY_STANDORT_ANWENDER;
+
                 herkunft = string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.KLIMA_TRY_DETAILS_DATEI,
                     Path.GetFileName(pfad),
                     DateTime.Now.ToString("d", CultureInfo.CurrentCulture),
                     MyResource.Resource.KLIMA_TRY_LIZENZ,
                     string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KLIMA_TRY_VERWORFEN, kopf.VerworfenText));
+                                  MyResource.Resource.KLIMA_TRY_VERWORFEN, kopf.VerworfenText))
+                    + " · " + standort;
 
                 DwdTryLeser.DirektNormal(stunden, lon, lat);
             }

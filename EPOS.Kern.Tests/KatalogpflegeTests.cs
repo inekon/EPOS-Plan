@@ -1360,14 +1360,20 @@ namespace EPOS.Kern.Tests
         /// Schreibt eine vollstaendige, SYNTHETISCHE TRY-Datei (34 Kopfzeilen,
         /// 8 760 Datenzeilen) in den Temp-Ordner. Keine DWD-Originaldaten.
         /// </summary>
-        private static string TryDateiSchreiben()
+        /// <param name="mitStandort">Schreibt Rechts- und Hochwert in den Kopf
+        /// (Auftrag KL-2): 3 929 310 / 2 478 193 ergeben 9,0000° O / 49,0000° N.</param>
+        private static string TryDateiSchreiben(bool mitStandort = false)
         {
             string pfad = Path.Combine(Path.GetTempPath(),
                 "epos_try_" + Guid.NewGuid().ToString("N") + ".dat");
 
             var sb = new System.Text.StringBuilder(700 * 1024);
             for (int i = 1; i <= 34; i++)
-                sb.Append("Kopfzeile ").Append(i.ToString(CultureInfo.InvariantCulture)).Append("\r\n");
+            {
+                if (mitStandort && i == 6) sb.Append("Rechtswert: 3929310 Meter\r\n");
+                else if (mitStandort && i == 7) sb.Append("Hochwert: 2478193 Meter\r\n");
+                else sb.Append("Kopfzeile ").Append(i.ToString(CultureInfo.InvariantCulture)).Append("\r\n");
+            }
             sb.Append("*** \r\n");
 
             int[] tageMonat = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -1436,6 +1442,140 @@ namespace EPOS.Kern.Tests
                 {
                     try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
                 }
+            }
+        }
+
+        /// <summary>
+        /// <b>Ohne Koordinaten im Auftrag kommt der Standort aus dem DATEIKOPF</b>
+        /// (Auftrag KL-2): Rechts-/Hochwert werden über <c>LambertKoordinaten</c>
+        /// umgerechnet, und der Herkunftsvermerk sagt das. Die Region trägt danach
+        /// 9,0000° O / 49,0000° N.
+        /// </summary>
+        [Fact]
+        public async Task DerTryImportOhneKoordinatenNimmtDenDateikopf()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                string pfad = TryDateiSchreiben(mitStandort: true);
+                try
+                {
+                    KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                        new KlimaImportAuftrag
+                        {
+                            Art = KlimaImportArt.AusKoordinaten,
+                            Bezeichnung = "KL2 Standort aus dem Kopf",
+                            // KEINE Koordinaten - sie kommen aus dem Kopf.
+                            Quelle = KlimaQuelle.TryDatei,
+                            TryPfad = pfad
+                        },
+                        null);
+
+                    Assert.True(erg.Erfolgreich, erg.Meldung);
+
+                    double lon = Convert.ToDouble(DataRepository.ExecuteScalar(
+                        "SELECT Longitude FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id)), CultureInfo.InvariantCulture);
+                    double lat = Convert.ToDouble(DataRepository.ExecuteScalar(
+                        "SELECT Latitude FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id)), CultureInfo.InvariantCulture);
+
+                    Assert.Equal(9.0, lon, 3);
+                    Assert.Equal(49.0, lat, 3);
+
+                    string details = Convert.ToString(DataRepository.ExecuteScalar(
+                        "SELECT Details FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id))) ?? "";
+
+                    // Kulturunabhaengig: die ZAHLEN des Kopfes stehen im Vermerk, der
+                    // Satz "vom Anwender" nicht.
+                    Assert.Contains("3929310", details);
+                    Assert.Contains("2478193", details);
+                    Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_STANDORT_ANWENDER,
+                                          details);
+                }
+                finally
+                {
+                    try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Trägt der Auftrag Koordinaten, BLEIBEN SIE STEHEN — auch wenn der Dateikopf
+        /// einen anderen Punkt nennt; der Vermerk sagt „vom Anwender“ (Auftrag KL-2).
+        /// </summary>
+        [Fact]
+        public async Task DerTryImportMitKoordinatenBehaeltDieEingabeDesAnwenders()
+        {
+            using (var eigene = new TestDatenbank())
+            {
+                if (!eigene.Vorhanden) return;
+
+                string pfad = TryDateiSchreiben(mitStandort: true);
+                try
+                {
+                    KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                        new KlimaImportAuftrag
+                        {
+                            Art = KlimaImportArt.AusKoordinaten,
+                            Bezeichnung = "KL2 Standort vom Anwender",
+                            Longitude = 9.1829,
+                            Latitude = 48.7758,
+                            Quelle = KlimaQuelle.TryDatei,
+                            TryPfad = pfad
+                        },
+                        null);
+
+                    Assert.True(erg.Erfolgreich, erg.Meldung);
+
+                    double lon = Convert.ToDouble(DataRepository.ExecuteScalar(
+                        "SELECT Longitude FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id)), CultureInfo.InvariantCulture);
+
+                    Assert.Equal(9.1829, lon, 4);
+
+                    string details = Convert.ToString(DataRepository.ExecuteScalar(
+                        "SELECT Details FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?",
+                        new DbParam("@id", erg.Id))) ?? "";
+
+                    Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_STANDORT_ANWENDER, details);
+                    Assert.DoesNotContain("3929310", details);
+                }
+                finally
+                {
+                    try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Weder Koordinaten im Auftrag noch ein lesbarer Kopf: <b>benannter
+        /// Eingabefehler</b> statt eines Punktes bei 0/0 (Auftrag KL-2).
+        /// </summary>
+        [Fact]
+        public async Task EinTryImportOhneKoordinatenUndOhneKopfstandortWirdAbgelehnt()
+        {
+            string pfad = TryDateiSchreiben();          // Kopf ohne Rechts-/Hochwert
+            try
+            {
+                KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                    new KlimaImportAuftrag
+                    {
+                        Art = KlimaImportArt.AusKoordinaten,
+                        Bezeichnung = "KL2 ohne jeden Standort",
+                        Quelle = KlimaQuelle.TryDatei,
+                        TryPfad = pfad
+                    },
+                    null);
+
+                Assert.Equal(KlimaImportAusgang.Eingabefehler, erg.Ausgang);
+                Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_STANDORT_FEHLT, erg.Meldung);
+            }
+            finally
+            {
+                try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
             }
         }
 

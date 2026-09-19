@@ -128,8 +128,139 @@ namespace EPOS.Kern.Tests
                          mittag.GlobalIrradiance, 9);
 
             // Die Kopfangaben, soweit lesbar.
-            Assert.Contains("4321000", kopf.Rechtswert);
-            Assert.Contains("5678000", kopf.Hochwert);
+            Assert.Contains("3929310", kopf.Rechtswert);
+            Assert.Contains("2478193", kopf.Hochwert);
+
+            // Und der STANDORT daraus (Auftrag KL-2): der runde Punkt der Probe.
+            Assert.True(kopf.StandortBekannt);
+            Assert.Equal(9.0, kopf.Laenge!.Value, 4);
+            Assert.Equal(49.0, kopf.Breite!.Value, 4);
+        }
+
+        // =====================================================================
+        //  Der Standort aus dem Dateikopf (Auftrag KL-2)
+        // =====================================================================
+
+        /// <summary>
+        /// <b><c>KopfLesen</c> liest NUR den Kopf</b> — und kommt ohne die 8 760
+        /// Datenzeilen zum Standort. Genau das ruft der Klimadaten-Dialog, wenn der
+        /// Anwender eine Datei wählt.
+        /// </summary>
+        [Fact]
+        public void KopfLesen_holt_den_Standort_ohne_die_Datenzeilen()
+        {
+            Assert.True(DwdTryLeser.KopfLesen(ProbeDatei(), out TryKopf kopf));
+
+            Assert.Equal(34, kopf.Kopfzeilen);
+            Assert.True(kopf.StandortBekannt);
+            Assert.Equal(9.0, kopf.Laenge!.Value, 4);
+            Assert.Equal(49.0, kopf.Breite!.Value, 4);
+            Assert.Contains("Meter", kopf.Rechtswert);
+        }
+
+        /// <summary>
+        /// Ein Kopf OHNE Rechts- und Hochwert lässt den Standort <c>null</c> — keine
+        /// stille Null im Golf von Guinea.
+        /// </summary>
+        [Fact]
+        public void Ein_Kopf_ohne_Lambertwerte_laesst_den_Standort_leer()
+        {
+            TryKopf kopf = DwdTryLeser.KopfLesen(Kopf(34));
+
+            Assert.Equal(34, kopf.Kopfzeilen);
+            Assert.False(kopf.StandortBekannt);
+            Assert.Null(kopf.Laenge);
+            Assert.Null(kopf.Breite);
+        }
+
+        /// <summary>
+        /// Ein Rechts-/Hochwert AUSSERHALB der Plausibilitätsgrenzen zählt nicht als
+        /// Standort — die alten, erfundenen Werte der Probe lagen genau dort.
+        /// </summary>
+        [Fact]
+        public void Ein_unplausibler_Lambertpunkt_zaehlt_nicht_als_Standort()
+        {
+            var z = new System.Collections.Generic.List<string>
+            {
+                "Rechtswert: 4321000 Meter",
+                "Hochwert: 5678000 Meter",
+                "*** "
+            };
+
+            TryKopf kopf = DwdTryLeser.KopfLesen(z);
+
+            Assert.Equal("4321000 Meter", kopf.Rechtswert);
+            Assert.False(kopf.StandortBekannt);
+        }
+
+        /// <summary>
+        /// <b>Was der volle Leser findet, findet auch <c>KopfLesen</c></b> — derselbe
+        /// Kopf, dieselben Zahlen. Sonst zeigte der Dialog etwas anderes an als der
+        /// Import schreibt.
+        /// </summary>
+        [Fact]
+        public void KopfLesen_und_Lesen_liefern_denselben_Standort()
+        {
+            DwdTryLeser.LesenDatei(ProbeDatei(), out TryKopf voll, vollesJahr: false);
+            Assert.True(DwdTryLeser.KopfLesen(ProbeDatei(), out TryKopf nurKopf));
+
+            Assert.Equal(voll.Kopfzeilen, nurKopf.Kopfzeilen);
+            Assert.Equal(voll.Rechtswert, nurKopf.Rechtswert);
+            Assert.Equal(voll.Laenge, nurKopf.Laenge);
+            Assert.Equal(voll.Breite, nurKopf.Breite);
+        }
+
+        /// <summary>
+        /// Eine Datei, die es nicht gibt, ist kein Absturz: <c>false</c> und ein leerer
+        /// Kopf — der Dialog meldet das und lässt die Felder stehen.
+        /// </summary>
+        [Fact]
+        public void KopfLesen_einer_fehlenden_Datei_wirft_nicht()
+        {
+            Assert.False(DwdTryLeser.KopfLesen(
+                Path.Combine(Path.GetTempPath(), "epos_gibt_es_nicht_" +
+                             Guid.NewGuid().ToString("N") + ".dat"), out TryKopf kopf));
+
+            Assert.False(kopf.StandortBekannt);
+            Assert.Equal("", kopf.Rechtswert);
+
+            Assert.False(DwdTryLeser.KopfLesen("   ", out TryKopf leer));
+            Assert.False(leer.StandortBekannt);
+        }
+
+        /// <summary>Ohne Trennzeile gibt es keinen Kopf — benannt, nicht still.</summary>
+        [Fact]
+        public void KopfLesen_ohne_Trennzeile_meldet_das_fehlende_Kopfende()
+        {
+            var z = new System.Collections.Generic.List<string> { "Rechtswert: 3929310 Meter" };
+
+            FormatException ex = Assert.Throws<FormatException>(() => DwdTryLeser.KopfLesen(z));
+            Assert.Contains("***", ex.Message);
+        }
+
+        /// <summary>
+        /// <c>Meterwert</c> liest die Zahl aus „3929310 Meter“ — und lehnt ab, was keine
+        /// ist. Die Kultur spielt keine Rolle: Gelesen wird invariant.
+        /// </summary>
+        [Theory]
+        [InlineData("3929310 Meter", 3929310.0)]
+        [InlineData("  2478193  ", 2478193.0)]
+        [InlineData("3929310,5 Meter", 3929310.5)]
+        public void Meterwert_liest_die_Zahl_vor_der_Einheit(string angabe, double erwartet)
+        {
+            Assert.True(DwdTryLeser.Meterwert(angabe, out double wert));
+            Assert.Equal(erwartet, wert, 6);
+        }
+
+        /// <summary>Was keine Zahl ist, wird abgelehnt statt zu 0 gemacht.</summary>
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData("unbekannt")]
+        public void Meterwert_lehnt_ab_was_keine_Zahl_ist(string angabe)
+        {
+            Assert.False(DwdTryLeser.Meterwert(angabe, out double wert));
+            Assert.Equal(0.0, wert);
         }
 
         /// <summary>
