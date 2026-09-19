@@ -171,6 +171,13 @@
        nicht mehr (er hat nur noch EINE Anordnung), das Formularraster, der
        Dublettenbaum und die Kennzahlzeile benutzen es weiter. */
     --epos-projektlistenhoehe: 12rem;
+
+    /* Die PROJEKTLISTE DES TRANSFERDIALOGS (Auftrag PI-1). Sie ist hoeher als
+       die Projektliste der Startseite: Dort waehlt man EINES, hier hakt man
+       mehrere an und vergleicht dabei Art, Varianten und Kunde. 24 rem sind
+       bei 53 px Zeilenhoehe rund acht Zeilen plus Kopf - genug, um eine
+       Stammgruppe samt ihren Varianten auf einen Blick zu sehen. */
+    --epos-transfer-listenhoehe: 24rem;
     --epos-zweispalten-umbruch: 900px;
 
     /* Das FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026:
@@ -1100,6 +1107,14 @@ body {
 .epos-option-kasten {
     width: 20px;
     height: 20px;
+}
+
+/* Ein gesperrtes Haekchen bleibt sichtbar und traegt seinen Grund (PI-1).
+   HART und WEICH in EINER Regel (Hausregel, W16b-E-6): Ein Anwender
+   unterscheidet "geht nicht" nicht nach der Bauart. */
+.epos-schalter-kasten:disabled + .epos-feld-text,
+.epos-schalter-kasten[aria-disabled="true"] + .epos-feld-text {
+    color: var(--epos-text-sehr-leise);
 }
 
 /* Eine gesperrte Option bleibt sichtbar - sie sagt, dass es die Moeglichkeit
@@ -9491,6 +9506,61 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     .epos-suchauswahl-eintrag--hervor {
         outline: 2px solid CanvasText;
     }
+}
+
+/* ==================================================================== */
+/* PROJEKTTRANSFER - die Mehrfachwahl (Auftrag PI-1)                    */
+/* -------------------------------------------------------------------- */
+/* Vier Flaechen, vier Regeln: die Projektliste des Exportblatts, die   */
+/* Haekchenbloecke je Stammgruppe darunter, die Paketvorschau des       */
+/* Importblatts und die Zielordnerzeile. Alle vier deckeln nur ihre     */
+/* Hoehe und rollen; das Aussehen kommt von den Bausteinen.             */
+/* ==================================================================== */
+.epos-transfer-liste {
+    max-height: var(--epos-transfer-listenhoehe);
+    overflow: auto;
+}
+
+/* Die Haekchenbloecke: je Stammgruppe einer, nebeneinander, solange
+   Platz ist. Ohne Deckel wuechse das Blatt bei acht Gruppen ins
+   Unermessliche und der Exportknopf rutschte aus dem Bild. */
+.epos-transfer-gruppen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-height: calc(var(--epos-transfer-listenhoehe) * 0.75);
+    overflow: auto;
+    margin-block: 6px;
+}
+
+.epos-transfer-gruppen > * {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+/* Die Paketvorschau des Importblatts - ein Raster, das bei fuenf
+   Paketen nicht laenger wird als die Projektliste daneben. */
+.epos-transfer-pakete {
+    max-height: calc(var(--epos-transfer-listenhoehe) * 0.75);
+    overflow: auto;
+    margin-block: 6px;
+}
+
+/* Die Zielordnerzeile: Beschriftung, Pfad und Knopf in EINER Zeile;
+   der Pfad nimmt den Rest und kuerzt sich mit Auslassungspunkten. */
+.epos-transfer-ordner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-block: 6px;
+}
+
+.epos-transfer-ordner-pfad {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* ==================================================================== */

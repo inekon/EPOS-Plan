@@ -20100,4 +20100,109 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_SET_LBL_TRY_REGIONAL" xml:space="preserve">
     <value>Adresse der TRY-Regionaldaten:</value>
   </data>
+  <data name="PTR_SP_PROJEKT" xml:space="preserve">
+    <value>Projekt</value>
+  </data>
+  <data name="PTR_SP_ART" xml:space="preserve">
+    <value>Art</value>
+  </data>
+  <data name="PTR_SP_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="PTR_SP_KUNDE" xml:space="preserve">
+    <value>Kunde</value>
+  </data>
+  <data name="PTR_SP_GEAENDERT" xml:space="preserve">
+    <value>Geändert</value>
+  </data>
+  <data name="PTR_SP_MITGENOMMEN" xml:space="preserve">
+    <value>mitgenommen</value>
+  </data>
+  <data name="PTR_ART_STAMM" xml:space="preserve">
+    <value>Stamm</value>
+  </data>
+  <data name="PTR_ART_VARIANTE" xml:space="preserve">
+    <value>Variante von {0}</value>
+  </data>
+  <data name="PTR_LBL_PROJEKTE" xml:space="preserve">
+    <value>Projekte zum Export:</value>
+  </data>
+  <data name="PTR_HINWEIS_STAMMZUG" xml:space="preserve">
+    <value>Zu {0} gewählten Varianten kommen {1} Stammprojekte hinzu.</value>
+  </data>
+  <data name="PTR_LBL_ZIELORDNER" xml:space="preserve">
+    <value>Zielordner:</value>
+  </data>
+  <data name="PTR_BTN_ORDNER" xml:space="preserve">
+    <value>Ordner wählen…</value>
+  </data>
+  <data name="PTR_GRUPPE_VARIANTEN" xml:space="preserve">
+    <value>Varianten von „{0}“:</value>
+  </data>
+  <data name="PTR_GESPERRT_GEWAEHLT" xml:space="preserve">
+    <value>Diese Variante ist in der Liste gewählt und reist mit.</value>
+  </data>
+  <data name="PTR_MSG_KEINE_WAHL" xml:space="preserve">
+    <value>Bitte mindestens ein Projekt wählen.</value>
+  </data>
+  <data name="PTR_MSG_KEIN_ORDNER" xml:space="preserve">
+    <value>Bitte einen Zielordner wählen.</value>
+  </data>
+  <data name="PTR_BILANZ_EXPORT" xml:space="preserve">
+    <value>{0} von {1} Paketen geschrieben, {2} fehlgeschlagen.</value>
+  </data>
+  <data name="PTR_BTN_DATEIEN" xml:space="preserve">
+    <value>Dateien wählen…</value>
+  </data>
+  <data name="PTR_SP_PAKET_DATEI" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="PTR_SP_PAKET_PROJEKT" xml:space="preserve">
+    <value>Hauptprojekt</value>
+  </data>
+  <data name="PTR_SP_PAKET_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="PTR_SP_PAKET_SCHEMA" xml:space="preserve">
+    <value>Schemastand</value>
+  </data>
+  <data name="PTR_SP_PAKET_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="PTR_PAKET_SCHEMA_OK" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="PTR_PAKET_SCHEMA_ALT" xml:space="preserve">
+    <value>{0} — abweichend</value>
+  </data>
+  <data name="PTR_PAKET_STAMM_AUS" xml:space="preserve">
+    <value>Variante von „{0}“</value>
+  </data>
+  <data name="PTR_PAKET_DUBLETTE" xml:space="preserve">
+    <value>derselbe Stamm wie Paket {0} — wird übersprungen</value>
+  </data>
+  <data name="PTR_LAUF_PAKET" xml:space="preserve">
+    <value>Paket {0} von {1} — {2}</value>
+  </data>
+  <data name="PTR_BILANZ_IMPORT" xml:space="preserve">
+    <value>{0} von {1} Paketen importiert, {2} übersprungen, {3} umbenannt, {4} fehlgeschlagen.</value>
+  </data>
+  <data name="PTR_MSG_ZIELNAME_MEHRERE" xml:space="preserve">
+    <value>Der Zielname gilt nur für einen einzelnen Import; bei mehreren Paketen behält jedes Projekt seinen Namen.</value>
+  </data>
+  <data name="TRANSFER_EXPORT_VARIANTE_ALS_STAMM" xml:space="preserve">
+    <value>Das Projekt „{0}“ ist selbst eine Variante und kann keine weiteren Varianten mitnehmen. Bitte das Stammprojekt wählen.</value>
+  </data>
+  <data name="TRANSFER_STAMM_BEREITS" xml:space="preserve">
+    <value>Stammprojekt „{0}“ steht bereits aus einem früheren Paket dieses Laufs — es wird nicht noch einmal angelegt.</value>
+  </data>
+  <data name="TRANSFER_PAKET_SCHEMA" xml:space="preserve">
+    <value>Das Paket wurde mit Schemastand {0} exportiert, dieser Rechner arbeitet mit Stand {1}.</value>
+  </data>
+  <data name="TRANSFER_PAKET_UNLESBAR" xml:space="preserve">
+    <value>Kein gültiges Projektpaket (manifest.json fehlt).</value>
+  </data>
+  <data name="TRANSFER_PAKET_UNLESBAR_GRUND" xml:space="preserve">
+    <value>Paket konnte nicht gelesen werden: {0}</value>
+  </data>
 </root>

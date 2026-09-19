@@ -20093,4 +20093,109 @@ Do you want to allow this?</value>
   <data name="ADM_SET_LBL_TRY_REGIONAL" xml:space="preserve">
     <value>Address of the TRY regional data:</value>
   </data>
+  <data name="PTR_SP_PROJEKT" xml:space="preserve">
+    <value>Project</value>
+  </data>
+  <data name="PTR_SP_ART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="PTR_SP_VARIANTEN" xml:space="preserve">
+    <value>Variants</value>
+  </data>
+  <data name="PTR_SP_KUNDE" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="PTR_SP_GEAENDERT" xml:space="preserve">
+    <value>Changed</value>
+  </data>
+  <data name="PTR_SP_MITGENOMMEN" xml:space="preserve">
+    <value>included</value>
+  </data>
+  <data name="PTR_ART_STAMM" xml:space="preserve">
+    <value>Parent</value>
+  </data>
+  <data name="PTR_ART_VARIANTE" xml:space="preserve">
+    <value>Variant of {0}</value>
+  </data>
+  <data name="PTR_LBL_PROJEKTE" xml:space="preserve">
+    <value>Projects to export:</value>
+  </data>
+  <data name="PTR_HINWEIS_STAMMZUG" xml:space="preserve">
+    <value>{1} parent project(s) are added for {0} selected variant(s).</value>
+  </data>
+  <data name="PTR_LBL_ZIELORDNER" xml:space="preserve">
+    <value>Target folder:</value>
+  </data>
+  <data name="PTR_BTN_ORDNER" xml:space="preserve">
+    <value>Choose folder…</value>
+  </data>
+  <data name="PTR_GRUPPE_VARIANTEN" xml:space="preserve">
+    <value>Variants of “{0}”:</value>
+  </data>
+  <data name="PTR_GESPERRT_GEWAEHLT" xml:space="preserve">
+    <value>This variant is selected in the list and travels along.</value>
+  </data>
+  <data name="PTR_MSG_KEINE_WAHL" xml:space="preserve">
+    <value>Please select at least one project.</value>
+  </data>
+  <data name="PTR_MSG_KEIN_ORDNER" xml:space="preserve">
+    <value>Please choose a target folder.</value>
+  </data>
+  <data name="PTR_BILANZ_EXPORT" xml:space="preserve">
+    <value>{0} of {1} packages written, {2} failed.</value>
+  </data>
+  <data name="PTR_BTN_DATEIEN" xml:space="preserve">
+    <value>Choose files…</value>
+  </data>
+  <data name="PTR_SP_PAKET_DATEI" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="PTR_SP_PAKET_PROJEKT" xml:space="preserve">
+    <value>Main project</value>
+  </data>
+  <data name="PTR_SP_PAKET_VARIANTEN" xml:space="preserve">
+    <value>Variants</value>
+  </data>
+  <data name="PTR_SP_PAKET_SCHEMA" xml:space="preserve">
+    <value>Schema version</value>
+  </data>
+  <data name="PTR_SP_PAKET_HINWEIS" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="PTR_PAKET_SCHEMA_OK" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="PTR_PAKET_SCHEMA_ALT" xml:space="preserve">
+    <value>{0} — differing</value>
+  </data>
+  <data name="PTR_PAKET_STAMM_AUS" xml:space="preserve">
+    <value>Variant of “{0}”</value>
+  </data>
+  <data name="PTR_PAKET_DUBLETTE" xml:space="preserve">
+    <value>same parent as package {0} — will be skipped</value>
+  </data>
+  <data name="PTR_LAUF_PAKET" xml:space="preserve">
+    <value>Package {0} of {1} — {2}</value>
+  </data>
+  <data name="PTR_BILANZ_IMPORT" xml:space="preserve">
+    <value>{0} of {1} packages imported, {2} skipped, {3} renamed, {4} failed.</value>
+  </data>
+  <data name="PTR_MSG_ZIELNAME_MEHRERE" xml:space="preserve">
+    <value>The target name applies to a single import only; with several packages every project keeps its name.</value>
+  </data>
+  <data name="TRANSFER_EXPORT_VARIANTE_ALS_STAMM" xml:space="preserve">
+    <value>The project “{0}” is a variant itself and cannot take further variants along. Please select the parent project.</value>
+  </data>
+  <data name="TRANSFER_STAMM_BEREITS" xml:space="preserve">
+    <value>Parent project “{0}” already came with an earlier package of this run — it is not created a second time.</value>
+  </data>
+  <data name="TRANSFER_PAKET_SCHEMA" xml:space="preserve">
+    <value>The package was exported with schema version {0}, this computer works with version {1}.</value>
+  </data>
+  <data name="TRANSFER_PAKET_UNLESBAR" xml:space="preserve">
+    <value>Not a valid project package (manifest.json is missing).</value>
+  </data>
+  <data name="TRANSFER_PAKET_UNLESBAR_GRUND" xml:space="preserve">
+    <value>The package could not be read: {0}</value>
+  </data>
 </root>

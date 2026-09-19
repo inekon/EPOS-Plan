@@ -39015,11 +39015,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm ähnelt.
+        /// </summary>
+        public static string PTR_ART_STAMM {
+            get {
+                return ResourceManager.GetString("PTR_ART_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante von {0} ähnelt.
+        /// </summary>
+        public static string PTR_ART_VARIANTE {
+            get {
+                return ResourceManager.GetString("PTR_ART_VARIANTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Paketen geschrieben, {2} fehlgeschlagen. ähnelt.
+        /// </summary>
+        public static string PTR_BILANZ_EXPORT {
+            get {
+                return ResourceManager.GetString("PTR_BILANZ_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Paketen importiert, {2} übersprungen, {3} umbenannt, {4} fehlgeschlagen. ähnelt.
+        /// </summary>
+        public static string PTR_BILANZ_IMPORT {
+            get {
+                return ResourceManager.GetString("PTR_BILANZ_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datei wählen… ähnelt.
         /// </summary>
         public static string PTR_BTN_DATEI {
             get {
                 return ResourceManager.GetString("PTR_BTN_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dateien wählen… ähnelt.
+        /// </summary>
+        public static string PTR_BTN_DATEIEN {
+            get {
+                return ResourceManager.GetString("PTR_BTN_DATEIEN", resourceCulture);
             }
         }
         
@@ -39038,6 +39083,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PTR_BTN_IMPORT {
             get {
                 return ResourceManager.GetString("PTR_BTN_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordner wählen… ähnelt.
+        /// </summary>
+        public static string PTR_BTN_ORDNER {
+            get {
+                return ResourceManager.GetString("PTR_BTN_ORDNER", resourceCulture);
             }
         }
         
@@ -39108,6 +39162,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Variante ist in der Liste gewählt und reist mit. ähnelt.
+        /// </summary>
+        public static string PTR_GESPERRT_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("PTR_GESPERRT_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten von „{0}“: ähnelt.
+        /// </summary>
+        public static string PTR_GRUPPE_VARIANTEN {
+            get {
+                return ResourceManager.GetString("PTR_GRUPPE_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu {0} gewählten Varianten kommen {1} Stammprojekte hinzu. ähnelt.
+        /// </summary>
+        public static string PTR_HINWEIS_STAMMZUG {
+            get {
+                return ResourceManager.GetString("PTR_HINWEIS_STAMMZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quellprojekt: {0} · Exportdatum: {1} · Schema-Version: {2} ähnelt.
         /// </summary>
         public static string PTR_INFO_PAKET {
@@ -39122,6 +39203,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PTR_INFO_VARIANTEN {
             get {
                 return ResourceManager.GetString("PTR_INFO_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paket {0} von {1} — {2} ähnelt.
+        /// </summary>
+        public static string PTR_LAUF_PAKET {
+            get {
+                return ResourceManager.GetString("PTR_LAUF_PAKET", resourceCulture);
             }
         }
         
@@ -39153,6 +39243,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekte zum Export: ähnelt.
+        /// </summary>
+        public static string PTR_LBL_PROJEKTE {
+            get {
+                return ResourceManager.GetString("PTR_LBL_PROJEKTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Varianten mitexportieren: ähnelt.
         /// </summary>
         public static string PTR_LBL_VARIANTEN {
@@ -39167,6 +39266,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PTR_LBL_ZIELNAME {
             get {
                 return ResourceManager.GetString("PTR_LBL_ZIELNAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielordner: ähnelt.
+        /// </summary>
+        public static string PTR_LBL_ZIELORDNER {
+            get {
+                return ResourceManager.GetString("PTR_LBL_ZIELORDNER", resourceCulture);
             }
         }
         
@@ -39236,6 +39344,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte mindestens ein Projekt wählen. ähnelt.
+        /// </summary>
+        public static string PTR_MSG_KEINE_WAHL {
+            get {
+                return ResourceManager.GetString("PTR_MSG_KEINE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Zielordner wählen. ähnelt.
+        /// </summary>
+        public static string PTR_MSG_KEIN_ORDNER {
+            get {
+                return ResourceManager.GetString("PTR_MSG_KEIN_ORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein gültiges Paket (manifest.json fehlt). ähnelt.
         /// </summary>
         public static string PTR_MSG_KEIN_PAKET {
@@ -39272,6 +39398,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zielname gilt nur für einen einzelnen Import; bei mehreren Paketen behält jedes Projekt seinen Namen. ähnelt.
+        /// </summary>
+        public static string PTR_MSG_ZIELNAME_MEHRERE {
+            get {
+                return ResourceManager.GetString("PTR_MSG_ZIELNAME_MEHRERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string PTR_OPT_ABBRECHEN {
@@ -39295,6 +39430,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PTR_OPT_UEBERSCHREIBEN {
             get {
                 return ResourceManager.GetString("PTR_OPT_UEBERSCHREIBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die derselbe Stamm wie Paket {0} — wird übersprungen ähnelt.
+        /// </summary>
+        public static string PTR_PAKET_DUBLETTE {
+            get {
+                return ResourceManager.GetString("PTR_PAKET_DUBLETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — abweichend ähnelt.
+        /// </summary>
+        public static string PTR_PAKET_SCHEMA_ALT {
+            get {
+                return ResourceManager.GetString("PTR_PAKET_SCHEMA_ALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ähnelt.
+        /// </summary>
+        public static string PTR_PAKET_SCHEMA_OK {
+            get {
+                return ResourceManager.GetString("PTR_PAKET_SCHEMA_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante von „{0}“ ähnelt.
+        /// </summary>
+        public static string PTR_PAKET_STAMM_AUS {
+            get {
+                return ResourceManager.GetString("PTR_PAKET_STAMM_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Art ähnelt.
+        /// </summary>
+        public static string PTR_SP_ART {
+            get {
+                return ResourceManager.GetString("PTR_SP_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geändert ähnelt.
+        /// </summary>
+        public static string PTR_SP_GEAENDERT {
+            get {
+                return ResourceManager.GetString("PTR_SP_GEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kunde ähnelt.
+        /// </summary>
+        public static string PTR_SP_KUNDE {
+            get {
+                return ResourceManager.GetString("PTR_SP_KUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mitgenommen ähnelt.
+        /// </summary>
+        public static string PTR_SP_MITGENOMMEN {
+            get {
+                return ResourceManager.GetString("PTR_SP_MITGENOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_DATEI {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_HINWEIS {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hauptprojekt ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_PROJEKT {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schemastand ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_SCHEMA {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten ähnelt.
+        /// </summary>
+        public static string PTR_SP_PAKET_VARIANTEN {
+            get {
+                return ResourceManager.GetString("PTR_SP_PAKET_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt ähnelt.
+        /// </summary>
+        public static string PTR_SP_PROJEKT {
+            get {
+                return ResourceManager.GetString("PTR_SP_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten ähnelt.
+        /// </summary>
+        public static string PTR_SP_VARIANTEN {
+            get {
+                return ResourceManager.GetString("PTR_SP_VARIANTEN", resourceCulture);
             }
         }
         
@@ -53006,6 +53276,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt „{0}“ ist selbst eine Variante und kann keine weiteren Varianten mitnehmen. Bitte das Stammprojekt wählen. ähnelt.
+        /// </summary>
+        public static string TRANSFER_EXPORT_VARIANTE_ALS_STAMM {
+            get {
+                return ResourceManager.GetString("TRANSFER_EXPORT_VARIANTE_ALS_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Paket wurde mit Schemastand {0} exportiert, dieser Rechner arbeitet mit Stand {1}. ähnelt.
+        /// </summary>
+        public static string TRANSFER_PAKET_SCHEMA {
+            get {
+                return ResourceManager.GetString("TRANSFER_PAKET_SCHEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein gültiges Projektpaket (manifest.json fehlt). ähnelt.
+        /// </summary>
+        public static string TRANSFER_PAKET_UNLESBAR {
+            get {
+                return ResourceManager.GetString("TRANSFER_PAKET_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Paket konnte nicht gelesen werden: {0} ähnelt.
+        /// </summary>
+        public static string TRANSFER_PAKET_UNLESBAR_GRUND {
+            get {
+                return ResourceManager.GetString("TRANSFER_PAKET_UNLESBAR_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vergütung des Stammprojekts „{0}“ als eigene Werte übernommen. ähnelt.
         /// </summary>
         public static string TRANSFER_PV_BEILAGE {
@@ -53020,6 +53326,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string TRANSFER_PV_OHNE_BEILAGE {
             get {
                 return ResourceManager.GetString("TRANSFER_PV_OHNE_BEILAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stammprojekt „{0}“ steht bereits aus einem früheren Paket dieses Laufs — es wird nicht noch einmal angelegt. ähnelt.
+        /// </summary>
+        public static string TRANSFER_STAMM_BEREITS {
+            get {
+                return ResourceManager.GetString("TRANSFER_STAMM_BEREITS", resourceCulture);
             }
         }
         
