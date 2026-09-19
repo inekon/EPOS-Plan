@@ -17,6 +17,8 @@ Umsetzung. Was davon noch nicht gebaut ist, steht gesammelt in seinem Anhang
 Wirtschaftlichkeit_Kosten/
 ├── LIESMICH.md                          diese Datei — Einstieg und Lesereihenfolge
 ├── Beispielprojekt.md                   die eine Zahlenquelle: Eingangsgrößen, Mengenbilanz, Preise
+├── 2026-09-19_Pruefung_Mockups_Wirtschaftlichkeit.md   Prüfung der Mockups: Befund und Änderungsplan
+├── 2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md   Analyse des Konzepts für die Umsetzung: Stand, Lücken, Entscheide, Etappen
 └── Rechenweg/
     ├── 01_Investitionskosten_BHKW.md    Drei-Runden-Kaskade, Zuschussklemme
     ├── 02_Betriebskosten_BHKW.md        Pflichtpositionen, Hilfsenergie an der Endenergie
