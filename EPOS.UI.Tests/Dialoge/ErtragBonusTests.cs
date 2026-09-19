@@ -207,4 +207,125 @@ public class ErtragBonusTests : BunitContext
         Assert.Single(cut.FindAll(".epos-formularraster"));
         Assert.Single(cut.FindAll(".epos-formularraster .epos-feld"));
     }
+
+    // =====================================================================
+    //  KONZEPT § 2.16 — die Vergütungswahl je Variante (U38)
+    // =====================================================================
+
+    /// <summary>
+    /// Eine VARIANTE bekommt die Optionsgruppe „vom Stammprojekt übernehmen |
+    /// eigene Vergütung" mit der Vorgabe „übernehmen" und darunter die
+    /// Erklärzeile, die die Herkunft nennt.
+    /// </summary>
+    [Fact]
+    public void Bei_einer_Variante_steht_die_Wahl_mit_der_Erklaerzeile()
+    {
+        var cut = Render<ErtragBonus>(p => p
+            .Add(x => x.IstPv, true)
+            .Add(x => x.IstVariante, true)
+            .Add(x => x.Uebernommen, true)
+            .Add(x => x.ProjektlisteZeigen, false)
+            .Add(x => x.ProjektVorwahl, 9)
+            .Add(x => x.LabelPvWahl, "Vergütung:")
+            .Add(x => x.UebernehmenText, "vom Stammprojekt übernehmen")
+            .Add(x => x.EigeneText, "eigene Vergütung")
+            .Add(x => x.HerkunftText, "übernommen von Musterprojekt · anzulegender Wert 6,04 ct/kWh"));
+
+        var optionen = cut.FindAll("input[type=radio]");
+        Assert.Equal(2, optionen.Count);
+        Assert.True(optionen[0].HasAttribute("checked"));
+        Assert.False(optionen[1].HasAttribute("checked"));
+        Assert.Contains("vom Stammprojekt übernehmen", cut.Markup);
+        Assert.Contains("eigene Vergütung", cut.Markup);
+        Assert.Contains("übernommen von Musterprojekt", cut.Markup);
+    }
+
+    /// <summary>
+    /// Bei „eigene Vergütung" steht die zweite Option, und die Erklärzeile sagt es
+    /// ebenso — beides aus denselben Gaben, keine Zweitwahrheit in der Komponente.
+    /// </summary>
+    [Fact]
+    public void Eine_Variante_mit_eigenen_Werten_zeigt_die_zweite_Option()
+    {
+        var cut = Render<ErtragBonus>(p => p
+            .Add(x => x.IstPv, true)
+            .Add(x => x.IstVariante, true)
+            .Add(x => x.Uebernommen, false)
+            .Add(x => x.ProjektlisteZeigen, false)
+            .Add(x => x.ProjektVorwahl, 9)
+            .Add(x => x.HerkunftText, "eigene Werte dieser Variante"));
+
+        var optionen = cut.FindAll("input[type=radio]");
+        Assert.False(optionen[0].HasAttribute("checked"));
+        Assert.True(optionen[1].HasAttribute("checked"));
+        Assert.Contains("eigene Werte dieser Variante", cut.Markup);
+    }
+
+    /// <summary>
+    /// Der Wechsel meldet die neue Wahl an die Hülle (sie schreibt) und danach den
+    /// Wunsch nach neuen Gaben an den Wirt. Eine Wahl, die schon steht, löst NICHTS
+    /// aus — sonst öffnete jedes Neuzeichnen den Vergütungsdialog.
+    /// </summary>
+    [Fact]
+    public void Der_Wechsel_meldet_die_Wahl_und_bittet_um_neue_Gaben()
+    {
+        bool? gewaehlt = null;
+        int neuGeladen = 0;
+
+        var cut = Render<ErtragBonus>(p => p
+            .Add(x => x.IstPv, true)
+            .Add(x => x.IstVariante, true)
+            .Add(x => x.Uebernommen, true)
+            .Add(x => x.ProjektlisteZeigen, false)
+            .Add(x => x.ProjektVorwahl, 9)
+            .Add(x => x.WahlGeaendert, (bool u) => gewaehlt = u)
+            .Add(x => x.NeuLaden, () => neuGeladen++));
+
+        cut.FindAll("input[type=radio]")[1].Change("1");
+
+        Assert.False(gewaehlt);
+        Assert.Equal(1, neuGeladen);
+
+        // Dieselbe Wahl noch einmal: nichts passiert.
+        cut.FindAll("input[type=radio]")[1].Change("1");
+        Assert.Equal(1, neuGeladen);
+    }
+
+    /// <summary>
+    /// Ein STAMMPROJEKT führt immer eigene Werte — statt der Optionsgruppe steht
+    /// die Zeile, wie viele Varianten seine Vergütung übernehmen (VV‑Q3).
+    /// </summary>
+    [Fact]
+    public void Ein_Stammprojekt_bekommt_keine_Wahl_sondern_die_Zaehlzeile()
+    {
+        var cut = Render<ErtragBonus>(p => p
+            .Add(x => x.IstPv, true)
+            .Add(x => x.IstVariante, false)
+            .Add(x => x.ProjektlisteZeigen, false)
+            .Add(x => x.ProjektVorwahl, 7)
+            .Add(x => x.HerkunftText, "Stammprojekt — 2 Variante(n) übernehmen diese Vergütung"));
+
+        Assert.Empty(cut.FindAll("input[type=radio]"));
+        Assert.Contains("2 Variante(n) übernehmen", cut.Markup);
+    }
+
+    /// <summary>
+    /// VV‑Q7: Im Projektmodus entfällt die Klappliste — der Stand steht fest, und
+    /// der Knopf öffnet den Vergütungsdialog für ihn. Im Admin-Kontext bleibt sie.
+    /// </summary>
+    [Fact]
+    public void Im_Projektmodus_entfaellt_die_Klappliste()
+    {
+        int gemeldet = 0;
+        var cut = Render<ErtragBonus>(p => p
+            .Add(x => x.IstPv, true)
+            .Add(x => x.ProjektlisteZeigen, false)
+            .Add(x => x.ProjektVorwahl, 9)
+            .Add(x => x.Projekte, PROJEKTE)
+            .Add(x => x.PvOeffnen, (int id) => gemeldet = id));
+
+        Assert.Empty(cut.FindAll("select"));
+        cut.Find("button").Click();
+        Assert.Equal(9, gemeldet);
+    }
 }

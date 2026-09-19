@@ -1252,7 +1252,11 @@ namespace WindowsFormsApplication1
         {
             string name = AktuelleKomponente;
             stand.ErtragSichtbar = ErtragBonusGaben.HatInhalt(name);
-            stand.ErtragGaben = stand.ErtragSichtbar ? ErtragBonusGaben.Bauen(name) : null;
+            // KONZEPT § 2.16: Das geöffnete Projekt entscheidet über die
+            // Vergütungswahl — im Admin-Kontext (ProjektModus = false) gibt es keinen
+            // Stand, über dessen Vergütung zu entscheiden wäre.
+            stand.ErtragGaben = stand.ErtragSichtbar
+                ? ErtragBonusGaben.Bauen(name, ProjektModus ? _idProjekt : 0) : null;
         }
 
         // =====================================================================

@@ -55,6 +55,20 @@
     <Schalter Bezeichnung="@_t.Aktiv" Wert="@Modell.Aktiv"
               WertChanged="@(w => Modell.Aktiv = w)" />
 
+    @* KONZEPT § 2.16 - die HERKUNFT der Verguetung dieses Stands. Sie steht unter
+       dem Schalter, weil sie fuer ALLES darunter gilt: Wer uebernimmt, sieht die
+       Werte des Stamms und aendert sie nicht hier, sondern nimmt "eigene Werte".
+       Der Reiter Ertrag/Bonus ist der Ort der WAHL (VV-Q3); dieser Dialog zeigt sie
+       und bietet den einen Weg heraus. *@
+    @if (!string.IsNullOrEmpty(HerkunftText))
+    {
+        <Herleitungszeile Text="@HerkunftText" />
+    }
+    @if (Uebernommen && EigeneWerte.HasDelegate)
+    {
+        <button type="button" class="epos-knopf" @onclick="EigeneWerteKlick">@_t.BtnEigeneWerte</button>
+    }
+
     @* ---------------------------------------------------------- Anlage *@
     <Gruppenkopf Titel="@_t.GAnlage" Symbol="☀">
         <KindInhalt>
@@ -286,6 +300,30 @@
 
     /// <summary>Was der Dialog beim Schließen meldet.</summary>
     [Parameter] public EventCallback<PvVerguetungErgebnis> Geschlossen { get; set; }
+
+    // ---- KONZEPT § 2.16: die Herkunft der Vergütung ----------------------
+
+    /// <summary>
+    /// Zeigt dieser Stand eine ÜBERNOMMENE Vergütung? Dann gehören die Felder dem
+    /// Stammprojekt — „Übernehmen" schriebe sie in die Zeile des geöffneten
+    /// Projekts, und der Weg dahin ist ausdrücklich der Knopf „eigene Werte".
+    /// </summary>
+    [Parameter] public bool Uebernommen { get; set; }
+
+    /// <summary>
+    /// Die Hinweiszeile unter dem Schalter: „Vergütung dieser Variante: eigene
+    /// Werte", „übernommen von ‹Stamm›" oder „Stammprojekt — ‹n› Varianten
+    /// übernehmen diese Vergütung". Sie kommt FERTIG herein; der Dialog kennt weder
+    /// Datenbank noch Variantenbaum.
+    /// </summary>
+    [Parameter] public string HerkunftText { get; set; } = "";
+
+    /// <summary>
+    /// „Eigene Werte": kopiert die Stammwerte in die Zeile dieses Stands und setzt
+    /// die Wahl auf „eigene" (VV‑Q6). Die HÜLLE tut das; <c>null</c> als Delegat
+    /// heißt „hier gibt es nichts zu lösen" — dann fehlt der Knopf.
+    /// </summary>
+    [Parameter] public EventCallback EigeneWerte { get; set; }
 
     /// <summary>Schlüssel des Hilfeknopfes — dieselbe Wikiseite wie bisher.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_PhotovoltaikVerguetung.btn_Help";
@@ -612,6 +650,18 @@
     }
 
     private Task TarifKlick() => Schliessen(PvSprung.Tarif);
+
+    /// <summary>
+    /// „Eigene Werte" (Konzept § 2.16, VV‑Q6): Die Hülle kopiert die Stammwerte in die
+    /// Zeile dieses Stands; danach schließt der Dialog, damit der Aufrufer ihn mit den
+    /// nun EIGENEN Werten neu öffnet. Ohne das Schließen stünden die alten Gaben noch
+    /// im Speicher, und „Übernehmen" schriebe sie zurück.
+    /// </summary>
+    private async Task EigeneWerteKlick()
+    {
+        await EigeneWerte.InvokeAsync();
+        await Schliessen(PvSprung.Keiner);
+    }
 
     private async Task BeiErgebnis(bool ok)
     {

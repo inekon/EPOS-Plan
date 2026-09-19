@@ -954,6 +954,18 @@ namespace WindowsFormsApplication1
             return karte;
         }
 
+        /// <summary>
+        /// Klartext der Vermarktungsform für ANDERE Leser — die Erklärzeile des
+        /// Reiters Ertrag/Bonus nennt sie neben der Herkunft (Konzept § 2.16).
+        ///
+        /// <para>Eine zweite Übersetzung derselben vier Steuerwerte liefe über kurz
+        /// oder lang auseinander; deshalb geht auch der Reiter durch diese eine.</para>
+        /// </summary>
+        public static string PvFormAnzeige(string form)
+        {
+            return PvFormText(form);
+        }
+
         /// <summary>Klartext der Vermarktungsform (Persistenzwert ist ASCII, P6).</summary>
         private static string PvFormText(string form)
         {

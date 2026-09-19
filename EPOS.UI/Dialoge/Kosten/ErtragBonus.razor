@@ -8,9 +8,12 @@
      Foerderdauer samt Jahresdeckel und die Steuerverguenstigungen — alles aus
      DENSELBEN Katalogschluesseln, mit denen der KwkgSatzRechner rechnet
      (Abnahmekriterium KD5). Dazu der Sprung in den Gesetzeskatalog.
-   * Photovoltaik (§ 6.2): der Einstieg in den Verguetungsdialog, stammprojekt-
-     bezogen; im Admin-Kontext waehlt eine Klappliste das Stammprojekt (eine
-     Verguetungswahrheit, V4/F7).
+   * Photovoltaik (§ 6.2, Konzept Wirtschaftlichkeit § 2.16): der Einstieg in den
+     Verguetungsdialog und die WAHL der Variante - „vom Stammprojekt uebernehmen"
+     (Vorgabe) oder „eigene Verguetung" - mit ihrer Erklaerzeile. Ein Stammprojekt
+     fuehrt immer eigene Werte und bekommt statt der Wahl die Zeile, wie viele
+     Varianten seine Verguetung uebernehmen. Im Admin-Kontext waehlt eine Klappliste
+     das Projekt (VV-Q7); im Projektmodus steht der Stand fest, dort entfaellt sie.
    * Alle uebrigen Komponenten (§ 6.3, FK5): der Abschnitt erscheint gar nicht;
      der Wirt fragt vorher HatInhalt.
 
@@ -64,16 +67,44 @@
         <Gruppenkopf Titel="@TitelPv">
             <KindInhalt>
                 <Herleitungszeile Text="@PvErklaerungText" />
+
+                @* KONZEPT § 2.16 - die Wahl je VARIANTE. Ein Stammprojekt fuehrt
+                   immer eigene Werte; es bekommt statt der Optionsgruppe die Zeile,
+                   wie viele Varianten seine Verguetung uebernehmen. *@
+                @if (IstVariante)
+                {
+                    <Formularraster>
+                        <KindInhalt>
+                            <Optionsgruppe Bezeichnung="@LabelPvWahl" Eintraege="@_wahlen"
+                                           Auswahl="@(Uebernommen ? UEBERNEHMEN : EIGENE)"
+                                           AuswahlChanged="BeiWahl" />
+                        </KindInhalt>
+                    </Formularraster>
+                }
+                @if (!string.IsNullOrEmpty(HerkunftText))
+                {
+                    <Herleitungszeile Text="@HerkunftText" />
+                }
+
                 @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben
                    dem Feld. Die Ertragstafel und die Herleitungszeilen bleiben
-                   Text - sie sind Ergebnis, kein Formularblock. *@
-                <Formularraster>
-                    <KindInhalt>
-                        <Auswahlfeld Bezeichnung="@LabelPvProjekt" Eintraege="@Projekte"
-                                     Auswahl="@_projektId" AuswahlChanged="BeiProjekt" />
-                    </KindInhalt>
-                </Formularraster>
-                <button type="button" class="epos-knopf" disabled="@(Projekte.Count == 0)"
+                   Text - sie sind Ergebnis, kein Formularblock.
+
+                   VV-Q7: Die Liste fuehrt ALLE Projekte und gehoert deshalb in den
+                   Admin-Kontext (Kostendialog ohne geoeffnetes Projekt). Im
+                   Projektmodus steht der Stand fest - dort waere sie eine zweite
+                   Projektwahl neben der, die der Anwender schon getroffen hat. *@
+                @if (ProjektlisteZeigen)
+                {
+                    <Formularraster>
+                        <KindInhalt>
+                            <Auswahlfeld Bezeichnung="@LabelPvProjekt" Eintraege="@Projekte"
+                                         Auswahl="@_projektId" AuswahlChanged="BeiProjekt" />
+                        </KindInhalt>
+                    </Formularraster>
+                }
+
+                <button type="button" class="epos-knopf" disabled="@KnopfGesperrt"
                         @onclick="BeiPvOeffnen">@PvOeffnenText</button>
             </KindInhalt>
         </Gruppenkopf>
@@ -127,6 +158,47 @@
     /// <summary>„PV-Verguetungsdialog oeffnen…" mit dem gewaehlten Stammprojekt.</summary>
     [Parameter] public EventCallback<int> PvOeffnen { get; set; }
 
+    // ---- KONZEPT § 2.16: die Verguetungswahl je Variante ------------------
+
+    /// <summary>
+    /// Ist das geoeffnete Projekt eine VARIANTE? Nur dann gibt es eine Wahl — ein
+    /// Stammprojekt fuehrt immer eigene Werte. <c>false</c> ist auch der
+    /// Admin-Kontext (kein Projekt geoeffnet).
+    /// </summary>
+    [Parameter] public bool IstVariante { get; set; }
+
+    /// <summary>Uebernimmt diese Variante die Verguetung ihres Stamms? Vorgabe
+    /// <c>true</c> — keine Zeile heisst uebernehmen.</summary>
+    [Parameter] public bool Uebernommen { get; set; } = true;
+
+    /// <summary>
+    /// Die neue Wahl (<c>true</c> = uebernehmen). Die HUELLE schreibt sie — diese
+    /// Komponente kennt keine Datenbank. „Eigene Verguetung" legt dabei die
+    /// Stammwerte vor (VV‑Q6) und oeffnet den Verguetungsdialog.
+    /// </summary>
+    [Parameter] public EventCallback<bool> WahlGeaendert { get; set; }
+
+    /// <summary>
+    /// Nach der Wahl baut der WIRT die Gaben dieses Blatts neu — derselbe Weg wie
+    /// nach dem Gesetzeskatalog. Ohne Rueckruf bleibt die Anzeige, wie sie war.
+    /// </summary>
+    [Parameter] public EventCallback NeuLaden { get; set; }
+
+    /// <summary>
+    /// Die Erklaerzeile unter der Wahl: „uebernommen von ‹Stamm› · anzulegender Wert
+    /// ‹AW› ct/kWh, ‹Vermarktungsform›" bzw. „eigene Werte dieser Variante"; beim
+    /// Stamm „Stammprojekt — ‹n› Varianten uebernehmen diese Verguetung". Sie kommt
+    /// FERTIG herein, wie jeder andere Satz dieses Blatts.
+    /// </summary>
+    [Parameter] public string HerkunftText { get; set; } = "";
+
+    /// <summary>
+    /// Zeigt die Klappliste aller Projekte? <c>true</c> = Admin-Kontext (Vorgabe,
+    /// VV‑Q7); im Projektmodus setzt die Huelle <c>false</c> — dort steht der Stand
+    /// fest.
+    /// </summary>
+    [Parameter] public bool ProjektlisteZeigen { get; set; } = true;
+
     // ---- Weiterfuehren ---------------------------------------------------
 
     /// <summary>
@@ -155,13 +227,24 @@
     [Parameter] public string GesetzeText { get; set; } = "Gesetzesparameter…";
     [Parameter] public string TitelPv { get; set; }
         = "PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)";
-    [Parameter] public string LabelPvProjekt { get; set; } = "Stammprojekt:";
+    [Parameter] public string LabelPvProjekt { get; set; } = "Projekt:";
+    [Parameter] public string LabelPvWahl { get; set; } = "Vergütung:";
+    [Parameter] public string UebernehmenText { get; set; } = "vom Stammprojekt übernehmen";
+    [Parameter] public string EigeneText { get; set; } = "eigene Vergütung";
     [Parameter] public string PvOeffnenText { get; set; } = "PV-Vergütungsdialog öffnen…";
     [Parameter] public string LeerText { get; set; }
         = "Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse "
         + "laufen als Zuschuss-Position in den Investitionskosten (FK5).";
 
     private int? _projektId;
+
+    /// <summary>Die zwei Optionen — die Reihenfolge ist die des Mockups: erst die
+    /// Vorgabe „übernehmen", dann „eigene Vergütung".</summary>
+    private const int UEBERNEHMEN = 0;
+    private const int EIGENE = 1;
+
+    private IReadOnlyList<(int Id, string Text)> _wahlen
+        => new[] { (UEBERNEHMEN, UebernehmenText), (EIGENE, EigeneText) };
 
     /// <summary>Das gewaehlte Stammprojekt (Pruefhilfe fuer Tests).</summary>
     public int? GewaehltesProjekt => _projektId;
@@ -174,8 +257,31 @@
 
     private void BeiProjekt(int? id) => _projektId = id;
 
+    /// <summary>
+    /// Der Knopf ist gesperrt, solange kein Ziel feststeht. Im Projektmodus ist das
+    /// geoeffnete Projekt das Ziel — dort genuegt die Vorwahl; im Admin-Kontext
+    /// braucht es einen Eintrag in der Liste.
+    /// </summary>
+    private bool KnopfGesperrt => !_projektId.HasValue;
+
     private Task BeiPvOeffnen()
         => _projektId.HasValue ? PvOeffnen.InvokeAsync(_projektId.Value) : Task.CompletedTask;
+
+    /// <summary>
+    /// Die Wahl geht an die Hülle (sie schreibt) und danach an den Wirt (er baut die
+    /// Gaben neu) — dieselbe Arbeitsteilung wie beim Gesetzeskatalog. Eine Wahl, die
+    /// schon steht, löst nichts aus: „eigene Vergütung" öffnet sonst bei jedem
+    /// Neuzeichnen den Vergütungsdialog.
+    /// </summary>
+    private async Task BeiWahl(int? nummer)
+    {
+        bool uebernehmen = nummer != EIGENE;
+        if (uebernehmen == Uebernommen) return;
+
+        Uebernommen = uebernehmen;
+        await WahlGeaendert.InvokeAsync(uebernehmen);
+        await NeuLaden.InvokeAsync();
+    }
 
     /// <summary>
     /// Wie <c>btnGesetze_Click</c>: Der Wirt öffnet den Katalog und lädt danach die
