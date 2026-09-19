@@ -357,6 +357,21 @@ namespace WindowsFormsApplication1
             return Zugriff.Vorgang();
         }
 
+        /// <summary>
+        /// Ein Vorgang, dessen Verbindung die Fremdschluessel AUSGESCHALTET hat — der
+        /// erste Schritt des Tabellenneubau-Rezepts des SQLite-Handbuchs, gebraucht von
+        /// Schemaschritt 96 (<c>ProjektFremdschluessel</c>).
+        ///
+        /// <para>NUR FUER SCHEMASCHRITTE, die eine ELTERNtabelle neu aufbauen. Kein
+        /// Fachweg gehoert hierher: Ohne Fremdschluessel laesst SQLite jede Beziehung
+        /// unbeurteilt. Die Begruendung im einzelnen steht beim zweiten Konstruktor von
+        /// <see cref="DbVorgang"/>.</para>
+        /// </summary>
+        public static DbVorgang VorgangOhneFremdschluessel()
+        {
+            return Zugriff.VorgangOhneFremdschluessel();
+        }
+
         // =================================================================================
         // Pfad und Startprüfung
         // =================================================================================

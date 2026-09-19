@@ -3445,6 +3445,38 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_95_KLIMASPALTEN = 95;
 
+        /// <summary>
+        /// Schritt 96 — die <b>Projekttabellen bekommen ihren Fremdschlüssel auf
+        /// <c>Tab_Projekt</c></b> (Anwenderentscheid vom 19.09.2026: „Umfang
+        /// vollständig", für alle Installationen).
+        ///
+        /// <para><b>Achtundzwanzig Tabellen</b> tragen eine Projektspalte
+        /// (<c>ID_Projekt</c> bzw. <c>ProjektID</c>) ohne Fremdschlüssel — dieselbe
+        /// Beziehung wie bei den zwanzig, die ihn seit der Access-Übernahme haben, nur
+        /// ohne Zusage. Sie bekommen
+        /// <c>REFERENCES Tab_Projekt(ID) ON DELETE CASCADE ON UPDATE CASCADE</c>;
+        /// <c>Tab_Variante</c> für beide Spalten (<c>ID_Projekt</c> und
+        /// <c>ID_ProjektRef</c>). <b>Benannt ausgenommen</b> bleiben
+        /// <c>Tab_Applikation</c> (die Spalte merkt sich das zuletzt geöffnete Projekt,
+        /// 0 = keines) und <c>Tab_Kenndaten_Kuehlung_STAMM</c> (Katalogtabelle).</para>
+        ///
+        /// <para><b>Waisen werden gezählt, geheilt oder gelöscht — nie still
+        /// übergangen.</b> Ohne Bereinigung scheiterte der neue Fremdschlüssel am
+        /// <c>foreign_key_check</c>. Wo die Zeile an einem gültigen Elternsatz hängt
+        /// (<c>Tab_Kenndaten</c> an <c>Tab_WP</c> und die drei Typtabellen an ihrer
+        /// jeweiligen Elterntabelle), wird die Projektspalte NACHGEZOGEN statt die Zeile
+        /// zu verlieren; nur was danach zu keinem Projekt und keinem gültigen Elternsatz
+        /// gehört, fällt. Jede Zahl steht im Bericht.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Der Schritt kopiert Zeilen, er rechnet nicht:
+        /// Werte, IDs, <c>sqlite_sequence</c>-Stände, Spaltenreihenfolge, Indizes und
+        /// Sichten bleiben. Entfernt wird ausschließlich, was zu keinem Projekt gehört —
+        /// was also kein Rechenweg je gelesen hat; der Referenzlauf bleibt byte-gleich.
+        /// Anlass, Rezept und die Begründung jeder Abweichung stehen ausführlich bei
+        /// <see cref="ProjektFremdschluessel"/>.</para>
+        /// </summary>
+        public const int SCHRITT_96_PROJEKT_FREMDSCHLUESSEL = 96;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4703,6 +4735,28 @@ namespace WindowsFormsApplication1
                         "verfuegbar' bzw. 'Altbestand' - der Schritt ist damit fuer " +
                         "jede Bestandsrechnung ergebnisneutral.",
                         Schritt_95_Klimaspalten),
+
+            // Schritt 96 (Anwenderentscheid 19.09.2026) - die Quelle ist
+            // ProjektFremdschluessel. Er steht ZULETZT und muss es: Er kopiert
+            // achtundzwanzig Tabellen vollstaendig, also muss jede Spalte, die ein
+            // frueherer Schritt anlegt, vorher dastehen (Schritt 95 haengt drei Spalten
+            // an Tab_Solar).
+            new Schritt(SCHRITT_96_PROJEKT_FREMDSCHLUESSEL,
+                        "28 Projekttabellen bekommen ihren Fremdschluessel auf " +
+                        "Tab_Projekt (ON DELETE/UPDATE CASCADE), Waisen werden geheilt " +
+                        "oder entfernt",
+                        "Ein Projekt ist der Anker von rund fuenfzig Tabellen; zwanzig " +
+                        "tragen ihre Beziehung seit der Access-Uebernahme, 28 nicht. " +
+                        "Ohne sie blieben beim Loeschen eines Projekts Zeilen liegen, " +
+                        "die niemand mehr erreicht - in der Testdatenbank 1.668 Stueck. " +
+                        "Ab hier nimmt ein geloeschtes Projekt seine Zeilen mit, und " +
+                        "eine neue Waise kann gar nicht mehr entstehen. Wo eine " +
+                        "ungepflegte Projektspalte an einem gueltigen Elternsatz haengt " +
+                        "(Kennlinien an ihrer Waermepumpe, Typzeilen an ihrem " +
+                        "Verbraucher), wird sie NACHGEZOGEN statt die Zeile zu " +
+                        "verlieren. Ergebnisneutral: Werte, Ids und Zaehlerstaende " +
+                        "bleiben, entfernt wird nur, was zu keinem Projekt gehoert.",
+                        Schritt_96_ProjektFremdschluessel),
         };
 
         /// <summary>
@@ -6952,6 +7006,96 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.TAB_KLIMAREGION_STAMM + ". KEIN DML: Alle bleiben NULL, " +
                     "und NULL heisst 'nicht verfuegbar' bzw. 'Altbestand'. KEIN " +
                     "Rechenergebnis aendert sich; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 96 - der Fremdschluessel der Projekttabellen (Anwenderentscheid 19.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 96 — Anlass, Rezept und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_96_PROJEKT_FREMDSCHLUESSEL"/> und ausführlich bei
+        /// <see cref="ProjektFremdschluessel"/>.
+        ///
+        /// <para><b>Wie die Schritte 74 und 81</b>: Zählung, Umbau über den Kern,
+        /// Nachprobe. Der Umbau selbst steht nicht hier — er braucht die
+        /// Transaktionsklammer MIT ABGESCHALTETEN FREMDSCHLÜSSELN, die nur
+        /// <c>DataRepository.VorgangOhneFremdschluessel</c> spannt.</para>
+        ///
+        /// <para><b>JE TABELLE EINE BERICHTSZEILE</b>, und darin die Waisenzahl. Dieser
+        /// Schritt ist der erste, der Zeilen ENTFERNT, die ein Anwender nie zu Gesicht
+        /// bekommen hat — was er entfernt, muss er benennen. Eine Tabelle, die an ihrem
+        /// Umbau scheitert, hält den Schritt an; die vorher fertigen bleiben stehen, und
+        /// der nächste Lauf setzt dort fort (jede fertige Tabelle wird übersprungen).</para>
+        /// </summary>
+        private static bool Schritt_96_ProjektFremdschluessel(Lauf l)
+        {
+            int offen = ProjektFremdschluessel.Offen();
+            l.Notiz("96: Projekttabellen ohne Fremdschluessel auf " +
+                    ProjektFremdschluessel.ZIEL + ": " +
+                    offen.ToString(CultureInfo.InvariantCulture) + " von " +
+                    ProjektFremdschluessel.Katalog.Length.ToString(CultureInfo.InvariantCulture) + ".");
+
+            if (offen == 0)
+            {
+                l.Notiz("96: nichts zu tun - jede Beziehung steht bereits.");
+                return true;
+            }
+
+            var bericht = new List<string>();
+            int umgebaut = 0;
+
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    foreach (ProjektFremdschluessel.Eintrag e in ProjektFremdschluessel.Katalog)
+                        if (ProjektFremdschluessel.Umbauen(e.Tabelle, bericht)) umgebaut++;
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz("96: " + zeile);
+
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz("96: FEHLER - " + text + " (" +
+                            umgebaut.ToString(CultureInfo.InvariantCulture) +
+                            " Tabelle(n) sind fertig und bleiben stehen; der Schritt ist " +
+                            "wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz("96: " + zeile);
+
+            // Die Nachprobe. Sie fragt dasselbe wie die Zaehlung vorher - steht jetzt
+            // noch eine Beziehung offen, hat eine Tabelle ihren Umbau nicht bekommen.
+            int rest = ProjektFremdschluessel.Offen();
+            if (rest > 0)
+            {
+                l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
+                                  " Projekttabelle(n) stehen nach dem Umbau weiter ohne " +
+                                  "Fremdschluessel auf " + ProjektFremdschluessel.ZIEL + ".";
+                l.Notiz("96: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("96: " + umgebaut.ToString(CultureInfo.InvariantCulture) +
+                    " Tabelle(n) neu aufgebaut; alle " +
+                    ProjektFremdschluessel.Katalog.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Projektbeziehungen tragen jetzt ON DELETE " +
+                    ProjektFremdschluessel.LOESCHREGEL + " ON UPDATE " +
+                    ProjektFremdschluessel.AENDERUNGSREGEL + ". Ein geloeschtes Projekt " +
+                    "nimmt ab hier seine Zeilen mit. Werte, Ids und Zaehlerstaende " +
+                    "bleiben; entfernt wurde nur, was zu keinem Projekt gehoert - der " +
+                    "Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

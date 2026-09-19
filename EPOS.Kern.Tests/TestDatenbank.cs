@@ -353,6 +353,14 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt95_Klimaspalten)
                     SpalteSicherstellen(s);
 
+                // Schritt 96 (Anwenderentscheid 19.09.2026): der Fremdschluessel der
+                // 28 Projekttabellen auf Tab_Projekt. DIESELBE Quelle wie in der
+                // Migration und im Werkzeug, und er steht ZULETZT: Er kopiert jede
+                // Tabelle vollstaendig, also muss jede Spalte eines frueheren Schritts
+                // (Schritt 95: drei Spalten an Tab_Solar) vorher dastehen. Stehen die
+                // Beziehungen schon, tut der Aufruf nichts.
+                ProjektFremdschluessel.Alle(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
