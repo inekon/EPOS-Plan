@@ -26252,6 +26252,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Standort liegt zu weit von der nächsten TRY-Region entfernt. Warum bricht das Einlesen ab, und welche Klimaquelle passt dann? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die TRY-Daten sind nicht lesbar. Woran liegt das, und wie komme ich an eine brauchbare Datei? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_FORMATFEHLER {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_FORMATFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse der TRY-Regionaldaten erlaubt keine Teilabrufe. Was bedeutet das, und wie lese ich die Daten trotzdem ein? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_KEIN_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_KEIN_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kopf der TRY-Datei nennt keinen lesbaren Standort. Was heißt das, und wie trage ich den Standort ein? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wärmeerzeuger des Projekts steht auf keinem Kaskadenplatz und rechnet deshalb nicht mit. Wie nehme ich ihn in die Simulation auf? ähnelt.
         /// </summary>
         public static string KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ {
