@@ -5409,21 +5409,11 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     min-width: 0;
 }
 
-.epos-lizverw-gruppe {
-    border: 1px solid var(--epos-rahmen-leise);
-    border-radius: var(--epos-ecke);
-    padding: 10px 12px 12px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
-}
-
-.epos-lizverw-kopf {
-    margin: 0;
-    font-size: var(--epos-schriftgroesse);
-    font-weight: 600;
-    color: var(--epos-text);
+/* MN-1 (19.09.2026): Die drei Gruppen sind der Hausbaustein Gruppenkopf
+   geworden; .epos-lizverw-gruppe und .epos-lizverw-kopf sind damit entfallen.
+   Was die Gruppen brauchen, steht jetzt im Koerper des Bausteins. */
+.epos-gruppenkopf-koerper > .epos-lizverw-zeile + .epos-lizverw-zeile {
+    margin-top: 8px;
 }
 
 /* Die drei Statusfarben sind BITGLEICH aus Form_LizenzVerwaltung.cs:134-137
@@ -5474,6 +5464,45 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     white-space: pre-line;
 }
 
+/* MN-1 (19.09.2026): Der feste Uebertragungshinweis UNMITTELBAR ueber dem Knopf
+   "Jetzt aktivieren". Er ist nicht leise - er sagt, was der naechste Klick
+   uebertraegt - und steht in einem eigenen Kasten, damit er nicht mit den
+   Feldern darueber verschmilzt. */
+.epos-lizverw-uebertragung {
+    margin: 12px 0 0 0;
+    padding: 8px 10px;
+    border-left: 3px solid var(--epos-marke);
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+}
+
+/* Die zwei Spruenge auf die Reiter "Lizenzvereinbarung" und "Rechtliche
+   Hinweise". Sie SEHEN aus wie Verweise und SIND Knoepfe: Ziel ist ein Reiter
+   im selben Fenster, keine Adresse. Das Beruehrungsziel haelt --epos-touchziel. */
+.epos-lizverw-spruenge {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 16px;
+    margin: 0 0 4px 0;
+}
+
+.epos-lizverw-sprung {
+    min-height: var(--epos-touchziel);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--epos-marke);
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.epos-lizverw-sprung:hover,
+.epos-lizverw-sprung:focus-visible {
+    color: var(--epos-quelle-text);
+}
+
 .epos-lizverw-fuss {
     display: flex;
     justify-content: flex-end;
@@ -5487,7 +5516,8 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     .epos-lizverw-status--gut,
     .epos-lizverw-status--warn,
     .epos-lizverw-status--schlecht { color: CanvasText; }
-    .epos-lizverw-gruppe { border: 1px solid CanvasText; }
+    .epos-lizverw-uebertragung { border-left: 3px solid CanvasText; }
+    .epos-lizverw-sprung { color: LinkText; }
 }
 
 /* --------------------------------------------------------------------------
@@ -5570,10 +5600,11 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     overflow-x: clip;
 }
 
-/* Die Verwaltung erscheint AUCH als Ueberlagerung im Lizenzdialog (E-11), und
-   die bringt ihren Rand schon mit - dieselbe Angleichung, die
-   .epos-ueberlagerung-inhalt > .epos-dialog bekommt. */
-.epos-ueberlagerung-inhalt > .epos-lizverw {
+/* Die Verwaltung steht seit MN-1 (19.09.2026) IM Reiterblatt des Lizenzdialogs
+   (bis dahin als Ueberlagerung, E-11), und das Blatt bringt seinen Rand schon
+   mit - dieselbe Angleichung, die .epos-ueberlagerung-inhalt > .epos-dialog
+   bekommt. */
+.epos-lizenz-verwaltungsblatt > .epos-lizverw {
     padding: 0;
 }
 
@@ -5658,6 +5689,22 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 .epos-lizenz .epos-reiter-blatt {
     display: flex;
     flex-direction: column;
+}
+
+/* MN-1 (19.09.2026): das Blatt "Status & Aktivierung". Es traegt keinen
+   Lesetext, sondern eine MASKE - und die rollt in DEMSELBEN Rahmen wie die
+   drei Lesebereiche daneben, damit der Reiterwechsel das Bild nicht springen
+   laesst. Waagerecht rollt auch sie nicht. */
+.epos-lizenz-verwaltungsblatt {
+    flex: 1 1 auto;
+    min-height: 12rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 14px 14px 14px;
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
 }
 
 /* Der Sprachhinweis (E-7): auf Deutsch leer, auf Englisch "Binding version in

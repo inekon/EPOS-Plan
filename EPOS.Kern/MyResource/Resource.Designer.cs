@@ -32206,9 +32206,9 @@ namespace WindowsFormsApplication1.MyResource {
         
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Microsoft .NET 10 mit Windows Forms (MIT-Lizenz, Microsoft Corporation) - Laufzeitumgebung und Bedienoberfläche.
-        ///SQLite über Microsoft.Data.Sqlite (MIT-Lizenz, Microsoft Corporation; SQLite selbst ist gemeinfrei) - Ablage der Kenndaten-Datenbank.
-        ///Microsoft Edge WebView2 Runtime (Microsoft Corporation) - Anzeige der Dialoge; Installation und Nutzung nach den Bedingungen von Microsoft.
-        ///Microsoft Access Database Engine sowie OLE-DB- und ODBC-Treiber (Microsoft Corporation) - nur noch für die einmalige Umstellu [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///ASP.NET Core Blazor mit Microsoft.AspNetCore.Components.WebView und Microsoft.AspNetCore.Components.QuickGrid (MIT-Lizenz, Microsoft Corporation) - Dialoge, Seiten und Tabellenraster.
+        ///SQLite über Microsoft.Data.Sqlite (MIT-Lizenz, Microsoft Corporation; SQLite selbst ist gemeinfrei) und SQLitePCLRaw (Apache-2.0-Lizenz, Eric Sink) - Ablage der Kenndaten-Datenbank.
+        ///Microsoft Edge WebView2 Runtime ( [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string LIZR_KO_A2 {
             get {
@@ -32236,7 +32236,8 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich lokal und ohne Datenübertragung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hilfe-Assistent kann auf Wunsch einen externen Sprachmodell-Dienst nutzen. Dafür ist ein eigener Zugangsschlüssel erforderlich, den der Anwender selbst hinterlegt; es gelten die Nutzungsbedingungen des jeweiligen Anbieters. Ohne Schlüssel arbeitet die Hilfe ausschließlich lokal und ohne Datenübertragung.
+        ///Mscc.GenerativeAI (Apache-2.0-Lizenz, Jochen Kirstätter) - Anbindung des Dienstes. ähnelt.
         /// </summary>
         public static string LIZR_KO_A5 {
             get {
@@ -32367,6 +32368,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Status &amp; Aktivierung ähnelt.
+        /// </summary>
+        public static string LIZR_REITER_STATUS {
+            get {
+                return ResourceManager.GetString("LIZR_REITER_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzvereinbarung ähnelt.
         /// </summary>
         public static string LIZR_REITER_VERTRAG {
@@ -32421,7 +32431,8 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation. Wird der optionale Hilfe-Assistent mit eigenem Zugangsschlüssel verwendet, werden ausschließlich die gestellte Frage, der Name des Programmbereichs und die integrierten Hilfetexte an den Dienst des jeweiligen Anbieters übertragen - keine Projekt- [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt-, Kunden- und Simulationsdaten werden ausschließlich lokal auf diesem Rechner gespeichert und nicht an INEKON übertragen. Eine Internetverbindung nutzt das Programm für den Bezug von Klimadaten, für die Ortssuche und für den Aufruf der Online-Dokumentation.
+        ///Lizenzierung: Beim Aktivieren einer Lizenz, beim Anfordern einer Testversion und beim Lösen eines Gerätes von der Lizenz werden Lizenzschlüssel, E-Mail-Adresse, eine anonyme Gerätekennung (Geräte-Hash), die Programmversion und der Zeitpunkt des V [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
         /// </summary>
         public static string LIZR_RH_A6 {
             get {
@@ -32729,8 +32740,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktivierung benötigt einmalig eine Internetverbindung. Übertragen werden nur
-        ///Lizenzschlüssel, E-Mail und ein anonymer Geräte-Hash — keine Projekt- oder Kundendaten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktivierung benötigt einmalig eine Internetverbindung. ähnelt.
         /// </summary>
         public static string LIZ_HINWEIS_AKTIVIERUNG {
             get {
@@ -32744,6 +32754,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string LIZ_HINWEIS_LIC_GELADEN {
             get {
                 return ResourceManager.GetString("LIZ_HINWEIS_LIC_GELADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit der Aktivierung werden Lizenzschlüssel, E-Mail-Adresse und eine anonyme Gerätekennung an den Lizenzserver übertragen. Es gelten die Lizenzvereinbarung und die Hinweise zur Datenverarbeitung. ähnelt.
+        /// </summary>
+        public static string LIZ_HINWEIS_UEBERTRAGUNG {
+            get {
+                return ResourceManager.GetString("LIZ_HINWEIS_UEBERTRAGUNG", resourceCulture);
             }
         }
         
@@ -32775,11 +32794,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweise zur Datenverarbeitung ähnelt.
+        /// </summary>
+        public static string LIZ_LINK_DATENVERARBEITUNG {
+            get {
+                return ResourceManager.GetString("LIZ_LINK_DATENVERARBEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzportal öffnen (Benutzer und Geräte verwalten, Schlüssel neu erzeugen) ähnelt.
         /// </summary>
         public static string LIZ_LINK_PORTAL {
             get {
                 return ResourceManager.GetString("LIZ_LINK_PORTAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenzvereinbarung ähnelt.
+        /// </summary>
+        public static string LIZ_LINK_VEREINBARUNG {
+            get {
+                return ResourceManager.GetString("LIZ_LINK_VEREINBARUNG", resourceCulture);
             }
         }
         
@@ -32939,7 +32976,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aktiviert — Testversion oder Lizenzschlüssel unter Administration → Lizenz. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht aktiviert — Testversion oder Lizenzschlüssel unter Hilfe → Lizenz. ähnelt.
         /// </summary>
         public static string LIZ_ST_NICHTAKTIVIERT {
             get {
@@ -52069,7 +52106,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer: {0} — der Katalogsatz {1} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
         /// </summary>
         public static string STEUER_ENERGIEST_SATZ_FEHLT {
             get {
@@ -52096,7 +52133,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steuer: der Katalogsatz {0} ist nicht gepflegt (Administration → Kosten → Gesetzliche Parameter); Gutschrift = 0. ähnelt.
         /// </summary>
         public static string STEUER_SATZ_FEHLT {
             get {

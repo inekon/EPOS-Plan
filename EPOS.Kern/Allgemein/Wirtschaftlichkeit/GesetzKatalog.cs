@@ -418,6 +418,70 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // Die Katalogliste (Anwenderentscheid MN-1, 19.09.2026)
+        // =====================================================================
+
+        /// <summary>Spaltenschluessel „Schluessel" der Katalogliste — sprachneutral.</summary>
+        public const string SpSchluessel = "GESETZ_SCHLUESSEL";
+
+        /// <summary>Spaltenschluessel „Gueltig ab" (Jahreszahl).</summary>
+        public const string SpJahrVon = "GESETZ_JAHRVON";
+
+        /// <summary>Spaltenschluessel „Wert".</summary>
+        public const string SpWert = "GESETZ_WERT";
+
+        /// <summary>Spaltenschluessel „Einheit".</summary>
+        public const string SpEinheit = "GESETZ_EINHEIT";
+
+        /// <summary>Spaltenschluessel „Status".</summary>
+        public const string SpStatus = "GESETZ_STATUS";
+
+        /// <summary>Spaltenschluessel „Quelle" — derselbe wie in jedem anderen Katalog.</summary>
+        public const string SpQuelle = Katalogfilterprofil.SpQuelle;
+
+        /// <summary>Der Katalogschluessel des Filterstands (<c>Katalogfilterregister</c>).</summary>
+        public const string KATALOG = "GESETZ";
+
+        /// <summary>
+        /// <b>Die Zeilen einer Klasse als Zeilen der HAUS-Katalogliste</b>
+        /// (Anwenderentscheid MN-1, 19.09.2026: „Bei der Auswahl der ‚Gesetzlichen
+        /// Parameter' soll das gleiche Schema (Filter, Sortieren …) verwendet
+        /// werden.").
+        ///
+        /// <para><b>Der Schluessel der Zeile ist ihre ID als Text</b>, nicht ihr
+        /// Bezeichner: Ein Gesetzesschluessel kommt in einer Klasse MEHRFACH vor — je
+        /// Gueltigkeitsjahr eine Zeile, und genau das ist die Kernregel dieser Maske.
+        /// Der Bezeichner ist der Gesetzesschluessel; er steht in der ersten Spalte
+        /// und ist der Suchraum.</para>
+        ///
+        /// <para><b>Der Wert traegt Text UND Zahl.</b> Der Text ist die gewohnte
+        /// Formatierung <c>"0.####"</c> (leer = der Satz ist entfallen), die Zahl
+        /// daneben laesst die Spalte als ZAHL sortieren und mit Ausdruecken wie
+        /// <c>&gt;50</c> filtern statt als Zeichenkette.</para>
+        /// </summary>
+        public IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen(string klasse)
+        {
+            var liste = new List<Katalogfilterzeile>();
+            foreach (GesetzParameter p in AlleDerKlasse(klasse))
+            {
+                var zeile = new Katalogfilterzeile(p.Id, p.Schluessel)
+                {
+                    Schluessel = p.Id.ToString(CultureInfo.InvariantCulture)
+                };
+
+                liste.Add(zeile
+                    .MitText(SpSchluessel, p.Schluessel)
+                    .Mit(SpJahrVon, new Katalogwert(
+                        p.JahrVon.ToString(CultureInfo.CurrentCulture), p.JahrVon))
+                    .Mit(SpWert, new Katalogwert(WertText(p.Wert), p.Wert))
+                    .MitText(SpEinheit, p.Einheit)
+                    .MitText(SpStatus, p.Status)
+                    .MitText(SpQuelle, p.Quelle));
+            }
+            return liste;
+        }
+
+        // =====================================================================
         // Pruefung (iU9-W14c.0b)
         // =====================================================================
 

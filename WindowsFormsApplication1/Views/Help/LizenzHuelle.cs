@@ -63,10 +63,30 @@ namespace WindowsFormsApplication1
         //  Die zwei Einstiege
         // ==================================================================
 
-        /// <summary>Menüeinstieg „Hilfe → Lizenz".</summary>
+        /// <summary>
+        /// Menüeinstieg „Hilfe → Lizenz" — seit MN-1 (19.09.2026) der EINZIGE Weg
+        /// zur Lizenzverwaltung; der Menüpunkt „Administration → Lizenz…" ist
+        /// entfallen.
+        ///
+        /// <para><b>Welches Blatt vorn steht, entscheidet die Lage:</b> Ist die
+        /// Lizenz nicht aktiviert, geht der Dialog auf „Status &amp; Aktivierung"
+        /// auf — das ist der Grund, aus dem der Anwender ihn dann öffnet.
+        /// Andernfalls steht die Lizenzvereinbarung vorn, die verbindliche Karte.</para>
+        /// </summary>
         internal static void Anzeigen(IWin32Window besitzer)
         {
-            Zeigen(besitzer, zustimmungsmodus: false);
+            Zeigen(besitzer, zustimmungsmodus: false, startReiter: Startblatt());
+        }
+
+        /// <summary>
+        /// „STATUS", solange kein Token vorliegt; sonst „VERTRAG". Eine unlesbare
+        /// Ablage soll den Weg nicht verstellen — im Zweifel die Vereinbarung
+        /// (derselbe Fehlerpfad wie <see cref="Lizenzstatus"/>).
+        /// </summary>
+        private static string Startblatt()
+        {
+            try { return LizenzCtrl.HatToken ? "VERTRAG" : "STATUS"; }
+            catch { return "VERTRAG"; }
         }
 
         /// <summary>
@@ -82,17 +102,21 @@ namespace WindowsFormsApplication1
         {
             if (ZustimmungCtrl.IstZugestimmt()) return true;
 
-            return Zeigen(besitzer, zustimmungsmodus: true);
+            // Der Erststart zeigt IMMER die Lizenzvereinbarung - zugestimmt wird
+            // ihr, nicht dem Lizenzstand (MN-1: unveraendert).
+            return Zeigen(besitzer, zustimmungsmodus: true, startReiter: "VERTRAG");
         }
 
         /// <summary>Der gemeinsame Weg beider Einstiege.</summary>
-        private static bool Zeigen(IWin32Window besitzer, bool zustimmungsmodus)
+        private static bool Zeigen(IWin32Window besitzer, bool zustimmungsmodus, string startReiter)
         {
             bool ergebnis = false;
             BlazorDialogForm<LizenzDialog> dlg = null;
 
             var werte = new Dictionary<string, object>(Gaben(zustimmungsmodus))
             {
+                ["StartReiter"] = startReiter ?? "",
+
                 ["Zugestimmt"] = EventCallback.Factory.Create(
                     new object(), () => ZustimmungCtrl.Merken(Fassung(), DateTime.Now)),
 
@@ -108,7 +132,11 @@ namespace WindowsFormsApplication1
                 ? MyResource.Resource.LIZR_TITEL_ZUSTIMMUNG
                 : MyResource.Resource.LIZR_TITEL;
 
-            // KLEIN (Anwenderwunsch 05.09.2026): Lesetext, keine Verwaltung.
+            // KLEIN (Anwenderwunsch 05.09.2026): ein Lesefenster, das nicht mit dem
+            // Bildschirm mitwaechst. Seit MN-1 traegt es AUCH die Verwaltung - als
+            // viertes Reiterblatt, nicht als zweiten Bereich; das Mass bleibt, es
+            // war schon vorher groesser als das frueher eigene Verwaltungsfenster
+            // (700 x 620).
             dlg = new BlazorDialogForm<LizenzDialog>(titel, MASS, werte,
                                                     EPOS.UI.Dienste.Dialogart.Klein)
             {
