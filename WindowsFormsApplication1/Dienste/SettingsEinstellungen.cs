@@ -7,10 +7,11 @@ namespace WindowsFormsApplication1
     /// <c>Properties.Settings</c>: Gelesen wird zuerst dort, dann in der Registry.
     ///
     /// <para><b>Warum es diese Brücke gibt.</b> Der Kern kennt genau eine
-    /// Einstellungsablage, der Bestand hat zwei. <c>Properties.Settings</c> hält die neun
+    /// Einstellungsablage, der Bestand hat zwei. <c>Properties.Settings</c> hält die elf
     /// Werte des Einstellungsdialogs (<c>DBPath</c>, <c>DBName</c>, <c>PVGISUrl</c>,
     /// <c>GeoKodierung</c>, <c>WordPressUrl</c>, <c>VDI3805Path</c>, <c>DBExportPath</c>,
-    /// <c>DBImportPath</c>, <c>AllgemeinPath</c>) in der <c>user.config</c>; die Registry
+    /// <c>DBImportPath</c>, <c>AllgemeinPath</c>, <c>TRYPortalUrl</c>,
+    /// <c>TRYRegionalUrl</c>) in der <c>user.config</c>; die Registry
     /// hält Sprache, KI-Einstellungen, Einwilligung, CSV-Pfad und Lizenzanker. Ein
     /// Kernaufruf <c>Dienste.Einstellungen.Lies("PVGISUrl", …)</c> muss beides finden.
     /// Die Reihenfolge ist eindeutig: <c>Properties.Settings</c> zuerst, weil dort die
@@ -81,9 +82,10 @@ namespace WindowsFormsApplication1
         /// Schlüssel dort nicht gibt oder er leer ist.
         ///
         /// <para><b>Auftrag #189 (Abnahmeliste).</b> <c>Properties.Settings</c> kennt nur die
-        /// NEUN Schlüssel des Einstellungsdialogs (<c>DBPath</c>, <c>DBName</c>, <c>PVGISUrl</c>,
+        /// ELF Schlüssel des Einstellungsdialogs (<c>DBPath</c>, <c>DBName</c>, <c>PVGISUrl</c>,
         /// <c>GeoKodierung</c>, <c>WordPressUrl</c>, <c>VDI3805Path</c>, <c>DBExportPath</c>,
-        /// <c>DBImportPath</c>, <c>AllgemeinPath</c>) — jeder REGISTRY-Schlüssel (z. B.
+        /// <c>DBImportPath</c>, <c>AllgemeinPath</c>, <c>TRYPortalUrl</c>,
+        /// <c>TRYRegionalUrl</c>) — jeder REGISTRY-Schlüssel (z. B.
         /// <c>LizenzAnker</c>, <c>LizenzZugestimmt</c>, <c>BedarfEinheit</c>, …) lief bis hierher
         /// über den WERTindexer <c>this[schluessel]</c> der <c>ApplicationSettingsBase</c>, und
         /// der wirft <c>SettingsPropertyNotFoundException</c> für einen unbekannten Namen — pro

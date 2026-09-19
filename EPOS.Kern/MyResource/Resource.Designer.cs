@@ -695,6 +695,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Portal der DWD-Testreferenzjahre: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_TRY_PORTAL {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_TRY_PORTAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Adresse der TRY-Regionaldaten: ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_TRY_REGIONAL {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_TRY_REGIONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ordner der VDI-3805-Datensätze: ähnelt.
         /// </summary>
         public static string ADM_SET_LBL_VDI_PFAD {
@@ -772,6 +790,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_RUBRIK_DATENBANK {
             get {
                 return ResourceManager.GetString("ADM_SET_RUBRIK_DATENBANK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_KLIMA {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_KLIMA", resourceCulture);
             }
         }
         
