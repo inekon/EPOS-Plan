@@ -230,6 +230,8 @@ section.kat + section.kat{border-top:1px solid var(--linie);margin-top:20px}
   border-radius:0 4px 4px 0;padding:7px 10px;margin-top:9px;font-size:11.5px;
 }
 .f-info{color:var(--f-weich);font-size:11.5px;margin-top:8px}
+.f-info ul{margin:4px 0 0;padding-left:18px}
+.f-info ul li{margin-bottom:4px}
 .f-vorschau{
   background:var(--marine-hell);color:#fff;border-radius:6px;padding:12px 14px;margin-top:14px;
 }
@@ -302,6 +304,10 @@ section.kat + section.kat{border-top:1px solid var(--linie);margin-top:20px}
 .f-raster td.gerechnet{background:var(--f-gesperrt);color:var(--f-weich);cursor:default}
 .f-raster tr.neuzeile td{border-style:dashed;background:transparent}
 .f-raster tr.pflicht td.gerechnet{background:#E6E9EF}
+/* Erläuterungstafel „Element -> Feldart -> Verhalten" innerhalb eines Fensters (S3) */
+.f-erklaertafel{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0 8px}
+.f-erklaertafel th{background:#EEF1F5;text-align:left;font-weight:600;padding:5px 9px;border:1px solid var(--f-linie)}
+.f-erklaertafel td{border:1px solid var(--f-linie);padding:5px 9px;background:var(--f-feld);vertical-align:top}
 .f-zknopf{display:inline-block;border:1px solid #8C97A8;background:linear-gradient(#FDFDFE,#EEF1F5);border-radius:4px;padding:0 6px;font-size:12px;line-height:20px;margin-right:3px;cursor:default}
 .f-hinweis{background:#EDF3FB;border:1px solid #C3D4EA;border-left:3px solid #1A3261;color:#1B1B1B;border-radius:0 4px 4px 0;padding:7px 10px;font-size:11.5px}
 
@@ -312,7 +318,7 @@ section.kat + section.kat{border-top:1px solid var(--linie);margin-top:20px}
   background:var(--p-grund);color:var(--p-tinte);
   border:1px solid #9AA6B8;border-radius:7px;overflow:hidden;box-shadow:var(--schatten-fenster);
 }
-.s-band{background:var(--marine);color:#fff;padding:9px 14px;display:flex;align-items:center;
+.s-band{background:var(--marine-hell);color:#fff;padding:9px 14px;display:flex;align-items:center;
   gap:10px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
 .s-band .s-sub{margin-left:auto;font-weight:400;font-size:11.5px;color:#A9BDDF}
 .s-leib{padding:14px}
@@ -530,7 +536,9 @@ a{color:var(--marine-hell)}
     sagen, woraus sie entsteht. Wer umsetzt, liest von vorn: je Kategorie Dialog · Berechnungsgrundlage ·
     Berechnungserläuterung · Beschriftungen · Abnahme. Wer prüft, liest zuerst „Das durchgerechnete
     Beispiel" und zuletzt die beiden Anhänge. Was an dieser Seite noch nicht gebaut ist, steht
-    gesammelt im <a href="#umsetzung">Anhang Umsetzungsstand</a> — und nur dort.
+    gesammelt im <a href="#umsetzung">Anhang Umsetzungsstand</a> — und nur dort. Zwei Rahmenstile: das
+    dunkle Kopfband mit ⓘ/× ist ein <b>Fenster</b> (Dialog, schließbar, mit Fußleiste), das hellere
+    Kopfband ohne ⓘ/× eine <b>Seitentafel</b> (Ausschnitt der Ergebnisseite, nicht schließbar).
     <div class="chip-legende">
       <span><span class="zk umg">umgesetzt Un</span> bereits gebaut — Un verweist auf die erledigte Zeile im Anhang Umsetzungsstand</span>
       <span><span class="zk vor">Vorschlag Un</span> vorgeschlagen, noch offen — Un verweist auf die offene Zeile dort</span>
@@ -835,18 +843,23 @@ a{color:var(--marine-hell)}
         </tbody>
       </table>
       </div>
-      <div class="f-info">Vier Zellen je Zeile sind Eingabe: <b>Position</b> (Textfeld), <b>Bemessung</b> (Klappliste,
-        je Gewerk gefiltert — beim Blockheizkraftwerk: fester Betrag · % der Investition · % der Erzeugerkosten ·
-        je kW elektr. Leistung · je kW Heizleistung · je kW elektrisch), <b>Satz</b> (Zahlenfeld, die Einheit folgt der
-        Bemessung) und <b>Nutzungsdauer</b> (Zahlenfeld, nur bei Investitionskosten). Der <b>Betrag</b> ist nie
-        eingebbar: Bei einer absoluten Bemessung spiegelt er den Satz (🔗), sonst rechnet ihn die Kaskade aus Satz und
-        Bezugsgröße des Projekts; sein Werkzeugtipp nennt die Rechnung. Fehlt einer Zeile die Bezugsgröße, trägt der
-        Betrag ein ⚠ und unter dem Raster steht der Grund samt Abhilfe („‹Position›: kein Simulationslauf" ·
-        „kein Gerät mit dieser Baugröße im Projekt" · „keine Investitionskosten für diese Anlage erfasst" ·
-        „diese Anlage steht nicht im Simulationslauf — sie braucht einen Platz in der Simulationskonfiguration" ·
-        „der Simulationslauf führt für diese Anlage keine Menge" · „für den Energieträger ist kein Arbeitspreis
-        gepflegt — er ist in der Energieträgerverwaltung zu erfassen") — nie eine stille 0.
-        Eine Änderung lebt bis „Speichern" oder „OK" nur im Objekt; „Abbrechen" und Esc verwerfen sie.</div>
+      <div class="f-info">
+      <table class="f-erklaertafel">
+        <thead><tr><th>Element</th><th>Feldart</th><th>Verhalten</th></tr></thead>
+        <tbody>
+          <tr><td>Position</td><td>Textfeld</td><td>Eingabe</td></tr>
+          <tr><td>Bemessung</td><td>Klappliste, je Gewerk gefiltert</td><td>beim Blockheizkraftwerk: fester Betrag · % der Investition · % der Erzeugerkosten · je kW elektr. Leistung · je kW Heizleistung · je kW elektrisch</td></tr>
+          <tr><td>Satz</td><td>Zahlenfeld</td><td>Einheit folgt der Bemessung</td></tr>
+          <tr><td>Nutzungsdauer</td><td>Zahlenfeld</td><td>nur bei Investitionskosten</td></tr>
+          <tr><td>Betrag</td><td>gerechnet, nie eingebbar</td><td>absolute Bemessung: spiegelt den Satz (🔗); sonst Kaskade aus Satz und Bezugsgröße des Projekts — Werkzeugtipp nennt die Rechnung</td></tr>
+        </tbody>
+      </table>
+      Fehlt einer Zeile die Bezugsgröße, trägt der Betrag ein ⚠ und unter dem Raster steht der Grund samt Abhilfe
+      („‹Position›: kein Simulationslauf" · „kein Gerät mit dieser Baugröße im Projekt" · „keine Investitionskosten
+      für diese Anlage erfasst" · „diese Anlage steht nicht im Simulationslauf — sie braucht einen Platz in der
+      Simulationskonfiguration" · „der Simulationslauf führt für diese Anlage keine Menge" · „für den Energieträger
+      ist kein Arbeitspreis gepflegt — er ist in der Energieträgerverwaltung zu erfassen") — nie eine stille 0.
+      Eine Änderung lebt bis „Speichern" oder „OK" nur im Objekt; „Abbrechen" und Esc verwerfen sie.</div>
       <div class="f-info">Der Summenfuß addiert die Beträge aller Zeilen, Erlös- und Zuschusszeilen mit
         negativem Vorzeichen — die Nettosumme ist damit I₀. Die dritte Zeile nennt beide Teile eigens
         <span class="zk umg">umgesetzt U29</span> und steht nur, wenn die Komponente eine Erlös-/Zuschusszeile führt:
@@ -1185,20 +1198,24 @@ Ersatz und Restwert — je Position aus ihrer Nutzungsdauer n, technikneutral
         führt einen Hilfsenergieanteil von 2,00 % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe
         mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts.
         <span class="zk umg">umgesetzt U31</span></div>
-      <div class="f-info">Die drei Pflichtzeilen tragen an Stelle des Papierkorbs ein Schloss mit dem Werkzeugtipp
+      <div class="f-info">
+      <ul>
+        <li>Die drei Pflichtzeilen tragen an Stelle des Papierkorbs ein Schloss mit dem Werkzeugtipp
         „Pflichtposition, kann nicht gelöscht werden"; jeder Löschversuch antwortet „‹Position› ist eine Pflichtposition
-        dieser Komponente und kann nicht gelöscht werden. Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen."
-        Der Empfehlungsbereich steht als leise Zeile unter dem Satzfeld und zusätzlich in dessen Werkzeugtipp.
-        Weicht die Bemessung einer Position von der der Vorlage „Standard“ ab, steht unter der Herleitung
+        dieser Komponente und kann nicht gelöscht werden. Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen."</li>
+        <li>Der Empfehlungsbereich steht als leise Zeile unter dem Satzfeld und zusätzlich in dessen Werkzeugtipp.</li>
+        <li>Weicht die Bemessung einer Position von der der Vorlage „Standard“ ab, steht unter der Herleitung
         die Zeile „Vorlage ‚Standard‘: ‹Bemessung›“ mit dem Schalter „übernehmen“: Er setzt die Bemessung auf den
         Wert der Vorlage, lässt Satz und Betrag stehen und rechnet Bezugsgröße und Herleitung neu.
-        Die Positionen eines Projekts folgen einer Vorlage nicht von selbst.
-        Bemessungen der Klappliste beim Blockheizkraftwerk: fester Jahresbetrag · % der Investition · % der
+        Die Positionen eines Projekts folgen einer Vorlage nicht von selbst.</li>
+        <li>Bemessungen der Klappliste beim Blockheizkraftwerk: fester Jahresbetrag · % der Investition · % der
         Endenergiekosten · % des Endenergiebedarfs · je kWh thermisch · je kWh elektrisch · je kW elektr. Leistung ·
         je kW Heizleistung · je kW elektrisch; die Altwerte „je kWh" und
-        „je Stunde" stehen nur, wo eine Bestandszeile sie trägt. <b>Ohne Simulationslauf</b> tragen die mengenbasierten
+        „je Stunde" stehen nur, wo eine Bestandszeile sie trägt.</li>
+        <li><b>Ohne Simulationslauf</b> tragen die mengenbasierten
         Zeilen ein ⚠ im Betrag, und unter dem Raster steht „‚Wartung BHKW': kein Simulationslauf ·
-        ‚Hilfsenergiekosten': kein Simulationslauf"; die investitionsbasierte Zeile rechnet sofort.</div>
+        ‚Hilfsenergiekosten': kein Simulationslauf"; die investitionsbasierte Zeile rechnet sofort.</li>
+      </ul></div>
       <div class="f-knopfzeile"><span class="f-knopf">+ Position hinzufügen</span><span class="f-knopf">Aus Vorlage übernehmen…</span>
         <span class="f-knopf">Positionskatalog…</span></div>
       </div>
@@ -1637,7 +1654,7 @@ Keine stillen Teilsummen
   Variante(n) übernehmen diese Vergütung"
   <span class="zk umg">umgesetzt U38</span>.</p>
   <div class="fenster">
-    <div class="f-band">Kostenverwaltung PV-Anlage 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe</span></div>
+    <div class="f-band">Kostenverwaltung PV-Anlage 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-tab"><span>Kosten Invest/Betrieb</span><span class="an">Ertrag/Bonus</span></div>
     <div class="f-leib">
       <div class="f-gruppe">
@@ -1652,6 +1669,12 @@ Keine stillen Teilsummen
         <div class="f-zeile eng"><label>Projekt:</label><span class="f-combo" style="min-width:260px">Musterprojekt Gewerbepark</span><span class="f-einheit">nur ohne geöffnetes Projekt</span></div>
         <div class="f-knopfzeile"><span class="f-knopf">PV-Vergütungsdialog öffnen…</span><span class="f-knopf">Gesetzesparameter…</span></div>
       </div>
+    </div>
+    <div class="f-fuss">
+      <span class="f-status">gespeichert 15:06 Uhr</span>
+      <span class="f-knopf">Abbrechen</span>
+      <span class="f-knopf">Speichern</span>
+      <span class="f-knopf primaer">OK</span>
     </div>
   </div>
 
@@ -1778,7 +1801,7 @@ Degradation           <span class="kom">kein Kostenattribut — Feld des Vergüt
   das Datumsfeld „Gültig ab" der Preishistorie; <b>gerechnet</b> sind die Herleitungs- und Kohärenzzeilen und die
   Summenzeile der Emissionen. Die Klappliste der Bilanzierungsmethode ist im Katalogkontext gesperrt.</p>
   <div class="fenster">
-    <div class="f-band">Energieträger — Erdgas<span class="f-sub">Musterprojekt Gewerbepark · Preise netto</span></div>
+    <div class="f-band">Energieträger — Erdgas<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc · Musterprojekt Gewerbepark · Preise netto</span></div>
     <div class="f-leib">
       <div class="f-spalten">
 
@@ -2171,13 +2194,17 @@ Keine stillen Teilsummen
         3.300 h — <b>60 % der Erzeugung</b>. Weil der Deckel jährlich fällt, reicht das Kontingent
         über 12 Kalenderjahre.</div>
         <div class="f-info"><b>Das Feld ist der Satz.</b> Gerechnet wird mit dem, was im Feld steht — ohne Rückfall
-        auf einen Projektwert; leer oder 0 heißt „kein Zuschlag", und die Vorschau zeigt dann 0 €. Wer den Satz
-        ändert, tippt ihn hier oder wählt ihn in der Überlagerung. Weicht das Feld vom Katalog ab, heißt die Zeile
-        darunter „… · <b>eigener Wert</b> 6,0000 ct/kWh — Vorschlag 5,5667 ct/kWh"
-        <span class="zk umg">umgesetzt U23</span>; der Weg zurück ist der Knopf
-        „Vorschlag übernehmen" in der Überlagerung. Graue Zeilen sind in der Anwendung Klapplisten
-        <span class="zk vor">Vorschlag U22</span>; Staffelzeile und Warnband <span class="zk vor">Vorschlag U25</span>;
-        Herleitungszeile und Bericht mit vier Nachkommastellen <span class="zk umg">umgesetzt U26</span>.</div>
+        auf einen Projektwert.
+        <ul>
+          <li>leer oder 0 heißt „kein Zuschlag", die Vorschau zeigt dann 0 €.</li>
+          <li>Satz ändern: hier tippen oder in der Überlagerung wählen.</li>
+          <li>Weicht das Feld vom Katalog ab, heißt die Zeile darunter „… · <b>eigener Wert</b> 6,0000 ct/kWh —
+          Vorschlag 5,5667 ct/kWh" <span class="zk umg">umgesetzt U23</span>; der Weg zurück ist der Knopf
+          „Vorschlag übernehmen" in der Überlagerung.</li>
+          <li>Graue Zeilen sind in der Anwendung Klapplisten <span class="zk vor">Vorschlag U22</span>; Staffelzeile
+          und Warnband <span class="zk vor">Vorschlag U25</span>; Herleitungszeile und Bericht mit vier
+          Nachkommastellen <span class="zk umg">umgesetzt U26</span>.</li>
+        </ul></div>
       </div>
 
       <!-- Gruppe 2: Projektweite KWK-Angaben (BHW_G2) -->
@@ -3398,7 +3425,7 @@ Zuordnung der Zeilen
 
   <div class="zone" id="valeri-dialog">Dialog — Parameter</div>
   <div class="fenster">
-    <div class="f-band">Wirtschaftlichkeit — Parameter<span class="f-sub">Musterprojekt Gewerbepark</span></div>
+    <div class="f-band">Wirtschaftlichkeit — Parameter<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc · Musterprojekt Gewerbepark</span></div>
     <div class="f-leib">
       <div class="f-spalten">
         <div class="f-gruppe">
