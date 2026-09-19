@@ -21,6 +21,12 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+// Der Hilfedienst des Hauses. Die KATALOGPROBE stellt ganze Dialoge, und jeder
+// von ihnen traegt im Kopf einen InfoKnopf - der spricht IHilfeDienst an. Ohne
+// Eintrag im Verzeichnis bricht die Seite beim Aufbau ab; die Probe misst
+// Layout, nicht den Hilfekatalog, deshalb die leere Ausfuehrung.
+builder.Services.AddSingleton<EPOS.UI.Dienste.IHilfeDienst>(new EPOS.UI.Dienste.KeineHilfe());
 builder.Logging.SetMinimumLevel(LogLevel.Warning);
 
 WebApplication app = builder.Build();
