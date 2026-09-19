@@ -1404,7 +1404,7 @@ Keine stillen Teilsummen
   <div class="zone" id="pvkosten-dialog">Dialog — Investitionskosten</div>
   <p class="eng">Beschriftungen sind die Ressourcentexte der Anwendung, Feldarten die ihrer Bausteine — dieselben
   Bausteine wie in Kategorie 1: Klappliste, Optionsgruppe, zwei Reiter, das Zeilenraster mit sieben Spalten,
-  Abschlusszeile, Summenfuß, drei Knöpfe, Fußleiste. <b>Editierbar</b> ist, was weiß mit dunklem Rand in der
+  Abschlusszeile, Summenfuß, vier Knöpfe, Fußleiste. <b>Editierbar</b> ist, was weiß mit dunklem Rand in der
   Zelle steht (Position, Bemessung, Satz, Nutzungsdauer); <b>gerechnet</b> ist grau und nie eingebbar. Die
   Klappliste Bemessung führt an der Photovoltaik fünf Arten: fester Betrag · % der Investition · % der
   Erzeugerkosten · je kW elektrisch · je kWp Leistung — die beiden Leistungsarten meinen dieselbe Größe. Die
@@ -1517,7 +1517,7 @@ Keine stillen Teilsummen
         Leistung <span class="zk umg">umgesetzt U34</span>; ohne gepflegte kWp entfällt sie.</div>
 
       <div class="f-knopfzeile"><span class="f-knopf">+ Position hinzufügen</span><span class="f-knopf">Aus Vorlage übernehmen…</span>
-        <span class="f-knopf">Positionskatalog…</span></div>
+        <span class="f-knopf">Positionskatalog…</span><span class="f-knopf">Nutzungsdauern vorbelegen…</span></div>
       </div>
     </div>
     <div class="f-fuss">
@@ -1530,8 +1530,9 @@ Keine stillen Teilsummen
 
   <div class="zone">Dialog — Betriebskosten</div>
   <p class="eng">Die Optionsgruppe steht auf „Betriebskosten": Die Betragsspalte heißt „Betrag netto [€/a]", die
-  Spalte Nutzungsdauer bleibt leer, und die Klappliste Bemessung führt an der Photovoltaik vier Arten — fester
-  Jahresbetrag · % der Investition · je kWh elektrisch (der erzeugte Strom aus dem Lauf) · je kWp Leistung. Die
+  Spalte Nutzungsdauer bleibt leer, und die Klappliste Bemessung führt an der Photovoltaik fünf Arten — fester
+  Jahresbetrag · % der Investition · je kWh elektrisch (der erzeugte Strom aus dem Lauf) · je kW elektrisch ·
+  je kWp Leistung. Die
   Endenergie-Arten
   „% der Endenergiekosten" und „% des Endenergiebedarfs" stehen hier nicht: Der Endenergie-Auflöser liefert für
   die Photovoltaik keine Menge, und was keine Bezugsgröße haben kann, bietet die Klappliste nicht an. Die beiden
@@ -1561,7 +1562,7 @@ Keine stillen Teilsummen
         </tr></thead>
         <tbody>
           <tr class="pflicht">
-            <td><span class="f-zknopf" title="Position bearbeiten">✏️</span><span class="f-zknopf" title="Position löschen">🗑️</span></td>
+            <td><span class="f-zknopf" title="Position bearbeiten">✏️</span><span class="f-zknopf" title="Pflichtposition — der Löschversuch nennt den Ausweg">🔒</span></td>
             <td class="feld"><span class="f-eingabe links">Wartung / Inspektion PV-Anlage</span><span class="klein">Pflicht nach VDI 2067</span></td>
             <td class="feld"><span class="f-combo">je kWp Leistung</span></td>
             <td class="feld r"><span class="f-eingabe num">12,00</span> <span class="f-einheit">€/kWp·a</span></td>
@@ -1570,7 +1571,7 @@ Keine stillen Teilsummen
             <td><span class="f-zknopf" title="Eingabe Worst/Best Case">±</span></td>
           </tr>
           <tr class="pflicht">
-            <td><span class="f-zknopf">✏️</span><span class="f-zknopf">🗑️</span></td>
+            <td><span class="f-zknopf">✏️</span><span class="f-zknopf" title="Pflichtposition — der Löschversuch nennt den Ausweg">🔒</span></td>
             <td class="feld"><span class="f-eingabe links">Instandhaltung PV-Module / Gestell</span><span class="klein">Pflicht nach VDI 2067</span></td>
             <td class="feld"><span class="f-combo">% der Investition</span></td>
             <td class="feld r"><span class="f-eingabe num">0,50</span> <span class="f-einheit">%</span></td>
@@ -1632,7 +1633,7 @@ Keine stillen Teilsummen
         der Erlösreihe — nicht auf diese Zeilen. Eine Quellenangabe dazu gibt es nirgends
         <span class="zk vor">Vorschlag U9</span>.</div>
       <div class="f-knopfzeile"><span class="f-knopf">+ Position hinzufügen</span><span class="f-knopf">Aus Vorlage übernehmen…</span>
-        <span class="f-knopf">Positionskatalog…</span></div>
+        <span class="f-knopf">Positionskatalog…</span><span class="f-knopf">Nutzungsdauern vorbelegen…</span></div>
       </div>
     </div>
     <div class="f-fuss">
@@ -1666,8 +1667,10 @@ Keine stillen Teilsummen
         Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.</div>
         <div class="f-zeile eng"><label>Vergütung:</label><span class="f-radio"><i></i></span><span class="f-lab">vom Stammprojekt übernehmen</span>
           <span class="f-radio an"><i></i></span><span class="f-lab" style="min-width:0">eigene Vergütung</span></div>
-        <div class="f-herleitung">eigene Werte dieser Variante — <b>Variante Photovoltaik</b></div>
+        <div class="f-herleitung">eigene Werte dieser Variante</div>
         <div class="f-zeile eng"><label>Projekt:</label><span class="f-combo" style="min-width:260px">Musterprojekt Gewerbepark</span><span class="f-einheit">nur ohne geöffnetes Projekt</span></div>
+        <div class="f-info"><b>Entweder/oder, nie beides:</b> Im Projektkontext steht die Optionsgruppe „Vergütung:" (so
+        gezeichnet); im Admin-Kontext ohne geöffnetes Projekt ersetzt die Klappliste „Projekt:" sie vollständig.</div>
         <div class="f-knopfzeile"><span class="f-knopf">PV-Vergütungsdialog öffnen…</span><span class="f-knopf">Gesetzesparameter…</span></div>
       </div>
     </div>
