@@ -243,8 +243,11 @@ namespace WindowsFormsApplication1
             return angelegt;
         }
 
-        /// <summary>Standard-Vorlage einer Komponente und Kategorie; null = keine.</summary>
-        private static KostenVorlageKopf StandardVorlage(int komponentenId, int kategorieId)
+        /// <summary>Standard-Vorlage einer Komponente und Kategorie; null = keine.
+        /// <para>Auch der Vorlagenhinweis des Kostendialogs fragt hier (Anwenderentscheid
+        /// 19.09.2026) — die Vorlage, aus der die Projektpositionen entstehen, wird
+        /// an EINER Stelle bestimmt.</para></summary>
+        internal static KostenVorlageKopf StandardVorlage(int komponentenId, int kategorieId)
         {
             foreach (KostenVorlageKopf k in KostenVorlagenCtrl.Vorlagen(komponentenId, kategorieId))
                 if (k.IstStandard) return k;

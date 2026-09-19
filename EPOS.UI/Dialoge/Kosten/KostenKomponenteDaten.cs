@@ -98,6 +98,23 @@ public sealed class KostenPositionZeile
     public string EmpfehlungZeile { get; set; } = "";
 
     /// <summary>
+    /// ANWENDERENTSCHEID 19.09.2026: Die Hinweiszeile unter der Herleitung —
+    /// „Vorlage ‚Standard': % des Endenergiebedarfs". Sie steht nur an einer
+    /// Projektposition, deren Bemessung von der der Standardvorlage abweicht; der
+    /// Satz kommt fertig aus dem Kern (<c>KostenHerleitung</c>), leer heißt keine
+    /// Zeile.
+    /// </summary>
+    public string VorlagenHinweis { get; set; } = "";
+
+    /// <summary>
+    /// Der Eintrag der Bemessungsliste, den „übernehmen" setzt (Id in
+    /// <see cref="KostenKomponenteStand.Bemessungen"/>); <c>null</c> = die Bemessung
+    /// der Vorlage steht in diesem Kontext nicht zur Auswahl, dann bleibt es beim
+    /// Hinweistext ohne Knopf.
+    /// </summary>
+    public int? VorlagenBemessungId { get; set; }
+
+    /// <summary>
     /// U8 (Stufe S2): Die HERLEITUNGSZEILE unter der Nutzungsdauer — „15 a · Vorgabe
     /// der Technik", „… · AfA-Tabelle: ‹Positionsart›" oder „… · eigener Wert". Sie
     /// kommt fertig aus dem Kern (<c>NutzungsdauerCtrl.Herleitungszeile</c>); leer

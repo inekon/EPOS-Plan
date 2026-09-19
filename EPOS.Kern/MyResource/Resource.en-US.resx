@@ -19796,6 +19796,15 @@ Do you want to allow this?</value>
   <data name="KDLG_EMPF_ZEILE" xml:space="preserve">
     <value>Recommended {0} to {1} {2}</value>
   </data>
+  <data name="KDLG_VORLAGE_ZEILE" xml:space="preserve">
+    <value>Template “{0}”: {1}</value>
+  </data>
+  <data name="KDLG_VORLAGE_UEBERNEHMEN" xml:space="preserve">
+    <value>apply</value>
+  </data>
+  <data name="KDLG_VORLAGE_UEBERNEHMEN_TT" xml:space="preserve">
+    <value>Apply the template’s basis for this item; rate and amount stay as they are.</value>
+  </data>
   <data name="KDLG_LAUFSTAND" xml:space="preserve">
     <value>Quantities come from the simulation run of {0}</value>
   </data>

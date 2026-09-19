@@ -112,6 +112,25 @@
         {
             <span class="epos-herleitung epos-zr-herleitung">@Herleitung</span>
         }
+        @* ANWENDERENTSCHEID 19.09.2026: DIE VORLAGE SAGT ETWAS ANDERES. Eine
+           Projektposition, deren Bemessung von der der Standardvorlage abweicht,
+           nennt den Vorlagenwert - und bietet ihn zur Uebernahme an. Muster U23:
+           eine leise Textzeile mit Handgriff, kein Warnbanner und keine Spalte -
+           eine eigene Bemessung ist kein Fehler, nur eine Auskunft wert. Im
+           Lesemodus bleibt der Text ohne Knopf. Der Satz kommt fertig aus dem Kern
+           (KostenHerleitung); leer heisst keine Zeile. *@
+        @if (!string.IsNullOrEmpty(VorlagenHinweis))
+        {
+            <span class="epos-herleitung epos-zr-herleitung epos-zr-vorlage">
+                @VorlagenHinweis
+                @if (Schreibbar && VorlagenUebernahme.HasDelegate)
+                {
+                    <button type="button" class="epos-zr-vorlageknopf"
+                            title="@VorlagenUebernehmenKurztext"
+                            @onclick="() => VorlagenUebernahme.InvokeAsync()">@VorlagenUebernehmenText</button>
+                }
+            </span>
+        }
     </div>
 
     <div class="epos-zr-zelle">
@@ -296,4 +315,20 @@
     /// (<c>KostenHerleitung</c>); leer heißt keine Zeile.
     /// </summary>
     [Parameter] public string EmpfehlungZeile { get; set; } = "";
+
+    /// <summary>
+    /// ANWENDERENTSCHEID 19.09.2026: Die Hinweiszeile unter der Herleitung —
+    /// „Vorlage ‚Standard': % des Endenergiebedarfs". Sie kommt fertig aus dem Kern
+    /// (<c>KostenHerleitung</c>); leer heisst keine Zeile.
+    /// </summary>
+    [Parameter] public string VorlagenHinweis { get; set; } = "";
+
+    /// <summary>Der Klick auf „übernehmen"; ohne Rückruf kein Knopf.</summary>
+    [Parameter] public EventCallback VorlagenUebernahme { get; set; }
+
+    /// <summary>Beschriftung des Übernahmeknopfes.</summary>
+    [Parameter] public string VorlagenUebernehmenText { get; set; } = "übernehmen";
+
+    /// <summary>Werkzeugtipp des Übernahmeknopfes.</summary>
+    [Parameter] public string VorlagenUebernehmenKurztext { get; set; } = "";
 }
