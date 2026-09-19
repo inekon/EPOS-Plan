@@ -206,11 +206,15 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Der Kern liefert den SCHLÜSSEL, nicht den Anzeigetext</b>
-        /// (Drei-Schichten-Regel): Eine Region mit Herkunft trägt <c>PVGIS</c>,
-        /// <c>TRY_DATEI</c> oder <c>TRY_REGIONAL</c> in der Spalte; die Übersetzung
-        /// macht die Hülle. Das Importdatum steht als ISO-Text und sortiert deshalb
-        /// als Zeichenkette in der Reihenfolge des Datums.
+        /// <b>Die Spalte QUELLE trägt den Satz, den <c>KlimaAnzeige</c> baut</b>
+        /// (Auftrag KL-6): Bis dahin stand hier der blanke Schlüssel, und die Hülle
+        /// übersetzte ihn. Seit Schemaschritt 97 reiht die Spalte Quelle, Bezugsjahr
+        /// und Szenario zu EINEM Satz — Satzbau ist kein Übersetzen mehr und gehört
+        /// deshalb an eine Stelle, nicht an zwei (die Startseite sagt dasselbe).
+        /// In der Datenbank steht unverändert nur der Schlüssel.
+        ///
+        /// <para>Das Importdatum steht als ISO-Text und sortiert deshalb als
+        /// Zeichenkette in der Reihenfolge des Datums.</para>
         /// </summary>
         [Fact]
         public void Eine_Region_mit_Herkunft_traegt_Schluessel_und_ISO_Datum()
@@ -232,13 +236,21 @@ namespace EPOS.Kern.Tests
 
             var zeilen = KlimaregionStammCtrl.Katalogfilterzeilen();
 
+            // Die Spalte zeigt den ANZEIGETEXT der Quelle; ohne Szenario und Jahr ist
+            // das die Quelle allein. In der Datenbank steht weiter der Schluessel.
             Katalogfilterzeile berlin = zeilen.Single(z => z.Bezeichner == "Berlin");
-            Assert.Equal(DbWerte.KLIMA_QUELLE_TRY_REGIONAL,
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_QUELLE_TRY_REGIONAL,
                          berlin.Text(Katalogfilterprofil.SpQuelle));
             Assert.Equal("2026-09-18", berlin.Text(Katalogfilterprofil.SpImportdatum));
 
+            Assert.Equal(DbWerte.KLIMA_QUELLE_TRY_REGIONAL,
+                         Convert.ToString(DataRepository.ExecuteScalar(
+                             "SELECT Quelle FROM Tab_Klimaregion_STAMM WHERE Name = ?",
+                             new DbParam("@n", "Berlin"))));
+
             Katalogfilterzeile sevilla = zeilen.Single(z => z.Bezeichner == "Sevilla");
-            Assert.Equal(DbWerte.KLIMA_QUELLE_PVGIS, sevilla.Text(Katalogfilterprofil.SpQuelle));
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_QUELLE_PVGIS,
+                         sevilla.Text(Katalogfilterprofil.SpQuelle));
 
             // ISO sortiert als ZEICHENKETTE in der Reihenfolge des Datums.
             Assert.True(string.CompareOrdinal(sevilla.Text(Katalogfilterprofil.SpImportdatum),
