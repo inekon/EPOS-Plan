@@ -153,8 +153,9 @@ jetzt als „Administration → Kosten → Gesetzliche Parameter“ (beide Sprac
 | Prüfung | Ergebnis |
 |---|---|
 | `dotnet build WP-Plan.Kern.slnf -c Release` | 0 Fehler, 0 Warnungen |
-| Volle Suite de‑DE | 9 316 grün (EPOS.Kern 3 665, EPOS.UI 4 747, SpeicherEngine 378, SpeicherPlanung 27, KiKern 499; 1 übersprungen) |
-| Volle Suite en‑US | dieselben Zahlen grün |
+| Volle Suite de‑DE (vor dem Merge) | 9 316 grün (EPOS.Kern 3 665, EPOS.UI 4 747, SpeicherEngine 378, SpeicherPlanung 27, KiKern 499; 1 übersprungen) |
+| Volle Suite de‑DE **nach** dem Merge von `ios_migration_september` | 9 364 grün (EPOS.Kern 3 686, EPOS.UI 4 774) |
+| Volle Suite en‑US | dieselben Zahlen grün, vor und nach dem Merge |
 | Windows-Schale (`EnableWindowsTargeting=true`) | 0 Fehler |
 | `ResourceDesigner` | wiederholbar, unverändert |
 | `SqlDialektPruefer` | 1 505 SQL‑Texte, 0 Fundstellen |
@@ -172,5 +173,15 @@ Rechner mit Browser nachzuholen**, bevor der Gesetzeskatalog beim Anwender ankom
   nicht geprüft.
 - **`kosten_32.png` ist ein Platzhalter im Hausstil**; ein gestaltetes Symbol ersetzt es ohne
   Codeänderung.
-- **`Katalogliste.Vergleichbar`** kommt auch mit Auftrag KL‑4; beim Merge zusammenführen.
 - **Rasterprobe nachholen** (siehe oben).
+
+## Zusammenführung mit KL‑4 und KI‑1
+
+Der Merge von `ios_migration_september` in `mn1` brachte zwei Berührungen:
+
+- **`Katalogliste.Vergleichbar`** hatten KL‑4 (Klimaregionen) und MN‑1 (gesetzliche Parameter)
+  **beide** angelegt — derselbe Parametername, dieselbe Vorgabe `true`, dieselbe Bedingung
+  `!Mehrfach && Vergleichbar`. Zusammengeführt zu **einer** Erklärung, die beide Wirte nennt.
+- **Die Statusnummer** wandert von #370 auf **#372**: KI‑1 belegt #370, KL‑4 belegt #371. Die
+  Commit‑Betreffs der drei Teile tragen noch keine Nummer, die Statuszeile und der
+  Offen‑Block heißen jetzt #372.
