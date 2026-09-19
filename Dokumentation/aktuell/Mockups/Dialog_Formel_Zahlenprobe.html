@@ -1672,7 +1672,7 @@ Keine stillen Teilsummen
         <div class="f-zeile eng"><label>Projekt:</label><span class="f-combo" style="min-width:260px">Musterprojekt Gewerbepark</span><span class="f-einheit">nur ohne geöffnetes Projekt</span></div>
         <div class="f-info"><b>Entweder/oder, nie beides:</b> Im Projektkontext steht die Optionsgruppe „Vergütung:" (so
         gezeichnet); im Admin-Kontext ohne geöffnetes Projekt ersetzt die Klappliste „Projekt:" sie vollständig.</div>
-        <div class="f-knopfzeile"><span class="f-knopf">PV-Vergütungsdialog öffnen…</span><span class="f-knopf">Gesetzesparameter…</span></div>
+        <div class="f-knopfzeile"><span class="f-knopf">PV-Vergütungsdialog öffnen…</span><span class="f-knopf" title="geplant — im PV-Zweig noch nicht gebaut">Gesetzesparameter…</span><span class="f-einheit">geplant im PV-Zweig</span></div>
       </div>
     </div>
     <div class="f-fuss">
@@ -2894,7 +2894,7 @@ Stromsteuer
     <div class="f-band">PV-Vergütung (EEG)<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
       <div class="f-zeile"><span class="f-check an"><i></i></span><span class="f-lab" style="min-width:0">Vergütung anwenden</span></div>
-      <div class="f-herleitung">Vergütung dieser Variante: <b>eigene Werte</b> — Variante Photovoltaik</div>
+      <div class="f-herleitung">Vergütung dieser Variante: <b>eigene Werte</b></div>
 
       <!-- Anlage (PVW_G_ANLAGE) -->
       <div class="f-gruppe" style="margin-top:8px">
@@ -3268,7 +3268,7 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme                            <span class=
         <thead><tr><th>Position</th><th class="r">Stammprojekt</th><th class="r">Blockheiz&shy;kraftwerk</th>
           <th class="r">Photovoltaik</th><th class="r">Beide Anlagen</th></tr></thead>
         <tbody>
-          <tr class="block"><td colspan="5">A — zahlungswirksam, geht in den Kapitalwert</td></tr>
+          <tr class="block"><td colspan="5">Erlöse und Vorteile — zahlungswirksam (Jahr 1)</td></tr>
           <tr class="teil"><td colspan="5">Blockheizkraftwerk</td></tr>
           <tr><td class="ein">Zuschlag Kraft-Wärme-Kopplung</td><td class="r">— <span class="klein">keine KWK-Anlage</span></td>
               <td class="r">32.022,2</td><td class="r">— <span class="klein">keine KWK-Anlage</span></td><td class="r">32.022,2</td></tr>
@@ -3280,7 +3280,7 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme                            <span class=
               <td class="r">15.489,1</td><td class="r">—</td><td class="r">15.489,1</td></tr>
           <tr><td class="ein" style="padding-left:40px">Satz Eigenstrom · Herkunft</td><td class="r">—</td>
               <td class="r">2,4167 ct/kWh · Vorschlag</td><td class="r">—</td><td class="r">2,4167 ct/kWh · Vorschlag</td></tr>
-          <tr><td class="ein">Energiesteuer-Gutschrift Brennstoff</td><td class="r">—</td>
+          <tr><td class="ein">Energiesteuer-Gutschrift Brennstoff <span class="zk vor">Vorschlag U7</span></td><td class="r">—</td>
               <td class="r">21.203,4</td><td class="r">—</td><td class="r">21.203,4</td></tr>
           <tr><td class="ein">Einspeiseerlös Strom</td><td class="r">—</td>
               <td class="r">24.750,0</td><td class="r">—</td><td class="r">24.750,0</td></tr>
@@ -3292,7 +3292,7 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme                            <span class=
           <tr class="teil"><td>Summe Photovoltaik</td><td class="r">—</td>
               <td class="r">—</td><td class="r">9.001,4</td><td class="r">9.001,4</td></tr>
           <tr class="teil"><td colspan="5">Gas-Brennwertkessel</td></tr>
-          <tr><td class="ein">Energiesteuer-Entlastung Heizstoff</td><td class="r">2.885,7</td>
+          <tr><td class="ein">Energiesteuer-Entlastung Heizstoff <span class="zk vor">Vorschlag U7</span></td><td class="r">2.885,7</td>
               <td class="r">— <span class="klein">kein Kesselbrennstoff</span></td><td class="r">2.885,7</td>
               <td class="r">— <span class="klein">kein Kesselbrennstoff</span></td></tr>
           <tr class="teil"><td>Summe Gas-Brennwertkessel</td><td class="r">2.885,7</td>
@@ -3304,14 +3304,22 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme                            <span class=
               <td class="r">6.460,0</td><td class="r">26.634,0</td><td class="r">4.750,0</td></tr>
           <tr class="summe"><td>Erlöse zahlungswirksam gesamt</td><td class="r">31.229,7</td>
               <td class="r">84.435,6</td><td class="r">38.521,1</td><td class="r">91.727,0</td></tr>
-          <tr class="block"><td colspan="5">B — Ausweis, nie in der Summe</td></tr>
+          <tr class="block"><td colspan="5">Ausweis — nicht in der Summe</td></tr>
           <tr class="teil"><td colspan="5">Blockheizkraftwerk</td></tr>
           <tr><td class="ein">Stromsteuer-Befreiung Eigenverbrauch</td><td class="r">—</td>
-              <td class="r">23.677,5</td><td class="r">—</td><td class="r">23.677,5</td></tr>
-          <tr><td class="ein">Vermiedene Stromkosten wirksam</td><td class="r">—</td>
+              <td class="r">23.677,5<span class="klein">1.155,0 MWh × 20,50 €/MWh; auf eigenen Strom entsteht keine Steuer</span></td><td class="r">—</td><td class="r">23.677,5</td></tr>
+          <tr><td class="ein">Vermiedene Stromkosten brutto</td><td class="r">—</td>
+              <td class="r">315.129,6<span class="klein">1.094,2 MWh × 28,80 ct; steckt schon im kleineren Reststrombetrag</span></td><td class="r">—</td><td class="r">315.129,6</td></tr>
+          <tr><td class="ein">abzüglich entgangener Entlastung Netzbezug</td><td class="r">—</td>
+              <td class="r">− 21.884,0<span class="klein">1.094,2 MWh × 20,00 €/MWh</span></td><td class="r">—</td><td class="r">− 21.884,0</td></tr>
+          <tr class="teil"><td>vermiedene Kosten wirksam — Blockheizkraftwerk</td><td class="r">—</td>
               <td class="r">293.245,6</td><td class="r">—</td><td class="r">293.245,6</td></tr>
           <tr class="teil"><td colspan="5">Photovoltaik</td></tr>
-          <tr><td class="ein">Vermiedene Stromkosten wirksam</td><td class="r">—</td>
+          <tr><td class="ein">Vermiedene Stromkosten brutto</td><td class="r">—</td>
+              <td class="r">—</td><td class="r">24.624,0<span class="klein">85,5 MWh × 28,80 ct</span></td><td class="r">24.624,0</td></tr>
+          <tr><td class="ein">abzüglich entgangener Entlastung Netzbezug</td><td class="r">—</td>
+              <td class="r">—</td><td class="r">− 1.710,0<span class="klein">85,5 MWh × 20,00 €/MWh</span></td><td class="r">− 1.710,0</td></tr>
+          <tr class="teil"><td>vermiedene Kosten wirksam — Photovoltaik</td><td class="r">—</td>
               <td class="r">—</td><td class="r">22.914,0</td><td class="r">22.914,0</td></tr>
           <tr class="teil"><td colspan="5">projektweit</td></tr>
           <tr><td class="ein">Vermiedene Stromkosten — Leistungsanteil</td><td class="r">—</td>
