@@ -3,14 +3,22 @@
    VORBILD: Views/Admin/Form_AdminSettings.cs (320 Z.) und .Designer.cs
    (491 Z.) - 35 Steuerelemente plus ZWEI, die zur Laufzeit entstehen.
 
-   WOZU. Neun Properties.Settings-Werte und EIN Registry-Schalter (der
-   KI-Abschalter), sortiert in vier Rubriken.
+   WOZU. Elf Properties.Settings-Werte und EIN Registry-Schalter (der
+   KI-Abschalter), sortiert in fuenf Rubriken.
 
-   DIE RUBRIKENLISTE IST EINE REITERLEISTE (A-16/A-17). Vier gestapelte
+   DIE RUBRIKENLISTE IST EINE REITERLEISTE (A-16/A-17). Gestapelte
    Dock.Fill-Panels, von denen genau eines sichtbar ist, plus eine Auswahlliste
    links - das ist woertlich der Baustein Reiter/Reiterblatt, nur senkrecht. Die
    Ausrichtung ist eine CSS-Frage (epos-reiter--senkrecht), keine zweite
    Komponente.
+
+   DIE RUBRIK "KLIMADATEN" (KL1-A) ist die fuenfte und steht HINTER "Web-
+   Schnittstellen (API)" - so bleiben die Reiterindizes 0 bis 2 die, die sie
+   waren. Sie fuehrt die drei Adressen, aus denen Klimadaten kommen: die
+   PVGIS-Schnittstelle (TMY) - sie ist aus der Web-Rubrik HIERHER gewandert,
+   weil sie Klimadaten holt und keine Programmschnittstelle im Sinne der
+   uebrigen ist -, das Portal der DWD-Testreferenzjahre und die Ablage der
+   TRY-Regionaldaten. Wiki- und Nominatim-Adresse bleiben, wo sie waren.
 
    BEFUND W14c-B50/B51, BEHOBEN: Die vier Rubriktexte waren deutsche
    Designer-Literale, und die Umschaltung lief ueber den INDEX - Rubrik 0 "VDI
@@ -117,12 +125,28 @@
                     <KindInhalt>
                     <Formularraster Einspaltig="true">
                         <KindInhalt>
-                        <Textfeld Bezeichnung="@LabelPvgis" Wert="@_satz.PvgisUrl"
-                                  WertChanged="@(t => _satz.PvgisUrl = t)" />
                         <Textfeld Bezeichnung="@LabelWiki" Wert="@_satz.WikiUrl"
                                   WertChanged="@(t => _satz.WikiUrl = t)" />
                         <Textfeld Bezeichnung="@LabelGeokodierung" Wert="@_satz.GeokodierungUrl"
                                   WertChanged="@(t => _satz.GeokodierungUrl = t)" />
+                        </KindInhalt>
+                    </Formularraster>
+                    </KindInhalt>
+                </Reiterblatt>
+
+                @* Die fuenfte Rubrik (KL1-A): die drei Adressen, aus denen
+                   Klimadaten kommen. Sie steht HINTER "WEB", damit die Indizes
+                   der drei ersten Blaetter bleiben, was sie sind. *@
+                <Reiterblatt Schluessel="KLIMA" Titel="@RubrikKlimaText">
+                    <KindInhalt>
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                        <Textfeld Bezeichnung="@LabelPvgis" Wert="@_satz.PvgisUrl"
+                                  WertChanged="@(t => _satz.PvgisUrl = t)" />
+                        <Textfeld Bezeichnung="@LabelTryPortal" Wert="@_satz.TryPortalUrl"
+                                  WertChanged="@(t => _satz.TryPortalUrl = t)" />
+                        <Textfeld Bezeichnung="@LabelTryRegional" Wert="@_satz.TryRegionalUrl"
+                                  WertChanged="@(t => _satz.TryRegionalUrl = t)" />
                         </KindInhalt>
                     </Formularraster>
                     </KindInhalt>
@@ -206,7 +230,7 @@
     /// </summary>
     public bool PfadeFest => OrdnerWaehler is null;
 
-    /// <summary>Schreibt die neun Werte und legt die fünf Ordner an.</summary>
+    /// <summary>Schreibt die elf Werte und legt die fünf Ordner an.</summary>
     [Parameter] public Func<Einstellungensatz, bool, Task<SpeicherBefund>>? Speichern { get; set; }
 
     /// <summary>Die Werksstandards (<c>EinstellungenCtrl.Zuruecksetzen</c>).</summary>
@@ -223,6 +247,7 @@
     [Parameter] public string RubrikVdiText { get; set; } = Resource.ADM_SET_RUBRIK_VDI;
     [Parameter] public string RubrikDatenbankText { get; set; } = Resource.ADM_SET_RUBRIK_DATENBANK;
     [Parameter] public string RubrikWebText { get; set; } = Resource.ADM_SET_RUBRIK_WEB;
+    [Parameter] public string RubrikKlimaText { get; set; } = Resource.ADM_SET_RUBRIK_KLIMA;
     [Parameter] public string RubrikAnwendungText { get; set; } = Resource.ADM_SET_RUBRIK_ANWENDUNG;
     [Parameter] public string LabelVdiPfad { get; set; } = Resource.ADM_SET_LBL_VDI_PFAD;
     [Parameter] public string LabelDbExport { get; set; } = Resource.ADM_SET_LBL_DB_EXPORT;
@@ -232,6 +257,8 @@
     [Parameter] public string LabelWiki { get; set; } = Resource.ADM_SET_LBL_WORDPRESS;
     [Parameter] public string LabelPvgis { get; set; } = Resource.ADM_SET_LBL_PVGIS;
     [Parameter] public string LabelGeokodierung { get; set; } = Resource.ADM_SET_LBL_GEOKODIERUNG;
+    [Parameter] public string LabelTryPortal { get; set; } = Resource.ADM_SET_LBL_TRY_PORTAL;
+    [Parameter] public string LabelTryRegional { get; set; } = Resource.ADM_SET_LBL_TRY_REGIONAL;
     [Parameter] public string LabelAllgemein { get; set; } = Resource.ADM_SET_LBL_ALLGEMEIN;
     [Parameter] public string DurchsuchenText { get; set; } = Resource.ADM_SET_BTN_DURCHSUCHEN;
     [Parameter] public string SpeichernText { get; set; } = Resource.ADM_BTN_SPEICHERN;
@@ -316,6 +343,8 @@
             WikiUrl = s?.WikiUrl ?? "",
             PvgisUrl = s?.PvgisUrl ?? "",
             GeokodierungUrl = s?.GeokodierungUrl ?? "",
+            TryPortalUrl = s?.TryPortalUrl ?? "",
+            TryRegionalUrl = s?.TryRegionalUrl ?? "",
             AllgemeinPfad = pfade?.AllgemeinPfad ?? ""
         };
     }

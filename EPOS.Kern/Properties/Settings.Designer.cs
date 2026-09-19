@@ -133,6 +133,30 @@ namespace WindowsFormsApplication1.Properties {
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://kunden.dwd.de/obt/")]
+        public string TRYPortalUrl {
+            get {
+                return ((string)(this["TRYPortalUrl"]));
+            }
+            set {
+                this["TRYPortalUrl"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://github.com/RE-Lab-Projects/TRY_DE_2015_2045/releases/download/v1.4.0/data.zip")]
+        public string TRYRegionalUrl {
+            get {
+                return ((string)(this["TRYRegionalUrl"]));
+            }
+            set {
+                this["TRYRegionalUrl"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool EinstellungenUebernommen {
             get {

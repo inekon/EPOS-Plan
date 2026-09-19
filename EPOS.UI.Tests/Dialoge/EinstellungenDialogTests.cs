@@ -12,10 +12,14 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <summary>
 /// Die globalen Anwendungseinstellungen (iU9-W14c.6). Soll ist die Feldkarte der
 /// gelöschten Maske <c>Form_AdminSettings</c> (28 Kartenzeilen): eine Rubrikenliste
-/// mit VIER Einträgen, neun Textfelder, fünf „Durchsuchen…"-Knöpfe, drei
+/// mit FÜNF Einträgen, elf Textfelder, fünf „Durchsuchen…"-Knöpfe, drei
 /// Fußknöpfe — <b>und die zwei Steuerelemente, die zur LAUFZEIT entstanden</b>
 /// (<c>chk_KiAus</c>, <c>lbl_KiAus</c>): Die Feldkarte sah sie nicht (R-W14c-6),
 /// hier stehen sie.
+///
+/// <para>Die fünfte Rubrik „Klimadaten" (KL1-A) steht HINTER „Web-Schnittstellen
+/// (API)": PVGIS-Adresse (aus der Web-Rubrik hierher gewandert), Portal der
+/// DWD-Testreferenzjahre und Adresse der TRY-Regionaldaten.</para>
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt (Regel seit W8).</para>
 /// </summary>
@@ -31,6 +35,8 @@ public class EinstellungenDialogTests : EposBunitContext
         WikiUrl = "https://wiki.epos-plan.de",
         PvgisUrl = "https://re.jrc.ec.europa.eu/api/tmy",
         GeokodierungUrl = "https://nominatim.openstreetmap.org",
+        TryPortalUrl = "https://kunden.dwd.de/obt/",
+        TryRegionalUrl = "https://github.com/RE-Lab-Projects/TRY_DE_2015_2045/releases/download/v1.4.0/data.zip",
         AllgemeinPfad = @"C:\Users\x\AppData\Local\WP-Plan"
     };
 
@@ -70,17 +76,22 @@ public class EinstellungenDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Die Rubrikenliste IST eine Reiterleiste (A-16): vier Blätter mit
-    /// sprachneutralem Schlüssel statt vier Panels über den Index (Befunde
+    /// Die Rubrikenliste IST eine Reiterleiste (A-16): fünf Blätter mit
+    /// sprachneutralem Schlüssel statt Panels über den Index (Befunde
     /// W14c-B50/B51).
+    ///
+    /// <para><b>Die Folge zählt</b> (KL1-A): „Klimadaten" steht HINTER
+    /// „Web-Schnittstellen (API)", damit die Indizes 0 bis 2 bleiben, was sie
+    /// waren.</para>
     /// </summary>
     [Fact]
-    public void Die_vier_Rubriken_sind_vier_Reiter()
+    public void Die_fuenf_Rubriken_sind_fuenf_Reiter()
     {
         var cut = Zeige();
         var reiter = cut.FindAll(".epos-reiter-knopf").Select(e => e.TextContent.Trim()).ToList();
 
-        Assert.Equal(new[] { "VDI Datensätze", "Datenbank", "Web-Schnittstellen (API)", "Anwendung" },
+        Assert.Equal(new[] { "VDI Datensätze", "Datenbank", "Web-Schnittstellen (API)",
+                             "Klimadaten", "Anwendung" },
                      reiter);
     }
 
@@ -99,20 +110,26 @@ public class EinstellungenDialogTests : EposBunitContext
         Assert.Equal(4, cut.FindAll("input[type=text]").Count);
         Assert.Equal(3, cut.FindAll(".epos-dateiwahl button").Count);
 
-        // Rubrik 3: die drei URLs, ohne Knopf.
+        // Rubrik 3 "Web-Schnittstellen (API)": Wiki und Nominatim, ohne Knopf -
+        // die PVGIS-Adresse ist in die Klimarubrik gewandert (KL1-A).
         Reiter(cut, 2);
+        Assert.Equal(2, cut.FindAll("input[type=text]").Count);
+        Assert.Empty(cut.FindAll(".epos-dateiwahl button"));
+
+        // Rubrik 4 "Klimadaten": die drei Adressen, ohne Knopf.
+        Reiter(cut, 3);
         Assert.Equal(3, cut.FindAll("input[type=text]").Count);
         Assert.Empty(cut.FindAll(".epos-dateiwahl button"));
 
-        // Rubrik 4: der Allgemein-Pfad UND der KI-Schalter.
-        Reiter(cut, 3);
+        // Rubrik 5: der Allgemein-Pfad UND der KI-Schalter.
+        Reiter(cut, 4);
         Assert.Single(cut.FindAll("input[type=text]"));
         Assert.Single(cut.FindAll(".epos-dateiwahl button"));
         Assert.Single(cut.FindAll("input[type=checkbox]"));
     }
 
     [Fact]
-    public void Die_neun_Werte_stehen_in_den_Feldern()
+    public void Die_elf_Werte_stehen_in_den_Feldern()
     {
         var cut = Zeige();
 
@@ -127,9 +144,15 @@ public class EinstellungenDialogTests : EposBunitContext
 
         Reiter(cut, 2);
         felder = cut.FindAll("input[type=text]").Select(e => e.GetAttribute("value")).ToList();
+        Assert.Equal("https://wiki.epos-plan.de", felder[0]);
+        Assert.Equal("https://nominatim.openstreetmap.org", felder[1]);
+
+        // Die fuenfte Rubrik: PVGIS und die zwei TRY-Adressen (KL1-A).
+        Reiter(cut, 3);
+        felder = cut.FindAll("input[type=text]").Select(e => e.GetAttribute("value")).ToList();
         Assert.Equal("https://re.jrc.ec.europa.eu/api/tmy", felder[0]);
-        Assert.Equal("https://wiki.epos-plan.de", felder[1]);
-        Assert.Equal("https://nominatim.openstreetmap.org", felder[2]);
+        Assert.Equal("https://kunden.dwd.de/obt/", felder[1]);
+        Assert.Equal("https://github.com/RE-Lab-Projects/TRY_DE_2015_2045/releases/download/v1.4.0/data.zip", felder[2]);
     }
 
     /// <summary>
@@ -167,12 +190,12 @@ public class EinstellungenDialogTests : EposBunitContext
             .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
     }
 
-    /// <summary>Zählt über alle vier Rubriken — ein Reiterblatt zeichnet nur, wenn es aktiv ist.</summary>
+    /// <summary>Zählt über alle fünf Rubriken — ein Reiterblatt zeichnet nur, wenn es aktiv ist.</summary>
     private static (int Felder, int NurLesend, int Knoepfe) Pfadfelder(
         IRenderedComponent<EinstellungenDialog> cut)
     {
         int felder = 0, lesend = 0, knoepfe = 0;
-        for (int r = 0; r < 4; r++)
+        for (int r = 0; r < 5; r++)
         {
             Reiter(cut, r);
             var pfade = cut.FindAll(".epos-dateiwahl input");
@@ -249,8 +272,8 @@ public class EinstellungenDialogTests : EposBunitContext
             },
             geschlossen: b => ergebnis = b);
 
-        // Eine Nicht-Pfad-Rubrik bearbeiten: die drei Web-Adressen.
-        Reiter(cut, 2);
+        // Eine Nicht-Pfad-Rubrik bearbeiten: die Klimarubrik, Feld 0 ist PVGIS.
+        Reiter(cut, 3);
         cut.FindAll("input[type=text]")[0].Input("https://neu/api/tmy");
 
         cut.FindAll("button.epos-knopf--primaer").Last().Click();
@@ -280,7 +303,9 @@ public class EinstellungenDialogTests : EposBunitContext
             DbPfad = @"D:\Werk",
             AllgemeinPfad = @"D:\Werk",
             DbName = "Kenndaten.sqlite",
-            PvgisUrl = "https://re.jrc.ec.europa.eu/api/tmy"
+            PvgisUrl = "https://re.jrc.ec.europa.eu/api/tmy",
+            TryPortalUrl = "https://kunden.dwd.de/obt/",
+            TryRegionalUrl = "https://github.com/RE-Lab-Projects/TRY_DE_2015_2045/releases/download/v1.4.0/data.zip"
         }));
 
         cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "Standardwerte").Click();
@@ -290,6 +315,8 @@ public class EinstellungenDialogTests : EposBunitContext
         Assert.Equal(@"C:\Users\x\AppData\Local\WP-Plan", cut.Instance.Werte.VdiPfad);
         Assert.Equal(@"C:\ProgramData\EPOS_PLAN", cut.Instance.Werte.DbPfad);
         Assert.Equal("https://re.jrc.ec.europa.eu/api/tmy", cut.Instance.Werte.PvgisUrl);
+        Assert.Equal("https://kunden.dwd.de/obt/", cut.Instance.Werte.TryPortalUrl);
+        Assert.Equal("https://github.com/RE-Lab-Projects/TRY_DE_2015_2045/releases/download/v1.4.0/data.zip", cut.Instance.Werte.TryRegionalUrl);
     }
 
     [Fact]
@@ -310,7 +337,7 @@ public class EinstellungenDialogTests : EposBunitContext
     public void Der_KI_Schalter_zeigt_den_Registry_Stand()
     {
         var cut = Zeige(kiAus: true);
-        Reiter(cut, 3);
+        Reiter(cut, 4);
 
         Assert.True(cut.Instance.KiAus);
         Assert.True(cut.Find("input[type=checkbox]").HasAttribute("checked"));
@@ -324,7 +351,7 @@ public class EinstellungenDialogTests : EposBunitContext
     public void Ein_Maschinenriegel_sperrt_den_Schalter_und_sagt_warum()
     {
         var cut = Zeige(kiAus: true, riegel: true);
-        Reiter(cut, 3);
+        Reiter(cut, 4);
 
         Assert.True(cut.Find("input[type=checkbox]").HasAttribute("disabled"));
         Assert.Contains("verwaltungsseitig gesperrt", cut.Markup);
@@ -362,7 +389,7 @@ public class EinstellungenDialogTests : EposBunitContext
     // =====================================================================
 
     [Fact]
-    public void Speichern_gibt_die_neun_Werte_weiter_und_schliesst()
+    public void Speichern_gibt_die_elf_Werte_weiter_und_schliesst()
     {
         Einstellungensatz? uebergeben = null;
         bool? ergebnis = null;
@@ -377,7 +404,41 @@ public class EinstellungenDialogTests : EposBunitContext
         Assert.NotNull(uebergeben);
         Assert.Equal("Kenndaten.sqlite", uebergeben!.DbName);
         Assert.Equal(@"C:\ProgramData\EPOS_PLAN", uebergeben.DbPfad);
+        Assert.Equal("https://re.jrc.ec.europa.eu/api/tmy", uebergeben.PvgisUrl);
+        Assert.Equal("https://kunden.dwd.de/obt/", uebergeben.TryPortalUrl);
+        Assert.Equal("https://github.com/RE-Lab-Projects/TRY_DE_2015_2045/releases/download/v1.4.0/data.zip", uebergeben.TryRegionalUrl);
         Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// <b>Die Klimarubrik bindet und speichert die zwei TRY-Adressen</b> (KL1-A): Was
+    /// in Feld 1 und 2 der fünften Rubrik getippt wird, steht im Wertesatz, den
+    /// „Speichern" weiterreicht — die PVGIS-Adresse daneben bleibt, was sie war.
+    /// </summary>
+    [Fact]
+    public void Die_Klimarubrik_bindet_und_speichert_die_zwei_TRY_Adressen()
+    {
+        Einstellungensatz? uebergeben = null;
+        var cut = Zeige(speichern: (s, _) =>
+        {
+            uebergeben = s;
+            return Task.FromResult(new SpeicherBefund(true, ""));
+        });
+
+        Reiter(cut, 3);
+        Assert.Equal(3, cut.FindAll("input[type=text]").Count);
+        cut.FindAll("input[type=text]")[1].Input("https://portal/neu/");
+        cut.FindAll("input[type=text]")[2].Input("https://regional/neu/data.zip");
+
+        Assert.Equal("https://portal/neu/", cut.Instance.Werte.TryPortalUrl);
+        Assert.Equal("https://regional/neu/data.zip", cut.Instance.Werte.TryRegionalUrl);
+
+        cut.FindAll("button.epos-knopf--primaer").Last().Click();
+
+        Assert.NotNull(uebergeben);
+        Assert.Equal("https://portal/neu/", uebergeben!.TryPortalUrl);
+        Assert.Equal("https://regional/neu/data.zip", uebergeben.TryRegionalUrl);
+        Assert.Equal("https://re.jrc.ec.europa.eu/api/tmy", uebergeben.PvgisUrl);
     }
 
     /// <summary>Ein Fehlschlag beim Ordneranlegen hält den Dialog offen und meldet sich.</summary>

@@ -19979,4 +19979,13 @@ Do you want to allow this?</value>
   <data name="KLIMA_TRY_MSG_HERKUNFT" xml:space="preserve">
     <value>Origin: {0}</value>
   </data>
+  <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
+    <value>Climate data</value>
+  </data>
+  <data name="ADM_SET_LBL_TRY_PORTAL" xml:space="preserve">
+    <value>DWD test reference year portal:</value>
+  </data>
+  <data name="ADM_SET_LBL_TRY_REGIONAL" xml:space="preserve">
+    <value>Address of the TRY regional data:</value>
+  </data>
 </root>

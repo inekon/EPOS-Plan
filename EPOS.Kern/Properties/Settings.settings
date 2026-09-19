@@ -29,6 +29,12 @@
     <Setting Name="WordPressUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">https://wiki.epos-plan.de</Value>
     </Setting>
+    <Setting Name="TRYPortalUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://kunden.dwd.de/obt/</Value>
+    </Setting>
+    <Setting Name="TRYRegionalUrl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://github.com/RE-Lab-Projects/TRY_DE_2015_2045/releases/download/v1.4.0/data.zip</Value>
+    </Setting>
     <Setting Name="EinstellungenUebernommen" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>

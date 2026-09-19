@@ -19986,4 +19986,13 @@ Möchten Sie das zulassen?</value>
   <data name="KLIMA_TRY_MSG_HERKUNFT" xml:space="preserve">
     <value>Herkunft: {0}</value>
   </data>
+  <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
+    <value>Klimadaten</value>
+  </data>
+  <data name="ADM_SET_LBL_TRY_PORTAL" xml:space="preserve">
+    <value>Portal der DWD-Testreferenzjahre:</value>
+  </data>
+  <data name="ADM_SET_LBL_TRY_REGIONAL" xml:space="preserve">
+    <value>Adresse der TRY-Regionaldaten:</value>
+  </data>
 </root>
