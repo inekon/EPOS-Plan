@@ -150,8 +150,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-18_R9_Kesselbrennstoff/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 94** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
-Stand 94, und die Schritte 90 bis 94 sind ergebnisneutral, gemessen). Schritt 92 legt die
+(**Schemastand 95** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
+Stand 95, und die Schritte 90 bis 95 sind ergebnisneutral, gemessen). Schritt 92 legt die
 Spalte `Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt` an und schreibt keinen Wert — NULL
 heißt Stamm, also genau die Referenz jeder Bestandsrechnung. Schritt 93 legt
 `Tab_ProjektPhotovoltaik.Uebernahme_Stamm` an und leitet die Vergütungswahl aus dem Bestand
@@ -161,6 +161,11 @@ Katalogvorlage „Standard" (BHKW, Heizkessel, Wärmepumpe) von `PROZENT_ENDENER
 `PROZENT_ENDENERGIEBEDARF` um. Angefasst wird allein `Tab_KostenVorlagePosition`;
 `Tab_ProjektWerte` bleibt Zeile für Zeile unverändert, und keine Referenzrechnung liest eine
 Vorlagenposition — die fünf CI-Projekte rechnen **byte-gleich**, gemessen.
+Schritt 95 ist reines DDL: Er legt `Gegenstrahlung`, `Luftfeuchte` und `Bedeckungsgrad` an
+`Tab_Solar` und `Tab_Solar_STAMM` an sowie `Quelle` und `Importdatum` an `Tab_Klimaregion`
+und `Tab_Klimaregion_STAMM` — zehn nullbare Spalten, **kein DML**. In der Testdatenbank
+bleiben alle zehn in jeder Zeile NULL (280 320 Stundenwerte, 32 Regionen), und kein
+Rechenweg liest eine von ihnen; die fünf CI-Projekte rechnen **byte-gleich**, gemessen.
 Schritt 90 räumt hinter Schritt 89 auf und hat **zwei Teile**. Der **DDL-Teil** entfernt aus
 `Tab_ProjektWirtschaftlichkeit` die sechs KWKG-Spalten `KWKG_Bonus`,
 `KWKG_Bonus_Einspeisung`, `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`,

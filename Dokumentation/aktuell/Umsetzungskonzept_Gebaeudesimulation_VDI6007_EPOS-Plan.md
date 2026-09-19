@@ -664,39 +664,54 @@ hintereinander nur zwei Gelegenheiten, die Definitionen auseinanderlaufen zu las
 hat die Trennung vorgesehen, solange G2 eine eigene Auslieferung war. **Empfehlung: verschmelzen**
 (15 Spalten je Tabelle, ein Neuaufbau). Frage U5.
 
-**Der Klimaspalten-Schritt bleibt dagegen ein eigener Schritt** — der Papiername ist **M4** (F-S1).
-Er legt **zwei** `REAL`-Spalten in `Tab_Solar` und `Tab_Solar_STAMM` an
-(`sql/schema/001_grundschema.sql:2153` bzw. `:2169`, beide `STRICT`):
+**Der Klimaspalten-Schritt ist ein eigener Schritt** — der Papiername ist **M4** (F-S1), die
+Nummer der Migration ist **95** (Anwenderentscheid vom 19.09.2026, „alles Relevante für die
+Gebäudesimulation aufnehmen"; Auftrag KL-3). Er legt **drei** `REAL`-Spalten in `Tab_Solar` und
+`Tab_Solar_STAMM` an (beide `STRICT`):
 
 | Spalte | Quelle | Einheit | NULL bedeutet |
 |---|---|---|---|
-| `Gegenstrahlung` | PVGIS `IR(h)` | W/m² | Δθ_lw = 0 und α_str,A = 5,0 W/(m²K) (E5) — dieselbe Festlegung wie in den Rechenschritten |
-| `Luftfeuchte` | PVGIS `RH` | % | nicht verfügbar |
+| `Gegenstrahlung` | PVGIS `IR(h)`, TRY `A` | W/m² | Δθ_lw = 0 und α_str,A = 5,0 W/(m²K) (E5) — dieselbe Festlegung wie in den Rechenschritten |
+| `Luftfeuchte` | PVGIS `RH`, TRY `RF` | % | nicht verfügbar |
+| `Bedeckungsgrad` | TRY `N` | Achtel (0…8) | nicht verfügbar — jede PVGIS-Region, weil PVGIS ihn nicht führt; die Schätzung aus dem Diffusanteil bleibt der Rückfall |
+
+**Der Bedeckungsgrad kommt hinzu, weil TRY ihn echt liefert.** Die Testreferenzjahre führen ihn
+als Spalte `N` (Blatt 3 „Sonnenwahrscheinlichkeit"); eine gemessene Bedeckung ist etwas anderes
+als eine aus dem Diffusanteil geschätzte. Die Schätzung bleibt bestehen — als das, was sie ist:
+der Rückfall bei NULL, nicht der Regelweg.
 
 **`Windgeschwindigkeit` wird nicht angelegt** (F-S3). Die Spalte hätte keinen Leser: Der äußere
 Wärmeübergang bleibt bei 25 W/(m²K), und eine windabhängige Formel ist in keiner Stufe dieses
 Plans festgelegt. Eine Spalte ohne Leser ist eine Zusage, die niemand einlöst; sie kommt, wenn der
 Rechenweg sie braucht, mit derselben Stufe wie ihre Formel. **Und der NULL-Fall der Gegenstrahlung
-ist keine Schätzung mehr:** Ohne `IR(h)` ist Δθ_lw nicht rechenbar, also gilt Δθ_lw = 0 (E5) —
-eine Schätzung aus dem Bedeckungsgrad wäre mit den vorliegenden Daten ohnehin nicht zu bilden.
+ist keine Schätzung:** Ohne `IR(h)` bzw. `A` ist Δθ_lw nicht rechenbar, also gilt Δθ_lw = 0 (E5).
 
-**Die Werte liegen bereits in der Antwort und werden weggeworfen.** Die eingefrorene Probe
+**Die Werte lagen bereits in beiden Antworten und wurden weggeworfen.** Die eingefrorene Probe
 `Referenzlaeufe/Importproben/pvgis_tmy_stuttgart_72h.json` führt je Stunde `time(UTC)`, `T2m`,
-`RH`, `G(h)`, `Gb(n)`, `Gd(h)`, **`IR(h)`**, `WS10m`, `WD10m`, `SP`. `TmyHourlyData`
-(`SolarPVGISCalculator.cs:57-89`) liest davon nur `RH` und `WS10m` — `IR(h)` hat kein Feld —, und
-`SaveTmyData` (`:586`, Spaltenlisten `:602-603`, Bindung `:614-635`) schreibt auch diese beiden
-**nicht**. Vier kleine Stellen genügen: eine Eigenschaft `[JsonPropertyName("IR(h)")]` in
-`TmyHourlyData`; zwei Spalten und zwei `DbParam` in `SaveTmyData`; zwei Zeilen im
-`SolardatenCtrl.MapDataRowToModel` (`:29-42`) samt zwei Feldern in `SolardatenModel`; der
-Migrationsschritt. `SolardatenCtrl.Insert` (`:267-322`) und `WriteDataTable` (`:325-365`) schreiben
-nur `(ID, ID_Klimaregion, Temperatur)` (`:293`, `:350`), haben **beide keinen Aufrufer** und würden
-an `Tab_Solar.ID_Projekt INTEGER NOT NULL` (`sql/schema/001_grundschema.sql:2155`) scheitern. **M4
-löscht sie** — toter Bestand, den der Auftrag ohnehin überschreitet (Aufräumregel der
+`RH`, `G(h)`, `Gb(n)`, `Gd(h)`, **`IR(h)`**, `WS10m`, `WD10m`, `SP`; eine DWD-TRY-Datei führt in
+jeder Datenzeile **`N`**, **`RF`** und **`A`**. `TmyHourlyData` las davon nur `RH` und `WS10m`,
+und `SaveTmyData` schrieb auch diese beiden nicht; der TRY-Leser verwarf `N`, `RF` und `A`
+benannt. Umgesetzt ist: eine Eigenschaft `[JsonPropertyName("IR(h)")] Gegenstrahlung` und ein
+Feld `Bedeckungsgrad` in `TmyHourlyData`, `Humidity` **nullbar** (fehlt `RH`, steht NULL und nicht
+0); drei Spalten und drei `DbParam` in `SaveTmyData`; drei nullbare Felder in `SolardatenModel`
+samt Leseweg in `SolardatenCtrl.MapDataRowToModel`; die drei Feldindizes im `DwdTryLeser`, dessen
+Verworfen-Liste damit auf `p, WR, WG, x, E, IL` schrumpft; die Projektkopie in
+`KlimaregionStammCtrl.CopyRegionToProjekt`. **`SolardatenCtrl.Insert` und `WriteDataTable` sind
+entfallen** — beide schrieben nur `(ID, ID_Klimaregion, Temperatur)`, beide hatten keinen Aufrufer
+und wären an `Tab_Solar.ID_Projekt INTEGER NOT NULL` gescheitert (Aufräumregel der
 Wurzel-[`CLAUDE.md`](../../CLAUDE.md)).
+
+**Derselbe Schritt gibt der Klimaregion ihre Herkunft** (Anwenderauftrag 19.09.2026, KL-4):
+`Tab_Klimaregion` und `Tab_Klimaregion_STAMM` bekommen `Quelle` (`TEXT`; die sprachneutralen
+Schlüssel `PVGIS`, `TRY_DATEI`, `TRY_REGIONAL` in `DbWerte.KLIMA_QUELLE_*`) und `Importdatum`
+(`TEXT`, ISO `yyyy-MM-dd`). **NULL heißt bei beiden Altbestand** — eine Region, die vor dem
+Schritt angelegt wurde, sagt nicht, woher sie kommt, und wird nicht nachdatiert. Der Freitext
+`Details` bleibt unverändert daneben stehen: Er ist der Herkunftsvermerk für den Leser, die zwei
+Spalten sind die Angabe für das Programm. Beide wandern mit der Projektkopie.
 
 Vier Gründe für den eigenen Schritt: **andere Wirkung** (die Klimaspalten bleiben in allen
 Bestandsregionen NULL, bis der Anwender die Region neu importiert — eine Zusage, die im
-Schrittbericht eigens stehen muss), **anderer Mitläufercode**, **anderes Risiko** (M3 baut eine
+Schrittbericht eigens steht), **anderer Mitläufercode**, **anderes Risiko** (M3 baut eine
 Sicht neu; die Klimaspalten daranzubinden koppelt ihren Rücklauf an dieses Risiko ohne Gegenwert)
 und **keine technische Notwendigkeit dagegen** (`ALTER TABLE … ADD COLUMN` ist in SQLite eine reine
 Metadatenänderung; die rund 280 000 Zeilen von `Tab_Solar_STAMM` werden nicht angefasst).
