@@ -10376,6 +10376,15 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="KDLG_BASIS_GRUND_LAUF" xml:space="preserve">
     <value>no simulation run</value>
   </data>
+  <data name="KDLG_BASIS_GRUND_ANLAGE" xml:space="preserve">
+    <value>this unit is not part of the simulation run — it needs a slot in the simulation setup</value>
+  </data>
+  <data name="KDLG_BASIS_GRUND_MENGE" xml:space="preserve">
+    <value>the simulation run reports no quantity for this unit</value>
+  </data>
+  <data name="KDLG_BASIS_GRUND_PREIS" xml:space="preserve">
+    <value>no energy price is maintained for the energy carrier — enter it in the energy carrier management</value>
+  </data>
   <data name="KDLG_BASIS_GRUND_INVEST" xml:space="preserve">
     <value>no investment costs recorded for this unit</value>
   </data>

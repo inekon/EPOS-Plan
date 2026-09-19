@@ -166,6 +166,12 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
+            // #363: Der Auflöser des Laufs für die GRÜNDE der Zeilen ohne Bezugsgröße —
+            // einmal je Leseschleife, nicht je Zeile (er liest den ganzen Lauf). Gebaut
+            // wird er erst, wenn die erste Zeile ihn braucht.
+            EndenergieAufloeser laufAufloeser = null;
+            bool laufVersucht = false;
+
             foreach (DataRow r in dt.Rows)
             {
                 var z = new Zeile();
@@ -261,9 +267,12 @@ namespace WindowsFormsApplication1
                 // ANWENDERBEFUND 10.09.2026 (H4c): Steht keine Bezugsgröße, wird der
                 // GRUND mitgegeben. Ohne ihn zeigt das Raster nur die 0 des
                 // Anwenderentscheids I-2 — und der Anwender sucht den Fehler bei sich.
+                // #363: mit dem Lauf in der Hand, damit „kein Simulationslauf" nicht
+                // auch dort steht, wo allein der Arbeitspreis fehlt.
                 z.BasisGrund = z.Basis.HasValue
                     ? "" : WirtschaftlichkeitCtrl.BasisGrundFuerZeile(
-                               z.Raster.Bemessung, komponentenId, anlageDerZeile);
+                               z.Raster.Bemessung, komponentenId, anlageDerZeile,
+                               projektId, ref laufAufloeser, ref laufVersucht);
 
                 liste.Add(z);
             }
@@ -367,10 +376,14 @@ namespace WindowsFormsApplication1
             int komponente, anlage;
             Zeilenbezug(z, out komponente, out anlage);
 
-            // H4c: derselbe Grundausweis wie beim Laden.
+            // H4c: derselbe Grundausweis wie beim Laden — #363 also auch hier mit dem
+            // Lauf in der Hand (EINE Zeile, also auch nur ein Auflöser).
+            EndenergieAufloeser laufAufloeser = null;
+            bool laufVersucht = false;
             z.BasisGrund = z.Basis.HasValue
                 ? "" : WirtschaftlichkeitCtrl.BasisGrundFuerZeile(
-                           z.Raster.Bemessung, komponente, anlage);
+                           z.Raster.Bemessung, komponente, anlage,
+                           z.ProjektId, ref laufAufloeser, ref laufVersucht);
 
             // 14.09.2026: und dieselbe Herleitung.
             z.BasisHerleitung = z.Basis.HasValue

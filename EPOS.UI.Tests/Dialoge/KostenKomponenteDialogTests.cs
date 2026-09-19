@@ -1435,6 +1435,102 @@ public class KostenKomponenteDialogTests : BunitContext
     }
 
     // =====================================================================
+    // ANWENDERBEFUND 19.09.2026 (#363): dasselbe auf der BETRIEBSSEITE
+    //
+    // Im Bildschirmfoto des Befundes trugen drei Betriebszeilen das ⚠, und unter
+    // dem Raster war nichts zu sehen. Die Hinweiszeile hängt an keiner Kategorie —
+    // aber das war bis hierher durch keinen Fall gedeckt, und der Grund selbst muss
+    // die ABHILFE nennen, sonst sucht der Anwender an der falschen Stelle.
+    // =====================================================================
+
+    /// <summary>Der Betriebsstand: Laufstandzeile über dem Raster, eine Zeile mit
+    /// Bezugsgröße und zwei ohne — Preis und Anlage, die beiden Gründe des
+    /// Befundes.</summary>
+    private static KostenKomponenteStand StandBetriebOhneBasis()
+        => new KostenKomponenteStand
+        {
+            Titel = "Kostenverwaltung Heizkessel — Musterprojekt",
+            Untertitel = "Betriebskosten nach VDI 2067",
+            Laufstand = "Mengen stammen aus dem Simulationslauf vom 07.09.2026 23:42",
+            Zeilen = new[]
+            {
+                Zeile(31, "Instandhaltung Heizkessel", 1.5),
+                new KostenPositionZeile
+                {
+                    Id = 32,
+                    Bezeichnung = "Vollwartung / Wartung Kessel",
+                    BemessungId = 2,
+                    Satz = 0.01,
+                    Einheit = "€/kWh",
+                    BetragText = "0,00",
+                    OhneBasis = true,
+                    BetragKurztext = "Keine Bezugsgröße: diese Anlage steht nicht im "
+                                     + "Simulationslauf — sie braucht einen Platz in der "
+                                     + "Simulationskonfiguration. Es gilt der erfasste Betrag.",
+                    Schreibbar = true
+                },
+                new KostenPositionZeile
+                {
+                    Id = 33,
+                    Bezeichnung = "Hilfsenergiekosten (Strom)",
+                    BemessungId = 1,
+                    Satz = 6,
+                    Einheit = "%",
+                    BetragText = "0,00",
+                    OhneBasis = true,
+                    BetragKurztext = "Keine Bezugsgröße: für den Energieträger ist kein "
+                                     + "Arbeitspreis gepflegt — er ist in der "
+                                     + "Energieträgerverwaltung zu erfassen. Es gilt der "
+                                     + "erfasste Betrag.",
+                    Schreibbar = true
+                }
+            },
+            Bemessungen = BEMESSUNGEN,
+            SpalteBetrag = "Betrag netto [€/a]",
+            MitNutzungsdauer = false,
+            MitWorstBest = true,
+            PositionNeuMoeglich = true
+        };
+
+    /// <summary>
+    /// DER BEFUND: Drei Betriebszeilen, zwei davon ohne Bezugsgröße — die
+    /// Hinweiszeile unter dem Raster muss BEIDE nennen, mit Bezeichnung und Grund.
+    /// </summary>
+    [Fact]
+    public void Betriebszeilen_ohne_Bezugsgroesse_stehen_ebenfalls_unter_dem_Raster()
+    {
+        var cut = Zeige(stand: StandBetriebOhneBasis());
+
+        string zeile = cut.Find(".epos-zr-ohnebasis-zeile").TextContent;
+
+        Assert.Contains("Vollwartung / Wartung Kessel", zeile);
+        Assert.Contains("Hilfsenergiekosten (Strom)", zeile);
+        Assert.DoesNotContain("Instandhaltung Heizkessel", zeile);
+        Assert.Equal(2, cut.FindAll(".epos-zr-zeile .epos-zr-ohnebasis").Count);
+    }
+
+    /// <summary>
+    /// Und der Grund nennt die ABHILFE, nicht nur die Lage: die
+    /// Energieträgerverwaltung beim fehlenden Preis, die Simulationskonfiguration
+    /// bei der Anlage außerhalb des Laufs. Er steht im ⚠ als Werkzeugtipp
+    /// (<c>title</c>) und als Vorlesetext (<c>aria-label</c>).
+    /// </summary>
+    [Fact]
+    public void Der_Grund_nennt_die_Abhilfe_und_haengt_am_Zeichen()
+    {
+        var cut = Zeige(stand: StandBetriebOhneBasis());
+
+        var zeichen = cut.FindAll(".epos-zr-zeile .epos-zr-ohnebasis");
+        string titel = string.Join(" ", zeichen.Select(z => z.GetAttribute("title") ?? ""));
+        string vorlesen = string.Join(" ", zeichen.Select(z => z.GetAttribute("aria-label") ?? ""));
+
+        Assert.Contains("Energieträgerverwaltung", titel);
+        Assert.Contains("Simulationskonfiguration", titel);
+        Assert.Contains("Energieträgerverwaltung", vorlesen);
+        Assert.Contains("Simulationskonfiguration", vorlesen);
+    }
+
+    // =====================================================================
     //  „Das Kreuz steht beim Titel" (Anwenderentscheid 15.09.2026): Die
     //  Ueberlagerung traegt Titel UND ✕, das eingebettete Blatt keins von
     //  beidem — je Einbettungsstelle ein Fall.

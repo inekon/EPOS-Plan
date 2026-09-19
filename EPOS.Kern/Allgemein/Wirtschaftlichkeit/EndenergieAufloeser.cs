@@ -239,6 +239,24 @@ namespace WindowsFormsApplication1
             return _elektrokessel.Count > 0 && _elektrokessel.Contains(modul ?? "");
         }
 
+        /// <summary>
+        /// Die NUTZWÄRME einer Kessel-Modulzeile [MWh/a] — die Bezugsgröße von
+        /// „je kWh thermisch“ am Heizkessel.
+        ///
+        /// <para><b>Gelesen wird die Spalte, abgeleitet nur der Rest</b> — dieselbe
+        /// Ordnung wie bei <see cref="HilfsstromRechner.KesselBrennstoffMWh"/>.
+        /// <c>Waermeproduktion</c> schreibt der Lauf erst seit Befund B-1; ein
+        /// GESPEICHERTER Lauf von davor trägt dort 0, führt die Wärme aber auf ihren
+        /// beiden Kanälen. Die Ableitung ist keine Näherung, sondern die Definition
+        /// selbst (<c>SimulationRunner</c>: <c>Waermeproduktion = Waerme_Gas +
+        /// Waerme_Oel</c>); Bericht und Variantenvergleich lesen die Zeile seit jeher
+        /// nach genau dieser Regel.</para>
+        /// </summary>
+        private static double KesselNutzwaermeMWh(ErgebnisHeizkesselModulModel m)
+        {
+            return m.Waermeproduktion > 0 ? m.Waermeproduktion : m.Waerme_Gas + m.Waerme_Oel;
+        }
+
         private double? Preis(int carrierId)
         {
             double? p;
@@ -286,7 +304,15 @@ namespace WindowsFormsApplication1
                     Modul = m.Modul,
                     VerbrauchMWh = elektro
                         ? SimulationSPK.StromeinsatzElektrokesselMwh(m.Waerme_Gas, m.Waerme_Oel)
-                        : m.Verbrauch,
+                        // ANWENDERBEFUND 19.09.2026 (#363): NICHT die rohe Spalte.
+                        // Tab_ErgebnisHeizkesselModul.Verbrauch führt der Lauf erst seit
+                        // Befund B-1; ein GESPEICHERTER Lauf von davor trägt dort 0 —
+                        // und dann stand „% der Endenergiekosten" ohne Bezugsgröße da,
+                        // obwohl derselbe Lauf Wärme und Nutzungsgrad führt. Der
+                        // Rückfall ist die EINE, schon vorhandene Ableitung der
+                        // Steuerseite (Etappe B3 Paket a), keine zweite Wahrheit; bei
+                        // gefüllter Spalte gibt sie unverändert deren Wert zurück.
+                        : HilfsstromRechner.KesselBrennstoffMWh(m),
                     CarrierId = m.CarrierId
                 });
             }
@@ -467,7 +493,7 @@ namespace WindowsFormsApplication1
                 case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
                     if (_ergebnis != null && _ergebnis.Heizkessel != null && _ergebnis.Heizkessel.Module != null)
                         foreach (ErgebnisHeizkesselModulModel m in _ergebnis.Heizkessel.Module)
-                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = m.Waermeproduktion });
+                            zeilen.Add(new Brennstoffzeile { Modul = m.Modul, VerbrauchMWh = KesselNutzwaermeMWh(m) });
                     break;
                 case KOMPONENTE_WAERMEPUMPE:
                     if (_ergebnis != null && _ergebnis.Waermepumpe != null && _ergebnis.Waermepumpe.Module != null)
@@ -670,6 +696,137 @@ namespace WindowsFormsApplication1
             }
             if (anlagenName != null && getroffen == 0) return null;
             return h > 0 ? h : (double?)null;
+        }
+
+        // =====================================================================
+        // ANWENDERBEFUND 19.09.2026 — WARUM DIE LAUFGRÖSSE FEHLT
+        //
+        //   „Die Hilfsenergiekosten werden nicht berechnet auch nach Simulation.
+        //    Korrigiere und prüfe andere Felder mit Abhängigkeiten."
+        //
+        // Die Landkarte in WirtschaftlichkeitCtrl.BasisGrund beantwortet nur EINE
+        // Frage: Kennt das Gewerk diese Größe überhaupt? Wo es sie kennt, sagte sie
+        // ausnahmslos BASISGRUND_LAUF — „kein Simulationslauf". Der Anwender las das
+        // an einer Zeile, deren Lauf samt Menge dastand und der allein der
+        // ARBEITSPREIS des Energieträgers fehlte, und suchte den Fehler an der
+        // falschen Stelle. Vier Lagen sehen im Raster gleich aus und verlangen vier
+        // verschiedene Handgriffe:
+        //
+        //   kein Lauf              → Simulation starten          (BASISGRUND_LAUF)
+        //   Anlage nicht im Lauf   → Kaskadenplatz vergeben      (BASISGRUND_ANLAGE)
+        //   Menge des Laufs ist 0  → nichts zu tun, benennen     (BASISGRUND_MENGE)
+        //   Arbeitspreis fehlt     → Energieträgerverwaltung     (BASISGRUND_PREIS)
+        //
+        // Der Auflöser hält alles in der Hand, was die Unterscheidung braucht — den
+        // Lauf, die Anlagen des Laufs und die Preise. Er rechnet dafür nichts Neues,
+        // sondern fragt dieselben Wege noch einmal; gefragt wird nur, wenn die Zeile
+        // KEINE Bezugsgröße hat (der Ausnahmefall, nicht der Regelfall).
+        // =====================================================================
+
+        /// <summary>Gibt es überhaupt einen gespeicherten Lauf? <c>false</c> = der
+        /// Grund heißt <see cref="WirtschaftlichkeitCtrl.BASISGRUND_LAUF"/>.</summary>
+        internal bool LaufVorhanden
+        {
+            get { return _ergebnis != null; }
+        }
+
+        /// <summary>
+        /// Warum trägt diese Position keine Laufgröße? Rückgabe ist einer der
+        /// <c>WirtschaftlichkeitCtrl.BASISGRUND_*</c>-Steuerwerte.
+        ///
+        /// <para><b>Nur für Arten, deren Größe aus dem Lauf kommt.</b> Der Aufrufer
+        /// fragt erst, wenn die Landkarte
+        /// (<see cref="WirtschaftlichkeitCtrl.BasisGrund(string, int)"/>) den Lauf
+        /// benannt hat — hier wird die Antwort nur GENAUER, nie eine andere.</para>
+        /// </summary>
+        internal string GrundOhneBasis(int komponentenID, int idAnlage, string bem)
+        {
+            if (_ergebnis == null) return WirtschaftlichkeitCtrl.BASISGRUND_LAUF;
+            if (!AnlageImLauf(komponentenID, idAnlage))
+                return WirtschaftlichkeitCtrl.BASISGRUND_ANLAGE;
+
+            // Die zwei Endenergie-Arten brauchen zur Menge auch einen PREIS: Weg A den
+            // Arbeitspreis jedes beteiligten Trägers, Weg B den Strombezugspreis
+            // (§ 4.5). Steht die Menge und fehlt die Zahl trotzdem, fehlt der Preis —
+            // und das ist die Lage des Befundes („Arbeitspreis 0,00 bei: Erdgas E").
+            if (string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN, StringComparison.Ordinal) ||
+                string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF, StringComparison.Ordinal))
+                return FuerPosition(komponentenID, idAnlage) == null
+                    ? WirtschaftlichkeitCtrl.BASISGRUND_MENGE
+                    : WirtschaftlichkeitCtrl.BASISGRUND_PREIS;
+
+            // Die reinen Mengenarten (kWh thermisch/elektrisch, Stunden) kennen keinen
+            // Preis: Lauf da, Anlage da, also ist die Menge selbst 0.
+            return WirtschaftlichkeitCtrl.BASISGRUND_MENGE;
+        }
+
+        /// <summary>
+        /// Steht diese Anlage im Lauf? <paramref name="idAnlage"/> 0 = Komponenten-
+        /// summe; dann zählt, ob die Komponente überhaupt Zeilen im Lauf führt.
+        ///
+        /// <para>Der Vergleich läuft über den BEZEICHNER, wie in jedem Mengenweg
+        /// dieser Klasse — der Stromspeicher ist auch hier die Ausnahme, er führt
+        /// seine Anlage als Schlüssel (<see cref="SpeicherEntladungKwh"/>).</para>
+        /// </summary>
+        private bool AnlageImLauf(int komponentenID, int idAnlage)
+        {
+            if (_ergebnis == null) return false;
+
+            if (komponentenID == KOMPONENTE_STROMSPEICHER)
+            {
+                if (_ergebnis.Stromspeicher == null) return false;
+                foreach (ErgebnisStromspeicherModel s in _ergebnis.Stromspeicher)
+                    if (idAnlage <= 0 || s.ID_Energieanlage == idAnlage) return true;
+                return false;
+            }
+
+            List<string> namen = Modulnamen(komponentenID);
+            if (namen.Count == 0) return false;
+            if (idAnlage <= 0) return true;
+
+            string anlagenName;
+            if (!_anlagenName.TryGetValue(idAnlage, out anlagenName)) return false;
+            foreach (string n in namen)
+                if (string.Equals(n ?? "", anlagenName, StringComparison.Ordinal)) return true;
+            return false;
+        }
+
+        /// <summary>Die Modulbezeichner, die der Lauf für dieses Gewerk führt; leer =
+        /// keine Modulliste (Gewerk ohne Laufgröße oder Lauf ohne diese Stufe).</summary>
+        private List<string> Modulnamen(int komponentenID)
+        {
+            var namen = new List<string>();
+            if (_ergebnis == null) return namen;
+
+            switch (komponentenID)
+            {
+                case KOMPONENTE_WAERMEPUMPE:
+                    if (_ergebnis.Waermepumpe != null && _ergebnis.Waermepumpe.Module != null)
+                        foreach (ErgebnisWaermepumpeModulModel m in _ergebnis.Waermepumpe.Module)
+                            namen.Add(m.Modul);
+                    break;
+                case BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL:
+                    if (_ergebnis.Heizkessel != null && _ergebnis.Heizkessel.Module != null)
+                        foreach (ErgebnisHeizkesselModulModel m in _ergebnis.Heizkessel.Module)
+                            namen.Add(m.Modul);
+                    break;
+                case KOMPONENTE_PHOTOVOLTAIK:
+                    if (_ergebnis.Photovoltaik != null && _ergebnis.Photovoltaik.Module != null)
+                        foreach (ErgebnisPhotovoltaikModulModel m in _ergebnis.Photovoltaik.Module)
+                            namen.Add(m.Modul);
+                    break;
+                case KOMPONENTE_SOLARTHERMIE:
+                    if (_ergebnis.Solarthermie != null && _ergebnis.Solarthermie.Module != null)
+                        foreach (ErgebnisSolarthermieModulModel m in _ergebnis.Solarthermie.Module)
+                            namen.Add(m.Modul);
+                    break;
+                case BetriebskostenCtrl.KOMPONENTE_BHKW:
+                    if (_ergebnis.BHKW != null && _ergebnis.BHKW.Module != null)
+                        foreach (ErgebnisBHKWModulModel m in _ergebnis.BHKW.Module)
+                            namen.Add(m.Modul);
+                    break;
+            }
+            return namen;
         }
     }
 }
