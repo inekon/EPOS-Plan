@@ -25,11 +25,14 @@ Eine Klimaregion trägt das, was bei ihrem Import geholt wurde; die Quelle steht
 Herkunftsvermerk (`Tab_Klimaregion_STAMM.Details`). Regionen unterschiedlicher Herkunft
 stehen nebeneinander, ohne einander zu beeinflussen.
 
-**Warum eine TRY-Datei zusätzlich den Standort braucht:** Ihr Kopf führt nur
+**Woher der Standort einer TRY-Datei kommt:** Ihr Kopf führt die Lage der Station als
 Lambert-Koordinaten. Longitude und Latitude sind aber für die Sonnengeometrie und für die
 Umrechnung auf Direkt-Normal nötig — bei den Regionaldaten zusätzlich für die Wahl der
-nächsten Region. Die Umrechnung Lambert → WGS 84 gibt es nicht; den Standort gibt der
-Anwender an.
+nächsten Region. **Die Umrechnung Lambert → WGS 84 rechnet das Programm selbst**
+(`LambertDwd`, Abschnitt 3a): Beim Wählen der Datei schlägt der Dialog den Standort vor,
+der Anwender kann ihn ändern, und trägt der Auftrag keinen, nimmt der Ablauf den
+Kopf-Standort als Rückfall. Fällt die Umrechnung durch die Plausibilitätsschranke, gibt
+es keinen Vorschlag — dann gibt der Anwender den Standort an.
 
 ## 2. Bedienweg
 
@@ -37,7 +40,8 @@ Im Dialog **Klimadaten** steht über der Gruppe „Standort" die Gruppe **Klimaq
 
 1. **Quelle wählen** — PVGIS (vorgewählt), TRY-Datei oder TRY-Regionaldaten.
 2. **Standort** — Ortsname oder Longitude/Latitude mit Bezeichnung, wie bei PVGIS.
-3. **Bei TRY-Datei** — die Datei über den Dateiwähler (`*.dat`).
+3. **Bei TRY-Datei** — die Datei über den Dateiwähler (`*.dat`); ihr Kopf belegt
+   Longitude und Latitude vor (Abschnitt 3a), änderbar.
 4. **Bei Regionaldaten** — Jahr (2015 oder 2045) und Szenario (mittleres Jahr,
    sommerwarm, winterkalt); Vorgabe **2015, mittleres Jahr**. Ohne Dateipfad läuft der
    Bereichsabruf über die hinterlegte Adresse; mit Pfad wird die lokale `data.zip` gelesen.
@@ -59,7 +63,7 @@ RW HW MM DD HH t p WR WG N x RF B D A E IL
 
 | Feld | Bedeutung | Ziel |
 |---|---|---|
-| `RW`, `HW` | Lambert-Koordinaten der Station | nicht übernommen — die Region trägt Longitude/Latitude |
+| `RW`, `HW` | Lambert-Koordinaten der Station | aus den DATENZEILEN nicht übernommen; aus dem KOPF als Standortvorschlag (Abschnitt 3a) |
 | `MM`, `DD`, `HH` | Monat, Tag, Stunde **1…24 MEZ**; `HH` benennt das Intervall, das zu `HH:00` endet | Reihenfolge der Zeile (Abschnitt 4) |
 | `t` | Lufttemperatur [°C] | `Tab_Solar_STAMM.Temperatur` |
 | `B` | Direktstrahlung **horizontal** [W/m²] | `Direktstrahlung`, nach der Umrechnung aus Abschnitt 5 |
@@ -76,6 +80,43 @@ des Netzabrufs.
 Ein Kopf ohne Trennzeile, eine falsche Feld- oder Zeilenzahl, ein unlesbares Zeit- oder
 Zahlenfeld und eine doppelt belegte Stunde führen jeweils zu einer benannten Meldung mit der
 Zeilennummer — und zu keiner Region.
+
+## 3a. Lambert → WGS 84
+
+Der Kopf einer TRY-Datei nennt sein Koordinatensystem — „Lambert konform konisch" —,
+nicht dessen Parameter. `EPOS.Kern/Allgemein/Import/LambertDwd.cs` setzt die des
+DWD-Rasters:
+
+| Größe | Wert |
+|---|---|
+| Ellipsoid | GRS80 (große Halbachse 6 378 137 m, Abplattung 1/298,257222101) |
+| Standardparallelen | 48° N und 53° N |
+| Ursprung | 51° N / 10,5° O |
+| Zuschlag Rechtswert | 4 000 000 m |
+| Zuschlag Hochwert | 2 800 000 m |
+
+Gerechnet wird die zweiparallelige Lambert-Projektion auf dem Ellipsoid (Snyder,
+„Map Projections — A Working Manual", Abschnitt 15); `NachWgs84` und `AusWgs84` stehen
+beide da, damit die **Rundprobe** möglich ist — hin und zurück unter einem Meter. Der
+Zuschlagspunkt selbst fällt auf 10,5° O / 51° N, der Rasterpunkt 3 936 500 / 2 695 500
+auf 9,6124° O / 50,0563° N.
+
+**Das Ergebnis ist ein VORSCHLAG, keine Zusage.** Weil die Datei die Parameter nicht
+nennt, hält `InDeutschland` das Ergebnis gegen den Rahmen des TRY-Rasters (47…55° N,
+5,5…15,5° O). Fällt ein Punkt durch, wird **nichts** vorbelegt — eine Zahl, die wie eine
+Koordinate aussieht, aber aus fremden Projektionsparametern stammt, wäre schlimmer als
+gar keine.
+
+**Wo der Vorschlag auftaucht:**
+
+1. **Beim Wählen der Datei** — `DwdTryLeser.LesenKopf` liest nur bis zur Trennzeile,
+   der Dialog belegt Longitude und Latitude und zeigt darunter die Herkunftszeile
+   „Standort aus dem Dateikopf (Lambert → WGS 84)". Jede eigene Eingabe — Koordinate,
+   Ortsname, andere Quelle — nimmt die Zeile weg; die Werte bleiben änderbar.
+2. **Im Ablauf als Rückfall** — trägt der Auftrag keinen Standort, nimmt
+   `KlimaImportAblauf` den aus dem Kopf, und der Herkunftsvermerk in
+   `Tab_Klimaregion_STAMM.Details` nennt ihn. Steht der Standort im Auftrag, ändert sich
+   am Ablauf nichts.
 
 ## 4. Zeitbasis
 
@@ -215,7 +256,13 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
 - `EinstellungenDialogTests` — 31 Tests, beide Kulturen.
 - Importprobe `Referenzlaeufe/Importproben/dwd_try_synthetisch_72h.dat` — eine
   **synthetische** Probe im DWD-Format, ausdrücklich keine amtlichen Daten; der Leser hat für
-  sie die Prüfoption „volles Jahr aus".
+  sie die Prüfoption „volles Jahr aus". Ihre Kopfkoordinaten liegen außerhalb des Rasters
+  und sind damit die Gegenprobe: kein Standortvorschlag.
+- Importprobe `Referenzlaeufe/Importproben/dwd_try_kopf_lambert.dat` — ebenso synthetisch,
+  Kopf mit einem Rasterpunkt INNERHALB Deutschlands und sechs Datenzeilen; sie misst
+  `LesenKopf` und den Standortvorschlag.
+- `LambertDwdTests` — Rundprobe über sechs Rasterpunkte, Zuschlagspunkt, Probe-Punkt und
+  der Rahmen von `InDeutschland`.
 - Referenzlauf der fünf Projekte byte-gleich gegen die geltende Basis; der PVGIS-Weg bleibt
   unverändert.
 
@@ -223,10 +270,8 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
 
 1. **Keine Regionsanzeige vor dem Import** — welche Region der Standort trifft, sagt erst
    die Meldung danach; eine Vorschau kostete einen zweiten Netzabruf.
-2. **Lambert → WGS 84 ist nicht umgesetzt** — der Standort einer TRY-Datei kommt vom
-   Anwender, nicht aus dem Dateikopf.
-3. **Sommerstunden einer TRY-Reihe liegen beim Lesen eine Stunde früher** (Abschnitt 4).
+2. **Sommerstunden einer TRY-Reihe liegen beim Lesen eine Stunde früher** (Abschnitt 4).
    Ein quellenbewusstes Lesen braucht eine Quellenkennung an der Region und damit einen
    Schemaschritt.
-4. **`N`, `A`, `E` werden nicht gespeichert** (Abschnitt 6) — der Schemaschritt dafür gehört
+3. **`N`, `A`, `E` werden nicht gespeichert** (Abschnitt 6) — der Schemaschritt dafür gehört
    mit dem Bedeckungsgrad der Gebäudesimulation zusammen.
