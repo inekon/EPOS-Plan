@@ -73,8 +73,8 @@ rechnen mit ihrer eigenen Nutzungsdauer (Vorgabe ± 2 Jahre). Der Betrachtungsze
 
 Administration → Kostenverwaltung führt „Kostenvorlagen" und „Energieträger" (`Menuetabelle.cs`). Die
 Menüwache zählt 59 Punkte, 8 Trenner, 13 klappbare und 46 nicht klappbare Knoten; ein neuer Punkt
-verschiebt diese Zahlen. Schemastand: Zielversion 74; neue Fachtabellen sind STRICT und laufen als
-nummerierter Schritt über `SchemaMigration`.
+verschiebt diese Zahlen. Schemastand: **Zielversion 96** (Stand 19.09.2026); neue Fachtabellen sind
+STRICT und laufen als nummerierter Schritt über `SchemaMigration`.
 
 ### 1.6 VDI 2067 im Bestand
 
