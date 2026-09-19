@@ -11321,7 +11321,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Stamm:</value>
   </data>
   <data name="WIRT_LBL_GRUPPE" xml:space="preserve">
-    <value>Vergleichsgruppe (Referenz: Stamm, fest gewählt):</value>
+    <value>Vergleichsgruppe:</value>
   </data>
   <data name="WIRT_LBL_SZENARIO" xml:space="preserve">
     <value>Szenario:</value>
@@ -19709,5 +19709,8 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_SICHT_PAAR_RUECKFALL" xml:space="preserve">
     <value>Ein Stand der Paarwahl steht nicht mehr im Vergleich — gezeigt werden wieder alle Varianten gegen die Referenz.</value>
+  </data>
+  <data name="WIRT_SICHT_LAUF_NOETIG" xml:space="preserve">
+    <value>Die Sicht „Zwei Stände“ rechnet gegen A — bitte „Berechnen“.</value>
   </data>
 </root>

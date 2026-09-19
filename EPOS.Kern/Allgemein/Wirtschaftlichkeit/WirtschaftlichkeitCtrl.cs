@@ -1517,6 +1517,23 @@ namespace WindowsFormsApplication1
         public List<WirtschaftlichkeitErgebnis> Berechne(BerichtsDaten daten,
             WirtschaftlichkeitParameter p, int idReferenz)
         {
+            return Berechne(daten, p, idReferenz, true);
+        }
+
+        /// <summary>
+        /// KONZEPT § 2.15 — dieselbe Rechnung, ohne zu persistieren.
+        /// </summary>
+        /// <param name="persistieren">
+        /// <c>false</c> für die Vergleichssicht „Zwei Stände": Sie ist ein
+        /// <b>Erkundungswerkzeug</b> — ihre Differenzen gelten gegen A und nicht gegen
+        /// die Unterlassensalternative der Gruppe. Geschrieben in
+        /// <c>Tab_ErgebnisWirtschaftlichkeit</c> wären sie eine zweite Wahrheit neben
+        /// dem Lauf, aus dem der Bericht reproduzierbar sein soll. Wer einen
+        /// Paarvergleich dauerhaft will, wählt A als Gruppenreferenz (§ 2.9).
+        /// </param>
+        public List<WirtschaftlichkeitErgebnis> Berechne(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int idReferenz, bool persistieren)
+        {
             var alle = new List<WirtschaftlichkeitErgebnis>();
             var sens = new List<SensitivitaetZeile>();
             var matrizen = new Dictionary<int, StromMatrix>();   // W3: je Projekt (szenariounabhängig)
@@ -1620,7 +1637,7 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            Persistiere(alle, sens, matrizen, p);
+            if (persistieren) Persistiere(alle, sens, matrizen, p);
             return alle;
         }
 

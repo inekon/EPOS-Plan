@@ -54123,7 +54123,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleichsgruppe (Referenz: Stamm, fest gewählt): ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleichsgruppe: ähnelt.
         /// </summary>
         public static string WIRT_LBL_GRUPPE {
             get {
@@ -54569,6 +54569,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_SICHT_GRUPPE {
             get {
                 return ResourceManager.GetString("WIRT_SICHT_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Sicht „Zwei Stände“ rechnet gegen A — bitte „Berechnen“. ähnelt.
+        /// </summary>
+        public static string WIRT_SICHT_LAUF_NOETIG {
+            get {
+                return ResourceManager.GetString("WIRT_SICHT_LAUF_NOETIG", resourceCulture);
             }
         }
         

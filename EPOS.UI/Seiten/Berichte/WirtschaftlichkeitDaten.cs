@@ -210,4 +210,48 @@ public sealed class WirtschaftlichkeitStand
 
     /// <summary>Die Statuszeile beim Aufbau (gespeicherter Stand, veraltet, keiner).</summary>
     public string Statuszeile { get; set; } = "";
+
+    // =====================================================================
+    // KONZEPT § 2.9 und § 2.15 — Referenz und Vergleichssicht
+    // =====================================================================
+
+    /// <summary>
+    /// KONZEPT § 2.9 — die REFERENZ DER GRUPPE (<c>Tab_Projekt.ID</c>): der Stand, gegen
+    /// den alle Differenzkennzahlen rechnen. Sie ist in der Vergleichsgruppen-Liste
+    /// wählbar und gespeichert; die Vorgabe ist das Stammprojekt.
+    /// </summary>
+    public int IdReferenz { get; set; }
+
+    /// <summary>
+    /// KONZEPT § 2.15 — die Sicht der Vergleichstafeln: 0 = alle Varianten gegen die
+    /// Referenz (Vorgabe), 1 = zwei Stände A und B. Sitzungswahl, keine Spalte.
+    /// </summary>
+    public int Sicht { get; set; }
+
+    /// <summary>Der Stand A der Sicht 2 — in dieser Sicht die Referenz.</summary>
+    public int SichtA { get; set; }
+
+    /// <summary>Der Stand B der Sicht 2 — der Stand, dessen Differenz gezeigt wird.</summary>
+    public int SichtB { get; set; }
+
+    /// <summary>
+    /// Trägt die Gruppe zwei Stände? Sonst ist Sicht 2 gesperrt, und der Werkzeugtipp
+    /// nennt den Grund („mindestens zwei Stände").
+    /// </summary>
+    public bool PaarMoeglich { get; set; }
+
+    /// <summary>
+    /// Die ERKLÄRZEILE unter der Optionsgruppe: in Sicht 1 „Referenz: ‹Name›", in
+    /// Sicht 2 „Referenz dieser Sicht: ‹A› · Referenz der Gruppe: ‹Referenz›", je mit
+    /// der Vorzeichenregel. Leer = keine Zeile.
+    /// </summary>
+    public string Referenzzeile { get; set; } = "";
+
+    /// <summary>
+    /// ALLE Stände der Vergleichsgruppe (Id und Anzeigename), Stamm zuerst — die
+    /// Auswahlliste der Referenz (§ 2.9). Die Klapplisten A und B führen davon die
+    /// angehakten (<see cref="GewaehlteVarianten"/>).
+    /// </summary>
+    public IReadOnlyList<(int Id, string Text)> Staende { get; set; }
+        = Array.Empty<(int, string)>();
 }
