@@ -117,7 +117,7 @@ Jahresbetrag. Solarthermie, Puffer-, Stromspeicher und PV: **nur absolut**. Weg 
 zweite Formel — der Auflöser übergibt den bewerteten Bedarf; die Sätze von A und B sind nicht
 austauschbar (Faktor ≈ 3,4, das Preisverhältnis Strom zu Brennstoff).
 
-**Welcher Strompreis Weg B bewertet, hängt an der ANLAGE** (Anwenderentscheid 19.09.2026).
+**Welcher Strompreis Weg B bewertet, hängt an der ANLAGE.**
 Bezieht die Anlage selbst Strom und trägt sie einen eigenen Stromträger — Wärmepumpe,
 Heizstab, Elektrokessel mit gesetzter `Tab_Energieanlagen.ID_Carrier` auf einen dem Projekt
 zugeordneten `ELECTRICITY`-Träger —, gilt dessen Arbeitspreis; sonst der des
