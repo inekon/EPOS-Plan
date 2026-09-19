@@ -981,6 +981,60 @@ namespace ChartProben
                         MitStelle(kapLeistungWerte, 0, 0, loch),
                         LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE));
 
+            // Und dasselbe fuer die ZWEITE FUSSZEILE (#255/#360): Hat ein FEINPUNKT den
+            // Lauf gewonnen, traegt die Karte unter dem SP-O-4-Hinweis einen zweiten
+            // Satz - die Karte markiert dann NICHT das beste Ergebnis, und ohne diesen
+            // Satz laese sich die Marke als das Beste des Laufs.
+            //
+            // BIS #360 HING DER ZUSATZ HINTER DEM GRUNDTEXT und damit an dessen letzter
+            // Zeile. Unter der Achsenbeschriftung bleiben bis zur Bildkante 560 aber nur
+            // rund 28 Bildpunkte, und eine Zeile der 13-Punkt-Schrift ist je nach
+            // Schriftart 17 bis 22 hoch: Auf einer Schrift mit hoher Zeile lag die
+            // zweite Zeile GANZ unter dem Bildrand, der Zusatz war nirgends zu sehen
+            // und zwei Karten mit und ohne ihn waren byte-gleich. Jetzt steht er auf
+            // einer eigenen Zeile, und das Bild waechst so weit, dass der ganze Block
+            // darin steht.
+            //
+            // Zwei Gegenproben: dass der Zusatz UEBERHAUPT etwas aendert, und dass seine
+            // LETZTE Zeile im Bild steht - dafuer unterscheiden sich die zwei Texte nur
+            // in ihren letzten Woertern.
+            const string fussGrund =
+                "SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. Zwischen "
+              + "zwei Stützstellen ist nichts gerechnet; das markierte Optimum ist das "
+              + "beste geprüfte, nicht das global beste.";
+            const string fussZusatz =
+                "Das beste Ergebnis stammt aus dem Feinraster (12.345 € bei 233,3 kWh) und "
+              + "liegt zwischen zwei Stützstellen; markiert ist hier das Grob-Optimum, "
+              + "gezeigt wird es im Ausschnitt um das ";
+
+            Unterschiedlich("flottenraster_zusatzzeile_wirkt",
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
+                        fussGrund),
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
+                        fussGrund, fussZusatz + "Optimum."));
+
+            Unterschiedlich("flottenraster_zusatz_letzte_zeile_steht_im_bild",
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
+                        fussGrund, fussZusatz + "Optimum."),
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
+                        fussGrund, fussZusatz + "Grob-Optimum."));
+
             // Und dasselbe fuer die FEINRASTERPUNKTE (#224): Masse, Farben und
             // Determinismus stimmen auch dann, wenn der Parameter stillschweigend
             // ignoriert wuerde - alle Punkte staenden dann in C_STAMM. Die Gegenprobe

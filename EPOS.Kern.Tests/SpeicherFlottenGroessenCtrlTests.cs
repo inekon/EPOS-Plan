@@ -627,9 +627,16 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die FUSSZEILE der Karte sagt es, wenn das beste Ergebnis aus dem Feinraster
-        /// stammt — sonst läse sich die markierte Stelle als das Beste des Laufs. Prüfbar
-        /// ist das am Bild: Derselbe Lauf mit einem Grob-Sieger sieht anders aus.
+        /// stammt — sonst läse sich die markierte Stelle als das Beste des Laufs.
         /// </summary>
+        /// <remarks>
+        /// Geprüft wird der TEXT, nicht das Bild. Bis Auftrag #360 stand hier ein
+        /// Bildvergleich; der maß die Schriftmetrik des Läufers mit: Auf einer Schriftart
+        /// mit hoher Zeile lag die zweite Fußzeile ganz unter dem Bildrand, beide Bilder
+        /// waren byte-gleich, und der Vergleich fiel — ohne dass am Rechenweg etwas
+        /// gewesen wäre. Dass der Zusatz das BILD ändert, belegt die Gegenprobe
+        /// „flottenraster_zusatzzeile_wirkt" in <c>Proben/ChartProben</c>.
+        /// </remarks>
         [Fact]
         public void Die_Fusszeile_der_Karte_nennt_den_Feinpunkt()
         {
@@ -637,8 +644,25 @@ namespace EPOS.Kern.Tests
             FlottenAuslegungErgebnis mitGrob = MitFeinraster();
             mitGrob.BesterKandidat = SpeicherFlottenAnzeigeCtrl.GrobOptimum(mitGrob);
 
-            Assert.NotEqual(SpeicherFlottenAnzeigeCtrl.Rasterbild(mitFein),
-                            SpeicherFlottenAnzeigeCtrl.Rasterbild(mitGrob));
+            // MIT Feinpunkt: der SP-O-4-Satz, dahinter der Zusatz samt Kapitalwert des
+            // besten Feinpunkts (5 000 €) und der Stelle, an der er steht (233,3 kWh).
+            string zusatz = SpeicherFlottenAnzeigeCtrl.Rasterfusszusatz(mitFein);
+            Assert.NotNull(zusatz);
+            Assert.Contains("5.000", zusatz, StringComparison.Ordinal);
+            Assert.Contains("233,3 kWh", zusatz, StringComparison.Ordinal);
+
+            string fuss = SpeicherFlottenAnzeigeCtrl.Rasterfusszeile(mitFein);
+            Assert.StartsWith(Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER, fuss, StringComparison.Ordinal);
+            Assert.EndsWith(zusatz, fuss, StringComparison.Ordinal);
+
+            // OHNE Feinpunkt: nur der SP-O-4-Satz, kein Zusatz.
+            Assert.Null(SpeicherFlottenAnzeigeCtrl.Rasterfusszusatz(mitGrob));
+            Assert.Equal(Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER,
+                         SpeicherFlottenAnzeigeCtrl.Rasterfusszeile(mitGrob));
+
+            // Und die Karte entsteht in beiden Fällen.
+            Assert.NotNull(SpeicherFlottenAnzeigeCtrl.Rasterbild(mitFein));
+            Assert.NotNull(SpeicherFlottenAnzeigeCtrl.Rasterbild(mitGrob));
         }
 
         // =================================================================

@@ -387,28 +387,50 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
             raster.Spaltenwerte, raster.Zeilenwerte, raster.Werte,
             raster.BesteZeile, raster.BesteSpalte,
-            raster.Unzulaessig, Rasterfusszeile(ergebnis, einheit));
+            raster.Unzulaessig, MyResource.Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER,
+            Rasterfusszusatz(ergebnis, einheit));
     }
 
     /// <summary>
-    /// Die Fußzeile der Rasterkarte: der SP-O-4-Hinweis, und wenn ein FEINPUNKT den Lauf
-    /// gewonnen hat, der Zusatz, wo dieses beste Ergebnis steht (Auftrag #255).
+    /// Die Fußzeile der Rasterkarte als EIN Text: der SP-O-4-Hinweis, und wenn ein
+    /// FEINPUNKT den Lauf gewonnen hat, dahinter der Zusatz (Auftrag #255).
+    /// </summary>
+    /// <remarks>
+    /// Das ist die eine Quelle dieser Zeile: Das Bild setzt dieselben zwei Teile, nur
+    /// getrennt gezeichnet — der Zusatz steht dort auf einer eigenen Zeile.
+    /// </remarks>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    public static string Rasterfusszeile(FlottenAuslegungErgebnis ergebnis,
+                                         int einheit = FLOTTE_GESAMT)
+    {
+        string zusatz = Rasterfusszusatz(ergebnis, einheit);
+        return zusatz is null
+            ? MyResource.Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER
+            : MyResource.Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER + " " + zusatz;
+    }
+
+    /// <summary>
+    /// Der ZUSATZ der Fußzeile — wo das beste Ergebnis steht, wenn ein FEINPUNKT den
+    /// Lauf gewonnen hat; sonst <c>null</c> (Auftrag #255).
     /// </summary>
     /// <remarks>
     /// Die Karte markiert dann nicht das beste Ergebnis, sondern das Grob-Optimum — ohne
     /// diesen Satz läse sich die markierte Stelle als das Beste des Laufs, und die
     /// Kandidatentabelle darunter nennt einen anderen Kapitalwert.
     /// </remarks>
-    private static string Rasterfusszeile(FlottenAuslegungErgebnis ergebnis, int einheit)
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    public static string Rasterfusszusatz(FlottenAuslegungErgebnis ergebnis,
+                                          int einheit = FLOTTE_GESAMT)
     {
-        string fuss = MyResource.Resource.FLOTTE_GROESSEN_ENDLICHES_RASTER;
         if (ergebnis?.BesterKandidat is not { Phase: FlottenKandidatPhase.Fein } bester)
-            return fuss;
+            return null;
 
         FlottenSchnittdaten ausschnitt = Ausschnittdaten(ergebnis, einheit);
-        if (!double.IsFinite(ausschnitt.OptimumAchse)) return fuss;
+        if (!double.IsFinite(ausschnitt.OptimumAchse)) return null;
 
-        return fuss + " " + string.Format(CultureInfo.CurrentCulture,
+        return string.Format(CultureInfo.CurrentCulture,
             MyResource.Resource.FLOTTE_AUSSCHNITT_FUSS,
             Zahl(bester.KapitalwertEuro, "N0"),
             Werttext(Zeilengroesse(ergebnis.Achsenmodus), ausschnitt.OptimumAchse));
