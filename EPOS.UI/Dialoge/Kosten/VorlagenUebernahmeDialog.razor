@@ -9,7 +9,23 @@
    DER DIALOG ZAEHLT UND SCHREIBT NICHT SELBST. Beides erledigt die Huelle
    Views/Kosten/VorlagenUebernahmeHuelle.cs ueber KostenVorlagenUebernahmeCtrl —
    mit denselben Filterparametern wie der Vorlaeufer (Regel F4/F5). Die
-   Komponente kennt nur drei Delegaten: AnlagenZu, Vorschau, Uebernehmen.
+   Komponente kennt nur fuenf Delegaten: VorlagenZu, PositionenZu, AnlagenZu,
+   Vorschau, Uebernehmen.
+
+   ANWENDERENTSCHEID 19.09.2026 — DIE QUELLE „AUS VORLAGE/VARIANTE" IST DIE
+   KATALOGANSICHT DER ADMINISTRATION. Unter der gewaehlten Option steht derselbe
+   Block wie in Administration > Kosten > Kostenverwaltung: Komponente (fest —
+   Positionen einer anderen gehoeren nicht in diese Anlage), Kategorie,
+   Variantenliste und darunter die Positionen der gewaehlten Variante als
+   Vorschau. OK uebernimmt sie in die gewaehlte Anlage UND in die gewaehlte
+   Kategorie; der Wirt schaltet danach auf diese Kategorie um. Eine schlichte
+   Klappliste zeigte zwar dieselben Varianten, aber weder ihre Kategorie noch
+   das, was in ihnen steht.
+
+   FUEHRT DER KATALOG NICHTS, SAGT ER ES. Ohne Variante in BEIDEN Kategorien
+   bleibt die Option gesperrt — jetzt mit einer Erklaerzeile darunter statt
+   stillschweigend. Fuehrt nur die ANDERE Kategorie eine, springt die
+   Kategorie-Vorwahl dorthin.
 
    ANWENDERENTSCHEID 10.09.2026 (Ae25) — OK UND ABBRECHEN. "OK = aus der Maske
    heraus und uebernehmen, Abbrechen = aus der Maske raus, nicht speichern."
@@ -65,13 +81,62 @@
                            Eintraege="@_quellen"
                            Auswahl="@(_ausVorlage ? QUELLE_VORLAGE : QUELLE_PROJEKT)"
                            Gesperrt="@_gesperrteQuellen"
+                           Beschreibungen="@_quellErklaerung"
                            AuswahlChanged="BeiQuelle" />
 
-            <Auswahlfeld Bezeichnung="@LabelQuellVorlage"
-                         Eintraege="@Quellvorlagen"
-                         Auswahl="@_quellVorlage"
-                         Aktiv="@_ausVorlage"
-                         AuswahlChanged="BeiQuellVorlage" />
+            @* ANWENDERENTSCHEID 19.09.2026 — DER KATALOGBLOCK DER ADMINISTRATION.
+               Er steht nur unter der gewaehlten Option und in derselben Reihenfolge
+               wie Administration > Kosten > Kostenverwaltung: Komponente, Kategorie,
+               Variante, Positionen. *@
+            @if (_ausVorlage)
+            {
+                @* Die Komponente steht fest: Positionen einer anderen gehoeren nicht
+                   in diese Anlage. Ein gesperrtes Auswahlfeld sagte "hier koenntest
+                   du waehlen, nur jetzt nicht" - hier gibt es nichts zu waehlen. *@
+                <div class="epos-feld">
+                    <span class="epos-feld-text">@LabelKomponente</span>
+                    <span class="epos-feld-zeile">
+                        <span class="epos-lesewert">@KomponenteText</span>
+                    </span>
+                </div>
+
+                <Optionsgruppe Bezeichnung="@LabelKategorie"
+                               Eintraege="@KATEGORIEN"
+                               Auswahl="@(_invest ? KATEGORIE_INVEST : KATEGORIE_BETRIEB)"
+                               AuswahlChanged="BeiKategorie" />
+
+                <Auswahlfeld Bezeichnung="@LabelVariante"
+                             Eintraege="@_vorlagen"
+                             Auswahl="@_quellVorlage"
+                             AuswahlChanged="BeiQuellVorlage" />
+
+                @if (_positionen.Count == 0)
+                {
+                    <Herleitungszeile Text="@VorlageLeerText" />
+                }
+                else
+                {
+                    <Zeilenraster Bezeichnung="@LabelPositionen"
+                                  Spalten="@Positionsspalten"
+                                  Spaltenmass="@Positionsmass">
+                        <KindInhalt>
+                            @foreach (VorlagenPositionZeile z in _positionen)
+                            {
+                                <div class="epos-zr-zeile" role="row">
+                                    <div class="epos-zr-zelle epos-zr-text" role="cell">@z.Bezeichnung</div>
+                                    <div class="epos-zr-zelle epos-zr-text" role="cell">@z.Bemessung</div>
+                                    <div class="epos-zr-zelle epos-zr-text" role="cell">@z.Satz</div>
+                                    @if (_invest)
+                                    {
+                                        <div class="epos-zr-zelle epos-zr-text" role="cell">@z.Nutzungsdauer</div>
+                                    }
+                                    <div class="epos-zr-zelle epos-zr-text" role="cell">@z.Zustand</div>
+                                </div>
+                            }
+                        </KindInhalt>
+                    </Zeilenraster>
+                }
+            }
 
             <Auswahlfeld Bezeichnung="@LabelQuellProjekt"
                          Eintraege="@Quellprojekte"
@@ -109,6 +174,17 @@
     /// <summary>Id der Option „Aus Projekt/Anlage".</summary>
     public const int QUELLE_PROJEKT = 1;
 
+    /// <summary>Id der Kategorie „Betriebskosten" (Reihenfolge wie im Katalogmodus).</summary>
+    public const int KATEGORIE_BETRIEB = 0;
+
+    /// <summary>Id der Kategorie „Investitionskosten".</summary>
+    public const int KATEGORIE_INVEST = 1;
+
+    /// <summary>Die beiden Kategorien — wortgleich zum Katalogmodus
+    /// (<c>KostenKomponenteDialog.KATEGORIEN</c>).</summary>
+    private (int Id, string Text)[] KATEGORIEN
+        => new[] { (KATEGORIE_BETRIEB, KategorieBetriebText), (KATEGORIE_INVEST, KategorieInvestText) };
+
     /// <summary>Die waehlbaren Zielprojekte (Id, Anzeigetext).</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Zielprojekte { get; set; }
         = Array.Empty<(int, string)>();
@@ -122,12 +198,30 @@
     /// </summary>
     [Parameter] public bool ZielWaehlbar { get; set; } = true;
 
-    /// <summary>Die Vorlagen/Varianten des Admin-Katalogs (Ä11).</summary>
-    [Parameter] public IReadOnlyList<(int Id, string Text)> Quellvorlagen { get; set; }
-        = Array.Empty<(int, string)>();
+    /// <summary>
+    /// Die Varianten des Admin-Katalogs je KATEGORIE (Ä11): <c>true</c> fragt die
+    /// Investitionsseite, <c>false</c> die Betriebsseite — dieselbe Liste, die
+    /// Administration › Kosten › Kostenverwaltung zeigt
+    /// (<c>KostenVorlagenCtrl.Vorlagen</c>, Standard zuerst).
+    ///
+    /// <para>Ohne Delegat fuehrt der Katalog nichts; dann bleibt die Option „Aus
+    /// Vorlage/Variante" gesperrt — der Pruefstandsfall.</para>
+    /// </summary>
+    [Parameter] public Func<bool, IReadOnlyList<(int Id, string Text)>>? VorlagenZu { get; set; }
+
+    /// <summary>
+    /// Die Positionen der gewaehlten Variante als Vorschau. Die ganze Wahl geht
+    /// hinein, nicht nur die Variantennummer: Das Einheitenzeichen haengt am Raster
+    /// („€/kWp" gegen „€/kWp·a"), und die Kennzeichnung „vorhanden" / „wird
+    /// angelegt" haengt am ZIEL.
+    /// </summary>
+    [Parameter] public Func<VorlagenUebernahmeWahl, IReadOnlyList<VorlagenPositionZeile>>? PositionenZu { get; set; }
 
     /// <summary>Vorgewaehlte Quellvorlage; <c>null</c> = der erste Eintrag.</summary>
     [Parameter] public int? QuellVorlageVorwahl { get; set; }
+
+    /// <summary>Die Kategorie, aus der der Dialog geoeffnet wurde (Vorbelegung).</summary>
+    [Parameter] public bool InvestVorwahl { get; set; } = true;
 
     /// <summary>Die waehlbaren Quellprojekte (Ä21: auch das eigene).</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Quellprojekte { get; set; }
@@ -150,10 +244,11 @@
     [Parameter] public Func<VorlagenUebernahmeWahl, VorlagenUebernahmeAntwort>? Uebernehmen { get; set; }
 
     /// <summary>
-    /// Der Dialog ist zu Ende. <c>true</c> = die Uebernahme lief und hat
-    /// geschrieben (Ae25: der Rueckgabewert von OK), <c>false</c> = abgebrochen.
+    /// Der Dialog ist zu Ende. <c>Geschrieben</c> = die Uebernahme lief und hat
+    /// geschrieben (Ae25: der Rueckgabewert von OK), sonst abgebrochen;
+    /// <c>Invest</c> nennt die Kategorie, in die uebernommen wurde.
     /// </summary>
-    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+    [Parameter] public EventCallback<VorlagenUebernahmeSchluss> Geschlossen { get; set; }
 
     /// <summary>Fenstertitel (Designer: lblKopfTitel); leer = die Ueberschrift
     /// steht schon ueber der Maske (Ae25, Ueberlagerungskopf).</summary>
@@ -174,9 +269,54 @@
     /// <summary>Zweite Option (rbQuelleProjekt, Ä21).</summary>
     [Parameter] public string LabelQuelleProjekt { get; set; } = "Aus Projekt/Anlage:";
 
-    /// <summary>Beschriftung der Vorlagenliste. Der Vorlaeufer liess sie leer —
-    /// die Beschriftung stand im Optionsknopf darueber (A-11).</summary>
-    [Parameter] public string LabelQuellVorlage { get; set; } = "Vorlage/Variante:";
+    /// <summary>Beschriftung der Komponentenanzeige (Katalogmodus: <c>KDLG_LBL_KOMPONENTE</c>).</summary>
+    [Parameter] public string LabelKomponente { get; set; } = "Komponente:";
+
+    /// <summary>Die Komponente der Anlage — reine Anzeige, nicht waehlbar.</summary>
+    [Parameter] public string KomponenteText { get; set; } = "";
+
+    /// <summary>Titel der Kategoriegruppe; leer wie im Katalogmodus.</summary>
+    [Parameter] public string LabelKategorie { get; set; } = "";
+
+    /// <summary>Erste Kategorie (<c>KDLG_KAT_INVEST</c>).</summary>
+    [Parameter] public string KategorieInvestText { get; set; } = "Investitionskosten";
+
+    /// <summary>Zweite Kategorie (<c>KDLG_KAT_BETRIEB</c>).</summary>
+    [Parameter] public string KategorieBetriebText { get; set; } = "Betriebskosten";
+
+    /// <summary>Beschriftung der Variantenliste (Katalogmodus: <c>KDLG_LBL_VARIANTE</c>).</summary>
+    [Parameter] public string LabelVariante { get; set; } = "Variante:";
+
+    /// <summary>Beschriftung der Positionsvorschau fuer die Sprachausgabe.</summary>
+    [Parameter] public string LabelPositionen { get; set; } = "Positionen";
+
+    /// <summary>Spaltenkoepfe der Vorschau — dieselben wie im Positionsraster.</summary>
+    [Parameter] public string SpaltePosition { get; set; } = "Position";
+
+    /// <summary>Spaltenkopf der Bemessung.</summary>
+    [Parameter] public string SpalteBemessung { get; set; } = "Bemessung";
+
+    /// <summary>Spaltenkopf des Satzes.</summary>
+    [Parameter] public string SpalteSatz { get; set; } = "Satz";
+
+    /// <summary>Spaltenkopf der Nutzungsdauer (nur Investitionsseite).</summary>
+    [Parameter] public string SpalteNutzung { get; set; } = "Nutzungsdauer [a]";
+
+    /// <summary>Spaltenkopf der Kennzeichnung „vorhanden" / „wird angelegt".</summary>
+    [Parameter] public string SpalteZiel { get; set; } = "Ziel";
+
+    /// <summary>Erklaerzeile statt leerer Tabelle, wenn die Variante nichts fuehrt.</summary>
+    [Parameter] public string VorlageLeerText { get; set; }
+        = "Diese Vorlage führt keine Positionen.";
+
+    /// <summary>
+    /// Erklaerzeile unter der GESPERRTEN Option, wenn der Katalog fuer diese
+    /// Komponente in KEINER Kategorie eine Variante fuehrt. Ein stilles Sperren
+    /// liesse den Anwender raten, warum die Quelle nicht offensteht.
+    /// </summary>
+    [Parameter] public string KatalogLeerText { get; set; }
+        = "Der Katalog führt für diese Komponente keine Vorlage — "
+        + "Administration › Kosten › Kostenverwaltung.";
 
     /// <summary>Beschriftung der Quellprojektliste (A-11).</summary>
     [Parameter] public string LabelQuellProjekt { get; set; } = "Quellprojekt:";
@@ -201,6 +341,7 @@
     private int? _quellProjekt;
     private int? _quellAnlage;
     private bool _ausVorlage = true;
+    private bool _invest = true;
     private bool _uebernahmeMoeglich;
 
     private string _vorschau = "";
@@ -209,16 +350,36 @@
 
     private (int Id, string Text)[] _quellen = Array.Empty<(int, string)>();
     private int[]? _gesperrteQuellen;
+    private Dictionary<int, string>? _quellErklaerung;
     private IReadOnlyList<(int Id, string Text)> _quellAnlagen = Array.Empty<(int, string)>();
+    private IReadOnlyList<(int Id, string Text)> _vorlagen = Array.Empty<(int, string)>();
+    private IReadOnlyList<VorlagenPositionZeile> _positionen = Array.Empty<VorlagenPositionZeile>();
 
     /// <summary>Steht die Quelle auf „Vorlage"? (Pruefhilfe fuer Tests.)</summary>
     public bool AusVorlage => _ausVorlage;
+
+    /// <summary>Steht der Katalogblock auf der Investitionsseite? (Pruefhilfe.)</summary>
+    public bool Invest => _invest;
+
+    /// <summary>Die gewaehlte Variante (Pruefhilfe fuer Tests.)</summary>
+    public int? QuellVorlage => _quellVorlage;
 
     /// <summary>Die gewaehlte Quellanlage (Pruefhilfe fuer Tests.)</summary>
     public int? QuellAnlage => _quellAnlage;
 
     /// <summary>Ist der Uebernehmen-Knopf bedienbar? (Pruefhilfe fuer Tests.)</summary>
     public bool UebernahmeMoeglich => _uebernahmeMoeglich;
+
+    /// <summary>Die Spaltenkoepfe der Vorschau; die Nutzungsdauer nur auf der
+    /// Investitionsseite (wie <c>KostenKomponenteStand.MitNutzungsdauer</c>).</summary>
+    private IReadOnlyList<string> Positionsspalten => _invest
+        ? new[] { SpaltePosition, SpalteBemessung, SpalteSatz, SpalteNutzung, SpalteZiel }
+        : new[] { SpaltePosition, SpalteBemessung, SpalteSatz, SpalteZiel };
+
+    /// <summary>Die Spuren der Vorschau — dieselbe Ordnung wie im Positionsraster.</summary>
+    private string Positionsmass => _invest
+        ? "minmax(120px, 2fr) minmax(110px, 1.4fr) minmax(80px, 1fr) 80px minmax(80px, 1fr)"
+        : "minmax(120px, 2fr) minmax(110px, 1.4fr) minmax(80px, 1fr) minmax(80px, 1fr)";
 
     protected override void OnInitialized()
     {
@@ -229,19 +390,49 @@
         };
 
         _zielProjekt = ZielProjektVorwahl ?? ErsteId(Zielprojekte);
-        _quellVorlage = QuellVorlageVorwahl ?? ErsteId(Quellvorlagen);
         _quellProjekt = QuellProjektVorwahl ?? ErsteId(Quellprojekte);
+
+        // ANWENDERENTSCHEID 19.09.2026: Die Kategorie startet dort, wo der Dialog
+        // geoeffnet wurde — fuehrt der Katalog dort aber KEINE Variante und in der
+        // anderen Kategorie eine, springt die Vorwahl dorthin. Sonst waere die
+        // Quelle gesperrt, obwohl es eine Vorlage gibt.
+        _invest = InvestVorwahl;
+        _vorlagen = VorlagenFuer(_invest);
+        if (_vorlagen.Count == 0)
+        {
+            IReadOnlyList<(int Id, string Text)> andere = VorlagenFuer(!_invest);
+            if (andere.Count > 0) { _invest = !_invest; _vorlagen = andere; }
+        }
+
+        _quellVorlage = Enthalten(_vorlagen, QuellVorlageVorwahl)
+            ? QuellVorlageVorwahl : ErsteId(_vorlagen);
 
         // rbQuelleVorlage.Enabled = _vorlagen.Count > 0;
         // if (_vorlagen.Count == 0) rbQuelleProjekt.Checked = true;
-        if (Quellvorlagen.Count == 0)
+        // Neu (19.09.2026): Die Sperre bleibt, aber sie erklaert sich.
+        if (_vorlagen.Count == 0)
         {
             _gesperrteQuellen = new[] { QUELLE_VORLAGE };
             _ausVorlage = false;
+            _quellErklaerung = new Dictionary<int, string> { [QUELLE_VORLAGE] = KatalogLeerText };
         }
 
         AnlagenNachziehen();
         VorschauAktualisieren();
+    }
+
+    /// <summary>Die Varianten EINER Kategorie; ohne Delegat fuehrt der Katalog nichts.</summary>
+    private IReadOnlyList<(int Id, string Text)> VorlagenFuer(bool invest)
+        => VorlagenZu is null ? Array.Empty<(int, string)>() : VorlagenZu(invest);
+
+    private static bool Enthalten(IReadOnlyList<(int Id, string Text)> liste, int? id)
+    {
+        if (!id.HasValue) return false;
+        foreach ((int eintrag, string _) in liste)
+        {
+            if (eintrag == id.Value) return true;
+        }
+        return false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -265,6 +456,19 @@
     private void BeiQuelle(int? id)
     {
         _ausVorlage = id != QUELLE_PROJEKT;
+        VorschauAktualisieren();
+    }
+
+    /// <summary>
+    /// Ein Kategoriewechsel laedt die Variantenliste DIESER Kategorie neu und setzt
+    /// die Vorwahl auf die erste Zeile — das ist die Standardvariante
+    /// (<c>KostenVorlagenCtrl.Vorlagen</c> sortiert Standard zuerst).
+    /// </summary>
+    private void BeiKategorie(int? id)
+    {
+        _invest = id == KATEGORIE_INVEST;
+        _vorlagen = VorlagenFuer(_invest);
+        _quellVorlage = ErsteId(_vorlagen);
         VorschauAktualisieren();
     }
 
@@ -297,9 +501,19 @@
         _quellAnlage = ErsteId(_quellAnlagen);
     }
 
-    /// <summary>Wie <c>VorschauAktualisieren</c>: Klartext und Knopfzustand in einem Zug.</summary>
+    /// <summary>
+    /// Wie <c>VorschauAktualisieren</c>: Klartext und Knopfzustand in einem Zug —
+    /// dazu die Positionsvorschau, die aus derselben Wahl faellt (Variante,
+    /// Kategorie, Ziel).
+    /// </summary>
     private void VorschauAktualisieren()
     {
+        VorlagenUebernahmeWahl wahl = Wahl();
+
+        _positionen = PositionenZu is null || !_ausVorlage || !_quellVorlage.HasValue
+            ? Array.Empty<VorlagenPositionZeile>()
+            : PositionenZu(wahl);
+
         if (Vorschau is null)
         {
             _vorschau = "";
@@ -307,7 +521,7 @@
             return;
         }
 
-        VorlagenUebernahmeVorschau antwort = Vorschau(Wahl());
+        VorlagenUebernahmeVorschau antwort = Vorschau(wahl);
         _vorschau = antwort.Text;
         _uebernahmeMoeglich = antwort.UebernahmeMoeglich;
     }
@@ -317,7 +531,8 @@
         _zielProjekt ?? 0,
         _quellVorlage ?? 0,
         _quellProjekt ?? 0,
-        _quellAnlage ?? 0);
+        _quellAnlage ?? 0,
+        _invest);
 
     /// <summary>
     /// ANWENDERENTSCHEID 10.09.2026 (Ae25): OK uebernimmt die aktuelle Wahl UND
@@ -342,11 +557,12 @@
             return Task.CompletedTask;
         }
 
-        return Geschlossen.InvokeAsync(true);
+        return Geschlossen.InvokeAsync(new VorlagenUebernahmeSchluss(true, _invest));
     }
 
     /// <summary>Ae25: Abbrechen verlaesst die Maske, ohne zu schreiben.</summary>
-    private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+    private Task BeiAbbrechen()
+        => Geschlossen.InvokeAsync(new VorlagenUebernahmeSchluss(false, _invest));
 
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
     {

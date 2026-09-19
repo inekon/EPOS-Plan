@@ -10352,9 +10352,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="KUEB_LBL_ZIEL" xml:space="preserve">
     <value>Target project:</value>
   </data>
-  <data name="KUEB_LBL_QUELLVORLAGE" xml:space="preserve">
-    <value>Template/variant:</value>
-  </data>
   <data name="KUEB_LBL_QUELLPROJEKT" xml:space="preserve">
     <value>Source project:</value>
   </data>
@@ -10363,6 +10360,21 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="KUEB_MSG_UEBERNOMMEN" xml:space="preserve">
     <value>The missing positions from the source have been created.</value>
+  </data>
+  <data name="KUEB_SP_ZIEL" xml:space="preserve">
+    <value>Target</value>
+  </data>
+  <data name="KUEB_POS_VORHANDEN" xml:space="preserve">
+    <value>present</value>
+  </data>
+  <data name="KUEB_POS_NEU" xml:space="preserve">
+    <value>will be created</value>
+  </data>
+  <data name="KUEB_VORLAGE_LEER" xml:space="preserve">
+    <value>This template holds no positions.</value>
+  </data>
+  <data name="KUEB_KATALOG_LEER" xml:space="preserve">
+    <value>The catalogue holds no template for this component — Administration › Costs › Cost management.</value>
   </data>
   <data name="KDLG_TT_OHNE_BASIS" xml:space="preserve">
     <value>No reference quantity: {0}. The entered amount applies.</value>
