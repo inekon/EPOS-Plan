@@ -26252,6 +26252,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Standort liegt zu weit von der nächsten TRY-Region entfernt. Warum bricht das Einlesen ab, und welche Klimaquelle passt dann? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die TRY-Daten sind nicht lesbar. Woran liegt das, und wie komme ich an eine brauchbare Datei? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_FORMATFEHLER {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_FORMATFEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse der TRY-Regionaldaten erlaubt keine Teilabrufe. Was bedeutet das, und wie lese ich die Daten trotzdem ein? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_KEIN_BEREICH {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_KEIN_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kopf der TRY-Datei nennt keinen lesbaren Standort. Was heißt das, und wie trage ich den Standort ein? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wärmeerzeuger des Projekts steht auf keinem Kaskadenplatz und rechnet deshalb nicht mit. Wie nehme ich ihn in die Simulation auf? ähnelt.
         /// </summary>
         public static string KI_FRAGE_LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ {
@@ -30400,11 +30436,65 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Importdatum ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_IMPORTDATUM {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_IMPORTDATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Latitude ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_LATITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_LATITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Longitude ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_LONGITUDE {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_LONGITUDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_QUELLE {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Klimaregion ähnelt.
         /// </summary>
         public static string KLIMA_SP_REGION {
             get {
                 return ResourceManager.GetString("KLIMA_SP_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibschutz ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_SCHREIBSCHUTZ {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_SCHREIBSCHUTZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort ähnelt.
+        /// </summary>
+        public static string KLIMA_SP_STANDORT {
+            get {
+                return ResourceManager.GetString("KLIMA_SP_STANDORT", resourceCulture);
             }
         }
         
@@ -51449,6 +51539,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten: {0} · {1} · {2} · Import {3} ähnelt.
+        /// </summary>
+        public static string START_KLIMA_HERKUNFT {
+            get {
+                return ResourceManager.GetString("START_KLIMA_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten: {0} · {1} ähnelt.
+        /// </summary>
+        public static string START_KLIMA_HERKUNFT_KURZ {
+            get {
+                return ResourceManager.GetString("START_KLIMA_HERKUNFT_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gilt für alle Berechnungen im Projekt ähnelt.
         /// </summary>
         public static string START_KLIMA_HINWEIS {
@@ -52524,6 +52632,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string STROMGL_TITEL_KOPIE {
             get {
                 return ResourceManager.GetString("STROMGL_TITEL_KOPIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Treffer. ähnelt.
+        /// </summary>
+        public static string SUCHAUSWAHL_KEIN_TREFFER {
+            get {
+                return ResourceManager.GetString("SUCHAUSWAHL_KEIN_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschläge ähnelt.
+        /// </summary>
+        public static string SUCHAUSWAHL_LISTE {
+            get {
+                return ResourceManager.GetString("SUCHAUSWAHL_LISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tippen zum Suchen … ähnelt.
+        /// </summary>
+        public static string SUCHAUSWAHL_PLATZHALTER {
+            get {
+                return ResourceManager.GetString("SUCHAUSWAHL_PLATZHALTER", resourceCulture);
             }
         }
         

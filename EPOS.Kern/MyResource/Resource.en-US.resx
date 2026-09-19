@@ -13574,6 +13574,24 @@ The CHP unit never generates more electricity than the current own demand. The u
   <data name="KLIMA_SP_REGION" xml:space="preserve">
     <value>Climate region</value>
   </data>
+  <data name="KLIMA_SP_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KLIMA_SP_STANDORT" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="KLIMA_SP_LONGITUDE" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="KLIMA_SP_LATITUDE" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
+    <value>Import date</value>
+  </data>
+  <data name="KLIMA_SP_SCHREIBSCHUTZ" xml:space="preserve">
+    <value>Read-only</value>
+  </data>
   <data name="KLIMA_BTN_IMPORT" xml:space="preserve">
     <value>Read data</value>
   </data>
@@ -14578,6 +14596,21 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   </data>
   <data name="START_KLIMA_HINWEIS" xml:space="preserve">
     <value>Applies to all calculations in the project</value>
+  </data>
+  <data name="START_KLIMA_HERKUNFT" xml:space="preserve">
+    <value>Climate data: {0} · {1} · {2} · imported {3}</value>
+  </data>
+  <data name="START_KLIMA_HERKUNFT_KURZ" xml:space="preserve">
+    <value>Climate data: {0} · {1}</value>
+  </data>
+  <data name="SUCHAUSWAHL_PLATZHALTER" xml:space="preserve">
+    <value>Type to search …</value>
+  </data>
+  <data name="SUCHAUSWAHL_KEIN_TREFFER" xml:space="preserve">
+    <value>No match.</value>
+  </data>
+  <data name="SUCHAUSWAHL_LISTE" xml:space="preserve">
+    <value>Suggestions</value>
   </data>
   <data name="START_EINSTIEG" xml:space="preserve">
     <value>Select a project above or create a new one below — the remaining sections open afterwards.</value>
@@ -17875,6 +17908,18 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   </data>
   <data name="KI_FRAGE_PV_STRANG_P8" xml:space="preserve">
     <value>The module count of the strings differs from the number of modules of the plant (rule P8). What does that mean and which figure drives the yield?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_KEIN_BEREICH" xml:space="preserve">
+    <value>The address of the TRY regional data does not allow range requests. What does that mean and how can I still import the data?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_AUSSERHALB" xml:space="preserve">
+    <value>The location is too far from the nearest TRY region. Why does the import stop and which climate source fits instead?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_FORMATFEHLER" xml:space="preserve">
+    <value>The TRY data cannot be read. What causes this and how do I get a usable file?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
+    <value>The header of the TRY file does not name a readable location. What does that mean and how do I enter the location?</value>
   </data>
   <data name="KI_DIALOGDATEN_SCHALTER" xml:space="preserve">
     <value>Send field values</value>

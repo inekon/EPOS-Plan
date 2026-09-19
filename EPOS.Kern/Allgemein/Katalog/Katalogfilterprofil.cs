@@ -420,6 +420,53 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SpSpitzeKw = "SPITZE";
 
+        // ------------------------------------------------------------------
+        // Klimaregionen (Auftrag KL-4) - der neunte Katalog
+        //
+        //   Die Klimadatenmaske zeigt ihre Regionsliste seit KL-4 als
+        //   Katalogliste (Anwenderwunsch 19.09.2026: "das gleiche Schema wie
+        //   bei den Modulen"). Die Spalten stehen hier, weil sie DATEN sind -
+        //   wie bei den vierzehn anderen Katalogen; das Profil baut
+        //   KlimadatenDialog ueber AusSpalten("KLIMAREGION", ...).
+        //
+        //   Die QUELLE benutzt den bestehenden SpQuelle: Sie ist dieselbe
+        //   Frage wie beim Stromspeicher ("woher stammt der Satz"), und ein
+        //   zweiter Schluessel gleichen Inhalts waere die Wahrheit doppelt.
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Der <b>Standort</b> einer Klimaregion (4.11) — der Ortsname aus
+        /// <c>Tab_Klimaregion_STAMM.Details</c>, sonst das Koordinatenpaar. Er ist die
+        /// Spalte, nach der gesucht wird: Der Bezeichner ist frei gewaehlt, der
+        /// Standort sagt, WO die Reihe gemessen ist
+        /// (<c>KlimaregionStammCtrl.Standorttext</c>).
+        /// </summary>
+        public const string SpStandort = "STANDORT";
+
+        /// <summary>Laengengrad einer Klimaregion in Grad Ost (4.11), vier Nachkommastellen.</summary>
+        public const string SpLongitude = "LONGITUDE";
+
+        /// <summary>Breitengrad einer Klimaregion in Grad Nord (4.11), vier Nachkommastellen.</summary>
+        public const string SpLatitude = "LATITUDE";
+
+        /// <summary>
+        /// Der Tag des Imports (4.11) als ISO-Text <c>yyyy-MM-dd</c> aus
+        /// <c>Tab_Klimaregion_STAMM.Importdatum</c> (Schemaschritt 95).
+        ///
+        /// <para><b>Eine TEXTspalte, und zwar mit Absicht</b>: ISO sortiert als
+        /// Zeichenkette in derselben Reihenfolge wie als Datum, und das Spaltenmodell
+        /// kennt keine Datumsart (<see cref="Katalogspaltenart"/>). Der Trichter
+        /// „enthaelt 2026-09" wird damit zum Monatsfilter.</para>
+        /// </summary>
+        public const string SpImportdatum = "IMPORTDATUM";
+
+        /// <summary>
+        /// Der <b>Schreibschutz</b> einer Klimaregion (4.11) — <c>ReadOnly</c>: ein
+        /// Satz der Auslieferung laesst sich nicht loeschen. Als Kennzeichen traegt er
+        /// nur den Sortierpfeil (5.6.2).
+        /// </summary>
+        public const string SpSchreibschutz = "SCHREIBSCHUTZ";
+
         /// <summary>
         /// Welche der acht Anlagenarten. <b>Nur bei den acht Anlagenkatalogen belegt</b>;
         /// die sechs Kataloge der Stufe S3 (Bedarf, Zeitreihen) sind keine Anlagen und

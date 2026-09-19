@@ -13581,6 +13581,24 @@ Das BHKW erzeugt niemals mehr Strom als den aktuellen Eigenbedarf. Die Anlage re
   <data name="KLIMA_SP_REGION" xml:space="preserve">
     <value>Klimaregion</value>
   </data>
+  <data name="KLIMA_SP_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KLIMA_SP_STANDORT" xml:space="preserve">
+    <value>Standort</value>
+  </data>
+  <data name="KLIMA_SP_LONGITUDE" xml:space="preserve">
+    <value>Longitude</value>
+  </data>
+  <data name="KLIMA_SP_LATITUDE" xml:space="preserve">
+    <value>Latitude</value>
+  </data>
+  <data name="KLIMA_SP_IMPORTDATUM" xml:space="preserve">
+    <value>Importdatum</value>
+  </data>
+  <data name="KLIMA_SP_SCHREIBSCHUTZ" xml:space="preserve">
+    <value>Schreibschutz</value>
+  </data>
   <data name="KLIMA_BTN_IMPORT" xml:space="preserve">
     <value>Daten einlesen</value>
   </data>
@@ -14567,6 +14585,21 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="START_KLIMA_HINWEIS" xml:space="preserve">
     <value>Gilt für alle Berechnungen im Projekt</value>
+  </data>
+  <data name="START_KLIMA_HERKUNFT" xml:space="preserve">
+    <value>Klimadaten: {0} · {1} · {2} · Import {3}</value>
+  </data>
+  <data name="START_KLIMA_HERKUNFT_KURZ" xml:space="preserve">
+    <value>Klimadaten: {0} · {1}</value>
+  </data>
+  <data name="SUCHAUSWAHL_PLATZHALTER" xml:space="preserve">
+    <value>Tippen zum Suchen …</value>
+  </data>
+  <data name="SUCHAUSWAHL_KEIN_TREFFER" xml:space="preserve">
+    <value>Kein Treffer.</value>
+  </data>
+  <data name="SUCHAUSWAHL_LISTE" xml:space="preserve">
+    <value>Vorschläge</value>
   </data>
   <data name="START_EINSTIEG" xml:space="preserve">
     <value>Wählen Sie oben ein Projekt aus oder legen Sie unten ein neues an — die übrigen Bereiche öffnen sich danach.</value>
@@ -17882,6 +17915,18 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="KI_FRAGE_PV_STRANG_P8" xml:space="preserve">
     <value>Die Modulsumme der Stränge weicht von der Anzahl Module der Anlage ab (Regel P8). Was bedeutet das, und welche Zahl gilt für die Erzeugung?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_KEIN_BEREICH" xml:space="preserve">
+    <value>Die Adresse der TRY-Regionaldaten erlaubt keine Teilabrufe. Was bedeutet das, und wie lese ich die Daten trotzdem ein?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_AUSSERHALB" xml:space="preserve">
+    <value>Der Standort liegt zu weit von der nächsten TRY-Region entfernt. Warum bricht das Einlesen ab, und welche Klimaquelle passt dann?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_FORMATFEHLER" xml:space="preserve">
+    <value>Die TRY-Daten sind nicht lesbar. Woran liegt das, und wie komme ich an eine brauchbare Datei?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
+    <value>Der Kopf der TRY-Datei nennt keinen lesbaren Standort. Was heißt das, und wie trage ich den Standort ein?</value>
   </data>
   <data name="KI_DIALOGDATEN_SCHALTER" xml:space="preserve">
     <value>Feldwerte mitsenden</value>

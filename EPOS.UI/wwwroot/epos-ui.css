@@ -5874,7 +5874,7 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
    26-px-Gattungszeile (grosse Schrift, 3:1), zu wenig fuer eine Beschriftung
    in 16 px (4,5:1). Die Marke bleibt deshalb dem Titelband vorbehalten. */
 .epos-startseite-projekt > label,
-.epos-startseite-klima > label {
+.epos-startseite-klima > .epos-startseite-feldtitel {
     font-size: var(--epos-schriftgroesse-kartentitel);
     font-weight: 600;
     color: var(--epos-text);
@@ -5882,6 +5882,15 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 
 .epos-startseite-projekt .epos-eingabe,
 .epos-startseite-klima .epos-eingabe {
+    flex: 0 1 260px;
+    min-width: 160px;
+}
+
+/* Die Suchauswahl der Klimaregion ist ein .epos-feld und damit eine Spalte aus
+   Beschriftung und Feldzeile. Hier traegt sie keine eigene Beschriftung - die
+   steht als .epos-startseite-feldtitel daneben -, und sie soll sich wie das
+   frueherere <select> in die Kastenzeile stellen: so breit wie ihr Feld. */
+.epos-startseite-klima > .epos-suchauswahl {
     flex: 0 1 260px;
     min-width: 160px;
 }
@@ -5899,6 +5908,20 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     flex: 1 1 140px;
     font-size: 11px;
     color: var(--epos-text-leise);
+}
+
+/* DIE HERKUNFTSZEILE (Auftrag KL-4). Sie steht als ZWEITE Zeile im Kasten -
+   flex-basis 100 % erzwingt den Umbruch - und leise: Sie sagt, womit gerechnet
+   wird, und verlangt nichts. Ein langer Regionsname kuerzt sich, statt den
+   Kasten zu verbreitern. */
+.epos-startseite-klimaherkunft {
+    flex: 1 1 100%;
+    margin: 0;
+    font-size: 11px;
+    color: var(--epos-text-leise);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* label_ProjektStatus: gruener Haken bei offenem Projekt, rotes Warnzeichen
@@ -9322,6 +9345,120 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 .epos-raster-leer td {
     color: var(--epos-text-leise);
     font-style: italic;
+}
+
+/* ==========================================================================
+   DIE DURCHSUCHBARE AUSWAHLLISTE (Standards/Suchauswahl.razor, Auftrag KL-4,
+   Anwenderwunsch 19.09.2026: "Das Dropdown soll auch durchsuchbar sein").
+
+   DIE DREI Z-EBENEN - dieselbe Mechanik wie beim Menueband (Befund W16c-B13):
+   Solange die Liste offen ist, liegt ein durchsichtiger Deckel ueber der
+   ganzen Ansicht und faengt den Klick NEBEN die Liste - auf Maus wie auf dem
+   Finger, ohne Fokus und ohne JavaScript. Das FELD bekommt dafuer einen
+   eigenen Stapelkontext (41) und liegt ueber dem Deckel (39); die Liste (40)
+   steht IM Feld und also ebenfalls darueber. Nur so bleibt ein Eintrag
+   anklickbar, waehrend der Deckel alles andere abfaengt.
+
+   Die Liste steht ABSOLUT unter dem Feld: Sie darf den Kasten, in dem das
+   Feld sitzt, nicht hoeher machen - sonst spraenge beim Tippen die halbe
+   Seite.
+   ========================================================================== */
+.epos-suchauswahl {
+    position: relative;
+    z-index: 41;
+}
+
+.epos-suchauswahl-liste {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    margin: 2px 0 0 0;
+    padding: 4px 0;
+    max-height: 320px;
+    overflow-y: auto;
+    list-style: none;
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 6px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+
+/* Im Formularraster steht das Feld rechts neben seiner Beschriftung; die
+   Liste gehoert unter das FELD, nicht unter das ganze Label. */
+.epos-formularraster .epos-suchauswahl-liste {
+    left: var(--epos-beschriftung-breite);
+}
+
+/* Beruehrungsziel: 44 px, wie jedes andere Bedienelement des Hauses. Die
+   Zeile umbricht nicht - ein langer Regionsname wird gekuerzt und steht
+   vollstaendig im title. */
+.epos-suchauswahl-eintrag {
+    display: flex;
+    align-items: center;
+    min-height: var(--epos-touchziel);
+    padding: 0 10px;
+    cursor: pointer;
+    color: var(--epos-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.epos-suchauswahl-eintrag:hover {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+/* Die mit den Pfeiltasten angesteuerte Stelle. Sie ist etwas anderes als der
+   GEWAEHLTE Eintrag (aria-selected, fett) - und zwei Zustaende muessen sichtbar
+   verschieden sein: der eine traegt Flaeche und Kante, der andere Fettschrift. */
+.epos-suchauswahl-eintrag--hervor {
+    background: var(--epos-karte-flaeche-hover);
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: -2px;
+}
+
+/* Der GEWAEHLTE Eintrag traegt aria-selected und steht damit fett - nicht
+   nur farbig: In Graustufen und unter forced-colors bleibt fett fett. */
+.epos-suchauswahl-eintrag[aria-selected="true"] {
+    font-weight: 700;
+}
+
+/* "Kein Treffer." ist keine Wahlmoeglichkeit, sondern eine Auskunft: leise,
+   ohne Beruehrungsziel und ohne Zeigerwechsel. */
+.epos-suchauswahl-leer {
+    padding: 8px 10px;
+    color: var(--epos-text-leise);
+    font-style: italic;
+}
+
+.epos-suchauswahl-schliessflaeche {
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: transparent;
+    cursor: default;
+}
+
+/* Im Kontrastmodus setzt das System Flaeche und Schrift selbst; was bleiben
+   muss, ist die KANTE der Liste und die Hervorhebung des gewaehlten
+   Eintrags - sonst steht die Liste ohne Umriss auf der Seite. */
+@media (forced-colors: active) {
+    .epos-suchauswahl-liste {
+        border: 1px solid CanvasText;
+        box-shadow: none;
+    }
+
+    .epos-suchauswahl-eintrag[aria-selected="true"] {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+
+    .epos-suchauswahl-eintrag--hervor {
+        outline: 2px solid CanvasText;
+    }
 }
 
 /* ==================================================================== */

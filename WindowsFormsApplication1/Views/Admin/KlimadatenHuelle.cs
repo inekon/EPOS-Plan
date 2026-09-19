@@ -103,7 +103,7 @@ namespace WindowsFormsApplication1
         {
             return new Dictionary<string, object>
             {
-                ["Regionen"] = new Func<Task<List<KlimadatenDialog.Regionszeile>>>(RegionenLesen),
+                ["Regionen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(RegionenLesen),
                 ["Ansicht"] = new Func<string, Task<KlimadatenDialog.Regionsansicht>>(Ansicht),
                 ["Importieren"] = new Func<KlimaImportAuftrag, IProgress<ImportFortschritt>,
                                            Task<KlimaImportErgebnis>>(Importieren),
@@ -138,16 +138,48 @@ namespace WindowsFormsApplication1
         // Liste und Ansicht
         // =====================================================================
 
-        private static Task<List<KlimadatenDialog.Regionszeile>> RegionenLesen()
+        /// <summary>
+        /// Die Zeilen der Regionsliste (Auftrag KL-4) — sieben Spalten aus
+        /// <see cref="KlimaregionStammCtrl.Katalogfilterzeilen"/>.
+        ///
+        /// <para><b>Hier wird der Quellenschlüssel zum Anzeigetext.</b> Der Kern
+        /// liefert <c>PVGIS</c>, <c>TRY_DATEI</c>, <c>TRY_REGIONAL</c> — die Werte, wie
+        /// sie in <c>Tab_Klimaregion_STAMM.Quelle</c> stehen (Drei-Schichten-Regel:
+        /// Schlüssel in der Datenbank, Text in <c>MyResource</c>). Die Spalte zeigt
+        /// dieselben drei Namen, die auch die Optionsgruppe „Klimaquelle" im Dialog
+        /// trägt — ein zweiter Wortlaut für dieselbe Sache wäre eine zweite
+        /// Wahrheit.</para>
+        ///
+        /// <para>Ein Altbestand ohne Quelle (NULL, vor Schemaschritt 95) bleibt LEER;
+        /// sein Halbgeviertstrich kommt aus <c>Katalogwert.AusText</c>.</para>
+        /// </summary>
+        private static Task<IReadOnlyList<Katalogfilterzeile>> RegionenLesen()
         {
-            var ctrl = new KlimaregionStammCtrl();
-            ctrl.ReadAll();
+            IReadOnlyList<Katalogfilterzeile> zeilen = KlimaregionStammCtrl.Katalogfilterzeilen();
 
-            var liste = new List<KlimadatenDialog.Regionszeile>(ctrl.rows);
-            for (int i = 0; i < ctrl.rows; i++)
-                liste.Add(new KlimadatenDialog.Regionszeile(ctrl.items[i].m_szName,
-                                                             ctrl.items[i].m_bReadOnly));
-            return Task.FromResult(liste);
+            foreach (Katalogfilterzeile zeile in zeilen)
+            {
+                string text = Quellentext(zeile.Text(Katalogfilterprofil.SpQuelle));
+                zeile.MitText(Katalogfilterprofil.SpQuelle, text);
+            }
+
+            return Task.FromResult(zeilen);
+        }
+
+        /// <summary>Der Anzeigetext eines Quellenschlüssels; ein unbekannter bleibt leer.</summary>
+        private static string Quellentext(string schluessel)
+        {
+            switch ((schluessel ?? "").Trim())
+            {
+                case DbWerte.KLIMA_QUELLE_PVGIS:
+                    return MyResource.Resource.KLIMA_QUELLE_PVGIS;
+                case DbWerte.KLIMA_QUELLE_TRY_DATEI:
+                    return MyResource.Resource.KLIMA_QUELLE_TRY_DATEI;
+                case DbWerte.KLIMA_QUELLE_TRY_REGIONAL:
+                    return MyResource.Resource.KLIMA_QUELLE_TRY_REGIONAL;
+                default:
+                    return "";
+            }
         }
 
         /// <summary>

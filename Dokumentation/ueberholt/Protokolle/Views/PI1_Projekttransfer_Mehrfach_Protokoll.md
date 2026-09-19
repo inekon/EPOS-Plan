@@ -2,7 +2,7 @@
 
 **19.09.2026** · Zweig `pi1` · Konzept
 [`Konzept_Projekttransfer_EPOS-Plan.md`](../../../aktuell/Konzept_Projekttransfer_EPOS-Plan.md)
-Rev. 3, Etappe T7 · Statuszeile **#370**
+Rev. 3, Etappe T7 · Statuszeile **#372**
 
 ---
 

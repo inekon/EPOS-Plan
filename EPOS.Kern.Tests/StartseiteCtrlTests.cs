@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -236,6 +237,120 @@ namespace EPOS.Kern.Tests
                              StartseiteCtrl.KlimaregionSpeichern(ID_1030, NAME_1030, "Nirgendwo"));
 
                 Assert.Equal("München", StartseiteCtrl.ProjektKlimazone(ID_1030));
+            }
+        }
+    
+
+        // =========================================================================
+        // Auftrag KL-4 - Wahl ueber die Id und die Herkunft der Klimadaten
+        // =========================================================================
+
+        /// <summary>
+        /// <b>Dieselben Regionen mit ihrer Stamm-Id</b> (Auftrag KL-4) — der Inhalt
+        /// des durchsuchbaren Auswahlfeldes. Namen und Reihenfolge sind die von
+        /// <see cref="StartseiteCtrl.Klimaregionen"/>; jede Id ist echt und eindeutig.
+        /// </summary>
+        [Fact]
+        public void Die_Klimaregionen_kommen_auch_mit_ihrer_Id()
+        {
+            if (!_db.Vorhanden) return;
+
+            IReadOnlyList<(int Id, string Name)> mitId = StartseiteCtrl.KlimaregionenMitId();
+            IReadOnlyList<string> namen = StartseiteCtrl.Klimaregionen();
+
+            Assert.NotEmpty(mitId);
+            Assert.Equal(namen.Count, mitId.Count);
+
+            for (int i = 0; i < mitId.Count; i++)
+            {
+                Assert.Equal(namen[i], mitId[i].Name);
+                Assert.True(mitId[i].Id > 0, "Jede Region traegt ihre Stamm-Id.");
+            }
+
+            var ids = new List<int>();
+            foreach ((int Id, string Name) e in mitId) ids.Add(e.Id);
+            Assert.Equal(ids.Count, new HashSet<int>(ids).Count);
+
+            Assert.Equal(StartseiteCtrl.KlimaregionStammId("München"),
+                         mitId.First(e => e.Name == "München").Id);
+        }
+
+        /// <summary>
+        /// <b>Der Id-Weg ist der Namensweg</b> (Auftrag KL-4): Die Namensfassung
+        /// schlägt nur die Id nach und ruft dieselbe Methode — ein Ablauf, keine zwei.
+        /// Beide Wege prüfen in derselben Reihenfolge und enden bei demselben Stand.
+        /// </summary>
+        [Fact]
+        public void Der_Id_Weg_und_der_Namensweg_sind_derselbe()
+        {
+            Assert.Equal(KlimaStand.KeinProjekt,
+                         StartseiteCtrl.KlimaregionSpeichern(0, "", 17));
+            Assert.Equal(KlimaStand.KeineRegion,
+                         StartseiteCtrl.KlimaregionSpeichern(ID_1030, NAME_1030, 0));
+
+            if (!_db.Vorhanden) return;
+
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                int idBerlin = StartseiteCtrl.KlimaregionStammId("Berlin");
+                Assert.True(idBerlin > 0);
+
+                Assert.Equal(KlimaStand.Gespeichert,
+                             StartseiteCtrl.KlimaregionSpeichern(ID_1030, NAME_1030, idBerlin));
+                Assert.Equal("Berlin", StartseiteCtrl.ProjektKlimazone(ID_1030));
+
+                // Und dasselbe ueber den Namen - derselbe Ablauf, derselbe Stand.
+                Assert.Equal(KlimaStand.Gespeichert,
+                             StartseiteCtrl.KlimaregionSpeichern(ID_1030, NAME_1030, "München"));
+                Assert.Equal("München", StartseiteCtrl.ProjektKlimazone(ID_1030));
+            }
+        }
+
+        /// <summary>
+        /// <b>Ohne Projekt gibt es keine Herkunft</b> — <c>null</c>, nicht ein
+        /// leerer Satz: Die Startseite zeichnet dann keine Zeile.
+        /// </summary>
+        [Fact]
+        public void Ohne_Projekt_gibt_es_keine_Klimaherkunft()
+        {
+            Assert.Null(StartseiteCtrl.KlimaHerkunft(0));
+            Assert.Null(StartseiteCtrl.KlimaHerkunft(-1));
+        }
+
+        /// <summary>
+        /// <b>Nach dem Speichern steht die Herkunft</b> (Auftrag KL-4) — gelesen aus
+        /// der PROJEKTKOPIE, also aus derselben Zeile, mit der der Rechenlauf
+        /// arbeitet. Quelle und Importdatum bleiben beim Altbestand leer, Bezeichner
+        /// und Standort stehen immer.
+        /// </summary>
+        [Fact]
+        public void Nach_dem_Speichern_steht_die_Herkunft_der_Projektkopie()
+        {
+            using (TestDatenbank eigen = new TestDatenbank())
+            {
+                if (!eigen.Vorhanden) return;
+
+                int idBerlin = StartseiteCtrl.KlimaregionStammId("Berlin");
+
+                DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Klimaregion_STAMM SET Quelle = ?, Importdatum = ? " +
+                    "WHERE ID_Klimaregion = ?",
+                    new DbParam("@q", DbWerte.KLIMA_QUELLE_TRY_REGIONAL),
+                    new DbParam("@d", "2026-09-18"),
+                    new DbParam("@id", idBerlin));
+
+                Assert.Equal(KlimaStand.Gespeichert,
+                             StartseiteCtrl.KlimaregionSpeichern(ID_1030, NAME_1030, idBerlin));
+
+                KlimaHerkunft h = StartseiteCtrl.KlimaHerkunft(ID_1030);
+
+                Assert.NotNull(h);
+                Assert.Equal("Berlin", h.Bezeichner);
+                Assert.Equal(DbWerte.KLIMA_QUELLE_TRY_REGIONAL, h.Quelle);
+                Assert.Equal("2026-09-18", h.Importdatum);
+                Assert.False(string.IsNullOrWhiteSpace(h.Standort));
             }
         }
     }

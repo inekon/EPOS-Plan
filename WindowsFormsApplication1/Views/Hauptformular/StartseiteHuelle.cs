@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows.Forms;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
@@ -93,9 +94,12 @@ namespace WindowsFormsApplication1
                 ["VarianteUmbenennen"] = new Action(VarianteUmbenennen),
                 ["VarianteAnlegenText"] = MyResource.Resource.START_BTN_VARIANTE_ANLEGEN,
                 ["VarianteUmbenennenText"] = MyResource.Resource.START_BTN_VARIANTE_UMBENENNEN,
-                ["Klimaregionen"] = new Func<IReadOnlyList<string>>(StartseiteCtrl.Klimaregionen),
-                ["Klimaregion"] = new Func<string>(() => _kontext.Klimazone),
-                ["KlimaSpeichern"] = new Func<string, (bool Fehler, string Text)>(KlimaSpeichern),
+                // Auftrag KL-4: Die Klimawahl laeuft ueber IDs, und die Seite zeigt
+                // daneben, WOHER die Reihe des Projekts stammt.
+                ["Klimaregionen"] = new Func<IReadOnlyList<(int Id, string Text)>>(Klimaregionen),
+                ["KlimaregionId"] = new Func<int>(KlimaregionId),
+                ["KlimaSpeichern"] = new Func<int, (bool Fehler, string Text)>(KlimaSpeichern),
+                ["KlimaHerkunft"] = new Func<KlimaHerkunftGaben>(Klimaherkunft),
                 ["Bericht"] = new Func<Zusammenfassung>(Zusammenfassen),
                 ["SolarartGewaehlt"] = new Action<bool>(an => _solarGanglinie = an),
                 ["Kurzhinweis"] = new Func<string>(KurzhinweisAbholen),
@@ -122,6 +126,8 @@ namespace WindowsFormsApplication1
                 ["KlimaPlatzhalterText"] = MyResource.Resource.START_KLIMA_PLATZHALTER,
                 ["KlimaHinweisText"] = MyResource.Resource.START_KLIMA_HINWEIS,
                 ["KlimaSpeichernText"] = MyResource.Resource.WIZ_BTN_SPEICHERN,
+                ["KlimaHerkunftText"] = MyResource.Resource.START_KLIMA_HERKUNFT,
+                ["KlimaHerkunftKurzText"] = MyResource.Resource.START_KLIMA_HERKUNFT_KURZ,
                 ["StatusOffenText"] = MyResource.Resource.START_STATUS_OFFEN,
                 ["StatusKeinsText"] = MyResource.Resource.START_STATUS_KEINS,
                 ["SperreText1"] = MyResource.Resource.Text_Form_Start_MessageBox1,
@@ -424,11 +430,85 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        private (bool Fehler, string Text) KlimaSpeichern(string region)
+        /// <summary>
+        /// Die waehlbaren Klimaregionen als (Id, Name) - Auftrag KL-4. Die Seite
+        /// meldet ihre Wahl als Stamm-Id, nicht als Text.
+        /// </summary>
+        private IReadOnlyList<(int Id, string Text)> Klimaregionen()
+        {
+            List<(int Id, string Text)> liste = new List<(int Id, string Text)>();
+            foreach ((int Id, string Name) e in StartseiteCtrl.KlimaregionenMitId())
+                liste.Add((e.Id, e.Name));
+            return liste;
+        }
+
+        /// <summary>
+        /// Die STAMM-Id der Klimaregion des offenen Projekts; 0 = keine gesetzt.
+        ///
+        /// <para>Der Projektkontext fuehrt den NAMEN der Region (er kommt aus der
+        /// Projektkopie); die Id dazu schlaegt der Kern nach - derselbe Weg, den der
+        /// Speicherknopf frueher je Klick ging.</para>
+        /// </summary>
+        private int KlimaregionId()
+        {
+            string name = _kontext.Klimazone ?? "";
+            return name.Length == 0 ? 0 : StartseiteCtrl.KlimaregionStammId(name);
+        }
+
+        /// <summary>
+        /// <b>Woher die Klimadaten des Projekts stammen</b> (Auftrag KL-4) - der
+        /// Kern-Record, uebersetzt und kulturgerecht datiert; <c>null</c>, wenn das
+        /// Projekt keine Klimaregion fuehrt (dann steht keine Zeile da).
+        /// </summary>
+        private KlimaHerkunftGaben Klimaherkunft()
+        {
+            // Der Record heisst wie die Methode, die ihn liefert (Muster
+            // "Color Color"); der volle Namensraum haelt beides auseinander.
+            WindowsFormsApplication1.KlimaHerkunft h = StartseiteCtrl.KlimaHerkunft(_kontext.Id);
+            if (h == null) return null;
+
+            return new KlimaHerkunftGaben(Quellentext(h.Quelle), h.Bezeichner,
+                                          h.Standort, Datumstext(h.Importdatum));
+        }
+
+        /// <summary>Der Anzeigetext eines Quellenschluessels; ein unbekannter bleibt leer.</summary>
+        private static string Quellentext(string schluessel)
+        {
+            switch ((schluessel ?? "").Trim())
+            {
+                case DbWerte.KLIMA_QUELLE_PVGIS:
+                    return MyResource.Resource.KLIMA_QUELLE_PVGIS;
+                case DbWerte.KLIMA_QUELLE_TRY_DATEI:
+                    return MyResource.Resource.KLIMA_QUELLE_TRY_DATEI;
+                case DbWerte.KLIMA_QUELLE_TRY_REGIONAL:
+                    return MyResource.Resource.KLIMA_QUELLE_TRY_REGIONAL;
+                default:
+                    return "";
+            }
+        }
+
+        /// <summary>
+        /// Das ISO-Importdatum in der Landesschreibweise. Es steht so in der
+        /// Datenbank, weil es dort sortierbar sein muss; gelesen wird es vom
+        /// Anwender. Was sich nicht als ISO lesen laesst, bleibt, wie es ist.
+        /// </summary>
+        private static string Datumstext(string iso)
+        {
+            string wert = (iso ?? "").Trim();
+            if (wert.Length == 0) return "";
+
+            return DateTime.TryParseExact(wert, "yyyy-MM-dd",
+                                          CultureInfo.InvariantCulture,
+                                          DateTimeStyles.None, out DateTime tag)
+                ? tag.ToString("d", CultureInfo.CurrentCulture)
+                : wert;
+        }
+
+        private (bool Fehler, string Text) KlimaSpeichern(int stammRegionId)
         {
             // Woertlich btn_Speichern_Click (:1856-1896) - die fuenf MessageBox
             // werden EIN Banner, die Schluessel bleiben dieselben.
-            switch (StartseiteCtrl.KlimaregionSpeichern(_kontext.Id, _kontext.Name, region))
+            switch (StartseiteCtrl.KlimaregionSpeichern(_kontext.Id, _kontext.Name, stammRegionId))
             {
                 case KlimaStand.KeinProjekt:
                     return (true, MyResource.Resource.Text_Form_Start_MessageBox1);

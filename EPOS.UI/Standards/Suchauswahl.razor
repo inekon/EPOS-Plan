@@ -1,0 +1,304 @@
+﻿@* DIE DURCHSUCHBARE AUSWAHLLISTE (Anwenderwunsch 19.09.2026, Auftrag KL-4:
+   "Das Dropdown soll auch durchsuchbar sein").
+
+   WOZU. Auswahlfeld.razor ist ein <select>: Es kennt seine Id, es ist auf dem
+   Finger ein Gewinn - und es laesst sich nicht durchsuchen. Bei 32 Klimaregionen
+   des Bestands und einer Liste, die mit jedem Import waechst, heisst "Region
+   waehlen" bislang: aufklappen und rollen. Hier genuegt "tueb" fuer Tuebingen.
+
+   WARUM KEIN <datalist>. Es waere die kuerzeste Fassung und fuer diesen Zweck
+   die falsche - aus drei Gruenden:
+     * Es traegt keine ID. Ein <datalist> gibt einen TEXT zurueck; die Zuordnung
+       Text -> Id muesste die Seite nachtraeglich raten, und zwei Regionen
+       gleichen Namens waeren nicht unterscheidbar. Die Hausregel lautet: neue
+       Beziehungen ueber Ids, nicht ueber Textfelder.
+     * Es fuehrt keine Tastatur. Welche Taste die Vorschlagsliste oeffnet, ob ↑↓
+       darin wandert und was Esc tut, entscheidet der Browser - nicht die
+       Anwendung.
+     * Es sieht ueberall anders aus. Die Liste ist Browser-Chrom; sie laesst sich
+       weder gestalten noch messen, und auf dem iPad verhaelt sie sich anders als
+       in der WebView2.
+   Deshalb ist dies eine gewoehnliche Textzeile mit einer eigenen Liste darunter.
+
+   KEIN focusout, KEIN JS-Interop. Geschlossen wird ueber eine SCHLIESSFLAECHE -
+   derselbe Weg wie beim Menueband (Befund W16c-B13): focusout blast nach oben
+   und feuert auch bei einem Fokuswechsel INNERHALB der Liste (der Zeigerdruck
+   auf einen Eintrag raeumte sie weg, bevor der Klick ankommt), und auf dem iPad
+   setzt eine Beruehrung ueberhaupt keinen Fokus. Die drei z-Ebenen stehen im
+   Stilblatt: Deckel 39, Feld und Liste darueber.
+
+   DIE WAHL IST EINE ID, kein Text - wie bei Auswahlfeld. Was im Feld steht, ist
+   der Text des gewaehlten Eintrags; Tippen oeffnet die Liste und filtert, Esc
+   nimmt die Eingabe zurueck und stellt den gewaehlten Text wieder her. *@
+
+@using System.Globalization
+
+<label class="epos-feld epos-suchauswahl">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile">
+        @* role="combobox" mit aria-expanded/-controls/-activedescendant: Die
+           Sprachausgabe liest "Kombinationsfeld, zugeklappt" bzw. den gerade
+           hervorgehobenen Eintrag - dasselbe, was ein Sehender sieht. *@
+        <input type="text" class="epos-eingabe" role="combobox"
+               value="@Feldtext"
+               placeholder="@Platzhalter"
+               aria-label="@(string.IsNullOrEmpty(Kurzname) ? null : Kurzname)"
+               aria-expanded="@(_offen ? "true" : "false")"
+               aria-autocomplete="list"
+               aria-controls="@ListenId"
+               aria-activedescendant="@(_offen && _stelle >= 0 ? EintragsId(_stelle) : null)"
+               disabled="@(!Aktiv)"
+               @oninput="BeiEingabe" @onclick="Oeffnen" @onkeydown="BeiTaste" />
+    </span>
+
+    @if (_offen)
+    {
+        <ul class="epos-suchauswahl-liste" id="@ListenId" role="listbox"
+            aria-label="@(string.IsNullOrEmpty(Kurzname) ? Bezeichnung : Kurzname)">
+            @if (Vorschlaege.Count == 0)
+            {
+                <li class="epos-suchauswahl-leer" role="presentation">@KeinTrefferText</li>
+            }
+            else
+            {
+                @for (int i = 0; i < Vorschlaege.Count; i++)
+                {
+                    int stelle = i;
+                    (int Id, string Text) eintrag = Vorschlaege[i];
+
+                    @* @key an der ID: Ein Tastendruck tauscht die Eintraege aus,
+                       und ohne Schluessel patcht Blazor sie an Ort und Stelle -
+                       derselbe Befund wie bei den <option> des Auswahlfeldes
+                       (W6-B-4). *@
+                    @* Ein langer Name wird im Stilblatt gekuerzt - der title traegt
+                       ihn vollstaendig (Hausregel "eine Klappliste in einer Tabelle
+                       wird gedeckelt, voller Name im title"). *@
+                    <li @key="eintrag.Id" id="@EintragsId(stelle)" role="option"
+                        class="@Eintragsklasse(stelle)" title="@eintrag.Text"
+                        aria-selected="@((Auswahl.HasValue && eintrag.Id == Auswahl.Value) ? "true" : "false")"
+                        @onclick="@(() => Waehlen(eintrag.Id))"
+                        @onclick:stopPropagation="true">@eintrag.Text</li>
+                }
+            }
+        </ul>
+    }
+</label>
+
+@if (_offen)
+{
+    @* DER DECKEL. Er faengt den Klick NEBEN die Liste - auf Maus wie auf dem
+       Finger, ohne Fokus und ohne JavaScript. Reine Mechanik: aria-hidden und
+       kein Tabulatorhalt. *@
+    <div class="epos-suchauswahl-schliessflaeche" aria-hidden="true"
+         @onclick="Schliessen"></div>
+}
+
+@code {
+    /// <summary>Beschriftung links bzw. über dem Feld.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Die Auswahlmöglichkeiten in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>Id des gewählten Eintrags; <c>null</c> = nichts gewählt. Bindbar.</summary>
+    [Parameter] public int? Auswahl { get; set; }
+
+    /// <summary>Meldet die neu gewählte Id.</summary>
+    [Parameter] public EventCallback<int?> AuswahlChanged { get; set; }
+
+    /// <summary>Text im leeren Feld — „Region auswählen" und dergleichen.</summary>
+    [Parameter] public string Platzhalter { get; set; } = Resource.SUCHAUSWAHL_PLATZHALTER;
+
+    /// <summary>
+    /// Ein ausführlicherer Name für die Sprachausgabe (<c>aria-label</c>); leer =
+    /// keiner, dann benennt das umschließende <c>&lt;label&gt;</c> das Feld.
+    /// </summary>
+    [Parameter] public string Kurzname { get; set; } = "";
+
+    /// <summary>Bedienbar? <c>false</c> sperrt das Feld — wie bei <c>Auswahlfeld</c>.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Was in der offenen Liste steht, wenn der Filter nichts trifft.</summary>
+    [Parameter] public string KeinTrefferText { get; set; } = Resource.SUCHAUSWAHL_KEIN_TREFFER;
+
+    /// <summary>
+    /// Wie viele Vorschläge höchstens gezeichnet werden.
+    ///
+    /// <para>Nicht die Zahl der Treffer wird begrenzt, sondern die der gezeichneten
+    /// Zeilen: Wer bei 20 749 Einträgen nichts eintippt, bekäme sonst 20 749
+    /// <c>&lt;li&gt;</c> in den Baum. Fünfzig sind mehr, als in ein Listenfeld
+    /// passen, und wer mehr sieht, sucht nicht, sondern rollt.</para>
+    /// </summary>
+    [Parameter] public int VorschlaegeHoechstens { get; set; } = 50;
+
+    // =====================================================================
+    //  Zustand
+    // =====================================================================
+
+    /// <summary>Steht die Vorschlagsliste offen?</summary>
+    private bool _offen;
+
+    /// <summary>Was der Anwender getippt hat; leer = er hat nichts getippt.</summary>
+    private string _eingabe = "";
+
+    /// <summary>Hat er überhaupt getippt? Sonst zeigt das Feld den gewählten Text.</summary>
+    private bool _getippt;
+
+    /// <summary>Die hervorgehobene Stelle in <see cref="Vorschlaege"/>; −1 = keine.</summary>
+    private int _stelle = -1;
+
+    /// <summary>Eine eigene Kennung je Feld — <c>aria-controls</c> braucht eine.</summary>
+    private readonly string _kennung = "epos-suchauswahl-" + Guid.NewGuid().ToString("N")[..8];
+
+    private string ListenId => _kennung + "-liste";
+
+    private string EintragsId(int stelle) =>
+        _kennung + "-e" + stelle.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Die Klasse eines Eintrags. Die mit ↑↓ angesteuerte Stelle trägt zusätzlich
+    /// <c>--hervor</c> — sie ist etwas anderes als die GEWÄHLTE Zeile
+    /// (<c>aria-selected</c>), und zwei Zustände müssen sichtbar verschieden sein.
+    /// </summary>
+    private string Eintragsklasse(int stelle) =>
+        stelle == _stelle ? "epos-suchauswahl-eintrag epos-suchauswahl-eintrag--hervor"
+                          : "epos-suchauswahl-eintrag";
+
+    /// <summary>Steht die Liste offen? (Prüfhilfe für Tests.)</summary>
+    public bool Offen => _offen;
+
+    /// <summary>Die hervorgehobene Stelle (Prüfhilfe für Tests).</summary>
+    public int Hervorgehoben => _stelle;
+
+    /// <summary>
+    /// Was im Feld steht: die Eingabe, solange getippt wird, sonst der Text des
+    /// gewählten Eintrags.
+    /// </summary>
+    private string Feldtext => _getippt ? _eingabe : Gewaehltertext;
+
+    private string Gewaehltertext
+    {
+        get
+        {
+            if (!Auswahl.HasValue) return "";
+            foreach ((int Id, string Text) e in Eintraege)
+                if (e.Id == Auswahl.Value) return e.Text;
+            return "";
+        }
+    }
+
+    /// <summary>
+    /// Die gezeichneten Vorschläge: alle Einträge, solange nichts getippt ist,
+    /// sonst die, deren Text die Eingabe ENTHÄLT — groß/klein egal.
+    ///
+    /// <para><c>ToUpperInvariant</c> und <c>Ordinal</c>, nicht
+    /// <c>ToLower</c>/<c>CurrentCulture</c>: Die türkische Kultur bildet „I" und
+    /// „i" verschieden ab, und ein Kulturvergleich je Zeile kostet bei langen
+    /// Listen spürbar.</para>
+    /// </summary>
+    private IReadOnlyList<(int Id, string Text)> Vorschlaege
+    {
+        get
+        {
+            var treffer = new List<(int Id, string Text)>();
+            string suche = _getippt ? _eingabe.Trim().ToUpperInvariant() : "";
+
+            foreach ((int Id, string Text) e in Eintraege)
+            {
+                if (suche.Length > 0 &&
+                    (e.Text ?? "").ToUpperInvariant().IndexOf(suche, StringComparison.Ordinal) < 0)
+                    continue;
+
+                treffer.Add(e);
+                if (treffer.Count >= VorschlaegeHoechstens) break;
+            }
+            return treffer;
+        }
+    }
+
+    // =====================================================================
+    //  Bedienung
+    // =====================================================================
+
+    private void Oeffnen()
+    {
+        if (!Aktiv) return;
+
+        // UNGEFILTERT beim Oeffnen: Wer klickt statt zu tippen, will die ganze
+        // Liste sehen - genau das, was ein <select> tut.
+        _offen = true;
+        _getippt = false;
+        _eingabe = "";
+        _stelle = -1;
+    }
+
+    private void Schliessen()
+    {
+        _offen = false;
+        _getippt = false;
+        _eingabe = "";
+        _stelle = -1;
+    }
+
+    private void BeiEingabe(ChangeEventArgs e)
+    {
+        if (!Aktiv) return;
+
+        _eingabe = e.Value?.ToString() ?? "";
+        _getippt = true;
+        _offen = true;
+        _stelle = -1;
+    }
+
+    private Task Waehlen(int id)
+    {
+        Auswahl = id;
+        Schliessen();
+        return AuswahlChanged.InvokeAsync(Auswahl);
+    }
+
+    /// <summary>
+    /// Die Tastatur: ↓ und ↑ wandern durch die Vorschläge (↓ öffnet die
+    /// geschlossene Liste), Enter übernimmt den hervorgehobenen, Esc schließt ohne
+    /// zu ändern.
+    ///
+    /// <para><b>Esc schließt nur die Liste</b> und lässt den Dialog darum herum in
+    /// Ruhe — deshalb hält dieses Feld das Ereignis auf, solange die Liste offen
+    /// ist; sonst schlösse derselbe Tastendruck den ganzen Dialog.</para>
+    /// </summary>
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (!Aktiv) return Task.CompletedTask;
+
+        IReadOnlyList<(int Id, string Text)> liste = Vorschlaege;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (!_offen) { Oeffnen(); liste = Vorschlaege; }
+                if (liste.Count > 0) _stelle = Math.Min(_stelle + 1, liste.Count - 1);
+                return Task.CompletedTask;
+
+            case "ArrowUp":
+                if (!_offen) return Task.CompletedTask;
+                if (liste.Count > 0) _stelle = Math.Max(_stelle - 1, 0);
+                return Task.CompletedTask;
+
+            case "Enter":
+                if (!_offen || _stelle < 0 || _stelle >= liste.Count) return Task.CompletedTask;
+                return Waehlen(liste[_stelle].Id);
+
+            case "Escape":
+                if (!_offen) return Task.CompletedTask;
+                Schliessen();
+                return Task.CompletedTask;
+
+            default:
+                return Task.CompletedTask;
+        }
+    }
+}
