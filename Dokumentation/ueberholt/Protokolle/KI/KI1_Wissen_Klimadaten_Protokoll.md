@@ -127,7 +127,7 @@ findet weiterhin seinen eigenen Abschnitt — das neue Wissen drängt sich nicht
 | `KiWissensdeckungTests` (neu) | 9 Fälle grün |
 | Filter `Ki\|HilfeWissen\|WikiProduktdatenWache\|DokumentationLinkWache`, `de-DE` | Kern 281, UI 352, KiKern 499, Engine 1 — alle grün |
 | derselbe Filter, `LC_ALL=en_US.UTF-8` | dieselben Zahlen, alle grün |
-| volle Suite `WP-Plan.Kern.slnf` nach dem Merge | siehe Statuszeile |
+| volle Suite `WP-Plan.Kern.slnf` nach dem Merge von `ios_migration_september` | Kern 3 663, UI 4 725, KiKern 499, SpeicherEngine 378, SpeicherPlanung 27 (1 übersprungen) — beide Kulturen grün, 0 Fehler |
 | Referenzlauf | nicht nötig (kein Rechenweg berührt) |
 
 Kodierung: `.cs` und `.resx` UTF-8 **mit** BOM und LF wie im Bestand, Markdown ohne BOM;
