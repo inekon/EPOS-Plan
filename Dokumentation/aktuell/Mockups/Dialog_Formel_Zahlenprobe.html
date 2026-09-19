@@ -1531,13 +1531,14 @@ Keine stillen Teilsummen
   <div class="zone">Dialog — Reiter Ertrag/Bonus</div>
   <p class="eng">Den zweiten Reiter gibt es nur bei Blockheizkraftwerk und Photovoltaik. Bei der Photovoltaik
   trägt er eine Gruppe, keinen zweiten Rechenweg: den Erklärungssatz, die Wahl der Vergütung je Variante —
-  „vom Stammprojekt übernehmen" oder „eigene Vergütung" — mit ihrer Erklärzeile, die Klappliste des
-  Stammprojekts für den Admin-Kontext (Kostendialog ohne geöffnetes Projekt) und den Knopf in den
+  „vom Stammprojekt übernehmen" oder „eigene Vergütung" — mit ihrer Erklärzeile, die Klappliste „Projekt:" für den
+  Admin-Kontext (Kostendialog ohne geöffnetes Projekt) und den Knopf in den
   Vergütungsdialog der Kategorie 6; daneben der Knopf in den Gesetzeskatalog, der als Überlagerung im
   selben Fenster erscheint. Die Erklärzeile nennt die Herkunft: „übernommen von Musterprojekt Gewerbepark ·
   anzulegender Wert 6,04 ct/kWh, Direktvermarktung" oder — wie im Beispiel, Variante „Photovoltaik" —
-  „eigene Werte dieser Variante"; das Stammprojekt führt immer eigene Werte
-  <span class="zk vor">Vorschlag U38</span>.</p>
+  „eigene Werte dieser Variante"; das Stammprojekt führt statt der Wahl die Zeile „Stammprojekt — n
+  Variante(n) übernehmen diese Vergütung"
+  <span class="zk umg">umgesetzt U38</span>.</p>
   <div class="fenster">
     <div class="f-band">Kostenverwaltung PV-Anlage 1 — Musterprojekt Gewerbepark<span class="f-sub">ⓘ Hilfe</span></div>
     <div class="f-tab"><span>Kosten Invest/Betrieb</span><span class="an">Ertrag/Bonus</span></div>
@@ -1551,7 +1552,7 @@ Keine stillen Teilsummen
         <div class="f-zeile eng"><label>Vergütung:</label><span class="f-radio"><i></i></span><span class="f-lab">vom Stammprojekt übernehmen</span>
           <span class="f-radio an"><i></i></span><span class="f-lab" style="min-width:0">eigene Vergütung</span></div>
         <div class="f-herleitung">eigene Werte dieser Variante — <b>Variante Photovoltaik</b></div>
-        <div class="f-zeile eng"><label>Stammprojekt:</label><span class="f-combo" style="min-width:260px">Musterprojekt Gewerbepark</span></div>
+        <div class="f-zeile eng"><label>Projekt:</label><span class="f-combo" style="min-width:260px">Musterprojekt Gewerbepark</span><span class="f-einheit">nur ohne geöffnetes Projekt</span></div>
         <div class="f-knopfzeile"><span class="f-knopf">PV-Vergütungsdialog öffnen…</span><span class="f-knopf">Gesetzesparameter…</span></div>
       </div>
     </div>
@@ -2745,9 +2746,9 @@ Stromsteuer
   Herleitungszeilen — installierte Leistung, anzulegender Wert samt Katalogherleitung, feste EV, die Statuszeilen,
   Vorschau und Kennzahlen. Die aufgeschlüsselte Vorschau am Ende <span class="zk vor">Vorschlag U27</span>.
   Unter dem Schalter die Herkunftszeile der Vergütung: „Vergütung dieser Variante: eigene Werte" oder
-  „übernommen vom Stammprojekt — Felder gesperrt" mit dem Knopf „eigene Werte", der die Stammwerte in die
-  Variante kopiert; das Stammprojekt zeigt „Stammprojekt — n Varianten übernehmen diese Vergütung"
-  <span class="zk vor">Vorschlag U38</span>.</p>
+  „übernommen vom Stammprojekt ‹Name›" mit dem Knopf „eigene Werte", der die Stammwerte in die
+  Variante kopiert; das Stammprojekt zeigt „Stammprojekt — n Variante(n) übernehmen diese Vergütung"
+  <span class="zk umg">umgesetzt U38</span>.</p>
   <div class="fenster">
     <div class="f-band">PV-Vergütung (EEG)<span class="f-sub">ⓘ Hilfe · × schließt ohne zu schreiben, wie Esc</span></div>
     <div class="f-leib">
@@ -4691,13 +4692,13 @@ Einstufung
               B − A gleich der Differenz der Sicht-1-Werte auf 0,01 €, Tausch A/B dreht das Vorzeichen.
               bunit: beide Zustände, Listen ohne den anderen Stand, Sperre bei nur einem Stand, Erklärzeile,
               Referenzwahl</td></tr>
-        <tr><td class="mono">U38</td><td class="num">3</td>
+        <tr class="gestrichen"><td class="mono">U38</td><td class="num">3</td>
             <td>Vergütung je Variante: Optionsgruppe „vom Stammprojekt übernehmen | eigene Vergütung" mit Erklärzeile im
               Reiter Ertrag/Bonus; Herkunftszeile und Knopf „eigene Werte" im Vergütungsdialog (Kategorie 6); Spalte
-              <span class="mono">Uebernahme_Stamm</span> in <span class="mono">Tab_ProjektPhotovoltaik</span> (Schemaschritt,
-              Ableitung der Wahl aus dem Bestand); der Rechenweg liest die aufgelöste Zeile der Variante, der Kopierlauf
-              lässt die PV-Zeile aus; Nachweiszeile der Herkunft im Bericht; Fragen VV‑Q1 bis VV‑Q7 im Konzept § 2.16
-              offen</td>
+              <span class="mono">Uebernahme_Stamm</span> in <span class="mono">Tab_ProjektPhotovoltaik</span>
+              (Schemaschritt 93, Ableitung der Wahl aus dem Bestand); der Rechenweg liest die aufgelöste Zeile der
+              Variante, der Kopierlauf lässt die PV-Zeile aus; Nachweiszeile der Herkunft im Bericht; VV‑Q1 bis VV‑Q7
+              nach Empfehlung entschieden</td>
             <td><span class="mono">ErtragBonus.razor</span> · <span class="mono">PhotovoltaikVerguetungDialog.razor</span> ·
               <span class="mono">ProjektPhotovoltaikCtrl.LiesAufgeloest</span> ·
               <span class="mono">WirtschaftlichkeitCtrl.RechnePvVerguetung</span> ·

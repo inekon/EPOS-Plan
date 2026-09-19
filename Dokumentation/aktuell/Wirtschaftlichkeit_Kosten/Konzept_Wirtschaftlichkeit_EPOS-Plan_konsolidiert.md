@@ -1194,7 +1194,21 @@ Kategorie 8 in `../Mockups/Dialog_Formel_Zahlenprobe.html#sicht2`, Umsetzungssta
 
 ---
 
-## 2.16 Vergütung je Variante — eigene Werte oder vom Stammprojekt übernommen (Anforderung 18.09.2026)
+## 2.16 Vergütung je Variante — eigene Werte oder vom Stammprojekt übernommen (Anforderung 18.09.2026) — umgesetzt
+
+> **Stand: umgesetzt.** Schemaschritt 93 legt `Tab_ProjektPhotovoltaik.Uebernahme_Stamm` an
+> (nullbares 0/1, `SchemaKatalog.Schritt93_VerguetungJeVariante`) und leitet die Wahl
+> ergebnisneutral aus dem Bestand ab (`PvVerguetungJeVariante`, zwei DML).
+> `ProjektPhotovoltaikCtrl.LiesAufgeloest` löst je Stand auf — Stamm, Variante mit eigener
+> Zeile, sonst die Zeile des Stamms —, und `WirtschaftlichkeitCtrl.RechnePvVerguetung` liest
+> sie; der flache Satz `Einspeiseverguetung` bleibt je Gruppe. Der Kopierlauf lässt die
+> PV-Zeile aus, `ProjektCtrl.Delete` gibt den übernehmenden Varianten vor dem Löschen die
+> Stammwerte. Der Reiter Ertrag/Bonus trägt die Optionsgruppe samt Erklärzeile und die
+> Klappliste „Projekt:" im Admin-Kontext, der Vergütungsdialog die Herkunftszeile und den
+> Knopf „eigene Werte". Die Herkunft reist im `ErgebnisNachweisUmschlag` (Fassung 3) und
+> steht als Zeile `PV_HERKUNFT` in Block A. Nachweis
+> `EPOS.Kern.Tests/PvVerguetungJeVarianteTests`, `EPOS.UI.Tests/Dialoge/ErtragBonusTests` und
+> `EPOS.UI.Tests/Dialoge/PhotovoltaikVerguetungDialogTests`; Referenzlauf byte-gleich.
 
 **Anforderung des Anwenders, im Wortlaut:** „Die Vergütung kann in der Variante unterschiedlich vom
 Stamm sein. Die Option der Übernahme soll es geben, aber eigene Vergütung in den Varianten muss
@@ -1300,9 +1314,9 @@ Stammänderung → die übernehmende Variante folgt, die eigene nicht (Test).
 
 **Was die Umsetzung braucht:**
 
-1. Schemaschritt (Nummer bei der Umsetzung; 92 ist von der Abwärmeabfuhr beansprucht): Spalte
-   `Uebernahme_Stamm` an beiden DDL-Orten, Ableitung der Wahl aus dem Bestand (Randfälle),
-   Löschweitergabe `Tab_Projekt → Tab_ProjektPhotovoltaik`;
+1. Schemaschritt **93**: Spalte `Uebernahme_Stamm` an beiden DDL-Orten, Ableitung der Wahl aus
+   dem Bestand (Randfälle), Löschweitergabe `Tab_Projekt → Tab_ProjektPhotovoltaik` — sie steht
+   als Vorarbeit in `ProjektCtrl.Delete`, siehe Einordnung;
 2. `ProjektPhotovoltaikCtrl.LiesAufgeloest` und `Speichern` mit der Spalte;
    `ProjektDuplizierenCtrl`: `Tab_ProjektPhotovoltaik` in die feste Ausnahmeliste; `ProjektCtrl.Delete`
    und `VariantenCtrl.LoescheVariante`: Übernahme in eigene Zeilen vor dem Lösen;
@@ -1322,7 +1336,7 @@ Stammänderung → die übernehmende Variante folgt, die eigene nicht (Test).
    `Programm Dokumentation - Varianten.wiki` (was eine Variante vom Stamm übernimmt); Logbuch-Eintrag
    mit der Veröffentlichung.
 
-**Fragen mit Empfehlung:**
+**Fragen mit Empfehlung — entschieden am 18.09.2026 („VV‑Q1 bis VV‑Q7: Empfehlung"):**
 
 | Frage | Empfehlung |
 |---|---|
@@ -1335,10 +1349,24 @@ Stammänderung → die übernehmende Variante folgt, die eigene nicht (Test).
 | **VV‑Q7** Klappliste „Stammprojekt:" im Reiter: umbenennen? | **„Projekt:"** — sie führt alle Projekte; im Projektmodus des Kostendialogs ist das geöffnete Projekt vorgewählt, und die Liste entfällt |
 
 **Einordnung:** Eigene kleine Etappe, unabhängig von § 2.9 und § 2.15 — sie ändert weder Referenz
-noch Sicht, nur den Leseweg einer Größe je Stand; ergebnisneutral in der Vorgabe. Sie lässt sich mit
-§ 2.9 in einem Zug umsetzen, weil beide in `WirtschaftlichkeitCtrl.Berechne` je Stand lesen. Mockup:
+noch Sicht, nur den Leseweg einer Größe je Stand; ergebnisneutral in der Vorgabe. Mockup:
 Kategorie 3 (Reiter Ertrag/Bonus) und Kategorie 6 (Kopfzeile) in
 `../Mockups/Dialog_Formel_Zahlenprobe.html#pvkosten`; Umsetzungsstand U38.
+
+**Zwei Stellen, an denen die Umsetzung von der Soll-Tafel abweicht — benannt, nicht still:**
+
+- **Die Löschweitergabe `Tab_Projekt → Tab_ProjektPhotovoltaik` ist kein Schemateil.** SQLite
+  kann einer bestehenden Tabelle keinen Fremdschlüssel anhängen; ein Tabellenneubau allein
+  dafür wäre eine zweite Wahrheit neben `ProjektCtrl.Delete`, dem einen Weg, durch den jedes
+  Projektlöschen läuft (auch `VariantenCtrl.LoescheVariante` endet dort). Und die Übernahme
+  der Stammwerte, die der Randfall verlangt, könnte ein `ON DELETE CASCADE` ohnehin nicht
+  leisten. Beides steht deshalb in `ProjektCtrl.PvVerguetungAufloesen` — erst die Übernahme,
+  dann das Löschen der eigenen Zeile.
+- **NULL an einer vorhandenen Zeile liest sich als „eigene Werte", nicht als „übernommen".**
+  Eine Zeile, die da ist, hat gegolten; das ist der Bestand vor dem Schritt, und dieselbe
+  Antwort gibt eine Datenbank, der die Spalte noch fehlt. „Übernommen" bleibt der Zustand
+  **ohne** Zeile oder mit ausdrücklichem Kennzeichen 1. Das DML des Schritts schreibt dieses
+  NULL einmalig als 0 fest; die Lesart bleibt als tolerante Rückfallebene.
 
 ---
 
