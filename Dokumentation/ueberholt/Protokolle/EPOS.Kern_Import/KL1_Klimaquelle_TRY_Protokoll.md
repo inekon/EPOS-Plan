@@ -234,3 +234,103 @@ selbst geht nie ins Netz.
 - **A-KL2-2** — dieselbe Datei, Längen- und Breitengrad von Hand überschreiben: Die
   Herkunftszeile verschwindet, gerechnet wird mit der Eingabe, die Details nennen
   „Standort vom Anwender".
+
+## 10. Nachtrag KL-3 — Schemaschritt 95: Klimaspalten und Regionsvorschau
+
+### 10.1 Auftrag
+
+Anwenderentscheid vom 19.09.2026, Block „Nach #367":
+
+- **(e)** „Alles Relevante für die Gebäudesimulation aufnehmen" — ein Schemaschritt mit
+  `Gegenstrahlung`, `Luftfeuchte` und `Bedeckungsgrad` in `Tab_Solar` **und**
+  `Tab_Solar_STAMM`. Windgeschwindigkeit **nicht**: keine Spalte ohne Leser
+  (Umsetzungskonzept Gebäudesimulation F-S3). Das ist der Schritt **M4** jenes Papiers,
+  erweitert um den Bedeckungsgrad, weil TRY ihn echt liefert (Spalte `N`).
+- **(b)** Die Regionsvorschau vor dem Import ist gewünscht; der zweite Netzabruf ist
+  angenommen.
+- Dazu der Anwenderauftrag KL-4: `Quelle` und `Importdatum` an `Tab_Klimaregion` und
+  `Tab_Klimaregion_STAMM` — im **selben** Schritt.
+
+### 10.2 Umsetzung
+
+**Schemaschritt 95** — zehn nullbare Spalten an vier Tabellen, **kein DML**. Die eine
+Quelle ist `SchemaKatalog.Schritt95_Klimaspalten`; daraus bedienen sich die drei Leser
+`SchemaMigration.Schritt_95_Klimaspalten`, `Werkzeuge/Testdatenbankschema` und
+`EPOS.Kern.Tests/TestDatenbank`. `SchemaStand.Zielversion` steht zuletzt auf **95**.
+
+| Tabelle | Spalte | Typ | NULL heißt |
+|---|---|---|---|
+| `Tab_Solar`, `Tab_Solar_STAMM` | `Gegenstrahlung` | `REAL` | nicht verfügbar |
+| `Tab_Solar`, `Tab_Solar_STAMM` | `Luftfeuchte` | `REAL` | nicht verfügbar |
+| `Tab_Solar`, `Tab_Solar_STAMM` | `Bedeckungsgrad` | `REAL` | nicht verfügbar (jede PVGIS-Region) |
+| `Tab_Klimaregion`, `Tab_Klimaregion_STAMM` | `Quelle` | `TEXT` | Altbestand |
+| `Tab_Klimaregion`, `Tab_Klimaregion_STAMM` | `Importdatum` | `TEXT` (ISO) | Altbestand |
+
+**Die Befüllung.**
+
+- **PVGIS** — `TmyHourlyData` bekommt `[JsonPropertyName("IR(h)")] Gegenstrahlung` und
+  `Bedeckungsgrad`; `Humidity` wird **nullbar** (fehlt `RH`, steht NULL statt 0).
+  `SaveTmyData` schreibt die drei Spalten in die STUNDENreihe — die Tageswerte
+  (`Tab_Klimadaten*`) führen sie nicht.
+- **TRY** — `DwdTryLeser` liest `A` → Gegenstrahlung, `RF` → Luftfeuchte, `N` →
+  Bedeckungsgrad; alle drei als Pflichtfelder der Datenzeile, mit benannter Meldung samt
+  Zeilennummer, wenn sie keine Zahl sind. Die Verworfen-Liste schrumpft von neun auf sechs:
+  `p, WR, WG, x, E, IL`. Die Drehung MEZ → UTC gilt für alle Größen gleich, weil sie an
+  derselben Zeile hängen.
+- **Herkunft** — `KlimaregionStammCtrl.Add` bekommt eine Überladung mit `quelle` und
+  `importdatum`; `KlimaImportAblauf` setzt beide bei **allen drei** Quellen an derselben
+  Stelle. Der Freitext `Details` bleibt unverändert daneben.
+- **Projektkopie** — `KlimaregionStammCtrl.CopyRegionToProjekt` kopiert die drei
+  Klimagrößen je Stunde und `Quelle`/`Importdatum` am Kopfsatz mit.
+- **Toter Bestand entfernt** — `SolardatenCtrl.Insert` und `WriteDataTable` (beide ohne
+  Aufrufer, beide schrieben nur `Temperatur`) sind gelöscht; `MapDataRowToModel` liest die
+  drei Größen NULLBAR, und NULL bleibt NULL.
+
+**Regionsvorschau.** `TryPaketLeser.RegionErmitteln` liest **allein das
+Zentralverzeichnis** und gibt Region, Stationskoordinate, Entfernung und die vorhandenen
+Jahr/Szenario-Kombinationen zurück — ohne einen Eintrag zu entpacken; die Regionswahl ist
+dieselbe Funktion, die der Import ruft (`Regionswahl`, eine Funktion, zwei Aufrufer).
+`KlimaImportAblauf.RegionErmittelnAsync` legt die Geokodierung darüber. Im Dialog steht im
+Regionaldaten-Zweig der Knopf „Region ermitteln" (frei, sobald ein Ortsname **oder** ein
+Koordinatenpaar da ist — eine Bezeichnung braucht die Vorschau nicht) und darunter eine
+Herleitungszeile: „Region 14 Stötten, Station 48,6600 / 9,8600, Entfernung 12 km · vorhanden:
+2015 mittleres Jahr, …" bzw. der benannte Fehler. Jede Standort- oder Quellenänderung
+verwirft die Zeile. Die Region wird mit **Namen** genannt (`TryRegionsnamen`, 1 Bremerhaven
+… 15 Garmisch-Partenkirchen; reine Anzeige, die Zuordnung bleibt der nächste
+Stationsmittelpunkt) — auch im Herkunftsvermerk.
+
+**Ressourcen** — vier Schlüssel `KLIMA_TRY_BTN_REGION`, `KLIMA_TRY_VORSCHAU`,
+`KLIMA_TRY_VORSCHAU_BESTAND`, `KLIMA_TRY_VORSCHAU_LAEUFT` in beiden `.resx`, Designer neu
+erzeugt.
+
+**Testdatenbank** — `Referenzlaeufe/Kenndaten_Test.sqlite` mit
+`Werkzeuge/Testdatenbankschema` auf Stand 95 gezogen: zehn Spalten angelegt,
+`integrity_check` = ok, alle zehn in jeder Zeile NULL (280 320 Stundenwerte, 32 Regionen).
+
+### 10.3 Nachweise
+
+| Prüfstand | Ergebnis |
+|---|---|
+| `KlimaspaltenTests` (neu) | 9 grün — Spaltenliste, Wiederholbarkeit, Bestand leer, PVGIS-, TRY- und Kopiefall, Altbestand, Leser |
+| `DwdTryLeserTests` | 34 grün (zwei neue: Zuordnung der drei Größen, Drehung) |
+| `TryPaketLeserTests` | 31 grün (sieben neue: Vorschau gegen Import, Ausführungen, kein Eintragsbyte, benannte Ablehnungen, lokale Datei, Stationsnamen) |
+| `KlimadatenDialogTests` | 34 grün (sechs neue: Knopf nur im Regionaldaten-Zweig, Freigabe, ohne Delegat, Ergebniszeile, Fehlerzeile, Verwerfen) |
+| Volle Suite | grün, beide Kulturen |
+| SQL-Dialekt-Prüfer | 1 505 Texte, 0 Fundstellen |
+| Referenzlauf | fünf Projekte byte-gleich gegen R9 |
+| Windows-Schale | 0 Fehler (Linux-Bau mit `EnableWindowsTargeting`) |
+
+### 10.4 Windows-Abnahmepunkte
+
+- **A-KL3-1** — Bestandsdatenbank: Der Programmstart migriert auf Stand 95; in
+  `Tab_Solar(_STAMM)` stehen die drei neuen Spalten und sind in jeder Bestandszeile leer.
+- **A-KL3-2** — PVGIS-Import einer neuen Region: `Gegenstrahlung` und `Luftfeuchte` sind je
+  Stunde gefüllt, `Bedeckungsgrad` bleibt leer.
+- **A-KL3-3** — Import einer DWD-TRY-Datei: alle drei Spalten gefüllt; die Meldung nennt als
+  nicht übernommen nur noch `p, WR, WG, x, E, IL`.
+- **A-KL3-4** — Regionaldaten, „Region ermitteln": Die Zeile nennt Region mit Namen, Station
+  und Entfernung, bevor eingelesen wird; außerhalb Deutschlands steht dort der benannte
+  Fehler, und „Daten einlesen" bleibt frei.
+- **A-KL3-5** — Details eines neuen Imports: `Quelle` und `Importdatum` sind gesetzt, bei
+  einer Altbestandsregion leer (in der Oberfläche sichtbar erst mit KL-4).
+

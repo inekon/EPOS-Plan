@@ -30427,6 +30427,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region ermitteln ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_BTN_REGION {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_BTN_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Durchsuchen … ähnelt.
         /// </summary>
         public static string KLIMA_TRY_BTN_WAEHLEN {
@@ -30684,6 +30693,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_TRY_VERWORFEN {
             get {
                 return ResourceManager.GetString("KLIMA_TRY_VERWORFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region {0}, Station {1}, Entfernung {2} km ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vorhanden: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_VORSCHAU_BESTAND {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_VORSCHAU_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region wird ermittelt … ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_VORSCHAU_LAEUFT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_VORSCHAU_LAEUFT", resourceCulture);
             }
         }
         

@@ -131,7 +131,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 94), saet den Gesetzeskatalog nach");
+                                  " nach (Schritte 62 bis 95), saet den Gesetzeskatalog nach");
                 Console.WriteLine("  und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
@@ -889,6 +889,18 @@ namespace Testdatenbankschema
                 Console.WriteLine("Schritt 94 - mit " + HilfsstromBemessungVorlage.NACH +
                                   " jetzt " + HilfsstromBemessungVorlage.Umgestellt() + ".");
             }
+
+            // ---- Schritt 95: die Klimaspalten (Anwenderentscheid 19.09.2026). REIN
+            //      DDL: drei Groessen der Stundenreihe an Tab_Solar und Tab_Solar_STAMM
+            //      (Gegenstrahlung, Luftfeuchte, Bedeckungsgrad) und zwei Angaben des
+            //      Kopfsatzes an Tab_Klimaregion und Tab_Klimaregion_STAMM (Quelle,
+            //      Importdatum). DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_95_Klimaspalten bedient. Kein DML: Alle
+            //      Spalten bleiben NULL, die dreizehn Referenzprojekte rechnen
+            //      unveraendert.
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt95_Klimaspalten)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 95, trocken);
 
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");

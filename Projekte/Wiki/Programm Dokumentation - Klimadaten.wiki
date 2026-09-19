@@ -29,6 +29,8 @@ Bei den Regionaldaten wählen Sie zusätzlich:
 
 Vorbelegt sind das Bezugsjahr 2015 und das mittlere Jahr.
 
+''Region ermitteln'' sagt Ihnen schon vor dem Einlesen, welche Region Ihr Standort trifft: Nummer und Name der Bezugsstation, ihre Koordinate und die Entfernung zu Ihrem Standort, dazu die Jahre und Szenarien, die das Archiv für diese Region führt. Dafür wird nur das Inhaltsverzeichnis des Archivs gelesen, kein Datensatz. Trifft der Standort keine Region, steht der Grund an derselben Stelle; einlesen können Sie trotzdem.
+
 == Einlesen ==
 {{Anker|einlesen}}
 
@@ -36,7 +38,7 @@ Vorbelegt sind das Bezugsjahr 2015 und das mittlere Jahr.
 
 * Bei einer '''Datei''' wählen Sie den Pfad über ''Durchsuchen''; der Dateiwähler zeigt Dateien mit der Endung ''.dat''. Es wird nichts aus dem Netz geholt.
 * Bei den '''Regionaldaten''' genügt der Standort: Das Programm liest über Teilabrufe nur das Inhaltsverzeichnis des Archivs und den einen benötigten Datensatz – wenige hundert Kilobyte statt des gesamten Archivs. Wahlweise geben Sie den Pfad eines bereits heruntergeladenen Archivs an; dann läuft alles ohne Netz.
-* Nach dem Einlesen nennt die Meldung die Quelle, bei den Regionaldaten zusätzlich die Regionsnummer, ihre Koordinate, die Entfernung zu Ihrem Standort, Szenario und Jahr.
+* Nach dem Einlesen nennt die Meldung die Quelle, bei den Regionaldaten zusätzlich Nummer und Name der Region, ihre Koordinate, die Entfernung zu Ihrem Standort, Szenario und Jahr.
 
 === Wenn etwas nicht passt ===
 
@@ -49,7 +51,9 @@ Vorbelegt sind das Bezugsjahr 2015 und das mittlere Jahr.
 
 Aus einer Testreferenzjahr-Datei übernimmt EPOS-Plan die Außentemperatur sowie Direkt- und Diffusstrahlung; daraus entstehen Globalstrahlung, Sonnenwinkel, die vier Fassadenwerte und die Tagesmittel – dieselben Größen wie bei einem PVGIS-Abruf. Die Direktstrahlung wird dabei von der waagerechten Fläche auf die Sonnenrichtung umgerechnet; bei sehr flachem Sonnenstand geht ihr Betrag in den Diffusanteil, damit die Globalstrahlung jeder Stunde erhalten bleibt.
 
-'''Nicht gespeichert''' werden Luftdruck, Windrichtung, Windgeschwindigkeit, Bedeckungsgrad, Wasserdampfgehalt, relative Feuchte, atmosphärische Gegenstrahlung, langwellige Ausstrahlung und das Qualitätsbit. Dafür gibt es keine Felder. Damit niemand sie in den Daten sucht, stehen sie in den ''Details'' der Region und in der Meldung nach dem Einlesen ausdrücklich als nicht übernommen.
+Zu jeder Stunde speichert EPOS-Plan außerdem die '''atmosphärische Gegenstrahlung''', die '''relative Luftfeuchte''' und – soweit die Quelle sie führt – den '''Bedeckungsgrad'''. Die Testreferenzjahre liefern alle drei; ein PVGIS-Abruf liefert Gegenstrahlung und Feuchte, aber keinen Bedeckungsgrad, und dessen Feld bleibt dann leer.
+
+'''Nicht gespeichert''' werden Luftdruck, Windrichtung, Windgeschwindigkeit, Wasserdampfgehalt, langwellige Ausstrahlung und das Qualitätsbit. Dafür gibt es keine Felder. Damit niemand sie in den Daten sucht, stehen sie in den ''Details'' der Region und in der Meldung nach dem Einlesen ausdrücklich als nicht übernommen.
 
 In den ''Details'' der Region stehen außerdem die Herkunft – Dateiname oder Region, Koordinate, Entfernung, Szenario, Jahr und Quelle – das Datum des Einlesens und der Lizenzvermerk der Daten.
 

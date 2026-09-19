@@ -266,7 +266,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Die Zuordnung der drei Strahlungsspalten:
         /// <c>Global = B + D</c>, <c>Diffus = D</c>, <c>Direkt = B</c> (noch horizontal).
-        /// <c>Humidity</c> und <c>WindSpeed</c> bleiben 0 — RF und WG sind verworfen.
+        /// <c>WindSpeed</c> bleibt 0 — WG ist verworfen.
         /// </summary>
         [Fact]
         public void Die_Strahlungsspalten_werden_benannt_zugeordnet()
@@ -281,23 +281,67 @@ namespace EPOS.Kern.Tests
             Assert.Equal(280.0, s[0].GlobalIrradiance);
             Assert.Equal(200.0, s[0].DirectIrradiance);
             Assert.Equal(80.0, s[0].DiffuseIrradiance);
-            Assert.Equal(0.0, s[0].Humidity);
             Assert.Equal(0.0, s[0].WindSpeed);
         }
 
         /// <summary>
-        /// <b>Die neun verworfenen Größen stehen BENANNT im Kopfergebnis</b> — Entscheid
+        /// <b>Die drei Größen der Gebäudesimulation</b> (Schemaschritt 95, Auftrag KL-3):
+        /// <c>A</c> → Gegenstrahlung, <c>RF</c> → Luftfeuchte, <c>N</c> → Bedeckungsgrad.
+        /// Die Prüfzeile führt <c>N = 4</c>, <c>RF = 80</c>, <c>A = 260</c> — jede Zahl
+        /// steht an einer anderen Stelle, eine Vertauschung fällt deshalb auf.
+        /// </summary>
+        [Fact]
+        public void Gegenstrahlung_Feuchte_und_Bedeckung_werden_uebernommen()
+        {
+            List<string> z = Kopf(34);
+            z.Add(Zeile(1, 1, 1, 3.5, 200, 80));
+
+            List<TmyHourlyData> s = DwdTryLeser.Lesen(z, out _, vollesJahr: false);
+
+            Assert.Single(s);
+            Assert.Equal(260.0, s[0].Gegenstrahlung);
+            Assert.Equal(80.0, s[0].Humidity);
+            Assert.Equal(4.0, s[0].Bedeckungsgrad);
+        }
+
+        /// <summary>
+        /// <b>Die drei Größen reisen mit der Drehung MEZ → UTC</b> — sie hängen an
+        /// derselben Zeile wie Temperatur und Strahlung, also am selben Zeitpunkt. Ein
+        /// getrenntes Einsortieren wäre eine zweite Zeitbasis.
+        /// </summary>
+        [Fact]
+        public void Die_drei_Groessen_folgen_der_Drehung_der_Zeile()
+        {
+            List<TmyHourlyData> utc = DwdTryLeser.Lesen(Jahr(), out _);
+
+            Assert.Equal(8760, utc.Count);
+            foreach (TmyHourlyData s in utc)
+            {
+                Assert.Equal(260.0, s.Gegenstrahlung);
+                Assert.Equal(80.0, s.Humidity);
+                Assert.Equal(4.0, s.Bedeckungsgrad);
+            }
+        }
+
+        /// <summary>
+        /// <b>Die sechs verworfenen Größen stehen BENANNT im Kopfergebnis</b> — Entscheid
         /// des Anwenders: nur vorhandene Spalten füllen, aber nie still übergehen.
+        ///
+        /// <para><b>Drei sind mit Schemaschritt 95 herausgefallen</b> (Auftrag KL-3):
+        /// <c>N</c>, <c>RF</c> und <c>A</c> werden gespeichert und stehen deshalb NICHT
+        /// mehr auf der Liste. <c>WG</c> steht weiter darauf — keine Spalte ohne
+        /// Leser.</para>
         /// </summary>
         [Fact]
         public void Die_verworfenen_Groessen_sind_benannt()
         {
             DwdTryLeser.Lesen(Jahr(), out TryKopf kopf);
 
-            Assert.Equal(new[] { "p", "WR", "WG", "N", "x", "RF", "A", "E", "IL" },
+            Assert.Equal(new[] { "p", "WR", "WG", "x", "E", "IL" },
                          kopf.Verworfen.ToArray());
             Assert.Contains("WR", kopf.VerworfenText);
             Assert.Contains("IL", kopf.VerworfenText);
+            Assert.DoesNotContain("RF", kopf.VerworfenText);
         }
 
         // =====================================================================

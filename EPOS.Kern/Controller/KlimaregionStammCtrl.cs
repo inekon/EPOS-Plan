@@ -185,21 +185,53 @@ namespace WindowsFormsApplication1
 
         // Legt eine neue Klimaregion in der STAMM-Tabelle an (Import im Admin-Dialog).
         // ID_Klimaregion ist AutoWert; ReadOnly wird mit false gesetzt (Feld ist NOT NULL).
+        //
+        // DIESE Ueberladung bleibt fuer jeden Aufrufer gueltig, der die Herkunft nicht
+        // kennt: Sie traegt Quelle und Importdatum als NULL ein - und NULL heisst dort
+        // "Altbestand" (Schemaschritt 95).
         public bool Add(string szName, double Longitude, double Latitude, string Details, DbVorgang v)
         {
-            string sql = "INSERT INTO " + TAB_REGION_STAMM + " (Name, Longitude, Latitude, Details, ReadOnly) VALUES (?, ?, ?, ?, ?)";
+            return Add(szName, Longitude, Latitude, Details, null, null, v);
+        }
+
+        /// <summary>
+        /// Legt eine neue Klimaregion im STAMM an und vermerkt, WOHER ihre Reihe stammt
+        /// (Schemaschritt 95, Auftrag KL-3).
+        /// </summary>
+        /// <param name="quelle">Sprachneutraler Schlüssel:
+        /// <see cref="DbWerte.KLIMA_QUELLE_PVGIS"/>,
+        /// <see cref="DbWerte.KLIMA_QUELLE_TRY_DATEI"/> oder
+        /// <see cref="DbWerte.KLIMA_QUELLE_TRY_REGIONAL"/>. Leer oder <c>null</c>
+        /// schreibt NULL — <b>nie</b> einen Anzeigetext.</param>
+        /// <param name="importdatum">Der Tag des Imports als ISO-Text
+        /// <c>yyyy-MM-dd</c>; leer oder <c>null</c> schreibt NULL.</param>
+        public bool Add(string szName, double Longitude, double Latitude, string Details,
+                        string quelle, string importdatum, DbVorgang v)
+        {
+            string sql = "INSERT INTO " + TAB_REGION_STAMM + " (Name, Longitude, Latitude, Details, ReadOnly, " +
+                         SchemaKatalog.SPALTE_KR_QUELLE + ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM +
+                         ") VALUES (?, ?, ?, ?, ?, ?, ?)";
             DbParam[] ps = {
                 new DbParam("?", string.IsNullOrEmpty(szName) ? (object)DBNull.Value : szName),
                 new DbParam("?", Longitude),
                 new DbParam("?", Latitude),
                 new DbParam("?", string.IsNullOrEmpty(Details) ? (object)DBNull.Value : Details),
-                new DbParam("?", false)
+                new DbParam("?", false),
+                Text(quelle),
+                Text(importdatum)
             };
             // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
             // Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
             int neueId = v.EinfuegenUndId(sql, ps);
             if (neueId > 0) m_ID_Klimaregion = neueId;
             return true;
+        }
+
+        /// <summary>Ein Textparameter, der bei leerem Wert NULL bindet — nie eine leere
+        /// Zeichenfolge: NULL ist hier die Aussage "nicht bekannt".</summary>
+        private static DbParam Text(string wert)
+        {
+            return new DbParam("?", string.IsNullOrWhiteSpace(wert) ? (object)DBNull.Value : wert.Trim());
         }
 
         public bool Update()
@@ -359,15 +391,22 @@ namespace WindowsFormsApplication1
             // 3. Region in Projekt-Tabelle anlegen (ID ist AutoWert), neue Region-ID holen.
             //    ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
             //    Verbindung des Vorgangs (frueher SELECT @@IDENTITY auf conn/trans).
+            //    Quelle und Importdatum wandern MIT (Schemaschritt 95, Auftrag KL-3):
+            //    Eine Spalte nur auf der Katalogseite waere hier ein Datenverlust - das
+            //    Projekt wuesste dann nicht mehr, woher seine Reihe stammt.
             DbParam[] psRegion = {
                 new DbParam("@idProj", idProjekt),
                 new DbParam("@bez", szName),
                 Val("@lon", reg["Longitude"]),
                 Val("@lat", reg["Latitude"]),
-                Val("@det", reg["Details"])
+                Val("@det", reg["Details"]),
+                Val("@quelle", ColOrNull(reg, SchemaKatalog.SPALTE_KR_QUELLE)),
+                Val("@import", ColOrNull(reg, SchemaKatalog.SPALTE_KR_IMPORTDATUM))
             };
             int neueRegionId = v.EinfuegenUndId(
-                "INSERT INTO " + TAB_REGION_PROJEKT + " (ID_Projekt, Bezeichner, Longitude, Latitude, Details) VALUES (?, ?, ?, ?, ?)",
+                "INSERT INTO " + TAB_REGION_PROJEKT + " (ID_Projekt, Bezeichner, Longitude, Latitude, Details, " +
+                SchemaKatalog.SPALTE_KR_QUELLE + ", " + SchemaKatalog.SPALTE_KR_IMPORTDATUM +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?)",
                 psRegion);
 
             // 4. Klimadaten kopieren (FK ID_Klimaregion in STAMM -> neue Projekt-Region-ID).
@@ -412,7 +451,13 @@ namespace WindowsFormsApplication1
                     object m = v.Skalar("SELECT MAX(ID) FROM " + TAB_SOLAR_PROJEKT);
                     nextId = ((m != null && m != DBNull.Value) ? Convert.ToInt32(m) : 0) + 1;
                 }
-                string ins = "INSERT INTO " + TAB_SOLAR_PROJEKT + " (ID, ID_Projekt, ID_Klimaregion, Temperatur, Sol_Nord, Sol_Ost, Sol_Sued, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+                // Schemaschritt 95 (Auftrag KL-3): Die drei Groessen der
+                // Gebaeudesimulation wandern mit. ColOrNull haelt den Weg tolerant -
+                // eine noch nicht migrierte Quelle liefert dann NULL statt zu werfen.
+                string ins = "INSERT INTO " + TAB_SOLAR_PROJEKT + " (ID, ID_Projekt, ID_Klimaregion, Temperatur, Sol_Nord, Sol_Ost, Sol_Sued, Sol_West, Globalstrahlung, Direktstrahlung, Diffusstrahlung, Sonnenwinkel, " +
+                             SchemaKatalog.SPALTE_SOLAR_GEGENSTRAHLUNG + ", " +
+                             SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE + ", " +
+                             SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD + ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
                 foreach (DataRow r in dtSolar.Rows)
                 {
                     {
@@ -429,6 +474,9 @@ namespace WindowsFormsApplication1
                         p.Add(Val("@dir", ColOrNull(r, "Direktstrahlung")));
                         p.Add(Val("@dif", ColOrNull(r, "Diffusstrahlung")));
                         p.Add(Val("@sw2", ColOrNull(r, "Sonnenwinkel")));
+                        p.Add(Val("@geg", ColOrNull(r, SchemaKatalog.SPALTE_SOLAR_GEGENSTRAHLUNG)));
+                        p.Add(Val("@feu", ColOrNull(r, SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE)));
+                        p.Add(Val("@bed", ColOrNull(r, SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD)));
                         v.Ausfuehren(ins, p.ToArray());
                     }
                 }

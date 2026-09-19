@@ -373,5 +373,170 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Somm", TryPaketLeser.Kuerzel(TrySzenario.Sommerwarm));
             Assert.Equal("Wint", TryPaketLeser.Kuerzel(TrySzenario.Winterkalt));
         }
+
+        // =====================================================================
+        //  4 — Die REGIONSVORSCHAU (Auftrag KL-3)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Vorschau nennt DIESELBE Region wie der Import</b> — beide gehen über
+        /// dieselbe Regionswahl. Wäre es eine zweite, könnte die Vorschau eine andere
+        /// Region ankündigen als der Lauf danach nimmt.
+        /// </summary>
+        [Theory]
+        [InlineData(8.6, 53.5, 1)]
+        [InlineData(7.1, 50.8, 7)]
+        [InlineData(11.6, 48.2, 13)]
+        public void Die_Vorschau_nennt_dieselbe_Region_wie_der_Import(double lon, double lat, int nummer)
+        {
+            using (var ms = new MemoryStream(Paket()))
+            {
+                TryRegionVorschau v = TryPaketLeser.RegionErmitteln(ms, lon, lat, 2015);
+                Assert.Equal(nummer, v.Region.Nummer);
+            }
+
+            using (var ms = new MemoryStream(Paket()))
+            {
+                TryPaketErgebnis erg = TryPaketLeser.AusStrom(ms, lon, lat, 2015, TrySzenario.MittleresJahr);
+                Assert.Equal(nummer, erg.Region.Nummer);
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Vorschau führt die Ausführungen der Region</b> — beide Bezugsjahre mal
+        /// drei Szenarien, geordnet nach Jahr und Szenario.
+        /// </summary>
+        [Fact]
+        public void Die_Vorschau_nennt_Jahr_und_Szenario_der_Region()
+        {
+            using (var ms = new MemoryStream(Paket()))
+            {
+                TryRegionVorschau v = TryPaketLeser.RegionErmitteln(ms, 8.6, 53.5, 2015);
+
+                Assert.Equal(6, v.Ausfuehrungen.Count);          // 2 Jahre x 3 Szenarien
+                Assert.Equal(2015, v.Ausfuehrungen[0].Jahr);
+                Assert.Equal(TrySzenario.MittleresJahr, v.Ausfuehrungen[0].Szenario);
+                Assert.Equal(2045, v.Ausfuehrungen[5].Jahr);
+                Assert.Equal(TrySzenario.Winterkalt, v.Ausfuehrungen[5].Szenario);
+            }
+        }
+
+        /// <summary>
+        /// <b>Der Nachweis, dass die Vorschau KEIN Eintragsbyte liest.</b> Gemessen wird
+        /// am Prüfstand: Die Vorschau holt allein das Zentralverzeichnis am Dateiende,
+        /// der Import zusätzlich den Eintrag. Die Vorschau muss deshalb WENIGER Bytes
+        /// übertragen als der volle Lauf — und deutlich weniger, als eine Stundenreihe
+        /// gepackt gross ist.
+        /// </summary>
+        [Fact]
+        public async Task Die_Vorschau_liest_kein_Eintragsbyte()
+        {
+            const int FUELLUNG = 8 * 1024 * 1024;
+            byte[] paket = Paket(FUELLUNG);
+
+            var zaehlerVorschau = new Bereichszaehler(paket);
+            TryRegionVorschau v = await TryPaketLeser.RegionErmittelnAusNetzAsync(
+                new INetzbereich(zaehlerVorschau.Holen), "https://beispiel.invalid/data.zip",
+                8.6, 53.5, 2015);
+
+            var zaehlerLauf = new Bereichszaehler(paket);
+            TryPaketErgebnis erg = await TryPaketLeser.LesenAusNetzAsync(
+                new INetzbereich(zaehlerLauf.Holen), "https://beispiel.invalid/data.zip",
+                8.6, 53.5, 2015, TrySzenario.MittleresJahr);
+
+            Assert.Equal(1, v.Region.Nummer);
+            Assert.Equal(1, erg.Region.Nummer);
+
+            Assert.True(v.UebertrageneBytes > 0);
+            Assert.True(v.Abrufe < erg.Abrufe,
+                "Vorschau " + v.Abrufe.ToString(CultureInfo.InvariantCulture) +
+                " Abrufe, Lauf " + erg.Abrufe.ToString(CultureInfo.InvariantCulture) + ".");
+            Assert.True(v.UebertrageneBytes < erg.UebertrageneBytes,
+                "Vorschau " + v.UebertrageneBytes.ToString(CultureInfo.InvariantCulture) +
+                " Byte, Lauf " + erg.UebertrageneBytes.ToString(CultureInfo.InvariantCulture) + ".");
+
+            Assert.Equal(zaehlerVorschau.Abrufe, (int)v.Abrufe);
+            Assert.Equal(zaehlerVorschau.Bytes, v.UebertrageneBytes);
+        }
+
+        /// <summary>
+        /// Die Vorschau lehnt genauso BENANNT ab wie der Import: jenseits der
+        /// 300-km-Grenze und bei einem Bezugsjahr, das das Paket nicht führt.
+        /// </summary>
+        [Fact]
+        public void Die_Vorschau_lehnt_dieselben_Faelle_benannt_ab()
+        {
+            using (var ms = new MemoryStream(Paket()))
+            {
+                var ex = Assert.Throws<InvalidOperationException>(
+                    () => TryPaketLeser.RegionErmitteln(ms, -3.7, 40.4, 2015));
+                Assert.Contains("300", ex.Message);
+            }
+
+            using (var ms = new MemoryStream(Paket()))
+            {
+                var ex = Assert.Throws<InvalidOperationException>(
+                    () => TryPaketLeser.RegionErmitteln(ms, 8.6, 53.5, 2099));
+                Assert.Contains("2099", ex.Message);
+            }
+        }
+
+        /// <summary>Die Vorschau aus einer LOKALEN <c>data.zip</c> — ohne Netz, ohne Abrufe.</summary>
+        [Fact]
+        public void Die_Vorschau_laeuft_auch_aus_einer_lokalen_Paketdatei()
+        {
+            string pfad = Path.Combine(Path.GetTempPath(),
+                "epos_try_vorschau_" + Guid.NewGuid().ToString("N") + ".zip");
+            try
+            {
+                File.WriteAllBytes(pfad, Paket());
+
+                TryRegionVorschau v = TryPaketLeser.RegionErmittelnAusDatei(pfad, 11.6, 48.2, 2015);
+
+                Assert.Equal(13, v.Region.Nummer);
+                Assert.Equal(0, v.Abrufe);
+                Assert.Equal(0, v.UebertrageneBytes);
+            }
+            finally
+            {
+                try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+            }
+        }
+
+        // =====================================================================
+        //  5 — Die Namen der 15 Repräsentanzstationen (Auftrag KL-3)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Region wird mit NAMEN genannt.</b> „Region 14" sagt einem Anwender
+        /// nichts, „Region 14 Stötten" schon. Die ZUORDNUNG bleibt der nächste
+        /// Stationsmittelpunkt aus dem Paket — die Namen sind reine Anzeige.
+        /// </summary>
+        [Theory]
+        [InlineData(1, "Bremerhaven")]
+        [InlineData(7, "Kassel")]
+        [InlineData(13, "Mühldorf/Inn")]
+        [InlineData(14, "Stötten")]
+        [InlineData(15, "Garmisch-Partenkirchen")]
+        public void Jede_Regionsnummer_traegt_ihren_Stationsnamen(int nummer, string name)
+        {
+            Assert.Equal(15, TryRegionsnamen.Namen.Count);
+            Assert.Equal(name, TryRegionsnamen.Zu(nummer));
+            Assert.Equal(nummer.ToString(CultureInfo.CurrentCulture) + " " + name,
+                         new TryRegion { Nummer = nummer }.Bezeichnung);
+        }
+
+        /// <summary>Eine Nummer außerhalb 1…15 bleibt ohne Namen — und die Bezeichnung
+        /// bei der blossen Nummer, statt zu werfen.</summary>
+        [Theory]
+        [InlineData(0)]
+        [InlineData(16)]
+        [InlineData(-3)]
+        public void Eine_unbekannte_Regionsnummer_bleibt_ohne_Namen(int nummer)
+        {
+            Assert.Equal("", TryRegionsnamen.Zu(nummer));
+            Assert.Equal(nummer.ToString(CultureInfo.CurrentCulture),
+                         new TryRegion { Nummer = nummer }.Bezeichnung);
+        }
     }
 }

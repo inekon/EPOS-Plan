@@ -346,6 +346,13 @@ namespace EPOS.Kern.Tests
                          in HilfsstromBemessungVorlage.Anweisungen)
                     DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
 
+                // Schritt 95 (Anwenderentscheid 19.09.2026): die drei Klimagroessen an
+                // Tab_Solar(_STAMM) und Quelle/Importdatum an Tab_Klimaregion(_STAMM).
+                // Wie in der Migration ueber ADD COLUMN, aus DERSELBEN Quelle; kein DML -
+                // alle zehn Spalten bleiben NULL.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt95_Klimaspalten)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

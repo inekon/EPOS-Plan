@@ -33,6 +33,103 @@ namespace WindowsFormsApplication1
         /// <summary>Koordinate als Text für den Herkunftsvermerk, z. B. „53,5591 / 8,5872".</summary>
         public string Koordinatentext => string.Format(CultureInfo.CurrentCulture,
             "{0:F4} / {1:F4}", Latitude, Longitude);
+
+        /// <summary>
+        /// Der Name der Repräsentanzstation dieser Region (z. B. „Stötten");
+        /// <c>""</c>, wenn die Nummer außerhalb 1…15 liegt.
+        /// </summary>
+        public string Name => TryRegionsnamen.Zu(Nummer);
+
+        /// <summary>
+        /// Nummer UND Stationsname, z. B. „14 Stötten" — die Form, in der Vorschau,
+        /// Meldung und Herkunftsvermerk die Region nennen. Ohne bekannten Namen bleibt
+        /// es bei der Nummer.
+        /// </summary>
+        public string Bezeichnung
+        {
+            get
+            {
+                string nummer = Nummer.ToString(CultureInfo.CurrentCulture);
+                string name = Name;
+                return name.Length == 0 ? nummer : nummer + " " + name;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Die NAMEN der 15 TRY-Repräsentanzstationen — Region 1 ist Bremerhaven,
+    /// Region 15 Garmisch-Partenkirchen.
+    ///
+    /// <para><b>Nur Anzeige.</b> Die ZUORDNUNG einer Koordinate zu einer Region trifft
+    /// weiterhin allein das Paket: Gewählt wird der nächste Stationsmittelpunkt aus dem
+    /// Zentralverzeichnis (<see cref="TryPaketLeser.AusStrom"/>). Diese Liste sagt nur,
+    /// wie die gewählte Region heißt — „Region 14" allein sagt einem Anwender nichts,
+    /// „Region 14 Stötten" schon.</para>
+    ///
+    /// <para><b>Ortsnamen und keine Ressourcentexte:</b> Sie heißen in jeder Sprache
+    /// gleich und werden deshalb nicht übersetzt — dieselbe Haltung wie bei den
+    /// Klimaregionsnamen des Katalogs.</para>
+    /// </summary>
+    public static class TryRegionsnamen
+    {
+        /// <summary>Die Namen in Regionsreihenfolge; Index 0 ist Region 1.</summary>
+        public static readonly IReadOnlyList<string> Namen = new[]
+        {
+            "Bremerhaven",
+            "Rostock-Warnemünde",
+            "Hamburg-Fuhlsbüttel",
+            "Potsdam",
+            "Essen",
+            "Bad Marienberg",
+            "Kassel",
+            "Braunlage",
+            "Chemnitz",
+            "Hof",
+            "Fichtelberg",
+            "Mannheim",
+            "Mühldorf/Inn",
+            "Stötten",
+            "Garmisch-Partenkirchen"
+        };
+
+        /// <summary>Der Name zu einer Regionsnummer; <c>""</c> außerhalb 1…15.</summary>
+        public static string Zu(int nummer)
+        {
+            return nummer >= 1 && nummer <= Namen.Count ? Namen[nummer - 1] : "";
+        }
+    }
+
+    /// <summary>
+    /// Eine Ausführung, die das Paket für eine Region führt: Bezugsjahr und Szenario
+    /// (Auftrag KL-3, Regionsvorschau).
+    /// </summary>
+    public sealed class TryAusfuehrung
+    {
+        /// <summary>Das Bezugsjahr (2015 oder 2045).</summary>
+        public int Jahr;
+
+        /// <summary>Das Szenario — abgeleitet aus dem Kürzel des Dateinamens.</summary>
+        public TrySzenario Szenario;
+    }
+
+    /// <summary>
+    /// Was die REGIONSVORSCHAU zurückgibt (Auftrag KL-3, Anwenderentscheid 19.09.2026
+    /// Punkt b): welche Region ein Standort trifft — <b>ohne</b> dass dafür eine
+    /// Stundenreihe entpackt wird.
+    /// </summary>
+    public sealed class TryRegionVorschau
+    {
+        /// <summary>Die getroffene Region samt Stationskoordinate und Entfernung.</summary>
+        public TryRegion Region = new TryRegion();
+
+        /// <summary>Was das Paket für diese Region führt — Jahr und Szenario.</summary>
+        public IReadOnlyList<TryAusfuehrung> Ausfuehrungen = new List<TryAusfuehrung>();
+
+        /// <summary>Zahl der Bereichsabrufe (0 bei einer lokalen Datei).</summary>
+        public long Abrufe;
+
+        /// <summary>Übertragene Bytes (0 bei einer lokalen Datei).</summary>
+        public long UebertrageneBytes;
     }
 
     /// <summary>Was ein Lauf des <see cref="TryPaketLeser"/> zurückgibt.</summary>
@@ -152,6 +249,112 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =================================================================
+        //  Das Zentralverzeichnis - EINE Durchsicht, zwei Aufrufer
+        // =================================================================
+
+        /// <summary>
+        /// Ein Eintrag des Pakets, wie ihn das ZENTRALVERZEICHNIS nennt: Region,
+        /// Stationskoordinate, Bezugsjahr, Szenariokürzel — und der Zugang zum Eintrag,
+        /// der dabei <b>nicht</b> entpackt wird.
+        /// </summary>
+        private sealed class Paketeintrag
+        {
+            public int Nummer;
+            public string Ziffern = "";
+            public double Latitude;
+            public double Longitude;
+            public int Jahr;
+            public string Kuerzel = "";
+            public ZipArchiveEntry Eintrag;
+        }
+
+        /// <summary>
+        /// Liest das Zentralverzeichnis und deutet jeden Namen, der zum Muster passt.
+        /// <b>Kein Byte eines Eintrags wird dabei gelesen</b> — <see cref="ZipArchive"/>
+        /// braucht für <c>Entries</c> nur das Verzeichnis am Dateiende.
+        /// </summary>
+        private static List<Paketeintrag> Zentralverzeichnis(ZipArchive archiv)
+        {
+            var liste = new List<Paketeintrag>();
+
+            foreach (ZipArchiveEntry eintrag in archiv.Entries)
+            {
+                Match m = EINTRAG.Match(eintrag.FullName.Replace('\\', '/'));
+                if (!m.Success) continue;
+
+                string ziffern = m.Groups["ziffern"].Value;
+
+                liste.Add(new Paketeintrag
+                {
+                    Nummer = int.Parse(m.Groups["n"].Value, CultureInfo.InvariantCulture),
+                    Ziffern = ziffern,
+                    Latitude = double.Parse(ziffern.Substring(0, 6), CultureInfo.InvariantCulture) / 10000.0,
+                    Longitude = double.Parse(ziffern.Substring(6, 6), CultureInfo.InvariantCulture) / 10000.0,
+                    Jahr = int.Parse(m.Groups["jahr"].Value, CultureInfo.InvariantCulture),
+                    Kuerzel = m.Groups["sz"].Value,
+                    Eintrag = eintrag
+                });
+            }
+
+            return liste;
+        }
+
+        /// <summary>
+        /// Wählt die NÄCHSTE Region zu einem Standort — <b>die eine Regionswahl</b>, die
+        /// der Import und die Vorschau gemeinsam benutzen.
+        ///
+        /// <para>Gemessen wird über die Einträge des gewünschten Bezugsjahres; gewinnt
+        /// die kleinste Großkreisentfernung. Findet sich für das Jahr keine Region oder
+        /// liegt auch die nächste weiter als <see cref="MAX_ENTFERNUNG_KM"/> weg, wird
+        /// das BENANNT abgelehnt — nie eine Region „irgendwo in der Nähe".</para>
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Kein Eintrag für das Bezugsjahr,
+        /// oder der nächste Regionsmittelpunkt liegt zu weit weg.</exception>
+        private static TryRegion Regionswahl(List<Paketeintrag> eintraege, double lon, double lat, int jahr)
+        {
+            TryRegion beste = null;
+
+            foreach (Paketeintrag e in eintraege)
+            {
+                if (e.Jahr != jahr) continue;
+
+                double km = EntfernungKm(lat, lon, e.Latitude, e.Longitude);
+                if (beste != null && km >= beste.EntfernungKm) continue;
+
+                beste = new TryRegion
+                {
+                    Nummer = e.Nummer,
+                    Latitude = e.Latitude,
+                    Longitude = e.Longitude,
+                    EntfernungKm = km,
+                    Ziffern = e.Ziffern
+                };
+            }
+
+            if (beste == null)
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KLIMA_TRY_KEINE_REGION,
+                    jahr.ToString(CultureInfo.CurrentCulture)));
+
+            if (beste.EntfernungKm > MAX_ENTFERNUNG_KM)
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KLIMA_TRY_AUSSERHALB,
+                    beste.EntfernungKm.ToString("F0", CultureInfo.CurrentCulture),
+                    MAX_ENTFERNUNG_KM.ToString("F0", CultureInfo.CurrentCulture)));
+
+            return beste;
+        }
+
+        /// <summary>Das Szenario zu einem Namenskürzel; <c>null</c>, wenn es keines ist.</summary>
+        private static TrySzenario? Szenario(string kuerzel)
+        {
+            if (string.Equals(kuerzel, "Jahr", StringComparison.OrdinalIgnoreCase)) return TrySzenario.MittleresJahr;
+            if (string.Equals(kuerzel, "Somm", StringComparison.OrdinalIgnoreCase)) return TrySzenario.Sommerwarm;
+            if (string.Equals(kuerzel, "Wint", StringComparison.OrdinalIgnoreCase)) return TrySzenario.Winterkalt;
+            return null;
+        }
+
         /// <summary>
         /// Der gemeinsame Weg: Zentralverzeichnis lesen, Region wählen, EINEN Eintrag
         /// entpacken, Zeilen an <see cref="DwdTryLeser.Lesen"/>.
@@ -165,54 +368,19 @@ namespace WindowsFormsApplication1
 
             using (var archiv = new ZipArchive(strom, ZipArchiveMode.Read, leaveOpen: true))
             {
-                TryRegion beste = null;
-                var kandidaten = new Dictionary<int, ZipArchiveEntry>();
+                List<Paketeintrag> eintraege = Zentralverzeichnis(archiv);
+                TryRegion beste = Regionswahl(eintraege, lon, lat, jahr);
 
-                foreach (ZipArchiveEntry eintrag in archiv.Entries)
+                ZipArchiveEntry datei = null;
+                foreach (Paketeintrag e in eintraege)
                 {
-                    Match m = EINTRAG.Match(eintrag.FullName.Replace('\\', '/'));
-                    if (!m.Success) continue;
-                    if (m.Groups["jahr"].Value != jahr.ToString(CultureInfo.InvariantCulture)) continue;
-
-                    string ziffern = m.Groups["ziffern"].Value;
-                    int nummer = int.Parse(m.Groups["n"].Value, CultureInfo.InvariantCulture);
-
-                    double stationLat = double.Parse(ziffern.Substring(0, 6),
-                        CultureInfo.InvariantCulture) / 10000.0;
-                    double stationLon = double.Parse(ziffern.Substring(6, 6),
-                        CultureInfo.InvariantCulture) / 10000.0;
-
-                    double km = EntfernungKm(lat, lon, stationLat, stationLon);
-
-                    if (beste == null || km < beste.EntfernungKm)
-                    {
-                        beste = new TryRegion
-                        {
-                            Nummer = nummer,
-                            Latitude = stationLat,
-                            Longitude = stationLon,
-                            EntfernungKm = km,
-                            Ziffern = ziffern
-                        };
-                    }
-
-                    if (m.Groups["sz"].Value.Equals(Kuerzel(szenario), StringComparison.OrdinalIgnoreCase)
-                        && !kandidaten.ContainsKey(nummer))
-                        kandidaten[nummer] = eintrag;
+                    if (e.Nummer != beste.Nummer || e.Jahr != jahr) continue;
+                    if (!e.Kuerzel.Equals(Kuerzel(szenario), StringComparison.OrdinalIgnoreCase)) continue;
+                    datei = e.Eintrag;
+                    break;
                 }
 
-                if (beste == null)
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.KLIMA_TRY_KEINE_REGION,
-                        jahr.ToString(CultureInfo.CurrentCulture)));
-
-                if (beste.EntfernungKm > MAX_ENTFERNUNG_KM)
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.KLIMA_TRY_AUSSERHALB,
-                        beste.EntfernungKm.ToString("F0", CultureInfo.CurrentCulture),
-                        MAX_ENTFERNUNG_KM.ToString("F0", CultureInfo.CurrentCulture)));
-
-                if (!kandidaten.TryGetValue(beste.Nummer, out ZipArchiveEntry datei))
+                if (datei == null)
                     throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.KLIMA_TRY_KEIN_SZENARIO,
                         Kuerzel(szenario),
@@ -225,6 +393,87 @@ namespace WindowsFormsApplication1
             }
 
             return erg;
+        }
+
+        // =================================================================
+        //  Die REGIONSVORSCHAU (Auftrag KL-3, Anwenderentscheid 19.09.2026 b)
+        // =================================================================
+
+        /// <summary>
+        /// Sagt, WELCHE Region ein Standort trifft — <b>ohne einen Eintrag zu
+        /// entpacken</b>. Gelesen wird allein das Zentralverzeichnis; die rund 155 KB
+        /// der Stundenreihe bleiben liegen, bis der Anwender wirklich einliest.
+        ///
+        /// <para><b>Dieselbe Regionswahl wie der Import</b>
+        /// (<see cref="Regionswahl"/>) — eine Funktion, zwei Aufrufer. Wäre es eine
+        /// zweite, könnte die Vorschau eine andere Region nennen als der Lauf danach
+        /// nimmt.</para>
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Kein Eintrag für das Bezugsjahr,
+        /// oder der nächste Regionsmittelpunkt liegt weiter als
+        /// <see cref="MAX_ENTFERNUNG_KM"/> weg.</exception>
+        public static TryRegionVorschau RegionErmitteln(Stream strom, double lon, double lat, int jahr)
+        {
+            if (strom == null) throw new ArgumentNullException(nameof(strom));
+
+            var vorschau = new TryRegionVorschau();
+
+            using (var archiv = new ZipArchive(strom, ZipArchiveMode.Read, leaveOpen: true))
+            {
+                List<Paketeintrag> eintraege = Zentralverzeichnis(archiv);
+                TryRegion beste = Regionswahl(eintraege, lon, lat, jahr);
+
+                var ausfuehrungen = new List<TryAusfuehrung>();
+                foreach (Paketeintrag e in eintraege)
+                {
+                    if (e.Nummer != beste.Nummer) continue;
+                    TrySzenario? sz = Szenario(e.Kuerzel);
+                    if (!sz.HasValue) continue;
+                    ausfuehrungen.Add(new TryAusfuehrung { Jahr = e.Jahr, Szenario = sz.Value });
+                }
+
+                ausfuehrungen.Sort((a, b) => a.Jahr != b.Jahr
+                    ? a.Jahr.CompareTo(b.Jahr)
+                    : ((int)a.Szenario).CompareTo((int)b.Szenario));
+
+                vorschau.Region = beste;
+                vorschau.Ausfuehrungen = ausfuehrungen;
+            }
+
+            return vorschau;
+        }
+
+        /// <summary>Die Regionsvorschau aus einer LOKALEN <c>data.zip</c>.</summary>
+        public static TryRegionVorschau RegionErmittelnAusDatei(string zipPfad, double lon, double lat, int jahr)
+        {
+            if (string.IsNullOrWhiteSpace(zipPfad) || !File.Exists(zipPfad))
+                throw new FileNotFoundException(zipPfad ?? "");
+
+            using (FileStream fs = File.OpenRead(zipPfad))
+            {
+                return RegionErmitteln(fs, lon, lat, jahr);
+            }
+        }
+
+        /// <summary>
+        /// Die Regionsvorschau über BEREICHSABRUFE — einige hundert Kilobyte
+        /// Zentralverzeichnis statt 892 MB.
+        /// </summary>
+        public static async Task<TryRegionVorschau> RegionErmittelnAusNetzAsync(
+            INetzbereich bereich, string adresse, double lon, double lat, int jahr,
+            CancellationToken abbruch = default)
+        {
+            if (bereich == null) throw new ArgumentNullException(nameof(bereich));
+            if (string.IsNullOrWhiteSpace(adresse)) adresse = ADRESSE_VORGABE;
+
+            using (BereichStream strom = await BereichStream.OeffnenAsync(
+                       bereich, adresse, abbruch).ConfigureAwait(false))
+            {
+                TryRegionVorschau v = RegionErmitteln(strom, lon, lat, jahr);
+                v.Abrufe = strom.Abrufe;
+                v.UebertrageneBytes = strom.UebertrageneBytes;
+                return v;
+            }
         }
 
         /// <summary>Die Zeilen eines Paketeintrags — entpackt, nie als Ganzes im Speicher.</summary>

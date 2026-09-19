@@ -39,6 +39,25 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("Direktstrahlung") && row["Direktstrahlung"] != DBNull.Value) item.Direktstrahlung = Convert.ToDouble(row["Direktstrahlung"]);
             if (dt.Columns.Contains("Diffusstrahlung") && row["Diffusstrahlung"] != DBNull.Value) item.Diffusstrahlung = Convert.ToDouble(row["Diffusstrahlung"]);
             if (dt.Columns.Contains("Sonnenwinkel") && row["Sonnenwinkel"] != DBNull.Value) item.Sonnenwinkel = Convert.ToDouble(row["Sonnenwinkel"]);
+
+            // Schemaschritt 95 (Auftrag KL-3). ANDERS als die Zeilen darueber: Was hier
+            // NULL ist, BLEIBT null - es wird nicht auf 0 stehen gelassen. Bei den
+            // Bestandsgroessen ist 0 der Vorgabewert des Modells und harmlos; bei diesen
+            // dreien waere 0 eine Messaussage, die niemand gemacht hat.
+            item.Gegenstrahlung = Zahl(row, dt, SchemaKatalog.SPALTE_SOLAR_GEGENSTRAHLUNG);
+            item.Luftfeuchte = Zahl(row, dt, SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE);
+            item.Bedeckungsgrad = Zahl(row, dt, SchemaKatalog.SPALTE_SOLAR_BEDECKUNGSGRAD);
+        }
+
+        /// <summary>
+        /// Eine NULLBARE Zahl aus der Zeile: <c>null</c>, wenn die Spalte fehlt (eine
+        /// noch nicht migrierte Datenbank) oder NULL führt.
+        /// </summary>
+        private static double? Zahl(DataRow row, DataTable dt, string spalte)
+        {
+            if (!dt.Columns.Contains(spalte)) return null;
+            if (row[spalte] == DBNull.Value) return null;
+            return Convert.ToDouble(row[spalte], CultureInfo.InvariantCulture);
         }
 
         public void ReadAll(string sql = "")
@@ -264,108 +283,18 @@ namespace WindowsFormsApplication1
             }
         }
 
-        public bool Insert(int ID_Klimaregion, List<SolardatenModel> list)
-        {
-            if (list == null || list.Count == 0) return true;
-
-            try
-            {
-                string sqlCount = "SELECT COUNT(*) FROM Tab_Solar";
-                object countResult = DataRepository.ExecuteScalar(sqlCount, null);
-                int count = countResult != null ? Convert.ToInt32(countResult) : 0;
-
-                int currentID = 1;
-                if (count > 0)
-                {
-                    string sqlMax = "SELECT MAX(ID) FROM Tab_Solar";
-                    object maxResult = DataRepository.ExecuteScalar(sqlMax, null);
-                    currentID = (maxResult != null ? Convert.ToInt32(maxResult) : 0) + 1;
-                }
-
-                using (DbVorgang v = DataRepository.Vorgang())
-                {
-                    // SQL-Dialekt-Audit 03.09.2026: Die Spalte heisst im Schema
-                    // Temperatur; "Außen_Temp" ist der Name der EIGENSCHAFT im Model
-                    // (siehe MapDataRowToModel, das Temperatur nach Außen_Temp liest).
-                    // Mit dem Modellnamen scheiterte der Satz an "table Tab_Solar has no
-                    // column named Außen_Temp" - unter Access ebenso, nur ruft niemand
-                    // diese Methode auf.
-                    string sqlInsert = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Temperatur) VALUES (?, ?, ?)";
-
-                    try
-                    {
-                        foreach (var item in list)
-                        {
-                            v.Ausfuehren(sqlInsert,
-                                new DbParam("@id", DbParamTyp.Integer) { Wert = currentID },
-                                new DbParam("@regId", DbParamTyp.Integer) { Wert = ID_Klimaregion },
-                                new DbParam("@temp", DbParamTyp.Double) { Wert = item.Außen_Temp });
-
-                            currentID++;
-                        }
-
-                        v.Commit();
-                        return true;
-                    }
-                    catch (Exception ex)
-                    {
-                        v.Rollback();
-                        Console.WriteLine("Fehler beim Massen-Insert in der Schleife: " + ex.Message);
-                        return false;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Allgemeiner Fehler bei Insert: " + ex.Message);
-                return false;
-            }
-        }
-
-        public bool WriteDataTable(DataTable dt, string szName, DbVorgang v)
-        {
-            if (dt == null) return false;
-
-            try
-            {
-                int nextID = 1;
-                object maxRes = v.Skalar("SELECT MAX(ID) FROM Tab_Solar");
-                nextID = (maxRes != DBNull.Value && maxRes != null ? Convert.ToInt32(maxRes) : 0) + 1;
-
-                int refID = 0;
-                // SQL-Dialekt-Audit 03.09.2026: Tab_Klimaregion fuehrt den Schluessel als
-                // ID und den Namen als Bezeichner - ID_Klimaregion/Name gibt es nur in
-                // Tab_Klimaregion_STAMM. Tab_Solar.ID_Klimaregion zeigt auf
-                // Tab_Klimaregion.ID, also ist DAS der gesuchte Wert.
-                string sqlRef = "SELECT ID FROM Tab_Klimaregion WHERE Bezeichner = ?";
-                object refRes = v.Skalar(sqlRef,
-                    new DbParam("@name", DbParamTyp.VarWChar) { Wert = szName ?? (object)DBNull.Value });
-                if (refRes != null && refRes != DBNull.Value)
-                {
-                    refID = Convert.ToInt32(refRes);
-                }
-
-                // Zeilenweises Schreiben in der Transaktion des Vorgangs
-                // Spaltenname wie im Schema (siehe Insert): Temperatur, nicht Außen_Temp.
-                string sqlInsert = "INSERT INTO Tab_Solar (ID, ID_Klimaregion, Temperatur) VALUES (?, ?, ?)";
-                foreach (DataRow row in dt.Rows)
-                {
-                    v.Ausfuehren(sqlInsert,
-                        new DbParam("@id", DbParamTyp.Integer) { Wert = nextID++ },
-                        new DbParam("@regId", DbParamTyp.Integer) { Wert = refID },
-                        // Dynamische Typprüfung für die übergebene DataTable
-                        new DbParam("@temp", DbParamTyp.Double)
-                        { Wert = row[0] != DBNull.Value ? Convert.ToDouble(row[0]) : 0.0 });
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Allgemeiner Fehler bei WriteDataTable: " + ex.Message);
-                DataRepository.FehlerMelden("Fehler beim Schreiben der Tabellendaten: " + ex.Message);
-                return false;
-            }
-        }
+        // =================================================================================
+        // ENTFALLEN mit Schemaschritt 95 (Auftrag KL-3, Umsetzungskonzept
+        // Gebaeudesimulation M4): Insert(int, List<SolardatenModel>) und
+        // WriteDataTable(DataTable, string, DbVorgang).
+        //
+        // Beide schrieben in Tab_Solar, beide nur die Spalte Temperatur - und beide
+        // hatte KEIN Aufrufer mehr (geprueft ueber den ganzen Bestand). Den Projektweg
+        // geht KlimaregionStammCtrl.CopyRegionToProjekt, den Katalogweg
+        // AccessRepository.SaveTmyData. Zwei tote Schreibwege stehen zu lassen, waehrend
+        // die Tabelle drei Spalten dazubekommt, hiesse zwei Wege zu fuehren, die die
+        // neuen Spalten nie fuellen - genau die Art von stiller Luecke, die der Schritt
+        // vermeiden soll.
+        // =================================================================================
     }
 }

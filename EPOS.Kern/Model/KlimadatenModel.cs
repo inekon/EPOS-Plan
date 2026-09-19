@@ -47,6 +47,26 @@
         public double Sonnenwinkel;
 
         // =====================================================================
+        // Die Groessen der Gebaeudesimulation (Schemaschritt 95, Auftrag KL-3)
+        // =====================================================================
+        //
+        // NULLBAR, und das ist der Punkt: NULL heisst "nicht verfuegbar", nie 0.
+        // Eine 0 waere bei allen dreien eine MESSAUSSAGE - ein Himmel ohne
+        // Gegenstrahlung, staubtrockene Luft, ein wolkenloser Tag -, und die
+        // Bestandszeilen haben nichts dergleichen gemessen: Sie standen vor
+        // Schritt 95 in der Datenbank und tragen dort NULL.
+
+        /// <summary>Atmosphaerische Gegenstrahlung [W/m2]; <c>null</c> = nicht verfuegbar.</summary>
+        public double? Gegenstrahlung;
+
+        /// <summary>Relative Luftfeuchte [%]; <c>null</c> = nicht verfuegbar.</summary>
+        public double? Luftfeuchte;
+
+        /// <summary>Bedeckungsgrad [Achtel, 0…8]; <c>null</c> = nicht verfuegbar
+        /// (jede PVGIS-Region, weil PVGIS ihn nicht liefert).</summary>
+        public double? Bedeckungsgrad;
+
+        // =====================================================================
         // Herkunft der Zeile im UTC-Raster (Befund B1, Paket A des
         // PV-Ertragsmodell-Konzepts)
         // =====================================================================

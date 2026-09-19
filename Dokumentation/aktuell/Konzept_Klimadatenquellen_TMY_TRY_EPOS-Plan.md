@@ -68,7 +68,10 @@ RW HW MM DD HH t p WR WG N x RF B D A E IL
 | `B` | Direktstrahlung **horizontal** [W/m²] | `Direktstrahlung`, nach der Umrechnung aus Abschnitt 5 |
 | `D` | Diffusstrahlung horizontal [W/m²] | `Diffusstrahlung` |
 | `B + D` | Globalstrahlung horizontal | `Globalstrahlung` |
-| `p WR WG N x RF A E IL` | Druck, Windrichtung, Windgeschwindigkeit, Bedeckung, Wasserdampfgehalt, relative Feuchte, atmosphärische Gegenstrahlung, langwellige Ausstrahlung, Qualitätsbit | **benannt verworfen** (Abschnitt 6) |
+| `A` | atmosphärische Gegenstrahlung [W/m²] | `Tab_Solar_STAMM.Gegenstrahlung` |
+| `RF` | relative Feuchte [%] | `Tab_Solar_STAMM.Luftfeuchte` |
+| `N` | Bedeckungsgrad [Achtel, 0…8] | `Tab_Solar_STAMM.Bedeckungsgrad` |
+| `p WR WG x E IL` | Druck, Windrichtung, Windgeschwindigkeit, Wasserdampfgehalt, langwellige Ausstrahlung, Qualitätsbit | **benannt verworfen** (Abschnitt 6) |
 
 Aus Stundenwerten und Sonnengeometrie entstehen anschließend — über dieselben Methoden wie
 bei PVGIS — die vier Fassadenwerte `Sol_Nord/Ost/Sued/West`, der `Sonnenwinkel` und daraus
@@ -165,16 +168,18 @@ stimmen die vier Fassadenwerte einer TRY-Region mit denen einer PVGIS-Region üb
 
 ## 6. Das benannte Verwerfen
 
-`Tab_Solar_STAMM` hat keine Spalten für Druck, Wind, Bedeckung, Feuchte, Gegenstrahlung und
-Qualitätsbit. Diese neun Größen werden **nicht still übergangen**: Sie stehen im
-Herkunftsvermerk der Region (`Tab_Klimaregion_STAMM.Details`, „nicht übernommen: p, WR, WG,
-N, x, RF, A, E, IL") und in der Meldung nach dem Import — damit niemand sie später in der
-Datenbank sucht.
+`Tab_Solar` und `Tab_Solar_STAMM` führen je Stunde `Gegenstrahlung` [W/m²], `Luftfeuchte` [%]
+und `Bedeckungsgrad` [Achtel] — die Größen, die die Gebäudesimulation nach VDI 6007 braucht.
+PVGIS füllt die ersten beiden (`IR(h)`, `RH`), TRY alle drei (`A`, `RF`, `N`); **NULL heißt
+„nicht verfügbar", nie 0.** Eine PVGIS-Region trägt deshalb keinen Bedeckungsgrad, und die
+Schätzung aus dem Diffusanteil bleibt das, was sie ist: der Rückfall bei NULL.
 
-Ein Schemaschritt, der `N` (Bedeckungsgrad), `A` (atmosphärische Gegenstrahlung) und `E`
-(langwellige Ausstrahlung) aufnimmt, ist Kandidat für die Gebäudesimulation: Sie braucht
-Bedeckungsgrad und langwelligen Austausch heute als Schätzung aus dem Diffusanteil. Wind und
-Feuchte lägen bei derselben Gelegenheit mit.
+Für Druck (`p`), Windrichtung (`WR`), Windgeschwindigkeit (`WG`), Wasserdampfgehalt (`x`),
+langwellige Ausstrahlung (`E`) und Qualitätsbit (`IL`) gibt es keine Spalte. Diese sechs Größen
+werden **nicht still übergangen**: Sie stehen im Herkunftsvermerk der Region
+(`Tab_Klimaregion_STAMM.Details`, „nicht übernommen: p, WR, WG, x, E, IL") und in der Meldung
+nach dem Import — damit niemand sie später in der Datenbank sucht. Die **Windgeschwindigkeit**
+bleibt ausdrücklich draußen: keine Spalte ohne Leser (Umsetzungskonzept Gebäudesimulation F-S3).
 
 ## 7. Regionaldaten: Auswahl, Bereichsabruf, Rückfall
 
@@ -199,6 +204,16 @@ Gebraucht werden zwei Dinge: das Zentralverzeichnis des ZIP am Dateiende und **e
   Volldownload wäre die schlechtere Überraschung.
 - **Rückfall.** Eine lokal abgelegte `data.zip` wird ohne Netz gelesen; derselbe Weg macht
   den Prüfstand netzfrei.
+- **Regionsvorschau.** „Region ermitteln" sagt **vor** dem Einlesen, welche Region der
+  Standort trifft: „Region 14 Stötten, Station 48,6600 / 9,8600, Entfernung 12 km", dazu
+  Bezugsjahre und Szenarien, die das Paket für diese Region führt. Gelesen wird dafür allein
+  das Zentralverzeichnis — **kein Eintrag wird entpackt**. Das Einlesen liest das Paket danach
+  ein zweites Mal; die Regionswahl ist dieselbe Funktion, Vorschau und Lauf können deshalb
+  nicht auseinanderlaufen. Ein Fehlschlag (kein Bereichsabruf, außerhalb der 300-km-Grenze,
+  Ort unbekannt) steht als Zeile da und sperrt nichts.
+- **Die Region wird mit Namen genannt.** Region 1 ist Bremerhaven, Region 15
+  Garmisch-Partenkirchen; die fünfzehn Namen stehen in `TryRegionsnamen` und sind reine
+  Anzeige. Die Zuordnung bleibt der nächste Stationsmittelpunkt aus dem Paket.
 
 ## 8. Lizenz und Herkunftsvermerk
 
@@ -208,6 +223,11 @@ denselben Text in der Importmeldung:
 - **TRY-Datei:** Dateiname, Importdatum, Lizenzvermerk, verworfene Größen.
 - **Regionaldaten:** Regionsnummer, Koordinate, Entfernung, Szenario, Jahr, Quelle (Adresse
   oder Dateiname), Importdatum, Lizenzvermerk, verworfene Größen.
+
+Daneben — und unabhängig vom Freitext — hält `Tab_Klimaregion(_STAMM)` die Herkunft als
+Angabe **für das Programm**: `Quelle` trägt den sprachneutralen Schlüssel `PVGIS`, `TRY_DATEI`
+oder `TRY_REGIONAL`, `Importdatum` den Tag des Imports als ISO-Text `yyyy-MM-dd`. **NULL heißt
+bei beiden Altbestand**; nachdatiert wird nichts. Beide wandern mit der Projektkopie.
 
 Der Lizenzvermerk lautet **„CC BY 4.0, RE-Lab-Projects/TRY_DE_2015_2045, Rohdaten Deutscher
 Wetterdienst"**. Die Datei aus dem DWD-Klimaberatungsmodul bezieht der Anwender selbst; sie
@@ -235,7 +255,9 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
 |---|---|
 | **E5** (Anwender, fortgeschrieben 19.09.2026) | Die Datenträger der Richtlinien bleiben abgelehnt; **DWD-TRY ist zweite Importquelle** neben PVGIS-TMY. Klimabasis einer Region ist das, was bei ihrem Import geholt wurde. |
 | **KL-Q2** | Beide TRY-Wege: die eigene Datei aus dem DWD-Klimaberatungsmodul **und** die offenen Regionaldaten. |
-| **KL-Q3** | Kein Schemaschritt. Temperatur, Global/Direkt/Diffus und die Flächenwerte werden übernommen; `p WR WG N x RF A E IL` werden benannt verworfen — Kandidat eines späteren Schemaschritts zusammen mit dem Bedeckungsgrad der Gebäudesimulation. |
+| **KL-Q3** | Temperatur, Global/Direkt/Diffus und die Flächenwerte werden übernommen; `p WR WG x E IL` werden benannt verworfen. |
+| **Anwender 19.09.2026 (e)** | „Alles Relevante für die Gebäudesimulation aufnehmen": `Gegenstrahlung`, `Luftfeuchte` und `Bedeckungsgrad` an `Tab_Solar(_STAMM)`, dazu `Quelle` und `Importdatum` an `Tab_Klimaregion(_STAMM)` — ein Schemaschritt. Windgeschwindigkeit nicht: keine Spalte ohne Leser. |
+| **Anwender 19.09.2026 (b)** | Regionsvorschau vor dem Import; der zweite Netzabruf ist angenommen. |
 | **KL-Q4** | Jahr und Szenario sind wählbar, Vorgabe 2015, mittleres Jahr. |
 | **KL-Q5** | Eigene Wiki-Seite „Programm Dokumentation/Klimadaten". |
 
@@ -264,10 +286,8 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
 
 ## 12. Offene Punkte
 
-1. **Keine Regionsanzeige vor dem Import** — welche Region der Standort trifft, sagt erst
-   die Meldung danach; eine Vorschau kostete einen zweiten Netzabruf.
-2. **Sommerstunden einer TRY-Reihe liegen beim Lesen eine Stunde früher** (Abschnitt 4).
-   Ein quellenbewusstes Lesen braucht eine Quellenkennung an der Region und damit einen
-   Schemaschritt.
-3. **`N`, `A`, `E` werden nicht gespeichert** (Abschnitt 6) — der Schemaschritt dafür gehört
-   mit dem Bedeckungsgrad der Gebäudesimulation zusammen.
+1. **Sommerstunden einer TRY-Reihe liegen beim Lesen eine Stunde früher** (Abschnitt 4). Die
+   Quellenkennung an der Region steht jetzt (`Tab_Klimaregion.Quelle`); das quellenbewusste
+   LESEN fehlt noch — kein Leser wertet sie bisher aus.
+2. **`E` (langwellige Ausstrahlung) wird nicht gespeichert** (Abschnitt 6) — sie hätte keinen
+   Leser. Sie kommt, wenn der Rechenweg sie braucht.

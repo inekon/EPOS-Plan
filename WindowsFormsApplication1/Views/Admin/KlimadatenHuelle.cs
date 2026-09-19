@@ -108,6 +108,8 @@ namespace WindowsFormsApplication1
                 ["Importieren"] = new Func<KlimaImportAuftrag, IProgress<ImportFortschritt>,
                                            Task<KlimaImportErgebnis>>(Importieren),
                 ["Abbrechen"] = new Action(() => { try { _abbruch?.Cancel(); } catch { } }),
+                ["RegionErmitteln"] = new Func<KlimaImportAuftrag,
+                                               Task<KlimaVorschauErgebnis>>(RegionErmitteln),
                 ["Loeschen"] = new Func<string, Task<bool>>(Loeschen),
                 ["Ortsvorschlaege"] = Ortsvorschlaege(),
                 ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen)
@@ -220,6 +222,28 @@ namespace WindowsFormsApplication1
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 melder,
                 marke,
+                Bereich));
+        }
+
+        // =====================================================================
+        // Die REGIONSVORSCHAU (Auftrag KL-3)
+        // =====================================================================
+
+        /// <summary>
+        /// Sagt vor dem Einlesen, welche TRY-Region der Standort trifft — über
+        /// DIESELBEN Nahtstellen wie der Import (Ortsauflösung und Bereichsabruf).
+        ///
+        /// <para><b>Auch sie läuft in <c>Task.Run</c></b>: Sie holt das
+        /// Zentralverzeichnis des Pakets über das Netz, und in einer WebView ist der
+        /// Renderfaden derselbe Faden. Eine eigene Abbruchmarke braucht sie nicht —
+        /// die Vorschau dauert einen Bruchteil des Imports.</para>
+        /// </summary>
+        private static async Task<KlimaVorschauErgebnis> RegionErmitteln(KlimaImportAuftrag auftrag)
+        {
+            return await Task.Run(() => KlimaImportAblauf.RegionErmittelnAsync(
+                auftrag,
+                ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
+                CancellationToken.None,
                 Bereich));
         }
 

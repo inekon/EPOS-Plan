@@ -2273,6 +2273,24 @@ namespace WindowsFormsApplication1
         public const string WR_HERKUNFT_HAND = "HAND";
 
         // =====================================================================
+        // Klimaregion — Herkunft der Reihe (Schemaschritt 95, Auftrag KL-3)
+        //   Persistenzwerte der Spalte Tab_Klimaregion(_STAMM).Quelle, eingefroren
+        //   (Drei-Schichten-Regel: Schlüssel in der Datenbank, Anzeigetext in
+        //   MyResource, Rechenweg im Kern).
+        //   NULL = Altbestand; eine Region, die vor Schritt 95 angelegt wurde,
+        //   sagt nicht, woher sie kommt - und wird nicht nachdatiert.
+        // =====================================================================
+
+        /// <summary>Stundenreihe aus dem PVGIS-TMY-Abruf (weltweit).</summary>
+        public const string KLIMA_QUELLE_PVGIS = "PVGIS";
+
+        /// <summary>Stundenreihe aus einer DWD-Testreferenzjahr-Datei des Anwenders.</summary>
+        public const string KLIMA_QUELLE_TRY_DATEI = "TRY_DATEI";
+
+        /// <summary>Stundenreihe aus den offenen TRY-Regionaldaten (Deutschland).</summary>
+        public const string KLIMA_QUELLE_TRY_REGIONAL = "TRY_REGIONAL";
+
+        // =====================================================================
         // Der SICHTBARE Wechselrichterweg, Stufe S2
         //   (Anwenderwunsch W6-E-3 vom 06.09.2026, Konzept Wechselrichter 7.1)
         //   Persistenzwerte der Spalte Tab_Energieanlagen.PV_Wechselrichterweg,

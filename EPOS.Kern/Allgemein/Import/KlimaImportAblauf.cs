@@ -56,6 +56,28 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Was die REGIONSVORSCHAU zurückgibt (Auftrag KL-3, Anwenderentscheid 19.09.2026
+    /// Punkt b): welche TRY-Region der eingetragene Standort trifft — <b>bevor</b>
+    /// eingelesen wird.
+    /// </summary>
+    public sealed class KlimaVorschauErgebnis
+    {
+        /// <summary>Wie die Vorschau ausgegangen ist; die Ausgänge des Imports.</summary>
+        public KlimaImportAusgang Ausgang = KlimaImportAusgang.Abgebrochen;
+
+        /// <summary>Die fertige Ergebnis- oder Fehlerzeile; leer heißt: nichts zu melden.</summary>
+        public string Meldung = "";
+
+        /// <summary>Die getroffene Region; <c>null</c>, wenn keine ermittelt wurde.</summary>
+        public TryRegion Region;
+
+        /// <summary>Was das Paket für diese Region führt — Jahr und Szenario.</summary>
+        public IReadOnlyList<TryAusfuehrung> Ausfuehrungen = new List<TryAusfuehrung>();
+
+        public bool Erfolgreich => Ausgang == KlimaImportAusgang.Erfolg;
+    }
+
+    /// <summary>
     /// Woher die Koordinaten kommen — die zwei Zweige des Vorläufers.
     /// </summary>
     public enum KlimaImportArt
@@ -445,9 +467,12 @@ namespace WindowsFormsApplication1
 
                 stunden = paketErg.Stunden;
 
+                // Die Region wird mit NAMEN genannt (Auftrag KL-3): "14 Stoetten"
+                // statt "14" - die Nummer allein sagt einem Anwender nichts. Die
+                // ZUORDNUNG bleibt der naechste Stationsmittelpunkt aus dem Paket.
                 herkunft = string.Format(CultureInfo.CurrentCulture,
                     MyResource.Resource.KLIMA_TRY_DETAILS_REGIONAL,
-                    paketErg.Region.Nummer.ToString(CultureInfo.CurrentCulture),
+                    paketErg.Region.Bezeichnung,
                     paketErg.Region.Koordinatentext,
                     paketErg.Region.EntfernungKm.ToString("F0", CultureInfo.CurrentCulture),
                     SzenarioText(auftrag.Szenario),
@@ -488,7 +513,8 @@ namespace WindowsFormsApplication1
                 try
                 {
                     Melden(melder, 4, "KLIMA_SCHRITT_REGION");
-                    if (!ctrl.Add(bezeichner, lon, lat, details, v))
+                    if (!ctrl.Add(bezeichner, lon, lat, details,
+                                  Quellenschluessel(auftrag.Quelle), Heute(), v))
                     {
                         v.Rollback();
                         return Fehler(erg, KlimaImportAusgang.Schreibfehler, "");
@@ -542,6 +568,200 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.KLIMA_TRY_MSG_HERKUNFT, herkunft);
 
             return erg;
+        }
+
+        // =====================================================================
+        //  Die REGIONSVORSCHAU (Auftrag KL-3, Anwenderentscheid 19.09.2026 b)
+        // =====================================================================
+
+        /// <summary>
+        /// Sagt VOR dem Import, welche TRY-Region der eingetragene Standort trifft.
+        ///
+        /// <para><b>Wozu.</b> Die Regionaldaten ordnen einen Ort der nächstgelegenen
+        /// Repräsentanzstation zu. Welche das ist, stand bisher erst NACH dem Einlesen
+        /// im Herkunftsvermerk — wer 8 760 Stunden einliest, um zu erfahren, dass es
+        /// die falsche Region war, hat sie umsonst eingelesen.</para>
+        ///
+        /// <para><b>Ohne einen Eintrag zu entpacken.</b> Gelesen wird allein das
+        /// Zentralverzeichnis des Pakets (<see cref="TryPaketLeser.RegionErmitteln"/>);
+        /// die Stundenreihe bleibt liegen. Der spätere Import liest das Paket ein
+        /// ZWEITES Mal — ein zweiter Bereichsabruf über einige hundert Kilobyte, vom
+        /// Anwender angenommen. Der Lauf nimmt dieselbe Regionswahl, weil beide
+        /// dieselbe Funktion rufen.</para>
+        ///
+        /// <para><b>Die Geokodierung läuft wie im Import</b>: Ein Ortsname wird über
+        /// <paramref name="orte"/> aufgelöst, Koordinaten gelten unverändert.</para>
+        /// </summary>
+        /// <param name="auftrag">Standort, Bezugsjahr und — wenn vorhanden — der Pfad
+        /// einer lokalen <c>data.zip</c>.</param>
+        /// <param name="orte">Die Ortsauflösung; nur für <c>AusOrtsname</c> nötig.</param>
+        /// <param name="abbruch">Abbruchmarke.</param>
+        /// <param name="bereich">Der Bereichsabruf; ohne ihn steht nur der Weg über
+        /// eine lokale <c>data.zip</c> offen.</param>
+        public static async Task<KlimaVorschauErgebnis> RegionErmittelnAsync(
+            KlimaImportAuftrag auftrag,
+            IOrtsQuelle orte = null,
+            CancellationToken abbruch = default,
+            INetzbereich bereich = null)
+        {
+            var erg = new KlimaVorschauErgebnis();
+            if (auftrag == null) return VorschauFehler(erg, KlimaImportAusgang.Abgebrochen, "");
+
+            double lon, lat;
+
+            if (auftrag.Art == KlimaImportArt.AusOrtsname)
+            {
+                string ort = (auftrag.Ortsname ?? "").Trim();
+                if (ort.Length == 0 || orte == null)
+                    return VorschauFehler(erg, KlimaImportAusgang.Eingabefehler,
+                        MyResource.Resource.KLIMA_MSG_EINGABEN_PRUEFEN);
+
+                var antwort = await orte(ort).ConfigureAwait(false);
+                if (!antwort.Success)
+                    return VorschauFehler(erg, KlimaImportAusgang.OrtUnbekannt,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_MSG_ORT_UNBEKANNT,
+                                      ort, antwort.DisplayName ?? ""));
+
+                lon = antwort.Lon;
+                lat = antwort.Lat;
+            }
+            else
+            {
+                lon = auftrag.Longitude;
+                lat = auftrag.Latitude;
+            }
+
+            if (abbruch.IsCancellationRequested)
+                return VorschauFehler(erg, KlimaImportAusgang.Abgebrochen,
+                                      MyResource.Resource.KLIMA_MSG_ABGEBROCHEN);
+
+            string paket = (auftrag.TryPaketPfad ?? "").Trim();
+            TryRegionVorschau vorschau;
+
+            try
+            {
+                if (paket.Length > 0)
+                {
+                    vorschau = TryPaketLeser.RegionErmittelnAusDatei(paket, lon, lat, auftrag.TryJahr);
+                }
+                else
+                {
+                    if (bereich == null)
+                        return VorschauFehler(erg, KlimaImportAusgang.Eingabefehler,
+                            MyResource.Resource.KLIMA_TRY_KEIN_BEREICH);
+
+                    vorschau = await TryPaketLeser.RegionErmittelnAusNetzAsync(
+                        bereich, Adresse(), lon, lat, auftrag.TryJahr, abbruch).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return VorschauFehler(erg, KlimaImportAusgang.Abgebrochen,
+                                      MyResource.Resource.KLIMA_MSG_ABGEBROCHEN);
+            }
+            catch (FileNotFoundException)
+            {
+                return VorschauFehler(erg, KlimaImportAusgang.Eingabefehler,
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KLIMA_TRY_DATEI_FEHLT, paket));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Keine Teilabrufe, keine Region fuer das Jahr, ausserhalb 300 km -
+                // alles BENANNT, mit dem Text des Kerns.
+                return VorschauFehler(erg, KlimaImportAusgang.Dateifehler, ex.Message);
+            }
+            catch (FormatException ex)
+            {
+                return VorschauFehler(erg, KlimaImportAusgang.Dateifehler,
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return VorschauFehler(erg, KlimaImportAusgang.Netzfehler,
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KLIMA_MSG_DOWNLOAD_FEHLER, ex.Message));
+            }
+
+            erg.Ausgang = KlimaImportAusgang.Erfolg;
+            erg.Region = vorschau.Region;
+            erg.Ausfuehrungen = vorschau.Ausfuehrungen;
+            erg.Meldung = Vorschauzeile(vorschau);
+            return erg;
+        }
+
+        /// <summary>
+        /// Die Ergebniszeile der Vorschau: „Region 14 Stötten, Station 48,6600 / 9,8600,
+        /// Entfernung 12 km" — und daran, was das Paket für diese Region führt.
+        /// </summary>
+        public static string Vorschauzeile(TryRegionVorschau vorschau)
+        {
+            if (vorschau == null || vorschau.Region == null) return "";
+
+            string zeile = string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.KLIMA_TRY_VORSCHAU,
+                vorschau.Region.Bezeichnung,
+                vorschau.Region.Koordinatentext,
+                vorschau.Region.EntfernungKm.ToString("F0", CultureInfo.CurrentCulture));
+
+            string bestand = Bestandstext(vorschau.Ausfuehrungen);
+            if (bestand.Length > 0)
+                zeile += " · " + string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KLIMA_TRY_VORSCHAU_BESTAND, bestand);
+
+            return zeile;
+        }
+
+        /// <summary>Jahr und Szenario jeder Ausführung, z. B. „2015 mittleres Jahr,
+        /// 2015 sommerwarm, …"; leer, wenn das Paket keine führt.</summary>
+        private static string Bestandstext(IReadOnlyList<TryAusfuehrung> ausfuehrungen)
+        {
+            if (ausfuehrungen == null || ausfuehrungen.Count == 0) return "";
+
+            var teile = new List<string>(ausfuehrungen.Count);
+            foreach (TryAusfuehrung a in ausfuehrungen)
+                teile.Add(a.Jahr.ToString(CultureInfo.CurrentCulture) + " " + SzenarioText(a.Szenario));
+
+            return string.Join(", ", teile);
+        }
+
+        private static KlimaVorschauErgebnis VorschauFehler(KlimaVorschauErgebnis erg,
+                                                            KlimaImportAusgang ausgang, string meldung)
+        {
+            erg.Ausgang = ausgang;
+            erg.Meldung = meldung ?? "";
+            return erg;
+        }
+
+        /// <summary>
+        /// Der sprachneutrale Schlüssel der Quelle für
+        /// <c>Tab_Klimaregion(_STAMM).Quelle</c> (Schemaschritt 95, Auftrag KL-3).
+        ///
+        /// <para><b>Nie ein Anzeigetext.</b> In der Spalte steht, WOHER die Reihe
+        /// stammt; wie das heißt, entscheidet die Sprache der Oberfläche — und die darf
+        /// den gespeicherten Wert nicht ändern (Drei-Schichten-Regel).</para>
+        /// </summary>
+        public static string Quellenschluessel(KlimaQuelle quelle)
+        {
+            switch (quelle)
+            {
+                case KlimaQuelle.TryDatei: return DbWerte.KLIMA_QUELLE_TRY_DATEI;
+                case KlimaQuelle.TryRegional: return DbWerte.KLIMA_QUELLE_TRY_REGIONAL;
+                default: return DbWerte.KLIMA_QUELLE_PVGIS;
+            }
+        }
+
+        /// <summary>
+        /// Der heutige Tag als ISO-Text <c>yyyy-MM-dd</c> — das Format der Spalte
+        /// <c>Importdatum</c>: sortierbar und kulturunabhängig. Der Herkunftsvermerk in
+        /// <c>Details</c> nennt daneben weiterhin das Datum in der Landesschreibweise;
+        /// er ist Text für den Leser, diese Spalte eine Angabe für das Programm.
+        /// </summary>
+        private static string Heute()
+        {
+            return DateTime.Now.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
 
         /// <summary>

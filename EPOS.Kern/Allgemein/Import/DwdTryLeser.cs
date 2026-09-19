@@ -90,12 +90,19 @@ namespace WindowsFormsApplication1
     ///     <c>GlobalIrradiance = B + D</c>, <c>DiffuseIrradiance = D</c>,
     ///     <c>DirectIrradiance = B</c> (noch horizontal, siehe
     ///     <see cref="DirektNormal"/>).</description></item>
-    ///   <item><description><c>p WR WG N x RF A E IL</c> — Druck, Windrichtung,
-    ///     Windgeschwindigkeit, Bedeckung, Wasserdampfgehalt, relative Feuchte,
-    ///     atmosphärische Gegenstrahlung, langwellige Ausstrahlung, Qualitätsbit:
-    ///     <b>benannt verworfen</b>, weil es in <c>Tab_Solar_STAMM</c> keine Spalte
-    ///     dafür gibt (Entscheid des Anwenders: nur vorhandene Spalten füllen, nie
-    ///     still übergehen).</description></item>
+    ///   <item><description><c>A</c> — atmosphärische Gegenstrahlung [W/m²],
+    ///     <c>RF</c> — relative Feuchte [%], <c>N</c> — Bedeckungsgrad [Achtel]:
+    ///     <b>gespeichert seit Schemaschritt 95</b> (Auftrag KL-3) in
+    ///     <c>Tab_Solar(_STAMM).Gegenstrahlung</c>, <c>.Luftfeuchte</c> und
+    ///     <c>.Bedeckungsgrad</c> — die Größen, die die Gebäudesimulation nach
+    ///     VDI 6007 braucht.</description></item>
+    ///   <item><description><c>p WR WG x E IL</c> — Druck, Windrichtung,
+    ///     Windgeschwindigkeit, Wasserdampfgehalt, langwellige Ausstrahlung,
+    ///     Qualitätsbit: <b>benannt verworfen</b>, weil es in <c>Tab_Solar_STAMM</c>
+    ///     keine Spalte dafür gibt (Entscheid des Anwenders: nur vorhandene Spalten
+    ///     füllen, nie still übergehen). Die Windgeschwindigkeit bleibt ausdrücklich
+    ///     draußen — keine Spalte ohne Leser (Umsetzungskonzept Gebäudesimulation
+    ///     F-S3).</description></item>
     /// </list>
     ///
     /// <para><b>Die ZEITBASIS.</b> Die Datei läuft in Ortszeit ohne Sommerzeit: Der
@@ -145,12 +152,25 @@ namespace WindowsFormsApplication1
         public const string TRENNZEICHEN = "***";
 
         /// <summary>
-        /// Die neun Größen der Datei, für die es keine Spalte gibt — benannt verworfen.
+        /// Die sechs Größen der Datei, für die es keine Spalte gibt — benannt verworfen.
+        ///
+        /// <para><b>Drei sind mit Schemaschritt 95 herausgefallen</b> (Auftrag KL-3):
+        /// <c>N</c>, <c>RF</c> und <c>A</c> werden jetzt gespeichert. <c>WG</c> bleibt
+        /// hier — keine Spalte ohne Leser.</para>
         /// </summary>
         public static readonly IReadOnlyList<string> VERWORFENE_GROESSEN = new[]
         {
-            "p", "WR", "WG", "N", "x", "RF", "A", "E", "IL"
+            "p", "WR", "WG", "x", "E", "IL"
         };
+
+        /// <summary>Feldindex des Bedeckungsgrads <c>N</c> [Achtel] in der Datenzeile.</summary>
+        public const int FELD_N = 9;
+
+        /// <summary>Feldindex der relativen Feuchte <c>RF</c> [%] in der Datenzeile.</summary>
+        public const int FELD_RF = 11;
+
+        /// <summary>Feldindex der atmosphärischen Gegenstrahlung <c>A</c> [W/m²].</summary>
+        public const int FELD_A = 14;
 
         /// <summary>Tage je Monat im 365-Tage-Raster (kein Schaltjahr).</summary>
         private static readonly int[] TAGE_MONAT =
@@ -294,6 +314,14 @@ namespace WindowsFormsApplication1
                 double b = Zahl(f[12], nummer, "B");
                 double d = Zahl(f[13], nummer, "D");
 
+                // Schemaschritt 95 (Auftrag KL-3): die drei Groessen der
+                // Gebaeudesimulation. Sie sind PFLICHTFELDER der Datenzeile - eine TRY
+                // Datei, die sie nicht als Zahl fuehrt, ist nicht lesbar, und genau das
+                // meldet Zahl() mit Zeilennummer und Feldname.
+                double n = Zahl(f[FELD_N], nummer, "N");
+                double rf = Zahl(f[FELD_RF], nummer, "RF");
+                double a = Zahl(f[FELD_A], nummer, "A");
+
                 if (monat < 1 || monat > 12 || tag < 1 || tag > TAGE_MONAT[monat - 1] ||
                     stunde < 1 || stunde > 24)
                     throw new FormatException(string.Format(CultureInfo.CurrentCulture,
@@ -309,7 +337,9 @@ namespace WindowsFormsApplication1
                     GlobalIrradiance = b + d,
                     DirectIrradiance = b,        // noch HORIZONTAL - siehe DirektNormal
                     DiffuseIrradiance = d,
-                    Humidity = 0,                // RF ist benannt verworfen
+                    Humidity = rf,               // RF -> Tab_Solar(_STAMM).Luftfeuchte
+                    Gegenstrahlung = a,          // A  -> Tab_Solar(_STAMM).Gegenstrahlung
+                    Bedeckungsgrad = n,          // N  -> Tab_Solar(_STAMM).Bedeckungsgrad
                     WindSpeed = 0                // WG ist benannt verworfen
                 });
 
