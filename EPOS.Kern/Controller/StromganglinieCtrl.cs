@@ -58,7 +58,17 @@ namespace WindowsFormsApplication1
                 }
 
                 // Standardkonformes INSERT INTO ... VALUES-Statement mit expliziten Parametertypen
-                string sql = "INSERT INTO Tab_Stromganglinie (ID, Bezeichner, Zeitinterval) VALUES (?, ?, ?)";
+                //
+                // ID_Projekt AUSDRUECKLICH NULL statt stillschweigend DEFAULT 0
+                // (Schemaschritt 96). Der Kopfsatz entsteht hier ohne Projekt - die
+                // Zuordnung leistet Z_ProjektStromganglinie -, und die 0 war nie ein
+                // Projekt, sondern ein nicht gesetzter Wert. Seit die Spalte einen
+                // Fremdschluessel auf Tab_Projekt traegt, wiese die Datenbank die 0 ab;
+                // NULL heisst "keins" und wird von jeder Beziehung durchgelassen.
+                // OFFEN: Wer diesen Weg benutzt, sollte das Projekt mitgeben - ein
+                // Filter nach ID_Projekt findet den Satz sonst nicht (eigener Auftrag;
+                // PreisreiheCtrl nennt dieselbe Stolperstelle in seinem Kopf).
+                string sql = "INSERT INTO Tab_Stromganglinie (ID, ID_Projekt, Bezeichner, Zeitinterval) VALUES (?, NULL, ?, ?)";
 
                 DbParam paramId = new DbParam("@id", DbParamTyp.Integer);
                 paramId.Wert = m_ID_Ganglinie;

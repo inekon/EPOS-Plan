@@ -54,7 +54,16 @@ namespace WindowsFormsApplication1
                 }
 
                 // Standardkonformes INSERT INTO ... VALUES-Statement
-                string sql = "INSERT INTO Tab_Waermebedarf (ID, Bezeichner) VALUES (?, ?)";
+                //
+                // ID_Projekt AUSDRUECKLICH NULL statt stillschweigend DEFAULT 0
+                // (Schemaschritt 96). Der Kopfsatz entsteht hier ohne Projekt - die
+                // Zuordnung leistet Z_ProjektWaermebedarf -, und die 0 war nie ein
+                // Projekt, sondern ein nicht gesetzter Wert. Seit die Spalte einen
+                // Fremdschluessel auf Tab_Projekt traegt, wiese die Datenbank die 0 ab;
+                // NULL heisst "keins" und wird von jeder Beziehung durchgelassen.
+                // OFFEN: Wer diesen Weg benutzt, sollte das Projekt mitgeben - ein
+                // Filter nach ID_Projekt findet den Satz sonst nicht (eigener Auftrag).
+                string sql = "INSERT INTO Tab_Waermebedarf (ID, ID_Projekt, Bezeichner) VALUES (?, NULL, ?)";
                 DbParam[] ps = {
                     new DbParam("@id", m_ID_Ganglinie),
                     new DbParam("@bez", m_szBezeichner ?? (object)DBNull.Value)

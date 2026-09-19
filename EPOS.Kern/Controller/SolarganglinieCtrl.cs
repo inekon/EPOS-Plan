@@ -61,7 +61,16 @@ namespace WindowsFormsApplication1
                 }
 
                 // Umstellung auf das standardkonforme und sichere VALUES-Statement
-                string sql = "INSERT INTO Tab_Solarganglinie (ID, Bezeichner, Beschreibung) VALUES (?, ?, ?)";
+                //
+                // ID_Projekt AUSDRUECKLICH NULL statt stillschweigend DEFAULT 0
+                // (Schemaschritt 96). Der Kopfsatz entsteht hier ohne Projekt - die
+                // Zuordnung leistet Z_ProjektSolarganglinie -, und die 0 war nie ein
+                // Projekt, sondern ein nicht gesetzter Wert. Seit die Spalte einen
+                // Fremdschluessel auf Tab_Projekt traegt, wiese die Datenbank die 0 ab;
+                // NULL heisst "keins" und wird von jeder Beziehung durchgelassen.
+                // OFFEN: Wer diesen Weg benutzt, sollte das Projekt mitgeben - ein
+                // Filter nach ID_Projekt findet den Satz sonst nicht (eigener Auftrag).
+                string sql = "INSERT INTO Tab_Solarganglinie (ID, ID_Projekt, Bezeichner, Beschreibung) VALUES (?, NULL, ?, ?)";
 
                 DbParam paramId = new DbParam("@id", DbParamTyp.Integer);
                 paramId.Wert = m_ID_Ganglinie;
