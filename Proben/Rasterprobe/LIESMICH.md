@@ -186,3 +186,116 @@ Blink-Unterbau, aber eigene Fassung) und mit **125 % Windows-DPI**, das WebView2
 aber keine Abnahme am Gerät. Ebenso nicht gemessen: der echte `KatalogImportDialog` samt
 Dateiwahl und CEC-Netzabruf — die Probe stellt die `Katalogliste` mit dem echten Profil,
 nicht den ganzen Wirt.
+
+---
+
+## Die zweite Probe: `katalogprobe.mjs` — der GANZE Katalogdialog (KL-5)
+
+**Zweck.** `rasterprobe.mjs` misst *eine Liste*. `katalogprobe.mjs` misst, **wo die
+Kästen liegen**: den ganzen Dialog aus `Katalograhmen` + `Katalogliste` — Listenblock,
+Eingabeblock, Reiterleiste, Diagrammkasten, Fußleiste und jeden Knopf darin — und meldet
+**jede Überschneidung als Verstoß**. Eine Überlagerung ist eine Aussage über Rechtecke;
+bunit hat kein Layout und sieht sie grundsätzlich nicht.
+
+**Der Anlass.** Im Dialog „Klimadaten" (1 180 × 780, nach einem TRY-Regionalimport mit
+35 Regionen) malten Reiterleiste und Diagrammkasten über die Listenzeilen, der
+Eingabeblock über die Fußleiste: Von „Löschen" war nur „…öschen" zu lesen, „Beenden"
+halb verdeckt. Dasselbe Bild kam aus der „Stromverbraucher Verwaltung" — kein Fehler
+einer Maske, sondern einer des Musters: **vierzehn Menüpunkte in sieben Komponenten**
+hängen daran.
+
+```bash
+export DOTNET_ROOT=/root/.dotnet; export PATH=/root/.dotnet:$PATH
+dotnet build Proben/Rasterprobe/Wirt/Rasterprobe.Wirt.csproj -c Release
+ASPNETCORE_URLS=http://127.0.0.1:5299 \
+  dotnet Proben/Rasterprobe/Wirt/bin/Release/net10.0/Rasterprobe.Wirt.dll &
+
+cd Proben/Rasterprobe
+node katalogprobe.mjs --url http://127.0.0.1:5299 --fotos /tmp/katalogfotos
+```
+
+Rückgabe `0` = keine Überlagerung, `1` = mindestens eine, `2` = Aufruf- oder
+Verbindungsfehler. Schalter: `--url`, `--fotos`, `--nur <präfix>` wie oben; `--vorher`
+setzt **allen** Fällen das Maß von vor KL-5 zurück (der Rahmen darf unter seinen Inhalt
+schrumpfen und rollt nicht in sich) — der Lauf muss dann rot sein.
+
+Die Seite des Wirtes nimmt ihre Gaben aus der Adresse:
+`/katalogprobe?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe&zeilen=<n>&bilder=1|0`.
+Die Zeilen sind synthetisch, die **Maße** nicht: Das Diagramm kommt aus demselben
+`ChartRenderer.Jahresgang` (1 304 × 440 px), den die Windows-Hülle ruft.
+
+### Was gemessen wird
+
+| | Größe | Sollwert |
+|---|---|---|
+| (a) | Überschneidung Eingabeblock / Reiterleiste / Diagramm **mit der Liste** | 0 px² |
+| (b) | Überschneidung **Listenhülle mit dem Eingabeblock** | 0 px² |
+| (c) | Überschneidung Eingabeblock / Diagramm / Liste **mit der Fußleiste** | 0 px² |
+| (d) | Beginn der Fußleiste gegen das Ende des Rahmens | Fußleiste **unter** dem Rahmen |
+| (e) | jeder Knopf der Fußleiste: `elementFromPoint` auf vier Ecken und Mitte | der Knopf selbst |
+| (f) | jeder Knopf der Fußleiste: im Fenster und ungeschnitten | ja |
+| (g) | Bildschirmfotos | — (Protokoll) |
+
+Gemessen wird der **sichtbare** Kasten, nicht der gerechnete: Jedes Rechteck wird mit
+denen aller rollenden Vorfahren geschnitten. `getBoundingClientRect` allein meldete sonst
+jeden gerollten Dialog als Verstoß.
+
+### Die Fälle
+
+| Fall | Was |
+|---|---|
+| K1 / K2 | Klimadaten, 35 Regionen, 1 180 × 780 und 1 600 × 1 000 |
+| K3 | Klimadaten **vor** dem Import (Platzhalter statt Bildern) |
+| B1 / B2 | Stromverbraucher Verwaltung, dieselben zwei Größen |
+| M1 / M2 | Photovoltaik-Module, dieselben zwei Größen |
+| W1, S1, C1, P1 | Wärmebedarf, Solarganglinie, BHKW-Katalog, Wärmepumpen-Stamm (je 1 180 × 780) |
+| G1 | **Gegenprobe**: Klimadaten mit dem Maß von vor KL-5. Sie MUSS den Befund zeigen |
+
+### Ergebnis vom 19.09.2026 (Auftrag KL-5)
+
+**Vorher** (`node katalogprobe.mjs --vorher`, Rückgabe 1 — 8 von 11 Fällen rot):
+
+| Größe | K1 (Klimadaten, 1 180 × 780) |
+|---|---|
+| Dialoghöhe / Inhalt | 780 px / **1 318 px** |
+| Rahmen | auf **601,8 px** gestaucht, Inhalt 1 220 px |
+| Rasterreihen | **295,906 px \| 295,906 px** — gleich groß, nicht nach Inhalt |
+| Listenhülle | **178,9 px** statt 457,6 px (rund drei Zeilen statt sieben) |
+| Eingabeblock | Reihe 295,9 px, Inhalt **914 px** → malt bis y = 876,8 |
+| Fußleiste | y = 720 … 764 → **49 829 px²** vom Diagramm überdeckt |
+| „Daten einlesen", „Beenden" | von `img.epos-chartbild` verdeckt |
+
+Derselbe Mechanismus in den anderen Masken, dort über die **Listenhülle**: Sie bleibt in
+ihrer Höchsthöhe stehen und ragt aus dem gestauchten Listenblock heraus — B1 186 698 px²,
+M1 280 105 px², C1 280 105 px², S1 174 076 px², W1 145 847 px² über die Felder darunter.
+Das ist das zweite Anwenderbild („Stromverbraucher Verwaltung").
+
+**Nachher** (`node katalogprobe.mjs`, Rückgabe 0 — 12 von 12 Fällen erfüllt):
+
+| Größe | K1 | K2 |
+|---|---|---|
+| Rasterreihen | **574,594 px \| 914,359 px** (nach Inhalt) | 574,594 \| 945,406 |
+| Listenhülle | **457,6 px** = Höchstmaß, sieben Zeilen | 457,6 px |
+| Rahmen | 601,8 px sichtbar, rollt in sich (1 499 px) | 821,8 px von 1 530 px |
+| Fußleiste | y = 720 … 764, **frei** | y = 940 … 984, **frei** |
+| Dialog-Rollhöhe | **780 px** = Fensterhöhe (die Maske rollt nicht mehr) | 1 000 px |
+
+### Die Ursache in zwei Sätzen
+
+`.epos-katalog-fuellend` gab dem Rahmen `flex: 1 1 auto` **und** `min-height: 0`, er durfte
+also unter seinen Inhalt schrumpfen; weil seine zwei Kinder ihrerseits `min-height: 0`
+trugen, war die Mindestgröße einer `auto`-Rasterreihe null, und Chromium verteilte die
+gestauchte Höhe zu **gleichen Teilen** auf beide Reihen statt nach Inhalt. Die zweite
+Reihe war damit 618 px zu kurz, und ihr Inhalt zeichnete einfach darüber hinaus — quer
+über die Liste und über die Fußleiste.
+
+### Der Fix
+
+Zwei Zeilen in `epos-ui.css`, beide am gemeinsamen Ort und keine je Dialog: Die zwei
+Kinder des Rasterpaares bekommen ihre selbsttätige Mindestgröße zurück
+(`min-height: auto`), damit jede Reihe ihre Inhaltshöhe behält; und der Rahmen rollt in
+sich (`overflow: auto`), statt die Maske länger zu machen — sonst stünde „Beenden" 850 px
+unter dem Fensterrand und wäre so unerreichbar wie vorher. Keine Positionierung, keine
+feste Pixelhöhe. Die zwei Masken, die `epos-katalog-fuellend` auf eine bloße Liste setzen
+(`GesetzeskatalogDialog`, `WaermepumpenKatalogDialog`), haben keine zweite Reihe und
+bleiben unberührt; die neun Fälle von `rasterprobe.mjs` bleiben grün.
