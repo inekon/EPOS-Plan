@@ -150,8 +150,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-18_R9_Kesselbrennstoff/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 95** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
-Stand 95, und die Schritte 90 bis 95 sind ergebnisneutral, gemessen). Schritt 92 legt die
+(**Schemastand 96** — die Basis ist unter Stand 89 eingefroren; die Testdatenbank steht auf
+Stand 96, und die Schritte 90 bis 96 sind ergebnisneutral, gemessen). Schritt 92 legt die
 Spalte `Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt` an und schreibt keinen Wert — NULL
 heißt Stamm, also genau die Referenz jeder Bestandsrechnung. Schritt 93 legt
 `Tab_ProjektPhotovoltaik.Uebernahme_Stamm` an und leitet die Vergütungswahl aus dem Bestand
@@ -166,6 +166,12 @@ Schritt 95 ist reines DDL: Er legt `Gegenstrahlung`, `Luftfeuchte` und `Bedeckun
 und `Tab_Klimaregion_STAMM` — zehn nullbare Spalten, **kein DML**. In der Testdatenbank
 bleiben alle zehn in jeder Zeile NULL (280 320 Stundenwerte, 32 Regionen), und kein
 Rechenweg liest eine von ihnen; die fünf CI-Projekte rechnen **byte-gleich**, gemessen.
+Schritt 96 rüstet in 28 Projekttabellen 29 Fremdschlüssel auf `Tab_Projekt` nach
+(Tabellenneubau, `ON DELETE CASCADE`), heilt vorher 1 466 Zeilen ohne Projektbezug über
+ihren Elternsatz (1 446 Kennlinien in `Tab_Kenndaten`, 20 in `Tab_Stromverbrauchertyp`) und
+entfernt 129 verwaiste Zeilen samt 131 557 abhängigen (Ganglinien- und Ergebnisdetails ohne
+Projekt). Keine Referenzrechnung liest eine der entfernten Zeilen, kein Rechenweg wertet
+einen Fremdschlüssel aus; die fünf CI-Projekte rechnen **byte-gleich**, gemessen.
 Schritt 90 räumt hinter Schritt 89 auf und hat **zwei Teile**. Der **DDL-Teil** entfernt aus
 `Tab_ProjektWirtschaftlichkeit` die sechs KWKG-Spalten `KWKG_Bonus`,
 `KWKG_Bonus_Einspeisung`, `KWKG_Vbh_Kontingent`, `KWKG_Vbh_Jahresdeckel`,

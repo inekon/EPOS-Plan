@@ -2,7 +2,7 @@
 
 **Stand 19.09.2026** · Prüfgegenstand: die sechs HTML-Mockups unter `../Mockups/` und die
 einschlägigen Papiere dieses Ordners · Schemastand 94 zur Prüfzeit; nach dem Zusammenführen vom Abend
-(KL‑3, Schritt 95) ist Schritt **96** der nächste freie ·
+(KL‑3 Schritt 95, FK‑2 Schritt 96) ist Schritt **97** der nächste freie ·
 Prüfprotokolle mit allen Einzelbefunden:
 [`ueberholt/Protokolle/Reporting/Pruefung_Mockups_2026-09-19/`](../../ueberholt/Protokolle/Reporting/Pruefung_Mockups_2026-09-19/)
 
@@ -26,7 +26,8 @@ Prüfprotokolle mit allen Einzelbefunden:
    die Zahlen von vor der PV-Neurechnung, das konsolidierte Konzept nennt in der Kopfzeile
    Zielversion 61, beschreibt den gebauten BHKW-Dialog als „neu" und führt Gebautes (Knopf
    „Nutzungsdauern vorbelegen", Positionsart) als offen; drei Papiere nennen „Schemaschritt 92"
-   als nächsten freien, tatsächlich ist es 96 (zur Prüfzeit 95; Schritt 95 hat am Abend KL‑3 belegt).
+   als nächsten freien, tatsächlich ist es 97 (zur Prüfzeit 95; die Schritte 95 und 96 haben am Abend
+   KL‑3 und FK‑2 belegt).
 4. **Darstellung:** Die Seite ist bei 1.440 px Fensterbreite 185 px zu breit — eine einzige
    Rasterregel schneidet die rechten Spalten aller Dialograhmen ab —, sie ist 69.438 px lang bei
    flacher Navigation, und Fenster, Seitentafeln und Überlagerungen tragen denselben Rahmenstil;
@@ -72,7 +73,7 @@ V2 217.622 statt 182.491 €, PV-Vergütung 10.396,34 statt 9.001,44 €, Reihe 
 und die Vokabel „neu" bedeutet in beiden etwas anderes (`02/e‑1`).
 
 **Stände und Nummern** (`02/b`, `02/f`): Konzept-Kopfzeile „Stand 02.09.2026 · ZIEL_VERSION = 61 ·
-Schemaschritt 62 vergeben" ist überholt (Zielversion 95, nächster freier 96); § 3.6 Befund K‑1 und
+Schemaschritt 62 vergeben" ist überholt (Zielversion 96, nächster freier 97); § 3.6 Befund K‑1 und
 Mockup-Anhang U1/U32 nennen „92" als nächsten freien Schritt; § 6.3 Nr. 9b „Zielversion bleibt 89";
 Konzept Nutzungsdauer „Zielversion 74". Die elf Indexzeilen des Ordners tragen 2026‑09‑02, die
 Dateien sind vom 18./19.09. Konzept Katalogfilter, Wechselrichter und PV-Ertragsmodell behaupten in
@@ -217,7 +218,7 @@ Ein Stern (*) heißt: erst nach dem Entscheid in § 4.
 | alle Dialograhmen | zwei Rahmenstile: Fenster (Titelleiste mit ⓘ Hilfe und ×, Fußleiste) und Seitentafel (Kopfzeile ohne ⓘ/×); ⓘ/× bei Energieträger (Kat. 4), Parameterdialog (Kat. 8) und Reiter Ertrag/Bonus (Kat. 3) nachziehen; Fußleiste am Reiter Ertrag/Bonus ergänzen; Zusatz „× schließt ohne zu schreiben" in den Werkzeugtipp | `00/S6, S7`, `04/B25, B26` | mittel |
 | Fußleisten Kat. 1–8 | *eine Regel nach § 4 Q8 (OK/Abbrechen/Speichern-Übernehmen) in allen Rahmen gleich zeichnen; Ergebnisseite als Seite mit Aktionsleiste und genau einem Primärknopf | `00/S8`, `04/B24, B27` | hoch |
 | Kat. 1, 2, 5: Erläuterungsabsätze | in Tafeln „Element → Feldart → Verhalten" umsetzen | `00/S3` | mittel |
-| Anhang Umsetzungsstand | Spalte „Stand" mit Chip (offen · erledigt · Entscheid ausstehend), offene zuerst; Zeile **U40** anlegen und als erledigt streichen (Vorlage „Standard" auf % des Endenergiebedarfs, Schritt 94, #365/#366); Zeilen für Brückenbild, Zahlungsstrombild, „Anhang‑E‑Checkliste…", „Bericht erzeugen", Fußzeile der Schnellwahl anlegen; U1 und U32: „Schemaschritt 96 (90–95 vergeben)" | `00/S4`, `02/c‑1, b‑3`, `03/#28, #43, #83, #84, #86, #38` | hoch |
+| Anhang Umsetzungsstand | Spalte „Stand" mit Chip (offen · erledigt · Entscheid ausstehend), offene zuerst; Zeile **U40** anlegen und als erledigt streichen (Vorlage „Standard" auf % des Endenergiebedarfs, Schritt 94, #365/#366); Zeilen für Brückenbild, Zahlungsstrombild, „Anhang‑E‑Checkliste…", „Bericht erzeugen", Fußzeile der Schnellwahl anlegen; U1 und U32: „Schemaschritt 97 (90–96 vergeben)" | `00/S4`, `02/c‑1, b‑3`, `03/#28, #43, #83, #84, #86, #38` | hoch |
 | Kat. 5 Ressourcentafel Z. 2713 | `WIRT_KWKG_KONTINGENT_LEER` und `WIRT_KWKG_ERSATZ_GEWICHTET`: auf die vorhandenen Schlüssel `WIRT_KWKG_KONTINGENT_OHNE_ART/_ANTEIL_FEHLT/_ZU_KLEIN` ziehen, Marker „geplant" entfernen | `02/c‑2`, `03/§6.3` | mittel |
 | Kat. 3 Ressourcentafel Z. 1652 | Klappliste „Stammprojekt:" → „Projekt:" (VV‑Q7) | `02/d‑17`, `03/#35` | mittel |
 | Kat. 1 Fließtext Z. 784–786 | Übernahme ins Projekt auf den Katalogblock aus #363 beschreiben (Komponente · Kategorie · Variante · Positionsvorschau mit „Ziel") | `02/d‑16`, `03/#14` | mittel |
@@ -255,8 +256,8 @@ Konzept § 2.13 und Statuseintrag „Nach #344". Kein Test bricht (`02/§4.1`). 
 
 | Datei · Stelle | Änderung | Quelle | Schwere |
 |---|---|---|---|
-| [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md) Kopfzeile | „Stand 19.09.2026 · Zielversion 95 · Schritte 90–95 vergeben · neue ab 96"; Codestand *streichen (Q25) | `02/b‑1, f‑1` | hoch |
-| dito § 3.6 Befund K‑1, § 5 U‑1, § 6.3 Nr. 9b | „nächster freier Schemaschritt 96"; Merksatz „ab 63" als historisch kennzeichnen; „Zielversion bleibt 89" → „wird davon nicht bewegt" | `02/b‑2, b‑4, b‑11` | hoch |
+| [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md) Kopfzeile | „Stand 19.09.2026 · Zielversion 96 · Schritte 90–96 vergeben · neue ab 97"; Codestand *streichen (Q25) | `02/b‑1, f‑1` | hoch |
+| dito § 3.6 Befund K‑1, § 5 U‑1, § 6.3 Nr. 9b | „nächster freier Schemaschritt 97"; Merksatz „ab 63" als historisch kennzeichnen; „Zielversion bleibt 89" → „wird davon nicht bewegt" | `02/b‑2, b‑4, b‑11` | hoch |
 | dito § 2.2 | auf den gebauten Dialog umstellen: acht Gruppen, Feldbeschriftung „Hilfsenergieanteil [% des Endenergiebedarfs]", zweiter Sprungknopf „BHKW-Tarif…", Beispiel 5,5667 / 2,4167, Herleitungsbeispiel auf das Musterprojekt (4.797,2 MWh × 4,42 € = 21.203,4 €); *Q2: „Vorschlag am Feld" und Überlagerung U22 zusammenführen; § 7 B5 als umgesetzt | `02/d‑1…d‑5, d‑21` | hoch |
 | dito § 2.3 | einspaltig/untereinander, Feld „Degradation [%/a]", Gruppennamen und -reihenfolge des Razor-Dialogs | `02/d‑6…d‑8` | mittel |
 | dito § 2.4 | Vergleichsprojekt (§ 2.9) und Szenarien-Parametersatz (Konzept Szenarien § 4) ergänzen | `02/d‑10` | mittel |
@@ -362,7 +363,7 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 
 | Etappe | Inhalt | Rechenwirkung |
 |---|---|---|
-| **P1 Papierpflege ohne Entscheid** | Mockup: CSS-Überlauf, U40-Anhangzeile, Schemaschritt 96, Ressourcentafel-Nachzüge, Wortlaute der Herleitungszeilen, Zählungen der Kat. 5, Rundungen; Konzept: Kopfzeile, § 2.2/2.3/2.4/2.7/2.8/2.12/2.13/6.1/6.3, Kopfblöcke der drei Konzepte; LIESMICH-Pfade; Index-Daten; Statuseinträge | keine |
+| **P1 Papierpflege ohne Entscheid** | Mockup: CSS-Überlauf, U40-Anhangzeile, Schemaschritt 97, Ressourcentafel-Nachzüge, Wortlaute der Herleitungszeilen, Zählungen der Kat. 5, Rundungen; Konzept: Kopfzeile, § 2.2/2.3/2.4/2.7/2.8/2.12/2.13/6.1/6.3, Kopfblöcke der drei Konzepte; LIESMICH-Pfade; Index-Daten; Statuseinträge | keine |
 | **P2 Entscheide Q1–Q25** einholen | die Tabelle in § 4 | — |
 | **P3 Kleine Codekorrekturen** | Formel `N4`, Kennzahl-Reihenfolge, Gesetzesparameter-Knopf im PV-Reiter, Neuzeile-Klappliste, Reiterbeschriftungen en‑US, `help_mapping.txt`, Kommentare und Rückfalltexte, PV-Sprungknopf (Q12), Löschrückfragen, Knopfsichtbarkeit | keine auf den Referenzlauf; Gate mit Kern- und UI-Tests |
 | **P4 Kohärenzzeile CO₂ und Zellensemantik** | `KohaerenzPruefung` neuer Fall; `WirtschaftlichkeitZeilen` nullbar (Q16) | Ausweis; Referenzlauf byte-gleich, Berichtsprobe |

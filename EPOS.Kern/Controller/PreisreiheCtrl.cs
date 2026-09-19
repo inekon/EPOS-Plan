@@ -15,8 +15,9 @@ namespace WindowsFormsApplication1
     // ORDER BY ID.
     //
     // Bewusst NICHT uebernommen wurden drei Stolperstellen des Vorbilds:
-    //   * ID_Projekt wird hier immer mitgeschrieben (StromganglinieCtrl.Insert laesst
-    //     es weg, obwohl spaeter danach gefiltert wird),
+    //   * ID_Projekt wird hier immer mitgeschrieben (StromganglinieCtrl.Insert liess es
+    //     weg, obwohl spaeter danach gefiltert wird - seit GL-1 verlangt auch jener Weg
+    //     die Projektnummer),
     //   * die Daten-ID wird explizit vergeben statt als AutoWert - die Reihenfolge der
     //     35.040 Werte haengt damit nicht mehr an der Vergabestrategie des Providers,
     //   * das Feld heisst ID_Preisreihe und traegt auch die Preisreihen-ID (im Vorbild

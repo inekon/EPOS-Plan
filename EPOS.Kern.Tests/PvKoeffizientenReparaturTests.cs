@@ -43,6 +43,19 @@ namespace EPOS.Kern.Tests
         /// <summary>Ab dieser ID gehören die Sätze diesem Prüfstand — und nur ihm.</summary>
         private const long ID_AB = 990000;
 
+        /// <summary>
+        /// Bis zu dieser ID — die OBERE Grenze des Prüfstands.
+        ///
+        /// <para>Sie ist seit Schemaschritt 96 nötig. Bis dahin hing an den Projektkopien
+        /// die Projektnummer 999999, die es nicht gibt; sie allein grenzte die Prüfsätze
+        /// vom Bestand ab, und der greift in <c>Tab_PV</c> bis ID 1.015.251 hinauf. Seit
+        /// die Spalte einen Fremdschlüssel auf <c>Tab_Projekt</c> trägt, lässt die
+        /// Datenbank eine erfundene Nummer nicht mehr herein — die Prüfsätze hängen an
+        /// einem ECHTEN Projekt (<see cref="PruefProjekt"/>), und die Abgrenzung
+        /// übernimmt der ID-Bereich.</para>
+        /// </summary>
+        private const long ID_BIS = ID_AB + 999;
+
         /// <summary>Die Zeile, die einen Treffer in der Wertequelle hat.</summary>
         private const long ID_MIT_TREFFER = 990001;
 
@@ -58,8 +71,26 @@ namespace EPOS.Kern.Tests
         /// <summary>Ein Name, den weder der Katalog noch die CEC-Liste kennt.</summary>
         private const string PRUEF_UNBEKANNT = "Pruefmodul ohne Listeneintrag W6-B-5";
 
-        /// <summary>Das Projekt der synthetischen Projektkopien.</summary>
-        private const int PRUEF_PROJEKT = 999999;
+        /// <summary>
+        /// Das Projekt der synthetischen Projektkopien — ein ECHTES Projekt der
+        /// Arbeitskopie (das mit der kleinsten Nummer).
+        ///
+        /// <para>Seit Schemaschritt 96 trägt <c>Tab_PV.ID_Projekt</c> einen
+        /// Fremdschlüssel auf <c>Tab_Projekt</c>; eine erfundene Nummer wiese die
+        /// Datenbank ab, und die Prüfsätze entstünden gar nicht erst. Die Abgrenzung
+        /// gegen den Bestand leistet der ID-Bereich
+        /// <see cref="ID_AB"/>…<see cref="ID_BIS"/>.</para>
+        /// </summary>
+        private static int PruefProjekt
+        {
+            get
+            {
+                object wert = DataRepository.ExecuteScalar("SELECT MIN(ID) FROM Tab_Projekt");
+                return wert == null || wert == DBNull.Value
+                    ? 0
+                    : Convert.ToInt32(wert, CultureInfo.InvariantCulture);
+            }
+        }
 
         // =================================================================================
         // 1 — Der Zielstand und die Fläche des Schrittes
@@ -747,7 +778,7 @@ namespace EPOS.Kern.Tests
                 "INSERT INTO Tab_PV (ID, ID_Projekt, Bezeichner, Firma, I_Kurzschluss, alpha_SC, " +
                 "beta_OC, gamma_PMP, T_NOCT) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 new DbParam("@id", id),
-                new DbParam("@p", PRUEF_PROJEKT),
+                new DbParam("@p", PruefProjekt),
                 new DbParam("@b", bezeichner),
                 new DbParam("@f", (object)firma ?? DBNull.Value),
                 new DbParam("@i", isc),
@@ -764,10 +795,12 @@ namespace EPOS.Kern.Tests
         private static void Aufraeumen()
         {
             string ab = ID_AB.ToString(CultureInfo.InvariantCulture);
-            DataRepository.ExecuteNonQuery("DELETE FROM Tab_PV_STAMM WHERE ID >= " + ab);
-            DataRepository.ExecuteNonQuery("DELETE FROM Tab_PV WHERE ID >= " + ab +
-                                           " AND ID_Projekt = " +
-                                           PRUEF_PROJEKT.ToString(CultureInfo.InvariantCulture));
+            string bis = ID_BIS.ToString(CultureInfo.InvariantCulture);
+            DataRepository.ExecuteNonQuery(
+                "DELETE FROM Tab_PV_STAMM WHERE ID >= " + ab + " AND ID <= " + bis);
+            DataRepository.ExecuteNonQuery(
+                "DELETE FROM Tab_PV WHERE ID >= " + ab + " AND ID <= " + bis +
+                " AND ID_Projekt = " + PruefProjekt.ToString(CultureInfo.InvariantCulture));
         }
     }
 }
