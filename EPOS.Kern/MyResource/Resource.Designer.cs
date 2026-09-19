@@ -20280,6 +20280,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die für den Stromträger des Projekts ist kein Arbeitspreis gepflegt — er ist in der Energieträgerverwaltung zu erfassen ähnelt.
+        /// </summary>
+        public static string KDLG_BASIS_GRUND_STROMPREIS {
+            get {
+                return ResourceManager.GetString("KDLG_BASIS_GRUND_STROMPREIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KDLG_BTN_ABBRECHEN {
