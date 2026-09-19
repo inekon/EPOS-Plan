@@ -112,7 +112,12 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Zeile je Gruppe, in Laufreihenfolge.</summary>
         public IReadOnlyList<ExportZeile> Zeilen => _zeilen;
 
-        internal void Anfuegen(ExportZeile zeile) => _zeilen.Add(zeile);
+        /// <summary>
+        /// Hängt eine Zeile an. Öffentlich, weil eine Bilanz ein ERGEBNISGEGENSTAND
+        /// ist: Wer einen baut — der Lauf im Kern oder ein Prüfstand der Oberfläche —
+        /// fügt Zeilen an; gelesen wird sie über <see cref="Zeilen"/>.
+        /// </summary>
+        public void Anfuegen(ExportZeile zeile) => _zeilen.Add(zeile);
     }
 
     /// <summary>Eine Zeile der Importbilanz — ein Paket.</summary>
@@ -175,7 +180,8 @@ namespace WindowsFormsApplication1
         /// <summary>Hat der Lauf überhaupt etwas geschrieben?</summary>
         public bool EtwasGeschrieben => Importiert > 0;
 
-        internal void Anfuegen(SammelImportZeile zeile) => _zeilen.Add(zeile);
+        /// <summary>Hängt eine Zeile an — siehe <see cref="ExportBilanz.Anfuegen"/>.</summary>
+        public void Anfuegen(SammelImportZeile zeile) => _zeilen.Add(zeile);
     }
 
     /// <summary>

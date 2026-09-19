@@ -435,13 +435,21 @@
     private IReadOnlyList<ProjektKopfZeile> Bestand
         => Daten?.Projekte ?? (IReadOnlyList<ProjektKopfZeile>)Array.Empty<ProjektKopfZeile>();
 
+    /// <summary>Der Bestand, aus dem die Listenzeilen zuletzt entstanden sind.</summary>
+    private object? _zeilenAbzug;
+
     protected override void OnParametersSet()
     {
         // PI-1: KEINE Vorbelegung. Eine Mehrfachliste mit einer vorgehakten Zeile
         // behauptet eine Wahl, die der Anwender nicht getroffen hat - und der
         // Export schriebe sie. Der Vorlaeufer belegte vor, weil er GENAU EINES
         // nehmen konnte und ohne Wahl gar nichts ging.
-        ZeilenNeuAufbauen();
+        if (!ReferenceEquals(Daten?.Projekte, _zeilenAbzug))
+        {
+            _zeilenAbzug = Daten?.Projekte;
+            _zeilen = Projekttransferprofil.Zeilen(Bestand, _nachgezogen);
+        }
+        WahlGeaendert();
     }
 
     private void ModusGewaehlt(int? wert)
@@ -454,14 +462,24 @@
     /// <summary>
     /// Nach jeder Änderung an der Wahl: Gruppen und nachgezogene Stämme neu
     /// bestimmen (BEIDES aus <c>Projektgruppierung</c>, nicht aus einer zweiten
-    /// Regel hier) und die Listenzeilen neu bauen — die Spalte „mitgenommen"
-    /// hängt daran.
+    /// Regel hier) und die Spalte „mitgenommen" nachziehen.
+    ///
+    /// <para><b>Die ZEILENOBJEKTE bleiben dieselben</b>, und das ist kein
+    /// Sparzwang, sondern Bedingung: Die <c>Katalogliste</c> bestimmt den
+    /// Anzeigeindex eines Klicks über <c>ReferenceEquals</c> gegen ihre gefilterte
+    /// Liste. Wer die Zeilen bei jedem Klick neu baut, gibt ihr ein Objekt, das sie
+    /// nicht kennt — sie meldet Index −1, und der zweite Klick auf dieselbe Zeile
+    /// bleibt wirkungslos. Der Wert der einen Spalte wird deshalb IN der Zeile
+    /// gesetzt; neu gebaut wird nur, wenn ein anderer Bestand hereinkommt.</para>
     /// </summary>
-    private void ZeilenNeuAufbauen()
+    private void WahlGeaendert()
     {
         _nachgezogen = Projektgruppierung.Nachgezogen(Bestand, _wahl);
         _gruppen = Projektgruppierung.Gruppieren(Bestand, _wahl, _abgewaehlt);
-        _zeilen = Projekttransferprofil.Zeilen(Bestand, _nachgezogen);
+
+        var nach = new HashSet<int>(_nachgezogen);
+        foreach (Katalogfilterzeile z in _zeilen)
+            z.MitKennzeichen(Projekttransferprofil.SpMitgenommen, nach.Contains(z.Id));
     }
 
     /// <summary>Die Anzeigeliste in derselben Ordnung, die die Katalogliste zeichnet.</summary>
@@ -478,11 +496,8 @@
     /// </summary>
     private void BeiMehrfachwahl(Katalogliste.Mehrfachklick klick)
     {
-        IReadOnlyList<Katalogfilterzeile> anzeige = Anzeige();
-        MarkierungAusWahl(anzeige);
-
         _markierung.Anklicken(klick.Index, klick.Strg, klick.Umschalt);
-        WahlAusMarkierung(anzeige);
+        WahlAusMarkierung(Anzeige());
     }
 
     /// <summary>„Alle"/„Keine" gilt den SICHTBAREN Zeilen (W13-B-5).</summary>
@@ -495,22 +510,25 @@
     }
 
     /// <summary>
-    /// Der Filter hat sich geändert: Der Anker der Bereichswahl gilt nicht mehr
-    /// (er zählte Anzeigeindizes), die WAHL bleibt — sie hängt an Projekt-Ids.
+    /// <b>Der Filter oder die Sortierung haben sich geändert</b> — die Markierung
+    /// zählt ANZEIGEindizes, und die zeigen jetzt auf andere Zeilen. Sie wird
+    /// deshalb aus der WAHL neu aufgebaut; der Anker der Bereichswahl fällt dabei
+    /// weg (dieselbe Zusage wie <c>Zeilenmarkierung.AufAnzahlBegrenzen</c>: eine
+    /// veraltete Markierung bleibt ohne Wirkung, statt die falsche Zeile zu
+    /// treffen).
+    ///
+    /// <para><b>Nur hier</b>, nicht bei jedem Klick: Die Markierung IST der
+    /// laufende Zustand der Klickregel. Wer sie vor jedem Klick aus der Wahl neu
+    /// aufbaut, verliert den Anker — und ein <c>Hinzufügen</c>, das ihn setzen
+    /// soll, wählt die Zeile gleich mit.</para>
     /// </summary>
-    private void BeiGefiltert() => _markierung.Leeren();
-
-    /// <summary>Die Markierung aus der Wahl aufbauen, bevor die Klickregel greift.</summary>
-    private void MarkierungAusWahl(IReadOnlyList<Katalogfilterzeile> anzeige)
+    private void BeiGefiltert()
     {
-        int? anker = _markierung.Anker;
+        IReadOnlyList<Katalogfilterzeile> anzeige = Anzeige();
         _markierung.Leeren();
         for (int i = 0; i < anzeige.Count; i++)
             if (_wahl.Contains(anzeige[i].Id)) _markierung.Hinzufuegen(i);
-
-        // Hinzufuegen setzt den Anker mit; den echten wiederherstellen, sonst
-        // zoege Umschalt vom letzten Treffer statt vom letzten Klick.
-        if (anker.HasValue && anker.Value < anzeige.Count) _markierung.Hinzufuegen(anker.Value);
+        _markierung.AnkerLoesen();
     }
 
     /// <summary>
@@ -523,7 +541,7 @@
         foreach (int i in _markierung.Gewaehlt)
             if (i >= 0 && i < anzeige.Count) _wahl.Add(anzeige[i].Id);
 
-        ZeilenNeuAufbauen();
+        WahlGeaendert();
     }
 
     /// <summary>„Zu {0} gewählten Varianten kommen {1} Stammprojekte hinzu."</summary>
@@ -558,7 +576,7 @@
             if (gewaehlt.Contains(id)) _abgewaehlt.Remove(id);
             else if (!_wahl.Contains(id)) _abgewaehlt.Add(id);
         }
-        ZeilenNeuAufbauen();
+        WahlGeaendert();
     }
 
     private async Task ZielordnerWaehlen()
