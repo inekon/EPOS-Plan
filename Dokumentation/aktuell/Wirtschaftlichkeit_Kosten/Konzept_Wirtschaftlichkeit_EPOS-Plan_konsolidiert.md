@@ -51,10 +51,10 @@ Entstehung des Papiers, nicht seinen heutigen Geltungsumfang.
 
 | Artifact | Inhalt | entspricht |
 |---|---|---|
-| [**Dialog, Formel, Zahlenprobe**](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f) | acht Kostenkategorien, je Dialog-Mockup + Berechnungsgrundlage + durchgerechnete Zahlenprobe an einem Beispielprojekt; Schwerpunkt Vergütungen BHKW (Mengentafel brutto/netto, Mischsatz, Jahresreihe mit Deckel) und PV (AW, Marktprämie, § 51/51a, Kappung); Komponentenkosten BHKW und PV in derselben Dialogform — **die Repo-Datei `Mockups/Dialog_Formel_Zahlenprobe.html` führt** | § 2.12 |
+| [**Dialog, Formel, Zahlenprobe**](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f) | acht Kostenkategorien, je Dialog-Mockup + Berechnungsgrundlage + durchgerechnete Zahlenprobe an einem Beispielprojekt; Schwerpunkt Vergütungen BHKW (Mengentafel brutto/netto, Mischsatz, Jahresreihe mit Deckel) und PV (AW, Marktprämie, § 51/51a, Kappung); Komponentenkosten BHKW und PV in derselben Dialogform — **die Repo-Datei `../Mockups/Dialog_Formel_Zahlenprobe.html` führt** | § 2.12 |
 
 Fünf weitere Artifacts sind durch Repo-Dateien abgelöst und stehen nur noch im Protokoll: das
-B5-Dialogmockup durch `Mockups/Dialog_Formel_Zahlenprobe.html` Kat. 5 und den gebauten
+B5-Dialogmockup durch `../Mockups/Dialog_Formel_Zahlenprobe.html` Kat. 5 und den gebauten
 `BhkwWirtschaftlichkeitDialog`, die Rechenwege durch [`Rechenweg/01…08`](Rechenweg/01_Investitionskosten_BHKW.md),
 die Erlösrubrik BHKW durch [`Rechenweg/07_Erloesrubrik.md`](Rechenweg/07_Erloesrubrik.md), die
 Pflichtpositionen durch § 2.8 und die ValERI-Bewertung Höfingen durch
@@ -1111,7 +1111,7 @@ Abnahme, Etappe); das Mockup zeigt beide Sichten in Kategorie 8.
 **Weitere Festlegungen des Mockups:** Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite
 (K8/V-1); Hinweistext zu den Szenarien unter der Annahmentafel (§ 2.11.7); der Kopfabschnitt „Was
 sich gegenüber der heutigen Seite ändert", der alle fünf Punkte führt, steht bislang nur im
-abzulösenden Mockup `Mockups/Ergebnis_Bandbreite_Herkunft.html`. Die drei Entscheide, die den
+abzulösenden Mockup `../Mockups/Ergebnis_Bandbreite_Herkunft.html`. Die drei Entscheide, die den
 Zuschnitt änderten: K-3 ist mit B6 erledigt (Statuszeile #328, anderer Rechner), B-1 (Kessel) behebt
 Auftrag #331, die Erlösrubrik steht seit B7.
 
