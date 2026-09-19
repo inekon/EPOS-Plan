@@ -17876,6 +17876,18 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="KI_FRAGE_PV_STRANG_P8" xml:space="preserve">
     <value>The module count of the strings differs from the number of modules of the plant (rule P8). What does that mean and which figure drives the yield?</value>
   </data>
+  <data name="KI_FRAGE_KLIMA_TRY_KEIN_BEREICH" xml:space="preserve">
+    <value>The address of the TRY regional data does not allow range requests. What does that mean and how can I still import the data?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_AUSSERHALB" xml:space="preserve">
+    <value>The location is too far from the nearest TRY region. Why does the import stop and which climate source fits instead?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_FORMATFEHLER" xml:space="preserve">
+    <value>The TRY data cannot be read. What causes this and how do I get a usable file?</value>
+  </data>
+  <data name="KI_FRAGE_KLIMA_TRY_STANDORT_UNLESBAR" xml:space="preserve">
+    <value>The header of the TRY file does not name a readable location. What does that mean and how do I enter the location?</value>
+  </data>
   <data name="KI_DIALOGDATEN_SCHALTER" xml:space="preserve">
     <value>Send field values</value>
   </data>

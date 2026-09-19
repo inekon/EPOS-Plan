@@ -94,6 +94,28 @@ namespace WindowsFormsApplication1
         /// <summary>P8: Modulsumme der Stränge weicht von der „Anzahl Module" der Anlage ab.</summary>
         public const string PV_STRANG_P8 = "PV_STRANG_P8";
 
+        // ------------------------------------------------------------------
+        //  Klimadaten: die vier TRY-Meldungen (Auftrag KI-1)
+        // ------------------------------------------------------------------
+        //
+        // SIE HEISSEN WIE IHR RESSOURCENSCHLUESSEL. Die Meldungstexte des
+        // Klimaimports liegen unter genau diesen Namen in Resource.resx
+        // (KlimaImportAblauf, TryPaketLeser); dieselbe Zeichenkette ist hier die
+        // Kennung und im Aktionswissen der Abschnitt. Wer sie aus einer Meldung
+        // oder einem Protokoll abschreibt, findet die Erklaerung.
+
+        /// <summary>Die Adresse der TRY-Regionaldaten erlaubt keine Teilabrufe.</summary>
+        public const string KLIMA_TRY_KEIN_BEREICH = "KLIMA_TRY_KEIN_BEREICH";
+
+        /// <summary>Der Standort liegt weiter als 300 km von der naechsten TRY-Region.</summary>
+        public const string KLIMA_TRY_AUSSERHALB = "KLIMA_TRY_AUSSERHALB";
+
+        /// <summary>Die TRY-Daten sind nicht lesbar (Zeile, Spaltenzahl, Feldwert).</summary>
+        public const string KLIMA_TRY_FORMATFEHLER = "KLIMA_TRY_FORMATFEHLER";
+
+        /// <summary>Der Kopf der TRY-Datei nennt keinen lesbaren Standort.</summary>
+        public const string KLIMA_TRY_STANDORT_UNLESBAR = "KLIMA_TRY_STANDORT_UNLESBAR";
+
         /// <summary>
         /// Alle Kennungen dieser Klasse — für den Nachweis, dass jede einen
         /// Wissensabschnitt und eine Ressource <c>KI_FRAGE_&lt;Kennung&gt;</c> hat.
@@ -105,7 +127,9 @@ namespace WindowsFormsApplication1
             FLOTTE_ARBEITSLOS, FLOTTE_PROGNOSE_FEHLT, FLOTTE_RAINFLOW_UNGUELTIG,
             LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ, LAUF_W_ERZEUGER_OHNE_STROMPLATZ,
             PV_STRANG_P1, PV_STRANG_P2, PV_STRANG_P3, PV_STRANG_P4,
-            PV_STRANG_P5, PV_STRANG_P6, PV_STRANG_P7, PV_STRANG_P8
+            PV_STRANG_P5, PV_STRANG_P6, PV_STRANG_P7, PV_STRANG_P8,
+            KLIMA_TRY_KEIN_BEREICH, KLIMA_TRY_AUSSERHALB, KLIMA_TRY_FORMATFEHLER,
+            KLIMA_TRY_STANDORT_UNLESBAR
         };
 
         /// <summary>
