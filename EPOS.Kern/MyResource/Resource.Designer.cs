@@ -30481,6 +30481,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ führt „vom Stammprojekt übernehmen“, hat aber kein Stammprojekt — es gilt keine Vergütungszeile, gerechnet wird der flache Einspeisesatz. ähnelt.
+        /// </summary>
+        public static string KOH_PV_STAMM_FEHLT {
+            get {
+                return ResourceManager.GetString("KOH_PV_STAMM_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ übernimmt die PV-Vergütung des Stammprojekts „{1}“; dort ist sie nicht angewendet — gerechnet wird der flache Einspeisesatz. ähnelt.
         /// </summary>
         public static string KOH_PV_STAMM_INAKTIV {
@@ -52317,6 +52326,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string Text_Select {
             get {
                 return ResourceManager.GetString("Text_Select", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergütung des Stammprojekts „{0}“ als eigene Werte übernommen. ähnelt.
+        /// </summary>
+        public static string TRANSFER_PV_BEILAGE {
+            get {
+                return ResourceManager.GetString("TRANSFER_PV_BEILAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: Das Projekt übernimmt die PV-Vergütung seines Stammprojekts; das Paket führt sie nicht mit — es gilt keine Vergütungszeile, gerechnet wird der flache Einspeisesatz. ähnelt.
+        /// </summary>
+        public static string TRANSFER_PV_OHNE_BEILAGE {
+            get {
+                return ResourceManager.GetString("TRANSFER_PV_OHNE_BEILAGE", resourceCulture);
             }
         }
         

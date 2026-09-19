@@ -261,6 +261,15 @@
   <data name="KOH_PV_STAMM_INAKTIV" xml:space="preserve">
     <value>Variant “{0}” takes the PV remuneration of master project “{1}”; it is not applied there — the flat feed-in rate is used.</value>
   </data>
+  <data name="KOH_PV_STAMM_FEHLT" xml:space="preserve">
+    <value>Variant “{0}” is set to “take from master project” but has no master project — no remuneration row applies, the flat feed-in rate is used.</value>
+  </data>
+  <data name="TRANSFER_PV_BEILAGE" xml:space="preserve">
+    <value>Remuneration of master project “{0}” taken over as own values.</value>
+  </data>
+  <data name="TRANSFER_PV_OHNE_BEILAGE" xml:space="preserve">
+    <value>Note: the project takes the PV remuneration of its master project; the package does not carry it — no remuneration row applies, the flat feed-in rate is used.</value>
+  </data>
   <data name="PVIMP_PLAUSI_TITEL" xml:space="preserve">
     <value>Note on the module values</value>
   </data>
