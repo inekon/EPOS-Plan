@@ -2709,6 +2709,9 @@ Im Projekt muss ein Pufferspeicher mit der Verwendung „{2}" angelegt sein.</va
   <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Das Ergebnis konnte nicht gespeichert werden.</value>
   </data>
+  <data name="SIM_MSG_BHKW_NICHT_GELAUFEN" xml:space="preserve">
+    <value>Das BHKW ist in diesem Lauf nicht gelaufen (0 h/a) – deshalb kein Brennstoffverbrauch.</value>
+  </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
     <value>Kein Brennstoff für dieses BHKW definiert.</value>
   </data>
@@ -3804,6 +3807,9 @@ Bitte zuerst die Simulation mit Heizkessel durchführen.</value>
   </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF_SPK" xml:space="preserve">
     <value>Kein Brennstoff für diese Heizkessel definiert.</value>
+  </data>
+  <data name="SIM_MSG_KESSEL_NICHT_GELAUFEN" xml:space="preserve">
+    <value>Die Heizkessel sind in diesem Lauf nicht gelaufen – deshalb kein Brennstoffverbrauch.</value>
   </data>
   <data name="SIM_MSG_KEINE_DATEN_BHKW" xml:space="preserve">
     <value>Keine Simulationsdaten vorhanden!

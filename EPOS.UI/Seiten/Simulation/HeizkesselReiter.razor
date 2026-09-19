@@ -114,7 +114,18 @@
                    hier bisher ein Balken ohne Inhalt. *@
                 @if (SichtbareBrennstoffe == 0)
                 {
-                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.SIM_MSG_KEIN_BRENNSTOFF_SPK" />
+                    @* BH-1: dieselbe Trennung wie im BHKW-Reiter. „Kein Brennstoff
+                       definiert" ist nur wahr, solange kein Kessel des Projekts einen
+                       gepflegten Brennstoff traegt; sonst ist der leere Block die Folge
+                       eines Laufs ohne Kesselbetrieb. *@
+                    @if (BrennstoffDefiniert)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Resource.SIM_MSG_KESSEL_NICHT_GELAUFEN" />
+                    }
+                    else
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@Resource.SIM_MSG_KEIN_BRENNSTOFF_SPK" />
+                    }
                 }
                 else
                 {
@@ -209,6 +220,13 @@
     /// <summary>Die zehn Brennstoffzeilen samt Praesenzregel; die Huelle stellt sie zusammen.</summary>
     [Parameter] public IReadOnlyList<Brennstoffzeile> Brennstoffe { get; set; }
         = Array.Empty<Brennstoffzeile>();
+
+    /// <summary>
+    /// Fuehrt mindestens ein Heizkessel des Projekts einen gepflegten Brennstoff
+    /// (<c>Tab_Heizkessel.Brennstoff</c> &gt; 0)? Entscheidet den Text des leeren
+    /// Brennstoffblocks (Auftrag BH-1).
+    /// </summary>
+    [Parameter] public bool BrennstoffDefiniert { get; set; }
 
     /// <summary>Fuehrt das Projekt einen Waermebedarf? Ohne ihn steht „0" statt einer Quote.</summary>
     [Parameter] public bool BedarfVorhanden { get; set; } = true;

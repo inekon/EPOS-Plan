@@ -2693,6 +2693,9 @@ The project must contain a buffer storage with the use "{2}".</value>
   <data name="SIM_MSG_ERGEBNIS_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The result could not be saved.</value>
   </data>
+  <data name="SIM_MSG_BHKW_NICHT_GELAUFEN" xml:space="preserve">
+    <value>The CHP unit did not run in this simulation (0 h/a) – hence no fuel consumption.</value>
+  </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF" xml:space="preserve">
     <value>No fuel defined for this CHP unit.</value>
   </data>
@@ -3788,6 +3791,9 @@ Please run the simulation with the boiler first.</value>
   </data>
   <data name="SIM_MSG_KEIN_BRENNSTOFF_SPK" xml:space="preserve">
     <value>No fuel defined for these boilers.</value>
+  </data>
+  <data name="SIM_MSG_KESSEL_NICHT_GELAUFEN" xml:space="preserve">
+    <value>The boilers did not run in this simulation – hence no fuel consumption.</value>
   </data>
   <data name="SIM_MSG_KEINE_DATEN_BHKW" xml:space="preserve">
     <value>No simulation data available!

@@ -47065,6 +47065,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das BHKW ist in diesem Lauf nicht gelaufen (0 h/a) – deshalb kein Brennstoffverbrauch. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_BHKW_NICHT_GELAUFEN {
+            get {
+                return ResourceManager.GetString("SIM_MSG_BHKW_NICHT_GELAUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Einspeisehöhe der {0} muss zwischen 0 und 1 liegen. ähnelt.
         /// </summary>
         public static string SIM_MSG_EINSPEISEHOEHE_BEREICH {
@@ -47205,6 +47214,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS {
             get {
                 return ResourceManager.GetString("SIM_MSG_KEIN_VOLLSTAENDIGES_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Heizkessel sind in diesem Lauf nicht gelaufen – deshalb kein Brennstoffverbrauch. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KESSEL_NICHT_GELAUFEN {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KESSEL_NICHT_GELAUFEN", resourceCulture);
             }
         }
         
