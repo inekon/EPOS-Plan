@@ -35,6 +35,22 @@ namespace WindowsFormsApplication1
         public string Hoehe = "";
 
         /// <summary>
+        /// Geographische Länge des Standorts [Grad, Ost positiv], aus
+        /// <see cref="Rechtswert"/>/<see cref="Hochwert"/> über
+        /// <see cref="LambertKoordinaten"/> gerechnet (Auftrag KL-2).
+        /// <c>null</c>, wenn der Kopf keine oder keine plausiblen Lambert-Koordinaten
+        /// führt — <b>nie eine stille Null</b>.
+        /// </summary>
+        public double? Laenge;
+
+        /// <summary>Geographische Breite des Standorts [Grad, Nord positiv]; siehe
+        /// <see cref="Laenge"/>.</summary>
+        public double? Breite;
+
+        /// <summary>Führt der Kopf einen lesbaren, plausiblen Standort?</summary>
+        public bool StandortBekannt => Laenge.HasValue && Breite.HasValue;
+
+        /// <summary>
         /// Die Größen, die die Datei führt und EPOS-Plan BENANNT verwirft (Entscheid des
         /// Anwenders: nur vorhandene Spalten füllen). Sie stehen im Herkunftsvermerk,
         /// damit niemand sie später in der Datenbank sucht.
@@ -62,8 +78,9 @@ namespace WindowsFormsApplication1
     /// RW HW MM DD HH t p WR WG N x RF B D A E IL
     /// </code>
     /// <list type="bullet">
-    ///   <item><description><c>RW</c>/<c>HW</c> — Lambert-Koordinaten der Station
-    ///     (nicht übernommen, die Region trägt Longitude/Latitude).</description></item>
+    ///   <item><description><c>RW</c>/<c>HW</c> — Lambert-Koordinaten der Station,
+    ///     je Datenzeile wiederholt (nicht übernommen; der STANDORT kommt aus dem
+    ///     Kopf, siehe <see cref="TryKopf.Laenge"/>).</description></item>
     ///   <item><description><c>MM</c>/<c>DD</c>/<c>HH</c> — Monat, Tag, Stunde
     ///     <b>1…24 MEZ</b>; <c>HH</c> benennt das Intervall, das zu <c>HH:00</c>
     ///     endet.</description></item>
@@ -157,6 +174,68 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Liest NUR den Kopf einer TRY-Datei — bis zur Trennzeile <c>***</c>, ohne die
+        /// 8 760 Datenzeilen zu deuten (Auftrag KL-2).
+        ///
+        /// <para><b>Wofür:</b> Der Klimadaten-Dialog belegt beim Wählen einer Datei den
+        /// Standort vor. Dafür genügen die vier Dutzend Kopfzeilen; die ganze Datei zu
+        /// parsen kostete ein Vielfaches und läge in der Oberfläche quer.</para>
+        ///
+        /// <para><b>Ohne Ausnahme:</b> Fehlt die Datei, ist sie nicht lesbar oder trägt
+        /// sie keine Trennzeile, liefert die Methode <c>false</c> und einen leeren
+        /// <see cref="TryKopf"/> — der Dialog meldet das, statt zu stürzen.</para>
+        /// </summary>
+        /// <param name="pfad">Der Pfad, den die OBERFLÄCHE gewählt hat.</param>
+        /// <param name="kopf">Was der Kopf hergibt, samt Standort.</param>
+        /// <returns><c>true</c>, wenn Kopf und Trennzeile gelesen wurden.</returns>
+        public static bool KopfLesen(string pfad, out TryKopf kopf)
+        {
+            kopf = new TryKopf();
+
+            if (string.IsNullOrWhiteSpace(pfad)) return false;
+
+            try
+            {
+                if (!File.Exists(pfad)) return false;
+                kopf = KopfLesen(File.ReadLines(pfad));
+                return kopf.Kopfzeilen > 0 || kopf.StandortBekannt;
+            }
+            catch (FormatException) { kopf = new TryKopf(); return false; }
+            catch (IOException) { kopf = new TryKopf(); return false; }
+            catch (UnauthorizedAccessException) { kopf = new TryKopf(); return false; }
+        }
+
+        /// <summary>
+        /// Liest den Kopf aus einer Zeilenfolge und HÖRT AN DER TRENNZEILE AUF — bei
+        /// <c>File.ReadLines</c> heißt das: Der Rest der Datei wird nie gelesen.
+        /// </summary>
+        /// <exception cref="FormatException">Es gibt keine Trennzeile <c>***</c>.</exception>
+        public static TryKopf KopfLesen(IEnumerable<string> zeilen)
+        {
+            if (zeilen == null) throw new ArgumentNullException(nameof(zeilen));
+
+            var kopf = new TryKopf();
+            int nummer = 0;
+
+            foreach (string zeile in zeilen)
+            {
+                nummer++;
+                string z = (zeile ?? "").Trim();
+
+                if (z.StartsWith(TRENNZEICHEN, StringComparison.Ordinal))
+                {
+                    kopf.Kopfzeilen = nummer - 1;
+                    StandortSetzen(kopf);
+                    return kopf;
+                }
+
+                KopfzeileDeuten(kopf, z);
+            }
+
+            throw new FormatException(MyResource.Resource.KLIMA_TRY_KEIN_KOPFENDE);
+        }
+
+        /// <summary>
         /// Liest eine TRY-Reihe aus ihren Zeilen.
         /// </summary>
         /// <param name="zeilen">Kopf, Trennzeile und Datenzeilen — Zeilenenden
@@ -190,6 +269,7 @@ namespace WindowsFormsApplication1
                     if (z.StartsWith(TRENNZEICHEN, StringComparison.Ordinal))
                     {
                         kopf.Kopfzeilen = nummer - 1;
+                        StandortSetzen(kopf);
                         imKopf = false;
                         continue;
                     }
@@ -381,6 +461,46 @@ namespace WindowsFormsApplication1
                 kopf.Art = Wert(zeile);
             else if (kopf.Bezugszeitraum.Length == 0 && Traegt(zeile, "Bezugszeitraum"))
                 kopf.Bezugszeitraum = Wert(zeile);
+        }
+
+        /// <summary>
+        /// Rechnet <see cref="TryKopf.Rechtswert"/>/<see cref="TryKopf.Hochwert"/> in
+        /// Länge und Breite um (Auftrag KL-2). Fehlt eine der beiden Angaben, ist sie
+        /// keine Zahl oder liegt der Punkt außerhalb der Plausibilitätsgrenzen von
+        /// <see cref="LambertKoordinaten"/>, bleiben beide Felder <c>null</c> —
+        /// <b>keine stille Null</b>.
+        /// </summary>
+        private static void StandortSetzen(TryKopf kopf)
+        {
+            kopf.Laenge = null;
+            kopf.Breite = null;
+
+            if (!Meterwert(kopf.Rechtswert, out double rw)) return;
+            if (!Meterwert(kopf.Hochwert, out double hw)) return;
+
+            if (LambertKoordinaten.NachGeographisch(rw, hw, out double lon, out double lat))
+            {
+                kopf.Laenge = lon;
+                kopf.Breite = lat;
+            }
+        }
+
+        /// <summary>
+        /// Die Zahl aus einer Kopfangabe wie „3909500 Meter“: das ERSTE weißraumfreie
+        /// Stück, invariant gelesen; ein Dezimalkomma wird zum Punkt.
+        /// </summary>
+        public static bool Meterwert(string angabe, out double wert)
+        {
+            wert = 0;
+            string a = (angabe ?? "").Trim();
+            if (a.Length == 0) return false;
+
+            int ende = a.IndexOfAny(new[] { ' ', '\t' });
+            string zahl = ende > 0 ? a.Substring(0, ende) : a;
+            zahl = zahl.Replace(',', '.');
+
+            return double.TryParse(zahl, NumberStyles.Float, CultureInfo.InvariantCulture,
+                                   out wert);
         }
 
         private static bool Traegt(string zeile, string wort)

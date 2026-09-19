@@ -30598,6 +30598,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort vom Anwender ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_ANWENDER {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_ANWENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kopf der TRY-Datei nennt keinen lesbaren Standort — Längen- und Breitengrad bitte eintragen. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_FEHLT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort aus der Datei (Rechtswert {0}, Hochwert {1}); änderbar. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_HINWEIS {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort aus dem Dateikopf: Rechtswert {0}, Hochwert {1} → {2}° O / {3}° N ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_KOPF {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Standort der Datei „{0}“ ist nicht lesbar — Längen- und Breitengrad bitte eintragen. ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_STANDORT_UNLESBAR {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_STANDORT_UNLESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Szenario ähnelt.
         /// </summary>
         public static string KLIMA_TRY_SZENARIO {

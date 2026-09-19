@@ -179,16 +179,27 @@
 
                 <span class="epos-klimaregion-oder">@OderText</span>
 
+                @* Schreibt der Anwender selbst in eines der beiden Felder, gilt SEIN
+                   Wert - und die Herkunftszeile der Datei stimmt nicht mehr (KL-2). *@
                 <Zahlenfeld Bezeichnung="@LabelLongitudeText" Wert="@_longitude"
-                            WertChanged="@(w => { _longitude = w; _meldung = ""; })"
+                            WertChanged="@(w => { _longitude = w; _meldung = ""; _tryStandort = ""; })"
                             Feldname="@FeldLongitudeText" FehlerZustand="BeiFehler"
                             Aktiv="@(!_laeuft)" />
                 <Zahlenfeld Bezeichnung="@LabelLatitudeText" Wert="@_latitude"
-                            WertChanged="@(w => { _latitude = w; _meldung = ""; })"
+                            WertChanged="@(w => { _latitude = w; _meldung = ""; _tryStandort = ""; })"
                             Feldname="@FeldLatitudeText" FehlerZustand="BeiFehler"
                             Aktiv="@(!_laeuft)" />
                 <Textfeld Bezeichnung="@LabelBezeichnungText" Wert="@_bezeichnung"
                           WertChanged="@(t => { _bezeichnung = t; _meldung = ""; })" />
+
+                @* Der Standort einer TRY-Datei kommt aus IHREM Kopf (Auftrag KL-2).
+                   Die Zeile sagt, woher die Zahlen stammen - und dass sie
+                   ueberschreibbar sind; ohne sie waere die Vorbelegung eine
+                   Behauptung ohne Herkunft. *@
+                @if (_tryStandort.Length > 0)
+                {
+                    <Herleitungszeile Text="@_tryStandort" />
+                }
             </div>
         </Eingabe>
     </Katalograhmen>
@@ -320,6 +331,10 @@
     [Parameter] public string TryDateiFilter { get; set; } = Resource.KLIMA_TRY_DATEI_FILTER;
     [Parameter] public string TryPaketFilter { get; set; } = Resource.KLIMA_TRY_PAKET_FILTER;
 
+    // ---- Standort aus der TRY-Datei (Auftrag KL-2) ----------------------
+    [Parameter] public string StandortHinweisText { get; set; } = Resource.KLIMA_TRY_STANDORT_HINWEIS;
+    [Parameter] public string StandortUnlesbarText { get; set; } = Resource.KLIMA_TRY_STANDORT_UNLESBAR;
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -358,6 +373,12 @@
     private string _tryPaketPfad = "";
     private int? _tryJahr = KlimaImportAuftrag.TRY_JAHR_VORGABE;
     private TrySzenario _szenario = TrySzenario.MittleresJahr;
+
+    /// <summary>Die Herkunftszeile des vorbelegten Standorts; leer = keine.</summary>
+    private string _tryStandort = "";
+
+    /// <summary>Die Herkunftszeile des Standorts (Prüfhilfe für Tests).</summary>
+    public string Standortzeile => _tryStandort;
 
     /// <summary>Die gewählte Klimaquelle (Prüfhilfe für Tests).</summary>
     public KlimaQuelle Quelle => _quelle;
@@ -399,9 +420,10 @@
 
     /// <summary>
     /// Der STANDORT: ein Ortsname ODER die drei Handangaben. Er wird bei JEDER Quelle
-    /// gebraucht — auch eine TRY-Datei sagt nichts über Longitude und Latitude
-    /// (ihr Kopf führt Lambert-Koordinaten), und ohne sie ließe sich weder die
-    /// Sonnengeometrie noch die nächste TRY-Region bestimmen.
+    /// gebraucht — ohne ihn ließe sich weder die Sonnengeometrie noch die nächste
+    /// TRY-Region bestimmen. Bei einer TRY-Datei füllt ihn
+    /// <see cref="StandortAusDatei"/> aus dem Dateikopf vor (Auftrag KL-2); der
+    /// Anwender kann jedes Feld überschreiben.
     /// </summary>
     private bool StandortSteht =>
         _ortsname.Trim().Length > 0 ||
@@ -506,6 +528,53 @@
     {
         _tryPfad = pfad ?? "";
         _meldung = "";
+        _tryStandort = "";
+        StandortAusDatei();
+    }
+
+    /// <summary>
+    /// Belegt den STANDORT aus dem Kopf der gewählten TRY-Datei vor (Auftrag KL-2).
+    ///
+    /// <para>Der Kern liest den Kopf — nur bis zur Trennzeile, ohne Netz und ohne
+    /// Datenbank — und rechnet Rechts-/Hochwert über
+    /// <c>LambertKoordinaten</c> in Länge und Breite um. Der Dialog SETZT beides, füllt
+    /// eine leere Bezeichnung aus dem Dateinamen und schreibt darunter, woher die
+    /// Zahlen kommen. <b>Alles bleibt änderbar</b>: Der Anwender kann jedes Feld
+    /// überschreiben, und der Import nimmt dann seine Eingabe.</para>
+    ///
+    /// <para><b>Nicht lesbar ist kein Fehler:</b> Fehlt die Datei oder nennt ihr Kopf
+    /// keinen plausiblen Punkt, bleibt es bei einem Hinweis — die Felder bleiben
+    /// stehen, und ob eingelesen werden darf, entscheidet wie bisher
+    /// <see cref="ImportErlaubt"/>.</para>
+    /// </summary>
+    private void StandortAusDatei()
+    {
+        string pfad = _tryPfad.Trim();
+        if (pfad.Length == 0) return;
+
+        if (!DwdTryLeser.KopfLesen(pfad, out TryKopf kopf) || !kopf.StandortBekannt)
+        {
+            Melden(string.Format(CultureInfo.CurrentCulture, StandortUnlesbarText,
+                                 Dateiname(pfad)), WarnStufe.Hinweis);
+            return;
+        }
+
+        _longitude = kopf.Laenge;
+        _latitude = kopf.Breite;
+        _fehlerFelder.Remove(FeldLongitudeText);   // die gesetzten Werte sind gueltig
+        _fehlerFelder.Remove(FeldLatitudeText);
+
+        if (_bezeichnung.Trim().Length == 0) _bezeichnung = Dateiname(pfad);
+
+        _tryStandort = string.Format(CultureInfo.CurrentCulture, StandortHinweisText,
+                                     kopf.Rechtswert, kopf.Hochwert);
+    }
+
+    /// <summary>Der Dateiname ohne Endung — die Vorgabe der Bezeichnung.</summary>
+    private static string Dateiname(string pfad)
+    {
+        try { return System.IO.Path.GetFileNameWithoutExtension(pfad) ?? ""; }
+        catch (ArgumentException) { return ""; }
     }
 
     private void BeiTryPaket(string pfad)
