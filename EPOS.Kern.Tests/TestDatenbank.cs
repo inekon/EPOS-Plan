@@ -326,6 +326,17 @@ namespace EPOS.Kern.Tests
                          in SpeicherVarianteAktivEindeutig.Anweisungen)
                     DataRepository.ExecuteNonQuery(a.Value);
 
+                // Schritt 93 (Konzept § 2.16, 18.09.2026): die Verguetungswahl je
+                // Variante an Tab_ProjektPhotovoltaik, dazu die zwei DML der
+                // Bestandsableitung. Wie in der Migration und im Werkzeug aus DERSELBEN
+                // Quelle; beide DML sind wiederholbar und fassen auf einer bereits
+                // abgeleiteten Kopie nichts mehr an.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt93_VerguetungJeVariante)
+                    SpalteSicherstellen(s);
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                         in PvVerguetungJeVariante.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

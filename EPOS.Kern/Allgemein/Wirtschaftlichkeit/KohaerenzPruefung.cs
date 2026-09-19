@@ -151,6 +151,11 @@ namespace WindowsFormsApplication1
             // wird deshalb VOR der Prüfung auf lauf.Steuer erledigt.
             try { HilfsenergieDoppelpflege(idProjekt, kultur, liste); } catch { }
 
+            // KONZEPT § 2.16: die Herkunft der PV-Verguetung. Sie haengt wie die
+            // Doppelpflege an KEINEM Steuerpfad und steht deshalb VOR der Pruefung auf
+            // lauf.Steuer.
+            try { PvVerguetungHerkunft(idProjekt, kultur, liste); } catch { }
+
             if (lauf == null || lauf.Steuer == null) return liste;
 
             // Jede Seite für sich gekapselt: Ein Fehlschlag der Brennstoffseite darf die
@@ -261,6 +266,74 @@ namespace WindowsFormsApplication1
                         (a.AnteilProzent ?? 0).ToString("N2", kultur))
                 });
             }
+        }
+
+        // =====================================================================
+        // PV-Vergütung — die Herkunft je Stand (Konzept § 2.16)
+        // =====================================================================
+
+        /// <summary>
+        /// Zwei Lagen ohne Rechenwirkung, in denen eine Variante NICHT das rechnet, was
+        /// ihr Stammprojekt rechnet (Konzept § 2.16, § 3.9):
+        ///
+        /// <list type="number">
+        ///   <item><description><b>Die Spur der Bestandsableitung</b> (VV‑Q4): Die
+        ///     Variante führt eine eigene, INAKTIVE Vergütung, während der Stamm eine
+        ///     aktive führt. Schemaschritt 93 hat diese Zeile angelegt, damit der Schritt
+        ///     keine Zahl ändert — gerechnet wird der flache Einspeisesatz. Ein Klick auf
+        ///     „vom Stammprojekt übernehmen" löst es auf.</description></item>
+        ///   <item><description><b>Der leere Stamm</b>: Die Variante übernimmt, aber die
+        ///     Vergütung des Stamms ist nicht angewendet. Beide rechnen Flat — das ist
+        ///     richtig, sieht im Reiter aber nach einer gepflegten Übernahme
+        ///     aus.</description></item>
+        /// </list>
+        ///
+        /// <para><b>Nur für VARIANTEN.</b> Ein Stammprojekt führt immer eigene Werte; es
+        /// gibt bei ihm nichts zu vergleichen. Die billigste Frage steht deshalb zuerst,
+        /// und im Bestand ohne gepflegte Vergütung endet die Prüfung nach zwei
+        /// Abfragen.</para>
+        /// </summary>
+        private static void PvVerguetungHerkunft(int idProjekt, CultureInfo kultur,
+                                                 List<KohaerenzHinweis> liste)
+        {
+            int idStamm = new VariantenCtrl().StammRefDerVariante(idProjekt);
+            if (idStamm <= 0 || idStamm == idProjekt) return;
+
+            var ctrl = new ProjektPhotovoltaikCtrl();
+            ProjektPhotovoltaikModel stamm = ctrl.Lies(idStamm);
+            if (stamm == null) return;
+
+            ProjektPhotovoltaikModel eigen = ctrl.Lies(idProjekt);
+            bool uebernimmt = eigen == null || eigen.UebernahmeStamm;
+
+            string nameVariante = StartseiteCtrl.Projektname(idProjekt) ?? "";
+            string nameStamm = StartseiteCtrl.Projektname(idStamm) ?? "";
+
+            if (!uebernimmt && !eigen.Aktiv && stamm.Aktiv)
+            {
+                liste.Add(new KohaerenzHinweis
+                {
+                    Schwere = KohaerenzSchwere.HINWEIS,
+                    Text = string.Format(kultur, T("KOH_PV_EIGENE_INAKTIV",
+                            "Variante „{0}\" führt eine eigene, INAKTIVE PV-Vergütung, " +
+                            "während das Stammprojekt „{1}\" eine aktive führt — " +
+                            "gerechnet wird der flache Einspeisesatz. „Vom Stammprojekt " +
+                            "übernehmen\" im Reiter Ertrag/Bonus löst es auf."),
+                        nameVariante, nameStamm)
+                });
+                return;
+            }
+
+            if (uebernimmt && !stamm.Aktiv)
+                liste.Add(new KohaerenzHinweis
+                {
+                    Schwere = KohaerenzSchwere.HINWEIS,
+                    Text = string.Format(kultur, T("KOH_PV_STAMM_INAKTIV",
+                            "Variante „{0}\" übernimmt die PV-Vergütung des " +
+                            "Stammprojekts „{1}\"; dort ist sie nicht angewendet — " +
+                            "gerechnet wird der flache Einspeisesatz."),
+                        nameVariante, nameStamm)
+                });
         }
 
         /// <summary>Anlagenzeilen des Projekts mit einem Hilfsenergieanteil &gt; 0 —

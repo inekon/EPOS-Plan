@@ -237,6 +237,12 @@
   <data name="CEC_MSG_KOPFZEILE" xml:space="preserve">
     <value>CEC header incomplete, missing column(s): {0}</value>
   </data>
+  <data name="KOH_PV_EIGENE_INAKTIV" xml:space="preserve">
+    <value>Variant “{0}” holds its own INACTIVE PV remuneration while master project “{1}” holds an active one — the flat feed-in rate is used. “Take from master project” on the Revenue/bonus tab resolves it.</value>
+  </data>
+  <data name="KOH_PV_STAMM_INAKTIV" xml:space="preserve">
+    <value>Variant “{0}” takes the PV remuneration of master project “{1}”; it is not applied there — the flat feed-in rate is used.</value>
+  </data>
   <data name="PVIMP_PLAUSI_TITEL" xml:space="preserve">
     <value>Note on the module values</value>
   </data>
@@ -6412,6 +6418,18 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   </data>
   <data name="WIRT_ZEILE_ENERGIESTEUER" xml:space="preserve">
     <value>Energy tax credit [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERKUNFT" xml:space="preserve">
+    <value>PV remuneration: origin</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_EIGEN" xml:space="preserve">
+    <value>own values</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_STAMM" xml:space="preserve">
+    <value>taken from {0}</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_STAMM_OHNE_NAME" xml:space="preserve">
+    <value>taken from the master project</value>
   </data>
   <data name="WIRT_ZEILE_STROMST_BEFREIUNG" xml:space="preserve">
     <value>Electricity tax exemption [€/a]</value>

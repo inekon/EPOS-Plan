@@ -1076,6 +1076,21 @@ namespace WindowsFormsApplication1
         /// <summary>60-%-Kappung (§ 9 Abs. 2 EEG): verlorene Menge [kWh/a]; 0 = keine Kappung.</summary>
         public double PvKappungsverlustKwh;
 
+        // ---- KONZEPT § 2.16 — die HERKUNFT der Vergütung dieses Stands ----
+        //
+        // Sie ist kein Rechenwert, sondern die Aussage, ohne die zwei Varianten
+        // derselben Gruppe mit verschiedenen Vergütungen nicht zu unterscheiden sind.
+        // Beide Felder reisen im ErgebnisNachweisUmschlag mit (Fassung 3) — deshalb
+        // nennt der Bericht die Herkunft auch beim gebuchten Stand, ohne neue Spalte in
+        // Tab_Ergebnis.
+
+        /// <summary>Rechnet dieser Stand mit der Vergütung seines Stammprojekts?
+        /// <c>false</c> = eigene Werte (beim Stamm immer).</summary>
+        public bool PvVerguetungUebernommen;
+
+        /// <summary>Name des Stammprojekts bei Übernahme; leer bei eigenen Werten.</summary>
+        public string PvVerguetungQuelle = "";
+
         /// <summary>
         /// Vermiedener Netzbezug durch PV-Eigenverbrauch [€/a], INFORMATIV —
         /// Jahr-1-Sicht: (Erzeugung − Überschuss) × Strom-Arbeitspreis derselben

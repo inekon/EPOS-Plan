@@ -478,6 +478,14 @@ namespace WindowsFormsApplication1
                                      e => e.PvAnzulegenderWert, WirtZeile.BLOCK_A);
                 aw.Format = "N2"; aw.ExcelFormat = "#,##0.00";
                 z.Add(aw);
+                // KONZEPT § 2.16 - die HERKUNFT der Verguetung je Spalte. Zwei Varianten
+                // derselben Gruppe koennen mit verschiedenen Verguetungen rechnen; ohne
+                // diese Zeile stuenden Vermarktungsform und AW nebeneinander, ohne zu
+                // sagen, WOHER sie kommen. Sie reist im Nachweisumschlag mit (Fassung 3)
+                // - Word und Excel lesen dieselbe Definition, und der gebuchte Stand
+                // traegt sie ebenso wie der frisch gerechnete.
+                z.Add(UnterText("PV_HERKUNFT", MyResource.Resource.WIRT_ZEILE_PV_HERKUNFT,
+                                PvHerkunftText, WirtZeile.BLOCK_A));
                 if (Irgendein(menge, e => e.PvMarktpraemie > 0))
                     z.Add(Erloes(blockA, "PV_MARKTPRAEMIE", MyResource.Resource.WIRT_ZEILE_PV_MARKTPRAEMIE,
                                  e => (double?)e.PvMarktpraemie, false));
@@ -954,6 +962,30 @@ namespace WindowsFormsApplication1
             if (form == DbWerte.PV_VERMARKTUNG_SONSTIGE_DV) return MyResource.Resource.WIRT_ZEILE_PV_FORM_DV;
             if (form == DbWerte.PV_VERMARKTUNG_KEINE) return MyResource.Resource.WIRT_ZEILE_PV_FORM_KEINE;
             return form;
+        }
+
+        /// <summary>
+        /// Die HERKUNFT der PV-Vergütung dieses Stands (Konzept § 2.16): „eigene Werte"
+        /// oder „übernommen von ‹Stamm›".
+        ///
+        /// <para>Ein Stammprojekt führt immer eigene Werte; ein vor Schemaschritt 93
+        /// gebuchter Stand ebenso — sein Nachweisumschlag kennt das Feld nicht und liest
+        /// sich als <c>false</c>, und genau das traf damals zu.</para>
+        ///
+        /// <para>Fehlt bei einer Übernahme der NAME des Stamms (gelöschtes Projekt,
+        /// älterer Umschlag mit gesetztem Kennzeichen), steht die Zeile ohne ihn da —
+        /// eine leere Anführung wäre eine Behauptung über ein Projekt, das niemand
+        /// benennen kann.</para>
+        /// </summary>
+        private static string PvHerkunftText(WirtschaftlichkeitErgebnis e)
+        {
+            if (e == null) return null;
+            if (!e.PvVerguetungUebernommen) return MyResource.Resource.WIRT_ZEILE_PV_HERK_EIGEN;
+            if (string.IsNullOrEmpty(e.PvVerguetungQuelle))
+                return MyResource.Resource.WIRT_ZEILE_PV_HERK_STAMM_OHNE_NAME;
+            return string.Format(BerichtTexte.Kultur,
+                                 MyResource.Resource.WIRT_ZEILE_PV_HERK_STAMM,
+                                 e.PvVerguetungQuelle);
         }
 
         private static bool Irgendein(IList<WirtschaftlichkeitErgebnis> menge,

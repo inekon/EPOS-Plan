@@ -3413,8 +3413,14 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die WAHL einer Variante: führt sie <b>eigene</b> PV-Vergütungswerte oder
         /// übernimmt sie die des Stammprojekts? <c>1</c> = übernommen, <c>0</c> = eigene
-        /// Werte, <b>NULL = übernommen</b> — und ebenso heißt <b>keine Zeile</b>
-        /// „übernommen" (die Vorgabe jeder neuen Variante).
+        /// Werte; <b>keine Zeile</b> heißt „übernommen" — die Vorgabe jeder neuen
+        /// Variante.
+        ///
+        /// <para><b>NULL an einer VORHANDENEN Zeile heißt „eigene Werte"</b>, nicht
+        /// „übernommen": Eine Zeile, die da ist, hat gegolten — das ist der Bestand vor
+        /// diesem Schritt, und dieselbe Antwort gibt eine Datenbank, der die Spalte noch
+        /// fehlt. Die Ableitung des Schritts schreibt dieses NULL einmalig als 0 fest;
+        /// die Lesart bleibt als tolerante Rückfallebene bestehen.</para>
         ///
         /// <para><b>Warum eine eigene Spalte und nicht „NULL je Feld".</b> Die Spalten
         /// dieser Tabelle bedeuten mit NULL schon „nicht gepflegt / Rückfall"

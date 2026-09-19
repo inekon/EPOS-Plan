@@ -1895,6 +1895,15 @@ namespace WindowsFormsApplication1
             /// Dialog inaktiv — dann gilt exakt der Bestandsrechenweg).</summary>
             public PvErloesErgebnis PvVerguetung;
 
+            /// <summary>KONZEPT § 2.16: Rechnet dieser Stand mit der Vergütung seines
+            /// STAMMPROJEKTS? <c>false</c> = eigene Werte (und beim Stamm immer).</summary>
+            public bool PvVerguetungUebernommen;
+
+            /// <summary>Name des Stammprojekts, dessen Vergütung übernommen wird; leer
+            /// bei eigenen Werten. Er steht im Nachweis, weil eine Id dort niemandem
+            /// sagt, WOHER die Zahl kommt.</summary>
+            public string PvVerguetungQuelle = "";
+
             /// <summary>ETAPPE KD6 (§ 11, FK10): Betriebskostenpositionen mit
             /// Startjahr ≥ 2 als (Betrag €/a, Startjahr) — sie laufen in der
             /// Kapitalwertreihe erst ab ihrem Jahr; <see cref="Betrieb"/> trägt
@@ -2283,6 +2292,15 @@ namespace WindowsFormsApplication1
         /// Kappung) greift von selbst, wenn Stundenreihen des Laufs und eine
         /// Spot-Preisreihe des Projekts vorliegen — sonst rechnet Stufe 1 mit der
         /// Ausfall-Pauschale. Fehler kippen den Lauf nicht (Hinweis statt Absturz).
+        ///
+        /// <para><b>KONZEPT § 2.16 — gelesen wird die AUFGELÖSTE Zeile.</b> Bis dahin
+        /// stand hier <c>Lies(v.IdProjekt)</c>, also die Zeile dieses einen Stands: Eine
+        /// Variante bekam die Dialogangaben genau dann, wenn sie eine eigene Zeile hatte
+        /// — und die hatte sie genau dann, wenn sie NACH der Pflege des Stamms angelegt
+        /// wurde. <see cref="ProjektPhotovoltaikCtrl.LiesAufgeloest"/> macht daraus eine
+        /// Wahl: eigene Zeile, sonst die des Stamms. Der Stamm rechnet wie bisher, und
+        /// eine Gruppe ohne gepflegte Zeile ebenso (Flat-Pfad). Der flache Rahmensatz
+        /// <c>Einspeiseverguetung</c> bleibt je Gruppe (VV‑Q5).</para>
         /// </summary>
         private void RechnePvVerguetung(VariantenDaten v, WirtschaftlichkeitParameter p,
                                         ProjektEingabe e)
@@ -2290,8 +2308,13 @@ namespace WindowsFormsApplication1
             try
             {
                 ProjektPhotovoltaikCtrl pvc = new ProjektPhotovoltaikCtrl();
-                ProjektPhotovoltaikModel pv = pvc.Lies(v.IdProjekt);
+                PvVerguetungStand stand = pvc.LiesAufgeloest(v.IdProjekt);
+                ProjektPhotovoltaikModel pv = stand.Modell;
                 if (pv == null || !pv.Aktiv) return;
+
+                e.PvVerguetungUebernommen = stand.Uebernommen;
+                e.PvVerguetungQuelle = stand.Uebernommen
+                    ? StartseiteCtrl.Projektname(stand.IdQuelle) ?? "" : "";
 
                 double kwp = PhotovoltaikCtrl.KwpDesProjekts(v.IdProjekt);
                 double einspMWh = v.Ergebnis != null && v.Ergebnis.Photovoltaik != null
@@ -5391,6 +5414,11 @@ namespace WindowsFormsApplication1
                 erg.PvKompensation51a = pv.Kompensation51aEur;
                 erg.PvKappungsverlustKwh = pv.KappungsverlustKwh;
                 erg.PvVermiedenerBezug = PvVermiedenerBezugAusweis(v);
+                // KONZEPT § 2.16: die Herkunft der Verguetung - "eigene Werte" oder
+                // "uebernommen von <Stamm>". Sie reist im Nachweisumschlag mit, damit
+                // der Bericht sie auch beim GEBUCHTEN Stand nennen kann.
+                erg.PvVerguetungUebernommen = eingabe.PvVerguetungUebernommen;
+                erg.PvVerguetungQuelle = eingabe.PvVerguetungQuelle ?? "";
             }
             erg.KwkgModule = eingabe.KwkgModule;
             erg.Betriebskosten = eingabe.Betriebskosten;

@@ -4,6 +4,37 @@ using System.Data;
 
 namespace WindowsFormsApplication1
 {
+    /// <summary>
+    /// Die AUFGELOESTE PV-Verguetung eines Stands (Konzept § 2.16): welche Zeile gilt —
+    /// und woher sie kommt.
+    ///
+    /// <para>Die Herkunft ist kein Nebenprodukt, sondern die Aussage, die Reiter, Dialog
+    /// und Bericht zeigen muessen: Zwei Varianten derselben Gruppe koennen mit
+    /// verschiedenen Verguetungen rechnen, und wer die Zahlen liest, muss erkennen,
+    /// welche.</para>
+    /// </summary>
+    public sealed class PvVerguetungStand
+    {
+        /// <summary>Die geltende Zeile; <c>null</c> = keine gepflegt (Flat-Pfad).</summary>
+        public readonly ProjektPhotovoltaikModel Modell;
+
+        /// <summary>Kommt die Zeile vom Stammprojekt? <c>false</c> = eigene Werte.</summary>
+        public readonly bool Uebernommen;
+
+        /// <summary>Das Projekt, dessen Zeile gilt — bei Uebernahme der Stamm.</summary>
+        public readonly int IdQuelle;
+
+        public PvVerguetungStand(ProjektPhotovoltaikModel modell, bool uebernommen, int idQuelle)
+        {
+            Modell = modell;
+            Uebernommen = uebernommen;
+            IdQuelle = idQuelle;
+        }
+
+        /// <summary>Gilt ueberhaupt eine AKTIVE Verguetung? Sonst rechnet der Flat-Pfad.</summary>
+        public bool Aktiv { get { return Modell != null && Modell.Aktiv; } }
+    }
+
     // ---------------------------------------------------------------------------
     // Zugriff auf Tab_ProjektPhotovoltaik (PV-Konzept Paragraf 6.1, Etappe P3)
     // und die Marktwert-Solar-Rueckfallketten (Paragraf 6.3, Nachtrag N2).
@@ -64,8 +95,141 @@ namespace WindowsFormsApplication1
                 Kappung60_Anwenden = DbWerte.PV_SCHALTER_AUTO,
                 MarktwertEntwicklung = 0,
                 BezugAusPreisreihe = false,
-                Degradation = 0.5
+                Degradation = 0.5,
+                // Konzept § 2.16: Wer diese Zeile speichert, legt EIGENE Werte an.
+                // „Uebernommen" ist der Zustand OHNE Zeile.
+                UebernahmeStamm = false
             };
+        }
+
+        // =====================================================================
+        // Die AUFGELOESTE Verguetung (Konzept § 2.16)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Verguetungszeile, die fuer diesen Stand GILT — samt der Auskunft, woher
+        /// sie kommt (Konzept § 2.16, Schemaschritt 93).
+        ///
+        /// <para><b>Die Aufloesung in drei Zeilen:</b> Ein STAMMPROJEKT fuehrt immer
+        /// eigene Werte — seine Zeile gilt, wie sie ist. Eine VARIANTE mit eigener Zeile
+        /// und <c>Uebernahme_Stamm = 0</c> ebenso. Sonst gilt die Zeile ihres Stamms; hat
+        /// auch der keine, bleibt es beim Flat-Pfad
+        /// (<see cref="PvVerguetungStand.Modell"/> ist dann <c>null</c>).</para>
+        ///
+        /// <para><b>Warum nicht <see cref="Lies"/> mit einem zweiten Parameter.</b> Der
+        /// Aufloesungsweg braucht die Variantenverknuepfung und damit einen zweiten
+        /// Controller; <see cref="Lies"/> bleibt der reine Zeilenleser, den Dialoge und
+        /// Huellen weiter brauchen — sie pflegen die Zeile EINES Projekts und duerfen
+        /// dabei nicht auf die des Stamms umgelenkt werden.</para>
+        /// </summary>
+        /// <param name="idProjekt">Der Stand, fuer den gerechnet oder angezeigt wird.</param>
+        public PvVerguetungStand LiesAufgeloest(int idProjekt)
+        {
+            if (idProjekt <= 0) return new PvVerguetungStand(null, false, 0);
+
+            ProjektPhotovoltaikModel eigen = Lies(idProjekt);
+
+            int idStamm;
+            try { idStamm = new VariantenCtrl().StammRefDerVariante(idProjekt); }
+            catch { idStamm = -1; }
+
+            // Stammprojekt (oder freistehendes Projekt): die eigene Zeile gilt, und die
+            // Wahl wird gar nicht erst gefragt.
+            if (idStamm <= 0 || idStamm == idProjekt)
+                return new PvVerguetungStand(eigen, false, idProjekt);
+
+            // Variante mit eigener, geltender Zeile.
+            if (eigen != null && !eigen.UebernahmeStamm)
+                return new PvVerguetungStand(eigen, false, idProjekt);
+
+            // Variante, die uebernimmt - keine Zeile oder Kennzeichen gesetzt.
+            return new PvVerguetungStand(Lies(idStamm), true, idStamm);
+        }
+
+        /// <summary>
+        /// Die Werte, die „eigene Verguetung" vorlegt (Anwenderentscheid VV‑Q6): eine
+        /// KOPIE der Stammzeile auf das eigene Projekt, mit <c>Uebernahme_Stamm = 0</c>.
+        /// Fehlt dem Stamm die Zeile, kommt die Vorbelegung des Controllers
+        /// (<see cref="LiesOderVorbelegt"/>) — der Anwender will eine Abweichung von
+        /// einer bekannten Basis, und wo es keine gibt, den gewohnten leeren Satz.
+        ///
+        /// <para><b>Schreibt nichts.</b> Angelegt wird die Zeile erst von
+        /// <see cref="Speichern"/> — dieselbe Trennung wie bei
+        /// <see cref="LiesOderVorbelegt"/>.</para>
+        /// </summary>
+        public ProjektPhotovoltaikModel VorlageAusStamm(int idProjekt)
+        {
+            PvVerguetungStand stand = LiesAufgeloest(idProjekt);
+            if (stand.Modell == null || stand.IdQuelle == idProjekt)
+            {
+                ProjektPhotovoltaikModel m = LiesOderVorbelegt(idProjekt);
+                m.UebernahmeStamm = false;
+                return m;
+            }
+
+            ProjektPhotovoltaikModel kopie = Kopie(stand.Modell);
+            kopie.ID = 0;                       // Speichern vergibt MAX(ID)+1
+            kopie.ID_Projekt = idProjekt;
+            kopie.UebernahmeStamm = false;
+            return kopie;
+        }
+
+        /// <summary>Feldweise Kopie — der ganze Block, nie ein Mischsatz (VV‑Q2).</summary>
+        public static ProjektPhotovoltaikModel Kopie(ProjektPhotovoltaikModel m)
+        {
+            if (m == null) return null;
+            return new ProjektPhotovoltaikModel
+            {
+                ID = m.ID,
+                ID_Projekt = m.ID_Projekt,
+                Aktiv = m.Aktiv,
+                Vermarktungsform = m.Vermarktungsform,
+                Einspeiseart = m.Einspeiseart,
+                Inbetriebnahme = m.Inbetriebnahme,
+                KwpOverride = m.KwpOverride,
+                AwOverride = m.AwOverride,
+                DvEntgelt = m.DvEntgelt,
+                PpaPreis = m.PpaPreis,
+                PpaSpotAufschlag = m.PpaSpotAufschlag,
+                Par51_Anwenden = m.Par51_Anwenden,
+                IMSys_Einbaujahr = m.IMSys_Einbaujahr,
+                AusfallanteilProzent = m.AusfallanteilProzent,
+                Par51a_Kompensieren = m.Par51a_Kompensieren,
+                Kappung60_Anwenden = m.Kappung60_Anwenden,
+                MarktwertJahresmittel = m.MarktwertJahresmittel,
+                MarktwertEntwicklung = m.MarktwertEntwicklung,
+                BezugAusPreisreihe = m.BezugAusPreisreihe,
+                Degradation = m.Degradation,
+                UebernahmeStamm = m.UebernahmeStamm,
+                GeaendertAm = m.GeaendertAm
+            };
+        }
+
+        /// <summary>
+        /// Setzt die WAHL einer Variante, ohne die Werte anzufassen (Konzept § 2.16).
+        ///
+        /// <para><c>true</c> = übernehmen: Die Zeile bleibt stehen — sie ist der Rückweg
+        /// zu den eigenen Werten —, gelesen wird ab jetzt die des Stamms. Ohne Zeile ist
+        /// nichts zu tun: „keine Zeile" heißt schon übernehmen.</para>
+        ///
+        /// <para><c>false</c> = eigene Werte: Hat die Variante eine Zeile, gilt sie
+        /// wieder; hat sie keine, legt der Aufrufer sie über
+        /// <see cref="VorlageAusStamm"/> und <see cref="Speichern"/> an (VV‑Q6).</para>
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Wahl steht — auch dann, wenn nichts zu schreiben war.</returns>
+        public bool SetzeUebernahme(int idProjekt, bool uebernehmen)
+        {
+            if (idProjekt <= 0) return false;
+            try
+            {
+                ProjektPhotovoltaikModel m = Lies(idProjekt);
+                if (m == null) return uebernehmen;      // keine Zeile = uebernommen
+                if (m.UebernahmeStamm == uebernehmen) return true;
+
+                m.UebernahmeStamm = uebernehmen;
+                return Speichern(m);
+            }
+            catch { return false; }
         }
 
         // =====================================================================
@@ -86,7 +250,9 @@ namespace WindowsFormsApplication1
                     "DvEntgelt = ?, PpaPreis = ?, PpaSpotAufschlag = ?, Par51_Anwenden = ?, " +
                     "IMSys_Einbaujahr = ?, AusfallanteilProzent = ?, Par51a_Kompensieren = ?, " +
                     "Kappung60_Anwenden = ?, MarktwertJahresmittel = ?, MarktwertEntwicklung = ?, " +
-                    "BezugAusPreisreihe = ?, Degradation = ?, GeaendertAm = ? WHERE ID_Projekt = ?",
+                    "BezugAusPreisreihe = ?, Degradation = ?, [" +
+                    SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM + "] = ?, " +
+                    "GeaendertAm = ? WHERE ID_Projekt = ?",
                     Parameter(m, projektAnsEnde: true));
                 if (rows > 0) return true;
 
@@ -98,8 +264,9 @@ namespace WindowsFormsApplication1
                     "Einspeiseart, Inbetriebnahme, KwpOverride, AwOverride, DvEntgelt, PpaPreis, " +
                     "PpaSpotAufschlag, Par51_Anwenden, IMSys_Einbaujahr, AusfallanteilProzent, " +
                     "Par51a_Kompensieren, Kappung60_Anwenden, MarktwertJahresmittel, " +
-                    "MarktwertEntwicklung, BezugAusPreisreihe, Degradation, GeaendertAm) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "MarktwertEntwicklung, BezugAusPreisreihe, Degradation, [" +
+                    SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM + "], GeaendertAm) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     ParameterInsert(m));
             }
             catch (Exception ex)
@@ -352,7 +519,12 @@ namespace WindowsFormsApplication1
                 BezugAusPreisreihe = Wahr(r, "BezugAusPreisreihe"),
                 // E2.4: NULL bleibt NULL - der Rechner liest daraus 0 %/a. Eine
                 // fehlende Spalte (Datenbank vor Schritt 63) ist derselbe Fall.
-                Degradation = Zahl(r, "Degradation")
+                Degradation = Zahl(r, "Degradation"),
+                // Konzept § 2.16: Eine Zeile, die DA ist, gilt - das ist der Bestand
+                // vor Schemaschritt 93. Fehlende Spalte und NULL lesen sich deshalb
+                // beide als false; "uebernommen" ist der Zustand OHNE Zeile oder das
+                // ausdrueckliche Kennzeichen 1.
+                UebernahmeStamm = Wahr(r, SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM)
             };
             object ibn = r["Inbetriebnahme"];
             m.Inbetriebnahme = (ibn == null || ibn == DBNull.Value)
@@ -382,6 +554,9 @@ namespace WindowsFormsApplication1
                 new DbParam("@mw", m.MarktwertEntwicklung),
                 new DbParam("@bez", m.BezugAusPreisreihe),
                 D("@deg", m.Degradation),
+                // Konzept § 2.16: 0/1, nie NULL - eine Zeile, die geschrieben wird,
+                // sagt ausdruecklich, ob sie gilt.
+                new DbParam("@ueb", DbParamTyp.Integer) { Wert = m.UebernahmeStamm ? 1 : 0 },
                 new DbParam("@ga", DbParamTyp.Date) { Wert = m.GeaendertAm ?? (object)DBNull.Value }
             };
             if (projektAnsEnde) p.Add(new DbParam("@pid", m.ID_Projekt));

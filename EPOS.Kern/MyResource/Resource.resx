@@ -237,6 +237,12 @@
   <data name="CEC_MSG_KOPFZEILE" xml:space="preserve">
     <value>CEC-Kopfzeile unvollständig, fehlende Spalte(n): {0}</value>
   </data>
+  <data name="KOH_PV_EIGENE_INAKTIV" xml:space="preserve">
+    <value>Variante „{0}“ führt eine eigene, INAKTIVE PV-Vergütung, während das Stammprojekt „{1}“ eine aktive führt — gerechnet wird der flache Einspeisesatz. „Vom Stammprojekt übernehmen“ im Reiter Ertrag/Bonus löst es auf.</value>
+  </data>
+  <data name="KOH_PV_STAMM_INAKTIV" xml:space="preserve">
+    <value>Variante „{0}“ übernimmt die PV-Vergütung des Stammprojekts „{1}“; dort ist sie nicht angewendet — gerechnet wird der flache Einspeisesatz.</value>
+  </data>
   <data name="PVIMP_PLAUSI_TITEL" xml:space="preserve">
     <value>Hinweis zu den Modulwerten</value>
   </data>
@@ -6428,6 +6434,18 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   </data>
   <data name="WIRT_ZEILE_ENERGIESTEUER" xml:space="preserve">
     <value>Energiesteuer-Gutschrift [€/a]</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERKUNFT" xml:space="preserve">
+    <value>PV-Vergütung: Herkunft</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_EIGEN" xml:space="preserve">
+    <value>eigene Werte</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_STAMM" xml:space="preserve">
+    <value>übernommen von {0}</value>
+  </data>
+  <data name="WIRT_ZEILE_PV_HERK_STAMM_OHNE_NAME" xml:space="preserve">
+    <value>vom Stammprojekt übernommen</value>
   </data>
   <data name="WIRT_ZEILE_STROMST_BEFREIUNG" xml:space="preserve">
     <value>Stromsteuer-Befreiung [€/a]</value>

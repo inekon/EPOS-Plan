@@ -69,7 +69,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die PV-Vergütungszeilen der Projekte.</summary>
         public const string TABELLE = SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK;
 
-        /// <summary>Die Wahl je Zeile: 1 = übernommen, 0 = eigene Werte, NULL = übernommen.</summary>
+        /// <summary>Die Wahl je Zeile: 1 = übernommen, 0 = eigene Werte; NULL an einer
+        /// vorhandenen Zeile liest sich wie 0 (Bestand), keine Zeile wie 1.</summary>
         public const string SPALTE = SchemaKatalog.SPALTE_PPV_UEBERNAHME_STAMM;
 
         /// <summary>Die Variantenverknüpfung (<c>ID_Projekt</c> → <c>ID_ProjektRef</c> = Stamm).</summary>
