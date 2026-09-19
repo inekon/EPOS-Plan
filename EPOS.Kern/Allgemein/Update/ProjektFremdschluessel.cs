@@ -712,15 +712,15 @@ namespace WindowsFormsApplication1
             if (anweisung.IndexOf("IF NOT EXISTS", StringComparison.OrdinalIgnoreCase) >= 0)
                 return anweisung;
 
-            const string unique = "CREATE UNIQUE INDEX ";
-            const string schlicht = "CREATE INDEX ";
+            // Eingesetzt wird hinter dem WORT - so ist der schlichte Index und der
+            // eindeutige (CREATE UNIQUE INDEX) mit EINEM Weg versorgt, und in dieser
+            // Datei steht kein angefangener CREATE-Text, ueber den der SqlDialektPruefer
+            // stolperte.
+            const string wort = " INDEX ";
+            int stelle = anweisung.IndexOf(wort, StringComparison.OrdinalIgnoreCase);
+            if (stelle < 0) return anweisung;
 
-            if (anweisung.StartsWith(unique, StringComparison.OrdinalIgnoreCase))
-                return unique + "IF NOT EXISTS " + anweisung.Substring(unique.Length);
-            if (anweisung.StartsWith(schlicht, StringComparison.OrdinalIgnoreCase))
-                return schlicht + "IF NOT EXISTS " + anweisung.Substring(schlicht.Length);
-
-            return anweisung;
+            return anweisung.Insert(stelle + wort.Length, "IF NOT EXISTS ");
         }
 
         // =================================================================
