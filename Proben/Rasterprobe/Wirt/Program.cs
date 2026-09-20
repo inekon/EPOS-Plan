@@ -36,6 +36,22 @@ WebApplication app = builder.Build();
 // Wirtes (Rasterprobe.Wirt.styles.css) heraus - und DARIN steckt QuickGrids
 // eigenes Stilblatt, ohne das die Probe weder Platzhalter noch Blinken saehe.
 app.MapStaticAssets();
+
+// Die SVG-PROBE (Konzept DG-1): dieselben Bilder wie die Seite /svgprobe, aber
+// als nackte Antwort. svgprobe.mjs holt sie mit fetch() aus der Seite heraus und
+// misst das Einsetzen ins Dokument NETZFREI - so bleibt die Renderzeit des
+// Browsers von der SignalR-Uebertragung des Blazor-Zeichenlaufs getrennt.
+app.MapGet("/svgprobe/svg", (string? variante, int? reihen) =>
+{
+    double[][] r = SvgProbe.SvgZeichner.Jahresreihen(Math.Clamp(reihen ?? 3, 1, 6));
+    return Results.Text(SvgProbe.SvgZeichner.Svg(r, SvgProbe.SvgZeichner.Art(variante)), "image/svg+xml");
+});
+app.MapGet("/svgprobe/png", (int? reihen) =>
+{
+    double[][] r = SvgProbe.SvgZeichner.Jahresreihen(Math.Clamp(reihen ?? 3, 1, 6));
+    return Results.Bytes(Bilder.Png(r), "image/png");
+});
+
 app.UseAntiforgery();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
