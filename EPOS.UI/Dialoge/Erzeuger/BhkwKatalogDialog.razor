@@ -96,10 +96,20 @@
                 <Zahlenfeld Bezeichnung="@LabelPel" Einheit="kW" Feldname="@FeldPel"
                             Wert="@Daten.Pel" WertChanged="BeiPel"
                             FehlerZustand="BeiFehlerZustand" />
-                <Zahlenfeld Bezeichnung="@LabelWirkungsgrad" Einheit="@HinweisWirkungsgrad"
-                            Feldname="@FeldWirkungsgrad"
-                            Wert="@Daten.Wirkungsgrad" WertChanged="w => Daten.Wirkungsgrad = w"
+                @* SCHEMASCHRITT 99 (Anwenderentscheid 20.09.2026): Gepflegt werden
+                   die ZWEI ANTEILE; der Gesamtwirkungsgrad daneben ist ihre Summe
+                   und laeuft bei jeder Eingabe mit - nicht editierbar, damit nicht
+                   drei Zahlen dastehen, von denen zwei einander widersprechen. *@
+                <Zahlenfeld Bezeichnung="@LabelWirkungsgradEl" Einheit="@HinweisWirkungsgradEl"
+                            Feldname="@FeldWirkungsgradEl"
+                            Wert="@Daten.WirkungsgradEl" WertChanged="BeiWirkungsgradEl"
                             FehlerZustand="BeiFehlerZustand" />
+                <Zahlenfeld Bezeichnung="@LabelWirkungsgradTh" Einheit="@HinweisWirkungsgradTh"
+                            Feldname="@FeldWirkungsgradTh"
+                            Wert="@Daten.WirkungsgradTh" WertChanged="BeiWirkungsgradTh"
+                            FehlerZustand="BeiFehlerZustand" />
+                <Textfeld Bezeichnung="@LabelWirkungsgrad" Wert="@GesamtText"
+                          NurLesen="true" Kurz="true" />
                 <Zahlenfeld Bezeichnung="@LabelGrenzleistung" Einheit="%" Feldname="@FeldGrenzleistung"
                             Wert="@Daten.Grenzleistung" WertChanged="w => Daten.Grenzleistung = w"
                             FehlerZustand="BeiFehlerZustand" />
@@ -232,9 +242,15 @@
     [Parameter] public string FeldPtherm { get; set; } = "thermische Leistung";
     [Parameter] public string LabelPel { get; set; } = "Elektrische Leistung:";
     [Parameter] public string FeldPel { get; set; } = "elektrische Leistung";
+    [Parameter] public string LabelWirkungsgradEl { get; set; } = "Elektrischer Wirkungsgrad:";
+    [Parameter] public string FeldWirkungsgradEl { get; set; } = "elektrischer Wirkungsgrad";
+    [Parameter] public string HinweisWirkungsgradEl { get; set; } = "(Faktor, z. B. 0,30)";
+    [Parameter] public string LabelWirkungsgradTh { get; set; } = "Thermischer Wirkungsgrad:";
+    [Parameter] public string FeldWirkungsgradTh { get; set; } = "thermischer Wirkungsgrad";
+    [Parameter] public string HinweisWirkungsgradTh { get; set; } = "(Faktor, z. B. 0,60)";
+
+    /// <summary>Die Beschriftung der berechneten Anzeige — der Gesamtwirkungsgrad.</summary>
     [Parameter] public string LabelWirkungsgrad { get; set; } = "Ges. Wirkungsgrad:";
-    [Parameter] public string FeldWirkungsgrad { get; set; } = "Gesamtwirkungsgrad";
-    [Parameter] public string HinweisWirkungsgrad { get; set; } = "(Faktor 0–1, z. B. 0,90)";
     [Parameter] public string LabelGrenzleistung { get; set; } = "Untere Grenzleistung:";
     [Parameter] public string FeldGrenzleistung { get; set; } = "untere Grenzleistung";
     [Parameter] public string LabelEnergietraeger { get; set; } = "Energieträger:";
@@ -267,12 +283,11 @@
 
     [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Namen eingeben!";
 
-    /// <summary>
-    /// Die Ablehnung eines Wirkungsgrads ausserhalb des Faktorbands — <c>{0}</c> ist das
-    /// Feld, <c>{1}</c> die Obergrenze.
-    /// </summary>
-    [Parameter] public string MeldungWirkungsgradFaktor { get; set; } =
-        "„{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert.";
+    @* OHNE "MeldungWirkungsgradFaktor" seit Schemaschritt 99: Die Abweisung steht
+       jetzt an EINER Stelle im Kern (BhkwWirkungsgrad.Pruefen) und bringt ihren
+       Wortlaut in beiden Sprachen selbst mit - drei Regeln, drei benannte Meldungen.
+       Mit ihr sind die Gaben "FeldWirkungsgrad" und "HinweisWirkungsgrad" entfallen:
+       Das eine Feld ist durch zwei ersetzt, der Gesamtwert ist Anzeige. *@
 
     /// <summary>Schluessel des Hilfeknopfes - die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_DBBHKW.btn_Help";
@@ -301,6 +316,45 @@
         _ersterAufbau = false;
         await _wurzel.FocusAsync();
     }
+
+    /// <summary>
+    /// DER RUECKFALL DES ALTBESTANDS (Schemaschritt 99): Traegt der geladene Satz
+    /// keine Aufteilung — weil ihm bei der Migration eine Leistung fehlte —, zeigt der
+    /// Dialog die Aufteilung des Gesamtwirkungsgrads im Verhaeltnis der Leistungen als
+    /// VORSCHLAG. Gespeichert wird sie erst, wenn der Anwender speichert.
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        if (Daten is null) return;
+        if (Daten.WirkungsgradEl.HasValue || Daten.WirkungsgradTh.HasValue) return;
+
+        BhkwWirkungsgrad.Aufteilung a =
+            BhkwWirkungsgrad.Aufteilen(Daten.Wirkungsgrad, Daten.Pel, Daten.Ptherm);
+        if (!a.El.HasValue || !a.Th.HasValue) return;
+
+        Daten.WirkungsgradEl = a.El;
+        Daten.WirkungsgradTh = a.Th;
+    }
+
+    /// <summary>
+    /// Der Gesamtwirkungsgrad als Anzeigetext — die SUMME der zwei Anteile, drei
+    /// Stellen. Leer, solange ein Anteil fehlt: Aus einem halben Paar laesst sich keine
+    /// Summe bilden, und eine 0 stuende dort fuer „Wirkungsgrad null".
+    /// </summary>
+    public string GesamtText
+    {
+        get
+        {
+            double? summe = BhkwWirkungsgrad.Gesamt(Daten?.WirkungsgradEl, Daten?.WirkungsgradTh);
+            return summe.HasValue
+                 ? summe.Value.ToString("0.###", CultureInfo.CurrentCulture)
+                 : "";
+        }
+    }
+
+    private void BeiWirkungsgradEl(double? wert) => Daten.WirkungsgradEl = wert;
+
+    private void BeiWirkungsgradTh(double? wert) => Daten.WirkungsgradTh = wert;
 
     // =================================================================================
     // Die technischen Felder
@@ -353,22 +407,19 @@
     }
 
     /// <summary>
-    /// Der Gesamtwirkungsgrad ist ein FAKTOR, kein Prozentwert: Der Rechenweg teilt
-    /// durch diese Zahl (<c>Verbrauch = (Wärme + Strom) / Wirkungsgrad</c>), und eine 29,5
-    /// machte den Brennstoff um rund Faktor 32 zu klein. Zugelassen ist (0;
-    /// <see cref="BhkwWirkungsgradFaktor.BAND_BIS"/>] — dieselbe Obergrenze wie im
-    /// Schemaschritt 98 und im Kern (<c>KatalogFeldPruefung.WirkungsgradFaktor</c>);
-    /// 1,05 laesst das Brennwertgeraet zu, dessen Gesamtwirkungsgrad auf den Heizwert
-    /// bezogen ueber 1 liegt.
+    /// DIE DREI REGELN stehen im Kern, nicht hier (<see cref="BhkwWirkungsgrad.Pruefen"/>,
+    /// Schemaschritt 99): jeder Anteil in (0; 1), die Summe in (0;
+    /// <see cref="BhkwWirkungsgrad.GESAMT_BIS"/>] — 1,05 laesst das Brennwertgeraet zu,
+    /// dessen Gesamtwirkungsgrad auf den Heizwert bezogen ueber 1 liegt. Der Dialog
+    /// zeigt die Meldung, er formuliert sie nicht: Waere der Wortlaut hier, liefe er
+    /// gegen den des Aufklappers und den des Migrationsschrittes auseinander.
     /// </summary>
     private bool WirkungsgradPruefen()
     {
-        double? wert = Daten.Wirkungsgrad;
-        if (!wert.HasValue) return true;
-        if (wert.Value > 0 && wert.Value <= BhkwWirkungsgradFaktor.BAND_BIS) return true;
+        string grund = BhkwWirkungsgrad.Pruefen(Daten.WirkungsgradEl, Daten.WirkungsgradTh);
+        if (string.IsNullOrEmpty(grund)) return true;
 
-        _meldung = string.Format(MeldungWirkungsgradFaktor, FeldWirkungsgrad,
-                                 BhkwWirkungsgradFaktor.BAND_BIS.ToString(CultureInfo.CurrentCulture));
+        _meldung = grund;
         _meldungStufe = WarnStufe.Warnung;
         return false;
     }
