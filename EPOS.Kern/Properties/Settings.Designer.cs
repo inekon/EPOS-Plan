@@ -157,6 +157,18 @@ namespace WindowsFormsApplication1.Properties {
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string DiagrammFarben {
+            get {
+                return ((string)(this["DiagrammFarben"]));
+            }
+            set {
+                this["DiagrammFarben"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool EinstellungenUebernommen {
             get {

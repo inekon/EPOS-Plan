@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using SkiaSharp;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace ChartProben
 {
@@ -92,6 +93,13 @@ namespace ChartProben
         private static int Main(string[] args)
         {
             try { Console.OutputEncoding = new UTF8Encoding(false); } catch { }
+
+            // DIE MESSLATTE GILT FUER DIE VORGABE-PALETTE, AUSDRUECKLICH (Auftrag DF-1).
+            // Die Farben der Diagramme sind seit DF-1 eine Anwendungseinstellung; ohne
+            // diese Zeile haenge die eingefrorene Hashliste an dem, was zufaellig in
+            // Farbpalette.Aktuell steht. Der Pruefstand setzt sie deshalb selbst -
+            // Dienste.Einstellungen ist hier ohnehin die fluechtige Standardfassung.
+            Farbpalette.Aktuell = Farbpalette.Vorgabe;
 
             string ziel = Argument(args, "--ziel") ?? Path.Combine(Wurzel(), "artifacts", "chartproben");
             Directory.CreateDirectory(ziel);
@@ -1194,12 +1202,42 @@ namespace ChartProben
                 () => ChartRenderer.KapitalwertVerlauf("Kumulierte Barwerte je Version",
                         VerlaufMitNamen(serien, "Bestand", "Version 1", "Version 2"), null));
 
+            // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
+            //
+            // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell
+            // beim Malen gar nicht gelesen wuerde: Beide Bilder waeren dann byte-gleich,
+            // und der Einstellungsdialog haette keine Wirkung. Hier steht dasselbe Bild
+            // zweimal, einmal mit den Hausfarben und einmal mit einer Palette, in der die
+            // Waermepumpe ROT ist.
+            //
+            // OHNE MESSLATTE: Das zweite Bild haengt an einer Anwendereinstellung und
+            // gehoert nicht in die eingefrorene Hashliste - sie misst die Vorgabe.
+            var rot = new Farbpalette(
+                new Dictionary<Farbrolle, Farbe> { { Farbrolle.WAERME_WP, new Farbe(0xFF, 0x00, 0x00) } },
+                Farbpalette.Vorgabe);
+            Unterschiedlich("palette_abweichend_wirkt",
+                () => ChartRenderer.JahresverlaufWaerme(z),
+                () => MitPalette(rot, () => ChartRenderer.JahresverlaufWaerme(z)),
+                false);
+
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
             MesslatteSchreiben();
             if (_verstoesse == 0) Console.WriteLine("ERGEBNIS: alle gruen.");
             else Console.WriteLine("ERGEBNIS: FEHLGESCHLAGEN.");
             return _verstoesse == 0 ? 0 : 1;
+        }
+
+        /// <summary>
+        /// Zeichnet EIN Bild mit einer anderen Palette und stellt die Vorgabe danach
+        /// wieder her — auch wenn der Renderer wirft. <c>Farbpalette.Aktuell</c> ist
+        /// prozessweiter Zustand; die Probe läuft einfädig.
+        /// </summary>
+        private static byte[] MitPalette(Farbpalette palette, Func<byte[]> zeichnen)
+        {
+            Farbpalette.Aktuell = palette;
+            try { return zeichnen(); }
+            finally { Farbpalette.Zuruecksetzen(); }
         }
 
         // =================================================================================
@@ -1645,6 +1683,22 @@ namespace ChartProben
         /// </summary>
         private static void Unterschiedlich(string name, Func<byte[]> ganz, Func<byte[]> teil)
         {
+            Unterschiedlich(name, ganz, teil, true);
+        }
+
+        /// <summary>
+        /// Dieselbe Gegenprobe, wahlweise OHNE Ablage und Messlatte
+        /// (<paramref name="messlatte"/> = <c>false</c>).
+        ///
+        /// <para><b>Wofür.</b> Die Probe „Palette abweichend" zeichnet dasselbe Bild
+        /// mit einer GEÄNDERTEN Farbpalette — ihr zweites Bild hängt damit an einer
+        /// Anwendereinstellung und gehört nicht in die eingefrorene Messlatte. Die
+        /// Messlatte bleibt die Aussage über die VORGABE-Palette; die Gegenprobe sagt
+        /// nur, dass ein getauschtes Rot überhaupt ankommt.</para>
+        /// </summary>
+        private static void Unterschiedlich(string name, Func<byte[]> ganz, Func<byte[]> teil,
+                                            bool messlatte)
+        {
             _bilder++;
             var maengel = new List<string>();
 
@@ -1662,8 +1716,11 @@ namespace ChartProben
 
             // Beide Seiten der Gegenprobe in die Ablage und die Messlatte: "_a" ist das
             // erste, "_b" das zweite Bild des Vergleichs.
-            Ablegen(name + "_a.png", a);
-            Ablegen(name + "_b.png", b);
+            if (messlatte)
+            {
+                Ablegen(name + "_a.png", a);
+                Ablegen(name + "_b.png", b);
+            }
 
             Melde(name + " (wirkt)", "-", b == null ? "-" : b.Length.ToString("N0", CultureInfo.InvariantCulture),
                   "-", "-", maengel);

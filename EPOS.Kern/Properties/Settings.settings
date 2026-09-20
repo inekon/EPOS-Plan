@@ -35,6 +35,9 @@
     <Setting Name="TRYRegionalUrl" Type="System.String" Scope="User">
       <Value Profile="(Default)">https://github.com/RE-Lab-Projects/TRY_DE_2015_2045/releases/download/v1.4.0/data.zip</Value>
     </Setting>
+    <Setting Name="DiagrammFarben" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
     <Setting Name="EinstellungenUebernommen" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>

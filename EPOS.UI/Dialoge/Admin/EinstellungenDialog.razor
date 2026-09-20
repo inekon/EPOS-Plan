@@ -3,8 +3,8 @@
    VORBILD: Views/Admin/Form_AdminSettings.cs (320 Z.) und .Designer.cs
    (491 Z.) - 35 Steuerelemente plus ZWEI, die zur Laufzeit entstehen.
 
-   WOZU. Elf Properties.Settings-Werte und EIN Registry-Schalter (der
-   KI-Abschalter), sortiert in fuenf Rubriken.
+   WOZU. Zwoelf Properties.Settings-Werte und EIN Registry-Schalter (der
+   KI-Abschalter), sortiert in sechs Rubriken.
 
    DIE RUBRIKENLISTE IST EINE REITERLEISTE (A-16/A-17). Gestapelte
    Dock.Fill-Panels, von denen genau eines sichtbar ist, plus eine Auswahlliste
@@ -58,7 +58,9 @@
    nicht belegt. *@
 
 @namespace EPOS.UI.Dialoge.Admin
+@using System.Linq
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 
 <div class="epos-dialog epos-einstellungen" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -152,6 +154,49 @@
                     </KindInhalt>
                 </Reiterblatt>
 
+                @* Die sechste Rubrik (DF-1, Anwenderentscheid 20.09.2026 "Die Farben
+                   der Diagramme sollen jeweils aenderbar sein"): die Farbe je
+                   FARBROLLE, anwendungsweit. Sie steht zwischen KLIMA und ANWENDUNG -
+                   "Anwendung" ist die Sammelrubrik und bleibt die letzte.
+
+                   Die Rollen kommen als GABEN aus der Huelle (Diagrammfarben.Gaben):
+                   Schluessel, Anzeigename, Gruppe und Hausfarbe als Text. Der Dialog
+                   kennt damit weder Farbrolle noch Farbe - er fuehrt ein Woerterbuch
+                   Schluessel -> #RRGGBB und gibt es beim Speichern als kompakten Text
+                   zurueck (nur die Abweichungen).
+
+                   "Hausfarben" setzt ALLE Rollen zurueck und SPEICHERT NICHT - dieselbe
+                   Zusage wie "Standardwerte" in der Fussleiste, nur auf diese eine
+                   Rubrik bezogen. *@
+                <Reiterblatt Schluessel="DIAGRAMME" Titel="@RubrikDiagrammeText">
+                    <KindInhalt>
+                        <Herleitungszeile Text="@DiagrammeHinweisText" />
+
+                        @foreach (var gruppe in Farbrollen.GroupBy(r => r.Gruppe))
+                        {
+                            <Gruppenkopf Titel="@gruppe.Key">
+                                <KindInhalt>
+                                @foreach (var rolle in gruppe)
+                                {
+                                    <Farbfeld @key="rolle.Schluessel"
+                                              Kennung="@($"epos-farbe-{rolle.Schluessel}")"
+                                              Bezeichnung="@rolle.Name"
+                                              Vorgabe="@rolle.Vorgabe"
+                                              Stand="@_farbstand"
+                                              Wert="@Farbe(rolle)"
+                                              WertChanged="@(w => FarbeGesetzt(rolle.Schluessel, w))" />
+                                }
+                                </KindInhalt>
+                            </Gruppenkopf>
+                        }
+
+                        <div class="epos-farbfeld-fuss">
+                            <button type="button" class="epos-knopf"
+                                    @onclick="BeiHausfarben">@HausfarbenText</button>
+                        </div>
+                    </KindInhalt>
+                </Reiterblatt>
+
                 <Reiterblatt Schluessel="ANWENDUNG" Titel="@RubrikAnwendungText">
                     <KindInhalt>
                         <Dateiwahl Bezeichnung="@LabelAllgemein" Pfad="@_satz.AllgemeinPfad"
@@ -181,7 +226,7 @@
 
     @* --- Die EINE Fussleiste (DL-2 Nr. 10) --------------------------------
        Standardwerte · Fueller · Abbrechen · OK (primaer). "Standardwerte" wirkt
-       auf ALLE fuenf Rubriken zugleich - auf den ganzen Dialog also, nicht auf
+       auf ALLE sechs Rubriken zugleich - auf den ganzen Dialog also, nicht auf
        ein Blatt - und steht deshalb im Aktionsschlitz der Fussleiste, links vom
        Fueller (die Statusspanne der SpeichernLeiste IST der Fueller). Die
        zweite Leiste darueber ist damit entfallen.
@@ -242,7 +287,15 @@
     /// </summary>
     public bool PfadeFest => OrdnerWaehler is null;
 
-    /// <summary>Schreibt die elf Werte und legt die fünf Ordner an.</summary>
+    /// <summary>
+    /// Die Farbrollen der Rubrik „Diagramme" — Schlüssel, Anzeigename, Gruppe und
+    /// Hausfarbe, wie sie <c>Diagrammfarben.Gaben()</c> liefert. <b>Leer heißt: die
+    /// Rubrik zeigt nichts</b>; sie steht dann leer da, statt zu fehlen.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Farbrollengabe> Farbrollen { get; set; }
+        = new List<Farbrollengabe>();
+
+    /// <summary>Schreibt die zwölf Werte und legt die fünf Ordner an.</summary>
     [Parameter] public Func<Einstellungensatz, bool, Task<SpeicherBefund>>? Speichern { get; set; }
 
     /// <summary>Die Werksstandards (<c>EinstellungenCtrl.Zuruecksetzen</c>).</summary>
@@ -260,6 +313,7 @@
     [Parameter] public string RubrikDatenbankText { get; set; } = Resource.ADM_SET_RUBRIK_DATENBANK;
     [Parameter] public string RubrikWebText { get; set; } = Resource.ADM_SET_RUBRIK_WEB;
     [Parameter] public string RubrikKlimaText { get; set; } = Resource.ADM_SET_RUBRIK_KLIMA;
+    [Parameter] public string RubrikDiagrammeText { get; set; } = Resource.ADM_SET_RUBRIK_DIAGRAMME;
     [Parameter] public string RubrikAnwendungText { get; set; } = Resource.ADM_SET_RUBRIK_ANWENDUNG;
     [Parameter] public string LabelVdiPfad { get; set; } = Resource.ADM_SET_LBL_VDI_PFAD;
     [Parameter] public string LabelDbExport { get; set; } = Resource.ADM_SET_LBL_DB_EXPORT;
@@ -282,6 +336,9 @@
     [Parameter] public string NeustartText { get; set; } = Resource.ADM_SET_MSG_NEUSTART;
     [Parameter] public string PfadeFestText { get; set; } = Resource.ADM_SET_HINT_PFADE_FEST;
     [Parameter] public string StandardwerteGeladenText { get; set; } = Resource.ADM_SET_MSG_STANDARDWERTE;
+    [Parameter] public string HausfarbenText { get; set; } = Resource.ADM_SET_BTN_HAUSFARBEN;
+    [Parameter] public string HausfarbenGeladenText { get; set; } = Resource.ADM_SET_MSG_HAUSFARBEN;
+    [Parameter] public string DiagrammeHinweisText { get; set; } = Resource.ADM_SET_HINT_DIAGRAMMFARBEN;
     [Parameter] public string FrageStandardwerteText { get; set; } = Resource.ADM_SET_FRAGE_STANDARDWERTE;
     [Parameter] public string TitelStandardwerteText { get; set; }
         = Resource.ADM_SET_FRAGE_STANDARDWERTE_TITEL;
@@ -309,6 +366,54 @@
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
 
     private bool _frageOffen;
+
+    /// <summary>
+    /// Der Arbeitsstand der Rubrik „Diagramme": Rollenschlüssel → <c>#RRGGBB</c>.
+    /// Er trägt JEDE Rolle — auch die unveränderten —, damit das Feld eine Farbe
+    /// zeigen kann; geschrieben werden beim Speichern nur die Abweichungen.
+    /// </summary>
+    private readonly Dictionary<string, string> _farben =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Zähler des Arbeitsstandes der Farbfelder. „Hausfarben" und „Standardwerte"
+    /// erhöhen ihn; ein Feld verwirft damit eine stehengebliebene Fehleingabe.
+    /// </summary>
+    private int _farbstand;
+
+    /// <summary>Die eingestellte Farbe einer Rolle; die Hausfarbe, solange nichts dasteht.</summary>
+    private string Farbe(Farbrollengabe rolle)
+        => _farben.TryGetValue(rolle.Schluessel, out string? wert) && wert is not null
+           ? wert : rolle.Vorgabe;
+
+    private void FarbeGesetzt(string schluessel, string hex)
+    {
+        _farben[schluessel] = hex;
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// „Hausfarben": alle Rollen zurück auf die Vorgabe. <b>Speichert nicht</b> —
+    /// wörtlich wie „Standardwerte"; übernommen wird mit „OK".
+    /// </summary>
+    private void BeiHausfarben()
+    {
+        foreach (Farbrollengabe rolle in Farbrollen) _farben[rolle.Schluessel] = rolle.Vorgabe;
+        _farbstand++;
+        Melden(HausfarbenGeladenText, WarnStufe.Hinweis);
+    }
+
+    /// <summary>Den Arbeitsstand der Farben aus einem Einstellungstext füllen.</summary>
+    private void FarbenUebernehmen(string text)
+    {
+        _farben.Clear();
+        foreach (Farbrollengabe rolle in Farbrollen) _farben[rolle.Schluessel] = rolle.Vorgabe;
+
+        foreach (KeyValuePair<string, string> e in Diagrammfarben.Werte(text ?? ""))
+            if (_farben.ContainsKey(e.Key)) _farben[e.Key] = e.Value;
+
+        _farbstand++;
+    }
 
     /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
     public string Meldung => _meldung;
@@ -359,8 +464,11 @@
             GeokodierungUrl = s?.GeokodierungUrl ?? "",
             TryPortalUrl = s?.TryPortalUrl ?? "",
             TryRegionalUrl = s?.TryRegionalUrl ?? "",
-            AllgemeinPfad = pfade?.AllgemeinPfad ?? ""
+            AllgemeinPfad = pfade?.AllgemeinPfad ?? "",
+            DiagrammFarben = s?.DiagrammFarben ?? ""
         };
+
+        FarbenUebernehmen(_satz.DiagrammFarben);
     }
 
     // =====================================================================
@@ -399,6 +507,13 @@
         //
         // Der KI-Abschalter liegt in der Registry, nicht in den Settings - er geht
         // deshalb gesondert mit; bei maschinenweiter Sperre passiert nichts.
+        //
+        // Die Diagrammfarben gehen als KOMPAKTER TEXT mit - nur die Rollen, die von
+        // der Hausfarbe abweichen. Ein ungueltiges Hex kann hier nicht stehen: Das
+        // Farbfeld meldet es nach aussen gar nicht erst (Pruefregel des Bausteins),
+        // und AlsText laesst einen dennoch unlesbaren Wert fallen.
+        _satz.DiagrammFarben = Diagrammfarben.AlsText(Farbrollen, _farben);
+
         SpeicherBefund befund = await Speichern(_satz, MaschinenRiegel ? KiAbgeschaltet : _kiAus);
 
         if (!befund.Ok) { Melden(befund.Meldung, WarnStufe.Fehler); return; }
