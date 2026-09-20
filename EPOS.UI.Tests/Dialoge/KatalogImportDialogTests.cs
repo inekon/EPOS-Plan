@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Import;
@@ -614,7 +615,7 @@ public class KatalogImportDialogTests : EposBunitContext
             ausfuehren: (_, __, ___, ____, _____) => Task.FromResult(new ImportBilanz()));
         Einlesen(cut, 3);
 
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
 
         Gemeldet(cut, "Bitte einen Eintrag wählen.");
     }
@@ -642,7 +643,7 @@ public class KatalogImportDialogTests : EposBunitContext
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click(new MouseEventArgs { CtrlKey = true });
         Markiert(cut, 0, 1);
 
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
 
         Gemeldet(cut, "2 von 2 Einträgen geladen.");
         Assert.Equal(new[] { 0, 1 }, gesehen);
@@ -672,7 +673,7 @@ public class KatalogImportDialogTests : EposBunitContext
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Markiert(cut, 0);
 
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
 
         // Das Erfolgsbanner steht ...
         Gemeldet(cut, "1 von 1 Einträgen geladen.");
@@ -703,7 +704,7 @@ public class KatalogImportDialogTests : EposBunitContext
         Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Markiert(cut, 0);
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
 
         Gemeldet(cut, "Bereits eingelesen (übersprungen): 1");
         Assert.Null(ergebnis);
@@ -726,7 +727,7 @@ public class KatalogImportDialogTests : EposBunitContext
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click(new MouseEventArgs { CtrlKey = true });
         Markiert(cut, 0, 1);
 
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
 
         // Genau EINE Ueberlagerung, im SELBEN Fenster.
         cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[role='dialog']")));
@@ -767,7 +768,7 @@ public class KatalogImportDialogTests : EposBunitContext
 
         Markiert(cut, 0, 2);
 
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
 
         cut.WaitForAssertion(() => Assert.Equal(2, ausgefuehrt));
         Assert.Equal(new[] { 0, 2 }, gesehen);
@@ -787,7 +788,7 @@ public class KatalogImportDialogTests : EposBunitContext
     ///
     /// <para><b>ANWENDERENTSCHEID W13-E-3</b> (09.09.2026): Der Dialog bleibt nach
     /// dem Schreiben offen, aber die Markierung wird geleert - dieselbe Regel
-    /// wie beim Fussknopf „Speichern DB".</para>
+    /// wie beim Fussknopf „Auswahl übernehmen".</para>
     /// </summary>
     [Fact]
     public void Ein_Doppelklick_uebernimmt_genau_diese_Zeile()
@@ -843,7 +844,7 @@ public class KatalogImportDialogTests : EposBunitContext
         // Erste Uebernahme.
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Markiert(cut, 0);
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
         cut.WaitForAssertion(() => Assert.Equal(1, ausgefuehrt));
         Markiert(cut);
 
@@ -854,7 +855,7 @@ public class KatalogImportDialogTests : EposBunitContext
         // Zweite Wahl, zweite Uebernahme.
         cut.FindAll("tbody .epos-anlagenwahl")[1].Click();
         Markiert(cut, 1);
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
 
         cut.WaitForAssertion(() => Assert.Equal(2, ausgefuehrt));
         Markiert(cut);
@@ -878,7 +879,7 @@ public class KatalogImportDialogTests : EposBunitContext
         Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Markiert(cut, 0);
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
 
         cut.WaitForAssertion(() => Assert.True(gefragt, "Auch der Solarimport muss vorpruefen."));
     }
@@ -1145,7 +1146,7 @@ public class KatalogImportDialogTests : EposBunitContext
         Markiert(cut, 0, 1);
 
         await cut.InvokeAsync(() =>
-            cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click());
+            Uebernehmen(cut).Click());
 
         Gemeldet(cut, "2");
         Assert.Equal(new[] { 2 }, uebernommen);
@@ -1187,7 +1188,7 @@ public class KatalogImportDialogTests : EposBunitContext
     /// <summary>
     /// <b>ANWENDERENTSCHEID W13-E-3</b> (09.09.2026): Wurde in dieser Sitzung
     /// schon geschrieben, meldet Esc beim wirklichen Schliessen <c>true</c> -
-    /// analog zum Fussknopf „OK".
+    /// analog zum Fussknopf „Beenden".
     /// </summary>
     [Fact]
     public void Nach_dem_Schreiben_meldet_Esc_true()
@@ -1202,7 +1203,7 @@ public class KatalogImportDialogTests : EposBunitContext
         Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Markiert(cut, 0);
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
         cut.WaitForAssertion(() => Assert.True(cut.Instance.Geschrieben));
         Assert.Null(ergebnis);
 
@@ -1211,26 +1212,80 @@ public class KatalogImportDialogTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.True(ergebnis));
     }
 
-    /// <summary>Ohne dass in dieser Sitzung geschrieben wurde, meldet der Fussknopf „OK" <c>false</c>.</summary>
+    // =====================================================================
+    // DL-2 Nr. 9 — die Fussleiste nach der Hausregel (Entscheid DL-Q4)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Fußleiste läuft <b>Füller · Auswahl übernehmen · Beenden (primär)</b> —
+    /// wörtlich die Leiste des Zwillings <c>ModulImportDialog</c>. Der Übernahmeknopf
+    /// hieß „Speichern DB"; beide Masken übernehmen dasselbe und heißen deshalb
+    /// gleich (Konzept Knopfleisten der Administrationsdialoge, Nr. 9;
+    /// Anwenderentscheid DL-Q4 vom 20.09.2026).
+    /// </summary>
     [Fact]
-    public void Der_Fussknopf_OK_schliesst_ohne_Ergebnis()
+    public void Die_Fussleiste_laeuft_Uebernehmen_dann_Beenden()
+    {
+        var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen());
+        IElement fuss = Fussleiste(cut);
+
+        Assert.NotNull(fuss.QuerySelector(".epos-leiste-fueller"));
+
+        var knoepfe = fuss.QuerySelectorAll("button");
+        Assert.Equal(
+            new[] { "✔ Auswahl übernehmen", "Beenden" },
+            knoepfe.Select(k => k.TextContent.Trim()).ToArray());
+
+        Assert.Single(fuss.QuerySelectorAll(".epos-knopf--primaer"));
+        Assert.Contains("epos-knopf--primaer", knoepfe[^1].ClassName);
+    }
+
+    /// <summary>
+    /// Die Quellenwahl ist ein <b>Umschalter</b>, kein zweiter primärer Knopf
+    /// (Konzept, Abschnitt 2.1): Die zuletzt benutzte Quelle trägt die
+    /// Umschaltermarke samt <c>aria-pressed</c>, und in der ganzen Maske steht genau
+    /// ein <c>epos-knopf--primaer</c> — der Schlussknopf.
+    /// </summary>
+    [Fact]
+    public void Die_Quellenwahl_ist_ein_Umschalter_und_nicht_primaer()
+    {
+        var gelesen = new List<(string, string)>();
+        var cut = BauenSpeicher(gelesen);
+
+        Quelle(cut, "bslib laden");
+        Gezeichnet(cut, 4);
+
+        var quellknoepfe = cut.Find(".epos-katalogimport-quellen").QuerySelectorAll("button");
+        Assert.Equal(
+            new[] { "false", "false", "true" },
+            quellknoepfe.Select(b => b.GetAttribute("aria-pressed")).ToArray());
+        Assert.All(quellknoepfe, b => Assert.DoesNotContain("epos-knopf--primaer", b.ClassName));
+
+        var primaer = cut.FindAll(".epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+    }
+
+    /// <summary>Ohne dass in dieser Sitzung geschrieben wurde, meldet der Fussknopf „Beenden" <c>false</c>.</summary>
+    [Fact]
+    public void Der_Fussknopf_Beenden_schliesst_ohne_Ergebnis()
     {
         bool? ergebnis = null;
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen(),
             geschlossen: EventCallback.Factory.Create<bool>(this, b => ergebnis = b));
 
-        cut.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Beenden(cut).Click();
 
         cut.WaitForAssertion(() => Assert.False(ergebnis));
     }
 
     /// <summary>
     /// <b>ANWENDERENTSCHEID W13-E-3</b> (09.09.2026): Wurde in dieser Sitzung
-    /// schon geschrieben, meldet der Fussknopf „OK" beim wirklichen
+    /// schon geschrieben, meldet der Fussknopf „Beenden" beim wirklichen
     /// Schliessen <c>true</c> - die Hülle muss ihren Aufruferkatalog nachladen.
     /// </summary>
     [Fact]
-    public void Nach_dem_Schreiben_meldet_OK_true()
+    public void Nach_dem_Schreiben_meldet_Beenden_true()
     {
         bool? ergebnis = null;
         var cut = Bauen(KatalogImportArt.Heizkessel, DreiZeilen(),
@@ -1242,13 +1297,13 @@ public class KatalogImportDialogTests : EposBunitContext
         Einlesen(cut, 3);
         cut.FindAll("tbody .epos-anlagenwahl")[0].Click();
         Markiert(cut, 0);
-        cut.FindAll("button").First(b => b.TextContent.Contains("Speichern")).Click();
+        Uebernehmen(cut).Click();
         cut.WaitForAssertion(() => Assert.True(cut.Instance.Geschrieben));
 
         // Der Dialog blieb bislang offen - Geschlossen wurde noch NICHT gerufen.
         Assert.Null(ergebnis);
 
-        cut.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Beenden(cut).Click();
 
         cut.WaitForAssertion(() => Assert.True(ergebnis));
     }
@@ -1539,6 +1594,30 @@ public class KatalogImportDialogTests : EposBunitContext
             if (geschlossen.HasValue) p.Add(x => x.Geschlossen, geschlossen.Value);
         });
     }
+
+    /// <summary>
+    /// <b>Die Fußleiste</b> — die letzte <c>epos-leiste</c>, die UNMITTELBAR im
+    /// Dialograhmen steht. Die Quellenleiste ist die erste; die Leisten der
+    /// Überlagerungen (Konfliktdialog, Rückfrage) liegen tiefer und zählen nicht mit.
+    /// </summary>
+    private static IElement Fussleiste(IRenderedComponent<KatalogImportDialog> cut)
+        => cut.FindAll(".epos-katalogimport > .epos-leiste")[^1];
+
+    /// <summary>
+    /// Der erste Knopf der Fußleiste: <b>„✔ Auswahl übernehmen"</b>. Er hieß bis
+    /// DL-2 (Nr. 9) „Speichern DB" und trägt seither denselben Ressourcentext wie
+    /// sein Zwilling im <c>ModulImportDialog</c> — beide übernehmen dasselbe.
+    /// </summary>
+    private static IElement Uebernehmen(IRenderedComponent<KatalogImportDialog> cut)
+        => Fussleiste(cut).QuerySelectorAll("button")[0];
+
+    /// <summary>
+    /// Der Schlussknopf der Fußleiste: <b>„Beenden"</b> (bis DL-2 „OK"). Er
+    /// bestätigt nichts — geschrieben wird beim Übernehmen —, und er ist der einzige
+    /// primäre Knopf der Maske.
+    /// </summary>
+    private static IElement Beenden(IRenderedComponent<KatalogImportDialog> cut)
+        => Fussleiste(cut).QuerySelectorAll("button")[1];
 
     /// <summary>Klickt einen der drei Quellknöpfe an seiner Beschriftung.</summary>
     private static void Quelle(IRenderedComponent<KatalogImportDialog> cut, string beschriftung) =>

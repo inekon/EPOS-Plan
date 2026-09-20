@@ -650,6 +650,29 @@ body {
     border-color: var(--epos-rahmen-leise);
 }
 
+/* DER EINGERASTETE UMSCHALTER (DL-2, Abschnitt 2.1). Eine Knopfreihe, aus der
+   genau einer gilt - die Quellenwahl der Importmasken (CEC-Netz, CEC-Datei,
+   PAN/OND) -, ist ein UMSCHALTER und keine Aktionsleiste. Sie trug bis zum
+   Umbau .epos-knopf--primaer und war damit ein zweiter dunkler Knopf in einer
+   Maske, deren einziger primaerer Knopf der Schlussknopf ist.
+
+   Das Bild ist das des aktiven Reiters (.epos-reiter-knopf--aktiv): Rahmen und
+   Text in der Quellfarbe, halbfett - erkennbar eingerastet, aber nicht dunkel
+   und damit kein zweiter primaerer Knopf. Es unterscheidet sich zugleich vom
+   Schwebezustand des gewoehnlichen Knopfes, der nur die Flaeche aufhellt.
+   Der Zustand steht zusaetzlich in aria-pressed, damit eine Sprachausgabe ihn
+   nennt - Farbe allein traegt keine Aussage. */
+.epos-knopf--gewaehlt {
+    color: var(--epos-quelle-text);
+    border-color: var(--epos-quelle-rahmen);
+    font-weight: 600;
+}
+
+.epos-knopf--gewaehlt:disabled,
+.epos-knopf--gewaehlt[aria-disabled="true"] {
+    border-color: var(--epos-rahmen-leise);
+}
+
 /* ==========================================================================
    Baustein: InfoKnopf / Hilfepille (Vorbild Allgemein/Hilfe/InfoKnopf.cs -
    28x28). Seit Auftrag #218 (Anwenderentscheid 11.09.2026, "KI-Knopf:

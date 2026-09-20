@@ -116,16 +116,6 @@ public sealed class KnopfleistenWacheTests
             + "dreht das um (Speichern . Fueller . Hinzufuegen . Loeschen . Beenden)."),
 
         new Ausnahme(
-            "EPOS.UI/Dialoge/Photovoltaik/ModulImportDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "DL-2 Nr. 8: \"Auswahl uebernehmen\" ist primaer, OK steht dahinter. "
-            + "Auftrag DL-2e setzt die Primaerfarbe auf Beenden (DL-Q4)."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Import/KatalogImportDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "DL-2 Nr. 9: \"Speichern DB\" ist primaer, OK steht dahinter. Auftrag DL-2e "
-            + "setzt die Primaerfarbe auf Beenden (DL-Q4)."),
-
-        new Ausnahme(
             "EPOS.UI/Dialoge/Strom/PeakShavingDialog.razor", REGEL_EIN_PRIMAER,
             "DL-2 Nr. 5: der Fuss traegt GAR keinen primaeren Knopf - die Primaerfarbe "
             + "liegt auf \"Berechnen\" im Blatt. Auftrag DL-2g macht \"Beenden\" primaer "

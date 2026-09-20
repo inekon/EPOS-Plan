@@ -18525,6 +18525,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string IMP_KAT_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datei VDI 3805 einlesen... ähnelt.
         /// </summary>
         public static string IMP_KAT_BTN_DATEI {
@@ -18539,15 +18548,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_BTN_DATEI_WP {
             get {
                 return ResourceManager.GetString("IMP_KAT_BTN_DATEI_WP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern DB ähnelt.
-        /// </summary>
-        public static string IMP_KAT_BTN_UEBERNEHMEN {
-            get {
-                return ResourceManager.GetString("IMP_KAT_BTN_UEBERNEHMEN", resourceCulture);
             }
         }
         
@@ -39835,6 +39835,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVIMP_ALLE {
             get {
                 return ResourceManager.GetString("PVIMP_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string PVIMP_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("PVIMP_BTN_BEENDEN", resourceCulture);
             }
         }
         
