@@ -56,6 +56,8 @@
   <ItemGroup>
     <!-- Nur noch die Probe selbst; der Pruefling kommt aus EPOS.Kern. -->
     <Compile Include="Program.cs" />
+    <!-- Die Gegenproben der Gruppe (d) - die vier reinen Berichtsbilder (DG-E3d). -->
+    <Compile Include="Program.GruppeD.cs" />
   </ItemGroup>
 
   <ItemGroup>

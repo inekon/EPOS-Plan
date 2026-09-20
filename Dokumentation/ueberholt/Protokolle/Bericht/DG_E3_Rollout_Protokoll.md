@@ -225,5 +225,176 @@ Anwender die Reihe über die Legende abwählt.
   heißt „Kostenprofil  [ct/kWh]" mit zwei Leerzeichen; das PNG setzt beide, das SVG zeigt
   eines (XML-Leerraum). Wenn es auffallen soll, ist `xml:space="preserve"` am `<text>` die
   Stelle — sie gehört zum Baustein, nicht zum Schreiber.
-* **Die Gruppen (b), (c) und (d)** des Rollouts stehen noch aus; `ChartBild` bleibt, bis die
-  letzte PNG-Stelle umgestellt ist.
+* **Die Gruppen (b) und (c)** des Rollouts stehen noch aus; `ChartBild` bleibt, bis die
+  letzte PNG-Stelle umgestellt ist. Die Gruppe (d) steht unten.
+
+---
+
+## Gruppe (d) — Berichtsbilder und SVG im Wortbericht
+
+### Die Aufgabe
+
+Zwei Dinge in einem Auftrag. Erstens: Die vier **reinen Berichtsbilder** —
+`JahresverlaufWaerme` (Tagesmittel, Stapelflächen, Bedarfslinie), `DauerlinieWaerme`,
+`Speicherverlauf` (drei Wochenfelder) und `Speichertemperaturen` (drei Felder) — bekommen
+ihr Zeichenmodell. Zweitens: Der **Wortbericht bettet Diagramme als SVG mit PNG-Rückfall**
+ein, überall dort, wo die Renderer-Methode schon ein Modell hat.
+
+Sie stehen zusammen, weil sie einander bedingen: Ohne Modell kein SVG, und ohne Ziel im
+Bericht wäre das Modell dieser vier Bilder ohne Nutzer — sie kommen auf keinem
+Ergebnisreiter vor.
+
+**Die unverrückbare Bedingung blieb: kein PNG darf sich ändern.** Gemessen an der
+Windows-Messlatte dieses Rechners (91 Hashes aus E0/E1), nach jedem Schritt.
+
+### Die Entscheide
+
+**DG-E3-7 — die vier sind reine PIXELBILDER.** Ihr Modell trägt `Flaeche = null` und
+**keine** `Datenreihe`. Der `SvgSchreiber` schreibt damit jeden Befehl so, wie der
+`SkiaMaler` ihn malt: die Reihen als Pixelpfad, jeden Text als `<text>`. Die Marken stehen
+trotzdem — `titel`, `xachse`, `yachse`, `reihe:<Name>`, `legende:<Name>`.
+
+*Warum.* Der Bericht ist **keine Bedienfläche**: Es gibt dort kein Zoomen, kein Abwählen
+über die Legende, keine Zeigerzeile. Was das SVG im Bericht bringt, ist Schärfe (Vektor
+statt 96-dpi-Raster) und Text, der Text bleibt — durchsuchbar, kopierbar, in der
+Bildschirmlupe scharf. Eine Zeichenfläche in Datenkoordinaten brächte nichts davon und
+kostete bei zweien der vier eine Unmöglichkeit: `Speicherverlauf` und
+`Speichertemperaturen` zeichnen drei Wochenfelder nebeneinander, das wäre nicht **eine**
+Zeichenfläche, sondern drei. Und der Weg über `Datenreihe` würde die Bilder sogar
+verändern — er zeichnet roh bzw. als konservative Hülle, das PNG jeden n-ten Wert
+(DG-E2-2); im Bericht sollen SVG und PNG-Rückfall dasselbe zeigen.
+
+Die Marke `leerhinweis` kommt in diesen vier nicht vor: Sie geben `null` zurück, wenn der
+Lauf die Reihen nicht führt, und der Bericht lässt die Stelle samt Beschriftung aus, statt
+eine leere Fläche zu setzen. Kein Bild, kein Modell.
+
+**DG-E3-8 — SVG im Wortbericht (revidiert DG-Q3; Anwenderentscheid 20.09.2026 „alle
+Grafiken, soweit möglich").** `WordKontext` bekommt `Bild(Zeichenmodell, Breite, Höhe)`.
+Es legt **zwei** Teile ab:
+
+* das PNG aus `SkiaMaler.Png(modell)` als gewöhnlichen `a:blip` — den Rückfall;
+* den SVG-Text aus `SvgSchreiber.Text(modell)` als zweiten `ImagePart` mit dem Inhaltstyp
+  `image/svg+xml` (UTF-8 **ohne** Vorzeichenfolge), verknüpft über
+  `DocumentFormat.OpenXml.Office2019.Drawing.SVG.SVGBlip` in der Erweiterungsliste des
+  Blips, URI `{96DAC541-7B7A-43D3-8B79-37D633B846F1}`.
+
+Maße und Lage sind dieselben wie beim reinen PNG. Word ab 2016 zeigt und druckt das SVG,
+jeder ältere Leser und jeder Konverter, der die Erweiterung nicht kennt, das PNG. Der
+`byte[]`-Weg bleibt unverändert daneben stehen; beide teilen sich einen Rumpf
+(`BildTeile`), damit die Drawing-Struktur nur an einer Stelle steht.
+
+### Was entstanden ist
+
+| Datei | Was dazugekommen ist |
+|---|---|
+| `EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs` | `JahresverlaufWaermeModell`, `DauerlinieWaermeModell`, `SpeicherverlaufModell`, `SpeichertemperaturenModell`; `StapelDiagramm`/`LinienDiagramm` → `…Modell`; Marken in `AchsenRaster` und `PanelRahmen` |
+| `EPOS.Kern/Allgemein/Bericht/WordBerichtGenerator.cs` | `Bild(Zeichenmodell, …)`, der gemeinsame Rumpf `BildTeile`, die Konstante `SVG_EXT_URI`; **Befund:** die Rahmenreihenfolge jeder Tabelle richtiggestellt |
+| `Bausteine/BausteineVergleich.cs`, `BausteineProjekt.cs` | die vier Bildstellen auf den Modellweg; `Sicher` führt jetzt Modelle, `SicherPng` bleibt der Strombilanz |
+| `Proben/ChartProben/Program.GruppeD.cs` (neu), `Program.cs`, `ChartProben.csproj`, `LIESMICH.md` | vier SVG-Gegenproben (`svgd_*`), eine Registrierungszeile, die Quelle im Projekt, der Abschnitt im LIESMICH |
+| `EPOS.Kern.Tests/ChartRendererGruppeDTests.cs` (neu) | 28 Fälle: PNG aus demselben Modell, Determinismus, reines Pixel-SVG, Text bleibt Text, die Marken, „kein Bild, kein Modell" |
+| `EPOS.Kern.Tests/WordBerichtSvgWacheTests.cs` (neu) | 8 Fälle: beide Teile je Bild, der `byte[]`-Weg unverändert, `null` schreibt nichts, `OpenXmlValidator` ohne Fehler, kein verwaister Teil und kein Verweis ins Leere |
+
+`Zeichenmodell.cs` und `SvgSchreiber.cs` sind **nicht** angefasst — die Nachbargruppen (b)
+und (c) erweitern sie.
+
+### Drei Stellen, die Aufmerksamkeit brauchten
+
+1. **Die Marken gehören an die gemeinsamen Helfer, nicht an die vier Methoden.**
+   `AchsenRaster` setzt y-Raster, y-Beschriftung, x-Raster, x-Beschriftung und das
+   Achsenkreuz in **einem** Rumpf; die Klammern liegen deshalb dort: der y-Teil unter
+   `yachse`, der x-Teil unter `xachse`, das `Achsenkreuz` unter keiner von beiden (dieselbe
+   Begründung wie in Gruppe (a): Wer eine Achsenteilung ausblendet, will die Achsenlinien
+   behalten). Ein Nebennutzer bekommt die Marken mit: `MonatsBalken` (Strombilanz, Gruppe
+   b/c). Das ist folgenlos — der `SkiaMaler` übergeht Marken, das PNG bleibt byte-gleich —
+   und erspart der Nachbargruppe die halbe Arbeit.
+2. **Der Rahmen eines Wochenfeldes ist sein Achsenkreuz.** `PanelRahmen` setzt das Rechteck
+   ohne Marke und die Feldüberschrift („Winterwoche (Jan)") unter `xachse`: Sie sagt, welche
+   Woche das Feld zeigt, und ist damit die Beschriftung seiner Zeitachse. Jede Reihe wird in
+   diesen Bildern **dreimal** gezeichnet — einmal je Feld — und trägt jedes Mal dieselbe
+   Marke `reihe:<Name>`; eine Legendenwahl träfe damit alle drei Felder zugleich.
+3. **Eine Schleifenvariable in einer Marken-Klammer braucht eine eigene Kopie.** `Markiert`
+   ruft die Klammer sofort auf, aber die Stapelschleife von `StapelDiagrammModell` schreibt
+   `unten = oben` **nach** dem Zeichnen weiter. Ober- und Unterkante gehen deshalb als
+   eigene Namen in die Klammer; sonst zeichnete jede Schicht die Kanten der nächsten.
+
+### Der Befund nebenbei: der Wortbericht war nicht schemagültig
+
+Die geforderte Validierung mit dem `OpenXmlValidator` meldete am ersten Lauf **acht
+Fehler** — einen je Tabelle, alle gleich: „unexpected child element `w:left`" in
+`w:tblBorders`. Ursache ist nicht das SVG, sondern die **Reihenfolge**: `CT_TblBorders`
+führt `top, left, bottom, right, insideH, insideV`, `NeueTabelle` setzte links und rechts
+aber hinter unten. Der Fehler stand in **jeder** Office-Fassung von 2007 bis 2021 an, also
+seit die Methode existiert; Word ist nachsichtig und zeichnet den Rahmen trotzdem, ein
+strengerer Leser hätte die Datei zurückgewiesen. Mit dem Tausch validiert der Bericht in
+allen sechs Fassungen fehlerfrei. Am Bild ändert er nichts — es sind dieselben sechs Rahmen
+in denselben Farben.
+
+### Welche Bildstellen des Wortberichts jetzt SVG tragen
+
+| Bildstelle | Baustein | Weg |
+|---|---|---|
+| Wärmeerzeugung im Jahresverlauf | Ergebnisse (je Variante) | **Modell → SVG + PNG** |
+| Jahresdauerlinie Wärme | Ergebnisse (je Variante) | **Modell → SVG + PNG** |
+| Speicherverlauf | Ergebnisse (je Variante) | **Modell → SVG + PNG** |
+| Speichertemperaturen | Projektbeschreibung (Stamm) | **Modell → SVG + PNG** |
+| Strombilanz im Monatsverlauf | Ergebnisse (je Variante) | offen — `byte[]`, kein Modell |
+| Kapitalwertverlauf (zwei Bilder) | Wirtschaftlichkeit | offen — `byte[]`, kein Modell |
+| Kuchen „Wärmedeckung"/„Stromdeckung" | Vergleich (je Variante) | offen — `byte[]`, kein Modell |
+| Balken je Schlüsselkennzahl | Vergleich | offen — `byte[]`, kein Modell |
+
+Die offenen Arten gehören zu den Gruppen (b) und (c); sie gehen mit deren Merge auf den
+Modellweg, indem an der Aufrufstelle `…Modell(…)` statt `byte[]` geholt wird — an
+`WordKontext.Bild` ist dafür nichts mehr zu tun.
+
+**`Jahresgang` (E2) kommt im Wortbericht nicht vor**, ebenso wenig
+`PeakShavingBild.Lastgang` und `SpeicherBetriebsbild.Zeichnen`: Beide liefern `byte[]` für
+die **Oberfläche** (Reiter und Dialoge), nicht für den Bericht. Sie bleiben, wo sie sind;
+für sie ist an dieser Stelle nichts offen.
+
+### Wie das PDF entsteht
+
+**Gar nicht — das Programm hat keinen PDF-Weg.** `BerichtCtrl` kennt genau zwei Ausgaben:
+`ErzeugeWord` (`.docx`, OpenXML-SDK) und `ErzeugeExcel` (`.xlsx`, ClosedXML). Im ganzen
+Repositorium steht keine PDF-Bibliothek, kein Word-Interop, kein `ExportAsFixedFormat`;
+„PDF" kommt nur als Dateifilter der Lizenzvereinbarung vor. Ein PDF entsteht also **aus dem
+Wortbericht heraus**, im Word des Anwenders („Speichern unter" oder „Drucken → Microsoft
+Print to PDF"), und erbt dabei genau das Bild, das Word anzeigt: das SVG in Word 2016 und
+neuer, das PNG in jeder älteren Fassung. Die Vorgabe „der PDF-Weg bleibt PNG" ist damit von
+selbst erfüllt und zugleich besser, als sie klingt.
+
+**Der Excelbericht bleibt PNG** — genauer: **ohne Bild**. `ExcelBerichtGenerator` bettet
+überhaupt keine Grafik ein; er führt die Zahlen, aus denen die Bilder entstehen. Es gibt
+dort also nichts umzustellen.
+
+### Nachweis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Windows-Messlatte des Rechners (91 Hashes) | 91 von 91 gleich, Text-Diff leer — vor dem ersten Schritt und nach jedem Commit |
+| `Proben/ChartProben` | **88 Bilder geprüft, 0 Verstöße** (84 wie bisher, dazu vier SVG-Gegenproben); 91 Hashes geschrieben, die Messlatte bleibt bei 91 Zeilen |
+| `WP-Plan.Kern.slnf` Bau Release | 0 Fehler |
+| Volle Suite mit den CI-Schaltern | **9 946 Fälle, 0 Fehler** (Kern 4 124, UI 4 918, KiKern 499, SpeicherEngine 378, SpeicherPlanung 27) |
+| `ChartRendererGruppeDTests` | 28 grün |
+| `WordBerichtSvgWacheTests` | 8 grün |
+| `BerichtBlattstrukturWacheTests`, `ZeichenmodellWacheTests`, `ChartRendererTests` | grün, unverändert |
+| Wortbericht aus Referenzprojekt **1030** der Testdatenbank | erzeugt über einen `dotnet`-Dateiskriptlauf (`SimulationRunner.Simuliere(1030)` → `ZeitreihenExtraktor.AusLauf` → `WordBerichtGenerator.Erzeuge`, alle Bausteine an): 227 092 Byte, 17 Teile — **7 PNG und 4 SVG**; die vier SVG sind genau die vier Bilder der Gruppe (d), die drei übrigen PNG sind Strombilanz und die zwei Kuchen |
+| `OpenXmlValidator` über diesen Bericht | **0 Fehler in allen sechs Fassungen** (Office2007 … Office2021) — vor der Rahmenkorrektur acht |
+| Sichtprüfung `--svg-alle` gegen `--ablage` (Edge kopflos) | alle vier deckungsgleich: gleiche Struktur, Farben, Achsen, Felder und Legenden. Anders als in Gruppe (a) gibt es hier **keinen** gewollten Unterschied im Linienzug — die Pixelbilder zeichnen dieselben Befehle, nur als Vektor |
+| Referenzlauf | nicht nötig — kein Rechenweg berührt |
+
+### Offen nach Gruppe (d)
+
+* **Die Bildarten ohne Modell** (Strombilanz, Kapitalwertverlauf, Kuchen, Balken) gehen mit
+  dem Merge der Gruppen (b) und (c) auf den Modellweg und tragen dann ebenfalls SVG. Die
+  Umstellung ist je Stelle eine Zeile.
+* **Doppelte Leerzeichen im Titel gehen im Browser verloren** — derselbe offene Punkt wie in
+  Gruppe (a), hier sichtbar an „Wärmeerzeugung im Jahresverlauf (Tagesmittel)  [kW]" und
+  „Jahresdauerlinie Wärme  [kW]". Im PNG stehen zwei Leerzeichen, im SVG eines. Die Stelle
+  ist `xml:space="preserve"` am `<text>`; sie gehört zum Schreiber bzw. Baustein, nicht zu
+  diesen Bildern.
+* **Ungeprüft bleibt, wie Word das SVG tatsächlich zeigt** — auf diesem Rechner ist kein
+  Word installiert. Nachgewiesen sind die Struktur (Validator, beide Teile, Beziehungen) und
+  die Darstellung des SVG im Browser; der Blick in Word steht beim Anwender aus.
+* **Die Bildunterschriften bleiben, wie sie sind.** Ein SVG könnte einen Alternativtext
+  tragen (`wp:docPr/@descr`) — für Barrierefreiheit wäre das der nächste Schritt, er gehört
+  aber nicht in diese Etappe.

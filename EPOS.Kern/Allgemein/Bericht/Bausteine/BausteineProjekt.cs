@@ -137,13 +137,15 @@ namespace WindowsFormsApplication1
             // frisch simuliert wurde. Ein Diagrammfehler kippt den Bericht nicht.
             if (stamm.Zeitreihen == null) return;
 
-            byte[] png;
-            try { png = ChartRenderer.Speichertemperaturen(stamm.Zeitreihen); }
-            catch { png = null; }
+            // DG-E3 (Gruppe d): ueber das ZEICHENMODELL — das Bild steht als SVG mit
+            // PNG-Rueckfall im Dokument (Entscheid DG-E3-8).
+            Zeichnung.Zeichenmodell bild;
+            try { bild = ChartRenderer.SpeichertemperaturenModell(stamm.Zeitreihen); }
+            catch { bild = null; }
 
-            if (png != null)
+            if (bild != null)
             {
-                k.Bild(png, 620, 280);
+                k.Bild(bild, 620, 280);
                 k.Beschriftung("Speichertemperaturen in charakteristischen Wochen (Winter/Übergang/Sommer)");
             }
         }

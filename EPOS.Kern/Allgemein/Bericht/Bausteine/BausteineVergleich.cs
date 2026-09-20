@@ -62,35 +62,48 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Die vier Ganglinientypen des Berichts.
+        ///
+        /// <para><b>Drei davon gehen seit DG-E3 (Gruppe d) über das ZEICHENMODELL</b>
+        /// und stehen damit als SVG mit PNG-Rückfall im Dokument (Entscheid DG-E3-8).
+        /// Die Strombilanz hat noch keine <c>…Modell</c>-Methode — sie bleibt beim
+        /// <c>byte[]</c>-Weg, bis die Gruppe (b)/(c) sie umstellt.</para>
+        /// </summary>
         private static void ZeichneGanglinien(WordKontext k, ZeitreihenSatz z)
         {
-            byte[] png = Sicher(() => ChartRenderer.JahresverlaufWaerme(z));
-            if (png != null)
+            Zeichnung.Zeichenmodell m = Sicher(() => ChartRenderer.JahresverlaufWaermeModell(z));
+            if (m != null)
             {
-                k.Bild(png, 620, 280);
+                k.Bild(m, 620, 280);
                 k.Beschriftung("Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)");
             }
-            png = Sicher(() => ChartRenderer.DauerlinieWaerme(z));
-            if (png != null)
+            m = Sicher(() => ChartRenderer.DauerlinieWaermeModell(z));
+            if (m != null)
             {
-                k.Bild(png, 620, 280);
+                k.Bild(m, 620, 280);
                 k.Beschriftung("Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien)");
             }
-            png = Sicher(() => ChartRenderer.StrombilanzMonate(z));
+            byte[] png = SicherPng(() => ChartRenderer.StrombilanzMonate(z));
             if (png != null)
             {
                 k.Bild(png, 620, 280);
                 k.Beschriftung("Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung separat, Bedarf als Linie)");
             }
-            png = Sicher(() => ChartRenderer.Speicherverlauf(z));
-            if (png != null)
+            m = Sicher(() => ChartRenderer.SpeicherverlaufModell(z));
+            if (m != null)
             {
-                k.Bild(png, 620, 260);
+                k.Bild(m, 620, 260);
                 k.Beschriftung("Speicherverlauf in charakteristischen Wochen (Winter/Übergang/Sommer)");
             }
         }
 
-        private static byte[] Sicher(Func<byte[]> f)
+        private static Zeichnung.Zeichenmodell Sicher(Func<Zeichnung.Zeichenmodell> f)
+        {
+            try { return f(); } catch { return null; }   // ein Diagrammfehler kippt nicht den Bericht
+        }
+
+        private static byte[] SicherPng(Func<byte[]> f)
         {
             try { return f(); } catch { return null; }   // ein Diagrammfehler kippt nicht den Bericht
         }
