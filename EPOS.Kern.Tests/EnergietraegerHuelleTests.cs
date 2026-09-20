@@ -1205,7 +1205,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// DL-Q5 (#386): Der Stammkopf hat keinen eigenen Knopf mehr - Bezeichnung und
+        /// DL-Q5 (#390): Der Stammkopf hat keinen eigenen Knopf mehr - Bezeichnung und
         /// Gruppe werden mit Speichern/OK geschrieben. Die Gabe "StammSpeichernText" gibt
         /// es deshalb nicht mehr; der Abbrechen-Kurztext sagt, was Abbrechen verwirft.
         /// </summary>

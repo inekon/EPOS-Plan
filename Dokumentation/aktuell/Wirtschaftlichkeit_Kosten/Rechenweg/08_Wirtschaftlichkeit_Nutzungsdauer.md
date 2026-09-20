@@ -36,7 +36,8 @@ Norm verwirft ihn als Entscheidungsgrundlage."
 · Energie- und Stromsteuerentlastungen **berücksichtigt** · Ertragsteuern **nicht berücksichtigt** ·
 keine Abschreibungen als Cashflow · Restwert linear — **dokumentierte Abweichung** von 6.4 ·
 Risikozuschlag nicht angesetzt (6.5 optional) · Szenariopflege „12 von 31 Parametern" · Knöpfe
-„Anhang-E-Checkliste…", „XLSX mit Formeln exportieren…".
+„Anhang-E-Checkliste…", „XLSX mit Formeln exportieren…" — **beides Mockup-Knöpfe: im Bestand
+gibt es weder ein Element noch einen Ressourcenschlüssel dafür.**
 
 **Szenarien** — alle Parameter gleichzeitig variiert (7.3): Best +118.430 · Erwartet +65.259 ·
 Worst −12.870 € (Best/Worst im Mockup Beispielwerte). „Ein negativer Worst Case ist nach 8.1.3 kein
@@ -102,6 +103,9 @@ Sensitivität (nur „Erwartet", ceteris paribus, 7.2)
 Die Mappe ist die externe Gegenprobe: Ihre Zahlen entstanden ohne EPOS-Plan. Die jahresscharfe
 Nachrechnung mit der obigen Formel trifft ihren Kapitalwert von 65.259 € exakt; die Tafel zeigt die
 Näherung über eine konstante Reihe, damit der Weg mit dem Taschenrechner nachvollziehbar bleibt.
+
+**Offen:** Welche Mappe des Bestands als **Referenzmappe** der Zahlenprobe gegen die Altanwendung
+(A8 / Etappe B9) gilt, ist noch zu benennen — samt dem maßgeblichen Kapitalwertblatt.
 
 | Schritt | Rechnung | Ergebnis | Anmerkung |
 |---|---|---|---|

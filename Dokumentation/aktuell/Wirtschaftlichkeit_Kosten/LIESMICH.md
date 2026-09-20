@@ -1,6 +1,6 @@
 # Wirtschaftlichkeit und Kosten — Rechenwege und Zahlenprobe
 
-Führende Fassung: `../Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`.
+Führende Fassung: `Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` in diesem Ordner.
 
 Dieser Ordner enthält das **Funktionsbild** der Kostendialoge und der Ergebnisseite sowie zu jeder
 Kostenkategorie den **dokumentierten Rechenweg** — Formel, Rechtsgrundlage, Codestelle und eine
@@ -17,6 +17,8 @@ Umsetzung. Was davon noch nicht gebaut ist, steht gesammelt in seinem Anhang
 Wirtschaftlichkeit_Kosten/
 ├── LIESMICH.md                          diese Datei — Einstieg und Lesereihenfolge
 ├── Beispielprojekt.md                   die eine Zahlenquelle: Eingangsgrößen, Mengenbilanz, Preise
+├── 2026-09-19_Pruefung_Mockups_Wirtschaftlichkeit.md   Prüfung der Mockups: Befund und Änderungsplan
+├── 2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md   Analyse des Konzepts für die Umsetzung: Stand, Lücken, Entscheide, Etappen
 └── Rechenweg/
     ├── 01_Investitionskosten_BHKW.md    Drei-Runden-Kaskade, Zuschussklemme
     ├── 02_Betriebskosten_BHKW.md        Pflichtpositionen, Hilfsenergie an der Endenergie
@@ -35,8 +37,9 @@ Berechnungserläuterung, Ergebnisseite und den beiden Anhängen — und
 
 Die Mockup-Seite ist zugleich als Artifact veröffentlicht:
 [Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f).
-Die HTML-Datei hier ist die Quelle; ein Redeploy erfolgt über den Artifact-Link (`url`), damit die
-Adresse stabil bleibt.
+**Die Repo-Datei führt** — das Artifact ist nicht neu veröffentlicht und trägt einen älteren
+Zahlenstand. Die HTML-Datei hier ist die Quelle; ein Redeploy erfolgt über den Artifact-Link
+(`url`), damit die Adresse stabil bleibt.
 
 ## Lesereihenfolge
 
@@ -47,6 +50,10 @@ Adresse stabil bleibt.
    mit dem Anhang „Umsetzungsstand".
 3. **`Rechenweg/05` und `06`** — die beiden Vergütungsseiten sind der Schwerpunkt des Auftrags.
 4. Die übrigen Rechenwege in Nummernfolge; `08` schließt mit dem Kapitalwert.
+5. **`2026-09-19_Pruefung_Mockups_Wirtschaftlichkeit.md`** — was an den Mockups und den Papieren
+   nicht zusammenpasst, mit Änderungsplan (§ 3) und den Entscheidfragen Q1–Q25 (§ 4).
+6. **`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`** — wer umsetzen will, liest
+   zuletzt dieses: Stand gegen Code, Lücken, die Entscheide A1–A20 und der Etappenplan E0–E12.
 
 ## Aufbau jeder Rechenweg-Datei
 
@@ -61,10 +68,14 @@ Adresse stabil bleibt.
 ## Die Dialogform der Komponentenkosten (abgenommen 02.09.2026)
 
 Kopfband (`#0F1F3D`) mit Titel „Kosten der Komponente — ‹Anlage›" und Zusatz „Investition · netto"
-· Reiter **Investition / Betrieb / Ertrag-Bonus** · Raster mit **Position · Kostenart · Bemessung ·
-Satz · Menge (mit Herleitungszeile in Monospace) · Betrag · Runde** · Summenzeile mit Brutto,
-Zuschuss und I₀ · Warnband amber für Fachhinweise · Infozeile für die Mengenreihenfolge · Fußleiste
-mit Statuszeile, „Aus Vorlage übernehmen…", „+ Position", „Speichern".
+· **Optionsgruppe „Betriebskosten / Investitionskosten"** und **zwei Reiter** „Kosten
+Invest/Betrieb" (`KDLG_TAB_KOSTEN`) und „Ertrag/Bonus" (`KDLG_TAB_ERTRAG`) · Raster mit
+**Aktionen · Position · Bemessung · Satz · Betrag netto [€] · Nutzungsdauer [a] · Worst/Best** —
+Kostenart und Runde stehen im Zeileneditor bzw. in der Herleitungszeile unter dem Betrag ·
+Summenzeile mit Brutto, Zuschuss und I₀ · Warnband amber für Fachhinweise · Infozeile für die
+Mengenreihenfolge · **vier Rasterknöpfe** „+ Position hinzufügen", „Aus Vorlage übernehmen…",
+„Positionskatalog…", „Nutzungsdauern vorbelegen…" und darunter die Leiste „Abbrechen · Speichern ·
+OK" mit Statuszeile.
 
 Die Spalte *Nutzungsdauer* und die Gruppe *Ersatz und Restwert* stehen **technikneutral** im
 Investitionsraster jeder Komponente — Ersatz und Restwert hängen an der einzelnen Position, nicht an
@@ -87,7 +98,7 @@ Das Beispielprojekt rechnet durchgängig mit **einer** BHKW-Größe (300 kW, I�
 
 ## Verwandte Dokumente
 
-- `../Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` — Gesamtkonzept, § 3 Rechenwege
+- `Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` — Gesamtkonzept, § 3 Rechenwege
 - `../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md` — Rechtsstand mit Quellen
-- `../KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md` — Datenwelten und Festlegungen
-- `../Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` — Etappenkonzept (Historie bis B4)
+- `../../ueberholt/KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md` — Datenwelten und Festlegungen (Geschichte, keine Regelquelle)
+- `../../ueberholt/Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` — Etappenkonzept bis B4 (Geschichte, keine Regelquelle)

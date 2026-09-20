@@ -161,6 +161,18 @@ body {
 }
 .mockup-legende b { color: var(--epos-text); }
 
+.mockup-abschnitte {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px;
+    max-width: 1340px; margin: 0 24px 8px 24px; padding: 6px 12px;
+    border-bottom: 1px solid var(--epos-karte-rahmen); font-size: 12.5px;
+}
+.mockup-abschnitte-titel {
+    font-weight: 700; color: var(--epos-text-leise); text-transform: uppercase;
+    font-size: 11px; letter-spacing: .05em; margin-right: 4px;
+}
+.mockup-abschnitte a { color: var(--epos-marke); text-decoration: none; }
+.mockup-abschnitte a:hover { text-decoration: underline; }
+
 /* ================= Baustein: Dialog ==================================== */
 .epos-dialog {
     display: flex; flex-direction: column; gap: var(--epos-rand);
@@ -303,7 +315,7 @@ body {
 .epos-raster td.zahl, .epos-raster th.zahl { text-align: right; }
 .epos-raster td.leise { color: var(--epos-text-leise); }
 /* Ueber die ganze Breite haben die langen Namen mehr Platz als im Paar
-   60/40: der Hersteller "Vaillant Deutschland GmbH & Co. KG" steht ganz da,
+   60/40: der Hersteller "Kesselhersteller 1" steht ganz da,
    wo er vorher nach 9 rem abbrach. Das ist der sichtbare Gewinn der
    Anordnung - deshalb sind die zwei Kappungen hier grosszuegiger. Die
    17 rem der langen Spalte sind GEMESSEN: bei 22 rem rollte die
@@ -497,6 +509,17 @@ th.offen { z-index: 6; }
         nicht filtern (Kennzeichen ja/nein).</span>
 </p>
 
+<nav class="mockup-abschnitte" aria-label="Abschnitte je Reiter">
+  <span class="mockup-abschnitte-titel">Abschnitte</span>
+  <a href="#heizkessel-datenbank" data-blatt="blatt-m1">Heizkessel in der Datenbank</a>
+  <a href="#heizkessel-eingabe" data-blatt="blatt-m1">Eingabe der Heizkesseldaten</a>
+  <a href="#waermepumpen-projekt" data-blatt="blatt-m2">W&auml;rmepumpen im Projekt</a>
+  <a href="#waermepumpen-datenbank" data-blatt="blatt-m2">W&auml;rmepumpen in der Datenbank</a>
+  <a href="#waermepumpen-kenndaten" data-blatt="blatt-m2">Kenndaten der gew&auml;hlten W&auml;rmepumpe</a>
+  <a href="#pv-module-datenbank" data-blatt="blatt-m3">PV-Module in der Datenbank</a>
+  <a href="#pv-module-eingabe" data-blatt="blatt-m3">Eingabe der Moduldaten</a>
+</nav>
+
 <!-- ==================================================================== -->
 <!-- M1 - HEIZKESSEL-VERWALTUNG                                           -->
 <!-- ==================================================================== -->
@@ -518,8 +541,8 @@ th.offen { z-index: 6; }
 
     <!-- ---------------- ZONE A ---------------------------------------- -->
     <div class="epos-dialog-kopf">
-      <h1 class="epos-dialog-titel">Verwaltung Heizkessel</h1>
-      <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">?</button>
+      <h2 class="epos-dialog-titel">Verwaltung Heizkessel</h2>
+      <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">&#9432;</button>
     </div>
 
     <div class="epos-suchzeile" role="search">
@@ -544,7 +567,7 @@ th.offen { z-index: 6; }
       <div class="epos-katalog-liste">
         <div class="epos-gruppenkopf-balken">
           <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
-          <h2 class="epos-gruppenkopf-titel">Heizkessel in der Datenbank</h2>
+          <h2 class="epos-gruppenkopf-titel" id="heizkessel-datenbank">Heizkessel in der Datenbank</h2>
           <span class="epos-gruppenkopf-summe">Mehrfachwahl mit Strg / Umschalt</span>
         </div>
         <div class="epos-raster-huelle epos-raster-huelle--katalog">
@@ -635,31 +658,31 @@ th.offen { z-index: 6; }
               </tr>
             </thead>
             <tbody data-zeilen>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoTEC plus VC 10CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">11,0</td><td class="zahl gefiltert">0,969</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 146/4-5 90</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 146/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 146/4-5 200</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td>ecoTEC plus VC 15CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">16,6</td><td class="zahl gefiltert">0,970</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 206/4-5 90</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 206/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VCC 206/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 206/4-5 200</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoTEC plus VC 20CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">22,1</td><td class="zahl gefiltert">0,968</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 266/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">27,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VSC 266/4-5 200</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">27,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoTEC plus VC 25CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">27,6</td><td class="zahl gefiltert">0,970</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCOMPACT VCC 266/4-5 150</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">30,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoTEC plus VC 30CS/1-5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">33,1</td><td class="zahl gefiltert">0,978</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 1</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">11,0</td><td class="zahl gefiltert">0,969</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 2</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 3</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 4</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td>Kessel 5</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">16,6</td><td class="zahl gefiltert">0,970</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 6</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 7</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 8</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 9</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 10</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">22,1</td><td class="zahl gefiltert">0,968</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 11</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">27,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 12</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">27,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 13</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">27,6</td><td class="zahl gefiltert">0,970</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 14</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">30,0</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 15</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">33,1</td><td class="zahl gefiltert">0,978</td><td class="leise">nein</td></tr>
 
               <!-- Schattenzeilen: sie scheitern an GENAU EINEM Spaltenfilter. -->
-              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>atmoTEC exclusiv VC 104/4-7 E</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">10,0</td><td class="zahl gefiltert">0,900</td><td class="leise">nein</td></tr>
-              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>GBH192i-15 T 150S Schichtenladespeicher</td><td class="leise eng" title="Buderus">Buderus</td><td class="gefiltert">Erdgas LL</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,882</td><td>ja</td></tr>
-              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoVIT VKK 186/5</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">19,3</td><td class="zahl gefiltert">0,874</td><td>ja</td></tr>
-              <tr data-verletzt="brennstoff"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>icoVIT exlcusiv VKO 156/3-7</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Heiz&ouml;l EL</td><td class="zahl gefiltert">15,8</td><td class="zahl gefiltert">1,000</td><td>ja</td></tr>
-              <tr data-verletzt="brennstoff"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>eloBLOCK VE 15</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Elektrische Energie</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">1,000</td><td class="leise">nein</td></tr>
-              <tr data-verletzt="brennstoff"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>eloBLOCK VE 21</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Elektrische Energie</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,994</td><td class="leise">nein</td></tr>
-              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Vitocrossal 200 CM2 raumluftabh&auml;ngig</td><td class="leise eng" title="Viessmann GmbH &amp; Co">Viessmann GmbH &amp; Co</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">80,0</td><td class="zahl gefiltert">1,000</td><td class="leise">nein</td></tr>
-              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>ecoCRAFT VKK 806/3</td><td class="leise eng" title="Vaillant Deutschland GmbH &amp; Co. KG">Vaillant Deutschland GmbH &amp; Co. KG</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">84,1</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 16</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">10,0</td><td class="zahl gefiltert">0,900</td><td class="leise">nein</td></tr>
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 17</td><td class="leise eng" title="Kesselhersteller 2">Kesselhersteller 2</td><td class="gefiltert">Erdgas LL</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">0,882</td><td>ja</td></tr>
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 18</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">19,3</td><td class="zahl gefiltert">0,874</td><td>ja</td></tr>
+              <tr data-verletzt="brennstoff"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 19</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Heiz&ouml;l EL</td><td class="zahl gefiltert">15,8</td><td class="zahl gefiltert">1,000</td><td>ja</td></tr>
+              <tr data-verletzt="brennstoff"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 20</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Elektrische Energie</td><td class="zahl gefiltert">15,0</td><td class="zahl gefiltert">1,000</td><td class="leise">nein</td></tr>
+              <tr data-verletzt="brennstoff"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 21</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Elektrische Energie</td><td class="zahl gefiltert">21,0</td><td class="zahl gefiltert">0,994</td><td class="leise">nein</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 22</td><td class="leise eng" title="Kesselhersteller 3">Kesselhersteller 3</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">80,0</td><td class="zahl gefiltert">1,000</td><td class="leise">nein</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td>Kessel 23</td><td class="leise eng" title="Kesselhersteller 1">Kesselhersteller 1</td><td class="gefiltert">Erdgas E</td><td class="zahl gefiltert">84,1</td><td class="zahl gefiltert">0,980</td><td class="leise">nein</td></tr>
             </tbody>
           </table>
         </div>
@@ -671,7 +694,7 @@ th.offen { z-index: 6; }
         <div class="epos-gruppenkopf">
           <div class="epos-gruppenkopf-balken">
             <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9998;</span>
-            <h2 class="epos-gruppenkopf-titel">Eingabe der Heizkesseldaten</h2>
+            <h2 class="epos-gruppenkopf-titel" id="heizkessel-eingabe">Eingabe der Heizkesseldaten</h2>
           </div>
           <div class="epos-gruppenkopf-koerper">
             <!-- Ueber die ganze Breite legt auto-fill mehrere Feldpaare
@@ -681,9 +704,9 @@ th.offen { z-index: 6; }
             <div class="epos-formularraster">
               <p class="epos-formulargruppe-titel">Stammdaten</p>
               <label class="epos-feld"><span>Name:</span>
-                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="ecoTEC plus VC 15CS/1-5"></span></label>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Kessel 5"></span></label>
               <label class="epos-feld"><span>Hersteller:</span>
-                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Vaillant Deutschland GmbH &amp; Co. KG"></span></label>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Kesselhersteller 1"></span></label>
               <label class="epos-feld"><span>Brennstoff:</span>
                 <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Erdgas E"></span></label>
               <label class="epos-feld"><span>Beschreibung:</span>
@@ -731,6 +754,7 @@ th.offen { z-index: 6; }
       <button type="button" class="epos-knopf">Kopieren&hellip;</button>
       <button type="button" class="epos-knopf" disabled>Vergleichen</button>
       <button type="button" class="epos-knopf">L&ouml;schen</button>
+      <button type="button" class="epos-knopf">Abbrechen</button>
       <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
     </div>
   </div>
@@ -749,14 +773,14 @@ th.offen { z-index: 6; }
           Leistungsfilter 22, ohne den Brennstofffilter 25.</li>
       <li>&eta; ist der <b>angezeigte</b> Wirkungsgrad: <code>Wirkungsgrad_Gas</code>, ersatzweise
           <code>Wirkungsgrad_&Ouml;l</code>; ein Wert &gt;&nbsp;2 gilt als Prozent und wird durch
-          100 geteilt (<b>Befund D&#8209;2</b> &ndash; <code>eloBLOCK VE 10</code> f&uuml;hrt 94,0
+          100 geteilt (<b>Befund D&#8209;2</b> &ndash; <code>Kessel 24</code> f&uuml;hrt 94,0
           statt 0,94; ein Satz von 63).</li>
       <li><b>Befund D&#8209;1 steht jetzt als Spalte da.</b> Alle 15 Treffer tragen
           <code>Brennwert&nbsp;=&nbsp;nein</code>, obwohl ihre Beschreibung
           &bdquo;Brennwert-Kessel&ldquo; bzw. &bdquo;Brennwert-Kombi-Kessel&ldquo; lautet; die
           Schattenzeilen <code>GBH192i-15&nbsp;T&nbsp;150S</code>,
-          <code>ecoVIT&nbsp;VKK&nbsp;186/5</code> und
-          <code>icoVIT&nbsp;exlcusiv&nbsp;VKO&nbsp;156/3-7</code> tragen &bdquo;ja&ldquo;.
+          <code>Kessel 18</code> und
+          <code>Kessel 19</code> tragen &bdquo;ja&ldquo;.
           Gemessen: <b>6 von 63</b> S&auml;tzen tragen das Kennzeichen, <b>46</b> nennen es im
           Text. Vor dem Spaltenmodell musste man dazu 63 Datens&auml;tze einzeln aufschlagen.</li>
       <li><b>Sechs Parameterspalten</b> statt einer &ndash; und keine davon f&auml;llt weg,
@@ -805,8 +829,8 @@ th.offen { z-index: 6; }
   <div class="epos-dialog epos-dialog--breit" data-mockup="m2">
 
     <div class="epos-dialog-kopf">
-      <h1 class="epos-dialog-titel">W&auml;rmepumpen des Projekts</h1>
-      <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">?</button>
+      <h2 class="epos-dialog-titel">W&auml;rmepumpen des Projekts</h2>
+      <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">&#9432;</button>
     </div>
     <p class="epos-kontextzeile">Projekt: Heinestr 15 &nbsp;&middot;&nbsp; Variante: Grundvariante</p>
 
@@ -816,7 +840,7 @@ th.offen { z-index: 6; }
       <div class="epos-katalog-liste" role="group" aria-label="W&auml;rmepumpen im Projekt">
         <div class="epos-gruppenkopf-balken">
           <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
-          <h2 class="epos-gruppenkopf-titel">W&auml;rmepumpen im Projekt</h2>
+          <h2 class="epos-gruppenkopf-titel" id="waermepumpen-projekt">W&auml;rmepumpen im Projekt</h2>
           <span class="epos-gruppenkopf-summe">2 Anlagen</span>
         </div>
         <div class="epos-raster-huelle epos-raster-huelle--kurz">
@@ -830,8 +854,8 @@ th.offen { z-index: 6; }
               <th scope="col" class="zahl"><div class="epos-kopfzelle"><button type="button" class="epos-kopf-titel" data-sortiere>Zuheizung [kW]<span class="epos-sortpfeil">&#8645;</span></button></div></th>
             </tr></thead>
             <tbody>
-              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td class="kurz" title="CS5800i AW 12 M + AW 5 OR-S">CS5800i AW 12 M + AW 5 OR-S</td><td class="leise eng" title="Bosch">Bosch</td><td>Luft-Wasser</td><td class="zahl">3</td><td class="zahl">6</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="CS7800iLW 16">CS7800iLW 16</td><td class="leise eng" title="Bosch">Bosch</td><td>Sole-Wasser</td><td class="zahl">15</td><td class="zahl">9</td></tr>
+              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td class="kurz" title="W&auml;rmepumpe 15">W&auml;rmepumpe 15</td><td class="leise eng" title="W&auml;rmepumpenhersteller 2">W&auml;rmepumpenhersteller 2</td><td>Luft-Wasser</td><td class="zahl">3</td><td class="zahl">6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="W&auml;rmepumpe 13">W&auml;rmepumpe 13</td><td class="leise eng" title="W&auml;rmepumpenhersteller 2">W&auml;rmepumpenhersteller 2</td><td>Sole-Wasser</td><td class="zahl">15</td><td class="zahl">9</td></tr>
             </tbody>
           </table>
         </div>
@@ -872,7 +896,7 @@ th.offen { z-index: 6; }
 
         <div class="epos-gruppenkopf-balken">
           <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
-          <h2 class="epos-gruppenkopf-titel">W&auml;rmepumpen in der Datenbank</h2>
+          <h2 class="epos-gruppenkopf-titel" id="waermepumpen-datenbank">W&auml;rmepumpen in der Datenbank</h2>
           <span class="epos-gruppenkopf-summe">Mehrfachwahl mit Strg / Umschalt</span>
         </div>
 
@@ -1008,22 +1032,22 @@ th.offen { z-index: 6; }
               </tr>
             </thead>
             <tbody data-zeilen>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="FHA-Center-14/17-300-S50-400V, DE">FHA-Center-14/17-300-S50-400V, DE</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">6</td><td class="zahl">25</td><td class="zahl gefiltert">60</td><td class="zahl">6</td><td>ja</td><td class="zahl">3,49</td></tr>
-              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP CHA-Monoblock 16/20 (400V) mit E-Heizelement 9 kW">WP CHA-Monoblock 16/20 (400V) mit E-Heizelement 9 kW</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">9</td><td class="zahl">25</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td class="leise">nein</td><td class="zahl">4,00</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS6800iAW MB + AW 10 OR-T">CS6800iAW MB + AW 10 OR-T</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">11</td><td class="zahl">35</td><td class="zahl gefiltert">75</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">2,90</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP CHA-Monoblock 20/24 (400V) mit E-Heizelement">WP CHA-Monoblock 20/24 (400V) mit E-Heizelement</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">11</td><td class="zahl">25</td><td class="zahl gefiltert">65</td><td class="zahl">0</td><td>ja</td><td class="zahl">3,70</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP CHA-Monoblock 20/24 (400V) ohne E-Heizelement">WP CHA-Monoblock 20/24 (400V) ohne E-Heizelement</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">11</td><td class="zahl">25</td><td class="zahl gefiltert">65</td><td class="zahl">0</td><td>ja</td><td class="zahl">3,70</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS5800i AW 12 M + AW 4 OR-S">CS5800i AW 12 M + AW 4 OR-S</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">12</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td class="leise">nein</td><td class="zahl">3,20</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS6800iAW MB + AW 12 OR-T">CS6800iAW MB + AW 12 OR-T</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">12</td><td class="zahl">35</td><td class="zahl gefiltert">75</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">2,70</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 1">W&auml;rmepumpenhersteller 1</td><td class="kurz" title="W&auml;rmepumpe 1">W&auml;rmepumpe 1</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">6</td><td class="zahl">25</td><td class="zahl gefiltert">60</td><td class="zahl">6</td><td>ja</td><td class="zahl">3,49</td></tr>
+              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 1">W&auml;rmepumpenhersteller 1</td><td class="kurz" title="W&auml;rmepumpe 2">W&auml;rmepumpe 2</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">9</td><td class="zahl">25</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td class="leise">nein</td><td class="zahl">4,00</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 2">W&auml;rmepumpenhersteller 2</td><td class="kurz" title="W&auml;rmepumpe 3">W&auml;rmepumpe 3</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">11</td><td class="zahl">35</td><td class="zahl gefiltert">75</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">2,90</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 1">W&auml;rmepumpenhersteller 1</td><td class="kurz" title="W&auml;rmepumpe 4">W&auml;rmepumpe 4</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">11</td><td class="zahl">25</td><td class="zahl gefiltert">65</td><td class="zahl">0</td><td>ja</td><td class="zahl">3,70</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 1">W&auml;rmepumpenhersteller 1</td><td class="kurz" title="W&auml;rmepumpe 5">W&auml;rmepumpe 5</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">11</td><td class="zahl">25</td><td class="zahl gefiltert">65</td><td class="zahl">0</td><td>ja</td><td class="zahl">3,70</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 2">W&auml;rmepumpenhersteller 2</td><td class="kurz" title="W&auml;rmepumpe 14">W&auml;rmepumpe 14</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">12</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td class="leise">nein</td><td class="zahl">3,20</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 2">W&auml;rmepumpenhersteller 2</td><td class="kurz" title="W&auml;rmepumpe 6">W&auml;rmepumpe 6</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">12</td><td class="zahl">35</td><td class="zahl gefiltert">75</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">2,70</td></tr>
 
               <!-- Schattenzeilen: sie scheitern an GENAU EINEM Spaltenfilter. -->
-              <tr data-verletzt="vorlauf"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="STIEBEL ELTRON">STIEBEL ELTRON</td><td class="kurz" title="WPL 19 I Set">WPL 19 I Set</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">7</td><td class="zahl">35</td><td class="zahl gefiltert">55</td><td class="zahl">8</td><td class="leise">nein</td><td class="zahl">4,12</td></tr>
-              <tr data-verletzt="vorlauf"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="STIEBEL ELTRON">STIEBEL ELTRON</td><td class="kurz" title="WPL 20 A hybrid Set">WPL 20 A hybrid Set</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">8</td><td class="zahl">35</td><td class="zahl gefiltert">55</td><td class="zahl">8</td><td class="leise">nein</td><td class="zahl">4,14</td></tr>
-              <tr data-verletzt="vorlauf"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP BWL-1-08-I, Ausbla&szlig; links">WP BWL-1-08-I, Ausbla&szlig; links</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">8</td><td class="zahl">35</td><td class="zahl gefiltert">55</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">3,80</td></tr>
-              <tr data-verletzt="quelle"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS7800iLW 8 M">CS7800iLW 8 M</td><td class="gefiltert">Sole-Wasser</td><td class="zahl gefiltert">7</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td>ja</td><td class="zahl leise">&ndash;</td></tr>
-              <tr data-verletzt="quelle"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS7800iLW 12">CS7800iLW 12</td><td class="gefiltert">Sole-Wasser</td><td class="zahl gefiltert">12</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td>ja</td><td class="zahl leise">&ndash;</td></tr>
-              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Bosch">Bosch</td><td class="kurz" title="CS5800i AW 12 M + AW 5 OR-S">CS5800i AW 12 M + AW 5 OR-S</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">3</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">2,90</td></tr>
-              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="Wolf">Wolf</td><td class="kurz" title="WP FHA-05/06-230V o. EHZ, DE">WP FHA-05/06-230V o. EHZ, DE</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">2</td><td class="zahl">25</td><td class="zahl gefiltert">60</td><td class="zahl">0</td><td>ja</td><td class="zahl">4,24</td></tr>
+              <tr data-verletzt="vorlauf"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 3">W&auml;rmepumpenhersteller 3</td><td class="kurz" title="W&auml;rmepumpe 7">W&auml;rmepumpe 7</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">7</td><td class="zahl">35</td><td class="zahl gefiltert">55</td><td class="zahl">8</td><td class="leise">nein</td><td class="zahl">4,12</td></tr>
+              <tr data-verletzt="vorlauf"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 3">W&auml;rmepumpenhersteller 3</td><td class="kurz" title="W&auml;rmepumpe 8">W&auml;rmepumpe 8</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">8</td><td class="zahl">35</td><td class="zahl gefiltert">55</td><td class="zahl">8</td><td class="leise">nein</td><td class="zahl">4,14</td></tr>
+              <tr data-verletzt="vorlauf"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 1">W&auml;rmepumpenhersteller 1</td><td class="kurz" title="W&auml;rmepumpe 10">W&auml;rmepumpe 10</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">8</td><td class="zahl">35</td><td class="zahl gefiltert">55</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">3,80</td></tr>
+              <tr data-verletzt="quelle"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 2">W&auml;rmepumpenhersteller 2</td><td class="kurz" title="W&auml;rmepumpe 11">W&auml;rmepumpe 11</td><td class="gefiltert">Sole-Wasser</td><td class="zahl gefiltert">7</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td>ja</td><td class="zahl leise">&ndash;</td></tr>
+              <tr data-verletzt="quelle"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 2">W&auml;rmepumpenhersteller 2</td><td class="kurz" title="W&auml;rmepumpe 12">W&auml;rmepumpe 12</td><td class="gefiltert">Sole-Wasser</td><td class="zahl gefiltert">12</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">9</td><td>ja</td><td class="zahl leise">&ndash;</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 2">W&auml;rmepumpenhersteller 2</td><td class="kurz" title="W&auml;rmepumpe 15">W&auml;rmepumpe 15</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">3</td><td class="zahl">35</td><td class="zahl gefiltert">65</td><td class="zahl">6</td><td class="leise">nein</td><td class="zahl">2,90</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="leise eng" title="W&auml;rmepumpenhersteller 1">W&auml;rmepumpenhersteller 1</td><td class="kurz" title="W&auml;rmepumpe 9">W&auml;rmepumpe 9</td><td class="gefiltert">Luft-Wasser</td><td class="zahl gefiltert">2</td><td class="zahl">25</td><td class="zahl gefiltert">60</td><td class="zahl">0</td><td>ja</td><td class="zahl">4,24</td></tr>
             </tbody>
           </table>
         </div>
@@ -1043,15 +1067,15 @@ th.offen { z-index: 6; }
     <div class="epos-gruppenkopf">
       <div class="epos-gruppenkopf-balken">
         <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
-        <h2 class="epos-gruppenkopf-titel">Kenndaten der gew&auml;hlten W&auml;rmepumpe</h2>
+        <h2 class="epos-gruppenkopf-titel" id="waermepumpen-kenndaten">Kenndaten der gew&auml;hlten W&auml;rmepumpe</h2>
         <span class="epos-gruppenkopf-summe">Katalogsatz &ndash; nur Anzeige</span>
       </div>
       <div class="epos-gruppenkopf-koerper">
         <div class="epos-formularraster">
           <label class="epos-feld"><span>Modell:</span>
-            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="WP CHA-Monoblock 16/20 (400V) mit E-Heizelement 9 kW"></span></label>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="W&auml;rmepumpe 2"></span></label>
           <label class="epos-feld"><span>Hersteller:</span>
-            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Wolf"></span></label>
+            <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="W&auml;rmepumpenhersteller 1"></span></label>
           <label class="epos-feld"><span>Quelle:</span>
             <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Luft-Wasser"></span></label>
           <label class="epos-feld"><span>Regelung:</span>
@@ -1078,8 +1102,8 @@ th.offen { z-index: 6; }
 
     <div class="epos-leiste">
       <span class="epos-leiste-fueller"></span>
-      <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
       <button type="button" class="epos-knopf">Abbrechen</button>
+      <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
     </div>
   </div>
 
@@ -1151,8 +1175,8 @@ th.offen { z-index: 6; }
   <div class="epos-dialog epos-dialog--breit" data-mockup="m3">
 
     <div class="epos-dialog-kopf">
-      <h1 class="epos-dialog-titel">Verwaltung PV-Module</h1>
-      <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">?</button>
+      <h2 class="epos-dialog-titel">Verwaltung PV-Module</h2>
+      <button type="button" class="epos-infoknopf" title="Hilfe zu dieser Maske">&#9432;</button>
     </div>
 
     <div class="epos-suchzeile" role="search">
@@ -1176,7 +1200,7 @@ th.offen { z-index: 6; }
       <div class="epos-katalog-liste">
         <div class="epos-gruppenkopf-balken">
           <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9636;</span>
-          <h2 class="epos-gruppenkopf-titel">PV-Module in der Datenbank</h2>
+          <h2 class="epos-gruppenkopf-titel" id="pv-module-datenbank">PV-Module in der Datenbank</h2>
           <span class="epos-gruppenkopf-summe">virtualisiert (Raster.Virtualisiert)</span>
         </div>
         <div class="epos-raster-huelle epos-raster-huelle--katalog">
@@ -1198,14 +1222,14 @@ th.offen { z-index: 6; }
                   </div>
                 </th>
                 <th scope="col" class="gefiltert" data-spalte="hersteller" data-aktiv="true"
-                    data-titel="Hersteller" data-text="enth&auml;lt &bdquo;LONGi&ldquo;">
+                    data-titel="Hersteller" data-text="enth&auml;lt &bdquo;Modulhersteller 1&ldquo;">
                   <div class="epos-kopfzelle">
                     <button type="button" class="epos-kopf-titel" data-sortiere>Hersteller<span class="epos-sortpfeil">&#8645;</span></button>
                     <button type="button" class="epos-kopf-trichter epos-kopf-trichter--gesetzt" data-trichter aria-expanded="false" aria-label="Filter f&uuml;r Hersteller"><svg><use href="#sym-trichter"/></svg></button>
                   </div>
                   <div class="epos-spaltenfilter" hidden>
                     <p class="epos-spaltenfilter-titel">Hersteller</p>
-                    <input class="epos-eingabe" type="text" readonly value="LONGi" placeholder="enth&auml;lt&hellip;">
+                    <input class="epos-eingabe" type="text" readonly value="Modulhersteller 1" placeholder="enth&auml;lt&hellip;">
                     <div class="epos-spaltenfilter-fuss">
                       <button type="button" class="epos-knopf epos-knopf--schmal" data-filterloeschen>Filter l&ouml;schen</button>
                     </div>
@@ -1297,30 +1321,30 @@ th.offen { z-index: 6; }
               </tr>
             </thead>
             <tbody data-zeilen>
-              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-570M">LONGi &hellip; LR5-72HPH-570M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">570,4</td><td class="zahl gefiltert">22,91</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-565M">LONGi &hellip; LR5-72HBD-565M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">565,2</td><td class="zahl gefiltert">22,52</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-565M">LONGi &hellip; LR5-72HPH-565M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">564,8</td><td class="zahl gefiltert">22,68</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-560M">LONGi &hellip; LR5-72HBD-560M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">560,9</td><td class="zahl gefiltert">22,35</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-560M">LONGi &hellip; LR5-72HPH-560M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">560,9</td><td class="zahl gefiltert">22,53</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-555M">LONGi &hellip; LR5-72HBD-555M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">555,3</td><td class="zahl gefiltert">22,12</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-555M">LONGi &hellip; LR5-72HPH-555M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">555,3</td><td class="zahl gefiltert">22,30</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-550M">LONGi &hellip; LR5-72HBD-550M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">551,0</td><td class="zahl gefiltert">21,95</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-550M">LONGi &hellip; LR5-72HPH-550M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">551,0</td><td class="zahl gefiltert">22,13</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-545M">LONGi &hellip; LR5-72HBD-545M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">545,1</td><td class="zahl gefiltert">21,72</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-545M">LONGi &hellip; LR5-72HPH-545M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">545,1</td><td class="zahl gefiltert">21,89</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-540M">LONGi &hellip; LR5-72HBD-540M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">540,8</td><td class="zahl gefiltert">21,55</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-540M">LONGi &hellip; LR5-72HPH-540M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">540,8</td><td class="zahl gefiltert">21,72</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-535M">LONGi &hellip; LR5-72HBD-535M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">535,4</td><td class="zahl gefiltert">21,50</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">47,3</td></tr>
-              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-535M">LONGi &hellip; LR5-72HPH-535M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">535,4</td><td class="zahl gefiltert">21,50</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr class="gewaehlt"><td><button type="button" class="epos-zeilenwahl" aria-pressed="true" aria-label="gew&auml;hlt"></button></td><td class="kurz" title="Modulhersteller 1 Modul 1">Modulhersteller 1 Modul 1</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">570,4</td><td class="zahl gefiltert">22,91</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 2">Modulhersteller 1 Modul 2</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">565,2</td><td class="zahl gefiltert">22,52</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 3">Modulhersteller 1 Modul 3</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">564,8</td><td class="zahl gefiltert">22,68</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 4">Modulhersteller 1 Modul 4</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">560,9</td><td class="zahl gefiltert">22,35</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 5">Modulhersteller 1 Modul 5</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">560,9</td><td class="zahl gefiltert">22,53</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 6">Modulhersteller 1 Modul 6</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">555,3</td><td class="zahl gefiltert">22,12</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 7">Modulhersteller 1 Modul 7</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">555,3</td><td class="zahl gefiltert">22,30</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 8">Modulhersteller 1 Modul 8</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">551,0</td><td class="zahl gefiltert">21,95</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 9">Modulhersteller 1 Modul 9</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">551,0</td><td class="zahl gefiltert">22,13</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 10">Modulhersteller 1 Modul 10</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">545,1</td><td class="zahl gefiltert">21,72</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 11">Modulhersteller 1 Modul 11</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">545,1</td><td class="zahl gefiltert">21,89</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 12">Modulhersteller 1 Modul 12</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">540,8</td><td class="zahl gefiltert">21,55</td><td>Mono-c-Si</td><td class="zahl">2,51</td><td class="zahl">48,7</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 13">Modulhersteller 1 Modul 13</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">540,8</td><td class="zahl gefiltert">21,72</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 14">Modulhersteller 1 Modul 14</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">535,4</td><td class="zahl gefiltert">21,50</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">47,3</td></tr>
+              <tr><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 15">Modulhersteller 1 Modul 15</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">535,4</td><td class="zahl gefiltert">21,50</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">46,6</td></tr>
 
               <!-- Schattenzeilen: sie scheitern an GENAU EINEM Spaltenfilter. -->
-              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-530M">LONGi &hellip; LR5-72HBD-530M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">530,7</td><td class="zahl gefiltert">21,32</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">47,3</td></tr>
-              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-72HBD-525M">LONGi &hellip; LR5-72HBD-525M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">525,3</td><td class="zahl gefiltert">21,10</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">47,3</td></tr>
-              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR5-66HBD-495M">LONGi &hellip; LR5-66HBD-495M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">494,7</td><td class="zahl gefiltert">21,60</td><td>Mono-c-Si</td><td class="zahl">2,29</td><td class="zahl">47,7</td></tr>
-              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="LONGi Green Energy Technology Co, Ltd, LR4-72HPH-465M">LONGi &hellip; LR4-72HPH-465M</td><td class="leise gefiltert eng" title="LONGi Green Energy Technology Co, Ltd,">LONGi Green Energy Technology Co, Ltd,</td><td class="zahl gefiltert">465,2</td><td class="zahl gefiltert">21,94</td><td>Mono-c-Si</td><td class="zahl">2,12</td><td class="zahl">45,1</td></tr>
-              <tr data-verletzt="hersteller"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Tangshan Haitai New Energy Technology Co, Ltd, HTM600MH8-60(1500)">Tangshan Haitai &hellip; HTM600MH8-60(1500)</td><td class="leise gefiltert eng" title="Tangshan Haitai New Energy Technology Co, Ltd,">Tangshan Haitai New Energy Technology Co, Ltd,</td><td class="zahl gefiltert">600,0</td><td class="zahl gefiltert">26,78</td><td>Mono-c-Si</td><td class="zahl">2,24</td><td class="zahl">45,6</td></tr>
-              <tr data-verletzt="hersteller"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="VIETNAM SUNERGY JOINT STOCK COMPANY VSUN600N-144BMH">VIETNAM SUNERGY &hellip; VSUN600N-144BMH</td><td class="leise gefiltert eng" title="VIETNAM SUNERGY JOINT STOCK COMPANY">VIETNAM SUNERGY JOINT STOCK COMPANY</td><td class="zahl gefiltert">599,9</td><td class="zahl gefiltert">23,25</td><td>Mono-c-Si</td><td class="zahl">2,58</td><td class="zahl">46,1</td></tr>
-              <tr data-verletzt="hersteller eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Philadelphia Solar PS-M144(HCBF)-530W">Philadelphia Solar PS-M144(HCBF)-530W</td><td class="leise gefiltert eng" title="Philadelphia Solar">Philadelphia Solar</td><td class="zahl gefiltert">530,8</td><td class="zahl gefiltert">20,73</td><td class="leise">&ndash;</td><td class="zahl leise">&ndash;</td><td class="zahl">45,3</td></tr>
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 16">Modulhersteller 1 Modul 16</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">530,7</td><td class="zahl gefiltert">21,32</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">47,3</td></tr>
+              <tr data-verletzt="eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 17">Modulhersteller 1 Modul 17</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">525,3</td><td class="zahl gefiltert">21,10</td><td>Mono-c-Si</td><td class="zahl">2,49</td><td class="zahl">47,3</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 18">Modulhersteller 1 Modul 18</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">494,7</td><td class="zahl gefiltert">21,60</td><td>Mono-c-Si</td><td class="zahl">2,29</td><td class="zahl">47,7</td></tr>
+              <tr data-verletzt="leistung"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 1 Modul 19">Modulhersteller 1 Modul 19</td><td class="leise gefiltert eng" title="Modulhersteller 1">Modulhersteller 1</td><td class="zahl gefiltert">465,2</td><td class="zahl gefiltert">21,94</td><td>Mono-c-Si</td><td class="zahl">2,12</td><td class="zahl">45,1</td></tr>
+              <tr data-verletzt="hersteller"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 3 Modul 21">Modulhersteller 3 Modul 21</td><td class="leise gefiltert eng" title="Modulhersteller 3">Modulhersteller 3</td><td class="zahl gefiltert">600,0</td><td class="zahl gefiltert">26,78</td><td>Mono-c-Si</td><td class="zahl">2,24</td><td class="zahl">45,6</td></tr>
+              <tr data-verletzt="hersteller"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 4 Modul 22">Modulhersteller 4 Modul 22</td><td class="leise gefiltert eng" title="Modulhersteller 4">Modulhersteller 4</td><td class="zahl gefiltert">599,9</td><td class="zahl gefiltert">23,25</td><td>Mono-c-Si</td><td class="zahl">2,58</td><td class="zahl">46,1</td></tr>
+              <tr data-verletzt="hersteller eta"><td><button type="button" class="epos-zeilenwahl" aria-pressed="false" aria-label="w&auml;hlen"></button></td><td class="kurz" title="Modulhersteller 2 Modul 20">Modulhersteller 2 Modul 20</td><td class="leise gefiltert eng" title="Modulhersteller 2">Modulhersteller 2</td><td class="zahl gefiltert">530,8</td><td class="zahl gefiltert">20,73</td><td class="leise">&ndash;</td><td class="zahl leise">&ndash;</td><td class="zahl">45,3</td></tr>
             </tbody>
           </table>
         </div>
@@ -1332,16 +1356,16 @@ th.offen { z-index: 6; }
         <div class="epos-gruppenkopf">
           <div class="epos-gruppenkopf-balken">
             <span class="epos-gruppenkopf-symbol" aria-hidden="true">&#9998;</span>
-            <h2 class="epos-gruppenkopf-titel">Eingabe der Moduldaten</h2>
+            <h2 class="epos-gruppenkopf-titel" id="pv-module-eingabe">Eingabe der Moduldaten</h2>
           </div>
           <div class="epos-gruppenkopf-koerper">
             <div class="epos-formularraster">
               <p class="epos-formulargruppe-titel">Stammdaten</p>
               <label class="epos-feld epos-feld--breit"><span>Modulname:</span>
                 <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen epos-eingabe--breit" readonly
-                       value="LONGi Green Energy Technology Co, Ltd, LR5-72HPH-570M"></span></label>
+                       value="Modulhersteller 1 Modul 1"></span></label>
               <label class="epos-feld"><span>Hersteller:</span>
-                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="LONGi Green Energy Technology Co, Ltd,"></span></label>
+                <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Modulhersteller 1"></span></label>
               <label class="epos-feld"><span>Zelltechnologie:</span>
                 <span class="epos-feld-zeile"><input class="epos-eingabe epos-eingabe--lesen" readonly value="Mono-c-Si"></span></label>
 
@@ -1396,6 +1420,7 @@ th.offen { z-index: 6; }
       <button type="button" class="epos-knopf">Kopieren&hellip;</button>
       <button type="button" class="epos-knopf" disabled>Vergleichen</button>
       <button type="button" class="epos-knopf">L&ouml;schen</button>
+      <button type="button" class="epos-knopf">Abbrechen</button>
       <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
     </div>
   </div>
@@ -1407,7 +1432,7 @@ th.offen { z-index: 6; }
           Datenzeilen von <b>258</b> Herstellern in <b>5</b> Zelltechnologien; dazu kommen die
           <b>6</b> S&auml;tze, die <code>Tab_PV_STAMM</code> in
           <code>Kenndaten_Test.sqlite</code> schon enth&auml;lt &ndash; zusammen 20 749.</li>
-      <li>&bdquo;Hersteller enth&auml;lt LONGi&ldquo; trifft 252 Module,
+      <li>&bdquo;Hersteller enth&auml;lt Modulhersteller 1&ldquo; trifft 252 Module,
           <code>P_STC&nbsp;500..600</code> trifft 2 158, <code>&eta;&nbsp;&gt;=21,5</code>
           trifft 2 172; zusammen bleiben <b>15</b> &ndash; genau die Zeilen, die oben stehen.
           Ohne den Herstellerfilter w&auml;ren es 789, ohne den Leistungsfilter 31, ohne den
@@ -1416,7 +1441,7 @@ th.offen { z-index: 6; }
           keine Wirkungsgradspalte &ndash; <code>Tab_PV_STAMM.Wirkungsgrad</code> entsteht beim
           Import genauso. Weil er eine Spalte ist, l&auml;sst sich nach ihm sortieren
           <i>und</i> filtern.</li>
-      <li>Die letzte Schattenzeile <code>Philadelphia Solar PS-M144(HCBF)-530W</code> stammt aus
+      <li>Die letzte Schattenzeile <code>Modulhersteller 2 Modul 20</code> stammt aus
           der Testdatenbank: 530,8&nbsp;W im Fenster, aber anderer Hersteller und 20,73&nbsp;%
           &ndash; sie erscheint erst, wenn <i>beide</i> Filter gel&ouml;scht sind. Ihre
           Zelltechnologie <i>und</i> ihre Modulfl&auml;che sind nicht gepflegt
@@ -1720,6 +1745,15 @@ th.offen { z-index: 6; }
     }
     ausAdresse();
     window.addEventListener('hashchange', ausAdresse);
+
+    /* Abschnittsnavigation: ein Sprungziel kann in einem nicht sichtbaren Blatt liegen -
+       vor dem Sprung erst dessen Reiter aktivieren (06/#5, #6). */
+    var abschnitte = [].slice.call(document.querySelectorAll('.mockup-abschnitte a[data-blatt]'));
+    for (var s = 0; s < abschnitte.length; s++) {
+        abschnitte[s].addEventListener('click', function (ev) {
+            blattZeigen(ev.currentTarget.getAttribute('data-blatt'));
+        });
+    }
 
     /* Esc schliesst jedes offene Popover - wie QuickGrid.razor.js es tut. */
     document.addEventListener('keydown', function (ev) {

@@ -979,9 +979,9 @@ ist nicht berührt; die Referenzbasis R7 bleibt.
 - **Schritt 1:** Auswahlkästchen je Einheitenkarte, Knopf „Ausgewählte Einheiten in Projekt übernehmen" neben „Speicher hinzufügen",
   Rückfrage mit Anzahl, Erfolgsmeldung mit den angelegten Anlagen.
 - Formularraster-Regeln (iU8‑E‑2), Bedienblock fester Breite wie #233, Ablaufleiste unverändert. Das Mockup
-  `Dokumentation/aktuell/Mockups/stromspeicher-optimierung-v2.html` (Fassung vor dem Entscheid: Herkunftspillen, Methode an die Herkunft gebunden) wird auf
-  diesen Stand nachgezogen — Pillen fallen, jede Karte trägt den Schalter „variieren", unter S zeigt jede eingeschaltete Karte die
-  Stückzahlzeile, unter G die Größenzeilen; Schritt 1 wird als zweite Ansicht mit Auswahl und Übernahmeknopf skizziert.
+  `Dokumentation/aktuell/Mockups/stromspeicher-optimierung-v2.html` ist auf diesen Stand nachgezogen (Auftrag
+  #247, #273) — die Pillen sind gefallen, jede Karte trägt den Schalter „variieren", unter S zeigt jede eingeschaltete Karte die
+  Stückzahlzeile, unter G die Größenzeilen; Schritt 1 ist als zweite Ansicht mit Auswahl und Übernahmeknopf skizziert.
 
 ### 8.5 Fragen (SD‑Q13 … SD‑Q18) mit Empfehlung und Entscheid
 

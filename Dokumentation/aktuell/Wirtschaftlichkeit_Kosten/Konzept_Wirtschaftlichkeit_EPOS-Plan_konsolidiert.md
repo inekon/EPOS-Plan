@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — konsolidiert
 
-**Stand 02.09.2026** · Codestand `922228a` (Branch `ios_migration`) · `SchemaMigration.ZIEL_VERSION` = 61 · Schemaschritt 62 vergeben (U-1), neue ab 63 · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 19.09.2026** · Codestand `e1c4275e` (vor dem Umschreiben der Geschichte am 12.09.2026: `922228a`) · `SchemaStand.Zielversion` = 96 · Schemaschritte 90–96 vergeben, neue ab 97 · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
 gut zwanzig Etappenprotokolle verteilt liegt. Es beantwortet die beiden Fragen, die vor der
@@ -17,39 +17,48 @@ Umsetzung zu klären sind:
 > **führende Fassung** des Wirtschaftlichkeitskonzepts: Es führt
 > `Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` (Etappenkonzept, letzter Stand 30.08.2026 mit B4),
 > `KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md` und `Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`
-> zusammen. Die drei Quellen bleiben als Historie und Herleitung stehen; **bei Widerspruch gilt
-> dieses Dokument.** Was sie an Stoff enthielten, der hier bislang fehlte, ist mit der Konsolidierung
-> nachgezogen: § 2.12 (Kategorien-Mockups), § 3.4 (Vorrangregel), § 3.11 (Emissionsfaktoren und
-> CO₂-Preispfad), § 5 (rechtliche Unsicherheiten), § 6.5 (doppelte Wahrheiten).
+> zusammen. **Bei Widerspruch gilt dieses Dokument.** Was sie an Stoff enthielten, der hier bislang
+> fehlte, ist mit der Konsolidierung nachgezogen: § 2.12 (Kategorien-Mockups), § 3.4 (Vorrangregel),
+> § 3.11 (Emissionsfaktoren und CO₂-Preispfad), § 5 (rechtliche Unsicherheiten), § 6.5 (doppelte
+> Wahrheiten).
+>
+> **Wo die drei Quellen heute liegen:** [`Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md`](../../ueberholt/Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md)
+> und [`KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md`](../../ueberholt/KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md)
+> stehen in `ueberholt/` und sind damit Geschichte, **nie Regelquelle**;
+> [`Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`](../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md)
+> bleibt in `aktuell/`, weil es Faktenbasis ist und kein umgesetztes Konzept. Was aus den beiden
+> Geschichtspapieren weiter gilt, gilt, weil es **hier** steht.
 
-> **Arbeitsregel (Anwender, 30.08.2026): erst das Konzept, keine Umsetzung.** Sämtliche hier
-> beschriebenen Vorhaben — die Erlösrubrik (§ 2.6), die Emissionsspalte (§ 2.5), die Befunde aus
-> § 4 — sind **zur Abnahme gedacht und ausdrücklich nicht implementiert**. Wo dieses Dokument
-> „Soll" sagt, beschreibt es einen Entwurf, keinen Codestand. Was tatsächlich umgesetzt ist, steht
-> in § 6.1.
+> **Stand der Umsetzung: § 6.1.** Was hier als Soll steht, ist gebaut, sofern § 6.1 die Etappe
+> führt. Was § 6.1 nicht führt, ist Entwurf zur Abnahme; § 6.3 nennt, was daran offen ist, § 7 die
+> Reihenfolge der offenen Etappen.
+
+**Herkunft.** Das Papier ist am 30.08.2026 unter der Arbeitsregel des Anwenders „erst das Konzept,
+keine Umsetzung" begonnen worden; damals war von den hier beschriebenen Vorhaben nichts
+implementiert. Seither sind die in § 6.1 geführten Etappen gelaufen — die Regel beschreibt die
+Entstehung des Papiers, nicht seinen heutigen Geltungsumfang.
 
 | Quelle | Was daraus einfließt |
 |---|---|
-| Formelkarte `rechenwege_formelkarte.md` (30.08.2026, gegen `b2ad3e3`) | § 3 vollständig, § 4 |
-| Feldkarte `b5_feldkarte.md` | § 2 vollständig, § 5 |
-| `Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` | Leitentscheidungen BW1–BW10 |
-| `KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md` | Datenwelten, Festlegungen L/KL/E/FK |
-| `Grundlagen_KWKG_Energiesteuer_Stromsteuer.md` | Rechtsstand, Sätze, Fristen |
+| Formelkarte `rechenwege_formelkarte.md` (30.08.2026, gegen `2cfb871d`) | § 3 vollständig, § 4 — **nicht erhalten**: lag im Sitzungs-Scratchpad; Belege heute an der Codestelle |
+| Feldkarte `b5_feldkarte.md` | § 2 vollständig, § 5 — **nicht erhalten**: lag im Sitzungs-Scratchpad; Belege heute an der Codestelle |
+| [`ueberholt/Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md`](../../ueberholt/Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md) | Leitentscheidungen BW1–BW10 |
+| [`ueberholt/KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md`](../../ueberholt/KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md) | Datenwelten, Festlegungen L/KL/E/FK |
+| [`Grundlagen_KWKG_Energiesteuer_Stromsteuer.md`](../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md) | Rechtsstand, Sätze, Fristen |
 | Protokolle B1–B4, BK1, H1–H4b, H21, HB1, W4 E1–E8, K1–K6, KD1–KD6, P1–P6 | § 6 |
 
-## Begleitende Artifacts
-
-Die visuellen Fassungen. Sie sind zum Ansehen und Prüfen gedacht; **maßgeblich ist dieses
-Dokument** — bei Abweichung gilt der Text hier.
+## Begleitendes Artifact
 
 | Artifact | Inhalt | entspricht |
 |---|---|---|
-| [**B5-Dialogmockup**](https://claude.ai/code/artifact/e928091e-44ef-41b9-ae31-d6bb7535cf1f) | alle Anlagen, BHKW und PV im Detail, Entscheidungen K1–K11 | § 2 |
-| [**Rechenwege der Wirtschaftlichkeit**](https://claude.ai/code/artifact/588f6e21-b9b4-4e4f-b732-56aeca3d5882) | Formelkarte aller Ketten mit Prüfliste | § 3, § 4 |
-| [**Erlösrubrik BHKW**](https://claude.ai/code/artifact/d924b2ec-9c41-4e84-a670-88e83bae7ff9) | Entwurf der eigenen Erlösrubrik, zwei Blöcke mit getrennten Summen; die beiden geprüften Befunde zur Stromsteuer-Reduktion und zur Unternehmensart | § 2.6 |
-| [**Pflichtpositionen je Komponente**](https://claude.ai/code/artifact/236c8a8a-a2e0-47f4-a099-aa1456de883a) |  Kostendialoge, Bezugsgrößen und die Hilfsenergie-Definition; **Entwurf B ist als § 2.8 übernommen** | § 3.4, Etappe H1 |
-| [**ValERI-Bewertung Höfingen**](https://claude.ai/code/artifact/f8968739-df34-4892-9d7d-9c07e6858a4f) | die fünf ValERI-Blöcke in der Wirtschaftlichkeitsseite, reale Höfingen-Zahlen, Cashflow über Nutzungsdauer, Sensitivität mit Steigung €/%, XLSX-Formelblatt nach Anhang A | § 2.9–2.11 |
-| [**Dialog, Formel, Zahlenprobe**](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f) | acht Kostenkategorien, je Dialog-Mockup + Berechnungsgrundlage + durchgerechnete Zahlenprobe an einem Beispielprojekt; Schwerpunkt Vergütungen BHKW (Mengentafel brutto/netto, Mischsatz, Jahresreihe mit Deckel) und PV (AW, Marktprämie, § 51/51a, Kappung); Komponentenkosten BHKW und PV in derselben Dialogform | § 2.12 |
+| [**Dialog, Formel, Zahlenprobe**](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f) | acht Kostenkategorien, je Dialog-Mockup + Berechnungsgrundlage + durchgerechnete Zahlenprobe an einem Beispielprojekt; Schwerpunkt Vergütungen BHKW (Mengentafel brutto/netto, Mischsatz, Jahresreihe mit Deckel) und PV (AW, Marktprämie, § 51/51a, Kappung); Komponentenkosten BHKW und PV in derselben Dialogform — **die Repo-Datei `../Mockups/Dialog_Formel_Zahlenprobe.html` führt** | § 2.12 |
+
+Fünf weitere Artifacts sind durch Repo-Dateien abgelöst und stehen nur noch im Protokoll: das
+B5-Dialogmockup durch `../Mockups/Dialog_Formel_Zahlenprobe.html` Kat. 5 und den gebauten
+`BhkwWirtschaftlichkeitDialog`, die Rechenwege durch [`Rechenweg/01…08`](Rechenweg/01_Investitionskosten_BHKW.md),
+die Erlösrubrik BHKW durch [`Rechenweg/07_Erloesrubrik.md`](Rechenweg/07_Erloesrubrik.md), die
+Pflichtpositionen durch § 2.8 und die ValERI-Bewertung Höfingen durch
+[`Rechenweg/08_Wirtschaftlichkeit_Nutzungsdauer.md`](Rechenweg/08_Wirtschaftlichkeit_Nutzungsdauer.md).
 
 ---
 
@@ -78,7 +87,8 @@ verändert oder nur erklärt.
 ```
 ① Positionswelt      Tab_ProjektWerte ← Tab_Kostenfaktor
    Kategorie 1 = Investition, 2 = Betrieb; je Projekt, Komponente und ANLAGE
-   Kostenart · Bemessung · Satz · Menge · Betrag · IstErloes · Nutzungsdauer · StartJahr · IstPflicht
+   Kostenart · Bemessung · Satz (Einheitpreis) · Menge · Betrag (EingegebenerWert) · IstErloes ·
+   Nutzungsdauer · StartJahr · IstPflicht · ID_AnlageGeraet · StammID · VorlageID · NutzungsdauerID
 
 ② Vorlagenwelt       Tab_KostenVorlage / Tab_KostenVorlagePosition
    Auslieferung „Standard": Struktur und Bemessung, Sätze bewusst LEER
@@ -92,20 +102,26 @@ verändert oder nur erklärt.
 ```
 
 Dazu die **Projektrahmen-Zeile** `Tab_ProjektWirtschaftlichkeit` — **eine Zeile je Stammprojekt**,
-gültig für die ganze Vergleichsgruppe (Befund R-1), und seit Schema 61 die
-**Wirtschaftlichkeitsspalten an `Tab_Energieanlagen`** (KWKG_*, `Energiesteuer_Wahl`,
-`Aufteilung_Methode`, `Hilfsenergie_Anteil`).
+gültig für die ganze Vergleichsgruppe (Befund R-1), und seit Schema 61 die **neun
+`KWKG_*`-Spalten** an `Tab_Energieanlagen` samt `Energiesteuer_Wahl`, `Aufteilung_Methode`,
+`Hilfsenergie_Anteil` und `ID_Carrier`.
 
 ---
 
 # 2 Der Dialograum
 
+**Zu den Namen.** `Form_*` und `Uc*` sind die **eingefrorenen Hilfe- und KI-Kennungen** (Hilfe-
+Zuordnung, Wissensbasis) und **keine Klassennamen mehr**: Seit der Schalentrennung liegen die
+Dialoge als Razor-Komponenten unter `EPOS.UI/Dialoge/…` mit den Bündeln `…Daten`/`…Texte`, die
+Plattformseite als `…Huelle` in der jeweiligen Schale. Dieses Kapitel nennt den gebauten Namen und
+die Hilfekennung als Paar.
+
 ## 2.1 Welche Anlage hat welche Wirtschaftlichkeitsfelder
 
 | Anlage | Investitionsfelder (Gerätewelt) | Betrieb: Hilfsenergie | Eigener Wirtschaftlichkeitsdialog |
 |---|---|---|---|
-| **BHKW** | `Kosten_Modul` + Montage + Lieferung + Schallschutzhaube + Abgasreinigung (Summe) · `Wartungskosten_kwhel` · Nutzungsdauer | `PROZENT_ENDENERGIEKOSTEN`, 2–4 % | **ja** — `Form_BhkwWirtschaftlichkeit` (neu, § 2.2) |
-| **Photovoltaik** | `Modulkosten` je Modul × Modulanzahl | `JAHRESBETRAG`, keine Pflicht | **ja** — `Form_PhotovoltaikVerguetung` (§ 2.3) |
+| **BHKW** | `Kosten_Modul` + Montage + Lieferung + Schallschutzhaube + Abgasreinigung (Summe) · `Wartungskosten_kwhel` · Nutzungsdauer | `PROZENT_ENDENERGIEKOSTEN`, 2–4 % | **ja** — `BhkwWirtschaftlichkeitDialog` (§ 2.2) |
+| **Photovoltaik** | `Modulkosten` je Modul × Modulanzahl | `JAHRESBETRAG`, keine Pflicht | **ja** — `PhotovoltaikVerguetungDialog` (§ 2.3) |
 | **Heizkessel** | `Investitionskosten` · `Wartungskosten` mit Einheit (€/a \| €/kWh \| %/a) · Nutzungsdauer | `PROZENT_ENDENERGIEKOSTEN`, 4–8 % | nein |
 | **Wärmepumpe** | `Modulkosten` (ganze Anlage) | `PROZENT_ENDENERGIEKOSTEN` | nein |
 | **Solarthermie** | `Investitionskosten` je Kollektormodul × Anzahl | `JAHRESBETRAG` | nein |
@@ -116,10 +132,14 @@ gültig für die ganze Vergleichsgruppe (Befund R-1), und seit Schema 61 die
 (Kapitalzins 3,0 %/a, Nutzungsdauer 20 a, Leistungspreis, Netzladeanteil, Preisquelle, SoC-Band).
 Alle übrigen Anlagen erben den Projektrahmen.
 
-## 2.2 `Form_BhkwWirtschaftlichkeit` — neu (BW9)
+## 2.2 `BhkwWirtschaftlichkeitDialog` (Hilfekennung `Form_BhkwWirtschaftlichkeit`)
 
-Sechs Gruppen an einem Ort, je Anlage pflegbar, mit Live-Vorschau aus **einem** Rechenweg.
-Andockung: Knopf in der Fußleiste von `UcWirtschaftlichkeit` und Reiter „Ertrag/Bonus" der
+**Gebaut** (§ 6.1, Etappe B5): `EPOS.UI/Dialoge/Wirtschaftlichkeit/BhkwWirtschaftlichkeitDialog.razor`
+mit der Windows-Hülle `WindowsFormsApplication1/Views/Wirtschaftlichkeit/BhkwWirtschaftlichkeitHuelle.cs`.
+Der Dialog führt **acht Gruppen** an einem Ort, je Anlage pflegbar, mit Live-Vorschau aus **einem**
+Rechenweg: die sechs unten beschriebenen, dazu „**Angaben der gewählten Anlage**" (aus der
+Aufklappzeile der Gruppe 1 herausgelöst) und „**Kohärenzprüfung (Energie- und Stromsteuer)**".
+Andockung: Knopf in der Fußleiste von `WirtschaftlichkeitSeite.razor` und Reiter „Ertrag/Bonus" der
 Komponente — dasselbe Formular, Muster PV.
 
 ### Gruppe 1 — Anlagen (Tabelle mit Aufklappzeile)
@@ -133,7 +153,8 @@ Tabellenkopf je BHKW-Modul, alles nur lesend:
 | **Brennstoff** | **kein Leseweg vorhanden — Lücke K4**, kleiner Leser `CarrierId` → Name in B5 |
 | Stichtag · Inbetriebnahme · Anlagenart | `KWKG_Stichtag` · `KWKG_Inbetriebnahme` · `KWKG_Anlagenart` |
 
-**Aufklappzeile** — 8 Bestandsfelder (heute in `Form_KwkgModule`) plus 3 aus B5 plus den
+**Aufklappzeile** — heute die eigene Gruppe „Angaben der gewählten Anlage" des gebauten Dialogs:
+8 Bestandsfelder (die Maske `Form_KwkgModule` ist mit BK1 aufgelöst) plus 3 aus B5 plus den
 Kostenanteil aus BK1. Durchgängig gilt: **leer oder 0 heißt „kein eigener Wert".** Für die fünf
 KWKG-Größen heißt das seit Schemaschritt 89 **nicht mehr „Projektvorgabe", sondern 0** — § 7 und
 § 8 KWKG bemessen sie an der einzelnen Anlage, und der Schritt hat jeder Bestandsanlage den Wert
@@ -141,18 +162,18 @@ eingetragen, den ihr der Rückfall zugewiesen hat (Entscheid `BK-E-1` (a)).
 
 | Feld | Typ | Bereich / Optionen | Spalte | Stand |
 |---|---|---|---|---|
-| Stichtag (Bestellung/Genehmigung) | DateTimePicker mit Haken | Haken aus = Projektwert | `KWKG_Stichtag` | Bestand |
-| Inbetriebnahme | DateTimePicker mit Haken | dito | `KWKG_Inbetriebnahme` | Bestand |
-| Anlagenart | ComboBox | (nicht erfasst = Neuanlage) · neu § 8 Abs. 1 · modernisiert Abs. 2 · nachgerüstet Abs. 3 | `KWKG_Anlagenart` | Bestand |
-| Eigenstrom nach § 6 Abs. 3 | ComboBox | kein Tatbestand · Nr. 1 bis 100 kW · Nr. 2 Kundenanlage · Nr. 3 stromkostenintensiv | `KWKG_Eigenstromfall` | Bestand |
+| Stichtag (Bestellung/Genehmigung) | Datumsfeld mit Kontrollkästchen | Haken aus = Projektwert | `KWKG_Stichtag` | Bestand |
+| Inbetriebnahme | Datumsfeld mit Kontrollkästchen | dito | `KWKG_Inbetriebnahme` | Bestand |
+| Anlagenart | Baustein `Auswahlfeld` | (nicht erfasst = Neuanlage) · neu § 8 Abs. 1 · modernisiert Abs. 2 · nachgerüstet Abs. 3 | `KWKG_Anlagenart` | Bestand |
+| Eigenstrom nach § 6 Abs. 3 | Baustein `Auswahlfeld` | kein Tatbestand · Nr. 1 bis 100 kW · Nr. 2 Kundenanlage · Nr. 3 stromkostenintensiv | `KWKG_Eigenstromfall` | Bestand |
 | Satz Einspeisung [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf „Vorschlag übernehmen" am Feld** | `KWKG_Satz_Einspeisung` | Bestand, Knopf BK1 |
 | Satz Eigenstrom [ct/kWh] | Numerisch 0–30 | 0 = kein Zuschlag; **Knopf am Feld** | `KWKG_Satz_Eigen` | Bestand, Knopf BK1 |
 | Vbh-Kontingent [h] | Numerisch 0–200.000 | 0 = nach § 8 aus dieser Anlage abgeleitet; **Knopf am Feld** | `KWKG_Vbh_Kontingent` | Bestand, Knopf BK1 |
 | Vbh-Jahresdeckel [h/a] | Numerisch 0–8.760 | 0 = Staffel | `KWKG_Vbh_Jahresdeckel` | Bestand |
 | **Anteil Neuherstellungskosten [%]** | Numerisch 0–100 | 0 = nicht gepflegt; wählt mit der Anlagenart die Kontingentstufe § 8 Abs. 2/3 | `KWKG_Kostenanteil` | **neu BK1**, einziger Pflegeort seit BK1b |
-| **Energiesteuerentlastung (Anlage)** | ComboBox | (Projektwert) · keine · § 53 · § 53a · § 54 | `Energiesteuer_Wahl` | **neu B5** |
-| **Brennstoff auf Strom/Wärme (Anlage)** | ComboBox | (Projektwert) · voller Brennstoff · energetisch | `Aufteilung_Methode` | **neu B5** |
-| **Hilfsenergieanteil [%]** | Numerisch 0–100 | 0 = keine; Vorschlag BHKW 2–4 % | `Hilfsenergie_Anteil` | **neu B5** |
+| **Energiesteuerentlastung (Anlage)** | Baustein `Auswahlfeld` | (Projektwert) · keine · § 53 · § 53a · § 54 | `Energiesteuer_Wahl` | **neu B5** |
+| **Brennstoff auf Strom/Wärme (Anlage)** | Baustein `Auswahlfeld` | (Projektwert) · voller Brennstoff · energetisch | `Aufteilung_Methode` | **neu B5** |
+| **Hilfsenergieanteil [% des Endenergiebedarfs]** | Numerisch 0–100 | 0 = keine; Vorschlag BHKW 2–4 %. Bemessen wird am **Endenergiebedarf (Brennstoff)** dieser Anlage — nicht an den Kosten (Schemaschritt 94, Statuszeilen #365/#366) | `Hilfsenergie_Anteil` | **neu B5** |
 
 Warnzeilen der Gruppe: Ausschreibung § 8a bei P_el > 500 kW · Stromsteuerbefreiung entfällt über
 2 MW · Heizöl-Ausschluss ab Inbetriebnahme 2025.
@@ -181,10 +202,15 @@ und daneben der Knopf „Vorschlag übernehmen". Er schreibt **nur sein eigenes 
 Knopfdruck und nur in den Arbeitsstand:
 
 ```
-Einspeisung 5,57 ct/kWh — 50 kW × 8,00 + 50 kW × 6,00 + 150 kW × 5,00 + 50 kW × 4,40   [Vorschlag übernehmen]
-Eigenstrom  0,00 ct/kWh — kein Tatbestand nach § 6 Abs. 3                               [gesperrt: Grund am Knopf]
-Kontingent  15.000 Vbh  — 30,0 % ≥ 25 % (§ 8 Abs. 2 KWKG 2025, 2027)                    [Vorschlag übernehmen]
+Einspeisung 5,5667 ct/kWh — § 7 Abs. 1 KWKG 2025, Stichtagsjahr 2026:
+                            50 × 8,00 + 50 × 6,00 + 150 × 5,00 + 50 × 4,40 = 1.670 ÷ 300  [Vorschlag übernehmen]
+Eigenstrom  2,4167 ct/kWh — § 7 Abs. 2 mit § 6 Abs. 3 Nr. 2, Stichtagsjahr 2026:
+                            50 × 4,00 + 50 × 3,00 + 150 × 2,00 + 50 × 1,50 =   725 ÷ 300  [Vorschlag übernehmen]
+Kontingent  30.000 Vbh    — § 8 Abs. 1, neue Anlage                                       [Vorschlag übernehmen]
 ```
+
+*Entscheid Q2 offen (Analyse vom 19.09.2026):* ob der Vorschlag am Feld bleibt oder als
+Sammelknopf „Sätze und Herkunft…" mit der Überlagerung U22 zusammengeführt wird.
 
 Fehlt eine Grundlage, ist der Knopf **weich** gesperrt (`aria-disabled`, Grund im `title` — ein
 `disabled`-Knopf zeigt seinen Tooltip nie): keine elektrische Nennleistung, kein Tatbestand nach
@@ -196,14 +222,16 @@ Projektebene: Energiesteuerentlastung (keine · § 53 Formular 1131 · § 53a Ab
 § 54 Formular 1450) · Brennstoff auf Strom/Wärme · Jahresnutzungsgrad [%] (0 = nicht erfasst,
 bleibt Projektgröße — K5).
 
-Herleitungslabel: `§ 53a Abs. 5 · Erdgas 4,42 €/MWh · 2.480 MWh (Ho, Faktor 1,1048) = 10.962 €/a`
+Herleitungslabel am Musterprojekt: `§ 53a Abs. 5 · Erdgas 4,42 €/MWh · 4.797,2 MWh = 21.203,4 €/a`
 Kohärenzzeile in Firebrick, wenn der erfasste Brennstoffpreis die Energiesteuer nicht ausweist.
 
 ### Gruppe 4 — Stromsteuer
 
 Unternehmensart (führend, BW4) · Räumlicher Zusammenhang 4,5 km · Hocheffizienz nachgewiesen ·
-Sprungknopf „Strombezug…" · **Feld „Modus § 9 Abs. 1 Nr. 3"** (ERLOES/AUSWEIS, Vorgabe AUSWEIS) —
-Spalte `Stromst_Befreiung_Modus`, Schemaschritt 88 (K3 erledigt mit B6, Statuszeile #328).
+**zwei Sprungknöpfe „Strombezug…" und „BHKW-Tarif…"** · **Feld „Modus § 9 Abs. 1 Nr. 3"**
+(ERLOES/AUSWEIS, Vorgabe AUSWEIS) — Spalte `Stromst_Befreiung_Modus`, Schemaschritt 88
+(K3 erledigt mit B6, Statuszeile #328). Beide Sprünge speichern nur, wenn der Arbeitsstand vom
+geladenen Stand abweicht.
 
 ### Gruppe 5 — Hilfsstrom
 
@@ -222,29 +250,39 @@ Live aus **dem einen** Rechenweg, keine Zweitrechnung: Zuschlag p. a. · Energie
 Stromsteuer p. a. · Einspeiseerlös p. a. · Vermiedene Kosten p. a. (als Ausweis gekennzeichnet) ·
 Prüfhinweise.
 
-## 2.3 `Form_PhotovoltaikVerguetung` — Bestand, zugleich Stilmuster
+## 2.3 `PhotovoltaikVerguetungDialog` (Hilfekennung `Form_PhotovoltaikVerguetung`) — Bestand, zugleich Stilmuster
 
-914 × 724, festes Fenster, Kopfband `#0F1F3D` mit CheckBox „Vergütung anwenden", zwei Spalten.
+**Sieben Gruppen untereinander**, einspaltig, in der Reihenfolge des Dialogs; Kopfband mit
+Kontrollkästchen „Vergütung anwenden". Das Wunschmaß des Fensters (914 × 724, fest) ist keine
+Eigenschaft der Razor-Komponente, sondern eine Konstante der Windows-Hülle
+(`PhotovoltaikVerguetungHuelle.FENSTER_BREITE`/`FENSTER_HOEHE`).
 
-| Gruppe | Felder |
+| Gruppe (Name im Dialog) | Felder |
 |---|---|
-| **Anlage** | Installierte Leistung (rechnerisch, fett) · Override [kWp] (0 = keiner) · Inbetriebnahme · Radio Überschuss-/Volleinspeisung · Warnzeile: > 1 MW Ausschreibung ⇒ AW-Override nötig; > 2 MW Stromsteuer prüfen |
-| **Vermarktung** | Radios: Feste Einspeisevergütung (nur ≤ 100 kW) · Direktvermarktung mit Marktprämie · Sonstige DV/PPA · Keine Vergütung (< 200 kW). Felder: DV-Entgelt [ct/kWh] (0,40) · PPA-Festpreis · PPA-Aufschlag auf Spot. Hinweis zu § 21c/§ 21 |
+| **Anlage** | Installierte Leistung (rechnerisch, fett) · Override [kWp] (0 = keiner) · Inbetriebnahme · **Degradation [%/a]** (0 = keine; mit #348 aus dem Kostenbild hierher verlegt) · `Optionsgruppe` Überschuss-/Volleinspeisung · Warnzeile: > 1 MW Ausschreibung ⇒ AW-Override nötig; > 2 MW Stromsteuer prüfen |
 | **Anzulegender Wert** | AW_mix (10 pt fett) · Herleitungszeile · AW-Override (0 = Katalog) · abgeleitete feste EV (AW − 0,40) |
-| **§ 51 / § 51a** | Anwenden: Automatisch/Ja/Nein · Statuszeile · iMSys-Einbaujahr (0 = keins) · Ausfallanteil [%] (20,0) · CheckBox § 51a-Kompensation |
-| **Bezugsbewertung** | CheckBox „Netzbezug stundenscharf aus Preiszeitreihe bewerten" · Stromsteuerhinweis § 9 |
-| **60-%-Begrenzung** | Anwenden: Combo · Statuszeile |
-| **Vorschau** | Einspeisung MWh/a · Satz Jahr 1 · Erlös Jahr 1 · Vergütungsausfall · § 51a-Gutschrift · Kennzahlzeile |
+| **Vermarktung** | `Optionsgruppe`: Feste Einspeisevergütung (nur ≤ 100 kW) · Direktvermarktung mit Marktprämie · Sonstige DV/PPA · Keine Vergütung (< 200 kW). Felder: DV-Entgelt [ct/kWh] (0,40) · PPA-Festpreis · PPA-Aufschlag auf Spot. Hinweis zu § 21c/§ 21 |
+| **Vergütungsausfall (§ 51 / § 51a)** | Anwenden: Automatisch/Ja/Nein · Statuszeile · iMSys-Einbaujahr (0 = keins) · Ausfallanteil [%] (20,0) · Kontrollkästchen § 51a-Kompensation |
+| **Strompreis / Bezugsbewertung** | Kontrollkästchen „Netzbezug stundenscharf aus Preiszeitreihe bewerten" · Stromsteuerhinweis § 9 |
+| **60-%-Wirkleistungsbegrenzung (§ 9 Abs. 2)** | Anwenden: `Auswahlfeld` · Statuszeile |
+| **Σ Vorschau** | Einspeisung MWh/a · Satz Jahr 1 · Erlös Jahr 1 · Vergütungsausfall · § 51a-Gutschrift · Kennzahlzeile |
 
 Fußleiste: Marktwerte importieren… · Einspeise-Tarif… · Übernehmen · Abbrechen.
 
-## 2.4 `Form_WirtschaftlichkeitParameter` nach dem Auszug
+## 2.4 `WirtschaftlichkeitParameterDialog` (Hilfekennung `Form_WirtschaftlichkeitParameter`) nach dem Auszug
 
 Bleibt: **Allgemein** (Kalkulationszins · Betrachtungszeitraum · Preissteigerung Energie ·
-Preissteigerung Betrieb) · **Strom** (Einspeisevergütung PV · Einspeisevergütung KWK · Anzeige-
-CheckBox Aufschläge) · **BEHG** (CO₂-Preis, 0 = Pfad · Herkunftszeile · Katalogknopf ·
-Referenz-Kraftwerkspark · Referenzkessel) · **Bilanzierung** (Bilanzjahr · Emissionsmethode ·
-Biomasse-Konvention · Nachhaltigkeitsnachweis).
+Preissteigerung Betrieb · **Vergleichsprojekt** je Gruppe — die Referenz der Differenzrechnung nach
+§ 2.9, Schemaschritt 92, NULL = Stammprojekt) · **Strom** (Einspeisevergütung PV ·
+Einspeisevergütung KWK · Anzeige-Kontrollkästchen Aufschläge) · **BEHG** (CO₂-Preis, 0 = Pfad ·
+Herkunftszeile · Katalogknopf · Referenz-Kraftwerkspark · Referenzkessel) · **Bilanzierung**
+(Bilanzjahr · Emissionsmethode · Biomasse-Konvention · Nachhaltigkeitsnachweis).
+
+**Dazu der Szenarien-Parametersatz** (Zins, Preissteigerungen Energie und Betrieb, Nutzungsdauer,
+Betrachtungszeitraum je Worst/Best) — die Tafel steht in
+[`../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md`](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md)
+§ 4 und wird hier gepflegt; die Spalten `Szen_Best_*`/`Szen_Worst_*` liegen seit Schritt 71 an
+`Tab_ProjektWirtschaftlichkeit` (§ 2.11.5).
 
 Zieht aus: die 11 KWKG-Felder und die 6 Steuerfelder. Danach vier Gruppen statt sechs, plus
 Statuszeile und Sprungknopf „BHKW…". Der Dialog war mit 26 Feldern am Kapazitätslimit — das ist der
@@ -307,7 +345,7 @@ Projektwerte, wo sie sind.
 > (sieben Fälle, beide Sprachen) und `EPOS.UI.Tests/Seiten/KostenSeiteTests`.
 
 **Ist-Zustand vor der Umsetzung.** Die Tabelle „Energieträger des Projekts" auf der Kostenseite führt **drei feste
-Emissionsspalten** — CO₂ [g/kWh], SO₂ [mg/kWh], NOx [mg/kWh] (`UcBkKosten.cs:771-772`, aus BK1).
+Emissionsspalten** — CO₂ [g/kWh], SO₂ [mg/kWh], NOx [mg/kWh] (`EPOS.UI/Seiten/Berichte/KostenSeite.razor` mit `KostenSeiteGaben.cs:658`, aus BK1).
 Sie stehen unabhängig davon da, was das Projekt rechnet.
 
 **Soll.** Die Tabelle zeigt **eine** Emissionsspalte, und ihr Kopf wie ihr Inhalt richten sich nach
@@ -461,15 +499,22 @@ Stelle erwartet.
 
 Kopfband `#0F1F3D`, Titel weiß Segoe UI 12 bold · Vorschau- und Kennzahlstreifen `#1A3261` ·
 Warnung amber `#C88A00` auf `#FFF6E0` · Fehlerzeile Firebrick `#B22222` · Hinweise DimGray ·
-Segoe UI 9 pt, Gruppentitel fett, Eckenradius 6 · Fußknöpfe 110 × 30 · `InfoKnopf` 28 × 28 ·
-`SpeichernLeiste` (nicht schließender Speichern-Knopf mit Statuszeile) · Designer-basiert
-(FK1/Ä6), Texte über `MyResource` mit GetString-Rückfall.
+Segoe UI 9 pt, Gruppentitel fett, Eckenradius 6 · **Fußknöpfe mindestens 88 × 44** (Zielgröße der
+Berührfläche; die alte Angabe 110 × 30 war ein WinForms-Maß) · `InfoKnopf` 28 × 28 ·
+`SpeichernLeiste` (nicht schließender Speichern-Knopf mit Statuszeile) · Razor-Komponenten **ohne
+Designer**: Texte kommen über `[Parameter]`-Vorgaben und die `*Texte`-Bündel und werden in der
+Hülle mit `Resource.*` bzw. `T(schlüssel, rückfall)` belegt.
 
-**Die Fußleiste von `UcWirtschaftlichkeit` ist voll** — sieben Knöpfe, ein achter läge bei
-x = −50 (**Lücke K8**). **Entschieden 18.09.2026 (K-8, nach Empfehlung):** kein achter Knopf,
-sondern ein Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite — links die heutige
-Kennzahltafel, rechts die Abschnitte der Ergebnisansicht (§ 2.13); das bestätigt zugleich V-1
-(§ 2.11.4). Der Knopf „Verlauf…" entfällt mit der Ergebnisansicht, weil der Verlauf dort steht.
+**Die Fußleiste der Wirtschaftlichkeitsseite** (`EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor`)
+führt **fünf Knöpfe** — Photovoltaik, BHKW, Strombezug, Verlauf…, Berechnen —, nach dem Wegfall von
+„Verlauf…" vier. **Lücke K8 („kein Platz für einen achten Knopf") ist damit gegenstandslos.**
+**Entschieden 18.09.2026 (K8, nach Empfehlung):** kein weiterer Knopf, sondern ein Umschalter
+„Kennzahlen / ValERI-Bewertung" im Kopf der Seite — links die heutige Kennzahltafel, rechts die
+Abschnitte der Ergebnisansicht (§ 2.13); das bestätigt zugleich V-1 (§ 2.11.4). Der Knopf
+„Verlauf…" entfällt mit der Ergebnisansicht, weil der Verlauf dort steht.
+
+*Entscheid Q9 offen (Analyse vom 19.09.2026):* Kopfband und Fehlerfarbe des Hausstils sowie die
+Frage, ob die Bauformregeln als eigener Abschnitt „Hausstil Dialoge" geführt werden.
 
 ## 2.8 Betriebskosten-Raster der Kostenverwaltung — Entwurf B (übernommen 31.08.2026)
 
@@ -478,8 +523,12 @@ Entwurf B, auf Anwenderentscheid in dieses Konzept übernommen. Es ist die Spezi
 Punkts „Live-Frisch-Anzeige der Bezugsgröße samt Herleitungszeile im Kostendialog"
 (§ 6.3 Nr. 2, H21-Grenze 1).*
 
-Das Raster der Kostenverwaltung (`Form_KostenKomponente`, Betriebskosten-Seite) ändert sich
-gegenüber dem heutigen Stand in **vier Punkten**:
+Das Raster der Kostenverwaltung (`KostenKomponenteDialog`, Hilfekennung `Form_KostenKomponente`)
+gliedert sich in eine **Optionsgruppe „Betriebskosten / Investitionskosten"** und **zwei Reiter**
+„Kosten Invest/Betrieb" (`KDLG_TAB_KOSTEN`) und „Ertrag/Bonus" (`KDLG_TAB_ERTRAG`). Sein Rasterkopf
+führt die Spalten **Aktionen · Position · Bemessung · Satz · Betrag netto [€] · Nutzungsdauer [a] ·
+Worst/Best**; Kostenart und Runde stehen im Zeileneditor bzw. in der Herleitungszeile. Gegenüber dem
+Stand vor dieser Beschreibung ändert sich das Raster in **vier Punkten**:
 
 **1. Pflichtzeilen stehen oben, hinterlegt, mit Schloss statt Papierkorb.**
 Die Zeilen mit `IstPflicht` (Wartung, Instandhaltung der eigenen Komponente, Hilfsenergie) tragen
@@ -487,7 +536,8 @@ in der Aktionsspalte ein Schloss-Symbol; der Löschversuch führt zum Dialog „
 (Löschsperre aus H3 — hier ihr Anzeige-Teil). Unter der Positionsbezeichnung steht der Vermerk
 „Pflicht nach VDI 2067" bzw. der Empfehlungsbereich („Pflicht · üblich 3,0–9,0 %").
 
-**2. Unter dem Satz steht die Herleitung im Klartext** — Menge **und** Quelle, anlagenscharf:
+**2. Unter dem Betrag steht die Herleitung im Klartext** — Menge **und** Quelle, anlagenscharf;
+sie nennt dort keine Runde (U28, umgesetzt mit #345):
 
 | Bemessung | Herleitungszeile (Beispiel) |
 |---|---|
@@ -520,11 +570,13 @@ Betriebskosten BHKW 1        brutto 8.358,08 €/a        7.023,60
   Warnzeile („Stromproduktion unbekannt — Simulation noch nicht gelaufen"); investitionsbasierte
   Sätze rechnen sofort. Fußhinweis: „n von m Pflichtpositionen rechnen noch nicht — Simulation
   ausführen." (Entwurf E im selben Artifact.)
-- **Worst/Best** bleibt je Zeile über den ±-Knopf (`Form_CaseEingabe`), Speichern über die
-  nicht schließende `SpeichernLeiste` mit Statuszeile („✓ Gespeichert 14:18").
-- Fußknöpfe: „Aus Vorlage übernehmen…" · „+ Position hinzufügen" · „Speichern".
+- **Worst/Best** bleibt je Zeile über den ±-Knopf (`CaseEingabeDialog`, Hilfekennung
+  `Form_CaseEingabe`), Speichern über die nicht schließende `SpeichernLeiste` mit Statuszeile
+  („✓ Gespeichert 14:18").
+- **Vier Rasterknöpfe:** „+ Position hinzufügen" · „Aus Vorlage übernehmen…" · „Positionskatalog…" ·
+  „Nutzungsdauern vorbelegen…"; darunter die Dialogleiste „Abbrechen · Speichern · OK".
 
-**Einordnung und Grenzen:** Nur Konzept, keine Umsetzung (Arbeitsregel). Der Klick auf einen
+**Einordnung und Grenzen:** Der Umsetzungsstand je Punkt steht in § 6.1 und § 6.3. Der Klick auf einen
 Betrag öffnet die vollständige Herleitung (Entwurf C im Artifact); die Mengenherkunft folgt den
 Rechenwegen aus § 3.4. Die Herleitungszeile zeigt am Kessel die Menge des Laufs (Befund **B-1**);
 beim Elektrokessel steht dort sein **Stromeinsatz** samt Betrag zum Arbeitspreis des Stromträgers
@@ -568,7 +620,7 @@ braucht die freie Wahl.
 | Vorgabe | **Stamm** — damit ist die Umstellung für jede Bestandsrechnung ergebnisneutral |
 | Persistenz | `Tab_ProjektWirtschaftlichkeit.ID_Referenzprojekt` (LONG, nullable; NULL = Stamm). Die Spalte gehört an die Rahmenzeile, weil die Referenz wie Zins und Zeitraum **je Gruppe** gilt (R-1) — und wie bei jeder Spalte dieser Tabelle an **beide** DDL-Orte (SchemaMigration **und** `StelleTabellenSicher`) |
 | Rechenwirkung | alle Differenzkennzahlen (KW-Differenz, Annuität, Amortisation, IZF, Sensitivität der Differenz) rechnen gegen die gewählte Referenz; die Referenz selbst erhält **keine** Differenzkennzahlen |
-| Anzeige | Referenzspalte im Kennzahlengrid markiert; ListView: die **gewählte** Referenz ist nicht abwählbar (heute: der Stamm); Nachweiszeile nennt die Referenz beim Namen („Referenz: ‹Variantenname›") statt der festen Formel |
+| Anzeige | Referenzspalte der Vergleichstabelle markiert; in der Variantenliste (eine `Optionsgruppe` je Zeile, kein ListView) ist die **gewählte** Referenz nicht abwählbar (heute: der Stamm); Nachweiszeile nennt die Referenz beim Namen („Referenz: ‹Variantenname›") statt der festen Formel |
 | Bericht | Word und Excel übernehmen die Benennung aus derselben Zeilendefinition (`WirtschaftlichkeitZeilen`) — keine dritte Wahrheit |
 | ValERI-Sicht | die gewählte Referenz **ist** die Unterlassensalternative im Sinne der Norm; der ValERI-Bewertungsbericht weist sie als solche aus |
 
@@ -588,17 +640,17 @@ ValERI-Berichtsetappe, weil deren Bewertungsbericht die Unterlassensalternative 
 ## 2.10 Integrationsort der ValERI-Darstellung (Anwendervorgabe 31.08.2026)
 
 **Die ValERI-Blöcke werden Bestandteil der Seite „Berichte && Kosten → Wirtschaftlichkeit"
-(`UcWirtschaftlichkeit`) — kein separater Dialog.** Die Seite trägt bereits heute den Titel
+(`EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor`, Hilfekennung `UcWirtschaftlichkeit`) — kein separater Dialog.** Die Seite trägt bereits heute den Titel
 „Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)" und die passende Grundausstattung:
 Vergleichsgruppen-Liste (mit der Referenzwahl je Gruppe, § 2.9), Szenariowahl, vier
-Kennzahl-Kacheln, Kennzahlengrid (Zeilen × Projekte), Parameternachweis und Fußknöpfe.
+Kennzahl-Kacheln, Vergleichstabelle (Zeilen × Projekte, `<table class="epos-raster epos-matrix">`), Parameternachweis und Fußknöpfe.
 
 **Andockvorschlag** (Einzelheiten in den ValERI-Mockups):
 
 | Element | Ort auf der Seite |
 |---|---|
 | Referenzwahl (§ 2.9) | in der Vergleichsgruppen-Liste, ein Optionsfeld je Zeile; die gewählte Referenz ist nicht abwählbar |
-| Die fünf ValERI-Blöcke (Investition · Betrieb · Erlöse · Energie · Wirtschaftlichkeit über Nutzungsdauer) | unterhalb des Kennzahlengrids als auf-/zuklappbare Abschnitte **oder** als zweite Ansicht der Seite (Umschalter „Kennzahlen / ValERI-Bewertung") — Entscheidung am Mockup |
+| Die fünf ValERI-Blöcke (Investition · Betrieb · Erlöse · Energie · Wirtschaftlichkeit über Nutzungsdauer) | unterhalb der Vergleichstabelle als auf-/zuklappbare Abschnitte **oder** als zweite Ansicht der Seite (Umschalter „Kennzahlen / ValERI-Bewertung") — Entscheidung am Mockup |
 | Kumulierter diskontierter Cashflow | inline in den Block „Wirtschaftlichkeit über Nutzungsdauer"; der vorhandene Verlauf-Dialog bleibt als Vollbild-Absprung |
 | ValERI-Bewertungsbericht (Anhang E der Norm) | als Baustein der **Bericht**-Seite (Word/Excel), gespeist aus derselben Zeilendefinition |
 
@@ -639,6 +691,18 @@ Vier Normaussagen tragen alles Weitere:
 
 ### 2.11.2 Abgleich Norm ↔ EPOS-Plan (Gap-Tabelle V-G)
 
+**Vorsicht bei den Nummern:** Dieses Papier zählt `V-G1…V-G12`, das Szenarienkonzept zählt `G1…G11`
+— dieselben Ziffern meinen Verschiedenes. Weil dieses Papier die führende Fassung ist, gelten hier
+die `V-G`-Nummern; die Tafel übersetzt:
+
+| hier | Szenarienkonzept | Gegenstand dort |
+|---|---|---|
+| V-G1 Preisschwankungsraten | **G2** | Preisänderung je Kostenart — umgesetzt |
+| V-G2 Degradation | **G3** | Degradation — *Entscheid A5 offen (Analyse vom 19.09.2026)*: das Szenarienkonzept führt G3 als „nicht umsetzen", § 2.11.4 nennt Degradation als Teil von V-E |
+| V-G6 Sensitivität mit Steigung €/% | **G6** | nicht monetisierbare Wirkungen — **andere Sache**, trotz gleicher Ziffer |
+| V-G10 Formelbericht | **G10** | Herleitung Eigen/Einspeisung — **andere Sache** |
+| V-G11 nicht monetisierbare Wirkungen | **G11** | investitionsgekoppelte Betriebskosten — **andere Sache**; der Freitext ist mit W5‑B‑12/G6 gebaut |
+
 | # | Normanforderung | EPOS heute | Lücke / Behandlung |
 |---|---|---|---|
 | V-G1 | ≥ 2 differenzierte **Preisschwankungsraten**, nominal (6.3.2) | p_E und p_B vorhanden, nominal ✓ | dem Grunde nach erfüllt; keine Raten je Träger/Position (bekannt, R-2) — Deklaration genügt, Ausbau optional |
@@ -651,7 +715,7 @@ Vier Normaussagen tragen alles Weitere:
 | V-G8 | **IZF/Amortisation nur nachrichtlich** (Anhang C) | Kacheln zeigen beide gleichrangig neben dem Kapitalwert | Kacheln behalten, aber als „nachrichtlich (Anhang C)" gekennzeichnet; **IZF-Mehrdeutigkeitswarnung** bei > 1 Vorzeichenwechsel der Differenzreihe — bei EPOS-Projekten durch Ersatzjahre und KWKG-Auslauf der Regelfall, nicht die Ausnahme |
 | V-G9 | **Steuerdeklaration Pflicht**: „Steuern berücksichtigt: ja/nein"; Abschreibungen nie als Cashflow, nur als Steuerschild (7.1.2) | Steuer-**Gutschriften** ja (Energie-/Stromsteuer), **Ertragsteuern** nein; keine AfA ✓ | zweiteilige Deklarationszeile: „Energie-/Stromsteuerentlastungen: berücksichtigt · Ertragsteuern: nicht berücksichtigt" |
 | V-G10 | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | Excel-Export existiert (ClosedXML), aber als **Werte** — der Generator schreibt keine einzige Formel, und keine Zahl des Parametersatzes erreicht eine Zelle (gemessen 18.09.2026) | **größte Einzellücke mit hartem Muss**. **Entschieden 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen, Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1 |
-| V-G11 | **Nicht monetarisierbare Wirkungen**: erfassen, kategorisieren (Energiefluss / finanziell / sonstig), beurteilen nach Dauer × Wirkung auf Organisation/Mitarbeiter/Umwelt (6.1, 8.2) | fehlt | neue kleine Datenklasse je Projekt (Freitext + Kategorie + Beurteilung); fließt nie in den NPV, immer in den Bericht |
+| V-G11 | **Nicht monetarisierbare Wirkungen**: erfassen, kategorisieren (Energiefluss / finanziell / sonstig), beurteilen nach Dauer × Wirkung auf Organisation/Mitarbeiter/Umwelt (6.1, 8.2) | **Freitext umgesetzt** (W5‑B‑12/G6 des Szenarienkonzepts) | es fehlen **Kategorie und Beurteilung** nach Dauer × Wirkung; fließt nie in den NPV, immer in den Bericht |
 | V-G12 | **Anhang-E-Checkliste** (15 Punkte, Note 1–5) | fehlt | als Abschlussseite des Berichts; zugleich interne Abnahmecheckliste der Etappe |
 
 **Anhang D der Norm ist eine BHKW-Fallstudie** (90 kW_th, 18 Jahre, NPV 64.480 €, Worst −202.802 €,
@@ -661,7 +725,7 @@ Normtext versehentlich Werte des Pumpenbeispiels — als Prüfreferenz ungeeigne
 
 ### 2.11.3 Die fünf Darstellungsblöcke
 
-Andockung nach § 2.10 in `UcWirtschaftlichkeit`, Referenz nach § 2.9. Alle Blöcke rendern
+Andockung nach § 2.10 in der Wirtschaftlichkeitsseite (`WirtschaftlichkeitSeite.razor`), Referenz nach § 2.9. Alle Blöcke rendern
 vorhandene Größen; Beispielzahlen in den Mockups aus der Höfingen-Mappe (20-kW-BHKW-Erneuerung
 gegen benannte Vergleichsheizung — Kapitalwert 65.259 €, IZF 20,4 %, Amortisation 4,33 a).
 
@@ -675,17 +739,25 @@ gegen benannte Vergleichsheizung — Kapitalwert 65.259 €, IZF 20,4 %, Amortis
 
 ### 2.11.4 Etappen und Entscheidungen
 
-| Etappe | Inhalt | Wirkung |
-|---|---|---|
-| **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | keine |
-| **V-B** | Referenzwahl (§ 2.9) — umgesetzt | keine in der Vorgabe |
-| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in `UcWirtschaftlichkeit` | Ausweis |
-| **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | Ausgabe |
-| **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), Degradation (V-G2), n-jährliche Zeitpunkte (V-G3) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral |
+Die Spalte „entspricht / bereits geliefert durch" löst die zweite Etappenreihe des
+Szenarienkonzepts (`W5‑B‑9` … `W5‑B‑12`) gegen diese auf — beide Reihen meinen teilweise dieselbe
+Arbeit.
+
+| Etappe | Inhalt | entspricht / bereits geliefert durch | Wirkung |
+|---|---|---|---|
+| **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | offen | keine |
+| **V-B** | Referenzwahl (§ 2.9) — umgesetzt | Etappe **VG**, Statuszeile **#358**, Schemaschritt 92 | keine in der Vorgabe |
+| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | offen | Ausweis |
+| **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6) | Ausgabe |
+| **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), Degradation (V-G2), n-jährliche Zeitpunkte (V-G3) | Szenarioabdeckung und Freitext teils geliefert durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral |
+
+*Entscheid A5 offen (Analyse vom 19.09.2026):* V-E nennt die **Degradation (V-G2)** als Teil der
+Etappe; das Szenarienkonzept führt dieselbe Sache als `G3` mit dem Entscheid vom 09.09.2026 „nicht
+umsetzen". Ob die Nummer falsch ist oder der Entscheid gekippt wird, ist nicht entschieden.
 
 | Nr. | Entscheidungsfrage | Empfehlung |
 |---|---|---|
-| **V-1** | Fünf Blöcke als Aufklappabschnitte unter dem Grid oder als zweite Ansicht mit Umschalter „Kennzahlen / ValERI-Bewertung"? | Umschalter — die Seite ist schon voll. **Entschieden 18.09.2026 nach Empfehlung** (zusammen mit K-8, § 2.7): Umschalter im Kopf der Seite |
+| **V-1** | Fünf Blöcke als Aufklappabschnitte unter der Vergleichstabelle oder als zweite Ansicht mit Umschalter „Kennzahlen / ValERI-Bewertung"? | Umschalter — die Seite ist schon voll. **Entschieden 18.09.2026 nach Empfehlung** (zusammen mit K8, § 2.7): Umschalter im Kopf der Seite |
 | **V-2** | XLSX-Formelexport: nur das ValERI-Blatt oder den ganzen Bericht formelbasiert? | Empfehlung war: nur das ValERI-Blatt (drei Szenariotabellen + Parameterblock), der übrige Bericht bleibt Werte. **Gekippt 18.09.2026 durch den Entscheid zu V-G10: der ganze Bericht, soweit ableitbar** — was ableitbar ist und was Wert bleibt, steht in § 2.11.6 |
 | **V-3** | IZF/Amortisation von den Kacheln nehmen oder mit „nachrichtlich"-Label behalten? | behalten mit Label — Anwender kennen die Größen, die Norm verlangt nur die richtige Einordnung |
 | **V-4** | Szenario-Parametersätze (V-G5) sofort oder nach V-A–V-D? | **Umfang entschieden** (§ 2.11.5). **Zeitpunkt entschieden 18.09.2026 nach Empfehlung: danach**, einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis — **mit Hinweistext** bis dahin (§ 2.11.7) |
@@ -697,7 +769,7 @@ Erlöse, dazu Rahmen und Mengen — werden mit Best- und Worst-Case-Werten verse
 
 **Das Prinzip ist eine Fortschreibung, kein Neubau:** Die Kostenpositionen haben das Muster schon —
 `BestCase`/`WorstCase` je Zeile, VALERI-Vorrang (0/NULL = wie Erwartet), Pflege über
-`Form_CaseEingabe` (±-Knopf). **Dasselbe Muster wandert an jeden Ort, an dem ein Erwartet-Wert
+`CaseEingabeDialog` (±-Knopf; Hilfekennung `Form_CaseEingabe`). **Dasselbe Muster wandert an jeden Ort, an dem ein Erwartet-Wert
 gepflegt wird.** Der Anwender trägt je Parameter die beiden Werte selbst ein (wie die Norm es in
 ihren Szenariotabellen vormacht — je Parameter ein realistischer Extremwert je Richtung); die
 Software wendet im Szenario Best **alle** Best-Werte gleichzeitig an, im Worst alle Worst-Werte.
@@ -709,7 +781,7 @@ Eine automatische „Richtungslogik" gibt es nicht und braucht es nicht.
 | **Betriebskosten** je Position | `Tab_ProjektWerte` Kat. 2 | dito | **vorhanden** |
 | **Energiepreise** je Träger | `energy_project_settings.custom_price_work` (+ Grundpreis) | neue Spalten `custom_price_work_best/_worst` (Grund-/Leistungspreis analog, nullable) | **neu** |
 | **Erlössätze** (Marktgrößen) | `Einspeiseverguetung`, `Einspeiseverguetung_KWK`, PPA-/DV-Preise des PV-Dialogs | je Feld ein Best/Worst-Paar an derselben Tabelle | **neu** |
-| **Rahmen** | `Tab_ProjektWirtschaftlichkeit`: `Zinssatz`, `Betrachtungszeitraum`, `Preissteigerung_Energie`, `Preissteigerung_Betrieb` | je Größe `_Best`/`_Worst` (8 Spalten), NULL/0 = wie Erwartet | **neu** |
+| **Rahmen** | `Tab_ProjektWirtschaftlichkeit`: `Zinssatz`, `Betrachtungszeitraum`, `Preissteigerung_Energie`, `Preissteigerung_Betrieb` | je Größe `_Best`/`_Worst` (8 Spalten), NULL/0 = wie Erwartet | **6 von 8 vorhanden** seit Schritt 71 (`Szen_Best/Worst_Zins`, `_Preis_E`, `_Preis_B`); neu sind allein Best/Worst des **Betrachtungszeitraums**. Namensvorsicht: `Szen_*_Dauer` ist die **Nutzungsdaueränderung**, nicht der Betrachtungszeitraum |
 | **Mengen** (Simulationsergebnis) | Stromerzeugung, Wärme, Einspeisung … | **ein Mengenfaktor [%] je Szenario** an der Rahmenzeile (wirkt multiplikativ auf die Energie- und Erlösmengen) — die Simulation selbst wird nicht dreifach gerechnet | **neu** |
 
 **Ausdrücklich nicht szenariert werden gesetzliche Sätze** — KWKG-Zuschläge, Energie- und
@@ -725,7 +797,7 @@ Preise, Laufzeit und Zins — genau die stehen oben.
   (`szenarioGepflegt ⇔ |Wert − Erwartet| > 1e−9`), an allen Lesestellen identisch.
 - Die **Sensitivität** (7.2) bleibt davon getrennt: Sie variiert einzeln ceteris paribus; die
   Szenarien variieren alles gleichzeitig (7.3). Beide nutzen dieselben Erwartet-Werte als Basis.
-- **Pflege**: der vorhandene ±-Knopf (`Form_CaseEingabe`) als einheitliches Muster auch an
+- **Pflege**: der vorhandene ±-Knopf (`CaseEingabeDialog`) als einheitliches Muster auch an
   Trägerpreisen, Erlösfeldern und der Rahmen-Gruppe; die ValERI-Ansicht zeigt je Szenario, welche
   Parameter gepflegte Abweichungen tragen („12 von 31 Parametern szenariert").
 - **Ausweis im Bericht** (Norm 9c): Die Kalkulationstabelle je Szenario nennt die
@@ -736,7 +808,7 @@ Preise, Laufzeit und Zins — genau die stehen oben.
 
 **Der Anwender hat abweichend von der Empfehlung entschieden: der ganze Bericht formelbasiert,
 nicht nur das ValERI-Blatt.** Das kippt V-2. Damit das Konzept nichts Unmögliches verspricht, ist
-die Grenze am Generator gemessen (`ExcelBerichtGenerator`, eine Klasse, 1 380 Zeilen, vier
+die Grenze am Generator gemessen (`ExcelBerichtGenerator`, eine Klasse, 1 412 Zeilen (gemessen 19.09.2026), vier
 Blattarten; adversarisch gegengelesen):
 
 - Der Generator schreibt heute **keine einzige Formel** — `.Value` mit Zahl oder Text, Zahlenformat,
@@ -790,8 +862,8 @@ Projekt zurück: Die Formelmappe ist ein nachvollziehbarer Nachweis, keine zweit
 
 Vor Stufe 0 zu klären: ob die eingesetzte ClosedXML-Fassung Formeln mit zwischengespeichertem
 Ergebnis ablegt oder Excel beim Öffnen rechnen muss, und ob eine Formelmappe in anderen
-Tabellenkalkulationen dieselben Werte zeigt. Im Bestand deckt kein Test den Excel-Generator ab —
-die Stufen brauchen zuerst eine Wache über die Blattstruktur.
+Tabellenkalkulationen dieselben Werte zeigt. Im Bestand deckt kein Test den Excel- und den Word-Generator ab —
+die Stufen brauchen zuerst eine Wache über beide Blattstrukturen.
 
 ### 2.11.7 Hinweistext bis zur vollständigen Szenarioabdeckung (Entscheid 18.09.2026 zu V-4)
 
@@ -820,6 +892,9 @@ Die Vorgabewerte im Text (±10 %, ±2 a) sind die Vorgaben aus § 2.1 des Szenar
 das Projekt gepflegte Sätze, nennt der Hinweis die gepflegten Werte. Der Hinweis entfällt mit der
 Etappe, die ihn überflüssig macht.
 
+*Entscheid A14 offen (Analyse vom 19.09.2026):* Das Mockup führt einen abweichenden Schlusssatz;
+welcher Wortlaut die Ressource `WIRT_SZEN_HINWEIS` trägt, ist nicht entschieden.
+
 ## 2.12 Kategorien-Mockups mit Rechenweg (Auftrag 02.09.2026)
 
 *Ausgelagert in den Ordner [`Wirtschaftlichkeit_Kosten/`](LIESMICH.md):
@@ -827,15 +902,19 @@ Etappe, die ihn überflüssig macht.
 eine konsolidierte Mockup**: alle acht Kategorien mit Dialog, Berechnungsgrundlage,
 Berechnungserläuterung, Beschriftungen und Abnahmezeile, die Ergebnisseite in Kategorie 8 und zwei
 Anhänge (Umsetzungsstand, Herkunft der Zahlen); zugleich Artifact
-[Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f).
+[Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f)
+— **die Repo-Datei führt**, das Artifact trägt einen älteren Zahlenstand.
 Dazu `Rechenweg/01…08` — je Kategorie Dialog → Berechnungsgrundlage → Berechnungserläuterung →
 Befunde. Der Auftrag: je Kostenkategorie ein Mockup mit Berechnungsgrundlage und
 Berechnungserläuterung, Schwerpunkt Vergütungen BHKW und PV. Dieser Abschnitt ist die Kurzfassung;
 bei Abweichung gilt der Ordner für die Zahlen und dieses Dokument für die Regeln.*
 
-**Die Dialogform der Komponentenkosten ist abgenommen** (Anwender, 02.09.2026): Kopfband, Reiter
-Investition / Betrieb / Ertrag, Raster mit Position · Kostenart · Bemessung · Satz · Menge mit
-Herleitungszeile · Betrag · Runde, Warnband, Fußleiste. Für **PV** dieselbe Form mit eigenen
+**Die Dialogform der Komponentenkosten ist abgenommen** (Anwender, 02.09.2026): Kopfband,
+**Optionsgruppe „Betriebskosten / Investitionskosten"** und **zwei Reiter** „Kosten Invest/Betrieb"
+und „Ertrag/Bonus" (`KDLG_TAB_KOSTEN`/`KDLG_TAB_ERTRAG`), Raster mit **Aktionen · Position ·
+Bemessung · Satz · Betrag netto [€] · Nutzungsdauer [a] · Worst/Best** — Kostenart und Runde stehen
+im Zeileneditor bzw. in der Herleitungszeile unter dem Betrag —, Warnband, Fußleiste mit vier
+Rasterknöpfen (§ 2.8). Für **PV** dieselbe Form mit eigenen
 Anordnungen: Spalte *Nutzungsdauer* im Investitionsraster, Herleitung der kWp-Menge aus
 Modulanzahl × Modulleistung (Befund I-1 sichtbar), Gruppe *Ersatz und Restwert* mit Barwerten,
 Kennzahl €/kWp, Betriebsseite ohne Endenergie-Bemessung, Gruppe *Ertrag und Degradation* (V-G2).
@@ -886,7 +965,16 @@ Reststrombezug 250 MWh/a · produzierendes Gewerbe · i = 3 %, T = 20 a. Belegza
 **Namensvorsicht:** „Befund K-1" (§ 3.6, Abwärmeabfuhr) und „Entscheidung K1" (§ 5, Deckung je
 Modul) sind verschiedene Dinge — im Ordner steht der Befund mit Bindestrich. Dasselbe gilt für
 „B-1": In § 3.8 und im Rechenweg `05`/`07` bezeichnet es die Stromsteuer-Erlösreihe (erledigt mit
-B6), in der Befundtabelle § 4 und in den Mockups die Kessel-Endenergie (Auftrag #331).
+B6), in der Befundtabelle § 4 und in den Mockups die Kessel-Endenergie (Auftrag #331). Ebenso
+kollidieren:
+
+- **U-1 gegen U1** — „U-1" ist der Einheitenbruch der Gase (§ 5), „U1" die erste Zeile des
+  Mockup-Anhangs „Umsetzungsstand" und damit der Befund **K-1** (Abwärmeabfuhr, Stromkennzahl σ);
+- **V-1 gegen V-1** — in § 2.11.4 die entschiedene ValERI-Frage „Umschalter", in der Befundtabelle
+  § 4 der Befund zur EV-Rundung (EvMix unrundet gegen gerundeten Erlös);
+- **V-Gn gegen Gn** — die Lückennummern dieses Papiers (`V-G1…V-G12`, § 2.11.2) und die des
+  Szenarienkonzepts (`G1…G11`) meinen bei gleicher Ziffer Verschiedenes; die Übersetzungstafel
+  steht am Anfang von § 2.11.2.
 
 ## 2.13 Ergebnisansicht (Anwenderdurchsicht 18.09.2026)
 
@@ -895,7 +983,7 @@ B6), in der Befundtabelle § 4 und in den Mockups die Kessel-Endenergie (Auftrag
 vier Fragen „Lohnt es sich · Wie sicher ist das · Woraus entsteht die Zahl · Was ist angenommen",
 die Kapitalwertformel, die Gegenprobe und die Bericht-Ausgaben. Woraus die einzelnen Beträge
 entstehen, sagen die Kategorien 1 bis 7; was noch nicht gebaut ist, steht im Anhang
-„Umsetzungsstand". Der Anwender hat die Ansicht am 18.09.2026 durchgesehen; die fünf Punkte und ihre
+„Umsetzungsstand". Der Anwender hat die Ansicht am 18.09.2026 durchgesehen; die fünf Punkte, dazu (6) als Verweis, und ihre
 Messung am Bestand:*
 
 **(1) Die laufenden Energiekosten — „Verbrauchskosten (BHKW)".** Der Begriff kommt im Bestand nicht
@@ -906,7 +994,7 @@ gezeichnet**: `WirtschaftlichkeitZeilen.Kennzahlen` legt je Anlage der Gruppe ei
 Unterzeile „davon ‹Anlage› [€/a]" und „davon Netzbezug Strom [€/a]" in den Zeilenkatalog, den die
 Windows-Gabe der Seite, Word und Excel über `Sichtbare` gemeinsam ziehen. Zwei Stücke davon sind
 **verwaist, kein Fehler**: der Überschriftsschlüssel `WIRT_ENK_KOPF` („Energiekosten je Anlage
-[€/a]") wird außer in der Designer-Datei nirgends gelesen, und `AnlageHerleitung` („Menge × Preis =
+[€/a]") wird außer in der erzeugten Ressourcenklasse `Resource.Designer.cs` nirgends gelesen, und `AnlageHerleitung` („Menge × Preis =
 Betrag") hat als einzigen Aufrufer einen Test — beides kann die Ergebnisansicht ohne neue Schlüssel
 verwenden. **Die Nachweise je Anlage bleiben erhalten:** Sie reisen im Nachweisumschlag der
 Ergebniszeile mit (`ErgebnisNachweisUmschlag`, Spalte `Nachweis_Json`), die davon-Zeilen stehen
@@ -924,8 +1012,8 @@ widersprechend: Ersatz und Restwert gibt es **schon heute für jede Technik glei
 PV-eigenen Pfad. Sie hängen an der einzelnen **Investitions-Kostenposition**, und der einzige
 Schalter ist die Nutzungsdauer: n ≥ 1 schaltet Ersatz **und** Restwert zugleich ein, n < 1 beides
 aus („still wie T"). `Tab_Nutzungsdauer` liefert Vorgaben für zehn Techniken, aber nur beim
-**Anlegen** einer Position; in der Testdatenbank tragen **103 von 109** Investitionspositionen keine
-Dauer. Das Mockup zeigt Ersatz und Restwert deshalb je Komponente als **Zusammenfassung ihrer
+**Anlegen** einer Position; in der Testdatenbank tragen **95 von 101** Investitionspositionen keine
+Dauer, 27 davon tragen einen Betrag (Messung 19.09.2026). Das Mockup zeigt Ersatz und Restwert deshalb je Komponente als **Zusammenfassung ihrer
 Positionen** (Betrag, Dauer, Ersatzjahr, Restwert, Herkunft der Dauer) und entwirft den fehlenden
 **Hinweis**: „Betrachtungszeitraum über der Nutzungsdauer-Vorgabe der Technik, k von n Positionen
 ohne Nutzungsdauer (Position, Betrag): kein Ersatz, kein Restwert gerechnet — ist ein Ersatz fällig,
@@ -934,22 +1022,30 @@ Prüfauftrag, nicht als Fehlermeldung. Rechenwerk braucht er keines: T steht in
 `Tab_ProjektWirtschaftlichkeit.Betrachtungszeitraum`, die Positionen samt n liefert
 `LiesInvestitionen` im Szenario Erwartet, `NutzungsdauerAbgleich.Hinweis` bildet kürzeste und
 längste Dauer bereits; zu ergänzen ist allein die Zahl der betragstragenden Positionen ohne Dauer
-gegen `NutzungsdauerCtrl.Vorgabe`. **Was der späteren Umsetzung fehlt** (fünf Stücke):
+gegen `NutzungsdauerCtrl.Vorgabe`.
+
+**Erledigt mit #357** (Nutzungsdauern Stufe S2, U8 und U30): die **Nachpflege des Bestands** — der
+Knopf „Nutzungsdauern vorbelegen…" steht als vierter der Rasterleiste
+(`KostenKomponenteDialog.razor:310`); offen bleibt allein sein gesperrter Zwilling auf der
+Betriebsseite. Ebenso der **Pflegeort für die Positionsart** — `NutzungsdauerID` ist seither eine
+Klappliste im Zeileneditor (`KostenProjektPositionenCtrl.NutzungsdauerArtZuordnen`).
+
+**Was der späteren Umsetzung fehlt** (drei Stücke, im Mockup-Anhang als **U39** geführt):
 
 1. die **Entkopplung** von Ersatz und Restwert — ein Kennzeichen je Position oder je Technik
    („Ersatz führen", „Restwert ansetzen"), weil ein Anwender oft das eine ohne das andere will;
-2. die **Nachpflege des Bestands** — Vorbelegen läuft nur beim Anlegen und Übernehmen; der im
-   Nutzungsdauer-Konzept vorgesehene Knopf „Nutzungsdauern vorbelegen" für bestehende Positionen ist
-   nicht gebaut;
-3. ein **Pflegeort für die Positionsart** — `NutzungsdauerID` wird ausschließlich bei der
-   Vorlagenübernahme gesetzt, kein Dialog lässt sie wählen;
-4. die **geräteeigenen Nutzungsdauer-Spalten** (`Tab_BHKW`, `Tab_Heizkessel`,
+2. die **geräteeigenen Nutzungsdauer-Spalten** (`Tab_BHKW`, `Tab_Heizkessel`,
    `Tab_StromspeicherVariante`) — eine zweite Wahrheit, die kein Wirtschaftlichkeitsrechner liest;
-5. der **Anschluss der Speicherflotte**, die ihren Ersatz über ein handgepflegtes
-   `ErsatzintervallJahre` und einen `RestwertEuro` führt, ohne Bezug zur Nutzungsdauertabelle.
+3. der **Anschluss der Speicherflotte**, die ihren Ersatz über die gleichnamigen **Felder des
+   Flottenstands** (`ErsatzintervallJahre`, `RestwertEuro` als JSON in `Tab_SpeicherAuslegung`) führt
+   — nicht über Spalten; der Anschluss berührt deshalb die **Einfrierregel** des Projekts 1046.
 
-Dazu: Die Hinweiszeile füllt heute nur die Windows-Hülle (`WirtschaftlichkeitSeiteGaben`); für die
-iOS-Schale muss sie in eine plattformfreie Hülle unter `EPOS.UI.Daten`.
+Dazu: Die Hinweiszeile füllt heute nur die Windows-Hülle (`WirtschaftlichkeitSeiteGaben:404`) — sie
+ist deren **einziger** Schreiber, und die Textbildung liegt bereits im Kern
+(`NutzungsdauerAbgleich.Hinweis`); zu tun ist das Einsammeln der Positionen, nicht der Text. Für die
+iOS-Schale muss sie in eine plattformfreie Hülle unter `EPOS.UI.Daten`; **einen Ordner
+`Wirtschaftlichkeit` gibt es dort noch nicht** (heute nur `Allgemein`, `Assistent`, `Bedarf`,
+`Kosten`, `Projekt`, `Pufferspeicher`, `Simulation`, `Stromspeicher`) — er ist mit anzulegen.
 
 **(4) Erlöse und Vorteile je Komponente.** B7 hat die Rubrik nach der Achse **zahlungswirksam /
 Ausweis** gebaut (Block A mit Summe, Block B ohne); der Anwender verlangt die Gliederung nach
@@ -962,8 +1058,9 @@ Jeder Komponentenblock trägt seine Zwischensumme, Block A darunter die Gesamtsu
 nicht summiert, weil sich seine Beträge überschneiden (die Befreiung steckt im Arbeitspreis der
 vermiedenen Kosten). Für die Umsetzung: Die Zeilen des Katalogs brauchen einen Anlagenbezug
 (Schlüssel je Anlage wie bei den Energiekosten-Unterzeilen), und die vermiedenen Stromkosten sind
-heute **projektweit** aus `VermiedenMengeMWh` gebildet — eine Aufteilung je Anlage braucht die
-Eigenverbrauchsmengen je Anlage aus der Strommatrix, die dort getrennt vorliegen; der
+heute **projektweit** aus `VermiedenMengeMWh` gebildet — eine Aufteilung je Anlage braucht einen
+**Verteilschlüssel je Anlage**: die Strommatrix trennt nur nach **Tarifzone** (`StromMatrix.Zone`),
+nicht nach Anlage, und der Kern verteilt heute nach dem Netto-Stromanteil (Befund V-4); der
 Leistungsanteil bleibt projektweit.
 
 **(5) Der Verlauf mit allen drei Szenarien.** Gemessen: Der Knopf „Verlauf…" öffnet
@@ -994,13 +1091,17 @@ Nachweis: `Proben/ChartProben` (Bild `kapitalwert_absolut_legende`, Gegenproben
   oder ein Sammelmodell mit drei Szenarien;
 - eine Reihenbildung, die Variante und Szenario zugleich unterscheidet — heute vergibt
   `VerlaufsReihen` Farben nach laufendem Index, und die Reihennamen tragen nur den Projektnamen
-  (dasselbe Projekt in drei Szenarien bekäme drei beliebige Farben und dreimal denselben Namen);
+  (dasselbe Projekt in drei Szenarien bekäme drei beliebige Farben und dreimal denselben Namen).
+  Die Palette hat **acht** Farben (`ChartRenderer.cs:553–562`); mit „Farbe = Variante" reicht sie
+  bis acht Varianten;
 - Platz für die zweigeteilte Legende und ein passendes Bildmaß (das Lesen von `Gestrichelt` in
-  `KapitalwertVerlauf` steht);
+  `KapitalwertVerlauf` steht). **`Reihe.Gestrichelt` ist ein `bool`** (`ChartRenderer.cs:106`) und
+  trägt damit **zwei** Stricharten — drei Szenarien brauchen eine dritte;
 - im Tabellenbericht je Szenario eine Spaltengruppe (die heutige Tabelle „Jahr, je Projekt eine
   Spalte, dann die Δ-Spalten" ist dafür nicht vorbereitet), im Wortbericht ein zusätzliches Bild;
-- **plattformfrei**: Rechen- und Zeichenlogik der Ansicht gehören nach `EPOS.UI.Daten`, sonst
-  entsteht sie wie der heutige Verlauf nur für die Windows-Schale (`KapitalwertVerlaufHuelle`).
+- **plattformfrei**: Rechen- und Zeichenlogik der Ansicht gehören nach `EPOS.UI.Daten` — dort gibt
+  es **keinen Ordner `Wirtschaftlichkeit`**, er ist mit anzulegen; sonst entsteht sie wie der
+  heutige Verlauf nur für die Windows-Schale (`KapitalwertVerlaufHuelle`).
 
 **(6) Vergleichssicht — alle Varianten gegen die Referenz oder zwei Stände.** Die Anforderung vom
 18.09.2026 zur Tafel „Gliederung des Kapitalwerts" steht als eigener Abschnitt in § 2.15, weil sie
@@ -1008,10 +1109,11 @@ in die Differenzrechnung greift und die Gliederung von § 2.9 braucht (Ist, Soll
 Abnahme, Etappe); das Mockup zeigt beide Sichten in Kategorie 8.
 
 **Weitere Festlegungen des Mockups:** Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite
-(K-8/V-1); Hinweistext zu den Szenarien unter der Annahmentafel (§ 2.11.7); der Kopfabschnitt „Was
-sich ändert" führt alle fünf Punkte. Die drei Entscheide, die den Zuschnitt änderten: K-3 ist mit
-B6 erledigt (Statuszeile #328, anderer Rechner), B-1 (Kessel) behebt Auftrag #331, die Erlösrubrik
-steht seit B7.
+(K8/V-1); Hinweistext zu den Szenarien unter der Annahmentafel (§ 2.11.7); der Kopfabschnitt „Was
+sich gegenüber der heutigen Seite ändert", der alle fünf Punkte führt, steht bislang nur im
+abzulösenden Mockup `../Mockups/Ergebnis_Bandbreite_Herkunft.html`. Die drei Entscheide, die den
+Zuschnitt änderten: K-3 ist mit B6 erledigt (Statuszeile #328, anderer Rechner), B-1 (Kessel) behebt
+Auftrag #331, die Erlösrubrik steht seit B7.
 
 ---
 
@@ -1335,8 +1437,11 @@ Stammänderung → die übernehmende Variante folgt, die eigene nicht (Test).
 4. Dialoge: Optionsgruppe und Erklärzeile in `ErtragBonus.razor`, Projekt-Id in
    `ErtragBonusGaben.Bauen` (die Vorwahl ist das geöffnete Projekt, nicht das erste der Liste),
    Hinweiszeile und Knopf „eigene Werte" in `PhotovoltaikVerguetungDialog.razor`; die Hülle
-   (`PhotovoltaikVerguetungHuelle`, Windows-Schale) öffnet für das gewählte Projekt; eine plattformfreie
-   Hülle in `EPOS.UI.Daten` gibt es nicht — auf iOS ist der Dialog nicht erreichbar;
+   (`PhotovoltaikVerguetungHuelle`, Windows-Schale) öffnet für das gewählte Projekt; auf iOS ist der
+   Dialog **aus zwei Gründen** nicht erreichbar, und beide müssen fallen: es gibt keine
+   plattformfreie Hülle in `EPOS.UI.Daten`, **und** sein Wirt bleibt leer, solange
+   `IProjektQuelle.BerichteKostenGaben` `null` liefert und kein Seitenschlüssel in der Whitelist
+   von `AppWurzel.razor` steht;
 5. Ressourcen (beide Sprachen): Optionsgruppe, Erklärzeilen, Hinweiszeile, Knopf, Nachweiszeile,
    Kohärenztext;
 6. Tests: Auflösung (Stamm; Variante eigene; Variante übernommen; Stamm ohne Zeile), Kopierlauf ohne
@@ -1360,8 +1465,8 @@ Stammänderung → die übernehmende Variante folgt, die eigene nicht (Test).
 
 **Einordnung:** Eigene kleine Etappe, unabhängig von § 2.9 und § 2.15 — sie ändert weder Referenz
 noch Sicht, nur den Leseweg einer Größe je Stand; ergebnisneutral in der Vorgabe. Mockup:
-Kategorie 3 (Reiter Ertrag/Bonus) und Kategorie 6 (Kopfzeile) in
-`../Mockups/Dialog_Formel_Zahlenprobe.html#pvkosten`; Umsetzungsstand U38.
+Kategorie 3 (Reiter Ertrag/Bonus) unter `../Mockups/Dialog_Formel_Zahlenprobe.html#pvkosten` und
+Kategorie 6 (Kopfzeile) unter `../Mockups/Dialog_Formel_Zahlenprobe.html#pv`; Umsetzungsstand U38.
 
 **Drei Stellen, an denen die Umsetzung von der Soll-Tafel abweicht — benannt, nicht still:**
 
@@ -1403,14 +1508,20 @@ KW [€] = − I₀
 ```
 
 ```
-A_t [€] = Betrieb_t   × (1 + p_B)^(t−1)
-        + Energie_1   × (1 + p_E)^(t−1)
+A_t [€] = Betrieb_t     × (1 + p_B)^(t−1)
+        + Energie_1     × (1 + p_E)^(t−1)
+        + Endenergie_1  × (1 + p_E)^(t−1)     ← eigener Topf (Energiekosten je Anlage, B7)
         + CO2_t
-        + Ersatz_t
+        + Ersatz_t      = A₀ × (1 + p_I)^t    ← Preisindizierung der Ersatzbeschaffung (W5‑B‑12)
 
 E_t [€] = Einspeiseerlös_1                    ← nominal KONSTANT, keine Steigerung
         + Σ über alle benannten Erlösreihen: Reihe.Wert(t)
 ```
+
+Die Preissteigerung der Ersatzbeschaffung **p_I** und die Nullsemantik stehen in
+[`../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md`](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md)
+§ 10; der Endenergie-Topf wird nur angesetzt, wenn er von 0 verschieden ist, und trägt dieselbe Rate
+p_E wie der Energietopf.
 
 Rahmengrößen aus `Tab_ProjektWirtschaftlichkeit`, **eine Zeile je Stammprojekt**:
 
@@ -1420,11 +1531,12 @@ Rahmengrößen aus `Tab_ProjektWirtschaftlichkeit`, **eine Zeile je Stammprojekt
 | Betrachtungszeitraum T | `Betrachtungszeitraum` [a] | 20 |
 | Preissteigerung Energie p_E | `Preissteigerung_Energie` [%/a] | 0,0 |
 | Preissteigerung Betrieb p_B | `Preissteigerung_Betrieb` [%/a] | 0,0 |
+| Preissteigerung Investition/Ersatz p_I | `Preissteigerung_Investition` [%/a] (Schritt 72) | NULL = 0,0 |
 | Einspeisevergütung PV | `Einspeiseverguetung` [€/kWh] | 0,0 |
 | Einspeisevergütung KWK | `Einspeiseverguetung_KWK` [€/kWh] | NULL = aus |
 | CO₂-Preis-Override | `CO2_Preis` [€/t] | 0 = Katalogpfad |
 
-**Genau zwei Preissteigerungsreihen** — keine je Träger, keine je Position.
+**Drei Preissteigerungsreihen** (p_B, p_E, p_I) — keine je Träger, keine je Position.
 
 **Sechs benannte Erlösreihen**, jahresscharf: `KWKG_ZUSCHLAG` · `KWKG_PAUSCHALE` (Index 0 =
 Einmalzahlung) · `ENERGIESTEUER_GUTSCHRIFT` · `STROMSTEUER_BEFREIUNG` · `STROMSTEUER_ENTLASTUNG` ·
@@ -1475,7 +1587,7 @@ Investition der Variante ± 10 % (Zuschuss wird **nicht** mitskaliert) · Energi
 
 ## 3.2 Investitionskosten — Drei-Runden-Kaskade
 
-Lesepunkt: `Tab_ProjektWerte` mit `KategorieID = 1`, **ohne ORDER BY** (Befund I-3).
+Lesepunkt: `Tab_ProjektWerte` mit `KategorieID = 1`, **ohne `ORDER BY`**; die Runde 3 friert ihre Basiszeilen vorher ein und ist deshalb reihenfolgeunabhängig (Befund I-3 erledigt).
 
 **Runde 1 — direkte Arten.** Vorrangordnung:
 
@@ -1491,7 +1603,7 @@ Lesepunkt: `Tab_ProjektWerte` mit `KategorieID = 1`, **ohne ORDER BY** (Befund I
 | `EUR_PRO_KW_HEIZLEISTUNG` | Σ Nennleistung × Satz | `Tab_WP.Nennleistung` |
 | `EUR_PRO_KW_LEISTUNG` | Σ P_therm × Satz | `Tab_Heizkessel.Ptherm` |
 | `EUR_PRO_KW_ELEKTRISCH` | Σ P_el × Satz | `Tab_BHKW.Pel` |
-| `EUR_PRO_KWP` | Σ PV_Leistung × Satz | `Tab_Energieanlagen.PV_Leistung` ⚠ **I-1** |
+| `EUR_PRO_KWP` | Σ (Modulanzahl × Modulleistung)/1000 × Satz | `PhotovoltaikCtrl.KwpSumme` |
 | `EUR_PRO_KWH_KAPAZITAET` | Σ Energie × Satz | `Tab_Stromspeicher.Energie` |
 | `EUR_PRO_M2_KOLLEKTOR` | Σ (Aperturfläche × Modulanzahl) × Satz | Solarthermie |
 | `EUR_PRO_KW_LEISTUNG` am Pufferspeicher | Σ Gesamtvolumen × Satz [€/Ltr.] | `Tab_Pufferspeicher.Gesamtvolumen` |
@@ -1540,8 +1652,9 @@ keine Ersatzbeschaffung, keinen Restwert und stehen in keiner Kaskadenbasis.
 
 ## 3.4 Betriebskosten
 
-**Der eine Rechenweg** — Sperre zuerst: fehlt Menge **oder** Satz ⇒ **Betrag = 0**, nicht der
-gespeicherte Wert.
+**Der eine Rechenweg** — fehlt Menge **oder** Satz, ist die Ableitung nicht rechenbar; dann gilt
+der **erfasste Betrag** (Anwenderentscheid I-2, 30.08.2026). Eine ermittelte Menge 0 rechnet weiter
+zu 0.
 
 | Gruppe | Bemessungen | Formel |
 |---|---|---|
@@ -1554,10 +1667,11 @@ gespeicherte Wert.
 1. Szenariowert gepflegt → keine Ableitung
 2. `BETRAG`/leer → gespeicherter Wert
 3. **Endenergie-Arten** (`PROZENT_ENDENERGIEKOSTEN`/`_BEDARF`): Menge **immer frisch** aus dem
-   jüngsten Lauf; Auflöser null ⇒ Betrag 0 — die Konserve greift nie
-4. **Rückfall-ermittelbare Arten** (9 Stück): frisch versuchen, Konserve nur bei null
-5. **Übrige Arten** (`EUR_PRO_H`, `EUR_PRO_KWH`, `PROZENT_BRENNSTOFF-`/`STROMKOSTEN`): nur
-   Konserve (Befund B-4)
+   jüngsten Lauf; Auflöser null ⇒ **erfasster Betrag** (I-2) — die Konserve greift nie
+4. **Rückfall-ermittelbare Arten** (10 Stück): frisch versuchen, Konserve nur bei null;
+   `EUR_PRO_H` und die beiden `EUR_PRO_KWH_*` sind seit FX2 frisch
+5. **Nur Konserve** bleiben `PROZENT_BRENNSTOFFKOSTEN` und `PROZENT_STROMKOSTEN` (Rest von
+   Befund B-4)
 
 **Endenergie je Komponente** (`EndenergieAufloeser`, „jüngster Lauf" = höchste `Tab_Ergebnis.ID`):
 
@@ -1600,9 +1714,9 @@ Altanwendung, die beim Speichern die Absolutfelder leerte (stiller Datenverlust,
 „oder"-Doppelfelder der Wartung (€/kWh_el neben €/h, dort tatsächlich **addiert**, Altbefund 7)
 gibt es nicht mehr: **eine** Position mit sichtbarer Bemessungswahl.
 
-**Basis „% der Investition" auf der Betriebsseite** (`InvestSummeFuer`): `SUM(EingegebenerWert)`
-Kategorie 1 ohne Zuschuss, stufig Anlage → Komponente → Projekt, **vor** Zuschussabzug — abgeleitete
-Beträge fehlen dort (Befund B-5).
+**Basis „% der Investition" auf der Betriebsseite** (`InvestSummeFuer`): Summe der
+**Investitionskaskade** (`InvestKaskade.Summen`), stufig Anlage → Komponente → Projekt, **vor**
+Zuschussabzug — die abgeleiteten Beträge sind seit W5‑B‑8 enthalten (Befund B-5 erledigt).
 
 ## 3.5 Energiekosten und CO₂
 
@@ -1755,8 +1869,9 @@ eine Rechenwirkung, die nirgends entschieden wurde.
 
 **Vbh-Kontingent § 8, je Anlage:** Override > 0 gewinnt; sonst aus **ihrer** Anlagenart und
 **ihrem** Kostenanteil — neu 30.000 h · modernisiert ab 50 %/25 % → 30.000/15.000 · nachgerüstet ab
-50/25/10 % → 30.000/15.000/10.000; darunter 0 mit Fehlgrund. Die projektweite Ableitung bleibt für
-den Ersatzweg stehen, der greift, wenn sich Anlagen- und Ergebniszeilen nicht zuordnen lassen.
+50/25/10 % → 30.000/15.000/10.000; darunter 0 mit Fehlgrund. Der Ersatzweg leitet das Kontingent
+**ebenfalls je Anlage** ab und mischt es leistungsgewichtet (BK1a); er greift, wenn sich Anlagen-
+und Ergebniszeilen nicht zuordnen lassen.
 
 **Der Aktivierungsschalter fragt die Anlagen.** „Ist der KWK-Zuschlag dieser Gruppe aktiv?" heißt
 seit BK1: führt **irgendeine** BHKW-Anlage der Gruppe einen Satz > 0? Die Regel steht **einmal** in
@@ -1848,8 +1963,8 @@ Begriff „Nettostromerzeugung" ist der des Gesetzes, keine Erfindung des Konzep
 > **Entschieden 18.09.2026, nach Empfehlung: Kennzeichen und Stromkennzahl je Anlage aufnehmen,
 > Fall 2 rechnen.** Neuer Boden seit BK1: Der Zuschlag gehört der Anlage (Schemaschritt 89,
 > § 6.5) — die zwei Felder sind zwei weitere Anlagenspalten neben den neun `KWKG_*`-Spalten von
-> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **92** (90 ist BK1a,
-> 91 ist BK1b). Das Kennzeichen
+> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **97** (90 BK1a,
+> 91 BK1b, 92 Vergleichsprojekt, 93 Vergütung je Variante, 94 Hilfsstrom-Bemessung, 95 KL-3 Klimaspalten, 96 FK-2 Projekt-Fremdschlüssel). Das Kennzeichen
 > `KWKG_Abwaermeabfuhr` (0/1, `CHECK`), die Stromkennzahl als nullbare Zahl mit **Vorschlag am
 > Feld** aus P_el / P_th der Gerätezeile (`Tab_BHKW`, wo σ heute nur für die Katalogliste gerechnet
 > wird) — dasselbe Muster wie die Vorschlagszeilen aus BK1. **Wo die Fallunterscheidung sitzt:**
@@ -1991,7 +2106,8 @@ Befreiung setzt Stundenreihen voraus), der Referenzlauf bleibt unverändert.
 | 4a **Einheit nicht vergleichbar** | Katalogsatz je 1.000 kg bzw. je 1.000 l, Projekt rechnet in der anderen Einheit — ohne Dichte keine Brücke | Hinweis (ohne Betrag) |
 | **Doppelzählung § 9 Abs. 1 Nr. 3** | Modus `ERLOES` bucht einen Betrag | Warnung **mit Betrag** |
 | Doppelpflege Hilfsenergie | Anlagenanteil > 0 **und** aktive Kostenposition derselben Anlage | Warnung |
-| Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | Hinweis (435 g/kWh) |
+| **CO₂-Bestandteil im Arbeitspreis und BEHG-Reihe gleichzeitig aktiv** | der Träger weist einen CO₂-Anteil im Arbeitspreis aus **und** die BEHG-Reihe rechnet denselben Brennstoff | Warnung **mit Betrag** — **Soll, nicht gebaut** (Etappe E2) |
+| Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | **Laufhinweis** ohne Wertangabe, kein `KohaerenzHinweis` (`WirtschaftlichkeitCtrl.cs:5465`) |
 
 ## 3.10 Rechenreihenfolge
 
@@ -2069,15 +2185,15 @@ ab. Die EEX-Auktionsdatei `nEHS_Auction_Reporting.csv` eignet sich zum automatis
 
 # 4 Befunde
 
-Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
+Aus der Abnahmeliste der Formelkarte (die Datei ist nicht erhalten, s. Quelltabelle — die Belege stehen heute an der Codestelle). ⚠ = wirkt oder kann wirken.
 
 ## Investitionsseite
 
 | Nr. | Befund |
 |---|---|
-| ⚠ **I-1** | `EUR_PRO_KWP` summiert `PV_Leistung` — dieselbe Spalte heißt andernorts ausdrücklich Modulanzahl. Ein €/kWp-Satz würde faktisch mit der Modulzahl multipliziert (~Faktor 2,5 bei 400-Wp-Modulen). |
-| ⚠ **I-2** | Abgeleitete Bemessung ohne Satz ⇒ 0 €, nicht der erfasste Betrag. |
-| ⚠ **I-3** | Runde 3 ist reihenfolgeabhängig: Zwei `PROZENT_INVESTITION`-Zeilen — die zweite rechnet die erste ein; ohne ORDER BY entscheidet ACE. |
+| ✔ **I-1** | `EUR_PRO_KWP` summierte `PV_Leistung` — dieselbe Spalte heißt andernorts ausdrücklich Modulanzahl. **Erledigt mit FX1/FX2:** `PhotovoltaikCtrl.KwpSumme` rechnet Modulanzahl × Modulleistung ÷ 1000. |
+| ✔ **I-2** | Abgeleitete Bemessung ohne Satz ⇒ 0 €, nicht der erfasste Betrag. **Entschieden 30.08.2026 (Anwender):** Ist die Ableitung nicht rechenbar, gilt der erfasste Betrag; eine ermittelte Menge 0 rechnet zu 0. |
+| ✔ **I-3** | Runde 3 war reihenfolgeabhängig: Zwei `PROZENT_INVESTITION`-Zeilen — die zweite rechnete die erste ein; ohne `ORDER BY` entschied früher die Datenbank. **Erledigt mit FX2:** Die Runde 3 friert ihre Basiszeilen vorher ein und ist reihenfolgeunabhängig. |
 | I-4 | `BaugroesseSumme` entdoppelt nicht (bei PV/Solar gewollt). |
 | I-5 | Vergleichsstrenge uneinheitlich: ZUSCHUSS ohne, `PROZENT_*` mit Groß-/Kleinschreibung. |
 | I-6 | Nicht migrierte Datenbank: keine Kaskade, keine Zuschusserkennung. |
@@ -2089,8 +2205,8 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 | ✔ **B-1** | **Die Kessel-Modulspalte `Verbrauch` blieb leer** — der Rechenkern führte den je Kessel gerechneten Brennstoffeinsatz nur auf der Anlagenzeile je Brennstoffart, und genau die Modulspalte liest die Kostenkette. Endenergie-Positionen am Kessel fielen damit auf `null` (nicht auf 0 €). Die Steuerseite umging es über den Jahresnutzungsgrad, Kosten- und Betriebsseite nicht. **Erledigt:** Die Modulzeile trägt Verbrauch, Wärmeproduktion und Brennstoff des Laufs; Modulverbrauch und Anlagensumme sind dieselbe Größe. Ausgenommen der Elektrokessel — er bucht auf den Stromzähler und steht im Netzbezug, seine Modulzeile führt bewusst 0. Seine Endenergie ist damit nicht verloren: Der Auflöser weist sie als **Stromeinsatz** aus (Regel **E1**), ohne sie ein zweites Mal zu bepreisen. |
 | B-2 | Asymmetrie der Rückfälle: Endenergie-Arten unbedingt frisch, Rückfall-Arten bedingt. |
 | B-3 | „Jüngster Lauf" ist die höchste ID, nicht der Zeitstempel. |
-| B-4 | Vier Arten nie frisch: `EUR_PRO_H`, `EUR_PRO_KWH`, `PROZENT_BRENNSTOFFKOSTEN`, `PROZENT_STROMKOSTEN`. |
-| B-5 | `InvestSummeFuer` summiert `EingegebenerWert` — abgeleitete Beträge fehlen. |
+| B-4 | Zwei Arten nie frisch: `PROZENT_BRENNSTOFFKOSTEN`, `PROZENT_STROMKOSTEN` — `EUR_PRO_H` und die beiden `EUR_PRO_KWH_*` sind seit FX2 frisch. |
+| ✔ **B-5** | `InvestSummeFuer` summierte `EingegebenerWert`, abgeleitete Beträge fehlten. **Erledigt mit W5‑B‑8:** Basis ist die Investitionskaskade (`InvestKaskade.Summen`). |
 | B-6 | Fehler werden geschluckt (`catch {}` ⇒ still 0). |
 | B-7 | `MengenEinheit` beschriftet die neuen Arten mit „€". |
 
@@ -2107,9 +2223,10 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 | Nr. | Befund |
 |---|---|
 | ⚠ **S-2** | Kein projektweites Doppelentlastungsverbot — Anlage A nach § 53 und Anlage B nach § 54 gleichzeitig möglich. |
-| S-1 · S-3 · S-4 · S-5 · S-6 | Überholte Zeilennummern älterer Protokolle · § 9-Meldung nennt Kessel „(0 kW)" · €/GJ ohne Ho-Umrechnung (für Kohle konsistent) · Radius 4,5 km nur Meldungstext, Erlaubnisschwelle 1.000 kW nirgends gelesen · `STROMST_REDUZIERT_SATZ` ungesät. |
+| S-1 · S-3 · S-4 · S-5 | Überholte Zeilennummern älterer Protokolle · § 9-Meldung nennt Kessel „(0 kW)" · €/GJ ohne Ho-Umrechnung (für Kohle konsistent) · Radius 4,5 km nur Meldungstext, Erlaubnisschwelle 1.000 kW nirgends gelesen — **dieser Rest bleibt offen**. |
+| ✔ **S-6** | `STROMST_REDUZIERT_SATZ` ungesät. **Erledigt:** Der Satz ist gesät (`GesetzKatalog.cs:1156`, Generation 7) und wird gelesen (`EnergietraegerHuelle.cs:659`); die Konstante in `StrompreisZerlegungModel` ist nur noch wertgleiche Rückfallebene. |
 | ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 KWKG fehlt** (§ 3.6): Bei Anlagen mit Vorrichtung zur Abwärmeabfuhr ist KWK-Strom `Nutzwärme × Stromkennzahl`, nicht die Nettostromerzeugung. Weder Kennzeichen noch Stromkennzahl sind im Datenmodell vorhanden; der Zuschlag fällt für solche Anlagen zu hoch aus. |
-| ⚠ **V-3** | Die **PV-Reihe** hat in der Mehrjahrestabelle **keine eigene Spalte** — sie wirkt nur in „Netto". Die **KWKG-Pauschale** hat seither eine (Spalte „KWKG-Pauschale (Jahr 0)"); damit stimmt die Selbstprüfung „Summe der Positionsspalten = Netto nominal" auch in der Zeile 0. |
+| ⚠ **V-3** | Die **PV-Reihe** hat in der Mehrjahrestabelle **keine eigene Spalte** — sie wirkt nur in „Netto". Die Reihe selbst gibt es bereits (`ErloesReihe.PV_VERGUETUNG`); es fehlen **ein Aufruf** in `Mehrjahresbild.Baue` **und ein Ressourcenschlüssel** — damit ist V-3 keine offene Frage mehr, sondern eine S-Aufgabe. Die **KWKG-Pauschale** hat seither eine Spalte („KWKG-Pauschale (Jahr 0)"); damit stimmt die Selbstprüfung „Summe der Positionsspalten = Netto nominal" auch in der Zeile 0. |
 | V-1 · V-2 · V-4 | EV-Rundung (EvMix unrundet, Erlös gerundet) · § 51a bewertet mit AW statt EV · Eigen/Einspeise-Split je Anlage ist benannte Näherung. |
 | R-1 · R-2 · R-3 | Rahmenparameter je Stammprojekt, nicht je Variante · Hilfsenergie steigt mit p_B statt p_E (bei gleichen Sätzen null) · ohne bestimmbare Energiekosten kein Kapitalwert (Absicht). |
 
@@ -2120,14 +2237,13 @@ Aus der Abnahmeliste der Formelkarte. ⚠ = wirkt oder kann wirken.
 | # | Frage | Stand |
 |---|---|---|
 | K1 | Feld „Deckung je Modul" | **entschieden: kein Feld** — die Befreiung ist bilanziell |
-| K2 | Hilfsenergie-Basis je Anlage rechnet fest Weg B (% des Bedarfs); Wege A und C nur in der Kostenposition | Dialog benennt die Basis klar; vierte Spalte nur bei Bedarf |
+| **K2** | Hilfsenergie-Basis je Anlage: **Weg B — „% des Endenergiebedarfs" der Anlage**, bewertet mit dem **eigenen Trägerpreis der Anlage**; Wege A und C nur in der Kostenposition | **erledigt mit #365/#366** (Schemaschritt 94): Vorlage „Standard" und Dialog benennen die Basis, Feldbeschriftung „Hilfsenergieanteil [% des Endenergiebedarfs]" (§ 2.2) |
 | **K3** | Modusfeld § 9 Nr. 3 — Spalte kommt erst mit B6 | **erledigt mit B6** (Statuszeile #328, anderer Rechner): Schemaschritt 88, Feld offen, Vorgabe AUSWEIS — der Entscheid vom 18.09.2026 („Ausweis") ist damit umgesetzt, keine zweite Baustelle |
 | K4 | Tabellenspalte „Brennstoff" ohne Leseweg | kleiner Leser `CarrierId` → Name in B5 |
 | K5 | Jahresnutzungsgrad bleibt Projektgröße | als Projektfeld zeigen |
 | K6 | WP-Hilfsenergie: Spalte gilt formal für alle, Leser nur BHKW und Kessel | B5 zeigt das Feld nur bei BHKW |
-| K7 | Schreibweg der drei B3-Spalten fehlt (`KwkgAnlagenCtrl.Speichere` = 8 Spalten) | **B5-Kernaufgabe**: auf 11 Spalten erweitern |
-| **K8** | Fußleiste voll — ein achter Knopf läge bei x = −50 | **entschieden 18.09.2026** (nach Empfehlung, = V-1): Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite statt eines achten Knopfes; der Knopf „Verlauf…" entfällt mit der Ergebnisansicht (§ 2.7, § 2.13) |
-| K9 | § 6.1 zählt „9 Felder", real 11 | Konzeptkorrektur |
+| **K7** | Schreibweg der drei B3-Spalten fehlt (`KwkgAnlagenCtrl.Speichere` = 8 Spalten) | **erledigt**: `Speichere(g, mitSteuerangaben)` schreibt 8 + 4 Spalten (`KwkgAnlagenCtrl.cs:283–299`) |
+| **K8** | Fußleiste voll — ein achter Knopf läge bei x = −50. **Die Frage ist gegenstandslos:** die Razor-Fußleiste führt fünf Knöpfe (§ 2.7) | **entschieden 18.09.2026** (nach Empfehlung, = V-1): Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite statt eines weiteren Knopfes; der Knopf „Verlauf…" entfällt mit der Ergebnisansicht (§ 2.7, § 2.13) |
 | K10 | Hilfsenergie-Bemessung doppelt: Seed gegen Altkatalog | **erledigt**: Altarten nur noch zur Anzeige, abgelöst von `PROZENT_ENDENERGIEKOSTEN` |
 | K11 | `Views\Wirtschaftlichkeit` unlokalisiert (63 Literale) | **erledigt mit B6**: 0 nackte Anzeigetexte, eigene Wache |
 
@@ -2148,7 +2264,7 @@ werden wie im Mockup"):
 |---|---|---|
 | **ET-D-1** | In welcher Einheit stehen die Preisbestandteile? | **(a) in der Abrechnungseinheit** (€/m³, €/l, €/t) an der Anzeigekante; gerechnet, gespeichert und geprüft wird weiter in ct/kWh. Ohne Heizwert bleibt ct/kWh mit Hinweis (§ 3.5) |
 | **ET-D-2** | Was zeigt der Emissionsblock der Trägerkarte? | **(a) die Arten DIESES Trägers** samt Bilanzierungsmethode als Klappliste, Summenzeile und Fußnote — **kein Primärenergiefaktor, keine Trägerübersicht**. Der Modus ist Projektsache und im Katalogkontext nur lesbar (Entscheide D-1/E-1 bleiben) |
-| **ET-D-3** | Was bietet die Preisbasis an? | **(a) genau zwei Einträge** — Abrechnungseinheit und kWh, Faktor = Heizwert. Die Umrechnungsregeln werden zum zugeklappten **Prüfblock** „Einheiten und Umrechnung" |
+| **ET-D-3** | Was bietet die Preisbasis an? | **(a) genau zwei Einträge** — Abrechnungseinheit und kWh, Faktor = Heizwert — **umgesetzt**. Die Umrechnungsregeln werden zum zugeklappten **Prüfblock** „Einheiten und Umrechnung". **Offener Rest (U32):** Der Kartenzustand fällt weiterhin auf `ID_Umrechnung = -1` zurück |
 | **UR-1** | Die Preisbasis rechnete mit dem `factor` einer Umrechnungsregel statt mit dem Heizwert (Anwenderfoto: 0,07 €/kWh eingegeben, 0,04 €/Nm³ gespeichert, Formelzeile 0,0033 €/kWh) | **behoben mit ET-D**: `EnergietraegerPreisCtrl.Preisbasen` liefert den Heizwert als Faktor; `Umrechnungen` liest nur noch aktive Regeln. **Bestandsprojekte werden nicht stillschweigend umgerechnet** — erkennbar an der Formelzeile der Trägerkarte, die den Preis je kWh nennt; wer einen falsch gespeicherten Arbeitspreis hat, gibt ihn neu ein |
 | **E1** | Welchen Energieträger bekommt ein **Elektroheizkessel** („Für Elektroheizkessel muss Strom als Energieträger auswählbar und zuzuordnen sein")? | **Er gehört zur elektrischen Welt wie Wärmepumpe und Heizstab.** Ein Heizkessel, dessen Gerät `Tab_Heizkessel.Brennstoff` = 13 führt, lässt nur die Stromfamilie zu, erscheint in der Komponentenliste der Energieträgerverwaltung mit dem **projektweiten Stromträger** als Vorgabe und ist dort wie eine Wärmepumpe zuzuordnen. Nicht über den Brennstoffweg: Der Katalog führt mehrere Träger auf Brennstoff 13, und die Auswahl unter ihnen könnte einen anderen treffen als die Wärmepumpe desselben Projekts. **Keinen eigenen Stromtarif je Verbraucher** (18.09.2026): Es gibt **einen Stromträger je Projekt**. Welcher es ist, wählt die Zuordnung an den Anlagen in der Rangfolge Wärmepumpe → Heizstab → Elektrokessel → Speicher → PV (`ProjektEnergietraegerCtrl.StromTraegerDerAnlagen`); ohne Wahl gilt die Vorgabe des Projekts. Bepreist wird der Netzbezug einmal — ein Heizstromtarif je Anlage entsteht daraus nicht |
 
@@ -2175,19 +2291,22 @@ die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernr
 
 | # | Frage | Entscheidung |
 |---|---|---|
-| **U-1** | Einheitenbruch `Tab_Brennstoff_Stamm.Einheit` ↔ `energy_conversion` (BK3 § 6 Nr. 4): die Identitätsregel-Ableitung liefert für 9 von 25 Brennstoffen `-1` | **entschieden 30.08.2026 — Weg (a)**: Der Stammtext der fünf Gase (Brennstoffe 1, 2, 3, 14, 25) wird „m³" → „Nm³" gezogen, als **Schemaschritt 62** (Muster Schritt 26a; Leitentscheidung L4 auf die Stammseite fortgeschrieben). Die Wege (b) Identitätsregel-Saat und (c) `billing_unit`-Ableitung sind **nicht beauftragt** |
+| **U-1** | Einheitenbruch `Tab_Brennstoff_Stamm.Einheit` ↔ `energy_conversion` (BK3 § 6 Nr. 4): die Identitätsregel-Ableitung liefert für 9 von 25 Brennstoffen `-1` | **entschieden 30.08.2026 — Weg (a)**: Der Stammtext der fünf Gase (Brennstoffe 1, 2, 3, 14, 25) wird „m³" → „Nm³" gezogen (Muster Schritt 26a; Leitentscheidung L4 auf die Stammseite fortgeschrieben). Die Wege (b) Identitätsregel-Saat und (c) `billing_unit`-Ableitung sind **nicht beauftragt** |
 
-**Folge für den Schema-Nummernraum: 62 ist damit vergeben — neue Schritte anderer Etappen ab 63.**
-Das schreibt die bisherige Regel „ab 62" (KOORDINATION § 4 Nr. 2) fort. Betroffen sind K3 oben sowie
-§ 7 (Zeile B6 und „Voraussetzungen"): Dort steht für M-3 / § 9 Nr. 3 noch „Schritt 62" — diese
-Nennung ist auf **63** nachzuziehen. Reine Nummernfrage, keine fachliche Änderung an B6.
+**Der Schemaschritt ist noch nicht vergeben.** Der einst genannte **Schritt 62 ist anderweitig
+belegt** (`Schritt_62_KlimaWaisen`); U-1 steht aus und bekommt **Schritt 103**. Gemessen am
+19.09.2026: Die fünf Gase führen in `Tab_Brennstoff_Stamm.Einheit` unverändert `m³`;
+`energy_carrier.billing_unit` steht dagegen seit Schritt 26a auf `Nm³`. **Die Umsetzung ist nicht
+freigegeben** und gehört auf den Pufferspeicher-Strang.
 
-Offen bleiben die Randfragen des Einheitenbruch-Konzepts: Waisenheilung (`energy_project_settings`
-Zeile 10076, Projekt 1039), kg-/rm-Abrechnung der Brennstoffe 4/5/12, Brennstoff 24 „Sonstige", der
-Fremdkörper Regel 67 und ein Prüfschritt in `EnergieEinheitenPruefung`. **Die Umsetzung ist noch
-nicht freigegeben** (Konzept-vor-Code) und gehört auf den Pufferspeicher-Strang. Quelle:
-`Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md` — liegt derzeit **nur** auf Zweig
-`claude/lucid-cori-a9a425` (`37bd068` Konzept, `8e34222` Entscheidungseintrag), noch nicht gemergt.
+**Die Randfragen des Einheitenbruch-Konzepts sind hiermit hierher übernommen** und gelten von hier
+aus: Waisenheilung (`energy_project_settings` Zeile 10076, Projekt 1039), kg-/rm-Abrechnung der
+Brennstoffe 4/5/12, Brennstoff 24 „Sonstige", der Fremdkörper Regel 67 und ein Prüfschritt in
+`EnergieEinheitenPruefung`. Das Quellpapier
+[`ueberholt/Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md`](../../ueberholt/Konzept_Einheitenbruch_Energietraeger_EPOS-Plan.md)
+ist Geschichte (Bezugsstand Access, `SchemaVersion 61`) und **keine Regelquelle**. Nicht zu
+verwechseln mit [`Konzept_Einheiten_EPOS-Plan.md`](../Konzept_Einheiten_EPOS-Plan.md) (kWh gegen
+MWh) — ein anderes Papier.
 
 **Rechtliche Unsicherheiten** (aus Grundlagen § 6, weiterhin offen — vor produktivem Einsatz mit
 dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, sondern des Rechts):
@@ -2199,6 +2318,10 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | R-U3 | Ausschluss fossiler flüssiger Brennstoffe aus der KWKG-Förderung — nur Sekundärquelle | als Prüfkette „Heizöl-Neuanlage ab 2025" umgesetzt (§ 3.6) |
 | R-U4 | EuGH-Urteil 09.07.2026 zur Beihilfeeigenschaft des KWKG | kein Primärbeleg |
 | R-U5 | keine Nachfolgeregelung nach 2030 | Förderzeitraum als Datumsparameter im Katalog, nicht als Konstante |
+| **R-U6** | **Auslösedauer des 45-Euro-Mechanismus im ETS 2** — zwei oder drei aufeinanderfolgende Monate; die Sekundärquellen widersprechen sich (Grundlagen § 10 Nr. 1) | nicht übernommen; der CO₂-Preispfad (§ 3.11) baut auf dieser Größe auf und führt sie als Stützstelle mit Status, nicht als Konstante |
+| **R-U7** | **Exakter Wortlaut des § 10 Abs. 3 BEHG** (Bezugspreis 2027), nur sekundär gesichert; die Zuordnung „Berechtigungen" gegen „Emissionszertifikate" ist auch fachlich strittig (Grundlagen § 10 Nr. 2) | entschärft, falls das Dritte Änderungsgesetz den Korridor festschreibt; bis dahin Katalogstatus VORLÄUFIG |
+| **R-U8** | **Zahlenreihe des Projektionsberichts 2026**, nur sekundär belegt (Grundlagen § 10 Nr. 3) | vor Verwendung als Vorbelegung des Preispfads (§ 3.11) zu prüfen |
+| **R-U9** | **Enddatum der Versteigerungsphase 2026** — Restmengenrechnung gegen Sekundärquelle 09.09.2026 (Grundlagen § 10 Nr. 4) | betrifft den Übergang Festpreis → Versteigerung im Preispfad (§ 3.11) |
 
 ---
 
@@ -2226,6 +2349,14 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **BK1b** | Die Projektspalte `KWKG_Kostenanteil` fällt (Schemaschritt 91); der Anteil der Neuherstellungskosten steht nur noch an der Anlage | keine — einziger Pflegeort wandert, kein Rechenleser betroffen |
 | **VG** (§ 2.9, § 2.15) | Wählbares Vergleichsprojekt je Gruppe (Schemaschritt 92, `ID_Referenzprojekt`, NULL = Stamm) und die Vergleichssicht der Ergebnisansicht: alle Varianten gegen die Referenz oder zwei Stände A und B mit A als Referenz dieser Sicht. Die Referenz ist Parameter von `Berechne` und `BerechneVerlauf`, ihre Auflösung samt Randfällen steht einmal in `Referenzwahl`; Sicht, A und B liegen in `Vergleichsauswahl`, der Paarlauf persistiert nicht | keine in der Vorgabe — Referenz = Stamm rechnet bitgleich, Referenzlauf der fünf CI-Projekte PASS |
 | **B7P** | Nachweise eines Wirtschaftlichkeitslaufs werden persistiert: `ErgebnisNachweisUmschlag` legt vier Listen und vier Skalare als JSON mit Präfix `nw1:` in `Tab_ErgebnisWirtschaftlichkeit.Nachweis_Json` (über `SpalteSicher`, ohne Schemaschritt), Längenwächter 4 MiB, toleranter Leseweg | keine — die davon-Zeilen stehen auch nach dem Neuladen |
+| **B5** (#286) | Der BHKW-Wirtschaftlichkeitsdialog als Razor-Komponente (`BhkwWirtschaftlichkeitDialog.razor`, acht Gruppen, § 2.2): Auszug aus dem Parameterdialog, Schreibweg der Anlagenspalten (K7), Brennstoff-Leser (K4), Live-Herleitung; mit #286 auf die einheitliche Speichern-/Abbrechen-Leiste umgebaut, danach mit #330, #342, #352 weiter gepflegt | keine — solange niemand die neuen Felder pflegt |
+| **B6** (#328, anderer Rechner) | § 9 Abs. 1 Nr. 3 StromStG als **Ausweis** statt als Erlös (Befund B-1, Entscheidung K3, § 3.8), Kohärenz-Nachträge, Lokalisierung (K11). **Schemaschritt 88** legt `Tab_ProjektWirtschaftlichkeit.Stromst_Befreiung_Modus` an (TEXT, `AUSWEIS`/`ERLOES`, kein DML, NULL = AUSWEIS); der Modus wandert mit ins Ergebnis | **ja, gewollt** — Projekt 1030: Ausweisbetrag 8.862,15 €/a in beiden Modi, Kapitalwert von −21.763.530,86 € (Erlös) auf −21.895.377,28 € (Ausweis) |
+| **B-1 / Kesselbrennstoff** (#331, dieser Rechner) | Die Kessel-Modulspalte `Verbrauch` trägt den Brennstoffeinsatz des Laufs; Endenergie-Positionen am Kessel fallen nicht mehr auf `null` (§ 4, Befunde B-1/N1) | **ja, gewollt** — neue Referenzbasis `2026-09-18_R9_Kesselbrennstoff` mit **#333** eingefroren (§ 6.2) |
+| **VV** (§ 2.16, #359) | Vergütung je Variante: eigene Werte oder vom gewählten Projekt übernommen. **Schemaschritt 93** an `Tab_ProjektPhotovoltaik`; der Kopierlauf fror die Vergütung bisher nur zufällig ein | keine in der Vorgabe — Übernahme rechnet wie bisher |
+| **Hilfsstrom am Endenergiebedarf** (#365/#366) | **Schemaschritt 94** (reines DML): Die drei Hilfsstrom-Positionen der Standardvorlagen BHKW, Heizkessel und Wärmepumpe wechseln von „% der Endenergiekosten" auf „% des **Endenergiebedarfs**"; Weg B bewertet den Endenergiebedarf einer Anlage mit dem **Preis ihres eigenen Stromträgers** (§ 2.2 Gruppe 1, § 5 K2) | **ja, gewollt** — die Hilfsenergiekosten werden überhaupt erst berechnet |
+| **Nutzungsdauern S2** (#357) | Knopf „Nutzungsdauern vorbelegen…" als vierter der Rasterleiste (U8) und die Tafel „Ersatz und Restwert" im Kostendialog (U30); Positionsart als Klappliste im Zeileneditor (§ 2.13 (3)) | keine, solange keine Dauer gepflegt wird; danach **ja** — Ersatz und Restwert entstehen |
+| **Übernahme aus der Kostenverwaltung** (#363) | „Aus Vorlage übernehmen…" öffnet den **Katalogblock** der Administration (Komponente · Kategorie · Variante · Positionsvorschau mit Spalte „Ziel") statt der bisherigen Klappliste | keine — reine Auswahlseite |
+| **Bezugsgrößen** (#364) | Betriebskosten: Bezugsgrößen aus dem gespeicherten Lauf, jeder Fehlgrund benannt; Grundlage der Live-Frisch-Anzeige (§ 2.8 Punkt 3, § 6.3 B5-Kernaufgabe 2) | **ja** — zuvor ungerechnete Hilfsenergiekosten entstehen |
 
 ## 6.2 Regressionsanker
 
@@ -2237,15 +2368,22 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | Kaskadenregression 1042 | +20.927,61 |
 | Referenzbasis | `Referenzlaeufe\2026-09-19_R10_BhkwWirkungsgrad` |
 
-Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu gesetzt werden.
+1030 ist auf der **Investitionsseite neu verankert** (410.000,00 €, `InvestKaskadeTests.cs:281`);
+**Kapitalwert und Betriebskosten von 1030 tragen weiterhin keinen Anker.**
 
 ## 6.3 Offene Punkte
 
-**B5-Kernaufgaben**
+*Die Nummern bleiben, wie sie vergeben wurden — auch die Sprünge (9 doppelt; 9a…9g, 9l, 9m, dann
+9h…9k). Ein erledigter oder überholter Punkt wird als solcher gekennzeichnet, nicht entfernt und
+nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter treffen.*
 
-1. Schreibweg der drei B3a-Anlagenspalten — `KwkgAnlagenCtrl.Speichere` von 8 auf 11 Spalten (K7)
-2. Live-Frisch-Anzeige der Bezugsgröße mit Herleitungszeile im Kostendialog — **spezifiziert in § 2.8 (Entwurf B, übernommen 31.08.2026)**
-3. Erste Kostenposition mit Anlagenbezug entsteht erst hier
+**B5-Kernaufgaben — alle drei erledigt**
+
+1. ~~Schreibweg der drei B3a-Anlagenspalten — `KwkgAnlagenCtrl.Speichere` von 8 auf 11 Spalten (K7)~~
+   — **erledigt**: `Speichere(g, mitSteuerangaben)` schreibt 8 + 4 Spalten (`KwkgAnlagenCtrl.cs:283–299`)
+2. ~~Live-Frisch-Anzeige der Bezugsgröße mit Herleitungszeile im Kostendialog~~ — **erledigt mit
+   U31 (#347) und #364**; spezifiziert bleibt sie in § 2.8 (Entwurf B, übernommen 31.08.2026)
+3. ~~Erste Kostenposition mit Anlagenbezug entsteht erst hier~~ — **erledigt mit B5 (#286 ff.)**
 
 **Nach B6 — alle sechs erledigt**
 
@@ -2271,10 +2409,10 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
     Ergebnis wäre vier Schemata, vier Schreib- und vier Lesewege für Daten, aus denen nichts
     gerechnet wird. Ein fehlender oder unlesbarer Umschlag kostet nur die Unterzeilen und setzt
     genau einen Kohärenzhinweis — nie eine Ergebniszeile.
-9c. **B7-3: Die KWKG-Pauschale (§ 9 KWKG, A3) hat keine Rubrikzeile.** Sie ist eine einmalige
-    Zahlung im Jahr 0 und hat keine persistierte Skalargröße; `KwkgErloesJahr1` steht bei einem
-    Pauschalprojekt auf 0. Sie gehört in die Investitions- oder Jahr-0-Darstellung, nicht in eine
-    €/a-Spalte.
+9c. ~~**B7-3: Die KWKG-Pauschale (§ 9 KWKG, A3) hat keine Rubrikzeile.**~~ — **erledigt mit U17
+    (#346)**: Die Zeile ist gebaut (`WirtschaftlichkeitZeilen.cs:405–412`), die Spalte ebenso
+    (`:1209`), bewacht von `KwkgPauschaleZeileTests`; sie steht als Jahr-0-Ausweis, nicht in einer
+    €/a-Spalte. Siehe § 2.6 (A3).
 9d. **B7-4: Der Grund einer Nullzeile ist aus den Ergebnisdaten abgeleitet, nicht vom Rechner
     durchgereicht.** Die `STEUER_*`-Begründungen und der KWKG-Ausstieg stehen im Hinweisfeld des
     Laufs, aber als ein mit „ | " verbundener Text über alle Positionen; ihn einer einzelnen
@@ -2296,9 +2434,8 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
     Gesamtanlage** (§ 3.6) und liest damit dieselbe Quelle wie der Regelweg. Der benannte
     Widerspruch zum Aktivierungsschalter ist damit fort: Ein Projekt mit Anlagensätzen bekommt
     auch auf diesem Weg seinen Zuschlag.
-9g. **BK1-3: Ein Jahr-0-Ausweis der KWKG-Pauschale in der Erlösrubrik** ist als Vorschlag
-    aufgenommen und **nicht gebaut** — der Entscheid steht beim Anwender aus. Er löst zugleich
-    `B7-3`.
+9g. ~~**BK1-3: Ein Jahr-0-Ausweis der KWKG-Pauschale in der Erlösrubrik**~~ — **erledigt mit U17
+    (#346)**, dieselbe Sache wie 9c.
 9l. ~~**BK1-4: `KWKG_Kostenanteil` (Projekt) hat keinen Rechenleser mehr, das Feld bleibt.**~~
     **Erledigt mit BK1b (Schemaschritt 91):** Anwenderentscheid 18.09.2026 „BK1-4: (a)
     Entfernen“. Eine gepflegte Angabe ohne Wirkung neben derselben Größe mit Wirkung war der
@@ -2313,11 +2450,12 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 
 **Aus der Anwenderdurchsicht der Ergebnisansicht (§ 2.13)**
 
-9h. **Nutzungsdauer, Ersatz, Restwert — fünf fehlende Stücke:** Entkopplung von Ersatz und
-    Restwert, Nachpflege des Bestands (Knopf „Nutzungsdauern vorbelegen"), Pflegeort der
-    Positionsart, die ungelesenen geräteeigenen Nutzungsdauer-Spalten, der Anschluss der
-    Speicherflotte; dazu der Hinweis „T über Vorgabe, Position ohne Dauer" auf Seite und Bericht
-    und die plattformfreie Hülle der Zeitraumzeile.
+9h. **Nutzungsdauer, Ersatz, Restwert — drei fehlende Stücke (Mockup-Anhang U39):** Entkopplung
+    von Ersatz und Restwert, die ungelesenen geräteeigenen Nutzungsdauer-Spalten, der Anschluss
+    der Speicherflotte; dazu der Hinweis „T über Vorgabe, Position ohne Dauer" auf Seite und
+    Bericht und die plattformfreie Hülle der Zeitraumzeile. **Erledigt mit #357:** die Nachpflege
+    des Bestands (Knopf „Nutzungsdauern vorbelegen…") und der Pflegeort der Positionsart
+    (Klappliste im Zeileneditor) — s. § 2.13 (3).
 9i. **Erlösrubrik nach Komponente innen:** Anlagenbezug je Katalogzeile, Block „projektweit",
     Eigenverbrauchsmengen je Anlage für die vermiedenen Kosten.
 9j. **Verlauf mit drei Szenarien:** Dreierreihe statt eines Szenarios je Lauf, Reihenbildung
@@ -2331,21 +2469,31 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 
 10. Bezugsgrößen der übrigen KD1-Bemessungsarten (H1-1b)
 11. Nachzieh-Migration für Bestandsprojekte — durch die Auto-Anlage entschärft, bleibt Option
-12. `InvestSummeFuer` auf die abgeleitete Kaskadensumme umbauen (B-5)
+12. ~~`InvestSummeFuer` auf die abgeleitete Kaskadensumme umbauen (B-5)~~ — **erledigt mit
+    W5‑B‑8**: Basis ist `InvestKaskade.Summen` (§ 3.4)
 13. Pufferkapazität bleibt null — bewusste Grenze
-14. Reduzierter Stromsteuersatz bleibt Konstante bis zur Katalog-Nachpflege
+14. ~~Reduzierter Stromsteuersatz bleibt Konstante bis zur Katalog-Nachpflege~~ — **überholt**:
+    Der Katalog führt `STROMST_REDUZIERT_SATZ` (`GesetzKatalog.cs:1156`); die Konstante in
+    `StrompreisZerlegungModel` ist nur noch wertgleiche **Rückfallebene** (`:82–89`). Offen bleibt
+    allein, dass **keine Wache Konstante gegen Katalog** hält (§ 6.5)
 15. Bilanzjahr und Unternehmensart wirken erst beim nächsten Dialog-Öffnen
 16. Rückweg „Parameterdialog zeigt den erfassten Preisanteil" fehlt
 17. ~~Kohärenzzeilen nicht persistiert~~ — erledigt mit B7P, sie reisen im Nachweisumschlag mit ·
     Fall 4 ohne Katalogsatz bleibt still
-18. Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1) — nur mit vollem Referenzlauf
+18. ~~Engine-Sortierung `ORDER BY Prioritaet` (HB1-O1)~~ — **vermutlich überholt**:
+    `SimulationControl.cs:1512, 3372, 4117` sortieren `ORDER BY Prioritaet, ID`; ob dies die
+    gemeinte Stelle ist, ist nicht gegengeprüft — nachmessen, dann streichen
 19. Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel"
 
 **Nachweis und Betrieb**
 
-20. **Zahlenprobe gegen die Altanwendung (A8) — blockiert, wartet auf Zulieferung der
-    BHKW-Plan-Excel.** Seit der Abnahme E8 der gewichtigste offene Punkt
-21. Basiswechsel der Referenzläufe entscheiden; 1030 neu verankern
+20. **Zahlenprobe gegen die Altanwendung (A8, ≡ B9) — die Vorbedingung ist entfallen:** Die
+    BHKW-Plan-Excel liegt vor, die Inventarisierung steht in
+    [`ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md`](../../ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md).
+    Der Punkt ist damit **planbar**, nicht mehr blockiert; Prüfumfang s. § 7 (B9)
+21. ~~Basiswechsel der Referenzläufe entscheiden~~ — **erledigt mit #333** (neue Basis
+    `2026-09-18_R9_Kesselbrennstoff`, § 6.2); **offen bleibt**: Kapitalwert und Betriebskosten von
+    1030 verankern (die Investitionsseite ist verankert)
 22. Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)
 23. resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie
 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar;
@@ -2353,15 +2501,23 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 
 ## 6.4 Fallstricke zur Wiederverwendung
 
-- **ACE: `UPDATE … WHERE x IN (SELECT …)` trifft stillschweigend 0 Zeilen** — kein Fehler, keine
-  Warnung. Fremdschlüssel vorher einzeln auflösen und die Zeilenzahl protokollieren.
-- **ACE: Ein falscher Spaltenname meldet sich als fehlender Parameter**, nicht als unbekannte
-  Spalte.
-- Zwei gemischte ACE-Verbindungen sehen Fremdschreibungen verzögert.
+Es gilt heute nur noch, was hier ohne Einschränkung steht:
+
 - `SetzeBetrag` ist ein Upsert — ein Harness braucht unbenutzte StammIDs.
 - Visual Studio regeneriert `Resource.Designer.cs`; Handeinträge erzeugen CS0102.
-- Keine `.cs` unterhalb von `WindowsFormsApplication1\` (CS0017); Harnesse nach `dev\`.
-- Build nur über das MSBuild von Visual Studio, x64 — `dotnet build` scheitert an COM.
+
+**Nur noch für den Migrationslauf** (`Referenzlauf/Migrationslauf.cs`, die einzige Stelle mit
+`Microsoft.ACE.OLEDB`; die Datenhaltung ist SQLite):
+
+- ACE: `UPDATE … WHERE x IN (SELECT …)` trifft stillschweigend 0 Zeilen — kein Fehler, keine
+  Warnung. Fremdschlüssel vorher einzeln auflösen und die Zeilenzahl protokollieren.
+- ACE: Ein falscher Spaltenname meldet sich als fehlender Parameter, nicht als unbekannte Spalte.
+- Zwei gemischte ACE-Verbindungen sehen Fremdschreibungen verzögert.
+
+**Überholt und deshalb gestrichen:** „Keine `.cs` unterhalb von `WindowsFormsApplication1\`
+(CS0017); Harnesse nach `dev\`" — den Ordner `dev\` gibt es nicht. „Build nur über das MSBuild von
+Visual Studio, x64 — `dotnet build` scheitert an COM" — `CLAUDE.md` nennt
+`dotnet build WP-Plan.sln -c Debug -p:Platform=x64` ausdrücklich als den Weg (SDK 10.0.400).
 
 ## 6.5 Doppelte Wahrheiten
 
@@ -2391,37 +2547,86 @@ Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu geset
 
 | Doppelung | Stand |
 |---|---|
-| Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` gegen `const double` in `StrompreisZerlegungModel` | wertgleich, eine Wache hält beide zusammen; gekoppelt ist nichts: eine gepflegte Novelle erreicht die Modellkonstante nicht |
+| Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` und `STROMST_REDUZIERT_SATZ` gegen die `const double` in `StrompreisZerlegungModel` | wertgleich, **gekoppelt ist nichts**: Die vorhandene Wache (`StrompreisZerlegungTests`) prüft Modell gegen Konstante, **nicht** Konstante gegen Katalog — eine gepflegte Novelle erreicht die Modellkonstante nicht, und eine Wache dafür fehlt. Der reduzierte Satz ist gesät; die Konstante ist ausdrücklich nur noch Rückfallebene (§ 6.3 Nr. 14) |
 | „Energieintensiv" an drei Orten — Unternehmensart, Schnellwahl im Trägerdialog, Katalogsatz | seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; gekoppelt ist weiterhin nichts |
-| BHKW-Einspeisevergütung an vier Orten | Vorrang eindeutig (aktiver Tarif schlägt Parameterwert), drei Felder zu viel |
-| Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | vier Tabellen; neue Spalten gehören an beide Stellen |
-| Zwei Lesewege auf die Kostenposition — die gespeicherte Access-Abfrage kennt die neuen Spalten nicht | der direkte Zugriff ist der Normalfall |
-| Komponenten-IDs hart verdrahtet gegen dynamisch gelesen | `Form_Kosten` gegen `UcBkKosten` |
-| Vorrang Projekt vor Katalog in drei Implementierungen | `KostenEmissionRechner`, `StromPreisCtrl`, eine Access-Abfrage |
+| BHKW-Einspeisevergütung an **drei** Orten | aktiver Tarif (`Tab_ProjektTarif.Einsp_Arbeit`) · Projektparameter (`Einspeiseverguetung_KWK`) · Anlage (`KWKG_Satz_Einspeisung`); Vorrang eindeutig (aktiver Tarif schlägt Parameterwert). Der vierte Ort (`energy_project_settings.Verguetung_BHKW`) ist mit Schritt 84/85 entfallen |
+| Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | **fünf** Tabellen mit eigenem `CREATE TABLE` (`Tab_ProjektWirtschaftlichkeit`, `Tab_ErgebnisWirtschaftlichkeit`, `Tab_ErgebnisWirtSensitivitaet`, `Tab_ProjektTarif`, `Tab_ErgebnisStromMatrix`), dazu 55 `SpalteSicher` auf sechs Tabellen; die `CREATE` tragen weder `STRICT` noch Fremdschlüssel (ADR-001 Option B). Neue Spalten gehören an beide Stellen |
+| Zwei Lesewege auf die Kostenposition | der direkte Zugriff ist der Normalfall; daneben die gespeicherte **Sicht** `Abfrage_Kostenfaktoren` (`sql/schema/002_views.sql`) — kein Access-Artefakt mehr, sie liegt im Repo, kennt die neuen Spalten nicht und ließe sich erweitern; beim Tabellenumbau wird sie eigens behandelt (`ProjektWerteLoeschschutz`) |
+| ~~Komponenten-IDs hart verdrahtet gegen dynamisch gelesen (`Form_Kosten` gegen `UcBkKosten`)~~ | **gegenstandslos** — beide Klassen gibt es nicht mehr: Die Unterscheidung liegt im Kern (`KostenVorlagenCtrl.IstErfassungsgruppe`), die Oberfläche in `EPOS.UI/Dialoge/Kosten/` |
+| Vorrang Projekt vor Katalog in **zwei** Implementierungen | `KostenEmissionRechner`, `StromPreisCtrl`; dazu die Sicht `Abfrage_Energietraeger_Effektiv` (`sql/schema/002_views.sql:26`) |
+| ~~Die gespeicherte Access-Abfrage kennt die neuen Spalten nicht~~ | **überholt**: Access ist abgelöst; die gespeicherten Abfragen sind Altbestand des eingefrorenen Access-Zweigs |
 | ~~Kennzahlenliste dreifach~~ | aufgelöst mit E7 — `WirtschaftlichkeitZeilen` führt sie einmal |
 
 ---
 
 # 7 Vorgeschlagene Reihenfolge
 
+**B5, B6 und B7 sind gelaufen und stehen mit ihrer Ergebniswirkung in § 6.1.** Offen sind nur noch
+die beiden Etappen dieser Tafel:
+
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
-| **B5** | `Form_BhkwWirtschaftlichkeit` mit sechs Gruppen; Auszug aus dem Parameterdialog; Schreibweg der drei Anlagenspalten (K7); Brennstoff-Leser (K4); Live-Herleitung | keine — solange niemand die neuen Felder pflegt |
-| **B6** | § 9 Nr. 3 als Ausweis (M-3, **Schemaschritt 88**); Kohärenz-Nachträge; Lokalisierung | **umgesetzt** — Vorgabe AUSWEIS; ein Projekt, das die Reihe buchte, verliert deren Barwert aus dem Kapitalwert |
-| **B7** | Anlagenscharfe Aufschlüsselung der Energiekosten; **Erlösrubrik** (§ 2.6) in Reiter, Word, Excel und BHKW-Vorschau; **Emissionsspalte nach Modus** (§ 2.5) | **umgesetzt** — reiner Ausweis; der Kapitalwert ist unverändert, die vermiedenen Kosten werden zusätzlich um die entgangene § 9b-Entlastung korrigiert ausgewiesen |
-| **B8** | Befunde abarbeiten: I-1 (kWp), I-3 (ORDER BY), B-1/N1 (Kessel-Verbrauch), N3 (Aufschlags-NULL), V-3 (Berichtsspalten), S-2 | **ja** — jeder einzeln mit A/B-Nachweis |
-| **B9** | Zahlenprobe gegen die Altanwendung (A8), sobald die Excel vorliegt | Nachweis |
+| **B8** | Die verbliebenen Befunde: **S-2** (kein projektweites Doppelentlastungsverbot), der **PV-Teil von V-3** (ein Aufruf in `Mehrjahresbild.Baue` und ein Ressourcenschlüssel), **B-6** (geschluckte Fehler, `catch {}` ⇒ still 0) und **I-5** (uneinheitliche Vergleichsstrenge: ZUSCHUSS ohne, `PROZENT_*` mit Groß-/Kleinschreibung) | **ja** bei S-2 — jeder Punkt einzeln mit A/B-Nachweis; V-3, B-6 und I-5 sind Ausweis bzw. Robustheit |
+| **B9** ≡ A8 | Zahlenprobe gegen die Altanwendung. **Planbar** — die Excel liegt vor und ist inventarisiert ([`Analyse_Altanwendung_BHKW-Plan.md`](../../ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md)); **was fehlt, ist die benannte Referenzmappe**. Abnahmeliste ist § 5 der [Grundlagen](../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md) — neun Abweichungen der Altanwendung, darunter drei, die eine Zahlenprobe sofort auseinanderlaufen lassen (Öl je 1 000 l statt je MWh, Flüssiggas nicht zuordenbar, Stromsteuer als Restbelastung statt Erstattung) | Nachweis |
 
-Die Reihenfolge ist bewusst so gewählt: **B5 bleibt ergebnisneutral** und macht nur pflegbar, was
-bisher nur im Datenmodell stand. Die erste gewollte Ergebnisänderung kommt mit B6 — und trifft
-dann eine Größe, die im Bestand nachweislich nirgends gebucht ist.
+Zur Einordnung: **I-1, I-2, I-3, B-1/N1, N3, B-5 und S-6 sind erledigt** (§ 4); die frühere
+Reihenfolgebegründung („B5 bleibt ergebnisneutral, die erste gewollte Ergebnisänderung kommt mit
+B6") ist mit B5, B6, B7, BK1, BK1a, BK1b, VG, VV und der Hilfsstrom-Umstellung überholt. Die
+Reihenfolge der **heute** offenen Etappen — V-A…V-E (§ 2.11.4), U39 (§ 2.13 (3)),
+Erlösrubrik-Ausbau (§ 6.3 9a/9d/9i), ND-S3, B8, B9 — steht im Etappenplan E0–E12 des
+Analysepapiers [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
 
-## Voraussetzungen vor der Umsetzung
+## Offene Entscheide vor der nächsten Codeetappe
 
-Zwei Entscheidungen sollten vor B5 fallen, weil sie den Dialog selbst betreffen — beide sind
-inzwischen gefallen:
+Nicht Gestaltungsfragen von gestern, sondern die heute **offenen** Entscheide des Anwenders — jeder
+blockiert mindestens eine der Etappen oben (Kennungen nach dem Analysepapier vom 19.09.2026, § 4):
 
-- **K3** — Modusfeld § 9 Nr. 3: **erledigt** mit B6, Schemaschritt 88 (§ 3.8, § 5)
-- **K8** — der achte Knopf: **entschieden 18.09.2026**, Umschalter statt Knopf (§ 2.7)
+- **A1** — Rechenaufruf und Datenseite aus der Windows-Schale holen: eigene Welle **vor** der
+  Ergebnisansicht oder erst mit ihr? (betrifft § 2.13 (5), die plattformfreie Hülle)
+- **A2** — Befund **K-1**: Stromkennzahl und Abwärmeabfuhr je Anlage (Schemaschritt 97) —
+  modulscharfe Nutzwärme aus dem Ergebnismodell oder Aufteilung nach Leistung? (§ 3.6, § 4)
+- **A5** — Degradation: V-E (§ 2.11.4) gegen den Entscheid „G3 nicht umsetzen" des
+  Szenarienkonzepts (§ 2.11.2)
+- **A11** — Nachweis der Wirtschaftlichkeitsgrößen: Referenzlauf erweitern oder Ankertests im
+  Kern? (§ 6.2, § 6.3 Nr. 21)
+- **A13** — Schnitt dieses Papiers in drei Papiere (gültiger Stand · Entscheidungsregister ·
+  Protokoll der Entscheidwege)
 
-Beide sind reine Gestaltungsentscheidungen ohne Rechenwirkung.
+Alle fünf sind **offen**, keiner ist entschieden.
+
+---
+
+# Anhang — Kürzel und Etappen
+
+Fünf Kürzelräume laufen nebeneinander: die Etappen dieses Papiers, die des Szenarienkonzepts, die
+des Nutzungsdauer-Konzepts, die Statusnummern der Datei `Status_iOS_Migration.md` und die
+U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegeneinander auf.
+
+| Konsolidiertes Konzept | Szenarienkonzept | Nutzungsdauer | Statuszeile | Gegenstand |
+|---|---|---|---|---|
+| W4 E1–E8, L12/L13 | — | — | vor #300 | Gesetzeskatalog, Tarif-Rollenmodell |
+| K1–K6 · KD1–KD6 · P1–P6 · H1–H4b, H21 | — | — | vor #300 | Alttabellen, Kostendialoge, PV, Pflichtpositionen |
+| B1 · B2 · B3a · B3b · B4 | — | — | vor #300 | Zahlenprobe, Schema 60/61, Hilfsstrom, Stromsteuer |
+| **B5** | — | — | **#286 ff.** | `BhkwWirtschaftlichkeitDialog` (§ 2.2) |
+| **B6** | — | — | **#328** (anderer Rechner) | § 9 Nr. 3 als Ausweis, Schemaschritt 88 |
+| **B7** | — | — | **#329** | Erlösrubrik, Energiekosten je Anlage, Emissionsspalte |
+| **B7P** | — | — | **#331** (anderer Rechner) | Nachweisumschlag `Nachweis_Json` |
+| Befund **B-1** | — | — | **#331** (dieser Rechner) | Kessel-Modulspalte `Verbrauch`; neue Basis **#333** |
+| **BK1** | — | — | **#330** | KWK-Zuschlag an der Anlage, Schemaschritt 89 |
+| **BK1a** | — | — | **#335** | Schritt 90, virtuelle Gesamtanlage |
+| **BK1b** | — | — | **#336** | Schritt 91, `KWKG_Kostenanteil` entfällt |
+| **VG** (§ 2.9, § 2.15) ≡ **V-B** | W5‑B‑11 | — | **#358** | Vergleichsprojekt, Schritt 92 |
+| **VV** (§ 2.16) | — | — | **#359** | Vergütung je Variante, Schritt 93 |
+| *(namenlos)* | — | — | **#365/#366** | Hilfsenergie am Endenergiebedarf, Schritt 94 |
+| **B8** | — | — | offen | Befunde S-2, V-3-Rest, B-6, I-5 (§ 7) |
+| **B9** ≡ A8 | — | — | offen | Zahlenprobe gegen die Altanwendung |
+| **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | keine im Bereich #300–#369 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72), V-A/V-C/V-D/V-E offen |
+| § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354 | Ergebnisansicht |
+| § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357** | Nutzungsdauer, Ersatz, Restwert |
+| — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen | AfA-Tabelle |
+| Mockup-Anhang **U1…U40** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** |
+
+**Zwei Fallen bei den Kennungen.** (1) Die Statusnummern **#302, #304, #328 und #331** sind je
+**doppelt** vergeben (zwei Rechner); jede Zeile der Statusdatei trägt den Zusatz, ein Verweis
+„#331" allein ist mehrdeutig. (2) Die Kürzelkollisionen K-1/K1, B-1/B-1, U-1/U1, V-1/V-1 und
+V-Gn/Gn sind unter „Namensvorsicht" am Ende von § 2.12 aufgelöst.

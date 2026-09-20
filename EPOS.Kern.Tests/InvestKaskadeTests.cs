@@ -37,6 +37,20 @@ namespace EPOS.Kern.Tests
         private static readonly int[] ID_NULLZEILEN =
             { 101600491, 101600492, 101600493, 101600496 };
 
+        // ---- Runde 2: zwei „% der Erzeugerkosten"-Zeilen derselben Komponente ----
+        // Beide Zeilen gehören zur Wärmepumpe (Komponente 1) und tragen je einen
+        // EIGENEN Kostenfaktor (StammID 112 bzw. 113 — beide nur EINMAL im Projekt
+        // vergeben, anders als 110/111/114). Erst dadurch lässt sich die
+        // Hauptpositions-Kennung der einen setzen, ohne die andere mitzuziehen.
+        private const int ID_E_A = 101600495;     // StammID 112, Leseplatz 8
+        private const int ID_E_B = 101600496;     // StammID 113, Leseplatz 9
+        private const int STAMM_E_A = 112;
+        private const int STAMM_E_B = 113;
+
+        /// <summary>Die übrigen Kategorie-1-Zeilen der Wärmepumpe im Runde-2-Fall.</summary>
+        private static readonly int[] ID_E_NULLZEILEN =
+            { 101600491, 101600492, 101600493, 101600494, 101600497 };
+
         /// <summary>
         /// Legt das Beispiel an: 5.660,00 € direkt, dazu 3 % / 10 % / 10 % der
         /// Investition. Geschrieben wird in die ARBEITSKOPIE der Testdatenbank.
@@ -107,6 +121,71 @@ namespace EPOS.Kern.Tests
             Dictionary<int, InvestKaskade.Zeile> k = Kaskade();
             Assert.Equal(k[ID_P10A].Betrag, k[ID_P10B].Betrag, 6);
             Assert.Equal(5660.00, k[ID_P10B].Basis.Value, 2);
+        }
+
+        /// <summary>
+        /// Legt den Runde-2-Fall an: die Hauptposition der Wärmepumpe über
+        /// 5.660,00 € und zwei „% der Erzeugerkosten"-Zeilen (10 % und 3 %), die
+        /// BEIDE als Hauptposition gekennzeichnet sind.
+        /// </summary>
+        private static void ErzeugerBeispielAnlegen(int idZehn, int idDrei)
+        {
+            Setze(ID_HAUPT, 5660.0, DbWerte.BEMESSUNG_BETRAG, null);
+            foreach (int id in ID_E_NULLZEILEN) Setze(id, 0.0, DbWerte.BEMESSUNG_BETRAG, null);
+
+            Setze(idZehn, 0.0, DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN, 10.0);
+            Setze(idDrei, 0.0, DbWerte.BEMESSUNG_PROZENT_ERZEUGERKOSTEN, 3.0);
+            HauptSetzen(STAMM_E_A);
+            HauptSetzen(STAMM_E_B);
+        }
+
+        /// <summary>
+        /// Kennzeichnet einen Kostenfaktor als Hauptposition. Die Kennung sitzt auf
+        /// <c>Tab_Kostenfaktor</c> (Primärschlüssel <c>StammID</c>), nicht auf der
+        /// Projektzeile — die Kaskade liest sie über den Verbund in
+        /// <see cref="InvestKaskade.Lies"/>.
+        /// </summary>
+        private static void HauptSetzen(int stammId)
+        {
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_Kostenfaktor SET IsMainComponent = ? WHERE StammID = " + stammId,
+                new DbParam("@h", 1));
+        }
+
+        /// <summary>
+        /// RUNDE 2 IST REIHENFOLGEUNABHÄNGIG (Etappe E1 Punkt 7).
+        ///
+        /// <para>Bis zur Zwei-Phasen-Fassung setzte Runde 2 jede fertige Zeile
+        /// SOFORT auf <c>Abgeleitet</c>. War eine „% der Erzeugerkosten"-Zeile
+        /// selbst als Hauptposition gekennzeichnet, rechnete die ZWEITE solche
+        /// Zeile derselben Komponente die ERSTE in ihre Basis ein — und weil die
+        /// Leseabfrage kein <c>ORDER BY</c> trägt, entschied die Datenbank über das
+        /// Ergebnis: Die 3-%-Zeile bekam 3 % von 6.226,00 € statt von 5.660,00 €.</para>
+        ///
+        /// <para>Die Theorie vertauscht die Rollen der beiden Zeilen. Beide Läufe
+        /// müssen dieselben Beträge liefern: Wer 10 % trägt, bekommt 566,00 €, wer
+        /// 3 % trägt, 169,80 € — je aus der EINEN Basis 5.660,00 €. Mit der alten
+        /// Fassung fällt jeder der beiden Datensätze, weil stets die
+        /// zweitgelesene Zeile zu viel bekommt.</para>
+        /// </summary>
+        [Theory]
+        [InlineData(ID_E_A, ID_E_B)]
+        [InlineData(ID_E_B, ID_E_A)]
+        public void Erzeugerkostenzeilen_zaehlen_einander_nicht_mit(int idZehn, int idDrei)
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            ErzeugerBeispielAnlegen(idZehn, idDrei);
+
+            Dictionary<int, InvestKaskade.Zeile> k = Kaskade();
+
+            Assert.Equal(566.00, k[idZehn].Betrag, 2);
+            Assert.Equal(169.80, k[idDrei].Betrag, 2);
+
+            // Beide bemessen sich an DERSELBEN Basis — den Hauptpositionen der
+            // Runde 1, nicht aneinander.
+            Assert.Equal(5660.00, k[idZehn].Basis.Value, 2);
+            Assert.Equal(5660.00, k[idDrei].Basis.Value, 2);
         }
 
         [Fact]

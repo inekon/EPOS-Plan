@@ -131,7 +131,8 @@ CO₂ / BEHG als eigene Reihe
 Emissionsfaktor-Kette (eine für alle Rechner)   PROJEKT → KATALOG → STAMM → CARRIER → null
   CO₂ in g/kWh, SO₂/NO_x in mg/kWh ; Strommix-Rückfall 435 g/kWh bei fehlendem Stromträger (mit Hinweis)
   Hi/Ho-Falle: Erdgas 200,9 g/kWh gilt heizwertbezogen ; auf die brennwertbezogene
-  Abrechnungsmenge gehört 181,4 — sonst rund 10 % zu viel CO₂
+  Abrechnungsmenge gehört der KATALOGWERT 181,4 (GESETZ_EF_BILANZ_EBEV_ERDGAS_HO) —
+  keine Umrechnung des Beispiels, sonst rund 10 % zu viel CO2
 ```
 
 ## Berechnungserläuterung am Beispielprojekt
@@ -145,10 +146,10 @@ Emissionsfaktor-Kette (eine für alle Rechner)   PROJEKT → KATALOG → STAMM �
 | — wären Aufschläge an | 250.000 kWh × 11,746 / 100 | + 29.365 €/a | Befund N3 |
 | **Energiekosten Jahr 1** | 312.631,2 + 180,00 + 72.000,00 | **384.811,20 €/a** | steigt mit p_E ab Jahr 2 |
 | 5 CO₂-Menge | 4.342,1 MWh × 0,2009 t/MWh | 872,3 t/a | EBeV-Faktor Erdgas (H_i) |
-| **BEHG Jahr 1 (2026)** | 872,3 × 65,00 €/t | **56.699,50 €/a** | eigene Reihe, folgt dem Preispfad je Kalenderjahr |
+| **BEHG Jahr 1 (2026)** | 872,329 × 65,00 €/t | **56.701,38 €/a** | eigene Reihe, folgt dem Preispfad je Kalenderjahr. Mit der auf 872,3 t gerundeten Menge ergäbe sich 56.699,50 € — hier wird **ungerundet** gerechnet |
 
 Die Preisbestandteile sind Ausweis: Der CO₂-Bestandteil im Gaspreis (0,1371 €/m³ × 413.533 m³ =
-56.695 €) und die BEHG-Reihe (56.699,50 €) beschreiben denselben Betrag — einmal als Teil des
+56.695 €) und die BEHG-Reihe (56.701,38 €) beschreiben denselben Betrag — einmal als Teil des
 Arbeitspreises, einmal als eigene Reihe. **Im Kapitalwert darf nur einer von beiden stehen.** Heute
 rechnet EPOS-Plan die BEHG-Reihe separat; dann muss der Arbeitspreis ohne CO₂-Bestandteil gepflegt
 sein — die Kohärenzprüfung (`05`) soll das anzeigen.

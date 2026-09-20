@@ -245,7 +245,7 @@ offengelegten Annahmen.
 | Sensitivitäten | Zins, Energiepreissteigerung, Investition, Energiekosten, „KWKG-Bonus entfällt" |
 | Bandbreite Worst/Erwartet/Best | Zeilenwerte (VALERI-Muster) **und** Parametersatz (W5‑B‑9) |
 | Weitere Kennzahlen | Annuität, dynamische Amortisation, interner Zinsfuß, Wärmegestehungskosten |
-| Referenzfall | Stammprojekt; Varianten werden als **Differenz** zum Stamm bewertet — genau die VALERI-Sicht „Maßnahme gegen Weiterbetrieb" |
+| Referenzfall | die **wählbare Referenz je Vergleichsgruppe** (Stamm oder Variante, `ID_Referenzprojekt`, seit #358; Vorgabe = Stammprojekt); Varianten werden als **Differenz** zu ihr bewertet — genau die VALERI-Sicht „Maßnahme gegen Weiterbetrieb" |
 | Offenlegung der Annahmen | Parameternachweis (`WirtschaftlichkeitParameter.Nachweis`), Herkunft der Steuersätze, Hinweiszeilen bei jeder Vereinfachung |
 
 ### 7.2 Umgesetzt mit dieser Etappe (ohne neues Datenmodell)
@@ -268,7 +268,7 @@ offengelegten Annahmen.
 |---|---|---|---|---|
 | **G1** | **Endjahr je Position.** EPOS kennt seit KD6 ein Startjahr je Kostenzeile, aber kein Endjahr. | VALERI führt je Faktor Start- **und** Endjahr (`99` = ganze Betriebszeit). | Spalte + Rechenweg; Datenmodell | **nicht umsetzen** — als Vereinfachung offenlegen (§ 9.4) |
 | **G2** | **Preisänderung je Kostenart.** Heute zwei Töpfe (p_B, p_E) plus CO₂-Pfad. | VALERI führt eine eigene Preisänderung je Faktor. | Spalte je Zeile + Rechenkern; Datenmodell | **umgesetzt W5‑B‑12** — nur als dritter Satz p_I, nicht je Zeile (§ 10) |
-| **G3** | **Degradation je Faktor.** Nur die PV-Ertragsdegradation ist modelliert. | VALERI führt eine Degradation je Nutzen-/Lastenfaktor. | Spalte je Zeile; Datenmodell | **nicht umsetzen** — offenlegen (§ 9.4) |
+| **G3** | **Degradation je Faktor.** Nur die PV-Ertragsdegradation ist modelliert. | VALERI führt eine Degradation je Nutzen-/Lastenfaktor. | Spalte je Zeile; Datenmodell | **nicht umsetzen** — offenlegen (§ 9.4). **Entscheid A5 offen (Analyse vom 19.09.2026):** Das konsolidierte Konzept führt die Degradation als `V-G2` in der Etappe **V-E** (§ 2.11.4) und widerspricht damit diesem Entscheid |
 | **G4** | **Preisindizierung der Ersatzbeschaffung.** Ersatz wird nominal unverändert angesetzt (Vereinfachung W1). | VDI 2067/VALERI setzen Ersatzbeschaffungen üblicherweise preisindiziert an. | Rechenkern; **fachlicher Entscheid** | **umgesetzt W5‑B‑12** — Preissteigerungssatz p_I, Migrationsschritt 72 (§ 10) |
 | **G5** | **Startjahr für die Energiekosten.** Die Simulation kennt keine Startjahre je Komponente; die Energiekosten sind die Gesamtrechnung des Laufs (dokumentierte Vereinfachung FK10). | VALERI aktiviert jeden Faktor ab seinem Betriebsjahr. | Simulation; groß | **nicht umsetzen** — offenlegen (§ 9.4) |
 | **G6** | **Nicht monetisierbare Wirkungen.** Kein Freitextfeld für Komfort, Versorgungssicherheit, Arbeitssicherheit. | VALERI verlangt eine qualitative Beschreibung im Bewertungsbericht. | Feld + Berichtsbaustein | **umgesetzt W5‑B‑12** — Freitextfeld (§ 10.5) |
@@ -315,9 +315,10 @@ Migrationsschritt 72).
 
 ### 9.1 G9 — die Empfehlungsregel
 
-Maßstab ist die **Kapitalwertdifferenz zum Stamm** (`KapitalwertDiff`), nicht der
-absolute Kapitalwert: Der Stamm ist die Unterlassensalternative (§ 7.1,
-Referenzfall).
+Maßstab ist die **Kapitalwertdifferenz zur gewählten Referenz** (`KapitalwertDiff`), nicht der
+absolute Kapitalwert: Die Referenz ist die Unterlassensalternative (§ 7.1, Referenzfall). Seit
+#358 ist sie je Vergleichsgruppe wählbar; ohne Wahl gilt das Stammprojekt. **Nachzuziehen:** Die
+Ressource `WIRT_EMPF_KEINE` nennt weiterhin das Stammprojekt.
 
 | Stufe | Bedingung |
 |---|---|
@@ -327,8 +328,8 @@ Referenzfall).
 | Zusatz **„Bandbreite nicht berechnet"** | Best oder Worst fehlt → Urteil allein nach Erwartet |
 
 **Gesamtvorschlag:** die höchste Erwartet-Differenz unter den *empfohlenen*, sonst
-unter den *bedingt empfohlenen*, sonst der Satz „Keine Variante ist gegenüber dem
-Stammprojekt wirtschaftlich; Weiterbetrieb (Referenzfall)." Ohne Variante mit
+unter den *bedingt empfohlenen*, sonst der Satz „Keine Variante ist gegenüber der
+Referenz wirtschaftlich; Weiterbetrieb (Referenzfall)." Ohne Variante mit
 Erwartet-Ergebnis bleibt der Text **leer** — ein Vorschlag ohne Zahlen wäre eine
 Behauptung.
 
@@ -462,8 +463,10 @@ Nicht_Monetaer                MEMO   → TEXT (ohne Längenprüfung, Freitext, G
   Kapitalwerte sinken dann leicht — gewollt, denn der bisherige Ausweis war der zu
   günstige. Projekte ohne Ersatzbeschaffung bleiben zahlengleich. Der Referenzlauf ist
   nicht berührt.
-* **Zielstand:** `SchemaStand.Zielversion = 72`. Systemimmanent weist
-  `ProjektExportImportCtrl` damit `.wpx`-Pakete auf Stand 71 ab.
+* **Zielstand dieser Etappe:** `SchemaStand.Zielversion = 72`. Systemimmanent weist
+  `ProjektExportImportCtrl` damit `.wpx`-Pakete auf Stand 71 ab. Der **heutige** Schemastand ist
+  ein anderer (19.09.2026: Zielversion 96, neue Schritte ab 97) — die 72 beziffert, womit diese
+  Etappe abgeschlossen wurde, nicht den Stand des Programms.
 
 ### 10.4 Parametersatz und Dialog (Teil b)
 
@@ -559,8 +562,8 @@ beschreibt weiterhin den gebauten Stand W5‑B‑9 bis W5‑B‑12.
   vollständigen Sätze kommen (Rahmen, Trägerpreise, Erlössätze, Mengenfaktor), sagt ein
   Hinweis unter der Annahmentafel der Seite genau das; Wortlaut im konsolidierten Konzept
   § 2.11.7. Die Statuszeile aus § 5 bleibt daneben bestehen.
-* **K-8 / V-1 — Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite** statt
-  eines achten Knopfes. Die Ergebnisansicht bringt den kumulierten Barwert der Differenz
+* **K8 / V-1 — Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite** statt
+  eines weiteren Knopfes. Die Ergebnisansicht bringt den kumulierten Barwert der Differenz
   mit allen drei Szenarien in einem Bild (Farbe = Variante, Strichart = Szenario) auf die
   Seite; der Knopf „Verlauf…" entfällt damit. Bis dahin gilt § 7.1 unverändert: Der
   Verlaufsdialog rechnet ein Szenario je Lauf mit frei wählbarem Horizont.
@@ -570,3 +573,25 @@ beschreibt weiterhin den gebauten Stand W5‑B‑9 bis W5‑B‑12.
   Umsetzung eine Wertfassung. Was formelfähig ist und was dauerhaft Wert bleibt, steht als
   Stufenplan im konsolidierten Konzept § 2.11.6; Stufe 0 ist ein Parameterblock aus
   echten Zellen — genau die Größen aus § 2 und § 4 dieses Papiers, je Szenario ein Satz.
+  **Die Stufen 0 bis 3 zählt § 2.11.6 des konsolidierten Konzepts; hier ist nur Stufe 0
+  beschrieben.**
+
+### 11.1 Zuordnung der Etappen W5‑B‑9…W5‑B‑12 zu V-A…V-E
+
+Das konsolidierte Konzept führt für dieselbe Arbeit die Reihe **V-A…V-E** (§ 2.11.4). Damit
+niemand zweimal baut:
+
+| hier | konsolidiertes Konzept | Stand |
+|---|---|---|
+| **W5‑B‑9** Parametersatz je Szenario (§ 2, Migrationsschritt 71) | Teil von **V-E** (vollständige Szenarioabdeckung) | gebaut — V-E bleibt für Rahmen, Trägerpreise, Erlössätze, Mengenfaktor offen |
+| **W5‑B‑10** VALERI-Abgleich (§ 7) | Grundlage der Gap-Tafel **V-G1…V-G12** (§ 2.11.2) | gebaut |
+| **W5‑B‑11** Umsetzung der Entscheidungen (§ 9) | **V-B** ≡ Etappe „VG" der Statuszeile **#358** (wählbare Referenz, Schemaschritt 92) | gebaut |
+| **W5‑B‑12** Preisindizierung p_I und Freitext (§ 10, Migrationsschritt 72) | Teil von **V-E** (p_I) und **V-G11** (Freitext) | gebaut — von V-G11 fehlen Kategorie und Beurteilung |
+| — | **V-A** Ausweis, **V-C** ValERI-Ansicht, **V-D** XLSX-Formelbericht | offen |
+
+**Nummernvorsicht:** Die Lückennummern `G1…G11` dieses Papiers und `V-G1…V-G12` des
+konsolidierten Konzepts meinen bei gleicher Ziffer Verschiedenes (G2 Preisänderung je Kostenart
+gegen V-G2 Degradation; G6 nicht monetisierbare Wirkungen gegen V-G6 Sensitivität; G11
+investitionsgekoppelte Betriebskosten gegen V-G11 nicht monetisierbare Wirkungen). Die
+Übersetzungstafel steht am Anfang von § 2.11.2 des konsolidierten Konzepts, das als führende
+Fassung die `V-G`-Nummern setzt.
