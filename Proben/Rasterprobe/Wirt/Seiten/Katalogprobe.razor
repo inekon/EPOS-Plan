@@ -31,6 +31,7 @@
     {
         case "klima":
             <KlimadatenDialog Regionen="@KlimaRegionen" Ansicht="@KlimaAnsicht"
+                              AnsichtMitAusschnitt="@KlimaAnsichtMitAusschnitt"
                               Filterstandvorgabe="@_filterstand"
                               Importieren="@KlimaImport" Loeschen="@(n => Task.FromResult(true))"
                               Ortsvorschlaege="@_orte" Geschlossen="@(b => { })" />
@@ -136,17 +137,28 @@
     // DASSELBE Bild wie die Windows-Huelle: ChartRenderer.Jahresgang mit
     // 8 760 Stundenwerten, 1 304 x 440 px. Die MASSE entscheiden hier - ein
     // kleineres Ersatzbild verfehlte genau den Befund.
-    private static byte[] Diagrammbild()
+    private static byte[] Diagrammbild(Diagrammbereich? bereich = null)
     {
         var werte = new double[8760];
         for (int i = 0; i < werte.Length; i++)
             werte[i] = 10.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0)
                      + 4.0 * Math.Sin(2 * Math.PI * i / 24.0);
 
+        // KL-8: DERSELBE Weg wie in der Windows-Huelle - aus dem aufgezogenen
+        // Rechteck rechnet der Kern das Achsenfenster. Nur so misst die Probe,
+        // was der Anwender sieht: die Leiste mit dem Knopf "Bereich" ueber dem
+        // Bild, und nach dem Zug ein neu gezeichnetes Bild derselben Masse.
+        ChartRenderer.Achsenfenster? fenster = bereich == null
+            ? null
+            : ChartRenderer.FensterAusBild(
+                new ChartRenderer.Bildausschnitt(bereich.XVon, bereich.XBis,
+                                                 bereich.YVon, bereich.YBis),
+                werte.Length);
+
         return ChartRenderer.Jahresgang(
             "Jahrestemperatur Verlauf",
             new[] { new ChartRenderer.Reihe("Temperatur", werte, ChartRenderer.C_AUSSENTEMPERATUR) },
-            "Stunde des Jahres", "Temperatur [°C]");
+            "Stunde des Jahres", "Temperatur [°C]", false, fenster);
     }
 
     // -------------------------------------------------------------- Klima
@@ -184,10 +196,19 @@
          + " Zone " + (i % 15 + 1) + " (" + (i + 1).ToString("D2") + ")";
 
     private Task<KlimadatenDialog.Regionsansicht> KlimaAnsicht(string name)
+        => KlimaAnsichtMitAusschnitt(name, null, null);
+
+    /// <summary>
+    /// Der Weg MIT Zeitausschnitt (KL-8) — er belegt im Dialog den Knopf „Bereich"
+    /// und zeichnet beide Bilder je fuer sich neu.
+    /// </summary>
+    private Task<KlimadatenDialog.Regionsansicht> KlimaAnsichtMitAusschnitt(
+        string name, Diagrammbereich? temperatur, Diagrammbereich? sonnenwinkel)
         => Task.FromResult(new KlimadatenDialog.Regionsansicht(
             "TRY-Datensatz " + name + ", Deutscher Wetterdienst, Bezugsjahr 2015",
             9.18, 48.77,
-            _mitBildern ? _bild : null, _mitBildern ? _bild : null,
+            _mitBildern ? (temperatur == null ? _bild : Diagrammbild(temperatur)) : null,
+            _mitBildern ? (sonnenwinkel == null ? _bild : Diagrammbild(sonnenwinkel)) : null,
             _mitBildern ? "" : "Keine Daten vorhanden."));
 
     private Task<KlimaImportErgebnis> KlimaImport(KlimaImportAuftrag auftrag,

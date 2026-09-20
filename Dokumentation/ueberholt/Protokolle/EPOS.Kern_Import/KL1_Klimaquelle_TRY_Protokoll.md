@@ -659,3 +659,98 @@ Rechenweg berührt, Referenzlauf byte-gleich gegen die geltende Basis.
   Regionsliste nennt in der Spalte „Quelle" Jahr **und** Szenario („DWD-Testreferenzjahr aus
   Datei · 2045 · sommerwarm"), das Detailfeld führt den Bezugszeitraum wörtlich mit. Eine
   Datei ohne Bezugszeitraum im Kopf bleibt ohne Jahr.
+
+
+---
+
+## 14. Nachtrag KL-8 — Zoom und Zeitausschnitt der zwei Klimadiagramme
+
+**Auftrag (Anwender, 20.09.2026, zum Bildschirmbild Administration → Klimadaten):**
+„Chart soll Zoom/Ausschnitt möglich sein (wie andere Charts)."
+
+### 14.1 Befund
+
+Der Bildzoom war längst da: Beide Bilder stehen im Hausbaustein `ChartBild` → `Diagramm`
+und tragen damit Rad, Ziehen, Kneifgeste, Doppelklick und die Tasten `+ − 0`; die Leiste
+darüber zeigte „×1 · 1:1".
+
+Was fehlte, war der **Datenzoom** — der Knopf „Bereich", das aufgezogene Rechteck und ein
+vom Kern **neu gezeichnetes** Bild mit Zeitausschnitt. Er erscheint nur, wo
+`Diagramm.BereichGewaehlt` belegt ist, und `KlimadatenDialog` belegte weder ihn noch
+`Zurueckgesetzt`. Dahinter lag die eigentliche Lücke: `ChartRenderer.Jahresgang` war die
+**einzige** Ganglinienmethode ohne `Achsenfenster` — `Jahresverlauf`, `Temperaturverlauf`,
+`Speicherbetrieb`, `GanglinieNormiert` und `ErzeugerStapel` führen ihn seit W11b‑B‑24.
+
+### 14.2 Kern
+
+`Jahresgang(titel, reihen, xTitel, yTitel, minimumNull = false, Achsenfenster fenster = null)`.
+
+Zugeschnitten wird **ganz oben**, wie im `Verlaufsbild`: Skala, Raster und Linien beziehen
+sich danach auf den Ausschnitt; `fenster.YAnteil` senkt die Obergrenze wie bei
+`Jahresverlauf`, die Null bleibt unten stehen (dieses Bild trägt sie immer).
+
+**Die x-Achse wechselt im Fenster auf `XAchseFenster`** — wirkliche Jahresstunden samt dem
+Achsentitel `CHART_ACHSE_JAHRESSTUNDEN` — statt der festen Monatsteilung 0…12. Das ist
+**nicht** die Monatsbruchteil-Achse, die der Auftragsentwurf vorgeschlagen hatte, sondern
+die Hausregel jedes zugeschnittenen Bildes (Kommentar an `XAchseFenster`: „im Fenster zählt
+die Achse IMMER Jahresstunden, auch wenn das Bild sonst Monatsgrenzen trägt"). Eine zweite
+Achsenkonvention hätte dieselbe Frage an zwei Stellen verschieden beantwortet; der
+Monatsbruchteil („3,5" für Mitte April) ist zudem schwerer zu lesen als die Stundenzahl.
+
+**Mit `fenster == null` bleibt jedes Bild byte-gleich.** Nachgemessen: Alle 69 Bilder der
+ChartProben sind vor und nach der Änderung Byte für Byte dieselben; nur das neue kommt
+hinzu.
+
+### 14.3 Oberfläche und Hülle
+
+`KlimadatenDialog` bekommt den **optionalen** Delegaten
+`AnsichtMitAusschnitt(Name, Bereich Temperatur, Bereich Sonnenwinkel)` neben dem
+bisherigen `Ansicht`. Nur wenn er belegt ist, tragen die beiden `ChartBild`
+`BereichGewaehlt` und `Zurueckgesetzt` — sonst fehlt der Knopf „Bereich", und es bleibt
+beim Bildzoom. Ein Knopf, der nichts neu zeichnen kann, wäre eine Behauptung; dieselbe
+Regel hält die Streuwolke des Wärmepumpenreiters.
+
+**Jeder Reiter führt seinen eigenen Ausschnitt** (`_bereichTemperatur`,
+`_bereichSonnenwinkel`): Temperatur und Sonnenwinkel zeigen verschiedene Größen. Ein
+Regionswechsel und ein erfolgreicher Import verwerfen beide — ein Ausschnitt der alten
+Reihe hat für die neue keine Bedeutung.
+
+`KlimadatenHuelle.Ansicht(name, temperaturbereich, sonnenwinkelbereich)` rechnet je Bild
+`ChartRenderer.FensterAusBild` — dieselbe eine Stelle, die `GebaeudeHuelle`,
+`StromganglinieHuelle`, `WaermebedarfExternHuelle` und `SimulationErgebnisHuelle` nehmen;
+ein gemeinsamer Helfer war deshalb nicht anzulegen. Die bisherige Fassung `Ansicht(name)`
+ruft die neue mit `null, null` und bleibt als `Gaben()["Ansicht"]` stehen.
+
+`Proben/Rasterprobe/Wirt/Seiten/Katalogprobe.razor` belegt den neuen Delegaten mit
+demselben synthetischen Bild und rechnet das Fenster auf demselben Weg.
+
+### 14.4 Nachweise
+
+- **ChartProben:** 71 Bilder, 0 Verstöße (69 → 71: Probe `klimadaten_temperatur_fenster`
+  für Maße und Determinismus, Gegenprobe `jahresgang_fenster` dafür, dass das Fenster
+  überhaupt wirkt). Die 69 bestehenden PNG sind byte-gleich zum Stand davor.
+- **`EPOS.Kern.Tests/ChartRendererTests`** +1:
+  `Jahresgang_zeichnet_den_Zeitausschnitt_und_laesst_das_Jahr_unberuehrt` — Nullfall
+  byte-gleich zum Aufruf ohne Parameter, Fenster wirkt, zwei Fenster ergeben zwei Bilder,
+  Maß bleibt 1 304 × 440.
+- **`EPOS.UI.Tests/Dialoge/KlimadatenDialogTests`** +4: ohne Delegat nur „1:1"; mit Delegat
+  „Bereich · 1:1" an **beiden** Reitern; der gemeldete Bereich geht unverändert an den
+  Platz des **gezeigten** Reiters, und „1:1" verwirft nur diesen; der Regionswechsel
+  verwirft beide.
+- **Katalogprobe im Browser** (Chromium, 1 180 × 780, Maske `klima`, 35 Regionen):
+  12/12 Fälle ohne Überlagerung (Rückgabe 0). Zusätzlich gemessen: Die Leiste über dem
+  Bild trägt „Bereich" und „1:1" in **beiden** Reitern, überschneidet das Bild mit 0 px²,
+  ein aufgezogenes Rechteck liefert ein **anderes** PNG, und „1:1" stellt genau das
+  vorherige wieder her.
+- **Windows-Schale** `EnableWindowsTargeting=true`: 0 Fehler.
+- **Kein Rechenweg, kein Schema** — Referenzlauf byte-gleich gegen die geltende Basis.
+
+### 14.5 Windows-Abnahmepunkt
+
+- **A-KL8-1** — Administration → Klimadaten, eine Region mit Stundenwerten wählen: Über dem
+  Temperaturdiagramm stehen „×1", „Bereich" und „1:1". Rad und Ziehen vergrößern das Bild
+  wie zuvor. „Bereich" drücken und ein Rechteck über einige Wochen aufziehen: Die Kurve
+  wird für diesen Zeitausschnitt **neu gezeichnet**, die x-Achse zählt darin Jahresstunden.
+  „1:1" stellt das ganze Jahr wieder her. Der Reiter „Sonnenwinkel" verhält sich genauso und
+  führt seinen **eigenen** Ausschnitt; ein Wechsel der Region zeigt in beiden Reitern wieder
+  das ganze Jahr.

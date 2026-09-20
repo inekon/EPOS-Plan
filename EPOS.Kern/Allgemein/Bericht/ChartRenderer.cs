@@ -900,9 +900,30 @@ namespace WindowsFormsApplication1
         /// der Bestand. Die Vorgabe <c>false</c> lässt jeden bisherigen Aufruf
         /// unverändert.</para>
         /// </param>
+        /// <param name="fenster">
+        /// DATENZOOM (Anwenderwunsch KL‑8, 20.09.2026: „Chart soll Zoom/Ausschnitt möglich
+        /// sein (wie andere Charts)"): der Zeitausschnitt, den der Anwender im Bild
+        /// aufgezogen hat; <c>null</c> = das ganze Jahr und damit Bild für Bild das des
+        /// Bestands. Zugeschnitten wird ZUERST — Skala, Raster und Linien beziehen sich
+        /// danach auf den Ausschnitt, genau wie es <see cref="Verlaufsbild"/> hält.
+        ///
+        /// <para><b>Die x-Achse wechselt im Fenster auf die WIRKLICHEN Jahresstunden</b>
+        /// (<see cref="XAchseFenster"/>). Das ist die Hausregel jedes zugeschnittenen
+        /// Bildes: Die feste Monatsteilung 0…12 sagt im Ausschnitt nichts mehr — in einem
+        /// Fenster von Stunde 3 100 bis 3 400 läge keine einzige Monatsgrenze —, die
+        /// Stunde schon. Mit ihr wechselt auch der Achsentitel auf
+        /// <c>CHART_ACHSE_JAHRESSTUNDEN</c>; <paramref name="xTitel"/> steht nur in der
+        /// Vollansicht.</para>
+        ///
+        /// <para>Der SENKRECHTE Anteil (<see cref="Achsenfenster.YAnteil"/>) senkt die
+        /// Obergrenze wie bei <see cref="Jahresverlauf"/>; die Untergrenze bleibt, wo sie
+        /// ist. Dieses Bild trägt die Null IMMER (siehe unten), sie ist also da, auf die
+        /// man den Zug beziehen kann.</para>
+        /// </param>
         public static byte[] Jahresgang(string titel, IReadOnlyList<Reihe> reihen,
                                         string xTitel, string yTitel,
-                                        bool minimumNull = false)
+                                        bool minimumNull = false,
+                                        Achsenfenster fenster = null)
         {
             int W = 1304, H = 440;
             using (var flaeche = Start(W, H))
@@ -916,6 +937,12 @@ namespace WindowsFormsApplication1
                     .Where(r => r != null && r.Werte != null && r.Werte.Length >= 2 &&
                                 r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w)))
                     .ToList();
+
+                // KL-8: Der Zuschnitt steht GANZ oben - alles darunter rechnet mit dem
+                // Ausschnitt, ohne davon zu wissen. gesamt merkt sich die volle Laenge;
+                // die Achsenbeschriftung nennt Jahresstunden, nicht Fensterstunden.
+                int gesamt = gueltig.Count > 0 ? gueltig[0].Werte.Length : 0;
+                if (fenster != null) gueltig = Brauchbare(Zugeschnitten(gueltig, fenster));
 
                 var rc = SKRect.Create(110f, 130f, W - 150f, 240f);
 
@@ -934,6 +961,7 @@ namespace WindowsFormsApplication1
                 // dieselbe Rechnung wie in KapitalwertVerlauf und Kostenprofil.
                 double min = minimumNull ? 0.0 : gueltig.Min(r => r.Werte.Min());
                 double max = gueltig.Max(r => r.Werte.Max());
+                if (fenster != null && fenster.YAnteil > 0) max *= fenster.YAnteil;
                 if (min > 0) min = 0;              // die Null gehoert ins Bild
                 if (max < 0) max = 0;
                 if (max - min < 1e-9) { max = min + 1; }
@@ -962,24 +990,35 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                // x-Achse: Monatsgrenzen 0…12, Abstand 1 (AxisX.Interval = 1).
-                using (var punktiert = SKPathEffect.CreateDash(new[] { 2f, 4f }, 0f))
-                using (var raster = Strich(SKColors.Gainsboro, 1f))
-                using (var f = Schrift(15f))
+                // x-Achse: Monatsgrenzen 0…12, Abstand 1 (AxisX.Interval = 1). Im
+                // FENSTER stehen dort die wirklichen Jahresstunden (KL-8, Regel des
+                // zugeschnittenen Bildes) - eine Monatsgrenze traegt im Ausschnitt
+                // keine Aussage mehr.
+                if (fenster == null)
                 {
-                    raster.PathEffect = punktiert;
-                    for (int m = 0; m <= 12; m++)
+                    using (var punktiert = SKPathEffect.CreateDash(new[] { 2f, 4f }, 0f))
+                    using (var raster = Strich(SKColors.Gainsboro, 1f))
+                    using (var f = Schrift(15f))
                     {
-                        float x = rc.Left + m / 12f * rc.Width;
-                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = m.ToString(DE);
-                        float breite = f.MeasureText(lab);
-                        Text(g, lab, f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
+                        raster.PathEffect = punktiert;
+                        for (int m = 0; m <= 12; m++)
+                        {
+                            float x = rc.Left + m / 12f * rc.Width;
+                            g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
+                            string lab = m.ToString(DE);
+                            float breite = f.MeasureText(lab);
+                            Text(g, lab, f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
+                        }
                     }
                 }
+                else XAchseFenster(g, rc, fenster, gesamt);
+
                 using (var f = Schrift(15f))
                 {
-                    Text(g, xTitel ?? "", f, SKColors.DimGray, rc.Right + 10f, rc.Bottom + 8f);
+                    // Im Fenster steht der Achsentitel schon da - mittig unter der
+                    // Achse und mit dem Wort "Jahresstunde" (XAchseFenster).
+                    if (fenster == null)
+                        Text(g, xTitel ?? "", f, SKColors.DimGray, rc.Right + 10f, rc.Bottom + 8f);
                     Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
                 }
 

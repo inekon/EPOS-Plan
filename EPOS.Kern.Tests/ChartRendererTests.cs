@@ -445,5 +445,45 @@ namespace EPOS.Kern.Tests
                 new ChartRenderer.Reihe("kurz", new double[1], ChartRenderer.C_QUELLTEMPERATUR)
             }, "Monat", "Temperatur"));
         }
+
+        /// <summary>
+        /// DER ZEITAUSSCHNITT (Anwenderwunsch KL-8): Mit Fenster zeichnet der Jahresgang
+        /// ein ANDERES Bild — dasselbe Mass, dieselbe Gestalt, aber die zugeschnittene
+        /// Reihe und die Jahresstunden auf der x-Achse. OHNE Fenster bleibt er Bild fuer
+        /// Bild das des Bestands; das ist die Zusage an jeden bisherigen Aufrufer und an
+        /// die ChartProben, die Bilder vergleichen.
+        /// </summary>
+        [Fact]
+        public void Jahresgang_zeichnet_den_Zeitausschnitt_und_laesst_das_Jahr_unberuehrt()
+        {
+            List<ChartRenderer.Reihe> reihen = Jahresgangreihen();
+
+            byte[] ganz = ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat", "Temperatur");
+            byte[] ohneFenster = ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat",
+                                                          "Temperatur", false, null);
+            Assert.Equal(ganz, ohneFenster);
+
+            var fenster = new ChartRenderer.Achsenfenster(2900, 3400);
+            byte[] teil = ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat",
+                                                   "Temperatur", false, fenster);
+            byte[] teilZweimal = ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat",
+                                                          "Temperatur", false, fenster);
+
+            Assert.NotEqual(ganz, teil);
+            Assert.Equal(teil, teilZweimal);
+
+            using (SKBitmap bild = SKBitmap.Decode(teil))
+            {
+                Assert.Equal(1304, bild.Width);
+                Assert.Equal(440, bild.Height);
+            }
+
+            // Ein anderer Ausschnitt ergibt ein anderes Bild - sonst waere das Fenster
+            // still uebergangen.
+            byte[] anderer = ChartRenderer.Jahresgang(
+                "Jahresgang", reihen, "Monat", "Temperatur", false,
+                new ChartRenderer.Achsenfenster(100, 600));
+            Assert.NotEqual(teil, anderer);
+        }
     }
 }

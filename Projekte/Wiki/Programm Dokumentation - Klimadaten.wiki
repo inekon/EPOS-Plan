@@ -14,6 +14,13 @@ Die Spalte ''Quelle'' nennt neben der Herkunft auch das '''Bezugsjahr''' und das
 
 ''Löschen'' entfernt die gewählte Region samt ihren Stunden- und Tageswerten, nach einer Rückfrage. Regionen der Auslieferung sind schreibgeschützt und bleiben stehen.
 
+== Die zwei Diagramme ==
+{{Anker|diagramme}}
+
+Rechts stehen die Stundenwerte der gewählten Region als Kurve – im Reiter ''Temperatur'' die Außentemperatur, im Reiter ''Sonnenwinkel'' der Sonnenstand, beide über dem ganzen Jahr.
+
+Über jedem Bild steht eine kleine Leiste. Mit dem Mausrad, mit Ziehen und mit den Tasten ''+'', ''−'' und ''0'' vergrößern und verschieben Sie das Bild; die Leiste zeigt links die Vergrößerung an. ''Bereich'' schaltet auf das Aufziehen eines Zeitausschnitts um: Ziehen Sie ein Rechteck über die Stelle, die Sie sehen wollen, und die Kurve wird für diesen Ausschnitt neu gezeichnet – die Achse zählt darin die Stunden des Jahres. ''1:1'' stellt das ganze Jahr wieder her. Beide Reiter führen ihren Ausschnitt getrennt; ein Wechsel der Region zeigt wieder das ganze Jahr.
+
 == Klimaquelle ==
 {{Anker|klimaquelle}}
 
