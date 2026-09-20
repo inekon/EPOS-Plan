@@ -34,6 +34,8 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -88,9 +90,16 @@
         <Schalter Bezeichnung="@LabelSortiert" Wert="@_sortiert" WertChanged="SortiertGesetzt" />
     </div>
 
-    <ChartBild Png="@Bild" Alt="@Bildtext" PlatzhalterText="@PlatzhalterBild"
-               BereichGewaehlt="BereichGewaehlt"
-               Zurueckgesetzt="@(() => _bereich = null)" />
+    @* Der Zoom liegt im Bild (Etappe DG-E3, Gruppe (a)): Ein Zeitausschnitt ist die
+       viewBox der Zeichenflaeche, „1:1" holt das ganze Jahr zurueck. *@
+    <DiagrammSvg Modell="@Modell" Kennung="gebaeude-bedarf" Bezeichnung="@Bildtext"
+                 PlatzhalterText="@PlatzhalterBild" Einheit="kW"
+                 Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
+                 XEinheit="@(_sortiert ? "" : "h")"
+                 Palette="@Farbpalette.Aktuell"
+                 FarbwahlErlaubt="@Farbwahl"
+                 FarbeGewaehlt="FarbeUebernehmen"
+                 FarbeZurueckgesetzt="FarbeVerwerfen" />
 
     @* ---- Die Monatsuebersicht ------------------------------------------- *@
     @if (Daten.MonatswerteMwh.Count >= 12)
@@ -125,13 +134,14 @@
 
     /// <summary>
     /// Liefert die Jahresganglinie als PNG — erster Parameter die Schalterstellung
-    /// „sortiert" (Dauerlinie), zweiter der aufgezogene Bildausschnitt (Datenzoom;
-    /// <c>null</c> = das ganze Jahr). Ohne Delegat bleibt der Platzhalter stehen.
+    /// „sortiert" (Dauerlinie). Ohne Delegat bleibt der Platzhalter stehen.
     ///
-    /// <para>Gezeichnet wird im Kern (<c>ChartRenderer.GanglinieNormiert</c>) — diese
-    /// Bibliothek ruft keinen Renderer (Risiko R‑W8‑2).</para>
+    /// <para>Gerechnet wird im Kern (<c>ChartRenderer.GanglinieNormiertModell</c>) —
+    /// diese Bibliothek ruft keinen Renderer (Risiko R‑W8‑2). Ein zweiter Parameter
+    /// für den aufgezogenen Bildausschnitt stand hier bis zur Etappe DG-E3; der
+    /// Zeitausschnitt liegt seither im Bild (DG-E3-9).</para>
     /// </summary>
-    [Parameter] public Func<bool, Diagrammbereich?, byte[]?>? Bildauftrag { get; set; }
+    [Parameter] public Func<bool, Zeichenmodell?>? Bildauftrag { get; set; }
 
     /// <summary>
     /// Die ANZEIGEEINHEIT beim Öffnen — MWh (Vorgabe) oder kWh (Anwenderentscheid
@@ -180,14 +190,10 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
     private bool _sortiert;
-    private Diagrammbereich? _bereich;
     private Energieeinheit _einheit = Energieeinheit.MWh;
 
     /// <summary>Steht der Schalter „sortiert"? Prüfhilfe für die Tests.</summary>
     public bool Sortiert => _sortiert;
-
-    /// <summary>Der aufgezogene Ausschnitt; <c>null</c> = ganzes Jahr. Prüfhilfe.</summary>
-    public Diagrammbereich? Bereich => _bereich;
 
     /// <summary>Die gewählte Anzeigeeinheit — Prüfhilfe für die Tests.</summary>
     public Energieeinheit Anzeigeeinheit => _einheit;
@@ -269,40 +275,34 @@
     // =================================================================================
 
     /// <summary>
-    /// Die gezeichneten Bilder, nach Schalterstellung und Ausschnitt getrennt. Ohne den
-    /// Zwischenspeicher zeichnete der Kern bei JEDEM Zeichendurchgang ein 1 240 × 560
-    /// grosses PNG neu — dasselbe Muster wie <c>SimulationErgebnisSeite._bilder</c>.
+    /// Die gerechneten Zeichenmodelle, nach Schalterstellung getrennt.
+    ///
+    /// <para><b>Der Zwischenspeicher ist hier mehr als eine Ersparnis:</b> Der
+    /// Baustein <c>DiagrammSvg</c> baut seinen Knotenbaum nur neu, wenn die REFERENZ
+    /// des Modells wechselt. Ein Modell, das je Zeichenlauf neu entstünde, verwürfe
+    /// mit dem Baum auch Zoom, Zeigerstelle und abgewählte Reihen.</para>
     /// </summary>
-    private readonly Dictionary<string, byte[]?> _bilder = new Dictionary<string, byte[]?>();
+    private readonly Dictionary<bool, Zeichenmodell?> _modelle
+        = new Dictionary<bool, Zeichenmodell?>();
 
-    private byte[]? Bild
+    private Zeichenmodell? Modell
     {
         get
         {
             if (Bildauftrag is null) return null;
+            if (_modelle.TryGetValue(_sortiert, out Zeichenmodell? vorhanden)) return vorhanden;
 
-            string schluessel = (_sortiert ? "1|" : "0|") + (_bereich?.ToString() ?? "");
-            if (_bilder.TryGetValue(schluessel, out byte[]? vorhanden)) return vorhanden;
-
-            byte[]? neu = Bildauftrag(_sortiert, _bereich);
-            _bilder[schluessel] = neu;
+            Zeichenmodell? neu = Bildauftrag(_sortiert);
+            _modelle[_sortiert] = neu;
             return neu;
         }
     }
 
     /// <summary>
-    /// Ein Schalterwechsel verwirft den Achsenausschnitt: Ganglinie und Dauerlinie
-    /// tragen an derselben Stelle des Bildes verschiedene Stunden, und ein
-    /// mitgeschleppter Ausschnitt zeigte danach etwas anderes, als der Anwender
-    /// aufgezogen hat.
+    /// Ganglinie und Dauerlinie sind zwei Bilder; der Schalter tauscht das Modell,
+    /// und mit ihm beginnt der Zoom des Bildes von vorn.
     /// </summary>
-    private void SortiertGesetzt(bool wert)
-    {
-        _sortiert = wert;
-        _bereich = null;
-    }
-
-    private void BereichGewaehlt(Diagrammbereich bereich) => _bereich = bereich;
+    private void SortiertGesetzt(bool wert) => _sortiert = wert;
 
     // =================================================================================
 

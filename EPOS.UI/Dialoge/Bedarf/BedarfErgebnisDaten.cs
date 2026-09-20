@@ -1,4 +1,5 @@
 ﻿using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -75,10 +76,15 @@ public sealed class BedarfErgebnisDaten
     public IReadOnlyList<Monatssicht> Sichten { get; set; } = Array.Empty<Monatssicht>();
 
     /// <summary>
-    /// Der Jahresverlauf des Brauchwassers (8 760 Stunden) als fertiges Bild; <c>null</c> =
-    /// der Schalter „Jahresverlauf" erscheint nicht.
+    /// Der Jahresverlauf des Brauchwassers (8 760 Stunden) als ZEICHENMODELL;
+    /// <c>null</c> = der Schalter „Jahresverlauf" erscheint nicht.
+    ///
+    /// <para>Es ist ein Bild mit Zeitachse und steht deshalb seit der Etappe DG-E3,
+    /// Gruppe (a), im Baustein <c>DiagrammSvg</c>: Zoom auf der Zeitachse, Werte am
+    /// Mauszeiger, schaltbare Legende. Die MONATSSÄULEN daneben bleiben ein
+    /// Pixelbild — sie zählen zwölf Monate, keine Stunden.</para>
     /// </summary>
-    public byte[]? JahresverlaufBild { get; set; }
+    public Zeichenmodell? JahresverlaufModell { get; set; }
 
     /// <summary>
     /// Die GANGLINIE hinter dem Grafikreiter — Woche und Tag (Anwenderwunsch W8‑E‑2 der
@@ -142,10 +148,14 @@ public sealed class Ganglinienquelle
     public int Tage { get; init; } = 365;
 
     /// <summary>
-    /// Liefert das Bild zu einer Stufe und einer NULLBASIERTEN Nummer;
+    /// Liefert das ZEICHENMODELL zu einer Stufe und einer NULLBASIERTEN Nummer;
     /// <c>null</c> = kein Bild, die Anzeige zeigt ihren Platzhalter.
+    ///
+    /// <para>Der Navigator bleibt: Er wählt den AUSSCHNITT, den die Hülle rechnet
+    /// (eine Woche, einen Tag). Der Zoom IM Bild (DG-E3) kommt oben drauf — er
+    /// verschiebt die <c>viewBox</c> innerhalb dieses Ausschnitts.</para>
     /// </summary>
-    public Func<Gangstufe, int, byte[]?>? Bild { get; init; }
+    public Func<Gangstufe, int, Zeichenmodell?>? Modell { get; init; }
 }
 
 /// <summary>

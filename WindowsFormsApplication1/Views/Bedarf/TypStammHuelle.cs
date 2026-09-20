@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dialoge.Erzeuger;
 using Microsoft.AspNetCore.Components;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -204,7 +206,9 @@ namespace WindowsFormsApplication1
                 // Die Vorpruefung des Namens (Befund W8-B-2): Sie haelt die Namensabfrage
                 // offen, statt den belegten Namen bis in das INSERT laufen zu lassen.
                 ["Existiert"] = new Func<string, bool>(name => TypProfilCtrl.TypExists(art, name)),
-                ["Bild"] = new Func<double[], byte[]>(Wochenbild),
+                ["Bild"] = new Func<double[], Zeichenmodell>(Wochenbild),
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
                 ["TitelText"] = ProfilTitel(art),
                 ["LabelTypliste"] = ProfilListenBeschriftung(art),
@@ -247,13 +251,40 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Das 168-Stunden-Bild. Intervall 24 = Tagesgrenzen, wörtlich aus
-        /// <c>ChartAktualisieren</c> (<c>xAchse.Interval = 24</c>).
+        /// Das 168-Stunden-Bild als ZEICHENMODELL (Etappe DG-E3, Gruppe (a)).
+        /// Intervall 24 = Tagesgrenzen, wörtlich aus <c>ChartAktualisieren</c>
+        /// (<c>xAchse.Interval = 24</c>).
+        ///
+        /// <para>Auf der x-Achse zählt hier der INDEX der Reihe, nicht die
+        /// Jahresstunde: Die Fläche geht von 0 bis n, die Reihe von 1 bis n — Wert
+        /// <c>i</c> steht am rechten Rand seines Fachs (Protokoll DG-E3, „Was x je
+        /// Bild bedeutet").</para>
         /// </summary>
-        private static byte[] Wochenbild(double[] werte)
-            => ChartRenderer.Stundenprofil("", werte, 24,
+        private static Zeichenmodell Wochenbild(double[] werte)
+            => ChartRenderer.StundenprofilModell("", werte, 24,
                    Text_("BPRO_ACHSE_X", "Wochenstunde (1..168)"),
                    Text_("BPRO_ACHSE_Y", "Verteilung"));
+
+        // =================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags: Die Rolle bekommt
+        /// anwendungsweit diese Farbe — Bildschirm wie Bericht.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
+        }
 
         internal static string ProfilTitel(BedarfsArt art)
         {

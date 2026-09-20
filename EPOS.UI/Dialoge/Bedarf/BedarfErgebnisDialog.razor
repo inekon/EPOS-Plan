@@ -51,6 +51,8 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -195,7 +197,10 @@
                                       StufeWocheText="@StufeWocheText"
                                       StufeTagText="@StufeTagText"
                                       MarkeFormat="@MarkeFormat"
-                                      PlatzhalterText="@PlatzhalterBild">
+                                      PlatzhalterText="@PlatzhalterBild"
+                                      Kennung="bedarf-gang"
+                                      FarbeSetzen="@FarbeSetzen"
+                                      FarbeZuruecksetzen="@FarbeZuruecksetzen">
                         <JahresInhalt>
                             @if (Daten.Sichten.Count > 1)
                             {
@@ -212,7 +217,27 @@
                                           WertChanged="JahresverlaufUmschalten" />
                             }
 
-                            <ChartBild Png="@Bild" Alt="@Bildtext" PlatzhalterText="@PlatzhalterBild" />
+                            @* ZWEI BILDARTEN AUF EINEM BLATT: Der JAHRESVERLAUF traegt
+                               eine Zeitachse und steht deshalb im SVG-Baustein (Etappe
+                               DG-E3, Gruppe (a)); die MONATSSAEULEN zaehlen zwoelf
+                               Monate und bleiben ein Pixelbild. *@
+                            @if (JahresverlaufMoeglich && _jahresverlauf)
+                            {
+                                <DiagrammSvg Modell="@Daten.JahresverlaufModell"
+                                             Kennung="bedarf-jahresverlauf"
+                                             Bezeichnung="@Bildtext" Einheit="kW"
+                                             PlatzhalterText="@PlatzhalterBild"
+                                             Achsenart="Achsenart.Jahresstunde"
+                                             Palette="@Farbpalette.Aktuell"
+                                             FarbwahlErlaubt="@(FarbeSetzen is not null)"
+                                             FarbeGewaehlt="FarbeUebernehmen"
+                                             FarbeZurueckgesetzt="FarbeVerwerfen" />
+                            }
+                            else
+                            {
+                                <ChartBild Png="@Bild" Alt="@Bildtext"
+                                           PlatzhalterText="@PlatzhalterBild" />
+                            }
                         </JahresInhalt>
                     </BedarfGangGrafik>
                 </KindInhalt>
@@ -431,22 +456,22 @@
     /// <c>checkBox_MonatJahr.Visible</c> in jedem anderen Zweig auf <c>false</c> setzt.
     /// </summary>
     private bool JahresverlaufMoeglich
-        => Daten.JahresverlaufBild is not null
+        => Daten.JahresverlaufModell is not null
            && _sichtGrafik >= 0 && _sichtGrafik < Daten.Sichten.Count
            && Daten.Sichten[_sichtGrafik].IstBrauchwasser;
 
     /// <summary>
-    /// Das gerade gezeigte Bild: Monatssäulen oder der Jahresverlauf.
+    /// Die MONATSSÄULEN der gewählten Sicht — das Pixelbild dieses Blattes.
     ///
-    /// <para>Die Säulen gibt es in zwei Fassungen, eine je Einheit — ein PNG lässt
-    /// sich nicht umrechnen, und die Komponente ruft keinen Renderer. Der
-    /// Jahresverlauf zeigt eine LEISTUNG in kW und bleibt davon unberührt.</para>
+    /// <para>Es gibt sie in zwei Fassungen, eine je Einheit: Ein PNG lässt sich nicht
+    /// umrechnen, und die Komponente ruft keinen Renderer. Der JAHRESVERLAUF steht
+    /// daneben als Zeichenmodell (<see cref="BedarfErgebnisDaten.JahresverlaufModell"/>)
+    /// und geht diesen Weg nicht.</para>
     /// </summary>
     private byte[]? Bild
     {
         get
         {
-            if (JahresverlaufMoeglich && _jahresverlauf) return Daten.JahresverlaufBild;
             if (_sichtGrafik < 0 || _sichtGrafik >= Daten.Sichten.Count) return null;
 
             Monatssicht sicht = Daten.Sichten[_sichtGrafik];

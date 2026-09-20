@@ -77,6 +77,8 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -192,8 +194,17 @@
 
             <Reiterblatt Schluessel="GRAFIK" Titel="@ReiterGrafik">
                 <KindInhalt>
-                    <ChartBild Png="@_bild" Alt="@GruppeStunden"
-                               PlatzhalterText="@PlatzhalterBild" />
+                    @* Das Wochen-Stundenprofil im SVG-Baustein (Etappe DG-E3,
+                       Gruppe (a)): x zaehlt hier den INDEX der Reihe, 1 … 168, keine
+                       Jahresstunde. *@
+                    <DiagrammSvg Modell="@_modell" Kennung="typprofil"
+                                 Bezeichnung="@GruppeStunden"
+                                 PlatzhalterText="@PlatzhalterBild"
+                                 Achsenart="Achsenart.Index"
+                                 Palette="@Farbpalette.Aktuell"
+                                 FarbwahlErlaubt="@Farbwahl"
+                                 FarbeGewaehlt="FarbeUebernehmen"
+                                 FarbeZurueckgesetzt="FarbeVerwerfen" />
                 </KindInhalt>
             </Reiterblatt>
 
@@ -282,8 +293,11 @@
     /// </summary>
     [Parameter] public Func<string, bool>? Existiert { get; set; }
 
-    /// <summary>Zeichnet die 168 Wochenwerte; ohne Delegat bleibt das Blatt leer.</summary>
-    [Parameter] public Func<double[], byte[]>? Bild { get; set; }
+    /// <summary>
+    /// Rechnet das Zeichenmodell der 168 Wochenwerte; ohne Delegat bleibt das Blatt
+    /// leer.
+    /// </summary>
+    [Parameter] public Func<double[], Zeichenmodell?>? Bild { get; set; }
 
     /// <summary>Der Dialog wurde geschlossen („Beenden"/Esc) — immer <c>true</c>.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
@@ -366,7 +380,7 @@
     private int _tag;
     private readonly double?[] _felder = new double?[TypProfilDaten.STUNDEN];
     private double?[]? _puffer;
-    private byte[]? _bild;
+    private Zeichenmodell? _modell;
 
     private bool _namensfrage;
     private bool _alsKopie;
@@ -458,7 +472,7 @@
         for (int s = 0; s < TypProfilDaten.STUNDEN; s++) _felder[s] = werte[s];
     }
 
-    private void BildNeu() => _bild = Bild?.Invoke(Daten.Wochenreihe());
+    private void BildNeu() => _modell = Bild?.Invoke(Daten.Wochenreihe());
 
     // =================================================================================
     // Übernehmen, Kopierpuffer

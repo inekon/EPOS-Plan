@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Bedarf;
 using SkiaSharp;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -136,14 +138,14 @@ namespace WindowsFormsApplication1
             {
                 Wochen = Math.Max(1, belegt / (168 * jeStunde)),
                 Tage = Math.Max(1, belegt / (24 * jeStunde)),
-                Bild = (stufe, nummer) =>
+                Modell = (stufe, nummer) =>
                 {
                     int schritt = (stufe == Gangstufe.Woche ? 168 : 24) * jeStunde;
                     int von = nummer * schritt;
                     if (von < 0 || von >= belegt) return null;
                     int bis = Math.Min(belegt, von + schritt);
 
-                    return ChartRenderer.Jahresverlauf(titel, werte, yTitel, FARBE_STROM,
+                    return ChartRenderer.JahresverlaufModell(titel, werte, yTitel, FARBE_STROM,
                         new ChartRenderer.Achsenfenster(von, bis));
                 }
             };
@@ -163,7 +165,7 @@ namespace WindowsFormsApplication1
                       Text_("BERG_BILD_GEBAEUDE", "Gebäudewärme"), FARBE_GEBAEUDE)
             };
 
-            byte[] jahresbild = null;
+            Zeichenmodell jahresmodell = null;
             if (mitBrauchwasser)
             {
                 sichten.Add(Sicht(Text_("BERG_OPT_BRAUCHWASSER", "Brauchwasser"),
@@ -171,7 +173,7 @@ namespace WindowsFormsApplication1
                                   Text_("BERG_BILD_BRAUCHWASSER", "Brauchwasserwärme"),
                                   FARBE_BRAUCHWASSER, istBrauchwasser: true));
 
-                jahresbild = ChartRenderer.Jahresverlauf(
+                jahresmodell = ChartRenderer.JahresverlaufModell(
                     Text_("BERG_BILD_JAHR", "Jahresübersicht"),
                     AlsDouble(simulation.brauchwasserwerte),
                     Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]"), FARBE_JAHR);
@@ -183,7 +185,7 @@ namespace WindowsFormsApplication1
                 MitBrauchwasser = mitBrauchwasser,
                 StartReiter = startReiter,
                 TitelZusatz = titelZusatz ?? "",
-                JahresverlaufBild = jahresbild,
+                JahresverlaufModell = jahresmodell,
                 Kennzahlen = new[]
                 {
                     // DIESELBE GLIEDERUNG WIE BEIM STROM (Anwenderwunsch W8-E-2, hier
@@ -275,6 +277,11 @@ namespace WindowsFormsApplication1
                 ["StufeTagText"] = Text_("BERG_STUFE_TAG", "Tag"),
                 ["MarkeFormat"] = Text_("BERG_GANG_MARKE", "{2} {0} von {1}"),
                 ["Monatsnamen"] = Monatsnamen(),
+                // Die Farbe einer Reihe gilt ANWENDUNGSWEIT (Farbrollen, Bedienung
+                // Teil 2): Diagrammfarben schreibt sie ueber EinstellungenCtrl, und
+                // schon das naechste Bild traegt sie - Bildschirm wie Bericht.
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["HilfeSchluessel"] = hilfeSchluessel
             };
@@ -394,6 +401,28 @@ namespace WindowsFormsApplication1
             try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        // =================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags landet hier: Die Rolle
+        /// bekommt anwendungsweit diese Farbe, und danach trägt sie jedes Diagramm
+        /// und jeder Bericht — beide malen über dieselbe Palette.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
         }
     }
 }
