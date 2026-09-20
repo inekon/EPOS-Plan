@@ -269,6 +269,7 @@ Datenzoom bis dahin überall zu haben.
 | **E2 SVG-Ausgabe und Baustein für EINE Art** — *umgesetzt (#404): Der Klimadialog zeigt seine zwei Jahresgänge als SVG; Zoom, Verschieben, Rechteck, Werte am Mauszeiger, Legendenschalter und Farbwahl laufen im Browser, ohne einen einzigen Rundlauf in den Kern, und kein PNG hat sich um ein Byte geändert. Der Rundlauf-Datenzoom (KL-8) ist an dieser Stelle ersatzlos entfallen.* | `SvgSchreiber` (Modell → Text; inneres `<svg>` in Datenkoordinaten, `text-anchor`, `vector-effect`), `ChartRenderer.JahresgangModell` (das Modell statt `byte[]`), Baustein `EPOS.UI/Bausteine/DiagrammSvg.razor` (Razor-Elemente aus dem Modell, Legende schaltbar, Zeigerzeile, Bereich → `Achsenfenster` **ohne** Kernaufruf), `epos-diagramm.js` mit viewBox-Modus (dieselben Handler, zusätzlich Nachladen ab dem Vierfachen). Erste Stelle: **Klimadialog** (`KlimadatenHuelle`, `Regionsansicht` führt zwei Modelle; die PNG-Fassung bleibt für den Bericht). `ChartProben` bekommt die SVG-Gegenprobe (byte-gleich, Knotenzahl) | bunit: Pfade, Texte, Legendenschalter, Zeigerzeile, Fall ohne Gaben; SvgProbe-Sollwerte; **Abnahme am Gerät** A-DG-1 (Windows 125 % DPI und iPad: Zoom, Kneifen, Zeigerzeile, Text scharf) | **M** |
 | **E3 Rollout je Diagrammart** — *umgesetzt (#406–#411, #413): alle 26 Diagrammarten haben ein Modell (Kern (a) #406, (b) #408, (c) #409, die vier Berichtsbilder (d) #407), alle 41 Bildstellen der Oberfläche stehen im Baustein `DiagrammSvg` (Oberfläche (a) #411, (b)+(c) #413); `ChartBild`, `Diagramm`, `Diagrammbereich` und der CSS-Transform-Modus sind entfernt. Entscheide DG‑E3‑1 bis DG‑E3‑13 im Protokoll `DG_E3_Rollout_Protokoll.md`.* | in dieser Reihenfolge: (a) Zeitreihen der Ergebnisreiter (`Jahresverlauf`, `GanglinieNormiert`, `ErzeugerStapel`, `Temperaturverlauf`, `Speicherbetrieb`, `Kostenprofil`, `Stundenprofil`) — ersetzt den Rundlauf-Datenzoom dort; (b) `KapitalwertVerlauf`, `Jahresprojektion`, `Kennlinien`, `Streuwolke`, `Schnittkurve`, `Stueckzahlkurve`; (c) `MonatsSaeulen`, `MonatsStapel`, `StrombilanzMonate`, `BalkenHorizontal`, `Optimierungsraster`; (d) `Kuchen`, `Ring` (ohne Interaktion, nur Schärfe und Text). Je Auftrag eine Gruppe; `ChartBild` bleibt, bis die letzte PNG-Stelle umgestellt ist, dann entfällt der Bildzoom per CSS-Transform | je Gruppe bunit, ChartProben (PNG unverändert), Gerät | 4 × S–M |
 | **E4 Bericht** — *zur Hälfte umgesetzt (#407, #410): Der Wortbericht bettet jedes Diagramm als SVG mit PNG-Rückfall ein (DG‑E3‑8, revidiert DG‑Q3); der Excelbericht bettet keine Grafik ein, einen eigenen PDF-Weg gibt es nicht — ein PDF entsteht aus Word und erbt dessen Bild.* | Zwei Wahlpunkte offen: die PNG-Linien auf **gebündelt** umstellen (heute jeder n-te; das ändert die Bilder bewusst, neue Hash-Messlatte mit dem Datum des Tages, ChartProben bleibt grün, weil sie Struktur prüft); im Bericht den **gezoomten Ausschnitt** drucken, wenn der Anwender ihn gesetzt hat (Achsenfenster ins Modell, Bildauftrag des Berichts) | Hash-Messlatte neu, Sichtprüfung eines Berichts | S |
+| **E5 Farbrollen Teil 3** — *umgesetzt (#418)*: jede Reihe trägt eine Farbrolle (54 Rollen in sechs Gruppen), die Simulationsreiter zeigen die Hausfarben des Berichts, jeder Legendeneintrag hat einen Wähler; Wache gegen feste Farbwerte in Hüllen, Controllern und Schalen-Views | Messlatte unverändert (91/91), Prüfseite ohne Reihe ohne Wähler, DS‑13 | S |
 
 Gesamt: **L** — rund neun Aufträge, keiner größer als M, jeder für sich abnehmbar; der
 Bericht ändert sich bis E4 nicht um ein Byte. Ein iOS-Lauf ist nur für E2 begründet (Abnahme
@@ -286,7 +287,7 @@ Anwenderentscheidung, keine Pflicht).
 | **DG-Q5** | Pfadart: roh bis 8 760 Stützstellen, gebündelt darüber und ab vier Reihen, Nachladen ab dem Vierfachen — oder immer gebündelt (kleiner, Nachladen früher)? | **Regel wie in Abschnitt 5**; sie steht als eine Konstante im Modell und lässt sich am Gerät nachziehen | **Pfadregel als eine Konstante im Modell** (20.09.2026) |
 | **DG-Q6** | Zeitpunkt: E0/E1 sofort nach dem Merge von KL-8 und DL-3 beginnen — oder E1 aufschieben, bis DL-3 den Datenzoom überall über den Rundlauf ausgerollt hat? | **Nach dem Merge beginnen**, DL-3 nicht über sein Inventar hinaus in den Rundlauf investieren: Jede weitere Rundlauf-Verdrahtung ist Doppelarbeit gegen E3 | **Beginn sofort nach dem Merge von KL-8**; **DL-3 verworfen** — der Rundlauf-Datenzoom der vier weiteren Stellen kommt mit E3 (20.09.2026) |
 | **DG-Q7** | Farben: die Palette fest im Renderer — oder je Reihe und Größe eine benannte Farbrolle, die anwendungsweit tauschbar ist? | **Farbrollen.** Der Befehl trägt eine Rolle, nicht eine Zahl; die Palette löst sie beim Malen auf. Ein Tausch erreicht damit alle 26 Bilder und den Bericht, ohne dass eine Zeichenmethode angefasst wird | **benannte Farbrollen, anwendungsweit tauschbare Palette; der Bericht folgt** (20.09.2026) |
-| **DG-Q8** | Legende: Bleibt eine Reihe mit fest gerechneter Farbe ohne Wähler („Sonstiges" der Prüfseite) — oder bekommt jede Reihe einen Wähler? | Jede Reihe bekommt einen Wähler; dafür trägt jede Reihe eine Farbrolle (vorhandene Rollen für geteilte Größen, neue Rollen mit den bisherigen Farben als Vorgabe für Heizstab, Warmwasser, Speicherladung, Überschuss, Erzeugung gesamt, Speicherfüllstand, BHKW‑Strom); die Simulationsreiter zeigen dann die Hausfarben des Berichts (§ 9, Teil 3) | **jede Reihe wird änderbar** (Anwenderwunsch 20.09.2026); Umsetzung als Welle DG‑E5 offen, sichtbare Farbänderung rückgefragt |
+| **DG-Q8** | Legende: Bleibt eine Reihe mit fest gerechneter Farbe ohne Wähler („Sonstiges" der Prüfseite) — oder bekommt jede Reihe einen Wähler? | Jede Reihe bekommt einen Wähler; dafür trägt jede Reihe eine Farbrolle (vorhandene Rollen für geteilte Größen, neue Rollen mit den bisherigen Farben als Vorgabe für Heizstab, Warmwasser, Speicherladung, Überschuss, Erzeugung gesamt, Speicherfüllstand, BHKW‑Strom); die Simulationsreiter zeigen dann die Hausfarben des Berichts (§ 9, Teil 3) | **jede Reihe wird änderbar** (Anwenderwunsch 20.09.2026), **umgesetzt #418 (DG‑E5)**: 54 Rollen, Hülle, Kern-Bilder und Schalen-Hüllen auf Rollen, Wache gegen feste Farbwerte; die Farbänderung der Reiter war erläutert und angenommen |
 
 Kein Wiki-Logbuch-Satz für E1 selbst: Der Umbau hinter dem Renderer ist unsichtbar. Der Satz
 zur **Farbwahl** steht unter Abschnitt 9, der zur ersten umgestellten Maske entsteht mit E2
@@ -298,7 +299,7 @@ Aus DG-Q7 wird eine Bedienung: **Die Farbe einer Größe ist anwendungsweit eins
 
 **Rolle.** Ein Zeichenbefehl trägt keine Farbzahl, sondern einen `Farbton` — eine
 `Farbrolle` (`WAERME_WP`, `STROM_PV`, `SPEICHER_3`, `RASTER`, …) und wahlweise eine Abwandlung
-(andere Deckung, oder eine im Layout gerechnete Farbe mit ihrer Herkunftsrolle). Vierzig
+(andere Deckung, oder eine im Layout gerechnete Farbe mit ihrer Herkunftsrolle). Vierundfünfzig
 Rollen in sechs Gruppen: Allgemein, Erzeuger und Bedarf, Varianten, Speicher, Profile und
 Temperaturen, Rasterkarte.
 
@@ -326,25 +327,25 @@ Ein Klick auf den **Namen** einer Reihe blendet sie aus und wieder ein (der Eint
 lesbar, nur gedämpft), ein Klick auf das **Farbfeld** daneben öffnet den Farbwähler unmittelbar
 am Bild — Systemwähler, Hexfeld, Hausfarbenmuster und „Hausfarbe". Der Eintrag ist
 fokussierbar; Eingabe und Leertaste schalten, Umschalt + Eingabe öffnet den Wähler. Eine Reihe
-mit fest gerechneter Farbe ohne Rolle bekommt keinen Wähler — bis DG‑Q8 (Teil 3) umgesetzt ist. Ein Klick auf ein anderes Farbfeld
+mit im Layout gerechneter Farbe führt ihre Herkunftsrolle, und ihr Farbfeld öffnet den Wähler
+dieser Rolle. Ein Klick auf ein anderes Farbfeld
 wechselt den Wähler mit einem Klick, ein zweiter Klick auf dasselbe schließt ihn; ein Klick ins
 Bild oder daneben schließt ihn ebenso. Dasselbe Bild in neuer Instanz — ein Zeichenlauf des
 Wirtes nach einer Farbwahl oder ein neuer Rechenlauf — behält Ausschnitt, ausgeblendete Reihen
 und den offenen Wähler; erst ein anderes Bild setzt sie zurück.
 
-**Bedienung, Teil 3 (Anwenderentscheid 20.09.2026, DG‑Q8 — Umsetzung offen).** Jede Reihe bekommt
-einen Wähler, auch eine, deren Farbe bislang fest gerechnet ist („Sonstiges" der Prüfseite). Die
-Ausnahme aus Teil 2 entfällt damit. Voraussetzung ist, dass jede Reihe eine Farbrolle trägt — die
-Simulationshülle gibt ihren Reihen heute feste Farben aus dem WinForms-Vorbild, von denen keine
-eine Hausfarbe ist; zwei treffen zufällig fremde Rollen (Blau die Profillinie, Sattelbraun Speicher 4).
-Empfehlung zur Umsetzung: Wo es die Größe schon gibt (Heizkessel, BHKW, Solar, Photovoltaik,
-Wärmepumpe, Bedarf, Rest, Netz), nimmt die Hülle die vorhandene Rolle — die Reiter zeigen dann
-dieselben Hausfarben wie der Bericht; für Größen ohne Rolle (Heizstab, Warmwasser, Speicherladung,
-Überschuss, Erzeugung gesamt, Speicherfüllstand, BHKW‑Strom) kommen neue Rollen mit ihren bisherigen
-Farben als Vorgabe in Palette und Einstellungen. Eine im Layout gerechnete Farbe führt ihre
-Herkunftsrolle, und ihr Farbfeld öffnet den Wähler dieser Rolle. Eine Wache hält die Hüllen frei von
-festen Farbwerten; die Prüfseite zeigt danach keine Reihe ohne Wähler mehr. Die sichtbare
-Farbänderung in den Reitern ist beim Anwender rückgefragt; Umsetzung als eigene Welle (DG‑E5).
+**Bedienung, Teil 3 (umgesetzt #418, Anwenderentscheid DG‑Q8).** Jede Reihe trägt eine
+Farbrolle, und jeder Legendeneintrag hat einen Wähler. Eine `Reihe` des Renderers nennt ihren
+`Farbton` statt einer Farbzahl; die Simulationshülle, die Kern-Bilder (Lastspitzenkappung,
+Speicherbetrieb, Flottenanzeige) und die Hüllen der Schale übergeben Rollen — wo es die Größe
+schon gibt (Heizkessel, BHKW, Solar, Photovoltaik, Wärmepumpe, Bedarf, Rest, Netz) die vorhandene,
+sonst eine der vierzehn neuen Rollen mit ihrer bisherigen Farbe als Vorgabe (Heizstab, Heizwärme,
+Warmwasser, Prozesswärme, BHKW‑Strom, Überschuss, Erzeugung gesamt, Verbrauch gesamt,
+Speicherladung, Speicherfüllstand, Strom aus Speicher, Netz ohne und mit Speicher, Sonnenwinkel).
+Die Simulationsreiter zeigen damit dieselben Hausfarben wie der Bericht. Die Wache
+`DiagrammfarbenWacheTests` hält Hüllen, Controller und Schalen-Views frei von festen Farbwerten;
+die Prüfseite zeigt keine Reihe ohne Wähler. Feste Werte bleiben nur den Ringsegmenten der
+Übersicht (keine Reihen, keine SVG-Legende).
 Geschrieben wird über
 `Diagrammfarben.Setze`/`Zuruecksetzen` in denselben Einstellungsschlüssel wie in der
 Administration — **nur die Abweichungen**, und `Uebernehmen()` speist die Palette sofort. Die

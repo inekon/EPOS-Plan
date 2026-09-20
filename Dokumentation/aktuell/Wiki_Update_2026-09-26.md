@@ -13,7 +13,7 @@ Hilfesystem 13.3).
 | Wiki-Seite | Repo-Quelle | Was sich geändert hat | Quelle |
 |---|---|---|---|
 | Programm Dokumentation/Klimadaten | `Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki` | neue Seite: Quellenwahl PVGIS/DWD-Testreferenzjahr, Standort aus dem Dateikopf, Regionsvorschau, durchsuchbare Liste mit Quelle/Bezugsjahr/Szenario, Diagrammzoom | Statuszeilen #367, #368, #369, #371, #382, #396, #404, #413 |
-| Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende) | Statuszeilen #403, #411, #413 |
+| Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts | Statuszeilen #403, #411, #413, #418 |
 | Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen) | Statuszeilen #411, #413, #417 |
 | Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Ansichten); wächst mit den Wellen KI‑F2 bis F6 | Statuszeile #416 |
 | Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt | Statuszeilen #372, #405, #413 |
@@ -56,11 +56,13 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
 - Seit 26.09.2026: Der Hilfe-Assistent kann die Erzeugermasken des Projekts lesen, ausfüllen
   und speichern (Heizkessel, BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe,
   Photovoltaik). (#416)
+- Seit 26.09.2026: Jeder Legendeneintrag eines Diagramms hat ein Farbfeld; die
+  Simulationsreiter zeigen dieselben Farben wie der Bericht, und die Einstellungen führen dafür
+  54 Größen. (#418)
 
-*Nachzutragen, sobald die laufenden Wellen gemergt sind:* DG‑E5 (jede Reihe eines Diagramms
-bekommt einen Farbwähler; die Simulationsreiter zeigen die Hausfarben des Berichts) und die
-weiteren Freigabewellen des Assistenten (KI‑F2 bis F6 — ein Satz je Welle, die Maskenliste der
-Seite Hilfe-Assistent wächst mit). Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
+*Nachzutragen, sobald die laufenden Wellen gemergt sind:* die weiteren Freigabewellen des
+Assistenten (KI‑F2 bis F6 — ein Satz je Welle, die Maskenliste der Seite Hilfe-Assistent wächst
+mit). Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.
 
 *Zurückgestellt gegenüber den Rohentwürfen:* der engere Klimadaten-Satz aus #404 und die
@@ -147,10 +149,8 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
 - Der KI-Assistent bekommt die Masken mit Einstellwerten in sechs Wellen (Statuszeile #416,
   KI‑D‑Q5); je Welle wächst die Maskenliste der Seite Hilfe-Assistent, und ein Logbuch-Satz
   kommt dazu.
-- DG‑E5 (jede Reihe eines Diagramms bekommt einen Farbwähler, Konzept Diagramme DG‑Q8): Nach
-  dem Merge fällt auf der Seite Simulationsergebnisse der Satz „Kurven, deren Farbe das
-  Programm selbst ausrechnet, tragen kein Farbfeld", und die Farbänderung der Simulationsreiter
-  bekommt einen Logbuch-Satz.
+- DG‑E5 (Statuszeile #418) ist gemergt: Die Seite Simulationsergebnisse sagt jetzt „Jede Kurve
+  und jede Fläche trägt ein Farbfeld", der Logbuch-Satz steht oben.
 - Ältere, mit „Version offen“ oder „Version 1.2.0.1“/„1.2.0.2“ vorbereitete Logbuch-Sätze aus
   Statuszeilen vor #358 sind für dieses Papier nicht erneut geprüft; vor dem Hochladen klären,
   ob sie in einer früheren Runde schon veröffentlicht wurden oder noch offen sind.
