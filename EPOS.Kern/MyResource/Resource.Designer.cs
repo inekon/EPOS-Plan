@@ -8366,11 +8366,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Wärmeerzeugung ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_ERZEUGUNG_GESAMT {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_ERZEUGUNG_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Feinraster ähnelt.
         /// </summary>
         public static string DGF_ROLLE_FEINRASTER {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_FEINRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizwärme ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_HEIZWAERME {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_HEIZWAERME", resourceCulture);
             }
         }
         
@@ -8402,6 +8429,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug mit Speicher ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_NETZ_MIT_SPEICHER {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_NETZ_MIT_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug ohne Speicher ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_NETZ_OHNE_SPEICHER {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_NETZ_OHNE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profilfläche ähnelt.
         /// </summary>
         public static string DGF_ROLLE_PROFILFLAECHE {
@@ -8416,6 +8461,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DGF_ROLLE_PROFILLINIE {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_PROFILLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_PROZESSWAERME {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_PROZESSWAERME", resourceCulture);
             }
         }
         
@@ -8564,6 +8618,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenwinkel ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SONNENWINKEL {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SONNENWINKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherfüllstand ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SPEICHERFUELLSTAND {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SPEICHERFUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherladung ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SPEICHERLADUNG {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SPEICHERLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicher 1 ähnelt.
         /// </summary>
         public static string DGF_ROLLE_SPEICHER_1 {
@@ -8627,6 +8708,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Strom ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_STROM_BHKW {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_STROM_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug ähnelt.
         /// </summary>
         public static string DGF_ROLLE_STROM_NETZ {
@@ -8645,11 +8735,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom aus Speicher ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_STROM_SPEICHER {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_STROM_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Text ähnelt.
         /// </summary>
         public static string DGF_ROLLE_TEXT {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromüberschuss ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_UEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_UEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Stromverbrauch ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_VERBRAUCH_GESAMT {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_VERBRAUCH_GESAMT", resourceCulture);
             }
         }
         
@@ -8686,6 +8803,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DGF_ROLLE_WAERME_WP {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_WAERME_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warmwasser ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_WARMWASSER {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_WARMWASSER", resourceCulture);
             }
         }
         

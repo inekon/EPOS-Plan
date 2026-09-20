@@ -126,7 +126,10 @@ namespace WindowsFormsApplication1.Zeichnung
             {
                 Farbrolle.WAERME_WP, Farbrolle.WAERME_BHKW, Farbrolle.WAERME_KESSEL,
                 Farbrolle.WAERME_SOLAR, Farbrolle.STROM_PV, Farbrolle.STROM_NETZ,
-                Farbrolle.REST, Farbrolle.BEDARF, Farbrolle.STAMM
+                Farbrolle.REST, Farbrolle.BEDARF, Farbrolle.STAMM,
+                Farbrolle.HEIZSTAB, Farbrolle.HEIZWAERME, Farbrolle.WARMWASSER,
+                Farbrolle.PROZESSWAERME, Farbrolle.STROM_BHKW, Farbrolle.UEBERSCHUSS,
+                Farbrolle.ERZEUGUNG_GESAMT, Farbrolle.VERBRAUCH_GESAMT
             }),
             new Rollengruppe("VARIANTEN", MyResource.Resource.DGF_GRUPPE_VARIANTEN, new List<Farbrolle>
             {
@@ -136,12 +139,16 @@ namespace WindowsFormsApplication1.Zeichnung
             new Rollengruppe("SPEICHER", MyResource.Resource.DGF_GRUPPE_SPEICHER, new List<Farbrolle>
             {
                 Farbrolle.SPEICHER_1, Farbrolle.SPEICHER_2, Farbrolle.SPEICHER_3,
-                Farbrolle.SPEICHER_4, Farbrolle.SPEICHER_5, Farbrolle.SPEICHER_6
+                Farbrolle.SPEICHER_4, Farbrolle.SPEICHER_5, Farbrolle.SPEICHER_6,
+                Farbrolle.SPEICHERLADUNG, Farbrolle.SPEICHERFUELLSTAND,
+                Farbrolle.STROM_SPEICHER, Farbrolle.NETZ_OHNE_SPEICHER,
+                Farbrolle.NETZ_MIT_SPEICHER
             }),
             new Rollengruppe("PROFILE", MyResource.Resource.DGF_GRUPPE_PROFILE, new List<Farbrolle>
             {
                 Farbrolle.KOSTENPROFIL, Farbrolle.PROFILFLAECHE, Farbrolle.PROFILLINIE,
-                Farbrolle.QUELLTEMPERATUR, Farbrolle.AUSSENTEMPERATUR, Farbrolle.ERSATZJAHR
+                Farbrolle.QUELLTEMPERATUR, Farbrolle.AUSSENTEMPERATUR, Farbrolle.ERSATZJAHR,
+                Farbrolle.SONNENWINKEL
             }),
             new Rollengruppe("RASTERKARTE", MyResource.Resource.DGF_GRUPPE_RASTERKARTE, new List<Farbrolle>
             {
@@ -517,6 +524,14 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.REST,             MyResource.Resource.DGF_ROLLE_REST },
                 { Farbrolle.BEDARF,           MyResource.Resource.DGF_ROLLE_BEDARF },
                 { Farbrolle.STAMM,            MyResource.Resource.DGF_ROLLE_STAMM },
+                { Farbrolle.HEIZSTAB,         MyResource.Resource.DGF_ROLLE_HEIZSTAB },
+                { Farbrolle.HEIZWAERME,       MyResource.Resource.DGF_ROLLE_HEIZWAERME },
+                { Farbrolle.WARMWASSER,       MyResource.Resource.DGF_ROLLE_WARMWASSER },
+                { Farbrolle.PROZESSWAERME,    MyResource.Resource.DGF_ROLLE_PROZESSWAERME },
+                { Farbrolle.STROM_BHKW,       MyResource.Resource.DGF_ROLLE_STROM_BHKW },
+                { Farbrolle.UEBERSCHUSS,      MyResource.Resource.DGF_ROLLE_UEBERSCHUSS },
+                { Farbrolle.ERZEUGUNG_GESAMT, MyResource.Resource.DGF_ROLLE_ERZEUGUNG_GESAMT },
+                { Farbrolle.VERBRAUCH_GESAMT, MyResource.Resource.DGF_ROLLE_VERBRAUCH_GESAMT },
 
                 { Farbrolle.SERIE_1,          MyResource.Resource.DGF_ROLLE_SERIE_1 },
                 { Farbrolle.SERIE_2,          MyResource.Resource.DGF_ROLLE_SERIE_2 },
@@ -533,6 +548,11 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.SPEICHER_4,       MyResource.Resource.DGF_ROLLE_SPEICHER_4 },
                 { Farbrolle.SPEICHER_5,       MyResource.Resource.DGF_ROLLE_SPEICHER_5 },
                 { Farbrolle.SPEICHER_6,       MyResource.Resource.DGF_ROLLE_SPEICHER_6 },
+                { Farbrolle.SPEICHERLADUNG,   MyResource.Resource.DGF_ROLLE_SPEICHERLADUNG },
+                { Farbrolle.SPEICHERFUELLSTAND, MyResource.Resource.DGF_ROLLE_SPEICHERFUELLSTAND },
+                { Farbrolle.STROM_SPEICHER,   MyResource.Resource.DGF_ROLLE_STROM_SPEICHER },
+                { Farbrolle.NETZ_OHNE_SPEICHER, MyResource.Resource.DGF_ROLLE_NETZ_OHNE_SPEICHER },
+                { Farbrolle.NETZ_MIT_SPEICHER, MyResource.Resource.DGF_ROLLE_NETZ_MIT_SPEICHER },
 
                 { Farbrolle.KOSTENPROFIL,     MyResource.Resource.DGF_ROLLE_KOSTENPROFIL },
                 { Farbrolle.PROFILFLAECHE,    MyResource.Resource.DGF_ROLLE_PROFILFLAECHE },
@@ -540,6 +560,7 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.QUELLTEMPERATUR,  MyResource.Resource.DGF_ROLLE_QUELLTEMPERATUR },
                 { Farbrolle.AUSSENTEMPERATUR, MyResource.Resource.DGF_ROLLE_AUSSENTEMPERATUR },
                 { Farbrolle.ERSATZJAHR,       MyResource.Resource.DGF_ROLLE_ERSATZJAHR },
+                { Farbrolle.SONNENWINKEL,     MyResource.Resource.DGF_ROLLE_SONNENWINKEL },
 
                 { Farbrolle.RASTER_SCHLECHT,  MyResource.Resource.DGF_ROLLE_RASTER_SCHLECHT },
                 { Farbrolle.RASTER_MITTE,     MyResource.Resource.DGF_ROLLE_RASTER_MITTE },

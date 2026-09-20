@@ -20346,6 +20346,30 @@ Möchten Sie das zulassen?</value>
   <data name="DGF_ROLLE_STAMM" xml:space="preserve">
     <value>Stamm-Variante</value>
   </data>
+  <data name="DGF_ROLLE_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab</value>
+  </data>
+  <data name="DGF_ROLLE_HEIZWAERME" xml:space="preserve">
+    <value>Heizwärme</value>
+  </data>
+  <data name="DGF_ROLLE_WARMWASSER" xml:space="preserve">
+    <value>Warmwasser</value>
+  </data>
+  <data name="DGF_ROLLE_PROZESSWAERME" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="DGF_ROLLE_STROM_BHKW" xml:space="preserve">
+    <value>BHKW-Strom</value>
+  </data>
+  <data name="DGF_ROLLE_UEBERSCHUSS" xml:space="preserve">
+    <value>Stromüberschuss</value>
+  </data>
+  <data name="DGF_ROLLE_ERZEUGUNG_GESAMT" xml:space="preserve">
+    <value>Summe Wärmeerzeugung</value>
+  </data>
+  <data name="DGF_ROLLE_VERBRAUCH_GESAMT" xml:space="preserve">
+    <value>Summe Stromverbrauch</value>
+  </data>
   <data name="DGF_ROLLE_SERIE_1" xml:space="preserve">
     <value>Reihe 1</value>
   </data>
@@ -20388,6 +20412,21 @@ Möchten Sie das zulassen?</value>
   <data name="DGF_ROLLE_SPEICHER_6" xml:space="preserve">
     <value>Speicher 6</value>
   </data>
+  <data name="DGF_ROLLE_SPEICHERLADUNG" xml:space="preserve">
+    <value>Speicherladung</value>
+  </data>
+  <data name="DGF_ROLLE_SPEICHERFUELLSTAND" xml:space="preserve">
+    <value>Speicherfüllstand</value>
+  </data>
+  <data name="DGF_ROLLE_STROM_SPEICHER" xml:space="preserve">
+    <value>Strom aus Speicher</value>
+  </data>
+  <data name="DGF_ROLLE_NETZ_OHNE_SPEICHER" xml:space="preserve">
+    <value>Netzbezug ohne Speicher</value>
+  </data>
+  <data name="DGF_ROLLE_NETZ_MIT_SPEICHER" xml:space="preserve">
+    <value>Netzbezug mit Speicher</value>
+  </data>
   <data name="DGF_ROLLE_KOSTENPROFIL" xml:space="preserve">
     <value>Kostenprofil</value>
   </data>
@@ -20405,6 +20444,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="DGF_ROLLE_ERSATZJAHR" xml:space="preserve">
     <value>Ersatzjahr</value>
+  </data>
+  <data name="DGF_ROLLE_SONNENWINKEL" xml:space="preserve">
+    <value>Sonnenwinkel</value>
   </data>
   <data name="DGF_ROLLE_RASTER_SCHLECHT" xml:space="preserve">
     <value>Rasterkarte: schlecht</value>

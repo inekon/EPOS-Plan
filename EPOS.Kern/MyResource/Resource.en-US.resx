@@ -20339,6 +20339,30 @@ Do you want to allow this?</value>
   <data name="DGF_ROLLE_STAMM" xml:space="preserve">
     <value>Base variant</value>
   </data>
+  <data name="DGF_ROLLE_HEIZSTAB" xml:space="preserve">
+    <value>Immersion heater</value>
+  </data>
+  <data name="DGF_ROLLE_HEIZWAERME" xml:space="preserve">
+    <value>Space heating</value>
+  </data>
+  <data name="DGF_ROLLE_WARMWASSER" xml:space="preserve">
+    <value>Domestic hot water</value>
+  </data>
+  <data name="DGF_ROLLE_PROZESSWAERME" xml:space="preserve">
+    <value>Process heat</value>
+  </data>
+  <data name="DGF_ROLLE_STROM_BHKW" xml:space="preserve">
+    <value>CHP electricity</value>
+  </data>
+  <data name="DGF_ROLLE_UEBERSCHUSS" xml:space="preserve">
+    <value>Surplus electricity</value>
+  </data>
+  <data name="DGF_ROLLE_ERZEUGUNG_GESAMT" xml:space="preserve">
+    <value>Total heat generation</value>
+  </data>
+  <data name="DGF_ROLLE_VERBRAUCH_GESAMT" xml:space="preserve">
+    <value>Total electricity consumption</value>
+  </data>
   <data name="DGF_ROLLE_SERIE_1" xml:space="preserve">
     <value>Series 1</value>
   </data>
@@ -20381,6 +20405,21 @@ Do you want to allow this?</value>
   <data name="DGF_ROLLE_SPEICHER_6" xml:space="preserve">
     <value>Storage 6</value>
   </data>
+  <data name="DGF_ROLLE_SPEICHERLADUNG" xml:space="preserve">
+    <value>Storage charging</value>
+  </data>
+  <data name="DGF_ROLLE_SPEICHERFUELLSTAND" xml:space="preserve">
+    <value>State of charge</value>
+  </data>
+  <data name="DGF_ROLLE_STROM_SPEICHER" xml:space="preserve">
+    <value>Electricity from storage</value>
+  </data>
+  <data name="DGF_ROLLE_NETZ_OHNE_SPEICHER" xml:space="preserve">
+    <value>Grid supply without storage</value>
+  </data>
+  <data name="DGF_ROLLE_NETZ_MIT_SPEICHER" xml:space="preserve">
+    <value>Grid supply with storage</value>
+  </data>
   <data name="DGF_ROLLE_KOSTENPROFIL" xml:space="preserve">
     <value>Cost profile</value>
   </data>
@@ -20398,6 +20437,9 @@ Do you want to allow this?</value>
   </data>
   <data name="DGF_ROLLE_ERSATZJAHR" xml:space="preserve">
     <value>Replacement year</value>
+  </data>
+  <data name="DGF_ROLLE_SONNENWINKEL" xml:space="preserve">
+    <value>Solar angle</value>
   </data>
   <data name="DGF_ROLLE_RASTER_SCHLECHT" xml:space="preserve">
     <value>Grid map: poor</value>
