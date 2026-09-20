@@ -55,6 +55,19 @@
         /// <summary>Einheit einer Jahresbetriebsdauer (Auftrag #221).</summary>
         internal const string EINHEIT_H_A = "h/a";
 
+        /// <summary>
+        /// Einheit einer Nutzungsdauer in Jahren, als Zeichen (Welle KI-F1) — so steht
+        /// sie an den Feldern der Waermepumpen-Anlage.
+        /// </summary>
+        internal const string EINHEIT_JAHR = "a";
+
+        /// <summary>
+        /// Einheit einer taeglichen Stundenzahl (Welle KI-F1) — so steht sie an der
+        /// Sperrzeit der Waermepumpe, auf der deutschen wie auf der englischen
+        /// Oberflaeche.
+        /// </summary>
+        internal const string EINHEIT_H_TAG = "h/Tag";
+
         /// <summary>Einheit einer Zeitspanne in Jahren.</summary>
         internal static string EinheitJahre => MyResource.Resource.KI_DLG_EINHEIT_JAHRE;
 
@@ -99,6 +112,9 @@
         internal static string KnopfAbbrechen => MyResource.Resource.KI_DLG_KNOPF_ABBRECHEN;
         internal static string KnopfOk => MyResource.Resource.KI_DLG_KNOPF_OK;
 
+        /// <summary>Der nicht schliessende „Uebernehmen"-Knopf (Welle KI-F1).</summary>
+        internal static string KnopfUebernehmen => MyResource.Resource.SKV_BTN_UEBERNEHMEN;
+
         // ========================================================== Heizkessel: Felder
 
         internal static string HkLeistungName => MyResource.Resource.KI_DLG_HK_LEISTUNG_NAME;
@@ -134,6 +150,33 @@
         internal static string PvAnzahlName => MyResource.Resource.KI_DLG_PV_ANZAHL_NAME;
         internal static string PvAnzahlErl => MyResource.Resource.KI_DLG_PV_ANZAHL_ERL;
 
+        // Die Modellfelder und die Straenge (Welle KI-F1). Ihre Anzeigenamen sind die
+        // Beschriftungen der beiden Bausteine - dieselben Schluessel, die PvModellTexte
+        // und PvStrangTexte fuehren.
+        internal static string PvModellName => MyResource.Resource.PVM_ANLAGE_LABEL_MODELL;
+        internal static string PvModellErl => MyResource.Resource.KI_DLG_PV_MODELL_ERL;
+        internal static string PvWrWirkungsgradName => MyResource.Resource.PV_ANLAGE_LABEL_WRWIRKUNGSGRAD;
+        internal static string PvWrWirkungsgradErl => MyResource.Resource.KI_DLG_PV_WR_WIRKUNGSGRAD_ERL;
+        internal static string PvSystemverlusteName => MyResource.Resource.PV_ANLAGE_LABEL_SYSTEMVERLUSTE;
+        internal static string PvSystemverlusteErl => MyResource.Resource.KI_DLG_PV_SYSTEMVERLUSTE_ERL;
+        internal static string PvMitWrName => MyResource.Resource.PVS_WAHL;
+        internal static string PvMitWrErl => MyResource.Resource.KI_DLG_PV_MIT_WR_ERL;
+
+        internal static string PvStrangName => MyResource.Resource.PVS_SP_BEZEICHNER;
+        internal static string PvStrangErl => MyResource.Resource.KI_DLG_PV_STRANG_ERL;
+        internal static string PvStrangGeraetName => MyResource.Resource.PVS_SP_GERAET;
+        internal static string PvStrangGeraetErl => MyResource.Resource.KI_DLG_PV_STRANG_GERAET_ERL;
+        internal static string PvStrangMpptName => MyResource.Resource.PVS_SP_MPPT;
+        internal static string PvStrangMpptErl => MyResource.Resource.KI_DLG_PV_STRANG_MPPT_ERL;
+        internal static string PvStrangReiheName => MyResource.Resource.PVS_SP_REIHE;
+        internal static string PvStrangReiheErl => MyResource.Resource.KI_DLG_PV_STRANG_REIHE_ERL;
+        internal static string PvStrangParallelName => MyResource.Resource.PVS_SP_PARALLEL;
+        internal static string PvStrangParallelErl => MyResource.Resource.KI_DLG_PV_STRANG_PARALLEL_ERL;
+        internal static string PvStrangNeigungName => MyResource.Resource.PVS_SP_NEIGUNG;
+        internal static string PvStrangNeigungErl => MyResource.Resource.KI_DLG_PV_STRANG_NEIGUNG_ERL;
+        internal static string PvStrangAzimutName => MyResource.Resource.PVS_SP_AZIMUT;
+        internal static string PvStrangAzimutErl => MyResource.Resource.KI_DLG_PV_STRANG_AZIMUT_ERL;
+
         // ====================================================== Pufferspeicher: Felder
 
         internal static string PspVolumenName => MyResource.Resource.KI_DLG_PSP_VOLUMEN_NAME;
@@ -143,6 +186,113 @@
 
         internal static string WpModulkostenName => MyResource.Resource.KI_DLG_WP_MODULKOSTEN_NAME;
         internal static string WpModulkostenErl => MyResource.Resource.KI_DLG_WP_MODULKOSTEN_ERL;
+
+        // ========================================= Welle KI-F1: Erzeuger im Projekt
+        //
+        // DIE ANZEIGENAMEN SIND DIE BESCHRIFTUNGEN DER MASKE, nicht eigene KI-Texte:
+        // Es sind dieselben Ressourcenschluessel, die die Huelle in den Dialog reicht
+        // (HZKK_LBL_VORLAUF, BHKWV_LBL_GRENZLEISTUNG …). Ein zweiter Name fuer dasselbe
+        // Feld waere eine zweite Wahrheit - der Anwender liest in der Bestaetigung
+        // woertlich das, was ueber dem Eingabefeld steht. Neu ist je Feld allein die
+        // ERLAEUTERUNG (KI_DLG_<MASKE>_<FELD>_ERL).
+
+        internal static string MaskeHeizkesselProjekt => MyResource.Resource.KI_DLG_MASKE_HEIZKESSEL_PROJEKT;
+        internal static string MaskeBhkwProjekt => MyResource.Resource.KI_DLG_MASKE_BHKW;
+
+        // ------------------------------------------- Form_Heizkessel (Projektmaske)
+
+        internal static string HkpAnlageName => MyResource.Resource.HZK_LBL_NAME;
+        internal static string HkpAnlageErl => MyResource.Resource.KI_DLG_HKP_ANLAGE_ERL;
+        internal static string HkpVorlaufName => MyResource.Resource.HZKK_LBL_VORLAUF;
+        internal static string HkpVorlaufErl => MyResource.Resource.KI_DLG_HKP_VORLAUF_ERL;
+        internal static string HkpRuecklaufName => MyResource.Resource.HZKK_LBL_RUECKLAUF;
+        internal static string HkpRuecklaufErl => MyResource.Resource.KI_DLG_HKP_RUECKLAUF_ERL;
+
+        // -------------------------------------------- Form_BHKWEing (Projektmaske)
+
+        internal static string BhkwAnlageName => MyResource.Resource.BHKWV_LBL_NAME;
+        internal static string BhkwAnlageErl => MyResource.Resource.KI_DLG_BHKW_ANLAGE_ERL;
+        internal static string BhkwGrenzleistungName => MyResource.Resource.BHKWV_LBL_GRENZLEISTUNG;
+        internal static string BhkwGrenzleistungErl => MyResource.Resource.KI_DLG_BHKW_GRENZLEISTUNG_ERL;
+        internal static string BhkwVorlaufName => MyResource.Resource.BHKWV_LBL_VORLAUF;
+        internal static string BhkwVorlaufErl => MyResource.Resource.KI_DLG_BHKW_VORLAUF_ERL;
+        internal static string BhkwRuecklaufName => MyResource.Resource.BHKWV_LBL_RUECKLAUF;
+        internal static string BhkwRuecklaufErl => MyResource.Resource.KI_DLG_BHKW_RUECKLAUF_ERL;
+
+        // -------------------------------------------- Form_PufferSp (Projektmaske)
+
+        internal static string MaskePufferSpProjekt => MyResource.Resource.KI_DLG_MASKE_PUFFERSP_PROJEKT;
+        internal static string PspAnlageName => MyResource.Resource.HZK_LBL_NAME;
+        internal static string PspAnlageErl => MyResource.Resource.KI_DLG_PSPP_ANLAGE_ERL;
+
+        // ---------------------------------------- Form_Stromspeicher (Projektmaske)
+
+        internal static string MaskeStromspeicherProjekt => MyResource.Resource.KI_DLG_MASKE_STROMSPEICHER;
+        internal static string StspAnlageName => MyResource.Resource.HZK_LBL_NAME;
+        internal static string StspAnlageErl => MyResource.Resource.KI_DLG_STSP_ANLAGE_ERL;
+
+        // ------------------------------------- Form_SolarKollektoren (Projektmaske)
+
+        internal static string MaskeSolarkollektoren => MyResource.Resource.KI_DLG_MASKE_SOLARKOLLEKTOREN;
+        internal static string SkAnzahlName => MyResource.Resource.SKV_LBL_ANZAHL;
+        internal static string SkAnzahlErl => MyResource.Resource.KI_DLG_SK_ANZAHL_ERL;
+        internal static string SkNeigungName => MyResource.Resource.SKV_LBL_NEIGUNG;
+        internal static string SkNeigungErl => MyResource.Resource.KI_DLG_SK_NEIGUNG_ERL;
+        internal static string SkAzimutName => MyResource.Resource.SKV_LBL_AZIMUT;
+        internal static string SkAzimutErl => MyResource.Resource.KI_DLG_SK_AZIMUT_ERL;
+        internal static string SkVorlaufName => MyResource.Resource.SKK_LBL_VORLAUF;
+        internal static string SkVorlaufErl => MyResource.Resource.KI_DLG_SK_VORLAUF_ERL;
+        internal static string SkRuecklaufName => MyResource.Resource.SKK_LBL_RUECKLAUF;
+        internal static string SkRuecklaufErl => MyResource.Resource.KI_DLG_SK_RUECKLAUF_ERL;
+
+        // ------------------------------------------ Form_WP_Anlage (Waermepumpe)
+
+        internal static string MaskeWpAnlage => MyResource.Resource.KI_DLG_MASKE_WP_ANLAGE;
+
+        internal static string WpaAnlageName => MyResource.Resource.WPS_LBL_NAME;
+        internal static string WpaAnlageErl => MyResource.Resource.KI_DLG_WPA_ANLAGE_ERL;
+        internal static string WpaVorlaufName => MyResource.Resource.WPA_LBL_VORLAUF;
+        internal static string WpaVorlaufErl => MyResource.Resource.KI_DLG_WPA_VORLAUF_ERL;
+        internal static string WpaRuecklaufName => MyResource.Resource.WPA_LBL_RUECKLAUF;
+        internal static string WpaRuecklaufErl => MyResource.Resource.KI_DLG_WPA_RUECKLAUF_ERL;
+        internal static string WpaNutzungsdauerName => MyResource.Resource.WPA_LBL_NUTZUNGSZEIT;
+        internal static string WpaNutzungsdauerErl => MyResource.Resource.KI_DLG_WPA_NUTZUNGSDAUER_ERL;
+
+        internal static string WpaHeizstabName => MyResource.Resource.WPA_CHK_HEIZSTAB;
+        internal static string WpaHeizstabErl => MyResource.Resource.KI_DLG_WPA_HEIZSTAB_ERL;
+        internal static string WpaSperrungName => MyResource.Resource.WPA_CHK_SPERRZEIT;
+        internal static string WpaSperrungErl => MyResource.Resource.KI_DLG_WPA_SPERRUNG_ERL;
+        internal static string WpaSperrzeitVonName => MyResource.Resource.WPA_LBL_VON;
+        internal static string WpaSperrzeitVonErl => MyResource.Resource.KI_DLG_WPA_SPERRZEIT_VON_ERL;
+        internal static string WpaSperrzeitBisName => MyResource.Resource.WPA_LBL_BIS;
+        internal static string WpaSperrzeitBisErl => MyResource.Resource.KI_DLG_WPA_SPERRZEIT_BIS_ERL;
+        internal static string WpaBivalentName => MyResource.Resource.WPA_LBL_BIVALENT;
+        internal static string WpaBivalentErl => MyResource.Resource.KI_DLG_WPA_BIVALENT_ERL;
+        internal static string WpaBetriebsartName => MyResource.Resource.WPA_LBL_BETRIEBSART;
+        internal static string WpaBetriebsartErl => MyResource.Resource.KI_DLG_WPA_BETRIEBSART_ERL;
+        internal static string WpaAbschaltpunktName => MyResource.Resource.WPA_LBL_ABSCHALTTEMP;
+        internal static string WpaAbschaltpunktErl => MyResource.Resource.KI_DLG_WPA_ABSCHALTPUNKT_ERL;
+
+        internal static string WpaFirmaName => MyResource.Resource.WPS_LBL_HERSTELLER;
+        internal static string WpaFirmaErl => MyResource.Resource.KI_DLG_WPA_FIRMA_ERL;
+        internal static string WpaBeschreibungName => MyResource.Resource.WPS_LBL_BESCHREIBUNG;
+        internal static string WpaBeschreibungErl => MyResource.Resource.KI_DLG_WPA_BESCHREIBUNG_ERL;
+        internal static string WpaTypName => MyResource.Resource.WPS_LBL_TYP;
+        internal static string WpaTypErl => MyResource.Resource.KI_DLG_WPA_TYP_ERL;
+        internal static string WpaRegelungName => MyResource.Resource.WPS_LBL_REGELUNG;
+        internal static string WpaRegelungErl => MyResource.Resource.KI_DLG_WPA_REGELUNG_ERL;
+        internal static string WpaAufstellungName => MyResource.Resource.WPS_LBL_AUFSTELLUNG;
+        internal static string WpaAufstellungErl => MyResource.Resource.KI_DLG_WPA_AUFSTELLUNG_ERL;
+        internal static string WpaBaujahrName => MyResource.Resource.WPS_LBL_BAUJAHR;
+        internal static string WpaBaujahrErl => MyResource.Resource.KI_DLG_WPA_BAUJAHR_ERL;
+        internal static string WpaNennleistungName => MyResource.Resource.WPS_LBL_NENNLEISTUNG;
+        internal static string WpaNennleistungErl => MyResource.Resource.KI_DLG_WPA_NENNLEISTUNG_ERL;
+        internal static string WpaHeizstabLeistungName => MyResource.Resource.WPS_LBL_HEIZSTAB;
+        internal static string WpaHeizstabLeistungErl => MyResource.Resource.KI_DLG_WPA_HEIZSTAB_KW_ERL;
+        internal static string WpaKuehlleistungName => MyResource.Resource.WPS_LBL_KUEHLLEISTUNG;
+        internal static string WpaKuehlleistungErl => MyResource.Resource.KI_DLG_WPA_KUEHLLEISTUNG_ERL;
+        internal static string WpaModulkostenName => MyResource.Resource.MODK_LBL_MODULKOSTEN;
+        internal static string WpaModulkostenErl => MyResource.Resource.KI_DLG_WPA_MODULKOSTEN_ERL;
 
         // =================================================================== Feldarten
 

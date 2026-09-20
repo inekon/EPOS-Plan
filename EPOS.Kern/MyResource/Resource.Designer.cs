@@ -25010,6 +25010,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten BHKW-Moduls — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKW_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKW_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Modulationsgrenze dieses Moduls in Prozent der Nennleistung; 0 bedeutet „Projektvorgabe aus den Einstellungen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKW_GRENZLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKW_GRENZLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur dieses BHKW-Moduls im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKW_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKW_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur dieses BHKW-Moduls im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKW_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKW_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ist ein {1}; gesetzt werden können nur Textfeld, Häkchen und Auswahlliste. ähnelt.
         /// </summary>
         public static string KI_DLG_CONTROL_ART {
@@ -25105,6 +25141,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GELESEN {
             get {
                 return ResourceManager.GetString("KI_DLG_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten Heizkessels — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HKP_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HKP_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur dieses Kessels im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HKP_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HKP_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur dieses Kessels im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HKP_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HKP_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -25469,11 +25532,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung BHKW ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BHKW {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel bearbeiten ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Heizkessel ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_HEIZKESSEL_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_HEIZKESSEL_PROJEKT", resourceCulture);
             }
         }
         
@@ -25505,6 +25586,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Pufferspeicher ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PUFFERSP_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PUFFERSP_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik-Module ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PV {
@@ -25523,11 +25613,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe der Solarkollektoren ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_SOLARKOLLEKTOREN {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_SOLARKOLLEKTOREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher-Auslegung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_SPA {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_SPA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Stromspeicher ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_STROMSPEICHER", resourceCulture);
             }
         }
         
@@ -25546,6 +25654,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_WP {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe im Projekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WP_ANLAGE {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WP_ANLAGE", resourceCulture);
             }
         }
         
@@ -25604,6 +25721,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten Pufferspeichers — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPP_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPP_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speicherinhalt des Pufferspeichers. ähnelt.
         /// </summary>
         public static string KI_DLG_PSP_VOLUMEN_ERL {
@@ -25658,6 +25784,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = mit Wechselrichter, also mit Katalog, Strängen, Kennlinie und Clipping; Nein = vereinfacht mit Pauschalen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_MIT_WR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_MIT_WR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = das erweiterte Rechenmodell, Nein = das einfache (isotrope Einstrahlung, linearer Temperaturgang). Der Wechselrichter rechnet in beiden Modellen mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_MODELL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_MODELL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Neigungswinkel der Modulfläche gegen die Waagerechte (0° liegend, 90° senkrecht). ähnelt.
         /// </summary>
         public static string KI_DLG_PV_NEIGUNG_ERL {
@@ -25672,6 +25816,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PV_NEIGUNG_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_PV_NEIGUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausrichtung dieses Teilfelds in Grad, 0 = Süden; leer übernimmt den Azimut der Anlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_AZIMUT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_AZIMUT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name dieses Strangs, etwa „Dach Süd“; leer zeigt die Maske als Rangnummer. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welches physische Gerät dieses Typs den Strang trägt, ganze Zahl ab 1; leer bedeutet 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_GERAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_GERAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der MPPT-Eingang des Geräts, an dem der Strang hängt, ganze Zahl ab 1; leer bedeutet 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_MPPT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_MPPT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung dieses Teilfelds in Grad; leer übernimmt die Neigung der Anlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_NEIGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_NEIGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der parallel geschalteten Stränge dieser Zeile, ganze Zahl ab 1; leer bedeutet 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_PARALLEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_PARALLEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der in Reihe geschalteten Module dieses Strangs, ganze Zahl ab 1; ohne sie zählt der Strang keine Module. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_REIHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_REIHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pauschale Systemverluste der Anlage in Prozent, 0 bis 100; leer bedeutet 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_SYSTEMVERLUSTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_SYSTEMVERLUSTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wechselrichter-Wirkungsgrad als Faktor zwischen 0 und 1; leer bedeutet 0,95. Nur im einfachen Rechenmodell eingebbar — im erweiterten rechnet die Kennlinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_WR_WIRKUNGSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_WR_WIRKUNGSGRAD_ERL", resourceCulture);
             }
         }
         
@@ -26005,6 +26230,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_WREST_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_WREST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl der Kollektormodule dieser Anlage, ganze Zahl ab 0; aus ihr und der Modulfläche fällt die angezeigte Aperturfläche. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_ANZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_ANZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausrichtung der Kollektorfläche in Grad, 0 = Süden; negative Werte nach Osten, positive nach Westen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_AZIMUT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_AZIMUT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung der Kollektorfläche gegen die Waagerechte in Grad, 0 bis 90 (0 = waagerecht). ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_NEIGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_NEIGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SK_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SK_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -26495,6 +26765,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten Stromspeichers — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_STSP_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_STSP_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auswahl ähnelt.
         /// </summary>
         public static string KI_DLG_TYP_AUSWAHL {
@@ -26563,6 +26842,195 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WERTE_LEER {
             get {
                 return ResourceManager.GetString("KI_DLG_WERTE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bivalenztemperatur in °C — die Außentemperatur, unterhalb derer der zweite Wärmeerzeuger übernimmt; nur bei Alternativ- und Teilparallelbetrieb wirksam. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_ABSCHALTPUNKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_ABSCHALTPUNKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der gewählten Wärmepumpe — Anzeige aus der Geräteliste; umbenannt wird in der Wärmepumpen-Verwaltung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aufstellungsart des Geräts (etwa innen oder außen); wählbar sind die Einträge der Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_AUFSTELLUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_AUFSTELLUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Baujahr des Geräts als vierstellige Jahreszahl. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_BAUJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_BAUJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Gerät der Projektkopie; er wirkt auf keinen Rechenweg. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Betriebsart des bivalenten Betriebs: „Alternativbetrieb“, „Parallelbetrieb“ oder „Teilparallelbetrieb“. Bei alternativ und teilparallel wird die Bivalenztemperatur wirksam. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_BETRIEBSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_BETRIEBSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitet die Wärmepumpe bivalent, also zusammen mit einem zweiten Wärmeerzeuger? Ja verlangt eine Betriebsart. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_BIVALENT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_BIVALENT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hersteller des Geräts, wie er in der Projektkopie steht; freier Text. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_FIRMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll der Heizstab dieser Wärmepumpe im Lauf mitgerechnet werden? Ja setzt eine hinterlegte Heizstableistung voraus. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_HEIZSTAB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_HEIZSTAB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die elektrische Leistung des Heizstabs in kW; ohne sie lässt sich der Heizstab nicht mitrechnen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_HEIZSTAB_KW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_HEIZSTAB_KW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlleistung des Geräts in kW; Kommazahlen sind zulässig, leer heißt „nicht gepflegt“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_KUEHLLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_KUEHLLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gerätekosten in Euro — Anzeige; gepflegt werden sie in der Kostenverwaltung, nicht auf dieser Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_MODULKOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_MODULKOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die thermische Nennleistung des Geräts in kW, ganze Zahl; sie gehört zur Projektkopie, nicht zum Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_NENNLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_NENNLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer dieser Anlage in Jahren; sie ist Pflichtangabe — ohne sie meldet der OK-Knopf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_NUTZUNGSDAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_NUTZUNGSDAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungsstufen des Geräts (etwa einstufig oder modulierend); wählbar sind die Einträge der Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_REGELUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_REGELUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur der Anlage in °C, ganze Zahl und frei eingebbar; die angezeigten Werte sind ein Vorschlag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrt der Energieversorger die Wärmepumpe zeitweise? Ja macht die beiden Sperrzeiten wirksam. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SPERRUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SPERRUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ende der täglichen Sperrzeit in Stunden; Pflichtangabe — ohne sie meldet der OK-Knopf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SPERRZEIT_BIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SPERRZEIT_BIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn der täglichen Sperrzeit in Stunden; Pflichtangabe — ohne sie meldet der OK-Knopf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SPERRZEIT_VON_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SPERRZEIT_VON_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmepumpentyp der Projektkopie (etwa Luft/Wasser oder Sole/Wasser); wählbar sind die Einträge der Maske. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur der Anlage in °C; wählbar sind die Stufen, für die das Gerät Kennlinien führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_VORLAUF_ERL", resourceCulture);
             }
         }
         

@@ -36,6 +36,7 @@
 @using EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Kosten
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -210,17 +211,17 @@
                 <Formularraster>
                     <KindInhalt>
                 <Ganzzahlfeld Bezeichnung="@LabelAnzahl" Feldname="@LabelAnzahl"
-                              Wert="@_anzahl" WertChanged="w => { _anzahl = w; }" />
+                              Wert="@_eingaben.Anzahl" WertChanged="w => { _eingaben.Anzahl = w; }" />
                 <Textfeld Bezeichnung="@LabelAperturflaeche" Wert="@Gesamtflaeche" NurLesen="true"
                           Kurz="true" />
                 <Ganzzahlfeld Bezeichnung="@LabelNeigung" Feldname="@LabelNeigung"
-                              Wert="@_neigung" WertChanged="w => { _neigung = w; }" />
+                              Wert="@_eingaben.Neigung" WertChanged="w => { _eingaben.Neigung = w; }" />
                 <Ganzzahlfeld Bezeichnung="@LabelAzimut" Feldname="@LabelAzimut"
-                              Wert="@_azimut" WertChanged="w => { _azimut = w; }" />
+                              Wert="@_eingaben.Azimut" WertChanged="w => { _eingaben.Azimut = w; }" />
                 <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="@EinheitGrad" Feldname="@LabelVorlauf"
-                              Wert="@_vorlauf" WertChanged="w => { _vorlauf = w; }" />
+                              Wert="@_eingaben.Vorlauf" WertChanged="w => { _eingaben.Vorlauf = w; }" />
                 <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad" Feldname="@LabelRuecklauf"
-                              Wert="@_ruecklauf" WertChanged="w => { _ruecklauf = w; }" />
+                              Wert="@_eingaben.Ruecklauf" WertChanged="w => { _eingaben.Ruecklauf = w; }" />
                     </KindInhalt>
                 </Formularraster>
                 <div class="epos-leiste">
@@ -434,7 +435,12 @@
     private ErzeugerDetail _detail = new("", "", Array.Empty<(string, string)>());
     private double _modulflaeche;
 
-    private int? _anzahl, _neigung, _azimut, _vorlauf, _ruecklauf;
+    /// <summary>
+    /// Der ARBEITSSTAND der Kollektorgruppe. Er wird AN ORT UND STELLE gefüllt und nie
+    /// ersetzt — der Getter der Maskenanmeldung zeigt damit immer auf den lebenden
+    /// Stand (<see cref="SolarkollektorenEingaben"/>).
+    /// </summary>
+    private readonly SolarkollektorenEingaben _eingaben = new();
 
     private IReadOnlyDictionary<string, object>? _editorGaben;
     private bool _namensfrage;
@@ -481,7 +487,7 @@
     private bool _feldFehler;
 
     /// <summary>Die Gesamtfläche — Modulfläche mal Anzahl, live (<c>textBox_Anzahl_TextChanged</c>:367).</summary>
-    private string Gesamtflaeche => (_modulflaeche * (_anzahl ?? 0)).ToString();
+    private string Gesamtflaeche => (_modulflaeche * (_eingaben.Anzahl ?? 0)).ToString();
 
     protected override void OnParametersSet()
     {
@@ -494,7 +500,64 @@
 
         KatalogNeuLaden();
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+
+        // Welle KI-F1: den ARBEITSSTAND der Kollektorgruppe beim Hilfe-Assistenten
+        // anmelden - nicht die Projektzeile. Der Anwender sieht diesen Stand, und
+        // "Uebernehmen" traegt ihn in die Zeile; eine Setzung in die Zeile bliebe auf
+        // der Maske unsichtbar. Ohne gewaehlte Zeile gibt es die Kollektorgruppe nicht,
+        // dann sind die Felder leer.
+        _kiMaske = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
+            () => _projektZeile is null ? null : _eingaben, KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt die Kollektorgruppe (Welle KI-F1)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c>. Sie hält die Getter auf den
+    /// Arbeitsstand der Kollektorgruppe und fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>„Speichern" ist der Knopf „Übernehmen"</b> — derselbe Weg, den die fünf
+    /// Zahlen von Hand gehen: aus dem Arbeitsstand in die gewählte Projektzeile und von
+    /// dort über den Delegaten in das Modell. Ohne gewählte Zeile gibt es nichts zu
+    /// übernehmen, und die Aktion lehnt benannt ab.</para>
+    /// <para><b>Keine eigene Prüfung</b> — die fünf Ganzzahlfelder färben sich
+    /// selbst.</para>
+    /// <para><b>Der SCHREIBSCHUTZ hängt am Gerät</b>, auf das die gewählte Zeile
+    /// verweist (<c>ErzeugerZeile.NurLesen</c>).</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
+        Speichern = () => Task.FromResult(KiUebernehmen())
+    };
+
+    private KiKern.KiErgebnis KiUebernehmen()
+    {
+        if (_projektZeile is null || Uebernehmen is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        BeiUebernehmen();
+        return KiKern.KiErgebnis.Ok(_projektZeile.Bezeichner, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -545,11 +608,11 @@
         _felder = null;                       // der Aufklapper gehoert dem KATALOGsatz
         DetailSetzen(zeile.Bezeichner);
 
-        _anzahl = (int?)(zeile.AnzahlModule ?? 0);
-        _neigung = zeile.Neigung ?? 0;
-        _azimut = zeile.Azimut ?? 0;
-        _vorlauf = zeile.Vorlauf ?? 0;
-        _ruecklauf = zeile.Ruecklauf ?? 0;
+        _eingaben.Anzahl = (int?)(zeile.AnzahlModule ?? 0);
+        _eingaben.Neigung = zeile.Neigung ?? 0;
+        _eingaben.Azimut = zeile.Azimut ?? 0;
+        _eingaben.Vorlauf = zeile.Vorlauf ?? 0;
+        _eingaben.Ruecklauf = zeile.Ruecklauf ?? 0;
     }
 
     /// <summary>Katalogzeile: nur das Detail, KEINE Kollektorgruppe (<c>dataGridView1_Click</c>:289).</summary>
@@ -687,11 +750,11 @@
     {
         if (_projektZeile is null) return;
 
-        _projektZeile.AnzahlModule = _anzahl ?? 0;
-        _projektZeile.Neigung = _neigung ?? 0;
-        _projektZeile.Azimut = _azimut ?? 0;
-        _projektZeile.Vorlauf = _vorlauf ?? 0;
-        _projektZeile.Ruecklauf = _ruecklauf ?? 0;
+        _projektZeile.AnzahlModule = _eingaben.Anzahl ?? 0;
+        _projektZeile.Neigung = _eingaben.Neigung ?? 0;
+        _projektZeile.Azimut = _eingaben.Azimut ?? 0;
+        _projektZeile.Vorlauf = _eingaben.Vorlauf ?? 0;
+        _projektZeile.Ruecklauf = _eingaben.Ruecklauf ?? 0;
 
         Uebernehmen?.Invoke(_projektZeile);
 

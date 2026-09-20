@@ -20445,4 +20445,160 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_SET_MSG_FARBE_UNGUELTIG" xml:space="preserve">
     <value>„{0}“ ist keine Farbe in der Schreibweise #RRGGBB.</value>
   </data>
+  <data name="KI_DLG_MASKE_HEIZKESSEL_PROJEKT" xml:space="preserve">
+    <value>Verwaltung Heizkessel</value>
+  </data>
+  <data name="KI_DLG_MASKE_BHKW" xml:space="preserve">
+    <value>Verwaltung BHKW</value>
+  </data>
+  <data name="KI_DLG_HKP_ANLAGE_ERL" xml:space="preserve">
+    <value>Der Name des im Projekt gewählten Heizkessels — Anzeige aus der Projektliste, nicht eingebbar.</value>
+  </data>
+  <data name="KI_DLG_HKP_VORLAUF_ERL" xml:space="preserve">
+    <value>Vorlauftemperatur dieses Kessels im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“.</value>
+  </data>
+  <data name="KI_DLG_HKP_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Rücklauftemperatur dieses Kessels im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“.</value>
+  </data>
+  <data name="KI_DLG_BHKW_ANLAGE_ERL" xml:space="preserve">
+    <value>Der Name des im Projekt gewählten BHKW-Moduls — Anzeige aus der Projektliste, nicht eingebbar.</value>
+  </data>
+  <data name="KI_DLG_BHKW_GRENZLEISTUNG_ERL" xml:space="preserve">
+    <value>Untere Modulationsgrenze dieses Moduls in Prozent der Nennleistung; 0 bedeutet „Projektvorgabe aus den Einstellungen“.</value>
+  </data>
+  <data name="KI_DLG_BHKW_VORLAUF_ERL" xml:space="preserve">
+    <value>Vorlauftemperatur dieses BHKW-Moduls im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“.</value>
+  </data>
+  <data name="KI_DLG_BHKW_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Rücklauftemperatur dieses BHKW-Moduls im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PUFFERSP_PROJEKT" xml:space="preserve">
+    <value>Verwaltung Pufferspeicher</value>
+  </data>
+  <data name="KI_DLG_MASKE_STROMSPEICHER" xml:space="preserve">
+    <value>Verwaltung Stromspeicher</value>
+  </data>
+  <data name="KI_DLG_PSPP_ANLAGE_ERL" xml:space="preserve">
+    <value>Der Name des im Projekt gewählten Pufferspeichers — Anzeige aus der Projektliste, nicht eingebbar.</value>
+  </data>
+  <data name="KI_DLG_STSP_ANLAGE_ERL" xml:space="preserve">
+    <value>Der Name des im Projekt gewählten Stromspeichers — Anzeige aus der Projektliste, nicht eingebbar.</value>
+  </data>
+  <data name="KI_DLG_MASKE_SOLARKOLLEKTOREN" xml:space="preserve">
+    <value>Eingabe der Solarkollektoren</value>
+  </data>
+  <data name="KI_DLG_SK_ANZAHL_ERL" xml:space="preserve">
+    <value>Anzahl der Kollektormodule dieser Anlage, ganze Zahl ab 0; aus ihr und der Modulfläche fällt die angezeigte Aperturfläche.</value>
+  </data>
+  <data name="KI_DLG_SK_NEIGUNG_ERL" xml:space="preserve">
+    <value>Neigung der Kollektorfläche gegen die Waagerechte in Grad, 0 bis 90 (0 = waagerecht).</value>
+  </data>
+  <data name="KI_DLG_SK_AZIMUT_ERL" xml:space="preserve">
+    <value>Ausrichtung der Kollektorfläche in Grad, 0 = Süden; negative Werte nach Osten, positive nach Westen.</value>
+  </data>
+  <data name="KI_DLG_SK_VORLAUF_ERL" xml:space="preserve">
+    <value>Vorlauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0.</value>
+  </data>
+  <data name="KI_DLG_SK_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Rücklauftemperatur des Kollektorkreises in °C, ganze Zahl; leer gilt als 0.</value>
+  </data>
+  <data name="KI_DLG_MASKE_WP_ANLAGE" xml:space="preserve">
+    <value>Wärmepumpe im Projekt</value>
+  </data>
+  <data name="KI_DLG_WPA_ANLAGE_ERL" xml:space="preserve">
+    <value>Der Name der gewählten Wärmepumpe — Anzeige aus der Geräteliste; umbenannt wird in der Wärmepumpen-Verwaltung.</value>
+  </data>
+  <data name="KI_DLG_WPA_VORLAUF_ERL" xml:space="preserve">
+    <value>Vorlauftemperatur der Anlage in °C; wählbar sind die Stufen, für die das Gerät Kennlinien führt.</value>
+  </data>
+  <data name="KI_DLG_WPA_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Rücklauftemperatur der Anlage in °C, ganze Zahl und frei eingebbar; die angezeigten Werte sind ein Vorschlag.</value>
+  </data>
+  <data name="KI_DLG_WPA_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Nutzungsdauer dieser Anlage in Jahren; sie ist Pflichtangabe — ohne sie meldet der OK-Knopf.</value>
+  </data>
+  <data name="KI_DLG_WPA_HEIZSTAB_ERL" xml:space="preserve">
+    <value>Soll der Heizstab dieser Wärmepumpe im Lauf mitgerechnet werden? Ja setzt eine hinterlegte Heizstableistung voraus.</value>
+  </data>
+  <data name="KI_DLG_WPA_SPERRUNG_ERL" xml:space="preserve">
+    <value>Sperrt der Energieversorger die Wärmepumpe zeitweise? Ja macht die beiden Sperrzeiten wirksam.</value>
+  </data>
+  <data name="KI_DLG_WPA_SPERRZEIT_VON_ERL" xml:space="preserve">
+    <value>Beginn der täglichen Sperrzeit in Stunden; Pflichtangabe — ohne sie meldet der OK-Knopf.</value>
+  </data>
+  <data name="KI_DLG_WPA_SPERRZEIT_BIS_ERL" xml:space="preserve">
+    <value>Ende der täglichen Sperrzeit in Stunden; Pflichtangabe — ohne sie meldet der OK-Knopf.</value>
+  </data>
+  <data name="KI_DLG_WPA_BIVALENT_ERL" xml:space="preserve">
+    <value>Arbeitet die Wärmepumpe bivalent, also zusammen mit einem zweiten Wärmeerzeuger? Ja verlangt eine Betriebsart.</value>
+  </data>
+  <data name="KI_DLG_WPA_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Die Betriebsart des bivalenten Betriebs: „Alternativbetrieb“, „Parallelbetrieb“ oder „Teilparallelbetrieb“. Bei alternativ und teilparallel wird die Bivalenztemperatur wirksam.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABSCHALTPUNKT_ERL" xml:space="preserve">
+    <value>Die Bivalenztemperatur in °C — die Außentemperatur, unterhalb derer der zweite Wärmeerzeuger übernimmt; nur bei Alternativ- und Teilparallelbetrieb wirksam.</value>
+  </data>
+  <data name="KI_DLG_WPA_FIRMA_ERL" xml:space="preserve">
+    <value>Der Hersteller des Geräts, wie er in der Projektkopie steht; freier Text.</value>
+  </data>
+  <data name="KI_DLG_WPA_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Freitext zum Gerät der Projektkopie; er wirkt auf keinen Rechenweg.</value>
+  </data>
+  <data name="KI_DLG_WPA_TYP_ERL" xml:space="preserve">
+    <value>Der Wärmepumpentyp der Projektkopie (etwa Luft/Wasser oder Sole/Wasser); wählbar sind die Einträge der Maske.</value>
+  </data>
+  <data name="KI_DLG_WPA_REGELUNG_ERL" xml:space="preserve">
+    <value>Die Leistungsstufen des Geräts (etwa einstufig oder modulierend); wählbar sind die Einträge der Maske.</value>
+  </data>
+  <data name="KI_DLG_WPA_AUFSTELLUNG_ERL" xml:space="preserve">
+    <value>Die Aufstellungsart des Geräts (etwa innen oder außen); wählbar sind die Einträge der Maske.</value>
+  </data>
+  <data name="KI_DLG_WPA_BAUJAHR_ERL" xml:space="preserve">
+    <value>Das Baujahr des Geräts als vierstellige Jahreszahl.</value>
+  </data>
+  <data name="KI_DLG_WPA_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Die thermische Nennleistung des Geräts in kW, ganze Zahl; sie gehört zur Projektkopie, nicht zum Katalogsatz.</value>
+  </data>
+  <data name="KI_DLG_WPA_HEIZSTAB_KW_ERL" xml:space="preserve">
+    <value>Die elektrische Leistung des Heizstabs in kW; ohne sie lässt sich der Heizstab nicht mitrechnen.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLLEISTUNG_ERL" xml:space="preserve">
+    <value>Die Kühlleistung des Geräts in kW; Kommazahlen sind zulässig, leer heißt „nicht gepflegt“.</value>
+  </data>
+  <data name="KI_DLG_WPA_MODULKOSTEN_ERL" xml:space="preserve">
+    <value>Die Gerätekosten in Euro — Anzeige; gepflegt werden sie in der Kostenverwaltung, nicht auf dieser Maske.</value>
+  </data>
+  <data name="KI_DLG_PV_MODELL_ERL" xml:space="preserve">
+    <value>Ja = das erweiterte Rechenmodell, Nein = das einfache (isotrope Einstrahlung, linearer Temperaturgang). Der Wechselrichter rechnet in beiden Modellen mit.</value>
+  </data>
+  <data name="KI_DLG_PV_WR_WIRKUNGSGRAD_ERL" xml:space="preserve">
+    <value>Der Wechselrichter-Wirkungsgrad als Faktor zwischen 0 und 1; leer bedeutet 0,95. Nur im einfachen Rechenmodell eingebbar — im erweiterten rechnet die Kennlinie.</value>
+  </data>
+  <data name="KI_DLG_PV_SYSTEMVERLUSTE_ERL" xml:space="preserve">
+    <value>Pauschale Systemverluste der Anlage in Prozent, 0 bis 100; leer bedeutet 0.</value>
+  </data>
+  <data name="KI_DLG_PV_MIT_WR_ERL" xml:space="preserve">
+    <value>Ja = mit Wechselrichter, also mit Katalog, Strängen, Kennlinie und Clipping; Nein = vereinfacht mit Pauschalen.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_ERL" xml:space="preserve">
+    <value>Der Name dieses Strangs, etwa „Dach Süd“; leer zeigt die Maske als Rangnummer.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_GERAET_ERL" xml:space="preserve">
+    <value>Welches physische Gerät dieses Typs den Strang trägt, ganze Zahl ab 1; leer bedeutet 1.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_MPPT_ERL" xml:space="preserve">
+    <value>Der MPPT-Eingang des Geräts, an dem der Strang hängt, ganze Zahl ab 1; leer bedeutet 1.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_REIHE_ERL" xml:space="preserve">
+    <value>Die Zahl der in Reihe geschalteten Module dieses Strangs, ganze Zahl ab 1; ohne sie zählt der Strang keine Module.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_PARALLEL_ERL" xml:space="preserve">
+    <value>Die Zahl der parallel geschalteten Stränge dieser Zeile, ganze Zahl ab 1; leer bedeutet 1.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_NEIGUNG_ERL" xml:space="preserve">
+    <value>Neigung dieses Teilfelds in Grad; leer übernimmt die Neigung der Anlage.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_AZIMUT_ERL" xml:space="preserve">
+    <value>Ausrichtung dieses Teilfelds in Grad, 0 = Süden; leer übernimmt den Azimut der Anlage.</value>
+  </data>
 </root>

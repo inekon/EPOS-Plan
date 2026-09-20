@@ -39,7 +39,13 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// </summary>
 public class KiDialogkatalogTests
 {
-    /// <summary>Die sieben Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
+    /// <summary>Die Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
+    /// <remarks>
+    /// <b>Ein Daten-Objekt darf MEHRERE Masken tragen.</b> Die Erzeugermasken des
+    /// Projekts (Welle KI‑F1) melden alle dieselbe <c>ErzeugerZeile</c> an — die
+    /// gewählte Zeile ihrer Projektliste; welche Felder daran hängen, sagt der
+    /// Katalogeintrag und nicht der Typ.
+    /// </remarks>
     public static TheoryData<string, Type> Masken() => new()
     {
         { KiMaskennamen.HEIZKESSEL,              typeof(HeizkesselKatalogDaten) },
@@ -58,7 +64,22 @@ public class KiDialogkatalogTests
         // sind zum Teil SPALTEN (KostenKomponenteStand.Zeilen[].Nutzungsdauer); der
         // Waechter unten loest sie ueber KiMaskenanmeldung.Pruefe mit auf.
         { KiMaskennamen.KOSTENVERWALTUNG,
-          typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteStand) }
+          typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteStand) },
+
+        // Welle KI-F1: die Erzeugermasken des PROJEKTS. Sie melden die GEWAEHLTE
+        // Zeile ihrer Projektliste an - denselben Typ wie Form_PV.
+        { KiMaskennamen.HEIZKESSEL_PROJEKT,     typeof(ErzeugerZeile) },
+        { KiMaskennamen.BHKW_PROJEKT,           typeof(ErzeugerZeile) },
+        { KiMaskennamen.PUFFERSPEICHER_PROJEKT, typeof(ErzeugerZeile) },
+        { KiMaskennamen.STROMSPEICHER_PROJEKT,  typeof(ErzeugerZeile) },
+
+        // Die Solarkollektoren melden den ARBEITSSTAND der Kollektorgruppe an und
+        // nicht die Zeile: Ihre fuenf Zahlen gehen erst mit „Uebernehmen" dorthin.
+        { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
+          typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorenEingaben) },
+
+        // Die Waermepumpen-ANLAGE - ein Feldsatz fuer alle drei Bloecke der Maske.
+        { KiMaskennamen.WAERMEPUMPE_ANLAGE, typeof(WaermepumpeAnlageDaten) }
     };
 
     // =====================================================================
@@ -105,13 +126,38 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_sieben_Masken()
+    public void Der_Katalog_fuehrt_dreizehn_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(7, katalog.Anzahl);
+        Assert.Equal(13, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
+    }
+
+    /// <summary>
+    /// <b>Jede Katalogmaske hat ein Öffnungsziel, und die Projektmasken teilen sich
+    /// eines</b> — die STARTSEITE, von deren Erzeugerkarte aus sie aufgehen (Welle
+    /// KI‑F1).
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Wächter über die zwei Fundstellen.</b> <c>KiMaskenziele.STARTSEITE</c>
+    /// steht im Kern als Zeichenkette, weil der Kern die Oberfläche nicht kennt;
+    /// <c>Seitenschluessel.Startseite</c> steht in <c>EPOS.UI</c>. Laufen beide
+    /// auseinander, führt <c>dialog_oeffnen</c> ins Leere — dasselbe Muster, mit dem
+    /// die Stromspeicher-Ansicht zusammengehalten wird.
+    /// </remarks>
+    [Fact]
+    public void Das_Ziel_der_Projektmasken_ist_der_Seitenschluessel_der_Startseite()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Startseite, KiMaskenziele.STARTSEITE);
+
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.HEIZKESSEL_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.BHKW_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.STROMSPEICHER_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.WAERMEPUMPE_ANLAGE));
     }
 
     [Fact]
@@ -147,7 +193,7 @@ public class KiDialogkatalogTests
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_6_3_1_und_1_Feld()
+    public void Die_vier_Startmasken_fuehren_6_14_1_und_1_Feld()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
@@ -159,9 +205,54 @@ public class KiDialogkatalogTests
         // Katalog führt sie deshalb auch nicht mehr (siehe
         // Die_Heizkesselmaske_fuehrt_nur_noch_die_sechs_sichtbaren_Felder).
         Assert.Equal(6, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(3, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
+        Assert.Equal(14, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
         Assert.Single(KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder);
         Assert.Single(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder);
+    }
+
+    /// <summary>
+    /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
+    /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten
+    /// der Strangliste.
+    /// </summary>
+    /// <remarks>
+    /// Die Strangfelder sind SPALTEN (<c>ErzeugerZeile.Straenge[].Mppt</c>): Je
+    /// vorhandener Strangzeile wird daraus ein gewöhnliches Feld, und das
+    /// Zeilenkennzeichen ist der Bezeichner des Strangs. Ohne diesen Fall bliebe
+    /// unbemerkt, wenn eines der sieben wieder zu einem flachen Feld würde.
+    /// </remarks>
+    [Fact]
+    public void Die_Photovoltaikmaske_fuehrt_die_Modellfelder_und_sieben_Strangspalten()
+    {
+        KiDialog pv = KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!;
+
+        foreach (string name in new[] { "modell_erweitert", "wr_wirkungsgrad",
+                                        "systemverluste", "mit_wechselrichter" })
+        {
+            KiDialogFeld feld = pv.FindeFeld(name)!;
+            Assert.NotNull(feld);
+            Assert.False(feld.IstSpalte, name);
+        }
+
+        string[] spalten =
+        {
+            "strang", "strang_geraet", "strang_mppt", "strang_module_reihe",
+            "strang_parallel", "strang_neigung", "strang_azimut"
+        };
+
+        foreach (string name in spalten)
+        {
+            KiDialogFeld feld = pv.FindeFeld(name)!;
+            Assert.NotNull(feld);
+            Assert.True(feld.IstSpalte, name);
+            Assert.Equal("Straenge", feld.Sammlung);
+            Assert.Equal("Bezeichner", feld.Zeilenkennzeichen);
+        }
+
+        // Die Anlagenwerte des Wechselrichters stehen in einer eigenen Ueberlagerung
+        // und bleiben deshalb draussen (Fachkonzept 11.6).
+        foreach (string weg in new[] { "wr_nennleistung", "wr_eta10", "wr_eta50", "wr_eta100" })
+            Assert.False(pv.KenntFeld(weg), weg);
     }
 
     /// <summary>
@@ -217,11 +308,31 @@ public class KiDialogkatalogTests
     public static TheoryData<string, string> Markupdateien() => new()
     {
         { KiMaskennamen.HEIZKESSEL,       "EPOS.UI/Dialoge/Erzeuger/HeizkesselKatalogDialog.razor" },
-        { KiMaskennamen.PHOTOVOLTAIK,     "EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor" },
+        // DREI Dateien (Welle KI-F1): Der Projektdialog zeichnet Neigung, Azimut und
+        // Modulzahl selbst, die Modellfelder und die Straenge stehen in Bausteinen.
+        { KiMaskennamen.PHOTOVOLTAIK,     "EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor;" +
+                                          "EPOS.UI/Dialoge/Erzeuger/PvModellFelder.razor;" +
+                                          "EPOS.UI/Dialoge/Erzeuger/PvStraengeFelder.razor" },
         { KiMaskennamen.PUFFERSPEICHER,   "EPOS.UI/Dialoge/Erzeuger/PufferSpKatalogDialog.razor" },
         { KiMaskennamen.WAERMEPUMPE,      "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor;" +
                                           "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
-        { KiMaskennamen.KOSTENVERWALTUNG, "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" }
+        { KiMaskennamen.KOSTENVERWALTUNG, "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" },
+
+        // Welle KI-F1: die Erzeugermasken des PROJEKTS.
+        { KiMaskennamen.HEIZKESSEL_PROJEKT,     "EPOS.UI/Dialoge/Erzeuger/HeizkesselDialog.razor" },
+        { KiMaskennamen.BHKW_PROJEKT,           "EPOS.UI/Dialoge/Erzeuger/BhkwDialog.razor" },
+        { KiMaskennamen.PUFFERSPEICHER_PROJEKT, "EPOS.UI/Dialoge/Erzeuger/PufferspeicherDialog.razor" },
+        { KiMaskennamen.STROMSPEICHER_PROJEKT,  "EPOS.UI/Dialoge/Erzeuger/StromspeicherDialog.razor" },
+        { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
+          "EPOS.UI/Dialoge/Solarthermie/SolarkollektorenDialog.razor" },
+
+        // DREI Dateien: Der Anlagendialog zeichnet die Auslegung selbst und bettet
+        // die Konfiguration und den Stammfeldblock ein - jedes Feld steht damit vor
+        // dem Anwender, nur eben teils in einer Kinddatei.
+        { KiMaskennamen.WAERMEPUMPE_ANLAGE,
+          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor;" +
+          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeKonfiguration.razor;" +
+          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" }
     };
 
     /// <summary>
@@ -370,8 +481,11 @@ public class KiDialogkatalogTests
             felder += KiDialoge.Katalog.Finde((string)zeile[0])!.Felder.Count;
         }
 
-        // 6 (Heizkessel) + 3 (PV) + 1 (Puffer) + 1 (WP) + 7 (Kostenverwaltung) = 18.
-        Assert.True(felder >= 18, "Nur " + felder + " Feldpfade geprüft.");
+        // 6 (Heizkesseleditor) + 14 (PV) + 1 (Puffereditor) + 1 (WP-Verwaltung) +
+        // 7 (Kostenverwaltung) + 3 (Heizkessel im Projekt) + 4 (BHKW im Projekt) +
+        // 1 (Pufferspeicher im Projekt) + 1 (Stromspeicher im Projekt) +
+        // 5 (Solarkollektoren) + 21 (Waermepumpen-Anlage) = 64.
+        Assert.True(felder >= 64, "Nur " + felder + " Feldpfade geprüft.");
     }
 
     // ---------------------------------------------------------------------

@@ -45,6 +45,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Kosten
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -456,7 +457,48 @@
 
         KatalogNeuLaden();
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+
+        // Welle KI-F1: die GEWAEHLTE Zeile beim Hilfe-Assistenten anmelden - als
+        // Delegat und nicht als Instanz, denn sie wechselt mit jedem Klick in der
+        // Projektliste.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_PROJEKT,
+                                          () => _projektZeile, KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest die Zeile (Welle KI-F1)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c>. Sie hält den Getter auf die
+    /// gewählte Projektzeile und fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Was der Assistent über den Feldwert hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>KEIN Speicherweg, und das ist die Angabe.</b> Diese Maske wählt das
+    /// Gerät und zeigt seine Katalogwerte; die Betriebsführung der Speicher steht in
+    /// der Ansicht „Stromspeicher-Auslegung". <c>dialog_speichern</c> lehnt hier
+    /// benannt ab, statt still nichts zu tun.</para>
+    /// <para><b>Der SCHREIBSCHUTZ hängt am Gerät</b>, auf das die gewählte Zeile
+    /// verweist (<c>ErzeugerZeile.NurLesen</c>).</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

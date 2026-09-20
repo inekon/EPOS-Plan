@@ -1884,4 +1884,76 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         var cut = Aufbauen();
         Assert.Empty(cut.FindAll("rect.epos-legende-farbfeld"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F1)
+    // =====================================================================
+
+    /// <summary>
+    /// Nach dem Zeichnen steht die Maske an der <c>KiMaskenbruecke</c>; die Brücke
+    /// liest den Vorlauf und setzt ihn — und der Wert steht danach im Feldsatz der
+    /// Anlage.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist. Die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_den_Vorlauf()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        Aufbauen(daten);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.WAERMEPUMPE_ANLAGE));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "vorlauf");
+        Assert.NotNull(zugang);
+        Assert.Equal(35, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(45);
+
+        Assert.Equal(45, daten.Vorlauf);
+    }
+
+    /// <summary>
+    /// Auch ein Feld des STAMMFELDBLOCKS gehört zur Maske: Er bindet an ein Abbild von
+    /// <c>Daten</c>, und der Haken <c>Auffrischen</c> baut es nach einer Setzung neu
+    /// auf. Die Modulkosten daneben bleiben Anzeige.
+    /// </summary>
+    [Fact]
+    public void Die_Nennleistung_ist_setzbar_und_die_Modulkosten_sind_es_nicht()
+    {
+        WaermepumpeAnlageDaten daten = Voll();
+        Aufbauen(daten);
+
+        KiFeldzugang nenn =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "nennleistung");
+        Assert.Equal(12, nenn.Lesen());
+        nenn.Setzen(18);
+        Assert.Equal(18, daten.Nennleistung);
+
+        KiFeldzugang kosten =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEPUMPE_ANLAGE, "modulkosten");
+        Assert.Equal(4000, kosten.Lesen());
+        Assert.False(kosten.Setzbar);
+    }
+
+    /// <summary>
+    /// Die Maske meldet ihre PRÜFUNG und ihren Schreibschutz, aber keinen Speicherweg:
+    /// Geschrieben wird im OK-Weg, und zwar von der Hülle.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_Pruefung_und_Schreibschutz_aber_keinen_Speicherweg()
+    {
+        Aufbauen();
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.WAERMEPUMPE_ANLAGE);
+
+        Assert.NotNull(haken.Auffrischen);
+        Assert.NotNull(haken.Pruefen);
+        Assert.NotNull(haken.Schreibgeschuetzt);
+        Assert.Null(haken.Speichern);
+    }
 }

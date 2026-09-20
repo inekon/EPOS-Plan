@@ -941,4 +941,43 @@ public class SolarkollektorenDialogTests : EposBunitContext
     /// <summary>Wählt die Katalogzeile mit dieser Nummer in der rechten Liste.</summary>
     private static void KatalogZeileWaehlen(IRenderedComponent<SolarkollektorenDialog> cut, int nr)
         => cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr button")[nr].Click();
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F1)
+    // =====================================================================
+
+    /// <summary>
+    /// Nach dem Zeichnen steht die Maske an der <c>KiMaskenbruecke</c>; die Brücke
+    /// liest die Neigung aus dem ARBEITSSTAND der Kollektorgruppe und setzt sie — und
+    /// der neue Wert steht danach im Eingabefeld, nicht erst in der Zeile.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Arbeitsstand ist das Daten-Objekt, und das ist der Punkt.</b> Die Zeile
+    /// bekommt die fünf Zahlen erst mit „Übernehmen"; eine Setzung in die Zeile bliebe
+    /// auf der Maske unsichtbar und würde vom nächsten „Übernehmen" überschrieben.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Neigung()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Vitosol 200");
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT, "neigung");
+        Assert.NotNull(zugang);
+        Assert.Equal(30, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(35);
+
+        // Der Arbeitsstand trägt den neuen Wert - die Zeile noch nicht.
+        Assert.Equal(35, zugang.Lesen());
+        Assert.Equal(30, zeile.Neigung);
+
+        // „Übernehmen" trägt ihn hinüber - derselbe Weg, den der Speicherhaken geht.
+        cut.FindAll("button").First(b => b.TextContent.Trim() == "Übernehmen").Click();
+        Assert.Equal(35, zeile.Neigung);
+    }
 }

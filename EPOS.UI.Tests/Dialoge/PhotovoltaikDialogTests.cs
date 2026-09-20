@@ -1056,4 +1056,70 @@ public class PhotovoltaikDialogTests : EposBunitContext
         cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
         Assert.Empty(cut.FindAll(".epos-traegerwahl"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent: die Felder der Bausteine (Welle KI-F1)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Maske gibt seit dieser Welle auch die MODELLFELDER heraus — sie stehen im
+    /// Baustein <c>PvModellFelder</c> und binden an dieselbe Projektzeile.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist. Die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Der_Assistent_setzt_die_Systemverluste_der_gewaehlten_Zeile()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Anlage A", 100);
+        zeile.Systemverluste = 3.0;
+        Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PHOTOVOLTAIK));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PHOTOVOLTAIK, "systemverluste");
+        Assert.NotNull(zugang);
+        Assert.Equal(3.0, zugang.Lesen());
+
+        zugang.Setzen(5.5);
+        Assert.Equal(5.5, zeile.Systemverluste);
+    }
+
+    /// <summary>
+    /// Die STRÄNGE sind eine Liste: Je vorhandener Strangzeile wird aus der
+    /// Spaltendeklaration ein gewöhnliches Feld, und sein Klartextname trägt den
+    /// Bezeichner des Strangs.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_liest_und_setzt_die_Straenge_je_Zeile()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Anlage A", 100);
+        zeile.MitWechselrichter = true;
+        zeile.Straenge.Add(new StrangZeile { Rang = 1, Bezeichner = "Dach Süd", ModuleReihe = 12 });
+        zeile.Straenge.Add(new StrangZeile { Rang = 2, Bezeichner = "Dach West", ModuleReihe = 8 });
+
+        Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+
+        var reihen = KiMaskenbruecke.Lesen(KiMaskennamen.PHOTOVOLTAIK)
+                                    .Where(w => w.Name.StartsWith("strang_module_reihe"))
+                                    .ToList();
+
+        Assert.Equal(2, reihen.Count);
+        Assert.Contains(reihen, w => w.Anzeigename.Contains("Dach Süd"));
+        Assert.Contains(reihen, w => w.Anzeigename.Contains("Dach West"));
+
+        // Der Schluessel der ZWEITEN Zeile - er trägt ihre Nummer, der Anzeigename
+        // ihren Bezeichner.
+        string schluessel = reihen.First(w => w.Anzeigename.Contains("Dach West")).Name;
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PHOTOVOLTAIK, schluessel);
+        Assert.NotNull(zugang);
+        Assert.Equal(8, zugang.Lesen());
+
+        zugang.Setzen(16);
+        Assert.Equal(16, zeile.Straenge[1].ModuleReihe);
+    }
 }
