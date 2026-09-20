@@ -27,13 +27,19 @@
    setzt eine Beruehrung ueberhaupt keinen Fokus. Die drei z-Ebenen stehen im
    Stilblatt: Deckel 39, Feld und Liste darueber.
 
+   DIE HOHE EBENE HAENGT AN DER OFFENEN LISTE. Das Feld traegt
+   epos-suchauswahl--offen, solange seine Liste steht, und nur diese Klasse
+   vergibt die Ebene 41. Ein Feld, das sie dauerhaft truege, deckte die Klappe
+   des Menuebandes ab: Das Band steht selbst auf 41, und bei gleicher Ebene
+   gewinnt, was spaeter im Seitenaufbau steht.
+
    DIE WAHL IST EINE ID, kein Text - wie bei Auswahlfeld. Was im Feld steht, ist
    der Text des gewaehlten Eintrags; Tippen oeffnet die Liste und filtert, Esc
    nimmt die Eingabe zurueck und stellt den gewaehlten Text wieder her. *@
 
 @using System.Globalization
 
-<label class="epos-feld epos-suchauswahl">
+<label class="@Wurzelklasse">
     @if (!string.IsNullOrEmpty(Bezeichnung))
     {
         <span class="epos-feld-text">@Bezeichnung</span>
@@ -158,6 +164,16 @@
 
     private string EintragsId(int stelle) =>
         _kennung + "-e" + stelle.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Die Klasse der Wurzel. <c>--offen</c> steht nur, solange die eigene Liste
+    /// offen ist — und allein daran hängt im Stilblatt die hohe Stapelebene: Ein
+    /// Feld, das sie dauerhaft trüge, deckte die aufgeklappte Klappe des
+    /// Menübandes ab.
+    /// </summary>
+    private string Wurzelklasse => _offen
+        ? "epos-feld epos-suchauswahl epos-suchauswahl--offen"
+        : "epos-feld epos-suchauswahl";
 
     /// <summary>
     /// Die Klasse eines Eintrags. Die mit ↑↓ angesteuerte Stelle trägt zusätzlich

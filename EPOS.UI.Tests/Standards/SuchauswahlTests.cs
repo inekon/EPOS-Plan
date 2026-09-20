@@ -308,6 +308,27 @@ public class SuchauswahlTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Die hohe Stapelebene hängt an der offenen Liste</b> (Welle GM‑1): Nur
+    /// <c>epos-suchauswahl--offen</c> vergibt im Stilblatt die Ebene 41. Trüge das
+    /// Feld sie dauerhaft, deckte es die aufgeklappte Klappe des Menübandes ab —
+    /// das Band steht selbst auf 41, und bei gleicher Ebene gewinnt, was später im
+    /// Seitenaufbau steht.
+    /// </summary>
+    [Fact]
+    public void Die_hohe_Stapelebene_steht_nur_bei_offener_Liste()
+    {
+        var cut = Zeige();
+
+        Assert.Empty(cut.FindAll("label.epos-suchauswahl--offen"));
+
+        Feld(cut).Click();
+        Assert.Single(cut.FindAll("label.epos-suchauswahl--offen"));
+
+        cut.Find(".epos-suchauswahl-schliessflaeche").Click();
+        Assert.Empty(cut.FindAll("label.epos-suchauswahl--offen"));
+    }
+
+    /// <summary>
     /// <b>Ein gesperrtes Feld geht gar nicht erst auf</b> — weder auf Klick noch auf
     /// Tastendruck.
     /// </summary>

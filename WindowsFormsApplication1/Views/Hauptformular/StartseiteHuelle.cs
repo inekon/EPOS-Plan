@@ -253,6 +253,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Lässt die Startseite ihre KLIMAREGIONEN neu lesen — der Rückweg des
+        /// Klimadatenfensters (<c>KlimadatenHuelle</c>, Welle GM‑1).
+        ///
+        /// <para><b>Warum eine Hüllenmethode und kein <c>Ansichten</c>-Schlüssel.</b>
+        /// <c>INavigation.AnsichtAktualisieren</c> ist der Weg für Aufrufer, die die
+        /// Schale NICHT kennen dürfen — den Kern und die plattformfreien Komponenten.
+        /// Das Klimadatenfenster ist selbst Teil der Windows-Schale und steht neben
+        /// dieser Hülle im selben Projekt; ein sprachneutraler Schlüssel wäre für es
+        /// eine Zwischenschicht ohne zweiten Leser.</para>
+        ///
+        /// <para>Die Seite liest dabei ALLES neu, was am Projekt hängt
+        /// (<c>Startseite.Laden</c>) — dieselbe Bauart wie
+        /// <see cref="VariantenAnzeigeAktualisieren"/>. Ein eigener, engerer Weg nur
+        /// für die Regionsliste gäbe es nicht umsonst: Er wäre ein zweiter Nachzug
+        /// neben dem bestehenden.</para>
+        /// </summary>
+        internal void KlimaregionenAktualisieren()
+        {
+            _zustand.Auffrischen();
+        }
+
+        /// <summary>
         /// Öffnet den Reiter „Berichte &amp; Kosten" auf der gewünschten Seite —
         /// der Ersatz für <c>Form_Start.ZeigeBerichteKosten</c> (Menü
         /// „Projekte › Varianten und Bericht…", <c>Ansichten.BerichteKosten</c>).

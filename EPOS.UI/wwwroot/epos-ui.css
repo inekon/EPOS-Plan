@@ -9552,12 +9552,25 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
    steht IM Feld und also ebenfalls darueber. Nur so bleibt ein Eintrag
    anklickbar, waehrend der Deckel alles andere abfaengt.
 
+   DIE HOHE EBENE GILT NUR BEI OFFENER LISTE (Welle GM-1). Sie haengt an
+   .epos-suchauswahl--offen, die die Komponente traegt, solange sie offen ist.
+   Dauerhaft vergeben deckte das Feld die Klappe des Menuebandes (40) ab, denn
+   das Band selbst steht ebenfalls auf 41 und das spaeter im Seitenaufbau
+   stehende Element gewinnt bei gleicher Ebene. Geschlossen braucht das Feld
+   keine Ebene: Es steht dann nur als gewoehnliches Eingabefeld da.
+
+   position: relative bleibt am GRUNDZUSTAND - es ist der Bezugspunkt, an dem
+   die Liste haengt, und der darf nicht erst beim Oeffnen entstehen.
+
    Die Liste steht ABSOLUT unter dem Feld: Sie darf den Kasten, in dem das
    Feld sitzt, nicht hoeher machen - sonst spraenge beim Tippen die halbe
    Seite.
    ========================================================================== */
 .epos-suchauswahl {
     position: relative;
+}
+
+.epos-suchauswahl--offen {
     z-index: 41;
 }
 
