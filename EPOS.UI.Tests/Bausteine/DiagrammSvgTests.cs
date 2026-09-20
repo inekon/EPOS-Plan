@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
 using Microsoft.AspNetCore.Components.Web;
@@ -1058,5 +1059,211 @@ public class DiagrammSvgTests : EposBunitContext
         // Am MARKUP geprueft und nicht ueber GetAttribute: xml:space traegt einen
         // Namensraum, und wie ein Parser ihn zurueckgibt, ist seine Sache.
         Assert.All(texte, t => Assert.Contains("xml:space=\"preserve\"", t.OuterHtml));
+    }
+
+    // =====================================================================
+    //  DS-9  Der Wert am Element (DG-E3-10)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Monatsstapel — ein Bild OHNE Zeichenfläche. Seine Schichten sind
+    /// gewöhnliche Rechtecke mit der Marke <c>reihe:&lt;Name&gt;</c> und ihrem
+    /// fertig formatierten <c>data-wert</c>.
+    /// </summary>
+    private static Zeichenmodell Stapelbild()
+    {
+        var waerme = new double[12];
+        var strom = new double[12];
+        for (int m = 0; m < 12; m++)
+        {
+            waerme[m] = 40.0 - 3.0 * m;
+            strom[m] = 10.0 + 0.5 * m;
+        }
+
+        return ChartRenderer.MonatsStapelModell("Monatsstapel", "MWh", new[]
+        {
+            new ChartRenderer.Reihe("Wärmepumpe", waerme, ChartRenderer.C_WP),
+            new ChartRenderer.Reihe("Heizkessel", strom, ChartRenderer.C_KESSEL)
+        });
+    }
+
+    private IRenderedComponent<DiagrammSvg> ZeigeStapelbild()
+        => Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, Stapelbild());
+            p.Add(x => x.Kennung, "monatsstapel");
+        });
+
+    /// <summary>Das erste Element, das einen <c>data-wert</c> trägt.</summary>
+    private static IElement ErstesWertelement(IRenderedComponent<DiagrammSvg> cut)
+        => cut.FindAll("[data-wert]").First(e => e.GetAttribute("data-wert")!.Length > 0);
+
+    /// <summary>
+    /// <b>Ohne Zeichenfläche gibt es keine Bedienung</b> (DG-E3-10): weder Leiste noch
+    /// JS-Bindung — dort wäre nichts zu zoomen. Die ZEIGERZEILE steht trotzdem: Sie
+    /// ist der einzige Ort, an dem eine Säule ihre Zahl nennt.
+    /// </summary>
+    [Fact]
+    public void DS9_Ein_Bild_ohne_Flaeche_traegt_keine_Leiste_aber_eine_Zeigerzeile()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var binden = modul.SetupVoid("binden", _ => true);
+
+        var cut = ZeigeStapelbild();
+
+        Assert.Empty(cut.FindAll(".epos-diagramm-leiste"));
+        Assert.Empty(binden.Invocations);
+        Assert.Single(cut.FindAll(".epos-diagramm-zeigerzeile"));
+        Assert.True(cut.Instance.ZeigtWertAmElement);
+    }
+
+    /// <summary>
+    /// <b>Der Zeiger auf einem Element zeigt dessen Wert; das Verlassen löscht ihn.</b>
+    /// Der Text kommt fertig formatiert aus dem Kern — die Oberfläche formatiert nicht
+    /// ein zweites Mal, sonst gingen Bild und Zeigetext auseinander.
+    /// </summary>
+    [Fact]
+    public void DS9_Der_Zeiger_auf_einer_Saeule_zeigt_ihren_Wert()
+    {
+        var cut = ZeigeStapelbild();
+        IElement element = ErstesWertelement(cut);
+        string wert = element.GetAttribute("data-wert")!;
+
+        element.PointerEnter();
+        Assert.Equal(wert, cut.Instance.WertAmZeiger);
+        Assert.Equal(wert, cut.Find(".epos-diagramm-zeigerzeile").TextContent.Trim());
+
+        // Die MAUS loescht beim Verlassen.
+        ErstesWertelement(cut).PointerLeave(new PointerEventArgs { PointerType = "mouse" });
+        Assert.Equal("", cut.Instance.WertAmZeiger);
+    }
+
+    /// <summary>
+    /// <b>Berührung: Antippen zeigt, Antippen DANEBEN löscht</b> (DG-E3-10). Das
+    /// Verlassen eines Elements darf bei Berührung NICHT löschen — es folgte
+    /// unmittelbar auf das Antippen, und der Wert wäre nie zu lesen.
+    /// </summary>
+    [Fact]
+    public void DS9_Bei_Beruehrung_loescht_erst_das_Antippen_daneben()
+    {
+        var cut = ZeigeStapelbild();
+        IElement element = ErstesWertelement(cut);
+        string wert = element.GetAttribute("data-wert")!;
+
+        element.PointerDown(new PointerEventArgs { PointerType = "touch" });
+        Assert.Equal(wert, cut.Instance.WertAmZeiger);
+
+        // Das Verlassen bei Beruehrung laesst ihn stehen …
+        ErstesWertelement(cut).PointerLeave(new PointerEventArgs { PointerType = "touch" });
+        Assert.Equal(wert, cut.Instance.WertAmZeiger);
+
+        // … und erst ein Druck NEBEN jedes markierte Element raeumt die Zeile.
+        cut.Find(".epos-diagramm-svg-flaeche")
+           .PointerDown(new PointerEventArgs { PointerType = "touch" });
+        Assert.Equal("", cut.Instance.WertAmZeiger);
+    }
+
+    /// <summary>
+    /// <b>Der Legendenschalter greift auch bei einem Pixelbild.</b> Dort gibt es keinen
+    /// Reihenpfad mit <c>data-reihe</c>; die Zugehörigkeit steht in der Marke
+    /// <c>reihe:&lt;Name&gt;</c>. Ohne diese zweite Lesart färbte ein Klick nur den
+    /// Legendeneintrag und blendete nichts aus.
+    /// </summary>
+    [Fact]
+    public void DS9_Ein_Legendenklick_blendet_auch_die_Saeulen_aus()
+    {
+        var cut = ZeigeStapelbild();
+
+        int vorher = cut.FindAll("[data-marke='reihe:Wärmepumpe'][display='none']").Count;
+        Assert.Equal(0, vorher);
+
+        cut.Find("[data-legende='Wärmepumpe'].epos-legende-eintrag").Click();
+
+        Assert.True(cut.Instance.IstAus("Wärmepumpe"));
+        Assert.NotEmpty(cut.FindAll("[data-marke='reihe:Wärmepumpe'][display='none']"));
+        // Die NACHBARREIHE bleibt stehen.
+        Assert.Empty(cut.FindAll("[data-marke='reihe:Heizkessel'][display='none']"));
+    }
+
+    // =====================================================================
+    //  DS-10  Achsenseite und Punktreihen (DG-E3-11/12)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Reihe sagt selbst, auf welcher Achse sie steht</b> (DG-E3-12). Der Fall
+    /// gibt beiden Achsen DIESELBE y-Spanne — das alte Raten über die Spanne hätte hier
+    /// die rechte Reihe für eine linke gehalten und ihr „kW" statt „kWh" gegeben.
+    /// </summary>
+    [Fact]
+    public async Task DS10_Die_Achsenseite_kommt_aus_der_Reihe_nicht_aus_der_Spanne()
+    {
+        var links = new double[] { 10, 20, 30, 40 };
+        var rechts = new double[] { 10, 20, 30, 40 };
+        var flaeche = new Zeichenflaeche(new Rahmen(0, 0, 100, 100),
+                                         new Datenfenster(0, 3, 0, 40));
+
+        var modell = new Zeichenmodell(200, 120, Farbton.Aus(Farbrolle.HINTERGRUND))
+        {
+            Flaeche = flaeche
+        };
+        modell.FuegeReihe(new Datenreihe("Leistung", Farbton.Aus(Farbrolle.STAMM), 2f, null,
+                                         links, flaeche.Daten));
+        modell.FuegeReihe(new Datenreihe("Inhalt", Farbton.Aus(Farbrolle.STROM_NETZ), 2f, null,
+                                         rechts, flaeche.Daten,
+                                         Achsenseite: Achsenseite.Rechts));
+
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "zweiachsen");
+            p.Add(x => x.Einheit, "kW");
+            p.Add(x => x.EinheitRechts, "kWh");
+        });
+
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(1));
+
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.Contains("Leistung: 20 kW", zeile);
+        Assert.Contains("Inhalt: 20 kWh", zeile);
+    }
+
+    /// <summary>
+    /// <b>Eine Reihe mit eigenen x-Stellen wird GESUCHT, nicht gerechnet</b>
+    /// (DG-E3-11): Die Zeigerzeile nimmt den NÄCHSTLIEGENDEN Punkt. Über die
+    /// gleichmäßige Schrittweite gerechnet stünde bei ungleichmäßigen Stützstellen der
+    /// falsche Wert da.
+    /// </summary>
+    [Fact]
+    public async Task DS10_Die_Zeigerzeile_nimmt_den_naechstliegenden_Punkt()
+    {
+        // Vier Stuetzstellen, ungleichmaessig: 0, 1, 8, 10.
+        var x = new double[] { 0, 1, 8, 10 };
+        var y = new double[] { 100, 200, 300, 400 };
+        var flaeche = new Zeichenflaeche(new Rahmen(0, 0, 100, 100),
+                                         new Datenfenster(0, 10, 0, 400),
+                                         Achsenart.Wert, "kWh");
+
+        var modell = new Zeichenmodell(200, 120, Farbton.Aus(Farbrolle.HINTERGRUND))
+        {
+            Flaeche = flaeche
+        };
+        modell.FuegeReihe(new Datenreihe("Kapitalwert", Farbton.Aus(Farbrolle.STAMM), 2f, null,
+                                         y, flaeche.Daten, Reihenart.Linie, null, null, x, "€"));
+
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x2 => x2.Modell, modell);
+            p.Add(x2 => x2.Kennung, "ungleich");
+        });
+
+        // Die Stelle 7 liegt am naechsten bei der Stuetzstelle 8 - drittes Element.
+        // Gleichmaessig gerechnet (Schrittweite 10/3) waere es das zweite.
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(7));
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+
+        Assert.Contains("Kapitalwert: 300 €", zeile);
+        // Die EINHEIT der x-Stelle kommt aus dem Modell, nicht aus einem Parameter.
+        Assert.Contains("7 kWh", zeile);
     }
 }
