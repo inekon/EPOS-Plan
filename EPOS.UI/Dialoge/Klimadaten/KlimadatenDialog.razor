@@ -45,7 +45,18 @@
 
    A-4: Der Import laeuft im Task.Run der Huelle und laesst sich ABBRECHEN.
    A-6/E-2: Die x-Achse heisst "Monat" - das wird gezeichnet.
-   A-5, hingenommen: kein Mausrad-Zoom mehr; ein PNG bleibt ein Bild (wie W8-A-1).
+
+   ANWENDERWUNSCH KL-8 (20.09.2026): "Chart soll Zoom/Ausschnitt moeglich sein
+   (wie andere Charts)." Beide Bilder stehen im Hausbaustein ChartBild und
+   tragen damit laengst den BILDZOOM (Rad, Ziehen, Kneifgeste, Tasten). Was
+   fehlte, war der DATENZOOM: ein aufgezogenes Rechteck, aus dem der Kern das
+   Bild mit ZEITAUSSCHNITT neu zeichnet - und erst der macht 8 760 Stunden
+   wirklich lesbar. Er haengt am Delegaten AnsichtMitAusschnitt: Wer ihn belegt
+   (die Windows-Huelle, der Prueftand), bekommt an beiden Reitern den Knopf
+   "Bereich"; wer nur Ansicht belegt, behaelt den Bildzoom wie bisher. JEDER
+   Reiter fuehrt seinen EIGENEN Ausschnitt - Temperatur und Sonnenwinkel zeigen
+   verschiedene Groessen, ein geteilter Ausschnitt haette den Zug am einen Bild
+   im anderen sichtbar gemacht. Ein Regionswechsel verwirft beide.
 
    TASTATUR: Esc schliesst - waehrend eines Imports nicht. Enter ist nicht
    belegt: "Daten einlesen" schreibt sofort.
@@ -128,16 +139,24 @@
             @* ---- die zwei Diagramme in zwei Reitern ---------------------- *@
             <Reiter Bezeichnung="@TitelText" Aktiv="@_reiter" AktivChanged="@(s => _reiter = s)">
                 <KindInhalt>
+                    @* DER DATENZOOM HAENGT AM DELEGATEN (KL-8): Ohne
+                       AnsichtMitAusschnitt bleibt BereichGewaehlt unbelegt, und
+                       damit faellt der Knopf "Bereich" weg - es bleibt beim
+                       Bildzoom, genau wie vorher. *@
                     <Reiterblatt Schluessel="TEMPERATUR" Titel="@ReiterTemperaturText">
                         <KindInhalt>
                             <ChartBild Png="@_bildTemperatur" Alt="@DiagrammTemperaturText"
-                                       PlatzhalterText="@KeineDatenText" />
+                                       PlatzhalterText="@KeineDatenText"
+                                       BereichGewaehlt="@BereichTemperaturRueckruf"
+                                       Zurueckgesetzt="@ZurueckTemperaturRueckruf" />
                         </KindInhalt>
                     </Reiterblatt>
                     <Reiterblatt Schluessel="SONNENWINKEL" Titel="@ReiterSonnenwinkelText">
                         <KindInhalt>
                             <ChartBild Png="@_bildSonnenwinkel" Alt="@DiagrammSonnenwinkelText"
-                                       PlatzhalterText="@KeineDatenText" />
+                                       PlatzhalterText="@KeineDatenText"
+                                       BereichGewaehlt="@BereichSonnenwinkelRueckruf"
+                                       Zurueckgesetzt="@ZurueckSonnenwinkelRueckruf" />
                         </KindInhalt>
                     </Reiterblatt>
                 </KindInhalt>
@@ -337,6 +356,22 @@
     [Parameter] public Func<string, Task<Regionsansicht>>? Ansicht { get; set; }
 
     /// <summary>
+    /// DIESELBE Ansicht, aber mit dem ZEITAUSSCHNITT je Bild (Anwenderwunsch KL‑8):
+    /// erst der Regionsname, dann der aufgezogene Bereich des Temperaturbildes und
+    /// der des Sonnenwinkelbildes; <c>null</c> heißt „das ganze Jahr".
+    ///
+    /// <para><b>Er ist optional, und das ist Absicht.</b> Wer ihn belegt — die
+    /// Windows-Hülle und der Prüfstand —, bekommt an beiden Reitern den Knopf
+    /// „Bereich" und damit den Datenzoom. Wer nur <see cref="Ansicht"/> belegt
+    /// (Prüfstände ohne Renderer, künftige iOS-Wege), behält den Bildzoom und sieht
+    /// den Knopf gar nicht erst: ein Knopf, der nichts neu zeichnen kann, wäre eine
+    /// Behauptung. Ist er belegt, ruft der Dialog IHN und nicht mehr
+    /// <see cref="Ansicht"/>.</para>
+    /// </summary>
+    [Parameter]
+    public Func<string, Diagrammbereich?, Diagrammbereich?, Task<Regionsansicht>>? AnsichtMitAusschnitt { get; set; }
+
+    /// <summary>
     /// Der Import (<c>KlimaImportAblauf.Laufen</c>) — im <c>Task.Run</c> der Hülle,
     /// mit Fortschritt und Abbruch (A-4).
     /// </summary>
@@ -470,6 +505,12 @@
     private string _details = "";
     private byte[]? _bildTemperatur;
     private byte[]? _bildSonnenwinkel;
+
+    /// <summary>Der aufgezogene Zeitausschnitt des TEMPERATURBILDES (KL‑8); <c>null</c> = das ganze Jahr.</summary>
+    private Diagrammbereich? _bereichTemperatur;
+
+    /// <summary>Der Zeitausschnitt des SONNENWINKELBILDES — getrennt geführt.</summary>
+    private Diagrammbereich? _bereichSonnenwinkel;
 
     private bool _laeuft;
     private double? _anteil;
@@ -650,6 +691,8 @@
             _details = "";
             _bildTemperatur = null;
             _bildSonnenwinkel = null;
+            _bereichTemperatur = null;
+            _bereichSonnenwinkel = null;
         }
     }
 
@@ -661,6 +704,13 @@
     {
         _gewaehlt = schluessel ?? "";
         _meldung = "";
+
+        // KL-8: EINE ANDERE REGION HEISST EINE ANDERE REIHE. Ein Ausschnitt, der
+        // fuer die alte Region aufgezogen wurde, hat fuer die neue keine Bedeutung -
+        // er faellt mit der Wahl.
+        _bereichTemperatur = null;
+        _bereichSonnenwinkel = null;
+
         await AnsichtLaden();
     }
 
@@ -670,15 +720,73 @@
     /// </summary>
     private async Task AnsichtLaden()
     {
-        if (Ansicht is null || _gewaehlt.Length == 0) return;
+        if (_gewaehlt.Length == 0) return;
 
-        Regionsansicht a = await Ansicht(_gewaehlt);
+        // KL-8: Der Weg MIT Ausschnitt schlaegt den ohne - er kann alles, was der
+        // andere kann, und traegt zusaetzlich die beiden Zeitfenster.
+        Regionsansicht a;
+        if (AnsichtMitAusschnitt is not null)
+            a = await AnsichtMitAusschnitt(_gewaehlt, _bereichTemperatur, _bereichSonnenwinkel);
+        else if (Ansicht is not null)
+            a = await Ansicht(_gewaehlt);
+        else return;
+
         _details = a.Details ?? "";
         _longitude = a.Longitude;
         _latitude = a.Latitude;
         _bildTemperatur = a.BildTemperatur;
         _bildSonnenwinkel = a.BildSonnenwinkel;
         if (!string.IsNullOrEmpty(a.Meldung)) Melden(a.Meldung, WarnStufe.Hinweis);
+    }
+
+    // =====================================================================
+    // Der DATENZOOM der beiden Bilder (Anwenderwunsch KL-8)
+    // =====================================================================
+
+    /// <summary>
+    /// Kann dieser Dialog einen Zeitausschnitt zeichnen lassen? Nur dann tragen die
+    /// beiden Bilder einen Bereichsrückruf — und nur dann steht der Knopf „Bereich"
+    /// in ihrer Leiste (<c>Diagramm</c> zeigt ihn an <c>HasDelegate</c>).
+    /// </summary>
+    private bool DatenzoomMoeglich => AnsichtMitAusschnitt is not null;
+
+    private EventCallback<Diagrammbereich> BereichTemperaturRueckruf
+        => DatenzoomMoeglich
+            ? EventCallback.Factory.Create<Diagrammbereich>(this, (Diagrammbereich b) => BereichTemperatur(b))
+            : default;
+
+    private EventCallback ZurueckTemperaturRueckruf
+        => DatenzoomMoeglich
+            ? EventCallback.Factory.Create(this, () => BereichTemperatur(null))
+            : default;
+
+    private EventCallback<Diagrammbereich> BereichSonnenwinkelRueckruf
+        => DatenzoomMoeglich
+            ? EventCallback.Factory.Create<Diagrammbereich>(this, (Diagrammbereich b) => BereichSonnenwinkel(b))
+            : default;
+
+    private EventCallback ZurueckSonnenwinkelRueckruf
+        => DatenzoomMoeglich
+            ? EventCallback.Factory.Create(this, () => BereichSonnenwinkel(null))
+            : default;
+
+    /// <summary>
+    /// Der Anwender hat im TEMPERATURBILD ein Rechteck aufgezogen (oder mit „1:1"
+    /// verworfen, dann steht hier <c>null</c>). Was an dieser Stelle des Bildes
+    /// steht, weiß nur der Renderer, der es gezeichnet hat — der Bereich geht
+    /// deshalb UNVERÄNDERT an die Hülle.
+    /// </summary>
+    private Task BereichTemperatur(Diagrammbereich? bereich)
+    {
+        _bereichTemperatur = bereich;
+        return AnsichtLaden();
+    }
+
+    /// <summary>Dasselbe für das SONNENWINKELBILD — mit eigenem Ausschnitt.</summary>
+    private Task BereichSonnenwinkel(Diagrammbereich? bereich)
+    {
+        _bereichSonnenwinkel = bereich;
+        return AnsichtLaden();
     }
 
     private void BeiOrtsname(ChangeEventArgs e)
@@ -903,6 +1011,12 @@
             {
                 await RegionenLaden();
                 _gewaehlt = erg.Bezeichner;
+
+                // KL-8: Auch hier wechselt die Region - ein noch stehender
+                // Zeitausschnitt gehoerte zur vorigen Reihe.
+                _bereichTemperatur = null;
+                _bereichSonnenwinkel = null;
+
                 await AnsichtLaden();
 
                 // ANWENDERWUNSCH 19.09.2026, Punkt 2: "'Daten Einlesen' verschwindet

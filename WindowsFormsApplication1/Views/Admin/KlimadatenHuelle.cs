@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Klimadaten;
 using Microsoft.AspNetCore.Components;
 using SkiaSharp;
@@ -104,7 +105,11 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Regionen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(RegionenLesen),
-                ["Ansicht"] = new Func<string, Task<KlimadatenDialog.Regionsansicht>>(Ansicht),
+                ["Ansicht"] = new Func<string, Task<KlimadatenDialog.Regionsansicht>>(
+                                  name => Ansicht(name, null, null)),
+                ["AnsichtMitAusschnitt"] =
+                    new Func<string, Diagrammbereich, Diagrammbereich,
+                             Task<KlimadatenDialog.Regionsansicht>>(Ansicht),
                 ["Importieren"] = new Func<KlimaImportAuftrag, IProgress<ImportFortschritt>,
                                            Task<KlimaImportErgebnis>>(Importieren),
                 ["Abbrechen"] = new Action(() => { try { _abbruch?.Cancel(); } catch { } }),
@@ -165,8 +170,20 @@ namespace WindowsFormsApplication1
         /// W14c-B19): <c>yAxis.ToArray().Max()</c> warf mit „Sequence contains no
         /// elements", sobald eine Region keine Zeilen in <c>Tab_Solar_STAMM</c> hatte —
         /// etwa nach einem abgebrochenen Import.</para>
+        ///
+        /// <para><b>Der DATENZOOM</b> (Anwenderwunsch KL‑8, 20.09.2026: „Chart soll
+        /// Zoom/Ausschnitt möglich sein (wie andere Charts)"): Jedes der beiden Bilder
+        /// trägt seinen EIGENEN aufgezogenen Bereich. Was an einer Stelle des Bildes
+        /// steht, weiß nur der Renderer, der es gezeichnet hat — deshalb rechnet
+        /// <c>ChartRenderer.FensterAusBild</c> daraus das Achsenfenster, genau wie in
+        /// den übrigen Hüllen mit Ganglinie.</para>
         /// </summary>
-        private static Task<KlimadatenDialog.Regionsansicht> Ansicht(string name)
+        /// <param name="name">Der Bezeichner der Region.</param>
+        /// <param name="temperaturbereich">Der Bildausschnitt des Temperaturbildes;
+        /// <c>null</c> = das ganze Jahr.</param>
+        /// <param name="sonnenwinkelbereich">Der Bildausschnitt des Sonnenwinkelbildes.</param>
+        private static Task<KlimadatenDialog.Regionsansicht> Ansicht(
+            string name, Diagrammbereich temperaturbereich, Diagrammbereich sonnenwinkelbereich)
         {
             var region = new KlimaregionStammCtrl();
             region.ReadByName(name ?? "");
@@ -183,16 +200,21 @@ namespace WindowsFormsApplication1
                     region.Details ?? "", region.Longitude, region.Latitude, null, null,
                     MyResource.Resource.KLIMA_MSG_KEINE_DATEN));
 
+            double[] werteTemperatur = solar.list_Temperatur.ToArray();
+            double[] werteSonnenwinkel = solar.list_Sonnenwinkel.ToArray();
+
             byte[] temperatur = ChartRenderer.Jahresgang(
                 MyResource.Resource.KLIMA_DIA_TEMPERATUR,
                 new[]
                 {
                     new ChartRenderer.Reihe(MyResource.Resource.KLIMA_REIHE_TEMPERATUR,
-                                            solar.list_Temperatur.ToArray(),
+                                            werteTemperatur,
                                             ChartRenderer.C_AUSSENTEMPERATUR)
                 },
                 MyResource.Resource.KLIMA_ACHSE_X,
-                MyResource.Resource.KLIMA_ACHSE_TEMPERATUR);
+                MyResource.Resource.KLIMA_ACHSE_TEMPERATUR,
+                false,
+                Fenster(temperaturbereich, werteTemperatur.Length));
 
             // A-3/E-4: Die Sonnenwinkel-Achse beginnt bei 0 - wie YMinValue = 0 des
             // Vorlaeufers (W14c.0j).
@@ -201,15 +223,31 @@ namespace WindowsFormsApplication1
                 new[]
                 {
                     new ChartRenderer.Reihe(MyResource.Resource.KLIMA_REIHE_SONNENWINKEL,
-                                            solar.list_Sonnenwinkel.ToArray(),
+                                            werteSonnenwinkel,
                                             SKColors.Orange)
                 },
                 MyResource.Resource.KLIMA_ACHSE_X,
                 MyResource.Resource.KLIMA_ACHSE_SONNENWINKEL,
-                minimumNull: true);
+                true,
+                Fenster(sonnenwinkelbereich, werteSonnenwinkel.Length));
 
             return Task.FromResult(new KlimadatenDialog.Regionsansicht(
                 region.Details ?? "", region.Longitude, region.Latitude, temperatur, winkel, ""));
+        }
+
+        /// <summary>
+        /// Rechnet ein aufgezogenes Rechteck in das Achsenfenster des Renderers um
+        /// (KL‑8) — dieselbe eine Stelle, die auch die Gebäude-, Ganglinien- und
+        /// Simulationshüllen nehmen. Ohne Rechteck bleibt es beim ganzen Jahr.
+        /// </summary>
+        private static ChartRenderer.Achsenfenster Fenster(Diagrammbereich bereich, int laenge)
+        {
+            if (bereich == null) return null;
+
+            return ChartRenderer.FensterAusBild(
+                new ChartRenderer.Bildausschnitt(bereich.XVon, bereich.XBis,
+                                                 bereich.YVon, bereich.YBis),
+                laenge);
         }
 
         // =====================================================================

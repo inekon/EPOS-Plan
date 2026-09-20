@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Klimadaten;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
@@ -68,7 +69,9 @@ public class KlimadatenDialogTests : EposBunitContext
         IReadOnlyList<string>? orte = null,
         Action<bool>? geschlossen = null,
         Func<string, Task<string?>>? dateiWaehlen = null,
-        Func<KlimaImportAuftrag, Task<KlimaVorschauErgebnis>>? regionErmitteln = null)
+        Func<KlimaImportAuftrag, Task<KlimaVorschauErgebnis>>? regionErmitteln = null,
+        Func<string, Diagrammbereich?, Diagrammbereich?,
+             Task<KlimadatenDialog.Regionsansicht>>? ansichtMitAusschnitt = null)
     {
         IReadOnlyList<Katalogfilterzeile> liste = regionen ?? Regionen();
         return Render<KlimadatenDialog>(p => p
@@ -76,6 +79,7 @@ public class KlimadatenDialogTests : EposBunitContext
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Ansicht, ansicht ?? (n => Task.FromResult(
                 new KlimadatenDialog.Regionsansicht("Details " + n, 9.18, 48.77, BILD, BILD, ""))))
+            .Add(x => x.AnsichtMitAusschnitt, ansichtMitAusschnitt)
             .Add(x => x.Importieren, importieren ?? ((_, _) => Task.FromResult(
                 new KlimaImportErgebnis
                 {
@@ -1251,5 +1255,129 @@ public class KlimadatenDialogTests : EposBunitContext
 
         Assert.Equal("epos-knopf", knopf.ClassName);
         Assert.False(knopf.HasAttribute("style"));
+    }
+
+    // =====================================================================
+    //  Der DATENZOOM der beiden Diagramme (Anwenderwunsch KL-8)
+    // =====================================================================
+
+    /// <summary>Die Beschriftungen der Knöpfe über dem GEZEIGTEN Diagramm.</summary>
+    private static string[] Diagrammknoepfe(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindAll("button.epos-diagramm-knopf")
+              .Select(k => k.TextContent.Trim()).ToArray();
+
+    /// <summary>Der Bildrahmen des gezeigten Reiters — je Reiter steht genau einer.</summary>
+    private static EPOS.UI.Bausteine.Diagramm Bildrahmen(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindComponents<EPOS.UI.Bausteine.Diagramm>()[0].Instance;
+
+    /// <summary>
+    /// Wählt die Region Nr. <paramref name="nr"/> — ein Bild gibt es erst mit einer
+    /// gewählten Region, ohne sie steht der Platzhalter (und kein Bildrahmen).
+    /// </summary>
+    private static void Region(IRenderedComponent<KlimadatenDialog> cut, int nr)
+        => cut.FindAll("button.epos-anlagenwahl")[nr].Click();
+
+    /// <summary>
+    /// <b>OHNE den Delegaten bleibt es beim BILDZOOM.</b> Wer nur <c>Ansicht</c>
+    /// belegt, kann keinen Zeitausschnitt zeichnen lassen — dann steht über dem Bild
+    /// nur „1:1", und der Knopf „Bereich" erscheint gar nicht erst. Ein Knopf, der
+    /// nichts neu zeichnen kann, wäre eine Behauptung.
+    /// </summary>
+    [Fact]
+    public void Ohne_den_Ausschnittdelegaten_fehlt_der_Bereichsknopf()
+    {
+        var cut = Zeige();
+        Region(cut, 0);
+
+        Assert.Equal(new[] { "1:1" }, Diagrammknoepfe(cut));
+    }
+
+    /// <summary>
+    /// <b>MIT dem Delegaten trägt JEDER der beiden Reiter den Knopf „Bereich".</b>
+    /// Der Reiter zeichnet nur das gewählte Blatt; geprüft wird deshalb erst die
+    /// Temperatur, dann der Sonnenwinkel.
+    /// </summary>
+    [Fact]
+    public void Mit_dem_Ausschnittdelegaten_traegt_jeder_Reiter_den_Bereichsknopf()
+    {
+        var cut = Zeige(ansichtMitAusschnitt: (_, _, _) => Task.FromResult(
+            new KlimadatenDialog.Regionsansicht("D", 9.18, 48.77, BILD, BILD, "")));
+        Region(cut, 0);
+
+        Assert.Equal(new[] { "Bereich", "1:1" }, Diagrammknoepfe(cut));
+
+        cut.FindAll("button[role='tab']")[1].Click();
+
+        Assert.Equal(new[] { "Bereich", "1:1" }, Diagrammknoepfe(cut));
+    }
+
+    /// <summary>
+    /// <b>Der aufgezogene Bereich geht UNVERÄNDERT an den Delegaten — und zwar am
+    /// Platz des RICHTIGEN Reiters.</b> Was an einer Stelle des Bildes steht, weiß
+    /// nur der Renderer, der es gezeichnet hat; der Dialog rechnet nichts. Zieht der
+    /// Anwender im Temperaturbild, bleibt der Sonnenwinkel beim ganzen Jahr — und
+    /// umgekehrt. „1:1" nimmt den Ausschnitt wieder zurück.
+    /// </summary>
+    [Fact]
+    public async Task Der_Bereich_geht_an_den_Platz_des_gezeigten_Reiters()
+    {
+        var rufe = new List<(Diagrammbereich? Temperatur, Diagrammbereich? Sonnenwinkel)>();
+
+        var cut = Zeige(ansichtMitAusschnitt: (_, t, s) =>
+        {
+            rufe.Add((t, s));
+            return Task.FromResult(
+                new KlimadatenDialog.Regionsansicht("D", 9.18, 48.77, BILD, BILD, ""));
+        });
+        Region(cut, 0);
+
+        // Reiter 1: das Temperaturbild.
+        await cut.InvokeAsync(() => Bildrahmen(cut).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+
+        Assert.Equal(0.25, rufe[^1].Temperatur!.XVon);
+        Assert.Equal(0.5, rufe[^1].Temperatur!.XBis);
+        Assert.Null(rufe[^1].Sonnenwinkel);
+
+        // Reiter 2: der Sonnenwinkel fuehrt seinen EIGENEN Ausschnitt; der der
+        // Temperatur steht weiter.
+        cut.FindAll("button[role='tab']")[1].Click();
+        await cut.InvokeAsync(() => Bildrahmen(cut).BereichGemeldet(0.3, 0.7, 0.2, 0.8));
+
+        Assert.Equal(0.3, rufe[^1].Sonnenwinkel!.XVon);
+        Assert.Equal(0.25, rufe[^1].Temperatur!.XVon);
+
+        // „1:1" verwirft den Ausschnitt DIESES Bildes.
+        cut.FindAll("button.epos-diagramm-knopf").First(k => k.TextContent.Trim() == "1:1").Click();
+
+        Assert.Null(rufe[^1].Sonnenwinkel);
+        Assert.Equal(0.25, rufe[^1].Temperatur!.XVon);
+    }
+
+    /// <summary>
+    /// <b>Eine andere Region heißt eine andere Reihe</b> — ein Ausschnitt, der für
+    /// die alte Region aufgezogen wurde, hat für die neue keine Bedeutung und fällt
+    /// mit der Wahl.
+    /// </summary>
+    [Fact]
+    public async Task Der_Regionswechsel_setzt_beide_Ausschnitte_zurueck()
+    {
+        var rufe = new List<(string Name, Diagrammbereich? Temperatur, Diagrammbereich? Sonnenwinkel)>();
+
+        var cut = Zeige(ansichtMitAusschnitt: (n, t, s) =>
+        {
+            rufe.Add((n, t, s));
+            return Task.FromResult(
+                new KlimadatenDialog.Regionsansicht("D", 9.18, 48.77, BILD, BILD, ""));
+        });
+        Region(cut, 0);
+
+        await cut.InvokeAsync(() => Bildrahmen(cut).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+        Assert.NotNull(rufe[^1].Temperatur);
+
+        Region(cut, 1);
+
+        Assert.Equal("Stuttgart", rufe[^1].Name);
+        Assert.Null(rufe[^1].Temperatur);
+        Assert.Null(rufe[^1].Sonnenwinkel);
     }
 }
