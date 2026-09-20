@@ -62,6 +62,11 @@ public class GanglinieImportOptionenDialogTests : BunitContext
     private static IReadOnlyList<IElement> Listen(IRenderedComponent<GanglinieImportOptionenDialog> cut)
         => cut.FindAll(".epos-importoptionen-raster select");
 
+    /// <summary>
+    /// Ein Knopf der Fußleiste — sie läuft Aktualisieren(0) · Füller ·
+    /// Abbrechen(1) · OK(2), die <c>SpeichernLeiste</c> des Hauses mit
+    /// „Aktualisieren" im Aktionsschlitz.
+    /// </summary>
     private static IElement Knopf(IRenderedComponent<GanglinieImportOptionenDialog> cut, int i)
         => cut.FindAll(".epos-leiste button")[i];
 
@@ -76,7 +81,7 @@ public class GanglinieImportOptionenDialogTests : BunitContext
 
         Assert.Equal(7, Listen(cut).Count);                        // ohne cbo_Blatt
         Assert.Single(cut.FindAll("input[type=checkbox]"));        // chk_Kopfzeile
-        Assert.Equal(3, cut.FindAll(".epos-leiste button").Count); // Abbrechen, Aktualisieren, OK
+        Assert.Equal(3, cut.FindAll(".epos-leiste button").Count); // Aktualisieren, Abbrechen, OK
     }
 
     /// <summary>
@@ -179,7 +184,7 @@ public class GanglinieImportOptionenDialogTests : BunitContext
     [Fact]
     public void Ohne_Vorschaurueckruf_ist_der_Aktualisierknopf_gesperrt()
     {
-        Assert.True(Knopf(Zeige(), 1).HasAttribute("disabled"));
+        Assert.True(Knopf(Zeige(), 0).HasAttribute("disabled"));
     }
 
     /// <summary>
@@ -199,7 +204,7 @@ public class GanglinieImportOptionenDialogTests : BunitContext
         });
 
         Listen(cut)[0].Change("2");                 // Tabulator waehlen
-        Knopf(cut, 1).Click();
+        Knopf(cut, 0).Click();
 
         Assert.Equal('\t', gesehen);
         Assert.Equal('\t', cut.Instance.Optionen().Trennzeichen);   // gerettet
@@ -212,7 +217,7 @@ public class GanglinieImportOptionenDialogTests : BunitContext
         var cut = Zeige(vorschau: (pfad, o) =>
             Task.FromResult<GanglinienVorschau?>(new GanglinienVorschau { Lesbar = false }));
 
-        Knopf(cut, 1).Click();
+        Knopf(cut, 0).Click();
 
         Assert.Equal(3, cut.FindAll(".epos-raster tbody tr").Count);
     }
@@ -246,7 +251,7 @@ public class GanglinieImportOptionenDialogTests : BunitContext
         GanglinienImportOptionen? ergebnis = new();
         var cut = Zeige(geschlossen: o => ergebnis = o);
 
-        Knopf(cut, 0).Click();
+        Knopf(cut, 1).Click();
         Assert.Null(ergebnis);
     }
 
@@ -291,5 +296,37 @@ public class GanglinieImportOptionenDialogTests : BunitContext
 
         Assert.Single(cut.FindAll(".epos-importoptionen-raster .epos-formularraster"));
         Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
+    }
+
+    // =====================================================================
+    // Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 5)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Aktualisieren · Füller · Abbrechen · OK (primär, zuletzt)</b> — die eine
+    /// <c>SpeichernLeiste</c> des Hauses. „Aktualisieren" wirkt auf den
+    /// Eingabeblock und steht deshalb im Aktionsschlitz links vom Füller, nicht
+    /// mehr zwischen den beiden Schlussknöpfen.
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_ist_die_SpeichernLeiste_mit_Aktionsschlitz()
+    {
+        var cut = Zeige();
+        var leisten = cut.FindAll(".epos-leiste");
+        IElement fuss = leisten[leisten.Count - 1];
+
+        var knoepfe = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Vorschau aktualisieren", "Abbrechen", "OK" }, knoepfe);
+
+        // Der Fueller ist die Statusspanne, und sie steht ZWISCHEN Aktualisieren
+        // und Abbrechen.
+        Assert.Single(fuss.QuerySelectorAll(".epos-status"));
+        var kinder = fuss.Children.Select(e => e.ClassName ?? "").ToList();
+        Assert.Equal(1, kinder.FindIndex(k => k.Contains("epos-status")));
+
+        // Genau ein primaerer Knopf, und er steht zuletzt.
+        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("OK", primaer[0].TextContent.Trim());
     }
 }
