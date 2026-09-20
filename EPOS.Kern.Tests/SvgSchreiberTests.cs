@@ -666,5 +666,97 @@ namespace EPOS.Kern.Tests
             Assert.Equal(a, Text(Flaechenmodell()));
             Assert.DoesNotContain("\r", a);
         }
+
+        // =====================================================================
+        // 8 — Punktwolke und eigene x-Stellen (Etappe E3, Gruppe b)
+        // =====================================================================
+
+        /// <summary>Das Modell einer Punktwolke: x = Temperatur, y = Leistung.</summary>
+        private static Zeichenmodell Wolkenmodell()
+        {
+            var x = new double[] { -10, -5, 0, 5, 10 };
+            var y = new double[] { 40, 30, 20, 10, 0 };
+
+            Zeichenmodell m = Modell(200, 100);
+            m.Fuege(new Kreis(1f, 1f, 2.5f, null, new Fuellung(Farbton.Aus(Farbrolle.WAERME_WP)))
+            { Marke = "reihe:W" });
+            m.Flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 100f, 50f),
+                                           new Datenfenster(-10, 10, 0, 40),
+                                           Achsenart.Wert, "°C");
+            m.FuegeReihe(new Datenreihe("W", Farbton.Aus(Farbrolle.WAERME_WP), 5f, null, y,
+                                        m.Flaeche.Daten, Reihenart.Punkte, null, null, x, "kW"));
+            return m;
+        }
+
+        /// <summary>
+        /// <b>Eine Punktwolke wird EIN Pfad aus Punktsegmenten</b> (Entscheid
+        /// DG-E3-5): je Wert ein <c>M x,y h 0</c> — eine Strecke der Laenge null, die
+        /// erst die RUNDE Strichkappe zum Punkt macht. Die Strichbreite ist der
+        /// Punktdurchmesser des PNG, gefuellt wird nicht, und 8 760 Punkte sind EIN
+        /// Knoten statt 8 760.
+        ///
+        /// <para>Gebuendelt wird NICHT: Eine Buendelung je Bildpunktspalte naehme
+        /// genau die Verdichtung weg, die die Aussage der Wolke ist.</para>
+        /// </summary>
+        [Fact]
+        public void EinePunktwolkeWirdEinPfadAusPunktsegmenten()
+        {
+            SvgKnoten w = SvgSchreiber.Baum(Wolkenmodell(), Farbpalette.Vorgabe);
+            SvgKnoten pfad = w.Alle().Single(k => Wert(k, "class") == "epos-reihe");
+
+            Assert.Equal("none", Wert(pfad, "fill"));
+            Assert.Equal("round", Wert(pfad, "stroke-linecap"));
+            Assert.Equal("5", Wert(pfad, "stroke-width"));
+            Assert.Equal("non-scaling-stroke", Wert(pfad, "vector-effect"));
+
+            // y = Hoehe − (Wert − YVon) / (YBis − YVon) · Hoehe, mit Hoehe = 50.
+            Assert.Equal("M -10,0 h 0 M -5,12.5 h 0 M 0,25 h 0 M 5,37.5 h 0 M 10,50 h 0",
+                         Wert(pfad, "d"));
+        }
+
+        /// <summary>
+        /// Der AUSSCHNITT einer Punktwolke laesst weg, was ausserhalb liegt — Punkt
+        /// fuer Punkt an seiner eigenen x-Stelle, ohne Indexrechnung.
+        /// </summary>
+        [Fact]
+        public void DerFensterpfadDerPunktwolkeLaesstAeussereWeg()
+        {
+            Zeichenmodell m = Wolkenmodell();
+            Datenreihe r = m.Reihen.Single();
+
+            Assert.Equal("M -5,12.5 h 0 M 0,25 h 0 M 5,37.5 h 0",
+                         SvgSchreiber.Reihenpfad(r, m.Flaeche, -5, 5, true));
+            // Der Vollpfad ist derselbe wie im Baum.
+            Assert.Equal("M -10,0 h 0 M -5,12.5 h 0 M 0,25 h 0 M 5,37.5 h 0 M 10,50 h 0",
+                         SvgSchreiber.Reihenpfad(r, m.Flaeche, true));
+        }
+
+        /// <summary>
+        /// <b>Eine LINIE mit eigenen x-Stellen sitzt an ihnen</b> (DG-E3-5). Die
+        /// Schnittkurve der Rastersuche mischt Grob- und Feinpunkte; ohne
+        /// <c>XWerte</c> laegen die vier Werte gleichmaessig verteilt — hier bei
+        /// 0/100/200/300 statt bei 0/100/250/300.
+        /// </summary>
+        [Fact]
+        public void EineLinieMitEigenenXStellenSitztAnIhnen()
+        {
+            var x = new double[] { 0, 100, 250, 300 };
+            var y = new double[] { 0, 10, 20, 40 };
+
+            Zeichenmodell m = Modell(200, 100);
+            m.Fuege(new Linie(0f, 0f, 1f, 1f, Strich()) { Marke = "reihe:S" });
+            m.Flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 100f, 40f),
+                                           new Datenfenster(0, 300, 0, 40), Achsenart.Wert);
+            m.FuegeReihe(new Datenreihe("S", Farbton.Aus(Farbrolle.STAMM), 2f, null, y,
+                                        m.Flaeche.Daten, Reihenart.Linie, null, null, x));
+
+            SvgKnoten pfad = SvgSchreiber.Baum(m, Farbpalette.Vorgabe).Alle()
+                .Single(k => Wert(k, "class") == "epos-reihe");
+
+            Assert.Equal("M 0,40 L 100,30 250,20 300,0", Wert(pfad, "d"));
+            // Und der Ausschnitt schneidet nach der x-STELLE, nicht nach dem Index.
+            Assert.Equal("M 100,30 L 250,20", SvgSchreiber.Reihenpfad(
+                m.Reihen.Single(), m.Flaeche, 100, 250, true));
+        }
     }
 }

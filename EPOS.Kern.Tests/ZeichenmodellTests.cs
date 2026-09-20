@@ -533,5 +533,66 @@ namespace EPOS.Kern.Tests
             // Eine fehlende Rolle faellt auf UNBENANNT zurueck statt zu werfen.
             Assert.Equal(Farbrolle.UNBENANNT, Farbton.Aus(null).Rolle);
         }
+
+        // =====================================================================
+        // Etappe E3, Gruppe (b): Achsenart, x-Stellen und Einheit
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Zeichenflaeche nennt, was ihre x-Achse ZAEHLT</b> (Entscheid
+        /// DG-E3-4). Die Vorgabe ist <see cref="Achsenart.Stunden"/> ohne Einheit —
+        /// damit bleibt jede Flaeche der frueheren Etappen woertlich, was sie war. Die
+        /// beiden neuen Felder gehoeren zur Gleichheit: Zwei Flaechen ueber demselben
+        /// Fenster, aber mit verschiedener Achsenart, sind VERSCHIEDEN.
+        /// </summary>
+        [Fact]
+        public void DieZeichenflaecheNenntIhreAchsenartUndEinheit()
+        {
+            var bild = new Rahmen(0f, 0f, 100f, 50f);
+            var daten = new Datenfenster(0, 10, 0, 100);
+
+            var vorgabe = new Zeichenflaeche(bild, daten);
+            Assert.Equal(Achsenart.Stunden, vorgabe.X);
+            Assert.Null(vorgabe.XEinheit);
+            Assert.Equal(vorgabe, new Zeichenflaeche(bild, daten, Achsenart.Stunden));
+
+            Assert.NotEqual(vorgabe, new Zeichenflaeche(bild, daten, Achsenart.Index));
+            Assert.NotEqual(new Zeichenflaeche(bild, daten, Achsenart.Wert, "°C"),
+                            new Zeichenflaeche(bild, daten, Achsenart.Wert, "kWh"));
+        }
+
+        /// <summary>
+        /// <b><c>Gleicht</c> vergleicht auch die x-Stellen und die Einheit</b>
+        /// (DG-E3-5): Beide gehen in das Modell ein, das die Oberflaeche liest — eine
+        /// Reihe mit anderen Stuetzstellen ist eine andere Reihe, und ohne den
+        /// Vergleich liefe der Determinismusnachweis an ihnen vorbei.
+        ///
+        /// <para>Verglichen wird der INHALT der Felder, nicht die Referenz — derselbe
+        /// Grund wie bei <c>Werte</c> und <c>Unten</c>.</para>
+        /// </summary>
+        [Fact]
+        public void GleichtVergleichtXStellenUndEinheit()
+        {
+            var werte = new double[] { 1, 2, 3 };
+            var stellen = new double[] { 0, 5, 10 };
+
+            Datenreihe Bauen(double[] x, string einheit, Reihenart art = Reihenart.Linie)
+                => new Datenreihe("A", Ton(Farbrolle.STAMM), 1f, null, (double[])werte.Clone(),
+                                  null, art, null, null, x, einheit);
+
+            Datenreihe a = Bauen((double[])stellen.Clone(), "kW");
+
+            Assert.True(a.Gleicht(Bauen((double[])stellen.Clone(), "kW")));
+            Assert.False(a.Gleicht(Bauen(new double[] { 0, 6, 10 }, "kW")));
+            Assert.False(a.Gleicht(Bauen((double[])stellen.Clone(), "€")));
+            Assert.False(a.Gleicht(Bauen(null, "kW")));
+            Assert.False(a.Gleicht(Bauen((double[])stellen.Clone(), "kW", Reihenart.Punkte)));
+
+            // Und die Vorgaben bleiben, was sie waren: keine Stellen, keine Einheit.
+            var schlicht = new Datenreihe("A", Ton(Farbrolle.STAMM), 1f, null, werte);
+            Assert.Null(schlicht.XWerte);
+            Assert.Null(schlicht.Einheit);
+            Assert.Equal(Reihenart.Linie, schlicht.Art);
+        }
     }
 }
