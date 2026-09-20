@@ -20223,4 +20223,10 @@ Möchten Sie das zulassen?</value>
   <data name="TRANSFER_PAKET_UNLESBAR_GRUND" xml:space="preserve">
     <value>Paket konnte nicht gelesen werden: {0}</value>
   </data>
+  <data name="KDLG_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Verwirft nur die ungespeicherten Eingaben; angelegte Positionen bleiben.</value>
+  </data>
+  <data name="KDLG_ET_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Verwirft nur die ungespeicherten Eingaben; angelegte Träger bleiben.</value>
+  </data>
 </root>

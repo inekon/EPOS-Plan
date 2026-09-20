@@ -132,11 +132,6 @@ public sealed class KnopfleistenWacheTests
             + "(DL-Q2 a)."),
 
         new Ausnahme(
-            "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor", REGEL_ABBRECHEN_DAVOR,
-            "DL-2 Nr. 6: der Fuss laeuft Abbrechen . Speichern . OK. Auftrag DL-2i "
-            + "ersetzt ihn durch die SpeichernLeiste mit MitSpeichern (DL-Q3 a)."),
-
-        new Ausnahme(
             "EPOS.UI/Dialoge/Kosten/EnergietraegerDialog.razor", REGEL_ABBRECHEN_DAVOR,
             "DL-2 Nr. 7: der Fuss laeuft Abbrechen . Speichern . OK. Auftrag DL-2k "
             + "ersetzt ihn durch die SpeichernLeiste mit MitSpeichern (DL-Q3 a, DL-Q5).")

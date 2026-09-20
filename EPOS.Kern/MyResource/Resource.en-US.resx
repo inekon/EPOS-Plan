@@ -20216,4 +20216,10 @@ Do you want to allow this?</value>
   <data name="TRANSFER_PAKET_UNLESBAR_GRUND" xml:space="preserve">
     <value>The package could not be read: {0}</value>
   </data>
+  <data name="KDLG_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Discards only the unsaved entries; items already created remain.</value>
+  </data>
+  <data name="KDLG_ET_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Discards only the unsaved entries; energy sources already created remain.</value>
+  </data>
 </root>
