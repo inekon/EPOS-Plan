@@ -2682,125 +2682,117 @@ namespace WindowsFormsApplication1
                     if (unterkante > H) H = (int)Math.Ceiling(unterkante);
                 }
 
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel ?? "", W);
+
+            int zeilen = kapazitaetenKwh?.Count ?? 0;
+            int spalten = cRaten?.Count ?? 0;
+
+            if (zeilen < 1 || spalten < 1 || werte == null || werte.Length < zeilen)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel ?? "", W);
-
-                int zeilen = kapazitaetenKwh?.Count ?? 0;
-                int spalten = cRaten?.Count ?? 0;
-
-                if (zeilen < 1 || spalten < 1 || werte == null || werte.Length < zeilen)
-                {
-                    Leerhinweis(g, rc);
-                    return Png(flaeche);
-                }
-
-                double min = double.MaxValue, max = double.MinValue;
-                for (int i = 0; i < zeilen; i++)
-                    for (int s = 0; s < spalten && s < werte[i].Length; s++)
-                    {
-                        double v = werte[i][s];
-                        if (double.IsNaN(v) || double.IsInfinity(v)) continue;
-                        if (v < min) min = v;
-                        if (v > max) max = v;
-                    }
-                if (min > max) { min = 0.0; max = 0.0; }
-
-                float breite = rc.Width / spalten;
-                float hoehe = rc.Height / zeilen;
-
-                for (int i = 0; i < zeilen; i++)
-                    for (int s = 0; s < spalten; s++)
-                    {
-                        double v = s < werte[i].Length ? werte[i][s] : double.NaN;
-                        SKColor farbe = Rasterfarbe(v, min, max);
-
-                        // Zeile 0 unten: die Kapazitaet waechst nach oben.
-                        float x = rc.Left + s * breite;
-                        float y = rc.Bottom - (i + 1) * hoehe;
-                        using (var b = Fuellung(farbe)) g.DrawRect(x, y, breite, hoehe, b);
-
-                        // DIE SPERRE ALS MUSTER (#193): Schraffur ueber die Farbe, nicht
-                        // statt ihrer - der Wert bleibt ablesbar.
-                        if (Gesetzt(unzulaessig, i, s))
-                            Schraffur(g, SKRect.Create(x, y, breite, hoehe));
-                    }
-
-                using (var netz = Strich(SKColors.White, 1f))
-                {
-                    for (int i = 0; i <= zeilen; i++)
-                        g.DrawLine(rc.Left, rc.Bottom - i * hoehe, rc.Right, rc.Bottom - i * hoehe, netz);
-                    for (int s = 0; s <= spalten; s++)
-                        g.DrawLine(rc.Left + s * breite, rc.Top, rc.Left + s * breite, rc.Bottom, netz);
-                }
-
-                // Das Optimum: ein offenes schwarzes Quadrat auf der Zellmitte -
-                // dieselbe Marke, die die abgeloeste Maske setzte.
-                if (besteZeile >= 0 && besteZeile < zeilen && besteSpalte >= 0 && besteSpalte < spalten)
-                    using (var marke = Strich(SKColors.Black, 3f))
-                    {
-                        float mx = rc.Left + (besteSpalte + 0.5f) * breite;
-                        float my = rc.Bottom - (besteZeile + 0.5f) * hoehe;
-                        float k = Math.Min(breite, hoehe) * 0.36f;
-                        g.DrawRect(mx - k, my - k, 2f * k, 2f * k, marke);
-                    }
-
-                using (var achse = Strich(SKColors.DimGray, 2f))
-                {
-                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
-                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
-                }
-
-                // Achsenmarken an den Zellmitten. Bei vielen Stuetzstellen wird
-                // ausgeduennt, damit sich die Beschriftungen nicht beruehren.
-                using (var f = Schrift(14f))
-                {
-                    int xJede = Math.Max(1, (int)Math.Ceiling(spalten * 46f / rc.Width));
-                    for (int s = 0; s < spalten; s += xJede)
-                    {
-                        string lab = cRaten[s].ToString("0.##", DE);
-                        float x = rc.Left + (s + 0.5f) * breite;
-                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                    }
-
-                    int yJede = Math.Max(1, (int)Math.Ceiling(zeilen * 22f / rc.Height));
-                    for (int i = 0; i < zeilen; i += yJede)
-                    {
-                        string lab = kapazitaetenKwh[i].ToString("0.#", DE);
-                        float y = rc.Bottom - (i + 0.5f) * hoehe;
-                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 8f,
-                             y - TextHoehe(f) / 2f);
-                    }
-                }
-
-                using (var f = Schrift(15f))
-                {
-                    Text(g, xTitel ?? "", f, SKColors.DimGray,
-                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
-                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
-                }
-
-                Farbskala(g, SKRect.Create(rc.Right + 34f, rc.Top, 26f, rc.Height),
-                          min, max, skalaTitel);
-
-                // DIE FUSSZEILE (SP-O-4): Sie steht unter der Achsenbeschriftung und
-                // bricht bei Bedarf um; ohne Text aendert sie nichts. MIT ZUSATZ ist der
-                // Block oben schon vermessen - er wird Zeile fuer Zeile gesetzt und passt
-                // in die dafuer gewachsene Bildhoehe. OHNE Zusatz bleibt es beim Bestand:
-                // zwei Zeilen im Bild von 860 x 560.
-                if (fussBlock != null)
-                    using (var f = Schrift(13f))
-                        for (int i = 0; i < fussBlock.Count; i++)
-                            Text(g, fussBlock[i], f, SKColors.DimGray,
-                                 rc.Left, fussOben + i * fussZeilenhoehe);
-                else if (!string.IsNullOrWhiteSpace(fusszeile))
-                    using (var f = Schrift(13f))
-                        Umbruchtext(g, fusszeile, f, SKColors.DimGray, rc.Left, fussOben,
-                                    fussBreite);
-
-                return Png(flaeche);
+                Leerhinweis(z, rc);
+                return SkiaMaler.Png(z);
             }
+
+            double min = double.MaxValue, max = double.MinValue;
+            for (int i = 0; i < zeilen; i++)
+                for (int s = 0; s < spalten && s < werte[i].Length; s++)
+                {
+                    double v = werte[i][s];
+                    if (double.IsNaN(v) || double.IsInfinity(v)) continue;
+                    if (v < min) min = v;
+                    if (v > max) max = v;
+                }
+            if (min > max) { min = 0.0; max = 0.0; }
+
+            float breite = rc.Width / spalten;
+            float hoehe = rc.Height / zeilen;
+
+            for (int i = 0; i < zeilen; i++)
+                for (int s = 0; s < spalten; s++)
+                {
+                    double v = s < werte[i].Length ? werte[i][s] : double.NaN;
+
+                    // Zeile 0 unten: die Kapazitaet waechst nach oben.
+                    float x = rc.Left + s * breite;
+                    float y = rc.Bottom - (i + 1) * hoehe;
+                    z.Rechteck(x, y, breite, hoehe, null,
+                               new Zeichnung.Fuellung(Rasterfarbe(v, min, max)));
+
+                    // DIE SPERRE ALS MUSTER (#193): Schraffur ueber die Farbe, nicht
+                    // statt ihrer - der Wert bleibt ablesbar.
+                    if (Gesetzt(unzulaessig, i, s))
+                        Schraffur(z, SKRect.Create(x, y, breite, hoehe));
+                }
+
+            // Die Netzlinien tragen die Farbe des Bildgrundes — sie trennen zwei
+            // Zellen, statt eine eigene Farbe zu behaupten.
+            var netz = Stift(Farbrolle.HINTERGRUND, 1f);
+            for (int i = 0; i <= zeilen; i++)
+                z.Linie(rc.Left, rc.Bottom - i * hoehe, rc.Right, rc.Bottom - i * hoehe, netz);
+            for (int s = 0; s <= spalten; s++)
+                z.Linie(rc.Left + s * breite, rc.Top, rc.Left + s * breite, rc.Bottom, netz);
+
+            // Das Optimum: ein offenes schwarzes Quadrat auf der Zellmitte -
+            // dieselbe Marke, die die abgeloeste Maske setzte.
+            if (besteZeile >= 0 && besteZeile < zeilen && besteSpalte >= 0 && besteSpalte < spalten)
+            {
+                float mx = rc.Left + (besteSpalte + 0.5f) * breite;
+                float my = rc.Bottom - (besteZeile + 0.5f) * hoehe;
+                float k = Math.Min(breite, hoehe) * 0.36f;
+                z.Rechteck(mx - k, my - k, 2f * k, 2f * k, Stift(Farbrolle.TEXT, 3f));
+            }
+
+            Achsenkreuz(z, rc);
+
+            // Achsenmarken an den Zellmitten. Bei vielen Stuetzstellen wird
+            // ausgeduennt, damit sich die Beschriftungen nicht beruehren.
+            using (var f = Schrift(14f))
+            {
+                int xJede = Math.Max(1, (int)Math.Ceiling(spalten * 46f / rc.Width));
+                for (int s = 0; s < spalten; s += xJede)
+                {
+                    string lab = cRaten[s].ToString("0.##", DE);
+                    float x = rc.Left + (s + 0.5f) * breite;
+                    Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                }
+
+                int yJede = Math.Max(1, (int)Math.Ceiling(zeilen * 22f / rc.Height));
+                for (int i = 0; i < zeilen; i += yJede)
+                {
+                    string lab = kapazitaetenKwh[i].ToString("0.#", DE);
+                    float y = rc.Bottom - (i + 0.5f) * hoehe;
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 8f,
+                         y - TextHoehe(f) / 2f);
+                }
+            }
+
+            using (var f = Schrift(15f))
+            {
+                Text(z, xTitel ?? "", f, Farbrolle.ACHSE,
+                     rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 26f);
+            }
+
+            Farbskala(z, SKRect.Create(rc.Right + 34f, rc.Top, 26f, rc.Height),
+                      min, max, skalaTitel);
+
+            // DIE FUSSZEILE (SP-O-4): Sie steht unter der Achsenbeschriftung und
+            // bricht bei Bedarf um; ohne Text aendert sie nichts. MIT ZUSATZ ist der
+            // Block oben schon vermessen - er wird Zeile fuer Zeile gesetzt und passt
+            // in die dafuer gewachsene Bildhoehe. OHNE Zusatz bleibt es beim Bestand:
+            // zwei Zeilen im Bild von 860 x 560.
+            if (fussBlock != null)
+                using (var f = Schrift(13f))
+                    for (int i = 0; i < fussBlock.Count; i++)
+                        Text(z, fussBlock[i], f, Farbrolle.ACHSE,
+                             rc.Left, fussOben + i * fussZeilenhoehe);
+            else if (!string.IsNullOrWhiteSpace(fusszeile))
+                using (var f = Schrift(13f))
+                    Umbruchtext(z, fusszeile, f, Farbrolle.ACHSE, rc.Left, fussOben,
+                                fussBreite);
+
+            return SkiaMaler.Png(z);
         }
 
         /// <summary>Steht in der Schraffurmatrix an dieser Stelle <c>true</c>?</summary>
@@ -2906,12 +2898,12 @@ namespace WindowsFormsApplication1
         /// Ein Hinweis, der an der Breite <paramref name="breite"/> umbricht — höchstens
         /// zwei Zeilen, damit die Fußzeile nicht ins Bild wächst.
         /// </summary>
-        private static void Umbruchtext(SKCanvas g, string text, Schriftmass f, SKColor farbe,
+        private static void Umbruchtext(IZeichenziel z, string text, Schriftmass f, Farbrolle rolle,
                                         float x, float y, float breite)
         {
             List<string> zeilen = Umbruchzeilen(text, f, breite, FUSS_ZEILEN_BESTAND);
             for (int i = 0; i < zeilen.Count; i++)
-                Text(g, zeilen[i], f, farbe, x, y + i * (TextHoehe(f) + FUSS_ZEILENABSTAND));
+                Text(z, zeilen[i], f, rolle, x, y + i * (TextHoehe(f) + FUSS_ZEILENABSTAND));
         }
 
         /// <summary>
@@ -2919,57 +2911,76 @@ namespace WindowsFormsApplication1
         /// mittleren, Grün für den besten. Die Skala ist REIN RELATIV zum gezeigten
         /// Raster — sie sagt nichts darüber, ob der beste Punkt wirtschaftlich ist.
         /// </summary>
-        private static SKColor Rasterfarbe(double wert, double min, double max)
+        private static Farbton Rasterfarbe(double wert, double min, double max)
         {
             // EIN LOCH IST KEIN SCHLECHTER WERT (Auftrag #226): An dieser Stelle wurde
             // nichts gerechnet. Auf der Minimumfarbe stand dort bis dahin die Aussage
             // „schlechtester Kandidat des Rasters" - im Modus Kapazität × Leistung
             // zerfiel die Karte damit in ein überwiegend rotes Feld.
-            if (double.IsNaN(wert) || double.IsInfinity(wert)) return C_RASTER_LOCH;
+            if (double.IsNaN(wert) || double.IsInfinity(wert))
+                return Farbton.Aus(Farbrolle.RASTER_LOCH);
             double spanne = max - min;
             double t = spanne > 1e-12 ? (wert - min) / spanne : 0.5;
             return Farbstufe(t);
         }
 
-        /// <summary>Farbe zum Anteil 0…1 — exakt Rot bei 0, Gold bei 0,5 und Grün bei 1.</summary>
-        private static SKColor Farbstufe(double t)
+        /// <summary>
+        /// Farbton zum Anteil 0…1 — exakt Rot bei 0, Gold bei 0,5 und Grün bei 1.
+        ///
+        /// <para>Die beiden Enden sind REINE ROLLEN; dazwischen entsteht eine
+        /// GERECHNETE Farbe, die ihre Herkunftsrolle mitführt (DG-Q7): die untere
+        /// der beiden Rollen, aus denen gemischt wurde. So bleibt am Befehl
+        /// ablesbar, woraus der Ton entstand, und eine getauschte Palette verschiebt
+        /// die Enden der Skala.</para>
+        /// </summary>
+        private static Farbton Farbstufe(double t)
         {
-            if (t <= 0.0) return C_RASTER_SCHLECHT;
-            if (t >= 1.0) return C_RASTER_GUT;
+            if (t <= 0.0) return Farbton.Aus(Farbrolle.RASTER_SCHLECHT);
+            if (t >= 1.0) return Farbton.Aus(Farbrolle.RASTER_GUT);
             return t < 0.5
-                ? Mischung(C_RASTER_SCHLECHT, C_RASTER_MITTE, t * 2.0)
-                : Mischung(C_RASTER_MITTE, C_RASTER_GUT, (t - 0.5) * 2.0);
+                ? Farbpalette.Gerechnet(Farbrolle.RASTER_SCHLECHT,
+                                        Mischung(Farbrolle.RASTER_SCHLECHT, Farbrolle.RASTER_MITTE,
+                                                 t * 2.0))
+                : Farbpalette.Gerechnet(Farbrolle.RASTER_MITTE,
+                                        Mischung(Farbrolle.RASTER_MITTE, Farbrolle.RASTER_GUT,
+                                                 (t - 0.5) * 2.0));
         }
 
-        private static SKColor Mischung(SKColor a, SKColor b, double t)
+        /// <summary>
+        /// Die lineare Mischung zweier ROLLENFARBEN — gegen
+        /// <see cref="Farbpalette.Aktuell"/> aufgelöst, damit die Zwischentöne einer
+        /// getauschten Palette folgen.
+        /// </summary>
+        private static Farbe Mischung(Farbrolle a, Farbrolle b, double t)
         {
-            return new SKColor(
-                (byte)Math.Round(a.Red + (b.Red - a.Red) * t),
-                (byte)Math.Round(a.Green + (b.Green - a.Green) * t),
-                (byte)Math.Round(a.Blue + (b.Blue - a.Blue) * t));
+            Farbe fa = Farbpalette.Aktuell[a];
+            Farbe fb = Farbpalette.Aktuell[b];
+            return new Farbe(
+                (byte)Math.Round(fa.R + (fb.R - fa.R) * t),
+                (byte)Math.Round(fa.G + (fb.G - fa.G) * t),
+                (byte)Math.Round(fa.B + (fb.B - fa.B) * t));
         }
 
         /// <summary>Der senkrechte Farbbalken rechts neben der Rasterkarte.</summary>
-        private static void Farbskala(SKCanvas g, SKRect rc, double min, double max, string titel)
+        private static void Farbskala(IZeichenziel z, SKRect rc, double min, double max, string titel)
         {
             float stufe = rc.Height / FARBSKALA_STUFEN;
             for (int i = 0; i < FARBSKALA_STUFEN; i++)
             {
                 double t = (double)i / (FARBSKALA_STUFEN - 1);
-                using (var b = Fuellung(Farbstufe(t)))
-                    g.DrawRect(rc.Left, rc.Bottom - (i + 1) * stufe, rc.Width, stufe + 1f, b);
+                z.Rechteck(rc.Left, rc.Bottom - (i + 1) * stufe, rc.Width, stufe + 1f,
+                           null, new Zeichnung.Fuellung(Farbstufe(t)));
             }
-            using (var rahmen = Strich(SKColors.DimGray, 1f))
-                g.DrawRect(rc.Left, rc.Top, rc.Width, rc.Height, rahmen);
+            z.Rechteck(rc.Left, rc.Top, rc.Width, rc.Height, Stift(Farbrolle.ACHSE, 1f));
 
             using (var f = Schrift(14f))
             {
-                Text(g, max.ToString("N0", DE), f, SKColors.DimGray, rc.Right + 6f, rc.Top - 2f);
-                Text(g, min.ToString("N0", DE), f, SKColors.DimGray, rc.Right + 6f,
+                Text(z, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Right + 6f, rc.Top - 2f);
+                Text(z, min.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Right + 6f,
                      rc.Bottom - TextHoehe(f) + 2f);
             }
             using (var f = Schrift(15f))
-                Text(g, titel ?? "", f, SKColors.DimGray, rc.Left - 10f, rc.Top - 26f);
+                Text(z, titel ?? "", f, Farbrolle.ACHSE, rc.Left - 10f, rc.Top - 26f);
         }
 
         /// <summary>
