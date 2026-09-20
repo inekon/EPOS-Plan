@@ -20873,4 +20873,52 @@ Do you want to allow this?</value>
   <data name="KI_FELD_AUFGELOEST" xml:space="preserve">
     <value>(field name resolved: {0} → {1})</value>
   </data>
+  <data name="KI_DLG_HK_NAME_ERL" xml:space="preserve">
+    <value>The boiler name of the catalogue record; the boiler appears under it in the list.</value>
+  </data>
+  <data name="KI_DLG_HK_FIRMA_ERL" xml:space="preserve">
+    <value>The manufacturer of the boiler; purely descriptive, it does not enter any calculation.</value>
+  </data>
+  <data name="KI_DLG_HK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Free descriptive text for the catalogue record.</value>
+  </data>
+  <data name="KI_DLG_HK_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the boiler; it decides which efficiency is used.</value>
+  </data>
+  <data name="KI_DLG_HK_BRENNWERT_ERL" xml:space="preserve">
+    <value>Yes = the boiler is calculated as a condensing boiler.</value>
+  </data>
+  <data name="KI_DLG_PSP_NAME_ERL" xml:space="preserve">
+    <value>The name of the storage tank in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_PSP_FIRMA_ERL" xml:space="preserve">
+    <value>The manufacturer of the storage tank; purely descriptive.</value>
+  </data>
+  <data name="KI_DLG_PSP_SPEICHERTYP_ERL" xml:space="preserve">
+    <value>The design of the storage tank (solar, buffer, combined).</value>
+  </data>
+  <data name="KI_DLG_PSP_VERLUSTE_ERL" xml:space="preserve">
+    <value>The heat loss of the ready-to-operate storage tank over one day.</value>
+  </data>
+  <data name="KI_DLG_WP_NAME_ERL" xml:space="preserve">
+    <value>The name of the heat pump in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_WP_KUEHLLEISTUNG_ERL" xml:space="preserve">
+    <value>The cooling capacity of the catalogue record; here a read-only display, it is changed at the plant.</value>
+  </data>
+  <data name="KI_DLG_HKP_TRAEGER_ERL" xml:space="preserve">
+    <value>The fuel variant of the plant; it decides the price and the emissions of the boiler.</value>
+  </data>
+  <data name="KI_DLG_BHKW_TRAEGER_ERL" xml:space="preserve">
+    <value>The fuel variant of the plant; it decides the price and the emissions of the module.</value>
+  </data>
+  <data name="KI_DLG_STSP_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the storage unit; it decides the price and the emissions of the electricity drawn.</value>
+  </data>
+  <data name="KI_DLG_PV_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the plant; it decides the price and the emissions of the electricity generated.</value>
+  </data>
+  <data name="KI_DLG_WPA_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the heat pump; it decides the price and the emissions of the drive power.</value>
+  </data>
 </root>

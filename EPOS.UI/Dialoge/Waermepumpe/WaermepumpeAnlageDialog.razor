@@ -1083,9 +1083,33 @@
         // die EINE Quelle aller drei Bloecke - Dialog, Konfiguration und Stammfelder;
         // die Stammfelder arbeiten auf einem Abbild, das nach einer Feldsetzung neu
         // aufgebaut wird (siehe KiHaken).
+        // KI-F1b: Die fünf Klapplisten der Maske sind WAHLFELDER. Ihre Einträge stehen
+        // dort, wo auch die Maske sie herholt — der Trägerkatalog kommt aus der Hülle,
+        // die vier festen Listen aus den Bausteinen.
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE_ANLAGE,
-                                          () => Daten, KiHaken());
+                                          () => Daten, KiHaken(),
+                                          ("energietraeger", Traegereintraege),
+                                          ("betriebsart", Betriebsarteintraege),
+                                          ("typ", () => KiMaskenanmeldung.Eintraege(
+                                                            WaermepumpeStammFelder.TYPEN, s => s, s => s)),
+                                          ("leistungsstufen", () => KiMaskenanmeldung.Eintraege(
+                                                            WaermepumpeStammFelder.LEISTUNGSSTUFEN, s => s, s => s)),
+                                          ("aufstellung", () => KiMaskenanmeldung.Eintraege(
+                                                            WaermepumpeStammFelder.AUFSTELLUNGEN, s => s, s => s)),
+                                          ("baujahr", () => KiMaskenanmeldung.Eintraege(
+                                                            WaermepumpeStammFelder.BAUJAHRE, j => j)));
     }
+
+    /// <summary>Die Energieträger des Katalogs für den Assistenten (KI-F1b).</summary>
+    private IReadOnlyList<KiWahleintrag> Traegereintraege()
+        => KiMaskenanmeldung.Eintraege(Traegerkatalog, e => e.Id, e => e.Name);
+
+    /// <summary>
+    /// Die drei Betriebsarten der Konfiguration für den Assistenten (KI-F1b) —
+    /// Schlüssel UND Text sind der Steuerwert, genau wie in der Klappliste.
+    /// </summary>
+    private static IReadOnlyList<KiWahleintrag> Betriebsarteintraege()
+        => KiMaskenanmeldung.Eintraege(WaermepumpeKonfiguration.BETRIEBSARTEN, s => s, s => s);
 
     // =================================================================================
     // Der Hilfe-Assistent liest und setzt die Anlagenfelder (Welle KI-F1)

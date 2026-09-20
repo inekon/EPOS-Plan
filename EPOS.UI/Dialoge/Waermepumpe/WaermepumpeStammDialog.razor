@@ -515,8 +515,20 @@
         // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus.
         if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
 
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => Daten, KiHaken());
+        // KI-F1b: Die vier Klapplisten der Stammfelder sind WAHLFELDER; ihre Einträge
+        // sind genau die Listen, die der Baustein zeichnet.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => Daten, KiHaken(),
+                                          ("typ", () => KiMaskenanmeldung.Eintraege(Typen, s => s, s => s)),
+                                          ("leistungsstufen", () => KiMaskenanmeldung.Eintraege(
+                                                                        Leistungsstufen, s => s, s => s)),
+                                          ("aufstellung", () => KiMaskenanmeldung.Eintraege(
+                                                                        Aufstellungen, s => s, s => s)),
+                                          ("baujahr", Baujahreintraege));
     }
+
+    /// <summary>Die Baujahre als Wahleinträge — Schlüssel und Text sind die Jahreszahl (KI-F1b).</summary>
+    private IReadOnlyList<KiWahleintrag> Baujahreintraege()
+        => KiMaskenanmeldung.Eintraege(Baujahre, j => j);
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3).

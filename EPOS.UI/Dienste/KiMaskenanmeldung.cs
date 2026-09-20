@@ -301,6 +301,14 @@ public sealed class KiMaskenanmeldung : IDisposable
     }
 
     /// <summary>
+    /// Die Einträge einer Liste, deren Schlüssel ZUGLEICH der angezeigte Text ist
+    /// (KI-F1b) — Steuerwerte, Baujahre, Vorlaufstufen.
+    /// </summary>
+    public static IReadOnlyList<KiWahleintrag> Eintraege<TZeile>(
+        IEnumerable<TZeile>? zeilen, Func<TZeile, object?> schluessel)
+        => Eintraege(zeilen, schluessel, _ => null);
+
+    /// <summary>
     /// Die Einträge einer Liste, deren SCHLÜSSEL der Listenplatz ist — die Bauform der
     /// festen Klapplisten des Hauses (KI-F1b).
     /// </summary>
