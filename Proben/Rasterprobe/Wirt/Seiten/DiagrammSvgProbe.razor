@@ -1,0 +1,134 @@
+﻿@page "/diagrammsvg"
+@using Microsoft.AspNetCore.WebUtilities
+@using SvgProbe
+@inject NavigationManager Navigation
+
+@*  DIE PRUEFSEITE DES BAUSTEINS DiagrammSvg (Konzept Diagramme, Etappe E2).
+
+    WOZU. bunit hat weder Layout noch JavaScript: Es kann beweisen, was die
+    Komponente aus einer GEMELDETEN Stunde oder einem gemeldeten Fenster macht,
+    aber nicht, dass Rad, Ziehen, Kneifgeste und Gummiband im Browser wirklich
+    die viewBox bewegen. Diese Seite stellt den Baustein deshalb so, wie der
+    Klimadialog ihn stellt - mit einem echten Jahresgang-Modell aus dem Kern -,
+    damit sich die Bedienung messen laesst:
+
+      * Rad und Kneifgeste zoomen die ZEITACHSE, y bleibt voll,
+      * Ziehen verschiebt, Doppelklick und die Taste 0 stellen 1:1 her,
+      * "Bereich" zieht ein Rechteck auf, das den Ausschnitt setzt,
+      * die Zeile unter dem Bild zeigt die Werte am Mauszeiger,
+      * ein Klick auf den Legendentext blendet die Reihe aus,
+      * ein Klick auf ihr Farbfeld oeffnet den Farbwaehler.
+
+    DREI REIHEN, ZWEI FAELLE. Zwei Reihen tragen HAUSFARBEN und damit eine
+    Farbrolle - ihr Legendeneintrag hat ein Farbfeld. Die dritte traegt eine
+    fest gerechnete Farbe ohne Rolle; sie bekommt keinen Waehler, und genau das
+    soll man hier sehen.
+
+    DIE FARBWAHL SPEICHERT NICHTS. Der Delegat setzt allein
+    Farbpalette.Aktuell - die Einstellung des Anwenders bleibt unberuehrt. Eine
+    Probe, die in Properties.Settings schriebe, veraenderte den Rechner, auf dem
+    sie laeuft.
+
+    Gaben aus der Adresse:
+      ?reihen=3     Anzahl der Reihen (1…3; darueber buendelt die Pfadregel,
+                    und E2 hat keinen gebuendelten Pfad)
+      ?zoom=0       ohne Leiste und ohne JS-Anbindung (OhneZoom)
+      ?farben=0     ohne Farbwaehler (nur der Legendenschalter bleibt)
+*@
+
+<h1 class="epos-ueberschrift">DiagrammSvg-Probe DG-E2</h1>
+
+<p id="diagrammsvg-stand" class="epos-hinweis"
+   data-reihen="@_reihen" data-fenster="@_fensterText" data-farbe="@_farbeText">
+    @_reihen Reihen · Fenster @_fensterText · zuletzt gesetzt: @_farbeText
+</p>
+
+<DiagrammSvg Modell="@_modell" Kennung="probe" Bezeichnung="Jahresgang der Probe"
+             Einheit="kW" Palette="@Farbpalette.Aktuell"
+             OhneZoom="@(!_mitZoom)"
+             FarbwahlErlaubt="@_mitFarben"
+             FarbeGewaehlt="FarbeSetzen"
+             FarbeZurueckgesetzt="FarbeZurueck"
+             FensterGeaendert="FensterGemerkt" />
+
+@code {
+    private Zeichenmodell? _modell;
+    private int _reihen = 3;
+    private bool _mitZoom = true;
+    private bool _mitFarben = true;
+
+    private string _fensterText = "voll";
+    private string _farbeText = "—";
+
+    /// <summary>
+    /// Die Farben der drei Reihen: zwei Hausfarben (Rolle vorhanden, Farbfeld in
+    /// der Legende) und eine fest gerechnete ohne Rolle (kein Farbfeld).
+    /// </summary>
+    private static readonly SkiaSharp.SKColor[] FARBEN =
+    {
+        ChartRenderer.C_WP,          // Hausfarbe -> Rolle
+        ChartRenderer.C_PV,          // Hausfarbe -> Rolle
+        new SkiaSharp.SKColor(0x7B, 0x1F, 0xA2)   // keine Hausfarbe -> kein Waehler
+    };
+
+    private static readonly string[] NAMEN = { "Wärmepumpe", "Photovoltaik", "Sonstiges" };
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("reihen", out var r) && int.TryParse(r, out int n))
+            _reihen = Math.Clamp(n, 1, 3);
+        if (abfrage.TryGetValue("zoom", out var z)) _mitZoom = z.ToString() != "0";
+        if (abfrage.TryGetValue("farben", out var f)) _mitFarben = f.ToString() != "0";
+
+        // Die Reihen kommen aus der SVG-Probe (Jahresgang, Tagesgang, einzelne
+        // Spitzen ZWISCHEN den Stuetzstellen der Schrittweite) - dieselben, mit
+        // denen der Pruefstand die Zahlen des Konzepts gemessen hat. Das BILD
+        // baut der Kern, damit hier kein zweiter Renderer entsteht.
+        double[][] werte = SvgZeichner.Jahresreihen(_reihen);
+
+        var reihen = new List<ChartRenderer.Reihe>(_reihen);
+        for (int i = 0; i < _reihen; i++)
+            reihen.Add(new ChartRenderer.Reihe(NAMEN[i], werte[i], FARBEN[i]));
+
+        _modell = ChartRenderer.JahresgangModell(
+            "Jahresgang der Probe", reihen, "Monat", "Leistung [kW]");
+    }
+
+    /// <summary>
+    /// Die gewählte Farbe wirkt SOFORT und NUR in diesem Prozess: Sie geht in
+    /// <c>Farbpalette.Aktuell</c>, nicht in die Anwendungseinstellung. Das Modell
+    /// bleibt, wie es ist — es trägt Rollen, keine Zahlen.
+    /// </summary>
+    private Task FarbeSetzen((Farbrolle Rolle, Farbe Farbe) wahl)
+    {
+        Farbpalette.Aktuell = new Farbpalette(
+            new Dictionary<Farbrolle, Farbe> { { wahl.Rolle, wahl.Farbe } },
+            Farbpalette.Aktuell);
+        _farbeText = wahl.Rolle.Name + " = " + Diagrammfarben.Hex(wahl.Farbe);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>„Hausfarbe" — dieselbe Runde zurück zur Vorgabe.</summary>
+    private Task FarbeZurueck(Farbrolle rolle)
+    {
+        Farbpalette.Aktuell = new Farbpalette(
+            new Dictionary<Farbrolle, Farbe> { { rolle, Farbpalette.Vorgabe[rolle] } },
+            Farbpalette.Aktuell);
+        _farbeText = rolle.Name + " = Hausfarbe";
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Der Ausschnitt, den das JS-Modul am Ende einer Geste meldet — hier nur zum
+    /// Ablesen. Ein Wirt der Anwendung würde ihn merken oder drucken.
+    /// </summary>
+    private Task FensterGemerkt(ChartRenderer.Achsenfenster? fenster)
+    {
+        _fensterText = fenster is null
+            ? "voll"
+            : fenster.Von.ToString("N0", CultureInfo.CurrentCulture) + " … "
+              + (fenster.Bis - 1).ToString("N0", CultureInfo.CurrentCulture) + " h";
+        return Task.CompletedTask;
+    }
+}
