@@ -1149,3 +1149,73 @@ nicht.
 
 **Neun der einundzwanzig haben eine Zeichenfläche** und damit Zoom und die Zeigerzeile aus
 den Reihen; die übrigen zwölf zeigen den Wert am Element.
+
+## Nachzug #414 — die Farbwahl am Bild (20.09.2026)
+
+### Anlass
+
+Anwendermeldung aus der Abnahme am Gerät (A-DG-1): „Der Klick auf das Farbfeld öffnet nicht
+immer den Farbwähler." Die Prüfung im Wirt (`/diagrammsvg?bild=jahresgang&reihen=3`, Chromium,
+gemessen mit Klickfolge und DOM-Abfrage) ergab drei Befunde.
+
+### Befund A — die Schließfläche verschluckt den zweiten Klick (Hauptursache)
+
+Solange ein Wähler offen war, lag die Schließfläche (`position: fixed; inset: 0; z-index: 2`)
+über dem SVG samt Legende. Ein Klick auf das Farbfeld eines ANDEREN Eintrags oder auf einen
+Legendentext traf die Fläche, schloss nur den Wähler und tat sonst nichts; erst der zweite Klick
+öffnete oder schaltete. Gemessen: Farbfeld A → Wähler „Wärmepumpe"; Farbfeld B → kein Wähler;
+Farbfeld B nochmals → Wähler „Photovoltaik"; Legendentext C → Wähler zu, Reihe nicht geschaltet;
+Legendentext C nochmals → Reihe aus.
+
+**Entscheid DG-E3-14 — der Wähler weicht keinem zweiten Klick aus.** Solange ein Wähler offen
+ist, trägt die Zeichenfläche die Klasse `epos-diagramm-svg-flaeche--waehler`, und das äußere SVG
+steht mit `position: relative; z-index: 3` ÜBER der Schließfläche; der Wähler (z-index 3,
+später im DOM) bleibt obenauf. Das Farbfeld ist ein Umschalter (dieselbe Reihe schließt, eine
+andere wechselt mit einem Klick) und stoppt die Weitergabe seines Klicks; der Legendentext
+schaltet seine Reihe, und sein Klick steigt zur Fläche auf, die den Wähler schließt — beides in
+einem Klick. Ein Klick irgendwo sonst im Bild schließt über die Fläche, ein Klick außerhalb des
+Bildes weiter über die Schließfläche (Hausregel: kein `focusout`). Klicks im Wähler selbst
+steigen nicht auf (`@onclick:stopPropagation`; dazu ein leerer Handler, weil bunit ein Element
+ohne Handler nicht klickt). Liegt das Farbfeld in der rechten Bildhälfte, steht der Wähler mit
+`right:` statt `left:`, damit er nicht über den Bildrand hinausragt. Das JS-Modul blieb
+unverändert. Tests: Abschnitt DS-11 in `DiagrammSvgTests` (7 Fälle).
+
+### Befund B — sieben Bilder ohne Schreibweg
+
+Neun Aufrufstellen übergaben `FarbwahlErlaubt`/`FarbeGewaehlt`/`FarbeZurueckgesetzt` nicht; dort
+tat das Farbfeld nichts. Verdrahtet sind jetzt: Wärmepumpe Anlage und Stamm (je zwei Kennlinien;
+Delegaten aus `WaermepumpeAnlageHuelle`/`WaermepumpeStammHuelle`), Kapitalwert-Verlauf (zwei
+Bilder; `KapitalwertVerlaufHuelle`), Speicherflotte Ergebnis (Projektion, Netz, Ladezustand) über
+`FarbeSetzen`/`FarbeZuruecksetzen` in `StromspeicherAuslegungDienste`, gestellt von der
+plattformfreien `StromspeicherAuslegungHuelle` (iOS erbt es). Bewusst ohne Wähler bleiben: die
+Autarkie-Monatssäulen des Ergebnisreiters und die Monatssäulen des Bedarfsergebnisses
+(`MonatsStapelModell`/`MonatsSaeulenModell` führen keine Datenreihen und damit keine Rolle), die
+Rasterkarten der Größenansicht (keine Reihen), `PeakShavingDialog` (feste Farben, offener Punkt)
+und die Deckungsringe der Übersicht. **Neuer Befund:** Stückzahlkurve, Ausschnitt und
+Spalten-/Zeilenschnitt der Größenansicht (`StueckzahlkurveModell`, `SchnittkurveModell`) führen
+Reihen mit Rolle, zeichnen aber keine Legende — ohne Legendeneintrag gibt es kein Farbfeld. Wer
+sie farbwählbar machen will, ergänzt zuerst im Renderer eine Legende. Tests: je verdrahteter
+Maske ein Paar (mit und ohne Schreibweg), 8 Fälle.
+
+### Befund C — dasselbe Bild in neuer Instanz verlor seinen Zustand
+
+Die Simulationsreiter bauen ihr Modell bei jedem Zeichenlauf neu (`ModellBetrieb =>
+Modell?.Invoke(new Bildauftrag(…))`, die Hülle rechnet ohne Cache). `DiagrammSvg` verglich nur
+`ReferenceEquals` und setzte bei jeder neuen Instanz Ausschnitt, Zeiger, Stufe, ausgeblendete
+Reihen und den offenen Wähler zurück — nach einer Farbwahl (`Farbwahlwirt.FarbeUebernehmen` →
+`StateHasChanged` des Reiters) gingen Zoom und Legendenwahl verloren, entgegen der Zusage im Kopf
+von `Farbwahlwirt.cs`.
+
+**Entscheid DG-E3-15 — nur ein anderes Bild setzt zurück.** `SelbesBild(a, b)` vergleicht Maße,
+Zeichenfläche (vorhanden, `XVon`/`XBis`, Achsenart, Einheit) und die Reihen in Reihenfolge nach
+Name, Art, Achsenseite und Wertelänge; die y-Spanne bleibt außen vor, weil ein neuer Rechenlauf
+sie ändert und das Bild dasselbe bleibt. Bei „dasselbe Bild, neue Instanz" wird der Baum neu
+gebaut, der rohe Ausschnitt am stehenden Fenster nachgerechnet und der Zustand behalten;
+`OnAfterRenderAsync` setzt das Modul nur bei einem anderen Bild zurück. Tests: Abschnitt DS-12
+(3 Fälle).
+
+### Abnahme
+
+Zweig `dg-farbwahl` (Commits `31444ab0`, `d8f221c6`, `d98d0b17`), Merge `e4a47a3a`. Im Worktree:
+Kern-Filter 0 Fehler, Windows-Schale 0 Fehler, `EPOS.UI.Tests` 4 943 grün (davor 4 932;
+`DiagrammSvgTests` 56). Gate im Hauptbaum: siehe Statuszeile #414.
