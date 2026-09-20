@@ -348,5 +348,57 @@ namespace EPOS.Kern.Tests
             foreach (Farbrolle r in rollen)
                 Assert.True(Farbpalette.Vorgabe.Kennt(r), "Rolle ohne Vorgabefarbe: " + r.Name);
         }
+
+        /// <summary>
+        /// <b>Die ausdruecklich genannte Rolle ist wertgleich zur Rueckwaertssuche.</b>
+        /// Eine Zeichenmethode, die ihre Farbe selbst waehlt, schreibt
+        /// <c>Farbton.Aus(Farbrolle.X)</c> statt den Hausfarbenwert durchzureichen
+        /// (Etappe E1b). Das darf kein Bild verschieben — und genau das prueft dieser
+        /// Fall: Fuer jede Rolle, deren Vorgabefarbe die Rueckwaertssuche EINDEUTIG
+        /// zurueckfindet, liefern beide Wege denselben Farbton.
+        ///
+        /// <para>Die Einschraenkung ist beabsichtigt: Wertgleiche Rollen — SERIE_1
+        /// traegt die BHKW-Farbe, SERIE_3 die der Waermepumpe — treffen in der
+        /// Rueckwaertssuche die zuerst eingetragene. Fuer sie ist die ausdrueckliche
+        /// Rolle der einzige Weg, sie ueberhaupt zu benennen; der FARBWERT bleibt
+        /// auch dort derselbe, und genau das steht hier zusaetzlich.</para>
+        /// </summary>
+        [Fact]
+        public void AusdrueckenDerRolleIstWertgleichZurRueckwaertssuche()
+        {
+            List<Farbrolle> rollen = typeof(Farbrolle)
+                .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                .Where(f => f.FieldType == typeof(Farbrolle))
+                .Select(f => (Farbrolle)f.GetValue(null))
+                .Where(r => r != Farbrolle.UNBENANNT)
+                .ToList();
+
+            foreach (Farbrolle r in rollen)
+            {
+                Farbe wert = Farbpalette.Vorgabe[r];
+                Farbton ausdruecklich = Farbton.Aus(r);
+
+                // Der Farbwert ist in JEDEM Fall derselbe — das ist die Zusage an die
+                // Hash-Messlatte.
+                Assert.Equal(wert, Farbpalette.Vorgabe.Loese(ausdruecklich));
+
+                // Und wo die Rueckwaertssuche eindeutig ist, ist auch der Ton derselbe.
+                Farbton rueckwaerts = Farbpalette.Ton(wert);
+                if (rueckwaerts.Rolle == r) Assert.Equal(rueckwaerts, ausdruecklich);
+            }
+
+            // Die Rollen, die die Saeulen-, Stapel-, Kuchen-, Ring- und Balkenbilder
+            // ausdruecklich nennen, sind alle eindeutig — hier namentlich.
+            var genannte = new[]
+            {
+                Farbrolle.HINTERGRUND, Farbrolle.TEXT, Farbrolle.ACHSE,
+                Farbrolle.LEGENDENRAHMEN, Farbrolle.STAMM, Farbrolle.WAERME_WP
+            };
+            foreach (Farbrolle r in genannte)
+                Assert.Equal(Farbpalette.Ton(Farbpalette.Vorgabe[r]), Farbton.Aus(r));
+
+            // Eine fehlende Rolle faellt auf UNBENANNT zurueck statt zu werfen.
+            Assert.Equal(Farbrolle.UNBENANNT, Farbton.Aus(null).Rolle);
+        }
     }
 }
