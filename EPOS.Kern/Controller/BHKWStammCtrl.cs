@@ -182,12 +182,21 @@ namespace WindowsFormsApplication1
             {
                 string sql = @"UPDATE " + TABLE + @" SET
                                Beschreibung=?, Firma=?, Motortyp=?, Ptherm=?, Pel=?,
-                               Brennstoff=?, Wirkungsgrad=?, Investition_kwel=?, Raumbedarf=?,
+                               Brennstoff=?, Wirkungsgrad=?, Wirkungsgrad_el=?, Wirkungsgrad_th=?,
+                               Investition_kwel=?, Raumbedarf=?,
                                Wartungskosten_kwhel=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?,
                                CO2=?, Staub=?, Grenzleistung=?, Kosten_Modul=?, Kosten_Montage=?,
                                Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?,
                                Vorlauf=?, Ruecklauf=?
                                WHERE Bezeichner=?";
+
+                // EINE WAHRHEIT (Schemaschritt 99, Anwenderentscheid 20.09.2026): Der
+                // Gesamtwirkungsgrad ist die SUMME der zwei Anteile und wird hier
+                // nachgezogen - wie Investition_kwel aus den fuenf Kostenposten. Sind
+                // die Anteile nicht gepflegt (Altbestand vor Schritt 99), bleibt der
+                // Gesamtwert stehen, wie er war; SimulationBHKW liest ihn unveraendert.
+                model.m_Wirkungsgrad = BhkwWirkungsgrad.GesamtZumSchreiben(
+                    model.m_Wirkungsgrad_el, model.m_Wirkungsgrad_th, model.m_Wirkungsgrad);
 
                 // Die Einzelposten fuehren (Regel in BHKWKosten, Nutzerentscheid
                 // 22.08.2026): der spezifische Wert wird hier aus den Posten und Pel
@@ -217,6 +226,8 @@ namespace WindowsFormsApplication1
                 werte.Add(new DbParam("@pel", model.m_Pel));
                 werte.Add(new DbParam("@brenn", model.m_Brennstoff));
                 werte.Add(new DbParam("@wirk", model.m_Wirkungsgrad));
+                werte.Add(Anteil("@wirkEl", model.m_Wirkungsgrad_el));
+                werte.Add(Anteil("@wirkTh", model.m_Wirkungsgrad_th));
                 werte.Add(new DbParam("@inv", model.m_Investition_KWel));
                 werte.Add(new DbParam("@raum", model.m_Raumbedarf));
                 werte.Add(new DbParam("@wart", model.m_Wartungskosten_kWhel));
@@ -294,6 +305,8 @@ namespace WindowsFormsApplication1
             m.m_Pel = row["Pel"] != DBNull.Value ? Convert.ToDouble(row["Pel"]) : 0;
             m.m_Brennstoff = row["Brennstoff"] != DBNull.Value ? Convert.ToInt32(row["Brennstoff"]) : 0;
             m.m_Wirkungsgrad = row["Wirkungsgrad"] != DBNull.Value ? Convert.ToDouble(row["Wirkungsgrad"]) : 0;
+            m.m_Wirkungsgrad_el = AnteilAus(row, BhkwWirkungsgrad.SPALTE_EL);
+            m.m_Wirkungsgrad_th = AnteilAus(row, BhkwWirkungsgrad.SPALTE_TH);
             m.m_Investition_KWel = row["Investition_kwel"] != DBNull.Value ? Convert.ToDouble(row["Investition_kwel"]) : 0;
             m.m_Raumbedarf = row["Raumbedarf"] != DBNull.Value ? Convert.ToDouble(row["Raumbedarf"]) : 0;
             m.m_Wartungskosten_kWhel = row["Wartungskosten_kwhel"] != DBNull.Value ? Convert.ToDouble(row["Wartungskosten_kwhel"]) : 0;
@@ -317,6 +330,27 @@ namespace WindowsFormsApplication1
             return m;
         }
 
+        /// <summary>
+        /// Ein Anteil als Parameter: <c>null</c> wird zu <c>DBNull</c> — die Spalte ist
+        /// nullbar, und NULL heisst dort „nicht gepflegt" (Schemaschritt 99).
+        /// </summary>
+        private static DbParam Anteil(string name, double? wert)
+        {
+            return new DbParam(name, wert.HasValue ? (object)wert.Value : DBNull.Value);
+        }
+
+        /// <summary>
+        /// Ein Anteil aus der Zeile; fehlende Spalte (Altbestand vor Schritt 99) und
+        /// <c>NULL</c> ergeben <c>null</c>.
+        /// </summary>
+        private static double? AnteilAus(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return null;
+            object v = row[spalte];
+            if (v == null || v == DBNull.Value) return null;
+            return Convert.ToDouble(v);
+        }
+
         private void MapThisToRow(DataRow row)
         {
             BHKWStammModel m = MapRowToModel(row);
@@ -328,6 +362,8 @@ namespace WindowsFormsApplication1
             this.m_Pel = m.m_Pel;
             this.m_Brennstoff = m.m_Brennstoff;
             this.m_Wirkungsgrad = m.m_Wirkungsgrad;
+            this.m_Wirkungsgrad_el = m.m_Wirkungsgrad_el;
+            this.m_Wirkungsgrad_th = m.m_Wirkungsgrad_th;
             this.m_Investition_KWel = m.m_Investition_KWel;
             this.m_Raumbedarf = m.m_Raumbedarf;
             this.m_Wartungskosten_kWhel = m.m_Wartungskosten_kWhel;
@@ -921,7 +957,9 @@ namespace WindowsFormsApplication1
                                               f.Grenzleistung, 0, 100),
                 // Der Wirkungsgrad ist ein FAKTOR, kein Prozentwert: "nicht negativ"
                 // liesse 29,5 durch, und der Rechenweg teilt durch diese Zahl
-                // (Schemaschritt 98, BhkwWirkungsgradFaktor).
+                // (Schemaschritt 98, BhkwWirkungsgradFaktor). Der Aufklapper zeigt den
+                // GESAMTwert; die zwei Anteile pflegt der Katalogeditor
+                // (Schemaschritt 99).
                 KatalogFeldPruefung.WirkungsgradFaktor(art, KatalogBrowserProfil.FeldWirkungsgrad,
                                                        f.Wirkungsgrad),
                 Nichtnegativ(KatalogBrowserProfil.FeldRaumbedarf, f.Raumbedarf),
@@ -975,6 +1013,29 @@ namespace WindowsFormsApplication1
                                  satz.m_Kosten_Lieferung, satz.m_Kosten_Schallschutzhaube,
                                  satz.m_Kosten_Abgasreinigung),
                 satz.m_Pel);
+
+            // 5. DIE ZWEI ANTEILE NACHZIEHEN (Schemaschritt 99). Der Aufklapper zeigt
+            //    den GESAMTwirkungsgrad; wer ihn hier aendert, muss die Anteile
+            //    mitnehmen - sonst stuenden drei Zahlen da, von denen zwei einander
+            //    widersprechen. Geteilt wird im Verhaeltnis der Leistungen, also nach
+            //    derselben Regel wie im Datenteil von Schritt 99; ohne beide
+            //    Leistungen bleibt die Aufteilung, wie sie war, und Update schreibt
+            //    den Gesamtwert unveraendert.
+            if (f.Wirkungsgrad.HasValue)
+            {
+                BhkwWirkungsgrad.Aufteilung a = BhkwWirkungsgrad.Aufteilen(
+                    satz.m_Wirkungsgrad, satz.m_Pel, satz.m_Ptherm);
+                if (a.El.HasValue && a.Th.HasValue)
+                {
+                    satz.m_Wirkungsgrad_el = a.El;
+                    satz.m_Wirkungsgrad_th = a.Th;
+                }
+                else
+                {
+                    satz.m_Wirkungsgrad_el = null;
+                    satz.m_Wirkungsgrad_th = null;
+                }
+            }
 
             return null;
 

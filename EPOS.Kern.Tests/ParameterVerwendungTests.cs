@@ -427,7 +427,12 @@ namespace EPOS.Kern.Tests
 
                 case Anlagenart.Bhkw:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Motortyp", "Ptherm", "Pel",
-                                   "Brennstoff", "Wirkungsgrad", "Grenzleistung", "Kosten_Modul",
+                                   "Brennstoff", "Wirkungsgrad",
+                                   // Schemaschritt 99: die zwei Anteile pflegt der
+                                   // Katalogeditor, der Gesamtwert daneben ist dort
+                                   // Anzeige und bleibt im Aufklapper eingebbar.
+                                   "Wirkungsgrad_el", "Wirkungsgrad_th",
+                                   "Grenzleistung", "Kosten_Modul",
                                    "Kosten_Montage", "Kosten_Lieferung", "Kosten_Schallschutzhaube",
                                    "Kosten_Abgasreinigung", "Raumbedarf", "Wartungskosten_kwhel",
                                    "Nutzungsdauer", "NOX", "SO2", "CO", "CO2", "Staub",

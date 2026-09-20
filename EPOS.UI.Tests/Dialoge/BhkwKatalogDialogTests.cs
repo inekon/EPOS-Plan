@@ -112,13 +112,14 @@ public class BhkwKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        // Elf Felder: 4 Zahlen (Ptherm, Pel, Wirkungsgrad, Grenzleistung),
-        // 2 Ganzzahlen (Vorlauf, Ruecklauf), 3 Texte (Modulname, Hersteller,
-        // Motortyp), 1 mehrzeilige Beschreibung und die Klappliste des
+        // Zwoelf Felder: 5 Zahlen (Ptherm, Pel, elektrischer und thermischer
+        // Wirkungsgrad, Grenzleistung), 2 Ganzzahlen (Vorlauf, Ruecklauf),
+        // 4 Texte (Modulname, Hersteller, Motortyp und die BERECHNETE Anzeige des
+        // Gesamtwirkungsgrads), 1 mehrzeilige Beschreibung und die Klappliste des
         // Energietraegers.
-        Assert.Equal(4, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal(5, cut.FindAll("input[inputmode=decimal]").Count);
         Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);
-        Assert.Equal(3, cut.FindAll("input[type=text]:not([inputmode])").Count);
+        Assert.Equal(4, cut.FindAll("input[type=text]:not([inputmode])").Count);
         Assert.Single(cut.FindAll("textarea"));
         Assert.Single(cut.FindAll("select"));
 
@@ -132,6 +133,9 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Assert.Contains("Beschreibung:", texte);
         Assert.Contains("Thermische Leistung:", texte);
         Assert.Contains("Elektrische Leistung:", texte);
+        // Schemaschritt 99: zwei Eingaben und die berechnete Summe.
+        Assert.Contains("Elektrischer Wirkungsgrad:", texte);
+        Assert.Contains("Thermischer Wirkungsgrad:", texte);
         Assert.Contains("Ges. Wirkungsgrad:", texte);
         Assert.Contains("Untere Grenzleistung:", texte);
         Assert.Contains("Energieträger:", texte);
@@ -324,46 +328,146 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Assert.Contains("thermische Leistung", cut.Find(".epos-warnbanner").TextContent);
     }
 
+    // =================================================================================
+    // Die zwei Wirkungsgrade (Schemaschritt 99, Anwenderentscheid 20.09.2026)
+    // =================================================================================
+
     /// <summary>
-    /// A-BW1-3: <b>Der Gesamtwirkungsgrad ist ein FAKTOR.</b> Ein Prozentwert (29,5)
-    /// wird benannt abgelehnt und nicht geschrieben — der Rechenweg teilt durch diese
-    /// Zahl, und ein Prozentwert machte den Brennstoff um rund Faktor 32 zu klein
-    /// (Schemaschritt 98).
+    /// <b>Die Summe läuft mit.</b> Gepflegt werden die zwei Anteile; der
+    /// Gesamtwirkungsgrad daneben ist die berechnete Anzeige und folgt jeder Eingabe.
     /// </summary>
     [Fact]
-    public void Ein_Wirkungsgrad_als_Prozentwert_wird_benannt_abgelehnt()
+    public void Der_Gesamtwirkungsgrad_laeuft_bei_jeder_Eingabe_mit()
+    {
+        var daten = Bestand();
+        daten.WirkungsgradEl = 0.30;
+        daten.WirkungsgradTh = 0.60;
+
+        var cut = Aufbauen(daten);
+
+        Assert.Equal("0,9", Gesamtanzeige(cut));
+
+        // Der elektrische Anteil steigt - die Summe folgt.
+        cut.FindAll("input[inputmode=decimal]")[2].Input("0,32");
+        Assert.Equal("0,92", Gesamtanzeige(cut));
+
+        // Der thermische ebenso.
+        cut.FindAll("input[inputmode=decimal]")[3].Input("0,625");
+        Assert.Equal("0,945", Gesamtanzeige(cut));
+
+        // Und die Anzeige ist NICHT editierbar - sonst stuenden drei Zahlen da, von
+        // denen zwei einander widersprechen.
+        Assert.True(cut.FindAll("input[type=text]:not([inputmode])")[3].HasAttribute("readonly"));
+    }
+
+    /// <summary>
+    /// <b>Ohne beide Anteile keine Summe</b>: Aus einem halben Paar lässt sich keine
+    /// bilden, und eine 0 stünde dort für „Wirkungsgrad null".
+    /// </summary>
+    [Fact]
+    public void Ohne_beide_Anteile_bleibt_die_Summe_leer()
+    {
+        var daten = Bestand();
+        daten.Wirkungsgrad = null;
+        daten.WirkungsgradEl = null;
+        daten.WirkungsgradTh = null;
+
+        var cut = Aufbauen(daten);
+        Assert.Equal("", Gesamtanzeige(cut));
+
+        cut.FindAll("input[inputmode=decimal]")[2].Input("0,30");
+        Assert.Equal("", Gesamtanzeige(cut));
+    }
+
+    /// <summary>
+    /// <b>Der Rückfall des Altbestands</b> (Schemaschritt 99): Ein Satz ohne
+    /// Aufteilung — bei der Migration fehlte ihm eine Leistung — bekommt beim Öffnen
+    /// die Aufteilung des Gesamtwirkungsgrads im Verhältnis der Leistungen als
+    /// VORSCHLAG. 0,85 bei 40 kWel und 80 kWth ergibt 0,2833 und 0,5667.
+    /// </summary>
+    [Fact]
+    public void Ein_Altbestandssatz_bekommt_die_Aufteilung_als_Vorschlag()
+    {
+        var daten = Bestand();          // Wirkungsgrad 0,85, Pel 40, Ptherm 80
+        daten.WirkungsgradEl = null;
+        daten.WirkungsgradTh = null;
+
+        var cut = Aufbauen(daten);
+
+        Assert.Equal(0.2833, daten.WirkungsgradEl!.Value, 4);
+        Assert.Equal(0.5667, daten.WirkungsgradTh!.Value, 4);
+        Assert.Equal("0,85", Gesamtanzeige(cut));
+    }
+
+    /// <summary>Das Speichern reicht BEIDE Werte durch — und die Hülle zieht die Summe nach.</summary>
+    [Fact]
+    public void Das_Speichern_reicht_beide_Anteile_durch()
+    {
+        BhkwKatalogDaten? geschrieben = null;
+        var daten = Bestand();
+        daten.WirkungsgradEl = 0.30;
+        daten.WirkungsgradTh = 0.60;
+
+        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        {
+            geschrieben = d;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
+        });
+
+        cut.FindAll("input[inputmode=decimal]")[2].Input("0,31");
+        cut.FindAll("input[inputmode=decimal]")[3].Input("0,59");
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.NotNull(geschrieben);
+        Assert.Equal(0.31, geschrieben!.WirkungsgradEl!.Value, 6);
+        Assert.Equal(0.59, geschrieben.WirkungsgradTh!.Value, 6);
+    }
+
+    /// <summary>
+    /// <b>A-BW2-2:</b> 0,30 + 0,80 = 1,10 wird abgewiesen — die Summe liegt über der
+    /// Obergrenze 1,05, die auch das Brennwertgerät noch zulässt. Der Dialog bleibt
+    /// offen und schreibt nicht.
+    /// </summary>
+    [Fact]
+    public void Eine_Summe_ueber_1_05_wird_benannt_abgewiesen()
     {
         bool geschrieben = false;
+        bool geschlossen = false;
         var daten = Bestand();
-        daten.Wirkungsgrad = 29.5;
+        daten.WirkungsgradEl = 0.30;
+        daten.WirkungsgradTh = 0.80;
 
         var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
         {
             geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
-        });
+        }, geschlossen: _ => geschlossen = true);
 
         cut.FindAll(".epos-leiste button")[^4].Click();
 
         Assert.False(geschrieben);
-        Assert.Contains("Faktor", cut.Find(".epos-warnbanner").TextContent);
-        Assert.Contains("Gesamtwirkungsgrad", cut.Find(".epos-warnbanner").TextContent);
+        Assert.False(geschlossen);
+        Assert.Contains("zusammen", cut.Find(".epos-warnbanner").TextContent);
     }
 
     /// <summary>
-    /// Die Obergrenze ist die des Schemaschritts: 1,05 geht durch (Brennwertgerät),
-    /// 1,06 nicht — und 0 ebenso wenig, denn durch 0 teilt kein Rechenweg.
+    /// Ein PROZENTWERT im Anteilsfeld wird benannt abgelehnt — jeder Anteil liegt in
+    /// (0; 1), und der Rechenweg teilt durch die Summe.
     /// </summary>
     [Theory]
-    [InlineData(1.05, true)]
-    [InlineData(1.06, false)]
-    [InlineData(0.0, false)]
-    [InlineData(0.9216, true)]
-    public void Die_Obergrenze_der_Pflege_ist_die_des_Schemaschritts(double wert, bool erlaubt)
+    [InlineData(29.5, 0.60, false, "elektrische")]
+    [InlineData(0.30, 59.0, false, "thermische")]
+    [InlineData(0.0, 0.60, false, "elektrische")]
+    [InlineData(1.0, 0.60, false, "elektrische")]
+    [InlineData(0.45, 0.60, true, "")]
+    [InlineData(0.451, 0.60, false, "zusammen")]
+    [InlineData(0.295, 0.6266, true, "")]
+    public void Jede_Regel_weist_benannt_ab(double el, double th, bool erlaubt, string wortlaut)
     {
         bool geschrieben = false;
         var daten = Bestand();
-        daten.Wirkungsgrad = wert;
+        daten.WirkungsgradEl = el;
+        daten.WirkungsgradTh = th;
 
         var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
         {
@@ -374,6 +478,13 @@ public class BhkwKatalogDialogTests : EposBunitContext
         cut.FindAll(".epos-leiste button")[^4].Click();
 
         Assert.Equal(erlaubt, geschrieben);
+        if (!erlaubt) Assert.Contains(wortlaut, cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>Der Text der berechneten Anzeige — das vierte einfache Textfeld.</summary>
+    private static string Gesamtanzeige(IRenderedComponent<BhkwKatalogDialog> cut)
+    {
+        return cut.FindAll("input[type=text]:not([inputmode])")[3].GetAttribute("value") ?? "";
     }
 
     [Fact]

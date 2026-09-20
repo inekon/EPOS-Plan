@@ -326,7 +326,7 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 2. BHKW — Tab_BHKW_STAMM (27 Spalten)
+        // 2. BHKW — Tab_BHKW_STAMM (29 Spalten)
         // =================================================================
 
         /// <remarks>
@@ -418,7 +418,17 @@ namespace WindowsFormsApplication1
                 E("Ruecklauf", t("BHKWK_LBL_RUECKLAUF"), "°C", BER,
                   "AbweichungsErmittler.cs:92 — der Lauf nimmt Tab_Energieanlagen.[Rücklauf]"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
-                  "BHKWStammCtrl.IstSchreibgeschuetzt (Rueckfrage beim Ueberschreiben)")
+                  "BHKWStammCtrl.IstSchreibgeschuetzt (Rueckfrage beim Ueberschreiben)"),
+                // SCHEMASCHRITT 99, und deshalb ZULETZT: Die Reihenfolge dieser Liste
+                // folgt der SPALTENFOLGE der Tabelle (Waechter
+                // ParameterVerwendungTests), und ein ADD COLUMN haengt hinten an. Der
+                // Gesamtwirkungsgrad weiter oben ist ihre SUMME und wird beim Speichern
+                // nachgezogen (BhkwWirkungsgrad.Gesamt); gerechnet wird mit ihm - diese
+                // zwei Spalten sind die PFLEGESTELLE.
+                E(BhkwWirkungsgrad.SPALTE_EL, t("BHKWK_LBL_WIRKUNGSGRAD_EL"), "", DLG,
+                  "BhkwKatalogDialog (Katalogeditor) - Pflegestelle des Gesamtwirkungsgrads"),
+                E(BhkwWirkungsgrad.SPALTE_TH, t("BHKWK_LBL_WIRKUNGSGRAD_TH"), "", DLG,
+                  "BhkwKatalogDialog (Katalogeditor) - Pflegestelle des Gesamtwirkungsgrads")
             };
         }
 

@@ -151,11 +151,19 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-19_R10_BhkwWirkungsgrad/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
 1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
 dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
-(**Schemastand 98**). Anders als ihre Vorgängerinnen ist diese Basis **auf ihrem eigenen
-Schemastand gerechnet**: Schritt 98 ändert Werte, die der Rechenweg liest, also gibt es hier
-nichts nachzutragen — was die Schritte 90 bis 97 an dieser Stelle zu erklären hatten, steht
-beim Abschnitt „Die Basis R9 im Einzelnen" in
+(gerechnet auf **Schemastand 98**). Anders als ihre Vorgängerinnen ist diese Basis **auf ihrem
+eigenen Schemastand gerechnet**: Schritt 98 ändert Werte, die der Rechenweg liest, also gibt
+es hier nichts nachzutragen — was die Schritte 90 bis 97 an dieser Stelle zu erklären hatten,
+steht beim Abschnitt „Die Basis R9 im Einzelnen" in
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
+
+**Die Testdatenbank steht inzwischen auf Schemastand 99** — reines Nachziehen: Schritt 99
+legt `Wirkungsgrad_el` und `Wirkungsgrad_th` an `Tab_BHKW_STAMM` und `Tab_BHKW` an und teilt
+den gepflegten Gesamtwirkungsgrad im Verhältnis der Leistungen auf (78 Katalogsätze und 6
+Projektkopien; ein Satz ohne Gesamtwirkungsgrad bleibt benannt ausgewiesen). **Die Spalte
+`Wirkungsgrad` bleibt unverändert**, und nur sie liest `SimulationBHKW` — die **Referenzbasis
+R10 bleibt**, der Lauf der fünf CI-Projekte gegen sie ist **PASS und byte-gleich gemessen**
+(1 656 417 Werte, 143 Dateien).
 **Ohne eigenen Schritt** trägt die Testdatenbank zusätzlich die Spalte `Nachweis_Json` an
 `Tab_ErgebnisWirtschaftlichkeit` — eine **Konservenspalte**: Diese Ergebnistabelle ist keine
 Schematabelle, sie entsteht und wächst erst beim ersten Programmlauf über

@@ -49,8 +49,21 @@ public sealed class BhkwKatalogDaten
     /// <summary>Elektrische Leistung [kW]. Bei 0 ist der Wert je kWel unbestimmt.</summary>
     public double? Pel { get; set; }
 
-    /// <summary>Gesamtwirkungsgrad.</summary>
+    /// <summary>
+    /// Gesamtwirkungsgrad — die SUMME der zwei Anteile. Der Dialog ZEIGT ihn nur; wer
+    /// ihn ändert, ändert die Anteile (Schemaschritt 99). Beim Speichern rechnet der
+    /// Kern ihn aus den Anteilen nach (<c>BhkwWirkungsgrad.GesamtZumSchreiben</c>).
+    /// </summary>
     public double? Wirkungsgrad { get; set; }
+
+    /// <summary>
+    /// Elektrischer Wirkungsgrad als Faktor. <c>null</c> = nicht gepflegt; der Dialog
+    /// bietet dann die Aufteilung des Gesamtwerts als Vorschlag an.
+    /// </summary>
+    public double? WirkungsgradEl { get; set; }
+
+    /// <summary>Thermischer Wirkungsgrad als Faktor; <c>null</c> = nicht gepflegt.</summary>
+    public double? WirkungsgradTh { get; set; }
 
     /// <summary>Untere Grenzleistung [%].</summary>
     public double? Grenzleistung { get; set; }

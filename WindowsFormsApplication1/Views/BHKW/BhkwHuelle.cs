@@ -117,9 +117,15 @@ namespace WindowsFormsApplication1
                 ["FeldPtherm"] = Text_("BHKWK_FELD_PTHERM", "thermische Leistung"),
                 ["LabelPel"] = Text_("BHKWK_LBL_PEL", "Elektrische Leistung:"),
                 ["FeldPel"] = Text_("BHKWK_FELD_PEL", "elektrische Leistung"),
+                // Schemaschritt 99: gepflegt werden die ZWEI Anteile, der
+                // Gesamtwirkungsgrad daneben ist die berechnete Anzeige.
+                ["LabelWirkungsgradEl"] = Text_("BHKWK_LBL_WIRKUNGSGRAD_EL", "Elektrischer Wirkungsgrad:"),
+                ["FeldWirkungsgradEl"] = Text_("BHKWK_FELD_WIRKUNGSGRAD_EL", "elektrischer Wirkungsgrad"),
+                ["HinweisWirkungsgradEl"] = Text_("BHKWK_HINT_WIRKUNGSGRAD_EL", "(Faktor, z. B. 0,30)"),
+                ["LabelWirkungsgradTh"] = Text_("BHKWK_LBL_WIRKUNGSGRAD_TH", "Thermischer Wirkungsgrad:"),
+                ["FeldWirkungsgradTh"] = Text_("BHKWK_FELD_WIRKUNGSGRAD_TH", "thermischer Wirkungsgrad"),
+                ["HinweisWirkungsgradTh"] = Text_("BHKWK_HINT_WIRKUNGSGRAD_TH", "(Faktor, z. B. 0,60)"),
                 ["LabelWirkungsgrad"] = Text_("BHKWK_LBL_WIRKUNGSGRAD", "Ges. Wirkungsgrad:"),
-                ["FeldWirkungsgrad"] = Text_("BHKWK_FELD_WIRKUNGSGRAD", "Gesamtwirkungsgrad"),
-                ["HinweisWirkungsgrad"] = Text_("BHKWK_HINT_WIRKUNGSGRAD", "(z. B. 0,85)"),
                 ["LabelGrenzleistung"] = Text_("BHKWK_LBL_GRENZLEISTUNG", "Untere Grenzleistung:"),
                 ["FeldGrenzleistung"] = Text_("BHKWK_FELD_GRENZLEISTUNG", "untere Grenzleistung"),
                 ["LabelEnergietraeger"] = Text_("BHKWK_LBL_ENERGIETRAEGER", "Energieträger:"),
@@ -154,11 +160,12 @@ namespace WindowsFormsApplication1
                 ["TitelSchreibschutz"] = Text_("BHKWK_TITEL_SCHREIBSCHUTZ", "Schreibgeschützter Datensatz"),
                 ["MeldungZahlUngueltig"] = Text_("HZKK_MSG_ZAHL",
                     "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt)."),
-                ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!"),
-                // Der Gesamtwirkungsgrad ist ein FAKTOR; ein Prozentwert wird benannt
-                // abgelehnt (dieselbe Obergrenze wie Schemaschritt 98 und der Kern).
-                ["MeldungWirkungsgradFaktor"] = Text_("BHKWK_MSG_WIRKUNGSGRAD",
-                    "„{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert.")
+                ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!")
+
+                // OHNE "MeldungWirkungsgradFaktor" seit Schemaschritt 99: Die drei
+                // Regeln des Wirkungsgrads und ihre Meldungen stehen an EINER Stelle im
+                // Kern (BhkwWirkungsgrad.Pruefen); der Dialog zeigt sie, die Hülle
+                // reicht dafür nichts mehr durch.
             };
         }
 
@@ -175,6 +182,8 @@ namespace WindowsFormsApplication1
             d.Ptherm = m.m_Ptherm;
             d.Pel = m.m_Pel;
             d.Wirkungsgrad = m.m_Wirkungsgrad;
+            d.WirkungsgradEl = m.m_Wirkungsgrad_el;
+            d.WirkungsgradTh = m.m_Wirkungsgrad_th;
             d.Grenzleistung = m.m_Grenzleistung;
             d.Vorlauf = m.m_Vorlauf;
             d.Ruecklauf = m.m_Ruecklauf;
@@ -221,7 +230,12 @@ namespace WindowsFormsApplication1
                 m_szMotortyp = d.Motortyp ?? "",
                 m_Ptherm = d.Ptherm ?? 0,
                 m_Pel = pel,
+                // Der Gesamtwirkungsgrad ist die SUMME der zwei Anteile; ohne
+                // gepflegte Anteile bleibt der geladene Wert stehen (Schemaschritt 99,
+                // BhkwWirkungsgrad.GesamtZumSchreiben - gezogen im Kern beim Schreiben).
                 m_Wirkungsgrad = d.Wirkungsgrad ?? 0,
+                m_Wirkungsgrad_el = d.WirkungsgradEl,
+                m_Wirkungsgrad_th = d.WirkungsgradTh,
                 m_Grenzleistung = d.Grenzleistung ?? 0,
                 m_Vorlauf = d.Vorlauf ?? 0,
                 m_Ruecklauf = d.Ruecklauf ?? 0,
