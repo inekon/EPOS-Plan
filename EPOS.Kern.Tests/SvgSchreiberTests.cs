@@ -666,5 +666,85 @@ namespace EPOS.Kern.Tests
             Assert.Equal(a, Text(Flaechenmodell()));
             Assert.DoesNotContain("\r", a);
         }
+
+        // =====================================================================
+        // 8 — Der Wert am Element (Etappe E3, Entscheid DG-E3-6)
+        // =====================================================================
+
+        /// <summary>
+        /// <b><c>data-wert</c> steht an derselben Stelle wie <c>data-marke</c></b> —
+        /// und zwar an JEDEM Primitiv, denn die sieben Bilder der Gruppe (c) tragen
+        /// ihre Zahl auf einem Rechteck (Saeule, Balken, Rasterzelle), auf einem
+        /// Kreissegment (Kuchen, Ring) oder auf einem Streckenzug (die Bedarfslinie
+        /// des Monatsbalkens).
+        /// </summary>
+        [Fact]
+        public void DerWertStehtAlsDataWertNebenDerMarke()
+        {
+            Zeichenmodell m = Modell(200, 100);
+            m.Fuege(new Rechteck(1f, 2f, 3f, 4f, null, new Fuellung(Farbton.Aus(Farbrolle.WAERME_WP)))
+            { Marke = "reihe:WP", Wert = "Jan: 12,5 MWh" });
+            m.Fuege(new Kreissegment(0f, 0f, 10f, 10f, -90f, 90f, null,
+                                     new Fuellung(Farbton.Aus(Farbrolle.WAERME_WP)))
+            { Marke = "reihe:WP", Wert = "Waermepumpe: 48,0 %" });
+            m.Fuege(new Pfad(new Wertliste<Punkt>(new[] { new Punkt(0f, 0f), new Punkt(5f, 5f) }),
+                             false, Strich())
+            { Marke = "reihe:Bedarf", Wert = "Strombedarf" });
+            m.Fuege(new Linie(0f, 0f, 1f, 1f, Strich()) { Marke = "marke", Wert = "Optimum" });
+            m.Fuege(new Kreis(5f, 5f, 2f, Strich()) { Marke = "skala", Wert = "4.000 €" });
+            m.Fuege(new WindowsFormsApplication1.Zeichnung.Text(
+                        "T", 0f, 0f, new Schrift(12f), Farbton.Aus(Farbrolle.TEXT))
+            { Marke = "xachse", Wert = "Jan" });
+            m.Gruppe(null, z => z.Linie(0f, 0f, 1f, 1f, Strich()));
+
+            SvgKnoten w = SvgSchreiber.Baum(m, Farbpalette.Vorgabe);
+            List<SvgKnoten> alle = w.Alle().ToList();
+
+            foreach (string name in new[] { "rect", "path", "line", "circle", "text" })
+            {
+                SvgKnoten k = alle.First(n => n.Name == name && Wert(n, "data-wert") != null);
+                Assert.NotNull(Wert(k, "data-marke"));
+
+                // An DERSELBEN Stelle heisst: unmittelbar hinter data-marke.
+                List<string> namen = k.Attribute.Select(a => a.Key).ToList();
+                Assert.Equal(namen.IndexOf("data-marke") + 1, namen.IndexOf("data-wert"));
+            }
+
+            Assert.Equal("Jan: 12,5 MWh",
+                         Wert(alle.Single(k => k.Name == "rect" && Wert(k, "data-wert") != null),
+                              "data-wert"));
+            Assert.Equal("Waermepumpe: 48,0 %",
+                         Wert(alle.Single(k => k.Name == "path" && Wert(k, "d").Contains(" A ")),
+                              "data-wert"));
+
+            // Ein Befehl OHNE Wert schreibt sich woertlich wie zuvor: kein Attribut.
+            SvgKnoten gruppe = alle.Single(k => k.Name == "g");
+            Assert.Null(Wert(gruppe, "data-wert"));
+            Assert.Null(Wert(gruppe, "data-marke"));
+            Assert.DoesNotContain("data-wert=\"\"", Text(m));
+        }
+
+        /// <summary>
+        /// <b>Der Wert wird maskiert wie jeder Attributwert.</b> Er kommt aus den
+        /// Daten des Anwenders — ein Reihenname mit <c>&amp;</c> oder ein
+        /// Anfuehrungszeichen zerbraeche den Baum sonst.
+        /// </summary>
+        [Fact]
+        public void DerWertWirdMaskiert()
+        {
+            Zeichenmodell m = Modell(50, 50);
+            m.Fuege(new Rechteck(0f, 0f, 5f, 5f, Strich())
+            { Marke = "reihe:A&B", Wert = "A & B \"gross\": 1,5 <MWh>" });
+
+            string text = Text(m);
+            Assert.Contains("data-wert=\"A &amp; B &quot;gross&quot;: 1,5 &lt;MWh&gt;\"", text);
+            Assert.Contains("data-marke=\"reihe:A&amp;B\"", text);
+
+            // Und der Baum traegt den UNMASKIERTEN Wert - maskiert wird erst beim
+            // Schreiben, damit die Oberflaeche ihn roh weiterreichen kann.
+            SvgKnoten k = SvgSchreiber.Baum(m, Farbpalette.Vorgabe).Alle()
+                                      .Single(n => n.Name == "rect" && Wert(n, "data-wert") != null);
+            Assert.Equal("A & B \"gross\": 1,5 <MWh>", Wert(k, "data-wert"));
+        }
     }
 }

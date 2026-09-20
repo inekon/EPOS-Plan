@@ -87,11 +87,30 @@ namespace WindowsFormsApplication1.Zeichnung
     ///
     /// <para><c>null</c> heißt „keine Marke" und ist die Vorgabe — jeder Befehl des
     /// Bestands bleibt damit wörtlich, wie er war.</para>
+    ///
+    /// <para><b>Der WERT am Element (Etappe E3, Entscheid DG-E3-6).</b> Neben der
+    /// Marke darf ein Befehl den FERTIG FORMATIERTEN Text tragen, den die Oberfläche
+    /// beim Zeigen auf das Element anzeigt — „Jan · Wärmepumpe: 12,5 MWh",
+    /// „Kapazität 220 kWh · Entladeleistung 100 kW: 4.000 €", „Wärmepumpe: 48,0 %".
+    /// Der <c>SkiaMaler</c> übergeht ihn wie die Marke (das PNG bleibt byte-gleich);
+    /// der <see cref="SvgSchreiber"/> schreibt ihn als <c>data-wert</c> an dieselbe
+    /// Stelle wie <c>data-marke</c>.</para>
+    ///
+    /// <para><b>Warum fertiger Text und keine Zahl.</b> Formatiert wird dort, wo auch
+    /// die Beschriftung des Bildes entsteht — in der Kultur des Renderers und mit
+    /// denselben Nachkommastellen. Eine nackte Zahl im Modell müsste die Oberfläche
+    /// ein zweites Mal formatieren, und Bild und Zeigetext gingen auseinander.</para>
     /// </summary>
     public abstract record Zeichenbefehl
     {
         /// <summary>Wozu der Befehl gehört; <c>null</c> = keine Marke.</summary>
         public string Marke { get; init; }
+
+        /// <summary>
+        /// Der fertig formatierte Wert am Element (DG-E3-6); <c>null</c> = keiner,
+        /// und das Attribut <c>data-wert</c> bleibt dann weg.
+        /// </summary>
+        public string Wert { get; init; }
     }
 
     /// <summary>Eine Strecke.</summary>
@@ -433,9 +452,10 @@ namespace WindowsFormsApplication1.Zeichnung
         public void FuegeReihe(Datenreihe reihe) { if (reihe != null) _reihen.Add(reihe); }
 
         /// <summary>
-        /// Gleichheit zweier Modelle — Fläche, Hintergrund, jeder Befehl (samt Marke)
-        /// und seit Etappe E2 auch Zeichenfläche und Reihen. Damit prüft ein Test,
-        /// dass zweimal Erzeugen dasselbe Modell liefert.
+        /// Gleichheit zweier Modelle — Fläche, Hintergrund, jeder Befehl (samt Marke
+        /// und, seit DG-E3-6, samt Wert) und seit Etappe E2 auch Zeichenfläche und
+        /// Reihen. Damit prüft ein Test, dass zweimal Erzeugen dasselbe Modell
+        /// liefert.
         /// </summary>
         public bool Gleicht(Zeichenmodell andere)
         {
@@ -553,6 +573,28 @@ namespace WindowsFormsApplication1.Zeichnung
             inhalt(sammler);
             foreach (Zeichenbefehl b in sammler.Befehle)
                 z.Fuege(b.Marke == null ? b with { Marke = marke } : b);
+        }
+
+        /// <summary>
+        /// Dieselbe Klammer MIT dem Wert am Element (Etappe E3, Entscheid DG-E3-6):
+        /// Alles, was <paramref name="inhalt"/> absetzt, bekommt
+        /// <see cref="Zeichenbefehl.Marke"/> <paramref name="marke"/> und
+        /// <see cref="Zeichenbefehl.Wert"/> <paramref name="wert"/>.
+        ///
+        /// <para>Dieselbe Regel wie bei der Marke: Was der Inhalt schon gesetzt hat,
+        /// bleibt stehen — beides für sich. So überschreibt eine äußere Klammer weder
+        /// eine feinere Marke noch einen feineren Wert. Die Befehle bleiben im Übrigen
+        /// unverändert, das PNG deshalb byte-gleich.</para>
+        /// </summary>
+        public static void Markiert(this IZeichenziel z, string marke, string wert,
+                                    Action<IZeichenziel> inhalt)
+        {
+            var sammler = new Befehlssammler();
+            inhalt(sammler);
+            foreach (Zeichenbefehl b in sammler.Befehle)
+                z.Fuege(b.Marke == null || b.Wert == null
+                            ? b with { Marke = b.Marke ?? marke, Wert = b.Wert ?? wert }
+                            : b);
         }
     }
 }

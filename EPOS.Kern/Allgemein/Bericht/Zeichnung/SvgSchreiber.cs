@@ -55,6 +55,13 @@ namespace WindowsFormsApplication1.Zeichnung
     // Vierfache den sichtbaren Bereich roh nach - aus den Datenreihen des
     // Modells, ohne Rundlauf in den Kern.
     //
+    // DG-E3-6 - DER WERT AM ELEMENT. Traegt ein Befehl neben der Marke einen
+    // Zeichenbefehl.Wert - den fertig formatierten Text des Renderers -, so
+    // steht er als data-wert AN DERSELBEN STELLE wie data-marke. Damit zeigt
+    // die Oberflaeche beim Zeigen auf eine Saeule, eine Zelle oder ein
+    // Kreissegment genau die Zahl, die das PNG beschriftet; formatiert wird
+    // EINMAL, im Renderer. Der Maler uebergeht ihn wie die Marke.
+    //
     // DETERMINISMUS: Attribute stehen in der Reihenfolge, in der sie gebaut
     // werden, Zahlen in InvariantCulture (Bildpunkte "0.##", Datenwerte
     // "0.###"), Zeilenenden sind LF. Kein Zufall, keine Zeitangabe - zweimal
@@ -283,25 +290,26 @@ namespace WindowsFormsApplication1.Zeichnung
                 case Linie l:
                     return Marke(new SvgKnoten("line", l.Marke)
                         .Attribut("x1", Px(l.X1)).Attribut("y1", Px(l.Y1))
-                        .Attribut("x2", Px(l.X2)).Attribut("y2", Px(l.Y2)), l.Marke)
+                        .Attribut("x2", Px(l.X2)).Attribut("y2", Px(l.Y2)), l.Marke, l.Wert)
                         .Anhaengen(Stiftattribute(l.Stift, p));
 
                 case Rechteck r:
                     return Marke(new SvgKnoten("rect", r.Marke)
                         .Attribut("x", Px(r.X)).Attribut("y", Px(r.Y))
-                        .Attribut("width", Px(r.Breite)).Attribut("height", Px(r.Hoehe)), r.Marke)
+                        .Attribut("width", Px(r.Breite)).Attribut("height", Px(r.Hoehe)),
+                        r.Marke, r.Wert)
                         .Anhaengen(Fuellattribute(r.Fuellung, p))
                         .Anhaengen(Stiftattribute(r.Rand, p));
 
                 case Kreis k:
                     return Marke(new SvgKnoten("circle", k.Marke)
                         .Attribut("cx", Px(k.X)).Attribut("cy", Px(k.Y))
-                        .Attribut("r", Px(k.Radius)), k.Marke)
+                        .Attribut("r", Px(k.Radius)), k.Marke, k.Wert)
                         .Anhaengen(Fuellattribute(k.Fuellung, p))
                         .Anhaengen(Stiftattribute(k.Rand, p));
 
                 case Ellipse e:
-                    return Ellipsenknoten(e.Marke, e.X, e.Y, e.Breite, e.Hoehe,
+                    return Ellipsenknoten(e.Marke, e.Wert, e.X, e.Y, e.Breite, e.Hoehe,
                                           e.Fuellung, e.Rand, p);
 
                 case Kreissegment s:
@@ -310,11 +318,11 @@ namespace WindowsFormsApplication1.Zeichnung
                         // Maler (Befund zu Auftrag #222): Ein Bogen ueber 360 Grad zieht
                         // nichts, Anfang und Ende fallen zusammen.
                         if (Math.Abs(s.Winkel) >= 360f)
-                            return Ellipsenknoten(s.Marke, s.X, s.Y, s.Breite, s.Hoehe,
+                            return Ellipsenknoten(s.Marke, s.Wert, s.X, s.Y, s.Breite, s.Hoehe,
                                                   s.Fuellung, s.Rand, p);
 
                         return Marke(new SvgKnoten("path", s.Marke)
-                            .Attribut("d", Bogen(s)), s.Marke)
+                            .Attribut("d", Bogen(s)), s.Marke, s.Wert)
                             .Anhaengen(Fuellattribute(s.Fuellung, p))
                             .Anhaengen(Stiftattribute(s.Rand, p));
                     }
@@ -323,7 +331,7 @@ namespace WindowsFormsApplication1.Zeichnung
                     {
                         if (f.Punkte == null || f.Punkte.Count < 2) return null;
                         return Marke(new SvgKnoten("path", f.Marke)
-                            .Attribut("d", Streckenzug(f)), f.Marke)
+                            .Attribut("d", Streckenzug(f)), f.Marke, f.Wert)
                             .Anhaengen(Fuellattribute(f.Fuellung, p))
                             .Anhaengen(Stiftattribute(f.Rand, p));
                     }
@@ -358,12 +366,12 @@ namespace WindowsFormsApplication1.Zeichnung
                             .Attribut("text-anchor", Anker(t.Ausrichtung))
                             .Attribut("dominant-baseline", "text-before-edge")
                             .Attribut("fill", Hex(p, t.Ton))
-                            .Attribut("fill-opacity", Deckung(p, t.Ton)), t.Marke);
+                            .Attribut("fill-opacity", Deckung(p, t.Ton)), t.Marke, t.Wert);
                     }
 
                 case Gruppe g:
                     {
-                        var knoten = Marke(new SvgKnoten("g", g.Marke), g.Marke);
+                        var knoten = Marke(new SvgKnoten("g", g.Marke), g.Marke, g.Wert);
                         if (g.Zuschnitt.HasValue)
                         {
                             lage.Zuschnitte++;
@@ -386,20 +394,25 @@ namespace WindowsFormsApplication1.Zeichnung
             return null;
         }
 
-        private static SvgKnoten Ellipsenknoten(string marke, float x, float y,
+        private static SvgKnoten Ellipsenknoten(string marke, string wert, float x, float y,
                                                 float breite, float hoehe,
                                                 Fuellung fuellung, Stift rand, Farbpalette p)
         {
             return Marke(new SvgKnoten("ellipse", marke)
                 .Attribut("cx", Px(x + breite / 2f)).Attribut("cy", Px(y + hoehe / 2f))
-                .Attribut("rx", Px(breite / 2f)).Attribut("ry", Px(hoehe / 2f)), marke)
+                .Attribut("rx", Px(breite / 2f)).Attribut("ry", Px(hoehe / 2f)), marke, wert)
                 .Anhaengen(Fuellattribute(fuellung, p))
                 .Anhaengen(Stiftattribute(rand, p));
         }
 
-        /// <summary>Die Marke als <c>data-marke</c>; ohne Marke bleibt das Attribut weg.</summary>
-        private static SvgKnoten Marke(SvgKnoten knoten, string marke)
-            => knoten.Attribut("data-marke", marke);
+        /// <summary>
+        /// Die Marke als <c>data-marke</c> und — seit DG-E3-6 — der Wert des Befehls
+        /// als <c>data-wert</c> AN DERSELBEN STELLE. Ohne Marke bzw. ohne Wert bleibt
+        /// das jeweilige Attribut weg; ein Befehl des Bestands schreibt sich damit
+        /// wörtlich wie zuvor.
+        /// </summary>
+        private static SvgKnoten Marke(SvgKnoten knoten, string marke, string wert)
+            => knoten.Attribut("data-marke", marke).Attribut("data-wert", wert);
 
         // =====================================================================
         // Die Zeichenflaeche: inneres svg in Datenkoordinaten

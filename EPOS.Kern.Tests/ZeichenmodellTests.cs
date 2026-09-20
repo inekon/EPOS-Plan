@@ -533,5 +533,80 @@ namespace EPOS.Kern.Tests
             // Eine fehlende Rolle faellt auf UNBENANNT zurueck statt zu werfen.
             Assert.Equal(Farbrolle.UNBENANNT, Farbton.Aus(null).Rolle);
         }
+
+        // =====================================================================
+        // 8 — Der Wert am Element (Etappe E3, Entscheid DG-E3-6)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Wert ist wahlfrei und gehoert zur Gleichheit.</b> Ohne Angabe
+        /// bleibt er <c>null</c> — jeder Befehl des Bestands ist damit woertlich, was
+        /// er war —, und zwei Befehle, die sich NUR im Wert unterscheiden, sind
+        /// verschieden. Das ist die Zusage, auf der der Determinismusnachweis des
+        /// Modells steht: Ein Wert, den die Gleichheit uebersaehe, koennte zwischen
+        /// zwei Laeufen wandern, ohne aufzufallen.
+        /// </summary>
+        [Fact]
+        public void DerWertIstWahlfreiUndZaehltZurGleichheit()
+        {
+            var ohne = new Rechteck(0f, 0f, 10f, 10f, null, new Fuellung(Ton(Farbrolle.WAERME_WP)));
+            Assert.Null(ohne.Wert);
+            Assert.Null(ohne.Marke);
+
+            Zeichenbefehl mit = ohne with { Marke = "reihe:WP", Wert = "Jan: 12,5 MWh" };
+            Assert.Equal("Jan: 12,5 MWh", mit.Wert);
+            Assert.Equal("reihe:WP", mit.Marke);
+
+            // Nur der Wert unterscheidet sich — und das genuegt.
+            Assert.NotEqual(mit, ohne with { Marke = "reihe:WP" });
+            Assert.Equal(mit, ohne with { Marke = "reihe:WP", Wert = "Jan: 12,5 MWh" });
+
+            // Und dasselbe im ganzen Modell: Gleicht vergleicht Befehl fuer Befehl.
+            var a = new Zeichenmodell(10, 10, Ton(Farbrolle.HINTERGRUND));
+            var b = new Zeichenmodell(10, 10, Ton(Farbrolle.HINTERGRUND));
+            a.Fuege(mit);
+            b.Fuege(ohne with { Marke = "reihe:WP" });
+            Assert.False(a.Gleicht(b));
+            Assert.True(a.Gleicht(a));
+        }
+
+        /// <summary>
+        /// <b>Die Klammer setzt Marke UND Wert</b> — und ueberschreibt nichts, was der
+        /// Inhalt schon gesetzt hat. Beides gilt FUER SICH: Ein Befehl mit eigener
+        /// Marke, aber ohne Wert, bekommt den Wert der Klammer und behaelt seine
+        /// Marke.
+        /// </summary>
+        [Fact]
+        public void DieKlammerSetztMarkeUndWert()
+        {
+            var m = new Zeichenmodell(100, 50, Ton(Farbrolle.HINTERGRUND));
+            var stift = new Stift(Ton(Farbrolle.ACHSE), 1f);
+
+            m.Markiert("reihe:WP", "Jan · Waermepumpe: 12,5 MWh", z =>
+            {
+                z.Rechteck(0f, 0f, 5f, 5f, fuellung: new Fuellung(Ton(Farbrolle.WAERME_WP)));
+                z.Fuege(new Linie(0f, 0f, 1f, 1f, stift) { Marke = "eigene" });
+                z.Fuege(new Linie(1f, 1f, 2f, 2f, stift) { Wert = "eigener Wert" });
+            });
+
+            Assert.Equal(3, m.Befehle.Count);
+
+            Assert.Equal("reihe:WP", m.Befehle[0].Marke);
+            Assert.Equal("Jan · Waermepumpe: 12,5 MWh", m.Befehle[0].Wert);
+
+            // Eigene Marke bleibt, der Wert kommt von der Klammer.
+            Assert.Equal("eigene", m.Befehle[1].Marke);
+            Assert.Equal("Jan · Waermepumpe: 12,5 MWh", m.Befehle[1].Wert);
+
+            // Eigener Wert bleibt, die Marke kommt von der Klammer.
+            Assert.Equal("reihe:WP", m.Befehle[2].Marke);
+            Assert.Equal("eigener Wert", m.Befehle[2].Wert);
+
+            // Die Klammer OHNE Wert ist die des Bestands: sie setzt nur die Marke.
+            var n = new Zeichenmodell(100, 50, Ton(Farbrolle.HINTERGRUND));
+            n.Markiert("titel", z => z.Text("T", 0f, 0f, new Schrift(12f), Ton(Farbrolle.TEXT)));
+            Assert.Equal("titel", n.Befehle[0].Marke);
+            Assert.Null(n.Befehle[0].Wert);
+        }
     }
 }
