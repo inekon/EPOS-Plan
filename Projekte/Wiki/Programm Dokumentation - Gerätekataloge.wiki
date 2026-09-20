@@ -1,0 +1,176 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Gerätekataloge
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Die '''Gerätekataloge''' führen die technischen Daten der Anlagenkomponenten, mit denen EPOS-Plan rechnet: Heizkessel, BHKW, Solarkollektoren, Pufferspeicher, Wärmepumpen, PV-Module, Wechselrichter und Stromspeicher. Jeder Katalog trägt zwei Arten von Sätzen: die schreibgeschützten Sätze der Auslieferung und eigene, frei bearbeitbare Sätze. Ein Katalogsatz wird nie unmittelbar im Projekt verwendet — die Übernahme in ein Projekt legt eine eigene Kopie an, die sich unabhängig vom Katalog ändern lässt.
+
+== Aufruf ==
+{{Anker|aufruf}}
+
+Alle acht Verwaltungen liegen im Menü '''Administration''':
+
+* '''Wärmebedarf & Heizung''' – Heizkessel, BHKW, Wärmepumpen, Solarkollektoren
+* '''Strombedarf & Speicher''' – Stromspeicher
+* '''Energiesysteme''' – Photovoltaik (darunter PV Module und Wechselrichter), Pufferspeicher
+
+== Aufbau der Verwaltung ==
+{{Anker|aufbau}}
+
+'''Heizkessel, BHKW, Solarkollektoren und Pufferspeicher''' zeigen links die Liste der Katalogsätze — Suche über alle Spalten, ein Trichter je Spalte, wie in jedem Katalog des Hauses — und rechts eine Kurzübersicht des markierten Satzes. ''Neu…'' und ''Bearbeiten…'' öffnen einen eigenen Editor als Überlagerung desselben Fensters; ''Löschen'' fragt zuerst nach; ''OK'' übernimmt eine noch offene Eingabe und schließt die Verwaltung. Der Editor selbst führt bis zu drei Speicherwege: ''Überschreiben'' schreibt in den geladenen Satz zurück, ''Speichern unter…'' fragt einen Namen ab und legt eine Kopie an, ''Speichern'' (nur beim Anlegen eines neuen Satzes) legt ihn unter dem vergebenen Namen an; ''Abbrechen'' verwirft die Eingabe. Der Name selbst ist beim Bearbeiten nicht änderbar — umbenannt wird über ''Speichern unter…''.
+
+'''PV-Module, Wechselrichter und Stromspeicher''' fassen Liste und Eingabefelder in einer Maske zusammen: Die Felder rechts gehören unmittelbar zum markierten Satz. ''Speichern'' schreibt sofort, ''Neu…'' fragt einen Namen ab und öffnet eine leere Zeile, ''Löschen'' fragt nach, ''Beenden'' schließt die Maske.
+
+'''Wärmepumpen''' führen eine eigene Stammdatenpflege: Liste links, Kenndatenblock rechts, dazu zwei Überlagerungen — ''Kennliniendaten Ansicht/Bearbeiten…'' und ''Modul-Katalog…''. ''Speichern'' schreibt den markierten Satz, ''Neu'' legt einen an, ''Löschen'' fragt nach.
+
+== Heizkessel ==
+{{Anker|heizkessel}}
+
+Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
+
+* '''Kesselbezeichnung''' – der Name; im Bearbeiten-Modus schreibgeschützt.
+* '''Hersteller''', '''Beschreibung''' (mehrzeilig).
+* '''Thermische Leistung''' – in kW.
+* '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
+* '''Wirkungsgrad Gas, Biogas, Holz und Sonstiges''' und '''Wirkungsgrad Öl''' – je als Faktor (z. B. 0,9).
+* '''Betriebsbereitschaftsverluste''' – in Prozent.
+* '''Brennwertkessel''' – ein Schalter.
+* '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
+
+Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs führt zusätzlich Raumbedarf (m³), Wartungskosten samt ihrer Einheit, Nutzungsdauer (Jahre) und die Emissionsfaktoren CO₂, SO₂, NOx, CO und Staub (je g/MWh) — Herstellerangaben, die die Simulation nicht selbst verwendet: Sie rechnet mit dem Emissionsfaktor des gewählten Energieträgers.
+
+Fußleiste der Verwaltung: ''Speichern'' (nur bei ungespeicherten Eingaben), ''Neu…'', ''Bearbeiten…'', ''Löschen'', ''OK''.
+
+== BHKW ==
+{{Anker|bhkw}}
+
+Der BHKW-Katalog führt die Kenndaten von Blockheizkraftwerk-Modulen. Der Editor zeigt:
+
+* '''Modulname''' – schreibgeschützt im Bearbeiten-Modus.
+* '''Hersteller''', '''Motortyp''', '''Beschreibung''' (mehrzeilig).
+* '''Thermische Leistung''' und '''Elektrische Leistung''' – je in kW.
+* '''Elektrischer Wirkungsgrad''' und '''Thermischer Wirkungsgrad''' – je als Faktor zwischen 0 und 1 (Hinweis z. B. 0,30 bzw. 0,60).
+* '''Ges. Wirkungsgrad''' – berechnet, nicht editierbar: die Summe der beiden Anteile. Sie läuft bei jeder Eingabe mit, damit nicht drei Zahlen dastehen, von denen zwei einander widersprechen. Die Summe darf bis 1,05 reichen — das lässt ein Brennwertgerät zu, dessen auf den Heizwert bezogener Gesamtwirkungsgrad über 1 liegen kann.
+* '''Untere Grenzleistung''' – in Prozent der Nennleistung.
+* '''Energieträger''' – Auswahl aus dem Brennstoffkatalog.
+* '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
+
+Darunter führt eine eigene Knopfleiste zu Investitions-, Betriebs- und Energiekosten. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt zusätzlich die fünf Kostenposten Modul, Montage und Inbetriebnahme, Lieferung, Schallschutzhaube und Abgasreinigung (je €), daraus abgeleitet die Investition je kW elektrisch (nur Anzeige), Wartungskosten (€/kWh elektrisch), Raumbedarf (m³), Nutzungsdauer (Jahre) sowie die Emissionsfaktoren NOx, SO₂, CO, CO₂ und Staub (je g/MWh, Herstellerangaben, ohne Wirkung auf den Rechenweg).
+
+Fußleiste der Verwaltung: ''Speichern'', ''Neu…'', ''Bearbeiten…'', ''Löschen'', ''OK''.
+
+== Solarkollektoren ==
+{{Anker|solarkollektoren}}
+
+Der Kollektorkatalog führt die Kenndaten von Sonnenkollektoren samt ihrer Kennlinie. Der Editor zeigt:
+
+* '''Kollektorname''' – schreibgeschützt im Bearbeiten-Modus.
+* '''Hersteller''', '''Beschreibung''' (mehrzeilig), '''Kollektortyp'''.
+* '''Modulfläche''' und '''Aperturfläche''' – je in m².
+* Die Kennlinienparameter '''h0''' (optischer Wirkungsgrad), '''k1''' (in W/(m²·K)) und '''k2''' (in W/(m²·K²)) sowie die Einfallswinkel-Korrekturfaktoren '''Kdir''' und '''Kdiff''' (Kdiff bei einem Einfallswinkel von 50°).
+* '''Vorlauf''' und '''Rücklauf''' – in °C, ganzzahlig.
+
+Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
+
+Fußleiste der Verwaltung: ''Speichern'', ''Neu…'', ''Bearbeiten…'', ''Löschen'', ''OK''.
+
+== Pufferspeicher ==
+{{Anker|pufferspeicher}}
+
+Der Pufferspeicherkatalog führt die sechs Gerätewerte, mit denen ein Speicher im Katalog geführt wird — alles Weitere (Schichtung, Schaltschwellen, Entnahmehöhen je Kanal) entsteht erst mit der Projektkopie und steht in [[Programm Dokumentation/Pufferspeicher]]. Der Editor zeigt:
+
+* '''Name''', '''Hersteller'''.
+* '''Speichertyp''' – Auswahl.
+* '''Betriebsbereitschaftsverluste''' – in kWh je Tag.
+* '''Gesamtvolumen''' – in Litern, ganzzahlig.
+
+Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
+
+Fußleiste der Verwaltung: ''Speichern'', ''Neu…'', ''Bearbeiten…'', ''Löschen'', ''OK''.
+
+== Wärmepumpen ==
+{{Anker|waermepumpen}}
+
+Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- und, soweit vorhanden, die Kühlkennlinie. Der Kenndatenblock zeigt:
+
+* '''Name''', '''Hersteller''', '''Beschreibung'''.
+* '''Wärmepumpentyp''', '''Leistungsstufen''', '''Aufstellung''', '''Baujahr'''.
+* '''Nennleistung''', '''Heizstab''', '''Kühlleistung'''.
+* '''Modulkosten''' – nur lesend, mit einer Herleitungszeile darunter: Gerätekosten laufen über die Kostenverwaltung und nicht über ein Eingabefeld dieser Maske.
+
+''Kennliniendaten Ansicht/Bearbeiten…'' zeigt die Heizkennlinie und, wenn zur gewählten Pumpe Kühlkenndaten vorliegen, über einen Umschalter auch die Kühlkennlinie, als Diagramm. ''Modul-Katalog…'' öffnet eine durchsuchbare Auswahl aus dem Stammkatalog: eine Suchzeile über alle Spalten, dazu die Spalten Hersteller, Quelle, Nennleistung, Vorlauf minimal und maximal sowie Zuheizung; Bauart, Auslegung, Aufstellung und Regelung stehen im Kenndatenblock der gewählten Pumpe statt als eigene Spalte.
+
+Ein Auslieferungssatz steht in der Liste gedimmt; er lässt sich nicht speichern oder löschen, seine Kennlinien lassen sich nur ansehen.
+
+Fußleiste: ''Speichern'', ''Neu'', ''Löschen''.
+
+== PV-Module ==
+{{Anker|pv-module}}
+
+Der Modulkatalog der Photovoltaik führt eine Zeile je Modul. Einziges Pflichtfeld ist die Nennleistung; alle übrigen Zahlenfelder dürfen leer bleiben. Die Gruppe ''Moduldaten'' zeigt:
+
+* '''Bezeichner''', '''Hersteller''', '''Beschreibung'''.
+* '''Nennleistung (Pmax)''' – in W.
+* '''Wirkungsgrad''' – in %.
+* '''Spannung im MPP (Umpp)''' und '''Leerlaufspannung (Uoc)''' – in V.
+* '''Strom im MPP (Impp)''' und '''Kurzschlussstrom (Isc)''' – in A.
+* '''Temp.-Koeffizient Pmax''' – in %/K.
+* '''Länge''' und '''Breite''' – in m.
+* '''Modulkosten''' – in €.
+* '''Zelltemperatur NOCT''' – in °C.
+* '''Zelltechnologie''' – Auswahl.
+
+Fußleiste: ''Speichern'', ''Neu…'', ''Löschen'', ''Beenden''.
+
+== Wechselrichter ==
+{{Anker|wechselrichter}}
+
+Der Wechselrichterkatalog gliedert sich in drei Gruppen. Die Liste führt einen Herstellerfilter, weil die CEC-Liste über zweitausend Geräte umfasst.
+
+'''Gerät''': Bezeichner, Hersteller, Beschreibung, '''AC-Nennleistung''' (kW, das einzige Pflichtfeld), max. AC-Scheinleistung (kVA), max. DC-Leistung (kW), Gerätepreis (€), Herkunft (eine Auskunft — der Import setzt sie, eine von Hand gepflegte Zeile trägt „HAND").
+
+'''Eingang''' (Werte je MPPT): U_MPP minimal und maximal, max. DC-Spannung, Startspannung (je in V), max. DC-Strom und max. Kurzschlussstrom (je in A — Letzteren liefert keine der beiden Quellen, er ist von Hand zu ergänzen), Anzahl MPPT, Stränge je MPPT.
+
+'''Wirkungsgrad''': die Teillastwirkungsgrade bei 5, 10, 20, 30, 50 und 100 % Auslastung, dazu Euro- und Maximalwirkungsgrad — alle als Faktor zwischen 0 und 1, nicht in Prozent —, sowie Standby- und Nachtverbrauch (je in W).
+
+Fußleiste: ''Speichern'', ''Neu…'', ''Löschen'', ''Beenden''.
+
+== Stromspeicher ==
+{{Anker|stromspeicher}}
+
+Der Stromspeicherkatalog führt das Gerät — nicht die im Projekt geplante Speicherflotte, dafür [[Programm Dokumentation/Stromspeicher]]. Zwei Gruppen:
+
+'''Speicherdaten''' (alle fünf Felder Pflicht): Bezeichner, Hersteller, Typ (Zelltechnologie, Auswahl), Energie/Kapazität (kWh), Leistung (kW), Ladezustand (%), Degradation (%), Modulkosten (€/kWh).
+
+'''Gerätetechnik''' (alle sechs Felder dürfen leer bleiben und heißen dann nicht gepflegt): Wirkungsgrad (Round-Trip), Zyklen (zugesichert), Verschleißkosten (€/(kWh·Zyklus)), Leistungskosten (€/kW), Investition fix (€), Standby-Verbrauch (W).
+
+Fußleiste: ''Speichern'', ''Neu…'', ''Löschen'', ''Beenden''.
+
+== Import ==
+{{Anker|import}}
+
+Fünf Kataloge lesen sich aus Herstellerdateien nach VDI 3805 ein: Heizkessel (Blatt 3), Pufferspeicher (Blatt 20), Solarkollektoren (Blatt 19) und Wärmepumpen (Blatt 22, samt Kennlinien). PV-Module und Wechselrichter lesen sich wahlweise aus der CEC-Liste (Netzabruf oder Datei) oder aus PVsyst-Dateien ein — Module aus ''.PAN'', Wechselrichter aus ''.OND''. Stromspeicher haben keine VDI-3805-Vorlage; sie lesen sich aus der CEC Energy Storage System List und aus einer offenen Bibliothek von Batteriespezifikationen (bslib, CC BY 4.0).
+
+Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, die gefundenen Sätze in einer Liste mit Kontrollkästchen mehrfach auswählen (ein Klick schaltet die Markierung um, ein Doppelklick übernimmt die angeklickte Zeile sofort, ohne die übrige Auswahl zu leeren), eine Vorprüfung auf Dubletten, bei einem Fund ein eigener Konfliktdialog, danach die Übernahme mit einer Sammelmeldung. Der Dialog bleibt nach jeder Übernahme offen, damit sich mehrere Sätze nacheinander übernehmen lassen. Was eine Quelle nicht liefert — bei den Stromspeichern etwa Verschleißkosten oder Zyklen —, sagt eine Hinweiszeile am Import.
+
+== Übernahme in ein Projekt ==
+{{Anker|uebernahme}}
+
+Ein Katalogsatz wird nie unmittelbar im Projekt verwendet: Die Übernahme im Erzeuger- bzw. Anlagendialog des Projekts legt eine eigene Kopie an. Diese Kopie lässt sich im Projekt frei ändern, ohne den Katalogsatz zu berühren. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt dabei den vollen Feldbestand des Katalogsatzes — auch die Felder, die der Katalogeditor selbst nicht mehr zeigt (Kosten, Raumbedarf, Wartung, Nutzungsdauer, Emissionsfaktoren).
+
+== Schreibschutz und Löschen ==
+{{Anker|schreibschutz}}
+
+Sätze der Auslieferung tragen den Schreibschutz; keine Verwaltung lässt sie löschen oder umbenennen. Beim BHKW und bei den Wärmepumpen erscheinen sie in der Liste gedimmt. Beim BHKW fragt der Katalog vor dem Überschreiben eines geschützten Satzes ausdrücklich nach; wer bestätigt, überschreibt ihn trotzdem. Löschen fragt in jeder Verwaltung zuerst nach und nennt den Bezeichner des Satzes.
+
+== Dubletten ==
+{{Anker|dubletten}}
+
+''Katalog-Dubletten prüfen…'' sucht über alle Kataloge der Datenbank nach Sätzen, die dieselbe Sache doppelt führen — nicht nur bei den acht Gerätekatalogen. Sie wählen einen einzelnen Katalog oder ''(alle Kataloge)''; ''Prüfen'' baut das Ergebnis als Baum aus Katalog, Ast und Gruppe, ein markierter Satz zeigt seine Werte gegenübergestellt im Detailfeld. Vier Aktionen: ''Leere Kopien bereinigen'' fasst eine Gruppe leerer Kopien zusammen, ''Satz löschen…'' und ''Satz umbenennen…'' wirken auf den markierten Satz, ''Protokoll speichern…'' schreibt das ganze Ergebnis in eine Datei. Wird ein Satz noch verwendet, fragt das Löschen ausdrücklich nach; ein Satz der Auslieferung lässt sich hier weder löschen noch umbenennen.
+
+== Siehe auch ==
+
+* [[Programm Dokumentation/Pufferspeicher]] – Übernahme und Bewirtschaftung im Projekt
+* [[Programm Dokumentation/Photovoltaik]] – die PV-Anlage im Projekt, samt Wechselrichter
+* [[Programm Dokumentation/Stromspeicher]] – die im Projekt geplante Speicherauslegung
+* [[Berechnung/Heizkessel]], [[Berechnung/BHKW]], [[Berechnung/Wärmepumpe]], [[Berechnung/Solarthermie]], [[Berechnung/Pufferspeicher]], [[Berechnung/Photovoltaik]], [[Berechnung/Stromspeicher]] – die Rechenwege
+
+[[Kategorie:Programm Dokumentation]]

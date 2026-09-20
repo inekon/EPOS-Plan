@@ -103,7 +103,7 @@ abgenommen, alle Schritte sind damit frei.
 
 | Schritt | Auftrag | Aufwand | Voraussetzung |
 |---|---|---|---|
-| 0 | **umgesetzt (DL-2a)** — `SpeichernLeiste`: Aktionsschlitz links (`Aktionen`), bunit-Test; dazu die Wache **`EPOS.UI.Tests/KnopfleistenWacheTests`**: Die Fußleiste jeder `*Dialog.razor` unter `EPOS.UI/Dialoge/` steht allein (keine zweite Leiste unmittelbar darüber), trägt genau einen `epos-knopf--primaer`, und er ist der letzte Knopf; wo `Abbrechen` steht, steht es unmittelbar vor ihm. Acht der zehn standen mit Grund in `AUSNAHMEN` — **jeder Folgeauftrag streicht seinen Eintrag**, DL-2b die Einträge `GebaeudetypDialog` und `BedarfAdminDialog`; `WaermepumpeStammDialog` und `GebaeudeDialog` halten diese vier Regeln schon ein und stehen nicht darin. Sechs Dialoge außerhalb des Administrationsmenüs verletzen dieselben Regeln und stehen als Befund in `AUSNAHMEN_BEFUND` (Abschnitt 5) | S | — |
+| 0 | **umgesetzt (DL-2a)** — `SpeichernLeiste`: Aktionsschlitz links (`Aktionen`), bunit-Test; dazu die Wache **`EPOS.UI.Tests/KnopfleistenWacheTests`**: Die Fußleiste jeder `*Dialog.razor` unter `EPOS.UI/Dialoge/` steht allein (keine zweite Leiste unmittelbar darüber), trägt genau einen `epos-knopf--primaer`, und er ist der letzte Knopf; wo `Abbrechen` steht, steht es unmittelbar vor ihm. Acht der zehn standen mit Grund in `AUSNAHMEN` — **jeder Folgeauftrag streicht seinen Eintrag**, DL-2b die Einträge `GebaeudetypDialog` und `BedarfAdminDialog`; `WaermepumpeStammDialog` und `GebaeudeDialog` halten diese vier Regeln schon ein und stehen nicht darin. Sechs Dialoge außerhalb des Administrationsmenüs verletzten dieselben Regeln und standen als Befund in einer zweiten Liste `AUSNAHMEN_BEFUND` (Abschnitt 5; mit #391 umgebaut, beide Listen sind leer und die zweite ist entfallen) | S | — |
 | 1 | **umgesetzt (#387)** — GebaeudetypDialog (2): Typ speichern · Füller · Typ hinzufügen · Typ löschen · Beenden (primär); „OK" heißt „Beenden", Esc und ✕ melden weiter `true`; Speichern bleibt hart gesperrt, weil die Herleitungszeile den Grund schon nennt (A‑7) | S | — |
 | 2 | **umgesetzt (#387)** — WaermepumpeStammDialog (4): Speichern · Kennliniendaten… · Füller · Neu · Löschen · Beenden; der Knopf trägt den kurzen Text, die Überlagerung den vollen (`TitelKenndatenText`) | S | — |
 | 3 | **umgesetzt (#387)** — BedarfAdminDialog (3): Grafik… · Typ ändern… · Füller · Neu… · Ändern… · Löschen · Beenden; die zweite Leiste entfällt, Esc und ✕ schließen wie Beenden | S | — |
@@ -131,24 +131,30 @@ abgenommen, alle Schritte sind damit frei.
 **Kein Rechenweg ist betroffen**, deshalb kein Referenzlauf; die Testdatenbank bleibt unverändert.
 
 
-## 5 Befund außerhalb der zehn
+## 5 Befund außerhalb der zehn — umgesetzt (#391)
 
 Die Wache aus Schritt 0 liest den **ganzen** Dialogbestand, nicht nur das Administrationsmenü.
 Dabei sind sechs weitere Dialoge aufgefallen, die dieselben Regeln aus denselben Gründen
-verletzen. Sie stehen in der zweiten, eigenen Liste `AUSNAHMEN_BEFUND` der Wache — **kein Teil
-von DL-2, kein Auftrag zugeordnet**; die Liste macht den Befund sichtbar, bis der Anwender
-entscheidet.
+verletzten. Sie sind umgebaut; die zweite Liste `AUSNAHMEN_BEFUND` der Wache ist samt ihrem
+Kommentar entfallen, und `AUSNAHMEN` steht leer — **die Wache steht allein.**
 
-| Dialog | Fuß heute | Verletzt |
-|---|---|---|
-| `Bedarf/GebaeudeKatalogDialog.razor` | Überschreiben · **Speichern** · Beenden | der primäre Knopf steht nicht zuletzt |
-| `Bedarf/TypStammDialog.razor` | Überschreiben · Speichern unter · **Speichern** · Beenden | dieselbe Stellung |
-| `Bedarf/TypProfilDialog.razor` | Speichern unter · **Speichern** · Löschen · Neu · Schließen | dieselbe Stellung |
-| `Waermepumpe/WaermepumpenKatalogDialog.razor` | **Übernehmen** · Abbrechen | dieselbe Stellung — der Fall der Importdialoge 8/9 |
-| `Kosten/VorlagenUebernahmeDialog.razor` | **OK** · Abbrechen | dieselbe Stellung |
-| `Strom/GanglinieImportOptionenDialog.razor` | Abbrechen · Aktualisieren · **OK** | Abbrechen steht nicht unmittelbar vor OK — der Fall der Kostendialoge 6/7 |
+Die Zielleiste folgt in allen sechs Fällen dem Handler, nicht dem Augenschein: Wer sofort
+schreibt und stehen bleibt, ist ein Katalogdialog ohne Arbeitsstand und trägt nach Abschnitt 1
+Satz 3 kein Abbrechen, sondern den primären **„Beenden"** zuletzt; wer mit dem Knopf schließt,
+ist ein OK-Dialog und trägt **Abbrechen · OK (primär)**.
 
-Die ersten drei sind Geschwister der schon umgebauten Katalogdialoge (`BhkwKatalogDialog`,
-`HeizkesselKatalogDialog`, `PufferSpKatalogDialog`, `SolarkollektorKatalogDialog` laufen bereits
-„… · Abbrechen · Speichern (primär)"); ihr Umbau wäre je Dialog Aufwand S und derselbe Griff wie
-dort.
+| Dialog | Fuß vorher | Fuß jetzt | Warum diese Gestalt |
+|---|---|---|---|
+| `Bedarf/GebaeudeKatalogDialog.razor` | Überschreiben · **Speichern** · Beenden | Überschreiben · Speichern [unter] · Füller · **Beenden** | beide Speicherwege schreiben sofort und lassen die Maske stehen (im Modus „Admin" ist sie eine Katalogverwaltung mit Namensliste) |
+| `Bedarf/TypStammDialog.razor` | Überschreiben · Speichern unter · **Speichern** · Beenden | Überschreiben · Speichern unter · Speichern · Füller · **Beenden** | alle drei Speicherwege schreiben sofort und melden im Warnbanner |
+| `Bedarf/TypProfilDialog.razor` | Speichern unter · **Speichern** · Löschen · Neu · Schließen | Speichern in DB · Speichern unter · Füller · Neu · Löschen · **Beenden** | Katalogmuster nach der Leseregel: Eingabeblock links, Liste rechts; „Schließen" heißt wie überall „Beenden" (`BPRO_BTN_BEENDEN`) |
+| `Waermepumpe/WaermepumpenKatalogDialog.razor` | **Übernehmen** · Abbrechen | Füller · Abbrechen · **Übernehmen** | „Übernehmen" SCHLIESST mit der gewählten Zeile — der OK-Weg, also **nicht** der Fall der Importdialoge 8/9 (die bleiben nach der Übernahme stehen) |
+| `Kosten/VorlagenUebernahmeDialog.razor` | **OK** · Abbrechen | `SpeichernLeiste`: Füller · Abbrechen · **OK** | die beiden Schlussknöpfe standen vertauscht |
+| `Strom/GanglinieImportOptionenDialog.razor` | Abbrechen · Aktualisieren · **OK** | `SpeichernLeiste` mit `Aktionen`: Vorschau aktualisieren · Füller · Abbrechen · **OK** | „Aktualisieren" wirkt auf den Eingabeblock und gehört damit links vom Füller |
+
+Kein Knopf ist entfallen, kein Handler hat gewechselt; einzige Textänderung ist „Schließen" →
+„Beenden" im `TypProfilDialog`.
+
+**Logbuch-Satz (Version 1.2.0.3, ein Satz für alle sechs):** Gebäudekatalog, Bedarfs-Stammkopf,
+Stundenverteilung, Wärmepumpen-Katalog, Vorlagenübernahme und die Ganglinien-Importoptionen
+ordnen ihre Schlussknöpfe wie die übrigen Masken: der Knopf, der schließt, steht zuletzt.

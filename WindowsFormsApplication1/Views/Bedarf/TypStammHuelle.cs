@@ -225,7 +225,7 @@ namespace WindowsFormsApplication1
                 ["BtnLoeschenText"] = Text_("BPRO_BTN_LOESCHEN", "Löschen"),
                 ["BtnSpeichernUnterText"] = Text_("BTYP_BTN_SPEICHERN_UNTER", "Speichern unter"),
                 ["BtnSpeichernText"] = Text_("BPRO_BTN_SPEICHERN", "Speichern in DB"),
-                ["BtnSchliessenText"] = Text_("BPRO_BTN_SCHLIESSEN", "Schließen"),
+                ["BtnSchliessenText"] = Text_("BPRO_BTN_BEENDEN", "Beenden"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,

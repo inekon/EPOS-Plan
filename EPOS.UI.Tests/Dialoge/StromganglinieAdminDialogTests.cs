@@ -220,7 +220,9 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         // Die Ueberlagerung steht - mit dem Optionendialog darin.
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-importoptionen")));
 
-        cut.Find(".epos-importoptionen .epos-leiste button").Click();   // "Abbrechen"
+        // Die Fussleiste laeuft Vorschau aktualisieren . Fueller . Abbrechen . OK;
+        // "Abbrechen" steht unmittelbar VOR dem primaeren Knopf (DL-2f).
+        cut.FindAll(".epos-importoptionen .epos-leiste button")[^2].Click();   // "Abbrechen"
         await fertig.Task;
 
         Assert.Null(gemeldet);

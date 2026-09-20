@@ -6935,6 +6935,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string BPRO_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("BPRO_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string BPRO_BTN_LOESCHEN {
@@ -6949,15 +6958,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BPRO_BTN_NEU {
             get {
                 return ResourceManager.GetString("BPRO_BTN_NEU", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
-        /// </summary>
-        public static string BPRO_BTN_SCHLIESSEN {
-            get {
-                return ResourceManager.GetString("BPRO_BTN_SCHLIESSEN", resourceCulture);
             }
         }
         

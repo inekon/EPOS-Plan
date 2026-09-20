@@ -97,12 +97,17 @@
         </KindInhalt>
     </Raster>
 
-    <div class="epos-leiste">
-        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
-        <button type="button" class="epos-knopf" disabled="@(Vorschau is null)"
-                @onclick="BeiAktualisieren">@AktualisierenText</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="BeiOk">@OkText</button>
-    </div>
+    @* Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 1 Satz 1):
+       Aktionen · Fueller · Abbrechen · OK (primaer, zuletzt). "Aktualisieren"
+       wirkt auf den Eingabeblock - es zerlegt die Datei mit den eingestellten
+       Optionen neu - und steht deshalb im Aktionsschlitz links vom Fueller,
+       nicht zwischen den beiden Schlussknoepfen. *@
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
+        <Aktionen>
+            <button type="button" class="epos-knopf" disabled="@(Vorschau is null)"
+                    @onclick="BeiAktualisieren">@AktualisierenText</button>
+        </Aktionen>
+    </SpeichernLeiste>
 </div>
 
 @code {
@@ -344,6 +349,9 @@
     private Task BeiOk() => Geschlossen.InvokeAsync(Optionen());
 
     private Task BeiAbbrechen() => Geschlossen.InvokeAsync(null);
+
+    /// <summary>Der eine Ausgang der <c>SpeichernLeiste</c>: true = OK, false = Abbrechen.</summary>
+    private Task BeiErgebnis(bool ok) => ok ? BeiOk() : BeiAbbrechen();
 
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
     {

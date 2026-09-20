@@ -630,4 +630,56 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.NotEmpty(cut.FindAll(
             ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
     }
+
+    // =================================================================================
+    // Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 5)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Katalogmuster: <b>Überschreiben · Speichern unter · Füller · Beenden</b>.
+    /// Beide Speicherwege schreiben SOFORT und lassen die Maske stehen — es gibt
+    /// keinen Arbeitsstand und damit kein Abbrechen. Sie stehen links vom Füller,
+    /// und „Beenden" ist der eine primäre Schlussknopf ganz rechts.
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_traegt_das_Katalogmuster()
+    {
+        var cut = Aufbauen();
+        var leisten = cut.FindAll(".epos-dialog > .epos-leiste");
+        IElement fuss = leisten[leisten.Count - 1];
+
+        var knoepfe = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Überschreiben", "Speichern unter", "Beenden" }, knoepfe);
+
+        // Der Fueller steht zwischen dem letzten Speicherweg und "Beenden".
+        var kinder = fuss.Children.Select(e => e.ClassName ?? "").ToList();
+        Assert.Single(fuss.QuerySelectorAll(".epos-leiste-fueller"));
+        Assert.Equal(2, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+
+        // Genau ein primaerer Knopf, und er steht zuletzt.
+        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Die Knöpfe sind nur gewandert: „Überschreiben" und „Speichern [unter]" rufen
+    /// weiter <c>Speichern</c>, und der Schlussknopf schließt weiter mit <c>true</c>.
+    /// </summary>
+    [Fact]
+    public void Die_gewanderten_Knoepfe_rufen_dieselben_Wege()
+    {
+        int laeufe = 0;
+        bool? geschlossen = null;
+        var cut = Aufbauen(
+            speichern: (_, _, _) => { laeufe++; return new GebaeudeKatalogErgebnis(true, ""); },
+            geschlossen: b => geschlossen = b);
+
+        Knopf(cut, "Überschreiben").Click();
+        Assert.Equal(1, laeufe);
+        Assert.Null(geschlossen);
+
+        cut.Find(".epos-dialog > .epos-leiste button.epos-knopf--primaer").Click();
+        Assert.True(geschlossen);
+    }
 }

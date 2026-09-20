@@ -329,5 +329,8 @@ Die Basis `2026-09-19_R10_BhkwWirkungsgrad` gilt unverändert.
   und läuft mit; Speichern schreibt beide Anteile samt Summe in den Katalogsatz.
 - **Kein Logbuch-Eintrag:** eine Kleinigkeit im Sinn der Regel (Konzept Hilfesystem 13.4);
   der BW-2-Satz zu Version 1.2.0.3 deckt sie ab.
-- **Die Wikiseite „Programm Dokumentation/Gerätekataloge"** bleibt offen (Abschnitt 9); die
-  Feldliste in Abschnitt 6 gilt mit der Änderung aus 10.2.
+- **Die Repo-Quelle der Wikiseite „Programm Dokumentation/Gerätekataloge"** ist mit WK-1
+  (#393) entstanden. Sie steht zu BW-3 nicht im Widerspruch: Ihr BHKW-Abschnitt nennt den
+  Gesamtwirkungsgrad als berechnetes, nicht editierbares Feld, und ihre Aufzählung zum
+  Aufklapper führt ihn nicht als Eingabe. Der Upload ins Wiki steht noch aus.
+- **Die Feldliste in Abschnitt 6** gilt mit der Änderung aus 10.2.
