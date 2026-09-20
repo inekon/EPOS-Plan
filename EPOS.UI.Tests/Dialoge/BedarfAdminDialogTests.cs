@@ -481,7 +481,7 @@ public class BedarfAdminDialogTests : EposBunitContext
         bool? antwort = null;
         var cut = Aufbauen(BedarfsArt.Brauchwasser, geschlossen: b => antwort = b);
 
-        Assert.Empty(cut.FindAll("button").Where(b => b.TextContent.Trim() == "Abbrechen"));
+        Assert.DoesNotContain("Abbrechen", cut.FindAll("button").Select(b => b.TextContent.Trim()).ToList());
 
         Knopf(cut, "Beenden").Click();
         Assert.True(antwort);
