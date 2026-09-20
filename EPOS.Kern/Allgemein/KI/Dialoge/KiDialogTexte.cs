@@ -606,6 +606,38 @@
         internal static string QpufAnschlusshoeheName => MyResource.Resource.SIMQ_PUFFER_ANSCHLUSSHOEHE;
         internal static string QpufAnschlusshoeheErl => MyResource.Resource.KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL;
 
+        // ======================= Quellprofil und Waermesenken (Welle KI-F2)
+
+        /// <summary>Die elfte Maske (Welle KI-F2): der Kopf eines Quellprofils.</summary>
+        internal static string MaskeQuellprofil => MyResource.Resource.KI_DLG_MASKE_QPROF;
+
+        /// <summary>Die zwoelfte Maske (Welle KI-F2): die Waermesenken einer Anlage.</summary>
+        internal static string MaskeWaermesenke => MyResource.Resource.KI_DLG_MASKE_WSEN;
+
+        internal static string QprofBezeichnungName => MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BEZEICHNER;
+        internal static string QprofBezeichnungErl => MyResource.Resource.KI_DLG_QPROF_BEZEICHNUNG_ERL;
+        internal static string QprofBeschreibungName => MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BESCHREIBUNG;
+        internal static string QprofBeschreibungErl => MyResource.Resource.KI_DLG_QPROF_BESCHREIBUNG_ERL;
+        internal static string QprofBetriebsartName => MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BETRIEBSART;
+        internal static string QprofBetriebsartErl => MyResource.Resource.KI_DLG_QPROF_BETRIEBSART_ERL;
+
+        internal static string WsenZielName => MyResource.Resource.SIM_SPALTE_ZIEL;
+        internal static string WsenZielErl => MyResource.Resource.KI_DLG_WSEN_ZIEL_ERL;
+        internal static string WsenBedarfsartName => MyResource.Resource.SIM_SPALTE_BEDARFSART;
+        internal static string WsenBedarfsartErl => MyResource.Resource.KI_DLG_WSEN_BEDARFSART_ERL;
+        internal static string WsenLadeprioName => MyResource.Resource.PSP_SPALTE_LADEPRIO;
+        internal static string WsenLadeprioErl => MyResource.Resource.KI_DLG_WSEN_LADEPRIO_ERL;
+        internal static string WsenLadeprioPvName => MyResource.Resource.SIM_LBL_PV_UEBERSCHUSS;
+        internal static string WsenLadeprioPvErl => MyResource.Resource.KI_DLG_WSEN_LADEPRIO_PV_ERL;
+        internal static string WsenLadegrenzeAktivName => MyResource.Resource.SIM_CHK_LADEGRENZE;
+        internal static string WsenLadegrenzeAktivErl => MyResource.Resource.KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL;
+        internal static string WsenLadegrenzeName => MyResource.Resource.SIM_CHK_LADEGRENZE;
+        internal static string WsenLadegrenzeErl => MyResource.Resource.KI_DLG_WSEN_LADEGRENZE_ERL;
+        internal static string WsenHoeheAktivName => MyResource.Resource.SIM_CHK_EINSPEISEHOEHE;
+        internal static string WsenHoeheAktivErl => MyResource.Resource.KI_DLG_WSEN_HOEHE_AKTIV_ERL;
+        internal static string WsenHoeheName => MyResource.Resource.SIM_CHK_EINSPEISEHOEHE;
+        internal static string WsenHoeheErl => MyResource.Resource.KI_DLG_WSEN_HOEHE_ERL;
+
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;
     }

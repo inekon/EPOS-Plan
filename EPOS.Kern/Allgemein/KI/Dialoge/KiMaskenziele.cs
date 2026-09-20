@@ -152,7 +152,9 @@ namespace WindowsFormsApplication1
                 // der Seitenschluessel der AppWurzel (SIM-Q3, #207).
                 { KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, Masken.Simulation },
                 { KiMaskennamen.QUELLE_ERDREICH,           Masken.Simulation },
-                { KiMaskennamen.QUELLE_PUFFERSPEICHER,     Masken.Simulation }
+                { KiMaskennamen.QUELLE_PUFFERSPEICHER,     Masken.Simulation },
+                { KiMaskennamen.QUELLPROFIL,               Masken.Simulation },
+                { KiMaskennamen.WAERMESENKE,               Masken.Simulation }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

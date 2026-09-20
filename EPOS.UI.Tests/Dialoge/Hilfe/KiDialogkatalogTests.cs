@@ -88,7 +88,11 @@ public class KiDialogkatalogTests
         { KiMaskennamen.QUELLE_ERDREICH,
           typeof(EPOS.UI.Dialoge.Simulation.QuelleErdreichKiSicht) },
         { KiMaskennamen.QUELLE_PUFFERSPEICHER,
-          typeof(EPOS.UI.Dialoge.Simulation.QuellePufferspeicherKiSicht) }
+          typeof(EPOS.UI.Dialoge.Simulation.QuellePufferspeicherKiSicht) },
+        { KiMaskennamen.QUELLPROFIL,
+          typeof(EPOS.UI.Dialoge.Simulation.QuellprofilKiSicht) },
+        { KiMaskennamen.WAERMESENKE,
+          typeof(EPOS.UI.Dialoge.Simulation.WaermesenkeKiSicht) }
     };
 
     // =====================================================================
@@ -135,11 +139,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_sechzehn_Masken()
+    public void Der_Katalog_fuehrt_achtzehn_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(16, katalog.Anzahl);
+        Assert.Equal(18, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -191,6 +195,8 @@ public class KiDialogkatalogTests
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER_VERWALTUNG));
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.QUELLE_ERDREICH));
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.QUELLE_PUFFERSPEICHER));
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.QUELLPROFIL));
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.WAERMESENKE));
     }
 
     [Fact]
@@ -409,7 +415,13 @@ public class KiDialogkatalogTests
             "der Maske; Zeuge ist QuelleErdreichDialogTests",
         [KiMaskennamen.QUELLE_PUFFERSPEICHER] =
             "bindet über die Sichtklasse QuellePufferspeicherKiSicht auf die " +
-            "Eingabefelder der Maske; Zeuge ist QuellePufferspeicherDialogTests"
+            "Eingabefelder der Maske; Zeuge ist QuellePufferspeicherDialogTests",
+        [KiMaskennamen.QUELLPROFIL] =
+            "bindet über die Sichtklasse QuellprofilKiSicht auf die Kopffelder der " +
+            "Maske; Zeuge ist QuellprofilDialogTests",
+        [KiMaskennamen.WAERMESENKE] =
+            "bindet über die Sichtklasse WaermesenkeKiSicht auf die Bedienelemente " +
+            "der gewählten Zeile; Zeuge ist WaermesenkeDialogTests"
     };
 
     /// <summary>

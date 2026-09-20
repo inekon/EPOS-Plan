@@ -20696,4 +20696,43 @@ Do you want to allow this?</value>
   <data name="KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL" xml:space="preserve">
     <value>Height of the source withdrawal in the tank, 0 = bottom to 1 = top; empty means “top”.</value>
   </data>
+  <data name="KI_DLG_MASKE_QPROF" xml:space="preserve">
+    <value>Source profile</value>
+  </data>
+  <data name="KI_DLG_MASKE_WSEN" xml:space="preserve">
+    <value>Heat sinks</value>
+  </data>
+  <data name="KI_DLG_QPROF_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>The name of the source profile; without it nothing is saved.</value>
+  </data>
+  <data name="KI_DLG_QPROF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Free text for the source profile; it may stay empty.</value>
+  </data>
+  <data name="KI_DLG_QPROF_BETRIEBSART_ERL" xml:space="preserve">
+    <value>The raster of the profile: month (12 values), day (365 values) or hour (8760 values). A change keeps what fits and fills the rest with the default.</value>
+  </data>
+  <data name="KI_DLG_WSEN_ZIEL_ERL" xml:space="preserve">
+    <value>Where this sink delivers its heat: into the heating circuit or into a buffer tank. The fields below follow the target.</value>
+  </data>
+  <data name="KI_DLG_WSEN_BEDARFSART_ERL" xml:space="preserve">
+    <value>Heating circuit only: which demand is covered (space heating, domestic hot water, process heat).</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEPRIO_ERL" xml:space="preserve">
+    <value>Buffer tank only: in which order this tank is charged; 0 means “as the tank specifies”.</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEPRIO_PV_ERL" xml:space="preserve">
+    <value>Rank 1 only and only with photovoltaics: a different order while PV surplus is available; 0 means “unchanged”.</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL" xml:space="preserve">
+    <value>On = this sink charges only up to its own upper limit instead of the switch-off threshold of the tank. Switching it on proposes 70 %.</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEGRENZE_ERL" xml:space="preserve">
+    <value>The own upper charging limit of this sink in percent; it applies only while the switch is on.</value>
+  </data>
+  <data name="KI_DLG_WSEN_HOEHE_AKTIV_ERL" xml:space="preserve">
+    <value>On = this sink feeds into the tank at its own height. Switching it on proposes 1 (top).</value>
+  </data>
+  <data name="KI_DLG_WSEN_HOEHE_ERL" xml:space="preserve">
+    <value>The own feed-in height in the tank, 0 = bottom to 1 = top; it applies only while the switch is on.</value>
+  </data>
 </root>

@@ -579,4 +579,60 @@ public class QuellprofilDialogTests : EposBunitContext
                     "Kopf oder Werteblatt steht nicht im Raster");
         Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>QuellprofilKiSicht</c> und steht deshalb nicht in der
+    /// Markup-Probe des Dialogkatalogs — dieser Fall ist ihr Ersatz: Die Maske steht
+    /// gezeichnet da, die Brücke liest die Bezeichnung, und ein Setzen landet im
+    /// Eingabefeld.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist — die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Bezeichnung()
+    {
+        Zeige(Neu(), new Pruefstand());
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.QUELLPROFIL));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLPROFIL, "bezeichnung");
+        Assert.NotNull(zugang);
+        Assert.Equal("", zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen("Sole 10 °C");
+
+        Assert.Equal("Sole 10 °C", zugang.Lesen());
+    }
+
+    /// <summary>
+    /// Die Betriebsart ist eine Aufzählung über die STEUERWERTE der Maske. Ein
+    /// Steuerwert, den die Klappliste nicht führt, wird abgewiesen — sonst stünde die
+    /// Maske auf einem Raster, das es nicht gibt.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_stellt_die_Betriebsart_um_und_weist_Unbekanntes_ab()
+    {
+        var cut = Zeige(Neu(), new Pruefstand());
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLPROFIL, "betriebsart");
+
+        Assert.Equal(MONAT, zugang.Lesen());
+
+        zugang.Setzen(STUNDE);
+        cut.Render();
+        Assert.Equal(STUNDE, zugang.Lesen());
+
+        zugang.Setzen("Viertelstunde");
+        Assert.Equal(STUNDE, zugang.Lesen());
+    }
 }

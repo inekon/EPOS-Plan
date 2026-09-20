@@ -25622,6 +25622,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_QPROF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_QPROF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle Pufferspeicher ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_QPUF {
@@ -25690,6 +25699,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_WP_ANLAGE {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_WP_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenken ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WSEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WSEN", resourceCulture);
             }
         }
         
@@ -26131,6 +26149,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_QERD_TIEFE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_QERD_TIEFE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Quellprofil; er darf leer bleiben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Raster des Profils: Monat (12 Werte), Tag (365 Werte) oder Stunde (8760 Werte). Ein Wechsel behält, was passt, und belegt den Rest mit der Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_BETRIEBSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_BETRIEBSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Quellprofils; ohne ihn wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_BEZEICHNUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_BEZEICHNUNG_ERL", resourceCulture);
             }
         }
         
@@ -27355,6 +27400,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WP_MODULKOSTEN_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_WP_MODULKOSTEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur beim Heizkreis: welcher Bedarf gedeckt wird (Heizung, Brauchwasser, Prozesswärme). ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_BEDARFSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_BEDARFSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = diese Senke speist auf einer eigenen Höhe in den Speicher ein. Beim Einschalten steht 1 (ganz oben) als Vorschlag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_HOEHE_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_HOEHE_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eigene Einspeisehöhe im Speicher, 0 = ganz unten bis 1 = ganz oben; sie gilt nur bei eingeschaltetem Schalter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_HOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_HOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = diese Senke lädt nur bis zu einer eigenen Obergrenze statt bis zur Abschaltschwelle des Speichers. Beim Einschalten steht 70 % als Vorschlag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eigene Ladeobergrenze dieser Senke in Prozent; sie gilt nur bei eingeschaltetem Schalter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_LADEGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_LADEGRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur bei einem Pufferspeicher: in welcher Reihenfolge dieser Speicher geladen wird; 0 heißt „nach Vorgabe des Speichers&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_LADEPRIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_LADEPRIO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur auf Rang 1 und nur mit Photovoltaik: abweichende Reihenfolge, solange PV-Überschuss ansteht; 0 heißt „unverändert&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_LADEPRIO_PV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_LADEPRIO_PV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohin diese Senke die Wärme gibt: in den Heizkreis oder in einen Pufferspeicher. Mit dem Ziel wechseln die Felder darunter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_ZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_ZIEL_ERL", resourceCulture);
             }
         }
         

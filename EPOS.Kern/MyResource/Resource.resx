@@ -20703,4 +20703,43 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL" xml:space="preserve">
     <value>Höhe der Quell-Entnahme im Speicher, 0 = ganz unten bis 1 = ganz oben; leer heißt „oben".</value>
   </data>
+  <data name="KI_DLG_MASKE_QPROF" xml:space="preserve">
+    <value>Quellprofil</value>
+  </data>
+  <data name="KI_DLG_MASKE_WSEN" xml:space="preserve">
+    <value>Wärmesenken</value>
+  </data>
+  <data name="KI_DLG_QPROF_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Der Name des Quellprofils; ohne ihn wird nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_QPROF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Freitext zum Quellprofil; er darf leer bleiben.</value>
+  </data>
+  <data name="KI_DLG_QPROF_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Das Raster des Profils: Monat (12 Werte), Tag (365 Werte) oder Stunde (8760 Werte). Ein Wechsel behält, was passt, und belegt den Rest mit der Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_WSEN_ZIEL_ERL" xml:space="preserve">
+    <value>Wohin diese Senke die Wärme gibt: in den Heizkreis oder in einen Pufferspeicher. Mit dem Ziel wechseln die Felder darunter.</value>
+  </data>
+  <data name="KI_DLG_WSEN_BEDARFSART_ERL" xml:space="preserve">
+    <value>Nur beim Heizkreis: welcher Bedarf gedeckt wird (Heizung, Brauchwasser, Prozesswärme).</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEPRIO_ERL" xml:space="preserve">
+    <value>Nur bei einem Pufferspeicher: in welcher Reihenfolge dieser Speicher geladen wird; 0 heißt „nach Vorgabe des Speichers".</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEPRIO_PV_ERL" xml:space="preserve">
+    <value>Nur auf Rang 1 und nur mit Photovoltaik: abweichende Reihenfolge, solange PV-Überschuss ansteht; 0 heißt „unverändert".</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL" xml:space="preserve">
+    <value>An = diese Senke lädt nur bis zu einer eigenen Obergrenze statt bis zur Abschaltschwelle des Speichers. Beim Einschalten steht 70 % als Vorschlag.</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEGRENZE_ERL" xml:space="preserve">
+    <value>Die eigene Ladeobergrenze dieser Senke in Prozent; sie gilt nur bei eingeschaltetem Schalter.</value>
+  </data>
+  <data name="KI_DLG_WSEN_HOEHE_AKTIV_ERL" xml:space="preserve">
+    <value>An = diese Senke speist auf einer eigenen Höhe in den Speicher ein. Beim Einschalten steht 1 (ganz oben) als Vorschlag.</value>
+  </data>
+  <data name="KI_DLG_WSEN_HOEHE_ERL" xml:space="preserve">
+    <value>Die eigene Einspeisehöhe im Speicher, 0 = ganz unten bis 1 = ganz oben; sie gilt nur bei eingeschaltetem Schalter.</value>
+  </data>
 </root>

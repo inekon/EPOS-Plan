@@ -657,4 +657,73 @@ public class WaermesenkeDialogTests : EposBunitContext
         Assert.Equal(raster.Count, cut.FindAll(".epos-formularraster--einspaltig").Count);
         Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>WaermesenkeKiSicht</c> auf die Bedienelemente der GEWÄHLTEN
+    /// Zeile und steht deshalb nicht in der Markup-Probe des Dialogkatalogs — dieser
+    /// Fall ist ihr Ersatz: Die Maske steht gezeichnet da, die Brücke liest das Ziel
+    /// der gewählten Zeile, und ein Setzen schreibt die Zeile zurück.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist — die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_das_Ziel()
+    {
+        var cut = Zeige(MitPuffern());
+
+        Assert.True(WindowsFormsApplication1.KiMaskenbruecke.IstAngemeldet(
+                        WindowsFormsApplication1.KiMaskennamen.WAERMESENKE));
+
+        WindowsFormsApplication1.KiFeldzugang zugang = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.WAERMESENKE, "ziel");
+
+        Assert.NotNull(zugang);
+        Assert.Equal(HEIZKREIS, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(P_HEIZUNG);
+        cut.Render();
+
+        Assert.Equal(P_HEIZUNG, zugang.Lesen());
+
+        // Ein Ziel, das die Liste der Maske nicht fuehrt, wird abgewiesen.
+        zugang.Setzen("PufferGibtEsNicht");
+        Assert.Equal(P_HEIZUNG, zugang.Lesen());
+    }
+
+    /// <summary>
+    /// Die eigene Ladeobergrenze geht den Weg ihres Schalters: Mit dem Einschalten
+    /// kommt die Vorbelegung 70 % — genau wie beim Umlegen von Hand.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_schaltet_die_eigene_Ladeobergrenze_ein()
+    {
+        var cut = Zeige(MitPuffern());
+
+        WindowsFormsApplication1.KiFeldzugang ziel = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.WAERMESENKE, "ziel");
+        ziel.Setzen(P_HEIZUNG);
+        cut.Render();
+
+        WindowsFormsApplication1.KiFeldzugang schalter = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.WAERMESENKE, "ladegrenze_aktiv");
+
+        Assert.Equal(false, schalter.Lesen());
+
+        schalter.Setzen(true);
+        cut.Render();
+
+        Assert.Equal(true, schalter.Lesen());
+
+        WindowsFormsApplication1.KiFeldzugang grenze = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.WAERMESENKE, "ladegrenze");
+        Assert.Equal(70.0, grenze.Lesen());
+    }
 }

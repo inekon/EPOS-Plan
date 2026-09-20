@@ -243,7 +243,132 @@ namespace WindowsFormsApplication1
                 WaermepumpeAnlage(),
                 PufferspeicherVerwaltung(),
                 QuelleErdreich(),
-                QuellePufferspeicher());
+                QuellePufferspeicher(),
+                Quellprofil(),
+                Waermesenke());
+        }
+
+        // =====================================================================
+        // Form_Quellprofil  ->  QuellprofilDialog   (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der KOPF eines Quellprofils — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.QuellprofilKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Nur der Kopf, und das ist die Aussage.</b> Die zwoelf Monatswerte und die
+        /// 365 bzw. 8 760 Reihenwerte sind Zahlenfolgen ohne Zeilentyp: Ein Katalogfeld
+        /// traegt EINEN Wert, eine Katalogspalte braucht Zeilen mit benannten
+        /// Eigenschaften (<c>KiFeldsammlung</c>). Gepflegt werden sie ohnehin ueber
+        /// „Alle Werte gleich setzen…" und den CSV-Weg und nicht Zelle fuer Zelle.
+        /// </para>
+        /// <para>
+        /// <b>Das gewaehlte PROFIL bleibt draussen</b> — ein Verweis in die Profilliste
+        /// des Projekts (rohe Id, 0 = „neues Profil"); dieselbe Regel wie beim
+        /// gewaehlten Puffer der Quellenmaske.
+        /// </para>
+        /// <para>
+        /// <b>Die BETRIEBSART ist eine Aufzaehlung</b> und traegt den Steuerwert des
+        /// Bestands (Monat, Tag, Stunde) — nicht den Anzeigetext der Klappliste. Sie
+        /// entscheidet, wie viele Werte das Profil fuehrt.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Quellprofil()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.QUELLPROFIL,
+                anzeigename: KiDialogTexte.MaskeQuellprofil,
+                felder: new[]
+                {
+                    new KiDialogFeld("bezeichnung", "QuellprofilKiSicht.Bezeichnung",
+                                     KiDialogTexte.QprofBezeichnungName, KiParameterTyp.Text,
+                                     KiDialogTexte.QprofBezeichnungErl),
+                    new KiDialogFeld("beschreibung", "QuellprofilKiSicht.Beschreibung",
+                                     KiDialogTexte.QprofBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.QprofBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("betriebsart", "QuellprofilKiSicht.Betriebsart",
+                                     KiDialogTexte.QprofBetriebsartName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.QprofBetriebsartErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Waermesenke  ->  WaermesenkeDialog   (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Waermesenken einer Anlage — acht Felder der GEWAEHLTEN Zeile aus
+        /// <c>EPOS.UI.Dialoge.Simulation.WaermesenkeKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Das Daten-Objekt ist eine ZEILE und kein Dialogstand</b> — dieselbe
+        /// Bauart wie bei <see cref="Photovoltaik"/>: Der Dialog fuehrt eine Liste, und
+        /// angemeldet ist, was in der gewaehlten Zeile steht. Ist keine gewaehlt, sind
+        /// die Felder leer — derselbe Zustand, den der Anwender sieht.
+        /// </para>
+        /// <para>
+        /// <b>Der gewaehlte SPEICHER und der PARALLELVERBUND bleiben draussen.</b> Der
+        /// eine ist ein Verweis in die Pufferliste des Projekts (rohe Id), der andere
+        /// eine MENGE solcher Verweise; ein Katalogfeld traegt EINEN Wert. Der RANG der
+        /// Zeile bleibt ebenfalls draussen: Er wird nicht eingegeben, sondern ueber
+        /// „nach oben"/„nach unten" verschoben, und er traegt keine eigene Beschriftung.
+        /// </para>
+        /// <para>
+        /// <b>„Senke hinzufuegen", „nach oben", „nach unten" und „Pufferspeicher
+        /// anlegen…" sind keine Knoepfe dieser Liste</b> — sie aendern die LISTE und
+        /// nicht einen Wert; „Entfernen" ist ueberdies ein Loeschknopf und damit nicht
+        /// deklarierbar (Bauartsperre in <see cref="KiDialogKnopf"/>).
+        /// </para>
+        /// </remarks>
+        private static KiDialog Waermesenke()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.WAERMESENKE,
+                anzeigename: KiDialogTexte.MaskeWaermesenke,
+                felder: new[]
+                {
+                    new KiDialogFeld("ziel", "WaermesenkeKiSicht.Ziel",
+                                     KiDialogTexte.WsenZielName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.WsenZielErl, leerErlaubt: true),
+                    new KiDialogFeld("bedarfsart", "WaermesenkeKiSicht.Bedarfsart",
+                                     KiDialogTexte.WsenBedarfsartName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.WsenBedarfsartErl, leerErlaubt: true),
+                    new KiDialogFeld("ladeprioritaet", "WaermesenkeKiSicht.Ladeprioritaet",
+                                     KiDialogTexte.WsenLadeprioName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WsenLadeprioErl),
+                    new KiDialogFeld("ladeprioritaet_pv", "WaermesenkeKiSicht.LadeprioritaetPv",
+                                     KiDialogTexte.WsenLadeprioPvName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WsenLadeprioPvErl),
+                    new KiDialogFeld("ladegrenze_aktiv", "WaermesenkeKiSicht.LadegrenzeAktiv",
+                                     KiDialogTexte.WsenLadegrenzeAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WsenLadegrenzeAktivErl),
+                    new KiDialogFeld("ladegrenze", "WaermesenkeKiSicht.Ladegrenze",
+                                     KiDialogTexte.WsenLadegrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WsenLadegrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("einspeisehoehe_aktiv",
+                                     "WaermesenkeKiSicht.EinspeisehoeheAktiv",
+                                     KiDialogTexte.WsenHoeheAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WsenHoeheAktivErl),
+                    new KiDialogFeld("einspeisehoehe", "WaermesenkeKiSicht.Einspeisehoehe",
+                                     KiDialogTexte.WsenHoeheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WsenHoeheErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================
