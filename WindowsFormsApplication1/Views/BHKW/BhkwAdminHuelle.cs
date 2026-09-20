@@ -110,10 +110,14 @@ namespace WindowsFormsApplication1
         /// <remarks>
         /// <para><b>Gelesen wird genau, was das Profil als <c>Editierbar</c> führt</b>
         /// (Anwenderentscheid 15.09.2026): Firma, Beschreibung, Brennstoff, Motortyp,
-        /// die vier Leistungs- und Temperaturwerte, Wirkungsgrad, Raumbedarf, die fünf
+        /// die vier Leistungs- und Temperaturwerte, die zwei Wirkungsgradanteile,
+        /// Raumbedarf, die fünf
         /// Kostenposten, Wartung, Nutzungsdauer und die fünf Emissionsfaktoren. Die
         /// Investition je kWel bleibt draußen: Sie ist die ABLEITUNG der fünf Posten
         /// (W14a-E-8-B3) und wird im Kern nachgerechnet.</para>
+        /// <para><b>Der GESAMTwirkungsgrad bleibt ebenso draußen</b>
+        /// (Anwenderentscheid 20.09.2026): Er ist die Summe der zwei Anteile und im
+        /// Aufklapper nur Anzeige.</para>
         /// <para><b>Ein leeres Textfeld heißt „unverändert lassen".</b> Der Brennstoff
         /// ist ein Nachschlagewert; kommt er leer herein, rührt
         /// <c>KatalogFeldPruefung.AusListe</c> die Spalte nicht an — so bleibt ein
@@ -133,7 +137,6 @@ namespace WindowsFormsApplication1
                 KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldRuecklauf),
                 Beschreibung: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBeschreibung),
                 Brennstoff: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBrennstoff),
-                Wirkungsgrad: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgrad),
                 Motortyp: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMotortyp),
                 Raumbedarf: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldRaumbedarf),
                 KostenModul: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenModul),
@@ -150,7 +153,15 @@ namespace WindowsFormsApplication1
                 SO2: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldSo2),
                 CO: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldCo),
                 CO2: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldCo2),
-                Staub: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldStaub));
+                Staub: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldStaub),
+                // DIE ZWEI ANTEILE statt des Gesamtwerts (Anwenderentscheid
+                // 20.09.2026): Der Gesamtwirkungsgrad ist im Aufklapper Anzeige und
+                // steht deshalb nicht mehr im Datensatz - der Kern bildet ihn als
+                // Summe (BhkwWirkungsgrad.GesamtZumSchreiben).
+                WirkungsgradEl:
+                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradEl),
+                WirkungsgradTh:
+                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradTh));
 
             BHKWStammCtrl.SpeicherErgebnis e =
                 BHKWStammCtrl.AnzeigefelderSchreiben(name, werte, schutzUebergehen);

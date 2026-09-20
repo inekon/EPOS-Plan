@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using AngleSharp.Dom;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Bunit;
@@ -157,11 +158,13 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
     // Die Feldzahlen sind seit dem Anwenderentscheid vom 15.09.2026 die des VOLLEN
     // Katalogsatzes — jede fachliche Spalte der Stammtabelle ausser ID und ReadOnly
-    // (21 / 25 / 14 / 6). Bis dahin waren es 8 / 8 / 8 / 6: der Detailblock der vier
-    // Vorlaeufer-Masken. Die Quelle ist KatalogBrowserProfil; hier steht nur die Zahl.
+    // (21 / 27 / 14 / 6). Bis dahin waren es 8 / 8 / 8 / 6: der Detailblock der vier
+    // Vorlaeufer-Masken. Beim BHKW kamen mit dem Entscheid vom 20.09.2026 die zwei
+    // Wirkungsgradanteile dazu. Die Quelle ist KatalogBrowserProfil; hier steht nur
+    // die Zahl.
     [Theory]
     [InlineData(KatalogBrowserArt.Heizkessel, "Administration Heizkessel", 21)]
-    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 25)]
+    [InlineData(KatalogBrowserArt.Bhkw, "BHKW Verwaltung", 27)]
     [InlineData(KatalogBrowserArt.Solarkollektoren, "Administration Solarkollektoren", 14)]
     [InlineData(KatalogBrowserArt.Pufferspeicher, "Administration Pufferspeicher", 6)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Detailfelder(
@@ -495,6 +498,55 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Bearbeitenknopf(cut, art).Click();
 
         Assert.Equal(meldung, cut.Instance.Meldung);
+    }
+
+    // =================================================================================
+    // Der Gesamtwirkungsgrad des BHKW (Anwenderentscheid 20.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Der Gesamtwirkungsgrad ist im Aufklapper reine ANZEIGE</b> — eingegeben werden
+    /// der elektrische und der thermische Anteil, wie im Katalogeditor.
+    /// </summary>
+    [Fact]
+    public void Der_Gesamtwirkungsgrad_des_BHKW_ist_nicht_editierbar()
+    {
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw);
+
+        Assert.True(Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgrad).HasAttribute("readonly"));
+        Assert.False(Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgradEl).HasAttribute("readonly"));
+        Assert.False(Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgradTh).HasAttribute("readonly"));
+    }
+
+    /// <summary>
+    /// <b>Die Summe läuft mit:</b> Wer einen der zwei Anteile ändert, sieht den
+    /// Gesamtwirkungsgrad sofort — er ist ihre Summe, auf drei Stellen
+    /// (<c>BhkwWirkungsgrad.GesamtAnzeige</c>).
+    /// </summary>
+    [Fact]
+    public void Die_Summe_laeuft_mit_wenn_ein_Anteil_sich_aendert()
+    {
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw);
+
+        Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgradEl).Input("0,30");
+        Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgradTh).Input("0,60");
+
+        Assert.Equal("0,9", Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgrad).GetAttribute("value"));
+
+        // Ein halbes Paar ergibt keine Summe - leer statt einer halben Wahrheit.
+        Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgradTh).Input("");
+        Assert.Equal("", Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgrad).GetAttribute("value"));
+    }
+
+    /// <summary>Das Eingabefeld zu einem Profilschlüssel — über seine Beschriftung.</summary>
+    private static IElement Eingabe(IRenderedComponent<KatalogBrowserDialog> cut, string schluessel)
+    {
+        string bezeichnung = Profil(KatalogBrowserArt.Bhkw).Detailfelder
+                             .Single(f => f.Schluessel == schluessel).Bezeichnung;
+
+        return cut.FindAll("label.epos-feld")
+                  .Single(l => l.QuerySelector(".epos-feld-text")?.TextContent == bezeichnung)
+                  .QuerySelector("input")!;
     }
 
     // =================================================================================

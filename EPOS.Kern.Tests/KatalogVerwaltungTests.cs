@@ -338,7 +338,7 @@ namespace EPOS.Kern.Tests
             var erwartet = new Dictionary<KatalogBrowserArt, int>
             {
                 [KatalogBrowserArt.Heizkessel] = 21,
-                [KatalogBrowserArt.Bhkw] = 25,
+                [KatalogBrowserArt.Bhkw] = 27,
                 [KatalogBrowserArt.Solarkollektoren] = 14,
                 [KatalogBrowserArt.Pufferspeicher] = 6
             };
@@ -387,10 +387,12 @@ namespace EPOS.Kern.Tests
             Assert.True(solar.HatSpeicherweg);
             Assert.True(puffer.HatSpeicherweg);
 
-            // Alles ausser dem Bezeichner — beim BHKW zusaetzlich ohne die ABGELEITETE
-            // Investition je kWel (W14a-E-8-B3): 20 / 23 / 13 / 5.
+            // Alles ausser dem Bezeichner — beim BHKW zusaetzlich ohne die zwei
+            // ABGELEITETEN Groessen: die Investition je kWel (W14a-E-8-B3) und den
+            // GESAMTwirkungsgrad, die Summe der zwei Anteile (Anwenderentscheid
+            // 20.09.2026): 20 / 24 / 13 / 5.
             Assert.Equal(20, heiz.Detailfelder.Count(f => f.Editierbar));
-            Assert.Equal(23, bhkw.Detailfelder.Count(f => f.Editierbar));
+            Assert.Equal(24, bhkw.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(13, solar.Detailfelder.Count(f => f.Editierbar));
             Assert.Equal(5, puffer.Detailfelder.Count(f => f.Editierbar));
 
@@ -399,9 +401,15 @@ namespace EPOS.Kern.Tests
                 var profil = KatalogBrowserProfil.Finde(art);
                 foreach (var feld in profil.Detailfelder)
                 {
+                    // Nicht editierbar ist der SCHLUESSEL des UPDATE und was
+                    // ABGELEITET ist: die Investition je kWel (Summe der fuenf
+                    // Posten je kWel) und der BHKW-Gesamtwirkungsgrad (Summe der
+                    // zwei Anteile, Anwenderentscheid 20.09.2026).
                     bool schluesselOderAbgeleitet =
                         feld.Schluessel == KatalogBrowserProfil.FeldBezeichner
-                        || feld.Schluessel == KatalogBrowserProfil.FeldInvestitionJeKwel;
+                        || feld.Schluessel == KatalogBrowserProfil.FeldInvestitionJeKwel
+                        || (art == KatalogBrowserArt.Bhkw
+                            && feld.Schluessel == KatalogBrowserProfil.FeldWirkungsgrad);
 
                     Assert.Equal(!schluesselOderAbgeleitet, feld.Editierbar);
                 }

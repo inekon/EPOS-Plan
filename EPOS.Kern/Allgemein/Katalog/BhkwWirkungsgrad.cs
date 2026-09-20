@@ -103,6 +103,28 @@ namespace WindowsFormsApplication1
             return Gesamt(el.Value, th.Value);
         }
 
+        /// <summary>
+        /// <b>Der Gesamtwirkungsgrad als ANZEIGETEXT</b> — drei Stellen, wie im
+        /// Katalogeditor. Er ist die Summe der zwei Anteile; nur wo BEIDE fehlen
+        /// (Altbestand vor Schritt 99), steht der gespeicherte Wert da.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Eine Regel, zwei Leser:</b> der Katalogeditor
+        /// (<c>BhkwKatalogDialog.GesamtText</c>) und der Aufklapper „Alle Daten"
+        /// (<c>BHKWStammCtrl.KatalogsatzAnzeige</c> beim Aufbau,
+        /// <c>KatalogBrowserDialog</c> beim Mitlaufen). Seit dem Anwenderentscheid
+        /// vom 20.09.2026 ist das Feld an BEIDEN Stellen reine Anzeige.</para>
+        /// <para><b>Ein HALBES Paar ergibt nichts</b> — leer statt einer Zahl, die
+        /// nur einen der zwei Anteile enthielte.</para>
+        /// </remarks>
+        public static string GesamtAnzeige(double? el, double? th, double? altbestand)
+        {
+            double? summe = (!el.HasValue && !th.HasValue) ? altbestand : Gesamt(el, th);
+            return summe.HasValue
+                 ? summe.Value.ToString("0.###", CultureInfo.CurrentCulture)
+                 : "";
+        }
+
         // =================================================================
         //  Die Rueckrichtung: ein Gesamtwert ergibt einen VORSCHLAG
         // =================================================================

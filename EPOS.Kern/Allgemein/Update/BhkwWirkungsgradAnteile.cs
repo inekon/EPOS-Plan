@@ -88,14 +88,21 @@ namespace WindowsFormsApplication1
         /// Die Untergrenze, ab der ein Wert als gepflegt gilt — ausschliesslich.
         ///
         /// <para><b><c>static readonly</c> und nicht <c>const</c>, und das ist kein
-        /// Geschmack:</b> Ein KONSTANTER Ausdruck mit dem Wert null geht in C# implizit
-        /// in jeden Aufzählungstyp über. <c>new DbParam("@x", 0.0)</c> mit einer
-        /// <c>const</c> träfe deshalb nicht <c>DbParam(string, object)</c>, sondern
-        /// <c>DbParam(string, DbParamTyp)</c> — und der setzt den Wert auf
-        /// <c>DBNull</c>. Die Bedingung stünde dann als <c>Wirkungsgrad &gt; NULL</c> da,
-        /// wäre für jede Zeile NULL, und der Schritt fasste nichts an, ohne sich zu
-        /// beklagen. Ein <c>static readonly</c> ist kein konstanter Ausdruck; die
-        /// Überladung mit <c>object</c> gewinnt.</para>
+        /// Geschmack:</b> Ein KONSTANTER Ausdruck mit dem Wert null geht implizit in
+        /// jeden Aufzählungstyp über — <b>aus jedem numerischen Typ</b>. Die Sprachnorm
+        /// nennt dafür zwar nur die ganzzahligen Typen; Roslyn lässt darüber hinaus auch
+        /// <c>0.0</c>, <c>0f</c> und <c>0m</c> durch, und genau daran ist dieser Schritt
+        /// einmal gescheitert. <c>new DbParam("@x", NULLGRENZE)</c> mit
+        /// <c>const double NULLGRENZE = 0.0</c> traf deshalb nicht
+        /// <c>DbParam(string, object)</c>, sondern <c>DbParam(string, DbParamTyp)</c> —
+        /// und der setzt den Wert auf <c>DBNull</c>. Die Bedingung stand dann als
+        /// <c>Wirkungsgrad &gt; NULL</c> da, war für jede Zeile NULL, und der Schritt
+        /// fasste nichts an, ohne sich zu beklagen. Ein <c>static readonly</c> ist kein
+        /// konstanter Ausdruck; die Überladung mit <c>object</c> gewinnt.</para>
+        /// <para><b>Der Bestand wird darauf gehalten:</b> Der Wächter
+        /// <c>EPOS.Kern.Tests/DbParamNullkonstanteWacheTests</c> meldet jedes
+        /// <c>new DbParam(…)</c>, dessen zweites Argument ein Nullliteral oder der Name
+        /// einer <c>const</c>-Null ist.</para>
         /// </summary>
         public static readonly double NULLGRENZE = 0.0;
 

@@ -756,7 +756,19 @@ namespace WindowsFormsApplication1
             werte[KatalogBrowserProfil.FeldBrennstoff] =
                 (brenn >= 1 && brenn <= ctrl.Brennstoffart.Count) ? ctrl.Brennstoffart[brenn - 1] : "";
 
-            werte[KatalogBrowserProfil.FeldWirkungsgrad] = Feld(r, "Wirkungsgrad");
+            // DIE ZWEI ANTEILE SIND DIE EINGABE, DIE SUMME IST ANZEIGE
+            // (Anwenderentscheid 20.09.2026, Schemaschritt 99). Der Gesamtwert ist
+            // nicht die Spalte, sondern BhkwWirkungsgrad.Gesamt aus den zwei
+            // Anteilen - genau wie die Investition je kWel die Umrechnung der fuenf
+            // Posten ist. Nur wo beide Anteile fehlen (Altbestand vor Schritt 99),
+            // steht der gespeicherte Gesamtwert da; sonst liefe die Anzeige der
+            // Pflege davon.
+            double? wirkEl = AnteilAus(r, BhkwWirkungsgrad.SPALTE_EL);
+            double? wirkTh = AnteilAus(r, BhkwWirkungsgrad.SPALTE_TH);
+            werte[KatalogBrowserProfil.FeldWirkungsgradEl] = Feld(r, BhkwWirkungsgrad.SPALTE_EL);
+            werte[KatalogBrowserProfil.FeldWirkungsgradTh] = Feld(r, BhkwWirkungsgrad.SPALTE_TH);
+            werte[KatalogBrowserProfil.FeldWirkungsgrad] =
+                BhkwWirkungsgrad.GesamtAnzeige(wirkEl, wirkTh, AnteilAus(r, "Wirkungsgrad"));
             werte[KatalogBrowserProfil.FeldMotortyp] = Feld(r, "Motortyp");
             werte[KatalogBrowserProfil.FeldRaumbedarf] = Feld(r, "Raumbedarf");
             werte[KatalogBrowserProfil.FeldKostenModul] = Feld(r, "Kosten_Modul");
@@ -848,12 +860,17 @@ namespace WindowsFormsApplication1
         /// W14a-E-8-B3 abgeleitet (<see cref="BHKWKosten.JeKWel"/> aus den fuenf Posten);
         /// gespeichert wird, was in den Posten steht, und der Schreibweg rechnet die
         /// Spalte daraus nach.</para>
+        /// <para><b>Der GESAMTwirkungsgrad fehlt ebenso mit Absicht</b>
+        /// (Anwenderentscheid 20.09.2026): Gepflegt werden seine zwei Anteile
+        /// <see cref="AnzeigefelderBhkw.WirkungsgradEl"/> und
+        /// <see cref="AnzeigefelderBhkw.WirkungsgradTh"/>; die Spalte
+        /// <c>Wirkungsgrad</c> ist ihre Summe und wird vom Schreibweg nachgezogen
+        /// (<see cref="BhkwWirkungsgrad.GesamtZumSchreiben"/>, Schemaschritt 99).</para>
         /// </remarks>
         public sealed record AnzeigefelderBhkw(string Firma, double Ptherm, double Pel,
                                                double Grenzleistung, int Vorlauf, int Ruecklauf,
                                                string Beschreibung = null,
                                                string Brennstoff = null,
-                                               double? Wirkungsgrad = null,
                                                string Motortyp = null,
                                                double? Raumbedarf = null,
                                                double? KostenModul = null,
@@ -865,7 +882,9 @@ namespace WindowsFormsApplication1
                                                int? Nutzungsdauer = null,
                                                int? NOx = null, int? SO2 = null,
                                                int? CO = null, int? CO2 = null,
-                                               int? Staub = null);
+                                               int? Staub = null,
+                                               double? WirkungsgradEl = null,
+                                               double? WirkungsgradTh = null);
 
         /// <summary>
         /// Schreibt die sechs Anzeigefelder in den Katalogsatz zurueck — der Weg des
@@ -955,13 +974,6 @@ namespace WindowsFormsApplication1
                 KatalogFeldPruefung.NichtNegativ(art, KatalogBrowserProfil.FeldPel, f.Pel),
                 KatalogFeldPruefung.ImBereich(art, KatalogBrowserProfil.FeldGrenzleistung,
                                               f.Grenzleistung, 0, 100),
-                // Der Wirkungsgrad ist ein FAKTOR, kein Prozentwert: "nicht negativ"
-                // liesse 29,5 durch, und der Rechenweg teilt durch diese Zahl
-                // (Schemaschritt 98, BhkwWirkungsgradFaktor). Der Aufklapper zeigt den
-                // GESAMTwert; die zwei Anteile pflegt der Katalogeditor
-                // (Schemaschritt 99).
-                KatalogFeldPruefung.WirkungsgradFaktor(art, KatalogBrowserProfil.FeldWirkungsgrad,
-                                                       f.Wirkungsgrad),
                 Nichtnegativ(KatalogBrowserProfil.FeldRaumbedarf, f.Raumbedarf),
                 Nichtnegativ(KatalogBrowserProfil.FeldKostenModul, f.KostenModul),
                 Nichtnegativ(KatalogBrowserProfil.FeldKostenMontage, f.KostenMontage),
@@ -977,6 +989,17 @@ namespace WindowsFormsApplication1
                 Nichtnegativ(KatalogBrowserProfil.FeldStaub, f.Staub));
             if (!string.IsNullOrEmpty(grund)) return grund;
 
+            // 1a. DIE ZWEI WIRKUNGSGRADANTEILE - gegen dieselben drei Regeln wie im
+            //     Katalogeditor (BhkwWirkungsgrad.Pruefen, Schemaschritt 99): jeder
+            //     Anteil in (0; 1), die Summe in (0; 1,05]. Geprueft wird der Stand,
+            //     der nach der Uebernahme daestuende - ein Feld, das leer
+            //     hereinkommt, laesst den gepflegten Wert stehen (dieselbe Leerstelle
+            //     wie bei allen anderen Feldern).
+            double? wirkEl = f.WirkungsgradEl ?? satz.m_Wirkungsgrad_el;
+            double? wirkTh = f.WirkungsgradTh ?? satz.m_Wirkungsgrad_th;
+            grund = BhkwWirkungsgrad.Pruefen(wirkEl, wirkTh);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
             // 2. Der Nachschlagewert.
             string brennstoff;
             grund = KatalogFeldPruefung.AusListe(art, KatalogBrowserProfil.FeldBrennstoff,
@@ -988,7 +1011,6 @@ namespace WindowsFormsApplication1
             if (brennstoff != null)
                 satz.m_Brennstoff = new BHKWStammCtrl().Brennstoffart.IndexOf(brennstoff) + 1;
             if (f.Beschreibung != null) satz.m_szBeschreibung = f.Beschreibung;
-            if (f.Wirkungsgrad.HasValue) satz.m_Wirkungsgrad = f.Wirkungsgrad.Value;
             if (f.Motortyp != null) satz.m_szMotortyp = f.Motortyp;
             if (f.Raumbedarf.HasValue) satz.m_Raumbedarf = f.Raumbedarf.Value;
             if (f.KostenModul.HasValue) satz.m_Kosten_Modul = f.KostenModul.Value;
@@ -1006,6 +1028,8 @@ namespace WindowsFormsApplication1
             if (f.CO.HasValue) satz.m_CO = f.CO.Value;
             if (f.CO2.HasValue) satz.m_CO2 = f.CO2.Value;
             if (f.Staub.HasValue) satz.m_Staub = f.Staub.Value;
+            satz.m_Wirkungsgrad_el = wirkEl;
+            satz.m_Wirkungsgrad_th = wirkTh;
 
             // 4. Die abgeleitete Spalte nachziehen.
             satz.m_Investition_KWel = BHKWKosten.JeKWel(
@@ -1014,28 +1038,18 @@ namespace WindowsFormsApplication1
                                  satz.m_Kosten_Abgasreinigung),
                 satz.m_Pel);
 
-            // 5. DIE ZWEI ANTEILE NACHZIEHEN (Schemaschritt 99). Der Aufklapper zeigt
-            //    den GESAMTwirkungsgrad; wer ihn hier aendert, muss die Anteile
-            //    mitnehmen - sonst stuenden drei Zahlen da, von denen zwei einander
-            //    widersprechen. Geteilt wird im Verhaeltnis der Leistungen, also nach
-            //    derselben Regel wie im Datenteil von Schritt 99; ohne beide
-            //    Leistungen bleibt die Aufteilung, wie sie war, und Update schreibt
-            //    den Gesamtwert unveraendert.
-            if (f.Wirkungsgrad.HasValue)
-            {
-                BhkwWirkungsgrad.Aufteilung a = BhkwWirkungsgrad.Aufteilen(
-                    satz.m_Wirkungsgrad, satz.m_Pel, satz.m_Ptherm);
-                if (a.El.HasValue && a.Th.HasValue)
-                {
-                    satz.m_Wirkungsgrad_el = a.El;
-                    satz.m_Wirkungsgrad_th = a.Th;
-                }
-                else
-                {
-                    satz.m_Wirkungsgrad_el = null;
-                    satz.m_Wirkungsgrad_th = null;
-                }
-            }
+            // 5. DEN GESAMTWIRKUNGSGRAD NACHZIEHEN (Schemaschritt 99,
+            //    Anwenderentscheid 20.09.2026). Der Aufklapper nimmt ihn NICHT mehr
+            //    entgegen - der Datensatz fuehrt ihn gar nicht erst. Bis hierher
+            //    stand hier die Gegenrichtung: ein hier eingetippter Gesamtwert wurde
+            //    im Verhaeltnis der Leistungen auf die zwei Anteile VERTEILT. Dieser
+            //    Weg entfaellt, weil er die gepflegte Aufteilung eines Datenblattes
+            //    durch eine geschaetzte ersetzte, sobald jemand die Summe anfasste.
+            //    Geblieben ist die eine Richtung: Summe aus den Anteilen; fehlt einer
+            //    (Altbestand vor Schritt 99), bleibt der Gesamtwert stehen, wie er
+            //    war, und SimulationBHKW liest ihn unveraendert.
+            satz.m_Wirkungsgrad = BhkwWirkungsgrad.GesamtZumSchreiben(
+                satz.m_Wirkungsgrad_el, satz.m_Wirkungsgrad_th, satz.m_Wirkungsgrad);
 
             return null;
 

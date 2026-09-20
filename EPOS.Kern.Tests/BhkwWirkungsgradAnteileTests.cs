@@ -473,6 +473,150 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  Teil 6 (BW-3) - der Aufklapper "Alle Daten" zeigt den Gesamtwert nur noch
+        // =============================================================================
+
+        /// <summary>
+        /// <b>Anwenderentscheid vom 20.09.2026:</b> Im Aufklapper „Alle Daten anzeigen"
+        /// ist der Gesamtwirkungsgrad reine ANZEIGE — eingegeben werden der elektrische
+        /// und der thermische Anteil, wie im Katalogeditor.
+        /// </summary>
+        /// <remarks>
+        /// Geprüft wird die STRUKTUR: Das Profil führt die zwei Anteile editierbar und
+        /// den Gesamtwert nicht, und der Datensatz des Speicherwegs nimmt einen
+        /// Gesamtwert gar nicht erst entgegen — es gibt keinen Weg mehr, ihn zu
+        /// liefern, und damit auch keinen Verteilungsweg, der eine gepflegte Aufteilung
+        /// durch eine geschätzte ersetzte.
+        /// </remarks>
+        [Fact]
+        public void Der_Aufklapper_nimmt_den_Gesamtwirkungsgrad_nicht_mehr_entgegen()
+        {
+            using var _ = new Kulturvorrichtung();
+
+            KatalogBrowserProfil profil = KatalogBrowserProfil.Finde(KatalogBrowserArt.Bhkw);
+
+            BrowserDetailfeld gesamt = profil.Detailfelder.Single(
+                f => f.Schluessel == KatalogBrowserProfil.FeldWirkungsgrad);
+            BrowserDetailfeld el = profil.Detailfelder.Single(
+                f => f.Schluessel == KatalogBrowserProfil.FeldWirkungsgradEl);
+            BrowserDetailfeld th = profil.Detailfelder.Single(
+                f => f.Schluessel == KatalogBrowserProfil.FeldWirkungsgradTh);
+
+            Assert.False(gesamt.Editierbar);
+            Assert.True(el.Editierbar);
+            Assert.True(th.Editierbar);
+
+            // Die zwei Anteile stehen VOR der Summe - erst die Eingabe, dann, was
+            // daraus folgt.
+            var schluessel = profil.Detailfelder.Select(f => f.Schluessel).ToList();
+            Assert.True(schluessel.IndexOf(KatalogBrowserProfil.FeldWirkungsgradEl)
+                        < schluessel.IndexOf(KatalogBrowserProfil.FeldWirkungsgrad));
+
+            var namen = typeof(BHKWStammCtrl.AnzeigefelderBhkw)
+                        .GetConstructors().Single()
+                        .GetParameters().Select(p => p.Name).ToList();
+            Assert.DoesNotContain("Wirkungsgrad", namen);
+            Assert.Contains("WirkungsgradEl", namen);
+            Assert.Contains("WirkungsgradTh", namen);
+        }
+
+        /// <summary>
+        /// Der Speicherweg des Aufklappers schreibt den Gesamtwirkungsgrad als
+        /// <c>Gesamt(el, th)</c> — und die Anzeige zeigt dieselbe Summe, auf drei
+        /// Stellen.
+        /// </summary>
+        [Fact]
+        public void Der_Aufklapper_schreibt_den_Gesamtwirkungsgrad_als_Summe()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            const int id = 987654431;
+            const string name = "BW3 Aufklapper";
+
+            try
+            {
+                Einfuegen(id, name, 30.0, 15.0, 0.50);
+
+                var felder = new BHKWStammCtrl.AnzeigefelderBhkw(
+                    "Probe GmbH", 30.0, 15.0, 50, 80, 60,
+                    WirkungsgradEl: 0.31, WirkungsgradTh: 0.55);
+
+                BHKWStammCtrl.SpeicherErgebnis e =
+                    BHKWStammCtrl.AnzeigefelderSchreiben(name, felder, false);
+                Assert.True(e.Ok, e.Meldung);
+
+                // Die Spalte traegt die SUMME, nicht den alten Wert 0,50.
+                Assert.Equal(0.86, Gesamtwert(id), 4);
+                Assert.Equal(0.31, Anteil(id, BhkwWirkungsgrad.SPALTE_EL).Value, 4);
+                Assert.Equal(0.55, Anteil(id, BhkwWirkungsgrad.SPALTE_TH).Value, 4);
+
+                // Und die Anzeige zeigt sie - drei Stellen, wie im Katalogeditor.
+                var satz = BHKWStammCtrl.KatalogsatzAnzeige(name);
+                Assert.NotNull(satz);
+                Assert.Equal("0,86", satz[KatalogBrowserProfil.FeldWirkungsgrad]);
+
+                // Ein Anteil ausserhalb des Bandes wird BENANNT abgewiesen, und der
+                // Satz bleibt stehen, wie er war.
+                var abgelehnt = new BHKWStammCtrl.AnzeigefelderBhkw(
+                    "Probe GmbH", 30.0, 15.0, 50, 80, 60,
+                    WirkungsgradEl: 55.0, WirkungsgradTh: 0.55);
+                BHKWStammCtrl.SpeicherErgebnis nein =
+                    BHKWStammCtrl.AnzeigefelderSchreiben(name, abgelehnt, false);
+                Assert.False(nein.Ok);
+                Assert.Contains("Faktor", nein.Meldung);
+                Assert.Equal(0.86, Gesamtwert(id), 4);
+            }
+            finally
+            {
+                DataRepository.ExecuteNonQuery(
+                    "DELETE FROM [Tab_BHKW_STAMM] WHERE [ID] = ?", new DbParam("@id", id));
+            }
+        }
+
+        /// <summary>
+        /// <b>Ein Altbestandssatz ohne Aufteilung behält seinen Gesamtwirkungsgrad</b>:
+        /// Wer im Aufklapper ein anderes Feld pflegt, lässt ihn stehen, und die Anzeige
+        /// zeigt weiterhin den gespeicherten Wert.
+        /// </summary>
+        [Fact]
+        public void Ein_Altbestandssatz_behaelt_seinen_Gesamtwirkungsgrad()
+        {
+            if (!_db.Vorhanden) return;
+            using var _ = new Kulturvorrichtung();
+
+            const int id = 987654432;
+            const string name = "BW3 Altbestand";
+
+            try
+            {
+                Einfuegen(id, name, 30.0, 15.0, 0.9216);
+
+                var satz = BHKWStammCtrl.KatalogsatzAnzeige(name);
+                Assert.NotNull(satz);
+                Assert.Equal("", satz[KatalogBrowserProfil.FeldWirkungsgradEl]);
+                Assert.Equal("", satz[KatalogBrowserProfil.FeldWirkungsgradTh]);
+                Assert.Equal("0,922", satz[KatalogBrowserProfil.FeldWirkungsgrad]);
+
+                var felder = new BHKWStammCtrl.AnzeigefelderBhkw(
+                    "Probe GmbH", 30.0, 15.0, 50, 80, 60, Motortyp: "Ottomotor");
+
+                BHKWStammCtrl.SpeicherErgebnis e =
+                    BHKWStammCtrl.AnzeigefelderSchreiben(name, felder, false);
+                Assert.True(e.Ok, e.Meldung);
+
+                Assert.Equal(0.9216, Gesamtwert(id), 4);
+                Assert.Null(Anteil(id, BhkwWirkungsgrad.SPALTE_EL));
+                Assert.Null(Anteil(id, BhkwWirkungsgrad.SPALTE_TH));
+            }
+            finally
+            {
+                DataRepository.ExecuteNonQuery(
+                    "DELETE FROM [Tab_BHKW_STAMM] WHERE [ID] = ?", new DbParam("@id", id));
+            }
+        }
+
+        // =============================================================================
         //  Handreichungen
         // =============================================================================
 
@@ -485,6 +629,17 @@ namespace EPOS.Kern.Tests
                 new DbParam("@id", id), new DbParam("@b", bezeichner),
                 new DbParam("@pt", ptherm), new DbParam("@pe", pel),
                 new DbParam("@w", wirkungsgrad));
+        }
+
+        /// <summary>Der Gesamtwirkungsgrad einer Katalogzeile.</summary>
+        private static double Gesamtwert(int id)
+        {
+            object o = DataRepository.ExecuteScalar(
+                "SELECT [Wirkungsgrad] FROM [Tab_BHKW_STAMM] WHERE [ID] = ?",
+                new DbParam("@id", id));
+            return (o == null || o == System.DBNull.Value)
+                 ? 0.0
+                 : System.Convert.ToDouble(o, CultureInfo.InvariantCulture);
         }
 
         /// <summary>Ein Anteil der Katalogzeile; <c>null</c> heisst „nicht gepflegt".</summary>
