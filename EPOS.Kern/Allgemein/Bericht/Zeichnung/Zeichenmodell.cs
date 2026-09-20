@@ -228,6 +228,28 @@ namespace WindowsFormsApplication1.Zeichnung
                                         string XEinheit = null);
 
     /// <summary>
+    /// <b>Auf WELCHER y-Achse eine Reihe steht (Entscheid DG-E3-12).</b>
+    ///
+    /// <para>Bis hierher musste die Oberfläche es RATEN: Sie verglich das y-Fenster der
+    /// Reihe mit dem der Zeichenfläche und nannte jede Reihe mit abweichender Spanne
+    /// „rechts". Das trifft zu, solange die rechte Achse eine andere Spanne hat — und
+    /// geht fehl, sobald beide zufällig dieselbe führen. Wer die Achse kennt, sagt sie:
+    /// Der Renderer setzt sie in <c>ErzeugerStapelModell</c> und
+    /// <c>SpeicherbetriebModell</c>, und die Zeigerzeile liest sie, statt zu rechnen.</para>
+    /// </summary>
+    public enum Achsenseite
+    {
+        /// <summary>Die LINKE Achse — die Vorgabe und der Fall jeder Reihe ohne zweite Achse.</summary>
+        Links = 0,
+
+        /// <summary>
+        /// Die ZWEITE, RECHTE Achse (Marke <c>yachse2</c>): der Speicherinhalt in kWh
+        /// neben Leistungen in kW.
+        /// </summary>
+        Rechts = 1
+    }
+
+    /// <summary>
     /// Wie eine <see cref="Datenreihe"/> im SVG gezeichnet wird (Entscheid DG-E3-2).
     /// </summary>
     public enum Reihenart
@@ -313,6 +335,12 @@ namespace WindowsFormsApplication1.Zeichnung
     /// <c>null</c> = keine. Sie steht an der REIHE und nicht an der Fläche, weil eine
     /// Reihe der zweiten Achse eine andere führt als die der linken (DG-E3-4).
     /// </param>
+    /// <param name="Achsenseite">
+    /// <b>Auf welcher y-Achse die Reihe steht (DG-E3-12)</b>; Vorgabe
+    /// <see cref="Achsenseite.Links"/>. Der Renderer setzt
+    /// <see cref="Achsenseite.Rechts"/> für die Reihen der zweiten Achse, damit die
+    /// Oberfläche ihre Einheit nicht mehr aus der y-Spanne erraten muss.
+    /// </param>
     public sealed record Datenreihe(string Name, Farbton Ton, float Staerke,
                                     Strichmuster Muster, double[] Werte,
                                     Datenfenster Fenster = null,
@@ -320,7 +348,8 @@ namespace WindowsFormsApplication1.Zeichnung
                                     double[] Unten = null,
                                     Farbton Randton = null,
                                     double[] XWerte = null,
-                                    string Einheit = null)
+                                    string Einheit = null,
+                                    Achsenseite Achsenseite = Zeichnung.Achsenseite.Links)
     {
         /// <summary>
         /// Wertgleichheit samt Werten. Ein Record vergliche <see cref="Werte"/> über
@@ -340,6 +369,7 @@ namespace WindowsFormsApplication1.Zeichnung
             if (Art != andere.Art) return false;
             if (!Equals(Randton, andere.Randton)) return false;
             if (!string.Equals(Einheit, andere.Einheit, StringComparison.Ordinal)) return false;
+            if (Achsenseite != andere.Achsenseite) return false;
             if (!Werteliste(Werte, andere.Werte)) return false;
             if (!Werteliste(XWerte, andere.XWerte)) return false;
             return Werteliste(Unten, andere.Unten);

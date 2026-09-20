@@ -203,9 +203,30 @@ namespace WindowsFormsApplication1
                                       ChartRenderer.Achsenfenster fenster,
                                       double schwelleKw = double.NaN)
         {
+            Zeichnung.Zeichenmodell modell =
+                Modell(titel, eingang, ergebnis, dtH, wahl, sortiert, fenster, schwelleKw);
+            return modell == null ? null : Zeichnung.SkiaMaler.Png(modell);
+        }
+
+        /// <summary>
+        /// <b>DASSELBE BILD ALS ZEICHENMODELL</b> (Etappe DG-E3, Gruppen (b)/(c),
+        /// Oberfläche) — der Zwilling von <see cref="Zeichnen"/>.
+        ///
+        /// <para>Dieselben Reihen in derselben Reihenfolge, dieselbe zweite Achse: Beide
+        /// Wege gehen durch <c>SpeicherbetriebModell</c>, der PNG-Weg malt das Ergebnis
+        /// nur noch. Die Oberfläche gibt das Modell an <c>DiagrammSvg</c>; der
+        /// Ladezustand steht dort über <c>Datenreihe.Achsenseite</c> (DG-E3-12) als
+        /// Reihe der rechten Achse.</para>
+        /// </summary>
+        public static Zeichnung.Zeichenmodell Modell(string titel, SpeicherEingang eingang,
+                                                     SpeicherErgebnis ergebnis, double dtH,
+                                                     IReadOnlyList<string> wahl, bool sortiert,
+                                                     ChartRenderer.Achsenfenster fenster,
+                                                     double schwelleKw = double.NaN)
+        {
             if (eingang == null || ergebnis == null) return null;
 
-            return ChartRenderer.Speicherbetrieb(
+            return ChartRenderer.SpeicherbetriebModell(
                 titel,
                 Leistungsreihen(eingang, ergebnis, dtH, wahl, schwelleKw),
                 MyResource.Resource.PEAK_CHART_Y,

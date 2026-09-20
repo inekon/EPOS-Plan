@@ -117,6 +117,25 @@ namespace WindowsFormsApplication1.Zeichnung
         /// <summary>Die Marke des Befehls, aus dem der Knoten entstand; <c>null</c> = keine.</summary>
         public string Marke { get; }
 
+        /// <summary>
+        /// Der fertig formatierte WERT des Befehls (DG-E3-6); <c>null</c> = keiner.
+        ///
+        /// <para>Er steht auch als Attribut <c>data-wert</c> im Baum. Die Eigenschaft
+        /// daneben erspart der Oberfläche die Attributsuche: Die Zeigerzeile der Bilder
+        /// ohne Zeichenfläche (DG-E3-10) liest je Knoten genau diesen Wert.</para>
+        /// </summary>
+        public string Wert { get; private set; }
+
+        /// <summary>
+        /// Den Wert setzen — genau dort, wo auch <c>data-wert</c> entsteht
+        /// (<see cref="SvgSchreiber"/>).
+        /// </summary>
+        internal SvgKnoten MitWert(string wert)
+        {
+            Wert = wert;
+            return this;
+        }
+
         /// <summary>Ein Attribut anhängen; <c>null</c> als Wert lässt es weg.</summary>
         public SvgKnoten Attribut(string name, string wert)
         {
@@ -420,7 +439,8 @@ namespace WindowsFormsApplication1.Zeichnung
         /// wörtlich wie zuvor.
         /// </summary>
         private static SvgKnoten Marke(SvgKnoten knoten, string marke, string wert)
-            => knoten.Attribut("data-marke", marke).Attribut("data-wert", wert);
+            => knoten.MitWert(wert)
+                     .Attribut("data-marke", marke).Attribut("data-wert", wert);
 
         // =====================================================================
         // Die Zeichenflaeche: inneres svg in Datenkoordinaten

@@ -51,6 +51,23 @@ namespace WindowsFormsApplication1
         /// </param>
         public static byte[] Lastgang(PeakShavingErgebnis r, bool mitSoC)
         {
+            Zeichnung.Zeichenmodell modell = Modell(r, mitSoC);
+            return modell == null ? null : Zeichnung.SkiaMaler.Png(modell);
+        }
+
+        /// <summary>
+        /// <b>DASSELBE BILD ALS ZEICHENMODELL</b> (Etappe DG-E3, Gruppen (b)/(c),
+        /// Oberfläche) — der Zwilling von <see cref="Lastgang"/>.
+        ///
+        /// <para>Gleiche Reihenfolge, gleiche Reihen, gleiche Achsen: Beide Wege gehen
+        /// durch <c>ErzeugerStapelModell</c>, der PNG-Weg malt das Ergebnis nur noch.
+        /// Die Oberfläche gibt das Modell an <c>DiagrammSvg</c> und bekommt damit Zoom,
+        /// Legende und Zeigerzeile, ohne dass ein Bild neu gerechnet wird.</para>
+        /// </summary>
+        /// <param name="r">Das Ergebnis des Laufs; <c>null</c> liefert <c>null</c>.</param>
+        /// <param name="mitSoC">Den Ladezustand auf der Sekundaerachse mitzeichnen.</param>
+        public static Zeichnung.Zeichenmodell Modell(PeakShavingErgebnis r, bool mitSoC)
+        {
             if (r == null) return null;
 
             List<ChartRenderer.Reihe> linien = new List<ChartRenderer.Reihe>
@@ -66,7 +83,7 @@ namespace WindowsFormsApplication1
                   { new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_SOC, r.SoCKwh, FarbeSoC) }
                 : null;
 
-            return ChartRenderer.ErzeugerStapel(
+            return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.PEAK_CHART_TITEL,
                 new List<ChartRenderer.Reihe>(),      // kein Stapel — nur Linien
                 linien,

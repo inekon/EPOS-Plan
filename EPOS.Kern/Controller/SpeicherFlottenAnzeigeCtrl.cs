@@ -170,6 +170,34 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         ChartRenderer.Bildausschnitt netzbereich = null,
         ChartRenderer.Bildausschnitt socbereich = null)
     {
+        var m = Modelle(ergebnis, startTag, tage, speicher, reihen, sortiert,
+                        netzbereich, socbereich);
+        return (Gemalt(m.Netz), Gemalt(m.Soc), m.Zeitraum);
+    }
+
+    /// <summary>
+    /// <b>DIESELBEN ZWEI BILDER ALS ZEICHENMODELL</b> (Etappe DG-E3, Oberfläche) — der
+    /// Zwilling von <see cref="Bilder"/>, gleiche Reihenfolge, gleiche Reihen.
+    ///
+    /// <para>Der Ladezustand steht im Netzbild über <c>Datenreihe.Achsenseite</c>
+    /// (DG-E3-12) auf der rechten Achse; die Oberfläche liest daraus seine Einheit,
+    /// statt sie aus der y-Spanne zu erraten.</para>
+    /// </summary>
+    /// <param name="ergebnis">Der fertig gerechnete Flottenlauf.</param>
+    /// <param name="startTag">Erster gezeigter Tag (0 = Beginn des Datenzeitraums).</param>
+    /// <param name="tage">Länge des Ausschnitts in Tagen — 1 = Tag, 7 = Woche, 365 = Jahr.</param>
+    /// <param name="speicher">Stelle der Einheit, deren Ladezustand die ZWEITE Achse trägt.</param>
+    /// <param name="reihen">Die gewählten Reihenschlüssel; <c>null</c> = alle, leer = keine.</param>
+    /// <param name="sortiert">Dauerlinie statt Ganglinie.</param>
+    /// <param name="netzbereich">Der Datenzoom des NETZbildes; <c>null</c> = der volle Ausschnitt.</param>
+    /// <param name="socbereich">Der Datenzoom des LADEZUSTANDSbildes.</param>
+    public static (Zeichnung.Zeichenmodell Netz, Zeichnung.Zeichenmodell Soc, string Zeitraum)
+        Modelle(SpeicherFlottenErgebnis ergebnis,
+        int startTag = 0, int tage = 7, int speicher = 0,
+        IReadOnlyList<string> reihen = null, bool sortiert = false,
+        ChartRenderer.Bildausschnitt netzbereich = null,
+        ChartRenderer.Bildausschnitt socbereich = null)
+    {
         var studie = ergebnis?.Studie;
         if (studie?.Variante?.Intervalle.Count is not > 0) return (null, null, "");
         var alle = studie.Variante.Intervalle;
@@ -229,7 +257,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
                 SpeicherBetriebsbild.FarbeSoC);
         }
 
-        byte[] netz = ChartRenderer.Speicherbetrieb(
+        Zeichnung.Zeichenmodell netz = ChartRenderer.SpeicherbetriebModell(
             string.Format(CultureInfo.CurrentCulture, MyResource.Resource.FLOTTE_CHART_NETZ, zeitraum),
             reihenliste, MyResource.Resource.PEAK_CHART_Y, ladezustand,
             MyResource.Resource.PEAK_CHART_Y2, sortiert,
@@ -252,8 +280,8 @@ public static partial class SpeicherFlottenAnzeigeCtrl
                 ChartRenderer.C_BHKW) { Gestrichelt = true });
         }
 
-        byte[] socBild = soc.Count > 0
-            ? ChartRenderer.Speicherbetrieb(
+        Zeichnung.Zeichenmodell socBild = soc.Count > 0
+            ? ChartRenderer.SpeicherbetriebModell(
                 string.Format(CultureInfo.CurrentCulture, MyResource.Resource.FLOTTE_CHART_SOC, zeitraum),
                 soc, MyResource.Resource.PEAK_CHART_Y2, null, null, sortiert,
                 ChartRenderer.FensterAusBild(socbereich, anzahl))
@@ -263,6 +291,13 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     }
 
     /// <summary>
+    /// Das PNG eines Modells; <c>null</c> bleibt <c>null</c>. Die EINE Stelle, an der
+    /// die Bildmethoden dieses Controllers aus ihrem Zwilling ein Pixelbild machen.
+    /// </summary>
+    internal static byte[] Gemalt(Zeichnung.Zeichenmodell modell)
+        => modell is null ? null : Zeichnung.SkiaMaler.Png(modell);
+
+    /// <summary>
     /// Die JAHRESPROJEKTION als Bild (Konzept 2.2 Punkt 4): Säulen je Projektjahr, Linie
     /// kumuliert, Ersatzjahre markiert. Ohne Jahreskonten gibt es kein Bild.
     /// </summary>
@@ -270,6 +305,21 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// <param name="reihen">Die gewählten Reihenschlüssel; <c>null</c> = alle, leer = keine.</param>
     public static byte[] Jahresprojektionsbild(SpeicherFlottenErgebnis ergebnis,
                                                IReadOnlyList<string> reihen = null)
+        => Gemalt(JahresprojektionsModell(ergebnis, reihen));
+
+    /// <summary>
+    /// <b>DIESELBE JAHRESPROJEKTION ALS ZEICHENMODELL</b> (Etappe DG-E3, Oberfläche) —
+    /// der Zwilling von <see cref="Jahresprojektionsbild"/>.
+    ///
+    /// <para>Sie hat keine Zeichenfläche (DG-E3-7): Zwischen zwei Projektjahren liegt
+    /// nichts. Säulen und Ersatzjahr-Marken tragen ihren <c>data-wert</c>, die Linien
+    /// stehen als Datenreihe mit dem Jahr als x-Stelle — beides speist die Zeigerzeile
+    /// (DG-E3-10).</para>
+    /// </summary>
+    /// <param name="ergebnis">Der Lauf; gelesen werden nur die Jahreskonten.</param>
+    /// <param name="reihen">Die gewählten Reihenschlüssel; <c>null</c> = alle, leer = keine.</param>
+    public static Zeichnung.Zeichenmodell JahresprojektionsModell(
+        SpeicherFlottenErgebnis ergebnis, IReadOnlyList<string> reihen = null)
     {
         var konten = ergebnis?.Studie?.Wirtschaftlichkeit?.Jahreskonten;
         if (konten is not { Count: > 0 }) return null;
@@ -295,7 +345,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             weitere.Add(new ChartRenderer.Reihe(MyResource.Resource.FLOTTE_R_ERSATZ,
                 konten.Select(x => -x.ErsatzkostenEuro).ToArray(), ChartRenderer.C_RASTER_SCHLECHT) { Gestrichelt = true });
 
-        return ChartRenderer.Jahresprojektion(
+        return ChartRenderer.JahresprojektionModell(
             MyResource.Resource.FLOTTE_CHART_PROJEKTION, jahre,
             Gewaehlt(reihen, REIHE_NETTO)
                 ? new ChartRenderer.Reihe(MyResource.Resource.FLOTTE_R_NETTO, netto, ChartRenderer.C_PV) : null,
