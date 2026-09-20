@@ -77,7 +77,8 @@ namespace WindowsFormsApplication1.Zeichnung
     /// Ein einzelner Zeichenbefehl.
     ///
     /// <para><b>Die MARKE (Etappe E2).</b> Ein Befehl darf sagen, WOZU er gehört —
-    /// <c>"titel"</c>, <c>"xachse"</c>, <c>"yachse"</c>, <c>"reihe:&lt;Name&gt;"</c>,
+    /// <c>"titel"</c>, <c>"xachse"</c>, <c>"yachse"</c>, <c>"yachse2"</c> (die RECHTE
+    /// Achse, Etappe E3), <c>"reihe:&lt;Name&gt;"</c>,
     /// <c>"legende:&lt;Name&gt;"</c>, <c>"nulllinie"</c>, <c>"leerhinweis"</c>. Der
     /// <c>SkiaMaler</c> ÜBERGEHT sie; das PNG bleibt deshalb byte-gleich. Der
     /// <see cref="SvgSchreiber"/> gibt sie als <c>data-marke</c> weiter, und die
@@ -166,6 +167,22 @@ namespace WindowsFormsApplication1.Zeichnung
     public sealed record Zeichenflaeche(Rahmen Bild, Datenfenster Daten);
 
     /// <summary>
+    /// Wie eine <see cref="Datenreihe"/> im SVG gezeichnet wird (Entscheid DG-E3-2).
+    /// </summary>
+    public enum Reihenart
+    {
+        /// <summary>Ein Streckenzug — der Regelfall jeder Ganglinie.</summary>
+        Linie = 0,
+
+        /// <summary>
+        /// Eine gefüllte Fläche zwischen <see cref="Datenreihe.Unten"/> und
+        /// <see cref="Datenreihe.Werte"/> — eine Schicht des Stapels oder das
+        /// Profilband.
+        /// </summary>
+        Flaeche = 1
+    }
+
+    /// <summary>
     /// Eine Reihe des Bildes in DATENWERTEN — ungekürzt, Stützstelle für Stützstelle.
     ///
     /// <para><b>Warum neben dem Linienzug.</b> Der Pixelpfad im Befehl ist auf jeden
@@ -175,18 +192,50 @@ namespace WindowsFormsApplication1.Zeichnung
     /// Schrittweite. Entscheid DG-E2-2.</para>
     /// </summary>
     /// <param name="Name">Der Name der Reihe — zugleich der Schlüssel der Legende.</param>
-    /// <param name="Ton">Die Farbe als Rolle; aufgelöst wird beim Schreiben.</param>
+    /// <param name="Ton">
+    /// Die Farbe als Rolle; aufgelöst wird beim Schreiben. Bei einer
+    /// <see cref="Reihenart.Flaeche"/> ist es die FÜLLfarbe.
+    /// </param>
     /// <param name="Staerke">Die Strichstärke [px], wie sie das PNG zeichnet.</param>
     /// <param name="Muster">Das Strichmuster oder <c>null</c>.</param>
     /// <param name="Werte">Die Werte des BILDES — bei einem Fenster die zugeschnittenen.</param>
+    /// <param name="Fenster">
+    /// <b>DAS EIGENE DATENFENSTER der Reihe (Entscheid DG-E3-1).</b> <c>XVon</c>/<c>XBis</c>
+    /// sagen, wo die erste und die letzte Stützstelle in der Zeichenfläche stehen,
+    /// <c>YVon</c>/<c>YBis</c> nennen die Grenzen IHRER Achse. <c>null</c> = das Fenster
+    /// der Zeichenfläche (die linke Achse).
+    ///
+    /// <para>Nur damit trägt ein Bild eine ZWEITE y-Achse: Der Speicherinhalt rechts hat
+    /// seine eigene Skala und steht trotzdem im selben inneren <c>&lt;svg&gt;</c>. Und nur
+    /// damit sitzt eine Reihe, die das PNG über einen ANDEREN x-Bereich zeichnet (das
+    /// Stundenprofil, die nebeneinander gestellten Stapelgruppen), im SVG an derselben
+    /// Stelle wie im Bild.</para>
+    /// </param>
+    /// <param name="Art">Linie oder gefüllte Fläche (DG-E3-2).</param>
+    /// <param name="Unten">
+    /// Die UNTERKANTE einer Fläche, Stützstelle für Stützstelle — die Summe der
+    /// Schichten darunter. <c>null</c> = die Achsennull, in das Fenster geklemmt.
+    /// Bei einer <see cref="Reihenart.Linie"/> ohne Bedeutung.
+    /// </param>
+    /// <param name="Randton">
+    /// Die Farbe der RANDLINIE einer Fläche; <c>null</c> = ohne Strich. Sie steht neben
+    /// <paramref name="Ton"/>, weil das PNG die Randlinie des Profilbands in einer
+    /// ANDEREN Farbe zieht als die Füllung — eine Fläche mit Rand wird im SVG so
+    /// gezeichnet, wie das Bild sie zeichnet.
+    /// </param>
     public sealed record Datenreihe(string Name, Farbton Ton, float Staerke,
-                                    Strichmuster Muster, double[] Werte)
+                                    Strichmuster Muster, double[] Werte,
+                                    Datenfenster Fenster = null,
+                                    Reihenart Art = Reihenart.Linie,
+                                    double[] Unten = null,
+                                    Farbton Randton = null)
     {
         /// <summary>
         /// Wertgleichheit samt Werten. Ein Record vergliche <see cref="Werte"/> über
         /// die REFERENZ; zwei gleich gefüllte Reihen wären dann verschieden, und der
         /// Determinismusnachweis des Modells liefe ins Leere — derselbe Grund, aus dem
-        /// die Punktfolgen in einer <see cref="Wertliste{T}"/> stehen.
+        /// die Punktfolgen in einer <see cref="Wertliste{T}"/> stehen. Dasselbe gilt
+        /// seit DG-E3-2 für <see cref="Unten"/>.
         /// </summary>
         public bool Gleicht(Datenreihe andere)
         {
@@ -194,10 +243,19 @@ namespace WindowsFormsApplication1.Zeichnung
             if (!string.Equals(Name, andere.Name, StringComparison.Ordinal)) return false;
             if (!Equals(Ton, andere.Ton) || Staerke != andere.Staerke) return false;
             if (!Equals(Muster, andere.Muster)) return false;
-            if (Werte == null || andere.Werte == null) return ReferenceEquals(Werte, andere.Werte);
-            if (Werte.Length != andere.Werte.Length) return false;
-            for (int i = 0; i < Werte.Length; i++)
-                if (!Werte[i].Equals(andere.Werte[i])) return false;
+            if (!Equals(Fenster, andere.Fenster)) return false;
+            if (Art != andere.Art) return false;
+            if (!Equals(Randton, andere.Randton)) return false;
+            if (!Werteliste(Werte, andere.Werte)) return false;
+            return Werteliste(Unten, andere.Unten);
+        }
+
+        private static bool Werteliste(double[] a, double[] b)
+        {
+            if (a == null || b == null) return ReferenceEquals(a, b);
+            if (a.Length != b.Length) return false;
+            for (int i = 0; i < a.Length; i++)
+                if (!a[i].Equals(b[i])) return false;
             return true;
         }
     }
@@ -265,6 +323,44 @@ namespace WindowsFormsApplication1.Zeichnung
                     punkte.Add(new Punkt(iMin, (float)werte[iMin]));
                 }
 
+                start = ende;
+            }
+            return punkte;
+        }
+
+        /// <summary>
+        /// <b>Die gebündelte KANTE einer Fläche (Entscheid DG-E3-2).</b> Je
+        /// Bildpunktspalte genau EIN Punkt: der Höchstwert, wenn
+        /// <paramref name="hoechstwert"/> gesetzt ist (die Oberkante), sonst der
+        /// Kleinstwert (die Unterkante). <c>Punkt.X</c> ist der Index, an dem das
+        /// Extrem steht, <c>Punkt.Y</c> sein Wert — beides in DATENKOORDINATEN.
+        ///
+        /// <para><b>Warum ein Punkt je Spalte und nicht zwei.</b> Eine Fläche ist ein
+        /// geschlossener Zug; zwei Punkte je Spalte ergäben an ihrer Oberkante ein
+        /// Sägeblatt, das Fläche wegnähme, die im Bild steht. Höchstwert oben und
+        /// Kleinstwert unten geben stattdessen die KONSERVATIVE HÜLLE: Sie ist nie
+        /// kleiner als die rohe Fläche, und bei 1:1 ist sie von ihr nicht zu
+        /// unterscheiden.</para>
+        /// </summary>
+        public static IReadOnlyList<Punkt> GebuendelteKante(double[] werte, int spalten,
+                                                            bool hoechstwert)
+        {
+            var punkte = new List<Punkt>();
+            if (werte == null || werte.Length == 0) return punkte;
+            if (spalten < 1) spalten = 1;
+
+            int start = 0;
+            for (int c = 1; c <= spalten; c++)
+            {
+                int ende = (int)((long)c * werte.Length / spalten);
+                if (ende <= start) continue;
+
+                int treffer = start;
+                for (int i = start + 1; i < ende; i++)
+                    if (hoechstwert ? werte[i] > werte[treffer] : werte[i] < werte[treffer])
+                        treffer = i;
+
+                punkte.Add(new Punkt(treffer, (float)werte[treffer]));
                 start = ende;
             }
             return punkte;

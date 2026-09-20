@@ -291,6 +291,52 @@ namespace EPOS.Kern.Tests
             return m;
         }
 
+        /// <summary>
+        /// <b>Die Vorgaben der Etappe E3 lassen jede Reihe des Bestands, wie sie war:</b>
+        /// kein eigenes Fenster, eine Linie, keine Unterkante, kein Rand. Nur so bleibt
+        /// jeder Aufruf der Etappe E2 woertlich derselbe.
+        /// </summary>
+        [Fact]
+        public void EineDatenreiheIstOhneWeitereGabenEineLinie()
+        {
+            var r = new Datenreihe("A", Ton(Farbrolle.WAERME_WP), 2f, null, new double[] { 1, 2 });
+
+            Assert.Null(r.Fenster);
+            Assert.Equal(Reihenart.Linie, r.Art);
+            Assert.Null(r.Unten);
+            Assert.Null(r.Randton);
+        }
+
+        /// <summary>
+        /// <c>Gleicht</c> bezieht die vier neuen Gaben mit ein (DG-E3-1/2): Zwei Reihen
+        /// mit verschiedenem Fenster, verschiedener Art, verschiedener Unterkante oder
+        /// verschiedener Randfarbe sind NICHT dieselbe Reihe — sonst liefe der
+        /// Determinismusnachweis an der halben Aussage vorbei. <see cref="Datenreihe.Unten"/>
+        /// wird dabei ueber die WERTE verglichen, nicht ueber die Referenz.
+        /// </summary>
+        [Fact]
+        public void GleichtBeziehtFensterArtUnterkanteUndRandEin()
+        {
+            var werte = new double[] { 10, 20, 30 };
+            var unten = new double[] { 0, 5, 10 };
+            var grund = new Datenreihe("A", Ton(Farbrolle.WAERME_WP), 2f, null, werte);
+
+            Assert.True(grund.Gleicht(new Datenreihe("A", Ton(Farbrolle.WAERME_WP), 2f, null,
+                                                     new double[] { 10, 20, 30 })));
+
+            Assert.False(grund.Gleicht(grund with { Fenster = new Datenfenster(0, 2, 0, 30) }));
+            Assert.False(grund.Gleicht(grund with { Art = Reihenart.Flaeche }));
+            Assert.False(grund.Gleicht(grund with { Unten = unten }));
+            Assert.False(grund.Gleicht(grund with { Randton = Ton(Farbrolle.PROFILLINIE) }));
+
+            // Die Unterkante ueber die WERTE, nicht ueber die Referenz.
+            var a = grund with { Art = Reihenart.Flaeche, Unten = unten };
+            var b = grund with { Art = Reihenart.Flaeche, Unten = new double[] { 0, 5, 10 } };
+            Assert.True(a.Gleicht(b));
+            Assert.False(a.Gleicht(grund with { Art = Reihenart.Flaeche,
+                                                Unten = new double[] { 0, 5, 11 } }));
+        }
+
         // =====================================================================
         // 5 — Farbrollen und Palette
         // =====================================================================

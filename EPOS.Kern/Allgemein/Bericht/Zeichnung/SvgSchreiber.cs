@@ -28,12 +28,32 @@ namespace WindowsFormsApplication1.Zeichnung
     // blendet die Oberflaeche die "xachse"-Elemente aus und zeichnet die Ticks
     // aus ChartRenderer.Jahresstundenteilung nach.
     //
-    // DIE Y-UMKEHR steht als RECHNUNG im Pfad, nicht als transform:
-    // y' = YBis - y. Damit liegt oben YBis und unten YVon, die viewBox des
-    // inneren svg beginnt senkrecht bei 0, und ein Zoom auf der Zeitachse
+    // DG-E3-1 - SENKRECHT BILDPUNKTE, JEDE REIHE MIT EIGENEM FENSTER. Das
+    // innere svg traegt in x weiterhin Stunden, in y aber BILDPUNKTE der
+    // Zeichenflaeche (viewBox "XVon 0 Breite Bild.Hoehe"). Jede Datenreihe
+    // bringt ihr eigenes Datenfenster mit - den x-Bereich und den y-Bereich
+    // IHRER Achse -, und der Schreiber rechnet
+    //     y = Bild.Hoehe - (Wert - YVon) / (YBis - YVon) * Bild.Hoehe.
+    // Damit tragen Reihen der ZWEITEN Achse (der Speicherinhalt rechts)
+    // dasselbe innere svg; Zeichenflaeche.Daten bleibt das Fenster der linken
+    // Achse und die Vorgabe fuer Reihen ohne eigenes.
+    //
+    // DIE Y-UMKEHR steht als RECHNUNG im Pfad, nicht als transform. Damit
+    // beginnt die viewBox senkrecht bei 0, und ein Zoom auf der Zeitachse
     // aendert an ihr nur x und Breite - eine Attributaenderung, wie es der
     // Pruefstand gemessen hat. Ein transform="scale(1,-1)" taete dasselbe,
     // haette aber jedes Zoomen ueber zwei Stellen gefuehrt.
+    //
+    // DG-E3-2 - FLAECHEN. Eine Datenreihe mit Art = Flaeche wird ein
+    // GESCHLOSSENER Pfad: Oberkante vorwaerts, Unterkante rueckwaerts, Z. Die
+    // Unterkante ist "Unten" (die Summe der Schichten darunter) oder die
+    // Achsennull. Gefuellt wird in der Reihenfarbe samt ihrer Deckung, ohne
+    // Strich - es sei denn, das PNG zieht eine Randlinie (Randton).
+    //
+    // DG-E3-3 - DER REIHENPFAD IST OEFFENTLICH, mit einer Ueberladung fuer
+    // einen Ausschnitt. Der Baustein rechnet damit beim Zoom ueber das
+    // Vierfache den sichtbaren Bereich roh nach - aus den Datenreihen des
+    // Modells, ohne Rundlauf in den Kern.
     //
     // DETERMINISMUS: Attribute stehen in der Reihenfolge, in der sie gebaut
     // werden, Zahlen in InvariantCulture (Bildpunkte "0.##", Datenwerte
@@ -392,21 +412,24 @@ namespace WindowsFormsApplication1.Zeichnung
             Datenfenster d = fl.Daten;
 
             double breite = d.XBis - d.XVon;
-            double hoehe = d.YBis - d.YVon;
             if (breite <= 0) breite = 1;
-            if (hoehe <= 0) hoehe = 1;
 
-            // Die y-UMKEHR steht in den Punkten (y' = YBis - y), nicht in einem
-            // transform: Dann beginnt die viewBox senkrecht bei 0, und ein Zoom auf
-            // der Zeitachse aendert an ihr nur x und Breite.
+            // DG-E3-1: Waagerecht Stunden, SENKRECHT BILDPUNKTE. Die viewBox ist
+            // deshalb "XVon 0 Breite Bild.Hoehe"; jede Reihe rechnet ihren Wert ueber
+            // IHR Fenster in Bildpunkte um. Erst damit tragen zwei Achsen dasselbe
+            // innere svg - der Speicherinhalt rechts hat seine eigene Skala und steht
+            // trotzdem an der Stelle, an der ihn das PNG zeichnet.
+            //
+            // Die y-UMKEHR steht als RECHNUNG im Pfad, nicht als transform: Dann
+            // beginnt die viewBox senkrecht bei 0, und ein Zoom auf der Zeitachse
+            // aendert an ihr nur x und Breite - eine Attributaenderung.
             var knoten = new SvgKnoten("svg")
                 .Attribut("class", KLASSE_FLAECHE)
                 .Attribut("x", Px(bild.X)).Attribut("y", Px(bild.Y))
                 .Attribut("width", Px(bild.Breite)).Attribut("height", Px(bild.Hoehe))
-                .Attribut("viewBox", Wert(d.XVon) + " 0 " + Wert(breite) + " " + Wert(hoehe))
+                .Attribut("viewBox", Wert(d.XVon) + " 0 " + Wert(breite) + " " + Px(bild.Hoehe))
                 .Attribut("preserveAspectRatio", "none");
 
-            int spalten = (int)Math.Max(1.0, Math.Round(bild.Breite));
             int reihen = lage.Modell.Reihen.Count;
 
             foreach (Datenreihe r in lage.Modell.Reihen)
@@ -414,56 +437,196 @@ namespace WindowsFormsApplication1.Zeichnung
                 int n = r.Werte == null ? 0 : r.Werte.Length;
                 if (n < 2) continue;
 
+                bool flaeche = r.Art == Reihenart.Flaeche;
+                Farbton strich = flaeche ? r.Randton : r.Ton;
                 string marke = "reihe:" + (r.Name ?? "");
+
                 var pfad = new SvgKnoten("path", marke)
                     .Attribut("class", KLASSE_REIHE)
                     .Attribut("data-reihe", r.Name ?? "")
                     .Attribut("data-marke", marke)
-                    .Attribut("fill", "none")
-                    .Attribut("stroke", Hex(lage.Palette, r.Ton))
-                    .Attribut("stroke-opacity", Deckung(lage.Palette, r.Ton))
-                    .Attribut("stroke-width", Px(r.Staerke))
+                    .Attribut("fill", flaeche ? Hex(lage.Palette, r.Ton) : "none")
+                    .Attribut("fill-opacity", flaeche ? Deckung(lage.Palette, r.Ton) : null)
+                    .Attribut("stroke", strich == null ? "none" : Hex(lage.Palette, strich))
+                    .Attribut("stroke-opacity", strich == null
+                        ? null : Deckung(lage.Palette, strich))
+                    .Attribut("stroke-width", strich == null ? null : Px(r.Staerke))
                     .Attribut("stroke-dasharray", r.Muster == null
                         ? null
                         : Px(r.Muster.Strich) + " " + Px(r.Muster.Luecke))
                     .Attribut("vector-effect", "non-scaling-stroke")
-                    .Attribut("d", Reihenpfad(r, d, Pfadregel.Roh(n, reihen), spalten));
+                    .Attribut("d", Reihenpfad(r, fl, Pfadregel.Roh(n, reihen)));
                 knoten.Fuege(pfad);
             }
             return knoten;
         }
 
+        // =====================================================================
+        // Der Reihenpfad - oeffentlich (Entscheid DG-E3-3)
+        // =====================================================================
+
         /// <summary>
-        /// Der Pfad EINER Reihe in Datenkoordinaten: roh (jede Stützstelle) oder
-        /// gebündelt (je Bildpunktspalte Minimum und Maximum), nach
-        /// <see cref="Pfadregel"/>. Geklemmt wird NICHT — das innere
-        /// <c>&lt;svg&gt;</c> schneidet selbst ab, und ein geklemmter Wert wäre beim
-        /// Zoom verloren.
+        /// Der Pfad EINER Reihe in den Koordinaten des inneren <c>&lt;svg&gt;</c>:
+        /// waagerecht Stunden (bzw. Stützstellen), senkrecht BILDPUNKTE der
+        /// Zeichenfläche (DG-E3-1). Roh heißt jede Stützstelle, sonst wird nach
+        /// <see cref="Pfadregel"/> gebündelt; eine <see cref="Reihenart.Flaeche"/>
+        /// wird ein geschlossener Zug (Oberkante vorwärts, Unterkante rückwärts).
+        ///
+        /// <para>Geklemmt wird NICHT — das innere <c>&lt;svg&gt;</c> schneidet selbst
+        /// ab, und ein geklemmter Wert wäre beim Zoom verloren.</para>
         /// </summary>
-        private static string Reihenpfad(Datenreihe r, Datenfenster d, bool roh, int spalten)
+        public static string Reihenpfad(Datenreihe reihe, Zeichenflaeche flaeche, bool roh)
         {
-            int n = r.Werte.Length;
-            double schritt = n > 1 ? (d.XBis - d.XVon) / (n - 1) : 0.0;
-            var sb = new StringBuilder(n * 12);
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            return rf == null ? "" : Reihenpfad(reihe, flaeche, rf.XVon, rf.XBis, roh);
+        }
+
+        /// <summary>
+        /// <b>Derselbe Pfad für einen AUSSCHNITT (Entscheid DG-E3-3).</b>
+        /// <paramref name="von"/> und <paramref name="bis"/> stehen in der Einheit der
+        /// x-Achse (Jahresstunde bzw. Index); gezeichnet wird jede Stützstelle, die
+        /// darin liegt.
+        ///
+        /// <para><b>Wofür.</b> Zoomt der Anwender einen GEBÜNDELTEN Pfad über etwa das
+        /// Vierfache, zeigt die Bündelung nicht mehr die echte Stützstelle. Der
+        /// Baustein rechnet den sichtbaren Ausschnitt dann mit
+        /// <c>roh = true</c> NACH — aus den Datenreihen des Modells, die er ohnehin
+        /// hält, also ohne einen Rundlauf in den Kern (DG-E2-4 wird so eingelöst).</para>
+        ///
+        /// <para>Der Fensterpfad einer rohen Reihe ist deshalb genau der Ausschnitt
+        /// des Vollpfads: dieselben Punkte, dieselben Zahlen.</para>
+        /// </summary>
+        public static string Reihenpfad(Datenreihe reihe, Zeichenflaeche flaeche,
+                                        double von, double bis, bool roh)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            if (rf == null) return "";
+
+            int n = reihe.Werte.Length;
+            if (n < 2) return "";
+
+            double hoehe = flaeche.Bild.Hoehe;
+            double spanne = rf.YBis - rf.YVon;
+            if (spanne <= 0) spanne = 1;
+            double schritt = (rf.XBis - rf.XVon) / (n - 1);
+
+            // Die Indexgrenzen des Ausschnitts. Ohne Schrittweite (eine Reihe ohne
+            // x-Ausdehnung) bleibt es bei der ganzen Reihe.
+            int ab = 0, biss = n - 1;
+            if (schritt > 0)
+            {
+                ab = (int)Math.Ceiling((von - rf.XVon) / schritt - 1e-9);
+                biss = (int)Math.Floor((bis - rf.XVon) / schritt + 1e-9);
+                if (ab < 0) ab = 0;
+                if (biss > n - 1) biss = n - 1;
+            }
+            if (biss < ab) return "";
+
+            int laenge = biss - ab + 1;
+            int spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
+            var sb = new StringBuilder(laenge * 12 + 16);
+
+            if (reihe.Art == Reihenart.Flaeche)
+            {
+                Flaechenzug(sb, reihe, rf, ab, laenge, roh, spalten, hoehe, spanne);
+                return sb.ToString();
+            }
 
             if (roh)
             {
-                for (int i = 0; i < n; i++)
-                    Punkt(sb, i == 0, d.XVon + i * schritt, d.YBis - r.Werte[i]);
+                for (int i = ab; i <= biss; i++)
+                    Punkt(sb, i == ab, rf.XVon + i * schritt,
+                          Bildpunkt(reihe.Werte[i], rf, hoehe, spanne));
+                return sb.ToString();
             }
-            else
-            {
-                IReadOnlyList<Punkt> gebuendelt = Pfadregel.Gebuendelt(r.Werte, spalten);
-                for (int i = 0; i < gebuendelt.Count; i++)
-                    Punkt(sb, i == 0, d.XVon + gebuendelt[i].X * schritt,
-                          d.YBis - gebuendelt[i].Y);
-            }
+
+            IReadOnlyList<Punkt> gebuendelt =
+                Pfadregel.Gebuendelt(Teil(reihe.Werte, ab, laenge), spalten);
+            for (int i = 0; i < gebuendelt.Count; i++)
+                Punkt(sb, i == 0, rf.XVon + (ab + gebuendelt[i].X) * schritt,
+                      Bildpunkt(gebuendelt[i].Y, rf, hoehe, spanne));
             return sb.ToString();
         }
 
+        /// <summary>
+        /// Der geschlossene Zug einer Fläche: die Oberkante vorwärts, dann die
+        /// Unterkante rückwärts, dann <c>Z</c>. Fehlt <c>Unten</c>, ist die Unterkante
+        /// die ACHSENNULL, in das Fenster der Reihe geklemmt — eine Fläche, deren
+        /// Achse gar nicht bis null reicht, liefe sonst aus dem Bild.
+        /// </summary>
+        private static void Flaechenzug(StringBuilder sb, Datenreihe r, Datenfenster rf,
+                                        int ab, int laenge, bool roh, int spalten,
+                                        double hoehe, double spanne)
+        {
+            int n = r.Werte.Length;
+            double schritt = (rf.XBis - rf.XVon) / (n - 1);
+            double null0 = rf.YVon > 0 ? rf.YVon : rf.YBis < 0 ? rf.YBis : 0.0;
+
+            double[] oben = Teil(r.Werte, ab, laenge);
+            double[] unten = r.Unten == null
+                ? Gleichwert(laenge, null0)
+                : Teil(r.Unten, ab, laenge);
+
+            IReadOnlyList<Punkt> kanteOben = roh
+                ? Rohkante(oben)
+                : Pfadregel.GebuendelteKante(oben, spalten, true);
+            IReadOnlyList<Punkt> kanteUnten = roh
+                ? Rohkante(unten)
+                : Pfadregel.GebuendelteKante(unten, spalten, false);
+            if (kanteOben.Count == 0 || kanteUnten.Count == 0) return;
+
+            for (int i = 0; i < kanteOben.Count; i++)
+                Punkt(sb, i == 0, rf.XVon + (ab + kanteOben[i].X) * schritt,
+                      Bildpunkt(kanteOben[i].Y, rf, hoehe, spanne));
+            for (int i = kanteUnten.Count - 1; i >= 0; i--)
+                Punkt(sb, false, rf.XVon + (ab + kanteUnten[i].X) * schritt,
+                      Bildpunkt(kanteUnten[i].Y, rf, hoehe, spanne));
+            sb.Append(" Z");
+        }
+
+        private static IReadOnlyList<Punkt> Rohkante(double[] werte)
+        {
+            var punkte = new List<Punkt>(werte.Length);
+            for (int i = 0; i < werte.Length; i++) punkte.Add(new Punkt(i, (float)werte[i]));
+            return punkte;
+        }
+
+        private static double[] Teil(double[] werte, int ab, int laenge)
+        {
+            if (werte == null) return new double[laenge];
+            var teil = new double[laenge];
+            for (int i = 0; i < laenge && ab + i < werte.Length; i++) teil[i] = werte[ab + i];
+            return teil;
+        }
+
+        private static double[] Gleichwert(int laenge, double wert)
+        {
+            var werte = new double[laenge];
+            for (int i = 0; i < laenge; i++) werte[i] = wert;
+            return werte;
+        }
+
+        /// <summary>
+        /// Das eigene Fenster der Reihe, sonst das der Zeichenfläche (DG-E3-1);
+        /// <c>null</c>, wenn die Reihe nichts zu zeichnen hat.
+        /// </summary>
+        private static Datenfenster Reihenfenster(Datenreihe reihe, Zeichenflaeche flaeche)
+        {
+            if (reihe == null || reihe.Werte == null || reihe.Werte.Length < 2) return null;
+            if (flaeche == null) return null;
+            return reihe.Fenster ?? flaeche.Daten;
+        }
+
+        /// <summary>
+        /// Der Wert als BILDPUNKT der Zeichenfläche, von oben gezählt:
+        /// <c>Hoehe − (Wert − YVon) / (YBis − YVon) · Hoehe</c> (DG-E3-1).
+        /// </summary>
+        private static double Bildpunkt(double wert, Datenfenster rf, double hoehe, double spanne)
+            => hoehe - (wert - rf.YVon) / spanne * hoehe;
+
         private static void Punkt(StringBuilder sb, bool erster, double x, double y)
         {
-            sb.Append(erster ? "M " : " ").Append(Wert(x)).Append(',').Append(Wert(y));
+            sb.Append(erster ? "M " : " ").Append(Wert(x)).Append(',').Append(Px(y));
             if (erster) sb.Append(" L");
         }
 

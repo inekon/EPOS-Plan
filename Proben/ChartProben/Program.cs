@@ -89,6 +89,14 @@ namespace ChartProben
         private static string _svgdatei;
 
         /// <summary>
+        /// Der Ordner des Schalters <c>--svg-alle</c>, sonst <c>null</c>: Dorthin
+        /// schreibt die Probe JEDES Modell der Gruppe (a) als <c>.svg</c> — zum Ansehen
+        /// im Browser und für die Sichtprüfung gegen das Skia-Bild (Auftrag DG-E3a).
+        /// <c>--svg</c> bleibt daneben, was es war: der Jahresgang in EINE Datei.
+        /// </summary>
+        private static string _svgordner;
+
+        /// <summary>
         /// Die Messlatte: Dateiname → SHA-256 des PNG, nach Name geordnet
         /// (<see cref="StringComparer.Ordinal"/> — damit die Reihenfolge nicht von der
         /// Kultur des Laufs abhaengt). Gefuellt wird nur, wenn einer der beiden Schalter
@@ -114,6 +122,7 @@ namespace ChartProben
             _ablage = Argument(args, "--ablage");
             _hashdatei = Argument(args, "--hashes");
             _svgdatei = Argument(args, "--svg");
+            _svgordner = Argument(args, "--svg-alle");
             if (_ablage != null) Directory.CreateDirectory(_ablage);
 
             Console.WriteLine("ChartProben - plattformfreier Renderer-Nachweis (Paket iU7-3)");
@@ -121,6 +130,7 @@ namespace ChartProben
             if (_ablage != null) Console.WriteLine("Ablage: " + _ablage);
             if (_hashdatei != null) Console.WriteLine("Hashliste: " + _hashdatei);
             if (_svgdatei != null) Console.WriteLine("SVG-Datei: " + _svgdatei);
+            if (_svgordner != null) Console.WriteLine("SVG-Ordner: " + _svgordner);
             Console.WriteLine("Schriftart: " + Schriftbefund());
             Console.WriteLine();
             Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
@@ -1359,7 +1369,105 @@ namespace ChartProben
                     e.Maengel.Add("viewBox der Vollansicht: " + (boxVoll ?? "fehlt"));
             });
 
+            // =========================================================================
+            // AUFTRAG DG-E3a - DIE SIEBEN ZEITREIHEN-MODELLE DER ERGEBNISREITER.
+            //
+            // Dieselben Gaben, aus denen die PNG-Proben weiter oben ihr Bild ziehen,
+            // gehen hier durch den zweiten Ausgabeweg. Geprueft wird, was ein
+            // PNG-Vergleich nicht sehen kann: Determinismus des Textes, EIN
+            // path.epos-reihe je Datenreihe, Flaechen mit fill und geschlossenem Zug,
+            // die viewBox-Hoehe in BILDPUNKTEN (DG-E3-1) und die zweite Achse.
+            //
+            // OHNE ABLAGE UND OHNE MESSLATTE: Hier entsteht kein PNG; die eingefrorene
+            // Hashliste misst den PNG-Weg und bleibt bei 91 Zeilen.
+            // =========================================================================
+            var e3Temperaturen = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Puffer 1 oben", Temperaturreihe(62, 8, 0, 0), TEMP_ROT),
+                new ChartRenderer.Reihe("Puffer 1 unten", Temperaturreihe(48, 6, 0, 0), TEMP_ROT,
+                                        ChartRenderer.Stapelart.Keine, true),
+                new ChartRenderer.Reihe("Puffer 2 oben", Temperaturreihe(55, 7, 1, 0), TEMP_BLAU),
+                new ChartRenderer.Reihe("Puffer 2 unten", Temperaturreihe(41, 5, 1, 0), TEMP_BLAU,
+                                        ChartRenderer.Stapelart.Keine, true),
+                new ChartRenderer.Reihe("Quelltemperatur Erdreich",
+                                        Temperaturreihe(11, 4, 0, -Math.PI / 2), TEMP_QUELLE)
+            };
+
+            // Lastgang und Speicherbetrieb (B10): vier LEISTUNGEN links, der
+            // Ladezustand als ENERGIE rechts - das Bild mit der zweiten Achse aus
+            // Verlaufsbild. Es hat keine PNG-Probe; die Gegenprobe ist seine erste.
+            double[] bezugOhne = Jahresreihe(140, 90, 30, 0, Math.PI / 2);
+            double[] bezugMit = Jahresreihe(100, 80, 15, 0, Math.PI / 2);
+            var speicherleistung = new double[bezugOhne.Length];
+            for (int i = 0; i < speicherleistung.Length; i++)
+                speicherleistung[i] = bezugOhne[i] - bezugMit[i];
+            var kappung = new double[bezugOhne.Length];
+            for (int i = 0; i < kappung.Length; i++) kappung[i] = 110.0;
+            double[] ladezustand = Jahresreihe(400, 120, 180, 0.7, Math.PI / 2);
+
+            var e3Bilder = new List<KeyValuePair<string, Func<Zeichenmodell>>>
+            {
+                Modellprobe("jahresgang", () => svgModell(null)),
+                Modellprobe("kostenprofil",
+                    () => ChartRenderer.KostenprofilModell("Kostenprofil", profil, "ct/kWh", "Monat")),
+                Modellprobe("stundenprofil_woche",
+                    () => ChartRenderer.StundenprofilModell("Wochenwerte", wochenprofil, 24,
+                                                            "Wochenstunde (1..168)", "Verteilung")),
+                Modellprobe("jahresverlauf_bedarf",
+                    () => ChartRenderer.JahresverlaufModell("Jahresuebersicht", jahresverlauf,
+                                                            "Waermebedarf [kW]", SKColors.SteelBlue)),
+                Modellprobe("ganglinie_normiert",
+                    () => ChartRenderer.GanglinieNormiertModell("Waermelast Jahresganglinie", b1Reihen,
+                                                                "Anteil am Hoechstwert",
+                                                                ChartRenderer.Achse.Monate, false)),
+                Modellprobe("erzeugerstapel_waerme",
+                    () => ChartRenderer.ErzeugerStapelModell("Waermeproduktion Jahresganglinie",
+                            b2Stapel, new List<ChartRenderer.Reihe>(),
+                            new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
+                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                            "Waermelast [kW]", ChartRenderer.Achse.Monate, false,
+                            new List<ChartRenderer.Reihe>
+                            { new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.DarkCyan) },
+                            "Bedarf [kW]")),
+                Modellprobe("erzeugerstapel_zwei_speicher",
+                    () => ChartRenderer.ErzeugerStapelModell("Waermeproduktion Jahresganglinie",
+                            b2Stapel,
+                            new List<ChartRenderer.Reihe>
+                            { new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.DarkCyan,
+                                                      ChartRenderer.Stapelart.Keine, false, 2f) },
+                            new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
+                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                            "Leistung [kW]", ChartRenderer.Achse.Monate, false,
+                            b2Speicher, "Speicherinhalt [kWh]")),
+                Modellprobe("temperaturverlauf",
+                    () => ChartRenderer.TemperaturverlaufModell("Speichertemperaturen",
+                                                                e3Temperaturen, true)),
+                Modellprobe("speicherbetrieb",
+                    () => ChartRenderer.SpeicherbetriebModell("Lastgang und Speicherbetrieb",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Netzbezug ohne Speicher", bezugOhne,
+                                                        SKColors.Gray),
+                                new ChartRenderer.Reihe("Netzbezug mit Speicher", bezugMit,
+                                                        SKColors.SteelBlue),
+                                new ChartRenderer.Reihe("Kappungsschwelle", kappung, SKColors.Red,
+                                                        ChartRenderer.Stapelart.Keine, true),
+                                new ChartRenderer.Reihe("Speicherleistung", speicherleistung,
+                                                        SKColors.Green)
+                            },
+                            "Leistung [kW]",
+                            new ChartRenderer.Reihe("Ladezustand", ladezustand,
+                                                    SKColors.MediumVioletRed),
+                            "Ladezustand [kWh]"))
+            };
+
+            // Die Gegenproben - der Jahresgang steht schon oben, er wird hier nur
+            // abgelegt.
+            foreach (KeyValuePair<string, Func<Zeichenmodell>> b in e3Bilder)
+                if (b.Key != "jahresgang") SvgModellprobe(b.Key, b.Value);
+
             if (_svgdatei != null) SvgAblegen(svgModell(null));
+            if (_svgordner != null) SvgOrdnerSchreiben(e3Bilder);
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
@@ -1497,6 +1605,121 @@ namespace ChartProben
                 else if (b is Gruppe g) n += Textbefehle(g.Befehle);
             }
             return n;
+        }
+
+        /// <summary>Ein Modell der Gruppe (a) unter seinem Namen — nur der Bequemlichkeit.</summary>
+        private static KeyValuePair<string, Func<Zeichenmodell>> Modellprobe(
+            string name, Func<Zeichenmodell> modell)
+            => new KeyValuePair<string, Func<Zeichenmodell>>(name, modell);
+
+        /// <summary>
+        /// <b>Die SVG-Gegenprobe EINES Modells der Gruppe (a)</b> (Auftrag DG-E3a).
+        /// Geprüft wird, was der PNG-Vergleich nicht sieht:
+        ///
+        /// <list type="number">
+        ///   <item>Zweimal geschrieben UND zweimal erzeugt ist byte-gleich.</item>
+        ///   <item>Je <c>Datenreihe</c> genau EIN <c>path.epos-reihe</c> im inneren
+        ///   <c>&lt;svg&gt;</c>, jeder mit <c>data-marke</c>, <c>vector-effect</c> und
+        ///   Punkten.</item>
+        ///   <item>Eine FLÄCHE trägt <c>fill</c> und einen geschlossenen Zug
+        ///   (DG-E3-2); eine Linie trägt <c>fill="none"</c>.</item>
+        ///   <item>Die viewBox des inneren svg steht senkrecht auf den BILDPUNKTEN der
+        ///   Zeichenfläche (DG-E3-1) — nicht mehr auf der Wertespanne.</item>
+        ///   <item>Führt das Modell eine zweite Achse, steht sie als <c>yachse2</c> im
+        ///   Baum.</item>
+        /// </list>
+        /// </summary>
+        private static void SvgModellprobe(string name, Func<Zeichenmodell> bau)
+        {
+            SvgProbe("svg_" + name, e =>
+            {
+                Zeichenmodell m = bau();
+                string a = SvgSchreiber.Text(m);
+                e.Masse = m.Breite + "x" + m.Hoehe;
+                e.Groesse = Encoding.UTF8.GetByteCount(a)
+                                    .ToString("N0", CultureInfo.InvariantCulture);
+
+                if (!string.Equals(a, SvgSchreiber.Text(m), StringComparison.Ordinal))
+                    e.Maengel.Add("zweimal geschrieben ist nicht byte-gleich");
+                if (!string.Equals(a, SvgSchreiber.Text(bau()), StringComparison.Ordinal))
+                    e.Maengel.Add("zweimal erzeugt ist nicht byte-gleich");
+
+                SvgKnoten baum = SvgSchreiber.Baum(m);
+                List<SvgKnoten> alle = baum.Alle().ToList();
+                e.Knoten = alle.Count.ToString(CultureInfo.InvariantCulture);
+
+                if (m.Flaeche == null) { e.Maengel.Add("das Modell fuehrt keine Zeichenflaeche"); return; }
+                if (m.Reihen.Count == 0) { e.Maengel.Add("das Modell fuehrt keine Datenreihe"); return; }
+
+                SvgKnoten flaeche = alle.FirstOrDefault(
+                    k => k.Name == "svg" && Attributwert(k, "class") == "epos-flaeche");
+                if (flaeche == null) { e.Maengel.Add("kein inneres svg"); return; }
+                if (Attributwert(flaeche, "preserveAspectRatio") != "none")
+                    e.Maengel.Add("inneres svg ohne preserveAspectRatio=none");
+
+                // DG-E3-1: die viewBox-Hoehe sind die Bildpunkte der Zeichenflaeche.
+                string[] box = (Attributwert(flaeche, "viewBox") ?? "").Split(' ');
+                string hoehe = m.Flaeche.Bild.Hoehe.ToString("0.##", CultureInfo.InvariantCulture);
+                if (box.Length != 4 || box[1] != "0" || box[3] != hoehe)
+                    e.Maengel.Add("viewBox steht nicht auf den Bildpunkten (" + hoehe + "): " +
+                                  Attributwert(flaeche, "viewBox"));
+
+                List<SvgKnoten> pfade = alle.Where(
+                    k => k.Name == "path" && Attributwert(k, "class") == "epos-reihe").ToList();
+                if (pfade.Count != m.Reihen.Count)
+                    e.Maengel.Add("Reihenpfade: " + pfade.Count + " statt " + m.Reihen.Count);
+
+                for (int i = 0; i < pfade.Count && i < m.Reihen.Count; i++)
+                {
+                    SvgKnoten pf = pfade[i];
+                    Datenreihe r = m.Reihen[i];
+                    string d = Attributwert(pf, "d");
+
+                    if (Attributwert(pf, "vector-effect") != "non-scaling-stroke")
+                        e.Maengel.Add("Reihenpfad ohne vector-effect: " + r.Name);
+                    string marke = Attributwert(pf, "data-marke");
+                    if (marke == null || !marke.StartsWith("reihe:", StringComparison.Ordinal))
+                        e.Maengel.Add("Reihenpfad ohne data-marke: " + r.Name);
+                    if (string.IsNullOrEmpty(d))
+                        e.Maengel.Add("Reihenpfad ohne Punkte: " + r.Name);
+
+                    bool gefuellt = Attributwert(pf, "fill") != "none";
+                    if (r.Art == Reihenart.Flaeche)
+                    {
+                        if (!gefuellt) e.Maengel.Add("Flaeche ohne fill: " + r.Name);
+                        if (d == null || !d.EndsWith(" Z", StringComparison.Ordinal))
+                            e.Maengel.Add("Flaeche ohne geschlossenen Zug: " + r.Name);
+                    }
+                    else if (gefuellt) e.Maengel.Add("Linie mit fill: " + r.Name);
+                }
+
+                bool y2ImModell = m.Befehle.Any(b => b.Marke == "yachse2");
+                bool y2ImBaum = alle.Any(k => Attributwert(k, "data-marke") == "yachse2");
+                if (y2ImModell != y2ImBaum)
+                    e.Maengel.Add("die zweite Achse steht " +
+                                  (y2ImModell ? "nicht im Baum" : "im Baum, aber nicht im Modell"));
+            });
+        }
+
+        /// <summary>
+        /// Schreibt ALLE Modelle der Gruppe (a) als <c>.svg</c> in einen Ordner
+        /// (Schalter <c>--svg-alle &lt;ordner&gt;</c>) — zum Ansehen im Browser und für
+        /// die Sichtprüfung gegen das Skia-Bild. Kein Teil der Prüfung: Es entsteht
+        /// kein PNG und keine Hashzeile.
+        /// </summary>
+        private static void SvgOrdnerSchreiben(
+            IReadOnlyList<KeyValuePair<string, Func<Zeichenmodell>>> bilder)
+        {
+            Directory.CreateDirectory(_svgordner);
+            foreach (KeyValuePair<string, Func<Zeichenmodell>> b in bilder)
+            {
+                string text = SvgSchreiber.Text(b.Value());
+                string pfad = Path.Combine(_svgordner, b.Key + ".svg");
+                File.WriteAllText(pfad, text, new UTF8Encoding(false));
+                Console.WriteLine("SVG geschrieben: " + pfad + " - " +
+                    Encoding.UTF8.GetByteCount(text).ToString("N0", CultureInfo.InvariantCulture) +
+                    " Byte");
+            }
         }
 
         /// <summary>

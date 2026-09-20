@@ -348,9 +348,13 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Zeichenflaeche wird ein INNERES <c>&lt;svg&gt;</c>: Pixelrechteck als
-        /// <c>x/y/width/height</c>, Datenfenster als <c>viewBox</c>,
-        /// <c>preserveAspectRatio="none"</c>. Zoom und Verschieben sind damit EINE
-        /// Attributaenderung.
+        /// <c>x/y/width/height</c>, <c>preserveAspectRatio="none"</c>. Zoom und
+        /// Verschieben sind damit EINE Attributaenderung.
+        ///
+        /// <para><b>Die viewBox traegt waagerecht Stunden, senkrecht BILDPUNKTE</b>
+        /// (Entscheid DG-E3-1): <c>XVon 0 Breite Bild.Hoehe</c>. Erst damit koennen
+        /// zwei Achsen dasselbe innere svg tragen — jede Reihe rechnet ihren Wert
+        /// ueber IHR Fenster in Bildpunkte um.</para>
         /// </summary>
         [Fact]
         public void DieFlaecheWirdEinInneresSvgInDatenkoordinaten()
@@ -363,20 +367,21 @@ namespace EPOS.Kern.Tests
             Assert.Equal("20", Wert(fl, "y"));
             Assert.Equal("100", Wert(fl, "width"));
             Assert.Equal("50", Wert(fl, "height"));
-            Assert.Equal("0 0 3 40", Wert(fl, "viewBox"));
+            Assert.Equal("0 0 3 50", Wert(fl, "viewBox"));
             Assert.Equal("none", Wert(fl, "preserveAspectRatio"));
         }
 
         /// <summary>
-        /// <b>Die y-UMKEHR:</b> SVG zaehlt y nach unten, die Werte zaehlen nach oben.
-        /// Gerechnet wird <c>y' = YBis - y</c>, damit oben <c>YBis</c> und unten
-        /// <c>YVon</c> liegt und die <c>viewBox</c> senkrecht bei 0 beginnt — ein Zoom
-        /// auf der ZEITACHSE aendert dann nur x und Breite.
+        /// <b>Die SENKRECHTE steht in BILDPUNKTEN (DG-E3-1):</b> SVG zaehlt y nach
+        /// unten, die Werte zaehlen nach oben. Gerechnet wird
+        /// <c>y = Hoehe − (Wert − YVon) / (YBis − YVon) · Hoehe</c>, damit die viewBox
+        /// senkrecht bei 0 beginnt und bei der Bildhoehe endet — ein Zoom auf der
+        /// ZEITACHSE aendert dann nur x und Breite, und eine Reihe der zweiten Achse
+        /// steht mit IHRER Skala im selben inneren svg.
         ///
-        /// <para>Die Punkte selbst stehen in Datenkoordinaten: x ist die
-        /// Stuetzstelle, y der umgerechnete Wert. Geklemmt wird NICHT — das innere
-        /// svg schneidet selbst ab, und ein geklemmter Wert waere beim Zoom
-        /// verloren.</para>
+        /// <para>x bleibt in Datenkoordinaten (die Stuetzstelle). Geklemmt wird
+        /// NICHT — das innere svg schneidet selbst ab, und ein geklemmter Wert waere
+        /// beim Zoom verloren.</para>
         /// </summary>
         [Fact]
         public void DieReiheStehtInDatenkoordinatenMitUmgekehrterYAchse()
@@ -394,9 +399,185 @@ namespace EPOS.Kern.Tests
             Assert.Equal("2", Wert(pfad, "stroke-width"));
             Assert.Equal("non-scaling-stroke", Wert(pfad, "vector-effect"));
 
-            // 30 -> 0 (oben), 0 -> 30, -10 -> 40 (unten), 10 -> 20.
-            Assert.Equal("M 0,0 L 1,30 2,40 3,20", Wert(pfad, "d"));
+            // Fenster -10…30 auf 50 Bildpunkte: 30 -> 0 (oben), 0 -> 37,5,
+            // -10 -> 50 (unten), 10 -> 25.
+            Assert.Equal("M 0,0 L 1,37.5 2,50 3,25", Wert(pfad, "d"));
         }
+
+        /// <summary>
+        /// <b>Eine Reihe mit EIGENEM Fenster</b> (DG-E3-1): Dieselbe Zeichenflaeche
+        /// traegt eine zweite Reihe, deren y-Achse eine ganz andere ist — der
+        /// Speicherinhalt rechts neben den Leistungen links. Gerechnet wird gegen IHR
+        /// Fenster, gezeichnet wird in DASSELBE innere svg.
+        /// </summary>
+        [Fact]
+        public void EineReiheMitEigenemFensterRechnetGegenIhreAchse()
+        {
+            Zeichenmodell m = Flaechenmodell();
+            m.FuegeReihe(new Datenreihe("B", Farbton.Aus(Farbrolle.SPEICHER_1), 2f, null,
+                                        new double[] { 0, 500, 1000, 250 },
+                                        new Datenfenster(0, 3, 0, 1000)));
+
+            SvgKnoten fl = SvgSchreiber.Baum(m, Farbpalette.Vorgabe).Alle()
+                .Single(k => Wert(k, "class") == "epos-flaeche");
+            SvgKnoten b = fl.Kinder.Single(k => Wert(k, "data-reihe") == "B");
+
+            // 0 -> 50 (unten), 500 -> 25, 1000 -> 0 (oben), 250 -> 37,5.
+            Assert.Equal("M 0,50 L 1,25 2,0 3,37.5", Wert(b, "d"));
+
+            // Die Reihe der LINKEN Achse bleibt unberuehrt.
+            Assert.Equal("M 0,0 L 1,37.5 2,50 3,25",
+                         Wert(fl.Kinder.Single(k => Wert(k, "data-reihe") == "A"), "d"));
+        }
+
+        /// <summary>
+        /// <b>Eine FLAECHE wird ein geschlossener Pfad</b> (DG-E3-2): Oberkante
+        /// vorwaerts, Unterkante rueckwaerts, <c>Z</c>. Gefuellt wird in der
+        /// Reihenfarbe, ohne Strich — der Stapel des Bestands zieht keine Randlinie.
+        /// </summary>
+        [Fact]
+        public void EineFlaecheMitUntenWirdEinGeschlossenerPfad()
+        {
+            Zeichenmodell m = Modell(200, 100);
+            m.Fuege(new Linie(0f, 0f, 1f, 1f, Strich()) { Marke = "reihe:S" });
+            m.Flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 100f, 50f),
+                                           new Datenfenster(0, 3, 0, 100));
+            m.FuegeReihe(new Datenreihe("S", Farbton.Aus(Farbrolle.WAERME_WP), 0f, null,
+                                        new double[] { 60, 80, 100, 40 },
+                                        new Datenfenster(0, 3, 0, 100),
+                                        Reihenart.Flaeche,
+                                        new double[] { 20, 40, 50, 20 }));
+
+            SvgKnoten pfad = SvgSchreiber.Baum(m, Farbpalette.Vorgabe).Alle()
+                .Single(k => Wert(k, "class") == "epos-reihe");
+
+            Assert.Equal("#4172C4", Wert(pfad, "fill"));
+            Assert.Equal("none", Wert(pfad, "stroke"));
+            Assert.Null(Wert(pfad, "stroke-width"));
+            // Oberkante 60/80/100/40 -> 20/10/0/30, Unterkante 20/40/50/20 -> 40/30/25/40.
+            Assert.Equal("M 0,20 L 1,10 2,0 3,30 3,40 2,25 1,30 0,40 Z", Wert(pfad, "d"));
+        }
+
+        /// <summary>
+        /// <b>Ohne <c>Unten</c> schliesst die Flaeche auf der ACHSENNULL</b>, in das
+        /// Fenster geklemmt — eine Achse, die gar nicht bis null reicht, liefe sonst
+        /// aus dem Bild. Zieht das PNG eine Randlinie, traegt die Flaeche sie in
+        /// DEREN Farbe (das Profilband).
+        /// </summary>
+        [Fact]
+        public void EineFlaecheOhneUntenSchliesstAufDerAchsennull()
+        {
+            Zeichenmodell m = Modell(200, 100);
+            m.Fuege(new Linie(0f, 0f, 1f, 1f, Strich()) { Marke = "reihe:P" });
+            m.Flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 100f, 50f),
+                                           new Datenfenster(0, 2, 0, 10));
+            m.FuegeReihe(new Datenreihe("P", Farbton.Aus(Farbrolle.PROFILFLAECHE), 2f, null,
+                                        new double[] { 5, 10, 0 },
+                                        new Datenfenster(0, 2, 0, 10),
+                                        Reihenart.Flaeche, null,
+                                        Farbton.Aus(Farbrolle.PROFILLINIE)));
+
+            SvgKnoten pfad = SvgSchreiber.Baum(m, Farbpalette.Vorgabe).Alle()
+                .Single(k => Wert(k, "class") == "epos-reihe");
+
+            Assert.Equal("#0000FF", Wert(pfad, "fill"));
+            Assert.Equal("0.392", Wert(pfad, "fill-opacity"));   // 100 von 255
+            Assert.Equal("#0000FF", Wert(pfad, "stroke"));
+            Assert.Equal("2", Wert(pfad, "stroke-width"));
+            Assert.Equal("M 0,25 L 1,0 2,50 2,50 1,50 0,50 Z", Wert(pfad, "d"));
+        }
+
+        /// <summary>
+        /// <b>Die gebuendelte Flaeche ist die KONSERVATIVE HUELLE</b> (DG-E3-2): je
+        /// Bildpunktspalte der Hoechstwert der Oberkante und der Kleinstwert der
+        /// Unterkante — hoechstens ein Punkt je Spalte und Kante, und nie weniger
+        /// Flaeche als roh.
+        /// </summary>
+        [Fact]
+        public void EineGebuendelteFlaecheTraegtHoechstUndKleinstwert()
+        {
+            var oben = new double[20000];
+            var unten = new double[20000];
+            for (int i = 0; i < oben.Length; i++)
+            {
+                unten[i] = 10 + 5 * Math.Sin(i * 0.7);
+                oben[i] = unten[i] + 20 + 10 * Math.Sin(i * 0.31);
+            }
+
+            Zeichenmodell m = Modell(200, 100);
+            m.Fuege(new Linie(0f, 0f, 1f, 1f, Strich()) { Marke = "reihe:F" });
+            m.Flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 100f, 50f),
+                                           new Datenfenster(0, oben.Length - 1, 0, 50));
+            m.FuegeReihe(new Datenreihe("F", Farbton.Aus(Farbrolle.WAERME_WP), 0f, null, oben,
+                                        null, Reihenart.Flaeche, unten));
+
+            SvgKnoten pfad = SvgSchreiber.Baum(m, Farbpalette.Vorgabe).Alle()
+                .Single(k => Wert(k, "class") == "epos-reihe");
+            string d = Wert(pfad, "d");
+
+            Assert.False(Pfadregel.Roh(oben.Length, 1));
+            Assert.EndsWith(" Z", d);
+            int punkte = d.Count(c => c == ',');
+            Assert.True(punkte <= 2 * 100, "hoechstens ein Punkt je Spalte und Kante: " + punkte);
+            Assert.True(punkte >= 2 * 100 - 2, "und mindestens einer je Spalte: " + punkte);
+        }
+
+        // =====================================================================
+        // 6b — Der Fensterpfad (DG-E3-3)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Fensterpfad einer ROHEN Reihe ist der Ausschnitt des Vollpfads.</b>
+        /// Der Baustein rechnet beim Zoom ueber das Vierfache den sichtbaren Bereich
+        /// damit nach — aus den Datenreihen des Modells, ohne Rundlauf in den Kern
+        /// (DG-E2-4, eingeloest mit DG-E3-3).
+        /// </summary>
+        [Fact]
+        public void DerFensterpfadIstDerAusschnittDesVollpfads()
+        {
+            var werte = new double[200];
+            for (int i = 0; i < werte.Length; i++) werte[i] = Math.Sin(i * 0.11) * 40;
+
+            var flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 400f, 100f),
+                                             new Datenfenster(0, werte.Length - 1, -50, 50));
+            var reihe = new Datenreihe("R", Farbton.Aus(Farbrolle.WAERME_WP), 2f, null, werte,
+                                       flaeche.Daten);
+
+            string[] voll = Punkte(SvgSchreiber.Reihenpfad(reihe, flaeche, true));
+            string[] teil = Punkte(SvgSchreiber.Reihenpfad(reihe, flaeche, 40, 59, true));
+
+            Assert.Equal(200, voll.Length);
+            Assert.Equal(20, teil.Length);
+            Assert.Equal(voll.Skip(40).Take(20).ToArray(), teil);
+        }
+
+        /// <summary>
+        /// Derselbe Ausschnitt einer GEBUENDELTEN Reihe geht wahlweise roh: Genau das
+        /// ist das Nachladen ab dem Vierfachen — dieselbe Reihe, mehr Punkte.
+        /// </summary>
+        [Fact]
+        public void DerFensterpfadKannRohErzwungenWerden()
+        {
+            var werte = new double[35040];
+            for (int i = 0; i < werte.Length; i++) werte[i] = Math.Sin(i * 0.01) * 30;
+
+            var flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 400f, 100f),
+                                             new Datenfenster(0, werte.Length - 1, -50, 50));
+            var reihe = new Datenreihe("V", Farbton.Aus(Farbrolle.WAERME_WP), 1f, null, werte,
+                                       flaeche.Daten);
+
+            int gebuendelt = Punkte(SvgSchreiber.Reihenpfad(reihe, flaeche, 1000, 1999, false)).Length;
+            int roh = Punkte(SvgSchreiber.Reihenpfad(reihe, flaeche, 1000, 1999, true)).Length;
+
+            Assert.Equal(1000, roh);
+            Assert.True(gebuendelt < roh,
+                        "gebuendelt sind es weniger Punkte als roh: " + gebuendelt + " zu " + roh);
+        }
+
+        /// <summary>Die Punktpaare eines Pfads — ohne die Befehlsbuchstaben.</summary>
+        private static string[] Punkte(string d)
+            => (d ?? "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Where(t => t.Contains(',')).ToArray();
 
         /// <summary>
         /// Der auf jeden n-ten Wert gekuerzte PIXELPFAD der Reihe faellt weg — er
