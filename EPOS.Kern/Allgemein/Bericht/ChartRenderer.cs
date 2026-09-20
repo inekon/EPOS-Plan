@@ -135,10 +135,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kuchendiagramm (Deckungsanteile) — Portierung aus dem Bestandsbericht.</summary>
         public static byte[] Kuchen(string titel, List<Segment> segmente)
+            => SkiaMaler.Png(KuchenModell(titel, segmente));
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c).
+        ///
+        /// <para><b>Ein reines Pixelbild</b> (Entscheid DG-E3-7): Es hat keine
+        /// Zeichenfläche und keine <c>Datenreihe</c> — ein Kuchen trägt keine
+        /// Zeitachse, auf der man zoomen könnte. Jedes Segment ist stattdessen ein
+        /// Pixel-Element mit der Marke <c>reihe:&lt;Segmentname&gt;</c> und seinem
+        /// Anteil als <c>Wert</c>; die Legendeneinträge tragen
+        /// <c>legende:&lt;Segmentname&gt;</c>. Damit schaltet ein Klick in der Legende
+        /// dasselbe Segment, auf das der Zeiger zeigt.</para>
+        /// </summary>
+        public static Zeichenmodell KuchenModell(string titel, List<Segment> segmente)
         {
             int W = 960, H = 600;
             var z = Modell(W, H);
-            Titel(z, titel, W);
+            z.Markiert("titel", zt => Titel(zt, titel, W));
 
             double total = segmente.Sum(s => Math.Max(s.Wert, 0));
             if (total <= 0) total = 1;
@@ -148,7 +162,9 @@ namespace WindowsFormsApplication1
             foreach (Segment s in segmente)
             {
                 float sweep = (float)(Math.Max(s.Wert, 0) / total * 360.0);
-                Kreissegment(z, rect, start, sweep, Flaeche(s.Farbe));
+                float von = start;                 // fest fuer die Klammer
+                z.Markiert("reihe:" + (s.Label ?? ""), Anteilwert(s.Label, s.Wert, total),
+                           zs => Kreissegment(zs, rect, von, sweep, Flaeche(s.Farbe)));
                 start += sweep;
             }
             z.Ellipse(rect.Left, rect.Top, rect.Width, rect.Height,
@@ -159,13 +175,20 @@ namespace WindowsFormsApplication1
             using (var lf = Schrift(19f))
                 foreach (Segment s in segmente)
                 {
-                    z.Rechteck(lx, ly, 28f, 28f, null, Flaeche(s.Farbe));
-                    z.Rechteck(lx, ly, 28f, 28f, rahmen);
-                    Text(z, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
-                         lf, Farbrolle.TEXT, lx + 40f, ly + 1f);
+                    float ex = lx, ey = ly;        // fest fuer die Klammer
+                    // Dieses Bild baut seine Legende selbst (die Prozentzahl steht im
+                    // Eintrag); die Marke setzt es deshalb hier statt im Helfer
+                    // Legende - derselbe Schluessel wie am Segment.
+                    z.Markiert("legende:" + (s.Label ?? ""), ze =>
+                    {
+                        ze.Rechteck(ex, ey, 28f, 28f, null, Flaeche(s.Farbe));
+                        ze.Rechteck(ex, ey, 28f, 28f, rahmen);
+                        Text(ze, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
+                             lf, Farbrolle.TEXT, ex + 40f, ey + 1f);
+                    });
                     ly += 48f;
                 }
-            return SkiaMaler.Png(z);
+            return z;
         }
 
         // =================================================================== Balken
@@ -175,11 +198,30 @@ namespace WindowsFormsApplication1
         /// Konzept Kap. 6.1). Stamm wird farblich hervorgehoben.
         /// </summary>
         public static byte[] BalkenHorizontal(string titel, string einheit, List<Balken> balken)
+            => SkiaMaler.Png(BalkenHorizontalModell(titel, einheit, balken));
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c).
+        ///
+        /// <para><b>Ein reines Pixelbild</b> (DG-E3-7): keine Zeichenfläche, keine
+        /// <c>Datenreihe</c> — die Achse dieses Bildes zählt Varianten, keine Zeit.
+        /// Eine ZEILE ist das Datenelement: Beschriftung, Balken, Rahmen und die Zahl
+        /// dahinter stehen zusammen in der Klammer <c>reihe:&lt;Variante&gt;</c> und
+        /// tragen denselben <c>Wert</c>. Dieses Bild führt keine eigene Legende — die
+        /// Beschriftung links IST sie.</para>
+        ///
+        /// <para>Die senkrechte Achsenlinie bleibt ohne Marke: Sie muss auch dann
+        /// stehen, wenn die Oberfläche eine Zeile ausblendet (dieselbe Regel wie beim
+        /// Achsenkreuz der Ganglinien).</para>
+        /// </summary>
+        public static Zeichenmodell BalkenHorizontalModell(string titel, string einheit,
+                                                           List<Balken> balken)
         {
             int W = 1240;
             int H = 150 + balken.Count * 64;
             var z = Modell(W, H);
-            Titel(z, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
+            z.Markiert("titel", zt =>
+                Titel(zt, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W));
 
             float links = 300f, rechts = W - 150f, oben = 80f;
             double max = Math.Max(balken.Max(b => Math.Abs(b.Wert)), 1e-9);
@@ -197,16 +239,22 @@ namespace WindowsFormsApplication1
 
                     // Label links (rechtsbündig).
                     float lbreite = lf.MeasureText(b.Label ?? "");
-                    Text(z, b.Label, lf, Farbrolle.TEXT, links - 12f - lbreite, y + 8f);
 
-                    z.Rechteck(links, y, laenge, 40f, null, Flaeche(farbe));
-                    z.Rechteck(links, y, laenge, 40f, rahmen);
-                    Text(z, b.Wert.ToString("N0", DE), wf, Farbrolle.TEXT, links + laenge + 10f, y + 9f);
+                    z.Markiert("reihe:" + (b.Label ?? ""),
+                               Elementwert(b.Label, b.Wert, "N0", einheit), zb =>
+                    {
+                        Text(zb, b.Label, lf, Farbrolle.TEXT, links - 12f - lbreite, y + 8f);
+
+                        zb.Rechteck(links, y, laenge, 40f, null, Flaeche(farbe));
+                        zb.Rechteck(links, y, laenge, 40f, rahmen);
+                        Text(zb, b.Wert.ToString("N0", DE), wf, Farbrolle.TEXT,
+                             links + laenge + 10f, y + 9f);
+                    });
                 }
             }
             z.Linie(links, oben - 8f, links, oben + balken.Count * 64f - 16f,
                     Stift(Farbrolle.ACHSE, 2f));
-            return SkiaMaler.Png(z);
+            return z;
         }
 
         // =================================================================== Ganglinien
@@ -249,6 +297,17 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static byte[] StrombilanzMonate(ZeitreihenSatz z)
         {
+            Zeichenmodell modell = StrombilanzMonateModell(z);
+            return modell == null ? null : SkiaMaler.Png(modell);
+        }
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c); <c>null</c> in
+        /// denselben Fällen, in denen <see cref="StrombilanzMonate"/> kein Bild
+        /// liefert — ohne Strombedarf und ohne eine einzige Deckungsreihe.
+        /// </summary>
+        public static Zeichenmodell StrombilanzMonateModell(ZeitreihenSatz z)
+        {
             double[] bedarf = z.Hole(ZeitreihenSatz.STROMBEDARF);
             if (bedarf == null) return null;
 
@@ -266,7 +325,7 @@ namespace WindowsFormsApplication1
                 serien.Add(new Reihe("Einspeisung", MonatsSummenMWh(z.Hole(ZeitreihenSatz.PV_UEBERSCHUSS)), C_NETZ));
             if (serien.Count == 0) return null;
 
-            return MonatsBalken("Strombilanz im Monatsverlauf", "MWh/Monat",
+            return MonatsBalkenModell("Strombilanz im Monatsverlauf", "MWh/Monat",
                 serien, MonatsSummenMWh(bedarf), "Strombedarf");
         }
 
@@ -469,13 +528,25 @@ namespace WindowsFormsApplication1
             return SkiaMaler.Png(z);
         }
 
-        private static byte[] MonatsBalken(string titel, string einheit, List<Reihe> serien,
-                                           double[] linie, string linienName)
+        /// <summary>
+        /// Der gemeinsame Rumpf der Monatsbalken als ZEICHENMODELL (Etappe DG-E3,
+        /// Gruppe c). Ein reines Pixelbild (DG-E3-7): keine Zeichenfläche, keine
+        /// <c>Datenreihe</c> — die x-Achse zählt zwölf Monate, keine Stunde.
+        ///
+        /// <para>Jede Stapelschicht und jeder Nebenbalken trägt
+        /// <c>reihe:&lt;Reihenname&gt;</c> und den Wert seines Monats. <b>Der
+        /// Bedarfszug bekommt als Wert nur seinen Namen</b>: Er ist EIN Element über
+        /// zwölf Monate und zeigt keine einzelne Zahl — die zwölf Punkte des PNG sind
+        /// ein einziger Streckenzug.</para>
+        /// </summary>
+        private static Zeichenmodell MonatsBalkenModell(string titel, string einheit,
+                                                        List<Reihe> serien,
+                                                        double[] linie, string linienName)
         {
             int W = 1240, H = 560;
             string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
             var z = Modell(W, H);
-            Titel(z, titel + "  [" + einheit + "]", W);
+            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W));
             var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
 
             // Einspeisung wird nicht gestapelt, sondern als schmaler Nebenbalken gezeigt.
@@ -489,14 +560,18 @@ namespace WindowsFormsApplication1
             if (einspeisung != null) max = Math.Max(max, einspeisung.Werte.Max());
             max = Nice(max);
 
-            // Achsen + Monatslabels.
-            AchsenRaster(z, rc, max, null, null, 12);
+            // Achsen + Monatslabels. Das Achsenkreuz bleibt ohne Marke - es steht
+            // auch dann, wenn die Oberflaeche eine Achsenteilung ausblendet.
+            z.Markiert("yachse", zy => AchsenRasterOhneKreuz(zy, rc, max, null, null, 12));
+            Achsenkreuz(z, rc);
             using (var f = Schrift(15f))
                 for (int m = 0; m < 12; m++)
                 {
                     float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
                     float breite = f.MeasureText(monate[m]);
-                    Text(z, monate[m], f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
+                    string lab = monate[m];
+                    z.Markiert("xachse", zx =>
+                        Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f));
                 }
 
             float slot = rc.Width / 12f;
@@ -505,17 +580,28 @@ namespace WindowsFormsApplication1
             {
                 float x0 = rc.Left + m * slot + slot * 0.12f;
                 float unten = rc.Bottom;
+                string monat = monate[m];
+                int im = m;
                 foreach (Reihe r in stapel)
                 {
                     float hoehe = (float)(r.Werte[m] / max * rc.Height);
-                    z.Rechteck(x0, unten - hoehe, bBreit, hoehe, null, Flaeche(r.Farbe));
+                    float oben = unten - hoehe;      // fest fuer die Klammer
+                    Reihe rr = r;
+                    z.Markiert("reihe:" + (r.Name ?? ""),
+                               Elementwert(monat + WERT_TRENNER + (r.Name ?? ""),
+                                           r.Werte[im], "N0", einheit),
+                               zs => zs.Rechteck(x0, oben, bBreit, hoehe, null, Flaeche(rr.Farbe)));
                     unten -= hoehe;
                 }
                 if (einspeisung != null)
                 {
                     float hoehe = (float)(einspeisung.Werte[m] / max * rc.Height);
-                    z.Rechteck(x0 + bBreit + slot * 0.06f, rc.Bottom - hoehe, bSchmal, hoehe,
-                               null, Flaeche(einspeisung.Farbe));
+                    Reihe e = einspeisung;
+                    z.Markiert("reihe:" + (e.Name ?? ""),
+                               Elementwert(monat + WERT_TRENNER + (e.Name ?? ""),
+                                           e.Werte[im], "N0", einheit),
+                               zs => zs.Rechteck(x0 + bBreit + slot * 0.06f, rc.Bottom - hoehe,
+                                                 bSchmal, hoehe, null, Flaeche(e.Farbe)));
                 }
             }
 
@@ -525,13 +611,14 @@ namespace WindowsFormsApplication1
                 for (int m = 0; m < 12; m++)
                     punkte[m] = new SKPoint(rc.Left + (m + 0.5f) * slot,
                         rc.Bottom - (float)(linie[m] / max * rc.Height));
-                Linienzug(z, punkte, Stift(C_BEDARF, 3f));
+                z.Markiert("reihe:" + (linienName ?? ""), linienName,
+                           zl => Linienzug(zl, punkte, Stift(C_BEDARF, 3f)));
             }
 
             var leg = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
             if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
             Legende(z, leg, 90f, H - 56f);
-            return SkiaMaler.Png(z);
+            return z;
         }
 
         // ============================================== Kapitalwert-Verlauf (Phase 11)
@@ -1387,31 +1474,51 @@ namespace WindowsFormsApplication1
         /// <param name="monatsnamen">Die zwölf Beschriftungen; <c>null</c> = die deutschen des Vorläufers.</param>
         public static byte[] MonatsSaeulen(string titel, double[] werte, SKColor farbe,
                                            string einheit, IReadOnlyList<string> monatsnamen = null)
+            => SkiaMaler.Png(MonatsSaeulenModell(titel, werte, farbe, einheit, monatsnamen));
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c).
+        ///
+        /// <para><b>Ein reines Pixelbild</b> (DG-E3-7): keine Zeichenfläche, keine
+        /// <c>Datenreihe</c> — zwölf starre Fächer sind keine Zeitachse, auf der man
+        /// zoomen könnte. Jede Säule trägt die Marke <c>reihe:&lt;Titel&gt;</c> (dieses
+        /// Bild führt GENAU EINE Reihe, und ihr Name ist sein Titel) und als Wert
+        /// „Jan: 12,5 MWh" — mit dem Zahlenformat SEINER y-Achse
+        /// (<see cref="Skala.Bedarf"/>), damit Zeigetext und Achsenbeschriftung
+        /// dieselben Nachkommastellen führen.</para>
+        /// </summary>
+        public static Zeichenmodell MonatsSaeulenModell(string titel, double[] werte, SKColor farbe,
+                                                        string einheit,
+                                                        IReadOnlyList<string> monatsnamen = null)
         {
             int W = 978, H = 542;
             var z = Modell(W, H);
-            Titel(z, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
+            z.Markiert("titel", zt =>
+                Titel(zt, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W));
             var rc = SKRect.Create(100f, 80f, W - 140f, 380f);
 
             if (werte == null || werte.Length < 12)
             {
                 using (var f = Schrift(18f))
-                    Text(z, BerichtTexte.T("Keine Monatswerte vorhanden."), f, Farbrolle.ACHSE,
-                         rc.Left, rc.Top + 20f);
-                return SkiaMaler.Png(z);
+                    z.Markiert("leerhinweis", zl =>
+                        Text(zl, BerichtTexte.T("Keine Monatswerte vorhanden."), f, Farbrolle.ACHSE,
+                             rc.Left, rc.Top + 20f));
+                return z;
             }
 
             double maxWert = 0;
             for (int m = 0; m < 12; m++) if (werte[m] > maxWert) maxWert = werte[m];
             (double schritt, double max, string format) = BedarfsSkala(maxWert);
 
-            BedarfsRaster(z, rc, schritt, max, format);
+            z.Markiert("yachse", zy => BedarfsRasterOhneKreuz(zy, rc, schritt, max, format));
+            Achsenkreuz(z, rc);
 
             float fach = rc.Width / 12f;
             float breite = fach * 0.6f;
             // Die Saeulenfarbe kommt von AUSSEN (sie benennt die Sicht) und behaelt
             // deshalb die Rueckwaertssuche; alle uebrigen Farben nennen ihre Rolle.
             Zeichnung.Fuellung pinsel = Flaeche(farbe);
+            string reihe = "reihe:" + (titel ?? "");
             using (var f = Schrift(15f))
                 for (int m = 0; m < 12; m++)
                 {
@@ -1419,15 +1526,21 @@ namespace WindowsFormsApplication1
 
                     double wert = werte[m] > 0 ? werte[m] : 0;   // y beginnt starr bei 0
                     float hoehe = (float)(Math.Min(wert, max) / max * rc.Height);
-                    if (hoehe > 0)
-                        z.Rechteck(mitte - breite / 2f, rc.Bottom - hoehe, breite, hoehe, null, pinsel);
-
                     string lab = (monatsnamen != null && monatsnamen.Count > m)
                         ? monatsnamen[m] : MONATE_KURZ[m];
-                    Text(z, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    double roh = werte[m];
+
+                    if (hoehe > 0)
+                        z.Markiert(reihe, Elementwert(lab, roh, format, einheit), zs =>
+                            zs.Rechteck(mitte - breite / 2f, rc.Bottom - hoehe, breite, hoehe,
+                                        null, pinsel));
+
+                    z.Markiert("xachse", zx =>
+                        Text(zx, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f,
+                             rc.Bottom + 8f));
                 }
 
-            return SkiaMaler.Png(z);
+            return z;
         }
 
         /// <summary>
@@ -2417,7 +2530,17 @@ namespace WindowsFormsApplication1
         public static byte[] Ring(string titel, IReadOnlyList<Ringsegment> segmente,
                                   double mitteWert, string mitteEinheit)
         {
-            return Ring(titel, segmente, mitteWert, mitteEinheit, null, true);
+            return SkiaMaler.Png(RingModell(titel, segmente, mitteWert, mitteEinheit));
+        }
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c) — die
+        /// Kurzfassung mit Legende und ohne Unterzeile.
+        /// </summary>
+        public static Zeichenmodell RingModell(string titel, IReadOnlyList<Ringsegment> segmente,
+                                               double mitteWert, string mitteEinheit)
+        {
+            return RingModell(titel, segmente, mitteWert, mitteEinheit, null, true);
         }
 
         /// <summary>
@@ -2446,10 +2569,29 @@ namespace WindowsFormsApplication1
                                   double mitteWert, string mitteEinheit,
                                   string mitteUnterzeile, bool mitLegende)
         {
+            return SkiaMaler.Png(RingModell(titel, segmente, mitteWert, mitteEinheit,
+                                            mitteUnterzeile, mitLegende));
+        }
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c).
+        ///
+        /// <para><b>Ein reines Pixelbild</b> (DG-E3-7): keine Zeichenfläche, keine
+        /// <c>Datenreihe</c>. Jedes Segment trägt <c>reihe:&lt;Name&gt;</c> und seinen
+        /// ANTEIL als Wert — ein <see cref="Ringsegment"/> nennt keine Einheit, und
+        /// der Anteil ist die Aussage des Rings; er steht in derselben Stufung („N1")
+        /// wie die Zahl in der Mitte. Das Innenloch, die Mittelzahl und ihre
+        /// Unterzeile bleiben ohne Marke: Sie gehören zum Bildaufbau, nicht zu einem
+        /// Segment.</para>
+        /// </summary>
+        public static Zeichenmodell RingModell(string titel, IReadOnlyList<Ringsegment> segmente,
+                                               double mitteWert, string mitteEinheit,
+                                               string mitteUnterzeile, bool mitLegende)
+        {
             int W = mitLegende ? 720 : 420;
             int H = mitLegende ? 560 : 420;
             var z = Modell(W, H);
-            Titel(z, titel ?? "", W);
+            z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
 
             var gueltig = (segmente ?? new List<Ringsegment>())
                 .Where(s => s != null && s.Wert > 0 && !double.IsNaN(s.Wert) && !double.IsInfinity(s.Wert))
@@ -2460,8 +2602,9 @@ namespace WindowsFormsApplication1
 
             if (gueltig.Count == 0)
             {
-                Leerhinweis(z, SKRect.Create(60f, 100f, W - 120f, 100f));
-                return SkiaMaler.Png(z);
+                z.Markiert("leerhinweis",
+                           zl => Leerhinweis(zl, SKRect.Create(60f, 100f, W - 120f, 100f)));
+                return z;
             }
 
             double summe = gueltig.Sum(s => s.Wert);
@@ -2469,7 +2612,9 @@ namespace WindowsFormsApplication1
             foreach (Ringsegment s in gueltig)
             {
                 float winkel = (float)(s.Wert / summe * 360.0);
-                Kreissegment(z, rc, start, winkel, Flaeche(s.Farbe));
+                float von = start;               // fest fuer die Klammer
+                z.Markiert("reihe:" + (s.Name ?? ""), Anteilwert(s.Name, s.Wert, summe),
+                           zs => Kreissegment(zs, rc, von, winkel, Flaeche(s.Farbe)));
                 start += winkel;
             }
 
@@ -2497,7 +2642,7 @@ namespace WindowsFormsApplication1
                 Legende(z, gueltig.Select(s => new Segment(s.Name, 0, s.Farbe)).ToList(),
                         60f, 430f, W - 30f);
 
-            return SkiaMaler.Png(z);
+            return z;
         }
 
         // ------------------------------------------------------------------ B6
@@ -2519,14 +2664,28 @@ namespace WindowsFormsApplication1
         /// <param name="einheit">Einheit fuer die Ueberschrift; leer = ohne.</param>
         /// <param name="reihen">Reihen mit je zwoelf Monatswerten, von unten nach oben.</param>
         public static byte[] MonatsStapel(string titel, string einheit, IReadOnlyList<Reihe> reihen)
+            => SkiaMaler.Png(MonatsStapelModell(titel, einheit, reihen));
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c).
+        ///
+        /// <para><b>Ein reines Pixelbild</b> (DG-E3-7): keine Zeichenfläche, keine
+        /// <c>Datenreihe</c>. Jede Stapelschicht trägt <c>reihe:&lt;Reihenname&gt;</c>
+        /// — denselben Schlüssel, den der Helfer <see cref="Legende"/> als
+        /// <c>legende:&lt;Reihenname&gt;</c> setzt — und als Wert
+        /// „Jan · Eigenverbrauch: 1.234 kWh", im Zahlenformat SEINER y-Achse.</para>
+        /// </summary>
+        public static Zeichenmodell MonatsStapelModell(string titel, string einheit,
+                                                       IReadOnlyList<Reihe> reihen)
         {
             int W = 978, H = 542;
             string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun",
                                 "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
 
             var z = Modell(W, H);
-            Titel(z, string.IsNullOrEmpty(einheit) ? (titel ?? "")
-                                                   : (titel ?? "") + "  [" + einheit + "]", W);
+            z.Markiert("titel", zt =>
+                Titel(zt, string.IsNullOrEmpty(einheit) ? (titel ?? "")
+                                                        : (titel ?? "") + "  [" + einheit + "]", W));
 
             var gueltig = (reihen ?? new List<Reihe>())
                 .Where(r => r != null && r.Werte != null && r.Werte.Length >= 12)
@@ -2535,8 +2694,8 @@ namespace WindowsFormsApplication1
             var rc = SKRect.Create(100f, 120f, W - 140f, 320f);
             if (gueltig.Count == 0)
             {
-                Leerhinweis(z, rc);
-                return SkiaMaler.Png(z);
+                z.Markiert("leerhinweis", zl => Leerhinweis(zl, rc));
+                return z;
             }
 
             // Legende OBEN und ZENTRIERT (Docking.Top, StringAlignment.Center).
@@ -2550,14 +2709,21 @@ namespace WindowsFormsApplication1
             double max = Nice(summe.Max());
             if (max <= 0) max = 1;
 
-            YRaster(z, rc, max);
+            z.Markiert("yachse", zy => YRasterOhneKreuz(zy, rc, max));
+            Achsenkreuz(z, rc);
             using (var f = Schrift(15f))
                 for (int m = 0; m < 12; m++)
                 {
                     float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
-                    Text(z, monate[m], f, Farbrolle.ACHSE,
-                         x - f.MeasureText(monate[m]) / 2f, rc.Bottom + 8f);
+                    string lab = monate[m];
+                    z.Markiert("xachse", zx =>
+                        Text(zx, lab, f, Farbrolle.ACHSE,
+                             x - f.MeasureText(lab) / 2f, rc.Bottom + 8f));
                 }
+
+            // Das Zahlenformat der y-Achse (YRasterOhneKreuz) - der Zeigetext traegt
+            // dieselben Nachkommastellen wie die Beschriftung daneben.
+            string format = max >= 10 ? "N0" : "N1";
 
             float slot = rc.Width / 12f;
             float balken = slot * 0.6f;
@@ -2565,17 +2731,24 @@ namespace WindowsFormsApplication1
             {
                 float x0 = rc.Left + m * slot + (slot - balken) / 2f;
                 float unten = rc.Bottom;
+                string monat = monate[m];
+                int im = m;
                 foreach (Reihe r in gueltig)
                 {
                     float hoehe = (float)(Math.Max(r.Werte[m], 0) / max * rc.Height);
                     if (hoehe <= 0) continue;
+                    float oben = unten - hoehe;   // fest fuer die Klammer
+                    Reihe rr = r;
                     // Die Reihenfarbe kommt von AUSSEN und behaelt die Rueckwaertssuche.
-                    z.Rechteck(x0, unten - hoehe, balken, hoehe, null, Flaeche(r.Farbe));
+                    z.Markiert("reihe:" + (r.Name ?? ""),
+                               Elementwert(monat + WERT_TRENNER + (r.Name ?? ""),
+                                           rr.Werte[im], format, einheit),
+                               zs => zs.Rechteck(x0, oben, balken, hoehe, null, Flaeche(rr.Farbe)));
                     unten -= hoehe;
                 }
             }
 
-            return SkiaMaler.Png(z);
+            return z;
         }
 
         /// <summary>Breite, die die Legende dieser Reihen braucht — fuer die Zentrierung.</summary>
@@ -3027,6 +3200,40 @@ namespace WindowsFormsApplication1
                                                 bool[][] unzulaessig = null,
                                                 string fusszeile = null,
                                                 string fusszeileZusatz = null)
+            => SkiaMaler.Png(OptimierungsrasterModell(titel, xTitel, yTitel, skalaTitel,
+                                                      cRaten, kapazitaetenKwh, werte,
+                                                      besteZeile, besteSpalte, unzulaessig,
+                                                      fusszeile, fusszeileZusatz));
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe c).
+        ///
+        /// <para><b>Ein reines Pixelbild</b> (DG-E3-7): keine Zeichenfläche, keine
+        /// <c>Datenreihe</c> — die Achsen dieses Bildes tragen Kapazität und C-Rate,
+        /// keine Zeit. Jede ZELLE samt ihrer Schraffur ist ein Datenelement: Marke
+        /// <c>reihe:&lt;Skalentitel&gt;</c> — die Farbskala rechts IST die Legende
+        /// dieses Bildes, und sie trägt die Marke <c>skala</c> — und als Wert die
+        /// beiden Stützstellen mit ihrem Zielfunktionswert,
+        /// „Kapazität 220 kWh · Entladeleistung 100 kW: 4.000 €". Die Stützstellen
+        /// stehen in den Formaten IHRER Achsenbeschriftung, der Zellwert in dem der
+        /// Farbskala.</para>
+        ///
+        /// <para>Ein LOCH (kein gerechneter Kandidat, Auftrag #226) nennt statt der
+        /// Zahl seinen Grund, eine gesperrte Zelle nennt ihre Sperre — beides sagt das
+        /// Bild schon, das eine durch die Lochfarbe, das andere durch die Schraffur.
+        /// Titel, Achsen, Bestmarke und Leerhinweis tragen <c>titel</c>,
+        /// <c>xachse</c>/<c>yachse</c>, <c>marke</c> und <c>leerhinweis</c>;
+        /// Achsenkreuz und Netzlinien bleiben markenlos.</para>
+        /// </summary>
+        public static Zeichenmodell OptimierungsrasterModell(string titel, string xTitel,
+                                                             string yTitel, string skalaTitel,
+                                                             IReadOnlyList<double> cRaten,
+                                                             IReadOnlyList<double> kapazitaetenKwh,
+                                                             double[][] werte,
+                                                             int besteZeile, int besteSpalte,
+                                                             bool[][] unzulaessig = null,
+                                                             string fusszeile = null,
+                                                             string fusszeileZusatz = null)
         {
             int W = 860, H = 560;
             var rc = SKRect.Create(120f, 96f, W - 300f, 380f);
@@ -3053,15 +3260,15 @@ namespace WindowsFormsApplication1
                 }
 
             var z = Modell(W, H);
-            Titel(z, titel ?? "", W);
+            z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
 
             int zeilen = kapazitaetenKwh?.Count ?? 0;
             int spalten = cRaten?.Count ?? 0;
 
             if (zeilen < 1 || spalten < 1 || werte == null || werte.Length < zeilen)
             {
-                Leerhinweis(z, rc);
-                return SkiaMaler.Png(z);
+                z.Markiert("leerhinweis", zl => Leerhinweis(zl, rc));
+                return z;
             }
 
             double min = double.MaxValue, max = double.MinValue;
@@ -3077,6 +3284,7 @@ namespace WindowsFormsApplication1
 
             float breite = rc.Width / spalten;
             float hoehe = rc.Height / zeilen;
+            string zellmarke = "reihe:" + (skalaTitel ?? "");
 
             for (int i = 0; i < zeilen; i++)
                 for (int s = 0; s < spalten; s++)
@@ -3086,13 +3294,20 @@ namespace WindowsFormsApplication1
                     // Zeile 0 unten: die Kapazitaet waechst nach oben.
                     float x = rc.Left + s * breite;
                     float y = rc.Bottom - (i + 1) * hoehe;
-                    z.Rechteck(x, y, breite, hoehe, null,
-                               new Zeichnung.Fuellung(Rasterfarbe(v, min, max)));
+                    bool gesperrt = Gesetzt(unzulaessig, i, s);
 
-                    // DIE SPERRE ALS MUSTER (#193): Schraffur ueber die Farbe, nicht
-                    // statt ihrer - der Wert bleibt ablesbar.
-                    if (Gesetzt(unzulaessig, i, s))
-                        Schraffur(z, SKRect.Create(x, y, breite, hoehe));
+                    z.Markiert(zellmarke,
+                               Zellwert(yTitel, kapazitaetenKwh[i], xTitel, cRaten[s],
+                                        v, skalaTitel, gesperrt), zz =>
+                    {
+                        zz.Rechteck(x, y, breite, hoehe, null,
+                                    new Zeichnung.Fuellung(Rasterfarbe(v, min, max)));
+
+                        // DIE SPERRE ALS MUSTER (#193): Schraffur ueber die Farbe, nicht
+                        // statt ihrer - der Wert bleibt ablesbar.
+                        if (gesperrt)
+                            Schraffur(zz, SKRect.Create(x, y, breite, hoehe));
+                    });
                 }
 
             // Die Netzlinien tragen die Farbe des Bildgrundes — sie trennen zwei
@@ -3110,7 +3325,14 @@ namespace WindowsFormsApplication1
                 float mx = rc.Left + (besteSpalte + 0.5f) * breite;
                 float my = rc.Bottom - (besteZeile + 0.5f) * hoehe;
                 float k = Math.Min(breite, hoehe) * 0.36f;
-                z.Rechteck(mx - k, my - k, 2f * k, 2f * k, Stift(Farbrolle.TEXT, 3f));
+                double best = besteSpalte < werte[besteZeile].Length
+                                  ? werte[besteZeile][besteSpalte] : double.NaN;
+                z.Markiert("marke",
+                           Zellwert(yTitel, kapazitaetenKwh[besteZeile], xTitel,
+                                    cRaten[besteSpalte], best, skalaTitel,
+                                    Gesetzt(unzulaessig, besteZeile, besteSpalte)),
+                           zm => zm.Rechteck(mx - k, my - k, 2f * k, 2f * k,
+                                             Stift(Farbrolle.TEXT, 3f)));
             }
 
             Achsenkreuz(z, rc);
@@ -3120,32 +3342,42 @@ namespace WindowsFormsApplication1
             using (var f = Schrift(14f))
             {
                 int xJede = Math.Max(1, (int)Math.Ceiling(spalten * 46f / rc.Width));
-                for (int s = 0; s < spalten; s += xJede)
+                z.Markiert("xachse", zx =>
                 {
-                    string lab = cRaten[s].ToString("0.##", DE);
-                    float x = rc.Left + (s + 0.5f) * breite;
-                    Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                }
+                    for (int s = 0; s < spalten; s += xJede)
+                    {
+                        string lab = cRaten[s].ToString("0.##", DE);
+                        float x = rc.Left + (s + 0.5f) * breite;
+                        Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f,
+                             rc.Bottom + 8f);
+                    }
+                });
 
                 int yJede = Math.Max(1, (int)Math.Ceiling(zeilen * 22f / rc.Height));
-                for (int i = 0; i < zeilen; i += yJede)
+                z.Markiert("yachse", zy =>
                 {
-                    string lab = kapazitaetenKwh[i].ToString("0.#", DE);
-                    float y = rc.Bottom - (i + 0.5f) * hoehe;
-                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 8f,
-                         y - TextHoehe(f) / 2f);
-                }
+                    for (int i = 0; i < zeilen; i += yJede)
+                    {
+                        string lab = kapazitaetenKwh[i].ToString("0.#", DE);
+                        float y = rc.Bottom - (i + 0.5f) * hoehe;
+                        Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 8f,
+                             y - TextHoehe(f) / 2f);
+                    }
+                });
             }
 
             using (var f = Schrift(15f))
             {
-                Text(z, xTitel ?? "", f, Farbrolle.ACHSE,
-                     rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
-                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 26f);
+                z.Markiert("xachse", zx =>
+                    Text(zx, xTitel ?? "", f, Farbrolle.ACHSE,
+                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f));
+                z.Markiert("yachse", zy =>
+                    Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 26f));
             }
 
-            Farbskala(z, SKRect.Create(rc.Right + 34f, rc.Top, 26f, rc.Height),
-                      min, max, skalaTitel);
+            z.Markiert("skala", zs =>
+                Farbskala(zs, SKRect.Create(rc.Right + 34f, rc.Top, 26f, rc.Height),
+                          min, max, skalaTitel));
 
             // DIE FUSSZEILE (SP-O-4): Sie steht unter der Achsenbeschriftung und
             // bricht bei Bedarf um; ohne Text aendert sie nichts. MIT ZUSATZ ist der
@@ -3162,7 +3394,41 @@ namespace WindowsFormsApplication1
                     Umbruchtext(z, fusszeile, f, Farbrolle.ACHSE, rc.Left, fussOben,
                                 fussBreite);
 
-            return SkiaMaler.Png(z);
+            return z;
+        }
+
+        /// <summary>
+        /// Der Wert EINER Rasterzelle (DG-E3-6):
+        /// <c>„Kapazität 220 kWh · Entladeleistung 100 kW: 4.000 €"</c>.
+        ///
+        /// <para>Beide Stützstellen stehen im Format ihrer eigenen Achsenbeschriftung
+        /// (<c>0.#</c> senkrecht, <c>0.##</c> waagerecht), der Zellwert in dem der
+        /// Farbskala („N0"). Ein LOCH nennt statt der Zahl seinen Grund — dort ist
+        /// nichts gerechnet worden (#226) —, eine gesperrte Zelle nennt zusätzlich
+        /// ihre Sperre (#193).</para>
+        /// </summary>
+        private static string Zellwert(string yTitel, double zeilenwert,
+                                       string xTitel, double spaltenwert,
+                                       double wert, string skalaTitel, bool gesperrt)
+        {
+            string stelle = Achsenwert(yTitel, zeilenwert, "0.#") + WERT_TRENNER +
+                            Achsenwert(xTitel, spaltenwert, "0.##");
+
+            string zahl = double.IsNaN(wert) || double.IsInfinity(wert)
+                ? BerichtTexte.T("nicht gerechnet")
+                : Elementwert(null, wert, "N0", Achseneinheit(skalaTitel));
+
+            return stelle + ": " + zahl +
+                   (gesperrt ? " (" + BerichtTexte.T("unzulässig") + ")" : "");
+        }
+
+        /// <summary>Die Einheit aus einer Achsenbeschriftung — „Kapitalwert [€]" → „€".</summary>
+        private static string Achseneinheit(string achsentitel)
+        {
+            string text = achsentitel ?? "";
+            int auf = text.IndexOf('[');
+            int zu = auf < 0 ? -1 : text.IndexOf(']', auf + 1);
+            return zu > auf ? text.Substring(auf + 1, zu - auf - 1).Trim() : "";
         }
 
         /// <summary>Steht in der Schraffurmatrix an dieser Stelle <c>true</c>?</summary>
@@ -4100,6 +4366,67 @@ namespace WindowsFormsApplication1
                                              Strichverbindung verbindung = Strichverbindung.Gehrung)
             => Stift(Farbton.Aus(rolle), staerke, muster, verbindung);
 
+        // ========================================= Der Wert am Element (DG-E3-6)
+        //
+        // Ein Datenelement der Gruppe (c) - eine Saeule, eine Stapelschicht, ein
+        // Balken, eine Rasterzelle, ein Ring- oder Kuchensegment - traegt neben
+        // seiner Marke den FERTIG FORMATIERTEN Text, den die Oberflaeche beim Zeigen
+        // darauf anzeigt. Formatiert wird HIER, wo auch die Beschriftung des Bildes
+        // entsteht: in der DE-Kultur des Renderers und mit den Nachkommastellen der
+        // eigenen Achse. Die Oberflaeche rechnet nichts nach - sonst zeigte der
+        // Zeigetext eine andere Zahl als das Bild darunter.
+
+        /// <summary>Der Trenner zweier Teile einer Elementkennung — „Jan · Wärmepumpe".</summary>
+        private const string WERT_TRENNER = " · ";
+
+        /// <summary>
+        /// Der Wert am Element: <c>„&lt;Was&gt;: &lt;Zahl&gt; &lt;Einheit&gt;"</c>.
+        /// Ohne <paramref name="was"/> bleibt der Doppelpunkt weg, ohne
+        /// <paramref name="einheit"/> die Einheit.
+        /// </summary>
+        /// <param name="was">Die Kennung des Elements — Monat, Reihenname, beides.</param>
+        /// <param name="wert">Die Zahl, die das Element zeigt.</param>
+        /// <param name="format">Das Zahlenformat DER EIGENEN ACHSE des Bildes.</param>
+        /// <param name="einheit">Die Einheit; leer = ohne.</param>
+        private static string Elementwert(string was, double wert, string format, string einheit)
+            => (string.IsNullOrEmpty(was) ? "" : was + ": ") +
+               wert.ToString(format, DE) +
+               (string.IsNullOrEmpty(einheit) ? "" : " " + einheit);
+
+        /// <summary>
+        /// Der Wert eines ANTEILS-Elements (Kuchen, Ring): <c>„&lt;Name&gt;: 48,0 %"</c>.
+        /// Ein Kreissegment zeigt keinen Betrag, sondern seinen Anteil am Ganzen —
+        /// und in derselben Stufung („N1"), in der die Bilder ihn beschriften.
+        /// </summary>
+        private static string Anteilwert(string name, double wert, double summe)
+            => Elementwert(name, summe > 0 ? wert / summe * 100.0 : 0.0, "N1", "%");
+
+        /// <summary>
+        /// Eine Achsenangabe für den Wert am Element: <c>„Kapazität 220 kWh"</c> aus
+        /// der Achsenbeschriftung <c>„Kapazität [kWh]"</c> und der Stützstelle.
+        ///
+        /// <para>Die Einheit steht in der Beschriftung in eckigen Klammern; sie wandert
+        /// hinter die Zahl, wo sie hingehört. Was hinter der Klammer noch folgt — die
+        /// C-Raten-Achse trägt die Erläuterung „(Leistung = Kapazität × C-Rate)" —
+        /// bleibt weg: Es ist ein Satz über die ACHSE und keiner über die Zelle.</para>
+        /// </summary>
+        private static string Achsenwert(string achsentitel, double wert, string format)
+        {
+            string name = achsentitel ?? "";
+            string einheit = "";
+            int auf = name.IndexOf('[');
+            int zu = auf < 0 ? -1 : name.IndexOf(']', auf + 1);
+            if (zu > auf)
+            {
+                einheit = name.Substring(auf + 1, zu - auf - 1).Trim();
+                name = name.Substring(0, auf);
+            }
+            name = name.Trim();
+            return (name.Length == 0 ? "" : name + " ") +
+                   wert.ToString(format, DE) +
+                   (einheit.Length == 0 ? "" : " " + einheit);
+        }
+
         /// <summary>
         /// Ein Kreissegment als Modellbefehl (ersetzt <c>Graphics.FillPie</c>).
         ///
@@ -4148,6 +4475,18 @@ namespace WindowsFormsApplication1
         private static void AchsenRaster(IZeichenziel z, SKRect rc, double max,
                                          int[] xpos, string[] xlab, int n)
         {
+            AchsenRasterOhneKreuz(z, rc, max, xpos, xlab, n);
+            Achsenkreuz(z, rc);
+        }
+
+        /// <summary>
+        /// Derselbe Rasterblock OHNE das Achsenkreuz (Etappe E3) — siehe
+        /// <see cref="BedarfsRasterOhneKreuz"/>: Ein Bild, das seine Achse MARKIERT,
+        /// klammert nur diesen Teil; die beiden Achsenlinien bleiben markenlos.
+        /// </summary>
+        private static void AchsenRasterOhneKreuz(IZeichenziel z, SKRect rc, double max,
+                                                  int[] xpos, string[] xlab, int n)
+        {
             var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
             {
@@ -4168,7 +4507,6 @@ namespace WindowsFormsApplication1
                         Text(z, xlab[i], f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                     }
             }
-            Achsenkreuz(z, rc);
         }
 
         private static void ZeichneLinie(IZeichenziel z, SKRect rc, double[] werte,
