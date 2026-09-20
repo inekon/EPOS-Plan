@@ -20472,4 +20472,16 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_BHKW_RUECKLAUF_ERL" xml:space="preserve">
     <value>Rücklauftemperatur dieses BHKW-Moduls im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“.</value>
   </data>
+  <data name="KI_DLG_MASKE_PUFFERSP_PROJEKT" xml:space="preserve">
+    <value>Verwaltung Pufferspeicher</value>
+  </data>
+  <data name="KI_DLG_MASKE_STROMSPEICHER" xml:space="preserve">
+    <value>Verwaltung Stromspeicher</value>
+  </data>
+  <data name="KI_DLG_PSPP_ANLAGE_ERL" xml:space="preserve">
+    <value>Der Name des im Projekt gewählten Pufferspeichers — Anzeige aus der Projektliste, nicht eingebbar.</value>
+  </data>
+  <data name="KI_DLG_STSP_ANLAGE_ERL" xml:space="preserve">
+    <value>Der Name des im Projekt gewählten Stromspeichers — Anzeige aus der Projektliste, nicht eingebbar.</value>
+  </data>
 </root>

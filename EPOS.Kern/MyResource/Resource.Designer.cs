@@ -25586,6 +25586,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Pufferspeicher ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PUFFERSP_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PUFFERSP_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik-Module ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PV {
@@ -25609,6 +25618,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_SPA {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_SPA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Stromspeicher ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_STROMSPEICHER", resourceCulture);
             }
         }
         
@@ -25681,6 +25699,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_OHNE_AENDERUNG {
             get {
                 return ResourceManager.GetString("KI_DLG_OHNE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten Pufferspeichers — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPP_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPP_ANLAGE_ERL", resourceCulture);
             }
         }
         
@@ -26572,6 +26599,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SPA_ZIEL_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SPA_ZIEL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten Stromspeichers — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_STSP_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_STSP_ANLAGE_ERL", resourceCulture);
             }
         }
         

@@ -68,8 +68,10 @@ public class KiDialogkatalogTests
 
         // Welle KI-F1: die Erzeugermasken des PROJEKTS. Sie melden die GEWAEHLTE
         // Zeile ihrer Projektliste an - denselben Typ wie Form_PV.
-        { KiMaskennamen.HEIZKESSEL_PROJEKT, typeof(ErzeugerZeile) },
-        { KiMaskennamen.BHKW_PROJEKT,       typeof(ErzeugerZeile) }
+        { KiMaskennamen.HEIZKESSEL_PROJEKT,     typeof(ErzeugerZeile) },
+        { KiMaskennamen.BHKW_PROJEKT,           typeof(ErzeugerZeile) },
+        { KiMaskennamen.PUFFERSPEICHER_PROJEKT, typeof(ErzeugerZeile) },
+        { KiMaskennamen.STROMSPEICHER_PROJEKT,  typeof(ErzeugerZeile) }
     };
 
     // =====================================================================
@@ -116,11 +118,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_neun_Masken()
+    public void Der_Katalog_fuehrt_elf_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(9, katalog.Anzahl);
+        Assert.Equal(11, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -144,6 +146,8 @@ public class KiDialogkatalogTests
 
         Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.HEIZKESSEL_PROJEKT));
         Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.BHKW_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.STROMSPEICHER_PROJEKT));
     }
 
     [Fact]
@@ -256,8 +260,10 @@ public class KiDialogkatalogTests
         { KiMaskennamen.KOSTENVERWALTUNG, "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" },
 
         // Welle KI-F1: die Erzeugermasken des PROJEKTS.
-        { KiMaskennamen.HEIZKESSEL_PROJEKT, "EPOS.UI/Dialoge/Erzeuger/HeizkesselDialog.razor" },
-        { KiMaskennamen.BHKW_PROJEKT,       "EPOS.UI/Dialoge/Erzeuger/BhkwDialog.razor" }
+        { KiMaskennamen.HEIZKESSEL_PROJEKT,     "EPOS.UI/Dialoge/Erzeuger/HeizkesselDialog.razor" },
+        { KiMaskennamen.BHKW_PROJEKT,           "EPOS.UI/Dialoge/Erzeuger/BhkwDialog.razor" },
+        { KiMaskennamen.PUFFERSPEICHER_PROJEKT, "EPOS.UI/Dialoge/Erzeuger/PufferspeicherDialog.razor" },
+        { KiMaskennamen.STROMSPEICHER_PROJEKT,  "EPOS.UI/Dialoge/Erzeuger/StromspeicherDialog.razor" }
     };
 
     /// <summary>
@@ -407,8 +413,9 @@ public class KiDialogkatalogTests
         }
 
         // 6 (Heizkesseleditor) + 3 (PV) + 1 (Puffereditor) + 1 (WP) +
-        // 7 (Kostenverwaltung) + 3 (Heizkessel im Projekt) + 4 (BHKW im Projekt) = 25.
-        Assert.True(felder >= 25, "Nur " + felder + " Feldpfade geprüft.");
+        // 7 (Kostenverwaltung) + 3 (Heizkessel im Projekt) + 4 (BHKW im Projekt) +
+        // 1 (Pufferspeicher im Projekt) + 1 (Stromspeicher im Projekt) = 27.
+        Assert.True(felder >= 27, "Nur " + felder + " Feldpfade geprüft.");
     }
 
     // ---------------------------------------------------------------------

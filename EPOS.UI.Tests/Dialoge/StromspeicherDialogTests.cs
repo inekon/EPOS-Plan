@@ -908,4 +908,48 @@ public class StromspeicherDialogTests : EposBunitContext
         cut.FindAll(".epos-kostenleiste button")[2].Click();
         Assert.Equal(1, energie);
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F1)
+    // =====================================================================
+
+    /// <summary>
+    /// Nach dem Zeichnen steht die Maske an der <c>KiMaskenbruecke</c>, und die Brücke
+    /// liest den Namen des gewählten Speichers. SETZEN geht nicht: Das eine Feld der
+    /// Maske ist eine Anzeige (<c>nurLesen</c>) — die Betriebsführung der Speicher
+    /// steht in der Ansicht „Stromspeicher-Auslegung".
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist. Die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_gibt_den_Namen_heraus()
+    {
+        Aufbauen(zeilen: new List<ErzeugerZeile> { Zeile(1, "Speicher 10", 41) });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.STROMSPEICHER_PROJEKT));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.STROMSPEICHER_PROJEKT, "anlage");
+        Assert.NotNull(zugang);
+        Assert.Equal("Speicher 10", zugang.Lesen());
+        Assert.False(zugang.Setzbar);
+    }
+
+    /// <summary>
+    /// Ohne Speicherweg lehnt <c>dialog_speichern</c> benannt ab — die Maske gibt ihre
+    /// Liste erst beim OK an die Hülle, ein eigener Schreibweg fehlt ihr.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_keinen_Speicherweg()
+    {
+        Aufbauen();
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.STROMSPEICHER_PROJEKT);
+
+        Assert.NotNull(haken.Auffrischen);
+        Assert.NotNull(haken.Schreibgeschuetzt);
+        Assert.Null(haken.Speichern);
+    }
 }

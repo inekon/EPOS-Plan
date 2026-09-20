@@ -79,6 +79,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>BHKW im Projekt (<c>BhkwDialog</c>).</summary>
         public const string BHKW_PROJEKT = "Form_BHKWEing";
+
+        /// <summary>Pufferspeicher im Projekt (<c>PufferspeicherDialog</c>).</summary>
+        public const string PUFFERSPEICHER_PROJEKT = "Form_PufferSp";
+
+        /// <summary>Stromspeicher im Projekt (<c>StromspeicherDialog</c>).</summary>
+        public const string STROMSPEICHER_PROJEKT = "Form_Stromspeicher";
     }
 
     /// <summary>
@@ -174,7 +180,95 @@ namespace WindowsFormsApplication1
                 Simulation(),
                 Kostenverwaltung(),
                 HeizkesselProjekt(),
-                BhkwProjekt());
+                BhkwProjekt(),
+                PufferspeicherProjekt(),
+                StromspeicherProjekt());
+        }
+
+        // =====================================================================
+        // Form_PufferSp  ->  PufferspeicherDialog   (Welle KI-F1)
+        // =====================================================================
+
+        /// <summary>
+        /// Pufferspeicher im Projekt — die gewaehlte Zeile der Projektliste
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerZeile</c>), mit EINEM Feld.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Ein Feld, und das ist kein Versehen.</b> Diese Maske fuehrt keine
+        /// Einstellwerte der ANLAGE: Sie waehlt den Speicher aus dem Katalog, zeigt
+        /// seine Werte und laesst den KATALOGSATZ im Aufklapper „Alle Daten"
+        /// bearbeiten. Der Name der gewaehlten Zeile ist damit alles, was der Assistent
+        /// hier lesen kann — und genau das soll er koennen: „welcher Pufferspeicher ist
+        /// im Projekt gewaehlt?" beantwortet er dann aus der Maske und nicht aus der
+        /// Dokumentation.
+        /// </para>
+        /// <para>
+        /// <b>Der Aufklapper bleibt draussen</b> — dieselbe Begruendung wie beim
+        /// Heizkessel: Er zeigt die Spalten des KATALOGsatzes ueber ein Profil und
+        /// nicht ueber benannte Eigenschaften der Zeile.
+        /// </para>
+        /// </remarks>
+        private static KiDialog PufferspeicherProjekt()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PUFFERSPEICHER_PROJEKT,
+                anzeigename: KiDialogTexte.MaskePufferSpProjekt,
+                felder: new[]
+                {
+                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                                     KiDialogTexte.PspAnlageName, KiParameterTyp.Text,
+                                     KiDialogTexte.PspAnlageErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Stromspeicher  ->  StromspeicherDialog   (Welle KI-F1)
+        // =====================================================================
+
+        /// <summary>
+        /// Stromspeicher im Projekt — die gewaehlte Zeile der Projektliste
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerZeile</c>), mit EINEM Feld.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Feldumfang wie beim Pufferspeicher.</b> Die Maske waehlt das Geraet und
+        /// zeigt seine Katalogwerte; die Betriebsfuehrung der Speicher steht in der
+        /// Ansicht „Stromspeicher-Auslegung"
+        /// (<see cref="KiMaskennamen.STROMSPEICHER_AUSLEGUNG"/>) und dort im Katalog
+        /// mit siebenundzwanzig Feldern.
+        /// </para>
+        /// <para>
+        /// <b>Der ENERGIETRAEGER fehlt mit Absicht.</b> Er steht als Wahl ueber Gruppe
+        /// und Art auf der Maske, im Daten-Objekt aber allein als Id
+        /// (<c>ErzeugerZeile.CarrierId</c>); gelesen waere er eine nackte Zahl,
+        /// gesetzt eine geratene — dieselbe Regel wie bei der Brennstoffvariante der
+        /// Kessel- und BHKW-Maske.
+        /// </para>
+        /// </remarks>
+        private static KiDialog StromspeicherProjekt()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.STROMSPEICHER_PROJEKT,
+                anzeigename: KiDialogTexte.MaskeStromspeicherProjekt,
+                felder: new[]
+                {
+                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                                     KiDialogTexte.StspAnlageName, KiParameterTyp.Text,
+                                     KiDialogTexte.StspAnlageErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================

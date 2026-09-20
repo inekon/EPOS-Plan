@@ -20465,4 +20465,16 @@ Do you want to allow this?</value>
   <data name="KI_DLG_BHKW_RUECKLAUF_ERL" xml:space="preserve">
     <value>Return temperature of this CHP module in the project in °C, whole number; empty means “not specified”.</value>
   </data>
+  <data name="KI_DLG_MASKE_PUFFERSP_PROJEKT" xml:space="preserve">
+    <value>Buffer tank management</value>
+  </data>
+  <data name="KI_DLG_MASKE_STROMSPEICHER" xml:space="preserve">
+    <value>Battery storage management</value>
+  </data>
+  <data name="KI_DLG_PSPP_ANLAGE_ERL" xml:space="preserve">
+    <value>The name of the buffer tank selected in the project — shown from the project list, not editable.</value>
+  </data>
+  <data name="KI_DLG_STSP_ANLAGE_ERL" xml:space="preserve">
+    <value>The name of the battery storage unit selected in the project — shown from the project list, not editable.</value>
+  </data>
 </root>

@@ -130,8 +130,10 @@ namespace WindowsFormsApplication1
                 // Welle KI-F1: Die Erzeugermasken des PROJEKTS gehen aus der
                 // Erzeugerkarte der Startseite auf und brauchen eine gewaehlte Anlage;
                 // ihr Ziel ist deshalb die Startseite - siehe STARTSEITE.
-                { KiMaskennamen.HEIZKESSEL_PROJEKT, STARTSEITE },
-                { KiMaskennamen.BHKW_PROJEKT,       STARTSEITE }
+                { KiMaskennamen.HEIZKESSEL_PROJEKT,     STARTSEITE },
+                { KiMaskennamen.BHKW_PROJEKT,           STARTSEITE },
+                { KiMaskennamen.PUFFERSPEICHER_PROJEKT, STARTSEITE },
+                { KiMaskennamen.STROMSPEICHER_PROJEKT,  STARTSEITE }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

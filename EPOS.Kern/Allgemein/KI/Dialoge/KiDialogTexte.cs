@@ -176,6 +176,18 @@
         internal static string BhkwRuecklaufName => MyResource.Resource.BHKWV_LBL_RUECKLAUF;
         internal static string BhkwRuecklaufErl => MyResource.Resource.KI_DLG_BHKW_RUECKLAUF_ERL;
 
+        // -------------------------------------------- Form_PufferSp (Projektmaske)
+
+        internal static string MaskePufferSpProjekt => MyResource.Resource.KI_DLG_MASKE_PUFFERSP_PROJEKT;
+        internal static string PspAnlageName => MyResource.Resource.HZK_LBL_NAME;
+        internal static string PspAnlageErl => MyResource.Resource.KI_DLG_PSPP_ANLAGE_ERL;
+
+        // ---------------------------------------- Form_Stromspeicher (Projektmaske)
+
+        internal static string MaskeStromspeicherProjekt => MyResource.Resource.KI_DLG_MASKE_STROMSPEICHER;
+        internal static string StspAnlageName => MyResource.Resource.HZK_LBL_NAME;
+        internal static string StspAnlageErl => MyResource.Resource.KI_DLG_STSP_ANLAGE_ERL;
+
         // =================================================================== Feldarten
 
         internal static string TypGanzzahl => MyResource.Resource.KI_DLG_TYP_GANZZAHL;
