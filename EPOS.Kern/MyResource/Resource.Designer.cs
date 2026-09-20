@@ -16098,6 +16098,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string GEB_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB ändern... ähnelt.
         /// </summary>
         public static string GEB_BTN_DB_AENDERN {

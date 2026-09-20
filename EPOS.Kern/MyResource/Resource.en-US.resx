@@ -20216,4 +20216,7 @@ Do you want to allow this?</value>
   <data name="PEAK_BTN_BEENDEN" xml:space="preserve">
     <value>Finish</value>
   </data>
+  <data name="GEB_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
 </root>

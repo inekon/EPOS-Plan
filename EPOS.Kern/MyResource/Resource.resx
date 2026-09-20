@@ -20223,4 +20223,7 @@ Möchten Sie das zulassen?</value>
   <data name="PEAK_BTN_BEENDEN" xml:space="preserve">
     <value>Beenden</value>
   </data>
+  <data name="GEB_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
 </root>
