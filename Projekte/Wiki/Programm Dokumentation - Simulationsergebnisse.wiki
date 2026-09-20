@@ -20,6 +20,21 @@ In der '''Stromspeicher-Auslegung''' – erreichbar über ''① Konfiguration �
 
 Nach einer Eingabeänderung wird das alte Ergebnis als veraltet gekennzeichnet. Die Heatmap verwendet Kapazität oder Leistung als gewählte Größenachse; Jahresüberschuss, Kapitalwert und Amortisation berücksichtigen die Betriebskosten. Neu berechnen liefert einen aktuellen Bestpunkt zur Übernahme der Dimensionierung. Die ausführliche Bedienung steht unter [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Stromspeicher: Auslegung optimieren]].
 
+== Die Diagramme bedienen ==
+{{Anker|diagrammbedienung}}
+
+Die Zeitreihen der Auswertung tragen dieselbe Bedienung: ''Energiebedarf'', die drei Bilder der ''Wärmepumpe'' – ''Produktion'', ''Stromverbrauch'' und ''Speichertemperaturen'' –, ''Heizkessel'', ''Solarthermie'', ''BHKW'', ''Photovoltaik'', das Betriebsbild des ''Stromspeichers'' sowie die beiden Ganglinien des Reiters ''Ergebnis'' (''Wärmeproduktion'' und ''Stromproduktion'').
+
+Über jedem Bild steht eine kleine Leiste. Mit dem Mausrad, mit Ziehen, mit der Kneifgeste und mit den Tasten ''+'', ''−'' und ''0'' vergrößern und verschieben Sie den Zeitausschnitt; die Werteachse bleibt dabei vollständig, und die Leiste zeigt links die Vergrößerung an – etwa ''×5''. ''Bereich'' schaltet auf das Aufziehen eines Ausschnitts um: Ziehen Sie ein Rechteck über die Stelle, die Sie sehen wollen; mit der Maus tut es auch Umschalt + Ziehen. ''1:1'' stellt die volle Ansicht wieder her; ein Doppelklick ins Bild und die Taste ''0'' tun dasselbe.
+
+Unter dem Bild steht eine Zeile mit den Werten an der Stelle, auf die Sie zeigen: die Stelle auf der Zeitachse und dazu je sichtbarer Kurve ihr Wert mit seiner Einheit. Führt ein Bild rechts eine zweite Werteachse – etwa den Speicherinhalt in kWh neben Leistungen in kW –, steht deren Kurve mit ihrer eigenen Einheit dabei.
+
+Die Legende ist bedienbar. Ein Klick auf den '''Namen''' einer Kurve oder Fläche blendet sie aus, ein zweiter holt sie zurück; der ausgeblendete Eintrag bleibt sichtbar, nur blasser. Ist keine Kurve der rechten Werteachse mehr eingeblendet, verschwindet auch diese Achse samt ihrer Beschriftung. Ein Klick auf das '''Farbfeld''' daneben öffnet den Farbwähler unmittelbar am Bild: Sie wählen die Farbe im Farbfenster oder tragen ihren Hexwert ein, ''Hausfarbe'' nimmt die Wahl wieder zurück, Esc und ein Klick neben den Wähler schließen ihn. Dieselbe Farbe gilt anschließend in allen Diagrammen des Programms und im Bericht. Kurven, deren Farbe das Programm selbst ausrechnet, tragen kein Farbfeld. Mit der Tastatur erreichen Sie beides ebenso: Die Einträge lassen sich anspringen, Eingabe und Leertaste schalten die Kurve, Umschalt + Eingabe öffnet den Farbwähler.
+
+Die Bilder sind '''maßstabsfrei''': Die Beschriftung bleibt in jeder Vergrößerung scharf, und ein Zeitausschnitt zeigt die Werte dieses Ausschnitts, nicht ein vergrößertes Bild.
+
+'''Drei Bilder dieser Auswertung sind Pixelbilder''' – die Streuwolke ''Leistung über Außentemperatur'' auf der Seite ''Wärmepumpe'', die beiden [[#ringe|Deckungsringe]] der Übersicht und die Monatssäulen der ''Autarkie-Analyse''. Sie tragen weder die Leiste über dem Bild noch die Werte am Mauszeiger, ihre Legende schaltet nichts, und ein Farbfeld haben sie nicht; vergrößern lässt sich an ihnen nur das Bild als Ganzes, samt seiner Beschriftung. Ein Zeitausschnitt hat dort auch keinen Gegenstand: Die Streuwolke trägt keine Zeitachse, an einem Ring gibt es nichts zu zoomen, und die Monatssäulen zeigen ohnehin nur zwölf Werte. Ihre Farben stellen Sie unter [[#diagrammfarben|Farben der Diagramme]] ein.
+
 == Farben der Diagramme ==
 {{Anker|diagrammfarben}}
 
@@ -28,6 +43,7 @@ Unter ''Administration → Einstellungen'' führt die Rubrik '''Diagramme''' zu 
 Je Größe stehen nebeneinander der Farbwähler, der Farbwert in der Schreibweise <code>#RRGGBB</code> und ein kleines Muster der Hausfarbe. Sie können die Farbe im Wähler aussuchen oder den Wert eintippen; eine Eingabe, die keine Farbe in dieser Schreibweise ist, wird am Feld abgewiesen.
 
 * '''Die Farbe gilt im ganzen Programm.''' Eine hier gesetzte Farbe erscheint in allen Diagrammen, die diese Größe zeigen, und ebenso im Wortbericht und im PDF. Ein Neustart ist nicht nötig.
+* '''Dieselbe Wahl steht am Diagramm.''' Das Farbfeld eines Legendeneintrags öffnet denselben Wähler unmittelbar am Bild – siehe [[#diagrammbedienung|Die Diagramme bedienen]].
 * '''Halbdurchsichtige Flächen bleiben halbdurchsichtig.''' Sie wählen den Farbton; wie stark eine Fläche durchscheint, gehört zum Bildaufbau und ändert sich nicht.
 * '''Hausfarben''' setzt alle Farben auf die Vorgaben der Auslieferung zurück; übernommen wird die Änderung – wie in den übrigen Rubriken – erst mit ''OK''.
 
