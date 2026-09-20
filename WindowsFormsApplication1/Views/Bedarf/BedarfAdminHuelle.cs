@@ -40,7 +40,10 @@ namespace WindowsFormsApplication1
         /// <c>Masken.BrauchwasserAdmin</c>, <c>…ProzesswaermeAdmin</c> und
         /// <c>…StromverbraucherAdmin</c>.
         /// </summary>
-        /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
+        /// <returns>
+        /// Immer <c>true</c>: Der Dialog kennt seit DL-2 nur den Weg „Beenden" —
+        /// jede Aktion schreibt sofort in den Katalog.
+        /// </returns>
         internal static bool Oeffnen(IWin32Window besitzer, BedarfsArt art)
         {
             bool ok = false;
@@ -114,6 +117,12 @@ namespace WindowsFormsApplication1
                 ["BtnTypAendernText"] = BtnTypAendern(art),
                 ["BtnLoeschenText"] = BtnLoeschen(art),
                 ["BtnGrafikText"] = MyResource.Resource.BADM_BTN_GRAFIK,
+
+                // DL-2 Nr. 3: Der Dialog schliesst mit EINEM Knopf. OK und Abbrechen
+                // sind entfallen - Stammkopf, Wochenprofil und Loeschen schreiben
+                // sofort in den Katalog, es gab nichts zu verwerfen. OkText und
+                // AbbrechenText bleiben: Sie beschriften die Namensabfrage vor "Neu".
+                ["BtnBeendenText"] = MyResource.Resource.BADM_BTN_BEENDEN,
 
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,

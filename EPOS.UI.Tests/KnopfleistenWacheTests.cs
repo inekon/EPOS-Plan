@@ -100,12 +100,6 @@ public sealed class KnopfleistenWacheTests
     private static readonly Ausnahme[] AUSNAHMEN =
     {
         new Ausnahme(
-            "EPOS.UI/Dialoge/Bedarf/BedarfAdminDialog.razor", REGEL_EINE_LEISTE,
-            "DL-2 Nr. 3: Aktionsleiste (Aendern/Neu/Typ aendern/Loeschen/Grafik) steht "
-            + "unmittelbar ueber der SpeichernLeiste. Auftrag DL-2d fuehrt beide zu einer "
-            + "Leiste mit Beenden zusammen."),
-
-        new Ausnahme(
             "EPOS.UI/Dialoge/Admin/EinstellungenDialog.razor", REGEL_EINE_LEISTE,
             "DL-2 Nr. 10: die Standardwerte-Leiste steht unmittelbar ueber der "
             + "SpeichernLeiste. Auftrag DL-2f legt Standardwerte in den Aktionsschlitz."),

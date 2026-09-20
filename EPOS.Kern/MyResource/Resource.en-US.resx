@@ -121,13 +121,13 @@
     <value>Change profile...</value>
   </data>
   <data name="BADM_BTN_AENDERN_PROZESS" xml:space="preserve">
-    <value>Change process in DB</value>
+    <value>Change process in DB...</value>
   </data>
   <data name="BADM_BTN_AENDERN_STROM" xml:space="preserve">
-    <value>Change consumer</value>
+    <value>Change consumer...</value>
   </data>
   <data name="BADM_BTN_GRAFIK" xml:space="preserve">
-    <value>Graphic</value>
+    <value>Graphic...</value>
   </data>
   <data name="BADM_BTN_LOESCHEN_BRAUCHWASSER" xml:space="preserve">
     <value>Delete profile</value>
@@ -142,19 +142,19 @@
     <value>New profile...</value>
   </data>
   <data name="BADM_BTN_NEU_PROZESS" xml:space="preserve">
-    <value>New process in DB</value>
+    <value>New process in DB...</value>
   </data>
   <data name="BADM_BTN_NEU_STROM" xml:space="preserve">
-    <value>New consumer</value>
+    <value>New consumer...</value>
   </data>
   <data name="BADM_BTN_TYP_BRAUCHWASSER" xml:space="preserve">
     <value>Change profile type...</value>
   </data>
   <data name="BADM_BTN_TYP_PROZESS" xml:space="preserve">
-    <value>Change type in DB</value>
+    <value>Change type in DB...</value>
   </data>
   <data name="BADM_BTN_TYP_STROM" xml:space="preserve">
-    <value>Change type</value>
+    <value>Change type...</value>
   </data>
   <data name="BADM_EINHEIT_STROM" xml:space="preserve">
     <value>MWh</value>
@@ -20221,5 +20221,8 @@ Do you want to allow this?</value>
   </data>
   <data name="WPS_BTN_KENNDATEN_KURZ" xml:space="preserve">
     <value>Characteristic curve data...</value>
+  </data>
+  <data name="BADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
   </data>
 </root>
