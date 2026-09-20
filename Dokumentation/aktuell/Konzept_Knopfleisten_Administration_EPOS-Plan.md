@@ -1,7 +1,7 @@
 # Konzept: Knopfleisten der Administrationsdialoge nach der Hausregel (DL-2)
 
 **Stand:** Mockups abgenommen, alle sechs Fragen entschieden (Abschnitt 3); die Schritte 0
-bis 3 der Umsetzungsreihenfolge sind umgesetzt, die Schritte 4 bis 9 sind frei.
+bis 3 sowie 6 bis 9 der Umsetzungsreihenfolge sind umgesetzt, frei sind die Schritte 4 und 5.
 **Anlass:** Anwenderentscheid 19.09.2026 — „Prüfe alle Dialoge [des Administrationsmenüs] auf
 Überlappung und Übersichtlichkeit/Anordnung Buttons." Entscheid: alle abweichenden Dialoge an die
 Hausregel angleichen, je Dialog ein Mockup zur Abnahme; umgebaut wird erst danach. Die Überlappung
@@ -109,10 +109,10 @@ abgenommen, alle Schritte sind damit frei.
 | 3 | **umgesetzt (#383)** — BedarfAdminDialog (3): Grafik… · Typ ändern… · Füller · Neu… · Ändern… · Löschen · Beenden; die zweite Leiste entfällt, Esc und ✕ schließen wie Beenden | S | — |
 | 4 | KatalogImportDialog (9) und ModulImportDialog (8) in einem Auftrag — ein Knopftext, zwei Wirte | S | DL-Q4 |
 | 5 | EinstellungenDialog (10) | S | Schritt 0, DL-Q6 |
-| 6 | PeakShavingDialog (5) | S | DL-Q2 |
-| 7 | GebaeudeDialog (1), beide Betriebsarten | M | Schritt 0, DL-Q1 |
-| 8 | KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
-| 9 | EnergietraegerDialog (7) | M | DL-Q3, DL-Q5 |
+| 6 | **umgesetzt (#385)** — PeakShavingDialog (5): „Berechnen" bleibt im Blatt ohne Primärfarbe, Fuß CSV-Export · In Variante übernehmen · Füller · **Beenden** (primär, `PEAK_BTN_BEENDEN`); Handler, Esc und ✕ unverändert, Ausnahme in `AUSNAHMEN` gestrichen | S | DL-Q2 |
+| 7 | **umgesetzt (#385)** — GebaeudeDialog (1), beide Betriebsarten: Verwaltung Katalogspalte Neu… · Ändern… · Löschen · Gebäudetyp in DB ändern…, Fuß Füller · **Beenden** (primär, `GEB_BTN_BEENDEN`, meldet `true`); Projekt Fuß Ändern · Simulation… · Gebäudetyp in DB ändern… · Füller · Abbrechen · OK als `SpeichernLeiste` mit `Aktionen`, Detailblock ohne Knöpfe | M | Schritt 0, DL-Q1 |
+| 8 | **umgesetzt (#386)** — KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
+| 9 | **umgesetzt (#386)** — EnergietraegerDialog (7) | M | DL-Q3, DL-Q5 |
 
 **Abnahme je Auftrag:**
 

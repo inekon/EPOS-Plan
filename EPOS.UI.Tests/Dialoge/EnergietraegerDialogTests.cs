@@ -527,16 +527,93 @@ public class EnergietraegerDialogTests : EposBunitContext
     [Fact]
     public void Der_Stammkopf_meldet_eine_leere_Bezeichnung()
     {
+        int gespeichert = 0;
         var cut = Zeige(p => p
             .Add(x => x.StammSchreiben, (string n, int? g) => false)
+            .Add(x => x.Speichern, () => { gespeichert++; return true; })
             .Add(x => x.MeldungStammLeer, "Bezeichnung darf nicht leer sein."));
 
-        // Der Uebernahmeknopf steht seit iU8-E-2 / W14a-E-7 (Paket P2) in einer
-        // eigenen Leiste unter dem Formularraster; das handgebaute Feldpaar
-        // des Stammkopfs ist damit entfallen.
-        cut.Find(".epos-traeger-inhalt .epos-leiste button").Click();
+        // DL-2 (Nr. 7, DL-Q5): Der eigene Knopf „Bezeichnung speichern" ist
+        // entfallen; die Stammwerte gehen im Speichern-Weg mit — und halten ihn auf,
+        // wenn die Bezeichnung leer ist.
+        cut.FindAll(".epos-dialog > .epos-leiste")[^1].QuerySelectorAll("button")[0].Click();
 
         Assert.Contains("nicht leer", cut.Instance.Meldung);
+        Assert.Equal(0, gespeichert);
+    }
+
+    /// <summary>
+    /// <b>DL-2 (Nr. 7, DL-Q5):</b> „Bezeichnung speichern" gibt es nicht mehr — im
+    /// Kartenblatt steht keine Knopfleiste mehr.
+    /// </summary>
+    [Fact]
+    public void Der_Stammkopf_traegt_keinen_eigenen_Speichern_Knopf()
+    {
+        var cut = Zeige();
+
+        // Unter dem Formularraster des Stammkopfs steht keine Knopfleiste mehr;
+        // die Leisten der Preiskarte stecken tiefer und bleiben unberührt.
+        Assert.Empty(cut.FindAll(".epos-traeger-inhalt > .epos-leiste"));
+        Assert.DoesNotContain("Bezeichnung speichern", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>DL-2 (Nr. 7, DL-Q5):</b> Auch OK schreibt Bezeichnung und Gruppe mit —
+    /// Speichern und OK gehen durch denselben Schreibweg.
+    /// </summary>
+    [Fact]
+    public void OK_schreibt_die_Stammwerte_mit()
+    {
+        int stamm = 0, gespeichert = 0;
+        bool? ergebnis = null;
+        var cut = Zeige(p => p
+            .Add(x => x.StammSchreiben, (string n, int? g) => { stamm++; return true; })
+            .Add(x => x.Speichern, () => { gespeichert++; return true; })
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        cut.FindAll(".epos-dialog > .epos-leiste")[^1].QuerySelectorAll("button")[2].Click();
+
+        Assert.Equal(1, stamm);
+        Assert.Equal(1, gespeichert);
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// <b>DL-2 (Nr. 7, DL-Q5):</b> Abbrechen schreibt weder Karte noch Stammwerte.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_schreibt_auch_die_Stammwerte_nicht()
+    {
+        int stamm = 0, gespeichert = 0;
+        bool? ergebnis = null;
+        var cut = Zeige(p => p
+            .Add(x => x.StammSchreiben, (string n, int? g) => { stamm++; return true; })
+            .Add(x => x.Speichern, () => { gespeichert++; return true; })
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        cut.FindAll(".epos-dialog > .epos-leiste")[^1].QuerySelectorAll("button")[1].Click();
+
+        Assert.Equal(0, stamm);
+        Assert.Equal(0, gespeichert);
+        Assert.False(ergebnis);
+    }
+
+    /// <summary>
+    /// <b>DL-2 (Nr. 7, DL-Q5):</b> Im Projektkontext gibt es keinen Stammkopf — der
+    /// Speichern-Weg fasst die Stammwerte dort auch nicht an.
+    /// </summary>
+    [Fact]
+    public void Im_Projektkontext_bleiben_die_Stammwerte_unberuehrt()
+    {
+        int stamm = 0, gespeichert = 0;
+        var cut = Zeige(p => p
+            .Add(x => x.StammSchreiben, (string n, int? g) => { stamm++; return true; })
+            .Add(x => x.Speichern, () => { gespeichert++; return true; }), katalog: false);
+
+        cut.FindAll(".epos-dialog > .epos-leiste")[^1].QuerySelectorAll("button")[0].Click();
+
+        Assert.Equal(0, stamm);
+        Assert.Equal(1, gespeichert);
     }
 
     [Fact]
@@ -657,10 +734,52 @@ public class EnergietraegerDialogTests : EposBunitContext
             .Add(x => x.Speichern, () => { gespeichert++; return true; })
             .Add(x => x.VorlageGespeichert, " — gespeichert {0} Uhr"));
 
-        cut.FindAll(".epos-dialog > .epos-leiste")[^1].QuerySelectorAll("button")[1].Click();
+        // DL-2 (Nr. 7): Der Fuß läuft Speichern · Abbrechen · OK.
+        cut.FindAll(".epos-dialog > .epos-leiste")[^1].QuerySelectorAll("button")[0].Click();
 
         Assert.Equal(1, gespeichert);
         Assert.Contains("gespeichert", cut.Find(".epos-kontextzeile").TextContent);
+    }
+
+    /// <summary>
+    /// <b>DL-2 (Nr. 7, Schritt 9):</b> Der Fuß ist eine <c>SpeichernLeiste</c> —
+    /// Status (zugleich Füller) · Speichern · Abbrechen · OK, und OK ist der
+    /// einzige primäre Knopf und der letzte.
+    /// </summary>
+    [Fact]
+    public void Der_Fuss_laeuft_Speichern_Abbrechen_OK()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.SpeichernText, "Speichern")
+            .Add(x => x.AbbrechenText, "Abbrechen")
+            .Add(x => x.OkText, "OK"));
+
+        var fuss = cut.FindAll(".epos-dialog > .epos-leiste")[^1];
+        var knoepfe = fuss.QuerySelectorAll("button");
+
+        Assert.Equal(new[] { "Speichern", "Abbrechen", "OK" },
+                     knoepfe.Select(b => b.TextContent.Trim()).ToArray());
+        Assert.NotNull(fuss.QuerySelector(".epos-status"));
+        Assert.Single(fuss.QuerySelectorAll(".epos-knopf--primaer"));
+        Assert.Contains("epos-knopf--primaer", knoepfe[^1].ClassName);
+    }
+
+    /// <summary>
+    /// <b>DL-2 (Entscheid DL-Q3 a):</b> Die Aktionen der Listenspalte schreiben
+    /// sofort; der Kurztext des Abbrechen-Knopfes sagt das.
+    /// </summary>
+    [Fact]
+    public void Der_Abbrechen_Knopf_traegt_den_Kurztext_zum_Arbeitsstand()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.AbbrechenText, "Abbrechen")
+            .Add(x => x.AbbrechenKurztext,
+                 "Verwirft nur die ungespeicherten Eingaben; angelegte Träger bleiben."));
+
+        var abbrechen = cut.FindAll(".epos-dialog > .epos-leiste")[^1]
+                           .QuerySelectorAll("button")[1];
+
+        Assert.Contains("angelegte Träger bleiben", abbrechen.GetAttribute("title"));
     }
 
     [Fact]
@@ -687,7 +806,8 @@ public class EnergietraegerDialogTests : EposBunitContext
             .Add(x => x.Speichern, () => { gespeichert++; return true; })
             .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
 
-        cut.FindAll(".epos-dialog > .epos-leiste")[^1].QuerySelectorAll("button")[0].Click();
+        // DL-2 (Nr. 7): Abbrechen steht unmittelbar vor OK.
+        cut.FindAll(".epos-dialog > .epos-leiste")[^1].QuerySelectorAll("button")[1].Click();
 
         Assert.Equal(0, gespeichert);
         Assert.False(ergebnis);
@@ -1488,9 +1608,11 @@ public class EnergietraegerDialogTests : EposBunitContext
                 int i = _stand.FindIndex(e => e.Traeger == 11);
                 _stand[i] = _stand[i] with { Text = "Erdgas H neu" };
                 return true;
-            }));
+            })
+            .Add(x => x.Speichern, () => true));
 
-        cut.Find(".epos-traeger-inhalt .epos-leiste button").Click();
+        // DL-2 (Nr. 7, DL-Q5): geschrieben wird über „Speichern" im Fuß.
+        cut.FindAll(".epos-dialog > .epos-leiste")[^1].QuerySelectorAll("button")[0].Click();
 
         Assert.Contains("Erdgas H neu", Listenmarkup(cut));
         // Die Markierung bleibt beim Träger — umbenannt ist nicht entfernt.
