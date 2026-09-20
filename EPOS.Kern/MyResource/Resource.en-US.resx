@@ -20645,4 +20645,55 @@ Do you want to allow this?</value>
   <data name="KI_DLG_PSPV_ENTLADEPRIO_ERL" xml:space="preserve">
     <value>Order in which the tanks of the project are discharged (1 = first); 0 means “automatic”.</value>
   </data>
+  <data name="KI_DLG_MASKE_QERD" xml:space="preserve">
+    <value>Ground heat source</value>
+  </data>
+  <data name="KI_DLG_MASKE_QPUF" xml:space="preserve">
+    <value>Buffer tank as heat source</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDE_ERL" xml:space="preserve">
+    <value>The source system: on = borehole probe (length per probe and count apply), off = horizontal collector (laying depth and area apply). The choice only locks; the other branch keeps its values.</value>
+  </data>
+  <data name="KI_DLG_QERD_TIEFE_ERL" xml:space="preserve">
+    <value>Laying depth of the horizontal collector in metres; it governs damping and phase shift of the source temperature.</value>
+  </data>
+  <data name="KI_DLG_QERD_FLAECHE_ERL" xml:space="preserve">
+    <value>Area occupied by the horizontal collector in square metres; it enters the design check to VDI 4640 part 2.</value>
+  </data>
+  <data name="KI_DLG_QERD_LAENGE_ERL" xml:space="preserve">
+    <value>Length of EACH borehole probe in metres — not the total of all probes.</value>
+  </data>
+  <data name="KI_DLG_QERD_ANZAHL_ERL" xml:space="preserve">
+    <value>Number of borehole probes; at least 1.</value>
+  </data>
+  <data name="KI_DLG_QERD_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Usable temperature spread of the source in kelvin; it must be greater than 0.</value>
+  </data>
+  <data name="KI_DLG_QERD_KLIMAZONE_ERL" xml:space="preserve">
+    <value>Climate zone of the site, 1 to 15; 0 means “not assigned”. It supplies the ground temperatures as long as no climate data of the project are available.</value>
+  </data>
+  <data name="KI_DLG_QPUF_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Heat pump only: temperature in °C at which the source reaches the evaporator.</value>
+  </data>
+  <data name="KI_DLG_QPUF_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Heat pump only: usable temperature spread of the source in kelvin; it must be greater than 0.</value>
+  </data>
+  <data name="KI_DLG_QPUF_REGENERATION_ERL" xml:space="preserve">
+    <value>Heat pump only: power in kW with which the source recharges itself.</value>
+  </data>
+  <data name="KI_DLG_QPUF_UNBEGRENZT_ERL" xml:space="preserve">
+    <value>Heat pump only: the source counts as unlimited; the tank content then does not limit the withdrawal.</value>
+  </data>
+  <data name="KI_DLG_QPUF_FEST_ERL" xml:space="preserve">
+    <value>Boiler only: on = flow and return are fixed values, off = they are derived from the plant.</value>
+  </data>
+  <data name="KI_DLG_QPUF_VORLAUF_ERL" xml:space="preserve">
+    <value>Boiler only, with fixed values: the flow temperature in °C; it must be above the return.</value>
+  </data>
+  <data name="KI_DLG_QPUF_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Boiler only, with fixed values: the return temperature in °C; it must be below the flow.</value>
+  </data>
+  <data name="KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL" xml:space="preserve">
+    <value>Height of the source withdrawal in the tank, 0 = bottom to 1 = top; empty means “top”.</value>
+  </data>
 </root>

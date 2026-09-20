@@ -241,7 +241,155 @@ namespace WindowsFormsApplication1
                 StromspeicherProjekt(),
                 SolarkollektorenProjekt(),
                 WaermepumpeAnlage(),
-                PufferspeicherVerwaltung());
+                PufferspeicherVerwaltung(),
+                QuelleErdreich(),
+                QuellePufferspeicher());
+        }
+
+        // =====================================================================
+        // Form_QuelleErdreich  ->  QuelleErdreichDialog   (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Waermequelle ERDREICH einer Sole-/Wasser-Waermepumpe — sieben Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.QuelleErdreichKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>ZWEI Quellsysteme, ein Feldsatz.</b> Der Erdkollektor fuehrt Verlegetiefe
+        /// und Flaeche, die Erdsonde Laenge je Sonde und Anzahl; die Wahl zwischen
+        /// beiden ist ein Wahrheitswert (<c>Erdsonde</c>). Sie SPERRT nur — der andere
+        /// Zweig behaelt seine Werte, und deshalb stehen alle vier Zahlen im Katalog
+        /// und nicht nur die des gewaehlten Zweigs.
+        /// </para>
+        /// <para>
+        /// <b>Der BODENTYP bleibt draussen.</b> Die Maske fuehrt ihn als Platz in einer
+        /// Katalogliste; was gespeichert wird, ist ein Katalogschluessel, den nur die
+        /// Maske kennt — dieselbe Regel wie bei der Brennstoffvariante. Die KLIMAZONE
+        /// steht dagegen im Katalog: Sie ist die Zonennummer selbst (1…15, 0 = nicht
+        /// zugeordnet) und kein Listenplatz.
+        /// </para>
+        /// <para>
+        /// <b>„Simulation starten" ist kein Knopf dieser Liste.</b> Er rechnet lange,
+        /// meldet Fortschritt und laesst sich abbrechen; solche Wege gehoeren in das
+        /// Aktionsregister (Stufe 2), nicht in die Positivliste einer Maske. Der
+        /// Kartenknopf „…" traegt nur ein Zeichen und keine Beschriftung.
+        /// </para>
+        /// </remarks>
+        private static KiDialog QuelleErdreich()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.QUELLE_ERDREICH,
+                anzeigename: KiDialogTexte.MaskeQuelleErdreich,
+                felder: new[]
+                {
+                    new KiDialogFeld("erdsonde", "QuelleErdreichKiSicht.Erdsonde",
+                                     KiDialogTexte.QerdSondeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.QerdSondeErl),
+                    new KiDialogFeld("verlegetiefe", "QuelleErdreichKiSicht.Verlegetiefe",
+                                     KiDialogTexte.QerdTiefeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdTiefeErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("flaeche", "QuelleErdreichKiSicht.Flaeche",
+                                     KiDialogTexte.QerdFlaecheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdFlaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2, leerErlaubt: true),
+                    new KiDialogFeld("laenge_sonde", "QuelleErdreichKiSicht.LaengeSonde",
+                                     KiDialogTexte.QerdLaengeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdLaengeErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("anzahl_sonden", "QuelleErdreichKiSicht.AnzahlSonden",
+                                     KiDialogTexte.QerdAnzahlName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.QerdAnzahlErl, leerErlaubt: true),
+                    new KiDialogFeld("spreizung", "QuelleErdreichKiSicht.Spreizung",
+                                     KiDialogTexte.QerdSpreizungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdSpreizungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
+                    new KiDialogFeld("klimazone", "QuelleErdreichKiSicht.Klimazone",
+                                     KiDialogTexte.QerdKlimazoneName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.QerdKlimazoneErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_QuellePufferspeicher  ->  QuellePufferspeicherDialog  (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Waermequelle PUFFERSPEICHER — acht Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.QuellePufferspeicherKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>ZWEI Erzeugerarten in einer Maske.</b> Die Waermepumpe zieht
+        /// Verdampferwaerme aus dem Speicher und pflegt dazu Quelltemperatur,
+        /// Spreizung, Regeneration und „Quelle unbegrenzt"; der Heizkessel nimmt seine
+        /// Eintrittstemperatur aus dem Puffer und pflegt dafuer den Temperaturbezug
+        /// samt festem Vorlauf und Ruecklauf. Die Entnahmehoehe gilt beiden. Welche
+        /// Felder sichtbar sind, entscheidet die Erzeugerart; die jeweils andere Seite
+        /// bleibt unangetastet.
+        /// </para>
+        /// <para>
+        /// <b>Der gewaehlte PUFFER bleibt draussen.</b> Er ist ein Verweis in die
+        /// Projektliste (rohe <c>WQ_ID_Puffer</c>) — dieselbe Regel wie bei der
+        /// Brennstoffvariante und beim Bodentyp der Erdreichquelle.
+        /// </para>
+        /// <para>
+        /// <b>„Pufferspeicher anlegen…" ist kein Knopf dieser Liste.</b> Er oeffnet
+        /// eine zweite Maske als Ueberlagerung, setzt aber keinen Wert; die
+        /// Positivliste dieser Welle fuehrt nur OK und Abbrechen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog QuellePufferspeicher()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.QUELLE_PUFFERSPEICHER,
+                anzeigename: KiDialogTexte.MaskeQuellePuffer,
+                felder: new[]
+                {
+                    new KiDialogFeld("quelltemperatur",
+                                     "QuellePufferspeicherKiSicht.Quelltemperatur",
+                                     KiDialogTexte.QpufTemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QpufTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("spreizung", "QuellePufferspeicherKiSicht.Spreizung",
+                                     KiDialogTexte.QpufSpreizungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QpufSpreizungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
+                    new KiDialogFeld("regeneration", "QuellePufferspeicherKiSicht.Regeneration",
+                                     KiDialogTexte.QpufRegenerationName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QpufRegenerationErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("unbegrenzt", "QuellePufferspeicherKiSicht.Unbegrenzt",
+                                     KiDialogTexte.QpufUnbegrenztName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.QpufUnbegrenztErl),
+                    new KiDialogFeld("temperatur_fest",
+                                     "QuellePufferspeicherKiSicht.TemperaturFest",
+                                     KiDialogTexte.QpufFestName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.QpufFestErl),
+                    new KiDialogFeld("vorlauf", "QuellePufferspeicherKiSicht.Vorlauf",
+                                     KiDialogTexte.QpufVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.QpufVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "QuellePufferspeicherKiSicht.Ruecklauf",
+                                     KiDialogTexte.QpufRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.QpufRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("anschlusshoehe",
+                                     "QuellePufferspeicherKiSicht.Anschlusshoehe",
+                                     KiDialogTexte.QpufAnschlusshoeheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QpufAnschlusshoeheErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================

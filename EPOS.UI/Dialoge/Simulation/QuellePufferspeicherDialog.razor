@@ -39,6 +39,8 @@
    ist NICHT belegt: Fuenf Pruefregeln haengen an OK. *@
 
 @namespace EPOS.UI.Dialoge.Simulation
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -408,7 +410,76 @@
         _fest = string.Equals(Daten.TemperaturModus, SteuerwertFest, StringComparison.Ordinal);
 
         VorauswahlSetzen();
+
+        // Welle KI-F2: die Maske beim Hilfe-Assistenten anmelden. Angemeldet wird ein
+        // SICHTMODELL ueber die LEBENDEN Felder - Daten ist ein unveraenderlicher
+        // Record, und der OK-Weg erzeugt ueber "with" einen neuen.
+        _kiSicht = KiSicht();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.QUELLE_PUFFERSPEICHER,
+                                          () => _kiSicht, KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt die Eingabefelder (Welle KI-F2)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Sichtmodell über die Eingabefelder; es fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private QuellePufferspeicherKiSicht? _kiSicht;
+
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Die acht Wege auf die Felder der Maske.
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Temperaturbezug nimmt den Weg des Optionsfeldes</b>
+    /// (<c>TemperaturbezugUmschalten</c>) — mit ihm kommt der Vorschlag 70/50 °C für
+    /// ein leeres Paar, genau wie beim Umschalten von Hand.
+    /// </remarks>
+    private QuellePufferspeicherKiSicht KiSicht() => new QuellePufferspeicherKiSicht
+    {
+        QuelltemperaturLesen = () => _temperatur,
+        QuelltemperaturSetzen = w => _temperatur = w,
+        SpreizungLesen = () => _spreizung,
+        SpreizungSetzen = w => _spreizung = w,
+        RegenerationLesen = () => _regeneration,
+        RegenerationSetzen = w => _regeneration = w,
+        UnbegrenztLesen = () => _unbegrenzt,
+        UnbegrenztSetzen = w => _unbegrenzt = w,
+        TemperaturFestLesen = () => _fest,
+        TemperaturFestSetzen = w => TemperaturbezugUmschalten(w ? FEST : BERECHNET),
+        VorlaufLesen = () => _tbVorlauf,
+        VorlaufSetzen = w => _tbVorlauf = w,
+        RuecklaufLesen = () => _tbRuecklauf,
+        RuecklaufSetzen = w => _tbRuecklauf = w,
+        AnschlusshoeheLesen = () => _anschlusshoehe,
+        AnschlusshoeheSetzen = w => _anschlusshoehe = w
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Kein Speicherweg.</b> Diese Maske schreibt nicht — sie ENTSCHEIDET: OK
+    /// prüft und reicht einen neuen Satz an den Wirt, der schreibt. Der einzige Weg
+    /// dorthin schließt die Maske, und das löst der Assistent nicht im Rücken des
+    /// Anwenders aus; <c>dialog_speichern</c> lehnt hier benannt ab.</para>
+    /// <para><b>Kein Schreibschutz.</b> Die Maske kennt keinen.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

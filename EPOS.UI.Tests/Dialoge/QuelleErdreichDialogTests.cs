@@ -857,4 +857,63 @@ public class QuelleErdreichDialogTests : EposBunitContext
 
         Assert.True(mit.FindComponent<DiagrammSvg>().Instance.FarbwahlErlaubt);
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>QuelleErdreichKiSicht</c> und steht deshalb nicht in der
+    /// Markup-Probe des Dialogkatalogs — dieser Fall ist ihr Ersatz: Die Maske steht
+    /// gezeichnet da, die Brücke liest die Spreizung, die der Anwender sieht, und ein
+    /// Setzen landet im Eingabefeld.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist — die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Spreizung()
+    {
+        Zeige(Kollektor());
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.QUELLE_ERDREICH));
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "spreizung");
+        Assert.NotNull(zugang);
+        Assert.Equal(4.0, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(6.5);
+
+        Assert.Equal(6.5, zugang.Lesen());
+    }
+
+    /// <summary>
+    /// Das Quellsystem ist ein Wahrheitswert, und ein Setzen geht den Weg des
+    /// Optionsfeldes: Danach steht die Maske im Sondenzweig — die Kollektorfelder
+    /// bleiben stehen und behalten ihre Werte (Abweichung A‑4).
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_schaltet_auf_die_Erdsonde_um()
+    {
+        var cut = Zeige(Kollektor());
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "erdsonde");
+
+        Assert.Equal(false, zugang.Lesen());
+
+        zugang.Setzen(true);
+        cut.Render();
+
+        Assert.Equal(true, zugang.Lesen());
+
+        // Die Verlegetiefe des Kollektors steht unveraendert da.
+        WindowsFormsApplication1.KiFeldzugang tiefe =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "verlegetiefe");
+        Assert.Equal(1.8, tiefe.Lesen());
+    }
 }

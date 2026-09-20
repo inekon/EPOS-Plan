@@ -20652,4 +20652,55 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_PSPV_ENTLADEPRIO_ERL" xml:space="preserve">
     <value>Reihenfolge, in der die Speicher des Projekts entladen werden (1 = zuerst); 0 heißt „automatisch".</value>
   </data>
+  <data name="KI_DLG_MASKE_QERD" xml:space="preserve">
+    <value>Wärmequelle Erdreich</value>
+  </data>
+  <data name="KI_DLG_MASKE_QPUF" xml:space="preserve">
+    <value>Wärmequelle Pufferspeicher</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDE_ERL" xml:space="preserve">
+    <value>Das Quellsystem: an = Erdsonde (Länge je Sonde und Anzahl gelten), aus = Erdkollektor (Verlegetiefe und Fläche gelten). Die Wahl sperrt nur; der andere Zweig behält seine Werte.</value>
+  </data>
+  <data name="KI_DLG_QERD_TIEFE_ERL" xml:space="preserve">
+    <value>Verlegetiefe des Erdkollektors in Metern; sie bestimmt Dämpfung und Phasenverschiebung der Quelltemperatur.</value>
+  </data>
+  <data name="KI_DLG_QERD_FLAECHE_ERL" xml:space="preserve">
+    <value>Belegte Fläche des Erdkollektors in Quadratmetern; sie geht in die Auslegungsprüfung nach VDI 4640 Blatt 2 ein.</value>
+  </data>
+  <data name="KI_DLG_QERD_LAENGE_ERL" xml:space="preserve">
+    <value>Länge JE Erdsonde in Metern — nicht die Summe aller Sonden.</value>
+  </data>
+  <data name="KI_DLG_QERD_ANZAHL_ERL" xml:space="preserve">
+    <value>Zahl der Erdsonden; mindestens 1.</value>
+  </data>
+  <data name="KI_DLG_QERD_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Nutzbare Spreizung der Quelle in Kelvin; sie muss größer als 0 sein.</value>
+  </data>
+  <data name="KI_DLG_QERD_KLIMAZONE_ERL" xml:space="preserve">
+    <value>Klimazone des Standorts, 1 bis 15; 0 heißt „nicht zugeordnet". Sie liefert die Bodentemperaturen, solange keine Klimadaten des Projekts vorliegen.</value>
+  </data>
+  <data name="KI_DLG_QPUF_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Nur Wärmepumpe: Temperatur in °C, mit der die Quelle am Verdampfer ankommt.</value>
+  </data>
+  <data name="KI_DLG_QPUF_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Nur Wärmepumpe: nutzbare Spreizung der Quelle in Kelvin; sie muss größer als 0 sein.</value>
+  </data>
+  <data name="KI_DLG_QPUF_REGENERATION_ERL" xml:space="preserve">
+    <value>Nur Wärmepumpe: Leistung in kW, mit der die Quelle sich nachlädt.</value>
+  </data>
+  <data name="KI_DLG_QPUF_UNBEGRENZT_ERL" xml:space="preserve">
+    <value>Nur Wärmepumpe: Die Quelle gilt als unbegrenzt verfügbar; der Speicherinhalt begrenzt die Entnahme dann nicht.</value>
+  </data>
+  <data name="KI_DLG_QPUF_FEST_ERL" xml:space="preserve">
+    <value>Nur Heizkessel: an = Vorlauf und Rücklauf sind fest vorgegeben, aus = sie werden aus der Anlage berechnet.</value>
+  </data>
+  <data name="KI_DLG_QPUF_VORLAUF_ERL" xml:space="preserve">
+    <value>Nur Heizkessel bei fester Vorgabe: der Vorlauf in °C; er muss über dem Rücklauf liegen.</value>
+  </data>
+  <data name="KI_DLG_QPUF_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Nur Heizkessel bei fester Vorgabe: der Rücklauf in °C; er muss unter dem Vorlauf liegen.</value>
+  </data>
+  <data name="KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL" xml:space="preserve">
+    <value>Höhe der Quell-Entnahme im Speicher, 0 = ganz unten bis 1 = ganz oben; leer heißt „oben".</value>
+  </data>
 </root>

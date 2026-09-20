@@ -84,7 +84,11 @@ public class KiDialogkatalogTests
         // Welle KI-F2: die Masken der SIMULATIONSKONFIGURATION. Sie melden je eine
         // SICHTKLASSE an - siehe OhneMarkupprobe.
         { KiMaskennamen.PUFFERSPEICHER_VERWALTUNG,
-          typeof(EPOS.UI.Dialoge.Simulation.PufferSpProjektKiSicht) }
+          typeof(EPOS.UI.Dialoge.Simulation.PufferSpProjektKiSicht) },
+        { KiMaskennamen.QUELLE_ERDREICH,
+          typeof(EPOS.UI.Dialoge.Simulation.QuelleErdreichKiSicht) },
+        { KiMaskennamen.QUELLE_PUFFERSPEICHER,
+          typeof(EPOS.UI.Dialoge.Simulation.QuellePufferspeicherKiSicht) }
     };
 
     // =====================================================================
@@ -131,11 +135,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_vierzehn_Masken()
+    public void Der_Katalog_fuehrt_sechzehn_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(14, katalog.Anzahl);
+        Assert.Equal(16, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -182,8 +186,11 @@ public class KiDialogkatalogTests
     {
         // Voll ausgeschrieben: Die Testklasse fuehrt selbst eine Masken()-Methode,
         // und die verdeckt den Typnamen.
-        Assert.Equal(WindowsFormsApplication1.Masken.Simulation,
-                     KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER_VERWALTUNG));
+        string ziel = WindowsFormsApplication1.Masken.Simulation;
+
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER_VERWALTUNG));
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.QUELLE_ERDREICH));
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.QUELLE_PUFFERSPEICHER));
     }
 
     [Fact]
@@ -396,7 +403,13 @@ public class KiDialogkatalogTests
             "bindet über die Sichtklasse SimulationKiSicht, nicht über das Markup",
         [KiMaskennamen.PUFFERSPEICHER_VERWALTUNG] =
             "bindet über die Sichtklasse PufferSpProjektKiSicht auf die Eingabefelder " +
-            "der Maske; Zeuge ist PufferSpProjektDialogTests"
+            "der Maske; Zeuge ist PufferSpProjektDialogTests",
+        [KiMaskennamen.QUELLE_ERDREICH] =
+            "bindet über die Sichtklasse QuelleErdreichKiSicht auf die Eingabefelder " +
+            "der Maske; Zeuge ist QuelleErdreichDialogTests",
+        [KiMaskennamen.QUELLE_PUFFERSPEICHER] =
+            "bindet über die Sichtklasse QuellePufferspeicherKiSicht auf die " +
+            "Eingabefelder der Maske; Zeuge ist QuellePufferspeicherDialogTests"
     };
 
     /// <summary>

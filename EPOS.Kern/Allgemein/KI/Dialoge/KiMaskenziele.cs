@@ -150,7 +150,9 @@ namespace WindowsFormsApplication1
                 // bei den Katalogeditoren und den Erzeugermasken. Masken.Simulation
                 // kennt die Windows-Navigationstabelle, und dieselbe Zeichenkette ist
                 // der Seitenschluessel der AppWurzel (SIM-Q3, #207).
-                { KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, Masken.Simulation }
+                { KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, Masken.Simulation },
+                { KiMaskennamen.QUELLE_ERDREICH,           Masken.Simulation },
+                { KiMaskennamen.QUELLE_PUFFERSPEICHER,     Masken.Simulation }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

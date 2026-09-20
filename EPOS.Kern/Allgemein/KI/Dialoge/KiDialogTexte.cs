@@ -566,6 +566,46 @@
         internal static string PspvEntladeprioName => MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET;
         internal static string PspvEntladeprioErl => MyResource.Resource.KI_DLG_PSPV_ENTLADEPRIO_ERL;
 
+        // ================= Waermequelle Erdreich und Pufferspeicher (Welle KI-F2)
+
+        /// <summary>Die neunte Maske (Welle KI-F2): die Waermequelle Erdreich.</summary>
+        internal static string MaskeQuelleErdreich => MyResource.Resource.KI_DLG_MASKE_QERD;
+
+        /// <summary>Die zehnte Maske (Welle KI-F2): die Waermequelle Pufferspeicher.</summary>
+        internal static string MaskeQuellePuffer => MyResource.Resource.KI_DLG_MASKE_QPUF;
+
+        internal static string QerdSondeName => MyResource.Resource.SIMQ_ERDREICH_RB_SONDE_WAHL;
+        internal static string QerdSondeErl => MyResource.Resource.KI_DLG_QERD_SONDE_ERL;
+        internal static string QerdTiefeName => MyResource.Resource.SIMQ_ERDREICH_VERLEGETIEFE;
+        internal static string QerdTiefeErl => MyResource.Resource.KI_DLG_QERD_TIEFE_ERL;
+        internal static string QerdFlaecheName => MyResource.Resource.SIMQ_ERDREICH_FLAECHE;
+        internal static string QerdFlaecheErl => MyResource.Resource.KI_DLG_QERD_FLAECHE_ERL;
+        internal static string QerdLaengeName => MyResource.Resource.SIMQ_ERDREICH_LAENGE_SONDE;
+        internal static string QerdLaengeErl => MyResource.Resource.KI_DLG_QERD_LAENGE_ERL;
+        internal static string QerdAnzahlName => MyResource.Resource.SIMQ_ERDREICH_ANZAHL_SONDEN;
+        internal static string QerdAnzahlErl => MyResource.Resource.KI_DLG_QERD_ANZAHL_ERL;
+        internal static string QerdSpreizungName => MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG;
+        internal static string QerdSpreizungErl => MyResource.Resource.KI_DLG_QERD_SPREIZUNG_ERL;
+        internal static string QerdKlimazoneName => MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE;
+        internal static string QerdKlimazoneErl => MyResource.Resource.KI_DLG_QERD_KLIMAZONE_ERL;
+
+        internal static string QpufTemperaturName => MyResource.Resource.SIMQ_PUFFER_QUELLTEMPERATUR;
+        internal static string QpufTemperaturErl => MyResource.Resource.KI_DLG_QPUF_TEMPERATUR_ERL;
+        internal static string QpufSpreizungName => MyResource.Resource.SIMQ_PUFFER_SPREIZUNG;
+        internal static string QpufSpreizungErl => MyResource.Resource.KI_DLG_QPUF_SPREIZUNG_ERL;
+        internal static string QpufRegenerationName => MyResource.Resource.SIMQ_PUFFER_REGENERATION;
+        internal static string QpufRegenerationErl => MyResource.Resource.KI_DLG_QPUF_REGENERATION_ERL;
+        internal static string QpufUnbegrenztName => MyResource.Resource.SIMQ_PUFFER_CB_UNBEGRENZT;
+        internal static string QpufUnbegrenztErl => MyResource.Resource.KI_DLG_QPUF_UNBEGRENZT_ERL;
+        internal static string QpufFestName => MyResource.Resource.SIMQ_PUFFER_TB_FEST;
+        internal static string QpufFestErl => MyResource.Resource.KI_DLG_QPUF_FEST_ERL;
+        internal static string QpufVorlaufName => MyResource.Resource.SIMQ_PUFFER_TB_VORLAUF;
+        internal static string QpufVorlaufErl => MyResource.Resource.KI_DLG_QPUF_VORLAUF_ERL;
+        internal static string QpufRuecklaufName => MyResource.Resource.SIMQ_PUFFER_TB_RUECKLAUF;
+        internal static string QpufRuecklaufErl => MyResource.Resource.KI_DLG_QPUF_RUECKLAUF_ERL;
+        internal static string QpufAnschlusshoeheName => MyResource.Resource.SIMQ_PUFFER_ANSCHLUSSHOEHE;
+        internal static string QpufAnschlusshoeheErl => MyResource.Resource.KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL;
+
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;
     }

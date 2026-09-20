@@ -25613,6 +25613,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle Erdreich ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_QERD {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_QERD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle Pufferspeicher ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_QPUF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_QPUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_SIM {
@@ -26050,6 +26068,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PV_WR_WIRKUNGSGRAD_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PV_WR_WIRKUNGSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Erdsonden; mindestens 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_ANZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_ANZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Belegte Fläche des Erdkollektors in Quadratmetern; sie geht in die Auslegungsprüfung nach VDI 4640 Blatt 2 ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_FLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_FLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimazone des Standorts, 1 bis 15; 0 heißt „nicht zugeordnet&quot;. Sie liefert die Bodentemperaturen, solange keine Klimadaten des Projekts vorliegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_KLIMAZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_KLIMAZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Länge JE Erdsonde in Metern — nicht die Summe aller Sonden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_LAENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_LAENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Quellsystem: an = Erdsonde (Länge je Sonde und Anzahl gelten), aus = Erdkollektor (Verlegetiefe und Fläche gelten). Die Wahl sperrt nur; der andere Zweig behält seine Werte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_SONDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_SONDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzbare Spreizung der Quelle in Kelvin; sie muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_SPREIZUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_SPREIZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlegetiefe des Erdkollektors in Metern; sie bestimmt Dämpfung und Phasenverschiebung der Quelltemperatur. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_TIEFE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_TIEFE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe der Quell-Entnahme im Speicher, 0 = ganz unten bis 1 = ganz oben; leer heißt „oben&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Heizkessel: an = Vorlauf und Rücklauf sind fest vorgegeben, aus = sie werden aus der Anlage berechnet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_FEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_FEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Wärmepumpe: Leistung in kW, mit der die Quelle sich nachlädt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_REGENERATION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_REGENERATION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Heizkessel bei fester Vorgabe: der Rücklauf in °C; er muss unter dem Vorlauf liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Wärmepumpe: nutzbare Spreizung der Quelle in Kelvin; sie muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_SPREIZUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_SPREIZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Wärmepumpe: Temperatur in °C, mit der die Quelle am Verdampfer ankommt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Wärmepumpe: Die Quelle gilt als unbegrenzt verfügbar; der Speicherinhalt begrenzt die Entnahme dann nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_UNBEGRENZT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_UNBEGRENZT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Heizkessel bei fester Vorgabe: der Vorlauf in °C; er muss über dem Rücklauf liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_VORLAUF_ERL", resourceCulture);
             }
         }
         
