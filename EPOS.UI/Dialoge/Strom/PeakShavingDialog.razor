@@ -169,8 +169,12 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* DL-2, Schritt 6 (Entscheid DL-Q2 a): "Berechnen" BLEIBT im Blatt, zwischen
+       Parametern und Ergebnis - der Lesefluss Parameter -> Rechnen -> Ergebnis
+       bleibt stehen. Die Primaerfarbe traegt er nicht mehr: Sie gehoert dem
+       Schlussknopf der einen Fussleiste (Hausregel, Konzept Abschnitt 1). *@
     <div class="epos-leiste epos-peakshaving-rechnen">
-        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+        <button type="button" class="epos-knopf" disabled="@_laeuft"
                 @onclick="BeiRechnen">@RechnenText</button>
     </div>
 
@@ -263,7 +267,8 @@
                     @onclick="BeiVarianteUebernehmen">@VarianteText</button>
         }
         <span class="epos-leiste-fueller"></span>
-        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiSchliessen">@BeendenText</button>
     </div>
 
     <Rueckfrage Offen="@_varianteFrageOffen" TitelText="@VarianteText" Frage="@_varianteFrage"
@@ -399,7 +404,12 @@
     [Parameter] public string MinimalText { get; set; } = Resource.PEAK_BTN_MINIMAL;
     [Parameter] public string RechnenText { get; set; } = Resource.PEAK_BTN_RECHNEN;
     [Parameter] public string CsvText { get; set; } = Resource.PEAK_BTN_CSV;
-    [Parameter] public string SchliessenText { get; set; } = Resource.PEAK_BTN_SCHLIESSEN;
+    /// <summary>
+    /// Beschriftung des Schlussknopfes — <c>PEAK_BTN_BEENDEN</c>. Die Maske
+    /// rechnet und schreibt nichts von selbst; sie wird BEENDET, nicht bestätigt
+    /// (DL-2, Schritt 6).
+    /// </summary>
+    [Parameter] public string BeendenText { get; set; } = Resource.PEAK_BTN_BEENDEN;
 
     [Parameter] public string ReiterKennzahlen { get; set; } = Resource.PEAK_TAB_KENNZAHLEN;
     [Parameter] public string ReiterChart { get; set; } = Resource.PEAK_TAB_CHART;

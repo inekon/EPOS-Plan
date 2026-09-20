@@ -4872,9 +4872,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="PEAK_BTN_CSV" xml:space="preserve">
     <value>CSV-Export</value>
   </data>
-  <data name="PEAK_BTN_SCHLIESSEN" xml:space="preserve">
-    <value>Schließen</value>
-  </data>
   <data name="PEAK_TAB_KENNZAHLEN" xml:space="preserve">
     <value>Kennzahlen</value>
   </data>
@@ -20225,5 +20222,17 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="IMP_KAT_BTN_BEENDEN" xml:space="preserve">
     <value>Beenden</value>
+  </data>
+  <data name="PEAK_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="GEB_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="KDLG_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Verwirft nur die ungespeicherten Eingaben; angelegte Positionen bleiben.</value>
+  </data>
+  <data name="KDLG_ET_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Verwirft nur die ungespeicherten Eingaben; angelegte Träger bleiben.</value>
   </data>
 </root>

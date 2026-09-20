@@ -335,12 +335,15 @@
         </KindInhalt>
     </Reiter>
 
-    <div class="epos-leiste">
-        <span class="epos-status">@_status</span>
-        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiSpeichern">@SpeichernText</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="BeiOk">@OkText</button>
-    </div>
+    @* DL-2 (Nr. 6): die eine Fussleiste des Hauses - Status (zugleich Fueller) ·
+       Speichern · Abbrechen · OK. Die Reiterleiste im Reiter „Kosten" bleibt, wo
+       sie ist: Sie traegt keinen primaeren und keinen schliessenden Knopf und ist
+       damit eine Blattleiste, keine zweite Fussleiste. *@
+    <SpeichernLeiste @ref="_leiste" MitSpeichern="true"
+                     SatzMarkiert="true" Geaendert="true"
+                     SpeichernText="@SpeichernText" Gespeichertwerden="BeiSpeichern"
+                     AbbrechenText="@AbbrechenText" AbbrechenKurztext="@AbbrechenKurztext"
+                     OkText="@OkText" Ergebnis="BeiErgebnis" />
 
     @* ------------------------------------------------------ Unterdialoge *@
     @* Das Kreuz steht beim Titel: Jede dieser sechs Ueberlagerungen traegt ihren
@@ -618,6 +621,16 @@
         = "Satz und Betrag netto sind verknüpft und werden bei Eingabe umgerechnet.";
     [Parameter] public string SpeichernText { get; set; } = "Speichern";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>
+    /// DL-2 (Entscheid DL-Q3 a): Die Zeilenaktionen des Reiters „Kosten"
+    /// (Position anlegen, Übernahme, Katalog) schreiben sofort, weil sie Ids
+    /// brauchen. Der Kurztext des Abbrechen-Knopfes sagt das, damit „Abbrechen"
+    /// keine Behauptung ist, die nicht stimmt.
+    /// </summary>
+    [Parameter] public string AbbrechenKurztext { get; set; }
+        = "Verwirft nur die ungespeicherten Eingaben; angelegte Positionen bleiben.";
+
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
@@ -686,6 +699,9 @@
     private bool _bannerOffen = true;
     private string _neuerName = "";
     private string _status = "";
+
+    /// <summary>Die Fussleiste - sie zeigt den Statustext (DL-2, Nr. 6).</summary>
+    private SpeichernLeiste? _leiste;
     /// <summary>Der sichtbare Reiter (Schluessel, kein Anzeigetext).</summary>
     private string _reiter = "KOSTEN";
 
@@ -796,7 +812,7 @@
 
         // Nach dem Schreiben denselben Weg wie der Knopf: neu laden, Statuszeile setzen.
         KontextLaden(_stand.VarianteId);
-        _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
+        StatusSetzen(string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm")));
 
         return Task.FromResult(KiKern.KiErgebnis.Ok(_status, anzahl: 1));
     }
@@ -1014,8 +1030,8 @@
         }
 
         Melden("");
-        _status = ergebnis.Gefuellt > 0
-            ? string.Format(VorbelegenStatus, ergebnis.Gefuellt) : _status;
+        if (ergebnis.Gefuellt > 0)
+            StatusSetzen(string.Format(VorbelegenStatus, ergebnis.Gefuellt));
 
         if (ergebnis.Belegt == 0) return;
 
@@ -1026,8 +1042,8 @@
             {
                 NutzungsdauerVorbelegung zweiter = NutzungsdauerVorbelegen(true);
                 SummenNachziehen();
-                _status = string.Format(VorbelegenStatus,
-                                        ergebnis.Gefuellt + zweiter.Gefuellt);
+                StatusSetzen(string.Format(VorbelegenStatus,
+                                           ergebnis.Gefuellt + zweiter.Gefuellt));
             }
             return Task.CompletedTask;
         };
@@ -1251,11 +1267,27 @@
     {
         if (Speichern is not null && !Speichern()) return;
         KontextLaden(_stand.VarianteId);
-        _status = string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm"));
+        StatusSetzen(string.Format(VorlageGespeichert, DateTime.Now.ToString("HH:mm")));
     }
 
     /// <summary>Ä12: schließen OHNE Datenübernahme.</summary>
     private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+
+    /// <summary>
+    /// DL-2 (Nr. 6): Die <c>SpeichernLeiste</c> meldet OK und Abbrechen über EIN
+    /// Ergebnis; die beiden Wege dahinter sind dieselben wie zuvor.
+    /// </summary>
+    private Task BeiErgebnis(bool ok) => ok ? BeiOk() : BeiAbbrechen();
+
+    /// <summary>
+    /// Der Statustext steht seit DL-2 in der Fußleiste. Das Feld bleibt der
+    /// Wortlaut (Prüfhilfe <see cref="Status"/>), die Leiste zeigt ihn an.
+    /// </summary>
+    private void StatusSetzen(string text)
+    {
+        _status = text;
+        _leiste?.Zeigen(text);
+    }
 
     private void Melden(string text, WarnStufe stufe = WarnStufe.Fehler)
     {

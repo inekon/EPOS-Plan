@@ -109,10 +109,10 @@ abgenommen, alle Schritte sind damit frei.
 | 3 | BedarfAdminDialog (3) | S | — |
 | 4 | **umgesetzt (#384)** — KatalogImportDialog (9) und ModulImportDialog (8) in einem Auftrag: beide Füße laufen Füller · Auswahl übernehmen · Beenden (primär), beide Übernahmeknöpfe tragen denselben Ressourcentext (`PVIMP_BTN_UEBERNEHMEN`; „Speichern DB" ist entfallen), und die Quellenwahl beider Masken ist als Umschalter gezeichnet (`epos-knopf--gewaehlt`, `aria-pressed`) statt als primärer Knopf | S | DL-Q4 |
 | 5 | **umgesetzt (#384)** — EinstellungenDialog (10): eine `SpeichernLeiste` mit „Standardwerte" im Aktionsschlitz, Schlussknopf „OK" | S | Schritt 0, DL-Q6 |
-| 6 | PeakShavingDialog (5) | S | DL-Q2 |
-| 7 | GebaeudeDialog (1), beide Betriebsarten | M | Schritt 0, DL-Q1 |
-| 8 | KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
-| 9 | EnergietraegerDialog (7) | M | DL-Q3, DL-Q5 |
+| 6 | **umgesetzt (#385)** — PeakShavingDialog (5): „Berechnen" bleibt im Blatt ohne Primärfarbe, Fuß CSV-Export · In Variante übernehmen · Füller · **Beenden** (primär, `PEAK_BTN_BEENDEN`); Handler, Esc und ✕ unverändert, Ausnahme in `AUSNAHMEN` gestrichen | S | DL-Q2 |
+| 7 | **umgesetzt (#385)** — GebaeudeDialog (1), beide Betriebsarten: Verwaltung Katalogspalte Neu… · Ändern… · Löschen · Gebäudetyp in DB ändern…, Fuß Füller · **Beenden** (primär, `GEB_BTN_BEENDEN`, meldet `true`); Projekt Fuß Ändern · Simulation… · Gebäudetyp in DB ändern… · Füller · Abbrechen · OK als `SpeichernLeiste` mit `Aktionen`, Detailblock ohne Knöpfe | M | Schritt 0, DL-Q1 |
+| 8 | **umgesetzt (#386)** — KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
+| 9 | **umgesetzt (#386)** — EnergietraegerDialog (7) | M | DL-Q3, DL-Q5 |
 
 **Abnahme je Auftrag:**
 

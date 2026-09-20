@@ -16098,6 +16098,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string GEB_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB ändern... ähnelt.
         /// </summary>
         public static string GEB_BTN_DB_AENDERN {
@@ -21108,6 +21117,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwirft nur die ungespeicherten Eingaben; angelegte Träger bleiben. ähnelt.
+        /// </summary>
+        public static string KDLG_ET_TIP_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_TIP_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgerverwaltung ähnelt.
         /// </summary>
         public static string KDLG_ET_TITEL {
@@ -21951,6 +21969,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_TAB_KOSTEN {
             get {
                 return ResourceManager.GetString("KDLG_TAB_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwirft nur die ungespeicherten Eingaben; angelegte Positionen bleiben. ähnelt.
+        /// </summary>
+        public static string KDLG_TIP_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_TIP_ABBRECHEN", resourceCulture);
             }
         }
         
@@ -35066,6 +35093,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string PEAK_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("PEAK_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Export ähnelt.
         /// </summary>
         public static string PEAK_BTN_CSV {
@@ -35098,15 +35134,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PEAK_BTN_RECHNEN {
             get {
                 return ResourceManager.GetString("PEAK_BTN_RECHNEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
-        /// </summary>
-        public static string PEAK_BTN_SCHLIESSEN {
-            get {
-                return ResourceManager.GetString("PEAK_BTN_SCHLIESSEN", resourceCulture);
             }
         }
         

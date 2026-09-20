@@ -35,7 +35,7 @@
 
     @if (MitAbbrechen)
     {
-        <button type="button" class="epos-knopf"
+        <button type="button" class="epos-knopf" title="@AbbrechenKurztext"
                 @onclick="() => Ergebnis.InvokeAsync(false)">@AbbrechenText</button>
     }
 
@@ -86,6 +86,16 @@
     /// "Speichern".</para>
     /// </summary>
     [Parameter] public bool MitAbbrechen { get; set; } = true;
+
+    /// <summary>
+    /// Kurztext des Abbrechen-Knopfes (DL-2, Entscheid DL-Q3 a).
+    ///
+    /// <para>Ein Dialog, der einen TEIL seiner Arbeit schon geschrieben hat - weil
+    /// eine Zeilenaktion eine Id braucht (Position anlegen, Traeger anlegen) -,
+    /// sagt am Knopf selbst, was Abbrechen wirklich verwirft. Ohne Kurztext
+    /// zeichnet der Knopf kein <c>title</c>-Attribut.</para>
+    /// </summary>
+    [Parameter] public string? AbbrechenKurztext { get; set; }
 
     /// <summary>Ist links ein Datensatz markiert? (Vorbild: Zustand, erster Parameter.)</summary>
     [Parameter] public bool SatzMarkiert { get; set; }
@@ -139,6 +149,16 @@
     public void Leeren()
     {
         Melden("", false);
+    }
+
+    /// <summary>
+    /// Ein eigener Statustext des Wirts - fuer Dialoge, die mehr zu melden haben
+    /// als „gespeichert" und „nicht gespeichert" (etwa „{0} Nutzungsdauern aus der
+    /// AfA-Tabelle vorbelegt"). Der Wirt haelt den Wortlaut, die Leiste zeigt ihn.
+    /// </summary>
+    public void Zeigen(string szText, bool bFehler = false)
+    {
+        Melden(szText, bFehler);
     }
 
     private void Melden(string szText, bool bFehler)

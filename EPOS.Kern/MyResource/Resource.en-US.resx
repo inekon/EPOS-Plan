@@ -4856,9 +4856,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="PEAK_BTN_CSV" xml:space="preserve">
     <value>CSV export</value>
   </data>
-  <data name="PEAK_BTN_SCHLIESSEN" xml:space="preserve">
-    <value>Close</value>
-  </data>
   <data name="PEAK_TAB_KENNZAHLEN" xml:space="preserve">
     <value>Key figures</value>
   </data>
@@ -20218,5 +20215,17 @@ Do you want to allow this?</value>
   </data>
   <data name="IMP_KAT_BTN_BEENDEN" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="PEAK_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="GEB_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="KDLG_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Discards only the unsaved entries; items already created remain.</value>
+  </data>
+  <data name="KDLG_ET_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Discards only the unsaved entries; energy sources already created remain.</value>
   </data>
 </root>
