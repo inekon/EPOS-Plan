@@ -2636,11 +2636,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwirkungsgrad ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die elektrischer Wirkungsgrad ähnelt.
         /// </summary>
-        public static string BHKWK_FELD_WIRKUNGSGRAD {
+        public static string BHKWK_FELD_WIRKUNGSGRAD_EL {
             get {
-                return ResourceManager.GetString("BHKWK_FELD_WIRKUNGSGRAD", resourceCulture);
+                return ResourceManager.GetString("BHKWK_FELD_WIRKUNGSGRAD_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die thermischer Wirkungsgrad ähnelt.
+        /// </summary>
+        public static string BHKWK_FELD_WIRKUNGSGRAD_TH {
+            get {
+                return ResourceManager.GetString("BHKWK_FELD_WIRKUNGSGRAD_TH", resourceCulture);
             }
         }
         
@@ -2674,11 +2683,20 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die (Faktor 0–1, z. B. 0,90) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Faktor, z. B. 0,30) ähnelt.
         /// </summary>
-        public static string BHKWK_HINT_WIRKUNGSGRAD {
+        public static string BHKWK_HINT_WIRKUNGSGRAD_EL {
             get {
-                return ResourceManager.GetString("BHKWK_HINT_WIRKUNGSGRAD", resourceCulture);
+                return ResourceManager.GetString("BHKWK_HINT_WIRKUNGSGRAD_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Faktor, z. B. 0,60) ähnelt.
+        /// </summary>
+        public static string BHKWK_HINT_WIRKUNGSGRAD_TH {
+            get {
+                return ResourceManager.GetString("BHKWK_HINT_WIRKUNGSGRAD_TH", resourceCulture);
             }
         }
         
@@ -2863,6 +2881,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrischer Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_WIRKUNGSGRAD_EL {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_WIRKUNGSGRAD_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thermischer Wirkungsgrad: ähnelt.
+        /// </summary>
+        public static string BHKWK_LBL_WIRKUNGSGRAD_TH {
+            get {
+                return ResourceManager.GetString("BHKWK_LBL_WIRKUNGSGRAD_TH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Fehler beim Überschreiben des Datensatzes! ähnelt.
         /// </summary>
         public static string BHKWK_MSG_FEHLER {
@@ -2922,15 +2958,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWK_MSG_SCHUTZ {
             get {
                 return ResourceManager.GetString("BHKWK_MSG_SCHUTZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert. ähnelt.
-        /// </summary>
-        public static string BHKWK_MSG_WIRKUNGSGRAD {
-            get {
-                return ResourceManager.GetString("BHKWK_MSG_WIRKUNGSGRAD", resourceCulture);
             }
         }
         
@@ -3165,6 +3192,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHKWV_ZELLE_BRENNSTOFF {
             get {
                 return ResourceManager.GetString("BHKWV_ZELLE_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der elektrische Wirkungsgrad ist ein Faktor größer 0 und kleiner 1 (z. B. 0,30), kein Prozentwert. ähnelt.
+        /// </summary>
+        public static string BHKWW_MSG_EL {
+            get {
+                return ResourceManager.GetString("BHKWW_MSG_EL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrischer und thermischer Wirkungsgrad ergeben zusammen höchstens {0}; {1} ist zu viel. ähnelt.
+        /// </summary>
+        public static string BHKWW_MSG_SUMME {
+            get {
+                return ResourceManager.GetString("BHKWW_MSG_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der thermische Wirkungsgrad ist ein Faktor größer 0 und kleiner 1 (z. B. 0,60), kein Prozentwert. ähnelt.
+        /// </summary>
+        public static string BHKWW_MSG_TH {
+            get {
+                return ResourceManager.GetString("BHKWW_MSG_TH", resourceCulture);
             }
         }
         

@@ -14,7 +14,24 @@
         public double m_Ptherm;
         public double m_Pel;
         public int m_Brennstoff;
+
+        /// <summary>
+        /// Der GESAMTwirkungsgrad als Faktor — die Summe der zwei Anteile
+        /// (<see cref="BhkwWirkungsgrad.Gesamt(double,double)"/>). Er bleibt die
+        /// Spalte, die <c>SimulationBHKW</c> liest; geschrieben wird er ab
+        /// Schemaschritt 99 aus den Anteilen.
+        /// </summary>
         public double m_Wirkungsgrad;
+
+        /// <summary>
+        /// Der ELEKTRISCHE Wirkungsgrad als Faktor (Schemaschritt 99).
+        /// <c>null</c> = nicht gepflegt (Altbestand); der Dialog bietet dann die
+        /// Aufteilung des Gesamtwerts als Vorschlag an.
+        /// </summary>
+        public double? m_Wirkungsgrad_el;
+
+        /// <summary>Der THERMISCHE Wirkungsgrad als Faktor; <c>null</c> = nicht gepflegt.</summary>
+        public double? m_Wirkungsgrad_th;
         public double m_Investition_KWel;
         public double m_Raumbedarf;
         public double m_Wartungskosten_kWhel;
@@ -47,6 +64,8 @@
             m_Pel = 0;
             m_Brennstoff = 0;
             m_Wirkungsgrad = 0;
+            m_Wirkungsgrad_el = null;
+            m_Wirkungsgrad_th = null;
             m_Investition_KWel = 0;
             m_Raumbedarf = 0;
             m_Wartungskosten_kWhel = 0;

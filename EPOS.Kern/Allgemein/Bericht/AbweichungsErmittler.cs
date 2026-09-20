@@ -126,7 +126,13 @@ namespace WindowsFormsApplication1
             new Merkmal("BHKW", "Tab_BHKW", "Motortyp",   "Motortyp", "", TEXT),
             new Merkmal("BHKW", "Tab_BHKW", "Ptherm",     "therm. Leistung", "kW", 1),
             new Merkmal("BHKW", "Tab_BHKW", "Pel",        "el. Leistung", "kW", 1),
-            new Merkmal("BHKW", "Tab_BHKW", "Wirkungsgrad","Wirkungsgrad", "%", 1),
+            // OHNE EINHEIT: Der BHKW-Wirkungsgrad ist ein FAKTOR (0…1), kein
+            // Prozentwert - so rechnet SimulationBHKW, und seit Schemaschritt 98 steht
+            // er im ganzen Katalog so. Die zwei Anteile daneben ergeben ihn
+            // (Schemaschritt 99); drei Stellen, wie der Katalog sie pflegt.
+            new Merkmal("BHKW", "Tab_BHKW", "Wirkungsgrad","Ges. Wirkungsgrad", "", 3),
+            new Merkmal("BHKW", "Tab_BHKW", "Wirkungsgrad_el","el. Wirkungsgrad", "", 3),
+            new Merkmal("BHKW", "Tab_BHKW", "Wirkungsgrad_th","therm. Wirkungsgrad", "", 3),
             new Merkmal("BHKW", "Tab_BHKW", "Vorlauf",    "Vorlauf", "°C", 0),
             new Merkmal("BHKW", "Tab_BHKW", "Ruecklauf",  "Rücklauf", "°C", 0),
 

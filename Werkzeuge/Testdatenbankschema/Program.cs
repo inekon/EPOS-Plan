@@ -1011,6 +1011,60 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt 98 - " + a.Zeile() + ".");
             }
 
+            // ---- Schritt 99: elektrischer und thermischer Wirkungsgrad des BHKW
+            //      (Anwenderentscheid 20.09.2026, Auftrag BW-2). DDL UND DML: je zwei
+            //      nullbare Spalten an Tab_BHKW_STAMM und Tab_BHKW, danach die
+            //      Aufteilung des Gesamtwirkungsgrads im Verhaeltnis der Leistungen.
+            //      DIESELBEN Quellen, aus denen sich
+            //      SchemaMigration.Schritt_99_BhkwWirkungsgradAnteile bedient.
+            //
+            //      ER STEHT NACH 98: Ein Prozentwert liesse sich nicht sinnvoll teilen.
+            //
+            //      ERGEBNISNEUTRAL: Die Spalte Wirkungsgrad bleibt unveraendert, und nur
+            //      sie liest der Rechenweg - die dreizehn Referenzprojekte rechnen
+            //      byte-gleich weiter.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt99_BhkwWirkungsgradAnteile)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 99, trocken);
+
+            BhkwWirkungsgradAnteile.Aufnahme aufnahme99 = BhkwWirkungsgradAnteile.Bestandsaufnahme();
+            foreach (string tabelle99 in BhkwWirkungsgradAnteile.Tabellen)
+            {
+                if (!aufnahme99.Gesamt.ContainsKey(tabelle99)) continue;
+                Console.WriteLine("Schritt 99 - " + tabelle99 + ": " +
+                                  aufnahme99.Aufzuteilen[tabelle99] +
+                                  " Zeile(n) aufzuteilen, " +
+                                  aufnahme99.AusgewiesenIn(tabelle99) +
+                                  " Zeile(n) ohne Aufteilung.");
+            }
+
+            if (!trocken)
+            {
+                foreach (System.Collections.Generic.KeyValuePair<string, BhkwWirkungsgradFaktor.Anweisung> a
+                         in BhkwWirkungsgradAnteile.Anweisungen)
+                {
+                    DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
+                    Console.WriteLine("Schritt 99 - " + a.Key + ".");
+                }
+
+                Console.WriteLine("Schritt 99 - " + BhkwWirkungsgradAnteile.Bericht(aufnahme99));
+
+                foreach (string tabelle99 in BhkwWirkungsgradAnteile.Tabellen)
+                    Console.WriteLine("Schritt 99 - " + tabelle99 + ": offen " +
+                                      BhkwWirkungsgradAnteile.Offen(tabelle99) +
+                                      " (erwartet 0), aufgeteilt " +
+                                      BhkwWirkungsgradAnteile.Aufgeteilt(tabelle99) +
+                                      ", Summe weicht ab " +
+                                      BhkwWirkungsgradAnteile.SummeWeichtAb(tabelle99) +
+                                      " (erwartet 0).");
+            }
+            else
+            {
+                foreach (BhkwWirkungsgradAnteile.Ausweis a in aufnahme99.Ausgewiesen)
+                    Console.WriteLine("Schritt 99 - " + a.Zeile() + ".");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

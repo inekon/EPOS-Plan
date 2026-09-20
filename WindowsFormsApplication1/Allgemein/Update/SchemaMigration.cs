@@ -3528,6 +3528,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_98_BHKW_WIRKUNGSGRAD = 98;
 
+        /// <summary>
+        /// Schritt 99 — der BHKW-Katalog führt <b>elektrischen und thermischen
+        /// Wirkungsgrad</b> (Anwenderentscheid vom 20.09.2026: „Der Wirkungsgrad sollte
+        /// sich aus dem elektrischen und dem thermischen Wirkungsgrad ergeben.“).
+        ///
+        /// <para><b>DDL und DML in EINEM Schritt.</b> Die vier Spalten stehen bei
+        /// <see cref="SchemaKatalog.Schritt99_BhkwWirkungsgradAnteile"/>, der Datenteil
+        /// bei <see cref="BhkwWirkungsgradAnteile"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>. Aufgeteilt wird im Verhältnis der Leistungen; fehlt
+        /// eine Angabe, bleiben beide Spalten NULL und die Zeile wird BENANNT
+        /// ausgewiesen.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Die Spalte <c>Wirkungsgrad</c> bleibt die
+        /// Summe und bleibt der Wert, den <c>SimulationBHKW</c> liest; der Referenzlauf
+        /// bleibt byte-gleich, die Basis <c>2026-09-19_R10_BhkwWirkungsgrad</c> gilt
+        /// weiter.</para>
+        ///
+        /// <para><b>Nach Schritt 96</b>, wie 97 und 98: 96 baut <c>Tab_BHKW</c> neu,
+        /// und ein späterer <c>ADD COLUMN</c> hängt sich an die neu gebaute
+        /// Tabelle.</para>
+        /// </summary>
+        public const int SCHRITT_99_BHKW_WIRKUNGSGRAD_ANTEILE = 99;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4844,6 +4868,30 @@ namespace WindowsFormsApplication1
                         "Werten; was dabei nicht in [0,5; 1,05] faellt, bleibt stehen " +
                         "und wird benannt ausgewiesen.",
                         Schritt_98_BhkwWirkungsgrad),
+
+            // ANWENDERENTSCHEID 20.09.2026 (Auftrag BW-2) - der Gesamtwirkungsgrad
+            // eines BHKW ergibt sich aus dem ELEKTRISCHEN und dem THERMISCHEN
+            // Wirkungsgrad. DDL UND DML; die Quellen sind
+            // SchemaKatalog.Schritt99_BhkwWirkungsgradAnteile (Spalten) und
+            // BhkwWirkungsgradAnteile (Aufteilung). Er steht NACH 98, weil er dessen
+            // Ergebnis aufteilt - ein Prozentwert liesse sich nicht sinnvoll teilen.
+            new Schritt(SCHRITT_99_BHKW_WIRKUNGSGRAD_ANTEILE,
+                        "Tab_BHKW(_STAMM) bekommt Wirkungsgrad_el und Wirkungsgrad_th, " +
+                        "der Bestand wird aufgeteilt",
+                        "Ein BHKW liefert aus einer Brennstoffmenge zweierlei: Strom " +
+                        "und Waerme. Der elektrische Wirkungsgrad sagt, welcher Teil " +
+                        "des Brennstoffs zu Strom wird, der thermische, welcher zu " +
+                        "Waerme; erst beide zusammen ergeben den Gesamtwirkungsgrad, " +
+                        "mit dem die Simulation rechnet. Gepflegt werden ab hier die " +
+                        "zwei Anteile, der Gesamtwirkungsgrad ist ihre Summe. Der " +
+                        "Bestand wird im Verhaeltnis der Leistungen aufgeteilt " +
+                        "(Wirkungsgrad * Pel / (Pel + Ptherm) und ebenso thermisch); " +
+                        "fehlt der Gesamtwirkungsgrad oder eine der beiden " +
+                        "Leistungen, bleiben beide Spalten leer und die Zeile wird " +
+                        "benannt ausgewiesen. ERGEBNISNEUTRAL: Die Spalte " +
+                        "Wirkungsgrad bleibt unveraendert, und nur sie liest der " +
+                        "Rechenweg.",
+                        Schritt_99_BhkwWirkungsgradAnteile),
         };
 
         /// <summary>
@@ -7172,6 +7220,58 @@ namespace WindowsFormsApplication1
                     " Der Rechenweg ist unveraendert; der Brennstoff der betroffenen " +
                     "Module faellt ab hier richtig aus, und der Referenzlauf aendert " +
                     "sich deshalb - die Basis ist neu eingefroren.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 99 - die zwei Wirkungsgrade des BHKW (Anwenderentscheid 20.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 99 — Anlass, Spalten und Aufteilung stehen bei
+        /// <see cref="SCHRITT_99_BHKW_WIRKUNGSGRAD_ANTEILE"/>, bei
+        /// <see cref="SchemaKatalog.Schritt99_BhkwWirkungsgradAnteile"/> und bei
+        /// <see cref="BhkwWirkungsgradAnteile"/>.
+        ///
+        /// <para><b>Erst DDL, dann DML</b> — der Datenteil schreibt in Spalten, die
+        /// derselbe Schritt eben angelegt hat. <b>Wiederholbar</b> auf beiden Seiten:
+        /// <see cref="SqliteSpalteAnlegen"/> fragt <c>PRAGMA table_info</c>, und die
+        /// Aufteilung fasst nur Zeilen an, deren beide neue Spalten NULL sind.</para>
+        ///
+        /// <para><b>Die Ausweisung gehört ins Protokoll</b>: Jede Zeile, die der Schritt
+        /// nicht aufteilen konnte, steht mit Id, Name und Grund in der Notiz.</para>
+        /// </summary>
+        private static bool Schritt_99_BhkwWirkungsgradAnteile(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt99_BhkwWirkungsgradAnteile)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            BhkwWirkungsgradAnteile.Aufnahme aufnahme = BhkwWirkungsgradAnteile.Bestandsaufnahme();
+
+            foreach (System.Collections.Generic.KeyValuePair<string, BhkwWirkungsgradFaktor.Anweisung> a
+                     in BhkwWirkungsgradAnteile.Anweisungen)
+            {
+                try { DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter); }
+                catch (Exception ex)
+                {
+                    l.LetzterFehler = a.Key + ": " + ex.Message;
+                    l.Notiz("99: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            }
+
+            l.Notiz("99: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt99_BhkwWirkungsgradAnteile.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt. " + BhkwWirkungsgradAnteile.Bericht(aufnahme) +
+                    " Der Gesamtwirkungsgrad bleibt unveraendert und bleibt der Wert, " +
+                    "den die Simulation liest; KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

@@ -11158,15 +11158,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BHKWK_LBL_WIRKUNGSGRAD" xml:space="preserve">
     <value>Total efficiency:</value>
   </data>
-  <data name="BHKWK_FELD_WIRKUNGSGRAD" xml:space="preserve">
-    <value>total efficiency</value>
-  </data>
-  <data name="BHKWK_HINT_WIRKUNGSGRAD" xml:space="preserve">
-    <value>(factor 0–1, e.g. 0.90)</value>
-  </data>
-  <data name="BHKWK_MSG_WIRKUNGSGRAD" xml:space="preserve">
-    <value>"{0}" is a factor between 0 and {1} (e.g. 0.90), not a percentage.</value>
-  </data>
   <data name="BHKWK_LBL_GRENZLEISTUNG" xml:space="preserve">
     <value>Lower limit output:</value>
   </data>
@@ -20239,6 +20230,33 @@ Do you want to allow this?</value>
   </data>
   <data name="BADM_BTN_BEENDEN" xml:space="preserve">
     <value>Finish</value>
+  </data>
+  <data name="BHKWK_LBL_WIRKUNGSGRAD_EL" xml:space="preserve">
+    <value>Electrical efficiency:</value>
+  </data>
+  <data name="BHKWK_FELD_WIRKUNGSGRAD_EL" xml:space="preserve">
+    <value>electrical efficiency</value>
+  </data>
+  <data name="BHKWK_HINT_WIRKUNGSGRAD_EL" xml:space="preserve">
+    <value>(factor, e.g. 0.30)</value>
+  </data>
+  <data name="BHKWK_LBL_WIRKUNGSGRAD_TH" xml:space="preserve">
+    <value>Thermal efficiency:</value>
+  </data>
+  <data name="BHKWK_FELD_WIRKUNGSGRAD_TH" xml:space="preserve">
+    <value>thermal efficiency</value>
+  </data>
+  <data name="BHKWK_HINT_WIRKUNGSGRAD_TH" xml:space="preserve">
+    <value>(factor, e.g. 0.60)</value>
+  </data>
+  <data name="BHKWW_MSG_EL" xml:space="preserve">
+    <value>The electrical efficiency is a factor greater than 0 and less than 1 (e.g. 0.30), not a percentage.</value>
+  </data>
+  <data name="BHKWW_MSG_TH" xml:space="preserve">
+    <value>The thermal efficiency is a factor greater than 0 and less than 1 (e.g. 0.60), not a percentage.</value>
+  </data>
+  <data name="BHKWW_MSG_SUMME" xml:space="preserve">
+    <value>Electrical and thermal efficiency add up to at most {0}; {1} is too much.</value>
   </data>
   <data name="BPRO_BTN_BEENDEN" xml:space="preserve">
     <value>Finish</value>
