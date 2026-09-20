@@ -130,11 +130,6 @@ public sealed class KnopfleistenWacheTests
             "DL-2 Nr. 5: der Fuss traegt GAR keinen primaeren Knopf - die Primaerfarbe "
             + "liegt auf \"Berechnen\" im Blatt. Auftrag DL-2g macht \"Beenden\" primaer "
             + "(DL-Q2 a)."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Kosten/EnergietraegerDialog.razor", REGEL_ABBRECHEN_DAVOR,
-            "DL-2 Nr. 7: der Fuss laeuft Abbrechen . Speichern . OK. Auftrag DL-2k "
-            + "ersetzt ihn durch die SpeichernLeiste mit MitSpeichern (DL-Q3 a, DL-Q5).")
     };
 
     /// <summary>
