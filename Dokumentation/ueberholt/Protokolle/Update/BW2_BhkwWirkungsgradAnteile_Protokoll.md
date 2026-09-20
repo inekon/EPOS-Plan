@@ -312,8 +312,9 @@ editierbaren Felder (23 → 24), die Spaltenfolge des Profils, der Rundlauf des 
 (liefert jetzt die zwei Anteile) und die Abweisung des Prozentwerts 29,5, die nun am
 elektrischen Anteil hängt.
 
-**Gate beide Kulturen grün:** EPOS.Kern 3 921, EPOS.UI 4 847, KiKern 499, SpeicherEngine
-378, SpeicherPlanung 27 (1 übersprungen). Windows-Schale mit
+**Gate beide Kulturen grün** (Stand nach dem Merge von DL-2f und WK-1)**:**
+EPOS.Kern 3 921, EPOS.UI 4 855, KiKern 499, SpeicherEngine 378, SpeicherPlanung 27
+(1 übersprungen). Windows-Schale mit
 `-p:EnableWindowsTargeting=true` **0 Fehler**. SQL-Dialekt-Prüfer **0 Fundstellen**
 (1 546 Texte). ResourceDesigner wiederholbar — **kein neuer Ressourcenschlüssel**, die zwei
 Beschriftungen und ihre Hinweise stehen seit BW-2 in beiden Sprachen.
