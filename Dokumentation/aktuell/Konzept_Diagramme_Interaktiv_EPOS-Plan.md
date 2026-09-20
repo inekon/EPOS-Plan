@@ -325,11 +325,26 @@ Ein Klick auf den **Namen** einer Reihe blendet sie aus und wieder ein (der Eint
 lesbar, nur gedämpft), ein Klick auf das **Farbfeld** daneben öffnet den Farbwähler unmittelbar
 am Bild — Systemwähler, Hexfeld, Hausfarbenmuster und „Hausfarbe". Der Eintrag ist
 fokussierbar; Eingabe und Leertaste schalten, Umschalt + Eingabe öffnet den Wähler. Eine Reihe
-mit fest gerechneter Farbe ohne Rolle bekommt keinen Wähler. Ein Klick auf ein anderes Farbfeld
+mit fest gerechneter Farbe ohne Rolle bekommt keinen Wähler — bis DG‑Q8 (Teil 3) umgesetzt ist. Ein Klick auf ein anderes Farbfeld
 wechselt den Wähler mit einem Klick, ein zweiter Klick auf dasselbe schließt ihn; ein Klick ins
 Bild oder daneben schließt ihn ebenso. Dasselbe Bild in neuer Instanz — ein Zeichenlauf des
 Wirtes nach einer Farbwahl oder ein neuer Rechenlauf — behält Ausschnitt, ausgeblendete Reihen
-und den offenen Wähler; erst ein anderes Bild setzt sie zurück. Geschrieben wird über
+und den offenen Wähler; erst ein anderes Bild setzt sie zurück.
+
+**Bedienung, Teil 3 (Anwenderentscheid 20.09.2026, DG‑Q8 — Umsetzung offen).** Jede Reihe bekommt
+einen Wähler, auch eine, deren Farbe bislang fest gerechnet ist („Sonstiges" der Prüfseite). Die
+Ausnahme aus Teil 2 entfällt damit. Voraussetzung ist, dass jede Reihe eine Farbrolle trägt — die
+Simulationshülle gibt ihren Reihen heute feste Farben aus dem WinForms-Vorbild, von denen keine
+eine Hausfarbe ist; zwei treffen zufällig fremde Rollen (Blau die Profillinie, Sattelbraun Speicher 4).
+Empfehlung zur Umsetzung: Wo es die Größe schon gibt (Heizkessel, BHKW, Solar, Photovoltaik,
+Wärmepumpe, Bedarf, Rest, Netz), nimmt die Hülle die vorhandene Rolle — die Reiter zeigen dann
+dieselben Hausfarben wie der Bericht; für Größen ohne Rolle (Heizstab, Warmwasser, Speicherladung,
+Überschuss, Erzeugung gesamt, Speicherfüllstand, BHKW‑Strom) kommen neue Rollen mit ihren bisherigen
+Farben als Vorgabe in Palette und Einstellungen. Eine im Layout gerechnete Farbe führt ihre
+Herkunftsrolle, und ihr Farbfeld öffnet den Wähler dieser Rolle. Eine Wache hält die Hüllen frei von
+festen Farbwerten; die Prüfseite zeigt danach keine Reihe ohne Wähler mehr. Die sichtbare
+Farbänderung in den Reitern ist beim Anwender rückgefragt; Umsetzung als eigene Welle (DG‑E5).
+Geschrieben wird über
 `Diagrammfarben.Setze`/`Zuruecksetzen` in denselben Einstellungsschlüssel wie in der
 Administration — **nur die Abweichungen**, und `Uebernehmen()` speist die Palette sofort. Die
 PNG-Legende bleibt ein Bildausschnitt ohne Trefferfläche; die Bedienung gilt deshalb je Bild ab
