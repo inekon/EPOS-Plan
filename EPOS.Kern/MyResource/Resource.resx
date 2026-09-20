@@ -20265,4 +20265,166 @@ Möchten Sie das zulassen?</value>
   <data name="BPRO_BTN_BEENDEN" xml:space="preserve">
     <value>Beenden</value>
   </data>
+  <data name="DGF_GRUPPE_ALLGEMEIN" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="DGF_GRUPPE_ERZEUGER" xml:space="preserve">
+    <value>Erzeuger und Bedarf</value>
+  </data>
+  <data name="DGF_GRUPPE_VARIANTEN" xml:space="preserve">
+    <value>Varianten</value>
+  </data>
+  <data name="DGF_GRUPPE_SPEICHER" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="DGF_GRUPPE_PROFILE" xml:space="preserve">
+    <value>Profile und Temperaturen</value>
+  </data>
+  <data name="DGF_GRUPPE_RASTERKARTE" xml:space="preserve">
+    <value>Rasterkarte</value>
+  </data>
+  <data name="DGF_ROLLE_HINTERGRUND" xml:space="preserve">
+    <value>Hintergrund</value>
+  </data>
+  <data name="DGF_ROLLE_TEXT" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="DGF_ROLLE_ACHSE" xml:space="preserve">
+    <value>Achsen und Beschriftung</value>
+  </data>
+  <data name="DGF_ROLLE_RASTER" xml:space="preserve">
+    <value>Rasterlinien</value>
+  </data>
+  <data name="DGF_ROLLE_RAHMEN" xml:space="preserve">
+    <value>Rahmen</value>
+  </data>
+  <data name="DGF_ROLLE_LEGENDENRAHMEN" xml:space="preserve">
+    <value>Legendenrahmen</value>
+  </data>
+  <data name="DGF_ROLLE_WAERME_WP" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="DGF_ROLLE_WAERME_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="DGF_ROLLE_WAERME_KESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="DGF_ROLLE_WAERME_SOLAR" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="DGF_ROLLE_STROM_PV" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="DGF_ROLLE_STROM_NETZ" xml:space="preserve">
+    <value>Netzbezug</value>
+  </data>
+  <data name="DGF_ROLLE_REST" xml:space="preserve">
+    <value>Restbedarf</value>
+  </data>
+  <data name="DGF_ROLLE_BEDARF" xml:space="preserve">
+    <value>Bedarfslinie</value>
+  </data>
+  <data name="DGF_ROLLE_STAMM" xml:space="preserve">
+    <value>Stamm-Variante</value>
+  </data>
+  <data name="DGF_ROLLE_SERIE_1" xml:space="preserve">
+    <value>Reihe 1</value>
+  </data>
+  <data name="DGF_ROLLE_SERIE_2" xml:space="preserve">
+    <value>Reihe 2</value>
+  </data>
+  <data name="DGF_ROLLE_SERIE_3" xml:space="preserve">
+    <value>Reihe 3</value>
+  </data>
+  <data name="DGF_ROLLE_SERIE_4" xml:space="preserve">
+    <value>Reihe 4</value>
+  </data>
+  <data name="DGF_ROLLE_SERIE_5" xml:space="preserve">
+    <value>Reihe 5</value>
+  </data>
+  <data name="DGF_ROLLE_SERIE_6" xml:space="preserve">
+    <value>Reihe 6</value>
+  </data>
+  <data name="DGF_ROLLE_SERIE_7" xml:space="preserve">
+    <value>Reihe 7</value>
+  </data>
+  <data name="DGF_ROLLE_SERIE_8" xml:space="preserve">
+    <value>Reihe 8</value>
+  </data>
+  <data name="DGF_ROLLE_SPEICHER_1" xml:space="preserve">
+    <value>Speicher 1</value>
+  </data>
+  <data name="DGF_ROLLE_SPEICHER_2" xml:space="preserve">
+    <value>Speicher 2</value>
+  </data>
+  <data name="DGF_ROLLE_SPEICHER_3" xml:space="preserve">
+    <value>Speicher 3</value>
+  </data>
+  <data name="DGF_ROLLE_SPEICHER_4" xml:space="preserve">
+    <value>Speicher 4</value>
+  </data>
+  <data name="DGF_ROLLE_SPEICHER_5" xml:space="preserve">
+    <value>Speicher 5</value>
+  </data>
+  <data name="DGF_ROLLE_SPEICHER_6" xml:space="preserve">
+    <value>Speicher 6</value>
+  </data>
+  <data name="DGF_ROLLE_KOSTENPROFIL" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="DGF_ROLLE_PROFILFLAECHE" xml:space="preserve">
+    <value>Profilfläche</value>
+  </data>
+  <data name="DGF_ROLLE_PROFILLINIE" xml:space="preserve">
+    <value>Profillinie</value>
+  </data>
+  <data name="DGF_ROLLE_QUELLTEMPERATUR" xml:space="preserve">
+    <value>Quelltemperatur</value>
+  </data>
+  <data name="DGF_ROLLE_AUSSENTEMPERATUR" xml:space="preserve">
+    <value>Außentemperatur</value>
+  </data>
+  <data name="DGF_ROLLE_ERSATZJAHR" xml:space="preserve">
+    <value>Ersatzjahr</value>
+  </data>
+  <data name="DGF_ROLLE_RASTER_SCHLECHT" xml:space="preserve">
+    <value>Rasterkarte: schlecht</value>
+  </data>
+  <data name="DGF_ROLLE_RASTER_MITTE" xml:space="preserve">
+    <value>Rasterkarte: mittel</value>
+  </data>
+  <data name="DGF_ROLLE_RASTER_GUT" xml:space="preserve">
+    <value>Rasterkarte: gut</value>
+  </data>
+  <data name="DGF_ROLLE_RASTER_LOCH" xml:space="preserve">
+    <value>Rasterkarte: kein Wert</value>
+  </data>
+  <data name="DGF_ROLLE_FEINRASTER" xml:space="preserve">
+    <value>Feinraster</value>
+  </data>
+  <data name="DGF_LBL_FARBWERT" xml:space="preserve">
+    <value>Farbwert</value>
+  </data>
+  <data name="DGF_LBL_VORGABE" xml:space="preserve">
+    <value>Hausfarbe</value>
+  </data>
+  <data name="DGF_MSG_HEX_UNGUELTIG" xml:space="preserve">
+    <value>Eine Farbe wird in der Schreibweise #RRGGBB angegeben, zum Beispiel #4172C4.</value>
+  </data>
+  <data name="ADM_SET_RUBRIK_DIAGRAMME" xml:space="preserve">
+    <value>Diagramme</value>
+  </data>
+  <data name="ADM_SET_BTN_HAUSFARBEN" xml:space="preserve">
+    <value>Hausfarben</value>
+  </data>
+  <data name="ADM_SET_HINT_DIAGRAMMFARBEN" xml:space="preserve">
+    <value>Die Farbe einer Größe gilt anwendungsweit: Jedes Diagramm und der Bericht zeichnen sie damit. Übernommen wird die Änderung mit „OK“.</value>
+  </data>
+  <data name="ADM_SET_MSG_HAUSFARBEN" xml:space="preserve">
+    <value>Die Hausfarben wurden geladen. Mit „OK“ werden sie übernommen.</value>
+  </data>
+  <data name="ADM_SET_MSG_FARBE_UNGUELTIG" xml:space="preserve">
+    <value>„{0}“ ist keine Farbe in der Schreibweise #RRGGBB.</value>
+  </data>
 </root>

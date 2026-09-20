@@ -288,5 +288,20 @@ namespace WindowsFormsApplication1.Zeichnung
         /// </summary>
         public static Farbton Gerechnet(Farbrolle rolle, Farbe farbe)
             => new Farbton(rolle ?? Farbrolle.UNBENANNT, farbe);
+
+        // ------------------------------------------------------- Zurücksetzen
+
+        /// <summary>
+        /// Zurück auf die Hausfarben: <see cref="Aktuell"/> wird wieder
+        /// <see cref="Vorgabe"/>.
+        ///
+        /// <para>Die Gegenrichtung zu <c>Diagrammfarben.Uebernehmen</c>, das die Palette
+        /// aus der Anwendungseinstellung speist. Prüfstände setzen damit zurück, und der
+        /// Einstellungsdialog verlangt es nach „Hausfarben" samt leerer Einstellung.</para>
+        /// </summary>
+        public static void Zuruecksetzen()
+        {
+            Aktuell = Vorgabe;
+        }
     }
 }
