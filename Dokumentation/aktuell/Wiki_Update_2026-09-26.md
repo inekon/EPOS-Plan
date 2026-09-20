@@ -60,6 +60,8 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Simulationskonfiguration (Pufferspeicher im Projekt, Erdreich- und Pufferspeicherquelle,
   Quellprofil, Wärmesenke, Komponentenkonfiguration) und die Einstellwerte des
   Stromspeicher-Reiters der Simulation. (#419)
+- Seit 26.09.2026: Der Hilfe-Assistent setzt in den freigegebenen Masken jedes Eingabefeld,
+  auch Auswahlfelder über den angezeigten Text; Feldnamen dürfen ungefähr sein. (#420)
 - Seit 26.09.2026: Jeder Legendeneintrag eines Diagramms hat ein Farbfeld; die
   Simulationsreiter zeigen dieselben Farben wie der Bericht, und die Einstellungen führen dafür
   54 Größen. (#418)
