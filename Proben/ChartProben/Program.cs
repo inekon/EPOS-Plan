@@ -297,6 +297,42 @@ namespace ChartProben
                             },
                             "Monat", "Sonnenwinkel [°]", minimumNull: true));
 
+            // 16d - DERSELBE JAHRESGANG MIT ZEITAUSSCHNITT (Auftrag KL-8). Der Anwender
+            // zieht im Klimadialog ein Rechteck auf; die Huelle rechnet daraus ein
+            // Achsenfenster, und der Kern zeichnet das Bild NEU - zugeschnitten, mit den
+            // wirklichen Jahresstunden auf der x-Achse statt der Monatsteilung 0…12.
+            // Geprueft wird, dass das Fenster das Bildmass NICHT antastet (1 304 x 440
+            // wie in der Vollansicht) und dass es deterministisch bleibt.
+            var fensterKlima = new ChartRenderer.Achsenfenster(2900, 3400);
+            Pruefe(ziel, "klimadaten_temperatur_fenster", 1304, 440,
+                   new SKColor[0],
+                   () => ChartRenderer.Jahresgang("Jahrestemperatur Verlauf",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Temperatur", klimaTemperatur,
+                                                        ChartRenderer.C_AUSSENTEMPERATUR)
+                            },
+                            "Monat", "Temperatur [°C]", false, fensterKlima));
+
+            // Die Gegenprobe: Ohne sie bestuende ein stillschweigend uebergangener
+            // Fensterparameter jede Mass-, Farb- und Determinismuspruefung - und der
+            // Ausschnitt zeigte weiter das ganze Jahr.
+            Unterschiedlich("jahresgang_fenster",
+                () => ChartRenderer.Jahresgang("Jahrestemperatur Verlauf",
+                        new List<ChartRenderer.Reihe>
+                        {
+                            new ChartRenderer.Reihe("Temperatur", klimaTemperatur,
+                                                    ChartRenderer.C_AUSSENTEMPERATUR)
+                        },
+                        "Monat", "Temperatur [°C]"),
+                () => ChartRenderer.Jahresgang("Jahrestemperatur Verlauf",
+                        new List<ChartRenderer.Reihe>
+                        {
+                            new ChartRenderer.Reihe("Temperatur", klimaTemperatur,
+                                                    ChartRenderer.C_AUSSENTEMPERATUR)
+                        },
+                        "Monat", "Temperatur [°C]", false, fensterKlima));
+
             // =========================================================================
             // 17-30 - die sieben ERGEBNISBILDER der Welle 11 (iU9-W11a.6), je zwei Proben
             // =========================================================================
