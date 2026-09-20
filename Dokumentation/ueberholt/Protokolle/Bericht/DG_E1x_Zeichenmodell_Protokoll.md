@@ -250,3 +250,138 @@ Umbau-Commits leer, kein Bild war zu untersuchen. Vier Stellen verdienten trotzd
   (`Titel` STAMM, `YRaster`/`XAchse` RASTER und ACHSE, `Legende` LEGENDENRAHMEN). Das ist
   wertgleich und kostet kein Bild; ausdrücklich genannt werden sie, wenn E1c die letzten
   `SKCanvas`-Überladungen entfernt und jeder Helfer ohnehin angefasst wird.
+
+---
+
+## E1c — Kennlinien, Streuwolke, Schnitt-, Stückzahlkurve, Raster; Abschluss E1 (Statusnummer #402)
+
+### Die Aufgabe
+
+Die letzten fünf Zeichenmethoden auf das Modell — und danach den Übergang abräumen: kein
+`SkiaZiel`, keine `SKCanvas`-Überladung, keine Paint-Fabrik. Kein Bild darf wandern.
+
+### Die fünf Zeichenmethoden
+
+| Methode | Was dazukam |
+|---|---|
+| `Kennlinien` | Punktmarken (Kreis bzw. Kreuz) als `Kreis`- und `Linie`-Befehle; die gestrichelte Nulllinie als `Strichmuster(6, 2)`; die acht Variantenfarben über die neue Rollenliste `Serienrolle` (SERIE_1…8) statt über `C_SERIEN` |
+| `Streuwolke` | die Punktwolke als `Kreis`-Befehle mit EINER Füllung je Reihe; die Reihenfarbe kommt von außen und behält die Rückwärtssuche |
+| `Schnittkurve` | Kurve, Grob- und Feinpunkte, die rote Optimumsmarke; die x- und y-Skalen wie gehabt über `Skala.Rund` |
+| `Stueckzahlkurve` | Säulen mit Rand, Schraffur der unzulässigen Stückzahlen, die offene Optimumsmarke |
+| `Optimierungsraster` | Zellen, Netz, Marke, Farbskala und die zwei Fußzeilen; die Zellfarbe kommt jetzt als `Farbton` aus `Rasterfarbe` |
+
+Damit stehen **26 von 26 Zeichenmethoden** auf dem Modell.
+
+### Die Schraffur wird eine Gruppe
+
+`Schraffur` war die einzige Stelle des Renderers mit `Save`/`ClipRect`/`Restore`. Sie ist
+jetzt eine `Gruppe` mit Zuschnittrechteck — derselbe Befehl, den `ErzeugerStapel` schon für
+seine Fenster nutzt. Der Maler setzt ihn wieder auf `Save`/`ClipRect`/`Restore` um; die
+Striche laufen also weiterhin nicht in die Nachbarzelle, und das PNG ist byte-gleich. Der
+Gewinn steht in E2: Ein SVG-Weg schreibt daraus ein `<clipPath>`, und niemand muss die Regel
+ein zweites Mal formulieren.
+
+### Die gerechneten Farben der Rasterkarte
+
+Der offene Punkt aus E1a. `Rasterfarbe` und `Farbstufe` gaben eine nackte `SKColor` zurück —
+und damit hätte ein Palettentausch die Rasterkarte nicht erreicht, obwohl sie ihre drei
+Eckfarben aus der Palette bezieht. Jetzt liefern beide einen `Farbton`:
+
+* die Enden der Dreifarbskala und das Loch als **reine Rolle** (`RASTER_SCHLECHT`,
+  `RASTER_GUT`, `RASTER_LOCH`);
+* jeder Zwischenton als **gerechnete Farbe mit Herkunftsrolle** — die untere der beiden
+  gemischten Rollen, damit am Befehl ablesbar bleibt, woraus er entstand;
+* `Mischung` mischt seither **Rollenfarben aus `Farbpalette.Aktuell`** statt zweier
+  Konstanten. Gegen die Vorgabepalette sind das Bit für Bit dieselben Werte, gegen eine
+  getauschte Palette wandert die ganze Skala mit.
+
+### Alle Helfer nennen ihre Rolle
+
+Der Nachtrag aus E1b. 17 × `Stift(Gainsboro)` → `RASTER`, 5 × `Stift(DimGray)` → `ACHSE`,
+`Silver` → `RAHMEN`, `Gray` → `LEGENDENRAHMEN`, 45 × die Textfarbe `DimGray` → `ACHSE`, die
+Legendenschrift `Black` → `TEXT`, der Titel `C_STAMM` → `STAMM`. `Text` und `Stift` tragen
+jetzt einen `Farbton`; die Fassungen mit `Farbrolle` und mit `SKColor` sind dünne
+Überladungen darauf. Die Farbe der ZWEITEN Achse ist der Fall, an dem beide Wege
+aufeinandertreffen: Sie ist die Reihenfarbe, wenn es genau eine Reihe gibt, sonst die
+Achsenfarbe — also `y2G[0].Farbe.Ton()` oder `Farbton.Aus(Farbrolle.ACHSE)`.
+
+### Was der Abschluss entfernt hat
+
+`SkiaZiel`; die 17 `SKCanvas`-Überladungen der gemeinsamen Helfer; `Start`,
+`Png(SKSurface)`; die Paint-Fabriken `Strich` und `Fuellung`; die Leinwandfassungen von
+`Kreissegment`, `Linienzug` und `Vieleck`; die unbenutzte Hülle `Schriftart`. Aus 91 privaten
+Helfern sind 71 geworden.
+
+**Was mit Absicht BLEIBT:** `SKColor`, `SKRect` und `SKPoint`. Sie zeichnen nichts — sie sind
+Farbe, Rechteck und Punkt als Werttypen und stehen in der öffentlichen Fläche (`C_WP` …,
+`Reihe.Farbe`, `Segment.Farbe`) und im Layout jeder Methode. Ihr Ersatz durch `Farbe`,
+`Rahmen` und `Punkt` berührt jede Hülle und jeden Aufrufer und gehört deshalb in eine eigene
+Etappe, nicht in einen Auftrag, dessen Messlatte „kein Bild ändert sich" heißt. Die
+Textvermessung bleibt Kern-Funktion, steht aber in `Zeichnung/SkiaMaler.cs`
+(`Schriftkette`, `Schriftmass`) und nicht mehr im Renderer.
+
+### Der Wächter
+
+`EPOS.Kern.Tests/ZeichenmodellWacheTests` — vier Fälle: kein Skia-Bezeichner außer den drei
+erlaubten Werttypen, kein `Draw…`/`ClipRect`/`Canvas`/`PathEffect`, 26 Bildmethoden und
+mindestens ebenso viele Übergaben an `SkiaMaler.Png`, und kein `SkiaZiel` mehr im Kern.
+
+**Warum ein Wächter und nicht nur ein Aufräumen.** Die Umstellung ändert kein Bild — genau
+deshalb fällt ein Rückfall nicht auf: Ein neuer Zeichenaufruf auf einer Leinwand liefert
+dasselbe PNG wie der Modellweg und bliebe in der Hash-Messlatte unsichtbar. Erst der SVG-Weg
+stieße darauf, und dann wäre die Ursache Monate alt.
+
+### Was an der Byte-Gleichheit schwierig war
+
+* **Die gestrichelten Linien.** Drei Stellen setzten den Strichel als `SKPathEffect` NACH dem
+  Anlegen des Paints (`stift.PathEffect = …`). Im Modell ist das Muster Teil des `Stift`, und
+  der Maler hängt den Effekt in derselben Reihenfolge an — `CreateDash({6,2}, 0)` bzw.
+  `{8,5}`. Byte-gleich, aber nur, weil der Maler `StrokeCap` und `StrokeJoin` unverändert
+  lässt, solange sie auf der Vorgabe stehen.
+* **Die Reihenfolge Füllung/Rand.** Die Säulen der Stückzahlkurve wurden erst gefüllt, dann
+  umrandet, dann schraffiert. Im Modell sind Füllung und Rand EIN `Rechteck`-Befehl — der
+  Maler malt in derselben Reihenfolge, und die Schraffur folgt als eigener Befehl. Ein
+  zusammengefasster Befehl mit vertauschter Reihenfolge hätte am Antialiasing des Randes
+  sichtbar gelegen.
+* **Die Punkte der Schnittkurve.** Grob- und Feinpunkte standen im Bestand in EINER Schleife
+  mit zwei vorbereiteten Pinseln; wer sie in zwei Schleifen trennt, ändert die
+  Zeichenreihenfolge und damit die Überdeckung dort, wo zwei Punkte aufeinanderliegen. Die
+  eine Schleife ist geblieben, nur die Pinsel sind zu zwei Füllungen geworden.
+* **Die Bildhöhe des Optimierungsrasters.** Sie wird aus dem umgebrochenen Fußblock
+  gerechnet, BEVOR die Zeichenfläche entsteht. Das Modell entsteht deshalb an genau
+  derselben Stelle wie vorher die Fläche — eine Zeile früher, und ein Bild mit Zusatzhinweis
+  wäre zu niedrig geworden.
+* **Die Vollkreis-Falle.** Der Kommentar dazu stand am Leinwand-`Kreissegment`, das entfällt;
+  er ist an den Modellbefehl gewandert, wo die Regel jetzt entschieden wird
+  (`SkiaMaler`, `Winkel >= 360°` → Ellipse).
+
+### Nachweis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Messlatte `Messlatte_2026-09-20.sha256` | 91 von 91 Hashes gleich, Text-Diff leer — nach jedem der fünf Umbau-Commits |
+| `Proben/ChartProben` | 71 Bilder, 0 Verstöße |
+| `WP-Plan.Kern.slnf` Bau und volle Suite mit den CI-Schaltern | grün |
+| `ChartRendererTests` | 15 grün, beide Kulturen |
+| `ZeichenmodellTests` / `SkiaMalerTests` | 15 / 17 grün |
+| `ZeichenmodellWacheTests` | 4 neu, grün |
+| Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler |
+| Referenzlauf | nicht nötig — kein Rechenweg berührt |
+
+### Offen nach E1c
+
+* **E2 ist frei:** `SvgSchreiber` aus demselben Modell, `DiagrammSvg.razor`, erste Stelle
+  Klimadialog.
+* `SKColor`, `SKRect` und `SKPoint` stehen weiter in der öffentlichen Fläche des Renderers
+  und in den Hüllen — eigene Etappe (siehe oben).
+* Die schwarze Optimumsmarke (Rasterkarte, Stückzahlkurve) und der weiße Zellen- und
+  Säulenrand nennen die WERTGLEICHEN Rollen `TEXT` und `HINTERGRUND`. Das ist heute richtig —
+  der Rand IST der Bildgrund —, aber ein Palettentausch von `TEXT` zöge die Marke mit. Ob
+  beide eigene Rollen bekommen, entscheidet der Auftrag, der die Palette zur
+  Anwendungseinstellung macht (DF-1); `Farbpalette.cs` ist in E1c bewusst nicht angefasst
+  worden, damit dessen Merge ein reiner Anhängekonflikt bleibt.
+* `Segment` und `Ringsegment` tragen ihre Farbe weiter als `SKColor`; die Legende bildet sie
+  über die Rückwärtssuche ab. Bei wertgleichen Rollen (Orange ist SERIE_1 und die
+  BHKW-Farbe) trifft sie die zuerst eingetragene — für das Bild gleichgültig, für einen
+  späteren Palettentausch nicht. Ein `Farbton` im Segment gehört in denselben Auftrag wie
+  die Einstellungsmaske.

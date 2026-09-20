@@ -6,13 +6,45 @@ namespace WindowsFormsApplication1.Zeichnung
     /// Die Achsenstufungen des Berichts an EINER Stelle (Etappe E1).
     ///
     /// <para><b>Vier benannte Varianten, nicht eine Rechnung.</b> Der Bestand hat
-    /// fünf Skalenrechnungen, und sie liefern nicht dasselbe: <see cref="Nice"/>
-    /// rundet nur die Obergrenze, <see cref="Rund"/> die Schrittweite,
-    /// <see cref="Stufe"/> zusätzlich die Untergrenze, und <see cref="Bedarf"/>
-    /// kennt als einzige Zehntelschritte. Sie sind hier zusammengezogen und
-    /// benannt, aber NICHT vereinheitlicht: Jede Vereinfachung, die ein Ergebnis
-    /// verschöbe, verschöbe ein Bild. Die Hash-Messlatte der ChartProben lässt das
-    /// nicht zu.</para>
+    /// fünf Skalenrechnungen, und sie liefern nicht dasselbe. Sie sind hier
+    /// zusammengezogen und benannt, aber NICHT vereinheitlicht: Jede
+    /// Vereinfachung, die ein Ergebnis verschöbe, verschöbe ein Bild. Die
+    /// Hash-Messlatte der ChartProben lässt das nicht zu.</para>
+    ///
+    /// <list type="table">
+    /// <listheader><term>Variante</term><description>Was sie liefert, und wer sie
+    /// nimmt</description></listheader>
+    /// <item><term><see cref="Nice"/></term><description>nur die OBERGRENZE, aus
+    /// der Stufenfolge 1 / 2 / 2,5 / 5 × 10^k. Jede Achse, die bei null anfängt:
+    /// Monatssäulen und -stapel, Erzeugerstapel, Ganglinien, Streuwolke,
+    /// Balken.</description></item>
+    /// <item><term><see cref="Rund"/></term><description>nur die SCHRITTWEITE aus
+    /// derselben Folge, aufgerundet; Ober- und Untergrenze rechnet der Aufrufer
+    /// daraus (<c>Floor</c>/<c>Ceiling</c>). Kennlinien, Schnitt- und
+    /// Stückzahlkurve, Streuwolke (x), Jahresprojektion, gefensterte
+    /// x-Achse.</description></item>
+    /// <item><term><see cref="Stufe"/></term><description>Schrittweite UND beide
+    /// Grenzen in einem Zug, auf fünf Rasterlinien ausgelegt. Kapitalwert-Verlauf
+    /// und Kennlinien (beide Achsen).</description></item>
+    /// <item><term><see cref="Bedarf"/></term><description>Schrittweite,
+    /// Obergrenze und ZAHLENFORMAT aus einer eigenen Stufenfolge, die auch Zehntel
+    /// kennt. Nur die Bedarfsbilder.</description></item>
+    /// </list>
+    ///
+    /// <para><b>Warum <see cref="Stufe"/> die Schrittweite nicht bei
+    /// <see cref="Rund"/> holt</b> — die beiden sehen gleich aus und sind es nicht:
+    /// Findet die Stufenfolge keinen passenden Faktor, nimmt <see cref="Rund"/> das
+    /// ZEHNFACHE der Zehnerstufe, <see cref="Stufe"/> die Zehnerstufe selbst. Der
+    /// Fall tritt an den Rundungsrändern von <c>Log10</c> auf, und dort lägen die
+    /// Rasterlinien danach anders. Deshalb bleibt die Rechnung in
+    /// <see cref="Stufe"/> stehen, statt <see cref="Rund"/> zu rufen.</para>
+    ///
+    /// <para><b>Und warum <see cref="Nice"/> nicht aus <see cref="Rund"/> folgt:</b>
+    /// <see cref="Rund"/> vergleicht <c>zehner · f &gt;= roh</c> und nimmt den ersten
+    /// Treffer, <see cref="Nice"/> vergleicht den normierten Anteil
+    /// <c>max / zehner</c> gegen dieselben Faktoren. Für die Zahlen des Bestands
+    /// fällt das zusammen; an einem Wert, der genau auf einer Zehnerstufe liegt,
+    /// nicht mehr. Zwei Namen sind billiger als ein wanderndes Bild.</para>
     /// </summary>
     public static class Skala
     {

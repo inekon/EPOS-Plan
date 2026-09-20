@@ -338,19 +338,4 @@ namespace WindowsFormsApplication1.Zeichnung
             };
         }
     }
-
-    /// <summary>
-    /// Ein Ziel, das JEDEN Befehl sofort auf eine Leinwand malt, statt ihn zu
-    /// sammeln — die Brücke des Übergangs (Etappe E1): Zeichenmethoden, die noch
-    /// nicht auf dem Modell stehen, geben den gemeinsamen Helfern dieses Ziel und
-    /// bekommen Bildpunkt für Bildpunkt dasselbe Bild wie zuvor.
-    /// </summary>
-    public sealed class SkiaZiel : IZeichenziel
-    {
-        private readonly SKCanvas _leinwand;
-
-        public SkiaZiel(SKCanvas leinwand) { _leinwand = leinwand; }
-
-        public void Fuege(Zeichenbefehl befehl) => SkiaMaler.Male(_leinwand, befehl);
-    }
 }

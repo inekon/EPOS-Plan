@@ -127,13 +127,14 @@ namespace WindowsFormsApplication1.Zeichnung
     // ------------------------------------------------------------------ Ziele
 
     /// <summary>
-    /// Wohin ein Helfer seine Befehle gibt: in ein <see cref="Zeichenmodell"/>
-    /// (gesammelt) oder über <c>SkiaZiel</c> unmittelbar auf eine Leinwand.
+    /// Wohin ein Helfer seine Befehle gibt: in ein ganzes <see cref="Zeichenmodell"/>
+    /// oder in einen <see cref="Befehlssammler"/>, der eine Gruppe füllt.
     ///
-    /// <para><b>Der Übergang.</b> Solange nicht alle 26 Zeichenmethoden auf dem
-    /// Modell stehen, bedienen die gemeinsamen Helfer beide Wege über DIESE
-    /// Schnittstelle — EIN Rumpf, zwei Ziele. Am Ende der Etappe bleibt nur der
-    /// Modellweg.</para>
+    /// <para>Die Schnittstelle trennt den HELFER vom Behälter: Titel, Raster, Achsen
+    /// und Legende haben EINEN Rumpf, gleich ob sie ins Bild oder in eine
+    /// zugeschnittene Gruppe schreiben. Ein Ziel, das unmittelbar malt, gibt es
+    /// nicht mehr — gemalt wird erst das fertige Modell
+    /// (<c>SkiaMaler.Png</c>).</para>
     /// </summary>
     public interface IZeichenziel
     {
