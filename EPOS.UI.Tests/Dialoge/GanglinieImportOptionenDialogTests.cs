@@ -316,7 +316,15 @@ public class GanglinieImportOptionenDialogTests : BunitContext
         IElement fuss = leisten[leisten.Count - 1];
 
         var knoepfe = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Vorschau aktualisieren", "Abbrechen", "OK" }, knoepfe);
+        // Die Texte kommen aus den Ressourcen - diese Klasse pinnt keine Kultur.
+        Assert.Equal(
+            new[]
+            {
+                WindowsFormsApplication1.MyResource.Resource.IMPORT_BTN_AKTUALISIEREN,
+                WindowsFormsApplication1.MyResource.Resource.IMPORT_BTN_ABBRECHEN,
+                WindowsFormsApplication1.MyResource.Resource.SIM_BTN_OK
+            },
+            knoepfe);
 
         // Der Fueller ist die Statusspanne, und sie steht ZWISCHEN Aktualisieren
         // und Abbrechen.
@@ -327,6 +335,7 @@ public class GanglinieImportOptionenDialogTests : BunitContext
         // Genau ein primaerer Knopf, und er steht zuletzt.
         var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
         Assert.Single(primaer);
-        Assert.Equal("OK", primaer[0].TextContent.Trim());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIM_BTN_OK,
+                     primaer[0].TextContent.Trim());
     }
 }
