@@ -559,11 +559,26 @@
     /// nach einem gescheiterten Schritt wiederholt sie nicht.</summary>
     private readonly List<bool> _anlageGeschrieben = new List<bool>();
 
+    /// <summary>
+    /// ETAPPE E2: Welcher Schreibversuch einer Anlagenzeile GESCHEITERT ist.
+    ///
+    /// <para><b>Warum das nötig ist.</b> <c>Anwenden</c> läuft VOR dem Schreibaufruf —
+    /// nach einem gescheiterten Versuch gleichen Arbeitsstand und hereingereichtes
+    /// Objekt einander. Ohne dieses Merkmal hielte die Änderungsprüfung des OK-Wegs
+    /// (04/B30) den Schritt für erledigt und überspränge ihn: Der zweite OK schlösse
+    /// den Dialog, ohne dass die Angabe jemals geschrieben wäre. Ein gescheiterter
+    /// Schritt bleibt deshalb fällig, bis er gelingt.</para>
+    /// </summary>
+    private readonly List<bool> _anlageFehlversuch = new List<bool>();
+
     /// <summary>Der Arbeitsstand der Projektvorgaben.</summary>
     private BhkwVorgabenstand _vorgaben = new BhkwVorgabenstand();
 
     /// <summary>Sind die Projektvorgaben im OK-Weg schon geschrieben?</summary>
     private bool _vorgabenGeschrieben;
+
+    /// <inheritdoc cref="_anlageFehlversuch"/>
+    private bool _vorgabenFehlversuch;
 
     private IReadOnlyList<Steuerwahl> _artA = Array.Empty<Steuerwahl>();
     private IReadOnlyList<Steuerwahl> _fallA = Array.Empty<Steuerwahl>();
@@ -653,6 +668,7 @@
         {
             _staende.Add(BhkwAnlagenstand.Aus(a));
             _anlageGeschrieben.Add(false);
+            _anlageFehlversuch.Add(false);
         }
         _vorgaben = BhkwVorgabenstand.Aus(Parameter);
 
@@ -1201,21 +1217,33 @@
         for (int i = 0; i < Anlagen.Count && i < _staende.Count; i++)
         {
             if (_anlageGeschrieben[i]) continue;
-            if (nurBeiAenderung && _staende[i].Gleicht(Anlagen[i])) continue;
+            // ETAPPE E2: Ein GESCHEITERTER Schritt bleibt fällig. Anwenden ist unten
+            // schon gelaufen, Arbeitsstand und Objekt gleichen einander seither — ohne
+            // das Merkmal hielte die Änderungsprüfung den Schritt für erledigt, und
+            // der zweite OK schlösse den Dialog, ohne je geschrieben zu haben.
+            if (nurBeiAenderung && !_anlageFehlversuch[i] &&
+                _staende[i].Gleicht(Anlagen[i])) continue;
 
             _staende[i].Anwenden(Anlagen[i]);
-            if (SpeichereAnlage is not null && !SpeichereAnlage(Anlagen[i])) { fehler++; continue; }
+            if (SpeichereAnlage is not null && !SpeichereAnlage(Anlagen[i]))
+            { fehler++; _anlageFehlversuch[i] = true; continue; }
             _anlageGeschrieben[i] = true;
+            _anlageFehlversuch[i] = false;
             geschrieben = true;
         }
 
-        if (!_vorgabenGeschrieben && !(nurBeiAenderung && _vorgaben.Gleicht(Parameter)))
+        if (!_vorgabenGeschrieben &&
+            !(nurBeiAenderung && !_vorgabenFehlversuch && _vorgaben.Gleicht(Parameter)))
         {
-            // K3 = a: Der Modus des § 9 Abs. 1 Nr. 3 wird NICHT geschrieben - es gibt
-            // dafuer bis B6 (M-3) keine Spalte; er steht auch nicht im Arbeitsstand.
+            // K3 = a: Der Modus des § 9 Abs. 1 Nr. 3 reist seit Etappe B6 mit — die
+            // Spalte Tab_ProjektWirtschaftlichkeit.Stromst_Befreiung_Modus gibt es
+            // seit Schemaschritt 88, und der Arbeitsstand fuehrt ihn
+            // (BhkwVorgabenstand.StromsteuerBefreiungModus). Anwenden schreibt ihn
+            // mit; Gleicht vergleicht ihn mit.
             _vorgaben.Anwenden(Parameter);
-            if (SpeichereVorgaben is not null && !SpeichereVorgaben(Parameter)) fehler++;
-            else { _vorgabenGeschrieben = true; geschrieben = true; }
+            if (SpeichereVorgaben is not null && !SpeichereVorgaben(Parameter))
+            { fehler++; _vorgabenFehlversuch = true; }
+            else { _vorgabenGeschrieben = true; _vorgabenFehlversuch = false; geschrieben = true; }
         }
 
         // Scheitert ein Schritt, findet der Sprung NICHT statt und die Maske bleibt
@@ -1244,8 +1272,16 @@
     /// Der Rueckruf der Leiste. <b>OK</b> schreibt den ganzen Arbeitsstand und
     /// schliesst; scheitert ein Schritt, bleibt der Dialog offen und nennt den Grund.
     /// <b>Abbrechen</b> verlaesst ihn ohne einen einzigen Schreibzugriff.
+    ///
+    /// <para><b>ETAPPE E2 (Mockup-Pruefung 04/B30).</b> Auch der OK-Weg schreibt nur,
+    /// was sich seit dem Laden geaendert hat. Die Begruendung ist dieselbe wie bei den
+    /// Sprungknoepfen: Ein Schreiben ohne Aenderung ueberschriebe in einer
+    /// Mehrbenutzerlage fremde Aenderungen mit dem eigenen geladenen Stand — und wer
+    /// den Dialog nur oeffnet, nachsieht und mit OK schliesst, tut genau das. Der
+    /// Vergleich laeuft am WERT (<c>Gleicht</c>), nicht an einem Merkflag.</para>
     /// </summary>
-    private Task BeiErgebnis(bool ok) => ok ? Schreiben(BhkwSprung.Keiner) : Verwerfen();
+    private Task BeiErgebnis(bool ok)
+        => ok ? Schreiben(BhkwSprung.Keiner, nurBeiAenderung: true) : Verwerfen();
 
     // Die zwei Sprungknoepfe nehmen den OK-Weg: Sie schreiben und schliessen. Der
     // Wirt oeffnet danach das Ziel und bringt den Dialog zurueck - ohne das
@@ -1272,11 +1308,15 @@
     {
         get
         {
+            // ETAPPE E2: Ein gescheiterter Schritt ist weiterhin fällig — die
+            // Ankündigung muss ihn mitzählen, sonst verspräche sie zu wenig.
             for (int i = 0; i < Anlagen.Count && i < _staende.Count; i++)
-                if (!_anlageGeschrieben[i] && !_staende[i].Gleicht(Anlagen[i]))
+                if (!_anlageGeschrieben[i] &&
+                    (_anlageFehlversuch[i] || !_staende[i].Gleicht(Anlagen[i])))
                     return true;
 
-            return !_vorgabenGeschrieben && !_vorgaben.Gleicht(Parameter);
+            return !_vorgabenGeschrieben &&
+                   (_vorgabenFehlversuch || !_vorgaben.Gleicht(Parameter));
         }
     }
 

@@ -222,6 +222,12 @@ namespace WindowsFormsApplication1
                 ["VarianteLoeschenKurztext"] = T("KKOMP_TT_VARIANTE_LOESCHEN", "Variante löschen"),
                 ["ReadOnlyHinweis"] = T("KDLG_READONLY_HINWEIS",
                     "Auslieferungsvorlage (schreibgeschützt) — zum Ändern „Speichern unter…\" verwenden."),
+                // ETAPPE E2 (Mockup-Prüfung 03/§ 6.2): Die beiden Reiterbeschriftungen
+                // kamen aus den Razor-Vorgaben und blieben damit in JEDER Sprache
+                // deutsch. Die Schlüssel liegen in beiden Sprachen vor; hier werden
+                // sie belegt wie jeder andere Text dieses Parametersatzes.
+                ["TitelReiterKosten"] = T("KDLG_TAB_KOSTEN", "Kosten Invest/Betrieb"),
+                ["TitelReiterErtrag"] = T("KDLG_TAB_ERTRAG", "Ertrag/Bonus"),
                 ["LabelRaster"] = T("KKOMP_RASTER", "Positionen"),
                 ["SpalteAktionen"] = T("KDLG_SP_AKTIONEN", "Aktionen"),
                 ["SpaltePosition"] = T("KDLG_SP_POSITION", "Position"),
@@ -274,8 +280,11 @@ namespace WindowsFormsApplication1
                 ["VorlageUebernehmenKurztext"] = T("KDLG_VORLAGE_UEBERNEHMEN_TT",
                     "Die Bemessung der Vorlage für diese Position übernehmen; "
                     + "Satz und Betrag bleiben stehen."),
-                ["SpeichernText"] = T("KDLG_BTN_SPEICHERN", "Speichern"),
-                ["AbbrechenText"] = T("KDLG_BTN_ABBRECHEN", "Abbrechen"),
+                // W-E2 (Mockup-Prüfung 04): Speichern und Abbrechen sind Hausknöpfe — ein
+                // eigener, gleichlautender Schlüssel je Dialog wäre eine zweite Wahrheit
+                // über denselben Text. Der alte Schlüssel bleibt in der .resx stehen.
+                ["SpeichernText"] = T("ADM_BTN_SPEICHERN", "Speichern"),
+                ["AbbrechenText"] = T("ALLG_BTN_ABBRECHEN", "Abbrechen"),
                 // DL-2 (DL-Q3 a): Die Zeilenaktionen des Reiters „Kosten" schreiben
                 // sofort - der Kurztext sagt, was Abbrechen wirklich verwirft.
                 ["AbbrechenKurztext"] = T("KDLG_TIP_ABBRECHEN",

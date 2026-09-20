@@ -298,7 +298,7 @@
     <value>Trying: {0}…</value>
   </data>
   <data name="ETV_BTN_SPEICHERN" xml:space="preserve">
-    <value>💾 Save</value>
+    <value>Save</value>
   </data>
   <data name="ETV_LBL_ARBEITSPREIS" xml:space="preserve">
     <value>Energy price</value>
@@ -8751,6 +8751,9 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_LPR_LOESCHEN" xml:space="preserve">
     <value>Delete series</value>
   </data>
+  <data name="KDLG_LPR_LOESCHFRAGE" xml:space="preserve">
+    <value>Really delete the demand-charge series for {0}?</value>
+  </data>
   <data name="KDLG_LPR_TITEL" xml:space="preserve">
     <value>Seasonal capacity price rates</value>
   </data>
@@ -8956,7 +8959,7 @@ To deactivate it, set its rate or amount to 0.</value>
     <value>CHP surcharge (sec. 7 KWKG 2025) — display from the statutory catalogue</value>
   </data>
   <data name="KDLG_ERTRAG_G_PV" xml:space="preserve">
-    <value>PV remuneration (EEG) — one remuneration truth (V4/F7)</value>
+    <value>PV remuneration (EEG) — one remuneration truth</value>
   </data>
   <data name="KDLG_ERTRAG_G_STEUERN" xml:space="preserve">
     <value>Tax privileges (HF6, rates from the statutory catalogue)</value>
@@ -8968,7 +8971,7 @@ To deactivate it, set its rate or amount to 0.</value>
     <value>This component has no recurring revenue — grants/subsidies run as a subsidy position within the investment costs (FK5).</value>
   </data>
   <data name="KDLG_ERTRAG_PV" xml:space="preserve">
-    <value>PV remuneration is maintained per project in the remuneration dialog — the same form the “Photovoltaics…” button of the economics tab opens. A variant either takes the remuneration of its master project or holds its own values. Applicable value, marketing form, sec. 51/51a and the 60 % limitation act on the NPV via the PV revenue series.</value>
+    <value>PV remuneration is maintained per project in the remuneration dialog (one remuneration truth per project) — the same form the “Photovoltaics…” button of the economics tab opens. A variant either takes the remuneration of its master project or holds its own values. Applicable value, marketing form, sec. 51/51a and the 60 % limitation act on the NPV via the PV revenue series.</value>
   </data>
   <data name="KDLG_ERTRAG_PV_OEFFNEN" xml:space="preserve">
     <value>Open PV remuneration dialog…</value>
@@ -10670,7 +10673,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>The PV remuneration could not be saved.</value>
   </data>
   <data name="PVV_SPRUNG_HINWEIS" xml:space="preserve">
-    <value>Jumping to the tariff dialog closes this window and reopens it afterwards — please apply your entries first.</value>
+    <value>The jump saves your entries, closes this dialogue and reopens it afterwards.</value>
   </data>
   <data name="WPAR_BTN_SPEICHERN" xml:space="preserve">
     <value>Save</value>
@@ -19720,9 +19723,6 @@ Do you want to allow this?</value>
   </data>
   <data name="BK_KOSTEN_EMISSION_CO2" xml:space="preserve">
     <value>CO₂ factor of level „{0}“. Lookup chain: project value → active emission value → fuel master → carrier catalogue.</value>
-  </data>
-  <data name="WIRT_ENK_KOPF" xml:space="preserve">
-    <value>Energy cost by plant [€/a]</value>
   </data>
   <data name="WIRT_ENK_ANLAGE" xml:space="preserve">
     <value>{0} — {1}</value>

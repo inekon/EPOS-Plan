@@ -9311,7 +9311,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 💾 Speichern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
         public static string ETV_BTN_SPEICHERN {
             get {
@@ -21198,7 +21198,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung (EEG) — eine Vergütungswahrheit ähnelt.
         /// </summary>
         public static string KDLG_ERTRAG_G_PV {
             get {
@@ -21234,7 +21234,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet. Eine Variante übernimmt die Vergütung ihres Stammprojekts oder führt eigene Werte. Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt (eine Vergütungswahrheit je Projekt) — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet. Eine Variante übernimmt die Vergütung ihres Stammprojekts oder führt eigene Werte. Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung. ähnelt.
         /// </summary>
         public static string KDLG_ERTRAG_PV {
             get {
@@ -22166,6 +22166,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_LPR_LOESCHEN {
             get {
                 return ResourceManager.GetString("KDLG_LPR_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungspreis-Reihe für {0} wirklich löschen? ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_LOESCHFRAGE {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_LOESCHFRAGE", resourceCulture);
             }
         }
         
@@ -42125,7 +42134,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung in den Tarifdialog schließt dieses Fenster und öffnet es danach wieder — bitte vorher übernehmen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung speichert die Eingaben, schließt diesen Dialog und öffnet ihn danach wieder. ähnelt.
         /// </summary>
         public static string PVV_SPRUNG_HINWEIS {
             get {
@@ -55389,15 +55398,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ENK_ANLAGE {
             get {
                 return ResourceManager.GetString("WIRT_ENK_ANLAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten je Anlage [€/a] ähnelt.
-        /// </summary>
-        public static string WIRT_ENK_KOPF {
-            get {
-                return ResourceManager.GetString("WIRT_ENK_KOPF", resourceCulture);
             }
         }
         

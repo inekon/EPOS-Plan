@@ -11,9 +11,10 @@ namespace WindowsFormsApplication1
     /// <see cref="KostenfaktorKatalogDialog"/> kennt keine Datenbank; alle drei
     /// Anweisungen der gelöschten Maske <c>Form_KostenAdmin</c> stehen seit iU9-W1.5
     /// im Kern-Controller <see cref="KostenfaktorCtrl"/>. Diese Hülle verbindet
-    /// beides und reicht die Rückfrage vor dem Löschen an
-    /// <c>Dienste.Dialog.Frage</c> weiter — ein Ja/Nein-Baustein in
-    /// <c>EPOS.UI</c> entsteht erst in Welle 4 (Bausteinlücke 8).</para>
+    /// beides. Die Rückfrage vor dem Löschen reicht sie NICHT mehr weiter: Sie
+    /// steht als Baustein <c>Rueckfrage</c> im Dialog selbst, weil ein modales
+    /// Systemfenster unmittelbar aus einem Blazor-Ereignis hier verboten ist
+    /// (Regel (b)) und es auf iOS keine MessageBox gibt.</para>
     /// </summary>
     internal static class KostenfaktorKatalogHuelle
     {
@@ -33,10 +34,11 @@ namespace WindowsFormsApplication1
                 ["Neu"] = new Func<string, int>(KostenfaktorCtrl.Neu),
                 ["Loeschen"] = new Func<int, ValueTuple<bool, string>>(Loeschen),
 
-                // Die Rückfrage von btnDeleteKostenfaktor_Click — derselbe Text,
-                // dieselbe Vorgabe (Ja/Nein mit Fragezeichen).
-                ["Rueckfrage"] = new Func<string, bool>(
-                    text => Dienste.Dialog.Frage(text, Text_("KFAK_FRAGE_TITEL", "Kostenfaktoren"))),
+                // Die Rückfrage von btnDeleteKostenfaktor_Click steht seit dem
+                // Umbau IM Dialog (Baustein Rueckfrage, Vorgabe „Nein"). Hier
+                // darf kein Schlüssel „Rueckfrage" mehr stehen: Der Parametersatz
+                // trifft nur [Parameter], und ein unbekannter Schlüssel bricht
+                // beim ersten Zeichnen im Blazor-Verteiler.
 
                 // Leer: Die Ueberlagerung (KostenKomponenteDialog) traegt den
                 // Titel schon (KatalogTitel, derselbe Schluessel KFAK_TITEL) -

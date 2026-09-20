@@ -37,6 +37,20 @@ public class LeistungspreisReiheDialogTests : BunitContext
         });
     }
 
+    /// <summary>Die Loeschfrage — der Baustein <c>Rueckfrage</c> im Dialog.</summary>
+    private static IRenderedComponent<EPOS.UI.Bausteine.Rueckfrage> Loeschfrage(
+        IRenderedComponent<LeistungspreisReiheDialog> cut)
+        => cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>();
+
+    /// <summary>
+    /// Antwortet auf die Loeschfrage. Die Knoepfe werden ueber ihre STELLUNG gewaehlt
+    /// (Ja zuerst, dann Nein), nicht ueber ihren Text: Der kommt aus
+    /// <c>Resource.ALLG_BTN_JA/_NEIN</c> und haengt damit an der Kultur des Laeufers,
+    /// die diese Klasse bewusst nicht pinnt.
+    /// </summary>
+    private static void Antworten(IRenderedComponent<LeistungspreisReiheDialog> cut, bool ja)
+        => Loeschfrage(cut).FindAll(".epos-rueckfrage .epos-leiste button")[ja ? 0 : 1].Click();
+
     // =====================================================================
     // Feldbestand und Beschriftungen (Feldkarte)
     // =====================================================================
@@ -221,8 +235,45 @@ public class LeistungspreisReiheDialogTests : BunitContext
     // Löschen und Abbrechen
     // =====================================================================
 
+    /// <summary>
+    /// W-E2, Befund 04/B17: „Reihe löschen" schreibt nicht mehr sofort — es fragt
+    /// erst, mit Vorgabe „Nein" (A-1), und nennt das Jahr der betroffenen Reihe.
+    /// Der Vorläufer löschte zwölf gepflegte Monatssätze ohne ein Wort.
+    /// </summary>
     [Fact]
-    public void Loeschen_ruft_den_Delegaten_und_schliesst()
+    public void Loeschen_fragt_erst_und_nennt_das_Jahr()
+    {
+        bool geloescht = false;
+        bool? ergebnis = null;
+
+        var cut = Zeige(p => p
+            .Add(x => x.Jahr, 2024)
+            .Add(x => x.LoeschenErlaubt, true)
+            .Add(x => x.Loeschen, () => { geloescht = true; return true; })
+            .Add(x => x.VorlageLoeschfrage, "Reihe {0} löschen?")
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        cut.FindAll(".epos-leiste button")[0].Click();
+
+        var frage = Loeschfrage(cut);
+        Assert.True(frage.Instance.Offen);
+        Assert.True(frage.Instance.VorgabeNein);
+        Assert.Equal("Reihe 2024 löschen?", frage.Instance.Frage);
+        Assert.False(geloescht);                       // der Knopf fragt nur
+        Assert.Null(ergebnis);
+
+        // A-1: Der hervorgehobene Knopf ist "Nein", nicht "Ja".
+        var knoepfe = frage.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.DoesNotContain("epos-knopf--primaer", knoepfe[0].ClassName);
+        Assert.Contains("epos-knopf--primaer", knoepfe[1].ClassName);
+
+        Antworten(cut, ja: true);
+        Assert.True(geloescht);
+        Assert.True(ergebnis);
+    }
+
+    [Fact]
+    public void Ein_Nein_in_der_Rueckfrage_loescht_nicht()
     {
         bool geloescht = false;
         bool? ergebnis = null;
@@ -233,9 +284,34 @@ public class LeistungspreisReiheDialogTests : BunitContext
             .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
 
         cut.FindAll(".epos-leiste button")[0].Click();
+        Antworten(cut, ja: false);
 
-        Assert.True(geloescht);
-        Assert.True(ergebnis);
+        Assert.False(geloescht);
+        Assert.Null(ergebnis);                         // der Dialog bleibt offen
+        Assert.False(Loeschfrage(cut).Instance.Offen);
+    }
+
+    /// <summary>
+    /// Eine offene Rueckfrage faengt Esc ab — der Dialog darf nicht unter der Frage
+    /// wegschliessen (Muster <c>GesetzeskatalogDialog</c>).
+    /// </summary>
+    [Fact]
+    public void Esc_schliesst_nicht_solange_die_Loeschfrage_steht()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(p => p
+            .Add(x => x.LoeschenErlaubt, true)
+            .Add(x => x.Loeschen, () => true)
+            .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
+
+        cut.FindAll(".epos-leiste button")[0].Click();
+        cut.Find(".epos-dialog").KeyDown("Escape");
+        Assert.Null(ergebnis);
+
+        // Nach der Antwort schliesst Esc wieder.
+        Antworten(cut, ja: false);
+        cut.Find(".epos-dialog").KeyDown("Escape");
+        Assert.False(ergebnis);
     }
 
     [Fact]
@@ -249,6 +325,7 @@ public class LeistungspreisReiheDialogTests : BunitContext
             .Add(x => x.Geschlossen, (bool ok) => geschlossen = true));
 
         cut.FindAll(".epos-leiste button")[0].Click();
+        Antworten(cut, ja: true);
 
         Assert.False(geschlossen);
         Assert.Contains("nicht gelöscht", cut.Find(".epos-warnbanner").TextContent);

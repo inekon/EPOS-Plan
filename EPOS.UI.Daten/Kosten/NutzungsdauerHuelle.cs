@@ -172,7 +172,9 @@ namespace WindowsFormsApplication1
                 LeereListe = Text("ND_LEER_LISTE", "Keine Zeile passt zur Suche."),
                 MeldungArtLeer = Text("ND_MELD_ART_LEER", "Die Positionsart darf nicht leer sein."),
                 Ok = MyResource.Resource.ALLG_BTN_OK,
-                Abbrechen = Text("PVW_ABBRECHEN", "Abbrechen"),
+                // W-E2 (Mockup-Prüfung 04): Abbrechen ist ebenfalls ein Hausknopf —
+                // PVW_ABBRECHEN war ein eigener, gleichlautender Schlüssel für denselben Text.
+                Abbrechen = Text("ALLG_BTN_ABBRECHEN", "Abbrechen"),
                 Speichern = MyResource.Resource.ADM_BTN_SPEICHERN,
             };
         }

@@ -307,10 +307,15 @@
            ändert eine gerechnete Wirtschaftlichkeit ohne Zutun — der Knopf füllt
            LEERE Nutzungsdauern und fragt nach, bevor er gefüllte überschreibt.
            Ohne Delegat kein Knopf (Hausregel). *@
-        @if (NutzungsdauerVorbelegen is not null)
+        @* ETAPPE E2 (Mockup-Pruefung 03/#26): Der Knopf erscheint nur, wo er WIRKT -
+           auf der Investitionsseite einer schreibbaren Vorlage bzw. eines Projekts.
+           Auf der Betriebsseite stand er dauerhaft gesperrt da und behauptete eine
+           Bedienung, die es dort nicht gibt. Ein gesperrtes Bedienelement bleibt nur
+           stehen, wo es seinen Grund erklaeren kann; hier ist der Grund der
+           Kontext, und der steht im Reiter. *@
+        @if (NutzungsdauerVorbelegen is not null && _stand.NutzungsdauerVorbelegbar)
         {
             <button type="button" class="epos-knopf"
-                    disabled="@(!_stand.NutzungsdauerVorbelegbar)"
                     @onclick="VorbelegenAngefordert">@VorbelegenText</button>
         }
     </div>

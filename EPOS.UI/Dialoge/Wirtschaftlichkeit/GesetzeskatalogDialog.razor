@@ -251,7 +251,9 @@
     [Parameter] public string SpeicherfehlerText { get; set; } = Resource.GESETZ_MSG_SPEICHERN_FEHLER;
     [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
     [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
-    [Parameter] public string AbbrechenText { get; set; } = Resource.GESETZ_BTN_ABBRECHEN;
+    // W-E2 (Mockup-Prüfung 04): Abbrechen ist ein Hausknopf — kein eigener,
+    // gleichlautender Schlüssel je Dialog; GESETZ_BTN_ABBRECHEN bleibt in der .resx stehen.
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Gesetzesparameter.btn_Help";
 
     /// <summary>Die Beschriftungen der Katalogliste — EIN Bündel (MN-1).</summary>

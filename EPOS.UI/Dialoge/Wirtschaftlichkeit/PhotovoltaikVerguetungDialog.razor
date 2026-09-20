@@ -354,6 +354,10 @@
     private string _fehler = "";
     private bool _gespeichert;
 
+    /// <summary>ETAPPE E2 (Q12): der Wertabzug des Modells BEIM LADEN — Maßstab der
+    /// Änderungsprüfung des Sprungknopfs.</summary>
+    private string _abzugBeimLaden = "";
+
     protected override void OnInitialized()
     {
         _schalter = PvSchalterwahlen.Liste(_t);
@@ -364,6 +368,12 @@
         };
 
         ZulaessigkeitPruefen();
+
+        // ETAPPE E2 (Q12): Der Maßstab der Änderungsprüfung wird NACH der
+        // Zulässigkeitsregel genommen. Sie kann die Vermarktungsform umstellen, und
+        // das ist eine Korrektur des Dialogs, keine Eingabe des Anwenders — sie darf
+        // den Sprungknopf nicht zu einem Schreibzugriff machen.
+        _abzugBeimLaden = Abzug();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -649,7 +659,62 @@
         else _fehler = _t.ImportFehler + ergebnis.Bericht;
     }
 
-    private Task TarifKlick() => Schliessen(PvSprung.Tarif);
+    /// <summary>
+    /// ETAPPE E2 (ANWENDERENTSCHEID Q12 der Mockup-Prüfung) — der Sprung in den
+    /// Tarifdialog nimmt den <b>OK-Weg</b>: Er prüft, schreibt und springt, genau wie
+    /// der Sprungknopf des BHKW-Dialogs.
+    ///
+    /// <para>Bis hierher sprang er wie „Abbrechen": Der Dialog schloss, die Eingaben
+    /// waren weg, und die Zeile darunter kündigte das an. Das ist die Bauart, die
+    /// <c>EPOS.UI/CLAUDE.md</c> ausschließt — stillschweigend verlorene Eingaben gibt
+    /// es nicht; ein Knopf, der den Dialog auf einem anderen Weg verlässt, nimmt
+    /// entweder den OK-Weg oder verwirft ausdrücklich.</para>
+    ///
+    /// <para><b>Nur bei Änderung</b>, aus demselben Grund wie im BHKW-Dialog: Wer nur
+    /// nachschlagen will, soll keinen Schreibzugriff auslösen; ein Schreiben ohne
+    /// Änderung überschriebe in einer Mehrbenutzerlage fremde Änderungen mit dem
+    /// eigenen geladenen Stand. Gemessen wird am WERT des ganzen Modells
+    /// (<see cref="Abzug"/>), nicht an einem Merkflag — ein Flag kippt schon bei einem
+    /// Fokuswechsel, und ein Feld, das jemand vergisst mitzuzählen, gäbe es hier
+    /// nicht.</para>
+    ///
+    /// <para>Scheitert die Prüfung oder das Schreiben, findet der Sprung NICHT statt
+    /// und der Dialog bleibt mit seinem Grund offen.</para>
+    /// </summary>
+    private async Task TarifKlick()
+    {
+        _fehler = "";
+
+        if (Abzug() != _abzugBeimLaden)
+        {
+            // Dieselbe Pflichtprüfung wie am OK-Knopf — die Regel steht genau einmal.
+            if (Modell.Aktiv && Modell.Inbetriebnahme == DateTime.MinValue)
+            {
+                _fehler = _t.IbnPflicht;
+                return;
+            }
+
+            if (Speichern is null || !Speichern())
+            {
+                _fehler = _t.MsgSpeicherfehler;
+                return;
+            }
+
+            _gespeichert = true;
+            _abzugBeimLaden = Abzug();
+        }
+
+        await Schliessen(PvSprung.Tarif);
+    }
+
+    /// <summary>
+    /// Der Wertabzug des gepflegten Modells — die Grundlage der Änderungsprüfung des
+    /// Sprungknopfs. Er entsteht über die Feldliste des Modells selbst; eine von Hand
+    /// gepflegte Liste der „wichtigen" Felder wäre die Stelle, an der ein neues Feld
+    /// vergessen wird.
+    /// </summary>
+    private string Abzug()
+        => System.Text.Json.JsonSerializer.Serialize(Modell);
 
     /// <summary>
     /// „Eigene Werte" (Konzept § 2.16, VV‑Q6): Die Hülle kopiert die Stammwerte in die

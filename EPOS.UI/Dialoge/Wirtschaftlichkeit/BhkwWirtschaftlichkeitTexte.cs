@@ -24,8 +24,10 @@ public sealed class BhkwWirtschaftlichkeitTexte
     public string Titel { get; } = T("BHW_TITEL", "BHKW-Wirtschaftlichkeit");
 
     /// <summary>Der OK-Knopf der Fußleiste. Er schreibt und schließt — „Speichern"
-    /// ist hier also keine Behauptung, sondern das, was der Knopf tut.</summary>
-    public string Speichern { get; } = T("BHW_BTN_SPEICHERN", "Speichern");
+    /// ist hier also keine Behauptung, sondern das, was der Knopf tut. Hausschlüssel
+    /// <c>ADM_BTN_SPEICHERN</c> (W-E2, Mockup-Prüfung 04) — kein eigener,
+    /// gleichlautender Schlüssel für denselben Text.</summary>
+    public string Speichern { get; } = T("ADM_BTN_SPEICHERN", "Speichern");
 
     /// <summary>Der Abbrechen-Knopf — derselbe Hausschlüssel wie in den
     /// Nachbardialogen der Wirtschaftlichkeit.</summary>
@@ -33,7 +35,12 @@ public sealed class BhkwWirtschaftlichkeitTexte
 
     // ------------------------------------------------------- Gruppentitel
     public string G1 { get; } = T("BHW_G1", "Anlagen");
-    public string G1b { get; } = T("BHW_G1B", "Angaben der gewählten Anlage — leer bzw. 0 = Projektvorgabe");
+    // ETAPPE E2 (Mockup-Pruefung 03/#59): Der Rueckfalltext fuehrte einen Zusatz
+    // („— leer bzw. 0 = Projektvorgabe"), den der Ressourcentext nicht hat. Damit
+    // stand je nach Sprachstand eine andere Ueberschrift da. Der Rueckfall ist der
+    // deutsche Ressourcentext, Wort fuer Wort — die Regel, dass leer bzw. 0 die
+    // Projektvorgabe meint, steht in der Herleitungszeile der Gruppe.
+    public string G1b { get; } = T("BHW_G1B", "Angaben der gewählten Anlage");
     public string G2 { get; } = T("BHW_G2", "Projektweite KWK-Angaben");
     public string G3 { get; } = T("BHW_G3", "Energiesteuer (Projektvorgabe)");
     public string G4 { get; } = T("BHW_G4", "Stromsteuer (Projektvorgabe)");

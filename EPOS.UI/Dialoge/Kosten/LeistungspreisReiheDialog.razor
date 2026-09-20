@@ -24,6 +24,13 @@
    Resource-Schluessel") - die Huelle kann sie ueberschreiben, damit ein Test
    nicht an der Sprache des Laeufers haengt.
 
+   "REIHE LOESCHEN" FRAGT ERST. Der Vorlaeufer loeschte auf den Knopfdruck
+   hin, ohne ein Wort - zwoelf gepflegte Monatssaetze waren mit einem Klick
+   weg. Seit es den Baustein Rueckfrage gibt, steht davor die Frage, im selben
+   Fenster und mit Vorgabe "Nein" (A-1); eine MessageBox waere hier verboten
+   (WindowsFormsApplication1 Regel (b)) und auf iOS gar nicht vorhanden. Der
+   Weg ist dadurch ZWEISTUFIG: Der Knopf fragt, geloescht wird in der Antwort.
+
    TASTATUR: Esc schliesst. Enter ist NICHT belegt - "Uebernehmen" schreibt
    sofort (A-7 aus B5b). *@
 
@@ -77,6 +84,12 @@
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiUebernehmen">@UebernehmenText</button>
     </div>
+
+    @* --- "Reihe loeschen" fragt erst (Vorgabe "Nein", A-1) --------------- *@
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage"
+                TitelText="@TitelLoeschen" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="LoeschfrageBeantwortet" />
 </div>
 
 @code {
@@ -154,7 +167,8 @@
     /// <summary>Beschriftung von btnUebernehmen (KDLG_LPR_UEBERNEHMEN).</summary>
     [Parameter] public string UebernehmenText { get; set; } = "Übernehmen";
 
-    /// <summary>Beschriftung von btnAbbrechen (KDLG_LPR_ABBRECHEN).</summary>
+    /// <summary>Beschriftung von btnAbbrechen (ALLG_BTN_ABBRECHEN) — Hausknopf, kein
+    /// eigener, gleichlautender Schlüssel je Dialog (W-E2, Mockup-Prüfung 04).</summary>
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
 
     /// <summary>Meldung, wenn alle zwoelf Saetze 0 sind (KDLG_LPR_ALLES_NULL).</summary>
@@ -168,6 +182,22 @@
     /// <summary>Meldung, wenn das Loeschen scheitert (LPR_MSG_LOESCHFEHLER).</summary>
     [Parameter] public string MeldungLoeschfehler { get; set; }
         = "Die Reihe konnte nicht gelöscht werden.";
+
+    /// <summary>
+    /// Vorlage der Loeschrueckfrage, ein Platzhalter: das JAHR der Reihe. Es ist
+    /// das Merkmal, das die betroffene Reihe benennt — Traeger und Ebene stehen
+    /// schon in der Kontextzeile darueber.
+    /// </summary>
+    [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.KDLG_LPR_LOESCHFRAGE;
+
+    /// <summary>Ueberschrift der Loeschrueckfrage (KDLG_LPR_LOESCHEN).</summary>
+    [Parameter] public string TitelLoeschen { get; set; } = Resource.KDLG_LPR_LOESCHEN;
+
+    /// <summary>Beschriftung des Ja-Knopfes der Rueckfrage.</summary>
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+
+    /// <summary>Beschriftung des Nein-Knopfes der Rueckfrage — der hervorgehobene (A-1).</summary>
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
 
     /// <summary>Schluessel des Hilfeknopfes - die vorhandene Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_LeistungspreisReihe.btn_Help";
@@ -183,6 +213,11 @@
     private int? _jahr;
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    // Die Loeschfrage: Sie traegt ihren eigenen Offen-Zustand, weil der Wirt
+    // einer Ueberlagerung ueber Offen entscheidet, nicht der Baustein.
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
 
     /// <summary>Die zwoelf Felder (Pruefhilfe fuer Tests).</summary>
     public IReadOnlyList<double?> Felder => _werte;
@@ -247,9 +282,26 @@
         await Geschlossen.InvokeAsync(true);
     }
 
-    /// <summary>Wie <c>btnLoeschen_Click</c>: ohne eigene Reihe passiert nichts.</summary>
-    private async Task BeiLoeschen()
+    /// <summary>
+    /// Wie <c>btnLoeschen_Click</c>: ohne eigene Reihe passiert nichts. Anders als
+    /// dort wird nicht sofort geloescht, sondern erst gefragt — geloescht wird in
+    /// <see cref="LoeschfrageBeantwortet"/>.
+    /// </summary>
+    private void BeiLoeschen()
     {
+        if (!LoeschenErlaubt || Loeschen is null) return;
+
+        Melden("", WarnStufe.Hinweis);
+        _loeschfrage = string.Format(VorlageLoeschfrage, _jahr ?? Jahr);
+        _loeschfrageOffen = true;
+    }
+
+    /// <summary>Die Antwort auf die Loeschfrage; alles ausser „Ja" laesst die Reihe stehen.</summary>
+    private async Task LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true) return;
+
         if (!LoeschenErlaubt || Loeschen is null) return;
 
         if (!Loeschen())
@@ -269,10 +321,16 @@
         _meldungStufe = stufe;
     }
 
+    /// <summary>
+    /// Esc schliesst die OBERSTE Ebene: Steht die Loeschfrage, faengt SIE das Esc ab
+    /// (ihre Ueberlagerung antwortet „Nein"), und der Dialog bleibt stehen — sonst
+    /// schloesse er unter der Frage weg. Das ✕ im Kopf ist derweil von der
+    /// Abdunkelung der Ueberlagerung gedeckt.
+    /// </summary>
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
     {
         // Enter ist NICHT belegt: "Uebernehmen" und "Reihe loeschen" schreiben sofort.
-        "Escape" => BeiAbbrechen(),
+        "Escape" when !_loeschfrageOffen => BeiAbbrechen(),
         _ => Task.CompletedTask
     };
 

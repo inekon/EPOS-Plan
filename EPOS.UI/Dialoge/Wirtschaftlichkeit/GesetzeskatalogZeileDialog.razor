@@ -179,7 +179,9 @@
     [Parameter] public string LabelStatus { get; set; } = Resource.GESETZ_SP_STATUS;
     [Parameter] public string LabelQuelle { get; set; } = Resource.GESETZ_SP_QUELLE;
     [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
-    [Parameter] public string AbbrechenText { get; set; } = Resource.GESETZ_BTN_ABBRECHEN;
+    // W-E2 (Mockup-Prüfung 04): Abbrechen ist ein Hausknopf — kein eigener,
+    // gleichlautender Schlüssel je Dialog; GESETZ_BTN_ABBRECHEN bleibt in der .resx stehen.
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
 
     // =====================================================================
     // Zustand

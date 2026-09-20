@@ -952,9 +952,14 @@ body {
    Bausteine: Herleitungszeile und Kohaerenzzeile
    ========================================================================== */
 
+/* Etappe E2 (Mockup-Pruefung 03/#60): Die Kennzahlenzeilen der PV-Verguetung
+   tragen ihre Zeilenumbrueche im TEXT - eine Herleitung ueber mehrere Groessen
+   liest sich nur zeilenweise. Ohne pre-line laufen sie zu einem Absatz zusammen.
+   Leerraum wird weiterhin zusammengefasst; nur der Umbruch bleibt stehen. */
 .epos-herleitung {
     margin: 0;
     color: var(--epos-text-leise);
+    white-space: pre-line;
 }
 
 .epos-herleitung-formel {

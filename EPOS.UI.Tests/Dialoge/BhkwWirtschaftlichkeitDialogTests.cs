@@ -1422,6 +1422,18 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.False(OkKnopf(cut).HasAttribute("disabled"));
     }
 
+    /// <summary>
+    /// Die REIHENFOLGE der drei Schreibwege: erst Zeile fuer Zeile die Anlagen,
+    /// dann die Projektvorgaben — der Wirt haengt die Vorgaben an das an, was die
+    /// Zeilen bereits tragen.
+    ///
+    /// <para><b>ETAPPE E2 (Befund 04/B30).</b> Der OK-Weg schreibt seither nur noch
+    /// den WERTLICH geaenderten Stand. Damit alle drei Wege ueberhaupt laufen,
+    /// aendert der Pruefstand jetzt BEIDE Anlagenzeilen und die Vorgaben — sonst
+    /// bewiese der Fall nur noch die halbe Reihenfolge. Die zweite Zeile wird ueber
+    /// die Anlagenwahl angesteuert; der Arbeitsstand jeder Zeile bleibt beim
+    /// Zurueckwechseln stehen, und geschrieben wird trotzdem in Listenreihenfolge.</para>
+    /// </summary>
     [Fact]
     public void OK_schreibt_erst_die_Anlagenzeilen_dann_die_Projektvorgaben()
     {
@@ -1432,6 +1444,9 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
 
         var cut = Aufbauen(anlagen, p, e => ergebnis = e, z.Anlage, z.Vorgaben);
 
+        Koerper(cut, 0).QuerySelectorAll("button.epos-anlagenwahl")[1].Click();
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("7,25");
+        Koerper(cut, 0).QuerySelectorAll("button.epos-anlagenwahl")[0].Click();
         Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
         Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
 
@@ -1441,6 +1456,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Equal(new[] { "Anlage:BHKW EW M 50 S [K] Erdgas", "Anlage:EC-POWER XRGI 9", "Vorgaben" },
                      z.Wege);
         Assert.Equal(5.57, anlagen[0].SatzEinspCt);
+        Assert.Equal(7.25, anlagen[1].SatzEinspCt);
         Assert.True(p.RaeumlicherZusammenhang);
         Assert.NotNull(ergebnis);
         Assert.True(ergebnis!.Gespeichert);
@@ -1567,6 +1583,12 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
 
+    /// <summary>
+    /// ETAPPE E2 (Befund 04/B30): Der gescheiterte Schritt sind die Projektvorgaben —
+    /// also muessen sie geaendert sein, sonst ruehrt der OK-Weg sie gar nicht mehr an
+    /// und es gaebe nichts zu scheitern. Die geaenderte Anlagenzeile daneben gelingt
+    /// und zeigt, dass die Zahl im Band nur die FEHLGESCHLAGENEN Saetze nennt.
+    /// </summary>
     [Fact]
     public void Ein_gescheiterter_Schritt_haelt_den_Dialog_offen_und_nennt_die_Zahl()
     {
@@ -1576,6 +1598,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
                            speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
 
         Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
         OkKnopf(cut).Click();
 
         Assert.False(geschlossen);
@@ -1586,6 +1609,15 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.NotNull(cut.Find(".epos-status--fehler"));
     }
 
+    /// <summary>
+    /// ETAPPE E2 (Befund 04/B30): Beide Anlagenzeilen und die Vorgaben sind
+    /// geaendert, sonst liefe der OK-Weg gar nicht mehr ueber alle drei Wege.
+    ///
+    /// <para>Gemessen wird, was der Fall beweisen will: Die zwei bereits geschriebenen
+    /// Anlagenzeilen bleiben unberuehrt, gerufen wird nur der offene Weg. Der zweite
+    /// Anlauf aendert die Vorgaben hier noch einmal — dass er auch OHNE weitere
+    /// Aenderung gelingt, steht als eigener Fall darunter.</para>
+    /// </summary>
     [Fact]
     public void Ein_zweites_OK_wiederholt_das_bereits_Geschriebene_nicht()
     {
@@ -1594,7 +1626,11 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         var cut = Aufbauen(beimSchliessen: e => ergebnis = e,
                            speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
 
+        Koerper(cut, 0).QuerySelectorAll("button.epos-anlagenwahl")[1].Click();
+        Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("7,25");
+        Koerper(cut, 0).QuerySelectorAll("button.epos-anlagenwahl")[0].Click();
         Koerper(cut, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
         OkKnopf(cut).Click();
 
         Assert.Equal(new[] { "Anlage:BHKW EW M 50 S [K] Erdgas", "Anlage:EC-POWER XRGI 9", "Vorgaben" },
@@ -1604,6 +1640,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         // Der zweite Anlauf gelingt — und ruehrt die zwei geschriebenen Zeilen nicht
         // noch einmal an.
         z.VorgabenAntwort = null;
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[1].Change(true);
         OkKnopf(cut).Click();
 
         Assert.Equal(new[] { "Anlage:BHKW EW M 50 S [K] Erdgas", "Anlage:EC-POWER XRGI 9",
@@ -1612,17 +1649,77 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.True(ergebnis!.Gespeichert);
     }
 
+    /// <summary>
+    /// ETAPPE E2 — die Gegenprobe zu 04/B30, die den Fallstrick der Regel abfängt:
+    /// <b>Ein gescheiterter Schritt bleibt fällig, auch ohne erneute Bedienung.</b>
+    ///
+    /// <para><c>Anwenden</c> läuft VOR dem Schreibaufruf. Nach einem gescheiterten
+    /// Versuch gleichen Arbeitsstand und hereingereichtes Objekt einander — eine
+    /// Änderungsprüfung, die nur darauf sähe, hielte den Schritt für erledigt und
+    /// spränge ihn über. Der zweite OK schlösse den Dialog, ohne dass die Angabe je
+    /// geschrieben wäre: ein stiller Datenverlust, schlimmer als der überflüssige
+    /// Schreibzugriff, den 04/B30 abstellt. Deshalb merkt sich der Dialog den
+    /// Fehlversuch.</para>
+    ///
+    /// <para>Und die Ankündigung unter den Sprungknöpfen zählt ihn mit — sie
+    /// verspricht, was der Sprung tun wird.</para>
+    /// </summary>
     [Fact]
-    public void Ohne_Schreibwege_schliesst_OK_und_meldet_gespeichert()
+    public void Ein_gescheiterter_Schritt_bleibt_faellig_ohne_erneute_Bedienung()
     {
-        // Jede Seite muss AUCH OHNE GABEN zeichnen und bedienbar sein.
+        var z = new Schreibzaehler { VorgabenAntwort = _ => false };
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(beimSchliessen: e => ergebnis = e,
+                           speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
+
+        Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
+        OkKnopf(cut).Click();
+
+        Assert.Equal(new[] { "Vorgaben" }, z.Wege);
+        Assert.Null(ergebnis);                        // der Dialog bleibt offen
+
+        // Der Sprunghinweis steht weiter: Es ist noch etwas zu schreiben.
+        Assert.NotEmpty(cut.FindAll("p.epos-herleitung"));
+
+        // Zweiter OK OHNE weitere Bedienung — der offene Schritt wird wiederholt.
+        z.VorgabenAntwort = null;
+        OkKnopf(cut).Click();
+
+        Assert.Equal(new[] { "Vorgaben", "Vorgaben" }, z.Wege);
+        Assert.NotNull(ergebnis);
+        Assert.True(ergebnis!.Gespeichert);
+    }
+
+    /// <summary>
+    /// Jede Seite muss AUCH OHNE GABEN zeichnen und bedienbar sein: Ohne die beiden
+    /// Schreibwege schliesst OK trotzdem, und der Arbeitsstand landet trotzdem auf
+    /// den hereingereichten Objekten.
+    ///
+    /// <para><b>ETAPPE E2 (Befund 04/B30).</b> Die Speichermeldung haengt seither an
+    /// der AENDERUNG, nicht am Knopf: Wer nur nachsieht und mit OK schliesst, gibt
+    /// dem Wirt keinen Grund neu zu rechnen — <c>Gespeichert</c> bleibt falsch. Erst
+    /// die geaenderte Zeile macht daraus ein „gespeichert".</para>
+    /// </summary>
+    [Fact]
+    public void Ohne_Schreibwege_schliesst_OK_und_meldet_nur_nach_Aenderung_gespeichert()
+    {
         BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
         var cut = Aufbauen(beimSchliessen: e => ergebnis = e);
 
         OkKnopf(cut).Click();
 
-        Assert.NotNull(ergebnis);
+        Assert.NotNull(ergebnis);             // der Dialog schliesst
+        Assert.False(ergebnis!.Gespeichert);  // nichts geaendert, nichts zu melden
+
+        // Dieselbe Lage mit einer Aenderung: ohne Schreibweg faellt nichts um, der
+        // Wert kommt am hereingereichten Objekt an und der Wirt rechnet neu.
+        var anlagen = ZweiAnlagen();
+        var cut2 = Aufbauen(anlagen, beimSchliessen: e => ergebnis = e);
+        Koerper(cut2, 1).QuerySelectorAll("input[inputmode=decimal]")[0].Input("5,57");
+        OkKnopf(cut2).Click();
+
         Assert.True(ergebnis!.Gespeichert);
+        Assert.Equal(5.57, anlagen[0].SatzEinspCt);
     }
 
     // =====================================================================
@@ -1655,6 +1752,30 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
 
         Assert.Equal(BhkwSprung.BhkwTarif, ergebnis!.Sprung);
         Assert.Equal(0, z2.Zugriffe);
+    }
+
+    /// <summary>
+    /// <b>ETAPPE E2, Befund 04/B30 — die Abnahme:</b> Das Gegenstueck zum Sprungfall
+    /// (a) fuer den OK-Weg. Wer den Dialog nur oeffnet, nachsieht und mit OK
+    /// schliesst, loest KEINEN Schreibzugriff aus — sonst ueberschriebe er in einer
+    /// Mehrbenutzerlage fremde Aenderungen mit seinem eigenen geladenen Stand.
+    /// Geschlossen wird trotzdem, und ohne Schreibzugriff meldet der Dialog auch
+    /// kein „gespeichert": Der Wirt haette keinen Grund, neu zu rechnen.
+    /// </summary>
+    [Fact]
+    public void OK_ohne_Aenderung_loest_keinen_Schreibzugriff_aus()
+    {
+        var z = new Schreibzaehler();
+        BhkwWirtschaftlichkeitErgebnis? ergebnis = null;
+        var cut = Aufbauen(beimSchliessen: e => ergebnis = e,
+                           speichereAnlage: z.Anlage, speichereVorgaben: z.Vorgaben);
+
+        OkKnopf(cut).Click();
+
+        Assert.Equal(0, z.Zugriffe);
+        Assert.NotNull(ergebnis);                          // der Dialog schliesst
+        Assert.Equal(BhkwSprung.Keiner, ergebnis!.Sprung);  // OK springt nirgendwohin
+        Assert.False(ergebnis.Gespeichert);
     }
 
     /// <summary>

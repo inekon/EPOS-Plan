@@ -643,8 +643,9 @@
     // DIE VIER SCHLUESSEL ZIEHEN UNVERAENDERT MIT aus dem Parameterdialog:
     // WPAR_G_BEWERTUNG, WPAR_NICHT_MONETAER, WPAR_NICHT_MONETAER_PLATZ und
     // WPAR_NICHT_MONETAER_HINWEIS. Kein neuer, kein umbenannter Schluessel - es ist
-    // derselbe Abschnitt an einem anderen Ort. Der Speichernknopf nimmt
-    // WPAR_BTN_SPEICHERN, den es ebenfalls schon gibt.
+    // derselbe Abschnitt an einem anderen Ort. Der Speichernknopf nimmt seit W-E2
+    // (Mockup-Pruefung 04) den Hausschluessel ADM_BTN_SPEICHERN - ein Hausknopf,
+    // ein Schluessel, keine zweite Wahrheit ueber denselben Text.
 
     /// <summary>Überschrift des Bewertungsblocks (Schlüssel <c>WPAR_G_BEWERTUNG</c>).</summary>
     [Parameter] public string BewertungTitel { get; set; }
@@ -664,9 +665,9 @@
     [Parameter] public string NichtMonetaerHinweis { get; set; }
         = BhwTexte.T("WPAR_NICHT_MONETAER_HINWEIS", "");
 
-    /// <summary>Beschriftung des Schreibknopfs (<c>WPAR_BTN_SPEICHERN</c>).</summary>
+    /// <summary>Beschriftung des Schreibknopfs (<c>ADM_BTN_SPEICHERN</c>).</summary>
     [Parameter] public string BewertungSpeichernText { get; set; }
-        = BhwTexte.T("WPAR_BTN_SPEICHERN", "Speichern");
+        = BhwTexte.T("ADM_BTN_SPEICHERN", "Speichern");
 
     /// <summary>Meldung nach dem Schreiben (<c>WIRT_NM_GESPEICHERT</c>).</summary>
     [Parameter] public string BewertungGespeichertText { get; set; }

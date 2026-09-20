@@ -18,8 +18,13 @@
       Zeilenmarkierung - dasselbe Muster wie in der Anlagentabelle des Dialogs
       "BHKW-Wirtschaftlichkeit" (A-6 aus B5b).
 
-   DIE RUECKFRAGE liegt bei der Huelle. Ein Ja/Nein-Baustein entsteht erst in
-   W4; bis dahin fragt die Huelle ueber Dienste.Dialog. *@
+   DIE RUECKFRAGE STEHT IM DIALOG. Sie lief bis hierher als Delegat ueber die
+   Huelle (Dienste.Dialog.Frage) - ein modales Systemfenster unmittelbar aus
+   einem Blazor-Ereignis, und genau das verbietet WindowsFormsApplication1
+   Regel (b); auf iOS gaebe es die MessageBox ohnehin nicht. Seit es den
+   Baustein Rueckfrage gibt, fragt der Dialog selbst, im selben Fenster und mit
+   Vorgabe "Nein" (A-1). Der Preis ist ein ZWEISTUFIGER Loeschweg: Der Knopf
+   stellt nur die Frage, geloescht wird in der Antwort. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
 
@@ -69,6 +74,12 @@
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiSchliessen">@OkText</button>
     </div>
+
+    @* --- Loeschen fragt erst (Vorgabe "Nein", A-1) ----------------------- *@
+    <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage"
+                TitelText="@TitelLoeschen" VorgabeNein="true"
+                JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="LoeschfrageBeantwortet" />
 </div>
 
 @code {
@@ -95,12 +106,6 @@
     /// wie bei <c>EnergietraegerDialog.TraegerLoeschen</c>.</para>
     /// </summary>
     [Parameter] public Func<int, (bool Erfolg, string Grund)>? Loeschen { get; set; }
-
-    /// <summary>
-    /// Rueckfrage vor dem Loeschen (Huelle: <c>Dienste.Dialog.Frage</c>).
-    /// Ohne Delegat wird nicht gefragt.
-    /// </summary>
-    [Parameter] public Func<string, bool>? Rueckfrage { get; set; }
 
     /// <summary>Laedt die Liste neu — nach jedem Anlegen und Loeschen.</summary>
     [Parameter] public Func<IReadOnlyList<KostenfaktorZeile>>? NeuLaden { get; set; }
@@ -135,6 +140,18 @@
     /// <summary>Vorlage der Loeschrueckfrage, ein Platzhalter.</summary>
     [Parameter] public string VorlageRueckfrage { get; set; } = "Kostenfaktor '{0}' wirklich löschen?";
 
+    /// <summary>
+    /// Ueberschrift der Loeschrueckfrage — derselbe Text, den die Huelle bis zum
+    /// Umbau als Titel der MessageBox setzte.
+    /// </summary>
+    [Parameter] public string TitelLoeschen { get; set; } = Resource.KFAK_FRAGE_TITEL;
+
+    /// <summary>Beschriftung des Ja-Knopfes der Rueckfrage.</summary>
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+
+    /// <summary>Beschriftung des Nein-Knopfes der Rueckfrage — der hervorgehobene (A-1).</summary>
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+
     /// <summary>Meldung, wenn das Anlegen scheitert (frueher eine MessageBox).</summary>
     [Parameter] public string MeldungNeuFehler { get; set; } = "Der Kostenfaktor konnte nicht angelegt werden.";
 
@@ -151,6 +168,11 @@
     private int? _gewaehlt;
     private string _neuerName = "";
     private string _meldung = "";
+
+    // Die Loeschfrage: Sie traegt ihren eigenen Offen-Zustand, weil der Wirt
+    // einer Ueberlagerung ueber Offen entscheidet, nicht der Baustein.
+    private bool _loeschfrageOffen;
+    private string _loeschfrage = "";
 
     /// <summary>Die markierte Zeile (Pruefhilfe fuer Tests).</summary>
     public int? Gewaehlt => _gewaehlt;
@@ -197,20 +219,32 @@
     }
 
     /// <summary>Wie <c>btnDeleteKostenfaktor_Click</c>: ohne Markierung nichts tun,
-    /// sonst erst fragen.</summary>
+    /// sonst erst fragen. Ohne Loeschdelegat wird gar nicht gefragt — eine Frage,
+    /// deren „Ja" nichts tut, ist eine Luege.</summary>
     private void BeiLoeschen()
     {
-        if (!_gewaehlt.HasValue || Loeschen is null) return;
+        if (Loeschen is null) return;
 
-        KostenfaktorZeile? zeile = null;
-        foreach (KostenfaktorZeile z in _zeilen)
-        {
-            if (z.StammId == _gewaehlt.Value) { zeile = z; break; }
-        }
+        KostenfaktorZeile? zeile = MarkierteZeile();
         if (zeile is null) return;
 
-        if (Rueckfrage is not null &&
-            !Rueckfrage(string.Format(VorlageRueckfrage, zeile.Bezeichnung))) return;
+        _meldung = "";
+        _loeschfrage = string.Format(VorlageRueckfrage, zeile.Bezeichnung);
+        _loeschfrageOffen = true;
+    }
+
+    /// <summary>
+    /// Die Antwort auf die Loeschfrage. Alles ausser „Ja" laesst den Satz stehen;
+    /// die markierte Zeile wird neu gesucht, weil die Liste zwischen Frage und
+    /// Antwort einen Zeichenlauf lang stand (Muster <c>GesetzeskatalogDialog</c>).
+    /// </summary>
+    private void LoeschfrageBeantwortet(bool? antwort)
+    {
+        _loeschfrageOffen = false;
+        if (antwort != true) return;
+
+        KostenfaktorZeile? zeile = MarkierteZeile();
+        if (zeile is null || Loeschen is null) return;
 
         (bool erfolg, string grund) = Loeschen(zeile.StammId);
         if (!erfolg)
@@ -227,6 +261,18 @@
         ListeNeuLaden();
     }
 
+    /// <summary>Die markierte Zeile, oder <c>null</c> — ohne Markierung und nach
+    /// einem Neuladen, das sie mitgenommen hat.</summary>
+    private KostenfaktorZeile? MarkierteZeile()
+    {
+        if (!_gewaehlt.HasValue) return null;
+        foreach (KostenfaktorZeile z in _zeilen)
+        {
+            if (z.StammId == _gewaehlt.Value) return z;
+        }
+        return null;
+    }
+
     private void ListeNeuLaden()
     {
         if (NeuLaden is null) return;
@@ -235,10 +281,16 @@
 
     private Task BeiSchliessen() => Geschlossen.InvokeAsync();
 
+    /// <summary>
+    /// Esc schliesst die OBERSTE Ebene: Steht die Loeschfrage, faengt SIE das Esc ab
+    /// (ihre Ueberlagerung antwortet „Nein"), und der Katalog bleibt stehen — sonst
+    /// schloesse er unter der Frage weg. Das ✕ im Kopf ist derweil von der
+    /// Abdunkelung der Ueberlagerung gedeckt.
+    /// </summary>
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
     {
         // Enter ist NICHT belegt: "Neu" und "Löschen" schreiben sofort (A-7 aus B5b).
-        "Escape" => BeiSchliessen(),
+        "Escape" when !_loeschfrageOffen => BeiSchliessen(),
         _ => Task.CompletedTask
     };
 }

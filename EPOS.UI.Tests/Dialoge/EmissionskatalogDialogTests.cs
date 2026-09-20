@@ -54,8 +54,7 @@ public class EmissionskatalogDialogTests : BunitContext
     private IRenderedComponent<EmissionskatalogDialog> Zeige(
         Action<Bunit.ComponentParameterCollectionBuilder<EmissionskatalogDialog>>? mehr = null,
         bool mitTraeger = true,
-        Func<int, IReadOnlyList<EmissionswertZeile>>? werteLaden = null,
-        Func<string, bool>? rueckfrage = null)
+        Func<int, IReadOnlyList<EmissionswertZeile>>? werteLaden = null)
     {
         return Render<EmissionskatalogDialog>(p =>
         {
@@ -63,10 +62,26 @@ public class EmissionskatalogDialogTests : BunitContext
             p.Add(x => x.MitTraeger, mitTraeger);
             p.Add(x => x.ArtenLaden, () => ARTEN);
             p.Add(x => x.WerteLaden, werteLaden ?? (artId => WERTE));
-            p.Add(x => x.Rueckfrage, rueckfrage ?? (text => true));
             mehr?.Invoke(p);
         });
     }
+
+    /// <summary>
+    /// Die EINE Rueckfrage des Dialogs — sie traegt alle drei Wege (Art loeschen,
+    /// Wert loeschen, statt dessen abwaehlen).
+    /// </summary>
+    private static IRenderedComponent<EPOS.UI.Bausteine.Rueckfrage> Frage(
+        IRenderedComponent<EmissionskatalogDialog> cut)
+        => cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>();
+
+    /// <summary>
+    /// Antwortet auf die Rueckfrage. Die Knoepfe werden ueber ihre STELLUNG gewaehlt
+    /// (Ja zuerst, dann Nein), nicht ueber ihren Text: Der kommt aus
+    /// <c>Resource.ALLG_BTN_JA/_NEIN</c> und haengt damit an der Kultur des Laeufers,
+    /// die diese Klasse bewusst nicht pinnt.
+    /// </summary>
+    private static void Antworten(IRenderedComponent<EmissionskatalogDialog> cut, bool ja)
+        => Frage(cut).FindAll(".epos-rueckfrage .epos-leiste button")[ja ? 0 : 1].Click();
 
     private static IReadOnlyList<IElement> ArtenKnoepfe(IRenderedComponent<EmissionskatalogDialog> cut)
         => cut.FindAll(".epos-gruppenkopf:first-of-type .epos-leiste button");
@@ -354,21 +369,35 @@ public class EmissionskatalogDialogTests : BunitContext
     // Artenlöschen und „abwählen statt löschen"
     // =====================================================================
 
+    /// <summary>
+    /// W-E2, Befund 04/B17: Der Loeschknopf schreibt nicht mehr sofort. Er stellt die
+    /// Frage IM Fenster (Baustein <c>Rueckfrage</c> statt MessageBox der Hülle), mit
+    /// Vorgabe „Nein" (A-1); geloescht wird erst die Antwort „Ja".
+    /// </summary>
     [Fact]
-    public void Eine_eigene_Art_wird_nach_Rueckfrage_geloescht()
+    public void Eine_eigene_Art_wird_erst_nach_der_Rueckfrage_geloescht()
     {
         int? geloescht = null;
-        string? gefragt = null;
         var cut = Zeige(p => p
             .Add(x => x.ArtVorwahl, "NH3")
             .Add(x => x.ArtLoeschenDelegat, id => { geloescht = id; return null; })
-            .Add(x => x.VorlageArtLoeschen, "Art {0} löschen?"),
-            rueckfrage: text => { gefragt = text; return true; });
+            .Add(x => x.VorlageArtLoeschen, "Art {0} löschen?"));
 
         ArtenKnoepfe(cut)[2].Click();
 
+        var frage = Frage(cut);
+        Assert.True(frage.Instance.Offen);
+        Assert.True(frage.Instance.VorgabeNein);
+        Assert.Equal("Art Ammoniak löschen?", frage.Instance.Frage);
+        Assert.Null(geloescht);                        // der Knopf fragt nur
+
+        // A-1: Der hervorgehobene Knopf ist "Nein", nicht "Ja".
+        var knoepfe = frage.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.DoesNotContain("epos-knopf--primaer", knoepfe[0].ClassName);
+        Assert.Contains("epos-knopf--primaer", knoepfe[1].ClassName);
+
+        Antworten(cut, ja: true);
         Assert.Equal(3, geloescht);
-        Assert.Equal("Art Ammoniak löschen?", gefragt);
     }
 
     [Fact]
@@ -377,12 +406,36 @@ public class EmissionskatalogDialogTests : BunitContext
         bool geloescht = false;
         var cut = Zeige(p => p
             .Add(x => x.ArtVorwahl, "NH3")
-            .Add(x => x.ArtLoeschenDelegat, id => { geloescht = true; return null; }),
-            rueckfrage: text => false);
+            .Add(x => x.ArtLoeschenDelegat, id => { geloescht = true; return null; }));
 
         ArtenKnoepfe(cut)[2].Click();
+        Antworten(cut, ja: false);
 
         Assert.False(geloescht);
+        Assert.False(Frage(cut).Instance.Offen);
+    }
+
+    /// <summary>
+    /// Eine offene Rueckfrage faengt Esc ab — der Katalog darf nicht unter der
+    /// Frage wegschliessen (Muster <c>GesetzeskatalogDialog</c>).
+    /// </summary>
+    [Fact]
+    public void Esc_schliesst_nicht_solange_die_Rueckfrage_steht()
+    {
+        EmissionskatalogErgebnis? erg = null;
+        var cut = Zeige(p => p
+            .Add(x => x.ArtVorwahl, "NH3")
+            .Add(x => x.ArtLoeschenDelegat, id => null)
+            .Add(x => x.Geschlossen, (EmissionskatalogErgebnis e) => erg = e));
+
+        ArtenKnoepfe(cut)[2].Click();
+        cut.Find(".epos-dialog").KeyDown("Escape");
+        Assert.Null(erg);
+
+        // Nach der Antwort schliesst Esc wieder.
+        Antworten(cut, ja: false);
+        cut.Find(".epos-dialog").KeyDown("Escape");
+        Assert.NotNull(erg);
     }
 
     /// <summary>
@@ -393,33 +446,99 @@ public class EmissionskatalogDialogTests : BunitContext
     public void Eine_ausgelieferte_Art_bietet_das_Abwaehlen_an()
     {
         int? abgewaehlt = null;
-        string? frage = null;
         var cut = Zeige(p => p
             .Add(x => x.ArtVorwahl, "CH4")
             .Add(x => x.ArtLoeschenDelegat, id => "Ausgelieferte Arten lassen sich nicht löschen.")
             .Add(x => x.AuswahlSetzen, (a, w) => { abgewaehlt = w ? -1 : a; return null; })
-            .Add(x => x.FrageAbwaehlen, "Stattdessen abwählen?"),
-            rueckfrage: text => { frage = text; return true; });
+            .Add(x => x.FrageAbwaehlen, "Stattdessen abwählen?"));
 
         ArtenKnoepfe(cut)[2].Click();
 
+        var frage = Frage(cut);
+        Assert.True(frage.Instance.Offen);
+        Assert.Contains("nicht löschen", frage.Instance.Frage);
+        Assert.Contains("Stattdessen abwählen?", frage.Instance.Frage);
+
+        // Das Abwaehlen ist ein ANGEBOT, kein Loeschen: Hier bleibt „Ja" betont.
+        Assert.False(frage.Instance.VorgabeNein);
+
+        Antworten(cut, ja: true);
         Assert.Equal(2, abgewaehlt);
-        Assert.Contains("nicht löschen", frage);
-        Assert.Contains("Stattdessen abwählen?", frage);
+    }
+
+    /// <summary>
+    /// Wer das Abwaehlen ablehnt, behaelt den GRUND als Hinweis — er ist die
+    /// eigentliche Auskunft, warum die Art nicht zu loeschen war.
+    /// </summary>
+    [Fact]
+    public void Ein_abgelehntes_Abwaehlen_laesst_den_Grund_stehen()
+    {
+        int? abgewaehlt = null;
+        var cut = Zeige(p => p
+            .Add(x => x.ArtVorwahl, "CH4")
+            .Add(x => x.ArtLoeschenDelegat, id => "Ausgelieferte Arten lassen sich nicht löschen.")
+            .Add(x => x.AuswahlSetzen, (a, w) => { abgewaehlt = a; return null; }));
+
+        ArtenKnoepfe(cut)[2].Click();
+        Antworten(cut, ja: false);
+
+        Assert.Null(abgewaehlt);
+        Assert.Contains("nicht löschen", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Der verkettete Fall: Die eigene Art wird gelöscht, der Kern weist sie ab —
+    /// dann steht DIESELBE Rückfrage gleich noch einmal, nun als Abwählangebot.
+    /// Genau hier muss der Wegmerker stimmen, sonst liefe das „Ja" in den
+    /// Löschweg zurück.
+    /// </summary>
+    [Fact]
+    public void Ein_abgewiesenes_Loeschen_geht_in_das_Abwaehlangebot_ueber()
+    {
+        // Eine EIGENE, aber AUSGEWAEHLTE Art: nur sie durchlaeuft beide Fragen —
+        // NH3 ist abgewaehlt (dort gibt es das Angebot nicht), CH4 ausgeliefert
+        // (dort steht die erste Frage nie).
+        EmissionsartZeile eigenUndGewaehlt =
+            new(4, "N2O", "Lachgas", "mg/kWh", 273.0, "273", "", true, false, false);
+        EmissionsartZeile[] arten = { Co2, eigenUndGewaehlt };
+
+        int? abgewaehlt = null;
+        int versuche = 0;
+        var cut = Render<EmissionskatalogDialog>(p => p
+            .Add(x => x.Arten, arten)
+            .Add(x => x.MitTraeger, true)
+            .Add(x => x.ArtenLaden, () => arten)
+            .Add(x => x.WerteLaden, artId => WERTE)
+            .Add(x => x.ArtVorwahl, "N2O")
+            .Add(x => x.ArtLoeschenDelegat, id => { versuche++; return "Die Art ist in Gebrauch."; })
+            .Add(x => x.AuswahlSetzen, (a, w) => { abgewaehlt = w ? -1 : a; return null; })
+            .Add(x => x.FrageAbwaehlen, "Stattdessen abwählen?"));
+
+        ArtenKnoepfe(cut)[2].Click();
+        Antworten(cut, ja: true);                        // Ja zum Loeschen
+
+        Assert.Equal(1, versuche);
+        var frage = Frage(cut);
+        Assert.True(frage.Instance.Offen);                // die zweite Frage steht
+        Assert.False(frage.Instance.VorgabeNein);         // ein Angebot, kein Loeschen
+        Assert.Contains("Stattdessen abwählen?", frage.Instance.Frage);
+
+        Antworten(cut, ja: true);                        // Ja zum Abwaehlen
+
+        Assert.Equal(4, abgewaehlt);
+        Assert.Equal(1, versuche);                        // NICHT noch einmal geloescht
     }
 
     /// <summary>Bei der Pflichtart gibt es den Ausweg nicht — nur den Hinweis.</summary>
     [Fact]
     public void Die_Pflichtart_bekommt_nur_den_Hinweis()
     {
-        bool gefragt = false;
         var cut = Zeige(p => p
-            .Add(x => x.ArtLoeschenDelegat, id => "CO₂ ist die Pflichtart."),
-            rueckfrage: text => { gefragt = true; return true; });
+            .Add(x => x.ArtLoeschenDelegat, id => "CO₂ ist die Pflichtart."));
 
         ArtenKnoepfe(cut)[2].Click();
 
-        Assert.False(gefragt);
+        Assert.False(Frage(cut).Instance.Offen);
         Assert.Contains("Pflichtart", cut.Instance.Meldung);
     }
 
@@ -454,6 +573,55 @@ public class EmissionskatalogDialogTests : BunitContext
         WerteKnoepfe(cut)[3].Click();
         Assert.Contains("unveränderlich", cut.Instance.Meldung);
     }
+
+    /// <summary>
+    /// W-E2, Befund 04/B17: Auch der zweite Loeschweg fragt erst — dieselbe
+    /// Rueckfrage, anderer Weg. Die Antwort setzt den RICHTIGEN fort: Hier wird der
+    /// Wert geloescht, nicht die Art.
+    /// </summary>
+    [Fact]
+    public void Ein_eigener_Wert_wird_erst_nach_der_Rueckfrage_geloescht()
+    {
+        int? geloescht = null;
+        int artGeloescht = 0;
+        var cut = Zeige(p => p
+            .Add(x => x.WertLoeschenDelegat, id => { geloescht = id; return null; })
+            .Add(x => x.ArtLoeschenDelegat, id => { artGeloescht++; return null; })
+            .Add(x => x.VorlageWertLoeschen, "Wert {0} löschen?"));
+
+        EigenenWertMarkieren(cut);
+        WerteKnoepfe(cut)[3].Click();                    // Löschen
+
+        var frage = Frage(cut);
+        Assert.True(frage.Instance.Offen);
+        Assert.True(frage.Instance.VorgabeNein);
+        Assert.Equal("Wert eigener Wert löschen?", frage.Instance.Frage);
+        Assert.Null(geloescht);                          // der Knopf fragt nur
+
+        Antworten(cut, ja: true);
+        Assert.Equal(12, geloescht);
+        Assert.Equal(0, artGeloescht);                   // der andere Weg bleibt unberuehrt
+    }
+
+    [Fact]
+    public void Ein_Nein_auf_die_Wertefrage_loescht_nicht()
+    {
+        bool geloescht = false;
+        var cut = Zeige(p => p
+            .Add(x => x.WertLoeschenDelegat, id => { geloescht = true; return null; }));
+
+        EigenenWertMarkieren(cut);
+        WerteKnoepfe(cut)[3].Click();
+        Antworten(cut, ja: false);
+
+        Assert.False(geloescht);
+        Assert.False(Frage(cut).Instance.Offen);
+    }
+
+    /// <summary>Markiert den eigenen Wert (Zeile 2 der Werteliste).</summary>
+    private static void EigenenWertMarkieren(IRenderedComponent<EmissionskatalogDialog> cut)
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[1]
+              .QuerySelector("button.epos-anlagenwahl")!.Click();
 
     [Fact]
     public void Ein_eigener_Wert_laesst_sich_bearbeiten()
