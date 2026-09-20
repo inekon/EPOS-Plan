@@ -5,7 +5,7 @@ using System.IO;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die elf globalen Anwendungseinstellungen als Wertesatz (iU9-W14c.0i).
+    /// Die zwölf globalen Anwendungseinstellungen als Wertesatz (iU9-W14c.0i).
     ///
     /// <para>Die Namen sind die Schlüssel aus <c>Properties.Settings</c> — sie sind
     /// eingefroren und stehen so auch in der <c>user.config</c> des Anwenders.</para>
@@ -14,6 +14,12 @@ namespace WindowsFormsApplication1
     /// (<c>PVGISUrl</c>, aus der Rubrik „Web-Schnittstellen" hierher gewandert), das
     /// Portal der DWD-Testreferenzjahre (<c>TRYPortalUrl</c>) und die Ablage der
     /// TRY-Regionaldaten (<c>TRYRegionalUrl</c>).</para>
+    ///
+    /// <para><b>Die Rubrik „Diagramme"</b> führt den zwölften Wert
+    /// (<c>DiagrammFarben</c>): die vom Anwender geänderten Farbrollen als kompakten
+    /// Text <c>ROLLE=#RRGGBB;…</c>. Leer heißt Hausfarben. Format, Rollenliste und das
+    /// Übernehmen in <c>Farbpalette.Aktuell</c> stehen in
+    /// <see cref="Zeichnung.Diagrammfarben"/>.</para>
     /// </summary>
     public sealed class Einstellungensatz
     {
@@ -28,6 +34,12 @@ namespace WindowsFormsApplication1
         public string TryPortalUrl = "";
         public string TryRegionalUrl = "";
         public string AllgemeinPfad = "";
+
+        /// <summary>
+        /// Die geänderten Diagrammfarben als <c>ROLLE=#RRGGBB;…</c>; leer = Hausfarben
+        /// (<c>Zeichnung.Diagrammfarben.SCHLUESSEL</c>).
+        /// </summary>
+        public string DiagrammFarben = "";
     }
 
     /// <summary>Das Ergebnis des Speicherns: gelungen oder mit Grund gescheitert.</summary>
@@ -46,7 +58,7 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Liest und <b>schreibt</b> die elf globalen Anwendungseinstellungen
+    /// Liest und <b>schreibt</b> die zwölf globalen Anwendungseinstellungen
     /// (iU9-W14c.0i).
     ///
     /// <para><b>Warum es das gibt</b> (Befund W14c-B57): Bis hierher gab es
@@ -110,6 +122,7 @@ namespace WindowsFormsApplication1
             s.GeokodierungUrl = Properties.Settings.Default.GeoKodierung ?? "";
             s.TryPortalUrl = Properties.Settings.Default.TRYPortalUrl ?? "";
             s.TryRegionalUrl = Properties.Settings.Default.TRYRegionalUrl ?? "";
+            s.DiagrammFarben = Properties.Settings.Default.DiagrammFarben ?? "";
             return s;
         }
 
@@ -131,12 +144,18 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Schreibt die elf Werte und legt die fünf Ordner an, falls sie fehlen.
+        /// Schreibt die zwölf Werte und legt die fünf Ordner an, falls sie fehlen.
         ///
         /// <para><b>Die Reihenfolge ist die des Vorläufers:</b> erst die Werte in die
         /// Settings, dann die Ordner — und nur wenn die Ordner stehen, wird
         /// <c>Save()</c> gerufen. Schlägt das Anlegen fehl, bleibt der gespeicherte
         /// Stand, was er war.</para>
+        ///
+        /// <para><b>Zuletzt wird die Diagrammpalette neu geladen</b>
+        /// (<c>Zeichnung.Diagrammfarben.Uebernehmen</c>): Damit trägt schon das nächste
+        /// gezeichnete Bild die eingestellten Farben, und der Bericht ebenso — beide
+        /// malen über denselben <c>SkiaMaler</c>. Ein Neustart ist nicht nötig. Es steht
+        /// hier und nicht in der Windows-Hülle, weil jede Schale denselben Weg nimmt.</para>
         /// </summary>
         public static SpeicherBefund Speichern(Einstellungensatz s)
         {
@@ -153,6 +172,7 @@ namespace WindowsFormsApplication1
             Properties.Settings.Default.TRYPortalUrl = s.TryPortalUrl ?? "";
             Properties.Settings.Default.TRYRegionalUrl = s.TryRegionalUrl ?? "";
             Properties.Settings.Default.AllgemeinPath = s.AllgemeinPfad ?? "";
+            Properties.Settings.Default.DiagrammFarben = s.DiagrammFarben ?? "";
 
             try
             {
@@ -168,6 +188,11 @@ namespace WindowsFormsApplication1
             }
 
             Properties.Settings.Default.Save();
+
+            // Die Palette der Diagramme traegt den neuen Stand ab dem naechsten Bild -
+            // ohne Neustart und ohne dass eine Huelle daran denken muss.
+            Zeichnung.Diagrammfarben.Uebernehmen();
+
             return new SpeicherBefund(true, "");
         }
 

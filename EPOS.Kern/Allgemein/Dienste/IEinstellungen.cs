@@ -6,10 +6,10 @@
     /// <c>Properties.Settings.Default</c> (Vermessung iU5, Abschnitt A.4).
     ///
     /// <para><b>Was NICHT hierher wandert.</b> <c>Properties.Settings</c> bleibt als
-    /// Ablage bestehen — die elf Schlüssel <c>DBPath</c>, <c>DBName</c>,
+    /// Ablage bestehen — die zwölf Schlüssel <c>DBPath</c>, <c>DBName</c>,
     /// <c>PVGISUrl</c>, <c>GeoKodierung</c>, <c>WordPressUrl</c>, <c>VDI3805Path</c>,
     /// <c>DBExportPath</c>, <c>DBImportPath</c>, <c>AllgemeinPath</c>,
-    /// <c>TRYPortalUrl</c>, <c>TRYRegionalUrl</c> werden vom
+    /// <c>TRYPortalUrl</c>, <c>TRYRegionalUrl</c>, <c>DiagrammFarben</c> werden vom
     /// Einstellungsdialog geschrieben und von der Erststart-Migration gepflegt. Diese
     /// Schnittstelle ersetzt nur die LESENDEN Zugriffe aus Kern-Code; die
     /// Windows-Fassung fragt dafür zuerst <c>Properties.Settings</c> und dann die
