@@ -90,6 +90,9 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Satz"] = EinstellungenCtrl.Lesen(),
+                // Die Rubrik "Diagramme" (DF-1): Rollenliste, Anzeigenamen, Gruppen und
+                // Hausfarben kommen aus dem Kern - der Dialog fuehrt nur Text.
+                ["Farbrollen"] = Zeichnung.Diagrammfarben.Gaben(),
                 ["KiAbgeschaltet"] = kiAus,
                 ["MaschinenRiegel"] = riegel,
                 ["KiLesbar"] = kiLesbar,
@@ -110,9 +113,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schreibt die elf Werte und — gesondert — den KI-Abschalter. Bei
+        /// Schreibt die zwölf Werte und — gesondert — den KI-Abschalter. Bei
         /// maschinenweiter Sperre bleibt der Schalter unangetastet
         /// (<c>KiAbschalterSpeichern</c> des Vorläufers).
+        ///
+        /// <para>Die Palette der Diagramme lädt <see cref="EinstellungenCtrl.Speichern"/>
+        /// selbst neu — dort und nicht hier, damit jede Schale denselben Weg nimmt.</para>
         /// </summary>
         private static Task<SpeicherBefund> Speichern(Einstellungensatz satz, bool kiAus)
         {
@@ -125,7 +131,7 @@ namespace WindowsFormsApplication1
             }
             catch
             {
-                // Der Registry-Schalter ist nicht der Grund, die elf Settings zu
+                // Der Registry-Schalter ist nicht der Grund, die zwoelf Settings zu
                 // verwerfen - sie stehen bereits.
             }
 
