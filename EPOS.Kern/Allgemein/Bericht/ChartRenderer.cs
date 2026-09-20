@@ -100,6 +100,25 @@ namespace WindowsFormsApplication1
             public string Name; public double[] Werte; public SKColor Farbe;
 
             /// <summary>
+            /// Der FARBTON der Reihe (DG-E5, Anwenderentscheid DG-Q8): die
+            /// <see cref="Farbrolle"/>, unter der sie gemalt wird — wahlweise mit
+            /// einer Abwandlung (andere Deckung, oder eine im Layout gerechnete
+            /// Farbe samt Herkunftsrolle, <see cref="Farbpalette.Gerechnet"/>).
+            ///
+            /// <para><c>null</c> heißt: Die Reihe kam als reiner Farbwert herein;
+            /// ihre Rolle sucht die Palette dann rückwärts. <b>Jede Reihe, die in
+            /// einer Legende steht, trägt eine Rolle</b> — ohne sie bleibt ihr
+            /// Legendeneintrag ohne Farbwähler.</para>
+            /// </summary>
+            public Farbton Ton;
+
+            /// <summary>
+            /// Die Farbrolle der Reihe; <see cref="Farbrolle.UNBENANNT"/>, solange
+            /// sie keine trägt.
+            /// </summary>
+            public Farbrolle Rolle => Ton == null ? Farbrolle.UNBENANNT : Ton.Rolle;
+
+            /// <summary>
             /// Zu welchem Stapel die Reihe gehoert (iU9-W11a.6). Der Vorlaeufer trennte
             /// zwei Stapel in EINEM Diagramm ueber <c>StackedGroupName</c> — auf der
             /// Waermepumpenseite „Bedarf" (Flaeche) und „Produktion" (Saeule). Nur
@@ -127,6 +146,39 @@ namespace WindowsFormsApplication1
                          bool gestrichelt = false, float breite = 0f)
             {
                 Name = n; Werte = w; Farbe = f;
+                Stapelgruppe = gruppe; Gestrichelt = gestrichelt; Breite = breite;
+            }
+
+            /// <summary>
+            /// <b>Die Reihe mit ihrer FARBROLLE</b> (DG-E5) — die Schreibweise für
+            /// jeden Aufrufer, der die Größe benennen kann. <see cref="Farbe"/>
+            /// entsteht dabei aus <see cref="Farbpalette.Aktuell"/>, damit der
+            /// PNG-Weg unverändert malt.
+            /// </summary>
+            public Reihe(string n, double[] w, Farbrolle rolle)
+                : this(n, w, Farbton.Aus(rolle)) { }
+
+            /// <summary>Dieselbe Reihe mit Stapelart, Strichfolge und Stärke.</summary>
+            public Reihe(string n, double[] w, Farbrolle rolle, Stapelart gruppe,
+                         bool gestrichelt = false, float breite = 0f)
+                : this(n, w, Farbton.Aus(rolle), gruppe, gestrichelt, breite) { }
+
+            /// <summary>
+            /// Die Reihe mit einem fertigen <see cref="Farbton"/> — der Weg für eine
+            /// andere Deckung und für eine im Layout GERECHNETE Farbe, die ihre
+            /// Herkunftsrolle mitführt.
+            /// </summary>
+            public Reihe(string n, double[] w, Farbton ton)
+            {
+                Name = n; Werte = w; Ton = ton;
+                Farbe = Farbpalette.Aktuell.Loese(ton).Skiafarbe();
+            }
+
+            /// <summary>Derselbe Farbton mit Stapelart, Strichfolge und Stärke.</summary>
+            public Reihe(string n, double[] w, Farbton ton, Stapelart gruppe,
+                         bool gestrichelt = false, float breite = 0f)
+                : this(n, w, ton)
+            {
                 Stapelgruppe = gruppe; Gestrichelt = gestrichelt; Breite = breite;
             }
         }
@@ -315,7 +367,7 @@ namespace WindowsFormsApplication1
 
             var reihen = new List<Reihe> { new Reihe("Wärmebedarf", SortiertAbsteigend(bedarf), C_BEDARF) };
             foreach (Reihe r in WaermeErzeugerReihen(z, tagesmittel: false))
-                reihen.Add(new Reihe(r.Name, SortiertAbsteigend(r.Werte), r.Farbe));
+                reihen.Add(Mit(r, SortiertAbsteigend(r.Werte)));
 
             return LinienDiagrammModell("Jahresdauerlinie Wärme", "kW", reihen,
                 new[] { 0, 2190, 4380, 6570, 8760 },
@@ -622,7 +674,7 @@ namespace WindowsFormsApplication1
                 Reihe reihe = r;
                 z.Markiert("reihe:" + reihe.Name, zr =>
                     ZeichneLinie(zr, rc, reihe.Werte, 0, max, reihe.Farbe,
-                                 reihe.Farbe == C_BEDARF ? 3.5f : 2.5f));
+                                 Traegt(reihe, Farbrolle.BEDARF, C_BEDARF) ? 3.5f : 2.5f));
             }
 
             Legende(z, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 90f, H - 64f);
@@ -886,7 +938,8 @@ namespace WindowsFormsApplication1
                 // — dieselbe Strichfolge wie in den übrigen Linienbildern (8/5).
                 // Ohne gesetztes Merkmal entsteht kein Pfadeffekt und das Bild bleibt
                 // byte-gleich dem von vorher.
-                float staerke = r.Breite > 0 ? r.Breite : r.Farbe == C_STAMM ? 3.5f : 2.5f;
+                float staerke = r.Breite > 0 ? r.Breite
+                              : Traegt(r, Farbrolle.STAMM, C_STAMM) ? 3.5f : 2.5f;
                 Strichmuster muster = r.Gestrichelt ? new Strichmuster(8f, 5f) : null;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     Linienzug(zr, punkte,
@@ -895,7 +948,7 @@ namespace WindowsFormsApplication1
                 // Dieselbe Reihe in DATENWERTEN, ungekuerzt (DG-E2-2) - mit ihrem
                 // EIGENEN Fenster, damit eine kuerzere Reihe im SVG dort endet, wo sie
                 // im Bild endet (DG-E3-1).
-                z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke, muster,
+                z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster,
                                             r.Werte,
                                             Reihenfenster(z.Flaeche.Daten, r.Werte.Length),
                                             Reihenart.Linie, null, null, null, "€"));
@@ -1327,7 +1380,7 @@ namespace WindowsFormsApplication1
                 // Reihe, bis E4 beide Wege zusammenfallen laesst. DG-E3-1: mit IHREM
                 // Fenster - eine kuerzere Reihe zeichnet das Bild ueber die volle
                 // Breite, nicht bis zur Haelfte.
-                z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke, null, r.Werte,
+                z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, r.Werte,
                                             Reihenfenster(z.Flaeche.Daten, r.Werte.Length)));
             }
 
@@ -1710,6 +1763,20 @@ namespace WindowsFormsApplication1
         public static Zeichenmodell MonatsSaeulenModell(string titel, double[] werte, SKColor farbe,
                                                         string einheit,
                                                         IReadOnlyList<string> monatsnamen = null)
+            => MonatsSaeulenModell(titel, werte, farbe.Ton(), einheit, monatsnamen);
+
+        /// <summary>
+        /// Dieselben Säulen mit AUSDRÜCKLICH genannter Farbrolle (DG-E5) — der Weg für
+        /// jede Hülle, die die Größe benennen kann.
+        /// </summary>
+        public static Zeichenmodell MonatsSaeulenModell(string titel, double[] werte,
+                                                        Farbrolle rolle, string einheit,
+                                                        IReadOnlyList<string> monatsnamen = null)
+            => MonatsSaeulenModell(titel, werte, Farbton.Aus(rolle), einheit, monatsnamen);
+
+        private static Zeichenmodell MonatsSaeulenModell(string titel, double[] werte, Farbton ton,
+                                                         string einheit,
+                                                         IReadOnlyList<string> monatsnamen)
         {
             int W = 978, H = 542;
             var z = Modell(W, H);
@@ -1735,9 +1802,9 @@ namespace WindowsFormsApplication1
 
             float fach = rc.Width / 12f;
             float breite = fach * 0.6f;
-            // Die Saeulenfarbe kommt von AUSSEN (sie benennt die Sicht) und behaelt
-            // deshalb die Rueckwaertssuche; alle uebrigen Farben nennen ihre Rolle.
-            Zeichnung.Fuellung pinsel = Flaeche(farbe);
+            // Die Saeulenfarbe benennt die SICHT und kommt deshalb von aussen - als
+            // Rolle, wo der Aufrufer sie kennt, sonst ueber die Rueckwaertssuche.
+            Zeichnung.Fuellung pinsel = Flaeche(ton);
             string reihe = "reihe:" + (titel ?? "");
             using (var f = Schrift(15f))
                 for (int m = 0; m < 12; m++)
@@ -1954,6 +2021,20 @@ namespace WindowsFormsApplication1
         public static Zeichenmodell JahresverlaufModell(string titel, double[] stundenwerte,
                                                         string yTitel, SKColor farbe,
                                                         Achsenfenster fenster = null)
+            => JahresverlaufModell(titel, stundenwerte, yTitel, farbe.Ton(), fenster);
+
+        /// <summary>
+        /// Dasselbe Bild mit AUSDRÜCKLICH genannter Farbrolle (DG-E5) — der Weg für
+        /// jede Hülle, die die Größe benennen kann.
+        /// </summary>
+        public static Zeichenmodell JahresverlaufModell(string titel, double[] stundenwerte,
+                                                        string yTitel, Farbrolle rolle,
+                                                        Achsenfenster fenster = null)
+            => JahresverlaufModell(titel, stundenwerte, yTitel, Farbton.Aus(rolle), fenster);
+
+        private static Zeichenmodell JahresverlaufModell(string titel, double[] stundenwerte,
+                                                         string yTitel, Farbton ton,
+                                                         Achsenfenster fenster)
         {
             int W = 978, H = 542;
             var z = Modell(W, H);
@@ -2030,9 +2111,9 @@ namespace WindowsFormsApplication1
             // Das Bild fuehrt keine Legende; die y-Beschriftung benennt die Groesse.
             string name = string.IsNullOrEmpty(yTitel) ? (titel ?? "") : yTitel;
             z.Markiert("reihe:" + name, zr =>
-                Linienzug(zr, punkte.ToArray(), Stift(farbe, 2f, null, Strichverbindung.Rund)));
+                Linienzug(zr, punkte.ToArray(), Stift(ton, 2f, null, Strichverbindung.Rund)));
 
-            z.FuegeReihe(new Datenreihe(name, farbe.Ton(), 2f, null, werte, z.Flaeche.Daten));
+            z.FuegeReihe(new Datenreihe(name, ton, 2f, null, werte, z.Flaeche.Daten));
 
             return z;
         }
@@ -2094,8 +2175,24 @@ namespace WindowsFormsApplication1
         /// <param name="Punkte">Die Punkte (x, y) in beliebiger Reihenfolge.</param>
         /// <param name="Farbe">Punktfarbe — halbtransparent, damit sich 8 760 Punkte
         /// nicht gegenseitig ausloeschen.</param>
+        /// <param name="Ton">Der Farbton samt Rolle (DG-E5); <c>null</c> heißt: Die
+        /// Farbe kam als Wert herein und bekommt ihre Rolle über die Rückwärtssuche.</param>
         public sealed record Punktreihe(string Name, IReadOnlyList<(double X, double Y)> Punkte,
-                                        SKColor Farbe);
+                                        SKColor Farbe, Farbton Ton = null)
+        {
+            /// <summary>
+            /// <b>Die Punktreihe mit ihrer FARBROLLE</b> (DG-E5): Die Deckung gehört
+            /// zum Bildaufbau und bleibt, der Anwender wählt den Ton.
+            /// </summary>
+            public Punktreihe(string name, IReadOnlyList<(double X, double Y)> punkte,
+                              Farbrolle rolle, byte deckung)
+                : this(name, punkte,
+                       Farbpalette.Aktuell.Loese(Farbton.Aus(rolle).MitDeckung(deckung)).Skiafarbe(),
+                       Farbton.Aus(rolle).MitDeckung(deckung)) { }
+
+            /// <summary>Die Farbrolle der Reihe; <c>UNBENANNT</c>, solange sie keine trägt.</summary>
+            public Farbrolle Rolle => Ton == null ? Farbrolle.UNBENANNT : Ton.Rolle;
+        }
 
         // ------------------------------------------------------------------ B1
 
@@ -2200,7 +2297,7 @@ namespace WindowsFormsApplication1
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     ZeichneLinie(zr, rc, prozent, 0, Y_PROZENT_MAX, r.Farbe, staerke));
 
-                z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke, null, prozent,
+                z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, prozent,
                                             new Datenfenster(xVon, xVon + prozent.Length - 1,
                                                              0, Y_PROZENT_MAX)));
             }
@@ -2410,7 +2507,7 @@ namespace WindowsFormsApplication1
                 float konturstaerke = kontur.Breite > 0 ? kontur.Breite : 4f;
                 z.Markiert("reihe:" + (kontur.Name ?? ""), zr =>
                     ZeichneLinie(zr, rc, konturwerte, 0, max, kontur.Farbe, konturstaerke));
-                z.FuegeReihe(new Datenreihe(kontur.Name ?? "", kontur.Farbe.Ton(), konturstaerke,
+                z.FuegeReihe(new Datenreihe(kontur.Name ?? "", Ton(kontur), konturstaerke,
                                             null, konturwerte,
                                             Reihenfenster(fensterLinks, konturwerte.Length)));
             }
@@ -2425,7 +2522,7 @@ namespace WindowsFormsApplication1
                     float staerke = r.Breite > 0 ? r.Breite : 4f;
                     z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                         ZeichneLinie(zr, rc, werte, 0, max, r.Farbe, staerke));
-                    z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke, null, werte,
+                    z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
                                                 Reihenfenster(fensterLinks, werte.Length)));
                 }
             }
@@ -2466,7 +2563,7 @@ namespace WindowsFormsApplication1
                 float staerke = r.Breite > 0 ? r.Breite : 2.5f;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     ZeichneLinie(zr, rc, werte, 0, max, r.Farbe, staerke));
-                z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke, null, werte,
+                z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
                                             Reihenfenster(fensterLinks, werte.Length)));
             }
 
@@ -2486,7 +2583,7 @@ namespace WindowsFormsApplication1
                 if (max2 <= 0) max2 = 1;
 
                 Farbton achsenfarbe = y2G.Count == 1
-                                    ? y2G[0].Farbe.Ton()
+                                    ? Ton(y2G[0])
                                     : Farbton.Aus(Farbrolle.ACHSE);
 
                 // DG-E3-1: Die Reihen der zweiten Achse bekommen IHR Fenster - selbe
@@ -2499,7 +2596,7 @@ namespace WindowsFormsApplication1
                         ZeichneLinie(zr, rc, werte, 0, max2, r.Farbe, staerke));
                     // DG-E3-12: Die Reihe SAGT, dass sie rechts steht — die Oberfläche
                     // muss es nicht mehr aus ihrer y-Spanne erraten.
-                    z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke, null, werte,
+                    z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, null, werte,
                                                 new Datenfenster(fensterLinks.XVon,
                                                                  fensterLinks.XVon + werte.Length - 1,
                                                                  0, max2),
@@ -2613,7 +2710,7 @@ namespace WindowsFormsApplication1
                 // Stapelsumme bis hierher, Unterkante die Summe darunter. Die Farbe
                 // traegt dieselbe Deckung wie im Bild.
                 if (modell != null)
-                    modell.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.WithAlpha(alpha).Ton(),
+                    modell.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r, alpha),
                                                      0f, null, oben, gruppenfenster,
                                                      Reihenart.Flaeche, unterkante));
                 unten = oben;
@@ -2766,7 +2863,7 @@ namespace WindowsFormsApplication1
                 var yw = new double[r.Punkte.Count];
                 for (int i = 0; i < r.Punkte.Count; i++)
                 { xw[i] = r.Punkte[i].X; yw[i] = r.Punkte[i].Y; }
-                z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), 5f, null, yw,
+                z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), 5f, null, yw,
                                             z.Flaeche.Daten, Reihenart.Punkte, null, null,
                                             xw, yTitel));
             }
@@ -3279,7 +3376,7 @@ namespace WindowsFormsApplication1
                 Strichmuster muster = r.Gestrichelt ? new Strichmuster(8f, 5f) : null;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     VerlaufLinie(zr, rc, werte, min, max, r.Farbe, staerke, r.Gestrichelt));
-                z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke, muster, werte,
+                z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, werte,
                                             Reihenfenster(fensterLinks, werte.Length)));
             }
 
@@ -3297,7 +3394,7 @@ namespace WindowsFormsApplication1
                     VerlaufLinie(zr, rc, w2, 0, max2, zweiteAchse.Farbe, staerke2,
                                  zweiteAchse.Gestrichelt));
                 // DG-E3-12: Die Reihe SAGT, dass sie rechts steht.
-                z.FuegeReihe(new Datenreihe(zweiteAchse.Name ?? "", zweiteAchse.Farbe.Ton(),
+                z.FuegeReihe(new Datenreihe(zweiteAchse.Name ?? "", Ton(zweiteAchse),
                                             staerke2, muster2, w2,
                                             new Datenfenster(xVon, xVon + w2.Length - 1, 0, max2),
                                             Achsenseite: Achsenseite.Rechts));
@@ -4634,7 +4731,7 @@ namespace WindowsFormsApplication1
             var werte = new double[m];
             var stellen = new double[m];
             for (int i = 0; i < m; i++) { werte[i] = r.Werte[i]; stellen[i] = jahre[i]; }
-            return new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke,
+            return new Datenreihe(r.Name ?? "", Ton(r), staerke,
                                   r.Gestrichelt ? new Strichmuster(8f, 5f) : null,
                                   werte, null, Reihenart.Linie, null, null, stellen, "€");
         }
@@ -4879,6 +4976,42 @@ namespace WindowsFormsApplication1
         /// <summary>Dieselbe Flächenfarbe als MODELLWERT (Rolle statt Zahl).</summary>
         private static Zeichnung.Fuellung Flaeche(SKColor farbe)
             => new Zeichnung.Fuellung(farbe.Ton());
+
+        /// <summary>Die Fläche zu einem fertigen Farbton.</summary>
+        private static Zeichnung.Fuellung Flaeche(Farbton ton)
+            => new Zeichnung.Fuellung(ton);
+
+        // ======================================== Der Farbton einer Reihe (DG-E5)
+
+        /// <summary>
+        /// <b>Der Farbton einer Reihe</b> (DG-E5, Anwenderentscheid DG-Q8): Nennt die
+        /// Reihe ihre <see cref="Farbrolle"/>, gilt sie — auch dann, wenn ihre
+        /// gerechnete Farbe zufällig die Hausfarbe einer anderen Rolle trifft. Erst
+        /// eine Reihe OHNE Rolle geht durch die Rückwärtssuche der Palette.
+        /// </summary>
+        private static Farbton Ton(Reihe r)
+        {
+            if (r == null) return Farbton.Aus(Farbrolle.UNBENANNT);
+            return r.Ton ?? r.Farbe.Ton();
+        }
+
+        /// <summary>Derselbe Farbton mit anderer Deckung (der Fall der Stapelflächen).</summary>
+        private static Farbton Ton(Reihe r, byte deckung)
+        {
+            if (r == null) return Farbton.Aus(Farbrolle.UNBENANNT);
+            return r.Ton != null ? r.Ton.MitDeckung(deckung) : r.Farbe.WithAlpha(deckung).Ton();
+        }
+
+        /// <summary>Der Farbton einer Punktreihe — dieselbe Regel wie bei der Reihe.</summary>
+        private static Farbton Ton(Punktreihe r)
+        {
+            if (r == null) return Farbton.Aus(Farbrolle.UNBENANNT);
+            return r.Ton ?? r.Farbe.Ton();
+        }
+
+        /// <summary>Trägt die Reihe DIESE Rolle? (Ohne Rolle entscheidet der Farbwert.)</summary>
+        private static bool Traegt(Reihe r, Farbrolle rolle, SKColor hausfarbe)
+            => r != null && (r.Ton != null ? r.Rolle == rolle : r.Farbe == hausfarbe);
 
         /// <summary>
         /// Die Fläche einer AUSDRÜCKLICH genannten Rolle (DG-Q7) — die Schreibweise
@@ -5386,7 +5519,21 @@ namespace WindowsFormsApplication1
 
             var werte = new double[bis - von];
             Array.Copy(r.Werte, von, werte, 0, werte.Length);
-            return new Reihe(r.Name, werte, r.Farbe, r.Stapelgruppe, r.Gestrichelt, r.Breite);
+            return Mit(r, werte);
+        }
+
+        /// <summary>
+        /// Dieselbe Reihe mit ANDEREN Werten — Farbe, Farbrolle, Stapelart,
+        /// Strichfolge und Stärke bleiben. <b>Ohne diesen Weg verlöre jede Kopie ihre
+        /// Rolle</b> und damit ihr Farbfeld in der Legende (DG-E5).
+        /// </summary>
+        private static Reihe Mit(Reihe r, double[] werte)
+        {
+            Reihe kopie = r.Ton != null
+                ? new Reihe(r.Name, werte, r.Ton, r.Stapelgruppe, r.Gestrichelt, r.Breite)
+                : new Reihe(r.Name, werte, r.Farbe, r.Stapelgruppe, r.Gestrichelt, r.Breite);
+            kopie.Farbe = r.Farbe;
+            return kopie;
         }
 
         /// <summary>Dieselbe Zuschneidung für eine ganze Liste.</summary>

@@ -53,14 +53,14 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Jede der vierzig Rollen hat in der Vorgabe eine Farbe — eine Rolle ohne
-        /// Palettenfarbe wäre im Bild schwarz, und im Einstellungsdialog stünde ein
-        /// leeres Muster.
+        /// Jede der vierundfünfzig Rollen hat in der Vorgabe eine Farbe — eine Rolle
+        /// ohne Palettenfarbe wäre im Bild schwarz, und im Einstellungsdialog stünde
+        /// ein leeres Muster.
         /// </summary>
         [Fact]
         public void JedeAenderbareRolleHatEineHausfarbe()
         {
-            Assert.Equal(40, Diagrammfarben.Rollen.Count);
+            Assert.Equal(54, Diagrammfarben.Rollen.Count);
             foreach (Farbrolle rolle in Diagrammfarben.Rollen)
                 Assert.True(Farbpalette.Vorgabe.Kennt(rolle), "ohne Hausfarbe: " + rolle.Name);
         }
@@ -357,6 +357,94 @@ namespace EPOS.Kern.Tests
             Farbrollengabe wp = gaben.First(x => x.Schluessel == "WAERME_WP");
             Assert.NotEqual("WAERME_WP", wp.Name);
             Assert.Equal("#4172C4", wp.Vorgabe);
+        }
+
+        // =====================================================================
+        // 6 — Die Rollen der Simulationsreiter (DG-E5, Anwenderentscheid DG-Q8)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Größen, die bis zur Welle DG-E5 feste Farben trugen, haben jetzt eine
+        /// Rolle — <b>mit der bisherigen Farbe als Vorgabe</b>, außer wo zwei Größen
+        /// dieselbe Farbe trugen: Überschuss (Gelb wie der Heizstab), BHKW-Strom
+        /// (Sattelbraun wie Speicher 4) und die Summe Stromverbrauch (Grün wie die
+        /// Summe Wärmeerzeugung) bekommen einen nahen, aber EIGENEN Ton.
+        /// </summary>
+        [Fact]
+        public void DieNeuenRollenTragenIhreVorgabefarbe()
+        {
+            Assert.Equal(new Farbe(0xFF, 0xFF, 0x00), Farbpalette.Vorgabe[Farbrolle.HEIZSTAB]);
+            Assert.Equal(new Farbe(0xFF, 0x00, 0x00), Farbpalette.Vorgabe[Farbrolle.HEIZWAERME]);
+            Assert.Equal(new Farbe(0x00, 0xBF, 0xFF), Farbpalette.Vorgabe[Farbrolle.WARMWASSER]);
+            Assert.Equal(new Farbe(0x7E, 0x57, 0xA6), Farbpalette.Vorgabe[Farbrolle.PROZESSWAERME]);
+            Assert.Equal(new Farbe(0xA0, 0x52, 0x2D), Farbpalette.Vorgabe[Farbrolle.STROM_BHKW]);
+            Assert.Equal(new Farbe(0xFF, 0xD5, 0x4F), Farbpalette.Vorgabe[Farbrolle.UEBERSCHUSS]);
+            Assert.Equal(new Farbe(0x00, 0x80, 0x00), Farbpalette.Vorgabe[Farbrolle.ERZEUGUNG_GESAMT]);
+            Assert.Equal(new Farbe(0x2E, 0x8B, 0x57), Farbpalette.Vorgabe[Farbrolle.VERBRAUCH_GESAMT]);
+            Assert.Equal(new Farbe(0xFF, 0x8C, 0x00), Farbpalette.Vorgabe[Farbrolle.SPEICHERLADUNG]);
+            Assert.Equal(new Farbe(0x78, 0x82, 0x8C), Farbpalette.Vorgabe[Farbrolle.SPEICHERFUELLSTAND]);
+            Assert.Equal(new Farbe(0x90, 0xEE, 0x90), Farbpalette.Vorgabe[Farbrolle.STROM_SPEICHER]);
+            Assert.Equal(new Farbe(0xBE, 0x5A, 0x5A), Farbpalette.Vorgabe[Farbrolle.NETZ_OHNE_SPEICHER]);
+            Assert.Equal(new Farbe(0x28, 0x6E, 0xB4), Farbpalette.Vorgabe[Farbrolle.NETZ_MIT_SPEICHER]);
+            Assert.Equal(new Farbe(0xFF, 0xA5, 0x00), Farbpalette.Vorgabe[Farbrolle.SONNENWINKEL]);
+        }
+
+        /// <summary>
+        /// <b>Keine der neuen Rollen doppelt eine vorhandene Hausfarbe.</b> Die
+        /// Rückwärtssuche führt je Farbwert genau EINE Rolle — die zuerst eingetragene;
+        /// eine neue Rolle mit einem schon vergebenen Wert wäre über
+        /// <see cref="Farbpalette.Ton(Farbe)"/> nie zu erreichen.
+        /// </summary>
+        [Fact]
+        public void JedeNeueRolleFindetSichInDerRueckwaertssucheSelbst()
+        {
+            var neu = new[]
+            {
+                Farbrolle.HEIZSTAB, Farbrolle.HEIZWAERME, Farbrolle.WARMWASSER,
+                Farbrolle.PROZESSWAERME, Farbrolle.STROM_BHKW, Farbrolle.UEBERSCHUSS,
+                Farbrolle.ERZEUGUNG_GESAMT, Farbrolle.VERBRAUCH_GESAMT,
+                Farbrolle.SPEICHERLADUNG, Farbrolle.SPEICHERFUELLSTAND,
+                Farbrolle.STROM_SPEICHER, Farbrolle.NETZ_OHNE_SPEICHER,
+                Farbrolle.NETZ_MIT_SPEICHER, Farbrolle.SONNENWINKEL
+            };
+
+            foreach (Farbrolle r in neu)
+                Assert.Equal(r, Farbpalette.Ton(Farbpalette.Vorgabe[r]).Rolle);
+        }
+
+        /// <summary>Jede neue Rolle trägt ihren Anzeigenamen in BEIDEN Sprachen.</summary>
+        [Theory]
+        [InlineData("HEIZSTAB")]
+        [InlineData("HEIZWAERME")]
+        [InlineData("WARMWASSER")]
+        [InlineData("PROZESSWAERME")]
+        [InlineData("STROM_BHKW")]
+        [InlineData("UEBERSCHUSS")]
+        [InlineData("ERZEUGUNG_GESAMT")]
+        [InlineData("VERBRAUCH_GESAMT")]
+        [InlineData("SPEICHERLADUNG")]
+        [InlineData("SPEICHERFUELLSTAND")]
+        [InlineData("STROM_SPEICHER")]
+        [InlineData("NETZ_OHNE_SPEICHER")]
+        [InlineData("NETZ_MIT_SPEICHER")]
+        [InlineData("SONNENWINKEL")]
+        public void JedeNeueRolleHatEinenAnzeigenamenInBeidenSprachen(string rolle)
+        {
+            string schluessel = "DGF_ROLLE_" + rolle;
+            System.Resources.ResourceManager rm =
+                WindowsFormsApplication1.MyResource.Resource.ResourceManager;
+
+            Assert.False(string.IsNullOrWhiteSpace(
+                rm.GetString(schluessel, new System.Globalization.CultureInfo("de-DE"))),
+                schluessel + " fehlt in Resource.resx");
+            Assert.False(string.IsNullOrWhiteSpace(
+                rm.GetString(schluessel, new System.Globalization.CultureInfo("en-US"))),
+                schluessel + " fehlt in Resource.en-US.resx");
+
+            // Der Anzeigename ist nicht der Schluessel - er kommt aus der Ressource.
+            Farbrolle r = Diagrammfarben.Rolle(rolle);
+            Assert.NotNull(r);
+            Assert.NotEqual(rolle, Diagrammfarben.Anzeigename(r));
         }
 
         /// <summary>Die Rückrichtung: der sprachneutrale Name findet seine Rolle.</summary>

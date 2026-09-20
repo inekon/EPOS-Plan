@@ -65,6 +65,19 @@ namespace WindowsFormsApplication1.Zeichnung
         public static readonly Farbrolle BEDARF = new Farbrolle("BEDARF");
         public static readonly Farbrolle STAMM = new Farbrolle("STAMM");
 
+        // Die Groessen der Simulationsreiter, die eine eigene Rolle brauchen
+        // (DG-E5, Anwenderentscheid DG-Q8): Ohne sie traegt ihr Legendeneintrag
+        // kein Farbfeld.
+
+        public static readonly Farbrolle HEIZSTAB = new Farbrolle("HEIZSTAB");
+        public static readonly Farbrolle HEIZWAERME = new Farbrolle("HEIZWAERME");
+        public static readonly Farbrolle WARMWASSER = new Farbrolle("WARMWASSER");
+        public static readonly Farbrolle PROZESSWAERME = new Farbrolle("PROZESSWAERME");
+        public static readonly Farbrolle STROM_BHKW = new Farbrolle("STROM_BHKW");
+        public static readonly Farbrolle UEBERSCHUSS = new Farbrolle("UEBERSCHUSS");
+        public static readonly Farbrolle ERZEUGUNG_GESAMT = new Farbrolle("ERZEUGUNG_GESAMT");
+        public static readonly Farbrolle VERBRAUCH_GESAMT = new Farbrolle("VERBRAUCH_GESAMT");
+
         // -------------------------------------------------------- Variantenreihen
 
         public static readonly Farbrolle SERIE_1 = new Farbrolle("SERIE_1");
@@ -85,6 +98,14 @@ namespace WindowsFormsApplication1.Zeichnung
         public static readonly Farbrolle SPEICHER_5 = new Farbrolle("SPEICHER_5");
         public static readonly Farbrolle SPEICHER_6 = new Farbrolle("SPEICHER_6");
 
+        // Was am Speicher haengt, aber keine EINZELNE Einheit benennt (DG-E5).
+
+        public static readonly Farbrolle SPEICHERLADUNG = new Farbrolle("SPEICHERLADUNG");
+        public static readonly Farbrolle SPEICHERFUELLSTAND = new Farbrolle("SPEICHERFUELLSTAND");
+        public static readonly Farbrolle STROM_SPEICHER = new Farbrolle("STROM_SPEICHER");
+        public static readonly Farbrolle NETZ_OHNE_SPEICHER = new Farbrolle("NETZ_OHNE_SPEICHER");
+        public static readonly Farbrolle NETZ_MIT_SPEICHER = new Farbrolle("NETZ_MIT_SPEICHER");
+
         // ------------------------------------------------ Profile und Temperaturen
 
         public static readonly Farbrolle KOSTENPROFIL = new Farbrolle("KOSTENPROFIL");
@@ -93,6 +114,7 @@ namespace WindowsFormsApplication1.Zeichnung
         public static readonly Farbrolle QUELLTEMPERATUR = new Farbrolle("QUELLTEMPERATUR");
         public static readonly Farbrolle AUSSENTEMPERATUR = new Farbrolle("AUSSENTEMPERATUR");
         public static readonly Farbrolle ERSATZJAHR = new Farbrolle("ERSATZJAHR");
+        public static readonly Farbrolle SONNENWINKEL = new Farbrolle("SONNENWINKEL");
 
         // --------------------------------------------------------- Rasterkarte
 
@@ -222,6 +244,21 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.BEDARF,          new Farbe(0x33, 0x33, 0x33) },
                 { Farbrolle.STAMM,           new Farbe(0x1F, 0x4E, 0x79) },
 
+                // DG-E5: die Vorgabe ist die bisherige feste Farbe der Groesse.
+                // Zwei muessten sich eine teilen — Heizstab und Ueberschuss beide
+                // Gelb, BHKW-Strom das Sattelbraun von SPEICHER_4 —, und ein
+                // doppelter Wert verschwaende in der Rueckwaertssuche die zweite
+                // Rolle: Ueberschuss und BHKW-Strom bekommen deshalb einen nahen,
+                // aber EIGENEN Ton. Dasselbe bei den zwei Summenlinien.
+                { Farbrolle.HEIZSTAB,        new Farbe(0xFF, 0xFF, 0x00) },  // Yellow
+                { Farbrolle.HEIZWAERME,      new Farbe(0xFF, 0x00, 0x00) },  // Red
+                { Farbrolle.WARMWASSER,      new Farbe(0x00, 0xBF, 0xFF) },  // DeepSkyBlue
+                { Farbrolle.PROZESSWAERME,   new Farbe(0x7E, 0x57, 0xA6) },
+                { Farbrolle.STROM_BHKW,      new Farbe(0xA0, 0x52, 0x2D) },  // Sienna
+                { Farbrolle.UEBERSCHUSS,     new Farbe(0xFF, 0xD5, 0x4F) },  // Bernstein
+                { Farbrolle.ERZEUGUNG_GESAMT, new Farbe(0x00, 0x80, 0x00) }, // Green
+                { Farbrolle.VERBRAUCH_GESAMT, new Farbe(0x2E, 0x8B, 0x57) }, // SeaGreen
+
                 { Farbrolle.SERIE_1,         new Farbe(0xED, 0x7D, 0x31) },  // Orange
                 { Farbrolle.SERIE_2,         new Farbe(0x70, 0xAD, 0x47) },  // Grün
                 { Farbrolle.SERIE_3,         new Farbe(0x41, 0x72, 0xC4) },  // Blau
@@ -238,12 +275,19 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.SPEICHER_5,      new Farbe(0x2F, 0x4F, 0x4F) },  // DarkSlateGray
                 { Farbrolle.SPEICHER_6,      new Farbe(0xDC, 0x14, 0x3C) },  // Crimson
 
+                { Farbrolle.SPEICHERLADUNG,  new Farbe(0xFF, 0x8C, 0x00) },  // DarkOrange
+                { Farbrolle.SPEICHERFUELLSTAND, new Farbe(0x78, 0x82, 0x8C) },
+                { Farbrolle.STROM_SPEICHER,  new Farbe(0x90, 0xEE, 0x90) },  // LightGreen
+                { Farbrolle.NETZ_OHNE_SPEICHER, new Farbe(0xBE, 0x5A, 0x5A) },
+                { Farbrolle.NETZ_MIT_SPEICHER, new Farbe(0x28, 0x6E, 0xB4) },
+
                 { Farbrolle.KOSTENPROFIL,    new Farbe(0x00, 0x64, 0x00, 180) },
                 { Farbrolle.PROFILFLAECHE,   new Farbe(0x00, 0x00, 0xFF, 100) },
                 { Farbrolle.PROFILLINIE,     new Farbe(0x00, 0x00, 0xFF) },
                 { Farbrolle.QUELLTEMPERATUR, new Farbe(0x8B, 0x45, 0x13, 200) },
                 { Farbrolle.AUSSENTEMPERATUR, new Farbe(0x46, 0x82, 0xB4, 90) },
                 { Farbrolle.ERSATZJAHR,      new Farbe(0xB2, 0x22, 0x22, 40) },
+                { Farbrolle.SONNENWINKEL,    new Farbe(0xFF, 0xA5, 0x00) },  // Orange
 
                 { Farbrolle.RASTER_SCHLECHT, new Farbe(0xB2, 0x22, 0x22) },
                 { Farbrolle.RASTER_MITTE,    new Farbe(0xFF, 0xD7, 0x00) },

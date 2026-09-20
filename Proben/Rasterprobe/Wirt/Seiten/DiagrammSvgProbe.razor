@@ -19,10 +19,11 @@
       * ein Klick auf den Legendentext blendet die Reihe ODER FLAECHE aus,
       * ein Klick auf ihr Farbfeld oeffnet den Farbwaehler.
 
-    DREI REIHEN, ZWEI FAELLE (Jahresgang). Zwei Reihen tragen HAUSFARBEN und
-    damit eine Farbrolle - ihr Legendeneintrag hat ein Farbfeld. Die dritte
-    traegt eine fest gerechnete Farbe ohne Rolle; sie bekommt keinen Waehler,
-    und genau das soll man hier sehen.
+    DREI REIHEN, ZWEI FAELLE (Jahresgang). Zwei Reihen nennen ihre Farbrolle
+    unmittelbar. Die dritte traegt eine im Layout GERECHNETE Farbe mit ihrer
+    Herkunftsrolle - auch sie hat ein Farbfeld, und ihr Waehler setzt die
+    Herkunftsrolle (DG-E5, Anwenderentscheid DG-Q8). Keine Reihe bleibt ohne
+    Waehler, und genau das soll man hier sehen.
 
     WAS DIE ETAPPE E3 DAZUGELEGT HAT (Gaben ?bild=…):
 
@@ -147,15 +148,15 @@
     private bool Achse2Aus => _diagramm?.ZweiteAchseAus ?? false;
 
     /// <summary>
-    /// Die Farben der drei Reihen des Jahresgangs: zwei Hausfarben (Rolle
-    /// vorhanden, Farbfeld in der Legende) und eine fest gerechnete ohne Rolle
-    /// (kein Farbfeld).
+    /// Die Farbtöne der drei Reihen des Jahresgangs: zwei nennen ihre Rolle, die
+    /// dritte trägt eine im Layout GERECHNETE Farbe mit ihrer Herkunftsrolle.
+    /// Alle drei haben damit ein Farbfeld in der Legende.
     /// </summary>
-    private static readonly SkiaSharp.SKColor[] FARBEN =
+    private static readonly Farbton[] TOENE =
     {
-        ChartRenderer.C_WP,          // Hausfarbe -> Rolle
-        ChartRenderer.C_PV,          // Hausfarbe -> Rolle
-        new SkiaSharp.SKColor(0x7B, 0x1F, 0xA2)   // keine Hausfarbe -> kein Waehler
+        Farbton.Aus(Farbrolle.WAERME_WP),
+        Farbton.Aus(Farbrolle.STROM_PV),
+        Farbpalette.Gerechnet(Farbrolle.REST, new Farbe(0x7B, 0x1F, 0xA2))
     };
 
     private static readonly string[] NAMEN = { "Wärmepumpe", "Photovoltaik", "Sonstiges" };
@@ -202,7 +203,7 @@
 
         var reihen = new List<ChartRenderer.Reihe>(_reihen);
         for (int i = 0; i < _reihen; i++)
-            reihen.Add(new ChartRenderer.Reihe(NAMEN[i], werte[i], FARBEN[i]));
+            reihen.Add(new ChartRenderer.Reihe(NAMEN[i], werte[i], TOENE[i]));
 
         _modell = ChartRenderer.JahresgangModell(
             "Jahresgang der Probe", reihen, "Monat", "Leistung [kW]");

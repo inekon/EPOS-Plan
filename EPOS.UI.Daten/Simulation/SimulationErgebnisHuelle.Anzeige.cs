@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using EPOS.UI.Seiten.Simulation;
 using SkiaSharp;
 using SpeicherEngine;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -890,19 +891,22 @@ namespace WindowsFormsApplication1
         {
             internal string Legende;
             internal double[] Werte;
-            internal SKColor Farbe;
+            internal Farbrolle Rolle;
             internal bool Gestrichelt;
             internal string Schluessel;
         }
 
-        /// <summary>Die vier Farben der Speicherpaare (wörtlich <c>TEMP_FARBEN</c> :124-131).</summary>
-        private static readonly SKColor[] TEMP_FARBEN =
+        /// <summary>
+        /// Die Rollen der Speicherpaare (DG-E5): Beide Temperaturen EINES Behälters
+        /// tragen dieselbe Rolle und unterscheiden sich über die Strichfolge — und es
+        /// ist dieselbe Rolle, unter der der Ladezustand dieses Speichers im
+        /// Wärmegang steht.
+        /// </summary>
+        private static readonly Farbrolle[] TEMP_ROLLEN =
         {
-            new SKColor(0xC0, 0x39, 0x2B), new SKColor(0x28, 0x80, 0xB9),
-            new SKColor(0x1D, 0x9E, 0x75), new SKColor(0x8E, 0x44, 0xAD)
+            Farbrolle.SPEICHER_1, Farbrolle.SPEICHER_2,
+            Farbrolle.SPEICHER_3, Farbrolle.SPEICHER_4
         };
-
-        private static readonly SKColor TEMP_FARBE_QUELLE = new SKColor(0xD8, 0x5A, 0x30);
 
         /// <summary>
         /// Die Temperaturreihen des Laufs — je Senkenspeicher zwei (oben, unten
@@ -924,7 +928,7 @@ namespace WindowsFormsApplication1
                 if (sp.T_oben_stuendlich == null || sp.T_unten_stuendlich == null) continue;
 
                 string schluessel = sp.Schluessel(i);
-                SKColor farbe = TEMP_FARBEN[nummer % TEMP_FARBEN.Length];
+                Farbrolle rolle = TEMP_ROLLEN[nummer % TEMP_ROLLEN.Length];
                 nummer++;
 
                 liste.Add(new Temperaturreihe
@@ -932,14 +936,14 @@ namespace WindowsFormsApplication1
                     Schluessel = schluessel + ZeitreihenSatz.SUFFIX_T_OBEN,
                     Legende = sp.BezeichnerAnzeige() + " " + MyResource.Resource.SIM_REIHE_T_OBEN,
                     Werte = sp.T_oben_stuendlich,
-                    Farbe = farbe
+                    Rolle = rolle
                 });
                 liste.Add(new Temperaturreihe
                 {
                     Schluessel = schluessel + ZeitreihenSatz.SUFFIX_T_UNTEN,
                     Legende = sp.BezeichnerAnzeige() + " " + MyResource.Resource.SIM_REIHE_T_UNTEN,
                     Werte = sp.T_unten_stuendlich,
-                    Farbe = farbe,
+                    Rolle = rolle,
                     Gestrichelt = true
                 });
             }
@@ -986,7 +990,7 @@ namespace WindowsFormsApplication1
                 Legende = (string.IsNullOrEmpty(bezeichner) ? schluessel : bezeichner) +
                           " " + MyResource.Resource.SIM_REIHE_QUELLTEMPERATUR,
                 Werte = werte,
-                Farbe = TEMP_FARBE_QUELLE
+                Rolle = Farbrolle.QUELLTEMPERATUR
             });
         }
     }

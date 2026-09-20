@@ -185,12 +185,12 @@ namespace WindowsFormsApplication1
                 {
                     new ChartRenderer.Reihe(
                         MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR, quelle,
-                        ChartRenderer.C_QUELLTEMPERATUR)
+                        Farbrolle.QUELLTEMPERATUR)
                 };
                 if (aussen != null && aussen.Length > 1)
                     reihen.Add(new ChartRenderer.Reihe(
                         MyResource.Resource.CHART_SERIE_AUSSENTEMPERATUR, aussen,
-                        ChartRenderer.C_AUSSENTEMPERATUR));
+                        Farbrolle.AUSSENTEMPERATUR));
 
                 return ChartRenderer.JahresgangModell(
                     MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU, reihen,

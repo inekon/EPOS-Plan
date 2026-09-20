@@ -37,11 +37,11 @@ public class DiagrammSvgTests : EposBunitContext
     private const string MIT_ROLLE = "Temperatur";
 
     /// <summary>
-    /// Die Reihe mit FEST gerechneter Farbe (Orange ist keine Hausfarbe, also
-    /// <c>Farbton.Wert</c> mit der Rolle <c>UNBENANNT</c>) — sie bekommt keinen
-    /// Wähler.
+    /// Die Reihe mit einer Farbe OHNE Rolle (<c>#123456</c> ist keine Hausfarbe,
+    /// also <c>Farbton.Wert</c> mit der Rolle <c>UNBENANNT</c>) — sie ist seit
+    /// DG-E5 der einzige Fall ohne Wähler.
     /// </summary>
-    private const string OHNE_ROLLE = "Sonnenwinkel";
+    private const string OHNE_ROLLE = "Sonstiges";
 
     public DiagrammSvgTests()
     {
@@ -81,8 +81,8 @@ public class DiagrammSvgTests : EposBunitContext
             "Jahrestemperatur Verlauf",
             new[]
             {
-                new ChartRenderer.Reihe(MIT_ROLLE, temperatur, ChartRenderer.C_AUSSENTEMPERATUR),
-                new ChartRenderer.Reihe(zweite, winkel, SkiaSharp.SKColors.Orange)
+                new ChartRenderer.Reihe(MIT_ROLLE, temperatur, Farbrolle.AUSSENTEMPERATUR),
+                new ChartRenderer.Reihe(zweite, winkel, new SkiaSharp.SKColor(0x12, 0x34, 0x56))
             },
             "Stunde des Jahres", "Temperatur [°C]");
     }
@@ -355,9 +355,10 @@ public class DiagrammSvgTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Eine Reihe mit FEST gerechneter Farbe bekommt keinen Wähler.</b> Es
-    /// gibt keine Rolle, auf die die Einstellung zeigen könnte — ein Wähler wäre
-    /// dort ein Versprechen ohne Wirkung.
+    /// <b>Eine Reihe mit einer Farbe OHNE Rolle bekommt keinen Wähler.</b> Es gibt
+    /// keine Rolle, auf die die Einstellung zeigen könnte — ein Wähler wäre dort
+    /// ein Versprechen ohne Wirkung. <b>Eine GERECHNETE Farbe mit Herkunftsrolle
+    /// fällt seit DG-E5 nicht mehr darunter</b> (Abschnitt DS-13).
     /// </summary>
     [Fact]
     public void DS3_Eine_Reihe_ohne_Rolle_bekommt_keinen_Farbwaehler()
@@ -1552,5 +1553,103 @@ public class DiagrammSvgTests : EposBunitContext
 
         Assert.Equal(erwartet, cut.Instance.Ausschnittpfade[FLAECHE]);
         Assert.Equal(erwartet, cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("d"));
+    }
+
+    // =====================================================================
+    //  DS-13  Jede Reihe hat einen Wähler (DG-E5, Anwenderentscheid DG-Q8)
+    // =====================================================================
+
+    /// <summary>Die Reihe mit im Layout GERECHNETER Farbe samt Herkunftsrolle.</summary>
+    private const string GERECHNET = "Abgestuft";
+
+    /// <summary>
+    /// Ein Bild mit drei Reihen: eine Hausfarbe, eine im Layout gerechnete Farbe
+    /// MIT Herkunftsrolle und eine Farbe ganz ohne Rolle.
+    /// </summary>
+    private static Zeichenmodell Dreierbild()
+    {
+        var a = new double[8760];
+        var b = new double[8760];
+        var c = new double[8760];
+        for (int i = 0; i < 8760; i++)
+        {
+            a[i] = 10.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0);
+            b[i] = 20.0 + 5.0 * Math.Sin(2 * Math.PI * i / 8760.0);
+            c[i] = 30.0 + 20.0 * Math.Sin(2 * Math.PI * i / 8760.0);
+        }
+
+        return ChartRenderer.JahresgangModell(
+            "Dreierbild",
+            new[]
+            {
+                new ChartRenderer.Reihe(MIT_ROLLE, a, Farbrolle.AUSSENTEMPERATUR),
+                new ChartRenderer.Reihe(GERECHNET, b,
+                                        Farbpalette.Gerechnet(Farbrolle.REST,
+                                                              new Farbe(0x7B, 0x1F, 0xA2))),
+                new ChartRenderer.Reihe(OHNE_ROLLE, c, new SkiaSharp.SKColor(0x12, 0x34, 0x56))
+            },
+            "Stunde des Jahres", "Temperatur [°C]");
+    }
+
+    /// <summary>
+    /// <b>Eine gerechnete Farbe mit Herkunftsrolle bekommt ihr Farbfeld</b>
+    /// (DG-Q8): Der Wähler zeigt auf die HERKUNFTSROLLE — die Abstufung entsteht
+    /// weiterhin im Bild, aus der geänderten Hausfarbe. Nur eine Farbe ohne Rolle
+    /// bleibt ohne.
+    /// </summary>
+    [Fact]
+    public void DS13_Eine_gerechnete_Farbe_mit_Herkunftsrolle_bekommt_einen_Waehler()
+    {
+        var cut = Zeige(modell: Dreierbild(), farbwahl: true, kennung: "drei");
+
+        Assert.NotEmpty(cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']"));
+        Assert.NotEmpty(cut.FindAll("rect[data-legende='" + GERECHNET + "']"));
+        Assert.Empty(cut.FindAll("rect[data-legende='" + OHNE_ROLLE + "']"));
+
+        // Kein Farbfeld gehoert zum Eintrag ohne Rolle - die zwei anderen tragen es.
+        Assert.NotEmpty(cut.FindAll(".epos-legende-farbfeld"));
+        Assert.All(cut.FindAll(".epos-legende-farbfeld"),
+                   f => Assert.NotEqual(OHNE_ROLLE, f.GetAttribute("data-legende")));
+        Assert.Contains(cut.FindAll(".epos-legende-farbfeld"),
+                        f => f.GetAttribute("data-legende") == GERECHNET);
+    }
+
+    /// <summary>
+    /// Der Klick auf das Farbfeld der gerechneten Reihe meldet ihre
+    /// HERKUNFTSROLLE — nicht die gerechnete Farbe.
+    /// </summary>
+    [Fact]
+    public void DS13_Der_Waehler_der_gerechneten_Reihe_meldet_die_Herkunftsrolle()
+    {
+        var wahl = new List<(Farbrolle Rolle, Farbe Farbe)>();
+        var cut = Zeige(modell: Dreierbild(), kennung: "drei",
+                        farbeGewaehlt: w => wahl.Add(w));
+
+        cut.FindAll("rect[data-legende='" + GERECHNET + "']")[0].Click();
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+
+        cut.Find(".epos-farbwahl input.epos-farbfeld-waehler").Change("#00A000");
+
+        Assert.Single(wahl);
+        Assert.Equal(Farbrolle.REST, wahl[0].Rolle);
+        Assert.Equal(0x00, wahl[0].Farbe.R);
+        Assert.Equal(0xA0, wahl[0].Farbe.G);
+        Assert.Equal(0x00, wahl[0].Farbe.B);
+    }
+
+    /// <summary>
+    /// Umschalt+Eingabe öffnet den Wähler auch auf der gerechneten Reihe — der
+    /// Tastaturweg gilt für jeden Eintrag, der ein Farbfeld hat.
+    /// </summary>
+    [Fact]
+    public void DS13_Umschalt_und_Eingabe_oeffnet_den_Waehler_der_gerechneten_Reihe()
+    {
+        var cut = Zeige(modell: Dreierbild(), farbwahl: true, kennung: "drei");
+
+        cut.Find("text[data-legende='" + GERECHNET + "']")
+           .KeyDown(new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
+
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+        Assert.False(cut.Instance.IstAus(GERECHNET));   // geschaltet wird dabei NICHT
     }
 }

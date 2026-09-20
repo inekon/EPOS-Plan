@@ -11,7 +11,6 @@ using System.Windows.Forms;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Klimadaten;
 using Microsoft.AspNetCore.Components;
-using SkiaSharp;
 using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
@@ -219,7 +218,7 @@ namespace WindowsFormsApplication1
                 {
                     new ChartRenderer.Reihe(MyResource.Resource.KLIMA_REIHE_TEMPERATUR,
                                             werteTemperatur,
-                                            ChartRenderer.C_AUSSENTEMPERATUR)
+                                            Farbrolle.AUSSENTEMPERATUR)
                 },
                 MyResource.Resource.KLIMA_ACHSE_X,
                 MyResource.Resource.KLIMA_ACHSE_TEMPERATUR);
@@ -232,7 +231,7 @@ namespace WindowsFormsApplication1
                 {
                     new ChartRenderer.Reihe(MyResource.Resource.KLIMA_REIHE_SONNENWINKEL,
                                             werteSonnenwinkel,
-                                            SKColors.Orange)
+                                            Farbrolle.SONNENWINKEL)
                 },
                 MyResource.Resource.KLIMA_ACHSE_X,
                 MyResource.Resource.KLIMA_ACHSE_SONNENWINKEL,

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using SkiaSharp;
 using SpeicherEngine;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -60,11 +60,11 @@ namespace WindowsFormsApplication1
         public const string REIHE_SOC = "LADEZUSTAND";
 
         /// <summary>
-        /// Die Farbe des Ladezustands — woertlich die des Vorlaeufers
-        /// (<c>Color.FromArgb(120, 130, 140)</c>), dieselbe, die das SoC-Bild des
-        /// Reiters trug und die <see cref="PeakShavingBild.FarbeSoC"/> führt.
+        /// Die Farbrolle des Ladezustands — dieselbe, die
+        /// <see cref="PeakShavingBild.RolleSoC"/> führt: Ein Anwender, der den
+        /// Ladezustand umfärbt, färbt ihn in jedem Bild um.
         /// </summary>
-        public static readonly SKColor FarbeSoC = PeakShavingBild.FarbeSoC;
+        public static readonly Farbrolle RolleSoC = PeakShavingBild.RolleSoC;
 
         // =================================================================
         // Die Rechnung (eine Stelle für beide Aufrufer)
@@ -149,17 +149,17 @@ namespace WindowsFormsApplication1
 
             if (Gewaehlt(wahl, REIHE_OHNE))
                 liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_OHNE,
-                                                  ohne, ChartRenderer.C_BEDARF));
+                                                  ohne, Farbrolle.BEDARF));
             if (Gewaehlt(wahl, REIHE_MIT))
                 liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_MIT,
-                                                  mit, ChartRenderer.C_NETZ));
+                                                  mit, Farbrolle.STROM_NETZ));
             if (!double.IsNaN(schwelleKw) && Gewaehlt(wahl, REIHE_SCHWELLE))
                 liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_SCHWELLE,
                                                   Konstante(schwelleKw, ohne.Length),
-                                                  ChartRenderer.C_RASTER_SCHLECHT) { Gestrichelt = true });
+                                                  Farbrolle.RASTER_SCHLECHT) { Gestrichelt = true });
             if (Gewaehlt(wahl, REIHE_SPEICHER))
                 liste.Add(new ChartRenderer.Reihe(MyResource.Resource.OPT_BETRIEB_R_LEISTUNG,
-                                                  leistung, ChartRenderer.C_WP));
+                                                  leistung, Farbrolle.WAERME_WP));
             return liste;
         }
 
@@ -178,7 +178,7 @@ namespace WindowsFormsApplication1
         {
             if (ergebnis == null || !Gewaehlt(wahl, REIHE_SOC)) return null;
             return new ChartRenderer.Reihe(MyResource.Resource.PEAK_CHART_Y2,
-                                           ergebnis.SoCKwh, FarbeSoC);
+                                           ergebnis.SoCKwh, RolleSoC);
         }
 
         // =================================================================

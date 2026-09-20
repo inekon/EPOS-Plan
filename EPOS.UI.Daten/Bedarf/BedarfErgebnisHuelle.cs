@@ -42,12 +42,16 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class BedarfErgebnisHuelle
     {
-        /// <summary>Die vier Sichtfarben der Vorläufer — wörtlich aus den drei Masken.</summary>
-        private static readonly SKColor FARBE_STROM = SKColors.YellowGreen;
-        private static readonly SKColor FARBE_PROZESS = SKColors.Red;
-        private static readonly SKColor FARBE_GEBAEUDE = SKColors.Blue;
-        private static readonly SKColor FARBE_BRAUCHWASSER = SKColors.Orange;
-        private static readonly SKColor FARBE_JAHR = SKColors.SteelBlue;
+        /// <summary>
+        /// Die Farbrolle je Sicht (DG-E5): Jede Sicht nennt die GRÖSSE, die sie zeigt,
+        /// und holt ihre Farbe aus der Palette — Strombedarf und Prozesse, Gebäude und
+        /// Brauchwasser sind dieselben Größen wie in den Simulationsreitern.
+        /// </summary>
+        private static readonly Farbrolle ROLLE_STROM = Farbrolle.BEDARF;
+        private static readonly Farbrolle ROLLE_PROZESS = Farbrolle.PROZESSWAERME;
+        private static readonly Farbrolle ROLLE_GEBAEUDE = Farbrolle.HEIZWAERME;
+        private static readonly Farbrolle ROLLE_BRAUCHWASSER = Farbrolle.WARMWASSER;
+        private static readonly Farbrolle ROLLE_JAHR = Farbrolle.WARMWASSER;
 
         /// <summary>
         /// Der Feldsatz des Strombedarfs — seit iU9-W9.5 eigene Methode.
@@ -95,7 +99,7 @@ namespace WindowsFormsApplication1
                 Sichten = new[]
                 {
                     Sicht(Text_("BERG_OPT_STROM", "Strombedarf"), simulation.Strombedarf_monat,
-                          Text_("BERG_BILD_STROM", "Strombedarf Monatsübersicht"), FARBE_STROM)
+                          Text_("BERG_BILD_STROM", "Strombedarf Monatsübersicht"), ROLLE_STROM)
                 },
                 Ganglinie = Gangquelle(simulation)
             };
@@ -145,7 +149,7 @@ namespace WindowsFormsApplication1
                     if (von < 0 || von >= belegt) return null;
                     int bis = Math.Min(belegt, von + schritt);
 
-                    return ChartRenderer.JahresverlaufModell(titel, werte, yTitel, FARBE_STROM,
+                    return ChartRenderer.JahresverlaufModell(titel, werte, yTitel, ROLLE_STROM,
                         new ChartRenderer.Achsenfenster(von, bis));
                 }
             };
@@ -159,10 +163,10 @@ namespace WindowsFormsApplication1
             var sichten = new List<Monatssicht>
             {
                 Sicht(Text_("BERG_OPT_PROZESSE", "Prozesse"), simulation.Waermebedarf_Prozess_Monat,
-                      Text_("BERG_BILD_PROZESS", "Prozesswärme"), FARBE_PROZESS),
+                      Text_("BERG_BILD_PROZESS", "Prozesswärme"), ROLLE_PROZESS),
                 Sicht(Text_("BERG_OPT_GEBAEUDE", "Gebäude (incl. ext. Wärmebedarf)"),
                       simulation.Waermebedarf_Gebaeude_Monat,
-                      Text_("BERG_BILD_GEBAEUDE", "Gebäudewärme"), FARBE_GEBAEUDE)
+                      Text_("BERG_BILD_GEBAEUDE", "Gebäudewärme"), ROLLE_GEBAEUDE)
             };
 
             Zeichenmodell jahresmodell = null;
@@ -171,12 +175,12 @@ namespace WindowsFormsApplication1
                 sichten.Add(Sicht(Text_("BERG_OPT_BRAUCHWASSER", "Brauchwasser"),
                                   simulation.Waermebedarf_Brauchwasser_Monat,
                                   Text_("BERG_BILD_BRAUCHWASSER", "Brauchwasserwärme"),
-                                  FARBE_BRAUCHWASSER, istBrauchwasser: true));
+                                  ROLLE_BRAUCHWASSER, istBrauchwasser: true));
 
                 jahresmodell = ChartRenderer.JahresverlaufModell(
                     Text_("BERG_BILD_JAHR", "Jahresübersicht"),
                     AlsDouble(simulation.brauchwasserwerte),
-                    Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]"), FARBE_JAHR);
+                    Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]"), ROLLE_JAHR);
             }
 
             return new BedarfErgebnisDaten
@@ -338,7 +342,7 @@ namespace WindowsFormsApplication1
         /// REFERENZ des Modells wechselt.</para>
         /// </summary>
         private static Monatssicht Sicht(string bezeichnung, double[] monat, string bildtitel,
-                                         SKColor farbe, bool istBrauchwasser = false)
+                                         Farbrolle rolle, bool istBrauchwasser = false)
         {
             if (monat == null || monat.Length < 12)
                 return new Monatssicht(bezeichnung, null, null, istBrauchwasser);
@@ -355,9 +359,9 @@ namespace WindowsFormsApplication1
 
             string[] monate = MonateKurz();
             Zeichenmodell modell = ChartRenderer.MonatsSaeulenModell(
-                bildtitel, mwh, farbe, Energieeinheit.MWh.Text, monate);
+                bildtitel, mwh, rolle, Energieeinheit.MWh.Text, monate);
             Zeichenmodell modellKWh = ChartRenderer.MonatsSaeulenModell(
-                bildtitel, kwh, farbe, Energieeinheit.KWh.Text, monate);
+                bildtitel, kwh, rolle, Energieeinheit.KWh.Text, monate);
 
             return new Monatssicht(bezeichnung, texte, modell, istBrauchwasser)
             {
