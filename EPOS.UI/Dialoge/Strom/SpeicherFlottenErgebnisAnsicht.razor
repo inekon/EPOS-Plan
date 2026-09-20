@@ -39,6 +39,11 @@
    je Zeichenlauf verwuerfe mit dem Baum auch Zoom, Zeigerstelle und abgewaehlte
    Reihen.
 
+   DIE FARBWAHL AM BILD (Farbrollen, Bedienung Teil 2) steht an allen drei
+   Bildern: Projektion, Netzbild und SoC-Band fuehren Reihen mit Farbrolle. Die
+   Schreibwege kommen als Delegaten von der Seite herein - kein Delegat, kein
+   Waehler.
+
    DER LADEZUSTAND KOMMT AUF DIE ZWEITE ACHSE (Hausregel 5.3). Welche Einheit
    dort steht, sagt das Auswahlfeld; ihr Reihenschalter sagt, OB sie gezeichnet
    wird. Das zweite Bild mit den Energiegrenzen bleibt waehlbar - dort steht das
@@ -51,6 +56,7 @@
    Warteschlange aufzubauen. *@
 
 @namespace EPOS.UI.Dialoge.Strom
+@inherits Farbwahlwirt
 @using System.Globalization
 @using EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1
@@ -218,7 +224,10 @@
                    Der Baustein schaltet ihn deshalb von selbst ab und zeigt statt
                    dessen den Wert der Saeule unter dem Zeiger (DG-E3-10). *@
                 <DiagrammSvg Modell="@_projektion" Kennung="flotte-projektion"
-                             Bezeichnung="@Resource.FLOTTE_ALT_PROJEKTION" />
+                             Bezeichnung="@Resource.FLOTTE_ALT_PROJEKTION"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
             </section>
 
             <details class="epos-flotte-jahreskonten">
@@ -366,12 +375,18 @@
                steht, sagt das Modell (Datenreihe.Achsenseite, DG-E3-12). *@
             <DiagrammSvg Modell="@_netz" Kennung="@Netzkennung"
                          Bezeichnung="@Resource.FLOTTE_ALT_NETZ"
-                         Einheit="kW" EinheitRechts="kWh" />
+                         Einheit="kW" EinheitRechts="kWh"
+                         FarbwahlErlaubt="@Farbwahl"
+                         FarbeGewaehlt="FarbeUebernehmen"
+                         FarbeZurueckgesetzt="FarbeVerwerfen" />
 
             @if (_zweitesBild && _soc is not null)
             {
                 <DiagrammSvg Modell="@_soc" Kennung="@Sockennung"
-                             Bezeichnung="@Resource.FLOTTE_ALT_SOC" Einheit="kWh" />
+                             Bezeichnung="@Resource.FLOTTE_ALT_SOC" Einheit="kWh"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
             }
 
             <div class="epos-simerg-schalter">

@@ -39,6 +39,7 @@
    schreiben sofort. *@
 
 @namespace EPOS.UI.Dialoge.Waermepumpe
+@inherits Farbwahlwirt
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
 @implements IDisposable
@@ -170,20 +171,28 @@
        (DG-E3-10) - jede Punktmarke nennt Aussentemperatur, Vorlauf und Wert bereits
        fertig formatiert.
 
-       KEINE FARBWAHL. Diese Maske bot noch nie einen Schreibweg fuer die Farbrollen
-       an; ein Waehler ohne Empfaenger waere ein Versprechen, das niemand einloest. *@
+       DIE FARBWAHL AM BILD steht jeder Vorlaufkennlinie offen: Das Kennlinienmodell
+       gibt jeder Reihe eine Farbrolle, und der Wirt reicht den Schreibweg der Huelle
+       durch (Farbrollen, Bedienung Teil 2). Ohne FarbeSetzen bleibt das Farbfeld
+       stumm. *@
     <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
         <KindInhalt>
             <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
                 <KindInhalt>
                     <DiagrammSvg Modell="@_bilder.Cop" Kennung="wp-kennlinie-cop"
-                                 Bezeichnung="@ReiterCop" PlatzhalterText="@PlatzhalterBild" />
+                                 Bezeichnung="@ReiterCop" PlatzhalterText="@PlatzhalterBild"
+                                 FarbwahlErlaubt="@Farbwahl"
+                                 FarbeGewaehlt="FarbeUebernehmen"
+                                 FarbeZurueckgesetzt="FarbeVerwerfen" />
                 </KindInhalt>
             </Reiterblatt>
             <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
                 <KindInhalt>
                     <DiagrammSvg Modell="@_bilder.Leistung" Kennung="wp-kennlinie-leistung"
-                                 Bezeichnung="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild" />
+                                 Bezeichnung="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild"
+                                 FarbwahlErlaubt="@Farbwahl"
+                                 FarbeGewaehlt="FarbeUebernehmen"
+                                 FarbeZurueckgesetzt="FarbeVerwerfen" />
                 </KindInhalt>
             </Reiterblatt>
         </KindInhalt>

@@ -127,6 +127,12 @@ namespace WindowsFormsApplication1
                 ["Szenarien"] = (IReadOnlyList<ValueTuple<int, string>>)szenarien,
                 ["JahreVorgabe"] = jahreVorgabe,
 
+                // Die Farbwahl am Bild (Farbrollen, Bedienung Teil 2): Die
+                // Verlaufsreihen nehmen Hausfarben, daraus wird im Modell eine
+                // Farbrolle. Kein Delegat, kein Waehler.
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
+
                 ["Berechnen"] = new Func<int, int, CancellationToken, Task<KapitalwertVerlaufBilder>>(
                     (jahre, szenarioId, ct) => Task.Run(() =>
                     {
@@ -172,6 +178,27 @@ namespace WindowsFormsApplication1
                 ["AltAbsolut"] = Text_("WVERL_BILD_ABS", TITEL_ABS),
                 ["PlatzhalterText"] = Text_("WVERL_KEIN_BILD", "Noch kein Diagramm")
             };
+        }
+
+        // ------------------------------------------------- Die Farbe einer Reihe
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags landet hier: Die Rolle
+        /// bekommt anwendungsweit diese Farbe (<c>Diagrammfarben.Setze</c> schreibt
+        /// die Einstellung und speist <c>Farbpalette.Aktuell</c>). Danach trägt sie
+        /// jedes Diagramm und jeder Bericht — beide malen über dieselbe Palette.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
         }
 
         // ------------------------------------------------------------------ Bilder

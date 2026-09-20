@@ -9,6 +9,7 @@ using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten.Simulation;
 using EPOS.UI.Seiten.Strom;
 using SpeicherEngine;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -156,8 +157,36 @@ namespace WindowsFormsApplication1
 
                 // Der LESEMODUS ist eine Lizenzaussage und wird deshalb HIER gestellt:
                 // Eine Razor-Komponente stellt keine Lizenzfragen (Hausregel S-2).
-                Schreibgeschuetzt = () => !Schreibnaht.DarfSchreiben()
+                Schreibgeschuetzt = () => !Schreibnaht.DarfSchreiben(),
+
+                // Die Farbwahl am Bild (Farbrollen, Bedienung Teil 2): Der Klick auf
+                // ein Farbfeld schreibt die Rolle anwendungsweit.
+                FarbeSetzen = FarbeSetzen,
+                FarbeZuruecksetzen = FarbeZuruecksetzen
             };
+        }
+
+        // =================================================================
+        //  Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags landet hier: Die Rolle
+        /// bekommt anwendungsweit diese Farbe (<c>Diagrammfarben.Setze</c> schreibt
+        /// die Einstellung und speist <c>Farbpalette.Aktuell</c>). Danach trägt sie
+        /// jedes Diagramm und jeder Bericht — beide malen über dieselbe Palette.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
         }
 
         /// <summary>

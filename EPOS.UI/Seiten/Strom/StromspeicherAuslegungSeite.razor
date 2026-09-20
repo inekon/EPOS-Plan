@@ -361,7 +361,9 @@
                                                 VorausschauPeakZielKw="@_peakVorausschau?.PeakZielKw"
                                                 Csv="@(Dienste?.Csv is null ? default
                                                        : EventCallback.Factory.Create<string>(this, CsvSchreiben))"
-                                                BetriebsfuehrungAendern="ZurBetriebsfuehrung" />
+                                                BetriebsfuehrungAendern="ZurBetriebsfuehrung"
+                                                FarbeSetzen="@Dienste?.FarbeSetzen"
+                                                FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />
 
                 <div class="epos-simerg-fuss">
                     @if (Dienste?.ProjektflotteAktivieren is not null

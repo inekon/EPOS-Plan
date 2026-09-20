@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using EPOS.UI.Seiten.Simulation;
 using SpeicherEngine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace EPOS.UI.Seiten.Strom;
 
@@ -227,6 +228,20 @@ public sealed class StromspeicherAuslegungDienste
     /// keine Lizenzfragen (Hausregel S‑2).
     /// </remarks>
     public Func<bool>? Schreibgeschuetzt;
+
+    // =====================================================================
+    //  Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Farbe einer Rolle anwendungsweit setzen (<c>Diagrammfarben.Setze</c>) — der
+    /// Klick auf das Farbfeld eines Legendeneintrags. <b>Kein Delegat, kein Wähler:</b>
+    /// Ohne ihn bietet keines der Flottenbilder die Farbwahl an.
+    /// </summary>
+    public Func<Farbrolle, Farbe, Task>? FarbeSetzen;
+
+    /// <summary>„Hausfarbe": die Rolle wieder auf die Vorgabe.</summary>
+    public Func<Farbrolle, Task>? FarbeZuruecksetzen;
 
     /// <summary>
     /// Bestimmt das kleinste haltbare Peak-Ziel per Bisektion; <c>melder</c> bekommt
