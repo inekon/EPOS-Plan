@@ -1992,77 +1992,77 @@ namespace WindowsFormsApplication1
                                         IReadOnlyList<Punktreihe> reihen)
         {
             int W = 1240, H = 560;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel ?? "", W);
+            // Rechts 90 statt 40 Bildpunkte: Dort steht die letzte x-Marke, und
+            // eine Marke wie "−20" ragt sonst ueber den Bildrand hinaus.
+            var rc = SKRect.Create(100f, 110f, W - 190f, 360f);
+
+            var gueltig = (reihen ?? new List<Punktreihe>())
+                .Where(r => r != null && r.Punkte != null && r.Punkte.Count > 0)
+                .ToList();
+            if (gueltig.Count == 0)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel ?? "", W);
-                // Rechts 90 statt 40 Bildpunkte: Dort steht die letzte x-Marke, und
-                // eine Marke wie "−20" ragt sonst ueber den Bildrand hinaus.
-                var rc = SKRect.Create(100f, 110f, W - 190f, 360f);
-
-                var gueltig = (reihen ?? new List<Punktreihe>())
-                    .Where(r => r != null && r.Punkte != null && r.Punkte.Count > 0)
-                    .ToList();
-                if (gueltig.Count == 0)
-                {
-                    Leerhinweis(g, rc);
-                    return Png(flaeche);
-                }
-
-                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, Undurchsichtig(r.Farbe))).ToList(),
-                        100f, 56f, W - 30f);
-
-                double xRoh0 = gueltig.Min(r => r.Punkte.Min(p => p.X));
-                double xRoh1 = gueltig.Max(r => r.Punkte.Max(p => p.X));
-                if (xRoh1 - xRoh0 < 1e-9) { xRoh1 = xRoh0 + 1; }
-
-                // Runde Teilung: Schrittweite aus der Spanne, Bereich auf die Stufen
-                // aufgerundet. Fuenf bis acht Marken - genug zum Ablesen, wenig genug,
-                // dass sich die Beschriftungen nicht beruehren.
-                double xSchritt = RundeStufe((xRoh1 - xRoh0) / 6.0);
-                double xMin = Math.Floor(xRoh0 / xSchritt) * xSchritt;
-                double xMax = Math.Ceiling(xRoh1 / xSchritt) * xSchritt;
-                if (xMax - xMin < 1e-9) { xMax = xMin + xSchritt; }
-
-                double yMax = Nice(Math.Max(0, gueltig.Max(r => r.Punkte.Max(p => p.Y))));
-                if (yMax <= 0) yMax = 1;
-
-                YRaster(g, rc, yMax);
-
-                // x-Skala: eine Marke je runder Stufe.
-                using (var raster = Strich(SKColors.Gainsboro, 1f))
-                using (var f = Schrift(15f))
-                    for (double wert = xMin; wert <= xMax + xSchritt * 1e-6; wert += xSchritt)
-                    {
-                        float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
-                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
-                        // Die Null soll "0" heissen und nicht "-0" (Math.Floor auf
-                        // negativen Zahlen liefert bei ganzzahligen Schritten -0).
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("0.#", DE);
-                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                    }
-                using (var f = Schrift(15f))
-                {
-                    // Der x-Titel steht UNTER den Marken (34 statt 30 Bildpunkte), der
-                    // y-Titel ueber der Flaeche und UNTER der Legende.
-                    Text(g, xTitel ?? "", f, SKColors.DimGray,
-                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
-                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
-                }
-
-                foreach (Punktreihe r in gueltig)
-                    using (var punkt = Fuellung(r.Farbe))
-                        foreach (var p in r.Punkte)
-                        {
-                            if (double.IsNaN(p.X) || double.IsNaN(p.Y)) continue;
-                            float x = rc.Left + (float)((p.X - xMin) / (xMax - xMin)) * rc.Width;
-                            float y = (float)(rc.Bottom - Math.Max(0, p.Y) / yMax * rc.Height);
-                            if (y < rc.Top) y = rc.Top;
-                            g.DrawCircle(x, y, 2.5f, punkt);
-                        }
-
-                return Png(flaeche);
+                Leerhinweis(z, rc);
+                return SkiaMaler.Png(z);
             }
+
+            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, Undurchsichtig(r.Farbe))).ToList(),
+                    100f, 56f, W - 30f);
+
+            double xRoh0 = gueltig.Min(r => r.Punkte.Min(p => p.X));
+            double xRoh1 = gueltig.Max(r => r.Punkte.Max(p => p.X));
+            if (xRoh1 - xRoh0 < 1e-9) { xRoh1 = xRoh0 + 1; }
+
+            // Runde Teilung: Schrittweite aus der Spanne, Bereich auf die Stufen
+            // aufgerundet. Fuenf bis acht Marken - genug zum Ablesen, wenig genug,
+            // dass sich die Beschriftungen nicht beruehren.
+            double xSchritt = RundeStufe((xRoh1 - xRoh0) / 6.0);
+            double xMin = Math.Floor(xRoh0 / xSchritt) * xSchritt;
+            double xMax = Math.Ceiling(xRoh1 / xSchritt) * xSchritt;
+            if (xMax - xMin < 1e-9) { xMax = xMin + xSchritt; }
+
+            double yMax = Nice(Math.Max(0, gueltig.Max(r => r.Punkte.Max(p => p.Y))));
+            if (yMax <= 0) yMax = 1;
+
+            YRaster(z, rc, yMax);
+
+            // x-Skala: eine Marke je runder Stufe.
+            var raster = Stift(Farbrolle.RASTER, 1f);
+            using (var f = Schrift(15f))
+                for (double wert = xMin; wert <= xMax + xSchritt * 1e-6; wert += xSchritt)
+                {
+                    float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
+                    z.Linie(x, rc.Top, x, rc.Bottom, raster);
+                    // Die Null soll "0" heissen und nicht "-0" (Math.Floor auf
+                    // negativen Zahlen liefert bei ganzzahligen Schritten -0).
+                    string lab = (wert == 0 ? 0.0 : wert).ToString("0.#", DE);
+                    Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                }
+            using (var f = Schrift(15f))
+            {
+                // Der x-Titel steht UNTER den Marken (34 statt 30 Bildpunkte), der
+                // y-Titel ueber der Flaeche und UNTER der Legende.
+                Text(z, xTitel ?? "", f, Farbrolle.ACHSE,
+                     rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 26f);
+            }
+
+            foreach (Punktreihe r in gueltig)
+            {
+                // Die Reihenfarbe kommt von AUSSEN und behaelt die Rueckwaertssuche.
+                Zeichnung.Fuellung punkt = Flaeche(r.Farbe);
+                foreach (var p in r.Punkte)
+                {
+                    if (double.IsNaN(p.X) || double.IsNaN(p.Y)) continue;
+                    float x = rc.Left + (float)((p.X - xMin) / (xMax - xMin)) * rc.Width;
+                    float y = (float)(rc.Bottom - Math.Max(0, p.Y) / yMax * rc.Height);
+                    if (y < rc.Top) y = rc.Top;
+                    z.Kreis(x, y, 2.5f, null, punkt);
+                }
+            }
+
+            return SkiaMaler.Png(z);
         }
 
         /// <summary>Dieselbe Farbe ohne Alphawert — fuer das Legendenkaestchen.</summary>
