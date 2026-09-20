@@ -351,8 +351,39 @@ else
     /// <summary>Die Palette dieses Zeichenlaufs.</summary>
     private Farbpalette AktivePalette => Palette ?? Farbpalette.Aktuell;
 
+    /// <summary>
+    /// Die Kennung, mit der der Schreiber seine <c>clipPath</c>-Namen bildet —
+    /// <b>auf Zeichen beschränkt, die in einem <c>url(#…)</c> stehen dürfen</b>.
+    ///
+    /// <para><b>Warum hier und nicht beim Aufrufer.</b> Ein Wirt bildet seine
+    /// Kennung gern aus dem, was sein Bild unterscheidet: der Ganglinienbaustein
+    /// aus „K|4711|Werk Nord". Daraus würde <c>clip-path="url(#ganglinie-K|4711|Werk
+    /// Nord-c1)"</c> — ein Verweis mit Leerzeichen und Strich, den kein Browser
+    /// auflöst, und das Bild verlöre seinen Zuschnitt. Die Regel gehört deshalb an
+    /// die EINE Stelle, die die Kennung weitergibt.</para>
+    ///
+    /// <para>Der öffentliche Parameter bleibt unangetastet: Er ist der Name, den der
+    /// Wirt vergeben hat, und Prüfstände lesen ihn.</para>
+    /// </summary>
     private string KennungOderZaehler
-        => string.IsNullOrWhiteSpace(Kennung) ? _eigeneKennung : Kennung.Trim();
+        => string.IsNullOrWhiteSpace(Kennung) ? _eigeneKennung : Gesaeubert(Kennung.Trim());
+
+    /// <summary>
+    /// Buchstaben, Ziffern, Bindestrich und Unterstrich bleiben; alles andere wird
+    /// ein Bindestrich. Eine Kennung, von der nichts übrig bleibt, nimmt den Zähler.
+    /// </summary>
+    private string Gesaeubert(string roh)
+    {
+        var sb = new System.Text.StringBuilder(roh.Length);
+        bool inhalt = false;
+        foreach (char c in roh)
+        {
+            if (char.IsLetterOrDigit(c) && c < 128) { sb.Append(c); inhalt = true; }
+            else if (c == '-' || c == '_') sb.Append(c);
+            else sb.Append('-');
+        }
+        return inhalt ? sb.ToString() : _eigeneKennung;
+    }
 
     /// <summary>
     /// Hat das Bild eine Zeichenfläche MIT Reihen? Nur dann gibt es ein inneres

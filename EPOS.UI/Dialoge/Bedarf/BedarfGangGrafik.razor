@@ -121,6 +121,19 @@
 
     private Gangstufe _stufe = Gangstufe.Jahr;
 
+    /// <summary>Die Quelle, zu der der Modellvorrat gehört.</summary>
+    private Ganglinienquelle? _quelle;
+
+    /// <inheritdoc/>
+    protected override void OnParametersSet()
+    {
+        // EINE ANDERE QUELLE IST EINE ANDERE REIHE: Ihre Woche 12 ist nicht
+        // dieselbe, und der Vorrat der vorigen hat fuer sie keine Bedeutung.
+        if (ReferenceEquals(_quelle, Quelle)) return;
+        _quelle = Quelle;
+        _modelle.Clear();
+    }
+
     /// <summary>
     /// Die nullbasierte Stelle JE STUFE. Wer von Woche 30 auf den Tag wechselt und
     /// zurück, findet seine Woche wieder — ein gemeinsamer Zähler würde beim
@@ -149,7 +162,32 @@
     private string Marke => string.Format(MarkeFormat, Nummer, Anzahl,
         _stufe == Gangstufe.Woche ? StufeWocheText : StufeTagText);
 
-    private Zeichenmodell? Fenstermodell => Quelle?.Modell?.Invoke(_stufe, _nummer[(int)_stufe]);
+    /// <summary>
+    /// Die gerechneten Modelle, nach Stufe und Nummer getrennt.
+    ///
+    /// <para><b>Ohne den Zwischenspeicher verlöre das Bild bei jedem Zeichenlauf
+    /// seinen Zustand:</b> Der Baustein <c>DiagrammSvg</c> baut seinen Knotenbaum
+    /// neu, sobald die REFERENZ des Modells wechselt, und die Hülle rechnet je
+    /// Aufruf ein neues. Zoom, Zeigerstelle und abgewählte Reihe wären nach jedem
+    /// Tastendruck des Wirts weg.</para>
+    /// </summary>
+    private readonly Dictionary<string, Zeichenmodell?> _modelle
+        = new Dictionary<string, Zeichenmodell?>(StringComparer.Ordinal);
+
+    private Zeichenmodell? Fenstermodell
+    {
+        get
+        {
+            if (Quelle?.Modell is null) return null;
+
+            string schluessel = Bildkennung;
+            if (_modelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
+
+            Zeichenmodell? neu = Quelle.Modell(_stufe, _nummer[(int)_stufe]);
+            _modelle[schluessel] = neu;
+            return neu;
+        }
+    }
 
     /// <summary>
     /// Die Kennung DIESES Ausschnitts. Sie wechselt mit Stufe und Nummer — so baut
