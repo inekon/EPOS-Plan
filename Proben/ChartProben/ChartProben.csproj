@@ -56,6 +56,11 @@
   <ItemGroup>
     <!-- Nur noch die Probe selbst; der Pruefling kommt aus EPOS.Kern. -->
     <Compile Include="Program.cs" />
+
+    <!-- Die SVG-Gegenproben der Gruppe (c) - sieben Bilder OHNE Zeitachse
+         (DG-E3c). Eigene Datei, damit die Gruppen des Rollouts nebeneinander
+         entstehen koennen, ohne sich in Program.cs zu begegnen. -->
+    <Compile Include="Program.GruppeC.cs" />
   </ItemGroup>
 
   <ItemGroup>
