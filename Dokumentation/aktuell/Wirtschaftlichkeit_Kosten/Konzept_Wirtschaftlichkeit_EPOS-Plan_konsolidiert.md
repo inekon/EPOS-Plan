@@ -2195,7 +2195,7 @@ Aus der Abnahmeliste der Formelkarte (die Datei ist nicht erhalten, s. Quelltabe
 | ✔ **I-2** | Abgeleitete Bemessung ohne Satz ⇒ 0 €, nicht der erfasste Betrag. **Entschieden 30.08.2026 (Anwender):** Ist die Ableitung nicht rechenbar, gilt der erfasste Betrag; eine ermittelte Menge 0 rechnet zu 0. |
 | ✔ **I-3** | Runde 3 war reihenfolgeabhängig: Zwei `PROZENT_INVESTITION`-Zeilen — die zweite rechnete die erste ein; ohne `ORDER BY` entschied früher die Datenbank. **Erledigt mit FX2:** Die Runde 3 friert ihre Basiszeilen vorher ein und ist reihenfolgeunabhängig. |
 | I-4 | `BaugroesseSumme` entdoppelt nicht (bei PV/Solar gewollt). |
-| I-5 | Vergleichsstrenge uneinheitlich: ZUSCHUSS ohne, `PROZENT_*` mit Groß-/Kleinschreibung. |
+| ✔ **I-5** | Vergleichsstrenge uneinheitlich: ZUSCHUSS ohne, `PROZENT_*` mit Groß-/Kleinschreibung. **Erledigt mit E2:** Steuerwerte sind eingefrorene ASCII-Schlüssel und werden im ganzen Kern **zeichengenau** verglichen — 78 von 79 Stellen taten das bereits, und der Betriebskostenpfad stellt dieselbe Frage als SQL-Gleichheit (SQLite vergleicht TEXT zeichengenau). Die eine tolerante Stelle (`IstZuschuss`) und ihr Gegenstück in `SpeicherAuslegungCtrl` sind nachgezogen; auf den Katalogschreibweisen des Bestands ändert das nichts. |
 | I-6 | Nicht migrierte Datenbank: keine Kaskade, keine Zuschusserkennung. |
 
 ## Betriebsseite
@@ -2208,7 +2208,7 @@ Aus der Abnahmeliste der Formelkarte (die Datei ist nicht erhalten, s. Quelltabe
 | B-4 | Zwei Arten nie frisch: `PROZENT_BRENNSTOFFKOSTEN`, `PROZENT_STROMKOSTEN` — `EUR_PRO_H` und die beiden `EUR_PRO_KWH_*` sind seit FX2 frisch. |
 | ✔ **B-5** | `InvestSummeFuer` summierte `EingegebenerWert`, abgeleitete Beträge fehlten. **Erledigt mit W5‑B‑8:** Basis ist die Investitionskaskade (`InvestKaskade.Summen`). |
 | B-6 | Fehler werden geschluckt (`catch {}` ⇒ still 0). |
-| B-7 | `MengenEinheit` beschriftet die neuen Arten mit „€". |
+| ✔ **B-7** | `MengenEinheit` beschriftet die neuen Arten mit „€". **Erledigt mit E2:** Die Bezugsmenge kommt aus dem `BemessungKatalog` wie der Satz — eine Leistung heißt „kW", ein Volumen am Pufferspeicher „Ltr.", eine Menge je Jahr „kWh/a". Regel: Trägt der Betriebssatz „·a", ist die Bezugsgröße ein Bestand und bleibt ohne Jahr; eine prozentuale Art bemisst sich an einem Betrag. |
 
 ## Energiekosten
 
@@ -2223,10 +2223,10 @@ Aus der Abnahmeliste der Formelkarte (die Datei ist nicht erhalten, s. Quelltabe
 | Nr. | Befund |
 |---|---|
 | ⚠ **S-2** | Kein projektweites Doppelentlastungsverbot — Anlage A nach § 53 und Anlage B nach § 54 gleichzeitig möglich. |
-| S-1 · S-3 · S-4 · S-5 | Überholte Zeilennummern älterer Protokolle · § 9-Meldung nennt Kessel „(0 kW)" · €/GJ ohne Ho-Umrechnung (für Kohle konsistent) · Radius 4,5 km nur Meldungstext, Erlaubnisschwelle 1.000 kW nirgends gelesen — **dieser Rest bleibt offen**. |
+| S-1 · ✔ **S-3** · S-4 · **S-5** | Überholte Zeilennummern älterer Protokolle · ~~§ 9-Meldung nennt Kessel „(0 kW)"~~ **erledigt mit E2** (`SteuerAnlage.Klartext` nennt an einer Anlage ohne Stromerzeugung keine elektrische Leistung) · €/GJ ohne Ho-Umrechnung (für Kohle konsistent, bleibt offen) · S-5: Der **Radius 4,5 km** bleibt Meldungstext (die Geometrie fehlt im Datenmodell); die **Erlaubnisschwelle 1.000 kW** hat mit E2 einen Leser — eine Hinweiszeile der Kohärenzprüfung ohne Rechenwerk. |
 | ✔ **S-6** | `STROMST_REDUZIERT_SATZ` ungesät. **Erledigt:** Der Satz ist gesät (`GesetzKatalog.cs:1156`, Generation 7) und wird gelesen (`EnergietraegerHuelle.cs:659`); die Konstante in `StrompreisZerlegungModel` ist nur noch wertgleiche Rückfallebene. |
 | ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 KWKG fehlt** (§ 3.6): Bei Anlagen mit Vorrichtung zur Abwärmeabfuhr ist KWK-Strom `Nutzwärme × Stromkennzahl`, nicht die Nettostromerzeugung. Weder Kennzeichen noch Stromkennzahl sind im Datenmodell vorhanden; der Zuschlag fällt für solche Anlagen zu hoch aus. |
-| ⚠ **V-3** | Die **PV-Reihe** hat in der Mehrjahrestabelle **keine eigene Spalte** — sie wirkt nur in „Netto". Die Reihe selbst gibt es bereits (`ErloesReihe.PV_VERGUETUNG`); es fehlen **ein Aufruf** in `Mehrjahresbild.Baue` **und ein Ressourcenschlüssel** — damit ist V-3 keine offene Frage mehr, sondern eine S-Aufgabe. Die **KWKG-Pauschale** hat seither eine Spalte („KWKG-Pauschale (Jahr 0)"); damit stimmt die Selbstprüfung „Summe der Positionsspalten = Netto nominal" auch in der Zeile 0. |
+| ✔ **V-3** | Die **PV-Reihe** hatte in der Mehrjahrestabelle keine eigene Spalte — sie wirkte nur in „Netto". **Erledigt mit E2:** `Mehrjahresbild.Baue` nimmt `ErloesReihe.PV_VERGUETUNG` als Spalte auf (`WIRT_REIHE_PV`). Damit stimmt die Selbstprüfung „Summe der Positionsspalten = Netto nominal" auch dort, wo ein Projekt den Vergütungsdialog führt; die **KWKG-Pauschale** hat ihre Spalte seit U17, und die Zeile 0 geht ebenfalls auf. |
 | V-1 · V-2 · V-4 | EV-Rundung (EvMix unrundet, Erlös gerundet) · § 51a bewertet mit AW statt EV · Eigen/Einspeise-Split je Anlage ist benannte Näherung. |
 | R-1 · R-2 · R-3 | Rahmenparameter je Stammprojekt, nicht je Variante · Hilfsenergie steigt mit p_B statt p_E (bei gleichen Sätzen null) · ohne bestimmbare Energiekosten kein Kapitalwert (Absicht). |
 
@@ -2357,6 +2357,7 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **Nutzungsdauern S2** (#357) | Knopf „Nutzungsdauern vorbelegen…" als vierter der Rasterleiste (U8) und die Tafel „Ersatz und Restwert" im Kostendialog (U30); Positionsart als Klappliste im Zeileneditor (§ 2.13 (3)) | keine, solange keine Dauer gepflegt wird; danach **ja** — Ersatz und Restwert entstehen |
 | **Übernahme aus der Kostenverwaltung** (#363) | „Aus Vorlage übernehmen…" öffnet den **Katalogblock** der Administration (Komponente · Kategorie · Variante · Positionsvorschau mit Spalte „Ziel") statt der bisherigen Klappliste | keine — reine Auswahlseite |
 | **Bezugsgrößen** (#364) | Betriebskosten: Bezugsgrößen aus dem gespeicherten Lauf, jeder Fehlgrund benannt; Grundlage der Live-Frisch-Anzeige (§ 2.8 Punkt 3, § 6.3 B5-Kernaufgabe 2) | **ja** — zuvor ungerechnete Hilfsenergiekosten entstehen |
+| **E2 Kleine Kernkorrekturen** (20.09.2026) | Ausweis und Bedienung ohne Rechenwirkung: CO₂-Doppelansatz und Strommix-Rückfall als Kohärenzzeilen (§ 3.9), Kohärenzzeilen im **einen** Zeilenkatalog und damit in Rubrik, Wort- und Excelbericht; Erlaubnisschwelle StromStG mit Leser; PV-Reihe als eigene Spalte der Mehrjahrestabelle; Bezugsmenge aus dem `BemessungKatalog`; zeichengenauer Steuerwertvergleich; Kapitalwertdifferenz über dem Nettobarwert; Bandbreite mit Spalte „Spanne" und Referenzzeile in Wort- und Excelbericht, Empfehlungssatz und Δ-Fußzeile mit der gewählten Referenz, Zeitraumhinweis auch im Excel-Blatt; dazu die Dialogkorrekturen der Mockup-Prüfung (Löschrückfragen mit Vorgabe „Nein", Gesetzesparameter im PV-Zweig, Sprungknopf auf den OK-Weg, OK-Weg nur bei Änderung, Hausschlüssel der Standardknöpfe, `help_mapping`-Anker) | **keine** — die vier Ankertests unverändert, Referenzlauf der fünf CI-Projekte PASS |
 
 ## 6.2 Regressionsanker
 
@@ -2484,6 +2485,43 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     `SimulationControl.cs:1512, 3372, 4117` sortieren `ORDER BY Prioritaet, ID`; ob dies die
     gemeinte Stelle ist, ist nicht gegengeprüft — nachmessen, dann streichen
 19. Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel"
+
+**Aus Etappe E2 (20.09.2026) — geschlossen**
+
+25. ~~**CO₂ doppelt gebucht** (R5): aktiver CO₂-Bestandteil im Arbeitspreis und gebuchte
+    BEHG-Reihe nebeneinander blieben unbemerkt.~~ — **erledigt**: neuer Fall der Kohärenzprüfung,
+    WARNUNG mit dem doppelt gebuchten Jahresbetrag (§ 3.9). Der Rechenweg bleibt, wie er ist.
+26. ~~**Kohärenzzeilen erreichen nur die Seite** (R6); der Strommix-Rückfall war ein Laufhinweis
+    ohne seinen Wert.~~ — **erledigt**: Die Zeilen stehen im **einen** Zeilenkatalog
+    (`WirtschaftlichkeitZeilen`) und damit in Rubrik, Wort- und Excelbericht; der Rückfall nennt
+    seine 435 g CO₂/kWh.
+27. ~~**B-7** (`MengenEinheit` beschriftet jede Bezugsmenge mit „€") · **I-5** (uneinheitliche
+    Vergleichsstrenge) · **S-3** („(0 kW)" am Kessel) · **S-5** (Erlaubnisschwelle ohne Leser) ·
+    **V-3** (PV-Reihe ohne Spalte).~~ — **alle fünf erledigt**, je ohne Rechenwirkung; Einzelheiten
+    in der Befundtafel des § 4.
+28. ~~**G7** (Zeitraumhinweis fehlt im Excel-Blatt) · **G8** (Bandbreite ohne Spalte „Spanne" und
+    ohne Referenzzeile) · **G9** (`WIRT_EMPF_KEINE` nennt „Stammprojekt" statt der gewählten
+    Referenz).~~ — **alle drei erledigt**; Word und Excel führen dieselbe Bandbreitentafel, und
+    Empfehlungssatz wie Δ-Fußzeile nennen die Referenz beim Namen.
+29. **Hi/Ho am CO₂-Grenzwert** (R11) — **offen, Entscheid für E7**: Der Katalog führt zum Erdgas
+    einen heizwert- und einen brennwertbezogenen EBeV-Faktor (200,9 bzw. 181,4 g/kWh) samt
+    Umrechnung; gelesen wird der Schlüssel der Anlage, die beiden Ho-Zeilen haben keinen Leser.
+    Ist der Grenzwert 270 g/kWh des § 2 StromStG brennwertbezogen, fällt ein heizwertbezogener
+    Zähler rund 10 % zu hoch aus und die Befreiung entfiele in Grenzfällen zu Unrecht. Die Wahl
+    der Bezugsgröße ändert den gebuchten Befreiungsbetrag und damit den Kapitalwert — sie gehört
+    zu E7, zusammen mit dem Beleg, auf welche Bezugsgröße die Vorschrift abstellt. Das heutige
+    Verhalten ist gepinnt (`KleinkorrekturenE2Tests`).
+
+**Aus der Papierpflege E0 — Sachpunkte der Datenaufnahme**
+
+30. **Sieben Energieanlagen tragen `KWKG_Anlagenart = ''`** (leere Zeichenkette statt NULL oder
+    eines Steuerwerts). Die Anlagenart entscheidet über Kontingent und Satzstaffel; eine leere
+    Zeichenkette ist weder „nicht gepflegt" noch eine Wahl. Zu klären ist, ob die Saat sie auf
+    NULL setzt oder auf einen benannten Wert — **offen, mit E7**.
+31. **`Nachweis_Json` ist in 0 von 78 Ergebniszeilen belegt.** Die Persistenz der Nachweise
+    (B7P, Punkt 9b) ist gebaut, aber kein Bestandsergebnis trägt den Umschlag: Er entsteht erst
+    beim nächsten Rechenlauf. Zu klären ist, ob ein Nachziehlauf nötig ist oder ob der
+    Bestand bis zur nächsten Rechnung ohne Unterzeilen bleibt — **offen, mit E7**.
 
 **Nachweis und Betrieb**
 
