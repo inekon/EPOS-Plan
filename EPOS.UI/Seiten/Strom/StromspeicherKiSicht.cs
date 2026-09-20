@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using KiKern;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 
@@ -141,6 +142,28 @@ public sealed class StromspeicherKiSicht
             FlottenSimulationOptionen? o = Optionen;
             if (o is null || string.IsNullOrWhiteSpace(value)) return;
             if (Enum.TryParse(value, true, out FlottenBetriebsziel ziel)) o.Betriebsziel = ziel;
+        }
+    }
+
+    /// <summary>
+    /// Die fünf Betriebsziele, die die Maske anbietet (KI-F1b, KI-D-Q6) — der
+    /// Schlüssel ist der Name des Aufzählungswertes, den <see cref="Betriebsziel"/>
+    /// führt.
+    /// </summary>
+    /// <remarks>
+    /// <b>Die Liste steht an EINER Stelle</b> (<c>SpeicherFlottenBetriebEditor</c>):
+    /// Klappliste und Assistentenauswahl zeigen dieselben fünf Ziele. Die Anmeldung
+    /// findet diese Eigenschaft über die Namenskonvention <c>&lt;Eigenschaft&gt;Wahl</c>.
+    /// </remarks>
+    public IReadOnlyList<KiWahleintrag> BetriebszielWahl
+    {
+        get
+        {
+            var liste = new List<KiWahleintrag>();
+            foreach ((int id, string text) in
+                     EPOS.UI.Dialoge.Strom.SpeicherFlottenBetriebEditor.Betriebsziele)
+                liste.Add(new KiWahleintrag(((FlottenBetriebsziel)id).ToString(), text));
+            return liste;
         }
     }
 

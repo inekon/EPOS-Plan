@@ -136,7 +136,9 @@ public class KiSimulationMaskeTests : IDisposable
                 {
                     new Steuerwahl("PeakShaving", "Lastspitzenkappung"),
                     new Steuerwahl("PvGreedy", "PV-Eigenverbrauch")
-                }
+                },
+                PreisreiheId = 4,
+                Preisreihen = new[] { (4, "Börsenpreis 2025"), (9, "Festpreis Nacht") }
             }
         };
         return d;
@@ -190,13 +192,13 @@ public class KiSimulationMaskeTests : IDisposable
     // =====================================================================
 
     /// <summary>
-    /// Achtunddreissig seit der Welle KI‑F2: Zu den siebzehn Feldern der Ablaufleiste
-    /// kommen die BLÄTTER der Ansicht — der Lesepunkt aus der Fußzeile von Schritt ①
-    /// und die einundzwanzig Einstellwerte des Reiters „Stromspeicher" von Schritt ③.
+    /// Neununddreissig: Zu den siebzehn Feldern der Ablaufleiste kommen die BLÄTTER der
+    /// Ansicht — der Lesepunkt aus der Fußzeile von Schritt ① und die zweiundzwanzig
+    /// Einstellwerte des Reiters „Stromspeicher" von Schritt ③, darunter die Preisreihe.
     /// Sie gehen nicht auf, sie stehen auf der Ansicht; eine Maske ist, was offen ist.
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_achtunddreissig_Felder_an()
+    public void Die_Ansicht_meldet_neununddreissig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -205,7 +207,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(38, felder.Count);
+        Assert.Equal(39, felder.Count);
     }
 
     [Fact]
@@ -370,7 +372,7 @@ public class KiSimulationMaskeTests : IDisposable
             "speicher_kompatibilitaet", "speicher_laden_pv", "speicher_laden_bhkw",
             "speicher_netzentladung", "speicher_kapitalzins", "speicher_nutzungsdauer",
             "speicher_leistungspreis", "speicher_netzladeaufschlag",
-            "speicher_preisquelle", "speicher_aufschlag"
+            "speicher_preisquelle", "speicher_preisreihe", "speicher_aufschlag"
         }, setzbar);
     }
 
@@ -447,6 +449,87 @@ public class KiSimulationMaskeTests : IDisposable
         art.Setzen("PvGreedy");
         Assert.Equal("PvGreedy", stand.Parameter.Speicher.Betriebsart);
         Assert.Contains(SpeicherFeld.Betriebsart + "=PvGreedy", geschrieben);
+    }
+
+    /// <summary>
+    /// <b>Ein Wahlfeld wird über den ANGEZEIGTEN TEXT gesetzt</b> (KI-F1b, KI-D-Q6):
+    /// Der Anwender liest „Lastspitzenkappung", die Eigenschaft trägt den Steuerwert
+    /// „PeakShaving" — und die Preisreihe eine Id.
+    /// </summary>
+    [Fact]
+    public void Die_Wahlfelder_des_Speicherreiters_nehmen_den_Anzeigetext()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<string>();
+        SimulationErgebnisDaten stand = Speicherstand(geschrieben);
+
+        var speicherwege = new SimulationErgebnisDienste
+        {
+            SpeicherfeldSchreiben = (feld, wert) =>
+            {
+                geschrieben.Add(feld + "=" + wert);
+                return new Rueckmeldung(true, "");
+            }
+        };
+
+        var sicht = Sicht(probe, ergebnis: stand, speicherwege: speicherwege);
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+
+        // Die Betriebsart über ihren Anzeigetext - gesetzt wird der Steuerwert.
+        KiFeldzugang art =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "speicher_betriebsart");
+        Assert.True(art.IstWahl);
+
+        KiFeldumsetzung u = KiFeldwandler.Wandle(art, "PV-Eigenverbrauch");
+        Assert.True(u.Ok, u.Grund);
+        art.Setzen(u.Wert);
+        Assert.Equal("PvGreedy", stand.Parameter.Speicher.Betriebsart);
+
+        // Die Preisreihe über ihren Namen - gesetzt wird die Id.
+        KiFeldzugang reihe =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "speicher_preisreihe");
+        Assert.True(reihe.IstWahl);
+
+        KiFeldumsetzung r = KiFeldwandler.Wandle(reihe, "Festpreis Nacht");
+        Assert.True(r.Ok, r.Grund);
+        reihe.Setzen(r.Wert);
+        Assert.Equal(9, stand.Parameter.Speicher.PreisreiheId);
+        Assert.Contains(SpeicherFeld.Preisreihe + "=9", geschrieben);
+
+        // Gelesen wird der TEXT, daneben steht der Schlüssel.
+        KiFeldwert gelesen = null;
+        foreach (KiFeldwert w in KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION))
+            if (w.Name == "speicher_preisreihe") gelesen = w;
+
+        Assert.NotNull(gelesen);
+        Assert.Equal("Festpreis Nacht", gelesen.Text);
+        Assert.Equal("9", gelesen.Schluessel);
+    }
+
+    /// <summary>
+    /// Ein Name, den die Reihenliste nicht führt, wird BENANNT abgelehnt — und die
+    /// Absage nennt, was zur Wahl steht.
+    /// </summary>
+    [Fact]
+    public void Eine_unbekannte_Preisreihe_wird_benannt_abgelehnt()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<string>();
+        SimulationErgebnisDaten stand = Speicherstand(geschrieben);
+
+        var sicht = Sicht(probe, ergebnis: stand);
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+
+        KiFeldzugang reihe =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "speicher_preisreihe");
+
+        KiFeldumsetzung u = KiFeldwandler.Wandle(reihe, "Mondpreis");
+
+        Assert.False(u.Ok);
+        Assert.Contains("Börsenpreis 2025 (4)", u.Grund, StringComparison.Ordinal);
+        Assert.Equal(4, stand.Parameter.Speicher.PreisreiheId);
     }
 
     /// <summary>

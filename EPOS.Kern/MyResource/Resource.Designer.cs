@@ -25613,6 +25613,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsgröße der Position; sie bestimmt, worauf sich der Satz bezieht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_BEMESSUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_BEMESSUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der errechnete Nettobetrag der Position — Anzeige aus Satz und Bemessung, nicht eingebbar. ähnelt.
         /// </summary>
         public static string KI_DLG_KV_BETRAG_ERL {
@@ -27013,6 +27022,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_SP_PREISQUELLE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_SP_PREISQUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Preisreihe, aus der der Stromtarif des Speichers gerechnet wird; sie wechselt mit der Preisquelle. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_PREISREIHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_PREISREIHE_ERL", resourceCulture);
             }
         }
         

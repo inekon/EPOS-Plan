@@ -214,6 +214,23 @@ public sealed class KostenKomponenteStand
     public IReadOnlyList<(int Id, string Text)> Bemessungen { get; set; }
         = Array.Empty<(int, string)>();
 
+    /// <summary>
+    /// Dieselben Bemessungen als Wahleinträge für den Hilfe-Assistenten (KI-F1b,
+    /// KI-D-Q6) — die Anmeldung findet sie über die Namenskonvention
+    /// <c>&lt;Eigenschaft&gt;Wahl</c> zur Spalte <c>BemessungId</c>.
+    /// </summary>
+    public IReadOnlyList<KiKern.KiWahleintrag> BemessungIdWahl
+    {
+        get
+        {
+            var liste = new List<KiKern.KiWahleintrag>(Bemessungen.Count);
+            foreach ((int id, string text) in Bemessungen)
+                liste.Add(new KiKern.KiWahleintrag(
+                    id.ToString(System.Globalization.CultureInfo.InvariantCulture), text));
+            return liste;
+        }
+    }
+
     /// <summary>Überschrift der Betragsspalte („Betrag netto [€]" bzw. „[€/a]").</summary>
     public string SpalteBetrag { get; set; } = "";
 

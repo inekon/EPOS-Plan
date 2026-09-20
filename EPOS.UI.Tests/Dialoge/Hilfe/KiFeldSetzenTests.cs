@@ -104,6 +104,78 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
         Assert.Equal(2400, daten.Modulkosten);
     }
 
+    /// <summary>
+    /// <b>Ein Wahlfeld wird über den ANGEZEIGTEN TEXT gesetzt</b> (KI-F1b, KI-D-Q6):
+    /// Der Wärmepumpen-Katalog führt vier Bauarten in einer Klappliste, und der
+    /// Assistent trifft sie über denselben Text, den der Anwender liest.
+    /// </summary>
+    [Fact]
+    public async Task Waermepumpe_Die_Bauart_wird_ueber_ihren_Text_gewaehlt()
+    {
+        var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten
+        { Modulkosten = 1000, Typ = "Sole-Wasser" };
+
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.WAERMEPUMPE, () => daten, Haken(),
+            ("typ", () => KiMaskenanmeldung.Eintraege(
+                              EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammFelder.TYPEN,
+                              s => s)));
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.WAERMEPUMPE, "typ", "luft-wasser");
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Equal("Luft-Wasser", daten.Typ);
+    }
+
+    /// <summary>
+    /// <b>Der tolerante Feldname</b> (KI-F1b): „Modulkosten des Geräts" trifft das
+    /// Feld <c>modulkosten</c>, und das Ergebnis vermerkt die Auflösung.
+    /// </summary>
+    [Fact]
+    public async Task Ein_tolerant_genannter_Feldname_trifft_und_wird_vermerkt()
+    {
+        var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten { Modulkosten = 1000 };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => daten,
+                                                     Haken());
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.WAERMEPUMPE,
+                                           "Modulkosten des Geräts", "2400");
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Equal(2400, daten.Modulkosten);
+        Assert.Contains("modulkosten", ergebnis.Kurzfassung(), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Das Betriebsziel der Stromspeicher-Ansicht ist eine WAHL</b> (KI-F1b): Die
+    /// fünf Ziele stehen als Klappliste auf der Maske; gesetzt wird der Name des
+    /// Aufzählungswertes, genannt sein Anzeigetext.
+    /// </summary>
+    [Fact]
+    public async Task Stromspeicher_Das_Betriebsziel_wird_ueber_seinen_Text_gewaehlt()
+    {
+        SpeicherOptimierungEingaben eingaben = Eingaben();
+        var sicht = new StromspeicherKiSicht(() => eingaben, () => null,
+                                             () => Array.Empty<FlottenHinweis>());
+
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMSPEICHER_AUSLEGUNG,
+                                                     () => sicht, Haken());
+
+        KiFeldzugang ziel = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.STROMSPEICHER_AUSLEGUNG, "betriebsziel");
+
+        Assert.True(ziel.IstWahl);
+        Assert.Equal(5, ziel.Wahleintraege().Count);
+
+        KiErgebnis ergebnis = await Setzen(
+            KiMaskennamen.STROMSPEICHER_AUSLEGUNG, "betriebsziel",
+            ziel.Wahleintraege()[(int)SpeicherEngine.FlottenBetriebsziel.PeakShaving].Text);
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Equal(SpeicherEngine.FlottenBetriebsziel.PeakShaving,
+                     eingaben.Auslegung!.Flotte!.Optionen.Betriebsziel);
+    }
+
     [Fact]
     public async Task Stromspeicher_Die_Bestaetigung_setzt_die_Netzladefreigabe()
     {

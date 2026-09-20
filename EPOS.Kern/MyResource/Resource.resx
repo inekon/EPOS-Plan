@@ -20970,4 +20970,10 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_KKONF_TRAEGER_ERL" xml:space="preserve">
     <value>Der Energieträger der Wärmepumpe; er bestimmt Preis und Emissionen des Antriebsstroms.</value>
   </data>
+  <data name="KI_DLG_SIM_SP_PREISREIHE_ERL" xml:space="preserve">
+    <value>Die Preisreihe, aus der der Stromtarif des Speichers gerechnet wird; sie wechselt mit der Preisquelle.</value>
+  </data>
+  <data name="KI_DLG_KV_BEMESSUNG_ERL" xml:space="preserve">
+    <value>Die Bezugsgröße der Position; sie bestimmt, worauf sich der Satz bezieht.</value>
+  </data>
 </root>

@@ -125,6 +125,8 @@
         internal static string KvNurLesenErl => MyResource.Resource.KI_DLG_KV_NURLESEN_ERL;
         internal static string KvPositionName => MyResource.Resource.KI_DLG_KV_POSITION_NAME;
         internal static string KvPositionErl => MyResource.Resource.KI_DLG_KV_POSITION_ERL;
+        internal static string KvBemessungName => MyResource.Resource.KDLG_SP_BEMESSUNG;
+        internal static string KvBemessungErl => MyResource.Resource.KI_DLG_KV_BEMESSUNG_ERL;
         internal static string KvSatzName => MyResource.Resource.KI_DLG_KV_SATZ_NAME;
         internal static string KvSatzErl => MyResource.Resource.KI_DLG_KV_SATZ_ERL;
         internal static string KvNutzungsdauerName => MyResource.Resource.KI_DLG_KV_NUTZUNGSDAUER_NAME;
@@ -621,6 +623,8 @@
         internal static string SimSpNetzaufschlagName => MyResource.Resource.SP_PARAM_LABEL_NETZLADEAUFSCHLAG;
         internal static string SimSpNetzaufschlagErl => MyResource.Resource.KI_DLG_SIM_SP_NETZAUFSCHLAG_ERL;
         internal static string SimSpPreisquelleName => MyResource.Resource.PREIS_PARAM_LABEL_PREISQUELLE;
+        internal static string SimSpPreisreiheName => MyResource.Resource.PREIS_PARAM_LABEL_REIHE;
+        internal static string SimSpPreisreiheErl => MyResource.Resource.KI_DLG_SIM_SP_PREISREIHE_ERL;
         internal static string SimSpPreisquelleErl => MyResource.Resource.KI_DLG_SIM_SP_PREISQUELLE_ERL;
         internal static string SimSpAufschlagName => MyResource.Resource.PREIS_PARAM_CHK_AUFSCHLAG;
         internal static string SimSpAufschlagErl => MyResource.Resource.KI_DLG_SIM_SP_AUFSCHLAG_ERL;

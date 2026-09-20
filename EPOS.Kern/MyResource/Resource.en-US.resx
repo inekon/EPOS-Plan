@@ -20963,4 +20963,10 @@ Do you want to allow this?</value>
   <data name="KI_DLG_KKONF_TRAEGER_ERL" xml:space="preserve">
     <value>The energy carrier of the heat pump; it determines the price and emissions of the drive electricity.</value>
   </data>
+  <data name="KI_DLG_SIM_SP_PREISREIHE_ERL" xml:space="preserve">
+    <value>The price series the storage unit's electricity tariff is calculated from; it changes with the price source.</value>
+  </data>
+  <data name="KI_DLG_KV_BEMESSUNG_ERL" xml:space="preserve">
+    <value>The reference quantity of the item; it decides what the rate refers to.</value>
+  </data>
 </root>
