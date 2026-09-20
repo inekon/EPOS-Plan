@@ -1008,7 +1008,7 @@ public class KostenKomponenteDialogTests : BunitContext
 
         cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")[1].Click();   // Übernahme
         cut.FindAll(".epos-ueberlagerung .epos-leiste")[^1]
-           .QuerySelectorAll("button")[1].Click();                              // Abbrechen
+           .QuerySelectorAll("button")[0].Click();                              // Abbrechen
 
         cut.WaitForAssertion(() => Assert.False(cut.Instance.UeberlagerungOffen));
         Assert.Equal("1500", Satzfeld(cut, 0).GetAttribute("value"));

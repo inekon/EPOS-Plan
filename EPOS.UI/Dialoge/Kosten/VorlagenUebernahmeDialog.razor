@@ -160,11 +160,13 @@
                     Text="@_meldung" />
     }
 
-    <div class="epos-leiste">
-        <button type="button" class="epos-knopf epos-knopf--primaer"
-                disabled="@(!_uebernahmeMoeglich)" @onclick="BeiOk">@OkText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
-    </div>
+    @* Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 1 Satz 1):
+       Fueller · Abbrechen · OK (primaer, zuletzt) - dieselbe SpeichernLeiste wie in
+       jedem anderen OK-Dialog des Hauses. Ohne Aktionen und ohne MitSpeichern
+       zeichnet sie genau die zwei Knoepfe, die diese Maske hat; der Fueller ist
+       ihre Statusspanne. *@
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     OkErlaubt="@_uebernahmeMoeglich" Ergebnis="BeiErgebnis" />
 </div>
 
 @code {
@@ -563,6 +565,9 @@
     /// <summary>Ae25: Abbrechen verlaesst die Maske, ohne zu schreiben.</summary>
     private Task BeiAbbrechen()
         => Geschlossen.InvokeAsync(new VorlagenUebernahmeSchluss(false, _invest));
+
+    /// <summary>Der eine Ausgang der <c>SpeichernLeiste</c>: true = OK, false = Abbrechen.</summary>
+    private Task BeiErgebnis(bool ok) => ok ? BeiOk() : BeiAbbrechen();
 
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
     {
