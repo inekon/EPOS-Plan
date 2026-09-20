@@ -287,7 +287,8 @@ namespace EPOS.Kern.Tests
                 // Einspeiseverguetung von der Traegerkarte in die
                 // Wirtschaftlichkeitsparameter. REINER DATENSCHRITT - keine Spalte.
                 // DIESELBE Quelle wie in der Migration und im Werkzeug; Umziehen() ist
-                // wiederholbar und tut auf einer bereits umgezogenen Kopie nichts mehr.
+                // wiederholbar und tut auf einer bereits umgezogenen Kopie nichts mehr,
+                // und ohne die Kartenspalten (Schritt 85) fragt es sie gar nicht erst ab.
                 VerguetungUmzug.Umziehen();
 
                 // Schritt 85 (Aufraeumen nach 83 und 84): die fuenf Altspalten der

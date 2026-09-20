@@ -51,9 +51,10 @@ namespace WindowsFormsApplication1
     // eine Zahl, die niemand eingetragen hat.
     //
     // WIEDERHOLBAR. Nach dem Lauf sind die Parameter gepflegt; ein zweiter Lauf findet
-    // nichts mehr und ZaehlungUmzug() liefert 0. Die Kartenspalten bleiben unberuehrt
-    // stehen (kein DROP, kein Leeren) - eine aeltere Programmfassung auf derselben Datei
-    // soll nicht auf einen fehlenden Namen laufen.
+    // nichts mehr und ZaehlungUmzug() liefert 0. Der Schritt selbst nimmt die
+    // Kartenspalten nicht weg (kein DROP, kein Leeren); das tut erst Schritt 85
+    // (StrompreisAltspalten). Danach fehlen sie: KartenspaltenVorhanden() sagt es vorab,
+    // Zaehlung und Umzug tun dann nichts und melden nichts.
     //
     // WARUM HIER UND NICHT IN DER MIGRATION. Dieselbe Begruendung wie bei
     // NutzungsdauerSchema (75) bis StrompreisZerlegung (83): Die Anweisungen brauchen
@@ -129,6 +130,19 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>
+        /// Stehen die Kartenspalten noch? Schemaschritt 85
+        /// (<see cref="StrompreisAltspalten"/>) entfernt sie; danach gibt es nichts mehr
+        /// umzuziehen, und der Schritt schweigt.
+        /// </summary>
+        public static bool KartenspaltenVorhanden()
+        {
+            return StrompreisAltspalten.Vorhanden(
+                       TABELLE_KARTE, StrompreisAltspalten.SPALTE_VERGUETUNG_PV)
+                && StrompreisAltspalten.Vorhanden(
+                       TABELLE_KARTE, StrompreisAltspalten.SPALTE_VERGUETUNG_BHKW);
+        }
+
+        /// <summary>
         /// Wie viele Projekte zieht der Schritt um? 0 = nichts zu tun (er ist gelaufen,
         /// oder es gab nie einen Kartenwert).
         /// </summary>
@@ -147,6 +161,12 @@ namespace WindowsFormsApplication1
         public static IReadOnlyList<Zeile> Zeilen()
         {
             List<Zeile> liste = new List<Zeile>();
+
+            // Ohne die Kartenspalten gibt es keinen Kartenwert. Ein SELECT auf sie waere
+            // "no such column" und stuende als Meldung im Protokoll jedes Laufs - auf dem
+            // Zielstand ist das keine Auskunft, sondern Laerm.
+            if (!KartenspaltenVorhanden()) return liste;
+
             Dictionary<int, Zeile> nachProjekt = new Dictionary<int, Zeile>();
 
             DataTable karte = DataRepository.GetDataTable(

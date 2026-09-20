@@ -135,6 +135,30 @@ namespace EPOS.Kern.Tests
             Assert.Null(p.EinspeiseverguetungKWK);
         }
 
+        /// <summary>
+        /// Auf dem Zielstand (Schritt 85 hat die Kartenspalten entfernt) ist der Schritt
+        /// STILL: nichts zu zählen, nichts umzuziehen — und keine Datenbankmeldung. Der
+        /// Engine-Modus sammelt jede Meldung von <c>DataRepository.FehlerMelden</c>, statt
+        /// sie zu zeigen; die Sammlung muss leer bleiben. Ohne die Prüfung in
+        /// <c>Zeilen()</c> stünde hier „no such column: eps.Verguetung_PV" — bei jeder
+        /// Arbeitskopie, in jedem Protokoll.
+        /// </summary>
+        [Fact]
+        public void Ohne_Kartenspalten_schweigt_der_Schritt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.False(VerguetungUmzug.KartenspaltenVorhanden());
+
+            using (DataRepository.EngineModus())
+            {
+                Assert.Equal(0, VerguetungUmzug.ZaehlungUmzug());
+                Assert.Empty(VerguetungUmzug.Umziehen());
+                Assert.Empty(DataRepository.StilleFehlerAbholen());
+            }
+        }
+
         // =================================================================
         //  Die Quellenkette der Speicherwelt
         // =================================================================
