@@ -170,38 +170,35 @@ namespace WindowsFormsApplication1
         {
             int W = 1240;
             int H = 150 + balken.Count * 64;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
+
+            float links = 300f, rechts = W - 150f, oben = 80f;
+            double max = Math.Max(balken.Max(b => Math.Abs(b.Wert)), 1e-9);
+
+            var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
+            using (var lf = Schrift(18f))
+            using (var wf = Schrift(17f))
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
-
-                float links = 300f, rechts = W - 150f, oben = 80f;
-                double max = Math.Max(balken.Max(b => Math.Abs(b.Wert)), 1e-9);
-
-                using (var lf = Schrift(18f))
-                using (var wf = Schrift(17f))
-                using (var rahmen = Strich(SKColors.Gray, 1f))
+                for (int i = 0; i < balken.Count; i++)
                 {
-                    for (int i = 0; i < balken.Count; i++)
-                    {
-                        float y = oben + i * 64f;
-                        Balken b = balken[i];
-                        float laenge = (float)(Math.Abs(b.Wert) / max * (rechts - links));
-                        SKColor farbe = b.Hervorheben ? C_STAMM : C_WP;
+                    float y = oben + i * 64f;
+                    Balken b = balken[i];
+                    float laenge = (float)(Math.Abs(b.Wert) / max * (rechts - links));
+                    Farbrolle farbe = b.Hervorheben ? Farbrolle.STAMM : Farbrolle.WAERME_WP;
 
-                        // Label links (rechtsbündig).
-                        float lbreite = lf.MeasureText(b.Label ?? "");
-                        Text(g, b.Label, lf, SKColors.Black, links - 12f - lbreite, y + 8f);
+                    // Label links (rechtsbündig).
+                    float lbreite = lf.MeasureText(b.Label ?? "");
+                    Text(z, b.Label, lf, Farbrolle.TEXT, links - 12f - lbreite, y + 8f);
 
-                        using (var br = Fuellung(farbe)) g.DrawRect(links, y, laenge, 40f, br);
-                        g.DrawRect(links, y, laenge, 40f, rahmen);
-                        Text(g, b.Wert.ToString("N0", DE), wf, SKColors.Black, links + laenge + 10f, y + 9f);
-                    }
+                    z.Rechteck(links, y, laenge, 40f, null, Flaeche(farbe));
+                    z.Rechteck(links, y, laenge, 40f, rahmen);
+                    Text(z, b.Wert.ToString("N0", DE), wf, Farbrolle.TEXT, links + laenge + 10f, y + 9f);
                 }
-                using (var achse = Strich(SKColors.DimGray, 2f))
-                    g.DrawLine(links, oben - 8f, links, oben + balken.Count * 64f - 16f, achse);
-                return Png(flaeche);
             }
+            z.Linie(links, oben - 8f, links, oben + balken.Count * 64f - 16f,
+                    Stift(Farbrolle.ACHSE, 2f));
+            return SkiaMaler.Png(z);
         }
 
         // =================================================================== Ganglinien
