@@ -20594,4 +20594,55 @@ Do you want to allow this?</value>
   <data name="KI_DLG_PV_STRANG_AZIMUT_ERL" xml:space="preserve">
     <value>Orientation of this sub-array in degrees, 0 = south; empty inherits the azimuth of the plant.</value>
   </data>
+  <data name="KI_DLG_MASKE_PSPV" xml:space="preserve">
+    <value>Manage buffer tanks of the project</value>
+  </data>
+  <data name="KI_DLG_PSPV_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The name of this buffer tank in the project; it must be given.</value>
+  </data>
+  <data name="KI_DLG_PSPV_VOLUMEN_ERL" xml:space="preserve">
+    <value>Total volume of the tank in litres; it must be greater than 0.</value>
+  </data>
+  <data name="KI_DLG_PSPV_VERLUSTE_ERL" xml:space="preserve">
+    <value>Standby losses of the tank in kilowatt hours per day; empty counts as 0.</value>
+  </data>
+  <data name="KI_DLG_PSPV_VORLAUF_ERL" xml:space="preserve">
+    <value>Flow temperature of the tank in °C; it must be above the return temperature.</value>
+  </data>
+  <data name="KI_DLG_PSPV_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Return temperature of the tank in °C; it must be below the flow temperature.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHWELLE_EIN_ERL" xml:space="preserve">
+    <value>State of charge in percent at which the generators start recharging the tank.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHWELLE_AUS_ERL" xml:space="preserve">
+    <value>State of charge in percent at which charging stops; it must be above the switch-on threshold.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
+    <value>State of charge in percent from which subordinate generators may charge as well.</value>
+  </data>
+  <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
+    <value>Share in percent kept in the tank as an emergency reserve and never discharged; 0 is valid.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHICHTEN_ERL" xml:space="preserve">
+    <value>Number of calculation layers of the tank model; 1 means “one volume without stratification”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_HOEHE_ERL" xml:space="preserve">
+    <value>Height of the tank in metres — only for the stratified model; empty means “the default applies”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_LAMBDA_ERL" xml:space="preserve">
+    <value>Effective thermal conductivity between the layers in W/(m·K); it governs how fast the stratification decays.</value>
+  </data>
+  <data name="KI_DLG_PSPV_T_NUTZ_BW_ERL" xml:space="preserve">
+    <value>Temperature in °C from which the water is usable for domestic hot water.</value>
+  </data>
+  <data name="KI_DLG_PSPV_LADELEISTUNG_ERL" xml:space="preserve">
+    <value>Maximum charging power of the tank in kW; empty means “unlimited”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTLADELEISTUNG_ERL" xml:space="preserve">
+    <value>Maximum discharging power of the tank in kW; empty means “unlimited”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTLADEPRIO_ERL" xml:space="preserve">
+    <value>Order in which the tanks of the project are discharged (1 = first); 0 means “automatic”.</value>
+  </data>
 </root>

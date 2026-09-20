@@ -68,6 +68,26 @@
         /// </summary>
         internal const string EINHEIT_H_TAG = "h/Tag";
 
+        /// <summary>Einheit einer Laenge in Metern (Welle KI-F2).</summary>
+        internal const string EINHEIT_METER = "m";
+
+        /// <summary>Einheit einer Flaeche in Quadratmetern (Welle KI-F2).</summary>
+        internal const string EINHEIT_M2 = "m²";
+
+        /// <summary>Einheit einer Temperaturspreizung in Kelvin (Welle KI-F2).</summary>
+        internal const string EINHEIT_KELVIN = "K";
+
+        /// <summary>
+        /// Einheit der Bereitschaftsverluste eines Speichers (Welle KI-F2) —
+        /// Kilowattstunden je Tag, so steht sie am Feld.
+        /// </summary>
+        internal const string EINHEIT_KWH_24H = "kWh/24h";
+
+        /// <summary>
+        /// Einheit der effektiven Waermeleitfaehigkeit der Schichtung (Welle KI-F2).
+        /// </summary>
+        internal const string EINHEIT_W_MK = "W/(m·K)";
+
         /// <summary>Einheit einer Zeitspanne in Jahren.</summary>
         internal static string EinheitJahre => MyResource.Resource.KI_DLG_EINHEIT_JAHRE;
 
@@ -504,6 +524,47 @@
         internal static string SimSpeicherSocErl => MyResource.Resource.KI_DLG_SIM_SP_SOC_ERL;
         internal static string SimHinweiseName => MyResource.Resource.KI_DLG_SIM_HINWEISE_NAME;
         internal static string SimHinweiseErl => MyResource.Resource.KI_DLG_SIM_HINWEISE_ERL;
+
+        // ============ Pufferspeicher-Verwaltung des Projekts (Welle KI-F2)
+        //
+        // Die ANZEIGENAMEN sind die Beschriftungen, die auf der Maske stehen
+        // (PSP_LABEL_*); neu ist je Feld allein die Erlaeuterung.
+
+        /// <summary>Die achte Maske (Welle KI-F2): die Pufferverwaltung des Projekts.</summary>
+        internal static string MaskePufferSpVerwaltung => MyResource.Resource.KI_DLG_MASKE_PSPV;
+
+        internal static string PspvBezeichnerName => MyResource.Resource.PSP_LABEL_BEZEICHNER;
+        internal static string PspvBezeichnerErl => MyResource.Resource.KI_DLG_PSPV_BEZEICHNER_ERL;
+        internal static string PspvVolumenName => MyResource.Resource.PSP_LABEL_GESAMTVOLUMEN;
+        internal static string PspvVolumenErl => MyResource.Resource.KI_DLG_PSPV_VOLUMEN_ERL;
+        internal static string PspvVerlusteName => MyResource.Resource.PSP_LABEL_BEREITSCHAFTSVERLUSTE;
+        internal static string PspvVerlusteErl => MyResource.Resource.KI_DLG_PSPV_VERLUSTE_ERL;
+        internal static string PspvVorlaufName => MyResource.Resource.PSP_LABEL_VORLAUF;
+        internal static string PspvVorlaufErl => MyResource.Resource.KI_DLG_PSPV_VORLAUF_ERL;
+        internal static string PspvRuecklaufName => MyResource.Resource.PSP_LABEL_RUECKLAUF;
+        internal static string PspvRuecklaufErl => MyResource.Resource.KI_DLG_PSPV_RUECKLAUF_ERL;
+        internal static string PspvSchwelleEinName => MyResource.Resource.PSP_LABEL_EINSCHALTSCHWELLE;
+        internal static string PspvSchwelleEinErl => MyResource.Resource.KI_DLG_PSPV_SCHWELLE_EIN_ERL;
+        internal static string PspvSchwelleAusName => MyResource.Resource.PSP_LABEL_ABSCHALTSCHWELLE;
+        internal static string PspvSchwelleAusErl => MyResource.Resource.KI_DLG_PSPV_SCHWELLE_AUS_ERL;
+        internal static string PspvSchwelleNachrangName => MyResource.Resource.PSP_LABEL_SCHWELLE_NACHRANGIG;
+        internal static string PspvSchwelleNachrangErl => MyResource.Resource.KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL;
+        internal static string PspvMindestfuellstandName => MyResource.Resource.PSP_LABEL_MINDESTFUELLSTAND;
+        internal static string PspvMindestfuellstandErl => MyResource.Resource.KI_DLG_PSPV_MINDESTFUELLSTAND_ERL;
+        internal static string PspvSchichtenName => MyResource.Resource.PSP_LABEL_SCHICHTEN;
+        internal static string PspvSchichtenErl => MyResource.Resource.KI_DLG_PSPV_SCHICHTEN_ERL;
+        internal static string PspvHoeheName => MyResource.Resource.PSP_LABEL_HOEHE;
+        internal static string PspvHoeheErl => MyResource.Resource.KI_DLG_PSPV_HOEHE_ERL;
+        internal static string PspvLambdaName => MyResource.Resource.PSP_LABEL_LAMBDA_EFF;
+        internal static string PspvLambdaErl => MyResource.Resource.KI_DLG_PSPV_LAMBDA_ERL;
+        internal static string PspvNutztemperaturName => MyResource.Resource.PSP_LABEL_T_NUTZ_BW;
+        internal static string PspvNutztemperaturErl => MyResource.Resource.KI_DLG_PSPV_T_NUTZ_BW_ERL;
+        internal static string PspvLadeleistungName => MyResource.Resource.PSP_LABEL_LADELEISTUNG_MAX;
+        internal static string PspvLadeleistungErl => MyResource.Resource.KI_DLG_PSPV_LADELEISTUNG_ERL;
+        internal static string PspvEntladeleistungName => MyResource.Resource.PSP_LABEL_ENTLADELEISTUNG_MAX;
+        internal static string PspvEntladeleistungErl => MyResource.Resource.KI_DLG_PSPV_ENTLADELEISTUNG_ERL;
+        internal static string PspvEntladeprioName => MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET;
+        internal static string PspvEntladeprioErl => MyResource.Resource.KI_DLG_PSPV_ENTLADEPRIO_ERL;
 
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;

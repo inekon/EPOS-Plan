@@ -3,7 +3,9 @@ using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Simulation;
 using EPOS.UI.Dienste;
+using KiKern;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -981,5 +983,58 @@ public class PufferSpProjektDialogTests : EposBunitContext
         // Schwellen (das Volumen ist ein Ganzzahlfeld und steht davor).
         var felder = cut.FindAll("input.epos-eingabe");
         felder[5 + nummer].Input(wert.ToString(CultureInfo.GetCultureInfo("de-DE")));
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>PufferSpProjektKiSicht</c> und steht deshalb nicht in der
+    /// Markup-Probe des Dialogkatalogs — dieser Fall ist ihr Ersatz und die schärfere
+    /// Probe: Die Maske steht gezeichnet da, die Brücke liest den Wert, den der
+    /// Anwender sieht, und ein Setzen landet im Eingabefeld.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist — die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_das_Volumen()
+    {
+        var cut = Zeige(MitZwei(), idPuffer: 11);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PUFFERSPEICHER_VERWALTUNG));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, "volumen");
+        Assert.NotNull(zugang);
+        Assert.Equal(800, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(1200);
+
+        // Der Wert steht danach im EINGABEFELD der Maske - nicht nur im Sichtmodell.
+        cut.Render();
+        Assert.Equal("1200", cut.FindAll("input.epos-eingabe")[1].GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Der Bezeichner ist Pflichtfeld und Text — er wird gelesen und gesetzt wie jedes
+    /// andere Feld der Maske.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_liest_und_setzt_den_Bezeichner()
+    {
+        var cut = Zeige(MitZwei(), idPuffer: 11);
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, "bezeichner");
+
+        Assert.Equal("Heizungsspeicher", zugang.Lesen());
+
+        zugang.Setzen("Pufferspeicher Nord");
+        Assert.Equal("Pufferspeicher Nord", zugang.Lesen());
     }
 }

@@ -79,7 +79,12 @@ public class KiDialogkatalogTests
           typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorenEingaben) },
 
         // Die Waermepumpen-ANLAGE - ein Feldsatz fuer alle drei Bloecke der Maske.
-        { KiMaskennamen.WAERMEPUMPE_ANLAGE, typeof(WaermepumpeAnlageDaten) }
+        { KiMaskennamen.WAERMEPUMPE_ANLAGE, typeof(WaermepumpeAnlageDaten) },
+
+        // Welle KI-F2: die Masken der SIMULATIONSKONFIGURATION. Sie melden je eine
+        // SICHTKLASSE an - siehe OhneMarkupprobe.
+        { KiMaskennamen.PUFFERSPEICHER_VERWALTUNG,
+          typeof(EPOS.UI.Dialoge.Simulation.PufferSpProjektKiSicht) }
     };
 
     // =====================================================================
@@ -126,11 +131,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_dreizehn_Masken()
+    public void Der_Katalog_fuehrt_vierzehn_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(13, katalog.Anzahl);
+        Assert.Equal(14, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -158,6 +163,27 @@ public class KiDialogkatalogTests
         Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.STROMSPEICHER_PROJEKT));
         Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT));
         Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.WAERMEPUMPE_ANLAGE));
+    }
+
+    /// <summary>
+    /// <b>Die Masken der Simulationskonfiguration führen auf die ANSICHT, aus der sie
+    /// aufgehen</b> (Welle KI‑F2).
+    /// </summary>
+    /// <remarks>
+    /// Sie brauchen alle eine gewählte Komponente; kontextfrei öffnen lässt sich keine.
+    /// <c>Masken.Simulation</c> kennt die Windows-Navigationstabelle, und dieselbe
+    /// Zeichenkette ist der Seitenschlüssel der <c>AppWurzel</c>
+    /// (<c>Seitenschluessel.Simulation</c> ist auf die Konstante des Kerns gesetzt) —
+    /// hier führt ein Ziel also wirklich irgendwohin, anders als bei der
+    /// Kostenverwaltung.
+    /// </remarks>
+    [Fact]
+    public void Das_Ziel_der_Simulationsmasken_ist_die_Ansicht_Simulation()
+    {
+        // Voll ausgeschrieben: Die Testklasse fuehrt selbst eine Masken()-Methode,
+        // und die verdeckt den Typnamen.
+        Assert.Equal(WindowsFormsApplication1.Masken.Simulation,
+                     KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER_VERWALTUNG));
     }
 
     [Fact]
@@ -350,12 +376,27 @@ public class KiDialogkatalogTests
     /// weiter unten, <c>KiSimulationMaskeTests</c>): Dort wird gerechnet, ob die
     /// Sicht die Werte der Ansicht trägt, und das ist die schärfere Probe.
     /// </remarks>
+    /// <remarks>
+    /// <b>Die Masken der Simulationskonfiguration kommen mit der Welle KI‑F2 dazu —
+    /// aus demselben Grund und mit demselben Ersatz.</b> Ihre Dialoge führen ihren
+    /// Arbeitsstand nicht als veränderliches DTO, sondern in den Eingabefeldern der
+    /// Maske; was sie hereinbekommen und herausgeben, sind unveränderliche Records
+    /// (<c>init</c>-Eigenschaften, neu erzeugt per <c>with</c>). Ein daran angemeldeter
+    /// Katalog zeigte den Stand von vorhin und setzte ins Leere. Jede dieser Masken
+    /// bindet deshalb über eine Sichtklasse auf die LEBENDEN Felder — und jede hält
+    /// ihren Zeugen in der Testklasse ihres Dialogs: Dort steht die Maske gezeichnet
+    /// an der Brücke, und ein Feld wird gelesen UND gesetzt. Das ist die schärfere
+    /// Probe, denn sie misst den ganzen Weg statt einer Zeichenkette im Markup.
+    /// </remarks>
     private static readonly Dictionary<string, string> OhneMarkupprobe = new()
     {
         [KiMaskennamen.STROMSPEICHER_AUSLEGUNG] =
             "bindet über die Sichtklasse StromspeicherKiSicht, nicht über das Markup",
         [KiMaskennamen.SIMULATION] =
-            "bindet über die Sichtklasse SimulationKiSicht, nicht über das Markup"
+            "bindet über die Sichtklasse SimulationKiSicht, nicht über das Markup",
+        [KiMaskennamen.PUFFERSPEICHER_VERWALTUNG] =
+            "bindet über die Sichtklasse PufferSpProjektKiSicht auf die Eingabefelder " +
+            "der Maske; Zeuge ist PufferSpProjektDialogTests"
     };
 
     /// <summary>

@@ -25577,6 +25577,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher im Projekt verwalten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PSPV {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PSPV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher bearbeiten ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PUFFERSP {
@@ -25726,6 +25735,150 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PSPP_ANLAGE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PSPP_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name dieses Pufferspeichers im Projekt; er muss angegeben sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste Entladeleistung des Speichers in kW; leer heißt „unbegrenzt&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_ENTLADELEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_ENTLADELEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihenfolge, in der die Speicher des Projekts entladen werden (1 = zuerst); 0 heißt „automatisch&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_ENTLADEPRIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_ENTLADEPRIO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauhöhe des Speichers in Metern — nur beim geschichteten Modell; leer heißt „Vorgabe gilt&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_HOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_HOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste Ladeleistung des Speichers in kW; leer heißt „unbegrenzt&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_LADELEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_LADELEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effektive Wärmeleitfähigkeit zwischen den Schichten in W/(m·K); sie bestimmt, wie schnell die Schichtung zerfällt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_LAMBDA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_LAMBDA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil in Prozent, der als Notreserve im Speicher bleibt und nicht entladen wird; 0 ist gültig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_MINDESTFUELLSTAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_MINDESTFUELLSTAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur des Speichers in °C; sie muss unter der Vorlauftemperatur liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Rechenschichten des Speichermodells; 1 heißt „ein Volumen ohne Schichtung&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_SCHICHTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_SCHICHTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, bei dem die Ladung endet; er muss über der Einschaltschwelle liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_SCHWELLE_AUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_SCHWELLE_AUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem die Erzeuger den Speicher nachladen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_SCHWELLE_EIN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_SCHWELLE_EIN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur in °C, ab der das Wasser für Brauchwasser nutzbar ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_T_NUTZ_BW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_T_NUTZ_BW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverluste des Speichers in Kilowattstunden je Tag; leer gilt als 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_VERLUSTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_VERLUSTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen des Speichers in Litern; es muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_VOLUMEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_VOLUMEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur des Speichers in °C; sie muss über der Rücklauftemperatur liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_VORLAUF_ERL", resourceCulture);
             }
         }
         

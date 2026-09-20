@@ -138,7 +138,19 @@ namespace WindowsFormsApplication1
 
                 // Die Waermepumpen-ANLAGE geht ebenfalls aus der Erzeugerkarte auf -
                 // anders als die Stammverwaltung Form_WP, die ihre eigene Maske hat.
-                { KiMaskennamen.WAERMEPUMPE_ANLAGE,     STARTSEITE }
+                { KiMaskennamen.WAERMEPUMPE_ANLAGE,     STARTSEITE },
+
+                // Welle KI-F2: Die Masken der SIMULATIONSKONFIGURATION gehen aus
+                // Schritt ① der Ansicht "Simulation" auf und brauchen eine gewaehlte
+                // Komponente - die Pufferverwaltung ueber den Knopf der Speicherkarte,
+                // die Quellen- und Senkenmasken ueber die Karte ihrer Waermepumpe, die
+                // Komponentenkonfiguration ueber den Knopf ihrer Karte. Kontextfrei
+                // laesst sich keine davon oeffnen; das Ziel ist deshalb die ANSICHT,
+                // auf der der Anwender die Komponente waehlt - dieselbe Begruendung wie
+                // bei den Katalogeditoren und den Erzeugermasken. Masken.Simulation
+                // kennt die Windows-Navigationstabelle, und dieselbe Zeichenkette ist
+                // der Seitenschluessel der AppWurzel (SIM-Q3, #207).
+                { KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, Masken.Simulation }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

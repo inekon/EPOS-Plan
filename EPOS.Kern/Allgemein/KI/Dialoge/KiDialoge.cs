@@ -98,6 +98,49 @@ namespace WindowsFormsApplication1
         /// einen Satz des Katalogs, diese hier die Anlage im Projekt.
         /// </remarks>
         public const string WAERMEPUMPE_ANLAGE = "Form_WP_Anlage";
+
+        // =================================================================
+        //  Welle KI-F2: die Masken der SIMULATIONSKONFIGURATION
+        // =================================================================
+        //
+        // Sie gehen aus Schritt ① der Ansicht "Simulation" auf - je Karte
+        // die Maske, die zu ihr gehoert: die Pufferverwaltung des Projekts,
+        // die zwei Quellenmasken der Waermepumpe, das Quellprofil, die
+        // Waermesenken und die Konfiguration einer Komponente. Alle sechs
+        // brauchen eine gewaehlte Komponente und lassen sich nicht
+        // kontextfrei oeffnen; ihr Ziel ist deshalb die Ansicht selbst.
+
+        /// <summary>
+        /// Die Pufferspeicher-Verwaltung des Projekts
+        /// (<c>PufferSpProjektDialog</c>).
+        /// </summary>
+        /// <remarks>
+        /// Sie steht neben <see cref="PUFFERSPEICHER"/> (dem Katalogeditor) und
+        /// <see cref="PUFFERSPEICHER_PROJEKT"/> (der Erzeugerkarte des Projekts) und
+        /// ist etwas Drittes: Hier entstehen und vergehen die Speicher des Projekts
+        /// samt Schichtmodell, Schwellen und Leistungsgrenzen. Alle drei tragen die
+        /// WinForms-Maskennamen des Bestands.
+        /// </remarks>
+        public const string PUFFERSPEICHER_VERWALTUNG = "Form_PufferSp_Projekt";
+
+        /// <summary>Waermequelle Erdreich einer Waermepumpe (<c>QuelleErdreichDialog</c>).</summary>
+        public const string QUELLE_ERDREICH = "Form_QuelleErdreich";
+
+        /// <summary>Waermequelle Pufferspeicher (<c>QuellePufferspeicherDialog</c>).</summary>
+        public const string QUELLE_PUFFERSPEICHER = "Form_QuellePufferspeicher";
+
+        /// <summary>Das Quellprofil einer Waermepumpe (<c>QuellprofilDialog</c>).</summary>
+        public const string QUELLPROFIL = "Form_Quellprofil";
+
+        /// <summary>Die Waermesenken einer Anlage (<c>WaermesenkeDialog</c>).</summary>
+        public const string WAERMESENKE = "Form_Waermesenke";
+
+        /// <summary>
+        /// Die Konfiguration EINER Komponente der Simulation
+        /// (<c>KomponentenKonfigurationDialog</c>) — die dritte Maske ohne
+        /// <c>Form_</c>-Vorsilbe: Sie hatte nie eine WinForms-Fassung.
+        /// </summary>
+        public const string KOMPONENTENKONFIGURATION = "KomponentenKonfiguration";
     }
 
     /// <summary>
@@ -197,7 +240,134 @@ namespace WindowsFormsApplication1
                 PufferspeicherProjekt(),
                 StromspeicherProjekt(),
                 SolarkollektorenProjekt(),
-                WaermepumpeAnlage());
+                WaermepumpeAnlage(),
+                PufferspeicherVerwaltung());
+        }
+
+        // =====================================================================
+        // Form_PufferSp_Projekt  ->  PufferSpProjektDialog   (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Pufferspeicher-Verwaltung des Projekts — sechzehn Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.PufferSpProjektKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum ein SICHTMODELL und nicht das Daten-Objekt.</b> Dieser Dialog
+        /// bekommt keinen veraenderlichen Satz herein und gibt keinen heraus: Was
+        /// hereinkommt, sind zwei Ids, und was der Anwender bearbeitet, steht bis zum
+        /// „Uebernehmen" in den Eingabefeldern der Maske — erst dort entsteht der
+        /// unveraenderliche Record <c>PspEingaben</c>. Ein daran angemeldeter Katalog
+        /// zeigte dem Assistenten den Stand von vorhin und setzte ins Leere. Dieselbe
+        /// Lage wie bei der Stromspeicher- und der Simulationsansicht, dieselbe
+        /// Antwort: eine flache Sichtklasse ueber die lebenden Felder.
+        /// </para>
+        /// <para>
+        /// <b>Die drei ENTNAHMEHOEHEN bleiben draussen.</b> „Heizung", „Brauchwasser"
+        /// und „Prozesswaerme" tragen im Bestand keine Beschriftungsressource — die
+        /// Maske zeigt dort ihren deutschen Vorgabetext, auch auf der englischen
+        /// Oberflaeche. Ein Anzeigename waere hier also erfunden und nicht abgelesen;
+        /// sie kommen in den Katalog, sobald die Maske sie in beiden Sprachen
+        /// beschriftet.
+        /// </para>
+        /// <para>
+        /// <b>Der Katalogsatz und die NUTZUNG bleiben ebenfalls draussen.</b> „Aus
+        /// Katalog" ist ein roher Listenplatz im Pufferkatalog (dieselbe Regel wie bei
+        /// der Brennstoffvariante), und „Nutzung" ist eine MEHRFACHwahl aus drei
+        /// Klassen — ein Katalogfeld traegt EINEN Wert (<c>KiDialogFeld</c>).
+        /// </para>
+        /// <para>
+        /// <b>Knoepfe: OK, Abbrechen und UEBERNEHMEN.</b> „Entfernen" ist ein
+        /// Loeschknopf und damit nicht deklarierbar (Bauartsperre in
+        /// <see cref="KiDialogKnopf"/>); „Neuer Pufferspeicher" und „Katalog
+        /// ansehen…" wechseln den Stand der Maske, ohne einen Wert zu setzen, und
+        /// gehoeren nicht in die Positivliste dieser Welle.
+        /// </para>
+        /// </remarks>
+        private static KiDialog PufferspeicherVerwaltung()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PUFFERSPEICHER_VERWALTUNG,
+                anzeigename: KiDialogTexte.MaskePufferSpVerwaltung,
+                felder: new[]
+                {
+                    new KiDialogFeld("bezeichner", "PufferSpProjektKiSicht.Bezeichner",
+                                     KiDialogTexte.PspvBezeichnerName, KiParameterTyp.Text,
+                                     KiDialogTexte.PspvBezeichnerErl),
+                    new KiDialogFeld("volumen", "PufferSpProjektKiSicht.Volumen",
+                                     KiDialogTexte.PspvVolumenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvVolumenErl,
+                                     einheit: KiDialogTexte.EINHEIT_LITER, leerErlaubt: true),
+                    new KiDialogFeld("bereitschaftsverluste",
+                                     "PufferSpProjektKiSicht.Bereitschaftsverluste",
+                                     KiDialogTexte.PspvVerlusteName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvVerlusteErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH_24H, leerErlaubt: true),
+                    new KiDialogFeld("vorlauf", "PufferSpProjektKiSicht.Vorlauf",
+                                     KiDialogTexte.PspvVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "PufferSpProjektKiSicht.Ruecklauf",
+                                     KiDialogTexte.PspvRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("einschaltschwelle",
+                                     "PufferSpProjektKiSicht.Einschaltschwelle",
+                                     KiDialogTexte.PspvSchwelleEinName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvSchwelleEinErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("abschaltschwelle",
+                                     "PufferSpProjektKiSicht.Abschaltschwelle",
+                                     KiDialogTexte.PspvSchwelleAusName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvSchwelleAusErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("schwelle_nachrangig",
+                                     "PufferSpProjektKiSicht.SchwelleNachrangig",
+                                     KiDialogTexte.PspvSchwelleNachrangName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvSchwelleNachrangErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("mindestfuellstand",
+                                     "PufferSpProjektKiSicht.Mindestfuellstand",
+                                     KiDialogTexte.PspvMindestfuellstandName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvMindestfuellstandErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("schichten", "PufferSpProjektKiSicht.Schichten",
+                                     KiDialogTexte.PspvSchichtenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvSchichtenErl, leerErlaubt: true),
+                    new KiDialogFeld("hoehe", "PufferSpProjektKiSicht.Hoehe",
+                                     KiDialogTexte.PspvHoeheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvHoeheErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("lambda", "PufferSpProjektKiSicht.Lambda",
+                                     KiDialogTexte.PspvLambdaName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvLambdaErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_MK, leerErlaubt: true),
+                    new KiDialogFeld("nutztemperatur_bw",
+                                     "PufferSpProjektKiSicht.NutztemperaturBw",
+                                     KiDialogTexte.PspvNutztemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvNutztemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ladeleistung", "PufferSpProjektKiSicht.Ladeleistung",
+                                     KiDialogTexte.PspvLadeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvLadeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("entladeleistung", "PufferSpProjektKiSicht.Entladeleistung",
+                                     KiDialogTexte.PspvEntladeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvEntladeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("entladeprioritaet",
+                                     "PufferSpProjektKiSicht.Entladeprioritaet",
+                                     KiDialogTexte.PspvEntladeprioName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvEntladeprioErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfUebernehmen),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================
