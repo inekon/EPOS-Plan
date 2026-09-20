@@ -20118,15 +20118,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert. ähnelt.
-        /// </summary>
-        public static string KBROW_MSG_WIRKUNGSGRAD_FAKTOR {
-            get {
-                return ResourceManager.GetString("KBROW_MSG_WIRKUNGSGRAD_FAKTOR", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eigenschaften ähnelt.
         /// </summary>
         public static string KBROW_SPALTE_EIGENSCHAFTEN {

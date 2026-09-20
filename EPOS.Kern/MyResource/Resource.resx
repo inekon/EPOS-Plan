@@ -729,9 +729,6 @@
   <data name="KBROW_MSG_WERT_UNBEKANNT" xml:space="preserve">
     <value>„{0}“: „{1}“ ist kein zulässiger Wert. Zulässig sind: {2}</value>
   </data>
-  <data name="KBROW_MSG_WIRKUNGSGRAD_FAKTOR" xml:space="preserve">
-    <value>„{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert.</value>
-  </data>
   <data name="KBROW_SPALTE_EIGENSCHAFTEN" xml:space="preserve">
     <value>Eigenschaften</value>
   </data>

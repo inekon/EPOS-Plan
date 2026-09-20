@@ -223,7 +223,7 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         // Die Fussleiste laeuft Vorschau aktualisieren . Fueller . Abbrechen . OK;
         // "Abbrechen" steht unmittelbar VOR dem primaeren Knopf (DL-2f).
         cut.FindAll(".epos-importoptionen .epos-leiste button")[^2].Click();   // "Abbrechen"
-        await fertig.Task;
+        await fertig.Task.MitZeitgrenze("Optionen");
 
         Assert.Null(gemeldet);
         cut.WaitForAssertion(() => Assert.Empty(cut.FindAll(".epos-importoptionen")));
@@ -252,7 +252,7 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-ganglinie-protokoll")));
 
         cut.FindAll(".epos-ganglinie-protokoll .epos-leiste button")[1].Click();   // "OK"
-        await fertig.Task;
+        await fertig.Task.MitZeitgrenze("Protokoll");
 
         Assert.True(weiter);
     }
@@ -285,7 +285,7 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-importkonflikte")));
 
         cut.FindAll(".epos-importkonflikte .epos-leiste button")[2].Click();   // "Uebernehmen"
-        await fertig.Task;
+        await fertig.Task.MitZeitgrenze("Konflikte");
 
         Assert.NotNull(entscheidungen);
         Assert.Single(entscheidungen!);
