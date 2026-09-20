@@ -12540,9 +12540,6 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="BPRO_BTN_SPEICHERN" xml:space="preserve">
     <value>Speichern in DB</value>
   </data>
-  <data name="BPRO_BTN_SCHLIESSEN" xml:space="preserve">
-    <value>Schließen</value>
-  </data>
   <data name="BPRO_FELD_STUNDENWERT" xml:space="preserve">
     <value>Stundenwert</value>
   </data>
@@ -20248,6 +20245,9 @@ Möchten Sie das zulassen?</value>
     <value>Kennliniendaten...</value>
   </data>
   <data name="BADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="BPRO_BTN_BEENDEN" xml:space="preserve">
     <value>Beenden</value>
   </data>
 </root>
