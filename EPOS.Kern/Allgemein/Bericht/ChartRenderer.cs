@@ -1060,137 +1060,136 @@ namespace WindowsFormsApplication1
                                         Kennlinienmarke marke)
         {
             int W = 968, H = 520;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel, W);
+            // Rechts bleiben 150 px stehen: Dort steht die Beschriftung der x-Achse,
+            // und die letzte Rasterzahl braucht ihre halbe Breite (der Bericht setzt
+            // den Achsentitel genauso, KapitalwertVerlauf mit „Jahr").
+            var rc = SKRect.Create(90f, 76f, W - 240f, 296f);
+
+            var gueltig = new List<KennlinienReihe>();
+            if (reihen != null)
+                foreach (KennlinienReihe r in reihen)
+                    if (r != null && r.Punkte != null && r.Punkte.Count > 0 &&
+                        r.Punkte.All(p => !double.IsNaN(p.Temperatur) && !double.IsInfinity(p.Temperatur) &&
+                                          !double.IsNaN(p.Wert) && !double.IsInfinity(p.Wert)))
+                        gueltig.Add(r);
+
+            if (gueltig.Count == 0)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel, W);
-                // Rechts bleiben 150 px stehen: Dort steht die Beschriftung der x-Achse,
-                // und die letzte Rasterzahl braucht ihre halbe Breite (der Bericht setzt
-                // den Achsentitel genauso, KapitalwertVerlauf mit „Jahr").
-                var rc = SKRect.Create(90f, 76f, W - 240f, 296f);
-
-                var gueltig = new List<KennlinienReihe>();
-                if (reihen != null)
-                    foreach (KennlinienReihe r in reihen)
-                        if (r != null && r.Punkte != null && r.Punkte.Count > 0 &&
-                            r.Punkte.All(p => !double.IsNaN(p.Temperatur) && !double.IsInfinity(p.Temperatur) &&
-                                              !double.IsNaN(p.Wert) && !double.IsInfinity(p.Wert)))
-                            gueltig.Add(r);
-
-                if (gueltig.Count == 0)
-                {
-                    using (var f = Schrift(18f))
-                        Text(g, BerichtTexte.T("Keine Kennlinien vorhanden."), f, SKColors.DimGray,
-                             rc.Left, rc.Top + 20f);
-                    return Png(flaeche);
-                }
-
-                double xMin = gueltig.Min(r => r.Punkte.Min(p => p.Temperatur));
-                double xMax = gueltig.Max(r => r.Punkte.Max(p => p.Temperatur));
-                double yMin = Math.Min(0, gueltig.Min(r => r.Punkte.Min(p => p.Wert)));
-                double yMax = Math.Max(0, gueltig.Max(r => r.Punkte.Max(p => p.Wert)));
-
-                double xSchritt = Stufe(ref xMin, ref xMax);
-                double ySchritt = Stufe(ref yMin, ref yMax);
-
-                // y-Raster und -Beschriftung.
-                using (var raster = Strich(SKColors.Gainsboro, 1f))
-                using (var f = Schrift(15f))
-                    for (double wert = yMin; wert <= yMax + ySchritt / 2; wert += ySchritt)
-                    {
-                        float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
-                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("0.###", DE);
-                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
-                             y - TextHoehe(f) / 2f);
-                    }
-
-                // x-Raster und -Beschriftung.
-                using (var raster = Strich(SKColors.Gainsboro, 1f))
-                using (var f = Schrift(15f))
-                    for (double wert = xMin; wert <= xMax + xSchritt / 2; wert += xSchritt)
-                    {
-                        float x = (float)(rc.Left + (wert - xMin) / (xMax - xMin) * rc.Width);
-                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = wert.ToString("0.###", DE);
-                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                    }
-
-                // Achsen, Achsentitel und - falls die Skala unter null reicht - die Nulllinie.
-                using (var achse = Strich(SKColors.DimGray, 2f))
-                {
-                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
-                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
-                }
-                using (var f = Schrift(15f))
-                {
-                    // 26 px statt der 10 px des Kapitalwert-Verlaufs: Dort steht rechts
-                    // eine einstellige Jahreszahl, hier eine zweistellige Temperatur mit
-                    // Vorzeichen - bei 10 px stiessen Zahl und Titel aneinander.
-                    Text(g, xTitel ?? "", f, SKColors.DimGray, rc.Right + 26f, rc.Bottom + 8f);
-                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
-                }
-                if (yMin < 0)
-                {
-                    float y0 = (float)(rc.Bottom - (0 - yMin) / (yMax - yMin) * rc.Height);
-                    using (var strichel = SKPathEffect.CreateDash(new[] { 6f, 2f }, 0f))
-                    using (var stift = Strich(SKColors.DimGray, 2f))
-                    {
-                        stift.PathEffect = strichel;
-                        g.DrawLine(rc.Left, y0, rc.Right, y0, stift);
-                    }
-                }
-
-                // Die Linien samt Punktmarken. Die Farbe kommt aus C_SERIEN und
-                // wiederholt sich, wenn ein Gerät mehr Vorläufe führt als Farben da sind.
-                for (int i = 0; i < gueltig.Count; i++)
-                {
-                    SKColor farbe = C_SERIEN[i % C_SERIEN.Length];
-                    var punkte = new SKPoint[gueltig[i].Punkte.Count];
-                    for (int t = 0; t < punkte.Length; t++)
-                    {
-                        var p = gueltig[i].Punkte[t];
-                        float x = (float)(rc.Left + (p.Temperatur - xMin) / (xMax - xMin) * rc.Width);
-                        float y = (float)(rc.Bottom - (p.Wert - yMin) / (yMax - yMin) * rc.Height);
-                        punkte[t] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
-                    }
-
-                    using (var stift = Strich(farbe, 3f))
-                    {
-                        stift.StrokeJoin = SKStrokeJoin.Round;
-                        Linienzug(g, punkte, stift);
-                    }
-                    Punktmarken(g, punkte, farbe, marke);
-                }
-
-                Legende(g, gueltig.Select(r => new Segment(
-                            r.Vorlauf.ToString(DE) + "°C", 0, C_SERIEN[gueltig.IndexOf(r) % C_SERIEN.Length]))
-                        .ToList(), 90f, H - 96f, W - 30f);
-                return Png(flaeche);
+                using (var f = Schrift(18f))
+                    Text(z, BerichtTexte.T("Keine Kennlinien vorhanden."), f, Farbrolle.ACHSE,
+                         rc.Left, rc.Top + 20f);
+                return SkiaMaler.Png(z);
             }
+
+            double xMin = gueltig.Min(r => r.Punkte.Min(p => p.Temperatur));
+            double xMax = gueltig.Max(r => r.Punkte.Max(p => p.Temperatur));
+            double yMin = Math.Min(0, gueltig.Min(r => r.Punkte.Min(p => p.Wert)));
+            double yMax = Math.Max(0, gueltig.Max(r => r.Punkte.Max(p => p.Wert)));
+
+            double xSchritt = Stufe(ref xMin, ref xMax);
+            double ySchritt = Stufe(ref yMin, ref yMax);
+
+            var raster = Stift(Farbrolle.RASTER, 1f);
+
+            // y-Raster und -Beschriftung.
+            using (var f = Schrift(15f))
+                for (double wert = yMin; wert <= yMax + ySchritt / 2; wert += ySchritt)
+                {
+                    float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
+                    z.Linie(rc.Left, y, rc.Right, y, raster);
+                    string lab = wert.ToString("0.###", DE);
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
+                         y - TextHoehe(f) / 2f);
+                }
+
+            // x-Raster und -Beschriftung.
+            using (var f = Schrift(15f))
+                for (double wert = xMin; wert <= xMax + xSchritt / 2; wert += xSchritt)
+                {
+                    float x = (float)(rc.Left + (wert - xMin) / (xMax - xMin) * rc.Width);
+                    z.Linie(x, rc.Top, x, rc.Bottom, raster);
+                    string lab = wert.ToString("0.###", DE);
+                    Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                }
+
+            // Achsen, Achsentitel und - falls die Skala unter null reicht - die Nulllinie.
+            Achsenkreuz(z, rc);
+            using (var f = Schrift(15f))
+            {
+                // 26 px statt der 10 px des Kapitalwert-Verlaufs: Dort steht rechts
+                // eine einstellige Jahreszahl, hier eine zweistellige Temperatur mit
+                // Vorzeichen - bei 10 px stiessen Zahl und Titel aneinander.
+                Text(z, xTitel ?? "", f, Farbrolle.ACHSE, rc.Right + 26f, rc.Bottom + 8f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f);
+            }
+            if (yMin < 0)
+            {
+                float y0 = (float)(rc.Bottom - (0 - yMin) / (yMax - yMin) * rc.Height);
+                z.Linie(rc.Left, y0, rc.Right, y0,
+                        Stift(Farbrolle.ACHSE, 2f, new Strichmuster(6f, 2f)));
+            }
+
+            // Die Linien samt Punktmarken. Die Farbe kommt aus den Serienrollen und
+            // wiederholt sich, wenn ein Gerät mehr Vorläufe führt als Farben da sind.
+            for (int i = 0; i < gueltig.Count; i++)
+            {
+                Farbrolle rolle = Serienrolle(i);
+                var punkte = new SKPoint[gueltig[i].Punkte.Count];
+                for (int t = 0; t < punkte.Length; t++)
+                {
+                    var p = gueltig[i].Punkte[t];
+                    float x = (float)(rc.Left + (p.Temperatur - xMin) / (xMax - xMin) * rc.Width);
+                    float y = (float)(rc.Bottom - (p.Wert - yMin) / (yMax - yMin) * rc.Height);
+                    punkte[t] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                }
+
+                Linienzug(z, punkte, Stift(rolle, 3f, null, Strichverbindung.Rund));
+                Punktmarken(z, punkte, rolle, marke);
+            }
+
+            Legende(z, gueltig.Select(r => new Segment(
+                        r.Vorlauf.ToString(DE) + "°C", 0, C_SERIEN[gueltig.IndexOf(r) % C_SERIEN.Length]))
+                    .ToList(), 90f, H - 96f, W - 30f);
+            return SkiaMaler.Png(z);
         }
 
         /// <summary>
         /// Die Punktmarken einer Kennlinie. <c>MarkerSize = 5</c> des Vorläufers bei
         /// einfacher Auflösung sind hier 10 px — dieselbe optische Größe.
         /// </summary>
-        private static void Punktmarken(SKCanvas g, SKPoint[] punkte, SKColor farbe, Kennlinienmarke marke)
+        private static void Punktmarken(IZeichenziel z, SKPoint[] punkte, Farbrolle rolle,
+                                        Kennlinienmarke marke)
         {
             const float R = 5f;
             if (marke == Kennlinienmarke.Kreis)
             {
-                using (var b = Fuellung(farbe))
-                    foreach (SKPoint p in punkte) g.DrawCircle(p, R, b);
+                foreach (SKPoint p in punkte) z.Kreis(p.X, p.Y, R, null, Flaeche(rolle));
                 return;
             }
 
-            using (var stift = Strich(farbe, 2.5f))
-                foreach (SKPoint p in punkte)
-                {
-                    g.DrawLine(p.X - R, p.Y - R, p.X + R, p.Y + R, stift);
-                    g.DrawLine(p.X - R, p.Y + R, p.X + R, p.Y - R, stift);
-                }
+            var stift = Stift(rolle, 2.5f);
+            foreach (SKPoint p in punkte)
+            {
+                z.Linie(p.X - R, p.Y - R, p.X + R, p.Y + R, stift);
+                z.Linie(p.X - R, p.Y + R, p.X + R, p.Y - R, stift);
+            }
         }
+
+        /// <summary>
+        /// Die Rolle der <paramref name="i"/>-ten Variantenreihe (DG-Q7) — die
+        /// ausdrückliche Schreibweise für <see cref="C_SERIEN"/>. Beide Listen tragen
+        /// dieselben acht Hausfarben in derselben Reihenfolge; die Rolle nennt die
+        /// Absicht, wo der Wert sie nur trifft.
+        /// </summary>
+        private static Farbrolle Serienrolle(int i) => SERIENROLLEN[i % SERIENROLLEN.Length];
+
+        private static readonly Farbrolle[] SERIENROLLEN =
+        {
+            Farbrolle.SERIE_1, Farbrolle.SERIE_2, Farbrolle.SERIE_3, Farbrolle.SERIE_4,
+            Farbrolle.SERIE_5, Farbrolle.SERIE_6, Farbrolle.SERIE_7, Farbrolle.SERIE_8
+        };
 
         /// <summary>
         /// Die „schöne" Achsenstufung der Liniendiagramme (5 Rasterlinien), aus
