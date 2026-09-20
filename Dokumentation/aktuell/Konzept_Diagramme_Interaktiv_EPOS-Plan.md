@@ -1,7 +1,8 @@
 # Konzept: Diagramme direkt in der Oberfläche statt als Bild (DG-1)
 
-Stand 20.09.2026 — Konzept liegt vor, Entscheid beim Anwender (Statuszeile #397).
-Prüfstand: [`Proben/SvgProbe/`](../../Proben/SvgProbe/LIESMICH.md).
+Stand 20.09.2026 — entschieden (DG-Q1…Q6, Abschnitt 8); **E0 umgesetzt** (Statuszeile #399),
+E1 frei. Prüfstände: [`Proben/SvgProbe/`](../../Proben/SvgProbe/LIESMICH.md) und die
+Hash-Messlatte in [`Proben/ChartProben/`](../../Proben/ChartProben/LIESMICH.md).
 
 ## 1 Die Frage
 
@@ -244,7 +245,8 @@ PNG für den Bericht und SVG für den Bildschirm aus derselben Layoutlogik. Begr
    ebenso, nur im Haus.
 
 Der heutige Baustein `Diagramm` bleibt bis zum Rollout gültig: **Bildzoom** und **Datenzoom
-über Rundlauf** gelten für jedes Bild, das noch PNG ist; KL-8 und DL-3 laufen zu Ende. Ihr
+über Rundlauf** gelten für jedes Bild, das noch PNG ist; KL-8 ist zu Ende geführt, DL-3 mit
+dem Entscheid DG-Q6 verworfen. Ihr
 Kernanteil (`Achsenfenster`, `Zugeschnitten`, `XAchseFenster`) wird vom Zeichenmodell
 **übernommen** — der Ausschnitt ist der Zustand des Zooms, den auch der Bericht drucken kann.
 Ihr Oberflächenanteil (das `Diagrammbereich`-Feld je Reiter, der sechste Wert im
@@ -256,11 +258,11 @@ Datenzoom bis dahin überall zu haben.
 
 | Etappe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
-| **E0 Vorbereitung** | KL-8 und DL-3 abschließen und mergen (sie fassen `ChartRenderer` und die Hüllen an — E1 zerlegt dieselbe Datei). `ChartProben` bekommt einen Schalter `--ablage <ordner>`, der die 69 PNG schreibt; ihre SHA-256-Hashes sind die **Messlatte** von E1 (Skript im Auftrag, Hashes im Protokoll, keine Bilder im Repository) | ChartProben grün, Hashliste liegt vor | S |
-| **E1 Zeichenmodell hinter dem `ChartRenderer`, ohne Bildänderung** | `Allgemein/Bericht/Zeichnung/`: `Zeichenmodell` (Primitive: Linie, Rechteck, Kreis, Ellipse, Pfad, Text, Gruppe mit Zuschnitt, Strichmuster; Zeichenfläche mit Datenfenster) und `SkiaMaler`. Die 62 Helfer werden auf das Modell umgestellt (`Text`, `Strich`, `Fuellung`, `Linienzug`, `Vieleck`, `Kreissegment`, `Legende`, `YRaster`, `XAchse`, `XAchseFenster`, …), die fünf Skalenrechnungen zu einer `Skala`; die 26 Methoden füllen ein Modell und geben weiterhin `byte[]` zurück (`Png(modell)`). Drei Aufträge: Zeitreihen (10 Methoden mit `Achsenfenster`, Jahresgang, Kostenprofil, Stundenprofil, Kapitalwert, Projektion), Säulen/Stapel/Kuchen/Ring/Balken (8), Kennlinien/Streuwolke/Schnitt/Stückzahl/Optimierungsraster (5) plus Bericht-Sonderfälle | **alle 69 Hashes gleich**, ChartProben grün, `ChartRendererTests` grün, Referenzlauf unnötig (kein Rechenweg) | **L** (3 × M) |
+| **E0 Vorbereitung** — *umgesetzt (#399)* | KL-8 gemergt (DL-3 verworfen, DG-Q6). `ChartProben` hat die Schalter `--ablage <ordner>` und `--hashes <datei>`; die Liste [`Proben/ChartProben/Messlatte_2026-09-20.sha256`](../../Proben/ChartProben/LIESMICH.md) nennt **91 Bilder aus 71 Proben** (auch die Bilder der Gegen- und Versatzproben, die im Bestand nie geschrieben werden) und ist die **Messlatte** von E1. Keine Bilder im Repository | ChartProben grün (71 Proben, 0 Verstöße), Hashliste liegt vor, zweiter Lauf byte-gleich | S |
+| **E1 Zeichenmodell hinter dem `ChartRenderer`, ohne Bildänderung** | `Allgemein/Bericht/Zeichnung/`: `Zeichenmodell` (Primitive: Linie, Rechteck, Kreis, Ellipse, Pfad, Text, Gruppe mit Zuschnitt, Strichmuster; Zeichenfläche mit Datenfenster) und `SkiaMaler`. Die 62 Helfer werden auf das Modell umgestellt (`Text`, `Strich`, `Fuellung`, `Linienzug`, `Vieleck`, `Kreissegment`, `Legende`, `YRaster`, `XAchse`, `XAchseFenster`, …), die fünf Skalenrechnungen zu einer `Skala`; die 26 Methoden füllen ein Modell und geben weiterhin `byte[]` zurück (`Png(modell)`). Drei Aufträge: Zeitreihen (10 Methoden mit `Achsenfenster`, Jahresgang, Kostenprofil, Stundenprofil, Kapitalwert, Projektion), Säulen/Stapel/Kuchen/Ring/Balken (8), Kennlinien/Streuwolke/Schnitt/Stückzahl/Optimierungsraster (5) plus Bericht-Sonderfälle | **alle 91 Hashes gleich** (Text-Diff gegen die Messlatte leer), ChartProben grün, `ChartRendererTests` grün, Referenzlauf unnötig (kein Rechenweg) | **L** (3 × M) |
 | **E2 SVG-Ausgabe und Baustein für EINE Art** | `SvgSchreiber` (Modell → Text; inneres `<svg>` in Datenkoordinaten, `text-anchor`, `vector-effect`), `ChartRenderer.JahresgangModell` (das Modell statt `byte[]`), Baustein `EPOS.UI/Bausteine/DiagrammSvg.razor` (Razor-Elemente aus dem Modell, Legende schaltbar, Zeigerzeile, Bereich → `Achsenfenster` **ohne** Kernaufruf), `epos-diagramm.js` mit viewBox-Modus (dieselben Handler, zusätzlich Nachladen ab dem Vierfachen). Erste Stelle: **Klimadialog** (`KlimadatenHuelle`, `Regionsansicht` führt zwei Modelle; die PNG-Fassung bleibt für den Bericht). `ChartProben` bekommt die SVG-Gegenprobe (byte-gleich, Knotenzahl) | bunit: Pfade, Texte, Legendenschalter, Zeigerzeile, Fall ohne Gaben; SvgProbe-Sollwerte; **Abnahme am Gerät** A-DG-1 (Windows 125 % DPI und iPad: Zoom, Kneifen, Zeigerzeile, Text scharf) | **M** |
 | **E3 Rollout je Diagrammart** | in dieser Reihenfolge: (a) Zeitreihen der Ergebnisreiter (`Jahresverlauf`, `GanglinieNormiert`, `ErzeugerStapel`, `Temperaturverlauf`, `Speicherbetrieb`, `Kostenprofil`, `Stundenprofil`) — ersetzt den Rundlauf-Datenzoom dort; (b) `KapitalwertVerlauf`, `Jahresprojektion`, `Kennlinien`, `Streuwolke`, `Schnittkurve`, `Stueckzahlkurve`; (c) `MonatsSaeulen`, `MonatsStapel`, `StrombilanzMonate`, `BalkenHorizontal`, `Optimierungsraster`; (d) `Kuchen`, `Ring` (ohne Interaktion, nur Schärfe und Text). Je Auftrag eine Gruppe; `ChartBild` bleibt, bis die letzte PNG-Stelle umgestellt ist, dann entfällt der Bildzoom per CSS-Transform | je Gruppe bunit, ChartProben (PNG unverändert), Gerät | 4 × S–M |
-| **E4 Bericht bleibt PNG aus demselben Modell** | nichts Neues — das ist E1. Zwei Wahlpunkte: die PNG-Linien auf **gebündelt** umstellen (heute jeder n-te; das ändert 69 Bilder bewusst, neue Hash-Messlatte, ChartProben bleibt grün, weil sie Struktur prüft); im Bericht den **gezoomten Ausschnitt** drucken, wenn der Anwender ihn gesetzt hat (Achsenfenster ins Modell, Bildauftrag des Berichts) | Hash-Messlatte neu, Sichtprüfung eines Berichts | S |
+| **E4 Bericht bleibt PNG aus demselben Modell** | nichts Neues — das ist E1. Zwei Wahlpunkte: die PNG-Linien auf **gebündelt** umstellen (heute jeder n-te; das ändert die Bilder bewusst, neue Hash-Messlatte mit dem Datum des Tages, ChartProben bleibt grün, weil sie Struktur prüft); im Bericht den **gezoomten Ausschnitt** drucken, wenn der Anwender ihn gesetzt hat (Achsenfenster ins Modell, Bildauftrag des Berichts) | Hash-Messlatte neu, Sichtprüfung eines Berichts | S |
 
 Gesamt: **L** — rund neun Aufträge, keiner größer als M, jeder für sich abnehmbar; der
 Bericht ändert sich bis E4 nicht um ein Byte. Ein iOS-Lauf ist nur für E2 begründet (Abnahme
@@ -269,14 +271,14 @@ Anwenderentscheidung, keine Pflicht).
 
 ## 8 Entscheide des Anwenders
 
-| Nr. | Frage | Empfehlung |
-|---|---|---|
-| **DG-Q1** | Grundsatz: Option B (Zeichenmodell, SVG) angehen — oder beim Bestand A bleiben und nur den Datenzoom (KL-8/DL-3) vollenden? | **B.** A bleibt ein Pixelbild mit Rundlauf; C und D2 kaufen Bedienung mit einer zweiten Wahrheit |
-| **DG-Q2** | Reichweite: alle 26 Diagrammarten (B) oder nur die Zeitreihen (D1 als Endzustand)? | **Alle, in der Reihenfolge von E3**; Kuchen und Ring zuletzt und ohne Bedienung. Ein dauerhafter zweiter Bildweg spart nichts |
-| **DG-Q3** | Bericht: PNG aus dem Modell (E4) — oder SVG auch in Word (OpenXML kennt SVG mit PNG-Rückfall seit Word 2016)? | **PNG bleibt.** SVG in Word ist eine spätere Option ohne Nutzen für den Ausdruck; der PDF-Weg braucht ohnehin das Bild |
-| **DG-Q4** | Interaktion: viewBox-Modus im vorhandenen JS-Modul (Rad, Kneifen, Ziehen, Rechteck, Zeigerstunde) und Blazor nur für Legende, Zeigerzeile und Bereichsmeldung — oder alles über Interop in Blazor? | **JS-Modul für alles, was je Bildaufbau anfällt** (dieselbe Regel, mit der der Bildzoom heute im Browser liegt); Blazor für alles, was Zustand ist |
-| **DG-Q5** | Pfadart: roh bis 8 760 Stützstellen, gebündelt darüber und ab vier Reihen, Nachladen ab dem Vierfachen — oder immer gebündelt (kleiner, Nachladen früher)? | **Regel wie in Abschnitt 5**; sie steht als eine Konstante im Modell und lässt sich am Gerät nachziehen |
-| **DG-Q6** | Zeitpunkt: E0/E1 sofort nach dem Merge von KL-8 und DL-3 beginnen — oder E1 aufschieben, bis DL-3 den Datenzoom überall über den Rundlauf ausgerollt hat? | **Nach dem Merge beginnen**, DL-3 nicht über sein Inventar hinaus in den Rundlauf investieren: Jede weitere Rundlauf-Verdrahtung ist Doppelarbeit gegen E3 |
+| Nr. | Frage | Empfehlung | Entscheid |
+|---|---|---|---|
+| **DG-Q1** | Grundsatz: Option B (Zeichenmodell, SVG) angehen — oder beim Bestand A bleiben und nur den Datenzoom (KL-8/DL-3) vollenden? | **B.** A bleibt ein Pixelbild mit Rundlauf; C und D2 kaufen Bedienung mit einer zweiten Wahrheit | **B — Zeichenmodell, SVG aus C#** (20.09.2026) |
+| **DG-Q2** | Reichweite: alle 26 Diagrammarten (B) oder nur die Zeitreihen (D1 als Endzustand)? | **Alle, in der Reihenfolge von E3**; Kuchen und Ring zuletzt und ohne Bedienung. Ein dauerhafter zweiter Bildweg spart nichts | **alle 26 Diagrammarten, in der Reihenfolge von E3** (20.09.2026) |
+| **DG-Q3** | Bericht: PNG aus dem Modell (E4) — oder SVG auch in Word (OpenXML kennt SVG mit PNG-Rückfall seit Word 2016)? | **PNG bleibt.** SVG in Word ist eine spätere Option ohne Nutzen für den Ausdruck; der PDF-Weg braucht ohnehin das Bild | **Bericht bleibt PNG aus dem Modell** (20.09.2026) |
+| **DG-Q4** | Interaktion: viewBox-Modus im vorhandenen JS-Modul (Rad, Kneifen, Ziehen, Rechteck, Zeigerstunde) und Blazor nur für Legende, Zeigerzeile und Bereichsmeldung — oder alles über Interop in Blazor? | **JS-Modul für alles, was je Bildaufbau anfällt** (dieselbe Regel, mit der der Bildzoom heute im Browser liegt); Blazor für alles, was Zustand ist | **JS-Modul für Interaktion je Bildaufbau, Blazor für Zustand** (20.09.2026) |
+| **DG-Q5** | Pfadart: roh bis 8 760 Stützstellen, gebündelt darüber und ab vier Reihen, Nachladen ab dem Vierfachen — oder immer gebündelt (kleiner, Nachladen früher)? | **Regel wie in Abschnitt 5**; sie steht als eine Konstante im Modell und lässt sich am Gerät nachziehen | **Pfadregel als eine Konstante im Modell** (20.09.2026) |
+| **DG-Q6** | Zeitpunkt: E0/E1 sofort nach dem Merge von KL-8 und DL-3 beginnen — oder E1 aufschieben, bis DL-3 den Datenzoom überall über den Rundlauf ausgerollt hat? | **Nach dem Merge beginnen**, DL-3 nicht über sein Inventar hinaus in den Rundlauf investieren: Jede weitere Rundlauf-Verdrahtung ist Doppelarbeit gegen E3 | **Beginn sofort nach dem Merge von KL-8**; **DL-3 verworfen** — der Rundlauf-Datenzoom der vier weiteren Stellen kommt mit E3 (20.09.2026) |
 
 Kein Wiki-Logbuch-Satz: Bis E2 sieht der Anwender nichts; der Satz entsteht mit der ersten
 umgestellten Maske (Klimadialog).
