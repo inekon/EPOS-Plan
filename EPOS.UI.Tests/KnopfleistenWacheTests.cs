@@ -99,20 +99,6 @@ public sealed class KnopfleistenWacheTests
     /// </summary>
     private static readonly Ausnahme[] AUSNAHMEN =
     {
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Admin/EinstellungenDialog.razor", REGEL_EINE_LEISTE,
-            "DL-2 Nr. 10: die Standardwerte-Leiste steht unmittelbar ueber der "
-            + "SpeichernLeiste. Auftrag DL-2f legt Standardwerte in den Aktionsschlitz."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Photovoltaik/ModulImportDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "DL-2 Nr. 8: \"Auswahl uebernehmen\" ist primaer, OK steht dahinter. "
-            + "Auftrag DL-2e setzt die Primaerfarbe auf Beenden (DL-Q4)."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Import/KatalogImportDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "DL-2 Nr. 9: \"Speichern DB\" ist primaer, OK steht dahinter. Auftrag DL-2e "
-            + "setzt die Primaerfarbe auf Beenden (DL-Q4).")
     };
 
     /// <summary>

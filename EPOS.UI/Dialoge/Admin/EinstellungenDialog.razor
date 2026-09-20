@@ -49,7 +49,7 @@
    selbst), die fuenf Pfadfelder NUR LESEND mit dem Wert aus EinstellungenCtrl,
    und darueber ein Hinweis (ADM_SET_HINT_PFADE_FEST). Die uebrigen Rubriken
    bleiben bedienbar - Web-Adressen, DB-Name und KI-Schalter kann man auf iOS
-   sinnvoll setzen. "Speichern" schreibt sie unveraendert; die fuenf Pfade
+   sinnvoll setzen. "OK" schreibt sie unveraendert; die fuenf Pfade
    gehen als das zurueck, was der Kern vorgegeben hat, auch nach
    "Standardwerte". MIT Waehler (Windows) bleibt alles wie bisher:
    beschreibbar, mit Knopf.
@@ -179,13 +179,25 @@
         </Reiter>
     </div>
 
-    <div class="epos-leiste">
-        <button type="button" class="epos-knopf" @onclick="BeiStandardwerte">@StandardwerteText</button>
-        <span class="epos-leiste-fueller"></span>
-    </div>
+    @* --- Die EINE Fussleiste (DL-2 Nr. 10) --------------------------------
+       Standardwerte · Fueller · Abbrechen · OK (primaer). "Standardwerte" wirkt
+       auf ALLE fuenf Rubriken zugleich - auf den ganzen Dialog also, nicht auf
+       ein Blatt - und steht deshalb im Aktionsschlitz der Fussleiste, links vom
+       Fueller (die Statusspanne der SpeichernLeiste IST der Fueller). Die
+       zweite Leiste darueber ist damit entfallen.
 
-    <SpeichernLeiste OkText="@SpeichernText" AbbrechenText="@AbbrechenText"
-                     Ergebnis="BeiLeiste" />
+       Der Schlussknopf heisst "OK" und nicht mehr "Speichern" (Entscheid DL-Q6
+       vom 20.09.2026): ein Wort fuer einen Weg - er prueft, schreibt und
+       schliesst, wie in jedem anderen Dialog des Hauses. "Standardwerte" setzt
+       weiter nur die Felder zurueck und speichert nicht; das sagt der Hinweis
+       darueber wie bisher. *@
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     Ergebnis="BeiLeiste">
+        <Aktionen>
+            <button type="button" class="epos-knopf"
+                    @onclick="BeiStandardwerte">@StandardwerteText</button>
+        </Aktionen>
+    </SpeichernLeiste>
 
     <Rueckfrage Offen="@_frageOffen" Frage="@FrageStandardwerteText"
                 TitelText="@TitelStandardwerteText" VorgabeNein="true"
@@ -261,7 +273,9 @@
     [Parameter] public string LabelTryRegional { get; set; } = Resource.ADM_SET_LBL_TRY_REGIONAL;
     [Parameter] public string LabelAllgemein { get; set; } = Resource.ADM_SET_LBL_ALLGEMEIN;
     [Parameter] public string DurchsuchenText { get; set; } = Resource.ADM_SET_BTN_DURCHSUCHEN;
-    [Parameter] public string SpeichernText { get; set; } = Resource.ADM_BTN_SPEICHERN;
+    @* DL-Q6 (20.09.2026): Der Schlussknopf heisst "OK" - er prueft, speichert
+       und schliesst. Der Vorlaeufer schrieb "Speichern". *@
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
     [Parameter] public string StandardwerteText { get; set; } = Resource.ADM_SET_BTN_STANDARDWERTE;
     [Parameter] public string GespeichertText { get; set; } = Resource.ADM_SET_MSG_GESPEICHERT;

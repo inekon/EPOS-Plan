@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Linq;
 using Bunit;
 using EPOS.UI.Dialoge.Admin;
 using EPOS.UI.Dienste;
@@ -385,6 +386,44 @@ public class EinstellungenDialogTests : EposBunitContext
     }
 
     // =====================================================================
+    //  DL-2 Nr. 10 — die EINE Fussleiste (Entscheid DL-Q6)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Dialog trägt <b>genau eine</b> Fußleiste, und sie läuft
+    /// <b>Standardwerte · Füller · Abbrechen · OK (primär)</b>. „Standardwerte" wirkt
+    /// auf alle fünf Rubriken zugleich und steht deshalb im Aktionsschlitz der
+    /// <c>SpeichernLeiste</c>, links vom Füller — die zweite Leiste darüber ist
+    /// entfallen (Konzept Knopfleisten der Administrationsdialoge, Nr. 10;
+    /// Anwenderentscheid DL-Q6 vom 20.09.2026: der Schlussknopf heißt „OK").
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_traegt_Standardwerte_Abbrechen_und_OK()
+    {
+        var cut = Zeige();
+
+        var leisten = cut.FindAll(".epos-einstellungen > .epos-leiste");
+        Assert.Single(leisten);
+
+        var fuss = leisten[0];
+        Assert.Equal(
+            new[] { "Standardwerte", "Abbrechen", "OK" },
+            fuss.QuerySelectorAll("button").Select(k => k.TextContent.Trim()).ToArray());
+
+        // Der Fueller ist die Statusspanne der SpeichernLeiste; sie steht HINTER
+        // dem Aktionsschlitz und schiebt Abbrechen und OK nach rechts.
+        Assert.NotNull(fuss.QuerySelector(".epos-status"));
+        Assert.Equal("Standardwerte",
+                     fuss.Children.OfType<AngleSharp.Dom.IElement>()
+                         .TakeWhile(e => !e.ClassList.Contains("epos-status"))
+                         .Last().TextContent.Trim());
+
+        // Genau EIN primaerer Knopf, und er steht zuletzt.
+        var primaer = Assert.Single(fuss.QuerySelectorAll(".epos-knopf--primaer"));
+        Assert.Equal("OK", primaer.TextContent.Trim());
+    }
+
+    // =====================================================================
     //  Speichern und Standardwerte
     // =====================================================================
 
@@ -475,9 +514,10 @@ public class EinstellungenDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// „Standardwerte" fragt mit Vorgabe „Nein" (A-1) und SPEICHERT NICHT — wörtlich
-    /// wie der Vorläufer: „Die Standardwerte wurden geladen. Mit ‚Speichern' werden
-    /// sie übernommen."
+    /// „Standardwerte" fragt mit Vorgabe „Nein" (A-1) und SPEICHERT NICHT; die
+    /// Meldung nennt den Weg, auf dem die geladenen Werte ankommen: „Die
+    /// Standardwerte wurden geladen. Mit ‚OK' werden sie übernommen." (Bis DL-2
+    /// hieß der Schlussknopf „Speichern", und die Meldung nannte ihn so.)
     /// </summary>
     [Fact]
     public void Standardwerte_fragen_laden_aber_speichern_nicht()
@@ -512,7 +552,7 @@ public class EinstellungenDialogTests : EposBunitContext
         Assert.Equal(1, zurueckgesetzt);
         Assert.Equal(0, gespeichert);                            // NICHT gespeichert
         Assert.Equal(@"C:\Vorgabe", cut.Instance.Werte.VdiPfad);
-        Assert.Contains("Speichern", cut.Instance.Meldung);
+        Assert.Contains("OK", cut.Instance.Meldung);
     }
 
     /// <summary>

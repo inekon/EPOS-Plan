@@ -402,9 +402,6 @@
   <data name="IMP_KAT_BTN_DATEI_WP" xml:space="preserve">
     <value>WP aus Datei VDI 3805 einlesen...</value>
   </data>
-  <data name="IMP_KAT_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Speichern DB</value>
-  </data>
   <data name="IMP_KAT_EINH_KW" xml:space="preserve">
     <value>kW</value>
   </data>
@@ -13769,7 +13766,7 @@ Ihre Stunden- und Tageswerte werden mit gelöscht.</value>
     <value>Die Ordner konnten nicht erstellt werden. Bitte die Pfadangaben überprüfen. Fehler: {0}</value>
   </data>
   <data name="ADM_SET_MSG_STANDARDWERTE" xml:space="preserve">
-    <value>Die Standardwerte wurden geladen. Mit „Speichern" werden sie übernommen.</value>
+    <value>Die Standardwerte wurden geladen. Mit „OK" werden sie übernommen.</value>
   </data>
   <data name="ADM_SET_FRAGE_STANDARDWERTE" xml:space="preserve">
     <value>Wirklich alle Einstellungen auf die Werksstandards zurücksetzen?</value>
@@ -20219,6 +20216,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="TRANSFER_PAKET_UNLESBAR_GRUND" xml:space="preserve">
     <value>Paket konnte nicht gelesen werden: {0}</value>
+  </data>
+  <data name="PVIMP_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="IMP_KAT_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
   </data>
   <data name="PEAK_BTN_BEENDEN" xml:space="preserve">
     <value>Beenden</value>

@@ -402,9 +402,6 @@
   <data name="IMP_KAT_BTN_DATEI_WP" xml:space="preserve">
     <value>Read WP from file VDI 3805...</value>
   </data>
-  <data name="IMP_KAT_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Save DB</value>
-  </data>
   <data name="IMP_KAT_EINH_KW" xml:space="preserve">
     <value>kW</value>
   </data>
@@ -13762,7 +13759,7 @@ Its hourly and daily values will be deleted as well.</value>
     <value>The folders could not be created. Please check the path entries. Error: {0}</value>
   </data>
   <data name="ADM_SET_MSG_STANDARDWERTE" xml:space="preserve">
-    <value>The default values have been loaded. Use “Save” to apply them.</value>
+    <value>The default values have been loaded. Use “OK” to apply them.</value>
   </data>
   <data name="ADM_SET_FRAGE_STANDARDWERTE" xml:space="preserve">
     <value>Really reset all settings to the factory defaults?</value>
@@ -20212,6 +20209,12 @@ Do you want to allow this?</value>
   </data>
   <data name="TRANSFER_PAKET_UNLESBAR_GRUND" xml:space="preserve">
     <value>The package could not be read: {0}</value>
+  </data>
+  <data name="PVIMP_BTN_BEENDEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="IMP_KAT_BTN_BEENDEN" xml:space="preserve">
+    <value>Close</value>
   </data>
   <data name="PEAK_BTN_BEENDEN" xml:space="preserve">
     <value>Finish</value>

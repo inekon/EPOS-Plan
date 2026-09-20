@@ -113,6 +113,7 @@
             {
                 KatalogImportQuelle q = quelle;
                 <button type="button" class="@Quellenklasse(q)" disabled="@_laeuft"
+                        aria-pressed="@(q.Schluessel == _quelle ? "true" : "false")"
                         @onclick="() => BeiQuelle(q)">@q.Beschriftung</button>
             }
         </div>
@@ -168,11 +169,18 @@
         <Herleitungszeile Text="@Profil.Hinweis" />
     }
 
+    @* --- Die Fussleiste nach der Hausregel (DL-2 Nr. 9) -------------------
+       Fueller · Auswahl uebernehmen · Beenden (primaer) - woertlich die Leiste
+       des Zwillings ModulImportDialog, bis auf den Ressourcentext hin: Beide
+       Masken uebernehmen dasselbe und heissen deshalb gleich. Der Schlussknopf
+       bestaetigt nichts (geschrieben wird beim Uebernehmen), also "Beenden"
+       (Entscheid DL-Q4 vom 20.09.2026). *@
     <div class="epos-leiste">
         <span class="epos-leiste-fueller"></span>
-        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!UebernehmenErlaubt)"
+        <button type="button" class="epos-knopf" disabled="@(!UebernehmenErlaubt)"
                 @onclick="BeiUebernehmen">@UebernehmenText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@OkText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiSchliessen">@BeendenText</button>
     </div>
 
     @* --- Der Konfliktdialog als Ueberlagerung ---------------------------- *@
@@ -273,8 +281,12 @@
 
     [Parameter] public string? TitelVorgabe { get; set; }
     [Parameter] public string DateiText { get; set; } = Resource.IMP_KAT_BTN_DATEI;
-    [Parameter] public string UebernehmenText { get; set; } = Resource.IMP_KAT_BTN_UEBERNEHMEN;
-    [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
+    @* DL-2 Nr. 9: EIN Wort fuer beide Zwillinge - der Uebernahmeknopf traegt
+       denselben Ressourcenschluessel wie im ModulImportDialog. "Speichern DB"
+       (IMP_KAT_BTN_UEBERNEHMEN) ist damit entfallen; der Schlussknopf heisst
+       "Beenden", weil er nichts bestaetigt. *@
+    [Parameter] public string UebernehmenText { get; set; } = Resource.PVIMP_BTN_UEBERNEHMEN;
+    [Parameter] public string BeendenText { get; set; } = Resource.IMP_KAT_BTN_BEENDEN;
     [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
     [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
     [Parameter] public string GruppeText { get; set; } = Resource.IMP_KAT_GRP_EIGENSCHAFTEN;
@@ -312,9 +324,14 @@
         _ => "Form_Heizkessel_einlesen.btn_Help"
     };
 
-    /// <summary>Die Klasse eines Quellknopfes — der zuletzt benutzte ist hervorgehoben.</summary>
+    /// <summary>
+    /// Die Klasse eines Quellknopfes — der zuletzt benutzte steht eingerastet. Er
+    /// trägt die <b>Umschaltermarke</b> und nicht mehr die Primärfarbe (DL-2,
+    /// Abschnitt 2.1): Die Quellenwahl ist ein Umschalter, der einzige primäre Knopf
+    /// der Maske ist der Schlussknopf der Fußleiste.
+    /// </summary>
     private string Quellenklasse(KatalogImportQuelle q) =>
-        q.Schluessel == _quelle ? "epos-knopf epos-knopf--primaer" : "epos-knopf";
+        q.Schluessel == _quelle ? "epos-knopf epos-knopf--gewaehlt" : "epos-knopf";
 
     private string Dateifilter => Profil.Dateifilter;
 
@@ -376,7 +393,7 @@
 
     /// <summary>
     /// Ob in dieser Sitzung schon etwas geschrieben wurde (ANWENDERENTSCHEID
-    /// W13-E-3, 09.09.2026). Der Dialog bleibt nach „Speichern DB" offen — erst
+    /// W13-E-3, 09.09.2026). Der Dialog bleibt nach „Auswahl übernehmen" offen — erst
     /// beim wirklichen Schliessen (Fussknopf, Esc) muss die Huelle wissen, ob
     /// sie den Aufruferkatalog nachladen soll; <see cref="Geschlossen"/> meldet
     /// deshalb diesen Merker statt fest <c>false</c>.

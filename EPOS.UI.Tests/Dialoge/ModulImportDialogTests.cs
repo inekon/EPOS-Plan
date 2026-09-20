@@ -240,8 +240,16 @@ public class ModulImportDialogTests : EposBunitContext
         => cut.WaitForAssertion(() =>
         {
             Assert.Contains(GEFUNDEN, Statuszeile(cut));
-            Assert.False(cut.Find(".epos-leiste .epos-knopf--primaer").HasAttribute("disabled"));
+            Assert.False(Quellenknopf(cut).HasAttribute("disabled"));
         });
+
+    /// <summary>
+    /// Der eingerastete Quellknopf. Seit DL-2 (Nr. 8) trägt er die Umschaltermarke
+    /// <c>epos-knopf--gewaehlt</c> und nicht mehr <c>epos-knopf--primaer</c> — der
+    /// einzige primäre Knopf der Maske ist der Schlussknopf der Fußleiste.
+    /// </summary>
+    private static IElement Quellenknopf(IRenderedComponent<ModulImportDialog> cut)
+        => cut.Find(".epos-leiste .epos-knopf--gewaehlt");
 
     /// <summary>
     /// Wartet auf den GEZEICHNETEN Stand nach einem Filterschritt: <paramref name="zeilen"/>
@@ -286,7 +294,7 @@ public class ModulImportDialogTests : EposBunitContext
     /// </summary>
     private static void Laden(IRenderedComponent<ModulImportDialog> cut)
     {
-        cut.Find(".epos-leiste .epos-knopf--primaer").Click();
+        Quellenknopf(cut).Click();
         Geladen(cut);
     }
 
@@ -1532,13 +1540,86 @@ public class ModulImportDialogTests : EposBunitContext
         Assert.Contains("kaputt", cut.Markup);
     }
 
-    /// <summary>Der Knopf, der das Fenster schließt, heißt OK - nicht Abbrechen (W13-B-4).</summary>
+    /// <summary>
+    /// Der Knopf, der das Fenster schließt, heißt „Beenden" — nicht „Abbrechen"
+    /// (W13-B-4: er verwirft nichts) und nicht mehr „OK" (DL-2 Nr. 8: er bestätigt
+    /// nichts, geschrieben wird beim Übernehmen).
+    /// </summary>
     [Fact]
-    public void Der_Schliessknopf_heisst_OK()
+    public void Der_Schliessknopf_heisst_Beenden()
     {
         var cut = Bauen(saetze: DreiModule());
         var knoepfe = cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button");
-        Assert.Equal("OK", knoepfe[1].TextContent.Trim());
+        Assert.Equal("Beenden", knoepfe[1].TextContent.Trim());
+    }
+
+    // =====================================================================
+    // DL-2 Nr. 8 — die Fussleiste nach der Hausregel (Entscheid DL-Q4)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Fußleiste läuft <b>Füller · Auswahl übernehmen · Beenden (primär)</b>:
+    /// zwei Knöpfe in dieser Reihenfolge, der Füller davor, und der LETZTE trägt als
+    /// EINZIGER die Primärfarbe (Konzept Knopfleisten der Administrationsdialoge,
+    /// Nr. 8; Anwenderentscheid DL-Q4 vom 20.09.2026).
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_laeuft_Uebernehmen_dann_Beenden()
+    {
+        var cut = Bauen(saetze: DreiModule());
+        IElement fuss = cut.FindAll(".epos-leiste")[1];
+
+        Assert.NotNull(fuss.QuerySelector(".epos-leiste-fueller"));
+
+        var knoepfe = fuss.QuerySelectorAll("button");
+        Assert.Equal(
+            new[] { "✔ Auswahl übernehmen", "Beenden" },
+            knoepfe.Select(k => k.TextContent.Trim()).ToArray());
+
+        Assert.Single(fuss.QuerySelectorAll(".epos-knopf--primaer"));
+        Assert.Contains("epos-knopf--primaer", knoepfe[^1].ClassName);
+    }
+
+    /// <summary>
+    /// Die Quellenwahl ist ein <b>Umschalter</b>, kein zweiter primärer Knopf
+    /// (Konzept, Abschnitt 2.1): Die gewählte Quelle trägt die Umschaltermarke samt
+    /// <c>aria-pressed</c>, und in der ganzen Maske steht genau ein
+    /// <c>epos-knopf--primaer</c> — der Schlussknopf.
+    /// </summary>
+    [Fact]
+    public void Die_Quellenwahl_ist_ein_Umschalter_und_nicht_primaer()
+    {
+        var cut = Bauen(saetze: DreiModule());
+
+        IElement quelle = Quellenknopf(cut);
+        Assert.Equal("true", quelle.GetAttribute("aria-pressed"));
+        Assert.DoesNotContain("epos-knopf--primaer", quelle.ClassName);
+
+        // Genau EINE Quelle steht eingerastet, die uebrigen ausgerastet.
+        var stand = cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button")
+                       .Select(b => b.GetAttribute("aria-pressed")).ToArray();
+        Assert.Single(stand, "true");
+        Assert.All(stand, w => Assert.Contains(w, new[] { "true", "false" }));
+
+        // Und die ganze Maske traegt genau EINEN primaeren Knopf: den Schlussknopf.
+        var primaer = cut.FindAll(".epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// „Beenden" ruft denselben Weg wie das Schließkreuz und meldet, ob geschrieben
+    /// wurde — der Knopf ist gewandert, der Handler ist derselbe geblieben.
+    /// </summary>
+    [Fact]
+    public void Beenden_meldet_geschlossen()
+    {
+        bool? ergebnis = null;
+        var cut = Bauen(saetze: DreiModule(), geschlossen: b => ergebnis = b);
+
+        cut.FindAll(".epos-leiste")[1].QuerySelectorAll("button")[1].Click();
+
+        Assert.False(ergebnis);   // nichts geschrieben
     }
 
     /// <summary>Der Alle-Schalter waehlt alle sichtbaren Zeilen und nimmt sie wieder weg (W13-B-5).</summary>

@@ -1,7 +1,7 @@
 # Konzept: Knopfleisten der Administrationsdialoge nach der Hausregel (DL-2)
 
-**Stand:** Mockups abgenommen, alle sechs Fragen entschieden (Abschnitt 3); die Schritte 0
-bis 3 sowie 6 bis 9 der Umsetzungsreihenfolge sind umgesetzt, frei sind die Schritte 4 und 5.
+**Stand:** Mockups abgenommen, alle sechs Fragen entschieden (Abschnitt 3); welcher Schritt
+umgesetzt ist, steht in der Tabelle der Umsetzungsreihenfolge (Abschnitt 4).
 **Anlass:** Anwenderentscheid 19.09.2026 — „Prüfe alle Dialoge [des Administrationsmenüs] auf
 Überlappung und Übersichtlichkeit/Anordnung Buttons." Entscheid: alle abweichenden Dialoge an die
 Hausregel angleichen, je Dialog ein Mockup zur Abnahme; umgebaut wird erst danach. Die Überlappung
@@ -107,8 +107,8 @@ abgenommen, alle Schritte sind damit frei.
 | 1 | **umgesetzt (#383)** — GebaeudetypDialog (2): Typ speichern · Füller · Typ hinzufügen · Typ löschen · Beenden (primär); „OK" heißt „Beenden", Esc und ✕ melden weiter `true`; Speichern bleibt hart gesperrt, weil die Herleitungszeile den Grund schon nennt (A‑7) | S | — |
 | 2 | **umgesetzt (#383)** — WaermepumpeStammDialog (4): Speichern · Kennliniendaten… · Füller · Neu · Löschen · Beenden; der Knopf trägt den kurzen Text, die Überlagerung den vollen (`TitelKenndatenText`) | S | — |
 | 3 | **umgesetzt (#383)** — BedarfAdminDialog (3): Grafik… · Typ ändern… · Füller · Neu… · Ändern… · Löschen · Beenden; die zweite Leiste entfällt, Esc und ✕ schließen wie Beenden | S | — |
-| 4 | KatalogImportDialog (9) und ModulImportDialog (8) in einem Auftrag — ein Knopftext, zwei Wirte | S | DL-Q4 |
-| 5 | EinstellungenDialog (10) | S | Schritt 0, DL-Q6 |
+| 4 | **umgesetzt (#384)** — KatalogImportDialog (9) und ModulImportDialog (8) in einem Auftrag: beide Füße laufen Füller · Auswahl übernehmen · Beenden (primär), beide Übernahmeknöpfe tragen denselben Ressourcentext (`PVIMP_BTN_UEBERNEHMEN`; „Speichern DB" ist entfallen), und die Quellenwahl beider Masken ist als Umschalter gezeichnet (`epos-knopf--gewaehlt`, `aria-pressed`) statt als primärer Knopf | S | DL-Q4 |
+| 5 | **umgesetzt (#384)** — EinstellungenDialog (10): eine `SpeichernLeiste` mit „Standardwerte" im Aktionsschlitz, Schlussknopf „OK" | S | Schritt 0, DL-Q6 |
 | 6 | **umgesetzt (#385)** — PeakShavingDialog (5): „Berechnen" bleibt im Blatt ohne Primärfarbe, Fuß CSV-Export · In Variante übernehmen · Füller · **Beenden** (primär, `PEAK_BTN_BEENDEN`); Handler, Esc und ✕ unverändert, Ausnahme in `AUSNAHMEN` gestrichen | S | DL-Q2 |
 | 7 | **umgesetzt (#385)** — GebaeudeDialog (1), beide Betriebsarten: Verwaltung Katalogspalte Neu… · Ändern… · Löschen · Gebäudetyp in DB ändern…, Fuß Füller · **Beenden** (primär, `GEB_BTN_BEENDEN`, meldet `true`); Projekt Fuß Ändern · Simulation… · Gebäudetyp in DB ändern… · Füller · Abbrechen · OK als `SpeichernLeiste` mit `Aktionen`, Detailblock ohne Knöpfe | M | Schritt 0, DL-Q1 |
 | 8 | **umgesetzt (#386)** — KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
