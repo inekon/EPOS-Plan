@@ -91,15 +91,20 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 1 Satz 3):
+       Alle DREI Speicherwege schreiben sofort und lassen die Maske stehen - es gibt
+       keinen Arbeitsstand und damit kein Abbrechen. Sie stehen links vom Fueller,
+       der primaere Schlussknopf "Beenden" steht zuletzt. *@
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
                 @onclick="BeiUeberschreiben">@BtnUeberschreibenText</button>
         <button type="button" class="epos-knopf" disabled="@(Modus != KatalogModus.Bearbeiten)"
                 @onclick="() => _namensfrage = true">@BtnSpeichernUnterText</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer"
+        <button type="button" class="epos-knopf"
                 disabled="@(Modus != KatalogModus.Neu)"
                 @onclick="BeiSpeichern">@BtnSpeichernText</button>
-        <button type="button" class="epos-knopf"
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Schliessen">@BtnBeendenText</button>
     </div>
 
