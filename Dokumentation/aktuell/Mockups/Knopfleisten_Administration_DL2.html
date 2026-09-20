@@ -124,6 +124,8 @@ table.uebersicht a:hover { text-decoration: underline; }
 .marke--s { border-color: var(--epos-erfolg-rahmen); background: var(--epos-erfolg-flaeche); color: var(--epos-erfolg-text); }
 .marke--m { border-color: var(--epos-warn-rahmen); background: var(--epos-warn-flaeche); color: var(--epos-warn-text); }
 .marke--frage { border-color: var(--epos-quelle-text); background: var(--epos-karte-flaeche-hover); color: var(--epos-quelle-text); }
+/* entschieden: die Frage ist beantwortet, der Vorschlag daneben ist der Entscheid */
+.marke--entschieden { border-color: var(--epos-erfolg-rahmen); background: var(--epos-erfolg-flaeche); color: var(--epos-erfolg-text); white-space: normal; }
 
 /* ================= Legende ============================================== */
 .mockup-legende {
@@ -237,9 +239,11 @@ section.komponente .pfad code { font-size: 12px; }
 <header class="mockup-kopf">
   <h1>Knopfleisten der Administrationsdialoge &ndash; Mockup zum Anwenderentscheid vom 19.09.2026 (DL&#8209;2)</h1>
   <p>Zehn Komponenten hinter siebzehn Men&uuml;punkten weichen von der Hausregel ab. Je Komponente steht
-     unten die Leiste, wie sie heute ist, und der Vorschlag &ndash; als Schema, nur die Kn&ouml;pfe. Abgenommen
-     wird je Abschnitt; erst danach wird umgebaut. Begr&uuml;ndung, Risiken und Reihenfolge stehen im Konzept
-     <code>Konzept_Knopfleisten_Administration_EPOS-Plan.md</code>.</p>
+     unten die Leiste, wie sie heute ist, und der Vorschlag &ndash; als Schema, nur die Kn&ouml;pfe. Begr&uuml;ndung,
+     Risiken und Reihenfolge stehen im Konzept <code>Konzept_Knopfleisten_Administration_EPOS-Plan.md</code>.</p>
+  <p><b>Abgenommen am 20.09.2026:</b> Die Mockups sind angenommen und alle sechs Fragen entschieden &ndash; nach
+     Empfehlung, mit einer Abweichung: <b>DL&#8209;Q1</b> beh&auml;lt &bdquo;Geb&auml;udetyp in DB &auml;ndern&hellip;&ldquo; an
+     BEIDEN Stellen. Die Entscheide stehen in der &Uuml;bersicht und bei jeder Frage.</p>
 </header>
 
 <main class="mockup-inhalt">
@@ -256,16 +260,16 @@ section.komponente .pfad code { font-size: 12px; }
 <table class="uebersicht">
   <thead><tr><th>#</th><th>Komponente (Men&uuml;punkte)</th><th>Vorschlag</th><th>Aufwand</th><th>Entscheid</th></tr></thead>
   <tbody>
-    <tr><td class="nr">1</td><td><a href="#k1">Geb&auml;ude</a> (Geb&auml;ude &rarr; Bearbeiten)</td><td>Verwaltung: F&uuml;ller &middot; Beenden; Projekt: &Auml;ndern&hellip; &middot; Simulation&hellip; &middot; F&uuml;ller &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--m">M</span></td><td><span class="marke marke--frage">DL-Q1</span></td></tr>
+    <tr><td class="nr">1</td><td><a href="#k1">Geb&auml;ude</a> (Geb&auml;ude &rarr; Bearbeiten)</td><td>Verwaltung: Katalogspalte Neu&hellip; &middot; &Auml;ndern&hellip; &middot; L&ouml;schen &middot; Geb&auml;udetyp in DB &auml;ndern&hellip;, Fu&szlig; F&uuml;ller &middot; Beenden; Projekt: &Auml;ndern&hellip; &middot; Simulation&hellip; &middot; Geb&auml;udetyp in DB &auml;ndern&hellip; &middot; F&uuml;ller &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--m">M</span></td><td><span class="marke marke--entschieden">DL-Q1: beide Stellen (20.09.2026)</span></td></tr>
     <tr><td class="nr">2</td><td><a href="#k2">Geb&auml;udetypen</a></td><td>Typ speichern &middot; F&uuml;ller &middot; Typ hinzuf&uuml;gen &middot; Typ l&ouml;schen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td>&ndash;</td></tr>
     <tr><td class="nr">3</td><td><a href="#k3">Bedarfskataloge</a> (Brauchwasser, Prozessw&auml;rme, Stromverbraucher)</td><td>Grafik&hellip; &middot; Typ &auml;ndern&hellip; &middot; F&uuml;ller &middot; Neu&hellip; &middot; &Auml;ndern&hellip; &middot; L&ouml;schen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td>&ndash;</td></tr>
     <tr><td class="nr">4</td><td><a href="#k4">W&auml;rmepumpen</a></td><td>Speichern &middot; Kennliniendaten&hellip; &middot; F&uuml;ller &middot; Neu &middot; L&ouml;schen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td>&ndash;</td></tr>
-    <tr><td class="nr">5</td><td><a href="#k5">Lastspitzenkappung</a></td><td>Berechnen bleibt im Blatt (ohne Prim&auml;rfarbe); CSV-Export &middot; In Variante &uuml;bernehmen &middot; F&uuml;ller &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q2</span></td></tr>
-    <tr><td class="nr">6</td><td><a href="#k6">Kostenverwaltung</a> (Kosten &rarr; Kostenvorlagen)</td><td>Reiterleiste bleibt; Fu&szlig; Status &middot; Speichern &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q3</span></td></tr>
-    <tr><td class="nr">7</td><td><a href="#k7">Energietr&auml;ger</a> (Kosten &rarr; Energietr&auml;ger)</td><td>Listenleiste bleibt; &bdquo;Stammwerte speichern&ldquo; entf&auml;llt; Fu&szlig; Status &middot; Speichern &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--m">M</span></td><td><span class="marke marke--frage">DL-Q3, DL-Q5</span></td></tr>
-    <tr><td class="nr">8</td><td><a href="#k8">PV-Modul- und Wechselrichter-Import</a></td><td>F&uuml;ller &middot; Auswahl &uuml;bernehmen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q4</span></td></tr>
-    <tr><td class="nr">9</td><td><a href="#k9">Katalogimport</a> (Heizkessel, W&auml;rmepumpen, Solarthermie, Pufferspeicher, Stromspeicher)</td><td>F&uuml;ller &middot; Auswahl &uuml;bernehmen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q4</span></td></tr>
-    <tr><td class="nr">10</td><td><a href="#k10">Einstellungen</a></td><td>Standardwerte &middot; F&uuml;ller &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--frage">DL-Q6</span></td></tr>
+    <tr><td class="nr">5</td><td><a href="#k5">Lastspitzenkappung</a></td><td>Berechnen bleibt im Blatt (ohne Prim&auml;rfarbe); CSV-Export &middot; In Variante &uuml;bernehmen &middot; F&uuml;ller &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--entschieden">DL-Q2: (a) Rechenmaske (20.09.2026)</span></td></tr>
+    <tr><td class="nr">6</td><td><a href="#k6">Kostenverwaltung</a> (Kosten &rarr; Kostenvorlagen)</td><td>Reiterleiste bleibt; Fu&szlig; Status &middot; Speichern &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--entschieden">DL-Q3: (a) Reihenfolge (20.09.2026)</span></td></tr>
+    <tr><td class="nr">7</td><td><a href="#k7">Energietr&auml;ger</a> (Kosten &rarr; Energietr&auml;ger)</td><td>Listenleiste bleibt; &bdquo;Stammwerte speichern&ldquo; entf&auml;llt; Fu&szlig; Status &middot; Speichern &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--m">M</span></td><td><span class="marke marke--entschieden">DL-Q3: (a), DL-Q5: ja (20.09.2026)</span></td></tr>
+    <tr><td class="nr">8</td><td><a href="#k8">PV-Modul- und Wechselrichter-Import</a></td><td>F&uuml;ller &middot; Auswahl &uuml;bernehmen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--entschieden">DL-Q4: Hausregel (20.09.2026)</span></td></tr>
+    <tr><td class="nr">9</td><td><a href="#k9">Katalogimport</a> (Heizkessel, W&auml;rmepumpen, Solarthermie, Pufferspeicher, Stromspeicher)</td><td>F&uuml;ller &middot; Auswahl &uuml;bernehmen &middot; Beenden</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--entschieden">DL-Q4: Hausregel (20.09.2026)</span></td></tr>
+    <tr><td class="nr">10</td><td><a href="#k10">Einstellungen</a></td><td>Standardwerte &middot; F&uuml;ller &middot; Abbrechen &middot; OK</td><td class="aufwand"><span class="marke marke--s">S</span></td><td><span class="marke marke--entschieden">DL-Q6: &bdquo;OK&ldquo; (20.09.2026)</span></td></tr>
   </tbody>
 </table>
 </div>
@@ -320,7 +324,7 @@ section.komponente .pfad code { font-size: 12px; }
     </div>
 
     <div class="tafel tafel--vorschlag">
-      <h3>Vorschlag &ndash; Katalogspalte beh&auml;lt ihre Listenleiste, eine Fu&szlig;leiste</h3>
+      <h3>Vorschlag &ndash; Katalogspalte beh&auml;lt ihre Listenleiste und den Typknopf, eine Fu&szlig;leiste</h3>
       <div class="spalten">
         <div class="spalte">
           <p class="ort"><b>Projektliste</b> (nur im Projekt)</p>
@@ -333,7 +337,7 @@ section.komponente .pfad code { font-size: 12px; }
             <span class="epos-knopf">Neu&hellip;</span>
             <span class="epos-knopf">&Auml;ndern&hellip;</span>
             <span class="epos-knopf">L&ouml;schen</span>
-            <span class="epos-knopf epos-knopf--blatt" title="DL-Q1">Geb&auml;udetyp&hellip; <small>(DL-Q1)</small></span>
+            <span class="epos-knopf">Geb&auml;udetyp in DB &auml;ndern&hellip;</span>
           </div>
         </div>
       </div>
@@ -348,6 +352,7 @@ section.komponente .pfad code { font-size: 12px; }
       <div class="epos-leiste epos-leiste--fuss">
         <span class="epos-knopf epos-knopf--neu">&Auml;ndern&hellip;</span>
         <span class="epos-knopf epos-knopf--neu">Simulation&hellip;</span>
+        <span class="epos-knopf epos-knopf--neu">Geb&auml;udetyp in DB &auml;ndern&hellip;</span>
         <span class="epos-status">Status</span>
         <span class="epos-knopf">Abbrechen</span>
         <span class="epos-knopf epos-knopf--primaer">OK</span>
@@ -360,11 +365,13 @@ section.komponente .pfad code { font-size: 12px; }
        nahmen nichts zur&uuml;ck und waren eine Behauptung; das Katalogmuster sagt mit &bdquo;Beenden&ldquo; die Wahrheit.
        Im Projekt f&uuml;hrt der Dialog einen Arbeitsstand (die Projektliste), also bleibt OK/Abbrechen, und die zwei Kn&ouml;pfe
        des Detailblocks wandern in die eine Fu&szlig;leiste.</p>
-    <p><b>Risiko.</b> Zwei Kn&ouml;pfe stehen an neuer Stelle; die Katalogspalte beh&auml;lt ihre Leiste, weil sie zur
+    <p><b>Risiko.</b> Drei Kn&ouml;pfe stehen an neuer Stelle; die Katalogspalte beh&auml;lt ihre Leiste, weil sie zur
        Liste geh&ouml;rt (wie die Regionsknöpfe im Klimadatendialog). Kein Arbeitsstand nachzur&uuml;sten &ndash; der Katalog
        bleibt Katalog. <b>Aufwand M</b> (zwei Betriebsarten, Aktionsschlitz der <code>SpeichernLeiste</code>).</p>
     <p class="frage"><b>DL-Q1:</b> &bdquo;Geb&auml;udetyp in DB &auml;ndern&hellip;&ldquo; hat in der Verwaltung einen Zwilling im Men&uuml;
-       (Geb&auml;ude &rarr; Geb&auml;udetypen). <b>Empfehlung:</b> nur im Projektdialog behalten, in der Verwaltung streichen.</p>
+       (Geb&auml;ude &rarr; Geb&auml;udetypen). <b>Empfehlung:</b> nur im Projektdialog behalten, in der Verwaltung streichen.
+       <b>Entscheid 20.09.2026:</b> Der Knopf bleibt an BEIDEN Stellen &ndash; in der Verwaltung in der Listenleiste der
+       Katalogspalte, im Projekt in der Fu&szlig;leiste.</p>
     <p class="logbuch"><b>Logbuch:</b> Die Geb&auml;udeverwaltung schlie&szlig;t mit &bdquo;Beenden&ldquo;; im Projektdialog stehen
        &bdquo;&Auml;ndern&ldquo; und &bdquo;Simulation&ldquo; in der Schlussleiste.</p>
   </div>
@@ -566,7 +573,9 @@ section.komponente .pfad code { font-size: 12px; }
     <p><b>Risiko (a).</b> Die Hervorhebung wandert vom Rechenknopf zum Beenden; der Knopf zur minimalen Schwelle bleibt
        beim Feld. &bdquo;Schlie&szlig;en&ldquo; hei&szlig;t wie &uuml;berall &bdquo;Beenden&ldquo;. Kein Arbeitsstand nachzur&uuml;sten.
        <b>Aufwand S</b> (Variante b: M).</p>
-    <p class="frage"><b>DL-Q2:</b> Rechenmaske (a) oder OK-Dialog (b)? <b>Empfehlung (a).</b></p>
+    <p class="frage"><b>DL-Q2:</b> Rechenmaske (a) oder OK-Dialog (b)? <b>Empfehlung (a).</b>
+       <b>Entscheid 20.09.2026:</b> (a) &ndash; Rechenmaske, &bdquo;Berechnen&ldquo; bleibt ohne Prim&auml;rfarbe im Blatt,
+       &bdquo;Beenden&ldquo; ist der prim&auml;re Schlussknopf.</p>
     <p class="logbuch"><b>Logbuch:</b> Die Lastspitzenkappung tr&auml;gt einen Beenden-Knopf; &bdquo;Berechnen&ldquo; steht ohne
        Hervorhebung im Blatt.</p>
   </div>
@@ -627,7 +636,9 @@ section.komponente .pfad code { font-size: 12px; }
        Kurztext des Knopfes sagt das. Ein voller Arbeitsstand w&auml;re ein Umbau der 1 336-Zeilen-H&uuml;lle.
        <b>Aufwand S</b> (Variante b: L).</p>
     <p class="frage"><b>DL-Q3:</b> Reihenfolge jetzt (a) oder voller Arbeitsstand (b)? <b>Empfehlung (a)</b> f&uuml;r DL-2,
-       (b) als eigenes Konzept vormerken.</p>
+       (b) als eigenes Konzept vormerken.
+       <b>Entscheid 20.09.2026:</b> (a) &ndash; Reihenfolge nach Hausregel, die Zeilenaktionen schreiben weiter sofort;
+       (b) bleibt als eigenes Konzept vorgemerkt.</p>
     <p class="logbuch"><b>Logbuch:</b> Die Kostenverwaltung ordnet ihre Schlussleiste: Speichern, Abbrechen, OK.</p>
   </div>
 </section>
@@ -705,7 +716,9 @@ section.komponente .pfad code { font-size: 12px; }
        den Listeneintrag nach (das tut sie heute schon). Neu, Variante, L&ouml;schen und die &Uuml;bernahme schreiben weiter
        sofort &ndash; Abbrechen verwirft die ungespeicherte Karte (DL-Q3). <b>Aufwand M.</b></p>
     <p class="frage"><b>DL-Q5:</b> &bdquo;Stammwerte speichern&ldquo; in Speichern/OK aufgehen lassen? <b>Empfehlung ja.</b>
-       &nbsp;<b>DL-Q3</b> wie bei 6.</p>
+       &nbsp;<b>DL-Q3</b> wie bei 6.
+       <b>Entscheid 20.09.2026:</b> ja &ndash; der eigene Knopf entf&auml;llt, Speichern/OK schreiben Bezeichnung und Gruppe
+       mit; <b>DL-Q3</b> (a) wie bei 6.</p>
     <p class="logbuch"><b>Logbuch:</b> Die Energietr&auml;gerverwaltung speichert Bezeichnung und Gruppe mit
        &bdquo;Speichern&ldquo;; der eigene Knopf entf&auml;llt.</p>
   </div>
@@ -763,7 +776,9 @@ section.komponente .pfad code { font-size: 12px; }
        Zeile gew&auml;hlt ist, und der Doppelklick &uuml;bernimmt weiter eine Zeile sofort. Nichts f&auml;llt weg.
        <b>Aufwand S.</b></p>
     <p class="frage"><b>DL-Q4:</b> Prim&auml;rfarbe auf Beenden (Hausregel) oder auf &Uuml;bernehmen (heute)?
-       <b>Empfehlung Hausregel.</b></p>
+       <b>Empfehlung Hausregel.</b>
+       <b>Entscheid 20.09.2026:</b> Hausregel &ndash; &bdquo;Beenden&ldquo; tr&auml;gt die Prim&auml;rfarbe,
+       &bdquo;Auswahl &uuml;bernehmen&ldquo; steht davor und ist gesperrt, bis eine Zeile gew&auml;hlt ist.</p>
     <p class="logbuch"><b>Logbuch:</b> PV-Modul- und Wechselrichter-Import schlie&szlig;en mit &bdquo;Beenden&ldquo;.</p>
   </div>
 </section>
@@ -803,7 +818,8 @@ section.komponente .pfad code { font-size: 12px; }
        &uuml;bernehmen&ldquo; meinen dasselbe und hei&szlig;en k&uuml;nftig gleich. Der Schlussknopf best&auml;tigt nichts, also
        &bdquo;Beenden&ldquo;.</p>
     <p><b>Risiko.</b> Wie 8, dazu ein neuer Knopftext in beiden Sprachen. <b>Aufwand S</b> &ndash; ein Auftrag mit 8.</p>
-    <p class="frage"><b>DL-Q4</b> wie bei 8.</p>
+    <p class="frage"><b>DL-Q4</b> wie bei 8. <b>Entscheid 20.09.2026:</b> Hausregel &ndash; &bdquo;Beenden&ldquo; tr&auml;gt die
+       Prim&auml;rfarbe, der &Uuml;bernahmeknopf hei&szlig;t in beiden Zwillingen &bdquo;Auswahl &uuml;bernehmen&ldquo;.</p>
     <p class="logbuch"><b>Logbuch:</b> Die f&uuml;nf Katalogimporte &uuml;bernehmen mit &bdquo;Auswahl &uuml;bernehmen&ldquo; und
        schlie&szlig;en mit &bdquo;Beenden&ldquo;.</p>
   </div>
@@ -850,7 +866,8 @@ section.komponente .pfad code { font-size: 12px; }
     <p><b>Risiko.</b> Standardwerte setzt weiter nur die Felder zur&uuml;ck und speichert nicht; die Statuszeile sagt es
        wie heute. Der Dialog f&uuml;hrt bereits einen Arbeitsstand. <b>Aufwand S.</b></p>
     <p class="frage"><b>DL-Q6:</b> Der OK-Knopf hei&szlig;t &bdquo;Speichern&ldquo; (heute) oder &bdquo;OK&ldquo; (Hausregel)?
-       <b>Empfehlung &bdquo;OK&ldquo;</b> &ndash; ein Wort f&uuml;r einen Weg.</p>
+       <b>Empfehlung &bdquo;OK&ldquo;</b> &ndash; ein Wort f&uuml;r einen Weg.
+       <b>Entscheid 20.09.2026:</b> &bdquo;OK&ldquo;.</p>
     <p class="logbuch"><b>Logbuch:</b> Der Standardwerte-Knopf der Einstellungen steht in der Schlussleiste.</p>
   </div>
 </section>
