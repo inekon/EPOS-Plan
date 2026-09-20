@@ -125,6 +125,42 @@ namespace WindowsFormsApplication1.Zeichnung
     }
 
     /// <summary>
+    /// Eine Schrift, die BEIDES kann: vermessen und in einen Befehl gehen.
+    ///
+    /// <para><b>Warum es diesen Typ gibt.</b> Die Layouts des Berichts sind
+    /// metrikgetrieben — 46 Stellen setzen einen Text rechtsbündig oder mittig, indem
+    /// sie ihn vorher messen. Das Modell trägt dagegen nur fertige Koordinaten und
+    /// den Schriftsatz. Ein <see cref="Schriftmass"/> hält beide Seiten zusammen:
+    /// <see cref="MeasureText"/> für das Layout, <see cref="Satz"/> für den Befehl.
+    /// So bleibt die Textvermessung eine Kern-Funktion, und der Ausgabeweg misst
+    /// nichts nach.</para>
+    /// </summary>
+    public sealed class Schriftmass : IDisposable
+    {
+        public Schriftmass(Schrift satz)
+        {
+            Satz = satz;
+            Font = Schriftkette.Erzeuge(satz);
+        }
+
+        /// <summary>Der Schriftsatz, wie er in den Textbefehl geht.</summary>
+        public Schrift Satz { get; }
+
+        /// <summary>Die Skia-Schrift der Vermessung.</summary>
+        public SKFont Font { get; }
+
+        /// <summary>Die Breite des Textes [px] — der Ersatz für <c>MeasureString</c>.</summary>
+        public float MeasureText(string text) => Font.MeasureText(text ?? "");
+
+        /// <summary>Die Zeilenhöhe [px].</summary>
+        public float Hoehe => Schriftkette.Zeilenhoehe(Font);
+
+        public SKFontMetrics Metrics => Font.Metrics;
+
+        public void Dispose() => Font.Dispose();
+    }
+
+    /// <summary>
     /// Malt ein <see cref="Zeichenmodell"/> mit SkiaSharp — Befehl für Befehl, in
     /// Zeichenreihenfolge, mit GENAU derselben Paint-Belegung, die der
     /// <c>ChartRenderer</c> vor der Etappe E1 unmittelbar gesetzt hat. Deshalb
