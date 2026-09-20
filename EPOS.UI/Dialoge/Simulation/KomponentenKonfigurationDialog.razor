@@ -308,7 +308,18 @@
         BhkwBetriebsartSetzen = w => BetriebsartGesetzt(w),
         BhkwLeistungsgrenzeLesen = () => Werte.UntersteLeistungsgrenze,
         BhkwLeistungsgrenzeSetzen = w => LeistungsgrenzeGesetzt(w),
-        AnlageLesen = () => Anlage
+        AnlageLesen = () => Anlage,
+
+        // KI-F1b: die drei Klapplisten der Maske. Ihre Eintraege stehen dort, wo auch
+        // die Maske sie herholt - die zwei festen Listen im Dialog bzw. im Baustein,
+        // der Traegerkatalog in der Huelle.
+        BhkwBetriebsartEintraege =
+            () => KiMaskenanmeldung.Eintraege(BETRIEBSARTEN, b => b.Id, b => b.Text),
+        BetriebsartEintraege =
+            () => KiMaskenanmeldung.Eintraege(WaermepumpeKonfiguration.BETRIEBSARTEN,
+                                              s => s, s => s),
+        EnergietraegerEintraege =
+            () => KiMaskenanmeldung.Eintraege(Traegerkatalog, e => e.Id, e => e.Name)
     };
 
     /// <summary>

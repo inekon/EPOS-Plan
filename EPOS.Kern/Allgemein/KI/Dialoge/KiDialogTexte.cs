@@ -666,6 +666,23 @@
         internal static string PspvEntladeprioName => MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET;
         internal static string PspvEntladeprioErl => MyResource.Resource.KI_DLG_PSPV_ENTLADEPRIO_ERL;
 
+        // Die NUTZUNG ist auf der Maske EINE Mehrfachwahl; im Katalog sind es drei
+        // Wahrheitswerte, denn ein Katalogfeld traegt EINEN Wert. Ihre Anzeigenamen
+        // sind die Kanalnamen des Hauses - dieselben, die die Mehrfachauswahl zeigt.
+        internal static string PspvNutzungHeizungName => MyResource.Resource.KANAL_HEIZUNG_ANZEIGE;
+        internal static string PspvNutzungHeizungErl => MyResource.Resource.KI_DLG_PSPV_NUTZUNG_HEIZUNG_ERL;
+        internal static string PspvNutzungBwName => MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE;
+        internal static string PspvNutzungBwErl => MyResource.Resource.KI_DLG_PSPV_NUTZUNG_BW_ERL;
+        internal static string PspvNutzungProzessName => MyResource.Resource.KANAL_PROZESS_ANZEIGE;
+        internal static string PspvNutzungProzessErl => MyResource.Resource.KI_DLG_PSPV_NUTZUNG_PROZESS_ERL;
+
+        internal static string PspvEntnahmeHeizungName => MyResource.Resource.PSP_LABEL_ENTNAHME_HEIZUNG;
+        internal static string PspvEntnahmeHeizungErl => MyResource.Resource.KI_DLG_PSPV_ENTNAHME_HEIZUNG_ERL;
+        internal static string PspvEntnahmeBwName => MyResource.Resource.PSP_LABEL_ENTNAHME_BW;
+        internal static string PspvEntnahmeBwErl => MyResource.Resource.KI_DLG_PSPV_ENTNAHME_BW_ERL;
+        internal static string PspvEntnahmeProzessName => MyResource.Resource.PSP_LABEL_ENTNAHME_PROZESS;
+        internal static string PspvEntnahmeProzessErl => MyResource.Resource.KI_DLG_PSPV_ENTNAHME_PROZESS_ERL;
+
         // ================= Waermequelle Erdreich und Pufferspeicher (Welle KI-F2)
 
         /// <summary>Die neunte Maske (Welle KI-F2): die Waermequelle Erdreich.</summary>
@@ -688,6 +705,8 @@
         internal static string QerdSpreizungErl => MyResource.Resource.KI_DLG_QERD_SPREIZUNG_ERL;
         internal static string QerdKlimazoneName => MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE;
         internal static string QerdKlimazoneErl => MyResource.Resource.KI_DLG_QERD_KLIMAZONE_ERL;
+        internal static string QerdBodentypName => MyResource.Resource.SIMQ_ERDREICH_BODENTYP;
+        internal static string QerdBodentypErl => MyResource.Resource.KI_DLG_QERD_BODENTYP_ERL;
 
         internal static string QpufTemperaturName => MyResource.Resource.SIMQ_PUFFER_QUELLTEMPERATUR;
         internal static string QpufTemperaturErl => MyResource.Resource.KI_DLG_QPUF_TEMPERATUR_ERL;
@@ -705,6 +724,8 @@
         internal static string QpufRuecklaufErl => MyResource.Resource.KI_DLG_QPUF_RUECKLAUF_ERL;
         internal static string QpufAnschlusshoeheName => MyResource.Resource.SIMQ_PUFFER_ANSCHLUSSHOEHE;
         internal static string QpufAnschlusshoeheErl => MyResource.Resource.KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL;
+        internal static string QpufPufferName => MyResource.Resource.SIMQ_PUFFER_KOPF;
+        internal static string QpufPufferErl => MyResource.Resource.KI_DLG_QPUF_PUFFER_ERL;
 
         // ======================= Quellprofil und Waermesenken (Welle KI-F2)
 
@@ -720,6 +741,8 @@
         internal static string QprofBeschreibungErl => MyResource.Resource.KI_DLG_QPROF_BESCHREIBUNG_ERL;
         internal static string QprofBetriebsartName => MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BETRIEBSART;
         internal static string QprofBetriebsartErl => MyResource.Resource.KI_DLG_QPROF_BETRIEBSART_ERL;
+        internal static string QprofProfilName => MyResource.Resource.SIMQ_QUELLPROFIL_LBL_PROFIL;
+        internal static string QprofProfilErl => MyResource.Resource.KI_DLG_QPROF_PROFIL_ERL;
 
         internal static string WsenZielName => MyResource.Resource.SIM_SPALTE_ZIEL;
         internal static string WsenZielErl => MyResource.Resource.KI_DLG_WSEN_ZIEL_ERL;
@@ -737,6 +760,8 @@
         internal static string WsenHoeheAktivErl => MyResource.Resource.KI_DLG_WSEN_HOEHE_AKTIV_ERL;
         internal static string WsenHoeheName => MyResource.Resource.SIM_CHK_EINSPEISEHOEHE;
         internal static string WsenHoeheErl => MyResource.Resource.KI_DLG_WSEN_HOEHE_ERL;
+        internal static string WsenSpeicherName => MyResource.Resource.SIM_SPALTE_SPEICHER;
+        internal static string WsenSpeicherErl => MyResource.Resource.KI_DLG_WSEN_SPEICHER_ERL;
 
         // ================= Konfiguration einer Komponente (Welle KI-F2)
         //
@@ -753,6 +778,8 @@
         internal static string KkonfBetriebsartErl => MyResource.Resource.KI_DLG_KKONF_BETRIEBSART_ERL;
         internal static string KkonfGrenzeName => MyResource.Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE;
         internal static string KkonfGrenzeErl => MyResource.Resource.KI_DLG_KKONF_GRENZE_ERL;
+        internal static string KkonfTraegerName => MyResource.Resource.ETW_LBL_ART;
+        internal static string KkonfTraegerErl => MyResource.Resource.KI_DLG_KKONF_TRAEGER_ERL;
 
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;

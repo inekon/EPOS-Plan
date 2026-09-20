@@ -41,7 +41,8 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
     private bool _hilfeEingelegt;
 
     private IRenderedComponent<KomponentenKonfigurationDialog> Zeige(
-        Komponentenart art, WaermepumpeAnlageDaten? anlage = null, bool titel = false)
+        Komponentenart art, WaermepumpeAnlageDaten? anlage = null, bool titel = false,
+        IReadOnlyList<EPOS.UI.Bausteine.EnergietraegerWahl.Eintrag>? traeger = null)
     {
         if (!_hilfeEingelegt)
         {
@@ -56,6 +57,7 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
             p.Add(x => x.TitelAnzeigen, titel);
             p.Add(x => x.Bezeichner, "BHKW · Modul 1");
             if (anlage is not null) p.Add(x => x.Anlage, anlage);
+            if (traeger is not null) p.Add(x => x.Traegerkatalog, traeger);
             p.Add(x => x.Geschlossen, (bool ok) => _ergebnis.Add(ok));
         });
     }
@@ -316,5 +318,75 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
                 WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION,
                 "bivalenztemperatur");
         Assert.Equal(-5.0, bivalenz.Lesen());
+    }
+
+    /// <summary>
+    /// <b>Der Energieträger ist ein WAHLFELD</b> (KI-F1b): Gesetzt wird über den
+    /// NAMEN des Katalogsatzes, in der Arbeitskopie der Anlage steht danach seine Id.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_den_Energietraeger_ueber_seinen_Namen()
+    {
+        var anlage = new WaermepumpeAnlageDaten { CarrierId = 3 };
+        var cut = Zeige(Komponentenart.Waermepumpe, anlage, traeger: new[]
+        {
+            new EPOS.UI.Bausteine.EnergietraegerWahl.Eintrag(3, "Strom", "Netzstrom"),
+            new EPOS.UI.Bausteine.EnergietraegerWahl.Eintrag(9, "Strom", "Ökostrom")
+        });
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION,
+                "energietraeger");
+        Assert.NotNull(zugang);
+        Assert.Equal(3, zugang.Lesen());
+
+        WindowsFormsApplication1.KiFeldumsetzung umsetzung =
+            WindowsFormsApplication1.KiFeldwandler.Wandle(zugang, "Ökostrom");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(9, anlage.CarrierId);
+
+        WindowsFormsApplication1.KiFeldwert wert =
+            WindowsFormsApplication1.KiMaskenbruecke
+                .Lesen(WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION)
+                .Single(f => f.Name == "energietraeger");
+        Assert.Equal("Ökostrom", wert.Text);
+        Assert.Equal("9", wert.Schluessel);
+    }
+
+    /// <summary>
+    /// Die BHKW-Betriebsart läuft seit KI-F1b als Wahl: Gesetzt wird über den Text
+    /// des Optionsfeldes, in der Arbeitskopie steht danach der Steuerwert 0/1/2.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_die_BHKW_Betriebsart_ueber_ihren_Text()
+    {
+        var cut = Zeige(Komponentenart.Bhkw);
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION,
+                "bhkw_betriebsart");
+        Assert.NotNull(zugang);
+
+        string waermegefuehrt = WindowsFormsApplication1.MyResource.Resource.SIMERG_OPT_WAERMEGEFUEHRT;
+
+        WindowsFormsApplication1.KiFeldumsetzung umsetzung =
+            WindowsFormsApplication1.KiFeldwandler.Wandle(zugang, waermegefuehrt);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(0, _werte.Betriebsart);
+
+        WindowsFormsApplication1.KiFeldwert wert =
+            WindowsFormsApplication1.KiMaskenbruecke
+                .Lesen(WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION)
+                .Single(f => f.Name == "bhkw_betriebsart");
+        Assert.Equal(waermegefuehrt, wert.Text);
+        Assert.Equal("0", wert.Schluessel);
     }
 }

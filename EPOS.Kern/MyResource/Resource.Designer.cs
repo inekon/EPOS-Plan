@@ -25514,6 +25514,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger der Wärmepumpe; er bestimmt Preis und Emissionen des Antriebsstroms. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KKONF_TRAEGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KKONF_TRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_DLG_KNOPF_ABBRECHEN {
@@ -26027,6 +26036,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Höhe, auf der das Brauchwasser aus dem Speicher entnimmt: 0 ist ganz unten, 1 ganz oben. Leer heißt „oben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_ENTNAHME_BW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_ENTNAHME_BW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Höhe, auf der die Heizung aus dem Speicher entnimmt: 0 ist ganz unten, 1 ganz oben. Leer heißt „oben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_ENTNAHME_HEIZUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_ENTNAHME_HEIZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Höhe, auf der die Prozesswärme aus dem Speicher entnimmt: 0 ist ganz unten, 1 ganz oben. Leer heißt „oben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_ENTNAHME_PROZESS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_ENTNAHME_PROZESS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauhöhe des Speichers in Metern — nur beim geschichteten Modell; leer heißt „Vorgabe gilt&quot;. ähnelt.
         /// </summary>
         public static string KI_DLG_PSPV_HOEHE_ERL {
@@ -26059,6 +26095,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PSPV_MINDESTFUELLSTAND_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PSPV_MINDESTFUELLSTAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher versorgt das Brauchwasser. Erst damit gilt die Nutztemperatur Brauchwasser. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_NUTZUNG_BW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_NUTZUNG_BW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher versorgt die Heizung. Die Nutzung ist eine Mehrfachwahl: Heizung, Brauchwasser und Prozesswärme lassen sich einzeln oder zusammen ankreuzen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_NUTZUNG_HEIZUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_NUTZUNG_HEIZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicher versorgt die Prozesswärme. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_NUTZUNG_PROZESS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_NUTZUNG_PROZESS_ERL", resourceCulture);
             }
         }
         
@@ -26369,6 +26432,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Untergrund am Standort. Er liefert Wärmeleitfähigkeit und Wärmekapazität des Bodens und bestimmt damit die Quelltemperatur und die Auslegung nach VDI 4640. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_BODENTYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_BODENTYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Belegte Fläche des Erdkollektors in Quadratmetern; sie geht in die Auslegungsprüfung nach VDI 4640 Blatt 2 ein. ähnelt.
         /// </summary>
         public static string KI_DLG_QERD_FLAECHE_ERL {
@@ -26450,6 +26522,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gespeicherte Quellprofil, das die Maske lädt. „Neues Profil“ beginnt einen leeren Satz; ein geladenes Profil bringt Betriebsart, Bezeichnung und Werte mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_PROFIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_PROFIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höhe der Quell-Entnahme im Speicher, 0 = ganz unten bis 1 = ganz oben; leer heißt „oben&quot;. ähnelt.
         /// </summary>
         public static string KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL {
@@ -26464,6 +26545,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_QPUF_FEST_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_QPUF_FEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher des Projekts, der als Wärmequelle dient. Zur Wahl stehen nur die Speicher dieses Projekts; „Pufferspeicher anlegen…“ legt einen neuen an. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_PUFFER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_PUFFER_ERL", resourceCulture);
             }
         }
         
@@ -27958,6 +28048,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WSEN_LADEPRIO_PV_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WSEN_LADEPRIO_PV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Pufferspeicher, den diese Senke lädt. Es gibt ihn nur, wenn das Ziel ein Pufferplatz ist; jeder Speicher darf nur einmal Ziel sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_SPEICHER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_SPEICHER_ERL", resourceCulture);
             }
         }
         
@@ -40431,6 +40530,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PSP_LABEL_ENTNAHMEHOEHEN {
             get {
                 return ResourceManager.GetString("PSP_LABEL_ENTNAHMEHOEHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_ENTNAHME_BW {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_ENTNAHME_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizung: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_ENTNAHME_HEIZUNG {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_ENTNAHME_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme: ähnelt.
+        /// </summary>
+        public static string PSP_LABEL_ENTNAHME_PROZESS {
+            get {
+                return ResourceManager.GetString("PSP_LABEL_ENTNAHME_PROZESS", resourceCulture);
             }
         }
         

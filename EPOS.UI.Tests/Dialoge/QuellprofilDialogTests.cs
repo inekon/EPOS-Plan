@@ -635,4 +635,39 @@ public class QuellprofilDialogTests : EposBunitContext
         zugang.Setzen("Viertelstunde");
         Assert.Equal(STUNDE, zugang.Lesen());
     }
+
+    /// <summary>
+    /// <b>Das gewählte Profil ist ein WAHLFELD</b> (KI-F1b): Gesetzt wird über die
+    /// ANZEIGE der Klappliste, und die Wahl lädt den Profilkopf samt Werten — genau
+    /// wie ein Griff in die Liste von Hand.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_ein_Profil_ueber_seine_Anzeige()
+    {
+        var stand = new Pruefstand();
+        var werte = new double[12];
+        for (int m = 0; m < 12; m++) werte[m] = 7 + m;
+        stand.Profile[7] = new QuellprofilInhalt("Erdsonde tief", "aus Messung", MONAT, werte);
+
+        var cut = Zeige(Neu(), stand,
+                        profile: new[] { new QuellprofilZeile(7, "Erdsonde tief") });
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLPROFIL, "profil");
+        Assert.NotNull(zugang);
+        Assert.Equal(0, zugang.Lesen());
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, "Erdsonde tief");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(7, cut.Instance.GewaehltesProfil);
+        Assert.Equal("Erdsonde tief", cut.Instance.Bezeichner);
+
+        KiFeldwert wert = KiMaskenbruecke.Lesen(KiMaskennamen.QUELLPROFIL)
+                                         .Single(f => f.Name == "profil");
+        Assert.Equal("Erdsonde tief", wert.Text);
+        Assert.Equal("7", wert.Schluessel);
+    }
 }

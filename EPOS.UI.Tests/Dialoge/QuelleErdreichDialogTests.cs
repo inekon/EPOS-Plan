@@ -916,4 +916,62 @@ public class QuelleErdreichDialogTests : EposBunitContext
             KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "verlegetiefe");
         Assert.Equal(1.8, tiefe.Lesen());
     }
+
+    /// <summary>
+    /// <b>Der Bodentyp ist ein WAHLFELD</b> (KI-F1b): Gesetzt wird über den
+    /// ANZEIGETEXT der Klappliste, in der Sicht steht danach der KATALOGSCHLÜSSEL —
+    /// nicht der Listenplatz (Abweichung A‑3).
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_den_Bodentyp_ueber_seinen_Anzeigetext()
+    {
+        var cut = Zeige(Kollektor());
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "bodentyp");
+        Assert.NotNull(zugang);
+        Assert.Equal(ErdreichTemperatur.BODENTYP_DEFAULT, zugang.Lesen());
+
+        string granit = ErdreichTemperatur.Bodentyp(DbWerte.BODENTYP_GRANIT).Untergrund;
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, granit);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        // In der Maske steht der Schluessel …
+        Assert.Equal(DbWerte.BODENTYP_GRANIT, cut.Instance.Bodentyp);
+
+        // … der Assistent liest den TEXT, den der Anwender sieht.
+        KiFeldwert wert = KiMaskenbruecke.Lesen(KiMaskennamen.QUELLE_ERDREICH)
+                                         .Single(f => f.Name == "bodentyp");
+        Assert.Equal(granit, wert.Text);
+        Assert.Equal(DbWerte.BODENTYP_GRANIT, wert.Schluessel);
+    }
+
+    /// <summary>
+    /// Die Klimazone ist seit KI-F1b ebenfalls eine Wahl: Ihr Schlüssel ist die
+    /// Zonennummer, ihr Text die Zeile „z — n h/a" der Klappliste.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_die_Klimazone_ueber_ihre_Nummer()
+    {
+        var cut = Zeige(Kollektor());
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.QUELLE_ERDREICH, "klimazone");
+        Assert.NotNull(zugang);
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, "11");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(11, cut.Instance.Klimazone);
+
+        KiFeldwert wert = KiMaskenbruecke.Lesen(KiMaskennamen.QUELLE_ERDREICH)
+                                         .Single(f => f.Name == "klimazone");
+        Assert.StartsWith("11 ", wert.Text);
+        Assert.Equal("11", wert.Schluessel);
+    }
 }

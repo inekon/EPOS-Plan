@@ -555,8 +555,33 @@
         BeschreibungLesen = () => _beschreibung,
         BeschreibungSetzen = w => _beschreibung = w ?? "",
         BetriebsartLesen = () => Betriebsart,
-        BetriebsartSetzen = KiBetriebsartSetzen
+        BetriebsartSetzen = KiBetriebsartSetzen,
+        BetriebsartEintraege = Betriebsartwahl,
+        ProfilLesen = () => _profil,
+        ProfilSetzen = ProfilWaehlen,
+        ProfilEintraege = Profilwahl
     };
+
+    /// <summary>
+    /// Die Betriebsarten für den Assistenten (KI-F1b): Schlüssel ist der STEUERWERT
+    /// des Bestands, Text der Eintrag der Klappliste.
+    /// </summary>
+    private IReadOnlyList<KiWahleintrag> Betriebsartwahl()
+    {
+        var l = new List<KiWahleintrag>(Betriebsarten.Count);
+        for (int i = 0; i < Betriebsarten.Count; i++)
+            l.Add(new KiWahleintrag(Betriebsarten[i],
+                                    i < BetriebsartTexte.Count ? BetriebsartTexte[i]
+                                                               : Betriebsarten[i]));
+        return l;
+    }
+
+    /// <summary>
+    /// Die Profile für den Assistenten (KI-F1b) — samt dem Eintrag 0 „neues Profil",
+    /// denn er ist eine gültige Wahl der Maske.
+    /// </summary>
+    private IReadOnlyList<KiWahleintrag> Profilwahl()
+        => KiMaskenanmeldung.Eintraege(Profileintraege, e => e.Id, e => e.Text);
 
     private void KiBetriebsartSetzen(string steuerwert)
     {

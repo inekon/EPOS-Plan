@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Simulation;
+﻿using KiKern;
+
+namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// Das FLACHE Abbild der Maske „Wärmequelle Pufferspeicher" für den Hilfe-Assistenten
@@ -46,9 +48,30 @@ public sealed class QuellePufferspeicherKiSicht
     public Func<double?>? AnschlusshoeheLesen { get; init; }
     public Action<double?>? AnschlusshoeheSetzen { get; init; }
 
+    public Func<int>? PufferLesen { get; init; }
+    public Action<int>? PufferSetzen { get; init; }
+
+    /// <summary>Liefert die Speicher, die die Maske zur Wahl stellt (KI-F1b).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? PufferEintraege { get; init; }
+
+    /// <summary>Die Pufferspeicher des Projekts — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> PufferWahl
+        => PufferEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
     // =====================================================================
     //  Die Felder der Maske
     // =====================================================================
+
+    /// <summary>
+    /// Die Id des Speichers, der als Wärmequelle dient; <c>0</c> heißt „keiner
+    /// gewählt". Die Liste kennt nur der Dialog — sie ist die Pufferliste DIESES
+    /// Projekts.
+    /// </summary>
+    public int Puffer
+    {
+        get => PufferLesen?.Invoke() ?? 0;
+        set => PufferSetzen?.Invoke(value);
+    }
 
     /// <summary>Nur Wärmepumpe: die Quelltemperatur am Verdampfer [°C].</summary>
     public double? Quelltemperatur

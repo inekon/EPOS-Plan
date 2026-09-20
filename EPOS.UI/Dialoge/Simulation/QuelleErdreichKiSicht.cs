@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Simulation;
+﻿using KiKern;
+
+namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// Das FLACHE Abbild der Maske „Wärmequelle Erdreich" für den Hilfe-Assistenten
@@ -42,8 +44,29 @@ public sealed class QuelleErdreichKiSicht
     public Func<double?>? SpreizungLesen { get; init; }
     public Action<double?>? SpreizungSetzen { get; init; }
 
+    public Func<string>? BodentypLesen { get; init; }
+    public Action<string>? BodentypSetzen { get; init; }
+
     public Func<int?>? KlimazoneLesen { get; init; }
     public Action<int?>? KlimazoneSetzen { get; init; }
+
+    // =====================================================================
+    //  Die Einträge der beiden Wahlfelder (KI-F1b)
+    // =====================================================================
+
+    /// <summary>Liefert die Bodentypen, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? BodentypEintraege { get; init; }
+
+    /// <summary>Liefert die Klimazonen, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? KlimazoneEintraege { get; init; }
+
+    /// <summary>Die Bodentypen des Katalogs — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> BodentypWahl
+        => BodentypEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Zone 0 und die Zonen 1…15 mit ihren Volllaststunden (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> KlimazoneWahl
+        => KlimazoneEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     // =====================================================================
     //  Die Felder der Maske
@@ -92,6 +115,17 @@ public sealed class QuelleErdreichKiSicht
     {
         get => SpreizungLesen?.Invoke();
         set => SpreizungSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Der KATALOGSCHLÜSSEL des gewählten Bodens (<c>ton_nass</c>, <c>granit</c> …) und
+    /// nicht sein Platz in der Anzeigeliste: Wird der Katalog umsortiert, zeigte ein
+    /// Listenplatz danach auf den falschen Boden (Abweichung A-3 der Maske).
+    /// </summary>
+    public string Bodentyp
+    {
+        get => BodentypLesen?.Invoke() ?? "";
+        set => BodentypSetzen?.Invoke(value ?? "");
     }
 
     /// <summary>Die Klimazone des Standorts, 1…15; 0 heißt „nicht zugeordnet".</summary>

@@ -20921,4 +20921,46 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPA_TRAEGER_ERL" xml:space="preserve">
     <value>The energy carrier of the heat pump; it decides the price and the emissions of the drive power.</value>
   </data>
+  <data name="PSP_LABEL_ENTNAHME_HEIZUNG" xml:space="preserve">
+    <value>Heating:</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHME_BW" xml:space="preserve">
+    <value>Domestic hot water:</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHME_PROZESS" xml:space="preserve">
+    <value>Process heat:</value>
+  </data>
+  <data name="KI_DLG_QERD_BODENTYP_ERL" xml:space="preserve">
+    <value>The subsoil at the site. It supplies the thermal conductivity and heat capacity of the ground and thus determines the source temperature and the design to VDI 4640.</value>
+  </data>
+  <data name="KI_DLG_QPUF_PUFFER_ERL" xml:space="preserve">
+    <value>The buffer tank of the project that serves as the heat source. Only the tanks of this project are available; “Create buffer tank…” adds a new one.</value>
+  </data>
+  <data name="KI_DLG_QPROF_PROFIL_ERL" xml:space="preserve">
+    <value>The stored source profile the screen loads. “New profile” starts an empty set; a loaded profile brings along its operating mode, name and values.</value>
+  </data>
+  <data name="KI_DLG_WSEN_SPEICHER_ERL" xml:space="preserve">
+    <value>The buffer tank this sink charges. It exists only if the target is a tank slot; each tank may be a target only once.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_HEIZUNG_ERL" xml:space="preserve">
+    <value>The tank supplies the heating. The usage is a multiple choice: heating, domestic hot water and process heat can be ticked individually or together.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_BW_ERL" xml:space="preserve">
+    <value>The tank supplies the domestic hot water. Only then does the domestic hot water usable temperature apply.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_PROZESS_ERL" xml:space="preserve">
+    <value>The tank supplies the process heat.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTNAHME_HEIZUNG_ERL" xml:space="preserve">
+    <value>The height at which the heating draws from the tank: 0 is at the very bottom, 1 at the very top. Empty means “top”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTNAHME_BW_ERL" xml:space="preserve">
+    <value>The height at which the domestic hot water draws from the tank: 0 is at the very bottom, 1 at the very top. Empty means “top”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTNAHME_PROZESS_ERL" xml:space="preserve">
+    <value>The height at which the process heat draws from the tank: 0 is at the very bottom, 1 at the very top. Empty means “top”.</value>
+  </data>
+  <data name="KI_DLG_KKONF_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the heat pump; it determines the price and emissions of the drive electricity.</value>
+  </data>
 </root>

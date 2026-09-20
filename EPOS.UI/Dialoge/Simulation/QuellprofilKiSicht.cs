@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Simulation;
+﻿using KiKern;
+
+namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// Das FLACHE Abbild der Maske „Quellprofil" für den Hilfe-Assistenten (Welle KI‑F2).
@@ -28,6 +30,30 @@ public sealed class QuellprofilKiSicht
 
     public Func<string>? BetriebsartLesen { get; init; }
     public Action<string>? BetriebsartSetzen { get; init; }
+
+    public Func<int?>? ProfilLesen { get; init; }
+    public Action<int?>? ProfilSetzen { get; init; }
+
+    // =====================================================================
+    //  Die Einträge der beiden Wahlfelder (KI-F1b)
+    // =====================================================================
+
+    /// <summary>Liefert die Betriebsarten, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? BetriebsartEintraege { get; init; }
+
+    /// <summary>Liefert die Profile, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? ProfilEintraege { get; init; }
+
+    /// <summary>Monat, Tag und Stunde — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> BetriebsartWahl
+        => BetriebsartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>
+    /// Die Profile des Projekts samt dem Eintrag „neues Profil" — die Auswahl der
+    /// Maske (KI-F1b).
+    /// </summary>
+    public IReadOnlyList<KiWahleintrag> ProfilWahl
+        => ProfilEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     // =====================================================================
     //  Die Felder der Maske
@@ -60,5 +86,15 @@ public sealed class QuellprofilKiSicht
     {
         get => BetriebsartLesen?.Invoke() ?? "";
         set => BetriebsartSetzen?.Invoke(value ?? "");
+    }
+
+    /// <summary>
+    /// Die Id des gewählten Profils; <c>0</c> ist der Eintrag „neues Profil". Die
+    /// Wahl LÄDT den Profilkopf samt Werten — sie ist derselbe Weg wie die Klappliste.
+    /// </summary>
+    public int? Profil
+    {
+        get => ProfilLesen?.Invoke();
+        set => ProfilSetzen?.Invoke(value);
     }
 }

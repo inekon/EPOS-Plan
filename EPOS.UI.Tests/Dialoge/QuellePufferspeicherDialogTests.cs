@@ -569,4 +569,35 @@ public class QuellePufferspeicherDialogTests : EposBunitContext
             WindowsFormsApplication1.KiMaskennamen.QUELLE_PUFFERSPEICHER, "vorlauf");
         Assert.Equal(QuellePufferspeicherDialog.VORSCHLAG_VORLAUF, vorlauf.Lesen());
     }
+
+    /// <summary>
+    /// <b>Der gewählte Puffer ist ein WAHLFELD</b> (KI-F1b): Gesetzt wird über die
+    /// ANZEIGE der Liste, in der Maske steht danach die Id der Zeile.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_den_Puffer_ueber_seine_Anzeige()
+    {
+        var cut = Zeige(Wp());
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.QUELLE_PUFFERSPEICHER, "puffer");
+        Assert.NotNull(zugang);
+        Assert.Equal(11, zugang.Lesen());
+
+        WindowsFormsApplication1.KiFeldumsetzung umsetzung =
+            WindowsFormsApplication1.KiFeldwandler.Wandle(zugang, "Brauchwasserspeicher");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(12, cut.Instance.GewaehlterPuffer);
+
+        WindowsFormsApplication1.KiFeldwert wert =
+            WindowsFormsApplication1.KiMaskenbruecke
+                .Lesen(WindowsFormsApplication1.KiMaskennamen.QUELLE_PUFFERSPEICHER)
+                .Single(f => f.Name == "puffer");
+        Assert.Equal("Brauchwasserspeicher · Brauchwasser · 300 l", wert.Text);
+        Assert.Equal("12", wert.Schluessel);
+    }
 }

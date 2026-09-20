@@ -793,13 +793,45 @@
         EntladeleistungLesen = () => _entladeleistung,
         EntladeleistungSetzen = w => KiGeaendert(() => _entladeleistung = w),
         EntladeprioritaetLesen = () => _entladeprio,
-        EntladeprioritaetSetzen = w => KiGeaendert(() => _entladeprio = w)
+        EntladeprioritaetSetzen = w => KiGeaendert(() => _entladeprio = w),
+        EntladeprioritaetEintraege =
+            () => KiMaskenanmeldung.Eintraege(Prioritaeten, e => e.Id, e => e.Text),
+
+        NutzungHeizungLesen = () => Hat(0),
+        NutzungHeizungSetzen = an => KiNutzung(0, an),
+        NutzungBrauchwasserLesen = () => Hat(1),
+        NutzungBrauchwasserSetzen = an => KiNutzung(1, an),
+        NutzungProzessLesen = () => Hat(2),
+        NutzungProzessSetzen = an => KiNutzung(2, an),
+
+        EntnahmeHeizungLesen = () => _entnahmeHeizung,
+        EntnahmeHeizungSetzen = w => KiGeaendert(() => _entnahmeHeizung = w),
+        EntnahmeBrauchwasserLesen = () => _entnahmeBW,
+        EntnahmeBrauchwasserSetzen = w => KiGeaendert(() => _entnahmeBW = w),
+        EntnahmeProzessLesen = () => _entnahmeProzess,
+        EntnahmeProzessSetzen = w => KiGeaendert(() => _entnahmeProzess = w)
     };
 
     private void KiGeaendert(Action setzen)
     {
         setzen();
         _geaendert = true;
+    }
+
+    /// <summary>
+    /// Eine Nutzungsklasse hinzunehmen oder herausnehmen — über denselben Rückruf, den
+    /// ein Klick in der Mehrfachauswahl nimmt (<see cref="KlassenSetSetzen"/>), damit
+    /// die Herleitungszeile mit dem Altwert nachzieht.
+    /// </summary>
+    private void KiNutzung(int klasse, bool an)
+    {
+        if (Hat(klasse) == an) return;
+
+        var set = new List<int>(_klassenSet);
+        if (an) set.Add(klasse); else set.Remove(klasse);
+        set.Sort();
+
+        KlassenSetSetzen(set);
     }
 
     /// <summary>

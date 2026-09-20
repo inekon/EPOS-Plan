@@ -121,6 +121,11 @@ public class KiDialogkatalogTests
         KiMaskennamen.PHOTOVOLTAIK         => new[] { "energietraeger" },
         KiMaskennamen.WAERMEPUMPE_ANLAGE   => new[] { "energietraeger", "betriebsart", "typ",
                                                       "leistungsstufen", "aufstellung", "baujahr" },
+
+        // Die sechs Masken der SIMULATIONSKONFIGURATION stehen hier bewusst NICHT:
+        // Sie melden je eine Sichtklasse an, und die traegt zu jedem Wahlfeld ihre
+        // Begleiteigenschaft <Eigenschaft>Wahl - den Weg findet der Waechter selbst.
+        // Wer eines ihrer Felder hier eintruege, naehme ihm genau diese Probe.
         _ => Array.Empty<string>()
     };
 
