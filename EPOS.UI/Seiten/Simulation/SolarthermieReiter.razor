@@ -2,9 +2,12 @@
 
    VORBILD. tabPage_Solarthermie mit fuenf Feldern, der programmatischen
    Kollektortabelle (listView_SimSolar, 6 Spalten) und chart8 (zwei Linien:
-   Waermebedarf rot, Waermeproduktion blau). Kein Umschalter, kein Export, kein
-   Zoom - so war es; die Schalterzeile ueber dem Bild kam mit W11b‑B‑19 dazu
-   (unten), Export und Zoom gibt es hier weiter nicht.
+   Waermebedarf rot, Waermeproduktion blau).
+
+   DIE SCHALTERLEISTE UEBER DEM BILD HAT ZWEI ZEILEN: oben „sortiert" (die
+   Darstellungsart), darunter je Reihe ein Schalter - dieselbe Trennung und
+   dieselbe Reihenfolge wie im Waermepumpen-, Kessel- und BHKW-Reiter. Einen
+   CSV-Export traegt dieser Reiter nicht; der Zoom liegt im Bild (unten).
 
    BEFUND W11-B20 IST IN W11a BEHOBEN: Die Solarthermie-Felder standen INNERHALB
    von „if (sim.bSimulationSolarthermie)" ohne Gegenstueck ausserhalb - ein
@@ -80,6 +83,14 @@
 
             @* Das Diagramm steht ueber BEIDE Spalten (Befund W11b-B-2). *@
             <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                @* ZUERST die Darstellungsart, DANN die Reihen - dieselbe Trennung
+                   und dieselbe Reihenfolge wie im Kesselreiter. „sortiert" heisst:
+                   jede Reihe fuer sich absteigend, also die DAUERLINIE. *@
+                <div class="epos-simerg-schalter">
+                    <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                              WertChanged="@(w => _sortiert = w)" />
+                </div>
+
                 @* W11b‑B‑19: die zwei Linien des Bildes, jede abwaehlbar. *@
                 <div class="epos-simerg-schalter">
                     <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF"
@@ -148,8 +159,14 @@
     /// <summary>Liefert das Zeichenmodell zur aktuellen Schalterstellung.</summary>
     [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
+    /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
     /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
+
+    /// <summary>Die Darstellungsart: aus = Ganglinie ueber das Jahr, an = Dauerlinie.</summary>
+    private bool _sortiert;
 
     // W11b‑B‑19: je Reihe ein Zustand, BEIDE vorbelegt an.
     private bool _bedarf = true;
@@ -170,7 +187,7 @@
     }
 
     private Zeichenmodell? ModellSolar =>
-        Modell?.Invoke(new Bildauftrag(Bilder.Solarthermie, false, -1, Reihen()));
+        Modell?.Invoke(new Bildauftrag(Bilder.Solarthermie, _sortiert, -1, Reihen()));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

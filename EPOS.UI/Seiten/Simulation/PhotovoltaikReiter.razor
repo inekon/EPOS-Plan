@@ -24,16 +24,19 @@
    und Wirkungsgrad GESCHAETZTE Flaeche traegt ein "≈" und den Grund als
    Tooltip.
 
-   EINE SCHALTERZEILE FUER ALLE VIER REIHEN (Anwenderwunsch 09.09.2026,
-   W11b‑B‑19). Bis dahin standen dort ZWEI Schalter „Ueberschuss anzeigen" und
-   „Speicherfuellung anzeigen"; Strombedarf und Photovoltaik waren fest an und
-   nirgends abwaehlbar. Jetzt traegt die Zeile JEDE Reihe des Bildes, in der
-   Beschriftung ihrer LEGENDE - man hakt ab, was man dort liest. Die Vorbelegung
-   bleibt, wie sie war: die zwei Grundreihen an, die zwei Zusatzreihen aus
+   DIE SCHALTERLEISTE HAT ZWEI ZEILEN: oben „sortiert" (die Darstellungsart),
+   darunter JEDE der vier Reihen, in der Beschriftung ihrer LEGENDE - man hakt
+   ab, was man dort liest. Dieselbe Trennung und dieselbe Reihenfolge wie im
+   Waermepumpen-, Kessel- und BHKW-Reiter. Die Vorbelegung der Reihen ist die
+   des Vorbilds: die zwei Grundreihen an, die zwei Zusatzreihen aus
    (woertlich :4676-4679). ALLE ABGEWAEHLT heisst KEINE Reihe und nicht „alle" -
    die Huelle zeichnet dann den Leerhinweis des Renderers, genau wie im
-   Waermepumpenreiter (W11b‑B‑17). Die zweite Y-Achse der Speicherfuellung
-   bleibt unveraendert.
+   Waermepumpenreiter (W11b‑B‑17).
+
+   „SORTIERT" HEISST: jede Reihe fuer sich absteigend, also die DAUERLINIE; die
+   x-Achse zaehlt dann Jahresstunden statt Monate. Der Speicherfuellstand der
+   zweiten Achse wird dabei genauso behandelt wie jede andere Reihe - das macht
+   ErzeugerStapelModell selbst, wie im Bild des Speicherbetriebs.
 
    DIE KENNZAHLENLISTE (Anwenderwunsch 09.09.2026, W11b‑B‑20). Sieben Zeilen
    in EINER Liste, in der sich Erzeugung, Bedarf und Einstrahlung abwechselten,
@@ -109,6 +112,13 @@
 
             @* Schalter und Diagramm ueber BEIDE Spalten (Befund W11b-B-2). *@
             <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                @* ZUERST die Darstellungsart, DANN die Reihen - dieselbe Trennung
+                   und dieselbe Reihenfolge wie im Kesselreiter. *@
+                <div class="epos-simerg-schalter">
+                    <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
+                              WertChanged="@(w => _sortiert = w)" />
+                </div>
+
                 @* W11b‑B‑19: EINE Zeile mit ALLEN vier Reihen, jede in der
                    Beschriftung ihrer Legende. Die zwei Grundreihen stehen an, die
                    zwei Zusatzreihen aus - woertlich :4676-4679. *@
@@ -228,12 +238,17 @@
     /// <summary>Liefert das Zeichenmodell zur aktuellen Schalterstellung.</summary>
     [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
+    /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
+    public bool Sortiert => _sortiert;
+
     /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
+    /// <summary>Die Darstellungsart: aus = Ganglinie ueber das Jahr, an = Dauerlinie.</summary>
+    private bool _sortiert;
 
-    // W11b‑B‑19: je Reihe ein Zustand. Die Vorbelegung ist die alte: die zwei
-    // GRUNDREIHEN an, die zwei ZUSATZREIHEN aus (woertlich :4676-4679).
+    // W11b‑B‑19: je Reihe ein Zustand. Die Vorbelegung ist die des Vorbilds: die
+    // zwei GRUNDREIHEN an, die zwei ZUSATZREIHEN aus (woertlich :4676-4679).
     private bool _strombedarf = true;
     private bool _photovoltaik = true;
     private bool _ueberschuss;
@@ -257,7 +272,7 @@
     }
 
     private Zeichenmodell? ModellPv =>
-        Modell?.Invoke(new Bildauftrag(Bilder.Photovoltaik, false, -1, Reihen()));
+        Modell?.Invoke(new Bildauftrag(Bilder.Photovoltaik, _sortiert, -1, Reihen()));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

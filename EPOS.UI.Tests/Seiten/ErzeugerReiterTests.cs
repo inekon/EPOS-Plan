@@ -36,6 +36,9 @@ namespace EPOS.UI.Tests.Seiten;
 /// <b>W11b‑B‑23</b> zieht dieselbe Bauform durch alle vier Reiter — Balken statt
 /// <c>h3</c> für jede Hauptgruppe, ein Leerhinweis, der die fehlende Komponente
 /// nennt, und die Reihenwahl auch am BHKW-Bild.</para>
+/// <para>Mit der Welle <b>GM‑1</b> tragen auch Solarthermie und Photovoltaik den
+/// Schalter „sortiert": Die Schalterleiste aller vier Reiter hat damit dieselben
+/// zwei Zeilen — oben die Darstellungsart, darunter die Reihen.</para>
 /// <para>Seit der Etappe DG-E3, Gruppe (a), steht jedes der vier Bilder im
 /// Baustein <c>DiagrammSvg</c>: Der Zeitausschnitt ist die viewBox seiner
 /// Zeichenfläche, „Bereich" und „1:1" bedienen sie, und kein Zoom kostet mehr
@@ -440,8 +443,8 @@ public class ErzeugerReiterTests : EposBunitContext
     {
         var seite = SolarZeichnen();
 
-        Assert.Equal(new[] { "Wärmebedarf", "Wärmeproduktion" }, Schalterzeile(seite));
-        Assert.All(seite.FindAll("div.epos-simerg-schalter")[0]
+        Assert.Equal(new[] { "Wärmebedarf", "Wärmeproduktion" }, Schalterzeile(seite, 1));
+        Assert.All(seite.FindAll("div.epos-simerg-schalter")[1]
                         .QuerySelectorAll("input[type=checkbox]"),
                    k => Assert.True(k.HasAttribute("checked")));
 
@@ -458,7 +461,7 @@ public class ErzeugerReiterTests : EposBunitContext
         var seite = SolarZeichnen();
         _auftraege.Clear();
 
-        Kasten(seite, 0).Change(false);                 // Wärmebedarf
+        Kasten(seite, 0, 1).Change(false);              // Wärmebedarf
 
         Assert.Equal(new[] { "WAERMEPRODUKTION" }, seite.Instance.GewaehlteReihen.ToArray());
         Assert.Equal(new[] { "WAERMEPRODUKTION" },
@@ -476,11 +479,32 @@ public class ErzeugerReiterTests : EposBunitContext
         var seite = SolarZeichnen();
         _auftraege.Clear();
 
-        Kasten(seite, 0).Change(false);
-        Kasten(seite, 1).Change(false);
+        Kasten(seite, 0, 1).Change(false);
+        Kasten(seite, 1, 1).Change(false);
 
         Assert.Empty(seite.Instance.GewaehlteReihen);
         Assert.Empty(_auftraege.Last(a => a.Bild == Bilder.Solarthermie).Reihen!);
+    }
+
+    /// <summary>
+    /// <b>Der Schalter „sortiert"</b> (Welle GM‑1) steht in seiner EIGENEN Zeile
+    /// über den Reihen — dieselbe Trennung wie im Kesselreiter — und wechselt nur
+    /// die Darstellungsart: Die zwei Reihen bleiben dieselben.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_wechselt_den_Bildauftrag_mit_dem_Sortiertschalter()
+    {
+        var seite = SolarZeichnen();
+
+        Assert.Equal(new[] { "sortiert" }, Schalterzeile(seite, 0));
+        _auftraege.Clear();
+
+        Kasten(seite, 0, 0).Change(true);
+
+        Assert.True(seite.Instance.Sortiert);
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.Solarthermie && a.Sortiert);
+        Assert.Equal(new[] { "WAERMEBEDARF", "WAERMEPRODUKTION" },
+                     _auftraege.Last(a => a.Bild == Bilder.Solarthermie).Reihen!.ToArray());
     }
 
     // ---- W11b‑B‑20: die Kennzahlenliste ------------------------------------
@@ -884,29 +908,49 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.DoesNotContain("NaN", seite.Markup);
     }
 
-    // ---- W11b‑B‑19: EINE Schalterzeile mit ALLEN vier Reihen ---------------
+    // ---- W11b‑B‑19: EINE Reihenzeile mit ALLEN vier Reihen -----------------
 
     /// <summary>
-    /// <b>Anwenderwunsch 09.09.2026.</b> Bis dahin trug die Zeile ZWEI Schalter
-    /// („Überschuß anzeigen“, „Speicherfüllung anzeigen“), während Strombedarf und
-    /// Photovoltaik fest an und nirgends abwählbar waren. Jetzt trägt EINE Zeile
-    /// JEDE Reihe, in der Beschriftung ihrer LEGENDE — die zwei alten Schalter
-    /// gehen darin auf. Die Vorbelegung bleibt: Grundreihen an, Zusatzreihen aus
-    /// (wörtlich :4676-4679).
+    /// <b>Anwenderwunsch 09.09.2026.</b> Die REIHENZEILE trägt JEDE Reihe des
+    /// Bildes, in der Beschriftung ihrer LEGENDE — man hakt ab, was man dort
+    /// liest. Die Vorbelegung ist die des Vorbilds: Grundreihen an, Zusatzreihen
+    /// aus (wörtlich :4676-4679). Über ihr steht seit GM‑1 die Zeile mit der
+    /// Darstellungsart.
     /// </summary>
     [Fact]
     public void Photovoltaik_traegt_eine_Schalterzeile_mit_allen_vier_Reihen()
     {
         var seite = PvZeichnen();
 
-        Assert.Single(seite.FindAll("div.epos-simerg-schalter"));
+        Assert.Equal(2, seite.FindAll("div.epos-simerg-schalter").Count);
         Assert.Equal(new[] { "Strombedarf", "Photovoltaik", "Überschuss", "Speicherfüllstand" },
-                     Schalterzeile(seite));
+                     Schalterzeile(seite, 1));
 
-        Assert.True(Kasten(seite, 0).HasAttribute("checked"));
-        Assert.True(Kasten(seite, 1).HasAttribute("checked"));
-        Assert.False(Kasten(seite, 2).HasAttribute("checked"));
-        Assert.False(Kasten(seite, 3).HasAttribute("checked"));
+        Assert.True(Kasten(seite, 0, 1).HasAttribute("checked"));
+        Assert.True(Kasten(seite, 1, 1).HasAttribute("checked"));
+        Assert.False(Kasten(seite, 2, 1).HasAttribute("checked"));
+        Assert.False(Kasten(seite, 3, 1).HasAttribute("checked"));
+    }
+
+    /// <summary>
+    /// <b>Der Schalter „sortiert"</b> (Welle GM‑1) steht in seiner EIGENEN Zeile
+    /// über den Reihen — dieselbe Trennung wie im Kesselreiter — und wechselt nur
+    /// die Darstellungsart: Die gewählten Reihen bleiben dieselben.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_wechselt_den_Bildauftrag_mit_dem_Sortiertschalter()
+    {
+        var seite = PvZeichnen();
+
+        Assert.Equal(new[] { "sortiert" }, Schalterzeile(seite, 0));
+        _auftraege.Clear();
+
+        Kasten(seite, 0, 0).Change(true);
+
+        Assert.True(seite.Instance.Sortiert);
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.Photovoltaik && a.Sortiert);
+        Assert.Equal(new[] { "STROMBEDARF", "PHOTOVOLTAIK" },
+                     _auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Reihen!.ToArray());
     }
 
     /// <summary>
@@ -928,7 +972,7 @@ public class ErzeugerReiterTests : EposBunitContext
     public void Photovoltaik_nimmt_den_Speicherfuellstand_ueber_seinen_Haken_dazu()
     {
         var seite = PvZeichnen();
-        Kasten(seite, 3).Change(true);
+        Kasten(seite, 3, 1).Change(true);
 
         Assert.Contains("SPEICHERFUELLSTAND", seite.Instance.GewaehlteReihen);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Photovoltaik
@@ -946,7 +990,7 @@ public class ErzeugerReiterTests : EposBunitContext
         var seite = PvZeichnen();
         _auftraege.Clear();
 
-        Kasten(seite, 0).Change(false);                 // Strombedarf
+        Kasten(seite, 0, 1).Change(false);              // Strombedarf
 
         Assert.Equal(new[] { "PHOTOVOLTAIK" }, seite.Instance.GewaehlteReihen.ToArray());
         Assert.Equal(new[] { "PHOTOVOLTAIK" },
@@ -963,8 +1007,8 @@ public class ErzeugerReiterTests : EposBunitContext
         var seite = PvZeichnen();
         _auftraege.Clear();
 
-        Kasten(seite, 0).Change(false);
-        Kasten(seite, 1).Change(false);
+        Kasten(seite, 0, 1).Change(false);
+        Kasten(seite, 1, 1).Change(false);
 
         Assert.Empty(seite.Instance.GewaehlteReihen);
         Assert.Empty(_auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Reihen!);

@@ -511,9 +511,15 @@ namespace WindowsFormsApplication1
         /// (W11b‑B‑19) ist jede abwählbar; <c>null</c> als Reihenliste heißt weiter
         /// „alle“ (<see cref="Alle"/>), eine LEERE Liste heißt „keine“ — der
         /// Renderer zeichnet dann seinen Leerhinweis.
+        ///
+        /// <para><b>„sortiert“ reicht der Reiter durch</b> (Welle GM‑1): Jede Reihe
+        /// wird für sich absteigend gezeichnet — die Dauerlinie. Die Achse bleibt
+        /// dabei auf Jahresstunden, denn das Solarbild zählt sie in BEIDEN
+        /// Zuständen; Monatsgrenzen hat es nie getragen.</para>
         /// </summary>
         private Zeichenmodell ModellSolar(Bildauftrag a)
         {
+            bool sortiert = a != null && a.Sortiert;
             bool alle = Alle(a);
             var linien = new List<ChartRenderer.Reihe>();
 
@@ -528,7 +534,7 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 new List<ChartRenderer.Reihe>(), linien, null,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
-                ChartRenderer.Achse.Jahresstunden, false);
+                ChartRenderer.Achse.Jahresstunden, sortiert);
         }
 
         /// <summary>
@@ -577,9 +583,17 @@ namespace WindowsFormsApplication1
         /// wählbaren Reihen: <c>null</c> heißt „alle“ (<see cref="Alle"/>), eine
         /// LEERE Liste heißt „keine“, und der Renderer zeichnet dann seinen
         /// Leerhinweis. Die Reihenfolge der Reihen bleibt unverändert.</para>
+        ///
+        /// <para><b>„sortiert“ reicht der Reiter durch</b> (Welle GM‑1): Jede Reihe
+        /// wird für sich absteigend gezeichnet — die Dauerlinie —, und die x-Achse
+        /// zählt dann Jahresstunden statt Monate. <b>Der Speicherfüllstand der
+        /// ZWEITEN Achse braucht dafür nichts Eigenes</b>: <c>ErzeugerStapelModell</c>
+        /// sortiert ihn mit, wie im Bild des Speicherbetriebs
+        /// (<see cref="ModellSpeicherBetrieb"/>).</para>
         /// </summary>
         private Zeichenmodell ModellPv(Bildauftrag a)
         {
+            bool sortiert = a != null && a.Sortiert;
             bool alle = Alle(a);
 
             var linien = new List<ChartRenderer.Reihe>();
@@ -611,7 +625,8 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE,
                 new List<ChartRenderer.Reihe>(), linien, null,
                 MyResource.Resource.CHART_ACHSE_LEISTUNG,
-                ChartRenderer.Achse.Monate, false,
+                sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                sortiert,
                 zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH);
         }
 
