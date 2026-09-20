@@ -111,8 +111,8 @@ abgenommen, alle Schritte sind damit frei.
 | 5 | EinstellungenDialog (10) | S | Schritt 0, DL-Q6 |
 | 6 | **umgesetzt (#385)** — PeakShavingDialog (5): „Berechnen" bleibt im Blatt ohne Primärfarbe, Fuß CSV-Export · In Variante übernehmen · Füller · **Beenden** (primär, `PEAK_BTN_BEENDEN`); Handler, Esc und ✕ unverändert, Ausnahme in `AUSNAHMEN` gestrichen | S | DL-Q2 |
 | 7 | **umgesetzt (#385)** — GebaeudeDialog (1), beide Betriebsarten: Verwaltung Katalogspalte Neu… · Ändern… · Löschen · Gebäudetyp in DB ändern…, Fuß Füller · **Beenden** (primär, `GEB_BTN_BEENDEN`, meldet `true`); Projekt Fuß Ändern · Simulation… · Gebäudetyp in DB ändern… · Füller · Abbrechen · OK als `SpeichernLeiste` mit `Aktionen`, Detailblock ohne Knöpfe | M | Schritt 0, DL-Q1 |
-| 8 | KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
-| 9 | EnergietraegerDialog (7) | M | DL-Q3, DL-Q5 |
+| 8 | **umgesetzt (#386)** — KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
+| 9 | **umgesetzt (#386)** — EnergietraegerDialog (7) | M | DL-Q3, DL-Q5 |
 
 **Abnahme je Auftrag:**
 

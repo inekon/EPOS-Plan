@@ -21117,6 +21117,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwirft nur die ungespeicherten Eingaben; angelegte Träger bleiben. ähnelt.
+        /// </summary>
+        public static string KDLG_ET_TIP_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_TIP_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgerverwaltung ähnelt.
         /// </summary>
         public static string KDLG_ET_TITEL {
@@ -21960,6 +21969,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_TAB_KOSTEN {
             get {
                 return ResourceManager.GetString("KDLG_TAB_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwirft nur die ungespeicherten Eingaben; angelegte Positionen bleiben. ähnelt.
+        /// </summary>
+        public static string KDLG_TIP_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_TIP_ABBRECHEN", resourceCulture);
             }
         }
         

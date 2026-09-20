@@ -292,9 +292,8 @@ namespace WindowsFormsApplication1
                 ["EntfernenText"] = T("KDLG_ET_BTN_ENTFERNEN", "Entfernen"),
                 ["LabelStammName"] = T("KDLG_ET_STAMM_NAME", "Bezeichnung:"),
                 ["LabelStammGruppe"] = T("KDLG_ET_STAMM_GRUPPE", "Gruppe:"),
-                // ET-7: „Bezeichnung speichern" statt „Übernehmen" — drei Knöpfe desselben
-                // Dialogs hießen „übernehmen" (Kataloguebernahme, Katalogwerte, Stammkopf).
-                ["StammSpeichernText"] = T("KDLG_ET_STAMM_SPEICHERN", "Bezeichnung speichern"),
+                // DL-2 (Nr. 7, DL-Q5): Der Knopf „Bezeichnung speichern" ist entfallen;
+                // Bezeichnung und Gruppe schreibt der Speichern- und OK-Weg mit.
                 ["KarteProfilTitel"] = T("KPROF_KARTE_PROFIL_TITEL", "Kostenprofil"),
                 ["KarteProfilInfo"] = T("KPROF_KARTE_PROFIL_INFO",
                     "Monatliche Preisniveaus des Strombezugs pflegen."),
@@ -321,6 +320,11 @@ namespace WindowsFormsApplication1
                 ["TitelEmissionskatalog"] = T("EMK_TITEL", "Emissionsfaktor-Katalog"),
                 ["SpeichernText"] = T("KDLG_BTN_SPEICHERN", "Speichern"),
                 ["AbbrechenText"] = T("KDLG_ET_ABBRECHEN", "Abbrechen"),
+                // DL-2 (DL-Q3 a): Die Aktionen der Listenspalte schreiben sofort -
+                // der Kurztext sagt, was Abbrechen wirklich verwirft.
+                ["AbbrechenKurztext"] = T("KDLG_ET_TIP_ABBRECHEN",
+                    "Verwirft nur die ungespeicherten Eingaben; "
+                    + "angelegte Träger bleiben."),
                 ["OkText"] = T("KDLG_BTN_OK", "OK"),
                 ["JaText"] = T("KKOMP_BTN_JA", "Ja"),
                 ["NeinText"] = T("KKOMP_BTN_NEIN", "Nein"),
