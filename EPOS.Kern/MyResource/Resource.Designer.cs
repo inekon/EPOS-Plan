@@ -1565,7 +1565,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess ändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_AENDERN_PROZESS {
             get {
@@ -1574,7 +1574,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB ändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_AENDERN_STROM {
             get {
@@ -1583,7 +1583,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string BADM_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("BADM_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik... ähnelt.
         /// </summary>
         public static string BADM_BTN_GRAFIK {
             get {
@@ -1628,7 +1637,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Prozess ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Prozess... ähnelt.
         /// </summary>
         public static string BADM_BTN_NEU_PROZESS {
             get {
@@ -1637,7 +1646,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB neu ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB neu... ähnelt.
         /// </summary>
         public static string BADM_BTN_NEU_STROM {
             get {
@@ -1655,7 +1664,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_TYP_PROZESS {
             get {
@@ -1664,7 +1673,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ in DB ändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ in DB ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_TYP_STROM {
             get {
@@ -16716,7 +16725,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ Löschen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string GTYP_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("GTYP_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ löschen ähnelt.
         /// </summary>
         public static string GTYP_BTN_LOESCHEN {
             get {
@@ -16734,7 +16752,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ Speichern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ speichern ähnelt.
         /// </summary>
         public static string GTYP_BTN_SPEICHERN {
             get {
@@ -58226,6 +58244,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPS_BTN_KENNDATEN {
             get {
                 return ResourceManager.GetString("WPS_BTN_KENNDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennliniendaten... ähnelt.
+        /// </summary>
+        public static string WPS_BTN_KENNDATEN_KURZ {
+            get {
+                return ResourceManager.GetString("WPS_BTN_KENNDATEN_KURZ", resourceCulture);
             }
         }
         

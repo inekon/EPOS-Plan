@@ -90,8 +90,8 @@ public sealed class KnopfleistenWacheTests
     /// <b>Folgeaufträge DL-2b…k streichen ihren Eintrag</b>, je Auftrag einen. Ist
     /// die Liste leer, ist der Umbau fertig und die Wache steht allein.
     ///
-    /// <para>Zwei der zehn stehen NICHT hier, weil sie die vier Regeln dieser Wache
-    /// heute schon einhalten: <c>WaermepumpeStammDialog</c> (ihm fehlt nur der
+    /// <para>Zwei der zehn standen NIE hier, weil sie die vier Regeln dieser Wache
+    /// schon einhalten: <c>WaermepumpeStammDialog</c> (was ihm fehlte, war der
     /// Füller — das ist Anordnung, keine Regel dieser Wache) und
     /// <c>GebaeudeDialog</c> (seine zweite Leiste steht im Detailblock, nicht
     /// unmittelbar über dem Fuß). Beide werden trotzdem umgebaut; ihre Abnahme
@@ -100,20 +100,9 @@ public sealed class KnopfleistenWacheTests
     private static readonly Ausnahme[] AUSNAHMEN =
     {
         new Ausnahme(
-            "EPOS.UI/Dialoge/Bedarf/BedarfAdminDialog.razor", REGEL_EINE_LEISTE,
-            "DL-2 Nr. 3: Aktionsleiste (Aendern/Neu/Typ aendern/Loeschen/Grafik) steht "
-            + "unmittelbar ueber der SpeichernLeiste. Auftrag DL-2d fuehrt beide zu einer "
-            + "Leiste mit Beenden zusammen."),
-
-        new Ausnahme(
             "EPOS.UI/Dialoge/Admin/EinstellungenDialog.razor", REGEL_EINE_LEISTE,
             "DL-2 Nr. 10: die Standardwerte-Leiste steht unmittelbar ueber der "
             + "SpeichernLeiste. Auftrag DL-2f legt Standardwerte in den Aktionsschlitz."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Bedarf/GebaeudetypDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "DL-2 Nr. 2: \"Typ speichern\" ist primaer, OK steht dahinter. Auftrag DL-2b "
-            + "dreht das um (Speichern . Fueller . Hinzufuegen . Loeschen . Beenden)."),
 
         new Ausnahme(
             "EPOS.UI/Dialoge/Photovoltaik/ModulImportDialog.razor", REGEL_PRIMAER_ZULETZT,

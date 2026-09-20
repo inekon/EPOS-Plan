@@ -134,7 +134,10 @@ namespace WindowsFormsApplication1
                 ["ReiterCop"] = Text_("WPS_REITER_COP", "COP"),
                 ["ReiterLeistung"] = Text_("WPS_REITER_LEISTUNG", "Leistung"),
                 ["PlatzhalterBild"] = Text_("WPS_PLATZHALTER_BILD", "Keine Kennlinien vorhanden"),
-                ["BtnKenndatenText"] = Text_("WPS_BTN_KENNDATEN", "Kennliniendaten Ansicht/Bearbeiten..."),
+                // DL-2 Nr. 4: Der Knopf der Fussleiste traegt den KURZEN Text, die
+                // Ueberlagerung den vollen Wortlaut des Vorlaeufers.
+                ["BtnKenndatenText"] = Text_("WPS_BTN_KENNDATEN_KURZ", "Kennliniendaten..."),
+                ["TitelKenndatenText"] = Text_("WPS_BTN_KENNDATEN", "Kennliniendaten Ansicht/Bearbeiten..."),
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
                 ["BtnNeuText"] = Text_("WPS_BTN_NEU", "Neu"),
                 ["BtnLoeschenText"] = Text_("WPS_BTN_LOESCHEN", "Löschen"),

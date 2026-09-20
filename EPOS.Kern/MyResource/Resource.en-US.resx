@@ -121,13 +121,13 @@
     <value>Change profile...</value>
   </data>
   <data name="BADM_BTN_AENDERN_PROZESS" xml:space="preserve">
-    <value>Change process in DB</value>
+    <value>Change process in DB...</value>
   </data>
   <data name="BADM_BTN_AENDERN_STROM" xml:space="preserve">
-    <value>Change consumer</value>
+    <value>Change consumer...</value>
   </data>
   <data name="BADM_BTN_GRAFIK" xml:space="preserve">
-    <value>Graphic</value>
+    <value>Graphic...</value>
   </data>
   <data name="BADM_BTN_LOESCHEN_BRAUCHWASSER" xml:space="preserve">
     <value>Delete profile</value>
@@ -142,19 +142,19 @@
     <value>New profile...</value>
   </data>
   <data name="BADM_BTN_NEU_PROZESS" xml:space="preserve">
-    <value>New process in DB</value>
+    <value>New process in DB...</value>
   </data>
   <data name="BADM_BTN_NEU_STROM" xml:space="preserve">
-    <value>New consumer</value>
+    <value>New consumer...</value>
   </data>
   <data name="BADM_BTN_TYP_BRAUCHWASSER" xml:space="preserve">
     <value>Change profile type...</value>
   </data>
   <data name="BADM_BTN_TYP_PROZESS" xml:space="preserve">
-    <value>Change type in DB</value>
+    <value>Change type in DB...</value>
   </data>
   <data name="BADM_BTN_TYP_STROM" xml:space="preserve">
-    <value>Change type</value>
+    <value>Change type...</value>
   </data>
   <data name="BADM_EINHEIT_STROM" xml:space="preserve">
     <value>MWh</value>
@@ -12582,10 +12582,10 @@ Overwrite it anyway?</value>
     <value>Add type</value>
   </data>
   <data name="GTYP_BTN_LOESCHEN" xml:space="preserve">
-    <value>Type Delete</value>
+    <value>Delete type</value>
   </data>
   <data name="GTYP_BTN_SPEICHERN" xml:space="preserve">
-    <value>Type Save</value>
+    <value>Save type</value>
   </data>
   <data name="GTYP_MSG_GESPERRT" xml:space="preserve">
     <value>The building types supplied by the software manufacturer cannot be changed</value>
@@ -20224,5 +20224,14 @@ Do you want to allow this?</value>
   </data>
   <data name="KDLG_ET_TIP_ABBRECHEN" xml:space="preserve">
     <value>Discards only the unsaved entries; energy sources already created remain.</value>
+  </data>
+  <data name="GTYP_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="WPS_BTN_KENNDATEN_KURZ" xml:space="preserve">
+    <value>Characteristic curve data...</value>
+  </data>
+  <data name="BADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
   </data>
 </root>

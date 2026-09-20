@@ -75,12 +75,12 @@ public class BedarfAdminDialogTests : EposBunitContext
         BedarfsArt.Stromverbraucher => new Beschriftung(
             "Stromverbraucher Verwaltung", "Datenbank Stromverbraucher",
             "jährlicher Strombedarf:", "MWh",
-            "Verbraucher in DB ändern", "Verbraucher in DB neu", "Typ in DB ändern",
+            "Verbraucher in DB ändern...", "Verbraucher in DB neu...", "Typ in DB ändern...",
             "Verbraucher in DB löschen", "Bitte wählen Sie zuerst einen Verbraucher aus!"),
         BedarfsArt.Prozesswaerme => new Beschriftung(
             "Prozesswärme Verwaltung", "Datenbank Prozesswärme:",
             "jährlicher Prozesswärmebedarf:", "MWth",
-            "Prozess ändern", "Neuer Prozess", "Typ ändern",
+            "Prozess ändern...", "Neuer Prozess...", "Typ ändern...",
             "Prozess löschen", "Bitte wählen Sie einen Prozess aus, den Sie löschen möchten."),
         _ => new Beschriftung(
             "Administration Brauchwasser", "Datenbank Brauchwasserprofile",
@@ -143,14 +143,15 @@ public class BedarfAdminDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Die SIEBEN Knöpfe der Feldkarte je Ausprägung: „ändern", „neu",
-    /// „Typ ändern", „löschen", „Grafik", OK und Abbrechen. Einen
-    /// „Ergebnisse"-Knopf gab es in KEINEM der drei Designer (Befund W14‑B78); er
-    /// wird deshalb nicht nachgebaut (A‑4).
+    /// Die SECHS Knöpfe der Feldkarte je Ausprägung: „Grafik…", „Typ ändern…",
+    /// „neu…", „ändern…", „löschen" und „Beenden". Einen „Ergebnisse"-Knopf gab es
+    /// in KEINEM der drei Designer (Befund W14‑B78); er wird deshalb nicht
+    /// nachgebaut (A‑4). „OK" und „Abbrechen" sind mit DL-2 Nr. 3 entfallen — jede
+    /// Aktion schreibt sofort in den Katalog.
     /// </summary>
     [Theory]
     [MemberData(nameof(AlleArten))]
-    public void Die_Maske_zeigt_ihre_sieben_Knoepfe(BedarfsArt art)
+    public void Die_Maske_zeigt_ihre_sechs_Knoepfe(BedarfsArt art)
     {
         Beschriftung t = Texte(art);
         var cut = Aufbauen(art);
@@ -161,11 +162,50 @@ public class BedarfAdminDialogTests : EposBunitContext
         Assert.Contains(t.Neu, knoepfe);
         Assert.Contains(t.TypAendern, knoepfe);
         Assert.Contains(t.Loeschen, knoepfe);
-        Assert.Contains("Grafik", knoepfe);
-        Assert.Contains("OK", knoepfe);
-        Assert.Contains("Abbrechen", knoepfe);
+        Assert.Contains("Grafik...", knoepfe);
+        Assert.Contains("Beenden", knoepfe);
 
         Assert.DoesNotContain("Ergebnisse", knoepfe);
+    }
+
+    // =====================================================================
+    // 1a — Die eine Fussleiste (DL-2 Nr. 3, Konzept Abschnitt 2 Zeile 3)
+    // =====================================================================
+
+    /// <summary>
+    /// Das Katalogmuster in EINER Leiste: <b>Grafik… · Typ ändern… · Füller · Neu… ·
+    /// Ändern… · Löschen · Beenden</b>. Links vom Füller stehen die Knöpfe, die auf
+    /// eine Ansicht oder den Nachbarkatalog wirken, rechts die Zeilenaktionen, und
+    /// ganz rechts der eine primäre Schlussknopf. Eine zweite Leiste gibt es nicht
+    /// mehr.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(AlleArten))]
+    public void Die_Fussleiste_traegt_das_Katalogmuster(BedarfsArt art)
+    {
+        Beschriftung t = Texte(art);
+        var cut = Aufbauen(art);
+
+        var leisten = cut.FindAll(".epos-leiste");
+        Assert.Single(leisten);
+
+        var leiste = leisten[0];
+        var knoepfe = leiste.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Grafik...", t.TypAendern, t.Neu, t.Aendern, t.Loeschen, "Beenden" },
+                     knoepfe);
+
+        // Der Fueller steht zwischen "Typ aendern..." und "Neu...".
+        var kinder = leiste.Children.Select(e => e.ClassName ?? "").ToList();
+        Assert.Single(leiste.QuerySelectorAll(".epos-leiste-fueller"));
+        Assert.Equal(2, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+
+        var primaer = leiste.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+
+        // Die zweite Leiste (Status . Abbrechen . OK) ist entfallen - die
+        // SpeichernLeiste zeichnete eine eigene .epos-leiste samt Statusspanne.
+        Assert.Empty(cut.FindAll(".epos-status"));
     }
 
     /// <summary>
@@ -373,9 +413,9 @@ public class BedarfAdminDialogTests : EposBunitContext
             .Add(x => x.Exists, n => n == "Alpha")
             .Add(x => x.TypStammGaben, (name, beschr, typ, neu) =>
                 (IReadOnlyDictionary<string, object>)new Dictionary<string, object>())
-            .Add(x => x.BtnNeuText, "Verbraucher in DB neu"));
+            .Add(x => x.BtnNeuText, "Verbraucher in DB neu..."));
 
-        Knopf(cut, "Verbraucher in DB neu").Click();
+        Knopf(cut, "Verbraucher in DB neu...").Click();
 
         cut.Find(".epos-ueberlagerung input").Input("Alpha");
         cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
@@ -407,7 +447,7 @@ public class BedarfAdminDialogTests : EposBunitContext
                                };
                            });
 
-        Knopf(cut, "Grafik").Click();
+        Knopf(cut, "Grafik...").Click();
 
         Assert.Equal("Alpha", gerechnet);
         Assert.True(cut.Instance.ErgebnisOffen);
@@ -422,7 +462,7 @@ public class BedarfAdminDialogTests : EposBunitContext
     {
         var cut = Aufbauen(BedarfsArt.Stromverbraucher, katalog: Array.Empty<string>());
 
-        Assert.True(Knopf(cut, "Grafik").HasAttribute("disabled"));
+        Assert.True(Knopf(cut, "Grafik...").HasAttribute("disabled"));
         Assert.True(Knopf(cut, Texte(BedarfsArt.Stromverbraucher).Aendern).HasAttribute("disabled"));
     }
 
@@ -431,21 +471,20 @@ public class BedarfAdminDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// „OK" liefert OK. Der Vorläufer tat das schon; die Solarganglinie tat es
-    /// nicht (Befund W14‑B4).
+    /// „Beenden" ist der eine Schlussweg (DL-2 Nr. 3) und meldet <c>true</c>. Einen
+    /// Abbruchweg gibt es nicht: Stammkopf, Wochenprofil und Löschen schreiben
+    /// sofort in den Katalog — „Abbrechen" nahm nichts zurück.
     /// </summary>
     [Fact]
-    public void OK_liefert_OK_und_Abbrechen_liefert_Abbruch()
+    public void Beenden_ist_der_eine_Schlussweg()
     {
         bool? antwort = null;
         var cut = Aufbauen(BedarfsArt.Brauchwasser, geschlossen: b => antwort = b);
 
-        Knopf(cut, "OK").Click();
-        Assert.True(antwort);
+        Assert.Empty(cut.FindAll("button").Where(b => b.TextContent.Trim() == "Abbrechen"));
 
-        antwort = null;
-        Knopf(cut, "Abbrechen").Click();
-        Assert.False(antwort);
+        Knopf(cut, "Beenden").Click();
+        Assert.True(antwort);
     }
 
     /// <summary>Esc schließt — aber erst, wenn keine Überlagerung offen ist.</summary>
@@ -461,10 +500,10 @@ public class BedarfAdminDialogTests : EposBunitContext
 
         Knopf(cut, "Nein").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.False(antwort);
+        Assert.True(antwort);
     }
 
-    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc: Abbrechen ohne zu speichern.</summary>
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc und „Beenden".</summary>
     [Fact]
     public void Kreuz_schliesst_wie_Esc()
     {
@@ -473,7 +512,7 @@ public class BedarfAdminDialogTests : EposBunitContext
 
         cut.Find(".epos-dialog-zu").Click();
 
-        Assert.False(antwort);
+        Assert.True(antwort);
     }
 
     /// <summary>
@@ -491,7 +530,7 @@ public class BedarfAdminDialogTests : EposBunitContext
                                ["TitelText"] = "Simulation Ergebnisse"
                            });
 
-        Knopf(cut, "Grafik").Click();
+        Knopf(cut, "Grafik...").Click();
         Assert.True(cut.Instance.ErgebnisOffen);
 
         cut.Find(".epos-ueberlagerung-zu").Click();
@@ -514,7 +553,7 @@ public class BedarfAdminDialogTests : EposBunitContext
                                ["TitelText"] = "Simulation Ergebnisse"
                            });
 
-        Knopf(cut, "Grafik").Click();
+        Knopf(cut, "Grafik...").Click();
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
@@ -531,7 +570,7 @@ public class BedarfAdminDialogTests : EposBunitContext
         var cut = Aufbauen(BedarfsArt.Prozesswaerme,
                            typStammGaben: (_, _, _, _) => new Dictionary<string, object>());
 
-        Knopf(cut, "Prozess ändern").Click();
+        Knopf(cut, "Prozess ändern...").Click();
         Assert.True(cut.Instance.TypStammOffen);
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
@@ -549,7 +588,7 @@ public class BedarfAdminDialogTests : EposBunitContext
         var cut = Aufbauen(BedarfsArt.Prozesswaerme,
                            typProfilGaben: () => new Dictionary<string, object>());
 
-        Knopf(cut, "Typ ändern").Click();
+        Knopf(cut, "Typ ändern...").Click();
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));

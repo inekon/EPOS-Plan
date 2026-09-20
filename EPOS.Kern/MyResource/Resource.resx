@@ -121,13 +121,13 @@
     <value>Profil ändern...</value>
   </data>
   <data name="BADM_BTN_AENDERN_PROZESS" xml:space="preserve">
-    <value>Prozess ändern</value>
+    <value>Prozess ändern...</value>
   </data>
   <data name="BADM_BTN_AENDERN_STROM" xml:space="preserve">
-    <value>Verbraucher in DB ändern</value>
+    <value>Verbraucher in DB ändern...</value>
   </data>
   <data name="BADM_BTN_GRAFIK" xml:space="preserve">
-    <value>Grafik</value>
+    <value>Grafik...</value>
   </data>
   <data name="BADM_BTN_LOESCHEN_BRAUCHWASSER" xml:space="preserve">
     <value>Profil löschen</value>
@@ -142,19 +142,19 @@
     <value>Neues Profil...</value>
   </data>
   <data name="BADM_BTN_NEU_PROZESS" xml:space="preserve">
-    <value>Neuer Prozess</value>
+    <value>Neuer Prozess...</value>
   </data>
   <data name="BADM_BTN_NEU_STROM" xml:space="preserve">
-    <value>Verbraucher in DB neu</value>
+    <value>Verbraucher in DB neu...</value>
   </data>
   <data name="BADM_BTN_TYP_BRAUCHWASSER" xml:space="preserve">
     <value>Profiltyp ändern...</value>
   </data>
   <data name="BADM_BTN_TYP_PROZESS" xml:space="preserve">
-    <value>Typ ändern</value>
+    <value>Typ ändern...</value>
   </data>
   <data name="BADM_BTN_TYP_STROM" xml:space="preserve">
-    <value>Typ in DB ändern</value>
+    <value>Typ in DB ändern...</value>
   </data>
   <data name="BADM_EINHEIT_STROM" xml:space="preserve">
     <value>MWh</value>
@@ -12589,10 +12589,10 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Typ hinzufügen</value>
   </data>
   <data name="GTYP_BTN_LOESCHEN" xml:space="preserve">
-    <value>Typ Löschen</value>
+    <value>Typ löschen</value>
   </data>
   <data name="GTYP_BTN_SPEICHERN" xml:space="preserve">
-    <value>Typ Speichern</value>
+    <value>Typ speichern</value>
   </data>
   <data name="GTYP_MSG_GESPERRT" xml:space="preserve">
     <value>Die vom Softwarehersteller gelieferten Gebäudetypen können nicht geändert werden</value>
@@ -20231,5 +20231,14 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KDLG_ET_TIP_ABBRECHEN" xml:space="preserve">
     <value>Verwirft nur die ungespeicherten Eingaben; angelegte Träger bleiben.</value>
+  </data>
+  <data name="GTYP_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="WPS_BTN_KENNDATEN_KURZ" xml:space="preserve">
+    <value>Kennliniendaten...</value>
+  </data>
+  <data name="BADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
   </data>
 </root>
