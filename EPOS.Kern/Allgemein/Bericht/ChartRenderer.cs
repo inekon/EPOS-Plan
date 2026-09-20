@@ -1281,45 +1281,45 @@ namespace WindowsFormsApplication1
                                            string einheit, IReadOnlyList<string> monatsnamen = null)
         {
             int W = 978, H = 542;
-            using (var flaeche = Start(W, H))
-            {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
-                var rc = SKRect.Create(100f, 80f, W - 140f, 380f);
+            var z = Modell(W, H);
+            Titel(z, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
+            var rc = SKRect.Create(100f, 80f, W - 140f, 380f);
 
-                if (werte == null || werte.Length < 12)
+            if (werte == null || werte.Length < 12)
+            {
+                using (var f = Schrift(18f))
+                    Text(z, BerichtTexte.T("Keine Monatswerte vorhanden."), f, Farbrolle.ACHSE,
+                         rc.Left, rc.Top + 20f);
+                return SkiaMaler.Png(z);
+            }
+
+            double maxWert = 0;
+            for (int m = 0; m < 12; m++) if (werte[m] > maxWert) maxWert = werte[m];
+            (double schritt, double max, string format) = BedarfsSkala(maxWert);
+
+            BedarfsRaster(z, rc, schritt, max, format);
+
+            float fach = rc.Width / 12f;
+            float breite = fach * 0.6f;
+            // Die Saeulenfarbe kommt von AUSSEN (sie benennt die Sicht) und behaelt
+            // deshalb die Rueckwaertssuche; alle uebrigen Farben nennen ihre Rolle.
+            Zeichnung.Fuellung pinsel = Flaeche(farbe);
+            using (var f = Schrift(15f))
+                for (int m = 0; m < 12; m++)
                 {
-                    using (var f = Schrift(18f))
-                        Text(g, BerichtTexte.T("Keine Monatswerte vorhanden."), f, SKColors.DimGray,
-                             rc.Left, rc.Top + 20f);
-                    return Png(flaeche);
+                    float mitte = rc.Left + (m + 0.5f) * fach;
+
+                    double wert = werte[m] > 0 ? werte[m] : 0;   // y beginnt starr bei 0
+                    float hoehe = (float)(Math.Min(wert, max) / max * rc.Height);
+                    if (hoehe > 0)
+                        z.Rechteck(mitte - breite / 2f, rc.Bottom - hoehe, breite, hoehe, null, pinsel);
+
+                    string lab = (monatsnamen != null && monatsnamen.Count > m)
+                        ? monatsnamen[m] : MONATE_KURZ[m];
+                    Text(z, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                 }
 
-                double maxWert = 0;
-                for (int m = 0; m < 12; m++) if (werte[m] > maxWert) maxWert = werte[m];
-                (double schritt, double max, string format) = BedarfsSkala(maxWert);
-
-                BedarfsRaster(g, rc, schritt, max, format);
-
-                float fach = rc.Width / 12f;
-                float breite = fach * 0.6f;
-                using (var f = Schrift(15f))
-                using (var pinsel = Fuellung(farbe))
-                    for (int m = 0; m < 12; m++)
-                    {
-                        float mitte = rc.Left + (m + 0.5f) * fach;
-
-                        double wert = werte[m] > 0 ? werte[m] : 0;   // y beginnt starr bei 0
-                        float hoehe = (float)(Math.Min(wert, max) / max * rc.Height);
-                        if (hoehe > 0) g.DrawRect(mitte - breite / 2f, rc.Bottom - hoehe, breite, hoehe, pinsel);
-
-                        string lab = (monatsnamen != null && monatsnamen.Count > m)
-                            ? monatsnamen[m] : MONATE_KURZ[m];
-                        Text(g, lab, f, SKColors.DimGray, mitte - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                    }
-
-                return Png(flaeche);
-            }
+            return SkiaMaler.Png(z);
         }
 
         /// <summary>
@@ -2202,61 +2202,58 @@ namespace WindowsFormsApplication1
             string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun",
                                 "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
 
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, string.IsNullOrEmpty(einheit) ? (titel ?? "")
+                                                   : (titel ?? "") + "  [" + einheit + "]", W);
+
+            var gueltig = (reihen ?? new List<Reihe>())
+                .Where(r => r != null && r.Werte != null && r.Werte.Length >= 12)
+                .ToList();
+
+            var rc = SKRect.Create(100f, 120f, W - 140f, 320f);
+            if (gueltig.Count == 0)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, string.IsNullOrEmpty(einheit) ? (titel ?? "")
-                                                       : (titel ?? "") + "  [" + einheit + "]", W);
-
-                var gueltig = (reihen ?? new List<Reihe>())
-                    .Where(r => r != null && r.Werte != null && r.Werte.Length >= 12)
-                    .ToList();
-
-                var rc = SKRect.Create(100f, 120f, W - 140f, 320f);
-                if (gueltig.Count == 0)
-                {
-                    Leerhinweis(g, rc);
-                    return Png(flaeche);
-                }
-
-                // Legende OBEN und ZENTRIERT (Docking.Top, StringAlignment.Center).
-                float legendenbreite = Legendenbreite(gueltig);
-                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
-                        Math.Max(20f, (W - legendenbreite) / 2f), 68f, W - 20f);
-
-                var summe = new double[12];
-                for (int m = 0; m < 12; m++)
-                    foreach (Reihe r in gueltig) summe[m] += Math.Max(r.Werte[m], 0);
-                double max = Nice(summe.Max());
-                if (max <= 0) max = 1;
-
-                YRaster(g, rc, max);
-                using (var f = Schrift(15f))
-                    for (int m = 0; m < 12; m++)
-                    {
-                        float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
-                        Text(g, monate[m], f, SKColors.DimGray,
-                             x - f.MeasureText(monate[m]) / 2f, rc.Bottom + 8f);
-                    }
-
-                float slot = rc.Width / 12f;
-                float balken = slot * 0.6f;
-                for (int m = 0; m < 12; m++)
-                {
-                    float x0 = rc.Left + m * slot + (slot - balken) / 2f;
-                    float unten = rc.Bottom;
-                    foreach (Reihe r in gueltig)
-                    {
-                        float hoehe = (float)(Math.Max(r.Werte[m], 0) / max * rc.Height);
-                        if (hoehe <= 0) continue;
-                        using (var br = Fuellung(r.Farbe))
-                            g.DrawRect(x0, unten - hoehe, balken, hoehe, br);
-                        unten -= hoehe;
-                    }
-                }
-
-                return Png(flaeche);
+                Leerhinweis(z, rc);
+                return SkiaMaler.Png(z);
             }
+
+            // Legende OBEN und ZENTRIERT (Docking.Top, StringAlignment.Center).
+            float legendenbreite = Legendenbreite(gueltig);
+            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                    Math.Max(20f, (W - legendenbreite) / 2f), 68f, W - 20f);
+
+            var summe = new double[12];
+            for (int m = 0; m < 12; m++)
+                foreach (Reihe r in gueltig) summe[m] += Math.Max(r.Werte[m], 0);
+            double max = Nice(summe.Max());
+            if (max <= 0) max = 1;
+
+            YRaster(z, rc, max);
+            using (var f = Schrift(15f))
+                for (int m = 0; m < 12; m++)
+                {
+                    float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
+                    Text(z, monate[m], f, Farbrolle.ACHSE,
+                         x - f.MeasureText(monate[m]) / 2f, rc.Bottom + 8f);
+                }
+
+            float slot = rc.Width / 12f;
+            float balken = slot * 0.6f;
+            for (int m = 0; m < 12; m++)
+            {
+                float x0 = rc.Left + m * slot + (slot - balken) / 2f;
+                float unten = rc.Bottom;
+                foreach (Reihe r in gueltig)
+                {
+                    float hoehe = (float)(Math.Max(r.Werte[m], 0) / max * rc.Height);
+                    if (hoehe <= 0) continue;
+                    // Die Reihenfarbe kommt von AUSSEN und behaelt die Rueckwaertssuche.
+                    z.Rechteck(x0, unten - hoehe, balken, hoehe, null, Flaeche(r.Farbe));
+                    unten -= hoehe;
+                }
+            }
+
+            return SkiaMaler.Png(z);
         }
 
         /// <summary>Breite, die die Legende dieser Reihen braucht — fuer die Zentrierung.</summary>
