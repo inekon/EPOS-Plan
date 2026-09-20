@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using SkiaSharp;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.Kern.Tests
@@ -484,6 +486,166 @@ namespace EPOS.Kern.Tests
                 "Jahresgang", reihen, "Monat", "Temperatur", false,
                 new ChartRenderer.Achsenfenster(100, 600));
             Assert.NotEqual(teil, anderer);
+        }
+
+        // -----------------------------------------------------------------------------
+        // 8 — Das Modell hinter dem Bild (Konzept Diagramme, Etappe E2)
+        // -----------------------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Ein Modell, zwei Ausgaben.</b> <c>Jahresgang</c> ist seit der Etappe E2
+        /// nur noch <c>SkiaMaler.Png(JahresgangModell(...))</c> — das muss Byte fuer
+        /// Byte dasselbe Bild ergeben, sonst haette der Umbau den Bericht veraendert.
+        /// Geprueft in allen drei Lagen: Vollansicht, Fenster und der Leerfall.
+        /// </summary>
+        [Fact]
+        public void Jahresgang_liefert_dieselben_Bytes_wie_der_Maler_aus_dem_Modell()
+        {
+            List<ChartRenderer.Reihe> reihen = Jahresgangreihen();
+            var fenster = new ChartRenderer.Achsenfenster(2900, 3400);
+
+            Assert.Equal(
+                ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat", "Temperatur"),
+                SkiaMaler.Png(ChartRenderer.JahresgangModell(
+                    "Jahresgang", reihen, "Monat", "Temperatur")));
+
+            Assert.Equal(
+                ChartRenderer.Jahresgang("Jahresgang", reihen, "Monat", "Temperatur",
+                                         false, fenster),
+                SkiaMaler.Png(ChartRenderer.JahresgangModell(
+                    "Jahresgang", reihen, "Monat", "Temperatur", false, fenster)));
+
+            Assert.Equal(
+                ChartRenderer.Jahresgang("J", null, "Monat", "Temperatur"),
+                SkiaMaler.Png(ChartRenderer.JahresgangModell("J", null, "Monat", "Temperatur")));
+        }
+
+        /// <summary>
+        /// Das Modell traegt ueber die Befehlsliste hinaus DREIERLEI: die
+        /// Zeichenflaeche samt Datenfenster, je Reihe eine <c>Datenreihe</c> mit den
+        /// UNGEKUERZTEN Werten (der Pixelpfad im Befehl ist auf jeden n-ten Wert
+        /// gekuerzt — Entscheid DG-E2-2) und die Marken, an denen die Oberflaeche
+        /// Gruppen schaltet.
+        /// </summary>
+        [Fact]
+        public void JahresgangModell_traegt_Flaeche_Reihen_und_Marken()
+        {
+            Zeichenmodell m = ChartRenderer.JahresgangModell(
+                "Jahresgang", Jahresgangreihen(), "Monat", "Temperatur");
+
+            Assert.Equal(1304, m.Breite);
+            Assert.Equal(440, m.Hoehe);
+
+            // Die Zeichenflaeche: dasselbe Rechteck, mit dem das Layout rechnet.
+            Assert.NotNull(m.Flaeche);
+            Assert.Equal(110f, m.Flaeche.Bild.X);
+            Assert.Equal(130f, m.Flaeche.Bild.Y);
+            Assert.Equal(1154f, m.Flaeche.Bild.Breite);
+            Assert.Equal(240f, m.Flaeche.Bild.Hoehe);
+            Assert.Equal(0.0, m.Flaeche.Daten.XVon);
+            Assert.Equal(8759.0, m.Flaeche.Daten.XBis);
+            Assert.True(m.Flaeche.Daten.YVon < 0.0, "die Skala reicht unter null");
+            Assert.True(m.Flaeche.Daten.YBis > 0.0);
+
+            // Je Reihe eine Datenreihe - Name, Rolle, Staerke wie im PNG, alle Werte.
+            Assert.Equal(2, m.Reihen.Count);
+            Assert.Equal("Quelltemperatur", m.Reihen[0].Name);
+            Assert.Equal("Aussentemperatur", m.Reihen[1].Name);
+            Assert.Equal(8760, m.Reihen[0].Werte.Length);
+            Assert.Equal(2f, m.Reihen[0].Staerke);
+            Assert.Equal(1f, m.Reihen[1].Staerke);
+            Assert.Equal(Farbrolle.QUELLTEMPERATUR, m.Reihen[0].Ton.Rolle);
+            Assert.Equal(Farbrolle.AUSSENTEMPERATUR, m.Reihen[1].Ton.Rolle);
+
+            var marken = new HashSet<string>(
+                m.Befehle.Where(b => b.Marke != null).Select(b => b.Marke),
+                StringComparer.Ordinal);
+            Assert.Contains("titel", marken);
+            Assert.Contains("xachse", marken);
+            Assert.Contains("yachse", marken);
+            Assert.Contains("nulllinie", marken);
+            Assert.Contains("legende:Quelltemperatur", marken);
+            Assert.Contains("legende:Aussentemperatur", marken);
+            Assert.Contains("reihe:Quelltemperatur", marken);
+            Assert.Contains("reihe:Aussentemperatur", marken);
+
+            // Das ACHSENKREUZ bleibt ohne Marke: Es steht auch dann, wenn die
+            // Oberflaeche beim Zoom die Teilung der x-Achse ausblendet.
+            Assert.Contains(m.Befehle, b => b.Marke == null);
+        }
+
+        /// <summary>
+        /// Ohne Reihen gibt es keine Zeichenflaeche und keine Datenreihen — aber den
+        /// LEERHINWEIS, damit die Oberflaeche ihn findet.
+        /// </summary>
+        [Fact]
+        public void JahresgangModell_ohne_Reihen_traegt_nur_den_Leerhinweis()
+        {
+            Zeichenmodell m = ChartRenderer.JahresgangModell("J", null, "Monat", "Temperatur");
+
+            Assert.Null(m.Flaeche);
+            Assert.Empty(m.Reihen);
+            Assert.Contains(m.Befehle, b => b.Marke == "leerhinweis");
+        }
+
+        /// <summary>
+        /// Im Fenster steht das Datenfenster auf den FENSTERSTUNDEN, und die Reihen
+        /// tragen die zugeschnittenen Werte — genau die Zahlen, aus denen die
+        /// Oberflaeche ihre Zeigerzeile liest.
+        /// </summary>
+        [Fact]
+        public void JahresgangModell_im_Fenster_zeigt_die_Fensterstunden()
+        {
+            Zeichenmodell m = ChartRenderer.JahresgangModell(
+                "Jahresgang", Jahresgangreihen(), "Monat", "Temperatur", false,
+                new ChartRenderer.Achsenfenster(2900, 3400));
+
+            Assert.Equal(2900.0, m.Flaeche.Daten.XVon);
+            Assert.Equal(3399.0, m.Flaeche.Daten.XBis);
+            Assert.Equal(500, m.Reihen[0].Werte.Length);
+        }
+
+        /// <summary>
+        /// <b><c>Jahresstundenteilung</c> ist die Regel, mit der die x-Achse eines
+        /// zugeschnittenen Bildes geteilt wird</b> — als reine Funktion, damit die
+        /// Oberflaeche die Ticks beim Zoom nachzeichnen kann, ohne den Kern zu rufen.
+        /// Sie muss sich mit dem decken, was ins Bild geht: dieselben Stunden,
+        /// dieselben Beschriftungen, dieselbe Reihenfolge.
+        /// </summary>
+        [Fact]
+        public void Jahresstundenteilung_deckt_sich_mit_der_gezeichneten_Achse()
+        {
+            Zeichenmodell m = ChartRenderer.JahresgangModell(
+                "Jahresgang", Jahresgangreihen(), "Monat", "Temperatur", false,
+                new ChartRenderer.Achsenfenster(2900, 3400));
+
+            List<string> gezeichnet = m.Befehle
+                .OfType<WindowsFormsApplication1.Zeichnung.Text>()
+                .Where(t => t.Marke == "xachse")
+                .Select(t => t.Inhalt)
+                .ToList();
+            int rasterlinien = m.Befehle
+                .OfType<WindowsFormsApplication1.Zeichnung.Linie>()
+                .Count(l => l.Marke == "xachse");
+
+            IReadOnlyList<(int Stunde, string Text)> teilung =
+                ChartRenderer.Jahresstundenteilung(2900, 3399);
+
+            Assert.NotEmpty(teilung);
+            Assert.Equal(teilung.Count, rasterlinien);
+
+            // Die Beschriftungen, dann der Achsentitel (CHART_ACHSE_JAHRESSTUNDEN).
+            Assert.Equal(teilung.Count + 1, gezeichnet.Count);
+            for (int i = 0; i < teilung.Count; i++)
+                Assert.Equal(teilung[i].Text, gezeichnet[i]);
+
+            // Die Stunden liegen im Fenster und steigen.
+            Assert.All(teilung, t => Assert.InRange(t.Stunde, 2900, 3399));
+            for (int i = 1; i < teilung.Count; i++)
+                Assert.True(teilung[i].Stunde > teilung[i - 1].Stunde);
+
+            // Ohne Spanne gibt es keine Teilung statt einer Ausnahme.
+            Assert.Empty(ChartRenderer.Jahresstundenteilung(100, 100));
         }
     }
 }

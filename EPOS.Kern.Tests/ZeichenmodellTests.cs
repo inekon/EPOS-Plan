@@ -205,6 +205,93 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        // 4b — Marke, Zeichenflaeche und Reihen (Etappe E2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die MARKE gehoert zum Befehl und damit zur Gleichheit: Ein Bild, dessen
+        /// Legende ihre Marke verloere, waere nicht mehr dasselbe Modell — auch wenn
+        /// das PNG gleich bliebe (der Maler uebergeht die Marke).
+        /// </summary>
+        [Fact]
+        public void EineMarkeGehoertZumBefehlUndZurGleichheit()
+        {
+            var stift = new Stift(Ton(Farbrolle.ACHSE), 1f);
+            var ohne = new Linie(0f, 0f, 1f, 1f, stift);
+            Zeichenbefehl mit = ohne with { Marke = "xachse" };
+
+            Assert.Null(ohne.Marke);
+            Assert.Equal("xachse", mit.Marke);
+            Assert.NotEqual((Zeichenbefehl)ohne, mit);
+            Assert.Equal(mit, (Zeichenbefehl)(ohne with { Marke = "xachse" }));
+        }
+
+        /// <summary>
+        /// <c>Markiert</c> setzt die Marke an einem ganzen BLOCK — die x-Achse sind
+        /// sechs Rasterlinien, sechs Beschriftungen und ein Titel. Eine feinere Marke,
+        /// die der Inhalt schon gesetzt hat, bleibt stehen.
+        /// </summary>
+        [Fact]
+        public void MarkiertSetztDieMarkeAmGanzenBlock()
+        {
+            var m = new Zeichenmodell(10, 10, Ton(Farbrolle.HINTERGRUND));
+            var stift = new Stift(Ton(Farbrolle.ACHSE), 1f);
+
+            m.Markiert("yachse", z =>
+            {
+                z.Linie(0f, 0f, 1f, 1f, stift);
+                z.Text("0", 1f, 2f, new Schrift(15f), Ton(Farbrolle.ACHSE));
+                z.Markiert("nulllinie", zi => zi.Linie(2f, 2f, 3f, 3f, stift));
+            });
+            m.Linie(4f, 4f, 5f, 5f, stift);
+
+            Assert.Equal(4, m.Befehle.Count);
+            Assert.Equal("yachse", m.Befehle[0].Marke);
+            Assert.Equal("yachse", m.Befehle[1].Marke);
+            Assert.Equal("nulllinie", m.Befehle[2].Marke);
+            Assert.Null(m.Befehle[3].Marke);
+        }
+
+        /// <summary>
+        /// <c>Gleicht</c> bezieht seit Etappe E2 auch die ZEICHENFLAECHE und die
+        /// REIHEN ein — beide gehen nicht ins PNG, wohl aber ins SVG; ein
+        /// Determinismusnachweis ohne sie liefe an der halben Ausgabe vorbei.
+        /// </summary>
+        [Fact]
+        public void GleichtBeziehtFlaecheUndReihenEin()
+        {
+            // Zweimal erzeugt: andere Felder, dieselben Werte — die Reihen werden
+            // ueber ihre WERTE verglichen, nicht ueber die Referenz.
+            Assert.True(Flaechenmodell().Gleicht(Flaechenmodell()));
+
+            Zeichenmodell andereFlaeche = Flaechenmodell();
+            andereFlaeche.Flaeche = new Zeichenflaeche(new Rahmen(0f, 0f, 10f, 10f),
+                                                       new Datenfenster(0, 3, 0, 1));
+            Assert.False(Flaechenmodell().Gleicht(andereFlaeche));
+
+            Zeichenmodell ohneFlaeche = Flaechenmodell();
+            ohneFlaeche.Flaeche = null;
+            Assert.False(Flaechenmodell().Gleicht(ohneFlaeche));
+
+            Zeichenmodell eineReiheMehr = Flaechenmodell();
+            eineReiheMehr.FuegeReihe(new Datenreihe("B", Ton(Farbrolle.SERIE_2), 1f, null,
+                                                     new double[] { 1, 2 }));
+            Assert.False(Flaechenmodell().Gleicht(eineReiheMehr));
+
+            Assert.False(Flaechenmodell().Gleicht(Flaechenmodell(7.0)));
+        }
+
+        private static Zeichenmodell Flaechenmodell(double letzter = 10.0)
+        {
+            Zeichenmodell m = Probemodell();
+            m.Flaeche = new Zeichenflaeche(new Rahmen(10f, 20f, 100f, 50f),
+                                           new Datenfenster(0, 3, -10, 30));
+            m.FuegeReihe(new Datenreihe("A", Ton(Farbrolle.WAERME_WP), 2f, null,
+                                        new double[] { 30, 0, -10, letzter }));
+            return m;
+        }
+
+        // =====================================================================
         // 5 — Farbrollen und Palette
         // =====================================================================
 
