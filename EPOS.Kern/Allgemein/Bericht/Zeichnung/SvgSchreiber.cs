@@ -312,16 +312,31 @@ namespace WindowsFormsApplication1.Zeichnung
                     {
                         if (string.IsNullOrEmpty(t.Inhalt)) return null;
 
-                        // SKIA ZEICHNET AUF DER GRUNDLINIE, SVG AUCH - die Koordinate
-                        // geht deshalb UNVERAENDERT durch, so wie der Renderer sie auch
-                        // dem Maler gibt. Die Ausrichtung wird zum text-anchor; x bleibt
-                        // die gerechnete Stelle, der Browser misst die Breite selbst.
+                        // DIE KOORDINATEN GEHEN UNVERAENDERT DURCH - beide, x wie y. Der
+                        // Renderer hat sie fertig gerechnet und gibt sie dem Maler
+                        // genauso; verschoben wird erst im AUSGABEWEG, und jeder auf
+                        // seine Art:
+                        //
+                        //   x: Der Maler zieht die gemessene Breite ab, das SVG setzt
+                        //      text-anchor - der Browser misst selbst.
+                        //   y: Der Befehl nennt die linke OBERE Ecke (so haelt es das
+                        //      Modell, und so rechnen die 46 Beschriftungen des
+                        //      Bestands - eine y-Beschriftung steht auf
+                        //      y - Zeilenhoehe/2). Der Maler zieht dafuer den Aufstieg
+                        //      ab, das SVG setzt dominant-baseline="text-before-edge".
+                        //      Eine Umrechnung hier braeuchte die Schriftmetrik und
+                        //      damit SkiaSharp im Ausgabeweg - genau das soll nicht
+                        //      sein.
+                        //
+                        // Die Groesse steht in BILDPUNKTEN (pt x 96/72), derselben
+                        // Umrechnung, die Schriftkette.Erzeuge fuer Skia macht.
                         return Marke(new SvgKnoten("text", t.Marke, t.Inhalt)
                             .Attribut("x", Px(t.X)).Attribut("y", Px(t.Y))
                             .Attribut("font-size", Px(t.Schrift.Punkt * 96f / 72f) + "px")
                             .Attribut("font-weight", t.Schrift.Fett ? "bold" : null)
                             .Attribut("font-style", t.Schrift.Kursiv ? "italic" : null)
                             .Attribut("text-anchor", Anker(t.Ausrichtung))
+                            .Attribut("dominant-baseline", "text-before-edge")
                             .Attribut("fill", Hex(p, t.Ton))
                             .Attribut("fill-opacity", Deckung(p, t.Ton)), t.Marke);
                     }
