@@ -677,6 +677,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const string ZEILENKENNZEICHEN = "Bezeichnung";
 
+        /// <summary>
+        /// Dasselbe fuer die Straenge einer Photovoltaikanlage: „Dach Sued · Module in
+        /// Reihe" statt „Module in Reihe 2". Ein Strang ohne Bezeichner faellt auf
+        /// seine Nummer zurueck - so, wie ihn auch die Maske zeigt.
+        /// </summary>
+        private const string STRANGKENNZEICHEN = "Bezeichner";
+
         // =====================================================================
         // Form_Heizkessel_Bearbeiten  ->  HeizkesselKatalogDialog
         // =====================================================================
@@ -763,8 +770,29 @@ namespace WindowsFormsApplication1
         /// <remarks>
         /// <b>Das Daten-Objekt ist hier eine ZEILE und kein Dialogstand.</b> Der Dialog
         /// fuehrt eine Projektliste; angemeldet wird die GEWAEHLTE Zeile, und der Getter
-        /// holt sie bei jedem Lesen neu. Ist keine gewaehlt, sind die drei Felder leer —
+        /// holt sie bei jedem Lesen neu. Ist keine gewaehlt, sind die Felder leer —
         /// derselbe Zustand, den der Anwender auf der Maske sieht.
+        /// <para>
+        /// <b>Die Maske besteht aus DREI Dateien</b> (Welle KI-F1): der Projektdialog
+        /// selbst, der Baustein der MODELLFELDER (Rechenmodell,
+        /// Wechselrichter-Wirkungsgrad, Systemverluste) und der Baustein der STRAENGE.
+        /// Alle drei binden an dieselbe Zeile, deshalb steht hier EIN Katalogeintrag.
+        /// </para>
+        /// <para>
+        /// <b>Die STRAENGE sind eine LISTE</b> und damit die zweite Maske mit Spalten
+        /// (nach der Kostenverwaltung): Je Strangzeile wird aus jeder Spaltendeklaration
+        /// ein gewoehnliches Feld, und das Zeilenkennzeichen ist der Bezeichner des
+        /// Strangs („Dach Sued") statt seiner Nummer. Das MODUL und das GERAET eines
+        /// Strangs fehlen dabei: Beide sind Verweise in kontextabhaengige Katalogauswahlen
+        /// und stehen im Daten-Objekt allein als Id — dieselbe Regel wie ueberall.
+        /// </para>
+        /// <para>
+        /// <b>Die Anlagenwerte des Wechselrichters bleiben draussen</b>
+        /// (<c>WrNennleistungKw</c>, <c>WrEta10/50/100</c>). Sie stehen in einer eigenen
+        /// Ueberlagerung mit eigenem Arbeitsstand und eigenem OK; auf der offenen Maske
+        /// sieht der Anwender sie nicht, und ein Katalogfeld, das dort niemand nachlesen
+        /// kann, waere genau die stille Setzung, die Fachkonzept 11.6 ausschliesst.
+        /// </para>
         /// </remarks>
         private static KiDialog Photovoltaik()
         {
@@ -773,6 +801,7 @@ namespace WindowsFormsApplication1
                 anzeigename: KiDialogTexte.MaskePv,
                 felder: new[]
                 {
+                    // ---- Die Anlage -------------------------------------------------
                     new KiDialogFeld("neigung", "ErzeugerZeile.Neigung",
                                      KiDialogTexte.PvNeigungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvNeigungErl,
@@ -784,7 +813,55 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("anzahl_module", "ErzeugerZeile.AnzahlModule",
                                      KiDialogTexte.PvAnzahlName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PvAnzahlErl,
-                                     leerErlaubt: true)
+                                     leerErlaubt: true),
+
+                    // ---- Die Modellfelder (PvModellFelder) --------------------------
+                    new KiDialogFeld("modell_erweitert", "ErzeugerZeile.ModellErweitert",
+                                     KiDialogTexte.PvModellName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PvModellErl),
+                    new KiDialogFeld("wr_wirkungsgrad", "ErzeugerZeile.WrWirkungsgrad",
+                                     KiDialogTexte.PvWrWirkungsgradName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvWrWirkungsgradErl,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("systemverluste", "ErzeugerZeile.Systemverluste",
+                                     KiDialogTexte.PvSystemverlusteName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvSystemverlusteErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+
+                    // ---- Wechselrichter und Straenge (PvStraengeFelder) -------------
+                    new KiDialogFeld("mit_wechselrichter", "ErzeugerZeile.MitWechselrichter",
+                                     KiDialogTexte.PvMitWrName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PvMitWrErl),
+                    new KiDialogFeld("strang", "ErzeugerZeile.Straenge[].Bezeichner",
+                                     KiDialogTexte.PvStrangName, KiParameterTyp.Text,
+                                     KiDialogTexte.PvStrangErl,
+                                     leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
+                    new KiDialogFeld("strang_geraet", "ErzeugerZeile.Straenge[].Geraetenummer",
+                                     KiDialogTexte.PvStrangGeraetName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PvStrangGeraetErl,
+                                     leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
+                    new KiDialogFeld("strang_mppt", "ErzeugerZeile.Straenge[].Mppt",
+                                     KiDialogTexte.PvStrangMpptName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PvStrangMpptErl,
+                                     leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
+                    new KiDialogFeld("strang_module_reihe", "ErzeugerZeile.Straenge[].ModuleReihe",
+                                     KiDialogTexte.PvStrangReiheName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PvStrangReiheErl,
+                                     leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
+                    new KiDialogFeld("strang_parallel", "ErzeugerZeile.Straenge[].StraengeParallel",
+                                     KiDialogTexte.PvStrangParallelName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PvStrangParallelErl,
+                                     leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
+                    new KiDialogFeld("strang_neigung", "ErzeugerZeile.Straenge[].Neigung",
+                                     KiDialogTexte.PvStrangNeigungName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PvStrangNeigungErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true,
+                                     zeilenkennzeichen: STRANGKENNZEICHEN),
+                    new KiDialogFeld("strang_azimut", "ErzeugerZeile.Straenge[].Azimut",
+                                     KiDialogTexte.PvStrangAzimutName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PvStrangAzimutErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true,
+                                     zeilenkennzeichen: STRANGKENNZEICHEN)
                 },
                 knoepfe: new[]
                 {

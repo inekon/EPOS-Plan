@@ -25784,6 +25784,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = mit Wechselrichter, also mit Katalog, Strängen, Kennlinie und Clipping; Nein = vereinfacht mit Pauschalen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_MIT_WR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_MIT_WR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = das erweiterte Rechenmodell, Nein = das einfache (isotrope Einstrahlung, linearer Temperaturgang). Der Wechselrichter rechnet in beiden Modellen mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_MODELL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_MODELL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Neigungswinkel der Modulfläche gegen die Waagerechte (0° liegend, 90° senkrecht). ähnelt.
         /// </summary>
         public static string KI_DLG_PV_NEIGUNG_ERL {
@@ -25798,6 +25816,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PV_NEIGUNG_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_PV_NEIGUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausrichtung dieses Teilfelds in Grad, 0 = Süden; leer übernimmt den Azimut der Anlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_AZIMUT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_AZIMUT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name dieses Strangs, etwa „Dach Süd“; leer zeigt die Maske als Rangnummer. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welches physische Gerät dieses Typs den Strang trägt, ganze Zahl ab 1; leer bedeutet 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_GERAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_GERAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der MPPT-Eingang des Geräts, an dem der Strang hängt, ganze Zahl ab 1; leer bedeutet 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_MPPT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_MPPT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neigung dieses Teilfelds in Grad; leer übernimmt die Neigung der Anlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_NEIGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_NEIGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der parallel geschalteten Stränge dieser Zeile, ganze Zahl ab 1; leer bedeutet 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_PARALLEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_PARALLEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der in Reihe geschalteten Module dieses Strangs, ganze Zahl ab 1; ohne sie zählt der Strang keine Module. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_REIHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_REIHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pauschale Systemverluste der Anlage in Prozent, 0 bis 100; leer bedeutet 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_SYSTEMVERLUSTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_SYSTEMVERLUSTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wechselrichter-Wirkungsgrad als Faktor zwischen 0 und 1; leer bedeutet 0,95. Nur im einfachen Rechenmodell eingebbar — im erweiterten rechnet die Kennlinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_WR_WIRKUNGSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_WR_WIRKUNGSGRAD_ERL", resourceCulture);
             }
         }
         

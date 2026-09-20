@@ -54,14 +54,22 @@ namespace EPOS.Kern.Tests
         // ===================================================== Der Befund selbst
 
         /// <summary>
-        /// Der Fall aus dem Befund, wörtlich: zwei Felder der Heizkesselmaske, keine
-        /// Maske offen.
+        /// Der Fall aus dem Befund: zwei Felder der Heizkesselmaske, keine Maske offen.
         /// </summary>
+        /// <remarks>
+        /// <b>Die zwei Felder sind <c>th_leistung</c> und <c>bereitschaftsverlust</c>.</b>
+        /// Sie stehen an genau EINER Maske, und nur dann darf die Absage sie zuordnen.
+        /// <c>vorlauf</c> und <c>ruecklauf</c> taugen dafür nicht mehr: Mit der Freigabe
+        /// der Erzeugermasken des Projekts führen sie fünf Masken (Kessel im Katalog und
+        /// im Projekt, BHKW, Solarkollektoren, Wärmepumpen-Anlage). Was dann geschieht,
+        /// hält <see cref="Ein_mehrdeutiges_Feld_wird_nicht_geraten"/> fest.
+        /// </remarks>
         [Fact]
         public void Die_Absage_nennt_die_Maske_zu_den_Feldern()
         {
             string text = Grund("formular_ausfuellen",
-                new Dictionary<string, object> { ["werte"] = "vorlauf=65; ruecklauf=55" });
+                new Dictionary<string, object>
+                { ["werte"] = "th_leistung=120; bereitschaftsverlust=1,5" });
 
             Assert.NotNull(text);
 
@@ -77,11 +85,12 @@ namespace EPOS.Kern.Tests
         public void Auch_feld_setzen_bekommt_den_Weg_genannt()
         {
             string text = Grund("feld_setzen",
-                new Dictionary<string, object> { ["feld"] = "vorlauf", ["wert"] = "65" });
+                new Dictionary<string, object> { ["feld"] = "th_leistung", ["wert"] = "120" });
 
             Assert.NotNull(text);
             Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL).Anzeigename,
                             text, StringComparison.Ordinal);
+            Assert.Contains("dialog_oeffnen", text, StringComparison.Ordinal);
         }
 
         // ===================================================== Die Grenzen
@@ -92,12 +101,8 @@ namespace EPOS.Kern.Tests
         /// keine davon nennen, sondern faellt auf die Liste zurueck.
         /// </summary>
         /// <remarks>
-        /// <b>Bis zum 15.09.2026 stand hier <c>nutzungsdauer</c></b> — das Feld gab es in
-        /// der Heizkesselmaske UND als Spalte der Kostenverwaltung. Mit dem
-        /// Anwenderentscheid „keine Kosten und Emissionen im Bearbeiten-Dialog" hat der
-        /// Heizkessel es verloren; es steht seither nur noch an einer Maske und taugt
-        /// nicht mehr als Beispiel. <c>schritt</c> ist an seine Stelle getreten, und die
-        /// Vorbedingung darunter prueft weiterhin, dass der Fall seinen Gegenstand hat.
+        /// Die Vorbedingung im Fall prueft, dass er seinen Gegenstand wirklich hat —
+        /// ein Feld, das nur noch an einer Maske steht, bewiese nichts.
         /// </remarks>
         [Fact]
         public void Ein_mehrdeutiges_Feld_wird_nicht_geraten()
@@ -113,6 +118,30 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(text);
             Assert.DoesNotContain("dialog_oeffnen", text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Der Vorlauf ist ein mehrdeutiges Feld</b> — er steht an fuenf Masken der
+        /// Erzeugerfamilien. Die Absage nennt deshalb keine von ihnen, sondern die
+        /// Liste; welche gemeint ist, sagt erst die OFFENE Maske.
+        /// </summary>
+        [Fact]
+        public void Der_Vorlauf_steht_an_mehreren_Masken_und_wird_nicht_geraten()
+        {
+            int masken = 0;
+            foreach (KiDialog d in KiDialoge.Katalog.Alle)
+                if (d.KenntFeld("vorlauf")) masken++;
+            Assert.True(masken > 1, "Der Fall braucht den Vorlauf in mehreren Masken.");
+
+            string text = Grund("feld_setzen",
+                new Dictionary<string, object> { ["feld"] = "vorlauf", ["wert"] = "55" });
+
+            Assert.NotNull(text);
+            Assert.DoesNotContain("dialog_oeffnen", text, StringComparison.Ordinal);
+
+            // Die Liste nennt weiterhin ANZEIGENAMEN und keine Typnamen.
+            Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_PROJEKT).Anzeigename,
+                            text, StringComparison.Ordinal);
         }
 
         /// <summary>

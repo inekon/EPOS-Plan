@@ -20568,4 +20568,37 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WPA_MODULKOSTEN_ERL" xml:space="preserve">
     <value>Die Gerätekosten in Euro — Anzeige; gepflegt werden sie in der Kostenverwaltung, nicht auf dieser Maske.</value>
   </data>
+  <data name="KI_DLG_PV_MODELL_ERL" xml:space="preserve">
+    <value>Ja = das erweiterte Rechenmodell, Nein = das einfache (isotrope Einstrahlung, linearer Temperaturgang). Der Wechselrichter rechnet in beiden Modellen mit.</value>
+  </data>
+  <data name="KI_DLG_PV_WR_WIRKUNGSGRAD_ERL" xml:space="preserve">
+    <value>Der Wechselrichter-Wirkungsgrad als Faktor zwischen 0 und 1; leer bedeutet 0,95. Nur im einfachen Rechenmodell eingebbar — im erweiterten rechnet die Kennlinie.</value>
+  </data>
+  <data name="KI_DLG_PV_SYSTEMVERLUSTE_ERL" xml:space="preserve">
+    <value>Pauschale Systemverluste der Anlage in Prozent, 0 bis 100; leer bedeutet 0.</value>
+  </data>
+  <data name="KI_DLG_PV_MIT_WR_ERL" xml:space="preserve">
+    <value>Ja = mit Wechselrichter, also mit Katalog, Strängen, Kennlinie und Clipping; Nein = vereinfacht mit Pauschalen.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_ERL" xml:space="preserve">
+    <value>Der Name dieses Strangs, etwa „Dach Süd“; leer zeigt die Maske als Rangnummer.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_GERAET_ERL" xml:space="preserve">
+    <value>Welches physische Gerät dieses Typs den Strang trägt, ganze Zahl ab 1; leer bedeutet 1.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_MPPT_ERL" xml:space="preserve">
+    <value>Der MPPT-Eingang des Geräts, an dem der Strang hängt, ganze Zahl ab 1; leer bedeutet 1.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_REIHE_ERL" xml:space="preserve">
+    <value>Die Zahl der in Reihe geschalteten Module dieses Strangs, ganze Zahl ab 1; ohne sie zählt der Strang keine Module.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_PARALLEL_ERL" xml:space="preserve">
+    <value>Die Zahl der parallel geschalteten Stränge dieser Zeile, ganze Zahl ab 1; leer bedeutet 1.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_NEIGUNG_ERL" xml:space="preserve">
+    <value>Neigung dieses Teilfelds in Grad; leer übernimmt die Neigung der Anlage.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_AZIMUT_ERL" xml:space="preserve">
+    <value>Ausrichtung dieses Teilfelds in Grad, 0 = Süden; leer übernimmt den Azimut der Anlage.</value>
+  </data>
 </root>

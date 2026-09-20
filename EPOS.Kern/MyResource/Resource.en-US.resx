@@ -20561,4 +20561,37 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPA_MODULKOSTEN_ERL" xml:space="preserve">
     <value>The device costs in euros — display only; they are maintained in the cost management, not on this form.</value>
   </data>
+  <data name="KI_DLG_PV_MODELL_ERL" xml:space="preserve">
+    <value>Yes = the extended calculation model, No = the simple one (isotropic irradiance, linear temperature response). The inverter is calculated in both models.</value>
+  </data>
+  <data name="KI_DLG_PV_WR_WIRKUNGSGRAD_ERL" xml:space="preserve">
+    <value>The inverter efficiency as a factor between 0 and 1; empty means 0.95. Editable only in the simple model — in the extended one the characteristic curve applies.</value>
+  </data>
+  <data name="KI_DLG_PV_SYSTEMVERLUSTE_ERL" xml:space="preserve">
+    <value>Flat-rate system losses of the plant in percent, 0 to 100; empty means 0.</value>
+  </data>
+  <data name="KI_DLG_PV_MIT_WR_ERL" xml:space="preserve">
+    <value>Yes = with inverter, that is with catalogue, strings, characteristic curve and clipping; No = simplified with flat rates.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_ERL" xml:space="preserve">
+    <value>The name of this string, for example “South roof”; if empty the form shows the rank number.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_GERAET_ERL" xml:space="preserve">
+    <value>Which physical device of this type carries the string, whole number from 1; empty means 1.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_MPPT_ERL" xml:space="preserve">
+    <value>The MPPT input of the device the string is connected to, whole number from 1; empty means 1.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_REIHE_ERL" xml:space="preserve">
+    <value>The number of modules connected in series in this string, whole number from 1; without it the string counts no modules.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_PARALLEL_ERL" xml:space="preserve">
+    <value>The number of strings connected in parallel in this row, whole number from 1; empty means 1.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_NEIGUNG_ERL" xml:space="preserve">
+    <value>Tilt of this sub-array in degrees; empty inherits the tilt of the plant.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_AZIMUT_ERL" xml:space="preserve">
+    <value>Orientation of this sub-array in degrees, 0 = south; empty inherits the azimuth of the plant.</value>
+  </data>
 </root>

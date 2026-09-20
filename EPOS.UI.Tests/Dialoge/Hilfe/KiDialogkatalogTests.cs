@@ -193,7 +193,7 @@ public class KiDialogkatalogTests
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_6_3_1_und_1_Feld()
+    public void Die_vier_Startmasken_fuehren_6_14_1_und_1_Feld()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
@@ -205,9 +205,54 @@ public class KiDialogkatalogTests
         // Katalog führt sie deshalb auch nicht mehr (siehe
         // Die_Heizkesselmaske_fuehrt_nur_noch_die_sechs_sichtbaren_Felder).
         Assert.Equal(6, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(3, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
+        Assert.Equal(14, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
         Assert.Single(KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder);
         Assert.Single(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder);
+    }
+
+    /// <summary>
+    /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
+    /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten
+    /// der Strangliste.
+    /// </summary>
+    /// <remarks>
+    /// Die Strangfelder sind SPALTEN (<c>ErzeugerZeile.Straenge[].Mppt</c>): Je
+    /// vorhandener Strangzeile wird daraus ein gewöhnliches Feld, und das
+    /// Zeilenkennzeichen ist der Bezeichner des Strangs. Ohne diesen Fall bliebe
+    /// unbemerkt, wenn eines der sieben wieder zu einem flachen Feld würde.
+    /// </remarks>
+    [Fact]
+    public void Die_Photovoltaikmaske_fuehrt_die_Modellfelder_und_sieben_Strangspalten()
+    {
+        KiDialog pv = KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!;
+
+        foreach (string name in new[] { "modell_erweitert", "wr_wirkungsgrad",
+                                        "systemverluste", "mit_wechselrichter" })
+        {
+            KiDialogFeld feld = pv.FindeFeld(name)!;
+            Assert.NotNull(feld);
+            Assert.False(feld.IstSpalte, name);
+        }
+
+        string[] spalten =
+        {
+            "strang", "strang_geraet", "strang_mppt", "strang_module_reihe",
+            "strang_parallel", "strang_neigung", "strang_azimut"
+        };
+
+        foreach (string name in spalten)
+        {
+            KiDialogFeld feld = pv.FindeFeld(name)!;
+            Assert.NotNull(feld);
+            Assert.True(feld.IstSpalte, name);
+            Assert.Equal("Straenge", feld.Sammlung);
+            Assert.Equal("Bezeichner", feld.Zeilenkennzeichen);
+        }
+
+        // Die Anlagenwerte des Wechselrichters stehen in einer eigenen Ueberlagerung
+        // und bleiben deshalb draussen (Fachkonzept 11.6).
+        foreach (string weg in new[] { "wr_nennleistung", "wr_eta10", "wr_eta50", "wr_eta100" })
+            Assert.False(pv.KenntFeld(weg), weg);
     }
 
     /// <summary>
@@ -263,7 +308,11 @@ public class KiDialogkatalogTests
     public static TheoryData<string, string> Markupdateien() => new()
     {
         { KiMaskennamen.HEIZKESSEL,       "EPOS.UI/Dialoge/Erzeuger/HeizkesselKatalogDialog.razor" },
-        { KiMaskennamen.PHOTOVOLTAIK,     "EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor" },
+        // DREI Dateien (Welle KI-F1): Der Projektdialog zeichnet Neigung, Azimut und
+        // Modulzahl selbst, die Modellfelder und die Straenge stehen in Bausteinen.
+        { KiMaskennamen.PHOTOVOLTAIK,     "EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor;" +
+                                          "EPOS.UI/Dialoge/Erzeuger/PvModellFelder.razor;" +
+                                          "EPOS.UI/Dialoge/Erzeuger/PvStraengeFelder.razor" },
         { KiMaskennamen.PUFFERSPEICHER,   "EPOS.UI/Dialoge/Erzeuger/PufferSpKatalogDialog.razor" },
         { KiMaskennamen.WAERMEPUMPE,      "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor;" +
                                           "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
@@ -432,11 +481,11 @@ public class KiDialogkatalogTests
             felder += KiDialoge.Katalog.Finde((string)zeile[0])!.Felder.Count;
         }
 
-        // 6 (Heizkesseleditor) + 3 (PV) + 1 (Puffereditor) + 1 (WP-Verwaltung) +
+        // 6 (Heizkesseleditor) + 14 (PV) + 1 (Puffereditor) + 1 (WP-Verwaltung) +
         // 7 (Kostenverwaltung) + 3 (Heizkessel im Projekt) + 4 (BHKW im Projekt) +
         // 1 (Pufferspeicher im Projekt) + 1 (Stromspeicher im Projekt) +
-        // 5 (Solarkollektoren) + 21 (Waermepumpen-Anlage) = 53.
-        Assert.True(felder >= 53, "Nur " + felder + " Feldpfade geprüft.");
+        // 5 (Solarkollektoren) + 21 (Waermepumpen-Anlage) = 64.
+        Assert.True(felder >= 64, "Nur " + felder + " Feldpfade geprüft.");
     }
 
     // ---------------------------------------------------------------------

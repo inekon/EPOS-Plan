@@ -150,6 +150,33 @@
         internal static string PvAnzahlName => MyResource.Resource.KI_DLG_PV_ANZAHL_NAME;
         internal static string PvAnzahlErl => MyResource.Resource.KI_DLG_PV_ANZAHL_ERL;
 
+        // Die Modellfelder und die Straenge (Welle KI-F1). Ihre Anzeigenamen sind die
+        // Beschriftungen der beiden Bausteine - dieselben Schluessel, die PvModellTexte
+        // und PvStrangTexte fuehren.
+        internal static string PvModellName => MyResource.Resource.PVM_ANLAGE_LABEL_MODELL;
+        internal static string PvModellErl => MyResource.Resource.KI_DLG_PV_MODELL_ERL;
+        internal static string PvWrWirkungsgradName => MyResource.Resource.PV_ANLAGE_LABEL_WRWIRKUNGSGRAD;
+        internal static string PvWrWirkungsgradErl => MyResource.Resource.KI_DLG_PV_WR_WIRKUNGSGRAD_ERL;
+        internal static string PvSystemverlusteName => MyResource.Resource.PV_ANLAGE_LABEL_SYSTEMVERLUSTE;
+        internal static string PvSystemverlusteErl => MyResource.Resource.KI_DLG_PV_SYSTEMVERLUSTE_ERL;
+        internal static string PvMitWrName => MyResource.Resource.PVS_WAHL;
+        internal static string PvMitWrErl => MyResource.Resource.KI_DLG_PV_MIT_WR_ERL;
+
+        internal static string PvStrangName => MyResource.Resource.PVS_SP_BEZEICHNER;
+        internal static string PvStrangErl => MyResource.Resource.KI_DLG_PV_STRANG_ERL;
+        internal static string PvStrangGeraetName => MyResource.Resource.PVS_SP_GERAET;
+        internal static string PvStrangGeraetErl => MyResource.Resource.KI_DLG_PV_STRANG_GERAET_ERL;
+        internal static string PvStrangMpptName => MyResource.Resource.PVS_SP_MPPT;
+        internal static string PvStrangMpptErl => MyResource.Resource.KI_DLG_PV_STRANG_MPPT_ERL;
+        internal static string PvStrangReiheName => MyResource.Resource.PVS_SP_REIHE;
+        internal static string PvStrangReiheErl => MyResource.Resource.KI_DLG_PV_STRANG_REIHE_ERL;
+        internal static string PvStrangParallelName => MyResource.Resource.PVS_SP_PARALLEL;
+        internal static string PvStrangParallelErl => MyResource.Resource.KI_DLG_PV_STRANG_PARALLEL_ERL;
+        internal static string PvStrangNeigungName => MyResource.Resource.PVS_SP_NEIGUNG;
+        internal static string PvStrangNeigungErl => MyResource.Resource.KI_DLG_PV_STRANG_NEIGUNG_ERL;
+        internal static string PvStrangAzimutName => MyResource.Resource.PVS_SP_AZIMUT;
+        internal static string PvStrangAzimutErl => MyResource.Resource.KI_DLG_PV_STRANG_AZIMUT_ERL;
+
         // ====================================================== Pufferspeicher: Felder
 
         internal static string PspVolumenName => MyResource.Resource.KI_DLG_PSP_VOLUMEN_NAME;
