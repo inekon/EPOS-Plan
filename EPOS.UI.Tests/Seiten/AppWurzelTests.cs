@@ -140,6 +140,12 @@ public class AppWurzelTests : EposBunitContext
     /// Auftrag #286, Einbettungsstelle 1: Der Wirt bekommt nach OK, was er braucht
     /// (die Speichermeldung — der Dialog hat geschrieben), und nach Abbrechen nichts.
     /// Gemessen werden die Schreibzugriffe, nicht die Anzeige.
+    ///
+    /// <para><b>ETAPPE E2 (Befund 04/B30).</b> Der OK-Weg schreibt nur noch den
+    /// WERTLICH geaenderten Stand. Geaendert ist hier allein die Anlagenzeile — die
+    /// Projektvorgaben bleiben, wie sie geladen wurden, und werden deshalb nicht
+    /// mitgeschrieben. Aus den zwei Zugriffen wird EINER; die Aussage des Falls
+    /// bleibt dieselbe: geschrieben wird im OK-Weg und sonst nirgends.</para>
     /// </summary>
     [Theory]
     [InlineData(true)]
@@ -174,7 +180,7 @@ public class AppWurzelTests : EposBunitContext
         var knoepfe = cut.FindAll(".epos-leiste button");
         knoepfe[ok ? 1 : 0].Click();
 
-        Assert.Equal(ok ? 2 : 0, zugriffe);
+        Assert.Equal(ok ? 1 : 0, zugriffe);          // nur die geaenderte Anlagenzeile
         Assert.Equal(ok ? 5.57 : (double?)null, anlage.SatzEinspCt);
         Assert.Single(cut.FindAll(".epos-seite"));   // zurueck in der Liste
     }

@@ -244,8 +244,13 @@ public class VorlagenZeileTests : BunitContext
         Assert.Equal(1, angelegt);
     }
 
+    /// <summary>
+    /// In der Abschlusszeile sind Satz, Nutzungsdauer — und seit Etappe E2 auch die
+    /// BEMESSUNG — gesperrt: Der Wirt reicht dort keine Auswahl durch, eine bedienbare
+    /// Klappliste ginge ins Leere (Mockup-Prüfung 03/#10).
+    /// </summary>
     [Fact]
-    public void In_der_Abschlusszeile_sind_Satz_und_Nutzungsdauer_gesperrt()
+    public void In_der_Abschlusszeile_sind_Bemessung_Satz_und_Nutzungsdauer_gesperrt()
     {
         var cut = Render<VorlagenZeile>(p => p
             .Add(x => x.Bemessungen, BEMESSUNGEN)
@@ -256,6 +261,19 @@ public class VorlagenZeileTests : BunitContext
         Assert.False(felder[0].HasAttribute("disabled"));   // Bezeichnung
         Assert.True(felder[1].HasAttribute("disabled"));    // Satz
         Assert.True(felder[2].HasAttribute("disabled"));    // Nutzungsdauer
+
+        Assert.True(cut.Find("select").HasAttribute("disabled"));   // Bemessung (E2)
+    }
+
+    /// <summary>Gegenprobe: In einer BESTEHENDEN Zeile bleibt die Klappliste bedienbar.</summary>
+    [Fact]
+    public void In_einer_bestehenden_Zeile_bleibt_die_Bemessung_bedienbar()
+    {
+        var cut = Render<VorlagenZeile>(p => p
+            .Add(x => x.Bemessungen, BEMESSUNGEN)
+            .Add(x => x.Neuzeile, false));
+
+        Assert.False(cut.Find("select").HasAttribute("disabled"));
     }
 
     // =====================================================================

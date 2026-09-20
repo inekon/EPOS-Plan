@@ -298,7 +298,7 @@
     <value>Versuche: {0}…</value>
   </data>
   <data name="ETV_BTN_SPEICHERN" xml:space="preserve">
-    <value>💾 Speichern</value>
+    <value>Speichern</value>
   </data>
   <data name="ETV_LBL_ARBEITSPREIS" xml:space="preserve">
     <value>Arbeitspreis</value>
@@ -6768,6 +6768,9 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_REIHE_STROMSTEUER_ENTLASTUNG" xml:space="preserve">
     <value>Stromsteuer-Entlastung</value>
   </data>
+  <data name="WIRT_REIHE_PV" xml:space="preserve">
+    <value>PV-Vergütung (EEG)</value>
+  </data>
   <data name="KI_REG_PROJEKT_ID_NAME" xml:space="preserve">
     <value>Projekt</value>
   </data>
@@ -8755,6 +8758,9 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_LPR_LOESCHEN" xml:space="preserve">
     <value>Reihe löschen</value>
   </data>
+  <data name="KDLG_LPR_LOESCHFRAGE" xml:space="preserve">
+    <value>Die Leistungspreis-Reihe für {0} wirklich löschen?</value>
+  </data>
   <data name="KDLG_LPR_TITEL" xml:space="preserve">
     <value>Saisonale Leistungspreis-Sätze</value>
   </data>
@@ -8960,7 +8966,7 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
     <value>KWKG-Zuschlag (§ 7 KWKG 2025) — Anzeige aus dem Gesetzeskatalog</value>
   </data>
   <data name="KDLG_ERTRAG_G_PV" xml:space="preserve">
-    <value>PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7)</value>
+    <value>PV-Vergütung (EEG) — eine Vergütungswahrheit</value>
   </data>
   <data name="KDLG_ERTRAG_G_STEUERN" xml:space="preserve">
     <value>Steuervergünstigungen (HF6, Sätze aus dem Gesetzeskatalog)</value>
@@ -8972,7 +8978,7 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
     <value>Diese Komponente führt keine laufenden Erträge — Förderungen/Zuschüsse laufen als Zuschuss-Position in den Investitionskosten (FK5).</value>
   </data>
   <data name="KDLG_ERTRAG_PV" xml:space="preserve">
-    <value>Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet. Eine Variante übernimmt die Vergütung ihres Stammprojekts oder führt eigene Werte. Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.</value>
+    <value>Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt (eine Vergütungswahrheit je Projekt) — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet. Eine Variante übernimmt die Vergütung ihres Stammprojekts oder führt eigene Werte. Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung.</value>
   </data>
   <data name="KDLG_ERTRAG_PV_OEFFNEN" xml:space="preserve">
     <value>PV-Vergütungsdialog öffnen…</value>
@@ -9808,11 +9814,17 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
     <value>Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Mengenangabe mindert den KWK-Zuschlag, die Kostenposition belastet die Betriebskosten — verrechnet wird nichts.</value>
   </data>
+  <data name="KOH_CO2_DOPPELT" xml:space="preserve">
+    <value>CO₂ doppelt angesetzt: Der erfasste Arbeitspreis weist einen aktiven CO₂-Bestandteil nach BEHG aus ({0}), und der Lauf bucht zusätzlich eine CO₂-Abgabe von {1} €/a. Derselbe Betrag steht damit zweimal in den Energiekosten — verrechnet wird nichts.</value>
+  </data>
+  <data name="KOH_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
+    <value>CO₂-Bilanz: Dem Projekt ist kein Strom-Energieträger zugeordnet — der Netzbezug ist mit dem Strommix-Vorgabewert von {0} g CO₂/kWh gerechnet.</value>
+  </data>
+  <data name="KOH_STROMST_ERLAUBNIS" xml:space="preserve">
+    <value>Erlaubnispflicht nach StromStG: Ab {0} kW elektrischer Nennleistung braucht der Betreiber eine Erlaubnis des Hauptzollamts. Betroffen: {1}. Auf die Rechnung wirkt das nicht.</value>
+  </data>
   <data name="STEUER_ENERGIEST_NUR_54" xml:space="preserve">
     <value>{0}: § 53 und § 53a Abs. 5 EnergieStG entlasten nur Anlagen mit Stromerzeugung. Für diese Anlage kommt allein § 54 EnergieStG in Betracht.</value>
-  </data>
-  <data name="WIRT_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
-    <value>CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit Strommix-Vorgabewert gerechnet.</value>
   </data>
   <data name="WIRT_STROMTRAEGER_RUECKFALL" xml:space="preserve">
     <value>Netzbezug mit dem Energieträger „{0}“ bepreist — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen.</value>
@@ -10668,7 +10680,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Die PV-Vergütung konnte nicht gespeichert werden.</value>
   </data>
   <data name="PVV_SPRUNG_HINWEIS" xml:space="preserve">
-    <value>Der Sprung in den Tarifdialog schließt dieses Fenster und öffnet es danach wieder — bitte vorher übernehmen.</value>
+    <value>Der Sprung speichert die Eingaben, schließt diesen Dialog und öffnet ihn danach wieder.</value>
   </data>
   <data name="WPAR_BTN_SPEICHERN" xml:space="preserve">
     <value>Speichern</value>
@@ -16120,7 +16132,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>PV-Anlage &#8222;{0}&#8220;: {1}</value>
   </data>
   <data name="WIRT_EMPF_SATZ" xml:space="preserve">
-    <value>Vorschlag zur Entscheidung: Variante „{0}“ — Kapitalwertdifferenz zum Stammprojekt {1} (Erwartet){2}.</value>
+    <value>Vorschlag zur Entscheidung: Variante „{0}“ — Kapitalwertdifferenz zu {3} {1} (Erwartet){2}.</value>
   </data>
   <data name="WIRT_EMPF_ALLE_POSITIV" xml:space="preserve">
     <value>, in allen drei Szenarien positiv (Worst {0}, Best {1})</value>
@@ -16132,7 +16144,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Bandbreite nicht berechnet</value>
   </data>
   <data name="WIRT_EMPF_KEINE" xml:space="preserve">
-    <value>Vorschlag zur Entscheidung: Keine Variante ist gegenüber dem Stammprojekt wirtschaftlich; Weiterbetrieb (Referenzfall).</value>
+    <value>Vorschlag zur Entscheidung: Keine Variante ist gegenüber {0} wirtschaftlich; Weiterbetrieb (Referenzfall).</value>
   </data>
   <data name="WIRT_EMPF_STUFE_JA" xml:space="preserve">
     <value>empfohlen</value>
@@ -16185,8 +16197,17 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="WIRT_SZ_SP_AMORT" xml:space="preserve">
     <value>Amortisation [a]</value>
   </data>
+  <data name="WIRT_SZ_SP_SPANNE" xml:space="preserve">
+    <value>Spanne [€]</value>
+  </data>
+  <data name="WIRT_SZ_BANDBREITE_TITEL" xml:space="preserve">
+    <value>Bandbreite der Kapitalwertdifferenz (Worst / Erwartet / Best)</value>
+  </data>
+  <data name="WIRT_EMPF_REFERENZ_UNBENANNT" xml:space="preserve">
+    <value>dem Referenzfall</value>
+  </data>
   <data name="WIRT_SZ_DELTA_FUSS" xml:space="preserve">
-    <value>ΔKW = Kapitalwert der Variante abzüglich Kapitalwert des Stammprojekts (Referenzfall); „—" = kein Stammprojekt in der Vergleichsgruppe oder Szenario nicht gerechnet.</value>
+    <value>ΔKW = Kapitalwert der Variante abzüglich Kapitalwert von {0} (Referenz); „—" = Referenz nicht in der Vergleichsgruppe oder Szenario nicht gerechnet. Spanne = Best − Worst.</value>
   </data>
   <data name="WIRT_NM_TITEL" xml:space="preserve">
     <value>Nicht monetäre Wirkungen</value>
@@ -19709,9 +19730,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="BK_KOSTEN_EMISSION_CO2" xml:space="preserve">
     <value>CO₂-Faktor der Ebene „{0}“. Lesekette: Projektwert → aktiver Emissionswert → Brennstoff-Stamm → Trägerkatalog.</value>
-  </data>
-  <data name="WIRT_ENK_KOPF" xml:space="preserve">
-    <value>Energiekosten je Anlage [€/a]</value>
   </data>
   <data name="WIRT_ENK_ANLAGE" xml:space="preserve">
     <value>{0} — {1}</value>

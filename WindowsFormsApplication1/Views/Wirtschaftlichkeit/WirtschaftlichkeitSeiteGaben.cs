@@ -652,7 +652,11 @@ namespace WindowsFormsApplication1
                 matrixzeilen.Add(new MatrixZeile { Titel = hinweis, Zellen = zellen });
             }
 
-            KohaerenzZeilen(spaltenErg, matrixzeilen);
+            // ETAPPE E2 (Befund R6): Die Kohärenzzeilen stehen seither im EINEN
+            // Zeilenkatalog des Kerns (WirtschaftlichkeitZeilen) und kommen oben mit
+            // allen anderen Zeilen herein — damit zeigen Reiter, Wortbericht und
+            // Excelblatt dieselben Zeilen. Der zweite Aufbau an dieser Stelle war die
+            // Stelle, an der die drei Ausgaben auseinanderliefen.
 
             ansicht.Matrix = new ErgebnisMatrix { Spalten = spalten, Zeilen = matrixzeilen };
             return ansicht;
@@ -720,40 +724,6 @@ namespace WindowsFormsApplication1
             var zellen = new List<string>();
             foreach (WirtschaftlichkeitErgebnis erg in zeilen) zellen.Add(erg == null ? "—" : wert(erg));
             return new MatrixZeile { Titel = titel, Zellen = zellen };
-        }
-
-        /// <summary>
-        /// ETAPPE B2 (Konzept BHKW-Wirtschaftlichkeit § 4.1): die Zeilen der
-        /// Kohärenzprüfung, je Hinweis eine Zeile. Sie sind nicht persistiert;
-        /// ein aus der Datenbank geladener Stand zeigt sie deshalb nicht.
-        /// </summary>
-        private void KohaerenzZeilen(List<WirtschaftlichkeitErgebnis> zeilen, List<MatrixZeile> ziel)
-        {
-            int hoechste = 0;
-            foreach (WirtschaftlichkeitErgebnis x in zeilen)
-                if (x != null && x.KohaerenzHinweise != null && x.KohaerenzHinweise.Count > hoechste)
-                    hoechste = x.KohaerenzHinweise.Count;
-            if (hoechste == 0) return;
-
-            string titel = T("KOH_ZEILE_TITEL", "Kohärenzprüfung");
-            for (int i = 0; i < hoechste; i++)
-            {
-                int index = i;
-                ziel.Add(Zeile(titel, zeilen, x =>
-                {
-                    List<KohaerenzHinweis> l = x.KohaerenzHinweise;
-                    if (l == null || index >= l.Count) return "";
-                    KohaerenzHinweis h = l[index];
-                    // ETAPPE B6: drei Schweren, drei Marken - die positive Nennung
-                    // (Fall 1) bekommt den Haken, den die Anwendung sonst fuer
-                    // "hat geklappt" nimmt.
-                    string marke = string.Equals(h.Schwere, KohaerenzSchwere.WARNUNG,
-                                                 StringComparison.Ordinal) ? "⚠ "
-                                 : string.Equals(h.Schwere, KohaerenzSchwere.BESTAETIGUNG,
-                                                 StringComparison.Ordinal) ? "✓ " : "· ";
-                    return marke + h.Text;
-                }));
-            }
         }
 
         /// <summary>

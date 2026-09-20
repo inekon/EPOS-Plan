@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace WindowsFormsApplication1
 {
@@ -601,13 +602,18 @@ namespace WindowsFormsApplication1
 
             z.Add(Zahl("RESTWERT", MyResource.Resource.WIRT_ZEILE_RESTWERT,
                        e => (double?)e.RestwertBarwert));
-            z.Add(Zahl("NETTOBARWERT", MyResource.Resource.WIRT_ZEILE_NETTOBARWERT,
-                       e => e.Kapitalwert));
 
+            // ANWENDERENTSCHEID Q19 (Mockup-Prüfung § 4) — REINE ANZEIGE: Die
+            // Differenzkennzahl steht ÜBER dem Nettobarwert. Sie ist die Zahl, nach der
+            // entschieden wird; der absolute Barwert ist die Herleitung dazu. Gerechnet
+            // wird nichts anders, beide Zeilen führen dieselben Werte wie vorher.
             WirtZeile diff = Zahl("KAPITALWERT_DIFF", MyResource.Resource.WIRT_ZEILE_KAPITALWERT_DIFF,
                                   e => e.KapitalwertDiff);
             diff.StammAnzeige = MyResource.Resource.WIRT_ZEILE_STAMM_REFERENZ;
             z.Add(diff);
+
+            z.Add(Zahl("NETTOBARWERT", MyResource.Resource.WIRT_ZEILE_NETTOBARWERT,
+                       e => e.Kapitalwert));
 
             WirtZeile ann = Zahl("ANNUITAET", MyResource.Resource.WIRT_ZEILE_ANNUITAET,
                                  e => e.AnnuitaetKW);
@@ -642,7 +648,71 @@ namespace WindowsFormsApplication1
                     Text = e => e.SteuerHerkunft
                 });
 
+            // ETAPPE E2 (Befund R6) — die Kohärenzzeilen des Laufs. Bis hierher standen
+            // sie NUR auf der Windows-Seite (WirtschaftlichkeitSeiteGaben); Wort- und
+            // Excelbericht kannten sie nicht, und die Rubrik ebenso wenig. Als Textzeile
+            // dieses EINEN Zeilenkatalogs erreichen sie alle drei Ausgaben auf einmal —
+            // dieselbe Sichtbarkeitsregel, dieselbe Reihenfolge, dieselben Marken.
+            KohaerenzZeilen(menge, z);
+
             return z;
+        }
+
+        /// <summary>
+        /// ETAPPE E2 (Befund R6) — je Kohärenzhinweis eine Textzeile, so viele, wie das
+        /// Ergebnis mit den meisten Hinweisen führt. Die Zeilen tragen alle denselben
+        /// Titel (<c>KOH_ZEILE_TITEL</c>); ein Ergebnis ohne so viele Hinweise lässt
+        /// seine Zelle leer.
+        /// </summary>
+        private static void KohaerenzZeilen(IList<WirtschaftlichkeitErgebnis> menge,
+                                            List<WirtZeile> z)
+        {
+            int hoechste = 0;
+            if (menge != null)
+                foreach (WirtschaftlichkeitErgebnis e in menge)
+                    if (e != null && e.KohaerenzHinweise != null &&
+                        e.KohaerenzHinweise.Count > hoechste) hoechste = e.KohaerenzHinweise.Count;
+            if (hoechste == 0) return;
+
+            string titel = MyResource.Resource.KOH_ZEILE_TITEL;
+            for (int i = 0; i < hoechste; i++)
+            {
+                int index = i;
+                z.Add(new WirtZeile
+                {
+                    Schluessel = "KOHAERENZ_" + (index + 1).ToString(CultureInfo.InvariantCulture),
+                    Titel = titel,
+                    Text = e => Zeilentext(e, index)
+                });
+            }
+        }
+
+        /// <summary>Der Text EINES Kohärenzhinweises eines Ergebnisses; leer, wenn es
+        /// so viele nicht führt.</summary>
+        private static string Zeilentext(WirtschaftlichkeitErgebnis e, int index)
+        {
+            if (e == null || e.KohaerenzHinweise == null ||
+                index >= e.KohaerenzHinweise.Count) return "";
+            return Kohaerenzmarke(e.KohaerenzHinweise[index]);
+        }
+
+        /// <summary>
+        /// ETAPPE B6 — drei Schweren, drei Marken: die positive Nennung (Fall 1)
+        /// bekommt den Haken, den die Anwendung sonst für „hat geklappt" nimmt.
+        ///
+        /// <para>Die Marken stehen <b>hier</b> und nicht in jeder Ausgabe, damit Rubrik,
+        /// Wort- und Excelbericht und die Ergebnisseite dieselbe Zeile zeigen. Sie sind
+        /// typografische Zeichen ohne Wortbestand und deshalb nicht lokalisiert —
+        /// dieselbe dokumentierte Ausnahme wie bei den Einheitenzeichen.</para>
+        /// </summary>
+        public static string Kohaerenzmarke(KohaerenzHinweis h)
+        {
+            if (h == null) return "";
+            string marke = string.Equals(h.Schwere, KohaerenzSchwere.WARNUNG,
+                                         StringComparison.Ordinal) ? "⚠ "
+                         : string.Equals(h.Schwere, KohaerenzSchwere.BESTAETIGUNG,
+                                         StringComparison.Ordinal) ? "✓ " : "· ";
+            return marke + h.Text;
         }
 
         private static WirtZeile Zahl(string schluessel, string titel,
@@ -1068,7 +1138,7 @@ namespace WindowsFormsApplication1
             // U33 (18.09.2026): Diese Liste sind die BETRIEBSKOSTENzeilen; ein
             // Leistungssatz heißt hier „€/kWp·a" und nicht „€/kWp".
             return n.Menge.Value.ToString("N2", kultur) + " " +
-                   BetriebskostenCtrl.MengenEinheit(n.Bemessung) + " × " +
+                   BetriebskostenCtrl.MengenEinheit(n.Bemessung, n.Komponente) + " × " +
                    n.Einheitpreis.Value.ToString("N3", kultur) + " " +
                    BetriebskostenCtrl.SatzEinheit(n.Bemessung, n.Komponente, true);
         }
@@ -1200,6 +1270,14 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.WIRT_REIHE_STROMSTEUER_BEFREIUNG, T);
             m.Reihe(b, KapitalwertRechner.ErloesReihe.STROMSTEUER_ENTLASTUNG,
                     MyResource.Resource.WIRT_REIHE_STROMSTEUER_ENTLASTUNG, T);
+
+            // ETAPPE E2 (Befund V-3): die PV-Vergütungsreihe. Sie ist eine ZUSATZ-Reihe
+            // des Kapitalwertrechners und steckt damit in „Netto nominal", aber NICHT in
+            // der Spalte „Einspeisung" (die trägt allein den konstanten Einspeiseerlös).
+            // Ohne eigene Spalte fehlte sie in der Summe der Positionsspalten, und die
+            // Selbstprüfung der Tabelle ging um genau diesen Betrag daneben.
+            m.Reihe(b, KapitalwertRechner.ErloesReihe.PV_VERGUETUNG,
+                    MyResource.Resource.WIRT_REIHE_PV, T);
 
             // AUFTRAG U17 — die Pauschale des § 9 KWKG. Sie braucht einen EIGENEN
             // Aufruf, weil ihr Betrag im INDEX 0 steht und Reihe() erst bei t = 1

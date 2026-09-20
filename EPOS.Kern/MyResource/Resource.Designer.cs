@@ -9311,7 +9311,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 💾 Speichern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
         public static string ETV_BTN_SPEICHERN {
             get {
@@ -21198,7 +21198,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung (EEG) — eine Vergütungswahrheit (V4/F7) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung (EEG) — eine Vergütungswahrheit ähnelt.
         /// </summary>
         public static string KDLG_ERTRAG_G_PV {
             get {
@@ -21234,7 +21234,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet. Eine Variante übernimmt die Vergütung ihres Stammprojekts oder führt eigene Werte. Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die PV-Vergütung wird je Projekt im Vergütungsdialog gepflegt (eine Vergütungswahrheit je Projekt) — demselben Formular, das auch der Knopf „Photovoltaik…“ im Wirtschaftlichkeits-Reiter öffnet. Eine Variante übernimmt die Vergütung ihres Stammprojekts oder führt eigene Werte. Anzulegender Wert, Vermarktungsform, § 51/§ 51a und 60-%-Begrenzung wirken über die PV-Erlösreihe direkt in der Kapitalwertrechnung. ähnelt.
         /// </summary>
         public static string KDLG_ERTRAG_PV {
             get {
@@ -22166,6 +22166,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_LPR_LOESCHEN {
             get {
                 return ResourceManager.GetString("KDLG_LPR_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungspreis-Reihe für {0} wirklich löschen? ähnelt.
+        /// </summary>
+        public static string KDLG_LPR_LOESCHFRAGE {
+            get {
+                return ResourceManager.GetString("KDLG_LPR_LOESCHFRAGE", resourceCulture);
             }
         }
         
@@ -31453,6 +31462,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂ doppelt angesetzt: Der erfasste Arbeitspreis weist einen aktiven CO₂-Bestandteil nach BEHG aus ({0}), und der Lauf bucht zusätzlich eine CO₂-Abgabe von {1} €/a. Derselbe Betrag steht damit zweimal in den Energiekosten — verrechnet wird nichts. ähnelt.
+        /// </summary>
+        public static string KOH_CO2_DOPPELT {
+            get {
+                return ResourceManager.GetString("KOH_CO2_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Bilanz: Dem Projekt ist kein Strom-Energieträger zugeordnet — der Netzbezug ist mit dem Strommix-Vorgabewert von {0} g CO₂/kWh gerechnet. ähnelt.
+        /// </summary>
+        public static string KOH_CO2_STROMMIX_RUECKFALL {
+            get {
+                return ResourceManager.GetString("KOH_CO2_STROMMIX_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Doppelzählung möglich: Die Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG von {0} €/a ist als Erlös gebucht. Der Vorteil steckt bereits in der kleineren Bezugsrechnung — als Erlös ist er nur richtig, wenn der angesetzte Bezugspreis die Stromsteuer auf den Eigenverbrauch enthält. ähnelt.
         /// </summary>
         public static string KOH_DOPPEL_STROMST_9_1_3 {
@@ -31674,6 +31701,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOH_PV_STAMM_INAKTIV {
             get {
                 return ResourceManager.GetString("KOH_PV_STAMM_INAKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlaubnispflicht nach StromStG: Ab {0} kW elektrischer Nennleistung braucht der Betreiber eine Erlaubnis des Hauptzollamts. Betroffen: {1}. Auf die Rechnung wirkt das nicht. ähnelt.
+        /// </summary>
+        public static string KOH_STROMST_ERLAUBNIS {
+            get {
+                return ResourceManager.GetString("KOH_STROMST_ERLAUBNIS", resourceCulture);
             }
         }
         
@@ -42098,7 +42134,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung in den Tarifdialog schließt dieses Fenster und öffnet es danach wieder — bitte vorher übernehmen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Sprung speichert die Eingaben, schließt diesen Dialog und öffnet ihn danach wieder. ähnelt.
         /// </summary>
         public static string PVV_SPRUNG_HINWEIS {
             get {
@@ -55078,15 +55114,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit Strommix-Vorgabewert gerechnet. ähnelt.
-        /// </summary>
-        public static string WIRT_CO2_STROMMIX_RUECKFALL {
-            get {
-                return ResourceManager.GetString("WIRT_CO2_STROMMIX_RUECKFALL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Bilanz: Netzbezug mit dem Emissionsfaktor des Energieträgers „{0}“ gerechnet — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen. ähnelt.
         /// </summary>
         public static string WIRT_CO2_TRAEGER_RUECKFALL {
@@ -55285,7 +55312,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Entscheidung: Keine Variante ist gegenüber dem Stammprojekt wirtschaftlich; Weiterbetrieb (Referenzfall). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Entscheidung: Keine Variante ist gegenüber {0} wirtschaftlich; Weiterbetrieb (Referenzfall). ähnelt.
         /// </summary>
         public static string WIRT_EMPF_KEINE {
             get {
@@ -55312,7 +55339,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Entscheidung: Variante „{0}“ — Kapitalwertdifferenz zum Stammprojekt {1} (Erwartet){2}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die dem Referenzfall ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_REFERENZ_UNBENANNT {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_REFERENZ_UNBENANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Entscheidung: Variante „{0}“ — Kapitalwertdifferenz zu {3} {1} (Erwartet){2}. ähnelt.
         /// </summary>
         public static string WIRT_EMPF_SATZ {
             get {
@@ -55362,15 +55398,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ENK_ANLAGE {
             get {
                 return ResourceManager.GetString("WIRT_ENK_ANLAGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten je Anlage [€/a] ähnelt.
-        /// </summary>
-        public static string WIRT_ENK_KOPF {
-            get {
-                return ResourceManager.GetString("WIRT_ENK_KOPF", resourceCulture);
             }
         }
         
@@ -56545,6 +56572,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung (EEG) ähnelt.
+        /// </summary>
+        public static string WIRT_REIHE_PV {
+            get {
+                return ResourceManager.GetString("WIRT_REIHE_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer-Befreiung ähnelt.
         /// </summary>
         public static string WIRT_REIHE_STROMSTEUER_BEFREIUNG {
@@ -56824,7 +56860,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW = Kapitalwert der Variante abzüglich Kapitalwert des Stammprojekts (Referenzfall); „—&quot; = kein Stammprojekt in der Vergleichsgruppe oder Szenario nicht gerechnet. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bandbreite der Kapitalwertdifferenz (Worst / Erwartet / Best) ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_BANDBREITE_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_BANDBREITE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW = Kapitalwert der Variante abzüglich Kapitalwert von {0} (Referenz); „—&quot; = Referenz nicht in der Vergleichsgruppe oder Szenario nicht gerechnet. Spanne = Best − Worst. ähnelt.
         /// </summary>
         public static string WIRT_SZ_DELTA_FUSS {
             get {
@@ -56883,6 +56928,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_SZ_SP_ERWARTET {
             get {
                 return ResourceManager.GetString("WIRT_SZ_SP_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spanne [€] ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_SP_SPANNE {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_SP_SPANNE", resourceCulture);
             }
         }
         

@@ -944,6 +944,43 @@ namespace WindowsFormsApplication1
                 ? i.EinheitBetrieb : i.Einheit;
         }
 
+        /// <summary>
+        /// ETAPPE E2 (Befund B-7) — Einheitenzeichen der BEZUGSMENGE dieser
+        /// Bemessungsart in diesem Gewerk („kW", „kWp", „Ltr.", „kWh/a", „h/a", „€").
+        ///
+        /// <para><b>Abgeleitet, nicht zweitgepflegt.</b> Der Satz einer abgeleiteten Art
+        /// ist „€ je Bezugsgröße" (<see cref="Einheit(string,int,bool)"/>); die
+        /// Bezugsgröße ist damit genau das, was hinter dem Schrägstrich steht. Eine
+        /// zweite Liste daneben wäre die Stelle, an der Satz und Menge auseinanderlaufen
+        /// — genau das ist vor E2 geschehen: <c>BetriebskostenCtrl.MengenEinheit</c>
+        /// kannte nur die beiden Altarten und beschriftete alles andere mit „€", auch
+        /// eine Leistung in kW.</para>
+        ///
+        /// <para><b>Das Jahr steht im SATZ, nicht in der Bezugsgröße</b> (siehe
+        /// <see cref="Info.EinheitBetrieb"/>): Trägt der Betriebssatz „·a", ist die
+        /// Bezugsgröße ein BESTAND (Leistung, Fläche, Volumen) und bleibt ohne Jahr;
+        /// sonst ist sie eine MENGE je Jahr („kWh/a"). Eine prozentuale Art bemisst sich
+        /// an einem Betrag — ihre Bezugsgröße ist „€".</para>
+        /// </summary>
+        /// <param name="komponentenId"><c>Tab_KostenKomponente.ID</c>; 0 = unbekannt.</param>
+        public static string Mengeneinheit(string persistenz, int komponentenId)
+        {
+            Info i = Finde(persistenz);
+            if (i == null || i.Absolut) return DbWerte.KOSTEN_EINHEIT_EURO;
+
+            string satz = Einheit(persistenz, komponentenId, true);
+            if (string.IsNullOrEmpty(satz) ||
+                !satz.StartsWith("€/", StringComparison.Ordinal))
+                return DbWerte.KOSTEN_EINHEIT_EURO;   // „%" — bemessen wird an einem Betrag
+
+            string nenner = satz.Substring(2).Trim();
+            if (nenner.Length == 0) return DbWerte.KOSTEN_EINHEIT_EURO;
+
+            if (nenner.EndsWith("·a", StringComparison.Ordinal))
+                return nenner.Substring(0, nenner.Length - 2);
+            return nenner + "/a";
+        }
+
         private static string Text(string schluessel, string rueckfallDe)
         {
             string text = null;

@@ -107,10 +107,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool Stromerzeuger = true;
 
-        /// <summary>Klartext „Bezeichner (n kW)" für Meldungen — dieselbe Form wie im
-        /// KWKG-Guard.</summary>
+        /// <summary>
+        /// Klartext „Bezeichner (n kW)" für Meldungen — dieselbe Form wie im
+        /// KWKG-Guard.
+        ///
+        /// <para><b>ETAPPE E2 (Befund S-3):</b> Die Klammer nennt die ELEKTRISCHE
+        /// Nennleistung. Eine Anlage ohne Stromerzeugung führt dort 0, und die Meldung
+        /// las sich als „Heizkessel (0 kW)" — eine Angabe, die es an einem Kessel gar
+        /// nicht gibt. Sie entfällt deshalb bei <see cref="Stromerzeuger"/> = false;
+        /// der Bezeichner steht dann allein.</para>
+        /// </summary>
         public string Klartext(CultureInfo kultur)
         {
+            if (!Stromerzeuger) return Bezeichner;
             return Bezeichner + " (" + PelKW.ToString("N0", kultur) + " kW)";
         }
     }
@@ -763,6 +772,20 @@ namespace WindowsFormsApplication1
         /// Bezugsgröße wie der Brennstoff des Rechenkerns).</para>
         ///
         /// <para><c>null</c> = kein Faktor zugeordnet oder kein Energieertrag im Lauf.</para>
+        ///
+        /// <para><b>OFFEN (Befund R11, Etappe E2): die Hi/Ho-Frage am Grenzwert.</b> Der
+        /// Katalog führt zum Erdgas zwei EBeV-Faktoren — <c>EF_BILANZ_EBEV_ERDGAS_HI</c>
+        /// (200,9 g/kWh, heizwertbezogen) und <c>EF_BILANZ_EBEV_ERDGAS_HO</c>
+        /// (181,4 g/kWh, brennwertbezogen, die deutsche Abrechnungspraxis) — samt der
+        /// Umrechnung <c>EF_BILANZ_EBEV_UMRECHNUNG_HO</c>. Gelesen wird hier der
+        /// Schlüssel, den die Anlage trägt; die beiden Ho-Zeilen hat bis heute kein
+        /// Leser. Steht die Grenze <c>STROMST_CO2_GRENZWERT</c> = 270 g/kWh
+        /// brennwertbezogen, ist ein heizwertbezogener Zähler dagegen rund 10 % zu hoch
+        /// — die Befreiung fiele in Grenzfällen zu Unrecht weg.
+        /// <b>Hier wird nichts umgestellt:</b> Die Wahl der Bezugsgröße ändert den
+        /// gebuchten Befreiungsbetrag und damit den Kapitalwert. Sie gehört als
+        /// Entscheid nach E7, zusammen mit dem Beleg, auf welche Bezugsgröße § 2 StromStG
+        /// abstellt. Gepinnt ist das heutige Verhalten.</para>
         /// </summary>
         private static double? Co2JeEnergieertrag(SteuerAnlage a, Func<string, GesetzParameter> satz)
         {

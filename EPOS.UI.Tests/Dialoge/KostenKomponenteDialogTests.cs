@@ -748,8 +748,14 @@ public class KostenKomponenteDialogTests : BunitContext
     [Fact]
     public void Die_Reiterleiste_bleibt_im_Blatt_und_ohne_Primaerknopf()
     {
+        // ETAPPE E2: Der vierte Knopf steht nur, wo er WIRKT — der Stand muss ihn
+        // deshalb ausdrücklich erlauben, sonst zählt die Leiste drei Knöpfe.
+        KostenKomponenteStand mit = Standard();
+        mit.NutzungsdauerVorbelegbar = true;
+
         var cut = Zeige(p => p
-            .Add(x => x.NutzungsdauerVorbelegen, (bool a) => new NutzungsdauerVorbelegung(0, 0)));
+            .Add(x => x.NutzungsdauerVorbelegen, (bool a) => new NutzungsdauerVorbelegung(0, 0)),
+            stand: mit);
 
         var blatt = cut.FindAll(".epos-leiste")[0];
 
@@ -1927,9 +1933,17 @@ public class KostenKomponenteDialogTests : BunitContext
         Assert.Equal("nichts vorzubelegen", cut.Instance.Meldung);
     }
 
-    /// <summary>Auf einer Auslieferungsvorlage ist der Knopf gesperrt.</summary>
+    /// <summary>
+    /// Auf einer Auslieferungsvorlage fehlt der Knopf.
+    ///
+    /// <para><b>ETAPPE E2 (Mockup-Prüfung 03/#26).</b> Bis hierher stand er dort
+    /// gesperrt da und behauptete eine Bedienung, die es in diesem Kontext nicht
+    /// gibt — ohne jeden Grund am Bedienelement. Ein gesperrtes Bedienelement bleibt
+    /// nur stehen, wo es seinen Grund erklären kann; hier ist der Grund der Kontext,
+    /// und der steht im Reiter. Er erscheint deshalb nur, wo er wirkt.</para>
+    /// </summary>
     [Fact]
-    public void Auf_einer_Auslieferungsvorlage_ist_der_Knopf_gesperrt()
+    public void Auf_einer_Auslieferungsvorlage_fehlt_der_Knopf()
     {
         KostenKomponenteStand nurLesen = Standard(nurLesen: true);
         nurLesen.NutzungsdauerVorbelegbar = false;
@@ -1938,8 +1952,7 @@ public class KostenKomponenteDialogTests : BunitContext
                                    (bool _) => new NutzungsdauerVorbelegung(0, 0)),
                         stand: nurLesen);
 
-        Assert.True(cut.FindAll(".epos-leiste")[0]
-                       .QuerySelectorAll("button")[3].HasAttribute("disabled"));
+        Assert.Equal(3, cut.FindAll(".epos-leiste")[0].QuerySelectorAll("button").Length);
     }
 
     // =====================================================================

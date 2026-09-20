@@ -106,6 +106,17 @@
 
                 <button type="button" class="epos-knopf" disabled="@KnopfGesperrt"
                         @onclick="BeiPvOeffnen">@PvOeffnenText</button>
+
+                @* ETAPPE E2 (Mockup-Pruefung 03/#29): Der Knopf in die
+                   Gesetzesparameter stand nur im BHKW-Zweig. Die EEG-Saetze der
+                   Photovoltaik stehen in demselben Katalog - anzulegender Wert,
+                   Degression, Ausfallverguetung -, und der Rueckruf ist fuer die
+                   ganze Komponente verdrahtet. Die Wache bleibt dieselbe wie oben:
+                   kein Delegat, kein Knopf. *@
+                @if (GesetzeGewuenscht.HasDelegate)
+                {
+                    <button type="button" class="epos-knopf" @onclick="BeiGesetze">@GesetzeText</button>
+                }
             </KindInhalt>
         </Gruppenkopf>
     }

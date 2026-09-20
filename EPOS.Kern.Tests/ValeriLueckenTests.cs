@@ -297,8 +297,15 @@ namespace EPOS.Kern.Tests
             Assert.Contains("WP klein", WirtschaftlichkeitEmpfehlung.Vorschlagstext(alle, DE));
         }
 
-        /// <summary>Erwartet nicht positiv → „nicht empfohlen", und es gibt keinen
-        /// Vorschlag: Der Satz nennt den Weiterbetrieb.</summary>
+        /// <summary>
+        /// Erwartet nicht positiv → „nicht empfohlen", und es gibt keinen Vorschlag:
+        /// Der Satz nennt den Weiterbetrieb.
+        ///
+        /// <para><b>ETAPPE E2 (VALERI-Lücke G9):</b> Der Satz nennt die REFERENZ beim
+        /// Namen. Ohne Namen — Aufrufer, die die Gruppe nicht kennen — steht der
+        /// sprachliche Rückfall „dem Referenzfall" darin, nie mehr fest
+        /// „dem Stammprojekt": Seit § 2.9 rechnet ΔKW gegen die gewählte Referenz.</para>
+        /// </summary>
         [Fact]
         public void Ein_nicht_positiver_Erwartungsfall_ergibt_nicht_empfohlen()
         {
@@ -308,8 +315,17 @@ namespace EPOS.Kern.Tests
             List<VariantenEmpfehlung> u = WirtschaftlichkeitEmpfehlung.Einstufungen(alle);
             Assert.Equal(EmpfehlungStufe.Nicht, u[0].Stufe);
             Assert.Null(WirtschaftlichkeitEmpfehlung.Vorschlag(u));
-            Assert.Equal(MyResource.Resource.WIRT_EMPF_KEINE,
-                         WirtschaftlichkeitEmpfehlung.Vorschlagstext(alle, DE));
+
+            // Mit genannter Referenz …
+            Assert.Equal(string.Format(DE, MyResource.Resource.WIRT_EMPF_KEINE, "Bestand 2024"),
+                         WirtschaftlichkeitEmpfehlung.Vorschlagstext(alle, DE, "Bestand 2024"));
+            Assert.Contains("Bestand 2024",
+                            WirtschaftlichkeitEmpfehlung.Vorschlagstext(alle, DE, "Bestand 2024"));
+
+            // … und ohne: der sprachliche Rückfall, kein „Stammprojekt" mehr.
+            string ohneNamen = WirtschaftlichkeitEmpfehlung.Vorschlagstext(alle, DE);
+            Assert.Contains(MyResource.Resource.WIRT_EMPF_REFERENZ_UNBENANNT, ohneNamen);
+            Assert.DoesNotContain("Stammprojekt", ohneNamen);
         }
 
         /// <summary>

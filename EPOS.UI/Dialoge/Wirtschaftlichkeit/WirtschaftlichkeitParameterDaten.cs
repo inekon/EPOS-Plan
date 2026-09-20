@@ -19,7 +19,9 @@ public sealed class WirtschaftlichkeitParameterTexte
 
     // ------------------------------------------------------------ Rahmen
     public string Titel { get; } = T("WPAR_TITEL", "Wirtschaftlichkeits-Parameter");
-    public string BtnSpeichern { get; } = T("WPAR_BTN_SPEICHERN", "Speichern");
+    // W-E2 (Mockup-Prüfung 04): Speichern ist ein Hausknopf, derselbe Schlüssel wie
+    // bei Abbrechen darunter — kein eigener, gleichlautender Schlüssel je Dialog.
+    public string BtnSpeichern { get; } = T("ADM_BTN_SPEICHERN", "Speichern");
     public string BtnAbbrechen { get; } = T("ALLG_BTN_ABBRECHEN", "Abbrechen");
 
     // --------------------------------------------------------- Allgemein

@@ -237,12 +237,15 @@ Form_Heizkessel_Admin.btn_Help = Heizkessel
 Form_Heizkessel_Bearbeiten.btn_Help = Heizkessel
 Form_Heizkessel_einlesen.btn_Help = Heizkessel
 Form_KiEinstellungen.btn_Help = Hilfe-Assistent
+# W-E2 (Mockup-Pruefung 05/§ 6): Die Kostendialoge sprangen bisher auf den
+# Seitenkopf. Wer aus einem Dialog Hilfe ruft, sucht den Abschnitt zu DIESEM
+# Dialog - die Anker gibt es auf der Seite, sie waren nur nicht verdrahtet.
 Form_CaseEingabe.btn_Help = Kosten
-Form_Energietraeger.btn_Help = Kosten
+Form_Energietraeger.btn_Help = Kosten#energietraegerverwaltung
 Form_KostenAdmin.btn_Help = Kosten
-Form_KostenKomponente.btn_Help = Kosten
+Form_KostenKomponente.btn_Help = Kosten#komponentenliste
 Form_Kostenprofil.btn_Help = Kosten
-Form_Nutzungsdauer.btn_Help = Kosten
+Form_Nutzungsdauer.btn_Help = Kosten#nutzungsdauern
 # Erster Dialog als Razor-Komponente (iU8/iZ5). Der Schluessel steht in der
 # Komponente selbst (EnergietraegerVarianteDialog.razor, HilfeSchluessel);
 # gesucht wird er nicht ueber ein Steuerelement, sondern ueber
@@ -254,9 +257,12 @@ Form_Kosten_Auswahl.btn_Help = Kosten
 Form_VorlagenPosition.btn_Help = Kosten
 Form_LeistungspreisReihe.btn_Help = Kosten
 Form_SpotpreisImport.btn_Help = Kosten
-Form_VorlagenUebernahme.btn_Help = Kosten
-Form_PhotovoltaikVerguetung.btn_Help = Kosten
-Form_Tarifstruktur.btn_Help = Kosten
+Form_VorlagenUebernahme.btn_Help = Kosten#uebernahme-vorlage
+# W-E2: Die beiden Dialoge gehoeren fachlich auf die Seite Wirtschaftlichkeit -
+# die PV-Verguetung und die Tarifstruktur werden dort beschrieben, nicht auf der
+# Kostenseite. Bis hierher landete der Infoknopf auf der falschen Rubrik.
+Form_PhotovoltaikVerguetung.btn_Help = Wirtschaftlichkeit#pv-verguetung
+Form_Tarifstruktur.btn_Help = Wirtschaftlichkeit#strombezug
 Form_AdminPV.btn_Help = Photovoltaik
 Main_PV_Test.btn_Help = Photovoltaik
 # Export/Import hat seit 30.08.2026 einen eigenen Abschnitt samt Anker auf der
@@ -315,8 +321,12 @@ Form_WPAuswahl.btn_Help = Wärmepumpe
 Form_WpFilterAuswahl.btn_Help = Wärmepumpe
 Form_WP_einlesen.btn_Help = Wärmepumpe
 Kenndaten.btn_Help = Wärmepumpe
-Form_WirtschaftlichkeitParameter.btn_Help = Wirtschaftlichkeit
-Form_WirtschaftlichkeitVerlauf.btn_Help = Wirtschaftlichkeit
+Form_WirtschaftlichkeitParameter.btn_Help = Wirtschaftlichkeit#parameter
+Form_WirtschaftlichkeitVerlauf.btn_Help = Wirtschaftlichkeit#verlauf
+# W-E2: Der Dialog "BHKW-Wirtschaftlichkeit" hatte ueberhaupt keine Zeile - sein
+# Infoknopf fiel auf den Rubrikkopf zurueck. Der Anker traegt den Abschnitt mit
+# den Angaben je Anlage, den projektweiten KWK-Angaben und den Steuern.
+Form_BhkwWirtschaftlichkeit.btn_Help = Wirtschaftlichkeit#bhkw-wirtschaftlichkeit
 UcBericht.btn_Help = Bericht
 Form_Simulation_Detail.btn_Help = Simulationsergebnisse
 Form_QuelleErdreich.btn_Help = Wärmequelle Erdreich

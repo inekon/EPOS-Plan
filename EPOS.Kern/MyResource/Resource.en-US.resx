@@ -298,7 +298,7 @@
     <value>Trying: {0}…</value>
   </data>
   <data name="ETV_BTN_SPEICHERN" xml:space="preserve">
-    <value>💾 Save</value>
+    <value>Save</value>
   </data>
   <data name="ETV_LBL_ARBEITSPREIS" xml:space="preserve">
     <value>Energy price</value>
@@ -6752,6 +6752,9 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_REIHE_STROMSTEUER_ENTLASTUNG" xml:space="preserve">
     <value>Electricity tax relief</value>
   </data>
+  <data name="WIRT_REIHE_PV" xml:space="preserve">
+    <value>PV remuneration (EEG)</value>
+  </data>
   <data name="KI_REG_PROJEKT_ID_NAME" xml:space="preserve">
     <value>Project</value>
   </data>
@@ -8748,6 +8751,9 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_LPR_LOESCHEN" xml:space="preserve">
     <value>Delete series</value>
   </data>
+  <data name="KDLG_LPR_LOESCHFRAGE" xml:space="preserve">
+    <value>Really delete the demand-charge series for {0}?</value>
+  </data>
   <data name="KDLG_LPR_TITEL" xml:space="preserve">
     <value>Seasonal capacity price rates</value>
   </data>
@@ -8953,7 +8959,7 @@ To deactivate it, set its rate or amount to 0.</value>
     <value>CHP surcharge (sec. 7 KWKG 2025) — display from the statutory catalogue</value>
   </data>
   <data name="KDLG_ERTRAG_G_PV" xml:space="preserve">
-    <value>PV remuneration (EEG) — one remuneration truth (V4/F7)</value>
+    <value>PV remuneration (EEG) — one remuneration truth</value>
   </data>
   <data name="KDLG_ERTRAG_G_STEUERN" xml:space="preserve">
     <value>Tax privileges (HF6, rates from the statutory catalogue)</value>
@@ -8965,7 +8971,7 @@ To deactivate it, set its rate or amount to 0.</value>
     <value>This component has no recurring revenue — grants/subsidies run as a subsidy position within the investment costs (FK5).</value>
   </data>
   <data name="KDLG_ERTRAG_PV" xml:space="preserve">
-    <value>PV remuneration is maintained per project in the remuneration dialog — the same form the “Photovoltaics…” button of the economics tab opens. A variant either takes the remuneration of its master project or holds its own values. Applicable value, marketing form, sec. 51/51a and the 60 % limitation act on the NPV via the PV revenue series.</value>
+    <value>PV remuneration is maintained per project in the remuneration dialog (one remuneration truth per project) — the same form the “Photovoltaics…” button of the economics tab opens. A variant either takes the remuneration of its master project or holds its own values. Applicable value, marketing form, sec. 51/51a and the 60 % limitation act on the NPV via the PV revenue series.</value>
   </data>
   <data name="KDLG_ERTRAG_PV_OEFFNEN" xml:space="preserve">
     <value>Open PV remuneration dialog…</value>
@@ -9801,11 +9807,17 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
     <value>Auxiliary energy maintained twice (quantity at the unit and cost item {0}): {1} carries an auxiliary energy share of {2} % and at the same time an active auxiliary energy cost item. The quantity reduces the CHP bonus, the cost item burdens the operating costs — nothing is offset.</value>
   </data>
+  <data name="KOH_CO2_DOPPELT" xml:space="preserve">
+    <value>CO₂ counted twice: the recorded energy price carries an active CO₂ component under the German Fuel Emissions Trading Act ({0}), and the run additionally books a CO₂ levy of {1} €/a. The same amount therefore appears twice in the energy costs — nothing is offset.</value>
+  </data>
+  <data name="KOH_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
+    <value>CO₂ balance: no electricity energy carrier is assigned to the project — grid supply is calculated with the default grid-mix value of {0} g CO₂/kWh.</value>
+  </data>
+  <data name="KOH_STROMST_ERLAUBNIS" xml:space="preserve">
+    <value>Permit required under the Electricity Duty Act: from {0} kW electrical rated output the operator needs a permit from the main customs office. Affected: {1}. This does not affect the calculation.</value>
+  </data>
   <data name="STEUER_ENERGIEST_NUR_54" xml:space="preserve">
     <value>{0}: Sections 53 and 53a (5) of the Energy Duty Act only relieve units that generate electricity. For this unit only Section 54 of the Energy Duty Act can apply.</value>
-  </data>
-  <data name="WIRT_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
-    <value>CO2 balance: no electricity energy carrier assigned — grid supply calculated with the default grid-mix value.</value>
   </data>
   <data name="WIRT_STROMTRAEGER_RUECKFALL" xml:space="preserve">
     <value>Grid supply priced with energy carrier “{0}” — no electricity carrier is assigned to the project. Remedy: assign one under “Reports &amp; Costs › Energy carriers”.</value>
@@ -10661,7 +10673,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>The PV remuneration could not be saved.</value>
   </data>
   <data name="PVV_SPRUNG_HINWEIS" xml:space="preserve">
-    <value>Jumping to the tariff dialog closes this window and reopens it afterwards — please apply your entries first.</value>
+    <value>The jump saves your entries, closes this dialogue and reopens it afterwards.</value>
   </data>
   <data name="WPAR_BTN_SPEICHERN" xml:space="preserve">
     <value>Save</value>
@@ -16131,7 +16143,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>PV system &#8220;{0}&#8221;: {1}</value>
   </data>
   <data name="WIRT_EMPF_SATZ" xml:space="preserve">
-    <value>Decision proposal: variant “{0}” — net present value difference to the base project {1} (expected){2}.</value>
+    <value>Decision proposal: variant “{0}” — net present value difference to {3} {1} (expected){2}.</value>
   </data>
   <data name="WIRT_EMPF_ALLE_POSITIV" xml:space="preserve">
     <value>, positive in all three scenarios (worst {0}, best {1})</value>
@@ -16143,7 +16155,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>range not calculated</value>
   </data>
   <data name="WIRT_EMPF_KEINE" xml:space="preserve">
-    <value>Decision proposal: no variant is economical compared with the base project; continued operation (reference case).</value>
+    <value>Decision proposal: no variant is economical compared with {0}; continued operation (reference case).</value>
   </data>
   <data name="WIRT_EMPF_STUFE_JA" xml:space="preserve">
     <value>recommended</value>
@@ -16196,8 +16208,17 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="WIRT_SZ_SP_AMORT" xml:space="preserve">
     <value>Payback [yrs]</value>
   </data>
+  <data name="WIRT_SZ_SP_SPANNE" xml:space="preserve">
+    <value>Range [€]</value>
+  </data>
+  <data name="WIRT_SZ_BANDBREITE_TITEL" xml:space="preserve">
+    <value>Range of the net present value difference (worst / expected / best)</value>
+  </data>
+  <data name="WIRT_EMPF_REFERENZ_UNBENANNT" xml:space="preserve">
+    <value>the reference case</value>
+  </data>
   <data name="WIRT_SZ_DELTA_FUSS" xml:space="preserve">
-    <value>ΔNPV = net present value of the variant less the net present value of the base project (reference case); “—" = no base project in the comparison group or scenario not calculated.</value>
+    <value>ΔNPV = net present value of the variant less the net present value of {0} (reference); “—" = reference not in the comparison group or scenario not calculated. Range = best − worst.</value>
   </data>
   <data name="WIRT_NM_TITEL" xml:space="preserve">
     <value>Non-monetary effects</value>
@@ -19702,9 +19723,6 @@ Do you want to allow this?</value>
   </data>
   <data name="BK_KOSTEN_EMISSION_CO2" xml:space="preserve">
     <value>CO₂ factor of level „{0}“. Lookup chain: project value → active emission value → fuel master → carrier catalogue.</value>
-  </data>
-  <data name="WIRT_ENK_KOPF" xml:space="preserve">
-    <value>Energy cost by plant [€/a]</value>
   </data>
   <data name="WIRT_ENK_ANLAGE" xml:space="preserve">
     <value>{0} — {1}</value>

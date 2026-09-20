@@ -164,7 +164,8 @@ public sealed class NutzungsdauerTexte
     /// <summary><c>ALLG_BTN_OK</c></summary>
     public string Ok { get; set; } = "OK";
 
-    /// <summary><c>PVW_ABBRECHEN</c></summary>
+    /// <summary>Hausknopf <c>ALLG_BTN_ABBRECHEN</c> statt eines eigenen,
+    /// gleichlautenden Schlüssels je Dialog (W-E2, Mockup-Prüfung 04).</summary>
     public string Abbrechen { get; set; } = "Abbrechen";
 
     /// <summary><c>ADM_BTN_SPEICHERN</c></summary>

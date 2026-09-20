@@ -105,28 +105,34 @@
                         <Herleitungszeile Text="@($"{LabelFormel} {Stand.FormelText}")" />
                     }
 
-                    @if (Stand.MitLeistungspreis)
+                    @* ETAPPE E2 (Mockup-Prüfung 03/#41): EINE Leiste für beide Knöpfe.
+                       Sie standen in zwei eigenen `.epos-leiste`-Kästen untereinander,
+                       obwohl sie dasselbe tun — Sätze dieses Trägers pflegen. Zwei
+                       Leisten sind zwei Bedienblöcke; hier gibt es nur einen. Die
+                       Bedingungen bleiben je Knopf, die Leiste entfällt mit beiden.
+
+                       B3: Die Katalogwerte der Administration in das Projekt holen — eine
+                       einmalige Kopie. Geschrieben wird erst mit „Speichern"/„OK", damit
+                       daraus eine Historienzeile wird. *@
+                    @if (Stand.MitLeistungspreis || Stand.MitKatalogUebernahme)
                     {
                         <div class="epos-leiste">
-                            <button type="button" class="epos-knopf"
-                                    @onclick="() => SaisonSaetze.InvokeAsync()">@SaisonText</button>
+                            @if (Stand.MitLeistungspreis)
+                            {
+                                <button type="button" class="epos-knopf"
+                                        @onclick="() => SaisonSaetze.InvokeAsync()">@SaisonText</button>
+                            }
+                            @if (Stand.MitKatalogUebernahme)
+                            {
+                                <button type="button" class="epos-knopf"
+                                        @onclick="() => KatalogUebernehmen.InvokeAsync()">@KatalogUebernehmenText</button>
+                            }
                         </div>
-                        @if (!string.IsNullOrEmpty(Stand.ReihenStatus))
+                        @if (Stand.MitLeistungspreis && !string.IsNullOrEmpty(Stand.ReihenStatus))
                         {
                             <Herleitungszeile Text="@Stand.ReihenStatus" />
                         }
-                    }
-
-                    @* B3: Die Katalogwerte der Administration in das Projekt holen — eine
-                       einmalige Kopie. Geschrieben wird erst mit „Speichern"/„OK", damit
-                       daraus eine Historienzeile wird. Muster: Knöpfe im Fuß der Gruppe. *@
-                    @if (Stand.MitKatalogUebernahme)
-                    {
-                        <div class="epos-leiste">
-                            <button type="button" class="epos-knopf"
-                                    @onclick="() => KatalogUebernehmen.InvokeAsync()">@KatalogUebernehmenText</button>
-                        </div>
-                        @if (!string.IsNullOrEmpty(Stand.UebernahmeHinweis))
+                        @if (Stand.MitKatalogUebernahme && !string.IsNullOrEmpty(Stand.UebernahmeHinweis))
                         {
                             <Herleitungszeile Text="@Stand.UebernahmeHinweis" />
                         }
@@ -337,12 +343,17 @@
                                 @onclick="() => RegelNeu.InvokeAsync()">@RegelNeuText</button>
                     </div>
 
-                    <Herleitungszeile Text="@HinweisRegeln" />
-
+                    @* ETAPPE E2 (Mockup-Prüfung 03/#42): Das Verstoßbanner steht VOR der
+                       Erklärzeile. Ein Banner meldet einen Zustand, den der Anwender
+                       beheben muss; die leise Regelzeile erklärt ihn. Stand die
+                       Erklärung darüber, las er zuerst die Regel und erst danach, dass
+                       sie verletzt ist — gestaffelt wird von der Meldung zum Grund. *@
                     @if (!string.IsNullOrEmpty(Stand.VerstossText))
                     {
                         <Warnbanner Stufe="WarnStufe.Warnung" Text="@Stand.VerstossText" />
                     }
+
+                    <Herleitungszeile Text="@HinweisRegeln" />
                 }
             </div>
         </KindInhalt>

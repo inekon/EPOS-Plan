@@ -28,6 +28,18 @@
    Vorlaeufer ohne die zweite WebView. Solange ein Editor offen steht, ruht
    der Rest des Dialogs.
 
+   DIE DREI RUECKFRAGEN STEHEN IM DIALOG. Sie liefen bis hierher als EIN
+   Delegat ueber die Huelle (Dienste.Dialog.Frage) - ein modales Systemfenster
+   unmittelbar aus einem Blazor-Ereignis, und genau das verbietet
+   WindowsFormsApplication1 Regel (b); auf iOS gaebe es die MessageBox ohnehin
+   nicht. Seit es den Baustein Rueckfrage gibt, fragt der Dialog selbst, im
+   selben Fenster. EIN Baustein traegt alle drei Wege (Art loeschen, Wert
+   loeschen, statt dessen abwaehlen) - welcher gefragt hat, steht im Feld
+   _frageweg, denn die Antwort kommt erst einen Zeichenlauf spaeter und muss
+   den RICHTIGEN Weg fortsetzen. Vor den beiden LOESCHWEGEN ist "Nein"
+   vorgegeben (A-1); das Abwaehlen ist ein Angebot, kein Loeschen, und behaelt
+   die Betonung auf "Ja".
+
    TASTATUR: Esc schliesst den offenen Editor, sonst den Dialog. Enter ist
    nicht belegt - fast jeder Knopf hier schreibt sofort. *@
 
@@ -248,6 +260,13 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* --- Die eine Rueckfrage fuer alle drei Wege ------------------------- *@
+    <Rueckfrage Offen="@(_frageweg != Frageweg.Keiner)" Frage="@_frage"
+                TitelText="@TitelFrage"
+                VorgabeNein="@(_frageweg != Frageweg.Abwaehlen)"
+                JaText="@JaText" NeinText="@NeinText"
+                Beantwortet="FrageBeantwortet" />
 </div>
 
 @code {
@@ -313,9 +332,6 @@
     /// reicht der Dialog die Id nur zurueck.
     /// </summary>
     [Parameter] public Func<int, string?>? WertUebernehmenDelegat { get; set; }
-
-    /// <summary>Rueckfrage vor dem Loeschen (Huelle: <c>Dienste.Dialog.Frage</c>).</summary>
-    [Parameter] public Func<string, bool>? Rueckfrage { get; set; }
 
     /// <summary>
     /// Rueckgabemodus: „Uebernehmen" reicht den Wert zurueck und schliesst,
@@ -529,10 +545,23 @@
         = "Die Art stattdessen abwählen? Sie verschwindet dann aus den " +
           "Emissionsfeldern und aus der CO₂e-Summe, ihre Werte bleiben erhalten.";
 
-    /// <summary>Beschriftung des OK-Knopfes (KDLG_BTN_OK).</summary>
+    /// <summary>
+    /// Überschrift der Rückfrage — derselbe Text, den die Hülle bis zum Umbau
+    /// als Titel der MessageBox setzte (EMK_TITEL).
+    /// </summary>
+    [Parameter] public string TitelFrage { get; set; } = Resource.EMK_TITEL;
+
+    /// <summary>Beschriftung des Ja-Knopfes der Rückfrage.</summary>
+    [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
+
+    /// <summary>Beschriftung des Nein-Knopfes der Rückfrage.</summary>
+    [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+
+    /// <summary>Beschriftung des OK-Knopfes (ALLG_BTN_OK).</summary>
     [Parameter] public string OkText { get; set; } = "OK";
 
-    /// <summary>Beschriftung des Abbrechen-Knopfes (PVW_ABBRECHEN).</summary>
+    /// <summary>Beschriftung des Abbrechen-Knopfes (ALLG_BTN_ABBRECHEN) — Hausknopf,
+    /// kein eigener, gleichlautender Schlüssel je Dialog (W-E2, Mockup-Prüfung 04).</summary>
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
 
     /// <summary>Schlüssel des Hilfeknopfes — die vorhandene Zeile in help_mapping.txt.</summary>
@@ -556,6 +585,36 @@
 
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+
+    /// <summary>
+    /// Welcher Weg gerade fragt. Der Baustein steht EINMAL im Markup, die Antwort
+    /// kommt aber erst einen Zeichenlauf nach der Frage — ohne diesen Merker
+    /// wüsste sie nicht, welchen der drei Wege sie fortsetzen soll.
+    /// </summary>
+    private enum Frageweg
+    {
+        /// <summary>Es steht keine Frage.</summary>
+        Keiner,
+
+        /// <summary>Eine eigene Emissionsart löschen.</summary>
+        ArtLoeschen,
+
+        /// <summary>Einen eigenen Wert löschen.</summary>
+        WertLoeschen,
+
+        /// <summary>Statt zu löschen abwählen (§ 4.2) — kein Löschen, deshalb ohne Vorgabe „Nein".</summary>
+        Abwaehlen
+    }
+
+    private Frageweg _frageweg = Frageweg.Keiner;
+    private string _frage = "";
+
+    // Die Art, um die es geht: Sie wird VOR der Frage festgehalten, damit die
+    // Antwort genau die Zeile fortsetzt, nach der gefragt wurde. Der Grund des
+    // Kerns wird mit festgehalten, weil ein abgelehntes Abwaehlen ihn als
+    // Hinweis stehen laesst - er ist die eigentliche Auskunft.
+    private EmissionsartZeile? _frageArt;
+    private string _frageGrund = "";
 
     // Arteneditor
     private EmissionsartZeile? _artEditor;
@@ -769,8 +828,17 @@
             return;
         }
 
-        if (Rueckfrage is not null &&
-            !Rueckfrage(string.Format(VorlageArtLoeschen, a.Name))) return;
+        // Ab hier ist der Weg ZWEISTUFIG: Der Knopf stellt nur die Frage,
+        // geloescht wird in FrageBeantwortet.
+        _frageArt = a;
+        _frage = string.Format(VorlageArtLoeschen, a.Name);
+        _frageweg = Frageweg.ArtLoeschen;
+    }
+
+    /// <summary>Das „Ja" auf die Artenfrage — der Rest des frueheren <c>ArtLoeschen</c>.</summary>
+    private void ArtLoeschenFortsetzen(EmissionsartZeile a)
+    {
+        if (ArtLoeschenDelegat is null) return;
 
         string? grund = ArtLoeschenDelegat(a.Id);
         if (grund is not null) { AbwaehlenAnbieten(a, grund); return; }
@@ -789,19 +857,62 @@
     {
         if (a.IstPflicht || !a.Ausgewaehlt) { Melden(grund ?? "", WarnStufe.Hinweis); return; }
 
-        if (Rueckfrage is null ||
-            !Rueckfrage((grund ?? "") + Environment.NewLine + Environment.NewLine + FrageAbwaehlen))
-        {
-            Melden(grund ?? "", WarnStufe.Hinweis);
-            return;
-        }
+        // Dieselbe Rueckfrage, anderer Weg: Der Merker sagt der Antwort, dass sie
+        // abwaehlen soll und nicht loeschen.
+        _frageArt = a;
+        _frageGrund = grund ?? "";
+        _frage = (grund ?? "") + Environment.NewLine + Environment.NewLine + FrageAbwaehlen;
+        _frageweg = Frageweg.Abwaehlen;
+    }
 
+    /// <summary>Das „Ja" auf das Abwaehlangebot.</summary>
+    private void AbwaehlenFortsetzen(EmissionsartZeile a)
+    {
         string? fehler = AuswahlSetzen?.Invoke(a.Id, false);
         if (fehler is not null) { Melden(fehler, WarnStufe.Hinweis); return; }
 
         _artenGeaendert = true;
         Melden("", WarnStufe.Hinweis);
         ArtenNeuLaden(a.Kuerzel);
+    }
+
+    /// <summary>
+    /// Die Antwort auf die EINE Rueckfrage. Sie verzweigt ueber <c>_frageweg</c>,
+    /// weil der Baustein nur einmal im Markup steht: Ohne den Merker wuesste sie
+    /// nicht, welchen der drei Wege sie fortsetzen soll.
+    ///
+    /// <para>Ein abgelehntes ABWAEHLEN laesst den Grund als Hinweis stehen — er ist
+    /// die Auskunft, warum die Art nicht zu loeschen war; ein abgelehntes LOESCHEN
+    /// laesst den Dialog schlicht, wie er war.</para>
+    /// </summary>
+    private void FrageBeantwortet(bool? antwort)
+    {
+        Frageweg weg = _frageweg;
+        EmissionsartZeile? art = _frageArt;
+        string grund = _frageGrund;
+
+        _frageweg = Frageweg.Keiner;
+        _frageArt = null;
+        _frageGrund = "";
+
+        switch (weg)
+        {
+            case Frageweg.ArtLoeschen when antwort == true && art is not null:
+                ArtLoeschenFortsetzen(art);
+                break;
+
+            case Frageweg.WertLoeschen when antwort == true:
+                WertLoeschenFortsetzen();
+                break;
+
+            case Frageweg.Abwaehlen when antwort == true && art is not null:
+                AbwaehlenFortsetzen(art);
+                break;
+
+            case Frageweg.Abwaehlen:
+                Melden(grund, WarnStufe.Hinweis);
+                break;
+        }
     }
 
     private int EinheitIndex(string einheit)
@@ -895,8 +1006,20 @@
         if (w is null || WertLoeschenDelegat is null) return;
         if (!w.AenderungErlaubt) { Melden(MeldungUnveraenderlich, WarnStufe.Hinweis); return; }
 
-        if (Rueckfrage is not null &&
-            !Rueckfrage(string.Format(VorlageWertLoeschen, w.Herkunftstext))) return;
+        // Zweistufig wie beim Loeschen einer Art: erst fragen, dann loeschen.
+        _frage = string.Format(VorlageWertLoeschen, w.Herkunftstext);
+        _frageweg = Frageweg.WertLoeschen;
+    }
+
+    /// <summary>
+    /// Das „Ja" auf die Wertefrage. Der markierte Wert wird neu gesucht: Die
+    /// Markierung ist der Stand, den der Anwender sieht, und sie steht seit der
+    /// Frage unveraendert — der Rest des Dialogs ruht hinter der Ueberlagerung.
+    /// </summary>
+    private void WertLoeschenFortsetzen()
+    {
+        EmissionswertZeile? w = GewaehlterWert;
+        if (w is null || WertLoeschenDelegat is null) return;
 
         string? grund = WertLoeschenDelegat(w.Id);
         if (grund is not null) { Melden(grund, WarnStufe.Fehler); return; }
@@ -972,8 +1095,14 @@
     {
         if (e.Key != "Escape") return Task.CompletedTask;
 
-        // Esc schliesst zuerst den offenen Editor - wie das Abbrechen des
-        // frueheren Unterdialogs, das die Maske ebenfalls stehen liess.
+        // Esc schliesst die OBERSTE Ebene. Steht die Rueckfrage, faengt SIE das Esc
+        // ab (ihre Ueberlagerung antwortet „Nein") und der Katalog bleibt stehen -
+        // sonst schloesse er unter der Frage weg. Das ✕ im Kopf ist derweil von der
+        // Abdunkelung gedeckt.
+        if (_frageweg != Frageweg.Keiner) return Task.CompletedTask;
+
+        // Danach der offene Editor - wie das Abbrechen des frueheren
+        // Unterdialogs, das die Maske ebenfalls stehen liess.
         if (EditorOffen) { EditorSchliessen(); return Task.CompletedTask; }
         return BeiAbbrechen();
     }

@@ -79,6 +79,20 @@ namespace WindowsFormsApplication1
 
         /// <summary>Gebuchte Stromsteuer-Entlastung § 9b im Jahr 1 [€/a].</summary>
         public double StromsteuerEntlastungEur;
+
+        /// <summary>
+        /// ETAPPE E2 (Befund R5): die gebuchte CO₂-Abgabe des Jahres 1 [€/a] aus der
+        /// BEHG-Reihe. 0 = keine Reihe gebucht — dann gibt es nichts doppelt zu buchen.
+        /// </summary>
+        public double Co2AbgabeEur;
+
+        /// <summary>
+        /// ETAPPE E2 (Befund R6): der angewandte Strommix-Vorgabewert [g CO₂/kWh],
+        /// wenn die Emissionsrechnung mangels zugeordnetem Strom-Energieträger darauf
+        /// zurückgefallen ist; <c>null</c> = kein Rückfall. Bis E2 war das ein
+        /// Laufhinweis OHNE die Zahl (<c>02/§ 4.2</c>).
+        /// </summary>
+        public double? StrommixRueckfallGJeKwh;
     }
 
     /// <summary>
@@ -110,6 +124,16 @@ namespace WindowsFormsApplication1
     /// Anlagenwahl, seit B3a je Anlage möglich), erscheint ein <b>HINWEIS</b> mit den
     /// beteiligten Anlagen und ihren Wahlen — ohne Betrag, ohne Sperre, ohne
     /// Zahlenänderung (<see cref="MischlageEnergiesteuer"/>).</para>
+    ///
+    /// <para><b>ETAPPE E2 — zwei Zeilen der CO₂-Seite (§ 3.9 des konsolidierten
+    /// Konzepts, Befunde R5 und R6):</b> Der <b>CO₂-Doppelansatz</b> (ein aktiver
+    /// CO₂-Bestandteil im Arbeitspreis eines Trägers <b>und</b> eine gebuchte
+    /// BEHG-Reihe, <see cref="Co2DoppelansatzBehg"/>) erscheint als <b>WARNUNG</b> mit
+    /// dem doppelt gebuchten Jahresbetrag; der <b>Strommix-Rückfall</b>
+    /// (<see cref="StrommixRueckfall"/>) als <b>HINWEIS</b> mit dem angewandten Wert in
+    /// g CO₂/kWh. Beide hängen an KEINEM Steuerpfad und werden deshalb vor der Prüfung
+    /// auf <c>lauf.Steuer</c> erledigt. Rechenweg unverändert: Der Anwenderentscheid zu
+    /// Frage Q3 der Mockup-Prüfung ist <b>Weg (a)</b> — ausweisen, nicht umrechnen.</para>
     ///
     /// <para><b>Zwei Preisseiten, EINE Leseregel.</b> Für Brennstoffe wie für Strom gilt
     /// seit SP-E-2: <c>NULL</c> heißt „kein Anteil erfasst". Beim Strom bleibt der
@@ -156,7 +180,16 @@ namespace WindowsFormsApplication1
             // lauf.Steuer.
             try { PvVerguetungHerkunft(idProjekt, kultur, liste); } catch { }
 
-            if (lauf == null || lauf.Steuer == null) return liste;
+            if (lauf == null) return liste;
+
+            // ETAPPE E2 (Befunde R5 und R6): Die beiden CO₂-Zeilen hängen an keinem
+            // STEUERpfad — ein reines Kesselprojekt ohne jede Entlastungswahl kann
+            // sowohl den Doppelansatz als auch den Strommix-Rückfall tragen. Sie stehen
+            // deshalb VOR der Prüfung auf lauf.Steuer.
+            try { Co2DoppelansatzBehg(idProjekt, lauf, kultur, liste); } catch { }
+            try { StrommixRueckfall(lauf, kultur, liste); } catch { }
+
+            if (lauf.Steuer == null) return liste;
 
             // Jede Seite für sich gekapselt: Ein Fehlschlag der Brennstoffseite darf die
             // Stromseite nicht mitnehmen — und keiner von beiden den Lauf.
@@ -167,6 +200,10 @@ namespace WindowsFormsApplication1
             // dürfte deshalb nicht an deren Vorabfiltern hängenbleiben.
             try { MischlageEnergiesteuer(lauf, kultur, liste); } catch { }
             try { Stromseite(idProjekt, lauf, kultur, liste); } catch { }
+            // ETAPPE E2 (Befund S-5): die Erlaubnisschwelle des StromStG. Sie war der
+            // einzige gesäte Katalogschlüssel der Stromsteuer OHNE Leser; ein
+            // Rechenwerk gibt es dazu nicht, eine Pflicht des Betreibers schon.
+            try { ErlaubnisschwelleStrom(lauf, kultur, liste); } catch { }
             // ETAPPE B6: Der Einwand gegen den Modus ERLOES hängt weder an einem
             // Energieträger noch an der Preiszerlegung - er gilt aus der Sache heraus
             // und steht deshalb, wie Fall 5, als eigener Schritt.
@@ -468,6 +505,114 @@ namespace WindowsFormsApplication1
             if (wert == null || wert == DBNull.Value) return false;
             try { return Math.Abs(Convert.ToDouble(wert)) > 1e-9; }
             catch { return false; }
+        }
+
+        // =====================================================================
+        // CO₂ — Doppelansatz Arbeitspreis gegen BEHG-Reihe, Strommix-Rückfall
+        // =====================================================================
+
+        /// <summary>
+        /// ETAPPE E2 (Befund R5, Mockup-Prüfung <c>01/B1</c>) — <b>CO₂ zweimal
+        /// gebucht</b>.
+        ///
+        /// <para>Der Arbeitspreis eines Brennstoffträgers darf den CO₂-Anteil nach BEHG
+        /// als Preisbestandteil ausweisen (<c>energy_project_settings</c>, Spalte
+        /// <see cref="SchemaKatalog.SPALTE_BB_CO2"/> mit gesetztem Aktiv-Schalter). Dann
+        /// steckt die Abgabe bereits in den Energiekosten. Bucht der Lauf zusätzlich
+        /// eine BEHG-Reihe (<c>KapitalwertRechner.Rechne</c> addiert sie auf die
+        /// Energiekosten), steht dieselbe Abgabe zweimal im Kapitalwert.</para>
+        ///
+        /// <para><b>Nur melden, nichts verrechnen</b> — dieselbe Haltung wie in der
+        /// ganzen Klasse (BF2), und ausdrücklich der Anwenderentscheid zu Frage Q3 der
+        /// Mockup-Prüfung: <i>Weg (a)</i>, die BEHG-Zeile bleibt, sie wird
+        /// gekennzeichnet. Der genannte Betrag ist deshalb die TATSÄCHLICH gebuchte
+        /// CO₂-Abgabe des Jahres 1, keine Zweitrechnung.</para>
+        ///
+        /// <para><b>Warum die Trägerliste aus der Preistabelle und nicht aus den
+        /// Steueranlagen kommt:</b> Der Doppelansatz hängt an keinem Steuerpfad. Gefragt
+        /// sind die Träger, für die das PROJEKT einen aktiven CO₂-Anteil gepflegt hat;
+        /// dass überhaupt Brennstoff verbrannt wird, sagt die gebuchte Abgabe selbst
+        /// (<c>Co2AbgabeEur &gt; 0</c>).</para>
+        /// </summary>
+        private static void Co2DoppelansatzBehg(int idProjekt, KohaerenzLauf lauf,
+                                                CultureInfo kultur, List<KohaerenzHinweis> liste)
+        {
+            if (lauf.Co2AbgabeEur <= 0) return;
+
+            List<string> mitAnteil = TraegerMitCo2Anteil(idProjekt);
+            if (mitAnteil.Count == 0) return;
+
+            liste.Add(new KohaerenzHinweis
+            {
+                Schwere = KohaerenzSchwere.WARNUNG,
+                Betrag = lauf.Co2AbgabeEur,
+                Text = string.Format(kultur, T("KOH_CO2_DOPPELT",
+                        "CO₂ doppelt angesetzt: Der erfasste Arbeitspreis weist einen aktiven " +
+                        "CO₂-Bestandteil nach BEHG aus ({0}), und der Lauf bucht zusätzlich eine " +
+                        "CO₂-Abgabe von {1} €/a. Derselbe Betrag steht damit zweimal in den " +
+                        "Energiekosten — verrechnet wird nichts."),
+                    string.Join(", ", mitAnteil.ToArray()),
+                    lauf.Co2AbgabeEur.ToString("N2", kultur))
+            });
+        }
+
+        /// <summary>
+        /// Energieträger des Projekts, deren Arbeitspreis einen AKTIVEN CO₂-Anteil
+        /// &gt; 0 ausweist — dieselbe Leseregel wie
+        /// <see cref="BrennstoffBestandteilCtrl.Read"/> (NULL heißt „kein Anteil
+        /// erfasst", der Aktiv-Schalter entscheidet über die Verwendung).
+        /// </summary>
+        private static List<string> TraegerMitCo2Anteil(int idProjekt)
+        {
+            var namen = new List<string>();
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT * FROM [" + BrennstoffBestandteilCtrl.TABLE + "] WHERE ID_Projekt = ?",
+                    new DbParam("@proj", idProjekt));
+
+                if (dt == null || dt.Rows.Count == 0) return namen;
+                if (!dt.Columns.Contains(SchemaKatalog.SPALTE_BB_CO2)) return namen;
+
+                foreach (DataRow r in dt.Rows)
+                {
+                    double? wert = null; bool aktiv = false;
+                    Preisanteile.PaarNullbar(dt, r, SchemaKatalog.SPALTE_BB_CO2, ref wert, ref aktiv);
+                    if (!wert.HasValue || !aktiv || wert.Value <= 0) continue;
+
+                    // Der Spaltenname steht EINMAL — buchstabengetreu mit Umlaut, wie
+                    // BETRIEB_SQLITE.md 6.1 es verlangt.
+                    object id = r[ProjektEnergietraegerEindeutig.SPALTE_TRAEGER];
+                    if (id == null || id == DBNull.Value) continue;
+                    string name = TraegerName(Convert.ToInt32(id));
+                    if (!namen.Contains(name)) namen.Add(name);
+                }
+            }
+            catch { namen.Clear(); }
+            return namen;
+        }
+
+        /// <summary>
+        /// ETAPPE E2 (Befund R6) — <b>Strommix-Vorgabewert statt zugeordnetem
+        /// Stromträger</b>. Bis E2 stand die Lage als gewöhnlicher Laufhinweis im
+        /// Hinweisfeld des Ergebnisses, <b>ohne</b> die Zahl; § 3.9 des Konzepts führt
+        /// sie als Zeile der Kohärenzgruppe. Hier steht sie mit ihrem Wert und ihrer
+        /// Schwere — und erreicht damit dieselben drei Ausgaben wie jede andere
+        /// Kohärenzzeile (Rubrik, Wort- und Excelbericht).
+        /// </summary>
+        private static void StrommixRueckfall(KohaerenzLauf lauf, CultureInfo kultur,
+                                              List<KohaerenzHinweis> liste)
+        {
+            if (!lauf.StrommixRueckfallGJeKwh.HasValue) return;
+
+            liste.Add(new KohaerenzHinweis
+            {
+                Schwere = KohaerenzSchwere.HINWEIS,
+                Text = string.Format(kultur, T("KOH_CO2_STROMMIX_RUECKFALL",
+                        "CO₂-Bilanz: Dem Projekt ist kein Strom-Energieträger zugeordnet — der " +
+                        "Netzbezug ist mit dem Strommix-Vorgabewert von {0} g CO₂/kWh gerechnet."),
+                    lauf.StrommixRueckfallGJeKwh.Value.ToString("N0", kultur))
+            });
         }
 
         // =====================================================================
@@ -957,6 +1102,50 @@ namespace WindowsFormsApplication1
                     p.Wert.Value.ToString("N2", kultur), p.Einheit,
                     jahr.ToString(CultureInfo.InvariantCulture),
                     katalogCt.Value.ToString("N4", kultur))
+            });
+        }
+
+        /// <summary>
+        /// ETAPPE E2 (Befund S-5) — <b>Erlaubnispflicht nach StromStG</b>.
+        ///
+        /// <para>Wer Strom in einer Anlage ab der Erlaubnisschwelle erzeugt und
+        /// entnimmt, braucht dafür eine Erlaubnis des Hauptzollamts. Das ist eine
+        /// Pflicht des Betreibers, kein Rechenwerk: Der Satz
+        /// <c>STROMST_ERLAUBNISSCHWELLE</c> stand als einziger Schlüssel der
+        /// Stromsteuer im Katalog, ohne dass ihn jemand las (<c>02/§ 3.2</c>). Die
+        /// Zeile nennt Schwelle und betroffene Anlagen und ändert nichts.</para>
+        ///
+        /// <para>Sie hängt NICHT daran, ob die Befreiung § 9 Abs. 1 Nr. 3 gewährt wird —
+        /// die Erlaubnispflicht gilt auch dort, wo gar nichts befreit ist.</para>
+        /// </summary>
+        private static void ErlaubnisschwelleStrom(KohaerenzLauf lauf, CultureInfo kultur,
+                                                   List<KohaerenzHinweis> liste)
+        {
+            if (lauf == null || lauf.Steuer == null || lauf.Steuer.Anlagen == null) return;
+
+            GesetzParameter p = new GesetzKatalog()
+                .WertMitHerkunft(DbWerte.GESETZ_STROMST_ERLAUBNISSCHWELLE, lauf.Jahr);
+            if (p == null || !p.Wert.HasValue || p.Wert.Value <= 0) return;
+
+            var ueber = new List<string>();
+            foreach (SteuerAnlage a in lauf.Steuer.Anlagen)
+            {
+                if (a == null || !a.Stromerzeuger) continue;
+                if (a.PelKW < p.Wert.Value) continue;
+                string name = a.Klartext(kultur);
+                if (!ueber.Contains(name)) ueber.Add(name);
+            }
+            if (ueber.Count == 0) return;
+
+            liste.Add(new KohaerenzHinweis
+            {
+                Schwere = KohaerenzSchwere.HINWEIS,
+                Text = string.Format(kultur, T("KOH_STROMST_ERLAUBNIS",
+                        "Erlaubnispflicht nach StromStG: Ab {0} kW elektrischer Nennleistung " +
+                        "braucht der Betreiber eine Erlaubnis des Hauptzollamts. Betroffen: {1}. " +
+                        "Auf die Rechnung wirkt das nicht."),
+                    p.Wert.Value.ToString("N0", kultur),
+                    string.Join(", ", ueber.ToArray()))
             });
         }
 

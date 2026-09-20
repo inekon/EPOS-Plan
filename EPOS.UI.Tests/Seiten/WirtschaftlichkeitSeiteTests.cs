@@ -752,6 +752,12 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     /// Auftrag #286, Einbettungsstelle 2: Der BHKW-Dialog schreibt auch hier nur im
     /// OK-Weg. Nach OK bekommt der Wirt seine Speichermeldung und rechnet neu, nach
     /// Abbrechen bekommt er nichts — und die Datenbank sieht keinen Zugriff.
+    ///
+    /// <para><b>ETAPPE E2 (Befund 04/B30).</b> Der OK-Weg schreibt nur noch den
+    /// WERTLICH geaenderten Stand. Geaendert ist hier allein die Anlagenzeile — die
+    /// Projektvorgaben bleiben, wie sie geladen wurden, und werden deshalb nicht
+    /// mitgeschrieben. Aus den zwei Zugriffen wird EINER; die Aussage des Falls
+    /// bleibt dieselbe: geschrieben wird im OK-Weg und sonst nirgends.</para>
     /// </summary>
     [Theory]
     [InlineData(true)]
@@ -789,7 +795,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         knoepfe[ok ? 1 : 0].Click();
 
         Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.Keins, cut.Instance.OffenerUnterdialog);
-        Assert.Equal(ok ? 2 : 0, zugriffe);
+        Assert.Equal(ok ? 1 : 0, zugriffe);          // nur die geaenderte Anlagenzeile
         Assert.Equal(ok ? 5.57 : (double?)null, anlage.SatzEinspCt);
         Assert.Equal(ok, gemeldet);
 

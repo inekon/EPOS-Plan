@@ -128,7 +128,10 @@ namespace WindowsFormsApplication1
                 ["HinweisText"] = hinweis,
                 ["LoeschenText"] = Text_("KDLG_LPR_LOESCHEN", "Reihe löschen"),
                 ["UebernehmenText"] = Text_("KDLG_LPR_UEBERNEHMEN", "Übernehmen"),
-                ["AbbrechenText"] = Text_("KDLG_LPR_ABBRECHEN", "Abbrechen"),
+                // W-E2 (Mockup-Prüfung 04): Abbrechen ist ein Hausknopf — kein eigener,
+                // gleichlautender Schlüssel je Dialog; der alte Schlüssel bleibt in der
+                // .resx stehen.
+                ["AbbrechenText"] = Text_("ALLG_BTN_ABBRECHEN", "Abbrechen"),
                 ["MeldungAllesNull"] = Text_("KDLG_LPR_ALLES_NULL",
                     "Alle zwölf Sätze sind 0 — zum Entfernen der Reihe bitte „Reihe löschen“ verwenden."),
                 ["MeldungSpeicherfehler"] = Text_("LPR_MSG_SPEICHERFEHLER",

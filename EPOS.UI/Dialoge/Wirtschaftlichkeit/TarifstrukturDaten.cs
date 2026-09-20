@@ -53,7 +53,9 @@ public sealed class TarifstrukturTexte
         "Tarifstruktur Strombezug (Wärmepumpe & Verbraucher)");
     public string TitelBhkw { get; } = T("TARIF_TITEL_BHKW", "Tarifstruktur BHKW (Strom)");
     public string TitelPv { get; } = T("TARIF_TITEL_PV", "Tarifstruktur PV-Einspeisung");
-    public string BtnSpeichern { get; } = T("TARIF_BTN_SPEICHERN", "Speichern");
+    // W-E2 (Mockup-Prüfung 04): Speichern ist ein Hausknopf, derselbe Schlüssel wie
+    // bei Abbrechen darunter — kein eigener, gleichlautender Schlüssel je Dialog.
+    public string BtnSpeichern { get; } = T("ADM_BTN_SPEICHERN", "Speichern");
     public string BtnAbbrechen { get; } = T("ALLG_BTN_ABBRECHEN", "Abbrechen");
 
     // -------------------------------------------------------------- Kopf

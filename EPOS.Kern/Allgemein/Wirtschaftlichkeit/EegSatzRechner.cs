@@ -33,8 +33,19 @@ namespace WindowsFormsApplication1
         /// — dann gibt es keine feste Einspeisevergütung.</summary>
         public bool EvZulaessig;
 
-        /// <summary>Ausfallvergütung (§ 53 Abs. 3): AW_mix × (1 − Abschlag), gerundet.
-        /// Nur für Anlagen &gt; 100 kW zulässig (<see cref="AusfallvergZulaessig"/>, N3).</summary>
+        /// <summary>
+        /// Ausfallvergütung (§ 53 Abs. 3): AW_mix × (1 − Abschlag), gerundet.
+        /// Nur für Anlagen &gt; 100 kW zulässig (<see cref="AusfallvergZulaessig"/>, N3).
+        ///
+        /// <para><b>ETAPPE E2 (Befund E1-EEG-2) — die Rundung steht am AUSGABEWERT, die
+        /// Rechnung läuft auf der UNRUNDETEN Mischung.</b> Bei 100 kWp ist
+        /// <see cref="AwMixCtUnrundet"/> = 6,432 und <see cref="AwMixCt"/> = 6,43; die
+        /// Ausfallvergütung ist 6,432 × 0,8 = 5,1456 → <b>5,15</b>, nicht
+        /// 6,43 × 0,8 = 5,14. Das ist dieselbe Regel wie bei der Degression oben —
+        /// gerundet wird genau einmal, am Ende — und damit die Rundung, die die
+        /// Nachbarwerte auch tragen. Sie stand bis E2 in keinem Papier; gemessen und
+        /// gepinnt ist sie in <c>EegSatzRechnerTests</c>.</para>
+        /// </summary>
         public double AusfallvergCt;
 
         /// <summary>true nur für Anlagen über der EV-Grenze (N3 — pv@now weist den
@@ -71,7 +82,7 @@ namespace WindowsFormsApplication1
     /// veröffentlicht neben den gerundeten auch die unrundeten Werte — sie beweisen,
     /// dass die Basis unrundet fortgeschrieben wird (Basis × 0,99ⁿ) und nur der
     /// ANZUWENDENDE Wert auf 2 Nachkommastellen gerundet ist: 8,60 × 0,99⁵ =
-    /// 8,17851 (Fenster 02–07/2026), × 0,99⁶ = 8,09679 → 8,10 (ab 08/2026).
+    /// 8,17851 (Fenster 02–07/2026), × 0,99⁶ = 8,09673 → 8,10 (ab 08/2026).
     /// Schrittweises Runden lieferte an Zwischenstichtagen abweichende Werte.</para>
     ///
     /// <para><b>Leistungsanteilige Mischrechnung (§ 23c EEG)</b> — Klassen sind

@@ -20,7 +20,9 @@ public sealed class PhotovoltaikVerguetungTexte
     public string Titel { get; } = T("PVW_TITEL", "PV-Vergütung (EEG)");
     public string Aktiv { get; } = T("PVW_AKTIV", "Vergütung anwenden");
     public string BtnUebernehmen { get; } = T("PVW_UEBERNEHMEN", "Übernehmen");
-    public string BtnAbbrechen { get; } = T("PVW_ABBRECHEN", "Abbrechen");
+    // W-E2 (Mockup-Prüfung 04): Abbrechen ist ein Hausknopf — kein eigener,
+    // gleichlautender Schlüssel je Dialog; PVW_ABBRECHEN bleibt in der .resx stehen.
+    public string BtnAbbrechen { get; } = T("ALLG_BTN_ABBRECHEN", "Abbrechen");
     public string BtnMarktwerte { get; } = T("PVW_BTN_MARKTWERTE", "Marktwerte importieren…");
     public string BtnTarif { get; } = T("PVW_BTN_TARIF", "Einspeise-Tarif…");
     /// <summary>Konzept § 2.16 (VV‑Q6): der eine Weg aus der Übernahme heraus — er
@@ -119,9 +121,16 @@ public sealed class PhotovoltaikVerguetungTexte
     public string ImportFehler { get; } = T("PVW_IMPORT_FEHLER", "Import nicht möglich: ");
     public string MsgSpeicherfehler { get; } = T("PVV_MSG_SPEICHERFEHLER",
         "Die PV-Vergütung konnte nicht gespeichert werden.");
+    /// <summary>
+    /// ETAPPE E2 (Anwenderentscheid Q12): Der Sprung NIMMT den OK-Weg — er speichert,
+    /// schließt und kommt zurück. Der Satz kündigt genau das an; bis dahin sagte er
+    /// „bitte vorher übernehmen", weil der Knopf die Eingaben verwarf. Wortgleich zum
+    /// Nachbarsatz des BHKW-Dialogs (<c>BHW_S_SPRUNG_HINWEIS</c>) — zwei Formulierungen
+    /// für dieselbe Zusage wären zwei Zusagen.
+    /// </summary>
     public string SprungHinweis { get; } = T("PVV_SPRUNG_HINWEIS",
-        "Der Sprung in den Tarifdialog schließt dieses Fenster und öffnet es danach " +
-        "wieder — bitte vorher übernehmen.");
+        "Der Sprung speichert die Eingaben, schließt diesen Dialog und öffnet ihn " +
+        "danach wieder.");
 }
 
 /// <summary>

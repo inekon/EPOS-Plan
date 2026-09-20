@@ -34,16 +34,35 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         Action? beimSchliessen = null,
         Func<string, int>? neu = null,
         Func<int, (bool Erfolg, string Grund)>? loeschen = null,
-        Func<string, bool>? rueckfrage = null,
         Func<IReadOnlyList<KostenfaktorKatalogDialog.KostenfaktorZeile>>? neuLaden = null)
     {
         return Render<KostenfaktorKatalogDialog>(p => p
             .Add(x => x.Zeilen, Bestand)
             .Add(x => x.Neu, neu ?? (_ => 11))
             .Add(x => x.Loeschen, loeschen ?? (_ => (true, "")))
-            .Add(x => x.Rueckfrage, rueckfrage)
             .Add(x => x.NeuLaden, neuLaden ?? (() => Bestand))
             .Add(x => x.Geschlossen, () => beimSchliessen?.Invoke()));
+    }
+
+    /// <summary>Die Loeschfrage — der Baustein <c>Rueckfrage</c> im Dialog.</summary>
+    private static IRenderedComponent<EPOS.UI.Bausteine.Rueckfrage> Loeschfrage(
+        IRenderedComponent<KostenfaktorKatalogDialog> cut)
+        => cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>();
+
+    /// <summary>
+    /// Antwortet auf die Loeschfrage. Die Knoepfe werden ueber ihre STELLUNG gewaehlt
+    /// (Ja zuerst, dann Nein), nicht ueber ihren Text: Der kommt aus
+    /// <c>Resource.ALLG_BTN_JA/_NEIN</c> und haengt damit an der Kultur des Laeufers,
+    /// die diese Klasse bewusst nicht pinnt.
+    /// </summary>
+    private static void Antworten(IRenderedComponent<KostenfaktorKatalogDialog> cut, bool ja)
+        => Loeschfrage(cut).FindAll(".epos-rueckfrage .epos-leiste button")[ja ? 0 : 1].Click();
+
+    /// <summary>Markiert die erste Zeile und drueckt „Löschen" — bis zur Frage.</summary>
+    private static void LoeschenDruecken(IRenderedComponent<KostenfaktorKatalogDialog> cut, int zeile = 0)
+    {
+        cut.FindAll(".epos-anlagenwahl")[zeile].Click();
+        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
     }
 
     [Fact]
@@ -135,19 +154,31 @@ public class KostenfaktorKatalogDialogTests : BunitContext
                      cut.Find(".epos-warnbanner-text").TextContent);
     }
 
+    /// <summary>
+    /// W-E2, Befund 04/B17: „Löschen" schreibt nicht mehr sofort. Es stellt die
+    /// Frage IM Fenster (Baustein <c>Rueckfrage</c> statt MessageBox der Hülle),
+    /// nennt den Namen und hebt „Nein" hervor (A-1).
+    /// </summary>
     [Fact]
-    public void Loeschen_fragt_vorher_und_nennt_den_Namen()
+    public void Loeschen_fragt_erst_und_nennt_den_Namen()
     {
-        string? frage = null;
         bool geloescht = false;
-        var cut = Aufbauen(
-            rueckfrage: text => { frage = text; return true; },
-            loeschen: _ => { geloescht = true; return (true, ""); });
+        var cut = Aufbauen(loeschen: _ => { geloescht = true; return (true, ""); });
 
-        cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
+        LoeschenDruecken(cut);
 
-        Assert.Equal("Kostenfaktor 'Montage' wirklich löschen?", frage);
+        var frage = Loeschfrage(cut);
+        Assert.True(frage.Instance.Offen);
+        Assert.True(frage.Instance.VorgabeNein);
+        Assert.Equal("Kostenfaktor 'Montage' wirklich löschen?", frage.Instance.Frage);
+        Assert.False(geloescht);                       // der Knopf fragt nur
+
+        // A-1: Der hervorgehobene Knopf ist "Nein", nicht "Ja".
+        var knoepfe = frage.FindAll(".epos-rueckfrage .epos-leiste button");
+        Assert.DoesNotContain("epos-knopf--primaer", knoepfe[0].ClassName);
+        Assert.Contains("epos-knopf--primaer", knoepfe[1].ClassName);
+
+        Antworten(cut, ja: true);
         Assert.True(geloescht);
     }
 
@@ -155,15 +186,14 @@ public class KostenfaktorKatalogDialogTests : BunitContext
     public void Ein_Nein_in_der_Rueckfrage_loescht_nicht()
     {
         bool geloescht = false;
-        var cut = Aufbauen(
-            rueckfrage: _ => false,
-            loeschen: _ => { geloescht = true; return (true, ""); });
+        var cut = Aufbauen(loeschen: _ => { geloescht = true; return (true, ""); });
 
-        cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
+        LoeschenDruecken(cut);
+        Antworten(cut, ja: false);
 
         Assert.False(geloescht);
-        Assert.Equal(3, cut.Instance.Gewaehlt);
+        Assert.False(Loeschfrage(cut).Instance.Offen);
+        Assert.Equal(3, cut.Instance.Gewaehlt);        // die Zeile bleibt markiert
     }
 
     [Fact]
@@ -173,28 +203,50 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         int erhalten = 0;
         var bestand = new List<KostenfaktorKatalogDialog.KostenfaktorZeile>(Bestand);
         var cut = Aufbauen(
-            rueckfrage: _ => true,
             loeschen: id => { erhalten = id; bestand.RemoveAll(z => z.StammId == id); return (true, ""); },
             neuLaden: () => bestand);
 
-        cut.FindAll(".epos-anlagenwahl")[1].Click();
-        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
+        LoeschenDruecken(cut, zeile: 1);
+        Antworten(cut, ja: true);
 
         Assert.Equal(7, erhalten);
         Assert.Single(cut.Instance.Angezeigt);
         Assert.Null(cut.Instance.Gewaehlt);
     }
 
+    /// <summary>
+    /// Ohne Loeschdelegat steht die Frage gar nicht erst: Eine Frage, deren „Ja"
+    /// nichts tut, waere eine Luege.
+    /// </summary>
     [Fact]
-    public void Ohne_Rueckfragedelegat_wird_sofort_geloescht()
+    public void Ohne_Loeschdelegat_wird_nicht_gefragt()
     {
-        bool geloescht = false;
-        var cut = Aufbauen(loeschen: _ => { geloescht = true; return (true, ""); });
+        var cut = Render<KostenfaktorKatalogDialog>(p => p
+            .Add(x => x.Zeilen, Bestand));
 
-        cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
+        LoeschenDruecken(cut);
 
-        Assert.True(geloescht);
+        Assert.False(Loeschfrage(cut).Instance.Offen);
+    }
+
+    /// <summary>
+    /// Eine offene Rueckfrage faengt Esc ab — der Katalog darf nicht unter der
+    /// Frage wegschliessen (Muster <c>GesetzeskatalogDialog</c>).
+    /// </summary>
+    [Fact]
+    public void Esc_schliesst_nicht_solange_die_Loeschfrage_steht()
+    {
+        int gemeldet = 0;
+        var cut = Aufbauen(beimSchliessen: () => gemeldet++);
+
+        LoeschenDruecken(cut);
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Equal(0, gemeldet);
+
+        // Nach der Antwort schliesst Esc wieder.
+        Antworten(cut, ja: false);
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Equal(1, gemeldet);
     }
 
     /// <summary>
@@ -207,12 +259,10 @@ public class KostenfaktorKatalogDialogTests : BunitContext
     {
         const string Grund = "6 Projektposition(en) in 5 Projekt(en) und 0 " +
                              "Vorlagenposition(en) verweisen auf diesen Kostenfaktor.";
-        var cut = Aufbauen(
-            rueckfrage: _ => true,
-            loeschen: _ => (false, Grund));
+        var cut = Aufbauen(loeschen: _ => (false, Grund));
 
-        cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
+        LoeschenDruecken(cut);
+        Antworten(cut, ja: true);
 
         Assert.Equal(Grund, cut.Find(".epos-warnbanner-text").TextContent);
         Assert.Equal(2, cut.Instance.Angezeigt.Count);
@@ -226,12 +276,10 @@ public class KostenfaktorKatalogDialogTests : BunitContext
     [Fact]
     public void Ohne_benannten_Grund_steht_die_allgemeine_Meldung()
     {
-        var cut = Aufbauen(
-            rueckfrage: _ => true,
-            loeschen: _ => (false, ""));
+        var cut = Aufbauen(loeschen: _ => (false, ""));
 
-        cut.FindAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
+        LoeschenDruecken(cut);
+        Antworten(cut, ja: true);
 
         Assert.Equal("Der Kostenfaktor konnte nicht gelöscht werden.",
                      cut.Find(".epos-warnbanner-text").TextContent);

@@ -195,16 +195,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Einheitenzeichen der BEZUGSMENGE einer Bemessungsart („€", „h/a", „kWh/a").
+        /// Einheitenzeichen der BEZUGSMENGE einer Bemessungsart („€", „h/a", „kWh/a",
+        /// „kW", „kWp", „Ltr.").
         /// <inheritdoc cref="SatzEinheit(string)" path="/summary/text()[last()]"/>
+        ///
+        /// <para><b>ETAPPE E2 (Befund B-7).</b> Bis hierher kannte diese Methode genau
+        /// zwei Arten und beschriftete jede andere Bezugsmenge mit „€" — die
+        /// Herleitungszeile las sich dann „500,00 € × 12,000 €/kW·a", wo eine Leistung
+        /// in kW steht. Die Antwort kommt seither aus dem <see cref="BemessungKatalog"/>,
+        /// genau wie bei <see cref="SatzEinheit(string,int,bool)"/>: EINE Wahrheit für
+        /// Satz und Menge, samt der gewerkeigenen Bezugsgröße (Pufferspeicher „Ltr.").</para>
         /// </summary>
-        internal static string MengenEinheit(string bemessung)
+        /// <param name="komponente"><c>Tab_KostenKomponente.ID</c> der Zeile; 0 =
+        /// unbekannt, dann gilt die allgemeine Bezugsgröße des Katalogs.</param>
+        internal static string MengenEinheit(string bemessung, int komponente)
         {
-            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal))
-                return "h/a";
-            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH, StringComparison.Ordinal))
-                return "kWh/a";
-            return DbWerte.KOSTEN_EINHEIT_EURO;
+            return BemessungKatalog.Mengeneinheit(bemessung, komponente);
         }
 
         /// <summary>

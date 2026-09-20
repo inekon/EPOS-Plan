@@ -318,14 +318,18 @@ namespace WindowsFormsApplication1
                 ["TitelSpotpreis"] = MyResource.Resource.PREIS_IMPORT_TITEL,
                 ["TitelSaison"] = T("KDLG_LPR_TITEL", "Saisonale Leistungspreise"),
                 ["TitelEmissionskatalog"] = T("EMK_TITEL", "Emissionsfaktor-Katalog"),
-                ["SpeichernText"] = T("KDLG_BTN_SPEICHERN", "Speichern"),
-                ["AbbrechenText"] = T("KDLG_ET_ABBRECHEN", "Abbrechen"),
+                // W-E2 (Mockup-Prüfung 04): OK, Abbrechen und Speichern sind Hausknöpfe —
+                // ein eigener, gleichlautender Schlüssel je Dialog wäre eine zweite
+                // Wahrheit über denselben Text. Die alten Schlüssel bleiben in der .resx
+                // stehen (u. a. Prüfmuster der Formularkarte).
+                ["SpeichernText"] = T("ADM_BTN_SPEICHERN", "Speichern"),
+                ["AbbrechenText"] = T("ALLG_BTN_ABBRECHEN", "Abbrechen"),
                 // DL-2 (DL-Q3 a): Die Aktionen der Listenspalte schreiben sofort -
                 // der Kurztext sagt, was Abbrechen wirklich verwirft.
                 ["AbbrechenKurztext"] = T("KDLG_ET_TIP_ABBRECHEN",
                     "Verwirft nur die ungespeicherten Eingaben; "
                     + "angelegte Träger bleiben."),
-                ["OkText"] = T("KDLG_BTN_OK", "OK"),
+                ["OkText"] = T("ALLG_BTN_OK", "OK"),
                 ["JaText"] = T("KKOMP_BTN_JA", "Ja"),
                 ["NeinText"] = T("KKOMP_BTN_NEIN", "Nein"),
                 ["VorlageGespeichert"] = " — " + T("KDLG_GESPEICHERT", "gespeichert {0:HH:mm} Uhr")
@@ -2700,7 +2704,7 @@ namespace WindowsFormsApplication1
                 ["LabelSo2"] = T("ETV_LBL_SO2", "SO2  [g/kWh]"),
                 ["LabelNox"] = T("ETV_LBL_NOX", "NOx  [g/kWh]"),
                 ["LabelGueltigAb"] = T("ETV_LBL_GUELTIG_AB", "Gültig ab"),
-                ["SpeichernText"] = T("ETV_BTN_SPEICHERN", "💾 Speichern"),
+                ["SpeichernText"] = T("ADM_BTN_SPEICHERN", "Speichern"),
                 ["SpalteGueltigAb"] = T("ETV_SP_GUELTIG_AB", "Gültig ab"),
                 ["SpalteHeizwert"] = T("ETV_SP_HEIZWERT", "Heizwert"),
                 ["SpalteHeizwertVorlage"] = T("ETV_SP_HEIZWERT_EINHEIT", "Heizwert [{0}]"),

@@ -377,7 +377,8 @@ namespace EPOS.Kern.Tests
 
             // Gemeldet war „0,00 € ÷ 21,00 kWh = 0,0000 €/kWh" - ohne Einheiten
             // und mit dem verdoppelten Heizwert.
-            Assert.Equal("0,84 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0800 €/kWh", stand.FormelText);
+            // ANWENDERENTSCHEID Q7 (Etappe E2): der Zähler mit vier Nachkommastellen.
+            Assert.Equal("0,8400 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0800 €/kWh", stand.FormelText);
             Assert.Equal("0,0800 €", stand.PreisJeKwh);
             Assert.Equal("effektiv: 1 Nm³ = 10,50 kWh (Hi) / 11,60 kWh (Hs)", stand.EffektivText);
         }

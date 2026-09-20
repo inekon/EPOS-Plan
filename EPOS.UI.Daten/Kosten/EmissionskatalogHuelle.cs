@@ -228,8 +228,10 @@ namespace WindowsFormsApplication1
                         ? null : (grund ?? "");
                 }),
 
-                ["Rueckfrage"] = new Func<string, bool>(
-                    text => Dienste.Dialog.Frage(text, Text_("EMK_TITEL", "Emissionsfaktor-Katalog"))),
+                // Die drei Rückfragen stehen seit dem Umbau IM Dialog (Baustein
+                // Rueckfrage). Hier darf kein Schlüssel „Rueckfrage" mehr stehen:
+                // Der Parametersatz trifft nur [Parameter], und ein unbekannter
+                // Schlüssel bricht beim ersten Zeichnen im Blazor-Verteiler.
 
                 // ---------------------------------------------------------- Texte
                 ["TitelText"] = Text_("EMK_TITEL", "Emissionsfaktor-Katalog"),
@@ -325,7 +327,10 @@ namespace WindowsFormsApplication1
                 // es nie, gezeigt wurde immer der deutsche Rückfall. Jetzt steht der
                 // Haustext (iU9-W3.5).
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
-                ["AbbrechenText"] = Text_("PVW_ABBRECHEN", "Abbrechen")
+                // W-E2 (Mockup-Prüfung 04): Abbrechen ist ebenfalls ein Hausknopf —
+                // PVW_ABBRECHEN war ein eigener, gleichlautender Schlüssel für
+                // denselben Text und bleibt nur noch in der .resx stehen.
+                ["AbbrechenText"] = Text_("ALLG_BTN_ABBRECHEN", "Abbrechen")
             };
 
             return new Aufruf(parameter, erg =>

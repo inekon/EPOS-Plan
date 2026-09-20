@@ -70,8 +70,13 @@
     </div>
 
     <div class="epos-zr-zelle">
+        @* ETAPPE E2 (Mockup-Pruefung 03/#10): In der ABSCHLUSSZEILE ist die
+           Klappliste gesperrt wie Satz und Nutzungsdauer daneben. Der Wirt reicht
+           dort weder BemessungId noch BemessungIdChanged durch - die Auswahl war
+           bedienbar und ging ins Leere. Die Bemessung der neuen Position wird
+           gepflegt, sobald die Zeile steht. *@
         <Auswahlfeld Eintraege="@Bemessungen" Auswahl="@BemessungId"
-                     AuswahlChanged="@BemessungIdChanged" Aktiv="@Schreibbar" />
+                     AuswahlChanged="@BemessungIdChanged" Aktiv="@(Schreibbar && !Neuzeile)" />
     </div>
 
     <div class="epos-zr-zelle" title="@EmpfehlungKurztext">
