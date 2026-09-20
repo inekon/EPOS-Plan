@@ -111,8 +111,8 @@ abgenommen, alle Schritte sind damit frei.
 | 5 | EinstellungenDialog (10) | S | Schritt 0, DL-Q6 |
 | 6 | PeakShavingDialog (5) | S | DL-Q2 |
 | 7 | GebaeudeDialog (1), beide Betriebsarten | M | Schritt 0, DL-Q1 |
-| 8 | KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
-| 9 | EnergietraegerDialog (7) | M | DL-Q3, DL-Q5 |
+| 8 | **umgesetzt (#386)** — KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
+| 9 | **umgesetzt (#386)** — EnergietraegerDialog (7) | M | DL-Q3, DL-Q5 |
 
 **Abnahme je Auftrag:**
 
