@@ -164,7 +164,9 @@ namespace WindowsFormsApplication1
                 double? satz = r["Einheitpreis"] == DBNull.Value ? null : Convert.ToDouble(r["Einheitpreis"], CultureInfo.InvariantCulture);
                 bool invest = Convert.ToInt32(r["KategorieID"]) == 1;
                 bool erloes = r["IstErloes"] != DBNull.Value && Convert.ToBoolean(r["IstErloes"]);
-                bool zuschuss = string.Equals(Convert.ToString(r["Kostenart"]), DbWerte.KOSTENART_ZUSCHUSS, StringComparison.OrdinalIgnoreCase);
+                // ETAPPE E2 (Befund I-5): zeichengenau wie jeder andere Steuerwertvergleich
+                // des Kerns — die Nachbarzeilen darunter vergleichen die Bemessung ebenso.
+                bool zuschuss = string.Equals(Convert.ToString(r["Kostenart"]), DbWerte.KOSTENART_ZUSCHUSS, StringComparison.Ordinal);
                 bool spaeter = r["StartJahr"] != DBNull.Value && Convert.ToInt32(r["StartJahr"]) > 1;
                 bool leistung = basis == DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG || basis == DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH;
                 bool kapazitaet = basis == DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET;

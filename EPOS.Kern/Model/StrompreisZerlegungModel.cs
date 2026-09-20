@@ -83,7 +83,7 @@
         ///
         /// <para><b>Rueckfallebene, nicht Quelle</b> - wie
         /// <see cref="STROMSTEUER_REGELFALL"/>. Der Katalogschluessel
-        /// <c>DbWerte.GESETZ_STROMST_REDUZIERT</c> ist mit der Saatgeneration 5
+        /// <c>DbWerte.GESETZ_STROMST_REDUZIERT</c> ist mit der Saatgeneration 7
         /// eingesaet (Restpunkt S-6) und mit dieser Konstante wertgleich.</para>
         /// </summary>
         public const double STROMSTEUER_REDUZIERT = 0.050;

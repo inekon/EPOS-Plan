@@ -128,8 +128,13 @@ namespace WindowsFormsApplication1
             double ergebnis = arbeitspreisBasis / heizwertBasis;
             string einheit = (abrechnungseinheit ?? "").Trim();
 
+            // ANWENDERENTSCHEID Q7 (Mockup-Prüfung § 4) — der Arbeitspreis steht in der
+            // Formelzeile mit VIER Nachkommastellen. Mit zwei rundete der Zähler weg,
+            // was das Ergebnis darunter mit vier Stellen ausweist: „0,05 € ÷ 10,50 =
+            // 0,0476 €" ging nicht auf, und die Formel stand dauerhaft falsch da.
+            // Gerechnet wird unverändert mit dem vollen Wert.
             string text = string.Format(k, MyResource.Resource.ETV_FORMEL_JE_EINHEIT,
-                                        arbeitspreisBasis.ToString("N2", k), einheit,
+                                        arbeitspreisBasis.ToString("N4", k), einheit,
                                         heizwertBasis.ToString("N2", k),
                                         ergebnis.ToString("N4", k));
 
