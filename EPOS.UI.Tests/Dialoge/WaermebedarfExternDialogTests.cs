@@ -8,9 +8,11 @@ using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using EPOS.UI.Standards;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -143,14 +145,37 @@ public class WaermebedarfExternDialogTests : EposBunitContext
             .Add(x => x.Kennzahlen, (GanglinienWahl w) =>
                 Task.FromResult(zahlen.TryGetValue(w.Bezeichner, out GanglinienKennzahlen? k)
                                 ? k : null))
-            .Add(x => x.Bildauftrag, (GanglinienWahl w, bool sortiert, Diagrammbereich? bereich) =>
+            .Add(x => x.Bildauftrag, (GanglinienWahl w, bool sortiert) =>
             {
-                auftraege?.Add(new Auftrag(w, sortiert, bereich));
-                return new byte[] { 1, 2, 3 };
+                auftraege?.Add(new Auftrag(w, sortiert));
+                return sortiert ? DAUER : GANG;
             }));
     }
 
-    private sealed record Auftrag(GanglinienWahl Wahl, bool Sortiert, Diagrammbereich? Bereich);
+    private sealed record Auftrag(GanglinienWahl Wahl, bool Sortiert);
+
+    /// <summary>
+    /// Die zwei Zeichenmodelle der Grafik — Ganglinie und Dauerlinie, je EINE
+    /// Instanz. Der Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz; ein je
+    /// Zeichenlauf neu gebautes Modell verwürfe mit dem Baum auch Zoom und
+    /// abgewählte Reihen.
+    /// </summary>
+    private static readonly Zeichenmodell GANG = Ganglinie(false);
+    private static readonly Zeichenmodell DAUER = Ganglinie(true);
+
+    /// <summary>Eine kurze, echte Ganglinie (eine Woche) statt eines Jahres.</summary>
+    private static Zeichenmodell Ganglinie(bool sortiert)
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 300.0 + 200.0 * Math.Sin(2 * Math.PI * i / 24.0);
+        if (sortiert) Array.Sort(werte, (a, b) => b.CompareTo(a));
+
+        return ChartRenderer.GanglinieNormiertModell(
+            "Wärmelast Jahresganglinie",
+            new[] { new ChartRenderer.Reihe("Wärmebedarf", werte, ChartRenderer.C_BEDARF) },
+            "kW", ChartRenderer.Achse.Jahresstunden, sortiert);
+    }
 
     private static IElement Knopf(IRenderedComponent<WaermebedarfExternDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
@@ -616,7 +641,36 @@ public class WaermebedarfExternDialogTests : EposBunitContext
 
         Assert.NotEmpty(auftraege);
         Assert.False(auftraege[0].Sortiert);
-        Assert.Null(auftraege[0].Bereich);
+    }
+
+    /// <summary>
+    /// <b>Die Ganglinie steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — ohne
+    /// ein Pixelbild daneben. Ihre Kennung trägt den Schlüssel der gewählten
+    /// Ganglinie und die Schalterstellung, damit zwei Bilder nie dieselben
+    /// <c>clipPath</c>-Kennungen bekommen.
+    /// </summary>
+    [Fact]
+    public void Die_Ganglinie_steht_als_DiagrammSvg_mit_eigener_Kennung()
+    {
+        var auftraege = new List<Auftrag>();
+        var cut = ZeigeMitGrafik(auftraege: auftraege);
+
+        KatalogWahl(cut, 1, 1).Click();      // "Ganglinie B"
+
+        GanglinienWahl wahl = cut.Instance.Grafikwahl!;
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+        Assert.Equal("ganglinie-K|" + wahl.GanglinieId + "|Ganglinie B",
+                     cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+        Assert.Empty(cut.FindComponents<ChartBild>());
+
+        // Die Dauerlinie ist ein ZWEITES Bild und traegt deshalb eine eigene Kennung.
+        cut.Find(".epos-ganglinie-leiste input[type=checkbox]").Change(true);
+
+        Assert.Equal("ganglinie-K|" + wahl.GanglinieId + "|Ganglinie B-s",
+                     cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal(Achsenart.Rang, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
+        Assert.Contains(auftraege, a => a.Sortiert);
     }
 
     /// <summary>

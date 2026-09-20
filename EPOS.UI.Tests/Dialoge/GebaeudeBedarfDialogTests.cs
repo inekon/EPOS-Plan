@@ -3,9 +3,11 @@ using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -15,9 +17,13 @@ namespace EPOS.UI.Tests.Dialoge;
 /// 05.09.2026) — die Überlagerung hinter dem Knopf „Simulation…" des Gebäudedialogs.
 ///
 /// <para><b>Was geprüft wird:</b> die drei Kennzahlen, die Einheitenwahl (W8‑O‑5), der
-/// Schalter „sortiert" samt seiner Wirkung auf den Bildauftrag, der Datenzoom — und
+/// Schalter „sortiert" samt seiner Wirkung auf Bildauftrag und Achsenart — und
 /// dass es weder einen Brauchwasser- noch einen Gesamt-Schalter gibt: der Anwender hat
 /// beides ausdrücklich abbestellt.</para>
+///
+/// <para>Die Ganglinie steht seit der Etappe DG-E3, Gruppe (a), als
+/// <c>DiagrammSvg</c> im Baum; der Zoom ist die viewBox der Zeichenfläche und
+/// kostet keinen Rundlauf mehr in den Kern.</para>
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt — die Erwartungswerte sind deutsche
 /// Zahlen und Beschriftungen.</para>
@@ -31,7 +37,32 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     }
 
     /// <summary>Ein Bildauftrag, wie ihn die Komponente stellt.</summary>
-    private sealed record Auftrag(bool Sortiert, Diagrammbereich? Bereich);
+    private sealed record Auftrag(bool Sortiert);
+
+    /// <summary>
+    /// Die zwei Zeichenmodelle — Ganglinie und Dauerlinie, je EINE Instanz. Der
+    /// Baustein <c>DiagrammSvg</c> vergleicht die Referenz; ein je Zeichenlauf neu
+    /// gebautes Modell verwürfe mit dem Baum auch Zoom und abgewählte Reihen.
+    /// </summary>
+    private static readonly Zeichenmodell GANG = Ganglinie(false);
+    private static readonly Zeichenmodell DAUER = Ganglinie(true);
+
+    /// <summary>
+    /// Eine kurze, echte Ganglinie (eine Woche) — die Fälle prüfen die Bedienung,
+    /// nicht die Rechenzeit eines Jahres.
+    /// </summary>
+    private static Zeichenmodell Ganglinie(bool sortiert)
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 20.0 + 10.0 * Math.Sin(2 * Math.PI * i / 24.0);
+        if (sortiert) Array.Sort(werte, (a, b) => b.CompareTo(a));
+
+        return ChartRenderer.GanglinieNormiertModell(
+            "Wärmelast Jahresganglinie",
+            new[] { new ChartRenderer.Reihe("Wärmebedarf", werte, ChartRenderer.C_BEDARF) },
+            "kW", ChartRenderer.Achse.Jahresstunden, sortiert);
+    }
 
     private static GebaeudeBedarfDaten Daten(double mwh = 52.84, double kw = 31.5,
                                              double? vbh = 1677.0)
@@ -62,10 +93,10 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         return Render<GebaeudeBedarfDialog>(p => p
             .Add(x => x.Daten, daten ?? Daten())
             .Add(x => x.TitelText, titel)
-            .Add(x => x.Bildauftrag, (sortiert, bereich) =>
+            .Add(x => x.Bildauftrag, sortiert =>
             {
-                liste.Add(new Auftrag(sortiert, bereich));
-                return new byte[] { 1, 2, 3 };
+                liste.Add(new Auftrag(sortiert));
+                return sortiert ? DAUER : GANG;
             })
             .Add(x => x.Einheit, einheit ?? Energieeinheit.MWh)
             .Add(x => x.EinheitGewaehlt, einheitGewaehlt)
@@ -96,9 +127,24 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Contains("31,50", cut.Markup);      // kW
         Assert.Contains("1677,00", cut.Markup);    // h/a
 
-        Assert.NotNull(cut.Find("img.epos-chartbild"));
+        Assert.NotNull(cut.Find("svg.epos-flaeche"));
         Assert.Contains("Januar:", cut.Markup);
         Assert.Contains("Dezember:", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Die Ganglinie steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — unter
+    /// der Kennung <c>gebaeude-bedarf</c>, und ohne ein Pixelbild daneben.
+    /// </summary>
+    [Fact]
+    public void Die_Ganglinie_steht_als_DiagrammSvg()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+        Assert.Equal("gebaeude-bedarf", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+        Assert.Empty(cut.FindComponents<ChartBild>());
     }
 
     /// <summary>
@@ -145,7 +191,8 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     {
         var cut = Render<GebaeudeBedarfDialog>(p => p.Add(x => x.Daten, Daten()));
 
-        Assert.Empty(cut.FindAll("img.epos-chartbild"));
+        Assert.Empty(cut.FindAll("svg.epos-flaeche"));
+        Assert.Single(cut.FindAll(".epos-chartbild-platzhalter"));
         Assert.Contains("Kein Diagramm vorhanden", cut.Markup);
     }
 
@@ -173,45 +220,23 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Contains(auftraege, a => a.Sortiert);
     }
 
-    // =================================================================================
-    // Der Datenzoom (Befund A-1 der Windows-Abnahme 05.09.2026)
-    // =================================================================================
-
     /// <summary>
-    /// Ein aufgezogenes Rechteck geht UNVERÄNDERT in den Bildauftrag — was an dieser
-    /// Stelle des Bildes steht, weiß nur der Renderer, der es gezeichnet hat.
+    /// Der Schalter tauscht auch die ACHSENART: Die Ganglinie zählt Stützstellen und
+    /// trägt die Stundeneinheit, die Dauerlinie zählt den Rang — dort ist x keine
+    /// Zeit mehr.
     /// </summary>
     [Fact]
-    public async Task Ein_aufgezogener_Bereich_geht_in_den_Bildauftrag()
-    {
-        var auftraege = new List<Auftrag>();
-        var cut = Aufbauen(auftraege: auftraege);
-
-        Diagramm diagramm = cut.FindComponent<Diagramm>().Instance;
-        await cut.InvokeAsync(() => diagramm.BereichGemeldet(0.25, 0.5, 0.1, 0.9));
-
-        Assert.NotNull(cut.Instance.Bereich);
-        Assert.Equal(0.25, cut.Instance.Bereich!.XVon);
-        Assert.Contains(auftraege, a => a.Bereich is not null && a.Bereich.XBis == 0.5);
-    }
-
-    /// <summary>
-    /// Ein Schalterwechsel VERWIRFT den Achsenausschnitt: Ganglinie und Dauerlinie
-    /// tragen an derselben Bildstelle verschiedene Stunden, und ein mitgeschleppter
-    /// Ausschnitt zeigte danach etwas anderes, als der Anwender aufgezogen hat.
-    /// </summary>
-    [Fact]
-    public async Task Der_Schalterwechsel_verwirft_den_Ausschnitt()
+    public void Der_Schalter_sortiert_stellt_die_Achsenart_auf_Rang()
     {
         var cut = Aufbauen();
 
-        Diagramm diagramm = cut.FindComponent<Diagramm>().Instance;
-        await cut.InvokeAsync(() => diagramm.BereichGemeldet(0.25, 0.5, 0.1, 0.9));
-        Assert.NotNull(cut.Instance.Bereich);
+        Assert.Equal(Achsenart.Stuetzstelle, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
+        Assert.Equal("h", cut.FindComponent<DiagrammSvg>().Instance.XEinheit);
 
         cut.Find("input[type=checkbox]").Change(true);
 
-        Assert.Null(cut.Instance.Bereich);
+        Assert.Equal(Achsenart.Rang, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
+        Assert.Equal("", cut.FindComponent<DiagrammSvg>().Instance.XEinheit);
     }
 
     // =================================================================================

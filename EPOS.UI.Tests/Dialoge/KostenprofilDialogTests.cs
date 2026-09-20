@@ -1,9 +1,13 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -16,7 +20,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Feldkarte stehen: zwölf Monatsniveaus und 24 Stundenabweichungen (Regel F1 —
 /// von Hand nachgetragen).</para>
 /// </summary>
-public class KostenprofilDialogTests : BunitContext
+public class KostenprofilDialogTests : EposBunitContext
 {
     private static readonly string[] MONATE =
     {
@@ -30,8 +34,25 @@ public class KostenprofilDialogTests : BunitContext
         (4, "Freitag"), (5, "Samstag"), (6, "Sonntag")
     };
 
+    /// <summary>
+    /// Das Zeichenmodell der Vorschau — EINE Instanz, EINMAL gebaut: Der Baustein
+    /// <c>DiagrammSvg</c> vergleicht die Modellreferenz, und ein je Zeichenlauf neu
+    /// gebautes Modell setzte seinen Baum jedes Mal neu.
+    /// </summary>
+    private static readonly Zeichenmodell MODELL = Vorschaubild();
+
+    private static Zeichenmodell Vorschaubild()
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 25.0 + 5.0 * Math.Sin(2 * Math.PI * i / 24.0);
+
+        return ChartRenderer.KostenprofilModell("Kostenprofil", werte, "ct/kWh", "Monat");
+    }
+
     public KostenprofilDialogTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
@@ -51,7 +72,7 @@ public class KostenprofilDialogTests : BunitContext
 
     private IRenderedComponent<KostenprofilDialog> Zeige(
         Action<Bunit.ComponentParameterCollectionBuilder<KostenprofilDialog>>? mehr = null,
-        Func<IReadOnlyList<double>, IReadOnlyList<double>, Task<byte[]?>>? vorschau = null,
+        Func<IReadOnlyList<double>, IReadOnlyList<double>, Task<Zeichenmodell?>>? vorschau = null,
         double[]? monatswerte = null,
         double[]? wochenwerte = null)
     {
@@ -61,7 +82,7 @@ public class KostenprofilDialogTests : BunitContext
             p.Add(x => x.Wochentage, TAGE);
             p.Add(x => x.Monatswerte, monatswerte ?? Monatsvorgabe());
             p.Add(x => x.Wochenwerte, wochenwerte ?? Wochenvorgabe());
-            p.Add(x => x.Vorschau, vorschau ?? ((m, w) => Task.FromResult<byte[]?>(new byte[] { 1, 2, 3 })));
+            p.Add(x => x.Vorschau, vorschau ?? ((m, w) => Task.FromResult<Zeichenmodell?>(MODELL)));
             mehr?.Invoke(p);
         });
     }
@@ -273,17 +294,54 @@ public class KostenprofilDialogTests : BunitContext
         var cut = Zeige(vorschau: (m, w) =>
         {
             laeufe++;
-            return Task.FromResult<byte[]?>(new byte[] { 9 });
+            return Task.FromResult<Zeichenmodell?>(MODELL);
         });
 
         Assert.Equal(1, laeufe);
-        Assert.NotNull(cut.Instance.Bild);
+        Assert.NotNull(cut.Instance.Modell);
 
         // Das Bild steht im Reiter „Grafik"; sein Betreten zeichnet erneut
         // (der Vorlaeufer tat dasselbe bei jedem Reiterwechsel).
         Reiter(cut, 2);
-        Assert.Single(cut.FindAll("img.epos-chartbild"));
+        Assert.Single(cut.FindAll("svg.epos-flaeche"));
         Assert.Equal(2, laeufe);
+    }
+
+    /// <summary>
+    /// <b>Die Vorschau steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — unter
+    /// der Kennung <c>kostenprofil</c>, mit der Einheit des Dialogs und ohne ein
+    /// Pixelbild daneben. Ihre x-Achse zählt den INDEX der Reihe, keine
+    /// Jahresstunde.
+    /// </summary>
+    [Fact]
+    public void Die_Vorschau_steht_als_DiagrammSvg()
+    {
+        var cut = Zeige();
+        Reiter(cut, 2);
+
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+        Assert.Equal("kostenprofil", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal("ct/kWh", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+        Assert.Equal(Achsenart.Index, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
+        Assert.Empty(cut.FindComponents<ChartBild>());
+    }
+
+    /// <summary>Ohne Delegat kein Bild — der Platzhalter steht auf dem Grafikblatt.</summary>
+    [Fact]
+    public void Ohne_Vorschaudelegat_steht_der_Platzhalter()
+    {
+        var cut = Render<KostenprofilDialog>(p =>
+        {
+            p.Add(x => x.Monatsnamen, MONATE);
+            p.Add(x => x.Wochentage, TAGE);
+            p.Add(x => x.Monatswerte, Monatsvorgabe());
+            p.Add(x => x.Wochenwerte, Wochenvorgabe());
+        });
+
+        Reiter(cut, 2);
+
+        Assert.Empty(cut.FindAll("svg.epos-flaeche"));
+        Assert.Single(cut.FindAll(".epos-chartbild-platzhalter"));
     }
 
     [Fact]
@@ -295,7 +353,7 @@ public class KostenprofilDialogTests : BunitContext
         var cut = Zeige(vorschau: (m, w) =>
         {
             monat = m; woche = w;
-            return Task.FromResult<byte[]?>(new byte[] { 9 });
+            return Task.FromResult<Zeichenmodell?>(MODELL);
         });
 
         Assert.NotNull(monat);
@@ -311,7 +369,7 @@ public class KostenprofilDialogTests : BunitContext
         var cut = Zeige(vorschau: (m, w) =>
         {
             laeufe++;
-            return Task.FromResult<byte[]?>(new byte[] { 9 });
+            return Task.FromResult<Zeichenmodell?>(MODELL);
         });
 
         Reiter(cut, 2);                            // Betreten zeichnet (1 -> 2)
@@ -327,7 +385,7 @@ public class KostenprofilDialogTests : BunitContext
         var cut = Zeige(vorschau: (m, w) =>
         {
             laeufe++;
-            return Task.FromResult<byte[]?>(new byte[] { 9 });
+            return Task.FromResult<Zeichenmodell?>(MODELL);
         });
 
         Wochenknoepfe(cut)[3].Click();

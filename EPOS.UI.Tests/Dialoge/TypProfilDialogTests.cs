@@ -2,11 +2,14 @@
 using System.IO;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -20,6 +23,22 @@ namespace EPOS.UI.Tests.Dialoge;
 public class TypProfilDialogTests : EposBunitContext
 {
     private static readonly string[] TYPEN = { "Buerogebaeude", "Wohnhaus" };
+
+    /// <summary>
+    /// Das Zeichenmodell des Wochenprofils — EINE Instanz, EINMAL gebaut: Der
+    /// Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz, und ein je
+    /// Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu.
+    /// </summary>
+    private static readonly Zeichenmodell MODELL = Wochenprofil();
+
+    private static Zeichenmodell Wochenprofil()
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++) werte[i] = i + 1;
+
+        return ChartRenderer.StundenprofilModell("Stundenverteilung", werte, 1,
+                                                 "Stunde der Woche", "Anteil [%]");
+    }
 
     public TypProfilDialogTests()
     {
@@ -53,7 +72,7 @@ public class TypProfilDialogTests : EposBunitContext
         Func<string, double[,], string, bool>? speichernUnter = null,
         Func<string, bool>? loeschen = null,
         Func<string, bool>? istReadOnly = null,
-        Func<double[], byte[]>? bild = null,
+        Func<double[], Zeichenmodell?>? bild = null,
         Func<string, bool>? existiert = null,
         Action<bool>? geschlossen = null,
         string titel = "Stromverbrauchertyp Stundenverteilung",
@@ -72,7 +91,7 @@ public class TypProfilDialogTests : EposBunitContext
             .Add(x => x.SpeichernUnter, speichernUnter ?? ((_, _, _) => true))
             .Add(x => x.Loeschen, loeschen ?? (_ => true))
             .Add(x => x.IstReadOnly, istReadOnly ?? (_ => false))
-            .Add(x => x.Bild, bild ?? (_ => new byte[] { 1, 2, 3 }))
+            .Add(x => x.Bild, bild ?? (_ => MODELL))
             .Add(x => x.Existiert, existiert ?? (_ => false))
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
@@ -556,11 +575,43 @@ public class TypProfilDialogTests : EposBunitContext
     public void Das_Bild_bekommt_168_Werte()
     {
         int laenge = 0;
-        var cut = Aufbauen(bild: w => { laenge = w.Length; return new byte[] { 9 }; });
+        var cut = Aufbauen(bild: w => { laenge = w.Length; return MODELL; });
 
         Assert.Equal(168, laenge);
         cut.FindAll("[role=tab]")[1].Click();
-        Assert.Single(cut.FindAll("img.epos-chartbild"));
+        Assert.Single(cut.FindAll("svg.epos-flaeche"));
+    }
+
+    /// <summary>
+    /// <b>Das Wochenprofil steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) —
+    /// unter der Kennung <c>typprofil</c>, und ohne ein Pixelbild daneben. Seine
+    /// x-Achse zählt den INDEX der Reihe, 1 … 168: keine Jahresstunde.
+    /// </summary>
+    [Fact]
+    public void Das_Wochenprofil_steht_als_DiagrammSvg()
+    {
+        var cut = Aufbauen();
+        cut.FindAll("[role=tab]")[1].Click();
+
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+        Assert.Equal("typprofil", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal(Achsenart.Index, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
+        Assert.Empty(cut.FindComponents<ChartBild>());
+    }
+
+    /// <summary>Ohne Delegat kein Bild — der Platzhalter steht auf dem Grafikblatt.</summary>
+    [Fact]
+    public void Ohne_Bilddelegat_steht_der_Platzhalter()
+    {
+        var cut = Render<TypProfilDialog>(p => p
+            .Add(x => x.Daten, new TypProfilDaten { Art = BedarfsArt.Stromverbraucher })
+            .Add(x => x.Typen, () => TYPEN)
+            .Add(x => x.Lies, (Func<string, (string, double[,])?>)(t => ("B " + t, Profil()))));
+
+        cut.FindAll("[role=tab]")[1].Click();
+
+        Assert.Empty(cut.FindAll("svg.epos-flaeche"));
+        Assert.Contains("Kein Diagramm vorhanden", cut.Markup);
     }
 
     [Fact]

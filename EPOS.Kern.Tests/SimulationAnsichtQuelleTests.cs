@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using EPOS.UI.Seiten.Simulation;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.Kern.Tests
@@ -213,9 +214,15 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Bilder entstehen im plattformfreien <c>ChartRenderer</c> — sie tragen
-        /// Bytes, und zwei Aufrufe desselben Auftrags liefern dasselbe Bild
-        /// (Determinismus, dieselbe Zusage wie in <c>Proben/ChartProben</c>).
+        /// Die Bilder entstehen im plattformfreien <c>ChartRenderer</c> — und zwei
+        /// Aufrufe desselben Auftrags liefern dasselbe Bild (Determinismus, dieselbe
+        /// Zusage wie in <c>Proben/ChartProben</c>).
+        ///
+        /// <para><b>Zwei Wege seit der Etappe DG-E3, Gruppe (a).</b> Eine Stelle mit
+        /// ZEITACHSE liefert ein <c>Zeichenmodell</c> (<c>dienste.Modell</c>) — die
+        /// Oberfläche zeigt es als SVG. Ohne Zeitachse bleibt es beim Pixelbild
+        /// (<c>dienste.Bild</c>): die Streuwolke, die zwei Ringe und die Monatssäulen
+        /// der Autarkie. Geprüft wird je einer von beiden.</para>
         /// </summary>
         [Fact]
         public async Task Die_Bilder_der_Ergebnisseite_sind_da_und_deterministisch()
@@ -228,19 +235,24 @@ namespace EPOS.Kern.Tests
             Rueckmeldung lauf = await Laufen(dienste);
             Assert.True(lauf.Erfolg, lauf.Text);
 
-            byte[] erstes = dienste.Bild(new Bildauftrag(Bilder.BedarfWaerme));
+            // Der Waermebedarf traegt eine Zeitachse: ein Modell, kein PNG.
+            Zeichenmodell erstes = dienste.Modell(new Bildauftrag(Bilder.BedarfWaerme));
             Assert.NotNull(erstes);
-            Assert.True(erstes.Length > 0, "Das Bild des Waermebedarfs traegt Bytes.");
+            Assert.NotEmpty(erstes.Reihen);
+            Assert.NotNull(erstes.Flaeche);
 
-            byte[] zweites = dienste.Bild(new Bildauftrag(Bilder.BedarfWaerme));
-            Assert.Equal(erstes, zweites);
+            Zeichenmodell zweites = dienste.Modell(new Bildauftrag(Bilder.BedarfWaerme));
+            Assert.Equal(SvgSchreiber.Text(erstes), SvgSchreiber.Text(zweites));
 
-            // Seit Auftrag #240 ist die Torte der Uebersicht gefallen (kein Anforderer
-            // mehr, seit #222 zeichnet die Uebersicht den RING). Geprueft wird deshalb
-            // der Ring - dasselbe, was die Seite wirklich anfordert.
+            // Und das PNG bleibt, wo es bleibt: Seit Auftrag #240 ist die Torte der
+            // Uebersicht gefallen (kein Anforderer mehr, seit #222 zeichnet die
+            // Uebersicht den RING). Er hat kein x und deshalb kein Modell.
             byte[] uebersicht = dienste.Bild(new Bildauftrag(Bilder.RingWaerme));
             Assert.NotNull(uebersicht);
             Assert.True(uebersicht.Length > 0);
+
+            byte[] nochmal = dienste.Bild(new Bildauftrag(Bilder.RingWaerme));
+            Assert.Equal(uebersicht, nochmal);
         }
 
         // =================================================================================

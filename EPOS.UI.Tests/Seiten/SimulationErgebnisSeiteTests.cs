@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SpeicherEngine;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -25,6 +26,27 @@ namespace EPOS.UI.Tests.Seiten;
 public class SimulationErgebnisSeiteTests : EposBunitContext
 {
     private readonly List<Bildauftrag> _auftraege = new();
+
+    /// <summary>
+    /// Das Zeichenmodell, das die Hülle für JEDES Zeitreihenbild liefert — EINE
+    /// Instanz, EINMAL gebaut (Etappe DG-E3, Gruppe (a)). Der Baustein
+    /// <c>DiagrammSvg</c> vergleicht die Modellreferenz; hier geht es ohnehin nur
+    /// darum, DASS die Seite ein Modell anfordert und es zwischenspeichert.
+    /// </summary>
+    private static readonly Zeichenmodell MODELL = Gangbild();
+
+    private static Zeichenmodell Gangbild()
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 100.0 + 50.0 * Math.Sin(2 * Math.PI * i / 24.0);
+
+        return ChartRenderer.GanglinieNormiertModell(
+            "Jahresganglinie",
+            new[] { new ChartRenderer.Reihe("Gesamt", werte, ChartRenderer.C_BEDARF) },
+            "kW", ChartRenderer.Achse.Jahresstunden, false);
+    }
+
     private int _laeufe;
     private int _abbrueche;
     private int _gespeichert;
@@ -77,6 +99,7 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
         {
             Laden = _ => _daten,
             Bild = a => { _auftraege.Add(a); return new byte[] { 1 }; },
+            Modell = a => { _auftraege.Add(a); return MODELL; },
             Laufen = mitLauf
                 ? melder =>
                 {

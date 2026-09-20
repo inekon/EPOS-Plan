@@ -1,10 +1,14 @@
 ﻿using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -24,6 +28,22 @@ public class GebaeudetypDialogTests : EposBunitContext
     private static readonly string[] LANG =
     { "Winter-Wochentag", "Winter-Wochenende", "Übergang1-Wochentag", "Übergang1-Wochenende",
       "Sommer-Wochentag", "Sommer-Wochenende", "Übergang2-Wochentag", "Übergang2-Wochenende" };
+
+    /// <summary>
+    /// Das Zeichenmodell des Tagesprofils — EINE Instanz, EINMAL gebaut: Der
+    /// Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz, und ein je
+    /// Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu.
+    /// </summary>
+    private static readonly Zeichenmodell MODELL = Stundenprofil();
+
+    private static Zeichenmodell Stundenprofil()
+    {
+        var werte = new double[24];
+        for (int s = 0; s < 24; s++) werte[s] = s + 1;
+
+        return ChartRenderer.StundenprofilModell("Stundenverteilung", werte, 1,
+                                                 "Stunde", "Anteil [%]");
+    }
 
     public GebaeudetypDialogTests()
     {
@@ -55,7 +75,7 @@ public class GebaeudetypDialogTests : EposBunitContext
         Func<int, double[,], bool>? speichern = null,
         Func<string, string, int>? anlegen = null,
         Func<int, bool>? loeschen = null,
-        Func<double[], byte[]>? bild = null,
+        Func<double[], Zeichenmodell?>? bild = null,
         Action<bool>? geschlossen = null,
         string titel = "Gebäudetypen Verwaltung")
         => Render<GebaeudetypDialog>(p => p
@@ -65,7 +85,7 @@ public class GebaeudetypDialogTests : EposBunitContext
             .Add(x => x.Speichern, speichern ?? ((_, _) => true))
             .Add(x => x.Anlegen, anlegen ?? ((_, _) => 42))
             .Add(x => x.Loeschen, loeschen ?? (_ => true))
-            .Add(x => x.Bild, bild ?? (_ => new byte[] { 1, 2, 3 }))
+            .Add(x => x.Bild, bild ?? (_ => MODELL))
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
     private static IElement Knopf(IRenderedComponent<GebaeudetypDialog> cut, string text)
@@ -347,10 +367,38 @@ public class GebaeudetypDialogTests : EposBunitContext
     public void Das_Bild_bekommt_24_Werte()
     {
         int laenge = 0;
-        var cut = Aufbauen(bild: w => { laenge = w.Length; return new byte[] { 9 }; });
+        var cut = Aufbauen(bild: w => { laenge = w.Length; return MODELL; });
 
         Assert.Equal(24, laenge);
-        Assert.Single(cut.FindAll("img.epos-chartbild"));
+        Assert.Single(cut.FindAll("svg.epos-flaeche"));
+    }
+
+    /// <summary>
+    /// <b>Das Tagesprofil steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) —
+    /// unter der Kennung <c>gebaeudetyp</c>, und ohne ein Pixelbild daneben. Seine
+    /// x-Achse zählt den INDEX der Reihe, 1 … 24: keine Jahresstunde.
+    /// </summary>
+    [Fact]
+    public void Das_Tagesprofil_steht_als_DiagrammSvg()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+        Assert.Equal("gebaeudetyp", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal(Achsenart.Index, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
+        Assert.Empty(cut.FindComponents<ChartBild>());
+    }
+
+    /// <summary>Ohne Delegat kein Bild — der Platzhalter steht.</summary>
+    [Fact]
+    public void Ohne_Bilddelegat_steht_der_Platzhalter()
+    {
+        var cut = Render<GebaeudetypDialog>(p => p
+            .Add(x => x.Typen, () => TYPEN)
+            .Add(x => x.Lies, (Func<string, GebaeudetypDaten?>)(n => Typ(n, 5))));
+
+        Assert.Empty(cut.FindAll("svg.epos-flaeche"));
+        Assert.Contains("Kein Diagramm vorhanden", cut.Markup);
     }
 
     [Fact]
