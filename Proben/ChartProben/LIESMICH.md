@@ -58,7 +58,7 @@ gegen diese Datei.
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
 - **Umfang.** 72 Proben (51 Maßproben, 20 Gegenproben, 1 Versatzprobe) ergeben **91 Bilder**
-  und ebenso viele Zeilen. Die zwölf SVG-Gegenproben zeichnen kein PNG und stehen deshalb
+  und ebenso viele Zeilen. Die zwanzig SVG-Gegenproben zeichnen kein PNG und stehen deshalb
   nicht darin — die Probenzahl steigt, die Messlatte bleibt bei 91.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -90,7 +90,7 @@ gegen diese Datei.
 Seit der Etappe E2 des
 [Diagrammkonzepts](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md) gibt
 es zu jedem Modell einen **zweiten Ausgabeweg**: `SvgSchreiber` schreibt dasselbe
-`Zeichenmodell`, das der `SkiaMaler` ins PNG malt, als SVG-Text für den Bildschirm. Zwölf
+`Zeichenmodell`, das der `SkiaMaler` ins PNG malt, als SVG-Text für den Bildschirm. Zwanzig
 Proben halten ihn fest — sie zeichnen **kein PNG**, legen nichts ab und stehen **nicht** in
 der Messlatte:
 
@@ -118,13 +118,30 @@ die zweite Achse (`data-marke="yachse2"`) genau dann, wenn das Modell sie führt
 | `svg_temperaturverlauf` | `TemperaturverlaufModell` — Achse ohne Nullpunkt |
 | `svg_speicherbetrieb` | `SpeicherbetriebModell` — vier Leistungen links, der Ladezustand rechts |
 
+Die **Gruppe (b)** legt acht weitere dazu (`Program.GruppeB.cs`, eine partielle Hälfte
+derselben Klasse). Ihre sechs Bilder zählen auf der x-Achse keine Zeit, und drei von ihnen
+haben deshalb **gar keine Zeichenfläche** (Entscheid DG-E3-7) — für sie gilt die umgekehrte
+Prüfung: kein inneres `<svg>`, die Reihenbefehle als gewöhnliche Pixel-Elemente mit ihrer
+Marke, und jede `Datenreihe` mit ihrer x-Stelle je Wert:
+
+| Probe | Bild |
+|---|---|
+| `svg_kapitalwert_absolut` | `KapitalwertVerlaufModell` — x ist das Projektjahr; eine kürzere Reihe endet früher |
+| `svg_streuwolke_drei_reihen` | `StreuwolkeModell` — drei Punktwolken, x ist die Außentemperatur |
+| `svg_schnittkurve` | `SchnittkurveModell` — eine Linie mit **ungleichmäßigen** Stützstellen |
+| `svg_kennlinien_cop` | `KennlinienModell` — reines Pixelbild samt Punktmarken |
+| `svg_jahresprojektion` | `JahresprojektionModell` — Säulen, Linie und Ersatzjahr-Marke |
+| `svg_flotte_stueckzahlkurve` | `StueckzahlkurveModell` — Säulen mit Schraffur, ohne Datenreihe |
+| `svg_streuwolke_punkte` | die Punktwolke selbst: ein `M x,y h 0` je Wert, runde Strichkappe, Strichbreite = Punktdurchmesser, **keine** Bündelung (DG-E3-5) |
+| `svg_achsenteilung` | `ChartRenderer.Achsenteilung` je Achsenart: Stunden, ganzzahliger Index, runde Wertstufen (DG-E3-4) |
+
 Warum sie nötig sind: Ein Schreiber, der die Reihen wegließe, die Palette nicht läse oder das
 Datenfenster überginge, bestünde jede Maß-, Farb- und Determinismusprüfung des PNG-Wegs — das
 PNG entsteht ja weiterhin aus dem Maler.
 
-**Sichtprüfung.** `--svg-alle <ordner>` schreibt alle neun Modelle (die acht und den
-Jahresgang) als Dateien; ein kopfloser Browser macht daraus ein Bild, das sich neben das
-Skia-PNG aus `--ablage` legen lässt. Erwartet wird **dieselbe Struktur**, nicht dasselbe
+**Sichtprüfung.** `--svg-alle <ordner>` schreibt alle fünfzehn Modelle (die acht der
+Gruppe (a), die sechs der Gruppe (b) und den Jahresgang) als Dateien; ein kopfloser Browser
+macht daraus ein Bild, das sich neben das Skia-PNG aus `--ablage` legen lässt. Erwartet wird **dieselbe Struktur**, nicht dasselbe
 Pixel: Das SVG zeichnet die Reihe roh bzw. als konservative Hülle, das PNG jeden n-ten Wert —
 im SVG steht deshalb der volle Tagesgang, wo das PNG ein ausgedünntes Band zeigt (Entscheid
 DG-E2-2).
